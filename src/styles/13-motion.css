@@ -1,0 +1,2 @@
+/*@ Reduced-motion overrides */
+@media (prefers-reduced-motion: reduce){ #start, .hud-top, #hint{ transition:none; } }

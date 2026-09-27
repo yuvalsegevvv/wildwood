@@ -1,0 +1,15 @@
+/*@ Talk button, speech bubble, "press E" prompt */
+#bTalk{ bottom:calc(env(safe-area-inset-bottom,0px) + 118px); display:none; }
+body.touch.playing.can-talk #bTalk{ display:grid; }
+#bubble{ position:fixed; z-index:6; transform:translate(-50%,-100%); max-width:250px; padding:9px 13px 10px; border-radius:14px;
+  background:var(--glass-strong); border:1px solid var(--line); color:var(--ink); font-size:14px; line-height:1.45;
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); pointer-events:none; }
+#bubble[hidden]{ display:none; }
+#bubble b{ display:block; font-family:Fraunces, Georgia, serif; font-weight:600; font-size:15px; color:var(--lichen); margin-bottom:2px; }
+#bubble::after{ content:""; position:absolute; left:50%; bottom:-7px; width:12px; height:12px; margin-left:-6px; transform:rotate(45deg);
+  background:var(--glass-strong); border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
+#prompt{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom,0px) + 70px); z-index:5;
+  background:var(--glass); border:1px solid var(--line); border-radius:12px; padding:7px 14px; font-size:13px; pointer-events:none;
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+#prompt[hidden]{ display:none; }
+body.editing #bubble, body.editing #prompt{ display:none; }

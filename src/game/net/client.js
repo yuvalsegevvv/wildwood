@@ -1,0 +1,107 @@
+//@ Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
+/* Messages from the server (see src/server/api.js):
+   welcome{pid,day,dev,players}  mons{list}  you{level,exp,hp,maxHp,dmg,def,red,dead,gear}  tp{x,z,face}
+   snap{day, pl:[[id,x,y,z,face,hp,maxHp,level,dead]], mo:[[id,x,z,face,hp,flags]], b:[boss], ev:[[kind,...]]} */
+function playerName(){ let n=''; try{ n=localStorage.getItem('wildwood-name')||''; }catch(_){} return n; }
+function netHello(){
+  NET.send&&NET.send({t:'hello',name:NET.name||'Hiker',look:LOOK,save:{level:PL.level,exp:PL.exp,gear:GEAR}});
+}
+function netHandle(msg){
+  if(!msg||typeof msg!=='object') return;
+  switch(msg.t){
+    case 'welcome': onWelcome(msg); break;
+    case 'mons': (msg.list||[]).forEach(addMonView); break;
+    case 'you': applyYou(msg); break;
+    case 'tp': P.x=msg.x; P.z=msg.z; P.y=getH(P.x,P.z); P.vx=P.vz=P.vy=0; P.face=P.yaw=msg.face; playerUp(); break;
+    case 'snap': applySnap(msg); break;
+  }
+}
+function onWelcome(msg){
+  NET.pid=msg.pid; NET.dev=msg.dev; NET.ready=true;
+  clearMonViews(); clearRemotes(); clearBossVisuals(); CB.projs.forEach(p=>scene.remove(p.mesh)); CB.projs.length=0; CB.target=null;
+  (msg.players||[]).forEach(remoteAdd);
+  serverDay=msg.day; dayClock=msg.day;
+  $('#tSec').hidden=!msg.dev;
+  if(NET.onReady){ const f=NET.onReady; NET.onReady=null; f(); }
+}
+function applySnap(msg){
+  if(msg.day!=null) serverDay=msg.day;
+  if(msg.pl) applyPlayers(msg.pl);
+  if(msg.mo) msg.mo.forEach(applyMonSnap);
+  if(msg.b) applyBossState(msg.b);
+  if(msg.ev) msg.ev.forEach(applyEvent);
+}
+function applyPlayers(pl){
+  for(const a of pl){
+    if(a[0]===NET.pid){ PL.hp=a[5]; PL.maxHp=a[6]; if(a[8]&&!PL.dead) playerDown(); continue; }
+    remoteSnap(a);
+  }
+  NET.players=pl.length;
+  const on=$('#online'); on.hidden=NET.mode==='solo'; on.textContent=pl.length===1?'Only you in this world':pl.length+' players in this world';
+}
+function applyEvent(e){
+  const me=NET.pid;
+  switch(e[0]){
+    case 'dmg': onMonDmg(e[1],e[2],e[3],e[4]); break;
+    case 'imm': onMonImmune(e[1]); break;
+    case 'kill': onMonKill(e[1],e[2]); break;
+    case 'mact': onMonAct(e[1],e[2]); break;
+    case 'aggro': { const m=MON_BY_ID.get(e[1]); if(m) monSound(m,'aggro'); break; }
+    case 'respawn': { const m=MON_BY_ID.get(e[1]); if(m) monRespawned(m,e[2],e[3]); break; }
+    case 'spawn': addMonView(e[1]); break;
+    case 'despawn': removeMonView(e[1]); break;
+    case 'proj': onProj(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8],e[9]); break;
+    case 'pend': onProjEnd(e[1],e[2],e[3],e[4],e[5]); break;
+    case 'tele': addTele(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8]); break;
+    case 'tend': endTele(e[1],!!e[2]); break;
+    case 'roar': bossRoar(); break;
+    case 'area': onArea(e[1],e[2],e[3],e[4],e[5],e[6]); break;
+    case 'aend': onAreaEnd(e[1]); break;
+    case 'chain': onChain(e[1]); break;
+    case 'skillslot': if(e[1]===me){ UI_SFX.success(); flashSkillSlot(); } break;
+    case 'skillbuy': if(e[1]===me) UI_SFX.success(); break;
+    case 'xp': if(e[1]===me){ const m=e[3]!=null?MON_BY_ID.get(e[3]):null; if(m){ const c=monCenter(m); popText(c.x,c.y+m.T.height*0.6,c.z,'+'+e[2].toFixed(1)+' XP','xp'); } } break;
+    case 'coins': if(e[1]===me){ const m=MON_BY_ID.get(e[3]); if(m){ const c=monCenter(m); popText(c.x+0.4,c.y+m.T.height*0.35,c.z,'+'+e[2]+' coins','coin'); } } break;
+    case 'loot': onLoot(e[1],e[2],e[3]); break;
+    case 'merge': if(e[1]===me){ const it=ITEM[e[2]]; if(it) forgeFx(it); } else { const r=REMOTES.get(e[1]), it=ITEM[e[2]]; if(r&&it&&it.rar>=3) toast(r.name+' forged '+it.name+'!','loot r'+it.rar); } break;
+    case 'lvup': if(e[1]===me) levelUpFx(e[2]); else remoteLevelUp(e[1],e[2]); break;
+    case 'hurt': if(e[1]===me) hurtFx(e[2]); else remoteHurt(e[1],e[2]); break;
+    case 'down': if(e[1]===me){ if(!PL.dead) playerDown(); } else remoteDown(e[1],true); break;
+    case 'up': if(e[1]===me) playerUp(); else remoteDown(e[1],false); break;
+    case 'toast': if(e[1]==null||e[1]===me){ toast(e[2],e[3]); if(e[1]==null&&e[3]==='good') UI_SFX.success(); } break;
+    case 'qdone': if(e[1]===me) UI_SFX.notify(); break;
+    case 'qturn': if(e[1]===me) UI_SFX.success(); break;
+    case 'pact': if(e[1]!==me) remoteAct(e[1],e[2],e[3]); break;
+    case 'pjoin': if(e[1].id!==me && !REMOTES.has(e[1].id)){ remoteAdd(e[1]); toast(e[1].name+' joined the world',''); } break;
+    case 'pleave': { const r=REMOTES.get(e[1]); if(r){ toast(r.name+' left the world',''); remoteRemove(e[1]); } break; }
+    case 'pgear': if(e[1]!==me) remoteGear(e[1],e[2]); break;
+    case 'plook': if(e[1]!==me) remoteLook(e[1],e[2]); break;
+  }
+}
+// an item dropped: epic or better gets the beam, banner and jingle; everyone hears about unique and legendary finds
+function onLoot(pid,id,monId){
+  const it=ITEM[id]; if(!it) return;
+  const m=monId!=null?MON_BY_ID.get(monId):null;
+  if(pid===NET.pid){
+    if(it.rar>=2){ const x=m?m.x:P.x, z=m?m.z:P.z; luckyFx(x,getH(x,z),z,it.rar,true,it); }
+    else UI_SFX.pickup();
+  } else {
+    const r=REMOTES.get(pid); if(!r) return;
+    if(it.rar>=2 && r.g.visible){ const x=m?m.x:r.x, z=m?m.z:r.z; luckyFx(x,getH(x,z),z,it.rar,false,it); }
+    if(it.rar>=3) toast(r.name+' found '+it.name+'!','loot r'+it.rar);
+  }
+}
+// your position goes to the server 10 times a second (room: in presence, others: as a message)
+let posT=0, lookT=0, lookDirty=false;
+function netTick(dt){
+  if(!NET.ready||!started) return;
+  posT-=dt;
+  if(posT<=0 && !PL.dead){
+    posT=0.1;
+    const p=[P.x,P.y,P.z,P.face,P.vx,P.vz].map(v=>Math.round(v*100)/100);
+    if(NET.mode==='room'&&!NET.host) NET.room.presence({p}).catch(()=>{});
+    else netSend({t:'pos',p});
+  }
+  if(lookDirty){ lookT-=dt; if(lookT<=0){ lookDirty=false; netSend({t:'look',look:LOOK}); } }
+}
+function netLookChanged(){ lookDirty=true; lookT=0.6; }

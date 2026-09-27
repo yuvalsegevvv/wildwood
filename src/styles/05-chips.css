@@ -1,0 +1,9 @@
+/*@ Shared chip buttons and start-card pickers */
+.chips{ display:flex; flex-wrap:wrap; gap:6px; }
+.chip{ min-height:36px; padding:0 13px; border-radius:10px; border:1px solid var(--line); background:rgba(238,240,226,.06); color:var(--ink); font:500 13.5px Inter, system-ui, sans-serif; cursor:pointer; }
+.chip[aria-pressed="true"]{ background:var(--lichen); color:var(--lichen-ink); border-color:var(--lichen); }
+.chip:focus-visible, .sw:focus-visible, .ed-tab:focus-visible, .linkbtn:focus-visible, #editor button:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
+.pick{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 16px; }
+.pick-l{ font-size:13.5px; color:var(--ink); font-weight:600; }
+.linkbtn{ margin-left:auto; background:none; border:0; color:var(--lichen); font:600 14px Inter, system-ui, sans-serif; cursor:pointer; padding:8px 2px; text-decoration:underline; text-underline-offset:3px; }
+.linkbtn:disabled{ opacity:.5; cursor:progress; }

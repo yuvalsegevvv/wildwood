@@ -1,0 +1,29 @@
+/*@ Colour tokens, light/dark theme, page, canvas */
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --ink:#eef0e2;
+  --ink-dim:rgba(238,240,226,.7);
+  --glass:rgba(22,30,22,.5);
+  --glass-strong:rgba(17,24,17,.8);
+  --line:rgba(238,240,226,.16);
+  --lichen:#cdd98f;
+  --lichen-ink:#1d2716;
+  --bg:#0f150e;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --glass:rgba(14,20,14,.56); --glass-strong:rgba(11,16,11,.84); }
+}
+:root[data-theme="dark"]{ --glass:rgba(14,20,14,.56); --glass-strong:rgba(11,16,11,.84); }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+*,*::before,*::after{ box-sizing:inherit; }
+html,body{ height:100%; margin:0; overflow:hidden; }
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-user-select:none; user-select:none; touch-action:none; overscroll-behavior:none;
+  -webkit-tap-highlight-color:transparent;
+}
+#c{ position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+

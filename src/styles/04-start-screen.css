@@ -1,0 +1,30 @@
+/*@ Start card, controls legend, loading bar */
+#start{
+  position:fixed; inset:0; z-index:10; display:grid; place-items:center; padding:24px;
+  background:radial-gradient(ellipse at 50% 55%, rgba(12,18,11,.15), rgba(12,18,11,.78));
+  transition:opacity .9s;
+}
+#start.hide{ opacity:0; pointer-events:none; }
+.card{
+  width:100%; max-width:410px; border-radius:22px; padding:28px 26px 24px;
+  background:var(--glass-strong); border:1px solid var(--line);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+}
+.card h1{
+  font-family:Fraunces, Georgia, "Times New Roman", serif; font-weight:400;
+  font-size:clamp(40px, 11vw, 54px); line-height:.95; letter-spacing:-.01em; margin:0 0 12px;
+}
+.card p{ margin:0 0 20px; color:var(--ink-dim); font-size:15px; line-height:1.55; }
+.keys{ display:grid; grid-template-columns:max-content 1fr; gap:8px 16px; margin:0 0 24px; font-size:13.5px; color:var(--ink-dim); }
+.keys dt{ color:var(--ink); font-weight:600; }
+.keys dd{ margin:0; }
+#go{
+  width:100%; height:52px; border:0; border-radius:14px; cursor:pointer;
+  background:var(--lichen); color:var(--lichen-ink); font:600 15.5px Inter, system-ui, sans-serif;
+}
+#go:disabled{ opacity:.6; cursor:progress; }
+.bar{ height:4px; border-radius:4px; background:rgba(238,240,226,.14); margin-top:14px; overflow:hidden; }
+.bar i{ display:block; height:100%; width:0; background:var(--lichen); border-radius:4px; transition:width .3s; }
+.brand .g{ font-size:11.5px; color:var(--lichen); margin-top:3px; }
+#status{ margin-top:12px; font-size:12.5px; color:var(--ink-dim); text-align:center; min-height:1.2em; }
+

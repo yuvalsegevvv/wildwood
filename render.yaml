@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: wildwood
+    runtime: node
+    plan: free
+    buildCommand: python3 build.py
+    startCommand: node dist/wildwood-server.js --no-dev
+    healthCheckPath: /status
+    envVars:
+      - key: NODE_VERSION
+        value: 22

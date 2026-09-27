@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wildwood, a forest to wander</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" id="fontcss">
+<style>
+{{STYLES}}</style>
+</head>
+<body>
+<canvas id="c" aria-label="3D forest scene"></canvas>
+
+<div class="hud-top">
+  <div class="brand"><div class="t">Wildwood</div><div class="s" id="tod">Morning 07:00</div><div class="s z" id="zone"></div><div class="g" id="grow" hidden></div><div class="s" id="online" hidden></div>
+    <div class="pstat"><div class="pl-top"><b id="plLv">Lv 1</b><span id="plHpT"></span></div><div class="pbar hp"><i id="plHp"></i></div><div class="pbar xp"><i id="plXp"></i></div><div class="pl-xp"><span id="plXpT"></span><span class="coin"><span id="plCoins">0</span> coins</span></div></div>
+  </div>
+  <div class="hud-r">
+  <div class="btns">
+    <button class="icon-btn" id="bMap" aria-label="World map (N)" title="World map (N)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>
+    </button>
+    <button class="icon-btn" id="bTime" aria-label="Skip ahead to the next part of the day (T)" title="Skip ahead to the next part of the day (T)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+    </button>
+    <button class="icon-btn" id="bInv" aria-label="Inventory (I)" title="Inventory (I)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+    </button>
+    <button class="icon-btn" id="bSound" aria-label="Settings" title="Settings: sound and testing (M mutes)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+    <button class="icon-btn" id="bLook" aria-label="Customize your hiker" title="Customize your hiker">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="3.5"/><path d="M5 20.5c.8-4 3.6-6 7-6s6.2 2 7 6"/></svg>
+    </button>
+    <button class="icon-btn" id="bView" aria-label="Switch camera view (V)" title="Switch camera view (V)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>
+    </button>
+  </div>
+  <button id="minimap" aria-label="Minimap. Open the world map (N)" title="World map (N)"><canvas id="mmC"></canvas></button>
+  </div>
+</div>
+
+<div id="hint"></div>
+<div id="qlog" hidden></div>
+<div id="toasts"></div>
+<div id="bossbar" hidden><div class="bb-top"><b>The Rootwarden</b><span class="bb-lv">Lv 15 boss</span><span id="bbPhase"></span></div><div class="bb-bar"><i id="bbHp"></i></div></div>
+<div id="inv" class="panel" hidden role="dialog" aria-label="Inventory">
+  <div class="pn-head"><span class="pn-t">Inventory</span><button class="chip pn-skills" id="invSkills">Skills (K)</button><span class="pn-coins" id="invCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="invBody"></div>
+</div>
+<div id="shop" class="panel" hidden role="dialog" aria-label="Shop">
+  <div class="pn-head"><span class="pn-t" id="shopTitle">Shop</span><span class="pn-coins" id="shopCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="chips pn-tabs"><button class="chip" data-shoptab="buy">Buy</button><button class="chip" data-shoptab="sell">Sell</button></div>
+  <div class="pn-body" id="shopBody"></div>
+</div>
+<div id="quests" class="panel" hidden role="dialog" aria-label="Quests">
+  <div class="pn-head"><span class="pn-t" id="qTitle">Quests</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="qBody"></div>
+</div>
+<div id="map" class="panel" hidden role="dialog" aria-label="World map">
+  <div class="pn-head"><span class="pn-t">World map</span><span class="map-here" id="mapHere"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="map-box" id="mapBox"><canvas id="mapC"></canvas><div class="map-tip" id="mapTip" hidden></div></div>
+  <div class="map-legend"><span><i class="lg you"></i>You</span><span><i class="lg pl"></i>Other players</span><span><i class="lg q"></i>Quest</span><span><i class="lg qr"></i>Quest done</span><span><i class="lg mo"></i>Monster on your trail</span><span><i class="lg boss"></i>Boss</span></div>
+</div>
+<div id="forge" class="panel" hidden role="dialog" aria-label="Forge">
+  <div class="pn-head"><span class="pn-t">Greta's forge</span><span class="pn-coins" id="forgeCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="forgeBody"></div>
+</div>
+<div id="skills" class="panel" hidden role="dialog" aria-label="Skills">
+  <div class="pn-head"><span class="pn-t" id="skTitle">Skills</span><span class="pn-coins" id="skCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="skBody"></div>
+</div>
+<div id="lucky" aria-live="polite"></div>
+<div id="hurt"></div>
+<div id="lvup"></div>
+<div id="down" hidden><b>You were knocked out</b><span>Waking up at the village gate…</span></div>
+<div id="sound" hidden role="dialog" aria-label="Sound settings">
+  <div class="snd-head"><span>Settings</span><button id="sClose" class="snd-x" aria-label="Close sound settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <label class="snd-row"><span>Music</span><input type="range" min="0" max="1" step="0.01" data-k="music"></label>
+  <label class="snd-row"><span>Nature</span><input type="range" min="0" max="1" step="0.01" data-k="ambient"></label>
+  <label class="snd-row"><span>Voices</span><input type="range" min="0" max="1" step="0.01" data-k="voice"></label>
+  <label class="snd-row"><span>Interface</span><input type="range" min="0" max="1" step="0.01" data-k="ui"></label>
+  <div class="snd-sub">How villagers talk</div>
+  <div class="chips"><button class="chip" data-voice="speech">Spoken</button><button class="chip" data-voice="babble">Babble</button><button class="chip" data-voice="off">Silent</button></div>
+  <button id="sMute" class="chip snd-mute">Sound on</button>
+  <div id="tSec">
+  <div class="snd-sub snd-sec">Testing</div>
+  <div class="test-row"><label for="tLevel">Level</label><input id="tLevel" type="number" min="1" max="50" value="1" inputmode="numeric"><button class="chip" id="tSetLv">Set level</button></div>
+  <div class="test-col">
+    <button class="chip" id="tAll">Add every item to my bag</button>
+    <button class="chip" id="tStartAll" aria-pressed="false">Start with every item: off</button>
+    <button class="chip" id="tCoins">Add 1000 coins</button>
+    <button class="chip" id="tThree">3 of an item (for the forge)</button>
+    <button class="chip" id="tLucky">Lucky drop</button>
+    <button class="chip" id="tReset">Reset all progress</button>
+  </div>
+  </div>
+</div>
+<div id="editor" hidden>
+  <div class="ed-head"><div class="ed-title">Your hiker</div><div class="ed-drag">Drag the scene to turn around</div></div>
+  <div id="edTabs" class="ed-tabs"></div>
+  <div id="edBody" class="ed-body"></div>
+  <div class="ed-foot"><button id="edRandom" class="ghost">Surprise me</button><button id="edDone" class="primary">Done</button></div>
+</div>
+<div id="joy"><div id="knob"></div></div>
+<button class="touch-btn" id="bJump" data-silent="1" aria-label="Jump">Jump</button>
+<button class="touch-btn" id="bTalk" data-silent="1" aria-label="Talk">Talk</button>
+<div id="tframe" hidden><div class="tf-top"><b id="tName"></b><span id="tLv"></span></div><div class="tf-bar"><i id="tBar"></i></div><div id="tHp" class="tf-hp"></div></div>
+<div id="actionbar">
+  <button class="ab" id="abBasic" data-silent="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></svg><span class="nm"></span><span class="key">F</span></button>
+  <button class="ab" id="abSkill" data-silent="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></svg><span class="nm"></span><span class="key">Q</span></button>
+  <button class="ab ab-burst" id="abBurst" data-silent="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></svg><span class="nm"></span><span class="key">R</span></button>
+</div>
+<div id="bubble" hidden><b id="bName"></b><span id="bText"></span></div>
+<div id="prompt" hidden></div>
+
+<div id="start">
+  <div class="card">
+    <h1>Wildwood</h1>
+    <p>A forest grown from noise, with a village at its heart. Monsters roam the woods, from level 1 near the village to level 15 at the edge of the world. Beat them to level up.</p>
+    <dl class="keys" id="keys"></dl>
+    <div class="pick"><span class="pick-l">World</span><div class="chips"><button class="chip" data-world="solo">Solo</button><button class="chip" data-world="room" hidden>Shared</button><button class="chip" data-world="ws" hidden>This server</button></div></div>
+    <p class="world-note" id="worldNote"></p>
+    <div class="pick"><label class="pick-l" for="pname">Name</label><input id="pname" maxlength="16" autocomplete="nickname" spellcheck="false"></div>
+    <div class="pick"><span class="pick-l">Weapon</span><div class="chips"><button class="chip" data-cls="warrior">Sword</button><button class="chip" data-cls="archer">Bow</button><button class="chip" data-cls="mage">Wand</button></div></div>
+    <div class="pick"><span class="pick-l">Play as</span><div class="chips"><button class="chip" data-sex="male">Male</button><button class="chip" data-sex="female">Female</button></div><button id="custom" class="linkbtn" disabled>Customize</button></div>
+    <button id="go" disabled>Walk into the forest</button>
+    <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+    <div id="status" aria-live="polite">Starting…</div>
+  </div>
+</div>
+
+<script>
+{{EARLY}}</script>
+{{AUDIO}}<script>
+/* The world server: runs in this page for solo play and when hosting a shared world. */
+function createWorldServer(io){
+'use strict';
+{{SERVER}}}
+</script>
+<script>
+function wildwoodMain(){
+{{GAME}}}
+</script>
+<script>
+{{THREE}}</script>
+<script>
+{{START}}</script>
+</body>
+</html>

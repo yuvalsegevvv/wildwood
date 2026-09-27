@@ -1,0 +1,185 @@
+//@ Monster families and 15 monsters (MON_DEFS), models, camps, AI, animation
+const MONS=[], CAMPS=[], MON_GEO={};
+function monMat(glow){ const m=new THREE.MeshLambertMaterial({vertexColors:true, emissive:glow||0x000000}); m.userData.glow=new THREE.Color(glow||0); return m; }
+function pivot(parent,x,y,z,mesh){ const g=new THREE.Group(); g.position.set(x,y,z); if(mesh) g.add(mesh); parent.add(g); return g; }
+function rigOf(root){ const g=n=>root.getObjectByName(n); return {root,hips:g('hips'),spine:g('spine'),head:g('head'),shL:g('shL'),elL:g('elL'),shR:g('shR'),elR:g('elR'),hipL:g('hipL'),kneeL:g('kneeL'),hipR:g('hipR'),kneeR:g('kneeR'),hipY:0.92}; }
+function monGeos(d){
+  if(MON_GEO[d.id]) return MON_GEO[d.id];
+  const p=d.pal, G={};
+  if(d.model==='slime'){
+    G.body=merge([
+      pc(csph(0.45,16,12).scale(1,0.78,1).translate(0,0.35,0),(x,y,z,c)=>{ c.set(p.body); if(y>0.45) c.lerp(_tint.set(p.top),clamp((y-0.45)/0.25)*0.6); }),
+      ...[-1,1].flatMap(sd=>[pc(csph(0.09,10,8).translate(sd*0.15,0.45,-0.35),c=>c.set(0xffffff)),pc(csph(0.045,8,6).translate(sd*0.15,0.45,-0.43),c=>c.set(0x111111))]),
+      pc(vbox(0.14,0.025,0.03,0,0.3,-0.42),c=>c.set(p.mouth))
+    ]);
+  } else if(d.model==='shroom'){
+    G.body=merge([
+      pc(cyl(0.2,0.25,0.55,12).translate(0,0.4,0),c=>c.set(p.stem)),
+      pc(new THREE.SphereGeometry(0.46,18,8,0,TAU,0,Math.PI/2).scale(1,0.7,1).translate(0,0.66,0),(x,y,z,c)=>{ c.set(p.cap); if(h3(Math.round(x*9),Math.round(y*9),Math.round(z*9))>0.8) c.set(p.spot); }),
+      pc(cyl(0.45,0.45,0.03,18).translate(0,0.66,0),c=>c.set(p.gill)),
+      ...[-1,1].flatMap(sd=>[pc(csph(0.055,8,6).translate(sd*0.08,0.5,-0.2),c=>c.set(0xffffff)),pc(csph(0.03,6,5).translate(sd*0.08,0.5,-0.245),c=>c.set(0x111111))]),
+      pc(vbox(0.08,0.02,0.02,0,0.4,-0.23),c=>c.set(0x6a3a2a))
+    ]);
+    G.foot=pc(csph(0.1,8,6).scale(1,0.6,1.4).translate(0,0.06,0),c=>c.set(p.feet));
+  } else if(d.model==='beetle'){
+    G.body=merge([
+      pc(csph(0.5,18,12).scale(0.8,0.5,1.2).translate(0,0.42,0),(x,y,z,c)=>{ c.set(p.shell); if(Math.abs(x)<0.025&&y>0.55) c.set(p.seam); c.lerp(_tint.set(p.sheen),clamp((y-0.55)*2)*0.35); }),
+      pc(csph(0.22,12,10).translate(0,0.36,-0.62),c=>c.set(p.head)),
+      pc(new THREE.ConeGeometry(0.06,0.42,8).rotateX(-1.1).translate(0,0.55,-0.8),c=>c.set(p.horn)),
+      ...[-1,1].flatMap(sd=>[pc(new THREE.ConeGeometry(0.03,0.16,6).rotateX(-Math.PI/2).rotateY(sd*0.4).translate(sd*0.08,0.26,-0.8),c=>c.set(0x2a2018)),pc(csph(0.035,6,5).translate(sd*0.12,0.42,-0.78),c=>c.set(p.eye))])
+    ]);
+    for(const sd of [-1,1]){ const legs=[]; for(const lz of [-0.35,0,0.35]) legs.push(pc(cyl(0.025,0.02,0.55,5).translate(0,-0.275,0).rotateZ(sd*1.0).translate(sd*0.3,0.42,lz),c=>c.set(p.legs))); G[sd<0?'lL':'lR']=merge(legs); }
+  } else if(d.model==='boar'){
+    G.body=merge([
+      pc(csph(0.45,16,12).scale(0.85,0.8,1.5).translate(0,0.62,0),(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.85+h3(Math.round(x*12),Math.round(y*12),Math.round(z*12))*0.3); if(y>0.9&&Math.abs(x)<0.12) c.set(p.ridge); }),
+      pc(csph(0.26,12,10).scale(0.9,0.9,1.2).translate(0,0.62,-0.72),c=>c.set(p.head)),
+      pc(cyl(0.11,0.12,0.14,10).rotateX(Math.PI/2).translate(0,0.55,-1.0),(x,y,z,c)=>{ c.set(p.snout); if(z<-1.05) c.set(0x3a2420); }),
+      ...[-1,1].flatMap(sd=>[pc(new THREE.ConeGeometry(0.035,0.2,6).rotateX(-0.5).translate(sd*0.12,0.52,-0.93),c=>c.set(p.tusk)),
+        pc(new THREE.ConeGeometry(0.06,0.16,5).rotateZ(-sd*0.4).translate(sd*0.15,0.86,-0.62),c=>c.set(p.ridge)),
+        pc(csph(0.03,6,5).translate(sd*0.13,0.7,-0.9),c=>c.set(p.eye))])
+    ]);
+    G.leg=pc(cyl(0.065,0.05,0.42,6).translate(0,-0.21,0),(x,y,z,c)=>{ c.set(p.legs); if(y<-0.36) c.set(0x1a1410); });
+  } else if(d.model==='treant'){
+    G.body=merge([
+      pc(cyl(0.34,0.5,2.0,10,6).translate(0,1.35,0),(x,y,z,c)=>{ c.set(p.bark).multiplyScalar(0.8+h3(Math.round(Math.atan2(z,x)*3),0,0)*0.35); }),
+      pc(csph(0.95,14,10).translate(0,2.75,0.05),(x,y,z,c)=>c.set(p.c1).multiplyScalar(0.8+h3(Math.round(x*5),Math.round(y*5),Math.round(z*5))*0.35)),
+      pc(csph(0.7,12,9).translate(0.55,2.45,0.25),c=>c.set(p.c2)),
+      pc(csph(0.65,12,9).translate(-0.55,2.5,-0.1),c=>c.set(p.c3)),
+      ...[-1,1].map(sd=>pc(csph(0.075,8,6).translate(sd*0.14,1.78,-0.4),c=>c.set(p.eyes))),
+      pc(vbox(0.26,0.07,0.05,0,1.48,-0.44),c=>c.set(0x1a120c))
+    ]);
+    for(const sd of [-1,1]) G[sd<0?'aL':'aR']=merge([pc(cyl(0.07,0.12,1.15,6).translate(0,-0.57,0),c=>c.set(p.bark)),pc(cyl(0.03,0.05,0.45,5).translate(0,-0.22,0).rotateZ(sd*0.7).translate(0,-0.8,0),c=>c.set(p.bark)),pc(csph(0.22,8,6).translate(sd*0.12,-1.05,0),c=>c.set(p.c1))]);
+    G.leg=merge([pc(cyl(0.16,0.22,0.62,7).translate(0,-0.31,0),c=>c.set(p.bark)),pc(new THREE.ConeGeometry(0.12,0.3,5).rotateX(-1.3).translate(0,-0.55,-0.18),c=>c.set(p.bark))]);
+  } else if(d.model==='totem'){
+    G.body=merge([
+      pc(vbox(1.0,0.3,1.0,0,0.15,0),stoneC),
+      pc(cyl(0.3,0.4,2.0,6,8).translate(0,1.3,0),(x,y,z,c)=>{ stoneC(x,y,z,c); if(((y*2.2)%1+1)%1<0.14) c.set(0x6af08a); }),
+      pc(new THREE.OctahedronGeometry(0.3,0).scale(1,1.5,1).translate(0,2.6,0),c=>c.set(0x7af0a0))
+    ]);
+  } else if(d.model==='goblin'){
+    const look={sex:'male',height:1,build:0.9,skin:p.skin,face:'angular',eyes:p.eyes,facial:'none',hair:'bald',hairColor:0x1d1714,top:p.top,topColor:p.topColor,bottom:p.bottom,bottomColor:p.bottomColor,shoes:'boots',shoeColor:0x2b2420,hat:p.hat,hatColor:p.hatColor,pack:false};
+    const rig=buildCharacter(look);
+    for(const sd of [-1,1]) rig.head.add(new THREE.Mesh(pc(new THREE.ConeGeometry(0.035,0.16,5).rotateZ(-sd*(Math.PI/2-0.35)).translate(sd*0.15,0.03,0.01),c=>c.set(p.skin)),matChar));
+    rig.elR.add(new THREE.Mesh(merge([pc(cyl(0.03,0.075,0.62,7).translate(0,-0.62,0),c=>c.set(p.club)),pc(csph(0.08,6,5).translate(0,-0.9,0),c=>c.set(p.club).multiplyScalar(0.8))]),matChar));
+    G.template=rig.root;
+  }
+  MON_GEO[d.id]=G; return G;
+}
+function buildMonster(d,mat){
+  const G=monGeos(d), g=new THREE.Group(), P0={};
+  const M=geo=>{ const m=new THREE.Mesh(geo,mat); m.castShadow=true; return m; };
+  if(d.model==='slime'){ P0.body=M(G.body); g.add(P0.body); }
+  else if(d.model==='shroom'){ P0.body=M(G.body); g.add(P0.body); P0.fL=pivot(g,-0.13,0,0,M(G.foot)); P0.fR=pivot(g,0.13,0,0,M(G.foot)); }
+  else if(d.model==='totem'){ P0.body=M(G.body); g.add(P0.body); }
+  else if(d.model==='beetle'){ P0.body=M(G.body); g.add(P0.body); P0.lL=M(G.lL); P0.lR=M(G.lR); g.add(P0.lL,P0.lR); }
+  else if(d.model==='boar'){ P0.body=M(G.body); g.add(P0.body); P0.legs=[[-0.2,-0.4],[0.2,-0.4],[-0.2,0.4],[0.2,0.4]].map(([x,z])=>pivot(g,x,0.42,z,M(G.leg))); }
+  else if(d.model==='treant'){
+    P0.body=M(G.body); g.add(P0.body);
+    P0.aL=pivot(g,-0.45,2.0,0,M(G.aL)); P0.aR=pivot(g,0.45,2.0,0,M(G.aR)); P0.aL.rotation.z=-0.45; P0.aR.rotation.z=0.45;
+    P0.lL=pivot(g,-0.2,0.62,0,M(G.leg)); P0.lR=pivot(g,0.2,0.62,0,M(G.leg));
+  } else if(d.model==='goblin'){
+    const root=G.template.clone(true);
+    root.traverse(o=>{ if(o.isMesh){ o.material=mat; o.castShadow=true; } });
+    g.add(root); P0.rig=rigOf(root);
+  }
+  return {g,parts:P0};
+}
+/* Monsters are simulated by the world server; the client keeps a view of each one (MONS), created from the
+   roster the server sends on join, moved smoothly toward the latest snapshot, and animated locally. */
+const MON_BY_ID=new Map(), DEF_BY_ID={};
+[...MON_DEFS,BOSS_DEF,TOTEM_DEF,THORN_DEF].forEach(d=>{ DEF_BY_ID[d.id]=d; });
+function addMonView(r){ // [id, defId, campX, campZ, scale, x, z, dead, temp]
+  if(MON_BY_ID.has(r[0])) return MON_BY_ID.get(r[0]);
+  const d=DEF_BY_ID[r[1]]; if(!d) return null;
+  const mat=monMat(d.glow), {g,parts}=buildMonster(d,mat); scene.add(g);
+  const m={id:r[0],def:d,model:d.model,T:d,camp:{x:r[2],z:r[3]},mat,g,parts,s:r[4],gs:r[4]*d.scale,maxHp:d.hp,hp:d.hp,
+    x:r[5],z:r[6],y:getH(r[5],r[6]),tx:r[5],tz:r[6],face:0,tface:0,vx:0,vz:0,ph:AR(0,TAU),flash:0,slowT:0,
+    dead:!!r[7],deadT:r[7]?9:0,aggro:false,immune:false,act:null,lunge:0,temp:!!r[8],spawnT:r[8]?0.6:0,boss:!!d.boss};
+  g.visible=false; MONS.push(m); MON_BY_ID.set(m.id,m);
+  if(m.boss) BOSS.m=m;
+  return m;
+}
+function removeMonView(id){
+  const m=MON_BY_ID.get(id); if(!m) return;
+  scene.remove(m.g); m.mat.dispose(); MON_BY_ID.delete(id);
+  const i=MONS.indexOf(m); if(i>=0) MONS.splice(i,1);
+  if(CB.target===m) CB.target=null; if(BOSS.m===m) BOSS.m=null;
+}
+function clearMonViews(){ [...MON_BY_ID.keys()].forEach(removeMonView); }
+function applyMonSnap(a){ // [id, x, z, face, hp, flags: 1 aggro, 4 slowed, 8 immune]
+  const m=MON_BY_ID.get(a[0]); if(!m) return;
+  m.tx=a[1]; m.tz=a[2]; m.tface=a[3]; m.hp=a[4];
+  m.aggro=!!(a[5]&1); m.slowT=(a[5]&4)?1:0; m.immune=!!(a[5]&8);
+  if(m.dead){ monRespawned(m,a[1],a[2]); }
+}
+function monRespawned(m,x,z){
+  m.dead=false; m.deadT=0; m.hp=m.maxHp; m.x=m.tx=x; m.z=m.tz=z; m.y=getH(x,z);
+  m.spawnT=0.6; m.g.rotation.set(0,m.face,0); m.act=null;
+}
+function monCenter(m){ return new THREE.Vector3(m.x,m.y+m.T.height*0.5*m.s,m.z); }
+function updateMonsters(dt){
+  for(const m of MONS){
+    if(m.dead){
+      m.deadT+=dt; const dur=m.boss?2:1.2;
+      if(m.deadT<dur){ const f=m.deadT/dur; m.g.scale.setScalar(m.gs*(1-f*(m.boss?0.6:0.85))); m.g.position.y=m.y-f*(m.boss?1.5:0.3); m.g.rotation.z=f*(m.boss?0.5:0.9); }
+      else m.g.visible=false;
+      continue;
+    }
+    const dp=Math.hypot(m.x-P.x,m.z-P.z);
+    if(dp>(m.boss?170:95)){ m.g.visible=false; m.x=m.tx; m.z=m.tz; continue; }
+    m.g.visible=true;
+    const ox=m.x, oz=m.z, k=1-Math.exp(-10*dt);
+    m.x+=(m.tx-m.x)*k; m.z+=(m.tz-m.z)*k;
+    if(Math.hypot(m.tx-m.x,m.tz-m.z)>12){ m.x=m.tx; m.z=m.tz; }
+    const inv=1/Math.max(dt,1e-3); m.vx=(m.x-ox)*inv; m.vz=(m.z-oz)*inv;
+    m.y=getH(m.x,m.z);
+    m.face=angLerp(m.face,m.tface,1-Math.exp(-10*dt));
+    animateMonster(m,dt,Math.min(Math.hypot(m.vx,m.vz),9));
+    m.flash=Math.max(0,m.flash-dt*4);
+    if(m.boss){ bossVisual(m,dt); continue; }
+    const f=m.flash, sl=m.slowT>0?0.35:0, gl=m.mat.userData.glow;
+    m.mat.emissive.setRGB(gl.r+f*0.9,gl.g+f*0.35+sl*0.4,gl.b+f*0.3+sl);
+  }
+  updateBossFx(dt);
+}
+function animateMonster(m,dt,sp){
+  const P0=m.parts, g=m.g;
+  m.lunge=Math.max(0,m.lunge-dt);
+  const lunge=m.lunge>0?Math.sin((0.5-m.lunge)/0.5*Math.PI)*0.45*m.T.scale:0;
+  let sc=m.gs; if(m.spawnT>0){ m.spawnT-=dt; sc=m.gs*(1-Math.max(0,m.spawnT)/0.6); }
+  g.scale.setScalar(sc); g.rotation.set(0,m.face,0);
+  g.position.set(m.x-Math.sin(m.face)*lunge,m.y,m.z-Math.cos(m.face)*lunge);
+  if(m.model==='slime'){
+    m.ph+=dt*(sp>0.1?7:2.5);
+    const hop=sp>0.1?Math.max(0,Math.sin(m.ph))*0.45:0, sy=1+(sp>0.1?Math.sin(m.ph*2)*0.14:Math.sin(m.ph)*0.05)+lunge*0.3;
+    P0.body.position.y=hop; P0.body.scale.set(1/Math.sqrt(sy),sy,1/Math.sqrt(sy));
+  } else if(m.model==='shroom'){
+    m.ph+=dt*(1+sp*6);
+    P0.fL.position.z=Math.sin(m.ph)*0.12*Math.min(1,sp); P0.fR.position.z=-P0.fL.position.z;
+    P0.body.rotation.z=Math.sin(m.ph)*0.09*Math.min(1,sp+0.2); P0.body.position.y=Math.abs(Math.cos(m.ph))*0.05*Math.min(1,sp);
+  } else if(m.model==='beetle'){
+    m.ph+=dt*(1+sp*10);
+    P0.lL.position.z=Math.sin(m.ph)*0.07*Math.min(1,sp); P0.lR.position.z=-P0.lL.position.z;
+    P0.body.position.y=Math.abs(Math.sin(m.ph))*0.02;
+  } else if(m.model==='boar'){
+    m.ph+=dt*sp*4;
+    const amp=Math.min(1,sp/2)*0.6;
+    P0.legs.forEach((l,k)=>{ l.rotation.x=Math.sin(m.ph+GAIT[k])*amp; });
+    P0.body.rotation.x=lunge*-0.3;
+  } else if(m.model==='treant'){
+    m.ph+=dt*sp*2.2;
+    const amp=Math.min(1,sp)*0.4;
+    P0.lL.rotation.x=Math.sin(m.ph)*amp; P0.lR.rotation.x=-Math.sin(m.ph)*amp;
+    const atk=m.act?clamp(m.act.t/m.act.dur):0;
+    const armA=m.act?(atk<0.5?2.4*atk*2:2.4-(atk-0.5)*2*2.6):0;
+    P0.aL.rotation.x=m.act?armA:Math.sin(m.ph)*amp; P0.aR.rotation.x=m.act?armA:-Math.sin(m.ph)*amp;
+    P0.body.rotation.z=Math.sin(t*0.8+m.ph)*0.03;
+  } else if(m.model==='totem'){
+    P0.body.rotation.y+=dt*0.4; P0.body.position.y=Math.sin(t*1.5+m.ph)*0.04;
+  } else if(m.model==='goblin'){
+    m.ph+=Math.sqrt(sp)*dt*3.3;
+    poseRig(P0.rig,dt,{sp,ph:m.ph,act:m.act,seed:m.s*10});
+  }
+  if(m.act){ m.act.t+=dt; if(m.act.t>=m.act.dur) m.act=null; }
+}
+

@@ -1,0 +1,34 @@
+//@ Name and profession labels above the special villagers, with ! / ? quest markers over quest givers
+/* Every villager in VILLAGERS with a title gets a label: a role icon, their name and what they do.
+   Maren (the quest board) also shows a gold ! when there are notices you can take and a green ? when you can hand one in. */
+const ROLE_ICON={
+  quests:'<path d="M7 3h10a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2V5a2 2 0 0 1 2-2z"/><path d="M9 8h6M9 12h6"/>',
+  weaponsmith:'<path d="M5 19L17 7l2-4-4 2L3 17z"/><path d="M8 16l-3 3"/>',
+  armorer:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/>',
+  forge:'<path d="M4 9h13l3-2v3a4 4 0 0 1-4 4h-1v3h2v3H7v-3h2v-3H8a4 4 0 0 1-4-4z"/>',
+  trainer:'<path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M10 8l1.5 3L15 9.5"/>',
+  story:'<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 2 1 3 3 3 5"/>'
+};
+const npcTags=new Map();
+function questMark(){ const Q=GEAR.q; if(!Q) return ''; return Q.ready&&Q.ready.length?'?':(Q.offers&&Q.offers.length&&Object.keys(Q.active).length<QUEST_MAX_ACTIVE)?'!':''; }
+function npcTag(n){
+  let el=npcTags.get(n); if(el) return el;
+  const D=n.def, icon=ROLE_ICON[D.role||'story'];
+  el=document.createElement('div'); el.className='npctag role-'+(D.role||'none'); el.hidden=true;
+  el.innerHTML=`<span class="nt-mark"></span><b>${D.name}</b><span class="nt-role"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>${D.title}</span>`;
+  document.body.append(el); npcTags.set(n,el); return el;
+}
+const _nv=new THREE.Vector3();
+function updateNpcLabels(){
+  for(const n of NPCs){
+    if(!n.def.title) continue;
+    const el=npcTag(n), d=Math.hypot(n.x-P.x,n.z-P.z);
+    if(!started||customizing||n.inside||n===talkNPC||d>34||!n.g.visible){ el.hidden=true; continue; }
+    _nv.set(n.x,n.y+2.2*n.scale,n.z).project(camera);
+    if(_nv.z>1||Math.abs(_nv.x)>1.1||Math.abs(_nv.y)>1.1){ el.hidden=true; continue; }
+    el.hidden=false;
+    el.style.transform=`translate(${(_nv.x*0.5+0.5)*innerWidth}px,${(-_nv.y*0.5+0.5)*innerHeight}px) translate(-50%,-100%) scale(${clamp(1.25-d/40,0.72,1.1)})`;
+    el.style.opacity=clamp((34-d)/10,0,1);
+    if(n.def.role==='quests'){ const mk=questMark(n.def.id), m=el.firstChild; if(m.textContent!==mk){ m.textContent=mk; m.className='nt-mark'+(mk==='?'?' ready':''); } }
+  }
+}

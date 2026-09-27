@@ -1,0 +1,37 @@
+/*@ Inventory / shop / quest panels */
+.panel{ position:fixed; z-index:9; left:50%; top:50%; transform:translate(-50%,-50%); width:min(620px,calc(100vw - 24px)); max-height:min(80dvh,700px);
+  display:flex; flex-direction:column; background:var(--glass-strong); border:1px solid var(--line); border-radius:18px; padding:14px 16px 12px;
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
+.panel[hidden]{ display:none; }
+.pn-head{ display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+.pn-t{ font-family:Fraunces, Georgia, serif; font-size:22px; }
+.pn-coins{ margin-left:auto; color:#f2cf5a; font-size:13.5px; font-weight:600; }
+.pn-tabs{ margin-bottom:8px; }
+.pn-body{ overflow-y:auto; padding-right:4px; touch-action:pan-y; -webkit-overflow-scrolling:touch; }
+.inv-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:6px; margin-bottom:8px; }
+.inv-stats div{ background:rgba(0,0,0,.2); border-radius:10px; padding:6px 10px; }
+.inv-stats span{ display:block; font-size:11px; color:var(--ink-dim); }
+.inv-stats b{ font-size:14px; }
+.inv-h{ font-size:12px; font-weight:600; color:var(--ink-dim); margin:12px 0 6px; letter-spacing:.02em; }
+.it{ display:flex; align-items:center; gap:10px; padding:7px 4px; border-bottom:1px solid rgba(238,240,226,.08); }
+.it .dot{ width:10px; height:10px; border-radius:50%; flex:none; background:rgba(238,240,226,.2); }
+.it-main{ flex:1; min-width:0; display:flex; flex-wrap:wrap; column-gap:10px; font-size:12.5px; color:var(--ink-dim); }
+.it-main b{ width:100%; font-size:14px; }
+.it.empty .it-main b{ color:var(--ink-dim); }
+.req.bad{ color:#ff7a6a; }
+.tag{ font-size:12px; color:var(--ink-dim); padding:0 6px; }
+.tag.on{ color:#9fe08a; }
+.chip:disabled{ opacity:.45; cursor:not-allowed; }
+.chip.buy{ color:#f2cf5a; }
+.qc{ background:rgba(0,0,0,.2); border-radius:12px; padding:10px 12px; margin-bottom:8px; }
+.qc-top{ display:flex; justify-content:space-between; align-items:baseline; }
+.qc-top b{ font-size:15px; }
+.qc p{ margin:6px 0 8px; font-size:13.5px; color:var(--ink-dim); line-height:1.45; }
+.qc-bot{ display:flex; align-items:center; gap:10px; font-size:12.5px; }
+.qc-bot .rw{ margin-left:auto; color:#f2cf5a; }
+.muted{ color:var(--ink-dim); font-size:13px; }
+@media (max-width:719px){
+  .panel{ left:0; right:0; top:auto; bottom:0; transform:none; width:auto; max-height:72dvh; border-radius:18px 18px 0 0; padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px); }
+  #qlog{ top:auto; bottom:calc(env(safe-area-inset-bottom,0px) + 200px); width:170px; }
+  body:not(.touch) #qlog{ bottom:auto; top:calc(env(safe-area-inset-top,0px) + 72px); }
+}
