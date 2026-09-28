@@ -22,7 +22,7 @@
    Random villagers are added after these (FILLER_COUNT) so the village never feels empty. */
 const VILLAGERS=[
   { id:'maren', title:'Quest board', name:'Maren', role:'quests',
-    look:{sex:'female',height:0.96,build:0.95,face:'oval',hair:'bun',hairColor:0xb9b3aa,top:'jacket',topColor:0x6b3a5b,bottom:'skirt',bottomColor:0x3d5a3a,hat:'none',pack:false,shoes:'boots',shoeColor:0x4a3526,facial:'none'},
+    look:{sex:'female',height:0.96,build:0.95,face:'oval',hair:'bun',hairColor:0xb9b3aa,chest:0.9,top:'jacket',topColor:0x6b3a5b,bottom:'skirt',bottomColor:0x3d5a3a,hat:'none',pack:false,shoes:'boots',shoeColor:0x4a3526,facial:'none'},
     behavior:{type:'stationary',at:'questboard'}, home:'house:3', schedule:'always', voice:{rate:0.85,pitch:1.05},
     lines:['Welcome, traveller! The board behind me always has work: hunts, bounties, places to scout. Take what suits you.','New notices go up every sunrise, and I pick ones that fit how strong you have become.','The forest remembers everything. Some of it is waking up.','Come back to me when you have seen what I asked.'] },
   { id:'tomas', title:'Weaponsmith', name:'Tomas', role:'weaponsmith',
@@ -30,7 +30,7 @@ const VILLAGERS=[
     behavior:{type:'stationary',at:'stall:0:behind'}, home:'house:1', schedule:'always',
     lines:['Swords, bows and wands! The weapon you carry decides how you fight.','Iron, steel, and if you have the coin, something that shines like the sun.'] },
   { id:'ilse', title:'Armorer', name:'Ilse', role:'armorer',
-    look:{sex:'female',face:'round',hair:'ponytail',hairColor:0xd8b56e,top:'tshirt',topColor:0xe8e4dc,bottom:'trousers',bottomColor:0x5c7f9c,hat:'none',pack:false},
+    look:{sex:'female',face:'round',hair:'ponytail',hairColor:0xd8b56e,chest:1.2,top:'tshirt',topColor:0xe8e4dc,bottom:'trousers',bottomColor:0x5c7f9c,hat:'none',pack:false},
     behavior:{type:'stationary',at:'stall:1:behind'}, home:'house:5', schedule:'always',
     lines:['Helmets, mail, plate and boots. Armor fits anyone, whatever you fight with.','Good armor turns a bite into a bruise. Have a look.'] },
   { id:'bram', title:'Hunter', name:'Bram', role:null,
@@ -38,7 +38,7 @@ const VILLAGERS=[
     behavior:{type:'patrol',route:['gate','lamp:2','lamp:3','lamp:4','lamp:5','lamp:6','lamp:1','gate'],pause:3}, home:'house:7', schedule:'always', speed:1.2, voice:{rate:1.0,pitch:0.85},
     lines:['All quiet on the edge of the woods. Mostly.','Slimes near the village, shroomlings a bit further. The deeper you go, the nastier it gets.','Goblins and those walking trees keep to the far woods. Do not go out there unprepared.','I walk this circle a hundred times a day. Keeps the knees working.'] },
   { id:'greta', title:'Forge · merges items', name:'Greta', role:'forge',
-    look:{sex:'female',build:1.15,face:'angular',hair:'bun',hairColor:0x6a2a1a,top:'jacket',topColor:0x4a3a2a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'none',pack:false,shoes:'boots',shoeColor:0x2a1e14},
+    look:{sex:'female',build:1.15,face:'angular',hair:'bun',hairColor:0x6a2a1a,chest:1.35,top:'jacket',topColor:0x4a3a2a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'none',pack:false,shoes:'boots',shoeColor:0x2a1e14},
     behavior:{type:'stationary',at:'stall:2:behind'}, home:'house:6', schedule:'always', voice:{rate:0.95,pitch:0.9},
     lines:['Three of the same, and my hammer makes them one, and better. Rare, epic, unique, even legendary.','Common steel is honest steel. Folded three times, it sings.','Found something that glows? Bring me two more like it.'] },
   { id:'aldric', title:'Skill trainer', name:'Aldric', role:'trainer',
@@ -65,7 +65,8 @@ function makeLook(rng,base){
     hair:f?rp(['long','ponytail','bun','bob','curly','short']):rp(['short','buzz','curly','bald','short']),
     hairColor:rp(HAIRC.slice(0,HAIRC_NATURAL)),top:rp(['tshirt','flannel','jacket','hoodie']),topColor:rp(CLOTH),
     bottom:f?rp(['trousers','skirt','skirt']):'trousers',bottomColor:rp(CLOTH),shoes:rp(['boots','boots','sneakers']),shoeColor:rp(SHOEC),
-    hat:rp(['none','none','none','beanie','cap']),hatColor:rp(HATC),pack:false};
+    hat:rp(['none','none','none','beanie','cap']),hatColor:rp(HATC),pack:false,
+    chest:f?+(0.7+rng()*0.65).toFixed(2):1};   // women vary 0.7-1.35 (the model allows 0.5-1.6)
   return Object.assign(L,base||{});
 }
 function anchorOf(name){ return VIL.anchors[name]||VIL.anchors.plaza0; }

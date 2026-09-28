@@ -136,3 +136,11 @@ $('#bLook').addEventListener('click',e=>{ e.currentTarget.blur(); customizing?cl
 $('#custom').addEventListener('click',openEditor);
 document.querySelectorAll('[data-sex]').forEach(b=>b.addEventListener('click',()=>setLook('sex',b.dataset.sex)));
 syncSexChips();
+// Chest size in the settings popover too (female hikers only), so it can be tuned in game without the editor.
+// Rebuild while dragging; save (and tell the server) once, on release.
+const chestIn=$('#setChest');
+function syncLookSettings(){ $('#lookSec').hidden=LOOK.sex!=='female'; chestIn.value=LOOK.chest!=null?LOOK.chest:1; }
+chestIn.addEventListener('input',()=>{ LOOK.chest=parseFloat(chestIn.value); LOOK.custom=true; rebuildHiker(); });
+chestIn.addEventListener('change',()=>{ saveLook(); if(customizing) renderEditor(); });
+$('#bSound').addEventListener('click',syncLookSettings);
+syncLookSettings();
