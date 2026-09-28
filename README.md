@@ -3,7 +3,7 @@
 A multiplayer 3D forest RPG in the browser (three.js r128): an 880 m streamed procedural forest with a river and
 three lakes, a village with villagers and shops, 16 monster zones with 451 monsters (40 of each level-1 kind down
 to 20 of each level-15 kind), three classes, equipment in 5 rarities with a drag-and-drop inventory and a merge forge, quests, a boss, a minimap
-and world map (N), and synthesised audio.
+and world map (N), a soundtrack of AI-generated songs (one per area and boss), and synthesised sound effects.
 
 **Developing with an AI agent?** Start with [CLAUDE.md](CLAUDE.md) (guide) and [docs/FILES.md](docs/FILES.md) (file map);
 headless tests and a model preview are in [tools/](tools/README.md).
@@ -148,9 +148,29 @@ same level needed. Numbers live in `src/shared/items.js` (`RAR_MULT`, `rollMonst
 
 The server runs one weather for the whole world: rain for 5-7 minutes every 40-60 minutes (the first 40-60
 minutes after the server starts), and 30% of those are thunderstorms with lightning strikes near players every 6-20
-seconds. Clients draw rain streaks around the camera, grey the sky, shorten the view, play rain and wind, and
+seconds. Clients draw rain streaks around the camera, grey the sky, shorten the view, play a soft rain sound, and
 flash for lightning with thunder delayed by distance. Testing tools have Rain / Thunderstorm / Clear sky buttons.
-Timing lives in `src/server/weather.js`, visuals in `src/game/world/weather.js`.
+Timing lives in `src/server/weather.js`, visuals in `src/game/world/weather.js`, the rain sound (a quiet low wash,
+a slowly swelling patter and scattered droplets; volumes in `RAIN_SND`) in `src/game/audio/rain.js`.
+
+## Music
+
+Every area has its own song, made with Suno (free plan: non-commercial use only) and crossfaded as you move:
+
+| Where | File (`assets/audio/`) |
+|---|---|
+| Home village (muffled and softer at night) | `music-village.m4a` |
+| Home forest, levels 1-15 | `music-wild.m4a` |
+| Rootwarden (level 15 boss) | `music-boss15.m4a` |
+| Hanami | `music-hanami.m4a` |
+| Sakura Vale, levels 16-25 | `music-vale.m4a` |
+| Akaoni (level 20 boss) | `music-boss20.m4a` |
+| Kyuubi (level 25 boss) | `music-boss25.m4a` |
+
+Songs loop with a 5 s crossfade; the boss songs play their build-up once and then loop their loud part
+(`MUSIC_LOOP_FROM`). They are embedded in the page (about 9 MB of the 13.5 MB) and decoded only while they play.
+A theme without a file falls back to the old generative music. How to add or replace a song, and how to encode it:
+[assets/audio/README.md](assets/audio/README.md). Code: `src/game/audio/music.js`.
 
 ## Chat and names
 
@@ -281,10 +301,11 @@ game
   village/talking.js                 Talking to villagers: bubble, prompt, E key, opening shop/quest panels
   village/npc-labels.js              Name and profession labels above the special villagers, with ! / ? quest markers over quest givers
   audio/engine.js                    Web Audio setup (SND, buses, reverb, echo, noise), tone(), noiseHit(), spatial()
-  audio/samples.js                   Sound files from assets/audio (embedded by build.py as window.WILDWOOD_AUDIO): loadSamples, playSample
+  audio/samples.js                   Sound files from assets/audio (embedded by build.py as window.WILDWOOD_AUDIO): loadSamples, playSample, musicBuffer (lazy)
   audio/ui-sounds.js                 Interface / game sounds (UI_SFX) and hover/click hooks
-  audio/music.js                     Generative background music
+  audio/music.js                     Background music: one theme per place, crossfaded; recorded tracks (music-*) or generative
   audio/ambience.js                  Footsteps, birds, crickets, owls, frogs, ducks, crackle, hooves
+  audio/rain.js                      Rain sound (rainSoundTick): a soft low wash, a slowly swelling patter, scattered droplets, a storm rumble
   audio/voices.js                    Villager voices: text-to-speech voice picking and babble
   audio/driver.js                    Per-frame sound driver (soundTick): beds, random events, NPC steps
   ui/settings-sound.js               Sound part of the settings popover

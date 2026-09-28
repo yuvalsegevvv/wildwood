@@ -98,8 +98,8 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | Animations | `game/character/pose.js` (`poseRig`; skill anims borrow kinds via `ANIM_OF`) |
 | World size, lakes, terrain | `shared/terrain.js` (`SIZE`, `LAKES`, `baseHeight`), `shared/zones.js` (`RINGS`, zones, arena) |
 | Vegetation / animals | `game/world/plant-models.js`, `generation-*.js`, `game/wildlife/animals.js` |
-| Background music (a theme per village, level range and boss; `THEMES`, `musicThemeHere`) | `game/audio/music.js` |
-| Time of day / weather | `game/world/time-of-day.js` (`weatherTint` hook), `server/weather.js`, `game/world/weather.js` |
+| Background music (a theme per village, level range and boss; `THEMES`, `musicThemeHere`; recorded tracks `assets/audio/music-<theme>.m4a` override a theme) | `game/audio/music.js`, `game/audio/samples.js` (`musicBuffer`) |
+| Time of day / weather | `game/world/time-of-day.js` (`weatherTint` hook), `server/weather.js`, `game/world/weather.js`; rain sound `game/audio/rain.js` (`RAIN_SND` volumes) |
 | Map / minimap | `game/ui/map.js` |
 | Chat / names / account code | `game/ui/chat.js`, `game/ui/account.js`; server `chatP`, `renameP` in `server/economy.js` |
 | Saves, accounts, migration | `server/api.js` (`beginJoin`, `saveP`, `flushAll`), `server/players.js` (`sanitize*`), `node/main.js` (stores, `AUTH` password hashing) |

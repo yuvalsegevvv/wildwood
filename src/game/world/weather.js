@@ -1,4 +1,4 @@
-//@ Weather on the client: rain streaks around the camera, a darker foggy sky, rain sound, lightning and thunder
+//@ Weather on the client: rain streaks around the camera, a darker foggy sky, lightning and thunder (rain sound: audio/rain.js)
 /* The server decides the weather (src/server/weather.js); snapshots carry [kind, seconds in, duration] and
    'thunder' events carry where lightning struck. Rain fades in and out over 25 seconds. */
 const WX={kind:0,t:0,dur:0,inten:0,flash:0,snd:null};
@@ -42,12 +42,7 @@ function updateWeather(dt){
     }
     rainGeo.attributes.position.needsUpdate=true;
   }
-  if(SND.ready){
-    if(!WX.snd){ WX.snd=noiseLoop('bandpass',2600,0.35,'ambient'); WX.snd2=noiseLoop('lowpass',420,0.7,'ambient'); }
-    const tc=SND.ctx.currentTime;
-    WX.snd.g.gain.setTargetAtTime(0.26*WX.inten,tc,0.4);
-    WX.snd2.g.gain.setTargetAtTime((WX.kind===2?0.2:0.06)*WX.inten,tc,0.6);
-  }
+  rainSoundTick(dt);   // audio/rain.js
 }
 // lightning: a bolt in the sky, a flash for everyone who can see it, thunder after distance / speed of sound
 const lightningMat=new THREE.LineBasicMaterial({color:0xf2f4ff,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false,fog:false});

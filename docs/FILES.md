@@ -85,10 +85,11 @@ game
   village/talking.js                 Talking to villagers: bubble, prompt, E key, opening shop/quest panels; stepping on a teleport circle
   village/npc-labels.js              Name and profession labels above the special villagers, with ! / ? quest markers over quest givers
   audio/engine.js                    Web Audio setup (SND, buses, reverb, echo, noise), tone(), noiseHit(), spatial()
-  audio/samples.js                   Sound files from assets/audio (embedded by build.py as window.WILDWOOD_AUDIO): loadSamples, playSample
+  audio/samples.js                   Sound files from assets/audio (embedded by build.py as window.WILDWOOD_AUDIO): loadSamples, playSample, musicBuffer (lazy)
   audio/ui-sounds.js                 Interface / game sounds (UI_SFX) and hover/click hooks
-  audio/music.js                     Generative background music: one theme per place (both villages, three home ranges, two vale ranges, each boss), crossfaded
+  audio/music.js                     Background music: one theme per place (both villages, three home ranges, two vale ranges, each boss), crossfaded; recorded tracks (music-*) or generative
   audio/ambience.js                  Footsteps, birds, crickets, owls, frogs, ducks, crackle, hooves
+  audio/rain.js                      Rain sound (rainSoundTick): a soft low wash, a slowly swelling patter, scattered droplets, a storm rumble
   audio/voices.js                    Villager voices: text-to-speech voice picking and babble
   audio/driver.js                    Per-frame sound driver (soundTick): beds, random events, NPC steps
   ui/settings-sound.js               Sound part of the settings popover
@@ -113,7 +114,7 @@ game
   economy/init.js                    Inventory key and first-time gear setup
   combat/boss.js                     The bosses, client side (Rootwarden, Akaoni, Kyuubi): telegraph visuals, root spikes, slam waves, shield bubble, roars, boss bar
   combat/skill-fx.js                 Visuals and sounds for the equippable skills: Arrow Rain, Meteor, Chain Lightning, Piercing Shot, Shield Bash, Charge
-  world/weather.js                   Weather on the client: rain streaks around the camera, a darker foggy sky, rain sound, lightning and thunder
+  world/weather.js                   Weather on the client: rain streaks around the camera, a darker foggy sky, lightning and thunder (rain sound: audio/rain.js)
   player/movement.js                 Player movement, collisions (the border mountains, the tunnel and its sealed door), camera
   ui/map.js                          World map: a map image painted from the terrain, the corner minimap, and the full map (N) of either land with zones, quests and players
   net/transport.js                   Connections to the world server: solo (server in this tab), shared room (one player's tab hosts), WebSocket (node server)

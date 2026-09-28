@@ -1,11 +1,21 @@
-//@ Generative background music: one theme per place (both villages, three home ranges, two vale ranges, each boss), crossfaded
+//@ Background music: one theme per place (both villages, three home ranges, two vale ranges, each boss), crossfaded; recorded tracks (music-*) or generative
 /* ---------- background music ----------
    A small step sequencer (8 steps a bar) plays the theme of where you are. Each theme sets its tempo (beat = seconds
    per step), chords (chordBars bars each), a scale for melodies, and patterns ('x' hit, 'o' soft, '.' rest) for the
    bass, the arpeggio and the drums. Themes change after you have been somewhere new for a moment, with a crossfade
    (every theme plays into its own gain node, so the old one's long pads fade out with it).
    Instruments: pad, bass, pluck (a harp-like triangle), koto, shamisen (sawtooth pluck), flute / shakuhachi (breathy,
-   with a bend), bell, and drums (kick, snare, hat, taiko, woodblock), all synthesised with tone() and noiseHit(). */
+   with a bend), bell, and drums (kick, snare, hat, taiko, woodblock), all synthesised with tone() and noiseHit().
+   Recorded themes: a file assets/audio/music-<theme>.m4a (AI-generated tracks) replaces that theme's sequencer. It loops
+   with a MUSIC_XF-second crossfade from its end back to its start; MUSIC_FILE_VOL matches it to the synthesised themes.
+   At night the village track goes through a lowpass (MUSIC_NIGHT_LP Hz) and plays softer: the darker night version.
+   MUSIC_FILE_OF lets several themes share one file (music-wild for all home ranges, music-vale for both vale ranges); moving between themes that share
+   a file keeps the track playing instead of restarting it. MUSIC_LOOP_FROM (seconds): later passes of a file restart
+   there instead of at 0, so a track with a quiet build-up (the bosses) plays it once, then loops its loud part. */
+const MUSIC_XF=5, MUSIC_FILE_VOL=0.35, MUSIC_NIGHT_LP=1500;
+const MUSIC_FILE_OF={wild1:'wild',wild2:'wild',wild3:'wild',vale1:'vale',vale2:'vale'};
+const MUSIC_LOOP_FROM={boss15:65.8,boss20:63.5,boss25:48.85};   // points that sound most like each track's ending
+const musicFileKey=th=>th&&MUSIC_FILE_OF[th]||th;
 const mtof=m=>440*Math.pow(2,(m-69)/12);
 const MUSIC={theme:null,want:null,wantT:0,node:null,step:0,next:0};
 const THEMES={
@@ -96,6 +106,19 @@ function musicStep(T,t){
     else if(Math.random()<Ld.p*(night?0.7:1)) mNote(Ld.inst,scale[Math.floor(Math.random()*scale.length)]+(Ld.oct||0),t,Ld.inst==='pluck'?0.045:0.035); }
   if(T.drums) for(const k in T.drums){ const v=hit(T.drums[k],s); if(v) mDrum(k,t,v); }
 }
+function musicFileTick(now){
+  const F=MUSIC.file, buf=musicBuffer(F.key); if(!buf) return;   // still decoding: silence for a moment
+  const night=MUSIC.theme==='village'&&envCur.night>0.5;
+  F.lp.frequency.setTargetAtTime(night?MUSIC_NIGHT_LP:20000,now,2); F.vol.gain.setTargetAtTime(MUSIC_FILE_VOL*(night?0.8:1),now,2);
+  if(F.next>now+0.5) return;
+  // start the next pass: on time for a crossfade, or right away (first pass, or the tab slept past the end)
+  const t=F.next>now-0.5?F.next:now+0.05, xf=Math.min(MUSIC_XF,buf.duration/4), c=SND.ctx;
+  const s=c.createBufferSource(), g=c.createGain(); s.buffer=buf;
+  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(1,t+(F.cur?xf:1.5));
+  if(F.cur){ const o=F.cur; o.g.gain.setValueAtTime(1,t); o.g.gain.linearRampToValueAtTime(0.0001,t+xf); try{ o.s.stop(t+xf+0.1); }catch(_){} }
+  const off=F.cur?Math.min(MUSIC_LOOP_FROM[F.key]||0,buf.duration/2):0;
+  s.connect(g); g.connect(F.lp); s.start(t,off); F.cur={s,g}; F.next=t+buf.duration-off-xf;
+}
 function musicTick(){
   const c=SND.ctx, now=c.currentTime;
   SND.verbIn.song=SND.verbIn.music;
@@ -103,11 +126,18 @@ function musicTick(){
   const here=started?musicThemeHere():'village';
   if(here!==MUSIC.theme){ if(here!==MUSIC.want){ MUSIC.want=here; MUSIC.wantT=now; } }
   else MUSIC.want=null;
+  if(MUSIC.want && MUSIC.file && musicFileKey(MUSIC.want)===MUSIC.file.key){ MUSIC.theme=MUSIC.want; MUSIC.want=null; }
   if(MUSIC.want && (now-MUSIC.wantT>2.5 || MUSIC.want.startsWith('boss') || !MUSIC.theme)){
     if(MUSIC.node){ const old=MUSIC.node; old.gain.setTargetAtTime(0,now,0.6); setTimeout(()=>{ try{ old.disconnect(); }catch(_){} },6000); }
+    if(MUSIC.file&&MUSIC.file.cur) try{ MUSIC.file.cur.s.stop(now+6); }catch(_){}
     const g=c.createGain(); g.gain.setValueAtTime(0.0001,now); g.gain.setTargetAtTime(1,now+0.4,0.8); g.connect(SND.bus.music);
     MUSIC.node=g; SND.bus.song=g; MUSIC.theme=MUSIC.want; MUSIC.want=null; MUSIC.step=0; MUSIC.next=now+0.5;
+    MUSIC.file=null;
+    const key=musicFileKey(MUSIC.theme);
+    if(hasMusicFile(key)){ const lp=c.createBiquadFilter(), v=c.createGain(); lp.type='lowpass'; lp.frequency.value=20000; v.gain.value=MUSIC_FILE_VOL;
+      lp.connect(v); v.connect(g); MUSIC.file={key,lp,vol:v,cur:null,next:0}; musicBuffer(key); }
   }
+  if(MUSIC.file){ musicFileTick(now); return; }
   const T=THEMES[MUSIC.theme]; if(!T) return;
   if(MUSIC.next<now-0.5) MUSIC.next=now+0.05;   // after the tab slept: don't play the missed steps all at once
   while(now+0.3>MUSIC.next){ musicStep(T,MUSIC.next); MUSIC.next+=T.beat; }
