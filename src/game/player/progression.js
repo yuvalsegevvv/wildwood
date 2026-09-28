@@ -6,7 +6,7 @@ let SAVE_PROGRESS={level:1,exp:0};
 try{ const s=JSON.parse(localStorage.getItem('wildwood-progress-v1')||'null'); if(s&&s.level>=1) SAVE_PROGRESS={level:Math.min(50,s.level|0),exp:+s.exp||0}; }catch(_){}
 PL.level=SAVE_PROGRESS.level; PL.exp=SAVE_PROGRESS.exp;
 { const f=fLv(PL.level); PL.maxHp=Math.round(20*f); PL.hp=PL.maxHp; PL.dmg=3*f; }
-function saveProgress(){ try{ localStorage.setItem('wildwood-progress-v1',JSON.stringify({level:PL.level,exp:PL.exp})); }catch(_){} }
+function saveProgress(){ if(NET&&NET.user) return; try{ localStorage.setItem('wildwood-progress-v1',JSON.stringify({level:PL.level,exp:PL.exp})); }catch(_){} }
 function recalcStats(){ /* stats come from the server now; kept so older callers still work */ }
 function applyYou(msg){
   PL.level=msg.level; PL.exp=msg.exp; PL.maxHp=msg.maxHp; PL.dmg=msg.dmg; PL.def=msg.def; PL.red=msg.red; PL.hp=msg.hp;

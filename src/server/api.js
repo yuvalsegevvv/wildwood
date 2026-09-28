@@ -4,15 +4,17 @@
    A player the server doesn't know yet is created from the save their browser sends: that is how progress
    from before server saves carries over, and how it recovers if the server ever loses a record. Without
    io.store (solo, or a shared world hosted in a tab) the browser's own save is used, as before.
-   Messages in:  hello{acct,name,look,save}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
+   Registered accounts (name + password, Node server only) are in accounts.js.
+   Messages in:  hello{acct,name,look,save[,user,pass|token]}  register{user,pass}  logout{token}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
                  cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  dev{cmd,v}
-   Messages out: welcome  mons{list}  you  tp  snap{day,pl,mo,b,ev}   (see src/game/net/client.js) */
+   Messages out: welcome  mons{list}  you  tp  snap{day,pl,mo,b,ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
 initMonstersS(); initBossS();
 const ACCT=new Map(), PENDING=new Set();   // account -> pid online; pids whose save is still loading
-const recordOf=p=>({v:1,name:p.name,look:p.look,level:p.level,exp:p.exp,gear:p.gear,updated:Date.now()});
+const recordOf=p=>Object.assign({v:1,name:p.name,look:p.look,level:p.level,exp:p.exp,gear:p.gear,updated:Date.now()},p.auth?{auth:p.auth}:{});
 function saveP(p){ if(!io.store||!p.acct) return Promise.resolve(); p.saveDirty=false; return Promise.resolve().then(()=>io.store.save(p.acct,recordOf(p))).catch(e=>{ p.saveDirty=true; if(io.log) io.log('save failed',e&&e.message); }); }
 function flushAll(){ return Promise.all([...S.players.values()].filter(p=>p.acct).map(saveP)); }
 function beginJoin(pid,hello){
+  if(typeof hello.user==='string'&&hello.user){ loginJoin(pid,hello); return; }
   const acct=typeof hello.acct==='string'&&/^[a-f0-9]{32}$/.test(hello.acct)?hello.acct:null;
   if(!io.store||!acct){ join(pid,hello); return; }
   PENDING.add(pid);
@@ -22,13 +24,17 @@ function beginJoin(pid,hello){
     if(!PENDING.delete(pid)) return;   // left while loading
     const old=ACCT.get(acct);
     if(old!==undefined&&old!==pid&&S.players.has(old)){ sendTo(old,{t:'kicked',text:'You opened this account somewhere else, so this window was disconnected.'}); leave(old); if(io.kick) io.kick(old); }
-    const migrate=!rec, h=migrate?hello:Object.assign({},hello,{save:{level:rec.level,exp:rec.exp,gear:rec.gear}});
+    // moved to a registered account: this guest starts over (the browser's copy belongs to the account now)
+    const moved=!!(rec&&rec.movedTo), migrate=!rec, h=moved?Object.assign({},hello,{save:null}):migrate?hello:Object.assign({},hello,{save:{level:rec.level,exp:rec.exp,gear:rec.gear}});
     const p=join(pid,h); p.acct=acct; ACCT.set(acct,pid);
+    if(moved){ saveP(p); toastTo(pid,'The progress in this browser belongs to the account '+rec.movedTo+' now. Log in as '+rec.movedTo+' to play it.',''); }
     if(migrate){ saveP(p); if(hello.save&&(hello.save.level>1||(hello.save.gear&&hello.save.gear.coins))) toastTo(pid,'Your progress has been moved to the server. It is safe even if you clear this browser, as long as you keep your account code (settings).','good'); }
   }).catch(e=>{ PENDING.delete(pid); if(io.log) io.log('load failed',e&&e.message); sendTo(pid,{t:'kicked',text:'The server could not load your progress. Please try again in a moment.'}); if(io.kick) io.kick(pid); });
 }
-function join(pid,hello){
+function join(pid,hello,auth){
   const p=newPlayer(pid,hello); S.players.set(pid,p);
+  if(auth){ p.auth=auth; p.user=auth.user; }
+  else { const n=freeName(p.name,p); if(n!==p.name){ toastTo(pid,'Someone already has the name '+p.name+', so you are '+n+'. Change it in Settings.',''); p.name=n; } }
   sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo)});
   const ros=MONS.filter(m=>!m.remove).map(monRoster);
   for(let i=0;i<ros.length;i+=40) sendTo(pid,{t:'mons',list:ros.slice(i,i+40)});
@@ -72,6 +78,8 @@ function receive(pid,msg){
     case 'unskill': unequipSkillP(p,msg.cls,msg.slot||'skill'); break;
     case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<2000){ p.look=msg.look; p.saveDirty=true; ev('plook',p.id,p.look); } break;
     case 'dev': devP(p,msg); break;
+    case 'register': registerP(p,msg.user,msg.pass); break;
+    case 'logout': logoutP(p,msg.token); break;
   }
 }
 function tick(dt){

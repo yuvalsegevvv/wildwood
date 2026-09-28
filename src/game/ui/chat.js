@@ -29,6 +29,7 @@ function sendChat(){
   netSend({t:'chat',text:v.slice(0,160)});
 }
 function setMyName(n){
+  if(NET.user){ toast('Your name is your account name and cannot be changed','bad'); return; }
   n=String(n||'').replace(/[\u0000-\u001f\u007f-\u009f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,16);
   if(!n){ toast('That name is empty','bad'); return; }
   NET.name=n; try{ localStorage.setItem('wildwood-name',n); }catch(_){}

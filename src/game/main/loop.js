@@ -65,7 +65,7 @@ const hint=$('#hint');
 let worldMode=window.WILDWOOD_WS?'ws':'solo', connecting=false;
 if(window.claude&&typeof window.claude.use==='function') $('[data-world="room"]').hidden=false;
 if(window.WILDWOOD_WS) $('[data-world="ws"]').hidden=false;
-function syncWorldChips(){ document.querySelectorAll('[data-world]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.world===worldMode)); $('#worldNote').textContent=WORLD_NOTES[worldMode]; }
+function syncWorldChips(){ document.querySelectorAll('[data-world]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.world===worldMode)); $('#worldNote').textContent=WORLD_NOTES[worldMode]; syncAcctPick(); }
 const WORLD_NOTES={solo:'Just you. The world server runs in this tab.',room:'Play with everyone who has this page open. One player\'s tab hosts the world.',ws:'Play on the world server this page came from.'};
 document.querySelectorAll('[data-world]').forEach(b=>b.addEventListener('click',()=>{ worldMode=b.dataset.world; syncWorldChips(); }));
 $('#pname').value=playerName()||('Hiker '+Math.floor(100+Math.random()*900));
@@ -75,6 +75,7 @@ syncWorldChips();
 NET.onStatus=text=>{ if(started) toast(text,''); else statusEl.textContent=text; };
 $('#go').addEventListener('click',async()=>{
   if(!canStart||connecting) return;
+  const loginErr=prepareLogin(); if(loginErr){ statusEl.textContent=loginErr; return; }
   audioInit();
   connecting=true; $('#go').disabled=true;
   NET.name=($('#pname').value.trim()||'Hiker').slice(0,16);

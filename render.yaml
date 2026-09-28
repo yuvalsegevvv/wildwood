@@ -1,7 +1,10 @@
 # Render blueprint: https://render.com/docs/blueprint-spec
 # SAVES: players' progress is kept on the server. For it to survive deploys and restarts on the free plan,
-# create a Postgres database (Render Postgres, Neon or Supabase) and set DATABASE_URL on this service to its
-# connection string. Without it, saves are rebuilt from each player's browser copy after a restart.
+# use a free Postgres database and set DATABASE_URL on this service to its connection string. Recommended:
+# Neon (neon.tech, free forever, 0.5 GB ≈ hundreds of thousands of saves; it sleeps when idle and wakes in
+# about a second). Render's own free Postgres is deleted after 30 days; Supabase's free project pauses after
+# a week without use. The table is created automatically. Without DATABASE_URL, saves are rebuilt from each
+# player's browser copy after a restart.
 services:
   - type: web
     name: wildwood

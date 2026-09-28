@@ -97,9 +97,15 @@
   <button id="sMute" class="chip snd-mute">Sound on</button>
   <div id="acctSec" hidden>
   <div class="snd-sub snd-sec">Account</div>
-  <p class="acct-note">This server keeps your progress under a secret account code. Keep it private. To play on another device, copy it here and paste it there.</p>
+  <div id="acctUser" hidden><p class="acct-note" id="acctUserNote"></p><div class="name-row"><button class="chip" id="acctOut">Log out</button></div></div>
+  <div id="acctGuest">
+  <p class="acct-note">You are playing as a guest. Register to keep your progress under a name and password and log in on any device. Your name becomes the account name.</p>
+  <div class="name-row"><input id="regUser" maxlength="16" placeholder="Account name" autocomplete="username" spellcheck="false" aria-label="Account name"><input id="regPass" type="password" maxlength="100" placeholder="Password (6+)" autocomplete="new-password" aria-label="Password"></div>
+  <div class="name-row"><button class="chip" id="regGo">Register</button></div>
+  <p class="acct-note">Guest progress is kept under a secret code in this browser. To move it to another device without registering, copy the code here and paste it there.</p>
   <div class="name-row"><input id="acctCode" readonly aria-label="Your account code" value="••••••••••••••••"><button class="chip" id="acctShow">Show</button><button class="chip" id="acctCopy">Copy</button></div>
   <div class="name-row"><input id="acctUse" placeholder="Paste a code from another device" autocomplete="off" spellcheck="false" aria-label="Account code from another device"><button class="chip" id="acctGo">Use it</button></div>
+  </div>
   </div>
   <div id="lookSec" hidden>
   <div class="snd-sub snd-sec">Your hiker</div>
@@ -148,7 +154,12 @@
     <dl class="keys" id="keys"></dl>
     <div class="pick"><span class="pick-l">World</span><div class="chips"><button class="chip" data-world="solo">Solo</button><button class="chip" data-world="room" hidden>Shared</button><button class="chip" data-world="ws" hidden>This server</button></div></div>
     <p class="world-note" id="worldNote"></p>
-    <div class="pick"><label class="pick-l" for="pname">Name</label><input id="pname" maxlength="16" autocomplete="nickname" spellcheck="false"></div>
+    <div class="pick" id="acctPick" hidden><span class="pick-l">Account</span><div class="chips"><button class="chip" data-acct="guest">Guest</button><button class="chip" data-acct="login">Log in</button></div></div>
+    <div id="loginBox" hidden>
+      <div class="pick" id="loginFields"><input id="lUser" class="start-in" maxlength="16" placeholder="Name" autocomplete="username" spellcheck="false" aria-label="Account name"><input id="lPass" class="start-in" type="password" maxlength="100" placeholder="Password" autocomplete="current-password" aria-label="Password"></div>
+      <p class="world-note" id="loginNote"></p>
+    </div>
+    <div class="pick" id="namePick"><label class="pick-l" for="pname">Name</label><input id="pname" maxlength="16" autocomplete="nickname" spellcheck="false"></div>
     <div class="pick"><span class="pick-l">Weapon</span><div class="chips"><button class="chip" data-cls="warrior">Sword</button><button class="chip" data-cls="archer">Bow</button><button class="chip" data-cls="mage">Wand</button></div></div>
     <div class="pick"><span class="pick-l">Play as</span><div class="chips"><button class="chip" data-sex="male">Male</button><button class="chip" data-sex="female">Female</button></div><button id="custom" class="linkbtn" disabled>Customize</button></div>
     <button id="go" disabled>Walk into the forest</button>

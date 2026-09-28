@@ -43,6 +43,7 @@
     "boss.js",
     "economy.js",
     "weather.js",
+    "accounts.js",
     "api.js"
   ],
   "node": [

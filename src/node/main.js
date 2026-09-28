@@ -4,7 +4,8 @@
    --no-dev (or the environment variable WILDWOOD_DEV=0) turns off the testing tools (set level, free items, coins).
    Hosting (Render and similar): listens on $PORT, serves the page gzip-compressed, answers GET /healthz and
    GET /status, and pings every connection every 25 s so proxies don't close idle games.
-   Saves: every player's progress is stored on the server under their account code (hashed, never stored as is):
+   Saves: every player's progress is stored on the server under their account code (hashed, never stored as is),
+   or under their name for registered accounts (name + password, see AUTH below):
      - DATABASE_URL set (Postgres, e.g. Render Postgres): a table wildwood_players; needs the 'pg' package.
      - otherwise JSON files in DATA_DIR (default ./data). On Render's free plan the disk is wiped on every
        deploy and restart; give the service a persistent disk (DATA_DIR=/var/data) or use Postgres.
@@ -22,20 +23,42 @@ function fileStore(dir){
     load(acct){ const f=path.join(d,keyOf(acct)+'.json'); try{ return JSON.parse(fs.readFileSync(f,'utf8')); }catch(e){ if(e.code==='ENOENT') return null; throw e; } },
     save(acct,rec){ const f=path.join(d,keyOf(acct)+'.json'), tmp=f+'.'+process.pid+'.tmp';
       return fs.promises.writeFile(tmp,JSON.stringify(rec)).then(()=>fs.promises.rename(tmp,f)); },
+    // registration: write only if nobody has this account yet ('wx' fails when the file exists)
+    create(acct,rec){ return fs.promises.writeFile(path.join(d,keyOf(acct)+'.json'),JSON.stringify(rec),{flag:'wx'}).then(()=>true,e=>{ if(e.code==='EEXIST') return false; throw e; }); },
+    users(){ const out=[]; for(const n of fs.readdirSync(d)) if(n.endsWith('.json')) try{ const r=JSON.parse(fs.readFileSync(path.join(d,n),'utf8')); if(r&&r.auth) out.push(r.auth.user); }catch(_){} return out; },
     count(){ try{ return fs.readdirSync(d).filter(n=>n.endsWith('.json')).length; }catch(_){ return 0; } } };
 }
 function pgStore(url){
   const { Pool }=require('pg');
-  const pool=new Pool({connectionString:url,ssl:/localhost|127\.0\.0\.1/.test(url)?false:{rejectUnauthorized:false},max:5});
-  const ready=pool.query('CREATE TABLE IF NOT EXISTS wildwood_players (id text PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())');
+  /* Free hosted Postgres (Neon, Supabase) suspends when idle and drops idle connections: close ours before
+     they do (idleTimeoutMillis), give a waking database 15 s to answer, and never let a dropped idle client
+     crash the server (without an 'error' listener pg rethrows it). */
+  const pool=new Pool({connectionString:url,ssl:/localhost|127\.0\.0\.1/.test(url)?false:{rejectUnauthorized:false},max:5,idleTimeoutMillis:60000,connectionTimeoutMillis:15000});
+  pool.on('error',e=>log('postgres idle client error',e&&e.message));
+  // Create the table once; if that fails (database still waking, network blip) the next query tries again.
+  let ready=null;
+  const table=()=>ready||(ready=pool.query('CREATE TABLE IF NOT EXISTS wildwood_players (id text PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())').catch(e=>{ ready=null; throw e; }));
+  table().catch(e=>log('postgres not ready yet:',e&&e.message));
   return { kind:'postgres', pool,
-    load(acct){ return ready.then(()=>pool.query('SELECT data FROM wildwood_players WHERE id=$1',[keyOf(acct)])).then(r=>r.rows.length?r.rows[0].data:null); },
-    save(acct,rec){ return ready.then(()=>pool.query('INSERT INTO wildwood_players (id,data,updated_at) VALUES ($1,$2,now()) ON CONFLICT (id) DO UPDATE SET data=EXCLUDED.data, updated_at=now()',[keyOf(acct),rec])); },
-    count(){ return ready.then(()=>pool.query('SELECT count(*)::int AS n FROM wildwood_players')).then(r=>r.rows[0].n); } };
+    load(acct){ return table().then(()=>pool.query('SELECT data FROM wildwood_players WHERE id=$1',[keyOf(acct)])).then(r=>r.rows.length?r.rows[0].data:null); },
+    save(acct,rec){ return table().then(()=>pool.query('INSERT INTO wildwood_players (id,data,updated_at) VALUES ($1,$2,now()) ON CONFLICT (id) DO UPDATE SET data=EXCLUDED.data, updated_at=now()',[keyOf(acct),rec])); },
+    create(acct,rec){ return table().then(()=>pool.query('INSERT INTO wildwood_players (id,data,updated_at) VALUES ($1,$2,now()) ON CONFLICT (id) DO NOTHING RETURNING id',[keyOf(acct),rec])).then(r=>r.rows.length>0); },
+    users(){ return table().then(()=>pool.query("SELECT data->'auth'->>'user' AS u FROM wildwood_players WHERE data ? 'auth'")).then(r=>r.rows.map(x=>x.u)); },
+    count(){ return table().then(()=>pool.query('SELECT count(*)::int AS n FROM wildwood_players')).then(r=>r.rows[0].n); } };
 }
 let STORE;
 if(process.env.DATABASE_URL){ try{ STORE=pgStore(process.env.DATABASE_URL); }catch(e){ console.error('DATABASE_URL is set but Postgres could not be used ('+e.message+'). Run "npm install" so the pg package is there. Falling back to files.'); } }
 if(!STORE) STORE=fileStore(process.env.DATA_DIR||path.join(process.cwd(),'data'));
+/* Account passwords: scrypt with a random salt per account, stored as 'salt:hash' (hex); session tokens are
+   random and only their sha256 is stored. The world server calls these (see src/server/accounts.js). */
+const AUTH={
+  hash(pass){ const salt=crypto.randomBytes(16).toString('hex');
+    return new Promise((ok,no)=>crypto.scrypt(pass,salt,32,(e,k)=>e?no(e):ok(salt+':'+k.toString('hex')))); },
+  verify(pass,stored){ const [salt,hex]=String(stored||'').split(':'); if(!salt||!hex) return Promise.resolve(false);
+    return new Promise((ok,no)=>crypto.scrypt(pass,salt,32,(e,k)=>e?no(e):ok(crypto.timingSafeEqual(k,Buffer.from(hex,'hex'))))); },
+  token(){ return crypto.randomBytes(24).toString('hex'); },
+  tokenHash(t){ return crypto.createHash('sha256').update('wildwood-session:'+t).digest('hex'); }
+};
 function frame(str){
   const data=Buffer.from(str,'utf8'), n=data.length;
   const head=n<126?Buffer.from([0x81,n]):n<65536?Buffer.from([0x81,126,n>>8,n&255]):(()=>{ const b=Buffer.alloc(10); b[0]=0x81; b[1]=127; b.writeBigUInt64BE(BigInt(n),2); return b; })();
@@ -43,7 +66,7 @@ function frame(str){
 }
 function sendRaw(sock,str){ if(!sock.destroyed) sock.write(frame(str)); }
 const world=createWorldServer({
-  dev:DEV, snapDt:0.1, store:STORE, log,
+  dev:DEV, snapDt:0.1, store:STORE, auth:AUTH, log,
   kick(pid){ const s=SOCKETS.get(pid); if(s){ SOCKETS.delete(pid); setTimeout(()=>{ try{ s.end(Buffer.from([0x88,0])); }catch(_){} },300); } },
   send(pid,msg){ const s=SOCKETS.get(pid); if(s) sendRaw(s,JSON.stringify(msg)); },
   broadcast(msg){ const str=JSON.stringify(msg), f=frame(str); for(const s of SOCKETS.values()) if(!s.destroyed) s.write(f); }

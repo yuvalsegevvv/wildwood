@@ -64,10 +64,10 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 
 ## 3. Protocol (details: `src/server/api.js` top comment, `src/game/net/client.js`)
 
-- Client → server: `hello{acct,name,look,save}`, `pos{p:[x,y,z,face,vx,vz]}`, `atk{k:'basic'|'skill'|'burst',tg,face,aim}`,
+- Client → server: `hello{acct,name,look,save[,user,pass|token]}`, `register{user,pass}`, `logout{token}`, `pos{p:[x,y,z,face,vx,vz]}`, `atk{k:'basic'|'skill'|'burst',tg,face,aim}`,
   `equip{id}`, `unequip{slot}`, `cls{cls}`, `buy/sell{id}`, `merge{id}`, `accept/turnin/abandon{id}`,
   `buyskill/eqskill{id}`, `unskill{cls,slot}`, `look{look}`, `chat{text}`, `name{name}`, `dev{cmd,v}`.
-- Server → client: `welcome`, `mons{list}` (roster), `you{...}` (private state incl. `gear`), `tp`, `kicked`,
+- Server → client: `welcome`, `mons{list}` (roster), `you{...}` (private state incl. `gear`), `tp`, `kicked`, `auth{user,token}`, `authfail{text}`,
   `snap{day, pl, mo, b (boss), w (weather), ev:[events]}` 8-20×/s.
 - Events (`ev(...)` on the server, `applyEvent` in `net/client.js`): dmg, kill, imm, mact, aggro, respawn,
   spawn, despawn, proj, pend, tele, tend, roar, area, aend, chain, buff, xp, coins, loot, lvup, hurt, down,
@@ -98,7 +98,8 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | Time of day / weather | `game/world/time-of-day.js` (`weatherTint` hook), `server/weather.js`, `game/world/weather.js` |
 | Map / minimap | `game/ui/map.js` |
 | Chat / names / account code | `game/ui/chat.js`, `game/ui/account.js`; server `chatP`, `renameP` in `server/economy.js` |
-| Saves, accounts, migration | `server/api.js` (`beginJoin`, `saveP`, `flushAll`), `server/players.js` (`sanitize*`), `node/main.js` (stores) |
+| Saves, accounts, migration | `server/api.js` (`beginJoin`, `saveP`, `flushAll`), `server/players.js` (`sanitize*`), `node/main.js` (stores, `AUTH` password hashing) |
+| Registered accounts (name + password, guest, unique names, gift levels `GIFT_LEVELS`) | `server/accounts.js`, client `game/ui/account.js`; test `node tools/accounts-smoke.js` |
 | Testing tools (dev commands) | `server/economy.js` (`devP`), `game/ui/settings-testing.js`, markup in `index.html` (`#tSec`) |
 | HUD, action bar, keys | `game/ui/combat-hud.js`, `game/player/input.js`, `game/ui/controls-legend.js` |
 | Transports / host election | `game/net/transport.js` |
@@ -133,6 +134,7 @@ npm install                      # three@0.128 for the tools, pg for Postgres (o
 python3 build.py                 # → dist/ (quiet, ~1 s)
 python3 build.py --check         # + syntax check of every bundle + duplicate-name check  (always run this)
 node tools/server-smoke.js       # 14 headless server checks from src/ (no build), ~5 s, prints PASS/FAIL
+node tools/accounts-smoke.js     # 15 checks of accounts (register, login, tokens, unique names), ~1 s
 node tools/client-smoke.js       # 9 checks running the built page headless (solo), ~40 s
 node tools/model-preview.js out.png [--head] [--looks '[{...}]']   # character model → PNG (numpy+pillow)
 node dist/wildwood-server.js --port 8080     # real server; open http://localhost:8080 in several tabs

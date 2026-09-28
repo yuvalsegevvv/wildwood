@@ -89,14 +89,22 @@ function chatP(p,text){
 }
 function renameP(p,name){
   const n=cleanName(name); if(n===p.name) return;
+  if(p.user){ toastTo(p.id,'Your name is your account name and cannot be changed','bad'); return; }
+  if(nameTaken(n,p)){ toastTo(p.id,'Someone already has the name '+n,'bad'); return; }
   if(S.t-(p.renameT||-9)<3){ toastTo(p.id,'Wait a moment before changing your name again','bad'); return; }
   const old=p.name; p.name=n; p.renameT=S.t; p.saveDirty=true; ev('pname',p.id,n,old);
+}
+// jump straight to a level (testing tools, account gifts): opens the skill slots passed on the way
+function setLevelP(p,lv){
+  const was=p.level; p.level=clampInt(lv,1,50,1); p.exp=0; recalcP(p); p.hp=p.maxHp; refreshOffersP(p);
+  if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst');
+  p.dirty=true; ev('lvset',p.id,p.level);
 }
 // testing tools (settings panel); allowed when the server runs in dev mode (solo, shared room, or node --dev)
 function devP(p,msg){
   if(!S.dev){ toastTo(p.id,'Testing tools are off on this server','bad'); return; }
   const c=msg.cmd;
-  if(c==='level'){ const was=p.level; p.level=clampInt(msg.v,1,50,1); p.exp=0; recalcP(p); p.hp=p.maxHp; refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); p.dirty=true; ev('lvset',p.id,p.level); }
+  if(c==='level') setLevelP(p,msg.v);
   else if(c==='giveAll'){ giveAllP(p); toastTo(p.id,'Every item added to your bag','good'); }
   else if(c==='startAll'){ p.gear.startAll=!!msg.v; if(p.gear.startAll) giveAllP(p); p.dirty=true; }
   else if(c==='skills'){ for(const id of SKILL_IDS) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Every skill learned','good'); }

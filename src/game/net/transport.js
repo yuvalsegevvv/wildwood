@@ -7,7 +7,7 @@
             player positions travel in presence at 10 per second. If the host leaves, a new host is elected
             and everyone rejoins it with their own save.
    - ws:    when the page is served by `node wildwood-server.js`, it connects to that server over WebSocket. */
-var NET={mode:null,pid:null,ready:false,dev:true,host:false,send:null,room:null,server:null,loop:null,players:1,onReady:null,onStatus:null};
+var NET={mode:null,user:null,login:null,pid:null,ready:false,dev:true,host:false,send:null,room:null,server:null,loop:null,players:1,onReady:null,onStatus:null};
 function netSend(msg){ if(NET.send) NET.send(msg); }
 const WORLD_ROOM='wildwood-world';
 function runServer(srv,snapDt){

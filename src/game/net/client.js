@@ -11,7 +11,7 @@ function accountCode(){
   return a;
 }
 function netHello(){
-  NET.send&&NET.send({t:'hello',acct:accountCode(),name:NET.name||'Hiker',look:LOOK,save:{level:PL.level,exp:PL.exp,gear:GEAR}});
+  NET.send&&NET.send(Object.assign({t:'hello',acct:accountCode(),name:NET.name||'Hiker',look:LOOK,save:{level:PL.level,exp:PL.exp,gear:GEAR}},NET.login||{}));
 }
 function netHandle(msg){
   if(!msg||typeof msg!=='object') return;
@@ -21,6 +21,8 @@ function netHandle(msg){
     case 'you': applyYou(msg); break;
     case 'tp': P.x=msg.x; P.z=msg.z; P.y=getH(P.x,P.z); P.vx=P.vz=P.vy=0; P.face=P.yaw=msg.face; playerUp(); break;
     case 'snap': applySnap(msg); break;
+    case 'auth': onAuth(msg); break;
+    case 'authfail': onAuthFail(msg); break;
     case 'kicked': NET.ready=false; NET.kicked=true; if(NET.ws) try{ NET.ws.close(); }catch(_){} $('#kicked').hidden=false; $('#kickedText').textContent=msg.text||'Disconnected.'; break;
   }
 }
@@ -29,7 +31,7 @@ function onWelcome(msg){
   clearMonViews(); clearRemotes(); clearBossVisuals(); CB.projs.forEach(p=>scene.remove(p.mesh)); CB.projs.length=0; CB.target=null;
   (msg.players||[]).forEach(remoteAdd);
   serverDay=msg.day; dayClock=msg.day;
-  $('#tSec').hidden=!msg.dev; $('#acctSec').hidden=NET.mode!=='ws';
+  $('#tSec').hidden=!msg.dev; $('#acctSec').hidden=NET.mode!=='ws'; syncAcctSec();
   if(NET.onReady){ const f=NET.onReady; NET.onReady=null; f(); }
 }
 function applySnap(msg){

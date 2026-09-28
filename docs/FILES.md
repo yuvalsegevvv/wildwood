@@ -49,6 +49,7 @@ server
   boss.js                            The Rootwarden on the server: engagement, cleave / root / slam telegraphs, shield + totems, enrage + adds, reset
   economy.js                         Economy on the server: equip, shops (buy / sell), loot, quests (accept, progress, hand in), testing commands
   weather.js                         Weather on the server: rain for 5-7 minutes every 40-60 minutes, 30% of the time a thunderstorm
+  accounts.js                        Registered accounts (name + password) on the online server: log in, register a guest, log out, unique names
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, snapshots)
 
 node
@@ -115,7 +116,7 @@ game
   net/transport.js                   Connections to the world server: solo (server in this tab), shared room (one player's tab hosts), WebSocket (node server)
   net/client.js                      Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
   net/remote.js                      Other players: avatars built from their look and gear, smoothed movement, attack animations, name tags
-  ui/account.js                      Account code in settings: show / copy it, or continue with a code from another device
+  ui/account.js                      Accounts on the online server: guest or log in on the start screen; register / log out / guest code in settings
   ui/chat.js                         Chat between players: the chat log, the input (Enter / chat button), speech bubbles, /name, joins and leaves
   main/loop.js                       Main loop (frame), loading progress, start button, boot
 ```

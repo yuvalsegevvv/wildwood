@@ -7,7 +7,7 @@ function newGear(){ return newGearFor(CLASSES[LOOK.cls]?LOOK.cls:'warrior'); }
 try{ const s=JSON.parse(localStorage.getItem('wildwood-gear-v1')||'null'); if(s&&Array.isArray(s.inv)){ GEAR=Object.assign(newGear(),s); GEAR.inv=GEAR.inv.filter(id=>ITEM[id]); } }catch(_){}
 if(!GEAR) GEAR=newGear();
 GEAR.q=Object.assign({active:{},ready:[],done:[]},GEAR.q||{});
-function saveGear(){ try{ localStorage.setItem('wildwood-gear-v1',JSON.stringify(GEAR)); }catch(_){} }
+function saveGear(){ if(NET&&NET.user) return; try{ localStorage.setItem('wildwood-gear-v1',JSON.stringify(GEAR)); }catch(_){} }
 function gearStats(){ return gearStatsOf(GEAR); }
 function effectiveLook(){ return effectiveLookOf(LOOK,GEAR); }
 // the server sends your gear in every "you" update; apply it and redraw whatever changed
