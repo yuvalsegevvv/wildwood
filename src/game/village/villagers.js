@@ -4,7 +4,8 @@
      id        unique key (use it later to find a character: npcById('maren'))
      name      shown when you talk to them
      title     shown above their head with their name (their profession)
-     role      'weaponsmith' / 'armorer' open a shop, 'quests' opens that villager's quest list, 'forge' opens the merge forge, 'trainer' opens the skills panel with lessons to buy (null = just chat)
+     role      'weaponsmith' / 'armorer' open a shop, 'quests' opens that villager's quest list, 'forge' opens the merge forge, 'trainer' opens the skills panel with lessons to buy,
+               'soul' opens the soul shrine where you bind your element (null = just chat)
      look      any character-editor fields (sex, hair, top, colors...); anything missing is random
      behavior  { type:'stationary', at:'<anchor>', pose:'sit' (optional) }
                { type:'patrol', route:['<anchor>', ...], pause:seconds }
@@ -16,6 +17,7 @@
      voice     optional { pitch, rate, name } for the spoken voice (name matches part of a system voice)
      onTalk    optional function(npc) called every time the player talks to them
      vil       2 = lives in Hanami, the Sakura Vale's village (same anchors, on that village's plan)
+     late      true = spawned after the random villagers, with its own random numbers (a new villager must not change everyone else's look)
    Anchors: 'well', 'well:far', 'questboard' (in front of the quest board), 'gate', 'garden', 'plaza0'..'plaza7',
             'house:0'..'house:8' (outside the door; house:4 is the tavern),
             'stall:0'..'stall:2' (customer side), 'stall:0:behind'.. (seller side),
@@ -78,7 +80,12 @@ const VILLAGERS=[
   { id:'chiyo', vil:2, title:'Storyteller', name:'Grandmother Chiyo', role:null,
     look:{sex:'female',height:0.9,build:0.95,face:'round',hair:'bun',hairColor:0xcfcac2,chest:0.8,skin:0xe0bc98,top:'hoodie',topColor:0x5a3a5a,bottom:'skirt',bottomColor:0x2a2830,hat:'none'},
     behavior:{type:'stationary',at:'campfire:seat1',pose:'sit'}, home:'house:4', schedule:'always', voice:{rate:0.8,pitch:1.0},
-    lines:['Sit, sit. The petals fall whether you hurry or not.','The circle of stones by the road hums for anyone who has walked here on their own feet. Step on it and it carries you home, and back again.','When I was a girl the kitsune were our friends. Then one of them grew nine tails.'] }
+    lines:['Sit, sit. The petals fall whether you hurry or not.','The circle of stones by the road hums for anyone who has walked here on their own feet. Step on it and it carries you home, and back again.','When I was a girl the kitsune were our friends. Then one of them grew nine tails.'] },
+  // the soul shrine: bind your soul to an element from level 15 (panel: economy/soul.js). late: spawned after everyone else, see above
+  { id:'kaede', vil:2, late:true, title:'Soul shrine', name:'Shrine Maiden Kaede', role:'soul',
+    look:{sex:'female',height:0.97,face:'oval',hair:'long',hairColor:0x1d1714,chest:0.95,skin:0xeac8a6,top:'jacket',topColor:0xe8e4dc,bottom:'skirt',bottomColor:0xb03a3a,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.85,pitch:1.15},
+    lines:['The three stones in the gravel are older than the village. Fire, water, earth, air, and the twins dark and light: every soul leans toward one.','Come to me at level 15 and I will bind your soul to an element. Your skills of that element grow stronger, and the skills of its opposite grow weaker.','Fire and water, earth and air, dark and light: each has exactly one opposite. Bind yourself as you please, and change your mind as often as you like.','Monsters have elements too. Strike one with its opposite and it will feel it. Strike it with its own and it will only shrug.'] }
 ];
 const FILLER_COUNT=LITE?3:(LOW?4:8);
 const NAMES_M=['Anders','Henrik','Lukas','Emil','Jonas','Felix','Mattis','Arvid','Elias','Nils','Viggo','Karl'];
@@ -118,7 +125,8 @@ function initNPCs(){
     const look=vil===2?{sex,hairColor:rng()<0.8?0x1d1714:0x3a2418,hat:rng()<0.3?'kasa':'none',hatColor:0xc8a868}:{sex};
     defs.push({id:'villager'+(vil===2?'h':'')+i,vil,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
   }
-  defs.forEach(d=>spawnNPC(d,rng));
+  defs.filter(d=>!d.late).forEach(d=>spawnNPC(d,rng));
+  defs.filter(d=>d.late).forEach(d=>spawnNPC(d,mulberry32(9002)));
 }
 function routeTo(n,pt,state){ n.route=[pt]; n.state=state||'walk'; n.stuckT=0; n.sx=n.x; n.sz=n.z; }
 function tryChat(n){

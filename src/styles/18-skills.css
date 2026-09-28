@@ -1,34 +1,104 @@
-/*@ Skills panel, the burst button, the skill slot's states */
-#skills{ width:min(680px,calc(100vw - 24px)); }
-.sk-load{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:6px; }
-.sk-slot{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 8px; border-radius:12px; background:rgba(0,0,0,.22); border:1px solid var(--line); text-align:center; }
-.sk-slot svg{ width:28px; height:28px; margin:2px 0; }
-.sk-slot b{ font-size:13.5px; } .sk-slot small{ font-size:11px; color:var(--ink-dim); min-height:13px; }
+/*@ Skills panel (slots, tabs, tiles, details, upgrades), the soul shrine, element chips, monster drops, the burst button, the skill slot's states */
+#skills, #soul{ width:min(680px,calc(100vw - 24px)); }
+/* ---- elements: a chip, the colour dot on tiles, the ring on the action bar ---- */
+.el-chip{ display:inline-flex; align-items:center; gap:4px; padding:1px 9px 1px 6px; border-radius:999px; font-size:11.5px; font-weight:600; line-height:1.5; color:var(--el); border:1px solid var(--el); background:rgba(238,240,226,.06); white-space:nowrap; }
+.el-chip svg{ width:13px; height:13px; flex:none; }
+.el-dot{ position:absolute; left:4px; top:4px; width:8px; height:8px; border-radius:50%; background:var(--el); box-shadow:0 0 6px var(--el); pointer-events:none; }
+.ab.has-el{ border-color:var(--el); box-shadow:inset 0 -3px 0 var(--el); }
+#tEl{ margin:0 auto 0 8px; }
+.dmg.up:not(.crit){ color:#ffbf5a; text-shadow:0 0 8px rgba(255,170,60,.9), 0 1px 3px rgba(0,0,0,.8); }
+.dmg.down:not(.crit){ color:#aab4c2; font-size:16px; }
+.dmg.crit.up{ text-shadow:0 0 10px rgba(255,170,60,.95), 0 1px 3px rgba(0,0,0,.8); }
+.dmg.drop{ color:#e8dcc0; font-size:14px; }
+/* ---- loadout: the active slots and the passive slots ---- */
+.sk-soul{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 10px; margin:2px 0 6px; font-size:12px; color:var(--ink-dim); }
+.sk-load-h{ margin:8px 0 5px; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-dim); }
+.sk-load-h span{ font-weight:500; text-transform:none; letter-spacing:0; margin-left:4px; }
+.sk-load{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.sk-slot, .sk-pslot{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 6px 9px; border-radius:12px; background:rgba(0,0,0,.22); border:1px solid var(--line); text-align:center; transition:background .12s; }
+.sk-slot b, .sk-pslot b{ font-size:13px; } .sk-slot small, .sk-pslot small{ font-size:11px; color:var(--ink-dim); min-height:13px; }
 .sk-n{ font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-dim); }
-.sk-slot.on{ border-color:rgba(159,224,138,.55); box-shadow:inset 0 0 14px rgba(159,224,138,.12); }
-.sk-slot.locked{ opacity:.6; }
-.sk-card{ display:flex; align-items:center; gap:12px; padding:10px 12px; margin-bottom:8px; border-radius:12px; background:rgba(0,0,0,.2); border:1px solid transparent; }
-.sk-card > svg{ width:30px; height:30px; flex:none; color:var(--lichen); }
-.sk-card.on{ border-color:rgba(159,224,138,.45); }
-.sk-card.unowned > svg{ color:var(--ink-dim); }
-.sk-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; font-size:12.5px; color:var(--ink-dim); line-height:1.4; }
-.sk-main b{ font-size:15px; color:var(--ink); }
-.sk-meta{ font-size:11.5px; color:#cfc6b4; }
-.sk-btn{ flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:4px; max-width:170px; }
-.sk-where{ font-size:11.5px; text-align:right; }
+.sk-slot.on, .sk-pslot.on{ border-color:rgba(159,224,138,.55); box-shadow:inset 0 0 14px rgba(159,224,138,.12); }
+.sk-slot.locked, .sk-pslot.locked{ opacity:.6; }
+.sk-slot.can, .sk-pslot.can{ outline:2px dashed var(--lichen); outline-offset:2px; }
+.sk-slot.over, .sk-pslot.over{ background:rgba(111,207,106,.24); }
+/* ---- a skill tile (in a slot or in the grid) ---- */
+.sk-tile{ position:relative; width:56px; height:56px; padding:0; border-radius:11px; border:2px solid rgba(238,240,226,.25); background:rgba(18,22,18,.6); color:var(--lichen);
+  display:grid; place-items:center; cursor:pointer; touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; transition:transform .12s, background .12s, opacity .12s, box-shadow .12s; }
+.sk-tile.drag{ cursor:grab; }
+.sk-tile:hover{ background:rgba(40,48,40,.7); }
+.sk-tile:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
+.sk-tile svg{ width:32px; height:32px; pointer-events:none; }
+.sk-tile .lv{ position:absolute; right:4px; bottom:1px; font-size:10px; font-weight:700; color:#eef0e2; text-shadow:0 1px 2px #000; pointer-events:none; }
+.sk-tile.burst{ color:#ffb060; }
+.sk-tile.unowned{ color:var(--ink-dim); } .sk-tile.unowned .lv{ color:#f2cf5a; }
+.sk-tile.locked svg{ opacity:.45; } .sk-tile.locked .lv{ color:#ff7a6a; }
+.sk-tile.sel{ box-shadow:0 0 0 2px var(--lichen), 0 0 14px rgba(159,224,138,.35); }
+.sk-tile.lifted{ opacity:.3; }
+.sk-tile.empty{ border:2px dashed rgba(238,240,226,.16); background:rgba(0,0,0,.18); cursor:default; color:var(--ink-dim); }
+.sk-tile.has-el{ border-color:var(--el); }
+.sk-ghost{ color:var(--lichen); } .sk-ghost svg{ width:34px; height:34px; }
+/* ---- the tabs and the grid of the selected kind (also the drop area for taking a skill off) ---- */
+.sk-area{ margin-top:10px; padding:8px; border-radius:14px; background:rgba(0,0,0,.14); transition:background .12s; }
+.sk-area.can{ outline:2px dashed var(--lichen); outline-offset:-2px; } .sk-area.over{ background:rgba(111,207,106,.14); }
+.sk-kinds{ margin-bottom:8px; }
+.sk-note{ margin:0 2px 8px; font-size:12px; }
+.sk-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr)); gap:8px 6px; min-height:84px; }
+.sk-cell{ display:flex; flex-direction:column; align-items:center; gap:3px; }
+.sk-cell .nm{ font-size:11px; line-height:1.2; text-align:center; color:var(--ink-dim); }
+/* ---- details and upgrade of the selected skill ---- */
+.sk-info{ margin-top:10px; padding:10px 12px; background:rgba(0,0,0,.2); border-radius:12px; min-height:64px; }
+.sk-info > p{ margin:0; }
+.sk-ii-h{ display:flex; gap:12px; align-items:center; }
+.sk-ico{ width:48px; height:48px; flex:none; border-radius:10px; border:2px solid rgba(238,240,226,.25); background:rgba(18,22,18,.6); display:grid; place-items:center; color:var(--lichen); }
+.sk-ico svg{ width:32px; height:32px; }
+.sk-ii-main{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; font-size:12.5px; color:var(--ink-dim); }
+.sk-ii-main b{ font-size:15px; color:var(--ink); }
+.sk-tags{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.sk-tag{ font-size:11px; color:var(--ink-dim); }
+.sk-meta{ font-size:12px; color:#cfc6b4; }
+.sk-ii-btn{ flex:none; max-width:190px; display:flex; flex-direction:column; align-items:flex-end; gap:4px; font-size:12px; text-align:right; }
+.sk-desc{ margin:8px 0 0; font-size:12.5px; line-height:1.45; color:var(--ink-dim); }
+.sk-up{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; margin-top:10px; padding:8px 10px; border-radius:10px; background:rgba(159,224,138,.07); border:1px solid rgba(159,224,138,.25); font-size:12.5px; color:var(--ink-dim); }
+.sk-up b{ color:var(--ink); }
+.sk-cost{ flex-basis:100%; display:flex; flex-wrap:wrap; gap:6px; }
+.sk-cost span{ display:inline-flex; align-items:center; gap:5px; padding:2px 9px; border-radius:8px; font-size:12px; background:rgba(0,0,0,.25); border:1px solid var(--line); }
+.sk-cost span i, .mat i{ width:9px; height:9px; border-radius:50%; flex:none; }
+.sk-cost .ok{ color:#b8e08a; border-color:rgba(184,224,138,.4); } .sk-cost .bad{ color:#ff9a8a; border-color:rgba(255,122,106,.4); }
+.sk-up .chip{ margin-left:auto; }
+/* ---- monster drops in the inventory ---- */
+.mat-row{ display:flex; flex-wrap:wrap; gap:6px; }
+.mat{ display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:8px; font-size:12px; background:rgba(0,0,0,.22); border:1px solid var(--line); }
+.mat b{ color:#f2cf5a; }
+/* ---- the soul shrine ---- */
+.so-intro{ margin:0 0 8px; font-size:13px; line-height:1.5; color:var(--ink-dim); }
+.so-lock{ margin:0 0 8px; padding:6px 10px; border-radius:10px; background:rgba(255,122,106,.1); border:1px solid rgba(255,122,106,.35); color:#ff9a8a; font-size:12.5px; }
+.so-now{ margin:0 0 8px; font-size:13px; }
+.so-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.so-el{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 6px; border-radius:12px; border:1px solid var(--line); background:rgba(0,0,0,.22); color:var(--ink); font:inherit; cursor:pointer; text-align:center; }
+.so-el:hover:not(:disabled){ background:rgba(40,48,40,.7); }
+.so-el:disabled{ opacity:.55; cursor:default; }
+.so-el[aria-pressed="true"]{ border-color:var(--el); box-shadow:inset 0 0 16px rgba(238,240,226,.08), 0 0 0 1px var(--el); }
+.so-ico{ display:grid; place-items:center; width:38px; height:38px; border-radius:50%; border:2px solid var(--el); color:var(--el); }
+.so-ico svg{ width:22px; height:22px; }
+.so-el b{ font-size:14px; margin-top:2px; } .so-el small{ font-size:11px; color:var(--ink-dim); }
+.so-sk{ font-size:10.5px; line-height:1.3; color:var(--ink-dim); min-height:26px; }
+.so-note{ margin:10px 0 0; font-size:12px; color:var(--ink-dim); }
+/* ---- the skill and burst buttons ---- */
 .pn-skills{ margin-left:4px; }
 .role-trainer .nt-role{ color:#b8e08a; border-color:rgba(184,224,138,.45); }
+.role-soul .nt-role{ color:#d6b0ff; border-color:rgba(214,176,255,.45); }
 #abSkill.empty svg{ opacity:.55; }
 #abSkill.flash{ animation:skflash 1.6s ease-out; }
 @keyframes skflash{ 0%{ box-shadow:0 0 0 0 rgba(159,224,138,.9); } 60%{ box-shadow:0 0 0 14px rgba(159,224,138,0); } 100%{ box-shadow:none; } }
-.ab-burst{ opacity:.7; }
 body.touch .ab-burst{ width:56px; height:56px; align-self:center; }
-@media (max-width:719px){
-  #skills{ width:auto; }
-  .sk-card{ flex-wrap:wrap; } .sk-btn{ max-width:none; width:100%; flex-direction:row; justify-content:flex-end; align-items:center; }
-  .sk-slot b{ font-size:12px; }
-}
-.sk-card.burst > svg{ color:#ffb060; }
 .ab.buffed{ box-shadow:0 0 0 2px rgba(255,120,90,.8), 0 0 14px rgba(255,120,90,.5); }
 .ab-burst{ opacity:1; }
 .ab-burst.empty{ opacity:.7; }
+@media (max-width:719px){
+  #skills, #soul{ width:auto; }
+  .sk-slot b, .sk-pslot b{ font-size:12px; }
+  .sk-ii-h{ flex-wrap:wrap; } .sk-ii-btn{ max-width:none; width:100%; flex-direction:row; justify-content:flex-end; align-items:center; }
+  .so-grid{ grid-template-columns:repeat(2,1fr); }
+  .sk-tile{ width:52px; height:52px; }
+}

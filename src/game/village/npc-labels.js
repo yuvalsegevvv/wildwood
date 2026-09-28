@@ -7,7 +7,8 @@ const ROLE_ICON={
   armorer:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/>',
   forge:'<path d="M4 9h13l3-2v3a4 4 0 0 1-4 4h-1v3h2v3H7v-3h2v-3H8a4 4 0 0 1-4-4z"/>',
   trainer:'<path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M10 8l1.5 3L15 9.5"/>',
-  story:'<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 2 1 3 3 3 5"/>'
+  story:'<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 2 1 3 3 3 5"/>',
+  soul:'<circle cx="12" cy="12" r="9"/><path d="M12 3a4.5 4.5 0 0 1 0 9 4.5 4.5 0 0 0 0 9"/>'
 };
 const npcTags=new Map();
 function questMark(){ const Q=GEAR.q; if(!Q) return ''; return Q.ready&&Q.ready.length?'?':(Q.offers&&Q.offers.length&&Object.keys(Q.active).length<QUEST_MAX_ACTIVE)?'!':''; }

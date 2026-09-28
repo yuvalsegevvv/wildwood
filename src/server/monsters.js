@@ -36,7 +36,7 @@ function spawnMonS(d,x,z,camp,temp){ const m=makeMon(d,x,z,camp,1,temp); ev('spa
 function removeMonS(m){ if(m.remove) return; m.remove=true; ev('despawn',m.id); }
 function respawnMonS(m){
   const c=m.camp; m.x=c.x+AR(-3,3); m.z=c.z+AR(-3,3); m.hp=m.maxHp; m.dead=false; m.deadT=0; m.state='idle'; m.aggro=false; m.tgt=null;
-  m.timer=AR(1,3); m.slowT=0; m.pendingHit=-1; m.kbx=m.kbz=0; ev('respawn',m.id,r1(m.x),r1(m.z));
+  m.timer=AR(1,3); m.slowT=0; m.burnT=0; m.pendingHit=-1; m.kbx=m.kbz=0; ev('respawn',m.id,r1(m.x),r1(m.z));
 }
 function monCenterS(m){ return {x:m.x,y:getH(m.x,m.z)+m.T.height*0.5*m.s,z:m.z}; }
 function nearestFighter(x,z,maxD){ let best=null,bd=maxD; for(const p of S.players.values()){ if(p.dead||inVillage(p)) continue; const d=Math.hypot(p.x-x,p.z-z); if(d<bd){ bd=d; best=p; } } return best; }

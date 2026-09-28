@@ -3,7 +3,7 @@
 const bubble=$('#bubble'), bName=$('#bName'), bText=$('#bText'), promptEl=$('#prompt'), bTalk=$('#bTalk');
 const _bv=new THREE.Vector3();
 function startTalk(n){ talkNPC=n; n.line=0; UI_SFX.talk(); sayLine(n); openRolePanel(n); }
-function openRolePanel(n){ const r=n.def.role; if(r==='weaponsmith'||r==='armorer') openShop(n); else if(r==='quests') openQuests(n); else if(r==='forge') openForge(n); else if(r==='trainer') openSkills(n); }
+function openRolePanel(n){ const r=n.def.role; if(r==='weaponsmith'||r==='armorer') openShop(n); else if(r==='quests') openQuests(n); else if(r==='forge') openForge(n); else if(r==='trainer') openSkills(n); else if(r==='soul') openSoul(n); }
 function sayLine(n){
   const L=n.def.lines&&n.def.lines.length?n.def.lines:['Hello there.'];
   const line=L[n.line%L.length];

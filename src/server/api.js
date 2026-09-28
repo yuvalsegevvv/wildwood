@@ -7,6 +7,7 @@
    Registered accounts (name + password, Node server only) are in accounts.js.
    Messages in:  hello{acct,name,look,save[,user,pass|token]}  register{user,pass}  logout{token}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
                  cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{}  dev{cmd,v}
+                 buyskill{id}  eqskill{id[,idx: passive slot]}  unskill{cls,slot[,idx]}  upskill{id}  soul{el}
    Messages out: welcome{pid,day,dev,players[,look: a logged-in account's own look]}  mons{list}  you  tp  snap{day,n,pl,mo,b:[per boss],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
 initMonstersS(); initBossS();
 const ACCT=new Map(), PENDING=new Set();   // account -> pid online; pids whose save is still loading
@@ -75,8 +76,10 @@ function receive(pid,msg){
     case 'buyskill': buySkillP(p,msg.id); break;
     case 'chat': chatP(p,msg.text); break;
     case 'name': renameP(p,msg.name); break;
-    case 'eqskill': equipSkillP(p,msg.id); break;
-    case 'unskill': unequipSkillP(p,msg.cls,msg.slot||'skill'); break;
+    case 'eqskill': equipSkillP(p,msg.id,msg.idx); break;
+    case 'unskill': unequipSkillP(p,msg.cls,msg.slot||'skill',msg.idx); break;
+    case 'upskill': upgradeSkillP(p,msg.id); break;
+    case 'soul': bindSoulP(p,msg.el); break;
     case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<2000){ p.look=msg.look; p.saveDirty=true; ev('plook',p.id,p.look); } break;
     case 'warp': warpP(p); break;
     case 'dev': devP(p,msg); break;
@@ -90,7 +93,7 @@ function tick(dt){
   else S.day=(S.day+dt/DAY_SECONDS)%1;
   if(S.day<S.prevDay) sunrise();
   S.prevDay=S.day;
-  updatePlayersS(dt); updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateWeatherS(dt);
+  updatePlayersS(dt); updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateBurnS(dt); updateWeatherS(dt);
   for(const p of S.players.values()) if(p.dirty){ p.dirty=false; p.saveDirty=true; sendTo(p.id,youMsg(p)); }
   S.saveT-=dt; if(S.saveT<=0){ S.saveT=5; for(const p of S.players.values()) if(p.saveDirty&&p.acct) saveP(p); }
   S.snapT-=dt; if(S.snapT<=0){ S.snapT=S.snapDt; broadcastSnap(); }
@@ -118,7 +121,7 @@ function broadcastSnap(){
   const rows=[];   // every awake monster once: [monster, entry, state key]
   for(const m of MONS){
     if(m.remove||m.dead||!m.awake) continue;
-    const a=[m.id,r1(m.x),r1(m.z),Math.round(m.face*100)/100,Math.ceil(m.hp),(m.aggro?1:0)|(m.slowT>0?4:0)|(m.immune?8:0)|(m.stunT>0?16:0)];
+    const a=[m.id,r1(m.x),r1(m.z),Math.round(m.face*100)/100,Math.ceil(m.hp),(m.aggro?1:0)|(m.slowT>0?4:0)|(m.immune?8:0)|(m.stunT>0?16:0)|(m.burnT>0?32:0)];
     rows.push([m,a,a.join()]);
   }
   const all=[...S.players.values()], prow=all.map(p=>[p.id,r1(p.x),r1(p.y),r1(p.z),Math.round(p.face*100)/100,Math.round(p.hp),p.maxHp,p.level,p.dead?1:0]);

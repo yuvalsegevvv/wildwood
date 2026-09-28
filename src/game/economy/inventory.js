@@ -19,7 +19,7 @@ function renderInv(){
   if($('#inv').hidden) return;
   $('#invCoins').textContent=GEAR.coins+' coins';
   const g=gearStats(), c=CLASSES[clsOf()];
-  let h=`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div></div>`;
+  let h=`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Soul</span><b style="color:${ELEMS[soulNow()].col}">${ELEMS[soulNow()].name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div></div>`;
   h+='<div class="inv-wrap"><div class="doll" id="invDoll">'+SIL;
   for(const [s,area] of BODY_SLOTS){
     const it=ITEM[GEAR.eq[s]];
@@ -28,6 +28,9 @@ function renderInv(){
   const counts=bagCounts(), ids=Object.keys(counts).sort((a,b)=>ITEM[a].kind.localeCompare(ITEM[b].kind)||ITEM[b].tier-ITEM[a].tier||ITEM[a].slot.localeCompare(ITEM[b].slot));
   h+=`</div><div class="bag"><div class="inv-h">Bag <span>${GEAR.inv.length} / 80</span></div><div class="bag-grid" id="invBag">${ids.map(id=>tile(ITEM[id],'bag',counts[id])).join('')||'<p class="muted bag-empty">Nothing in your bag. Items you take off land here.</p>'}</div></div></div>`;
   h+=`<div class="inv-info" id="invInfo"></div>`;
+  // monster drops: only used to upgrade skills (Skills panel)
+  const mats=GEAR.mats||{}, have=MAT_IDS.filter(id=>mats[id]>0);
+  h+=`<div class="inv-h">Monster drops <span>${have.length?'for upgrading skills':''}</span></div><div class="mat-row">${have.length?have.map(id=>`<span class="mat" title="Dropped by ${MATS[id].from} (level ${MATS[id].lv})"><i style="background:${MATS[id].col}"></i>${MATS[id].name} <b>${mats[id]}</b></span>`).join(''):'<p class="muted">Monsters sometimes drop materials. You use them to upgrade your skills at a trainer.</p>'}</div>`;
   $('#invBody').innerHTML=h;
   if(INV.sel && !(INV.sel.from==='bag'?counts[INV.sel.id]:GEAR.eq[INV.sel.from]===INV.sel.id)) INV.sel=null;
   renderInvInfo();

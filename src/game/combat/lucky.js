@@ -43,6 +43,12 @@ function luckySound(rar,gain,pan){
   if(rar>=4) chord.forEach(f=>tone({bus:'ui',type:'triangle',freq:f*1.5,dur:1.6,vol:0.03*gain,when:end+0.35,pan}));
   for(let i=0;i<10+rar*4;i++) noiseHit({bus:'ui',filter:'highpass',ff:6500,dur:0.04,vol:0.045*gain,when:n+0.05+i*0.055,pan});
 }
+// a boss dropped one of its skills for you (server event 'skilldrop'): the beam and jingle of a unique item, with the skill's name on the banner
+function onSkillDrop(id){
+  const s=SKILLS[id]; if(!s) return;
+  luckyFx(P.x,P.y,P.z,3,true,{name:s.name});
+  $('#lucky').innerHTML=`<small>Boss skill!</small><b>${s.name}</b>`;
+}
 function forgeFx(item){
   if(SND.ready){ const n=SND.ctx.currentTime;
     for(let k=0;k<3;k++){ noiseHit({bus:'ui',filter:'bandpass',ff:3200,dur:0.1,vol:0.2,when:n+k*0.3}); tone({bus:'ui',type:'square',freq:1250,freq2:1170,dur:0.28,vol:0.035,when:n+k*0.3,filter:'lowpass',ff:3000}); tone({bus:'ui',type:'sine',freq:2480,dur:0.5,vol:0.03,when:n+k*0.3}); } }

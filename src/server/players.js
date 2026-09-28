@@ -5,7 +5,8 @@
 function sanitizeGear(g,cls){
   const base=newGearFor(cls);
   if(!g||typeof g!=='object') return base;
-  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.max(0,Math.floor(+g.coins||0)),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0)};
+  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.max(0,Math.floor(+g.coins||0)),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
+  if(g.mats&&typeof g.mats==='object') for(const id in g.mats){ const n=MATS[id]?clampInt(g.mats[id],0,MAT_MAX,0):0; if(n) out.mats[id]=n; }
   if(g.eq) for(const k in out.eq){ const id=g.eq[k]; if(id&&ITEM[id]&&out.inv.includes(id)) out.eq[k]=id; else if(k!=='weapon') out.eq[k]=null; }
   if(!ITEM[out.eq.weapon]) out.eq.weapon=base.eq.weapon;
   if(!out.inv.includes(out.eq.weapon)) out.inv.push(out.eq.weapon);
@@ -38,15 +39,19 @@ function sanitizeQuests(q){
 }
 // player names: printable characters only, single spaces, 1-16 characters
 function cleanName(s){ return String(s||'').replace(/[\u0000-\u001f\u007f-\u009f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,16)||'Hiker'; }
-// loadouts: {owned:[ids], eq:{cls:{basic,skill,burst}}, v}; older saves had eq:{cls:'skillId'}
+// loadouts: {owned:[ids: skills and passives], eq:{cls:{basic,skill,burst}}, lv:{id:level}, pass:[passive ids], pgiven, v}; older saves had eq:{cls:'skillId'}
 function sanitizeSkills(g){
   const out=newSkills(); out.v=2;
   if(!g||typeof g!=='object') return out;
-  if(Array.isArray(g.owned)) for(const id of g.owned) if(SKILLS[id]&&!out.owned.includes(id)) out.owned.push(id);
+  if(Array.isArray(g.owned)) for(const id of g.owned) if(skillDef(id)&&!out.owned.includes(id)) out.owned.push(id);
   if(g.eq) for(const c in out.eq){
     const e=g.eq[c], slots=typeof e==='string'?{skill:e}:(e&&typeof e==='object'?e:{});
     for(const sl of SLOTS){ const id=slots[sl]; if(SKILLS[id]&&SKILLS[id].cls===c&&SKILLS[id].slot===sl&&out.owned.includes(id)&&canSwap(c,sl)) out.eq[c][sl]=id; }
   }
+  if(g.lv&&typeof g.lv==='object') for(const id in g.lv){ const L=out.owned.includes(id)&&!(skillDef(id)&&skillDef(id).drop)?clampInt(g.lv[id],1,SKILL_MAX_LV,1):1; if(L>1) out.lv[id]=L; }   // (boss skills cannot be upgraded yet)
+  // only the open passive slots can be used for now: what a save had in a locked slot moves up into the open ones (the rest goes back to the bag)
+  if(Array.isArray(g.pass)) [...new Set(g.pass.slice(0,PASSIVE_SLOTS).filter(id=>PASSIVES[id]&&out.owned.includes(id)))].slice(0,PASSIVE_OPEN).forEach((id,i)=>{ out.pass[i]=id; });
+  out.pgiven=!!g.pgiven;   // the free passive was handed out once (so taking it off does not bring it back)
   out.v=g.v===2?2:1;   // 1 = from before burst skills: they get their free burst on join
   return out;
 }
@@ -58,14 +63,17 @@ function newPlayer(pid,hello){
     hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0},buff:null,act:null,dirty:true,travelT:0};
   if(p.gear.startAll) giveAllP(p);
   if(p.gear.skills.v!==2){ autoEquipP(p,'skill'); autoEquipP(p,'burst'); p.gear.skills.v=2; }   // saves from before skills / bursts get the free ones
+  autoEquipPassiveP(p);   // ... and from before passives
   recalcP(p); p.hp=p.maxHp; fillOffersP(p); return p;
 }
 function recalcP(p){
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1;
-  p.maxHp=Math.round(20*fLv(p.level)+g.hp); p.dmg=3*fLv(p.level)+g.atk; p.def=g.def; p.red=defRed(g.def);
+  p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))); p.dmg=3*fLv(p.level)+g.atk; p.def=g.def; p.red=defRed(g.def);
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));
 }
 const clsOfP=p=>classOfGear(p.gear);
+const psP=(p,stat)=>passiveSum(p.gear.skills,p.level,stat);   // a passive stat (Vitality's hp, Ferocity's dmg...)
+const soulOfP=p=>p.level>=SOUL_LV?p.gear.soul:'basic';
 function youMsg(p){ return {t:'you',level:p.level,exp:p.exp,maxHp:p.maxHp,hp:p.hp,dmg:p.dmg,def:p.def,red:p.red,dead:p.dead,gear:p.gear}; }
 function pubInfo(p){ return {id:p.id,name:p.name,look:p.look,eq:p.gear.eq,level:p.level}; }
 function inVillage(p){ return vDist(p.x,p.z)<VR+12; }
@@ -88,14 +96,14 @@ function gainExpP(p,v,monId){
   p.exp+=v; ev('xp',p.id,r1(v),monId==null?null:monId);
   let up=false; const was=p.level;
   while(p.level<50 && p.exp>=expToNext(p.level)){ p.exp-=expToNext(p.level); p.level++; up=true; }
-  if(up){ recalcP(p); p.hp=p.maxHp; ev('lvup',p.id,p.level); refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); }
+  if(up){ recalcP(p); p.hp=p.maxHp; ev('lvup',p.id,p.level); refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(was<PASSIVE_LV&&p.level>=PASSIVE_LV) unlockPassivesP(p); }
   p.dirty=true;
 }
-// +5% damage taken per level the attacker is above you, then your armor
+// +5% damage taken per level the attacker is above you, then your armor and the Iron Will passive
 function hurtP(p,v,m){
   if(p.dead) return;
   const ld=m?Math.max(0,m.T.level-p.level):0;
-  v=Math.max(1,Math.round(v*(1+0.05*ld)*(1-p.red)));
+  v=Math.max(1,Math.round(v*(1+0.05*ld)*(1-p.red)*(1-psP(p,'red'))*(1-(p.buff?p.buff.red||0:0))));
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){
     p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id);
@@ -114,10 +122,23 @@ function unlockSkillsP(p,slot){
   toastTo(p.id,(slot==='burst'?'Burst slot unlocked! ':'Skill slot unlocked! ')+(s?s.name:'Your new ability')+' is ready ('+(slot==='burst'?'R':'Q')+'). Aldric, the trainer at the well, teaches more.','good');
   ev('skillslot',p.id,slot);
 }
+// level 18: the passive slots open, with Vitality (free) in the first one
+function autoEquipPassiveP(p){
+  const S=p.gear.skills; if(S.pgiven||p.level<PASSIVE_LV) return false;
+  S.pgiven=true; if(!S.owned.includes('vitality')) S.owned.push('vitality');
+  const i=S.pass.slice(0,PASSIVE_OPEN).indexOf(null); if(i>=0&&!S.pass.includes('vitality')) S.pass[i]='vitality';
+  p.dirty=true; return true;
+}
+function unlockPassivesP(p){
+  if(!autoEquipPassiveP(p)) return;
+  recalcP(p); toastTo(p.id,'Passive skills unlocked! Vitality is in your first passive slot. Aldric and Master Ryu teach more.','good'); ev('skillslot',p.id,'passive');
+}
+function healP(p,v){ if(!p.dead&&v>0) p.hp=Math.min(p.maxHp,p.hp+v); }
 function updatePlayersS(dt){
   for(const p of S.players.values()){
     for(const k in p.cd) p.cd[k]=Math.max(0,p.cd[k]-dt);
     if(p.buff&&S.t>=p.buff.until){ p.buff=null; }
+    if(p.buff&&p.buff.regen&&!p.dead) healP(p,p.maxHp*p.buff.regen*dt);
     if(p.dead){
       p.deadT+=dt;
       if(p.deadT>3){ const g=(p.x>HALF&&p.gear.east>=2?VIL2:VIL).anchors.gate; p.x=g.x; p.z=g.z; p.y=getH(g.x,g.z); p.dead=false; p.hp=p.maxHp; p.lastHit=-99; sendTo(p.id,{t:'tp',x:g.x,z:g.z,face:g.face}); ev('up',p.id); p.dirty=true; }

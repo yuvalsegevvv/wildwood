@@ -165,7 +165,7 @@ function clearMonViews(){ [...MON_BY_ID.keys()].forEach(removeMonView); }
 function applyMonSnap(a){ // [id, x, z, face, hp, flags: 1 aggro, 4 slowed, 8 immune]
   const m=MON_BY_ID.get(a[0]); if(!m) return;
   m.tx=a[1]; m.tz=a[2]; m.tface=a[3]; m.hp=a[4];
-  m.aggro=!!(a[5]&1); m.slowT=(a[5]&4)?1:0; m.immune=!!(a[5]&8);
+  m.aggro=!!(a[5]&1); m.slowT=(a[5]&4)?1:0; m.immune=!!(a[5]&8); m.burning=!!(a[5]&32);
   if(m.dead){ monRespawned(m,a[1],a[2]); }
 }
 function monRespawned(m,x,z){
@@ -193,8 +193,9 @@ function updateMonsters(dt){
     animateMonster(m,dt,Math.min(Math.hypot(m.vx,m.vz),9));
     m.flash=Math.max(0,m.flash-dt*4);
     if(m.boss){ bossVisual(m,dt); continue; }
-    const f=m.flash, sl=m.slowT>0?0.35:0, gl=m.mat.userData.glow;
-    m.mat.emissive.setRGB(gl.r+f*0.9,gl.g+f*0.35+sl*0.4,gl.b+f*0.3+sl);
+    const f=m.flash, sl=m.slowT>0?0.35:0, gl=m.mat.userData.glow, bn=m.burning?0.35+0.15*Math.sin(t*14):0;   // burning: an orange glow and sparks
+    m.mat.emissive.setRGB(gl.r+f*0.9+bn,gl.g+f*0.35+sl*0.4+bn*0.4,gl.b+f*0.3+sl);
+    if(m.burning&&m.g.visible&&Math.random()<dt*12){ const e=new THREE.Mesh(emberGeo,emberMat); e.position.set(m.x+AR(-0.35,0.35)*m.s,m.y+m.T.height*m.s*AR(0.2,1),m.z+AR(-0.35,0.35)*m.s); scene.add(e); CB.fx.push({mesh:e,life:0.5,max:0.5,shrink:true}); }
   }
   updateBossFx(dt);
 }

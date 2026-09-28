@@ -1,13 +1,13 @@
 # Wildwood: guide for agents
 
 Read this file first. It is written so you can work on the game **without reading the whole codebase**
-(about 7,100 lines of JavaScript in 92 files). Open only the files your task touches.
+(about 7,500 lines of JavaScript in 96 files). Open only the files your task touches.
 
 Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an authoritative world server
 that runs in the browser tab (solo / shared room) or in Node (the deployed MMO), procedural 880 m forest,
 village with NPCs, 451 monsters in 16 zones, a boss; east of the mountains the Sakura Vale (tunnel opened by the
 boss, Japanese village Hanami, 240 monsters of levels 16-25 in 10 zones, bosses at 20 and 25, teleport circles);
-3 classes with equippable skills, 210 items (6 tiers) in 5 rarities, a forge, a quest board, weather, chat, server-side saves in a Postgres database (Neon), player
+3 classes with equippable skills (5 levels each, upgraded with coins and monster drops), an element system (soul bound at level 15 in Hanami, elements on skills and monsters), class-universal passives from level 18, 210 items (6 tiers) in 5 rarities, a forge, a quest board, weather, chat, server-side saves in a Postgres database (Neon), player
 accounts (guest or name + password; the start card offers Log in, Register, Play as guest).
 
 - Repository: https://github.com/yuvalsegevvv/wildwood (Render deploys every push to `main`).
@@ -69,7 +69,8 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 
 - Client → server: `hello{acct,name,look,save[,user,pass|token]}`, `register{user,pass}`, `logout{token}`, `pos{p:[x,y,z,face,vx,vz]}`, `atk{k:'basic'|'skill'|'burst',tg,face,aim}`,
   `equip{id}`, `unequip{slot}`, `cls{cls}`, `buy/sell{id}`, `merge{id}`, `accept/turnin/abandon{id}`,
-  `buyskill/eqskill{id}`, `unskill{cls,slot}`, `look{look}`, `chat{text}`, `name{name}`, `warp{}`, `dev{cmd,v}`.
+  `buyskill{id}`, `eqskill{id[,idx]}` (idx: the passive slot), `unskill{cls,slot[,idx]}` (slot `'pass'` + idx for a passive), `upskill{id}`, `soul{el}`,
+  `look{look}`, `chat{text}`, `name{name}`, `warp{}`, `dev{cmd,v}`.
 - Server → client: `welcome{...,look?}` (`look` only for a logged-in account: its own look replaces the browser's), `mons{list}` (roster), `you{...}` (private
   state incl. `gear`), `tp`, `kicked`, `auth{user,token}`, `authfail{text}`,
   `snap{day, n, pl, mo, b (one entry per boss), w (weather), ev:[events]}` 8-20×/s, **made per player**: `mo` holds only the monsters
@@ -77,10 +78,10 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
   you (those within 40 m every snapshot, farther ones every second), `pl` yourself and the players within 250 m (the rest once a
   second), `n` the head count. Constants `SNAP_*` and the reasoning are in `server/api.js` (`broadcastSnap`). The claude.ai room
   host keeps one message for everyone (`io.broadcastSnaps`), since its channel is one shared 4 KB topic.
-- Events (`ev(...)` on the server, `applyEvent` in `net/client.js`): dmg, kill, imm, mact, aggro, respawn,
+- Events (`ev(...)` on the server, `applyEvent` in `net/client.js`): dmg (`[id,v,crit,by[,fx]]`: fx 1 / -1 = the element helped / hurt), kill, imm, mact, aggro, respawn,
   spawn, despawn, proj, pend, tele, tend, roar, area, aend, chain, buff, xp, coins, loot, lvup, hurt, down,
   up, toast, qdone, qturn, pact, pjoin, pleave, pgear, plook, pname, chat, merge, skillslot, skillbuy,
-  weather, thunder, lvset, warp, vale.
+  weather, thunder, lvset, warp, vale, drop (`[pid,mat,n,monId]`), skillup, soul.
 - To add a feature that changes state: handle a message in `receive()` (server/api.js), mutate state,
   call `ev('name', ...)` and/or set `p.dirty=true` (→ a `you` update + save), then handle the event in
   `applyEvent` on the client.
@@ -95,7 +96,12 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | Sakura Vale: tunnel `TUN`, Hanami `VIL2`, vale zones/ridges, arenas `ARENAS`, `vilAt` | `shared/vale.js`; meshes `game/village/buildings-vale.js`; tunnel collision `worldBounds` in `game/player/movement.js`; unlock / attune / `warpP` in `server/players.js`; Hanami NPCs (`vil:2`) in `game/village/villagers.js` |
 | Items, rarity, prices, drop rates, merge | `shared/items.js` (`RARITY`, `RAR_MULT`, `rollMonsterRarity`, `rollBossRarity`, `shopPrice`) |
 | Item icons | `game/ui/item-icons.js` |
-| Skills (all 3 slots, all classes) | `shared/classes.js` (`SKILLS`, `abilityOf`, slot levels) → effects `server/combat.js` (`resolveHitS`, `updateAreasS`, projectiles) → visuals `game/combat/skill-fx.js`, `game/combat/attacks.js` (`attackVisuals`, projectiles), icons `ICONS` in `game/ui/combat-hud.js` |
+| Skills (all 3 slots, all classes) | `shared/classes.js` (`SKILLS`, `abilityOf`, slot levels) → effects `server/combat.js` (`resolveHitS`, `updateAreasS`, projectiles) → visuals `game/combat/skill-fx.js`, `game/combat/attacks.js` (`attackVisuals`, projectiles), icons `ICONS` in `game/ui/combat-hud.js` (also the passives'). A new attack path must hand the skill's element (`a.el` / `pr.el` / `A.el`) to `damageMonsterS`, or the soul bonus silently does not apply |
+| Boss skills (dropped by a boss at 10% per skill, 6 per boss: a skill and a burst for each class; not sold, no upgrades yet) and generic skill effects (`fx`) | rows with `drop:'<boss id>'` at the end of `SKILLS` (`shared/classes.js`), `BOSS_SKILLS` / `BOSS_SKILL_CHANCE` in `shared/drops.js`; effects `resolveFxS` / `impactFxS` / `applyBuffS` / `statusS` / `updateBurnS` and the drop roll `bossSkillDropP` in `server/combat.js`; visuals `fxVisuals`, `onBeam`, zones (`updateZoneFx`) in `game/combat/skill-fx.js`, projectiles `GEN_PROJ` in `game/combat/attacks.js`; the panel's Boss tiles in `game/economy/skills.js`. Adding a skill with `fx` needs no server or client code: a row, an icon in `ICONS` and (for a new kind of effect) an entry in `resolveFxS` |
+| Elements: which skill / monster has which (`el` field), the soul (bind at level 15 in Hanami), the x1.5 rules | `shared/elements.js` (`ELEMS`, `soulMult`, `foeMult`, `ELEM_BOOST`); server `elemHitS` / `rollDmgS` in `server/combat.js`, `bindSoulP` in `server/economy.js`; panel + chips `game/economy/soul.js`; the shrine maiden Kaede in `VILLAGERS` (`role:'soul'`, `late:true`); target frame `#tEl`, `onMonDmg` arrows |
+| Skill levels / upgrades and monster drops (materials) | `shared/drops.js` (`MATS`, `DROP_CHANCE`, `upgradeNeeds`, `UP_COINS`, `UP_COUNT`), `shared/classes.js` (`skillPower`, `skillCdMult`, `abilityCd`); server `upgradeSkillP`, `addMatP`, `rewardKill`; UI `game/economy/skills.js` (details + Upgrade), materials list in `game/economy/inventory.js` |
+| Passive skills (class-universal, level 18) | `PASSIVES` in `shared/classes.js` (`stat`, `v`, `text`) read with `passiveSum` (`psP(p,stat)` on the server: hp in `recalcP`, dmg / crit in `rollDmgS`, red in `hurtP`, cd in `abilityCd`, drop / xp in `rewardKill`, soul in `elemHitS`); slots + unlock `autoEquipPassiveP` / `equipPassiveP` in `server/players.js` / `economy.js`; `PASSIVE_OPEN` (in `classes.js`) is how many of the 3 slots are usable: slots after it are locked in the panel, refused by the server, ignored by `passiveSum` and cleared from saves |
+| The skills panel (tabs, drag and drop onto slots) | `game/economy/skills.js` (`skTile`, `skInfoHtml`, `SKD` drag state; styles `18-skills.css`); test `client-smoke` |
 | Quest board generation / rewards | `shared/quests.js` (`genQuest`, `huntCount`, `questRewardFor`); server actions `server/economy.js`; panel `game/economy/quests.js` |
 | Shops / forge / skills panel / inventory | `game/economy/shops.js`, `forge.js`, `skills.js`, `inventory.js` (+ server `economy.js`) |
 | Village layout, board, stalls | `shared/village-layout.js` (positions, colliders `V.boxes`), `game/village/buildings.js` (meshes) |
@@ -156,7 +162,8 @@ python3 build.py                 # → dist/ (quiet, ~1 s)
 python3 build.py --check         # + syntax check of every bundle + duplicate-name check  (always run this)
 node tools/server-smoke.js       # 16 headless server checks from src/ (no build), ~5 s, prints PASS/FAIL
 node tools/accounts-smoke.js     # 17 checks of accounts (register, login, tokens, unique names, the account's look), ~1 s
-node tools/client-smoke.js       # 9 checks running the built page headless (solo), ~40 s
+node tools/skills-smoke.js       # 51 checks of elements, the soul shrine, monster drops, skill upgrades, passives and the 18 boss skills (server from src/), ~15 s
+node tools/client-smoke.js       # 17 checks running the built page headless (solo), ~45 s (also draws every boss skill). It runs dist/: build first
 node tools/start-smoke.js        # 27 checks of the start card + a new account's character editor, against a real server in-process, ~20 s
 python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)
 npm test                         # build --check + all of the above
@@ -170,7 +177,7 @@ OS temp dir: `python3 tools/rast.py <tmp>/model-preview.json out.png 260 300 1.3
 height in metres: 1.3 torso, 1.7 head). On Windows `python3` needs `pip install numpy pillow` first.
 
 Pick the smallest test that covers your change: model/face/hats → `model-preview` only; server rules →
-`server-smoke` (or a few lines with `tools/load.js`: `loadServer(io, ['MONS','genQuest'])` gives you the
+`server-smoke` / `skills-smoke` (or a few lines with `tools/load.js`: `loadServer(io, ['MONS','genQuest'])` gives you the
 server API plus any internal names); client UI → `build --check` + `client-smoke`; the start card, accounts or the character editor →
 `start-smoke`. The headless client (`tools/headless.js`) stubs the DOM: elements are cached per selector and remember their
 listeners and children (`c.el('#stGuest').click()`, `el._kids`, `el._a`), but there is no layout, so read state from game variables
@@ -266,6 +273,12 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
   redraws in `applyGear`. Anything on the start card that needs the server must wait for `NET.ready`.
 - `tools/client-smoke.js` used to count `requestAnimationFrame` calls: the world takes a few thousand frames to stream in, and a stopped
   loop stops `netTick`, so the server never learns the player moved and every attack misses. `headless.js` runs frames until `stop()`.
+- `tools/server-smoke.js` "forge merges 3" fails now and then (about 1 run in 15, also on older commits): it depends on a random item from the testing tool. Not a regression.
+- A page whose server was stopped (or restarted) used to look alive but ignore everything (equip, attack, buy: the message went to a closed socket, the clock froze). It now shows a Reconnect message (`netDown` in `net/transport.js`: on a closed socket, a send to a closed socket, or no message for `NET_STALL_MS` while playing on the Node server). Remember it when testing: stopping the dev server under an open tab is what triggers it, and a recording of "nothing works" with a frozen clock is a dead connection, not a UI bug.
+- Skills panel drag and drop: every tile can be dragged (so a refused drop always says why); the panel is not redrawn while a tile is held (the server's `you` updates would remove the element under the finger: `SKD.pending`); `pointerup` outside the window is caught by pointer capture. Don't reintroduce a silent `data-drag="0"`.
+- Server tests read events from the snapshots: an `ev(...)` reaches a test's log only with the next snapshot (about 2 ticks), so tick 3 times before checking `evs`.
+  `client-smoke` / `start-smoke` run the *built* page: a stale `dist/` gives false failures, run `python3 build.py` first.
+- A new hard-coded villager changes every random villager's look (the seeded rng's draw order): give it `late:true` (spawned after the others, own rng).
 - Windows: `shutil.rmtree` on `dist/audio` fails under OneDrive (build.py deletes the files, not the folder); a `cd dist` in one shell
   call stays for the next (use absolute paths); backslashes inside a bash heredoc get lost (write the script to a file instead);
   `git worktree remove` may leave `.git/worktrees/<name>` behind (delete it by hand).
@@ -290,6 +303,10 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
   5.5 M triangles per frame, of which about 3.7 M are instanced trees (chunks are 110 m, fog ends at 230 m; 42% of the triangles are
   120 m or farther); the world takes about 1.1 s of JS to generate (17% is `noise2`). The server ticks in under 5 ms with 40 players
   spread over the woods (about 4% of a core).
+- Elements: soul match x1.5, soul opposite x1/1.5; a monster takes x1.5 from the opposite of its element and x1/1.5 from its own (`ELEM_BOOST`, both stack).
+  Soul unlocks at level `SOUL_LV` 15 (Hanami's Kaede), passives at `PASSIVE_LV` 18 (3 slots exist, only `PASSIVE_OPEN` = 1 is usable, the others are locked for now). Skill level 1-5: +12% damage and -3% cooldown per level.
+  Boss skills: each of the boss's 6 skills has a 10% chance per kill, per player who helped. Burn: a share (k) of the hit's damage every second. Pull = negative knockback.
+  Drops: 35% per kill (a boss always 3), upgrade to level n needs `UP_COUNT` 4 / 6 / 9 / 14 drops + coins (`UP_COINS` x (n-1)^1.7) and, at level 5, 2 boss trophies.
 - Rarity stat multipliers 1 / 1.3 / 1.7 / 2.2 / 3; 3 identical → next rarity at Greta's forge.
 - Shop: unlimited, +20% of base per copy bought, reset at sunrise (server day wraps).
 - Quests: 4 notices, level −4…+2 weighted to yours; hunts 10-20 (L1) → 30-50 (L15), bounties 1.5×.
@@ -303,7 +320,8 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
 
 ## 10. Ideas not done yet (ask the owner before starting)
 
-Special quests from Bram and other NPCs; group/party system; the XP curve past 15 (levels 16-25 need 400-2100 kills
+The owner will define the real passive skills (the eight in `PASSIVES` are a placeholder set); monsters' elements do not change the damage they deal to you
+yet (a `hurtP` hook, same functions as `foeMult`); the `ELEM_WHEEL` order (fire > water > earth > air) is only used for display. Special quests from Bram and other NPCs; group/party system; the XP curve past 15 (levels 16-25 need 400-2100 kills
 each: tune `expToNext` / `xpFor` in `shared/balance.js`); animals in the vale; trading between players; more zones or a
 second boss; server-side anti-cheat for movement; villagers synced between players; mobile UI polish
 seen on a real device.

@@ -32,10 +32,10 @@ function startWS(){
   return new Promise((resolve,reject)=>{
     const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws');
     NET.ws=ws;
-    ws.onopen=()=>{ NET.send=msg=>{ if(ws.readyState===1) ws.send(JSON.stringify(msg)); }; netHello(); resolve(); };
-    ws.onmessage=e=>{ try{ netHandle(JSON.parse(e.data)); }catch(err){ console.error(err); } };
+    ws.onopen=()=>{ NET.send=msg=>{ if(ws.readyState===1) ws.send(JSON.stringify(msg)); else if(NET.ready) netDown(NET_LOST); }; netHello(); resolve(); };   // (a message to a closed socket used to vanish without a word)
+    ws.onmessage=e=>{ NET.lastMsg=performance.now(); try{ netHandle(JSON.parse(e.data)); }catch(err){ console.error(err); } };
     ws.onerror=()=>reject(new Error('Could not reach the world server.'));
-    ws.onclose=()=>{ if(NET.ready&&!NET.kicked){ NET.ready=false; netLost('Lost the connection to the world server. Reload the page to reconnect.'); } };
+    ws.onclose=()=>{ if(NET.ready&&!NET.kicked) netDown(NET_LOST); };
   });
 }
 /* ---- claude.ai shared room ---- */
@@ -124,3 +124,12 @@ function netReset(){
 }
 function status(text){ if(NET.onStatus) NET.onStatus(text); }
 function netLost(text){ toast(text,'bad'); status(text); }
+/* The connection to the Node server is gone (the socket closed) or the server stopped answering (no message for NET_STALL_MS: it sends 10 a second): from then on nothing
+   you do reaches it, so the game freezes and equipping, attacking or buying silently does nothing. A toast is not enough (it fades and the page still looks alive):
+   this puts up the same full-screen message as being kicked, with a Reconnect button (a reload: progress is kept on the server). */
+const NET_LOST='Lost the connection to the world server. It may have stopped or restarted: reconnect to carry on (your progress is kept on the server).', NET_STALL_MS=8000;
+function netDown(text){
+  if(NET.kicked) return;
+  NET.ready=false; NET.kicked=true; if(NET.ws) try{ NET.ws.close(); }catch(_){}
+  releasePointer(); $('#kicked').hidden=false; $('#kickedText').textContent=text;
+}

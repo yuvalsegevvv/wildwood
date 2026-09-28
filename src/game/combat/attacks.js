@@ -22,20 +22,21 @@ function doAttack(kind){
   const c=clsOf(), ab=abilityOf(c,kind,GEAR.skills,PL.level);
   if(!ab){ // the slot is locked or empty
     if(PL.level<slotLv(kind)){ toast('Your '+kind+' slot opens at level '+slotLv(kind),'bad'); UI_SFX.error(); }
-    else openSkills();
+    else openSkills(null,kind);
     return;
   }
   const tgtOK=CB.target&&!CB.target.dead&&Math.hypot(CB.target.x-P.x,CB.target.z-P.z)<=ab.range+3;
   if(!tgtOK){ const t2=pickTarget(Math.max(ab.range+2,8)); if(t2) CB.target=t2; }
   const [k,dur,hitAt]=ab.act;
   CB.act={kind:ANIM_OF[k]||k,sk:k,t:0,dur,hitAt,done:false,skill:kind==='skill'};
-  CB.cd[kind]=ab.cd*(kind==='basic'&&CB.buff?CB.buff.cd:1);
+  CB.cd[kind]=abilityCd(ab,GEAR.skills,PL.level)*(kind==='basic'&&CB.buff?CB.buff.cd:1);
   const T=CB.target;
   if(T && !T.dead && Math.hypot(T.x-P.x,T.z-P.z)<ab.range+6) P.face=Math.atan2(-(T.x-P.x),-(T.z-P.z));
   else P.face=P.yaw;
   const a=aimDir();
   netSend({t:'atk',k:kind,tg:T&&!T.dead?T.id:null,face:Math.round(P.face*1000)/1000,aim:[a.x,a.y,a.z].map(v=>Math.round(v*1000)/1000)});
   if(k==='charge') startCharge(T);
+  else if(ACT_SKILL[k]&&ACT_SKILL[k].fx&&ACT_SKILL[k].fx.dash) startCharge(T,ACT_SKILL[k].range,ACT_SKILL[k].fx.dash.ahead);
   if(k==='quake'||k==='inferno'||k==='bladestorm'||k==='berserk') cSfx.swing(true);
   if(k==='hail'||k==='snipe'||k==='focus') cSfx.draw();
   if(k==='shard'||k==='missiles'||k==='blizzard'||k==='surge') cSfx.charge(k!=='shard');
@@ -46,6 +47,7 @@ function doAttack(kind){
 // local swing visuals at the moment the blow lands (the damage itself comes from the server)
 function attackVisuals(a,who){
   const x=who?who.x:P.x, y=who?who.y:P.y, z=who?who.z:P.z, face=who?who.face:P.face, sc=who?who.scale:hiker.scale, mine=!who, k=a.sk||a.kind;
+  const gs=ACT_SKILL[k]; if(gs&&gs.fx){ fxVisuals(gs,x,y,z,face,sc,mine); return; }   // a skill with generic effects (the boss skills)
   if(k==='bash'){ spawnArcAt(x,y+0.9*sc,z,face); const fx=x-Math.sin(face)*1.6, fz=z-Math.cos(face)*1.6; spawnRingAt(fx,getH(fx,fz),fz,2.4,0xffe08a);
     if(mine&&SND.ready){ noiseHit({bus:'ui',filter:'lowpass',ff:420,dur:0.22,vol:0.3}); tone({bus:'ui',type:'triangle',freq:180,freq2:90,dur:0.2,vol:0.08}); } }
   else if(k==='charge'){ spawnRingAt(x,y,z,3.2,0xffc070); spawnBurst(new THREE.Vector3(x,y+0.3,z),0xd8b07a,1.2); if(mine){ cSfx.boom({x,z}); camShake=Math.max(camShake,0.3); } }
@@ -69,25 +71,32 @@ function spawnBurst(pos,color,size){
   mesh.position.copy(pos); scene.add(mesh);
   CB.fx.push({mesh,life:0.45,max:0.45,grow:size*3,own:true});
 }
-function spawnRingAt(x,y,z,radius,color){
+function spawnRingAt(x,y,z,radius,color,inward){   // inward: shrinks to the middle instead of growing (a pull)
   const mesh=new THREE.Mesh(new THREE.RingGeometry(0.8,1,48).rotateX(-Math.PI/2),fxMat(color,0.8));
   mesh.position.set(x,y+0.15,z); scene.add(mesh);
-  CB.fx.push({mesh,life:0.5,max:0.5,grow:radius,ring:true,own:true});
+  CB.fx.push({mesh,life:0.5,max:0.5,grow:radius,ring:true,own:true,inward:!!inward});
 }
 function spawnRing(radius,color,y){ spawnRingAt(P.x,y||P.y,P.z,radius,color); }
-function spawnArcAt(x,y,z,face){
-  const mesh=new THREE.Mesh(new THREE.RingGeometry(1.2,2.6,24,1,-Math.PI*0.35,Math.PI*0.7).rotateX(-Math.PI/2),fxMat(0xeef4ff,0.45));
-  mesh.position.set(x,y,z); mesh.rotation.y=face+Math.PI/2; scene.add(mesh);
+function spawnArcAt(x,y,z,face,col,size){   // col, size (x the normal reach): for skills with a longer reach or an element
+  const mesh=new THREE.Mesh(new THREE.RingGeometry(1.2,2.6,24,1,-Math.PI*0.35,Math.PI*0.7).rotateX(-Math.PI/2),fxMat(col||0xeef4ff,0.45));
+  mesh.position.set(x,y,z); mesh.rotation.y=face+Math.PI/2; if(size) mesh.scale.setScalar(size); scene.add(mesh);
   CB.fx.push({mesh,life:0.18,max:0.18,grow:0,own:true});
 }
 /* ---- server combat events ---- */
-function onMonDmg(id,v,crit,by){
+function onMonDmg(id,v,crit,by,fx){
   const m=MON_BY_ID.get(id); if(!m) return;
   m.flash=1; m.hp=Math.max(0,m.hp-v);
-  const c=monCenter(m); popText(c.x,c.y+m.T.height*0.5*m.s,c.z,String(v),crit?'crit':(by===NET.pid?'':'other'));
+  // your own hits show whether the element helped (an arrow up) or hurt (down): your soul and the monster's element
+  const mine=by===NET.pid&&fx, c=monCenter(m); popText(c.x,c.y+m.T.height*0.5*m.s,c.z,String(v)+(mine?(fx>0?'▲':'▼'):''),(crit?'crit':(by===NET.pid?'':'other'))+(mine?(fx>0?' up':' down'):''));
   if(by===NET.pid){ cSfx.hit(m,crit); if(!CB.target||CB.target.dead) CB.target=m; }
   else if(Math.random()<0.5) cSfx.hit(m,crit);
   if(Math.random()<0.4) monSound(m,'hurt');
+}
+// a monster left one of its materials for you (server event 'drop'): a small note floats up from it
+function onDrop(pid,mat,n,monId){
+  if(pid!==NET.pid||!MATS[mat]) return;
+  const m=MON_BY_ID.get(monId), c=m?monCenter(m):{x:P.x,y:P.y+1,z:P.z};
+  popText(c.x-0.4,c.y+(m?m.T.height*0.2*m.s:0),c.z,'+'+n+' '+MATS[mat].name,'drop'); UI_SFX.hover();
 }
 function onMonImmune(id){ const m=MON_BY_ID.get(id); if(!m) return; const c=monCenter(m); popText(c.x,c.y+m.T.height*0.3,c.z,'Immune','hurt'); }
 function onMonKill(id){
@@ -111,9 +120,12 @@ function onProj(id,kind,x,y,z,vx,vy,vz,tg){
   else if(kind==='missile'){ mesh=new THREE.Mesh(coreGeo,fxMat(0xd8b0ff,1)); mesh.scale.setScalar(1.6); mesh.add(new THREE.Mesh(boltGeo,fxMat(0x9a6aff,0.55))); }
   else if(kind==='snipe'){ mesh=arrowOf(); mesh.scale.setScalar(2.2); const glow=new THREE.Mesh(coreGeo,fxMat(0xfff0a0,0.9)); glow.scale.set(1.6,1.6,6); mesh.add(glow); }
   else if(kind==='pierce'){ mesh=arrowOf(); mesh.scale.setScalar(1.8); const glow=new THREE.Mesh(coreGeo,fxMat(0xbfe8ff,0.8)); glow.scale.set(1.2,1.2,4); mesh.add(glow); }
+  else if(kind==='spore'||kind==='ember'){ mesh=arrowOf(); mesh.scale.setScalar(1.3); const glow=new THREE.Mesh(coreGeo,fxMat(GEN_PROJ[kind],0.85)); glow.scale.set(1.5,1.5,kind==='ember'?5:3); mesh.add(glow); }
+  else if(kind==='thorn'){ mesh=new THREE.Mesh(shardGeo,fxMat(GEN_PROJ.thorn,0.95)); mesh.scale.setScalar(1.1); }
+  else if(kind==='spirit'){ mesh=new THREE.Mesh(coreGeo,fxMat(GEN_PROJ.spirit,1)); mesh.scale.setScalar(2.2); mesh.add(new THREE.Mesh(boltGeo,fxMat(0xffb060,0.5))); }
   else if(kind==='arrow') mesh=arrowOf(); else { mesh=new THREE.Mesh(boltGeo,boltMat); mesh.add(new THREE.Mesh(coreGeo,boltCore)); }
   scene.add(mesh);
-  CB.projs.push({id,kind,mesh,pos:new THREE.Vector3(x,y,z),vel:new THREE.Vector3(vx,vy,vz),target:tg!=null?MON_BY_ID.get(tg):null,life:2.2,turn:({arrow:10,shard:8,missile:9,snipe:14})[kind]||6,emberT:0});
+  CB.projs.push({id,kind,mesh,pos:new THREE.Vector3(x,y,z),vel:new THREE.Vector3(vx,vy,vz),target:tg!=null?MON_BY_ID.get(tg):null,life:2.2,turn:({arrow:10,shard:8,missile:9,snipe:14,spore:8,ember:9,spirit:9,thorn:0})[kind]||6,emberT:0});
 }
 function onProjEnd(id,x,y,z,hit){
   const i=CB.projs.findIndex(p=>p.id===id); if(i<0) return;
@@ -123,6 +135,9 @@ function onProjEnd(id,x,y,z,hit){
   else if(p.kind==='shard'){ spawnBurst(pos,0xbfe8ff,0.5); }
   else if(p.kind==='missile'){ spawnBurst(pos,0xb08aff,0.6); }
   else if(p.kind==='snipe'){ spawnBurst(pos,0xfff0a0,1.1); cSfx.boom(pos); }
+  else if(p.kind==='ember'){ spawnBurst(pos,0xff8a3a,1.1); spawnRingAt(pos.x,pos.y,pos.z,2.8,0xffa040); cSfx.boom(pos); }
+  else if(p.kind==='spore'){ spawnBurst(pos,GEN_PROJ.spore,0.8); spawnRingAt(pos.x,pos.y,pos.z,3.5,GEN_PROJ.spore); }
+  else if(p.kind==='thorn'||p.kind==='spirit'){ spawnBurst(pos,GEN_PROJ[p.kind],0.4); }
   else if(hit==null) cSfx.thunk(pos);
 }
 const _pv2=new THREE.Vector3();
@@ -146,13 +161,13 @@ function updateCombat(dt){
     if(p.kind==='pierce') p.pos.y=getH(p.pos.x,p.pos.z)+1.1;
     if(p.target && !p.target.dead && monCenter(p.target).distanceTo(p.pos)<0.5) p.pos.copy(monCenter(p.target));
     p.mesh.position.copy(p.pos);
-    if(p.kind==='arrow'||p.kind==='pierce'||p.kind==='snipe'||p.kind==='shard'){ _pv2.copy(p.pos).add(p.vel); p.mesh.lookAt(_pv2); }
+    if(p.kind==='arrow'||p.kind==='pierce'||p.kind==='snipe'||p.kind==='shard'||p.kind==='spore'||p.kind==='ember'||p.kind==='thorn'){ _pv2.copy(p.pos).add(p.vel); p.mesh.lookAt(_pv2); }
     else { p.mesh.scale.setScalar(1+Math.sin(t*30)*0.12); p.emberT-=dt; if(p.emberT<=0){ p.emberT=0.025; const e=new THREE.Mesh(emberGeo,emberMat); e.position.copy(p.pos); scene.add(e); CB.fx.push({mesh:e,life:0.35,max:0.35,shrink:true}); } }
   }
   for(let i=CB.fx.length-1;i>=0;i--){
     const f=CB.fx[i]; f.life-=dt; const k=1-f.life/f.max;
     if(f.shrink) f.mesh.scale.setScalar(Math.max(0.01,1-k));
-    else if(f.ring){ f.mesh.scale.setScalar(0.3+k*f.grow); f.mesh.material.opacity=0.8*(1-k); }
+    else if(f.ring){ f.mesh.scale.setScalar(f.inward?0.3+(1-k)*f.grow:0.3+k*f.grow); f.mesh.material.opacity=0.8*(1-k); }
     else if(f.grow){ f.mesh.scale.setScalar(0.3+k*f.grow); f.mesh.material.opacity=0.6*(1-k); }
     else f.mesh.material.opacity=0.45*(1-k);
     if(f.life<=0){ scene.remove(f.mesh); if(f.own){ f.mesh.geometry.dispose(); f.mesh.material.dispose(); } CB.fx.splice(i,1); }

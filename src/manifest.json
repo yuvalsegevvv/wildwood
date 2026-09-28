@@ -31,7 +31,9 @@
     "terrain-height.js",
     "balance.js",
     "monster-defs.js",
+    "elements.js",
     "classes.js",
+    "drops.js",
     "items.js",
     "quests.js"
   ],
@@ -102,6 +104,7 @@
     "economy/inventory.js",
     "economy/shops.js",
     "economy/forge.js",
+    "economy/soul.js",
     "economy/skills.js",
     "economy/quests.js",
     "ui/settings-testing.js",

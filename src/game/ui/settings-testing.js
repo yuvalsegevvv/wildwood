@@ -6,6 +6,8 @@ $('#tAll').addEventListener('click',()=>{ netSend({t:'dev',cmd:'giveAll'}); });
 function syncStartAll(){ $('#tStartAll').setAttribute('aria-pressed',!!GEAR.startAll); $('#tStartAll').textContent='Start with every item: '+(GEAR.startAll?'on':'off'); }
 $('#tStartAll').addEventListener('click',()=>{ GEAR.startAll=!GEAR.startAll; saveGear(); syncStartAll(); netSend({t:'dev',cmd:'startAll',v:GEAR.startAll}); });
 $('#tCoins').addEventListener('click',()=>{ netSend({t:'dev',cmd:'coins'}); });
+$('#tMats').addEventListener('click',()=>netSend({t:'dev',cmd:'mats'}));
+$('#tSkills').addEventListener('click',()=>netSend({t:'dev',cmd:'skills'}));
 $('#tThree').addEventListener('click',()=>{ netSend({t:'dev',cmd:'three'}); });
 $('#tRain').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'rain'}));
 $('#tStorm').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'storm'}));

@@ -1,6 +1,6 @@
 //@ Target frame, player bars, damage numbers, action bar, attack input
 /* combat interface: target frame, health bars, damage numbers, action buttons */
-const tframe=$('#tframe'), tName=$('#tName'), tLv=$('#tLv'), tBar=$('#tBar'), tHp=$('#tHp');
+const tframe=$('#tframe'), tName=$('#tName'), tLv=$('#tLv'), tEl=$('#tEl'), tBar=$('#tBar'), tHp=$('#tHp');
 const dmgPool=[], barPool=[];
 for(let i=0;i<20;i++){ const d=document.createElement('div'); d.className='dmg'; d.hidden=true; document.body.append(d); dmgPool.push({el:d,life:0}); }
 for(let i=0;i<10;i++){ const d=document.createElement('div'); d.className='hpb'; d.hidden=true; d.innerHTML='<i></i>'; document.body.append(d); barPool.push(d); }
@@ -29,14 +29,16 @@ function updateCombatUI(dt){
   }
   for(;bi<barPool.length;bi++) barPool[bi].hidden=true;
   const T=CB.target;
-  $('#plLv').textContent='Lv '+PL.level; $('#plHpT').textContent=Math.ceil(PL.hp)+' / '+PL.maxHp;
+  const soul=soulNow(); $('#plLv').textContent='Lv '+PL.level+(soul!=='basic'?' · '+ELEMS[soul].name:''); $('#plHpT').textContent=Math.ceil(PL.hp)+' / '+PL.maxHp;
   $('#plHp').style.width=(PL.hp/PL.maxHp*100)+'%'; const need=expToNext(PL.level);
   $('#plXp').style.width=Math.min(100,PL.exp/need*100)+'%'; $('#plXpT').textContent='XP '+Math.floor(PL.exp)+' / '+Math.ceil(need);
   const bossUI=updateBossUI();
-  if(T && started && !customizing && !(bossUI&&T===BOSS.m)){ tframe.hidden=false; tName.textContent=T.T.name; const ld=T.T.level-PL.level; tLv.textContent='Lv '+T.T.level+(ld>0?'  (-'+ld*5+'% dmg)':''); tLv.classList.toggle('bad',ld>0); tBar.style.width=(T.hp/T.maxHp*100)+'%'; tHp.textContent=Math.ceil(T.hp)+' / '+T.maxHp; }
+  if(T && started && !customizing && !(bossUI&&T===BOSS.m)){ tframe.hidden=false; tName.textContent=T.T.name; const ld=T.T.level-PL.level; tLv.textContent='Lv '+T.T.level+(ld>0?'  (-'+ld*5+'% dmg)':''); tLv.classList.toggle('bad',ld>0);
+    const te=elOf(T.T); tEl.textContent=te==='basic'?'':ELEMS[te].name; tEl.style.color=ELEMS[te].col; tEl.title=te==='basic'?'':ELEMS[te].name+': weak to '+ELEMS[ELEM_OPP[te]].name+', resists '+ELEMS[te].name;
+    tBar.style.width=(T.hp/T.maxHp*100)+'%'; tHp.textContent=Math.ceil(T.hp)+' / '+T.maxHp; }
   else tframe.hidden=true;
   const L=GEAR&&GEAR.skills, c=clsOf(), ba=abilityOf(c,'basic',L,PL.level), sk=abilityOf(c,'skill',L,PL.level), bu=abilityOf(c,'burst',L,PL.level);
-  abBasic.style.setProperty('--p',ba?CB.cd.basic/(ba.cd*(CB.buff?CB.buff.cd:1)):0); abSkill.style.setProperty('--p',sk?CB.cd.skill/sk.cd:0); abBurst.style.setProperty('--p',bu?CB.cd.burst/bu.cd:0);
+  abBasic.style.setProperty('--p',ba?CB.cd.basic/(abilityCd(ba,L,PL.level)*(CB.buff?CB.buff.cd:1)):0); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PL.level):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PL.level):0);
   abSkill.classList.toggle('ready',!!sk&&CB.cd.skill<=0); abBurst.classList.toggle('ready',!!bu&&CB.cd.burst<=0);
   abBasic.classList.toggle('buffed',!!CB.buff);
   const key=c+'|'+(ba?ba.id:'')+'|'+(sk?sk.id:'')+'|'+(bu?bu.id:'')+'|'+Math.min(PL.level,BURST_SLOT_LV); if(key!==abKey){ abKey=key; setActionBar(); }
@@ -67,7 +69,35 @@ const ICONS={
   "Hunter's Focus":'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   'Blizzard':'<path d="M12 2v20M4 6l16 12M4 18L20 6"/><circle cx="12" cy="12" r="3"/>',
   'Inferno':'<path d="M12 22c-5 0-8-3-8-7 0-4 4-6 4-10 3 2 4 5 4 7 1-2 1-4 0-6 4 2 8 6 8 9 0 4-3 7-8 7z"/>',
-  'Arcane Surge':'<path d="M12 2l3 7h7l-6 5 2 8-6-5-6 5 2-8-6-5h7z"/>'
+  'Arcane Surge':'<path d="M12 2l3 7h7l-6 5 2 8-6-5-6 5 2-8-6-5h7z"/>',
+  // boss skills
+  'Bramble Snare':'<path d="M4 12c4-6 12-6 16 0M4 12c4 6 12 6 16 0"/><path d="M8 8l-1-3M12 6V3M16 8l1-3M8 16l-1 3M12 18v3M16 16l1 3"/>',
+  'Lifesap Frenzy':'<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/><path d="M12 11v6M9 14h6"/>',
+  'Spore Arrow':'<path d="M4 20L16 8M16 8h-4M16 8v4"/><circle cx="18" cy="6" r="2"/><circle cx="21" cy="10" r="1.3"/><circle cx="14" cy="4.5" r="1.3"/>',
+  'Black Bloom':'<circle cx="12" cy="12" r="2.5"/><path d="M12 9.5C12 5 10 3 8 3c0 3 1 5 4 6.5zM14.5 12C19 12 21 10 21 8c-3 0-5 1-6.5 4zM12 14.5c0 4.5 2 6.5 4 6.5 0-3-1-5-4-6.5zM9.5 12C5 12 3 14 3 16c3 0 5-1 6.5-4z"/>',
+  'Thorn Shards':'<path d="M4 20L9 6l3 9zM12 20l3-14 3 11z"/><path d="M20 20l1-6"/>',
+  'Heartwood Drain':'<path d="M2 12h8"/><path d="M15 20s-5-3-5-7a3 3 0 0 1 5-2 3 3 0 0 1 5 2c0 4-5 7-5 7z"/>',
+  'Oni Cleave':'<path d="M4 20L18 4M8 20L20 8"/><path d="M15 3c1 2 3 3 3 5"/>',
+  'Kanabo Slam':'<path d="M5 19l9-9"/><path d="M13 5l6 6-3 3-6-6z"/><path d="M3 21h6"/>',
+  'Ember Shot':'<path d="M3 21L15 9M15 9h-4M15 9v4"/><path d="M19 3c1 2 3 2 3 5a3 3 0 0 1-6 0c0-1 1-1.5 1-3z"/>',
+  'Inferno Volley':'<path d="M3 20L12 11M8 21L17 12M3 14L9 8"/><path d="M17 3c1 2 4 3 4 6a3 3 0 0 1-6 0c0-2 2-3 2-6z"/>',
+  'Oni Gale':'<path d="M3 9h12a3 3 0 1 0-3-3M3 14h17a3 3 0 1 1-3 3M3 19h8"/>',
+  'Demon Gate':'<path d="M3 6h18M5 6v14M19 6v14M7 11h10M9 6V4M15 6V4"/>',
+  'Foxfire Riposte':'<path d="M5 19L17 5M9 20L21 8M4 14L12 5"/><path d="M19 2v3M17.5 3.5h3"/>',
+  'Dawn Guard':'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><circle cx="12" cy="11" r="2.5"/><path d="M12 5.5v1.5M12 15v1.5M6.5 11H8M16 11h1.5"/>',
+  'Radiant Lance':'<path d="M3 21L21 3"/><path d="M15 3h6v6"/><path d="M8 13l3 3M5 16l3 3"/>',
+  'Fox Spirit Barrage':'<circle cx="18" cy="6" r="2.2"/><circle cx="18" cy="17" r="2.2"/><circle cx="11" cy="12" r="2.2"/><path d="M3 12h6M3 5l13 1M3 19l13-1"/>',
+  'Spirit Chain':'<circle cx="6" cy="6" r="2.5"/><circle cx="12" cy="13" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M7.5 8l3 3M13.5 11l3-3M12 15.5V20"/>',
+  Tempest:'<path d="M12 12a2 2 0 1 1 2 2 5 5 0 1 1-5-5 8 8 0 1 1 8 8"/>',
+  // passives
+  Vitality:'<path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z"/>',
+  Ferocity:'<path d="M5 4l5 16M11 3l4 17M17 5l3 14"/>',
+  Precision:'<path d="M12 3l3 6 6 3-6 3-3 6-3-6-6-3 6-3z"/>',
+  'Iron Will':'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M12 8v8"/>',
+  Quickhands:'<path d="M5 6l6 6-6 6M12 6l6 6-6 6"/>',
+  Scavenger:'<path d="M12 3l7 6-7 12L5 9z"/><path d="M5 9h14M9 9l3 12M15 9l-3 12"/>',
+  Scholar:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M9 8h6M9 12h6"/>',
+  Resonance:'<circle cx="12" cy="12" r="2"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="10"/>'
 };
 const abBasic=$('#abBasic'), abSkill=$('#abSkill'), abBurst=$('#abBurst'); let abKey='';
 function burstSlot(){ doAttack('burst'); }
@@ -78,7 +108,8 @@ function setActionBar(){
   const fill=(el,slot,key)=>{ const a=abilityOf(c,slot,L,PL.level), locked=PL.level<slotLv(slot);
     el.querySelector('svg').innerHTML=ICONS[a?a.name:locked?'lock':'plus']||ICONS.burst;
     el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+slotLv(slot):(slot==='burst'?'Burst':'Skill');
-    el.classList.toggle('empty',!a); el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Burst':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };
+    el.classList.toggle('empty',!a); const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
+    el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Burst':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };
   fill(abBasic,'basic','F'); fill(abSkill,'skill','Q'); fill(abBurst,'burst','R');
 }
 const press=(el,fn)=>{ el.addEventListener('touchstart',e=>{ e.preventDefault(); fn(); },{passive:false}); el.addEventListener('click',fn); };

@@ -192,6 +192,9 @@ ability can be used. The first ability of each slot is free and equipped automat
 others are taught by Aldric, the trainer at the well. Only the mage can change its basic attack. Loadouts are kept
 per class, and each slot has one cooldown, so swapping doesn't skip it. Open the panel with K, the Skills button in
 the inventory, or by tapping an empty slot button. Keys: F basic, Q skill, R burst.
+The panel has the active slots and the passive slots on top (drop targets) and a tab below for each kind: 1 basic, 2 skill,
+3 burst and Passive. Drag a skill you own from the grid onto its slot to use it, drag it out of the slot to take it off (or
+tap it and use the Equip / Take off button); tap any skill for its details and its upgrade.
 
 | Class | Basic | Skill (level 3 / 3 / 6) | Burst (level 10 / 12 / 14) |
 |---|---|---|---|
@@ -204,6 +207,79 @@ level 10-15 monsters (and the boss) have 1.5x health and give 1.5x XP and coins 
 `src/shared/balance.js`); the level curve still uses the old XP, so level 15 -> 16 now takes about 333 kills.
 Definitions are `SKILLS` in `src/shared/classes.js`, effects in `src/server/combat.js`, visuals in
 `src/game/combat/skill-fx.js`.
+
+### Elements and your soul
+
+Every skill has an element (`el` on its row in `SKILLS`; Slash, Shoot and the three buffs have none = basic), and so does every
+monster (`el` in `src/shared/monster-defs.js`). The six elements are listed as a wheel, fire, water, earth, air, with dark and
+light as a pair; what counts are the opposites: **fire / water, earth / air, dark / light**.
+
+| Class | Skills by element |
+|---|---|
+| Warrior | air: Whirlwind · light: Shield Bash · fire: Charge · earth: Earthshatter · dark: Blade Storm |
+| Archer | air: Volley · earth: Piercing Shot · water: Arrow Rain · dark: Hail of Arrows · light: Sniper Shot |
+| Mage | fire: Firebolt, Inferno · water: Ice Shard, Frost Nova, Blizzard · dark: Arcane Missiles · air: Chain Lightning · earth: Meteor |
+
+- **Your soul.** From level 15, the shrine maiden Kaede at Hanami's raked garden binds your soul to an element. It is free and
+  you can change it as often as you like (a soul is `basic` until you do). Your skills of that element deal **x1.5**, skills of
+  its opposite deal **x1/1.5**, everything else is unchanged. The panel is `src/game/economy/soul.js`, the server rule is
+  `bindSoulP` (it checks the level and that you stand in Hanami).
+- **Monsters.** The opposite element hurts a monster **x1.5**, its own element only **x1/1.5**. Both effects stack. Your own
+  damage numbers get an arrow (up: the element helped, down: it hurt), the target frame shows the monster's element and what
+  it is weak to.
+- Change `ELEM_BOOST` (or the two functions `soulMult` / `foeMult`) in `src/shared/elements.js` to retune all of it.
+
+### Boss skills
+
+Each boss has its own set of skills that it drops (not sold, no upgrades yet): **every kill gives everyone who helped a 10% chance
+for each of its skills they do not own yet** (`BOSS_SKILL_CHANCE` in `src/shared/drops.js`). Each set has a skill (slot 2) and a burst
+(slot 3) for every class, and needs the boss's level. A drop shows a banner and appears in the Skills panel (tiles say "Boss" until you
+own them). They are the least used elements so far: light gets five, fire, earth, air and dark three each, water one, so every class
+now has all six elements.
+
+| Boss | Warrior | Archer | Mage |
+|---|---|---|---|
+| The Rootwarden (level 15) | Bramble Snare (earth, slot 2): pulls everything within 7 m to you and roots it. Lifesap Frenzy (water, 3): 10 s, +20% damage, basic 25% faster, heals you for 20% of your damage, element-less attacks count as water | Spore Arrow (air, 2): the arrow bursts into a slowing, hurting spore cloud. Black Bloom (dark, 3): 4.5 s of thorns that pull enemies into the middle | Thorn Shards (earth, 2): 5 shards in a fan. Heartwood Drain (dark, 3): a 22 m beam, 3 hits, heals you for 35% of the damage |
+| Akaoni (level 20) | Oni Cleave (fire, 2): a double swing that sets enemies on fire. Kanabo Slam (earth, 3): leap 12 m, slam, knock back and stun | Ember Shot (fire, 2): an exploding, burning arrow. Inferno Volley (fire, 3): 5 exploding arrows | Oni Gale (air, 2): a wide gust that blows enemies back and slows them. Demon Gate (dark, 3): after 1.6 s a huge hit and a stun over 8 m |
+| Kyuubi (level 25) | Foxfire Riposte (light, 2): 3 quick strikes. Dawn Guard (light, 3): 8 s, 40% less damage taken, heals 3% a second, element-less attacks count as light | Radiant Lance (light, 2): a 40 m beam through everything. Fox Spirit Barrage (light, 3): 7 homing spirits | Spirit Chain (light, 2): jumps to 6 more enemies. Tempest (air, 3): a storm that follows you for 6 s |
+
+Each of them is one row of `SKILLS` in `src/shared/classes.js` with `drop:'<boss id>'` and an `fx` entry that says what it does (ring, cone,
+beam, chain, proj, zone, dash, buff: the list is in the comment above `resolveFxS` in `src/server/combat.js`); the client draws from the same
+entry (`fxVisuals` in `src/game/combat/skill-fx.js`, in the colour of the element). New statuses: burning (a share of the hit again every
+second, orange glow on the monster), pulling (negative knockback), and the buffs' `red` / `steal` / `regen` / `el`.
+
+### Upgrading skills and monster drops
+
+Every monster kind drops its own material (Slime Goo, Boar Tusk, ...; `MATS` in `src/shared/drops.js`) with a 35% chance per kill
+(sometimes two); a boss always drops 3 of its trophy. They are kept in `gear.mats` (up to 999 each), listed in the inventory, and
+used for nothing else. A skill or passive has 5 levels. Each level adds 12% damage (a buff's bonus grows the same way and lasts
+0.5 s longer) and shortens the cooldown by 3%. Going up a level costs coins and drops, at Aldric or Master Ryu:
+
+| To level | Coins (skill / burst) | Drops |
+|---|---|---|
+| 2 / 3 / 4 / 5 | 240 / 780 / 1550 / 2530 (burst: 600 / 1950 / 3880 / 6330) | 4 / 6 / 9 / 14 of a monster kind at level `skill level + 2 x (steps)`; level 5 also 2 boss trophies |
+
+`upgradeNeeds()` in `src/shared/drops.js` works the numbers out (a skill can list its own prices with `up:`); the server action is
+`upgradeSkillP`. Higher levels send you deeper: bursts and passives need the Sakura Vale's monsters and bosses.
+
+### Passive skills (level 18)
+
+One loadout of 3 passive slots that every class shares, opened at level 18 with Vitality (free) in the first slot. **Only the first slot
+can be used for now: slots 2 and 3 are shown locked ("Unlocks later")** and unlock later (`PASSIVE_OPEN` in `src/shared/classes.js`; a save
+that had passives in a locked slot keeps the first one, moved up). The other passives are taught by the trainers (1500-4500 coins) and
+upgraded like any skill. This is a first set to be replaced or extended: `PASSIVES` in
+`src/shared/classes.js`, one row each, and the server reads them with `passiveSum()`.
+
+| Passive | Level | Effect at level 1 (+ per level) |
+|---|---|---|
+| Vitality | 18 | +6% maximum health (+2%) |
+| Ferocity | 18 | +5% damage (+2%) |
+| Precision | 19 | +4% critical hit chance (+1.5%) |
+| Iron Will | 20 | 5% less damage taken (+1.5%) |
+| Quickhands | 21 | 6% shorter cooldowns (+2%) |
+| Scavenger | 22 | +15% chance of monster drops (+5%) |
+| Scholar | 23 | +5% XP from kills (+2%) |
+| Resonance | 24 | soul element skills deal +5% more damage (+3%) |
 
 ## The quest board
 

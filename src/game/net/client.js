@@ -27,7 +27,7 @@ function netHandle(msg){
   }
 }
 function onWelcome(msg){
-  NET.pid=msg.pid; NET.dev=msg.dev; NET.ready=true;
+  NET.pid=msg.pid; NET.dev=msg.dev; NET.ready=true; NET.lastMsg=performance.now();
   adoptLook(msg.look);
   clearMonViews(); clearRemotes(); clearBossVisuals(); CB.projs.forEach(p=>scene.remove(p.mesh)); CB.projs.length=0; CB.target=null;
   (msg.players||[]).forEach(remoteAdd);
@@ -54,7 +54,7 @@ function applyPlayers(pl,n){
 function applyEvent(e){
   const me=NET.pid;
   switch(e[0]){
-    case 'dmg': onMonDmg(e[1],e[2],e[3],e[4]); break;
+    case 'dmg': onMonDmg(e[1],e[2],e[3],e[4],e[5]); break;
     case 'imm': onMonImmune(e[1]); break;
     case 'kill': onMonKill(e[1],e[2]); break;
     case 'mact': onMonAct(e[1],e[2]); break;
@@ -71,12 +71,16 @@ function applyEvent(e){
     case 'vale': if(e[1]===me) onValeStep(e[2]); break;
     case 'thunder': onThunder(e[1],e[2]); break;
     case 'weather': if(!e[1]&&WX.kind&&started) toast('The rain is easing off.',''); break;
-    case 'area': onArea(e[1],e[2],e[3],e[4],e[5],e[6],e[7]); break;
+    case 'area': onArea(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8],e[9]); break;
     case 'buff': onBuff(e[1],e[2],e[3]); break;
     case 'aend': onAreaEnd(e[1]); break;
-    case 'chain': onChain(e[1]); break;
-    case 'skillslot': if(e[1]===me){ UI_SFX.success(); flashSkillSlot(e[2]); } break;
-    case 'skillbuy': if(e[1]===me) UI_SFX.success(); break;
+    case 'chain': onChain(e[1],e[2]); break;
+    case 'beam': onBeam(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8]); break;
+    case 'skilldrop': if(e[1]===me) onSkillDrop(e[2]); break;
+    case 'skillslot': if(e[1]===me){ UI_SFX.success(); if(e[2]!=='passive') flashSkillSlot(e[2]); } break;
+    case 'skillbuy': case 'skillup': if(e[1]===me) UI_SFX.success(); break;
+    case 'soul': if(e[1]===me){ UI_SFX.success(); spawnRing(2.2,parseInt(ELEMS[e[2]].col.slice(1),16),P.y+0.2); } break;
+    case 'drop': onDrop(e[1],e[2],e[3],e[4]); break;
     case 'xp': if(e[1]===me){ const m=e[3]!=null?MON_BY_ID.get(e[3]):null; if(m){ const c=monCenter(m); popText(c.x,c.y+m.T.height*0.6,c.z,'+'+e[2].toFixed(1)+' XP','xp'); } } break;
     case 'coins': if(e[1]===me){ const m=MON_BY_ID.get(e[3]); if(m){ const c=monCenter(m); popText(c.x+0.4,c.y+m.T.height*0.35,c.z,'+'+e[2]+' coins','coin'); } } break;
     case 'loot': onLoot(e[1],e[2],e[3]); break;
@@ -114,6 +118,8 @@ function onLoot(pid,id,monId){
 let posT=0, lookT=0, lookDirty=false;
 function netTick(dt){
   if(!NET.ready) return;
+  // a server that stopped answering (a closed socket is caught by onclose); after a long frame gap (a tab that was asleep) give it time to deliver what it sent
+  if(NET.mode==='ws'&&started){ if(dt>1.5) NET.lastMsg=performance.now(); else if(performance.now()-NET.lastMsg>NET_STALL_MS){ netDown('The world server stopped answering. Reconnect to carry on (your progress is kept on the server).'); return; } }
   if(lookDirty){ lookT-=dt; if(lookT<=0){ lookDirty=false; netSend({t:'look',look:LOOK}); } }   // also while creating a hiker, before the game starts
   if(!started) return;
   posT-=dt;

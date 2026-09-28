@@ -1,8 +1,14 @@
-//@ Economy on the server: equip, shops (buy / sell), loot, quests (accept, progress, hand in), testing commands
+//@ Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), the soul shrine, testing commands
 function addItemP(p,id,quiet,monId){
   if(p.gear.inv.length>=BAG_MAX){ toastTo(p.id,'Your bag is full','bad'); return; }
   p.gear.inv.push(id); p.dirty=true;
   if(!quiet){ const it=ITEM[id]; ev('loot',p.id,id,monId==null?null:monId); toastTo(p.id,'Found: '+it.name,'loot r'+it.rar); }
+}
+// a monster's material (drops.js): kept in gear.mats, only used to upgrade skills
+function addMatP(p,id,n,monId){
+  if(!MATS[id]||!(n>0)) return;
+  const have=p.gear.mats[id]||0, add=Math.min(n,MAT_MAX-have); if(add<=0) return;
+  p.gear.mats[id]=have+add; p.dirty=true; ev('drop',p.id,id,add,monId==null?null:monId);
 }
 const unwornCount=(p,id)=>p.gear.inv.filter(x=>x===id).length-Object.values(p.gear.eq).filter(x=>x===id).length;
 // Greta's forge: three identical items (not the ones you wear) become one of the next rarity
@@ -67,19 +73,54 @@ function turnInP(p,id){
   const rar=rollQuestItemRarity(r.item); if(rar>=0) addItemP(p,randomItem(tierFor(q.level),rar));
   ev('qturn',p.id,id); p.dirty=true;
 }
-/* ---- skills: bought from Aldric the trainer, equipped per class ---- */
+/* ---- skills: bought from Aldric the trainer, equipped per class (passives: one loadout for every class), upgraded with coins and drops ---- */
 function buySkillP(p,id){
-  const s=SKILLS[id]; if(!s||p.gear.skills.owned.includes(id)) return;
+  const s=skillDef(id); if(!s||p.gear.skills.owned.includes(id)) return;
+  if(s.drop){ toastTo(p.id,s.name+' is not for sale: '+BOSS_DEFS.find(b=>b.def.id===s.drop).short+' drops it','bad'); return; }
   if(p.level<s.lv){ toastTo(p.id,s.name+' needs level '+s.lv,'bad'); return; }
   if(p.gear.coins<s.price){ toastTo(p.id,'Not enough coins','bad'); return; }
   p.gear.coins-=s.price; p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Learned '+s.name+'!','good'); ev('skillbuy',p.id,id);
 }
-function equipSkillP(p,id){
-  const s=SKILLS[id]; if(!s||!p.gear.skills.owned.includes(id)||!canSwap(s.cls,s.slot)) return;
+// a passive goes into slot idx of the passive loadout (or the first free open one, or nowhere when they are all full); slots from PASSIVE_OPEN on are locked for now
+function equipPassiveP(p,id,idx){
+  const P=p.gear.skills.pass, need=Math.max(PASSIVE_LV,PASSIVES[id].lv);
+  if(p.level<need){ toastTo(p.id,PASSIVES[id].name+' needs level '+need,'bad'); return; }
+  if(idx>=PASSIVE_OPEN){ toastTo(p.id,'Passive slot '+(idx+1)+' is locked for now','bad'); return; }
+  const at=idx>=0?idx:P.slice(0,PASSIVE_OPEN).indexOf(null); if(at<0){ toastTo(p.id,'The passive slot is full: drop it onto the slot to replace it','bad'); return; }
+  const was=P.indexOf(id); if(was>=0) P[was]=null; P[at]=id; recalcP(p); p.dirty=true;
+}
+function equipSkillP(p,id,idx){
+  const s=skillDef(id); if(!s||!p.gear.skills.owned.includes(id)) return;
+  if(s.slot==='passive'){ equipPassiveP(p,id,clampInt(idx,0,PASSIVE_SLOTS-1,-1)); return; }
+  if(!canSwap(s.cls,s.slot)) return;
   const need=Math.max(slotLv(s.slot),s.lv); if(p.level<need){ toastTo(p.id,s.name+' needs level '+need,'bad'); return; }
   p.gear.skills.eq[s.cls][s.slot]=id; p.dirty=true;
 }
-function unequipSkillP(p,cls,slot){ const e=p.gear.skills.eq[cls]; if(e&&(slot==='skill'||slot==='burst')){ e[slot]=null; p.dirty=true; } }
+function unequipSkillP(p,cls,slot,idx){
+  if(slot==='pass'){ const P=p.gear.skills.pass, i=clampInt(idx,0,PASSIVE_SLOTS-1,-1); if(i>=0&&P[i]){ P[i]=null; recalcP(p); p.dirty=true; } return; }
+  const e=p.gear.skills.eq[cls]; if(e&&(slot==='skill'||slot==='burst')){ e[slot]=null; p.dirty=true; }
+}
+// level up a skill or passive you own: coins and monster drops (upgradeNeeds), at the trainer in either village
+function upgradeSkillP(p,id){
+  const s=skillDef(id), S=p.gear.skills; if(!s||!S.owned.includes(id)) return;
+  if(s.drop){ toastTo(p.id,s.name+' cannot be upgraded yet','bad'); return; }
+  if(!inVillage(p)){ toastTo(p.id,'Skills are upgraded by a trainer: Aldric at the well (or Master Ryu in Hanami)','bad'); return; }
+  const to=skillLvOf(S,id)+1; if(to>SKILL_MAX_LV){ toastTo(p.id,s.name+' is already at its highest level','bad'); return; }
+  const need=upgradeNeeds(id,to), lack=need.mats.find(m=>(p.gear.mats[m.id]||0)<m.n);
+  if(p.gear.coins<need.coins){ toastTo(p.id,'Not enough coins','bad'); return; }
+  if(lack){ toastTo(p.id,'You need '+lack.n+' '+MATS[lack.id].name,'bad'); return; }
+  p.gear.coins-=need.coins;
+  for(const m of need.mats){ const left=(p.gear.mats[m.id]||0)-m.n; if(left>0) p.gear.mats[m.id]=left; else delete p.gear.mats[m.id]; }
+  S.lv[id]=to; recalcP(p); p.dirty=true; toastTo(p.id,s.name+' is now level '+to,'good'); ev('skillup',p.id,id,to);
+}
+// the soul shrine in Hanami (level SOUL_LV): bind your soul to an element, free and as often as you like ('basic' unbinds it)
+function bindSoulP(p,el){
+  if(!ELEMS[el]||p.dead) return;
+  if(p.level<SOUL_LV){ toastTo(p.id,'The shrine answers only hikers of level '+SOUL_LV+' and above','bad'); return; }
+  if(Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14){ toastTo(p.id,'The soul shrine is in Hanami, beyond the eastern mountains','bad'); return; }
+  if(p.gear.soul===el) return;
+  p.gear.soul=el; p.dirty=true; toastTo(p.id,el==='basic'?'Your soul is unbound':'Your soul is bound to '+ELEMS[el].name,'good'); ev('soul',p.id,el);
+}
 /* ---- chat and names ---- */
 // chat: up to 160 characters, at most one message every 0.7 s per player; everyone in the world hears it
 function chatP(p,text){
@@ -97,7 +138,7 @@ function renameP(p,name){
 // jump straight to a level (testing tools, account gifts): opens the skill slots passed on the way
 function setLevelP(p,lv){
   const was=p.level; p.level=clampInt(lv,1,50,1); p.exp=0; recalcP(p); p.hp=p.maxHp; refreshOffersP(p);
-  if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst');
+  if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(was<PASSIVE_LV&&p.level>=PASSIVE_LV) unlockPassivesP(p);
   p.dirty=true; ev('lvset',p.id,p.level);
 }
 // testing tools (settings panel); allowed when the server runs in dev mode (solo, shared room, or node --dev)
@@ -107,7 +148,8 @@ function devP(p,msg){
   if(c==='level') setLevelP(p,msg.v);
   else if(c==='giveAll'){ giveAllP(p); toastTo(p.id,'Every item added to your bag','good'); }
   else if(c==='startAll'){ p.gear.startAll=!!msg.v; if(p.gear.startAll) giveAllP(p); p.dirty=true; }
-  else if(c==='skills'){ for(const id of SKILL_IDS) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Every skill learned','good'); }
+  else if(c==='skills'){ for(const id of [...SKILL_IDS,...PASSIVE_IDS]) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Every skill and passive learned','good'); }
+  else if(c==='mats'){ for(const id of MAT_IDS) addMatP(p,id,20); toastTo(p.id,'20 of every monster drop added','good'); }
   else if(c==='weather'){ const k={clear:0,rain:1,storm:2}[msg.v]; if(k===0){ W.kind=0; W.t=0; W.dur=0; ev('weather',0); } else if(k) startWeatherS(k); }
   else if(c==='coins'){ p.gear.coins+=1000; p.dirty=true; }
   else if(c==='vale'){ const v=clampInt(msg.v,0,2,1); if(v>=1) openValeP(p); if(v>=2){ p.gear.east=2; ev('vale',p.id,2); } if(v===0) p.gear.east=0; p.dirty=true; }

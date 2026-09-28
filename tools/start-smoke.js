@@ -5,7 +5,7 @@ const {bootClient,memoryAccounts}=require('./headless');
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const until=async(f,ms)=>{ for(let t=0;t<(ms||8000);t+=20){ if(f()) return true; await wait(20); } return false; };
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
-const EXPOSE=['NET','started:()=>started','customizing:()=>customizing','creating:()=>creating','canStart:()=>canStart','clsOf','setLook','LOOK:()=>LOOK','edTab:()=>edTab','EDIT'];
+const EXPOSE=['NET','netTick','started:()=>started','customizing:()=>customizing','creating:()=>creating','canStart:()=>canStart','clsOf','setLook','LOOK:()=>LOOK','edTab:()=>edTab','EDIT'];
 const find=(e,f)=>{ if(f(e)) return e; for(const k of e._kids||[]){ const r=find(k,f); if(r) return r; } return null; };
 function fill(c,user,pass,pass2){ c.el('#stUser').value=user; c.el('#stPass').value=pass; c.el('#stPass2').value=pass2===undefined?'':pass2; c.el('#stForm').requestSubmit(); }
 async function boot(o){ const c=bootClient(Object.assign({online:true,expose:EXPOSE},o)); await until(()=>c.G().canStart()); return c; }
@@ -20,6 +20,16 @@ async function boot(o){ const c=bootClient(Object.assign({online:true,expose:EXP
   ok('the guest and submit buttons wait for the world',c.el('#stGuest').disabled===false&&c.el('#stSubmit').disabled===false);
   c.el('#stGuest').click();
   ok('Play as guest starts the game as a guest',await until(()=>c.G().started())&&!c.G().NET.user&&c.G().NET.mode==='ws');
+  // the server stops answering (no message for 8 s): a message that stays, with a Reconnect button, instead of a frozen game that ignores everything
+  G=c.G(); ok('while the server answers there is no such message',c.el('#kicked').hidden!==false);
+  G.NET.lastMsg=performance.now()-20000; G.netTick(0.016);
+  ok('a server that stopped answering puts up a Reconnect message that stays',c.el('#kicked').hidden===false&&/stopped answering/.test(c.el('#kickedText').textContent)&&!c.G().NET.ready);
+  c.stop();
+  // the connection is closed (the server was stopped or restarted)
+  c=await boot({accounts}); c.el('#stGuest').click(); await until(()=>c.G().started()); G=c.G();
+  ok('the game is running before the connection drops',G.NET.ready&&c.el('#kicked').hidden!==false);
+  G.NET.ws.close();
+  ok('a closed connection puts up the Reconnect message at once (it was only a toast that faded)',c.el('#kicked').hidden===false&&/Lost the connection/.test(c.el('#kickedText').textContent)&&!c.G().NET.ready);
   c.stop();
 
   // 2. login errors, registration errors, then a new account: the editor opens on the Class tab and the class can be clicked
