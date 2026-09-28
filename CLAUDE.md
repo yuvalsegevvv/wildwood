@@ -6,7 +6,8 @@ Read this file first. It is written so you can work on the game **without readin
 Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an authoritative world server
 that runs in the browser tab (solo / shared room) or in Node (the deployed MMO), procedural 880 m forest,
 village with NPCs, 451 monsters in 16 zones, a boss, 3 classes with equippable skills, 140 items in 5
-rarities, a forge, a quest board, weather, chat, server-side saves.
+rarities, a forge, a quest board, weather, chat, server-side saves in a Postgres database (Neon), player
+accounts (guest or name + password).
 
 - Repository: https://github.com/yuvalsegevvv/wildwood (Render deploys every push to `main`).
 - The owner also playtests a single-file build published as a claude.ai artifact (Claude app on a phone).
@@ -56,7 +57,7 @@ The two scopes never see each other; they talk only through JSON messages. Conse
 |---|---|---|
 | Solo | the player's own tab (`createWorldServer` in the page) | browser localStorage |
 | Shared | one elected player's tab (claude.ai `room` capability, topics `c`/`s`, 4 KB messages) | browser |
-| This server | Node (`dist/wildwood-server.js`), the Render deploy | server: files or Postgres |
+| This server | Node (`dist/wildwood-server.js`), the Render deploy | server: Postgres (Neon) in production, files locally |
 
 **Who owns what**: the server owns monsters, combat results, HP, XP, levels, coins, items, quests,
 skills loadout, the clock and the weather. The client owns rendering, its own movement (sent 10×/s),
@@ -159,9 +160,38 @@ outputs folder and publish it to the same link, https://claude.ai/artifact/VCvNo
 
 `render.yaml`: build `npm install --omit=dev ... && python3 build.py`, start
 `node dist/wildwood-server.js --no-dev` (testing tools off for players), health check `/healthz`.
-Saves: set `DATABASE_URL` (Postgres, table `wildwood_players` created automatically) or a persistent disk
-(`DATA_DIR`). Without either, Render wipes files on deploy/restart and saves are rebuilt from each
-browser's copy. `GET /status` shows players, monsters and which storage is used. `dist/` is not committed.
+Live at https://wildwood-wib9.onrender.com (service `wildwood`, free plan: sleeps after 15 min idle, ~30-50 s
+to wake). `dist/` is not committed. `GET /status` shows players, monsters, storage kind (`"saves":"postgres"`
+when the database is connected) and the number of saved accounts.
+
+**Database (exists, in use).** A free **Neon** Postgres (neon.tech, project `wildwood`, branch `production`,
+database `neondb`, free tier: 0.5 GB, no expiry, compute sleeps after 5 min idle and wakes in ~1 s). Render's
+env var `DATABASE_URL` holds its connection string (the secret lives only in Render and Neon, never in the
+repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
+`wildwood_players(id text PRIMARY KEY, data jsonb, updated_at timestamptz)`.
+- `id` = sha256 of `'wildwood:'+key` (first 40 hex): key is the guest's browser account code, or
+  `'user:'+lowercase name` for a registered account (so a name maps to one row: that is the uniqueness).
+- `data` = `{v,name,look,level,exp,gear,updated}`, plus `auth:{user, pass:'salt:scrypt-hash', tokens:[sha256 of
+  session tokens, last 5]}` for registered accounts, or `{movedTo:name}` for a guest code that registered.
+- Neon's SQL Editor can inspect or fix rows (e.g. a forgotten password: there is no email, so no reset;
+  the owner would clear `data->'auth'` tokens or set a new hash by hand).
+- The pool is built for a sleeping free database: `'error'` listener (a dropped idle connection must not
+  crash the server), 60 s idle close, 15 s connect timeout, table creation retried on the next query.
+- Without `DATABASE_URL`, saves go to JSON files in `DATA_DIR` (default `./data`), which Render wipes on
+  every deploy/restart. Don't use Render's own free Postgres: it is deleted after 30 days.
+
+**Accounts** (`server/accounts.js`, client `game/ui/account.js`, only in "This server" mode):
+- Guest = progress under the browser's secret account code (every player from before accounts is a guest
+  with their old progress). Log in = name + password; the browser then keeps a session token
+  (`wildwood-session`) and logs in with it next time. Guests register in Settings → Account; their progress
+  moves to the account and the guest record becomes `{movedTo}` (can't be replayed as a second copy).
+- Names are unique (case-insensitive): registered names can't be taken or renamed; a guest whose name is
+  taken (registered or online) gets a number added. Registered names are loaded at start (`store.users()`).
+- Passwords: scrypt in `AUTH` (`node/main.js`), 6-100 chars; 5 wrong tries lock that account for 1 minute.
+- `GIFT_LEVELS` in `accounts.js`: restores a level on register/login (`hayru: 9`, a friend who lost progress).
+- While logged in, the client does not write its local save (`saveGear`/`saveProgress`), so a guest on
+  the same browser can't inherit the account's progress.
+- Test: `node tools/accounts-smoke.js` (in-memory store, 15 checks).
 
 ## 8. Pitfalls already hit (don't repeat them)
 
@@ -180,6 +210,11 @@ browser's copy. `GET /status` shows players, monsters and which storage is used.
   smooth `noise2` tint in `pc`. Don't reintroduce any of them on characters.
 - Skill cooldowns are per slot on the server, so swapping skills doesn't reset them (tests must reset
   `p.cd` directly).
+- `npm install` inside the OneDrive folder may fail to install the optional `pg` and strip it from
+  `package-lock.json`: restore the lockfile (`git checkout package-lock.json`); for a local Postgres test
+  install `pg` in a temp folder and run the server with `NODE_PATH` pointing there.
+- The built-in browser pane throttles timers when hidden: the start screen can sit on "Shaping the hills…"
+  until it is visible (take a screenshot) before `#go` enables.
 - The Shared (room) mode is only testable against the mock in `tools/`-style harnesses; the host tab
   must stay visible (browser timers throttle in background tabs).
 
