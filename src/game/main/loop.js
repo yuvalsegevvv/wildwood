@@ -13,13 +13,16 @@ function onStreamProgress(){
     if(Stream.needed.size===0){
       canStart=true;
       barEl.style.width='100%';
-      statusEl.textContent=Stream.done<NCH?'Ready. The rest of the forest keeps growing while you walk.':'The forest is ready.';
+      statusEl.textContent=growLeft()?'Ready. The rest of the forest keeps growing while you walk.':'The forest is ready.';
       $('#go').disabled=false; $('#custom').disabled=false; $('#go').focus({preventScroll:true});
     }
   }
-  if(Stream.done<NCH){ growEl.textContent='Growing distant areas: '+Stream.done+' of '+NCH; growEl.hidden=false; }
+  const left=growLeft();
+  if(left){ growEl.textContent='Growing distant areas: '+left+' left'; growEl.hidden=false; }
   else growEl.hidden=true;
 }
+// chunks still to grow within reach (the far side of the mountains grows only when you get there)
+function growLeft(){ return Stream.pending.filter(i=>distToChunk(i,P.x,P.z)<=FAR_R).length+(Stream.job&&Stream.job.kind==='c'?1:0); }
 function frame(){
   requestAnimationFrame(frame);
   const dt=Math.min(clock.getDelta(),0.05);
@@ -34,9 +37,9 @@ function frame(){
     if(started && !customizing && !PL.dead) updatePlayer(dt);
     else if(!started && !customizing) P.yaw+=dt*0.04;
     animateHiker(dt);
-    updateMotes(dt,t);
+    updateMotes(dt,t); updatePetals(dt,t);
     updateAnimals(dt);
-    updateVillage(dt);
+    updateVillage(dt); updateVale(dt);
     updateNPCs(dt);
     updateNpcLabels();
     updateRemotes(dt);

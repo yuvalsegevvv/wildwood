@@ -20,21 +20,24 @@ function findVillage(){
   }
   return best||{x:0,z:0,h:6};
 }
-function layoutVillage(){
-  const v=findVillage();
+// v = {x,z,h} from findVillage; o.seed shapes the houses, o.ent forces the side the road comes in from (Hanami faces its tunnel)
+function layoutVillage(v,o){
+  o=o||{};
   const V={x:v.x,z:v.z,h:v.h,r:VR,plaza:9.5,houses:[],stalls:[],lamps:[],benches:[],barrels:[],crates:[],anchors:{},pois:[],paths:[],boxes:[],circles:[]};
-  const vr=mulberry32(4242), vR=(a,b)=>a+(b-a)*vr();
+  const vr=mulberry32(o.seed||4242), vR=(a,b)=>a+(b-a)*vr();
   const at=(a,r)=>[V.x+Math.sin(a)*r, V.z+Math.cos(a)*r];
   const anchor=(name,p,face,poi)=>{ const o={x:p[0],z:p[1],face}; V.anchors[name]=o; if(poi) V.pois.push(o); return o; };
   // the entrance faces the side whose outskirts sit closest to the village's height
-  let ent=0,bestE=1e9;
-  for(let k=0;k<16;k++){
+  let ent=o.ent||0,bestE=o.ent!==undefined?-1:1e9;
+  for(let k=0;k<16&&bestE>=0;k++){
     const a=k/16*TAU, p=at(a,VR+16), h=baseHeight(p[0],p[1]);
     let e=Math.abs(h-V.h); if(h<1.5) e+=50; if(riverDist(p[0],p[1])<10) e+=50;
     if(e<bestE){ bestE=e; ent=a; }
   }
   V.ent=ent;
   const sp=at(ent,VR+15); V.spawn={x:sp[0],z:sp[1]};
+  // the teleport circle, just outside the houses beside the road in (see shared/vale.js)
+  { const tp=at(ent-0.5,31); V.tele={x:tp[0],z:tp[1],r:2.4}; }
   // houses around a ring, doors facing the plaza
   const N=9, a0=ent+0.62, step=(TAU-1.24)/(N-1);
   const plasters=[0xe8e0cc,0xd9cdb0,0xcfc2a4,0xe2d6c0,0xd6c7b2], roofs=[0x8e6c3e,0x7d5c34,0x6a4a3a,0x5a4a4a,0x7a5040], accents=[0x3d5a3a,0x2f4a6b,0x8a2f2f,0x6b5a2e,0x4a5a6a];
@@ -106,5 +109,4 @@ function segDist(px,pz,s){
   const t=clamp(((px-ax)*vx+(pz-az)*vz)/l2);
   return Math.hypot(px-(ax+vx*t),pz-(az+vz*t));
 }
-const VIL=layoutVillage();
-// the boss arena: a flat clearing ringed by standing stones near the edge of the world
+const VIL=layoutVillage(findVillage(),{seed:4242});

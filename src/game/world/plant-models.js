@@ -170,3 +170,20 @@ function makeReeds(){
   return merge(parts);
 }
 
+/* the Sakura Vale's plants: a wide, flat-crowned cherry on a leaning trunk; a clump of bamboo */
+function makeSakura(){
+  const t=makeBroadleaf({trunkH:3.0, tr:0.34, crownY:4.6, rMain:2.1, blobs:7, spread:2.5, sy:0.55, branches:5, bark:0x4a3434});
+  // lean the whole tree a little and flatten the underside of the crown
+  const lean=g=>{ const p=g.attributes.position; for(let i=0;i<p.count;i++){ const y=p.getY(i); p.setX(i,p.getX(i)+y*y*0.018); } return g; };
+  return {trunk:lean(t.trunk), leaves:lean(t.leaves)};
+}
+function makeBamboo(){
+  const parts=[], leaves=[], C=new THREE.Vector3(0,7,0);
+  for(let k=0;k<7;k++){
+    const a=k/7*TAU+rand(), r=k?R(0.25,0.7):0, x=Math.cos(a)*r, z=Math.sin(a)*r, h=R(6.5,10), rr=R(0.055,0.08), tilt=R(-0.06,0.06);
+    const g=cyl(rr*0.8,rr,h,6,Math.round(h/0.9)).translate(0,h/2,0).rotateZ(tilt).translate(x,0,z);
+    parts.push(paint(g,(px,py,pz,nx,ny,nz,c)=>{ const node=Math.abs(((py/0.9)%1)-0.5)>0.44; c.set(node?0x9ab86a:0x6f9a3a).multiplyScalar(0.85+h3(k,Math.floor(py/0.9),1)*0.25); }));
+    for(let j=0;j<3;j++) leaves.push(blob(R(0.55,0.85),x+Math.sin(tilt)*-h*0.8+R(-0.4,0.4),h*R(0.72,0.98),z+R(-0.4,0.4),0.5,C,0));
+  }
+  return {trunk:merge(parts), leaves:merge(leaves.map(g=>paint(g,shade(4,10))))};
+}

@@ -1,8 +1,8 @@
-//@ Per-chunk vegetation placement (genChunk)
-const NCH=CH*CH;
+//@ Per-chunk vegetation placement (genChunk): the home forest's mix, and sakura, maple, pine and bamboo in the Sakura Vale
+const NCH=CHX*CHZ;
 function chunkRect(ci,m){
-  const cx=ci%CH, cz=Math.floor(ci/CH);
-  return [Math.max(-HALF+cx*CS,-HALF+m), Math.min(-HALF+(cx+1)*CS,HALF-m), Math.max(-HALF+cz*CS,-HALF+m), Math.min(-HALF+(cz+1)*CS,HALF-m)];
+  const cx=ci%CHX, cz=Math.floor(ci/CHX);
+  return [Math.max(WX0+cx*CS,WX0+m), Math.min(WX0+(cx+1)*CS,WX1-m), Math.max(WZ0+cz*CS,WZ0+m), Math.min(WZ0+(cz+1)*CS,WZ1-m)];
 }
 function distToChunk(ci,x,z){
   const r=chunkRect(ci,0);
@@ -11,7 +11,7 @@ function distToChunk(ci,x,z){
 }
 
 function* genChunk(ci){
-  const per=AREA/NCH;
+  const per=(CS/360)*(CS/360);   // this chunk's share of the old per-map counts (the home forest was 8 x 8 chunks)
   const pt=m=>{ const r=chunkRect(ci,m); return [R(r[0],r[1]),R(r[2],r[3])]; };
 
   // trees
@@ -22,19 +22,26 @@ function* genChunk(ci){
     if((a&511)===511) yield;
     const [x,z]=pt(10);
     if(Math.hypot(x-spawn.x,z-spawn.z)<7) continue;
-    if(vDist(x,z)<VIL.r+6 || nearPath(x,z,3.5) || Math.hypot(x-ARENA.x,z-ARENA.z)<ARENA.r+5) continue;
+    if(vDist(x,z)<VR+6 || nearPath(x,z,3.5) || arenaDist(x,z)<25 || inTunnelCut(x,z,2)) continue;
     const h=getH(x,z); if(h<0.8) continue;
     const g=grad(x,z); if(g>0.95) continue;
     const fd=forestDensity(x,z);
     if(rand()>fd*fd*1.15+0.015) continue;
     const alt=smoothstep(6,24,h)+noise2(x*0.03,z*0.03)*0.25;
     let type;
-    if(rand()<alt*0.85+0.08) type=rand()<0.55?'pine':'spruce';
+    if(inVale(x)){   // bamboo groves where the noise says so, pines up the hills, cherries everywhere else, a few maples
+      const grove=noise2(x*0.02-60,z*0.02+14);
+      if(grove>0.42 && h<22) type='bamboo';
+      else if(rand()<alt*0.7) type='pine';
+      else type=rand()<0.8?'sakura':'maple';
+    }
+    else if(rand()<alt*0.85+0.08) type=rand()<0.55?'pine':'spruce';
     else { const r2=rand(); type=r2<0.28?'oakA':r2<0.5?'oakB':r2<0.9?'birch':'snag'; }
     const young=rand()<0.14;
     let s=young?R(0.3,0.55):R(0.75,1.35);
     if(type==='snag') s=R(0.7,1.1);
-    const spacing=young?1.6:(type.startsWith('oak')?4.2:2.6)*Math.min(s,1.1);
+    if(type==='bamboo') s=R(0.8,1.15);
+    const spacing=young?1.6:(type.startsWith('oak')||type==='sakura'?4.2:type==='bamboo'?2.2:2.6)*Math.min(s,1.1);
     if(!canPlace(x,z,spacing)) continue;
     addCol(x,z,RAD[type]*s);
     const m=mtx(x,h-0.15,z,rand()*TAU,s*R(0.92,1.08),s*R(0.9,1.15),s*R(0.92,1.08),R(-0.05,0.05),R(-0.05,0.05));
@@ -42,6 +49,7 @@ function* genChunk(ci){
     if(type==='spruce') pal=PAL.spruce;
     else if(type.startsWith('oak')) pal=rand()<autumnAmt(x,z)?PAL.autumn:PAL.oak;
     else if(type==='birch') pal=rand()<autumnAmt(x,z)?PAL.birchAutumn:PAL.birch;
+    else if(type==='sakura'||type==='maple'||type==='bamboo') pal=PAL[type];
     items[type].push({x,z,m,c:tint(pick(pal))});
     trees.push({x,z,s});
     placed++;
@@ -49,7 +57,7 @@ function* genChunk(ci){
   for(const k in G.trees){
     const list=items[k]; if(!list.length) continue;
     addInstanced(G.trees[k].trunk, matBark, list.map(i=>({x:i.x,z:i.z,m:i.m})), {cast:true,receive:true});
-    if(G.trees[k].leaves) addInstanced(G.trees[k].leaves, k==='pine'||k==='spruce'?matConifer:matBroad, list, {cast:true,receive:true});
+    if(G.trees[k].leaves) addInstanced(G.trees[k].leaves, k==='pine'||k==='spruce'?matConifer:k==='bamboo'?matBush:matBroad, list, {cast:true,receive:true});
   }
   yield;
 
@@ -59,11 +67,11 @@ function* genChunk(ci){
     if((a&511)===511) yield;
     const [x,z]=pt(8), h=getH(x,z);
     if(h<0.6 || grad(x,z)>0.8) continue;
-    if(vDist(x,z)<VIL.r+2 || nearPath(x,z,2) || Math.hypot(x-ARENA.x,z-ARENA.z)<ARENA.r+2) continue;
+    if(vDist(x,z)<VR+2 || nearPath(x,z,2) || arenaDist(x,z)<22 || inTunnelCut(x,z)) continue;
     const fd=forestDensity(x,z);
     if(rand()>clamp(1-Math.abs(fd-0.55)*2)+0.08) continue;
-    const s=R(0.6,1.5), bloom=rand()<0.1;
-    bushItems[n%2].push({x,z,m:mtx(x,h-0.1,z,rand()*TAU,s*R(0.9,1.2),s*R(0.7,1.1),s*R(0.9,1.2)),c:tint(pick(bloom?PAL.shrubBloom:PAL.bush))});
+    const s=R(0.6,1.5), vale=inVale(x), bloom=rand()<(vale?0.35:0.1);   // the vale's azaleas
+    bushItems[n%2].push({x,z,m:mtx(x,h-0.1,z,rand()*TAU,s*R(0.9,1.2),s*R(0.7,1.1),s*R(0.9,1.2)),c:tint(pick(bloom?(vale?PAL.azalea:PAL.shrubBloom):PAL.bush))});
     n++;
   }
   G.bush.forEach((g,i)=>{ if(bushItems[i].length) addInstanced(g,matBush,bushItems[i],{cast:true,receive:true,maxDist:170}); });
@@ -74,7 +82,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<30000*per && n<(Q*(LOW?2600:4200))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(8), h=getH(x,z);
-    if(h<0.8 || grad(x,z)>0.75 || forestDensity(x,z)<0.45 || vDist(x,z)<VIL.r || Math.hypot(x-ARENA.x,z-ARENA.z)<ARENA.r) continue;
+    if(h<0.8 || grad(x,z)>0.75 || forestDensity(x,z)<0.45 || vDist(x,z)<VR || arenaDist(x,z)<20 || inTunnelCut(x,z)) continue;
     const s=R(0.6,1.3);
     fernItems.push({x,z,m:mtx(x,h-0.03,z,rand()*TAU,s,s*R(0.8,1.2),s),c:tint(pick(PAL.fern))}); n++;
   }
@@ -90,7 +98,9 @@ function* genChunk(ci){
     if(h<0.5) continue;
     const g=grad(x,z), fd=forestDensity(x,z);
     if(rand()>(1-smoothstep(0.55,0.95,fd)*0.75)*(1-smoothstep(0.6,0.95,g))) continue;
-    if(vDist(x,z)<VIL.r+26){ if(plazaAmt(x,z)>0.3 || pathAmt(x,z)>0.35 || inBox(x,z,0.3)) continue; if(vDist(x,z)<VIL.r && rand()<0.4) continue; }
+    if(vDist(x,z)<VR+26){ if(plazaAmt(x,z)>0.3 || pathAmt(x,z)>0.35 || inBox(x,z,0.3)) continue; if(vDist(x,z)<VR && rand()<0.4) continue; }
+    if(Math.abs(z-TUN.z)<TUN.w+1 && x>TUN.x0-12 && x<TUN.x1+12) continue;   // the tunnel's gravel road
+    if(nearTele(x,z,1.2)) continue;
     const meadow=smoothstep(0.1,0.7,noise2(x*0.025+9,z*0.025-4))*(1-fd);
     const s=R(0.75,1.2);
     terrainColor(x,z,h,g,gc); gc.lerp(fresh,0.3).multiplyScalar(R(0.95,1.2));
@@ -104,11 +114,12 @@ function* genChunk(ci){
   for(let a=0,n=0;a<60000*per && n<(Q*(LOW?2600:4600))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(6), h=getH(x,z);
-    if(h<0.8 || grad(x,z)>0.6 || forestDensity(x,z)>0.5 || vDist(x,z)<VIL.r+1) continue;
+    if(h<0.8 || grad(x,z)>0.6 || forestDensity(x,z)>0.5 || vDist(x,z)<VR+1 || inTunnelCut(x,z)) continue;
     if(noise2(x*0.04+11,z*0.04-3)<0.15) continue;
-    const idx=rand()<0.8?Math.floor((noise2(x*0.02-50,z*0.02+50)*0.5+0.5)*PAL.flowers.length)%PAL.flowers.length:Math.floor(rand()*PAL.flowers.length);
+    const FL=inVale(x)?PAL.valeFlowers:PAL.flowers;
+    const idx=rand()<0.8?Math.floor((noise2(x*0.02-50,z*0.02+50)*0.5+0.5)*FL.length)%FL.length:Math.floor(rand()*FL.length);
     const s=R(0.7,1.35), m=mtx(x,h-0.02,z,rand()*TAU,s,s,s);
-    stemItems.push({x,z,m}); headItems.push({x,z,m,c:tint(PAL.flowers[idx],0.08)}); n++;
+    stemItems.push({x,z,m}); headItems.push({x,z,m,c:tint(FL[idx],0.08)}); n++;
   }
   if(stemItems.length){ addInstanced(G.stem,matFlower,stemItems,{maxDist:85}); addInstanced(G.head,matFlower,headItems,{maxDist:85}); }
   yield;
@@ -118,7 +129,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<40000*per && n<(Q*(LOW?650:950))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(6), h=getH(x,z);
-    if(h<-1 || vDist(x,z)<VIL.r+3 || nearPath(x,z,2) || Math.hypot(x-ARENA.x,z-ARENA.z)<ARENA.r+3) continue;
+    if(h<-1 || vDist(x,z)<VR+3 || nearPath(x,z,2) || arenaDist(x,z)<23 || inTunnelCut(x,z,1)) continue;
     if(rand()>0.12+smoothstep(0.5,1.2,grad(x,z))*0.7) continue;
     const big=rand()<0.2, b=big?R(0.9,2.3):R(0.2,0.65);
     const sx=b*R(0.8,1.4), sy=b*R(0.5,1.0), sz=b*R(0.8,1.3);
@@ -131,7 +142,7 @@ function* genChunk(ci){
   const logItems=[];
   for(let a=0,n=0;a<20000*per && n<(Q*(LOW?110:160))*per;a++){
     const [x,z]=pt(10), h=getH(x,z);
-    if(h<1 || grad(x,z)>0.3 || forestDensity(x,z)<0.4 || vDist(x,z)<VIL.r+4 || Math.hypot(x-ARENA.x,z-ARENA.z)<ARENA.r+3) continue;
+    if(h<1 || grad(x,z)>0.3 || forestDensity(x,z)<0.4 || vDist(x,z)<VR+4 || arenaDist(x,z)<23 || inTunnelCut(x,z)) continue;
     const s=R(0.8,1.2), l=R(0.7,1.4);
     logItems.push({x,z,m:mtx(x,h+0.18*s,z,rand()*TAU,l,s,s)}); n++;
   }

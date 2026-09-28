@@ -52,7 +52,7 @@
 <div id="hint"></div>
 <div id="qlog" hidden></div>
 <div id="toasts"></div>
-<div id="bossbar" hidden><div class="bb-top"><b>The Rootwarden</b><span class="bb-lv">Lv 15 boss</span><span id="bbPhase"></span></div><div class="bb-bar"><i id="bbHp"></i></div></div>
+<div id="bossbar" hidden><div class="bb-top"><b id="bbName">The Rootwarden</b><span class="bb-lv" id="bbLv">Lv 15 boss</span><span id="bbPhase"></span></div><div class="bb-bar"><i id="bbHp"></i></div></div>
 <div id="inv" class="panel" hidden role="dialog" aria-label="Inventory">
   <div class="pn-head"><span class="pn-t">Inventory</span><button class="chip pn-skills" id="invSkills">Skills (K)</button><span class="pn-coins" id="invCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="invBody"></div>
@@ -67,7 +67,7 @@
   <div class="pn-body" id="qBody"></div>
 </div>
 <div id="map" class="panel" hidden role="dialog" aria-label="World map">
-  <div class="pn-head"><span class="pn-t">World map</span><span class="map-here" id="mapHere"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-head"><span class="pn-t">World map</span><button class="chip map-land" id="mapLand" hidden></button><span class="map-here" id="mapHere"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="map-box" id="mapBox"><canvas id="mapC"></canvas><div class="map-tip" id="mapTip" hidden></div></div>
   <div class="map-legend"><span><i class="lg you"></i>You</span><span><i class="lg pl"></i>Other players</span><span><i class="lg q"></i>Quest</span><span><i class="lg qr"></i>Quest done</span><span><i class="lg mo"></i>Monster on your trail</span><span><i class="lg boss"></i>Boss</span></div>
 </div>
@@ -125,6 +125,9 @@
     <button class="chip" id="tRain">Rain</button>
     <button class="chip" id="tStorm">Thunderstorm</button>
     <button class="chip" id="tClear">Clear sky</button>
+    <button class="chip" id="tVale">Open the tunnel to the Sakura Vale</button>
+    <button class="chip" id="tTunnel">Go to the tunnel</button>
+    <button class="chip" id="tSeal">Seal the vale again</button>
     <button class="chip" id="tReset">Reset all progress</button>
   </div>
   </div>

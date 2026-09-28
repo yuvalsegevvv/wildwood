@@ -1,4 +1,4 @@
-//@ Talking to villagers: bubble, prompt, E key, opening shop/quest panels
+//@ Talking to villagers: bubble, prompt, E key, opening shop/quest panels; stepping on a teleport circle
 /* talking */
 const bubble=$('#bubble'), bName=$('#bName'), bText=$('#bText'), promptEl=$('#prompt'), bTalk=$('#bTalk');
 const _bv=new THREE.Vector3();
@@ -16,6 +16,15 @@ function interact(){
   if(!started||customizing||PL.dead) return;
   if(talkNPC && (nearNPC===talkNPC || Math.hypot(P.x-talkNPC.x,P.z-talkNPC.z)<4.5)){ sayLine(talkNPC); if(!panelNPC) openRolePanel(talkNPC); }
   else if(nearNPC) startTalk(nearNPC);
+  else if(nearCircle()) useCircle();
+}
+// the teleport circles (one in each village): E / the talk button on one sends you to the other, once attuned (GEAR.east 2)
+function nearCircle(){ const V=vilAt(P.x,P.z); return V.tele&&Math.hypot(P.x-V.tele.x,P.z-V.tele.z)<V.tele.r+0.6?V:null; }
+function useCircle(){ netSend({t:'warp'}); UI_SFX.click(); }
+function circlePrompt(V){
+  const other=V===VIL?'Hanami':'the village';
+  if(GEAR.east>=2) return (isTouch?'Tap Travel to go to ':'Press E to travel to ')+other;
+  return GEAR.east>=1?'The circle hums, but it is not attuned: walk to Hanami first':'An old teleport circle. It is cold';
 }
 function updateTalkUI(){
   const canTalk=started && !customizing && (nearNPC||talkNPC);
@@ -26,7 +35,11 @@ function updateTalkUI(){
       bubble.style.left=x+'px'; bubble.style.top=y+'px'; bubble.hidden=false;
     } else bubble.hidden=true;
   } else bubble.hidden=true;
-  if(canTalk){
+  const circ=started && !customizing && !canTalk && !PL.dead ? nearCircle() : null;
+  if(circ){
+    promptEl.textContent=circlePrompt(circ); promptEl.hidden=false; bTalk.textContent=GEAR.east>=2?'Travel':'Look';
+    document.body.classList.add('can-talk');
+  } else if(canTalk){
     const who=talkNPC||nearNPC;
     promptEl.textContent=isTouch?'':(talkNPC?'E to keep talking to '+who.def.name:'Press E to talk to '+who.def.name);
     promptEl.hidden=isTouch; bTalk.textContent=talkNPC?'Next':'Talk';

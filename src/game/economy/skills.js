@@ -9,7 +9,7 @@ const SLOT_TITLE={basic:'1 · Basic attack',skill:'2 · Skill',burst:'3 · Burst
 function renderSkills(){
   if($('#skills').hidden) return;
   const trainer=!!(panelNPC&&panelNPC.def.role==='trainer'), S=GEAR.skills||newSkills(), cls=skTab||clsOf(), C=CLASSES[cls], lv=PL.level;
-  $('#skTitle').textContent=trainer?"Aldric's lessons":'Skills'; $('#skCoins').textContent=GEAR.coins+' coins';
+  $('#skTitle').textContent=trainer?panelNPC.def.name+"'s lessons":'Skills'; $('#skCoins').textContent=GEAR.coins+' coins';
   let h=`<div class="chips pn-tabs">${Object.keys(CLASSES).map(c=>`<button class="chip" data-sktab="${c}" aria-pressed="${c===cls}">${CLASSES[c].name}${c===clsOf()?' (you)':''}</button>`).join('')}</div>`;
   // the loadout: what is in each slot right now
   h+='<div class="sk-load">'+SLOTS.map(slot=>{
@@ -25,7 +25,7 @@ function renderSkills(){
       if(on) btn=`<span class="tag on">Equipped</span>`+(slot!=='basic'?`<button class="chip" data-unskill="${cls}|${slot}">Take off</button>`:'');
       else if(own) btn=`<button class="chip" data-eqskill="${id}" ${low?'disabled':''}>${low?'Level '+need:'Equip'}</button>`;
       else if(trainer) btn=`<button class="chip buy" data-buyskill="${id}" ${GEAR.coins<s.price||lv<s.lv?'disabled':''}>${lv<s.lv?'Level '+s.lv:'Learn: '+s.price+' coins'}</button>`;
-      else btn=`<span class="muted sk-where">Aldric teaches it at the well: ${s.price} coins</span>`;
+      else btn=`<span class="muted sk-where">Aldric (or Master Ryu in Hanami) teaches it at the well: ${s.price} coins</span>`;
       const dmg=s.buff?'buff':(Math.round(s.mult*100)+'% damage');
       h+=`<div class="sk-card${on?' on':''}${own?'':' unowned'}${slot==='burst'?' burst':''}">${skIcon(s.name)}<div class="sk-main"><b>${s.name}</b><span class="sk-meta">${s.price?'':'Free &middot; '}Level ${need} &middot; ${s.cd} s cooldown &middot; ${dmg}</span><span>${s.desc}</span></div><div class="sk-btn">${btn}</div></div>`;
     }

@@ -49,11 +49,16 @@ function envAt(c,out){
 let todLabelT=0;
 let curZone='';
 function updateZoneLabel(){
-  const zn=vDist(P.x,P.z)<VIL.r+22?null:zoneAt(P.x,P.z);
-  const key=zn?String(zn.key):(vDist(P.x,P.z)<VIL.r+22?'village':'wild');
-  const txt=zn?zn.name+(zn.key==='boss'?' (boss)':' (Lv '+zn.level+')'):(key==='village'?'The village':'Deep forest');
+  const V=vilAt(P.x,P.z), inV=vDist(P.x,P.z)<VR+22, zn=inV?null:zoneAt(P.x,P.z), vale=inVale(P.x);
+  const key=zn?String(zn.key):inV?(V===VIL2?'hanami':'village'):P.inTun?'tunnel':vale?'vale':'wild';
+  const txt=zn?zn.name+(zn.boss?' (boss)':' (Lv '+zn.level+')'):inV?(V===VIL2?'Hanami':'The village'):P.inTun?'The mountain tunnel':vale?'The Sakura Vale':'Deep forest';
   $('#zone').textContent=txt;
-  if(started && key!==curZone && curZone!==''){ if(zn) toast('Entering '+txt,zn.key==='boss'||zn.level>PL.level+2?'bad':''); else if(key==='village') toast('Back in the village','good'); }
+  if(started && key!==curZone && curZone!==''){
+    if(zn) toast('Entering '+txt,zn.boss||zn.level>PL.level+2?'bad':'');
+    else if(key==='village') toast('Back in the village','good');
+    else if(key==='hanami') toast('Hanami, village of the Sakura Vale','good');
+    else if(key==='vale'&&curZone==='tunnel') toast('The Sakura Vale','good');
+  }
   curZone=key;
 }
 function clockText(c){ const mins=Math.floor((6*60+c*1440))%1440; return String(Math.floor(mins/60)).padStart(2,'0')+':'+String(mins%60).padStart(2,'0'); }

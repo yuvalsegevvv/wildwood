@@ -5,8 +5,9 @@ Read this file first. It is written so you can work on the game **without readin
 
 Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an authoritative world server
 that runs in the browser tab (solo / shared room) or in Node (the deployed MMO), procedural 880 m forest,
-village with NPCs, 451 monsters in 16 zones, a boss, 3 classes with equippable skills, 140 items in 5
-rarities, a forge, a quest board, weather, chat, server-side saves in a Postgres database (Neon), player
+village with NPCs, 451 monsters in 16 zones, a boss; east of the mountains the Sakura Vale (tunnel opened by the
+boss, Japanese village Hanami, 240 monsters of levels 16-25 in 10 zones, bosses at 20 and 25, teleport circles);
+3 classes with equippable skills, 210 items (6 tiers) in 5 rarities, a forge, a quest board, weather, chat, server-side saves in a Postgres database (Neon), player
 accounts (guest or name + password).
 
 - Repository: https://github.com/yuvalsegevvv/wildwood (Render deploys every push to `main`).
@@ -67,13 +68,13 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 
 - Client → server: `hello{acct,name,look,save[,user,pass|token]}`, `register{user,pass}`, `logout{token}`, `pos{p:[x,y,z,face,vx,vz]}`, `atk{k:'basic'|'skill'|'burst',tg,face,aim}`,
   `equip{id}`, `unequip{slot}`, `cls{cls}`, `buy/sell{id}`, `merge{id}`, `accept/turnin/abandon{id}`,
-  `buyskill/eqskill{id}`, `unskill{cls,slot}`, `look{look}`, `chat{text}`, `name{name}`, `dev{cmd,v}`.
+  `buyskill/eqskill{id}`, `unskill{cls,slot}`, `look{look}`, `chat{text}`, `name{name}`, `warp{}`, `dev{cmd,v}`.
 - Server → client: `welcome`, `mons{list}` (roster), `you{...}` (private state incl. `gear`), `tp`, `kicked`, `auth{user,token}`, `authfail{text}`,
-  `snap{day, pl, mo, b (boss), w (weather), ev:[events]}` 8-20×/s.
+  `snap{day, pl, mo, b (one entry per boss), w (weather), ev:[events]}` 8-20×/s.
 - Events (`ev(...)` on the server, `applyEvent` in `net/client.js`): dmg, kill, imm, mact, aggro, respawn,
   spawn, despawn, proj, pend, tele, tend, roar, area, aend, chain, buff, xp, coins, loot, lvup, hurt, down,
   up, toast, qdone, qturn, pact, pjoin, pleave, pgear, plook, pname, chat, merge, skillslot, skillbuy,
-  weather, thunder, lvset.
+  weather, thunder, lvset, warp, vale.
 - To add a feature that changes state: handle a message in `receive()` (server/api.js), mutate state,
   call `ev('name', ...)` and/or set `p.dirty=true` (→ a `you` update + save), then handle the event in
   `applyEvent` on the client.
@@ -84,7 +85,8 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 |---|---|
 | Balance formulas (HP, damage, XP curve, coins, 1.5× for level 10-15) | `shared/balance.js` |
 | Monster stats / new monster | `shared/monster-defs.js` (data), `game/combat/monsters.js` (model builders, `animateMonster`), `server/monsters.js` (spawn counts `MON_COUNT`, AI) |
-| Boss mechanics / visuals | `server/boss.js` / `game/combat/boss.js` |
+| Boss mechanics / visuals (all three bosses: `BOSS_DEFS` in `shared/monster-defs.js`) | `server/boss.js` / `game/combat/boss.js` |
+| Sakura Vale: tunnel `TUN`, Hanami `VIL2`, vale zones/ridges, arenas `ARENAS`, `vilAt` | `shared/vale.js`; meshes `game/village/buildings-vale.js`; tunnel collision `worldBounds` in `game/player/movement.js`; unlock / attune / `warpP` in `server/players.js`; Hanami NPCs (`vil:2`) in `game/village/villagers.js` |
 | Items, rarity, prices, drop rates, merge | `shared/items.js` (`RARITY`, `RAR_MULT`, `rollMonsterRarity`, `rollBossRarity`, `shopPrice`) |
 | Item icons | `game/ui/item-icons.js` |
 | Skills (all 3 slots, all classes) | `shared/classes.js` (`SKILLS`, `abilityOf`, slot levels) → effects `server/combat.js` (`resolveHitS`, `updateAreasS`, projectiles) → visuals `game/combat/skill-fx.js`, `game/combat/attacks.js` (`attackVisuals`, projectiles), icons `ICONS` in `game/ui/combat-hud.js` |
@@ -96,6 +98,7 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | Animations | `game/character/pose.js` (`poseRig`; skill anims borrow kinds via `ANIM_OF`) |
 | World size, lakes, terrain | `shared/terrain.js` (`SIZE`, `LAKES`, `baseHeight`), `shared/zones.js` (`RINGS`, zones, arena) |
 | Vegetation / animals | `game/world/plant-models.js`, `generation-*.js`, `game/wildlife/animals.js` |
+| Background music (a theme per village, level range and boss; `THEMES`, `musicThemeHere`) | `game/audio/music.js` |
 | Time of day / weather | `game/world/time-of-day.js` (`weatherTint` hook), `server/weather.js`, `game/world/weather.js` |
 | Map / minimap | `game/ui/map.js` |
 | Chat / names / account code | `game/ui/chat.js`, `game/ui/account.js`; server `chatP`, `renameP` in `server/economy.js` |
@@ -215,6 +218,9 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
   install `pg` in a temp folder and run the server with `NODE_PATH` pointing there.
 - The built-in browser pane throttles timers when hidden: the start screen can sit on "Shaping the hills…"
   until it is visible (take a screenshot) before `#go` enables.
+- The hidden browser pane pauses frames but a solo/host server keeps simulating (timers): teleporting next to
+  monsters and taking screenshots gets you knocked out before a frame renders. Testing tools have "Go to the
+  tunnel" (the button's `data-v` can be `in`, `east`, `hanami` or `x,z`).
 - The Shared (room) mode is only testable against the mock in `tools/`-style harnesses; the host tab
   must stay visible (browser timers throttle in background tabs).
 
@@ -225,6 +231,11 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
 - XP to next `10(L²+(7/6)^L)·K15^((L-5)/10)`; level 10-15 monsters 1.5× HP/XP/coins (`highMult`).
 - Monsters: 40 of each level-1 kind down to 20 of each level-15 kind; respawn 35 s; think within 110 m.
 - Drops: monsters 2% common, 0.5% rare, 0.1% epic; boss 50/10/3/1/0.1% (common…legendary).
+- World: the home forest is -HALF..HALF; the whole world is `WX0..WX1` x `WZ0..WZ1` (the vale is x > HALF, 550 m wide).
+  Use those bounds (not ±HALF) for clamps. The heightmap is rectangular (`NVX` x `NVZ`), the terrain is drawn in
+  x-strips culled beyond the fog, and plant chunks more than 320 m away are only grown when you come closer.
+- Vale progress: `gear.east` 0 sealed, 1 tunnel open (anyone rewarded for a Rootwarden kill), 2 walked into Hanami
+  (teleport circles work). Vale monsters: 2 kinds per level, 12 of each; gear tiers 4-5 at levels 20 and 25.
 - Rarity stat multipliers 1 / 1.3 / 1.7 / 2.2 / 3; 3 identical → next rarity at Greta's forge.
 - Shop: unlimited, +20% of base per copy bought, reset at sunrise (server day wraps).
 - Quests: 4 notices, level −4…+2 weighted to yours; hunts 10-20 (L1) → 30-50 (L15), bounties 1.5×.
@@ -238,6 +249,7 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
 
 ## 10. Ideas not done yet (ask the owner before starting)
 
-Special quests from Bram and other NPCs; group/party system; trading between players; more zones or a
+Special quests from Bram and other NPCs; group/party system; the XP curve past 15 (levels 16-25 need 400-2100 kills
+each: tune `expToNext` / `xpFor` in `shared/balance.js`); animals in the vale; trading between players; more zones or a
 second boss; server-side anti-cheat for movement; villagers synced between players; mobile UI polish
 seen on a real device.

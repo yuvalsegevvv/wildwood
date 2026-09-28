@@ -1,5 +1,5 @@
 //@ Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
-function openForge(n){ openPanel('forge',n); renderForge(); }
+function openForge(n){ openPanel('forge',n); $('#forge .pn-t').textContent=n.def.name+"'s forge"; renderForge(); }
 const ARROW='<svg class="fg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>';
 function renderForge(){
   if($('#forge').hidden) return;

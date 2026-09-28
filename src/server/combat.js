@@ -19,7 +19,7 @@ function rollDmgS(p,mult,m){ const b=p.buff, crit=Math.random()<0.12+(b?b.crit:0
 function damageMonsterS(m,mult,p,fromX,fromZ,kb){
   if(m.dead||m.remove) return;
   if(m.immune){ ev('imm',m.id); return; }
-  if(m.boss && BOSS.stunT>0) mult*=1.5;
+  if(m.boss && m.B.stunT>0) mult*=1.5;
   const d=rollDmgS(p,mult,m);
   if(m.T.heavy) kb=0;
   m.hp-=d.v; m.hitters.set(p.id,S.t);
@@ -42,8 +42,9 @@ function rewardKill(q,m){
   gainExpP(q,m.T.xp,m.id);
   const c=coinsFor(m.def.level)*(m.def.boss?20:1); q.gear.coins+=c; ev('coins',q.id,c,m.id);
   const r=m.def.boss?rollBossRarity():rollMonsterRarity();
-  if(r>=0) addItemP(q,randomItem(m.def.boss?3:tierFor(m.def.level),r),false,m.id);
+  if(r>=0) addItemP(q,randomItem(tierFor(m.def.level),r),false,m.id);
   questKillP(q,m.def.id); q.dirty=true;
+  if(m.def.id==='boss') openValeP(q);
 }
 function handPosS(p){ return {x:p.x-Math.sin(p.face)*0.4,y:p.y+1.4,z:p.z-Math.cos(p.face)*0.4}; }
 function dirToS(p,m){ const c=monCenterS(m), h=handPosS(p); return norm3([c.x-h.x,c.y-h.y,c.z-h.z]); }
@@ -66,7 +67,7 @@ function resolveHitS(p,a){
     for(const m of MONS){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<3.3+m.T.rad) damageMonsterS(m,a.mult,p,p.x,p.z,6); }
   } else if(a.kind==='charge'){
     const L=tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=a.range+2?(()=>{ const dx=tgt.x-p.x, dz=tgt.z-p.z, d=Math.hypot(dx,dz)||1, o=tgt.T.rad+0.9; return {x:tgt.x-dx/d*o,z:tgt.z-dz/d*o}; })():{x:p.x-Math.sin(p.face)*8,z:p.z-Math.cos(p.face)*8};
-    p.x=clamp(L.x,-HALF+14,HALF-14); p.z=clamp(L.z,-HALF+14,HALF-14); p.y=getH(p.x,p.z);
+    p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z);
     for(const m of MONS){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<2.6+m.T.rad) damageMonsterS(m,a.mult,p,p.x,p.z,6); }
   } else if(a.kind==='shoot'){
     fireProjS(p,'arrow',tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<36?dirToS(p,tgt):a.aim,tgt,a.mult);

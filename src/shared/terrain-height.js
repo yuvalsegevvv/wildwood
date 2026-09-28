@@ -1,2 +1,7 @@
-//@ rawHeight: base terrain + zone ridges + village and arena flattening. Pure.
-function rawHeight(x,z){ let h=baseHeight(x,z)+zoneRidge(x,z); const d=vDist(x,z); if(d<VIL.r+24){ h=lerp(h,VIL.h,smoothstep(VIL.r+24,VIL.r+3,d)); } const da=Math.hypot(x-ARENA.x,z-ARENA.z); if(da<ARENA.r+22){ h=lerp(h,ARENA.h,smoothstep(ARENA.r+22,ARENA.r+2,da)); } return h; }
+//@ rawHeight: base terrain + zone ridges + village, arena and tunnel flattening. Pure.
+function rawHeight(x,z){
+  let h=baseHeight(x,z)+zoneRidge(x,z);
+  const V=vilAt(x,z), d=Math.hypot(x-V.x,z-V.z); if(d<V.r+24){ h=lerp(h,V.h,smoothstep(V.r+24,V.r+3,d)); }
+  for(const A of ARENAS){ const da=Math.hypot(x-A.x,z-A.z); if(da<A.r+22){ h=lerp(h,A.h,smoothstep(A.r+22,A.r+2,da)); } }
+  return tunnelCarve(x,z,h);
+}

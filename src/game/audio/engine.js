@@ -2,7 +2,7 @@
 /* ===================== SOUND =====================
    Everything is synthesised live with the Web Audio API (no audio files).
    Four channels, each with its own volume:
-     music    generative background music that follows the time of day
+     music    generative background music: a theme for each place and boss (audio/music.js)
      ui       interface / game sounds: UI_SFX.hover(), click(), open(), close(), talk(),
               plus pickup(), success(), error(), notify() kept ready for later game events
      ambient  wind, leaves, water, birds, crickets, owls, frogs, campfire, footsteps, animals
@@ -41,7 +41,7 @@ function audioInit(){
   SND.loops.leaves=noiseLoop('highpass',3200,0.7,'ambient');
   SND.loops.water=noiseLoop('lowpass',950,0.8,'ambient');
   SND.loops.fire=noiseLoop('lowpass',380,0.9,'ambient');
-  SND.ready=true; loadSamples(); SND.nextChord=c.currentTime+0.5; SND.chordI=0; SND.nextNote=c.currentTime+2;
+  SND.ready=true; loadSamples();
   applyVolumes();
 }
 function applyVolumes(){

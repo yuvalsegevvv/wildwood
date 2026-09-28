@@ -3,7 +3,7 @@
    A monster only thinks while a player is within 110 m (or while it is chasing someone).
    The server has no tree colliders, so monsters can brush through trees. */
 const MONS=[], MON_BY_ID=new Map(); let nextMonId=1;
-const DEF_BY_ID={}; [...MON_DEFS,BOSS_DEF,TOTEM_DEF,THORN_DEF].forEach(d=>{ DEF_BY_ID[d.id]=d; });
+const DEF_BY_ID={}; ALL_MON_DEFS.forEach(d=>{ DEF_BY_ID[d.id]=d; });
 function makeMon(d,x,z,camp,s,temp){
   const m={id:nextMonId++,def:d,T:d,model:d.model,camp:camp||{x,z},s:s||1,x,z,face:AR(0,TAU),faceGoal:0,vx:0,vz:0,kbx:0,kbz:0,
     state:'idle',timer:AR(0,3),ph:AR(0,TAU),slowT:0,dead:false,deadT:0,respawnT:0,atkT:0,aggro:false,tgt:null,gx:x,gz:z,
@@ -11,11 +11,12 @@ function makeMon(d,x,z,camp,s,temp){
   m.faceGoal=m.face; MONS.push(m); MON_BY_ID.set(m.id,m); return m;
 }
 const CAMPS=[];
-// how many of each monster live in its zone: 40 of the level-1 kind, down to 20 of the level-15 kind
-const MON_COUNT=d=>Math.round(40-(d.level-1)*20/14);
+// how many of each monster live in its zone: 40 of the level-1 kind, down to 20 of the level-15 kind;
+// the vale's zones hold two kinds, 12 of each
+const MON_COUNT=d=>d.level>15?12:Math.round(40-(d.level-1)*20/14);
 function initMonstersS(){
   const rng=mulberry32(31337), rr=(a,b)=>a+(b-a)*rng();
-  const ok=(x,z)=>Math.abs(x)<HALF-26&&Math.abs(z)<HALF-26&&getH(x,z)>1&&grad(x,z)<0.55&&zoneRidge(x,z)<0.5&&vDist(x,z)>VIL.r+15&&!nearPath(x,z,8)&&Math.hypot(x-ARENA.x,z-ARENA.z)>ARENA.r+30;
+  const ok=(x,z)=>x>WX0+26&&x<WX1-26&&Math.abs(z)<HALF-26&&getH(x,z)>1&&grad(x,z)<0.55&&zoneRidge(x,z)<0.5&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&!inTunnelCut(x,z,15);
   for(const d of MON_DEFS){
     const zn=ZONES.find(z=>z.key===d.level), total=MON_COUNT(d), pack=d.per+2;
     let made=0;
@@ -86,7 +87,7 @@ function updateMonstersS(dt){
     const ox=m.x, oz=m.z;
     m.x+=(m.vx+m.kbx)*dt; m.z+=(m.vz+m.kbz)*dt;
     const kd=Math.exp(-7*dt); m.kbx*=kd; m.kbz*=kd;
-    if(getH(m.x,m.z)<0.4 || vDist(m.x,m.z)<VIL.r+8){ m.x=ox; m.z=oz; }
+    if(getH(m.x,m.z)<0.4 || vDist(m.x,m.z)<VR+8 || inTunnelCut(m.x,m.z)){ m.x=ox; m.z=oz; }
     if(p && dp<m.T.rad+0.35){ const e=dp||1, mm=m.T.rad+0.35; m.x=p.x-dx/e*mm; m.z=p.z-dz/e*mm; }
     m.face=angLerp(m.face,m.faceGoal,1-Math.exp(-8*dt));
   }

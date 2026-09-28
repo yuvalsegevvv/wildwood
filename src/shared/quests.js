@@ -5,17 +5,18 @@
                                                              reward: XP, coins, 50% chance of an item
      bounty  1.5x a hunt, the grindy one                     reward: more XP and coins, always an item, 25% rare
      scout   walk to a named place in that level's zone      reward: XP and coins
-     boss    the Rootwarden (from level 13)                  reward: lots, a rare item, 20% epic
+     boss    the Rootwarden (from level 13), Akaoni (from 18), Kyuubi (from 23)   reward: lots, a rare item, 20% epic
+   Levels 16-25 are the Sakura Vale's: two monster kinds per level, so a hunt names one of the two.
    Items are of the quest's level tier. Notices refresh when you level up and at sunrise. */
 function dirWord(x,z){ const a=Math.atan2(x,-z), i=Math.round(a/(Math.PI/4)); return ['north','north-east','east','south-east','south','south-west','west','north-west','north'][(i+8)%8]; }
 const QUEST_OFFERS=4, QUEST_MAX_ACTIVE=5, QUEST_MAX_COUNT=120;
 // how many kills a hunt asks for at level L: 10-20 at level 1, growing evenly to 30-50 at level 15
-function huntCount(L){ const f=(L-1)/14, lo=10+20*f, hi=20+30*f; return Math.round(lo+Math.random()*(hi-lo)); }
+function huntCount(L){ const f=Math.min(1,(L-1)/14), lo=10+20*f, hi=20+30*f; return Math.round(lo+Math.random()*(hi-lo)); }
 const coinAvg=L=>fLv(L)*2*Math.pow(1.1,Math.max(0,L-5))*highMult(L);
 const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const qpick=a=>a[Math.floor(Math.random()*a.length)];
 function questLevelFor(pl){
-  const E=Math.max(1,Math.min(15,pl)), lo=Math.max(1,E-4), hi=Math.min(15,E+2), w=[];
+  const E=Math.max(1,Math.min(MAX_ZONE_LV,pl)), lo=Math.max(1,E-4), hi=Math.min(MAX_ZONE_LV,E+2), w=[];
   let sum=0; for(let L=lo;L<=hi;L++){ const x=Math.exp(-0.9*Math.abs(L-E))*(L>E?0.55:1); w.push([L,x]); sum+=x; }
   let r=Math.random()*sum; for(const [L,x] of w){ r-=x; if(r<=0) return L; } return E;
 }
@@ -26,12 +27,17 @@ function scoutPlace(L){
   for(const lk of LAKES){ const lz=zoneAt(lk.x,lk.z); if(lz&&lz.key===L) opts.push({x:lk.x,z:lk.z,name:lk.name}); }
   return qpick(opts);
 }
+// the boss notices: the strongest boss you are ready for (a little below its level), sometimes the one before it
+const BOSS_QUESTS=[
+  {target:'boss',from:13,level:15,title:'The Rootwarden',text:'Something ancient sleeps in the stone circle at the edge of the world, and the forest sickens around it. Wake it, and end it.'},
+  {target:'akaoni',from:18,level:20,title:'Akaoni, the Gate Demon',text:'A red oni the size of a gatehouse guards the Demon Gate in the far corner of the vale. Break its lanterns, then break it.'},
+  {target:'kyuubi',from:23,level:25,title:'Kyuubi, the Nine-Tailed',text:'Nine tails of foxfire burn above the shrine in the north-west of the vale. The old fox has ruled there for a thousand years. End its reign.'}];
+function bossQuestFor(E){ const ok=BOSS_QUESTS.filter(b=>E>=b.from); if(!ok.length) return null; return ok.length>1&&Math.random()<0.3?ok[ok.length-2]:ok[ok.length-1]; }
 function genQuest(pl,id){
-  const E=Math.max(1,Math.min(15,pl)), L=questLevelFor(pl), d=MON_DEFS.find(m=>m.level===L), zn=ZONES.find(z=>z.key===L);
-  const big=d.model==='treant', many=d.name+'s', x=Math.random();
+  const E=Math.max(1,Math.min(MAX_ZONE_LV,pl)), L=questLevelFor(pl), d=qpick(MON_DEFS.filter(m=>m.level===L)), zn=ZONES.find(z=>z.key===L);
+  const big=d.model==='treant', many=d.name+'s', x=Math.random(), bq=bossQuestFor(E);
   let q;
-  if(E>=13 && x<0.12) q={kind:'boss',type:'kill',target:'boss',count:1,level:15,title:'The Rootwarden',
-    text:'Something ancient sleeps in the stone circle at the edge of the world, and the forest sickens around it. Wake it, and end it.'};
+  if(bq && x<0.12) q={kind:'boss',type:'kill',target:bq.target,count:1,level:bq.level,title:bq.title,text:bq.text};
   else if(x<0.24){ const p=scoutPlace(L); q={kind:'scout',type:'visit',at:{x:Math.round(p.x),z:Math.round(p.z)},r:18,level:L,place:p.name,
     title:qpick(['Scout '+p.name,'Eyes on '+p.name,'A Look at '+p.name]),
     text:qpick(['Walk out to '+p.name+' and see how things stand. Just get close enough to look around, then come back.','Nobody has been out to '+p.name+' in weeks. Go and have a look, then tell me what you saw.'])}; }
@@ -45,7 +51,7 @@ function genQuest(pl,id){
 // item: p = chance of an item, r = chance it is rare, e = chance it is epic
 function questRewardFor(q){
   const L=q.level, n=q.count||0;
-  if(q.kind==='boss') return {xp:Math.round(xpFor(15)*40),coins:2500,item:{p:1,r:1,e:0.2}};
+  if(q.kind==='boss') return {xp:Math.round(xpFor(L)*40),coins:Math.round(2500*coinAvg(L)/coinAvg(15)),item:{p:1,r:1,e:0.2}};
   if(q.kind==='scout') return {xp:Math.round(6*xpFor(L)),coins:Math.round(10*coinAvg(L)),item:null};
   if(q.kind==='bounty') return {xp:Math.round(n*xpFor(L)*2.2),coins:Math.round(n*coinAvg(L)*2.6),item:{p:1,r:0.25,e:0}};
   return {xp:Math.round(n*xpFor(L)*1.6),coins:Math.round(n*coinAvg(L)*2),item:{p:0.5,r:0,e:0}};

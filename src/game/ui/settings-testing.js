@@ -1,4 +1,4 @@
-//@ Testing tools in the settings popover (sent to the server as dev commands): set level, all items, coins, reset
+//@ Testing tools in the settings popover (sent to the server as dev commands): set level, all items, coins, weather, the Sakura Vale, reset
 /* ----- settings: testing tools ----- */
 $('#tLevel').value=PL.level;
 $('#tSetLv').addEventListener('click',()=>{ const v=clamp(parseInt($('#tLevel').value,10)||1,1,50); netSend({t:'dev',cmd:'level',v}); toast('Level set to '+v,'good'); });
@@ -10,6 +10,10 @@ $('#tThree').addEventListener('click',()=>{ netSend({t:'dev',cmd:'three'}); });
 $('#tRain').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'rain'}));
 $('#tStorm').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'storm'}));
 $('#tClear').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'clear'}));
+// the vale: open the tunnel (as if you had helped beat the Rootwarden), jump to its west portal, or seal it again
+$('#tVale').addEventListener('click',()=>netSend({t:'dev',cmd:'vale',v:1}));
+$('#tTunnel').addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}));
+$('#tSeal').addEventListener('click',()=>{ netSend({t:'dev',cmd:'vale',v:0}); toast('The vale is sealed again','good'); });
 let luckyN=0; $('#tLucky').addEventListener('click',()=>{ netSend({t:'dev',cmd:'lucky',v:2+(luckyN++%3)}); });
 $('#tReset').addEventListener('click',e=>{
   const b=e.currentTarget; if(!b.dataset.sure){ b.dataset.sure='1'; b.textContent='Tap again to wipe level, items, coins and quests'; return; }

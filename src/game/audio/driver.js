@@ -27,7 +27,7 @@ function soundTick(dt){
   L.wind.f.frequency.setTargetAtTime(380+gust*380,now,0.5);
   set(L.leaves.g,0.012*fdNear*gust*(vDist(P.x,P.z)<VIL.r?0.3:1));
   set(L.water.g,0.16*waterNear*waterNear);
-  const fd=VIL.fire?Math.hypot(P.x-VIL.fire.x,P.z-VIL.fire.z):99;
+  const FV=vilAt(P.x,P.z), fd=FV.fire?Math.hypot(P.x-FV.fire.x,P.z-FV.fire.z):99;
   set(L.fire.g,fd<16?0.1*(1-fd/16)*(0.5+night*0.5):0);
   const k=T/0.1; // events per tick scale
   const r=p=>Math.random()<p*k;
@@ -36,7 +36,7 @@ function soundTick(dt){
   if(r(0.5*night)){ const s=around(4,25); if(s) cricket(s.pan,s.gain*1.4); }
   if(r(0.005*night)){ const s=around(20,50); if(s) owl(s.pan,s.gain*2); }
   if(r(0.08*night*waterNear)){ const s=around(5,20); if(s) frog(s.pan,s.gain*1.5); }
-  if(fd<18 && r(0.45*(1-fd/18))){ const s=spatial(VIL.fire.x,VIL.fire.z,4,20); if(s) crackle(s.pan,s.gain); }
+  if(fd<18 && r(0.45*(1-fd/18))){ const s=spatial(FV.fire.x,FV.fire.z,4,20); if(s) crackle(s.pan,s.gain); }
   if(W.ready){
     for(const d of W.duck){ if(r(0.004)){ const s=spatial(d.x,d.z,8,35); if(s) quack(s.pan,s.gain); } }
     if(day>0.5) for(const f of W.flocks){ if(r(0.004)){ const s=spatial(f.ax,f.az,20,90); if(s) crowCaw(s.pan,s.gain*1.5); } }

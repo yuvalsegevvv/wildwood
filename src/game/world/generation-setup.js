@@ -1,4 +1,4 @@
-//@ Palettes, shared geometries (buildGeometries), terrain + water + village build (genTerrain)
+//@ Palettes, shared geometries (buildGeometries), terrain (in bands, culled by distance) + water + both villages (genTerrain)
 /* ---------- world generation (streamed in small slices) ---------- */
 let water, waterMat;
 const statusEl=$('#status');
@@ -9,9 +9,12 @@ const PAL={
   birch:[0x7fa83e,0x92b64a,0x6f9a38], birchAutumn:[0xdcc046,0xe6cf5a,0xc9b03c],
   bush:[0x3f6d2a,0x4f7a30,0x5b8436,0x365f28], shrubBloom:[0xc76a8f,0xd8d2e6,0xe0a0b8],
   fern:[0x3d7a2a,0x4f8a30,0x467f2c], lily:[0x3f7a35,0x4b8a3c,0x356a30],
-  flowers:[0xf4f2ea,0xf6d23c,0xa65fd4,0xe5484d,0x6f8cf0,0xff9ad5,0xf29a38]
+  flowers:[0xf4f2ea,0xf6d23c,0xa65fd4,0xe5484d,0x6f8cf0,0xff9ad5,0xf29a38],
+  // the Sakura Vale
+  sakura:[0xf6c6d6,0xf2b0c8,0xfad4e0,0xeea0bc,0xfbe6ee,0xf4bcd0], maple:[0xc8321e,0xd8502a,0xb82a24,0xe07030,0xa8281e],
+  bamboo:[0x6f9a3a,0x7aa844,0x5f8a34], azalea:[0xe0508a,0xf07aa8,0xf4f0f2,0xd84a6a], valeFlowers:[0xf8f4f6,0xffb0cc,0xf6d23c,0xe0508a,0xb080e0,0xfad4e0]
 };
-const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3};
+const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3,sakura:0.4,maple:0.3,bamboo:0.7};
 const moss=new THREE.Color(0x56702f);
 
 function buildGeometries(){
@@ -21,7 +24,10 @@ function buildGeometries(){
     oakA:makeBroadleaf({trunkH:4.2, tr:0.42, crownY:6.2, rMain:2.4, blobs:5, spread:1.9, sy:0.85, branches:3, bark:0x4f3c2a}),
     oakB:makeBroadleaf({trunkH:3.4, tr:0.36, crownY:5.0, rMain:2.0, blobs:6, spread:2.2, sy:0.75, branches:4, bark:0x5a4632}),
     birch:makeBroadleaf({trunkH:7.5, tr:0.16, crownY:7.6, rMain:1.2, blobs:4, spread:0.85, sy:1.6, branches:0, birch:true}),
-    snag:makeSnag()
+    snag:makeSnag(),
+    sakura:makeSakura(),
+    maple:makeBroadleaf({trunkH:2.6, tr:0.22, crownY:4.0, rMain:1.6, blobs:6, spread:1.5, sy:0.65, branches:3, bark:0x3e302a}),
+    bamboo:makeBamboo()
   };
   G.bush=[makeBush(4,0.6), makeBush(3,0.45)];
   G.fern=makeFern();
@@ -42,30 +48,35 @@ function buildGeometries(){
   G.lilyFlower=paint(new THREE.IcosahedronGeometry(0.1,0).scale(1,0.55,1),()=>_c.setRGB(1,1,1));
 }
 
+/* The terrain is one grid (HS) over the whole world, drawn as TBANDS strips of cells east to west so that
+   strips beyond the fog (most of the other land) are skipped; normals come from the heightmap so strips meet seamlessly. */
+const TBAND=LITE?48:64, TERRAIN_BANDS=[];
 function* genTerrain(){
-  const tGeo=new THREE.PlaneGeometry(SIZE,SIZE,SEG,SEG); tGeo.rotateX(-Math.PI/2);
-  const tp=tGeo.attributes.position;
-  for(let row=0;row<NV;row++){
-    for(let i=row*NV;i<(row+1)*NV;i++){ HS[i]=rawHeight(tp.getX(i),tp.getZ(i)); tp.setY(i,HS[i]); }
-    Stream.tp=row/NV*0.6;
-    if((row&7)===7) yield;
+  for(let iz=0;iz<NVZ;iz++){
+    const z=WZ0+iz*CELL;
+    for(let ix=0;ix<NVX;ix++) HS[iz*NVX+ix]=rawHeight(WX0+ix*CELL,z);
+    Stream.tp=iz/NVZ*0.6;
+    if((iz&7)===7) yield;
   }
-  tGeo.computeVertexNormals(); yield;
-  const tc=new Float32Array(tp.count*3), cc=new THREE.Color();
-  for(let row=0;row<NV;row++){
-    for(let i=row*NV;i<(row+1)*NV;i++){
-      const x=tp.getX(i), z=tp.getZ(i);
-      terrainColor(x,z,HS[i],grad(x,z),cc);
-      tc[i*3]=cc.r; tc[i*3+1]=cc.g; tc[i*3+2]=cc.b;
+  const tmat=new THREE.MeshLambertMaterial({vertexColors:true}), cc=new THREE.Color(), hs=(ix,iz)=>HS[clamp(iz,0,SEGZ)*NVX+clamp(ix,0,SEGX)];
+  for(let b0=0;b0<SEGX;b0+=TBAND){
+    const nx=Math.min(TBAND,SEGX-b0), w=nx*CELL, g=new THREE.PlaneGeometry(w,WD,nx,SEGZ); g.rotateX(-Math.PI/2);
+    g.translate(WX0+b0*CELL+w/2,0,(WZ0+WZ1)/2);
+    const tp=g.attributes.position, tn=g.attributes.normal, tc=new Float32Array(tp.count*3), n=new THREE.Vector3();
+    for(let iz=0;iz<NVZ;iz++){
+      for(let k=0;k<=nx;k++){
+        const i=iz*(nx+1)+k, ix=b0+k, h=HS[iz*NVX+ix], x=tp.getX(i), z=tp.getZ(i);
+        tp.setY(i,h);
+        n.set(hs(ix-1,iz)-hs(ix+1,iz),2*CELL,hs(ix,iz-1)-hs(ix,iz+1)).normalize(); tn.setXYZ(i,n.x,n.y,n.z);
+        terrainColor(x,z,h,grad(x,z),cc); tc[i*3]=cc.r; tc[i*3+1]=cc.g; tc[i*3+2]=cc.b;
+      }
+      if((iz&15)===15) yield;
     }
-    Stream.tp=0.6+row/NV*0.4;
-    if((row&7)===7) yield;
+    g.setAttribute('color', new THREE.BufferAttribute(tc,3)); g.computeBoundingSphere();
+    const mesh=new THREE.Mesh(g,tmat); mesh.receiveShadow=true; scene.add(mesh);
+    TERRAIN_BANDS.push({mesh,x0:WX0+b0*CELL,x1:WX0+b0*CELL+w});
+    Stream.tp=0.6+(b0+nx)/SEGX*0.4;
   }
-  tGeo.setAttribute('color', new THREE.BufferAttribute(tc,3));
-  const terrain=new THREE.Mesh(tGeo, new THREE.MeshLambertMaterial({vertexColors:true}));
-  terrain.receiveShadow=true;
-  scene.add(terrain);
-
   waterMat=new THREE.MeshPhongMaterial({color:0x2c5560, transparent:true, opacity:0.84, shininess:140, specular:0x8fa4b4});
   waterMat.onBeforeCompile=sh=>{
     sh.uniforms.uTime=timeU;
@@ -78,13 +89,15 @@ function* genTerrain(){
   };
   waterMat.customProgramCacheKey=()=>'water';
   applyEnv(envCur);
-  const wg=new THREE.PlaneGeometry(SIZE,SIZE,1,1); wg.rotateX(-Math.PI/2);
+  const wg=new THREE.PlaneGeometry(WW,WD,1,1); wg.rotateX(-Math.PI/2); wg.translate((WX0+WX1)/2,0,(WZ0+WZ1)/2);
   water=new THREE.Mesh(wg,waterMat); water.position.y=WATER; water.receiveShadow=true;
   scene.add(water);
 
   spawn.x=VIL.spawn.x; spawn.z=VIL.spawn.z;
   P.x=spawn.x; P.z=spawn.z; P.y=getH(P.x,P.z);
   { const ux=VIL.x-P.x, uz=VIL.z-P.z; P.yaw=Math.atan2(-ux,-uz); P.face=P.yaw; }
-  buildVillage();
+  buildVillage(); buildVale();
 }
+// terrain strips farther than the fog are hidden (checked with the plant chunks, see cullChunks)
+function cullTerrain(){ const cx=camera.position.x, far=scene.fog.far+60; for(const b of TERRAIN_BANDS) b.mesh.visible=Math.max(b.x0-cx,0,cx-b.x1)<far; }
 

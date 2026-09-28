@@ -173,7 +173,7 @@ function buildVillage(){
   { const S=VIL.sign, {A}=inF(frameM(S.x,Y,S.z,S.rot)), T=woodC(0x5a3e28);
     A(vbox(0.14,2.2,0.14,0,1.1,0),T); A(vbox(1.4,0.45,0.08,0.45,1.8,0),woodC(0x8a6a44)); A(vbox(1.1,0.07,0.09,0.45,1.8,0),(x,y,z,c)=>c.set(0x3a2a1c));
   }
-  // standing stones around the boss arena
+  // standing stones around the Rootwarden's arena (the vale's two shrines are in buildings-vale.js)
   for(let k=0;k<11;k++){
     const a=k/11*TAU+0.2, x=ARENA.x+Math.sin(a)*(ARENA.r+1.5), z=ARENA.z+Math.cos(a)*(ARENA.r+1.5), hgt=AR(2.6,4.2);
     const {A}=inF(frameM(x,ARENA.h-0.3,z,a));
@@ -195,6 +195,7 @@ function updateVillage(dt){
   const night=envCur.night;
   windowMat.emissiveIntensity=smoothstep(0.05,0.9,night)*1.35+0.08;
   const fl=0.85+0.15*Math.sin(t*13)*Math.sin(t*7.3);
+  const FV=vilAt(camera.position.x,camera.position.z); fireLight.position.set(FV.fire.x,FV.h+(FV===VIL2?1.6:1.3),FV.fire.z);
   fireLight.intensity=(0.35+night*2.4)*fl;
   flames.forEach((m,i)=>{ const s=0.75+0.3*Math.sin(t*(9+i*2.3)+i)*Math.sin(t*5.1+i*1.7); m.scale.set(1+0.1*Math.sin(t*11+i),s,1+0.1*Math.cos(t*10+i)); m.rotation.y=t*(0.5+i*0.3); });
   const d=smoke.data, p=smoke.pos;

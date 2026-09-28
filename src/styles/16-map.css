@@ -9,6 +9,8 @@ body:not(.playing) #minimap{ visibility:hidden; }
 body.touch #minimap{ width:104px; height:104px; border-radius:14px; }
 #map{ width:min(860px,calc(100vw - 24px)); height:min(92dvh,900px); max-height:none; }
 .map-here{ margin-left:auto; font-size:13px; color:var(--lichen); }
+.map-land{ margin-left:12px; font-size:12px; padding:4px 10px; }
+.map-land[hidden]{ display:none; }
 .map-box{ position:relative; flex:1; min-height:0; display:grid; place-items:center; }
 #mapC{ border-radius:12px; touch-action:none; box-shadow:0 0 0 1px var(--line); }
 .map-tip{ position:absolute; z-index:2; transform:translate(-50%,calc(-100% - 12px)); pointer-events:none; white-space:nowrap;

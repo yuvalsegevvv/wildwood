@@ -1,4 +1,4 @@
-//@ Monster zones (ZONES, zoneAt, zonePoint), dividing ridges (zoneRidge), boss arena (ARENA). Pure.
+//@ Monster zones of the home forest (ZONES, zoneAt, zonePoint), dividing ridges (zoneRidge), boss arena (ARENA); the vale's zones are in vale.js. Pure.
 /* ---------- monster zones ----------
    The wilds are split into 16 zones in three rings around the village, one zone per monster (and one for the boss).
    Zones are walled off by low ridges (well below the border mountains) with a pass in the middle of each wall;
@@ -13,18 +13,21 @@ const ZONES=[], RING_START=[];
     const w=TAU/keys.length;
     if(i>0){ const prev=ZONE_RINGS[i-1]; start=RING_START[i-1]+(prev.length-1)*(TAU/prev.length); }
     RING_START[i]=start;
-    keys.forEach((key,j)=>ZONES.push({key,ring:i,j,center:start+j*w,w,r0:RINGS[i],r1:RINGS[i+1],name:ZONE_NAMES[key],level:key==='boss'?15:key}));
+    keys.forEach((key,j)=>ZONES.push({key,ring:i,j,center:start+j*w,w,r0:RINGS[i],r1:RINGS[i+1],name:ZONE_NAMES[key],level:key==='boss'?15:key,boss:key==='boss'}));
   });
 }
 function zoneAt(x,z){
+  if(inVale(x)) return valeZoneAt(x,z);
   const dx=x-VIL.x, dz=z-VIL.z, r=Math.hypot(dx,dz);
   if(r<RINGS[0]||r>=RINGS[3]) return null;
   const i=r<RINGS[1]?0:r<RINGS[2]?1:2, n=ZONE_RINGS[i].length, w=TAU/n;
   const rel=(((Math.atan2(dx,dz)-RING_START[i]+w/2)%TAU)+TAU)%TAU;
   return ZONES.find(zn=>zn.ring===i&&zn.j===Math.floor(rel/w)%n);
 }
-function zonePoint(zn,fa,fr){ const a=zn.center+fa*zn.w, r=zn.r0+fr*(zn.r1-zn.r0); return [VIL.x+Math.sin(a)*r,VIL.z+Math.cos(a)*r]; }
+// fa, fr: -0.5..0.5 across the zone's angle, 0..1 from its inner to its outer edge (vale zones: angle and distance from the centre)
+function zonePoint(zn,fa,fr){ if(zn.vale){ const a=fa*TAU, r=Math.abs(fr-0.5)*2*zn.R; return [zn.x+Math.sin(a)*r,zn.z+Math.cos(a)*r]; } const a=zn.center+fa*zn.w, r=zn.r0+fr*(zn.r1-zn.r0); return [VIL.x+Math.sin(a)*r,VIL.z+Math.cos(a)*r]; }
 function zoneRidge(x,z){
+  if(inVale(x)) return valeRidge(x,z);
   const dx=x-VIL.x, dz=z-VIL.z, r=Math.hypot(dx,dz);
   if(r<RINGS[0]-2||r>RINGS[3]-4) return 0;
   const a=Math.atan2(dx,dz); let h=0;
@@ -58,4 +61,4 @@ function findArena(){
   if(!best){ const [x,z]=zonePoint(zn,0,0.45); best={x,z,h:Math.max(4,baseHeight(x,z))}; }
   return best;
 }
-const ARENA=Object.assign(findArena(),{r:20});
+const ARENA=Object.assign(findArena(),{r:20,key:'boss'});

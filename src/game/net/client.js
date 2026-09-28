@@ -1,7 +1,7 @@
 //@ Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
 /* Messages from the server (see src/server/api.js):
    welcome{pid,day,dev,players}  mons{list}  you{level,exp,hp,maxHp,dmg,def,red,dead,gear}  tp{x,z,face}
-   snap{day, pl:[[id,x,y,z,face,hp,maxHp,level,dead]], mo:[[id,x,z,face,hp,flags]], b:[boss], ev:[[kind,...]]} */
+   snap{day, pl:[[id,x,y,z,face,hp,maxHp,level,dead]], mo:[[id,x,z,face,hp,flags]], b:[[bossId,engaged,phase,immune,enraged,stunned,totems]...], ev:[[kind,...]]} */
 function playerName(){ let n=''; try{ n=localStorage.getItem('wildwood-name')||''; }catch(_){} return n; }
 /* Your account code: made once in this browser. A server that keeps saves stores your progress under it,
    and the first time it sees the code it takes over this browser's save (that is how old progress moves over). */
@@ -19,7 +19,7 @@ function netHandle(msg){
     case 'welcome': onWelcome(msg); break;
     case 'mons': (msg.list||[]).forEach(addMonView); break;
     case 'you': applyYou(msg); break;
-    case 'tp': P.x=msg.x; P.z=msg.z; P.y=getH(P.x,P.z); P.vx=P.vz=P.vy=0; P.face=P.yaw=msg.face; playerUp(); break;
+    case 'tp': P.x=msg.x; P.z=msg.z; P.inTun=inTunnelBore(P.x,P.z); P.y=getH(P.x,P.z); P.vx=P.vz=P.vy=0; P.face=P.yaw=msg.face; playerUp(); break;
     case 'snap': applySnap(msg); break;
     case 'auth': onAuth(msg); break;
     case 'authfail': onAuthFail(msg); break;
@@ -65,7 +65,9 @@ function applyEvent(e){
     case 'pend': onProjEnd(e[1],e[2],e[3],e[4],e[5]); break;
     case 'tele': addTele(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8]); break;
     case 'tend': endTele(e[1],!!e[2]); break;
-    case 'roar': bossRoar(); break;
+    case 'roar': bossRoar(e[1]); break;
+    case 'warp': onWarp(e[1],e[2],e[3],e[4],e[5]); break;
+    case 'vale': if(e[1]===me) onValeStep(e[2]); break;
     case 'thunder': onThunder(e[1],e[2]); break;
     case 'weather': if(!e[1]&&WX.kind&&started) toast('The rain is easing off.',''); break;
     case 'area': onArea(e[1],e[2],e[3],e[4],e[5],e[6],e[7]); break;

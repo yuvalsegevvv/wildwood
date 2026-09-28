@@ -110,6 +110,11 @@ function devP(p,msg){
   else if(c==='skills'){ for(const id of SKILL_IDS) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Every skill learned','good'); }
   else if(c==='weather'){ const k={clear:0,rain:1,storm:2}[msg.v]; if(k===0){ W.kind=0; W.t=0; W.dur=0; ev('weather',0); } else if(k) startWeatherS(k); }
   else if(c==='coins'){ p.gear.coins+=1000; p.dirty=true; }
+  else if(c==='vale'){ const v=clampInt(msg.v,0,2,1); if(v>=1) openValeP(p); if(v>=2){ p.gear.east=2; ev('vale',p.id,2); } if(v===0) p.gear.east=0; p.dirty=true; }
+  else if(c==='tunnel'){   // v: 'in' (halfway through), 'east' (the east portal), 'hanami' (its gate); default the west portal
+    const xy=/^-?\d+,-?\d+$/.test(msg.v||'')?msg.v.split(',').map(Number):null;   // or 'x,z' anywhere (testing)
+    const x=xy?clamp(xy[0],WX0+14,WX1-14):msg.v==='in'?(TUN.p0+TUN.p1)/2:msg.v==='east'?TUN.x1+12:msg.v==='hanami'?VIL2.anchors.gate.x:TUN.x0-14, z=xy?clamp(xy[1],WZ0+14,WZ1-14):msg.v==='hanami'?VIL2.anchors.gate.z:TUN.z;
+    if(x>TUN.p0&&p.gear.east<1) return; p.x=x; p.z=z; p.y=getH(x,z); sendTo(p.id,{t:'tp',x,z,face:-Math.PI/2}); }
   else if(c==='three'){ const id=randomItem(tierFor(p.level),0); for(let k=0;k<MERGE_COUNT;k++) addItemP(p,id,true); toastTo(p.id,'Three '+ITEM[id].name+' added for the forge','good'); }
   else if(c==='lucky'){ const r=clampInt(msg.v,2,4,2); addItemP(p,randomItem(tierFor(p.level),r)); }
   else if(c==='reset'){ const keep=p.gear.startAll; p.gear=newGearFor(clsOfP(p)); p.gear.startAll=keep; if(keep) giveAllP(p); p.level=1; fillOffersP(p); p.exp=0; p.dead=false; recalcP(p); p.hp=p.maxHp; gearChangedP(p); toastTo(p.id,'Progress reset','good'); }

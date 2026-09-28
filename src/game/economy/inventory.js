@@ -43,7 +43,7 @@ function renderInvInfo(){
   const kind=it.kind==='weapon'?it.slot[0].toUpperCase()+it.slot.slice(1)+' ('+CLASSES[CLASS_OF[it.slot]].name+')':SLOT_LABEL[slot];
   let cmp='';
   const have=bagCounts()[it.id]||0;
-  if(!worn && have>=MERGE_COUNT && it.rar<4) cmp=`<span style="color:${RAR_COL[it.rar+1]}">You have ${have}: Greta's forge in the village can merge 3 into a ${RARITY[it.rar+1]} one.</span>`;
+  if(!worn && have>=MERGE_COUNT && it.rar<4) cmp=`<span style="color:${RAR_COL[it.rar+1]}">You have ${have}: Greta's forge (or Tetsuo's in Hanami) can merge 3 into a ${RARITY[it.rar+1]} one.</span>`;
   if(!worn){ const d=statDiff(it,cur); cmp=(cmp?cmp+'<br>':'')+(cur?(d?`${d} <span class="muted">compared to your ${cur.name}</span>`:'<span class="muted">Same as what you wear</span>'):'<span class="up">Fills an empty slot</span>'); }
   const btn=worn?(slot==='weapon'?'<span class="muted">You always hold a weapon: drag another one onto your hand to swap.</span>':`<button class="chip" data-unequip="${slot}">Take off</button>`)
     :`<button class="chip" data-equip="${it.id}" ${locked?'disabled':''}>${locked?'Needs level '+it.lv:'Equip'}</button>`;

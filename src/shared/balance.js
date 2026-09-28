@@ -10,10 +10,13 @@
      atk     seconds between its attacks */
 const fLv=L=>L+Math.pow(13/12,L);
 /* Equipment numbers (also used to scale enemies to the gear you are expected to have at their level) */
-const TIER_ATK=[4,12,26,45];
-const ARMOR_HP={helmet:[8,25,55,100],top:[15,45,100,180],bottom:[10,32,70,130],shoes:[6,18,40,75]};
-const ARMOR_DEF={helmet:[1,3,5,8],top:[2,5,10,16],bottom:[1,3,6,10],shoes:[1,2,4,6]};
-const tierFor=L=>L>=15?3:L>=10?2:L>=5?1:0;
+// tiers 0-3 are the home forest's (levels 1, 5, 10, 15), 4-5 the Sakura Vale's (levels 20, 25)
+const TIER_ATK=[4,12,26,45,70,100];
+const ARMOR_HP={helmet:[8,25,55,100,160,240],top:[15,45,100,180,290,430],bottom:[10,32,70,130,210,310],shoes:[6,18,40,75,120,180]};
+const ARMOR_DEF={helmet:[1,3,5,8,11,15],top:[2,5,10,16,22,30],bottom:[1,3,6,10,14,19],shoes:[1,2,4,6,9,12]};
+const tierFor=L=>L>=25?5:L>=20?4:L>=15?3:L>=10?2:L>=5?1:0;
+// the highest monster level (zones, quests)
+const MAX_ZONE_LV=25;
 const setHP=t=>ARMOR_HP.helmet[t]+ARMOR_HP.top[t]+ARMOR_HP.bottom[t]+ARMOR_HP.shoes[t];
 const setDef=t=>ARMOR_DEF.helmet[t]+ARMOR_DEF.top[t]+ARMOR_DEF.bottom[t]+ARMOR_DEF.shoes[t];
 const defRed=d=>d/(d+60);

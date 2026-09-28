@@ -32,7 +32,7 @@ const EDIT=[
     {k:'shoes',label:'Shoes',type:'seg',opts:[['boots','Boots'],['sneakers','Sneakers']]},
     {k:'shoeColor',label:'',type:'color',opts:SHOEC},
     {k:'armor',label:'Armor',type:'seg',opts:[['show','Show'],['hide','Hide (clothes only)']]},
-    {k:'hat',label:'Hat',type:'seg',opts:[['none','None'],['ranger','Ranger'],['beanie','Beanie'],['cap','Cap']]},
+    {k:'hat',label:'Hat',type:'seg',opts:[['none','None'],['ranger','Ranger'],['beanie','Beanie'],['cap','Cap'],['kasa','Kasa']]},
     {k:'hatColor',label:'',type:'color',opts:HATC},
     {k:'pack',label:'Backpack',type:'seg',opts:[[true,'On'],[false,'Off']]}
   ]}

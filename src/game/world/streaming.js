@@ -2,7 +2,7 @@
 /* the streaming scheduler: does a little work each frame, nearest areas first */
 const Stream={ job:null, terrainDone:false, pending:[], done:0, needed:null, failed:false };
 for(let i=0;i<NCH;i++) Stream.pending.push(i);
-const NEAR_R=55;
+const NEAR_R=55, FAR_R=320;
 function streamPump(budgetMs){
   if(Stream.failed) return;
   const t0=performance.now();
@@ -12,6 +12,7 @@ function streamPump(budgetMs){
         if(!Stream.terrainDone) Stream.job={gen:genTerrain(), rng:mulberry32(99), kind:'t'};
         else if(Stream.pending.length){
           Stream.pending.sort((a,b)=>distToChunk(a,P.x,P.z)-distToChunk(b,P.x,P.z));
+          if(distToChunk(Stream.pending[0],P.x,P.z)>FAR_R) return;   // far chunks (the other land) wait until you come closer
           const ci=Stream.pending.shift();
           Stream.job={gen:genChunk(ci), rng:mulberry32(1000+ci*7919), kind:'c', ci};
         } else return;

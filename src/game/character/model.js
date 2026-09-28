@@ -247,6 +247,9 @@ function buildCharacter(L){
     hparts.push(pc(sculpt(shell(0.133,0.385*Math.PI,0.09*Math.PI,0,0.4),false).scale(fs[0],fs[1],1),c=>c.set(hc).multiplyScalar(0.7)));
     hparts.push(pc(vbox(0.018,0.062,0.016,0,0.03,-0.116).rotateX(0.14),c=>c.set(hc).multiplyScalar(0.8)));
     if(L.plume) hparts.push(pc(new THREE.CylinderGeometry(0.13,0.13,0.024,20,1,false,Math.PI,Math.PI).rotateZ(-Math.PI/2).scale(1,0.8,1.05).translate(0,0.03,0).rotateX(0.4).translate(0,0.02*fs[1],0.0),(x,y,z,c)=>c.set(L.plume).multiplyScalar(0.8+0.35*clamp((y-0.1)*8))));
+  } else if(L.hat==='kasa'){   // a conical straw hat (the Sakura Vale)
+    hparts.push(pc(new THREE.ConeGeometry(0.3,0.15,20).translate(0,0.14*fs[1],0),(x,y,z,c)=>c.set(hc).multiplyScalar(0.84+0.22*h3(Math.round(Math.atan2(z,x)*8),0,5))));
+    hparts.push(pc(new THREE.CylinderGeometry(0.1,0.11,0.05,16).translate(0,0.085*fs[1],0),c=>c.set(hc).multiplyScalar(0.6)));
   } else if(L.hat==='cap'){
     hparts.push(pc(sculpt(shell(0.119,0,0.435*Math.PI,0,0.33),false).scale(fs[0],fs[1],1),c=>c.set(hc)));
     hparts.push(pc(new THREE.CylinderGeometry(0.1,0.1,0.01,18,1,false,Math.PI/2,Math.PI).scale(1,1,1.15).rotateX(-0.12).translate(0,0.062*fs[1],-0.086),c=>c.set(hc).multiplyScalar(0.85)));

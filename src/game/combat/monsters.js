@@ -1,4 +1,4 @@
-//@ Monster families and 15 monsters (MON_DEFS), models, camps, AI, animation
+//@ Monster views: models for every family (slime, shroom, beetle/spider, boar, treant, goblin/oni/tengu, fox, wisp, totem), animation
 const MONS=[], CAMPS=[], MON_GEO={};
 function monMat(glow){ const m=new THREE.MeshLambertMaterial({vertexColors:true, emissive:glow||0x000000}); m.userData.glow=new THREE.Color(glow||0); return m; }
 function pivot(parent,x,y,z,mesh){ const g=new THREE.Group(); g.position.set(x,y,z); if(mesh) g.add(mesh); parent.add(g); return g; }
@@ -21,6 +21,17 @@ function monGeos(d){
       pc(vbox(0.08,0.02,0.02,0,0.4,-0.23),c=>c.set(0x6a3a2a))
     ]);
     G.foot=pc(csph(0.1,8,6).scale(1,0.6,1.4).translate(0,0.06,0),c=>c.set(p.feet));
+  } else if(d.model==='beetle' && p.spider){   // Jorogumo: a round banded abdomen, a small head, four long legs a side
+    G.body=merge([
+      pc(csph(0.5,18,12).scale(0.95,0.75,1.1).translate(0,0.62,0.35),(x,y,z,c)=>{ c.set(p.shell); if(Math.abs(Math.sin(z*9))<0.22&&y>0.5) c.set(p.seam); c.lerp(_tint.set(p.sheen),clamp((y-0.8)*2)*0.4); }),
+      pc(csph(0.28,12,10).scale(1,0.8,1).translate(0,0.5,-0.3),c=>c.set(p.head)),
+      ...[-1,1].flatMap(sd=>[0.06,0.13].map(ex=>pc(csph(0.035,6,5).translate(sd*ex,0.6,-0.53),c=>c.set(p.eye)))),
+      ...[-1,1].map(sd=>pc(new THREE.ConeGeometry(0.03,0.18,5).rotateX(Math.PI).translate(sd*0.07,0.36,-0.52),c=>c.set(0x1a1414)))
+    ]);
+    for(const sd of [-1,1]){ const legs=[]; for(const lz of [-0.42,-0.14,0.14,0.42]){
+      legs.push(pc(cyl(0.03,0.025,0.6,5).translate(0,0.3,0).rotateZ(-sd*0.9).translate(sd*0.22,0.52,lz*0.8),c=>c.set(p.legs)));
+      legs.push(pc(cyl(0.025,0.015,0.9,5).translate(0,-0.45,0).rotateZ(sd*0.35).translate(sd*0.68,0.85,lz),c=>c.set(p.legs)));
+    } G[sd<0?'lL':'lR']=merge(legs); }
   } else if(d.model==='beetle'){
     G.body=merge([
       pc(csph(0.5,18,12).scale(0.8,0.5,1.2).translate(0,0.42,0),(x,y,z,c)=>{ c.set(p.shell); if(Math.abs(x)<0.025&&y>0.55) c.set(p.seam); c.lerp(_tint.set(p.sheen),clamp((y-0.55)*2)*0.35); }),
@@ -53,14 +64,57 @@ function monGeos(d){
   } else if(d.model==='totem'){
     G.body=merge([
       pc(vbox(1.0,0.3,1.0,0,0.15,0),stoneC),
-      pc(cyl(0.3,0.4,2.0,6,8).translate(0,1.3,0),(x,y,z,c)=>{ stoneC(x,y,z,c); if(((y*2.2)%1+1)%1<0.14) c.set(0x6af08a); }),
-      pc(new THREE.OctahedronGeometry(0.3,0).scale(1,1.5,1).translate(0,2.6,0),c=>c.set(0x7af0a0))
+      pc(cyl(0.3,0.4,2.0,6,8).translate(0,1.3,0),(x,y,z,c)=>{ stoneC(x,y,z,c); if(((y*2.2)%1+1)%1<0.14) c.set(p.band||0x6af08a); }),
+      pc(new THREE.OctahedronGeometry(0.3,0).scale(1,1.5,1).translate(0,2.6,0),c=>c.set(p.crystal||0x7af0a0))
     ]);
+  } else if(d.model==='fox'){   // kitsune: slim body, long snout, tall ears, a fan of tails with pale tips
+    G.body=merge([
+      pc(csph(0.4,16,12).scale(0.72,0.7,1.45).translate(0,0.66,0),(x,y,z,c)=>{ c.set(p.body); if(y<0.5) c.lerp(_tint.set(p.belly),0.7); }),
+      pc(csph(0.24,12,10).scale(0.95,0.9,1.05).translate(0,0.9,-0.6),(x,y,z,c)=>{ c.set(p.body); if(y<0.84) c.lerp(_tint.set(p.belly),0.8); }),
+      pc(new THREE.ConeGeometry(0.11,0.34,8).rotateX(-Math.PI/2).translate(0,0.84,-0.9),(x,y,z,c)=>{ c.set(p.belly); if(z<-1.03) c.set(0x1a1414); }),
+      pc(csph(0.1,10,8).scale(1.6,1,1.1).translate(0,1.06,-0.58),c=>c.set(p.tip)),   // the white blaze
+      ...[-1,1].flatMap(sd=>[pc(new THREE.ConeGeometry(0.08,0.26,5).rotateZ(-sd*0.15).translate(sd*0.12,1.2,-0.55),(x,y,z,c)=>{ c.set(p.body); if(y>1.25) c.set(0x1a1414); }),
+        pc(csph(0.035,6,5).translate(sd*0.1,0.96,-0.78),c=>c.set(p.eye))])
+    ]);
+    const n=Math.max(1,Math.min(9,p.tails|0||1)), tails=[];
+    for(let i=0;i<n;i++){ const a=n>1?(i/(n-1)-0.5)*Math.min(2.4,0.5*n):0;
+      tails.push(pc(csph(0.17,10,8).scale(1,1,3.4).translate(0,0,0.52).rotateX(-0.55).rotateY(a),(x,y,z,c)=>{ c.set(p.body); if(Math.hypot(x,y,z)>0.85) c.set(p.tip); })); }
+    G.tail=merge(tails);
+    G.leg=pc(cyl(0.05,0.04,0.46,6).translate(0,-0.23,0),(x,y,z,c)=>{ c.set(p.legs); });
+  } else if(d.model==='wisp'){   // onibi: a floating flame with a bright core; yurei (ghost): a pale figure with long hair and a trailing hem
+    if(p.ghost){
+      G.body=merge([
+        pc(new THREE.ConeGeometry(0.36,1.2,12,4,true).rotateX(Math.PI).translate(0,0.95,0),(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.8+y*0.18); }),
+        pc(csph(0.2,12,10).translate(0,1.62,0),c=>c.set(p.core)),
+        pc(csph(0.23,12,10).scale(1,1.25,1).translate(0,1.55,0.05),(x,y,z,c)=>{ c.set(p.hair); if(z<-0.1&&y<1.72&&y>1.35) c.set(p.core); }),
+        ...[-1,1].map(sd=>pc(cyl(0.05,0.07,0.6,6).rotateX(-1.2).translate(sd*0.24,1.3,-0.22),c=>c.set(p.body))),
+        ...[-1,1].map(sd=>pc(csph(0.025,6,5).translate(sd*0.07,1.62,-0.19),c=>c.set(p.eye)))
+      ]);
+    } else {
+      G.body=merge([
+        pc(csph(0.42,16,12).scale(1,1.1,1).translate(0,0.95,0),(x,y,z,c)=>{ c.set(p.body).lerp(_tint.set(p.core),clamp(1-Math.hypot(x,z)*2.2)*0.5); }),
+        pc(new THREE.ConeGeometry(0.34,0.9,12).translate(0,1.62,0.05),(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.9+(y-1.2)*0.5); }),
+        ...[-1,1].map(sd=>pc(csph(0.07,8,6).scale(1,1.4,1).translate(sd*0.13,1.02,-0.37),c=>c.set(p.eye)))
+      ]);
+      G.flick=pc(new THREE.ConeGeometry(0.16,0.5,8).translate(0,0.25,0),(x,y,z,c)=>c.set(p.core));
+    }
   } else if(d.model==='goblin'){
     const look={sex:'male',height:1,build:0.9,skin:p.skin,face:'angular',eyes:p.eyes,facial:'none',hair:'bald',hairColor:0x1d1714,top:p.top,topColor:p.topColor,bottom:p.bottom,bottomColor:p.bottomColor,shoes:'boots',shoeColor:0x2b2420,hat:p.hat,hatColor:p.hatColor,pack:false};
     const rig=buildCharacter(look);
     for(const sd of [-1,1]) rig.head.add(new THREE.Mesh(pc(new THREE.ConeGeometry(0.035,0.16,5).rotateZ(-sd*(Math.PI/2-0.35)).translate(sd*0.15,0.03,0.01),c=>c.set(p.skin)),matChar));
-    rig.elR.add(new THREE.Mesh(merge([pc(cyl(0.03,0.075,0.62,7).translate(0,-0.62,0),c=>c.set(p.club)),pc(csph(0.08,6,5).translate(0,-0.9,0),c=>c.set(p.club).multiplyScalar(0.8))]),matChar));
+    const W=p.weapon, wood=0x5a3e28;
+    if(W==='kanabo') rig.elR.add(new THREE.Mesh(merge([pc(cyl(0.05,0.1,0.95,8).translate(0,-0.75,0),c=>c.set(p.club)),
+      ...[0,1,2,3,4,5].map(k=>pc(new THREE.ConeGeometry(0.025,0.08,4).rotateZ(Math.PI/2).translate(0.1,-0.5-(k%3)*0.2,0).rotateY(k*1.05),c=>c.set(0xb8b0a0)))]),matChar));
+    else if(W==='spear') rig.elR.add(new THREE.Mesh(merge([pc(cyl(0.02,0.02,1.9,6).translate(0,-0.55,0),c=>c.set(wood)),pc(new THREE.ConeGeometry(0.04,0.26,4).rotateX(Math.PI).translate(0,-1.62,0),c=>c.set(0xc0c6cc))]),matChar));
+    else if(W==='katana') rig.elR.add(new THREE.Mesh(merge([pc(vbox(0.035,0.9,0.012,0,-0.72,0),(x,y,z,c)=>c.set(p.club).multiplyScalar(0.85+Math.abs(x)*4)),pc(cyl(0.06,0.06,0.02,10).translate(0,-0.26,0),c=>c.set(0x2a2420)),pc(cyl(0.02,0.02,0.22,6).translate(0,-0.13,0),c=>c.set(0x1a1414))]),matChar));
+    else rig.elR.add(new THREE.Mesh(merge([pc(cyl(0.03,0.075,0.62,7).translate(0,-0.62,0),c=>c.set(p.club)),pc(csph(0.08,6,5).translate(0,-0.9,0),c=>c.set(p.club).multiplyScalar(0.8))]),matChar));
+    // yokai extras on the head and back (head space: front is -z, the crown about 0.2 above the head pivot)
+    if(p.horns) for(const sd of [-1,1]) rig.head.add(new THREE.Mesh(pc(new THREE.ConeGeometry(0.04,0.22,6).rotateZ(-sd*0.3).translate(sd*0.08,0.2,-0.02),c=>c.set(p.horns)),matChar));
+    if(p.kasa) rig.head.add(new THREE.Mesh(pc(new THREE.ConeGeometry(0.36,0.2,14).translate(0,0.17,0),(x,y,z,c)=>c.set(p.kasa).multiplyScalar(0.85+h3(Math.round(Math.atan2(z,x)*6),0,3)*0.25)),matChar));
+    if(p.nose){ rig.head.add(new THREE.Mesh(pc(new THREE.ConeGeometry(0.035,0.2,6).rotateX(-Math.PI/2).translate(0,0.0,-0.2),c=>c.set(p.nose)),matChar)); }
+    if(p.shell){ rig.spine.add(new THREE.Mesh(pc(csph(0.22,12,9).scale(1.05,1.2,0.55).translate(0,0.3,0.16),(x,y,z,c)=>{ c.set(p.shell); if(Math.abs(Math.sin(x*14)*Math.sin(y*12))>0.8) c.multiplyScalar(0.7); }),matChar));
+      rig.head.add(new THREE.Mesh(pc(cyl(0.1,0.1,0.02,12).translate(0,0.125,0),c=>c.set(0xd8e8e0)),matChar)); }
+    if(p.wings) for(const sd of [-1,1]) rig.spine.add(new THREE.Mesh(pc(new THREE.ConeGeometry(0.2,0.8,4).scale(0.4,1,1.6).rotateZ(-sd*0.7).translate(sd*0.34,0.45,0.2),c=>c.set(p.wings)),matChar));
     G.template=rig.root;
   }
   MON_GEO[d.id]=G; return G;
@@ -72,6 +126,8 @@ function buildMonster(d,mat){
   else if(d.model==='shroom'){ P0.body=M(G.body); g.add(P0.body); P0.fL=pivot(g,-0.13,0,0,M(G.foot)); P0.fR=pivot(g,0.13,0,0,M(G.foot)); }
   else if(d.model==='totem'){ P0.body=M(G.body); g.add(P0.body); }
   else if(d.model==='beetle'){ P0.body=M(G.body); g.add(P0.body); P0.lL=M(G.lL); P0.lR=M(G.lR); g.add(P0.lL,P0.lR); }
+  else if(d.model==='fox'){ P0.body=M(G.body); g.add(P0.body); P0.tail=pivot(g,0,0.78,0.5,M(G.tail)); P0.legs=[[-0.15,-0.4],[0.15,-0.4],[-0.15,0.38],[0.15,0.38]].map(([x,z])=>pivot(g,x,0.46,z,M(G.leg))); }
+  else if(d.model==='wisp'){ P0.body=M(G.body); g.add(P0.body); if(G.flick){ P0.flick=pivot(g,0,1.9,0.05,M(G.flick)); P0.flick.children[0].castShadow=false; } }
   else if(d.model==='boar'){ P0.body=M(G.body); g.add(P0.body); P0.legs=[[-0.2,-0.4],[0.2,-0.4],[-0.2,0.4],[0.2,0.4]].map(([x,z])=>pivot(g,x,0.42,z,M(G.leg))); }
   else if(d.model==='treant'){
     P0.body=M(G.body); g.add(P0.body);
@@ -87,7 +143,7 @@ function buildMonster(d,mat){
 /* Monsters are simulated by the world server; the client keeps a view of each one (MONS), created from the
    roster the server sends on join, moved smoothly toward the latest snapshot, and animated locally. */
 const MON_BY_ID=new Map(), DEF_BY_ID={};
-[...MON_DEFS,BOSS_DEF,TOTEM_DEF,THORN_DEF].forEach(d=>{ DEF_BY_ID[d.id]=d; });
+ALL_MON_DEFS.forEach(d=>{ DEF_BY_ID[d.id]=d; });
 function addMonView(r){ // [id, defId, campX, campZ, scale, x, z, dead, temp]
   if(MON_BY_ID.has(r[0])) return MON_BY_ID.get(r[0]);
   const d=DEF_BY_ID[r[1]]; if(!d) return null;
@@ -96,14 +152,14 @@ function addMonView(r){ // [id, defId, campX, campZ, scale, x, z, dead, temp]
     x:r[5],z:r[6],y:getH(r[5],r[6]),tx:r[5],tz:r[6],face:0,tface:0,vx:0,vz:0,ph:AR(0,TAU),flash:0,slowT:0,
     dead:!!r[7],deadT:r[7]?9:0,aggro:false,immune:false,act:null,lunge:0,temp:!!r[8],spawnT:r[8]?0.6:0,boss:!!d.boss};
   g.visible=false; MONS.push(m); MON_BY_ID.set(m.id,m);
-  if(m.boss) BOSS.m=m;
+  if(m.boss) BOSS.list.push(m);
   return m;
 }
 function removeMonView(id){
   const m=MON_BY_ID.get(id); if(!m) return;
   scene.remove(m.g); m.mat.dispose(); MON_BY_ID.delete(id);
   const i=MONS.indexOf(m); if(i>=0) MONS.splice(i,1);
-  if(CB.target===m) CB.target=null; if(BOSS.m===m) BOSS.m=null;
+  if(CB.target===m) CB.target=null; BOSS.list=BOSS.list.filter(b=>b!==m); if(BOSS.m===m) BOSS.m=null;
 }
 function clearMonViews(){ [...MON_BY_ID.keys()].forEach(removeMonView); }
 function applyMonSnap(a){ // [id, x, z, face, hp, flags: 1 aggro, 4 slowed, 8 immune]
@@ -174,6 +230,16 @@ function animateMonster(m,dt,sp){
     const armA=m.act?(atk<0.5?2.4*atk*2:2.4-(atk-0.5)*2*2.6):0;
     P0.aL.rotation.x=m.act?armA:Math.sin(m.ph)*amp; P0.aR.rotation.x=m.act?armA:-Math.sin(m.ph)*amp;
     P0.body.rotation.z=Math.sin(t*0.8+m.ph)*0.03;
+  } else if(m.model==='fox'){
+    m.ph+=dt*sp*4.5;
+    const amp=Math.min(1,sp/2)*0.7;
+    P0.legs.forEach((l,k)=>{ l.rotation.x=Math.sin(m.ph+GAIT[k])*amp; });
+    P0.body.rotation.x=lunge*-0.3; P0.body.position.y=Math.abs(Math.sin(m.ph))*0.04*Math.min(1,sp);
+    P0.tail.rotation.y=Math.sin(t*2.2+m.s*7)*0.25; P0.tail.rotation.x=-0.1+Math.sin(t*1.7+m.s*3)*0.08;
+  } else if(m.model==='wisp'){
+    m.ph+=dt*(1.5+sp);
+    P0.body.position.y=0.25+Math.sin(m.ph*1.3)*0.15; P0.body.rotation.x=Math.min(0.35,sp*0.08)+lunge*-0.4;
+    if(P0.flick){ P0.flick.position.y=P0.body.position.y+1.9; P0.flick.scale.set(1,0.8+0.35*Math.sin(t*11+m.s*9),1); P0.flick.rotation.y=t*2; }
   } else if(m.model==='totem'){
     P0.body.rotation.y+=dt*0.4; P0.body.position.y=Math.sin(t*1.5+m.ph)*0.04;
   } else if(m.model==='goblin'){

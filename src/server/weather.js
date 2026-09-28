@@ -12,7 +12,7 @@ function updateWeatherS(dt){
     if(W.t>=W.dur){ W.kind=0; W.t=0; W.dur=0; ev('weather',0); }
     else if(W.kind===2 && W.t>20 && W.t<W.dur-20 && (W.bolt-=dt)<=0){
       W.bolt=AR(6,20);
-      const ps=[...S.players.values()]; if(ps.length){ const p=ps[Math.floor(Math.random()*ps.length)], a=AR(0,TAU), r=AR(40,220); ev('thunder',r1(clamp(p.x+Math.sin(a)*r,-HALF,HALF)),r1(clamp(p.z+Math.cos(a)*r,-HALF,HALF))); }
+      const ps=[...S.players.values()]; if(ps.length){ const p=ps[Math.floor(Math.random()*ps.length)], a=AR(0,TAU), r=AR(40,220); ev('thunder',r1(clamp(p.x+Math.sin(a)*r,WX0,WX1)),r1(clamp(p.z+Math.cos(a)*r,WZ0,WZ1))); }
     }
   } else if(W.next<=0) startWeatherS(Math.random()<0.3?2:1);
 }

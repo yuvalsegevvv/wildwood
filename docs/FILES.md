@@ -29,24 +29,25 @@ styles
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
   noise.js                           Seeded RNG (rand, R, pick), simplex noise2, fbm, clamp, lerp, smoothstep, h3 hash. Pure.
-  terrain.js                         Map size (SIZE, HALF, WATER), river (riverX), baseHeight, forestDensity, autumnAmt. Pure.
+  terrain.js                         Map size (SIZE, HALF, WATER; the whole world WX0..WX1 with the Sakura Vale east), river (riverX), baseHeight, forestDensity, autumnAmt. Pure.
   village-layout.js                  Village placement and layout (VIL): houses, stalls, anchors, paths, colliders. Pure.
-  zones.js                           Monster zones (ZONES, zoneAt, zonePoint), dividing ridges (zoneRidge), boss arena (ARENA). Pure.
-  village-helpers.js                 vDist, nearPath, pathAmt, plazaAmt, inBox, pushOutBoxes. Pure.
-  terrain-height.js                  rawHeight: base terrain + zone ridges + village and arena flattening. Pure.
+  zones.js                           Monster zones of the home forest (ZONES, zoneAt, zonePoint), dividing ridges (zoneRidge), boss arena (ARENA); the vale's zones are in vale.js. Pure.
+  vale.js                            The Sakura Vale east of the mountains: the tunnel (TUN), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt. Pure.
+  village-helpers.js                 vDist, nearPath, pathAmt, plazaAmt, inBox, pushOutBoxes: each works on the village on that side of the mountains (vilAt). Pure.
+  terrain-height.js                  rawHeight: base terrain + zone ridges + village, arena and tunnel flattening. Pure.
   balance.js                         Level formulas: fLv, gear tiers, expected gear, XP curve, coins. Pure.
-  monster-defs.js                    Monster families (FAM), the 15 monsters (MON_DEFS), prepDef, boss / totem / thornling defs. Pure.
+  monster-defs.js                    Monster families (FAM), the 35 monsters (MON_DEFS: 15 home, 20 in the Sakura Vale), prepDef, the three bosses (BOSS_DEFS) with their totems and adds. Pure.
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills (SKILLS, abilityOf). Pure.
-  items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 4 level tiers x 5 rarities, prices, drop tables, merging, armour looks, gear helpers. Pure.
+  items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, prices, drop tables, merging, armour looks, gear helpers. Pure.
   quests.js                          Quest board: endless random quests (hunt, bounty, scout, boss) scaled to your level, and their rewards. Pure.
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
-  world.js                           Server heightmap (coarser than the client's): SEG, HS, getH, grad
+  world.js                           Server heightmap over the whole world (coarser than the client's): SEG, HS, getH, grad
   players.js                         Players on the server: records, stats, XP and levels, damage taken, knock-out and respawn, private state ("you")
   monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits), kills, shared rewards, loot
-  boss.js                            The Rootwarden on the server: engagement, cleave / root / slam telegraphs, shield + totems, enrage + adds, reset
+  boss.js                            The bosses on the server (Rootwarden, Akaoni, Kyuubi): engagement, cleave / root / slam telegraphs, shield + totems, enrage + adds, reset
   economy.js                         Economy on the server: equip, shops (buy / sell), loot, quests (accept, progress, hand in), testing commands
   weather.js                         Weather on the server: rain for 5-7 minutes every 40-60 minutes, 30% of the time a thunderstorm
   accounts.js                        Registered accounts (name + password) on the online server: log in, register a guest, log out, unique names
@@ -58,7 +59,7 @@ node
 game
   core/setup.js                      Page helpers ($), device flags (isTouch, LOW, LITE, Q), TAU/DEG
   @shared                            (the shared files above are inserted here)
-  world/heightmap.js                 Client heightmap: SEG (by device), HS, getH, grad. The server keeps its own coarser copy.
+  world/heightmap.js                 Client heightmap over the whole world (WX0..WX1 x WZ0..WZ1): SEG (by device), HS, getH, grad. The server keeps its own coarser copy.
   world/terrain-color.js             Terrain colours (COL, terrainColor)
   ui/controls-legend.js              Fills the controls list on the start card
   engine/renderer.js                 WebGL renderer, scene, camera, lights, sun shadow, timeU
@@ -67,29 +68,31 @@ game
   world/plant-models.js              Geometry helpers (paint, merge, mkGeo, cyl, blob) and plant models (trees, grass, ferns...)
   world/instancing.js                Chunked instanced meshes, distance culling, tree collision grid (addCol, nearCols)
   player/state.js                    Player state P and spawn point
-  world/generation-setup.js          Palettes, shared geometries (buildGeometries), terrain + water + village build (genTerrain)
-  world/generation-chunks.js         Per-chunk vegetation placement (genChunk)
+  world/generation-setup.js          Palettes, shared geometries (buildGeometries), terrain (in bands, culled by distance) + water + both villages (genTerrain)
+  world/generation-chunks.js         Per-chunk vegetation placement (genChunk): the home forest's mix, and sakura, maple, pine and bamboo in the Sakura Vale
   world/streaming.js                 Streaming scheduler (Stream, streamPump): terrain first, nearest chunks next
   character/model.js                 Look presets, save/load, buildCharacter (all outfits and armour looks), hiker, rebuildHiker
   character/pose.js                  poseRig (walk, run, sit, talk, attacks) and animateHiker
   world/motes.js                     Floating pollen by day, fireflies by night
+  world/petals.js                    Cherry petals drifting down around you in the Sakura Vale
   wildlife/animals.js                Deer, foxes, rabbits, ducks, birds/bats, butterflies
   world/time-of-day.js               20-minute day/night cycle, sky keyframes, clock, zone label
   player/input.js                    Keyboard, mouse look, touch joystick, HUD buttons
   ui/character-editor.js             Character editor panel and camera
   village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke
-  village/villagers.js               VILLAGERS (hard-coded NPCs), random villagers, NPC behaviour (updateNPCs)
-  village/talking.js                 Talking to villagers: bubble, prompt, E key, opening shop/quest panels
+  village/buildings-vale.js          The Sakura Vale's buildings: Hanami (tiled roofs, shoji, torii, stone lanterns), the tunnel (bore, roof, portals, sealed door), teleport circles, the two shrines
+  village/villagers.js               VILLAGERS (hard-coded NPCs of both villages), random villagers, NPC behaviour (updateNPCs)
+  village/talking.js                 Talking to villagers: bubble, prompt, E key, opening shop/quest panels; stepping on a teleport circle
   village/npc-labels.js              Name and profession labels above the special villagers, with ! / ? quest markers over quest givers
   audio/engine.js                    Web Audio setup (SND, buses, reverb, echo, noise), tone(), noiseHit(), spatial()
   audio/samples.js                   Sound files from assets/audio (embedded by build.py as window.WILDWOOD_AUDIO): loadSamples, playSample
   audio/ui-sounds.js                 Interface / game sounds (UI_SFX) and hover/click hooks
-  audio/music.js                     Generative background music
+  audio/music.js                     Generative background music: one theme per place (both villages, three home ranges, two vale ranges, each boss), crossfaded
   audio/ambience.js                  Footsteps, birds, crickets, owls, frogs, ducks, crackle, hooves
   audio/voices.js                    Villager voices: text-to-speech voice picking and babble
   audio/driver.js                    Per-frame sound driver (soundTick): beds, random events, NPC steps
   ui/settings-sound.js               Sound part of the settings popover
-  combat/monsters.js                 Monster families and 15 monsters (MON_DEFS), models, camps, AI, animation
+  combat/monsters.js                 Monster views: models for every family (slime, shroom, beetle/spider, boar, treant, goblin/oni/tengu, fox, wisp, totem), animation
   player/progression.js              Your health, level and XP as told by the server, the save kept in this browser, hurt / level-up / knocked-out effects
   combat/classes.js                  Classes and their abilities (CLASSES), combat state (CB), effect materials
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
@@ -106,13 +109,13 @@ game
   economy/forge.js                   Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
   economy/skills.js                  Skills panel: each class's loadout in three slots (basic, skill, burst) and Aldric's lessons (learn, equip, take off)
   economy/quests.js                  The quest board panel (Maren) and the quest log: notices, quests in progress, hand-ins (all generated by the server)
-  ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, all items, coins, reset
+  ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, all items, coins, weather, the Sakura Vale, reset
   economy/init.js                    Inventory key and first-time gear setup
-  combat/boss.js                     The Rootwarden, client side: telegraph visuals, root spikes, slam waves, shield bubble, roars, boss bar
+  combat/boss.js                     The bosses, client side (Rootwarden, Akaoni, Kyuubi): telegraph visuals, root spikes, slam waves, shield bubble, roars, boss bar
   combat/skill-fx.js                 Visuals and sounds for the equippable skills: Arrow Rain, Meteor, Chain Lightning, Piercing Shot, Shield Bash, Charge
   world/weather.js                   Weather on the client: rain streaks around the camera, a darker foggy sky, rain sound, lightning and thunder
-  player/movement.js                 Player movement, collisions, camera
-  ui/map.js                          World map: a map image painted from the terrain, the corner minimap, and the full map (N) with zones, quests and players
+  player/movement.js                 Player movement, collisions (the border mountains, the tunnel and its sealed door), camera
+  ui/map.js                          World map: a map image painted from the terrain, the corner minimap, and the full map (N) of either land with zones, quests and players
   net/transport.js                   Connections to the world server: solo (server in this tab), shared room (one player's tab hosts), WebSocket (node server)
   net/client.js                      Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
   net/remote.js                      Other players: avatars built from their look and gear, smoothed movement, attack animations, name tags

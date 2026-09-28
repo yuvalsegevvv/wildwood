@@ -79,7 +79,7 @@ function startCharge(T){
   let tx,tz;
   if(T&&!T.dead&&Math.hypot(T.x-P.x,T.z-P.z)<=SKILLS.charge.range+2){ const dx=T.x-P.x, dz=T.z-P.z, d=Math.hypot(dx,dz)||1, o=T.T.rad*T.s+0.9; tx=T.x-dx/d*o; tz=T.z-dz/d*o; }
   else { tx=P.x-Math.sin(P.face)*8; tz=P.z-Math.cos(P.face)*8; }
-  const lim=HALF-14; CB.dash={fx:P.x,fz:P.z,tx:clamp(tx,-lim,lim),tz:clamp(tz,-lim,lim),t:0,dur:0.26};
+  CB.dash={fx:P.x,fz:P.z,tx:clamp(tx,WX0+14,WX1-14),tz:clamp(tz,WZ0+14,WZ1-14),t:0,dur:0.26};
   if(SND.ready){ noiseHit({bus:'ui',filter:'bandpass',ff:500,ff2:1500,dur:0.3,vol:0.12}); }
 }
 // buffs (Berserk, Hunter's Focus, Arcane Surge): a glowing ring at the feet for as long as they last

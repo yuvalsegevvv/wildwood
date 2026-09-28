@@ -1,6 +1,6 @@
 //@ Your gear as told by the server (GEAR), saved in this browser; equip / unequip requests
 /* ===================== EQUIPMENT, COINS, SHOPS, QUESTS =====================
-   4 tiers (level 1, 5, 10, 15). Weapons: sword (Warrior), bow (Archer), wand (Mage): the weapon you hold is your class.
+   6 tiers (level 1, 5, 10, 15, 20, 25). Weapons: sword (Warrior), bow (Archer), wand (Mage): the weapon you hold is your class.
    Armor (any class): helmet, top, bottom, shoes. It adds health and defense and changes your outfit. */
 var GEAR=null;
 function newGear(){ return newGearFor(CLASSES[LOOK.cls]?LOOK.cls:'warrior'); }

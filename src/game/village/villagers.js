@@ -1,4 +1,4 @@
-//@ VILLAGERS (hard-coded NPCs), random villagers, NPC behaviour (updateNPCs)
+//@ VILLAGERS (hard-coded NPCs of both villages), random villagers, NPC behaviour (updateNPCs)
 /* ===================== VILLAGERS =====================
    Hard-coded characters go in this list. Each entry can set:
      id        unique key (use it later to find a character: npcById('maren'))
@@ -15,6 +15,7 @@
      lines     what they say, one line per chat, in order
      voice     optional { pitch, rate, name } for the spoken voice (name matches part of a system voice)
      onTalk    optional function(npc) called every time the player talks to them
+     vil       2 = lives in Hanami, the Sakura Vale's village (same anchors, on that village's plan)
    Anchors: 'well', 'well:far', 'questboard' (in front of the quest board), 'gate', 'garden', 'plaza0'..'plaza7',
             'house:0'..'house:8' (outside the door; house:4 is the tavern),
             'stall:0'..'stall:2' (customer side), 'stall:0:behind'.. (seller side),
@@ -48,11 +49,43 @@ const VILLAGERS=[
   { id:'oskar', title:'Storyteller', name:'Oskar', role:null,
     look:{sex:'male',build:1.2,face:'round',hair:'bald',hairColor:0xb9b3aa,facial:'beard',top:'hoodie',topColor:0x2b2b2e,bottom:'trousers',bottomColor:0x3d5a3a,hat:'beanie',hatColor:0x8a2f2f,pack:false},
     behavior:{type:'stationary',at:'campfire:seat1',pose:'sit'}, home:'house:4', schedule:'always', voice:{rate:0.82,pitch:0.7},
-    lines:['Sit a while. The fire does not mind company.','When I was young, the forest came right up to the well.','Have you seen the fireflies by the river at night? Worth the walk.'] }
+    lines:['Sit a while. The fire does not mind company.','When I was young, the forest came right up to the well.','Have you seen the fireflies by the river at night? Worth the walk.','There is an old circle of stones by the road in. My grandfather swore it once took him over the mountains in a blink.'] },
+  /* ---- Hanami, in the Sakura Vale: the same jobs as the home village, their own people ---- */
+  { id:'sayuri', vil:2, title:'Quest board', name:'Sayuri', role:'quests',
+    look:{sex:'female',height:0.95,face:'oval',hair:'bun',hairColor:0x1d1714,chest:0.95,skin:0xe8c4a0,top:'jacket',topColor:0x8a2a3a,bottom:'skirt',bottomColor:0x2a2830,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'questboard'}, home:'house:3', schedule:'always', voice:{rate:0.9,pitch:1.1},
+    lines:['Welcome to Hanami, traveller from beyond the mountains! The board is full of work for strong arms.','The yokai grow bolder every season. The further east you go, the older and angrier they are.','New notices go up every sunrise, the same as in your village.','Come back when it is done, and the village will pay you well.'] },
+  { id:'kenji', vil:2, title:'Weaponsmith', name:'Kenji', role:'weaponsmith',
+    look:{sex:'male',build:1.1,face:'angular',hair:'short',hairColor:0x1d1714,facial:'stubble',skin:0xd8b08a,top:'jacket',topColor:0x2a2830,bottom:'trousers',bottomColor:0x3a3a42,hat:'none'},
+    behavior:{type:'stationary',at:'stall:0:behind'}, home:'house:1', schedule:'always', voice:{rate:0.95,pitch:0.85},
+    lines:['Katana, yumi and blossom wands, folded and lacquered here in Hanami.','A blade from beyond the mountains? Good steel. Mine is better.','The Raijin katana is my finest work. It hums before a storm.'] },
+  { id:'haruka', vil:2, title:'Armorer', name:'Haruka', role:'armorer',
+    look:{sex:'female',face:'round',hair:'ponytail',hairColor:0x2a1a14,chest:1.1,skin:0xecc8a4,top:'tshirt',topColor:0xe8e4dc,bottom:'trousers',bottomColor:0x2f4a6b,hat:'none'},
+    behavior:{type:'stationary',at:'stall:1:behind'}, home:'house:5', schedule:'always',
+    lines:['Samurai armor: lacquered plates laced with silk. Light, and it turns an oni club.','Red lacquer for the brave, black for the shogun. Pick yours.'] },
+  { id:'tetsuo', vil:2, title:'Forge · merges items', name:'Tetsuo', role:'forge',
+    look:{sex:'male',build:1.25,face:'round',hair:'bald',hairColor:0x1d1714,facial:'beard',skin:0xc89a78,top:'jacket',topColor:0x4a3a2a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'stall:2:behind'}, home:'house:6', schedule:'always', voice:{rate:0.85,pitch:0.75},
+    lines:['Three the same, and the fire makes one better. Greta on the other side taught me that. Or I taught her.','Rare, epic, unique, legendary. The steel does not care which side of the mountains it came from.'] },
+  { id:'ryu', vil:2, title:'Skill trainer', name:'Master Ryu', role:'trainer',
+    look:{sex:'male',height:0.98,build:0.9,face:'angular',hair:'bun',hairColor:0xd8d4cc,facial:'mustache',skin:0xd8b08a,top:'jacket',topColor:0x3d5a3a,bottom:'trousers',bottomColor:0x2a2830,hat:'none'},
+    behavior:{type:'stationary',at:'well'}, home:'house:2', schedule:'always', voice:{rate:0.8,pitch:0.8},
+    lines:['A strong body is nothing without a practised hand. I teach the same arts Aldric does, and I charge the same.','The fox of the shrine has nine tails and nine tricks. Learn yours before you face her.','Breathe. Strike. Breathe again.'] },
+  { id:'daisuke', vil:2, title:'Guard', name:'Daisuke', role:null,
+    look:{sex:'male',build:1.1,face:'angular',hair:'short',hairColor:0x1d1714,facial:'none',skin:0xdcb48e,top:'jacket',topColor:0x6a2a26,bottom:'trousers',bottomColor:0x2a2830,hat:'kasa',hatColor:0xc8a868},
+    behavior:{type:'patrol',route:['gate','lamp:2','lamp:3','lamp:4','lamp:5','lamp:6','lamp:1','gate'],pause:3}, home:'house:7', schedule:'always', speed:1.2, voice:{rate:1.0,pitch:0.9},
+    lines:['Kappa near the ponds, kodama in the old woods. Farther east the oni come down from the crags.','The Demon Gate is in the far south-east corner. Akaoni guards it. Nobody guards us from Akaoni.','You came through the tunnel? Then the Rootwarden is dead. Good riddance.'] },
+  { id:'chiyo', vil:2, title:'Storyteller', name:'Grandmother Chiyo', role:null,
+    look:{sex:'female',height:0.9,build:0.95,face:'round',hair:'bun',hairColor:0xcfcac2,chest:0.8,skin:0xe0bc98,top:'hoodie',topColor:0x5a3a5a,bottom:'skirt',bottomColor:0x2a2830,hat:'none'},
+    behavior:{type:'stationary',at:'campfire:seat1',pose:'sit'}, home:'house:4', schedule:'always', voice:{rate:0.8,pitch:1.0},
+    lines:['Sit, sit. The petals fall whether you hurry or not.','The circle of stones by the road hums for anyone who has walked here on their own feet. Step on it and it carries you home, and back again.','When I was a girl the kitsune were our friends. Then one of them grew nine tails.'] }
 ];
 const FILLER_COUNT=LITE?3:(LOW?4:8);
 const NAMES_M=['Anders','Henrik','Lukas','Emil','Jonas','Felix','Mattis','Arvid','Elias','Nils','Viggo','Karl'];
 const NAMES_F=['Freya','Ingrid','Liv','Astrid','Sigrid','Elin','Hanna','Greta','Noor','Saga','Tove','Alma'];
+const NAMES_M2=['Hiroshi','Takumi','Sora','Ren','Haruto','Kaito','Yuto','Daiki','Shun','Riku'];
+const NAMES_F2=['Yui','Aoi','Hina','Sakura','Mei','Rin','Emi','Nanami','Koharu','Akari'];
+const SMALLTALK2=['The cherry trees never stop blooming here. Nobody remembers why.','Mind the ponds. Kappa like to pull travellers in by the ankles.','Tetsuo and Kenji argue about steel every evening at the brazier.','The bamboo sings when the wind comes off the mountains.','My brother saw foxfire above the shrine again last night.','Sweep the petals in the morning, and by noon there are more.','Daisuke walks that circle so often the stones know his feet.','They say the tunnel was sealed by the Rootwarden itself. Strange that you got through.'];
 const SMALLTALK=['Lovely day for a walk in the woods.','The deer come right up to the garden at dawn.','Mind the river, the current is quicker than it looks.','Have you tried the apples at the market?','My grandmother planted half the birches around here.','Foxes got into the hen house again last week.','When the fireflies come out, you know summer is here.','The old path still leads down to the lake, if you know where to look.','The tavern gets loud after sunset. Oskar tells the same stories every night.','Bram thinks he is guarding us from wolves. There are no wolves.'];
 
 const NPCs=[];
@@ -69,16 +102,18 @@ function makeLook(rng,base){
     chest:f?+(0.7+rng()*0.65).toFixed(2):1};   // women vary 0.7-1.35 (the model allows 0.5-1.6)
   return Object.assign(L,base||{});
 }
-function anchorOf(name){ return VIL.anchors[name]||VIL.anchors.plaza0; }
-function randomPOI(n){ let p; for(let i=0;i<6;i++){ p=VIL.pois[Math.floor(Math.random()*VIL.pois.length)]; if(Math.hypot(p.x-n.x,p.z-n.z)>3) break; } return {x:p.x+AR(-0.6,0.6),z:p.z+AR(-0.6,0.6),face:p.face}; }
+const vilOf=n=>n.def.vil===2?VIL2:VIL;
+function anchorOf(name,V){ V=V||VIL; return V.anchors[name]||V.anchors.plaza0; }
+function randomPOI(n){ const V=vilOf(n); let p; for(let i=0;i<6;i++){ p=V.pois[Math.floor(Math.random()*V.pois.length)]; if(Math.hypot(p.x-n.x,p.z-n.z)>3) break; } return {x:p.x+AR(-0.6,0.6),z:p.z+AR(-0.6,0.6),face:p.face}; }
 function spawnNPC(def,rng){
   const look=makeLook(rng||Math.random,def.look);
   const rig=buildCharacter(look), s=look.height*(look.sex==='female'?0.95:1);
   rig.root.scale.setScalar(s);
   const g=new THREE.Group(); g.add(rig.root); scene.add(g);
   const B=def.behavior||{type:'wander'}; def.behavior=B;
-  const start=B.at?anchorOf(B.at):(B.route?anchorOf(B.route[0]):randomPOI({x:VIL.x+99,z:VIL.z}));
-  const n={def,look,rig,g,scale:s,x:start.x,z:start.z,y:VIL.h,face:start.face||0,faceGoal:start.face,vx:0,vz:0,walk:0,state:'idle',timer:AR(0.5,4),
+  const V=def.vil===2?VIL2:VIL;
+  const start=B.at?anchorOf(B.at,V):(B.route?anchorOf(B.route[0],V):randomPOI({def,x:V.x+99,z:V.z}));
+  const n={def,V,look,rig,g,scale:s,x:start.x,z:start.z,y:V.h,face:start.face||0,faceGoal:start.face,vx:0,vz:0,walk:0,state:'idle',timer:AR(0.5,4),
     route:[],inside:false,headYaw:0,line:0,pi:0,stuckT:0,sx:start.x,sz:start.z,partner:null,seed:Math.random()*10};
   NPCs.push(n); return n;
 }
@@ -86,11 +121,13 @@ function initNPCs(){
   const rng=mulberry32(9001);
   const defs=VILLAGERS.filter(v=>!LITE||v.role);   // light mode keeps everyone with a job
   const used=new Set();
-  for(let i=0;i<FILLER_COUNT;i++){
-    const sex=rng()<0.5?'male':'female', pool=sex==='male'?NAMES_M:NAMES_F;
+  for(const vil of [1,2]) for(let i=0;i<FILLER_COUNT;i++){
+    const sex=rng()<0.5?'male':'female', pool=vil===2?(sex==='male'?NAMES_M2:NAMES_F2):(sex==='male'?NAMES_M:NAMES_F), talk=vil===2?SMALLTALK2:SMALLTALK;
     let name; do{ name=pool[Math.floor(rng()*pool.length)]; }while(used.has(name)); used.add(name);
-    const lines=[]; for(let k=0;k<3;k++) lines.push(SMALLTALK[Math.floor(rng()*SMALLTALK.length)]);
-    defs.push({id:'villager'+i,name,role:null,look:{sex},behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
+    const lines=[]; for(let k=0;k<3;k++) lines.push(talk[Math.floor(rng()*talk.length)]);
+    // Hanami's people: darker hair, sometimes a straw kasa
+    const look=vil===2?{sex,hairColor:rng()<0.8?0x1d1714:0x3a2418,hat:rng()<0.3?'kasa':'none',hatColor:0xc8a868}:{sex};
+    defs.push({id:'villager'+(vil===2?'h':'')+i,vil,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
   }
   defs.forEach(d=>spawnNPC(d,rng));
 }
@@ -107,21 +144,22 @@ function updateNPCs(dt){
   const night=envCur.night, cx=camera.position.x, cz=camera.position.z;
   nearNPC=null; let nd=3.8;
   for(const n of NPCs){
-    const B=n.def.behavior, D=n.def;
+    const B=n.def.behavior, D=n.def, V=n.V;
     const dxp=P.x-n.x, dzp=P.z-n.z, dp=Math.hypot(dxp,dzp);
+    if(Math.hypot(cx-V.x,cz-V.z)>260){ n.g.visible=false; continue; }   // the other village sleeps while you are far away
     const wantHome=D.schedule!=='always' && night>0.6;
-    if(wantHome && !n.inside && n.state!=='home'){ if(talkNPC===n) endTalk(); if(n.partner){ n.partner.state='idle'; n.partner.partner=null; n.partner=null; } routeTo(n,anchorOf(D.home||'house:0'),'home'); }
-    if(!wantHome && n.inside){ const h=anchorOf(D.home||'house:0'); n.inside=false; n.x=h.x; n.z=h.z; n.face=h.face; n.state='idle'; n.timer=AR(0,3); n.route=[]; }
+    if(wantHome && !n.inside && n.state!=='home'){ if(talkNPC===n) endTalk(); if(n.partner){ n.partner.state='idle'; n.partner.partner=null; n.partner=null; } routeTo(n,anchorOf(D.home||'house:0',V),'home'); }
+    if(!wantHome && n.inside){ const h=anchorOf(D.home||'house:0',V); n.inside=false; n.x=h.x; n.z=h.z; n.face=h.face; n.state='idle'; n.timer=AR(0,3); n.route=[]; }
     if(n.inside){ n.g.visible=false; continue; }
     const talking=talkNPC===n;
     if(talking && dp>4.5) endTalk();
     if(!talking && n.state!=='home'){
       if(B.type==='stationary'){
-        const A=anchorOf(B.at);
+        const A=anchorOf(B.at,V);
         if(n.state!=='walk' && Math.hypot(A.x-n.x,A.z-n.z)>0.6) routeTo(n,A);
-        else if(n.state!=='walk'){ n.state='idle'; n.faceGoal=A.face!==undefined?A.face:Math.atan2(-(VIL.x-n.x),-(VIL.z-n.z)); }
+        else if(n.state!=='walk'){ n.state='idle'; n.faceGoal=A.face!==undefined?A.face:Math.atan2(-(V.x-n.x),-(V.z-n.z)); }
       } else if(B.type==='patrol'){
-        if(n.state==='idle'){ n.timer-=dt; if(n.timer<=0){ n.pi=(n.pi+1)%B.route.length; routeTo(n,anchorOf(B.route[n.pi])); } }
+        if(n.state==='idle'){ n.timer-=dt; if(n.timer<=0){ n.pi=(n.pi+1)%B.route.length; routeTo(n,anchorOf(B.route[n.pi],V)); } }
       } else {
         if(n.state==='idle'){ n.timer-=dt; if(n.timer<=0){ if(!(Math.random()<0.35 && tryChat(n))) routeTo(n,randomPOI(n)); } }
         if(n.state==='chat'){

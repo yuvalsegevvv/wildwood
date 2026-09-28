@@ -6,8 +6,8 @@
    io.store (solo, or a shared world hosted in a tab) the browser's own save is used, as before.
    Registered accounts (name + password, Node server only) are in accounts.js.
    Messages in:  hello{acct,name,look,save[,user,pass|token]}  register{user,pass}  logout{token}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
-                 cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  dev{cmd,v}
-   Messages out: welcome  mons{list}  you  tp  snap{day,pl,mo,b,ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
+                 cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{}  dev{cmd,v}
+   Messages out: welcome  mons{list}  you  tp  snap{day,pl,mo,b:[per boss],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
 initMonstersS(); initBossS();
 const ACCT=new Map(), PENDING=new Set();   // account -> pid online; pids whose save is still loading
 const recordOf=p=>Object.assign({v:1,name:p.name,look:p.look,level:p.level,exp:p.exp,gear:p.gear,updated:Date.now()},p.auth?{auth:p.auth}:{});
@@ -38,7 +38,7 @@ function join(pid,hello,auth){
   sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo)});
   const ros=MONS.filter(m=>!m.remove).map(monRoster);
   for(let i=0;i<ros.length;i+=40) sendTo(pid,{t:'mons',list:ros.slice(i,i+40)});
-  if(BOSS.tele.length) for(const e of BOSS.tele) sendTo(pid,{t:'snap',ev:[['tele',e.id,e.kind,r1(e.x),r1(e.z),r1(e.r),e.dur-e.t,Math.round(e.face*100)/100,e.half]]});
+  for(const B of BOSSES) for(const e of B.tele) sendTo(pid,{t:'snap',ev:[['tele',e.id,e.kind,r1(e.x),r1(e.z),r1(e.r),e.dur-e.t,Math.round(e.face*100)/100,e.half]]});
   sendTo(pid,youMsg(p)); p.dirty=false;
   ev('pjoin',pubInfo(p));
   return p;
@@ -53,7 +53,8 @@ function leave(pid){
 function setPos(pid,d){
   const p=S.players.get(pid); if(!p||p.dead||!Array.isArray(d)) return;
   const v=d.map(Number); if(!v.slice(0,3).every(isFinite)) return;
-  p.x=clamp(v[0],-HALF,HALF); p.y=v[1]; p.z=clamp(v[2],-HALF,HALF); p.face=isFinite(v[3])?v[3]:p.face; p.vx=v[4]||0; p.vz=v[5]||0;
+  p.x=clamp(v[0],WX0,WX1); p.y=v[1]; p.z=clamp(v[2],WZ0,WZ1); p.face=isFinite(v[3])?v[3]:p.face; p.vx=v[4]||0; p.vz=v[5]||0;
+  if(p.gear.east<1 && p.x>TUN.p0) p.x=TUN.p0;   // the sealed tunnel
 }
 function receive(pid,msg){
   if(!msg||typeof msg!=='object') return;
@@ -77,6 +78,7 @@ function receive(pid,msg){
     case 'eqskill': equipSkillP(p,msg.id); break;
     case 'unskill': unequipSkillP(p,msg.cls,msg.slot||'skill'); break;
     case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<2000){ p.look=msg.look; p.saveDirty=true; ev('plook',p.id,p.look); } break;
+    case 'warp': warpP(p); break;
     case 'dev': devP(p,msg); break;
     case 'register': registerP(p,msg.user,msg.pass); break;
     case 'logout': logoutP(p,msg.token); break;

@@ -1,19 +1,20 @@
 //@ Chunked instanced meshes, distance culling, tree collision grid (addCol, nearCols)
 /* ---------- instancing ---------- */
-const CH=8, CS=SIZE/CH;
+// chunks are CS (110 m) squares over the whole world: CHX across, CHZ down
+const CS=SIZE/8, CHX=Math.ceil(WW/CS-0.01), CHZ=Math.ceil(WD/CS-0.01);
 const _q=new THREE.Quaternion(), _e=new THREE.Euler(), _p=new THREE.Vector3(), _s=new THREE.Vector3();
 function mtx(x,y,z,ry,sx,sy,sz,tx,tz){ _e.set(tx||0,ry,tz||0); _q.setFromEuler(_e); _p.set(x,y,z); _s.set(sx,sy,sz); return new THREE.Matrix4().compose(_p,_q,_s); }
 function addInstanced(geo, mat, items, o){
   o=o||{};
   const buckets=new Map(), hasColor=items.some(i=>i.c);
   for(const it of items){
-    const cx=clamp(Math.floor((it.x+HALF)/CS),0,CH-1), cz=clamp(Math.floor((it.z+HALF)/CS),0,CH-1), k=cz*CH+cx;
+    const cx=clamp(Math.floor((it.x-WX0)/CS),0,CHX-1), cz=clamp(Math.floor((it.z-WZ0)/CS),0,CHZ-1), k=cz*CHX+cx;
     let b=buckets.get(k); if(!b){ b=[]; buckets.set(k,b); } b.push(it);
   }
   buckets.forEach((list,k)=>{
-    const cx=k%CH, cz=Math.floor(k/CH), g=new THREE.BufferGeometry();
+    const cx=k%CHX, cz=Math.floor(k/CHX), g=new THREE.BufferGeometry();
     for(const name in geo.attributes) g.setAttribute(name, geo.attributes[name]);
-    g.boundingSphere=new THREE.Sphere(new THREE.Vector3(-HALF+(cx+0.5)*CS, 12, -HALF+(cz+0.5)*CS), CS*0.75+25);
+    g.boundingSphere=new THREE.Sphere(new THREE.Vector3(WX0+(cx+0.5)*CS, 12, WZ0+(cz+0.5)*CS), CS*0.75+25);
     const mesh=new THREE.InstancedMesh(g, mat, list.length);
     list.forEach((it,i)=>{ mesh.setMatrixAt(i,it.m); if(hasColor) mesh.setColorAt(i,it.c||WHITE); });
     mesh.instanceMatrix.needsUpdate=true;
@@ -26,7 +27,7 @@ function addInstanced(geo, mat, items, o){
 // hide chunks of plants that are too far away to matter (beyond the fog, or grass beyond ~100 m)
 const CHUNK_MESHES=[]; let cullT=0;
 function cullChunks(dt){
-  cullT-=dt; if(cullT>0) return; cullT=0.3;
+  cullT-=dt; if(cullT>0) return; cullT=0.3; cullTerrain();
   const cx=camera.position.x, cz=camera.position.z, pad=CS*0.72;
   for(const c of CHUNK_MESHES){ const d=Math.hypot(c.x-cx,c.z-cz)-pad; c.mesh.visible=d<(c.max||scene.fog.far+30); }
 }
