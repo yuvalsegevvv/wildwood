@@ -63,7 +63,7 @@ function makeLook(rng,base){
   const L={sex,height:+(0.92+rng()*0.14).toFixed(2),build:+(0.88+rng()*0.3).toFixed(2),skin:rp(SKINS),face:rp(['round','oval','angular']),eyes:rp(EYEC),
     facial:f?'none':rp(['none','stubble','stubble','mustache','beard']),
     hair:f?rp(['long','ponytail','bun','bob','curly','short']):rp(['short','buzz','curly','bald','short']),
-    hairColor:rp(HAIRC.slice(0,6)),top:rp(['tshirt','flannel','jacket','hoodie']),topColor:rp(CLOTH),
+    hairColor:rp(HAIRC.slice(0,HAIRC_NATURAL)),top:rp(['tshirt','flannel','jacket','hoodie']),topColor:rp(CLOTH),
     bottom:f?rp(['trousers','skirt','skirt']):'trousers',bottomColor:rp(CLOTH),shoes:rp(['boots','boots','sneakers']),shoeColor:rp(SHOEC),
     hat:rp(['none','none','none','beanie','cap']),hatColor:rp(HATC),pack:false};
   return Object.assign(L,base||{});

@@ -5,6 +5,9 @@ three lakes, a village with villagers and shops, 16 monster zones with 451 monst
 to 20 of each level-15 kind), three classes, equipment in 5 rarities with a drag-and-drop inventory and a merge forge, quests, a boss, a minimap
 and world map (N), and synthesised audio.
 
+**Developing with an AI agent?** Start with [CLAUDE.md](CLAUDE.md) (guide) and [docs/FILES.md](docs/FILES.md) (file map);
+headless tests and a model preview are in [tools/](tools/README.md).
+
 ## Three ways to play
 
 | Mode | Who hosts the world server | How |

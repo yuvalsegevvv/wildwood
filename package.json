@@ -7,7 +7,11 @@
     "build": "python3 build.py",
     "check": "python3 build.py --check",
     "start": "node dist/wildwood-server.js",
-    "dev": "python3 build.py && node dist/wildwood-server.js"
+    "dev": "python3 build.py && node dist/wildwood-server.js",
+    "test:server": "node tools/server-smoke.js",
+    "test:client": "python3 build.py >/dev/null && node tools/client-smoke.js",
+    "test": "python3 build.py --check && node tools/server-smoke.js && node tools/client-smoke.js",
+    "preview:model": "node tools/model-preview.js"
   },
   "engines": {
     "node": ">=18"
@@ -15,5 +19,8 @@
   "license": "UNLICENSED",
   "optionalDependencies": {
     "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "three": "0.128.0"
   }
 }

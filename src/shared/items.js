@@ -48,6 +48,7 @@ function newGearFor(cls){ return {inv:['sword1','bow1','wand1'],eq:{weapon:(WEAP
 function gearStatsOf(gear){ let hp=0,atk=0,def=0; if(gear&&gear.eq) for(const k in gear.eq){ const it=ITEM[gear.eq[k]]; if(!it) continue; hp+=it.hp||0; atk+=it.atk||0; def+=it.def||0; } return {hp,atk,def}; }
 function effectiveLookOf(look,gear){
   const L=Object.assign({},look||{});
+  if(L.armor==='hide') return L;   // the player chose to show their own clothes over their armour (stats still count)
   if(gear&&gear.eq) for(const s of ARMOR_SLOTS){ const it=ITEM[gear.eq[s]]; if(it) Object.assign(L,ARMOR_LOOK[s][it.tier]); }
   return L;
 }

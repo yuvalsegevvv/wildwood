@@ -22,7 +22,7 @@ How the sources fit together:
 The first line of every source file may be a header: //@ ... in JS, /*@ ... */ in CSS.
 Headers document the file and are left out of the built page.
 """
-import base64, json, os, shutil, subprocess, sys, tempfile
+import re, base64, json, os, shutil, subprocess, sys, tempfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(ROOT, 'src')
@@ -41,6 +41,49 @@ def read(path):
 def strip_header(text):
     first, _, rest = text.partition('\n')
     return rest if first.startswith('//@') or first.startswith('/*@') else text
+
+
+
+def top_level_names(text):
+    """Names declared at the top level of a bundle: function x, class x, and every name in
+    const/let/var x=..., y=... (commas inside brackets or strings are ignored)."""
+    names = []
+    for line in text.split('\n'):
+        m = re.match(r'(?:async\s+)?(?:function\*?|class)\s+([A-Za-z_$][\w$]*)', line)
+        if m:
+            names.append(m.group(1)); continue
+        m = re.match(r'(?:const|let|var)\s+(.*)', line)
+        if not m:
+            continue
+        body, depth, q, cur, out = m.group(1), 0, None, '', []
+        for ch in body:
+            if q:
+                if ch == q: q = None
+            elif ch in '\'"`': q = ch
+            elif ch in '([{': depth += 1
+            elif ch in ')]}': depth -= 1
+            elif ch == ',' and depth == 0:
+                out.append(cur); cur = ''; continue
+            elif ch == ';' and depth == 0:
+                break
+            cur += ch
+        out.append(cur)
+        for part in out:
+            n = re.match(r'\s*([A-Za-z_$][\w$]*)\s*=', part)
+            if n: names.append(n.group(1))
+    return names
+
+
+def check_duplicates(label, files):
+    """Files in one bundle share one scope: a second 'function x' silently replaces the first,
+    and a second 'const x' is a syntax error at load. Report both before they bite."""
+    seen, dup = {}, []
+    for path in files:
+        for n in top_level_names(read(path)):
+            if n in seen and seen[n] != path:
+                dup.append('%s: %s (in %s and %s)' % (label, n, os.path.relpath(seen[n], SRC), os.path.relpath(path, SRC)))
+            seen.setdefault(n, path)
+    return dup
 
 
 def header(text):
@@ -109,6 +152,13 @@ def check(page):
         os.unlink(t.name)
         if r.returncode:
             sys.exit('script block %d has a syntax error:\n%s' % (i, r.stderr))
+    manifest = json.loads(read(os.path.join(SRC, 'manifest.json')))
+    shared_f = [os.path.join(SRC, 'shared', f) for f in manifest['shared']]
+    client_f = [os.path.join(SRC, 'game', f) for f in manifest['game'] if f != '@shared']
+    server_f = [os.path.join(SRC, 'server', f) for f in manifest['server']]
+    dups = check_duplicates('client', shared_f + client_f) + check_duplicates('server', shared_f + server_f)
+    if dups:
+        sys.exit('duplicate top-level names (files in a bundle share one scope):\n  ' + '\n  '.join(dups))
     r = subprocess.run(['node', '--check', SERVER_OUT], capture_output=True, text=True)
     if r.returncode:
         sys.exit('wildwood-server.js has a syntax error:\n' + r.stderr)

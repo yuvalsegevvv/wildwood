@@ -8,6 +8,7 @@ const EDIT=[
     {k:'sex',label:'Play as',type:'seg',opts:[['male','Male'],['female','Female']]},
     {k:'height',label:'Height',type:'range',min:0.9,max:1.1,step:0.01,ends:['Shorter','Taller']},
     {k:'build',label:'Build',type:'range',min:0.84,max:1.24,step:0.01,ends:['Slim','Sturdy']},
+    {k:'chest',label:'Chest',type:'range',min:0.5,max:1.6,step:0.01,ends:['Smaller','Larger'],fem:true},
     {k:'skin',label:'Skin tone',type:'color',opts:SKINS}
   ]},
   {tab:'Face', rows:[
@@ -30,6 +31,7 @@ const EDIT=[
     {k:'bottomColor',label:'',type:'color',opts:CLOTH},
     {k:'shoes',label:'Shoes',type:'seg',opts:[['boots','Boots'],['sneakers','Sneakers']]},
     {k:'shoeColor',label:'',type:'color',opts:SHOEC},
+    {k:'armor',label:'Armor',type:'seg',opts:[['show','Show'],['hide','Hide (clothes only)']]},
     {k:'hat',label:'Hat',type:'seg',opts:[['none','None'],['ranger','Ranger'],['beanie','Beanie'],['cap','Cap']]},
     {k:'hatColor',label:'',type:'color',opts:HATC},
     {k:'pack',label:'Backpack',type:'seg',opts:[[true,'On'],[false,'Off']]}
@@ -38,7 +40,7 @@ const EDIT=[
 const hex=n=>'#'+n.toString(16).padStart(6,'0');
 function setLook(k,v){
   if(k==='cls'){ if(weaponsReady) equipClass(v); return; }
-  if(k==='sex' && !LOOK.custom){ LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,{height:LOOK.height,build:LOOK.build,skin:LOOK.skin,cls:LOOK.cls}); }
+  if(k==='sex' && !LOOK.custom){ LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,{height:LOOK.height,build:LOOK.build,chest:LOOK.chest,skin:LOOK.skin,cls:LOOK.cls}); }
   else { LOOK[k]=v; if(k!=='sex'&&k!=='cls') LOOK.custom=true; }
   if(k==='cls' && weaponsReady) setActionBar();
   saveLook(); rebuildHiker(); syncSexChips();
@@ -51,6 +53,7 @@ function renderEditor(){
   });
   edBody.innerHTML='';
   for(const row of EDIT[edTab].rows){
+    if(row.fem && LOOK.sex!=='female') continue;
     const wrap=document.createElement('div'); wrap.className='ed-row'+(row.label?'':' ed-sub');
     if(row.label){ const lb=document.createElement('div'); lb.className='ed-label'; lb.textContent=row.label; wrap.append(lb); }
     if(row.type==='seg'){
@@ -79,7 +82,7 @@ function renderEditor(){
     } else if(row.type==='range'){
       const box=document.createElement('div'); box.className='range';
       const a=document.createElement('span'); a.textContent=row.ends[0];
-      const inp=document.createElement('input'); inp.type='range'; inp.min=row.min; inp.max=row.max; inp.step=row.step; inp.value=LOOK[row.k]; inp.setAttribute('aria-label',row.label);
+      const inp=document.createElement('input'); inp.type='range'; inp.min=row.min; inp.max=row.max; inp.step=row.step; inp.value=LOOK[row.k]!=null?LOOK[row.k]:1; inp.setAttribute('aria-label',row.label);
       inp.oninput=()=>setLook(row.k,parseFloat(inp.value));
       const b=document.createElement('span'); b.textContent=row.ends[1];
       box.append(a,inp,b); wrap.append(box);
@@ -92,9 +95,9 @@ function randomLook(){
   LOOK={sex,height:+AR(0.93,1.07).toFixed(2),build:+AR(0.88,1.18).toFixed(2),skin:rp(SKINS),face:rp(['round','oval','angular']),eyes:rp(EYEC),
     facial:f?'none':rp(['none','stubble','stubble','mustache','beard']),
     hair:f?rp(['long','ponytail','bun','bob','curly','short']):rp(['short','buzz','curly','bald','short','bob']),
-    hairColor:rp(HAIRC.slice(0,6)),top:rp(['tshirt','flannel','jacket','hoodie']),topColor:rp(CLOTH),
+    hairColor:rp(HAIRC.slice(0,HAIRC_NATURAL)),top:rp(['tshirt','flannel','jacket','hoodie']),topColor:rp(CLOTH),
     bottom:f?rp(['trousers','shorts','skirt']):rp(['trousers','trousers','shorts']),bottomColor:rp(CLOTH),
-    shoes:rp(['boots','boots','sneakers']),shoeColor:rp(SHOEC),hat:rp(['none','none','ranger','beanie','cap']),hatColor:rp(HATC),pack:Math.random()<0.75,custom:true,cls:LOOK.cls};
+    shoes:rp(['boots','boots','sneakers']),shoeColor:rp(SHOEC),hat:rp(['none','none','ranger','beanie','cap']),hatColor:rp(HATC),pack:Math.random()<0.25,chest:f?+AR(0.75,1.3).toFixed(2):1,custom:true,cls:LOOK.cls};
   saveLook(); rebuildHiker(); renderEditor(); syncSexChips();
 }
 function syncSexChips(){ document.querySelectorAll('[data-sex]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sex===LOOK.sex)); }
