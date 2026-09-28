@@ -1,0 +1,19 @@
+{
+  "name": "wildwood",
+  "version": "1.0.0",
+  "description": "Wildwood: a multiplayer 3D forest RPG in the browser (three.js), with a Node world server that keeps players' progress (files or Postgres).",
+  "private": true,
+  "scripts": {
+    "build": "python3 build.py",
+    "check": "python3 build.py --check",
+    "start": "node dist/wildwood-server.js",
+    "dev": "python3 build.py && node dist/wildwood-server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED",
+  "optionalDependencies": {
+    "pg": "^8.13.0"
+  }
+}

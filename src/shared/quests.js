@@ -1,14 +1,17 @@
 //@ Quest board: endless random quests (hunt, bounty, scout, boss) scaled to your level, and their rewards. Pure.
 /* Maren's board always shows QUEST_OFFERS notices. Each notice's level is drawn from 4 below to 2 above your
    level, much more likely the closer it is to yours. Kinds:
-     hunt    defeat 5-8 of a monster (3-4 treants)          reward: XP, coins, 50% chance of an item
-     bounty  defeat 12-15 (6-8 treants), the grindy one      reward: more XP and coins, always an item, 25% rare
+     hunt    defeat 10-20 of a level-1 monster, rising evenly to 30-50 at level 15
+                                                             reward: XP, coins, 50% chance of an item
+     bounty  1.5x a hunt, the grindy one                     reward: more XP and coins, always an item, 25% rare
      scout   walk to a named place in that level's zone      reward: XP and coins
      boss    the Rootwarden (from level 13)                  reward: lots, a rare item, 20% epic
    Items are of the quest's level tier. Notices refresh when you level up and at sunrise. */
 function dirWord(x,z){ const a=Math.atan2(x,-z), i=Math.round(a/(Math.PI/4)); return ['north','north-east','east','south-east','south','south-west','west','north-west','north'][(i+8)%8]; }
-const QUEST_OFFERS=4, QUEST_MAX_ACTIVE=5;
-const coinAvg=L=>fLv(L)*2*Math.pow(1.1,Math.max(0,L-5));
+const QUEST_OFFERS=4, QUEST_MAX_ACTIVE=5, QUEST_MAX_COUNT=120;
+// how many kills a hunt asks for at level L: 10-20 at level 1, growing evenly to 30-50 at level 15
+function huntCount(L){ const f=(L-1)/14, lo=10+20*f, hi=20+30*f; return Math.round(lo+Math.random()*(hi-lo)); }
+const coinAvg=L=>fLv(L)*2*Math.pow(1.1,Math.max(0,L-5))*highMult(L);
 const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const qpick=a=>a[Math.floor(Math.random()*a.length)];
 function questLevelFor(pl){
@@ -32,9 +35,9 @@ function genQuest(pl,id){
   else if(x<0.24){ const p=scoutPlace(L); q={kind:'scout',type:'visit',at:{x:Math.round(p.x),z:Math.round(p.z)},r:18,level:L,place:p.name,
     title:qpick(['Scout '+p.name,'Eyes on '+p.name,'A Look at '+p.name]),
     text:qpick(['Walk out to '+p.name+' and see how things stand. Just get close enough to look around, then come back.','Nobody has been out to '+p.name+' in weeks. Go and have a look, then tell me what you saw.'])}; }
-  else if(x<0.42){ const n=big?rint(6,8):rint(12,15); q={kind:'bounty',type:'kill',target:d.id,count:n,level:L,
+  else if(x<0.42){ const n=Math.round(huntCount(L,big)*1.5); q={kind:'bounty',type:'kill',target:d.id,count:n,level:L,
     title:'Bounty: '+n+' '+many, text:'The village pays well for a big cull: '+n+' '+many+' from '+zn.name+'. Long work, but the reward is worth it, and there is always gear in it for you.'}; }
-  else { const n=big?rint(3,4):rint(5,8); q={kind:'hunt',type:'kill',target:d.id,count:n,level:L,
+  else { const n=huntCount(L,big); q={kind:'hunt',type:'kill',target:d.id,count:n,level:L,
     title:qpick([d.name+' Hunt','Thin the '+many,'Trouble in '+zn.name,many+' on the Move']),
     text:qpick([zn.name+' is crawling with '+many+'. Defeat '+n+' of them.','A trapper lost his snares to '+many+' near '+zn.name+'. Deal with '+n+'.','Travellers keep running into '+many+'. Clear out '+n+' around '+zn.name+'.'])}; }
   q.id=id; q.reward=questRewardFor(q); return q;

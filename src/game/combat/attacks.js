@@ -20,8 +20,8 @@ function cycleTarget(){
 function doAttack(kind){
   if(!started||!NET.ready||uiOpen()||PL.dead||CB.act||CB.cd[kind]>0) return;
   const c=clsOf(), ab=abilityOf(c,kind,GEAR.skills,PL.level);
-  if(!ab){ // the skill slot is locked or empty
-    if(PL.level<SKILL_SLOT_LV){ toast('Your skill slot opens at level '+SKILL_SLOT_LV,'bad'); UI_SFX.error(); }
+  if(!ab){ // the slot is locked or empty
+    if(PL.level<slotLv(kind)){ toast('Your '+kind+' slot opens at level '+slotLv(kind),'bad'); UI_SFX.error(); }
     else openSkills();
     return;
   }
@@ -29,13 +29,16 @@ function doAttack(kind){
   if(!tgtOK){ const t2=pickTarget(Math.max(ab.range+2,8)); if(t2) CB.target=t2; }
   const [k,dur,hitAt]=ab.act;
   CB.act={kind:ANIM_OF[k]||k,sk:k,t:0,dur,hitAt,done:false,skill:kind==='skill'};
-  CB.cd[kind]=ab.cd;
+  CB.cd[kind]=ab.cd*(kind==='basic'&&CB.buff?CB.buff.cd:1);
   const T=CB.target;
   if(T && !T.dead && Math.hypot(T.x-P.x,T.z-P.z)<ab.range+6) P.face=Math.atan2(-(T.x-P.x),-(T.z-P.z));
   else P.face=P.yaw;
   const a=aimDir();
   netSend({t:'atk',k:kind,tg:T&&!T.dead?T.id:null,face:Math.round(P.face*1000)/1000,aim:[a.x,a.y,a.z].map(v=>Math.round(v*1000)/1000)});
   if(k==='charge') startCharge(T);
+  if(k==='quake'||k==='inferno'||k==='bladestorm'||k==='berserk') cSfx.swing(true);
+  if(k==='hail'||k==='snipe'||k==='focus') cSfx.draw();
+  if(k==='shard'||k==='missiles'||k==='blizzard'||k==='surge') cSfx.charge(k!=='shard');
   if(k==='slash'||k==='spin'||k==='bash'||k==='charge') cSfx.swing(k!=='slash');
   if(k==='shoot'||k==='volley'||k==='pierce'||k==='rain') cSfx.draw();
   if(k==='cast'||k==='nova'||k==='chain'||k==='meteor') cSfx.charge(k==='nova'||k==='meteor');
@@ -46,8 +49,15 @@ function attackVisuals(a,who){
   if(k==='bash'){ spawnArcAt(x,y+0.9*sc,z,face); const fx=x-Math.sin(face)*1.6, fz=z-Math.cos(face)*1.6; spawnRingAt(fx,getH(fx,fz),fz,2.4,0xffe08a);
     if(mine&&SND.ready){ noiseHit({bus:'ui',filter:'lowpass',ff:420,dur:0.22,vol:0.3}); tone({bus:'ui',type:'triangle',freq:180,freq2:90,dur:0.2,vol:0.08}); } }
   else if(k==='charge'){ spawnRingAt(x,y,z,3.2,0xffc070); spawnBurst(new THREE.Vector3(x,y+0.3,z),0xd8b07a,1.2); if(mine){ cSfx.boom({x,z}); camShake=Math.max(camShake,0.3); } }
-  else if(k==='pierce'||k==='rain'){ if(mine) cSfx.twang(); }
-  else if(k==='chain'||k==='meteor'){ if(mine) cSfx.whoosh(); }
+  else if(k==='quake'){ for(let i=0;i<3;i++) spawnRingAt(x,getH(x,z),z,3+i*2.3,i?0xd8b07a:0xfff0c0); spawnBurst(new THREE.Vector3(x,y+0.2,z),0x8a6a44,2.2);
+    for(let i=0;i<10;i++){ const a=i/10*TAU+AR(-0.2,0.2), r=AR(2,6.5); spawnBurst(new THREE.Vector3(x+Math.sin(a)*r,getH(x+Math.sin(a)*r,z+Math.cos(a)*r)+0.2,z+Math.cos(a)*r),0x6a5030,0.5); }
+    cSfx.boom({x,z}); if(mine||Math.hypot(P.x-x,P.z-z)<25) camShake=Math.max(camShake,0.55); }
+  else if(k==='inferno'){ for(let i=0;i<3;i++) spawnRingAt(x,y+0.3*i,z,3+i*2.2,[0xff5a1a,0xffa040,0xfff0b0][i]); spawnBurst(new THREE.Vector3(x,y+0.8,z),0xff7a2a,3);
+    for(let i=0;i<14;i++){ const a=i/14*TAU, r=AR(3,6.5); spawnBurst(new THREE.Vector3(x+Math.sin(a)*r,y+0.6,z+Math.cos(a)*r),0xff8a3a,0.7); }
+    cSfx.boom({x,z}); if(mine) camShake=Math.max(camShake,0.45); }
+  else if(k==='berserk'||k==='focus'||k==='surge'){ const col=k==='berserk'?0xff4a3a:k==='focus'?0x9fe08a:0xb08aff; spawnRingAt(x,y,z,2.6,col); spawnRingAt(x,y+1.2,z,1.6,col); }
+  else if(k==='pierce'||k==='rain'||k==='hail'||k==='snipe'){ if(mine) cSfx.twang(); }
+  else if(k==='chain'||k==='meteor'||k==='shard'||k==='missiles'||k==='blizzard'){ if(mine) cSfx.whoosh(); }
   else if(a.kind==='slash') spawnArcAt(x,y+1.0*sc,z,face);
   else if(a.kind==='spin') spawnRingAt(x,y+0.8,z,3.4,0xeef4ff);
   else if(a.kind==='nova'){ spawnRingAt(x,y,z,5.5,0x9fd8ff); spawnRingAt(x,y+0.6,z,4,0xe8f6ff); if(mine) cSfx.nova(); }
@@ -94,23 +104,31 @@ function onMonAct(id,dur){
   monSound(m,'attack');
 }
 const arrowOf=()=>new THREE.Mesh(arrowGeo,matChar);
+const shardGeo=new THREE.ConeGeometry(0.09,0.7,5).rotateX(Math.PI/2);
 function onProj(id,kind,x,y,z,vx,vy,vz,tg){
   let mesh;
-  if(kind==='pierce'){ mesh=arrowOf(); mesh.scale.setScalar(1.8); const glow=new THREE.Mesh(coreGeo,fxMat(0xbfe8ff,0.8)); glow.scale.set(1.2,1.2,4); mesh.add(glow); }
+  if(kind==='shard'){ mesh=new THREE.Mesh(shardGeo,fxMat(0xbfe8ff,0.95)); }
+  else if(kind==='missile'){ mesh=new THREE.Mesh(coreGeo,fxMat(0xd8b0ff,1)); mesh.scale.setScalar(1.6); mesh.add(new THREE.Mesh(boltGeo,fxMat(0x9a6aff,0.55))); }
+  else if(kind==='snipe'){ mesh=arrowOf(); mesh.scale.setScalar(2.2); const glow=new THREE.Mesh(coreGeo,fxMat(0xfff0a0,0.9)); glow.scale.set(1.6,1.6,6); mesh.add(glow); }
+  else if(kind==='pierce'){ mesh=arrowOf(); mesh.scale.setScalar(1.8); const glow=new THREE.Mesh(coreGeo,fxMat(0xbfe8ff,0.8)); glow.scale.set(1.2,1.2,4); mesh.add(glow); }
   else if(kind==='arrow') mesh=arrowOf(); else { mesh=new THREE.Mesh(boltGeo,boltMat); mesh.add(new THREE.Mesh(coreGeo,boltCore)); }
   scene.add(mesh);
-  CB.projs.push({id,kind,mesh,pos:new THREE.Vector3(x,y,z),vel:new THREE.Vector3(vx,vy,vz),target:tg!=null?MON_BY_ID.get(tg):null,life:2.2,turn:kind==='arrow'?10:6,emberT:0});
+  CB.projs.push({id,kind,mesh,pos:new THREE.Vector3(x,y,z),vel:new THREE.Vector3(vx,vy,vz),target:tg!=null?MON_BY_ID.get(tg):null,life:2.2,turn:({arrow:10,shard:8,missile:9,snipe:14})[kind]||6,emberT:0});
 }
 function onProjEnd(id,x,y,z,hit){
   const i=CB.projs.findIndex(p=>p.id===id); if(i<0) return;
   const p=CB.projs[i]; scene.remove(p.mesh); CB.projs.splice(i,1);
   const pos=new THREE.Vector3(x,y,z);
   if(p.kind==='bolt'){ cSfx.boom(pos); spawnBurst(pos,0xff8a3a,0.9); }
+  else if(p.kind==='shard'){ spawnBurst(pos,0xbfe8ff,0.5); }
+  else if(p.kind==='missile'){ spawnBurst(pos,0xb08aff,0.6); }
+  else if(p.kind==='snipe'){ spawnBurst(pos,0xfff0a0,1.1); cSfx.boom(pos); }
   else if(hit==null) cSfx.thunk(pos);
 }
 const _pv2=new THREE.Vector3();
 function updateCombat(dt){
-  CB.cd.basic=Math.max(0,CB.cd.basic-dt); CB.cd.skill=Math.max(0,CB.cd.skill-dt);
+  for(const k in CB.cd) CB.cd[k]=Math.max(0,CB.cd[k]-dt);
+  if(CB.buff&&performance.now()>CB.buff.until) CB.buff=null;
   if(CB.target && (CB.target.dead || !CB.target.g.visible || Math.hypot(CB.target.x-P.x,CB.target.z-P.z)>45)) CB.target=null;
   if(CB.act){
     const a=CB.act; a.t+=dt;
@@ -128,7 +146,7 @@ function updateCombat(dt){
     if(p.kind==='pierce') p.pos.y=getH(p.pos.x,p.pos.z)+1.1;
     if(p.target && !p.target.dead && monCenter(p.target).distanceTo(p.pos)<0.5) p.pos.copy(monCenter(p.target));
     p.mesh.position.copy(p.pos);
-    if(p.kind==='arrow'||p.kind==='pierce'){ _pv2.copy(p.pos).add(p.vel); p.mesh.lookAt(_pv2); }
+    if(p.kind==='arrow'||p.kind==='pierce'||p.kind==='snipe'||p.kind==='shard'){ _pv2.copy(p.pos).add(p.vel); p.mesh.lookAt(_pv2); }
     else { p.mesh.scale.setScalar(1+Math.sin(t*30)*0.12); p.emberT-=dt; if(p.emberT<=0){ p.emberT=0.025; const e=new THREE.Mesh(emberGeo,emberMat); e.position.copy(p.pos); scene.add(e); CB.fx.push({mesh:e,life:0.35,max:0.35,shrink:true}); } }
   }
   for(let i=CB.fx.length-1;i>=0;i--){

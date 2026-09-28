@@ -1,8 +1,32 @@
 //@ Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, snapshots)
-/* Messages in:  hello{name,look,save}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
+/* Saves: when the host gives io.store = {load(acct) -> record|null, save(acct, record)} (either may return a
+   Promise), each player's progress lives on the server under their account code (a secret the browser keeps).
+   A player the server doesn't know yet is created from the save their browser sends: that is how progress
+   from before server saves carries over, and how it recovers if the server ever loses a record. Without
+   io.store (solo, or a shared world hosted in a tab) the browser's own save is used, as before.
+   Messages in:  hello{acct,name,look,save}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
                  cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  dev{cmd,v}
    Messages out: welcome  mons{list}  you  tp  snap{day,pl,mo,b,ev}   (see src/game/net/client.js) */
 initMonstersS(); initBossS();
+const ACCT=new Map(), PENDING=new Set();   // account -> pid online; pids whose save is still loading
+const recordOf=p=>({v:1,name:p.name,look:p.look,level:p.level,exp:p.exp,gear:p.gear,updated:Date.now()});
+function saveP(p){ if(!io.store||!p.acct) return Promise.resolve(); p.saveDirty=false; return Promise.resolve().then(()=>io.store.save(p.acct,recordOf(p))).catch(e=>{ p.saveDirty=true; if(io.log) io.log('save failed',e&&e.message); }); }
+function flushAll(){ return Promise.all([...S.players.values()].filter(p=>p.acct).map(saveP)); }
+function beginJoin(pid,hello){
+  const acct=typeof hello.acct==='string'&&/^[a-f0-9]{32}$/.test(hello.acct)?hello.acct:null;
+  if(!io.store||!acct){ join(pid,hello); return; }
+  PENDING.add(pid);
+  // already playing in another window? take that live progress (newer than anything on disk)
+  const live=ACCT.get(acct), lp=live!==undefined&&S.players.get(live);
+  Promise.resolve().then(()=>lp?recordOf(lp):io.store.load(acct)).then(rec=>{
+    if(!PENDING.delete(pid)) return;   // left while loading
+    const old=ACCT.get(acct);
+    if(old!==undefined&&old!==pid&&S.players.has(old)){ sendTo(old,{t:'kicked',text:'You opened this account somewhere else, so this window was disconnected.'}); leave(old); if(io.kick) io.kick(old); }
+    const migrate=!rec, h=migrate?hello:Object.assign({},hello,{save:{level:rec.level,exp:rec.exp,gear:rec.gear}});
+    const p=join(pid,h); p.acct=acct; ACCT.set(acct,pid);
+    if(migrate){ saveP(p); if(hello.save&&(hello.save.level>1||(hello.save.gear&&hello.save.gear.coins))) toastTo(pid,'Your progress has been moved to the server. It is safe even if you clear this browser, as long as you keep your account code (settings).','good'); }
+  }).catch(e=>{ PENDING.delete(pid); if(io.log) io.log('load failed',e&&e.message); sendTo(pid,{t:'kicked',text:'The server could not load your progress. Please try again in a moment.'}); if(io.kick) io.kick(pid); });
+}
 function join(pid,hello){
   const p=newPlayer(pid,hello); S.players.set(pid,p);
   sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo)});
@@ -14,6 +38,8 @@ function join(pid,hello){
   return p;
 }
 function leave(pid){
+  PENDING.delete(pid);
+  const lp=S.players.get(pid); if(lp&&lp.acct){ saveP(lp); if(ACCT.get(lp.acct)===pid) ACCT.delete(lp.acct); }
   if(!S.players.delete(pid)) return;
   ev('pleave',pid);
   for(const m of MONS) if(m.tgt===pid){ m.aggro=false; m.tgt=null; m.state='return'; m.pendingHit=-1; }
@@ -25,7 +51,7 @@ function setPos(pid,d){
 }
 function receive(pid,msg){
   if(!msg||typeof msg!=='object') return;
-  if(msg.t==='hello'){ if(S.players.has(pid)) leave(pid); join(pid,msg); return; }
+  if(msg.t==='hello'){ if(S.players.has(pid)) leave(pid); beginJoin(pid,msg); return; }
   const p=S.players.get(pid); if(!p) return;
   switch(msg.t){
     case 'pos': setPos(pid,msg.p); break;
@@ -40,9 +66,11 @@ function receive(pid,msg){
     case 'turnin': turnInP(p,msg.id); break;
     case 'abandon': abandonP(p,msg.id); break;
     case 'buyskill': buySkillP(p,msg.id); break;
+    case 'chat': chatP(p,msg.text); break;
+    case 'name': renameP(p,msg.name); break;
     case 'eqskill': equipSkillP(p,msg.id); break;
-    case 'unskill': unequipSkillP(p,msg.cls); break;
-    case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<2000){ p.look=msg.look; ev('plook',p.id,p.look); } break;
+    case 'unskill': unequipSkillP(p,msg.cls,msg.slot||'skill'); break;
+    case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<2000){ p.look=msg.look; p.saveDirty=true; ev('plook',p.id,p.look); } break;
     case 'dev': devP(p,msg); break;
   }
 }
@@ -52,8 +80,9 @@ function tick(dt){
   else S.day=(S.day+dt/DAY_SECONDS)%1;
   if(S.day<S.prevDay) sunrise();
   S.prevDay=S.day;
-  updatePlayersS(dt); updateMonstersS(dt); updateProjS(dt); updateAreasS(dt);
-  for(const p of S.players.values()) if(p.dirty){ p.dirty=false; sendTo(p.id,youMsg(p)); }
+  updatePlayersS(dt); updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateWeatherS(dt);
+  for(const p of S.players.values()) if(p.dirty){ p.dirty=false; p.saveDirty=true; sendTo(p.id,youMsg(p)); }
+  S.saveT-=dt; if(S.saveT<=0){ S.saveT=5; for(const p of S.players.values()) if(p.saveDirty&&p.acct) saveP(p); }
   S.snapT-=dt; if(S.snapT<=0){ S.snapT=S.snapDt; broadcastSnap(); }
 }
 // a new day: shop prices go back to normal for everyone
@@ -72,6 +101,6 @@ function broadcastSnap(){
     if(full||key!==m.snapKey){ m.snapKey=key; mo.push(a); }
   }
   const events=EVQ; EVQ=[];
-  io.broadcast({t:'snap',day:Math.round(S.day*1e5)/1e5,pl,mo,b:bossState(),ev:events});
+  io.broadcast({t:'snap',day:Math.round(S.day*1e5)/1e5,pl,mo,b:bossState(),w:weatherState(),ev:events});
 }
-return {join,leave,receive,setPos,tick,state:S,monsters:MONS,players:S.players};
+return {join:beginJoin,leave,receive,setPos,tick,flushAll,state:S,monsters:MONS,players:S.players};

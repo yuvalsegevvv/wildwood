@@ -14,8 +14,15 @@
 <canvas id="c" aria-label="3D forest scene"></canvas>
 
 <div class="hud-top">
+  <div class="hud-l">
   <div class="brand"><div class="t">Wildwood</div><div class="s" id="tod">Morning 07:00</div><div class="s z" id="zone"></div><div class="g" id="grow" hidden></div><div class="s" id="online" hidden></div>
     <div class="pstat"><div class="pl-top"><b id="plLv">Lv 1</b><span id="plHpT"></span></div><div class="pbar hp"><i id="plHp"></i></div><div class="pbar xp"><i id="plXp"></i></div><div class="pl-xp"><span id="plXpT"></span><span class="coin"><span id="plCoins">0</span> coins</span></div></div>
+  </div>
+  <div id="chat" class="chat empty">
+    <div class="chat-log" id="chatLog" aria-live="polite" aria-label="Chat"></div>
+    <div class="chat-in" id="chatIn" hidden><input id="chatText" maxlength="160" placeholder="Say something to everyone… (/name to rename)" autocomplete="off" enterkeyhint="send" aria-label="Chat message"><button class="chip" id="chatSend">Send</button></div>
+    <button class="chat-btn" id="chatBtn" aria-label="Chat (Enter)" title="Chat (Enter)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg></button>
+  </div>
   </div>
   <div class="hud-r">
   <div class="btns">
@@ -73,6 +80,8 @@
   <div class="pn-body" id="skBody"></div>
 </div>
 <div id="lucky" aria-live="polite"></div>
+<div id="meSay" class="say" hidden></div>
+<div id="kicked" class="kicked" hidden role="alertdialog" aria-labelledby="kickedText"><div><p id="kickedText"></p><button class="chip" id="kickedBtn">Reconnect</button></div></div>
 <div id="hurt"></div>
 <div id="lvup"></div>
 <div id="down" hidden><b>You were knocked out</b><span>Waking up at the village gate…</span></div>
@@ -86,6 +95,14 @@
   <div class="snd-sub">How villagers talk</div>
   <div class="chips"><button class="chip" data-voice="speech">Spoken</button><button class="chip" data-voice="babble">Babble</button><button class="chip" data-voice="off">Silent</button></div>
   <button id="sMute" class="chip snd-mute">Sound on</button>
+  <div id="acctSec" hidden>
+  <div class="snd-sub snd-sec">Account</div>
+  <p class="acct-note">This server keeps your progress under a secret account code. Keep it private. To play on another device, copy it here and paste it there.</p>
+  <div class="name-row"><input id="acctCode" readonly aria-label="Your account code" value="••••••••••••••••"><button class="chip" id="acctShow">Show</button><button class="chip" id="acctCopy">Copy</button></div>
+  <div class="name-row"><input id="acctUse" placeholder="Paste a code from another device" autocomplete="off" spellcheck="false" aria-label="Account code from another device"><button class="chip" id="acctGo">Use it</button></div>
+  </div>
+  <div class="snd-sub snd-sec">Your name</div>
+  <div class="name-row"><input id="setName" maxlength="16" autocomplete="nickname" spellcheck="false" aria-label="Your name"><button class="chip" id="setNameBtn">Save</button></div>
   <div id="tSec">
   <div class="snd-sub snd-sec">Testing</div>
   <div class="test-row"><label for="tLevel">Level</label><input id="tLevel" type="number" min="1" max="50" value="1" inputmode="numeric"><button class="chip" id="tSetLv">Set level</button></div>
@@ -95,6 +112,9 @@
     <button class="chip" id="tCoins">Add 1000 coins</button>
     <button class="chip" id="tThree">3 of an item (for the forge)</button>
     <button class="chip" id="tLucky">Lucky drop</button>
+    <button class="chip" id="tRain">Rain</button>
+    <button class="chip" id="tStorm">Thunderstorm</button>
+    <button class="chip" id="tClear">Clear sky</button>
     <button class="chip" id="tReset">Reset all progress</button>
   </div>
   </div>

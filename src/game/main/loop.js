@@ -46,6 +46,8 @@ function frame(){
     soundTick(dt);
   }
   updateMap(dt);
+  updateWeather(dt);
+  updateChat();
   updateEnv(dt);
   cullChunks(dt);
   updateCamera(dt); updateShadow();
@@ -67,6 +69,7 @@ function syncWorldChips(){ document.querySelectorAll('[data-world]').forEach(b=>
 const WORLD_NOTES={solo:'Just you. The world server runs in this tab.',room:'Play with everyone who has this page open. One player\'s tab hosts the world.',ws:'Play on the world server this page came from.'};
 document.querySelectorAll('[data-world]').forEach(b=>b.addEventListener('click',()=>{ worldMode=b.dataset.world; syncWorldChips(); }));
 $('#pname').value=playerName()||('Hiker '+Math.floor(100+Math.random()*900));
+$('#setName').value=$('#pname').value;
 $('#pname').addEventListener('change',()=>{ try{ localStorage.setItem('wildwood-name',$('#pname').value.trim().slice(0,16)); }catch(_){} });
 syncWorldChips();
 NET.onStatus=text=>{ if(started) toast(text,''); else statusEl.textContent=text; };

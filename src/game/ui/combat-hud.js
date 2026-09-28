@@ -35,10 +35,11 @@ function updateCombatUI(dt){
   const bossUI=updateBossUI();
   if(T && started && !customizing && !(bossUI&&T===BOSS.m)){ tframe.hidden=false; tName.textContent=T.T.name; const ld=T.T.level-PL.level; tLv.textContent='Lv '+T.T.level+(ld>0?'  (-'+ld*5+'% dmg)':''); tLv.classList.toggle('bad',ld>0); tBar.style.width=(T.hp/T.maxHp*100)+'%'; tHp.textContent=Math.ceil(T.hp)+' / '+T.maxHp; }
   else tframe.hidden=true;
-  const c=CLASSES[clsOf()], sk=abilityOf(clsOf(),'skill',GEAR&&GEAR.skills,PL.level);
-  abBasic.style.setProperty('--p',CB.cd.basic/c.basic.cd); abSkill.style.setProperty('--p',sk?CB.cd.skill/sk.cd:0);
-  abSkill.classList.toggle('ready',!!sk&&CB.cd.skill<=0);
-  const key=clsOf()+'|'+(sk?sk.id:'')+'|'+Math.min(PL.level,BURST_SLOT_LV); if(key!==abKey){ abKey=key; setActionBar(); }
+  const L=GEAR&&GEAR.skills, c=clsOf(), ba=abilityOf(c,'basic',L,PL.level), sk=abilityOf(c,'skill',L,PL.level), bu=abilityOf(c,'burst',L,PL.level);
+  abBasic.style.setProperty('--p',ba?CB.cd.basic/(ba.cd*(CB.buff?CB.buff.cd:1)):0); abSkill.style.setProperty('--p',sk?CB.cd.skill/sk.cd:0); abBurst.style.setProperty('--p',bu?CB.cd.burst/bu.cd:0);
+  abSkill.classList.toggle('ready',!!sk&&CB.cd.skill<=0); abBurst.classList.toggle('ready',!!bu&&CB.cd.burst<=0);
+  abBasic.classList.toggle('buffed',!!CB.buff);
+  const key=c+'|'+(ba?ba.id:'')+'|'+(sk?sk.id:'')+'|'+(bu?bu.id:'')+'|'+Math.min(PL.level,BURST_SLOT_LV); if(key!==abKey){ abKey=key; setActionBar(); }
 }
 const ICONS={
   Slash:'<path d="M5 19L17 7l2-4-4 2L3 17z"/><path d="M8 16l-3 3M15 5l4 4"/>',
@@ -55,22 +56,30 @@ const ICONS={
   'Meteor':'<circle cx="15" cy="15" r="5"/><path d="M11 11L3 3M13 9L8 3M9 13L3 8"/>',
   lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
-  burst:'<path d="M12 2l2.5 6.5L21 9l-5 4.5L17.5 21 12 17l-5.5 4L8 13.5 3 9l6.5-.5z"/>'
+  burst:'<path d="M12 2l2.5 6.5L21 9l-5 4.5L17.5 21 12 17l-5.5 4L8 13.5 3 9l6.5-.5z"/>',
+  'Ice Shard':'<path d="M4 20L15 9l5-5-2 6-9 9z"/><path d="M13 7l4 4"/>',
+  'Arcane Missiles':'<circle cx="17" cy="7" r="2.5"/><circle cx="7" cy="9" r="2"/><circle cx="12" cy="17" r="2"/><path d="M3 21l3-3M9 21l2-2M3 15l2-2"/>',
+  'Earthshatter':'<path d="M2 20h20"/><path d="M12 20l-2-5 3-3-2-4M7 20l1-3M17 20l-1-4 2-2"/><path d="M9 4l3 2 3-2"/>',
+  'Blade Storm':'<circle cx="12" cy="12" r="2"/><path d="M12 10V3l3 3M14 12h7l-3 3M12 14v7l-3-3M10 12H3l3-3"/>',
+  'Berserk':'<path d="M4 20l5-9 3 4 3-7 5 12"/><path d="M8 4l2 3M16 3l-1 4M12 2v3"/>',
+  'Hail of Arrows':'<path d="M4 3v8M9 3v12M14 3v8M19 3v12M2 9l2 3 2-3M7 13l2 3 2-3M12 9l2 3 2-3M17 13l2 3 2-3"/><path d="M2 21h20"/>',
+  'Sniper Shot':'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/><path d="M12 1v5M12 18v5M1 12h5M18 12h5"/>',
+  "Hunter's Focus":'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  'Blizzard':'<path d="M12 2v20M4 6l16 12M4 18L20 6"/><circle cx="12" cy="12" r="3"/>',
+  'Inferno':'<path d="M12 22c-5 0-8-3-8-7 0-4 4-6 4-10 3 2 4 5 4 7 1-2 1-4 0-6 4 2 8 6 8 9 0 4-3 7-8 7z"/>',
+  'Arcane Surge':'<path d="M12 2l3 7h7l-6 5 2 8-6-5-6 5 2-8-6-5h7z"/>'
 };
 const abBasic=$('#abBasic'), abSkill=$('#abSkill'), abBurst=$('#abBurst'); let abKey='';
-function burstSlot(){ toast(PL.level<BURST_SLOT_LV?'Your burst slot opens at level '+BURST_SLOT_LV:'Burst skills are coming soon!',''); UI_SFX.click(); }
-function flashSkillSlot(){ abKey=''; abSkill.classList.remove('flash'); void abSkill.offsetWidth; abSkill.classList.add('flash'); }
+function burstSlot(){ doAttack('burst'); }
+function flashSkillSlot(slot){ abKey=''; const el=slot==='burst'?abBurst:abSkill; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
 function setActionBar(){
-  const c=CLASSES[clsOf()];
-  abBasic.querySelector('svg').innerHTML=ICONS[c.basic.name]; abBasic.querySelector('.nm').textContent=c.basic.name;
-  // slot 2: your equipped skill, or a lock until level 3, or a + when nothing is equipped
-  const sk=abilityOf(clsOf(),'skill',GEAR&&GEAR.skills,PL.level), locked=PL.level<SKILL_SLOT_LV;
-  abSkill.querySelector('svg').innerHTML=ICONS[sk?sk.name:locked?'lock':'plus']; abSkill.querySelector('.nm').textContent=sk?sk.name:locked?'Lv '+SKILL_SLOT_LV:'Skill';
-  abSkill.classList.toggle('empty',!sk);
-  abBasic.setAttribute('aria-label',c.basic.name); abSkill.setAttribute('aria-label',sk?sk.name:locked?'Skill slot, opens at level '+SKILL_SLOT_LV:'Empty skill slot: choose a skill');
-  // slot 3: burst skills (coming later)
-  const bl=PL.level<BURST_SLOT_LV; abBurst.querySelector('svg').innerHTML=ICONS[bl?'lock':'burst']; abBurst.querySelector('.nm').textContent=bl?'Lv '+BURST_SLOT_LV:'Soon';
-  abBurst.setAttribute('aria-label',bl?'Burst slot, opens at level '+BURST_SLOT_LV:'Burst skills are coming soon');
+  const c=clsOf(), L=GEAR&&GEAR.skills;
+  // each button: the equipped ability, a lock until the slot's level, or a + when nothing is equipped
+  const fill=(el,slot,key)=>{ const a=abilityOf(c,slot,L,PL.level), locked=PL.level<slotLv(slot);
+    el.querySelector('svg').innerHTML=ICONS[a?a.name:locked?'lock':'plus']||ICONS.burst;
+    el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+slotLv(slot):(slot==='burst'?'Burst':'Skill');
+    el.classList.toggle('empty',!a); el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Burst':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };
+  fill(abBasic,'basic','F'); fill(abSkill,'skill','Q'); fill(abBurst,'burst','R');
   document.querySelectorAll('[data-cls]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cls===clsOf()));
 }
 const press=(el,fn)=>{ el.addEventListener('touchstart',e=>{ e.preventDefault(); fn(); },{passive:false}); el.addEventListener('click',fn); };

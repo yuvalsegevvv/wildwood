@@ -1,0 +1,68 @@
+//@ Weather on the client: rain streaks around the camera, a darker foggy sky, rain sound, lightning and thunder
+/* The server decides the weather (src/server/weather.js); snapshots carry [kind, seconds in, duration] and
+   'thunder' events carry where lightning struck. Rain fades in and out over 25 seconds. */
+const WX={kind:0,t:0,dur:0,inten:0,flash:0,snd:null};
+const RAIN_N=LITE?700:(LOW?1100:2000);
+const rainPos=new Float32Array(RAIN_N*6), rainGeo=new THREE.BufferGeometry();
+rainGeo.setAttribute('position',new THREE.BufferAttribute(rainPos,3));
+const rainMat=new THREE.LineBasicMaterial({color:0xb6c4d2,transparent:true,opacity:0,depthWrite:false});
+const rain=new THREE.LineSegments(rainGeo,rainMat); rain.frustumCulled=false; rain.visible=false; scene.add(rain);
+const rainSpd=new Float32Array(RAIN_N);
+for(let i=0;i<RAIN_N;i++){ rainSpd[i]=AR(18,26); const x=AR(-22,22), y=AR(-10,16), z=AR(-22,22); rainPos.set([x,y,z,x,y+0.7,z],i*6); }
+function applyWeather(w){
+  if(!w) return; const was=WX.kind; WX.kind=w[0]; WX.t=w[1]; WX.dur=w[2];
+  if(WX.kind&&!was&&started) toast(WX.kind===2?'A thunderstorm is rolling in…':'It is starting to rain…','');
+}
+// how strong the weather is right now (0..1): fades in over the first 25 s and out over the last 25 s
+function weatherTarget(){ if(!WX.kind) return 0; return clamp(Math.min(WX.t/25,(WX.dur-WX.t)/25,1)); }
+const _wg=new THREE.Color(), _ww=new THREE.Color(0xdfe6ff);
+function weatherTint(s){
+  const k=WX.inten*(WX.kind===2?1:0.8);
+  if(k>0.001){
+    const lum=(s.fog.r+s.fog.g+s.fog.b)/3; _wg.setRGB(lum*0.82,lum*0.87,lum*0.93);
+    s.fog.lerp(_wg,k*0.8); s.sky.lerp(_wg,k*0.85); s.hor.lerp(_wg,k*0.8); s.cloud.lerp(_wg,k*0.7);
+    s.sunI*=1-0.65*k; s.hi*=1-0.22*k; s.far*=1-0.45*k;
+  }
+  if(WX.flash>0.001){ const f=WX.flash; s.hi+=f*1.4; s.fog.lerp(_ww,f*0.35); s.sky.lerp(_ww,f*0.6); s.hor.lerp(_ww,f*0.5); }
+}
+function updateWeather(dt){
+  if(WX.kind) WX.t+=dt;
+  WX.inten+=(weatherTarget()-WX.inten)*Math.min(1,dt*0.8);
+  WX.flash=Math.max(0,WX.flash-dt*3.2);
+  const on=WX.inten>0.01; rain.visible=on;
+  if(on){
+    const n=Math.floor(RAIN_N*WX.inten); rainGeo.setDrawRange(0,n*2);
+    rainMat.opacity=(WX.kind===2?0.5:0.4)*Math.min(1,WX.inten*1.5);
+    const cx=camera.position.x, cy=camera.position.y, cz=camera.position.z, wind=WX.kind===2?0.35:0.12;
+    for(let i=0;i<n;i++){
+      const o=i*6, fall=rainSpd[i]*dt;
+      let x=rainPos[o]-fall*wind, y=rainPos[o+1]-fall, z=rainPos[o+2];
+      if(y<cy-10||Math.abs(x-cx)>22||Math.abs(z-cz)>22){ x=cx+AR(-22,22); z=cz+AR(-22,22); y=cy+AR(8,16); }
+      rainPos[o]=x; rainPos[o+1]=y; rainPos[o+2]=z; rainPos[o+3]=x+0.7*wind; rainPos[o+4]=y+0.75; rainPos[o+5]=z;
+    }
+    rainGeo.attributes.position.needsUpdate=true;
+  }
+  if(SND.ready){
+    if(!WX.snd){ WX.snd=noiseLoop('bandpass',2600,0.35,'ambient'); WX.snd2=noiseLoop('lowpass',420,0.7,'ambient'); }
+    const tc=SND.ctx.currentTime;
+    WX.snd.g.gain.setTargetAtTime(0.26*WX.inten,tc,0.4);
+    WX.snd2.g.gain.setTargetAtTime((WX.kind===2?0.2:0.06)*WX.inten,tc,0.6);
+  }
+}
+// lightning: a bolt in the sky, a flash for everyone who can see it, thunder after distance / speed of sound
+const lightningMat=new THREE.LineBasicMaterial({color:0xf2f4ff,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false,fog:false});
+function onThunder(x,z){
+  const d=Math.hypot(x-P.x,z-P.z), near=clamp(1-d/320);
+  WX.flash=Math.max(WX.flash,0.25+0.75*near);
+  if(d<420){
+    const g=getH(x,z), v=[]; let px=x, pz=z;
+    for(let y=g+70;y>g;y-=AR(4,8)){ v.push(px,y,pz); px+=AR(-3,3); pz+=AR(-3,3); v.push(px,Math.max(g,y-AR(4,8)),pz); }
+    const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(v,3));
+    const line=new THREE.LineSegments(geo,lightningMat.clone()); scene.add(line); BOLTS.push({o:line,t:0,life:0.35});
+  }
+  if(!SND.ready) return;
+  const when=SND.ctx.currentTime+d/343, s=spatial(x,z,60,2000)||{gain:0.3,pan:0}, v=0.15+0.5*near;
+  if(d<90) noiseHit({bus:'ui',filter:'highpass',ff:1800,dur:0.25,vol:0.35*near,pan:s.pan,when:SND.ctx.currentTime+d/343});
+  noiseHit({bus:'ambient',filter:'lowpass',ff:160+300*near,dur:2.6+1.5*(1-near),vol:v,pan:s.pan,when});
+  tone({bus:'ambient',type:'sawtooth',freq:55,freq2:28,dur:2.2,vol:0.05*v,filter:'lowpass',ff:220,pan:s.pan,when:when+0.1});
+}

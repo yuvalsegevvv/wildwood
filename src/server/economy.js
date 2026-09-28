@@ -75,19 +75,32 @@ function buySkillP(p,id){
   p.gear.coins-=s.price; p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Learned '+s.name+'!','good'); ev('skillbuy',p.id,id);
 }
 function equipSkillP(p,id){
-  const s=SKILLS[id]; if(!s||!p.gear.skills.owned.includes(id)) return;
-  if(p.level<Math.max(SKILL_SLOT_LV,s.lv)){ toastTo(p.id,'The skill slot opens at level '+Math.max(SKILL_SLOT_LV,s.lv),'bad'); return; }
-  p.gear.skills.eq[s.cls]=id; p.dirty=true;
+  const s=SKILLS[id]; if(!s||!p.gear.skills.owned.includes(id)||!canSwap(s.cls,s.slot)) return;
+  const need=Math.max(slotLv(s.slot),s.lv); if(p.level<need){ toastTo(p.id,s.name+' needs level '+need,'bad'); return; }
+  p.gear.skills.eq[s.cls][s.slot]=id; p.dirty=true;
 }
-function unequipSkillP(p,cls){ if(cls in p.gear.skills.eq){ p.gear.skills.eq[cls]=null; p.dirty=true; } }
+function unequipSkillP(p,cls,slot){ const e=p.gear.skills.eq[cls]; if(e&&(slot==='skill'||slot==='burst')){ e[slot]=null; p.dirty=true; } }
+/* ---- chat and names ---- */
+// chat: up to 160 characters, at most one message every 0.7 s per player; everyone in the world hears it
+function chatP(p,text){
+  text=String(text||'').replace(/[\u0000-\u001f\u007f-\u009f]/g,'').replace(/\s+/g,' ').trim().slice(0,160); if(!text) return;
+  if(S.t-(p.chatT||-9)<0.7){ toastTo(p.id,'Slow down a little','bad'); return; }
+  p.chatT=S.t; ev('chat',p.id,p.name,text);
+}
+function renameP(p,name){
+  const n=cleanName(name); if(n===p.name) return;
+  if(S.t-(p.renameT||-9)<3){ toastTo(p.id,'Wait a moment before changing your name again','bad'); return; }
+  const old=p.name; p.name=n; p.renameT=S.t; p.saveDirty=true; ev('pname',p.id,n,old);
+}
 // testing tools (settings panel); allowed when the server runs in dev mode (solo, shared room, or node --dev)
 function devP(p,msg){
   if(!S.dev){ toastTo(p.id,'Testing tools are off on this server','bad'); return; }
   const c=msg.cmd;
-  if(c==='level'){ const was=p.level; p.level=clampInt(msg.v,1,50,1); p.exp=0; recalcP(p); p.hp=p.maxHp; refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p); p.dirty=true; ev('lvset',p.id,p.level); }
+  if(c==='level'){ const was=p.level; p.level=clampInt(msg.v,1,50,1); p.exp=0; recalcP(p); p.hp=p.maxHp; refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); p.dirty=true; ev('lvset',p.id,p.level); }
   else if(c==='giveAll'){ giveAllP(p); toastTo(p.id,'Every item added to your bag','good'); }
   else if(c==='startAll'){ p.gear.startAll=!!msg.v; if(p.gear.startAll) giveAllP(p); p.dirty=true; }
   else if(c==='skills'){ for(const id of SKILL_IDS) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Every skill learned','good'); }
+  else if(c==='weather'){ const k={clear:0,rain:1,storm:2}[msg.v]; if(k===0){ W.kind=0; W.t=0; W.dur=0; ev('weather',0); } else if(k) startWeatherS(k); }
   else if(c==='coins'){ p.gear.coins+=1000; p.dirty=true; }
   else if(c==='three'){ const id=randomItem(tierFor(p.level),0); for(let k=0;k<MERGE_COUNT;k++) addItemP(p,id,true); toastTo(p.id,'Three '+ITEM[id].name+' added for the forge','good'); }
   else if(c==='lucky'){ const r=clampInt(msg.v,2,4,2); addItemP(p,randomItem(tierFor(p.level),r)); }

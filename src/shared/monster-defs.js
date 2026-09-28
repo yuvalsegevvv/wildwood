@@ -29,7 +29,7 @@ function prepDef(d){
   const F=FAM[d.model]; for(const k in F) if(d[k]===undefined) d[k]=F[k];
   d.rad=F.rad*d.scale; d.height=F.height*d.scale;
   // health: the hits a same-level, normally geared player needs (4 + 0.45 x level), times the enemy's toughness
-  d.hp=Math.round(expDmg(d.level)*(4+0.45*d.level)*d.hpK);
+  d.hp=Math.round(expDmg(d.level)*(4+0.45*d.level)*d.hpK*highMult(d.level));
   // damage: a share of a same-level, normally geared player's health, before that player's armor
   d.dmg=Math.max(1,Math.round(expHP(d.level)*d.dmgPct/(1-expRed(d.level))));
   d.xp=xpFor(d.level);
@@ -38,9 +38,9 @@ function prepDef(d){
 MON_DEFS.forEach(prepDef);
 const BOSS_DEF={id:'boss',name:'The Rootwarden',level:15,model:'treant',scale:2.4,boss:true,heavy:true,glow:0x12001a,atk:2.6,speed:1.9,aggro:0,
   pal:{bark:0x2e2a36,c1:0x4a2a5a,c2:0x5a3a7a,c3:0x3a1f4a,eyes:0xff5cf0}};
-prepDef(BOSS_DEF); BOSS_DEF.hp=Math.round(expDmg(15)*70); BOSS_DEF.dmg=Math.round(expHP(15)*0.16/(1-expRed(15))); BOSS_DEF.xp=xpFor(15)*25;
+prepDef(BOSS_DEF); BOSS_DEF.hp=Math.round(expDmg(15)*70*highMult(15)); BOSS_DEF.dmg=Math.round(expHP(15)*0.16/(1-expRed(15))); BOSS_DEF.xp=xpFor(15)*25;
 const TOTEM_DEF={id:'totem',name:'Heartwood Totem',level:15,model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x0a2a10,pal:{}};
-prepDef(TOTEM_DEF); TOTEM_DEF.hp=Math.round(expDmg(15)*9); TOTEM_DEF.xp=0;
+prepDef(TOTEM_DEF); TOTEM_DEF.hp=Math.round(expDmg(15)*9*highMult(15)); TOTEM_DEF.xp=0;
 const THORN_DEF={id:'thornling',name:'Thornling',level:14,model:'treant',scale:0.6,hpK:0.6,dmgPct:0.07,atk:1.8,speed:2.4,aggro:30,
   pal:{bark:0x3a2e28,c1:0x5a3a7a,c2:0x4a2a5a,c3:0x3a1f4a,eyes:0xff5cf0}};
 prepDef(THORN_DEF);

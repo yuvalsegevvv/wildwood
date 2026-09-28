@@ -22,7 +22,11 @@ const expHP=L=>20*fLv(L)+setHP(tierFor(L));
 const expRed=L=>defRed(setDef(tierFor(L)));
 /* XP: unchanged up to level 5, then later monsters give 15% more per level and levels need more,
    so that level 15 -> 16 takes about 500 level-15 kills */
-const xpFor=L=>fLv(L)*Math.pow(1.15,Math.max(0,L-5));
-const K15=(500*xpFor(15))/(10*(225+Math.pow(7/6,15)));
+const xpBase=L=>fLv(L)*Math.pow(1.15,Math.max(0,L-5));
+/* Levels 10-15 monsters have 1.5x health (to keep up with burst skills), so they also give 1.5x XP and coins:
+   the level curve below still uses the old XP, so each high-level kill moves you further than before. */
+const HIGH_LV=10, highMult=L=>L>=HIGH_LV?1.5:1;
+const xpFor=L=>xpBase(L)*highMult(L);
+const K15=(500*xpBase(15))/(10*(225+Math.pow(7/6,15)));
 const expToNext=L=>10*(L*L+Math.pow(7/6,L))*Math.pow(K15,Math.max(0,L-5)/10);
-const coinsFor=L=>Math.max(1,Math.round(fLv(L)*AR(1.5,2.5)*Math.pow(1.1,Math.max(0,L-5))));
+const coinsFor=L=>Math.max(1,Math.round(fLv(L)*AR(1.5,2.5)*Math.pow(1.1,Math.max(0,L-5))*highMult(L)));

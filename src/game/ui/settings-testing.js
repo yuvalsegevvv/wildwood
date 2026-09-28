@@ -7,6 +7,9 @@ function syncStartAll(){ $('#tStartAll').setAttribute('aria-pressed',!!GEAR.star
 $('#tStartAll').addEventListener('click',()=>{ GEAR.startAll=!GEAR.startAll; saveGear(); syncStartAll(); netSend({t:'dev',cmd:'startAll',v:GEAR.startAll}); });
 $('#tCoins').addEventListener('click',()=>{ netSend({t:'dev',cmd:'coins'}); });
 $('#tThree').addEventListener('click',()=>{ netSend({t:'dev',cmd:'three'}); });
+$('#tRain').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'rain'}));
+$('#tStorm').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'storm'}));
+$('#tClear').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'clear'}));
 let luckyN=0; $('#tLucky').addEventListener('click',()=>{ netSend({t:'dev',cmd:'lucky',v:2+(luckyN++%3)}); });
 $('#tReset').addEventListener('click',e=>{
   const b=e.currentTarget; if(!b.dataset.sure){ b.dataset.sure='1'; b.textContent='Tap again to wipe level, items, coins and quests'; return; }

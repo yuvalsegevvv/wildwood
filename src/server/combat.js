@@ -5,17 +5,17 @@
 const PROJS=[]; let nextProjId=1;
 function handleAttack(p,msg){
   if(p.dead||p.act) return;
-  const k=msg.k==='skill'?'skill':'basic'; if(p.cd[k]>0.08) return;
+  const k=SLOTS.includes(msg.k)?msg.k:'basic'; if(p.cd[k]>0.08) return;
   const cls=clsOfP(p), ab=abilityOf(cls,k,p.gear.skills,p.level); if(!ab) return;   // no skill equipped, or the slot is still locked
   const [kind,dur,hitAt]=ab.act;
-  p.cd[k]=ab.cd;
+  p.cd[k]=ab.cd*(k==='basic'&&p.buff?p.buff.cd:1);
   if(isFinite(+msg.face)) p.face=+msg.face;
   const tg=MON_BY_ID.get(msg.tg);
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
-  p.act={kind,t:0,dur,hitAt,done:false,skill:k==='skill',mult:ab.mult,range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim};
+  p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,mult:ab.mult,range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim};
   ev('pact',p.id,kind,Math.round(p.face*100)/100);
 }
-function rollDmgS(p,mult,m){ const crit=Math.random()<0.12, ld=m?Math.max(0,m.T.level-p.level):0; return {v:Math.max(1,Math.round(p.dmg*mult*Math.max(0.1,1-0.05*ld)*AR(0.85,1.15)*(crit?1.7:1))),crit}; }
+function rollDmgS(p,mult,m){ const b=p.buff, crit=Math.random()<0.12+(b?b.crit:0), ld=m?Math.max(0,m.T.level-p.level):0; return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*Math.max(0.1,1-0.05*ld)*AR(0.85,1.15)*(crit?1.7:1))),crit}; }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb){
   if(m.dead||m.remove) return;
   if(m.immune){ ev('imm',m.id); return; }
@@ -83,6 +83,28 @@ function resolveHitS(p,a){
     const c=aimPoint(p,tgt,a.range,10); addAreaS(p,'rain',c.x,c.z,4,2.6,a.mult);
   } else if(a.kind==='meteor'){
     const c=aimPoint(p,tgt,a.range,10); addAreaS(p,'meteor',c.x,c.z,4.5,1.2,a.mult);
+  } else if(a.kind==='shard'){
+    fireProjS(p,'shard',tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<32?dirToS(p,tgt):a.aim,tgt,a.mult);
+  } else if(a.kind==='missiles'){
+    // three homing missiles: the target first, then the nearest other enemies around it
+    const first=tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=a.range+2?tgt:nearestAhead(p,a.range);
+    const near=first?MONS.filter(m=>alive(m)&&m!==first&&Math.hypot(m.x-first.x,m.z-first.z)<6).sort((x,y)=>Math.hypot(x.x-first.x,x.z-first.z)-Math.hypot(y.x-first.x,y.z-first.z)):[];
+    const tg3=[first,near[0]||first,near[1]||first];
+    [-0.35,0,0.35].forEach((off,i)=>fireProjS(p,'missile',rotY(tg3[i]?dirToS(p,tg3[i]):a.aim,off),tg3[i],a.mult));
+  } else if(a.kind==='quake'||a.kind==='inferno'){
+    for(const m of MONS){ if(!alive(m)||Math.hypot(m.x-p.x,m.z-p.z)>=a.range+m.T.rad) continue; damageMonsterS(m,a.mult,p,p.x,p.z,7); if(a.kind==='quake'&&!m.T.heavy&&!m.boss&&!m.dead) m.stunT=1.5; }
+  } else if(a.kind==='bladestorm'){
+    addAreaS(p,'storm',p.x,p.z,a.range,4,a.mult,true);
+  } else if(a.kind==='hail'){
+    const c=aimPoint(p,tgt,a.range,12); addAreaS(p,'hail',c.x,c.z,7,4.1,a.mult);
+  } else if(a.kind==='blizzard'){
+    const c=aimPoint(p,tgt,a.range,12); addAreaS(p,'blizzard',c.x,c.z,8,5.1,a.mult);
+  } else if(a.kind==='snipe'){
+    fireProjS(p,'snipe',tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<a.range+2?dirToS(p,tgt):a.aim,tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<a.range+2?tgt:null,a.mult);
+  } else if(a.kind==='berserk'||a.kind==='focus'||a.kind==='surge'){
+    const b=SKILLS[a.sid].buff; p.buff={id:a.sid,until:S.t+b.dur,dmg:b.dmg,cd:b.cd,crit:b.crit};
+    if(b.reset) p.cd.skill=0;
+    ev('buff',p.id,a.sid,b.dur);
   } else if(a.kind==='cast'){
     fireProjS(p,'bolt',tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<30?dirToS(p,tgt):a.aim,tgt,a.mult);
   } else if(a.kind==='nova'){
@@ -102,22 +124,26 @@ function resolveHitS(p,a){
 }
 // lingering ground effects: Arrow Rain hits 5 times, Meteor once when it lands
 const AREAS=[]; let nextAreaId=1;
-function addAreaS(p,kind,x,z,r,dur,mult){
-  const A={id:nextAreaId++,kind,owner:p.id,x,z,r,dur,mult,t:0,next:kind==='rain'?0.3:dur,every:0.5};
-  AREAS.push(A); ev('area',A.id,kind,r1(x),r1(z),r,dur);
+const AREA_TIMING={rain:[0.3,0.5],hail:[0.3,0.5],blizzard:[0.3,0.5],storm:[0.2,0.4]};   // first hit, then every ... s (meteor: once, at the end)
+function addAreaS(p,kind,x,z,r,dur,mult,follow){
+  const tm=AREA_TIMING[kind]||[dur,dur];
+  const A={id:nextAreaId++,kind,owner:p.id,x,z,r,dur,mult,t:0,next:tm[0],every:tm[1],follow:!!follow};
+  AREAS.push(A); ev('area',A.id,kind,r1(x),r1(z),r,dur,p.id);
 }
 function updateAreasS(dt){
   for(let i=AREAS.length-1;i>=0;i--){
-    const A=AREAS[i]; A.t+=dt;
-    if(A.t>=A.next){ A.next+=A.every; const o=S.players.get(A.owner);
-      if(o) for(const m of MONS){ if(!m.dead&&!m.remove&&Math.hypot(m.x-A.x,m.z-A.z)<A.r+m.T.rad*0.5) damageMonsterS(m,A.mult,o,A.x,A.z,A.kind==='meteor'?7:0.5); } }
+    const A=AREAS[i]; A.t+=dt; const o=S.players.get(A.owner);
+    if(A.follow&&o){ if(o.dead){ A.t=A.dur; } else { A.x=o.x; A.z=o.z; } }
+    if(A.t>=A.next&&A.t<=A.dur+0.01){ A.next+=A.every;
+      if(o) for(const m of MONS){ if(!m.dead&&!m.remove&&Math.hypot(m.x-A.x,m.z-A.z)<A.r+m.T.rad*0.5){ damageMonsterS(m,A.mult,o,A.x,A.z,A.kind==='meteor'?7:A.kind==='storm'?1.5:0.5); if(A.kind==='blizzard'&&!m.dead) m.slowT=1.5; } } }
     if(A.t>=A.dur){ ev('aend',A.id); AREAS.splice(i,1); }
   }
 }
 function fireProjS(p,kind,dir,tg,mult){
   const h=handPosS(p), sp=kind==='arrow'?42:20;
-  const pierce=kind==='pierce', spd=pierce?50:sp;
-  const pr={id:nextProjId++,kind,owner:p.id,x:h.x,y:h.y,z:h.z,vx:dir[0]*spd,vy:dir[1]*spd,vz:dir[2]*spd,tg:tg?tg.id:null,mult,life:pierce?0.72:kind==='arrow'?1.4:1.8,turn:kind==='arrow'?10:6,hit:pierce?new Set():null};
+  // speed, seconds of flight, how hard it homes
+  const P_=({pierce:[50,0.72,0],shard:[38,1.1,8],missile:[24,1.9,9],snipe:[75,0.9,14],arrow:[42,1.4,10]})[kind]||[20,1.8,6], pierce=kind==='pierce', spd=P_[0];
+  const pr={id:nextProjId++,kind,owner:p.id,x:h.x,y:h.y,z:h.z,vx:dir[0]*spd,vy:dir[1]*spd,vz:dir[2]*spd,tg:tg?tg.id:null,mult,life:P_[1],turn:P_[2],hit:pierce?new Set():null};
   PROJS.push(pr);
   ev('proj',pr.id,kind,r1(pr.x),r1(pr.y),r1(pr.z),r1(pr.vx),r1(pr.vy),r1(pr.vz),pr.tg);
 }
@@ -146,7 +172,7 @@ function updateProjS(dt){
     const owner=S.players.get(pr.owner);
     ev('pend',pr.id,r1(pr.x),r1(pr.y),r1(pr.z),hit?hit.id:null);
     if(owner){
-      if(pr.kind==='arrow'){ if(hit) damageMonsterS(hit,pr.mult,owner,owner.x,owner.z,2); }
+      if(pr.kind!=='bolt'){ if(hit){ damageMonsterS(hit,pr.mult,owner,owner.x,owner.z,pr.kind==='snipe'?6:2); if(pr.kind==='shard'&&!hit.dead) hit.slowT=2; } }
       else {
         if(hit) damageMonsterS(hit,pr.mult,owner,owner.x,owner.z,3);
         for(const m of MONS){ if(m!==hit&&!m.dead&&!m.remove){ const c=monCenterS(m); if(Math.hypot(c.x-pr.x,c.y-pr.y,c.z-pr.z)<2.2+m.T.rad*0.5) damageMonsterS(m,0.5,owner,pr.x,pr.z,3); } }

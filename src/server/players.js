@@ -11,11 +11,7 @@ function sanitizeGear(g,cls){
   if(!out.inv.includes(out.eq.weapon)) out.inv.push(out.eq.weapon);
   if(g.bought&&typeof g.bought==='object') for(const id in g.bought) if(ITEM[id]&&ITEM[id].rar===0) out.bought[id]=clampInt(g.bought[id],0,999,0);
   out.q=sanitizeQuests(g.q);
-  out.skills=newSkills();
-  if(g.skills&&typeof g.skills==='object'){
-    if(Array.isArray(g.skills.owned)) for(const id of g.skills.owned) if(SKILLS[id]&&!out.skills.owned.includes(id)) out.skills.owned.push(id);
-    if(g.skills.eq) for(const c in out.skills.eq){ const id=g.skills.eq[c]; if(SKILLS[id]&&SKILLS[id].cls===c&&out.skills.owned.includes(id)) out.skills.eq[c]=id; }
-  }
+  out.skills=sanitizeSkills(g.skills);
   return out;
 }
 // quests travel in the player's own save, so check every field and recompute the rewards here
@@ -25,7 +21,7 @@ function sanitizeQuest(q){
   const str=(v,n)=>String(v||'').slice(0,n);
   const o={id:q.id,kind:q.kind,type:q.type,level:L,title:str(q.title,80),text:str(q.text,300)};
   if(q.kind==='boss'){ Object.assign(o,{type:'kill',target:'boss',count:1,level:15}); }
-  else if(q.kind==='hunt'||q.kind==='bounty'){ const d=MON_DEFS.find(m=>m.id===q.target&&m.level===L); if(!d) return null; Object.assign(o,{type:'kill',target:d.id,count:clampInt(q.count,1,20,5)}); }
+  else if(q.kind==='hunt'||q.kind==='bounty'){ const d=MON_DEFS.find(m=>m.id===q.target&&m.level===L); if(!d) return null; Object.assign(o,{type:'kill',target:d.id,count:clampInt(q.count,1,QUEST_MAX_COUNT,10)}); }
   else if(q.kind==='scout'){ if(!q.at||!isFinite(q.at.x)||!isFinite(q.at.z)) return null; Object.assign(o,{type:'visit',at:{x:clamp(+q.at.x,-HALF,HALF),z:clamp(+q.at.z,-HALF,HALF)},r:18,place:str(q.place,40)}); }
   else return null;
   o.reward=questRewardFor(o); return o;
@@ -40,14 +36,28 @@ function sanitizeQuests(q){
   for(const x of [...out.offers,...Object.values(out.defs)]){ const n=parseInt(x.id.slice(1),10); if(n>=out.next) out.next=n+1; }
   return out;
 }
+// player names: printable characters only, single spaces, 1-16 characters
+function cleanName(s){ return String(s||'').replace(/[\u0000-\u001f\u007f-\u009f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,16)||'Hiker'; }
+// loadouts: {owned:[ids], eq:{cls:{basic,skill,burst}}, v}; older saves had eq:{cls:'skillId'}
+function sanitizeSkills(g){
+  const out=newSkills(); out.v=2;
+  if(!g||typeof g!=='object') return out;
+  if(Array.isArray(g.owned)) for(const id of g.owned) if(SKILLS[id]&&!out.owned.includes(id)) out.owned.push(id);
+  if(g.eq) for(const c in out.eq){
+    const e=g.eq[c], slots=typeof e==='string'?{skill:e}:(e&&typeof e==='object'?e:{});
+    for(const sl of SLOTS){ const id=slots[sl]; if(SKILLS[id]&&SKILLS[id].cls===c&&SKILLS[id].slot===sl&&out.owned.includes(id)&&canSwap(c,sl)) out.eq[c][sl]=id; }
+  }
+  out.v=g.v===2?2:1;   // 1 = from before burst skills: they get their free burst on join
+  return out;
+}
 function newPlayer(pid,hello){
   hello=hello||{}; const save=hello.save||{}, look=(hello.look&&typeof hello.look==='object')?hello.look:{};
   const sp=VIL.spawn;
-  const p={id:pid,name:String(hello.name||'Hiker').slice(0,20),look,x:sp.x,y:getH(sp.x,sp.z),z:sp.z,face:0,vx:0,vz:0,
+  const p={id:pid,name:cleanName(hello.name),look,x:sp.x,y:getH(sp.x,sp.z),z:sp.z,face:0,vx:0,vz:0,
     level:clampInt(save.level,1,50,1),exp:Math.max(0,+save.exp||0),gear:sanitizeGear(save.gear,look.cls),
-    hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0},act:null,dirty:true,travelT:0};
+    hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0},buff:null,act:null,dirty:true,travelT:0};
   if(p.gear.startAll) giveAllP(p);
-  if(!(hello.save&&hello.save.gear&&hello.save.gear.skills)&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,true);   // players from before skills keep theirs
+  if(p.gear.skills.v!==2){ autoEquipP(p,'skill'); autoEquipP(p,'burst'); p.gear.skills.v=2; }   // saves from before skills / bursts get the free ones
   recalcP(p); p.hp=p.maxHp; fillOffersP(p); return p;
 }
 function recalcP(p){
@@ -64,7 +74,7 @@ function gainExpP(p,v,monId){
   p.exp+=v; ev('xp',p.id,r1(v),monId==null?null:monId);
   let up=false; const was=p.level;
   while(p.level<50 && p.exp>=expToNext(p.level)){ p.exp-=expToNext(p.level); p.level++; up=true; }
-  if(up){ recalcP(p); p.hp=p.maxHp; ev('lvup',p.id,p.level); refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) toastTo(p.id,'Level '+BURST_SLOT_LV+': your burst slot is open. Burst skills are coming soon!','good'); }
+  if(up){ recalcP(p); p.hp=p.maxHp; ev('lvup',p.id,p.level); refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); }
   p.dirty=true;
 }
 // +5% damage taken per level the attacker is above you, then your armor
@@ -78,15 +88,22 @@ function hurtP(p,v,m){
     for(const mm of MONS) if(mm.tgt===p.id){ mm.aggro=false; mm.tgt=null; mm.state='return'; mm.pendingHit=-1; }
   }
 }
-// level 3: the skill slot opens and every class gets its free skill equipped
-function unlockSkillsP(p,quiet){
-  for(const c in FREE_SKILL) if(!p.gear.skills.eq[c]) p.gear.skills.eq[c]=FREE_SKILL[c];
+// a slot opens (skill at level 3, burst at level 10): every class gets that slot's free ability equipped
+function autoEquipP(p,slot){
+  if(p.level<slotLv(slot)) return;
+  for(const c in DEFAULT_OF){ const id=DEFAULT_OF[c][slot]; if(id&&!p.gear.skills.eq[c][slot]){ if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); p.gear.skills.eq[c][slot]=id; } }
   p.dirty=true;
-  if(!quiet){ const s=SKILLS[p.gear.skills.eq[clsOfP(p)]]; toastTo(p.id,'Skill slot unlocked! '+(s?s.name:'Your skill')+' is ready. Aldric, the trainer at the well, teaches more.','good'); ev('skillslot',p.id); }
+}
+function unlockSkillsP(p,slot){
+  autoEquipP(p,slot);
+  const s=SKILLS[p.gear.skills.eq[clsOfP(p)][slot]];
+  toastTo(p.id,(slot==='burst'?'Burst slot unlocked! ':'Skill slot unlocked! ')+(s?s.name:'Your new ability')+' is ready ('+(slot==='burst'?'R':'Q')+'). Aldric, the trainer at the well, teaches more.','good');
+  ev('skillslot',p.id,slot);
 }
 function updatePlayersS(dt){
   for(const p of S.players.values()){
-    p.cd.basic=Math.max(0,p.cd.basic-dt); p.cd.skill=Math.max(0,p.cd.skill-dt);
+    for(const k in p.cd) p.cd[k]=Math.max(0,p.cd[k]-dt);
+    if(p.buff&&S.t>=p.buff.until){ p.buff=null; }
     if(p.dead){
       p.deadT+=dt;
       if(p.deadT>3){ const g=VIL.anchors.gate; p.x=g.x; p.z=g.z; p.y=getH(g.x,g.z); p.dead=false; p.hp=p.maxHp; p.lastHit=-99; sendTo(p.id,{t:'tp',x:g.x,z:g.z,face:g.face}); ev('up',p.id); p.dirty=true; }

@@ -3,8 +3,15 @@
    welcome{pid,day,dev,players}  mons{list}  you{level,exp,hp,maxHp,dmg,def,red,dead,gear}  tp{x,z,face}
    snap{day, pl:[[id,x,y,z,face,hp,maxHp,level,dead]], mo:[[id,x,z,face,hp,flags]], b:[boss], ev:[[kind,...]]} */
 function playerName(){ let n=''; try{ n=localStorage.getItem('wildwood-name')||''; }catch(_){} return n; }
+/* Your account code: made once in this browser. A server that keeps saves stores your progress under it,
+   and the first time it sees the code it takes over this browser's save (that is how old progress moves over). */
+function accountCode(){
+  let a=''; try{ a=localStorage.getItem('wildwood-account')||''; }catch(_){}
+  if(!/^[a-f0-9]{32}$/.test(a)){ const b=new Uint8Array(16); crypto.getRandomValues(b); a=[...b].map(x=>x.toString(16).padStart(2,'0')).join(''); try{ localStorage.setItem('wildwood-account',a); }catch(_){} }
+  return a;
+}
 function netHello(){
-  NET.send&&NET.send({t:'hello',name:NET.name||'Hiker',look:LOOK,save:{level:PL.level,exp:PL.exp,gear:GEAR}});
+  NET.send&&NET.send({t:'hello',acct:accountCode(),name:NET.name||'Hiker',look:LOOK,save:{level:PL.level,exp:PL.exp,gear:GEAR}});
 }
 function netHandle(msg){
   if(!msg||typeof msg!=='object') return;
@@ -14,6 +21,7 @@ function netHandle(msg){
     case 'you': applyYou(msg); break;
     case 'tp': P.x=msg.x; P.z=msg.z; P.y=getH(P.x,P.z); P.vx=P.vz=P.vy=0; P.face=P.yaw=msg.face; playerUp(); break;
     case 'snap': applySnap(msg); break;
+    case 'kicked': NET.ready=false; NET.kicked=true; if(NET.ws) try{ NET.ws.close(); }catch(_){} $('#kicked').hidden=false; $('#kickedText').textContent=msg.text||'Disconnected.'; break;
   }
 }
 function onWelcome(msg){
@@ -21,7 +29,7 @@ function onWelcome(msg){
   clearMonViews(); clearRemotes(); clearBossVisuals(); CB.projs.forEach(p=>scene.remove(p.mesh)); CB.projs.length=0; CB.target=null;
   (msg.players||[]).forEach(remoteAdd);
   serverDay=msg.day; dayClock=msg.day;
-  $('#tSec').hidden=!msg.dev;
+  $('#tSec').hidden=!msg.dev; $('#acctSec').hidden=NET.mode!=='ws';
   if(NET.onReady){ const f=NET.onReady; NET.onReady=null; f(); }
 }
 function applySnap(msg){
@@ -29,6 +37,7 @@ function applySnap(msg){
   if(msg.pl) applyPlayers(msg.pl);
   if(msg.mo) msg.mo.forEach(applyMonSnap);
   if(msg.b) applyBossState(msg.b);
+  if(msg.w) applyWeather(msg.w);
   if(msg.ev) msg.ev.forEach(applyEvent);
 }
 function applyPlayers(pl){
@@ -55,10 +64,13 @@ function applyEvent(e){
     case 'tele': addTele(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8]); break;
     case 'tend': endTele(e[1],!!e[2]); break;
     case 'roar': bossRoar(); break;
-    case 'area': onArea(e[1],e[2],e[3],e[4],e[5],e[6]); break;
+    case 'thunder': onThunder(e[1],e[2]); break;
+    case 'weather': if(!e[1]&&WX.kind&&started) toast('The rain is easing off.',''); break;
+    case 'area': onArea(e[1],e[2],e[3],e[4],e[5],e[6],e[7]); break;
+    case 'buff': onBuff(e[1],e[2],e[3]); break;
     case 'aend': onAreaEnd(e[1]); break;
     case 'chain': onChain(e[1]); break;
-    case 'skillslot': if(e[1]===me){ UI_SFX.success(); flashSkillSlot(); } break;
+    case 'skillslot': if(e[1]===me){ UI_SFX.success(); flashSkillSlot(e[2]); } break;
     case 'skillbuy': if(e[1]===me) UI_SFX.success(); break;
     case 'xp': if(e[1]===me){ const m=e[3]!=null?MON_BY_ID.get(e[3]):null; if(m){ const c=monCenter(m); popText(c.x,c.y+m.T.height*0.6,c.z,'+'+e[2].toFixed(1)+' XP','xp'); } } break;
     case 'coins': if(e[1]===me){ const m=MON_BY_ID.get(e[3]); if(m){ const c=monCenter(m); popText(c.x+0.4,c.y+m.T.height*0.35,c.z,'+'+e[2]+' coins','coin'); } } break;
@@ -72,8 +84,10 @@ function applyEvent(e){
     case 'qdone': if(e[1]===me) UI_SFX.notify(); break;
     case 'qturn': if(e[1]===me) UI_SFX.success(); break;
     case 'pact': if(e[1]!==me) remoteAct(e[1],e[2],e[3]); break;
-    case 'pjoin': if(e[1].id!==me && !REMOTES.has(e[1].id)){ remoteAdd(e[1]); toast(e[1].name+' joined the world',''); } break;
-    case 'pleave': { const r=REMOTES.get(e[1]); if(r){ toast(r.name+' left the world',''); remoteRemove(e[1]); } break; }
+    case 'pjoin': if(e[1].id!==me && !REMOTES.has(e[1].id)){ remoteAdd(e[1]); chatLine('sys',e[1].name,'joined the world'); } break;
+    case 'pleave': { const r=REMOTES.get(e[1]); if(r){ chatLine('sys',r.name,'left the world'); remoteRemove(e[1]); } break; }
+    case 'chat': onChat(e[1],e[2],e[3]); break;
+    case 'pname': onRename(e[1],e[2],e[3]); break;
     case 'pgear': if(e[1]!==me) remoteGear(e[1],e[2]); break;
     case 'plook': if(e[1]!==me) remoteLook(e[1],e[2]); break;
   }

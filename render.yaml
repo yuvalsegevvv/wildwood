@@ -1,11 +1,20 @@
+# Render blueprint: https://render.com/docs/blueprint-spec
+# SAVES: players' progress is kept on the server. For it to survive deploys and restarts on the free plan,
+# create a Postgres database (Render Postgres, Neon or Supabase) and set DATABASE_URL on this service to its
+# connection string. Without it, saves are rebuilt from each player's browser copy after a restart.
 services:
   - type: web
     name: wildwood
     runtime: node
     plan: free
-    buildCommand: python3 build.py
+    # npm install brings in pg (Postgres); build.py builds dist/ from src/
+    buildCommand: npm install --omit=dev --no-audit --no-fund && python3 build.py
+    # --no-dev: testing tools (set level, free items, coins) are off for players
     startCommand: node dist/wildwood-server.js --no-dev
-    healthCheckPath: /status
+    healthCheckPath: /healthz
     envVars:
       - key: NODE_VERSION
         value: 22
+      # Paste your Postgres connection string in the Render dashboard (Environment > DATABASE_URL).
+      - key: DATABASE_URL
+        sync: false

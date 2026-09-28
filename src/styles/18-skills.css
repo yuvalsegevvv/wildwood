@@ -28,3 +28,7 @@ body.touch .ab-burst{ width:56px; height:56px; align-self:center; }
   .sk-card{ flex-wrap:wrap; } .sk-btn{ max-width:none; width:100%; flex-direction:row; justify-content:flex-end; align-items:center; }
   .sk-slot b{ font-size:12px; }
 }
+.sk-card.burst > svg{ color:#ffb060; }
+.ab.buffed{ box-shadow:0 0 0 2px rgba(255,120,90,.8), 0 0 14px rgba(255,120,90,.5); }
+.ab-burst{ opacity:1; }
+.ab-burst.empty{ opacity:.7; }

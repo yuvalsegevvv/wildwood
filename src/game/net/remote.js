@@ -44,11 +44,13 @@ function updateRemotes(dt){
     r.g.position.set(r.x,r.y,r.z);
     r.g.rotation.set(0,r.face+(r.act&&r.act.kind==='spin'?clamp(r.act.t/r.act.dur)*TAU*2:0),r.dead?1.4:0);
     poseRig(r.rig,dt,{sp,ph:r.walk,act:r.act,hold:CLASS_OF[(ITEM[r.eq.weapon]||{}).slot]==='warrior'?'sword':null});
-    if(started && d<45){
+    const talking=CHAT.bubbles.has(r.id)&&performance.now()<CHAT.bubbles.get(r.id).until;
+    if(started && (d<45||(talking&&d<90))){
       const s=toScreen(r.x,r.y+2.25*r.scale,r.z); if(!s) continue;
-      let tag=tagPool[ti]; if(!tag){ tag=document.createElement('div'); tag.className='ntag'; tag.innerHTML='<b></b><span></span><i><i></i></i>'; document.body.append(tag); tagPool.push(tag); }
+      let tag=tagPool[ti]; if(!tag){ tag=document.createElement('div'); tag.className='ntag'; tag.innerHTML='<q hidden></q><b></b><span></span><i><i></i></i>'; document.body.append(tag); tagPool.push(tag); }
       ti++; tag.hidden=false; tag.style.transform=`translate(${s[0]}px,${s[1]}px) translate(-50%,-100%)`;
-      tag.children[0].textContent=r.name; tag.children[1].textContent='Lv '+r.level; tag.children[2].firstChild.style.width=(r.hp/Math.max(1,r.maxHp)*100)+'%';
+      const say=CHAT.bubbles.get(r.id), q=tag.children[0], on=!!(say&&performance.now()<say.until); q.hidden=!on; if(on&&q.textContent!==say.text) q.textContent=say.text;
+      tag.children[1].textContent=r.name; tag.children[2].textContent='Lv '+r.level; tag.children[3].firstChild.style.width=(r.hp/Math.max(1,r.maxHp)*100)+'%';
     }
   }
   for(;ti<tagPool.length;ti++) tagPool[ti].hidden=true;

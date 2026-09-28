@@ -17,7 +17,8 @@
     "15-inventory.css",
     "16-map.css",
     "17-forge.css",
-    "18-skills.css"
+    "18-skills.css",
+    "19-chat.css"
   ],
   "shared": [
     "math.js",
@@ -41,6 +42,7 @@
     "combat.js",
     "boss.js",
     "economy.js",
+    "weather.js",
     "api.js"
   ],
   "node": [
@@ -101,11 +103,14 @@
     "economy/init.js",
     "combat/boss.js",
     "combat/skill-fx.js",
+    "world/weather.js",
     "player/movement.js",
     "ui/map.js",
     "net/transport.js",
     "net/client.js",
     "net/remote.js",
+    "ui/account.js",
+    "ui/chat.js",
     "main/loop.js"
   ]
 }

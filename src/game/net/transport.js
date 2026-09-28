@@ -36,7 +36,7 @@ function startWS(){
     ws.onopen=()=>{ NET.send=msg=>{ if(ws.readyState===1) ws.send(JSON.stringify(msg)); }; netHello(); resolve(); };
     ws.onmessage=e=>{ try{ netHandle(JSON.parse(e.data)); }catch(err){ console.error(err); } };
     ws.onerror=()=>reject(new Error('Could not reach the world server.'));
-    ws.onclose=()=>{ if(NET.ready){ NET.ready=false; netLost('Lost the connection to the world server. Reload the page to reconnect.'); } };
+    ws.onclose=()=>{ if(NET.ready&&!NET.kicked){ NET.ready=false; netLost('Lost the connection to the world server. Reload the page to reconnect.'); } };
   });
 }
 /* ---- claude.ai shared room ---- */

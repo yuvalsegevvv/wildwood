@@ -62,9 +62,10 @@ function updateEnv(dt){
   dayClock=(dayClock+dt/DAY_SECONDS)%1;
   if(serverDay!==null){ const d=((serverDay-dayClock+1.5)%1)-0.5; dayClock=Math.abs(d)>0.05?serverDay:(dayClock+d*Math.min(1,dt*2)+1)%1; }
   envAt(dayClock,envCur);
+  weatherTint(envCur);
   applyEnv(envCur);
   todLabelT-=dt;
-  if(todLabelT<=0){ todLabelT=0.5; $('#tod').textContent=envCur.name+' '+clockText(dayClock); updateZoneLabel(); }
+  if(todLabelT<=0){ todLabelT=0.5; $('#tod').textContent=envCur.name+' '+clockText(dayClock)+(WX.kind&&WX.inten>0.2?(WX.kind===2?' · Thunderstorm':' · Rain'):''); updateZoneLabel(); }
 }
 // the sun button / T key skips ahead to the next part of the day
 let serverDay=null;

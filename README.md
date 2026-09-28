@@ -22,12 +22,52 @@ player takes over within a few seconds and everyone rejoins with their own save 
 should stay visible: browsers slow down timers in background tabs. Sending on the room needs Contributor access or
 above to the artifact; Viewers can still play Solo.
 
-**Node server:** `node dist/wildwood-server.js [--port 8080] [--host 0.0.0.0] [--no-dev]`. It serves the page and
+**Node server:** `node dist/wildwood-server.js [--port 8080] [--host 0.0.0.0] [--no-dev]` (or `npm start`). It serves the page and
 runs the world over WebSocket, with no npm packages. Open the address in several tabs or on other devices on
 your network. `--no-dev` turns the testing tools off. `GET /status` returns player and monster counts.
 
-**Saves:** each player's level, XP, gear, coins and quests are stored in their own browser and sent to whichever
-server they join. The server sends back an update whenever they change. (There is no anti-cheat: a playtest build.)
+**Saves:** on the Node server, each player's progress (level, XP, gear, coins, quests, skills, name, look) is
+kept on the server under their account code: a secret the browser makes once and keeps (settings > Account shows
+it, copies it, and lets you continue on another device). The first time the server sees an account, it takes over
+that browser's existing save, so players from before server saves keep their progress. Browsers keep a copy of
+each update, so if the server ever loses a record it is rebuilt from the player's copy the next time they join.
+The server writes changes every 5 seconds, when a player leaves, and on shutdown (SIGTERM). Opening the same
+account twice disconnects the older window. In Solo and Shared (claude.ai) the browser's own save is used.
+
+## Deploy to Render
+
+The repository is ready for [Render](https://render.com) as a Node web service; no npm packages are needed.
+
+1. Push this folder to a GitHub repository (see below).
+2. On render.com: **New > Blueprint**, connect GitHub, pick the repository. Render reads `render.yaml` and
+   creates the `wildwood` web service. (Or **New > Web Service** by hand: runtime Node, build command
+   `(command -v python3 >/dev/null && python3 build.py) || true`, start command `node dist/wildwood-server.js`,
+   health check path `/healthz`.)
+3. Open the `https://wildwood-xxxx.onrender.com` address Render gives you. The page connects to the world over
+   `wss://` on the same address, and "This server" is picked automatically. Share the link to play together.
+
+**Keeping saves on Render.** The service's own disk is wiped on every deploy and restart. Pick one:
+- **Postgres** (works on the free web plan): create a database (Render Postgres, or a free one at Neon or
+  Supabase), then set `DATABASE_URL` on the service to its connection string. The server creates its table
+  (`wildwood_players`) itself. `npm install` (in the build command) installs the `pg` package.
+- **A persistent disk** (paid instance): uncomment the `disk` block and `DATA_DIR` in `render.yaml`.
+Without either, players still don't lose progress (it's rebuilt from their browser's copy), but a player who
+cleared their browser would. `GET /status` shows which storage is in use and how many accounts it holds.
+
+Notes: `dist/` is not committed; Render builds it with `python3 build.py` on every deploy (run the same locally). The server listens on `$PORT`, serves the page gzip-compressed (about
+a quarter of its size), and pings connections every 25 s. Testing tools are on (`WILDWOOD_DEV=1` in `render.yaml`);
+set it to `0` in the Render dashboard for a public server. The free plan sleeps after about 15 minutes without
+visitors and takes up to a minute to wake; the world (monsters, clock) restarts then, but players keep their
+progress because saves live in each player's browser.
+
+## Put it on GitHub
+
+    git init -b main              # skip if the folder already has .git
+    git add -A && git commit -m "Wildwood"
+    git remote add origin https://github.com/yuvalsegevvv/wildwood.git
+    git push -u origin main
+
+(Create the empty `wildwood` repository on github.com first, without a README.)
 
 ## Build
 
@@ -94,36 +134,54 @@ Shops have unlimited stock; each one of an item you buy adds 20% of its base pri
 and the counts reset at sunrise (the server clock passing dawn).
 
 The special villagers (`title` in `VILLAGERS`) wear a name and profession label; quest givers also show a gold !
-(a quest you can take) or a green ? (one to hand in). Maren stands in front of the quest board by the road in.
+(a quest you can take) or a green ? (one to hand in). Maren stands in front of the quest board by the road in. Villagers with a job stay at their posts day and night;
+only ordinary villagers go home after dark.
 
 Greta's forge (the third market stall) merges 3 identical items from your bag into 1 of the next rarity,
 same level needed. Numbers live in `src/shared/items.js` (`RAR_MULT`, `rollMonsterRarity`, `rollBossRarity`,
 `MERGE_COUNT`) and `src/shared/quests.js` (`RARE_QUESTS`).
 
+## Weather
+
+The server runs one weather for the whole world: rain for 5-7 minutes every 40-60 minutes (the first 40-60
+minutes after the server starts), and 30% of those are thunderstorms with lightning strikes near players every 6-20
+seconds. Clients draw rain streaks around the camera, grey the sky, shorten the view, play rain and wind, and
+flash for lightning with thunder delayed by distance. Testing tools have Rain / Thunderstorm / Clear sky buttons.
+Timing lives in `src/server/weather.js`, visuals in `src/game/world/weather.js`.
+
+## Chat and names
+
+Press Enter (or the chat button by the log) to talk to everyone in the world; Enter sends, Escape closes. Messages
+appear in the log and as a bubble over the speaker's head for 6 seconds; joins, leaves and renames are logged too.
+The server cleans messages (160 characters, one every 0.7 s per player). Change your name in settings ("Your name"),
+on the start screen, or with `/name New Name` in chat (1-16 characters, shown to everyone).
+
 ## Skills
 
-Three slots per class: 1 the basic attack (always there), 2 a skill (opens at level 3), 3 a burst skill (opens at
-level 10; not implemented yet, the button says "coming soon"). Only an equipped skill can be used. Each class has 3
-skills; the first is free and equipped automatically at level 3, the other two are taught by Aldric, the trainer
-at the well (level 3 / 180 coins and level 6 / 650 coins). Loadouts are kept per class; the skill slot has one
-cooldown, so swapping skills doesn't skip it. Open the panel with K, the Skills button in the inventory, or by
-tapping the empty skill button.
+Three slots per class: basic attack (always open), skill (level 3) and burst (level 10). Only an equipped
+ability can be used. The first ability of each slot is free and equipped automatically when the slot opens; the
+others are taught by Aldric, the trainer at the well. Only the mage can change its basic attack. Loadouts are kept
+per class, and each slot has one cooldown, so swapping doesn't skip it. Open the panel with K, the Skills button in
+the inventory, or by tapping an empty slot button. Keys: F basic, Q skill, R burst.
 
-| Class | Free | Level 3 | Level 6 |
+| Class | Basic | Skill (level 3 / 3 / 6) | Burst (level 10 / 12 / 14) |
 |---|---|---|---|
-| Warrior | Whirlwind: spin, hit all around | Shield Bash: heavy frontal hit, 2 s stun | Charge: dash 14 m to the target, hit and knock back where you land |
-| Archer | Volley: 3 homing arrows | Piercing Shot: an arrow through every enemy in a line | Arrow Rain: 5 waves on an area over 2.5 s |
-| Mage | Frost Nova: blast and slow all around | Chain Lightning: target + 4 jumps, 15% weaker each | Meteor: lands on an area after 1.2 s, big hit and knockback |
+| Warrior | Slash | Whirlwind, Shield Bash (2 s stun), Charge (14 m dash) | Earthshatter (7 m, stun), Blade Storm (4 s, 10 hits, you can move), Berserk (10 s: +50% damage, basic 40% faster) |
+| Archer | Shoot | Volley, Piercing Shot, Arrow Rain | Hail of Arrows (8 waves, 7 m), Sniper Shot (650%, 45 m), Hunter's Focus (10 s: shoot twice as fast, +35% crits) |
+| Mage | Firebolt, Ice Shard (level 4, fast, slows), Arcane Missiles (level 8, 3 homing) | Frost Nova, Chain Lightning, Meteor | Blizzard (10 waves, 8 m, slows), Inferno (7 m ring of fire), Arcane Surge (skill ready again, 10 s: +40% damage, 30% faster casts) |
 
-Definitions (cooldown, damage multiplier, price, level, timing) are `SKILLS` in `src/shared/classes.js`; the effects
-are in `resolveHitS` / `updateAreasS` (`src/server/combat.js`) and the visuals in `src/game/combat/skill-fx.js`.
+Prices: skills 180 / 650 coins, bursts 2000 / 4000, mage basics 250 / 900. Because bursts raise damage a lot,
+level 10-15 monsters (and the boss) have 1.5x health and give 1.5x XP and coins (`highMult` in
+`src/shared/balance.js`); the level curve still uses the old XP, so level 15 -> 16 now takes about 333 kills.
+Definitions are `SKILLS` in `src/shared/classes.js`, effects in `src/server/combat.js`, visuals in
+`src/game/combat/skill-fx.js`.
 
 ## The quest board
 
 Maren's board always shows 4 notices, generated per player by `genQuest` in `src/shared/quests.js`. A notice's
 level is drawn from 4 below to 2 above yours, weighted toward your own (at level 5: about half are level 5, a fifth
-level 4, a tenth level 6). Kinds: hunt (5-8 kills, 3-4 treants; XP, coins, 50% item), bounty (12-15 kills, 6-8
-treants; more XP and coins, always an item, 25% rare), scout (walk to a zone or lake; XP, coins), and from level 13
+level 4, a tenth level 6). Kinds: hunt (10-20 kills at level 1, rising evenly to 30-50 at level 15; XP, coins, 50%
+item), bounty (1.5x a hunt; more XP and coins, always an item, 25% rare), scout (walk to a zone or lake; XP, coins), and from level 13
 the Rootwarden (a rare item, 20% epic). Notices refresh when you level up and at sunrise; an accepted one is replaced
 at once, and the board avoids repeating a monster or place. You carry up to 5 quests and can abandon them.
 Quests are stored in the player's save; the server re-checks them and recomputes rewards (`questRewardFor`).
@@ -163,6 +221,7 @@ styles
   16-map.css                         Minimap and world map
   17-forge.css                       Rarity colours (tiles, rows, toasts), the forge panel, the lucky-drop banner
   18-skills.css                      Skills panel, the burst button, the skill slot's states
+  19-chat.css                        Chat: log, input, chat button, speech bubbles; the name field in settings
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -186,6 +245,7 @@ server
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits), kills, shared rewards, loot
   boss.js                            The Rootwarden on the server: engagement, cleave / root / slam telegraphs, shield + totems, enrage + adds, reset
   economy.js                         Economy on the server: equip, shops (buy / sell), loot, quests (accept, progress, hand in), testing commands
+  weather.js                         Weather on the server: rain for 5-7 minutes every 40-60 minutes, 30% of the time a thunderstorm
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, snapshots)
 
 node
@@ -240,21 +300,24 @@ game
   economy/inventory.js               Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
   economy/shops.js                   Weapon and armour shops
   economy/forge.js                   Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
-  economy/skills.js                  Skills panel: each class's loadout (basic attack, skill, burst) and Aldric's lessons (learn, equip, take off)
+  economy/skills.js                  Skills panel: each class's loadout in three slots (basic, skill, burst) and Aldric's lessons (learn, equip, take off)
   economy/quests.js                  The quest board panel (Maren) and the quest log: notices, quests in progress, hand-ins (all generated by the server)
   ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, all items, coins, reset
   economy/init.js                    Inventory key and first-time gear setup
   combat/boss.js                     The Rootwarden, client side: telegraph visuals, root spikes, slam waves, shield bubble, roars, boss bar
   combat/skill-fx.js                 Visuals and sounds for the equippable skills: Arrow Rain, Meteor, Chain Lightning, Piercing Shot, Shield Bash, Charge
+  world/weather.js                   Weather on the client: rain streaks around the camera, a darker foggy sky, rain sound, lightning and thunder
   player/movement.js                 Player movement, collisions, camera
   ui/map.js                          World map: a map image painted from the terrain, the corner minimap, and the full map (N) with zones, quests and players
   net/transport.js                   Connections to the world server: solo (server in this tab), shared room (one player's tab hosts), WebSocket (node server)
   net/client.js                      Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
   net/remote.js                      Other players: avatars built from their look and gear, smoothed movement, attack animations, name tags
+  ui/account.js                      Account code in settings: show / copy it, or continue with a code from another device
+  ui/chat.js                         Chat between players: the chat log, the input (Enter / chat button), speech bubbles, /name, joins and leaves
   main/loop.js                       Main loop (frame), loading progress, start button, boot
 ```
 
 ## Saved data (localStorage, per browser)
 
-`wildwood-look-v1` (character), `wildwood-progress-v1` (level, XP), `wildwood-gear-v1` (items, coins, quests),
+`wildwood-account` (account code), `wildwood-look-v1` (character), `wildwood-progress-v1` (level, XP), `wildwood-gear-v1` (items, coins, quests, skills),
 `wildwood-audio-v1` (volumes, voice mode), `wildwood-name` (player name), `wildwood-lite` (light graphics mode).

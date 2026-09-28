@@ -71,7 +71,7 @@ function renderEditor(){
     } else if(row.type==='info'){
       const c=CLASSES[clsOf()], p=document.createElement('p'); p.className='ed-info';
       p.textContent='Your class follows the weapon you hold (sword, bow or wand); picking one here equips the best one you own. '+c.desc; wrap.append(p);
-      const ul=document.createElement('p'); ul.className='ed-info'; const sk=abilityOf(clsOf(),'skill',GEAR&&GEAR.skills,PL.level); ul.innerHTML='<b>'+c.basic.name+'</b> basic attack &nbsp; '+(sk?'<b>'+sk.name+'</b> skill':PL.level<SKILL_SLOT_LV?'skill slot opens at level '+SKILL_SLOT_LV:'no skill equipped'); wrap.append(ul);
+      const ul=document.createElement('p'); ul.className='ed-info'; const sk=abilityOf(clsOf(),'skill',GEAR&&GEAR.skills,PL.level); const ba=abilityOf(clsOf(),'basic',GEAR&&GEAR.skills,PL.level); ul.innerHTML='<b>'+(ba?ba.name:c.basic.name)+'</b> basic attack &nbsp; '+(sk?'<b>'+sk.name+'</b> skill':PL.level<SKILL_SLOT_LV?'skill slot opens at level '+SKILL_SLOT_LV:'no skill equipped'); wrap.append(ul);
       const pr=document.createElement('p'); pr.className='ed-info'; pr.innerHTML='<b>Level '+PL.level+'</b> &nbsp; '+Math.floor(PL.exp)+' / '+Math.ceil(expToNext(PL.level))+' XP &nbsp; '+PL.maxHp+' health &nbsp; '+Math.round(PL.dmg)+' base damage'; wrap.append(pr);
       const rb=document.createElement('button'); rb.className='chip'; rb.style.marginTop='12px'; rb.textContent='Start over at level 1';
       rb.onclick=()=>{ if(!rb.dataset.sure){ rb.dataset.sure='1'; rb.textContent='Tap again to reset your level'; return; } netSend({t:'dev',cmd:'level',v:1}); };
