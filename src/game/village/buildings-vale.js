@@ -14,7 +14,7 @@ function hipRoof(W,D,H,rh,th){
   const top=(a,bb,c,hx,hz)=>{ faceTri(P,a,bb,c,hx,1,hz); faceTri(P,[a[0],a[1]-th,a[2]],[bb[0],bb[1]-th,bb[2]],[c[0],c[1]-th,c[2]],-hx,-1,-hz); };
   top(b[0],b[1],r1,0,-1); top(b[0],r1,r0,0,-1); top(b[3],b[2],r1,0,1); top(b[3],r1,r0,0,1);
   top(b[0],b[3],r0,-1,0); top(b[1],b[2],r1,1,0);
-  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.computeVertexNormals(); return g;
+  return trisGeo(P);
 }
 const tileC=base=>(x,y,z,c)=>{ c.set(base).multiplyScalar(0.8+0.14*((Math.floor(y*7+Math.abs(x)*0.4))&1)+h3(Math.floor(x*3),0,Math.floor(z*3))*0.08); };
 function buildVale(){
@@ -98,13 +98,7 @@ function buildVale(){
     A(vbox(4.2,0.16,0.22,0,3.0,0),red); A(vbox(4.4,0.14,0.26,0,0.9,0),dark);
     A(hipRoof(4.8,1.2,0.5,1.8,0.08).translate(0,3.35,0),tileC(0x3a4048));
     [[-1.2,2.4],[-0.4,2.45],[0.45,2.4],[1.25,2.45],[-1.25,1.5],[-0.45,1.55],[0.4,1.5],[1.2,1.55]].forEach(([x,y],i)=>A(new THREE.BoxGeometry(0.56,0.7,0.012).rotateZ((h3(i,3,7)-0.5)*0.2).translate(x,y,0.062),c=>c.set([0xf2ead6,0xe6d6b0,0xefe4c8][i%3])));
-    const cv=document.createElement('canvas'); cv.width=512; cv.height=112; const g=cv.getContext('2d');
-    g.fillStyle='#6a1a14'; g.fillRect(0,0,512,112); g.strokeStyle='#e8c060'; g.lineWidth=6; g.strokeRect(8,8,496,96);
-    g.fillStyle='#fff4dc'; g.font='700 60px Fraunces, Georgia, serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('QUEST BOARD',256,60);
-    const tex=new THREE.CanvasTexture(cv); tex.anisotropy=4;
-    const sign=new THREE.Mesh(new THREE.PlaneGeometry(2.2,0.48),new THREE.MeshLambertMaterial({map:tex,emissive:0x2a0a04}));
-    const sp=new THREE.Vector3(0,3.02,0.13).applyAxisAngle(new THREE.Vector3(0,1,0),B.rot);
-    sign.position.set(B.x+sp.x,Y+sp.y,B.z+sp.z); sign.rotation.y=B.rot; scene.add(sign);
+    questSign(B,Y,{bg:'#6a1a14',line:'#e8c060',ink:'#fff4dc',font:60,w:2.2,h:0.48,y:3.02,z:0.13,glow:0x2a0a04});
   }
   // the brazier fire and stone benches
   { const fp=V.fire, {A}=inF(frameM(fp.x,Y,fp.z,0));
@@ -143,8 +137,7 @@ function buildVale(){
   }
   buildTunnel(inF);
   for(const A of [ARENA20,ARENA25]) buildShrine(A,inF);
-  const vm=new THREE.Mesh(merge(out),villageMat); vm.castShadow=true; vm.receiveShadow=true; scene.add(vm);
-  const wm=new THREE.Mesh(merge(win),windowMat); wm.receiveShadow=true; scene.add(wm);
+  addVillageMeshes(out,win);
   for(const c of V.circles) addCol(c[0],c[1],c[2]);
   for(const VV of VILS) buildCircle(VV);
 }

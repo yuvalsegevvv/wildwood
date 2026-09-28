@@ -1,6 +1,8 @@
-//@ Character editor panel and camera
-/* ---------- character editor ---------- */
-let customizing=false, edTab=0;
+//@ Character editor panel and camera: opened from the HUD, or in creating mode right after a new account is registered
+/* ---------- character editor ----------
+   Two ways in: the HUD button (Done just closes it) and creating mode, right after Register on the start card (it opens on the
+   Class tab and its Enter button starts the game). A tab with close:true frames the head (face, hair) instead of the whole body. */
+let customizing=false, creating=false, edTab=0;
 const edEl=$('#editor'), edTabs=$('#edTabs'), edBody=$('#edBody');
 const cam={d:3,h:1.2,l:0.95};
 const EDIT=[
@@ -11,12 +13,12 @@ const EDIT=[
     {k:'chest',label:'Chest',type:'range',min:0.5,max:1.6,step:0.01,ends:['Smaller','Larger'],fem:true},
     {k:'skin',label:'Skin tone',type:'color',opts:SKINS}
   ]},
-  {tab:'Face', rows:[
+  {tab:'Face', close:true, rows:[
     {k:'face',label:'Face shape',type:'seg',opts:[['round','Round'],['oval','Oval'],['angular','Angular']]},
     {k:'eyes',label:'Eye color',type:'color',opts:EYEC},
     {k:'facial',label:'Facial hair',type:'seg',opts:[['none','None'],['stubble','Stubble'],['mustache','Mustache'],['beard','Beard']]}
   ]},
-  {tab:'Hair', rows:[
+  {tab:'Hair', close:true, rows:[
     {k:'hair',label:'Style',type:'seg',opts:[['bald','Bald'],['buzz','Buzz'],['short','Short'],['curly','Curly'],['bob','Bob'],['long','Long'],['ponytail','Ponytail'],['bun','Bun']]},
     {k:'hairColor',label:'Hair color',type:'color',opts:HAIRC}
   ]},
@@ -39,11 +41,10 @@ const EDIT=[
 ];
 const hex=n=>'#'+n.toString(16).padStart(6,'0');
 function setLook(k,v){
-  if(k==='cls'){ if(weaponsReady) equipClass(v); return; }
+  if(k==='cls'){ equipClass(v); return; }   // the server equips your best weapon of that class; applyGear (economy/items.js) redraws this panel
   if(k==='sex' && !LOOK.custom){ LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,{height:LOOK.height,build:LOOK.build,chest:LOOK.chest,skin:LOOK.skin,cls:LOOK.cls}); }
-  else { LOOK[k]=v; if(k!=='sex'&&k!=='cls') LOOK.custom=true; }
-  if(k==='cls' && weaponsReady) setActionBar();
-  saveLook(); rebuildHiker(); syncSexChips();
+  else { LOOK[k]=v; if(k!=='sex') LOOK.custom=true; }
+  saveLook(); rebuildHiker();
 }
 function renderEditor(){
   edTabs.innerHTML='';
@@ -76,9 +77,9 @@ function renderEditor(){
       p.textContent='Your class follows the weapon you hold (sword, bow or wand); picking one here equips the best one you own. '+c.desc; wrap.append(p);
       const ul=document.createElement('p'); ul.className='ed-info'; const sk=abilityOf(clsOf(),'skill',GEAR&&GEAR.skills,PL.level); const ba=abilityOf(clsOf(),'basic',GEAR&&GEAR.skills,PL.level); ul.innerHTML='<b>'+(ba?ba.name:c.basic.name)+'</b> basic attack &nbsp; '+(sk?'<b>'+sk.name+'</b> skill':PL.level<SKILL_SLOT_LV?'skill slot opens at level '+SKILL_SLOT_LV:'no skill equipped'); wrap.append(ul);
       const pr=document.createElement('p'); pr.className='ed-info'; pr.innerHTML='<b>Level '+PL.level+'</b> &nbsp; '+Math.floor(PL.exp)+' / '+Math.ceil(expToNext(PL.level))+' XP &nbsp; '+PL.maxHp+' health &nbsp; '+Math.round(PL.dmg)+' base damage'; wrap.append(pr);
-      const rb=document.createElement('button'); rb.className='chip'; rb.style.marginTop='12px'; rb.textContent='Start over at level 1';
-      rb.onclick=()=>{ if(!rb.dataset.sure){ rb.dataset.sure='1'; rb.textContent='Tap again to reset your level'; return; } netSend({t:'dev',cmd:'level',v:1}); };
-      wrap.append(rb);
+      if(PL.level>1){ const rb=document.createElement('button'); rb.className='chip'; rb.style.marginTop='12px'; rb.textContent='Start over at level 1';
+        rb.onclick=()=>{ if(!rb.dataset.sure){ rb.dataset.sure='1'; rb.textContent='Tap again to reset your level'; return; } netSend({t:'dev',cmd:'level',v:1}); };
+        wrap.append(rb); }
     } else if(row.type==='range'){
       const box=document.createElement('div'); box.className='range';
       const a=document.createElement('span'); a.textContent=row.ends[0];
@@ -90,21 +91,16 @@ function renderEditor(){
     edBody.append(wrap);
   }
 }
-function randomLook(){
-  const sex=Math.random()<0.5?'male':'female', f=sex==='female', rp=a=>a[Math.floor(Math.random()*a.length)];
-  LOOK={sex,height:+AR(0.93,1.07).toFixed(2),build:+AR(0.88,1.18).toFixed(2),skin:rp(SKINS),face:rp(['round','oval','angular']),eyes:rp(EYEC),
-    facial:f?'none':rp(['none','stubble','stubble','mustache','beard']),
-    hair:f?rp(['long','ponytail','bun','bob','curly','short']):rp(['short','buzz','curly','bald','short','bob']),
-    hairColor:rp(HAIRC.slice(0,HAIRC_NATURAL)),top:rp(['tshirt','flannel','jacket','hoodie']),topColor:rp(CLOTH),
-    bottom:f?rp(['trousers','shorts','skirt']):rp(['trousers','trousers','shorts']),bottomColor:rp(CLOTH),
-    shoes:rp(['boots','boots','sneakers']),shoeColor:rp(SHOEC),hat:rp(['none','none','ranger','beanie','cap']),hatColor:rp(HATC),pack:Math.random()<0.25,chest:f?+AR(0.75,1.3).toFixed(2):1,custom:true,cls:LOOK.cls};
-  saveLook(); rebuildHiker(); renderEditor(); syncSexChips();
+function surpriseMe(){
+  LOOK=randomLook(Math.random,{base:{custom:true,cls:LOOK.cls}});
+  saveLook(); rebuildHiker(); renderEditor();
 }
-function syncSexChips(){ document.querySelectorAll('[data-sex]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sex===LOOK.sex)); }
-function openEditor(){
+function openEditor(o){
   if(!Stream.terrainDone) return;
-  customizing=true;
-  if(document.pointerLockElement) try{ document.exitPointerLock(); }catch(_){}
+  customizing=true; creating=!!(o&&o.create);
+  if(creating) edTab=Math.max(0,EDIT.findIndex(tb=>tb.tab==='Class'));
+  $('#edTitle').textContent=creating?'Create your hiker':'Your hiker'; $('#edDone').textContent=creating?'Enter the world':'Done';
+  releasePointer();
   P.vx=P.vz=0; joyX=joyY=0;
   hiker.g.visible=true;
   $('#start').classList.add('hide');
@@ -113,14 +109,14 @@ function openEditor(){
   const fwd=P.face; cam.d=3; cam.h=1.2; cam.l=0.95; P.editYaw=fwd;
 }
 function closeEditor(){
-  customizing=false; UI_SFX.close();
+  const enter=creating; customizing=creating=false; UI_SFX.close();
   camera.clearViewOffset();
   edEl.hidden=true; document.body.classList.remove('editing');
   hiker.g.visible=thirdPerson||!started;
-  if(!started) $('#start').classList.remove('hide');
+  if(enter) beginPlay();
 }
 function editorCamera(dt){
-  const close=edTab===1||edTab===2, s=hiker.scale;
+  const close=!!EDIT[edTab].close, s=hiker.scale;
   const td=close?(LOW?1.25:1.05):(LOW?3.6:3.1), th=close?1.64:1.15, tl=close?1.6:0.92;
   const k=Math.min(1,dt*4); cam.d+=(td-cam.d)*k; cam.h+=(th-cam.h)*k; cam.l+=(tl-cam.l)*k;
   const fx=-Math.sin(P.face), fz=-Math.cos(P.face);
@@ -131,11 +127,8 @@ function editorCamera(dt){
   else camera.setViewOffset(innerWidth,innerHeight,0,Math.round(edEl.offsetHeight/2),innerWidth,innerHeight);
 }
 $('#edDone').addEventListener('click',closeEditor);
-$('#edRandom').addEventListener('click',randomLook);
+$('#edRandom').addEventListener('click',surpriseMe);
 $('#bLook').addEventListener('click',e=>{ e.currentTarget.blur(); customizing?closeEditor():openEditor(); });
-$('#custom').addEventListener('click',openEditor);
-document.querySelectorAll('[data-sex]').forEach(b=>b.addEventListener('click',()=>setLook('sex',b.dataset.sex)));
-syncSexChips();
 // Chest size in the settings popover too (female hikers only), so it can be tuned in game without the editor.
 // Rebuild while dragging; save (and tell the server) once, on release.
 const chestIn=$('#setChest');

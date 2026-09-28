@@ -1,48 +1,24 @@
-//@ Accounts on the online server: guest or log in on the start screen; register / log out / guest code in settings
+//@ Accounts on the online server: session token, the server's auth answers, register / log out / guest code in settings
 /* Only on a server that keeps saves (the Node server, NET.mode 'ws'); solo and shared worlds have no accounts.
    Guest: progress under this browser's secret account code (accountCode() in net/client.js).
    Registered: name + password; after logging in the browser keeps a session token ('wildwood-session') so the
    next visit logs in without the password. While logged in, the browser's own save is not overwritten: it
-   stays the guest's copy (see saveGear / saveProgress). Server side: src/server/accounts.js. */
+   stays the guest's copy (see saveGear / saveProgress). Log in / Register / Play as guest live on the start
+   card (ui/start-screen.js); this file has what the server answers and the Account part of the settings.
+   Server side: src/server/accounts.js. */
 function loadSession(){ try{ const s=JSON.parse(localStorage.getItem('wildwood-session')||'null'); if(s&&typeof s.user==='string'&&typeof s.token==='string') return s; }catch(_){} return null; }
 function saveSession(s){ try{ if(s) localStorage.setItem('wildwood-session',JSON.stringify(s)); else localStorage.removeItem('wildwood-session'); }catch(_){} }
-let acctMode=loadSession()?'login':'guest';
-try{ const m=localStorage.getItem('wildwood-acctmode'); if(m==='guest'||m==='login') acctMode=m; }catch(_){}
-/* ---- start screen: Guest / Log in (shown when the world is "This server") ---- */
-function syncAcctPick(){
-  const ws=typeof worldMode!=='undefined'&&worldMode==='ws', login=ws&&acctMode==='login', ses=loadSession();
-  $('#acctPick').hidden=!ws; $('#loginBox').hidden=!login; $('#namePick').hidden=login;
-  document.querySelectorAll('[data-acct]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.acct===acctMode));
-  $('#loginFields').hidden=!!ses;
-  const note=$('#loginNote'); note.textContent='';
-  if(ses){ note.append('Logged in as '+ses.user+' on this device.'); const b=document.createElement('button'); b.className='linkbtn'; b.textContent='Use another account';
-    b.addEventListener('click',()=>{ saveSession(null); syncAcctPick(); }); note.append(b); }
-  else note.textContent='No account yet? Play as a guest and register in Settings: your progress comes with you.';
-}
-document.querySelectorAll('[data-acct]').forEach(b=>b.addEventListener('click',()=>{ acctMode=b.dataset.acct; try{ localStorage.setItem('wildwood-acctmode',acctMode); }catch(_){} syncAcctPick(); }));
-// read by netHello: null = guest, {user,pass} or {user,token} = log in. Returns an error text when incomplete.
-function prepareLogin(){
-  NET.login=null;
-  if(worldMode!=='ws'||acctMode!=='login') return '';
-  const ses=loadSession(); if(ses){ NET.login={user:ses.user,token:ses.token}; return ''; }
-  const user=$('#lUser').value.trim(), pass=$('#lPass').value;
-  if(!user||!pass) return 'Type your account name and password, or play as a guest.';
-  NET.login={user,pass}; return '';
-}
-/* ---- server answers ---- */
+/* ---- server answers (the start card's part is in ui/start-screen.js) ---- */
 function onAuth(msg){
   if(msg.token) saveSession({user:msg.user,token:msg.token});
   NET.user=msg.user; NET.name=msg.user; NET.login=null;
-  try{ localStorage.setItem('wildwood-acctmode','login'); }catch(_){}
-  $('#lPass').value=''; $('#regPass').value=''; $('#pname').value=msg.user; $('#setName').value=msg.user;
+  $('#regPass').value=''; $('#setName').value=msg.user;
   syncAcctSec();
+  if(!started) startAuthed();
 }
 function onAuthFail(msg){
-  if(msg.reg){ toast(msg.text,'bad'); $('#regGo').disabled=false; return; }
-  // refused at the start screen: close this connection; the Walk button connects again
-  if(NET.login&&NET.login.token) saveSession(null);
-  NET.login=null; NET.onReady=null; NET.send=null; if(NET.ws) try{ NET.ws.close(); }catch(_){}
-  statusEl.textContent=msg.text; connecting=false; $('#go').disabled=false; syncAcctPick();
+  if(started){ toast(msg.text,'bad'); $('#regGo').disabled=false; return; }   // a refused registration from the settings
+  startAuthFailed(msg);
 }
 /* ---- settings: who you are, register, log out, guest code ---- */
 function syncAcctSec(){
@@ -62,7 +38,7 @@ $('#regGo').addEventListener('click',()=>{
 });
 $('#acctOut').addEventListener('click',()=>{
   const s=loadSession(); if(s) netSend({t:'logout',token:s.token});
-  saveSession(null); try{ localStorage.setItem('wildwood-acctmode','guest'); }catch(_){}
+  saveSession(null);
   toast('Logged out','good'); setTimeout(()=>location.reload(),500);
 });
 const acctIn=$('#acctCode');

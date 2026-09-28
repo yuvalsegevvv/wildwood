@@ -9,8 +9,8 @@ styles
   01-base.css                        Colour tokens, light/dark theme, page, canvas
   02-hud.css                         Top bar: brand box, icon buttons, hint pill
   03-touch-controls.css              Joystick and round touch buttons
-  04-start-screen.css                Start card, controls legend, loading bar
-  05-chips.css                       Shared chip buttons and start-card pickers
+  04-start-screen.css                Start card (log in / register / play as guest), controls list, loading bar
+  05-chips.css                       Shared chip buttons and link buttons
   06-character-editor.css            Character editor side panel / bottom sheet
   07-talk.css                        Talk button, speech bubble, "press E" prompt
   08-settings.css                    Settings (sound) popover
@@ -19,7 +19,7 @@ styles
   11-quests-toasts-boss.css          Coins, testing tools, quest log, toasts, boss bar
   12-panels.css                      Inventory / shop / quest panels
   13-motion.css                      Reduced-motion overrides
-  14-multiplayer.css                 Multiplayer: world picker, name field, player name tags, online count
+  14-multiplayer.css                 Multiplayer: player name tags, online count
   15-inventory.css                   Inventory: body slots, bag grid, item tiles and icons, drag and drop, item details
   16-map.css                         Minimap and world map
   17-forge.css                       Rarity colours (tiles, rows, toasts), the forge panel, the lucky-drop banner
@@ -51,10 +51,10 @@ server
   economy.js                         Economy on the server: equip, shops (buy / sell), loot, quests (accept, progress, hand in), testing commands
   weather.js                         Weather on the server: rain for 5-7 minutes every 40-60 minutes, 30% of the time a thunderstorm
   accounts.js                        Registered accounts (name + password) on the online server: log in, register a guest, log out, unique names
-  api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, snapshots)
+  api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 
 node
-  main.js                            Node host: serves the game page over HTTP and runs the world server over WebSocket (no npm packages needed)
+  main.js                            Node host: serves the game page (gzip, ETag) and the music files (/audio/, cached for a year) over HTTP and runs the world server over WebSocket (no npm packages needed)
 
 game
   core/setup.js                      Page helpers ($), device flags (isTouch, LOW, LITE, Q), TAU/DEG
@@ -71,21 +71,21 @@ game
   world/generation-setup.js          Palettes, shared geometries (buildGeometries), terrain (in bands, culled by distance) + water + both villages (genTerrain)
   world/generation-chunks.js         Per-chunk vegetation placement (genChunk): the home forest's mix, and sakura, maple, pine and bamboo in the Sakura Vale
   world/streaming.js                 Streaming scheduler (Stream, streamPump): terrain first, nearest chunks next
-  character/model.js                 Look presets, save/load, buildCharacter (all outfits and armour looks), hiker, rebuildHiker
+  character/model.js                 Look presets, random looks (randomLook), save/load, buildCharacter (all outfits and armour looks), hiker, rebuildHiker
   character/pose.js                  poseRig (walk, run, sit, talk, attacks) and animateHiker
   world/motes.js                     Floating pollen by day, fireflies by night
   world/petals.js                    Cherry petals drifting down around you in the Sakura Vale
   wildlife/animals.js                Deer, foxes, rabbits, ducks, birds/bats, butterflies
   world/time-of-day.js               20-minute day/night cycle, sky keyframes, clock, zone label
   player/input.js                    Keyboard, mouse look, touch joystick, HUD buttons
-  ui/character-editor.js             Character editor panel and camera
-  village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke
+  ui/character-editor.js             Character editor panel and camera: opened from the HUD, or in creating mode right after a new account is registered
+  village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)
   village/buildings-vale.js          The Sakura Vale's buildings: Hanami (tiled roofs, shoji, torii, stone lanterns), the tunnel (bore, roof, portals, sealed door), teleport circles, the two shrines
   village/villagers.js               VILLAGERS (hard-coded NPCs of both villages), random villagers, NPC behaviour (updateNPCs)
   village/talking.js                 Talking to villagers: bubble, prompt, E key, opening shop/quest panels; stepping on a teleport circle
   village/npc-labels.js              Name and profession labels above the special villagers, with ! / ? quest markers over quest givers
   audio/engine.js                    Web Audio setup (SND, buses, reverb, echo, noise), tone(), noiseHit(), spatial()
-  audio/samples.js                   Sound files from assets/audio (embedded by build.py as window.WILDWOOD_AUDIO): loadSamples, playSample, musicBuffer (lazy)
+  audio/samples.js                   Sound files from assets/audio: small ones embedded in the page (window.WILDWOOD_AUDIO), music fetched once from audio/ (window.WILDWOOD_AUDIO_URL): loadSamples, playSample, musicBuffer (lazy)
   audio/ui-sounds.js                 Interface / game sounds (UI_SFX) and hover/click hooks
   audio/music.js                     Background music: one theme per place (both villages, three home ranges, two vale ranges, each boss), crossfaded; recorded tracks (music-*) or generative
   audio/ambience.js                  Footsteps, birds, crickets, owls, frogs, ducks, crackle, hooves
@@ -104,7 +104,7 @@ game
   economy/items.js                   Your gear as told by the server (GEAR), saved in this browser; equip / unequip requests
   ui/toasts.js                       Toast messages
   ui/item-icons.js                   Item icons: an SVG for every piece of equipment, coloured like the item looks on your character
-  ui/panels.js                       Panel open/close helpers (openPanel, closePanels, uiOpen)
+  ui/panels.js                       Panel open/close helpers (openPanel, closePanels, uiOpen, releasePointer)
   economy/inventory.js               Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
   economy/shops.js                   Weapon and armour shops
   economy/forge.js                   Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
@@ -120,7 +120,8 @@ game
   net/transport.js                   Connections to the world server: solo (server in this tab), shared room (one player's tab hosts), WebSocket (node server)
   net/client.js                      Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
   net/remote.js                      Other players: avatars built from their look and gear, smoothed movement, attack animations, name tags
-  ui/account.js                      Accounts on the online server: guest or log in on the start screen; register / log out / guest code in settings
+  ui/account.js                      Accounts on the online server: session token, the server's auth answers, register / log out / guest code in settings
   ui/chat.js                         Chat between players: the chat log, the input (Enter / chat button), speech bubbles, /name, joins and leaves
-  main/loop.js                       Main loop (frame), loading progress, start button, boot
+  ui/start-screen.js                 Start card: loading state, Log in / Register / Play as guest (Solo / Shared without a server), connecting, beginPlay
+  main/loop.js                       Main loop (frame) and boot; the start card and loading progress are in ui/start-screen.js
 ```

@@ -80,11 +80,9 @@ function setActionBar(){
     el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+slotLv(slot):(slot==='burst'?'Burst':'Skill');
     el.classList.toggle('empty',!a); el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Burst':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };
   fill(abBasic,'basic','F'); fill(abSkill,'skill','Q'); fill(abBurst,'burst','R');
-  document.querySelectorAll('[data-cls]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cls===clsOf()));
 }
 const press=(el,fn)=>{ el.addEventListener('touchstart',e=>{ e.preventDefault(); fn(); },{passive:false}); el.addEventListener('click',fn); };
 press(abBasic,()=>doAttack('basic')); press(abSkill,()=>doAttack('skill')); press(abBurst,burstSlot);
-document.querySelectorAll('[data-cls]').forEach(b=>b.addEventListener('click',()=>{ equipClass(b.dataset.cls); }));
 addEventListener('keydown',e=>{
   if(!started||uiOpen()) return;
   if(e.code==='KeyF'||e.code==='Digit1') doAttack('basic');

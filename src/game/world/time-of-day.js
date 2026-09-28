@@ -18,7 +18,6 @@ const CK=['sun','sky','hor','fog','hs','hg','cloud'], NK=['sunI','hi','night','f
 function mkState(p){ const s={elev:20,azim:75}; CK.forEach(k=>s[k]=new THREE.Color(p[k])); NK.forEach(k=>s[k]=p[k]); return s; }
 const TOD_STATES=TOD_KEYS.map(mkState);
 let dayClock=0.045; // start every visit in the morning, around 07:05
-let ffTarget=null;
 const envCur=mkState(TOD_KEYS[1]);
 const dayMote=new THREE.Color(0xfff7d6), fly=new THREE.Color(0xd8ff6a), wDay=new THREE.Color(0x2c5560), wNight=new THREE.Color(0x0d1826);
 function applyEnv(s){

@@ -1,4 +1,4 @@
-//@ Look presets, save/load, buildCharacter (all outfits and armour looks), hiker, rebuildHiker
+//@ Look presets, random looks (randomLook), save/load, buildCharacter (all outfits and armour looks), hiker, rebuildHiker
 /* ---------- the hiker: a customisable character ---------- */
 const SKINS=[0xf3d3bd,0xe6b894,0xc98e66,0xa56c45,0x7a4a2c,0x4f2f1d];
 // natural shades first (random looks pick from HAIRC.slice(0,HAIRC_NATURAL)), then the dyed / fantasy ones
@@ -14,6 +14,26 @@ function loadLook(){
   try{ const s=JSON.parse(localStorage.getItem('wildwood-look-v1')||'null'); if(s && (s.sex==='male'||s.sex==='female')) return Object.assign({}, s.sex==='female'?LOOK_F:LOOK_M, s); }catch(_){}
   return Object.assign({},LOOK_M);
 }
+/* A random look. rng: a function giving 0..1; villagers pass a seeded one so every player sees the same villagers, and their draw order below
+   must not change (it would change every random villager). o.villager: the plainer pools of a villager (no shorts, mostly no hat, no
+   backpack); otherwise the editor's "Surprise me". o.base: fields that override the result (a named NPC's fixed sex, colours...). */
+function randomLook(rng,o){
+  o=o||{}; const v=!!o.villager, rp=a=>a[Math.floor(rng()*a.length)], sex=(o.base&&o.base.sex)||(rng()<0.5?'male':'female'), f=sex==='female';
+  const L={sex,height:+(0.92+rng()*0.14).toFixed(2),build:+(0.88+rng()*0.3).toFixed(2),skin:rp(SKINS),face:rp(['round','oval','angular']),eyes:rp(EYEC),
+    facial:f?'none':rp(['none','stubble','stubble','mustache','beard']),
+    hair:f?rp(['long','ponytail','bun','bob','curly','short']):rp(v?['short','buzz','curly','bald','short']:['short','buzz','curly','bald','short','bob']),
+    hairColor:rp(HAIRC.slice(0,HAIRC_NATURAL)),top:rp(['tshirt','flannel','jacket','hoodie']),topColor:rp(CLOTH),
+    bottom:f?rp(v?['trousers','skirt','skirt']:['trousers','shorts','skirt']):v?'trousers':rp(['trousers','trousers','shorts']),bottomColor:rp(CLOTH),
+    shoes:rp(['boots','boots','sneakers']),shoeColor:rp(SHOEC),hat:rp(v?['none','none','none','beanie','cap']:['none','none','ranger','beanie','cap']),hatColor:rp(HATC),
+    pack:v?false:rng()<0.25,
+    chest:f?+(0.7+rng()*0.65).toFixed(2):1};   // women vary 0.7-1.35 (the model allows 0.5-1.6)
+  return Object.assign(L,o.base||{});
+}
+// a logged-in account's own look (sent in welcome) replaces this browser's; not written to this browser's save
+function adoptLook(l){
+  if(!l||typeof l!=='object'||(l.sex!=='male'&&l.sex!=='female')) return;
+  LOOK=Object.assign({},l.sex==='female'?LOOK_F:LOOK_M,l); rebuildHiker();
+}
 function saveLookLocal(){ try{ localStorage.setItem('wildwood-look-v1',JSON.stringify(LOOK)); }catch(_){} }
 function saveLook(){ saveLookLocal(); if(typeof netLookChanged==='function') netLookChanged(); }
 let LOOK=loadLook();
@@ -21,20 +41,12 @@ let LOOK=loadLook();
 const csph=(r,w,h)=>new THREE.SphereGeometry(r,w||10,h||8);
 // Phong lights every pixel from the interpolated normal; Lambert (per-vertex light) showed each triangle's edges on bodies
 const matChar=new THREE.MeshPhongMaterial({vertexColors:true,shininess:6,specular:0x0b0b0b});
-const _cc=new THREE.Color(), _tint=new THREE.Color();
+const _tint=new THREE.Color();
 function plaid(c,base,u,v){
   c.set(base);
   const a=((u*15)%1+1)%1<0.32, b=((v*15)%1+1)%1<0.32;
   if(a) c.multiplyScalar(0.6); if(b) c.multiplyScalar(0.6);
   if((((u*15+0.5)%1+1)%1<0.08)||(((v*15+0.5)%1+1)%1<0.08)) c.lerp(_tint.set(0xeadfc4),0.35);
-}
-// a rounded, tapered limb hanging from its joint (0,0,0) down to -len
-function limbGeo(r1,r2,len,seg){
-  const pts=[], n=5, mid=8;
-  for(let i=0;i<=n;i++){ const a=-Math.PI/2+(i/n)*Math.PI/2; pts.push(new THREE.Vector2(Math.max(1e-4,Math.cos(a)*r2), -len+Math.sin(a)*r2)); }
-  for(let i=1;i<mid;i++){ const f=i/mid; pts.push(new THREE.Vector2(lerp(r2,r1,f), -len+len*f)); }
-  for(let i=0;i<=n;i++){ const a=(i/n)*Math.PI/2; pts.push(new THREE.Vector2(Math.max(1e-4,Math.cos(a)*r1), Math.sin(a)*r1)); }
-  return new THREE.LatheGeometry(pts, seg||12);
 }
 /* A limb with a muscle profile. prof: [t, radius, zOffset?] from the top joint (t=0) to the bottom (t=1);
    zOffset > 0 pushes that part backwards (the calf), < 0 forwards. sx / sz squash the cross-section.

@@ -19,7 +19,7 @@ body.playing .hud-top{ opacity:1; }
   display:grid; place-items:center; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
 }
 .icon-btn:hover{ background:var(--glass-strong); }
-.icon-btn:focus-visible, #go:focus-visible, .touch-btn:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
+.icon-btn:focus-visible, .touch-btn:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
 .icon-btn svg{ width:22px; height:22px; }
 
 #hint{

@@ -1,5 +1,5 @@
 //@ Monster views: models for every family (slime, shroom, beetle/spider, boar, treant, goblin/oni/tengu, fox, wisp, totem), animation
-const MONS=[], CAMPS=[], MON_GEO={};
+const MONS=[], MON_GEO={};
 function monMat(glow){ const m=new THREE.MeshLambertMaterial({vertexColors:true, emissive:glow||0x000000}); m.userData.glow=new THREE.Color(glow||0); return m; }
 function pivot(parent,x,y,z,mesh){ const g=new THREE.Group(); g.position.set(x,y,z); if(mesh) g.add(mesh); parent.add(g); return g; }
 function rigOf(root){ const g=n=>root.getObjectByName(n); return {root,hips:g('hips'),spine:g('spine'),head:g('head'),shL:g('shL'),elL:g('elL'),shR:g('shR'),elR:g('elR'),hipL:g('hipL'),kneeL:g('kneeL'),hipR:g('hipR'),kneeR:g('kneeR'),hipY:0.92}; }

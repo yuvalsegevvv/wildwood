@@ -1,12 +1,8 @@
 // Headless test of registered accounts (src/server/accounts.js) with an in-memory store: prints PASS/FAIL.
 // Usage: node tools/accounts-smoke.js
-const crypto=require('crypto'), {loadServer}=require('./load');
-const DB=new Map(), inbox={};
-const store={ load:k=>DB.get(k)||null, save:(k,r)=>{ DB.set(k,JSON.parse(JSON.stringify(r))); },
-  create:(k,r)=>{ if(DB.has(k)) return false; DB.set(k,JSON.parse(JSON.stringify(r))); return true; },
-  users:()=>[...DB.values()].filter(r=>r.auth).map(r=>r.auth.user) };
-const auth={ hash:p=>'s:'+crypto.createHash('sha256').update(p).digest('hex'), verify:(p,h)=>h==='s:'+crypto.createHash('sha256').update(p).digest('hex'),
-  token:()=>crypto.randomBytes(8).toString('hex'), tokenHash:t=>'t'+t };
+const {loadServer}=require('./load'), {memoryAccounts}=require('./headless');
+const inbox={};
+const {DB,store,auth}=memoryAccounts();   // accounts kept in memory instead of files or Postgres
 const {api:W}=loadServer({dev:false,store,auth,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); },broadcast(){}});
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const last=(pid,t)=>[...(inbox[pid]||[])].reverse().find(m=>m.t===t);
@@ -33,6 +29,14 @@ const A1='a'.repeat(32), A2='b'.repeat(32), A3='c'.repeat(32);
   // log in elsewhere with the password, then with the token
   W.join('d1',{acct:A3,user:'hayru',pass:'wrong',name:'x',look:{},save:{level:1}}); await wait();
   ok('wrong password refused',!W.players.has('d1')&&last('d1','authfail').text==='Wrong password.');
+  // the account's look: set while playing, restored by a login from a browser that has a different one
+  W.join('l0',{acct:A3,user:'hayru',pass:'secret1',name:'x',look:{sex:'male',hair:'short'},save:{level:1}}); await wait();
+  W.receive('l0',{t:'look',look:{sex:'female',hair:'bun',cls:'mage'}}); W.leave('l0'); await wait();
+  W.join('l1',{acct:A3,user:'hayru',pass:'secret1',name:'x',look:{sex:'male',hair:'buzz'},save:{level:1}}); await wait();
+  ok('login restores the account look and sends it in welcome',W.players.get('l1').look.hair==='bun'&&last('l1','welcome').look.hair==='bun',JSON.stringify(last('l1','welcome').look));
+  W.join('gw',{acct:A2,name:'Guesty',look:{sex:'male',hair:'buzz'},save:{level:1}}); await wait();
+  ok('a guest keeps the look its browser sent (no look in welcome)',W.players.get('gw').look.hair==='buzz'&&last('gw','welcome').look===undefined);
+  W.leave('gw'); W.leave('l1'); await wait();
   W.join('d1',{acct:A3,user:'hayru',pass:'secret1',name:'x',look:{},save:{level:1}}); await wait();
   const d=W.players.get('d1'); ok('password login loads the account',d&&d.name==='Hayru'&&d.level===9&&d.gear.coins===500);
   const tok=last('d1','auth').token; W.leave('d1'); await wait();

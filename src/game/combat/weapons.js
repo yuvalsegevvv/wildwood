@@ -3,11 +3,11 @@
 function attachWeapons(){
   const r=hiker.rig; if(!r) return;
   if(hiker.wpn) hiker.wpn.forEach(o=>{ if(o.parent) o.parent.remove(o); });
-  const res=weaponsOn(r,GEAR&&GEAR.eq.weapon,LOOK.build); hiker.wpn=res.objs; hiker.orb=res.orb;
+  const res=weaponsOn(r,GEAR&&GEAR.eq.weapon,LOOK.build); hiker.wpn=res.objs;
 }
 // builds the weapon models for a weapon item on a character rig; used for your hiker and for other players
 function weaponsOn(r,weaponId,build){
-  const objs=[], res={objs,orb:null};
+  const objs=[], res={objs};
   const add=(parent,obj)=>{ parent.add(obj); objs.push(obj); obj.traverse(q=>{ if(q.isMesh) q.castShadow=true; }); return obj; };
   const w=ITEM[weaponId], c=w?CLASS_OF[w.slot]:'warrior', tr=w?w.tier:0;
   if(c==='warrior'){
@@ -46,10 +46,9 @@ function weaponsOn(r,weaponId,build){
     const orb=new THREE.Mesh(tr===1?new THREE.OctahedronGeometry(0.05,0):new THREE.SphereGeometry(0.045,10,8),new THREE.MeshBasicMaterial({color:glow}));
     orb.position.set(0,-L-0.06,0); wand.add(orb);
     const halo=new THREE.Mesh(new THREE.SphereGeometry(0.09+tr*0.015,10,8),fxMat(glow,0.35)); halo.position.copy(orb.position); wand.add(halo);
-    wand.position.set(0,-0.3,0); wand.rotation.x=0.3; add(r.elR,wand); res.orb=orb;
+    wand.position.set(0,-0.3,0); wand.rotation.x=0.3; add(r.elR,wand);
   }
   return res;
 }
-function handPos(){ const v=new THREE.Vector3(); if(hiker.orb && hiker.g.visible){ hiker.g.updateMatrixWorld(true); hiker.orb.getWorldPosition(v); if(Math.hypot(v.x-P.x,v.z-P.z)<3) return v; } return v.set(P.x-Math.sin(P.face)*0.4,P.y+1.4*hiker.scale,P.z-Math.cos(P.face)*0.4); }
 function aimDir(){ const v=new THREE.Vector3(); camera.getWorldDirection(v); if(thirdPerson) v.y=Math.max(v.y,-0.05)+0.04; return v.normalize(); }
 

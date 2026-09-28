@@ -20,8 +20,7 @@ function deliver(msg){ queueMicrotask(()=>netHandle(msg)); }
 function startSolo(){
   NET.mode='solo'; const pid='you';
   const srv=createWorldServer({dev:true,snapDt:0.05,
-    send(to,msg){ if(to===pid) deliver(JSON.parse(JSON.stringify(msg))); },
-    broadcast(msg){ deliver(JSON.parse(JSON.stringify(msg))); }});
+    send(to,msg){ if(to===pid) deliver(JSON.parse(JSON.stringify(msg))); }});
   NET.server=srv; NET.host=true;
   NET.send=msg=>srv.receive(pid,JSON.parse(JSON.stringify(msg)));
   runServer(srv);
@@ -83,7 +82,7 @@ async function startRoom(name){
   });
   const becomeHost=()=>{
     NET.host=true; hostPeer=me; status('You are hosting this world.');
-    const srv=createWorldServer({dev:true,snapDt:0.125,
+    const srv=createWorldServer({dev:true,snapDt:0.125,broadcastSnaps:true,
       send(to,msg){ if(to===me) deliver(JSON.parse(JSON.stringify(msg))); else chunkSend(room,'s',{to,m:msg}); },
       broadcast(msg){ deliver(JSON.parse(JSON.stringify(msg))); chunkSend(room,'s',{to:'*',m:msg}); }});
     NET.server=srv;
@@ -117,6 +116,11 @@ async function startRoom(name){
     if(ww[0]&&ww[0].peer===me) becomeHost();
   };
   NET.elect=setInterval(elect,1500); setTimeout(elect,2600);
+}
+// drop a connection that has not started a game: a refused login, or the guest connection a registration used
+function netReset(){
+  NET.ready=false; NET.send=null; NET.onReady=null;
+  if(NET.ws){ NET.ws.onclose=NET.ws.onmessage=null; try{ NET.ws.close(); }catch(_){} NET.ws=null; }
 }
 function status(text){ if(NET.onStatus) NET.onStatus(text); }
 function netLost(text){ toast(text,'bad'); status(text); }

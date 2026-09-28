@@ -1,4 +1,4 @@
-//@ Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, snapshots)
+//@ Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 /* Saves: when the host gives io.store = {load(acct) -> record|null, save(acct, record)} (either may return a
    Promise), each player's progress lives on the server under their account code (a secret the browser keeps).
    A player the server doesn't know yet is created from the save their browser sends: that is how progress
@@ -7,7 +7,7 @@
    Registered accounts (name + password, Node server only) are in accounts.js.
    Messages in:  hello{acct,name,look,save[,user,pass|token]}  register{user,pass}  logout{token}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
                  cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{}  dev{cmd,v}
-   Messages out: welcome  mons{list}  you  tp  snap{day,pl,mo,b:[per boss],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
+   Messages out: welcome{pid,day,dev,players[,look: a logged-in account's own look]}  mons{list}  you  tp  snap{day,n,pl,mo,b:[per boss],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
 initMonstersS(); initBossS();
 const ACCT=new Map(), PENDING=new Set();   // account -> pid online; pids whose save is still loading
 const recordOf=p=>Object.assign({v:1,name:p.name,look:p.look,level:p.level,exp:p.exp,gear:p.gear,updated:Date.now()},p.auth?{auth:p.auth}:{});
@@ -35,7 +35,7 @@ function join(pid,hello,auth){
   const p=newPlayer(pid,hello); S.players.set(pid,p);
   if(auth){ p.auth=auth; p.user=auth.user; }
   else { const n=freeName(p.name,p); if(n!==p.name){ toastTo(pid,'Someone already has the name '+p.name+', so you are '+n+'. Change it in Settings.',''); p.name=n; } }
-  sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo)});
+  sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth?p.look:undefined});
   const ros=MONS.filter(m=>!m.remove).map(monRoster);
   for(let i=0;i<ros.length;i+=40) sendTo(pid,{t:'mons',list:ros.slice(i,i+40)});
   for(const B of BOSSES) for(const e of B.tele) sendTo(pid,{t:'snap',ev:[['tele',e.id,e.kind,r1(e.x),r1(e.z),r1(e.r),e.dur-e.t,Math.round(e.face*100)/100,e.half]]});
@@ -101,16 +101,44 @@ function sunrise(){
   for(const p of S.players.values()){ refreshOffersP(p); if(Object.keys(p.gear.bought).length){ p.gear.bought={}; p.dirty=true; any=true; } }
   toastTo(null,'Sunrise: new notices on the quest board'+(any?', and the shops are back to their usual prices.':'.'),'good');
 }
+/* Snapshots are made per player, so traffic grows with what you can see and not with everyone in the world (it used to be one broadcast: every
+   client received every awake monster of every player, which is N x N messages). What you get:
+   - monsters (mo): only the ones you can see (the client draws monsters within 95 m, bosses within 170 m: SNAP_MON / SNAP_BOSS add a margin),
+     and only when their state changed since the last time they were sent to you (p.mk remembers what each player has). Those within SNAP_NEAR
+     update every snapshot, farther ones every second snapshot (staggered by id): the client smooths movement, and a monster 60 m away is a
+     few pixels. One that comes into range is always sent, and everything in range is re-sent every 3 s in case a message was lost.
+   - players (pl): yourself and those within SNAP_PLAYERS (about the fog distance) every snapshot; the others once a second (map and count).
+     n is the head count.
+   - day, bosses (b), weather (w) and events (ev) are the same for everyone.
+   The claude.ai room host sets io.broadcastSnaps: its channel is one shared, size-limited topic, so it keeps a single message for everyone
+   (all awake monsters that changed, all players) instead of one per player. */
+const SNAP_NEAR=40, SNAP_MON=110, SNAP_BOSS=190, SNAP_PLAYERS=250;
 function broadcastSnap(){
-  const pl=[...S.players.values()].map(p=>[p.id,r1(p.x),r1(p.y),r1(p.z),Math.round(p.face*100)/100,Math.round(p.hp),p.maxHp,p.level,p.dead?1:0]);
-  // monsters: only those near a player whose state changed, plus all of them every 3 s in case a message was lost
-  const mo=[], full=(S.fullT-=S.snapDt)<=0; if(full) S.fullT=3;
+  const no=++S.snapNo, full=(S.fullT-=S.snapDt)<=0; if(full) S.fullT=3;
+  const rows=[];   // every awake monster once: [monster, entry, state key]
   for(const m of MONS){
     if(m.remove||m.dead||!m.awake) continue;
-    const a=[m.id,r1(m.x),r1(m.z),Math.round(m.face*100)/100,Math.ceil(m.hp),(m.aggro?1:0)|(m.slowT>0?4:0)|(m.immune?8:0)|(m.stunT>0?16:0)], key=a.join();
-    if(full||key!==m.snapKey){ m.snapKey=key; mo.push(a); }
+    const a=[m.id,r1(m.x),r1(m.z),Math.round(m.face*100)/100,Math.ceil(m.hp),(m.aggro?1:0)|(m.slowT>0?4:0)|(m.immune?8:0)|(m.stunT>0?16:0)];
+    rows.push([m,a,a.join()]);
   }
-  const events=EVQ; EVQ=[];
-  io.broadcast({t:'snap',day:Math.round(S.day*1e5)/1e5,pl,mo,b:bossState(),w:weatherState(),ev:events});
+  const all=[...S.players.values()], prow=all.map(p=>[p.id,r1(p.x),r1(p.y),r1(p.z),Math.round(p.face*100)/100,Math.round(p.hp),p.maxHp,p.level,p.dead?1:0]);
+  const day=Math.round(S.day*1e5)/1e5, b=bossState(), w=weatherState(), ev=EVQ; EVQ=[];
+  if(io.broadcastSnaps){
+    const mo=[]; for(const [m,a,key] of rows) if(full||key!==m.snapKey){ m.snapKey=key; mo.push(a); }
+    io.broadcast({t:'snap',day,n:all.length,pl:prow,mo,b,w,ev}); return;
+  }
+  const farToo=no%10===0;
+  for(const p of all){
+    const seen=p.mk||(p.mk=new Map()), stamp=p.mkS||(p.mkS=new Map()), mo=[], pl=[];
+    for(const [m,a,key] of rows){
+      const dx=m.x-p.x, dz=m.z-p.z, d2=dx*dx+dz*dz, R=m.boss?SNAP_BOSS:SNAP_MON; if(d2>R*R) continue;
+      stamp.set(m.id,no);
+      const known=seen.get(m.id);
+      if(full||known===undefined||(known!==key&&(d2<=SNAP_NEAR*SNAP_NEAR||(no+m.id)%2===0))){ seen.set(m.id,key); mo.push(a); }
+    }
+    for(const [id,s] of stamp) if(s!==no){ stamp.delete(id); seen.delete(id); }   // left your range: sent again from scratch when it returns
+    all.forEach((q,i)=>{ const dx=q.x-p.x, dz=q.z-p.z; if(q===p||farToo||dx*dx+dz*dz<=SNAP_PLAYERS*SNAP_PLAYERS) pl.push(prow[i]); });
+    io.send(p.id,{t:'snap',day,n:all.length,pl,mo,b,w,ev});
+  }
 }
 return {join:beginJoin,leave,receive,setPos,tick,flushAll,state:S,monsters:MONS,players:S.players};

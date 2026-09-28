@@ -49,7 +49,6 @@ const SKILL_IDS=Object.keys(SKILLS);
 const ANIM_OF={}; for(const id in SKILLS){ const s=SKILLS[id]; s.id=id; ANIM_OF[s.act[0]]=s.anim||s.act[0]; }
 const DEFAULT_OF={};   // DEFAULT_OF[cls][slot] = the free ability of that slot
 for(const id in SKILLS){ const s=SKILLS[id]; if(!s.price){ (DEFAULT_OF[s.cls]=DEFAULT_OF[s.cls]||{})[s.slot]=id; } }
-const FREE_SKILL={warrior:'whirlwind',archer:'volley',mage:'frostnova'};
 const slotLv=slot=>slot==='burst'?BURST_SLOT_LV:slot==='skill'?SKILL_SLOT_LV:1;
 const newSkills=()=>({owned:SKILL_IDS.filter(id=>!SKILLS[id].price),eq:{warrior:{basic:null,skill:null,burst:null},archer:{basic:null,skill:null,burst:null},mage:{basic:null,skill:null,burst:null}}});
 // only the mage chooses a basic attack; everyone else always has their class's

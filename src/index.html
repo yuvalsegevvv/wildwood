@@ -133,7 +133,7 @@
   </div>
 </div>
 <div id="editor" hidden>
-  <div class="ed-head"><div class="ed-title">Your hiker</div><div class="ed-drag">Drag the scene to turn around</div></div>
+  <div class="ed-head"><div class="ed-title" id="edTitle">Your hiker</div><div class="ed-drag">Drag the scene to turn around</div></div>
   <div id="edTabs" class="ed-tabs"></div>
   <div id="edBody" class="ed-body"></div>
   <div class="ed-foot"><button id="edRandom" class="ghost">Surprise me</button><button id="edDone" class="primary">Done</button></div>
@@ -153,21 +153,29 @@
 <div id="start">
   <div class="card">
     <h1>Wildwood</h1>
-    <p>A forest grown from noise, with a village at its heart. Monsters roam the woods, from level 1 near the village to level 15 at the edge of the world. Beat them to level up.</p>
-    <dl class="keys" id="keys"></dl>
-    <div class="pick"><span class="pick-l">World</span><div class="chips"><button class="chip" data-world="solo">Solo</button><button class="chip" data-world="room" hidden>Shared</button><button class="chip" data-world="ws" hidden>This server</button></div></div>
-    <p class="world-note" id="worldNote"></p>
-    <div class="pick" id="acctPick" hidden><span class="pick-l">Account</span><div class="chips"><button class="chip" data-acct="guest">Guest</button><button class="chip" data-acct="login">Log in</button></div></div>
-    <div id="loginBox" hidden>
-      <div class="pick" id="loginFields"><input id="lUser" class="start-in" maxlength="16" placeholder="Name" autocomplete="username" spellcheck="false" aria-label="Account name"><input id="lPass" class="start-in" type="password" maxlength="100" placeholder="Password" autocomplete="current-password" aria-label="Password"></div>
-      <p class="world-note" id="loginNote"></p>
+    <p class="tag">A forest to wander: a village at its heart, monsters in the woods, a boss at the edge of the world.</p>
+    <p class="st-msg" id="stMsg" role="alert" hidden></p>
+    <div class="st-btns" id="stHome">
+      <button class="st-btn primary" id="stLogin" hidden>Log in</button>
+      <button class="st-btn" id="stRegister" hidden>Register</button>
+      <button class="st-btn" id="stGuest" hidden>Play as guest</button>
+      <button class="st-btn primary" id="stSolo" hidden>Play solo</button>
+      <button class="st-btn" id="stRoom" hidden>Play in the shared world</button>
+      <p class="st-fine" id="stNote" hidden></p>
     </div>
-    <div class="pick" id="namePick"><label class="pick-l" for="pname">Name</label><input id="pname" maxlength="16" autocomplete="nickname" spellcheck="false"></div>
-    <div class="pick"><span class="pick-l">Weapon</span><div class="chips"><button class="chip" data-cls="warrior">Sword</button><button class="chip" data-cls="archer">Bow</button><button class="chip" data-cls="mage">Wand</button></div></div>
-    <div class="pick"><span class="pick-l">Play as</span><div class="chips"><button class="chip" data-sex="male">Male</button><button class="chip" data-sex="female">Female</button></div><button id="custom" class="linkbtn" disabled>Customize</button></div>
-    <button id="go" disabled>Walk into the forest</button>
-    <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+    <form class="st-form" id="stForm" novalidate hidden>
+      <h2 id="stFormTitle">Log in</h2>
+      <input id="stUser" class="start-in" maxlength="16" placeholder="Account name" autocomplete="username" spellcheck="false" aria-label="Account name">
+      <input id="stPass" class="start-in" type="password" maxlength="100" placeholder="Password" autocomplete="current-password" aria-label="Password">
+      <input id="stPass2" class="start-in" type="password" maxlength="100" placeholder="Repeat the password" autocomplete="new-password" aria-label="Repeat the password" hidden>
+      <p class="st-fine" id="stFine" hidden></p>
+      <button class="st-btn primary" id="stSubmit" type="submit">Log in</button>
+      <button class="linkbtn" id="stBack" type="button">Back</button>
+    </form>
+    <button class="st-btn primary" id="stReload" hidden>Reload</button>
+    <div class="bar" id="bar" aria-hidden="true"><i id="barFill"></i></div>
     <div id="status" aria-live="polite">Starting…</div>
+    <details class="how"><summary>Controls</summary><dl class="keys" id="keys"></dl></details>
   </div>
 </div>
 

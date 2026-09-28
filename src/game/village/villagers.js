@@ -91,22 +91,11 @@ const SMALLTALK=['Lovely day for a walk in the woods.','The deer come right up t
 const NPCs=[];
 let talkNPC=null, nearNPC=null;
 function npcById(id){ return NPCs.find(n=>n.def.id===id); }
-function makeLook(rng,base){
-  const rp=a=>a[Math.floor(rng()*a.length)], sex=(base&&base.sex)||(rng()<0.5?'male':'female'), f=sex==='female';
-  const L={sex,height:+(0.92+rng()*0.14).toFixed(2),build:+(0.88+rng()*0.3).toFixed(2),skin:rp(SKINS),face:rp(['round','oval','angular']),eyes:rp(EYEC),
-    facial:f?'none':rp(['none','stubble','stubble','mustache','beard']),
-    hair:f?rp(['long','ponytail','bun','bob','curly','short']):rp(['short','buzz','curly','bald','short']),
-    hairColor:rp(HAIRC.slice(0,HAIRC_NATURAL)),top:rp(['tshirt','flannel','jacket','hoodie']),topColor:rp(CLOTH),
-    bottom:f?rp(['trousers','skirt','skirt']):'trousers',bottomColor:rp(CLOTH),shoes:rp(['boots','boots','sneakers']),shoeColor:rp(SHOEC),
-    hat:rp(['none','none','none','beanie','cap']),hatColor:rp(HATC),pack:false,
-    chest:f?+(0.7+rng()*0.65).toFixed(2):1};   // women vary 0.7-1.35 (the model allows 0.5-1.6)
-  return Object.assign(L,base||{});
-}
 const vilOf=n=>n.def.vil===2?VIL2:VIL;
 function anchorOf(name,V){ V=V||VIL; return V.anchors[name]||V.anchors.plaza0; }
 function randomPOI(n){ const V=vilOf(n); let p; for(let i=0;i<6;i++){ p=V.pois[Math.floor(Math.random()*V.pois.length)]; if(Math.hypot(p.x-n.x,p.z-n.z)>3) break; } return {x:p.x+AR(-0.6,0.6),z:p.z+AR(-0.6,0.6),face:p.face}; }
 function spawnNPC(def,rng){
-  const look=makeLook(rng||Math.random,def.look);
+  const look=randomLook(rng||Math.random,{villager:true,base:def.look});
   const rig=buildCharacter(look), s=look.height*(look.sex==='female'?0.95:1);
   rig.root.scale.setScalar(s);
   const g=new THREE.Group(); g.add(rig.root); scene.add(g);

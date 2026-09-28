@@ -1,17 +1,18 @@
 # Wildwood: guide for agents
 
 Read this file first. It is written so you can work on the game **without reading the whole codebase**
-(about 5,700 lines of JavaScript in 85 files). Open only the files your task touches.
+(about 7,100 lines of JavaScript in 92 files). Open only the files your task touches.
 
 Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an authoritative world server
 that runs in the browser tab (solo / shared room) or in Node (the deployed MMO), procedural 880 m forest,
 village with NPCs, 451 monsters in 16 zones, a boss; east of the mountains the Sakura Vale (tunnel opened by the
 boss, Japanese village Hanami, 240 monsters of levels 16-25 in 10 zones, bosses at 20 and 25, teleport circles);
 3 classes with equippable skills, 210 items (6 tiers) in 5 rarities, a forge, a quest board, weather, chat, server-side saves in a Postgres database (Neon), player
-accounts (guest or name + password).
+accounts (guest or name + password; the start card offers Log in, Register, Play as guest).
 
 - Repository: https://github.com/yuvalsegevvv/wildwood (Render deploys every push to `main`).
-- The owner also playtests a single-file build published as a claude.ai artifact (Claude app on a phone).
+- The owner also playtests a build published as a claude.ai artifact (Claude app on a phone): the page plus the
+  music files next to it (section 6).
 - Owner preferences: iterative feature requests; keep token use low (targeted reads, targeted tests);
   **do not commit or push unless asked**; when only one part changes (e.g. the character model), test
   only that part.
@@ -29,7 +30,7 @@ accounts (guest or name + password).
 src/shared/   pure rules and data (no DOM, no three.js): terrain, village layout, zones, balance, monster /
               item / quest / class+skill definitions. Loaded into BOTH the client and the server bundles.
 src/server/   the authoritative world server: players, monsters AI, combat, boss, economy, weather, api.
-src/node/     Node host: HTTP + zero-dependency WebSocket, save storage (files or Postgres), shutdown.
+src/node/     Node host: HTTP (page, music files) + zero-dependency WebSocket, save storage (files or Postgres), shutdown.
 src/game/     the client: rendering, input, audio, UI panels, views of server state, net/ transports.
 src/styles/   CSS in cascade order.     src/index.html  page shell + all HUD/panel markup.
 src/manifest.json   load order of every group ("@shared" marks where shared files go in the client).
@@ -69,8 +70,13 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 - Client → server: `hello{acct,name,look,save[,user,pass|token]}`, `register{user,pass}`, `logout{token}`, `pos{p:[x,y,z,face,vx,vz]}`, `atk{k:'basic'|'skill'|'burst',tg,face,aim}`,
   `equip{id}`, `unequip{slot}`, `cls{cls}`, `buy/sell{id}`, `merge{id}`, `accept/turnin/abandon{id}`,
   `buyskill/eqskill{id}`, `unskill{cls,slot}`, `look{look}`, `chat{text}`, `name{name}`, `warp{}`, `dev{cmd,v}`.
-- Server → client: `welcome`, `mons{list}` (roster), `you{...}` (private state incl. `gear`), `tp`, `kicked`, `auth{user,token}`, `authfail{text}`,
-  `snap{day, pl, mo, b (one entry per boss), w (weather), ev:[events]}` 8-20×/s.
+- Server → client: `welcome{...,look?}` (`look` only for a logged-in account: its own look replaces the browser's), `mons{list}` (roster), `you{...}` (private
+  state incl. `gear`), `tp`, `kicked`, `auth{user,token}`, `authfail{text}`,
+  `snap{day, n, pl, mo, b (one entry per boss), w (weather), ev:[events]}` 8-20×/s, **made per player**: `mo` holds only the monsters
+  you can see (within 110 m, bosses 190 m: the client draws 95 / 170 m) and only when changed since the last time they were sent to
+  you (those within 40 m every snapshot, farther ones every second), `pl` yourself and the players within 250 m (the rest once a
+  second), `n` the head count. Constants `SNAP_*` and the reasoning are in `server/api.js` (`broadcastSnap`). The claude.ai room
+  host keeps one message for everyone (`io.broadcastSnaps`), since its channel is one shared 4 KB topic.
 - Events (`ev(...)` on the server, `applyEvent` in `net/client.js`): dmg, kill, imm, mact, aggro, respawn,
   spawn, despawn, proj, pend, tele, tend, roar, area, aend, chain, buff, xp, coins, loot, lvup, hurt, down,
   up, toast, qdone, qturn, pact, pjoin, pleave, pgear, plook, pname, chat, merge, skillslot, skillbuy,
@@ -94,7 +100,8 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | Shops / forge / skills panel / inventory | `game/economy/shops.js`, `forge.js`, `skills.js`, `inventory.js` (+ server `economy.js`) |
 | Village layout, board, stalls | `shared/village-layout.js` (positions, colliders `V.boxes`), `game/village/buildings.js` (meshes) |
 | NPCs (who, where, role, lines, labels) | `game/village/villagers.js` (`VILLAGERS`), `talking.js` (`openRolePanel`), `npc-labels.js` |
-| Character body, face, hair, hats | `game/character/model.js` (`buildCharacter`, `muscleLimb`, `sculpt`, `smoothN`; look defaults `LOOK_M`/`LOOK_F`, palettes `HAIRC` (+`HAIRC_NATURAL`), `SKINS`, `CLOTH`...); armour looks `ARMOR_LOOK` in `shared/items.js`; editor rows `EDIT` in `game/ui/character-editor.js` (`fem:true` = female-only row), random looks `randomLook` there and in `village/villagers.js` |
+| Character body, face, hair, hats | `game/character/model.js` (`buildCharacter`, `muscleLimb`, `sculpt`, `smoothN`; look defaults `LOOK_M`/`LOOK_F`, palettes `HAIRC` (+`HAIRC_NATURAL`), `SKINS`, `CLOTH`...; `randomLook(rng,{villager,base})` serves both "Surprise me" and random villagers: villagers use a seeded rng, so its draw order must not change); armour looks `ARMOR_LOOK` in `shared/items.js`; editor rows `EDIT` in `game/ui/character-editor.js` (`fem:true` = female-only row, `close:true` = the tab frames the head) |
+| Start card: Log in / Register / Play as guest (Solo / Shared without a server), loading state, connecting, `beginPlay`; the first steps of a new account (character editor in creating mode, `openEditor({create:true})`) | `game/ui/start-screen.js` (`enterWorld`, `showStart`), markup `#start` in `index.html`, `styles/04-start-screen.css`; session token and the server's auth answers `game/ui/account.js`; `netReset` in `game/net/transport.js`; test `node tools/start-smoke.js` |
 | Animations | `game/character/pose.js` (`poseRig`; skill anims borrow kinds via `ANIM_OF`) |
 | World size, lakes, terrain | `shared/terrain.js` (`SIZE`, `LAKES`, `baseHeight`), `shared/zones.js` (`RINGS`, zones, arena) |
 | Vegetation / animals | `game/world/plant-models.js`, `generation-*.js`, `game/wildlife/animals.js` |
@@ -103,7 +110,8 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | Map / minimap | `game/ui/map.js` |
 | Chat / names / account code | `game/ui/chat.js`, `game/ui/account.js`; server `chatP`, `renameP` in `server/economy.js` |
 | Saves, accounts, migration | `server/api.js` (`beginJoin`, `saveP`, `flushAll`), `server/players.js` (`sanitize*`), `node/main.js` (stores, `AUTH` password hashing) |
-| Registered accounts (name + password, guest, unique names, gift levels `GIFT_LEVELS`) | `server/accounts.js`, client `game/ui/account.js`; test `node tools/accounts-smoke.js` |
+| Registered accounts (name + password, guest, unique names, gift levels `GIFT_LEVELS`) | `server/accounts.js`, client `game/ui/account.js` (settings, session) and `start-screen.js`; tests `node tools/accounts-smoke.js`, `start-smoke.js` |
+| What each client is sent (snapshot ranges and rates, `SNAP_*`) | `server/api.js` (`broadcastSnap`); client `applySnap` in `game/net/client.js` |
 | Testing tools (dev commands) | `server/economy.js` (`devP`), `game/ui/settings-testing.js`, markup in `index.html` (`#tSec`) |
 | HUD, action bar, keys | `game/ui/combat-hud.js`, `game/player/input.js`, `game/ui/controls-legend.js` |
 | Transports / host election | `game/net/transport.js` |
@@ -115,18 +123,27 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 - three.js is **r128**: no `CapsuleGeometry`; `OrbitControls` isn't available. Geometry is merged per
   character/object; colours are vertex colours painted with `pc(geo, fn)` / `paint`.
 - The published page is one self-contained HTML file: no external requests (CSP), no remote images,
-  no inline `onclick` (bind in script). Only Google Fonts load.
+  no inline `onclick` (bind in script). Only Google Fonts load. The one exception is the background music
+  (`assets/audio/music-*`, 9 MB): it is not in the page (the artifact caps a page at 16 MB and every visitor downloads it),
+  the build copies it to `dist/audio/<name>.<hash>.m4a` and the client fetches a track when its theme first plays
+  (same-origin, relative URL). Keep new big sounds out of the page the same way; only small sounds are embedded.
 - The server never trusts client numbers it can recompute: sanitize saves (`sanitizeGear`,
   `sanitizeQuest`, `sanitizeSkills`), recompute rewards, clamp counts, clean names/chat.
 - Put player-visible text through `textContent` (names and chat are user input).
 - Snapshots and events must stay small: a room message is at most 4 KB (`chunkSend` splits larger ones);
-  send monsters only when changed (`snapKey`), round numbers (`r1`).
+  send monsters only when changed and only to players who can see them (`p.mk` in `broadcastSnap`), round numbers (`r1`).
 - Comments explain *why* and the numbers a designer would tune; keep them current.
 - Saves: new player fields go in `gear` (saved) and must be sanitized with a default for old saves.
 - Performance: the phone (low/lite mode: `LOW`, `LITE`, `Q` in `core/setup.js`) matters.
 - Character look (`LOOK`) fields: add a default to both `LOOK_M` and `LOOK_F` (old saves and other players'
   looks are merged onto them) and clamp the value inside `buildCharacter`: the server passes looks through
   unsanitized (only a 2 KB size limit), so a remote player's look can hold anything.
+- Recipes. **A look field**: defaults in `LOOK_M`/`LOOK_F`, a row in `EDIT` (character-editor.js), the clamp and the drawing in `buildCharacter`,
+  the pools in `randomLook` (model.js; append to a villager pool only if you accept every random villager changing). **A server message**:
+  a `case` in `receive()` (server/api.js) → mutate → `ev(...)` / `p.dirty=true` → handle it in `applyEvent` / `netHandle`, plus a check
+  in `tools/server-smoke.js`. **A panel**: markup `class="panel"` in index.html, its id in `PANELS` (ui/panels.js), a key in its file's
+  `keydown`, CSS in `12-panels.css` or a new file in the manifest. **A way into the world**: `enterWorld({mode,name,login,register})`
+  in ui/start-screen.js. **Dead code**: `python3 tools/unused.py` lists names and CSS nobody uses.
 - Character shading: `matChar` is a Phong material (per-pixel light). For curved body/cloth surfaces call
   `smoothN(g)` instead of `g.computeVertexNormals()`, so lathe/sphere seams don't show. Shape body features
   (e.g. the bust) by deforming the torso lathe, not by adding spheres.
@@ -137,9 +154,12 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 npm install                      # three@0.128 for the tools, pg for Postgres (optional)
 python3 build.py                 # → dist/ (quiet, ~1 s)
 python3 build.py --check         # + syntax check of every bundle + duplicate-name check  (always run this)
-node tools/server-smoke.js       # 14 headless server checks from src/ (no build), ~5 s, prints PASS/FAIL
-node tools/accounts-smoke.js     # 15 checks of accounts (register, login, tokens, unique names), ~1 s
+node tools/server-smoke.js       # 16 headless server checks from src/ (no build), ~5 s, prints PASS/FAIL
+node tools/accounts-smoke.js     # 17 checks of accounts (register, login, tokens, unique names, the account's look), ~1 s
 node tools/client-smoke.js       # 9 checks running the built page headless (solo), ~40 s
+node tools/start-smoke.js        # 27 checks of the start card + a new account's character editor, against a real server in-process, ~20 s
+python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)
+npm test                         # build --check + all of the above
 node tools/model-preview.js out.png [--head] [--looks '[{...}]']   # character model → PNG (numpy+pillow)
 node dist/wildwood-server.js --port 8080     # real server; open http://localhost:8080 in several tabs
 ```
@@ -151,13 +171,23 @@ height in metres: 1.3 torso, 1.7 head). On Windows `python3` needs `pip install 
 
 Pick the smallest test that covers your change: model/face/hats → `model-preview` only; server rules →
 `server-smoke` (or a few lines with `tools/load.js`: `loadServer(io, ['MONS','genQuest'])` gives you the
-server API plus any internal names); client UI → `build --check` + `client-smoke`. The headless client
-stubs the DOM: element getters return fresh stubs, so read state from game variables, not DOM text.
+server API plus any internal names); client UI → `build --check` + `client-smoke`; the start card, accounts or the character editor →
+`start-smoke`. The headless client (`tools/headless.js`) stubs the DOM: elements are cached per selector and remember their
+listeners and children (`c.el('#stGuest').click()`, `el._kids`, `el._a`), but there is no layout, so read state from game variables
+(`expose` names) rather than DOM text where you can. To check that a test can fail, break the code it covers, run it, restore
+(this is how `start-smoke` was validated).
 
-Publishing the claude.ai playtest artifact (in claude.ai sessions only): copy `dist/wildwood.html` to the
+Publishing the claude.ai playtest artifact (in claude.ai sessions only): copy `dist/wildwood.html` (about 1.2 MB) to the
 outputs folder and publish it to the same link, https://claude.ai/artifact/VCvNoypJ63mXoU3bgztYtY
 (label "Wildwood forest", title "Wildwood — forest simulator", favicon 🌲), with capabilities
-`{room:{topics:{c:"interact",s:"interact"}}}` (needed for Shared mode).
+`{room:{topics:{c:"interact",s:"interact"}}}` (needed for Shared mode). Publish the music as supporting files of the
+same artifact: `files` maps `audio/<name>.<hash>.m4a` to each `dist/audio/` file (contentType `audio/mp4`); the page
+fetches them by that relative path (the Artifact contract allows `fetch()` of files published alongside the page). Names
+hold a content hash, so unchanged tracks keep their URL (cached in the viewer's browser); when a track was re-encoded, publish
+the new file and set the old path to `null`. Not yet checked in the real artifact sandbox: if the music there is the old generated
+kind, the fetch failed. Fallback: `python3 build.py --inline-audio` embeds everything again (13.6 MB, under the 15 MB cap,
+no room to grow). Every music track is downloaded once per client (in-memory bytes + Cache Storage `wildwood-music-v1`, and on the
+Node server immutable HTTP caching), so check `read_network_requests` in the browser pane after a change to `samples.js`.
 
 ## 7. Deploy (Render)
 
@@ -166,6 +196,13 @@ outputs folder and publish it to the same link, https://claude.ai/artifact/VCvNo
 Live at https://wildwood-wib9.onrender.com (service `wildwood`, free plan: sleeps after 15 min idle, ~30-50 s
 to wake). `dist/` is not committed. `GET /status` shows players, monsters, storage kind (`"saves":"postgres"`
 when the database is connected) and the number of saved accounts.
+Traffic: the page is ~350 KB gzipped with an `ETag` (`no-cache` + 304 when unchanged); music is served from `/audio/<name>.<hash>.m4a`
+(`dist/audio/`, whitelist of names read at start, `cache-control: public, max-age=31536000, immutable`), so a returning
+player downloads nothing but a 304, and a new player downloads only the tracks of the places they visit (~1-1.7 MB each).
+`wildwood-server.js` must stay next to its `audio/` folder (or set `AUDIO_DIR`); without it the game plays generated music.
+Game traffic, per client (measured on the server's own snapshots, `broadcastSnap`): about 8 KB/s alone, 11-12 KB/s with 10-40 players
+spread over the woods (before per-player snapshots: 63-79 KB/s, and the total out of the server grew with the square of the players).
+The free plan allows 100 GB a month outbound: 100 players playing 3 hours a day would use about 35 GB.
 
 **Database (exists, in use).** A free **Neon** Postgres (neon.tech, project `wildwood`, branch `production`,
 database `neondb`, free tier: 0.5 GB, no expiry, compute sleeps after 5 min idle and wakes in ~1 s). Render's
@@ -183,18 +220,20 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
 - Without `DATABASE_URL`, saves go to JSON files in `DATA_DIR` (default `./data`), which Render wipes on
   every deploy/restart. Don't use Render's own free Postgres: it is deleted after 30 days.
 
-**Accounts** (`server/accounts.js`, client `game/ui/account.js`, only in "This server" mode):
+**Accounts** (`server/accounts.js`, client `game/ui/start-screen.js` + `account.js`, only in "This server" mode):
 - Guest = progress under the browser's secret account code (every player from before accounts is a guest
   with their old progress). Log in = name + password; the browser then keeps a session token
-  (`wildwood-session`) and logs in with it next time. Guests register in Settings → Account; their progress
-  moves to the account and the guest record becomes `{movedTo}` (can't be replayed as a second copy).
+  (`wildwood-session`) and the start card then offers "Continue as <name>". The start card's **Register** connects as a guest,
+  registers (the guest's progress moves to the account) and opens the character editor in creating mode; guests can also register in
+  Settings → Account. The guest record becomes `{movedTo}` (can't be replayed as a second copy).
+- An account's look is kept in its record and comes back in `welcome` when logging in, so a new device shows the same hiker.
 - Names are unique (case-insensitive): registered names can't be taken or renamed; a guest whose name is
   taken (registered or online) gets a number added. Registered names are loaded at start (`store.users()`).
 - Passwords: scrypt in `AUTH` (`node/main.js`), 6-100 chars; 5 wrong tries lock that account for 1 minute.
 - `GIFT_LEVELS` in `accounts.js`: restores a level on register/login (`hayru: 9`, a friend who lost progress).
 - While logged in, the client does not write its local save (`saveGear`/`saveProgress`), so a guest on
   the same browser can't inherit the account's progress.
-- Test: `node tools/accounts-smoke.js` (in-memory store, 15 checks).
+- Tests: `node tools/accounts-smoke.js` (server, in-memory store), `node tools/start-smoke.js` (the start card and editor on top of it).
 
 ## 8. Pitfalls already hit (don't repeat them)
 
@@ -217,10 +256,21 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
   `package-lock.json`: restore the lockfile (`git checkout package-lock.json`); for a local Postgres test
   install `pg` in a temp folder and run the server with `NODE_PATH` pointing there.
 - The built-in browser pane throttles timers when hidden: the start screen can sit on "Shaping the hills…"
-  until it is visible (take a screenshot) before `#go` enables.
+  until it is visible (take a screenshot every few seconds) before the buttons enable. Frames only run around screenshots, so read
+  per-frame numbers (draw calls, fps) between two screenshots, not after a `setTimeout`.
 - The hidden browser pane pauses frames but a solo/host server keeps simulating (timers): teleporting next to
   monsters and taking screenshots gets you knocked out before a frame renders. Testing tools have "Go to the
-  tunnel" (the button's `data-v` can be `in`, `east`, `hanami` or `x,z`).
+  tunnel" (the button's `data-v` can be `in`, `east`, `hanami` or `x,z` with **integers**: `-4.4,8.8` silently goes to the west portal).
+- A class chip that "did nothing": `equipClass` only sends a message, so it can't work before a connection exists, and the editor
+  did not redraw when the server confirmed the new weapon. The start card no longer offers class or sex before connecting; the editor
+  redraws in `applyGear`. Anything on the start card that needs the server must wait for `NET.ready`.
+- `tools/client-smoke.js` used to count `requestAnimationFrame` calls: the world takes a few thousand frames to stream in, and a stopped
+  loop stops `netTick`, so the server never learns the player moved and every attack misses. `headless.js` runs frames until `stop()`.
+- Windows: `shutil.rmtree` on `dist/audio` fails under OneDrive (build.py deletes the files, not the folder); a `cd dist` in one shell
+  call stays for the next (use absolute paths); backslashes inside a bash heredoc get lost (write the script to a file instead);
+  `git worktree remove` may leave `.git/worktrees/<name>` behind (delete it by hand).
+- Replacing text with `str.replace(old,new,1)` after inserting a helper that contains `old` replaces the helper's copy: this made
+  `addVillageMeshes` call itself. Run `client-smoke` after moving code.
 - The Shared (room) mode is only testable against the mock in `tools/`-style harnesses; the host tab
   must stay visible (browser timers throttle in background tabs).
 
@@ -236,6 +286,10 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
   x-strips culled beyond the fog, and plant chunks more than 320 m away are only grown when you come closer.
 - Vale progress: `gear.east` 0 sealed, 1 tunnel open (anyone rewarded for a Rootwarden kill), 2 walked into Hanami
   (teleport circles work). Vale monsters: 2 kinds per level, 12 of each; gear tiers 4-5 at levels 20 and 25.
+- Measured costs (desktop, village): the client's JS is about 0.2 ms per frame (headless, no GPU); the GPU draws about 750 calls and
+  5.5 M triangles per frame, of which about 3.7 M are instanced trees (chunks are 110 m, fog ends at 230 m; 42% of the triangles are
+  120 m or farther); the world takes about 1.1 s of JS to generate (17% is `noise2`). The server ticks in under 5 ms with 40 players
+  spread over the woods (about 4% of a core).
 - Rarity stat multipliers 1 / 1.3 / 1.7 / 2.2 / 3; 3 identical → next rarity at Greta's forge.
 - Shop: unlimited, +20% of base per copy bought, reset at sunrise (server day wraps).
 - Quests: 4 notices, level −4…+2 weighted to yours; hunts 10-20 (L1) → 30-50 (L15), bounties 1.5×.
@@ -245,7 +299,7 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
   centre 0.72 above the hips, head scale 1.18 (female 1.15), eyes ~15-25% larger than real; short neck.
   Female `chest` 0.5-1.6 (default 1): editor Body tab and a slider in the Settings popover (`#lookSec`,
   `syncLookSettings` in `ui/character-editor.js`); named NPCs set it in `VILLAGERS`, random villagers roll
-  0.7-1.35 in `makeLook`. Default looks have no backpack.
+  0.7-1.35 in `randomLook`. Default looks have no backpack.
 
 ## 10. Ideas not done yet (ask the owner before starting)
 
@@ -253,3 +307,8 @@ Special quests from Bram and other NPCs; group/party system; the XP curve past 1
 each: tune `expToNext` / `xpFor` in `shared/balance.js`); animals in the vale; trading between players; more zones or a
 second boss; server-side anti-cheat for movement; villagers synced between players; mobile UI polish
 seen on a real device.
+
+Performance ideas that would change how the forest looks, so they need the owner's yes (numbers in section 9): draw only a share of
+the trees in far chunks (`InstancedMesh.count` set in `cullChunks` from the distance, with the instances shuffled once; about -25%
+triangles), a low-poly variant of each tree for chunks beyond ~120 m, and rendering the sun's shadow map every few frames (character
+shadows would stutter). Also: events (`ev`) still go to everyone, and could be filtered by distance like monsters are.

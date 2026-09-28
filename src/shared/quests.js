@@ -13,7 +13,6 @@ const QUEST_OFFERS=4, QUEST_MAX_ACTIVE=5, QUEST_MAX_COUNT=120;
 // how many kills a hunt asks for at level L: 10-20 at level 1, growing evenly to 30-50 at level 15
 function huntCount(L){ const f=Math.min(1,(L-1)/14), lo=10+20*f, hi=20+30*f; return Math.round(lo+Math.random()*(hi-lo)); }
 const coinAvg=L=>fLv(L)*2*Math.pow(1.1,Math.max(0,L-5))*highMult(L);
-const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const qpick=a=>a[Math.floor(Math.random()*a.length)];
 function questLevelFor(pl){
   const E=Math.max(1,Math.min(MAX_ZONE_LV,pl)), lo=Math.max(1,E-4), hi=Math.min(MAX_ZONE_LV,E+2), w=[];
@@ -63,4 +62,3 @@ function rewardItemText(it){
   if(it.p>=1) return it.r>0?'an item ('+Math.round(it.r*100)+'% rare)':'an item';
   return Math.round(it.p*100)+'% chance of an item';
 }
-const giverName=()=>'Maren';

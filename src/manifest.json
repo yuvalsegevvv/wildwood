@@ -116,6 +116,7 @@
     "net/remote.js",
     "ui/account.js",
     "ui/chat.js",
+    "ui/start-screen.js",
     "main/loop.js"
   ]
 }

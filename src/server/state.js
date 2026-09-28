@@ -1,8 +1,8 @@
 //@ Server state (S), the per-tick event queue (ev), messaging helpers
 /* The world server is authoritative for monsters, the boss, combat, levels, loot, shops, quests and the clock.
    It never touches the page or three.js, so the same code runs inside a browser tab (solo, or hosting a
-   shared world) and in Node (dist/wildwood-server.js). io = {send(pid,msg), broadcast(msg), dev, snapDt}. */
-const S={t:0,day:0.045,ff:null,players:new Map(),dev:io.dev!==false,snapT:0,snapDt:io.snapDt||0.1,fullT:0,prevDay:0.045,saveT:5};
+   shared world) and in Node (dist/wildwood-server.js). io = {send(pid,msg), dev, snapDt, [broadcast(msg), broadcastSnaps]}. */
+const S={t:0,day:0.045,ff:null,players:new Map(),dev:io.dev!==false,snapT:0,snapDt:io.snapDt||0.1,snapNo:0,fullT:0,prevDay:0.045,saveT:5};
 const DAY_SECONDS=1200;
 let EVQ=[];
 function ev(...a){ EVQ.push(a); }

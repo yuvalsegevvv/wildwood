@@ -1,11 +1,13 @@
-//@ Panel open/close helpers (openPanel, closePanels, uiOpen)
+//@ Panel open/close helpers (openPanel, closePanels, uiOpen, releasePointer)
 /* ----- panels ----- */
 const PANELS=['inv','shop','quests','map','forge','skills'];
 let panelNPC=null;
+// the mouse look is locked while playing; panels, chat and the editor need the pointer back
+function releasePointer(){ if(document.pointerLockElement) try{ document.exitPointerLock(); }catch(_){} }
 function openPanel(id,npc){
   PANELS.forEach(p=>{ if(p!==id) $('#'+p).hidden=true; });
   const el=$('#'+id), was=!el.hidden; el.hidden=false; panelNPC=npc||null;
-  if(document.pointerLockElement) try{ document.exitPointerLock(); }catch(_){}
+  releasePointer();
   if(!was) UI_SFX.open();
 }
 function closePanels(){ let was=false; PANELS.forEach(p=>{ const e=$('#'+p); if(!e.hidden){ e.hidden=true; was=true; } }); panelNPC=null; if(was) UI_SFX.close(); }

@@ -88,5 +88,4 @@ const BOSS_DEFS=[
   {def:BOSS_DEF,arena:'boss',totem:TOTEM_DEF,add:THORN_DEF,short:'The Rootwarden',totems:'Heartwood Totems'},
   {def:AKAONI_DEF,arena:'boss20',totem:LANTERN_DEF,add:IMP_DEF,short:'Akaoni',totems:'Oni Lanterns'},
   {def:KYUUBI_DEF,arena:'boss25',totem:SHRINE_DEF,add:FOXKIT_DEF,short:'Kyuubi',totems:'Foxfire Shrines'}];
-const BOSS_IDS=BOSS_DEFS.map(b=>b.def.id);
 const ALL_MON_DEFS=[...MON_DEFS,...BOSS_DEFS.flatMap(b=>[b.def,b.totem,b.add])];

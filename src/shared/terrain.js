@@ -1,6 +1,6 @@
 //@ Map size (SIZE, HALF, WATER; the whole world WX0..WX1 with the Sakura Vale east), river (riverX), baseHeight, forestDensity, autumnAmt. Pure.
 /* ---------- world shape ---------- */
-const SIZE=880, HALF=SIZE/2, AREA=(SIZE/360)*(SIZE/360), WATER=0;
+const SIZE=880, HALF=SIZE/2, WATER=0;
 /* The home forest is the square -HALF..HALF. East of its border mountains lies the Sakura Vale (EAST_W wide),
    reached through the tunnel in shared/vale.js. The whole world is the rectangle WX0..WX1 x WZ0..WZ1. */
 const EAST_W=550, WX0=-HALF, WX1=HALF+EAST_W, WZ0=-HALF, WZ1=HALF, WW=WX1-WX0, WD=WZ1-WZ0;

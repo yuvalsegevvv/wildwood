@@ -1,4 +1,4 @@
-//@ Node host: serves the game page over HTTP and runs the world server over WebSocket (no npm packages needed)
+//@ Node host: serves the game page (gzip, ETag) and the music files (/audio/, cached for a year) over HTTP and runs the world server over WebSocket (no npm packages needed)
 /* Usage:  node wildwood-server.js [--port 8080] [--host 0.0.0.0] [--no-dev]
    Then open http://localhost:8080 in several tabs or on several devices on your network.
    --no-dev (or the environment variable WILDWOOD_DEV=0) turns off the testing tools (set level, free items, coins).
@@ -68,17 +68,34 @@ function sendRaw(sock,str){ if(!sock.destroyed) sock.write(frame(str)); }
 const world=createWorldServer({
   dev:DEV, snapDt:0.1, store:STORE, auth:AUTH, log,
   kick(pid){ const s=SOCKETS.get(pid); if(s){ SOCKETS.delete(pid); setTimeout(()=>{ try{ s.end(Buffer.from([0x88,0])); }catch(_){} },300); } },
-  send(pid,msg){ const s=SOCKETS.get(pid); if(s) sendRaw(s,JSON.stringify(msg)); },
-  broadcast(msg){ const str=JSON.stringify(msg), f=frame(str); for(const s of SOCKETS.values()) if(!s.destroyed) s.write(f); }
+  send(pid,msg){ const s=SOCKETS.get(pid); if(s) sendRaw(s,JSON.stringify(msg)); }
 });
 let last=Date.now();
 setInterval(()=>{ const now=Date.now(); world.tick((now-last)/1000); last=now; },50);
 const page=PAGE.replace('</head>','<script>window.WILDWOOD_WS=true;</script>\n</head>'), pageGz=zlib.gzipSync(page,{level:9});
+const pageTag='"'+crypto.createHash('sha1').update(page).digest('hex').slice(0,20)+'"';
+/* Music files (dist/audio/, made by build.py; the page fetches them from /audio/ when a theme first plays). Their names hold a hash of
+   their content, so a file never changes under its name: browsers may keep it for a year and never ask again (one download per client).
+   Only names found in the folder at start are served, so no path can leave it. Already compressed audio: no gzip. */
+const AUDIO_DIR=process.env.AUDIO_DIR||path.join(__dirname,'audio'), AUDIO=new Map(), AUDIO_MIME={'.m4a':'audio/mp4','.mp3':'audio/mpeg','.ogg':'audio/ogg','.wav':'audio/wav'};
+try{ for(const f of fs.readdirSync(AUDIO_DIR)){ const file=path.join(AUDIO_DIR,f), st=fs.statSync(file); if(st.isFile()) AUDIO.set(f,{file,size:st.size,type:AUDIO_MIME[path.extname(f).toLowerCase()]||'application/octet-stream'}); } }
+catch(e){ log('no audio folder at '+AUDIO_DIR+': the game plays its generated music'); }
+function serveAudio(req,res){
+  let name; try{ name=decodeURIComponent(req.url.slice(7).split('?')[0]); }catch(_){ name=''; }
+  const a=AUDIO.get(name); if(!a){ res.writeHead(404); res.end('not found'); return; }
+  res.writeHead(200,{'content-type':a.type,'content-length':a.size,'cache-control':'public, max-age=31536000, immutable'});
+  if(req.method==='HEAD'){ res.end(); return; }
+  const rs=fs.createReadStream(a.file); rs.on('error',()=>res.destroy()); rs.pipe(res);
+}
 const server=http.createServer((req,res)=>{
   if(req.url==='/'||req.url.startsWith('/?')||req.url==='/index.html'){
+    // no-cache + ETag: the browser asks every visit but gets a bodiless 304 unless the game was updated
+    // (includes: a proxy may send the tag weakened, W/"...")
+    if((req.headers['if-none-match']||'').includes(pageTag)){ res.writeHead(304,{'etag':pageTag,'cache-control':'no-cache'}); res.end(); return; }
     const gz=/\bgzip\b/.test(req.headers['accept-encoding']||'');
-    res.writeHead(200,Object.assign({'content-type':'text/html; charset=utf-8','cache-control':'no-cache','vary':'accept-encoding'},gz?{'content-encoding':'gzip'}:{}));
+    res.writeHead(200,Object.assign({'content-type':'text/html; charset=utf-8','cache-control':'no-cache','etag':pageTag,'vary':'accept-encoding'},gz?{'content-encoding':'gzip'}:{}));
     res.end(gz?pageGz:page); return; }
+  if(req.url.startsWith('/audio/')&&(req.method==='GET'||req.method==='HEAD')){ serveAudio(req,res); return; }
   if(req.url==='/healthz'){ res.writeHead(200,{'content-type':'text/plain'}); res.end('ok'); return; }
   if(req.url==='/status'){ Promise.resolve(STORE.count()).catch(()=>null).then(n=>{ res.writeHead(200,{'content-type':'application/json'}); res.end(JSON.stringify({players:world.players.size,monsters:world.monsters.length,day:world.state.day,saves:STORE.kind,accounts:n})); }); return; }
   res.writeHead(404); res.end('not found');

@@ -1,7 +1,7 @@
 //@ Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
 /* Messages from the server (see src/server/api.js):
-   welcome{pid,day,dev,players}  mons{list}  you{level,exp,hp,maxHp,dmg,def,red,dead,gear}  tp{x,z,face}
-   snap{day, pl:[[id,x,y,z,face,hp,maxHp,level,dead]], mo:[[id,x,z,face,hp,flags]], b:[[bossId,engaged,phase,immune,enraged,stunned,totems]...], ev:[[kind,...]]} */
+   welcome{pid,day,dev,players[,look]}  mons{list}  you{level,exp,hp,maxHp,dmg,def,red,dead,gear}  tp{x,z,face}
+   snap{day, n, pl:[[id,x,y,z,face,hp,maxHp,level,dead]], mo:[[id,x,z,face,hp,flags]], b:[[bossId,engaged,phase,immune,enraged,stunned,totems]...], ev:[[kind,...]]} */
 function playerName(){ let n=''; try{ n=localStorage.getItem('wildwood-name')||''; }catch(_){} return n; }
 /* Your account code: made once in this browser. A server that keeps saves stores your progress under it,
    and the first time it sees the code it takes over this browser's save (that is how old progress moves over). */
@@ -28,6 +28,7 @@ function netHandle(msg){
 }
 function onWelcome(msg){
   NET.pid=msg.pid; NET.dev=msg.dev; NET.ready=true;
+  adoptLook(msg.look);
   clearMonViews(); clearRemotes(); clearBossVisuals(); CB.projs.forEach(p=>scene.remove(p.mesh)); CB.projs.length=0; CB.target=null;
   (msg.players||[]).forEach(remoteAdd);
   serverDay=msg.day; dayClock=msg.day;
@@ -36,19 +37,19 @@ function onWelcome(msg){
 }
 function applySnap(msg){
   if(msg.day!=null) serverDay=msg.day;
-  if(msg.pl) applyPlayers(msg.pl);
+  if(msg.pl) applyPlayers(msg.pl,msg.n);
   if(msg.mo) msg.mo.forEach(applyMonSnap);
   if(msg.b) applyBossState(msg.b);
   if(msg.w) applyWeather(msg.w);
   if(msg.ev) msg.ev.forEach(applyEvent);
 }
-function applyPlayers(pl){
+function applyPlayers(pl,n){
   for(const a of pl){
     if(a[0]===NET.pid){ PL.hp=a[5]; PL.maxHp=a[6]; if(a[8]&&!PL.dead) playerDown(); continue; }
     remoteSnap(a);
   }
-  NET.players=pl.length;
-  const on=$('#online'); on.hidden=NET.mode==='solo'; on.textContent=pl.length===1?'Only you in this world':pl.length+' players in this world';
+  NET.players=n||pl.length;   // pl holds only the players near you (and everyone once a second): n is the head count
+  const on=$('#online'); on.hidden=NET.mode==='solo'; on.textContent=NET.players===1?'Only you in this world':NET.players+' players in this world';
 }
 function applyEvent(e){
   const me=NET.pid;
@@ -112,7 +113,9 @@ function onLoot(pid,id,monId){
 // your position goes to the server 10 times a second (room: in presence, others: as a message)
 let posT=0, lookT=0, lookDirty=false;
 function netTick(dt){
-  if(!NET.ready||!started) return;
+  if(!NET.ready) return;
+  if(lookDirty){ lookT-=dt; if(lookT<=0){ lookDirty=false; netSend({t:'look',look:LOOK}); } }   // also while creating a hiker, before the game starts
+  if(!started) return;
   posT-=dt;
   if(posT<=0 && !PL.dead){
     posT=0.1;
@@ -120,6 +123,5 @@ function netTick(dt){
     if(NET.mode==='room'&&!NET.host) NET.room.presence({p}).catch(()=>{});
     else netSend({t:'pos',p});
   }
-  if(lookDirty){ lookT-=dt; if(lookT<=0){ lookDirty=false; netSend({t:'look',look:LOOK}); } }
 }
 function netLookChanged(){ lookDirty=true; lookT=0.6; }

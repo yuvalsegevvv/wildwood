@@ -2,7 +2,7 @@
 // Usage: node tools/server-smoke.js
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
-const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); },broadcast(m){ const c=JSON.parse(JSON.stringify(m)); for(const k in inbox) inbox[k].push(c); if(m.ev) evs.push(...m.ev); }},['MONS','getH','W']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['MONS','getH','W']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ for(let i=0;i<n;i++){ W.tick(0.05); if(keepAlive) for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
@@ -25,6 +25,16 @@ W.receive('a',{t:'dev',cmd:'three'}); tick(1); const three=you('a').gear.inv.fin
 W.receive('a',{t:'merge',id:three}); tick(1); ok('forge merges 3 into the next rarity',you('a').gear.inv.includes(three+'-r'),three+' -> '+three+'-r');
 W.receive('a',{t:'dev',cmd:'level',v:15}); W.receive('a',{t:'dev',cmd:'giveAll'}); ['sword4','helmet4','top4','bottom4','shoes4'].forEach(id=>W.receive('a',{t:'equip',id})); tick(1);
 ok('slots open at 3 and 10 with free abilities',p.gear.skills.eq.warrior.skill==='whirlwind'&&p.gear.skills.eq.warrior.burst==='quake');
+// interest management: each player is sent the monsters near them (not everyone's), other players mostly once a second
+inbox.c=[]; W.join('c',{name:'Far',look:{cls:'mage'},save:{level:5}});
+const mA=x.MONS.find(m=>m.def.id==='slime'), mC=x.MONS.filter(m=>!m.boss&&m.x<430).sort((p,q)=>Math.hypot(q.x-mA.x,q.z-mA.z)-Math.hypot(p.x-mA.x,p.z-mA.z))[0], byId=new Map(x.MONS.map(m=>[m.id,m]));   // mC: the farthest monster in the home forest (the vale is closed to a new player)
+W.setPos('a',[mA.x,x.getH(mA.x,mA.z),mA.z,0,0,0]); W.setPos('c',[mC.x,x.getH(mC.x,mC.z),mC.z,0,0,0]); tick(3,true); inbox.a.length=0; inbox.c.length=0; tick(40,true);
+const snapsOf=pid=>inbox[pid].filter(m=>m.t==='snap'), idsOf=pid=>new Set(snapsOf(pid).flatMap(m=>m.mo.map(e=>e[0])));
+const inRange=(pid,px,pz)=>{ const ids=idsOf(pid); return ids.size>0&&[...ids].every(id=>{ const m=byId.get(id); return Math.hypot(m.x-px,m.z-pz)<=(m.boss?190:110)+15; }); };
+ok('a player is sent only the monsters near them',inRange('a',mA.x,mA.z)&&inRange('c',mC.x,mC.z),idsOf('a').size+' and '+idsOf('c').size+' monsters');
+const withC=snapsOf('a').filter(m=>m.pl.some(e=>e[0]==='c')).length;
+ok('a far player is in a few snapshots (once a second) and the head count stays right',withC>0&&withC<snapsOf('a').length/3&&snapsOf('a').every(m=>m.n===2),withC+' of '+snapsOf('a').length+' snapshots');
+W.leave('c'); inbox.c=[];
 // second player, then the boss
 inbox.b=[]; W.join('b',{name:'Two',look:{cls:'mage'},save:{level:15}}); W.receive('b',{t:'dev',cmd:'giveAll'}); ['wand4','helmet4','top4','bottom4','shoes4'].forEach(id=>W.receive('b',{t:'equip',id})); tick(1);
 const boss=W.monsters.find(m=>m.boss); let secs=0;

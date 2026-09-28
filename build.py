@@ -3,10 +3,16 @@
 
     python3 build.py            build
     python3 build.py --check    build, then syntax-check every script with node (if installed)
+    python3 build.py --inline-audio   also embed the music in the page (one ~14 MB file that works offline / from file://)
     python3 build.py --index    print what each source file contains (from its //@ header)
 
-Why one file: the published page may not download anything from other sites, so the 3D engine,
-every script, every stylesheet and every sound file are inlined into the page.
+Why (nearly) one file: the published page may not download anything from other sites, so the 3D engine,
+every script and every stylesheet are inlined into the page. The background music is the exception: it is
+9 MB, and the page has a size cap (16 MB) and is downloaded by every visitor, so music files are NOT in the
+page. They are copied to dist/audio/ under a content-hashed name (music-village.3fa9c1d2.m4a) and the page only
+carries the name -> URL map (window.WILDWOOD_AUDIO_URL). The client fetches a track when its theme first plays and
+keeps it (immutable HTTP caching on the Node server, Cache Storage as a second layer), so each client downloads
+each track once. Publish dist/audio/* next to the page (Node server: served from /audio/, artifact: `files`).
 
 How the sources fit together:
   src/index.html        page shell with {{STYLES}} {{EARLY}} {{AUDIO}} {{GAME}} {{THREE}} {{START}} slots
@@ -17,12 +23,13 @@ How the sources fit together:
   src/boot/early.js     runs first: error screen, WebGL check
   src/boot/start.js     runs last: starts wildwoodMain()
   src/vendor/           three.js r128 (MIT)
-  assets/audio/*        .wav .mp3 .ogg .m4a files, embedded as base64; play with playSample('file-name')
+  assets/audio/music-*  background music: copied to dist/audio/ (hashed names), fetched lazily by the client
+  assets/audio/*        every other .wav .mp3 .ogg .m4a file: small sounds, embedded as base64; playSample('file-name')
 
 The first line of every source file may be a header: //@ ... in JS, /*@ ... */ in CSS.
 Headers document the file and are left out of the built page.
 """
-import re, base64, json, os, shutil, subprocess, sys, tempfile
+import re, base64, hashlib, json, os, shutil, subprocess, sys, tempfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(ROOT, 'src')
@@ -30,7 +37,9 @@ AUDIO = os.path.join(ROOT, 'assets', 'audio')
 OUT = os.path.join(ROOT, 'dist', 'wildwood.html')
 SERVER_OUT = os.path.join(ROOT, 'dist', 'wildwood-server.js')
 AUDIO_TYPES = ('.wav', '.mp3', '.ogg', '.m4a')
-MAX_BYTES = 15 * 1024 * 1024  # the host allows 16 MB per page
+MAX_BYTES = 15 * 1024 * 1024  # the host allows 16 MB per page (a page with embedded music must stay under this)
+MAX_FILE_BYTES = 15 * 1024 * 1024  # ... and 15 MB per published binary file
+AUDIO_OUT = os.path.join(ROOT, 'dist', 'audio')
 
 
 def read(path):
@@ -91,20 +100,40 @@ def header(text):
     return first[3:].rstrip(' */').strip() if first[:3] in ('//@', '/*@') else ''
 
 
-def audio_block():
-    if not os.path.isdir(AUDIO):
-        return ''
-    files = sorted(f for f in os.listdir(AUDIO) if f.lower().endswith(AUDIO_TYPES))
-    if not files:
-        return ''
-    data = {}
+def audio_block(inline):
+    """Small sounds are embedded as base64 (window.WILDWOOD_AUDIO); music-* files are copied to dist/audio/
+    with a content hash in the name (window.WILDWOOD_AUDIO_URL maps each key to that relative URL), so a
+    changed track gets a new URL and an unchanged one can be cached forever. inline=True embeds everything."""
+    if os.path.isdir(AUDIO_OUT):   # drop files of earlier builds (old hashes); the folder stays, OneDrive may hold it open
+        for old in os.listdir(AUDIO_OUT):
+            os.unlink(os.path.join(AUDIO_OUT, old))
+    files = sorted(f for f in os.listdir(AUDIO) if f.lower().endswith(AUDIO_TYPES)) if os.path.isdir(AUDIO) else []
+    embedded, urls, music_bytes = {}, {}, 0
     for f in files:
+        key, ext = os.path.splitext(f)
         with open(os.path.join(AUDIO, f), 'rb') as fh:
-            data[os.path.splitext(f)[0]] = base64.b64encode(fh.read()).decode('ascii')
-    return '<script>\nwindow.WILDWOOD_AUDIO=' + json.dumps(data, separators=(',', ':')) + ';\n</script>\n'
+            raw = fh.read()
+        if inline or not key.startswith('music-'):
+            embedded[key] = base64.b64encode(raw).decode('ascii')
+            continue
+        if len(raw) > MAX_FILE_BYTES:
+            sys.exit('%s is over 15 MB; encode it smaller' % f)
+        name = '%s.%s%s' % (key, hashlib.sha256(raw).hexdigest()[:8], ext.lower())
+        os.makedirs(AUDIO_OUT, exist_ok=True)
+        with open(os.path.join(AUDIO_OUT, name), 'wb') as dst:
+            dst.write(raw)
+        urls[key] = 'audio/' + name
+        music_bytes += len(raw)
+    code = ''
+    if embedded:
+        code += 'window.WILDWOOD_AUDIO=' + json.dumps(embedded, separators=(',', ':')) + ';\n'
+    if urls:
+        code += 'window.WILDWOOD_AUDIO_URL=' + json.dumps(urls, separators=(',', ':')) + ';\n'
+        print('music: %d files, %.1f MB in %s (fetched by the client, not in the page)' % (len(urls), music_bytes / 1048576, os.path.relpath(AUDIO_OUT, ROOT)))
+    return '<script>\n' + code + '</script>\n' if code else ''
 
 
-def build():
+def build(inline_audio=False):
     manifest = json.loads(read(os.path.join(SRC, 'manifest.json')))
     styles = ''.join(strip_header(read(os.path.join(SRC, 'styles', f))) for f in manifest['styles'])
     shared = ''.join(strip_header(read(os.path.join(SRC, 'shared', f))) for f in manifest['shared'])
@@ -113,7 +142,7 @@ def build():
     slots = {
         '{{STYLES}}': styles,
         '{{EARLY}}': read(os.path.join(SRC, 'boot', 'early.js')),
-        '{{AUDIO}}': audio_block(),
+        '{{AUDIO}}': audio_block(inline_audio),
         '{{SERVER}}': server,
         '{{GAME}}': game,
         '{{THREE}}': read(os.path.join(SRC, 'vendor', 'three.r128.min.js')),
@@ -136,7 +165,7 @@ def build():
     size = os.path.getsize(OUT)
     print('built %s (%.0f KB, %d game files, %d stylesheets)' % (os.path.relpath(OUT, ROOT), size / 1024, len(manifest['game']), len(manifest['styles'])))
     if size > MAX_BYTES:
-        sys.exit('page is over 15 MB; shrink or compress the audio files')
+        sys.exit('page is over 15 MB; move sounds out of the page (music-* files are not embedded) or compress them')
     return page
 
 
@@ -180,6 +209,6 @@ if __name__ == '__main__':
     if '--index' in sys.argv:
         index()
     else:
-        page = build()
+        page = build('--inline-audio' in sys.argv)
         if '--check' in sys.argv:
             check(page)

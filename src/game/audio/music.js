@@ -6,7 +6,8 @@
    (every theme plays into its own gain node, so the old one's long pads fade out with it).
    Instruments: pad, bass, pluck (a harp-like triangle), koto, shamisen (sawtooth pluck), flute / shakuhachi (breathy,
    with a bend), bell, and drums (kick, snare, hat, taiko, woodblock), all synthesised with tone() and noiseHit().
-   Recorded themes: a file assets/audio/music-<theme>.m4a (AI-generated tracks) replaces that theme's sequencer. It loops
+   Recorded themes: a file assets/audio/music-<theme>.m4a (AI-generated tracks; fetched when the theme first plays, see samples.js;
+   silent until it has arrived, the sequencer takes over if it can't be loaded) replaces that theme's sequencer. It loops
    with a MUSIC_XF-second crossfade from its end back to its start; MUSIC_FILE_VOL matches it to the synthesised themes.
    At night the village track goes through a lowpass (MUSIC_NIGHT_LP Hz) and plays softer: the darker night version.
    MUSIC_FILE_OF lets several themes share one file (music-wild for all home ranges, music-vale for both vale ranges); moving between themes that share
@@ -137,7 +138,10 @@ function musicTick(){
     if(hasMusicFile(key)){ const lp=c.createBiquadFilter(), v=c.createGain(); lp.type='lowpass'; lp.frequency.value=20000; v.gain.value=MUSIC_FILE_VOL;
       lp.connect(v); v.connect(g); MUSIC.file={key,lp,vol:v,cur:null,next:0}; musicBuffer(key); }
   }
-  if(MUSIC.file){ musicFileTick(now); return; }
+  if(MUSIC.file){
+    if(!musicFailed(MUSIC.file.key)){ musicFileTick(now); return; }
+    MUSIC.file=null; MUSIC.next=now+0.05;   // the track could not be fetched or decoded: this theme's generated music plays instead
+  }
   const T=THEMES[MUSIC.theme]; if(!T) return;
   if(MUSIC.next<now-0.5) MUSIC.next=now+0.05;   // after the tab slept: don't play the missed steps all at once
   while(now+0.3>MUSIC.next){ musicStep(T,MUSIC.next); MUSIC.next+=T.beat; }

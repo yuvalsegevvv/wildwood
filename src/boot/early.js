@@ -1,9 +1,10 @@
 function showFatal(msg, reload){
-  var st=document.getElementById('status'), start=document.getElementById('start'), go=document.getElementById('go');
+  var st=document.getElementById('status'), start=document.getElementById('start'), rl=document.getElementById('stReload');
   if(start){ start.classList.remove('hide'); }
   document.body.classList.remove('playing');
   if(st) st.textContent=msg;
-  if(go){ go.disabled=false; go.textContent=reload?'Reload':'Try again'; go.onclick=function(){ location.reload(); }; }
+  ['stHome','stForm','stMsg'].forEach(function(id){ var e=document.getElementById(id); if(e) e.hidden=true; });
+  if(rl){ rl.hidden=false; rl.textContent=reload?'Reload':'Try again'; rl.onclick=function(){ location.reload(); }; }
 }
 window.addEventListener('error',function(e){ showFatal('Something went wrong: '+(e.message||'unknown error')+'. Tap to reload.', true); });
 window.addEventListener('unhandledrejection',function(e){ showFatal('Something went wrong: '+((e.reason&&e.reason.message)||e.reason)+'. Tap to reload.', true); });

@@ -17,7 +17,7 @@ function openChat(){
   if(!started||customizing||!NET.ready) return;
   CHAT.open=true; chatEl.classList.add('open'); chatIn.hidden=false;
   for(const k in keys) keys[k]=false; joyX=joyY=0;
-  if(document.pointerLockElement) try{ document.exitPointerLock(); }catch(_){}
+  releasePointer();
   setTimeout(()=>chatText.focus(),0);
 }
 function closeChat(){ CHAT.open=false; chatEl.classList.remove('open'); chatIn.hidden=true; chatText.value=''; chatText.blur(); }
@@ -33,7 +33,7 @@ function setMyName(n){
   n=String(n||'').replace(/[\u0000-\u001f\u007f-\u009f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,16);
   if(!n){ toast('That name is empty','bad'); return; }
   NET.name=n; try{ localStorage.setItem('wildwood-name',n); }catch(_){}
-  $('#pname').value=n; $('#setName').value=n;
+  $('#setName').value=n;
   if(NET.ready) netSend({t:'name',name:n}); else toast('Name saved','good');
 }
 // events from the server
@@ -61,7 +61,6 @@ addEventListener('keydown',e=>{
 $('#chatBtn').addEventListener('click',e=>{ e.currentTarget.blur(); CHAT.open?closeChat():openChat(); });
 $('#chatSend').addEventListener('click',sendChat);
 // name in the settings popover
-$('#setName').value=$('#pname').value;
 $('#setNameBtn').addEventListener('click',()=>setMyName($('#setName').value));
 $('#setName').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); setMyName($('#setName').value); } });
 // fade old lines when the chat is closed; your own speech bubble

@@ -15,7 +15,7 @@ function applyGear(g){
   if(!g) return;
   const prevW=GEAR&&GEAR.eq.weapon, prevEq=JSON.stringify(GEAR&&GEAR.eq);
   GEAR=g; saveGear();
-  if(GEAR.eq.weapon!==prevW){ LOOK.cls=clsOf(); saveLookLocal(); attachWeapons(); setActionBar(); }
+  if(GEAR.eq.weapon!==prevW){ LOOK.cls=clsOf(); saveLookLocal(); attachWeapons(); setActionBar(); if(customizing) renderEditor(); }
   if(JSON.stringify(GEAR.eq)!==prevEq) rebuildHiker();
   $('#plCoins').textContent=GEAR.coins;
   renderInv(); if(!$('#shop').hidden) renderShop(); if(!$('#forge').hidden) renderForge(); if(!$('#skills').hidden) renderSkills(); if(!$('#quests').hidden) renderQuests(); renderQlog(); syncStartAll();

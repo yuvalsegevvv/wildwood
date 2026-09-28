@@ -1,4 +1,4 @@
-//@ Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke
+//@ Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)
 /* ---------- the village: buildings and props ---------- */
 const villageMat=new THREE.MeshLambertMaterial({vertexColors:true});
 const windowMat=new THREE.MeshLambertMaterial({vertexColors:true, emissive:0xffb060, emissiveIntensity:0});
@@ -11,13 +11,30 @@ function frameM(x,y,z,rot){ _vq.setFromAxisAngle(_vy,rot); _vp.set(x,y,z); retur
 const vbox=(w,h,d,x,y,z)=>new THREE.BoxGeometry(w,h,d).translate(x||0,y||0,z||0);
 const woodC=base=>(x,y,z,c)=>{ c.set(base).multiplyScalar(0.84+h3(x,y,z)*0.3); };
 function stoneC(x,y,z,c){ c.set(0x807a70).multiplyScalar(0.72+h3(Math.floor(x*3),Math.floor(y*3),Math.floor(z*3))*0.4); }
+// a mesh from a flat list of triangle corners [x,y,z, x,y,z, ...] with smooth normals
+function trisGeo(P){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.computeVertexNormals(); return g; }
+// the merged walls and the (unlit, dark) windows of a village become two meshes
+function addVillageMeshes(out,win){
+  const vm=new THREE.Mesh(merge(out),villageMat); vm.castShadow=true; vm.receiveShadow=true; scene.add(vm);
+  const wm=new THREE.Mesh(merge(win),windowMat); wm.receiveShadow=true; scene.add(wm);
+}
+// the painted header over a quest board. o: bg, line, ink (colours), font (px), w/h (size), y/z (offset from the board), glow (emissive)
+function questSign(B,Y,o){
+  const cv=document.createElement('canvas'); cv.width=512; cv.height=112; const g=cv.getContext('2d');
+  g.fillStyle=o.bg; g.fillRect(0,0,512,112); g.strokeStyle=o.line; g.lineWidth=6; g.strokeRect(8,8,496,96);
+  g.fillStyle=o.ink; g.font='700 '+o.font+'px Fraunces, Georgia, serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('QUEST BOARD',256,60);
+  const tex=new THREE.CanvasTexture(cv); tex.anisotropy=4;
+  const sign=new THREE.Mesh(new THREE.PlaneGeometry(o.w,o.h),new THREE.MeshLambertMaterial({map:tex,emissive:o.glow}));
+  const sp=new THREE.Vector3(0,o.y,o.z).applyAxisAngle(new THREE.Vector3(0,1,0),B.rot);
+  sign.position.set(B.x+sp.x,Y+sp.y,B.z+sp.z); sign.rotation.y=B.rot; scene.add(sign);
+}
 function prism(w,h,d){
   const hw=w/2, hd=d/2, P=[];
   const tri=(a,b,c)=>P.push(...a,...b,...c);
   tri([-hw,0,-hd],[0,h,-hd],[hw,0,-hd]); tri([-hw,0,hd],[hw,0,hd],[0,h,hd]);
   tri([-hw,0,-hd],[-hw,0,hd],[0,h,hd]); tri([-hw,0,-hd],[0,h,hd],[0,h,-hd]);
   tri([hw,0,-hd],[0,h,hd],[hw,0,hd]); tri([hw,0,-hd],[0,h,-hd],[0,h,hd]);
-  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.computeVertexNormals(); return g;
+  return trisGeo(P);
 }
 function buildVillage(){
   const out=[], win=[], Y=VIL.h, smokePts=[];
@@ -130,14 +147,7 @@ function buildVillage(){
     });
     A(vbox(0.7,0.45,0.5,1.45,0.22,0.7),woodC(0x8a6a44));
     for(let k=0;k<4;k++) A(cyl(0.06,0.06,0.42,8).rotateZ(Math.PI/2).translate(1.3+(k%2)*0.2,0.5+Math.floor(k/2)*0.1,0.6+(k%2)*0.12),c=>c.set(0xefe4c8));
-    // the painted header
-    const cv=document.createElement('canvas'); cv.width=512; cv.height=112; const g=cv.getContext('2d');
-    g.fillStyle='#3a2a1c'; g.fillRect(0,0,512,112); g.strokeStyle='#d4a83a'; g.lineWidth=6; g.strokeRect(8,8,496,96);
-    g.fillStyle='#f2cf5a'; g.font='700 64px Fraunces, Georgia, serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('QUEST BOARD',256,60);
-    const tex=new THREE.CanvasTexture(cv); tex.anisotropy=4;
-    const sign=new THREE.Mesh(new THREE.PlaneGeometry(2.3,0.5),new THREE.MeshLambertMaterial({map:tex,emissive:0x2a1a08}));
-    const sp=new THREE.Vector3(0,3.28,0.12).applyAxisAngle(new THREE.Vector3(0,1,0),B.rot);
-    sign.position.set(B.x+sp.x,Y+sp.y,B.z+sp.z); sign.rotation.y=B.rot; scene.add(sign);
+    questSign(B,Y,{bg:'#3a2a1c',line:'#d4a83a',ink:'#f2cf5a',font:64,w:2.3,h:0.5,y:3.28,z:0.12,glow:0x2a1a08});   // the painted header
   }
   // campfire + benches
   { const fp=VIL.fire, {A}=inF(frameM(fp.x,Y,fp.z,0));
@@ -180,8 +190,7 @@ function buildVillage(){
     A(new THREE.BoxGeometry(1.2,hgt,0.7,1,4,1).translate(0,hgt/2,0).rotateZ(AR(-0.08,0.08)),(px,py,pz,c)=>{ stoneC(px,py,pz,c); if(py>hgt*0.75) c.lerp(_tint.set(0x5a6a3a),0.4); if(Math.abs(py-hgt*0.5)<0.12) c.set(0xb07ae0); });
     VIL.circles.push([x,z,0.7]);
   }
-  const vm=new THREE.Mesh(merge(out),villageMat); vm.castShadow=true; vm.receiveShadow=true; scene.add(vm);
-  const wm=new THREE.Mesh(merge(win),windowMat); wm.receiveShadow=true; scene.add(wm);
+  addVillageMeshes(out,win);
   for(const c of VIL.circles) addCol(c[0],c[1],c[2]);
   // chimney smoke
   const per=10, pos=new Float32Array(smokePts.length*per*3), data=[];

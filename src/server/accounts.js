@@ -58,14 +58,16 @@ function loginJoin(pid,hello){
     return typeof hello.pass==='string'&&io.auth.verify(hello.pass,rec.auth.pass);
   }).then(good=>{
     if(!PENDING.has(pid)) return;   // left while loading
-    if(!rec||!rec.auth) return fail('There is no account called '+user+'. Check the name, or play as a guest and register in Settings.');
+    if(!rec||!rec.auth) return fail('There is no account called '+user+'. Check the name, or go back and register.');
     if(!good){ if(hello.token) return fail('Your session has ended. Log in with your password.'); failed(key); return fail('Wrong password.'); }
     FAILS.delete(key); PENDING.delete(pid);
     const old=ACCT.get(key);
     if(old!==undefined&&old!==pid&&S.players.has(old)){ sendTo(old,{t:'kicked',text:'You logged in somewhere else, so this window was disconnected.'}); leave(old); if(io.kick) io.kick(old); }
     const auth=rec.auth; if(!hello.token) token=issueToken(auth);
     sendTo(pid,{t:'auth',user:auth.user,token});
-    const p=join(pid,Object.assign({},hello,{name:auth.user,save:{level:rec.level,exp:rec.exp,gear:rec.gear}}),auth);
+    // the account's own look (kept in its record) replaces the one this browser sent; welcome hands it back to the client
+    const look=rec.look&&typeof rec.look==='object'?rec.look:hello.look;
+    const p=join(pid,Object.assign({},hello,{name:auth.user,look,save:{level:rec.level,exp:rec.exp,gear:rec.gear}}),auth);
     p.acct=key; ACCT.set(key,pid); NAMES.add(key.slice(5));
     if(token) p.saveDirty=true;
     giftP(p);

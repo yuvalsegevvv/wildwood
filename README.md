@@ -12,9 +12,14 @@ headless tests and a model preview are in [tools/](tools/README.md).
 
 | Mode | Who hosts the world server | How |
 |---|---|---|
-| **Solo** | your own browser tab | open the page, pick **Solo** (default) |
-| **Shared** | one player's tab, elected automatically | open the published page in claude.ai with others, pick **Shared** |
-| **This server** | a Node process (`dist/wildwood-server.js`) | `node dist/wildwood-server.js`, open `http://localhost:8080` |
+| **This server** | a Node process (`dist/wildwood-server.js`) | `node dist/wildwood-server.js`, open `http://localhost:8080`: the start card offers **Log in**, **Register** and **Play as guest** |
+| **Solo** | your own browser tab | a page that is not served by the Node server (the claude.ai artifact, a local file) offers **Play solo** |
+| **Shared** | one player's tab, elected automatically | open the published page in claude.ai with others, pick **Play in the shared world** |
+
+**Start card (this server).** *Play as guest* goes straight in; your progress is kept under a secret code in this browser.
+*Register* asks for an account name and a password (twice), creates the account on the server (a guest's progress moves to it),
+and opens the character editor: pick a class and a look, then *Enter the world*. *Log in* takes the name and password; the
+browser then remembers the session and the card shows *Continue as <name>*. An account's look and progress follow it to any device.
 
 Every mode runs the **same authoritative server code**; only the transport differs.
 
@@ -92,7 +97,7 @@ anything from other sites); the Node server embeds the page and serves it.
     src/styles/     CSS, in cascade order.
     src/index.html  page shell with all HUD / panel markup and the slots the build fills.
     src/manifest.json   load order for every group; "@shared" marks where the shared files go in the client.
-    assets/audio/   sound files; embedded by the build, played with playSample().
+    assets/audio/   sound files: music-* are copied to dist/audio/ and fetched when played; small sounds are embedded and played with playSample().
 
 Files in a group are concatenated in manifest order into one function, so they share one scope. The client is
 `wildwoodMain()` = client files + shared files; the server is `createWorldServer(io)` = shared files + server
@@ -168,7 +173,8 @@ Every area has its own song, made with Suno (free plan: non-commercial use only)
 | Kyuubi (level 25 boss) | `music-boss25.m4a` |
 
 Songs loop with a 5 s crossfade; the boss songs play their build-up once and then loop their loud part
-(`MUSIC_LOOP_FROM`). They are embedded in the page (about 9 MB of the 13.5 MB) and decoded only while they play.
+(`MUSIC_LOOP_FROM`). They are not in the page (9 MB): the build copies them to `dist/audio/` under content-hashed names, the client fetches a track the first
+time its theme plays, keeps it (immutable HTTP caching, Cache Storage) so it is downloaded once per client, and decodes it only while it plays.
 A theme without a file falls back to the old generative music. How to add or replace a song, and how to encode it:
 [assets/audio/README.md](assets/audio/README.md). Code: `src/game/audio/music.js`.
 
@@ -176,8 +182,8 @@ A theme without a file falls back to the old generative music. How to add or rep
 
 Press Enter (or the chat button by the log) to talk to everyone in the world; Enter sends, Escape closes. Messages
 appear in the log and as a bubble over the speaker's head for 6 seconds; joins, leaves and renames are logged too.
-The server cleans messages (160 characters, one every 0.7 s per player). Change your name in settings ("Your name"),
-on the start screen, or with `/name New Name` in chat (1-16 characters, shown to everyone).
+The server cleans messages (160 characters, one every 0.7 s per player). A guest changes their name in settings ("Your name") or with
+`/name New Name` in chat (1-16 characters, shown to everyone); a registered account's name is fixed.
 
 ## Skills
 
@@ -224,122 +230,7 @@ Quests are stored in the player's save; the server re-checks them and recomputes
 
 ## File index
 
-```
-styles
-  01-base.css                        Colour tokens, light/dark theme, page, canvas
-  02-hud.css                         Top bar: brand box, icon buttons, hint pill
-  03-touch-controls.css              Joystick and round touch buttons
-  04-start-screen.css                Start card, controls legend, loading bar
-  05-chips.css                       Shared chip buttons and start-card pickers
-  06-character-editor.css            Character editor side panel / bottom sheet
-  07-talk.css                        Talk button, speech bubble, "press E" prompt
-  08-settings.css                    Settings (sound) popover
-  09-combat-hud.css                  Target frame, damage numbers, enemy health bars, action bar
-  10-player-status.css               Player health / XP bars, hurt flash, level-up banner, knocked-out screen
-  11-quests-toasts-boss.css          Coins, testing tools, quest log, toasts, boss bar
-  12-panels.css                      Inventory / shop / quest panels
-  13-motion.css                      Reduced-motion overrides
-  14-multiplayer.css                 Multiplayer: world picker, name field, player name tags, online count
-  15-inventory.css                   Inventory: body slots, bag grid, item tiles and icons, drag and drop, item details
-  16-map.css                         Minimap and world map
-  17-forge.css                       Rarity colours (tiles, rows, toasts), the forge panel, the lucky-drop banner
-  18-skills.css                      Skills panel, the burst button, the skill slot's states
-  19-chat.css                        Chat: log, input, chat button, speech bubbles; the name field in settings
-
-shared
-  math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
-  noise.js                           Seeded RNG (rand, R, pick), simplex noise2, fbm, clamp, lerp, smoothstep, h3 hash. Pure.
-  terrain.js                         Map size (SIZE, HALF, WATER), river (riverX), baseHeight, forestDensity, autumnAmt. Pure.
-  village-layout.js                  Village placement and layout (VIL): houses, stalls, anchors, paths, colliders. Pure.
-  zones.js                           Monster zones (ZONES, zoneAt, zonePoint), dividing ridges (zoneRidge), boss arena (ARENA). Pure.
-  village-helpers.js                 vDist, nearPath, pathAmt, plazaAmt, inBox, pushOutBoxes. Pure.
-  terrain-height.js                  rawHeight: base terrain + zone ridges + village and arena flattening. Pure.
-  balance.js                         Level formulas: fLv, gear tiers, expected gear, XP curve, coins. Pure.
-  monster-defs.js                    Monster families (FAM), the 15 monsters (MON_DEFS), prepDef, boss / totem / thornling defs. Pure.
-  classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills (SKILLS, abilityOf). Pure.
-  items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 4 level tiers x 5 rarities, prices, drop tables, merging, armour looks, gear helpers. Pure.
-  quests.js                          Quest board: endless random quests (hunt, bounty, scout, boss) scaled to your level, and their rewards. Pure.
-
-server
-  state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
-  world.js                           Server heightmap (coarser than the client's): SEG, HS, getH, grad
-  players.js                         Players on the server: records, stats, XP and levels, damage taken, knock-out and respawn, private state ("you")
-  monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
-  combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits), kills, shared rewards, loot
-  boss.js                            The Rootwarden on the server: engagement, cleave / root / slam telegraphs, shield + totems, enrage + adds, reset
-  economy.js                         Economy on the server: equip, shops (buy / sell), loot, quests (accept, progress, hand in), testing commands
-  weather.js                         Weather on the server: rain for 5-7 minutes every 40-60 minutes, 30% of the time a thunderstorm
-  api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, snapshots)
-
-node
-  main.js                            Node host: serves the game page over HTTP and runs the world server over WebSocket (no npm packages needed)
-
-game
-  core/setup.js                      Page helpers ($), device flags (isTouch, LOW, LITE, Q), TAU/DEG
-  @shared                            (the shared files above are inserted here)
-  world/heightmap.js                 Client heightmap: SEG (by device), HS, getH, grad. The server keeps its own coarser copy.
-  world/terrain-color.js             Terrain colours (COL, terrainColor)
-  ui/controls-legend.js              Fills the controls list on the start card
-  engine/renderer.js                 WebGL renderer, scene, camera, lights, sun shadow, timeU
-  engine/sky.js                      Sky dome shader (gradient, sun/moon, stars, clouds)
-  engine/materials.js                Plant materials with wind sway (plantMat) and shared materials
-  world/plant-models.js              Geometry helpers (paint, merge, mkGeo, cyl, blob) and plant models (trees, grass, ferns...)
-  world/instancing.js                Chunked instanced meshes, distance culling, tree collision grid (addCol, nearCols)
-  player/state.js                    Player state P and spawn point
-  world/generation-setup.js          Palettes, shared geometries (buildGeometries), terrain + water + village build (genTerrain)
-  world/generation-chunks.js         Per-chunk vegetation placement (genChunk)
-  world/streaming.js                 Streaming scheduler (Stream, streamPump): terrain first, nearest chunks next
-  character/model.js                 Look presets, save/load, buildCharacter (all outfits and armour looks), hiker, rebuildHiker
-  character/pose.js                  poseRig (walk, run, sit, talk, attacks) and animateHiker
-  world/motes.js                     Floating pollen by day, fireflies by night
-  wildlife/animals.js                Deer, foxes, rabbits, ducks, birds/bats, butterflies
-  world/time-of-day.js               20-minute day/night cycle, sky keyframes, clock, zone label
-  player/input.js                    Keyboard, mouse look, touch joystick, HUD buttons
-  ui/character-editor.js             Character editor panel and camera
-  village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke
-  village/villagers.js               VILLAGERS (hard-coded NPCs), random villagers, NPC behaviour (updateNPCs)
-  village/talking.js                 Talking to villagers: bubble, prompt, E key, opening shop/quest panels
-  village/npc-labels.js              Name and profession labels above the special villagers, with ! / ? quest markers over quest givers
-  audio/engine.js                    Web Audio setup (SND, buses, reverb, echo, noise), tone(), noiseHit(), spatial()
-  audio/samples.js                   Sound files from assets/audio (embedded by build.py as window.WILDWOOD_AUDIO): loadSamples, playSample, musicBuffer (lazy)
-  audio/ui-sounds.js                 Interface / game sounds (UI_SFX) and hover/click hooks
-  audio/music.js                     Background music: one theme per place, crossfaded; recorded tracks (music-*) or generative
-  audio/ambience.js                  Footsteps, birds, crickets, owls, frogs, ducks, crackle, hooves
-  audio/rain.js                      Rain sound (rainSoundTick): a soft low wash, a slowly swelling patter, scattered droplets, a storm rumble
-  audio/voices.js                    Villager voices: text-to-speech voice picking and babble
-  audio/driver.js                    Per-frame sound driver (soundTick): beds, random events, NPC steps
-  ui/settings-sound.js               Sound part of the settings popover
-  combat/monsters.js                 Monster families and 15 monsters (MON_DEFS), models, camps, AI, animation
-  player/progression.js              Your health, level and XP as told by the server, the save kept in this browser, hurt / level-up / knocked-out effects
-  combat/classes.js                  Classes and their abilities (CLASSES), combat state (CB), effect materials
-  combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
-  combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
-  combat/lucky.js                    Lucky drops and forging: light beam, sparkles, banner and a bright jingle for epic, unique and legendary items
-  combat/sounds.js                   Combat sounds (cSfx) and monster voices (monSound)
-  ui/combat-hud.js                   Target frame, player bars, damage numbers, action bar, attack input
-  economy/items.js                   Your gear as told by the server (GEAR), saved in this browser; equip / unequip requests
-  ui/toasts.js                       Toast messages
-  ui/item-icons.js                   Item icons: an SVG for every piece of equipment, coloured like the item looks on your character
-  ui/panels.js                       Panel open/close helpers (openPanel, closePanels, uiOpen)
-  economy/inventory.js               Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
-  economy/shops.js                   Weapon and armour shops
-  economy/forge.js                   Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
-  economy/skills.js                  Skills panel: each class's loadout in three slots (basic, skill, burst) and Aldric's lessons (learn, equip, take off)
-  economy/quests.js                  The quest board panel (Maren) and the quest log: notices, quests in progress, hand-ins (all generated by the server)
-  ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, all items, coins, reset
-  economy/init.js                    Inventory key and first-time gear setup
-  combat/boss.js                     The Rootwarden, client side: telegraph visuals, root spikes, slam waves, shield bubble, roars, boss bar
-  combat/skill-fx.js                 Visuals and sounds for the equippable skills: Arrow Rain, Meteor, Chain Lightning, Piercing Shot, Shield Bash, Charge
-  world/weather.js                   Weather on the client: rain streaks around the camera, a darker foggy sky, rain sound, lightning and thunder
-  player/movement.js                 Player movement, collisions, camera
-  ui/map.js                          World map: a map image painted from the terrain, the corner minimap, and the full map (N) with zones, quests and players
-  net/transport.js                   Connections to the world server: solo (server in this tab), shared room (one player's tab hosts), WebSocket (node server)
-  net/client.js                      Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
-  net/remote.js                      Other players: avatars built from their look and gear, smoothed movement, attack animations, name tags
-  ui/account.js                      Account code in settings: show / copy it, or continue with a code from another device
-  ui/chat.js                         Chat between players: the chat log, the input (Enter / chat button), speech bubbles, /name, joins and leaves
-  main/loop.js                       Main loop (frame), loading progress, start button, boot
-```
+Every source file with a one-line description: [docs/FILES.md](docs/FILES.md) (made by `python3 build.py --index`).
 
 ## Saved data (localStorage, per browser)
 
