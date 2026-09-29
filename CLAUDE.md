@@ -23,7 +23,7 @@ accounts (guest or name + password; the start card offers Log in, Register, Play
 2. Section 4 below maps common tasks to files.
 3. `grep -n "name" -r src/` to find a function; then open only a line range.
 4. Every file starts with `//@ one-line description`. Keep that line accurate when you edit.
-5. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules); the main quest plan: `docs/MAIN-QUEST.md`; what is **not built yet**, with comments on each gap (professions' uses, potions, the levels 26-50 story, regional weather, the four songs...): `docs/NOT-BUILT.md`.
+5. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules); the main quest plan: `docs/MAIN-QUEST.md`; what is **not built yet**, with comments on each gap (professions' uses, potions, the levels 26-50 story, regional weather, the tracks' licences...): `docs/NOT-BUILT.md`.
 
 ## 2. Architecture in one screen
 
@@ -141,7 +141,7 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
   character/object; colours are vertex colours painted with `pc(geo, fn)` / `paint`.
 - The published page is one self-contained HTML file: no external requests (CSP), no remote images,
   no inline `onclick` (bind in script). Only Google Fonts load. The one exception is the background music
-  (`assets/audio/music-*`, 9 MB): it is not in the page (the artifact caps a page at 16 MB and every visitor downloads it),
+  (`assets/audio/music-*`, 14 MB): it is not in the page (the artifact caps a page at 16 MB and every visitor downloads it),
   the build copies it to `dist/audio/<name>.<hash>.m4a` and the client fetches a track when its theme first plays
   (same-origin, relative URL). Keep new big sounds out of the page the same way; only small sounds are embedded.
 - The server never trusts client numbers it can recompute: sanitize saves (`sanitizeGear`,
@@ -352,7 +352,7 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
 
 ## 10. Ideas not done yet (ask the owner before starting)
 
-(Each gap is commented in `docs/NOT-BUILT.md`.) Professions' next steps (crafting, potions as a fourth profession, resource nodes in every land, selling and tools: `docs/MAIN-QUEST.md` section 5b); levels 26-50 (acts IV-VII, planned step by step in `docs/MAIN-QUEST.md` section 7); regional weather on the server; the Hoarfrost's west glacier valley to the Greyspine; a real music track for Rimehold and the Hoarfrost ranges (generated ones play until then).
+(Each gap is commented in `docs/NOT-BUILT.md`.) Professions' next steps (crafting, potions as a fourth profession, resource nodes in every land, selling and tools: `docs/MAIN-QUEST.md` section 5b); levels 26-50 (acts IV-VII, planned step by step in `docs/MAIN-QUEST.md` section 7); regional weather on the server; the Hoarfrost's west glacier valley to the Greyspine; the licences of the free-plan music tracks (Suno and Google Flow Music: non-commercial) before the game earns money.
 The owner will define the real passive skills (the eight in `PASSIVES` are a placeholder set); monsters' elements do not change the damage they deal to you
 yet (a `hurtP` hook, same functions as `foeMult`); Special quests from Bram and other NPCs; group/party system; the XP curve past 15 (levels 16-25 need 400-2100 kills
 each: tune `expToNext` / `xpFor` in `shared/balance.js`); animals in the vale; trading between players; more zones or a

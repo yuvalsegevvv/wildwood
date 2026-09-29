@@ -61,11 +61,10 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
 - **Performance was not measured on a phone.** The heightmap grew from 716 x 441 to 716 x 741 cells and the terrain is drawn in tiles culled in both directions; the desktop cost
   of world generation went from about 1.1 s to about 1.8 s of JS, a phone will pay more. The far-lands placeholder north of the Reach is unchanged and has no LOD.
 
-## 4. Music (four songs)
+## 4. Music (done)
 
-The Reach has generated fallback music only. Four songs are still to make, with briefs and file names, in `assets/audio/README.md` ("Songs still to make"):
-`music-rimehold`, `music-hoar` (shared by both level ranges), `music-boss26` (Ymrik) and `music-boss30` (Vetrmaw). After the boss songs exist their loop points go into
-`MUSIC_LOOP_FROM`.
+The four Hoarfrost songs exist (`music-rimehold`, `music-hoar`, `music-boss26`, `music-boss30`, made with Google's Flow Music; see `assets/audio/README.md`). What is left: the licence
+of the free-plan tracks (all eleven) if the game ever earns money, and, if wanted, the darker night mix for Rimehold and Hanami (today only the home village has it).
 
 ## 5. Systems the next lands need (not started)
 

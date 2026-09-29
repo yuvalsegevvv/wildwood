@@ -14,8 +14,8 @@
    a file keeps the track playing instead of restarting it. MUSIC_LOOP_FROM (seconds): later passes of a file restart
    there instead of at 0, so a track with a quiet build-up (the bosses) plays it once, then loops its loud part. */
 const MUSIC_XF=5, MUSIC_FILE_VOL=0.35, MUSIC_NIGHT_LP=1500;
-const MUSIC_FILE_OF={wild1:'wild',wild2:'wild',wild3:'wild',vale1:'vale',vale2:'vale',hoar1:'hoar',hoar2:'hoar'};   // (the four songs still to make: music-rimehold, music-hoar, music-boss26, music-boss30, assets/audio/README.md)
-const MUSIC_LOOP_FROM={boss15:65.8,boss20:63.5,boss25:48.85};   // points that sound most like each track's ending
+const MUSIC_FILE_OF={wild1:'wild',wild2:'wild',wild3:'wild',vale1:'vale',vale2:'vale',hoar1:'hoar',hoar2:'hoar'};
+const MUSIC_LOOP_FROM={boss15:65.8,boss20:63.5,boss25:48.85,boss26:44.5,boss30:79.0};   // points that sound most like each track's ending
 const musicFileKey=th=>th&&MUSIC_FILE_OF[th]||th;
 const mtof=m=>440*Math.pow(2,(m-69)/12);
 const MUSIC={theme:null,want:null,wantT:0,node:null,step:0,next:0};

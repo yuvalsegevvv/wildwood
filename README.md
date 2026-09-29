@@ -160,7 +160,7 @@ a slowly swelling patter and scattered droplets; volumes in `RAIN_SND`) in `src/
 
 ## Music
 
-Every area has its own song, made with Suno (free plan: non-commercial use only) and crossfaded as you move:
+Every area has its own song, made with Suno and Google's Flow Music (free plans: non-commercial use only) and crossfaded as you move:
 
 | Where | File (`assets/audio/`) |
 |---|---|
@@ -171,15 +171,15 @@ Every area has its own song, made with Suno (free plan: non-commercial use only)
 | Sakura Vale, levels 16-25 | `music-vale.m4a` |
 | Akaoni (level 20 boss) | `music-boss20.m4a` |
 | Kyuubi (level 25 boss) | `music-boss25.m4a` |
-| Rimehold *(song still to make)* | `music-rimehold.m4a` |
-| Hoarfrost Reach, levels 22-30 *(still to make)* | `music-hoar.m4a` |
-| Ymrik (level 26 boss) *(still to make)* | `music-boss26.m4a` |
-| Vetrmaw (level 30 boss) *(still to make)* | `music-boss30.m4a` |
+| Rimehold | `music-rimehold.m4a` |
+| Hoarfrost Reach, levels 22-30 | `music-hoar.m4a` |
+| Ymrik (level 26 boss) | `music-boss26.m4a` |
+| Vetrmaw (level 30 boss) | `music-boss30.m4a` |
 
 Songs loop with a 5 s crossfade; the boss songs play their build-up once and then loop their loud part
-(`MUSIC_LOOP_FROM`). They are not in the page (9 MB): the build copies them to `dist/audio/` under content-hashed names, the client fetches a track the first
+(`MUSIC_LOOP_FROM`). They are not in the page (about 14 MB): the build copies them to `dist/audio/` under content-hashed names, the client fetches a track the first
 time its theme plays, keeps it (immutable HTTP caching, Cache Storage) so it is downloaded once per client, and decodes it only while it plays.
-A theme without a file falls back to the old generative music (the four Hoarfrost songs above do not exist yet: the briefs for them are in [assets/audio/README.md](assets/audio/README.md)). How to add or replace a song, and how to encode it:
+A theme without a file falls back to the old generative music. How to add or replace a song, and how to encode it:
 [assets/audio/README.md](assets/audio/README.md). Code: `src/game/audio/music.js`.
 
 ## Chat and names
