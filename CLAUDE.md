@@ -23,6 +23,7 @@ accounts (guest or name + password; the start card offers Log in, Register, Play
 2. Section 4 below maps common tasks to files.
 3. `grep -n "name" -r src/` to find a function; then open only a line range.
 4. Every file starts with `//@ one-line description`. Keep that line accurate when you edit.
+5. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules).
 
 ## 2. Architecture in one screen
 
