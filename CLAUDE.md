@@ -318,8 +318,8 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
 - Day 20 min; rain 5-7 min every 40-60 min, 30% storms.
 - Character proportions (style between realistic and anime): about 7.2 heads tall; hips at 0.92 m, head
   centre 0.72 above the hips, head scale 1.18 (female 1.15), eyes ~15-25% larger than real; short neck.
-  Female `chest` 0.5-1.6 (default 1): editor Body tab and a slider in the Settings popover (`#lookSec`,
-  `syncLookSettings` in `ui/character-editor.js`); named NPCs set it in `VILLAGERS`, random villagers roll
+  Female `chest` 0.5-1.6 (default 1): a slider on the character editor's Body tab (`EDIT` in `ui/character-editor.js`,
+  `fem:true`; it is not in Settings); named NPCs set it in `VILLAGERS`, random villagers roll
   0.7-1.35 in `randomLook`. Default looks have no backpack.
 
 ## 10. Ideas not done yet (ask the owner before starting)
