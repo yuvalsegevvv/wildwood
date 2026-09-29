@@ -34,9 +34,15 @@ function bootClient(o){
   o=o||{};
   global.THREE=require('three');
   const els={}, ls=o.ls||new Map(); let alive=true, tick=null, seq=0; const socks=new Map();
+  const winH={};   // listeners the game put on window: {f, cap}; fireWin() calls them like the browser would (capture first, stop*Propagation honoured)
+  const fireWin=(type,ev)=>{ let stop=false, stopAll=false;
+    const e=Object.assign({code:'',key:'',repeat:false,target:{tagName:'BODY'},preventDefault(){ e.prevented=true; },stopPropagation(){ stop=true; },stopImmediatePropagation(){ stop=stopAll=true; }},ev), L=winH[type]||[];
+    for(const h of L.filter(h=>h.cap)){ h.f(e); if(stopAll) return e; }
+    if(!stop) for(const h of L.filter(h=>!h.cap)){ h.f(e); if(stopAll) break; }
+    return e; };
   const acc=o.accounts||memoryAccounts();
   Object.defineProperty(global,'navigator',{value:{maxTouchPoints:0},configurable:true,writable:true});
-  Object.assign(global,{window:global,innerWidth:800,innerHeight:600,devicePixelRatio:1,addEventListener(){},
+  Object.assign(global,{window:global,innerWidth:800,innerHeight:600,devicePixelRatio:1,addEventListener(t,f,opt){ (winH[t]=winH[t]||[]).push({f,cap:opt===true||!!(opt&&opt.capture)}); },
     location:{protocol:'http:',host:'test.local',reload(){}},
     localStorage:{getItem:k=>ls.has(k)?ls.get(k):null,setItem:(k,v)=>{ ls.set(k,String(v)); },removeItem:k=>{ ls.delete(k); }},
     document:{addEventListener(){},hidden:false,querySelectorAll:()=>[],getElementById:s=>els['#'+s]||(els['#'+s]=makeEl()),querySelector:s=>els[s]||(els[s]=makeEl()),
@@ -66,7 +72,7 @@ function bootClient(o){
       kick(pid){ const s=socks.get(pid); if(s) s.close(); }});
     tick=setInterval(()=>{ const n=Date.now(); global.__srv.tick((n-last)/1000); last=n; },50);
   }
-  return {G:()=>global.__G(),el:s=>document.querySelector(s),els,ls,accounts:acc,server:()=>global.__srv,
+  return {G:()=>global.__G(),el:s=>document.querySelector(s),els,ls,accounts:acc,server:()=>global.__srv,fireWin,
     stop(){ alive=false; if(tick) clearInterval(tick); for(const s of [...socks.values()]) { s.onclose=null; s.close(); } }};
 }
 module.exports={bootClient,makeEl,memoryAccounts};

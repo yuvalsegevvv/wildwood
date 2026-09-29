@@ -57,6 +57,7 @@
     "@shared",
     "world/heightmap.js",
     "world/terrain-color.js",
+    "player/keybinds.js",
     "ui/controls-legend.js",
     "engine/renderer.js",
     "engine/sky.js",

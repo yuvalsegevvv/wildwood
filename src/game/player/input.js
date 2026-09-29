@@ -1,20 +1,38 @@
-//@ Keyboard, mouse look, touch joystick, HUD buttons
+//@ Keyboard, hold Alt to free the mouse, mouse look, touch joystick, HUD buttons
 /* ---------- input ---------- */
 const keys={};
 let joyX=0, joyY=0, jumpReq=false, thirdPerson=true, started=false, dragging=false;
 function look(dx,dy,s){ if(customizing){ P.face-=dx*0.01; return; } P.yaw-=dx*s; P.pitch=clamp(P.pitch-dy*s,-1.35,1.35); }
 function toggleView(){ thirdPerson=!thirdPerson; hiker.g.visible=thirdPerson||customizing; }
+// Hold Alt to get the mouse pointer back and click the HUD, panels and settings without opening a panel or pressing Esc;
+// let go and the mouse look locks again (the browser only allows that shortly after a key press, about 5 s: after a longer
+// hold the next click on the world locks it, as always). Alt+Tab and the like end the hold without a lock.
+let altHeld=false, altRelock=false;
+const isAlt=e=>e.code==='AltLeft'||e.code==='AltRight';
+function altDown(){
+  if(altHeld||!started||customizing) return;
+  altHeld=true; altRelock=document.pointerLockElement===canvas; dragging=false;
+  releasePointer();
+}
+function altUp(){
+  if(!altHeld) return; altHeld=false;
+  if(altRelock && !uiOpen() && !CHAT.open && sndEl.hidden && canvas.requestPointerLock){
+    try{ const r=canvas.requestPointerLock(); if(r && r.catch) r.catch(()=>{}); }catch(_){}
+  }
+  altRelock=false;
+}
 addEventListener('keydown',e=>{
   keys[e.code]=true;
+  if(isAlt(e)){ e.preventDefault(); if(!e.repeat) altDown(); return; }   // preventDefault: a lone Alt would focus the browser's menu bar
   if(!started) return;
-  if(e.code==='Space'){ jumpReq=true; e.preventDefault(); }
-  if(e.code==='KeyT') cycleTime();
-  if(e.code==='KeyV') toggleView();
+  if(kbIs(e.code,'jump')){ jumpReq=true; e.preventDefault(); }
+  if(kbIs(e.code,'time')) cycleTime();
+  if(kbIs(e.code,'view')) toggleView();
 });
-addEventListener('keyup',e=>{ keys[e.code]=false; });
-addEventListener('blur',()=>{ for(const k in keys) keys[k]=false; });
+addEventListener('keyup',e=>{ keys[e.code]=false; if(isAlt(e)){ e.preventDefault(); altUp(); } });
+addEventListener('blur',()=>{ for(const k in keys) keys[k]=false; altHeld=false; altRelock=false; });
 canvas.addEventListener('mousedown',()=>{
-  if(!started && !customizing) return; dragging=true; if(customizing) return;
+  if(altHeld || (!started && !customizing)) return; dragging=true; if(customizing) return;
   if(!isTouch && document.pointerLockElement!==canvas && canvas.requestPointerLock){
     try{ const r=canvas.requestPointerLock(); if(r && r.catch) r.catch(()=>{}); }catch(_){}
   }

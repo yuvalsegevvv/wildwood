@@ -2,11 +2,11 @@
 /* ---------- simulation ---------- */
 function updatePlayer(dt){
   let f=0,s=0;
-  if(keys.KeyW||keys.ArrowUp) f+=1; if(keys.KeyS||keys.ArrowDown) f-=1;
-  if(keys.KeyD||keys.ArrowRight) s+=1; if(keys.KeyA||keys.ArrowLeft) s-=1;
+  if(kbHeld('fwd')) f+=1; if(kbHeld('back')) f-=1;
+  if(kbHeld('right')) s+=1; if(kbHeld('left')) s-=1;
   f+=-joyY; s+=joyX;
   const len=Math.hypot(f,s); if(len>1){ f/=len; s/=len; }
-  const run=keys.ShiftLeft||keys.ShiftRight||Math.hypot(joyX,joyY)>0.92;
+  const run=kbHeld('run')||Math.hypot(joyX,joyY)>0.92;
   const inWater=getH(P.x,P.z)<WATER-0.35;
   let speed=run?9.5:4.2; if(inWater) speed*=0.5;
   if(CB.act && (CB.act.kind==='slash'||CB.act.kind==='nova'||CB.act.kind==='shoot'||CB.act.kind==='volley')) speed*=0.45;

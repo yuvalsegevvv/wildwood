@@ -15,5 +15,5 @@ function toggleMute(){ SND.muted=!SND.muted; if(SND.muted) stopSpeech(); applyVo
 $('#sMute').addEventListener('click',toggleMute);
 $('#bSound').addEventListener('click',e=>{ audioInit(); e.currentTarget.blur(); sndEl.hidden=!sndEl.hidden; if(!sndEl.hidden){ renderSound(); UI_SFX.open(); } else UI_SFX.close(); });
 $('#sClose').addEventListener('click',()=>{ sndEl.hidden=true; UI_SFX.close(); });
-addEventListener('keydown',e=>{ if(e.code==='KeyM' && started) toggleMute(); if(e.code==='Escape') sndEl.hidden=true; });
+addEventListener('keydown',e=>{ if(kbIs(e.code,'mute') && started) toggleMute(); if(e.code==='Escape') sndEl.hidden=true; });
 renderSound();

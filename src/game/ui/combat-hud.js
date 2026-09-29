@@ -110,22 +110,22 @@ function setActionBar(){
     el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+slotLv(slot):(slot==='burst'?'Burst':'Skill');
     el.classList.toggle('empty',!a); const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
     el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Burst':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };
-  fill(abBasic,'basic','F'); fill(abSkill,'skill','Q'); fill(abBurst,'burst','R');
+  fill(abBasic,'basic',kbName('basic')); fill(abSkill,'skill',kbName('skill')); fill(abBurst,'burst',kbName('burst'));
 }
 const press=(el,fn)=>{ el.addEventListener('touchstart',e=>{ e.preventDefault(); fn(); },{passive:false}); el.addEventListener('click',fn); };
 press(abBasic,()=>doAttack('basic')); press(abSkill,()=>doAttack('skill')); press(abBurst,burstSlot);
 addEventListener('keydown',e=>{
   if(!started||uiOpen()) return;
-  if(e.code==='KeyF'||e.code==='Digit1') doAttack('basic');
-  if(e.code==='KeyQ'||e.code==='Digit2') doAttack('skill');
-  if(e.code==='KeyR'||e.code==='Digit3') burstSlot();
-  if(e.code==='KeyK' && !e.repeat) toggleSkills();
-  if(e.code==='Tab'){ e.preventDefault(); cycleTarget(); }
+  if(kbIs(e.code,'basic')) doAttack('basic');
+  if(kbIs(e.code,'skill')) doAttack('skill');
+  if(kbIs(e.code,'burst')) burstSlot();
+  if(kbIs(e.code,'skills') && !e.repeat) toggleSkills();
+  if(kbIs(e.code,'target')){ e.preventDefault(); cycleTarget(); }
 });
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 let mDown=null;
 canvas.addEventListener('mousedown',e=>{
-  if(!started||customizing) return;
+  if(!started||customizing||altHeld) return;   // Alt held: the mouse is free for the menus, a click on the world does nothing
   const locked=document.pointerLockElement===canvas;
   mDown={x:e.clientX,y:e.clientY,t:performance.now(),locked};
   if(!locked){ if(canvas.dataset.lockTried) canvas.dataset.lockFailed='1'; canvas.dataset.lockTried='1'; }

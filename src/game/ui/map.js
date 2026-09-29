@@ -146,7 +146,7 @@ function toggleMap(){
 }
 $('#bMap').addEventListener('click',e=>{ e.currentTarget.blur(); toggleMap(); });
 $('#minimap').addEventListener('click',e=>{ e.currentTarget.blur(); toggleMap(); });
-addEventListener('keydown',e=>{ if(e.code==='KeyN' && started && !customizing && !e.repeat) toggleMap(); });
+addEventListener('keydown',e=>{ if(kbIs(e.code,'map') && started && !customizing && !e.repeat) toggleMap(); });
 addEventListener('resize',()=>{ if(!$('#map').hidden){ sizeFullMap(); drawFullMap(); } });
 { const sz=Math.round((isTouch?104:150)*DPR); mmC.width=mmC.height=sz; }
 function updateMap(dt){

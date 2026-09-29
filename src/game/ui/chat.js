@@ -1,5 +1,5 @@
 //@ Chat between players: the chat log, the input (Enter / chat button), speech bubbles, /name, joins and leaves
-/* Press Enter (or the chat button) to type, Enter to send, Escape to close. Messages go to everyone in the
+/* Press Enter (the chat key, rebindable) or the chat button to type, Enter to send, Escape to close. Messages go to everyone in the
    world through the server; they appear in the log and as a bubble over the speaker's head for a few seconds.
    "/name New Name" changes your name. While you type, the game ignores the keyboard. */
 const CHAT={lines:[],open:false,bubbles:new Map()};
@@ -56,7 +56,7 @@ addEventListener('keydown',e=>{
     return;
   }
   if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')){ e.stopPropagation(); return; }
-  if(e.key==='Enter'&&started&&!customizing&&!uiOpen()&&!CHAT.open){ e.preventDefault(); e.stopPropagation(); openChat(); }
+  if(kbIs(e.code,'chat')&&started&&!customizing&&!uiOpen()&&!CHAT.open){ e.preventDefault(); e.stopPropagation(); openChat(); }
 },true);
 $('#chatBtn').addEventListener('click',e=>{ e.currentTarget.blur(); CHAT.open?closeChat():openChat(); });
 $('#chatSend').addEventListener('click',sendChat);

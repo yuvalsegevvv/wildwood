@@ -1,4 +1,4 @@
-/*@ Top bar: brand box, icon buttons, hint pill */
+/*@ Top bar: brand box, icon buttons, hint pill, the AI disclosure note (bottom left) */
 .hud-top{
   position:fixed; top:0; left:0; right:0; z-index:5;
   padding:calc(env(safe-area-inset-top,0px) + 14px) calc(16px + env(safe-area-inset-right,0px)) 0 calc(16px + env(safe-area-inset-left,0px));
@@ -32,4 +32,16 @@ body.playing .hud-top{ opacity:1; }
 }
 #hint.show{ opacity:1; }
 body.touch #hint{ bottom:calc(env(safe-area-inset-bottom,0px) + 118px); }
+
+/* AI disclosure, bottom left: always there, over the start card too; on a phone it stops short of the round buttons on the right */
+#aiNote{
+  position:fixed; z-index:11; left:calc(14px + env(safe-area-inset-left,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 6px);
+  max-width:min(520px, calc(100vw - 28px)); padding:3px 9px; border-radius:8px;
+  background:var(--glass); border:1px solid var(--line); color:var(--ink-dim);
+  font-size:11px; line-height:1.35; pointer-events:none;
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+}
+body.touch #aiNote{ font-size:10px; max-width:calc(100vw - 190px - env(safe-area-inset-left,0px)); }
+body.editing #aiNote{ display:none; }
+@media (max-width:719px){ body:has(.panel:not([hidden])) #aiNote{ display:none; } }   /* the panels are bottom sheets on a phone */
 

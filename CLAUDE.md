@@ -119,7 +119,10 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | Registered accounts (name + password, guest, unique names, gift levels `GIFT_LEVELS`) | `server/accounts.js`, client `game/ui/account.js` (settings, session) and `start-screen.js`; tests `node tools/accounts-smoke.js`, `start-smoke.js` |
 | What each client is sent (snapshot ranges and rates, `SNAP_*`) | `server/api.js` (`broadcastSnap`); client `applySnap` in `game/net/client.js` |
 | Testing tools (dev commands) | `server/economy.js` (`devP`), `game/ui/settings-testing.js`, markup in `index.html` (`#tSec`) |
-| HUD, action bar, keys | `game/ui/combat-hud.js`, `game/player/input.js`, `game/ui/controls-legend.js` |
+| HUD, action bar | `game/ui/combat-hud.js`, `game/player/input.js`, `game/ui/controls-legend.js` |
+| Keys: the rebindable actions (`KB_ACTIONS`: id, name, default main + spare key), saving (`wildwood-keys`), swapping, labels (`kbName`, AZERTY via `getLayoutMap`), the `data-kb` hints on HUD buttons, the Controls list in Settings (`#kbSec`). A key handler asks `kbIs(e.code,'<action>')` / `kbHeld('<action>')`, never a literal `KeyX`. A new action = a row in `KB_ACTIONS` + its handler (a new default key must not collide with another action's; `kbLoad` keeps saved keys first) | `game/player/keybinds.js` (+ the handlers in `input.js`, `combat-hud.js`, `talking.js`, `economy/init.js`, `ui/map.js`, `ui/settings-sound.js`, `ui/chat.js`, `movement.js`); test `node tools/keys-smoke.js` |
+| The AI disclosure (bottom-left note: everything, assets and music included, is made with AI; keep it visible and keep the chat above it) | `#aiNote` in `index.html`, `styles/02-hud.css` (the desktop chat is lifted above it in `19-chat.css`) |
+| Hold Alt = free mouse (releases pointer lock, locks again on release; a canvas click does nothing meanwhile) | `altDown` / `altUp` / `altHeld` in `game/player/input.js`; the `mousedown` guard in `game/ui/combat-hud.js` |
 | Transports / host election | `game/net/transport.js` |
 
 ## 5. Rules and conventions
@@ -165,6 +168,7 @@ node tools/accounts-smoke.js     # 17 checks of accounts (register, login, token
 node tools/skills-smoke.js       # 51 checks of elements, the soul shrine, monster drops, skill upgrades, passives and the 18 boss skills (server from src/), ~15 s
 node tools/client-smoke.js       # 17 checks running the built page headless (solo), ~45 s (also draws every boss skill). It runs dist/: build first
 node tools/start-smoke.js        # 27 checks of the start card + a new account's character editor, against a real server in-process, ~20 s
+node tools/keys-smoke.js         # checks of the rebindable keys (defaults, swap, save/load, hints) and of hold-Alt; runs dist/: build first
 python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)
 npm test                         # build --check + all of the above
 node tools/model-preview.js out.png [--head] [--looks '[{...}]']   # character model → PNG (numpy+pillow)

@@ -1,7 +1,7 @@
 /*@ Settings (sound) popover */
 #sound{ position:fixed; z-index:7; top:calc(env(safe-area-inset-top,0px) + 68px); right:calc(16px + env(safe-area-inset-right,0px)); width:min(290px, calc(100vw - 32px));
   background:var(--glass-strong); border:1px solid var(--line); border-radius:16px; padding:12px 16px 16px;
-  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); max-height:calc(100vh - 88px); overflow-y:auto; }
 #sound[hidden]{ display:none; }
 .snd-head{ display:flex; align-items:center; justify-content:space-between; font-family:Fraunces, Georgia, serif; font-size:19px; margin-bottom:6px; }
 .snd-x{ width:36px; height:36px; border-radius:10px; border:0; background:none; color:var(--ink-dim); cursor:pointer; display:grid; place-items:center; }
@@ -10,5 +10,13 @@
 .snd-row input{ width:100%; accent-color:var(--lichen); }
 .snd-sub{ font-size:13px; font-weight:600; margin:10px 0 8px; }
 .snd-mute{ width:100%; margin-top:14px; }
+/* Controls: a row per action with its main and spare key */
+.kb-how summary{ font-size:13px; font-weight:600; margin:12px 0 8px; cursor:pointer; }
+.kb-row{ display:grid; grid-template-columns:1fr 66px 66px; align-items:center; gap:6px; min-height:34px; font-size:13px; }
+.kb-key{ min-height:30px; padding:0 4px; border-radius:8px; border:1px solid var(--line); background:rgba(238,240,226,.06); color:var(--ink); font:600 12px Inter, system-ui, sans-serif; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.kb-key.empty{ color:var(--ink-dim); }
+.kb-key.listening{ background:var(--lichen); color:var(--lichen-ink); border-color:var(--lichen); }
+.kb-key:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
+#kbReset{ width:100%; margin-top:8px; }
 #bSound .x{ display:none; } #bSound.muted .x{ display:inline; } #bSound.muted .w{ display:none; }
 body.editing #sound{ display:none; }

@@ -24,7 +24,7 @@ body:not(.playing) .chat{ display:none; }
   text-shadow:none; white-space:normal; text-align:center; line-height:1.3; quotes:none; box-shadow:0 2px 8px rgba(0,0,0,.35); margin-bottom:3px; }
 .say{ position:fixed; left:0; top:0; z-index:5; pointer-events:none; }
 .say[hidden], .ntag q[hidden]{ display:none; }
-@media (min-width:720px){ body:not(.touch) .chat{ position:fixed; left:14px; bottom:calc(env(safe-area-inset-bottom,0px) + 18px); width:380px; } }
+@media (min-width:720px){ body:not(.touch) .chat{ position:fixed; left:14px; bottom:calc(env(safe-area-inset-bottom,0px) + 38px); width:380px; } }   /* above the AI note (#aiNote) */
 body.touch .chat-log{ max-height:96px; font-size:12px; }
 body.touch .chat.open .chat-log{ max-height:28vh; }
 body.editing .chat, body.editing .say{ display:none; }

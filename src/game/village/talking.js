@@ -1,4 +1,4 @@
-//@ Talking to villagers: bubble, prompt, E key, opening shop/quest panels; stepping on a teleport circle
+//@ Talking to villagers: bubble, prompt, talk key (E), opening shop/quest panels; stepping on a teleport circle
 /* talking */
 const bubble=$('#bubble'), bName=$('#bName'), bText=$('#bText'), promptEl=$('#prompt'), bTalk=$('#bTalk');
 const _bv=new THREE.Vector3();
@@ -23,7 +23,7 @@ function nearCircle(){ const V=vilAt(P.x,P.z); return V.tele&&Math.hypot(P.x-V.t
 function useCircle(){ netSend({t:'warp'}); UI_SFX.click(); }
 function circlePrompt(V){
   const other=V===VIL?'Hanami':'the village';
-  if(GEAR.east>=2) return (isTouch?'Tap Travel to go to ':'Press E to travel to ')+other;
+  if(GEAR.east>=2) return (isTouch?'Tap Travel to go to ':'Press '+(kbName('talk')||'the talk key')+' to travel to ')+other;
   return GEAR.east>=1?'The circle hums, but it is not attuned: walk to Hanami first':'An old teleport circle. It is cold';
 }
 function updateTalkUI(){
@@ -41,11 +41,12 @@ function updateTalkUI(){
     document.body.classList.add('can-talk');
   } else if(canTalk){
     const who=talkNPC||nearNPC;
-    promptEl.textContent=isTouch?'':(talkNPC?'E to keep talking to '+who.def.name:'Press E to talk to '+who.def.name);
+    const tk=kbName('talk')||'the talk key';
+    promptEl.textContent=isTouch?'':(talkNPC?'Press '+tk+' to keep talking to '+who.def.name:'Press '+tk+' to talk to '+who.def.name);
     promptEl.hidden=isTouch; bTalk.textContent=talkNPC?'Next':'Talk';
     document.body.classList.add('can-talk');
   } else { promptEl.hidden=true; document.body.classList.remove('can-talk'); }
 }
 bTalk.addEventListener('touchstart',e=>{ e.preventDefault(); interact(); },{passive:false});
 bTalk.addEventListener('click',()=>interact());
-addEventListener('keydown',e=>{ if(e.code==='KeyE') interact(); });
+addEventListener('keydown',e=>{ if(kbIs(e.code,'talk')) interact(); });
