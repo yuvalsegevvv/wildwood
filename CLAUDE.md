@@ -326,6 +326,11 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
   A mesh per bucket and level made 5,000+ meshes and 2,700 draw calls: levels of detail are per instance now (one mesh per level, its buffers packed from a shared source), and a group 150 m beyond its draw range hands its buffers
   back (`lodRelease`, packed again by `lodAlloc`): a world walked end to end held 146 MB of level buffers before that and 7 MB after, which is the kind of thing that
   loses a WebGL context. Measure it headless: teleport the hiker over a grid of the whole world (a scratch script on `tools/headless.js` exposing `LODS`) and sum the buffers.
+- **Every instanced mesh must have `instanceColor`.** r128 picks a material's shader program once, from whichever instanced mesh draws first, and never looks at
+  `instanceColor` again. A material shared by meshes with and without colours (`matBark`: trunks and mushrooms, `matFlower`: stems and heads, `matAnimal`) crashes the
+  render loop with "Cannot read properties of null (reading 'isInterleavedBufferAttribute')" whenever a coloured mesh happens to draw before an uncoloured one (it depends
+  on what is nearest to the camera at the first frame, so it hits only some runs). `addInstanced` and `animMesh` give every mesh colours (white where there is no tint);
+  `client-smoke` checks that none is bare. A new `InstancedMesh` made any other way must do the same.
 - Looking at the world in the built-in browser pane (a way that worked): serve `dist/` with a static server (solo mode runs the world in the tab: no Node
   server to restart), patch a debug hook into `dist/wildwood.html` after each build (`window.__dbg={P,camera,scene,renderer,getH,...}` inserted before
   `buildGeometries();` at the end of `wildwoodMain`, and a `renderer.render` wrapper that puts the camera at `window.__cam=[x,y,z,tx,ty,tz]`: a photo mode

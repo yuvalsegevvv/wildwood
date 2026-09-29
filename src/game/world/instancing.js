@@ -12,7 +12,11 @@ function mtx(x,y,z,ry,sx,sy,sz,tx,tz){ _e.set(tx||0,ry,tz||0); _q.setFromEuler(_
    a smaller count). Every instance picks its own level by its own distance to the eye (see updateLod), so the switch is exact, not by chunk. */
 function addInstanced(geo, mat, items, o){
   o=o||{};
-  const buckets=new Map(), hasColor=items.some(i=>i.c);
+  // Every instanced mesh carries instance colours (white where an item has none). r128 picks a material's shader program once, from whichever instanced
+  // mesh draws first, and does not look at instanceColor again: a material shared by meshes with and without colours (matBark: trunks and mushrooms,
+  // matFlower: stems and heads, matAnimal) drew nothing right, or threw "Cannot read properties of null (reading 'isInterleavedBufferAttribute')"
+  // when a mesh without colours drew after one with. So all of them have colours.
+  const buckets=new Map(), hasColor=true;
   for(const it of items){
     const cx=clamp(Math.floor((it.x-WX0)/CS),0,CHX-1), cz=clamp(Math.floor((it.z-WZ0)/CS),0,CHZ-1), k=cz*CHX+cx;
     let b=buckets.get(k); if(!b){ b=[]; buckets.set(k,b); } b.push(it);

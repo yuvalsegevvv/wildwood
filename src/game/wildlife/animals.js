@@ -17,7 +17,7 @@ function animMesh(geo,mat,n,cast){
   const m=new THREE.InstancedMesh(geo,mat,Math.max(1,n));
   m.frustumCulled=false; m.castShadow=!!cast; m.receiveShadow=true;
   m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-  for(let i=0;i<m.count;i++) m.setMatrixAt(i,ZERO);
+  for(let i=0;i<m.count;i++){ m.setMatrixAt(i,ZERO); m.setColorAt(i,WHITE); }   // (colours on every instanced mesh: see addInstanced)
   scene.add(m); return m;
 }
 
