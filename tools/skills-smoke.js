@@ -14,7 +14,11 @@ const near=(a,b)=>Math.abs(a-b)<1e-9;
 // ---- the rules (shared, pure) ----
 ok('soul: own element x1.5, opposite x1/1.5, others and basic x1',near(x.soulMult('fire','fire',0),1.5)&&near(x.soulMult('fire','water',0),1/1.5)&&x.soulMult('fire','earth',0)===1&&x.soulMult('fire','dark',0)===1&&x.soulMult('basic','fire',0)===1&&x.soulMult('fire','basic',0)===1);
 ok('every element has exactly one opposite (fire/water, earth/air, dark/light)',['fire','water','earth','air','dark','light'].every(e=>x.soulMult(e,e,0)===1.5)&&near(x.soulMult('earth','air',0),1/1.5)&&near(x.soulMult('light','dark',0),1/1.5)&&x.soulMult('earth','water',0)===1);
-ok('monster element: the opposite hurts x1.5, its own element x1/1.5',near(x.foeMult('water','fire'),1.5)&&near(x.foeMult('fire','fire'),1/1.5)&&x.foeMult('fire','earth')===1&&x.foeMult('basic','fire')===1);
+{ const beats=[['water','fire'],['fire','air'],['air','earth'],['earth','water']];   // the wheel: water beats fire beats air beats earth beats water
+  ok('monster wheel: a skill that beats the monster x1.5, one it beats x1/1.5 (water on fire 1.5, fire on water 1/1.5, ...)',beats.every(([a,b])=>near(x.foeMult(a,b),1.5)&&near(x.foeMult(b,a),1/1.5)),beats.map(([a,b])=>a+'>'+b+' '+x.foeMult(a,b).toFixed(2)+'/'+x.foeMult(b,a).toFixed(2)).join(' '));
+  ok('monster wheel: two steps apart, basic, and the same element',x.foeMult('water','air')===1&&x.foeMult('fire','earth')===1&&x.foeMult('basic','fire')===1&&x.foeMult('fire','basic')===1&&near(x.foeMult('fire','fire'),1/1.5)&&near(x.foeMult('dark','dark'),1/1.5));
+  ok('monster wheel: dark and light beat each other',near(x.foeMult('dark','light'),1.5)&&near(x.foeMult('light','dark'),1.5)&&x.foeMult('dark','fire')===1);
+  ok('the soul still works on the opposite pairs, not the wheel (a fire soul: water x1/1.5, air and earth x1)',near(x.soulMult('fire','water',0),1/1.5)&&x.soulMult('fire','air',0)===1&&x.soulMult('fire','earth',0)===1&&near(x.soulMult('water','fire',0),1/1.5)); }
 ok('every monster and skill has a valid element',x.MONS.every(m=>!m.def.el||x.ELEMS[m.def.el])&&Object.values(x.SKILLS).every(s=>!s.el||x.ELEMS[s.el]));
 const up=x.upgradeNeeds('whirlwind',2);
 ok('upgrade costs coins and a monster drop that exists',up&&up.coins>0&&up.mats.length===1&&x.MATS[up.mats[0].id]&&x.upgradeNeeds('whirlwind',x.SKILL_MAX_LV+1)===null&&x.upgradeNeeds('whirlwind',5).mats.length===2);
@@ -39,15 +43,16 @@ ok('soul: changed freely, unknown elements ignored',you('a').gear.soul==='water'
 W.receive('a',{t:'soul',el:'fire'}); tick(1);
 
 // ---- damage with elements ----
-const slime=x.MONS.find(m=>m.def.id==='slime'), boar=x.MONS.find(m=>m.def.id==='boar'), magma=x.MONS.find(m=>m.def.id==='magmaslime');
+const slime=x.MONS.find(m=>m.def.id==='slime'), boar=x.MONS.find(m=>m.def.id==='boar'), magma=x.MONS.find(m=>m.def.id==='magmaslime'), shroom=x.MONS.find(m=>m.def.id==='shroom');
 const eh=(el,m)=>x.elemHitS(p,el,m);
-ok('damage: fire soul, fire skill on a water slime = 1.5 x 1.5',near(eh('fire',slime),2.25),eh('fire',slime).toFixed(3));
+ok('damage: fire soul, fire skill on an air shroom = 1.5 (soul) x 1.5 (fire beats air)',near(eh('fire',shroom),2.25),eh('fire',shroom).toFixed(3));
+ok('damage: fire soul, fire skill on a water slime = 1.5 (soul) x 1/1.5 (water beats fire) = 1',near(eh('fire',slime),1),eh('fire',slime).toFixed(3));
 ok('damage: on a fire monster a fire soul cancels out (1.5 x 1/1.5, water skills 1/1.5 x 1.5)',near(eh('water',magma),1)&&near(eh('fire',magma),1));
 ok('damage: basic skills and basic monsters are neutral',eh('basic',boar)===1&&eh('fire',boar)===1.5&&near(eh('water',boar),1/1.5));
 // a real cast: the dmg event says the element helped (6th value 1)
 evs.length=0;
-for(let i=0;i<40&&!evs.some(e=>e[0]==='dmg'&&e[1]===slime.id);i++){ W.setPos('a',[slime.x+4,x.getH(slime.x,slime.z),slime.z,Math.PI/2,0,0]); p.cd.basic=0; W.receive('a',{t:'atk',k:'basic',tg:slime.id,face:Math.PI/2}); tick(30,true); }
-const hit=evs.find(e=>e[0]==='dmg'&&e[1]===slime.id); ok('a hit tells the client the element helped',hit&&hit[5]===1,JSON.stringify(hit));
+for(let i=0;i<40&&!evs.some(e=>e[0]==='dmg'&&e[1]===shroom.id);i++){ W.setPos('a',[shroom.x+4,x.getH(shroom.x,shroom.z),shroom.z,Math.PI/2,0,0]); p.cd.basic=0; W.receive('a',{t:'atk',k:'basic',tg:shroom.id,face:Math.PI/2}); tick(30,true); }
+const hit=evs.find(e=>e[0]==='dmg'&&e[1]===shroom.id); ok('a hit tells the client the element helped',hit&&hit[5]===1,JSON.stringify(hit));
 p.gear.soul='basic'; ok('soul basic = no bonus',eh('fire',boar)===1); p.gear.soul='fire';
 
 // ---- monster drops ----
