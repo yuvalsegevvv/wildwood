@@ -295,7 +295,7 @@ storyline). What it means for the geography:
     out along a wavy line (`mapEdgeAlpha`), so neither land looks like a rectangle.
   - **Monsters by the land they live in**: every part of Wildwood has monsters. The outer ring's zones (12-15) reach on to the edges,
     and each edge has its own zone and creatures, levels 16-20 (optional ground for players back from the vale, not on the main quest's
-    path): **the Crownsea Shore** (Shore Crabs 16, Tide Slimes 17), **the Sunwall's Foot** (Sun Scarabs 18, in the red scree), **the
+    path): **the Crownsea Shore** (Shore Crabs 16, Tide Slimes 17, and on its beach west of the river the level-20 boss **Carapax, the Tide King**, a crab as big as a boat: `ARENA_TIDE`, `shared/beach.js`), **the Sunwall's Foot** (Sun Scarabs 18, in the red scree), **the
     Greyspine Foothills** (Ram-horned Boars 19, Crag Wardens 20). The Vale Wall has none. (The Vale's shores still hold the Vale's own
     zones: a coastal kind for them is a possible next step.)
   - **Roads** (`shared/roads.js`): the East Road from the village over **the river bridge** to the tunnel, with the Circle Path to the

@@ -1,7 +1,7 @@
 //@ Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
 /* Messages from the server (see src/server/api.js):
    welcome{pid,day,dev,players[,look]}  mons{list}  you{level,exp,hp,maxHp,dmg,def,red,dead,gear}  tp{x,z,face}
-   snap{day, n, pl:[[id,x,y,z,face,hp,maxHp,level,dead]], mo:[[id,x,z,face,hp,flags]], b:[[bossId,engaged,phase,immune,enraged,stunned,totems]...], ev:[[kind,...]]} */
+   snap{day, n, pl:[[id,x,y,z,face,hp,maxHp,level,dead]], mo:[[id,x,z,face,hp,flags]], b:[[bossId,engaged,phase,immune,enraged,stunned,aux,mode]...], ev:[[kind,...]]} */
 function playerName(){ let n=''; try{ n=localStorage.getItem('wildwood-name')||''; }catch(_){} return n; }
 /* Your account code: made once in this browser. A server that keeps saves stores your progress under it,
    and the first time it sees the code it takes over this browser's save (that is how old progress moves over). */
@@ -65,7 +65,12 @@ function applyEvent(e){
     case 'proj': onProj(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8],e[9]); break;
     case 'pend': onProjEnd(e[1],e[2],e[3],e[4],e[5]); break;
     case 'tele': addTele(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8]); break;
-    case 'tend': endTele(e[1],!!e[2]); break;
+    case 'tend': endTele(e[1],!!e[2],e[3],e[4]); break;
+    case 'zone': onBossZone(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8]); break;
+    case 'zend': endBossZone(e[1]); break;
+    case 'wall': onBossWall(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8],e[9],e[10]); break;
+    case 'wend': endBossWall(e[1]); break;
+    case 'pfx': if(e[1]===me) onPfx(e[2],e[3],e[4],e[5]); break;
     case 'roar': bossRoar(e[1]); break;
     case 'warp': onWarp(e[1],e[2],e[3],e[4],e[5]); break;
     case 'vale': if(e[1]===me) onValeStep(e[2]); break;

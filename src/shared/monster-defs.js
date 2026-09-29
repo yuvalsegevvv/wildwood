@@ -1,4 +1,4 @@
-//@ Monster families (FAM), the 58 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach), prepDef, the five bosses (BOSS_DEFS) with their totems and adds, the main quest's grey-veined monsters (GREY_DEFS). Pure.
+//@ Monster families (FAM), the 58 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach), prepDef, the six bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
 const FAM={
   slime: {hpK:0.85,dmgPct:0.06,atk:1.6,speed:2.2,rad:0.45,height:0.8,aggro:10,sound:'squish',per:4},
   shroom:{hpK:0.95,dmgPct:0.07,atk:1.7,speed:1.8,rad:0.4, height:1.1,aggro:10,sound:'pip',per:3},
@@ -90,8 +90,8 @@ function prepDef(d){
   d.color=d.pal.body||d.pal.cap||d.pal.shell||d.pal.skin||d.pal.c1||0x7af0a0;
 }
 MON_DEFS.forEach(prepDef);
-/* Bosses: health = 70 hits of a same-level player, a hit = 16% of that player's health; totems (the shield phase)
-   9 hits; adds come in the enrage phase. Every boss fights the same way (server/boss.js). */
+/* Bosses: health = 70 hits of a same-level player, a hit = 16% of that player's health; props (the Rootwarden's totems, Vetrmaw's warm
+   cores) 9 hits. Every boss has its own move set on top of the shared melee and phases (server/boss.js, boss-kits-*.js). */
 function bossDef(d){ const L=d.level; prepDef(d); d.hp=Math.round(expDmg(L)*70*highMult(L)); d.dmg=Math.round(expHP(L)*0.16/(1-expRed(L))); d.xp=xpFor(L)*25; return d; }
 function totemDef(d){ prepDef(d); d.hp=Math.round(expDmg(d.level)*9*highMult(d.level)); d.xp=0; return d; }
 const BOSS_DEF=bossDef({id:'boss',name:'The Rootwarden',level:15,el:'dark',model:'treant',scale:2.4,boss:true,heavy:true,glow:0x12001a,atk:2.6,speed:1.9,aggro:0,
@@ -100,22 +100,25 @@ const TOTEM_DEF=totemDef({id:'totem',name:'Heartwood Totem',level:15,el:'dark',m
 const THORN_DEF={id:'thornling',name:'Thornling',level:14,el:'dark',model:'treant',scale:0.6,hpK:0.6,dmgPct:0.07,atk:1.8,speed:2.4,aggro:30,
   pal:{bark:0x3a2e28,c1:0x5a3a7a,c2:0x4a2a5a,c3:0x3a1f4a,eyes:0xff5cf0}};
 prepDef(THORN_DEF);
+// the Crownsea Shore (level 20): Carapax, the Tide King, a crab the size of a fishing boat (the beetle model with claws: pal.crab). It plays the Rootwarden's music for now (music: a theme other than the one for its level)
+const CARAPAX_DEF=bossDef({id:'carapax',name:'Carapax, the Tide King',level:20,el:'water',model:'beetle',scale:3.4,boss:true,heavy:true,glow:0x04202a,atk:2.5,speed:2.0,aggro:0,music:'boss15',
+  pal:{shell:0xc8552e,seam:0x5a1a10,sheen:0xffb080,head:0x8a2a18,horn:0xe8dcc0,eye:0x111111,legs:0xa83a22,crab:1}});
+const HATCH_DEF={id:'crabhatch',name:'Tide Hatchling',level:19,el:'water',model:'beetle',scale:0.7,hpK:0.6,dmgPct:0.07,atk:1.5,speed:3.2,aggro:30,
+  pal:{shell:0xc8552e,seam:0x5a1a10,sheen:0xffb080,head:0x8a2a18,horn:0xe8dcc0,eye:0x111111,legs:0xa83a22,crab:1}};
+prepDef(HATCH_DEF);
 const AKAONI_DEF=bossDef({id:'akaoni',name:'Akaoni, the Gate Demon',level:20,el:'fire',model:'goblin',scale:2.3,boss:true,heavy:true,glow:0x2a0400,atk:2.4,speed:2.1,aggro:0,
   pal:{skin:0xb02a1e,eyes:0xffe060,top:'tshirt',topColor:0x2a2830,bottom:'shorts',bottomColor:0xe0a030,hat:'none',hatColor:0x2b2420,club:0x2a2626,horns:0xf6eedc,weapon:'kanabo'}});
-const LANTERN_DEF=totemDef({id:'onilantern',name:'Oni Lantern',level:20,el:'fire',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x2a1000,pal:{crystal:0xff8a2a,band:0xffb04a}});
 const IMP_DEF={id:'oniimp',name:'Oni Imp',level:19,el:'fire',model:'goblin',scale:0.62,hpK:0.6,dmgPct:0.07,atk:1.5,speed:3.2,aggro:30,
   pal:{skin:0xd04a2a,eyes:0xffe060,top:'tshirt',topColor:0x2a2830,bottom:'shorts',bottomColor:0xe0a030,hat:'none',hatColor:0x2b2420,club:0x3a3230,horns:0xf2ead8,weapon:'kanabo'}};
 prepDef(IMP_DEF);
 const KYUUBI_DEF=bossDef({id:'kyuubi',name:'Kyuubi, the Nine-Tailed',level:25,el:'light',model:'fox',scale:3.2,boss:true,heavy:true,glow:0x1a0c02,atk:2.2,speed:2.6,aggro:0,
   pal:{body:0xf4ead4,belly:0xfff8ec,tip:0xffa040,eye:0xff5020,legs:0xd8c8a8,tails:9}});
-const SHRINE_DEF=totemDef({id:'foxshrine',name:'Foxfire Shrine',level:25,el:'light',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x06142a,pal:{crystal:0x6ab8ff,band:0x9fd8ff}});
 const FOXKIT_DEF={id:'foxkit',name:'Fox Spirit',level:24,el:'light',model:'fox',scale:0.7,hpK:0.6,dmgPct:0.07,atk:1.4,speed:4,aggro:30,glow:0x06142a,
   pal:{body:0x6ab8ff,belly:0xd8f0ff,tip:0xffffff,eye:0xffffff,legs:0x2a4a7a,tails:2}};
 prepDef(FOXKIT_DEF);
 // the Hoarfrost Reach: Ymrik the Rimeking (level 26, a frost giant in his ice hall) and Vetrmaw the frost wyrm (level 30, at the wreck)
 const YMRIK_DEF=bossDef({id:'ymrik',name:'Ymrik, the Rimeking',level:26,el:'water',model:'goblin',scale:2.5,boss:true,heavy:true,glow:0x081a2a,atk:2.4,speed:2.1,aggro:0,
   pal:{skin:0xa8c8dc,eyes:0x9fe8ff,top:'plate',topColor:0x4a6278,bottom:'trousers',bottomColor:0x2a3a4a,hat:'helm',hatColor:0x6a8298,club:0xdce8f0,horns:0xeaf4fa,weapon:'axe',fur:0xe8f0f6}});
-const PILLAR_DEF=totemDef({id:'rimepillar',name:'Rime Pillar',level:26,el:'water',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x06202c,pal:{crystal:0x9fe0ff,band:0xd0f4ff}});
 const THRALL_DEF={id:'frostthrall',name:'Frost Thrall',level:25,el:'water',model:'goblin',scale:0.7,hpK:0.6,dmgPct:0.07,atk:1.5,speed:3.2,aggro:30,
   pal:{skin:0x9ab8c8,eyes:0x9fe8ff,top:'tshirt',topColor:0x4a6278,bottom:'shorts',bottomColor:0x2a3a4a,hat:'none',hatColor:0x2b2420,club:0xdce8f0,horns:0xeaf4fa,weapon:'axe'}};
 prepDef(THRALL_DEF);
@@ -125,13 +128,16 @@ const CORE_DEF=totemDef({id:'warmcore',name:'Warm Core',level:30,el:'water',mode
 const WYRMLING_DEF={id:'wyrmling',name:'Wyrmling',level:29,el:'water',model:'wyrm',scale:0.6,hpK:0.6,dmgPct:0.07,atk:1.6,speed:3.6,aggro:30,
   pal:{body:0x9cc4e0,belly:0xe4f2fa,ridge:0x3a6a8c,horn:0xe8f6ff,eye:0xff7a3a,wing:0x6a98bc}};
 prepDef(WYRMLING_DEF);
-// arena: which clearing (ARENAS in vale.js and hoarfrost.js); totem / add: the shield-phase totems and the enrage adds
+/* kit: the boss's own move set (BOSS_KITS in server/boss-kits-*.js); arena: which clearing (ARENAS in vale.js, hoarfrost.js, beach.js); add: what it
+   summons; totem: the Rootwarden's shield-phase totems; prop: what shelters players in Vetrmaw's blizzard; totems: the totems' name for the boss bar;
+   bar: what the boss bar says while the boss is in a mode (1 airborne, 2 hidden, 3 shielded, 4 whiteout, 5 blizzard) or stunned */
 const BOSS_DEFS=[
-  {def:BOSS_DEF,arena:'boss',totem:TOTEM_DEF,add:THORN_DEF,short:'The Rootwarden',totems:'Heartwood Totems'},
-  {def:AKAONI_DEF,arena:'boss20',totem:LANTERN_DEF,add:IMP_DEF,short:'Akaoni',totems:'Oni Lanterns'},
-  {def:KYUUBI_DEF,arena:'boss25',totem:SHRINE_DEF,add:FOXKIT_DEF,short:'Kyuubi',totems:'Foxfire Shrines'},
-  {def:YMRIK_DEF,arena:'boss26',totem:PILLAR_DEF,add:THRALL_DEF,short:'Ymrik',totems:'Rime Pillars'},
-  {def:VETRMAW_DEF,arena:'boss30',totem:CORE_DEF,add:WYRMLING_DEF,short:'Vetrmaw',totems:'Warm Cores'}];
+  {def:BOSS_DEF,arena:'boss',kit:'roots',totem:TOTEM_DEF,add:THORN_DEF,short:'The Rootwarden',totems:'Heartwood Totems',bar:{stun:'Stunned!'}},
+  {def:CARAPAX_DEF,arena:'boss20b',kit:'tide',add:HATCH_DEF,short:'Carapax',bar:{2:'Burrowed: watch the sand!',stun:'Claws stuck: hit it now!'}},
+  {def:AKAONI_DEF,arena:'boss20',kit:'oni',add:IMP_DEF,short:'Akaoni',bar:{1:'Leaping!',stun:'Stunned!'}},
+  {def:KYUUBI_DEF,arena:'boss25',kit:'kitsune',add:FOXKIT_DEF,short:'Kyuubi',bar:{2:'Vanished: where will it strike?',stun:'Stunned!'}},
+  {def:YMRIK_DEF,arena:'boss26',kit:'rime',add:THRALL_DEF,short:'Ymrik',bar:{4:'Whiteout: stay inside the circle!',stun:'Spent: strike now!'}},
+  {def:VETRMAW_DEF,arena:'boss30',kit:'wyrm',add:WYRMLING_DEF,prop:CORE_DEF,short:'Vetrmaw',bar:{1:'Airborne: fend off the wyrmlings',5:'Blizzard: shelter at a Warm Core!',stun:'Grounded: hit it now!'}}];
 /* The main quest's grey-veined monsters (docs/MAIN-QUEST.md, W9 and V7): tougher copies of a zone's kind, touched by the grey sleep.
    Not in MON_DEFS: no camps and no board quests; the server spawns a few for each player on that step (server/main-quest.js) */
 function greyDef(base,id,name,o){
@@ -142,4 +148,4 @@ function greyDef(base,id,name,o){
 const GREY_DEFS=[
   greyDef('bogslime','greybog','Grey-veined Bog Slime',{scale:1.9,hpK:2.6,per:0,glow:0x101418,pal:{body:0x6a7470,top:0xc8d0cc,mouth:0x14181a}}),
   greyDef('kitsune','greyfox','Grey Kitsune',{scale:1.15,hpK:2.2,glow:0x101418,pal:{body:0x8a8a86,belly:0xd8d8d2,tip:0x4a4a48,eye:0xe8f0ff,legs:0x3a3a38,tails:3}})];
-const ALL_MON_DEFS=[...MON_DEFS,...GREY_DEFS,...BOSS_DEFS.flatMap(b=>[b.def,b.totem,b.add])];
+const ALL_MON_DEFS=[...MON_DEFS,...GREY_DEFS,...BOSS_DEFS.flatMap(b=>[b.def,b.totem,b.add,b.prop].filter(Boolean))];

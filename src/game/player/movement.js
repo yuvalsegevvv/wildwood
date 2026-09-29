@@ -1,4 +1,4 @@
-//@ Player movement, collisions (the border mountains, the tunnel and its sealed door, the vale's north wall with Frostgate Pass and its ice wall), camera
+//@ Player movement (with a boss's ice, shoves and whirlpools), collisions (the border mountains, the tunnel and its sealed door, the vale's north wall with Frostgate Pass and its ice wall), camera
 /* ---------- simulation ---------- */
 function updatePlayer(dt){
   let f=0,s=0;
@@ -9,20 +9,21 @@ function updatePlayer(dt){
   const run=kbHeld('run')||Math.hypot(joyX,joyY)>0.92;
   const inWater=getH(P.x,P.z)<WATER-0.35 && bridgeDeck(P.x,P.z)<WATER;
   let speed=run?9.5:4.2; if(inWater) speed*=0.5;
+  if(PFX.slow>0) speed*=0.5; if(PFX.root>0) speed=0;   // a boss's ice: frozen or slowed (combat/boss-fx.js)
   if(CB.act && (CB.act.kind==='slash'||CB.act.kind==='nova'||CB.act.kind==='shoot'||CB.act.kind==='volley')) speed*=0.45;
   const sy=Math.sin(P.yaw), cy=Math.cos(P.yaw);
   const tx=(-sy*f+cy*s)*speed, tz=(-cy*f-sy*s)*speed;
   const k=1-Math.exp(-(P.ground?10:2.5)*dt);
   P.vx+=(tx-P.vx)*k; P.vz+=(tz-P.vz)*k;
   const ox=P.x, oz=P.z;
-  P.x+=P.vx*dt; P.z+=P.vz*dt;
+  P.x+=P.vx*dt; P.z+=P.vz*dt; pfxStep(dt);
   nearCols(P.x,P.z,(cx,cz,r)=>{ const dx=P.x-cx, dz=P.z-cz, d=Math.hypot(dx,dz), m=r+0.32; if(d<m && d>1e-4){ P.x=cx+dx/d*m; P.z=cz+dz/d*m; } });
   pushOutBoxes(P,0.32);
   for(const m of MONS){ if(m.dead||!m.g.visible) continue; const dx=P.x-m.x, dz=P.z-m.z, d=Math.hypot(dx,dz), mm=m.T.rad+0.32; if(d<mm && d>1e-4){ P.x=m.x+dx/d*mm; P.z=m.z+dz/d*mm; } }
   for(const n of NPCs){ if(n.inside) continue; const dx=P.x-n.x, dz=P.z-n.z, d=Math.hypot(dx,dz), m=0.62; if(d<m && d>1e-4){ P.x=n.x+dx/d*m; P.z=n.z+dz/d*m; } }
   worldBounds(P,ox,0.32,oz);
   const gnd=Math.max(getH(P.x,P.z),WATER-1.15,bridgeDeck(P.x,P.z));   // the river bridge's deck is ground too
-  if(jumpReq && P.ground){ P.vy=inWater?4:6.2; P.ground=false; }
+  if(jumpReq && P.ground && PFX.root<=0){ P.vy=inWater?4:6.2; P.ground=false; }
   jumpReq=false;
   P.vy-=19*dt; P.y+=P.vy*dt;
   if(P.y<=gnd){ P.y=gnd; P.vy=0; P.ground=true; }

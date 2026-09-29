@@ -37,10 +37,11 @@ shared
   vale.js                            The Sakura Vale east of the mountains: the tunnel (TUN), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt (which knows all three villages). Pure.
   hoarfrost.js                       The Hoarfrost Reach north of the vale: Frostgate Pass and its ice wall (PASS), Rimehold village (VIL3, VILS), zones 22-30 (Voronoi cells, ridges), two boss arenas. Pure.
   village-helpers.js                 vDist, nearPath, pathAmt, plazaAmt, inBox, pushOutBoxes: each works on the village on that side of the mountains (vilAt). Pure.
+  beach.js                           The Crownsea Shore's boss arena (ARENA_TIDE): a flat terrace on the south beach where Carapax, the Tide King, lives (beachSpot). Pure.
   roads.js                           Roads between the three villages and the key places (ROADS), the river bridge and the plank causeways over the drowned stretches (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck, bridgeAt. Pure.
   terrain-height.js                  rawHeight: base terrain + zone ridges (cut away where a road crosses) + village, arena, tunnel and Frostgate Pass flattening. Pure.
   balance.js                         Level formulas: fLv, gear tiers, expected gear, XP curve, coins. Pure.
-  monster-defs.js                    Monster families (FAM), the 58 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach), prepDef, the five bosses (BOSS_DEFS) with their totems and adds, the main quest's grey-veined monsters (GREY_DEFS). Pure.
+  monster-defs.js                    Monster families (FAM), the 58 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach), prepDef, the six bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
   elements.js                        Elements (ELEMS): your soul (SOUL_LV, opposite pairs) and a monster's element (the wheel), with the damage multipliers for both. Pure.
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
   drops.js                           Monster drops (MATS: one material per monster kind), the skills bosses drop (BOSS_SKILLS), and what upgrading a skill costs (upgradeNeeds). Pure.
@@ -55,7 +56,11 @@ server
   players.js                         Players on the server: records, stats, XP and levels, damage taken, knock-out and respawn, private state ("you")
   monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
-  boss.js                            The bosses on the server (Rootwarden, Akaoni, Kyuubi): engagement, cleave / root / slam telegraphs, shield + totems, enrage + adds, reset
+  boss-fx.js                         What the bosses can do, shared by every move set: telegraphed hits (circle, cone, line, donut, marks), ground zones, tidal walls, orbs, effects on players, timed casts, summons
+  boss-kits-home.js                  Boss move sets of the home forest: the Rootwarden (root spikes, slam, totem shield, thornlings) and Carapax, the Tide King (geyser trails, tidal waves, burrow strikes, whirlpool)
+  boss-kits-vale.js                  Boss move sets of the Sakura Vale: Akaoni (leaps and fire pools, fire ripples, brands) and Kyuubi (foxfire volleys, blinks, spoke beams, spirit foxes)
+  boss-kits-north.js                 Boss move sets of the Hoarfrost Reach: Ymrik (icefall, ice prisons, whiteout, frost nova) and Vetrmaw (gust and breath, flight and dives, blizzard with warm cores)
+  boss.js                            The bosses on the server: engagement, the shared melee (cleave), phases, reset; each boss's own moves are its BOSS_KITS entry
   economy.js                         Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), the soul shrine, testing commands
   main-quest.js                      The main quest on the server: starting, progressing and handing in steps (MQ in shared/main-quest.js) from what the server sees (talks, kills, system uses, places), rewards, the grey monsters spawned for you
   professions.js                     Professions on the server: learning at the Wayfarers' Lodge (Rimehold), gathering at resource nodes that respawn, profession levels, resources kept in gear.res
@@ -95,6 +100,7 @@ game
   ui/character-editor.js             Character editor panel and camera: opened from the HUD, or in creating mode right after a new account is registered
   village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)
   village/buildings-vale.js          The Sakura Vale's buildings: Hanami (tiled roofs, shoji, torii, stone lanterns), the tunnel (bore, roof, portals, sealed door), teleport circles, the two shrines
+  village/buildings-beach.js         The Tide King's beach (ARENA_TIDE): whale-rib arches, driftwood, big shells, tide pools
   village/buildings-hoar.js          The Hoarfrost Reach's buildings: Rimehold (timber houses under snow, gate and rune stones, the Wayfarers' Lodge yard), the ice wall in Frostgate Pass, the Rimeking's ice hall, the iron bird's wreck
   village/villagers.js               VILLAGERS (hard-coded NPCs of the three villages), random villagers, NPC behaviour (updateNPCs)
   village/talking.js                 Talking to villagers: bubble, prompt, talk key (E), the main quest's lines first, opening shop/quest panels; reading lore spots, picking heartleaf; stepping on a teleport circle
@@ -102,7 +108,7 @@ game
   audio/engine.js                    Web Audio setup (SND, buses, reverb, echo, noise), tone(), noiseHit(), spatial()
   audio/samples.js                   Sound files from assets/audio: small ones embedded in the page (window.WILDWOOD_AUDIO), music fetched once from audio/ (window.WILDWOOD_AUDIO_URL): loadSamples, playSample, musicBuffer (lazy)
   audio/ui-sounds.js                 Interface / game sounds (UI_SFX) and hover/click hooks
-  audio/music.js                     Background music: one theme per place (the three villages, three home ranges, two vale ranges, two Hoarfrost ranges, each boss), crossfaded; recorded tracks (music-*) or generative
+  audio/music.js                     Background music: one theme per place (the three villages, three home ranges, two vale ranges, two Hoarfrost ranges, each boss; a boss def may name its own theme: def.music), crossfaded; recorded tracks (music-*) or generative
   audio/ambience.js                  Footsteps, birds, crickets, owls, frogs, ducks, crackle, hooves
   audio/rain.js                      Rain sound (rainSoundTick): a soft low wash, a slowly swelling patter, scattered droplets, a storm rumble; in the snow (WX.snow) a low wind and a blizzard's howl instead
   audio/voices.js                    Villager voices: text-to-speech voice picking and babble
@@ -131,7 +137,8 @@ game
   ui/travel.js                       The travel window: stepping on a teleport circle and pressing the talk key lists every village (CIRCLES in shared/hoarfrost.js); the ones you have not walked to yet are locked
   ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, reset
   economy/init.js                    Inventory key and first-time gear setup
-  combat/boss.js                     The bosses, client side (Rootwarden, Akaoni, Kyuubi, Ymrik, Vetrmaw): telegraph visuals, root spikes, slam waves, shield bubble, roars, boss bar
+  combat/boss.js                     The bosses, client side: telegraph visuals (circle, cone, line, donut, marks) and how each ends, root spikes, slam waves, shield bubble, roars, boss bar, a boss's look in each mode (airborne, hidden)
+  combat/boss-fx.js                  Boss zones and waves (fire pools, whirlpools, the whiteout, the blizzard, tidal walls) and what a boss does to you: frozen, slowed, shoved, pulled into a whirlpool
   combat/skill-fx.js                 Visuals and sounds for the equippable skills: Arrow Rain, Meteor, Chain Lightning, Piercing Shot, Shield Bash, Charge, and every skill with generic effects (fx: the boss skills)
   world/weather.js                   Weather on the client: rain streaks around the camera (snowfall and blizzards instead in the Hoarfrost Reach), a darker foggy sky, lightning and thunder (rain and wind sound: audio/rain.js)
   world/aurora.js                    The aurora over the Hoarfrost Reach: slow green and violet curtains in the northern sky on clear nights

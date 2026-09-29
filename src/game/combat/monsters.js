@@ -1,4 +1,4 @@
-//@ Monster views: models for every family (slime, shroom, beetle/spider, boar, treant, goblin/oni/tengu/yeti, fox/wolf, wisp, wyrm, totem), animation
+//@ Monster views: models for every family (slime, shroom, beetle/spider/crab, boar, treant, goblin/oni/tengu/yeti, fox/wolf, wisp, wyrm, totem), animation
 const MONS=[], MON_GEO={};
 function monMat(glow){ const m=new THREE.MeshLambertMaterial({vertexColors:true, emissive:glow||0x000000}); m.userData.glow=new THREE.Color(glow||0); return m; }
 function pivot(parent,x,y,z,mesh){ const g=new THREE.Group(); g.position.set(x,y,z); if(mesh) g.add(mesh); parent.add(g); return g; }
@@ -32,6 +32,21 @@ function monGeos(d){
       legs.push(pc(cyl(0.03,0.025,0.6,5).translate(0,0.3,0).rotateZ(-sd*0.9).translate(sd*0.22,0.52,lz*0.8),c=>c.set(p.legs)));
       legs.push(pc(cyl(0.025,0.015,0.9,5).translate(0,-0.45,0).rotateZ(sd*0.35).translate(sd*0.68,0.85,lz),c=>c.set(p.legs)));
     } G[sd<0?'lL':'lR']=merge(legs); }
+  } else if(d.model==='beetle' && p.crab){   // Carapax and his hatchlings: a wide flat carapace with barnacles, eyes on stalks, four legs a side, two big claws of their own (cL, cR: they rear up and snap when it attacks)
+    G.body=merge([
+      pc(csph(0.55,18,12).scale(1.4,0.5,1.0).translate(0,0.5,0),(x,y,z,c)=>{ c.set(p.shell); if(h3(Math.round(x*7),Math.round(y*7),Math.round(z*7))>0.84) c.set(p.horn); if(y>0.62) c.lerp(_tint.set(p.sheen),clamp((y-0.62)*4)*0.4); }),
+      pc(csph(0.24,10,8).scale(1.3,0.7,0.8).translate(0,0.4,-0.55),c=>c.set(p.head)),
+      ...[-1,1].flatMap(sd=>[pc(cyl(0.025,0.025,0.26,5).translate(sd*0.16,0.78,-0.5),c=>c.set(p.head)),pc(csph(0.065,8,6).translate(sd*0.16,0.93,-0.5),c=>c.set(p.eye))])
+    ]);
+    for(const sd of [-1,1]){ const legs=[]; for(const lz of [-0.34,-0.12,0.12,0.34]){
+      legs.push(pc(cyl(0.04,0.03,0.6,5).translate(0,0.3,0).rotateZ(-sd*1.15).translate(sd*0.5,0.5,lz*0.9),c=>c.set(p.legs)));
+      legs.push(pc(cyl(0.03,0.02,0.85,5).translate(0,-0.425,0).rotateZ(sd*0.25).translate(sd*1.05,0.75,lz*0.9),c=>c.set(p.legs)));
+    } G[sd<0?'lL':'lR']=merge(legs);
+      G[sd<0?'cL':'cR']=merge([   // a claw, from its shoulder forward: the arm, the palm, two fingers
+        pc(cyl(0.11,0.09,0.7,6).rotateX(-Math.PI/2+0.35).translate(sd*0.15,0.1,-0.35),c=>c.set(p.legs)),
+        pc(csph(0.3,12,9).scale(0.8,0.6,1.15).translate(sd*0.15,0.22,-0.85),(x,y,z,c)=>{ c.set(p.shell); if(y>0.3) c.lerp(_tint.set(p.sheen),0.3); }),
+        pc(new THREE.ConeGeometry(0.13,0.62,6).rotateX(-Math.PI/2).rotateY(sd*0.12).translate(sd*0.05,0.4,-1.3),c=>c.set(p.horn)),
+        pc(new THREE.ConeGeometry(0.11,0.55,6).rotateX(-Math.PI/2).rotateY(-sd*0.12).translate(sd*0.26,0.06,-1.25),c=>c.set(p.horn))]); }
   } else if(d.model==='beetle'){
     G.body=merge([
       pc(csph(0.5,18,12).scale(0.8,0.5,1.2).translate(0,0.42,0),(x,y,z,c)=>{ c.set(p.shell); if(Math.abs(x)<0.025&&y>0.55) c.set(p.seam); c.lerp(_tint.set(p.sheen),clamp((y-0.55)*2)*0.35); }),
@@ -154,7 +169,7 @@ function buildMonster(d,mat){
   if(d.model==='slime'){ P0.body=M(G.body); g.add(P0.body); }
   else if(d.model==='shroom'){ P0.body=M(G.body); g.add(P0.body); P0.fL=pivot(g,-0.13,0,0,M(G.foot)); P0.fR=pivot(g,0.13,0,0,M(G.foot)); }
   else if(d.model==='totem'){ P0.body=M(G.body); g.add(P0.body); }
-  else if(d.model==='beetle'){ P0.body=M(G.body); g.add(P0.body); P0.lL=M(G.lL); P0.lR=M(G.lR); g.add(P0.lL,P0.lR); }
+  else if(d.model==='beetle'){ P0.body=M(G.body); g.add(P0.body); P0.lL=M(G.lL); P0.lR=M(G.lR); g.add(P0.lL,P0.lR); if(G.cL){ P0.cL=pivot(g,-0.7,0.55,-0.42,M(G.cL)); P0.cR=pivot(g,0.7,0.55,-0.42,M(G.cR)); } }
   else if(d.model==='fox'){ P0.body=M(G.body); g.add(P0.body); P0.tail=pivot(g,0,0.78,0.5,M(G.tail)); P0.legs=[[-0.15,-0.4],[0.15,-0.4],[-0.15,0.38],[0.15,0.38]].map(([x,z])=>pivot(g,x,0.46,z,M(G.leg))); }
   else if(d.model==='wyrm'){
     const zs=[0,0.85,0.8,0.7,0.6,0.5]; let par=g; P0.segs=G.segs.map((geo,i)=>{ const pv=pivot(par,0,i?0:1.15,zs[i],M(geo)); par=pv; return pv; });
@@ -254,6 +269,10 @@ function animateMonster(m,dt,sp){
     m.ph+=dt*(1+sp*10);
     P0.lL.position.z=Math.sin(m.ph)*0.07*Math.min(1,sp); P0.lR.position.z=-P0.lL.position.z;
     P0.body.position.y=Math.abs(Math.sin(m.ph))*0.02;
+    if(P0.cL){   // a crab's claws: held up and swaying, they rear back and snap shut in its attack
+      const atk=m.act?clamp(m.act.t/m.act.dur):0, up=m.act?Math.sin(atk*Math.PI)*0.7:0, snap=m.act?Math.sin(atk*Math.PI*4)*0.22:0, sw=Math.sin(t*1.7+m.ph)*0.06;
+      P0.cL.rotation.set(-up+sw,-0.2+snap,0); P0.cR.rotation.set(-up-sw,0.2-snap,0);
+    }
   } else if(m.model==='boar'){
     m.ph+=dt*sp*4;
     const amp=Math.min(1,sp/2)*0.6;

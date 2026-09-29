@@ -28,6 +28,7 @@ const EDGE_ZONES=[   // label: where the map writes the name (clear of the ring 
 EDGE_ZONES.forEach(zn=>{ zn.ring=3; ZONES.push(zn); });
 // undefined: not near an edge (the rings decide); null: an edge with no monsters (the sea, the cliff face)
 function edgeZoneAt(x,z){
+  for(const A of ARENAS) if(A.beach&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;   // the Tide King's beach (shared/beach.js)
   const c=coastDist(x,z); if(c<74) return c>20?EDGE_ZONES[0]:null;
   const w=x-WX0-sunwallLine(z); if(w<62) return w>8?EDGE_ZONES[1]:null;
   if(z-HZ0-rimWobble(x,11)<100) return EDGE_ZONES[2];
@@ -52,7 +53,7 @@ function ringReach(a){ const s=Math.sin(a), c=Math.cos(a), t=v=>v>1e-6?(HALF-20)
    edge zones: along the edge and in from it). full: an outer-ring zone's whole reach out to the land's edge (the camps), not just
    its ring (labels, quest markers) */
 function zonePoint(zn,fa,fr,full){
-  if(zn.vale){ const a=fa*TAU, r=Math.abs(fr-0.5)*2*zn.R; return [zn.x+Math.sin(a)*r,zn.z+Math.cos(a)*r]; }
+  if(zn.vale||zn.arena){ const a=fa*TAU, r=Math.abs(fr-0.5)*2*zn.R; return [zn.x+Math.sin(a)*r,zn.z+Math.cos(a)*r]; }
   if(zn.edge==='shore') return [lerp(-410,410,fa+0.5), WZ1-lerp(30,78,fr)];
   if(zn.edge==='west'){ const z=lerp(-400,400,fa+0.5); return [WX0+sunwallLine(z)+lerp(12,60,fr), z]; }
   if(zn.edge==='north'){ const x=lerp(-330,420,fa+0.5); return [x, HZ0+rimWobble(x,11)+lerp(30,98,fr)]; }

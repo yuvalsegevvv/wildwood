@@ -8,14 +8,14 @@
      element if that level has one),
      so higher levels send you deeper into the woods (bursts and passives into the Sakura Vale); level 5 also needs BOSS_UP of a boss's trophy.
    A skill can list its own price instead: up:{2:{coins,mats:[{id,n}]},...} on its row in SKILLS / PASSIVES.
-   Boss skills (rows with drop:'<boss id>' in SKILLS, 6 per boss: a skill and a burst for each class) are not for sale: every kill of that boss gives
+   Boss skills (rows with drop:'<boss id>' in SKILLS, 6 per boss (six bosses): a skill and a burst for each class) are not for sale: every kill of that boss gives
    every player who helped a BOSS_SKILL_CHANCE roll for each of the boss's skills they do not own yet. They cannot be upgraded yet. */
 const MAT_NAMES={slime:'Slime Goo',shroom:'Spore Cap',beetle:'Beetle Shell',boar:'Boar Tusk',goblin:'Goblin Fang',treant:'Living Bark',bogslime:'Bog Ooze',
   deathcap:'Deathcap Venom',ironshell:'Iron Plate',direboar:'Dire Tusk',hobgoblin:'Rusty Buckle',rotwood:'Rotwood Ember',magmaslime:'Magma Core',
   chieftain:"Chieftain's Totem",ancient:'Ancient Sap',crab:'Crab Claw',tideslime:'Sea Glass',scarab:'Scarab Wing',ramboar:'Ram Horn',cragwarden:'Crag Moss',sakuraslime:'Blossom Jelly',kappa:'Kappa Dish',kodama:'Spirit Bell',kabuto:'Kabuto Horn',
   kitsune:'Foxfire Ash',yamaboar:'Mountain Hide',ashigaru:'Lacquered Plate',bamboo:'Singing Bamboo',onibi:'Blue Flame',jorogumo:'Spider Silk',
   oni:'Oni Fang',yurei:'Yurei Shroud',shadowfox:'Night Fur',jadeslime:'Jade Shard',blueoni:'Storm Horn',tengu:'Tengu Feather',samurai:'Samurai Crest',
-  goldkabuto:'Gold Shell',sakuratreant:'Elder Blossom',raiju:'Raiju Spark',boss:'Rootwarden Heart',akaoni:'Gate Demon Horn',kyuubi:'Kyuubi Tail',
+  goldkabuto:'Gold Shell',sakuratreant:'Elder Blossom',raiju:'Raiju Spark',boss:'Rootwarden Heart',carapax:"Tide King's Claw",akaoni:'Gate Demon Horn',kyuubi:'Kyuubi Tail',
   frostslime:'Frost Jelly',snowboar:'Snow Tusk',icebeetle:'Ice Shell',wolf:'Winter Pelt',reaver:'Reaver Rune',rimewisp:'Rime Spark',rimetreant:'Rimebark',yeti:'Yeti Fur',
   draugr:'Draugr Rune',icewraith:'Wraith Shroud',lynx:'Lynx Claw',crawler:'Glacier Shard',frosttroll:'Troll Tooth',blizzhound:'Hound Fang',revenant:'Revenant Plate',
   barrowwight:'Barrow Ash',alphawolf:'Alpha Fang',glaciergolem:'Golem Core',ymrik:"Rimeking's Crown",vetrmaw:'Wyrm Scale'};

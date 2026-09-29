@@ -5,7 +5,7 @@
                                                              reward: XP, coins, 50% chance of an item
      bounty  1.5x a hunt, the grindy one                     reward: more XP and coins, always an item, 25% rare
      scout   walk to a named place in that level's zone      reward: XP and coins
-     boss    the Rootwarden (from level 13), Akaoni (from 18), Kyuubi (from 23), Ymrik (from 25), Vetrmaw (from 29)   reward: lots, a rare item, 20% epic
+     boss    the Rootwarden (from level 13), Carapax the Tide King (from 17), Akaoni (from 18), Kyuubi (from 23), Ymrik (from 25), Vetrmaw (from 29)   reward: lots, a rare item, 20% epic
    Levels 16-25 are the Sakura Vale's and 22-30 the Hoarfrost Reach's: two monster kinds per level, so a hunt names one of the two. Levels 12-15 also have the
    home forest's edge kinds (shore crabs...), hunted in their own edge zone.
    Items are of the quest's level tier. Notices refresh when you level up and at sunrise. */
@@ -30,9 +30,10 @@ function scoutPlace(L){
 // the boss notices: the strongest boss you are ready for (a little below its level), sometimes the one before it
 const BOSS_QUESTS=[
   {target:'boss',from:13,level:15,title:'The Rootwarden',text:'Something ancient sleeps in the stone circle at the edge of the world, and the forest sickens around it. Wake it, and end it.'},
-  {target:'akaoni',from:18,level:20,title:'Akaoni, the Gate Demon',text:'A red oni the size of a gatehouse guards the Demon Gate in the far corner of the vale. Break its lanterns, then break it.'},
+  {target:'carapax',from:17,level:20,title:'Carapax, the Tide King',text:'The fishers of the Crownsea Shore have stopped putting to sea. A crab the size of a boat has taken the beach west of the river, and the tide rises whenever it wants. End it.'},
+  {target:'akaoni',from:18,level:20,title:'Akaoni, the Gate Demon',text:'A red oni the size of a gatehouse guards the Demon Gate in the far corner of the vale. It leaps like a cat, and fire follows where it lands. End it.'},
   {target:'kyuubi',from:23,level:25,title:'Kyuubi, the Nine-Tailed',text:'Nine tails of foxfire burn above the shrine in the north-west of the vale. The old fox has ruled there for a thousand years. End its reign.'},
-  {target:'ymrik',from:25,level:26,title:'Ymrik, the Rimeking',text:'A frost giant has taken the ice hall in the middle of the Hoarfrost Reach, and his thralls raid the wold beyond the lake. Break his pillars, then break him.'},
+  {target:'ymrik',from:25,level:26,title:'Ymrik, the Rimeking',text:'A frost giant has taken the ice hall in the middle of the Hoarfrost Reach, and his thralls raid the wold beyond the lake. The cold in his hall closes in on anyone who lingers: end him before it ends you.'},
   {target:'vetrmaw',from:29,level:30,title:'Vetrmaw, the Frost Wyrm',text:'A wyrm nests in the glacier at the far north-east of the reach, where the iron bird fell. The hunters of Rimehold want it gone.'}];
 function bossQuestFor(E){ const ok=BOSS_QUESTS.filter(b=>E>=b.from); if(!ok.length) return null; return ok.length>1&&Math.random()<0.3?ok[ok.length-2]:ok[ok.length-1]; }
 function genQuest(pl,id){

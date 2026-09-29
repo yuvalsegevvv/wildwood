@@ -48,10 +48,10 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
   Movement itself is only clamped (no real anti-cheat, like everywhere: `CLAUDE.md` section 10).
 - **Rimehold is not walled** (`WORLD.md` calls it a walled town of hunters and ice-fishers): it has a gate with shields and rune stones but no palisade, no chimney smoke
   (the home village has it), no watchtower and no ice-fishing huts. Its NPCs follow the same day-and-night schedule as the other villages.
-- **Monsters and bosses use the shared fight.** The 18 kinds are recolours or variants of existing models (a wolf variant of the fox, a fur mantle and axes for the goblin
-  family, a new wyrm model), with no mechanics of their own; monsters' elements still do not change the damage they deal. Ymrik and Vetrmaw fight exactly like the other
-  bosses (cleave, roots, slam, shield with totems, adds): Ymrik's Rime Pillars and Vetrmaw's Warm Cores are the totems, Frost Thralls and Wyrmlings the adds. The wyrm does not
-  fly or breathe, and neither boss has a unique drop beyond materials and skills.
+- **The Hoarfrost monsters have no mechanics of their own.** The 18 kinds are recolours or variants of existing models (a wolf variant of the fox, a fur mantle and axes for the
+  goblin family, a new wyrm model); monsters' elements still do not change the damage they deal. The bosses are different: since the boss rework each of the six has its own
+  move set (`server/boss-kits-*.js`, see CLAUDE.md), but no boss has a unique drop beyond materials and skills, and the moves' numbers are first guesses, **not balance-tested
+  by play** (Ymrik's ice prison, Vetrmaw's dives and Carapax's waves hit hard on purpose: they are telegraphed).
 - **The 12 new boss skills** reuse the generic effects (`fx`) with new icons and one new projectile look (frost shards); their numbers were copied from the analogous
   skills of the older bosses and are **not balance-tested by play**. The skill icons are simple placeholders.
 - **The iron bird** is scenery plus one readable spot; there is no interior, loot or quest on it. Its emblem (a sun in a ring) is the story's continuity mark.

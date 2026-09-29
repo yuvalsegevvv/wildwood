@@ -8,7 +8,7 @@
    Messages in:  hello{acct,name,look,save[,user,pass|token]}  register{user,pass}  logout{token}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
                  cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{to: 'home'|'hanami'|'rimehold'}  dev{cmd,v}
                  buyskill{id}  eqskill{id[,idx: passive slot]}  unskill{cls,slot[,idx]}  upskill{id}  soul{el}  mq{a:'talk'|'pick'|'read',id|i}  learn{id: a profession}  gather{i: a resource node}
-   Messages out: welcome{pid,day,dev,players[,look: a logged-in account's own look]}  mons{list}  you  tp  snap{day,n,pl,mo,b:[per boss],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
+   Messages out: welcome{pid,day,dev,players[,look: a logged-in account's own look]}  mons{list}  you  tp  snap{day,n,pl,mo,b:[per boss: id,engaged,phase,immune,enraged,stunned,aux,mode],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
 initMonstersS(); initBossS();
 const ACCT=new Map(), PENDING=new Set();   // account -> pid online; pids whose save is still loading
 const recordOf=p=>Object.assign({v:1,name:p.name,look:p.look,level:p.level,exp:p.exp,gear:p.gear,updated:Date.now()},p.auth?{auth:p.auth}:{});
@@ -39,7 +39,10 @@ function join(pid,hello,auth){
   sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth?p.look:undefined});
   const ros=MONS.filter(m=>!m.remove).map(monRoster);
   for(let i=0;i<ros.length;i+=40) sendTo(pid,{t:'mons',list:ros.slice(i,i+40)});
-  for(const B of BOSSES) for(const e of B.tele) sendTo(pid,{t:'snap',ev:[['tele',e.id,e.kind,r1(e.x),r1(e.z),r1(e.r),e.dur-e.t,Math.round(e.face*100)/100,e.half]]});
+  for(const B of BOSSES){   // what a boss has set up right now, for someone who arrives in the middle of the fight
+    for(const e of B.tele) sendTo(pid,{t:'snap',ev:[['tele',e.id,e.kind,r1(e.x),r1(e.z),r1(e.r),e.dur-e.t,Math.round(e.face*100)/100,e.half]]});
+    for(const zn of B.zones) sendTo(pid,{t:'snap',ev:[['zone',zn.id,zn.kind,r1(zn.x),r1(zn.z),r1(zn.r),zn.dur-zn.t,zn.a,zn.b]]});
+  }
   { const ne=nodeEvents(); if(ne.length) sendTo(pid,{t:'snap',ev:ne}); }   // the resource nodes that are taken right now
   sendTo(pid,youMsg(p)); p.dirty=false;
   ev('pjoin',pubInfo(p));

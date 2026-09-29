@@ -24,6 +24,9 @@ $('#tSeal').addEventListener('click',()=>{ netSend({t:'dev',cmd:'vale',v:0}); to
 $('#tNorth').addEventListener('click',()=>netSend({t:'dev',cmd:'north',v:1}));
 $('#tPass').addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}));
 for(const id of ['tRime','tHall','tNest']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'north',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });
+// the boss arenas (to try each boss's moves): the vale's two open the tunnel first
+for(const id of ['tCircle','tTide']) $('#'+id).addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}));
+for(const id of ['tGate','tShrine']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });
 $('#tSealN').addEventListener('click',()=>{ netSend({t:'dev',cmd:'north',v:0}); toast('The ice wall is sealed again','good'); });
 let luckyN=0; $('#tLucky').addEventListener('click',()=>{ netSend({t:'dev',cmd:'lucky',v:2+(luckyN++%3)}); });
 $('#tReset').addEventListener('click',e=>{

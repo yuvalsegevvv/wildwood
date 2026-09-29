@@ -108,7 +108,7 @@ files. The two scopes never see each other; they only exchange JSON messages.
 | Server (authoritative) | Client |
 |---|---|
 | monster AI, positions, health, respawns | monster models and animation (smoothed toward snapshots) |
-| the boss fight, telegraphs, totems, adds | telegraph / spike / shock-wave / shield visuals |
+| the boss fights (six bosses, each with its own moves): telegraphs, zones, waves, orbs, summons | telegraph / spike / shock-wave / shield / zone / wave visuals, what a boss does to your movement |
 | attack resolution, projectiles, damage, crits, level debuff | swing animations, projectile visuals, damage numbers |
 | player health, regeneration, knock-out, respawn | your movement (sent 10x per second), hurt / level-up effects |
 | XP, levels, coins, loot, inventory, equipment | inventory / shop / quest panels (they send requests) |
