@@ -132,8 +132,7 @@ function buildVale(){
   { const items=[], hA=V.houses.map(h=>h.a);
     for(let i=0;i<7;i++){ const a=(hA[i]+hA[i+1])/2, r=31, x=V.x+Math.sin(a)*r, z=V.z+Math.cos(a)*r, s=R(0.85,1.1);
       items.push({x,z,m:mtx(x,getH(x,z)-0.15,z,a,s,s,s),c:tint(pick(PAL.sakura))}); addCol(x,z,RAD.sakura*s); }
-    addInstanced(G.trees.sakura.trunk,matBark,items.map(i=>({x:i.x,z:i.z,m:i.m})),{cast:true,receive:true});
-    addInstanced(G.trees.sakura.leaves,matBroad,items,{cast:true,receive:true});
+    addTreeKind('sakura',items);
   }
   buildTunnel(inF);
   for(const A of [ARENA20,ARENA25]) buildShrine(A,inF);

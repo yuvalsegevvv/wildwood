@@ -1,7 +1,7 @@
 # Wildwood: guide for agents
 
 Read this file first. It is written so you can work on the game **without reading the whole codebase**
-(about 9,700 lines of JavaScript in 110 files). Open only the files your task touches.
+(about 11,300 lines of JavaScript in 124 files). Open only the files your task touches.
 
 Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an authoritative world server
 that runs in the browser tab (solo / shared room) or in Node (the deployed MMO), procedural 880 m forest,
@@ -118,11 +118,12 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | Character body, face, hair, hats | `game/character/model.js` (`buildCharacter`, `muscleLimb`, `sculpt`, `smoothN`; look defaults `LOOK_M`/`LOOK_F`, palettes `HAIRC` (+`HAIRC_NATURAL`), `SKINS`, `CLOTH`...; `randomLook(rng,{villager,base})` serves both "Surprise me" and random villagers: villagers use a seeded rng, so its draw order must not change); armour looks `ARMOR_LOOK` in `shared/items.js`; editor rows `EDIT` in `game/ui/character-editor.js` (`fem:true` = female-only row, `close:true` = the tab frames the head) |
 | Start card: Log in / Register / Play as guest (Solo / Shared without a server), loading state, connecting, `beginPlay`; the first steps of a new account (character editor in creating mode, `openEditor({create:true})`) | `game/ui/start-screen.js` (`enterWorld`, `showStart`), markup `#start` in `index.html`, `styles/04-start-screen.css`; session token and the server's auth answers `game/ui/account.js`; `netReset` in `game/net/transport.js`; test `node tools/start-smoke.js` |
 | Animations | `game/character/pose.js` (`poseRig`; skill anims borrow kinds via `ANIM_OF`) |
-| World size, lakes, terrain | `shared/terrain.js` (`SIZE`, `LAKES`, `baseHeight`), `shared/zones.js` (`RINGS`, zones, arena) |
+| World size, lakes, terrain | `shared/terrain.js` (`SIZE`, `LAKES` and `lakeCut`, which digs each lake a bowl, `baseHeight`; the hills' shape is `hillShape` with `HILL_HOME` / `HILL_VALE`: fbm bent by a domain warp and eroded by `erodeFbm`, so ridges and valleys meander; `ridged` gives the mountain walls' crests and the Greyspine), `shared/noise.js` (`noiseD`: noise with its slope), `shared/zones.js` (`RINGS`, zones, arena; `zoneRidge` wobbles the walls). The shared height is sampled on the server's 4 m grid: put nothing finer than 8-16 m wavelength in it. Tune it offline: load the shared code with `loadShared(['rawHeight'])` (tools/load.js), sample a grid and draw a hillshade; slopes above 0.95 (no trees) were 9% of the home forest before and after the rework |
+| The ground you see (colours, per-pixel detail, curvature shading) and the far lands | `terrainMaterial` (a Phong material on the desktop so the pixel shader can bump the normal; Lambert with colour detail only on phones; plain in light mode), `groundShade`, `TERRAIN_*` in `game/world/generation-setup.js`; vertex colours `game/world/terrain-color.js`; the placeholder lands beyond the map (an indexed, smooth-shaded mesh of ridged mountains) `game/world/far-lands.js` |
 | The lands' edges (Crownsea shore, the Sunwall and Redgate Canyon, snowy northern rims, all curved by noise) and the placeholder lands beyond; the edge zones and their monsters (`EDGE_ZONES`, `edgeZoneAt`, `defZone` in `shared/zones.js`; rows with `zone:` in `MON_DEFS`) | `shared/terrain.js` (`coastDist`, `shore`, `sunwall`, `bareGround`), colours `game/world/terrain-color.js`, the sea limit in `worldBounds` (`game/player/movement.js`), names `edgeName` (`game/ui/map.js`); placeholders `game/world/far-lands.js` (`FAR_COAST`, `FAR_ISLES`, `farHeight`); design `docs/WORLD.md` |
 | Roads, the river bridge and the plank causeways over the drowned roads (found automatically wherever a road runs under water; names `CAUSEWAY_NAMES`) | `shared/roads.js` (`ROADS` waypoints, `roadDist`, `nearRoad`, `BRIDGES`, `bridgeDeck`, `bridgeAt`); the models `game/world/bridges.js`; walking on it `updatePlayer` (movement.js); road names on the map (`placeName`); the map's wavy outline `mapEdgeAlpha` (map.js) |
 | The main quest line (acts I-III: steps W1-W18 with W6a, W7b, W11b; V3-V11 with V7b; F1-F9; Wren, Linnea, Odran, Sigrun; talks, herbs, gathering, professions, crafting, brewing, grey monsters, lore spots; levels 26-50 are only planned in `docs/MAIN-QUEST.md` section 7) | data and talk logic `shared/main-quest.js` (`MQ`, `mqTalk`, `mqReward`, `HERBS`, `LORE`, `VIL.bed`, `V.cart`; **a step inserted in the middle of `MQ` shifts every later step's index in saves: bump `MQ_VER` and add it to `MQ_INSERTED`**); server `server/main-quest.js` (message `mq{a:'talk'\|'pick'\|'read'}`, `mqKillP`, `mqActP` hooks in economy/players/combat, `mqTickP`, grey monsters `GREY_DEFS` in `monster-defs.js`, dev `mq`); client `game/economy/main-quest.js` (`mqLinesFor`, `mqMark`, `mqLogRow`, `mqTarget`, `wrenAwake`, `odranHere`), talking and reading `village/talking.js`, props `world/lore-props.js`; the people in `VILLAGERS` (`kin`, `show`, pose `bed`); design `docs/MAIN-QUEST.md`, story `docs/STORY.md`; test `node tools/mainquest-smoke.js` |
-| Vegetation / animals | `game/world/plant-models.js`, `generation-*.js`, `game/wildlife/animals.js` |
+| Vegetation / animals | `game/world/plant-models.js` (the low-poly models: what far plants and light mode draw), `plant-models-hi.js` (the desktop's detailed ones, the `*Hi` builders: conifers with drooping bough fronds, broadleaf crowns of leaf fans on forked limbs, bushes, ferns, rocks, logs, reeds), `grass-models.js` (grass tufts in 3 levels of detail, flowers), `generation-*.js` (placement; `addTreeKind` / `addGrass` / `addRocks` choose the models), `game/wildlife/animals.js`. `VD` (plant-models-hi.js) is the detail level: 0 light mode, 1 phones (curved grass only), 2 desktop. Levels of detail: `addInstanced(geo, mat, items, {lods:[{geo,from,frac}]})` in `instancing.js` decides per instance from its distance to the eye (the nearest level's geometry is `geo`); trees switch at 120 m, bushes 65 m, ferns 55 m, boulders 90 m, stones 45 m, grass 30 m and 62 m. A new plant: build a `*Hi` geometry from its own `mrng(seed)` stream (never the global `rand`: it would move the whole world's layout), keep its outline like the low-poly one so the switch does not show, use a double-sided material (`matBroadD`, `matConiferD`, `matBushD`) for open polygons |
 | Background music (a theme per village, level range and boss; `THEMES`, `musicThemeHere`; recorded tracks `assets/audio/music-<theme>.m4a` override a theme) | `game/audio/music.js`, `game/audio/samples.js` (`musicBuffer`) |
 | Time of day / weather | `game/world/time-of-day.js` (`weatherTint` hook, the zone label), `server/weather.js`, `game/world/weather.js` (rain, and snow / blizzard in the Reach); rain and wind sound `game/audio/rain.js` (`RAIN_SND` volumes) |
 | Map / minimap | `game/ui/map.js` |
@@ -319,6 +320,25 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
 - The hidden browser pane runs a frame only around a screenshot: a key press (E to talk) or a teleport shows its effect one screenshot later, so take
   a screenshot before and after. The Testing tools' Hoarfrost buttons (`tPass`, `tRime`, `tHall`, `tNest`) plus `data-v="x,z,degrees"` on `tPass`
   (set it from the console, then click) put you anywhere facing any way.
+- three r128's `InstancedMesh` sets `frustumCulled = false` in its constructor, so every plant chunk within the fog was drawn, behind the camera too.
+  `addInstanced` now turns it back on and fits each mesh's bounding sphere to its instances (`hgt` / `rad` say how big one model is: a loose sphere
+  would cull nothing, a too tight one makes plants vanish at the screen's edge). That halved the triangles and paid for the detailed plants.
+  A mesh per bucket and level made 5,000+ meshes and 2,700 draw calls: levels of detail are per instance now (one mesh per level, its buffers packed from a shared source), and a group 150 m beyond its draw range hands its buffers
+  back (`lodRelease`, packed again by `lodAlloc`): a world walked end to end held 146 MB of level buffers before that and 7 MB after, which is the kind of thing that
+  loses a WebGL context. Measure it headless: teleport the hiker over a grid of the whole world (a scratch script on `tools/headless.js` exposing `LODS`) and sum the buffers.
+- Looking at the world in the built-in browser pane (a way that worked): serve `dist/` with a static server (solo mode runs the world in the tab: no Node
+  server to restart), patch a debug hook into `dist/wildwood.html` after each build (`window.__dbg={P,camera,scene,renderer,getH,...}` inserted before
+  `buildGeometries();` at the end of `wildwoodMain`, and a `renderer.render` wrapper that puts the camera at `window.__cam=[x,y,z,tx,ty,tz]`: a photo mode
+  that leaves the player where the server keeps them), click `#stSolo` when the status line says Ready (a click while it loads does nothing), set the level to
+  50 with `#tLevel` + `#tSetLv` (monsters near a level-1 hiker knock them out mid-shot) and move with `#tPass` (`data-v="x,z,degrees"`; the server
+  sends a hiker back who jumps more than a few metres by other means). `renderer.info.render` gives draw calls and triangles.
+- Changing the terrain moves things that are found by scanning it: the tunnel (`findTunnel`), Hanami, the boss arenas, the home boss arena, and, worst, the home
+  village's entrance `ent` (`findVillage` scan), from which the whole spiral of monster zones starts: the eroded hills once turned it 180 degrees and every zone with it.
+  `ent` is pinned to 315 degrees in `VIL`. After a terrain change print `VIL.ent`, `TUN.z` and the arenas with `loadShared` (old `git archive` copy next to the new one) and compare.
+  Two tests also depended on where the first monster or node happens to be (`skills-smoke` put the hiker at the target's ground height, `client-smoke` took the first
+  snowmoss node beside a camp): both now pick their spot robustly.
+- A Phong terrain material needs no textures for detail: world-space noise in the fragment shader (`TERRAIN_COLOR`, `TERRAIN_BUMP`) breaks up the 2 m
+  mesh. r128's Lambert is lit per vertex, so a bumped normal does nothing there.
 
 ## 9. Reference numbers
 
@@ -337,10 +357,13 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
   (its circle and home's work). Vale monsters: 2 kinds per level, 12 of each; gear tiers 4-5 at levels 20 and 25.
 - Hoarfrost progress: `gear.north` 0 ice wall shut, 1 open (anyone rewarded for an Akaoni kill; old saves past V10 get 1), 2 walked into Rimehold
   (its circle works). Professions: `gear.prof` `{mining|woodcutting|gathering: {xp}}` (60 coins each at any Lodge), `gear.res` the resources, `gear.pot` the potions; the tools are worn in `gear.eq.pick|axe|sickle`.
-- Measured costs (desktop, village): the client's JS is about 0.2 ms per frame (headless, no GPU); the GPU draws about 750 calls and
-  5.5 M triangles per frame, of which about 3.7 M are instanced trees (chunks are 110 m, fog ends at 230 m; 42% of the triangles are
-  120 m or farther); the world took about 1.1 s of JS to generate before the Hoarfrost Reach and takes about 1.8 s now (the heightmap is 1.7 times as big; 17% is `noise2`). The server ticks in under 5 ms with 40 players
+- Measured costs (desktop, village): the client's JS is about 0.2 ms per frame (headless, no GPU); the world took about 1.1 s of JS to generate before the Hoarfrost Reach and takes about 2 s now (the heightmap is 1.7 times as big; 17% is `noise2`; the eroded hills added about 40% to `rawHeight`, and `buildGeometries` with every detailed plant takes 140 ms). The server ticks in under 5 ms with 40 players
   spread over the woods (about 4% of a core).
+  What the GPU draws (`renderer.info.render`, counting the shadow pass, a level-50 hiker in a meadow, the world fully grown): before the plant rework
+  about 710 calls and 5.4 M triangles per frame, most of them instanced trees drawn behind the camera too (chunks are 110 m, fog ends at 230 m); after it
+  about 340 calls and 3.5 M (frustum culling on, detailed plants near the eye). Other views: forest 2.8-3.0 M, the village vista 3.0 M, Hanami 4-5.4 M, Rimehold 3.3 M
+  triangles; phones 280 calls and 1.2 M; light mode 335 calls and 1.0 M. A detailed oak is about 4,400 triangles, a spruce 2,500, a bush 1,900, a boulder 980,
+  a grass tuft 180 (mid 55, far 24). If a change adds more, check these numbers first.
 - Elements: soul match x1.5, soul opposite x1/1.5 (pairs fire/water, earth/air, dark/light: `ELEM_OPP`); against monsters the wheel water > fire > air > earth > water plus dark <> light (`ELEM_BEATS`): a skill that beats the monster's element x1.5, one it beats or its own element x1/1.5 (`ELEM_BOOST`, soul and wheel stack).
   Soul unlocks at level `SOUL_LV` 15 (Hanami's Kaede), passives at `PASSIVE_LV` 18 (3 slots exist, only `PASSIVE_OPEN` = 1 is usable, the others are locked for now). Skill level 1-5: +12% damage and -3% cooldown per level.
   Boss skills: each of the boss's 6 skills has a 10% chance per kill, per player who helped. Burn: a share (k) of the hit's damage every second. Pull = negative knockback.

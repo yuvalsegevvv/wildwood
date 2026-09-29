@@ -10,6 +10,30 @@ function distToChunk(ci,x,z){
   return Math.hypot(dx,dz);
 }
 
+/* Levels of detail on the desktop (plant-models-hi.js, grass-models.js): a tree within 120 m of the eye is drawn with the detailed model, farther
+   ones with the low-poly one (addInstanced decides per instance); bushes, ferns and boulders do the same at shorter distances, and grass has three
+   tufts. Without the detailed set (phones, light mode) the low-poly models are drawn alone, as before. */
+const TREE_LOD=120;
+function addTreeKind(k,list){
+  const lo=G.trees[k], hi=G.treesHi&&G.treesHi[k], conifer=k==='pine'||k==='spruce'||k==='frostspruce';
+  const base=list.map(i=>({x:i.x,z:i.z,m:i.m})), leafMat=conifer?(hi?matConiferD:matConifer):k==='bamboo'?matBush:hi?matBroadD:matBroad;
+  if(!hi){ addInstanced(lo.trunk,matBark,base,{cast:true,receive:true}); if(lo.leaves) addInstanced(lo.leaves,leafMat,list,{cast:true,receive:true}); return; }
+  addInstanced(hi.trunk,matBark,base,{cast:true,receive:true,lods:[{geo:lo.trunk,from:TREE_LOD,cast:true}]});
+  if(hi.leaves) addInstanced(hi.leaves,leafMat,list,{cast:true,receive:true,lods:[{geo:lo.leaves,from:TREE_LOD,cast:true}]});
+}
+function addGrass(items){
+  const T=G.grassHi;
+  if(!T) addInstanced(G.grass,matGrass,items,{receive:true,maxDist:95,hgt:1.6,rad:0.6});
+  else if(T.length<3) addInstanced(T[0],matGrass,items,{receive:true,maxDist:95,hgt:1.6,rad:0.6});
+  else addInstanced(T[0],matGrass,items,{receive:true,maxDist:100,hgt:1.6,rad:0.6,lods:[{geo:T[1],from:30,frac:0.85},{geo:T[2],from:62,frac:0.6}]});
+}
+function addRocks(list,hiBig,hiSmall,lo){   // boulders (big) get the 980-triangle stones, pebbles the 320-triangle ones; two shapes of each, dealt out in turn
+  if(!list.length) return;
+  if(!hiBig){ addInstanced(lo,matRock,list,{cast:true,receive:true,hgt:3.5,rad:3.5}); return; }
+  for(const [items,geos,from] of [[list.filter(i=>i.big),hiBig,90],[list.filter(i=>!i.big),hiSmall,45]])
+    geos.forEach((g,v)=>{ const part=items.filter((_,i)=>i%geos.length===v); if(part.length) addInstanced(g,matRock,part,{cast:true,receive:true,hgt:3.5,rad:3.5,lods:[{geo:lo,from,cast:true}]}); });
+}
+
 function* genChunk(ci){
   const per=(CS/360)*(CS/360);   // this chunk's share of the old per-map counts (the home forest was 8 x 8 chunks)
   const pt=m=>{ const r=chunkRect(ci,m); return [R(r[0],r[1]),R(r[2],r[3])]; };
@@ -60,11 +84,7 @@ function* genChunk(ci){
     trees.push({x,z,s});
     placed++;
   }
-  for(const k in G.trees){
-    const list=items[k]; if(!list.length) continue;
-    addInstanced(G.trees[k].trunk, matBark, list.map(i=>({x:i.x,z:i.z,m:i.m})), {cast:true,receive:true});
-    if(G.trees[k].leaves) addInstanced(G.trees[k].leaves, k==='pine'||k==='spruce'||k==='frostspruce'?matConifer:k==='bamboo'?matBush:matBroad, list, {cast:true,receive:true});
-  }
+  for(const k in G.trees){ const list=items[k]; if(list.length) addTreeKind(k,list); }
   yield;
 
   // bushes
@@ -81,7 +101,11 @@ function* genChunk(ci){
     bushItems[n%2].push({x,z,m:mtx(x,h-0.1,z,rand()*TAU,s*R(0.9,1.2),s*R(0.7,1.1),s*R(0.9,1.2)),c:tint(pick(hoar?PAL.frostBush:bloom?(vale?PAL.azalea:PAL.shrubBloom):PAL.bush))});
     n++;
   }
-  G.bush.forEach((g,i)=>{ if(bushItems[i].length) addInstanced(g,matBush,bushItems[i],{cast:true,receive:true,maxDist:170}); });
+  G.bush.forEach((g,i)=>{
+    if(!bushItems[i].length) return;
+    if(G.bushHi) addInstanced(G.bushHi[i],matBushD,bushItems[i],{cast:true,receive:true,maxDist:170,hgt:2.8,rad:2,lods:[{geo:g,from:65,cast:true}]});
+    else addInstanced(g,matBush,bushItems[i],{cast:true,receive:true,maxDist:170,hgt:2.8,rad:2});
+  });
   yield;
 
   // ferns
@@ -93,12 +117,15 @@ function* genChunk(ci){
     const s=R(0.6,1.3);
     fernItems.push({x,z,m:mtx(x,h-0.03,z,rand()*TAU,s,s*R(0.8,1.2),s),c:tint(pick(PAL.fern))}); n++;
   }
-  if(fernItems.length) addInstanced(G.fern,matFern,fernItems,{receive:true,maxDist:110});
+  if(fernItems.length){
+    if(G.fernHi) addInstanced(G.fernHi,matFern,fernItems,{receive:true,maxDist:110,hgt:1.8,rad:2,lods:[{geo:G.fern,from:55}]});
+    else addInstanced(G.fern,matFern,fernItems,{receive:true,maxDist:110,hgt:1.8,rad:2});
+  }
   yield;
 
   // grass
   const grassItems=[], gc=new THREE.Color(), fresh=new THREE.Color(0x5f8f35);
-  const GN=Math.round(56000*Q*Q*per*0.8);
+  const GN=Math.round(56000*Q*Q*per*0.8*(VD>=2?1.5:1));   // (the desktop grows half as many again: its tufts are what you walk through)
   for(let a=0,n=0;a<GN*4 && n<GN;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(4), h=getH(x,z);
@@ -115,7 +142,7 @@ function* genChunk(ci){
     if(hoar) gc.set(pick(PAL.tussock)); else { terrainColor(x,z,h,g,gc); gc.lerp(fresh,0.3).multiplyScalar(R(0.95,1.2)); }
     grassItems.push({x,z,m:mtx(x,h-0.02,z,rand()*TAU,s,s*R(0.8,1.15)*(1+meadow*0.9),s),c:gc.clone()}); n++;
   }
-  if(grassItems.length) addInstanced(G.grass,matGrass,grassItems,{receive:true,maxDist:95});
+  if(grassItems.length) addGrass(grassItems);
   yield;
 
   // wildflowers
@@ -130,7 +157,7 @@ function* genChunk(ci){
     const s=R(0.7,1.35), m=mtx(x,h-0.02,z,rand()*TAU,s,s,s);
     stemItems.push({x,z,m}); headItems.push({x,z,m,c:tint(FL[idx],0.08)}); n++;
   }
-  if(stemItems.length){ addInstanced(G.stem,matFlower,stemItems,{maxDist:85}); addInstanced(G.head,matFlower,headItems,{maxDist:85}); }
+  if(stemItems.length){ addInstanced(G.stemHi||G.stem,matFlower,stemItems,{maxDist:85,hgt:0.8,rad:0.3}); addInstanced(G.headHi||G.head,matFlower,headItems,{maxDist:85,hgt:0.8,rad:0.3}); }
   yield;
 
   // rocks
@@ -144,10 +171,10 @@ function* genChunk(ci){
     const big=rand()<0.2, b=big?R(0.9,2.3):R(0.2,0.65);
     const sx=b*R(0.8,1.4), sy=b*R(0.5,1.0), sz=b*R(0.8,1.3);
     if(big){ if(Math.hypot(x-spawn.x,z-spawn.z)<6) continue; addCol(x,z,Math.min(sx,sz)*0.9); }
-    (hoar?snowRocks:rockItems).push({x,z,m:mtx(x,h-sy*0.3,z,rand()*TAU,sx,sy,sz,R(-0.2,0.2),R(-0.2,0.2)),c:tint(0xffffff,0.1)}); n++;
+    (hoar?snowRocks:rockItems).push({x,z,big,m:mtx(x,h-sy*0.3,z,rand()*TAU,sx,sy,sz,R(-0.2,0.2),R(-0.2,0.2)),c:tint(0xffffff,0.1)}); n++;
   }
-  if(rockItems.length) addInstanced(G.rock,matRock,rockItems,{cast:true,receive:true});
-  if(snowRocks.length) addInstanced(G.rockSnow,matRock,snowRocks,{cast:true,receive:true});
+  addRocks(rockItems,G.rockHi,G.rockHiS,G.rock);
+  addRocks(snowRocks,G.rockSnowHi,G.rockSnowHiS,G.rockSnow);
 
   // fallen logs
   const logItems=[];
@@ -157,7 +184,7 @@ function* genChunk(ci){
     const s=R(0.8,1.2), l=R(0.7,1.4);
     logItems.push({x,z,m:mtx(x,h+0.18*s,z,rand()*TAU,l,s,s)}); n++;
   }
-  if(logItems.length) addInstanced(G.log,matBark,logItems,{cast:true,receive:true});
+  if(logItems.length) addInstanced(G.logHi||G.log,matBark,logItems,{cast:true,receive:true,hgt:1.6,rad:3.2});
   yield;
 
   // mushrooms around this area's trees
@@ -172,7 +199,7 @@ function* genChunk(ci){
       mushItems.push({x,z,m:mtx(x,h-0.02,z,rand()*TAU,s,s,s,R(-0.15,0.15),R(-0.15,0.15)),c:brown?new THREE.Color(1.35,1.05,0.75):tint(0xffffff,0.08)});
     }
   }
-  if(mushItems.length) addInstanced(G.mush,matBark,mushItems,{receive:true,maxDist:70});
+  if(mushItems.length) addInstanced(G.mush,matBark,mushItems,{receive:true,maxDist:70,hgt:0.5,rad:0.4});
 
   // reeds on the shoreline
   const reedItems=[];
@@ -183,7 +210,7 @@ function* genChunk(ci){
     const s=R(0.75,1.3);
     reedItems.push({x,z,m:mtx(x,h-0.05,z,rand()*TAU,s,s*R(0.85,1.2),s),c:tint(0xffffff,0.12)}); n++;
   }
-  if(reedItems.length) addInstanced(G.reeds,matReed,reedItems,{receive:true,maxDist:130});
+  if(reedItems.length) addInstanced(G.reedsHi||G.reeds,matReed,reedItems,{receive:true,maxDist:130,hgt:2.2,rad:0.4});
 
   // lily pads
   const lilyItems=[], lilyFlowers=[];
@@ -196,7 +223,7 @@ function* genChunk(ci){
     if(rand()<0.18) lilyFlowers.push({x,z,m:mtx(x+R(-0.1,0.1),WATER+0.04,z+R(-0.1,0.1),ry,s,s,s),c:new THREE.Color(rand()<0.5?0xfaf6f0:0xf2a6c4)});
     n++;
   }
-  if(lilyItems.length) addInstanced(G.lily,matFlat,lilyItems,{receive:true});
-  if(lilyFlowers.length) addInstanced(G.lilyFlower,matFlat,lilyFlowers,{});
+  if(lilyItems.length) addInstanced(G.lily,matFlat,lilyItems,{receive:true,hgt:0.2,rad:0.7});
+  if(lilyFlowers.length) addInstanced(G.lilyFlower,matFlat,lilyFlowers,{hgt:0.3,rad:0.2});
 }
 

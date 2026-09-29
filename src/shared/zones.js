@@ -62,9 +62,10 @@ function zonePoint(zn,fa,fr,full){
 }
 function zoneRidge(x,z){
   if(inVale(x)) return inHoar(x,z)?hoarRidge(x,z):valeRidge(x,z);
-  const dx=x-VIL.x, dz=z-VIL.z, r=Math.hypot(dx,dz);
+  // the walls wander: their radius and angle are pushed by slow noise (+-5 m), so they are not perfect arcs and spokes (the passes move with them)
+  const dx=x-VIL.x, dz=z-VIL.z, r=Math.hypot(dx,dz)+noise2(x*0.022+4,z*0.022-9)*5;
   if(r<RINGS[0]-2||r>RINGS[3]-4) return 0;
-  const a=Math.atan2(dx,dz); let h=0;
+  const a=Math.atan2(dx,dz)+noise2(x*0.018-6,z*0.018+2)*0.03; let h=0;
   // walls between the rings, with a pass into the middle of every outer zone
   for(let i=1;i<=2;i++){
     const d=Math.abs(r-RINGS[i]); if(d>=10) continue;

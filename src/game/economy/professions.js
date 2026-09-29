@@ -19,8 +19,8 @@ function oreGeo(kind,v){
   return {rock,cr:merge(cr)};
 }
 function treeParts(kind){
-  const [name,broad]=TREE_OF[kind], T=G.trees[name];
-  return {trunk:T.trunk,leaves:T.leaves,mat:broad?matBroad:matConifer,blaze:merge([paint(new THREE.BoxGeometry(0.32,0.5,0.06).translate(0,1.1,-0.42),(x,y,z,nx,ny,nz,c)=>c.set(0xd8a050)),paint(new THREE.BoxGeometry(0.4,0.1,0.1).translate(0,1.4,-0.4).rotateZ(0.4),(x,y,z,nx,ny,nz,c)=>c.set(0xc0c8ce))])};
+  const [name,broad]=TREE_OF[kind], T=(G.treesHi||G.trees)[name];   // (the desktop's detailed model: a node is looked at from close by)
+  return {trunk:T.trunk,leaves:T.leaves,mat:broad?(G.treesHi?matBroadD:matBroad):(G.treesHi?matConiferD:matConifer),blaze:merge([paint(new THREE.BoxGeometry(0.32,0.5,0.06).translate(0,1.1,-0.42),(x,y,z,nx,ny,nz,c)=>c.set(0xd8a050)),paint(new THREE.BoxGeometry(0.4,0.1,0.1).translate(0,1.4,-0.4).rotateZ(0.4),(x,y,z,nx,ny,nz,c)=>c.set(0xc0c8ce))])};
 }
 // herbs: flowers on stems (sunpetal, kikyo, frostbloom), leaf blades (ironroot, yomogi), or a low mound (snowmoss)
 function herbGeo(kind,v){

@@ -25,8 +25,11 @@ function plantMat(o){
 const matBark = new THREE.MeshLambertMaterial({vertexColors:true});
 const matRock = new THREE.MeshLambertMaterial({vertexColors:true});
 const matConifer = plantMat({wind:0.011});
+const matConiferD = plantMat({wind:0.011, double:true});   // the desktop's bough fronds are open polygons
 const matBroad = plantMat({wind:0.017});
+const matBroadD = plantMat({wind:0.017, double:true});   // the desktop's leaf clusters are open polygons, seen from both sides
 const matBush = plantMat({wind:0.03});
+const matBushD = plantMat({wind:0.03, double:true});
 const matGrass = plantMat({wind:0.24, double:true});
 const matFern = plantMat({wind:0.1, double:true});
 const matFlower = plantMat({wind:0.22, double:true});

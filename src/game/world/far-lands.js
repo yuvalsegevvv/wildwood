@@ -1,12 +1,13 @@
-//@ The rest of Eldmere as low-poly placeholders around the three playable lands (Greyspine, Sunscar, Amber Reach, Stormhorn, Emberwake Isles; the Hoarfrost Reach is built): one flat-shaded mesh, high ground seen through the haze
+//@ The rest of Eldmere as placeholders around the three playable lands (Greyspine, Sunscar, Amber Reach, Stormhorn, Emberwake Isles; the Hoarfrost Reach is built): one smooth-shaded mesh of ridged mountains, high ground seen through the haze
 /* Placeholders until each land is built (docs/WORLD.md: regions, map). Nothing here can be walked on: the playable
    rectangle's bounds (player/movement.js) keep you inside. The shapes follow docs/world-map.svg turned into world
    metres: the draft's Wildwood box is the home forest (about 2.1 m per map pixel east-west, 2.8 north-south), the
    vale is squeezed to its 550 m, and the Emberwake Isles are pulled north so they can be seen from the south shore
    (the map is not to scale, WORLD.md section 6). North is -z.
    The mesh is a grid of FAR_CELL cells aligned with the playable rectangle's edges; vertices on those edges take the
-   real terrain's height (getH) so the two meet, and cells inside the rectangle or under the sea are left out. */
-const FAR_CELL=27.5;
+   real terrain's height (getH) so the two meet, and cells inside the rectangle or under the sea are left out. Shared vertices, smooth
+   normals and colours from smooth noise (the old grid was flat-shaded with a random tint per face, which read as crumpled paper). */
+const FAR_CELL=27.5/1.5;
 // the continent's coastline (world metres, clockwise from the Stormhorn's tip)
 const FAR_COAST=[[-1566,-1244],[-1561,-1138],[-1497,-1028],[-1370,-917],[-1242,-806],[-1135,-751],[-901,-737],[-816,-834],
   [-645,-917],[-411,-1050],[-102,-1111],[100,-1166],[271,-1194],[441,-1125],[580,-958],[721,-723],[846,-560],[955,-470],
@@ -53,18 +54,18 @@ function farHeight(x,z){
   const sd=farSD(x,z);
   if(sd<=0) return Math.max(-4+Math.max(sd,-220)*0.12, -3+isl*0.1);
   const R=farRegion(x,z);
-  if(R==='grey'){ const r=1-Math.abs(noise2(x*0.0042+5,z*0.0042-3)); return 8+28*smoothstep(0,120,sd)+r*r*r*190*smoothstep(0,240,sd)+fbm(x*0.012,z*0.012,3)*14; }
+  if(R==='grey') return 8+28*smoothstep(0,120,sd)+ridged(x*0.0034+5,z*0.0034-3,5)*165*smoothstep(0,240,sd)+fbm(x*0.012,z*0.012,3)*12;
   if(R==='frost') return 8+50*smoothstep(0,160,sd)+(fbm(x*0.005+2,z*0.005,3)*0.5+0.5)*30+Math.max(0,noise2(x*0.011,z*0.011+4))*34;
   if(R==='sun') return 4+48*smoothstep(0,45,sd)+noise2(x*0.03,z*0.03)*2.5+(noise2(x*0.007+9,z*0.007-2)>0.45?16:0);
   if(R==='amber') return lerp(1.2,3+16*smoothstep(0,140,sd)+fbm(x*0.008,z*0.008,3)*9,smoothstep(4,30,sd));
   return 3+smoothstep(0,22,sd)*(30+(fbm(x*0.01,z*0.01,3)*0.5+0.5)*45);   // the Stormhorn's ridge
 }
 function farColor(x,z,h,out){
-  const j=0.92+h3(x*0.1,h,z*0.1)*0.16, [isl,I]=farIsle(x,z);
+  const j=0.9+(noise2(x*0.045+3,z*0.045-8)*0.5+0.5)*0.2, [isl,I]=farIsle(x,z);
   let c;
   if(isl>0) c=h<2.6?FAR_C.beach:I.volcano&&isl>I.r*0.8?FAR_C.lava:I.volcano&&h>40?FAR_C.ash:FAR_C.jungle;
   else {
-    const R=farRegion(x,z), k=h3(x*0.05,z*0.05,7);
+    const R=farRegion(x,z), k=noise2(x*0.022+7,z*0.022-2)*0.5+0.5;
     if(R==='grey') c=h>115?FAR_C.snow:h>45?FAR_C.rock:FAR_C.grass;
     else if(R==='frost') c=h<34&&z>-560?FAR_C.spruce:k<0.3?FAR_C.ice:FAR_C.frost;
     else if(R==='sun') c=h<3?FAR_C.beach:h>58?FAR_C.mesa:FAR_C.sand;
@@ -76,7 +77,7 @@ function farColor(x,z,h,out){
 /* haze: the far lands fog like the terrain up to the fog's end, then their high ground (25-110 m and up) stays faintly
    visible above it as a pale silhouette, so the Greyspine, the Hoarfrost and the volcano show on the horizon */
 function farMaterial(){
-  const m=new THREE.MeshLambertMaterial({vertexColors:true, flatShading:true});
+  const m=new THREE.MeshLambertMaterial({vertexColors:true});
   m.onBeforeCompile=sh=>{
     sh.vertexShader='varying float vWy;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWy=(modelMatrix*vec4(transformed,1.0)).y;');
     sh.fragmentShader='varying float vWy;\n'+sh.fragmentShader.replace('#include <fog_fragment>',`#ifdef USE_FOG
@@ -89,34 +90,37 @@ function farMaterial(){
   return m;
 }
 function buildFarLands(){
-  const C=FAR_CELL, X0=WX0-46*C, Z0=HZ0-32*C, NX=104, NZ=106, W=NX+1;   // (Z0 stays where it was when the rectangle ended at HZ0: the Hoarfrost Reach is built, its rectangle's cells are skipped below)
+  const C=FAR_CELL, X0=WX0-46*27.5, Z0=HZ0-32*27.5, NX=Math.round(104*27.5/C), NZ=Math.round(106*27.5/C), W=NX+1;   // (Z0 stays where it was when the rectangle ended at HZ0: the Hoarfrost Reach is built, its rectangle's cells are skipped below)
   const onRect=(x,z)=>x>=WX0-0.01&&x<=WX1+0.01&&z>=WZ0-0.01&&z<=WZ1+0.01;
-  const H=new Float32Array(W*(NZ+1));
-  for(let iz=0;iz<=NZ;iz++) for(let ix=0;ix<=NX;ix++){ const x=X0+ix*C, z=Z0+iz*C; H[iz*W+ix]=onRect(x,z)?getH(clamp(x,WX0,WX1),clamp(z,WZ0,WZ1)):farHeight(x,z); }
-  const pos=[], col=[], cc=new THREE.Color();
-  const tri=(ax,az,ah,bx,bz,bh,cx,cz,ch)=>{
-    pos.push(ax,ah,az,bx,bh,bz,cx,ch,cz);
-    farColor((ax+bx+cx)/3,(az+bz+cz)/3,(ah+bh+ch)/3,cc);
-    for(let k=0;k<3;k++) col.push(cc.r,cc.g,cc.b);
-  };
+  const H=new Float32Array(W*(NZ+1)), pos=new Float32Array(W*(NZ+1)*3), col=new Float32Array(W*(NZ+1)*3), cc=new THREE.Color();
+  for(let iz=0;iz<=NZ;iz++) for(let ix=0;ix<=NX;ix++){
+    const x=X0+ix*C, z=Z0+iz*C, k=iz*W+ix, h=onRect(x,z)?getH(clamp(x,WX0,WX1),clamp(z,WZ0,WZ1)):farHeight(x,z);
+    H[k]=h; pos[k*3]=x; pos[k*3+1]=h; pos[k*3+2]=z;
+    farColor(x,z,h,cc); col[k*3]=cc.r; col[k*3+1]=cc.g; col[k*3+2]=cc.b;
+  }
+  const idx=[];
   for(let iz=0;iz<NZ;iz++) for(let ix=0;ix<NX;ix++){
     const x=X0+ix*C, z=Z0+iz*C;
     if(x>=WX0-0.01&&x+C<=WX1+0.01&&z>=WZ0-0.01&&z+C<=WZ1+0.01) continue;   // the playable lands draw themselves
-    const a=H[iz*W+ix], b=H[iz*W+ix+1], c=H[(iz+1)*W+ix+1], d=H[(iz+1)*W+ix];
-    if(Math.max(a,b,c,d)<-2.5) continue;                                     // deep under the sea
-    tri(x,z,a, x,z+C,d, x+C,z+C,c); tri(x,z,a, x+C,z+C,c, x+C,z,b);
+    const a=iz*W+ix, b=a+1, d=a+W, c=d+1;
+    if(Math.max(H[a],H[b],H[c],H[d])<-2.5) continue;                       // deep under the sea
+    idx.push(a,d,c, a,c,b);
   }
-  // smoke over the volcano: a few low-poly puffs, high enough to show through the haze
-  const V=FAR_ISLES.find(q=>q.volcano);
-  [[0,150,16],[8,182,22],[-4,215,27],[14,252,32]].forEach(([dx,y,r],i)=>{
-    const g=new THREE.IcosahedronGeometry(r,0).toNonIndexed(), p=g.attributes.position;
-    for(let k=0;k<p.count;k++){ pos.push(V.x+dx+p.getX(k),y+p.getY(k),V.z-i*6+p.getZ(k)); cc.set(FAR_C.smoke).multiplyScalar(0.9+0.1*i/3); col.push(cc.r,cc.g,cc.b); }
-  });
   const g=new THREE.BufferGeometry();
-  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
-  g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
-  g.computeVertexNormals(); g.computeBoundingSphere();
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  g.setAttribute('color',new THREE.BufferAttribute(col,3));
+  g.setIndex(idx); g.computeVertexNormals(); g.computeBoundingSphere();
   const mesh=new THREE.Mesh(g,farMaterial()); mesh.matrixAutoUpdate=false;
   scene.add(mesh);
+  // smoke over the volcano: a few low-poly puffs, high enough to show through the haze
+  const V=FAR_ISLES.find(q=>q.volcano), sp=[], sc=[];
+  [[0,150,16],[8,182,22],[-4,215,27],[14,252,32]].forEach(([dx,y,r],i)=>{
+    const sg=new THREE.IcosahedronGeometry(r,0), p=sg.attributes.position;
+    for(let k=0;k<p.count;k++){ sp.push(V.x+dx+p.getX(k),y+p.getY(k),V.z-i*6+p.getZ(k)); cc.set(FAR_C.smoke).multiplyScalar(0.9+0.1*i/3); sc.push(cc.r,cc.g,cc.b); }
+  });
+  const sg=new THREE.BufferGeometry();
+  sg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3)); sg.setAttribute('color',new THREE.Float32BufferAttribute(sc,3));
+  sg.computeVertexNormals(); sg.computeBoundingSphere();
+  const smoke=new THREE.Mesh(sg,farMaterial()); smoke.matrixAutoUpdate=false; scene.add(smoke);
   return mesh;
 }

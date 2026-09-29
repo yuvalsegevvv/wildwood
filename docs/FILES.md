@@ -30,8 +30,8 @@ styles
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
-  noise.js                           Seeded RNG (rand, R, pick), simplex noise2, fbm, clamp, lerp, smoothstep, h3 hash. Pure.
-  terrain.js                         Map size (SIZE, HALF, WATER; the whole world WX0..WX1 x WZ0..WZ1 with the Sakura Vale east and the Hoarfrost Reach north of it), river (riverX), the lands' edges (coast, the Sunwall and Redgate, snowy rims), baseHeight, forestDensity, autumnAmt. Pure.
+  noise.js                           Seeded RNG (rand, R, pick), simplex noise2 (and noiseD with its slope), fbm, erodeFbm (fbm that looks eroded), clamp, lerp, smoothstep, h3 hash. Pure.
+  terrain.js                         Map size (SIZE, HALF, WATER; the whole world WX0..WX1 x WZ0..WZ1 with the Sakura Vale east and the Hoarfrost Reach north of it), river (riverX), lakes, the lands' edges (coast, the Sunwall and Redgate, snowy rims), the hills' shape (hillShape: warped, eroded fbm; ridged mountains), baseHeight, forestDensity, autumnAmt. Pure.
   village-layout.js                  Village placement and layout (VIL): houses, stalls, anchors, paths, colliders. Pure.
   zones.js                           Monster zones of the home forest (ZONES, zoneAt, zonePoint, defZone): three rings round the village plus the edge zones (shore, Sunwall, foothills), dividing ridges (zoneRidge), boss arena (ARENA); the vale's zones are in vale.js, the Hoarfrost Reach's in hoarfrost.js. Pure.
   vale.js                            The Sakura Vale east of the mountains: the tunnel (TUN), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt (which knows all three villages). Pure.
@@ -84,11 +84,13 @@ game
   engine/sky.js                      Sky dome shader (gradient, sun/moon, stars, clouds)
   engine/materials.js                Plant materials with wind sway (plantMat) and shared materials
   world/plant-models.js              Geometry helpers (paint, merge, mkGeo, cyl, blob) and plant models (trees, grass, ferns...)
-  world/instancing.js                Chunked instanced meshes, distance culling, tree collision grid (addCol, nearCols)
+  world/plant-models-hi.js           Detailed plant models for the desktop (the *Hi builders): conifers with drooping boughs, broadleaf crowns of leaf fans on forked limbs, leafy bushes, pinnate ferns, faceted rocks, fallen logs, reeds
+  world/grass-models.js              Grass tufts in three levels of detail (curved, tapering blades with a dark root and a bright tip) and flowers with petals
+  world/instancing.js                Chunked instanced meshes (frustum culled, with per-instance levels of detail), distance culling, tree collision grid (addCol, nearCols)
   player/state.js                    Player state P and spawn point
-  world/generation-setup.js          Palettes, shared geometries (buildGeometries), terrain (in tiles, culled by distance) + water + the three villages (genTerrain)
+  world/generation-setup.js          Palettes, shared geometries (buildGeometries), terrain (in tiles, culled by distance, with a ground-detail shader) + water + the three villages (genTerrain)
   world/generation-chunks.js         Per-chunk vegetation placement (genChunk): the home forest's mix, sakura, maple, pine and bamboo in the Sakura Vale, snowy spruce, dwarf birch and boulders in the Hoarfrost Reach
-  world/far-lands.js                 The rest of Eldmere as low-poly placeholders around the three playable lands (Greyspine, Sunscar, Amber Reach, Stormhorn, Emberwake Isles; the Hoarfrost Reach is built): one flat-shaded mesh, high ground seen through the haze
+  world/far-lands.js                 The rest of Eldmere as placeholders around the three playable lands (Greyspine, Sunscar, Amber Reach, Stormhorn, Emberwake Isles; the Hoarfrost Reach is built): one smooth-shaded mesh of ridged mountains, high ground seen through the haze
   world/bridges.js                   The river bridge's and the plank causeways' models (BRIDGES in shared/roads.js): plank decks, rails, posts and piers, one merged mesh
   world/lore-props.js                The story's props: Wren's sickbed under its awning, Odran's two carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside shrine, a grey plate in the ice) and the heartleaf you pick
   world/streaming.js                 Streaming scheduler (Stream, streamPump): terrain first, nearest chunks next

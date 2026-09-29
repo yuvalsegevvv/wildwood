@@ -141,8 +141,7 @@ function buildRimehold(){
   { const items=[], hA=V.houses.map(h=>h.a);
     for(let i=0;i<7;i++){ const a=(hA[i]+hA[i+1])/2, r=31, x=V.x+Math.sin(a)*r, z=V.z+Math.cos(a)*r, s=R(0.95,1.3);
       items.push({x,z,m:mtx(x,getH(x,z)-0.15,z,a,s,s,s),c:tint(pick(PAL.frostSpruce))}); addCol(x,z,RAD.frostspruce*s); }
-    addInstanced(G.trees.frostspruce.trunk,matBark,items.map(i=>({x:i.x,z:i.z,m:i.m})),{cast:true,receive:true});
-    addInstanced(G.trees.frostspruce.leaves,matConifer,items,{cast:true,receive:true});
+    addTreeKind('frostspruce',items);
   }
   addVillageMeshes(out,win);
   for(const c of V.circles) addCol(c[0],c[1],c[2]);

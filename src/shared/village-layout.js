@@ -109,4 +109,6 @@ function segDist(px,pz,s){
   const t=clamp(((px-ax)*vx+(pz-az)*vz)/l2);
   return Math.hypot(px-(ax+vx*t),pz-(az+vz*t));
 }
-const VIL=layoutVillage(findVillage(),{seed:4242});
+// (ent: the road comes in from the north-west, as it always did. Left to the scan above, a change in the hills round the village can turn the entrance
+// right round, and with it the whole spiral of monster zones, which starts at the entrance: the world's layout must not depend on the noise's details)
+const VIL=layoutVillage(findVillage(),{seed:4242,ent:14/16*TAU});

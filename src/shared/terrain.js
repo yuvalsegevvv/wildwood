@@ -1,4 +1,4 @@
-//@ Map size (SIZE, HALF, WATER; the whole world WX0..WX1 x WZ0..WZ1 with the Sakura Vale east and the Hoarfrost Reach north of it), river (riverX), the lands' edges (coast, the Sunwall and Redgate, snowy rims), baseHeight, forestDensity, autumnAmt. Pure.
+//@ Map size (SIZE, HALF, WATER; the whole world WX0..WX1 x WZ0..WZ1 with the Sakura Vale east and the Hoarfrost Reach north of it), river (riverX), lakes, the lands' edges (coast, the Sunwall and Redgate, snowy rims), the hills' shape (hillShape: warped, eroded fbm; ridged mountains), baseHeight, forestDensity, autumnAmt. Pure.
 /* ---------- world shape ---------- */
 const SIZE=880, HALF=SIZE/2, WATER=0;
 /* The home forest is the square -HALF..HALF. East of its border mountains lies the Sakura Vale (EAST_W wide),
@@ -9,7 +9,7 @@ const NORTH_D=600, HZ0=-HALF;
 const EAST_W=550, WX0=-HALF, WX1=HALF+EAST_W, WZ0=HZ0-NORTH_D, WZ1=HALF, WW=WX1-WX0, WD=WZ1-WZ0;
 const inVale=x=>x>HALF;   // east of the border mountains: the Sakura Vale and, past its north crest, the Hoarfrost Reach
 const inHoar=(x,z)=>x>HALF&&z<HZ0;
-function riverBase(z){ return Math.sin(z*0.011+0.6)*34 + noise2(z*0.006,7.7)*24 + 28; }
+function riverBase(z){ return Math.sin(z*0.011+0.6)*34 + noise2(z*0.006,7.7)*24 + noise2(z*0.021+3.7,2.9)*6 + 28; }
 const RIVER_SIDE=Math.sign(riverBase(0))||1;
 // the river bends around the middle of the map so the village has room there
 function riverX(z){ const b=riverBase(z), w=Math.exp(-Math.pow(z/75,2)); return b+RIVER_SIDE*Math.max(0,62-RIVER_SIDE*b)*w; }
@@ -17,8 +17,10 @@ function riverX(z){ const b=riverBase(z), w=Math.exp(-Math.pow(z/75,2)); return 
 const LAKES=[{x:-75,z:65,r:36,name:'Still Water'},{x:-250,z:-180,r:48,name:'Mistmere'},{x:235,z:215,r:30,name:'Heron Pond'},
   {x:770,z:40,r:30,name:'Mirror Pond',vale:true},{x:860,z:-250,r:26,name:'Crane Lake',vale:true}];
 function lakeCut(x,z,h){
-  for(const L of LAKES){ const lx=x-L.x, lz=z-L.z; if(Math.abs(lx)>L.r+8||Math.abs(lz)>L.r+8) continue;
+  for(const L of LAKES){ const lx=x-L.x, lz=z-L.z; if(Math.abs(lx)>L.r*2.6||Math.abs(lz)>L.r*2.6) continue;
     const ld=Math.sqrt(lx*lx+lz*lz) + noise2(x*0.05+L.x,z*0.05)*6;
+    // a bowl: the ground round a lake may rise only gently from its shore (the eroded hills would otherwise leave a lake little more than a puddle)
+    h = lerp(h, Math.min(h, 0.9+Math.max(0,ld-L.r*0.72)*0.32), smoothstep(L.r*2.6, L.r*1.2, ld));
     h = lerp(h, Math.min(h,-2.6), smoothstep(L.r, L.r*0.42, ld)); }
   return h;
 }
@@ -70,13 +72,13 @@ function baseHeight(x,z){
   return z<HZ0-36?lerp(homeHeight(x,z),greyspineHeight(x,z),smoothstep(HZ0-36,HZ0-96,z)):homeHeight(x,z);
 }
 // the Greyspine north of the home forest: the forest's rim goes on as a ridge and climbs (z < HZ0 - 96 is only this)
-function greyspineHeight(x,z){ return 70+fbm(x*0.0045+3.1,z*0.0045-1.7,3)*38+Math.max(0,noise2(x*0.011,z*0.011))*26; }
+function greyspineHeight(x,z){ return 42+ridged(x*0.0058+3.1,z*0.0058-1.7,5)*118+fbm(x*0.0045+3.1,z*0.0045-1.7,3)*14; }
 /* ---------- the Hoarfrost Reach: a high frozen plateau (docs/WORLD.md) ----------
    Its ground is ~50 m up (the vale's is 10-30 m), rolling in broad white domes, with frozen lakes (flat ice: walkable, no water). South,
    the vale's north rim goes on north of its crest at HZ0 and eases down to the plateau over ~60 m (only the pass through it is low,
    shared/hoarfrost.js); west the Vale Wall goes on; north a glacier wall; east the ice ends in sea cliffs (you stop 14 m short of the edge). */
 const FROST_LAKES=[{x:790,z:-742,r:46,name:'Frostmere'},{x:585,z:-850,r:30,name:'Mirrorice'},{x:905,z:-812,r:26,name:'Blue Tarn'}];
-const hoarBase=(x,z)=>50+fbm(x*0.0055+13.7,z*0.0055-4.1,4)*15+Math.pow(1-Math.abs(noise2(x*0.011+61,z*0.011-9)),2)*5+noise2(x*0.06,z*0.06)*0.4;
+const hoarBase=(x,z)=>50+erodeFbm(x*0.0055+13.7,z*0.0055-4.1,5,0.2)*19+Math.pow(1-Math.abs(noise2(x*0.011+61,z*0.011-9)),2)*5+noise2(x*0.06,z*0.06)*0.4;
 function iceLevel(L){ return hoarBase(L.x,L.z)-1.6; }
 // distance to the nearest frozen lake's edge (negative inside); the ice sheet itself is flat
 function iceDist(x,z){ let m=1e9; for(const L of FROST_LAKES){ const d=Math.hypot(x-L.x,z-L.z)-L.r+noise2(x*0.05+L.x,z*0.05)*4; if(d<m) m=d; } return m; }
@@ -84,34 +86,50 @@ function hoarHeight(x,z){
   let h=hoarBase(x,z);
   for(const L of FROST_LAKES){ const lx=x-L.x, lz=z-L.z; if(Math.abs(lx)>L.r+14||Math.abs(lz)>L.r+14) continue;
     const ld=Math.sqrt(lx*lx+lz*lz)+noise2(x*0.05+L.x,z*0.05)*4; h=lerp(h,iceLevel(L),smoothstep(L.r+6,L.r-3,ld)); }
-  const f=fbm(x*0.02,z*0.02,3)*0.5+0.5, rw=smoothstep(62,4,x-HALF), rn=smoothstep(62,4,z-WZ0-rimWobble(x,31));
-  h+=rw*rw*46+rw*f*14;    // the Vale Wall goes on
-  h+=rn*rn*46+rn*f*16;    // the glacier wall in the north
+  const f=fbm(x*0.02,z*0.02,3)*0.5+0.5, rw=smoothstep(62,4,x-HALF), rn=smoothstep(62,4,z-WZ0-rimWobble(x,31)), cr=(rw>0||rn>0)?crest(x,z):0;
+  h+=rw*rw*46+rw*f*14+rw*rw*rw*cr*20;    // the Vale Wall goes on
+  h+=rn*rn*46+rn*f*16+rn*rn*rn*cr*22;    // the glacier wall in the north
   return lerp(h,-9,smoothstep(18,-10,WX1-x+noise2(z*0.02,4.1)*5));   // the east: sea cliffs (flat until 18 m short of the edge, where you stop 14 m short)
 }
 // the Sakura Vale: softer rolling hills and ponds, no river
 function valeHeight(x,z){
-  let h = fbm(x*0.0048-7.3, z*0.0048+2.9, 5)*20 + 9;
-  const r = 1-Math.abs(noise2(x*0.013-21, z*0.013+33)); h += r*r*7 - 2;
-  h += noise2(x*0.06, z*0.06)*0.4;
+  let h = hillShape(x,z,HILL_VALE);
   h = lakeCut(x,z,h);
-  const f=fbm(x*0.02,z*0.02,3)*0.5+0.5, rw=smoothstep(62,4,x-HALF), rn=smoothstep(62,4,z-HZ0-rimWobble(x,23));
-  h += rw*rw*48 + rw*f*14;   // the Vale Wall
-  h += rn*rn*58 + rn*f*18;   // up to the crest at HZ0 (the Hoarfrost Reach's south wall)
+  const f=fbm(x*0.02,z*0.02,3)*0.5+0.5, rw=smoothstep(62,4,x-HALF), rn=smoothstep(62,4,z-HZ0-rimWobble(x,23)), cr=(rw>0||rn>0)?crest(x,z):0;
+  h += rw*rw*48 + rw*f*14 + rw*rw*rw*cr*20;   // the Vale Wall
+  h += rn*rn*58 + rn*f*18 + rn*rn*rn*cr*22;   // up to the crest at HZ0 (the Hoarfrost Reach's south wall)
   if(z<HZ0-2) return lerp(h,hoarHeight(x,z),smoothstep(HZ0-2,HZ0-62,z));   // past the crest it eases down onto the plateau
   return shore(h, coastDist(x,z), smoothstep(46,14,x-HALF));
 }
+/* the hills' shape, shared by the home forest and the vale: fbm bent by a slow domain warp (so ridges and valleys meander instead of sitting
+   in round blobs) and eroded (erodeFbm: smooth flanks, detail kept in the hollows), a ridged term for crests, and a fine relief of 8-16 m
+   wavelength that is strongest on the flats (the server's grid is 4 m, the client's 2 m: nothing finer than this is put in the shared height) */
+const HILL_HOME={f:0.0042,ox:3.1,oz:-1.7,amp:32,base:8,rf:0.011,rox:40,roz:-17,ramp:6,mic:0.45};
+const HILL_VALE={f:0.0048,ox:-7.3,oz:2.9,amp:25,base:9,rf:0.013,rox:-21,roz:33,ramp:7,mic:0.4};
+function hillShape(x,z,o){
+  const wx=x+noise2(x*0.0029+7.1,z*0.0029-3.7)*42, wz=z+noise2(x*0.0029-11.3,z*0.0029+5.3)*42;
+  let h=erodeFbm(wx*o.f+o.ox,wz*o.f+o.oz,6,0.22)*o.amp+o.base;
+  const r=1-Math.abs(noise2(wx*o.rf+o.rox,wz*o.rf+o.roz)); h+=r*r*o.ramp-2;
+  h+=noise2(x*0.06,z*0.06)*o.mic+erodeFbm(x*0.075+9,z*0.075-4,2,0.5)*0.55;
+  return h;
+}
+// ridged multifractal (0..~1): sharp crests with valleys between, for mountain walls and the Greyspine
+function ridged(x,z,oct){
+  let v=0, a=0.5, f=1, w=1;
+  for(let k=0;k<oct;k++){ let n=1-Math.abs(noise2(x*f+k*5.3,z*f-k*3.1)); n*=n; n*=w; w=clamp(n*2,0,1); v+=n*a; a*=0.5; f*=2.03; }
+  return v;
+}
+const crest=(x,z)=>ridged(x*0.021+5,z*0.021-8,3);   // the jagged top of the border mountains
 function homeHeight(x,z){
-  let h = fbm(x*0.0042+3.1, z*0.0042-1.7, 5)*26 + 8;
-  const r = 1-Math.abs(noise2(x*0.011+40, z*0.011-17)); h += r*r*6 - 2;
-  h += noise2(x*0.06, z*0.06)*0.45;
-  const d = Math.abs(x - riverX(z));
+  let h = hillShape(x,z,HILL_HOME);
+  const d = Math.abs(x - riverX(z)) + noise2(x*0.05+3.3,z*0.05-1.9)*2.2;   // (the banks are not straight)
   h = lerp(h, h*0.35 + 2.2, smoothstep(70, 12, d));
   h = lerp(h, -1.7, smoothstep(11, 2.5, d));
   h = lakeCut(x,z,h);
   const f=fbm(x*0.02,z*0.02,3)*0.5+0.5, re=smoothstep(62,4,HALF-x), rn=smoothstep(66,4,z-HZ0-rimWobble(x,11));
-  h += re*re*48 + re*f*14;   // the Vale Wall
-  h += rn*rn*62 + rn*f*18;   // the Greyspine's foothills
+  const cr=(re>0||rn>0)?crest(x,z):0;
+  h += re*re*48 + re*f*14 + re*re*re*cr*20;   // the Vale Wall
+  h += rn*rn*62 + rn*f*18 + rn*rn*rn*cr*22;   // the Greyspine's foothills
   h = sunwall(x,z,h,x-WX0);
   return shore(h, coastDist(x,z), smoothstep(46,14,HALF-x));
 }

@@ -139,7 +139,8 @@ const dmgTo=(ids,from)=>evs.slice(from).filter(e=>e[0]==='dmg'&&ids.has(e[1])).l
 const castOne=(id,pid,ticks)=>{
   const s=x.SKILLS[id], cls=s.cls, lv=s.lv; inbox[pid]=[]; W.join(pid,{name:'C'+pid,look:{cls},save:{level:lv}}); tick(1);
   const q=W.players.get(pid); q.gear.skills.owned.push(id); W.receive(pid,{t:'eqskill',id}); tick(1);
-  gather(); const dx=s.fx.dash?9:Math.min(4,Math.max(2,s.range-1.2)), face=Math.PI/2; W.setPos(pid,[target.x+dx,x.getH(target.x,target.z),target.z,face,0,0]);
+  gather(); const dx=s.fx.dash?9:Math.min(4,Math.max(2,s.range-1.2)), face=Math.PI/2, px=target.x+dx;
+  W.setPos(pid,[px,x.getH(px,target.z),target.z,face,0,0]);   // (on the ground under their own feet: on a slope the target's height would bury the hand and every shot would end in the ground)
   q.cd.skill=q.cd.burst=0; const from=evs.length; W.receive(pid,{t:'atk',k:s.slot,tg:target.id,face,aim:[-1,0,0]}); tick(ticks||60,true);
   return {q,s,from};
 };

@@ -1,4 +1,4 @@
-//@ Seeded RNG (rand, R, pick), simplex noise2, fbm, clamp, lerp, smoothstep, h3 hash. Pure.
+//@ Seeded RNG (rand, R, pick), simplex noise2 (and noiseD with its slope), fbm, erodeFbm (fbm that looks eroded), clamp, lerp, smoothstep, h3 hash. Pure.
 /* ---------- RNG + noise ---------- */
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 let rand = mulberry32(20260927);
@@ -20,6 +20,27 @@ function noise2(xin,yin){
   return 70*n;
 }
 function fbm(x,y,o){ let v=0,a=1,f=1,s=0; for(let k=0;k<o;k++){ v+=a*noise2(x*f,y*f); s+=a; a*=0.5; f*=2.02; } return v/s; }
+/* noise2 with its slope: returns the same value as noise2 and leaves it in ND[0], the partial derivatives in ND[1] (d/dx) and ND[2] (d/dy)
+   (each corner adds t^4 (g.d), so its derivative is t^4 g - 8 t^3 (g.d) d) */
+const ND=[0,0,0];
+function noiseD(xin,yin){
+  const s=(xin+yin)*F2, i=Math.floor(xin+s), j=Math.floor(yin+s);
+  const t=(i+j)*G2, x0=xin-(i-t), y0=yin-(j-t);
+  const i1=x0>y0?1:0, j1=x0>y0?0:1;
+  const x1=x0-i1+G2, y1=y0-j1+G2, x2=x0-1+2*G2, y2=y0-1+2*G2;
+  const ii=i&255, jj=j&255; let n=0, dx=0, dy=0, tt, g, gd, t2, t3;
+  tt=0.5-x0*x0-y0*y0; if(tt>0){ g=GR[perm[ii+perm[jj]]&7]; gd=g[0]*x0+g[1]*y0; t2=tt*tt; t3=t2*tt; n+=t2*t2*gd; dx+=t2*t2*g[0]-8*t3*gd*x0; dy+=t2*t2*g[1]-8*t3*gd*y0; }
+  tt=0.5-x1*x1-y1*y1; if(tt>0){ g=GR[perm[ii+i1+perm[jj+j1]]&7]; gd=g[0]*x1+g[1]*y1; t2=tt*tt; t3=t2*tt; n+=t2*t2*gd; dx+=t2*t2*g[0]-8*t3*gd*x1; dy+=t2*t2*g[1]-8*t3*gd*y1; }
+  tt=0.5-x2*x2-y2*y2; if(tt>0){ g=GR[perm[ii+1+perm[jj+1]]&7]; gd=g[0]*x2+g[1]*y2; t2=tt*tt; t3=t2*tt; n+=t2*t2*gd; dx+=t2*t2*g[0]-8*t3*gd*x2; dy+=t2*t2*g[1]-8*t3*gd*y2; }
+  ND[0]=70*n; ND[1]=70*dx; ND[2]=70*dy; return ND[0];
+}
+/* fbm that looks eroded: every octave is divided by 1 + the slope the octaves before it have built up, so steep ground stays smooth and the
+   flats and hollows keep the fine detail (the way water sorts a hillside); ~ +-0.6 like fbm */
+function erodeFbm(x,y,o,q){
+  let v=0, a=1, f=1, dx=0, dy=0, s=0; q=q===undefined?0.3:q;   // q: how strongly the slope damps the octaves that follow
+  for(let k=0;k<o;k++){ noiseD(x*f+k*17.3,y*f-k*9.1); dx+=ND[1]*q; dy+=ND[2]*q; v+=a*ND[0]/(1+dx*dx+dy*dy); s+=a; a*=0.5; f*=2.02; }
+  return v/s;
+}
 const clamp=(v,a=0,b=1)=>v<a?a:v>b?b:v;
 const lerp=(a,b,t)=>a+(b-a)*t;
 function smoothstep(e0,e1,x){ const t=clamp((x-e0)/(e1-e0)); return t*t*(3-2*t); }

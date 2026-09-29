@@ -78,6 +78,8 @@
     "engine/sky.js",
     "engine/materials.js",
     "world/plant-models.js",
+    "world/plant-models-hi.js",
+    "world/grass-models.js",
     "world/instancing.js",
     "player/state.js",
     "world/generation-setup.js",
