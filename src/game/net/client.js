@@ -92,6 +92,7 @@ function applyEvent(e){
     case 'toast': if(e[1]==null||e[1]===me){ toast(e[2],e[3]); if(e[1]==null&&e[3]==='good') UI_SFX.success(); } break;
     case 'qdone': if(e[1]===me) UI_SFX.notify(); break;
     case 'qturn': if(e[1]===me) UI_SFX.success(); break;
+    case 'mq': if(e[1]===me) { if(e[3]===2) UI_SFX.success(); else UI_SFX.notify(); } break;   // a main quest step started (1) or handed in (2)
     case 'pact': if(e[1]!==me) remoteAct(e[1],e[2],e[3]); break;
     case 'pjoin': if(e[1].id!==me && !REMOTES.has(e[1].id)){ remoteAdd(e[1]); chatLine('sys',e[1].name,'joined the world'); } break;
     case 'pleave': { const r=REMOTES.get(e[1]); if(r){ chatLine('sys',r.name,'left the world'); remoteRemove(e[1]); } break; }

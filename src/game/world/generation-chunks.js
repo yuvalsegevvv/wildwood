@@ -23,7 +23,7 @@ function* genChunk(ci){
     const [x,z]=pt(10);
     if(Math.hypot(x-spawn.x,z-spawn.z)<7) continue;
     if(vDist(x,z)<VR+6 || nearPath(x,z,3.5) || arenaDist(x,z)<25 || inTunnelCut(x,z,2)) continue;
-    const h=getH(x,z); if(h<0.8 || bareGround(x,z)) continue;
+    const h=getH(x,z); if(h<0.8 || bareGround(x,z) || storyClear(x,z)) continue;
     const g=grad(x,z); if(g>0.95) continue;
     const fd=forestDensity(x,z);
     if(rand()>fd*fd*1.15+0.015) continue;
@@ -66,7 +66,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<30000*per && n<(Q*(LOW?900:1400))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(8), h=getH(x,z);
-    if(h<0.6 || grad(x,z)>0.8 || bareGround(x,z)) continue;
+    if(h<0.6 || grad(x,z)>0.8 || bareGround(x,z) || storyClear(x,z)) continue;
     if(vDist(x,z)<VR+2 || nearPath(x,z,2) || arenaDist(x,z)<22 || inTunnelCut(x,z)) continue;
     const fd=forestDensity(x,z);
     if(rand()>clamp(1-Math.abs(fd-0.55)*2)+0.08) continue;

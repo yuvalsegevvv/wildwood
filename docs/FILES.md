@@ -34,15 +34,16 @@ shared
   zones.js                           Monster zones of the home forest (ZONES, zoneAt, zonePoint, defZone): three rings round the village plus the edge zones (shore, Sunwall, foothills), dividing ridges (zoneRidge), boss arena (ARENA); the vale's zones are in vale.js. Pure.
   vale.js                            The Sakura Vale east of the mountains: the tunnel (TUN), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt. Pure.
   village-helpers.js                 vDist, nearPath, pathAmt, plazaAmt, inBox, pushOutBoxes: each works on the village on that side of the mountains (vilAt). Pure.
-  roads.js                           Roads between the two villages and the key places (ROADS), the bridge over the river (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck. Pure.
+  roads.js                           Roads between the two villages and the key places (ROADS), the river bridge and the plank causeways over the drowned stretches (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck, bridgeAt. Pure.
   terrain-height.js                  rawHeight: base terrain + zone ridges (cut away where a road crosses) + village, arena and tunnel flattening. Pure.
   balance.js                         Level formulas: fLv, gear tiers, expected gear, XP curve, coins. Pure.
-  monster-defs.js                    Monster families (FAM), the 39 monsters (MON_DEFS: 15 home, 4 on the home forest's edges, 20 in the Sakura Vale), prepDef, the three bosses (BOSS_DEFS) with their totems and adds. Pure.
+  monster-defs.js                    Monster families (FAM), the 40 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale), prepDef, the three bosses (BOSS_DEFS) with their totems and adds, the main quest's grey-veined monsters (GREY_DEFS). Pure.
   elements.js                        Elements (ELEMS): your soul (SOUL_LV, opposite pairs) and a monster's element (the wheel), with the damage multipliers for both. Pure.
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
   drops.js                           Monster drops (MATS: one material per monster kind), the skills bosses drop (BOSS_SKILLS), and what upgrading a skill costs (upgradeNeeds). Pure.
   items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, prices, drop tables, merging, armour looks, gear helpers. Pure.
   quests.js                          Quest board: endless random quests (hunt, bounty, scout, boss) scaled to your level, and their rewards. Pure.
+  main-quest.js                      The main quest line (MQ: acts I and II, docs/MAIN-QUEST.md), its places (Wren's sickbed, Odran's carts, heartleaf, grey spots) and the readable lore spots (LORE: carvings, signs, the drowned roads). Pure.
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -52,6 +53,7 @@ server
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
   boss.js                            The bosses on the server (Rootwarden, Akaoni, Kyuubi): engagement, cleave / root / slam telegraphs, shield + totems, enrage + adds, reset
   economy.js                         Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), the soul shrine, testing commands
+  main-quest.js                      The main quest on the server: starting, progressing and handing in steps (MQ in shared/main-quest.js) from what the server sees (talks, kills, system uses, places), rewards, the grey monsters spawned for you
   weather.js                         Weather on the server: rain for 5-7 minutes every 40-60 minutes, 30% of the time a thunderstorm
   accounts.js                        Registered accounts (name + password) on the online server: log in, register a guest, log out, unique names
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
@@ -75,7 +77,8 @@ game
   world/generation-setup.js          Palettes, shared geometries (buildGeometries), terrain (in bands, culled by distance) + water + both villages (genTerrain)
   world/generation-chunks.js         Per-chunk vegetation placement (genChunk): the home forest's mix, and sakura, maple, pine and bamboo in the Sakura Vale
   world/far-lands.js                 The rest of Eldmere as low-poly placeholders around the two playable lands (Greyspine, Hoarfrost, Sunscar, Amber Reach, Stormhorn, Emberwake Isles): one flat-shaded mesh, high ground seen through the haze
-  world/bridges.js                   The river bridge's model (BRIDGES in shared/roads.js): plank deck following its arch, rails, posts and piers, one merged mesh
+  world/bridges.js                   The river bridge's and the plank causeways' models (BRIDGES in shared/roads.js): plank decks, rails, posts and piers, one merged mesh
+  world/lore-props.js                The story's props: Wren's sickbed under its awning, Odran's two carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside shrine, the ice wall) and the heartleaf you pick
   world/streaming.js                 Streaming scheduler (Stream, streamPump): terrain first, nearest chunks next
   character/model.js                 Look presets, random looks (randomLook), save/load, buildCharacter (all outfits and armour looks), hiker, rebuildHiker
   character/pose.js                  poseRig (walk, run, sit, talk, attacks) and animateHiker
@@ -88,7 +91,7 @@ game
   village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)
   village/buildings-vale.js          The Sakura Vale's buildings: Hanami (tiled roofs, shoji, torii, stone lanterns), the tunnel (bore, roof, portals, sealed door), teleport circles, the two shrines
   village/villagers.js               VILLAGERS (hard-coded NPCs of both villages), random villagers, NPC behaviour (updateNPCs)
-  village/talking.js                 Talking to villagers: bubble, prompt, talk key (E), opening shop/quest panels; stepping on a teleport circle
+  village/talking.js                 Talking to villagers: bubble, prompt, talk key (E), the main quest's lines first, opening shop/quest panels; reading lore spots, picking heartleaf; stepping on a teleport circle
   village/npc-labels.js              Name and profession labels above the special villagers, with ! / ? quest markers over quest givers
   audio/engine.js                    Web Audio setup (SND, buses, reverb, echo, noise), tone(), noiseHit(), spatial()
   audio/samples.js                   Sound files from assets/audio: small ones embedded in the page (window.WILDWOOD_AUDIO), music fetched once from audio/ (window.WILDWOOD_AUDIO_URL): loadSamples, playSample, musicBuffer (lazy)
@@ -112,12 +115,13 @@ game
   ui/item-icons.js                   Item icons: an SVG for every piece of equipment, coloured like the item looks on your character
   ui/panels.js                       Panel open/close helpers (openPanel, closePanels, uiOpen, releasePointer)
   economy/inventory.js               Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
-  economy/shops.js                   Weapon and armour shops
+  economy/shops.js                   Weapon and armour shops, and Odran the peddler (a bit of everything, and curiosities he will not sell)
   economy/forge.js                   Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
   economy/soul.js                    Element helpers for the interface (icons, chips) and the Soul Shrine panel in Hanami, where you bind your soul to an element
   economy/skills.js                  Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, upgrade with coins and monster drops, learn from the trainers
   economy/quests.js                  The quest board panel (Maren) and the quest log: notices, quests in progress, hand-ins (all generated by the server)
-  ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, all items, coins, weather, the Sakura Vale, reset
+  economy/main-quest.js              The main quest on the client: what quest villagers say (mqTalk), the marks over them, the main quest at the top of the quest log, its marker on the maps, where Odran is, heartleaf to pick
+  ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, reset
   economy/init.js                    Inventory key and first-time gear setup
   combat/boss.js                     The bosses, client side (Rootwarden, Akaoni, Kyuubi): telegraph visuals, root spikes, slam waves, shield bubble, roars, boss bar
   combat/skill-fx.js                 Visuals and sounds for the equippable skills: Arrow Rain, Meteor, Chain Lightning, Piercing Shot, Shield Bash, Charge, and every skill with generic effects (fx: the boss skills)

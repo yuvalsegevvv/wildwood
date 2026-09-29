@@ -291,13 +291,22 @@ storyline). What it means for the geography:
     wanders +-22 m (`sunwallLine`), the northern rims start rising up to 40 m early (`rimWobble`), and the world map fades each land
     out along a wavy line (`mapEdgeAlpha`), so neither land looks like a rectangle.
   - **Monsters by the land they live in**: every part of Wildwood has monsters. The outer ring's zones (12-15) reach on to the edges,
-    and each edge has its own zone and creatures: **the Crownsea Shore** (Shore Crabs 12, Tide Slimes 13), **the Sunwall's Foot**
-    (Sun Scarabs 14, in the red scree), **the Greyspine Foothills** (Ram-horned Boars 15). The Vale Wall has none. (The Vale's shores
-    still hold the Vale's own zones: a coastal kind for them is a possible next step.)
+    and each edge has its own zone and creatures, levels 16-20 (optional ground for players back from the vale, not on the main quest's
+    path): **the Crownsea Shore** (Shore Crabs 16, Tide Slimes 17), **the Sunwall's Foot** (Sun Scarabs 18, in the red scree), **the
+    Greyspine Foothills** (Ram-horned Boars 19, Crag Wardens 20). The Vale Wall has none. (The Vale's shores still hold the Vale's own
+    zones: a coastal kind for them is a possible next step.)
   - **Roads** (`shared/roads.js`): the East Road from the village over **the river bridge** to the tunnel, with the Circle Path to the
     Stone Circle; the Redgate Road west to the sealed canyon; the Shore Road south to the beach. In the Vale: the Tunnel Road into
     Hanami, the Gate Road to the Demon Gate, the Shrine Road to the Foxfire Shrine, the Coast Road to the east shore and the North Road
     towards the Hoarfrost. Roads cut through the zone ridges, and trees and monster camps keep off them.
+  - **The drowned roads**: where a road dips under still water, a plank causeway on posts carries it across (`BRIDGES` kind
+    `causeway`, one per wet stretch, found automatically): the Drowned Road (the Redgate Road, west of the village), the Long Planks
+    (the Shore Road's flooded valley), the Heron Steps (a pond on the East Road), and short ones in the vale. The lore (`STORY.md`,
+    act I): the ancients' paving runs on under the water.
+  - **The story's places** (`shared/main-quest.js`): Wren's sickbed by the village gate, Odran's cart outside each village's gate,
+    heartleaf in the Slime Meadow, and readable spots (`LORE`: the Stone Circle's carvings, old letters by the tunnel, the drowned roads'
+    signs and milestone, a grey wreck on the shore, the Demon Gate's stone, a roadside shrine, **the ice wall** closing the North Road).
+    Trees and bushes keep clear of them (`storyClear`).
   - The lake in the west forest is **Mistmere** (the Greywater name belongs to the Bight).
 - **The rest of Eldmere is a low-poly placeholder** (`game/world/far-lands.js`): one flat-shaded mesh around the playable rectangle,
   shaped from this map (the Greyspine's peaks, the Hoarfrost plateau, the Sunscar plateau with mesas, Amber Reach, the Stormhorn, and the

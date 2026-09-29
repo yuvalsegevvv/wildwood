@@ -13,6 +13,7 @@ function sanitizeGear(g,cls){
   if(g.bought&&typeof g.bought==='object') for(const id in g.bought) if(ITEM[id]&&ITEM[id].rar===0) out.bought[id]=clampInt(g.bought[id],0,999,0);
   out.q=sanitizeQuests(g.q);
   out.skills=sanitizeSkills(g.skills);
+  out.mq=sanitizeMq(g.mq);
   return out;
 }
 // quests travel in the player's own save, so check every field and recompute the rewards here
@@ -83,13 +84,13 @@ function warpP(p){
   const from=VILS.find(V=>Math.hypot(p.x-V.tele.x,p.z-V.tele.z)<V.tele.r+1.5); if(!from) return;
   if(p.gear.east<2){ toastTo(p.id,p.gear.east<1?'The circle is cold. Whatever it answers to lies beyond the eastern mountains.':'The circle hums but will not wake. Walk to Hanami on the far side of the tunnel first.','bad'); return; }
   const to=from===VIL?VIL2:VIL, T=to.tele, a=Math.atan2(to.x-T.x,to.z-T.z), x=T.x+Math.sin(a)*3.2, z=T.z+Math.cos(a)*3.2;
-  p.warpT=S.t; ev('warp',p.id,r1(p.x),r1(p.z),r1(x),r1(z));
+  p.warpT=S.t; ev('warp',p.id,r1(p.x),r1(p.z),r1(x),r1(z)); if(to===VIL) mqActP(p,'warp');
   p.x=x; p.z=z; p.y=getH(x,z); sendTo(p.id,{t:'tp',x,z,face:Math.atan2(-(to.x-x),-(to.z-z))});
 }
 // the vale: its tunnel opens for everyone who helped defeat the Rootwarden; walking to Hanami attunes the circles
 function openValeP(p){ if(p.gear.east>=1) return; p.gear.east=1; p.dirty=true; ev('vale',p.id,1);
   toastTo(p.id,'A deep rumble rolls in from the eastern mountains: the sealed tunnel has opened for you. The Sakura Vale lies beyond.','good'); }
-function reachHanamiP(p){ if(p.gear.east!==1||Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14) return; p.gear.east=2; p.dirty=true; ev('vale',p.id,2);
+function reachHanamiP(p){ if(p.gear.east!==1||Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14) return; p.gear.east=2; p.dirty=true; ev('vale',p.id,2); mqActP(p,'hanami');
   toastTo(p.id,'Welcome to Hanami! The teleport circles in both villages are attuned to you now.','good'); }
 function gainExpP(p,v,monId){
   if(!(v>0)) return;
@@ -146,6 +147,6 @@ function updatePlayersS(dt){
     }
     if(S.t-p.lastHit>3 && p.hp<p.maxHp) p.hp=Math.min(p.maxHp,p.hp+p.maxHp*0.08*dt);
     if(p.act){ const a=p.act; a.t+=dt; if(!a.done && a.t>=a.dur*a.hitAt){ a.done=true; resolveHitS(p,a); } if(a.t>=a.dur) p.act=null; }
-    p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); reachHanamiP(p); }
+    p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); reachHanamiP(p); mqTickP(p); }
   }
 }

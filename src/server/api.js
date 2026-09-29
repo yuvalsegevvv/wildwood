@@ -7,7 +7,7 @@
    Registered accounts (name + password, Node server only) are in accounts.js.
    Messages in:  hello{acct,name,look,save[,user,pass|token]}  register{user,pass}  logout{token}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
                  cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{}  dev{cmd,v}
-                 buyskill{id}  eqskill{id[,idx: passive slot]}  unskill{cls,slot[,idx]}  upskill{id}  soul{el}
+                 buyskill{id}  eqskill{id[,idx: passive slot]}  unskill{cls,slot[,idx]}  upskill{id}  soul{el}  mq{a:'talk'|'pick'|'read',id|i}
    Messages out: welcome{pid,day,dev,players[,look: a logged-in account's own look]}  mons{list}  you  tp  snap{day,n,pl,mo,b:[per boss],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
 initMonstersS(); initBossS();
 const ACCT=new Map(), PENDING=new Set();   // account -> pid online; pids whose save is still loading
@@ -46,7 +46,8 @@ function join(pid,hello,auth){
 }
 function leave(pid){
   PENDING.delete(pid);
-  const lp=S.players.get(pid); if(lp&&lp.acct){ saveP(lp); if(ACCT.get(lp.acct)===pid) ACCT.delete(lp.acct); }
+  const lp=S.players.get(pid); if(lp) mqRemoveGreyP(lp);
+  if(lp&&lp.acct){ saveP(lp); if(ACCT.get(lp.acct)===pid) ACCT.delete(lp.acct); }
   if(!S.players.delete(pid)) return;
   ev('pleave',pid);
   for(const m of MONS) if(m.tgt===pid){ m.aggro=false; m.tgt=null; m.state='return'; m.pendingHit=-1; }
@@ -82,6 +83,7 @@ function receive(pid,msg){
     case 'soul': bindSoulP(p,msg.el); break;
     case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<2000){ p.look=msg.look; p.saveDirty=true; ev('plook',p.id,p.look); } break;
     case 'warp': warpP(p); break;
+    case 'mq': mqMsgP(p,msg); break;
     case 'dev': devP(p,msg); break;
     case 'register': registerP(p,msg.user,msg.pass); break;
     case 'logout': logoutP(p,msg.token); break;

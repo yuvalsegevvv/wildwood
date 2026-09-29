@@ -43,7 +43,7 @@ After the surrender the Concord cast **the Quiet** over the continent: a working
 of every mind, and teams that burned the books and chiselled the murals. Eldmere forgot its past, its knowledge and its crafts, and fell
 back to villages, swords and bows within a few generations. What the Quiet could not reach:
 - **songs**: the herders of Amber Reach kept singing a war song they no longer understand (its words sound like nonsense);
-- **spirits and very old beings**, whose minds are not human: Kyuubi remembers; the Heartwood remembers in its own way;
+- **spirits and very old beings**, whose minds are not human: Akaoni and Kyuubi remember; the Heartwood remembers in its own way;
 - **stone**: ruins that were missed, deep under the ground (the Glimmer Halls) or under ice.
 
 ### The dumping: why there are monsters
@@ -118,8 +118,13 @@ the meaning of its bosses, and the hook that sends the player on.
 - **Already in the game and fitting**: Maren: "The forest remembers everything. Some of it is waking up." Oskar: "When I was young, the
   forest came right up to the well" (the Heartwood is shrinking).
 - **Hook**: Hanami's shrine is said to know every sickness of the soul.
+- **Built** (`docs/MAIN-QUEST.md`, steps W1-W18). Also in the world: **the drowned roads**. Where the roads dip under still water, the
+  old paving runs on beneath it, fitted closer than anyone in Eldmere can cut stone (the ancients' roads, drowned when the Crown broke
+  and the land sank); the villages laid plank causeways over them (the Drowned Road, the Long Planks, the Heron Steps). Oskar says the
+  water came up "the year the sky went quiet" (the Quiet), and nobody else remembers such a year. A drowned milestone shows a ring with
+  a small sun inside (the emblem, section 6). A grey fishing boat on the Crownsea shore, where nothing grows: the grey comes from the sea.
 
-### Act II: Sakura Vale (16-25)
+### Act II: Sakura Vale (16-20 in the main quest; 21-25 a side story)
 - **Beats**: the player reaches Hanami. Shrine Maiden Kaede reads the player's soul when it is bound (level 15-16) and falls silent: it
   burns brighter than any she has seen. The shrine's old scrolls name the grey sleep and say "it comes from the sea". The oni of the
   Demon Gate and the nine-tailed fox are the Vale's spirits turned wrong.
@@ -128,10 +133,12 @@ the meaning of its bosses, and the hook that sends the player on.
 - **Hints**: *person*: Grandmother Chiyo: "When I was a girl the kitsune were our friends. Then one of them grew nine tails" (already in
   the game: the spirits were corrupted, not born evil). *Object*: Odran, now in Hanami, sells a "lantern with no flame" that he takes back
   quickly. *Place*: the Demon Gate is older than Hanami, built of stone no one here can cut.
-- **Bosses**: Akaoni (20), the first spirit fully drowned in dark; his fall breaks the ice wall north of Hanami. **Kyuubi** (25) is the
-  key hint of the act: being ancient she remembers, and dying she speaks clearly for a moment: "They made you forget. They are still
-  watching. Ask the ice what fell from the sky." Nobody else heard it; Kaede says spirits speak in riddles.
-- **Hook**: the scrolls name a flower that halts the Greying, the **Frostbloom**, growing only under the Hoarfrost glaciers.
+- **Bosses** (decided by the owner: the vale's main story ends at the first boss): **Akaoni** (20), the first spirit fully drowned in
+  dark, carries the key hint of the act: an old spirit remembers, and dying he speaks clearly for a moment: "They made you forget...
+  They are still watching... Ask the ice what fell from the sky." His fall cracks the ice wall north of Hanami. The Demon Gate's stone
+  names the Frostbloom. **Kyuubi** (25) is saved for a side story (MAIN-QUEST.md section 4): the vale's oldest friend turned grey; her
+  last words must add something new, never answers before the reveal.
+- **Hook**: the scrolls and the gate name a flower that halts the Greying, the **Frostbloom**, growing only under the Hoarfrost glaciers.
 
 ### Act III: Hoarfrost Reach (22-30)
 - **Beats**: the player searches the glaciers for Frostbloom with the hunters of Rimehold. The seer **Old Sigrun** keeps the sagas of "the
@@ -217,11 +224,13 @@ the meaning of its bosses, and the hook that sends the player on.
 | Character | Where | Who they are | Arc |
 |---|---|---|---|
 | **the player** | Wildwood | born under the Heartwood; their soul carries its light | from a sibling seeking a cure to the one who closes the Sink |
-| **Wren** | Wildwood | the player's younger sibling | the Greying; wakes at Rook's medicine; healed at the end |
+| **Wren** | Wildwood (in the game) | the player's younger sibling | the Greying; wakes at Rook's medicine; healed at the end |
 | **Oskar** | Wildwood (in the game) | the village storyteller | remembers the forest bigger; the first to name the grey sleep |
 | **Shrine Maiden Kaede** | Hanami (in the game) | keeper of the soul shrine | sees the player's light; makes the talisman |
 | **Grandmother Chiyo** | Hanami (in the game) | the storyteller | remembers when the kitsune were friends |
-| **Kyuubi** | Foxfire Shrine (boss, in the game) | an ancient fox spirit, corrupted | the first voice of the truth, in dying |
+| **Akaoni** | the Demon Gate (boss, in the game) | an old oni spirit drowned in dark | the first voice of the truth, in dying |
+| **Kyuubi** | Foxfire Shrine (boss, in the game) | an ancient fox spirit, corrupted | a side story: the vale's oldest friend |
+| **Healer Linnea** | Wildwood (in the game) | the village healer | treats Wren; sends the player east |
 | **Old Sigrun** | Rimehold | seer, keeper of sagas | the burning sky; points to the root of the sickness |
 | **Brenna** | Highmark | mine foreman | notices the too-perfect coins |
 | **Odran** | everywhere | watcher, peddler | watches, grows fond, reveals the truth, changes sides |

@@ -16,6 +16,7 @@ function handleAttack(p,msg){
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
   p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:ab.fx,mult:ab.mult*skillPower(lvl),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim};
   ev('pact',p.id,kind,Math.round(p.face*100)/100);
+  if(k!=='basic') mqActP(p,k);   // the main quest's 'use your skill / burst' steps
 }
 // the element multiplier of an attack of element el (a skill's, 'basic' if none) from p on monster m: their soul and the monster's own element
 function elemHitS(p,el,m){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=p.buff.el;   // an enchanting buff gives element-less attacks its element
@@ -56,6 +57,7 @@ function rewardKill(q,m){
   if(MATS[m.def.id]){ const n=rollDropCount(m.def,psP(q,'drop')); if(n) addMatP(q,m.def.id,n,m.id); }
   questKillP(q,m.def.id); q.dirty=true;
   if(m.def.boss) bossSkillDropP(q,m.def.id);
+  mqKillP(q,m);
   if(m.def.id==='boss') openValeP(q);
 }
 // a boss kill: each of that boss's skills you do not own yet drops with BOSS_SKILL_CHANCE (drops.js); you choose when to equip it

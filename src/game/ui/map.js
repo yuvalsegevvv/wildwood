@@ -58,7 +58,8 @@ function mapBuildStep(rows){
 }
 /* ---- markers ---- */
 function questTargets(){
-  const out=[], D=(GEAR.q&&GEAR.q.defs)||{};
+  const out=[], D=(GEAR.q&&GEAR.q.defs)||{}, mq=mqTarget(), ms=mqCur();
+  if(mq) out.push({x:mq.x,z:mq.z,label:ms.title+' (main quest)',main:true});
   for(const qid in GEAR.q.active){
     const q=D[qid]; if(!q) continue;
     if(GEAR.q.ready.includes(qid)){ const B=vilAt(P.x,P.z).board; out.push({x:B.x,z:B.z,label:q.title+': return to the quest board',ready:true}); continue; }
@@ -85,8 +86,9 @@ function drawMinimap(){
   for(const r of REMOTES.values()){ if(r.tx===null||!inside(r.x,r.z)) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,3.2*DPR,'#6fb8ff'); }
   for(const q of questTargets()){
     if(q.ring) continue;
-    if(inside(q.x,q.z)){ const [a,b]=at(q.x,q.z); drawDiamond(x,a,b,5*DPR,q.ready?'#9fe08a':'#f2cf5a'); }
-    else { const ang=Math.atan2(q.x-P.x,-(q.z-P.z)), rr=W/2-9*DPR; x.save(); x.translate(W/2+Math.sin(ang)*rr,W/2-Math.cos(ang)*rr); drawDiamond(x,0,0,4*DPR,q.ready?'#9fe08a':'#f2cf5a'); x.restore(); }
+    const col=q.main?'#c89bff':q.ready?'#9fe08a':'#f2cf5a';
+    if(inside(q.x,q.z)){ const [a,b]=at(q.x,q.z); drawDiamond(x,a,b,(q.main?6:5)*DPR,col); }
+    else { const ang=Math.atan2(q.x-P.x,-(q.z-P.z)), rr=W/2-9*DPR; x.save(); x.translate(W/2+Math.sin(ang)*rr,W/2-Math.cos(ang)*rr); drawDiamond(x,0,0,(q.main?5:4)*DPR,col); x.restore(); }
   }
   // your view cone and arrow
   x.save(); x.translate(W/2,W/2); x.rotate(-P.yaw); const g=x.createRadialGradient(0,0,0,0,0,W*0.32); g.addColorStop(0,'rgba(255,255,255,.28)'); g.addColorStop(1,'rgba(255,255,255,0)');
@@ -118,10 +120,11 @@ function drawFullMap(){
   { const V=vale?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(vale?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
   { const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Tunnel':'Tunnel (sealed)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
   for(const Lk of LAKES){ if(!!Lk.vale!==vale) continue; const [cx,cy]=at(Lk.x,Lk.z); label(Lk.name,cx,cy,fs*0.85,'#cfe8f6'); }
+  for(const B of BRIDGES){ if(B.kind!=='causeway'||B.name[0]!=='T'||inVale(B.x)!==vale) continue; const [cx,cy]=at(B.x,B.z); label(B.name,cx,cy+fs*1.1,fs*0.8,'#cfe8f6'); }   // the named causeways
   // quests
   for(const q of questTargets()){
     if(q.ring){ x.save(); x.setLineDash([5*DPR,5*DPR]); x.strokeStyle='rgba(242,207,90,.8)'; x.lineWidth=1.5*DPR; x.beginPath(); const [cx,cy]=at(VIL.x,VIL.z); x.arc(cx,cy,q.ring*k,0,TAU); x.stroke(); x.restore(); continue; }
-    const [cx,cy]=at(q.x,q.z); drawDiamond(x,cx,cy,6*DPR,q.ready?'#9fe08a':'#f2cf5a');
+    const [cx,cy]=at(q.x,q.z); drawDiamond(x,cx,cy,(q.main?7.5:6)*DPR,q.main?'#c89bff':q.ready?'#9fe08a':'#f2cf5a');
   }
   for(const m of MONS){ if(m.dead||!m.aggro) continue; const [a,b]=at(m.x,m.z); dot(x,a,b,2.4*DPR,'#ff4a3a'); }
   for(const r of REMOTES.values()){ if(r.tx===null) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,4*DPR,'#6fb8ff'); label(r.name,a,b-fs*1.1,fs*0.85,'#cfe6ff'); }
@@ -134,7 +137,8 @@ function placeName(wx,wz){
   for(const L of LAKES) if(Math.hypot(wx-L.x,wz-L.z)<L.r*0.8) return L.name;
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if(Math.hypot(wx-A.x,wz-A.z)<A.r+6) return A.name+': '+bd.def.name+', level '+bd.def.level+' boss'; }
   if(inTunnelCut(wx,wz)&&wx>TUN.p0-4&&wx<TUN.p1+4) return valeOpen()?'The mountain tunnel':'The mountain tunnel (sealed until the Rootwarden falls)';
-  const rd=roadAt(wx,wz,3); if(rd) return rd.name+(BRIDGES.some(B=>Math.hypot(wx-B.x,wz-B.z)<BRIDGE_LEN/2+2)?' (the river bridge)':'');
+  const B=bridgeAt(wx,wz,2); if(B) return B.road+' ('+B.name+')';
+  const rd=roadAt(wx,wz,3); if(rd) return rd.name;
   const zn=zoneAt(wx,wz); if(zn) return zn.key==='boss'?'Rootwarden Barrens':zn.boss?zn.name:zn.name+': level '+(zn.lvText||zn.level)+' ('+MON_DEFS.filter(d=>defZone(d)===zn).map(d=>d.name).join(', ')+')';
   return edgeName(wx,wz)||(inVale(wx)?'Hanami meadows':'Village meadows');
 }

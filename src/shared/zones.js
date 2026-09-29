@@ -18,13 +18,13 @@ const ZONES=[], RING_START=[];
 }
 /* The forest's edges have zones of their own, with the creatures that belong there (docs/WORLD.md): the Crownsea Shore
    (shore crabs and tide slimes on the beach), the Sunwall's Foot (sun scarabs in the red scree) and the Greyspine Foothills
-   (ram-horned boars). Their monsters name their zone (zone:'shore'... in MON_DEFS). Beyond the outer ring, the outer ring's
+   (ram-horned boars and crag wardens). Levels 16-20: optional ground for players back from the vale, not on the main quest's path. Their monsters name their zone (zone:'shore'... in MON_DEFS). Beyond the outer ring, the outer ring's
    zones reach on to the land's edge (all but the boss zone), so every part of the forest has monsters. The Vale Wall (east)
    has none. lvText: the levels a zone holds, when it holds more than one. */
 const EDGE_ZONES=[   // label: where the map writes the name (clear of the ring zones' names)
-  {key:'shore',name:'The Crownsea Shore',level:12,lvText:'12-13',edge:'shore',label:[170,396]},
-  {key:'sunfoot',name:"The Sunwall's Foot",level:14,edge:'west',label:[-350,170]},
-  {key:'foothills',name:'The Greyspine Foothills',level:15,edge:'north',label:[250,-372]}];
+  {key:'shore',name:'The Crownsea Shore',level:16,lvText:'16-17',edge:'shore',label:[170,396]},
+  {key:'sunfoot',name:"The Sunwall's Foot",level:18,edge:'west',label:[-350,170]},
+  {key:'foothills',name:'The Greyspine Foothills',level:19,lvText:'19-20',edge:'north',label:[250,-372]}];
 EDGE_ZONES.forEach(zn=>{ zn.ring=3; ZONES.push(zn); });
 // undefined: not near an edge (the rings decide); null: an edge with no monsters (the sea, the cliff face)
 function edgeZoneAt(x,z){

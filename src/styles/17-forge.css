@@ -51,6 +51,7 @@
 .nt-mark{ font:800 30px Fraunces, Georgia, serif; line-height:1; color:#ffd23a; text-shadow:0 0 10px rgba(255,200,40,.8), 0 2px 3px #000; animation:ntbob 1.6s ease-in-out infinite; }
 .nt-mark:empty{ display:none; }
 .nt-mark.ready{ color:#9fe08a; text-shadow:0 0 10px rgba(140,230,120,.85), 0 2px 3px #000; }
+.nt-mark.mq{ color:#d2a8ff; text-shadow:0 0 10px rgba(190,140,255,.9), 0 2px 3px #000; }   /* the main quest */
 @keyframes ntbob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-4px); } }
 body.editing .npctag{ display:none; }
 .shop-note{ margin:0 0 8px; padding:7px 10px; border-radius:10px; background:rgba(242,207,90,.08); border:1px solid rgba(242,207,90,.25); font-size:12.5px; color:#e8dcb0; }

@@ -18,7 +18,7 @@ function frame(){
     animateHiker(dt);
     updateMotes(dt,t); updatePetals(dt,t);
     updateAnimals(dt);
-    updateVillage(dt); updateVale(dt);
+    updateVillage(dt); updateVale(dt); updateLoreProps();
     updateNPCs(dt);
     updateNpcLabels();
     updateRemotes(dt);

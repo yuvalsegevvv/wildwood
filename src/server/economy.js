@@ -16,7 +16,7 @@ function mergeP(p,id){
   const it=ITEM[id], nid=mergedId(id); if(!it||!nid) return;
   if(unwornCount(p,id)<MERGE_COUNT){ toastTo(p.id,'You need three '+it.name+' in your bag','bad'); return; }
   for(let k=0;k<MERGE_COUNT;k++) p.gear.inv.splice(p.gear.inv.lastIndexOf(id),1);
-  p.gear.inv.push(nid); p.dirty=true;
+  p.gear.inv.push(nid); p.dirty=true; mqActP(p,'merge');
   const n=ITEM[nid]; toastTo(p.id,'Forged: '+n.name,'loot r'+n.rar); ev('merge',p.id,nid);
 }
 function giveAllP(p){ for(const it of ITEM_LIST) if(!p.gear.inv.includes(it.id)&&p.gear.inv.length<BAG_MAX) p.gear.inv.push(it.id); p.dirty=true; }
@@ -24,22 +24,23 @@ function gearChangedP(p){ recalcP(p); p.dirty=true; ev('pgear',p.id,p.gear.eq); 
 function equipP(p,id){
   const it=ITEM[id]; if(!it||!p.gear.inv.includes(id)) return;
   if(p.level<it.lv){ toastTo(p.id,it.name+' needs level '+it.lv,'bad'); return; }
-  p.gear.eq[it.kind==='weapon'?'weapon':it.slot]=id; gearChangedP(p);
+  const cls=clsOfP(p); p.gear.eq[it.kind==='weapon'?'weapon':it.slot]=id; gearChangedP(p);
+  if(it.kind!=='weapon') mqActP(p,'armor'); else if(clsOfP(p)!==cls) mqActP(p,'class');
 }
 function unequipP(p,slot){ if(slot==='weapon'||!(slot in p.gear.eq)) return; p.gear.eq[slot]=null; gearChangedP(p); }
 function equipClassP(p,cls){
   const slot=WEAPON_OF[cls]; if(!slot) return;
   let owned=p.gear.inv.filter(id=>ITEM[id].slot===slot&&ITEM[id].lv<=p.level).sort((a,b)=>ITEM[b].tier-ITEM[a].tier);
   if(!owned.length){ p.gear.inv.push(slot+'1'); owned=[slot+'1']; }
-  p.gear.eq.weapon=owned[0]; gearChangedP(p);
+  const was=clsOfP(p); p.gear.eq.weapon=owned[0]; gearChangedP(p); if(clsOfP(p)!==was) mqActP(p,'class');
 }
 function buyP(p,id){ const it=ITEM[id]; if(!it||it.rar>0) return;   // shops only sell common items, as many as you like
   const n=p.gear.bought[id]||0, price=shopPrice(it,n);
-  if(p.gear.coins<price){ toastTo(p.id,'Not enough coins','bad'); return; } p.gear.coins-=price; p.gear.bought[id]=n+1; addItemP(p,id,true); toastTo(p.id,'Bought '+it.name+' for '+price+' coins','loot r0'); ev('loot',p.id,id); }
+  if(p.gear.coins<price){ toastTo(p.id,'Not enough coins','bad'); return; } p.gear.coins-=price; p.gear.bought[id]=n+1; addItemP(p,id,true); toastTo(p.id,'Bought '+it.name+' for '+price+' coins','loot r0'); ev('loot',p.id,id); mqActP(p,'buy'); }
 function sellP(p,id){
   const i=p.gear.inv.lastIndexOf(id); if(i<0) return;
   const copies=p.gear.inv.filter(x=>x===id).length; if(Object.values(p.gear.eq).includes(id)&&copies<2) return;
-  p.gear.inv.splice(i,1); p.gear.coins+=sellPrice(ITEM[id]); p.dirty=true;
+  p.gear.inv.splice(i,1); p.gear.coins+=sellPrice(ITEM[id]); p.dirty=true; mqActP(p,'sell');
 }
 /* ---- the quest board ---- */
 // a fresh notice, avoiding a monster or place already on the board or in your log when it can
@@ -71,7 +72,7 @@ function turnInP(p,id){
   delete Q.active[id]; delete Q.defs[id]; Q.ready=Q.ready.filter(x=>x!==id); Q.done++;
   p.gear.coins+=r.coins; gainExpP(p,r.xp,null); toastTo(p.id,'Reward: '+r.xp+' XP and '+r.coins+' coins','good');
   const rar=rollQuestItemRarity(r.item); if(rar>=0) addItemP(p,randomItem(tierFor(q.level),rar));
-  ev('qturn',p.id,id); p.dirty=true;
+  ev('qturn',p.id,id); p.dirty=true; mqActP(p,'board');
 }
 /* ---- skills: bought from Aldric the trainer, equipped per class (passives: one loadout for every class), upgraded with coins and drops ---- */
 function buySkillP(p,id){
@@ -111,7 +112,7 @@ function upgradeSkillP(p,id){
   if(lack){ toastTo(p.id,'You need '+lack.n+' '+MATS[lack.id].name,'bad'); return; }
   p.gear.coins-=need.coins;
   for(const m of need.mats){ const left=(p.gear.mats[m.id]||0)-m.n; if(left>0) p.gear.mats[m.id]=left; else delete p.gear.mats[m.id]; }
-  S.lv[id]=to; recalcP(p); p.dirty=true; toastTo(p.id,s.name+' is now level '+to,'good'); ev('skillup',p.id,id,to);
+  S.lv[id]=to; recalcP(p); p.dirty=true; toastTo(p.id,s.name+' is now level '+to,'good'); ev('skillup',p.id,id,to); mqActP(p,'upskill');
 }
 // the soul shrine in Hanami (level SOUL_LV): bind your soul to an element, free and as often as you like ('basic' unbinds it)
 function bindSoulP(p,el){
@@ -119,7 +120,7 @@ function bindSoulP(p,el){
   if(p.level<SOUL_LV){ toastTo(p.id,'The shrine answers only hikers of level '+SOUL_LV+' and above','bad'); return; }
   if(Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14){ toastTo(p.id,'The soul shrine is in Hanami, beyond the eastern mountains','bad'); return; }
   if(p.gear.soul===el) return;
-  p.gear.soul=el; p.dirty=true; toastTo(p.id,el==='basic'?'Your soul is unbound':'Your soul is bound to '+ELEMS[el].name,'good'); ev('soul',p.id,el);
+  p.gear.soul=el; p.dirty=true; if(el!=='basic') mqActP(p,'soul'); toastTo(p.id,el==='basic'?'Your soul is unbound':'Your soul is bound to '+ELEMS[el].name,'good'); ev('soul',p.id,el);
 }
 /* ---- chat and names ---- */
 // chat: up to 160 characters, at most one message every 0.7 s per player; everyone in the world hears it
@@ -159,6 +160,7 @@ function devP(p,msg){
     if(x>TUN.p0&&p.gear.east<1) return; p.x=x; p.z=z; p.y=getH(x,z); sendTo(p.id,{t:'tp',x,z,face:-Math.PI/2}); }
   else if(c==='three'){ const id=randomItem(tierFor(p.level),0); for(let k=0;k<MERGE_COUNT;k++) addItemP(p,id,true); toastTo(p.id,'Three '+ITEM[id].name+' added for the forge','good'); }
   else if(c==='lucky'){ const r=clampInt(msg.v,2,4,2); addItemP(p,randomItem(tierFor(p.level),r)); }
+  else if(c==='mq'){ const s=MQ_BY_ID[msg.v]; if(!s) return; mqRemoveGreyP(p); p.gear.mq={s:s.i,st:0,n:s.parts.map(()=>0),h:0}; if(s.from===null) mqStartP(p); p.dirty=true; toastTo(p.id,'Main quest set to '+s.id+': '+s.title,'good'); }
   else if(c==='reset'){ const keep=p.gear.startAll; p.gear=newGearFor(clsOfP(p)); p.gear.startAll=keep; if(keep) giveAllP(p); p.level=1; fillOffersP(p); p.exp=0; p.dead=false; recalcP(p); p.hp=p.maxHp; gearChangedP(p); toastTo(p.id,'Progress reset','good'); }
   else if(c==='skip'){ const stops=[0.045,0.25,0.47,0.62], from=S.ff!==null?S.ff:S.day; S.ff=stops.find(s=>s>from+0.01); if(S.ff===undefined) S.ff=stops[0]; }
 }

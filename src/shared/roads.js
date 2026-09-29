@@ -1,4 +1,4 @@
-//@ Roads between the two villages and the key places (ROADS), the bridge over the river (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck. Pure.
+//@ Roads between the two villages and the key places (ROADS), the river bridge and the plank causeways over the drowned stretches (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck, bridgeAt. Pure.
 /* Dirt roads that link each village to the places the story sends you (docs/MAIN-QUEST.md, docs/WORLD.md):
    home forest: the East Road (the village, over the river bridge, to the tunnel) with the Circle Path to the Stone Circle,
    the Redgate Road west to the sealed canyon, the Shore Road south to the beach;
@@ -48,9 +48,12 @@ function roadDist(x,z){
 function roadAt(x,z,m){ return roadDist(x,z)<ROAD_W+(m||0)?roadHit:null; }
 const nearRoad=(x,z,m)=>roadDist(x,z)<ROAD_W+m;
 const roadAmt=(x,z)=>smoothstep(ROAD_W+1.4,ROAD_W*0.5,roadDist(x,z));
-/* bridges: where a road's line crosses the river, an arched deck BRIDGE_LEN long from bank to bank, BRIDGE_W wide.
-   Its ends sit on the banks (baseHeight there) and its middle rises 0.9 m, at least 1.4 m above the water */
-const BRIDGE_LEN=30, BRIDGE_W=2.4;
+/* bridges: where a road's line crosses the river, an arched deck BRIDGE_LEN long from bank to bank (half-width w).
+   Its ends sit on the banks (baseHeight there) and its middle rises 0.9 m, at least 1.4 m above the water.
+   Causeways (kind 'causeway'): where a road runs under still water (the drowned roads, docs/STORY.md: the old paving goes on
+   under the water, older than anyone's memory), the villages laid plank walkways on posts from dry bank to dry bank,
+   a hand's width above the water. Every wet stretch of a road gets one; CAUSEWAY_NAMES names the known ones. */
+const BRIDGE_LEN=30, BRIDGE_W=2.4, CAUSE_W=1.5;
 const BRIDGES=[];
 for(const rd of ROADS) for(let i=1;i<rd.pts.length;i++){
   const [ax,az]=rd.pts[i-1], [bx,bz]=rd.pts[i];
@@ -58,12 +61,32 @@ for(const rd of ROADS) for(let i=1;i<rd.pts.length;i++){
   const sa=ax-riverX(az), sb=bx-riverX(bz); if(sa*sb>0) continue;
   const t=sa/(sa-sb), x=ax+(bx-ax)*t, z=az+(bz-az)*t, L=Math.hypot(bx-ax,bz-az), dx=(bx-ax)/L, dz=(bz-az)/L;
   const h0=Math.max(baseHeight(x-dx*BRIDGE_LEN/2,z-dz*BRIDGE_LEN/2),WATER+0.6), h1=Math.max(baseHeight(x+dx*BRIDGE_LEN/2,z+dz*BRIDGE_LEN/2),WATER+0.6);
-  BRIDGES.push({x,z,dx,dz,h0,h1,road:rd.name});
+  BRIDGES.push({x,z,dx,dz,h0,h1,len:BRIDGE_LEN,w:BRIDGE_W,kind:'bridge',road:rd.name,name:'the river bridge'});
 }
-const bridgeY=(B,t)=>lerp(B.h0,B.h1,t)+Math.sin(t*Math.PI)*Math.max(0.9,WATER+1.4-(B.h0+B.h1)/2);
+// the drowned stretches, by road (the first causeway on that road gets the name)
+const CAUSEWAY_NAMES={'The Redgate Road':'The Drowned Road','The Shore Road':'The Long Planks','The East Road':'The Heron Steps'};
+{ const wet=(x,z)=>baseHeight(x,z)<WATER+0.35, named=new Set();
+  for(const rd of ROADS){
+    const S=[]; for(let i=1;i<rd.pts.length;i++){ const [ax,az]=rd.pts[i-1], [bx,bz]=rd.pts[i], n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/2)); for(let k=i===1?0:1;k<=n;k++) S.push([ax+(bx-ax)*k/n, az+(bz-az)*k/n]); }
+    for(let i=0;i<S.length;i++){
+      if(!wet(...S[i])) continue;
+      let j=i; while(j+1<S.length&&(wet(...S[j+1])||wet(...S[Math.min(S.length-1,j+2)])||wet(...S[Math.min(S.length-1,j+3)]))) j++;
+      const [ax,az]=S[Math.max(0,i-3)], [bx,bz]=S[Math.min(S.length-1,j+3)];
+      if(!inVale(ax)&&BRIDGES.some(B=>B.kind==='bridge'&&Math.hypot((ax+bx)/2-B.x,(az+bz)/2-B.z)<BRIDGE_LEN)){ i=j; continue; }   // the river: its bridge already spans it
+      const L=Math.hypot(bx-ax,bz-az); if(L<4||bridgeAt((ax+bx)/2,(az+bz)/2,2)){ i=j; continue; }   // (where two roads meet in the water, one walkway)
+      const nm=!named.has(rd.name)&&CAUSEWAY_NAMES[rd.name]; if(nm) named.add(rd.name);
+      BRIDGES.push({x:(ax+bx)/2,z:(az+bz)/2,dx:(bx-ax)/L,dz:(bz-az)/L,h0:Math.max(baseHeight(ax,az),WATER+0.5),h1:Math.max(baseHeight(bx,bz),WATER+0.5),len:L,w:CAUSE_W,kind:'causeway',road:rd.name,name:nm||'a plank causeway'});
+      i=j;
+    }
+  }
+}
+// a bridge arches over the river; a causeway ramps down from each bank (0.3 m per m) and runs a hand above the water between
+const bridgeY=(B,t)=>B.kind==='causeway'?Math.max(WATER+0.5,B.h0-t*B.len*0.3,B.h1-(1-t)*B.len*0.3):lerp(B.h0,B.h1,t)+Math.sin(t*Math.PI)*Math.max(0.9,WATER+1.4-(B.h0+B.h1)/2);
 // the deck's height under (x, z), or -Infinity off every bridge
 function bridgeDeck(x,z){
   for(const B of BRIDGES){ const px=x-B.x, pz=z-B.z, u=px*B.dx+pz*B.dz, v=-px*B.dz+pz*B.dx;
-    if(Math.abs(u)<=BRIDGE_LEN/2 && Math.abs(v)<=BRIDGE_W) return bridgeY(B,u/BRIDGE_LEN+0.5); }
+    if(Math.abs(u)<=B.len/2 && Math.abs(v)<=B.w) return bridgeY(B,u/B.len+0.5); }
   return -Infinity;
 }
+// the bridge or causeway at (x, z) (m: margin), or null
+function bridgeAt(x,z,m){ m=m||0; for(const B of BRIDGES){ const px=x-B.x, pz=z-B.z, u=px*B.dx+pz*B.dz, v=-px*B.dz+pz*B.dx; if(Math.abs(u)<=B.len/2+m&&Math.abs(v)<=B.w+m) return B; } return null; }

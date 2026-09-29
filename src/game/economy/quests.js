@@ -46,9 +46,9 @@ function qProgress(q){
   return 'Defeated '+(GEAR.q.active[q.id]||0)+' of '+q.count+(where?' &middot; '+where:'');
 }
 function renderQlog(){
-  const el=$('#qlog'), Q=GEAR.q, ids=Object.keys(Q.active||{}), D=qDefs();
-  if(!ids.length||!started){ el.hidden=true; return; }
+  const el=$('#qlog'), Q=GEAR.q, ids=Object.keys(Q.active||{}), D=qDefs(), main=mqLogRow();
+  if((!ids.length&&!main)||!started){ el.hidden=true; return; }
   el.hidden=false;
-  el.innerHTML=ids.map(id=>{ const q=D[id]; if(!q) return ''; const ready=Q.ready.includes(id);
+  el.innerHTML=main+ids.map(id=>{ const q=D[id]; if(!q) return ''; const ready=Q.ready.includes(id);
     return `<div class="ql${ready?' ok':''}"><b>${q.title}</b><span>${ready?'Done! Return to the quest board':qProgress(q)}</span></div>`; }).join('');
 }

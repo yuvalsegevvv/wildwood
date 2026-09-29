@@ -36,7 +36,8 @@
     "classes.js",
     "drops.js",
     "items.js",
-    "quests.js"
+    "quests.js",
+    "main-quest.js"
   ],
   "server": [
     "state.js",
@@ -46,6 +47,7 @@
     "combat.js",
     "boss.js",
     "economy.js",
+    "main-quest.js",
     "weather.js",
     "accounts.js",
     "api.js"
@@ -70,6 +72,7 @@
     "world/generation-chunks.js",
     "world/far-lands.js",
     "world/bridges.js",
+    "world/lore-props.js",
     "world/streaming.js",
     "character/model.js",
     "character/pose.js",
@@ -111,6 +114,7 @@
     "economy/soul.js",
     "economy/skills.js",
     "economy/quests.js",
+    "economy/main-quest.js",
     "ui/settings-testing.js",
     "economy/init.js",
     "combat/boss.js",

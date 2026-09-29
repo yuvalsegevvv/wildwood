@@ -7,6 +7,8 @@
 #sound{ max-height:calc(100dvh - 90px); overflow-y:auto; }
 .snd-sec{ border-top:1px solid var(--line); padding-top:12px; margin-top:16px; }
 .test-row{ display:flex; gap:8px; align-items:center; font-size:13.5px; }
+.test-row select{ flex:1; min-width:0; height:36px; border-radius:10px; border:1px solid var(--line); background:rgba(0,0,0,.25); color:var(--ink); padding:0 6px; font:500 13px Inter, system-ui, sans-serif; }
+.test-row select option{ background:#1e2420; }
 .test-row input{ width:64px; height:36px; border-radius:10px; border:1px solid var(--line); background:rgba(0,0,0,.25); color:var(--ink); padding:0 8px; font:500 14px Inter, system-ui, sans-serif; }
 .test-col{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
 #qlog{ position:fixed; z-index:4; right:calc(16px + env(safe-area-inset-right,0px)); top:calc(env(safe-area-inset-top,0px) + 72px); width:min(240px,46vw);
@@ -16,10 +18,12 @@
 .ql b{ display:block; font-size:12.5px; }
 .ql span{ color:var(--ink-dim); }
 .ql.ok b{ color:#9fe08a; }
+.ql.mq{ border-color:rgba(200,155,255,.55); border-left:3px solid #c89bff; } .ql.mq b{ color:#d8b8ff; } .ql.mq.ok b{ color:#9fe08a; }   /* the main quest's row */
 #toasts{ position:fixed; z-index:9; left:50%; transform:translateX(-50%); top:calc(env(safe-area-inset-top,0px) + 86px); display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:none; width:min(420px,90vw); }
 .toast{ background:var(--glass-strong); border:1px solid var(--line); border-radius:12px; padding:7px 14px; font-size:13.5px; text-align:center; transition:opacity .5s, transform .5s; }
 .toast.out{ opacity:0; transform:translateY(-8px); }
 .toast.good{ border-color:rgba(159,224,138,.5); } .toast.bad{ border-color:rgba(255,122,106,.55); }
+.toast.mq{ border-color:rgba(200,155,255,.6); max-width:min(560px,92vw); } .toast.boss{ border-color:rgba(200,107,255,.8); color:#e8c8ff; font-style:italic; max-width:min(560px,92vw); }
 .toast.loot.t0{ color:#c4a57a; } .toast.loot.t1{ color:#d6dbe0; } .toast.loot.t2{ color:#8fc4f2; } .toast.loot.t3{ color:#f2cf5a; border-color:rgba(242,207,90,.6); }
 #bossbar{ position:fixed; z-index:6; top:calc(env(safe-area-inset-top,0px) + 12px); left:50%; transform:translateX(-50%); width:min(520px,70vw);
   background:var(--glass-strong); border:1px solid rgba(197,155,255,.45); border-radius:12px; padding:7px 12px 9px; pointer-events:none; }

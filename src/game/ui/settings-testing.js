@@ -1,7 +1,10 @@
-//@ Testing tools in the settings popover (sent to the server as dev commands): set level, all items, coins, weather, the Sakura Vale, reset
+//@ Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, reset
 /* ----- settings: testing tools ----- */
 $('#tLevel').value=PL.level;
 $('#tSetLv').addEventListener('click',()=>{ const v=clamp(parseInt($('#tLevel').value,10)||1,1,50); netSend({t:'dev',cmd:'level',v}); toast('Level set to '+v,'good'); });
+// the main quest: jump to a step (offered by its giver; set the level too if the step is gated above yours)
+$('#tMq').innerHTML=MQ.map(s=>`<option value="${s.id}">${s.id} · ${s.title} (level ${s.gate})</option>`).join('');
+$('#tSetMq').addEventListener('click',()=>netSend({t:'dev',cmd:'mq',v:$('#tMq').value}));
 $('#tAll').addEventListener('click',()=>{ netSend({t:'dev',cmd:'giveAll'}); });
 function syncStartAll(){ $('#tStartAll').setAttribute('aria-pressed',!!GEAR.startAll); $('#tStartAll').textContent='Start with every item: '+(GEAR.startAll?'on':'off'); }
 $('#tStartAll').addEventListener('click',()=>{ GEAR.startAll=!GEAR.startAll; saveGear(); syncStartAll(); netSend({t:'dev',cmd:'startAll',v:GEAR.startAll}); });

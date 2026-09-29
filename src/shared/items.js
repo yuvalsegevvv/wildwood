@@ -45,7 +45,7 @@ const ARMOR_LOOK={
   bottom:[{bottom:'trousers',bottomColor:0x5a3e28,bottomStyle:''},{bottom:'trousers',bottomColor:0x7a7f84,bottomStyle:'mail'},{bottom:'trousers',bottomColor:0x9aa6b2,bottomStyle:'plate'},{bottom:'trousers',bottomColor:0xc9a13a,bottomStyle:'plate'},{bottom:'trousers',bottomColor:0x8a2a26,bottomStyle:'plate'},{bottom:'trousers',bottomColor:0x2a2830,bottomStyle:'plate'}],
   shoes:[{shoes:'boots',shoeColor:0x5a3e28},{shoes:'boots',shoeColor:0x55595e},{shoes:'boots',shoeColor:0x9aa6b2},{shoes:'boots',shoeColor:0xd4a83a},{shoes:'boots',shoeColor:0x7a2622},{shoes:'boots',shoeColor:0x1e1c22}]};
 // east: the Sakura Vale (0 sealed, 1 tunnel open after the Rootwarden, 2 walked to Hanami: teleport circles attuned); soul: the element you are bound to (elements.js); mats: monster drops {id:count}
-function newGearFor(cls){ return {inv:['sword1','bow1','wand1'],eq:{weapon:(WEAPON_OF[cls]||'sword')+'1',helmet:null,top:null,bottom:null,shoes:null},coins:0,q:{offers:[],active:{},defs:{},ready:[],done:0,next:1},startAll:false,bought:{},skills:newSkills(),east:0,soul:'basic',mats:{}}; }
+function newGearFor(cls){ return {inv:['sword1','bow1','wand1'],eq:{weapon:(WEAPON_OF[cls]||'sword')+'1',helmet:null,top:null,bottom:null,shoes:null},coins:0,q:{offers:[],active:{},defs:{},ready:[],done:0,next:1},startAll:false,bought:{},skills:newSkills(),east:0,soul:'basic',mats:{},mq:newMq()}; }
 function gearStatsOf(gear){ let hp=0,atk=0,def=0; if(gear&&gear.eq) for(const k in gear.eq){ const it=ITEM[gear.eq[k]]; if(!it) continue; hp+=it.hp||0; atk+=it.atk||0; def+=it.def||0; } return {hp,atk,def}; }
 function effectiveLookOf(look,gear){
   const L=Object.assign({},look||{});

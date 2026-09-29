@@ -5,7 +5,7 @@ Read this file first. It is written so you can work on the game **without readin
 
 Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an authoritative world server
 that runs in the browser tab (solo / shared room) or in Node (the deployed MMO), procedural 880 m forest,
-village with NPCs, 556 monsters in 19 zones (three rings round the village plus the shore, the Sunwall's foot and the Greyspine foothills), roads and a river bridge, a boss; east of the mountains the Sakura Vale (tunnel opened by the
+village with NPCs, 555 monsters in 19 zones (three rings round the village plus the shore, the Sunwall's foot and the Greyspine foothills, whose monsters are levels 16-20), roads, a river bridge and plank causeways, a boss; a main quest line (acts I and II: Wren's sickness, from the village to Akaoni); east of the mountains the Sakura Vale (tunnel opened by the
 boss, Japanese village Hanami, 240 monsters of levels 16-25 in 10 zones, bosses at 20 and 25, teleport circles);
 3 classes with equippable skills (5 levels each, upgraded with coins and monster drops), an element system (soul bound at level 15 in Hanami, elements on skills and monsters), class-universal passives from level 18, 210 items (6 tiers) in 5 rarities, a forge, a quest board, weather, chat, server-side saves in a Postgres database (Neon), player
 accounts (guest or name + password; the start card offers Log in, Register, Play as guest).
@@ -71,7 +71,7 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 - Client → server: `hello{acct,name,look,save[,user,pass|token]}`, `register{user,pass}`, `logout{token}`, `pos{p:[x,y,z,face,vx,vz]}`, `atk{k:'basic'|'skill'|'burst',tg,face,aim}`,
   `equip{id}`, `unequip{slot}`, `cls{cls}`, `buy/sell{id}`, `merge{id}`, `accept/turnin/abandon{id}`,
   `buyskill{id}`, `eqskill{id[,idx]}` (idx: the passive slot), `unskill{cls,slot[,idx]}` (slot `'pass'` + idx for a passive), `upskill{id}`, `soul{el}`,
-  `look{look}`, `chat{text}`, `name{name}`, `warp{}`, `dev{cmd,v}`.
+  `look{look}`, `chat{text}`, `name{name}`, `warp{}`, `mq{a:'talk'|'pick'|'read',id|i}` (the main quest), `dev{cmd,v}`.
 - Server → client: `welcome{...,look?}` (`look` only for a logged-in account: its own look replaces the browser's), `mons{list}` (roster), `you{...}` (private
   state incl. `gear`), `tp`, `kicked`, `auth{user,token}`, `authfail{text}`,
   `snap{day, n, pl, mo, b (one entry per boss), w (weather), ev:[events]}` 8-20×/s, **made per player**: `mo` holds only the monsters
@@ -82,7 +82,7 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 - Events (`ev(...)` on the server, `applyEvent` in `net/client.js`): dmg (`[id,v,crit,by[,fx]]`: fx 1 / -1 = the element helped / hurt), kill, imm, mact, aggro, respawn,
   spawn, despawn, proj, pend, tele, tend, roar, area, aend, chain, buff, xp, coins, loot, lvup, hurt, down,
   up, toast, qdone, qturn, pact, pjoin, pleave, pgear, plook, pname, chat, merge, skillslot, skillbuy,
-  weather, thunder, lvset, warp, vale, drop (`[pid,mat,n,monId]`), skillup, soul.
+  weather, thunder, lvset, warp, vale, drop (`[pid,mat,n,monId]`), skillup, soul, mq (`[pid,stepId,1 started|2 handed in]`).
 - To add a feature that changes state: handle a message in `receive()` (server/api.js), mutate state,
   call `ev('name', ...)` and/or set `p.dirty=true` (→ a `you` update + save), then handle the event in
   `applyEvent` on the client.
@@ -112,8 +112,8 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | Animations | `game/character/pose.js` (`poseRig`; skill anims borrow kinds via `ANIM_OF`) |
 | World size, lakes, terrain | `shared/terrain.js` (`SIZE`, `LAKES`, `baseHeight`), `shared/zones.js` (`RINGS`, zones, arena) |
 | The lands' edges (Crownsea shore, the Sunwall and Redgate Canyon, snowy northern rims, all curved by noise) and the placeholder lands beyond; the edge zones and their monsters (`EDGE_ZONES`, `edgeZoneAt`, `defZone` in `shared/zones.js`; rows with `zone:` in `MON_DEFS`) | `shared/terrain.js` (`coastDist`, `shore`, `sunwall`, `bareGround`), colours `game/world/terrain-color.js`, the sea limit in `worldBounds` (`game/player/movement.js`), names `edgeName` (`game/ui/map.js`); placeholders `game/world/far-lands.js` (`FAR_COAST`, `FAR_ISLES`, `farHeight`); design `docs/WORLD.md` |
-| Roads and the river bridge | `shared/roads.js` (`ROADS` waypoints, `roadDist`, `nearRoad`, `BRIDGES`, `bridgeDeck`); the bridge's model `game/world/bridges.js`; walking on it `updatePlayer` (movement.js); road names on the map (`placeName`); the map's wavy outline `mapEdgeAlpha` (map.js) |
-| The main quest line (plan, not built yet) | `docs/MAIN-QUEST.md` (steps, levels, rewards, how to build it); story `docs/STORY.md` |
+| Roads, the river bridge and the plank causeways over the drowned roads (found automatically wherever a road runs under water; names `CAUSEWAY_NAMES`) | `shared/roads.js` (`ROADS` waypoints, `roadDist`, `nearRoad`, `BRIDGES`, `bridgeDeck`, `bridgeAt`); the models `game/world/bridges.js`; walking on it `updatePlayer` (movement.js); road names on the map (`placeName`); the map's wavy outline `mapEdgeAlpha` (map.js) |
+| The main quest line (acts I-II: steps W1-W18, V3-V11; Wren, Linnea, Odran; talks, herbs, grey monsters, lore spots) | data and talk logic `shared/main-quest.js` (`MQ`, `mqTalk`, `mqReward`, `HERBS`, `LORE`, `VIL.bed`, `V.cart`); server `server/main-quest.js` (message `mq{a:'talk'\|'pick'\|'read'}`, `mqKillP`, `mqActP` hooks in economy/players/combat, `mqTickP`, grey monsters `GREY_DEFS` in `monster-defs.js`, dev `mq`); client `game/economy/main-quest.js` (`mqLinesFor`, `mqMark`, `mqLogRow`, `mqTarget`, `wrenAwake`, `odranHere`), talking and reading `village/talking.js`, props `world/lore-props.js`; the people in `VILLAGERS` (`kin`, `show`, pose `bed`); design `docs/MAIN-QUEST.md`, story `docs/STORY.md`; test `node tools/mainquest-smoke.js` |
 | Vegetation / animals | `game/world/plant-models.js`, `generation-*.js`, `game/wildlife/animals.js` |
 | Background music (a theme per village, level range and boss; `THEMES`, `musicThemeHere`; recorded tracks `assets/audio/music-<theme>.m4a` override a theme) | `game/audio/music.js`, `game/audio/samples.js` (`musicBuffer`) |
 | Time of day / weather | `game/world/time-of-day.js` (`weatherTint` hook), `server/weather.js`, `game/world/weather.js`; rain sound `game/audio/rain.js` (`RAIN_SND` volumes) |
@@ -169,6 +169,7 @@ python3 build.py                 # → dist/ (quiet, ~1 s)
 python3 build.py --check         # + syntax check of every bundle + duplicate-name check  (always run this)
 node tools/server-smoke.js       # 16 headless server checks from src/ (no build), ~5 s, prints PASS/FAIL
 node tools/accounts-smoke.js     # 17 checks of accounts (register, login, tokens, unique names, the account's look), ~1 s
+node tools/mainquest-smoke.js    # 24 checks of the main quest (talks, herbs, kills, grey monsters, night, lore, old saves, the end of act II), ~10 s
 node tools/skills-smoke.js       # 51 checks of elements, the soul shrine, monster drops, skill upgrades, passives and the 18 boss skills (server from src/), ~15 s
 node tools/client-smoke.js       # 17 checks running the built page headless (solo), ~45 s (also draws every boss skill). It runs dist/: build first
 node tools/start-smoke.js        # 27 checks of the start card + a new account's character editor, against a real server in-process, ~20 s
@@ -301,7 +302,7 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
   ±5% per level difference; crits 12% ×1.7.
 - XP to next `10(L²+(7/6)^L)·K15^((L-5)/10)`; level 10-15 monsters 1.5× HP/XP/coins (`highMult`).
 - Monsters: 40 of each level-1 kind down to 26 of each level-11 kind, levels 12-15 a quarter more (30 down to 25: their zones reach the land's edge), the
-  four edge kinds their own `count` (16-28); respawn 35 s; think within 110 m.
+  five edge kinds (levels 16-20) their own `count` (10-20); respawn 35 s; think within 110 m.
 - Drops: monsters 2% common, 0.5% rare, 0.1% epic; boss 50/10/3/1/0.1% (common…legendary).
 - World: the home forest is -HALF..HALF; the whole world is `WX0..WX1` x `WZ0..WZ1` (the vale is x > HALF, 550 m wide).
   Use those bounds (not ±HALF) for clamps. The heightmap is rectangular (`NVX` x `NVZ`), the terrain is drawn in

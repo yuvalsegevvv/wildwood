@@ -7,6 +7,7 @@ Install once: `npm install` (three@0.128 for these tools). The model preview als
 |---|---|---|
 | `node tools/server-smoke.js` | 16 checks of the world server straight from `src/`: join, combat, quests, shop, forge, skill slots, per-player snapshots (only monsters near you), 2-player boss, snapshot sizes, weather, chat | no |
 | `node tools/accounts-smoke.js` | 17 checks of registered accounts (register, login, tokens, unique names, the account's look) with an in-memory store | no |
+| `node tools/mainquest-smoke.js` | 24 checks of the main quest: a character walked through steps (talks, heartleaf, kills, grey monsters, the night, a lore spot, old-save flags, the end of act II) and broken saves | no |
 | `node tools/client-smoke.js` | 9 checks running `dist/wildwood.html` headless in solo mode: streaming, monster views, attacking, equip, inventory, skills panel, chat, map, rain | yes (`python3 build.py`) |
 | `node tools/start-smoke.js` | 27 checks of the start card against a real world server in the same process (fake WebSocket): guest, log in, register, errors, the character editor after registering (class, look), Continue as, no-server page | yes |
 | `python3 tools/unused.py` | dead-code candidates: names nothing uses, CSS nobody mentions | no |

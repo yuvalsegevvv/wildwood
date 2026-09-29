@@ -18,6 +18,9 @@
      onTalk    optional function(npc) called every time the player talks to them
      vil       2 = lives in Hanami, the Sakura Vale's village (same anchors, on that village's plan)
      late      true = spawned after the random villagers, with its own random numbers (a new villager must not change everyone else's look)
+     icon      the label's icon when it is not the role's (ROLE_ICON in npc-labels.js)
+     show      optional function() -> false hides them (and you cannot talk to them): Odran comes and goes with the main quest
+     kin       true = looks like your family (your skin and hair colour, greyed by the sickness): Wren
    Anchors: 'well', 'well:far', 'questboard' (in front of the quest board), 'gate', 'garden', 'plaza0'..'plaza7',
             'house:0'..'house:8' (outside the door; house:4 is the tavern),
             'stall:0'..'stall:2' (customer side), 'stall:0:behind'.. (seller side),
@@ -81,6 +84,26 @@ const VILLAGERS=[
     look:{sex:'female',height:0.9,build:0.95,face:'round',hair:'bun',hairColor:0xcfcac2,chest:0.8,skin:0xe0bc98,top:'hoodie',topColor:0x5a3a5a,bottom:'skirt',bottomColor:0x2a2830,hat:'none'},
     behavior:{type:'stationary',at:'campfire:seat1',pose:'sit'}, home:'house:4', schedule:'always', voice:{rate:0.8,pitch:1.0},
     lines:['Sit, sit. The petals fall whether you hurry or not.','The circle of stones by the road hums for anyone who has walked here on their own feet. Step on it and it carries you home, and back again.','When I was a girl the kitsune were our friends. Then one of them grew nine tails.'] },
+  /* ---- the main quest's people (docs/MAIN-QUEST.md, docs/STORY.md). late, so the random villagers keep their looks ---- */
+  // Wren, your younger sibling, in the sickbed under the awning of your house by the gate: asleep (lying) unless a quest step
+  // wants them awake (wrenAwake), then sitting up
+  { id:'wren', late:true, kin:true, title:'Your sibling', icon:'kin', name:'Wren', role:null,
+    look:{height:0.82,build:0.85,face:'round',hair:'short',top:'tshirt',topColor:0xd8d0c0,bottom:'trousers',bottomColor:0x6a6e74,hat:'none',pack:false,shoes:'none',facial:'none',chest:0.6},
+    behavior:{type:'stationary',at:'bed',pose:'bed'}, home:'house:0', schedule:'always', voice:{rate:1.05,pitch:1.35},
+    lines:['(Wren is asleep. The grey lines on their arms have not changed.)','(Wren murmurs something about grey water, and sleeps on.)'] },
+  { id:'linnea', late:true, title:'Healer', icon:'healer', name:'Healer Linnea', role:null,
+    look:{sex:'female',height:0.97,build:0.9,face:'oval',hair:'long',hairColor:0x8a6a4a,chest:1.0,top:'jacket',topColor:0x5a7a4a,bottom:'skirt',bottomColor:0x4a3a2a,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2a1e,facial:'none'},
+    behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.9,pitch:1.05},
+    lines:['Heartleaf for fever, willow bark for pain, and rest for everything else.','Wren is no worse today. I will take that.','If you find anything strange out there, bring it to me. Strange is what I need.'] },
+  // Odran the peddler (a watcher: docs/STORY.md; never say so): his cart by the gate from W8, by Hanami's gate from V8
+  { id:'odran', late:true, title:'Peddler', icon:'peddler', name:'Odran', role:'peddler', show:()=>odranHere(1),
+    look:{sex:'male',height:1.02,build:1.05,face:'oval',hair:'short',hairColor:0x3a2a20,facial:'stubble',top:'jacket',topColor:0x5a4a6a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'ranger',hatColor:0x3a3230,pack:true,shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'cart'}, home:'house:4', schedule:'always', voice:{rate:1.1,pitch:0.95},
+    lines:['Useful things and useless ones! Mostly useless, but those sell best.','Buttons, buckles, a spoon with a hole in it. Something for everyone.','I go where the roads go. The roads here go to interesting places.'] },
+  { id:'odran2', vil:2, late:true, title:'Peddler', icon:'peddler', name:'Odran', role:'peddler', show:()=>odranHere(2),
+    look:{sex:'male',height:1.02,build:1.05,face:'oval',hair:'short',hairColor:0x3a2a20,facial:'stubble',top:'jacket',topColor:0x5a4a6a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'ranger',hatColor:0x3a3230,pack:true,shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'cart'}, home:'house:4', schedule:'always', voice:{rate:1.1,pitch:0.95},
+    lines:['Cherry blossoms all year round. Somebody here is very good at gardening.','The tunnel was dark, but I have a good lamp. A very good lamp.','Buy something, sell something. The roads do not pay for themselves.'] },
   // the soul shrine: bind your soul to an element from level 15 (panel: economy/soul.js). late: spawned after everyone else, see above
   { id:'kaede', vil:2, late:true, title:'Soul shrine', name:'Shrine Maiden Kaede', role:'soul',
     look:{sex:'female',height:0.97,face:'oval',hair:'long',hairColor:0x1d1714,chest:0.95,skin:0xeac8a6,top:'jacket',topColor:0xe8e4dc,bottom:'skirt',bottomColor:0xb03a3a,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
@@ -103,6 +126,7 @@ function anchorOf(name,V){ V=V||VIL; return V.anchors[name]||V.anchors.plaza0; }
 function randomPOI(n){ const V=vilOf(n); let p; for(let i=0;i<6;i++){ p=V.pois[Math.floor(Math.random()*V.pois.length)]; if(Math.hypot(p.x-n.x,p.z-n.z)>3) break; } return {x:p.x+AR(-0.6,0.6),z:p.z+AR(-0.6,0.6),face:p.face}; }
 function spawnNPC(def,rng){
   const look=randomLook(rng||Math.random,{villager:true,base:def.look});
+  if(def.kin){ look.sex=LOOK.sex; look.hairColor=LOOK.hairColor; look.skin=new THREE.Color(LOOK.skin||0xe0b894).lerp(new THREE.Color(0x9a9a98),0.35).getHex(); }   // your family, greyed by the sickness
   const rig=buildCharacter(look), s=look.height*(look.sex==='female'?0.95:1);
   rig.root.scale.setScalar(s);
   const g=new THREE.Group(); g.add(rig.root); scene.add(g);
@@ -147,7 +171,7 @@ function updateNPCs(dt){
     const wantHome=D.schedule!=='always' && night>0.6;
     if(wantHome && !n.inside && n.state!=='home'){ if(talkNPC===n) endTalk(); if(n.partner){ n.partner.state='idle'; n.partner.partner=null; n.partner=null; } routeTo(n,anchorOf(D.home||'house:0',V),'home'); }
     if(!wantHome && n.inside){ const h=anchorOf(D.home||'house:0',V); n.inside=false; n.x=h.x; n.z=h.z; n.face=h.face; n.state='idle'; n.timer=AR(0,3); n.route=[]; }
-    if(n.inside){ n.g.visible=false; continue; }
+    if(n.inside||(D.show&&!D.show())){ n.g.visible=false; if(talkNPC===n) endTalk(); continue; }
     const talking=talkNPC===n;
     if(talking && dp>4.5) endTalk();
     if(!talking && n.state!=='home'){
@@ -203,10 +227,14 @@ function updateNPCs(dt){
     n.g.visible=Math.hypot(n.x-cx,n.z-cz)<95;
     if(n.g.visible){
       const speaking=talking||(n.state==='chat' && ((Math.floor(t/2.2+n.seed)%2===0)===!!n.leader));
-      const sit=B.pose==='sit' && n.state==='idle' && !moving && !talking;
-      poseRig(n.rig,dt,{sp,ph:n.walk,sit,sitH:0.5/n.scale,talk:speaking,headYaw:n.headYaw,seed:n.seed});
+      const bed=B.pose==='bed', lie=bed&&!wrenAwake(), sit=(B.pose==='sit'||(bed&&!lie)) && n.state==='idle' && !moving && (!talking||bed);
+      poseRig(n.rig,dt,{sp,ph:n.walk,sit,sitH:0.55/n.scale,talk:speaking&&!lie,headYaw:lie?0:n.headYaw,seed:n.seed});
+      if(bed){   // lying on the mattress (feet at the anchor, head at the headboard), or sitting on its front edge facing the plaza
+        const a=VIL.bed.rot; n.g.rotation.order='YXZ'; n.g.rotation.x=lie?Math.PI/2:0; n.g.rotation.y=lie?a+Math.PI/2:a;
+        if(lie) n.g.position.y=n.y+0.74; else n.g.position.set(n.x+Math.cos(a)*0.55-Math.sin(a)*0.3,n.y,n.z-Math.sin(a)*0.55-Math.cos(a)*0.3);
+      }
     }
-    if(dp<nd && dp<(n.def.role?3.8:2.8)){ nd=dp; nearNPC=n; }
+    if(dp<nd && dp<(n.def.role||n.def.kin?3.8:2.8)){ nd=dp; nearNPC=n; }
   }
   updateTalkUI();
 }
