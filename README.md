@@ -191,7 +191,7 @@ Three slots per class: basic attack (always open), skill (level 3) and burst (le
 ability can be used. The first ability of each slot is free and equipped automatically when the slot opens; the
 others are taught by Aldric, the trainer at the well. Only the mage can change its basic attack. Loadouts are kept
 per class, and each slot has one cooldown, so swapping doesn't skip it. Open the panel with K, the Skills button in
-the inventory, or by tapping an empty slot button. Keys: F basic, Q skill, R burst.
+the inventory, or by tapping an empty slot button. Default keys: F basic, Q skill, R burst (every key can be changed in Settings > Controls; hold Alt to free the mouse for the menus).
 The panel has the active slots and the passive slots on top (drop targets) and a tab below for each kind: 1 basic, 2 skill,
 3 burst and Passive. Drag a skill you own from the grid onto its slot to use it, drag it out of the slot to take it off (or
 tap it and use the Equip / Take off button); tap any skill for its details and its upgrade.
