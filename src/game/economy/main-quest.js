@@ -18,7 +18,7 @@ function mqPicking(){ const M=mqG(), s=mqCur(); return !!(s&&M.st===1&&s.parts.s
 function nearHerb(){ if(!mqPicking()) return -1; const M=mqG(); for(let i=0;i<HERBS.length;i++) if(!((M.h>>i)&1)&&Math.hypot(P.x-HERBS[i][0],P.z-HERBS[i][1])<HERB_R) return i; return -1; }
 // where a villager stands (their live position if they are drawn, else their anchor)
 function npcSpot(id){ const n=npcById(id); if(n) return {x:n.x,z:n.z,name:n.def.name}; return null; }
-const MQ_ACT_AT={buy:'ilse',board:'maren',upskill:'aldric',merge:'greta',soul:'kaede',learn:'gudrun'};
+const MQ_ACT_AT={buy:'ilse',board:'maren',upskill:'aldric',merge:'greta',soul:'kaede'};
 const MQ_GREY_C={};
 function mqPartTarget(s,pt){
   if(pt.talk) return npcSpot(pt.talk);
@@ -27,11 +27,15 @@ function mqPartTarget(s,pt){
   if(pt.pick){ const M=mqG(); let best=null,bd=1e9; HERBS.forEach(([x,z],i)=>{ const d=Math.hypot(x-P.x,z-P.z); if(!((M.h>>i)&1)&&d<bd){ bd=d; best={x,z,name:'Heartleaf'}; } }); return best; }
   if(pt.read){ const L=LORE_BY_ID[pt.read]; return {x:L.x,z:L.z,name:L.name}; }
   if(pt.boss){ const bd=BOSS_DEFS.find(b=>b.def.id===pt.boss), A=ARENAS.find(a=>a.key===bd.arena); return {x:A.x,z:A.z,name:A.name}; }
-  if(pt.gather){ let best=null,bd=1e9; for(const n of NODES) if(n.kind===pt.gather){ const d=Math.hypot(n.x-P.x,n.z-P.z); if(d<bd&&!nodeTaken(n.i)){ bd=d; best=n; } } return best?{x:best.x,z:best.z,name:NODE_KINDS[best.kind].name}:null; }
+  if(pt.gather){ let best=null,bd=1e9; for(const n of NODES) if((n.kind===pt.gather||NODE_KINDS[n.kind].prof===pt.gather)&&!nodeBlock(GEAR,n)){ const d=Math.hypot(n.x-P.x,n.z-P.z); if(d<bd&&!nodeTaken(n.i)){ bd=d; best=n; } } return best?{x:best.x,z:best.z,name:NODE_KINDS[best.kind].name}:null; }
   if(pt.act==='sell'){ const V=VILS[MQ_NPC_VIL[s.from]-1]; return {x:V.cart.x,z:V.cart.z,name:'Odran\'s cart'}; }
   if(pt.act==='warp'){ const V=vilAt(P.x,P.z); return V!==VIL?{x:V.tele.x,z:V.tele.z,name:'the teleport circle'}:null; }
   if(pt.act==='rimehold') return inHoar(P.x,P.z)?{x:VIL3.anchors.gate.x,z:VIL3.anchors.gate.z,name:'Rimehold'}:{x:PASS.x,z:PASS.ice+4,name:'Frostgate Pass'};
   if(pt.act==='hanami') return inVale(P.x)?{x:VIL2.anchors.gate.x,z:VIL2.anchors.gate.z,name:'Hanami'}:{x:TUN.x0,z:TUN.z,name:'the tunnel'};
+  { const v=(MQ_NPC_VIL[s.from]||1)-1;   // the professions' places are in the giver's village: its lodge keeper, healer, weaponsmith or armourer
+    if(pt.act==='learn'||pt.act==='tool') return npcSpot(['tamsin','isamu','gudrun'][v]);
+    if(pt.act==='brew') return npcSpot(['linnea','hinata','ylva'][v]);
+    if(pt.act==='craft') return npcSpot((pt.kind==='armor'?['ilse','haruka','dagny']:['tomas','kenji','bjorn'])[v]); }
   return MQ_ACT_AT[pt.act]?npcSpot(MQ_ACT_AT[pt.act]):null;
 }
 // the main quest's marker for the maps: the giver, the first open part that has a place, or whom to hand in to

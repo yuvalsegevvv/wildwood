@@ -91,6 +91,10 @@ function receive(pid,msg){
     case 'mq': mqMsgP(p,msg); break;
     case 'learn': learnProfP(p,msg.id); break;
     case 'gather': gatherP(p,clampInt(msg.i,0,NODES.length-1,-1)); break;
+    case 'sellres': sellResP(p,msg.id,clampInt(msg.n,0,RES_MAX,0)); break;
+    case 'craft': craftP(p,msg.slot,msg.tier,msg.rar); break;
+    case 'brew': brewP(p,msg.id,msg.n); break;
+    case 'potion': drinkP(p,msg.k); break;
     case 'dev': devP(p,msg); break;
     case 'register': registerP(p,msg.user,msg.pass); break;
     case 'logout': logoutP(p,msg.token); break;
@@ -102,7 +106,7 @@ function tick(dt){
   else S.day=(S.day+dt/DAY_SECONDS)%1;
   if(S.day<S.prevDay) sunrise();
   S.prevDay=S.day;
-  updatePlayersS(dt); updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateBurnS(dt); updateWeatherS(dt); updateNodesS(dt);
+  updatePlayersS(dt); updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateBurnS(dt); updateWeatherS(dt); updateNodesS(dt); updateCastsS();
   for(const p of S.players.values()) if(p.dirty){ p.dirty=false; p.saveDirty=true; sendTo(p.id,youMsg(p)); }
   S.saveT-=dt; if(S.saveT<=0){ S.saveT=5; for(const p of S.players.values()) if(p.saveDirty&&p.acct) saveP(p); }
   S.snapT-=dt; if(S.snapT<=0){ S.snapT=S.snapDt; broadcastSnap(); }

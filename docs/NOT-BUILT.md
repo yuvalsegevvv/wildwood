@@ -4,24 +4,54 @@ An honest list of what the Hoarfrost Reach update left out, and of the older gap
 would take and where to start. Nothing here is a bug; it is the edge of what exists. Ask the owner before starting any of it (`CLAUDE.md` section 10
 keeps the short list of ideas; the story for levels 26-50 is planned step by step in `docs/MAIN-QUEST.md` section 7).
 
-## 1. Professions (the Wayfarers' Lodge, `shared/professions.js`)
+## 1. Professions, tools, crafting and potions (`shared/professions.js`, `shared/crafting.js`; built, see `docs/MAIN-QUEST.md` section 5b)
 
-- **Potion use** is only a greyed-out row at the Lodge ("Coming later"). It is meant to be a fourth profession, taught by an alchemist (Gudrun says her chair
-  is empty), whose recipes turn herbs and frostbloom into healing, cures and short buffs. It needs an alchemist NPC (the plan puts her in Glasswell, act V-a),
-  a potion item kind in the bag and on a hotkey, a server effect (`hurtP`/`healP`/buff hooks already exist for skills), cooldowns and a recipe list. Best built
-  together with crafting, since both eat resources.
-- **Crafting** does not exist: mined ore, chopped logs, frostbloom and snowmoss have **no use**. The idea is crafting at the forges (Ulfhild's, Greta's...):
-  ore and wood into weapons and armour of the land's tier, ore into upgrade material. It needs recipes, a crafting panel (the forge panel is the model), and a
-  decision on how it fits with drops and the shops. Until then the resources just pile up (capped at 999 each) and show in the inventory.
-- **Selling resources**: the peddler and the stalls only buy items (`sellP`); Odran's "he buys anything" does not include resources yet. A price per resource
-  in `RES` and a Resources tab in the shop would do.
-- **Gathering has no animation and no cast time**: pressing the talk key at a node takes it at once (1.2 s cooldown), with a sound, a toast and a few sparks. A
-  swing or kneel pose (`poseRig`), a short progress bar and a tool in the hand would make it feel like work; tools that make gathering faster or unlock
-  richer nodes are part of the same idea.
-- **Nodes exist only in the Hoarfrost Reach** (90 of them: rime ore, frostpine, frostbloom, snowmoss). The home forest and the vale have no nodes, so a player
-  cannot level a profession anywhere else, and a profession's level only gives a double-yield chance (there are no level-locked nodes in use: `NODE_KINDS.lv` is
-  1 for all). Every later land should get its own resource kinds (`docs/MAIN-QUEST.md` section 5b).
-- **Profession levels stop at 5** (`PROF_XP`) and a profession has no ranks, trainers per level or specialities.
+What is built: three professions each with a **tool slot** (a node needs a tool of the tier of its zone), 314 nodes in every land, ore / logs in six grades and
+three lands' herbs, a Wayfarers' Lodge in every village (learn, buy tools, sell resources), a **cast** of about a second for every gather (a bar, no animation),
+**crafting** at the weaponsmiths' (ore) and armourers' (logs), **brewing** at the healers' (herbs) and three potions drunk with Z / X / C.
+
+**Decided against (the owner's call, do not build unless asked again):**
+- **No gathering animation.** A gather is a cast with a progress bar and nothing else: no swing or kneel pose, no tool in the hand.
+- **No tool durability.** Tools never wear out or break, and there are no repairs: a broken-tool system was judged annoying and unwanted.
+
+**What is left, with comments:**
+
+- **The numbers are first guesses, not balance-tested by play**: the resource counts of a recipe (`CRAFT_BASE`, `CRAFT_RAR`), the fees, the tool prices
+  (`TOOL_PRICE`), how many nodes there are and how fast they respawn, the potions' strengths and cooldowns, the xp per gather, and the cast time (`GATHER_CAST`
+  1.2 s, less 0.1 s per tool tier and 0.04 s per rarity, never under `GATHER_CAST_MIN` 0.6 s: meant to feel like a beat, not a wait). Crafting an epic piece of the
+  top tier asks for about 100 logs and 13,000 coins on purpose (it should be an investment), but nobody has played it through yet.
+- **A cast breaks only when you walk more than 1.5 m away or are knocked out**; a hit does not break it (it is short, and monsters roam near the nodes).
+  Two players may cast on the same node: the first to finish takes it and the other gets "Someone has already taken this one".
+- **Potions only heal, strengthen and guard**: the three kinds are healing, might and guard (`POT_KINDS`). Status-cleansing potions (antidotes, a potion that clears
+  a boss's freeze, slow or root: `pfxStep`), regeneration over time, potions with a level requirement and buff icons on the HUD beyond the belt's timer are **not
+  built**. There is no alchemy beyond the three recipes and no way to make a potion better than the land's herbs allow. To add a kind: a row in `POT_KINDS` (id,
+  herbs, cooldown, key `potN` in `KB_ACTIONS`), its effect in `drinkP` (`server/crafting.js`), and a button in the belt (`game/ui/potions.js` builds one for each kind).
+- **Tools are not crafted**: they are only bought at a Lodge (common) and merged at a forge. A Craft tab for tools at the smiths would give ore and logs another use.
+- **Resources are only sold to lodge keepers** (`sellResP`, a fixed price by grade in `RES_SELL` / `HERB_SELL`); Odran and the stalls still buy items only, and
+  there is no trading between players (`docs/MAIN-QUEST.md` section 7, S2).
+- **The quest board has no gathering or crafting notices** (only the main quest asks for them: W6a, W7b, W11b, V7b, F4-F6). **Planned, to implement later** (the board
+  code is `shared/quests.js` for the notices and rewards, `server/economy.js` for accepting, counting and handing in, `server/players.js` `sanitizeQuest` for saves,
+  `game/economy/quests.js` for the panel):
+  - Two new kinds next to hunt, bounty, scout and boss: **`gather`** ("Bring me N ore / logs / herbs": `type:'gather'`, `target` a resource id of the notice's level, `count`) and
+    **`craft`** (`type:'craft'`, "make one piece of tier T" with `kind:'weapon'|'armor'`, or "brew N potions" with a potion kind). Only offered to players who
+    know the profession (`gear.prof`) and, for craft, only for a tier they could make (`craftCost`); otherwise `genQuest` draws another kind.
+  - **The resource of a gather notice comes from the zone of the notice's level** (`tierFor(L)`: the grade is `ORE_GRADES[t]`, `LOG_GRADES[t]`, or the land's herbs), so a
+    level-8 notice asks for iron ore and never for something the player cannot mine. Counts follow `huntCount` scaled down (a gather takes longer than a kill: about 8-16 at level 1).
+  - **Counting**: a hook in `finishGatherP` (`server/professions.js`) next to `mqGatherP`, like `questKillP`, that adds the haul to every active `gather` notice for that resource
+    (the double yield counts twice); `craftP` and `brewP` call a `questCraftP` the same way. Progress lives in `Q.active[id]`, and the resources are **not** taken from the bag
+    (the notice counts what you gather, so it does not fight the smiths and healers for the same materials); a variant "hand in the goods" that takes them from `gear.res` is the
+    other option and needs a Deliver button in the panel.
+  - **Rewards** in `questRewardFor`: XP and coins like a hunt of the same count (`n * xpFor(L) * 1.2`, coins `* 1.5`), with a chance of an item like a hunt; a craft notice
+    could pay a rare tool. `sanitizeQuest` must accept the new kinds (it returns null for unknown ones, which is what protects old saves) and clamp `target` to `RES` / `POTS`.
+  - **Panel and map**: `quests.js` needs the text and a marker (a gather notice has none: it can point at the nearest node of the resource, like `mqPartTarget` does).
+  - **Test**: `tools/professions-smoke.js` (gather and craft with a notice active) and `tools/server-smoke.js` (the board still offers only valid notices).
+- **Nodes stand where the rng puts them**: 7 to 9 in a zone, spaced 9 m apart, and they can overlap a tree (the plants are placed on the client only), so a vein may
+  sit half inside a trunk. The Reach has 90 in its nine zones (10 a zone), the home zones 7 to 9. Higher-tier nodes cannot be worked before the level of their tool (level 25 for the
+  Reach's top zones), so a lower-level player sees them only as locked (they are left off the map).
+- **Profession levels stop at 5** (`PROF_XP`) and a profession has no ranks, trainers per level or specialities; the level only adds to the double-yield chance
+  (`NODE_KINDS.lv` is 1 for all).
+- **The next lands** need a grade of ore and logs, two herbs, a node plan and a tool tier each (`ORE_GRADES`, `LOG_GRADES`, `HERB_LANDS`, `TOOL_MAT`): the tiers
+  are six now because gear has six.
 
 ## 2. The rest of the story (levels 26-50)
 

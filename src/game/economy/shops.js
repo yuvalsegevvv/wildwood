@@ -10,8 +10,10 @@ function renderShop(){
   $('#shopTitle').textContent=n.def.name+(ped?"'s cart":kind==='weapon'?"'s weapons":"'s armor");
   $('#shopCoins').textContent=GEAR.coins+' coins';
   document.querySelectorAll('[data-shoptab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.shoptab===shopTab));
+  document.querySelector('[data-shoptab="craft"]').hidden=ped;   // the smiths and armourers craft; Odran only trades
   let h='';
-  if(shopTab==='buy'){
+  if(shopTab==='craft') h=craftHtml(kind);
+  else if(shopTab==='buy'){
     const mins=Math.max(1,Math.round((1-dayClock)*DAY_SECONDS/60));
     h+=`<p class="shop-note">Unlimited stock. Each one you buy costs 20% more than the last, until sunrise (in about ${mins} min).</p>`;
     if(ped) h+=`<p class="shop-note">On the cart's top shelf, not for sale: ${ODRAN_CURIOS[(n.def.vil||1)-1]}</p>`;
@@ -30,6 +32,7 @@ function renderShop(){
     }
   }
   $('#shopBody').innerHTML=h;
+  if(shopTab==='craft') bindCraft();
   $('#shopBody').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{ const it=ITEM[b.dataset.buy]; if(GEAR.coins<shopPrice(it,(GEAR.bought||{})[it.id]||0)) return; netSend({t:'buy',id:it.id}); UI_SFX.pickup(); });
   $('#shopBody').querySelectorAll('[data-buy]').forEach(b=>{ const it=ITEM[b.dataset.buy]; if(GEAR.coins<shopPrice(it,(GEAR.bought||{})[it.id]||0)) b.disabled=true; });
   $('#shopBody').querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>{ netSend({t:'sell',id:b.dataset.sell}); UI_SFX.click(); });

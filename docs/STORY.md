@@ -240,7 +240,7 @@ the meaning of its bosses, and the hook that sends the player on.
 | **Healer Linnea** | Wildwood (in the game) | the village healer | treats Wren; sends the player east |
 | **Old Sigrun** | Rimehold (in the game) | seer, keeper of sagas | the burning sky; points to the root of the sickness |
 | **Hallvard** | Rimehold (in the game) | hunter-captain, keeps the gate | counts who comes through; sends the player to Sigrun and, later, to the Rimeking |
-| **Gudrun** | Rimehold (in the game) | keeper of the Wayfarers' Lodge | teaches mining, woodcutting and gathering; the alchemist's chair beside hers is empty |
+| **Gudrun** | Rimehold (in the game) | keeper of the Wayfarers' Lodge | teaches mining, woodcutting and gathering (there is a lodge in every village: Tamsin at home, Isamu in Hanami); Ylva sits in the alchemist's chair beside hers (potions are brewed at the healers' of all three villages) |
 | **Ymrik, the Rimeking** | the ice hall (boss, in the game) | a frost giant, once the wolves' keeper, turned by the dark | the second voice of the truth, in dying |
 | **Brenna** | Highmark | mine foreman | notices the too-perfect coins |
 | **Odran** | everywhere | watcher, peddler | watches, grows fond, reveals the truth, changes sides |

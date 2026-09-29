@@ -77,6 +77,11 @@ function applyEvent(e){
     case 'north': if(e[1]===me) onNorthStep(e[2]); break;
     case 'node': onNodeEvent(e[1],e[2]); break;
     case 'gather': if(e[1]===me) onGatherEvent(e[2],e[3],e[4]); break;
+    case 'cast': if(e[1]===me) onCastEvent(e[2],e[3]); break;
+    case 'castx': if(e[1]===me) hideCast(); break;
+    case 'pot': if(e[1]===me) onPotionEvent(e[2],e[3],e[4]); break;
+    case 'craft': if(e[1]===me){ const it=ITEM[e[2]]; if(it){ forgeFx(it); if(!$('#shop').hidden) renderShop(); } } else { const r=REMOTES.get(e[1]), it=ITEM[e[2]]; if(r&&it&&it.rar>=2) toast(r.name+' crafted '+it.name+'!','loot r'+it.rar); } break;
+    case 'brew': if(e[1]===me) UI_SFX.success(); break;
     case 'thunder': onThunder(e[1],e[2]); break;
     case 'weather': if(!e[1]&&WX.kind&&started) toast(WX.snow>0.5?'The snow is easing off.':'The rain is easing off.',''); break;
     case 'area': onArea(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8],e[9]); break;

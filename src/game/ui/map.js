@@ -88,7 +88,7 @@ function drawMinimap(){
   const k=W/(2*MM_R), at=(wx,wz)=>[(wx-P.x)*k+W/2,(wz-P.z)*k+W/2], inside=(wx,wz)=>Math.abs(wx-P.x)<MM_R&&Math.abs(wz-P.z)<MM_R;
   for(const m of MONS){ if(m.dead||!inside(m.x,m.z)) continue; const [a,b]=at(m.x,m.z); dot(x,a,b,(m.boss?4.5:m.aggro?2.8:2.1)*DPR,m.boss?'#c86bff':m.aggro?'#ff4a3a':'#e8904a'); }
   for(const r of REMOTES.values()){ if(r.tx===null||!inside(r.x,r.z)) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,3.2*DPR,'#6fb8ff'); }
-  if(GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||!GEAR.prof[NODE_KINDS[n.kind].prof]||!inside(n.x,n.z)) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.4*DPR,RES[NODE_KINDS[n.kind].res].col); }   // the nodes of the professions you know
+  if(GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||nodeBlock(GEAR,n)||!inside(n.x,n.z)) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.4*DPR,RES[NODE_KINDS[n.kind].res].col); }   // the nodes of the professions you know
   for(const q of questTargets()){
     if(q.ring) continue;
     const col=q.main?'#c89bff':q.ready?'#9fe08a':'#f2cf5a';
@@ -126,7 +126,7 @@ function drawFullMap(){
   if(land!=='hoar'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Tunnel':'Tunnel (sealed)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='vale'){ const [cx,cy]=at(PASS.x,PASS.ice); dot(x,cx,cy,3.5*DPR,northOpen()?'#9fe0ff':'#8a8078'); label(northOpen()?'Frostgate Pass':'Frostgate Pass (ice wall)',cx-fs*4.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='hoar'){ const [cx,cy]=at(PASS.x,PASS.z1+50); label('Frostgate Pass',cx-fs*3.6,cy,fs*0.85,'#e8e0d0'); for(const Lk of FROST_LAKES){ const [lx,ly]=at(Lk.x,Lk.z); label(Lk.name,lx,ly,fs*0.85,'#cfe8f6'); }
-    if(GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||!GEAR.prof[NODE_KINDS[n.kind].prof]) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.6*DPR,RES[NODE_KINDS[n.kind].res].col); } }   // the nodes of the professions you know
+    if(GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||nodeBlock(GEAR,n)) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.6*DPR,RES[NODE_KINDS[n.kind].res].col); } }   // the nodes of the professions you know
   for(const Lk of LAKES){ if(!!Lk.vale!==(land==='vale')||land==='hoar') continue; const [cx,cy]=at(Lk.x,Lk.z); label(Lk.name,cx,cy,fs*0.85,'#cfe8f6'); }
   for(const B of BRIDGES){ if(B.kind!=='causeway'||B.name[0]!=='T'||inVale(B.x)!==vale||land==='hoar') continue; const [cx,cy]=at(B.x,B.z); label(B.name,cx,cy+fs*1.1,fs*0.8,'#cfe8f6'); }   // the named causeways
   // quests

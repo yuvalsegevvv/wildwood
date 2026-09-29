@@ -25,7 +25,7 @@ function equipP(p,id){
   const it=ITEM[id]; if(!it||!p.gear.inv.includes(id)) return;
   if(p.level<it.lv){ toastTo(p.id,it.name+' needs level '+it.lv,'bad'); return; }
   const cls=clsOfP(p); p.gear.eq[it.kind==='weapon'?'weapon':it.slot]=id; gearChangedP(p);
-  if(it.kind!=='weapon') mqActP(p,'armor'); else if(clsOfP(p)!==cls) mqActP(p,'class');
+  if(it.kind==='armor') mqActP(p,'armor'); else if(it.kind==='tool') mqActP(p,'tool',1,{tool:it.slot,tier:it.tier}); else if(clsOfP(p)!==cls) mqActP(p,'class');
 }
 function unequipP(p,slot){ if(slot==='weapon'||!(slot in p.gear.eq)) return; p.gear.eq[slot]=null; gearChangedP(p); }
 function equipClassP(p,cls){
@@ -35,8 +35,9 @@ function equipClassP(p,cls){
   const was=clsOfP(p); p.gear.eq.weapon=owned[0]; gearChangedP(p); if(clsOfP(p)!==was) mqActP(p,'class');
 }
 function buyP(p,id){ const it=ITEM[id]; if(!it||it.rar>0) return;   // shops only sell common items, as many as you like
+  if(it.kind==='tool'&&!inVillage(p)){ toastTo(p.id,'Tools are sold at a Wayfarers\' Lodge, in a village','bad'); return; }
   const n=p.gear.bought[id]||0, price=shopPrice(it,n);
-  if(p.gear.coins<price){ toastTo(p.id,'Not enough coins','bad'); return; } p.gear.coins-=price; p.gear.bought[id]=n+1; addItemP(p,id,true); toastTo(p.id,'Bought '+it.name+' for '+price+' coins','loot r0'); ev('loot',p.id,id); mqActP(p,'buy'); }
+  if(p.gear.coins<price){ toastTo(p.id,'Not enough coins','bad'); return; } p.gear.coins-=price; p.gear.bought[id]=n+1; addItemP(p,id,true); toastTo(p.id,'Bought '+it.name+' for '+price+' coins','loot r0'); ev('loot',p.id,id); if(it.kind!=='tool') mqActP(p,'buy'); }
 function sellP(p,id){
   const i=p.gear.inv.lastIndexOf(id); if(i<0) return;
   const copies=p.gear.inv.filter(x=>x===id).length; if(Object.values(p.gear.eq).includes(id)&&copies<2) return;
@@ -153,7 +154,13 @@ function devP(p,msg){
   else if(c==='mats'){ for(const id of MAT_IDS) addMatP(p,id,20); toastTo(p.id,'20 of every monster drop added','good'); }
   else if(c==='weather'){ const k={clear:0,rain:1,storm:2}[msg.v]; if(k===0){ W.kind=0; W.t=0; W.dur=0; ev('weather',0); } else if(k) startWeatherS(k); }
   else if(c==='coins'){ p.gear.coins+=1000; p.dirty=true; }
-  else if(c==='prof'){ for(const id of PROF_IDS) if(!p.gear.prof[id]) p.gear.prof[id]={xp:0}; p.dirty=true; mqActP(p,'learn'); toastTo(p.id,'Mining, woodcutting and gathering learned','good'); }
+  else if(c==='prof'){   // every profession, and a common tool of each tier for each (the best one you have the level for is worn)
+    for(const id of PROF_IDS){ if(!p.gear.prof[id]) p.gear.prof[id]={xp:0}; mqActP(p,'learn',1,{prof:id}); }
+    for(const t of TOOL_LIST) if(t.rar===0&&!p.gear.inv.includes(t.id)&&p.gear.inv.length<BAG_MAX) p.gear.inv.push(t.id);
+    for(const slot of TOOL_SLOTS){ const best=TOOL_LIST.filter(t=>t.slot===slot&&t.rar===0&&t.lv<=p.level).pop(); if(best){ p.gear.eq[slot]=best.id; mqActP(p,'tool',1,{tool:slot,tier:best.tier}); } }
+    gearChangedP(p); toastTo(p.id,'Mining, woodcutting and gathering learned, with their tools','good'); }
+  else if(c==='res'){ for(const id in RES) p.gear.res[id]=Math.min(RES_MAX,(p.gear.res[id]||0)+60); p.dirty=true; toastTo(p.id,'60 of every resource added','good'); }
+  else if(c==='pots'){ for(const id in POTS) p.gear.pot[id]=Math.min(POT_MAX,(p.gear.pot[id]||0)+5); p.dirty=true; toastTo(p.id,'5 of every potion added','good'); }
   else if(c==='vale'){ const v=clampInt(msg.v,0,2,1); if(v>=1) openValeP(p); if(v>=2){ p.gear.east=2; ev('vale',p.id,2); } if(v===0) p.gear.east=0; p.dirty=true; }
   else if(c==='north'){ const v=clampInt(msg.v,0,2,1); if(v>=1&&p.gear.north<1){ p.gear.north=1; ev('north',p.id,1); } if(v>=2){ p.gear.north=2; ev('north',p.id,2); } if(v===0) p.gear.north=0; p.dirty=true; }
   else if(c==='tunnel'){   // v: 'in' (halfway through), 'east' (the east portal), 'hanami' (its gate), 'pass' / 'north' (either side of the ice wall), 'rimehold' (its gate), 'hall' / 'nest' / 'gate' / 'shrine' / 'tide' / 'circle' (the boss arenas); default the west portal
@@ -163,7 +170,7 @@ function devP(p,msg){
     if(x>TUN.p0&&p.gear.east<1) return; if(x>HALF&&z<PASS.ice&&p.gear.north<1) return; p.x=x; p.z=z; p.y=getH(x,z); sendTo(p.id,{t:'tp',x,z,face:N?0:xy&&xy.length>2?xy[2]*Math.PI/180:-Math.PI/2}); }
   else if(c==='three'){ const id=randomItem(tierFor(p.level),0); for(let k=0;k<MERGE_COUNT;k++) addItemP(p,id,true); toastTo(p.id,'Three '+ITEM[id].name+' added for the forge','good'); }
   else if(c==='lucky'){ const r=clampInt(msg.v,2,4,2); addItemP(p,randomItem(tierFor(p.level),r)); }
-  else if(c==='mq'){ const s=MQ_BY_ID[msg.v]; if(!s) return; mqRemoveGreyP(p); p.gear.mq={s:s.i,st:0,n:s.parts.map(()=>0),h:0}; if(s.from===null) mqStartP(p); p.dirty=true; toastTo(p.id,'Main quest set to '+s.id+': '+s.title,'good'); }
+  else if(c==='mq'){ const s=MQ_BY_ID[msg.v]; if(!s) return; mqRemoveGreyP(p); p.gear.mq={s:s.i,st:0,n:s.parts.map(()=>0),h:0,ver:MQ_VER}; if(s.from===null) mqStartP(p); p.dirty=true; toastTo(p.id,'Main quest set to '+s.id+': '+s.title,'good'); }
   else if(c==='reset'){ const keep=p.gear.startAll; p.gear=newGearFor(clsOfP(p)); p.gear.startAll=keep; if(keep) giveAllP(p); p.level=1; fillOffersP(p); p.exp=0; p.dead=false; recalcP(p); p.hp=p.maxHp; gearChangedP(p); toastTo(p.id,'Progress reset','good'); }
   else if(c==='skip'){ const stops=[0.045,0.25,0.47,0.62], from=S.ff!==null?S.ff:S.day; S.ff=stops.find(s=>s>from+0.01); if(S.ff===undefined) S.ff=stops[0]; }
 }

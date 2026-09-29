@@ -25,7 +25,7 @@ body.playing #actionbar{ display:flex; }
 .ab:active{ background:var(--glass-strong); }
 .ab:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
 #hint{ bottom:calc(env(safe-area-inset-bottom,0px) + 100px); }
-#prompt{ bottom:calc(env(safe-area-inset-bottom,0px) + 96px); }
+#prompt{ bottom:calc(env(safe-area-inset-bottom,0px) + 150px); }   /* (above the potion belt) */
 body.touch #actionbar{ left:auto; transform:none; right:calc(104px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 26px); flex-direction:column-reverse; }
 body.touch .ab{ width:72px; height:72px; border-radius:50%; }
 body.touch .ab .key{ display:none; }

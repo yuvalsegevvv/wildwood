@@ -19,7 +19,8 @@
     "17-forge.css",
     "18-skills.css",
     "19-chat.css",
-    "20-professions.css"
+    "20-professions.css",
+    "21-crafting.css"
   ],
   "shared": [
     "math.js",
@@ -41,7 +42,8 @@
     "items.js",
     "quests.js",
     "main-quest.js",
-    "professions.js"
+    "professions.js",
+    "crafting.js"
   ],
   "server": [
     "state.js",
@@ -57,6 +59,7 @@
     "economy.js",
     "main-quest.js",
     "professions.js",
+    "crafting.js",
     "weather.js",
     "accounts.js",
     "api.js"
@@ -127,6 +130,8 @@
     "economy/quests.js",
     "economy/main-quest.js",
     "economy/professions.js",
+    "economy/crafting.js",
+    "ui/potions.js",
     "ui/travel.js",
     "ui/settings-testing.js",
     "economy/init.js",

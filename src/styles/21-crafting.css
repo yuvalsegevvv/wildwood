@@ -1,0 +1,27 @@
+/*@ Crafting, brewing and potions: the Craft tab, the brewing panel, the lodge's tool shop and resource list, the potion belt above the action bar */
+#brew{ width:min(640px,calc(100vw - 24px)); }
+.cr-tiers, .cr-rar{ margin:0 0 8px; }
+.lo-tiers{ margin:0 0 6px; }
+.cr-short{ color:#e6806e; }
+.cr-dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:4px; vertical-align:baseline; }
+.it-ico.pot{ border-color:rgba(214,216,207,.45); }
+.br-btns{ display:flex; gap:6px; flex:none; }
+.lo-res{ display:flex; flex-direction:column; gap:4px; }
+.lo-sell{ display:flex; align-items:center; gap:10px; padding:5px 4px; border-bottom:1px solid rgba(238,240,226,.08); font-size:12.5px; }
+.lo-sell .mat{ flex:1; }
+/* the potion belt: one round button for each kind you carry, above the action bar (beside it on a phone) */
+#potbar{ position:fixed; z-index:5; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom,0px) + 92px); display:none; gap:8px; }
+body.playing #potbar:not([hidden]){ display:flex; }
+.pb{ position:relative; width:46px; height:46px; border-radius:50%; border:1px solid var(--pc,var(--line)); background:var(--glass); color:var(--ink); cursor:pointer; padding:0; overflow:hidden; --p:0;
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); display:grid; place-items:center; }
+.pb[hidden]{ display:none; }
+.pb .pi{ display:grid; place-items:center; } .pb .pi .ico{ width:30px; height:30px; }
+.pb .pn{ position:absolute; right:5px; bottom:2px; font-size:11px; font-weight:700; text-shadow:0 1px 2px #000; }
+.pb .pk{ position:absolute; left:0; right:0; top:1px; font-size:9px; font-weight:600; color:var(--lichen); text-align:center; }
+.pb .pt{ position:absolute; left:0; right:0; bottom:2px; font-size:9px; color:#ffe27a; text-align:center; text-shadow:0 1px 2px #000; }
+.pb::after{ content:""; position:absolute; inset:0; background:conic-gradient(rgba(0,0,0,.6) calc(var(--p)*360deg), transparent 0); pointer-events:none; }
+.pb.active{ box-shadow:0 0 0 2px var(--pc), 0 0 12px var(--pc); }
+.pb:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
+body.touch #potbar{ left:auto; transform:none; right:calc(104px + 72px + 22px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 26px); flex-direction:column-reverse; }
+body.touch .pb .pk{ display:none; }
+body.editing #potbar{ display:none !important; }

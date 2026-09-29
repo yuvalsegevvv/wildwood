@@ -1,4 +1,4 @@
-//@ Item icons: an SVG for every piece of equipment, coloured like the item looks on your character
+//@ Item icons: an SVG for every piece of equipment and every tool, coloured like the item looks on your character
 /* itemIcon(item) draws the item; slotIcon(slot) draws the faint outline shown in an empty equipment slot.
    Colours come from the same numbers the 3D models use (ARMOR_LOOK, and the weapon colours below). */
 const colHex=n=>'#'+(n>>>0).toString(16).padStart(6,'0');
@@ -51,7 +51,15 @@ function itemIcon(it){
     if(t===0) g+=`<path d="M11 11H15M11 14H15" stroke="#e8dcc0" stroke-width=".8"/>`;
     else g+=`<path d="M18 18.5Q13 17 8 18.5" fill="none" stroke="${icoShade(c,1.3)}" stroke-width="1"/>${t>=3?'<circle cx="13" cy="12" r="1.2" fill="#e0384a" stroke="#15120e" stroke-width=".6"/>':''}`;
   }
+  else if(it.kind==='tool') g=toolIconArt(it);
   return `<svg class="ico" viewBox="0 0 32 32" aria-hidden="true">${g}</svg>`;
+}
+// the three tools: a wooden haft and a head in the colour of the tier's ore (ORE_GRADES)
+function toolIconArt(it){
+  const c=ORE_GRADES[it.tier][2], h='#7a5236';
+  if(it.slot==='pick') return `<g transform="rotate(38 16 16)"><rect x="14.7" y="7" width="2.6" height="22" rx="1.1" fill="${h}" ${OUT}/><path d="M3.5 12.5Q16 2.5 28.5 12.5L28.5 14.6Q16 8 3.5 14.6Z" fill="${c}" ${OUT}/><path d="M9 9.6Q16 6.4 23 9.6" fill="none" stroke="${icoShade(c,1.3)}" stroke-width=".9"/></g>`;
+  if(it.slot==='axe') return `<g transform="rotate(32 16 16)"><rect x="14.7" y="5" width="2.6" height="24" rx="1.1" fill="${h}" ${OUT}/><path d="M17.3 6Q29 4.5 28 16Q23 13.5 17.3 14.5Z" fill="${c}" ${OUT}/><path d="M20 8.5Q25 8 26 12" fill="none" stroke="${icoShade(c,1.3)}" stroke-width=".9"/></g>`;
+  return `<g transform="rotate(20 16 16)"><rect x="14.7" y="17" width="2.6" height="12" rx="1.1" fill="${h}" ${OUT}/><path d="M16 17.6Q3.5 15 7 4.5Q9 10.5 22 10.5Q17 12 16 17.6Z" fill="${c}" ${OUT}/><path d="M9 7Q11 10.5 18 11" fill="none" stroke="${icoShade(c,1.35)}" stroke-width=".9"/></g>`;
 }
 // faint outline for an empty equipment slot
 function slotIcon(slot){

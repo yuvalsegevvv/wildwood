@@ -60,7 +60,7 @@
 </div>
 <div id="shop" class="panel" hidden role="dialog" aria-label="Shop">
   <div class="pn-head"><span class="pn-t" id="shopTitle">Shop</span><span class="pn-coins" id="shopCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-  <div class="chips pn-tabs"><button class="chip" data-shoptab="buy">Buy</button><button class="chip" data-shoptab="sell">Sell</button></div>
+  <div class="chips pn-tabs"><button class="chip" data-shoptab="buy">Buy</button><button class="chip" data-shoptab="sell">Sell</button><button class="chip" data-shoptab="craft" hidden>Craft</button></div>
   <div class="pn-body" id="shopBody"></div>
 </div>
 <div id="quests" class="panel" hidden role="dialog" aria-label="Quests">
@@ -87,6 +87,10 @@
 <div id="lodge" class="panel" hidden role="dialog" aria-label="Wayfarers' Lodge">
   <div class="pn-head"><span class="pn-t" id="loTitle">Wayfarers' Lodge</span><span class="pn-coins" id="loCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="loBody"></div>
+</div>
+<div id="brew" class="panel" hidden role="dialog" aria-label="Brewing">
+  <div class="pn-head"><span class="pn-t" id="brTitle">Brewing</span><span class="pn-coins" id="brCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="brBody"></div>
 </div>
 <div id="travel" class="panel" hidden role="dialog" aria-label="Teleport circle">
   <div class="pn-head"><span class="pn-t">Teleport circle</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
@@ -139,7 +143,9 @@
     <button class="chip" id="tCoins">Add 1000 coins</button>
     <button class="chip" id="tMats">Add 20 of every monster drop</button>
     <button class="chip" id="tSkills">Learn every skill and passive</button>
-    <button class="chip" id="tProf">Learn every profession</button>
+    <button class="chip" id="tProf">Learn every profession (with tools)</button>
+    <button class="chip" id="tRes">Add 60 of every resource</button>
+    <button class="chip" id="tPots">Add 5 of every potion</button>
     <button class="chip" id="tThree">3 of an item (for the forge)</button>
     <button class="chip" id="tLucky">Lucky drop</button>
     <button class="chip" id="tRain">Rain</button>
@@ -172,6 +178,7 @@
 <button class="touch-btn" id="bJump" data-silent="1" aria-label="Jump">Jump</button>
 <button class="touch-btn" id="bTalk" data-silent="1" aria-label="Talk">Talk</button>
 <div id="tframe" hidden><div class="tf-top"><b id="tName"></b><span id="tEl"></span><span id="tLv"></span></div><div class="tf-bar"><i id="tBar"></i></div><div id="tHp" class="tf-hp"></div></div>
+<div id="potbar" hidden></div>
 <div id="actionbar">
   <button class="ab" id="abBasic" data-silent="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></svg><span class="nm"></span><span class="key">F</span></button>
   <button class="ab" id="abSkill" data-silent="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></svg><span class="nm"></span><span class="key">Q</span></button>
@@ -179,6 +186,7 @@
 </div>
 <div id="bubble" hidden><b id="bName"></b><span id="bText"></span></div>
 <div id="prompt" hidden></div>
+<div id="castbar" hidden><span id="cbName"></span><div class="cb-bar"><i id="cbFill"></i></div></div>
 
 <div id="start">
   <div class="card">

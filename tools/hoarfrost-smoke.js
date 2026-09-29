@@ -5,7 +5,7 @@
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['MONS','BOSSES','VIL','VIL2','VIL3','PASS','ARENA26','ARENA30','ARENAS','rewardKill','zoneAt','rawHeight','iceDist','FROST_LAKES','BOSS_DEFS','MON_DEFS','ZONES','NODES','NODE_BACK','NODE_KINDS','S','genQuest','expToNext','xpFor','sanitizeGear','SKILL_IDS','PASSIVE_IDS','upgradeNeeds','HZ0','WZ0','WX1','inHoar','sanitizeProf','MATS','profLvOf','respawnVil','PROF_IDS']);
+  ['MONS','BOSSES','VIL','VIL2','VIL3','PASS','ARENA26','ARENA30','ARENAS','rewardKill','zoneAt','rawHeight','iceDist','FROST_LAKES','BOSS_DEFS','MON_DEFS','ZONES','NODES','NODE_BACK','NODE_KINDS','S','genQuest','expToNext','xpFor','sanitizeGear','SKILL_IDS','PASSIVE_IDS','upgradeNeeds','HZ0','WZ0','WX1','inHoar','sanitizeProf','MATS','profLvOf','respawnVil','PROF_IDS','ITEM']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const at=(xx,zz)=>W.setPos('a',[xx,x.rawHeight(xx,zz),zz,0,0,0]);
@@ -56,22 +56,24 @@ at(x.VIL3.x+3,x.VIL3.z+3); tick(14); ok('walking into Rimehold attunes the circl
   ok('the quest board works for levels 22-30 (hunts, bounties, scouts, bosses), never a broken notice',!bad&&kinds.size===4&&boss.has('ymrik'),'bosses offered: '+[...boss].join(',')); }
 { const k=L=>x.expToNext(L)/x.xpFor(L); ok('past level 25 a level costs as many same-level kills as 25 does (the curve no longer explodes)',Math.abs(k(30)-k(25))<1&&Math.abs(k(26)-k(25))<1&&x.expToNext(26)>x.expToNext(25)&&x.expToNext(30)>x.expToNext(29),Math.round(k(25))+' kills at 25, '+Math.round(k(30))+' at 30'); }
 ok('skill upgrades never ask for a drop above the vale\'s level 25 (no empty pool)',(()=>{ try{ for(const id of [...x.SKILL_IDS,...x.PASSIVE_IDS]) for(let to=2;to<=5;to++){ const n=x.upgradeNeeds(id,to); if(n&&!n.mats.every(m=>x.MATS[m.id])) return false; } return true; }catch(e){ return false; } })());
-// ---- professions ----
-{ const q=W.players.get('a'); q.gear.coins=1000; q.gear.prof={}; q.gear.res={}; at(x.VIL.x,x.VIL.z);
-  W.receive('a',{t:'learn',id:'mining'}); tick(1); ok('the Lodge is only in Rimehold',!q.gear.prof.mining);
-  at(x.VIL3.x+3,x.VIL3.z+3); W.receive('a',{t:'learn',id:'mining'}); tick(1); ok('mining learned for 150 coins in Rimehold',q.gear.prof.mining&&q.gear.coins===850);
-  W.receive('a',{t:'learn',id:'mining'}); tick(1); ok('a profession is learned once',q.gear.coins===850);
-  const ore=x.NODES.find(n=>n.kind==='rimeore'), pine=x.NODES.find(n=>n.kind==='frostpine');
+// ---- professions (the tools and the lodge in every village are also checked in tools/professions-smoke.js) ----
+{ const q=W.players.get('a'); q.gear.coins=1000; q.gear.prof={}; q.gear.res={}; q.gear.inv=q.gear.inv.filter(id=>!x.ITEM[id]||x.ITEM[id].kind!=='tool'); for(const k of ['pick','axe','sickle']) q.gear.eq[k]=null; at(x.VIL.x+150,x.VIL.z+150);
+  W.receive('a',{t:'learn',id:'mining'}); tick(1); ok('a profession is learned at a Wayfarers\' Lodge, in a village',!q.gear.prof.mining);
+  at(x.VIL3.x+3,x.VIL3.z+3); W.receive('a',{t:'learn',id:'mining'}); tick(1); ok('mining learned for 60 coins in Rimehold',q.gear.prof.mining&&q.gear.coins===940);
+  W.receive('a',{t:'learn',id:'mining'}); tick(1); ok('a profession is learned once',q.gear.coins===940);
+  const ore=x.NODES.find(n=>n.kind==='rimeore'&&n.zone==='h22'), pine=x.NODES.find(n=>n.kind==='frostpine');
   at(pine.x,pine.z); W.receive('a',{t:'gather',i:pine.i}); tick(1); ok('a node needs its profession (woodcutting not learned)',!q.gear.res.frostwood);
   at(ore.x+40,ore.z); W.receive('a',{t:'gather',i:ore.i}); tick(1); ok('a node out of reach gives nothing',!q.gear.res.rimeore);
-  at(ore.x,ore.z); grab(); evs.length=0; W.receive('a',{t:'gather',i:ore.i}); tick(3); grab();
-  ok('mining a vein: ore, profession xp and events for the node and the haul',q.gear.res.rimeore>=1&&q.gear.prof.mining.xp===1&&evs.some(e=>e[0]==='node'&&e[1]===ore.i&&e[2]===1)&&evs.some(e=>e[0]==='gather'&&e[1]==='a'&&e[3]==='rimeore'));
-  const had=q.gear.res.rimeore; p.gatherT=-99; W.receive('a',{t:'gather',i:ore.i}); tick(1); ok('a vein that was taken gives nothing until it grows back',q.gear.res.rimeore===had);
+  at(ore.x,ore.z); W.receive('a',{t:'gather',i:ore.i}); tick(1); ok('a node needs its tool (no pickaxe worn)',!q.gear.res.rimeore);
+  q.gear.inv.push('pick1'); W.receive('a',{t:'equip',id:'pick1'}); tick(1); W.receive('a',{t:'gather',i:ore.i}); tick(30); ok('a copper pickaxe is too weak for the Reach\'s ore (needs tier '+ore.need+')',!q.gear.res.rimeore&&q.gear.eq.pick==='pick1');
+  q.gear.inv.push('pick5'); W.receive('a',{t:'equip',id:'pick5'}); tick(1); grab(); evs.length=0; W.receive('a',{t:'gather',i:ore.i}); tick(30); grab();
+  ok('mining a vein with a Hagane pickaxe (a short cast): ore, profession xp and events for the node and the haul',q.gear.res.rimeore>=1&&q.gear.prof.mining.xp===6&&evs.some(e=>e[0]==='node'&&e[1]===ore.i&&e[2]===1)&&evs.some(e=>e[0]==='gather'&&e[1]==='a'&&e[3]==='rimeore'));
+  const had=q.gear.res.rimeore; W.receive('a',{t:'gather',i:ore.i}); tick(30); ok('a vein that was taken gives nothing until it grows back',q.gear.res.rimeore===had);
   x.S.t+=200; tick(25); grab(); ok('after its respawn time the node is back (event)',x.NODE_BACK[ore.i]===0&&evs.some(e=>e[0]==='node'&&e[1]===ore.i&&e[2]===0));
-  { const nw=W.players.get('a'); nw.gatherT=-99; W.receive('a',{t:'gather',i:ore.i}); tick(1); ok('and it can be mined again',q.gear.res.rimeore>had); }
-  for(let i=0;i<20;i++){ x.S.t+=200; tick(1); q.gatherT=-99; W.receive('a',{t:'gather',i:ore.i}); tick(1); }
+  { W.receive('a',{t:'gather',i:ore.i}); tick(30); ok('and it can be mined again',q.gear.res.rimeore>had); }
+  for(let i=0;i<20;i++){ x.S.t+=200; tick(1); W.receive('a',{t:'gather',i:ore.i}); tick(30); }
   ok('the profession levels up with use (xp thresholds), the haul is clamped',x.profLvOf(q.gear.prof.mining.xp)>=3&&q.gear.res.rimeore<=999,'level '+x.profLvOf(q.gear.prof.mining.xp)); }
 { const g=x.sanitizeProf({prof:{mining:{xp:5},cooking:{xp:9},gathering:{xp:-4}},res:{rimeore:5000,junk:3,snowmoss:'x'}});
   ok('saves: unknown professions and resources are dropped, numbers clamped',Object.keys(g.prof).join()==='mining,gathering'&&g.prof.gathering.xp===0&&g.res.rimeore===999&&!g.res.junk&&!g.res.snowmoss); }
-{ const q=W.players.get('a'); q.gear.res={}; q.gear.prof={}; dev('prof'); ok('the testing tool teaches every profession',x.PROF_IDS.every(id=>q.gear.prof[id])); }
+{ const q=W.players.get('a'); q.gear.res={}; q.gear.prof={}; dev('prof'); ok('the testing tool teaches every profession and wears a tool for each',x.PROF_IDS.every(id=>q.gear.prof[id])&&['pick','axe','sickle'].every(k=>q.gear.eq[k])); }
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

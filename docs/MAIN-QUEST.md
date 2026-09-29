@@ -36,7 +36,9 @@ at level 30.
 - **Wren**, the player's younger sibling, in a sickbed under an awning by the first house right of the gate (`VIL.bed`). Wren has the
   player's skin and hair colour, greyed by the sickness; asleep (lying) unless a step wants them awake (`wrenAwake`: handing a step in
   to Wren, and the goodbye in W18), then sitting up.
-- **Healer Linnea** at the herb garden.
+- **Healer Linnea** at the herb garden (she brews potions: role `brew`).
+- **Tamsin**, keeper of the home village's Wayfarers' Lodge (`role:'lodge'`, plaza 2): every village has a lodge and a keeper (Isamu in
+  Hanami, Gudrun in Rimehold), see section 5b.
 - **Odran** the peddler (a watcher, `STORY.md`): his cart stands by the gate from W8 until V8 (`odranHere`); he buys anything,
   sells a little of everything, and shows curiosities he will not sell.
 
@@ -48,11 +50,14 @@ at level 30.
 | W4 | Dressed for the woods | 3 | Ilse | Buy something; wear armour | coins, shops, inventory | 1.1 |
 | W5 | The first trick | 3 | Aldric | Use your skill; 5 horned beetles | skill slot, cooldowns | .9 |
 | W6 | The board | 4 | Maren | Finish and hand in a board notice | the quest board | .9 |
+| W6a | Working hands | 5 | Tamsin | Learn Gathering at the Lodge; buy a sickle and wear it; cut 3 herbs | professions, tools (5b) | .5 |
 | W7 | Sap of the Heartwood | 5 | Linnea → Wren | 3 heartwood sap (treants, 50%); bring it to Linnea | the map and its markers | .8 |
+| W7b | Linnea's kettle | 6 | Linnea | 3 sunpetal; brew a Healing Potion at Linnea's; drink one when hurt (Z) | brewing, potions | .5 |
 | W8 | The peddler | 6 | Odran | Sell him 2 things at his cart | selling | .6 |
 | W9 | Grey in the bog | 7 | Bram | 3 grey-veined bog slimes (spawned for you in the Bog) | drops, tough monsters | .55 |
 | W10 | Sharper | 8 | Aldric | Upgrade a skill | skill upgrades | .5 |
 | W11 | Three of a kind | 9 | Greta | Merge the three items she gives you | rarity, the forge | .45 |
+| W11b | Made by hand | 9 | Tomas | Learn Mining; buy a pickaxe and wear it; mine 10 ore (copper, inner woods); craft a weapon at Tomas's | crafting, ore | .45 |
 | W12 | Everything at once | 10 | Aldric | Use your burst; 3 dire boars | burst slot | .4 |
 | W13 | The storyteller | 11 | Oskar | Hear Oskar's tale **after dark**; read the Stone Circle's carvings | day and night | .35 |
 | W14 | Shiny things | 12 | Bram | The goblins' hoard (Goblin Chieftain, 35%) | harder zones, playing together | .3 |
@@ -69,7 +74,8 @@ flame" that Odran buys at once (W14).
 ## 3. Act II: "The Blossom and the Blight" (the Sakura Vale, levels 15-20)
 
 Existing people: Daisuke (guard), Sayuri (board), Kenji and Haruka (shops), Tetsuo (forge), Master Ryu (trainer), Grandmother Chiyo
-(storyteller), Shrine Maiden Kaede (soul shrine); Odran's cart moves to Hanami's gate at V8.
+(storyteller), Shrine Maiden Kaede (soul shrine); Odran's cart moves to Hanami's gate at V8. New with the professions: **Isamu** (the
+Wayfarers' Lodge) and **Herbalist Hinata** (brews potions), both `late:true`.
 
 | # | Step | Gate | Giver → hand in | Objective | Teaches | r |
 |---|---|---|---|---|---|---|
@@ -78,6 +84,7 @@ Existing people: Daisuke (guard), Sayuri (board), Kenji and Haruka (shops), Tets
 | V5 | The soul shrine | 16 | Kaede | Bind your soul | the soul, x1.5 | .25 |
 | V6 | A light for Wren | 17 | Kaede → Wren | 6 kodama lanterns (50%); bring them to Kaede | monster elements, the wheel | .2 |
 | V7 | The friendly foxes | 18 | Chiyo | Ask Master Ryu about passives; 5 grey kitsune (spawned for you in the Inari Hills) | passives | .2 |
+| V7b | Lacquer and cherrywood | 18 | Haruka | Learn Woodcutting at Isamu's lodge; buy a Sunstone axe (level 15) and wear it; chop 12 logs in the vale; craft an armour piece at Haruka's | armour crafting, logs | .4 |
 | V8 | A lantern with no flame | 19 | Odran (Hanami) | Sell him something | (story) | .2 |
 | V9 | The old scrolls | 19 | Kaede | 4 scroll pieces (onibi, jorogumo, 45%) | tier 4 gear (level 20) | .2 |
 | V10 | The Demon Gate | 20 | Daisuke → Kaede | Defeat Akaoni; read the Demon Gate's stone | boss skill drops | .2 |
@@ -92,21 +99,22 @@ sleepers wake."). After V11 act III begins by itself.
 
 The Reach is a high frozen plateau north of the vale (`docs/WORLD.md`, `shared/hoarfrost.js`). Frostgate Pass climbs through the vale's
 north wall to it; the ice wall that shut the pass is a real wall until Akaoni falls. Rimehold is the third village, with the same jobs
-as the others (board, weapon and armour stalls, forge, trainer, a teleport circle) and one new one: **the Wayfarers' Lodge**, where the
-professions are learned. Rain is snow here, a storm a blizzard (`game/world/weather.js`).
+as the others (board, weapon and armour stalls, forge, trainer, a teleport circle) and its **Wayfarers' Lodge** (every village has
+one since the professions reached the whole game, section 5b) and Ylva's kettle. Rain is snow here, a storm a blizzard (`game/world/weather.js`).
 
 **New people** (all `late:true`; ids in `MQ_NPC_VIL`, village 3): **Hallvard** the hunter-captain (the gate), **Old Sigrun** the seer (the
 campfire), **Ragna** (board), **Bjorn** (weapons), **Dagny** (armour), **Ulfhild** (forge), **Thorvald** (skill trainer), **Gudrun** (the
-Lodge), **Odran** (`odran3`: his cart stands at Rimehold's gate from F7, `odranHere(3)`).
+Lodge), **Alchemist Ylva** (brews potions: she has taken her mother's chair, the one Gudrun said was empty), **Odran** (`odran3`: his
+cart stands at Rimehold's gate from F7, `odranHere(3)`).
 
 | # | Step | Gate | Giver → hand in | Objective | Teaches | r |
 |---|---|---|---|---|---|---|
 | F1 | Beyond the wall | 20 | (starts) → Hallvard | Walk up Frostgate Pass into Rimehold (attunes its circle) | snow, the third village | .08 |
 | F2 | The hearth-folk | 21 | Hallvard | Meet Ragna, Bjorn, Ulfhild, Thorvald | a third hub | .06 |
 | F3 | The winter after the burning sky | 21 | Sigrun | Sit with Sigrun **after dark**; read the rune stones at the gate | day and night, reading | .12 |
-| F4 | Skilled hands | 22 | Sigrun → Gudrun | Learn Gathering at the Lodge (150 coins) | professions | .1 |
+| F4 | Skilled hands | 22 | Sigrun → Gudrun | Learn Gathering (60 coins; done already if you learned it in the south); wear a Hagane sickle (tier 5, level 20), which Gudrun sells | tools of the tier of the zone | .1 |
 | F5 | Frostbloom | 22 | Gudrun → Sigrun | Gather 3 frostbloom in the Rimewood Edge; 5 snow boars | resource nodes, the map's node marks | .18 |
-| F6 | A flower for Wren | 23 | Sigrun → Wren | Take the tea from Sigrun; travel home on the circle | choosing a destination in the travel window | .2 |
+| F6 | A flower for Wren | 23 | Sigrun → Wren | Brew the frostbloom tea at Ylva's (a Greater Healing Potion: 3 frostbloom); travel home on the circle | brewing with the north's herbs, choosing a destination in the travel window | .2 |
 | F7 | Iron in the ice | 24 | Hallvard → Odran | Read the grey plate at Frostmere Shore; 2 plates from the Frost Reavers (45%) | rare drops | .18 |
 | F8 | The Rimeking | 25 | Hallvard → Sigrun | Defeat Ymrik in his ice hall (level 26 boss; last words below) | pillars, boss skill drops | .25 |
 | F9 | Where the earth's heat runs black | 25 | Sigrun → Hallvard | Hear Sigrun's last verse | (the act ends) | .1 |
@@ -123,8 +131,8 @@ under the mountains" (Highmark's miners, act IV), and the west glacier valley ha
 gate, `MQ_END`).
 
 **Systems introduced**: the third village and its circle (`CIRCLES` in `shared/hoarfrost.js`, the travel window `ui/travel.js`); snow
-weather; **professions** (section 5b); the gate on the vale's north wall. **Not built in the Reach**: the Greyspine gate (the west valley),
-what the resources are for (crafting, potions), regional weather on the server.
+weather; the gate on the vale's north wall; the north's tier of **professions** (section 5b: the Reach's ore, pines and herbs need a Hagane
+tool or better, and Ylva brews the frostbloom tea). **Not built in the Reach**: the Greyspine gate (the west valley), regional weather on the server.
 
 ## 4. Side story, planned (not built): "The Nine Tails"
 
@@ -155,36 +163,70 @@ main quest, ground for players who come back from the vale.
 **The Hoarfrost Reach beyond the main quest**: levels 26-30 (four zones, two kinds each, and the wyrm's nest), the two bosses' skills
 (12), the resource nodes (90) and Odran's plate trade are side content for players who carry on after F9.
 
-### 5b. Professions (built: the Lodge and gathering; not built: what the resources are for)
+### 5b. Professions, tools, crafting and potions (built)
 
-The Wayfarers' Lodge (Gudrun, Rimehold) teaches **mining**, **woodcutting** and **gathering** for 150 coins each (`shared/professions.js`);
-**potion use** is listed there as "coming later". A profession levels 1-5 with use (`PROF_XP`), a higher level sometimes gives a double
-yield. Resource nodes (`NODES`, 90 of them, placed from a seeded rng in the Reach's zones: rime ore veins, frostpines, frostbloom,
-snowmoss) give one resource each (`gear.res`) and grow back after 75-120 s; the map shows the nodes of the professions you know.
-Frostbloom is the only resource the main quest asks for (F5). Planned for later lands: nodes and resource kinds in every land, crafting at
-the forges (gear from ore and wood), potions (a fourth profession, taught by an alchemist in Glasswell, act V-a: healing, cures, buffs,
-a use for herbs and frostbloom), selling resources to Odran and the stalls, tools that make gathering faster.
+**Three professions, three tools.** A Wayfarers' Lodge stands in every village (Tamsin at home, Isamu in Hanami, Gudrun in Rimehold;
+role `lodge`, panel `game/economy/professions.js`). It teaches **mining** (pickaxe), **woodcutting** (axe) and **gathering** (sickle) for
+60 coins each (`PROFS` in `shared/professions.js`), sells the tools, and buys resources. To work a node you need the profession **and the
+tool worn in its slot**: the inventory has three tool slots (`pick`, `axe`, `sickle`) under the body. Tools are items (`TOOL_LIST` in
+`shared/items.js`): the same six tiers and five rarities as gear (Copper, Iron, Silverstone, Sunstone, Hagane, Rimesteel; they need the
+tier's level to wear), no stats, and the forge merges three into the next rarity. A common tool costs 30 / 90 / 270 / 700 / 1500 / 3200
+coins by tier. The tier decides **which nodes it can work** and the rarity **how often a node gives double**.
+
+**Nodes** (`NODES`, 314, the same on client and server from seeded rngs): every ring zone of the home forest, the three edge zones and
+every zone of the vale has 2 ore veins, 2 trees (3 of each in the home zones of levels 1-14, which are only 4-5 zones per grade), two of its land's healing herb and one
+strengthening herb; the Hoarfrost Reach keeps its own plan of 90. A node
+needs a tool of the **gear tier of its zone** (`tierFor(zone level)`: levels 1-4 tier 1, 5-9 tier 2, 10-14 tier 3, 15-19 tier 4, 20-24
+tier 5, 25+ tier 6; the vale's best zones still need tier 5 and give hagane). What a gather gives: **ore** and **logs** in six grades,
+one for each gear tier (copper / iron / silverstone / sunstone / hagane / rime ore; pine / oak / yew / sunwood / cherry / frostpine),
+found in the zones of that tier, and **herbs**, two in each land (sunpetal and ironroot in the home forest, kikyo and yomogi in the vale,
+frostbloom and snowmoss in the Reach). Profession xp per gather is the grade (herbs 1 / 3 / 5); levels 1-5 (`PROF_XP`), +8% double-yield
+chance per level above 1, the tool's rarity (+0/8/16/26/40%) and +5% per tier the tool is above the node's need. Nodes grow back after
+75-120 s; the map shows the nodes you can work now.
+
+**Crafting** is not a profession; it is done at NPCs: the weaponsmiths' shops (Tomas, Kenji, Bjorn) have a **Craft** tab that makes
+weapons from **ore**, and the armourers' (Ilse, Haruka, Dagny) make armour from **logs** (`shared/crafting.js`). A common piece of tier t
+costs `CRAFT_BASE[t]` x the piece's weight (a weapon 1.3, a helmet 0.8...) resources of grade t plus a fee of a tenth of its price;
+a rare one costs 2.5 times as much, an epic one 6 times. Unique and legendary come only from drops and merging. All the numbers are
+first guesses, not balance-tested by play.
+
+**Brewing and potions** are done at the healers' (Linnea, Hinata, Ylva: role `brew`, the Brewing panel). Herbs and a few coins make
+three potions in three strengths (the strength follows the land of the herbs): **healing** (restores 35 / 50 / 70% of your health, 15 s
+cooldown), **might** (+20 / 30 / 40% damage for 90 s) and **guard** (-20 / 30 / 40% damage taken for 90 s). Drink them with **Z / X / C**
+(rebindable) or the potion belt above the action bar; the strongest one you carry is used (`gear.pot`).
+
+**In the quests**: W6a (learn Gathering, wear a sickle), W7b (brew and drink), W11b (mining, a pickaxe, craft a weapon), V7b (woodcutting,
+an axe, craft armour) and, in the Reach, F4 (a Hagane sickle), F5 (frostbloom) and F6 (Ylva brews the frostbloom tea: a Greater Healing
+Potion).
+
+**Gathering is a cast**: pressing the talk key at a node starts a bar that fills for `castTime` (1.2 s with a copper tool, 0.1 s less for each tier of the tool and
+0.04 s for each rarity, never under 0.6 s); walking more than 1.5 m away or being knocked out breaks it, and the haul arrives when it ends. There is no gathering
+animation and tools never wear out, both on purpose. **Not built** (`docs/NOT-BUILT.md`, with a plan for the first): quest-board notices for gathering and crafting, potions
+that cleanse a boss's freeze or slow, resources for the lands to come.
 
 ## 6. How it is built
 
 - **Data** (`src/shared/main-quest.js`, pure): `MQ`, the steps (fields described at the top of the file), `mqTalk` (what a talk does
   and says: used by the server to apply it and by the client to show it, so the two always agree), `mqObjective`, `mqReward`, the
-  places (`HERBS`, `mqGreySpot`, `VIL.bed`, `V.cart`) and `LORE`. Part kinds: `talk`, `kill`, `grey`, `pick`, `collect`, `gather`, `read`,
-  `act`, `level`, `tier`, `boss`.
-- **Save**: `gear.mq = {s, st, n, h}` (step index; 0 offered, 1 in progress, 2 ready to hand in; progress per part; heartleaf picked),
-  sanitized by `sanitizeMq`. Old characters start at W1 and walk the early steps quickly; parts that are about what they already have
+  places (`HERBS`, `mqGreySpot`, `VIL.bed`, `V.cart`) and `LORE`. Part kinds: `talk`, `kill`, `grey`, `pick`, `collect`, `gather` (a node kind or a
+  profession), `read`, `act` (`learn` with `prof`, `tool` with `tool` and `tier`, `craft` and `brew` and `potion` with `kind`), `level`, `tier`, `boss`.
+- **Save**: `gear.mq = {s, st, n, h, ver}` (step index; 0 offered, 1 in progress, 2 ready to hand in; progress per part; heartleaf picked;
+  `ver` = `MQ_VER`), sanitized by `sanitizeMq`. **Steps inserted in the middle of `MQ` shift the index of every later step**, so a save without
+  the current `ver` is moved up by the steps inserted before it (`MQ_INSERTED`: each entry is the old index the new step follows). When you
+  insert a step, bump `MQ_VER` and add it to `MQ_INSERTED`. Old characters start at W1 and walk the early steps quickly; parts that are about what they already have
   (level, weapon tier, soul, the tunnel open, Hanami reached, Rimehold reached, gathering learned) finish at once. A save that is already
   past V10 gets `gear.north` 1 (the ice wall open).
 - **Server** (`src/server/main-quest.js`): the only message is `mq{a:'talk'|'pick'|'read'}`, each checked (in the village of that
   villager, next to the herb or the spot, the part open). Kills (`rewardKill` → `mqKillP`), system uses (`mqActP` from buy, sell, equip,
-  class, merge, upskill, soul, the quest board, skill and burst use, the teleport circle, reaching Hanami and Rimehold, learning
-  gathering), gathering (`mqGatherP` from `server/professions.js`) and a half-second check (`mqTickP`: auto parts, the grey monsters
+  class, merge, upskill, soul, the quest board, skill and burst use, the teleport circle, reaching Hanami and Rimehold, learning a
+  profession, wearing a tool, crafting, brewing, drinking), gathering (`mqGatherP` from `server/professions.js`) and a half-second check (`mqTickP`: auto parts, the grey monsters
   spawned for you: `GREY_DEFS` in `monster-defs.js`) move it on. Testing: `dev{cmd:'mq',v:'F5'}` (the Settings' testing tools).
 - **Client** (`src/game/economy/main-quest.js`): the lines (`mqLinesFor`, shown by `village/talking.js` before a villager's panel), the
   violet ! / ? over villagers (`mqMark`, `npc-labels.js`), the main quest's row at the top of the quest log (`mqLogRow`), its violet
   marker on the maps (`mqTarget`: people, kill zones, lore spots, resource nodes, the pass). Props: `game/world/lore-props.js` (sickbed,
   carts, lore props, heartleaf), `game/village/buildings-hoar.js` (the ice wall, the rune stones, the iron bird).
-- **Tests**: `node tools/mainquest-smoke.js` (walks a character through acts I-III to the end), `node tools/hoarfrost-smoke.js`.
+- **Tests**: `node tools/mainquest-smoke.js` (walks a character through acts I-III to the end, the profession steps and the save migration
+  included), `node tools/hoarfrost-smoke.js`, `node tools/professions-smoke.js`.
 - **To add a step**: a row in `MQ` (and its people in `MQ_NPC_VIL` / `MQ_NAMES`, `VILLAGERS`), a lore spot in `LORE` if it reads something,
   a test line; a new kind of part needs a hook in `server/main-quest.js` and a marker in `mqPartTarget` (client).
 
@@ -240,7 +282,7 @@ items and icons), monsters 26-32 (two kinds per level: `MON_DEFS`, models, mater
 
 Hub: **Glasswell**, the oasis city (`WORLD.md`: districts, bazaar, palace, harbour; bigger than a village). Cast: **Physician Anselm Rook**
 (a watcher: helpful, odd, never a villain on screen), **the archivist Mirela** (the Silent Years: 60 pages cut out cleanly), **Caravan-master
-Tahir**, an alchemist (teaches **potion use**), Odran. Gate in: the river road from the Greyspine (the gryphon queen).
+Tahir**, an alchemist (brews potions of the desert's herbs: the professions and potions are built, section 5b), Odran. Gate in: the river road from the Greyspine (the gryphon queen).
 
 | # | Step | Gate | Objective | Hint / teaches |
 |---|---|---|---|---|
@@ -249,7 +291,7 @@ Tahir**, an alchemist (teaches **potion use**), Odran. Gate in: the river road f
 | S3 | The physician's cup | 30 | Show Rook Wren's sickness: bring him a lock of grey (from a grey-veined monster) and a page of Old Sigrun's saga | **object**: identical glass vials with printed labels, a "cold cupboard" that hums |
 | S4 | A favour, for his studies | 30 | Rook asks a vial of your blood: give it (a choice with no penalty, remembered later) | the trap the player cannot see yet |
 | S5 | The archive | 31 | Read three shelves of the chronicle with the archivist: pages cut out | **place**: the Silent Years |
-| S6 | Potion use | 32 | The alchemist teaches potions; brew the first (herbs, frostbloom, resources from the professions) | the fourth profession, `gear.prof.potions` |
+| S6 | The desert's herbs | 32 | The alchemist wants the oasis herbs (a new gathering grade: `HERB_LANDS`) and the desert's ore and logs for gear of the land; brew and craft with them | new resource grades, tools of the next tier (`TOOL_MAT`) |
 | S7 | The medicine | 33 | Fetch Rook's ingredients from the glass fields' edge (guardian of the glass, **boss 32**) | **place**: black glass in a perfect circle, "where the sun wept" |
 | S8 | Wren wakes | 34 | Carry the medicine home by the circle (a warm scene in the village: Wren awake for the first time in the whole game) | the payoff of two acts; it needs repeating |
 | S9 | The sand wyrm | 36 | Defeat the sand wyrm under the dunes (**boss 36**) | reopens **Redgate Canyon**, the road home |
@@ -313,7 +355,8 @@ Sink), Odran (changed sides). Travel between the islands: boats and teleport cir
    edges and far-lands replacing their placeholders; the isles need water around them and boats; the Rootdeep an enclosed instance.
 3. **Regional weather on the server** (sandstorms, gales, tropical storms; today the server has one weather and the client turns rain into
    snow in the Reach), regional music themes, ambience.
-4. **Professions' next steps**: crafting, potions, resource nodes in every land, tools, selling (section 5b).
+4. **Professions' next steps**: resource grades, herbs, node zones and a tool tier for each new land (section 5b: `ORE_GRADES`, `LOG_GRADES`, `HERB_LANDS`,
+   `TOOL_MAT`, the node plan in `shared/professions.js`), gathering animations and cast times, tool durability.
 5. **Per land**: a village or city (`layoutVillage` or a bigger plan), its NPCs, a zone grid with two monster kinds per level, two bosses (12 boss
    skills each), gates as real things in the land (`WORLD.md` section 5), lore spots, a music theme, a teleport circle in `CIRCLES`, tests.
 6. **Group play**: parties, trading between players (Glasswell's bazaar) and other ideas in `CLAUDE.md` section 10.

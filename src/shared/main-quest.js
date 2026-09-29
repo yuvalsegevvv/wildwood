@@ -6,9 +6,9 @@
      client shows them), parts (what to do; all at once unless a part says after:true, which waits for the parts before it).
    Parts: talk:'<villager id>' (say: their lines; night: only after dark, wait: their lines before that) · kill:'<monster id>', n ·
      grey:'<GREY_DEFS id>', n, zone (a few are spawned for you there) · pick:'herb', n (glowing heartleaf, HERBS) ·
-     collect:'<what>', from:[monster ids], n, chance (a quest drop) · gather:'<NODE_KINDS id>', n (a resource node gathered) · read:'<LORE id>' (walk up
-     and read it) · act:'<system>', n (class, buy, armor, skill, burst, board, sell, upskill, merge, soul, warp, hanami, rimehold, learn: see
-     server/main-quest.js) · level · tier
+     collect:'<what>', from:[monster ids], n, chance (a quest drop) · gather:'<NODE_KINDS id or profession id>', n (a resource node gathered) · read:'<LORE id>' (walk up
+     and read it) · act:'<system>', n (class, buy, armor, skill, burst, board, sell, upskill, merge, soul, warp, hanami, rimehold, learn (prof:'<profession>'), tool (tool:'pick|axe|sickle', tier: a tool
+     of at least that tier is worn), craft (kind:'weapon|armor'), brew (kind:'heal|might|guard', minTier 0-2), potion (kind): see server/main-quest.js) · level · tier
      (a weapon of that item tier, 0-based) · boss:'<boss monster id>' (bossLine: toasted when it falls).
    Progress is gear.mq = {s: step index, st: 0 offered / 1 in progress / 2 ready to hand in, n: [per part]}; the server
    (server/main-quest.js) moves it on, the client (game/economy/main-quest.js) draws it. */
@@ -44,12 +44,22 @@ const MQ=[
    offer:['Linnea\'s herbs cost coin, and the woods pay those who work. Take a notice from the board behind me.','Hunts, bounties, places to scout. Finish one and hand it in to me.'],
    parts:[{act:'board',text:'Finish a notice from the quest board and hand it in'}],
    done:['There. The board is always here between the bigger things.','The forest remembers everything. Some of it is waking up.']},
+  {id:'W6a',title:'Working hands',gate:5,from:'tamsin',to:'tamsin',r:0.5,
+   tip:'The Wayfarers\' Lodge teaches three professions, each with its own tool: mining (pickaxe), woodcutting (axe) and gathering (sickle). Wear the tool (inventory, I), walk up to a herb, a vein or a tree and press the talk key. What you take is used by the smiths, the armourers and the healers.',
+   offer:['You are Wren\'s elder, the one who walks the far woods? I am Tamsin. The Wayfarers keep a lodge in every village, for people like you.','You bring home a great many monster parts and not one plant. Let us mend that. Gathering first: sixty coins for the teaching, thirty for a sickle, and the woods start giving back.'],
+   parts:[{act:'learn',prof:'gathering',text:'Learn Gathering at the Wayfarers\' Lodge (Tamsin)'},{act:'tool',tool:'sickle',text:'Buy a sickle from Tamsin and wear it (inventory)'},{gather:'gathering',n:3,text:'Gather 3 herbs in the woods (sunpetal grows in every zone)'}],
+   done:['A sickle looks good on you. Sunpetal is the herb every healer starts with, and there is a knack to cutting it. You have it.','Linnea will want some. She has been asking who in the village still knows a plant from a weed.']},
   {id:'W7',title:'Sap of the Heartwood',gate:5,from:'linnea',to:'wren',r:0.8,
    tip:'The map (N) and the minimap mark where the main quest wants you, with a violet marker.',
    offer:['The trees of the Treant Grove are old, older than the village. Their sap is the strongest medicine I know.','Bring me three measures. The map shows you the way.'],
    parts:[{collect:'Heartwood sap',from:['treant'],n:3,chance:0.5,text:'Take heartwood sap from the treants of the Treant Grove'},
           {talk:'linnea',after:true,text:'Bring the sap to Linnea',say:['Treant sap. The old trees keep something of the Heartwood in them.','Let me warm it... There. Give it to Wren, a drop on the lips.']}],
    done:['(Wren\'s eyes open. For a moment they know you.)','...You are here. I dreamed of grey water. It was so quiet.','(Their eyes close again. The grey lines are a little paler.)']},
+  {id:'W7b',title:'Linnea\'s kettle',gate:6,from:'linnea',to:'linnea',r:0.5,
+   tip:'Brewing is done at a healer\'s, with herbs and a few coins. Drink a potion with Z (healing), X (might) or C (guard): the strongest one you have is used. A healing potion needs you to be hurt.',
+   offer:['Tamsin says you can cut herbs now. Good: the sap will not last, and a fever wants a draught.','Bring me three sunpetal and I will show you the kettle. Then drink one yourself when you are next hurt: a healer who has not tasted her own work is a liar.'],
+   parts:[{gather:'sunpetal',n:3,text:'Gather 3 sunpetal'},{act:'brew',kind:'heal',text:'Brew a Healing Potion at Linnea\'s (herbs and a few coins)'},{act:'potion',kind:'heal',text:'Drink a Healing Potion when you are hurt (Z)'}],
+   done:['Bitter, is it not? It is meant to be. Anything sweet is lying to you.','Might and guard draughts want other herbs. Herbs are the same everywhere: the north grows the strongest.']},
   {id:'W8',title:'The peddler',gate:6,from:'odran',to:'odran',r:0.6,
    tip:'Sell what you do not need, at any stall or to Odran.',
    offer:['Well met! Odran, trader in useful things and useless ones. Came up the south road the week the rain started. Lucky me.','Got anything to sell? I pay fair. Fairer than Tomas, anyway.'],
@@ -70,6 +80,11 @@ const MQ=[
    offer:['Here: three of the same, fresh off my bench. Now watch what the forge does with three.','Put them in, and out comes one better.'],
    parts:[{act:'merge',text:'Merge three identical items at Greta\'s forge'}],
    done:['Hear it sing? Folded steel always sings.','My father said the old smiths\' steel sang a whole song. Nobody knows how they made it.']},
+  {id:'W11b',title:'Made by hand',gate:9,from:'tomas',to:'tomas',r:0.45,
+   tip:'Crafting: weapons are made from ore at the weaponsmith\'s (the Craft tab), armour from logs at the armourer\'s. Ore of each grade lies in the zones of its gear tier: copper in the inner woods, iron further out. A tool of too low a tier cannot work a node.',
+   offer:['You keep paying me coin for what a good vein of iron would give you for free. Tamsin at the Lodge teaches mining and sells the pickaxe.','Bring me the ore and I will show you how the hammer takes it. Copper from the inner woods will do for a first blade.'],
+   parts:[{act:'learn',prof:'mining',text:'Learn Mining at the Wayfarers\' Lodge (Tamsin)'},{act:'tool',tool:'pick',text:'Buy a pickaxe and wear it (inventory)'},{gather:'mining',n:10,text:'Mine 10 ore (copper in the inner woods)'},{act:'craft',kind:'weapon',after:true,text:'Craft a weapon at Tomas\'s (the Craft tab)'}],
+   done:['Ha! Rough as a badger, and it will cut. Now you know what my prices pay for.','A rare blade wants more ore than a common one, and an epic one a great deal more. But it is all ore, and ore is free to anyone with a pick.']},
   {id:'W12',title:'Everything at once',gate:10,from:'aldric',to:'aldric',r:0.4,
    tip:'Your burst sits in slot 3 (key R or 3): it hits hard and takes long to come back.',
    offer:['Your third slot is open: a burst.','Try it on the dire boars of the Dire Wallows. Save it for the worst moment.'],
@@ -140,6 +155,11 @@ const MQ=[
    parts:[{talk:'ryu',text:'Ask Master Ryu about passive skills',say:['Level 18? Then your body has learned something your hands have not. Passives: they work without you thinking of them.','Vitality is already in your first slot. I teach others. Now go: the foxes will not wait.']},
           {grey:'greyfox',n:5,zone:18,text:'Drive off the grey kitsune in the Inari Hills'}],
    done:['Grey foxes. In my day... well. In my day a great many things were different.','Then one of them grew nine tails. But that is a story for another night.']},
+  {id:'V7b',title:'Lacquer and cherrywood',gate:18,from:'haruka',to:'haruka',r:0.4,
+   tip:'Armour is made from logs (woodcutting: an axe). The vale\'s trees need an axe of tier 4 (Sunstone, level 15) or better. Craft at the armourer\'s: the Craft tab.',
+   offer:['Silk and lacquer over a frame of good wood: that is samurai armour. The wood is the part nobody thinks about.','Isamu at the Lodge teaches the axe. Bring me a dozen logs from the vale and I will let you make a piece yourself.'],
+   parts:[{act:'learn',prof:'woodcutting',text:'Learn Woodcutting at the Wayfarers\' Lodge (Isamu)'},{act:'tool',tool:'axe',tier:3,text:'Buy an axe of level 15 or better (Sunstone) and wear it'},{gather:'woodcutting',n:12,text:'Chop 12 logs in the Sakura Vale'},{act:'craft',kind:'armor',after:true,text:'Craft an armour piece at Haruka\'s (the Craft tab)'}],
+   done:['Not bad. The lacquer will forgive the corners.','Rare and epic pieces take more logs, the way they take more of everything.']},
   {id:'V8',title:'A lantern with no flame',gate:19,from:'odran2',to:'odran2',r:0.2,
    offer:['You again! Small world, is it not? Smaller than people think.','I came through the tunnel the day after you opened it. Business, you understand. Sell me something?'],
    parts:[{act:'sell',n:1,at:'cart',text:'Sell Odran something at his cart by Hanami\'s gate'}],
@@ -180,19 +200,19 @@ const MQ=[
           {read:'runes',after:true,text:'Read the rune stones at Rimehold\'s gate'}],
    done:['The stones say it too? Then I did not dream the song.','Frostbloom, then. But those hands of yours... you have never picked anything that fights back. The Lodge will teach you.']},
   {id:'F4',title:'Skilled hands',gate:22,from:'sigrun',to:'gudrun',r:0.1,
-   tip:'The Wayfarers\' Lodge teaches gathering: mining, woodcutting and picking plants. Learn a profession once, then walk up to a resource in the snow and press the talk key. Potion use is not taught yet.',
-   offer:['Frostbloom does not come out of the ground for just anyone. It shuts at a clumsy touch. Gudrun at the Wayfarers\' Lodge will teach you to gather it.'],
-   parts:[{act:'learn',text:'Learn Gathering at the Wayfarers\' Lodge (Gudrun)'}],
-   done:['There. You have the hands for it now.','The blue veins in the rock are rime ore, and the old pines make good beams: the Lodge teaches mining and woodcutting too, when you have the coin. Potions? The alchemist\'s chair has been empty since her mother died. Someone will sit in it. Not yet.']},
+   tip:'The Reach\'s plants and ore need better tools: a node needs a tool of the tier of its zone (the Reach starts at tier 5, Hagane, level 20). Gudrun\'s Lodge sells them.',
+   offer:['Frostbloom does not come out of the ground for just anyone. It shuts at a clumsy touch, and at a dull blade. Gudrun at the Wayfarers\' Lodge will teach you to gather it, and sell you a sickle sharp enough.'],
+   parts:[{act:'learn',prof:'gathering',text:'Learn Gathering at the Wayfarers\' Lodge (Gudrun), if you have not yet'},{act:'tool',tool:'sickle',tier:4,text:'Wear a Hagane sickle (level 20): Gudrun sells them'}],
+   done:['There. You have the hands for it now, and the edge.','The blue veins in the rock are rime ore, and the old pines make good beams: the Lodge teaches mining and woodcutting too. Potions? Ylva has taken up the alchemist\'s chair at last, and she wants frostbloom more than anyone.']},
   {id:'F5',title:'Frostbloom',gate:22,from:'gudrun',to:'sigrun',r:0.18,
-   tip:'Plants and ore show up as marks on the map once you know the profession. Monsters roam near them: the bar over a monster shows its level.',
+   tip:'Plants and ore show up as marks on the map once you know the profession and wear its tool. Monsters roam near them: the bar over a monster shows its level.',
    offer:['Go out to the Rimewood Edge, west of Rimehold, where the ice is thin over the springs. Six sprigs would be a fair morning. Three will do.','The snow boars go mad for the smell. Deal with a few while you are out there.'],
    parts:[{gather:'frostbloom',n:3,text:'Gather frostbloom in the Rimewood Edge'},{kill:'snowboar',n:5,text:'Defeat snow boars in the Rimewood Edge'}],
-   done:['Three. Still blue. And you are still in one piece.','Give them here. There: into the water, and the water turns to a light. Drink it? No. Not you. It is for whoever is grey.']},
+   done:['Three. Still blue. And you are still in one piece.','Keep them. A flower for the grey sleep has to be brewed by the hand that carries it home, or it wilts on the road. Ylva sits in the alchemist\'s chair now: take them to her kettle.']},
   {id:'F6',title:'A flower for Wren',gate:23,from:'sigrun',to:'wren',r:0.2,
-   tip:'Step onto a teleport circle: a window lets you choose where to go.',
-   offer:['I will brew it now. Then you carry it home before it wilts. The circle in the middle of Rimehold will take you, if you have stood on it before.'],
-   parts:[{talk:'sigrun',text:'Take the frostbloom tea from Old Sigrun',say:['(She strains the cloudy blue water through linen into a small flask. It gives off a pale glow.)','One drop at a time. It will not wake them, I think. It will keep the grey from going any further.']},
+   tip:'Brew at Ylva\'s kettle in Rimehold: three frostbloom make a Greater Healing Potion. Then step onto a teleport circle: a window lets you choose where to go.',
+   offer:['Ylva will show you the kettle. Frostbloom in the water turns it to light, and the brew must be made by whoever carries it home.','Then carry it before it wilts. The circle in the middle of Rimehold will take you, if you have stood on it before. One drop at a time, for Wren: it will not wake them, I think. It will keep the grey from going any further.'],
+   parts:[{act:'brew',kind:'heal',minTier:2,text:'Brew the frostbloom tea at Ylva\'s: a Greater Healing Potion (3 frostbloom)'},
           {act:'warp',after:true,text:'Travel home on the teleport circle'}],
    done:['(Wren stirs and opens their eyes. For once the grey lines on their arms are only lines.)','...The grey water has a light in it now. Far away. Like a lamp somewhere in the snow.','(They take a sip, make a face, and sleep again, peacefully. The grey has not moved.)']},
   {id:'F7',title:'Iron in the ice',gate:24,from:'hallvard',to:'odran3',r:0.18,
@@ -214,10 +234,10 @@ const MQ=[
 const MQ_BY_ID={}; MQ.forEach((s,i)=>{ s.i=i; MQ_BY_ID[s.id]=s; });
 const MQ_END='Act III is over. The glacier valley west of the Hoarfrost Reach has split, but the road to Highmark is not open yet: the story goes on in the Greyspine.';
 // which village each quest villager lives in (the server checks you are there when you talk to them); odran2 is Odran's cart in Hanami, odran3 his cart at Rimehold
-const MQ_NPC_VIL={wren:1,linnea:1,odran:1,bram:1,aldric:1,tomas:1,ilse:1,maren:1,greta:1,oskar:1,
+const MQ_NPC_VIL={tamsin:1,isamu:2,hinata:2,ylva:3,wren:1,linnea:1,odran:1,bram:1,aldric:1,tomas:1,ilse:1,maren:1,greta:1,oskar:1,
   odran2:2,daisuke:2,sayuri:2,kenji:2,haruka:2,tetsuo:2,ryu:2,chiyo:2,kaede:2,
   odran3:3,hallvard:3,ragna:3,bjorn:3,ulfhild:3,thorvald:3,sigrun:3,gudrun:3};
-const MQ_NAMES={wren:'Wren',linnea:'Healer Linnea',odran:'Odran',odran2:'Odran',bram:'Bram',aldric:'Aldric',tomas:'Tomas',ilse:'Ilse',maren:'Maren',greta:'Greta',oskar:'Oskar',
+const MQ_NAMES={tamsin:'Tamsin',isamu:'Isamu',hinata:'Herbalist Hinata',ylva:'Alchemist Ylva',wren:'Wren',linnea:'Healer Linnea',odran:'Odran',odran2:'Odran',bram:'Bram',aldric:'Aldric',tomas:'Tomas',ilse:'Ilse',maren:'Maren',greta:'Greta',oskar:'Oskar',
   daisuke:'Daisuke',sayuri:'Sayuri',kenji:'Kenji',haruka:'Haruka',tetsuo:'Tetsuo',ryu:'Master Ryu',chiyo:'Grandmother Chiyo',kaede:'Shrine Maiden Kaede',
   odran3:'Odran',hallvard:'Hallvard',ragna:'Ragna',bjorn:'Bjorn',ulfhild:'Ulfhild',thorvald:'Thorvald',sigrun:'Old Sigrun',gudrun:'Gudrun'};
 const mqNeed=pt=>pt.n||1;
@@ -228,13 +248,16 @@ function mqReward(step){ return {xp:Math.round(step.r*expToNext(step.gate)), coi
 const mqNight=day=>day>0.53||day<0.005;   // the day clock (0 = 06:00, 0.5 = 18:00): dusk to dawn
 
 // a new character's progress (W1 starts by itself), and a save's, checked
-function newMq(){ return {s:0,st:1,n:MQ[0].parts.map(()=>0),h:0}; }
+// MQ_VER 2: W6a, W7b, W11b and V7b were inserted after W6 (old index 5), W7 (6), W11 (10) and V7 (22): an older save's step index moves up by the ones before it
+const MQ_VER=2, MQ_INSERTED=[[5,1],[6,1],[10,1],[22,1]];
+const mqMigrate=s=>s+MQ_INSERTED.reduce((a,[after,n])=>a+(s>after?n:0),0);
+function newMq(){ return {s:0,st:1,n:MQ[0].parts.map(()=>0),h:0,ver:MQ_VER}; }
 const mqInt=(v,a,b,d)=>{ v=parseInt(v,10); return isFinite(v)?Math.max(a,Math.min(b,v)):d; };
 function sanitizeMq(m){
   if(!m||typeof m!=='object') return newMq();
-  const s=mqInt(m.s,0,MQ.length,0), st=s>=MQ.length?0:mqInt(m.st,0,2,0), step=MQ[s];
+  const s=mqInt(m.ver===MQ_VER?m.s:mqMigrate(mqInt(m.s,0,MQ.length,0)),0,MQ.length,0), st=s>=MQ.length?0:mqInt(m.st,0,2,0), step=MQ[s];
   const n=step?step.parts.map((pt,i)=>mqInt(Array.isArray(m.n)?m.n[i]:0,0,mqNeed(pt),0)):[];
-  const out={s,st,n,h:mqInt(m.h,0,31,0)};
+  const out={s,st,n,h:mqInt(m.h,0,31,0),ver:MQ_VER};
   if(step&&st===0&&step.from===null) out.st=1;
   if(step&&out.st===2&&!mqAllDone(step,n)) out.st=1;
   return out;

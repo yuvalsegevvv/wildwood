@@ -1,10 +1,9 @@
-/*@ Professions and travel: the Wayfarers' Lodge panel (mining, woodcutting, gathering, potion use coming later) and the teleport circle's travel window */
+/*@ Professions and travel: the Wayfarers' Lodge panel (mining, woodcutting, gathering, tools, resources) and the teleport circle's travel window */
 #lodge, #travel{ width:min(640px,calc(100vw - 24px)); }
 .lo-intro, .tr-intro{ margin:0 0 10px; font-size:13px; line-height:1.5; color:var(--ink-dim); }
 .lo-list{ display:flex; flex-direction:column; gap:8px; }
 .lo-row{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:rgba(0,0,0,.22); }
 .lo-row.mine{ border-color:rgba(140,220,160,.45); }
-.lo-row.soon{ opacity:.6; }
 .lo-main{ flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }
 .lo-main b{ font-family:Fraunces, Georgia, serif; font-size:16px; }
 .lo-main span{ font-size:12.5px; line-height:1.4; color:var(--ink-dim); }
@@ -16,8 +15,12 @@
 .lo-state{ font-size:12px; color:var(--ink-dim); white-space:nowrap; }
 .lo-state.ok{ color:#8adf9a; }
 .lo-learn{ white-space:nowrap; }
-.lo-bag{ margin-top:10px; font-size:12.5px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; }
-.lo-note{ margin:8px 0 0; font-size:12px; color:var(--ink-dim); }
+/* the gathering cast bar, above the talk prompt */
+#castbar{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(env(safe-area-inset-bottom,0px) + 198px); z-index:5; min-width:190px; padding:6px 14px 8px; border-radius:12px; border:1px solid var(--line); background:var(--glass); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); text-align:center; font-size:12.5px; }
+#castbar[hidden]{ display:none; }
+.cb-bar{ height:6px; margin-top:5px; border-radius:3px; background:rgba(255,255,255,.14); overflow:hidden; }
+.cb-bar i{ display:block; width:0; height:100%; background:linear-gradient(90deg,#8adf9a,#e2f7a8); }
+body.editing #castbar{ display:none; }
 .tr-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
 .tr-dest{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:14px 8px; border-radius:14px; border:1px solid var(--line); background:rgba(0,0,0,.22); color:var(--ink); font:inherit; cursor:pointer; text-align:center; }
 .tr-dest:hover:not(:disabled){ background:rgba(40,52,64,.7); border-color:#7fd0ff; }

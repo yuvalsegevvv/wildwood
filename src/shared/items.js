@@ -1,4 +1,4 @@
-//@ Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, prices, drop tables, merging, armour looks, gear helpers. Pure.
+//@ Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, and the three profession tools (TOOL_LIST) with the same tiers and rarities; prices, drop tables, merging, armour looks, gear helpers. Pure.
 /* 6 tiers (level 1, 5, 10, 15; the Sakura Vale's samurai gear at 20 and 25). Weapons: sword (Warrior), bow (Archer), wand (Mage): the weapon you hold is your class.
    Armor (any class): helmet, top, bottom, shoes. It adds health and defense and changes your outfit. */
 const TIER_LV=[1,5,10,15,20,25], TIERS=TIER_LV.length;
@@ -17,7 +17,7 @@ const SLOT_NAMES={
   shoes:['Leather Boots','Ironshod Boots','Steel Sabatons','Sunforged Sabatons','Samurai Suneate','Shogun Suneate']};
 const WEAPON_SLOTS=['sword','bow','wand'], ARMOR_SLOTS=['helmet','top','bottom','shoes'], ALL_SLOTS=[...WEAPON_SLOTS,...ARMOR_SLOTS];
 const CLASS_OF={sword:'warrior',bow:'archer',wand:'mage'}, WEAPON_OF={warrior:'sword',archer:'bow',mage:'wand'};
-const SLOT_LABEL={weapon:'Weapon',helmet:'Helmet',top:'Top',bottom:'Bottom',shoes:'Shoes'};
+const SLOT_LABEL={weapon:'Weapon',helmet:'Helmet',top:'Top',bottom:'Bottom',shoes:'Shoes',pick:'Pickaxe',axe:'Axe',sickle:'Sickle'};
 const PRICE=[25,120,480,1600,4500,12000], SLOT_PRICE={sword:1.3,bow:1.3,wand:1.3,helmet:0.8,top:1.2,bottom:1,shoes:0.7};
 // ids: 'sword2' is a common Iron Longsword, 'sword2-e' the epic one (r, e, u, l = rare, epic, unique, legendary)
 const itemId=(slot,t,r)=>slot+(t+1)+(r?'-'+RAR_KEY[r]:'');
@@ -28,6 +28,18 @@ for(const slot of ALL_SLOTS) for(let t=0;t<TIERS;t++) for(let r=0;r<5;r++){
   if(it.kind==='weapon') it.atk=Math.round(TIER_ATK[t]*RAR_MULT[r]);
   else { it.hp=Math.round(ARMOR_HP[slot][t]*RAR_MULT[r]); it.def=Math.max(ARMOR_DEF[slot][t]+r,Math.round(ARMOR_DEF[slot][t]*RAR_MULT[r])); }
   ITEM[it.id]=it; ITEM_LIST.push(it);
+}
+/* Tools: one slot for each profession (mining, woodcutting, gathering). Same 6 tiers and 5 rarities as gear, so the forge merges them too, but no
+   stats: the tier decides which nodes it can work (a node needs a tool of tier NODE.need or better) and the rarity how often a node gives double.
+   They are bought at a Wayfarers' Lodge (common only) and are not in ITEM_LIST, so the shops, drops and "all items" leave them alone. */
+const TOOL_SLOTS=['pick','axe','sickle'], TOOL_PROF={pick:'mining',axe:'woodcutting',sickle:'gathering'};
+const TOOL_MAT=['Copper','Iron','Silverstone','Sunstone','Hagane','Rimesteel'], TOOL_KIND={pick:'Pickaxe',axe:'Axe',sickle:'Sickle'};
+const TOOL_PRICE=[30,90,270,700,1500,3200], TOOL_EXTRA=[0,0.08,0.16,0.26,0.4];   // TOOL_EXTRA: extra chance of a double yield by rarity
+const TOOL_LIST=[];
+for(const slot of TOOL_SLOTS) for(let t=0;t<TIERS;t++) for(let r=0;r<5;r++){
+  const it={id:itemId(slot,t,r),base:slot+(t+1),slot,tier:t,rar:r,lv:TIER_LV[t],name:(r?RARITY[r]+' ':'')+TOOL_MAT[t]+' '+TOOL_KIND[slot],
+    price:Math.round(TOOL_PRICE[t]*Math.pow(3,r)),kind:'tool',prof:TOOL_PROF[slot],extra:TOOL_EXTRA[r]};
+  ITEM[it.id]=it; TOOL_LIST.push(it);
 }
 const sellPrice=it=>Math.round(it.price*0.4);
 /* Shops have unlimited stock, but every one of an item you buy adds 20% of its base price (1st: 100%, 2nd: 120%,
@@ -44,8 +56,8 @@ const ARMOR_LOOK={
   top:[{top:'jacket',topColor:0x7a5236},{top:'mail',topColor:0x8a8f94},{top:'plate',topColor:0xa8b4c0},{top:'plate',topColor:0xd4a83a},{top:'plate',topColor:0x9a2e2a},{top:'plate',topColor:0x2a2830}],
   bottom:[{bottom:'trousers',bottomColor:0x5a3e28,bottomStyle:''},{bottom:'trousers',bottomColor:0x7a7f84,bottomStyle:'mail'},{bottom:'trousers',bottomColor:0x9aa6b2,bottomStyle:'plate'},{bottom:'trousers',bottomColor:0xc9a13a,bottomStyle:'plate'},{bottom:'trousers',bottomColor:0x8a2a26,bottomStyle:'plate'},{bottom:'trousers',bottomColor:0x2a2830,bottomStyle:'plate'}],
   shoes:[{shoes:'boots',shoeColor:0x5a3e28},{shoes:'boots',shoeColor:0x55595e},{shoes:'boots',shoeColor:0x9aa6b2},{shoes:'boots',shoeColor:0xd4a83a},{shoes:'boots',shoeColor:0x7a2622},{shoes:'boots',shoeColor:0x1e1c22}]};
-// east: the Sakura Vale (0 sealed, 1 tunnel open after the Rootwarden, 2 walked to Hanami: teleport circles attuned); north: the Hoarfrost Reach (0 ice wall shut, 1 open after Akaoni, 2 walked to Rimehold); soul: the element you are bound to (elements.js); mats: monster drops {id:count}; prof: learned professions {id:{xp}}, res: gathered resources {id:count} (professions.js)
-function newGearFor(cls){ return {inv:['sword1','bow1','wand1'],eq:{weapon:(WEAPON_OF[cls]||'sword')+'1',helmet:null,top:null,bottom:null,shoes:null},coins:0,q:{offers:[],active:{},defs:{},ready:[],done:0,next:1},startAll:false,bought:{},skills:newSkills(),east:0,north:0,soul:'basic',mats:{},prof:{},res:{},mq:newMq()}; }
+// east: the Sakura Vale (0 sealed, 1 tunnel open after the Rootwarden, 2 walked to Hanami: teleport circles attuned); north: the Hoarfrost Reach (0 ice wall shut, 1 open after Akaoni, 2 walked to Rimehold); soul: the element you are bound to (elements.js); mats: monster drops {id:count}; prof: learned professions {id:{xp}}, res: gathered resources {id:count} (professions.js), pot: brewed potions {id:count} (crafting.js); eq also holds the three tools (pick, axe, sickle)
+function newGearFor(cls){ return {inv:['sword1','bow1','wand1'],eq:{weapon:(WEAPON_OF[cls]||'sword')+'1',helmet:null,top:null,bottom:null,shoes:null,pick:null,axe:null,sickle:null},coins:0,q:{offers:[],active:{},defs:{},ready:[],done:0,next:1},startAll:false,bought:{},skills:newSkills(),east:0,north:0,soul:'basic',mats:{},prof:{},res:{},pot:{},mq:newMq()}; }
 function gearStatsOf(gear){ let hp=0,atk=0,def=0; if(gear&&gear.eq) for(const k in gear.eq){ const it=ITEM[gear.eq[k]]; if(!it) continue; hp+=it.hp||0; atk+=it.atk||0; def+=it.def||0; } return {hp,atk,def}; }
 function effectiveLookOf(look,gear){
   const L=Object.assign({},look||{});
@@ -54,5 +66,5 @@ function effectiveLookOf(look,gear){
   return L;
 }
 function classOfGear(gear,fallback){ const w=gear&&gear.eq&&ITEM[gear.eq.weapon]; return w?CLASS_OF[w.slot]:(fallback||'warrior'); }
-function itemStat(it){ return it.kind==='weapon'?'+'+it.atk+' attack':'+'+it.hp+' health, +'+it.def+' defense'; }
+function itemStat(it){ return it.kind==='tool'?'Works tier '+(it.tier+1)+' nodes'+(it.extra?', +'+Math.round(it.extra*100)+'% double yield':''):it.kind==='weapon'?'+'+it.atk+' attack':'+'+it.hp+' health, +'+it.def+' defense'; }
 function randomItem(t,r){ return itemId(ALL_SLOTS[Math.floor(Math.random()*ALL_SLOTS.length)],t,r||0); }

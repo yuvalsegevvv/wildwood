@@ -6,7 +6,7 @@ const _bv=new THREE.Vector3();
    is told once (it applies the same talk: starts, progresses or hands in the step); their shop or panel opens after the last one */
 function startTalk(n){ loreOpen=null; talkNPC=n; n.line=0; UI_SFX.talk(); const T=mqLinesFor(n); n.mq=T?T.lines.slice():null; if(T) netSend({t:'mq',a:'talk',id:n.def.id}); sayLine(n); if(!mqBusy(n)) openRolePanel(n); }
 const mqBusy=n=>!!(n.mq&&n.mq.length);
-function openRolePanel(n){ const r=n.def.role; if(r==='weaponsmith'||r==='armorer'||r==='peddler') openShop(n); else if(r==='quests') openQuests(n); else if(r==='forge') openForge(n); else if(r==='trainer') openSkills(n); else if(r==='soul') openSoul(n); else if(r==='lodge') openLodge(n); }
+function openRolePanel(n){ const r=n.def.role; if(r==='weaponsmith'||r==='armorer'||r==='peddler') openShop(n); else if(r==='quests') openQuests(n); else if(r==='forge') openForge(n); else if(r==='trainer') openSkills(n); else if(r==='soul') openSoul(n); else if(r==='lodge') openLodge(n); else if(r==='brew') openBrew(n); }
 function sayLine(n){
   const L=n.def.lines&&n.def.lines.length?n.def.lines:['Hello there.'];
   const quest=mqBusy(n), line=quest?n.mq.shift():L[n.line++%L.length];

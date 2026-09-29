@@ -13,6 +13,7 @@ const ROLE_ICON={
   healer:'<path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/>',
   peddler:'<path d="M3 7h13v9H3zM16 10h3l2 3v3h-5"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>',
   kin:'<path d="M12 20s-8-5-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5-8 10-8 10z"/>',
+  brew:'<path d="M9 3h6v5l4 7c2 3.4-.2 6-7 6s-9-2.6-7-6l4-7z"/><path d="M7 15h10"/>',
   lodge:'<path d="M4 20L14 10"/><path d="M13 4c3-1 6 0 7 2-2 0-4 1-4 4l-3-2z"/><path d="M6 20h12"/>'
 };
 const npcTags=new Map();

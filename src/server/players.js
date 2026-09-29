@@ -7,14 +7,14 @@ function sanitizeGear(g,cls){
   if(!g||typeof g!=='object') return base;
   const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.max(0,Math.floor(+g.coins||0)),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
   if(g.mats&&typeof g.mats==='object') for(const id in g.mats){ const n=MATS[id]?clampInt(g.mats[id],0,MAT_MAX,0):0; if(n) out.mats[id]=n; }
-  if(g.eq) for(const k in out.eq){ const id=g.eq[k]; if(id&&ITEM[id]&&out.inv.includes(id)) out.eq[k]=id; else if(k!=='weapon') out.eq[k]=null; }
+  if(g.eq) for(const k in out.eq){ const id=g.eq[k], it=ITEM[id]; if(it&&out.inv.includes(id)&&(k==='weapon'?it.kind==='weapon':it.slot===k)) out.eq[k]=id; else if(k!=='weapon') out.eq[k]=null; }
   if(!ITEM[out.eq.weapon]) out.eq.weapon=base.eq.weapon;
   if(!out.inv.includes(out.eq.weapon)) out.inv.push(out.eq.weapon);
   if(g.bought&&typeof g.bought==='object') for(const id in g.bought) if(ITEM[id]&&ITEM[id].rar===0) out.bought[id]=clampInt(g.bought[id],0,999,0);
   out.q=sanitizeQuests(g.q);
   out.skills=sanitizeSkills(g.skills);
   out.mq=sanitizeMq(g.mq);
-  { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; }
+  { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); }
   if(out.north<1&&out.mq.s>MQ_BY_ID.V10.i) out.north=1;   // saves that already got past Akaoni: the ice wall is open for them
   return out;
 }
@@ -117,7 +117,7 @@ function gainExpP(p,v,monId){
 function hurtP(p,v,m){
   if(p.dead) return;
   const ld=m?Math.max(0,m.T.level-p.level):0;
-  v=Math.max(1,Math.round(v*(1+0.05*ld)*(1-p.red)*(1-psP(p,'red'))*(1-(p.buff?p.buff.red||0:0))));
+  v=Math.max(1,Math.round(v*(1+0.05*ld)*(1-p.red)*(1-psP(p,'red'))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))));
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){
     p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id);

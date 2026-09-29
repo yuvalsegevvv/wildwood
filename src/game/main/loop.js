@@ -23,7 +23,7 @@ function frame(){
     updateNpcLabels();
     updateRemotes(dt);
     updateMonsters(dt);
-    updateCombat(dt);
+    updateCombat(dt); updatePotBar();
     netTick(dt);
     soundTick(dt);
   }
