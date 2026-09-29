@@ -211,8 +211,8 @@ Definitions are `SKILLS` in `src/shared/classes.js`, effects in `src/server/comb
 ### Elements and your soul
 
 Every skill has an element (`el` on its row in `SKILLS`; Slash, Shoot and the three buffs have none = basic), and so does every
-monster (`el` in `src/shared/monster-defs.js`). The six elements are listed as a wheel, fire, water, earth, air, with dark and
-light as a pair; what counts are the opposites: **fire / water, earth / air, dark / light**.
+monster (`el` in `src/shared/monster-defs.js`). Two rules use them: your soul works on pairs of opposites (**fire / water, earth / air,
+dark / light**), and monsters work on the wheel **water beats fire beats air beats earth beats water**, with dark and light beating each other.
 
 | Class | Skills by element |
 |---|---|
@@ -224,9 +224,11 @@ light as a pair; what counts are the opposites: **fire / water, earth / air, dar
   you can change it as often as you like (a soul is `basic` until you do). Your skills of that element deal **x1.5**, skills of
   its opposite deal **x1/1.5**, everything else is unchanged. The panel is `src/game/economy/soul.js`, the server rule is
   `bindSoulP` (it checks the level and that you stand in Hanami).
-- **Monsters.** The opposite element hurts a monster **x1.5**, its own element only **x1/1.5**. Both effects stack. Your own
-  damage numbers get an arrow (up: the element helped, down: it hurt), the target frame shows the monster's element and what
-  it is weak to.
+- **Monsters (the wheel).** A skill whose element beats the monster's element deals **x1.5** (water on a fire monster, fire on air, air on
+  earth, earth on water, dark on light, light on dark). A skill whose element the monster's element beats, or the monster's own element,
+  deals **x1/1.5** (fire on a water monster, water on an earth monster...). Anything else is unchanged. Soul and wheel stack. Your own
+  damage numbers get an arrow (up: the element helped, down: it hurt), and the target frame shows the monster's element with what it is
+  weak to and what it resists.
 - Change `ELEM_BOOST` (or the two functions `soulMult` / `foeMult`) in `src/shared/elements.js` to retune all of it.
 
 ### Boss skills

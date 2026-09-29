@@ -24,12 +24,12 @@ function renderSoul(){
   let h=`<p class="so-intro">Bind your soul to an element. Your skills of that element deal ${up}% more damage, and skills of its opposite deal ${down}% less. Change it whenever you like: it costs nothing.</p>`;
   if(!open) h+=`<p class="so-lock">The shrine answers only hikers of level ${SOUL_LV} and above.</p>`;
   h+=`<div class="so-now">Your soul: ${elChip(cur)}</div><div class="so-grid">`;
-  for(const el of [...ELEM_WHEEL,'dark','light','basic']){
+  for(const el of [...ELEM_LIST,'basic']){
     const mine=SKILL_IDS.filter(id=>SKILLS[id].cls===cls&&elOf(SKILLS[id])===el).map(id=>SKILLS[id].name);
     const sub=el==='basic'?'No bonus, no penalty':'Opposite: '+ELEMS[ELEM_OPP[el]].name;
     h+=`<button class="so-el" data-soul="${el}" aria-pressed="${el===cur}" ${open?'':'disabled'} style="--el:${ELEMS[el].col}"><span class="so-ico">${elSvg(el)}</span><b>${ELEMS[el].name}</b><small>${sub}</small><span class="so-sk">${mine.length?'Your '+CLASSES[cls].name+' skills: '+mine.join(', '):(el==='basic'?'':'None of your '+CLASSES[cls].name+' skills')}</span></button>`;
   }
-  h+=`</div><p class="so-note">Monsters have elements too. The opposite element hurts them ${up}% more, and their own element only ${100-down}% as much. Their element is shown on the target frame.</p>`;
+  h+=`</div><p class="so-note">Monsters have elements too, and against them the wheel decides: water beats fire beats air beats earth beats water, and dark and light beat each other. A skill whose element beats the monster's deals ${up}% more; a skill of its own element, or of one that it beats, deals ${down}% less. A monster's element and what it is weak to are shown on the target frame.</p>`;
   $('#soBody').innerHTML=h;
   $('#soBody').querySelectorAll('[data-soul]').forEach(b=>b.onclick=()=>{ if(b.dataset.soul===soulNow()) return; netSend({t:'soul',el:b.dataset.soul}); UI_SFX.click(); });
 }

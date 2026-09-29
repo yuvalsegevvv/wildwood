@@ -303,7 +303,7 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
   5.5 M triangles per frame, of which about 3.7 M are instanced trees (chunks are 110 m, fog ends at 230 m; 42% of the triangles are
   120 m or farther); the world takes about 1.1 s of JS to generate (17% is `noise2`). The server ticks in under 5 ms with 40 players
   spread over the woods (about 4% of a core).
-- Elements: soul match x1.5, soul opposite x1/1.5; a monster takes x1.5 from the opposite of its element and x1/1.5 from its own (`ELEM_BOOST`, both stack).
+- Elements: soul match x1.5, soul opposite x1/1.5 (pairs fire/water, earth/air, dark/light: `ELEM_OPP`); against monsters the wheel water > fire > air > earth > water plus dark <> light (`ELEM_BEATS`): a skill that beats the monster's element x1.5, one it beats or its own element x1/1.5 (`ELEM_BOOST`, soul and wheel stack).
   Soul unlocks at level `SOUL_LV` 15 (Hanami's Kaede), passives at `PASSIVE_LV` 18 (3 slots exist, only `PASSIVE_OPEN` = 1 is usable, the others are locked for now). Skill level 1-5: +12% damage and -3% cooldown per level.
   Boss skills: each of the boss's 6 skills has a 10% chance per kill, per player who helped. Burn: a share (k) of the hit's damage every second. Pull = negative knockback.
   Drops: 35% per kill (a boss always 3), upgrade to level n needs `UP_COUNT` 4 / 6 / 9 / 14 drops + coins (`UP_COINS` x (n-1)^1.7) and, at level 5, 2 boss trophies.
@@ -321,7 +321,7 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
 ## 10. Ideas not done yet (ask the owner before starting)
 
 The owner will define the real passive skills (the eight in `PASSIVES` are a placeholder set); monsters' elements do not change the damage they deal to you
-yet (a `hurtP` hook, same functions as `foeMult`); the `ELEM_WHEEL` order (fire > water > earth > air) is only used for display. Special quests from Bram and other NPCs; group/party system; the XP curve past 15 (levels 16-25 need 400-2100 kills
+yet (a `hurtP` hook, same functions as `foeMult`); Special quests from Bram and other NPCs; group/party system; the XP curve past 15 (levels 16-25 need 400-2100 kills
 each: tune `expToNext` / `xpFor` in `shared/balance.js`); animals in the vale; trading between players; more zones or a
 second boss; server-side anti-cheat for movement; villagers synced between players; mobile UI polish
 seen on a real device.

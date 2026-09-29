@@ -1,6 +1,6 @@
 //@ Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
 /* Your damage = 3 x f(level) + weapon attack, times the ability's multiplier (and its skill level: skillPower), +/-15%, 12% chance of x1.7,
-   times the Ferocity passive and the element: your soul (elements.js: soulMult) and the monster's own element (foeMult).
+   times the Ferocity passive and the element: your soul (elements.js: soulMult, the opposite pairs) and the element wheel against the monster (foeMult).
    -5% damage dealt per level the enemy is above you (never below 10%).
    Everyone who hit a monster in the last 30 s and is within 80 m gets the XP, coins, quest credit and a loot roll. */
 const PROJS=[]; let nextProjId=1;

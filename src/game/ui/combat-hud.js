@@ -34,7 +34,7 @@ function updateCombatUI(dt){
   $('#plXp').style.width=Math.min(100,PL.exp/need*100)+'%'; $('#plXpT').textContent='XP '+Math.floor(PL.exp)+' / '+Math.ceil(need);
   const bossUI=updateBossUI();
   if(T && started && !customizing && !(bossUI&&T===BOSS.m)){ tframe.hidden=false; tName.textContent=T.T.name; const ld=T.T.level-PL.level; tLv.textContent='Lv '+T.T.level+(ld>0?'  (-'+ld*5+'% dmg)':''); tLv.classList.toggle('bad',ld>0);
-    const te=elOf(T.T); tEl.textContent=te==='basic'?'':ELEMS[te].name; tEl.style.color=ELEMS[te].col; tEl.title=te==='basic'?'':ELEMS[te].name+': weak to '+ELEMS[ELEM_OPP[te]].name+', resists '+ELEMS[te].name;
+    const te=elOf(T.T); tEl.textContent=te==='basic'?'':ELEMS[te].name; tEl.style.color=ELEMS[te].col; if(te==='basic') tEl.title=''; else { const tr=foeTraits(te), nm=l=>l.map(e=>ELEMS[e].name).join(' and '); tEl.title=ELEMS[te].name+': weak to '+nm(tr.weak)+', resists '+nm(tr.resist); }
     tBar.style.width=(T.hp/T.maxHp*100)+'%'; tHp.textContent=Math.ceil(T.hp)+' / '+T.maxHp; }
   else tframe.hidden=true;
   const L=GEAR&&GEAR.skills, c=clsOf(), ba=abilityOf(c,'basic',L,PL.level), sk=abilityOf(c,'skill',L,PL.level), bu=abilityOf(c,'burst',L,PL.level);
