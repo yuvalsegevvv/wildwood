@@ -122,6 +122,7 @@ function onProj(id,kind,x,y,z,vx,vy,vz,tg){
   else if(kind==='pierce'){ mesh=arrowOf(); mesh.scale.setScalar(1.8); const glow=new THREE.Mesh(coreGeo,fxMat(0xbfe8ff,0.8)); glow.scale.set(1.2,1.2,4); mesh.add(glow); }
   else if(kind==='spore'||kind==='ember'){ mesh=arrowOf(); mesh.scale.setScalar(1.3); const glow=new THREE.Mesh(coreGeo,fxMat(GEN_PROJ[kind],0.85)); glow.scale.set(1.5,1.5,kind==='ember'?5:3); mesh.add(glow); }
   else if(kind==='thorn'){ mesh=new THREE.Mesh(shardGeo,fxMat(GEN_PROJ.thorn,0.95)); mesh.scale.setScalar(1.1); }
+  else if(kind==='frost'){ mesh=new THREE.Mesh(shardGeo,fxMat(GEN_PROJ.frost,0.95)); mesh.scale.setScalar(1.3); mesh.add(new THREE.Mesh(coreGeo,fxMat(0xffffff,0.6))); }
   else if(kind==='spirit'){ mesh=new THREE.Mesh(coreGeo,fxMat(GEN_PROJ.spirit,1)); mesh.scale.setScalar(2.2); mesh.add(new THREE.Mesh(boltGeo,fxMat(0xffb060,0.5))); }
   else if(kind==='arrow') mesh=arrowOf(); else { mesh=new THREE.Mesh(boltGeo,boltMat); mesh.add(new THREE.Mesh(coreGeo,boltCore)); }
   scene.add(mesh);
@@ -138,6 +139,7 @@ function onProjEnd(id,x,y,z,hit){
   else if(p.kind==='ember'){ spawnBurst(pos,0xff8a3a,1.1); spawnRingAt(pos.x,pos.y,pos.z,2.8,0xffa040); cSfx.boom(pos); }
   else if(p.kind==='spore'){ spawnBurst(pos,GEN_PROJ.spore,0.8); spawnRingAt(pos.x,pos.y,pos.z,3.5,GEN_PROJ.spore); }
   else if(p.kind==='thorn'||p.kind==='spirit'){ spawnBurst(pos,GEN_PROJ[p.kind],0.4); }
+  else if(p.kind==='frost'){ spawnBurst(pos,GEN_PROJ.frost,0.8); spawnRingAt(pos.x,pos.y,pos.z,2.6,GEN_PROJ.frost); }
   else if(hit==null) cSfx.thunk(pos);
 }
 const _pv2=new THREE.Vector3();

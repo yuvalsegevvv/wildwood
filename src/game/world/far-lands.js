@@ -1,4 +1,4 @@
-//@ The rest of Eldmere as low-poly placeholders around the two playable lands (Greyspine, Hoarfrost, Sunscar, Amber Reach, Stormhorn, Emberwake Isles): one flat-shaded mesh, high ground seen through the haze
+//@ The rest of Eldmere as low-poly placeholders around the three playable lands (Greyspine, Sunscar, Amber Reach, Stormhorn, Emberwake Isles; the Hoarfrost Reach is built): one flat-shaded mesh, high ground seen through the haze
 /* Placeholders until each land is built (docs/WORLD.md: regions, map). Nothing here can be walked on: the playable
    rectangle's bounds (player/movement.js) keep you inside. The shapes follow docs/world-map.svg turned into world
    metres: the draft's Wildwood box is the home forest (about 2.1 m per map pixel east-west, 2.8 north-south), the
@@ -89,7 +89,7 @@ function farMaterial(){
   return m;
 }
 function buildFarLands(){
-  const C=FAR_CELL, X0=WX0-46*C, Z0=WZ0-32*C, NX=104, NZ=106, W=NX+1;
+  const C=FAR_CELL, X0=WX0-46*C, Z0=HZ0-32*C, NX=104, NZ=106, W=NX+1;   // (Z0 stays where it was when the rectangle ended at HZ0: the Hoarfrost Reach is built, its rectangle's cells are skipped below)
   const onRect=(x,z)=>x>=WX0-0.01&&x<=WX1+0.01&&z>=WZ0-0.01&&z<=WZ1+0.01;
   const H=new Float32Array(W*(NZ+1));
   for(let iz=0;iz<=NZ;iz++) for(let ix=0;ix<=NX;ix++){ const x=X0+ix*C, z=Z0+iz*C; H[iz*W+ix]=onRect(x,z)?getH(clamp(x,WX0,WX1),clamp(z,WZ0,WZ1)):farHeight(x,z); }

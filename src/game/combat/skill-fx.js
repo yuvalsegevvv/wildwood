@@ -3,7 +3,7 @@
    with kind 'pierce'. Everyone nearby sees them, whoever cast them. A skill with generic effects (fx in its row) is drawn from that row
    in the colour of its element: fxVisuals for the swing, then the same events as above. */
 const elCol=el=>parseInt(ELEMS[ELEMS[el]?el:'basic'].col.slice(1),16);
-const GEN_PROJ={spore:0x9adf6a,thorn:0xa8834a,ember:0xff8a3a,spirit:0xfff0a0};   // the colours of the generic projectiles
+const GEN_PROJ={spore:0x9adf6a,thorn:0xa8834a,ember:0xff8a3a,spirit:0xfff0a0,frost:0x9fd8ff};   // the colours of the generic projectiles
 const AREA_FX=new Map(), BOLTS=[];
 const meteorGeo=new THREE.IcosahedronGeometry(0.9,1), fallArrowGeo=new THREE.CylinderGeometry(0.02,0.02,0.9,4);
 const AREA_COL={meteor:0xff6a2a,rain:0xf2cf5a,hail:0xf2cf5a,blizzard:0x9fd8ff,storm:0xdfe6ee};

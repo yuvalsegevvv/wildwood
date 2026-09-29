@@ -1,4 +1,4 @@
-//@ Monster zones of the home forest (ZONES, zoneAt, zonePoint, defZone): three rings round the village plus the edge zones (shore, Sunwall, foothills), dividing ridges (zoneRidge), boss arena (ARENA); the vale's zones are in vale.js. Pure.
+//@ Monster zones of the home forest (ZONES, zoneAt, zonePoint, defZone): three rings round the village plus the edge zones (shore, Sunwall, foothills), dividing ridges (zoneRidge), boss arena (ARENA); the vale's zones are in vale.js, the Hoarfrost Reach's in hoarfrost.js. Pure.
 /* ---------- monster zones ----------
    The wilds are split into 16 zones in three rings around the village, one zone per monster (and one for the boss).
    Zones are walled off by low ridges (well below the border mountains) with a pass in the middle of each wall;
@@ -30,14 +30,14 @@ EDGE_ZONES.forEach(zn=>{ zn.ring=3; ZONES.push(zn); });
 function edgeZoneAt(x,z){
   const c=coastDist(x,z); if(c<74) return c>20?EDGE_ZONES[0]:null;
   const w=x-WX0-sunwallLine(z); if(w<62) return w>8?EDGE_ZONES[1]:null;
-  if(z-WZ0-rimWobble(x,11)<100) return EDGE_ZONES[2];
+  if(z-HZ0-rimWobble(x,11)<100) return EDGE_ZONES[2];
   if(HALF-x<58) return null;
   return undefined;
 }
 // the monster kind's zone: its own (edge kinds) or the zone of its level
 function defZone(d){ const k=d.zone||d.level; return ZONES.find(zn=>zn.key===k); }
 function zoneAt(x,z){
-  if(inVale(x)) return valeZoneAt(x,z);
+  if(inVale(x)) return inHoar(x,z)?hoarZoneAt(x,z):valeZoneAt(x,z);
   const ez=edgeZoneAt(x,z); if(ez!==undefined) return ez;
   const dx=x-VIL.x, dz=z-VIL.z, r=Math.hypot(dx,dz);
   if(r<RINGS[0]) return null;
@@ -55,12 +55,12 @@ function zonePoint(zn,fa,fr,full){
   if(zn.vale){ const a=fa*TAU, r=Math.abs(fr-0.5)*2*zn.R; return [zn.x+Math.sin(a)*r,zn.z+Math.cos(a)*r]; }
   if(zn.edge==='shore') return [lerp(-410,410,fa+0.5), WZ1-lerp(30,78,fr)];
   if(zn.edge==='west'){ const z=lerp(-400,400,fa+0.5); return [WX0+sunwallLine(z)+lerp(12,60,fr), z]; }
-  if(zn.edge==='north'){ const x=lerp(-330,420,fa+0.5); return [x, WZ0+rimWobble(x,11)+lerp(30,98,fr)]; }
+  if(zn.edge==='north'){ const x=lerp(-330,420,fa+0.5); return [x, HZ0+rimWobble(x,11)+lerp(30,98,fr)]; }
   const a=zn.center+fa*zn.w, r1=full&&zn.ring===2&&!zn.boss?Math.max(zn.r1,ringReach(a)):zn.r1, r=zn.r0+fr*(r1-zn.r0);
   return [VIL.x+Math.sin(a)*r,VIL.z+Math.cos(a)*r];
 }
 function zoneRidge(x,z){
-  if(inVale(x)) return valeRidge(x,z);
+  if(inVale(x)) return inHoar(x,z)?hoarRidge(x,z):valeRidge(x,z);
   const dx=x-VIL.x, dz=z-VIL.z, r=Math.hypot(dx,dz);
   if(r<RINGS[0]-2||r>RINGS[3]-4) return 0;
   const a=Math.atan2(dx,dz); let h=0;

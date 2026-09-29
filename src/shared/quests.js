@@ -5,8 +5,8 @@
                                                              reward: XP, coins, 50% chance of an item
      bounty  1.5x a hunt, the grindy one                     reward: more XP and coins, always an item, 25% rare
      scout   walk to a named place in that level's zone      reward: XP and coins
-     boss    the Rootwarden (from level 13), Akaoni (from 18), Kyuubi (from 23)   reward: lots, a rare item, 20% epic
-   Levels 16-25 are the Sakura Vale's: two monster kinds per level, so a hunt names one of the two. Levels 12-15 also have the
+     boss    the Rootwarden (from level 13), Akaoni (from 18), Kyuubi (from 23), Ymrik (from 25), Vetrmaw (from 29)   reward: lots, a rare item, 20% epic
+   Levels 16-25 are the Sakura Vale's and 22-30 the Hoarfrost Reach's: two monster kinds per level, so a hunt names one of the two. Levels 12-15 also have the
    home forest's edge kinds (shore crabs...), hunted in their own edge zone.
    Items are of the quest's level tier. Notices refresh when you level up and at sunrise. */
 function dirWord(x,z){ const a=Math.atan2(x,-z), i=Math.round(a/(Math.PI/4)); return ['north','north-east','east','south-east','south','south-west','west','north-west','north'][(i+8)%8]; }
@@ -22,7 +22,7 @@ function questLevelFor(pl){
 }
 // places worth scouting at each level: the zone itself, plus any lake inside it
 function scoutPlace(L){
-  const zn=ZONES.find(z=>z.key===L), opts=[];
+  const zs=ZONES.filter(z=>z.level===L&&!z.boss&&!z.edge), zn=qpick(zs), opts=[];   // (levels 22-25 have a vale zone and a Hoarfrost zone)
   const [x,z]=zonePoint(zn,(Math.random()-0.5)*0.5,0.35+Math.random()*0.3); opts.push({x,z,name:zn.name});
   for(const lk of LAKES){ const lz=zoneAt(lk.x,lk.z); if(lz&&lz.key===L) opts.push({x:lk.x,z:lk.z,name:lk.name}); }
   return qpick(opts);
@@ -31,7 +31,9 @@ function scoutPlace(L){
 const BOSS_QUESTS=[
   {target:'boss',from:13,level:15,title:'The Rootwarden',text:'Something ancient sleeps in the stone circle at the edge of the world, and the forest sickens around it. Wake it, and end it.'},
   {target:'akaoni',from:18,level:20,title:'Akaoni, the Gate Demon',text:'A red oni the size of a gatehouse guards the Demon Gate in the far corner of the vale. Break its lanterns, then break it.'},
-  {target:'kyuubi',from:23,level:25,title:'Kyuubi, the Nine-Tailed',text:'Nine tails of foxfire burn above the shrine in the north-west of the vale. The old fox has ruled there for a thousand years. End its reign.'}];
+  {target:'kyuubi',from:23,level:25,title:'Kyuubi, the Nine-Tailed',text:'Nine tails of foxfire burn above the shrine in the north-west of the vale. The old fox has ruled there for a thousand years. End its reign.'},
+  {target:'ymrik',from:25,level:26,title:'Ymrik, the Rimeking',text:'A frost giant has taken the ice hall in the middle of the Hoarfrost Reach, and his thralls raid the wold beyond the lake. Break his pillars, then break him.'},
+  {target:'vetrmaw',from:29,level:30,title:'Vetrmaw, the Frost Wyrm',text:'A wyrm nests in the glacier at the far north-east of the reach, where the iron bird fell. The hunters of Rimehold want it gone.'}];
 function bossQuestFor(E){ const ok=BOSS_QUESTS.filter(b=>E>=b.from); if(!ok.length) return null; return ok.length>1&&Math.random()<0.3?ok[ok.length-2]:ok[ok.length-1]; }
 function genQuest(pl,id){
   const E=Math.max(1,Math.min(MAX_ZONE_LV,pl)), L=questLevelFor(pl), d=qpick(MON_DEFS.filter(m=>m.level===L)), zn=defZone(d);

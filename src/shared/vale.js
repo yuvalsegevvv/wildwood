@@ -1,4 +1,4 @@
-//@ The Sakura Vale east of the mountains: the tunnel (TUN), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt. Pure.
+//@ The Sakura Vale east of the mountains: the tunnel (TUN), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt (which knows all three villages). Pure.
 /* ===================== THE SAKURA VALE =====================
    A second land behind the eastern border mountains, reached through a tunnel that stays sealed for each player
    until they help defeat the Rootwarden (gear.east: 0 sealed, 1 tunnel open, 2 walked to Hanami: circles attuned).
@@ -51,11 +51,11 @@ function findVale2Village(){
 }
 const VIL2=(()=>{ const v=findVale2Village(); return layoutVillage(v,{seed:7171,ent:Math.atan2(TUN.x1+10-v.x,TUN.z-v.z)}); })();
 VIL2.name='Hanami'; VIL.name='the village';
-const VILS=[VIL,VIL2];
-// on (or m metres from) either village's teleport circle
+// (VILS, with Rimehold, is in hoarfrost.js)
+// on (or m metres from) any village's teleport circle
 function nearTele(x,z,m){ const V=vilAt(x,z); return Math.hypot(x-V.tele.x,z-V.tele.z)<V.tele.r+m; }
-// the village whose side of the mountains a point is on (every "near the village" test uses this one)
-function vilAt(x,z){ return x>HALF?VIL2:VIL; }
+// the village whose land a point is in (every "near the village" test uses this one): the home forest, the vale, the Hoarfrost Reach
+function vilAt(x,z){ return x>HALF?(z<HZ0?VIL3:VIL2):VIL; }
 
 /* ---- zones: seeds on a rough 3 x 4 grid east of Hanami. key null = Hanami's meadows (no monsters) */
 const VALE_ZONE_NAMES={16:'Petal Meadow',17:'Kodama Wood',18:'Inari Hills',19:'Bamboo Sea',20:'Ghostlight Marsh',21:'Oni Crags',22:'Jade Falls',23:'Tengu Peaks',24:'Warlord Ruins',25:'Thunder Grove',boss25:'Foxfire Shrine'};
@@ -72,12 +72,12 @@ function valeSeeds(x,z){
   return [a,b];
 }
 function valeZoneAt(x,z){
-  if(Math.min(x-HALF,WX1-x,z-WZ0,WZ1-z)<40) return null;   // the border mountains
+  if(Math.min(x-HALF,WX1-x,z-HZ0,WZ1-z)<40) return null;   // the border mountains
   for(const A of ARENAS) if(A.zone&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;
   const [wx,wz]=valeWarp(x,z), s=valeSeeds(wx,wz)[0]; return s.key===null?null:ZONES.find(zn=>zn.vale&&zn.key===s.key);
 }
 function valeRidge(x,z){
-  const e=Math.min(x-HALF,WX1-x,z-WZ0,WZ1-z); if(e<30) return 0;
+  const e=Math.min(x-HALF,WX1-x,z-HZ0,WZ1-z); if(e<30) return 0;
   const [wx,wz]=valeWarp(x,z), [a,b]=valeSeeds(wx,wz), ux=b.x-a.x, uz=b.z-a.z, L=Math.hypot(ux,uz);
   const da=Math.hypot(wx-a.x,wz-a.z), dbb=Math.hypot(wx-b.x,wz-b.z), d=(dbb*dbb-da*da)/(2*L);   // distance to the wall between a and b
   if(d>=10) return 0;
@@ -92,7 +92,7 @@ function flatSpot(cx,cz,span){
   let best=null;
   for(let dx=-span;dx<=span;dx+=10) for(let dz=-span;dz<=span;dz+=10){
     const x=cx+dx, z=cz+dz;
-    if(Math.min(x-HALF,WX1-x,z-WZ0,WZ1-z)<75) continue;
+    if(Math.min(x-HALF,WX1-x,z-WZ0,WZ1-z)<75||(x>HALF&&Math.abs(z-HZ0)<75)) continue;
     if(LAKES.some(L=>Math.hypot(x-L.x,z-L.z)<L.r+25)) continue;
     let mn=1e9,mx=-1e9,sum=0,c=0;
     for(let rr=0;rr<=22;rr+=11) for(let j=0;j<8;j++){ const b=j/8*TAU, h=baseHeight(x+Math.sin(b)*rr,z+Math.cos(b)*rr); mn=Math.min(mn,h); mx=Math.max(mx,h); sum+=h; c++; }

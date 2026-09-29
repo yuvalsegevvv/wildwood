@@ -14,9 +14,9 @@ const fLv=L=>L+Math.pow(13/12,L);
 const TIER_ATK=[4,12,26,45,70,100];
 const ARMOR_HP={helmet:[8,25,55,100,160,240],top:[15,45,100,180,290,430],bottom:[10,32,70,130,210,310],shoes:[6,18,40,75,120,180]};
 const ARMOR_DEF={helmet:[1,3,5,8,11,15],top:[2,5,10,16,22,30],bottom:[1,3,6,10,14,19],shoes:[1,2,4,6,9,12]};
-const tierFor=L=>L>=25?5:L>=20?4:L>=15?3:L>=10?2:L>=5?1:0;
-// the highest monster level (zones, quests)
-const MAX_ZONE_LV=25;
+const tierFor=L=>L>=25?5:L>=20?4:L>=15?3:L>=10?2:L>=5?1:0;   // (tier 5 until the next land brings a better one)
+// the highest monster level (zones, quests): the Hoarfrost Reach's 30. VALE_TOP_LV: the highest level skill upgrades ask drops of (the vale's 25)
+const MAX_ZONE_LV=30, VALE_TOP_LV=25;
 const setHP=t=>ARMOR_HP.helmet[t]+ARMOR_HP.top[t]+ARMOR_HP.bottom[t]+ARMOR_HP.shoes[t];
 const setDef=t=>ARMOR_DEF.helmet[t]+ARMOR_DEF.top[t]+ARMOR_DEF.bottom[t]+ARMOR_DEF.shoes[t];
 const defRed=d=>d/(d+60);
@@ -31,5 +31,9 @@ const xpBase=L=>fLv(L)*Math.pow(1.15,Math.max(0,L-5));
 const HIGH_LV=10, highMult=L=>L>=HIGH_LV?1.5:1;
 const xpFor=L=>xpBase(L)*highMult(L);
 const K15=(500*xpBase(15))/(10*(225+Math.pow(7/6,15)));
-const expToNext=L=>10*(L*L+Math.pow(7/6,L))*Math.pow(K15,Math.max(0,L-5)/10);
+const expToNext25=L=>10*(L*L+Math.pow(7/6,L))*Math.pow(K15,Math.max(0,L-5)/10);
+/* Past level 25 the curve above keeps growing faster than the monsters' XP (level 30 would need ~7,800 same-level kills): from 25 on a
+   level costs as many same-level kills as 25 -> 26 does, so the Hoarfrost's levels 26-30 stay a long but bounded grind. */
+const KILLS25=expToNext25(25)/xpFor(25);
+const expToNext=L=>L<=25?expToNext25(L):KILLS25*xpFor(L);
 const coinsFor=L=>Math.max(1,Math.round(fLv(L)*AR(1.5,2.5)*Math.pow(1.1,Math.max(0,L-5))*highMult(L)));

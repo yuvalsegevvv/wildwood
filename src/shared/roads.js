@@ -1,9 +1,10 @@
-//@ Roads between the two villages and the key places (ROADS), the river bridge and the plank causeways over the drowned stretches (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck, bridgeAt. Pure.
+//@ Roads between the three villages and the key places (ROADS), the river bridge and the plank causeways over the drowned stretches (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck, bridgeAt. Pure.
 /* Dirt roads that link each village to the places the story sends you (docs/MAIN-QUEST.md, docs/WORLD.md):
    home forest: the East Road (the village, over the river bridge, to the tunnel) with the Circle Path to the Stone Circle,
    the Redgate Road west to the sealed canyon, the Shore Road south to the beach;
    the vale: the Tunnel Road into Hanami, the Gate Road to the Demon Gate, the Shrine Road to the Foxfire Shrine,
-   the Coast Road east to the shore and the North Road up towards the Hoarfrost.
+   the Coast Road east to the shore and the North Road up to the ice wall in Frostgate Pass;
+   the Hoarfrost Reach: the Frost Road from the wall through the pass to Rimehold, the Hall Road to the Rimeking's hall, the Wyrm Road on to the wyrm's nest.
    A road is a list of waypoints, cut into ~12 m steps with a gentle noise bend. The dirt is solid within ROAD_W of the line;
    zone ridges are cut away where a road crosses them (rawHeight), and trees, bushes and monster camps keep off (nearPath).
    Where a road crosses the river a bridge is built (BRIDGES): an arched deck from bank to bank that you walk on (bridgeDeck). */
@@ -19,7 +20,7 @@ function roadPts(wps,seed){
 // the point m metres outside an arena's ring, on the side facing (fx, fz)
 function arenaGate(A,fx,fz,m){ const dx=fx-A.x, dz=fz-A.z, d=Math.hypot(dx,dz)||1; return [A.x+dx/d*(A.r+m), A.z+dz/d*(A.r+m)]; }
 const ROADS=(()=>{
-  const e1=VIL.paths[VIL.paths.length-1], S=[e1[2],e1[3]], e2=VIL2.paths[VIL2.paths.length-1], S2=[e2[2],e2[3]];
+  const e1=VIL.paths[VIL.paths.length-1], S=[e1[2],e1[3]], e2=VIL2.paths[VIL2.paths.length-1], S2=[e2[2],e2[3]], e3=VIL3.paths[VIL3.paths.length-1], S3=[e3[2],e3[3]];
   const R=(name,wps,seed)=>({name,pts:roadPts(wps,seed)});
   return [
     R('The East Road',[S,[0,64],[38,52],[82,46],[150,-10],[230,-92],[300,-120],[TUN.x0-4,TUN.z]],1),
@@ -30,7 +31,11 @@ const ROADS=(()=>{
     R('The Gate Road',[S2,[560,-160],[650,-195],[760,-240],[850,-300],arenaGate(ARENA20,850,-300,3)],6),
     R('The Shrine Road',[S2,[560,-40],[600,80],[592,200],arenaGate(ARENA25,592,200,3)],7),
     R('The Coast Road',[[560,-40],[680,-22],[800,-52],[900,-22],[WX1-46,-12]],8),
-    R('The North Road',[[560,-160],[600,-280],[636,WZ0+60]],9)];
+    R('The North Road',[[560,-160],[600,-280],[PASS.x,-350],[PASS.x,-380],[PASS.x,PASS.ice+8]],9),
+    // beyond the ice wall: through Frostgate Pass onto the plateau and into Rimehold, then to the two boss halls
+    R('The Frost Road',[[PASS.x,PASS.ice-8],[PASS.x,-450],[PASS.x,-490],[PASS.x,PASS.z1],S3],10),
+    R('The Hall Road',[S3,[700,-680],[722,-735],arenaGate(ARENA26,722,-735,3)],11),
+    R('The Wyrm Road',[arenaGate(ARENA26,790,-835,3),[825,-860],arenaGate(ARENA30,825,-860,3)],12)];
 })();
 // segments bucketed on a ROAD_CELL grid (with a margin) so a lookup only checks the few nearby ones
 const ROAD_GRID=new Map();

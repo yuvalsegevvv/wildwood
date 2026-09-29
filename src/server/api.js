@@ -6,8 +6,8 @@
    io.store (solo, or a shared world hosted in a tab) the browser's own save is used, as before.
    Registered accounts (name + password, Node server only) are in accounts.js.
    Messages in:  hello{acct,name,look,save[,user,pass|token]}  register{user,pass}  logout{token}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
-                 cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{}  dev{cmd,v}
-                 buyskill{id}  eqskill{id[,idx: passive slot]}  unskill{cls,slot[,idx]}  upskill{id}  soul{el}  mq{a:'talk'|'pick'|'read',id|i}
+                 cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{to: 'home'|'hanami'|'rimehold'}  dev{cmd,v}
+                 buyskill{id}  eqskill{id[,idx: passive slot]}  unskill{cls,slot[,idx]}  upskill{id}  soul{el}  mq{a:'talk'|'pick'|'read',id|i}  learn{id: a profession}  gather{i: a resource node}
    Messages out: welcome{pid,day,dev,players[,look: a logged-in account's own look]}  mons{list}  you  tp  snap{day,n,pl,mo,b:[per boss],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
 initMonstersS(); initBossS();
 const ACCT=new Map(), PENDING=new Set();   // account -> pid online; pids whose save is still loading
@@ -40,6 +40,7 @@ function join(pid,hello,auth){
   const ros=MONS.filter(m=>!m.remove).map(monRoster);
   for(let i=0;i<ros.length;i+=40) sendTo(pid,{t:'mons',list:ros.slice(i,i+40)});
   for(const B of BOSSES) for(const e of B.tele) sendTo(pid,{t:'snap',ev:[['tele',e.id,e.kind,r1(e.x),r1(e.z),r1(e.r),e.dur-e.t,Math.round(e.face*100)/100,e.half]]});
+  { const ne=nodeEvents(); if(ne.length) sendTo(pid,{t:'snap',ev:ne}); }   // the resource nodes that are taken right now
   sendTo(pid,youMsg(p)); p.dirty=false;
   ev('pjoin',pubInfo(p));
   return p;
@@ -57,6 +58,7 @@ function setPos(pid,d){
   const v=d.map(Number); if(!v.slice(0,3).every(isFinite)) return;
   p.x=clamp(v[0],WX0,WX1); p.y=v[1]; p.z=clamp(v[2],WZ0,WZ1); p.face=isFinite(v[3])?v[3]:p.face; p.vx=v[4]||0; p.vz=v[5]||0;
   if(p.gear.east<1 && p.x>TUN.p0) p.x=TUN.p0;   // the sealed tunnel
+  if(p.gear.north<1 && p.x>HALF && p.z<PASS.ice) p.z=PASS.ice;   // the ice wall in Frostgate Pass
 }
 function receive(pid,msg){
   if(!msg||typeof msg!=='object') return;
@@ -82,8 +84,10 @@ function receive(pid,msg){
     case 'upskill': upgradeSkillP(p,msg.id); break;
     case 'soul': bindSoulP(p,msg.el); break;
     case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<2000){ p.look=msg.look; p.saveDirty=true; ev('plook',p.id,p.look); } break;
-    case 'warp': warpP(p); break;
+    case 'warp': warpP(p,typeof msg.to==='string'?msg.to:undefined); break;
     case 'mq': mqMsgP(p,msg); break;
+    case 'learn': learnProfP(p,msg.id); break;
+    case 'gather': gatherP(p,clampInt(msg.i,0,NODES.length-1,-1)); break;
     case 'dev': devP(p,msg); break;
     case 'register': registerP(p,msg.user,msg.pass); break;
     case 'logout': logoutP(p,msg.token); break;
@@ -95,7 +99,7 @@ function tick(dt){
   else S.day=(S.day+dt/DAY_SECONDS)%1;
   if(S.day<S.prevDay) sunrise();
   S.prevDay=S.day;
-  updatePlayersS(dt); updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateBurnS(dt); updateWeatherS(dt);
+  updatePlayersS(dt); updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateBurnS(dt); updateWeatherS(dt); updateNodesS(dt);
   for(const p of S.players.values()) if(p.dirty){ p.dirty=false; p.saveDirty=true; sendTo(p.id,youMsg(p)); }
   S.saveT-=dt; if(S.saveT<=0){ S.saveT=5; for(const p of S.players.values()) if(p.saveDirty&&p.acct) saveP(p); }
   S.snapT-=dt; if(S.snapT<=0){ S.snapT=S.snapDt; broadcastSnap(); }

@@ -1,15 +1,19 @@
-//@ World map: a map image painted from the terrain, the corner minimap, and the full map (N) of either land with zones, quests and players
+//@ World map: a map image painted from the terrain, the corner minimap, and the full map (N) of each land (home forest, Sakura Vale, Hoarfrost Reach) with zones, quests, resource nodes and players
 /* The map image covers the whole world (both lands) and is painted once, a few rows per frame after the ground is ready:
    terrain colours with hill shading, forests darker, water blue, zone borders, village houses and the boss arenas.
    The minimap shows the 90 m around you (north up, 10 times a second). The full map (N key, map button, or tap the
-   minimap) shows one land at a time: the one you are in, or the other with the button in its header (once the tunnel is open). */
+   minimap) shows one land at a time: the one you are in, or the next one with the button in its header (once the tunnel is open; the Hoarfrost Reach once its ice wall is). */
 const MAP={size:LITE?320:(LOW?400:560),canvas:null,ctx:null,img:null,zone:null,row:0,done:false,mmT:0,fullT:0};
 MAP.k=MAP.size/SIZE; MAP.w=Math.round(WW*MAP.k); MAP.h=Math.round(WD*MAP.k);   // pixels per metre, image size
 const MM_R=90, DPR=Math.min(2,devicePixelRatio||1);
 const mapX=x=>(x-WX0)*MAP.k, mapZ=z=>(z-WZ0)*MAP.k;
-// the two lands as the full map shows them
-const LANDS={home:{x0:-HALF,x1:HALF,z0:-HALF,z1:HALF,name:'The home forest'},vale:{x0:HALF-40,x1:WX1,z0:-HALF,z1:HALF,name:'The Sakura Vale'}};
+// the three lands as the full map shows them (the vale's crop ends at its north crest, the Hoarfrost Reach's begins just south of it)
+const LANDS={home:{x0:-HALF,x1:HALF,z0:HZ0,z1:HALF,name:'The home forest'},vale:{x0:HALF-40,x1:WX1,z0:HZ0,z1:HALF,name:'The Sakura Vale'},hoar:{x0:HALF+10,x1:WX1,z0:WZ0,z1:HZ0+30,name:'The Hoarfrost Reach'}};
 let mapLand=null;   // null: the land you are in
+const landHere=()=>inHoar(P.x,P.z)?'hoar':inVale(P.x)?'vale':'home';
+const landOpen=id=>id==='home'||(id==='vale'&&valeOpen())||(id==='hoar'&&northOpen());
+const landOfZone=zn=>zn.hoar?'hoar':zn.vale?'vale':'home';
+const nextLand=cur=>{ const order=['home','vale','hoar'].filter(landOpen), i=order.indexOf(cur); return order[(i+1)%order.length]; };
 function mapInit(){
   const c=document.createElement('canvas'); c.width=MAP.w; c.height=MAP.h;
   MAP.canvas=c; MAP.ctx=c.getContext('2d'); MAP.img=MAP.ctx.createImageData(MAP.w,MAP.h); MAP.zone=new Uint8Array(MAP.w*MAP.h);
@@ -17,7 +21,7 @@ function mapInit(){
 const _mc=new THREE.Color();
 // the map's outline: each land fades out along a wavy line 6-36 m inside its borders, so neither land is drawn as a rectangle
 function mapEdgeAlpha(x,z){
-  const e=x<HALF?Math.min(x-WX0,z-WZ0,WZ1-z,HALF-x):Math.min(x-HALF,z-WZ0,WZ1-z,WX1-x);
+  const e=x<HALF?Math.min(x-WX0,z-HZ0,WZ1-z,HALF-x):Math.min(x-HALF,z-WZ0,WZ1-z,WX1-x);
   const t=6+(noise2(x*0.011+3,z*0.011-5)*0.5+0.5)*26+noise2(x*0.05,z*0.05)*4;
   return clamp((e-t)/6)*255;
 }
@@ -47,7 +51,7 @@ function mapBuildStep(rows){
   const x=MAP.ctx; x.putImageData(MAP.img,0,0);
   const s=MAP.k;
   for(const V of VILS){
-    for(const H of V.houses){ x.save(); x.translate(mapX(H.x),mapZ(H.z)); x.rotate(-H.rot); x.fillStyle=V===VIL2?'#3e4650':colHex(H.roof); x.strokeStyle='rgba(0,0,0,.6)'; x.lineWidth=0.8; x.fillRect(-H.w/2*s,-H.d/2*s,H.w*s,H.d*s); x.strokeRect(-H.w/2*s,-H.d/2*s,H.w*s,H.d*s); x.restore(); }
+    for(const H of V.houses){ x.save(); x.translate(mapX(H.x),mapZ(H.z)); x.rotate(-H.rot); x.fillStyle=V===VIL2?'#3e4650':V===VIL3?'#4a3a2a':colHex(H.roof); x.strokeStyle='rgba(0,0,0,.6)'; x.lineWidth=0.8; x.fillRect(-H.w/2*s,-H.d/2*s,H.w*s,H.d*s); x.strokeRect(-H.w/2*s,-H.d/2*s,H.w*s,H.d*s); x.restore(); }
     x.fillStyle='#d8cfb8'; for(const st of V.stalls){ x.beginPath(); x.arc(mapX(st.x),mapZ(st.z),Math.max(1.2,1.6*s),0,TAU); x.fill(); }
     x.strokeStyle='#9fe0ff'; x.lineWidth=Math.max(1,1.2*s); x.beginPath(); x.arc(mapX(V.tele.x),mapZ(V.tele.z),Math.max(2,V.tele.r*s),0,TAU); x.stroke();
   }
@@ -84,6 +88,7 @@ function drawMinimap(){
   const k=W/(2*MM_R), at=(wx,wz)=>[(wx-P.x)*k+W/2,(wz-P.z)*k+W/2], inside=(wx,wz)=>Math.abs(wx-P.x)<MM_R&&Math.abs(wz-P.z)<MM_R;
   for(const m of MONS){ if(m.dead||!inside(m.x,m.z)) continue; const [a,b]=at(m.x,m.z); dot(x,a,b,(m.boss?4.5:m.aggro?2.8:2.1)*DPR,m.boss?'#c86bff':m.aggro?'#ff4a3a':'#e8904a'); }
   for(const r of REMOTES.values()){ if(r.tx===null||!inside(r.x,r.z)) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,3.2*DPR,'#6fb8ff'); }
+  if(GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||!GEAR.prof[NODE_KINDS[n.kind].prof]||!inside(n.x,n.z)) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.4*DPR,RES[NODE_KINDS[n.kind].res].col); }   // the nodes of the professions you know
   for(const q of questTargets()){
     if(q.ring) continue;
     const col=q.main?'#c89bff':q.ready?'#9fe08a':'#f2cf5a';
@@ -99,28 +104,31 @@ function drawMinimap(){
 /* ---- full map ---- */
 const mapC=$('#mapC'), mapCX=mapC.getContext('2d'), mapTip=$('#mapTip'), mapLandBtn=$('#mapLand');
 let mapView={w:0,h:0};
-const viewLand=()=>LANDS[mapLand||(inVale(P.x)?'vale':'home')];
+const viewLand=()=>LANDS[mapLand||landHere()];
 function sizeFullMap(){
   const L=viewLand(), ar=(L.x1-L.x0)/(L.z1-L.z0), box=$('#mapBox'), r=box.getBoundingClientRect();
   let w=Math.max(160,Math.floor(r.width)), h=Math.floor(w/ar); if(h>r.height){ h=Math.max(160,Math.floor(r.height)); w=Math.floor(h*ar); }
   mapC.style.width=w+'px'; mapC.style.height=h+'px'; mapC.width=Math.round(w*DPR); mapC.height=Math.round(h*DPR); mapView.w=w; mapView.h=h;
-  const other=inVale(P.x)?'home':'vale', cur=mapLand||(inVale(P.x)?'vale':'home');
-  mapLandBtn.hidden=!valeOpen(); mapLandBtn.textContent=cur===other?'Where I am':LANDS[other].name;
+  const here=landHere(), cur=mapLand||here, nx=nextLand(cur);
+  mapLandBtn.hidden=!valeOpen()||nx===cur; mapLandBtn.textContent=nx===here?'Where I am':LANDS[nx].name;
 }
 function drawFullMap(){
   const L=viewLand(), W=mapC.width, H=mapC.height, x=mapCX, k=W/(L.x1-L.x0), at=(wx,wz)=>[(wx-L.x0)*k,(wz-L.z0)*k];
   x.clearRect(0,0,W,H);
   if(!MAP.done){ x.fillStyle='rgba(238,240,226,.7)'; x.font=`${14*DPR}px Inter, system-ui, sans-serif`; x.textAlign='center'; x.fillText('Still mapping the forest…',W/2,H/2); return; }
   x.imageSmoothingEnabled=true; x.drawImage(MAP.canvas,mapX(L.x0),mapZ(L.z0),(L.x1-L.x0)*MAP.k,(L.z1-L.z0)*MAP.k,0,0,W,H);
-  const fs=Math.max(9,Math.min(13,W/DPR/48))*DPR, vale=L===LANDS.vale, mine=zn=>!!zn.vale===vale;
+  const fs=Math.max(9,Math.min(13,W/DPR/48))*DPR, land=L===LANDS.hoar?'hoar':L===LANDS.vale?'vale':'home', vale=land!=='home', mine=zn=>landOfZone(zn)===land;
   x.textAlign='center'; x.textBaseline='middle';
   const label=(t,cx,cy,size,col,bold)=>{ x.font=`${bold?'600 ':''}${size}px Inter, system-ui, sans-serif`; x.lineWidth=3*DPR; x.strokeStyle='rgba(10,12,10,.75)'; x.strokeText(t,cx,cy); x.fillStyle=col; x.fillText(t,cx,cy); };
   for(const zn of ZONES){ if(zn.boss||!mine(zn)) continue; const [cx,cy]=at(...(zn.label||zonePoint(zn,0,0.5))); label(zn.name,cx,cy-fs*0.55,fs,'#f2f0e4',true); label('Level '+(zn.lvText||zn.level),cx,cy+fs*0.6,fs*0.85,'#ffcf8a'); }
-  for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if(inVale(A.x)!==vale) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bd.def.level+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
-  { const V=vale?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(vale?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
-  { const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Tunnel':'Tunnel (sealed)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
-  for(const Lk of LAKES){ if(!!Lk.vale!==vale) continue; const [cx,cy]=at(Lk.x,Lk.z); label(Lk.name,cx,cy,fs*0.85,'#cfe8f6'); }
-  for(const B of BRIDGES){ if(B.kind!=='causeway'||B.name[0]!=='T'||inVale(B.x)!==vale) continue; const [cx,cy]=at(B.x,B.z); label(B.name,cx,cy+fs*1.1,fs*0.8,'#cfe8f6'); }   // the named causeways
+  for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.hoar?'hoar':inVale(A.x)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bd.def.level+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
+  { const V=land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
+  if(land!=='hoar'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Tunnel':'Tunnel (sealed)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
+  if(land==='vale'){ const [cx,cy]=at(PASS.x,PASS.ice); dot(x,cx,cy,3.5*DPR,northOpen()?'#9fe0ff':'#8a8078'); label(northOpen()?'Frostgate Pass':'Frostgate Pass (ice wall)',cx-fs*4.6,cy,fs*0.85,'#e8e0d0'); }
+  if(land==='hoar'){ const [cx,cy]=at(PASS.x,PASS.z1+50); label('Frostgate Pass',cx-fs*3.6,cy,fs*0.85,'#e8e0d0'); for(const Lk of FROST_LAKES){ const [lx,ly]=at(Lk.x,Lk.z); label(Lk.name,lx,ly,fs*0.85,'#cfe8f6'); }
+    if(GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||!GEAR.prof[NODE_KINDS[n.kind].prof]) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.6*DPR,RES[NODE_KINDS[n.kind].res].col); } }   // the nodes of the professions you know
+  for(const Lk of LAKES){ if(!!Lk.vale!==(land==='vale')||land==='hoar') continue; const [cx,cy]=at(Lk.x,Lk.z); label(Lk.name,cx,cy,fs*0.85,'#cfe8f6'); }
+  for(const B of BRIDGES){ if(B.kind!=='causeway'||B.name[0]!=='T'||inVale(B.x)!==vale||land==='hoar') continue; const [cx,cy]=at(B.x,B.z); label(B.name,cx,cy+fs*1.1,fs*0.8,'#cfe8f6'); }   // the named causeways
   // quests
   for(const q of questTargets()){
     if(q.ring){ x.save(); x.setLineDash([5*DPR,5*DPR]); x.strokeStyle='rgba(242,207,90,.8)'; x.lineWidth=1.5*DPR; x.beginPath(); const [cx,cy]=at(VIL.x,VIL.z); x.arc(cx,cy,q.ring*k,0,TAU); x.stroke(); x.restore(); continue; }
@@ -130,17 +138,21 @@ function drawFullMap(){
   for(const r of REMOTES.values()){ if(r.tx===null) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,4*DPR,'#6fb8ff'); label(r.name,a,b-fs*1.1,fs*0.85,'#cfe6ff'); }
   { const [a,b]=at(P.x,P.z); drawArrow(x,a,b,-P.face,8*DPR,'#fff4d0'); }
   const zn=zoneAt(P.x,P.z), V=vilAt(P.x,P.z);
-  $('#mapHere').textContent=vDist(P.x,P.z)<VR+12?(V===VIL2?'You are in Hanami':'You are in the village'):P.inTun?'You are in the mountain tunnel':zn?(zn.boss?'You are near '+zn.name:'You are in '+zn.name+' (level '+zn.level+')'):(V===VIL2?'You are near Hanami':'You are near the village');
+  const vn=V===VIL3?'Rimehold':V===VIL2?'Hanami':'the village';
+  $('#mapHere').textContent=vDist(P.x,P.z)<VR+12?'You are in '+vn:P.inTun?'You are in the mountain tunnel':zn?(zn.boss?'You are near '+zn.name:'You are in '+zn.name+' (level '+(zn.lvText||zn.level)+')'):inPass(P.x,P.z)?'You are in Frostgate Pass':'You are near '+vn;
 }
 function placeName(wx,wz){
-  if(vDist(wx,wz)<VR+8) return vilAt(wx,wz)===VIL2?'Hanami':'Village';
+  if(vDist(wx,wz)<VR+8) return vilAt(wx,wz)===VIL3?'Rimehold':vilAt(wx,wz)===VIL2?'Hanami':'Village';
+  for(const L of FROST_LAKES) if(inHoar(wx,wz)&&Math.hypot(wx-L.x,wz-L.z)<L.r*0.8) return L.name+' (frozen)';
   for(const L of LAKES) if(Math.hypot(wx-L.x,wz-L.z)<L.r*0.8) return L.name;
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if(Math.hypot(wx-A.x,wz-A.z)<A.r+6) return A.name+': '+bd.def.name+', level '+bd.def.level+' boss'; }
+  if(inPass(wx,wz)&&Math.abs(wz-PASS.ice)<6) return northOpen()?'Frostgate Pass (the ice wall has fallen)':'Frostgate Pass: the ice wall (shut until Akaoni falls)';
+  if(inPass(wx,wz)&&wz<HZ0+60) return 'Frostgate Pass';
   if(inTunnelCut(wx,wz)&&wx>TUN.p0-4&&wx<TUN.p1+4) return valeOpen()?'The mountain tunnel':'The mountain tunnel (sealed until the Rootwarden falls)';
   const B=bridgeAt(wx,wz,2); if(B) return B.road+' ('+B.name+')';
   const rd=roadAt(wx,wz,3); if(rd) return rd.name;
   const zn=zoneAt(wx,wz); if(zn) return zn.key==='boss'?'Rootwarden Barrens':zn.boss?zn.name:zn.name+': level '+(zn.lvText||zn.level)+' ('+MON_DEFS.filter(d=>defZone(d)===zn).map(d=>d.name).join(', ')+')';
-  return edgeName(wx,wz)||(inVale(wx)?'Hanami meadows':'Village meadows');
+  return edgeName(wx,wz)||(inHoar(wx,wz)?'The snowfields':inVale(wx)?'Hanami meadows':'Village meadows');
 }
 // the lands' edges by their names in docs/WORLD.md (shaped in shared/terrain.js)
 function edgeName(x,z){
@@ -148,11 +160,16 @@ function edgeName(x,z){
   if(!inVale(x)){
     if(Math.abs(z-REDGATE_Z)<16&&x-WX0<REDGATE_CL+45) return 'Redgate Canyon (sealed by a rock fall)';
     if(x-WX0<sunwallLine(z)+18) return 'The Sunwall';
-    if(z-WZ0<62) return 'The Greyspine foothills';
+    if(z-HZ0<62) return 'The Greyspine foothills';
     if(HALF-x<60) return 'The Vale Wall';
+  } else if(inHoar(x,z)){
+    if(x-HALF<60) return 'The Vale Wall';
+    if(z-WZ0<62) return 'The glacier wall';
+    if(WX1-x<40) return 'The ice cliffs';
+    if(z>HZ0-62) return 'The Frostwall';
   } else {
     if(x-HALF<60) return 'The Vale Wall';
-    if(z-WZ0<62) return 'The slopes of the Hoarfrost Reach';
+    if(z-HZ0<62) return 'The slopes of the Hoarfrost Reach';
   }
   return null;
 }
@@ -163,7 +180,7 @@ function mapPointer(e){
   const br=$('#mapBox').getBoundingClientRect(); mapTip.style.left=(e.clientX-br.left)+'px'; mapTip.style.top=(e.clientY-br.top)+'px';
 }
 mapC.addEventListener('pointermove',mapPointer); mapC.addEventListener('pointerdown',mapPointer); mapC.addEventListener('pointerleave',()=>{ mapTip.hidden=true; });
-mapLandBtn.addEventListener('click',()=>{ const here=inVale(P.x)?'vale':'home'; mapLand=(mapLand&&mapLand!==here)?null:(here==='vale'?'home':'vale'); sizeFullMap(); drawFullMap(); });
+mapLandBtn.addEventListener('click',()=>{ const here=landHere(), nx=nextLand(mapLand||here); mapLand=nx===here?null:nx; sizeFullMap(); drawFullMap(); });
 function toggleMap(){
   if($('#map').hidden){ mapLand=null; openPanel('map'); sizeFullMap(); drawFullMap(); MAP.fullT=0; }
   else closePanels();

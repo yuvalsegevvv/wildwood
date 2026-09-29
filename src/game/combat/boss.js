@@ -1,4 +1,4 @@
-//@ The bosses, client side (Rootwarden, Akaoni, Kyuubi): telegraph visuals, root spikes, slam waves, shield bubble, roars, boss bar
+//@ The bosses, client side (Rootwarden, Akaoni, Kyuubi, Ymrik, Vetrmaw): telegraph visuals, root spikes, slam waves, shield bubble, roars, boss bar
 /* The fight itself runs on the world server (src/server/boss.js). The client draws what it is told:
    'tele' events open a telegraph (pink cone = cleave, red circle = roots, orange circle = slam),
    'tend' closes it (with spikes or a shock wave if it went off), and each snapshot carries every boss's state
@@ -56,7 +56,8 @@ function updateBossFx(dt){
   for(const e of BOSS.tele.values()){ e.t+=dt; const k=Math.min(1,e.t/e.dur); e.fill.scale.setScalar(Math.max(0.01,k*e.r)); e.edge.material.opacity=0.55+0.4*Math.sin(t*14); }
   const m=BOSS.m;
   BOSS.shield.visible=!!(m&&!m.dead&&m.g.visible&&BOSS.immune);
-  if(BOSS.shield.visible){ BOSS.shield.position.set(m.x,m.y+m.T.height*0.5,m.z); BOSS.shield.scale.setScalar(m.T.height*0.62*(1+Math.sin(t*3)*0.03)); }
+  if(BOSS.shield.visible){
+    const bd=bossInfo(m); if(bd&&BOSS.shieldFor!==bd){ BOSS.shieldFor=bd; BOSS.shield.material.color.setHex(bd.totem.pal.crystal||0x7af0a0); } BOSS.shield.position.set(m.x,m.y+m.T.height*0.5,m.z); BOSS.shield.scale.setScalar(m.T.height*0.62*(1+Math.sin(t*3)*0.03)); }
 }
 function bossVisual(m,dt){
   const bs=m.bs||{}, gl=m.mat.userData.glow, en=bs.enraged?(0.25+0.2*Math.sin(t*6)):0, st=bs.stunned?0.25:0;

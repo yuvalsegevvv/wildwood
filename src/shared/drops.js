@@ -15,7 +15,10 @@ const MAT_NAMES={slime:'Slime Goo',shroom:'Spore Cap',beetle:'Beetle Shell',boar
   chieftain:"Chieftain's Totem",ancient:'Ancient Sap',crab:'Crab Claw',tideslime:'Sea Glass',scarab:'Scarab Wing',ramboar:'Ram Horn',cragwarden:'Crag Moss',sakuraslime:'Blossom Jelly',kappa:'Kappa Dish',kodama:'Spirit Bell',kabuto:'Kabuto Horn',
   kitsune:'Foxfire Ash',yamaboar:'Mountain Hide',ashigaru:'Lacquered Plate',bamboo:'Singing Bamboo',onibi:'Blue Flame',jorogumo:'Spider Silk',
   oni:'Oni Fang',yurei:'Yurei Shroud',shadowfox:'Night Fur',jadeslime:'Jade Shard',blueoni:'Storm Horn',tengu:'Tengu Feather',samurai:'Samurai Crest',
-  goldkabuto:'Gold Shell',sakuratreant:'Elder Blossom',raiju:'Raiju Spark',boss:'Rootwarden Heart',akaoni:'Gate Demon Horn',kyuubi:'Kyuubi Tail'};
+  goldkabuto:'Gold Shell',sakuratreant:'Elder Blossom',raiju:'Raiju Spark',boss:'Rootwarden Heart',akaoni:'Gate Demon Horn',kyuubi:'Kyuubi Tail',
+  frostslime:'Frost Jelly',snowboar:'Snow Tusk',icebeetle:'Ice Shell',wolf:'Winter Pelt',reaver:'Reaver Rune',rimewisp:'Rime Spark',rimetreant:'Rimebark',yeti:'Yeti Fur',
+  draugr:'Draugr Rune',icewraith:'Wraith Shroud',lynx:'Lynx Claw',crawler:'Glacier Shard',frosttroll:'Troll Tooth',blizzhound:'Hound Fang',revenant:'Revenant Plate',
+  barrowwight:'Barrow Ash',alphawolf:'Alpha Fang',glaciergolem:'Golem Core',ymrik:"Rimeking's Crown",vetrmaw:'Wyrm Scale'};
 const DROP_CHANCE=0.35, BOSS_DROPS=3, MAT_MAX=999, BOSS_UP=2;
 const MATS={}, MAT_IDS=[];
 const lighten=c=>'#'+[16,8,0].map(sh=>{ const v=(c>>sh)&255; return Math.round(v+(255-v)*0.35).toString(16).padStart(2,'0'); }).join('');
@@ -30,7 +33,7 @@ const idHash=str=>[...str].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7);
 function upgradeNeeds(id,to){
   const s=skillDef(id); if(!s||s.drop||!(to>=2)||to>SKILL_MAX_LV) return null;   // (boss skills cannot be upgraded yet)
   if(s.up&&s.up[to]) return s.up[to];
-  const lv=Math.min(MAX_ZONE_LV,(s.slot==='passive'?PASSIVE_LV:s.lv)+2*(to-1)), pool=MON_DEFS.filter(d=>d.level===lv&&!d.zone), d=pool.find(x=>elOf(x)===elOf(s))||pool[idHash(id)%pool.length];
+  const lv=Math.min(VALE_TOP_LV,(s.slot==='passive'?PASSIVE_LV:s.lv)+2*(to-1)), pool=MON_DEFS.filter(d=>d.level===lv&&!d.zone), d=pool.find(x=>elOf(x)===elOf(s))||pool[idHash(id)%pool.length];
   const mats=[{id:d.id,n:UP_COUNT[to]}];
   if(to===SKILL_MAX_LV) mats.push({id:lv>=21?'kyuubi':lv>=16?'akaoni':'boss',n:BOSS_UP});
   return {coins:Math.round(UP_COINS[s.slot]*Math.pow(to-1,1.7)/10)*10,mats};

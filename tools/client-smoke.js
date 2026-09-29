@@ -2,7 +2,7 @@
 // client code. Build first (python3 build.py). Needs the three package (npm install). Prints PASS/FAIL lines.
 // Usage: node tools/client-smoke.js
 const {bootClient}=require('./headless');
-const c=bootClient({expose:['NET','startSolo','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart']});
+const c=bootClient({expose:['NET','startSolo','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const el=s=>document.querySelector(s);
 (async()=>{
@@ -40,10 +40,34 @@ const el=s=>document.querySelector(s);
         for(let j=0;j<40;j++) G.updateCombat(0.033);
         if(!made) bad.push(id);
       }
-      ok('all 18 boss skills draw without errors (rings, arcs, projectiles, zones, beams, chains, auras)',!bad.length&&G.AREA_FX.size===0,bad.length?'nothing drawn for '+bad.join(', '):ids.length+' skills'); }
+      ok('all boss skills draw without errors (rings, arcs, projectiles, zones, beams, chains, auras)',!bad.length&&G.AREA_FX.size===0,bad.length?'nothing drawn for '+bad.join(', '):ids.length+' skills'); }
   }
   G.openChat(); G.chatText.value='hi'; G.sendChat(); await wait(300); ok('chat line arrives',c.G().CHAT.lines.length>0);
   for(let i=0;i<150&&!c.G().MAP.done;i++) await wait(100); ok('world map painted',c.G().MAP.done);
   G.NET.send({t:'dev',cmd:'weather',v:'rain'}); await wait(300); for(let i=0;i<60;i++){ G.WX.t+=0.5; G.updateWeather(0.5); } ok('rain fades in',G.WX.inten>0.9);
+  // ---- the Hoarfrost Reach (levels 22-30): the client side of the third land ----
+  G.NET.send({t:'dev',cmd:'weather',v:'clear'}); G.NET.send({t:'dev',cmd:'level',v:24}); G.NET.send({t:'dev',cmd:'vale',v:2}); G.NET.send({t:'dev',cmd:'north',v:2}); G.NET.send({t:'dev',cmd:'prof'}); G.NET.send({t:'dev',cmd:'coins'}); await wait(700); G=c.G();
+  ok('the server tells the client about the ice wall and the professions',G.GEAR.north===2&&G.northOpen()&&G.GEAR.prof.mining&&G.GEAR.prof.gathering);
+  G.P.x=G.VIL3.x+3; G.P.z=G.VIL3.z+3; G.P.y=G.getH(G.P.x,G.P.z); for(let i=0;i<50;i++) G.updateHoarfrost(0.1);   // (the wall sinks for 3.4 s when the server says it opened)
+  { const N0=G.GEAR.north, W=G.PASS, o1={x:W.x,z:W.ice-1,inTun:false}, o2={x:W.x+40,z:G.HZ0+5,inTun:false}, o3={x:0,z:G.HZ0-5,inTun:false}, o4={x:W.x,z:W.ice-1,inTun:false};
+    G.GEAR.north=0; G.worldBounds(o1,W.x,0.32,W.ice+2); G.GEAR.north=1; G.worldBounds(o4,W.x,0.32,W.ice+2); G.worldBounds(o2,W.x+40,0.32,G.HZ0+20); G.worldBounds(o3,0,0.32,G.HZ0+30); G.GEAR.north=N0;
+    ok('the sealed ice wall stops you in the pass, an open one does not; the north walls of the vale and the home forest hold',o1.z>=W.ice+0.79&&o4.z<W.ice-0.9&&o2.z>=G.HZ0+13.9&&o3.z>=G.HZ0+13.9,'sealed '+o1.z.toFixed(1)+', open '+o4.z.toFixed(1)+', wall '+o2.z.toFixed(1)+', forest '+o3.z.toFixed(1)); }
+  ok('the ice wall is hidden once the way is open',G.HOAR.wall&&!G.HOAR.wall.visible);
+  ok('Rimehold plays its own music and Frostgate Pass its own zone label',G.musicThemeHere()==='rimehold'&&G.landHere()==='hoar');
+  G.P.x=G.PASS.x; G.P.z=G.PASS.z1-40; ok('the Reach\'s music (levels 22-26) outside the village',G.musicThemeHere()==='hoar1');
+  { const h4=G.ZONES.find(z=>z.key==='h29'); G.P.x=h4.x; G.P.z=h4.z; ok('and the harder ranges another (27-30)',G.musicThemeHere()==='hoar2'); }
+  G.openLodge(); { const h=el('#loBody').innerHTML; ok('the Wayfarers\' Lodge lists three professions to learn or learned and potion use as coming later',(h.match(/class="lo-row/g)||[]).length===4&&/Coming later/.test(h)&&(h.match(/>Learned</g)||[]).length===3); }
+  G.P.x=G.VIL3.tele.x; G.P.z=G.VIL3.tele.z; G.P.y=G.getH(G.P.x,G.P.z); G.openTravel();
+  { const h=el('#trBody').innerHTML; ok('stepping on a circle opens a window with every village: this one marked, the others open to travel',G.nearCircle()===G.VIL3&&(h.match(/data-to=/g)||[]).length===3&&/You are here/.test(h)&&(h.match(/Travel here/g)||[]).length===2&&(h.match(/<button[^>]*disabled/g)||[]).length===1); }
+  await wait(400); G.NET.send({t:'warp',to:'hanami'}); await wait(500); G=c.G();   // (the server must have heard where you stand) ok('choosing Hanami in the window carries you there',Math.hypot(G.P.x-G.VIL2.x,G.P.z-G.VIL2.z)<G.VIL2.r);
+  ok('a node is drawn for every resource node',G.NODE_VIEWS.length===G.NODES.length&&G.NODES.length>=60);
+  { const n=G.NODES.find(n=>n.kind==='snowmoss'); G.P.x=n.x+1; G.P.z=n.z; G.P.y=G.getH(G.P.x,G.P.z); G.NET.send({t:'pos',p:[G.P.x,G.P.y,G.P.z,0,0,0]}); await wait(300);
+    ok('walking up to a node offers to gather it (the prompt names the profession\'s verb)',G.nearNode()===n.i&&/^Press .* to gather Snowmoss$/.test(G.nodePrompt(n.i)),G.nodePrompt(n.i));
+    G.gatherNode(n.i); await wait(700); G=c.G(); ok('gathering it fills gear.res, takes the node and hides it',G.GEAR.res.snowmoss>=1&&G.NODE_TAKEN.has(n.i)&&G.nearNode()<0); }
+  // snow instead of rain in the Reach, rain everywhere else
+  G.NET.send({t:'dev',cmd:'weather',v:'rain'}); await wait(300); G.camera.position.set(G.VIL3.x,G.VIL3.h+3,G.VIL3.z); for(let i=0;i<80;i++){ G.WX.t+=0.5; G.updateWeather(0.5); }
+  ok('in the Reach the rain becomes snowfall',G.WX.snow>0.95&&G.snowfall.visible&&!G.rain.visible);
+  G.camera.position.set(0,10,0); for(let i=0;i<40;i++){ G.WX.t+=0.5; G.updateWeather(0.5); } ok('and in the forest it is rain again',G.WX.snow<0.05&&G.rain.visible&&!G.snowfall.visible);
+  G.NET.send({t:'dev',cmd:'weather',v:'clear'});
   c.stop(); console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);
 })();

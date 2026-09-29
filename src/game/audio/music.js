@@ -1,4 +1,4 @@
-//@ Background music: one theme per place (both villages, three home ranges, two vale ranges, each boss), crossfaded; recorded tracks (music-*) or generative
+//@ Background music: one theme per place (the three villages, three home ranges, two vale ranges, two Hoarfrost ranges, each boss), crossfaded; recorded tracks (music-*) or generative
 /* ---------- background music ----------
    A small step sequencer (8 steps a bar) plays the theme of where you are. Each theme sets its tempo (beat = seconds
    per step), chords (chordBars bars each), a scale for melodies, and patterns ('x' hit, 'o' soft, '.' rest) for the
@@ -10,11 +10,11 @@
    silent until it has arrived, the sequencer takes over if it can't be loaded) replaces that theme's sequencer. It loops
    with a MUSIC_XF-second crossfade from its end back to its start; MUSIC_FILE_VOL matches it to the synthesised themes.
    At night the village track goes through a lowpass (MUSIC_NIGHT_LP Hz) and plays softer: the darker night version.
-   MUSIC_FILE_OF lets several themes share one file (music-wild for all home ranges, music-vale for both vale ranges); moving between themes that share
+   MUSIC_FILE_OF lets several themes share one file (music-wild for all home ranges, music-vale for both vale ranges, music-hoar for both Hoarfrost ranges); moving between themes that share
    a file keeps the track playing instead of restarting it. MUSIC_LOOP_FROM (seconds): later passes of a file restart
    there instead of at 0, so a track with a quiet build-up (the bosses) plays it once, then loops its loud part. */
 const MUSIC_XF=5, MUSIC_FILE_VOL=0.35, MUSIC_NIGHT_LP=1500;
-const MUSIC_FILE_OF={wild1:'wild',wild2:'wild',wild3:'wild',vale1:'vale',vale2:'vale'};
+const MUSIC_FILE_OF={wild1:'wild',wild2:'wild',wild3:'wild',vale1:'vale',vale2:'vale',hoar1:'hoar',hoar2:'hoar'};   // (the four songs still to make: music-rimehold, music-hoar, music-boss26, music-boss30, assets/audio/README.md)
 const MUSIC_LOOP_FROM={boss15:65.8,boss20:63.5,boss25:48.85};   // points that sound most like each track's ending
 const musicFileKey=th=>th&&MUSIC_FILE_OF[th]||th;
 const mtof=m=>440*Math.pow(2,(m-69)/12);
@@ -52,6 +52,26 @@ const THEMES={
   vale2:{beat:0.3,chordBars:2,chords:[[38,45,50,51],[43,50,55,58],[34,41,46,50],[39,46,51,55]],scale:[62,63,67,69,70,74,75,79],
     pad:{type:'sawtooth',vol:0.012,ff:700},drone:38,bass:'x.x.x...',bassType:'sawtooth',arp:{pat:'x.x.xx.x',inst:'shamisen',vol:0.016,from:'scale'},lead:{inst:'shaku',p:0.1},
     drums:{taiko:'x..x..x.',wood:'....o..o'}},
+  // Rimehold: A aeolian, a slow harp over a low drone, a flute far off, one soft frame drum: the long night and the warm hall
+  rimehold:{beat:0.62,chordBars:2,chords:[[45,52,57,60],[41,48,53,57],[43,50,55,59],[40,47,52,55]],scale:[69,72,74,76,79,81,84],
+    pad:{type:'triangle',vol:0.026,ff:900,attack:3},drone:33,bass:'x.......',arp:{pat:'x...x.x.',inst:'pluck',vol:0.02,from:'scale'},lead:{inst:'flute',p:0.13},
+    drums:{taiko:'o.......'}},
+  // Hoarfrost levels 22-26: cold and sparse, bells over a soft pad, a flute in the wind
+  hoar1:{beat:0.44,chordBars:2,chords:[[45,52,57,60],[41,48,53,57],[43,50,55,59],[40,47,52,55]],scale:[69,72,74,76,79,81,84],
+    pad:{type:'sine',vol:0.026,ff:800,attack:3.5},bass:'x.......',arp:{pat:'x...x...',inst:'bell',vol:0.013,from:'scale',echo:true},lead:{inst:'flute',p:0.12},
+    drums:{hat:'......o.'}},
+  // Hoarfrost levels 27-30: E phrygian, a low drone and a slow drum, the wind under it
+  hoar2:{beat:0.34,chordBars:2,chords:[[40,47,52,55],[41,48,53,57],[38,45,50,53],[40,47,52,55]],scale:[64,65,67,69,71,72,76,77],
+    pad:{type:'sawtooth',vol:0.012,ff:600,attack:3},drone:28,bass:'x.x...x.',bassType:'sawtooth',arp:{pat:'x..x..x.',inst:'pluck',vol:0.015,from:'scale'},lead:{inst:'flute',p:0.09,oct:-12},
+    drums:{kick:'x...x...',taiko:'o...o...'}},
+  // Ymrik the Rimeking: horn-like stabs, a marching bass, frame drums
+  boss26:{beat:0.21,chordBars:1,chords:[[38,45,50],[36,43,48],[41,48,53],[38,45,50]],scale:[74,77,79,81,84,86],
+    stab:'x..x....',pad:{type:'sawtooth',vol:0.017,ff:1400},bass:'xxxxxxxx',bassType:'sawtooth',arp:{pat:'x.x.x.x.',inst:'pluck',vol:0.012,ff:2200,oct:24},
+    motif:[74,77,76,72,74,69,72,74],lead:{inst:'bell',p:0.85},drums:{kick:'x..xx...',snare:'..x...x.',taiko:'x.......'}},
+  // Vetrmaw the frost wyrm: fast and fierce, taiko and bells over a roaring bass
+  boss30:{beat:0.185,chordBars:1,chords:[[33,40,45,48],[36,43,48,52],[31,38,43,46],[33,40,45,48]],scale:[81,84,86,88,91,93],
+    stab:'x.x..x..',pad:{type:'sawtooth',vol:0.017,ff:1500},bass:'x.xxx.xx',bassType:'sawtooth',arp:{pat:'xxxxxxxx',inst:'bell',vol:0.011,from:'scale',echo:true},
+    motif:[81,84,88,86,84,81,79,81],lead:{inst:'bell',p:0.9},drums:{taiko:'x.xx.xx.',kick:'x...x...',snare:'..x...x.',hat:'oooooooo'}},
   // Akaoni: war drums, fast shamisen, power-chord stabs
   boss20:{beat:0.2,chordBars:1,chords:[[38,45,50],[39,46,51],[43,50,55],[38,45,50]],scale:[74,75,79,81,82,86],
     stab:'x..x..x.',pad:{type:'sawtooth',vol:0.018,ff:1300},bass:'x.x.xxx.',bassType:'sawtooth',arp:{pat:'xxxxxxxx',inst:'shamisen',vol:0.012,from:'scale'},
@@ -63,10 +83,11 @@ const THEMES={
 };
 // which theme fits where you are: a boss you are fighting, then the village you are in, then the zone's level
 function musicThemeHere(){
-  const m=BOSS.m; if(m&&BOSS.engaged&&!m.dead){ const A=arenaOf(m); if(Math.hypot(P.x-A.x,P.z-A.z)<A.r+30) return m.def.level>=25?'boss25':m.def.level>=20?'boss20':'boss15'; }
-  const V=vilAt(P.x,P.z); if(vDist(P.x,P.z)<VR+22) return V===VIL2?'hanami':'village';
+  const m=BOSS.m; if(m&&BOSS.engaged&&!m.dead){ const A=arenaOf(m); if(Math.hypot(P.x-A.x,P.z-A.z)<A.r+30) return m.def.level>=30?'boss30':m.def.level>=26?'boss26':m.def.level>=25?'boss25':m.def.level>=20?'boss20':'boss15'; }
+  const V=vilAt(P.x,P.z); if(vDist(P.x,P.z)<VR+22) return V===VIL3?'rimehold':V===VIL2?'hanami':'village';
   if(P.inTun) return MUSIC.theme||'wild3';
   const zn=zoneAt(P.x,P.z), L=zn?zn.level:0;
+  if(inHoar(P.x,P.z)) return L>=27?'hoar2':'hoar1';
   if(inVale(P.x)) return L>=21?'vale2':'vale1';
   return L>=12?'wild3':L>=7?'wild2':'wild1';
 }

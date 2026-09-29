@@ -2,7 +2,7 @@
 
 A multiplayer 3D forest RPG in the browser (three.js r128): an 880 m streamed procedural forest with a river and
 three lakes, a village with villagers and shops, 19 monster zones with 555 monsters (40 of each level-1 kind down
-to 25 of each level-15 kind, and level 16-20 crabs, tide slimes, scarabs, ram-horned boars and crag wardens on the forest's edges), dirt roads, a river bridge and plank causeways over the drowned roads, a main quest line (a sick sibling, two acts, Wildwood and the Sakura Vale), three classes, equipment in 5 rarities with a drag-and-drop inventory and a merge forge, quests, a boss, a minimap
+to 25 of each level-15 kind, and level 16-20 crabs, tide slimes, scarabs, ram-horned boars and crag wardens on the forest's edges), dirt roads, a river bridge and plank causeways over the drowned roads, a main quest line (a sick sibling, three acts: Wildwood, the Sakura Vale and the snowbound Hoarfrost Reach with its village Rimehold, where rain falls as snow and the Wayfarers' Lodge teaches mining, woodcutting and gathering), teleport circles that let you choose among the three villages, three classes, equipment in 5 rarities with a drag-and-drop inventory and a merge forge, quests, a boss, a minimap
 and world map (N), a soundtrack of AI-generated songs (one per area and boss), and synthesised sound effects.
 
 **Developing with an AI agent?** Start with [CLAUDE.md](CLAUDE.md) (guide) and [docs/FILES.md](docs/FILES.md) (file map);
@@ -171,11 +171,15 @@ Every area has its own song, made with Suno (free plan: non-commercial use only)
 | Sakura Vale, levels 16-25 | `music-vale.m4a` |
 | Akaoni (level 20 boss) | `music-boss20.m4a` |
 | Kyuubi (level 25 boss) | `music-boss25.m4a` |
+| Rimehold *(song still to make)* | `music-rimehold.m4a` |
+| Hoarfrost Reach, levels 22-30 *(still to make)* | `music-hoar.m4a` |
+| Ymrik (level 26 boss) *(still to make)* | `music-boss26.m4a` |
+| Vetrmaw (level 30 boss) *(still to make)* | `music-boss30.m4a` |
 
 Songs loop with a 5 s crossfade; the boss songs play their build-up once and then loop their loud part
 (`MUSIC_LOOP_FROM`). They are not in the page (9 MB): the build copies them to `dist/audio/` under content-hashed names, the client fetches a track the first
 time its theme plays, keeps it (immutable HTTP caching, Cache Storage) so it is downloaded once per client, and decodes it only while it plays.
-A theme without a file falls back to the old generative music. How to add or replace a song, and how to encode it:
+A theme without a file falls back to the old generative music (the four Hoarfrost songs above do not exist yet: the briefs for them are in [assets/audio/README.md](assets/audio/README.md)). How to add or replace a song, and how to encode it:
 [assets/audio/README.md](assets/audio/README.md). Code: `src/game/audio/music.js`.
 
 ## Chat and names

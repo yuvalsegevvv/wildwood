@@ -2,7 +2,7 @@
 
 Read this before adding a region, a village, a boss, lore, or anything that says where a place is or what lies beyond it.
 It turns the owner's hand-drawn draft of the home continent into a geography that makes sense, and sets the rules that keep
-future regions consistent. **It is a design document, not a description of the code**: only Wildwood and the Sakura Vale exist in
+future regions consistent. **It is a design document, not a description of the code**: only Wildwood, the Sakura Vale and the Hoarfrost Reach exist in
 the game today, and the game's current layout does not have to match this map yet (section 8 says how the two meet).
 
 **Decided by the owner**: the shape of the continent, which region borders which, where the settlements are, the order of the
@@ -27,7 +27,7 @@ they are out of scope for now, but the Stormhorn's lighthouse is where the way t
 |---|---|---|---|---|---|
 | wildwood - starter forest | **Wildwood** | 1-15 (built) | lowland basin, rivers to the Crownsea | mild, rainy (monsoon) | the village |
 | hanami - japanese zone | **Sakura Vale** | 16-25 (built) | temperate coastal vale, glacier-fed rivers | mild, four seasons | Hanami |
-| snowy zone | **Hoarfrost Reach** | 22-30 | high frozen plateau: tundra, taiga fringe, glaciers | polar | Rimehold |
+| snowy zone | **Hoarfrost Reach** | 22-30 (built) | high frozen plateau: tundra, taiga fringe, glaciers | polar | Rimehold |
 | mountain zone | **the Greyspine** | 26-32 | young alpine range, snow above the snowline, fjords | alpine | Highmark |
 | desert | **Sunscar** | 28-36 | raised plateau desert behind an escarpment, one river | hot and dry, cold nights | **Glasswell, an oasis city** |
 | narrow cliff shore | **Stormhorn** | 30-40 | narrow hooked peninsula of sea cliffs and stacks | cold, foggy, gales | Gullrest |
@@ -108,13 +108,16 @@ Temperate vale with cherry, maple, bamboo and cedar; Japanese folklore (kodama, 
 Bosses: Akaoni at the Demon Gate (20), Kyuubi at the Foxfire Shrine (25). Its rivers come from the Hoarfrost glaciers. Add later if
 wanted: hot springs (onsen) near the northern border, where the land starts to climb.
 
-### Hoarfrost Reach (levels 22-30)
+### Hoarfrost Reach (built, levels 22-30)
+**Built** (section 8 has the numbers): Frostgate Pass and its ice wall, Rimehold, nine zones, two bosses, snow instead of rain, the Wayfarers' Lodge. What follows is the design it was built from; where the game chose differently the line says so.
+
 - **Look**: white plateau, blue glacier ice, frozen lakes, dwarf birch and a taiga fringe of dark spruce on its southern edge, aurora at night.
 - **Culture** *(proposed)*: Nordic-inspired: longhouses of timber and turf, rune stones. Rimehold is a walled town of hunters and ice-fishers.
 - **Monsters**: Frost Slime, Snow Boar, Ice Beetle, Frost Goblin (reaver), Frozen Treant; local: ice wolves, yeti, wendigo-like wraiths, frost wyrm.
 - **Elements**: water (ice), air, dark (the polar night).
 - **Weather**: snowfall, blizzards (short sight range), clear cold nights.
-- **Boss ideas**: a mid boss in an ice cave (~26); the final boss (30), a frost giant or a wyrm frozen in a glacier.
+- **Boss ideas**: a mid boss in an ice cave (~26); the final boss (30), a frost giant or a wyrm frozen in a glacier. **Built**: **Ymrik, the Rimeking** (a frost giant, level 26, in his ice hall) and **Vetrmaw, the frost wyrm** (level 30, nesting beside the wreck of the iron bird, `STORY.md`).
+- **The wonder** (rule 9 of section 6): the plateau's wonder is the iron bird, a wreck the hunters call a dragon's skeleton; the lore explains it (`STORY.md`).
 
 ### The Greyspine (levels 26-32)
 - **Look**: alpine meadows, pine and larch, scree, waterfalls, snowfields above the snowline, fjords with cold dark water on the south-west.
@@ -227,8 +230,8 @@ Wildwood 1-15 → Sakura Vale 16-25 → Hoarfrost Reach 22-30 → Greyspine 26-3
 
 | Road | Opened by |
 |---|---|
-| Vale → Hoarfrost (the glacier ice wall north of Hanami) | Akaoni (20) |
-| Hoarfrost → Greyspine (the glacier valley) | Kyuubi (25) or the Hoarfrost's mid boss (26) |
+| Vale → Hoarfrost (the ice wall in Frostgate Pass, north of Hanami) | Akaoni (20) **(built: `gear.north`)** |
+| Hoarfrost → Greyspine (the glacier valley) | Kyuubi (25) or the Hoarfrost's mid boss (26): **Ymrik (26) is chosen; the valley is not built yet** |
 | Greyspine → Sunscar (the river road) | the Greyspine's first boss (29) |
 | Greyspine → Stormhorn (the neck pass) and → Rootdeep (Highmark's mine) | the Greyspine's final boss (32) |
 | Sunscar → Amber Reach (the dry riverbed) and Redgate back to Wildwood | the Sunscar's final boss (36) |
@@ -308,13 +311,40 @@ storyline). What it means for the geography:
     signs and milestone, a grey wreck on the shore, the Demon Gate's stone, a roadside shrine, **the ice wall** closing the North Road).
     Trees and bushes keep clear of them (`storyClear`).
   - The lake in the west forest is **Mistmere** (the Greywater name belongs to the Bight).
+- **The Hoarfrost Reach** (what it leaves out is commented in `docs/NOT-BUILT.md`) (`shared/hoarfrost.js`, heights in `shared/terrain.js`, dressing in `game/village/buildings-hoar.js`):
+  - The world rectangle grew 600 m north (`NORTH_D`, `HZ0` = the vale's and forest's old north edge at z = -440, `WZ0` = -1040): 1430 x 1480 m. The
+    part north of the home forest is the Greyspine's mountains (`greyspineHeight`, cheap, nobody can walk there).
+  - **Shape**: the vale's north rim goes on as a crest (~80-90 m) along z = HZ0 and eases down over ~60 m onto the plateau (~50 m up, rolling white
+    domes, `hoarHeight`), with a glacier wall in the north, the Vale Wall in the west and sea cliffs in the east. Three **frozen lakes**
+    (`FROST_LAKES`: Frostmere, Mirrorice, Blue Tarn) are flat, walkable ice, not water.
+  - **Frostgate Pass** (`PASS`, at x = 636): a canyon carved through the crest, its floor climbing from the vale (3 m) to the plateau (58 m) over 185 m
+    between walls 30-40 m above it. **The ice wall** stands across it at `PASS.ice` until Akaoni falls (`gear.north` 1; stopped by
+    `frostWall` in `player/movement.js` and by `setPos` on the server; it sinks with a rumble when the wall opens). Walking into Rimehold sets
+    `gear.north` 2 (its teleport circle wakes).
+  - **Rimehold** (`VIL3`, the third village, at (690, -610), 30 m radius, entrance turned to the pass): Nordic timber houses with turf roofs under snow, iron braziers, a
+    great fire, a gate with shields and rune stones, the Wayfarers' Lodge yard. The same jobs as the other villages plus the Lodge.
+  - **Zones** (9 Voronoi cells like the vale's, keys `h22`..`h30`, route: 22 Rimewood Edge, 23 Whitebirch Flats, 24 Frostmere Shore, 25 Hunters' Wold,
+    26 the Rimeking's Hall, 27 Glacier Tongue, 28 Blizzard Steppe, 29 Bonefrost Barrow, 30 the Wyrm's Glacier), two monster kinds each, 12 of every
+    kind (216 monsters): frost slime, snow boar, ice beetle, winter wolf, frost reaver, rime wisp, rimebark treant, yeti, draugr, ice wraith,
+    snow lynx, glacier crawler, frost troll, blizzard hound, rime revenant, barrow wight, frostfang alpha, glacier golem (elements water, air, dark).
+    Two boss arenas: the Rimeking's Hall (an ice-pillar ring and a great ice arch) and the Wyrm's Nest (the iron bird's wreck, ice mounds, warm air).
+  - **Roads**: the North Road runs on to the ice wall, the Frost Road through the pass to Rimehold, the Hall Road and the Wyrm Road to the two halls.
+  - **Weather**: the server still has one weather for everyone; the client turns rain into snowfall and a storm into a blizzard whenever the camera is in the
+    Reach (`WX.snow`, `game/world/weather.js`; a lower, whiter sky, wind instead of patter, `audio/rain.js`). The plateau is white: snow, blue ice, tundra
+    patches, dark needles under the spruce of the southern fringe (`hoarColor`); the aurora on clear nights (`game/world/aurora.js`); frosted spruce, dwarf birch, snow-capped boulders; no petals, birds, crickets
+    or frogs; wolf howls at night; a soft crunch underfoot.
+  - **Travel**: the teleport circle in each village opens a window to choose where to go (`CIRCLES`, `ui/travel.js`, `warp{to}`).
+  - **Cost**: the heightmap grew from 716 x 441 to 716 x 741 cells (client, full detail), the terrain is drawn in 64 x 128-cell tiles culled by distance
+    in both directions, the placeholder far-lands grid keeps its old origin.
 - **The rest of Eldmere is a low-poly placeholder** (`game/world/far-lands.js`): one flat-shaded mesh around the playable rectangle,
   shaped from this map (the Greyspine's peaks, the Hoarfrost plateau, the Sunscar plateau with mesas, Amber Reach, the Stormhorn, and the
   Emberwake Isles with a smoking volcano), plus one sea to the horizon. It can't be walked on. Its high ground shows faintly through the
   distance haze. When a land is built, it replaces its part of the placeholder.
-- The game's world is one rectangular heightmap (`WX0..WX1` x `WZ0..WZ1`, section 9 of `CLAUDE.md`). Regions to the north and west of
-  Wildwood need that rectangle to grow in those directions; the isles need water around them and boat or teleport travel.
+- The game's world is one rectangular heightmap (`WX0..WX1` x `WZ0..WZ1`, section 9 of `CLAUDE.md`). The rectangle has already grown north (the Hoarfrost
+  Reach); the Greyspine (north-west of Wildwood, today a cheap unwalkable massif), the Sunscar (west) and Amber Reach (south-west) need it to
+  grow in those directions; the isles need water around them and boat or teleport travel.
 - **The Rootdeep cannot be made from the heightmap** (a heightmap has no ceilings or overhangs). It needs its own kind of space: enclosed
   cave meshes, reached through a portal at its entrances like a separate instance, with its own lighting (no sun, no sky, no weather).
-- Levels past 25 need the XP curve and gear tiers extended to 50 (`shared/balance.js`, `shared/items.js`); `CLAUDE.md` section 10 already
-  notes that the curve past 15 needs tuning.
+- Levels past 25: the Hoarfrost Reach's 26-30 work today because `expToNext` is flattened from level 25 on (a level costs as many same-level kills as
+  25 -> 26 does) and gear stays at tier 5 (`tierFor`, `MAX_ZONE_LV` 30); levels up to 50 need the curve tuned and more gear tiers
+  (`shared/balance.js`, `shared/items.js`), and `CLAUDE.md` section 10 notes that the curve past 15 needs tuning.

@@ -1,4 +1,4 @@
-//@ Player movement, collisions (the border mountains, the tunnel and its sealed door), camera
+//@ Player movement, collisions (the border mountains, the tunnel and its sealed door, the vale's north wall with Frostgate Pass and its ice wall), camera
 /* ---------- simulation ---------- */
 function updatePlayer(dt){
   let f=0,s=0;
@@ -38,6 +38,7 @@ function updatePlayer(dt){
    Rootwarden falls (GEAR.east >= 1). o.inTun is set when you walk in through either portal.
    On the Crownsea's shore you can wade in to the knees (ground above WATER-0.8), no deeper (oz: the z before the move). */
 const valeOpen=()=>!!(GEAR&&GEAR.east>=1);
+const northOpen=()=>!!(GEAR&&GEAR.north>=1);
 function worldBounds(o,ox,rad,oz){
   const T=TUN, dz=o.z-T.z, bore=Math.abs(dz)<T.w-rad+0.2, e0=T.p0-0.6, e1=T.p1+0.6;
   if(!o.inTun && bore && ((ox<=e0 && o.x>e0 && valeOpen()) || (ox>=e1 && o.x<e1))) o.inTun=true;
@@ -52,7 +53,19 @@ function worldBounds(o,ox,rad,oz){
     if(o.x<HALF) o.x=Math.min(o.x,HALF-14); else o.x=clamp(o.x,HALF+14,WX1-14);
   }
   o.z=clamp(o.z,WZ0+14,WZ1-14); if(o.x<WX0+14) o.x=WX0+14;
+  if(o.x<HALF) o.z=Math.max(o.z,HZ0+14);   // north of the home forest: the Greyspine's mountains
+  else frostWall(o,ox,oz,rad);
   if(oz!==undefined && coastDist(o.x,o.z)<34){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }
+}
+/* The vale's north wall (its crest is at z = HZ0) is climbable up to 14 m short of the crest from either side; the only way through is Frostgate
+   Pass, and its ice wall stays shut until Akaoni falls (GEAR.north >= 1). In the pass you are kept between its walls near the crest. */
+function frostWall(o,ox,oz,rad){
+  if(oz===undefined) oz=o.z;
+  const inC=Math.abs(o.x-PASS.x)<PASS.w-rad+0.2;
+  if(Math.abs(o.z-HZ0)<14){
+    if(!inC){ if(Math.abs(oz-HZ0)<14) o.x=clamp(o.x,PASS.x-PASS.w+rad,PASS.x+PASS.w-rad); else o.z=oz>=HZ0?HZ0+14:HZ0-14; }
+  }
+  if(!northOpen() && inC && oz>=PASS.ice && o.z<PASS.ice+0.8) o.z=PASS.ice+0.8;   // the ice wall
 }
 const inTunnelBore=(x,z)=>x>TUN.p0-1&&x<TUN.p1+1&&Math.abs(z-TUN.z)<TUN.w+0.5;
 function updateCamera(dt){

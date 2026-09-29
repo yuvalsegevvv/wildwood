@@ -1,12 +1,12 @@
 # Wildwood: guide for agents
 
 Read this file first. It is written so you can work on the game **without reading the whole codebase**
-(about 7,500 lines of JavaScript in 96 files). Open only the files your task touches.
+(about 9,700 lines of JavaScript in 110 files). Open only the files your task touches.
 
 Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an authoritative world server
 that runs in the browser tab (solo / shared room) or in Node (the deployed MMO), procedural 880 m forest,
-village with NPCs, 555 monsters in 19 zones (three rings round the village plus the shore, the Sunwall's foot and the Greyspine foothills, whose monsters are levels 16-20), roads, a river bridge and plank causeways, a boss; a main quest line (acts I and II: Wren's sickness, from the village to Akaoni); east of the mountains the Sakura Vale (tunnel opened by the
-boss, Japanese village Hanami, 240 monsters of levels 16-25 in 10 zones, bosses at 20 and 25, teleport circles);
+village with NPCs, 555 monsters in 19 zones (three rings round the village plus the shore, the Sunwall's foot and the Greyspine foothills, whose monsters are levels 16-20), roads, a river bridge and plank causeways, a boss; a main quest line (acts I-III: Wren's sickness, from the village through the vale to the Rimeking, levels 1-25; levels 26-50 are planned in `docs/MAIN-QUEST.md` section 7, not built); east of the mountains the Sakura Vale (tunnel opened by the
+boss, Japanese village Hanami, 240 monsters of levels 16-25 in 10 zones, bosses at 20 and 25, teleport circles); north of the vale the Hoarfrost Reach (a high frozen plateau reached through Frostgate Pass, whose ice wall opens when Akaoni falls; Nordic village Rimehold, 216 monsters of levels 22-30 in 9 zones, bosses at 26 and 30, snow instead of rain, the Wayfarers' Lodge where mining, woodcutting and gathering are learned; the teleport circles open a window to choose among the three villages);
 3 classes with equippable skills (5 levels each, upgraded with coins and monster drops), an element system (soul bound at level 15 in Hanami, elements on skills and monsters), class-universal passives from level 18, 210 items (6 tiers) in 5 rarities, a forge, a quest board, weather, chat, server-side saves in a Postgres database (Neon), player
 accounts (guest or name + password; the start card offers Log in, Register, Play as guest).
 
@@ -23,7 +23,7 @@ accounts (guest or name + password; the start card offers Log in, Register, Play
 2. Section 4 below maps common tasks to files.
 3. `grep -n "name" -r src/` to find a function; then open only a line range.
 4. Every file starts with `//@ one-line description`. Keep that line accurate when you edit.
-5. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules); the main quest plan: `docs/MAIN-QUEST.md`.
+5. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules); the main quest plan: `docs/MAIN-QUEST.md`; what is **not built yet**, with comments on each gap (professions' uses, potions, the levels 26-50 story, regional weather, the four songs...): `docs/NOT-BUILT.md`.
 
 ## 2. Architecture in one screen
 
@@ -71,7 +71,7 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 - Client → server: `hello{acct,name,look,save[,user,pass|token]}`, `register{user,pass}`, `logout{token}`, `pos{p:[x,y,z,face,vx,vz]}`, `atk{k:'basic'|'skill'|'burst',tg,face,aim}`,
   `equip{id}`, `unequip{slot}`, `cls{cls}`, `buy/sell{id}`, `merge{id}`, `accept/turnin/abandon{id}`,
   `buyskill{id}`, `eqskill{id[,idx]}` (idx: the passive slot), `unskill{cls,slot[,idx]}` (slot `'pass'` + idx for a passive), `upskill{id}`, `soul{el}`,
-  `look{look}`, `chat{text}`, `name{name}`, `warp{}`, `mq{a:'talk'|'pick'|'read',id|i}` (the main quest), `dev{cmd,v}`.
+  `look{look}`, `chat{text}`, `name{name}`, `warp{to:'home'|'hanami'|'rimehold'}` (from a teleport circle; the client's travel window), `mq{a:'talk'|'pick'|'read',id|i}` (the main quest), `learn{id}` and `gather{i}` (professions), `dev{cmd,v}`.
 - Server → client: `welcome{...,look?}` (`look` only for a logged-in account: its own look replaces the browser's), `mons{list}` (roster), `you{...}` (private
   state incl. `gear`), `tp`, `kicked`, `auth{user,token}`, `authfail{text}`,
   `snap{day, n, pl, mo, b (one entry per boss), w (weather), ev:[events]}` 8-20×/s, **made per player**: `mo` holds only the monsters
@@ -82,7 +82,7 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 - Events (`ev(...)` on the server, `applyEvent` in `net/client.js`): dmg (`[id,v,crit,by[,fx]]`: fx 1 / -1 = the element helped / hurt), kill, imm, mact, aggro, respawn,
   spawn, despawn, proj, pend, tele, tend, roar, area, aend, chain, buff, xp, coins, loot, lvup, hurt, down,
   up, toast, qdone, qturn, pact, pjoin, pleave, pgear, plook, pname, chat, merge, skillslot, skillbuy,
-  weather, thunder, lvset, warp, vale, drop (`[pid,mat,n,monId]`), skillup, soul, mq (`[pid,stepId,1 started|2 handed in]`).
+  weather, thunder, lvset, warp, vale, north (`[pid,1 ice wall open|2 walked into Rimehold]`), node (`[i,1 taken|0 back]`, a resource node), gather (`[pid,i,resource,n]`), drop (`[pid,mat,n,monId]`), skillup, soul, mq (`[pid,stepId,1 started|2 handed in]`).
 - To add a feature that changes state: handle a message in `receive()` (server/api.js), mutate state,
   call `ev('name', ...)` and/or set `p.dirty=true` (→ a `you` update + save), then handle the event in
   `applyEvent` on the client.
@@ -92,13 +92,17 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | Task | Files |
 |---|---|
 | Balance formulas (HP, damage, XP curve, coins, 1.5× for level 10-15) | `shared/balance.js` |
-| Monster stats / new monster | `shared/monster-defs.js` (data), `game/combat/monsters.js` (model builders, `animateMonster`), `server/monsters.js` (spawn counts `MON_COUNT`, AI) |
-| Boss mechanics / visuals (all three bosses: `BOSS_DEFS` in `shared/monster-defs.js`) | `server/boss.js` / `game/combat/boss.js` |
-| Sakura Vale: tunnel `TUN`, Hanami `VIL2`, vale zones/ridges, arenas `ARENAS`, `vilAt` | `shared/vale.js`; meshes `game/village/buildings-vale.js`; tunnel collision `worldBounds` in `game/player/movement.js`; unlock / attune / `warpP` in `server/players.js`; Hanami NPCs (`vil:2`) in `game/village/villagers.js` |
+| Monster stats / new monster | `shared/monster-defs.js` (data; model flags `wolf`, `fur`, weapon `axe`, the `wyrm` model), `game/combat/monsters.js` (model builders, `animateMonster`), `server/monsters.js` (spawn counts `MON_COUNT`, AI) |
+| Boss mechanics / visuals (all five bosses: `BOSS_DEFS` in `shared/monster-defs.js`) | `server/boss.js` / `game/combat/boss.js` |
+| Hoarfrost Reach (levels 22-30): the plateau, Frostgate Pass and its ice wall, Rimehold `VIL3`, zones `h22`-`h30`, the two boss arenas, the rectangle `NORTH_D` / `HZ0` / `WZ0` | shape `hoarHeight`, `FROST_LAKES`, `NORTH_D` in `shared/terrain.js` (the cheap Greyspine massif is `greyspineHeight`); pass, village, zones, ridges, arenas, `CIRCLES` in `shared/hoarfrost.js` (`passCarve` is called by `rawHeight`); roads in `shared/roads.js`; monsters `MON_DEFS` rows with `zone:'h22'`..; the gate: `frostWall` (`game/player/movement.js`) + `setPos` (`server/api.js`), opened by `openNorthP` when Akaoni falls (`server/combat.js`), saved as `gear.north`; meshes, the ice wall, the boss halls, the iron bird `game/village/buildings-hoar.js`; snow and needle colours `hoarColor` (`game/world/terrain-color.js`); trees/rocks `generation-chunks.js` (`inHoar`); map view `LANDS.hoar` (`game/ui/map.js`); music `rimehold` / `hoar1` / `hoar2` / `boss26` / `boss30` |
+| Weather: snow instead of rain in the Reach (the server still has one weather); the aurora at night over it (`game/world/aurora.js`) | `WX.snow`, the snowfall layer and `weatherTint` in `game/world/weather.js`, the wind in `game/audio/rain.js`, wind / howls / crunch in `audio/driver.js`, `audio/ambience.js` |
+| Professions (mining, woodcutting, gathering; potion use is planned): the Wayfarers' Lodge, resource nodes, resources | rules, `NODES`, `RES`, `NODE_KINDS`, `PROFS` in `shared/professions.js`; `learnProfP` / `gatherP` / node respawn in `server/professions.js` (`gear.prof`, `gear.res`, sanitized by `sanitizeProf`); the Lodge panel (Gudrun, role `lodge`), node meshes, gathering with the talk key `game/economy/professions.js`; styles `20-professions.css` |
+| Teleport circles and their travel window (choose among the villages; it opens by itself when you step onto an attuned circle) | `CIRCLES` in `shared/hoarfrost.js` (where each leads, when it wakes); `warpP` in `server/players.js`; `useCircle`, `circlePrompt` in `game/village/talking.js`; the window `game/ui/travel.js`; the circle meshes `buildCircle` in `game/village/buildings-vale.js` |
+| Sakura Vale: tunnel `TUN`, Hanami `VIL2`, vale zones/ridges, arenas `ARENAS`, `vilAt` (knows all three villages) | `shared/vale.js`; meshes `game/village/buildings-vale.js`; tunnel collision `worldBounds` in `game/player/movement.js`; unlock / attune / `warpP` in `server/players.js`; Hanami NPCs (`vil:2`) in `game/village/villagers.js` |
 | Items, rarity, prices, drop rates, merge | `shared/items.js` (`RARITY`, `RAR_MULT`, `rollMonsterRarity`, `rollBossRarity`, `shopPrice`) |
 | Item icons | `game/ui/item-icons.js` |
 | Skills (all 3 slots, all classes) | `shared/classes.js` (`SKILLS`, `abilityOf`, slot levels) → effects `server/combat.js` (`resolveHitS`, `updateAreasS`, projectiles) → visuals `game/combat/skill-fx.js`, `game/combat/attacks.js` (`attackVisuals`, projectiles), icons `ICONS` in `game/ui/combat-hud.js` (also the passives'). A new attack path must hand the skill's element (`a.el` / `pr.el` / `A.el`) to `damageMonsterS`, or the soul bonus silently does not apply |
-| Boss skills (dropped by a boss at 10% per skill, 6 per boss: a skill and a burst for each class; not sold, no upgrades yet) and generic skill effects (`fx`) | rows with `drop:'<boss id>'` at the end of `SKILLS` (`shared/classes.js`), `BOSS_SKILLS` / `BOSS_SKILL_CHANCE` in `shared/drops.js`; effects `resolveFxS` / `impactFxS` / `applyBuffS` / `statusS` / `updateBurnS` and the drop roll `bossSkillDropP` in `server/combat.js`; visuals `fxVisuals`, `onBeam`, zones (`updateZoneFx`) in `game/combat/skill-fx.js`, projectiles `GEN_PROJ` in `game/combat/attacks.js`; the panel's Boss tiles in `game/economy/skills.js`. Adding a skill with `fx` needs no server or client code: a row, an icon in `ICONS` and (for a new kind of effect) an entry in `resolveFxS` |
+| Boss skills (dropped by a boss at 10% per skill, 6 per boss (five bosses, 30 skills): a skill and a burst for each class; not sold, no upgrades yet) and generic skill effects (`fx`) | rows with `drop:'<boss id>'` at the end of `SKILLS` (`shared/classes.js`), `BOSS_SKILLS` / `BOSS_SKILL_CHANCE` in `shared/drops.js`; effects `resolveFxS` / `impactFxS` / `applyBuffS` / `statusS` / `updateBurnS` and the drop roll `bossSkillDropP` in `server/combat.js`; visuals `fxVisuals`, `onBeam`, zones (`updateZoneFx`) in `game/combat/skill-fx.js`, projectiles `GEN_PROJ` in `game/combat/attacks.js`; the panel's Boss tiles in `game/economy/skills.js`. Adding a skill with `fx` needs no server or client code: a row, an icon in `ICONS` and (for a new kind of effect) an entry in `resolveFxS` |
 | Elements: which skill / monster has which (`el` field), the soul (bind at level 15 in Hanami), the x1.5 rules | `shared/elements.js` (`ELEMS`, `soulMult`, `foeMult`, `ELEM_BOOST`); server `elemHitS` / `rollDmgS` in `server/combat.js`, `bindSoulP` in `server/economy.js`; panel + chips `game/economy/soul.js`; the shrine maiden Kaede in `VILLAGERS` (`role:'soul'`, `late:true`); target frame `#tEl`, `onMonDmg` arrows |
 | Skill levels / upgrades and monster drops (materials) | `shared/drops.js` (`MATS`, `DROP_CHANCE`, `upgradeNeeds`, `UP_COINS`, `UP_COUNT`), `shared/classes.js` (`skillPower`, `skillCdMult`, `abilityCd`); server `upgradeSkillP`, `addMatP`, `rewardKill`; UI `game/economy/skills.js` (details + Upgrade), materials list in `game/economy/inventory.js` |
 | Passive skills (class-universal, level 18) | `PASSIVES` in `shared/classes.js` (`stat`, `v`, `text`) read with `passiveSum` (`psP(p,stat)` on the server: hp in `recalcP`, dmg / crit in `rollDmgS`, red in `hurtP`, cd in `abilityCd`, drop / xp in `rewardKill`, soul in `elemHitS`); slots + unlock `autoEquipPassiveP` / `equipPassiveP` in `server/players.js` / `economy.js`; `PASSIVE_OPEN` (in `classes.js`) is how many of the 3 slots are usable: slots after it are locked in the panel, refused by the server, ignored by `passiveSum` and cleared from saves |
@@ -113,10 +117,10 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | World size, lakes, terrain | `shared/terrain.js` (`SIZE`, `LAKES`, `baseHeight`), `shared/zones.js` (`RINGS`, zones, arena) |
 | The lands' edges (Crownsea shore, the Sunwall and Redgate Canyon, snowy northern rims, all curved by noise) and the placeholder lands beyond; the edge zones and their monsters (`EDGE_ZONES`, `edgeZoneAt`, `defZone` in `shared/zones.js`; rows with `zone:` in `MON_DEFS`) | `shared/terrain.js` (`coastDist`, `shore`, `sunwall`, `bareGround`), colours `game/world/terrain-color.js`, the sea limit in `worldBounds` (`game/player/movement.js`), names `edgeName` (`game/ui/map.js`); placeholders `game/world/far-lands.js` (`FAR_COAST`, `FAR_ISLES`, `farHeight`); design `docs/WORLD.md` |
 | Roads, the river bridge and the plank causeways over the drowned roads (found automatically wherever a road runs under water; names `CAUSEWAY_NAMES`) | `shared/roads.js` (`ROADS` waypoints, `roadDist`, `nearRoad`, `BRIDGES`, `bridgeDeck`, `bridgeAt`); the models `game/world/bridges.js`; walking on it `updatePlayer` (movement.js); road names on the map (`placeName`); the map's wavy outline `mapEdgeAlpha` (map.js) |
-| The main quest line (acts I-II: steps W1-W18, V3-V11; Wren, Linnea, Odran; talks, herbs, grey monsters, lore spots) | data and talk logic `shared/main-quest.js` (`MQ`, `mqTalk`, `mqReward`, `HERBS`, `LORE`, `VIL.bed`, `V.cart`); server `server/main-quest.js` (message `mq{a:'talk'\|'pick'\|'read'}`, `mqKillP`, `mqActP` hooks in economy/players/combat, `mqTickP`, grey monsters `GREY_DEFS` in `monster-defs.js`, dev `mq`); client `game/economy/main-quest.js` (`mqLinesFor`, `mqMark`, `mqLogRow`, `mqTarget`, `wrenAwake`, `odranHere`), talking and reading `village/talking.js`, props `world/lore-props.js`; the people in `VILLAGERS` (`kin`, `show`, pose `bed`); design `docs/MAIN-QUEST.md`, story `docs/STORY.md`; test `node tools/mainquest-smoke.js` |
+| The main quest line (acts I-III: steps W1-W18, V3-V11, F1-F9; Wren, Linnea, Odran, Sigrun; talks, herbs, gathering, grey monsters, lore spots; levels 26-50 are only planned in `docs/MAIN-QUEST.md` section 7) | data and talk logic `shared/main-quest.js` (`MQ`, `mqTalk`, `mqReward`, `HERBS`, `LORE`, `VIL.bed`, `V.cart`); server `server/main-quest.js` (message `mq{a:'talk'\|'pick'\|'read'}`, `mqKillP`, `mqActP` hooks in economy/players/combat, `mqTickP`, grey monsters `GREY_DEFS` in `monster-defs.js`, dev `mq`); client `game/economy/main-quest.js` (`mqLinesFor`, `mqMark`, `mqLogRow`, `mqTarget`, `wrenAwake`, `odranHere`), talking and reading `village/talking.js`, props `world/lore-props.js`; the people in `VILLAGERS` (`kin`, `show`, pose `bed`); design `docs/MAIN-QUEST.md`, story `docs/STORY.md`; test `node tools/mainquest-smoke.js` |
 | Vegetation / animals | `game/world/plant-models.js`, `generation-*.js`, `game/wildlife/animals.js` |
 | Background music (a theme per village, level range and boss; `THEMES`, `musicThemeHere`; recorded tracks `assets/audio/music-<theme>.m4a` override a theme) | `game/audio/music.js`, `game/audio/samples.js` (`musicBuffer`) |
-| Time of day / weather | `game/world/time-of-day.js` (`weatherTint` hook), `server/weather.js`, `game/world/weather.js`; rain sound `game/audio/rain.js` (`RAIN_SND` volumes) |
+| Time of day / weather | `game/world/time-of-day.js` (`weatherTint` hook, the zone label), `server/weather.js`, `game/world/weather.js` (rain, and snow / blizzard in the Reach); rain and wind sound `game/audio/rain.js` (`RAIN_SND` volumes) |
 | Map / minimap | `game/ui/map.js` |
 | Chat / names / account code | `game/ui/chat.js`, `game/ui/account.js`; server `chatP`, `renameP` in `server/economy.js` |
 | Saves, accounts, migration | `server/api.js` (`beginJoin`, `saveP`, `flushAll`), `server/players.js` (`sanitize*`), `node/main.js` (stores, `AUTH` password hashing) |
@@ -169,9 +173,10 @@ python3 build.py                 # → dist/ (quiet, ~1 s)
 python3 build.py --check         # + syntax check of every bundle + duplicate-name check  (always run this)
 node tools/server-smoke.js       # 16 headless server checks from src/ (no build), ~5 s, prints PASS/FAIL
 node tools/accounts-smoke.js     # 17 checks of accounts (register, login, tokens, unique names, the account's look), ~1 s
-node tools/mainquest-smoke.js    # 24 checks of the main quest (talks, herbs, kills, grey monsters, night, lore, old saves, the end of act II), ~10 s
-node tools/skills-smoke.js       # 51 checks of elements, the soul shrine, monster drops, skill upgrades, passives and the 18 boss skills (server from src/), ~15 s
-node tools/client-smoke.js       # 17 checks running the built page headless (solo), ~45 s (also draws every boss skill). It runs dist/: build first
+node tools/mainquest-smoke.js    # 63 checks of the main quest (talks, herbs, kills, grey monsters, night, lore, old saves, and acts II-III to the end: Rimehold, the Lodge, gathering, the circles, the Rimeking), ~10 s
+node tools/hoarfrost-smoke.js    # 35 checks of the Hoarfrost Reach: its shape, zones and monsters, bosses, the ice wall and how it opens, quest board and XP for levels 22-30, professions (server from src/), ~5 s
+node tools/skills-smoke.js       # 58 checks of elements, the soul shrine, monster drops, skill upgrades, passives and the 30 boss skills (server from src/), ~15 s
+node tools/client-smoke.js       # 29 checks running the built page headless (solo), ~60 s (also draws every boss skill, and checks the Hoarfrost's client side: ice wall, music, the Lodge and travel windows, resource nodes, snow). It runs dist/: build first
 node tools/start-smoke.js        # 27 checks of the start card + a new account's character editor, against a real server in-process, ~20 s
 node tools/keys-smoke.js         # checks of the rebindable keys (defaults, swap, save/load, hints) and of hold-Alt; runs dist/: build first
 python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)
@@ -295,23 +300,40 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
   `addVillageMeshes` call itself. Run `client-smoke` after moving code.
 - The Shared (room) mode is only testable against the mock in `tools/`-style harnesses; the host tab
   must stay visible (browser timers throttle in background tabs).
+- Adding a region (the Hoarfrost Reach taught these): `WZ0` is the whole world's north edge now, not the forest's or the vale's: their edge is `HZ0`
+  (`inHoar(x,z)` tells the Reach apart; `inVale(x)` is true there too). A zone key is a level for the home forest and the vale but `'h22'`.. for the Reach
+  (`ZONES.find(z=>z.key===level)` finds only the first two: use `z.level===L`, `defZone(def)`). Hoarfrost zones carry `vale:true` (a polar cell with `x,z,R`)
+  and `hoar:true`. `upgradeNeeds` must cap the level it asks drops of (`VALE_TOP_LV`): above it every kind has a `zone` and the pool is empty.
+  Constants used by terrain functions at load must be defined before the first call (TDZ across the concatenated files): `FROST_LAKES`, `hoarBase` live in
+  `shared/terrain.js` for that reason. A new region also needs `ok()` in `server/monsters.js`, `worldBounds` (movement.js), the map's `LANDS`, `vilAt`, the music and
+  ambience, and a look at every `inVale(x)` (vegetation, petals, motes).
+- three r128 has no `BufferGeometry.applyQuaternion` (use `applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(q))`). An exception while a monster
+  model is built inside the `mons` message aborts the rest of the roster (monsters silently missing): run `client-smoke` after touching model builders.
+  `paint(geo,fn)` calls `fn(x,y,z,nx,ny,nz,c)`, `pc(geo,fn)` calls `fn(x,y,z,c)` (or `fn(c)`): a `pc`-style function given to `paint` throws "c.set is not a function".
+- The hidden browser pane runs a frame only around a screenshot: a key press (E to talk) or a teleport shows its effect one screenshot later, so take
+  a screenshot before and after. The Testing tools' Hoarfrost buttons (`tPass`, `tRime`, `tHall`, `tNest`) plus `data-v="x,z,degrees"` on `tPass`
+  (set it from the console, then click) put you anywhere facing any way.
 
 ## 9. Reference numbers
 
 - Stats: `f(L)=L+(13/12)^L`; HP `20f+armor`; damage `3f+weapon`; defence cut `def/(def+60)`;
   ±5% per level difference; crits 12% ×1.7.
-- XP to next `10(L²+(7/6)^L)·K15^((L-5)/10)`; level 10-15 monsters 1.5× HP/XP/coins (`highMult`).
+- XP to next `10(L²+(7/6)^L)·K15^((L-5)/10)` up to level 25; from 25 on a level costs as many same-level kills as 25 → 26 (about 2,100: `expToNext` in `shared/balance.js`, so 26-30 are a long but bounded grind); level 10-15 monsters 1.5× HP/XP/coins (`highMult`). `MAX_ZONE_LV` is 30 (quest board, sanitizing); `VALE_TOP_LV` (25) caps the level of the drops skill upgrades ask for; gear stays at tier 5 for levels 25-30.
 - Monsters: 40 of each level-1 kind down to 26 of each level-11 kind, levels 12-15 a quarter more (30 down to 25: their zones reach the land's edge), the
   five edge kinds (levels 16-20) their own `count` (10-20); respawn 35 s; think within 110 m.
+- Hoarfrost Reach: 18 monster kinds (two per level 22-30, `zone:'h22'`..`'h30'`), 12 of each, two bosses (26 Ymrik, 30 Vetrmaw, 6 skills each), 90 resource nodes.
 - Drops: monsters 2% common, 0.5% rare, 0.1% epic; boss 50/10/3/1/0.1% (common…legendary).
-- World: the home forest is -HALF..HALF; the whole world is `WX0..WX1` x `WZ0..WZ1` (the vale is x > HALF, 550 m wide).
-  Use those bounds (not ±HALF) for clamps. The heightmap is rectangular (`NVX` x `NVZ`), the terrain is drawn in
-  x-strips culled beyond the fog, and plant chunks more than 320 m away are only grown when you come closer.
+- World: the home forest is -HALF..HALF; the whole world is `WX0..WX1` x `WZ0..WZ1` (the vale is x > HALF, 550 m wide; the Hoarfrost Reach is x > HALF
+  and z < `HZ0` = -440, down to `WZ0` = -1040: `inHoar(x,z)`; north of the home forest is unwalkable mountains). Use those bounds (not ±HALF) for clamps
+  (the home forest's north edge is `HZ0`, not `WZ0`). The heightmap is rectangular (`NVX` x `NVZ`), the terrain is drawn in
+  tiles (64 x 128 cells) culled beyond the fog in both directions, and plant chunks more than 320 m away are only grown when you come closer.
 - Vale progress: `gear.east` 0 sealed, 1 tunnel open (anyone rewarded for a Rootwarden kill), 2 walked into Hanami
-  (teleport circles work). Vale monsters: 2 kinds per level, 12 of each; gear tiers 4-5 at levels 20 and 25.
+  (its circle and home's work). Vale monsters: 2 kinds per level, 12 of each; gear tiers 4-5 at levels 20 and 25.
+- Hoarfrost progress: `gear.north` 0 ice wall shut, 1 open (anyone rewarded for an Akaoni kill; old saves past V10 get 1), 2 walked into Rimehold
+  (its circle works). Professions: `gear.prof` `{mining|woodcutting|gathering: {xp}}` (150 coins each at the Lodge), `gear.res` the resources.
 - Measured costs (desktop, village): the client's JS is about 0.2 ms per frame (headless, no GPU); the GPU draws about 750 calls and
   5.5 M triangles per frame, of which about 3.7 M are instanced trees (chunks are 110 m, fog ends at 230 m; 42% of the triangles are
-  120 m or farther); the world takes about 1.1 s of JS to generate (17% is `noise2`). The server ticks in under 5 ms with 40 players
+  120 m or farther); the world took about 1.1 s of JS to generate before the Hoarfrost Reach and takes about 1.8 s now (the heightmap is 1.7 times as big; 17% is `noise2`). The server ticks in under 5 ms with 40 players
   spread over the woods (about 4% of a core).
 - Elements: soul match x1.5, soul opposite x1/1.5 (pairs fire/water, earth/air, dark/light: `ELEM_OPP`); against monsters the wheel water > fire > air > earth > water plus dark <> light (`ELEM_BEATS`): a skill that beats the monster's element x1.5, one it beats or its own element x1/1.5 (`ELEM_BOOST`, soul and wheel stack).
   Soul unlocks at level `SOUL_LV` 15 (Hanami's Kaede), passives at `PASSIVE_LV` 18 (3 slots exist, only `PASSIVE_OPEN` = 1 is usable, the others are locked for now). Skill level 1-5: +12% damage and -3% cooldown per level.
@@ -330,6 +352,7 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
 
 ## 10. Ideas not done yet (ask the owner before starting)
 
+(Each gap is commented in `docs/NOT-BUILT.md`.) Professions' next steps (crafting, potions as a fourth profession, resource nodes in every land, selling and tools: `docs/MAIN-QUEST.md` section 5b); levels 26-50 (acts IV-VII, planned step by step in `docs/MAIN-QUEST.md` section 7); regional weather on the server; the Hoarfrost's west glacier valley to the Greyspine; a real music track for Rimehold and the Hoarfrost ranges (generated ones play until then).
 The owner will define the real passive skills (the eight in `PASSIVES` are a placeholder set); monsters' elements do not change the damage they deal to you
 yet (a `hurtP` hook, same functions as `foeMult`); Special quests from Bram and other NPCs; group/party system; the XP curve past 15 (levels 16-25 need 400-2100 kills
 each: tune `expToNext` / `xpFor` in `shared/balance.js`); animals in the vale; trading between players; more zones or a

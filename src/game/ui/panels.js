@@ -1,6 +1,6 @@
 //@ Panel open/close helpers (openPanel, closePanels, uiOpen, releasePointer)
 /* ----- panels ----- */
-const PANELS=['inv','shop','quests','map','forge','skills','soul'];
+const PANELS=['inv','shop','quests','map','forge','skills','soul','lodge','travel'];
 let panelNPC=null;
 // the mouse look is locked while playing; panels, chat and the editor need the pointer back
 function releasePointer(){ if(document.pointerLockElement) try{ document.exitPointerLock(); }catch(_){} }

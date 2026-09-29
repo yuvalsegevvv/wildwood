@@ -1,0 +1,36 @@
+/*@ Professions and travel: the Wayfarers' Lodge panel (mining, woodcutting, gathering, potion use coming later) and the teleport circle's travel window */
+#lodge, #travel{ width:min(640px,calc(100vw - 24px)); }
+.lo-intro, .tr-intro{ margin:0 0 10px; font-size:13px; line-height:1.5; color:var(--ink-dim); }
+.lo-list{ display:flex; flex-direction:column; gap:8px; }
+.lo-row{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:rgba(0,0,0,.22); }
+.lo-row.mine{ border-color:rgba(140,220,160,.45); }
+.lo-row.soon{ opacity:.6; }
+.lo-main{ flex:1; display:flex; flex-direction:column; gap:2px; min-width:0; }
+.lo-main b{ font-family:Fraunces, Georgia, serif; font-size:16px; }
+.lo-main span{ font-size:12.5px; line-height:1.4; color:var(--ink-dim); }
+.lo-main small{ font-size:11.5px; color:#9fd8ff; }
+.lo-lv{ display:flex; align-items:center; gap:8px; margin-top:4px; }
+.lo-lv span{ font-size:12px; color:var(--ink); white-space:nowrap; }
+.lo-lv i{ flex:1; height:6px; border-radius:3px; background:rgba(255,255,255,.12); overflow:hidden; }
+.lo-lv i b{ display:block; height:100%; background:linear-gradient(90deg,#6ac8ff,#b8ecff); }
+.lo-state{ font-size:12px; color:var(--ink-dim); white-space:nowrap; }
+.lo-state.ok{ color:#8adf9a; }
+.lo-learn{ white-space:nowrap; }
+.lo-bag{ margin-top:10px; font-size:12.5px; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; }
+.lo-note{ margin:8px 0 0; font-size:12px; color:var(--ink-dim); }
+.tr-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.tr-dest{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:14px 8px; border-radius:14px; border:1px solid var(--line); background:rgba(0,0,0,.22); color:var(--ink); font:inherit; cursor:pointer; text-align:center; }
+.tr-dest:hover:not(:disabled){ background:rgba(40,52,64,.7); border-color:#7fd0ff; }
+.tr-dest:disabled{ cursor:default; opacity:.6; }
+.tr-dest.here{ border-color:#f2cf5a; opacity:.9; }
+.tr-ico{ display:grid; place-items:center; width:48px; height:48px; border-radius:50%; border:2px solid #7fd0ff; color:#7fd0ff; }
+.tr-dest.here .tr-ico{ border-color:#f2cf5a; color:#f2cf5a; }
+.tr-ico svg{ width:28px; height:28px; }
+.tr-dest b{ font-family:Fraunces, Georgia, serif; font-size:17px; margin-top:4px; }
+.tr-dest small{ font-size:11.5px; color:var(--ink-dim); }
+.tr-state{ font-size:12px; margin-top:4px; color:#8adf9a; }
+.tr-dest:disabled .tr-state{ color:var(--ink-dim); }
+@media (max-width:640px){
+  .tr-grid{ grid-template-columns:1fr; }
+  .lo-row{ flex-wrap:wrap; }
+}

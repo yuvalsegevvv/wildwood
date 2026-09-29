@@ -1,4 +1,4 @@
-//@ The main quest line (MQ: acts I and II, docs/MAIN-QUEST.md), its places (Wren's sickbed, Odran's carts, heartleaf, grey spots) and the readable lore spots (LORE: carvings, signs, the drowned roads). Pure.
+//@ The main quest line (MQ: acts I-III, docs/MAIN-QUEST.md), its places (Wren's sickbed, Odran's carts, heartleaf, grey spots) and the readable lore spots (LORE: carvings, signs, the drowned roads, the Hoarfrost's runes and wreck). Pure.
 /* The story is docs/STORY.md (mind its spoiler rule: hints only, no modern words). Each step:
      id, title, gate (level it is offered from), from (villager id who offers it; null = starts by itself when the step before ends),
      to (villager id you hand it in to), r (XP reward: r x expToNext(gate), so it keeps its share if the curve is tuned),
@@ -6,8 +6,9 @@
      client shows them), parts (what to do; all at once unless a part says after:true, which waits for the parts before it).
    Parts: talk:'<villager id>' (say: their lines; night: only after dark, wait: their lines before that) · kill:'<monster id>', n ·
      grey:'<GREY_DEFS id>', n, zone (a few are spawned for you there) · pick:'herb', n (glowing heartleaf, HERBS) ·
-     collect:'<what>', from:[monster ids], n, chance (a quest drop) · read:'<LORE id>' (walk up and read it) · act:'<system>', n
-     (class, buy, armor, skill, burst, board, sell, upskill, merge, soul, warp, hanami: see server/main-quest.js) · level · tier
+     collect:'<what>', from:[monster ids], n, chance (a quest drop) · gather:'<NODE_KINDS id>', n (a resource node gathered) · read:'<LORE id>' (walk up
+     and read it) · act:'<system>', n (class, buy, armor, skill, burst, board, sell, upskill, merge, soul, warp, hanami, rimehold, learn: see
+     server/main-quest.js) · level · tier
      (a weapon of that item tier, 0-based) · boss:'<boss monster id>' (bossLine: toasted when it falls).
    Progress is gear.mq = {s: step index, st: 0 offered / 1 in progress / 2 ready to hand in, n: [per part]}; the server
    (server/main-quest.js) moves it on, the client (game/economy/main-quest.js) draws it. */
@@ -118,7 +119,7 @@ const MQ=[
           {talk:'tetsuo',text:'Meet Tetsuo at the forge',say:['Greta taught me the three-into-one. Or I taught her. We argue about it.']}],
    done:['Now you know everyone worth knowing. Except Grandmother Chiyo at the fire. She will want to see you: she wants to see everyone.']},
   {id:'V4',title:'Home in a blink',gate:15,from:'chiyo',to:'wren',r:0.25,
-   tip:'Stand on a teleport circle and press the talk key to travel between the two villages.',
+   tip:'Step onto a teleport circle: a window lets you choose where to travel (the talk key opens it again).',
    offer:['From beyond the mountains, and still on your feet! Sit, sit.','The circle of stones by the road hums for anyone who has walked here on their own feet. Step on it and it carries you home, and back again.','Go and tell your sibling you have found the shrine. Then come back.'],
    parts:[{act:'warp',text:'Travel home on the teleport circle'}],
    done:['(Wren stirs as you sit down beside the bed.) Cherry trees that bloom all year? ...You are making it up.','(They fall asleep smiling.)']},
@@ -157,15 +158,68 @@ const MQ=[
   {id:'V11',title:'Frostbloom',gate:20,from:'kaede',to:'wren',r:0.12,
    offer:['The Frostbloom grows only under the glaciers of the Hoarfrost Reach, north past the ice wall. It halts the grey sleep: the scroll is certain of that.','The wall cracked when Akaoni fell. The road north will open. Tell Chiyo, then go home and tell Wren.'],
    parts:[{talk:'chiyo',text:'Tell Grandmother Chiyo what the demon said',say:['"They made you forget"... When I was small, my grandmother spoke of a year nobody could remember. The year the sky went quiet.','Go home first, child. Your sibling should hear this from you.']}],
-   done:['(Wren is awake. The talisman glows beside them.)','A flower under the ice? Of course it is under the ice. Nothing is ever easy with you.','...Go. I will still be here. I am not going anywhere, am I?']}
+   done:['(Wren is awake. The talisman glows beside them.)','A flower under the ice? Of course it is under the ice. Nothing is ever easy with you.','...Go. I will still be here. I am not going anywhere, am I?']},
+  /* ---------------- Act III: The Frost Flower (the Hoarfrost Reach, levels 20-25; it ends at Ymrik the Rimeking) ---------------- */
+  {id:'F1',title:'Beyond the wall',gate:20,from:null,to:'hallvard',r:0.08,
+   tip:'Frostgate Pass climbs north from the end of the North Road. Up there rain falls as snow. Walking into Rimehold attunes its teleport circle: the circles now link all three villages.',
+   parts:[{act:'rimehold',text:'Walk up Frostgate Pass to Rimehold'}],
+   done:['You came up the pass? The wall cracked three nights ago. We heard it in Rimehold, like the ice on Frostmere breaking, and Old Sigrun said: "Someone is coming."','I am Hallvard. I keep the gate and count who comes through it. You are the first from the south in longer than I have been alive.','Go and warm yourself at the fire. Then see Old Sigrun. She has been waiting for you, and she will not say why.']},
+  {id:'F2',title:'The hearth-folk',gate:21,from:'hallvard',to:'hallvard',r:0.06,
+   tip:'Rimehold has the same jobs as your other villages: a quest board, stalls, a forge, a trainer. It also has the Wayfarers\' Lodge.',
+   offer:['Rimehold is a small place and everyone in it has work. Learn who does what: you will need them.'],
+   parts:[{talk:'ragna',text:'Meet Ragna at the quest board',say:['The board works the way it does everywhere. Wolves, wraiths, and men who ought to know better. Take what suits you.']},
+          {talk:'bjorn',text:'Meet Bjorn, the weaponsmith',say:['Axes, spears and the long knife. Forged in the cold, so it does not go brittle in it.']},
+          {talk:'ulfhild',text:'Meet Ulfhild at the forge',say:['Three the same, and the coals make one better. The cold makes it ring.']},
+          {talk:'thorvald',text:'Meet Thorvald, the skill trainer',say:['The old wolf teaches what the old wolf knows. Come at me with your hands and I will find the gaps.']}],
+   done:['Now you know the hearth-folk. Everyone else is called Ulf or Ylva. It saves time.']},
+  {id:'F3',title:'The winter after the burning sky',gate:21,from:'sigrun',to:'sigrun',r:0.12,
+   tip:'The north\'s nights are long, and some things only happen after dark. Rune stones like the one at Rimehold\'s gate can be read: walk up and press the talk key.',
+   offer:['So the demon spoke to you, and the stone gave you a flower\'s name. Yes. I know the words. My grandmother sang them.','Come and sit when the fire is the only light. I will tell you what the Reach remembers. It is not much, and it is enough.'],
+   parts:[{talk:'sigrun',night:true,text:'Sit with Old Sigrun after dark',wait:['Not yet. The sagas want the dark, and the north gives plenty of it. Come back when the fire is the only light.'],
+           say:['There was a winter that came after the burning sky. That is how the saga begins, and nobody has ever told me what it burned.','The sky opened, and something fell out of it, and where it fell the ice grew back over a whole summer in one night. The old hunters called it the dragon, and never went near.','The Frostbloom grows in the caves under the glacier, where the ice is thin over the warm springs. It is blue as a vein. It opens in the dark and closes in the light. The old healers used it for the grey sleep, before they forgot how.','The rune stones at the gate say the same, if you can read them. I cannot. I only remember the singing.']},
+          {read:'runes',after:true,text:'Read the rune stones at Rimehold\'s gate'}],
+   done:['The stones say it too? Then I did not dream the song.','Frostbloom, then. But those hands of yours... you have never picked anything that fights back. The Lodge will teach you.']},
+  {id:'F4',title:'Skilled hands',gate:22,from:'sigrun',to:'gudrun',r:0.1,
+   tip:'The Wayfarers\' Lodge teaches gathering: mining, woodcutting and picking plants. Learn a profession once, then walk up to a resource in the snow and press the talk key. Potion use is not taught yet.',
+   offer:['Frostbloom does not come out of the ground for just anyone. It shuts at a clumsy touch. Gudrun at the Wayfarers\' Lodge will teach you to gather it.'],
+   parts:[{act:'learn',text:'Learn Gathering at the Wayfarers\' Lodge (Gudrun)'}],
+   done:['There. You have the hands for it now.','The blue veins in the rock are rime ore, and the old pines make good beams: the Lodge teaches mining and woodcutting too, when you have the coin. Potions? The alchemist\'s chair has been empty since her mother died. Someone will sit in it. Not yet.']},
+  {id:'F5',title:'Frostbloom',gate:22,from:'gudrun',to:'sigrun',r:0.18,
+   tip:'Plants and ore show up as marks on the map once you know the profession. Monsters roam near them: the bar over a monster shows its level.',
+   offer:['Go out to the Rimewood Edge, west of Rimehold, where the ice is thin over the springs. Six sprigs would be a fair morning. Three will do.','The snow boars go mad for the smell. Deal with a few while you are out there.'],
+   parts:[{gather:'frostbloom',n:3,text:'Gather frostbloom in the Rimewood Edge'},{kill:'snowboar',n:5,text:'Defeat snow boars in the Rimewood Edge'}],
+   done:['Three. Still blue. And you are still in one piece.','Give them here. There: into the water, and the water turns to a light. Drink it? No. Not you. It is for whoever is grey.']},
+  {id:'F6',title:'A flower for Wren',gate:23,from:'sigrun',to:'wren',r:0.2,
+   tip:'Step onto a teleport circle: a window lets you choose where to go.',
+   offer:['I will brew it now. Then you carry it home before it wilts. The circle in the middle of Rimehold will take you, if you have stood on it before.'],
+   parts:[{talk:'sigrun',text:'Take the frostbloom tea from Old Sigrun',say:['(She strains the cloudy blue water through linen into a small flask. It gives off a pale glow.)','One drop at a time. It will not wake them, I think. It will keep the grey from going any further.']},
+          {act:'warp',after:true,text:'Travel home on the teleport circle'}],
+   done:['(Wren stirs and opens their eyes. For once the grey lines on their arms are only lines.)','...The grey water has a light in it now. Far away. Like a lamp somewhere in the snow.','(They take a sip, make a face, and sleep again, peacefully. The grey has not moved.)']},
+  {id:'F7',title:'Iron in the ice',gate:24,from:'hallvard',to:'odran3',r:0.18,
+   tip:'Some drops only come from one kind of monster, and not every time: keep hunting until you have enough.',
+   offer:['The Frost Reavers have been wearing scraps of grey plate that does not rust and does not dent. They say they took it from the dragon in the ice at Frostmere, but nobody has seen a dragon in three hundred years.','A peddler has set up his cart outside the gate, and he pays good coin for that plate. Bring him two pieces and see what he says.'],
+   parts:[{read:'hullplate',text:'Look at the grey plate in the ice at Frostmere Shore'},{collect:'Reaver plate',from:['reaver'],n:2,chance:0.45,text:'Take plates from the Frost Reavers of Frostmere Shore'}],
+   done:['Ah! The grey plate. Bless you. Thirty coins a piece, and I never ask where it came from, which is why people keep bringing it.','...It was not a dragon, you know. Dragons do not come in sheets, and the edges are cut clean. Someone made this. (He wraps it in cloth, quickly.) Forget I said that. I am a trader, not a scholar.']},
+  {id:'F8',title:'The Rimeking',gate:25,from:'hallvard',to:'sigrun',r:0.25,
+   tip:'Ymrik\'s pillars shield him: smash them. Boss skills drop at 10% each, for everyone who helped.',
+   offer:['The Rimeking has taken the old ice hall at the heart of the Reach. Hunters go in and come out grey, or do not come out. He was here before the village. The old people say he was never an enemy: that he kept the wolves from the doors.','Something has turned him, the same something that turned the foxes in your vale, I suppose. Go and see. Take friends. The hall is north-north-east of the village, past the lake.'],
+   parts:[{boss:'ymrik',text:'Defeat Ymrik, the Rimeking, in his ice hall'}],
+   bossLine:'Ymrik, as he falls: "The iron bird... still sings under the ice. And someone... sings back. From a far light on the sea." In the west, ice groans and splits.',
+   done:['He said that? "Sings back"?','...Sit. Tell it again, slowly, every word. The old sagas have a verse I never understood. I think I begin to.']},
+  {id:'F9',title:'Where the earth\'s heat runs black',gate:25,from:'sigrun',to:'hallvard',r:0.1,
+   offer:['Listen now, while the giant is quiet. The saga has a second verse that I did not tell you, because it made no sense.'],
+   parts:[{talk:'sigrun',text:'Hear Old Sigrun\'s last verse',say:['"The sickness has a root, where the earth\'s heat runs black. Under the mountains men dig for the root, and call it stone."','The mountains are west, past the glacier valley that has just split. The miners of Highmark dig them. If the grey sleep has a root, that is where your road goes.','But you are not ready. The stone there is older, and what guards it is worse. Grow first. There is a great deal of Hoarfrost yet to see, and a wyrm in the north that nobody has beaten.']}],
+   done:['The west valley is open? Then the way to Highmark is open. It is a hard road. Come back and tell us of it, if you can.']}
 ];
 const MQ_BY_ID={}; MQ.forEach((s,i)=>{ s.i=i; MQ_BY_ID[s.id]=s; });
-const MQ_END='Act II is over. The road north to the Hoarfrost Reach and the Frostbloom is not open yet: the story goes on there.';
-// which village each quest villager lives in (the server checks you are there when you talk to them); odran2 is Odran's cart in Hanami
+const MQ_END='Act III is over. The glacier valley west of the Hoarfrost Reach has split, but the road to Highmark is not open yet: the story goes on in the Greyspine.';
+// which village each quest villager lives in (the server checks you are there when you talk to them); odran2 is Odran's cart in Hanami, odran3 his cart at Rimehold
 const MQ_NPC_VIL={wren:1,linnea:1,odran:1,bram:1,aldric:1,tomas:1,ilse:1,maren:1,greta:1,oskar:1,
-  odran2:2,daisuke:2,sayuri:2,kenji:2,haruka:2,tetsuo:2,ryu:2,chiyo:2,kaede:2};
+  odran2:2,daisuke:2,sayuri:2,kenji:2,haruka:2,tetsuo:2,ryu:2,chiyo:2,kaede:2,
+  odran3:3,hallvard:3,ragna:3,bjorn:3,ulfhild:3,thorvald:3,sigrun:3,gudrun:3};
 const MQ_NAMES={wren:'Wren',linnea:'Healer Linnea',odran:'Odran',odran2:'Odran',bram:'Bram',aldric:'Aldric',tomas:'Tomas',ilse:'Ilse',maren:'Maren',greta:'Greta',oskar:'Oskar',
-  daisuke:'Daisuke',sayuri:'Sayuri',kenji:'Kenji',haruka:'Haruka',tetsuo:'Tetsuo',ryu:'Master Ryu',chiyo:'Grandmother Chiyo',kaede:'Shrine Maiden Kaede'};
+  daisuke:'Daisuke',sayuri:'Sayuri',kenji:'Kenji',haruka:'Haruka',tetsuo:'Tetsuo',ryu:'Master Ryu',chiyo:'Grandmother Chiyo',kaede:'Shrine Maiden Kaede',
+  odran3:'Odran',hallvard:'Hallvard',ragna:'Ragna',bjorn:'Bjorn',ulfhild:'Ulfhild',thorvald:'Thorvald',sigrun:'Old Sigrun',gudrun:'Gudrun'};
 const mqNeed=pt=>pt.n||1;
 // a part can progress: not waiting for the parts before it (after:true)
 function mqOpen(step,n,i){ const pt=step.parts[i]; if((n[i]||0)>=mqNeed(pt)) return false; if(!pt.after) return true; for(let k=0;k<i;k++) if((n[k]||0)<mqNeed(step.parts[k])) return false; return true; }
@@ -257,7 +311,15 @@ const LORE=(()=>{
   { const sr=ROADS.find(r=>r.name==='The Shore Road'), [ex,ez]=sr.pts[sr.pts.length-1]; add('wreck',ex+14,ez+6,'wreck','An old fishing boat','The ribs of a fishing boat, bleached and split. Every plank has gone the colour of ash, and nothing grows in the sand around it, not even the sea grass. Farther out, the water is the same grey.',{rot:0.6}); }
   { const [x,z]=arenaGate(ARENA20,850,-300,6); add('demongate',x,z,'stone','The Demon Gate\'s stone','The gate\'s stone is smooth as glass and cold in the sun, with no chisel mark anywhere. Letters run across it, and Kaede\'s scroll gave you the key to them: "Where the ice meets the sky the frost flower grows, and the sleepers wake." Someone has scratched beneath it with a knife: "It was here before the village. It will be here after."',{rot:Math.atan2(x-ARENA20.x,z-ARENA20.z)}); }
   add('offerings',566,-150,'shrine','A roadside shrine','Folded paper prayers are tied to a little roadside shrine. "For a quiet sky to speak again." "For my father, grey since the spring." "For the foxes to be kind again."',{rot:0.8});
-  { const nr=ROADS.find(r=>r.name==='The North Road'), [ex,ez]=nr.pts[nr.pts.length-1]; add('icewall',ex,ez-6,'ice','The ice wall','The pass north is shut by a wall of blue ice, taller than the tallest cedar. Deep inside it, dark shapes hang like flies in amber. Somewhere beyond lies the Hoarfrost Reach, and under its glaciers, the Frostbloom.',{rot:0}); }
+  add('icewall',PASS.x,PASS.ice+4.5,'ice','The ice wall','The pass north is shut by a wall of blue ice, taller than the tallest cedar. Deep inside it, dark shapes hang like flies in amber. Somewhere beyond lies the Hoarfrost Reach, and under its glaciers, the Frostbloom.',{rot:0,
+    textOpen:'The ice wall is gone. Where it stood there is a slope of grey slush and broken blue blocks, and beyond it Frostgate Pass climbs north. The dark shapes it held lie in the meltwater: old timbers, coils of rope, one boot, and a smooth glass lantern that still glows faintly, with no flame in it.'});
+  { const V=VIL3, e=V.ent, rx=4.6, rz=-0.6, px=V.x+Math.sin(e)*(VR+9), pz=V.z+Math.cos(e)*(VR+9);
+    add('runes',px+rx*Math.cos(e)+rz*Math.sin(e)-Math.sin(e)*1.4,pz-rx*Math.sin(e)+rz*Math.cos(e)-Math.cos(e)*1.4,'runes','The rune stones at Rimehold\'s gate','Runes are cut into the standing stone, deep and even, in three rows. The lowest row is Rimehold\'s own script, and Old Sigrun\'s grandmother could read it: "Winter came after the burning sky. Under the ice the flower waits. Do not wake what fell." The upper rows are older, straight as ruled lines, and nobody can read those at all.',{rot:e}); }
+  { const B=FROST_LAKES[0]; let best=null;
+    for(let a=0;a<24&&!best;a++){ const x=B.x+Math.sin(a/24*TAU+2.2)*(B.r+8), z=B.z+Math.cos(a/24*TAU+2.2)*(B.r+8); if(zoneAt(x,z)===ZONES.find(zn=>zn.key==='h24')&&!nearRoad(x,z,6)&&rawHeight(x,z)>30) best=[x,z]; }
+    if(best) add('hullplate',best[0],best[1],'hull','A grey plate in the ice','A slab of grey metal juts out of the glacier at a slant, smooth as glass and cold to the touch. It has not rusted or dented. Round-headed studs run across it in even rows, and half scoured away by the wind, a ring with a small sun inside is painted on it. The hunters call it a dragon\'s scale.',{rot:0.6}); }
+  { const A=ARENA30, a0=Math.atan2(A.x-VIL3.x,A.z-VIL3.z);
+    add('ironbird',A.x+Math.sin(a0)*(A.r+3.5),A.z+Math.cos(a0)*(A.r+3.5),'ironbird','The iron bird','Ahead, nose down in the glacier with one wing snapped, lies a body of grey metal as long as a longhouse, set with even rows of studs and a glass eye cracked black. On its tail fin is a painted ring with a small sun inside it. The hunters call it the dragon\'s skeleton. Warm air sighs from under a wing, and the snow around it never settles.',{rot:a0}); }
   return out;
 })();
 const LORE_BY_ID={}; LORE.forEach(L=>{ LORE_BY_ID[L.id]=L; });

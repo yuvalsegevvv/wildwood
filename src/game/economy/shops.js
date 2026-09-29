@@ -2,7 +2,7 @@
 /* ----- shops (Tomas: weapons, Ilse: armor; Odran, role 'peddler': both, and he buys anything) ----- */
 let shopTab='buy';
 // Odran's curiosities (docs/STORY.md: hints, and he takes them back if you look too long)
-const ODRAN_CURIOS=['a coin with a sun inside a ring, far too round and far too even; a spoon with a hole in it; a bottle of something that smells of nothing at all.','a lantern with no flame, wrapped in cloth; a folded map of the coast with no villages on it; a very small, very old key.'];
+const ODRAN_CURIOS=['a coin with a sun inside a ring, far too round and far too even; a spoon with a hole in it; a bottle of something that smells of nothing at all.','a lantern with no flame, wrapped in cloth; a folded map of the coast with no villages on it; a very small, very old key.','a slab of grey plate that a hunter swore was a dragon scale; a glass bulb, small and warm to the touch; a map of the north with a ring and a small sun drawn in its corner.'];
 function openShop(n){ openPanel('shop',n); shopTab='buy'; renderShop(); }
 function renderShop(){
   const n=panelNPC; if(!n) return;
@@ -14,7 +14,7 @@ function renderShop(){
   if(shopTab==='buy'){
     const mins=Math.max(1,Math.round((1-dayClock)*DAY_SECONDS/60));
     h+=`<p class="shop-note">Unlimited stock. Each one you buy costs 20% more than the last, until sunrise (in about ${mins} min).</p>`;
-    if(ped) h+=`<p class="shop-note">On the cart's top shelf, not for sale: ${ODRAN_CURIOS[n.def.vil===2?1:0]}</p>`;
+    if(ped) h+=`<p class="shop-note">On the cart's top shelf, not for sale: ${ODRAN_CURIOS[(n.def.vil||1)-1]}</p>`;
     for(const it of ITEM_LIST.filter(i=>ofKind(i)&&i.rar===0&&(!ped||i.tier<=tierFor(PL.level))).sort((a,b)=>a.tier-b.tier||a.slot.localeCompare(b.slot))){
       const own=GEAR.inv.filter(x=>x===it.id).length, n=(GEAR.bought||{})[it.id]||0, price=shopPrice(it,n);
       const note=[own?'owned x'+own:'',n?`<span class="up-price">bought ${n} today (+${Math.round(n*SHOP_STEP*100)}%)</span>`:''].filter(Boolean).join(' &middot; ');

@@ -110,8 +110,11 @@ const CLS=['warrior','archer','mage'], BOSSES={boss:15,akaoni:20,kyuubi:25}, BS=
 ok('three bosses drop 6 skills each: a skill and a burst for every class, at the boss level',Object.keys(BOSSES).every(b=>(BS[b]||[]).length===6&&CLS.every(c=>['skill','burst'].every(sl=>BS[b].filter(id=>x.SKILLS[id].cls===c&&x.SKILLS[id].slot===sl).length===1))&&BS[b].every(id=>x.SKILLS[id].lv===BOSSES[b])),Object.keys(BS).map(b=>b+':'+BS[b].length).join(' '));
 ok('boss skills are not free and not sold',Object.values(x.SKILLS).filter(s=>s.drop).every(s=>!x.newSkills().owned.includes(s.id)&&x.upgradeNeeds(s.id,2)===null));
 const elCount=(ids)=>{ const c={}; for(const id of ids){ const e=x.SKILLS[id].el; if(e) c[e]=(c[e]||0)+1; } return c; };
-const newIds=Object.values(BS).flat(), oldIds=Object.keys(x.SKILLS).filter(id=>!x.SKILLS[id].drop), cNew=elCount(newIds), cOld=elCount(oldIds), six=['fire','water','earth','air','dark','light'];
+const newIds=Object.keys(BOSSES).flatMap(b=>BS[b]), oldIds=Object.keys(x.SKILLS).filter(id=>!x.SKILLS[id].drop), cNew=elCount(newIds), cOld=elCount(oldIds), six=['fire','water','earth','air','dark','light'];
 ok('the new skills are mostly the elements used least so far (light, then fire / earth / air / dark, and only one water)',cOld.light===Math.min(...six.map(e=>cOld[e]))&&cNew.light===Math.max(...six.map(e=>cNew[e]||0))&&cNew.water===1&&six.every(e=>cNew[e]>=1),'before '+JSON.stringify(cOld)+' new '+JSON.stringify(cNew));
+// the Hoarfrost Reach's two bosses (Ymrik, level 26; Vetrmaw, level 30) drop 6 skills each too, in the region's elements (water, air, dark)
+{ const H={ymrik:26,vetrmaw:30};
+  ok('the two Hoarfrost bosses drop 6 skills each: a skill and a burst for every class, at the boss level, in water / air / dark',Object.keys(H).every(b=>(BS[b]||[]).length===6&&CLS.every(c=>['skill','burst'].every(sl=>BS[b].filter(id=>x.SKILLS[id].cls===c&&x.SKILLS[id].slot===sl).length===1))&&BS[b].every(id=>x.SKILLS[id].lv===H[b]&&['water','air','dark'].includes(x.SKILLS[id].el))),Object.keys(H).map(b=>b+':'+(BS[b]||[]).length).join(' ')); }
 ok('every class can now use all six elements',CLS.every(c=>six.every(e=>Object.values(x.SKILLS).some(s=>s.cls===c&&s.el===e))));
 // the drop chance: every unowned skill of that boss rolls 10% for each player who helped
 { const N=4000; let got=0, other=0, dup=0; for(let i=0;i<N;i++){ const q={id:'t'+i,gear:{skills:x.newSkills()}}; x.bossSkillDropP(q,'boss'); if(q.gear.skills.owned.includes('snare')) got++; if(q.gear.skills.owned.some(id=>x.SKILLS[id].drop&&x.SKILLS[id].drop!=='boss')) other++; }
@@ -148,7 +151,7 @@ for(const id of newIds){
   if(!(fine&&extra)) castFails.push(id+'('+(fine?'':'no hits ')+(extra?'':'no fx event')+')'); shown.push(id+':'+(f.buff?'buff':hits));
   W.leave('c_'+id);
 }
-ok('all 18 boss skills cast and do what their fx says (hits, buff, beam, chain, zone, projectile, dash)',!castFails.length,castFails.length?'failed: '+castFails.join(', '):shown.join(' '));
+ok('all boss skills cast and do what their fx says (hits, buff, beam, chain, zone, projectile, dash)',!castFails.length,castFails.length?'failed: '+castFails.join(', '):shown.join(' '));
 // what the statuses do
 {   let r=castOne('cleave','c_cl'); const onTarget=evs.slice(r.from).filter(e=>e[0]==='dmg'&&e[1]===target.id).length;
   ok('Oni Cleave sets enemies on fire and the fire keeps hurting (2 hits, then a tick every second)',target.burnT>0&&onTarget>=4,'burning '+target.burnT.toFixed(1)+' s left, '+onTarget+' hits on the target'); W.leave('c_cl');

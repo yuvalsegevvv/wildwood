@@ -31,6 +31,8 @@ function renderInv(){
   // monster drops: only used to upgrade skills (Skills panel)
   const mats=GEAR.mats||{}, have=MAT_IDS.filter(id=>mats[id]>0);
   h+=`<div class="inv-h">Monster drops <span>${have.length?'for upgrading skills':''}</span></div><div class="mat-row">${have.length?have.map(id=>`<span class="mat" title="Dropped by ${MATS[id].from} (level ${MATS[id].lv})"><i style="background:${MATS[id].col}"></i>${MATS[id].name} <b>${mats[id]}</b></span>`).join(''):'<p class="muted">Monsters sometimes drop materials. You use them to upgrade your skills at a trainer.</p>'}</div>`;
+  { const res=GEAR.res||{}, haveR=Object.keys(RES).filter(id=>res[id]>0);   // gathered resources (professions)
+    if(haveR.length||(GEAR.prof&&Object.keys(GEAR.prof).length)) h+=`<div class="inv-h">Resources <span>${haveR.length?'gathered with your professions':''}</span></div><div class="mat-row">${haveR.length?haveR.map(id=>`<span class="mat"><i style="background:${RES[id].col}"></i>${RES[id].name} <b>${res[id]}</b></span>`).join(''):'<p class="muted">Nothing gathered yet.</p>'}</div>`; }
   $('#invBody').innerHTML=h;
   if(INV.sel && !(INV.sel.from==='bag'?counts[INV.sel.id]:GEAR.eq[INV.sel.from]===INV.sel.id)) INV.sel=null;
   renderInvInfo();

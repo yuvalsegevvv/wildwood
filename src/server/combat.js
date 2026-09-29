@@ -59,6 +59,7 @@ function rewardKill(q,m){
   if(m.def.boss) bossSkillDropP(q,m.def.id);
   mqKillP(q,m);
   if(m.def.id==='boss') openValeP(q);
+  if(m.def.id==='akaoni') openNorthP(q);
 }
 // a boss kill: each of that boss's skills you do not own yet drops with BOSS_SKILL_CHANCE (drops.js); you choose when to equip it
 function bossSkillDropP(q,bossId){

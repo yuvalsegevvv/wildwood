@@ -5,7 +5,7 @@
 function sanitizeGear(g,cls){
   const base=newGearFor(cls);
   if(!g||typeof g!=='object') return base;
-  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.max(0,Math.floor(+g.coins||0)),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
+  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.max(0,Math.floor(+g.coins||0)),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
   if(g.mats&&typeof g.mats==='object') for(const id in g.mats){ const n=MATS[id]?clampInt(g.mats[id],0,MAT_MAX,0):0; if(n) out.mats[id]=n; }
   if(g.eq) for(const k in out.eq){ const id=g.eq[k]; if(id&&ITEM[id]&&out.inv.includes(id)) out.eq[k]=id; else if(k!=='weapon') out.eq[k]=null; }
   if(!ITEM[out.eq.weapon]) out.eq.weapon=base.eq.weapon;
@@ -14,6 +14,8 @@ function sanitizeGear(g,cls){
   out.q=sanitizeQuests(g.q);
   out.skills=sanitizeSkills(g.skills);
   out.mq=sanitizeMq(g.mq);
+  { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; }
+  if(out.north<1&&out.mq.s>MQ_BY_ID.V10.i) out.north=1;   // saves that already got past Akaoni: the ice wall is open for them
   return out;
 }
 // quests travel in the player's own save, so check every field and recompute the rewards here
@@ -78,20 +80,31 @@ const soulOfP=p=>p.level>=SOUL_LV?p.gear.soul:'basic';
 function youMsg(p){ return {t:'you',level:p.level,exp:p.exp,maxHp:p.maxHp,hp:p.hp,dmg:p.dmg,def:p.def,red:p.red,dead:p.dead,gear:p.gear}; }
 function pubInfo(p){ return {id:p.id,name:p.name,look:p.look,eq:p.gear.eq,level:p.level}; }
 function inVillage(p){ return vDist(p.x,p.z)<VR+12; }
-// the teleport circles: standing on one in either village (once you have walked to Hanami) takes you to the other
-function warpP(p){
+// the teleport circles (one in each village): standing on one and choosing a destination (the client's travel window, warp{to}) takes you
+// there (CIRCLES in shared/hoarfrost.js: a land's circles wake when you have walked into its village).
+function warpP(p,to){
   if(p.dead||S.t-(p.warpT||-9)<2) return;
-  const from=VILS.find(V=>Math.hypot(p.x-V.tele.x,p.z-V.tele.z)<V.tele.r+1.5); if(!from) return;
-  if(p.gear.east<2){ toastTo(p.id,p.gear.east<1?'The circle is cold. Whatever it answers to lies beyond the eastern mountains.':'The circle hums but will not wake. Walk to Hanami on the far side of the tunnel first.','bad'); return; }
-  const to=from===VIL?VIL2:VIL, T=to.tele, a=Math.atan2(to.x-T.x,to.z-T.z), x=T.x+Math.sin(a)*3.2, z=T.z+Math.cos(a)*3.2;
-  p.warpT=S.t; ev('warp',p.id,r1(p.x),r1(p.z),r1(x),r1(z)); if(to===VIL) mqActP(p,'warp');
-  p.x=x; p.z=z; p.y=getH(x,z); sendTo(p.id,{t:'tp',x,z,face:Math.atan2(-(to.x-x),-(to.z-z))});
+  const from=CIRCLES.find(C=>Math.hypot(p.x-C.V.tele.x,p.z-C.V.tele.z)<C.V.tele.r+1.5); if(!from) return;
+  if(!from.open(p.gear)){ toastTo(p.id,p.gear.east<1?'The circle is cold. Whatever it answers to lies beyond the eastern mountains.':from.id==='rimehold'?'The circle hums but will not wake. Walk into Rimehold through Frostgate Pass first.':'The circle hums but will not wake. Walk to Hanami on the far side of the tunnel first.','bad'); return; }
+  const dest=CIRCLES.find(C=>C.id===to)||(from.id==='home'?CIRCLES[1]:CIRCLES[0]);   // no destination given: home <-> Hanami
+  if(dest===from) return;
+  if(!dest.open(p.gear)){ toastTo(p.id,dest.hint,'bad'); return; }
+  const V=dest.V, T=V.tele, a=Math.atan2(V.x-T.x,V.z-T.z), x=T.x+Math.sin(a)*3.2, z=T.z+Math.cos(a)*3.2;
+  p.warpT=S.t; ev('warp',p.id,r1(p.x),r1(p.z),r1(x),r1(z)); if(V===VIL) mqActP(p,'warp');
+  p.x=x; p.z=z; p.y=getH(x,z); sendTo(p.id,{t:'tp',x,z,face:Math.atan2(-(V.x-x),-(V.z-z))});
 }
 // the vale: its tunnel opens for everyone who helped defeat the Rootwarden; walking to Hanami attunes the circles
 function openValeP(p){ if(p.gear.east>=1) return; p.gear.east=1; p.dirty=true; ev('vale',p.id,1);
   toastTo(p.id,'A deep rumble rolls in from the eastern mountains: the sealed tunnel has opened for you. The Sakura Vale lies beyond.','good'); }
 function reachHanamiP(p){ if(p.gear.east!==1||Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14) return; p.gear.east=2; p.dirty=true; ev('vale',p.id,2); mqActP(p,'hanami');
   toastTo(p.id,'Welcome to Hanami! The teleport circles in both villages are attuned to you now.','good'); }
+// the Hoarfrost Reach: the ice wall in Frostgate Pass cracks for everyone who helped defeat Akaoni; walking into Rimehold attunes its circle
+function openNorthP(p){ if(p.gear.north>=1) return; p.gear.north=1; p.dirty=true; ev('north',p.id,1);
+  toastTo(p.id,'Far to the north, the ice wall in Frostgate Pass cracks and slides apart: the road to the Hoarfrost Reach is open for you.','good'); }
+function reachRimeholdP(p){ if(p.gear.north!==1||Math.hypot(p.x-VIL3.x,p.z-VIL3.z)>VIL3.r+14) return; p.gear.north=2; p.dirty=true; ev('north',p.id,2); mqActP(p,'rimehold');
+  toastTo(p.id,'Welcome to Rimehold! Its teleport circle is attuned to you now: the circles will take you between all three villages.','good'); }
+// where you wake after being knocked out: the village of the land you are in, once you have been there
+const respawnVil=p=>p.x>HALF?(p.z<HZ0?(p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):(p.gear.east>=2?VIL2:VIL)):VIL;
 function gainExpP(p,v,monId){
   if(!(v>0)) return;
   p.exp+=v; ev('xp',p.id,r1(v),monId==null?null:monId);
@@ -142,11 +155,11 @@ function updatePlayersS(dt){
     if(p.buff&&p.buff.regen&&!p.dead) healP(p,p.maxHp*p.buff.regen*dt);
     if(p.dead){
       p.deadT+=dt;
-      if(p.deadT>3){ const g=(p.x>HALF&&p.gear.east>=2?VIL2:VIL).anchors.gate; p.x=g.x; p.z=g.z; p.y=getH(g.x,g.z); p.dead=false; p.hp=p.maxHp; p.lastHit=-99; sendTo(p.id,{t:'tp',x:g.x,z:g.z,face:g.face}); ev('up',p.id); p.dirty=true; }
+      if(p.deadT>3){ const g=respawnVil(p).anchors.gate; p.x=g.x; p.z=g.z; p.y=getH(g.x,g.z); p.dead=false; p.hp=p.maxHp; p.lastHit=-99; sendTo(p.id,{t:'tp',x:g.x,z:g.z,face:g.face}); ev('up',p.id); p.dirty=true; }
       continue;
     }
     if(S.t-p.lastHit>3 && p.hp<p.maxHp) p.hp=Math.min(p.maxHp,p.hp+p.maxHp*0.08*dt);
     if(p.act){ const a=p.act; a.t+=dt; if(!a.done && a.t>=a.dur*a.hitAt){ a.done=true; resolveHitS(p,a); } if(a.t>=a.dur) p.act=null; }
-    p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); reachHanamiP(p); mqTickP(p); }
+    p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); reachHanamiP(p); reachRimeholdP(p); mqTickP(p); }
   }
 }

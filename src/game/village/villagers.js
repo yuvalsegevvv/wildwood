@@ -1,11 +1,11 @@
-//@ VILLAGERS (hard-coded NPCs of both villages), random villagers, NPC behaviour (updateNPCs)
+//@ VILLAGERS (hard-coded NPCs of the three villages), random villagers, NPC behaviour (updateNPCs)
 /* ===================== VILLAGERS =====================
    Hard-coded characters go in this list. Each entry can set:
      id        unique key (use it later to find a character: npcById('maren'))
      name      shown when you talk to them
      title     shown above their head with their name (their profession)
      role      'weaponsmith' / 'armorer' open a shop, 'quests' opens that villager's quest list, 'forge' opens the merge forge, 'trainer' opens the skills panel with lessons to buy,
-               'soul' opens the soul shrine where you bind your element (null = just chat)
+               'soul' opens the soul shrine where you bind your element, 'lodge' opens the Wayfarers' Lodge where you learn professions (null = just chat)
      look      any character-editor fields (sex, hair, top, colors...); anything missing is random
      behavior  { type:'stationary', at:'<anchor>', pose:'sit' (optional) }
                { type:'patrol', route:['<anchor>', ...], pause:seconds }
@@ -16,7 +16,7 @@
      lines     what they say, one line per chat, in order
      voice     optional { pitch, rate, name } for the spoken voice (name matches part of a system voice)
      onTalk    optional function(npc) called every time the player talks to them
-     vil       2 = lives in Hanami, the Sakura Vale's village (same anchors, on that village's plan)
+     vil       2 = lives in Hanami, the Sakura Vale's village, 3 = in Rimehold, the Hoarfrost Reach's (same anchors, on that village's plan)
      late      true = spawned after the random villagers, with its own random numbers (a new villager must not change everyone else's look)
      icon      the label's icon when it is not the role's (ROLE_ICON in npc-labels.js)
      show      optional function() -> false hides them (and you cannot talk to them): Odran comes and goes with the main quest
@@ -108,20 +108,60 @@ const VILLAGERS=[
   { id:'kaede', vil:2, late:true, title:'Soul shrine', name:'Shrine Maiden Kaede', role:'soul',
     look:{sex:'female',height:0.97,face:'oval',hair:'long',hairColor:0x1d1714,chest:0.95,skin:0xeac8a6,top:'jacket',topColor:0xe8e4dc,bottom:'skirt',bottomColor:0xb03a3a,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
     behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.85,pitch:1.15},
-    lines:['The three stones in the gravel are older than the village. Fire, water, earth, air, and the twins dark and light: every soul leans toward one.','Come to me at level 15 and I will bind your soul to an element. Your skills of that element grow stronger, and the skills of its opposite grow weaker.','Fire and water, earth and air, dark and light: each has exactly one opposite. Bind yourself as you please, and change your mind as often as you like.','Monsters have elements too, and they follow the wheel: water douses fire, fire burns air, air wears down earth, and earth drinks water, while light and dark break each other. Strike a monster with the element that beats its own and it will feel it. Strike it with its own and it will only shrug.'] }
+    lines:['The three stones in the gravel are older than the village. Fire, water, earth, air, and the twins dark and light: every soul leans toward one.','Come to me at level 15 and I will bind your soul to an element. Your skills of that element grow stronger, and the skills of its opposite grow weaker.','Fire and water, earth and air, dark and light: each has exactly one opposite. Bind yourself as you please, and change your mind as often as you like.','Monsters have elements too, and they follow the wheel: water douses fire, fire burns air, air wears down earth, and earth drinks water, while light and dark break each other. Strike a monster with the element that beats its own and it will feel it. Strike it with its own and it will only shrug.'] },
+  /* ---- Rimehold, in the Hoarfrost Reach: the same jobs again, hunters and ice-fishers in furs (docs/STORY.md, docs/MAIN-QUEST.md). All late, so the other villagers keep their looks ---- */
+  { id:'ragna', vil:3, late:true, title:'Quest board', name:'Ragna', role:'quests',
+    look:{sex:'female',height:1.0,build:1.05,face:'angular',hair:'long',hairColor:0xc9b48a,chest:1.0,skin:0xe6c8b0,top:'jacket',topColor:0x2f4a6b,bottom:'skirt',bottomColor:0x3a3a42,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'questboard'}, home:'house:3', schedule:'always', voice:{rate:0.88,pitch:1.0},
+    lines:['Welcome to Rimehold. The board is by the road so nobody can say they did not see it: wolves, wraiths, and now and then a man who lost a bet.','New notices go up at sunrise, the same as everywhere. The nights are long here, so the days feel longer.','If you are thinking of the ice hall, ask Hallvard first. Then think again.'] },
+  { id:'bjorn', vil:3, late:true, title:'Weaponsmith', name:'Bjorn', role:'weaponsmith',
+    look:{sex:'male',height:1.06,build:1.3,face:'round',hair:'short',hairColor:0xb0703a,facial:'beard',skin:0xe2b898,top:'flannel',topColor:0x6a3a2a,bottom:'trousers',bottomColor:0x3a3028,hat:'none',pack:false},
+    behavior:{type:'stationary',at:'stall:0:behind'}, home:'house:1', schedule:'always', voice:{rate:0.85,pitch:0.75},
+    lines:['Axes, spears, bows of yew and wands of birch, all forged or cut in the cold. Steel that has never been warm does not go soft.','A blade from the south? Nice edge. It will chip on the ice.','The Wolf-Slayer axe hums before a storm. I sell it only to people who answer questions correctly.'] },
+  { id:'dagny', vil:3, late:true, title:'Armorer', name:'Dagny', role:'armorer',
+    look:{sex:'female',face:'round',hair:'ponytail',hairColor:0x8a5a2a,chest:1.15,skin:0xe4c4a6,top:'hoodie',topColor:0xe0d8c8,bottom:'trousers',bottomColor:0x4a5a6a,hat:'beanie',hatColor:0x8a2a26},
+    behavior:{type:'stationary',at:'stall:1:behind'}, home:'house:5', schedule:'always', voice:{rate:0.95,pitch:1.05},
+    lines:['Furs, mail and plate, lined with wool. A helm that is cold against the skull is a helm that gets left at home.','Good armor turns a bite into a bruise, and a bad winter into a bad night.'] },
+  { id:'ulfhild', vil:3, late:true, title:'Forge · merges items', name:'Ulfhild', role:'forge',
+    look:{sex:'female',height:1.03,build:1.3,face:'angular',hair:'bun',hairColor:0x4a2a1a,chest:1.2,skin:0xd8b090,top:'jacket',topColor:0x4a3a2a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'stall:2:behind'}, home:'house:6', schedule:'always', voice:{rate:0.85,pitch:0.85},
+    lines:['Three of the same, and the coals make one better. In this cold the steel rings like a bell.','Rare, epic, unique, legendary. Bring me three and I will show you what the north can do.'] },
+  { id:'thorvald', vil:3, late:true, title:'Skill trainer', name:'Thorvald', role:'trainer',
+    look:{sex:'male',height:1.02,build:1.0,face:'angular',hair:'short',hairColor:0xcfcac2,facial:'beard',skin:0xd8b494,top:'jacket',topColor:0x3a4a5a,bottom:'trousers',bottomColor:0x2a2830,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'well'}, home:'house:2', schedule:'always', voice:{rate:0.8,pitch:0.72},
+    lines:['I teach what Aldric and Ryu teach, in the cold, and I charge the same. Ask them: they will say I teach it better.','Learn your skills before you meet the Rimeking. He does not wait for you to catch up.','Breathe in the cold. It clears the head.'] },
+  { id:'sigrun', vil:3, late:true, title:'Seer', icon:'story', name:'Old Sigrun', role:null,
+    look:{sex:'female',height:0.9,build:0.95,face:'round',hair:'bun',hairColor:0xdad6ce,chest:0.8,skin:0xe4c8ae,top:'hoodie',topColor:0x5a4a6a,bottom:'skirt',bottomColor:0x2a2830,hat:'none'},
+    behavior:{type:'stationary',at:'campfire:seat1',pose:'sit'}, home:'house:4', schedule:'always', voice:{rate:0.78,pitch:1.0},
+    lines:['Sit. The fire is warmer than it looks, and I am colder than I look.','There was a winter that came after the burning sky. I have the whole saga, if you have the whole night.','The aurora is the sky remembering. Do not stare at it too long: it remembers you back.'] },
+  { id:'hallvard', vil:3, late:true, title:'Hunter-captain', name:'Hallvard', role:null,
+    look:{sex:'male',height:1.05,build:1.15,face:'angular',hair:'short',hairColor:0x3a2a1e,facial:'mustache',skin:0xdcb894,top:'jacket',topColor:0x4a5a4a,bottom:'trousers',bottomColor:0x3a3a2e,hat:'ranger',hatColor:0x5a4a3a},
+    behavior:{type:'patrol',route:['gate','lamp:2','lamp:3','lamp:4','lamp:5','lamp:6','lamp:1','gate'],pause:3}, home:'house:7', schedule:'always', speed:1.2, voice:{rate:0.95,pitch:0.85},
+    lines:['Wolves in the wold, wraiths in the hall, a wyrm in the north. Nothing to worry about, so long as you stay by the fire.','The Rimeking sits in the old ice hall, north-north-east of here. Ymrik was here before the first house.','Frostgate Pass has been shut since my grandfather was a boy. Then it cracked, three nights ago, like the lake in spring.'] },
+  // the Wayfarers' Lodge: mining, woodcutting and gathering are learned here (panel: economy/professions.js); potion use will be
+  { id:'gudrun', vil:3, late:true, title:'Wayfarers\' Lodge · professions', icon:'lodge', name:'Gudrun', role:'lodge',
+    look:{sex:'female',height:1.0,build:1.1,face:'oval',hair:'ponytail',hairColor:0x6a4a2a,chest:1.0,skin:0xe2c4a6,top:'jacket',topColor:0x5a6a4a,bottom:'trousers',bottomColor:0x4a3a2a,hat:'beanie',hatColor:0x3a5a6a,shoes:'boots',shoeColor:0x3a2a1e},
+    behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.92,pitch:1.05},
+    lines:['The Lodge teaches the three ways of taking what the north gives: mining, woodcutting, and gathering. A hundred and fifty coins each, and a little patience.','Rime ore in the rock, frostpines on the wold, frostbloom under the snow. Take only what you can carry home.','Potions? Come back in a year. Somebody will sit in the alchemist\'s chair by then.'] },
+  { id:'odran3', vil:3, late:true, title:'Peddler', icon:'peddler', name:'Odran', role:'peddler', show:()=>odranHere(3),
+    look:{sex:'male',height:1.02,build:1.05,face:'oval',hair:'short',hairColor:0x3a2a20,facial:'stubble',top:'jacket',topColor:0x5a4a6a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'ranger',hatColor:0x3a3230,pack:true,shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'cart'}, home:'house:4', schedule:'always', voice:{rate:1.1,pitch:0.95},
+    lines:['Furs, flasks and the odd bit of grey plate. Cold work, but somebody has to keep the north supplied with buttons.','It snows even inside my hat. Do not ask how.','The pass is open? Marvellous. I was beginning to think I had come to the end of the world.'] }
 ];
 const FILLER_COUNT=LITE?3:(LOW?4:8);
 const NAMES_M=['Anders','Henrik','Lukas','Emil','Jonas','Felix','Mattis','Arvid','Elias','Nils','Viggo','Karl'];
 const NAMES_F=['Freya','Ingrid','Liv','Astrid','Sigrid','Elin','Hanna','Greta','Noor','Saga','Tove','Alma'];
 const NAMES_M2=['Hiroshi','Takumi','Sora','Ren','Haruto','Kaito','Yuto','Daiki','Shun','Riku'];
 const NAMES_F2=['Yui','Aoi','Hina','Sakura','Mei','Rin','Emi','Nanami','Koharu','Akari'];
+const NAMES_M3=['Ulf','Leif','Eirik','Gunnar','Hakon','Ivar','Orm','Sten','Torben','Rurik'], NAMES_F3=['Ylva','Runa','Solveig','Brynja','Halla','Torvi','Yrsa','Signe','Vigdis','Asa'];
+const SMALLTALK3=['The lake has never frozen this thick. Or this quiet.','Wolves come to the edge of the firelight and just sit there. I do not care for it.','My grandfather fished Frostmere for sixty winters. He never once looked at the north shore.','If you see a blue flower, do not pick it in the daylight. It sulks.','The aurora was green last night. Green means a good winter. Red means the other kind.','They say the wall is open. They also say the Rimeking is friendly. They say a lot at the fire.'];
 const SMALLTALK2=['The cherry trees never stop blooming here. Nobody remembers why.','Mind the ponds. Kappa like to pull travellers in by the ankles.','Tetsuo and Kenji argue about steel every evening at the brazier.','The bamboo sings when the wind comes off the mountains.','My brother saw foxfire above the shrine again last night.','Sweep the petals in the morning, and by noon there are more.','Daisuke walks that circle so often the stones know his feet.','They say the tunnel was sealed by the Rootwarden itself. Strange that you got through.'];
 const SMALLTALK=['Lovely day for a walk in the woods.','The deer come right up to the garden at dawn.','Mind the river, the current is quicker than it looks.','Have you tried the apples at the market?','My grandmother planted half the birches around here.','Foxes got into the hen house again last week.','When the fireflies come out, you know summer is here.','The old path still leads down to the lake, if you know where to look.','The tavern gets loud after sunset. Oskar tells the same stories every night.','Bram thinks he is guarding us from wolves. There are no wolves.'];
 
 const NPCs=[];
 let talkNPC=null, nearNPC=null;
 function npcById(id){ return NPCs.find(n=>n.def.id===id); }
-const vilOf=n=>n.def.vil===2?VIL2:VIL;
+const vilOf=n=>VILS[(n.def.vil||1)-1];
 function anchorOf(name,V){ V=V||VIL; return V.anchors[name]||V.anchors.plaza0; }
 function randomPOI(n){ const V=vilOf(n); let p; for(let i=0;i<6;i++){ p=V.pois[Math.floor(Math.random()*V.pois.length)]; if(Math.hypot(p.x-n.x,p.z-n.z)>3) break; } return {x:p.x+AR(-0.6,0.6),z:p.z+AR(-0.6,0.6),face:p.face}; }
 function spawnNPC(def,rng){
@@ -131,7 +171,7 @@ function spawnNPC(def,rng){
   rig.root.scale.setScalar(s);
   const g=new THREE.Group(); g.add(rig.root); scene.add(g);
   const B=def.behavior||{type:'wander'}; def.behavior=B;
-  const V=def.vil===2?VIL2:VIL;
+  const V=VILS[(def.vil||1)-1];
   const start=B.at?anchorOf(B.at,V):(B.route?anchorOf(B.route[0],V):randomPOI({def,x:V.x+99,z:V.z}));
   const n={def,V,look,rig,g,scale:s,x:start.x,z:start.z,y:V.h,face:start.face||0,faceGoal:start.face,vx:0,vz:0,walk:0,state:'idle',timer:AR(0.5,4),
     route:[],inside:false,headYaw:0,line:0,pi:0,stuckT:0,sx:start.x,sz:start.z,partner:null,seed:Math.random()*10};
@@ -149,8 +189,16 @@ function initNPCs(){
     const look=vil===2?{sex,hairColor:rng()<0.8?0x1d1714:0x3a2418,hat:rng()<0.3?'kasa':'none',hatColor:0xc8a868}:{sex};
     defs.push({id:'villager'+(vil===2?'h':'')+i,vil,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
   }
+  // Rimehold's people: made with their own rng after everything else, so the other villages' random looks stay as they were
+  { const r3=mulberry32(9003);
+    for(let i=0;i<FILLER_COUNT;i++){
+      const sex=r3()<0.5?'male':'female', pool=sex==='male'?NAMES_M3:NAMES_F3; let name; do{ name=pool[Math.floor(r3()*pool.length)]; }while(used.has(name)); used.add(name);
+      const lines=[]; for(let k=0;k<3;k++) lines.push(SMALLTALK3[Math.floor(r3()*SMALLTALK3.length)]);
+      const look={sex,hairColor:[0xc9b48a,0x8a5a2a,0x3a2a1e,0xb0703a,0xdad6ce][Math.floor(r3()*5)],hat:r3()<0.4?'beanie':'none',hatColor:[0x8a2a26,0x3a5a6a,0x5a4a3a][Math.floor(r3()*3)],top:r3()<0.5?'hoodie':'jacket'};
+      defs.push({id:'villagerr'+i,vil:3,late:true,seed:i+1,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
+    } }
   defs.filter(d=>!d.late).forEach(d=>spawnNPC(d,rng));
-  defs.filter(d=>d.late).forEach(d=>spawnNPC(d,mulberry32(9002)));
+  defs.filter(d=>d.late).forEach(d=>spawnNPC(d,mulberry32(9002+(d.seed||0))));
 }
 function routeTo(n,pt,state){ n.route=[pt]; n.state=state||'walk'; n.stuckT=0; n.sx=n.x; n.sz=n.z; }
 function tryChat(n){

@@ -18,7 +18,7 @@ function frame(){
     animateHiker(dt);
     updateMotes(dt,t); updatePetals(dt,t);
     updateAnimals(dt);
-    updateVillage(dt); updateVale(dt); updateLoreProps();
+    updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateNodes(); updateLoreProps();
     updateNPCs(dt);
     updateNpcLabels();
     updateRemotes(dt);
@@ -28,7 +28,7 @@ function frame(){
     soundTick(dt);
   }
   updateMap(dt);
-  updateWeather(dt);
+  updateWeather(dt); updateAurora();
   updateChat();
   updateEnv(dt);
   cullChunks(dt);

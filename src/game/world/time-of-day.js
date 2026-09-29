@@ -19,7 +19,7 @@ function mkState(p){ const s={elev:20,azim:75}; CK.forEach(k=>s[k]=new THREE.Col
 const TOD_STATES=TOD_KEYS.map(mkState);
 let dayClock=0.045; // start every visit in the morning, around 07:05
 const envCur=mkState(TOD_KEYS[1]);
-const dayMote=new THREE.Color(0xfff7d6), fly=new THREE.Color(0xd8ff6a), wDay=new THREE.Color(0x2c5560), wNight=new THREE.Color(0x0d1826);
+const dayMote=new THREE.Color(0xfff7d6), fly=new THREE.Color(0xd8ff6a), wDay=new THREE.Color(0x2c5560), wNight=new THREE.Color(0x0d1826), iceMote=new THREE.Color(0xcfe8ff);
 function applyEnv(s){
   const el=s.elev*DEG, az=s.azim*DEG;
   sunDir.set(Math.cos(el)*Math.sin(az), Math.sin(el), Math.cos(el)*Math.cos(az)).normalize();
@@ -30,6 +30,7 @@ function applyEnv(s){
   skyU.uBot.value.copy(s.hg); skyU.uSunCol.value.copy(s.sun); skyU.uCloud.value.copy(s.cloud); skyU.uNight.value=s.night;
   if(waterMat) waterMat.color.copy(wDay).lerp(wNight,s.night);
   pMat.color.copy(dayMote).lerp(fly,s.night); pMat.size=lerp(0.13,0.34,s.night); pMat.opacity=lerp(0.45,1,s.night);
+  { const cold=P.x>HALF?smoothstep(HZ0+40,HZ0-30,P.z):0; if(cold>0){ pMat.color.lerp(iceMote,cold); pMat.size=lerp(pMat.size,lerp(0.09,0.15,s.night),cold); pMat.opacity*=1-0.35*cold; } }   // over the snow: glints of diamond dust, not fireflies
 }
 function envAt(c,out){
   const n=TOD_KEYS.length;
@@ -48,15 +49,17 @@ function envAt(c,out){
 let todLabelT=0;
 let curZone='';
 function updateZoneLabel(){
-  const V=vilAt(P.x,P.z), inV=vDist(P.x,P.z)<VR+22, zn=inV?null:zoneAt(P.x,P.z), vale=inVale(P.x);
-  const key=zn?String(zn.key):inV?(V===VIL2?'hanami':'village'):P.inTun?'tunnel':vale?'vale':'wild';
-  const txt=zn?zn.name+(zn.boss?' (boss)':' (Lv '+(zn.lvText||zn.level)+')'):inV?(V===VIL2?'Hanami':'The village'):P.inTun?'The mountain tunnel':vale?'The Sakura Vale':'Deep forest';
+  const V=vilAt(P.x,P.z), inV=vDist(P.x,P.z)<VR+22, zn=inV?null:zoneAt(P.x,P.z), vale=inVale(P.x), hoar=inHoar(P.x,P.z), pass=!zn&&!inV&&inPass(P.x,P.z);
+  const key=zn?String(zn.key):inV?(V===VIL3?'rimehold':V===VIL2?'hanami':'village'):P.inTun?'tunnel':pass?'pass':hoar?'hoar':vale?'vale':'wild';
+  const txt=zn?zn.name+(zn.boss?' (boss)':' (Lv '+(zn.lvText||zn.level)+')'):inV?(V===VIL3?'Rimehold':V===VIL2?'Hanami':'The village'):P.inTun?'The mountain tunnel':pass?'Frostgate Pass':hoar?'The Hoarfrost Reach':vale?'The Sakura Vale':'Deep forest';
   $('#zone').textContent=txt;
   if(started && key!==curZone && curZone!==''){
     if(zn) toast('Entering '+txt,zn.boss||zn.level>PL.level+2?'bad':'');
     else if(key==='village') toast('Back in the village','good');
     else if(key==='hanami') toast('Hanami, village of the Sakura Vale','good');
+    else if(key==='rimehold') toast('Rimehold, village of the Hoarfrost Reach','good');
     else if(key==='vale'&&curZone==='tunnel') toast('The Sakura Vale','good');
+    else if(key==='hoar'&&curZone==='pass') toast('The Hoarfrost Reach','good');
   }
   curZone=key;
 }
@@ -69,7 +72,7 @@ function updateEnv(dt){
   weatherTint(envCur);
   applyEnv(envCur);
   todLabelT-=dt;
-  if(todLabelT<=0){ todLabelT=0.5; $('#tod').textContent=envCur.name+' '+clockText(dayClock)+(WX.kind&&WX.inten>0.2?(WX.kind===2?' · Thunderstorm':' · Rain'):''); updateZoneLabel(); }
+  if(todLabelT<=0){ todLabelT=0.5; $('#tod').textContent=envCur.name+' '+clockText(dayClock)+(WX.kind&&WX.inten>0.2?(WX.snow>0.5?(WX.kind===2?' · Blizzard':' · Snow'):WX.kind===2?' · Thunderstorm':' · Rain'):''); updateZoneLabel(); }
 }
 // the sun button / T key skips ahead to the next part of the day
 let serverDay=null;

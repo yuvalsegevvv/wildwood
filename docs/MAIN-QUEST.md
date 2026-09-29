@@ -1,20 +1,22 @@
-# Main quest line: Wildwood and the Sakura Vale
+# Main quest line: Wildwood, the Sakura Vale and the Hoarfrost Reach (built, levels 1-25), and the plan for levels 26-50
 
-The first two chapters of the main quest line: **Act I** (Wildwood, levels 1-15) and **Act II** (the Sakura Vale, levels 15-20; it
-ends at the first vale boss, Akaoni). They follow `docs/STORY.md` (the story, the spoiler rule, the hints) and `docs/WORLD.md` (the
-lands), and teach the game's systems as the story needs them. **Built**: the steps are data in `src/shared/main-quest.js`; section 6
-says how the code fits together. The vale's second boss (Kyuubi, level 25) is saved for a side story (section 4), not built yet.
+The first three chapters of the main quest line: **Act I** (Wildwood, levels 1-15), **Act II** (the Sakura Vale, levels 15-20; it
+ends at the first vale boss, Akaoni) and **Act III** (the Hoarfrost Reach, levels 20-25; it ends at Ymrik the Rimeking). They follow
+`docs/STORY.md` (the story, the spoiler rule, the hints) and `docs/WORLD.md` (the lands), and teach the game's systems as the story needs
+them. **Built**: the steps are data in `src/shared/main-quest.js`; section 6 says how the code fits together. **Levels 26-50 are only
+planned** (section 7): nothing in it exists in the game yet (`docs/NOT-BUILT.md` comments on this and the other gaps). The vale's second boss (Kyuubi, level 25) is saved for a side story
+(section 4), not built yet.
 
 ## 1. Goals and pacing
 
 - **About 30 minutes of quest play per land**: walking, talking, the objectives themselves and the boss fight. The time a player
   spends levelling between steps is not counted in it.
 - **The main quest is the best path, not enough on its own.** Its rewards give about **30% of the XP** a land requires (Wildwood:
-  levels 1 to 15, 29%; the Vale: levels 15 to 20, 31%). The rest comes from hunting and the quest board (Maren, Sayuri). Steps have a
-  **level gate**: a step is offered only from its level; until then the giver says to hunt and take notices, and the quest log says
-  "From level N".
+  levels 1 to 15, 29%; the Vale: levels 15 to 20, 31%; the Hoarfrost Reach: levels 20 to 25, 27%). The rest comes from hunting and the
+  quest board (Maren, Sayuri, Ragna). Steps have a **level gate**: a step is offered only from its level; until then the giver says to
+  hunt and take notices, and the quest log says "From level N".
 - **Teach one system at a time, when the story needs it.** A step's `tip` is a one-time toast when it starts.
-- **The story comes first in the main quest** (`STORY.md` section 7): a player who follows only it understands acts I and II.
+- **The story comes first in the main quest** (`STORY.md` section 7): a player who follows only it understands the acts built so far.
   Side content (section 5) adds hints and is never required.
 
 ### Rewards
@@ -24,6 +26,9 @@ tuned later; coins are `r x 18 x` a board quest's coins at that level, plus 10 (
 
 **What the rest costs (current curve)**: Wildwood's other 71% is about 1,000 kills of the right level, a few hours with board quests.
 Levels 15-20 in the vale need about 1,450 kills of one level up beyond the quest (the curve past 15 is steep: `CLAUDE.md` section 10).
+From level 25 on `expToNext` is flattened (`shared/balance.js`): a level then costs as many same-level kills as 25 -> 26 does (about
+2,100), so the Hoarfrost's levels 26-30 are a long but bounded grind instead of the 7,800 kills a level the old curve would have asked
+at level 30.
 
 ## 2. Act I: "The Grey Rain" (Wildwood, levels 1-15)
 
@@ -78,10 +83,48 @@ Existing people: Daisuke (guard), Sayuri (board), Kenji and Haruka (shops), Tets
 | V10 | The Demon Gate | 20 | Daisuke → Kaede | Defeat Akaoni; read the Demon Gate's stone | boss skill drops | .2 |
 | V11 | Frostbloom | 20 | Kaede → Wren | Tell Chiyo; take the news home | (the act ends) | .12 |
 
-**The act ends at Akaoni.** Its dying words carry the act's key hint (moved here from Kyuubi): *"They made you forget... They are
-still watching... Ask the ice what fell from the sky."*, and far to the north the ice wall cracks. The gate's stone gives the
-Frostbloom ("Where the ice meets the sky the frost flower grows, and the sleepers wake."). After V11 the quest log says the road north
-to the Hoarfrost Reach is not open yet (`MQ_END`).
+Akaoni's dying words carry the act's key hint (moved here from Kyuubi): *"They made you forget... They are still watching... Ask the ice
+what fell from the sky."*, and far to the north the ice wall cracks: **Akaoni's fall opens the ice wall in Frostgate Pass**
+(`gear.north` 1, `openNorthP`). The gate's stone gives the Frostbloom ("Where the ice meets the sky the frost flower grows, and the
+sleepers wake."). After V11 act III begins by itself.
+
+## 3b. Act III: "The Frost Flower" (the Hoarfrost Reach, levels 20-25)
+
+The Reach is a high frozen plateau north of the vale (`docs/WORLD.md`, `shared/hoarfrost.js`). Frostgate Pass climbs through the vale's
+north wall to it; the ice wall that shut the pass is a real wall until Akaoni falls. Rimehold is the third village, with the same jobs
+as the others (board, weapon and armour stalls, forge, trainer, a teleport circle) and one new one: **the Wayfarers' Lodge**, where the
+professions are learned. Rain is snow here, a storm a blizzard (`game/world/weather.js`).
+
+**New people** (all `late:true`; ids in `MQ_NPC_VIL`, village 3): **Hallvard** the hunter-captain (the gate), **Old Sigrun** the seer (the
+campfire), **Ragna** (board), **Bjorn** (weapons), **Dagny** (armour), **Ulfhild** (forge), **Thorvald** (skill trainer), **Gudrun** (the
+Lodge), **Odran** (`odran3`: his cart stands at Rimehold's gate from F7, `odranHere(3)`).
+
+| # | Step | Gate | Giver → hand in | Objective | Teaches | r |
+|---|---|---|---|---|---|---|
+| F1 | Beyond the wall | 20 | (starts) → Hallvard | Walk up Frostgate Pass into Rimehold (attunes its circle) | snow, the third village | .08 |
+| F2 | The hearth-folk | 21 | Hallvard | Meet Ragna, Bjorn, Ulfhild, Thorvald | a third hub | .06 |
+| F3 | The winter after the burning sky | 21 | Sigrun | Sit with Sigrun **after dark**; read the rune stones at the gate | day and night, reading | .12 |
+| F4 | Skilled hands | 22 | Sigrun → Gudrun | Learn Gathering at the Lodge (150 coins) | professions | .1 |
+| F5 | Frostbloom | 22 | Gudrun → Sigrun | Gather 3 frostbloom in the Rimewood Edge; 5 snow boars | resource nodes, the map's node marks | .18 |
+| F6 | A flower for Wren | 23 | Sigrun → Wren | Take the tea from Sigrun; travel home on the circle | choosing a destination in the travel window | .2 |
+| F7 | Iron in the ice | 24 | Hallvard → Odran | Read the grey plate at Frostmere Shore; 2 plates from the Frost Reavers (45%) | rare drops | .18 |
+| F8 | The Rimeking | 25 | Hallvard → Sigrun | Defeat Ymrik in his ice hall (level 26 boss; last words below) | pillars, boss skill drops | .25 |
+| F9 | Where the earth's heat runs black | 25 | Sigrun → Hallvard | Hear Sigrun's last verse | (the act ends) | .1 |
+
+Story beats: the Frostbloom halts the grey where the sap only slowed it (F6: Wren's arms are "only lines" for once, but they do not
+wake); Sigrun's saga of "the winter after the burning sky" and the rune stones' upper rows, "straight as ruled lines" (the same old
+hand as the tunnel's letters and the Demon Gate); the hint *objects*: **the grey plate** ("a dragon's scale": smooth, does not rust,
+studs in even rows, a ring with a small sun painted on it, `hullplate`) and Odran's slip: "Dragons do not come in sheets, and the edges
+are cut clean. Someone made this."; the hint *person*: Odran pays for the plate and wraps it up quickly; the hint *place*: **the iron
+bird**, the wreck at the frost wyrm's nest (`ironbird`, a boss zone the main quest does not reach; a player who does read it). Ymrik,
+dying: *"The iron bird... still sings under the ice. And someone... sings back. From a far light on the sea."* (the Stormhorn's lighthouse
+relay, `STORY.md` act V-b: no answers before the reveal). F9 ends the act: the sickness "has a root, where the earth's heat runs black,
+under the mountains" (Highmark's miners, act IV), and the west glacier valley has split (**not built**: the road west is the Greyspine's
+gate, `MQ_END`).
+
+**Systems introduced**: the third village and its circle (`CIRCLES` in `shared/hoarfrost.js`, the travel window `ui/travel.js`); snow
+weather; **professions** (section 5b); the gate on the vale's north wall. **Not built in the Reach**: the Greyspine gate (the west valley),
+what the resources are for (crafting, potions), regional weather on the server.
 
 ## 4. Side story, planned (not built): "The Nine Tails"
 
@@ -95,8 +138,10 @@ to the story, not repeat Akaoni's (spoiler rule: still no answers before the end
 
 Readable lore spots (`LORE` in `shared/main-quest.js`; walk up and press the talk key): the Stone Circle's carvings; the old letters by
 the tunnel; **the drowned roads** (below); a grey fishing boat on the Crownsea shore where nothing grows; the Demon Gate's stone; a
-roadside shrine of paper prayers in the vale ("for a quiet sky to speak again"); the ice wall at the end of the North Road. Oskar's,
-Chiyo's and Odran's lines; Odran's curiosities (a coin with a sun inside a ring, the lantern with no flame).
+roadside shrine of paper prayers in the vale ("for a quiet sky to speak again"); **the ice wall** in Frostgate Pass (it reads differently
+once open: `textOpen`, with a lantern that glows with no flame in the meltwater); the rune stones at Rimehold's gate; the grey plate in
+the ice at Frostmere; the iron bird. Oskar's, Chiyo's, Sigrun's and Odran's lines; Odran's curiosities (a coin with a sun inside a ring,
+the lantern with no flame, a warm glass bulb).
 
 **The drowned roads.** Where the roads dip under still water (the Redgate Road west of the village, the Shore Road's valley, a pond
 on the East Road, and a few spots in the vale), plank causeways on posts carry them across (`BRIDGES` kind `causeway`). Below the planks
@@ -107,19 +152,168 @@ inside. Names: the Drowned Road, the Long Planks, the Heron Steps.
 **The forest's edges** (the Crownsea Shore, the Sunwall's Foot, the Greyspine Foothills) hold monsters of levels 16-20: not part of the
 main quest, ground for players who come back from the vale.
 
+**The Hoarfrost Reach beyond the main quest**: levels 26-30 (four zones, two kinds each, and the wyrm's nest), the two bosses' skills
+(12), the resource nodes (90) and Odran's plate trade are side content for players who carry on after F9.
+
+### 5b. Professions (built: the Lodge and gathering; not built: what the resources are for)
+
+The Wayfarers' Lodge (Gudrun, Rimehold) teaches **mining**, **woodcutting** and **gathering** for 150 coins each (`shared/professions.js`);
+**potion use** is listed there as "coming later". A profession levels 1-5 with use (`PROF_XP`), a higher level sometimes gives a double
+yield. Resource nodes (`NODES`, 90 of them, placed from a seeded rng in the Reach's zones: rime ore veins, frostpines, frostbloom,
+snowmoss) give one resource each (`gear.res`) and grow back after 75-120 s; the map shows the nodes of the professions you know.
+Frostbloom is the only resource the main quest asks for (F5). Planned for later lands: nodes and resource kinds in every land, crafting at
+the forges (gear from ore and wood), potions (a fourth profession, taught by an alchemist in Glasswell, act V-a: healing, cures, buffs,
+a use for herbs and frostbloom), selling resources to Odran and the stalls, tools that make gathering faster.
+
 ## 6. How it is built
 
 - **Data** (`src/shared/main-quest.js`, pure): `MQ`, the steps (fields described at the top of the file), `mqTalk` (what a talk does
   and says: used by the server to apply it and by the client to show it, so the two always agree), `mqObjective`, `mqReward`, the
-  places (`HERBS`, `mqGreySpot`, `VIL.bed`, `V.cart`) and `LORE`.
+  places (`HERBS`, `mqGreySpot`, `VIL.bed`, `V.cart`) and `LORE`. Part kinds: `talk`, `kill`, `grey`, `pick`, `collect`, `gather`, `read`,
+  `act`, `level`, `tier`, `boss`.
 - **Save**: `gear.mq = {s, st, n, h}` (step index; 0 offered, 1 in progress, 2 ready to hand in; progress per part; heartleaf picked),
   sanitized by `sanitizeMq`. Old characters start at W1 and walk the early steps quickly; parts that are about what they already have
-  (level, weapon tier, soul, the tunnel open, Hanami reached) finish at once.
-- **Server** (`src/server/main-quest.js`): the only message is `mq{a:'talk'|'pick'|'read'}`, each checked (in the village, next to the
-  herb or the spot, the part open). Kills (`rewardKill` → `mqKillP`), system uses (`mqActP` from buy, sell, equip, class, merge, upskill,
-  soul, the quest board, skill and burst use, the teleport circle, reaching Hanami) and a half-second check (`mqTickP`: auto parts, the grey
-  monsters spawned for you: `GREY_DEFS` in `monster-defs.js`) move it on. Testing: `dev{cmd:'mq',v:'W9'}` (the Settings' testing tools).
+  (level, weapon tier, soul, the tunnel open, Hanami reached, Rimehold reached, gathering learned) finish at once. A save that is already
+  past V10 gets `gear.north` 1 (the ice wall open).
+- **Server** (`src/server/main-quest.js`): the only message is `mq{a:'talk'|'pick'|'read'}`, each checked (in the village of that
+  villager, next to the herb or the spot, the part open). Kills (`rewardKill` → `mqKillP`), system uses (`mqActP` from buy, sell, equip,
+  class, merge, upskill, soul, the quest board, skill and burst use, the teleport circle, reaching Hanami and Rimehold, learning
+  gathering), gathering (`mqGatherP` from `server/professions.js`) and a half-second check (`mqTickP`: auto parts, the grey monsters
+  spawned for you: `GREY_DEFS` in `monster-defs.js`) move it on. Testing: `dev{cmd:'mq',v:'F5'}` (the Settings' testing tools).
 - **Client** (`src/game/economy/main-quest.js`): the lines (`mqLinesFor`, shown by `village/talking.js` before a villager's panel), the
   violet ! / ? over villagers (`mqMark`, `npc-labels.js`), the main quest's row at the top of the quest log (`mqLogRow`), its violet
-  marker on the maps (`mqTarget`). Props: `game/world/lore-props.js` (sickbed, carts, lore props, heartleaf).
-- **Test**: `node tools/mainquest-smoke.js`.
+  marker on the maps (`mqTarget`: people, kill zones, lore spots, resource nodes, the pass). Props: `game/world/lore-props.js` (sickbed,
+  carts, lore props, heartleaf), `game/village/buildings-hoar.js` (the ice wall, the rune stones, the iron bird).
+- **Tests**: `node tools/mainquest-smoke.js` (walks a character through acts I-III to the end), `node tools/hoarfrost-smoke.js`.
+- **To add a step**: a row in `MQ` (and its people in `MQ_NPC_VIL` / `MQ_NAMES`, `VILLAGERS`), a lore spot in `LORE` if it reads something,
+  a test line; a new kind of part needs a hook in `server/main-quest.js` and a marker in `mqPartTarget` (client).
+
+## 7. Planned, not built: the rest of the story, levels 26-50
+
+**Nothing in this section exists in the game.** It turns `docs/STORY.md` (the acts, the hidden truth, the spoiler rule) and
+`docs/WORLD.md` (the lands, their level ranges and gates) into main quest steps, level by level, so the next chapters can be built one
+land at a time. The spoiler rule (`STORY.md` section 0) is unchanged: no answers before the end of the Amber Reach storyline (act VI);
+every hint keeps an innocent reading. Step ids continue the built ones: **G** the Greyspine, **S** the Sunscar, **A** Amber Reach,
+**E** the Emberwake Isles, plus the side branches **T** (Stormhorn) and **R** (Rootdeep). Rewards follow section 1 (about 30% of the
+XP a land needs, `r x expToNext(gate)`), 3-4 hub steps and one boss per land, gates rising with the levels below.
+
+### 7.1 The road, level by level
+
+```
+level   25     30     35     40     45     50
+Hoarfrost  (built to 25 by the main quest; 22-30 walkable)
+Greyspine    G1----------G9 (26-32)
+Sunscar          S1---------------S10 (28-36)
+Amber Reach                  A1-----------A10 (35-45)   <- the reveal
+Emberwake                          E1------------E10 (40-50)   <- the ending
+side: Stormhorn T1..T6 (30-40), Rootdeep R1..R9 (30-47)
+```
+
+A player follows the main line **Hoarfrost → Greyspine → Sunscar → Amber Reach → Emberwake**. The main line's gates never send you to a
+land more than about 2 levels above you; the overlap means that from 28 on the player chooses the order of the side branches.
+The Sunscar and Amber Reach each give a real cure beat for Wren (act V-a: the medicine that wakes them; act VI: none, the truth).
+
+### 7.2 Act IV: "The Black Stone" (the Greyspine, levels 26-32)
+
+Hub: **Highmark**, an alpine mining and monastery village built into the rock (rope bridges, shrines on the passes). Cast: **Foreman
+Brenna** (the mine; notices the too-perfect coins), **Abbot Ansgar** (the monastery's archive: a page of the Silent Years is cut out),
+Odran's cart. Gate in: the Hoarfrost's west glacier valley (opened by Ymrik, F8/F9).
+
+| # | Step | Gate | Objective | Hint / teaches |
+|---|---|---|---|---|
+| G1 | The glacier valley | 26 | Walk the split valley west to Highmark | the road, cold nights |
+| G2 | The hearth of Highmark | 26 | Meet Brenna, the abbot, the smith, the trainer | a fourth hub (`CIRCLES` + a circle) |
+| G3 | Black stone | 27 | Bring Brenna 6 lumps of black stone (mine them: **mining** in the Greyspine's veins, or take them from stone slimes) | **object**: cold stone that hums and calls monsters. Teaches: gathering matters (the first *required* mining node) |
+| G4 | Too perfect | 28 | Take a miners' pay to Odran: he pays in coins that are all alike; Brenna weighs them | **person**: the buyer's coins |
+| G5 | The grey shift | 29 | Guard the night shift: 12 monsters that came for the black stone | the grey sleep among miners |
+| G6 | The gryphon queen | 29 | Defeat the gryphon queen on her peak (**boss 29**) | opens the river road south (Sunscar) |
+| G7 | What the miners dug into | 30 | See the deepest shaft that broke into something vast (read; a cave mouth: the Rootdeep) | the Rootdeep hook (side branch R) |
+| G8 | The old machine | 31 | Reach the mountain golem's cavern; read its jointed frame | **place**: a stone shell around a jointed metal frame, "an old war machine of our own, woken by the dark" |
+| G9 | The mountain wakes | 32 | Defeat the mountain golem (**boss 32**) | opens the neck pass west (Stormhorn) and the deep mine (Rootdeep); the road on: Glasswell's physician |
+
+Engine needs: the Greyspine built (replace `greyspineHeight` in `shared/terrain.js` with real terrain, grow `WX0..WZ0` where the map
+needs it: it lies north-west of Wildwood and west of the Hoarfrost); gear tier 6 (levels 30-34, `tierFor`, `TIER_ATK`, `ARMOR_*`,
+items and icons), monsters 26-32 (two kinds per level: `MON_DEFS`, models, materials), two bosses (12 boss skills each, `BOSS_DEFS`),
+`MAX_ZONE_LV` to 32, `VALE_TOP_LV` review (skill upgrades ask for drops of levels up to it).
+
+### 7.3 Act V-a: "The Physician" (the Sunscar, levels 28-36; the main road)
+
+Hub: **Glasswell**, the oasis city (`WORLD.md`: districts, bazaar, palace, harbour; bigger than a village). Cast: **Physician Anselm Rook**
+(a watcher: helpful, odd, never a villain on screen), **the archivist Mirela** (the Silent Years: 60 pages cut out cleanly), **Caravan-master
+Tahir**, an alchemist (teaches **potion use**), Odran. Gate in: the river road from the Greyspine (the gryphon queen).
+
+| # | Step | Gate | Objective | Hint / teaches |
+|---|---|---|---|---|
+| S1 | The river road | 28 | Follow the river south to Glasswell's gate | hot days, cold nights, sandstorms (server weather per region) |
+| S2 | The oasis city | 29 | Meet the bazaar, the palace steward, the harbour master, a trainer | the first city; **trading between players** (a bazaar) |
+| S3 | The physician's cup | 30 | Show Rook Wren's sickness: bring him a lock of grey (from a grey-veined monster) and a page of Old Sigrun's saga | **object**: identical glass vials with printed labels, a "cold cupboard" that hums |
+| S4 | A favour, for his studies | 30 | Rook asks a vial of your blood: give it (a choice with no penalty, remembered later) | the trap the player cannot see yet |
+| S5 | The archive | 31 | Read three shelves of the chronicle with the archivist: pages cut out | **place**: the Silent Years |
+| S6 | Potion use | 32 | The alchemist teaches potions; brew the first (herbs, frostbloom, resources from the professions) | the fourth profession, `gear.prof.potions` |
+| S7 | The medicine | 33 | Fetch Rook's ingredients from the glass fields' edge (guardian of the glass, **boss 32**) | **place**: black glass in a perfect circle, "where the sun wept" |
+| S8 | Wren wakes | 34 | Carry the medicine home by the circle (a warm scene in the village: Wren awake for the first time in the whole game) | the payoff of two acts; it needs repeating |
+| S9 | The sand wyrm | 36 | Defeat the sand wyrm under the dunes (**boss 36**) | reopens **Redgate Canyon**, the road home |
+| S10 | South, for the herb | 36 | Rook sends you to the herders of Amber Reach for the herb that stops the relapse (he wants you away while he studies the blood) | the hook to act VI |
+
+### 7.4 Act VI: "The Song" (Amber Reach, levels 35-45) and the reveal
+
+Hub: **Tallgrass**, a herders' and traders' settlement on the west coast (a pier; a landing on the southern cape for the boats). Cast:
+**Elder Tamsa** (keeps the nonsense war song), **Kesi** (a young herder, the player's guide), Odran (now the one who follows the player), Rook's
+agents (grey coats, polite, in the background from A4).
+
+| # | Step | Gate | Objective | Hint / teaches |
+|---|---|---|---|---|
+| A1 | Grass and gold | 35 | Cross the dry riverbed into Amber Reach | wet and dry seasons, grass fires |
+| A2 | Tallgrass | 36 | Meet the elder, the pier, the smith, the trainer | hub |
+| A3 | The song at the fire | 37 | Sit at the herders' fire after dark: hear the old song | **object**: words that sound like nonsense |
+| A4 | The herb | 38 | Gather the herb for the relapse (**gathering**; guarded) | the cure part of the road |
+| A5 | Grey coats | 39 | Someone follows you: lose them (or fight) | Rook's agents |
+| A6 | The storm bird | 40 | Defeat the storm bird (**boss 40**) | thunder season |
+| A7 | Kesi's herds | 41 | Help the herds through the fire season | side content hooks |
+| A8 | The great beast | 45 | Defeat the great beast of the herds (**boss 45**) | opens the boats south |
+| A9 | Odran at the fire | 45 | **The reveal**: Odran stops the agents and tells the truth at the herders' fire (the Lumen Concord, the Crown War, the Quiet, the Black Line, the Sink, the watchers, Wildwood and the Heartwood: `STORY.md` section 4, act VI); a photograph and a radio | the whole story; Tamsa's song finally makes sense |
+| A10 | The way south | 45 | Take the boat to the Emberwake Isles | the hook to act VII |
+
+Everything before A9 must read differently after it: Odran's lines, Rook's favour, the plate, the black stone, the sun-in-a-ring, the
+lantern with no flame. There is **no cure** but one after the reveal: close the Sink.
+
+### 7.5 Act VII: "The Sink" (the Emberwake Isles, levels 40-50) and the ending
+
+Hub: **Coralhaven** (stilt houses, outriggers, carved totems). Cast: **Chief Makoa**, **Lani** (pilot), Rook (exposed, defending the
+Sink), Odran (changed sides). Travel between the islands: boats and teleport circles.
+
+| # | Step | Gate | Objective | Hint / teaches |
+|---|---|---|---|---|
+| E1 | Black smoke | 40 | Land at Coralhaven | hot storms, ash falls |
+| E2 | The stilt village | 41 | Meet the chief, the pilot, the smith, the trainer | hub |
+| E3 | The breathing mountain | 43 | Reach the volcano's foot: the black conduit in the sea | the Black Line, a fact now |
+| E4 | Island by island | 44 | Cross three islands by boat and circle | travel |
+| E5 | The sea dragon | 45 | Defeat the sea dragon (**boss 45**) | a guardian drowned in dark |
+| E6 | The station | 47 | Reach the Sink's door: concrete, steel, humming conduits, signs in a foreign script | hints become facts |
+| E7 | Rook's last stand | 48 | Defeat Rook's guards (a fight, not a boss) | the antagonist |
+| E8 | The warden | 50 | Defeat **the Sink's warden** (**boss 50**), the volcano's fire spirit fused with the machine | the Wildwood light against it |
+| E9 | The dark stops | 50 | Close the Sink | the ending |
+| E10 | Green again | 50 | Go home: the Heartwood's roots green, **Wren wakes for good**; the Quiet thins (NPC lines change); the Stormhorn's lamp room opens, the first Concord ship on the horizon | the epilogue and the hook for the next continent |
+
+### 7.6 Side branches (optional, `STORY.md` section 7)
+
+- **The Stormhorn** (levels 30-40, `T1-T6`): Gullrest's fishers and Keeper Maelis (the lamp room with the lock that has no keyhole, the
+  tower at the same hour every night, steel-hulled wrecks with tins and a camera, the drowned captain in a uniform with the sun-in-a-ring,
+  **boss 35**, the kraken **boss 40**). Ymrik's dying words point here.
+- **The Rootdeep** (levels 30-47, `R1-R9`, three layers: the Rootways 30-35, the Glimmer Halls 36-41, the Emberdeep 42-47): the Heartwood's
+  withering roots (*why Wren fell sick*), murals with the invaders' faces chiselled away, black iron roots along the lava tubes; camps with
+  teleport circles instead of a village, **bosses 35, 41, 47**. It needs its own enclosed space (`WORLD.md` section 8).
+- **The Nine Tails** (vale, levels 21-25, section 4) and more Hoarfrost side chains (Sigrun's sagas, the wyrm at the iron bird).
+
+### 7.7 What the engine needs, in order
+
+1. **XP curve and gear to 50**: `expToNext` past 25 is a flat 2,100 same-level kills (`shared/balance.js`): tune it for 30-50; more gear tiers
+   (`tierFor`, `TIER_ATK`, `ARMOR_HP`, `ARMOR_DEF`, `shared/items.js`, icons, looks), `MAX_ZONE_LV` 50, `VALE_TOP_LV` and `upgradeNeeds`.
+2. **The world rectangle** grows north-west (the Greyspine), west (the Sunscar behind the Sunwall), south-west (Amber Reach) with real terrain,
+   edges and far-lands replacing their placeholders; the isles need water around them and boats; the Rootdeep an enclosed instance.
+3. **Regional weather on the server** (sandstorms, gales, tropical storms; today the server has one weather and the client turns rain into
+   snow in the Reach), regional music themes, ambience.
+4. **Professions' next steps**: crafting, potions, resource nodes in every land, tools, selling (section 5b).
+5. **Per land**: a village or city (`layoutVillage` or a bigger plan), its NPCs, a zone grid with two monster kinds per level, two bosses (12 boss
+   skills each), gates as real things in the land (`WORLD.md` section 5), lore spots, a music theme, a teleport circle in `CIRCLES`, tests.
+6. **Group play**: parties, trading between players (Glasswell's bazaar) and other ideas in `CLAUDE.md` section 10.

@@ -1,4 +1,4 @@
-//@ Monster families (FAM), the 40 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale), prepDef, the three bosses (BOSS_DEFS) with their totems and adds, the main quest's grey-veined monsters (GREY_DEFS). Pure.
+//@ Monster families (FAM), the 58 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach), prepDef, the five bosses (BOSS_DEFS) with their totems and adds, the main quest's grey-veined monsters (GREY_DEFS). Pure.
 const FAM={
   slime: {hpK:0.85,dmgPct:0.06,atk:1.6,speed:2.2,rad:0.45,height:0.8,aggro:10,sound:'squish',per:4},
   shroom:{hpK:0.95,dmgPct:0.07,atk:1.7,speed:1.8,rad:0.4, height:1.1,aggro:10,sound:'pip',per:3},
@@ -8,7 +8,8 @@ const FAM={
   treant:{hpK:1.35,dmgPct:0.14,atk:2.4,speed:1.6,rad:0.85,height:3.3,aggro:12,sound:'groan',per:1},
   fox:   {hpK:1.0, dmgPct:0.1, atk:1.5,speed:3.8,rad:0.55,height:1.0,aggro:14,sound:'yelp',per:2},
   wisp:  {hpK:0.9, dmgPct:0.1, atk:1.7,speed:2.6,rad:0.45,height:1.6,aggro:13,sound:'pip',per:3},
-  totem: {hpK:1,dmgPct:0,atk:99,speed:0,rad:0.55,height:2.7,aggro:0,sound:'click',per:0}
+  totem: {hpK:1,dmgPct:0,atk:99,speed:0,rad:0.55,height:2.7,aggro:0,sound:'click',per:0},
+  wyrm:  {hpK:1.0,dmgPct:0.12,atk:2.2,speed:2.6,rad:0.9,height:2.0,aggro:16,sound:'groan',per:1}
 };
 const MON_DEFS=[
   {id:'slime',     name:'Slime',            level:1,el:'water', model:'slime', scale:1,   aggro:0, pal:{body:0x5fcf5a,top:0xc2f7a8,mouth:0x1d4a1a}},
@@ -55,7 +56,28 @@ const MON_DEFS=[
   {id:'samurai',   name:'Undead Samurai',   level:24,el:'dark',model:'goblin',scale:1.05,per:2,hpK:1.3,dmgPct:0.11,pal:{skin:0xb8b0a0,eyes:0x7fd8ff,top:'plate',topColor:0x8a2a26,bottom:'trousers',bottomColor:0x2a2830,hat:'helm',hatColor:0x24222a,club:0xd9e2ea,weapon:'katana'}},
   {id:'goldkabuto',name:'Golden Kabuto',    level:24,el:'light',model:'beetle',scale:1.7, hpK:1.35,pal:{shell:0xc9a13a,seam:0x5a4010,sheen:0xfff0a0,head:0x6a5018,horn:0xe8c860,eye:0xff4020,legs:0x3a2a10}},
   {id:'sakuratreant',name:'Elder Sakura',   level:25,el:'light',model:'treant',scale:1.6, hpK:1.5, glow:0x14040c, pal:{bark:0x4a3434,c1:0xf2a6c4,c2:0xf8c4d8,c3:0xe68ab0,eyes:0xff70b0}},
-  {id:'raiju',     name:'Raiju',            level:25,el:'air',model:'fox',   scale:1.3, per:2, glow:0x1a1a04, pal:{body:0xf2d040,belly:0x3a4a8a,tip:0x9fd8ff,eye:0x7fe0ff,legs:0x2a2a40,tails:1}}
+  {id:'raiju',     name:'Raiju',            level:25,el:'air',model:'fox',   scale:1.3, per:2, glow:0x1a1a04, pal:{body:0xf2d040,belly:0x3a4a8a,tip:0x9fd8ff,eye:0x7fe0ff,legs:0x2a2a40,tails:1}},
+  /* the Hoarfrost Reach (levels 22-30, docs/WORLD.md): two kinds per level, each in its own zone (zone:'h22'..'h30', ZONES in hoarfrost.js).
+     Look flags for the client models: fox wolf (a heavy wolf: broad head, small ears, one bushy tail); goblin fur (a shaggy mane and
+     shoulders) and weapon 'axe' */
+  {id:'frostslime',name:'Frost Slime',      level:22,el:'water',model:'slime', scale:1.6, per:3, zone:'h22', glow:0x06202c, pal:{body:0x8fd0f0,top:0xeaf8ff,mouth:0x1a3a4e}},
+  {id:'snowboar',  name:'Snow Boar',        level:22,el:'water',model:'boar',  scale:1.5, zone:'h22', pal:{body:0xe4eaee,ridge:0x8aa4b8,head:0xd6dee4,snout:0xb8a8a0,tusk:0xf6f4ea,legs:0x8a96a0,eye:0x3a7ad8}},
+  {id:'icebeetle', name:'Ice Beetle',       level:23,el:'water',model:'beetle',scale:1.5, hpK:1.25, zone:'h23', pal:{shell:0x9ac8e0,seam:0x3a6a8a,sheen:0xf0fbff,head:0x6a98b0,horn:0xd8f2ff,eye:0x1a3a6a,legs:0x5a88a0}},
+  {id:'wolf',      name:'Winter Wolf',      level:23,el:'air',  model:'fox',   scale:1.35,zone:'h23', pal:{body:0xb8c2cc,belly:0xeef2f6,tip:0xf8fbff,eye:0x9fe0ff,legs:0x6a747e,tails:1,wolf:1}},
+  {id:'reaver',    name:'Frost Reaver',     level:24,el:'dark', model:'goblin',scale:1.05,per:2,hpK:1.2, zone:'h24', pal:{skin:0x7aa0b0,eyes:0xff5a3a,top:'jacket',topColor:0x3a4a5a,bottom:'trousers',bottomColor:0x2a2a34,hat:'none',hatColor:0x2b2420,club:0xc8ced4,weapon:'axe',horns:0xe8e4d8,fur:0xd8e0e8}},
+  {id:'rimewisp',  name:'Rime Wisp',        level:24,el:'air',  model:'wisp',  scale:1.1, zone:'h24', glow:0x102a44, pal:{body:0xa8e0ff,core:0xffffff,eye:0x0a2a4a}},
+  {id:'rimetreant',name:'Rimebark Treant',  level:25,el:'water',model:'treant',scale:1.7, hpK:1.5, zone:'h25', glow:0x081820, pal:{bark:0x5a5e62,c1:0xdce8ee,c2:0xc4d8e2,c3:0xa8c4d4,eyes:0x7fe0ff}},
+  {id:'yeti',      name:'Yeti',             level:25,el:'water',model:'goblin',scale:1.6, per:2,hpK:1.4,dmgPct:0.11,zone:'h25', pal:{skin:0xe8eff4,eyes:0x3aa0e8,top:'hoodie',topColor:0xf0f4f8,bottom:'trousers',bottomColor:0xd8e0e8,hat:'none',hatColor:0x2b2420,club:0x8a9aa8,horns:0xbcd8ea,fur:0xf4f8fb}},
+  {id:'draugr',    name:'Draugr',           level:26,el:'dark', model:'goblin',scale:1.1, per:2,hpK:1.3,dmgPct:0.11,zone:'h26', pal:{skin:0x6a7a84,eyes:0x7fe8ff,top:'plate',topColor:0x4a5a6a,bottom:'trousers',bottomColor:0x2a3038,hat:'helm',hatColor:0x3a4650,club:0xb8c4cc,weapon:'axe'}},
+  {id:'icewraith', name:'Ice Wraith',       level:26,el:'dark', model:'wisp',  scale:1.2, zone:'h26', glow:0x101c2c, pal:{body:0xc0d4e4,core:0xffffff,eye:0x10141c,hair:0x1c2430,ghost:1}},
+  {id:'lynx',      name:'Snow Lynx',        level:27,el:'air',  model:'fox',   scale:1.4, zone:'h27', pal:{body:0xd8d4ca,belly:0xf6f4ee,tip:0x2a2a2e,eye:0xa0e0a0,legs:0x8a867c,tails:1,wolf:1}},
+  {id:'crawler',   name:'Glacier Crawler',  level:27,el:'water',model:'beetle',scale:1.7, hpK:1.3, zone:'h27', pal:{shell:0xb0dcf0,seam:0x2a5a7a,sheen:0xffffff,head:0x7aaac0,horn:0xe8f8ff,eye:0xff5a5a,legs:0x4a7a90,spider:1}},
+  {id:'frosttroll',name:'Frost Troll',      level:28,el:'water',model:'goblin',scale:1.85,per:2,hpK:1.5,dmgPct:0.12,zone:'h28', pal:{skin:0x86b4c8,eyes:0xffe060,top:'tshirt',topColor:0x5a6a78,bottom:'shorts',bottomColor:0x4a5660,hat:'none',hatColor:0x2b2420,club:0x7a8a98,horns:0xdcecf4,fur:0xc8dce8}},
+  {id:'blizzhound',name:'Blizzard Hound',   level:28,el:'air',  model:'fox',   scale:1.5, glow:0x0a1c30, zone:'h28', pal:{body:0x8aa4c0,belly:0xdce8f4,tip:0xffffff,eye:0xc8f0ff,legs:0x4a5e78,tails:1,wolf:1}},
+  {id:'revenant',  name:'Rime Revenant',    level:29,el:'dark', model:'goblin',scale:1.2, per:2,hpK:1.35,dmgPct:0.12,zone:'h29', glow:0x081420, pal:{skin:0x9ab0bc,eyes:0x9fe8ff,top:'plate',topColor:0x6a8298,bottom:'trousers',bottomColor:0x2a3644,hat:'helm',hatColor:0x54687c,club:0xdce8f0,weapon:'katana'}},
+  {id:'barrowwight',name:'Barrow Wight',    level:29,el:'dark', model:'wisp',  scale:1.3, glow:0x0c1420, zone:'h29', pal:{body:0x8a9cb0,core:0xe8f4ff,eye:0x0a0e14,hair:0x141a24,ghost:1}},
+  {id:'alphawolf', name:'Frostfang Alpha',  level:30,el:'air',  model:'fox',   scale:1.75,hpK:1.3, zone:'h30', glow:0x0c1a2c, pal:{body:0x9eb4cc,belly:0xeaf2fa,tip:0xffffff,eye:0xff6a5a,legs:0x566a84,tails:1,wolf:1}},
+  {id:'glaciergolem',name:'Glacier Golem',  level:30,el:'water',model:'treant',scale:1.95,hpK:1.6, zone:'h30', glow:0x0a2030, pal:{bark:0x4a5a68,c1:0xa8d8f0,c2:0xc8ecfc,c3:0x88c0e0,eyes:0xffb040}}
 ];
 function prepDef(d){
   const F=FAM[d.model]; for(const k in F) if(d[k]===undefined) d[k]=F[k];
@@ -90,11 +112,26 @@ const SHRINE_DEF=totemDef({id:'foxshrine',name:'Foxfire Shrine',level:25,el:'lig
 const FOXKIT_DEF={id:'foxkit',name:'Fox Spirit',level:24,el:'light',model:'fox',scale:0.7,hpK:0.6,dmgPct:0.07,atk:1.4,speed:4,aggro:30,glow:0x06142a,
   pal:{body:0x6ab8ff,belly:0xd8f0ff,tip:0xffffff,eye:0xffffff,legs:0x2a4a7a,tails:2}};
 prepDef(FOXKIT_DEF);
-// arena: which clearing (ARENAS in vale.js); totem / add: the shield-phase totems and the enrage adds
+// the Hoarfrost Reach: Ymrik the Rimeking (level 26, a frost giant in his ice hall) and Vetrmaw the frost wyrm (level 30, at the wreck)
+const YMRIK_DEF=bossDef({id:'ymrik',name:'Ymrik, the Rimeking',level:26,el:'water',model:'goblin',scale:2.5,boss:true,heavy:true,glow:0x081a2a,atk:2.4,speed:2.1,aggro:0,
+  pal:{skin:0xa8c8dc,eyes:0x9fe8ff,top:'plate',topColor:0x4a6278,bottom:'trousers',bottomColor:0x2a3a4a,hat:'helm',hatColor:0x6a8298,club:0xdce8f0,horns:0xeaf4fa,weapon:'axe',fur:0xe8f0f6}});
+const PILLAR_DEF=totemDef({id:'rimepillar',name:'Rime Pillar',level:26,el:'water',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x06202c,pal:{crystal:0x9fe0ff,band:0xd0f4ff}});
+const THRALL_DEF={id:'frostthrall',name:'Frost Thrall',level:25,el:'water',model:'goblin',scale:0.7,hpK:0.6,dmgPct:0.07,atk:1.5,speed:3.2,aggro:30,
+  pal:{skin:0x9ab8c8,eyes:0x9fe8ff,top:'tshirt',topColor:0x4a6278,bottom:'shorts',bottomColor:0x2a3a4a,hat:'none',hatColor:0x2b2420,club:0xdce8f0,horns:0xeaf4fa,weapon:'axe'}};
+prepDef(THRALL_DEF);
+const VETRMAW_DEF=bossDef({id:'vetrmaw',name:'Vetrmaw, the Frost Wyrm',level:30,el:'water',model:'wyrm',scale:2.3,boss:true,heavy:true,glow:0x081c30,atk:2.2,speed:2.5,aggro:0,
+  pal:{body:0x9cc4e0,belly:0xe4f2fa,ridge:0x3a6a8c,horn:0xe8f6ff,eye:0xff7a3a,wing:0x6a98bc}});
+const CORE_DEF=totemDef({id:'warmcore',name:'Warm Core',level:30,el:'water',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x3a1400,pal:{crystal:0xff9a3a,band:0xffc060}});
+const WYRMLING_DEF={id:'wyrmling',name:'Wyrmling',level:29,el:'water',model:'wyrm',scale:0.6,hpK:0.6,dmgPct:0.07,atk:1.6,speed:3.6,aggro:30,
+  pal:{body:0x9cc4e0,belly:0xe4f2fa,ridge:0x3a6a8c,horn:0xe8f6ff,eye:0xff7a3a,wing:0x6a98bc}};
+prepDef(WYRMLING_DEF);
+// arena: which clearing (ARENAS in vale.js and hoarfrost.js); totem / add: the shield-phase totems and the enrage adds
 const BOSS_DEFS=[
   {def:BOSS_DEF,arena:'boss',totem:TOTEM_DEF,add:THORN_DEF,short:'The Rootwarden',totems:'Heartwood Totems'},
   {def:AKAONI_DEF,arena:'boss20',totem:LANTERN_DEF,add:IMP_DEF,short:'Akaoni',totems:'Oni Lanterns'},
-  {def:KYUUBI_DEF,arena:'boss25',totem:SHRINE_DEF,add:FOXKIT_DEF,short:'Kyuubi',totems:'Foxfire Shrines'}];
+  {def:KYUUBI_DEF,arena:'boss25',totem:SHRINE_DEF,add:FOXKIT_DEF,short:'Kyuubi',totems:'Foxfire Shrines'},
+  {def:YMRIK_DEF,arena:'boss26',totem:PILLAR_DEF,add:THRALL_DEF,short:'Ymrik',totems:'Rime Pillars'},
+  {def:VETRMAW_DEF,arena:'boss30',totem:CORE_DEF,add:WYRMLING_DEF,short:'Vetrmaw',totems:'Warm Cores'}];
 /* The main quest's grey-veined monsters (docs/MAIN-QUEST.md, W9 and V7): tougher copies of a zone's kind, touched by the grey sleep.
    Not in MON_DEFS: no camps and no board quests; the server spawns a few for each player on that step (server/main-quest.js) */
 function greyDef(base,id,name,o){

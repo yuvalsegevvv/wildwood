@@ -69,8 +69,11 @@ function applyEvent(e){
     case 'roar': bossRoar(e[1]); break;
     case 'warp': onWarp(e[1],e[2],e[3],e[4],e[5]); break;
     case 'vale': if(e[1]===me) onValeStep(e[2]); break;
+    case 'north': if(e[1]===me) onNorthStep(e[2]); break;
+    case 'node': onNodeEvent(e[1],e[2]); break;
+    case 'gather': if(e[1]===me) onGatherEvent(e[2],e[3],e[4]); break;
     case 'thunder': onThunder(e[1],e[2]); break;
-    case 'weather': if(!e[1]&&WX.kind&&started) toast('The rain is easing off.',''); break;
+    case 'weather': if(!e[1]&&WX.kind&&started) toast(WX.snow>0.5?'The snow is easing off.':'The rain is easing off.',''); break;
     case 'area': onArea(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8],e[9]); break;
     case 'buff': onBuff(e[1],e[2],e[3]); break;
     case 'aend': onAreaEnd(e[1]); break;

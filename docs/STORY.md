@@ -149,6 +149,13 @@ the meaning of its bosses, and the hook that sends the player on.
   skeleton): riveted metal, glass, a painted sun-in-a-ring emblem (the Concord's). *Person*: Odran pays well for any "dragon scale" (hull
   plate) brought to him. *Place*: the frost wyrm (30) nests in the wreck; it is drawn to the warmth still leaking from its engine.
 - **Hook**: the glacier valley west leads to Highmark, whose miners dig the black stone.
+- **Built** (`docs/MAIN-QUEST.md` section 3b, steps F1-F9, levels 20-25): the ice wall in Frostgate Pass cracks when Akaoni falls; Rimehold, Hallvard the
+  hunter-captain, Old Sigrun's saga (only after dark) and the rune stones at the gate; the Wayfarers' Lodge (Gudrun) where the professions are learned
+  (a player must learn **gathering** to pick the Frostbloom); the Frostbloom tea that keeps the grey from spreading (Wren: "the grey water has a light
+  in it now"); the grey plate at Frostmere and the Frost Reavers who wear it, Odran's price and his slip; **Ymrik, the Rimeking** (a frost giant, level 26,
+  kept the wolves from the doors, then turned) whose dying words are the act's key hint: *"The iron bird... still sings under the ice. And someone... sings
+  back. From a far light on the sea."* (the Stormhorn's relay; no answer before the reveal); Sigrun's second verse points west to Highmark. The frost wyrm (30)
+  and the wreck itself are beyond the main quest (levels 26-30 are side content).
 
 ### Act IV: the Greyspine (26-32), the crossroads
 - **Beats**: in Highmark, miners dig **black stone that hums**: dark energy gone solid. They sell it to a travelling buyer (Odran) and
@@ -231,7 +238,10 @@ the meaning of its bosses, and the hook that sends the player on.
 | **Akaoni** | the Demon Gate (boss, in the game) | an old oni spirit drowned in dark | the first voice of the truth, in dying |
 | **Kyuubi** | Foxfire Shrine (boss, in the game) | an ancient fox spirit, corrupted | a side story: the vale's oldest friend |
 | **Healer Linnea** | Wildwood (in the game) | the village healer | treats Wren; sends the player east |
-| **Old Sigrun** | Rimehold | seer, keeper of sagas | the burning sky; points to the root of the sickness |
+| **Old Sigrun** | Rimehold (in the game) | seer, keeper of sagas | the burning sky; points to the root of the sickness |
+| **Hallvard** | Rimehold (in the game) | hunter-captain, keeps the gate | counts who comes through; sends the player to Sigrun and, later, to the Rimeking |
+| **Gudrun** | Rimehold (in the game) | keeper of the Wayfarers' Lodge | teaches mining, woodcutting and gathering; the alchemist's chair beside hers is empty |
+| **Ymrik, the Rimeking** | the ice hall (boss, in the game) | a frost giant, once the wolves' keeper, turned by the dark | the second voice of the truth, in dying |
 | **Brenna** | Highmark | mine foreman | notices the too-perfect coins |
 | **Odran** | everywhere | watcher, peddler | watches, grows fond, reveals the truth, changes sides |
 | **Anselm Rook** | Glasswell | watcher, physician | helps, then hunts the player; defends the Sink |

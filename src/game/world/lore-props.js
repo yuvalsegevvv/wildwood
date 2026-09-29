@@ -1,4 +1,4 @@
-//@ The story's props: Wren's sickbed under its awning, Odran's two carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside shrine, the ice wall) and the heartleaf you pick
+//@ The story's props: Wren's sickbed under its awning, Odran's two carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside shrine, a grey plate in the ice) and the heartleaf you pick
 /* Places come from shared/main-quest.js (VIL.bed, V.cart, LORE, HERBS). The static props are one merged mesh; each cart is its own
    mesh (hidden unless Odran stands beside it: odranHere in game/economy/main-quest.js), the herbs glow while you are picking them. */
 const LP={carts:[],herbs:[]};
@@ -44,14 +44,16 @@ function buildLoreProps(){
       put(out,new THREE.BoxGeometry(0.7,0.55,0.55),0x8a3a2a,x,y+1.35,z,yaw);
       put(out,new THREE.ConeGeometry(0.62,0.4,4),0x3a3230,x,y+1.82,z,yaw+Math.PI/4);
       for(let k=0;k<5;k++){ const [px,pz]=L(-0.3+k*0.15,0.3); put(out,new THREE.BoxGeometry(0.08,0.22,0.02),0xf4f0e6,px,y+0.95-(k%2)*0.08,pz,yaw); }
-    } else if(Lo.kind==='ice'){
-      for(let k=-7;k<=7;k++){ const [px,pz]=L(k*3.2,(h3(k,3,1)-0.5)*2), hgt=16+h3(k,1,2)*14;
-        put(out,new THREE.BoxGeometry(3.6,hgt,3.2+h3(k,2,3)*2),0xbfe4f4,px,getH(px,pz)+hgt/2-2,pz,yaw+(h3(k,5,5)-0.5)*0.3,(h3(k,6,6)-0.5)*0.12,(h3(k,7,7)-0.5)*0.1); }
-    }
+    } else if(Lo.kind==='hull'){   // a slab of grey metal in the ice with the Concord's ring and sun (docs/STORY.md: the emblem, unexplained)
+      put(out,new THREE.BoxGeometry(2.6,0.22,1.7),0x9aa2a8,x,y+0.85,z,yaw,0.55,0.12);
+      for(let k=0;k<6;k++){ const [px,pz]=L(-0.9+k*0.36,0.05); put(out,new THREE.SphereGeometry(0.05,5,4),0x6a7076,px,y+0.95+k*0.09,pz,yaw); }
+      put(out,new THREE.CylinderGeometry(0.34,0.34,0.02,14),0xd8b040,x+Math.sin(yaw)*0.05,y+1.02,z+Math.cos(yaw)*0.05,yaw,0.55+Math.PI/2,0.12);
+      put(out,new THREE.IcosahedronGeometry(0.9,0).scale(1.4,0.6,1.1),0xe6eff4,x,y+0.15,z,yaw+0.4);
+    }   // (the ice wall, the rune stones and the iron bird are dressed in game/village/buildings-hoar.js)
   }
   const mat=new THREE.MeshLambertMaterial({vertexColors:true});
   const mesh=new THREE.Mesh(merge(out),mat); mesh.castShadow=true; mesh.receiveShadow=true; mesh.matrixAutoUpdate=false; scene.add(mesh);
-  for(const L of LORE) if(L.kind!=='mile'&&L.kind!=='ice') addCol(L.x,L.z,L.kind==='wreck'?1.2:0.6);
+  for(const L of LORE) if(L.kind!=='mile'&&L.kind!=='ice'&&L.kind!=='runes'&&L.kind!=='ironbird') addCol(L.x,L.z,L.kind==='wreck'?1.2:L.kind==='hull'?1.3:0.6);
   /* Odran's carts: a covered wagon with two big wheels, crates and a lantern pole */
   for(const V of VILS){
     const C=V.cart, parts=[], y=getH(C.x,C.z), L=local(C.x,C.z,C.rot), yaw=C.rot;
@@ -77,7 +79,7 @@ function buildLoreProps(){
 // every frame: carts where Odran is, herbs while you still need them (both from your main quest progress)
 function updateLoreProps(){
   if(!LP.herbs.length) return;
-  for(const c of LP.carts) c.mesh.visible=odranHere(c.V===VIL2?2:1);
+  for(const c of LP.carts) c.mesh.visible=odranHere(VILS.indexOf(c.V)+1);
   const pick=mqPicking(), M=GEAR&&GEAR.mq, pulse=0.6+0.4*Math.sin(t*3);
   LP.herbs.forEach((h,i)=>{ h.visible=pick&&!((M.h>>i)&1); if(h.visible) h.material.emissiveIntensity=pulse; });
 }

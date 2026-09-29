@@ -84,6 +84,14 @@
   <div class="pn-head"><span class="pn-t" id="soTitle">Soul shrine</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="soBody"></div>
 </div>
+<div id="lodge" class="panel" hidden role="dialog" aria-label="Wayfarers' Lodge">
+  <div class="pn-head"><span class="pn-t" id="loTitle">Wayfarers' Lodge</span><span class="pn-coins" id="loCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="loBody"></div>
+</div>
+<div id="travel" class="panel" hidden role="dialog" aria-label="Teleport circle">
+  <div class="pn-head"><span class="pn-t">Teleport circle</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="trBody"></div>
+</div>
 <div id="lucky" aria-live="polite"></div>
 <div id="meSay" class="say" hidden></div>
 <div id="kicked" class="kicked" hidden role="alertdialog" aria-labelledby="kickedText"><div><p id="kickedText"></p><button class="chip" id="kickedBtn">Reconnect</button></div></div>
@@ -131,6 +139,7 @@
     <button class="chip" id="tCoins">Add 1000 coins</button>
     <button class="chip" id="tMats">Add 20 of every monster drop</button>
     <button class="chip" id="tSkills">Learn every skill and passive</button>
+    <button class="chip" id="tProf">Learn every profession</button>
     <button class="chip" id="tThree">3 of an item (for the forge)</button>
     <button class="chip" id="tLucky">Lucky drop</button>
     <button class="chip" id="tRain">Rain</button>
@@ -139,6 +148,12 @@
     <button class="chip" id="tVale">Open the tunnel to the Sakura Vale</button>
     <button class="chip" id="tTunnel">Go to the tunnel</button>
     <button class="chip" id="tSeal">Seal the vale again</button>
+    <button class="chip" id="tNorth">Open the ice wall in Frostgate Pass</button>
+    <button class="chip" id="tPass" data-v="pass">Go to the ice wall</button>
+    <button class="chip" id="tRime" data-v="rimehold">Go to Rimehold</button>
+    <button class="chip" id="tHall" data-v="hall">Go to the Rimeking's hall</button>
+    <button class="chip" id="tNest" data-v="nest">Go to the wyrm's nest</button>
+    <button class="chip" id="tSealN">Seal the ice wall again</button>
     <button class="chip" id="tReset">Reset all progress</button>
   </div>
   </div>

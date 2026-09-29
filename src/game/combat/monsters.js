@@ -1,4 +1,4 @@
-//@ Monster views: models for every family (slime, shroom, beetle/spider, boar, treant, goblin/oni/tengu, fox, wisp, totem), animation
+//@ Monster views: models for every family (slime, shroom, beetle/spider, boar, treant, goblin/oni/tengu/yeti, fox/wolf, wisp, wyrm, totem), animation
 const MONS=[], MON_GEO={};
 function monMat(glow){ const m=new THREE.MeshLambertMaterial({vertexColors:true, emissive:glow||0x000000}); m.userData.glow=new THREE.Color(glow||0); return m; }
 function pivot(parent,x,y,z,mesh){ const g=new THREE.Group(); g.position.set(x,y,z); if(mesh) g.add(mesh); parent.add(g); return g; }
@@ -67,18 +67,20 @@ function monGeos(d){
       pc(cyl(0.3,0.4,2.0,6,8).translate(0,1.3,0),(x,y,z,c)=>{ stoneC(x,y,z,c); if(((y*2.2)%1+1)%1<0.14) c.set(p.band||0x6af08a); }),
       pc(new THREE.OctahedronGeometry(0.3,0).scale(1,1.5,1).translate(0,2.6,0),c=>c.set(p.crystal||0x7af0a0))
     ]);
-  } else if(d.model==='fox'){   // kitsune: slim body, long snout, tall ears, a fan of tails with pale tips
+  } else if(d.model==='fox'){   // kitsune: slim body, long snout, tall ears, a fan of tails with pale tips; wolf (p.wolf): heavier, broad head, small ears, a thick ruff, one bushy tail
+    const w=p.wolf?1:0;
     G.body=merge([
-      pc(csph(0.4,16,12).scale(0.72,0.7,1.45).translate(0,0.66,0),(x,y,z,c)=>{ c.set(p.body); if(y<0.5) c.lerp(_tint.set(p.belly),0.7); }),
-      pc(csph(0.24,12,10).scale(0.95,0.9,1.05).translate(0,0.9,-0.6),(x,y,z,c)=>{ c.set(p.body); if(y<0.84) c.lerp(_tint.set(p.belly),0.8); }),
-      pc(new THREE.ConeGeometry(0.11,0.34,8).rotateX(-Math.PI/2).translate(0,0.84,-0.9),(x,y,z,c)=>{ c.set(p.belly); if(z<-1.03) c.set(0x1a1414); }),
-      pc(csph(0.1,10,8).scale(1.6,1,1.1).translate(0,1.06,-0.58),c=>c.set(p.tip)),   // the white blaze
-      ...[-1,1].flatMap(sd=>[pc(new THREE.ConeGeometry(0.08,0.26,5).rotateZ(-sd*0.15).translate(sd*0.12,1.2,-0.55),(x,y,z,c)=>{ c.set(p.body); if(y>1.25) c.set(0x1a1414); }),
-        pc(csph(0.035,6,5).translate(sd*0.1,0.96,-0.78),c=>c.set(p.eye))])
+      pc(csph(0.4+0.05*w,16,12).scale(0.72+0.1*w,0.7+0.08*w,1.45+0.05*w).translate(0,0.66+0.04*w,0),(x,y,z,c)=>{ c.set(p.body); if(y<0.5) c.lerp(_tint.set(p.belly),0.7); }),
+      pc(csph(0.24+0.04*w,12,10).scale(0.95+0.1*w,0.9,1.05).translate(0,0.9+0.02*w,-0.6),(x,y,z,c)=>{ c.set(p.body); if(y<0.84) c.lerp(_tint.set(p.belly),0.8); }),
+      pc(new THREE.ConeGeometry(0.11+0.04*w,0.34+0.07*w,8).rotateX(-Math.PI/2).translate(0,0.84+0.02*w,-0.9-0.03*w),(x,y,z,c)=>{ c.set(p.belly); if(z<-1.03-0.04*w) c.set(0x1a1414); }),
+      pc(csph(0.1,10,8).scale(1.6,1,1.1).translate(0,1.06+0.02*w,-0.58),c=>c.set(p.tip)),   // the white blaze
+      ...(w?[pc(csph(0.32,10,8).scale(1.1,0.95,0.85).translate(0,0.86,-0.4),(x,y,z,c)=>{ c.set(p.belly).lerp(_tint.set(p.body),0.35); })]:[]),   // the wolf's ruff
+      ...[-1,1].flatMap(sd=>[pc(new THREE.ConeGeometry(0.08-0.02*w,0.26-0.08*w,5).rotateZ(-sd*0.15).translate(sd*(0.12+0.02*w),1.2-0.05*w,-0.55),(x,y,z,c)=>{ c.set(p.body); if(y>1.25-0.05*w) c.set(0x1a1414); }),
+        pc(csph(0.035,6,5).translate(sd*0.1,0.96+0.02*w,-0.78),c=>c.set(p.eye))])
     ]);
     const n=Math.max(1,Math.min(9,p.tails|0||1)), tails=[];
     for(let i=0;i<n;i++){ const a=n>1?(i/(n-1)-0.5)*Math.min(2.4,0.5*n):0;
-      tails.push(pc(csph(0.17,10,8).scale(1,1,3.4).translate(0,0,0.52).rotateX(-0.55).rotateY(a),(x,y,z,c)=>{ c.set(p.body); if(Math.hypot(x,y,z)>0.85) c.set(p.tip); })); }
+      tails.push(pc(csph(0.17+0.04*w,10,8).scale(1,1,3.4-0.7*w).translate(0,0,0.52-0.06*w).rotateX(-0.55+0.4*w).rotateY(a),(x,y,z,c)=>{ c.set(p.body); if(Math.hypot(x,y,z)>0.85) c.set(p.tip); })); }
     G.tail=merge(tails);
     G.leg=pc(cyl(0.05,0.04,0.46,6).translate(0,-0.23,0),(x,y,z,c)=>{ c.set(p.legs); });
   } else if(d.model==='wisp'){   // onibi: a floating flame with a bright core; yurei (ghost): a pale figure with long hair and a trailing hem
@@ -98,6 +100,29 @@ function monGeos(d){
       ]);
       G.flick=pc(new THREE.ConeGeometry(0.16,0.5,8).translate(0,0.25,0),(x,y,z,c)=>c.set(p.core));
     }
+  } else if(d.model==='wyrm'){   // a frost wyrm: a horned head, six armoured body segments that undulate, two bat-like wings, four short clawed legs, a spiked tail
+    const bone=(A,B,r,col)=>{ const dir=B.clone().sub(A), L=dir.length(), q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());
+      return pc(cyl(r,r*0.6,L,5).applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(q)).translate((A.x+B.x)/2,(A.y+B.y)/2,(A.z+B.z)/2),c=>c.set(col)); };
+    G.segs=[0.62,0.6,0.52,0.44,0.35,0.25].map(r=>merge([
+      pc(csph(r,12,9).scale(1,0.92,1.25),(x,y,z,c)=>{ c.set(p.body); if(y<-r*0.25) c.lerp(_tint.set(p.belly),0.85); if(Math.abs(Math.sin(z*7))<0.16&&y>0) c.multiplyScalar(0.82); }),
+      ...[-0.25,0,0.25].map(dz=>pc(new THREE.ConeGeometry(r*0.2,r*0.65,5).translate(0,r*1.1,dz*r*2),c=>c.set(p.ridge)))
+    ]));
+    G.tailTip=merge([pc(new THREE.ConeGeometry(0.2,1.0,6).rotateX(Math.PI/2).translate(0,0,0.65),c=>c.set(p.ridge)),pc(csph(0.16,8,6),c=>c.set(p.body))]);
+    G.head=merge([
+      pc(csph(0.46,12,10).scale(0.95,0.8,1.3).translate(0,0,-0.35),(x,y,z,c)=>{ c.set(p.body); if(y<-0.12) c.lerp(_tint.set(p.belly),0.7); }),
+      pc(new THREE.ConeGeometry(0.3,0.75,8).rotateX(-Math.PI/2).translate(0,-0.06,-1.05),c=>c.set(p.body)),   // the snout
+      pc(vbox(0.34,0.1,0.6,0,-0.27,-0.9),c=>c.set(p.belly)),                                                     // the lower jaw
+      ...[-1,1].flatMap(sd=>[
+        pc(new THREE.ConeGeometry(0.09,0.75,6).rotateX(Math.PI/2-0.5).rotateZ(-sd*0.35).translate(sd*0.3,0.35,0.05),c=>c.set(p.horn)),   // horns sweep back and up
+        pc(csph(0.075,8,6).translate(sd*0.24,0.14,-0.62),c=>c.set(p.eye)),
+        pc(new THREE.ConeGeometry(0.03,0.16,5).rotateX(Math.PI).translate(sd*0.13,-0.24,-1.25),c=>c.set(0xf6f2e4))]),
+      ...[0,1,2].map(k=>pc(new THREE.ConeGeometry(0.08,0.3,5).rotateX(0.4).translate(0,0.38,-0.15+k*0.28),c=>c.set(p.ridge)))   // a crest of spikes
+    ]);
+    { const V3=(x,y,z)=>new THREE.Vector3(x,y,z), S0=V3(0,0,0), T=[V3(2.4,0.35,-1.0),V3(2.9,0.1,0.3),V3(2.1,-0.05,1.5)], Bk=V3(0.3,-0.05,1.2), P=[];
+      for(const [a,b,c] of [[S0,T[0],T[1]],[S0,T[1],T[2]],[S0,T[2],Bk]]) P.push(a.x,a.y,a.z,b.x,b.y,b.z,c.x,c.y,c.z, a.x,a.y,a.z,c.x,c.y,c.z,b.x,b.y,b.z);   // the membrane, two-sided
+      G.wing=merge([pc(trisGeo(P),(x,y,z,c)=>{ c.set(p.wing).multiplyScalar(0.8+clamp(x/3)*0.3); }),...T.map(t=>bone(S0,t,0.06,p.horn)),bone(S0,Bk,0.05,p.horn)]);
+      G.wingL=G.wing.clone().scale(-1,1,1); }
+    G.leg=merge([pc(cyl(0.13,0.1,0.7,6).translate(0,-0.35,0),c=>c.set(p.body)),pc(new THREE.ConeGeometry(0.13,0.3,5).rotateX(-1.4).translate(0,-0.72,-0.14),c=>c.set(p.horn))]);
   } else if(d.model==='goblin'){
     const look={sex:'male',height:1,build:0.9,skin:p.skin,face:'angular',eyes:p.eyes,facial:'none',hair:'bald',hairColor:0x1d1714,top:p.top,topColor:p.topColor,bottom:p.bottom,bottomColor:p.bottomColor,shoes:'boots',shoeColor:0x2b2420,hat:p.hat,hatColor:p.hatColor,pack:false};
     const rig=buildCharacter(look);
@@ -106,6 +131,7 @@ function monGeos(d){
     if(W==='kanabo') rig.elR.add(new THREE.Mesh(merge([pc(cyl(0.05,0.1,0.95,8).translate(0,-0.75,0),c=>c.set(p.club)),
       ...[0,1,2,3,4,5].map(k=>pc(new THREE.ConeGeometry(0.025,0.08,4).rotateZ(Math.PI/2).translate(0.1,-0.5-(k%3)*0.2,0).rotateY(k*1.05),c=>c.set(0xb8b0a0)))]),matChar));
     else if(W==='spear') rig.elR.add(new THREE.Mesh(merge([pc(cyl(0.02,0.02,1.9,6).translate(0,-0.55,0),c=>c.set(wood)),pc(new THREE.ConeGeometry(0.04,0.26,4).rotateX(Math.PI).translate(0,-1.62,0),c=>c.set(0xc0c6cc))]),matChar));
+    else if(W==='axe') rig.elR.add(new THREE.Mesh(merge([pc(cyl(0.035,0.04,1.0,7).translate(0,-0.62,0),c=>c.set(wood)),pc(vbox(0.34,0.26,0.04,0.17,-1.02,0),c=>c.set(p.club)),pc(vbox(0.1,0.12,0.04,-0.08,-1.02,0),c=>c.set(0x4a4a50))]),matChar));
     else if(W==='katana') rig.elR.add(new THREE.Mesh(merge([pc(vbox(0.035,0.9,0.012,0,-0.72,0),(x,y,z,c)=>c.set(p.club).multiplyScalar(0.85+Math.abs(x)*4)),pc(cyl(0.06,0.06,0.02,10).translate(0,-0.26,0),c=>c.set(0x2a2420)),pc(cyl(0.02,0.02,0.22,6).translate(0,-0.13,0),c=>c.set(0x1a1414))]),matChar));
     else rig.elR.add(new THREE.Mesh(merge([pc(cyl(0.03,0.075,0.62,7).translate(0,-0.62,0),c=>c.set(p.club)),pc(csph(0.08,6,5).translate(0,-0.9,0),c=>c.set(p.club).multiplyScalar(0.8))]),matChar));
     // yokai extras on the head and back (head space: front is -z, the crown about 0.2 above the head pivot)
@@ -114,6 +140,9 @@ function monGeos(d){
     if(p.nose){ rig.head.add(new THREE.Mesh(pc(new THREE.ConeGeometry(0.035,0.2,6).rotateX(-Math.PI/2).translate(0,0.0,-0.2),c=>c.set(p.nose)),matChar)); }
     if(p.shell){ rig.spine.add(new THREE.Mesh(pc(csph(0.22,12,9).scale(1.05,1.2,0.55).translate(0,0.3,0.16),(x,y,z,c)=>{ c.set(p.shell); if(Math.abs(Math.sin(x*14)*Math.sin(y*12))>0.8) c.multiplyScalar(0.7); }),matChar));
       rig.head.add(new THREE.Mesh(pc(cyl(0.1,0.1,0.02,12).translate(0,0.125,0),c=>c.set(0xd8e8e0)),matChar)); }
+    if(p.fur){   // yeti / troll / reaver: a shaggy mane round the head and a fur mantle over the shoulders
+      rig.head.add(new THREE.Mesh(merge([pc(csph(0.24,10,8).scale(1.15,1.05,0.9).translate(0,0.02,0.1),c=>c.set(p.fur)),...[-1,1].map(sd=>pc(csph(0.13,8,6).translate(sd*0.19,-0.1,-0.06),c=>c.set(p.fur))),pc(csph(0.13,8,6).scale(1.3,1,0.8).translate(0,-0.2,-0.14),c=>c.set(p.fur))]),matChar));
+      rig.spine.add(new THREE.Mesh(merge([pc(csph(0.3,10,8).scale(1.75,0.55,1.1).translate(0,0.4,0.02),(x,y,z,c)=>c.set(p.fur).multiplyScalar(0.85+h3(Math.floor(x*9),Math.floor(y*9),Math.floor(z*9))*0.2))]),matChar)); }
     if(p.wings) for(const sd of [-1,1]) rig.spine.add(new THREE.Mesh(pc(new THREE.ConeGeometry(0.2,0.8,4).scale(0.4,1,1.6).rotateZ(-sd*0.7).translate(sd*0.34,0.45,0.2),c=>c.set(p.wings)),matChar));
     G.template=rig.root;
   }
@@ -127,6 +156,13 @@ function buildMonster(d,mat){
   else if(d.model==='totem'){ P0.body=M(G.body); g.add(P0.body); }
   else if(d.model==='beetle'){ P0.body=M(G.body); g.add(P0.body); P0.lL=M(G.lL); P0.lR=M(G.lR); g.add(P0.lL,P0.lR); }
   else if(d.model==='fox'){ P0.body=M(G.body); g.add(P0.body); P0.tail=pivot(g,0,0.78,0.5,M(G.tail)); P0.legs=[[-0.15,-0.4],[0.15,-0.4],[-0.15,0.38],[0.15,0.38]].map(([x,z])=>pivot(g,x,0.46,z,M(G.leg))); }
+  else if(d.model==='wyrm'){
+    const zs=[0,0.85,0.8,0.7,0.6,0.5]; let par=g; P0.segs=G.segs.map((geo,i)=>{ const pv=pivot(par,0,i?0:1.15,zs[i],M(geo)); par=pv; return pv; });
+    P0.tail=pivot(par,0,0,0.5,M(G.tailTip));
+    P0.head=pivot(P0.segs[0],0,0.35,-0.75,M(G.head));
+    P0.wR=pivot(P0.segs[0],0.45,0.5,-0.1,M(G.wing)); P0.wL=pivot(P0.segs[0],-0.45,0.5,-0.1,M(G.wingL));
+    P0.legs=[[P0.segs[0],-0.5,-0.15],[P0.segs[0],0.5,-0.15],[P0.segs[2],-0.42,0],[P0.segs[2],0.42,0]].map(([s,x,z])=>pivot(s,x,-0.25,z,M(G.leg)));
+  }
   else if(d.model==='wisp'){ P0.body=M(G.body); g.add(P0.body); if(G.flick){ P0.flick=pivot(g,0,1.9,0.05,M(G.flick)); P0.flick.children[0].castShadow=false; } }
   else if(d.model==='boar'){ P0.body=M(G.body); g.add(P0.body); P0.legs=[[-0.2,-0.4],[0.2,-0.4],[-0.2,0.4],[0.2,0.4]].map(([x,z])=>pivot(g,x,0.42,z,M(G.leg))); }
   else if(d.model==='treant'){
@@ -237,6 +273,15 @@ function animateMonster(m,dt,sp){
     P0.legs.forEach((l,k)=>{ l.rotation.x=Math.sin(m.ph+GAIT[k])*amp; });
     P0.body.rotation.x=lunge*-0.3; P0.body.position.y=Math.abs(Math.sin(m.ph))*0.04*Math.min(1,sp);
     P0.tail.rotation.y=Math.sin(t*2.2+m.s*7)*0.25; P0.tail.rotation.x=-0.1+Math.sin(t*1.7+m.s*3)*0.08;
+  } else if(m.model==='wyrm'){
+    m.ph+=dt*(1.2+sp*1.3);
+    const amp=0.12+Math.min(1,sp/2)*0.16, atk=m.act?clamp(m.act.t/m.act.dur):0;
+    P0.segs.forEach((s,i)=>{ s.rotation.y=Math.sin(m.ph*2-i*0.75)*amp*(0.5+i*0.18); s.rotation.x=Math.sin(m.ph*1.3-i*0.6)*0.03; });
+    P0.tail.rotation.y=Math.sin(m.ph*2-4.5)*amp*1.3;
+    P0.head.rotation.x=m.act?(atk<0.45?-0.7*(atk/0.45):-0.7+(atk-0.45)/0.55*1.5):Math.sin(t*1.4+m.ph)*0.05+lunge*0.6;
+    P0.head.rotation.y=Math.sin(m.ph*2+0.6)*0.1;
+    const fl=Math.sin(t*(m.aggro?3.2:1.4)+m.s*5)*0.35+0.25; P0.wR.rotation.z=fl; P0.wL.rotation.z=-fl;
+    P0.legs.forEach((l,k)=>{ l.rotation.x=Math.sin(m.ph*2+GAIT[k])*Math.min(1,sp/2)*0.5; });
   } else if(m.model==='wisp'){
     m.ph+=dt*(1.5+sp);
     P0.body.position.y=0.25+Math.sin(m.ph*1.3)*0.15; P0.body.rotation.x=Math.min(0.35,sp*0.08)+lunge*-0.4;
