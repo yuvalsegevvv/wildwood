@@ -76,7 +76,7 @@ const VILLAGERS=[
   { id:'daisuke', vil:2, title:'Guard', name:'Daisuke', role:null,
     look:{sex:'male',build:1.1,face:'angular',hair:'short',hairColor:0x1d1714,facial:'none',skin:0xdcb48e,top:'jacket',topColor:0x6a2a26,bottom:'trousers',bottomColor:0x2a2830,hat:'kasa',hatColor:0xc8a868},
     behavior:{type:'patrol',route:['gate','lamp:2','lamp:3','lamp:4','lamp:5','lamp:6','lamp:1','gate'],pause:3}, home:'house:7', schedule:'always', speed:1.2, voice:{rate:1.0,pitch:0.9},
-    lines:['Kappa near the ponds, kodama in the old woods. Farther east the oni come down from the crags.','The Demon Gate is in the far south-east corner. Akaoni guards it. Nobody guards us from Akaoni.','You came through the tunnel? Then the Rootwarden is dead. Good riddance.'] },
+    lines:['Kappa near the ponds, kodama in the old woods. Farther east the oni come down from the crags.','The Demon Gate is in the far north-east corner. Akaoni guards it. Nobody guards us from Akaoni.','You came through the tunnel? Then the Rootwarden is dead. Good riddance.'] },
   { id:'chiyo', vil:2, title:'Storyteller', name:'Grandmother Chiyo', role:null,
     look:{sex:'female',height:0.9,build:0.95,face:'round',hair:'bun',hairColor:0xcfcac2,chest:0.8,skin:0xe0bc98,top:'hoodie',topColor:0x5a3a5a,bottom:'skirt',bottomColor:0x2a2830,hat:'none'},
     behavior:{type:'stationary',at:'campfire:seat1',pose:'sit'}, home:'house:4', schedule:'always', voice:{rate:0.8,pitch:1.0},

@@ -5,7 +5,7 @@ Read this file first. It is written so you can work on the game **without readin
 
 Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an authoritative world server
 that runs in the browser tab (solo / shared room) or in Node (the deployed MMO), procedural 880 m forest,
-village with NPCs, 451 monsters in 16 zones, a boss; east of the mountains the Sakura Vale (tunnel opened by the
+village with NPCs, 556 monsters in 19 zones (three rings round the village plus the shore, the Sunwall's foot and the Greyspine foothills), roads and a river bridge, a boss; east of the mountains the Sakura Vale (tunnel opened by the
 boss, Japanese village Hanami, 240 monsters of levels 16-25 in 10 zones, bosses at 20 and 25, teleport circles);
 3 classes with equippable skills (5 levels each, upgraded with coins and monster drops), an element system (soul bound at level 15 in Hanami, elements on skills and monsters), class-universal passives from level 18, 210 items (6 tiers) in 5 rarities, a forge, a quest board, weather, chat, server-side saves in a Postgres database (Neon), player
 accounts (guest or name + password; the start card offers Log in, Register, Play as guest).
@@ -23,7 +23,7 @@ accounts (guest or name + password; the start card offers Log in, Register, Play
 2. Section 4 below maps common tasks to files.
 3. `grep -n "name" -r src/` to find a function; then open only a line range.
 4. Every file starts with `//@ one-line description`. Keep that line accurate when you edit.
-5. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules).
+5. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules); the main quest plan: `docs/MAIN-QUEST.md`.
 
 ## 2. Architecture in one screen
 
@@ -111,6 +111,9 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | Start card: Log in / Register / Play as guest (Solo / Shared without a server), loading state, connecting, `beginPlay`; the first steps of a new account (character editor in creating mode, `openEditor({create:true})`) | `game/ui/start-screen.js` (`enterWorld`, `showStart`), markup `#start` in `index.html`, `styles/04-start-screen.css`; session token and the server's auth answers `game/ui/account.js`; `netReset` in `game/net/transport.js`; test `node tools/start-smoke.js` |
 | Animations | `game/character/pose.js` (`poseRig`; skill anims borrow kinds via `ANIM_OF`) |
 | World size, lakes, terrain | `shared/terrain.js` (`SIZE`, `LAKES`, `baseHeight`), `shared/zones.js` (`RINGS`, zones, arena) |
+| The lands' edges (Crownsea shore, the Sunwall and Redgate Canyon, snowy northern rims, all curved by noise) and the placeholder lands beyond; the edge zones and their monsters (`EDGE_ZONES`, `edgeZoneAt`, `defZone` in `shared/zones.js`; rows with `zone:` in `MON_DEFS`) | `shared/terrain.js` (`coastDist`, `shore`, `sunwall`, `bareGround`), colours `game/world/terrain-color.js`, the sea limit in `worldBounds` (`game/player/movement.js`), names `edgeName` (`game/ui/map.js`); placeholders `game/world/far-lands.js` (`FAR_COAST`, `FAR_ISLES`, `farHeight`); design `docs/WORLD.md` |
+| Roads and the river bridge | `shared/roads.js` (`ROADS` waypoints, `roadDist`, `nearRoad`, `BRIDGES`, `bridgeDeck`); the bridge's model `game/world/bridges.js`; walking on it `updatePlayer` (movement.js); road names on the map (`placeName`); the map's wavy outline `mapEdgeAlpha` (map.js) |
+| The main quest line (plan, not built yet) | `docs/MAIN-QUEST.md` (steps, levels, rewards, how to build it); story `docs/STORY.md` |
 | Vegetation / animals | `game/world/plant-models.js`, `generation-*.js`, `game/wildlife/animals.js` |
 | Background music (a theme per village, level range and boss; `THEMES`, `musicThemeHere`; recorded tracks `assets/audio/music-<theme>.m4a` override a theme) | `game/audio/music.js`, `game/audio/samples.js` (`musicBuffer`) |
 | Time of day / weather | `game/world/time-of-day.js` (`weatherTint` hook), `server/weather.js`, `game/world/weather.js`; rain sound `game/audio/rain.js` (`RAIN_SND` volumes) |
@@ -297,7 +300,8 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
 - Stats: `f(L)=L+(13/12)^L`; HP `20f+armor`; damage `3f+weapon`; defence cut `def/(def+60)`;
   ±5% per level difference; crits 12% ×1.7.
 - XP to next `10(L²+(7/6)^L)·K15^((L-5)/10)`; level 10-15 monsters 1.5× HP/XP/coins (`highMult`).
-- Monsters: 40 of each level-1 kind down to 20 of each level-15 kind; respawn 35 s; think within 110 m.
+- Monsters: 40 of each level-1 kind down to 26 of each level-11 kind, levels 12-15 a quarter more (30 down to 25: their zones reach the land's edge), the
+  four edge kinds their own `count` (16-28); respawn 35 s; think within 110 m.
 - Drops: monsters 2% common, 0.5% rare, 0.1% epic; boss 50/10/3/1/0.1% (common…legendary).
 - World: the home forest is -HALF..HALF; the whole world is `WX0..WX1` x `WZ0..WZ1` (the vale is x > HALF, 550 m wide).
   Use those bounds (not ±HALF) for clamps. The heightmap is rectangular (`NVX` x `NVZ`), the terrain is drawn in

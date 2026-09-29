@@ -7,21 +7,21 @@ function updatePlayer(dt){
   f+=-joyY; s+=joyX;
   const len=Math.hypot(f,s); if(len>1){ f/=len; s/=len; }
   const run=kbHeld('run')||Math.hypot(joyX,joyY)>0.92;
-  const inWater=getH(P.x,P.z)<WATER-0.35;
+  const inWater=getH(P.x,P.z)<WATER-0.35 && bridgeDeck(P.x,P.z)<WATER;
   let speed=run?9.5:4.2; if(inWater) speed*=0.5;
   if(CB.act && (CB.act.kind==='slash'||CB.act.kind==='nova'||CB.act.kind==='shoot'||CB.act.kind==='volley')) speed*=0.45;
   const sy=Math.sin(P.yaw), cy=Math.cos(P.yaw);
   const tx=(-sy*f+cy*s)*speed, tz=(-cy*f-sy*s)*speed;
   const k=1-Math.exp(-(P.ground?10:2.5)*dt);
   P.vx+=(tx-P.vx)*k; P.vz+=(tz-P.vz)*k;
-  const ox=P.x;
+  const ox=P.x, oz=P.z;
   P.x+=P.vx*dt; P.z+=P.vz*dt;
   nearCols(P.x,P.z,(cx,cz,r)=>{ const dx=P.x-cx, dz=P.z-cz, d=Math.hypot(dx,dz), m=r+0.32; if(d<m && d>1e-4){ P.x=cx+dx/d*m; P.z=cz+dz/d*m; } });
   pushOutBoxes(P,0.32);
   for(const m of MONS){ if(m.dead||!m.g.visible) continue; const dx=P.x-m.x, dz=P.z-m.z, d=Math.hypot(dx,dz), mm=m.T.rad+0.32; if(d<mm && d>1e-4){ P.x=m.x+dx/d*mm; P.z=m.z+dz/d*mm; } }
   for(const n of NPCs){ if(n.inside) continue; const dx=P.x-n.x, dz=P.z-n.z, d=Math.hypot(dx,dz), m=0.62; if(d<m && d>1e-4){ P.x=n.x+dx/d*m; P.z=n.z+dz/d*m; } }
-  worldBounds(P,ox,0.32);
-  const gnd=Math.max(getH(P.x,P.z),WATER-1.15);
+  worldBounds(P,ox,0.32,oz);
+  const gnd=Math.max(getH(P.x,P.z),WATER-1.15,bridgeDeck(P.x,P.z));   // the river bridge's deck is ground too
   if(jumpReq && P.ground){ P.vy=inWater?4:6.2; P.ground=false; }
   jumpReq=false;
   P.vy-=19*dt; P.y+=P.vy*dt;
@@ -35,9 +35,10 @@ function updatePlayer(dt){
 }
 /* The two lands are walled off by the border mountains (you can climb up to 14 m short of the crest from either side);
    the only way through is the tunnel. Inside it you are kept between its walls; its west door stays shut until the
-   Rootwarden falls (GEAR.east >= 1). o.inTun is set when you walk in through either portal. */
+   Rootwarden falls (GEAR.east >= 1). o.inTun is set when you walk in through either portal.
+   On the Crownsea's shore you can wade in to the knees (ground above WATER-0.8), no deeper (oz: the z before the move). */
 const valeOpen=()=>!!(GEAR&&GEAR.east>=1);
-function worldBounds(o,ox,rad){
+function worldBounds(o,ox,rad,oz){
   const T=TUN, dz=o.z-T.z, bore=Math.abs(dz)<T.w-rad+0.2, e0=T.p0-0.6, e1=T.p1+0.6;
   if(!o.inTun && bore && ((ox<=e0 && o.x>e0 && valeOpen()) || (ox>=e1 && o.x<e1))) o.inTun=true;
   if(o.inTun){
@@ -51,6 +52,7 @@ function worldBounds(o,ox,rad){
     if(o.x<HALF) o.x=Math.min(o.x,HALF-14); else o.x=clamp(o.x,HALF+14,WX1-14);
   }
   o.z=clamp(o.z,WZ0+14,WZ1-14); if(o.x<WX0+14) o.x=WX0+14;
+  if(oz!==undefined && coastDist(o.x,o.z)<34){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }
 }
 const inTunnelBore=(x,z)=>x>TUN.p0-1&&x<TUN.p1+1&&Math.abs(z-TUN.z)<TUN.w+0.5;
 function updateCamera(dt){

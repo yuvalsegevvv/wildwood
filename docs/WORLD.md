@@ -280,12 +280,29 @@ storyline). What it means for the geography:
 
 ## 8. The current game and this map
 
-- Today the home forest is a square ringed by mountains on every side, and the Vale is a rectangle east of it with mountains on every side
-  (`shared/terrain.js`, `shared/vale.js`, `shared/zones.js`). In this map Wildwood's south and the Vale's south and east are **coast**
-  on the Crownsea, and Wildwood's west is the **Sunwall** (red cliffs), not grey mountains.
-- Nothing has to change until the owner asks. When the next region is built, reshape only the edges it touches (e.g. the northern rim of
-  the Vale becomes the climb into the Hoarfrost), and ask before turning the southern rims into coast: it changes how the built areas look.
-- The Vale Wall (the border mountains with the tunnel) matches the map as it is.
+- **The two playable lands' edges follow this map** (`shared/terrain.js`: `coastDist`, `shore`, `sunwall`, `bareGround`; colours in
+  `game/world/terrain-color.js`; names on the world map in `edgeName`, `game/ui/map.js`):
+  - Wildwood: north the Greyspine's snowy foothills; west **the Sunwall**, red cliffs up to a sandy plateau (52 m), with **Redgate
+    Canyon** cut through it at z = 40 and choked by a rock fall; south the **Crownsea shore** (a ~20 m beach, the river runs into the sea);
+    east the Vale Wall with the tunnel.
+  - The Sakura Vale: west the Vale Wall, north the snowy climb towards the Hoarfrost, south and east the Crownsea shore.
+  - On the shore you can wade in to the knees and no further (`worldBounds` in `game/player/movement.js`).
+  - No edge is a straight line: the shore has bays up to ~28 m deep (the vale's south-east corner is rounded), the Sunwall's cliff
+    wanders +-22 m (`sunwallLine`), the northern rims start rising up to 40 m early (`rimWobble`), and the world map fades each land
+    out along a wavy line (`mapEdgeAlpha`), so neither land looks like a rectangle.
+  - **Monsters by the land they live in**: every part of Wildwood has monsters. The outer ring's zones (12-15) reach on to the edges,
+    and each edge has its own zone and creatures: **the Crownsea Shore** (Shore Crabs 12, Tide Slimes 13), **the Sunwall's Foot**
+    (Sun Scarabs 14, in the red scree), **the Greyspine Foothills** (Ram-horned Boars 15). The Vale Wall has none. (The Vale's shores
+    still hold the Vale's own zones: a coastal kind for them is a possible next step.)
+  - **Roads** (`shared/roads.js`): the East Road from the village over **the river bridge** to the tunnel, with the Circle Path to the
+    Stone Circle; the Redgate Road west to the sealed canyon; the Shore Road south to the beach. In the Vale: the Tunnel Road into
+    Hanami, the Gate Road to the Demon Gate, the Shrine Road to the Foxfire Shrine, the Coast Road to the east shore and the North Road
+    towards the Hoarfrost. Roads cut through the zone ridges, and trees and monster camps keep off them.
+  - The lake in the west forest is **Mistmere** (the Greywater name belongs to the Bight).
+- **The rest of Eldmere is a low-poly placeholder** (`game/world/far-lands.js`): one flat-shaded mesh around the playable rectangle,
+  shaped from this map (the Greyspine's peaks, the Hoarfrost plateau, the Sunscar plateau with mesas, Amber Reach, the Stormhorn, and the
+  Emberwake Isles with a smoking volcano), plus one sea to the horizon. It can't be walked on. Its high ground shows faintly through the
+  distance haze. When a land is built, it replaces its part of the placeholder.
 - The game's world is one rectangular heightmap (`WX0..WX1` x `WZ0..WZ1`, section 9 of `CLAUDE.md`). Regions to the north and west of
   Wildwood need that rectangle to grow in those directions; the isles need water around them and boat or teleport travel.
 - **The Rootdeep cannot be made from the heightmap** (a heightmap has no ceilings or overhangs). It needs its own kind of space: enclosed

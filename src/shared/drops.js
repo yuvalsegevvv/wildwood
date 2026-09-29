@@ -12,7 +12,7 @@
    every player who helped a BOSS_SKILL_CHANCE roll for each of the boss's skills they do not own yet. They cannot be upgraded yet. */
 const MAT_NAMES={slime:'Slime Goo',shroom:'Spore Cap',beetle:'Beetle Shell',boar:'Boar Tusk',goblin:'Goblin Fang',treant:'Living Bark',bogslime:'Bog Ooze',
   deathcap:'Deathcap Venom',ironshell:'Iron Plate',direboar:'Dire Tusk',hobgoblin:'Rusty Buckle',rotwood:'Rotwood Ember',magmaslime:'Magma Core',
-  chieftain:"Chieftain's Totem",ancient:'Ancient Sap',sakuraslime:'Blossom Jelly',kappa:'Kappa Dish',kodama:'Spirit Bell',kabuto:'Kabuto Horn',
+  chieftain:"Chieftain's Totem",ancient:'Ancient Sap',crab:'Crab Claw',tideslime:'Sea Glass',scarab:'Scarab Wing',ramboar:'Ram Horn',sakuraslime:'Blossom Jelly',kappa:'Kappa Dish',kodama:'Spirit Bell',kabuto:'Kabuto Horn',
   kitsune:'Foxfire Ash',yamaboar:'Mountain Hide',ashigaru:'Lacquered Plate',bamboo:'Singing Bamboo',onibi:'Blue Flame',jorogumo:'Spider Silk',
   oni:'Oni Fang',yurei:'Yurei Shroud',shadowfox:'Night Fur',jadeslime:'Jade Shard',blueoni:'Storm Horn',tengu:'Tengu Feather',samurai:'Samurai Crest',
   goldkabuto:'Gold Shell',sakuratreant:'Elder Blossom',raiju:'Raiju Spark',boss:'Rootwarden Heart',akaoni:'Gate Demon Horn',kyuubi:'Kyuubi Tail'};
@@ -30,7 +30,7 @@ const idHash=str=>[...str].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7);
 function upgradeNeeds(id,to){
   const s=skillDef(id); if(!s||s.drop||!(to>=2)||to>SKILL_MAX_LV) return null;   // (boss skills cannot be upgraded yet)
   if(s.up&&s.up[to]) return s.up[to];
-  const lv=Math.min(MAX_ZONE_LV,(s.slot==='passive'?PASSIVE_LV:s.lv)+2*(to-1)), pool=MON_DEFS.filter(d=>d.level===lv), d=pool.find(x=>elOf(x)===elOf(s))||pool[idHash(id)%pool.length];
+  const lv=Math.min(MAX_ZONE_LV,(s.slot==='passive'?PASSIVE_LV:s.lv)+2*(to-1)), pool=MON_DEFS.filter(d=>d.level===lv&&!d.zone), d=pool.find(x=>elOf(x)===elOf(s))||pool[idHash(id)%pool.length];
   const mats=[{id:d.id,n:UP_COUNT[to]}];
   if(to===SKILL_MAX_LV) mats.push({id:lv>=21?'kyuubi':lv>=16?'akaoni':'boss',n:BOSS_UP});
   return {coins:Math.round(UP_COINS[s.slot]*Math.pow(to-1,1.7)/10)*10,mats};

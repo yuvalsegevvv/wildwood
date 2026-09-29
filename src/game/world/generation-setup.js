@@ -89,9 +89,11 @@ function* genTerrain(){
   };
   waterMat.customProgramCacheKey=()=>'water';
   applyEnv(envCur);
-  const wg=new THREE.PlaneGeometry(WW,WD,1,1); wg.rotateX(-Math.PI/2); wg.translate((WX0+WX1)/2,0,(WZ0+WZ1)/2);
+  // one sea for the lakes, the Crownsea and the ocean: wide enough that its edge is never within the camera's reach (1200 m)
+  const wg=new THREE.PlaneGeometry(4200,3800,1,1); wg.rotateX(-Math.PI/2); wg.translate((WX0+WX1)/2,0,(WZ0+WZ1)/2);
   water=new THREE.Mesh(wg,waterMat); water.position.y=WATER; water.receiveShadow=true;
   scene.add(water);
+  buildFarLands(); buildBridges();
 
   spawn.x=VIL.spawn.x; spawn.z=VIL.spawn.z;
   P.x=spawn.x; P.z=spawn.z; P.y=getH(P.x,P.z);

@@ -1,6 +1,7 @@
 //@ vDist, nearPath, pathAmt, plazaAmt, inBox, pushOutBoxes: each works on the village on that side of the mountains (vilAt). Pure.
 function vDist(x,z){ const V=vilAt(x,z); return Math.hypot(x-V.x,z-V.z); }
-function nearPath(x,z,m){ if(vDist(x,z)>VR+30) return false; for(const s of vilAt(x,z).paths) if(segDist(x,z,s)<m) return true; return false; }
+// on (or m metres from) a village path or a road (shared/roads.js)
+function nearPath(x,z,m){ if(nearRoad(x,z,m)) return true; if(vDist(x,z)>VR+30) return false; for(const s of vilAt(x,z).paths) if(segDist(x,z,s)<m) return true; return false; }
 function pathAmt(x,z){ if(vDist(x,z)>VR+30) return 0; let m=0; for(const s of vilAt(x,z).paths){ const a=smoothstep(s[4],s[4]*0.4,segDist(x,z,s)); if(a>m) m=a; } return m; }
 function plazaAmt(x,z){ const V=vilAt(x,z); return smoothstep(V.plaza+0.8,V.plaza-0.8,vDist(x,z)); }
 function inBox(x,z,pad){

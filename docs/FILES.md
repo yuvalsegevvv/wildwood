@@ -29,15 +29,16 @@ styles
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
   noise.js                           Seeded RNG (rand, R, pick), simplex noise2, fbm, clamp, lerp, smoothstep, h3 hash. Pure.
-  terrain.js                         Map size (SIZE, HALF, WATER; the whole world WX0..WX1 with the Sakura Vale east), river (riverX), baseHeight, forestDensity, autumnAmt. Pure.
+  terrain.js                         Map size (SIZE, HALF, WATER; the whole world WX0..WX1 with the Sakura Vale east), river (riverX), the lands' edges (coast, the Sunwall and Redgate, snowy rims), baseHeight, forestDensity, autumnAmt. Pure.
   village-layout.js                  Village placement and layout (VIL): houses, stalls, anchors, paths, colliders. Pure.
-  zones.js                           Monster zones of the home forest (ZONES, zoneAt, zonePoint), dividing ridges (zoneRidge), boss arena (ARENA); the vale's zones are in vale.js. Pure.
+  zones.js                           Monster zones of the home forest (ZONES, zoneAt, zonePoint, defZone): three rings round the village plus the edge zones (shore, Sunwall, foothills), dividing ridges (zoneRidge), boss arena (ARENA); the vale's zones are in vale.js. Pure.
   vale.js                            The Sakura Vale east of the mountains: the tunnel (TUN), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt. Pure.
   village-helpers.js                 vDist, nearPath, pathAmt, plazaAmt, inBox, pushOutBoxes: each works on the village on that side of the mountains (vilAt). Pure.
-  terrain-height.js                  rawHeight: base terrain + zone ridges + village, arena and tunnel flattening. Pure.
+  roads.js                           Roads between the two villages and the key places (ROADS), the bridge over the river (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck. Pure.
+  terrain-height.js                  rawHeight: base terrain + zone ridges (cut away where a road crosses) + village, arena and tunnel flattening. Pure.
   balance.js                         Level formulas: fLv, gear tiers, expected gear, XP curve, coins. Pure.
-  monster-defs.js                    Monster families (FAM), the 35 monsters (MON_DEFS: 15 home, 20 in the Sakura Vale), prepDef, the three bosses (BOSS_DEFS) with their totems and adds. Pure.
-  elements.js                        Elements (ELEMS): the soul you bind (SOUL_LV), opposites, and the damage multipliers for your soul and for a monster's element. Pure.
+  monster-defs.js                    Monster families (FAM), the 39 monsters (MON_DEFS: 15 home, 4 on the home forest's edges, 20 in the Sakura Vale), prepDef, the three bosses (BOSS_DEFS) with their totems and adds. Pure.
+  elements.js                        Elements (ELEMS): your soul (SOUL_LV, opposite pairs) and a monster's element (the wheel), with the damage multipliers for both. Pure.
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
   drops.js                           Monster drops (MATS: one material per monster kind), the skills bosses drop (BOSS_SKILLS), and what upgrading a skill costs (upgradeNeeds). Pure.
   items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, prices, drop tables, merging, armour looks, gear helpers. Pure.
@@ -73,6 +74,8 @@ game
   player/state.js                    Player state P and spawn point
   world/generation-setup.js          Palettes, shared geometries (buildGeometries), terrain (in bands, culled by distance) + water + both villages (genTerrain)
   world/generation-chunks.js         Per-chunk vegetation placement (genChunk): the home forest's mix, and sakura, maple, pine and bamboo in the Sakura Vale
+  world/far-lands.js                 The rest of Eldmere as low-poly placeholders around the two playable lands (Greyspine, Hoarfrost, Sunscar, Amber Reach, Stormhorn, Emberwake Isles): one flat-shaded mesh, high ground seen through the haze
+  world/bridges.js                   The river bridge's model (BRIDGES in shared/roads.js): plank deck following its arch, rails, posts and piers, one merged mesh
   world/streaming.js                 Streaming scheduler (Stream, streamPump): terrain first, nearest chunks next
   character/model.js                 Look presets, random looks (randomLook), save/load, buildCharacter (all outfits and armour looks), hiker, rebuildHiker
   character/pose.js                  poseRig (walk, run, sit, talk, attacks) and animateHiker

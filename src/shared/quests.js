@@ -6,7 +6,8 @@
      bounty  1.5x a hunt, the grindy one                     reward: more XP and coins, always an item, 25% rare
      scout   walk to a named place in that level's zone      reward: XP and coins
      boss    the Rootwarden (from level 13), Akaoni (from 18), Kyuubi (from 23)   reward: lots, a rare item, 20% epic
-   Levels 16-25 are the Sakura Vale's: two monster kinds per level, so a hunt names one of the two.
+   Levels 16-25 are the Sakura Vale's: two monster kinds per level, so a hunt names one of the two. Levels 12-15 also have the
+   home forest's edge kinds (shore crabs...), hunted in their own edge zone.
    Items are of the quest's level tier. Notices refresh when you level up and at sunrise. */
 function dirWord(x,z){ const a=Math.atan2(x,-z), i=Math.round(a/(Math.PI/4)); return ['north','north-east','east','south-east','south','south-west','west','north-west','north'][(i+8)%8]; }
 const QUEST_OFFERS=4, QUEST_MAX_ACTIVE=5, QUEST_MAX_COUNT=120;
@@ -33,7 +34,7 @@ const BOSS_QUESTS=[
   {target:'kyuubi',from:23,level:25,title:'Kyuubi, the Nine-Tailed',text:'Nine tails of foxfire burn above the shrine in the north-west of the vale. The old fox has ruled there for a thousand years. End its reign.'}];
 function bossQuestFor(E){ const ok=BOSS_QUESTS.filter(b=>E>=b.from); if(!ok.length) return null; return ok.length>1&&Math.random()<0.3?ok[ok.length-2]:ok[ok.length-1]; }
 function genQuest(pl,id){
-  const E=Math.max(1,Math.min(MAX_ZONE_LV,pl)), L=questLevelFor(pl), d=qpick(MON_DEFS.filter(m=>m.level===L)), zn=ZONES.find(z=>z.key===L);
+  const E=Math.max(1,Math.min(MAX_ZONE_LV,pl)), L=questLevelFor(pl), d=qpick(MON_DEFS.filter(m=>m.level===L)), zn=defZone(d);
   const big=d.model==='treant', many=d.name+'s', x=Math.random(), bq=bossQuestFor(E);
   let q;
   if(bq && x<0.12) q={kind:'boss',type:'kill',target:bq.target,count:1,level:bq.level,title:bq.title,text:bq.text};

@@ -15,6 +15,12 @@ function mapInit(){
   MAP.canvas=c; MAP.ctx=c.getContext('2d'); MAP.img=MAP.ctx.createImageData(MAP.w,MAP.h); MAP.zone=new Uint8Array(MAP.w*MAP.h);
 }
 const _mc=new THREE.Color();
+// the map's outline: each land fades out along a wavy line 6-36 m inside its borders, so neither land is drawn as a rectangle
+function mapEdgeAlpha(x,z){
+  const e=x<HALF?Math.min(x-WX0,z-WZ0,WZ1-z,HALF-x):Math.min(x-HALF,z-WZ0,WZ1-z,WX1-x);
+  const t=6+(noise2(x*0.011+3,z*0.011-5)*0.5+0.5)*26+noise2(x*0.05,z*0.05)*4;
+  return clamp((e-t)/6)*255;
+}
 function mapBuildStep(rows){
   if(MAP.done) return; if(!MAP.canvas) mapInit();
   const N=MAP.w, NZ=MAP.h, d=MAP.img.data, cell=1/MAP.k;
@@ -32,7 +38,7 @@ function mapBuildStep(rows){
         R=_mc.r*f*sh; G=_mc.g*f*sh; B=_mc.b*f*sh;
       }
       const zn=zoneAt(x,z); MAP.zone[iz*N+ix]=zn?ZONES.indexOf(zn)+1:0;
-      d[i]=clamp(R)*255; d[i+1]=clamp(G)*255; d[i+2]=clamp(B)*255; d[i+3]=255;
+      d[i]=clamp(R)*255; d[i+1]=clamp(G)*255; d[i+2]=clamp(B)*255; d[i+3]=mapEdgeAlpha(x,z);
     }
   }
   if(MAP.row<NZ) return;
@@ -107,7 +113,7 @@ function drawFullMap(){
   const fs=Math.max(9,Math.min(13,W/DPR/48))*DPR, vale=L===LANDS.vale, mine=zn=>!!zn.vale===vale;
   x.textAlign='center'; x.textBaseline='middle';
   const label=(t,cx,cy,size,col,bold)=>{ x.font=`${bold?'600 ':''}${size}px Inter, system-ui, sans-serif`; x.lineWidth=3*DPR; x.strokeStyle='rgba(10,12,10,.75)'; x.strokeText(t,cx,cy); x.fillStyle=col; x.fillText(t,cx,cy); };
-  for(const zn of ZONES){ if(zn.boss||!mine(zn)) continue; const [cx,cy]=at(...zonePoint(zn,0,0.5)); label(zn.name,cx,cy-fs*0.55,fs,'#f2f0e4',true); label('Level '+zn.level,cx,cy+fs*0.6,fs*0.85,'#ffcf8a'); }
+  for(const zn of ZONES){ if(zn.boss||!mine(zn)) continue; const [cx,cy]=at(...(zn.label||zonePoint(zn,0,0.5))); label(zn.name,cx,cy-fs*0.55,fs,'#f2f0e4',true); label('Level '+(zn.lvText||zn.level),cx,cy+fs*0.6,fs*0.85,'#ffcf8a'); }
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if(inVale(A.x)!==vale) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bd.def.level+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
   { const V=vale?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(vale?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
   { const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Tunnel':'Tunnel (sealed)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
@@ -128,9 +134,23 @@ function placeName(wx,wz){
   for(const L of LAKES) if(Math.hypot(wx-L.x,wz-L.z)<L.r*0.8) return L.name;
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if(Math.hypot(wx-A.x,wz-A.z)<A.r+6) return A.name+': '+bd.def.name+', level '+bd.def.level+' boss'; }
   if(inTunnelCut(wx,wz)&&wx>TUN.p0-4&&wx<TUN.p1+4) return valeOpen()?'The mountain tunnel':'The mountain tunnel (sealed until the Rootwarden falls)';
-  const zn=zoneAt(wx,wz); if(zn) return zn.key==='boss'?'Rootwarden Barrens':zn.boss?zn.name:zn.name+': level '+zn.level+' ('+MON_DEFS.filter(d=>d.level===zn.key).map(d=>d.name).join(', ')+')';
-  const edge=inVale(wx)?Math.min(wx-HALF,WX1-wx,wz-WZ0,WZ1-wz):HALF-Math.max(Math.abs(wx),Math.abs(wz));
-  return edge<60?'Border mountains':inVale(wx)?'Hanami meadows':'Village meadows';
+  const rd=roadAt(wx,wz,3); if(rd) return rd.name+(BRIDGES.some(B=>Math.hypot(wx-B.x,wz-B.z)<BRIDGE_LEN/2+2)?' (the river bridge)':'');
+  const zn=zoneAt(wx,wz); if(zn) return zn.key==='boss'?'Rootwarden Barrens':zn.boss?zn.name:zn.name+': level '+(zn.lvText||zn.level)+' ('+MON_DEFS.filter(d=>defZone(d)===zn).map(d=>d.name).join(', ')+')';
+  return edgeName(wx,wz)||(inVale(wx)?'Hanami meadows':'Village meadows');
+}
+// the lands' edges by their names in docs/WORLD.md (shaped in shared/terrain.js)
+function edgeName(x,z){
+  if(coastDist(x,z)<40) return 'The Crownsea shore';
+  if(!inVale(x)){
+    if(Math.abs(z-REDGATE_Z)<16&&x-WX0<REDGATE_CL+45) return 'Redgate Canyon (sealed by a rock fall)';
+    if(x-WX0<sunwallLine(z)+18) return 'The Sunwall';
+    if(z-WZ0<62) return 'The Greyspine foothills';
+    if(HALF-x<60) return 'The Vale Wall';
+  } else {
+    if(x-HALF<60) return 'The Vale Wall';
+    if(z-WZ0<62) return 'The slopes of the Hoarfrost Reach';
+  }
+  return null;
 }
 function mapPointer(e){
   const L=viewLand(), r=mapC.getBoundingClientRect(), wx=L.x0+(e.clientX-r.left)/r.width*(L.x1-L.x0), wz=L.z0+(e.clientY-r.top)/r.height*(L.z1-L.z0);

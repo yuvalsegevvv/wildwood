@@ -12,17 +12,18 @@ function makeMon(d,x,z,camp,s,temp){
 }
 const CAMPS=[];
 // how many of each monster live in its zone: 40 of the level-1 kind, down to 20 of the level-15 kind;
-// the vale's zones hold two kinds, 12 of each
-const MON_COUNT=d=>d.level>15?12:Math.round(40-(d.level-1)*20/14);
+// the vale's zones hold two kinds, 12 of each; the outer ring's kinds (12-15) a quarter more, since their zones reach on
+// to the land's edge; the edge kinds say how many (count)
+const MON_COUNT=d=>d.count||(d.level>15?12:Math.round((40-(d.level-1)*20/14)*(d.level>=12?1.25:1)));
 function initMonstersS(){
   const rng=mulberry32(31337), rr=(a,b)=>a+(b-a)*rng();
   const ok=(x,z)=>x>WX0+26&&x<WX1-26&&Math.abs(z)<HALF-26&&getH(x,z)>1&&grad(x,z)<0.55&&zoneRidge(x,z)<0.5&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&!inTunnelCut(x,z,15);
   for(const d of MON_DEFS){
-    const zn=ZONES.find(z=>z.key===d.level), total=MON_COUNT(d), pack=d.per+2;
+    const zn=defZone(d), total=MON_COUNT(d), pack=d.per+2;
     let made=0;
     for(let tries=0;tries<4000&&made<total;tries++){
       const spread=tries<1200?0.8:0.94, gap=tries<1500?18:tries<2800?13:9;
-      const [x,z]=zonePoint(zn,rr(-0.5,0.5)*spread,0.5+rr(-0.5,0.5)*spread);
+      const [x,z]=zonePoint(zn,rr(-0.5,0.5)*spread,0.5+rr(-0.5,0.5)*spread,true);
       if(!ok(x,z)||zoneAt(x,z)!==zn||CAMPS.some(c=>Math.hypot(c.x-x,c.z-z)<gap)) continue;
       const camp={x,z,def:d,zone:zn}; CAMPS.push(camp);
       const n=Math.min(pack,total-made);

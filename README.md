@@ -1,8 +1,8 @@
 # Wildwood
 
 A multiplayer 3D forest RPG in the browser (three.js r128): an 880 m streamed procedural forest with a river and
-three lakes, a village with villagers and shops, 16 monster zones with 451 monsters (40 of each level-1 kind down
-to 20 of each level-15 kind), three classes, equipment in 5 rarities with a drag-and-drop inventory and a merge forge, quests, a boss, a minimap
+three lakes, a village with villagers and shops, 19 monster zones with 556 monsters (40 of each level-1 kind down
+to 25 of each level-15 kind, and crabs, tide slimes, scarabs and ram-horned boars on the forest's edges), dirt roads and a river bridge, three classes, equipment in 5 rarities with a drag-and-drop inventory and a merge forge, quests, a boss, a minimap
 and world map (N), a soundtrack of AI-generated songs (one per area and boss), and synthesised sound effects.
 
 **Developing with an AI agent?** Start with [CLAUDE.md](CLAUDE.md) (guide) and [docs/FILES.md](docs/FILES.md) (file map);

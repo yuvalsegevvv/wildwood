@@ -23,7 +23,7 @@ function* genChunk(ci){
     const [x,z]=pt(10);
     if(Math.hypot(x-spawn.x,z-spawn.z)<7) continue;
     if(vDist(x,z)<VR+6 || nearPath(x,z,3.5) || arenaDist(x,z)<25 || inTunnelCut(x,z,2)) continue;
-    const h=getH(x,z); if(h<0.8) continue;
+    const h=getH(x,z); if(h<0.8 || bareGround(x,z)) continue;
     const g=grad(x,z); if(g>0.95) continue;
     const fd=forestDensity(x,z);
     if(rand()>fd*fd*1.15+0.015) continue;
@@ -66,7 +66,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<30000*per && n<(Q*(LOW?900:1400))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(8), h=getH(x,z);
-    if(h<0.6 || grad(x,z)>0.8) continue;
+    if(h<0.6 || grad(x,z)>0.8 || bareGround(x,z)) continue;
     if(vDist(x,z)<VR+2 || nearPath(x,z,2) || arenaDist(x,z)<22 || inTunnelCut(x,z)) continue;
     const fd=forestDensity(x,z);
     if(rand()>clamp(1-Math.abs(fd-0.55)*2)+0.08) continue;
@@ -95,11 +95,12 @@ function* genChunk(ci){
   for(let a=0,n=0;a<GN*4 && n<GN;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(4), h=getH(x,z);
-    if(h<0.5) continue;
+    if(h<0.5 || (bareGround(x,z) && rand()<0.85)) continue;   // a few dry tufts on the beach and the Sunwall
     const g=grad(x,z), fd=forestDensity(x,z);
     if(rand()>(1-smoothstep(0.55,0.95,fd)*0.75)*(1-smoothstep(0.6,0.95,g))) continue;
     if(vDist(x,z)<VR+26){ if(plazaAmt(x,z)>0.3 || pathAmt(x,z)>0.35 || inBox(x,z,0.3)) continue; if(vDist(x,z)<VR && rand()<0.4) continue; }
     if(Math.abs(z-TUN.z)<TUN.w+1 && x>TUN.x0-12 && x<TUN.x1+12) continue;   // the tunnel's gravel road
+    if(roadAmt(x,z)>0.4) continue;                                             // the roads
     if(nearTele(x,z,1.2)) continue;
     const meadow=smoothstep(0.1,0.7,noise2(x*0.025+9,z*0.025-4))*(1-fd);
     const s=R(0.75,1.2);
@@ -114,7 +115,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<60000*per && n<(Q*(LOW?2600:4600))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(6), h=getH(x,z);
-    if(h<0.8 || grad(x,z)>0.6 || forestDensity(x,z)>0.5 || vDist(x,z)<VR+1 || inTunnelCut(x,z)) continue;
+    if(h<0.8 || grad(x,z)>0.6 || forestDensity(x,z)>0.5 || vDist(x,z)<VR+1 || inTunnelCut(x,z) || bareGround(x,z)) continue;
     if(noise2(x*0.04+11,z*0.04-3)<0.15) continue;
     const FL=inVale(x)?PAL.valeFlowers:PAL.flowers;
     const idx=rand()<0.8?Math.floor((noise2(x*0.02-50,z*0.02+50)*0.5+0.5)*FL.length)%FL.length:Math.floor(rand()*FL.length);

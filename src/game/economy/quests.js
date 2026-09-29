@@ -36,7 +36,7 @@ function questTarget(q){
   if(q.type==='visit') return {x:q.at.x,z:q.at.z,name:q.place};
   const bd=BOSS_DEFS.find(b=>b.def.id===q.target);
   if(bd){ const A=ARENAS.find(a=>a.key===bd.arena); return {x:A.x,z:A.z,name:A.name}; }
-  const zn=ZONES.find(z=>MON_DEFS.find(d=>d.id===q.target&&d.level===z.key)); if(!zn) return null;
+  const d=MON_DEFS.find(m=>m.id===q.target), zn=d&&defZone(d); if(!zn) return null;
   const [x,z]=zonePoint(zn,0,0.5); return {x,z,name:zn.name,zone:zn};
 }
 function qProgress(q){

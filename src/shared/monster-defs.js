@@ -1,4 +1,4 @@
-//@ Monster families (FAM), the 35 monsters (MON_DEFS: 15 home, 20 in the Sakura Vale), prepDef, the three bosses (BOSS_DEFS) with their totems and adds. Pure.
+//@ Monster families (FAM), the 39 monsters (MON_DEFS: 15 home, 4 on the home forest's edges, 20 in the Sakura Vale), prepDef, the three bosses (BOSS_DEFS) with their totems and adds. Pure.
 const FAM={
   slime: {hpK:0.85,dmgPct:0.06,atk:1.6,speed:2.2,rad:0.45,height:0.8,aggro:10,sound:'squish',per:4},
   shroom:{hpK:0.95,dmgPct:0.07,atk:1.7,speed:1.8,rad:0.4, height:1.1,aggro:10,sound:'pip',per:3},
@@ -26,6 +26,11 @@ const MON_DEFS=[
   {id:'magmaslime',name:'Magma Slime',      level:13,el:'fire',model:'slime', scale:1.5, per:3, glow:0x3a1000, dmgPct:0.08, pal:{body:0xd8551e,top:0xffd040,mouth:0x3a0a00}},
   {id:'chieftain', name:'Goblin Chieftain', level:14,el:'dark',model:'goblin',scale:1.0, per:2, hpK:1.3, dmgPct:0.11, pal:{skin:0x4a6a7a,eyes:0xff4030,top:'hoodie',topColor:0x6b2a2a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'ranger',hatColor:0x2b2420,club:0x2b2b2e}},
   {id:'ancient',   name:'Ancient Treant',   level:15,el:'light',model:'treant',scale:1.5, hpK:1.6, glow:0x000814, pal:{bark:0x8a8478,c1:0x1f4a3a,c2:0x2a5a48,c3:0x183a2e,eyes:0x7fd8ff}},
+  /* the home forest's edges: each lives in its own edge zone (zone, see EDGE_ZONES in zones.js), count of them in all */
+  {id:'crab',      name:'Shore Crab',       level:12,el:'water',model:'beetle',scale:1.15,zone:'shore',count:18,hpK:1.2,pal:{shell:0xc0452a,seam:0x5a1a10,sheen:0xf08a60,head:0x8a2a18,horn:0xc0452a,eye:0x111111,legs:0xa83a22,spider:1}},
+  {id:'tideslime', name:'Tide Slime',       level:13,el:'water',model:'slime', scale:1.4, zone:'shore',count:16,per:3,glow:0x04202a,pal:{body:0x3aa8c8,top:0xbff0ff,mouth:0x0a2a3a}},
+  {id:'scarab',    name:'Sun Scarab',       level:14,el:'fire', model:'beetle',scale:1.3, zone:'sunfoot',count:20,pal:{shell:0xc0782e,seam:0x4a2a10,sheen:0xffd070,head:0x7a4418,horn:0xe0a040,eye:0x111111,legs:0x5a3418}},
+  {id:'ramboar',   name:'Ram-horned Boar',  level:15,el:'earth',model:'boar',  scale:1.4, zone:'foothills',count:28,pal:{body:0x8a8478,ridge:0xe8e4dc,head:0x7a7468,snout:0x9a8a7a,tusk:0xf2ead8,legs:0x4a443c,eye:0xffa030}},
   /* the Sakura Vale: two kinds per level. Extra look flags for the client models: goblin horns / kasa (straw hat) /
      shell (kappa) / nose + wings (tengu) / weapon 'kanabo' | 'spear' | 'katana'; beetle spider (8 long legs, no horn);
      fox tails (how many); wisp ghost (a trailing body and arms instead of a flame) */
