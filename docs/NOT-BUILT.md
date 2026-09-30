@@ -102,5 +102,5 @@ of the free-plan tracks (all eleven) if the game ever earns money, and, if wante
   and skill upgrades still ask for drops of at most level 25 (`VALE_TOP_LV`). Levels up to 50 need a real curve, more gear tiers (items, icons, looks) and a decision about upgrades.
 - **The world rectangle** must grow again (north-west, west, south-west) and the Rootdeep needs an enclosed instance (`docs/WORLD.md` section 8).
 - **Group play, trading between players, party quests** (`CLAUDE.md` section 10).
-- **Real passives** (the eight in `PASSIVES` are a placeholder set; only one slot is open).
+- **Real passives** (the eight in `PASSIVES` are a placeholder set; the three slots open at levels 18, 24 and 30).
 - **Server-side anti-cheat for movement**, and synced villagers.

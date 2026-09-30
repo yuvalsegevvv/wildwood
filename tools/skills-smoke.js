@@ -3,7 +3,7 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},
-  ['MONS','getH','VIL2','VIL','rewardKill','elemHitS','sanitizeGear','hurtP','ELEMS','MATS','upgradeNeeds','SKILLS','soulMult','foeMult','SKILL_MAX_LV','BOSS_SKILLS','bossSkillDropP','newSkills','damageMonsterS','psP','S','passiveSum','PASSIVE_OPEN']);
+  ['MONS','getH','VIL2','VIL','rewardKill','elemHitS','sanitizeGear','hurtP','ELEMS','MATS','upgradeNeeds','SKILLS','soulMult','foeMult','SKILL_MAX_LV','BOSS_SKILLS','bossSkillDropP','newSkills','damageMonsterS','psP','S','passiveSum','passiveOpen','PASSIVE_SLOT_LV']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ n=Math.max(n,3); for(let i=0;i<n;i++){ // (at least 3 ticks: events reach the log with the next snapshot)
@@ -86,22 +86,37 @@ ok('passives: locked before level 18',you('a').gear.skills.pass.every(v=>v===nul
 W.receive('a',{t:'dev',cmd:'level',v:18}); tick(1);
 const y18=you('a'); ok('passives: level 18 opens the slots with a free Vitality',y18.gear.skills.pass[0]==='vitality'&&y18.gear.skills.owned.includes('vitality')&&evs.some(e=>e[0]==='skillslot'&&e[2]==='passive'));
 const base18=Math.round(20*(18+Math.pow(13/12,18))); ok('Vitality raises maximum health by 6%',y18.maxHp===Math.round(base18*1.06),y18.maxHp+' vs '+base18);
-W.receive('a',{t:'dev',cmd:'level',v:24}); tick(1); const base24=Math.round(20*(24+Math.pow(13/12,24)));
-W.receive('a',{t:'dev',cmd:'skills'}); evs.length=0; W.receive('a',{t:'eqskill',id:'ferocity',idx:1}); W.receive('a',{t:'eqskill',id:'ironwill',idx:2}); tick(1);
-ok('passives: slots 2 and 3 are locked for now: nothing goes in, and the server says so',x.PASSIVE_OPEN===1&&JSON.stringify(you('a').gear.skills.pass)==='["vitality",null,null]'&&toasts().some(t=>/slot 2 is locked/.test(t))&&toasts().some(t=>/slot 3 is locked/.test(t)));
-W.receive('a',{t:'eqskill',id:'ironwill'}); tick(1); ok('passives: the one open slot is full, so another one without a slot is refused',JSON.stringify(you('a').gear.skills.pass)==='["vitality",null,null]'&&toasts().some(t=>/slot is full/.test(t)));
-W.receive('a',{t:'eqskill',id:'precision',idx:0}); tick(1); ok('passives: dropping onto the open slot replaces what is in it',JSON.stringify(you('a').gear.skills.pass)==='["precision",null,null]'&&you('a').maxHp===base24);
-W.receive('a',{t:'unskill',slot:'pass',idx:0}); tick(1); ok('passives: take one off',you('a').gear.skills.pass[0]===null);
-W.receive('a',{t:'eqskill',id:'ferocity'}); tick(1); ok('passives: with no slot given it takes the first free open one',JSON.stringify(you('a').gear.skills.pass)==='["ferocity",null,null]');
+const PASS=()=>JSON.stringify(you('a').gear.skills.pass);
+W.receive('a',{t:'dev',cmd:'skills'}); evs.length=0; W.receive('a',{t:'eqskill',id:'ferocity',idx:1}); W.receive('a',{t:'eqskill',id:'ferocity',idx:2}); tick(1);
+ok('passives: the slots open at levels 18, 24 and 30',JSON.stringify(x.PASSIVE_SLOT_LV)==='[18,24,30]'&&[17,18,23,24,29,30,50].map(x.passiveOpen).join()==='0,1,1,2,2,3,3');
+ok('passives: at level 18 only slot 1 is open: slots 2 and 3 refuse, and say when they open',PASS()==='["vitality",null,null]'&&toasts().some(t=>/slot 2 opens at level 24/.test(t))&&toasts().some(t=>/slot 3 opens at level 30/.test(t)));
+evs.length=0; W.receive('a',{t:'dev',cmd:'level',v:24}); tick(1); const base24=Math.round(20*(24+Math.pow(13/12,24)));
+ok('passives: level 24 opens slot 2 (a toast and a skillslot event), not slot 3',toasts().some(t=>/Passive slot 2 unlocked/.test(t))&&!toasts().some(t=>/slot 3 unlocked/.test(t))&&evs.some(e=>e[0]==='skillslot'&&e[2]==='passive'));
+evs.length=0; W.receive('a',{t:'eqskill',id:'ferocity',idx:1}); W.receive('a',{t:'eqskill',id:'ironwill',idx:2}); tick(1);
+ok('passives: at level 24 slot 2 takes one and slot 3 is still locked',PASS()==='["vitality","ferocity",null]'&&toasts().some(t=>/slot 3 opens at level 30/.test(t)));
+evs.length=0; W.receive('a',{t:'eqskill',id:'ironwill'}); tick(1); ok('passives: both open slots are full, so another one without a slot is refused',PASS()==='["vitality","ferocity",null]'&&toasts().some(t=>/slots are full/.test(t)));
+W.receive('a',{t:'eqskill',id:'precision',idx:0}); tick(1); ok('passives: dropping onto a full slot replaces what is in it',PASS()==='["precision","ferocity",null]'&&you('a').maxHp===base24);
+W.receive('a',{t:'eqskill',id:'ferocity',idx:0}); tick(1); ok('passives: dropping one that is worn in another slot swaps the two',PASS()==='["ferocity","precision",null]');
+W.receive('a',{t:'unskill',slot:'pass',idx:0}); tick(1); ok('passives: take one off',you('a').gear.skills.pass[0]===null&&PASS()==='[null,"precision",null]');
+W.receive('a',{t:'eqskill',id:'ferocity'}); tick(1); ok('passives: with no slot given it takes the first free open one',PASS()==='["ferocity","precision",null]');
 { const g=x.sanitizeGear({skills:{owned:['vitality','ferocity','ironwill'],pass:[null,'ferocity','vitality']}},'warrior');
-  ok('an old save with passives in the locked slots keeps the first one, in the open slot (the rest go back to the bag)',JSON.stringify(g.skills.pass)==='["ferocity",null,null]'&&g.skills.owned.includes('vitality'));
-  ok('passives in a locked slot do nothing even if they get there',x.passiveSum({owned:['vitality'],pass:[null,'vitality',null],lv:{}},20,'hp')===0&&x.passiveSum({owned:['vitality'],pass:['vitality',null,null],lv:{}},20,'hp')>0); }
+  ok('a save keeps its passives in their slots, once each',JSON.stringify(g.skills.pass)==='[null,"ferocity","vitality"]'&&JSON.stringify(x.sanitizeGear({skills:{owned:['vitality'],pass:['vitality','vitality','vitality']}},'warrior').skills.pass)==='["vitality",null,null]');
+  const hp=(pass,lv)=>x.passiveSum({owned:['vitality'],pass,lv:{}},lv,'hp');
+  ok('passives in a slot the level has not opened do nothing',hp([null,'vitality',null],20)===0&&hp([null,'vitality',null],24)>0&&hp(['vitality',null,null],20)>0&&hp([null,null,'vitality'],29)===0&&hp([null,null,'vitality'],30)>0); }
+{ inbox.e=[]; W.join('e',{name:'Slots',look:{cls:'warrior'},save:{level:20,exp:0,gear:{skills:{owned:['vitality','ferocity'],v:2,pass:[null,'ferocity','vitality']}}}}); tick(1);
+  ok('a save at level 20 with passives in slots 2 and 3 gets them back in the bag, and the free Vitality in slot 1',JSON.stringify(you('e').gear.skills.pass)==='["vitality",null,null]'&&you('e').gear.skills.owned.includes('ferocity'),JSON.stringify(you('e').gear.skills.pass));
+  inbox.f=[]; W.join('f',{name:'Slots30',look:{cls:'warrior'},save:{level:30,exp:0,gear:{skills:{owned:['vitality','ferocity'],v:2,pgiven:true,pass:[null,'ferocity','vitality']}}}}); tick(1);
+  ok('a save at level 30 keeps passives in all three slots',JSON.stringify(you('f').gear.skills.pass)==='[null,"ferocity","vitality"]',JSON.stringify(you('f').gear.skills.pass)); }
 p.gear.mats={}; p.gear.coins=99999; W.receive('a',{t:'upskill',id:'ferocity'}); tick(1); ok('passives: upgrades need the drops too',!you('a').gear.skills.lv.ferocity);
 for(const m of x.upgradeNeeds('ferocity',2).mats) p.gear.mats[m.id]=50; W.receive('a',{t:'upskill',id:'ferocity'}); tick(1);
 ok('passives: upgraded',you('a').gear.skills.lv.ferocity===2);
 // Iron Will takes some of every hit
 W.receive('a',{t:'unskill',slot:'pass',idx:2}); W.receive('a',{t:'eqskill',id:'ironwill',idx:0}); tick(1);
 const hp0=p.hp; p.lastHit=-99; x.hurtP(p,100,null); const lost=hp0-p.hp; ok('Iron Will: 5% less damage taken',lost===Math.max(1,Math.round(100*(1-p.red)*0.95)),'lost '+lost);
+// level 30 opens the last slot (then back to 24 for the rest of the tests)
+evs.length=0; W.receive('a',{t:'dev',cmd:'level',v:30}); tick(1); const t30=toasts(); W.receive('a',{t:'eqskill',id:'scholar',idx:2}); tick(1);
+ok('passives: level 30 opens slot 3, and a passive in it works',t30.some(t=>/Passive slot 3 unlocked/.test(t))&&you('a').gear.skills.pass[2]==='scholar'&&x.psP(p,'xp')>0);
+W.receive('a',{t:'unskill',slot:'pass',idx:2}); W.receive('a',{t:'dev',cmd:'level',v:24}); tick(1);
 // a saved level 20 hiker who never had passives gets the free one on join
 inbox.d=[]; W.join('d',{name:'Old',look:{cls:'warrior'},save:{level:20,exp:0,gear:{skills:{owned:[],v:2}}}}); tick(1);
 ok('an old save at level 20 gets Vitality on join',you('d').gear.skills.pass[0]==='vitality');

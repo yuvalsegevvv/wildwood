@@ -94,13 +94,14 @@ const SKILLS={
 };
 const SKILL_IDS=Object.keys(SKILLS);
 /* ===================== PASSIVES =====================
-   Class-universal: one loadout of PASSIVE_SLOTS for every class, opened at level PASSIVE_LV (only the first PASSIVE_OPEN slots can be used for now,
-   the others are locked and unlock later: raise PASSIVE_OPEN). They are learned from the trainers like the
+   Class-universal: one loadout of PASSIVE_SLOTS for every class, the first slot opened at level PASSIVE_LV and the next two at 24 and 30
+   (PASSIVE_SLOT_LV; passiveOpen(level) counts the slots a level has). They are learned from the trainers like the
    other skills (the first, Vitality, is free) and upgraded the same way. stat = what the server reads through passiveSum(); v = [value at
    skill level 1, added per level after that]. Stats: hp (max health), dmg (all damage), crit (crit chance), red (damage taken), cd (cooldowns),
    drop (chance of monster drops), xp (XP from kills), soul (added to the soul element's x1.5). These are a first set: swap or add rows freely,
    nothing else needs to change (name, lv, price, stat, v, text with {} for the percent). */
-const PASSIVE_LV=18, PASSIVE_SLOTS=3, PASSIVE_OPEN=1;
+const PASSIVE_LV=18, PASSIVE_SLOT_LV=[PASSIVE_LV,24,30], PASSIVE_SLOTS=PASSIVE_SLOT_LV.length;
+const passiveOpen=level=>PASSIVE_SLOT_LV.filter(l=>level>=l).length;   // how many passive slots a level can use (slot i opens at PASSIVE_SLOT_LV[i])
 const PASSIVES={
   vitality:  {name:'Vitality',  lv:18,price:0,   stat:'hp',  v:[0.06,0.02], text:'+{}% maximum health'},
   ferocity:  {name:'Ferocity',  lv:18,price:1500,stat:'dmg', v:[0.05,0.02], text:'+{}% damage with every attack'},
@@ -123,10 +124,10 @@ const skillPower=L=>1+0.12*(L-1), skillCdMult=L=>1-0.03*(L-1);
 const passiveValue=(id,L)=>PASSIVES[id].v[0]+PASSIVES[id].v[1]*(L-1);
 const pctText=v=>+(v*100).toFixed(1);
 const passiveText=(id,L)=>PASSIVES[id].text.replace('{}',pctText(passiveValue(id,L)));
-// the total of one passive stat from a loadout (0 before level PASSIVE_LV)
+// the total of one passive stat from a loadout (0 before level PASSIVE_LV; a slot the level has not opened yet does nothing)
 function passiveSum(skills,level,stat){
   if(level<PASSIVE_LV||!skills||!Array.isArray(skills.pass)) return 0;
-  let t=0; for(const id of skills.pass.slice(0,PASSIVE_OPEN)){ const P=PASSIVES[id]; if(P&&P.stat===stat&&skills.owned.includes(id)&&level>=P.lv) t+=passiveValue(id,skillLvOf(skills,id)); }
+  let t=0; for(const id of skills.pass.slice(0,passiveOpen(level))){ const P=PASSIVES[id]; if(P&&P.stat===stat&&skills.owned.includes(id)&&level>=P.lv) t+=passiveValue(id,skillLvOf(skills,id)); }
   return t;
 }
 const ANIM_OF={}; for(const id in SKILLS){ const s=SKILLS[id]; s.id=id; ANIM_OF[s.act[0]]=s.anim||s.act[0]; }
