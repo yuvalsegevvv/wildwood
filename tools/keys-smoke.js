@@ -3,7 +3,7 @@
 // Usage: node tools/keys-smoke.js
 const {bootClient}=require('./headless');
 const EXPOSE=['KB','KB_ACTIONS','kbIs','kbHeld','kbSet','kbLabel','kbName','kbHints','kbChanged','keys','P','updatePlayer','setStarted:v=>{started=v}','started:()=>started',
-  'altHeld:()=>altHeld','dragging:()=>dragging','mDown:()=>mDown','thirdPerson:()=>thirdPerson','keysEl'];
+  'altHeld:()=>altHeld','dragging:()=>dragging','mDown:()=>mDown','thirdPerson:()=>thirdPerson','keysEl','NET','NODES'];
 const c=bootClient({expose:EXPOSE});
 let fails=0; const ok=(n,x,i)=>{ console.log((x?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!x) fails++; };
 const key=(code,o)=>c.fireWin('keydown',Object.assign({code},o)), up=code=>c.fireWin('keyup',{code});
@@ -12,6 +12,7 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
   let G=c.G();
   // defaults are the keys the game always used
   ok('defaults: W and the arrow walk, F and 1 attack, Enter and the numpad Enter chat',G.kbIs('KeyW','fwd')&&G.kbIs('ArrowUp','fwd')&&G.kbIs('KeyF','basic')&&G.kbIs('Digit1','basic')&&G.kbIs('Enter','chat')&&G.kbIs('NumpadEnter','chat'));
+  ok('defaults: G gathers (a key of its own next to the talk key E)',G.kbIs('KeyG','gather')&&G.kbIs('KeyE','talk')&&G.kbName('gather')==='G');
   ok('defaults: no key is used twice',unique(G));
   ok('labels: letters, arrows, shift, numpad',G.kbName('inv')==='I'&&G.kbLabel('ArrowUp')==='↑'&&G.kbLabel('ShiftLeft')==='L Shift'&&G.kbLabel('Numpad5')==='Num 5'&&G.kbLabel('Digit3')==='3');
   // rebinding, swapping, clearing
@@ -32,12 +33,18 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
     G.kbSet('map',0,''); G.kbSet('map',1,''); G.kbHints(); ok('hint drops the key when there is none',el.title==='World map'&&el._a['aria-label']==='Minimap. Open the world map',el.title);
     G.kbSet('map',0,'KeyB'); document.querySelectorAll=qs; }
   // the start card's legend is redrawn from the keys
-  G.kbChanged(); { const t=G.keysEl._kids.slice(-34).map(x=>x.textContent);
-    ok('the legend lists the current keys and Hold Alt',t.length===34&&t.includes('Hold Alt')&&t[t.indexOf('World map')-1]==='B'&&t[t.indexOf('Inventory (drag items onto your body)')-1]==='N',t.join('|')); }
+  G.kbChanged(); { const t=G.keysEl._kids.slice(-36).map(x=>x.textContent);
+    ok('the legend lists the current keys, Gather and Hold Alt',t.length===36&&t.includes('Hold Alt')&&t[t.indexOf('World map')-1]==='B'&&t[t.indexOf('Inventory (drag items onto your body)')-1]==='N'&&t[t.indexOf('Gather: mine, chop or pick what you stand beside')-1]==='G',t.join('|')); }
   // a key event reaches the right handler
   G.setStarted(true); G=c.G();
   { const v0=G.thirdPerson(); key('KeyV'); ok('V toggles the camera view',c.G().thirdPerson()!==v0); G.kbSet('view',0,'KeyX'); key('KeyV'); ok('after rebinding, V does nothing',c.G().thirdPerson()!==v0);
     key('KeyX'); ok('and X toggles it',c.G().thirdPerson()===v0); }
+  // the gather key (economy/professions.js) gathers the node you stand at: once per press, on its new key after a rebind, and only beside a node
+  { const G2=c.G(), n=G2.NODES[0], sent=[]; G2.NET.send=m=>sent.push(m); G2.P.x=n.x; G2.P.z=n.z;
+    key('KeyG'); ok('G gathers the node you stand beside',sent.length===1&&sent[0].t==='gather'&&sent[0].i===n.i,JSON.stringify(sent));
+    key('KeyG',{repeat:true}); ok('holding G does not send it again',sent.length===1);
+    G2.kbSet('gather',0,'KeyY'); key('KeyG'); ok('after rebinding, G does nothing',sent.length===1); key('KeyY'); ok('and Y gathers',sent.length===2);
+    G2.P.x=1e5; key('KeyY'); ok('away from every node nothing is sent',sent.length===2); }
   // the capture flow in Settings: click a box, press a key
   { const btn=G.KB.btns[0]; btn.fire('click'); ok('clicking a key box waits for a key',!!c.G().KB.cap&&/Press a key/.test(btn.textContent));
     const v0=c.G().thirdPerson(), e=key('KeyH'); ok('the pressed key is bound and eaten (nothing else sees it)',c.G().KB.map.fwd[0]==='KeyH'&&!c.G().KB.cap&&e.prevented);

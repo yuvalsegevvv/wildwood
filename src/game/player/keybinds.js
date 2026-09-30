@@ -20,6 +20,7 @@ const KB_ACTIONS=[
   {id:'pot3',  name:'Potion of guard', def:['KeyC','']},
   {id:'target',name:'Switch target', def:['Tab','']},
   {id:'talk',  name:'Talk / travel', def:['KeyE','']},
+  {id:'gather',name:'Gather (mine, chop, pick herbs)', def:['KeyG','']},
   {id:'inv',   name:'Inventory',     def:['KeyI','']},
   {id:'skills',name:'Skills',        def:['KeyK','']},
   {id:'map',   name:'World map',     def:['KeyN','']},
