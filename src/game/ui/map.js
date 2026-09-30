@@ -106,6 +106,7 @@ const mapC=$('#mapC'), mapCX=mapC.getContext('2d'), mapTip=$('#mapTip'), mapLand
 let mapView={w:0,h:0};
 const viewLand=()=>LANDS[mapLand||landHere()];
 function sizeFullMap(){
+  renderTierRow(mapLand||landHere());   // (its height is part of the room the map is fitted to)
   const L=viewLand(), ar=(L.x1-L.x0)/(L.z1-L.z0), box=$('#mapBox'), r=box.getBoundingClientRect();
   let w=Math.max(160,Math.floor(r.width)), h=Math.floor(w/ar); if(h>r.height){ h=Math.max(160,Math.floor(r.height)); w=Math.floor(h*ar); }
   mapC.style.width=w+'px'; mapC.style.height=h+'px'; mapC.width=Math.round(w*DPR); mapC.height=Math.round(h*DPR); mapView.w=w; mapView.h=h;
@@ -113,6 +114,7 @@ function sizeFullMap(){
   mapLandBtn.hidden=!valeOpen()||nx===cur; mapLandBtn.textContent=nx===here?'Where I am':LANDS[nx].name;
 }
 function drawFullMap(){
+  renderTierRow(mapLand||landHere());
   const L=viewLand(), W=mapC.width, H=mapC.height, x=mapCX, k=W/(L.x1-L.x0), at=(wx,wz)=>[(wx-L.x0)*k,(wz-L.z0)*k];
   x.clearRect(0,0,W,H);
   if(!MAP.done){ x.fillStyle='rgba(238,240,226,.7)'; x.font=`${14*DPR}px Inter, system-ui, sans-serif`; x.textAlign='center'; x.fillText('Still mapping the forest…',W/2,H/2); return; }
@@ -120,8 +122,8 @@ function drawFullMap(){
   const fs=Math.max(9,Math.min(13,W/DPR/48))*DPR, land=L===LANDS.hoar?'hoar':L===LANDS.vale?'vale':'home', vale=land!=='home', mine=zn=>landOfZone(zn)===land;
   x.textAlign='center'; x.textBaseline='middle';
   const label=(t,cx,cy,size,col,bold)=>{ x.font=`${bold?'600 ':''}${size}px Inter, system-ui, sans-serif`; x.lineWidth=3*DPR; x.strokeStyle='rgba(10,12,10,.75)'; x.strokeText(t,cx,cy); x.fillStyle=col; x.fillText(t,cx,cy); };
-  for(const zn of ZONES){ if(zn.boss||!mine(zn)) continue; const [cx,cy]=at(...(zn.label||zonePoint(zn,0,0.5))); label(zn.name,cx,cy-fs*0.55,fs,'#f2f0e4',true); label('Level '+(zn.lvText||zn.level),cx,cy+fs*0.6,fs*0.85,'#ffcf8a'); }
-  for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.hoar?'hoar':inVale(A.x)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bd.def.level+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
+  for(const zn of ZONES){ if(zn.boss||!mine(zn)) continue; const [cx,cy]=at(...(zn.label||zonePoint(zn,0,0.5))); label(zn.name,cx,cy-fs*0.55,fs,'#f2f0e4',true); label('Level '+zoneLvText(zn),cx,cy+fs*0.6,fs*0.85,'#ffcf8a'); }
+  for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.hoar?'hoar':inVale(A.x)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bossLvIn(bd.def,land)+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
   { const V=land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
   if(land!=='hoar'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Tunnel':'Tunnel (sealed)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='vale'){ const [cx,cy]=at(PASS.x,PASS.ice); dot(x,cx,cy,3.5*DPR,northOpen()?'#9fe0ff':'#8a8078'); label(northOpen()?'Frostgate Pass':'Frostgate Pass (ice wall)',cx-fs*4.6,cy,fs*0.85,'#e8e0d0'); }
@@ -139,19 +141,19 @@ function drawFullMap(){
   { const [a,b]=at(P.x,P.z); drawArrow(x,a,b,-P.face,8*DPR,'#fff4d0'); }
   const zn=zoneAt(P.x,P.z), V=vilAt(P.x,P.z);
   const vn=V===VIL3?'Rimehold':V===VIL2?'Hanami':'the village';
-  $('#mapHere').textContent=vDist(P.x,P.z)<VR+12?'You are in '+vn:P.inTun?'You are in the mountain tunnel':zn?(zn.boss?'You are near '+zn.name:'You are in '+zn.name+' (level '+(zn.lvText||zn.level)+')'):inPass(P.x,P.z)?'You are in Frostgate Pass':'You are near '+vn;
+  $('#mapHere').textContent=vDist(P.x,P.z)<VR+12?'You are in '+vn:P.inTun?'You are in the mountain tunnel':zn?(zn.boss?'You are near '+zn.name:'You are in '+zn.name+' (level '+zoneLvText(zn)+')'):inPass(P.x,P.z)?'You are in Frostgate Pass':'You are near '+vn;
 }
 function placeName(wx,wz){
   if(vDist(wx,wz)<VR+8) return vilAt(wx,wz)===VIL3?'Rimehold':vilAt(wx,wz)===VIL2?'Hanami':'Village';
   for(const L of FROST_LAKES) if(inHoar(wx,wz)&&Math.hypot(wx-L.x,wz-L.z)<L.r*0.8) return L.name+' (frozen)';
   for(const L of LAKES) if(Math.hypot(wx-L.x,wz-L.z)<L.r*0.8) return L.name;
-  for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if(Math.hypot(wx-A.x,wz-A.z)<A.r+6) return A.name+': '+bd.def.name+', level '+bd.def.level+' boss'; }
+  for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if(Math.hypot(wx-A.x,wz-A.z)<A.r+6) return A.name+': '+bd.def.name+', level '+bossLvIn(bd.def,landAt(A.x,A.z))+' boss'; }
   if(inPass(wx,wz)&&Math.abs(wz-PASS.ice)<6) return northOpen()?'Frostgate Pass (the ice wall has fallen)':'Frostgate Pass: the ice wall (shut until Akaoni falls)';
   if(inPass(wx,wz)&&wz<HZ0+60) return 'Frostgate Pass';
   if(inTunnelCut(wx,wz)&&wx>TUN.p0-4&&wx<TUN.p1+4) return valeOpen()?'The mountain tunnel':'The mountain tunnel (sealed until the Rootwarden falls)';
   const B=bridgeAt(wx,wz,2); if(B) return B.road+' ('+B.name+')';
   const rd=roadAt(wx,wz,3); if(rd) return rd.name;
-  const zn=zoneAt(wx,wz); if(zn) return zn.key==='boss'?'Rootwarden Barrens':zn.boss?zn.name:zn.name+': level '+(zn.lvText||zn.level)+' ('+MON_DEFS.filter(d=>defZone(d)===zn).map(d=>d.name).join(', ')+')';
+  const zn=zoneAt(wx,wz); if(zn) return zn.key==='boss'?'Rootwarden Barrens':zn.boss?zn.name:zn.name+': level '+zoneLvText(zn)+' ('+MON_DEFS.filter(d=>defZone(d)===zn).map(d=>d.name).join(', ')+')';
   return edgeName(wx,wz)||(inHoar(wx,wz)?'The snowfields':inVale(wx)?'Hanami meadows':'Village meadows');
 }
 // the lands' edges by their names in docs/WORLD.md (shaped in shared/terrain.js)

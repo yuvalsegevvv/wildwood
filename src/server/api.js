@@ -95,6 +95,7 @@ function receive(pid,msg){
     case 'craft': craftP(p,msg.slot,msg.tier,msg.rar); break;
     case 'brew': brewP(p,msg.id,msg.n); break;
     case 'potion': drinkP(p,msg.k); break;
+    case 'zt': setZoneTierP(p,msg.land,msg.n); break;
     case 'dev': devP(p,msg); break;
     case 'register': registerP(p,msg.user,msg.pass); break;
     case 'logout': logoutP(p,msg.token); break;

@@ -16,7 +16,7 @@
 <div class="hud-top">
   <div class="hud-l">
   <div class="brand"><div class="t">Wildwood</div><div class="s" id="tod">Morning 07:00</div><div class="s z" id="zone"></div><div class="g" id="grow" hidden></div><div class="s" id="online" hidden></div>
-    <div class="pstat"><div class="pl-top"><b id="plLv">Lv 1</b><span id="plHpT"></span></div><div class="pbar hp"><i id="plHp"></i></div><div class="pbar xp"><i id="plXp"></i></div><div class="pl-xp"><span id="plXpT"></span><span class="coin"><span id="plCoins">0</span> coins</span></div></div>
+    <div class="pstat"><div class="pl-top"><b id="plLv">Lv 1</b><span id="plHpT"></span></div><div class="pbar hp"><i id="plHp"></i></div><div class="pbar xp"><i id="plXp"></i></div><div class="pl-xp"><span id="plXpT"></span><span class="coin"><span id="plCoins">0</span> coins</span></div><div class="pl-sym" id="plSym" hidden></div></div>
   </div>
   <div id="chat" class="chat empty">
     <div class="chat-log" id="chatLog" aria-live="polite" aria-label="Chat"></div>
@@ -70,6 +70,7 @@
 <div id="map" class="panel" hidden role="dialog" aria-label="World map">
   <div class="pn-head"><span class="pn-t">World map</span><button class="chip map-land" id="mapLand" hidden></button><span class="map-here" id="mapHere"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="map-box" id="mapBox"><canvas id="mapC"></canvas><div class="map-tip" id="mapTip" hidden></div></div>
+  <div class="map-tier" id="mapTier"></div>
   <div class="map-legend"><span><i class="lg you"></i>You</span><span><i class="lg pl"></i>Other players</span><span><i class="lg q"></i>Quest</span><span><i class="lg qr"></i>Quest done</span><span><i class="lg mo"></i>Monster on your trail</span><span><i class="lg boss"></i>Boss</span></div>
 </div>
 <div id="forge" class="panel" hidden role="dialog" aria-label="Forge">
@@ -146,6 +147,7 @@
     <button class="chip" id="tProf">Learn every profession (with tools)</button>
     <button class="chip" id="tRes">Add 60 of every resource</button>
     <button class="chip" id="tPots">Add 5 of every potion</button>
+    <button class="chip" id="tZt">Unlock zone tiers (all lands, +1)</button>
     <button class="chip" id="tThree">3 of an item (for the forge)</button>
     <button class="chip" id="tLucky">Lucky drop</button>
     <button class="chip" id="tRain">Rain</button>

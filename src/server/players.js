@@ -15,6 +15,7 @@ function sanitizeGear(g,cls){
   out.skills=sanitizeSkills(g.skills);
   out.mq=sanitizeMq(g.mq);
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); }
+  out.zt=sanitizeZt(g.zt);
   if(out.north<1&&out.mq.s>MQ_BY_ID.V10.i) out.north=1;   // saves that already got past Akaoni: the ice wall is open for them
   return out;
 }
@@ -70,8 +71,8 @@ function newPlayer(pid,hello){
   recalcP(p); p.hp=p.maxHp; fillOffersP(p); return p;
 }
 function recalcP(p){
-  const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1;
-  p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))); p.dmg=3*fLv(p.level)+g.atk; p.def=g.def; p.red=defRed(g.def);
+  const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
+  p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym); p.def=g.def; p.red=defRed(g.def);
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));
 }
 const clsOfP=p=>classOfGear(p.gear);
@@ -113,11 +114,11 @@ function gainExpP(p,v,monId){
   if(up){ recalcP(p); p.hp=p.maxHp; ev('lvup',p.id,p.level); refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(was<PASSIVE_LV&&p.level>=PASSIVE_LV) unlockPassivesP(p); }
   p.dirty=true;
 }
-// +5% damage taken per level the attacker is above you, then your armor and the Iron Will passive
+// the attacker's damage at your zone tier (its tiered level's damage), +5% per level the attacker is above you, then your armor and the Iron Will passive
 function hurtP(p,v,m){
   if(p.dead) return;
-  const ld=m?Math.max(0,m.T.level-p.level):0;
-  v=Math.max(1,Math.round(v*(1+0.05*ld)*(1-p.red)*(1-psP(p,'red'))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))));
+  const K=m?monK(m,p):null, ld=m?Math.max(0,K.lv-p.level):0;
+  v=Math.max(1,Math.round(v*(K?K.dmg:1)*(1+0.05*ld)*(1-p.red)*(1-psP(p,'red'))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))));
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){
     p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id);

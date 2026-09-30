@@ -113,7 +113,8 @@ function updateBossUI(){
   if(!m||!BOSS.engaged||m.dead||!started){ bb.hidden=true; return false; }
   const A=arenaOf(m); if(Math.hypot(P.x-A.x,P.z-A.z)>A.r+40){ bb.hidden=true; return false; }
   bb.hidden=false; $('#bbHp').style.width=(m.hp/m.maxHp*100)+'%';
-  if(BOSS.shown!==m){ BOSS.shown=m; $('#bbName').textContent=m.def.name; $('#bbLv').textContent='Lv '+m.def.level+' boss'; }
+  if(BOSS.shown!==m){ BOSS.shown=m; $('#bbName').textContent=m.def.name; }
+  const bbLv='Lv '+monTierK(m).lv+' boss'; if($('#bbLv').textContent!==bbLv) $('#bbLv').textContent=bbLv;
   const bd=bossInfo(m)||{}, bar=bd.bar||{};
   $('#bbPhase').textContent=BOSS.mode===3?'Shielded: break the '+(bd.totems||'totems')+' ('+BOSS.aux+' left)':BOSS.stunned?(bar.stun||'Stunned!'):bar[BOSS.mode]||(BOSS.enraged?'Enraged':'');
   return true;

@@ -33,9 +33,9 @@ function updateCombatUI(dt){
   $('#plHp').style.width=(PL.hp/PL.maxHp*100)+'%'; const need=expToNext(PL.level);
   $('#plXp').style.width=Math.min(100,PL.exp/need*100)+'%'; $('#plXpT').textContent='XP '+Math.floor(PL.exp)+' / '+Math.ceil(need);
   const bossUI=updateBossUI();
-  if(T && started && !customizing && !(bossUI&&T===BOSS.m)){ tframe.hidden=false; tName.textContent=T.T.name; const ld=T.T.level-PL.level; tLv.textContent='Lv '+T.T.level+(ld>0?'  (-'+ld*5+'% dmg)':''); tLv.classList.toggle('bad',ld>0);
+  if(T && started && !customizing && !(bossUI&&T===BOSS.m)){ tframe.hidden=false; tName.textContent=T.T.name; const K=monTierK(T), ld=K.lv-PL.level; tLv.textContent='Lv '+K.lv+(ld>0?'  (-'+ld*5+'% dmg)':''); tLv.classList.toggle('bad',ld>0);
     const te=elOf(T.T); tEl.textContent=te==='basic'?'':ELEMS[te].name; tEl.style.color=ELEMS[te].col; if(te==='basic') tEl.title=''; else { const tr=foeTraits(te), nm=l=>l.map(e=>ELEMS[e].name).join(' and '); tEl.title=ELEMS[te].name+': weak to '+nm(tr.weak)+', resists '+nm(tr.resist); }
-    tBar.style.width=(T.hp/T.maxHp*100)+'%'; tHp.textContent=Math.ceil(T.hp)+' / '+T.maxHp; }
+    tBar.style.width=(T.hp/T.maxHp*100)+'%'; tHp.textContent=Math.ceil(T.hp*K.hp)+' / '+Math.round(T.maxHp*K.hp); }
   else tframe.hidden=true;
   const L=GEAR&&GEAR.skills, c=clsOf(), ba=abilityOf(c,'basic',L,PL.level), sk=abilityOf(c,'skill',L,PL.level), bu=abilityOf(c,'burst',L,PL.level);
   abBasic.style.setProperty('--p',ba?CB.cd.basic/(abilityCd(ba,L,PL.level)*(CB.buff?CB.buff.cd:1)):0); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PL.level):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PL.level):0);

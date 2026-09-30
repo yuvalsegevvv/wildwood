@@ -13,7 +13,7 @@
     "test:keys": "python3 build.py >/dev/null && node tools/keys-smoke.js",
     "test:accounts": "node tools/accounts-smoke.js",
     "unused": "python3 tools/unused.py",
-    "test": "python3 build.py --check && node tools/server-smoke.js && node tools/skills-smoke.js && node tools/accounts-smoke.js && node tools/mainquest-smoke.js && node tools/hoarfrost-smoke.js && node tools/professions-smoke.js && node tools/boss-smoke.js && node tools/client-smoke.js && node tools/start-smoke.js && node tools/keys-smoke.js",
+    "test": "python3 build.py --check && node tools/server-smoke.js && node tools/skills-smoke.js && node tools/accounts-smoke.js && node tools/mainquest-smoke.js && node tools/hoarfrost-smoke.js && node tools/professions-smoke.js && node tools/tiers-smoke.js && node tools/boss-smoke.js && node tools/client-smoke.js && node tools/start-smoke.js && node tools/keys-smoke.js",
     "preview:model": "node tools/model-preview.js"
   },
   "engines": {

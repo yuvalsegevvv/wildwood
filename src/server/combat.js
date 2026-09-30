@@ -22,7 +22,7 @@ function handleAttack(p,msg){
 function elemHitS(p,el,m){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=p.buff.el;   // an enchanting buff gives element-less attacks its element
   return soulMult(soulOfP(p),el,psP(p,'soul'))*(m?foeMult(el,elOf(m.T)):1); }
 function rollDmgS(p,mult,m,el){
-  const b=p.buff, crit=Math.random()<0.12+psP(p,'crit')+(b?b.crit:0), ld=m?Math.max(0,m.T.level-p.level):0, em=elemHitS(p,el,m);
+  const b=p.buff, crit=Math.random()<0.12+psP(p,'crit')+(b?b.crit:0), ld=m?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
   return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg'))*(1+potBuffP(p,'might'))*em*Math.max(0.1,1-0.05*ld)*AR(0.85,1.15)*(crit?1.7:1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
@@ -31,7 +31,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(m.boss && m.B.stunT>0) mult*=1.5;
   const d=rollDmgS(p,mult,m,el);
   if(m.T.heavy) kb=0;
-  m.hp-=d.v; m.hitters.set(p.id,S.t);
+  m.hp-=d.v/monK(m,p).hp; m.hitters.set(p.id,S.t);   // (the health pool is in the def's own units: a hit at a higher zone tier takes off less of it)
   if(p.buff&&p.buff.steal) healP(p,d.v*p.buff.steal);
   const ex=m.x-fromX, ez=m.z-fromZ, e=Math.hypot(ex,ez)||1, k=kb===0?0:(kb||3);
   m.kbx+=ex/e*k; m.kbz+=ez/e*k;
@@ -50,13 +50,14 @@ function killMonsterS(m,p){
   if(m.boss) bossDefeatedS(m);
 }
 function rewardKill(q,m){
-  gainExpP(q,m.T.xp*(1+psP(q,'xp')),m.id);
-  const c=coinsFor(m.def.level)*(m.def.boss?20:1); q.gear.coins+=c; ev('coins',q.id,c,m.id);
+  const K=monK(m,q);   // XP, coins and gear are those of the monster's level at your zone tier
+  gainExpP(q,m.T.xp*K.xp*(1+psP(q,'xp')),m.id);
+  const c=coinsFor(K.lv)*(m.def.boss?20:1); q.gear.coins+=c; ev('coins',q.id,c,m.id);
   const r=m.def.boss?rollBossRarity():rollMonsterRarity();
-  if(r>=0) addItemP(q,randomItem(tierFor(m.def.level),r),false,m.id);
+  if(r>=0) addItemP(q,randomItem(tierFor(K.lv),r),false,m.id);
   if(MATS[m.def.id]){ const n=rollDropCount(m.def,psP(q,'drop')); if(n) addMatP(q,m.def.id,n,m.id); }
   questKillP(q,m.def.id); q.dirty=true;
-  if(m.def.boss) bossSkillDropP(q,m.def.id);
+  if(m.def.boss){ bossSkillDropP(q,m.def.id); zoneTierKillP(q,m); }
   mqKillP(q,m);
   if(m.def.id==='boss') openValeP(q);
   if(m.def.id==='akaoni') openNorthP(q);

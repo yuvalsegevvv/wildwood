@@ -27,6 +27,7 @@ styles
   19-chat.css                        Chat: log, input, chat button, speech bubbles; the name field in settings
   20-professions.css                 Professions and travel: the Wayfarers' Lodge panel (mining, woodcutting, gathering, tools, resources) and the teleport circle's travel window
   21-crafting.css                    Crafting, brewing and potions: the Craft tab, the brewing panel, the lodge's tool shop and resource list, the potion belt above the action bar
+  22-tiers.css                       Zone tiers: the symbol under your XP bar (one badge per land, the tier you unlocked in it) and the tier picker under the map
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -42,6 +43,7 @@ shared
   terrain-height.js                  rawHeight: base terrain + zone ridges (cut away where a road crosses) + village, arena, tunnel and Frostgate Pass flattening. Pure.
   balance.js                         Level formulas: fLv, gear tiers, expected gear, XP curve, coins. Pure.
   monster-defs.js                    Monster families (FAM), the 58 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach), prepDef, the six bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
+  tiers.js                           Zone tiers: a harder setting for each land (every enemy in it, bosses included, +10 levels per tier), opened by its second boss, and the symbol bonus. Pure.
   elements.js                        Elements (ELEMS): your soul (SOUL_LV, opposite pairs) and a monster's element (the wheel), with the damage multipliers for both. Pure.
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
   drops.js                           Monster drops (MATS: one material per monster kind), the skills bosses drop (BOSS_SKILLS), and what upgrading a skill costs (upgradeNeeds). Pure.
@@ -66,6 +68,7 @@ server
   main-quest.js                      The main quest on the server: starting, progressing and handing in steps (MQ in shared/main-quest.js) from what the server sees (talks, kills, system uses, places), rewards, the grey monsters spawned for you
   professions.js                     Professions on the server: learning at a Wayfarers' Lodge (one in each village), gathering at resource nodes with the right tool after a short cast (they respawn), profession levels, resources kept in gear.res, selling them
   crafting.js                        Crafting, brewing and potions on the server: making gear from ore and logs, brewing potions from herbs (both in a village, at the NPCs), drinking them (healing at once, might and guard for a while)
+  tiers.js                           Zone tiers on the server: the saved tiers, choosing one in a village, opening the next one with a land's second boss, and how a tier changes one player's fights
   weather.js                         Weather on the server: rain for 5-7 minutes every 40-60 minutes, 30% of the time a thunderstorm
   accounts.js                        Registered accounts (name + password) on the online server: log in, register a guest, log out, unique names
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
@@ -118,18 +121,18 @@ game
   audio/voices.js                    Villager voices: text-to-speech voice picking and babble
   audio/driver.js                    Per-frame sound driver (soundTick): beds, random events, NPC steps
   ui/settings-sound.js               Sound part of the settings popover
-  combat/monsters.js                 Monster views: made on first sight from the family models, moved toward the server's snapshots, flashed, burning, dying (the models are in monster-*.js)
-  combat/monster-parts.js            Helpers for the monster models: the MODELS registry, lofted bodies (moLoft / moLoftZ), bones, curved tubes, horns, cones, ellipsoids, patches, lumps
-  combat/monster-folk.js             The goblin family's bodies (model 'goblin'): one rig with the player's node names for goblins, oni, kappa, tengu, undead, yeti, trolls, reavers, Akaoni, Ymrik; a body plan per pal.form
-  combat/monster-heads.js            Heads of the goblin family, one builder per form (goblin, oni, kappa, tengu, undead skull, yeti, troll, viking)
-  combat/monster-gear.js             What the goblin family carries and wears: weapons (kanabo, spear, axe, katana, ice greataxe, club), helms, hats, horns, kilts, fur, shells, wings
-  combat/monster-boss.js             What sets the bosses apart in the goblin and fox models: Akaoni's iron and flames, Ymrik's ice crown and cape, Kyuubi's gold, beads and rope
-  combat/monster-blobs.js            Slime and mushroom models: jelly with moss / lava crust / shells / petals / crystals / ice, gilled spotted mushrooms and the kodama
-  combat/monster-bugs.js             Beetle, spider and crab models: horned, kabuto, scarab, ironshell and ice beetles, the Jorogumo, glacier crawlers, crabs with claws, Carapax
-  combat/monster-beasts.js           Boar and fox / wolf / lynx models: bristled hogs that gore, kitsune with fans of tails, heavy wolves, tufted lynx, Kyuubi's nine tails
-  combat/monster-wyrm.js             The frost wyrm (Vetrmaw, wyrmlings): horned head, eight undulating segments, membrane wings, clawed legs, a spade tail
-  combat/monster-woods.js            Treant and totem models: gnarled walking trees (dead, mossy, snowy, blossoming, bamboo, rock, ice kinds), the Rootwarden, the totems
-  combat/monster-spirits.js          Wisp and ghost models: flame spirits with a core and tongues, the yurei, the ice wraith and the barrow wight
+  combat/monster-parts.js            Shared helpers for the monster models (monster-*.js): the MODELS registry, lofted bodies, tapered bones, curved tubes, horns, lumpy blobs, scale plates
+  combat/monster-folk.js             The goblin family's bodies (model 'goblin': goblins, oni, kappa, tengu, undead, yeti, trolls, reavers, Akaoni, Ymrik): one rig, a body plan for each form (pal.form)
+  combat/monster-heads.js            Heads of the goblin family (monster-folk.js), one builder per body plan: goblin, oni, kappa, tengu, undead skull, yeti, troll, viking
+  combat/monster-gear.js             What the goblin family carries and wears (monster-folk.js): weapons, helms, hats, horns, torso trimmings, fur, shells and wings
+  combat/monster-blobs.js            Slime and mushroom models: jelly bodies with a skirt and highlights, moss / lava crust / shells / petals / crystals / ice growing on them; gilled, spotted mushrooms and the kodama spirit
+  combat/monster-bugs.js             Beetle, spider and crab models (model 'beetle'): horned / kabuto / scarab / ironshell / ice beetles, the Jorogumo and glacier spiders, crabs with claws, the Tide King
+  combat/monster-beasts.js           Boar and fox / wolf / lynx models (models 'boar' and 'fox'): bristled hogs with tusks and a head that gores, slim kitsune with fans of tails, heavy wolves, tufted lynx
+  combat/monster-wyrm.js             The frost wyrm model (model 'wyrm': Vetrmaw and the wyrmlings): a horned head with teeth, eight armoured body segments that undulate, membrane wings on finger bones, clawed legs, a spiked tail
+  combat/monster-woods.js            Treant and totem models: gnarled walking trees with faces and hands of twigs; dead, mossy, snowy, blossoming, bamboo, rock and ice kinds; the Rootwarden; the totems
+  combat/monster-spirits.js          Wisp and ghost models (model 'wisp'): fire spirits (onibi, rime wisp) with a bright core and rising tongues; the yurei, ice wraith and barrow wight, tattered figures that float
+  combat/monster-boss.js             What sets the bosses apart in the goblin and fox models: Akaoni's iron, skulls and flames, Ymrik's ice crown, cape and greataxe, Kyuubi's gold, beads, rope and marks
+  combat/monsters.js                 Monster views: made from the family models (monster-*.js), moved smoothly toward the server's snapshots, flashed, burning, dying
   player/progression.js              Your health, level and XP as told by the server, the save kept in this browser, hurt / level-up / knocked-out effects
   combat/classes.js                  Classes and their abilities (CLASSES), combat state (CB), effect materials
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
@@ -152,6 +155,7 @@ game
   economy/crafting.js                Crafting and brewing on the client: the Craft tab of the weaponsmiths' and armourers' shops (gear from ore and logs), and the brewing panel of the healers (potions from herbs)
   ui/potions.js                      Potions on the client: the potion belt above the action bar (healing, might and guard, with counts, keys, cooldowns and the running buff), drinking with the keys, and the potion icons
   ui/travel.js                       The travel window: stepping on a teleport circle and pressing the talk key lists every village (CIRCLES in shared/hoarfrost.js); the ones you have not walked to yet are locked
+  economy/tiers.js                   Zone tiers, client side: a monster's level and health as you fight it, the symbol beside your health, the tier picker on the map panel
   ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, reset
   economy/init.js                    Inventory key and first-time gear setup
   combat/boss.js                     The bosses, client side: telegraph visuals (circle, cone, line, donut, marks) and how each ends, root spikes, slam waves, shield bubble, roars, boss bar, a boss's look in each mode

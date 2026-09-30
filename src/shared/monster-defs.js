@@ -79,21 +79,26 @@ const MON_DEFS=[
   {id:'alphawolf', name:'Frostfang Alpha',  level:30,el:'air',  model:'fox',   scale:1.75,hpK:1.3, zone:'h30', glow:0x0c1a2c, pal:{body:0x9eb4cc,belly:0xeaf2fa,tip:0xffffff,eye:0xff6a5a,legs:0x566a84,tails:1,wolf:1}},
   {id:'glaciergolem',name:'Glacier Golem',  level:30,el:'water',model:'treant',scale:1.95,hpK:1.6, zone:'h30', glow:0x0a2030, pal:{kind:'ice',bark:0x4a5a68,c1:0xa8d8f0,c2:0xc8ecfc,c3:0x88c0e0,eyes:0xffb040}}
 ];
+/* The numbers of a monster def at level L: prepDef gives it those of its own level, a zone tier (tiers.js) asks for those of a higher one.
+   Health: the hits a same-level, normally geared player needs (4 + 0.45 x level), times the enemy's toughness; a boss or a prop has a fixed
+   count of hits instead (d.hits). Damage: a share of a same-level, normally geared player's health, before that player's armor (a boss: 16%). */
+function defAt(d,L){
+  const hits=d.hits||(4+0.45*L), k=d.hits?1:d.hpK, rd=1-expRed(L);
+  return {hp:Math.round(expDmg(L)*hits*k*highMult(L)),
+    dmg:d.boss?Math.round(expHP(L)*0.16/rd):Math.max(1,Math.round(expHP(L)*d.dmgPct/rd)),
+    xp:d.noXp?0:xpFor(L)*(d.boss?25:1)};
+}
 function prepDef(d){
   const F=FAM[d.model]; for(const k in F) if(d[k]===undefined) d[k]=F[k];
   d.rad=F.rad*d.scale; d.height=F.height*d.scale;
-  // health: the hits a same-level, normally geared player needs (4 + 0.45 x level), times the enemy's toughness
-  d.hp=Math.round(expDmg(d.level)*(4+0.45*d.level)*d.hpK*highMult(d.level));
-  // damage: a share of a same-level, normally geared player's health, before that player's armor
-  d.dmg=Math.max(1,Math.round(expHP(d.level)*d.dmgPct/(1-expRed(d.level))));
-  d.xp=xpFor(d.level);
+  Object.assign(d,defAt(d,d.level));
   d.color=d.pal.body||d.pal.cap||d.pal.shell||d.pal.skin||d.pal.c1||0x7af0a0;
 }
 MON_DEFS.forEach(prepDef);
 /* Bosses: health = 70 hits of a same-level player, a hit = 16% of that player's health; props (the Rootwarden's totems, Vetrmaw's warm
    cores) 9 hits. Every boss has its own move set on top of the shared melee and phases (server/boss.js, boss-kits-*.js). */
-function bossDef(d){ const L=d.level; prepDef(d); d.hp=Math.round(expDmg(L)*70*highMult(L)); d.dmg=Math.round(expHP(L)*0.16/(1-expRed(L))); d.xp=xpFor(L)*25; return d; }
-function totemDef(d){ prepDef(d); d.hp=Math.round(expDmg(d.level)*9*highMult(d.level)); d.xp=0; return d; }
+function bossDef(d){ d.hits=70; prepDef(d); return d; }
+function totemDef(d){ d.hits=9; prepDef(d); return d; }
 const BOSS_DEF=bossDef({id:'boss',name:'The Rootwarden',level:15,el:'dark',model:'treant',scale:2.4,boss:true,heavy:true,glow:0x12001a,atk:2.6,speed:1.9,aggro:0,
   pal:{bark:0x2e2a36,c1:0x4a2a5a,c2:0x5a3a7a,c3:0x3a1f4a,eyes:0xff5cf0}});
 const TOTEM_DEF=totemDef({id:'totem',name:'Heartwood Totem',level:15,el:'dark',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x0a2a10,pal:{crystal:0x7af0a0,band:0x6af08a}});

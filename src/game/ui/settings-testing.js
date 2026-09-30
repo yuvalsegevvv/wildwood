@@ -14,6 +14,7 @@ $('#tSkills').addEventListener('click',()=>netSend({t:'dev',cmd:'skills'}));
 $('#tProf').addEventListener('click',()=>netSend({t:'dev',cmd:'prof'}));
 $('#tRes').addEventListener('click',()=>netSend({t:'dev',cmd:'res'}));
 $('#tPots').addEventListener('click',()=>netSend({t:'dev',cmd:'pots'}));
+$('#tZt').addEventListener('click',()=>netSend({t:'dev',cmd:'zt'}));
 $('#tThree').addEventListener('click',()=>{ netSend({t:'dev',cmd:'three'}); });
 $('#tRain').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'rain'}));
 $('#tStorm').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'storm'}));

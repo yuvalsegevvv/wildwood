@@ -17,7 +17,7 @@ function applyGear(g){
   GEAR=g; saveGear();
   if(GEAR.eq.weapon!==prevW){ LOOK.cls=clsOf(); saveLookLocal(); attachWeapons(); setActionBar(); if(customizing) renderEditor(); }
   if(JSON.stringify(GEAR.eq)!==prevEq) rebuildHiker();
-  $('#plCoins').textContent=GEAR.coins;
+  $('#plCoins').textContent=GEAR.coins; tiersRefresh();
   renderInv(); if(!$('#shop').hidden) renderShop(); if(!$('#forge').hidden) renderForge(); if(!$('#skills').hidden) renderSkills(); if(!$('#soul').hidden) renderSoul(); if(!$('#lodge').hidden) renderLodge(); if(!$('#brew').hidden) renderBrew(); updatePotBar(true); if(!$('#travel').hidden) renderTravel(); if(!$('#quests').hidden) renderQuests(); renderQlog(); syncStartAll();
 }
 function equip(id){

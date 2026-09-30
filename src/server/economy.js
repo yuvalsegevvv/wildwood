@@ -168,6 +168,10 @@ function devP(p,msg){
     const N={pass:[PASS.x,PASS.ice+14],north:[PASS.x,PASS.ice-14],rimehold:[VIL3.anchors.gate.x,VIL3.anchors.gate.z],hall:[ARENA26.x,ARENA26.z+ARENA26.r+8],nest:[ARENA30.x,ARENA30.z+ARENA30.r+8],tide:[ARENA_TIDE.x,ARENA_TIDE.z-ARENA_TIDE.r-8],circle:[ARENA.x,ARENA.z+ARENA.r+8],gate:[ARENA20.x,ARENA20.z+ARENA20.r+8],shrine:[ARENA25.x,ARENA25.z+ARENA25.r+8]}[msg.v];   // the Hoarfrost Reach's places, and the boss arenas
     const x=xy?clamp(xy[0],WX0+14,WX1-14):N?N[0]:msg.v==='in'?(TUN.p0+TUN.p1)/2:msg.v==='east'?TUN.x1+12:msg.v==='hanami'?VIL2.anchors.gate.x:TUN.x0-14, z=xy?clamp(xy[1],WZ0+14,WZ1-14):N?N[1]:msg.v==='hanami'?VIL2.anchors.gate.z:TUN.z;
     if(x>TUN.p0&&p.gear.east<1) return; if(x>HALF&&z<PASS.ice&&p.gear.north<1) return; p.x=x; p.z=z; p.y=getH(x,z); sendTo(p.id,{t:'tp',x,z,face:N?0:xy&&xy.length>2?xy[2]*Math.PI/180:-Math.PI/2}); }
+  else if(c==='zt'){   // unlock the zone tiers of every land: up to v, or one more than the lowest (back to 0 after the last)
+    const lo=Math.min(...ZTIER_LANDS.map(l=>p.gear.zt[l].max)), to=msg.v===undefined?(lo>=ZTIER_MAX?0:lo+1):clampInt(msg.v,0,ZTIER_MAX,0);
+    for(const l of ZTIER_LANDS){ const z=p.gear.zt[l]; z.max=to; z.on=Math.min(z.on,to); }
+    recalcP(p); p.dirty=true; toastTo(p.id,'Zone tiers unlocked up to '+ZTIER_ROMAN[to]+' in every land','good'); }
   else if(c==='three'){ const id=randomItem(tierFor(p.level),0); for(let k=0;k<MERGE_COUNT;k++) addItemP(p,id,true); toastTo(p.id,'Three '+ITEM[id].name+' added for the forge','good'); }
   else if(c==='lucky'){ const r=clampInt(msg.v,2,4,2); addItemP(p,randomItem(tierFor(p.level),r)); }
   else if(c==='mq'){ const s=MQ_BY_ID[msg.v]; if(!s) return; mqRemoveGreyP(p); p.gear.mq={s:s.i,st:0,n:s.parts.map(()=>0),h:0,ver:MQ_VER}; if(s.from===null) mqStartP(p); p.dirty=true; toastTo(p.id,'Main quest set to '+s.id+': '+s.title,'good'); }
