@@ -118,7 +118,18 @@ game
   audio/voices.js                    Villager voices: text-to-speech voice picking and babble
   audio/driver.js                    Per-frame sound driver (soundTick): beds, random events, NPC steps
   ui/settings-sound.js               Sound part of the settings popover
-  combat/monsters.js                 Monster views: models for every family (slime, shroom, beetle/spider/crab, boar, treant, goblin/oni/tengu/yeti, fox/wolf, wisp, wyrm, totem), animation
+  combat/monsters.js                 Monster views: made on first sight from the family models, moved toward the server's snapshots, flashed, burning, dying (the models are in monster-*.js)
+  combat/monster-parts.js            Helpers for the monster models: the MODELS registry, lofted bodies (moLoft / moLoftZ), bones, curved tubes, horns, cones, ellipsoids, patches, lumps
+  combat/monster-folk.js             The goblin family's bodies (model 'goblin'): one rig with the player's node names for goblins, oni, kappa, tengu, undead, yeti, trolls, reavers, Akaoni, Ymrik; a body plan per pal.form
+  combat/monster-heads.js            Heads of the goblin family, one builder per form (goblin, oni, kappa, tengu, undead skull, yeti, troll, viking)
+  combat/monster-gear.js             What the goblin family carries and wears: weapons (kanabo, spear, axe, katana, ice greataxe, club), helms, hats, horns, kilts, fur, shells, wings
+  combat/monster-boss.js             What sets the bosses apart in the goblin and fox models: Akaoni's iron and flames, Ymrik's ice crown and cape, Kyuubi's gold, beads and rope
+  combat/monster-blobs.js            Slime and mushroom models: jelly with moss / lava crust / shells / petals / crystals / ice, gilled spotted mushrooms and the kodama
+  combat/monster-bugs.js             Beetle, spider and crab models: horned, kabuto, scarab, ironshell and ice beetles, the Jorogumo, glacier crawlers, crabs with claws, Carapax
+  combat/monster-beasts.js           Boar and fox / wolf / lynx models: bristled hogs that gore, kitsune with fans of tails, heavy wolves, tufted lynx, Kyuubi's nine tails
+  combat/monster-wyrm.js             The frost wyrm (Vetrmaw, wyrmlings): horned head, eight undulating segments, membrane wings, clawed legs, a spade tail
+  combat/monster-woods.js            Treant and totem models: gnarled walking trees (dead, mossy, snowy, blossoming, bamboo, rock, ice kinds), the Rootwarden, the totems
+  combat/monster-spirits.js          Wisp and ghost models: flame spirits with a core and tongues, the yurei, the ice wraith and the barrow wight
   player/progression.js              Your health, level and XP as told by the server, the save kept in this browser, hurt / level-up / knocked-out effects
   combat/classes.js                  Classes and their abilities (CLASSES), combat state (CB), effect materials
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
