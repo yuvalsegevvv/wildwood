@@ -45,7 +45,8 @@
     "quests.js",
     "main-quest.js",
     "professions.js",
-    "crafting.js"
+    "crafting.js",
+    "dungeons.js"
   ],
   "server": [
     "state.js",

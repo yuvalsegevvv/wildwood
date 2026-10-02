@@ -52,6 +52,7 @@ shared
   main-quest.js                      The main quest line (MQ: acts I-III, docs/MAIN-QUEST.md), its places (Wren's sickbed, Odran's carts, heartleaf, grey spots) and the readable lore spots (LORE: carvings, signs, the drowned roads, the Hoarfrost's runes and wreck). Pure.
   professions.js                     Professions: mining, woodcutting and gathering (learned at a Wayfarers' Lodge, each with its own tool slot), the six grades of ore and logs and the three lands' herbs, the resource nodes in every land, profession levels. Pure.
   crafting.js                        Crafting and brewing rules: weapons from ore at the weaponsmiths', armour from logs at the armourers', potions (healing, might, guard) from herbs at the healers'. Neither is a profession: they are done at NPCs, and the professions supply the materials. Pure.
+  dungeons.js                        Dungeons, setup only (nothing calls it yet): map tiles, the seeded layout generator, the baked collision grid with line of sight and a flow field, the mission list (every mission ends with a boss in a round hall the size of a boss arena), party-size scaling. Pure.
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
