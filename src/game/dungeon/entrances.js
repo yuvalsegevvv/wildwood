@@ -114,3 +114,10 @@ function dgEntSounds(r,spatial){
   if(Math.hypot(P.x-R.x,P.z-R.z)<50&&r(0.8)){ const s=spatial(R.x,R.z,3,45); if(s) dgEntDrip(s.pan,s.gain*1.6); }
   if(Math.hypot(P.x-B.x,P.z-B.z)<70&&r(0.035)){ const s=spatial(B.x,B.z,6,65); if(s) dgEntHum(s.pan,s.gain*1.8,dgEntSealed(B)); }
 }
+// Testing tools: Go to a door (its apron, facing the door); a land's gate is opened first so the walk is allowed (the server's dev `tunnel` refuses the Vale and the Reach while they are sealed)
+{ const go=(id,vale,north)=>{ const E=DG_ENTRANCES[id], A=dgApron(E);
+    if(vale) netSend({t:'dev',cmd:'vale',v:2}); if(north) netSend({t:'dev',cmd:'north',v:2});
+    netSend({t:'dev',cmd:'tunnel',v:Math.round(A.x)+','+Math.round(A.z)+','+Math.round(E.a*180/Math.PI)}); };   // dungeons: the testing tool's door buttons
+  $('#tDoorElder').addEventListener('click',()=>go('hollowroots',false,false));
+  $('#tDoorFalls').addEventListener('click',()=>go('jadesprings',true,false));
+  $('#tDoorBarrow').addEventListener('click',()=>go('bonefrostbarrow',true,true)); }

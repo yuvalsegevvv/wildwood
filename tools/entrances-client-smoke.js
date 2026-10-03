@@ -121,6 +121,9 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>
       if(d<R-0.5&&!mine.has(key)) theirs.push([x.toFixed(1),z.toFixed(1),a[i+2].toFixed(1)].join(',')); if(d>=R&&d<R+14) ring++; if(Math.hypot(x-sg.x,z-sg.z)<2.4&&Math.hypot(x-sg.x,z-sg.z)>0.05) inRing.push(key); }
     ok(id+': no tree or rock collider within '+R+' m of the door (the forest beyond it is there: '+ring+' within 14 m past the edge) and none by its signpost',!theirs.length&&!inRing.length&&(id==='bonefrostbarrow'||ring>0),theirs.slice(0,3).join(' ')+' '+inRing.slice(0,2).join(' ')); }
   { G=c.G(); ok('dgEntClear: true at a door and at a signpost, false 30 m from either',IDS.every(id=>{ const E=G.DG_ENTRANCES[id]; return G.dgEntClear(E.x+3,E.z+3)&&G.dgEntClear(E.sign.x+1,E.sign.z)&&!G.dgEntClear(E.x+30,E.z)&&!G.dgEntClear(E.sign.x+30,E.sign.z); })); }
+  { const G2=c.G(); const here=id=>{ const E=G2.DG_ENTRANCES[id], A=G2.dgApron(E); return Math.hypot(c.G().P.x-A.x,c.G().P.z-A.z)<=1.5; }; const out=[];
+    for(const [btn,id] of [['#tDoorElder','hollowroots'],['#tDoorFalls','jadesprings'],['#tDoorBarrow','bonefrostbarrow']]){ c.el(btn).click(); await wait(500); if(!here(id)) out.push(id+' '+c.G().P.x.toFixed(1)+','+c.G().P.z.toFixed(1)); }
+    ok('the testing tool\'s door buttons put you on each door\'s apron (the Vale\'s and the Reach\'s open the way first)',!out.length,out.join(' | ')); }
   ok('the whole run threw nothing (no stream failure, no console error)',!c.G().Stream.failed&&errs.length===0,errs.slice(0,2).join(' | '));
   c.stop(); console.error=realErr; console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);
 })();
