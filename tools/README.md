@@ -28,6 +28,7 @@ Install once: `npm install` (three@0.128 for these tools). The model preview als
 | `python3 tools/unused.py` | dead-code candidates: names nothing uses, CSS nobody mentions | no |
 | `node tools/model-preview.js out.png [--head] [--looks '[...]']` | renders characters (front + side) from `src/game/character/model.js` to a PNG | no |
 | `node tools/monster-preview.js out.png [--ids a,b \| --bosses \| --all] [--pose \| --act] [--head] [--views 35,90] [--stats]` | renders monsters and bosses from `src/game/combat/monster-*.js` (a three-quarter and a side view each, at their in-game size; `--pose` trotting, `--act` mid-attack, `--head` faces only); `--stats` prints each model's triangles and meshes and the time to build them | no |
+| `node tools/gen-docs.js [--check [--strict]]` | writes `docs/MOBS.md` (all monster definitions, the dungeon bosses and mob pools, the boss skills, a level table) and `docs/EQUIPMENT.md` (the gear, the tools, the level-30 dungeon pieces and rings) from the live code, each with its stats and `file:line`; `--check` exits 1 when the data is stale (moved line numbers only warn, `--strict` fails on them too) | no |
 | `tools/load.js` | `loadServer(io, names)` / `loadShared(names)` for your own quick scripts | no |
 | `tools/headless.js` | `bootClient({online, expose})`: the built page in Node with a stub DOM, renderer and (online) a fake WebSocket to an in-process world server; fake elements remember listeners, so `el('#stGuest').click()` works. Used by the two client tests | yes |
 

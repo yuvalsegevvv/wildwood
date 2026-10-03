@@ -16,7 +16,7 @@ Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an
 2. Section 4 below maps common tasks to files.
 3. `grep -n "name" -r src/` to find a function; then open only a line range.
 4. Every file starts with `//@ one-line description` (`--check` fails without it). Keep that line accurate when you edit.
-5. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules); the main quest plan: `docs/MAIN-QUEST.md`; what is **not built yet**, with comments on each gap (gathering's animation, the balance of crafting and potions, the levels 26-50 story, regional weather, the tracks' licences...): `docs/NOT-BUILT.md`; professions, tools, crafting and potions: `docs/MAIN-QUEST.md` section 5b; dungeons (the design, the five rules, the build order, what is built): `docs/DUNGEONS.md`; the three dungeons (one a land, level 30), the hourly offer of two mission types, their bosses, the three entrances in the world (map `docs/dungeon-entrances.png`, drawn by `tools/entrance-map.js`) and the rewards (level-30 gear, the ring, enhancing, the Tempering Stone): `docs/DUNGEON-THEMES.md`.
+5. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules); the main quest plan: `docs/MAIN-QUEST.md`; what is **not built yet**, with comments on each gap (gathering's animation, the balance of crafting and potions, the levels 26-50 story, regional weather, the tracks' licences...): `docs/NOT-BUILT.md`; professions, tools, crafting and potions: `docs/MAIN-QUEST.md` section 5b; dungeons (the design, the five rules, the build order, what is built): `docs/DUNGEONS.md`; the three dungeons (one a land, level 30), the hourly offer of two mission types, their bosses, the three entrances in the world (map `docs/dungeon-entrances.png`, drawn by `tools/entrance-map.js`) and the rewards (level-30 gear, the ring, enhancing, the Tempering Stone): `docs/DUNGEON-THEMES.md`; **every monster and every piece of gear with its stats and the `file:line` it is defined at**: `docs/MOBS.md` and `docs/EQUIPMENT.md` (generated from the code by `node tools/gen-docs.js`: run it after changing monsters, items, balance, drops, zones, boss kits or the dungeons' bosses and gear).
 6. **Area guides**: `docs/areas/README.md` says which guide to open (the long detail of each section-4 row, the pitfalls and reference numbers of that area). Tests and the browser-pane workflow: `docs/TESTING.md`. Deploy, the database and publishing the playtest artifact: `docs/DEPLOY.md`.
 
 ## 2. Architecture in one screen
@@ -87,6 +87,7 @@ Short rows: the files that matter. A row ending in `→ docs/areas/<x>.md` has t
 
 | Task | Files |
 |---|---|
+| Look up a monster's or an item's numbers, or where it is defined | `docs/MOBS.md`, `docs/EQUIPMENT.md` (generated: `node tools/gen-docs.js`; `--check` says whether they are current) |
 | Balance formulas (HP, damage, XP curve, coins, 1.5× for level 10-15) | `shared/balance.js` |
 | Monster stats / new monster | `shared/monster-defs.js` (data; the look flags in `pal` are in `docs/areas/monsters-bosses.md`), `game/combat/monsters.js` (the views: `addMonView`, `updateMonsters`, `animateMonster`), `server/monsters.js` (spawn counts `MON_COUNT`, AI) |
 | How a monster or boss looks (models, animation, look flags) | `game/combat/monster-*.js`: one file per family, each fills `MODELS.<model>={geo,build,anim}`; helpers in `monster-parts.js`. **See them**: `node tools/monster-preview.js out.png --ids oni,boss` → `docs/areas/monsters-bosses.md` |
@@ -210,6 +211,7 @@ node tools/client-smoke.js       # 48 checks, the built page headless (solo), ~6
 node tools/start-smoke.js        # 31 checks: the start card + a new account's editor, ~20 s; runs dist/
 node tools/keys-smoke.js         # rebindable keys and hold-Alt; runs dist/
 python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)
+node tools/gen-docs.js           # rewrites docs/MOBS.md and docs/EQUIPMENT.md from the code (every mob and item, stats, file:line); --check: exit 1 if the data is stale (moved line numbers only warn; --strict fails on those too)
 npm test                         # build --check + all of the above
 node tools/model-preview.js out.png [--head]                 # character model → PNG (numpy + pillow)
 node tools/monster-preview.js out.png --ids slime,boss       # monster and boss models → PNG, or --stats
