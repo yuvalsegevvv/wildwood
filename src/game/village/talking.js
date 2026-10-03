@@ -28,6 +28,8 @@ function interact(){
   else if(loreNear(P.x,P.z)){ const L=loreNear(P.x,P.z); if(loreOpen===L) loreOpen=null; else readLore(L); }
   else if(nearNode()>=0) gatherNode(nearNode());
   else if(nearCircle()) useCircle();
+  else if(dgEntranceNear(P.x,P.z)) dgOpenDoor(dgEntranceNear(P.x,P.z).theme);   // dungeons: the talk key at a door
+  else if(dgUseNear()) dgUseKey();   // dungeons: revive, use an objective, relight a lamp or leave by the portal (dungeon/hud.js)
 }
 // the teleport circles (one in each village): E / the talk button on one sends you to the other, once attuned (GEAR.east 2)
 function nearCircle(){ const V=vilAt(P.x,P.z); return V.tele&&Math.hypot(P.x-V.tele.x,P.z-V.tele.z)<V.tele.r+0.6?V:null; }
@@ -56,6 +58,7 @@ function updateTalkUI(){
   } else bubble.hidden=true;
   if(!$('#travel').hidden&&!nearCircle()) closePanels();   // stepped off the circle
   const free=started && !customizing && !canTalk && !PL.dead, herb=free?nearHerb():-1, lore=free&&herb<0?loreNear(P.x,P.z):null, node=free&&herb<0&&!lore?nearNode():-1, circ=free&&herb<0&&!lore&&node<0?nearCircle():null;
+  const dgDoor=free&&herb<0&&!lore&&node<0&&!circ?dgEntranceNear(P.x,P.z):null;   // dungeons: a door within reach
   const tk=kbName('talk')||'the talk key';
   if(herb>=0||lore){
     promptEl.textContent=isTouch?'':herb>=0?'Press '+tk+' to pick the heartleaf':loreOpen===lore?'Press '+tk+' to stop reading':'Press '+tk+' to read: '+lore.name;
@@ -65,6 +68,8 @@ function updateTalkUI(){
   } else if(circ){
     promptEl.textContent=circlePrompt(circ); promptEl.hidden=false; bTalk.textContent=CIRCLES.find(c=>c.V===circ).open(GEAR)?'Travel':'Look';
     document.body.classList.add('can-talk');
+  } else if(dgDoor){ dgEntPrompt(dgDoor,promptEl,bTalk); document.body.classList.add('can-talk');   // dungeons: the door's prompt
+  } else if(free&&dgUseNear()){ dgUsePrompt(promptEl,bTalk); document.body.classList.add('can-talk');   // dungeons: a downed teammate, an objective, a dark lamp or the portal within reach (dungeon/hud.js)
   } else if(canTalk){
     const who=talkNPC||nearNPC;
     promptEl.textContent=isTouch?'':(talkNPC?'Press '+tk+' to keep talking to '+who.def.name:'Press '+tk+' to talk to '+who.def.name);

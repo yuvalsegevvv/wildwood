@@ -47,7 +47,7 @@ function* genChunk(ci){
     const [x,z]=pt(10);
     if(Math.hypot(x-spawn.x,z-spawn.z)<7) continue;
     if(vDist(x,z)<VR+6 || nearPath(x,z,3.5) || arenaDist(x,z)<25 || inTunnelCut(x,z,2)) continue;
-    const h=getH(x,z); if(h<0.8 || bareGround(x,z) || storyClear(x,z)) continue;
+    const h=getH(x,z); if(h<0.8 || bareGround(x,z) || storyClear(x,z) || dgEntClear(x,z)) continue;   // dungeons: no trees at a door or signpost
     const g=grad(x,z); if(g>0.95) continue;
     const hoar=inHoar(x,z), fringe=hoar?smoothstep(-740,-570,z):0;   // the taiga fringe: spruce grows thickest on the plateau's southern edge
     if(hoar&&(iceDist(x,z)<4||inPass(x,z,4))) continue;                 // none on the frozen lakes or in the pass
@@ -92,7 +92,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<30000*per && n<(Q*(LOW?900:1400))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(8), h=getH(x,z);
-    if(h<0.6 || grad(x,z)>0.8 || bareGround(x,z) || storyClear(x,z)) continue;
+    if(h<0.6 || grad(x,z)>0.8 || bareGround(x,z) || storyClear(x,z) || dgEntClear(x,z)) continue;   // dungeons: no bushes at a door or signpost
     if(vDist(x,z)<VR+2 || nearPath(x,z,2) || arenaDist(x,z)<22 || inTunnelCut(x,z)) continue;
     const hoar=inHoar(x,z); if(hoar&&(iceDist(x,z)<3||inPass(x,z,3)||rand()<0.45)) continue;
     const fd=forestDensity(x,z);
@@ -165,7 +165,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<40000*per && n<(Q*(LOW?650:950))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(6), h=getH(x,z);
-    if(h<-1 || vDist(x,z)<VR+3 || nearPath(x,z,2) || arenaDist(x,z)<23 || inTunnelCut(x,z,1)) continue;
+    if(h<-1 || vDist(x,z)<VR+3 || nearPath(x,z,2) || arenaDist(x,z)<23 || inTunnelCut(x,z,1) || dgEntClear(x,z)) continue;   // dungeons: no rocks at a door or signpost
     const hoar=inHoar(x,z); if(hoar&&(iceDist(x,z)<2||inPass(x,z,1)||inBox(x,z,1))) continue;
     if(rand()>(hoar?0.2:0.12)+smoothstep(0.5,1.2,grad(x,z))*0.7) continue;
     const big=rand()<0.2, b=big?R(0.9,2.3):R(0.2,0.65);

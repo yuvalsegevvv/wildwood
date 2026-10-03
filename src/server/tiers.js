@@ -10,7 +10,7 @@ function sanitizeZt(g){
   return out;
 }
 // the tier's numbers (level, health / damage / XP multipliers) for player p against monster m
-const monK=(m,p)=>zoneTierK(m.T,monTierOf(p.gear,m));
+const monK=(m,p)=>m.dgK||zoneTierK(m.T,monTierOf(p.gear,m));   // dungeons: a run's monster has its run's level and numbers (m.dgK), never the zone tier of the land its slot's x would read as
 // zt{land,n}: play a land at tier n (0 to your highest unlocked one). Only in a village: a fight cannot be made easier halfway
 function setZoneTierP(p,land,n){
   if(!ZTIER_LANDS.includes(land)) return;

@@ -13,16 +13,18 @@ function accountCode(){
 function netHello(){
   NET.send&&NET.send(Object.assign({t:'hello',acct:accountCode(),name:NET.name||'Hiker',look:LOOK,save:{level:PL.level,exp:PL.exp,gear:GEAR}},NET.login||{}));
 }
+const NETH=Object.create(null), EVH=Object.create(null), SNAPH=Object.create(null);   // dungeons: handler tables feature files fill: NETH.<message>=msg=>.., EVH.<event>=e=>.., SNAPH.<snapshot field>=value=>..
 function netHandle(msg){
   if(!msg||typeof msg!=='object') return;
   switch(msg.t){
     case 'welcome': onWelcome(msg); break;
     case 'mons': (msg.list||[]).forEach(addMonView); break;
     case 'you': applyYou(msg); break;
-    case 'tp': P.x=msg.x; P.z=msg.z; P.inTun=inTunnelBore(P.x,P.z); P.y=getH(P.x,P.z); P.vx=P.vz=P.vy=0; P.face=P.yaw=msg.face; playerUp(); break;
+    case 'tp': dgOnTp(msg); P.x=msg.x; P.z=msg.z; P.inTun=inTunnelBore(P.x,P.z); P.y=getH(P.x,P.z); P.vx=P.vz=P.vy=0; P.face=P.yaw=msg.face; playerUp(); break;   // dungeons: dgOnTp builds or tears down the run's view (msg.dg) before the floor is read (dungeon/run.js)
     case 'snap': applySnap(msg); break;
     case 'auth': onAuth(msg); break;
     case 'authfail': onAuthFail(msg); break;
+    default: if(NETH[msg.t]) NETH[msg.t](msg); break;   // dungeons: messages added by feature files
     case 'kicked': NET.ready=false; NET.kicked=true; if(NET.ws) try{ NET.ws.close(); }catch(_){} $('#kicked').hidden=false; $('#kickedText').textContent=msg.text||'Disconnected.'; break;
   }
 }
@@ -41,6 +43,7 @@ function applySnap(msg){
   if(msg.mo) msg.mo.forEach(applyMonSnap);
   if(msg.b) applyBossState(msg.b);
   if(msg.w) applyWeather(msg.w);
+  for(const k in SNAPH) if(msg[k]!==undefined) SNAPH[k](msg[k]);   // dungeons: snapshot fields added by feature files (dg, ...)
   if(msg.ev) msg.ev.forEach(applyEvent);
 }
 function applyPlayers(pl,n){
@@ -77,7 +80,7 @@ function applyEvent(e){
     case 'north': if(e[1]===me) onNorthStep(e[2]); break;
     case 'node': onNodeEvent(e[1],e[2]); break;
     case 'gather': if(e[1]===me) onGatherEvent(e[2],e[3],e[4]); break;
-    case 'cast': if(e[1]===me) onCastEvent(e[2],e[3]); break;
+    case 'cast': if(e[2]<0) dgCastEv(e); else if(e[1]===me) onCastEvent(e[2],e[3]); break;   // dungeons: cast [pid, -1 revive | -2 a kit's channel, s, target] is not a resource node (dungeon/party.js)
     case 'castx': if(e[1]===me) hideCast(); break;
     case 'pot': if(e[1]===me) onPotionEvent(e[2],e[3],e[4]); break;
     case 'craft': if(e[1]===me){ const it=ITEM[e[2]]; if(it){ forgeFx(it); if(!$('#shop').hidden) renderShop(); } } else { const r=REMOTES.get(e[1]), it=ITEM[e[2]]; if(r&&it&&it.rar>=2) toast(r.name+' crafted '+it.name+'!','loot r'+it.rar); } break;
@@ -113,6 +116,7 @@ function applyEvent(e){
     case 'pname': onRename(e[1],e[2],e[3]); break;
     case 'pgear': if(e[1]!==me) remoteGear(e[1],e[2]); break;
     case 'plook': if(e[1]!==me) remoteLook(e[1],e[2]); break;
+    default: if(EVH[e[0]]) EVH[e[0]](e); break;   // dungeons: events added by feature files (pty, dgi, dgo, dgb, dge, ...)
   }
 }
 // an item dropped: epic or better gets the beam, banner and jingle; everyone hears about unique and legendary finds

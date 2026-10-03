@@ -1,0 +1,40 @@
+/*@ The Delve board (the panel at a dungeon door: lock, the two missions on offer, countdown, party) and the prompt to join a party's run */
+@media (min-width:720px){ #dgBoard{ width:min(560px,calc(100vw - 24px)); } }   /* (on a phone the panel is a bottom sheet: 12-panels.css sets its width) */
+.dgb-hero{ --dgc:#cdd98f; padding:10px 12px 11px; margin-bottom:10px; border-radius:14px; border:1px solid var(--line); border-left:4px solid var(--dgc); background:rgba(0,0,0,.22); }
+.dgb-name{ margin:0; font-family:Fraunces, Georgia, serif; font-weight:400; font-size:21px; color:var(--dgc); }
+.dgb-door{ font-size:12px; color:var(--ink-dim); margin-top:1px; }
+.dgb-blurb{ margin:7px 0 8px; font-size:13px; line-height:1.45; color:var(--ink-dim); }
+.dgb-facts{ display:flex; flex-wrap:wrap; gap:6px; }
+.dgb-fact{ padding:2px 9px; border-radius:999px; border:1px solid var(--line); background:rgba(238,240,226,.06); font-size:12px; }
+.dgb-fact.lv{ color:#f2cf5a; border-color:rgba(242,207,90,.4); }
+.dgb-state{ margin:0 0 10px; padding:8px 11px; border-radius:11px; font-size:13px; line-height:1.4; }
+.dgb-state.ok{ color:#8adf9a; background:rgba(110,200,130,.1); border:1px solid rgba(138,223,154,.35); }
+.dgb-state.no{ color:#ffb09f; background:rgba(255,122,106,.09); border:1px solid rgba(255,122,106,.35); }
+.dgb-wait{ margin:6px 0 4px; font-size:13.5px; color:var(--ink-dim); }
+.dgb-cards{ display:flex; flex-direction:column; gap:8px; }
+.dgb-card{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:rgba(0,0,0,.22); }
+.dgb-card.soon{ opacity:.6; }
+.dgb-ct{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.dgb-ct b{ font-family:Fraunces, Georgia, serif; font-size:16px; font-weight:600; }
+.dgb-ct span{ font-size:12.5px; line-height:1.4; color:var(--ink-dim); }
+.dgb-act{ flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:3px; max-width:140px; text-align:right; font-size:12px; color:var(--ink-dim); }
+.dgb-start{ min-width:84px; min-height:40px; font-weight:600; }
+.dgb-more{ margin:10px 0 0; font-size:12px; color:var(--ink-dim); }
+.dgb-foot{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 14px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(238,240,226,.1); font-size:12.5px; color:var(--ink-dim); }
+.dgb-foot b{ color:var(--ink); font-variant-numeric:tabular-nums; }
+/* the prompt to join a party's run: top of the screen, above the panels (9) */
+#dgJoin{ position:fixed; z-index:12; left:50%; top:calc(env(safe-area-inset-top,0px) + 74px); transform:translateX(-50%); width:min(400px,calc(100vw - 32px)); padding:12px 14px 13px; border-radius:16px; border:1px solid var(--line);
+  border-left:4px solid #f2cf5a; background:var(--glass-strong); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
+#dgJoin[hidden]{ display:none; }
+#dgJoin p{ margin:0 0 9px; font-size:13.5px; line-height:1.45; }
+.dgj-row{ display:flex; align-items:center; gap:8px; }
+.dgj-row .chip{ min-height:42px; }
+.dgj-bar{ flex:1; height:5px; border-radius:3px; background:rgba(255,255,255,.14); overflow:hidden; }
+.dgj-bar i{ display:block; width:100%; height:100%; transition:width 1s linear; background:linear-gradient(90deg,#f2cf5a,#ffe9a0); }
+.dgj-left{ min-width:2.2em; text-align:right; font-size:12.5px; color:var(--ink-dim); font-variant-numeric:tabular-nums; }
+@media (max-width:719px){
+  .dgb-card{ flex-wrap:wrap; }
+  .dgb-act{ flex-direction:row; align-items:center; max-width:none; width:100%; justify-content:space-between; text-align:left; }
+  .dgb-start{ min-height:44px; flex:1; }
+  #dgJoin{ top:calc(env(safe-area-inset-top,0px) + 60px); }
+}

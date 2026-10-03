@@ -172,6 +172,7 @@ function* genTerrain(){
   P.x=spawn.x; P.z=spawn.z; P.y=getH(P.x,P.z);
   { const ux=VIL.x-P.x, uz=VIL.z-P.z; P.yaw=Math.atan2(-ux,-uz); P.face=P.yaw; }
   buildVillage(); buildVale(); buildHoarfrost(); buildTideBeach(); buildNodes();
+  dgEntBuild();   // dungeons: the three doors and their signposts
 }
 // terrain tiles farther than the fog are hidden (checked with the plant chunks, see cullChunks)
 function cullTerrain(){ const cx=camera.position.x, cz=camera.position.z, far=scene.fog.far+60; for(const b of TERRAIN_BANDS) b.mesh.visible=Math.hypot(Math.max(b.x0-cx,0,cx-b.x1),Math.max(b.z0-cz,0,cz-b.z1))<far; }

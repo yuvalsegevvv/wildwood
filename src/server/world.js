@@ -2,6 +2,7 @@
 const SEG=220, CELL=SIZE/SEG, SEGX=Math.round(WW/CELL), SEGZ=Math.round(WD/CELL), NVX=SEGX+1, HS=new Float32Array(NVX*(SEGZ+1));
 for(let iz=0;iz<=SEGZ;iz++) for(let ix=0;ix<NVX;ix++) HS[iz*NVX+ix]=rawHeight(WX0+ix*CELL,WZ0+iz*CELL);
 function getH(x,z){
+  if(dgInSlots(x)) return DG_FLOOR_Y;   // dungeons: a run's flat floor (the run slots lie east of the world)
   const gx=(x-WX0)/CELL, gz=(z-WZ0)/CELL;
   const ix=clamp(Math.floor(gx),0,SEGX-1), iz=clamp(Math.floor(gz),0,SEGZ-1);
   const fx=clamp(gx-ix), fz=clamp(gz-iz);

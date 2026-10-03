@@ -45,6 +45,7 @@ function updateCastsS(){
   for(const p of S.players.values()){
     const c=p.cast; if(!c) continue;
     if(p.dead||Math.hypot(p.x-c.x,p.z-c.z)>1.5){ breakCastP(p); continue; }
+    if(c.rev!==undefined){ dgReviveCastS(p,c); continue; }   // dungeons: a revive channel (the same cast bar) ends in dungeons/runs.js
     if(S.t>=c.end) finishGatherP(p);
   }
 }

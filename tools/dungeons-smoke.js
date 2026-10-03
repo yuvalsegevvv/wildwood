@@ -1,10 +1,12 @@
 // Headless test of the dungeon setup (shared/dungeons.js), straight from src/, no build, no server: the map tiles (every tile in every turn: doors match the art; the round
 // hall is a boss arena's circle), the seeded layout generator (connected, reciprocal doors, one-door entrance, the roles each mission asks for, a boss hall in every
-// dungeon, same seed = same dungeon), the baked grid (collision, line of sight, the flow field walkers follow round walls), and the party-size table. One line per check.
+// dungeon, same seed = same dungeon), the baked grid (collision, line of sight, the flow field walkers follow round walls), the party-size table, the three dungeons' tile kits through the
+// theme registry (legends, props, halls against the bosses' pillars, every mission on 300 seeds, bad themes refused into DG_BAD) and the bosses' data against their kits. One line per check.
 // Usage: node tools/dungeons-smoke.js            the checks
 //        node tools/dungeons-smoke.js --show defense 7   draws that dungeon (the tile graph, then the cells: one character per 2 x 2 cells)
 const {loadShared}=require('./load');
-const X=loadShared(['DG_CELL','DG_TC','DG_BOSS_R','ARENAS','DG_N','DG_E','DG_S','DG_W','DG_STEP','DG_SET_BARE','DG_MISSIONS','DG_PARTY','DG_MAX_PARTY','dgVariants','dgRotArt','dgRotMask','dgOpp','dgLayout','dgBake','dgSolid','dgFree','dgSlide','dgLos','dgFlow','dgStep','dgParty','dgFightRatio','mulberry32','DG_THEMES','DG_LANDS','DG_LV','DG_ENTRY_GAP','dgUnlocked','dgLevel','dgTierOf','ZTIER_STEP','ZTIER_MAX','DG_ENTRANCES','DG_APRON','DG_ENT_CLEAR','DG_ENT_TALK','dgApron','dgEntranceNear','dgGateOpen','rawHeight','zoneAt','vDist','VR','roadDist','arenaDist','inTunnelCut','zoneRidge','NODES','STORY_SPOTS','LAKES','FROST_LAKES','bareGround','ROADS','ROAD_W','WATER','DG_BOSSES','dgOffer','dgOfferLeft','DG_OFFER_HOUR','FAM','ELEMS','ALL_MON_DEFS','MON_DEFS','BOSS_DEFS','ZONES']);
+const X=loadShared(['DG_CELL','DG_TC','DG_BOSS_R','ARENAS','DG_N','DG_E','DG_S','DG_W','DG_STEP','DG_SET_BARE','DG_MISSIONS','DG_PARTY','DG_MAX_PARTY','dgVariants','dgRotArt','dgRotMask','dgOpp','dgLayout','dgBake','dgSolid','dgFree','dgSlide','dgLos','dgFlow','dgStep','dgParty','dgFightRatio','mulberry32','DG_THEMES','DG_LANDS','DG_LV','DG_ENTRY_GAP','dgUnlocked','dgLevel','dgTierOf','ZTIER_STEP','ZTIER_MAX','DG_ENTRANCES','DG_APRON','DG_ENT_CLEAR','DG_ENT_TALK','dgApron','dgEntranceNear','dgGateOpen','rawHeight','zoneAt','vDist','VR','roadDist','arenaDist','inTunnelCut','zoneRidge','NODES','STORY_SPOTS','LAKES','FROST_LAKES','bareGround','ROADS','ROAD_W','WATER','DG_BOSSES','dgOffer','dgOfferLeft','DG_OFFER_HOUR','FAM','ELEMS','ALL_MON_DEFS','MON_DEFS','BOSS_DEFS','ZONES',
+  'DG_BAD','defineDungeonTheme','dgTileProblems','dgCarve','DG_SHAPES','DG_MARKS','DG_TAGS','DG_HALL_PILLARS','DG_HALL_PILLAR_HALF','DG_HALL_MOUTHS','DG_BOSS_DEFS','DG_HALL_LAMPS','dgVentAt','dgHallArena']);
 const {DG_TC,DG_CELL}=X;
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 
@@ -110,6 +112,7 @@ for(const r of [0.5,0.9]){
 
 // ---- the three dungeons, their bosses and the hourly offer (docs/DUNGEON-THEMES.md) ----
 const TH=Object.values(X.DG_THEMES).filter(t=>!t.dev), ids=X.MON_DEFS.map(d=>d.id), DEF=Object.fromEntries(X.MON_DEFS.map(d=>[d.id,d]));
+const MUSIC=['village','wild1','wild2','wild3','boss15','hanami','vale1','vale2','boss20','boss25','rimehold','hoar1','hoar2','boss26','boss30'];   // the music themes (game/audio/music.js THEMES)
 const iVale=ids.indexOf('sakuraslime'), iHoar=ids.indexOf('frostslime'), landOfDef=id=>{ const i=ids.indexOf(id); return i<0?null:i<iVale?'home':i<iHoar?'vale':'hoar'; };
 const landOfZone=z=>z.hoar?'hoar':z.vale?'vale':'home';
 ok('three dungeons, one for each built land (Wildwood, the Sakura Vale, the Hoarfrost Reach), level '+X.DG_LV+' at their land\'s base difficulty',TH.length===3&&['home','vale','hoar'].every(l=>TH.filter(t=>t.land===l).length===1)&&TH.every(t=>t.lv===30&&X.DG_LV===30),TH.map(t=>t.id).join(', '));
@@ -118,8 +121,75 @@ ok('every dungeon\'s monsters exist, come from its own land, and the walkers (th
   const all=[...t.mobs.walkers,...t.mobs.guardians];
   return t.mobs.walkers.length>=4&&new Set(all).size===all.length&&all.every(id=>DEF[id]&&landOfDef(id)===t.land)&&t.mobs.walkers.every(id=>DEF[id].rad<=0.9); }));
 ok('the guardians (they stay in their room) are the ones too big for the doors',TH.every(t=>t.mobs.guardians.every(id=>DEF[id].rad>0.9)));
-ok('every dungeon has a music track, a palette and the bare tile set until the art is made',TH.every(t=>typeof t.music==='string'&&['wall','floor','fog','light'].every(k=>Number.isInteger(t.pal[k]))&&t.tiles===X.DG_SET_BARE&&t.art===false));
+ok('every dungeon has a music track that exists, a palette, a legend and its own tile kit (the art is drawn: not the bare test set)',TH.every(t=>MUSIC.includes(t.music)&&['wall','floor','fog','light'].every(k=>Number.isInteger(t.pal[k]))&&t.tiles!==X.DG_SET_BARE&&t.art===true&&t.legend&&Object.keys(t.legend).length>=5),TH.map(t=>t.id+' '+t.tiles.length+' tiles').join(', '));
 ok('every dungeon makes a layout for all seven missions',TH.every(t=>MIS.every(mi=>[1,2,3].every(seed=>!!X.dgLayout({mission:mi,seed,set:t.tiles})))));
+// ---- the three dungeons' tile kits (shared/dungeons/themes/<id>.js through defineDungeonTheme; docs/DUNGEON-THEMES.md section 3) ----
+ok('the theme registry left nothing out: DG_BAD is empty (each bad theme would be listed here by id and field)',X.DG_BAD.length===0,X.DG_BAD.map(b=>b.id+' '+b.field+': '+b.why).join('; '));
+ok('every dungeon\'s legend: one character each, none of # . S O C P B, solid true or false, a prop name; hazards and guardian posts are floor',TH.every(t=>Object.entries(t.legend).every(([ch,e])=>
+  ch.length===1&&!'#.SOCPB'.includes(ch)&&typeof e.solid==='boolean'&&typeof e.prop==='string'&&e.prop&&(!(e.hazard||e.post)||!e.solid))),TH.map(t=>t.id+': '+Object.keys(t.legend).join('')).join(', '));
+{ const NAMED={hollowroots:['cathedral','sapcellar','fungusalcove','crawlway','heartknot','seednook','burrow'],jadesprings:['basin','bathhall','bamboocellar','steamcorridor','springhead','offering','waterfall'],
+    bonefrostbarrow:['burialchamber','cairnroom','urnhall','passagegrave','runecell','gravegoods','barrowdoor']}, ROLE={0:'hall',1:'room',2:'room',3:'pass',4:'site',5:'cache',6:'start'};
+  ok('every dungeon draws the tiles its design names (hall, two rooms, pass, site, cache, entrance), each in the role the design gives it',TH.every(t=>NAMED[t.id].every((nm,i)=>t.tiles.some(v=>v.id.split('-')[0]===nm&&v.tags.includes(ROLE[i])))),TH.map(t=>t.id+' '+new Set(t.tiles.map(v=>v.id.split('-')[0])).size+' designs').join(', ')); }
+// the test's own reading of a tile (not dgTileProblems): a legend's solid characters are wall, everything else floor
+const solidIn=t=>ch=>ch==='#'||!!(t.legend&&t.legend[ch]&&t.legend[ch].solid);
+{ const bad=[];
+  for(const t of TH){ const sol=solidIn(t), allowed=new Set(['#','.',...'SOCPB',...Object.keys(t.legend)]);
+    for(const v of X.dgVariants(t.tiles)){ const a=v.art, tag=t.id+' '+v.id+' rot'+v.rot;
+      if(a.length!==DG_TC||a.some(r=>r.length!==DG_TC||[...r].some(ch=>!allowed.has(ch)))){ bad.push(tag+' format'); continue; }
+      const mid=i=>i===DG_TC/2-1||i===DG_TC/2;
+      for(const [bit,cell] of [[X.DG_N,i=>a[0][i]],[X.DG_S,i=>a[DG_TC-1][i]],[X.DG_W,i=>a[i][0]],[X.DG_E,i=>a[i][DG_TC-1]]]) for(let i=0;i<DG_TC;i++) if(!sol(cell(i))!==(!!(v.doors&bit)&&mid(i))){ bad.push(tag+' door'); break; }
+      const fl=[]; for(let z=0;z<DG_TC;z++) for(let x=0;x<DG_TC;x++) if(!sol(a[z][x])) fl.push(z*DG_TC+x);
+      const seen=new Set([fl[0]]), q=[fl[0]]; for(let i=0;i<q.length;i++){ const c=q[i], x=c%DG_TC, z=(c-x)/DG_TC; for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+dx, nz=z+dz, k=nz*DG_TC+nx; if(nx>=0&&nz>=0&&nx<DG_TC&&nz<DG_TC&&!sol(a[nz][nx])&&!seen.has(k)){ seen.add(k); q.push(k); } } }
+      if(seen.size!==fl.length) bad.push(tag+' floor in pieces');
+      if(X.dgTileProblems(v,t.legend).length) bad.push(tag+' '+X.dgTileProblems(v,t.legend)[0]); } }
+  ok('every tile of every dungeon in every turn: 24 x 24 cells of the markers and its legend, doors only as the middle two cells of a side (legend solids are wall), one piece of floor, and dgTileProblems agrees',!bad.length,bad.length?bad.slice(0,3).join('; '):TH.map(t=>t.id+' '+X.dgVariants(t.tiles).length+' variants').join(', ')); }
+{ const C=DG_TC/2, R=X.DG_BOSS_R/DG_CELL, sets=[{id:'bare',tiles:X.DG_SET_BARE,legend:{}},...TH], bad=[];
+  const pillarCells=new Set(); for(const [px,pz] of X.DG_HALL_PILLARS) for(let z=0;z<DG_TC;z++) for(let x=0;x<DG_TC;x++) if(Math.abs((x+0.5-C)*DG_CELL-px)<X.DG_HALL_PILLAR_HALF&&Math.abs((z+0.5-C)*DG_CELL-pz)<X.DG_HALL_PILLAR_HALF) pillarCells.add(z*DG_TC+x);
+  for(const t of sets){ const sol=solidIn(t); for(const v of X.dgVariants(t.tiles).filter(v=>v.tags.includes('hall'))){ let walls=0, wrong=0, b=0;
+    for(let z=0;z<DG_TC;z++) for(let x=0;x<DG_TC;x++){ const d=Math.hypot(x+0.5-C,z+0.5-C), s2=sol(v.art[z][x]); if(d<=R-1&&s2) walls++; if(d<=R&&s2!==pillarCells.has(z*DG_TC+x)) wrong++; if(v.art[z][x]==='B'&&d<=1) b++; }
+    if(walls!==16||wrong||b!==1||!X.DG_HALL_MOUTHS.every(([mx,mz])=>v.art[Math.floor(C+mz/DG_CELL)][Math.floor(C+mx/DG_CELL)]==='S')) bad.push(t.id+' '+v.id+' rot'+v.rot+' walls '+walls+' wrong '+wrong); } }
+  ok('every hall, the bare set\'s and each dungeon\'s, is the boss circle with its four pillars exactly at DG_HALL_PILLARS (16 cells, where the kits look for cover), the boss spot in the middle and a mouth at each of DG_HALL_MOUTHS',pillarCells.size===16&&!bad.length,bad.slice(0,2).join('; ')); }
+ok('the kits\' hall spots fit every hall: Haugbui\'s lamps and Gawataro\'s five vents stand on open floor inside the circle, clear of the pillars',TH.every(t=>{ const L=X.dgLayout({mission:'purge',seed:2,theme:t.id}), B=X.dgBake(L), A=X.dgHallArena(B,100,-50);
+  const free=(x,z)=>!A.solid(x,z)&&Math.hypot(x-A.x,z-A.z)<A.r-1.5;
+  return X.DG_HALL_LAMPS.every(([lx,lz])=>free(A.x+lx,A.z+lz)&&free(A.x+lx+0.6,A.z+lz+0.6)&&free(A.x+lx-0.6,A.z+lz-0.6))&&[0,1,2,3,4].every(i=>{ const [vx,vz]=X.dgVentAt(A,i); return free(vx,vz); })&&X.DG_HALL_PILLARS.every(([px,pz])=>A.solid(A.x+px,A.z+pz)); }));
+{ const bad=[]; let tries=0, n=0;
+  for(const t of TH) for(const mi of MIS){ const M=X.DG_MISSIONS[mi];
+    for(let s=1;s<=300;s++){ const L=X.dgLayout({mission:mi,seed:s,theme:t.id}); n++; if(!L){ bad.push(t.id+' '+mi+' '+s+' null'); continue; } tries+=L.tries;
+      if(L.theme!==t.id||L.legend!==t.legend||L.cells.length<M.rooms[0]||L.cells.length>M.rooms[1]||M.roles.some(R=>roleCount(L,roleOf(R))!==R.n)||roleCount(L,'start')!==1) bad.push(t.id+' '+mi+' '+s); } }
+  ok('every dungeon\'s own tile kit makes all seven missions on 300 seeds each (the right size, every role, one entrance, one boss hall)',!bad.length,bad.length?bad.slice(0,3).join('; '):n+' layouts, '+(tries/n).toFixed(2)+' tries on average'); }
+{ const bad=[];
+  for(const t of TH) for(const mi of MIS) for(let s=1;s<=12;s++){
+    const B=X.dgBake(X.dgLayout({mission:mi,seed:s,theme:t.id})), fl=allFloor(B), flow=X.dgFlow(B,B.start.x,B.start.z), tag=t.id+' '+mi+' '+s;
+    if(fl.some(([x,z])=>flow[Math.floor(z/DG_CELL)*B.w+Math.floor(x/DG_CELL)]===65535)) bad.push(tag+' floor cut off');
+    if(B.marks.P.length!==1||!B.boss||B.boss.r!==X.DG_BOSS_R) bad.push(tag+' portal / boss');
+    for(const k of ['S','O','C','P','B']) for(const m of B.marks[k]) if(X.dgSolid(B,m.x,m.z)) bad.push(tag+' marker in a wall');
+    let cells=0; for(const c of B.layout.cells) for(const r of c.art) for(const ch of r) if(t.legend[ch]) cells++;
+    if(B.props.length!==cells) bad.push(tag+' props '+B.props.length+' of '+cells);
+    for(const p of B.props){ const e=Object.values(t.legend).find(e=>e.prop===p.k); if(!e||X.dgSolid(B,p.x,p.z)!==e.solid||(e.hazard||undefined)!==p.hz) { bad.push(tag+' prop '+p.k); break; } }
+    if(B.props.some(p=>X.dgLos(B,p.x,p.z,p.x,p.z)===undefined)) bad.push(tag+' los'); }
+  ok('baked with a dungeon\'s legend: every legend cell is in B.props {k,x,z} (hazards with hz), solid ones are wall to dgSolid (so to dgFree, dgSlide, dgLos and the flow field) and the rest floor; all floor reachable, one portal, a boss circle, markers on floor',!bad.length,bad.slice(0,3).join('; ')); }
+{ const B=X.dgBake(X.dgLayout({mission:'purge',seed:4,theme:'hollowroots'})), pil=B.props.find(p=>p.k==='rootpillar'), hz=B.props.filter(p=>p.hz==='spikes');
+  ok('a solid prop blocks like a wall and a floor prop does not: a root pillar stops sight and walkers, root spikes are walked over (and carry their hazard)',!!pil&&X.dgSolid(B,pil.x,pil.z)&&!X.dgFree(B,pil.x,pil.z,0.3)&&!X.dgLos(B,pil.x-3,pil.z,pil.x+3,pil.z)&&hz.length>0&&hz.every(p=>!X.dgSolid(B,p.x,p.z)),hz.length+' spike cells'); }
+for(const r of [0.5,0.9]){
+  let stuck=0, n=0;
+  for(const t of TH) for(const mi of ['defense','sabotage','hunt']) for(let s=1;s<=6;s++){
+    const B=X.dgBake(X.dgLayout({mission:mi,seed:s,theme:t.id})), fl=allFloor(B).filter(([x,z])=>X.dgFree(B,x,z,r)), goal=B.start, flow=X.dgFlow(B,goal.x,goal.z);
+    for(let i=0;i<25;i++){ let [x,z]=fl[Math.floor(rng()*fl.length)]; n++;
+      for(let step=0;step<5000;step++){ if(Math.hypot(x-goal.x,z-goal.z)<1.5) break; const d=X.dgStep(B,flow,x,z); if(!d) break; [x,z]=X.dgSlide(B,x,z,x+d[0]*0.5,z+d[1]*0.5,r); }
+      if(Math.hypot(x-goal.x,z-goal.z)>=1.5) stuck++; } }
+  ok('a walker of radius '+r+' m following the flow field reaches the portal round every dungeon\'s props and through its doors, from '+n+' random starting points in 54 dungeons',stuck===0,stuck+' got stuck');
+}
+ok('a dungeon with guardians gives them posts (G) in its rooms or sites; one without guardians has none',TH.every(t=>{ const posts=t.tiles.filter(v=>v.art.some(r=>[...r].some(ch=>t.legend[ch]&&t.legend[ch].post==='guardian'))); return t.mobs.guardians.length?posts.length>0&&posts.every(v=>v.tags.includes('room')||v.tags.includes('site')):posts.length===0; }));
+{ const F=loadShared(['defineDungeonTheme','DG_BAD','DG_THEMES','DG_SET_BARE']), warn=console.warn, said=[]; console.warn=m=>said.push(m);
+  const good=()=>JSON.parse(JSON.stringify({id:'testcave',name:'Test Cave',land:'home',at:'Ancient Grove',mobs:{walkers:['treant','deathcap','shroom','bogslime'],guardians:[]},boss:'amanita',music:'wild3',
+    pal:{wall:1,floor:2,fog:3,light:4},legend:{R:{solid:true,prop:'rock'}},tiles:X.DG_THEMES.hollowroots.tiles.map(v=>({id:v.id,doors:v.doors,tags:v.tags,w:v.w,art:v.art.map(r=>[...r].map(ch=>'#.SOCPB'.includes(ch)?ch:X.DG_THEMES.hollowroots.legend[ch].solid?'#':'.').join(''))}))}));   // the Hollow Roots' kit with its legend drawn as plain wall and floor
+  const cases=[['tiles',T=>{ T.tiles[3].art[0]='.'+T.tiles[3].art[0].slice(1); }],['tiles',T=>{ T.tiles[5].art[12]=T.tiles[5].art[12].slice(0,12)+'Q'+T.tiles[5].art[12].slice(13); }],
+    ['tiles',T=>{ T.tiles=T.tiles.filter(v=>!v.tags.includes('cache')); }],['tiles',T=>{ const h=T.tiles.find(v=>v.tags.includes('hall')); h.art[12]=h.art[12].slice(0,9)+'#'+h.art[12].slice(10); }],
+    ['mobs',T=>{ T.mobs.walkers.push('nosuchmonster'); }],['mobs',T=>{ T.mobs.walkers.push('ancient'); }],['boss',T=>{ T.boss='rootwarden'; }],['at',T=>{ T.at='Nowhere'; }],['legend',T=>{ T.legend['S']={solid:true,prop:'x'}; }],['id',T=>{ T.id='Bad Id'; }]];
+  const fine=F.defineDungeonTheme(good()), res=cases.map(([field,f],i)=>{ const T=good(); T.id=T.id==='testcave'?'testcave'+i:T.id; f(T); const n=F.DG_BAD.length, r=F.defineDungeonTheme(T); return r===null&&F.DG_BAD.length===n+1&&F.DG_BAD[n].field===field&&!F.DG_THEMES[T.id]; });
+  console.warn=warn;
+  ok('a bad theme never stops the game: it is left out, warned about and listed in DG_BAD by id and field (a door off the middle, an unknown character, no cache, a pillar out of place, a missing or oversized walker, an unknown boss or zone, a marker in the legend, a bad id); a good one is taken',
+    !!fine&&!!F.DG_THEMES.testcave&&res.every(Boolean)&&said.length===cases.length,res.map((r,i)=>r?'':cases[i][0]+i).filter(Boolean).join(' ')||said.length+' warnings'); }
 // ---- the three entrances: real places on the real map ----
 { const E=Object.values(X.DG_ENTRANCES), H=(x,z)=>X.rawHeight(x,z), slope=(x,z,d=2)=>Math.hypot(H(x+d,z)-H(x-d,z),H(x,z+d)-H(x,z-d))/(2*d);
   const zoneName=(x,z)=>{ const q=X.zoneAt(x,z); return q&&q.name; }, landOf=q=>q&&(q.hoar?'hoar':q.vale?'vale':'home');
@@ -149,10 +219,11 @@ ok('every dungeon makes a layout for all seven missions',TH.every(t=>MIS.every(m
       [g(Z,Z,Z),g([1,1],Z,Z),g(Z,Z,Z,{east:2}),g(Z,[1,1],Z,{east:2}),g(Z,Z,Z,{north:2}),g([0,3],Z,Z)].every(gear=>['hollowroots','jadesprings','bonefrostbarrow'].every(id=>go(gear,T[id])===X.dgUnlocked(gear,60,T[id]).ok))); }
   ok('the talk key works within '+X.DG_ENT_TALK+' m of a door only, and the apron is '+X.DG_APRON+' m in front of it',E.every(e=>{ const A=X.dgApron(e); return X.dgEntranceNear(e.x+0.5,e.z)===e&&X.dgEntranceNear(e.x,e.z+X.DG_ENT_TALK-0.1)===e&&X.dgEntranceNear(e.x+X.DG_ENT_TALK+1.5,e.z)===null&&X.dgEntranceNear(e.x,e.z,X.DG_APRON+1)===e&&Math.abs(Math.hypot(A.x-e.x,A.z-e.z)-X.DG_APRON)<1e-9; })); }
 
-const BS=Object.values(X.DG_BOSSES), KNOWN=new Set(['tele:circle','tele:root','tele:slam','tele:icefall','tele:geyser','tele:gust','tele:cone','tele:cleave','tele:breath','tele:line','tele:donut','tele:mark','tele:prison',
+// the primitives a move may be made of: the telegraph kinds (the circle kinds include the dungeon bosses' own looks: spore puff pulse vent wail snuff, drawn by game/combat/boss.js,
+// resolved as circles by server/boss-fx.js), zones, waves, orbs, effects on players, summons, a glide, modes, stuns and casts
+const BS=Object.values(X.DG_BOSSES), KNOWN=new Set(['tele:circle','tele:root','tele:slam','tele:icefall','tele:geyser','tele:gust','tele:spore','tele:puff','tele:pulse','tele:vent','tele:wail','tele:snuff','tele:cleave','tele:breath','tele:line','tele:donut','tele:mark','tele:prison',
   'zone:ember','zone:whirl','zone:whiteout','zone:blizzard','wall','orb','pfx:root','pfx:slow','pfx:push','adds','props','move','mode:hidden','mode:shielded','mode:airborne','stun','cast']);
 const PALKEYS={shroom:['cap','spot','stem','gill','feet','spirit'],goblin:['form','skin','eyes','top','topColor','bottom','bottomColor','hat','hatColor','club','horns','weapon','fur','embers','shell'],wisp:['body','core','eye','hair','ghost'],totem:['crystal','band']};
-const MUSIC=['village','wild1','wild2','wild3','boss15','hanami','vale1','vale2','boss20','boss25','rimehold','hoar1','hoar2','boss26','boss30'];
 ok('three new bosses, one for each dungeon, each used once: the dungeon names its boss and the boss names its dungeon (no more random draw)',BS.length===3&&TH.every(t=>BS.filter(b=>b.id===t.boss&&b.dungeon===t.id).length===1)&&new Set(TH.map(t=>t.boss)).size===3,TH.map(t=>t.id+' -> '+t.boss).join(', '));
 ok('the bosses are new (their ids, and their adds\' and props\', are in no def), are built from a model and element the game has, with pal flags that model reads, a music track that exists, and fit the hall',BS.every(b=>{
   const ids=[b.id,b.add.id,...(b.prop?[b.prop.id]:[])], used=new Set(X.ALL_MON_DEFS.map(d=>d.id));
@@ -163,6 +234,17 @@ ok('every boss has at least 5 moves in all three phases, each made of primitives
   b.moves.length>=5&&[1,2,3].every(ph=>b.moves.some(m=>m.phase===ph))&&b.moves.every(m=>m.does.every(tok=>KNOWN.has(tok)||(tok.startsWith('new:')&&b.needs.includes(tok))))&&
   b.needs.every(n=>b.moves.some(m=>m.does.includes(n)))&&b.moves.filter(m=>m.signature).length===1)&&new Set(BS.flatMap(b=>b.moves.map(m=>m.id))).size===BS.reduce((n,b)=>n+b.moves.length,0));
 ok('the three are different: three model families, three elements, three kits, three signatures',new Set(BS.map(b=>b.model)).size===3&&new Set(BS.map(b=>b.el)).size===3&&new Set(BS.map(b=>b.kit)).size===3&&new Set(BS.map(b=>b.moves.find(m=>m.signature).id)).size===3);
+// the bosses' data against their code: the rows makeBossS takes, the kits (server/dungeons/boss-kits.js), what implements each new primitive, and what the client draws
+{ const fs=require('fs'), path=require('path'), {SRC,manifest,loadServer}=require('./load'), SV=loadServer({dev:true},['BOSS_KITS','DG_BOSS_NEEDS']).x;
+  const game=manifest().game.filter(f=>f!=='@shared').map(f=>fs.readFileSync(path.join(SRC,'game',f),'utf8')).join('\n'), cb=fs.readFileSync(path.join(SRC,'game/combat/boss.js'),'utf8'), cz=fs.readFileSync(path.join(SRC,'game/combat/boss-fx.js'),'utf8');
+  const tele=new Set((cb.match(/const TELE_COL=\{([\s\S]*?)\};/)[1].match(/\w+(?=:0x)/g)||[])), zone=new Set((cz.match(/const ZONE_COL=\{([\s\S]*?)\};/)[1].match(/\w+(?=:0x)/g)||[]));
+  ok('DG_BOSSES and DG_BOSS_DEFS agree (each design is a row for makeBossS: the def, its kit, add, prop, name, bar and music) and every kit is registered with start, tick and phase',
+    Object.keys(X.DG_BOSS_DEFS).length===3&&BS.every(b=>{ const r=X.DG_BOSS_DEFS[b.id], K=SV.BOSS_KITS[b.kit];
+      return r&&r.def.id===b.id&&r.def.boss&&r.def.level===b.lv&&r.kit===b.kit&&r.add.id===b.add.id&&(b.prop?r.prop&&r.prop.id===b.prop.id:!r.prop)&&r.short===b.short&&r.bar===b.bar&&r.def.music===b.music&&r.dungeon===b.dungeon&&K&&['start','tick','phase'].every(f=>typeof K[f]==='function'); }));
+  ok('every new primitive a boss needs is implemented (DG_BOSS_NEEDS: a server function, or a client function the page defines) and no implemented need is unused',BS.every(b=>b.needs.every(n=>{ const v=SV.DG_BOSS_NEEDS[n];
+      return typeof v==='function'||(typeof v==='string'&&/^client:\w+$/.test(v)&&new RegExp('function '+v.slice(7)+'\\(').test(game)); }))&&Object.keys(SV.DG_BOSS_NEEDS).every(n=>BS.some(b=>b.needs.includes(n))),Object.keys(SV.DG_BOSS_NEEDS).join(' '));
+  ok('every telegraph and zone the dungeon bosses use has a look on the client (TELE_COL in game/combat/boss.js, ZONE_COL in game/combat/boss-fx.js), and their own circle kinds are no world boss\'s',
+    BS.every(b=>b.moves.every(m=>m.does.every(t=>t.startsWith('tele:')?tele.has(t.slice(5)):t.startsWith('zone:')?zone.has(t.slice(5)):true)))&&zone.has('spore')&&['spore','puff','pulse','vent','wail','snuff'].every(k=>tele.has(k)),[...tele].join(' ')); }
 // the hourly offer: two different mission types, changing at the top of every hour, the same for everyone
 { const H=X.DG_OFFER_HOUR, T0=Date.UTC(2026,9,3,0,0,0), P=MIS.length*(MIS.length-1)/2, off=(id,h)=>X.dgOffer(id,T0+h*H), key=a=>a.join('+');
   ok('a dungeon offers two different mission types of the seven, the same all hour long, and the same for everyone who asks',TH.every(t=>[0,1,2,3,50,999].every(h=>{ const a=off(t.id,h), b=X.dgOffer(t.id,T0+h*H+H-1); return a.length===2&&a[0]!==a[1]&&a.every(m=>MIS.includes(m))&&key(a)===key(b)&&key(a)===key(X.dgOffer(t.id,T0+h*H)); })));
@@ -223,8 +305,8 @@ ok('each of the three dungeons pays one kind of reward: Wildwood weapons, the Va
     return q&&it&&it.id===id&&(q.el?R.dgRingId(q.el,q.rar,q.n):R.dgGearId(q.slot,q.rar,q.n))===id; }));
   const no=['sword7+3','sword7-l+11','sword7-e+7','sword7-u+9','sword7+0','sword7+01','sword6','sword7-x','ring-fire-x','ring-fire+','ring-wind','ring-fire-l+11','shoes7-r+5','sword','ring','','sword7 ','Sword7'], yes=['sword7','sword7+2','sword7-r+4','sword7-e+6','sword7-u+8','ring-dark-l+10','ring-basic','top7-u+6'];
   ok('an id past its rarity\'s limit, or one that is not a level-30 piece, does not parse (limits 2 / 4 / 6 / 8 / 10)',no.every(id=>R.dgParse(id)===null)&&yes.every(id=>R.dgParse(id))&&R.ENH_MAX.join()==='2,4,6,8,10'); }
-ok('the level-30 gear is a tier of its own: shops, tools, drops and the six tiers are untouched (no id collides with ITEM, tierFor stops at the old top tier)',
-  R.TIERS===6&&R.ITEM_LIST.length===210&&R.tierFor(30)===5&&R.tierFor(50)===5&&R.TOOL_LIST.length===90&&R.dgAllIds().every(id=>!R.ITEM[id])&&R.DG_TIER===R.TIERS);
+ok('the level-30 gear is a tier of its own: its 490 ids are ITEM records (shared/dungeon-items.js) but in neither ITEM_LIST nor TOOL_LIST, so shops, tools, drops and the six tiers are untouched (tierFor stops at the old top tier)',
+  R.TIERS===6&&R.ITEM_LIST.length===210&&R.tierFor(30)===5&&R.tierFor(50)===5&&R.TOOL_LIST.length===90&&R.dgAllIds().every(id=>R.ITEM[id]&&R.ITEM[id].dg&&!R.ITEM_LIST.includes(R.ITEM[id])&&!R.TOOL_LIST.includes(R.ITEM[id]))&&R.DG_TIER===R.TIERS);
 { const bad=[], ratio=(a,b)=>a/b;
   for(const s of R.WEAPON_SLOTS) for(let r=0;r<5;r++){ const a=R.dgItem(R.dgGearId(s,r,0)), b=R.ITEM[s+'6'+(r?'-'+['','r','e','u','l'][r]:'')]; if(!(a.atk>b.atk)) bad.push(s+r+' atk'); }
   for(const s of R.ARMOR_SLOTS) for(let r=0;r<5;r++){ const a=R.dgItem(R.dgGearId(s,r,0)), b=R.ITEM[s+'6'+(r?'-'+['','r','e','u','l'][r]:'')]; if(!(a.hp>b.hp&&a.def>b.def)) bad.push(s+r+' hp/def'); }

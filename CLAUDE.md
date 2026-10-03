@@ -16,7 +16,7 @@ Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an
 2. Section 4 below maps common tasks to files.
 3. `grep -n "name" -r src/` to find a function; then open only a line range.
 4. Every file starts with `//@ one-line description` (`--check` fails without it). Keep that line accurate when you edit.
-5. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules); the main quest plan: `docs/MAIN-QUEST.md`; what is **not built yet**, with comments on each gap (gathering's animation, the balance of crafting and potions, the levels 26-50 story, regional weather, the tracks' licences...): `docs/NOT-BUILT.md`; professions, tools, crafting and potions: `docs/MAIN-QUEST.md` section 5b; dungeons (planned: the design, the five rules, the build order, what exists): `docs/DUNGEONS.md`; the three dungeons (one a land, level 30), the hourly offer of two mission types, their bosses, the three entrances in the world (map `docs/dungeon-entrances.png`, drawn by `tools/entrance-map.js`) and the rewards (level-30 gear, the ring, enhancing, the Tempering Stone): `docs/DUNGEON-THEMES.md`.
+5. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules); the main quest plan: `docs/MAIN-QUEST.md`; what is **not built yet**, with comments on each gap (gathering's animation, the balance of crafting and potions, the levels 26-50 story, regional weather, the tracks' licences...): `docs/NOT-BUILT.md`; professions, tools, crafting and potions: `docs/MAIN-QUEST.md` section 5b; dungeons (the design, the five rules, the build order, what is built): `docs/DUNGEONS.md`; the three dungeons (one a land, level 30), the hourly offer of two mission types, their bosses, the three entrances in the world (map `docs/dungeon-entrances.png`, drawn by `tools/entrance-map.js`) and the rewards (level-30 gear, the ring, enhancing, the Tempering Stone): `docs/DUNGEON-THEMES.md`.
 6. **Area guides**: `docs/areas/README.md` says which guide to open (the long detail of each section-4 row, the pitfalls and reference numbers of that area). Tests and the browser-pane workflow: `docs/TESTING.md`. Deploy, the database and publishing the playtest artifact: `docs/DEPLOY.md`.
 
 ## 2. Architecture in one screen
@@ -135,7 +135,7 @@ Short rows: the files that matter. A row ending in `→ docs/areas/<x>.md` has t
 | The AI disclosure (bottom-left note: everything, assets and music included, is made with AI; keep it visible and keep the chat above it) | `#aiNote` in `index.html`, `styles/02-hud.css` (the desktop chat is lifted above it in `19-chat.css`) |
 | Hold Alt = free mouse (releases pointer lock, locks again on release; a canvas click does nothing meanwhile) | `altDown` / `altUp` / `altHeld` in `game/player/input.js`; the `mousedown` guard in `game/ui/combat-hud.js` |
 | Transports / host election | `game/net/transport.js` |
-| Dungeons (**planned, not built**: only the pure setup exists and nothing calls it) | `shared/dungeons.js` (map tiles, `dgLayout`, `DG_MISSIONS`, `dgBake`, `dgSolid` / `dgLos` / `dgFlow`, `DG_PARTY`, the three dungeons `DG_THEMES` and bosses `DG_BOSSES`, the hourly offer `dgOffer`, entry rules `dgUnlocked`, the doors `DG_ENTRANCES`) and `shared/dungeon-rewards.js` (`DG_REWARDS`, `dgClearReward`, the level-30 gear, the ring, enhancing, the Tempering Stone); the design, the instance plan for the server, missions, loot, milestones: `docs/DUNGEONS.md` (read it first); the three dungeons, entrances and rewards: `docs/DUNGEON-THEMES.md`; test `node tools/dungeons-smoke.js` → `docs/areas/dungeons.md` |
+| Dungeons (**built**: parties, runs in far-away slots, seven missions, three dungeons with their bosses, the doors and the Delve board, level-30 rewards; Wildwood's needs +1 difficulty) | server `party.js`, `dungeon-gear.js`, `dungeons/` (instances, mobs, kits/, fx, hazards, runs, lobby, boss-kits); shared `dungeons.js`, `dungeons/` (themes, bosses), `dungeon-rewards.js`, `dungeon-items.js`, `dungeon-slots.js`, `dungeon-hud.js`; client `game/dungeon/` (run, view, look, collide, party, hud, minimap, board, entrances), `village/buildings-dungeon.js`, `economy/dungeon-gear.js`; the design `docs/DUNGEONS.md` (read it first), `docs/DUNGEON-THEMES.md`; tests: the `dungeon*` / `party` / `rewards*` / `entrances*` smokes in section 6 → `docs/areas/dungeons.md` |
 
 ## 5. Rules and conventions
 
@@ -192,12 +192,21 @@ node tools/accounts-smoke.js     # 17 checks: register, login, tokens, unique na
 node tools/mainquest-smoke.js    # 91 checks: the main quest, acts I-III, ~15 s
 node tools/boss-smoke.js         # 36 checks: the six bosses' move sets, ~2 s
 node tools/hoarfrost-smoke.js    # 37 checks: the Hoarfrost Reach, ~5 s
-node tools/dungeons-smoke.js     # 81 checks: map tiles, the boss hall vs the arenas, seeded mission layouts, grid, flow field, party table, the three dungeons and bosses, the hourly offer, the entrances, the rewards, ~2 s
+node tools/dungeons-smoke.js     # 97 checks: the pure setup: tiles of every theme, boss hall vs arenas, layouts, grid, flow field, party table, the three dungeons and bosses, offer, entrances, reward rules, ~3 s
+node tools/party-smoke.js        # 22 checks: invites, /invite, the cap, lead, kick, leave, expiry, ~2 s
+node tools/dungeon-runs-smoke.js # 80 checks: runs isolated from the world and each other, walls, party health, loot for all, down / revive / lost, a Purge won with the save and the clear's piece, ~10 s
+node tools/dungeon-boss-smoke.js # 36 checks: the three dungeon bosses in a real hall, ~5 s
+node tools/dungeon-missions-smoke.js # 112 checks: the seven mission kits won and lost, HUD, chests, hazards, ~15 s
+node tools/rewards-smoke.js      # 56 checks: level-30 gear, the ring and the soul, the Tempering Stone, temper, merge, saves, ~5 s
+node tools/rewards-client-smoke.js     # 23 checks: ring slot, Temper tab (runs dist/: build first)
+node tools/entrances-client-smoke.js   # 30 checks: the three doors' client dressing (runs dist/)
+node tools/dungeon-board-client-smoke.js # 37 checks: the Delve board and the join prompt (runs dist/)
+node tools/dungeon-client-smoke.js     # 44 checks: a run's client: view, walls, camera, party frame, HUD, results (runs dist/)
 node tools/entrance-map.js       # draws docs/dungeon-entrances.png (the three doors on the real terrain); regenerates byte-identically
 node tools/tiers-smoke.js        # 34 checks: zone tiers, ~2 s
 node tools/professions-smoke.js  # 73 checks: tools, nodes, gathering, crafting, brewing, potions, ~8 s
 node tools/skills-smoke.js       # 58 checks: elements, soul, drops, upgrades, passives, boss skills, ~15 s
-node tools/client-smoke.js       # 39 checks, the built page headless (solo), ~60 s; runs dist/: build first
+node tools/client-smoke.js       # 48 checks, the built page headless (solo), ~60 s; runs dist/: build first
 node tools/start-smoke.js        # 31 checks: the start card + a new account's editor, ~20 s; runs dist/
 node tools/keys-smoke.js         # rebindable keys and hold-Alt; runs dist/
 python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)
@@ -259,7 +268,7 @@ The universal ones are here. An area's own pitfalls are in its guide (`docs/area
 
 (Each gap is commented in `docs/NOT-BUILT.md`.) Professions' next steps (quest-board notices for gathering and crafting, planned in `docs/NOT-BUILT.md` section 1; status-cleansing potions; resources for the lands to come). Zone tiers' next steps (none decided): quest-board notices and their rewards by tier (the board still scales by base level), tier-only loot or a gear tier above 5, a cap or damping on the XP a tier pays, a look for the symbol on the character, a tier picker at the teleport circles. **Dungeons**: designed in `docs/DUNGEONS.md` (milestones M0-M7; M0, the inert setup in `shared/dungeons.js`, is done; its section 13 lists the owner's decisions); no dungeon theme exists. **Agent docs**: CLAUDE.md is a router (rule 8 above): section-4 rows are short and the detail lives in `docs/areas/`; keep it that way. **Decided against**: a gathering animation and tool durability; levels 26-50 (acts IV-VII, planned step by step in `docs/MAIN-QUEST.md` section 7); regional weather on the server; the Hoarfrost's west glacier valley to the Greyspine; the licences of the free-plan music tracks (Suno and Google Flow Music: non-commercial) before the game earns money.
 The owner will define the real passive skills (the eight in `PASSIVES` are a placeholder set); monsters' elements do not change the damage they deal to you
-yet (a `hurtP` hook, same functions as `foeMult`); Special quests from Bram and other NPCs; group/party system (planned with the dungeons: `docs/DUNGEONS.md` section 5); the XP curve past 15 (levels 16-25 need 400-2100 kills
+yet (a `hurtP` hook, same functions as `foeMult`); Special quests from Bram and other NPCs; party quests (the party itself is built with the dungeons: `docs/DUNGEONS.md` section 5); the XP curve past 15 (levels 16-25 need 400-2100 kills
 each: tune `expToNext` / `xpFor` in `shared/balance.js`); animals in the vale; trading between players; more zones or a
 second boss; server-side anti-cheat for movement; villagers synced between players; mobile UI polish
 seen on a real device.

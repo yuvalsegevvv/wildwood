@@ -84,6 +84,7 @@ const THEMES={
 // which theme fits where you are: a boss you are fighting (its own def.music, else the one for its level), then the village you are in, then the zone's level
 function musicThemeHere(){
   const m=BOSS.m; if(m&&BOSS.engaged&&!m.dead){ const A=arenaOf(m); if(Math.hypot(P.x-A.x,P.z-A.z)<A.r+30){ const bd=bossInfo(m); return (bd&&bd.def.music)||(m.def.level>=30?'boss30':m.def.level>=26?'boss26':m.def.level>=25?'boss25':m.def.level>=20?'boss20':'boss15'); } }
+  if(dgIn()) return dgMusicTheme();   // dungeons: a run's own music (a boss in its hall plays its theme: the line above) (dungeon/look.js)
   const V=vilAt(P.x,P.z); if(vDist(P.x,P.z)<VR+22) return V===VIL3?'rimehold':V===VIL2?'hanami':'village';
   if(P.inTun) return MUSIC.theme||'wild3';
   const zn=zoneAt(P.x,P.z), L=zn?zn.level:0;

@@ -7,7 +7,7 @@ function footstep(surf,k,pan,gain){
   else if(surf==='snow'){ noiseHit({filter:'bandpass',ff:2200+Math.random()*500,dur:0.11,vol:0.05*v,q:0.7,pan}); noiseHit({filter:'lowpass',ff:260,dur:0.08,vol:0.04*v,pan,when:n+0.01}); noiseHit({filter:'highpass',ff:4200,dur:0.03,vol:0.014*v,pan,when:n+0.035}); }   // a soft crunch
   else { noiseHit({filter:'lowpass',ff:500+Math.random()*300,dur:0.09,vol:0.08*v,pan}); noiseHit({filter:'bandpass',ff:3200,dur:0.06,vol:0.018*v,q:0.8,pan,when:n+0.01}); }
 }
-function surfaceAt(x,z){ if(getH(x,z)<WATER-0.1) return 'water'; if(inHoar(x,z)&&iceDist(x,z)>2) return vDist(x,z)<VR+26&&(plazaAmt(x,z)>0.5||pathAmt(x,z)>0.5)?'gravel':'snow'; if(vDist(x,z)<VIL.r+26 && (plazaAmt(x,z)>0.5||pathAmt(x,z)>0.5)) return 'gravel'; return 'grass'; }
+function surfaceAt(x,z){ if(dgInSlots(x)) return 'gravel'; if(getH(x,z)<WATER-0.1) return 'water'; if(inHoar(x,z)&&iceDist(x,z)>2) return vDist(x,z)<VR+26&&(plazaAmt(x,z)>0.5||pathAmt(x,z)>0.5)?'gravel':'snow'; if(vDist(x,z)<VIL.r+26 && (plazaAmt(x,z)>0.5||pathAmt(x,z)>0.5)) return 'gravel'; return 'grass'; }   // dungeons: stone underfoot in a run
 function wolfHowl(pan,g){ const n=SND.ctx.currentTime; tone({freq:300,freq2:520,glide:0.9,dur:2.8,attack:0.35,vol:0.04*g,when:n,pan,echo:true,verb:true}); tone({freq:520,freq2:330,glide:1.2,dur:1.8,attack:0.05,vol:0.03*g,when:n+1.2,pan,echo:true,verb:true}); }
 function birdSong(pan,g){
   const n=SND.ctx.currentTime, type=Math.floor(Math.random()*4), v=0.045*g;

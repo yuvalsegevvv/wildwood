@@ -37,7 +37,7 @@ function join(pid,hello,auth){
   if(auth){ p.auth=auth; p.user=auth.user; }
   else { const n=freeName(p.name,p); if(n!==p.name){ toastTo(pid,'Someone already has the name '+p.name+', so you are '+n+'. Change it in Settings.',''); p.name=n; } }
   sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth?p.look:undefined});
-  const ros=MONS.filter(m=>!m.remove).map(monRoster);
+  const ros=MONS.filter(m=>!m.remove&&!m.inst).map(monRoster);   // dungeons: the world's monsters only (a run's reach its members on entry)
   for(let i=0;i<ros.length;i+=40) sendTo(pid,{t:'mons',list:ros.slice(i,i+40)});
   for(const B of BOSSES){   // what a boss has set up right now, for someone who arrives in the middle of the fight
     for(const e of B.tele) sendTo(pid,{t:'snap',ev:[['tele',e.id,e.kind,r1(e.x),r1(e.z),r1(e.r),e.dur-e.t,Math.round(e.face*100)/100,e.half]]});
@@ -51,6 +51,7 @@ function join(pid,hello,auth){
 function leave(pid){
   PENDING.delete(pid);
   const lp=S.players.get(pid); if(lp) mqRemoveGreyP(lp);
+  if(lp){ partyGoneP(lp); dgGoneP(lp); }   // dungeons: out of the party (the lead passes on); a run holds the place 5 minutes
   if(lp&&lp.acct){ saveP(lp); if(ACCT.get(lp.acct)===pid) ACCT.delete(lp.acct); }
   if(!S.players.delete(pid)) return;
   ev('pleave',pid);
@@ -59,6 +60,7 @@ function leave(pid){
 function setPos(pid,d){
   const p=S.players.get(pid); if(!p||p.dead||!Array.isArray(d)) return;
   const v=d.map(Number); if(!v.slice(0,3).every(isFinite)) return;
+  if(p.inst||dgInSlots(v[0])){ dgSetPosS(p,v); return; }   // dungeons: inside a run (its grid, never into a wall); slot coordinates from a hiker in no run are a late message: ignored
   p.x=clamp(v[0],WX0,WX1); p.y=v[1]; p.z=clamp(v[2],WZ0,WZ1); p.face=isFinite(v[3])?v[3]:p.face; p.vx=v[4]||0; p.vz=v[5]||0;
   if(p.gear.east<1 && p.x>TUN.p0) p.x=TUN.p0;   // the sealed tunnel
   if(p.gear.north<1 && p.x>HALF && p.z<PASS.ice) p.z=PASS.ice;   // the ice wall in Frostgate Pass
@@ -67,6 +69,7 @@ function receive(pid,msg){
   if(!msg||typeof msg!=='object') return;
   if(msg.t==='hello'){ if(S.players.has(pid)) leave(pid); beginJoin(pid,msg); return; }
   const p=S.players.get(pid); if(!p) return;
+  S.ctx=p.inst|0;   // dungeons: what a message causes belongs to the sender's run (0 = the world)
   switch(msg.t){
     case 'pos': setPos(pid,msg.p); break;
     case 'atk': handleAttack(p,msg); break;
@@ -99,7 +102,9 @@ function receive(pid,msg){
     case 'dev': devP(p,msg); break;
     case 'register': registerP(p,msg.user,msg.pass); break;
     case 'logout': logoutP(p,msg.token); break;
+    default: if(MSG[msg.t]) MSG[msg.t](p,msg); break;   // dungeons: messages added by feature files (party, dg, ...)
   }
+  S.ctx=0;   // dungeons: back to the world's context
 }
 function tick(dt){
   dt=Math.min(Math.max(dt,0),0.1); S.t+=dt;
@@ -107,7 +112,7 @@ function tick(dt){
   else S.day=(S.day+dt/DAY_SECONDS)%1;
   if(S.day<S.prevDay) sunrise();
   S.prevDay=S.day;
-  updatePlayersS(dt); updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateBurnS(dt); updateWeatherS(dt); updateNodesS(dt); updateCastsS();
+  updatePlayersS(dt); S.ctx=0; updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateBurnS(dt); S.ctx=0; updateWeatherS(dt); updateNodesS(dt); updateCastsS(); updatePartiesS(dt); updateInstsS(dt); S.ctx=0;   // dungeons: the per-entity loops set S.ctx (the run an event belongs to), so it goes back to the world after them; parties and runs tick here
   for(const p of S.players.values()) if(p.dirty){ p.dirty=false; p.saveDirty=true; sendTo(p.id,youMsg(p)); }
   S.saveT-=dt; if(S.saveT<=0){ S.saveT=5; for(const p of S.players.values()) if(p.saveDirty&&p.acct) saveP(p); }
   S.snapT-=dt; if(S.snapT<=0){ S.snapT=S.snapDt; broadcastSnap(); }
@@ -155,7 +160,7 @@ function broadcastSnap(){
     }
     for(const [id,s] of stamp) if(s!==no){ stamp.delete(id); seen.delete(id); }   // left your range: sent again from scratch when it returns
     all.forEach((q,i)=>{ const dx=q.x-p.x, dz=q.z-p.z; if(q===p||farToo||dx*dx+dz*dz<=SNAP_PLAYERS*SNAP_PLAYERS) pl.push(prow[i]); });
-    io.send(p.id,{t:'snap',day,n:all.length,pl,mo,b,w,ev});
+    io.send(p.id,dgSnapS(p,{t:'snap',day,n:all.length,pl,mo,b,w,ev}));   // dungeons: events of your own run (or the world), its players, its boss row (b) and its HUD tuple (dg)
   }
 }
 return {join:beginJoin,leave,receive,setPos,tick,flushAll,state:S,monsters:MONS,players:S.players};

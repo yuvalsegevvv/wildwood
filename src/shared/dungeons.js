@@ -1,10 +1,13 @@
-//@ Dungeons, setup only (nothing calls it yet): map tiles, the seeded layout generator, the baked collision grid with line of sight and a flow field, the mission list (every mission ends with a boss in a round hall the size of a boss arena), the three level-30 dungeons (one a land) and where their entrances stand, their three bosses, the hourly offer of two mission types, and who may enter, party-size scaling. Pure.
+//@ Dungeons, setup only (nothing calls it yet): map tiles and the theme registry (defineDungeonTheme, DG_BAD), the seeded layout generator, the baked collision grid with props, line of sight and a flow field, the mission list (every mission ends with a boss in a round hall the size of a boss arena), where the three entrances stand, the hourly offer of two mission types, who may enter, party-size scaling. Pure.
 /* Design: docs/DUNGEONS.md. A dungeon is a grid of map tiles (a room is authored as 24 x 24 cells of 2 m, so DG_TILE = 48 m a side: big enough for a boss's circle) joined
    by doors in the middle of their sides. dgLayout picks which tile goes where from a seed, so the server and every client build the same dungeon from {mission, seed,
    theme} and no layout is ever sent; dgBake turns it into the cell grid that both sides collide against and the server's monsters walk on. Nothing here touches the
    world (no terrain, no players, no state): the wiring is the build order in the design doc.
    A tile's art is 24 strings of 24 characters: '#' wall, '.' floor, and markers that are floor too: S a monster mouth, O an objective, C a cache, P the portal, B the
-   middle of a boss hall (where the boss appears). */
+   middle of a boss hall (where the boss appears). A theme adds its own characters (its legend: props, solid pillars, hazard spots), docs/DUNGEON-THEMES.md section 3.
+   Agent map: exports DG_THEMES (by id; `bare` is the dev test set), defineDungeonTheme / DG_BAD (the registry: one file per theme in shared/dungeons/themes/), dgTileProblems,
+   dgCarve, dgLayout({mission,seed,theme|set}), dgBake (cells, marks, props, boss circle), dgSolid / dgFree / dgSlide / dgLos / dgFlow / dgStep, DG_HALL_PILLARS / DG_HALL_MOUTHS
+   (the hall's geometry the boss kits rely on), DG_MISSIONS, dgOffer, dgUnlocked, DG_ENTRANCES, dgParty. The bosses are in shared/dungeons/bosses.js. Test: tools/dungeons-smoke.js. */
 // DG_BOSS_R: the radius of a boss arena (ARENAS: all six are 20 m), which is also the radius of a boss hall, so the boss kits (they read A.x, A.z, A.r) work in a dungeon as they do in their arenas
 const DG_CELL=2, DG_TC=24, DG_TILE=DG_CELL*DG_TC, DG_BOSS_R=20;
 const DG_N=1, DG_E=2, DG_S=4, DG_W=8, DG_STEP=[[DG_N,0,-1],[DG_E,1,0],[DG_S,0,1],[DG_W,-1,0]];   // door bit, grid step (z grows south)
@@ -27,20 +30,22 @@ function dgRect(doors,room,marks,pillars){
 const DG_SHAPES={dead:DG_S, straight:DG_N|DG_S, bend:DG_N|DG_E, tee:DG_N|DG_E|DG_S, cross:15};
 const dgKind=(id,tags,w,room,marks,pillars,shapes)=>shapes.map(sh=>({id:id+'-'+sh,doors:DG_SHAPES[sh],tags,w,art:dgRect(DG_SHAPES[sh],room,marks,pillars)}));
 const DG_ALL_SHAPES=Object.keys(DG_SHAPES);
-/* the test set: bare rooms only to prove the machinery, not a dungeon. The hall is a round room of a boss arena's radius (DG_BOSS_R / DG_CELL = 10 cells) with four pillars
-   for cover and the boss's spot in the middle. A real theme lists hand-authored tiles the same way ({id,doors,tags,w,art}), see the design doc. */
+/* THE ROUND HALL's geometry, in metres from its middle, the same in every theme (the test checks every hall tile against it) because the dungeon bosses' kits use it:
+   four pillars (4 m squares centred at DG_HALL_PILLARS: cover from Amanita's pulse and Haugbui's breath, what stops Gawataro's charge) and four monster mouths
+   (DG_HALL_MOUTHS: where adds rise). Placed symmetrically, so a quarter turn of a hall tile leaves them where they were. */
+const DG_HALL_PILLARS=[[-10,-10],[10,-10],[-10,10],[10,10]], DG_HALL_PILLAR_HALF=2, DG_HALL_MOUTHS=[[-13,-13],[13,-13],[-13,13],[13,13]];
+/* the test set: bare rooms only to prove the machinery, not a dungeon. The hall is a round room of a boss arena's radius (DG_BOSS_R / DG_CELL = 10 cells) with the four pillars
+   for cover and the boss's spot in the middle. A real theme lists hand-authored tiles through defineDungeonTheme (below and shared/dungeons/themes/). */
 const DG_SET_BARE=[
   ...dgKind('pass',['pass'],3,[4,4],[],null,DG_ALL_SHAPES),
   ...dgKind('room',['room'],3,[12,12],[['S',-3,-3],['S',2,2]],null,DG_ALL_SHAPES),
-  ...dgKind('hall',['hall'],1,DG_BOSS_R/DG_CELL,[['B',0,0],['S',-7,-7],['S',6,-7],['S',-7,6],['S',6,6]],[[-5,-5],[4,-5],[-5,4],[4,4]],DG_ALL_SHAPES),
+  ...dgKind('hall',['hall'],1,DG_BOSS_R/DG_CELL,[['B',0,0],...DG_HALL_MOUTHS.map(([x,z])=>['S',x/DG_CELL-0.5,z/DG_CELL-0.5])],DG_HALL_PILLARS.map(([x,z])=>[x/DG_CELL-1,z/DG_CELL-1]),DG_ALL_SHAPES),
   ...dgKind('start',['start'],1,[8,8],[['P',0,0]],null,['dead']),
   ...dgKind('site',['site'],1,[10,10],[['O',0,0]],null,DG_ALL_SHAPES),
   ...dgKind('cache',['cache'],1,[8,8],[['C',0,0]],null,['dead'])];
-/* THE THREE DUNGEONS, one for each built land (docs/DUNGEON-THEMES.md has the designs: feel, tile kit, hazard, objective skins, bosses). Each is level DG_LV at its land's base
-   difficulty (the owner's call for now: a theme may set its own lv later; see DG_LANDS for the difficulty). A theme is data: land, `at` (the zone of that land it lies under: a real
-   ZONES name, a test checks), `mobs`: walkers (monster kinds that fit the 4 m doors, radius <= 0.9 m: they make the waves and packs and walk through the dungeon) and guardians (the
-   bigger ones: they stay in their room, hall or site), `boss` (its own, DG_BOSSES), `music` (an existing track until dungeon tracks exist), `pal` (wall, floor, fog, light colours for
-   the client builder), `tiles` (the bare test set until the tile art is authored: `art:false`). Which two mission types a dungeon offers changes every hour (dgOffer). Rewards are not designed yet. */
+/* THE THREE DUNGEONS, one for each built land (docs/DUNGEON-THEMES.md has the designs: feel, tile kit, hazard, objective skins, bosses), one file each in shared/dungeons/themes/,
+   entered through defineDungeonTheme below. Each is level DG_LV at its land's base difficulty (see DG_LANDS for the difficulty). Which two mission types a dungeon offers changes
+   every hour (dgOffer); what a clear pays is shared/dungeon-rewards.js. */
 const DG_LV=30, DG_ENTRY_GAP=5;   // a dungeon is level 30 at its land's base difficulty; you may enter from its level - 5
 /* The difficulty a dungeon is played at is its land's own zone tier setting (gear.zt[land].on: the +N chosen under the map in a village, shared/tiers.js). Each land has a
    `base`, the lowest +N its dungeons open at, where they are level DG_LV; every tier above adds ZTIER_STEP (10) levels, as everywhere. Wildwood's base is +1 (its dungeon
@@ -49,60 +54,103 @@ const DG_LANDS={
   home:{name:'Wildwood',    base:1,unlock:{},          hint:'Wildwood opens its dungeon at +1 difficulty: once Carapax, the Tide King, has fallen, set Wildwood to +1 on the map in a village.'},
   vale:{name:'Sakura Vale', base:0,unlock:{east:2},    hint:'Walk to Hanami, on the far side of the tunnel, first.'},
   hoar:{name:'Hoarfrost Reach',base:0,unlock:{north:2},hint:'Walk into Rimehold, through Frostgate Pass, first.'}};
-const dgTheme=(id,name,land,at,walkers,guardians,boss,music,pal)=>({id,name,land,at,lv:DG_LV,mobs:{walkers,guardians},boss,music,pal:{wall:pal[0],floor:pal[1],fog:pal[2],light:pal[3]},tiles:DG_SET_BARE,art:false});
-const DG_THEMES={
-  bare:{id:'bare',name:'Bare test set',tiles:DG_SET_BARE,dev:true},
-  hollowroots:    dgTheme('hollowroots','The Hollow Roots','home','Ancient Grove',['treant','deathcap','shroom','bogslime','direboar'],['ancient','rotwood'],'amanita','wild3',[0x3a2a1c,0x2a2218,0x120d08,0xe0a040]),
-  jadesprings:    dgTheme('jadesprings','Jade Spring Grottoes','vale','Jade Falls',['kappa','jadeslime','blueoni','tengu','jorogumo','yamaboar'],['bamboo'],'gawataro','vale2',[0x2a5a4a,0x1e3a34,0x0a1c18,0x90f0c8]),
-  bonefrostbarrow:dgTheme('bonefrostbarrow','Bonefrost Barrow','hoar','Bonefrost Barrow',['draugr','revenant','barrowwight','icewraith','reaver'],[],'haugbui','hoar2',[0x4a4a52,0x30303a,0x08080c,0x7090c0])};
-
-/* THE THREE NEW BOSSES, one for each dungeon (designs: docs/DUNGEON-THEMES.md section 4). Built on the pieces the six bosses use (shared/monster-defs.js: bossDef, a model family with its pal flags;
-   server/boss-fx.js: telegraphs, zones, walls, pfx, summons, props), so a def here is what bossDef() would be given, and `moves` name the primitives each move is made of:
-     tele:<kind> a telegraph (circle root slam icefall geyser gust | cone cleave breath | line | donut | mark prison)   zone:<kind> ember whirl whiteout blizzard   wall   orb
-     pfx:root / pfx:slow / pfx:push   adds   props   move (a glide)   mode:hidden / shielded / airborne   stun   cast
-     new:<name>  something the primitives cannot do yet (listed in the boss's `needs`: a small piece of server or client work each, M3 of docs/DUNGEONS.md)
-   `signature`: the one mechanic that is only this boss's. Not registered in BOSS_DEFS: a world boss needs an arena, and these live in a dungeon's round hall (r = DG_BOSS_R).
-   hits 70 and level DG_LV like every boss (defAt: 23,400 health and a 718 hit at level 30); `aux` is what the boss bar's number means. */
-const DG_BOSSES={
-  amanita:{id:'amanita',name:'Amanita, the Sporemother',short:'Amanita',dungeon:'hollowroots',kit:'spore',lv:DG_LV,el:'earth',model:'shroom',scale:5.5,glow:0x1a3010,atk:2.6,speed:1.7,music:'boss15',
-    pal:{cap:0x7a2a48,spot:0xd8f08a,stem:0xcfc3a8,gill:0x6a4a58,feet:0x8a7a68},
-    add:{id:'sporeling',name:'Sporeling',scale:0.7,pal:{cap:0x7a2a48,spot:0xd8f08a,stem:0xcfc3a8,gill:0x6a4a58,feet:0x8a7a68}},
-    prop:{id:'puffball',name:'Puffball',scale:0.9,pal:{cap:0xd8cfae,spot:0xf4efe4,stem:0xe8dcc0,gill:0xcdbf9c,feet:0xd8c8a4}},
-    bar:{stun:'Her spores are spent: strike now!'}, aux:'puffballs about to burst',
-    moves:[
-      {id:'capslam',   name:'Cap Slam',    phase:1,does:['tele:slam','cast'],x:1.4},
-      {id:'sporecloud',name:'Spore Cloud', phase:1,does:['tele:circle','new:zone-spore'],x:0.18},
-      {id:'puffballs', name:'Puffballs',   phase:1,does:['props','tele:geyser','new:tele-cancel'],x:1.7,signature:true},
-      {id:'sporelings',name:'Sporelings',  phase:2,does:['adds']},
-      {id:'sporepulse',name:'Spore Pulse', phase:2,does:['tele:circle','pfx:slow','new:tele-safe'],x:1.2},
-      {id:'sporefall', name:'Sporefall',   phase:3,does:['tele:icefall','pfx:slow'],x:0.8}],
-    needs:['new:zone-spore','new:tele-cancel','new:tele-safe']},
-  gawataro:{id:'gawataro',name:'Gawataro, the Jade Elder',short:'Gawataro',dungeon:'jadesprings',kit:'dish',lv:DG_LV,el:'water',model:'goblin',scale:2.6,glow:0x06201a,atk:2.3,speed:2.4,music:'boss20',
-    pal:{form:'kappa',skin:0x4f9a86,eyes:0xf2e04a,top:'tshirt',topColor:0x2f6a4a,bottom:'shorts',bottomColor:0x24443a,hat:'none',hatColor:0x2b2420,club:0x6a5a3a,shell:0x3a6a4a,weapon:'kanabo'},
-    add:{id:'kappawhelp',name:'Kappa Whelp',scale:0.6,pal:{form:'kappa',skin:0x5aa08a,eyes:0xf2e04a,top:'tshirt',topColor:0x3f6a4a,bottom:'shorts',bottomColor:0x2f4a3a,hat:'none',hatColor:0x2b2420,club:0x6a5a3a,shell:0x4a6a3a}},
-    bar:{1:'Charging!',stun:'Dish spilled: strike now!'}, aux:'water left in his dish (%)',
-    moves:[
-      {id:'sweep',  name:'Kanabo Sweep',       phase:1,does:['tele:cone','pfx:push','cast'],x:1.2},
-      {id:'vents',  name:'Vent Dance',         phase:1,does:['tele:geyser'],x:1.0},
-      {id:'whirls', name:'Whirlpool Shepherd', phase:1,does:['zone:whirl']},
-      {id:'dish',   name:'The Dish',           phase:1,does:['stun','new:hit-hook'],signature:true},
-      {id:'charge', name:'Sumo Charge',        phase:2,does:['tele:line','move','pfx:push','stun','new:stop-at-wall'],x:2.0},
-      {id:'whelps', name:'Kappa Whelps',       phase:2,does:['adds']},
-      {id:'surge',  name:'Spring Surge',       phase:3,does:['wall'],x:1.4}],
-    needs:['new:hit-hook','new:stop-at-wall']},
-  haugbui:{id:'haugbui',name:'Haugbui, the Barrow Lord',short:'Haugbui',dungeon:'bonefrostbarrow',kit:'barrow',lv:DG_LV,el:'dark',model:'wisp',scale:3.4,glow:0x0c1420,atk:2.0,speed:2.6,music:'boss26',
-    pal:{body:0x7a8ca0,core:0xe8f4ff,eye:0x0a0e14,hair:0x141a24,ghost:1},
-    add:{id:'gravewisp',name:'Grave Wisp',scale:0.6,pal:{body:0x8a9cb0,core:0xe8f4ff,eye:0x0a0e14,hair:0x141a24,ghost:1}},
-    prop:{id:'barrowlamp',name:'Barrow Lamp',scale:1,model:'totem',pal:{crystal:0x9fd8ff,band:0xcfe8f8}},
-    bar:{2:'Blackout: relight the lamps!',stun:'Unmoored: strike now!'}, aux:'lamps lit',
-    moves:[
-      {id:'chain',     name:'Grasping Chain',  phase:1,does:['tele:root','pfx:root'],x:0.9},
-      {id:'coldbreath',name:'Cold Breath',     phase:1,does:['tele:breath','pfx:slow'],x:1.8},
-      {id:'thralls',   name:'Raise Thralls',   phase:1,does:['adds']},
-      {id:'snuff',     name:'Snuff the Lamps', phase:2,does:['props','tele:circle','new:channel'],x:1.0,signature:true},
-      {id:'wail',      name:'Barrow Wail',     phase:2,does:['tele:circle','new:tele-safe'],x:1.6},
-      {id:'blackout',  name:'Blackout',        phase:3,does:['mode:hidden','adds','new:gloom']}],
-    needs:['new:channel','new:tele-safe','new:gloom']}};
+/* THE THEME REGISTRY. A dungeon theme is one file, shared/dungeons/themes/<id>.js, holding a single defineDungeonTheme({...}) call and no top-level names, plus its line in
+   src/manifest.json (after shared/dungeons/bosses.js). defineDungeonTheme checks the theme; a bad one is LEFT OUT (the game still boots), warned about (console.warn) and listed in
+   DG_BAD as {id, field, why}: tools/dungeons-smoke.js fails naming them. Fields:
+     id ('hollowroots': a lowercase word), name, land (a DG_LANDS key), at (the ZONES name of the zone it lies under), lv (default DG_LV),
+     mobs:{walkers, guardians} (MON_DEFS ids; walkers fit the 4 m doors: radius <= 0.9 m, at least 4 kinds; guardians are the big ones that stay in their room),
+     boss (a DG_BOSS_DEFS id), music (a music theme), pal:{wall, floor, fog, light} (colours for the client builder),
+     legend:{char:{solid, prop, hazard?, light?, post?}}: the theme's own characters (one character each, not # . S O C P B). solid: blocks like '#' (collision, line of sight,
+       the flow field); prop: what the client draws there (dgBake lists every legend cell in B.props); hazard: a run-time hazard spot (set off by server/dungeons/hazards.js: 'spikes',
+       'steam', 'prison'...); light: a colour if it glows; post: 'guardian' (where a guardian stands).
+     tiles: [{id, tags, w, doors, art}] a tile with its doors drawn, or [{id, tags, w, shapes, art}] a room drawn with its rim closed and the door shapes it comes in (DG_SHAPES keys):
+       each shape becomes a tile <id>-<shape> with dgCarve opening its doors. Tags: start hall site cache room pass (the roles of DG_MISSIONS). Every tile must pass dgTileProblems,
+       and the set must fit every cell a layout can make (dgCoverProblems): start and cache in every dead end, hall, site, room and pass in all 15 door masks. */
+const DG_MARKS='SOCPB', DG_TAGS=['start','hall','site','cache','room','pass'];
+const DG_THEMES=Object.assign(Object.create(null),{bare:{id:'bare',name:'Bare test set',tiles:DG_SET_BARE,legend:{},dev:true}});   // (no prototype: a lookup by any id is safe)
+const DG_BAD=[];
+// open a tile's doors: art drawn with its rim closed gets, for each door of `doors`, the middle two cells of that side dug out and on inward through solid cells until the floor is reached
+function dgCarve(art,doors,legend){
+  const lg=legend||{}, g=art.map(r=>r.split('')), solid=ch=>ch==='#'||!!(lg[ch]&&lg[ch].solid), M=DG_TC/2, E=DG_TC-1;
+  for(const [bit] of DG_STEP){
+    if(!(doors&bit)) continue;
+    for(let i=0;i<DG_TC;i++){
+      const pair=bit===DG_N?[[M-1,i],[M,i]]:bit===DG_S?[[M-1,E-i],[M,E-i]]:bit===DG_W?[[i,M-1],[i,M]]:[[E-i,M-1],[E-i,M]];
+      if(i>0&&pair.every(([x,z])=>!solid(g[z][x]))) break;
+      for(const [x,z] of pair) if(solid(g[z][x])) g[z][x]='.';
+    }
+  }
+  return g.map(r=>r.join(''));
+}
+// what is wrong with one tile ([] when nothing): its size and characters, tags and weight, its doors against its mask (the middle two cells of a side, every other rim cell solid),
+// one piece of floor, the markers its role needs, and for a hall the boss's circle: open floor out to DG_BOSS_R but for the four pillars at DG_HALL_PILLARS, B in the middle, S at DG_HALL_MOUTHS
+function dgTileProblems(t,legend){
+  const lg=legend||{}, a=t&&t.art, out=[], solid=ch=>ch==='#'||!!(lg[ch]&&lg[ch].solid), C=DG_TC/2;
+  if(!Array.isArray(a)||a.length!==DG_TC||a.some(r=>typeof r!=='string'||r.length!==DG_TC)) return ['the art is not '+DG_TC+' strings of '+DG_TC+' characters'];
+  for(const r of a) for(const ch of r) if(ch!=='#'&&ch!=='.'&&!DG_MARKS.includes(ch)&&!lg[ch]) return ['the character "'+ch+'" is in neither the markers nor the legend'];
+  if(!Number.isInteger(t.doors)||t.doors<1||t.doors>15) out.push('doors '+t.doors+' (a mask of 1-15)');
+  if(!Array.isArray(t.tags)||!t.tags.length||t.tags.some(g=>!DG_TAGS.includes(g))) out.push('tags '+JSON.stringify(t.tags)+' (of '+DG_TAGS.join(' ')+')');
+  if(!(t.w>0)) out.push('weight '+t.w);
+  const mid=i=>i===C-1||i===C;
+  for(const [bit,side] of [[DG_N,'north'],[DG_E,'east'],[DG_S,'south'],[DG_W,'west']]) for(let i=0;i<DG_TC;i++){
+    const ch=bit===DG_N?a[0][i]:bit===DG_S?a[DG_TC-1][i]:bit===DG_W?a[i][0]:a[i][DG_TC-1];
+    if(!solid(ch)!==(!!(t.doors&bit)&&mid(i))){ out.push('the '+side+' rim does not match the doors (a door is the middle two cells, every other rim cell solid)'); break; }
+  }
+  let total=0, s=null; for(let z=0;z<DG_TC;z++) for(let x=0;x<DG_TC;x++) if(!solid(a[z][x])){ total++; s=s||[x,z]; }
+  if(!s) return out.concat(['no floor']);
+  const seen=new Set([s[1]*DG_TC+s[0]]), q=[s];
+  for(let i=0;i<q.length;i++){ const [x,z]=q[i]; for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+dx, nz=z+dz, k=nz*DG_TC+nx; if(nx>=0&&nz>=0&&nx<DG_TC&&nz<DG_TC&&!solid(a[nz][nx])&&!seen.has(k)){ seen.add(k); q.push([nx,nz]); } } }
+  if(seen.size!==total) out.push('the floor is in more than one piece');
+  const count=ch=>a.join('').split(ch).length-1, ndoors=[1,2,4,8].filter(b=>t.doors&b).length, tags=t.tags||[];
+  if(tags.includes('start')&&(count('P')!==1||ndoors!==1)) out.push('a start tile has one portal P and one door');
+  if(tags.includes('cache')&&(count('C')<1||ndoors!==1)) out.push('a cache tile has a cache C and one door');
+  if(tags.includes('site')&&count('O')!==1) out.push('a site tile has one objective O');
+  if(tags.includes('hall')){
+    const R=DG_BOSS_R/DG_CELL, inPillar=(x,z)=>DG_HALL_PILLARS.some(([px,pz])=>Math.abs((x+0.5-C)*DG_CELL-px)<DG_HALL_PILLAR_HALF&&Math.abs((z+0.5-C)*DG_CELL-pz)<DG_HALL_PILLAR_HALF);
+    let bad=0, b=0, bOk=true;
+    for(let z=0;z<DG_TC;z++) for(let x=0;x<DG_TC;x++){ const d=Math.hypot(x+0.5-C,z+0.5-C), ch=a[z][x];
+      if(d<=R&&solid(ch)!==inPillar(x,z)) bad++;
+      if(ch==='B'){ b++; bOk=bOk&&d<=1; } }
+    if(bad) out.push('the hall is not the boss circle: '+bad+' cells within '+DG_BOSS_R+' m differ from "floor but the four pillars at DG_HALL_PILLARS"');
+    if(b!==1||!bOk) out.push('a hall has one boss spot B in its middle');
+    if(!DG_HALL_MOUTHS.every(([mx,mz])=>a[Math.floor(C+mz/DG_CELL)][Math.floor(C+mx/DG_CELL)]==='S')) out.push('a hall has a monster mouth S at each of DG_HALL_MOUTHS');
+  }
+  return out;
+}
+// can every cell a layout makes find a tile? (dgTry: the entrance and caches are dead ends; the hall, sites and the fillers, room and pass, may have any doors)
+function dgCoverProblems(tiles){
+  const V=dgVariants(tiles), out=[], has=(tag,m)=>V.some(v=>v.doors===m&&v.tags.includes(tag));
+  for(const tag of DG_TAGS){ const masks=tag==='start'||tag==='cache'?[1,2,4,8]:Array.from({length:15},(_,i)=>i+1), miss=masks.filter(m=>!has(tag,m)); if(miss.length) out.push(tag+' has no tile for door masks '+miss.join(',')); }
+  return out;
+}
+function defineDungeonTheme(T){
+  const id=T&&typeof T.id==='string'?T.id:'?', bad=(field,why)=>{ DG_BAD.push({id,field,why}); if(typeof console!=='undefined') console.warn('dungeon theme '+id+' left out: '+field+': '+why); return null; };
+  if(!T||!/^[a-z][a-z0-9]*$/.test(id)) return bad('id','missing or not a lowercase word');
+  if(DG_THEMES[id]) return bad('id','defined twice');
+  if(typeof T.name!=='string'||!T.name) return bad('name','missing');
+  if(!DG_LANDS[T.land]) return bad('land','"'+T.land+'" is not one of '+Object.keys(DG_LANDS).join(' '));
+  if(!ZONES.some(z=>z.name===T.at)) return bad('at','"'+T.at+'" is not the name of a zone');
+  const lv=T.lv===undefined?DG_LV:T.lv; if(!Number.isInteger(lv)||lv<1||lv>99) return bad('lv',String(T.lv));
+  const mobs=T.mobs||{}, defOf=mid=>ALL_MON_DEFS.find(d=>d.id===mid);
+  if(!Array.isArray(mobs.walkers)||mobs.walkers.length<4) return bad('mobs','at least 4 kinds of walker');
+  for(const mid of [...mobs.walkers,...(mobs.guardians||[])]) if(!defOf(mid)) return bad('mobs','no monster "'+mid+'"');
+  for(const mid of mobs.walkers) if(defOf(mid).rad>0.9) return bad('mobs','walker "'+mid+'" is too big for the 4 m doors (radius '+defOf(mid).rad.toFixed(2)+' m > 0.9)');
+  if(!DG_BOSS_DEFS[T.boss]) return bad('boss','no dungeon boss "'+T.boss+'" in DG_BOSS_DEFS');
+  if(typeof T.music!=='string'||!T.music) return bad('music','missing');
+  if(!T.pal||!['wall','floor','fog','light'].every(k=>Number.isInteger(T.pal[k]))) return bad('pal','wall, floor, fog and light colours');
+  const lg=T.legend||{};
+  for(const ch in lg){ const e=lg[ch]; if(ch.length!==1||ch==='#'||ch==='.'||DG_MARKS.includes(ch)) return bad('legend','"'+ch+'" (one character, not # . or a marker)'); if(!e||typeof e.solid!=='boolean'||typeof e.prop!=='string'||!e.prop) return bad('legend','"'+ch+'" needs solid (true / false) and prop (a name)'); }
+  if(!Array.isArray(T.tiles)||!T.tiles.length) return bad('tiles','none');
+  const tiles=[];
+  for(const t of T.tiles){
+    if(!t||typeof t.id!=='string') return bad('tiles','a tile without an id');
+    const made=t.shapes?t.shapes.map(sh=>DG_SHAPES[sh]===undefined?null:{id:t.id+'-'+sh,doors:DG_SHAPES[sh],tags:t.tags,w:t.w,art:Array.isArray(t.art)?dgCarve(t.art,DG_SHAPES[sh],lg):t.art}):[t];
+    for(const v of made){ if(!v) return bad('tiles',t.id+': unknown shape in '+JSON.stringify(t.shapes)); const p=dgTileProblems(v,lg); if(p.length) return bad('tiles',v.id+': '+p.join('; ')); tiles.push(v); }
+  }
+  const cover=dgCoverProblems(tiles); if(cover.length) return bad('tiles',cover.join('; '));
+  const th={id,name:T.name,land:T.land,at:T.at,lv,mobs:{walkers:mobs.walkers.slice(),guardians:(mobs.guardians||[]).slice()},boss:T.boss,music:T.music,pal:Object.assign({},T.pal),legend:lg,tiles,art:true};
+  DG_THEMES[id]=th; return th;
+}
 
 /* THE THREE ENTRANCES, the only way into a dungeon (docs/DUNGEON-THEMES.md section 6): a door in the world at a place of the dungeon's zone. Found by searching the real terrain for a door
    dug into a bank (the ground rises at least 2 m in the 10 m behind it) with a flat apron in front, clear of roads, villages, arenas, resource nodes, lore spots, lakes, monster camps
@@ -178,9 +226,11 @@ const DG_MISSIONS={
    neighbours, the mission's roles take the cells that suit them, and every other cell gets a plain tile whose doors match. A try that cannot fit a role
    (no tile of that tag has the doors the cell needs) is thrown away and the next one starts: 80 tries, then null (the caller picks another seed). Same
    seed, same dungeon, on the server and on every client. */
+// o: {mission, seed, theme (a DG_THEMES id or entry: its tiles and legend) or set (a tile list, the bare test set by default), over (mission fields to override)}
 function dgLayout(o){
-  const M=Object.assign({},DG_MISSIONS[o.mission]||{},o.over||{}), V=dgVariantsOf(o.set||DG_SET_BARE), rng=mulberry32((o.seed|0)^0x5bd1e995);
-  for(let a=0;a<80;a++){ const L=dgTry(M,V,rng); if(L){ L.seed=o.seed|0; L.mission=o.mission; L.tries=a+1; return L; } }
+  const T=typeof o.theme==='string'?DG_THEMES[o.theme]:o.theme||null, set=o.set||(T&&T.tiles)||DG_SET_BARE;
+  const M=Object.assign({},DG_MISSIONS[o.mission]||{},o.over||{}), V=dgVariantsOf(set), rng=mulberry32((o.seed|0)^0x5bd1e995);
+  for(let a=0;a<80;a++){ const L=dgTry(M,V,rng); if(L){ L.seed=o.seed|0; L.mission=o.mission; L.tries=a+1; L.theme=T?T.id:null; L.legend=(T&&T.legend)||o.legend||{}; return L; } }
   return null;
 }
 function dgTry(M,V,rng){
@@ -226,16 +276,20 @@ function dgTry(M,V,rng){
   });
   return {gw,gh,start:[sx,sz],cells};
 }
-// the baked dungeon: one floor cell grid over the whole layout (metres from its north-west corner) and every marker's place. Used by both sides.
-function dgBake(L){
-  const W=L.gw*DG_TC, H=L.gh*DG_TC, cells=new Uint8Array(W*H), marks={S:[],O:[],C:[],P:[],B:[]};
+/* the baked dungeon: one floor cell grid over the whole layout (metres from its north-west corner), every marker's place, and B.props: every cell of a legend character
+   as {k: its prop, x, z} (the cell's middle; hz: its hazard, if the legend gives one) for the client to draw and the run to read; a solid legend cell is wall in B.cells
+   like '#' (legend: the layout's, from its theme, or the one given). Used by both sides. */
+function dgBake(L,legend){
+  const W=L.gw*DG_TC, H=L.gh*DG_TC, cells=new Uint8Array(W*H), marks={S:[],O:[],C:[],P:[],B:[]}, props=[], lg=legend||L.legend||{};
   for(const t of L.cells) for(let z=0;z<DG_TC;z++) for(let x=0;x<DG_TC;x++){
     const ch=t.art[z][x]; if(ch==='#') continue;
-    const gx=t.x*DG_TC+x, gz=t.z*DG_TC+z; cells[gz*W+gx]=1;
-    if(marks[ch]) marks[ch].push({x:(gx+0.5)*DG_CELL,z:(gz+0.5)*DG_CELL,tile:[t.x,t.z],role:t.role});
+    const gx=t.x*DG_TC+x, gz=t.z*DG_TC+z, e=lg[ch], px=(gx+0.5)*DG_CELL, pz=(gz+0.5)*DG_CELL;
+    if(e){ const pr={k:e.prop,x:px,z:pz}; if(e.hazard) pr.hz=e.hazard; props.push(pr); if(e.solid) continue; }
+    cells[gz*W+gx]=1;
+    if(marks[ch]) marks[ch].push({x:px,z:pz,tile:[t.x,t.z],role:t.role});
   }
   const bm=marks.B.find(m=>m.role==='boss'), boss=bm&&{x:(bm.tile[0]*DG_TC+DG_TC/2)*DG_CELL,z:(bm.tile[1]*DG_TC+DG_TC/2)*DG_CELL,r:DG_BOSS_R};   // boss: the hall's circle, shaped like a boss arena {x,z,r}
-  return {w:W,h:H,cells,marks,size:[W*DG_CELL,H*DG_CELL],start:marks.P[0],boss,layout:L};
+  return {w:W,h:H,cells,marks,props,legend:lg,size:[W*DG_CELL,H*DG_CELL],start:marks.P[0],boss,layout:L};
 }
 // collision: a wall (or anything outside) is solid; a walker of radius r is free where its four corners are; sliding tries the move whole, then along each axis
 const dgSolid=(B,x,z)=>{ const ix=Math.floor(x/DG_CELL), iz=Math.floor(z/DG_CELL); return ix<0||iz<0||ix>=B.w||iz>=B.h||!B.cells[iz*B.w+ix]; };

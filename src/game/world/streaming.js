@@ -5,6 +5,7 @@ for(let i=0;i<NCH;i++) Stream.pending.push(i);
 const NEAR_R=55, FAR_R=320;
 function streamPump(budgetMs){
   if(Stream.failed) return;
+  if(dgIn()) return;   // dungeons: no chunks grow while you are in a run (dungeon/run.js)
   const t0=performance.now();
   try{
     while(performance.now()-t0<budgetMs){

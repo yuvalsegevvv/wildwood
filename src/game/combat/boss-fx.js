@@ -1,9 +1,10 @@
-//@ Boss zones and waves (fire pools, whirlpools, the whiteout, the blizzard, tidal walls) and what a boss does to you: frozen, slowed, shoved, pulled into a whirlpool
+//@ Boss zones and waves (fire pools, whirlpools, the whiteout, the blizzard, Amanita's spore clouds, tidal walls) and what a boss does to you: frozen, slowed, shoved, pulled into a whirlpool
 /* The server (src/server/boss-fx.js) sends 'zone' / 'zend' (a ground zone: ember, whirl, whiteout, blizzard), 'wall' / 'wend' (a wave with a gap in it) and
    'pfx' (an effect on you: root, slow, push). The hurting is done there; here the zones and waves are drawn, and the effects are applied to your own
    movement (pfxStep, called by updatePlayer): a whirlpool pulls you toward its middle while you stand in it. */
 const BZONES=new Map(), BWALLS=new Map(), PFX={root:0,slow:0,kx:0,kz:0,ice:null};
-const ZONE_COL={ember:0xff7a2a,whirl:0x3ac8e8,whiteout:0xeaf6ff,blizzard:0xdff0ff};
+const ZONE_COL={ember:0xff7a2a,whirl:0x3ac8e8,whiteout:0xeaf6ff,blizzard:0xdff0ff,spore:0x9ad860};
+const sporeMoteMat=fxMat(0xd0f090,0.7);   // the spores drifting up out of a spore cloud (the server slows whoever stands in one)
 const whiteGeo=new THREE.RingGeometry(1,4,64).rotateX(-Math.PI/2);   // the snow outside a whiteout's safe circle: scale = the circle's radius
 const armGeo=new THREE.RingGeometry(0.5,0.6,24,1,0,2.4).rotateX(-Math.PI/2), waveGeo=new THREE.BoxGeometry(1,1,1);
 function onBossZone(id,kind,x,z,r,dur,a,b){
@@ -28,6 +29,7 @@ function updateBossZones(dt){
     const pulse=0.5+0.5*Math.sin(t*5);
     if(Z.kind==='ember'){ Z.fill.material.opacity=0.2+0.12*pulse; if(Math.random()<dt*10){ const e=new THREE.Mesh(emberGeo,emberMat); e.position.set(Z.x+AR(-Z.r,Z.r)*0.8,Z.y+0.1,Z.z+AR(-Z.r,Z.r)*0.8); scene.add(e); CB.fx.push({mesh:e,life:0.6,max:0.6,shrink:true}); } }
     else if(Z.kind==='whirl'){ Z.arms.rotation.y+=dt*2.4; Z.fill.material.opacity=0.2+0.1*pulse; }
+    else if(Z.kind==='spore'){ Z.fill.material.opacity=0.22+0.1*pulse; if(Math.random()<dt*9){ const a=AR(0,TAU), r=Math.sqrt(Math.random())*Z.r, e=new THREE.Mesh(emberGeo,sporeMoteMat); e.position.set(Z.x+Math.sin(a)*r,Z.y+AR(0.2,1.6),Z.z+Math.cos(a)*r); scene.add(e); CB.fx.push({mesh:e,life:1.2,max:1.2,shrink:true}); } }
     else if(Z.kind==='whiteout'){ const r=whiteRNow(Z); Z.fill.scale.setScalar(r); Z.edge.scale.setScalar(r); Z.edge.material.opacity=0.6+0.35*pulse; }
     else if(Z.kind==='blizzard'){ const wind=Z.t<Z.a; Z.fill.material.opacity=wind?0.06+0.05*pulse:0.3+0.06*pulse; Z.edge.material.opacity=wind?0.3+0.3*pulse:0.9; }
   }

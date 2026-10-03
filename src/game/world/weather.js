@@ -42,6 +42,7 @@ function weatherTint(s){
 function updateWeather(dt){
   if(WX.kind) WX.t+=dt;
   WX.inten+=(weatherTarget()-WX.inten)*Math.min(1,dt*0.8);
+  if(dgIn()) WX.inten=0;   // dungeons: no rain, snow or their sound under the ground (it eases back after a run)
   WX.flash=Math.max(0,WX.flash-dt*3.2);
   // rain or snow: by where the camera is (over the vale's north crest and down onto the plateau it turns to snow over ~50 m)
   { const cx=camera.position.x, cz=camera.position.z, tgt=cx>HALF?smoothstep(HZ0+25,HZ0-25,cz):0; WX.snow+=(tgt-WX.snow)*Math.min(1,dt*2); if(Math.abs(tgt-WX.snow)<0.004) WX.snow=tgt; }

@@ -20,6 +20,7 @@ function addMonView(r){ // [id, defId, campX, campZ, scale, x, z, dead, temp]
   const m={id:r[0],def:d,model:d.model,T:d,camp:{x:r[2],z:r[3]},mat,g,parts:null,s:r[4],gs:r[4]*d.scale,maxHp:d.hp,hp:d.hp,
     x:r[5],z:r[6],y:getH(r[5],r[6]),tx:r[5],tz:r[6],face:0,tface:0,vx:0,vz:0,ph:AR(0,TAU),flash:0,slowT:0,
     dead:!!r[7],deadT:r[7]?9:0,aggro:false,immune:false,act:null,lunge:0,temp:!!r[8],spawnT:r[8]?0.6:0,boss:!!d.boss};
+  if(r.length>9){ m.dgK=dgMonK(d,r[9]); m.maxHp=m.hp=Math.max(1,+r[10]||d.hp); }   // dungeons: a run monster's level and health in the def's units (roster fields 9, 10; dungeon/run.js)
   g.visible=false; MONS.push(m); MON_BY_ID.set(m.id,m);
   if(m.boss) BOSS.list.push(m);
   return m;

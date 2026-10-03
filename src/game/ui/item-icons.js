@@ -10,7 +10,7 @@ const ICON_COL={
 const OUT='stroke="#15120e" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round"';
 function icoShade(c,k){ const n=parseInt(c.slice(1),16), f=v=>Math.max(0,Math.min(255,Math.round(v*k))); return '#'+[f(n>>16),f(n>>8&255),f(n&255)].map(v=>v.toString(16).padStart(2,'0')).join(''); }
 function itemIcon(it){
-  const t=it.tier; let g='';
+  const t=dgVisTier(it); let g='';   // dungeons: a level-30 piece borrows the top tier's art (and gets the sparkle below)
   if(it.slot==='sword'){
     const b=ICON_COL.blade[t], gd=ICON_COL.guard[t];
     g=`<g transform="translate(16 16) rotate(45) scale(1.14) translate(-16 -16)"><path d="M14.4 21V6.5L16 3l1.6 3.5V21z" fill="${b}" ${OUT}/><path d="M16 4.5V20.5" stroke="${icoShade(b,0.72)}" stroke-width="0.8"/>
@@ -52,6 +52,8 @@ function itemIcon(it){
     else g+=`<path d="M18 18.5Q13 17 8 18.5" fill="none" stroke="${icoShade(c,1.3)}" stroke-width="1"/>${t>=3?'<circle cx="13" cy="12" r="1.2" fill="#e0384a" stroke="#15120e" stroke-width=".6"/>':''}`;
   }
   else if(it.kind==='tool') g=toolIconArt(it);
+  else if(it.kind==='ring') g=ringIconArt(it);   // dungeons: the ring
+  if(it.dg&&it.kind!=='ring') g+=DG_SPARK;   // dungeons: a jade sparkle marks level-30 gear
   return `<svg class="ico" viewBox="0 0 32 32" aria-hidden="true">${g}</svg>`;
 }
 // the three tools: a wooden haft and a head in the colour of the tier's ore (ORE_GRADES)
@@ -61,8 +63,15 @@ function toolIconArt(it){
   if(it.slot==='axe') return `<g transform="rotate(32 16 16)"><rect x="14.7" y="5" width="2.6" height="24" rx="1.1" fill="${h}" ${OUT}/><path d="M17.3 6Q29 4.5 28 16Q23 13.5 17.3 14.5Z" fill="${c}" ${OUT}/><path d="M20 8.5Q25 8 26 12" fill="none" stroke="${icoShade(c,1.3)}" stroke-width=".9"/></g>`;
   return `<g transform="rotate(20 16 16)"><rect x="14.7" y="17" width="2.6" height="12" rx="1.1" fill="${h}" ${OUT}/><path d="M16 17.6Q3.5 15 7 4.5Q9 10.5 22 10.5Q17 12 16 17.6Z" fill="${c}" ${OUT}/><path d="M9 7Q11 10.5 18 11" fill="none" stroke="${icoShade(c,1.35)}" stroke-width=".9"/></g>`;
 }
+// the dungeon ring: a gold band and a gem in the colour of its element (ELEMS; the plain ring's gem is pale), a jade sparkle on the band when it is enhanced
+const DG_SPARK='<path d="M26.5 2.5l1.1 2.7 2.7 1.1-2.7 1.1-1.1 2.7-1.1-2.7-2.7-1.1 2.7-1.1z" fill="#9ff0c8" stroke="#15120e" stroke-width=".6"/>';
+function ringIconArt(it){
+  const c=ELEMS[it.el].col, band=['#cdbd8a','#c9d3e8','#d9c3f5','#f5dc70','#a8ee9c'][it.rar];
+  return `<circle cx="16" cy="11" r="9" fill="${c}" opacity=".22"/><circle cx="16" cy="20" r="8" fill="none" stroke="#15120e" stroke-width="5"/><circle cx="16" cy="20" r="8" fill="none" stroke="${band}" stroke-width="3"/>
+    <path d="M16 4.5l4.2 4.8-4.2 5.2-4.2-5.2z" fill="${c}" ${OUT}/><path d="M16 4.5l-1.8 4.8 1.8 5.2zM12 9.3h8.4" fill="none" stroke="${icoShade(c,1.3)}" stroke-width=".7"/>${it.n?DG_SPARK:''}`;
+}
 // faint outline for an empty equipment slot
 function slotIcon(slot){
-  const fake=slot==='weapon'?ITEM.sword1:ITEM[slot+'1'];
+  const fake=slot==='weapon'?ITEM.sword1:slot==='ring'?ITEM['ring-basic']:ITEM[slot+'1'];
   return itemIcon(fake).replace('class="ico"','class="ico ghost"');
 }

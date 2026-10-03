@@ -5,7 +5,8 @@
 const S={t:0,day:0.045,ff:null,players:new Map(),dev:io.dev!==false,snapT:0,snapDt:io.snapDt||0.1,snapNo:0,fullT:0,prevDay:0.045,saveT:5};
 const DAY_SECONDS=1200;
 let EVQ=[];
-function ev(...a){ EVQ.push(a); }
+const MSG=Object.create(null);   // dungeons: handlers of the messages feature files add, MSG.<type>=(p,msg)=>{...}; receive() falls back to it (no edit to the switch for a new message)
+function ev(...a){ a.inst=S.ctx; EVQ.push(a); return a; }   // dungeons: an event is tagged with the run that caused it (S.ctx, 0 = the world); broadcastSnap sends it to that run's members only
 function sendTo(pid,msg){ io.send(pid,msg); }
 function toastTo(pid,text,kind){ ev('toast',pid,text,kind||''); }
 const r1=v=>Math.round(v*10)/10;

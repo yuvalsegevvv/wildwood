@@ -2,7 +2,7 @@
 
 **Status: designs plus data, not playable.** The machinery they run on is in `docs/DUNGEONS.md` (tiles, missions, parties, the server plan). What exists in code is the data of the three
 dungeons (`DG_THEMES`), of their three entrances (`DG_ENTRANCES`, section 6), of their three bosses (`DG_BOSSES`), the hourly offer (`dgOffer`) and the entry rule (`dgUnlocked`, `dgLevel`, `dgGateOpen`) in `src/shared/dungeons.js`, and the rewards (section 7: `DG_REWARDS`, the level-30 gear, the ring, enhancing, the stone) in `src/shared/dungeon-rewards.js`, checked by
-`tools/dungeons-smoke.js` (81 checks); `tools/entrance-map.js` draws the map of section 6. The tile art is not drawn (every dungeon uses the bare test set; section 3 names the tiles to draw).
+`tools/dungeons-smoke.js` (97 checks); `tools/entrance-map.js` draws the map of section 6; the doors' client dressing (section 6) is built and tested by `tools/entrances-client-smoke.js`. The tile art is drawn (section 3: one file per dungeon in `src/shared/dungeons/themes/`, entered through `defineDungeonTheme`) and the three bosses are built (section 4: `src/server/dungeons/boss-kits.js`, tested by `tools/dungeon-boss-smoke.js`).
 *(proposed)* = my suggestion. An earlier version of this file had nine dungeons and bosses drawn at random; those are gone, and the six dungeons I did not pick are kept in section 5.
 
 ## 1. What the owner decided
@@ -66,6 +66,20 @@ Guardian: the Bamboo Treant in the Bamboo Cellar.
 rooms **Cairn Room** and **Urn Hall**, pass **Passage Grave**, site **Rune Pillar Cell**, cache **Grave Goods**, entrance **Barrow Door**. Hazard: **gloom** (client-only: your light shrinks in unlit rooms; the braziers
 are the way) and ice `prison` marks. No guardians: the barrow is walkers only.
 
+**The tile kits: drawn** (`src/shared/dungeons/themes/<id>.js`: one `defineDungeonTheme({...})` call each, no top-level names, one line in `src/manifest.json`; the fields are in `shared/dungeons.js`). A bad theme is left out,
+warned about and listed in `DG_BAD` (the game still boots; `tools/dungeons-smoke.js` fails naming the theme and field). Each kit is the seven tiles named above plus a second pass (Root Bend, Pooled Bend, Grave Bend), each drawn once with its
+rim closed and opened for every door shape it comes in (`shapes`, `dgCarve`): 32 tiles a dungeon, and all seven missions generate on 300 seeds with each kit. The hall is the same circle in all three: its four pillars (4 m squares at
++-10 m, `DG_HALL_PILLARS`) and four mouths (+-13 m, `DG_HALL_MOUTHS`) are fixed because the bosses use them. A theme's **legend** (`{char:{solid, prop, hazard?, light?, post?}}`) adds characters: solid ones block like `#`
+(collision, sight, the flow field), and `dgBake` lists every legend cell in `B.props` as `{k, x, z}` (local metres; `hz` for a hazard spot). Hazards are set off at run time by `server/dungeons/hazards.js` (built: the telegraphs, damage, root / slow and timings are in its agent map and `docs/DUNGEONS.md` section 4).
+
+| Dungeon | Solid | Floor | Hazard spots (`hz`) |
+|---|---|---|---|
+| Hollow Roots | `R` root wall, `I` root pillar, `T` root trunk, `m` mushrooms, `k` heartwood knot | `f` glowing fungus (light), `s` sap pool (light), `n` seed pods, `G` guardian post | `^` root spikes, `spikes`: the Rootwarden's `root` telegraph |
+| Jade Springs | `r` stone rim, `J` jade column, `b` bamboo, `l` stone lantern (light), `u` offering bowl | `w` spring water (light), `~` steam, `G` guardian post | `v` steam vent, `steam`: the `geyser` telegraph |
+| Bonefrost Barrow | `N` burial niche, `X` rune pillar, `K` cairn, `U` urn, `Y` brazier (light) | `g` grave slab, `b` bones | `x` rime, `prison`: ice-prison marks; gloom (client) everywhere away from a `Y` |
+
+Guardian posts: the Rotwood in the Fungus Alcove, the Ancient Treant in the Heartwood Knot, the Bamboo Treant in the Bamboo Cellar. Gawataro's five vents and Haugbui's lamps are the bosses' own (section 4), not drawn.
+
 **What every mission calls its objectives** (the mechanics are those of `docs/DUNGEONS.md` section 4):
 
 | Dungeon | Defense: the stone | Survival: the light | Sabotage: three... | Siege: three altars | Hunt: the quarry | Escort: the captive |
@@ -83,6 +97,21 @@ engage when a player steps into the circle, and use the shared melee, phases at 
 (889 / 1,180 / 1,740), and a move is worth a number of hits (x). The hall has four pillars about 13 m from the middle; in a Defense or Survival run the stone or the lantern also stands in it, and **no boss move
 targets it** (only players are hurt; the stone's own breakers do not appear once the boss is out). Each boss has one **signature mechanic** that no other boss has, and a list of **new primitives** it needs, each small
 (M3 of `docs/DUNGEONS.md`); everything else is the existing primitives. `aux` is what the boss bar's number shows. Each is in `DG_BOSSES` with its moves named by primitive; the test checks the names.
+
+**Status: built** (`tools/dungeon-boss-smoke.js`, 36 checks: each fought through its phases in a real hall, every move of its design seen, moves no other of the nine bosses has, the signatures, nothing left behind, the models).
+Defs `DG_BOSS_DEFS` (`shared/dungeons/bosses.js`: rows shaped like `BOSS_DEFS`, keyed `amanita` / `gawataro` / `haugbui` = each theme's `boss`); a run makes one with `makeBossS(DG_BOSS_DEFS[theme.boss], dgHallArena(bake, ox, oz))`
+(the arena is the hall's circle plus `solid(x,z)`, the hall's walls and pillars; without it nothing gives cover and the charge runs to the arena's edge). Kits `BOSS_KITS.spore / dish / barrow` (`server/dungeons/boss-kits.js`), new primitives
+`server/dungeons/boss-fx.js` (`DG_BOSS_NEEDS` maps each need to its code). Client: telegraph looks `spore` `puff` `pulse` `vent` `wail` `snuff` (`game/combat/boss.js`; the server resolves them as circles), the zone `spore` (`boss-fx.js`), Haugbui and
+the Grave Wisp in the ghost builder (`monster-spirits.js`), the bar's number, lamp glow, the relight cast bar and the gloom (`game/combat/boss-dungeon.js`). Events: `dglamp [lamp id, 1 lit / 0 dark]`, `dgch [pid, s, label]` / `dgchx [pid]`.
+**Different from the text below**: the telegraph kinds are named for their look (puffballs `puff` and vents `vent` rather than `geyser`, the pulse `pulse`, the wail `wail`, the snuffing ring `snuff`); Cold Breath also spares whoever has a pillar
+between them and him (4.4's "cover from the breath"); the lamps are the boss's own props with a channel of the kit's own (`kit.use(B, m, p)`: the run's use message calls it), not run objectives; the lamps stand at the pillars' inner corners,
+9.6 m out, so the wail's 8 m shelter leaves the middle open; the vents' 12 m ring misses the pillars at +-10 m; Gawataro shows no "Charging!" (mode 1 lifts a boss off the ground on the client).
+
+| Hook (one line each, marked `// dungeons:`) | File |
+|---|---|
+| a boss kit's hit hook (`kit.hit`, Gawataro's dish) | `server/combat.js` `damageMonsterS` |
+| a dungeon boss's row and arena for the boss bar and music (`bossInfo`, `arenaOf`), its number on the bar (`dgBossBarText`) | `game/combat/boss.js` (3 lines) |
+| the blackout's gloom (`dgGloomTint`) | `game/world/time-of-day.js` `updateEnv` |
 
 ### 4.1 Amanita, the Sporemother (the Hollow Roots)
 
@@ -225,12 +254,36 @@ and the Reach's snow domes are steep or flat, so the Barrow has one site and Wil
 to accept and those who do are carried in together; the others can walk up and press **Join run** while the run is open (before the boss appears). A run ends, or you leave, and you stand on the apron facing out. A disconnect brings you back at the village
 spawn, as every login does (position is not saved).
 
-**What it asks of the code** (none of it is built): the server checks the door for `dg{a:'open'}` and puts you on the apron after a run; `server/monsters.js` `ok()` keeps camps 32 m off a door (a no-op today); `storyClear` gets the doors and signposts; the client gets
-`game/village/buildings-dungeon.js` (the three builders), the prompt in `talking.js`, the colour patch in `terrain-color.js`, the sounds in `audio/ambience.js`, the markers in `ui/map.js` and the Delve panel. Part of M5 of `docs/DUNGEONS.md`.
+**What it asks of the server** (not built): it checks the door for `dg{a:'open'}` and puts you on the apron after a run; `server/monsters.js` `ok()` keeps camps 32 m off a door (a no-op today). Part of M5 of `docs/DUNGEONS.md`.
+
+**The client dressing: built** (`tools/entrances-client-smoke.js`, 30 checks on the built page). Files: `game/village/buildings-dungeon.js` (the three doors and the signposts: one `THREE.Group` per door at the door, turned by `a`, so +z is out of it; 6-10 merged meshes and 2,200-8,400 triangles each;
+phones get fewer details and nothing moves, light mode the bare shapes) and `game/dungeon/entrances.js` (the rules: `dgEntSealed`, the prompt, `dgOpenDoor`, the ground patch, the clearing, the maps' markers, the sounds). What was chosen:
+
+- **Sealed or open** follows your gear every frame for all three doors (`dgGateOpen`): the **Elder** shows knotted roots across the opening and an amber light gone dull; the **Falls Door** a wooden lattice with red talismans behind the water; the **Barrow Door** a frost-covered slab with a dim ring, flames burning low and no column
+  of light. Open, the light eases up over about a second.
+- **The talk key** within 4.5 m (`dgEntranceNear`): the prompt is `<key>: <door name>` (`(sealed)` added while shut; the touch button reads Enter / Look). Sealed: a toast with `dgUnlocked`'s reason (`DG_LANDS[..].hint`: play Wildwood at +1, walk to Hanami, walk into Rimehold). Open: `dgOpenDoor(id)` calls
+  **`dgBoardOpen(themeId)`** when that global exists (the Delve board's file defines it), else the toast "The way is not ready yet". The door's id is its key in `DG_ENTRANCES`, which is its theme's id.
+- **Ground**: a patch of 15 m round the middle of the way from the door to its apron, blended with noise: moss and radiating roots (Elder), wet dark flags and jade (Falls), trodden snow, bone-grey and rime (Barrow); the height is not touched. The pool at the Falls Door takes the shape of the hollow the door lies in (the water stands 0.7 m over the doorway, the ground shows where it is higher).
+- **Plants**: trees, bushes and rocks skip `DG_ENT_CLEAR` round a door and 2.5 m round a signpost (`dgEntClear`, 3 hook lines in `generation-chunks.js`, which is per chunk, so only the chunk it is in changes). Colliders: the trunk, the rock face and the mound are blocked (circles of 6 m or less: the collision grid looks one cell round you), the way in stays open to the talk range.
+- **Signposts**: a post and a pointed board at `DG_ENTRANCES[..].sign`, the board turned to point at the door, the name and "178 m, south-east" on both faces (it stands where it stands, so the distance is fixed).
+- **Maps**: a door icon (gold; grey with a padlock while sealed) and the name on the full map in the land's own view, the icon on the minimap within its range, and the door's name and dungeon when the pointer is within 16 m of it.
+- **Sounds**: the Falls Door raises the existing water loop (`waterNear`) within 85 m; the Elder drips and the Barrow hums as random events (`dgEntSounds`). Not done: a wind loop of its own at the Barrow (the Reach's wind is already there).
+- **Not done**: the optional worn trail from the signpost to the apron; the firefly motes of `world/motes.js` (the Elder has its own 18 drifting puffs).
+
+| Hook (one line each, marked `// dungeons:`) | File | What it calls |
+|---|---|---|
+| the doors and signposts are built after the village and the lands | `world/generation-setup.js` | `dgEntBuild()` |
+| every frame: sealed look, light, animation | `main/loop.js` | `dgEntUpdate(dt)` |
+| the talk key at a door | `village/talking.js` `interact` | `dgOpenDoor(theme)` |
+| the door within reach, and its prompt | `village/talking.js` `updateTalkUI` (2 lines) | `dgEntranceNear`, `dgEntPrompt` |
+| the ground patch (Reach's colours, then the others) | `world/terrain-color.js` (2 lines) | `dgEntTint` |
+| no trees / bushes / rocks at a door or signpost | `world/generation-chunks.js` (3 lines) | `dgEntClear` |
+| the full map's markers, the minimap's, the hover name | `ui/map.js` (3 lines) | `dgEntMapMarks`, `dgEntMiniMarks`, `dgEntName` |
+| the Falls Door's cascade through the water loop; drips and hum | `audio/driver.js` (2 lines) | `dgEntWater`, `dgEntSounds` |
 
 ## 7. The rewards
 
-Decided by the owner; the data and the rules are in `src/shared/dungeon-rewards.js` and are checked (14 of the 81 checks, the odds, the caps and the soul rule written out in the test, not read from the code).
+Decided by the owner; the data and the rules are in `src/shared/dungeon-rewards.js` and are checked (14 of the 97 checks of `tools/dungeons-smoke.js`, the odds, the caps and the soul rule written out in the test, not read from the code). **Status: built, except the clear's hand-out** (`dgGrantItemP` exists, nothing calls it until a run does): the items, the ring slot and its attack, the stone, tempering and the UI work today, tested by `tools/rewards-smoke.js` and `tools/rewards-client-smoke.js`; the end of this section lists what was built and every hook.
 
 | Dungeon | A clear pays | Pool of the one random piece |
 |---|---|---|
@@ -262,7 +315,7 @@ sword (405) with a legendary ring on the right soul: +61 attack; both at +10 (be
 
 **Enhancing.** A level-30 piece (weapon, armour, ring) can be raised **+1 ... +N**, N by rarity: **Common 2, Rare 4, Epic 6, Unique 8, Legendary 10**. Each step adds **5%** of the piece's own stats (`ENH_STEP`; a common at its
 limit is +10%, a legendary +50%; a ring's share grows the same way). The step to +n costs **n Tempering Stones** (`ENH_STONES`): +1 costs 1, +2 costs 2... so a piece to its limit costs 3 / 10 / 21 / 36 / 55 stones
-(common ... legendary). It always works: it never breaks and never loses a level. No coins in it (a coin cost is an easy later sink). Where: a second tab at Greta's forge *(proposed)*.
+(common ... legendary). It always works: it never breaks and never loses a level. No coins in it (a coin cost is an easy later sink). Where: the **Temper tab** of every forge (Greta's and the others': the forge panel has two tabs, Merge and Temper).
 
 **The Tempering Stone** is the "item from normal monsters that replaces equipment from level 30 and up". A normal monster fought at level **30 or more** drops it at **2.6%**, exactly the chance of the equipment drop it replaces
 (`rollMonsterRarity`: 2% + 0.5% + 0.1%), **and no longer drops equipment**. Bosses are unchanged (they still roll the boss table). Reading it so:
@@ -273,10 +326,29 @@ limit is +10%, a legendary +50%; a ring's share grows the same way). The step to
 **Ids.** Items stay strings: `sword7-e+3` is an epic level-30 sword at +3, `ring-fire-l+10` a legendary fire ring at +10 (`7` = the seventh tier; `dgParse` refuses a step past the rarity's limit). 14 kinds x 35 (rarity, step) = **490 ids**
 become `ITEM` records at load (not in `ITEM_LIST`, like the tools), so the save format, `sanitizeGear`, selling and the bag work unchanged.
 
-**What it asks of the code** (none of it is built): `items.js` adds the 490 records and `SLOT_LABEL.ring`; `sanitizeGear` the `eq.ring` slot and `gear.temper`; `equipP` the ring slot (level 30 to wear, so a hiker who enters at 25 wins gear to grow into);
-`recalcP` the ring's attack (`ringAtk(ring, soulOfP(p), weapon attack)`; **a soul change must now recalc**, it did not touch stats before); `rewardKill` the stone (`dgDropKind(K.lv, boss)`) and, at a clear, `dgClearReward(theme)` once for
-the run, handed to every member through `addItemP`; the forge a Temper tab (`dgEnhanceNext`, `dgEnhanceStones`) and the rule that a piece above +0 does not merge; the client the ring tile, ring icons, a "+n" badge and the tooltip's
-"matches your soul / does not". M6 of `docs/DUNGEONS.md`.
+**What was built** (M6r of `docs/DUNGEONS.md`). Files: `shared/dungeon-items.js` (the 490 `ITEM` records, `dgVisTier`, `dgMergedId`, `dgRingAtkOf`, `dgEnhInfo`, texts), `server/dungeon-gear.js` (`dgRingAtkP`, `dgRollDropP`, `dgAddStonesP`, `dgTemperP` + `MSG.temper`, `dgMergeRefusedP`, `dgGrantItemP`, `MSG.rwdev`), `game/economy/dungeon-gear.js` (details, stone chip, the Temper tab, events, test buttons), `styles/23-dungeon-gear.css`.
+- **The records.** `ITEM[id]` for all 490 ids (`dgItem`: `kind` weapon | armor | ring, `slot`, `tier` 6, `lv` 30, `rar`, `n` (the +n), `dg:true`, `atk` | `hp` + `def` | `pct` + `el`, `name`, `price`), never in `ITEM_LIST` / `TOOL_LIST`. A save keeps ids; `sanitizeGear` needs no new item rule. Level 30 to wear (`equipP` already checks `it.lv`).
+- **The ring** is `gear.eq.ring` (slot `ring`, `SLOT_LABEL.ring`). `recalcP` adds `dgRingAtkOf(gear, soulOfP(p))` (its share of the worn weapon's attack, only for a matching soul) to the attack, and `bindSoulP` now calls `recalcP`. The client shows the result in `PL.dmg` (the server's) and, in the item details, "Matches your soul (Fire): +61 attack" / "Your soul is Water: no effect".
+- **Look.** Level-30 armour and weapons borrow the top tier's look, icon and model (`dgVisTier`, `DG_LOOK_TIER` = 5) and get a jade sparkle on the icon; rings have their own icon (a gem in the element's colour).
+- **Stones.** `gear.temper` (0..`DG_STONE_MAX` = 9,999). `rewardKill` calls `dgRollDropP`: a normal monster fought at `K.lv` >= 30 rolls `dgRollStone` and never drops equipment; bosses and lower levels keep the old roll. Events `stone [pid,n,monId]` (a floating note) and the toast "Found: Tempering Stone".
+- **Tempering.** Message `temper{id[,worn]}` (a handler in `MSG`): the piece must be a level-30 piece in your bag, not at its limit, and you need `dgEnhanceStones(id)` stones; one copy of the id becomes `dgEnhanceNext(id)` (the bag copy, unless `worn` is set or the worn copy is the only one: then the slot follows and the hiker is recalculated). Event `temper [pid,newId,oldId]`.
+- **Merging.** `mergedId` knows the level-30 ids (+0 only, to the next rarity at +0, a legendary has none); `mergeP` refuses a +n piece with a toast; the forge's Merge tab leaves tempered pieces out and says why.
+- **Selling and buying.** `sellP` pays `sellPrice` (40% of `price`); the armourer's Sell tab also takes rings. `buyP` refuses `it.dg` (a client could otherwise ask a shop for `sword7`).
+- **For the integration step.** At a clear roll `dgClearReward(theme)` once and call `dgGrantItemP(p, id)` for every member (it returns false and says so when a bag is full). Testing tools (only with testing tools on): "Add 20 Tempering Stones", "Add a level-30 piece of every kind (common)", "3 of a level-30 piece (for the forge)" (message `rwdev{cmd:'stones'|'dgall'|'dgthree'}`).
+
+| Hook (grep `// dungeons:`) | Where |
+|---|---|
+| ring slot label, `mergedId`, `newGearFor` (`eq.ring`, `temper`), `effectiveLookOf` (tier look), `itemStat` (ring text) | `shared/items.js` |
+| `recalcP` (ring attack), `sanitizeGear` (`temper`) | `server/players.js` |
+| `mergeP` (refuse +n), `buyP` (never sell level-30 gear), `bindSoulP` (recalc) | `server/economy.js` |
+| `rewardKill` (the stone replaces equipment at level 30+) | `server/combat.js` |
+| `BODY_SLOTS` (ring), `tile` (badge, accent), `statDiff` (ring), `renderInvInfo` (details), the stone chip | `game/economy/inventory.js` |
+| forge tabs, Temper tab, merge filter and note | `game/economy/forge.js`, markup in `index.html` (`data-fgtab`) |
+| the armourer buys rings | `game/economy/shops.js` |
+| `itemIcon` (tier, ring, sparkle), `slotIcon` (ring) | `game/ui/item-icons.js` |
+| weapon model tier | `game/combat/weapons.js` |
+| ring grid area, `.enh` badge, Temper tab | `styles/15-inventory.css`, `styles/23-dungeon-gear.css` |
+| three testing buttons (`tStones`, `tDgAll`, `tDgThree`), bound in `game/economy/dungeon-gear.js` | `index.html` `#tSec` |
 
 ## 8. Decisions for the owner (what I assumed)
 

@@ -26,7 +26,10 @@ const KB_ACTIONS=[
   {id:'chat',  name:'Chat',          def:['Enter','NumpadEnter']},
   {id:'mute',  name:'Mute sound',    def:['KeyM','']},
   {id:'time',  name:'Skip the day',  def:['KeyT','']},
-  {id:'view',  name:'Camera view',   def:['KeyV','']}
+  {id:'view',  name:'Camera view',   def:['KeyV','']},
+  {id:'party', name:'Party',         def:['KeyP','']},   // dungeons: the party panel (dungeon/party.js)
+  {id:'accept',name:'Accept an invite', def:['KeyY','']},   // dungeons: a party invite or a run's join prompt (dungeon/party.js)
+  {id:'decline',name:'Decline an invite', def:['Backspace','']}   // dungeons: the same, declined
 ];
 const KB_FIXED=['Escape','AltLeft','AltRight','MetaLeft','MetaRight','ContextMenu'];
 const KB_NICE={Space:'Space',Enter:'Enter',NumpadEnter:'Num Enter',Tab:'Tab',Backspace:'Backspace',CapsLock:'Caps',ShiftLeft:'L Shift',ShiftRight:'R Shift',
