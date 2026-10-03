@@ -274,3 +274,26 @@ and 6 x 6 (sabotage, siege: 12-16 tiles).
 7. **Leaving early** through the entrance portal stays possible and keeps the loot, without a clear *(assumed; a disconnect or a restart needs it anyway)*. Joining in progress until the boss has appeared, and reconnecting, as in section 5 *(assumed)*.
 8. **Bosses**: each theme names its boss; the six existing ones fit the hall and level with `defAt` *(assumed)*, a new boss is a new def + kit. Whether the boss may also be a *wave* boss in Defense *(assumed no: one boss, at the end)*.
 9. **The first theme**, its monsters (mind the 0.9 m door limit if it uses treants) and its boss. Not designed, as you asked.
+
+## 14. Notes from a second review (agent-first additions)
+
+A second pass over the plan against the code found it sound; it had independently reached the same slot design. These are the additions section 7 does not have. They apply the
+layout rules of `CLAUDE.md` section 5 to the dungeons.
+
+- **Mark every hook.** Each change to an existing file in section 7's table is one line ending in `// dungeons: <what>`, so `grep -rn "// dungeons:" src` lists every integration point
+  and can be checked against that table.
+- **Add messages through a table, not the switch.** `receive()` in `server/api.js` is one `switch`; give it a `default:` that looks the message up in a handler table (`MSG[msg.t]`), so
+  `party` and `dg` are added in their own files (`server/party.js`, `server/dungeons.js`) without editing `receive` each time. `netHandle` and `applyEvent` (`game/net/client.js`) get the same `default:`.
+- **`respawnVil`** (`server/players.js`, used by the 3 s wake-up in `updatePlayersS`) picks a village from the position (`p.x > HALF`: Hanami or Rimehold). A slot is east of the world, so a
+  downed run member would wake in Hanami: the run's down / revive branch must bypass it (section 5).
+- **`getH` has 18 call sites on the server and 96 on the client, none in shared code**: one branch in each `getH` (section 7) covers all of them; no call site needs rewriting.
+- **Measured**: a second `createWorldServer` per run costs about 0.4 s of CPU and 2-5 MB each (the heightmap and 555 monsters), on Node's one thread, so every player would feel it: one more
+  reason for the slot design.
+- **Validate themes when they are defined.** When M6 adds `DG_THEMES`, enter each theme through one function (`defineDungeonTheme({...})`): it checks the id, that every tile passes the tile checks,
+  that each `mobs` id is in `ALL_MON_DEFS` and the boss kit is in `BOSS_KITS`, `lv`, `music`. A bad theme is **left out, warned about and listed** (`DG_BAD`), so the game still boots, and
+  `tools/dungeons-smoke.js` fails naming the theme and the field. A theme is then one file (`shared/dungeons/themes/<id>.js`: a single call, no top-level names) plus one line in `src/manifest.json`.
+- **Folder when the files multiply.** The plan names four server files (`dungeons.js`, `dungeon-kits.js`, `dungeon-fx.js`, plus the generic `party.js`) and a client folder: once M2 adds them, keep the
+  dungeon ones together in `server/dungeons/` (the manifest takes paths; `CLAUDE.md` section 5, rule 1) so one `ls` shows the feature.
+- **Small facts.** float32 at the slots' coordinates (about 2,500-5,000) is accurate to about 0.5 mm. If the client draws props with an `InstancedMesh`, every mesh needs `instanceColor`
+  (`docs/areas/render.md`). A `pc(...)` geometry needs normals, and a model that throws while it is built inside a network message aborts the rest of that message
+  (`docs/areas/monsters-bosses.md`).
