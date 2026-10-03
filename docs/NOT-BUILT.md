@@ -101,6 +101,7 @@ of the free-plan tracks (all eleven) if the game ever earns money, and, if wante
 - **XP curve and gear past 25/tier 5**: the curve is flattened to 2,100 same-level kills a level from 25 (a stopgap so 26-30 are playable), gear stays at tier 5, `MAX_ZONE_LV` is 30
   and skill upgrades still ask for drops of at most level 25 (`VALE_TOP_LV`). Levels up to 50 need a real curve, more gear tiers (items, icons, looks) and a decision about upgrades.
 - **The world rectangle** must grow again (north-west, west, south-west) and the Rootdeep needs an enclosed instance (`docs/WORLD.md` section 8).
+- **Dungeons** (instanced rooms with a boss, entered through a portal): only the setup plan exists, `docs/DUNGEONS.md`. It shares its enclosed-space half (a region outside the heightmap, an indoor client mode, portal entrances) with the Rootdeep, so build that once. Nothing is built; the plan's section 11 lists the owner's decisions.
 - **Group play, trading between players, party quests** (`CLAUDE.md` section 10).
 - **Real passives** (the eight in `PASSIVES` are a placeholder set; only one slot is open).
 - **Server-side anti-cheat for movement**, and synced villagers.
