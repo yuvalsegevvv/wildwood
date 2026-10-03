@@ -4,7 +4,7 @@
 // Usage: node tools/dungeons-smoke.js            the checks
 //        node tools/dungeons-smoke.js --show defense 7   draws that dungeon (the tile graph, then the cells: one character per 2 x 2 cells)
 const {loadShared}=require('./load');
-const X=loadShared(['DG_CELL','DG_TC','DG_BOSS_R','ARENAS','DG_N','DG_E','DG_S','DG_W','DG_STEP','DG_SET_BARE','DG_MISSIONS','DG_PARTY','DG_MAX_PARTY','dgVariants','dgRotArt','dgRotMask','dgOpp','dgLayout','dgBake','dgSolid','dgFree','dgSlide','dgLos','dgFlow','dgStep','dgParty','dgFightRatio','mulberry32']);
+const X=loadShared(['DG_CELL','DG_TC','DG_BOSS_R','ARENAS','DG_N','DG_E','DG_S','DG_W','DG_STEP','DG_SET_BARE','DG_MISSIONS','DG_PARTY','DG_MAX_PARTY','dgVariants','dgRotArt','dgRotMask','dgOpp','dgLayout','dgBake','dgSolid','dgFree','dgSlide','dgLos','dgFlow','dgStep','dgParty','dgFightRatio','mulberry32','DG_THEMES','DG_LANDS','DG_LV','DG_ENTRY_GAP','dgUnlocked','dgLevel','dgTierOf','ZTIER_STEP','ZTIER_MAX','DG_ENTRANCES','DG_APRON','DG_ENT_CLEAR','DG_ENT_TALK','dgApron','dgEntranceNear','dgGateOpen','rawHeight','zoneAt','vDist','VR','roadDist','arenaDist','inTunnelCut','zoneRidge','NODES','STORY_SPOTS','LAKES','FROST_LAKES','bareGround','ROADS','ROAD_W','WATER','DG_BOSSES','dgOffer','dgOfferLeft','DG_OFFER_HOUR','FAM','ELEMS','ALL_MON_DEFS','MON_DEFS','BOSS_DEFS','ZONES']);
 const {DG_TC,DG_CELL}=X;
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 
@@ -108,9 +108,152 @@ for(const r of [0.5,0.9]){
   ok('a walker of radius '+r+' m following the flow field reaches the portal from '+n+' random starting points in 30 dungeons',stuck===0,stuck+' got stuck');
 }
 
+// ---- the three dungeons, their bosses and the hourly offer (docs/DUNGEON-THEMES.md) ----
+const TH=Object.values(X.DG_THEMES).filter(t=>!t.dev), ids=X.MON_DEFS.map(d=>d.id), DEF=Object.fromEntries(X.MON_DEFS.map(d=>[d.id,d]));
+const iVale=ids.indexOf('sakuraslime'), iHoar=ids.indexOf('frostslime'), landOfDef=id=>{ const i=ids.indexOf(id); return i<0?null:i<iVale?'home':i<iHoar?'vale':'hoar'; };
+const landOfZone=z=>z.hoar?'hoar':z.vale?'vale':'home';
+ok('three dungeons, one for each built land (Wildwood, the Sakura Vale, the Hoarfrost Reach), level '+X.DG_LV+' at their land\'s base difficulty',TH.length===3&&['home','vale','hoar'].every(l=>TH.filter(t=>t.land===l).length===1)&&TH.every(t=>t.lv===30&&X.DG_LV===30),TH.map(t=>t.id).join(', '));
+ok('every dungeon lies under a real zone of its own land',TH.every(t=>{ const z=X.ZONES.find(z=>z.name===t.at); return z&&landOfZone(z)===t.land; }),TH.map(t=>t.at).join(' / '));
+ok('every dungeon\'s monsters exist, come from its own land, and the walkers (they make the waves) fit a 4 m door (radius <= 0.9 m); at least 4 kinds of walker; none listed twice',TH.every(t=>{
+  const all=[...t.mobs.walkers,...t.mobs.guardians];
+  return t.mobs.walkers.length>=4&&new Set(all).size===all.length&&all.every(id=>DEF[id]&&landOfDef(id)===t.land)&&t.mobs.walkers.every(id=>DEF[id].rad<=0.9); }));
+ok('the guardians (they stay in their room) are the ones too big for the doors',TH.every(t=>t.mobs.guardians.every(id=>DEF[id].rad>0.9)));
+ok('every dungeon has a music track, a palette and the bare tile set until the art is made',TH.every(t=>typeof t.music==='string'&&['wall','floor','fog','light'].every(k=>Number.isInteger(t.pal[k]))&&t.tiles===X.DG_SET_BARE&&t.art===false));
+ok('every dungeon makes a layout for all seven missions',TH.every(t=>MIS.every(mi=>[1,2,3].every(seed=>!!X.dgLayout({mission:mi,seed,set:t.tiles})))));
+// ---- the three entrances: real places on the real map ----
+{ const E=Object.values(X.DG_ENTRANCES), H=(x,z)=>X.rawHeight(x,z), slope=(x,z,d=2)=>Math.hypot(H(x+d,z)-H(x-d,z),H(x,z+d)-H(x,z-d))/(2*d);
+  const zoneName=(x,z)=>{ const q=X.zoneAt(x,z); return q&&q.name; }, landOf=q=>q&&(q.hoar?'hoar':q.vale?'vale':'home');
+  const roadD=(x,z)=>{ let m=1e9; for(const rd of X.ROADS) for(let i=1;i<rd.pts.length;i++){ const [ax,az]=rd.pts[i-1],[bx,bz]=rd.pts[i],dx=bx-ax,dz=bz-az,L2=dx*dx+dz*dz||1,u=Math.max(0,Math.min(1,((x-ax)*dx+(z-az)*dz)/L2)); m=Math.min(m,Math.hypot(x-(ax+dx*u),z-(az+dz*u))); } return m; };
+  const nearest=(list,x,z,f)=>list.reduce((m,o)=>Math.min(m,f(o,x,z)),1e9);
+  ok('one entrance for each of the three dungeons (the dungeon names it, it names the dungeon), at least 300 m apart',E.length===3&&TH.every(t=>E.filter(e=>e.theme===t.id&&X.DG_ENTRANCES[t.id]===e).length===1)&&E.every((a,i)=>E.every((b,j)=>i===j||Math.hypot(a.x-b.x,a.z-b.z)>=300)),E.map(e=>e.name+' ('+e.x+', '+e.z+')').join(', '));
+  ok('each stands in its dungeon\'s zone, and the zone holds 25 m all round the door (so it is the right land and not at a zone\'s edge)',E.every(e=>{ const t=X.DG_THEMES[e.theme]; return zoneName(e.x,e.z)===t.at&&landOf(X.zoneAt(e.x,e.z))===t.land&&[0,1,2,3,4,5,6,7].every(k=>zoneName(e.x+Math.sin(k*Math.PI/4)*25,e.z+Math.cos(k*Math.PI/4)*25)===t.at); }));
+  ok('the ground: the door at least 2.5 m above the water, the ground rising at least 2 m in the 10 m behind it (a bank to dig into), a flat apron in front (within 2.2 m of the door\'s height, slope <= 0.34 within 4.5 m)',E.every(e=>{
+    const ux=Math.sin(e.a), uz=Math.cos(e.a), A=X.dgApron(e); let sm=0; for(let k=0;k<8;k++) for(const r of [2,4.5]) sm=Math.max(sm,slope(A.x+Math.sin(k*Math.PI/4)*r,A.z+Math.cos(k*Math.PI/4)*r));
+    return H(e.x,e.z)>=X.WATER+2.5&&H(e.x-ux*10,e.z-uz*10)-H(e.x,e.z)>=2&&Math.abs(H(A.x,A.z)-H(e.x,e.z))<=2.2&&sm<=0.34&&Math.hypot(A.x-e.x,A.z-e.z)===X.DG_APRON; }));
+  ok('clear of everything: villages 60 m beyond their walls, arenas 70 m, the tunnel cutting, resource nodes 16 m, story and lore spots 25 m, lakes 25 m, roads 12 m, no zone ridge, no bare ground',E.every(e=>
+    X.vDist(e.x,e.z)>=X.VR+60&&X.arenaDist(e.x,e.z)>=70&&!X.inTunnelCut(e.x,e.z,40)&&nearest(X.NODES,e.x,e.z,(n,x,z)=>Math.hypot(n.x-x,n.z-z))>=16&&nearest(X.STORY_SPOTS,e.x,e.z,(s,x,z)=>Math.hypot(s[0]-x,s[1]-z))>=25&&
+    nearest([...X.LAKES,...X.FROST_LAKES],e.x,e.z,(L,x,z)=>Math.hypot(L.x-x,L.z-z)-L.r)>=25&&roadD(e.x,e.z)>=12&&X.zoneRidge(e.x,e.z)<0.4&&!X.bareGround(e.x,e.z)));
+  { const {loadServer}=require('./load'), camps=loadServer({dev:true},['CAMPS']).x.CAMPS;
+    ok('no monster camp within 32 m of a door: keeping camps out of 32 m in server/monsters.js ok() changes none of the world\'s '+camps.length+' camps',E.every(e=>nearest(camps,e.x,e.z,(c,x,z)=>Math.hypot(c.x-x,c.z-z))>=32),E.map(e=>Math.round(nearest(camps,e.x,e.z,(c,x,z)=>Math.hypot(c.x-x,c.z-z)))+' m').join(', ')); }
+  ok('the signpost stands on a road (3.5 m off its centre line, toward the door) and a dry route of at most 1.4 times the straight distance leads from it to the apron',E.every(e=>{
+    const sg=e.sign, rd=X.roadDist(sg.x,sg.z); if(!(rd>2.5&&rd<4.5)||!X.ROADS.some(r=>r.name===sg.road)) return false;
+    const A=X.dgApron(e), cs=4, x0=Math.min(sg.x,A.x)-100, z0=Math.min(sg.z,A.z)-100, W=Math.ceil((Math.abs(sg.x-A.x)+200)/cs), Hh=Math.ceil((Math.abs(sg.z-A.z)+200)/cs), dry=new Uint8Array(W*Hh);
+    for(let j=0;j<Hh;j++) for(let i=0;i<W;i++) dry[j*W+i]=H(x0+i*cs,z0+j*cs)>0.2?1:0;
+    const cell=(x,z)=>[Math.round((x-x0)/cs),Math.round((z-z0)/cs)], [si,sj]=cell(sg.x,sg.z), [ai,aj]=cell(A.x,A.z), dist=new Float64Array(W*Hh).fill(1e9), todo=[[0,si,sj]]; dist[sj*W+si]=0;
+    while(todo.length){ todo.sort((p,q)=>q[0]-p[0]); const [d,i,j]=todo.pop(); if(d>dist[j*W+i]) continue; if(i===ai&&j===aj) break;
+      for(let di=-1;di<=1;di++) for(let dj=-1;dj<=1;dj++){ const ni=i+di,nj=j+dj; if((!di&&!dj)||ni<0||nj<0||ni>=W||nj>=Hh||!dry[nj*W+ni]) continue; const nd=d+Math.hypot(di,dj)*cs; if(nd<dist[nj*W+ni]){ dist[nj*W+ni]=nd; todo.push([nd,ni,nj]); } } }
+    return dist[aj*W+ai]<1.4*Math.hypot(sg.x-A.x,sg.z-A.z)+8; }),E.map(e=>e.sign.road).join(', '));
+  { const g=(h,v,r,x)=>Object.assign({zt:{home:{on:h[0],max:h[1]},vale:{on:v[0],max:v[1]},hoar:{on:r[0],max:r[1]}}},x||{}), Z=[0,0], go=X.dgGateOpen, T=X.DG_THEMES;
+    ok('the door\'s look: Wildwood\'s roots are knotted shut at +0 and open at +1; the Vale\'s door needs Hanami (gear.east 2) and the Reach\'s Rimehold (gear.north 2); for a high-level hiker it says what the entry check says',
+      !go(g(Z,Z,Z),T.hollowroots)&&!go(g([0,1],Z,Z),T.hollowroots)&&go(g([1,1],Z,Z),T.hollowroots)&&!go(g(Z,Z,Z,{east:1}),T.jadesprings)&&go(g(Z,Z,Z,{east:2}),T.jadesprings)&&!go(g(Z,Z,Z,{north:1}),T.bonefrostbarrow)&&go(g(Z,Z,Z,{north:2}),T.bonefrostbarrow)&&
+      [g(Z,Z,Z),g([1,1],Z,Z),g(Z,Z,Z,{east:2}),g(Z,[1,1],Z,{east:2}),g(Z,Z,Z,{north:2}),g([0,3],Z,Z)].every(gear=>['hollowroots','jadesprings','bonefrostbarrow'].every(id=>go(gear,T[id])===X.dgUnlocked(gear,60,T[id]).ok))); }
+  ok('the talk key works within '+X.DG_ENT_TALK+' m of a door only, and the apron is '+X.DG_APRON+' m in front of it',E.every(e=>{ const A=X.dgApron(e); return X.dgEntranceNear(e.x+0.5,e.z)===e&&X.dgEntranceNear(e.x,e.z+X.DG_ENT_TALK-0.1)===e&&X.dgEntranceNear(e.x+X.DG_ENT_TALK+1.5,e.z)===null&&X.dgEntranceNear(e.x,e.z,X.DG_APRON+1)===e&&Math.abs(Math.hypot(A.x-e.x,A.z-e.z)-X.DG_APRON)<1e-9; })); }
+
+const BS=Object.values(X.DG_BOSSES), KNOWN=new Set(['tele:circle','tele:root','tele:slam','tele:icefall','tele:geyser','tele:gust','tele:cone','tele:cleave','tele:breath','tele:line','tele:donut','tele:mark','tele:prison',
+  'zone:ember','zone:whirl','zone:whiteout','zone:blizzard','wall','orb','pfx:root','pfx:slow','pfx:push','adds','props','move','mode:hidden','mode:shielded','mode:airborne','stun','cast']);
+const PALKEYS={shroom:['cap','spot','stem','gill','feet','spirit'],goblin:['form','skin','eyes','top','topColor','bottom','bottomColor','hat','hatColor','club','horns','weapon','fur','embers','shell'],wisp:['body','core','eye','hair','ghost'],totem:['crystal','band']};
+const MUSIC=['village','wild1','wild2','wild3','boss15','hanami','vale1','vale2','boss20','boss25','rimehold','hoar1','hoar2','boss26','boss30'];
+ok('three new bosses, one for each dungeon, each used once: the dungeon names its boss and the boss names its dungeon (no more random draw)',BS.length===3&&TH.every(t=>BS.filter(b=>b.id===t.boss&&b.dungeon===t.id).length===1)&&new Set(TH.map(t=>t.boss)).size===3,TH.map(t=>t.id+' -> '+t.boss).join(', '));
+ok('the bosses are new (their ids, and their adds\' and props\', are in no def), are built from a model and element the game has, with pal flags that model reads, a music track that exists, and fit the hall',BS.every(b=>{
+  const ids=[b.id,b.add.id,...(b.prop?[b.prop.id]:[])], used=new Set(X.ALL_MON_DEFS.map(d=>d.id));
+  const palOk=(model,pal)=>Object.keys(pal).every(k=>(PALKEYS[model]||[]).includes(k));
+  return ids.every(i=>!used.has(i))&&new Set(ids).size===ids.length&&X.FAM[b.model]&&X.ELEMS[b.el]&&b.el!=='basic'&&palOk(b.model,b.pal)&&palOk(b.add.model||b.model,b.add.pal)&&(!b.prop||palOk(b.prop.model||b.model,b.prop.pal))&&
+    MUSIC.includes(b.music)&&b.lv===X.DG_LV&&X.FAM[b.model].rad*b.scale>=1&&X.FAM[b.model].rad*b.scale<=X.DG_BOSS_R/5&&b.speed>0&&b.atk>0&&typeof b.bar.stun==='string'; }),BS.map(b=>b.id+': radius '+(((X.FAM[b.model]||{rad:0}).rad)*b.scale).toFixed(2)+' m').join(', '));
+ok('every boss has at least 5 moves in all three phases, each made of primitives the bosses already use or declared as new in its `needs` (and every need is used), exactly one signature move, no move id repeated',BS.every(b=>
+  b.moves.length>=5&&[1,2,3].every(ph=>b.moves.some(m=>m.phase===ph))&&b.moves.every(m=>m.does.every(tok=>KNOWN.has(tok)||(tok.startsWith('new:')&&b.needs.includes(tok))))&&
+  b.needs.every(n=>b.moves.some(m=>m.does.includes(n)))&&b.moves.filter(m=>m.signature).length===1)&&new Set(BS.flatMap(b=>b.moves.map(m=>m.id))).size===BS.reduce((n,b)=>n+b.moves.length,0));
+ok('the three are different: three model families, three elements, three kits, three signatures',new Set(BS.map(b=>b.model)).size===3&&new Set(BS.map(b=>b.el)).size===3&&new Set(BS.map(b=>b.kit)).size===3&&new Set(BS.map(b=>b.moves.find(m=>m.signature).id)).size===3);
+// the hourly offer: two different mission types, changing at the top of every hour, the same for everyone
+{ const H=X.DG_OFFER_HOUR, T0=Date.UTC(2026,9,3,0,0,0), P=MIS.length*(MIS.length-1)/2, off=(id,h)=>X.dgOffer(id,T0+h*H), key=a=>a.join('+');
+  ok('a dungeon offers two different mission types of the seven, the same all hour long, and the same for everyone who asks',TH.every(t=>[0,1,2,3,50,999].every(h=>{ const a=off(t.id,h), b=X.dgOffer(t.id,T0+h*H+H-1); return a.length===2&&a[0]!==a[1]&&a.every(m=>MIS.includes(m))&&key(a)===key(b)&&key(a)===key(X.dgOffer(t.id,T0+h*H)); })));
+  ok('it changes at the top of the hour, and is never the same two hours running (also across the 21-hour cycles), for 3 dungeons over 3,000 hours',TH.every(t=>{ for(let h=1;h<3000;h++) if(key(off(t.id,h))===key(off(t.id,h-1))) return false; return true; }));
+  ok('every one of the '+P+' pairs comes up exactly once in each '+P+'-hour cycle (fair: a type is not starved), whichever cycle',TH.every(t=>[0,1,7,40,500].every(c=>{ const seen=new Set(); for(let i=0;i<P;i++) seen.add(key(X.dgOffer(t.id,(c*P+i)*H).slice().sort())); return seen.size===P; })));
+  ok('each dungeon has its own order (they offer the same pair only now and then), and every type is offered by each of them in a day',(()=>{ const [a,b]=TH; let same=0; for(let h=0;h<500;h++) if(key(off(a.id,h))===key(off(b.id,h))) same++; return same<125; })()&&TH.every(t=>{ const seen=new Set(); for(let h=0;h<24;h++) off(t.id,h).forEach(m=>seen.add(m)); return seen.size===7; }));
+  ok('the board can show a countdown: 3,600 s at the top of the hour, 1 s a millisecond before the next',X.dgOfferLeft(T0+5*H)===3600&&X.dgOfferLeft(T0+5*H+H-1)===1&&X.dgOfferLeft(T0+5*H+1800000)===1800);
+  ok('a pool of fewer types still works (the missions built so far): 2 types are always offered together',key(X.dgOffer('x',T0,['purge','defense']))==='purge+defense'&&X.dgOffer('x',T0,['purge','defense','survival']).length===2); }
+{ const home=TH.filter(t=>t.land==='home'), vale=TH.filter(t=>t.land==='vale'), hoar=TH.filter(t=>t.land==='hoar'), un=(g,lv,t,tier)=>X.dgUnlocked(g,lv,t,tier);
+  const gear=(h,v,r,extra)=>Object.assign({zt:{home:{on:h[0],max:h[1]},vale:{on:v[0],max:v[1]},hoar:{on:r[0],max:r[1]}}},extra||{}), Z=[0,0];
+  ok('Wildwood\'s dungeons are locked at +0 (even with +1 unlocked, whatever the level) and open at +1, level '+X.DG_LV+', the difficulty being the one you play Wildwood at',home.every(t=>
+    !un(gear(Z,Z,Z),50,t).ok&&!un(gear([0,1],Z,Z),50,t).ok&&!un(gear([0,3],Z,Z),50,t).ok&&/\+1 difficulty/.test(un(gear([0,1],Z,Z),50,t).why)&&
+    un(gear([1,1],Z,Z),25,t).ok&&un(gear([1,1],Z,Z),25,t).level===30&&un(gear([1,1],Z,Z),25,t).tier===1&&X.dgTierOf(gear([1,1],Z,Z),'home')===1));
+  ok('the Vale\'s and the Reach\'s dungeons are level '+X.DG_LV+' at their base, +0 (no tier needed)',[...vale,...hoar].every(t=>{ const g=gear(Z,Z,Z,{east:2,north:2}), r=un(g,25,t); return r.ok&&r.level===30&&r.tier===0; }));
+  ok('each tier above the base adds '+X.ZTIER_STEP+' levels: Wildwood +1/+2/+3 = 30/40/50, the Vale and the Reach +0/+1/+2/+3 = 30/40/50/60',
+    home.every(t=>[1,2,3].map(k=>X.dgLevel(t,k)).join()==='30,40,50')&&[...vale,...hoar].every(t=>[0,1,2,3].map(k=>X.dgLevel(t,k)).join()==='30,40,50,60'));
+  ok('the way in needs the dungeon\'s level less '+X.DG_ENTRY_GAP+' at that tier: Wildwood +1 and the Vale +0 from level 25, the Vale +1 from level 35',
+    home.every(t=>!un(gear([1,1],Z,Z),24,t).ok&&un(gear([1,1],Z,Z),25,t).ok&&/level 25/.test(un(gear([1,1],Z,Z),10,t).why))&&
+    vale.every(t=>!un(gear(Z,Z,Z,{east:2}),24,t).ok&&un(gear(Z,Z,Z,{east:2}),25,t).ok&&!un(gear(Z,[1,1],Z,{east:2}),34,t).ok&&un(gear(Z,[1,1],Z,{east:2}),35,t).ok));
+  ok('the Vale\'s dungeons need Hanami walked into (gear.east 2) and the Reach\'s Rimehold (gear.north 2); each land uses its own tier, not Wildwood\'s',
+    vale.every(t=>!un(gear(Z,Z,Z,{east:1}),30,t).ok&&un(gear(Z,Z,Z,{east:2}),30,t).ok&&un(gear([3,3],Z,Z,{east:2}),30,t).tier===0)&&
+    hoar.every(t=>!un(gear(Z,Z,Z,{north:1}),30,t).ok&&un(gear(Z,Z,Z,{north:2}),30,t).ok&&!un(gear(Z,Z,Z,{east:2}),30,t).ok));
+  ok('a party plays at its leader\'s tier: a member needs that tier unlocked (not played) and the level for it',vale.every(t=>{ const m=gear(Z,[1,1],Z,{east:2}); return un(m,35,t,1).ok&&!un(gear(Z,Z,Z,{east:2}),60,t,1).ok&&/not unlocked \+1/.test(un(gear(Z,Z,Z,{east:2}),60,t,1).why)&&!un(m,34,t,1).ok; })&&
+    home.every(t=>un(gear([0,2],Z,Z),40,t,2).ok&&!un(gear([0,2],Z,Z),40,t,0).ok)); }
+
+
 // ---- party size ----
 ok('one hiker is the baseline (x1 health, x1 groups, x1 objective), and a head count is clamped to 1-'+X.DG_MAX_PARTY,JSON.stringify(X.dgParty(1))==='{"hp":1,"count":1,"obj":1}'&&X.dgParty(0).hp===1&&X.dgParty(NaN).hp===1&&X.dgParty(9).hp===X.dgParty(4).hp);
 ok('every extra player makes monsters tougher (health never goes down with the head count)',[2,3,4].every(n=>X.dgParty(n).hp>X.dgParty(n-1).hp));
 ok('a party\'s fight with one monster lasts 1 to 1.3 times a solo fight (never faster, never a slog)',[2,3,4].every(n=>X.dgFightRatio(n)>=1&&X.dgFightRatio(n)<=1.3),[2,3,4].map(n=>n+': x'+X.dgFightRatio(n).toFixed(2)).join(', '));
+
+// ---- rewards (shared/dungeon-rewards.js) ----
+const R=loadShared(['DG_THEMES','DG_REWARDS','DG_REWARD_W','DG_GEAR_LV','DG_TIER','DG_ATK','DG_HP','DG_DEF','RING_ELS','RING_PCT','ENH_MAX','ENH_STEP','ENH_LV','ENH_DROP','dgRewardRarity','dgParse','dgItem','dgClearReward','dgAllIds','ringAtk','dgEnhanceNext','dgEnhanceStones','dgEnhanceTotal','dgDropKind','dgRollStone','dgGearId','dgRingId',
+  'ITEM','ITEM_LIST','TIERS','tierFor','TIER_ATK','ARMOR_HP','ARMOR_DEF','RAR_MULT','WEAPON_SLOTS','ARMOR_SLOTS','ALL_SLOTS','CLASS_OF','ELEM_LIST','ELEMS','TOOL_LIST','rollMonsterRarity']);
+const mulberry=a=>()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+const within=(obs,n,p)=>Math.abs(obs-n*p)<=4*Math.sqrt(n*p*(1-p))+1;   // 4 sigma
+const ODDS=[0.7,0.25,0.04,0.008,0.002];   // the owner's table, written out here so a change to the code's own table cannot hide
+const RT=Object.values(R.DG_THEMES).filter(t=>!t.dev), RKINDS={home:'weapon',vale:'armor',hoar:'ring'};
+ok('each of the three dungeons pays one kind of reward: Wildwood weapons, the Vale armour, the Reach rings (a reward for every theme and no other)',
+  RT.length===3&&RT.every(t=>R.DG_REWARDS[t.id]&&R.DG_REWARDS[t.id].kind===RKINDS[t.land])&&Object.keys(R.DG_REWARDS).length===3);
+{ const P=id=>R.DG_REWARDS[id].pool;
+  ok('the pools are "all kinds": the weapons of all three classes, the four armour pieces, and 7 rings (no element and the six elements)',
+    P('hollowroots').join()===R.WEAPON_SLOTS.join()&&new Set(P('hollowroots').map(s=>R.CLASS_OF[s])).size===3&&P('jadesprings').join()===R.ARMOR_SLOTS.join()&&
+    P('bonefrostbarrow').length===7&&new Set(P('bonefrostbarrow')).size===7&&P('bonefrostbarrow')[0]==='basic'&&R.ELEM_LIST.length===6&&R.ELEM_LIST.every(e=>P('bonefrostbarrow').includes(e)&&R.ELEMS[e])); }
+{ const B=[0,0.6999,0.70,0.9499,0.95,0.9899,0.99,0.9979,0.998,0.99999].map(R.dgRewardRarity).join();
+  ok('the rarity of a clear is 70 / 25 / 4 / 0.8 / 0.2% (the table adds up to 100% and every boundary falls in the right rarity)',R.DG_REWARD_W.reduce((a,b)=>a+b,0)===1000&&B==='0,0,1,1,2,2,3,3,4,4',B); }
+{ const N=200000, rnd=mulberry(7), cnt=[0,0,0,0,0]; for(let i=0;i<N;i++) cnt[R.dgRewardRarity(rnd())]++;
+  ok('over '+N+' rolls the rarities come out at their odds (within 4 sigma)',cnt.every((c,r)=>within(c,N,ODDS[r])),cnt.map(c=>(c/N*100).toFixed(2)+'%').join(' / ')); }
+{ const rnd=mulberry(11), N=60000, bad=[];
+  for(const t of RT){ const K=R.DG_REWARDS[t.id], seen={}, rar=[0,0,0,0,0];
+    for(let i=0;i<N;i++){ const id=R.dgClearReward(t.id,rnd), it=R.dgItem(id);
+      if(!it||it.kind!==K.kind||it.n!==0||it.lv!==30){ bad.push(t.id+' '+id); break; } seen[it.el||it.slot]=(seen[it.el||it.slot]||0)+1; rar[it.rar]++; }
+    if(!K.pool.every(s=>within(seen[s]||0,N,1/K.pool.length))) bad.push(t.id+' pool not uniform '+JSON.stringify(seen));
+    if(!rar.every((c,r)=>within(c,N,ODDS[r]))) bad.push(t.id+' rarity '+rar); }
+  ok('a clear pays one fresh (+0) level-30 item of the dungeon\'s kind: every piece of the pool comes up equally often, at the table\'s rarities',!bad.length&&R.dgClearReward('bare')===null&&R.dgClearReward('nope')===null,bad.join('; ')); }
+{ const bad=[], all=R.dgAllIds(), ids=new Set(all);
+  ok('the ids are a list of strings a save can keep: 14 kinds x 35 (rarity, enhancement) = 490, unique, each parses and rebuilds itself',all.length===490&&ids.size===490&&all.every(id=>{ const q=R.dgParse(id), it=R.dgItem(id);
+    return q&&it&&it.id===id&&(q.el?R.dgRingId(q.el,q.rar,q.n):R.dgGearId(q.slot,q.rar,q.n))===id; }));
+  const no=['sword7+3','sword7-l+11','sword7-e+7','sword7-u+9','sword7+0','sword7+01','sword6','sword7-x','ring-fire-x','ring-fire+','ring-wind','ring-fire-l+11','shoes7-r+5','sword','ring','','sword7 ','Sword7'], yes=['sword7','sword7+2','sword7-r+4','sword7-e+6','sword7-u+8','ring-dark-l+10','ring-basic','top7-u+6'];
+  ok('an id past its rarity\'s limit, or one that is not a level-30 piece, does not parse (limits 2 / 4 / 6 / 8 / 10)',no.every(id=>R.dgParse(id)===null)&&yes.every(id=>R.dgParse(id))&&R.ENH_MAX.join()==='2,4,6,8,10'); }
+ok('the level-30 gear is a tier of its own: shops, tools, drops and the six tiers are untouched (no id collides with ITEM, tierFor stops at the old top tier)',
+  R.TIERS===6&&R.ITEM_LIST.length===210&&R.tierFor(30)===5&&R.tierFor(50)===5&&R.TOOL_LIST.length===90&&R.dgAllIds().every(id=>!R.ITEM[id])&&R.DG_TIER===R.TIERS);
+{ const bad=[], ratio=(a,b)=>a/b;
+  for(const s of R.WEAPON_SLOTS) for(let r=0;r<5;r++){ const a=R.dgItem(R.dgGearId(s,r,0)), b=R.ITEM[s+'6'+(r?'-'+['','r','e','u','l'][r]:'')]; if(!(a.atk>b.atk)) bad.push(s+r+' atk'); }
+  for(const s of R.ARMOR_SLOTS) for(let r=0;r<5;r++){ const a=R.dgItem(R.dgGearId(s,r,0)), b=R.ITEM[s+'6'+(r?'-'+['','r','e','u','l'][r]:'')]; if(!(a.hp>b.hp&&a.def>b.def)) bad.push(s+r+' hp/def'); }
+  const stepRatio=ratio(R.DG_ATK,R.TIER_ATK[5]), prev=ratio(R.TIER_ATK[5],R.TIER_ATK[4]);
+  ok('a level-30 piece beats the level-25 piece of the same rarity in every stat, and the step is smaller than the last one (the curve flattens: weapon x'+stepRatio.toFixed(2)+' after x'+prev.toFixed(2)+')',
+    !bad.length&&stepRatio>1.2&&stepRatio<prev&&R.ARMOR_SLOTS.every(s=>R.DG_HP[s]/R.ARMOR_HP[s][5]>1.2&&R.DG_HP[s]/R.ARMOR_HP[s][5]<R.ARMOR_HP[s][5]/R.ARMOR_HP[s][4]),bad.join(', ')); }
+{ const bad=[];
+  for(let r=0;r<5;r++){ const M=R.ENH_MAX[r]; let id=R.dgGearId('sword',r,0), last=R.dgItem(id), steps=0, stones=0;
+    for(;;){ const nx=R.dgEnhanceNext(id); if(!nx) break; stones+=R.dgEnhanceStones(id); id=nx; steps++; const it=R.dgItem(id); if(!(it.atk>last.atk)) bad.push('atk r'+r+' step '+steps); last=it; }
+    if(steps!==M||stones!==R.dgEnhanceTotal(r)||R.dgEnhanceStones(id)!==0) bad.push('r'+r+' steps '+steps+' stones '+stones);
+    const base=R.dgItem(R.dgGearId('sword',r,0)).atk, top=R.dgItem(R.dgGearId('sword',r,M)).atk;
+    if(Math.abs(top-base*(1+R.ENH_STEP*M))>1) bad.push('r'+r+' top '+top+' vs '+base*(1+R.ENH_STEP*M));
+    for(const s of R.ARMOR_SLOTS){ let p=R.dgItem(R.dgGearId(s,r,0)); for(let n=1;n<=M;n++){ const q=R.dgItem(R.dgGearId(s,r,n)); if(!(q.hp>p.hp&&q.def>=p.def)) bad.push(s+r+' +'+n); p=q; } }
+    for(const e of R.RING_ELS){ let p=R.dgItem(R.dgRingId(e,r,0)); for(let n=1;n<=M;n++){ const q=R.dgItem(R.dgRingId(e,r,n)); if(!(q.pct>p.pct)) bad.push(e+r+' +'+n); p=q; } } }
+  const tot=[0,1,2,3,4].map(R.dgEnhanceTotal), kills=tot.map(t=>Math.round(t/R.ENH_DROP));
+  ok('enhancing walks from +0 to 2 / 4 / 6 / 8 / 10 and stops: the step to +n costs n stones ('+tot.join(' / ')+' to the limit = about '+kills.join(' / ')+' kills at '+R.ENH_DROP*100+'%), and every step raises weapons, armour and rings (the top is +'+Math.round(R.ENH_STEP*R.ENH_MAX[4]*100)+'% for a legendary)',
+    !bad.length&&tot.join()==='3,10,21,36,55',bad.join('; ')); }
+{ const w=1000, e=R.RING_ELS, souls=['basic',...R.ELEM_LIST], bad=[];
+  for(const el of e) for(const so of souls){ const b=R.ringAtk(R.dgRingId(el,0,0),so,w); if((b>0)!==(el===so)) bad.push(el+' ring, '+so+' soul = '+b); }
+  const byRar=[0,1,2,3,4].map(r=>R.ringAtk(R.dgRingId('fire',r,0),'fire',w)), enh=R.ringAtk(R.dgRingId('fire',4,10),'fire',w);
+  ok('a ring adds a share of the weapon\'s attack only when its element is the soul\'s (7 rings x 7 souls: only the matching one pays; none for the opposite soul)',!bad.length&&R.ringAtk(R.dgRingId('fire',0,0),'water',w)===0,bad.join('; '));
+  ok('the share is 5 / 6.5 / 8.5 / 11 / 15% of the weapon by rarity, grows with the weapon (x2 weapon = x2 bonus) and with enhancement (a legendary +10 gives 22.5%), and a hiker with no soul (undefined) counts as basic',
+    byRar.join()==='50,65,85,110,150'&&R.ringAtk(R.dgRingId('fire',2,0),'fire',2*w)===2*R.ringAtk(R.dgRingId('fire',2,0),'fire',w)&&enh===225&&R.ringAtk(R.dgRingId('basic',0,0),undefined,w)===50&&R.ringAtk('sword7','fire',w)===0&&R.ringAtk(null,'fire',w)===0,byRar.join('/')+' '+enh); }
+{ const real=Math.random, N=200000, rnd=mulberry(5); let a,b;
+  Math.random=()=>R.ENH_DROP-1e-9; a=R.rollMonsterRarity(); Math.random=()=>R.ENH_DROP; b=R.rollMonsterRarity(); Math.random=real;
+  ok('the stone\'s chance is exactly the equipment chance it replaces (2.6%: just under it a monster drops equipment, at it nothing)',a>=0&&b===-1&&R.ENH_DROP===0.026);
+  let lv30=0, lv29=0, boss=0, lv31=0; for(let i=0;i<N;i++){ lv30+=R.dgRollStone(30,false,rnd); lv29+=R.dgRollStone(29,false,rnd); boss+=R.dgRollStone(30,true,rnd); lv31+=R.dgRollStone(31,false,rnd); }
+  ok('only normal monsters of level '+R.ENH_LV+' and above drop the stone, at the level you fight them at (a level-1 slime at tier III is 31): below 30 and every boss keep rolling equipment',
+    R.dgDropKind(29,false)==='equipment'&&R.dgDropKind(30,false)==='stone'&&R.dgDropKind(31,false)==='stone'&&R.dgDropKind(30,true)==='equipment'&&R.dgDropKind(60,true)==='equipment'&&lv29===0&&boss===0&&within(lv30,N,R.ENH_DROP)&&within(lv31,N,R.ENH_DROP),
+    'lv30 '+(lv30/N*100).toFixed(2)+'%, lv29 '+lv29+', boss '+boss); }
 
 console.log(fails?'\n'+fails+' FAILED':'\nall passed'); process.exit(fails?1:0);
