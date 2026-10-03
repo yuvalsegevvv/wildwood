@@ -47,7 +47,7 @@ for(const d of W.MON_DEFS) groups[landOfZone(W.defZone(d))].push(d);
 function mobsDoc(){
   const nBoss=W.BOSS_DEFS.length, helpers=W.BOSS_DEFS.flatMap(b=>[b.add,b.totem,b.prop].filter(Boolean));
   const total=W.MONS.length;
-  let s=HEADER('Monsters: every mob and its stats','Every monster kind in the game, with the numbers the server uses and the place in the code that defines it. Dungeons (docs/DUNGEONS.md) draw their mobs from here.');
+  let s=HEADER('Monsters: every mob and its stats','Every monster kind in the game, with the numbers the server uses and the place in the code that defines it. Dungeons (docs/DUNGEONS.md) draw their mobs from here. **Every number is a base stat (zone tier 0)**: a zone tier, and so a dungeon played at a tier, only multiplies them (`zoneTierK` in src/shared/tiers.js: +10 levels per tier); tiered values are not listed.');
   s+=`${W.MON_DEFS.length} monster kinds in ${W.ZONES.filter(z=>!z.boss&&W.MON_DEFS.some(d=>W.defZone(d)===z)).length} zones, ${nBoss} bosses, ${helpers.length} boss helpers (summons and props) and ${W.GREY_DEFS.length} grey-veined quest monsters: ${W.ALL_MON_DEFS.length} definitions. ${total} monsters exist in the world at start (${W.MON_DEFS.length} kinds in their camps + ${nBoss} bosses).\n\n`;
 
   s+='## 1. Where it is defined\n\n'+rowsOf(['What','Where'],[
@@ -76,13 +76,13 @@ function mobsDoc(){
 - **XP** = xpFor(L) = f(L) × 1.15^(L−5) × highMult (a boss ×25, a prop 0). **Coins** per kill = round(f(L) × U(1.5, 2.5) × 1.1^(L−5) × highMult); the tables show the mean (boss ×20).
 - **Hits** in the tables is HP / expDmg(L): how many hits of a same-level, normally geared player it takes.
 - **Behaviour**: attack every \`Atk s\` seconds with a 0.28 s wind-up; moves at \`Spd\` m/s; a monster with \`Aggro 0\` ("passive") leaves you alone until hit; it gives up when 32 m from its camp; it only thinks while a player is within 110 m; a dead one respawns after 35 s if nobody is within 22 m of its camp. Bosses engage when a player steps inside their arena and reset when nobody is left inside.
-- **Level debuff**: ±5% damage per level of difference between player and monster. **Zone tiers** add 10 levels per tier to every monster of a land (see \`zoneTierK\`).
+- **Level debuff**: ±5% damage per level of difference between player and monster. **Zone tiers** add 10 levels per tier to every monster of a land, and to a dungeon played at that land's tier (see \`zoneTierK\`); the tables show base values only.
 - **Drops**: every kind drops its material with ${W.DROP_CHANCE*100}% (one, sometimes two); a boss always drops ${W.BOSS_DROPS}. An item roll on every kill (monster: 2% common, 0.5% rare, 0.1% epic; boss: 50 / 10 / 3 / 1 / 0.1% common to legendary) of the gear tier of the monster's level (\`tierFor\`, see docs/EQUIPMENT.md). Each boss skill drops from its boss with ${W.BOSS_SKILL_CHANCE*100}% per kill and helper.
 
 `;
 
   const section=(n,title,note,defs)=>`## ${n}. ${title}\n\n${note}\n\n${monTable(defs)}\n\n`;
-  s+='## 3. Reading the tables\n\n**Lv** level; **El** element (`—` = none); **HP** health in the def\'s own units; **Hits** HP / a same-level player\'s damage; **Dmg** damage per hit before armour; **Atk s** seconds between attacks; **Spd** metres per second; **Aggro** distance at which it notices you; **XP** and **Coins** per kill (mean) at level 0 tier; **Count** how many exist; **Drop** its material; **Model** the client model and `scale`; **Defined** file:line of its row.\n\n';
+  s+='## 3. Reading the tables\n\n**Lv** level; **El** element (`—` = none); **HP** health in the def\'s own units; **Hits** HP / a same-level player\'s damage; **Dmg** damage per hit before armour; **Atk s** seconds between attacks; **Spd** metres per second; **Aggro** distance at which it notices you; **XP** and **Coins** per kill (mean) at base (tier 0); **Count** how many exist; **Drop** its material; **Model** the client model and `scale`; **Defined** file:line of its row.\n\n';
   s+=section(4,'Home forest: the three rings (levels 1-15)','Zones are named by level; ring 0 = levels 1-6, ring 1 = 7-11, ring 2 = 12-15 around the village.',groups.ring);
   s+=section(5,'Home forest: the edges (levels 16-20)','Side content with its own `zone` and `count` (the shore, the Sunwall\'s foot, the Greyspine foothills).',groups.edge);
   s+=section(6,'Sakura Vale (levels 16-25)','Two kinds per level, 12 of each, in ten zones.',groups.vale);

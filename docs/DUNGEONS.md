@@ -4,6 +4,8 @@
 add and where, in which order, and how to test it. It plans **no dungeon** (no names, themes, layouts or bosses): that comes later, as its own request,
 on top of this framework. Choices marked **Recommended** are my proposal and wait for the owner's yes (section 11 collects them).
 
+**Decided by the owner:** dungeons scale with the **zone tier** exactly like the open world (D5), and the generated docs list **base stats only** (tier 0).
+
 Symbols and files are named without line numbers (they move); `docs/MOBS.md` and `docs/EQUIPMENT.md` carry the exact `file:line`.
 
 ## 1. The two catalogs a dungeon is built from
@@ -48,7 +50,7 @@ What a dungeon designer takes from where:
 | `setPos` clamps the player to the world box (`WX0..WX1`, `WZ0..WZ1`) | `server/api.js` | the instance region needs an exemption, only while the player is in an instance |
 | `getH` is the world's heightmap and **clamps to its edge** outside it | `server/world.js`, client `world/heightmap.js` | a floor override for the instance region on both sides, or the player falls / floats |
 | One `B` (boss fight state) per `BOSS_DEFS` row, built once at start from `ARENAS`; a boss is a circle `{x,z,r}`; `bossState()` goes to everyone; a dead boss respawns after 120 s | `server/boss.js` `initBossS`, `updateBossS` | a dungeon boss needs its own `B` made on demand (extract `makeBossB(bd, A)`), no respawn, and its state sent only to the instance's players. The kits (`BOSS_KITS`) and `boss-fx.js` are reusable as they are |
-| A monster's zone tier comes from `landAt(camp)`: x > `HALF` is the vale or the Reach | `shared/tiers.js` `landAt`, `monTierOf` | dungeon mobs would silently get the player's vale / Reach tier: `landAt` must return `'dungeon'` first. `zoneTierOn` already returns 0 for an unknown land |
+| A monster's zone tier comes from `landAt(camp)`, which decides by position: x > `HALF` is the vale or the Reach. `landAt` is the only place that does it (`monTierOf`, used by the server's `monK`, the client's `monTierK` and the map text, all go through it) | `shared/tiers.js` `landAt`, `monTierOf` | the instance region lies east of the world, so by position it would count as the vale or the Reach and a dungeon would get the wrong land's tier. `landAt` must answer with the land **of the dungeon in that slot** (D5); nothing else changes |
 | `rewardKill` rolls an item of tier `tierFor(level)` (the top gear tier, T6, from level 25 on) and the monster's own material | `server/combat.js` | dungeon loot needs its own table (section 5.6); dungeon-only mobs must stay **out of** `MON_DEFS` (it feeds camps, `genQuest`, `MATS` and `upgradeNeeds`): follow `GREY_DEFS` |
 | Position is not saved: a new session spawns in the village; one account = one live session | `server/players.js` `newPlayer`, `api.js` `beginJoin` | instance membership is transient: leaving, disconnecting or a crash just ends it. Only progress (`gear.dg`) is saved |
 | No party system; `hello` / accounts are per player | `server/api.js` | phase 1 is solo; groups come later and stay small (section 4, D4) |
@@ -75,9 +77,14 @@ seed assembles (a fixed number of rooms, fixed boss room), so a dungeon is neith
 at the entrance when one member presses enter (or is invited by name) joins the same instance, up to `DG_PARTY_MAX`. A full party system (chat, UI,
 shared quests) stays a separate feature. Scaling with group size is decided when groups are built (open question 2).
 
-**D5. Difficulty is the dungeon's own, not the zone tier's.** *Recommended.* A dungeon has a level band; its mobs are made at a level with `defAt` and
-run through the unchanged combat paths. Zone tiers do not apply inside (`landAt` returns `'dungeon'`). The level debuffs (-5% damage dealt / +5% taken per
-level above you) already punish going in too low.
+**D5. Difficulty is the zone tier's (decided by the owner).** A dungeon belongs to a land (`land`: home, vale or hoar, where its entrance stands) and is played at
+**that land's zone tier**, the one the player chose in a village (`gear.zt[land].on`; tiers can only be changed in a village, so it cannot change inside).
+Its mobs are base defs at the level of the dungeon's `band` (made with `defAt`); the tier then adds +10 levels per tier through `zoneTierK`, which scales health,
+damage, XP, coins and the gear tier of the drop exactly as it does for the open land, and the symbol bonus applies as always. This needs one change:
+`landAt(x,z)` answers, for the instance region, with the land of the dungeon occupying that slot (a small table `DG_SLOT_LAND` in `shared/dungeons.js`, filled
+by the server when an instance opens and by the client when `dgin` arrives), so `monTierOf`, `monK`, `monTierK`, the target frame's level and the map text work
+unchanged on both sides. The unlock of a new tier stays with each land's second boss (`ZTIER_BOSS`: Carapax, Kyuubi, Vetrmaw); a dungeon boss does not unlock
+tiers unless the owner decides so. The level debuffs (-5% damage dealt / +5% taken per level above you) still apply.
 
 **D6. Rewards: the dungeon's table, the world's items.** *Recommended.* Kills inside still pay XP and coins (same formulas, from the mob's level) and the material
 of the mob's kind if it has one. Item rolls come from the dungeon's loot table (`DUNGEONS[...].loot`): trash as in the world, elites better, the boss
@@ -135,8 +142,9 @@ side, instance or world. In the room (Shared) mode there is one message for ever
 
 ### 5.6 Rewards and saves
 
-`rewardKill(q,m)`: when `m.inst`, XP, coins and the material are as today (`monK` returns the identity because the land is `'dungeon'`) and the **item roll**
-uses `instanceLoot(m)` instead of `rollMonsterRarity` / `rollBossRarity` and `tierFor(K.lv)`. A cleared instance gives each member the chest once (`dgdone`
+`rewardKill(q,m)`: when `m.inst`, XP, coins and the material are as today (`monK` gives the zone tier of the dungeon's land, D5) and the **item roll**
+uses `instanceLoot(m)` for the rarity instead of `rollMonsterRarity` / `rollBossRarity`; the gear tier stays `tierFor(K.lv)` of the tiered level, so a higher tier
+drops better gear up to T6. A cleared instance gives each member the chest once (`dgdone`
 event with the result). `gear.dg = {v:1, done:{id:n}, best:{id:seconds}, first:{id:1}}` is sanitized by `sanitizeDg` (new, in `server/dungeons.js`, called from
 `sanitizeGear`) with a default in `newGearFor`; old saves get `{}`. A dungeon's own materials (if wanted) need `MATS` extended past `MON_DEFS` + bosses
 (`shared/drops.js`).
@@ -146,7 +154,7 @@ event with the result). `gear.dg = {v:1, done:{id:n}, best:{id:seconds}, first:{
 - `dgin [pid,id,seed,slot,ox,oz]` -> `enterDungeonView`: build the layout meshes at the slot (`game/world/dungeon-build.js`: merged geometry with vertex colours,
   `pc` / `paint`; any `InstancedMesh` must carry `instanceColor`), hide terrain, plants, far lands and weather, fixed lighting and fog, the dungeon's music
   theme (`musicThemeHere`), no map (or a room map), stop `streamPump`. `dgout` undoes it and returns to the world view.
-- `getH` and `worldBounds` (`game/player/movement.js`) return the floor and the walls of the layout while inside.
+- `getH` and `worldBounds` (`game/player/movement.js`) return the floor and the walls of the layout while inside. `dgin` also carries the dungeon's land: the client fills `DG_SLOT_LAND` so `landAt` is right there too (D5).
 - HUD (`game/ui/dungeon-ui.js`, `styles/23-dungeons.css`): the room or progress, revives left, leave button, the result panel. The entrance prompt is in `talking.js`.
 - Everything per-instance is torn down on `dgout` / `kicked` / `netReset`.
 
@@ -155,9 +163,9 @@ event with the result). `gear.dg = {v:1, done:{id:n}, best:{id:seconds}, first:{
 A future row of `DUNGEONS` in `shared/dungeons.js`. Illustrative: this is the **shape**, not a dungeon.
 
 ```js
-{ id:'example', name:'<name>', land:'home'|'vale'|'hoar',            // where the entrance stands (ties it to a map)
+{ id:'example', name:'<name>', land:'home'|'vale'|'hoar',            // where the entrance stands, and whose zone tier applies inside (D5)
   entrance:{x,z},                                                    // the portal in the world (found like the arenas: a flat spot near x,z)
-  band:[lo,hi],                                                      // level range: the mobs' level is picked in it; the gate is `lo`
+  band:[lo,hi],                                                      // base level range (tier 0): the mobs' level is picked in it; the gate is `lo`
   party:1,                                                           // players allowed (1 until groups exist)
   unlock:null,                                                       // null | {boss:'akaoni'} | {quest:'..'} | {level:n}
   theme:{music:'<theme>',light:0x..,fog:[near,far]},
@@ -190,7 +198,7 @@ spawn, clear, loot, `sanitizeDg`), `src/game/world/dungeon-build.js` (meshes), `
 | `server/boss.js` | `makeBossB`, `bossStateFor(p)`, `bossDefeatedS` branch on `m.inst` |
 | `server/combat.js` | `rewardKill`: the instance's item roll; `killMonsterS`: tell the instance (clear tracking) |
 | `server/players.js` | `sanitizeGear` calls `sanitizeDg`; death inside an instance respawns in the start room (`updatePlayersS`) |
-| `shared/tiers.js` | `landAt` returns `'dungeon'` for the instance region |
+| `shared/tiers.js` | `landAt` returns the land of the dungeon in that slot for the instance region (`DG_SLOT_LAND`); `monTierOf`, `server/tiers.js` `monK` and `game/economy/tiers.js` `monTierK` stay as they are |
 | `shared/items.js` | `newGearFor`: `dg:{}` |
 | `server/world.js`, `game/world/heightmap.js` | `getH` floor override in the instance region (floor height at least 1.5: monsters treat `getH < 0.4` as water) |
 | `game/player/movement.js` | `worldBounds` and ground from the layout while inside |
@@ -205,6 +213,7 @@ spawn, clear, loot, `sanitizeDg`), `src/game/world/dungeon-build.js` (meshes), `
 
 Use `MOBS.md` section 11. A run should pay about what the same time in the world pays, plus the chest:
 
+- **Base stats only.** The `band`, the budget and the tables in `MOBS.md` are all tier 0; a zone tier multiplies them as in the open land (`zoneTierK`, +10 levels a tier: read the level table at L + 10 t). Design and check a dungeon at tier 0.
 - **Mob level** inside `band`; an elite +1 level or `hpK x2-3` (the grey monsters are `hpK x2.2-2.6`, XP x3); a boss uses the boss formulas (70 hits, 16% damage, XP x25, coins x20).
 - **Budget** (checked by `validateDungeon` and printed by the smoke test): total mob HP / (player damage at `lo`) = hits to clear; total XP and coins of a full clear; room count. Target proposals: 5-8 rooms, 8-12 mobs a room, a clear in 15-25 minutes alone, total XP of a clear about 150-250 same-level kills, coins in proportion.
 - **Loot**: the world's rates for trash (2% / 0.5% / 0.1%); elites one rarity step better; the boss `rollBossRarity`; the chest two boss rolls. Tier is `tierFor(level)`: nothing beyond T6 until the owner decides (question 4).
@@ -223,7 +232,7 @@ The generated docs then show the new tier by themselves.
 |---|---|---|
 | 0 (done) | `docs/MOBS.md`, `docs/EQUIPMENT.md`, `tools/gen-docs.js`, this plan | `node tools/gen-docs.js --check` |
 | 1 Empty instance | slots, region, `getH` floor, `enterDungeonP` / `leaveDungeonP`, `evTo`, per-player filtering; a testing-tool "enter dungeon" with one flat room | enter and leave; two players in two instances see nothing of each other (snapshots, events, projectiles); a world monster never reaches an instance; saves and positions unchanged; all existing smoke tests (`npm test`) still pass |
-| 2 Rooms and mobs | `dungeonLayout`, walk test (server and client), meshes, `dungeonMob`, room wake-up, clear tracking | same seed = same layout on both sides; mobs stay in their room and inside walls; no respawn; XP and coins as in the world; `monK` identity (no vale tier leaks) |
+| 2 Rooms and mobs | `dungeonLayout`, walk test (server and client), meshes, `dungeonMob`, room wake-up, clear tracking | same seed = same layout on both sides; mobs stay in their room and inside walls; no respawn; XP and coins as in the world; `monK` uses the tier of the dungeon's own land (a vale-tier-II player in a home dungeon fights at the home tier; `landAt` of the region is that land on server and client) |
 | 3 Boss room | `makeBossB`, `bossStateFor`, instance boss, completion | a boss fights through its three phases inside an instance (as `tools/boss-smoke.js` does for the world); the world's six bosses unchanged |
 | 4 Rewards and saves | `instanceLoot`, chest, `gear.dg`, `sanitizeDg` | loot rarity rates; old saves; first clear once; chest once |
 | 5 Entrances and UI | world portals, gates, HUD, indoor mode, music | `client-smoke` additions (enter, the HUD, back out), no streaming inside, no bare `InstancedMesh` |
@@ -234,7 +243,7 @@ The generated docs then show the new tier by themselves.
 
 1. **Instance model**: slots in a reserved region (D1). OK?
 2. **Groups**: solo first, then up to 4; how should mobs scale with group size (more HP only, or more mobs)?
-3. **Zone tiers inside dungeons**: none, the dungeon has its own difficulty (D5). Or should a dungeon also have I / II / III settings?
+3. ~~Zone tiers inside dungeons~~ **Decided**: dungeons scale with the land's zone tier (D5); base stats are what the docs list.
 4. **Loot**: no new gear tier and no dungeon-only items at first (D6). Do you want exclusive items or materials, and gear above T6?
 5. **Death**: respawn in the dungeon with 3 revives (D7), or out at once?
 6. **Lockouts**: none at first (D8)?
@@ -245,7 +254,7 @@ The generated docs then show the new tier by themselves.
 
 ## 12. Risks (lessons already in CLAUDE.md section 8)
 
-Duplicate top-level names (prefix everything); `monK` / `landAt` leaking the vale or Reach tier into the region; the instance region being treated as water
+Duplicate top-level names (prefix everything); `landAt` not answering with the dungeon's land for the instance region (the position alone says vale or Reach, and the wrong tier would scale the mobs); the instance region being treated as water
 (`getH < 0.4`) or as the vale by the many `inVale(x)` checks (the client's indoor mode must come first); snapshot size (instances are small, but filter events
 before sending); a bare `InstancedMesh` crashing the render loop; a boss `B` left behind on teardown (`clearBossFxS`, `removeMonS`); new save fields must be
 sanitized with a default; constants used at load (`DG_*`) must be defined before their first use (the files are concatenated: a top-level `const` used too early throws); the headless client has no layout, so test the client part by reading game variables.
