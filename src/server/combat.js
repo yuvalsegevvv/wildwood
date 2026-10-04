@@ -54,7 +54,7 @@ function killMonsterS(m,p){
 }
 function rewardKill(q,m){
   const K=monK(m,q);   // XP, coins and gear are those of the monster's level at your zone tier
-  gainExpP(q,m.T.xp*K.xp*(1+psP(q,'xp')),m.id);
+  gainExpP(q,m.T.xp*K.xp*xpLeadK(q.level,K.lv)*(1+psP(q,'xp')),m.id);   // (never more than 10 levels above you pay: xpLeadK)
   const c=coinsFor(K.lv)*(m.def.boss?20:1); q.gear.coins+=c; ev('coins',q.id,c,m.id);
   const r=dgRollDropP(q,m,K,m.def.boss?rollBossRarity():rollMonsterRarity());   // dungeons: a Tempering Stone replaces the equipment drop of normal monsters fought at level 30+
   if(r>=0) addItemP(q,randomItem(tierFor(K.lv),r),false,m.id);

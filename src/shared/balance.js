@@ -1,4 +1,4 @@
-//@ Level formulas: fLv, gear tiers, expected gear, armour negation (soft-capped at 90%), XP curve, coins (the pay doubles every 10 levels above 60). Pure.
+//@ Level formulas: fLv, gear tiers, expected gear, armour negation (soft-capped at 90%), the XP curve (a soft cap at level 50, no kill pays for more than 10 levels above you), coins (the pay doubles every 10 levels above 60). Pure.
 /* ===================== MONSTERS =====================
    15 monsters built from 6 models (slime, shroom, beetle, boar, goblin, treant), recoloured and resized.
    Camps sit at fixed spots in rings around the village: level 1 closest, level 15 farthest.
@@ -26,7 +26,10 @@ const RED_KNEE=0.6, RED_CAP=0.9, DEF_KNEE=60*RED_KNEE/(1-RED_KNEE), RED_H=(RED_C
 const defRed=d=>d<=DEF_KNEE?d/(d+60):RED_KNEE+(RED_CAP-RED_KNEE)*(d-DEF_KNEE)/(d-DEF_KNEE+RED_H);
 // whatever armour, passives, buffs and potions add up to, a hit still does at least this share of its damage (at most 90% negation in all)
 const DMG_TAKEN_MIN=0.1;
-const PLAYER_MAX_LV=50;   // the highest level a hiker reaches (gainExpP, saves, the testing tool)
+/* Levels. Level 50 is a soft cap, not a wall: from it on every level costs LV_SOFT_GROWTH (x1.5) times what the one before cost (expToNext), so with the best XP a kill can pay
+   (a monster 10 levels above you) the step 50 -> 51 takes about 450 kills, 55 -> 56 about 6,300 and 60 -> 61 about 90,000. PLAYER_MAX_LV is only the technical ceiling a save or the testing tool is
+   clamped to, far beyond where anyone gets. */
+const LV_SOFT=50, LV_SOFT_GROWTH=1.5, PLAYER_MAX_LV=99;
 const expDmg=L=>3*fLv(L)+TIER_ATK[tierFor(L)];
 const expHP=L=>20*fLv(L)+setHP(tierFor(L));
 const expRed=L=>defRed(setDef(tierFor(L)));
@@ -41,10 +44,13 @@ const HIGH_LV=10, highMult=L=>L>=HIGH_LV?1.5:1;
    PAY_DOUBLE levels more (x2 at 70, x4 at 80). Nothing at or below level 60 changes, and no hiker levels past 50, so the level curve below is untouched. */
 const PAY_LV=60, PAY_DOUBLE=10, payMult=L=>L>PAY_LV?Math.pow(2,(L-PAY_LV)/PAY_DOUBLE):1;
 const xpFor=L=>xpBase(Math.min(L,PAY_LV))*highMult(L)*payMult(L);
+/* A kill never pays for more than XP_LEAD (10) levels above you: a monster 30 levels up (zone tier III, a +III dungeon) pays what one 10 levels up does, so fighting far above your
+   level no longer pays more XP (the coins, the drops and the level debuffs go on). It is a factor on whatever the kill would pay, so a boss's x25 and a grey monster's x3 stay. */
+const XP_LEAD=10, xpLeadK=(playerLv,monLv)=>monLv>playerLv+XP_LEAD?xpFor(playerLv+XP_LEAD)/xpFor(monLv):1;
 const K15=(500*xpBase(15))/(10*(225+Math.pow(7/6,15)));
 const expToNext25=L=>10*(L*L+Math.pow(7/6,L))*Math.pow(K15,Math.max(0,L-5)/10);
 /* Past level 25 the curve above keeps growing faster than the monsters' XP (level 30 would need ~7,800 same-level kills): from 25 on a
    level costs as many same-level kills as 25 -> 26 does, so the Hoarfrost's levels 26-30 stay a long but bounded grind. */
 const KILLS25=expToNext25(25)/xpFor(25);
-const expToNext=L=>L<=25?expToNext25(L):KILLS25*xpFor(L);
+const expToNext=L=>L<=25?expToNext25(L):KILLS25*xpFor(L)*(L>=LV_SOFT?Math.pow(LV_SOFT_GROWTH,L-LV_SOFT+1):1);
 const coinsFor=L=>{ const P=Math.min(L,PAY_LV); return Math.max(1,Math.round(fLv(P)*AR(1.5,2.5)*Math.pow(1.1,Math.max(0,P-5))*highMult(L)*payMult(L))); };

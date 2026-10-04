@@ -106,7 +106,7 @@ function rewardAllS(run,m){
   const ps=dgPresentS(run); if(!ps.length) return;
   const K=m.dgK||dgKOf(m.def,run.L), R=dgLootRollS(m,K,ps);
   for(const q of ps){
-    const mb=dgMemberOf(run,q), xp=m.T.xp*K.xp*(1+psP(q,'xp'));
+    const mb=dgMemberOf(run,q), xp=m.T.xp*K.xp*xpLeadK(q.level,K.lv)*(1+psP(q,'xp'));   // (the world's cap: a member never gets more than 10 levels above their own level pays)
     gainExpP(q,xp,m.id);
     q.gear.coins+=R.coins; ev('coins',q.id,R.coins,m.id);
     if(R.item){ const had=q.gear.inv.length; addItemP(q,R.item,false,m.id); if(mb&&q.gear.inv.length>had) mb.got.items.push(R.item); }

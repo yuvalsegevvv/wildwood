@@ -8,7 +8,7 @@ const got={}, msgs={};   // pid -> events / messages received
 const NAMES=['DG_RUNS','DG_SLOT_RUN','DG_KITS','DG_KIT_BAD','DG_THEMES','DG_MISSIONS','DG_PARTY','DG_X0','DG_SLOT','DG_FLOOR_Y','DG_MAX_INST','DG_ENTRANCES','DG_HOLD_S','DG_END_S','DG_EMPTY_S',
   'DG_DOWN_S','DG_REVIVE_HP','DG_LV','MONS','S','WX1','getH','dgWorldS','dgLocalS','dgSpawnS','dgRemoveS','dgPresentS','dgBossS','dgBossDefOf','dgSlotAt','dgSlotOrigin','dgSolid','dgFree','dgLos',
   'dgFlow','dgLayout','dgBake','dgOffer','dgPoolS','dgApron','dgDefineKit','dgMemberOf','dgKOf','damageMonsterS','killMonsterS','hurtP','monK','zoneTierK','landAt','recalcP','sanitizeGear',
-  'DEF_BY_ID','fireProjS','PROJS','partyOf','ITEM'];
+  'DEF_BY_ID','fireProjS','PROJS','partyOf','ITEM','xpFor','psP'];
 const {api:W,x}=loadServer({dev:true,log(){},send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (msgs[pid]=msgs[pid]||[]).push(c); if(c.t==='snap'&&c.ev) (got[pid]=got[pid]||[]).push(...c.ev); }},NAMES);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const IMM=new Set();   // players kept at full health (monsters roam the runs)
@@ -152,6 +152,14 @@ for(const m of [m2,m3,m4,m5]) x.dgRemoveS(runE,m);
   ok('a kill pays every member the same roll: coins, XP, the stone (level 30: no equipment), the material',d.every(q=>q.coins>0&&q.coins===d[0].coins&&q.exp>0&&Math.abs(q.exp-d[0].exp)<1e-6&&q.temper===1&&q.mats===2),JSON.stringify(d));
   ok('...whoever struck it: those who never hit it are paid too',d[1].coins===d[0].coins&&d[2].coins===d[0].coins);
   ok('and each hears of it (coins / stone / drop events to each)',['e','f','g'].every(pid=>evs(pid,'coins').length&&evs(pid,'stone').length&&evs(pid,'drop').length)); }
+// the world's XP cap inside a run: nobody gets more than a monster 10 levels above their own level pays (shared/balance.js: xpLeadK), whatever the run's level
+{ const real=P('f').level; P('f').level=12;   // F is far below the run (level 30): the cap is level 22
+  const m=spawnHp(); clear(); withRandom(0.5,()=>x.killMonsterS(m,E)); tick(3);
+  const amount=pid=>{ const q=evs(pid,'xp').filter(e=>e[1]===pid&&e[3]===m.id); return q.length?q[q.length-1][2]:null; };
+  const eX=amount('e'), fX=amount('f'), gX=amount('g'), wantE=x.xpFor(runE.L)*(1+x.psP(P('e'),'xp')), wantF=x.xpFor(22)*(1+x.psP(P('f'),'xp'));
+  ok('a member far below the run\'s level is paid for a monster 10 levels above them (level 22), the others in full (level '+runE.L+'): one kill, one amount for each',
+    Math.abs(eX-wantE)<0.15+wantE*1e-3&&Math.abs(gX-eX)<0.2&&Math.abs(fX-wantF)<0.15+wantF*1e-3&&fX<eX,eX+' / '+fX+' / '+gX+' (wanted '+wantE.toFixed(1)+' / '+wantF.toFixed(1)+')');
+  P('f').level=real; }
 // the zone-tier trap: the slot's x reads as another land, but a run's monster has the run's numbers for everyone
 { const m=spawnHp(); E.gear.zt={home:{on:3,max:3},vale:{on:3,max:3},hoar:{on:3,max:3}}; x.recalcP(E); E.dmg=F.dmg;
   const kE=x.monK(m,E), kF=x.monK(m,F), land=x.landAt(m.camp.x,m.camp.z), trap=x.zoneTierK(m.T,3).lv;
