@@ -1,6 +1,6 @@
 //@ The bosses, client side: telegraph visuals (circle, cone, line, donut, marks) and how each ends, root spikes, slam waves, shield bubble, roars, boss bar, a boss's look in each mode
 /* The fight itself runs on the world server (src/server/boss.js, boss-fx.js). The client draws what it is told:
-   'tele' events open a telegraph (kinds: cleave breath and rake are cones, root slam icefall geyser gust swoop rockfall quake mark prison are circles, line a strip, donut a ring;
+   'tele' events open a telegraph (kinds: cleave breath and rake are cones, root slam icefall geyser gust swoop rockfall quake mark prison are circles, and so are the dungeon bosses' spore puff pulse vent wail snuff, line a strip, donut a ring;
    mark and prison follow a player), 'tend' closes it (spikes, a shock wave, a flash... if it went off), and each snapshot carries every boss's state
    (kept on its view as m.bs: engaged, phase, immune, enraged, stunned, aux a number for the bar, mode 0 normal / 1 airborne / 2 hidden / 3 shielded /
    4 whiteout / 5 blizzard). BOSS.m is the boss nearest to you; the boss bar and the shield follow that one. Zones, waves and what happens to you
@@ -16,15 +16,16 @@ function applyBossState(b){
   for(const a of b){ const m=MON_BY_ID.get(a[0]); if(m) m.bs={engaged:!!a[1],phase:a[2],immune:!!a[3],enraged:!!a[4],stunned:!!a[5],aux:a[6]||0,mode:a[7]||0}; }
   pickBoss();
 }
-const bossInfo=m=>BOSS_DEFS.find(b=>b.def===m.def);
-const arenaOf=m=>{ const bd=bossInfo(m); return ARENAS.find(A=>A.key===(bd?bd.arena:'boss'))||ARENA; };
+const bossInfo=m=>BOSS_DEFS.find(b=>b.def===m.def)||DG_BOSS_DEFS[m.def.id];   // dungeons: a dungeon boss's row (shared/dungeons/bosses.js)
+const arenaOf=m=>{ const bd=bossInfo(m); if(bd&&bd.dungeon) return {x:m.camp.x,z:m.camp.z,r:DG_BOSS_R}; return ARENAS.find(A=>A.key===(bd?bd.arena:'boss'))||ARENA; };   // dungeons: a dungeon boss's arena is its hall (its camp is the hall's middle)
 // the boss you are closest to drives the boss bar and the shared flags below
 function pickBoss(){
   let best=null,bd=1e9; for(const m of BOSS.list){ const d=Math.hypot(m.x-P.x,m.z-P.z); if(d<bd){ bd=d; best=m; } }
   BOSS.m=best; const s=best&&best.bs||{};
   BOSS.engaged=!!s.engaged; BOSS.phase=s.phase||1; BOSS.immune=!!s.immune; BOSS.enraged=!!s.enraged; BOSS.stunned=!!s.stunned; BOSS.aux=s.aux||0; BOSS.mode=s.mode||0;
 }
-const TELE_COL={cleave:0xff5a8a,breath:0x8fdcff,root:0xff3a2a,slam:0xff9a2a,icefall:0x9fe0ff,geyser:0x3ac8e8,gust:0xc8f0ff,line:0xfff07a,mark:0xff4a2a,prison:0x7fd8ff,rake:0xffc04a,swoop:0xffe08a,rockfall:0xb8905a,quake:0xc8a060};
+const TELE_COL={cleave:0xff5a8a,breath:0x8fdcff,root:0xff3a2a,slam:0xff9a2a,icefall:0x9fe0ff,geyser:0x3ac8e8,gust:0xc8f0ff,line:0xfff07a,mark:0xff4a2a,prison:0x7fd8ff,rake:0xffc04a,swoop:0xffe08a,rockfall:0xb8905a,quake:0xc8a060,
+  spore:0xa8e060,puff:0xe0f0a0,pulse:0x9ae050,vent:0xeaf6f0,wail:0xb8c8f0,snuff:0x5a6a90};   // the last six: the dungeon bosses' circles (a cloud's warning, a puffball, Amanita's pulse, a steam vent, Haugbui's wail, a lamp going dark)
 function addTele(id,kind,x,z,r,dur,face,half){
   if(BOSS.tele.has(id)) return;
   const el=BOSS.m&&BOSS.m.def.el, col=kind==='donut'?(el==='fire'?0xff7a2a:0x8fdcff):TELE_COL[kind]||0xff3a2a, own=[];
@@ -66,7 +67,13 @@ function endTele(id,fired,x,z){
     const col=new THREE.Mesh(columnGeo,fxMat(0x8fe4ff,0.6)); col.position.set(e.x,y,e.z); col.scale.set(e.r*0.4,1,e.r*0.4); scene.add(col);
     bossFxAdd({o:col,t:0,life:0.7,kind:'column',dispose:()=>{ scene.remove(col); col.material.dispose(); }});
     spawnRingAt(e.x,y,e.z,e.r,0x8fe4ff); spawnBurst(c,0xdff8ff,0.7); boom(0.2);
-  } else if(e.kind==='mark'){ spawnBurst(c,0xff8a3a,2.2); spawnBurst(c,0xffffff,0.9); spawnRingAt(e.x,y,e.z,e.r,0xff7a2a); cSfx.boom(c); if(near<30) camShake=Math.max(camShake,0.4); }
+  } else if(e.kind==='vent'){   // a steam vent: a white column of steam
+    const col=new THREE.Mesh(columnGeo,fxMat(0xf2fbf6,0.5)); col.position.set(e.x,y,e.z); col.scale.set(e.r*0.45,1,e.r*0.45); scene.add(col);
+    bossFxAdd({o:col,t:0,life:0.9,kind:'column',dispose:()=>{ scene.remove(col); col.material.dispose(); }}); spawnBurst(c,0xffffff,0.9); boom(0.16);
+  } else if(e.kind==='spore'||e.kind==='puff'){ spawnBurst(c,0xc8f080,e.kind==='puff'?2.2:1); spawnRingAt(e.x,y,e.z,e.r,0xb8e070); boom(e.kind==='puff'?0.22:0.12); }   // a burst of spores (the cloud is a zone)
+  else if(e.kind==='pulse'||e.kind==='wail'){ const col=e.kind==='pulse'?0xa8f060:0xc8d8ff; spawnRingAt(e.x,y,e.z,e.r,col); spawnRingAt(e.x,y+0.6,e.z,e.r*0.6,col); boom(0.26); if(near<e.r+5) camShake=Math.max(camShake,0.35); }   // the hall-wide hits
+  else if(e.kind==='snuff'){ spawnBurst(c,0x202838,1.4); spawnRingAt(e.x,y,e.z,e.r,0x5a6a90); boom(0.14); }
+  else if(e.kind==='mark'){ spawnBurst(c,0xff8a3a,2.2); spawnBurst(c,0xffffff,0.9); spawnRingAt(e.x,y,e.z,e.r,0xff7a2a); cSfx.boom(c); if(near<30) camShake=Math.max(camShake,0.4); }
   else if(e.kind==='prison'){ spawnBurst(c,0xcdf1ff,1.1); spawnRingAt(e.x,y,e.z,e.r,0x9fe8ff); boom(0.2); }
   else if(e.kind==='gust'){ spawnRingAt(e.x,y,e.z,e.r,0xdff4ff); spawnRingAt(e.x,y+0.5,e.z,e.r*0.6,0xffffff); cSfx.boom(c); if(near<30) camShake=Math.max(camShake,0.35); }
   else {   // slam
@@ -117,5 +124,6 @@ function updateBossUI(){
   const bbLv='Lv '+monTierK(m).lv+' boss'; if($('#bbLv').textContent!==bbLv) $('#bbLv').textContent=bbLv;
   const bd=bossInfo(m)||{}, bar=bd.bar||{};
   $('#bbPhase').textContent=BOSS.mode===3?'Shielded: break the '+(bd.totems||'totems')+' ('+BOSS.aux+' left)':BOSS.stunned?(bar.stun||'Stunned!'):bar[BOSS.mode]||(BOSS.enraged?'Enraged':'');
+  const dgBar=dgBossBarText(bd,bar); if(dgBar) $('#bbPhase').textContent=dgBar;   // dungeons: what a dungeon boss's number means (its dish, its puffballs, its lamps)
   return true;
 }

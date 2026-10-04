@@ -1,7 +1,7 @@
 //@ Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
 /* Your damage = 3 x f(level) + weapon attack, times the ability's multiplier (and its skill level: skillPower), +/-15%, 12% chance of x1.7,
    times the Ferocity passive and the element: your soul (elements.js: soulMult, the opposite pairs) and the element wheel against the monster (foeMult).
-   -5% damage dealt per level the enemy is above you (never below 10%).
+   -5% damage dealt per level the enemy is above you (never below 50%: lvDmgK, shared/balance.js).
    Everyone who hit a monster in the last 30 s and is within 80 m gets the XP, coins, quest credit and a loot roll. */
 const PROJS=[]; let nextProjId=1;
 function handleAttack(p,msg){
@@ -23,15 +23,17 @@ function elemHitS(p,el,m){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) e
   return soulMult(soulOfP(p),el,psP(p,'soul'))*(m?foeMult(el,elOf(m.T)):1); }
 function rollDmgS(p,mult,m,el){
   const b=p.buff, crit=Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+pendP(p,'crit')+(b?b.crit:0)), ld=m?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
-  return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg'))*(1+potBuffP(p,'might'))*em*Math.max(0.1,1-0.05*ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
+  return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg'))*(1+potBuffP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
   if(m.dead||m.remove) return 0;
+  if(m.inst&&!dgHitOkS(m,p,fromX,fromZ)) return 0;   // dungeons: a run's monster takes hits only from its run, and walls stop them
   if(m.immune){ ev('imm',m.id); return 0; }
   if(m.boss && m.B.stunT>0) mult*=1.5;
   const d=rollDmgS(p,mult,m,el);
   if(m.T.heavy) kb=0;
   m.hp-=d.v/monK(m,p).hp; m.hitters.set(p.id,S.t);   // (the health pool is in the def's own units: a hit at a higher zone tier takes off less of it)
+  if(m.boss&&m.B.kit.hit) m.B.kit.hit(m.B,m,p,d.v);   // dungeons: a boss kit's hit hook (Gawataro's dish spills from behind)
   if(p.buff&&p.buff.steal) healP(p,d.v*p.buff.steal);
   const ex=m.x-fromX, ez=m.z-fromZ, e=Math.hypot(ex,ez)||1, k=kb===0?0:(kb||3);
   m.kbx+=ex/e*k; m.kbz+=ez/e*k;
@@ -43,6 +45,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
 function killMonsterS(m,p){
   m.burnT=0; m.dead=true; m.deadT=0; m.respawnT=35; m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
   ev('kill',m.id,p?p.id:null);
+  if(m.inst){ dgKilledS(m,p); return; }   // dungeons: a run's kill pays every member present (rewardAllS) and tells the mission; its boss ends the run
   if(!m.T.noXp){
     for(const [pid,tm] of m.hitters){ const q=S.players.get(pid); if(!q||S.t-tm>30||Math.hypot(q.x-m.x,q.z-m.z)>80) continue; rewardKill(q,m); }
   }
@@ -51,9 +54,9 @@ function killMonsterS(m,p){
 }
 function rewardKill(q,m){
   const K=monK(m,q);   // XP, coins and gear are those of the monster's level at your zone tier
-  gainExpP(q,m.T.xp*K.xp*(1+psP(q,'xp')+pendP(q,'xp')),m.id);
+  gainExpP(q,m.T.xp*K.xp*xpLeadK(q.level,K.lv)*(1+psP(q,'xp')+pendP(q,'xp')),m.id);   // (never more than 10 levels above you pay: xpLeadK)
   const c=Math.round(coinsFor(K.lv)*(m.def.boss?20:1)*(1+pendP(q,'coin'))); q.gear.coins+=c; ev('coins',q.id,c,m.id);
-  const r=m.def.boss?rollBossRarity():rollMonsterRarity();
+  const r=dgRollDropP(q,m,K,m.def.boss?rollBossRarity():rollMonsterRarity());   // dungeons: a Tempering Stone replaces the equipment drop of normal monsters fought at level 30+
   if(r>=0) addItemP(q,randomItem(tierFor(K.lv),r),false,m.id);
   if(MATS[m.def.id]){ const n=rollDropCount(m.def,psP(q,'drop')+pendP(q,'drop')); if(n) addMatP(q,m.def.id,n,m.id); }
   questKillP(q,m.def.id); q.dirty=true;
@@ -97,6 +100,7 @@ function resolveHitS(p,a){
   } else if(a.kind==='charge'){
     const L=tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=a.range+2?(()=>{ const dx=tgt.x-p.x, dz=tgt.z-p.z, d=Math.hypot(dx,dz)||1, o=tgt.T.rad+0.9; return {x:tgt.x-dx/d*o,z:tgt.z-dz/d*o}; })():{x:p.x-Math.sin(p.face)*8,z:p.z-Math.cos(p.face)*8};
     p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z);
+    if(p.inst) dgDashS(p,L);   // dungeons: a charge inside a run stays in it, short of the first wall
     for(const m of MONS){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<2.6+m.T.rad) damageMonsterS(m,a.mult,p,p.x,p.z,6,a.el); }
   } else if(a.kind==='shoot'){
     fireProjS(p,'arrow',tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<36?dirToS(p,tgt):a.aim,tgt,a.mult,a.el);
@@ -168,6 +172,7 @@ function statusS(m,s,p,el,mult){
 function updateBurnS(dt){
   for(const m of MONS){
     if(!(m.burnT>0)) continue;
+    S.ctx=m.inst|0;   // dungeons: burning belongs to the monster's run
     if(m.dead||m.remove){ m.burnT=0; continue; }
     m.burnT-=dt; m.burnTick-=dt;
     if(m.burnTick<=0){ m.burnTick+=1; const o=S.players.get(m.burnBy); if(o) damageMonsterS(m,m.burnMult,o,m.x,m.z,0,m.burnEl); else m.burnT=0; }
@@ -190,6 +195,7 @@ function resolveFxS(p,a,tgt){
   if(f.dash){
     const L=inRange?(()=>{ const dx=tgt.x-p.x, dz=tgt.z-p.z, d=Math.hypot(dx,dz)||1, o=tgt.T.rad+0.9; return {x:tgt.x-dx/d*o,z:tgt.z-dz/d*o}; })():{x:p.x-Math.sin(p.face)*f.dash.ahead,z:p.z-Math.cos(p.face)*f.dash.ahead};
     p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z);
+    if(p.inst) dgDashS(p,L);   // dungeons: a dash inside a run stays in it, short of the first wall
   }
   if(f.ring){ const R=f.ring; for(const m of MONS){ if(!alive(m)||dist(m)>=R.r+m.T.rad) continue; dmg(m,a.mult,p.x,p.z,R.kb||0); statusS(m,R,p,a.el,a.mult); } }
   if(f.cone){ const C=f.cone;
@@ -238,6 +244,7 @@ function addAreaS(p,kind,x,z,r,dur,mult,follow,el,fx){
 function updateAreasS(dt){
   for(let i=AREAS.length-1;i>=0;i--){
     const A=AREAS[i]; A.t+=dt; const o=S.players.get(A.owner);
+    S.ctx=dgCtxAt(A.x,A.z);   // dungeons: an area's hits belong to the run it lies in
     if(A.follow&&o){ if(o.dead){ A.t=A.dur; } else { A.x=o.x; A.z=o.z; } }
     if(A.t>=A.next&&A.t<=A.dur+0.01){ A.next+=A.every;
       if(o) for(const m of MONS){ if(!m.dead&&!m.remove&&Math.hypot(m.x-A.x,m.z-A.z)<A.r+m.T.rad*0.5){
@@ -257,11 +264,13 @@ function fireProjS(p,kind,dir,tg,mult,el,spec){   // spec: a generic projectile'
 function updateProjS(dt){
   for(let i=PROJS.length-1;i>=0;i--){
     const pr=PROJS[i]; pr.life-=dt;
+    S.ctx=dgCtxAt(pr.x,pr.z);   // dungeons: what a projectile does belongs to the run it flies in
     const T=pr.tg?MON_BY_ID.get(pr.tg):null, sp=Math.hypot(pr.vx,pr.vy,pr.vz);
     if(T&&!T.dead&&!T.remove){ const c=monCenterS(T), w=norm3([c.x-pr.x,c.y-pr.y,c.z-pr.z]), k=Math.min(1,pr.turn*dt); pr.vx+=(w[0]*sp-pr.vx)*k; pr.vy+=(w[1]*sp-pr.vy)*k; pr.vz+=(w[2]*sp-pr.vz)*k; }
     else if(pr.kind==='arrow') pr.vy-=4*dt;
     const ox=pr.x, oy=pr.y, oz=pr.z;
     pr.x+=pr.vx*dt; pr.y+=pr.vy*dt; pr.z+=pr.vz*dt;
+    if(dgWallAtS(pr.x,pr.z)) pr.life=0;   // dungeons: a wall stops a projectile (it still hits what it reached this tick)
     // distance from a monster's centre to the stretch flown this tick (fast arrows move ~2 m per tick)
     const near=c=>{ const vx=pr.x-ox, vy=pr.y-oy, vz=pr.z-oz, l2=vx*vx+vy*vy+vz*vz||1, t=clamp(((c.x-ox)*vx+(c.y-oy)*vy+(c.z-oz)*vz)/l2); return Math.hypot(c.x-(ox+vx*t),c.y-(oy+vy*t),c.z-(oz+vz*t)); };
     if(pr.kind==='pierce'){

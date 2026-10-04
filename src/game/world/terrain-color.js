@@ -49,7 +49,7 @@ function greyColor(x,z,h,g,out){
 const _hc=new THREE.Color(), _gc=new THREE.Color();
 function terrainColor(x,z,h,g,out,noCut){   // noCut: colour as if the tunnel's cutting were not there (its lid)
   const hf=x>HALF+2?smoothstep(HZ0+8,HZ0-56,z):0;   // the vale's north crest, over which the ground turns to the Hoarfrost's
-  if(hf>=1) return hoarColor(x,z,h,g,out);
+  if(hf>=1) return dgEntTint(x,z,hoarColor(x,z,h,g,out));   // dungeons: the Barrow Door's patch of trodden snow
   const gf=x<HALF?smoothstep(HZ0+8,HZ0-56,z):0;   // the home forest's north crest, over which the ground turns to the Greyspine's
   if(gf>=1) return greyColor(x,z,h,g,out);
   const n1=noise2(x*0.02,z*0.02)*0.5+0.5, n2=noise2(x*0.11+5,z*0.11)*0.5+0.5;
@@ -85,6 +85,7 @@ function terrainColor(x,z,h,g,out,noCut){   // noCut: colour as if the tunnel's 
   }
   if(hf>0){ hoarColor(x,z,h,g,_hc); out.lerp(_hc,hf); }
   if(gf>0){ greyColor(x,z,h,g,_hc); out.lerp(_hc,gf); }
+  dgEntTint(x,z,out);   // dungeons: the ground round the Elder and the Falls Door
   out.multiplyScalar(0.92+n2*0.16);
   return out;
 }

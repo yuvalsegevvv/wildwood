@@ -1,4 +1,4 @@
-//@ Monster families (FAM), the 72 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach, 14 in the Greyspine), prepDef, the eight bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
+//@ Monster families (FAM), the 72 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach, 14 in the Greyspine), defAt (a def's numbers at a level; above level 60 monsters creep tougher, bosses also stronger), prepDef, the eight bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
 const FAM={
   slime: {hpK:0.85,dmgPct:0.06,atk:1.6,speed:2.2,rad:0.45,height:0.8,aggro:10,sound:'squish',per:4},
   shroom:{hpK:0.95,dmgPct:0.07,atk:1.7,speed:1.8,rad:0.4, height:1.1,aggro:10,sound:'pip',per:3},
@@ -96,13 +96,28 @@ const MON_DEFS=[
   {id:'slatecrawler',name:'Slate Crawler',  level:31,el:'earth',model:'beetle',scale:1.75,hpK:1.3, zone:'g31', pal:{shell:0x5a5e66,seam:0x22262a,sheen:0xa0a8b8,head:0x3a3e46,horn:0x8a8e96,eye:0xff6a3a,legs:0x2e3238,spider:1}},
   {id:'galedrake', name:'Gale Drake',       level:32,el:'air',  model:'wyrm',  scale:1.3, hpK:1.3, zone:'g32', pal:{body:0x8aa4b4,belly:0xe0eaf0,ridge:0x4a5a6a,horn:0xe8f0f4,eye:0xff7a3a,wing:0x7a94a8}},
   {id:'granitegolem',name:'Granite Golem',  level:32,el:'earth',model:'treant',scale:2.0, hpK:1.6, zone:'g32', glow:0x0a1018, pal:{kind:'rock',bark:0x5a5a58,c1:0x8a8a84,c2:0x9a9a94,c3:0x74746e,eyes:0xffb040}}
-];/* The numbers of a monster def at level L: prepDef gives it those of its own level, a zone tier (tiers.js) asks for those of a higher one.
+];
+/* What a monster's level does to its health and damage past level 60, the top of the old zone tiers (a level-30 monster at tier III). Two creeps, both applied inside defAt so zone tiers, dungeons and prepDef
+   get them alike, and nothing at or below level 60 changes:
+   - LATE CREEP (every monster except a prop): health x base^(level - 60). A boss's base is 13/12, the growth of f(L) itself (x1.5 at 65, x2.2 at 70, x3.3 at 75, x4.95 at 80); a normal monster's is the gentler
+     LATE_CREEP_MOB 1.065 (x1.9 at 70, x2.6 at 75, x3.5 at 80: fights 10-40% shorter than at 13/12, "a bit easier to kill"). A boss's own adds (`bossAdd`, set below and in
+     shared/dungeons/bosses.js) keep the boss's base: they are part of the boss fight, which is calibrated as a whole (tools/boss-duel.js). The level debuff on the damage you deal stops at x0.5 (LV_DMG_MIN in
+     balance.js, reached 10 levels above you), so beyond that the only thing that keeps a level-80 monster hard for a maxed level-60 hero is its own health; without this a tier V pack fell in a few
+     seconds and Vetrmaw in 34 s. Props (the totems and lamps: `hits` without `boss`) keep the "hits" of their design.
+   - BOSS CREEP (bosses only): +BOSS_CREEP_HP of health and +BOSS_CREEP_DMG of damage for every level over BOSS_CREEP_LV (level 70: x1.125 / x1.5, level 80: x1.25 / x2). The expected-gear numbers (balance.js)
+     stop growing with the player's level, but a maxed level-60 player (level-30 dungeon gear at +10, the symbol, potions) brings far more than they assume and a boss's own damage is cut by 84% armour, so at x1
+     a hero who only stands in melee and drinks potions beat every zone tier V and +V dungeon boss (a greater heal potion out-heals a level-80 boss; docs/areas/tiers.md, tools/boss-duel.js). */
+const BOSS_CREEP_LV=60, BOSS_CREEP_HP=0.0125, BOSS_CREEP_DMG=0.05;
+const bossCreep=(d,L)=>d.boss&&L>BOSS_CREEP_LV?L-BOSS_CREEP_LV:0;
+const LATE_CREEP_LV=60, LATE_CREEP_BOSS=13/12, LATE_CREEP_MOB=1.065;
+const lateCreep=(d,L)=>L>LATE_CREEP_LV&&(d.boss||!d.hits)?Math.pow(d.boss||d.bossAdd?LATE_CREEP_BOSS:LATE_CREEP_MOB,L-LATE_CREEP_LV):1;
+/* The numbers of a monster def at level L: prepDef gives it those of its own level, a zone tier (tiers.js) asks for those of a higher one.
    Health: the hits a same-level, normally geared player needs (4 + 0.45 x level), times the enemy's toughness; a boss or a prop has a fixed
    count of hits instead (d.hits). Damage: a share of a same-level, normally geared player's health, before that player's armor (a boss: 16%). */
 function defAt(d,L){
-  const hits=d.hits||(4+0.45*L), k=d.hits?1:d.hpK, rd=1-expRed(L);
-  return {hp:Math.round(expDmg(L)*hits*k*highMult(L)),
-    dmg:d.boss?Math.round(expHP(L)*0.16/rd):Math.max(1,Math.round(expHP(L)*d.dmgPct/rd)),
+  const hits=d.hits||(4+0.45*L), k=d.hits?1:d.hpK, rd=1-expRed(L), c=bossCreep(d,L);
+  return {hp:Math.round(expDmg(L)*hits*k*highMult(L)*(1+BOSS_CREEP_HP*c)*lateCreep(d,L)),
+    dmg:d.boss?Math.round(expHP(L)*0.16/rd*(1+BOSS_CREEP_DMG*c)):Math.max(1,Math.round(expHP(L)*d.dmgPct/rd)),
     xp:d.noXp?0:xpFor(L)*(d.boss?25:1)};
 }
 function prepDef(d){
@@ -112,7 +127,7 @@ function prepDef(d){
   d.color=d.pal.body||d.pal.cap||d.pal.shell||d.pal.skin||d.pal.c1||0x7af0a0;
 }
 MON_DEFS.forEach(prepDef);
-/* Bosses: health = 70 hits of a same-level player, a hit = 16% of that player's health; props (the Rootwarden's totems, Vetrmaw's warm
+/* Bosses: health = 70 hits of a same-level player, a hit = 16% of that player's health (more above level 60: BOSS_CREEP_* and LATE_CREEP_*, in defAt); props (the Rootwarden's totems, Vetrmaw's warm
    cores) 9 hits. Every boss has its own move set on top of the shared melee and phases (server/boss.js, boss-kits-*.js). */
 function bossDef(d){ d.hits=70; prepDef(d); return d; }
 function totemDef(d){ d.hits=9; prepDef(d); return d; }
@@ -174,6 +189,7 @@ const BOSS_DEFS=[
   {def:VETRMAW_DEF,arena:'boss30',kit:'wyrm',add:WYRMLING_DEF,prop:CORE_DEF,short:'Vetrmaw',bar:{1:'Airborne: fend off the wyrmlings',5:'Blizzard: shelter at a Warm Core!',stun:'Grounded: hit it now!'}},
   {def:GRYPHON_DEF,arena:'boss29',kit:'gryphon',add:EAGLET_DEF,short:'The Gryphon Queen',bar:{1:'Airborne: she dives from the sky!',stun:'Grounded: hit her now!'}},
   {def:GOLEM_DEF,arena:'boss32',kit:'golem',add:RUBBLE_DEF,totem:JOINT_DEF,short:'The Mountain Golem',totems:'Iron Joints',bar:{stun:'The shell is cracked: hit him now!'}}];
+BOSS_DEFS.forEach(b=>{ b.add.bossAdd=true; });   // (the adds of a boss grow like the boss: LATE_CREEP_BOSS)
 /* The main quest's grey-veined monsters (docs/MAIN-QUEST.md, W9 and V7): tougher copies of a zone's kind, touched by the grey sleep.
    Not in MON_DEFS: no camps and no board quests; the server spawns a few for each player on that step (server/main-quest.js) */
 function greyDef(base,id,name,o){

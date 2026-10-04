@@ -374,6 +374,7 @@ storyline). What it means for the geography:
   grow in those directions; the isles need water around them and boat or teleport travel.
 - **The Rootdeep cannot be made from the heightmap** (a heightmap has no ceilings or overhangs). It needs its own kind of space: enclosed
   cave meshes, reached through a portal at its entrances like a separate instance, with its own lighting (no sun, no sky, no weather).
+  The dungeons' plan (`docs/DUNGEONS.md` section 7: runs in far-away slots, a floor-and-wall `getH`, a client scene switch) builds exactly this machinery; the Rootdeep is meant to be its second user.
 - Levels past 25: the Hoarfrost Reach's 26-30 work today because `expToNext` is flattened from level 25 on (a level costs as many same-level kills as
   25 -> 26 does) and gear stays at tier 5 (`tierFor`, `MAX_ZONE_LV` 30); levels up to 50 need the curve tuned and more gear tiers
   (`shared/balance.js`, `shared/items.js`), and `CLAUDE.md` section 10 notes that the curve past 15 needs tuning.

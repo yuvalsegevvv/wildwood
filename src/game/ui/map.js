@@ -81,6 +81,7 @@ function dot(x,cx,cy,r,fill){ x.beginPath(); x.arc(cx,cy,r,0,TAU); x.fillStyle=f
 /* ---- minimap ---- */
 const mmC=$('#mmC'), mmX=mmC.getContext('2d');
 function drawMinimap(){
+  if(dgIn()){ dgDrawMini(mmC,mmX,DPR); return; }   // dungeons: the run's explored tiles instead of the world (dungeon/minimap.js)
   const W=mmC.width, x=mmX; x.clearRect(0,0,W,W);
   x.fillStyle='#2a3a4a'; x.fillRect(0,0,W,W);
   if(!MAP.done){ x.fillStyle='rgba(238,240,226,.6)'; x.font=`${12*DPR}px Inter, system-ui, sans-serif`; x.textAlign='center'; x.fillText('Mapping…',W/2,W/2); return; }
@@ -88,8 +89,9 @@ function drawMinimap(){
   x.drawImage(MAP.canvas,mapX(P.x)-MM_R*s,mapZ(P.z)-MM_R*s,2*MM_R*s,2*MM_R*s,0,0,W,W);
   const k=W/(2*MM_R), at=(wx,wz)=>[(wx-P.x)*k+W/2,(wz-P.z)*k+W/2], inside=(wx,wz)=>Math.abs(wx-P.x)<MM_R&&Math.abs(wz-P.z)<MM_R;
   for(const m of MONS){ if(m.dead||!inside(m.x,m.z)) continue; const [a,b]=at(m.x,m.z); dot(x,a,b,(m.boss?4.5:m.aggro?2.8:2.1)*DPR,m.boss?'#c86bff':m.aggro?'#ff4a3a':'#e8904a'); }
-  for(const r of REMOTES.values()){ if(r.tx===null||!inside(r.x,r.z)) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,3.2*DPR,'#6fb8ff'); }
+  for(const r of REMOTES.values()){ if(r.tx===null||!inside(r.x,r.z)) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,3.2*DPR,dgPartyCol(r.id)||'#6fb8ff'); }   // dungeons: party members in their colour (dungeon/party.js)
   if(GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||nodeBlock(GEAR,n)||!inside(n.x,n.z)) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.4*DPR,RES[NODE_KINDS[n.kind].res].col); }   // the nodes of the professions you know
+  dgEntMiniMarks(x,at,inside,DPR);   // dungeons: a door in range
   for(const q of questTargets()){
     if(q.ring) continue;
     const col=q.main?'#c89bff':q.ready?'#9fe08a':'#f2cf5a';
@@ -115,6 +117,7 @@ function sizeFullMap(){
   mapLandBtn.hidden=!valeOpen()||nx===cur; mapLandBtn.textContent=nx===here?'Where I am':LANDS[nx].name;
 }
 function drawFullMap(){
+  if(dgIn()){ dgDrawFullMap(mapC,mapCX,DPR); return; }   // dungeons: the run's explored tiles instead of a land (dungeon/minimap.js)
   renderTierRow(mapLand||landHere());
   const L=viewLand(), W=mapC.width, H=mapC.height, x=mapCX, k=W/(L.x1-L.x0), at=(wx,wz)=>[(wx-L.x0)*k,(wz-L.z0)*k];
   x.clearRect(0,0,W,H);
@@ -126,6 +129,7 @@ function drawFullMap(){
   for(const zn of ZONES){ if(zn.boss||!mine(zn)) continue; const [cx,cy]=at(...(zn.label||zonePoint(zn,0,0.5))); label(zn.name,cx,cy-fs*0.55,fs,'#f2f0e4',true); label('Level '+zoneLvText(zn),cx,cy+fs*0.6,fs*0.85,'#ffcf8a'); }
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.grey?'grey':A.hoar?'hoar':inVale(A.x)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bossLvIn(bd.def,land)+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
   { const V=land==='grey'?VIL4:land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='grey'?'Highmark':land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
+  dgEntMapMarks(x,at,land,fs,label,DPR);   // dungeons: the three doors, the Elder greyed while sealed
   if(land!=='hoar'&&land!=='grey'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Tunnel':'Tunnel (sealed)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='vale'){ const [cx,cy]=at(PASS.x,PASS.ice); dot(x,cx,cy,3.5*DPR,northOpen()?'#9fe0ff':'#8a8078'); label(northOpen()?'Frostgate Pass':'Frostgate Pass (ice wall)',cx-fs*4.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='hoar'){ const [cx,cy]=at(PASS.x,PASS.z1+50); label('Frostgate Pass',cx-fs*3.6,cy,fs*0.85,'#e8e0d0'); for(const Lk of FROST_LAKES){ const [lx,ly]=at(Lk.x,Lk.z); label(Lk.name,lx,ly,fs*0.85,'#cfe8f6'); }
@@ -138,13 +142,14 @@ function drawFullMap(){
     const [cx,cy]=at(q.x,q.z); drawDiamond(x,cx,cy,(q.main?7.5:6)*DPR,q.main?'#c89bff':q.ready?'#9fe08a':'#f2cf5a');
   }
   for(const m of MONS){ if(m.dead||!m.aggro) continue; const [a,b]=at(m.x,m.z); dot(x,a,b,2.4*DPR,'#ff4a3a'); }
-  for(const r of REMOTES.values()){ if(r.tx===null) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,4*DPR,'#6fb8ff'); label(r.name,a,b-fs*1.1,fs*0.85,'#cfe6ff'); }
+  for(const r of REMOTES.values()){ if(r.tx===null) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,4*DPR,dgPartyCol(r.id)||'#6fb8ff'); label(r.name,a,b-fs*1.1,fs*0.85,'#cfe6ff'); }   // dungeons: party members in their colour (dungeon/party.js)
   { const [a,b]=at(P.x,P.z); drawArrow(x,a,b,-P.face,8*DPR,'#fff4d0'); }
   const zn=zoneAt(P.x,P.z), V=vilAt(P.x,P.z);
   const vn=V===VIL4?'Highmark':V===VIL3?'Rimehold':V===VIL2?'Hanami':'the village';
   $('#mapHere').textContent=vDist(P.x,P.z)<VR+12?'You are in '+vn:P.inTun?'You are in the mountain tunnel':zn?(zn.boss?'You are near '+zn.name:'You are in '+zn.name+' (level '+zoneLvText(zn)+')'):inPass(P.x,P.z)?'You are in Frostgate Pass':inGrey(P.x,P.z)?'You are in the Greyspine':'You are near '+vn;
 }
 function placeName(wx,wz){
+  { const dn=dgEntName(wx,wz); if(dn) return dn; }   // dungeons: the door's name under the pointer
   if(vDist(wx,wz)<VR+8) return vilAt(wx,wz)===VIL4?'Highmark':vilAt(wx,wz)===VIL3?'Rimehold':vilAt(wx,wz)===VIL2?'Hanami':'Village';
   for(const L of FROST_LAKES) if(inHoar(wx,wz)&&Math.hypot(wx-L.x,wz-L.z)<L.r*0.8) return L.name+' (frozen)';
   for(const L of LAKES) if(Math.hypot(wx-L.x,wz-L.z)<L.r*0.8) return L.name;

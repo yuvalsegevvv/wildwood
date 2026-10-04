@@ -8,12 +8,14 @@
     "check": "python3 build.py --check",
     "start": "node dist/wildwood-server.js",
     "dev": "python3 build.py && node dist/wildwood-server.js",
-    "test:server": "node tools/server-smoke.js && node tools/skills-smoke.js && node tools/hoarfrost-smoke.js && node tools/greyspine-smoke.js && node tools/pendants-smoke.js && node tools/professions-smoke.js",
-    "test:client": "python3 build.py >/dev/null && node tools/client-smoke.js && node tools/start-smoke.js && node tools/keys-smoke.js",
+    "test:server": "node tools/server-smoke.js && node tools/skills-smoke.js && node tools/hoarfrost-smoke.js && node tools/professions-smoke.js && node tools/greyspine-smoke.js && node tools/pendants-smoke.js && node tools/dungeons-smoke.js && node tools/party-smoke.js && node tools/dungeon-runs-smoke.js && node tools/dungeon-boss-smoke.js && node tools/rewards-smoke.js && node tools/dungeon-missions-smoke.js",
+    "test:client": "python3 build.py >/dev/null && node tools/client-smoke.js && node tools/start-smoke.js && node tools/keys-smoke.js && node tools/entrances-client-smoke.js && node tools/rewards-client-smoke.js && node tools/dungeon-client-smoke.js && node tools/dungeon-board-client-smoke.js",
     "test:keys": "python3 build.py >/dev/null && node tools/keys-smoke.js",
     "test:accounts": "node tools/accounts-smoke.js",
     "unused": "python3 tools/unused.py",
-    "test": "python3 build.py --check && node tools/server-smoke.js && node tools/skills-smoke.js && node tools/accounts-smoke.js && node tools/mainquest-smoke.js && node tools/hoarfrost-smoke.js && node tools/greyspine-smoke.js && node tools/pendants-smoke.js && node tools/professions-smoke.js && node tools/tiers-smoke.js && node tools/boss-smoke.js && node tools/client-smoke.js && node tools/start-smoke.js && node tools/keys-smoke.js",
+    "docs": "node tools/gen-docs.js",
+    "docs:check": "node tools/gen-docs.js --check",
+    "test": "python3 build.py --check && node tools/server-smoke.js && node tools/skills-smoke.js && node tools/accounts-smoke.js && node tools/mainquest-smoke.js && node tools/hoarfrost-smoke.js && node tools/greyspine-smoke.js && node tools/pendants-smoke.js && node tools/professions-smoke.js && node tools/tiers-smoke.js && node tools/boss-duel.js --check && node tools/levels-smoke.js && node tools/boss-smoke.js && node tools/dungeons-smoke.js && node tools/party-smoke.js && node tools/dungeon-runs-smoke.js && node tools/dungeon-boss-smoke.js && node tools/rewards-smoke.js && node tools/dungeon-missions-smoke.js && node tools/client-smoke.js && node tools/start-smoke.js && node tools/keys-smoke.js && node tools/entrances-client-smoke.js && node tools/rewards-client-smoke.js && node tools/dungeon-client-smoke.js && node tools/dungeon-board-client-smoke.js",
     "preview:model": "node tools/model-preview.js"
   },
   "engines": {

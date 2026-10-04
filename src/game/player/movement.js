@@ -42,6 +42,7 @@ const valeOpen=()=>!!(GEAR&&GEAR.east>=1);
 const northOpen=()=>!!(GEAR&&GEAR.north>=1);
 const westOpen=()=>!!(GEAR&&GEAR.west>=1);
 function worldBounds(o,ox,rad,oz){
+  if(dgIn()){ dgBounds(o,ox,rad,oz); return; }   // dungeons: a run's walls instead of the world's edges (dungeon/collide.js)
   const T=TUN, dz=o.z-T.z, bore=Math.abs(dz)<T.w-rad+0.2, e0=T.p0-0.6, e1=T.p1+0.6;
   if(!o.inTun && bore && ((ox<=e0 && o.x>e0 && valeOpen()) || (ox>=e1 && o.x<e1))) o.inTun=true;
   if(o.inTun){
@@ -93,6 +94,7 @@ function updateCamera(dt){
       cz=TUN.z+clamp(cz-TUN.z,-(TUN.w-0.4),TUN.w-0.4); cx=clamp(cx,TUN.p0-8,TUN.p1+8);
       if(cx>TUN.p0-1&&cx<TUN.p1+1) cyy=Math.min(cyy,TUN.floor(cx)+TUN.roof-1.2);
     }
+    if(dgIn()){ const b=dgCamBoom(hx,hy,hz,cx,cyy,cz); cx=b[0]; cyy=b[1]; cz=b[2]; }   // dungeons: the camera's arm shortens in front of a run's walls (dungeon/collide.js)
     camera.position.set(cx+(Math.random()-0.5)*camShake*0.6,cyy+(Math.random()-0.5)*camShake*0.6,cz);
     camera.lookAt(hx,hy+0.2,hz);
   } else {

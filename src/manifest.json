@@ -21,7 +21,10 @@
     "19-chat.css",
     "20-professions.css",
     "21-crafting.css",
-    "22-tiers.css"
+    "22-tiers.css",
+    "23-dungeon-gear.css",
+    "24-dungeon.css",
+    "25-dungeon-board.css"
   ],
   "shared": [
     "math.js",
@@ -49,7 +52,10 @@
     "quests.js",
     "main-quest.js",
     "professions.js",
-    "crafting.js"
+    "crafting.js",
+    "dungeon-slots.js",
+    "dungeon-hud.js",
+    "dungeons.js", "dungeons/bosses.js", "dungeons/themes/hollowroots.js", "dungeons/themes/jadesprings.js", "dungeons/themes/bonefrostbarrow.js", "dungeon-rewards.js", "dungeon-items.js"
   ],
   "server": [
     "state.js",
@@ -62,14 +68,18 @@
     "boss-kits-vale.js",
     "boss-kits-north.js",
     "boss-kits-grey.js",
+    "dungeons/boss-fx.js", "dungeons/boss-kits.js",
     "boss.js",
     "economy.js",
+    "dungeon-gear.js",
     "main-quest.js",
     "professions.js",
     "crafting.js",
     "tiers.js",
     "weather.js",
     "accounts.js",
+    "party.js",
+    "dungeons/instances.js", "dungeons/mobs.js", "dungeons/fx.js", "dungeons/hazards.js", "dungeons/kits.js", "dungeons/kits/purge.js", "dungeons/kits/defense.js", "dungeons/kits/survival.js", "dungeons/kits/sabotage.js", "dungeons/kits/siege.js", "dungeons/kits/hunt.js", "dungeons/kits/escort.js", "dungeons/runs.js", "dungeons/lobby.js",
     "api.js"
   ],
   "node": [
@@ -80,6 +90,7 @@
     "@shared",
     "world/heightmap.js",
     "world/terrain-color.js",
+    "dungeon/entrances.js",
     "player/keybinds.js",
     "ui/controls-legend.js",
     "engine/renderer.js",
@@ -109,6 +120,7 @@
     "village/buildings-hoar.js",
     "village/buildings-grey.js",
     "village/buildings-beach.js",
+    "village/buildings-dungeon.js",
     "village/villagers.js",
     "village/talking.js",
     "village/npc-labels.js",
@@ -168,7 +180,11 @@
     "ui/map.js",
     "net/transport.js",
     "net/client.js",
+    "combat/boss-dungeon.js",
     "net/remote.js",
+    "economy/dungeon-gear.js",
+    "dungeon/board.js",
+    "dungeon/run.js", "dungeon/view.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "dungeon/hud.js", "dungeon/minimap.js",
     "ui/account.js",
     "ui/chat.js",
     "ui/start-screen.js",

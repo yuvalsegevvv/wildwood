@@ -1,6 +1,6 @@
 //@ Wisp and ghost models (model 'wisp'): fire spirits (onibi, rime wisp) with a bright core and rising tongues; the yurei, ice wraith and barrow wight, tattered figures that float
 /* One mesh (body) that bobs and leans; the flame wisp has a second one (P0.flick, the topmost tongue, which flickers). pal.ghost picks a ghost; the ghost's look follows its id:
-   the yurei (long black hair, a white kimono, arms held out), the ice wraith (a hood of frost), the barrow wight (a crown of ice, a cloak in rags). */
+   the yurei (long black hair, a white kimono, arms held out), the ice wraith and the Grave Wisp (a hood of frost), the barrow wight and Haugbui, the Barrow Lord (a crown of ice, a cloak in rags). */
 MODELS.wisp={
   geo(d,p){
     const G={}, W=[-1,1], body=[];
@@ -13,7 +13,7 @@ MODELS.wisp={
       G.flick=moTube([[0,0,0],[0.05,0.28,0],[0,0.55,0.04]],0.11,0.01,(x,y,z,c)=>{ c.set(p.body).lerp(_tint.set(p.core),clamp(y*1.6)); },6,true,t=>1+0.3*Math.sin(Math.PI*t));
       G.body=moMerge(body); return G;
     }
-    const st=d.id==='barrowwight'?'wight':d.id==='icewraith'?'wraith':'yurei', skinC=st==='yurei'?0xe8e4e0:p.core;
+    const st=d.id==='barrowwight'||d.id==='haugbui'?'wight':d.id==='icewraith'||d.id==='gravewisp'?'wraith':'yurei', skinC=st==='yurei'?0xe8e4e0:p.core;   // (haugbui: the Barrow Lord, a huge wight; gravewisp: his thralls)
     const sh=(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.72+0.3*clamp(y*0.9)+0.12*moNoise(x,y,z,7)); if(st==='yurei'&&y>1.05&&y<1.25&&Math.abs(x)<0.18-(1.25-y)*0.5) c.set(skinC); };
     // the shroud: a tapering torso down to a ragged hem of strips, twisting in the wind
     body.push(moLoft([{y:0.7,rx:0.16,rz:0.13},{y:0.95,rx:0.2,rz:0.15},{y:1.15,rx:0.17,rz:0.12},{y:1.32,rx:0.22,rz:0.14},{y:1.42,rx:0.1,rz:0.09},{y:1.5,rx:0.06,rz:0.06}],moQ(14),sh));

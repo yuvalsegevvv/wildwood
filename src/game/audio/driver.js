@@ -15,12 +15,14 @@ function soundTick(dt){
     wasGround=P.ground;
   }
   sTick+=dt; if(sTick<0.1) return; const T=sTick; sTick=0;
+  if(dgIn()){ dgAmbience(T); return; }   // dungeons: a run's sounds instead of the forest's (dungeon/look.js)
   // measure surroundings
   if(Math.random()<0.4){
     let best=99; for(let r=4;r<=36;r+=8) for(let k=0;k<8;k++){ const a=k/8*TAU; if(getH(P.x+Math.sin(a)*r,P.z+Math.cos(a)*r)<WATER) best=Math.min(best,r); }
     if(getH(P.x,P.z)<WATER) best=0; waterNear=best>36?0:1-best/40;
     fdNear=forestDensity(P.x,P.z);
   }
+  waterNear=Math.max(waterNear,dgEntWater(P.x,P.z));   // dungeons: the Falls Door's cascade roars through the water loop
   const L=SND.loops, set=(g,v)=>g.gain.setTargetAtTime(v,now,0.4);
   const gust=0.6+0.4*Math.sin(t*0.23)*Math.sin(t*0.61), cold=inHoar(P.x,P.z)?1:0;   // (cold: the Hoarfrost Reach, more wind, no birds, crickets or frogs)
   set(L.wind.g,(0.05+0.09*smoothstep(8,40,P.y)+0.05*cold)*gust*(0.7+0.3*day));
@@ -38,6 +40,7 @@ function soundTick(dt){
   if(r(0.004*night*cold)){ const s=around(60,160); if(s) wolfHowl(s.pan,s.gain*2.2); }   // a wolf, far off, on the long nights
   if(r(0.08*night*waterNear*(1-cold))){ const s=around(5,20); if(s) frog(s.pan,s.gain*1.5); }
   if(fd<18 && r(0.45*(1-fd/18))){ const s=spatial(FV.fire.x,FV.fire.z,4,20); if(s) crackle(s.pan,s.gain); }
+  dgEntSounds(r,spatial);   // dungeons: drips at the Elder, the Barrow's hum
   if(W.ready){
     for(const d of W.duck){ if(r(0.004)){ const s=spatial(d.x,d.z,8,35); if(s) quack(s.pan,s.gain); } }
     if(day>0.5) for(const f of W.flocks){ if(r(0.004)){ const s=spatial(f.ax,f.az,20,90); if(s) crowCaw(s.pan,s.gain*1.5); } }

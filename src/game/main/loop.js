@@ -20,6 +20,7 @@ function frame(){
     updateAnimals(dt);
     updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateGreyspine(dt); updateNodes(); updateLoreProps();
     updateNPCs(dt);
+    dgEntUpdate(dt);   // dungeons: the doors' sealed look and animation
     updateNpcLabels();
     updateRemotes(dt);
     updateMonsters(dt);
@@ -32,6 +33,7 @@ function frame(){
   updateChat();
   updateEnv(dt);
   cullChunks(dt);
+  dgFrame(dt);   // dungeons: a run's view, light and HUD, the party's prompts (dungeon/run.js)
   updateCamera(dt); updateShadow();
   sky.position.copy(camera.position);
   renderer.render(scene,camera);

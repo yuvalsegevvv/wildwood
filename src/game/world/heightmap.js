@@ -3,6 +3,7 @@
 const SEG=LITE?240:(LOW?300:440), CELL=SIZE/SEG, SEGX=Math.round(WW/CELL), SEGZ=Math.round(WD/CELL), NVX=SEGX+1, NVZ=SEGZ+1;
 const HS = new Float32Array(NVX*NVZ);
 function getH(x,z){
+  if(dgInSlots(x)) return DG_FLOOR_Y;   // dungeons: a run's flat floor (the server's getH does the same; shared/dungeon-slots.js)
   const gx=(x-WX0)/CELL, gz=(z-WZ0)/CELL;
   const ix=clamp(Math.floor(gx),0,SEGX-1), iz=clamp(Math.floor(gz),0,SEGZ-1);
   const fx=clamp(gx-ix), fz=clamp(gz-iz);

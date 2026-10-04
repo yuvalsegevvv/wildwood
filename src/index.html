@@ -17,6 +17,7 @@
   <div class="hud-l">
   <div class="brand"><div class="t">Wildwood</div><div class="s" id="tod">Morning 07:00</div><div class="s z" id="zone"></div><div class="g" id="grow" hidden></div><div class="s" id="online" hidden></div>
     <div class="pstat"><div class="pl-top"><b id="plLv">Lv 1</b><span id="plHpT"></span></div><div class="pbar hp"><i id="plHp"></i></div><div class="pbar xp"><i id="plXp"></i></div><div class="pl-xp"><span id="plXpT"></span><span class="coin"><span id="plCoins">0</span> coins</span></div><div class="pl-sym" id="plSym" hidden></div></div>
+    <div id="dgPtyFrame" hidden title="Party (P)"></div>
   </div>
   <div id="chat" class="chat empty">
     <div class="chat-log" id="chatLog" aria-live="polite" aria-label="Chat"></div>
@@ -75,6 +76,7 @@
 </div>
 <div id="forge" class="panel" hidden role="dialog" aria-label="Forge">
   <div class="pn-head"><span class="pn-t">Greta's forge</span><span class="pn-coins" id="forgeCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="chips pn-tabs"><button class="chip" data-fgtab="merge">Merge</button><button class="chip" data-fgtab="temper">Temper</button></div>
   <div class="pn-body" id="forgeBody"></div>
 </div>
 <div id="skills" class="panel" hidden role="dialog" aria-label="Skills">
@@ -96,6 +98,28 @@
 <div id="travel" class="panel" hidden role="dialog" aria-label="Teleport circle">
   <div class="pn-head"><span class="pn-t">Teleport circle</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="trBody"></div>
+</div>
+<!-- dungeons: the Delve board (game/dungeon/board.js, styles/25-dungeon-board.css) and the prompt to join a party's run -->
+<div id="dgBoard" class="panel" hidden role="dialog" aria-label="Delve board">
+  <div class="pn-head"><span class="pn-t">Delve board</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="dgBody"></div>
+  <div class="dgb-foot"><span id="dgClock"></span><span id="dgParty"></span></div>
+</div>
+<div id="dgJoin" hidden role="alertdialog" aria-live="assertive" aria-label="Join a run">
+  <p id="dgJoinText"></p>
+  <div class="dgj-row"><button class="chip buy" id="dgJoinYes" type="button">Join them</button><button class="chip" id="dgJoinNo" type="button">Stay behind</button><span class="dgj-bar"><i id="dgJoinBar"></i></span><span class="dgj-left" id="dgJoinLeft"></span></div>
+</div>
+<!-- dungeons: a run's HUD, the results, the party panel and invite (game/dungeon/hud.js, party.js; styles/24-dungeon.css) -->
+<div id="dgHud" hidden><div class="dgh-top"><b id="dgHudTitle"></b><span id="dgHudTime"></span><button class="chip" id="dgLeave" type="button">Leave</button></div><div id="dgHudLines"></div><div class="dgh-bar" id="dgHudBarBox" hidden><i id="dgHudBar"></i><span id="dgHudBarLbl"></span></div></div>
+<div id="dgArrows" aria-hidden="true"></div>
+<div id="dgResult" hidden role="dialog" aria-label="Run results"><b id="dgResultTitle"></b><p id="dgResultWhy" hidden></p><p id="dgResultStats"></p><div id="dgResultItems"></div><div class="dgr-foot"><span id="dgResultLeft"></span><button class="chip buy" id="dgResultGo" type="button">Leave now</button></div></div>
+<div id="dgPtyInv" hidden role="alertdialog" aria-live="assertive" aria-label="Party invite">
+  <p id="dgPtyInvText"></p>
+  <div class="dgj-row"><button class="chip buy" id="dgPtyYes" type="button">Join</button><button class="chip" id="dgPtyNo" type="button">No thanks</button><span class="dgj-bar"><i id="dgPtyInvBar"></i></span><span class="dgj-left" id="dgPtyInvLeft"></span></div>
+</div>
+<div id="dgPty" class="panel" hidden role="dialog" aria-label="Party">
+  <div class="pn-head"><span class="pn-t">Party</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="dgPtyBody"></div>
 </div>
 <div id="lucky" aria-live="polite"></div>
 <div id="meSay" class="say" hidden></div>
@@ -136,7 +160,8 @@
   <div class="name-row"><input id="setName" maxlength="16" autocomplete="nickname" spellcheck="false" aria-label="Your name"><button class="chip" id="setNameBtn">Save</button></div>
   <div id="tSec">
   <div class="snd-sub snd-sec">Testing</div>
-  <div class="test-row"><label for="tLevel">Level</label><input id="tLevel" type="number" min="1" max="50" value="1" inputmode="numeric"><button class="chip" id="tSetLv">Set level</button></div>
+  <div class="test-row"><label for="tLevel">Level</label><input id="tLevel" type="number" min="1" max="99" value="1" inputmode="numeric"><button class="chip" id="tSetLv">Set level</button></div>
+  <div class="test-row"><label for="tDgTheme">Dungeon</label><select id="tDgTheme" aria-label="Dungeon"></select><select id="tDgMission" aria-label="Mission"></select><button class="chip" id="tDgGo">Start a run</button></div>
   <div class="test-row"><label for="tMq">Main quest</label><select id="tMq"></select><button class="chip" id="tSetMq">Go to step</button></div>
   <div class="test-col">
     <button class="chip" id="tAll">Add every item to my bag</button>
@@ -150,6 +175,9 @@
     <button class="chip" id="tPots">Add 5 of every potion</button>
     <button class="chip" id="tZt">Unlock zone tiers (all lands, +1)</button>
     <button class="chip" id="tThree">3 of an item (for the forge)</button>
+    <button class="chip" id="tStones">Add 20 Tempering Stones</button>
+    <button class="chip" id="tDgAll">Add a level-30 piece of every kind (common)</button>
+    <button class="chip" id="tDgThree">3 of a level-30 piece (for the forge)</button>
     <button class="chip" id="tLucky">Lucky drop</button>
     <button class="chip" id="tRain">Rain</button>
     <button class="chip" id="tStorm">Thunderstorm</button>
@@ -176,6 +204,9 @@
     <button class="chip" id="tTide" data-v="tide">Go to the Tide King's beach</button>
     <button class="chip" id="tGate" data-v="gate">Go to the Demon Gate</button>
     <button class="chip" id="tShrine" data-v="shrine">Go to the Foxfire Shrine</button>
+    <button class="chip" id="tDoorElder">Go to the Hollowed Elder (Wildwood's dungeon door)</button>
+    <button class="chip" id="tDoorFalls">Go to the Falls Door (the Vale's, opens the tunnel and Hanami)</button>
+    <button class="chip" id="tDoorBarrow">Go to the Barrow Door (the Reach's, opens the ice wall too)</button>
     <button class="chip" id="tSealN">Seal the ice wall again</button>
     <button class="chip" id="tSealW">Seal the ice fall again</button>
     <button class="chip" id="tReset">Reset all progress</button>

@@ -2,7 +2,8 @@
 // client code. Build first (python3 build.py). Needs the three package (npm install). Prints PASS/FAIL lines.
 // Usage: node tools/client-smoke.js
 const {bootClient}=require('./headless');
-const c=bootClient({expose:['NET','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','GLEN','GREY_GATES','slotIcon','PENDANT_LIST','itemStat','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt']});
+const c=bootClient({expose:['NET','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','GLEN','GREY_GATES','slotIcon','PENDANT_LIST','itemStat','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt',
+  'DG_RUN:()=>DG_RUN','DG_VIEW','DG_THEMES','dgFree','dgIn','dgHudText','dgHudTick','dgDownText','sky','water','sun','updateCamera','updateEnv','updatePlayer','applySnap','keys','TERRAIN_BANDS','cullChunks','playerDown','playerUp']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const el=s=>document.querySelector(s);
 (async()=>{
@@ -14,7 +15,7 @@ const el=s=>document.querySelector(s);
   for(let i=0;i<120&&!s.dead;i++){ G.CB.target=s; G.P.yaw=Math.atan2(-(s.x-G.P.x),-(s.z-G.P.z)); G.doAttack('basic'); G.updateMonsters(0.033); G.updateCombat(0.033); await wait(33); }
   G=c.G(); ok('attack through the server kills a slime',s.dead,'xp '+G.PL.exp.toFixed(1));
   G.equip('bow1'); await wait(300); ok('equip round-trip',c.G().GEAR.eq.weapon==='bow1');
-  el('#inv').hidden=false; G.renderInv(); ok('inventory renders body slots, the three tool slots and the pendant slot',(el('#invBody').innerHTML.match(/class="eqslot"/g)||[]).length===9&&['pick','axe','sickle','pendant'].every(k=>el('#invBody').innerHTML.includes('data-slot="'+k+'"')));
+  el('#inv').hidden=false; G.renderInv(); ok('inventory renders body slots, the ring and pendant slots and the three tool slots',(el('#invBody').innerHTML.match(/class="eqslot"/g)||[]).length===10&&['pick','axe','sickle','ring','pendant'].every(k=>el('#invBody').innerHTML.includes('data-slot="'+k+'"')));
   G.openSkills(); ok('skills panel renders 3 slots',(el('#skBody').innerHTML.match(/class="sk-slot/g)||[]).length===3);
   { const h=()=>el('#skBody').innerHTML; ok('skills panel: a tab for 1, 2, 3 and Passive, and three passive slots',(h().match(/data-skkind=/g)||[]).length===4&&(h().match(/class="sk-pslot/g)||[]).length===3);
     ok('an unowned boss skill shows as Boss in the grid and cannot be bought',/data-id="spore"[^>]*>(?:(?!<\/button>)[\s\S])*<span class="lv">Boss<\/span>/.test(h())&&!/data-buyskill="spore"/.test(h()),G.GEAR.eq.weapon);
@@ -114,5 +115,27 @@ const el=s=>document.querySelector(s);
   // r128 compiles a material's shader once, for whichever instanced mesh draws first: one with instance colours and one without on the same material
   // threw "Cannot read properties of null (reading 'isInterleavedBufferAttribute')" in the render loop, depending on what was nearest at the first frame
   { let n=0, bare=0; G.scene.traverse(o=>{ if(o.isInstancedMesh){ n++; if(!o.instanceColor) bare++; } }); ok('every instanced mesh has instance colours (a material shared by meshes with and without crashed the renderer)',n>100&&bare===0,n+' meshes, '+bare+' without'); }
+  // ---- a dungeon run (game/dungeon/*.js; the full set: tools/dungeon-client-smoke.js): built from the tp at its slot, the forest off, walls, camera, monsters, HUD, party, results, leaving ----
+  { G.NET.send({t:'dev',cmd:'level',v:50}); G.NET.send({t:'dev',cmd:'dg',v:'hollowroots:purge'}); await wait(900); G=c.G();
+    const R=G.DG_RUN(), sp=()=>G.NET.server.players.get('you'); let grp=null; G.scene.traverse(o=>{ if(o.name==='dungeon') grp=o; });
+    ok('dungeon: a purge run from the testing tool builds the dungeon\'s meshes at the run\'s slot, where the server has you',!!R&&!!grp&&grp.position.x===R.ox&&grp.position.z===R.oz&&G.DG_VIEW.meshes>=3&&sp().inst===R.id&&Math.abs(G.P.x-sp().x)<0.01,R&&G.DG_VIEW.meshes+' meshes, '+Math.round(G.DG_VIEW.tris)+' triangles');
+    for(let i=0;i<3;i++){ G.updateEnv(0.05); G.cullChunks(0.05); }
+    ok('dungeon: the forest is off (sky, water, sun shadow, terrain tiles) and the fog is the theme\'s',!G.sky.visible&&!G.water.visible&&!G.sun.castShadow&&!G.TERRAIN_BANDS.some(b=>b.mesh.visible)&&G.scene.fog.color.getHex()===G.DG_THEMES.hollowroots.pal.fog&&G.camera.far<200);
+    const B=R.B, lx=()=>G.P.x-R.ox, lz=()=>G.P.z-R.oz; let dir=null;
+    for(let a=0;a<8&&!dir;a++){ const dx=Math.sin(a/4*Math.PI), dz=Math.cos(a/4*Math.PI); for(let d=1;d<12;d+=0.25) if(!G.dgFree(B,lx()+dx*d,lz()+dz*d,0.32)){ dir={dx,dz,d}; break; } }
+    { const x0=lx(), z0=lz(); G.P.yaw=Math.atan2(-dir.dx,-dir.dz); G.keys.KeyW=true; for(let i=0;i<90;i++) G.updatePlayer(0.05); await wait(500); G.keys.KeyW=false; G=c.G();
+      const went=(lx()-x0)*dir.dx+(lz()-z0)*dir.dz;
+      ok('dungeon: a wall stops you, and the server agrees where you are',G.dgFree(B,lx(),lz(),0.3)&&went<dir.d&&Math.hypot(sp().x-G.P.x,sp().z-G.P.z)<0.35,'went '+went.toFixed(2)+' of '+dir.d.toFixed(2)+' m'); }
+    G.P.x-=dir.dx*1.2; G.P.z-=dir.dz*1.2; G.P.yaw=Math.atan2(dir.dx,dir.dz); G.P.pitch=0; for(let i=0;i<10;i++) G.updateCamera(0.05);
+    { const d=Math.hypot(G.camera.position.x-G.P.x,G.camera.position.z-G.P.z); ok('dungeon: with a wall behind you the camera\'s arm shortens',d<2.2,'arm '+d.toFixed(2)+' m'); }
+    ok('dungeon: the run\'s monsters have views at the run\'s level',G.MONS.filter(m=>m.dgK&&G.monTierK(m).lv===R.L).length>3);
+    G.applySnap({dg:[0,40,0,3,9]}); G.dgHudTick(0.016); ok('dungeon: the dg snapshot drives the HUD text',el('#dgHudTitle').textContent==='Purge'&&el('#dgHudLines')._kids.some(k=>k.textContent==='Monsters slain: 3 / 9'));
+    const me=G.NET.pid; G.applyEvent(['pty',me,me,[[me,'Me',100,100,50,0,R.id],[4242,'Ann',0,120,29,1,R.id]]]);
+    ok('dungeon: a downed member shows in the party frame',!el('#dgPtyFrame').hidden&&el('#dgPtyFrame')._kids.length===1&&/down/.test(el('#dgPtyFrame')._kids[0].className));
+    G.applyEvent(['pty',me,0,[]]);
+    G.applyEvent(['dge',me,0,61,40,12,[],2,'Everyone was down at once.']); ok('dungeon: the results panel appears on dge',!el('#dgResult').hidden&&el('#dgResultTitle').textContent==='The run is lost'&&/Everyone/.test(el('#dgResultWhy').textContent));
+    const geos=G.DG_VIEW.geos.slice(); let gone=0; for(const g of geos){ const f=g.dispose.bind(g); g.dispose=()=>{ gone++; f(); }; }
+    G.NET.send({t:'dg',a:'leave'}); await wait(700); G=c.G(); for(let i=0;i<3;i++){ G.updateEnv(0.05); G.cullChunks(0.05); } let left=0; G.scene.traverse(o=>{ if(o.name==='dungeon') left++; });
+    ok('dungeon: leaving gives the world back (sky, water, sun shadow, fog, streaming) and disposes the meshes',!G.dgIn()&&sp().inst===0&&left===0&&gone===geos.length&&G.sky.visible&&G.water.visible&&G.sun.castShadow&&G.scene.fog.far>100&&G.camera.far===1200&&!G.MONS.some(m=>m.dgK),gone+' of '+geos.length+' geometries'); }
   c.stop(); console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);
 })();

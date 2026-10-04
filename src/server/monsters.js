@@ -8,6 +8,7 @@ function makeMon(d,x,z,camp,s,temp){
   const m={id:nextMonId++,def:d,T:d,model:d.model,camp:camp||{x,z},s:s||1,x,z,face:AR(0,TAU),faceGoal:0,vx:0,vz:0,kbx:0,kbz:0,
     state:'idle',timer:AR(0,3),ph:AR(0,TAU),slowT:0,dead:false,deadT:0,respawnT:0,atkT:0,aggro:false,tgt:null,gx:x,gz:z,
     pendingHit:-1,act:null,temp:!!temp,hp:d.hp,maxHp:d.hp,hitters:new Map(),awake:false};
+  if(S.ctx) dgAdoptS(m);   // dungeons: a monster made while a run updates (a boss's adds, a kit's spawn, the boss) belongs to that run: its level, the party's health
   m.faceGoal=m.face; MONS.push(m); MON_BY_ID.set(m.id,m); return m;
 }
 const CAMPS=[];
@@ -17,7 +18,7 @@ const CAMPS=[];
 const MON_COUNT=d=>d.count||(d.level>15?12:Math.round((40-(d.level-1)*20/14)*(d.level>=12?1.25:1)));
 function initMonstersS(){
   const rng=mulberry32(31337), rr=(a,b)=>a+(b-a)*rng();
-  const ok=(x,z)=>x>WX0+26&&x<WX1-26&&z>(x>HALF||z<HZ0?WZ0:HZ0)+26&&z<(x<HALF&&z<HZ0?HZ0:HALF)-26&&getH(x,z)>1&&grad(x,z)<0.55&&zoneRidge(x,z)<0.5&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&!inTunnelCut(x,z,15)&&!inGlen(x,z,8)&&!inGate(x,z,6)&&!greyWet(x,z,-3);
+  const ok=(x,z)=>x>WX0+26&&x<WX1-26&&z>(x>HALF||z<HZ0?WZ0:HZ0)+26&&z<(x<HALF&&z<HZ0?HZ0:HALF)-26&&getH(x,z)>1&&grad(x,z)<0.55&&zoneRidge(x,z)<0.5&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&!inTunnelCut(x,z,15)&&!inGlen(x,z,8)&&!inGate(x,z,6)&&!greyWet(x,z,-3)&&!dgEntranceNear(x,z,32);   // dungeons: a camp keeps 32 m off a dungeon's door (none was nearer: no camp moves)
   for(const d of MON_DEFS){
     const zn=defZone(d), total=MON_COUNT(d), pack=d.per+2;
     let made=0;
@@ -32,7 +33,7 @@ function initMonstersS(){
     }
   }
 }
-function monRoster(m){ return [m.id,m.def.id,r1(m.camp.x),r1(m.camp.z),Math.round(m.s*100)/100,r1(m.x),r1(m.z),m.dead?1:0,m.temp?1:0]; }
+function monRoster(m){ return [m.id,m.def.id,r1(m.camp.x),r1(m.camp.z),Math.round(m.s*100)/100,r1(m.x),r1(m.z),m.dead?1:0,m.temp?1:0].concat(m.inst?[m.dgK.lv,Math.round(m.maxHp)]:[]); }   // dungeons: a run's monster adds [level, maxHp in the def's units]
 function spawnMonS(d,x,z,camp,temp){ const m=makeMon(d,x,z,camp,1,temp); ev('spawn',monRoster(m)); return m; }
 function removeMonS(m){ if(m.remove) return; m.remove=true; ev('despawn',m.id); }
 function respawnMonS(m){
@@ -45,6 +46,7 @@ function anyPlayerNear(x,z,d){ for(const p of S.players.values()) if(Math.hypot(
 function updateMonstersS(dt){
   for(const m of MONS){
     if(m.remove) continue;
+    if(m.inst) continue;   // dungeons: a run's monsters (its boss too) move in updateInstsS
     if(m.boss){ updateBossS(m,dt); continue; }
     if(m.dead){
       m.deadT+=dt;

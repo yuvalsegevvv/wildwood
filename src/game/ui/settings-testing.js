@@ -1,7 +1,7 @@
 //@ Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, the Greyspine, reset
 /* ----- settings: testing tools ----- */
 $('#tLevel').value=PL.level;
-$('#tSetLv').addEventListener('click',()=>{ const v=clamp(parseInt($('#tLevel').value,10)||1,1,50); netSend({t:'dev',cmd:'level',v}); toast('Level set to '+v,'good'); });
+$('#tSetLv').addEventListener('click',()=>{ const v=clamp(parseInt($('#tLevel').value,10)||1,1,PLAYER_MAX_LV); netSend({t:'dev',cmd:'level',v}); toast('Level set to '+v,'good'); });
 // the main quest: jump to a step (offered by its giver; set the level too if the step is gated above yours)
 $('#tMq').innerHTML=MQ.map(s=>`<option value="${s.id}">${s.id} · ${s.title} (level ${s.gate})</option>`).join('');
 $('#tSetMq').addEventListener('click',()=>netSend({t:'dev',cmd:'mq',v:$('#tMq').value}));

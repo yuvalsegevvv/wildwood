@@ -9,12 +9,14 @@
    cleaves; B.mode is what the client shows (0 normal, 1 airborne, 2 hidden, 3 shielded, 4 whiteout, 5 blizzard); B.aux a number for the boss bar. B = one
    boss fight's state (m.B). */
 const BOSSES=[];
+// one boss fight's state for a def and an arena circle A = {x,z,r}: the six of the world are made through it at start, and a dungeon makes its boss on demand (dungeons: makeBossS)
+function makeBossS(bd,A){
+  const B={bd,A,kit:BOSS_KITS[bd.kit],m:null,phase:1,tele:[],zones:[],walls:[],orbs:[],q:[],k:{},mode:0,aux:0,busy:0,mv:null,engaged:false,totems:[],adds:[],enraged:false,stunT:0};
+  B.m=makeMon(bd.def,A.x,A.z,{x:A.x,z:A.z},1,false); B.m.boss=true; B.m.B=B;
+  return B;
+}
 function initBossS(){
-  for(const bd of BOSS_DEFS){
-    const A=ARENAS.find(a=>a.key===bd.arena);
-    const B={bd,A,kit:BOSS_KITS[bd.kit],m:null,phase:1,tele:[],zones:[],walls:[],orbs:[],q:[],k:{},mode:0,aux:0,busy:0,mv:null,engaged:false,totems:[],adds:[],enraged:false,stunT:0};
-    B.m=makeMon(bd.def,A.x,A.z,{x:A.x,z:A.z},1,false); B.m.boss=true; B.m.B=B; BOSSES.push(B);
-  }
+  for(const bd of BOSS_DEFS) BOSSES.push(makeBossS(bd,ARENAS.find(a=>a.key===bd.arena)));
 }
 // snapshot: one entry per boss [monster id, engaged, phase, immune, enraged, stunned, aux, mode]
 function bossState(){ return BOSSES.map(B=>[B.m.id,B.engaged?1:0,B.phase,B.m.immune?1:0,B.enraged?1:0,B.stunT>0?1:0,B.aux,B.mode]); }

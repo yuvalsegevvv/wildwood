@@ -9,7 +9,7 @@ function attachWeapons(){
 function weaponsOn(r,weaponId,build){
   const objs=[], res={objs};
   const add=(parent,obj)=>{ parent.add(obj); objs.push(obj); obj.traverse(q=>{ if(q.isMesh) q.castShadow=true; }); return obj; };
-  const w=ITEM[weaponId], c=w?CLASS_OF[w.slot]:'warrior', tr=w?w.tier:0;
+  const w=ITEM[weaponId], c=w?CLASS_OF[w.slot]:'warrior', tr=w?dgVisTier(w):0;   // dungeons: a level-30 weapon is drawn as the top tier's
   if(c==='warrior'){
     const blade=[0x9c9288,0xc0c6cc,0xd9e2ea,0xf5dc8a,0xeef2f6,0xcfe4ff][tr], guard=[0x6a5030,0x5a5d62,0x8a7a4a,0xd4a83a,0x1a1414,0x2a2a40][tr], L=[0.6,0.7,0.8,0.9,0.95,1.0][tr], kat=tr>=4;
     const parts=[

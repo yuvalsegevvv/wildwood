@@ -72,6 +72,8 @@ function updateEnv(dt){
   if(serverDay!==null){ const d=((serverDay-dayClock+1.5)%1)-0.5; dayClock=Math.abs(d)>0.05?serverDay:(dayClock+d*Math.min(1,dt*2)+1)%1; }
   envAt(dayClock,envCur);
   weatherTint(envCur);
+  dgLookEnv(envCur);   // dungeons: a run's own fog and light, whatever the hour or weather (dungeon/look.js)
+  dgGloomTint(envCur,dt);   // dungeons: the Barrow Lord's blackout darkens his hall (combat/boss-dungeon.js)
   applyEnv(envCur);
   todLabelT-=dt;
   if(todLabelT<=0){ todLabelT=0.5; $('#tod').textContent=envCur.name+' '+clockText(dayClock)+(WX.kind&&WX.inten>0.2?(WX.snow>0.5?(WX.kind===2?' · Blizzard':' · Snow'):WX.kind===2?' · Thunderstorm':' · Rain'):''); updateZoneLabel(); }

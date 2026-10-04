@@ -3,7 +3,7 @@
    monster's health in your own units (the snapshot sends it in the def's own units, the same for everyone: your tier's health multiplier turns it
    into what a hit of yours is measured against). The symbol (three badges and the bonus) sits under your XP bar; the picker is a row under the
    map, for the land the map shows, and works in a village only (the server checks it as well). */
-const monTierK=m=>zoneTierK(m.T,monTierOf(GEAR,m));
+const monTierK=m=>m.dgK||zoneTierK(m.T,monTierOf(GEAR,m));   // dungeons: a run monster's numbers are its run's level (m.dgK), like the server's monK
 // a zone's level text at your tier for its land ('12', or '16-17' for a zone with two levels)
 const zoneLvText=zn=>{ const t=zoneTierOn(GEAR,landOfZone(zn)); return t?String(zn.lvText||zn.level).replace(/\d+/g,n=>+n+ZTIER_STEP*t):(zn.lvText||zn.level); };
 const zoneLvNum=zn=>zn.level+ZTIER_STEP*zoneTierOn(GEAR,landOfZone(zn));

@@ -16,6 +16,8 @@ function sanitizeGear(g,cls){
   out.mq=sanitizeMq(g.mq);
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); }
   out.zt=sanitizeZt(g.zt);
+  out.dg=dgSanitizeSave(g.dg);   // dungeons: clears and best times per '<theme>:<mission>' (an old save has none)
+  out.temper=clampInt(g.temper,0,DG_STONE_MAX,0);   // dungeons: the Tempering Stones (a count; an old save has none)
   if(out.north<1&&out.mq.s>MQ_BY_ID.V10.i) out.north=1;   // saves that already got past Akaoni: the ice wall is open for them
   if(out.west<1&&out.mq.s>MQ_BY_ID.F8.i) out.west=1;      // ... and past Ymrik: the glacier valley is
   return out;
@@ -64,7 +66,7 @@ function newPlayer(pid,hello){
   hello=hello||{}; const save=hello.save||{}, look=(hello.look&&typeof hello.look==='object')?hello.look:{};
   const sp=VIL.spawn;
   const p={id:pid,name:cleanName(hello.name),look,x:sp.x,y:getH(sp.x,sp.z),z:sp.z,face:0,vx:0,vz:0,
-    level:clampInt(save.level,1,50,1),exp:Math.max(0,+save.exp||0),gear:sanitizeGear(save.gear,look.cls),
+    level:clampInt(save.level,1,PLAYER_MAX_LV,1),exp:Math.max(0,+save.exp||0),gear:sanitizeGear(save.gear,look.cls),
     hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0},buff:null,act:null,dirty:true,travelT:0};
   if(p.gear.startAll) giveAllP(p);
   if(p.gear.skills.v!==2){ autoEquipP(p,'skill'); autoEquipP(p,'burst'); p.gear.skills.v=2; }   // saves from before skills / bursts get the free ones
@@ -73,6 +75,7 @@ function newPlayer(pid,hello){
 }
 function recalcP(p){
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
+  g.atk+=dgRingAtkP(p);   // dungeons: the worn ring's share of the weapon's attack (only for a matching soul)
   p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym); p.def=g.def; p.red=defRed(g.def);
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));
 }
@@ -121,15 +124,16 @@ function gainExpP(p,v,monId){
   if(!(v>0)) return;
   p.exp+=v; ev('xp',p.id,r1(v),monId==null?null:monId);
   let up=false; const was=p.level;
-  while(p.level<50 && p.exp>=expToNext(p.level)){ p.exp-=expToNext(p.level); p.level++; up=true; }
+  while(p.level<PLAYER_MAX_LV && p.exp>=expToNext(p.level)){ p.exp-=expToNext(p.level); p.level++; up=true; }
   if(up){ recalcP(p); p.hp=p.maxHp; ev('lvup',p.id,p.level); refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(was<PASSIVE_LV&&p.level>=PASSIVE_LV) unlockPassivesP(p); }
   p.dirty=true;
 }
-// the attacker's damage at your zone tier (its tiered level's damage), +5% per level the attacker is above you, then your armor and the Iron Will passive
+// the attacker's damage at your zone tier (its tiered level's damage), +5% per level the attacker is above you, then your armor (soft-capped, defRed), the Iron Will passive, a buff and a guard potion;
+// together they can never take off more than 90% (DMG_TAKEN_MIN)
 function hurtP(p,v,m){
   if(p.dead) return;
   const K=m?monK(m,p):null, ld=m?Math.max(0,K.lv-p.level):0;
-  v=Math.max(1,Math.round(v*(K?K.dmg:1)*(1+0.05*ld)*(1-p.red)*(1-psP(p,'red'))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))));
+  v=Math.max(1,Math.round(v*(K?K.dmg:1)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red'))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard')))));
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){
     p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id);
@@ -162,9 +166,11 @@ function unlockPassivesP(p){
 function healP(p,v){ if(!p.dead&&v>0) p.hp=Math.min(p.maxHp,p.hp+v); }
 function updatePlayersS(dt){
   for(const p of S.players.values()){
+    S.ctx=p.inst|0;   // dungeons: what a player's tick causes belongs to his run
     for(const k in p.cd) p.cd[k]=Math.max(0,p.cd[k]-dt);
     if(p.buff&&S.t>=p.buff.until){ p.buff=null; }
     if(p.buff&&p.buff.regen&&!p.dead) healP(p,p.maxHp*p.buff.regen*dt);
+    if(p.dead&&p.inst){ dgDownTickS(p,dt); continue; }   // dungeons: downed in a run: revived, or a respawn at its entrance, never the village
     if(p.dead){
       p.deadT+=dt;
       if(p.deadT>3){ const g=respawnVil(p).anchors.gate; p.x=g.x; p.z=g.z; p.y=getH(g.x,g.z); p.dead=false; p.hp=p.maxHp; p.lastHit=-99; sendTo(p.id,{t:'tp',x:g.x,z:g.z,face:g.face}); ev('up',p.id); p.dirty=true; }
