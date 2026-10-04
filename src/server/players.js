@@ -75,7 +75,7 @@ function newPlayer(pid,hello){
 }
 function recalcP(p){
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
-  g.atk+=dgRingAtkP(p);   // dungeons: the worn ring's share of the weapon's attack (only for a matching soul)
+  g.atk+=dgRingAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else (only for a matching soul)
   p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym); p.def=g.def; p.red=defRed(g.def);
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));
 }

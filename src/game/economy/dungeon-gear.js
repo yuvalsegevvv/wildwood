@@ -1,6 +1,6 @@
 //@ Level-30 dungeon gear in the UI: the ring's notes in the item details, the Tempering Stone count and drop note, the forge's Temper tab, the testing buttons, the events `stone` and `temper`
 /* Agent map (server: server/dungeon-gear.js; rules and items: shared/dungeon-rewards.js, shared/dungeon-items.js)
-   owns:    dgInfoHtml (extra lines of the item details: enhancement and next step; a ring's share of your weapon's attack and whether it matches your soul),
+   owns:    dgInfoHtml (extra lines of the item details: enhancement and next step; a ring's flat attack and whether it matches your soul),
             dgRingDiffHtml (what swapping a ring changes, for statDiff), dgStoneChipHtml (the stone count among the materials), dgStatChange, the Temper tab
             (dgTemperHtml / dgTemperBind: a row for every level-30 piece you own, a button sends temper{id[,worn]}), EVH.stone / EVH.temper, the three testing buttons.
    uses:    forge.js (the tab), inventory.js (details, tiles), soul.js (soulNow), the GEAR mirror (gear.temper, gear.eq.ring), popText / UI_SFX.
@@ -14,23 +14,23 @@ function dgStatChange(it,next){
   if(it.kind==='weapon') return `+${next.atk} attack ${up(it.atk,next.atk)}`;
   if(it.kind==='armor') return `+${next.hp} health, +${next.def} defense ${up(it.hp,next.hp)}`;
   if(it.kind==='pendant') return `${pendantText(next)} <span class="up">(+${it.stat==='critdmg'?Math.round((next.v-it.v)*100)/100:dgPct(next.v-it.v)+'%'})</span>`;
-  const w=ITEM[GEAR.eq.weapon], a=dgRingShare(it,soulNow(),w).atk, b=dgRingShare(next,soulNow(),w).atk;
-  return `+${dgPct(next.pct)}% of your weapon's attack ${up(dgPct(it.pct),dgPct(next.pct),'%')}${b>a?` <span class="muted">(+${b} attack with your soul, now +${a})</span>`:''}`;
+  const a=dgRingShare(it,soulNow()).atk, b=dgRingShare(next,soulNow()).atk;
+  return `+${next.ratk} attack ${up(it.ratk,next.ratk)}${b>a?` <span class="muted">(+${b} attack with your soul, now +${a})</span>`:''}`;
 }
 // the extra lines in the item details panel (inventory.js renderInvInfo): '' for anything but a level-30 dungeon piece
 function dgInfoHtml(it){
   if(!it.dg) return '';
   const E=dgEnhInfo(it.id), have=dgStones(); let h='';
   if(it.kind==='ring'){
-    const sh=dgRingShare(it,soulNow(),ITEM[GEAR.eq.weapon]), sn=ELEMS[sh.soul].name;
+    const sh=dgRingShare(it,soulNow()), sn=ELEMS[sh.soul].name;
     h+=sh.match?`<span class="up">Matches your soul (${sn}): +${sh.atk} attack</span>`:`<span class="down">Your soul is ${sn}: no effect</span> <span class="muted">(it needs a ${dgSoulName(it.el)} soul)</span>`;
   }
   h+=`<span>Tempered +${E.n} of ${E.max}`+(E.next?` &middot; next: ${dgStatChange(it,E.next)} for ${dgPlural(E.stones,ENH_NAME)} <span class="${have>=E.stones?'up':'down'}">(you have ${have})</span>`:' &middot; fully tempered')+'</span>';
   return h;
 }
-// what swapping to a ring changes in your attack (statDiff in inventory.js): its share of your weapon now, against the worn ring's
+// what swapping to a ring changes in your attack (statDiff in inventory.js): its flat attack for your soul now, against the worn ring's
 function dgRingDiffHtml(it,cur){
-  const w=ITEM[GEAR.eq.weapon], soul=soulNow(), d=dgRingShare(it,soul,w).atk-(cur&&cur.kind==='ring'?dgRingShare(cur,soul,w).atk:0);
+  const soul=soulNow(), d=dgRingShare(it,soul).atk-(cur&&cur.kind==='ring'?dgRingShare(cur,soul).atk:0);
   return d?`<span class="${d>0?'up':'down'}">${d>0?'+':''}${d} attack</span>`:'';
 }
 // the stone count, a chip beside the monster drops in the inventory (nothing until you hold one)

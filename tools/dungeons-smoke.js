@@ -279,7 +279,7 @@ ok('every extra player makes monsters tougher (health never goes down with the h
 ok('a party\'s fight with one monster lasts 1 to 1.3 times a solo fight (never faster, never a slog)',[2,3,4].every(n=>X.dgFightRatio(n)>=1&&X.dgFightRatio(n)<=1.3),[2,3,4].map(n=>n+': x'+X.dgFightRatio(n).toFixed(2)).join(', '));
 
 // ---- rewards (shared/dungeon-rewards.js) ----
-const R=loadShared(['DG_THEMES','DG_REWARDS','DG_REWARD_W','DG_GEAR_LV','DG_TIER','DG_ATK','DG_HP','DG_DEF','RING_ELS','RING_PCT','ENH_MAX','ENH_STEP','ENH_LV','ENH_DROP','dgRewardRarity','dgParse','dgItem','dgClearReward','dgAllIds','ringAtk','dgEnhanceNext','dgEnhanceStones','dgEnhanceTotal','dgDropKind','dgRollStone','dgGearId','dgRingId','dgPendantId','PENDANT_STATS',
+const R=loadShared(['DG_THEMES','DG_REWARDS','DG_REWARD_W','DG_GEAR_LV','DG_TIER','DG_ATK','DG_HP','DG_DEF','RING_ELS','RING_ATK','ENH_MAX','ENH_STEP','ENH_LV','ENH_DROP','dgRewardRarity','dgParse','dgItem','dgClearReward','dgAllIds','ringAtk','dgEnhanceNext','dgEnhanceStones','dgEnhanceTotal','dgDropKind','dgRollStone','dgGearId','dgRingId','dgPendantId','PENDANT_STATS',
   'ITEM','ITEM_LIST','TIERS','tierFor','TIER_ATK','ARMOR_HP','ARMOR_DEF','RAR_MULT','WEAPON_SLOTS','ARMOR_SLOTS','ALL_SLOTS','CLASS_OF','ELEM_LIST','ELEMS','TOOL_LIST','rollMonsterRarity']);
 const mulberry=a=>()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
 const within=(obs,n,p)=>Math.abs(obs-n*p)<=4*Math.sqrt(n*p*(1-p))+1;   // 4 sigma
@@ -322,16 +322,16 @@ ok('the level-30 gear is a tier of its own: its 490 ids are ITEM records (shared
     const base=R.dgItem(R.dgGearId('sword',r,0)).atk, top=R.dgItem(R.dgGearId('sword',r,M)).atk;
     if(Math.abs(top-base*(1+R.ENH_STEP*M))>1.5) bad.push('r'+r+' top '+top+' vs '+base*(1+R.ENH_STEP*M));
     for(const s of R.ARMOR_SLOTS){ let p=R.dgItem(R.dgGearId(s,r,0)); for(let n=1;n<=M;n++){ const q=R.dgItem(R.dgGearId(s,r,n)); if(!(q.hp>p.hp&&q.def>=p.def)) bad.push(s+r+' +'+n); p=q; } }
-    for(const e of R.RING_ELS){ let p=R.dgItem(R.dgRingId(e,r,0)); for(let n=1;n<=M;n++){ const q=R.dgItem(R.dgRingId(e,r,n)); if(!(q.pct>p.pct)) bad.push(e+r+' +'+n); p=q; } } }
+    for(const e of R.RING_ELS){ let p=R.dgItem(R.dgRingId(e,r,0)); for(let n=1;n<=M;n++){ const q=R.dgItem(R.dgRingId(e,r,n)); if(!(q.ratk>p.ratk)) bad.push(e+r+' +'+n); p=q; } } }
   const tot=[0,1,2,3,4].map(R.dgEnhanceTotal), kills=tot.map(t=>Math.round(t/R.ENH_DROP));
   ok('enhancing walks from +0 to 2 / 4 / 6 / 8 / 10 and stops: the step to +n costs n stones ('+tot.join(' / ')+' to the limit = about '+kills.join(' / ')+' kills at '+R.ENH_DROP*100+'%), and every step raises weapons, armour and rings (the top is +'+Math.round(R.ENH_STEP*R.ENH_MAX[4]*100)+'% for a legendary)',
     !bad.length&&tot.join()==='3,10,21,36,55',bad.join('; ')); }
-{ const w=1000, e=R.RING_ELS, souls=['basic',...R.ELEM_LIST], bad=[];
-  for(const el of e) for(const so of souls){ const b=R.ringAtk(R.dgRingId(el,0,0),so,w); if((b>0)!==(el===so)) bad.push(el+' ring, '+so+' soul = '+b); }
-  const byRar=[0,1,2,3,4].map(r=>R.ringAtk(R.dgRingId('fire',r,0),'fire',w)), enh=R.ringAtk(R.dgRingId('fire',4,10),'fire',w);
-  ok('a ring adds a share of the weapon\'s attack only when its element is the soul\'s (7 rings x 7 souls: only the matching one pays; none for the opposite soul)',!bad.length&&R.ringAtk(R.dgRingId('fire',0,0),'water',w)===0,bad.join('; '));
-  ok('the share is 5 / 6.5 / 8.5 / 11 / 15% of the weapon by rarity, grows with the weapon (x2 weapon = x2 bonus) and with enhancement (a legendary +10 gives 30%), and a hiker with no soul (undefined) counts as basic',
-    byRar.join()==='50,65,85,110,150'&&R.ringAtk(R.dgRingId('fire',2,0),'fire',2*w)===2*R.ringAtk(R.dgRingId('fire',2,0),'fire',w)&&enh===300&&R.ringAtk(R.dgRingId('basic',0,0),undefined,w)===50&&R.ringAtk('sword7','fire',w)===0&&R.ringAtk(null,'fire',w)===0,byRar.join('/')+' '+enh); }
+{ const e=R.RING_ELS, souls=['basic',...R.ELEM_LIST], bad=[];
+  for(const el of e) for(const so of souls){ const b=R.ringAtk(R.dgRingId(el,0,0),so); if((b>0)!==(el===so)||(el===so&&b!==R.RING_ATK)) bad.push(el+' ring, '+so+' soul = '+b); }
+  const byRar=[0,1,2,3,4].map(r=>R.ringAtk(R.dgRingId('fire',r,0),'fire')), enh=R.ringAtk(R.dgRingId('fire',4,10),'fire');
+  ok('a ring adds its flat attack only when its element is the soul\'s (7 rings x 7 souls: only the matching one pays the full RING_ATK; none for the opposite soul)',!bad.length&&R.ringAtk(R.dgRingId('fire',0,0),'water')===0&&R.RING_ATK===20,bad.join('; '));
+  ok('the flat attack is 20 / 26 / 34 / 44 / 60 by rarity (RING_ATK x RAR_MULT), is the ring\'s own (no weapon in it) and grows with enhancement (a legendary +10 gives 120), and a hiker with no soul (undefined) counts as basic',
+    byRar.join()==='20,26,34,44,60'&&enh===120&&R.ringAtk(R.dgRingId('basic',0,0))===20&&R.ringAtk('sword7','fire')===0&&R.ringAtk(null,'fire')===0&&R.dgItem(R.dgRingId('fire',0,0)).atk===undefined,byRar.join('/')+' '+enh); }
 { const real=Math.random, N=200000, rnd=mulberry(5); let a,b;
   Math.random=()=>R.ENH_DROP-1e-9; a=R.rollMonsterRarity(); Math.random=()=>R.ENH_DROP; b=R.rollMonsterRarity(); Math.random=real;
   ok('the stone\'s chance is exactly the equipment chance it replaces (2.6%: just under it a monster drops equipment, at it nothing)',a>=0&&b===-1&&R.ENH_DROP===0.026);

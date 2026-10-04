@@ -26,9 +26,9 @@ const el=s=>document.querySelector(s);
   G.equip('ring-fire'); await wait(500); G=c.G(); G.renderInv(); h=el('#invBody').innerHTML;
   ok('a worn ring is a tile in the ring slot, with its level and the rarity colour',G.GEAR.eq.ring==='ring-fire'&&/class="eqslot" data-slot="ring"[^>]*>(?:(?!<\/div>)[\s\S])*class="tile r0 dg[^"]*" data-id="ring-fire" data-from="ring"/.test(h),G.GEAR.eq.ring);
   G.INV.sel={id:'ring-fire',from:'ring'}; G.renderInvInfo(); h=el('#invInfo').innerHTML;
-  ok('the ring\'s details: its share of the weapon\'s attack, and that your soul is Basic so a fire ring has no effect',/Ring/.test(h)&&/\+5% of your weapon's attack, for a Fire soul/.test(h)&&/Your soul is Basic: no effect/.test(h)&&/Tempered \+0 of 2/.test(h),h.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').slice(0,260));
+  ok('the ring\'s details: its flat attack, and that your soul is Basic so a fire ring has no effect',/Ring/.test(h)&&/\+20 attack, for a Fire soul/.test(h)&&/Your soul is Basic: no effect/.test(h)&&/Tempered \+0 of 2/.test(h),h.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').slice(0,260));
   { const soul=G.GEAR.soul; G.GEAR.soul='fire'; G.renderInvInfo(); const t=el('#invInfo').innerHTML.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
-    const w=G.ITEM[G.GEAR.eq.weapon], want=Math.round(w.atk*0.05);   // (125 x 5% = 6)
+    const want=20;   // (a common ring: RING_ATK, flat)
     ok('with a Fire soul the same ring says it matches, and how much attack it adds ("matches your soul: +N attack")',new RegExp('Matches your soul \\(Fire\\): \\+'+want+' attack').test(t),t.slice(0,200));
     G.GEAR.soul=soul; }
   G.INV.sel={id:'ring-water',from:'bag'}; G.renderInvInfo(); h=el('#invInfo').innerHTML.replace(/<[^>]*>/g,' ');

@@ -12,7 +12,7 @@ const NAMES=['FAM','MON_DEFS','ALL_MON_DEFS','BOSS_DEFS','GREY_DEFS','MONS','ZON
   'ARMOR_HP','ARMOR_DEF','setHP','setDef','TOOL_MAT','TOOL_PRICE','TOOL_EXTRA','TOOL_KIND','TOOL_PROF','TOOL_SLOTS','craftCost','ORE_GRADES','LOG_GRADES','sellPrice',
   'CLASS_OF','WEAPON_SLOTS','ARMOR_SLOTS','MERGE_COUNT','SHOP_STEP','CRAFT_MAX_RAR','tierFor','fLv','expDmg','expHP','expRed','xpFor','expToNext','highMult','defRed',
   // the dungeons (version2): bosses, themes and their mob pools, the level-30 gear, rings and tempering
-  'DG_BOSS_DEFS','DG_THEMES','DG_LANDS','DG_LV','DG_ELITE_HP','DG_REWARDS','DG_REWARD_W','DG_NAMES','DG_GEAR_LV','RING_ELS','RING_NAMES','RING_PCT','ENH_MAX','ENH_STEP','ENH_LV','ENH_DROP','ENH_NAME',
+  'DG_BOSS_DEFS','DG_THEMES','DG_LANDS','DG_LV','DG_ELITE_HP','DG_REWARDS','DG_REWARD_W','DG_NAMES','DG_GEAR_LV','RING_ELS','RING_NAMES','RING_ATK','ENH_MAX','ENH_STEP','ENH_LV','ENH_DROP','ENH_NAME',
   'dgItem','dgGearId','dgRingId','dgAllIds','ITEM','POT_BUFF','passiveValue','SKILL_MAX_LV','DMG_TAKEN_MIN','RED_CAP'];
 const {x:W}=loadServer({send(){},broadcast(){}},NAMES);
 const CHECK=process.argv.includes('--check'), STRICT=process.argv.includes('--strict');
@@ -225,9 +225,9 @@ function equipmentDoc(){
     s+='\n## 7. Level-30 dungeon gear and rings ('+W.dgAllIds().length+' ids)\n\n';
   { const DR=SH+'dungeon-rewards.js', allIds=W.dgAllIds(), rare=r=>W.DG_REWARD_W[r]/10;
     s+=`A tier above the six of section 3, paid **only by dungeons**: level ${W.DG_GEAR_LV} (\`DG_GEAR_LV\`), not in \`TIER_LV\` / \`ITEM_LIST\`, so shops, drops, "give every item" and \`tierFor\` never see them (they are in \`ITEM\` and carry \`dg:true\`). 7 pieces and 7 rings, 5 rarities each, each of them enhanced from +0 up to **+${W.ENH_MAX.join(' / +')}** (by rarity): ${W.dgAllIds().length} ids. ${W.ENH_NAME}s raise a piece one step (step n costs n stones) and add ${W.ENH_STEP*100}% of its own stats per step; they drop from normal monsters of level ${W.ENH_LV}+ at ${W.ENH_DROP*100}% instead of equipment. One clear of a dungeon pays one random piece of its pool: the rarity is ${W.RARITY.map((n,r)=>n+' '+rare(r)+'%').join(', ')}, then one kind of the pool with equal chance; everyone in the party gets the same piece.\n\n`;
-    s+=`Ids: \`<piece>7[-r|-e|-u|-l][+n]\` (\`sword7-e+3\` is an epic level-30 sword at +3) and \`ring-<element>[-r|-e|-u|-l][+n]\` (\`ring-fire-l+10\`). The tables list the **+0 base of each of the ${W.WEAPON_SLOTS.length+W.ARMOR_SLOTS.length+W.RING_ELS.length*1} kinds × 5 rarities** and, in the last stat column, the stat at every step from +0 to the rarity's maximum, so every id is covered. A ring adds a share of **your weapon's attack** and only when its element is your soul's (\`basic\` is the plain ring, for an unbound soul).\n\n`;
+    s+=`Ids: \`<piece>7[-r|-e|-u|-l][+n]\` (\`sword7-e+3\` is an epic level-30 sword at +3) and \`ring-<element>[-r|-e|-u|-l][+n]\` (\`ring-fire-l+10\`). The tables list the **+0 base of each of the ${W.WEAPON_SLOTS.length+W.ARMOR_SLOTS.length+W.RING_ELS.length*1} kinds × 5 rarities** and, in the last stat column, the stat at every step from +0 to the rarity's maximum, so every id is covered. A ring adds a flat number of **attack** (its own, added to your weapon's before everything else) and only when its element is your soul's (\`basic\` is the plain ring, for an unbound soul).\n\n`;
     const where=kind=>{ const t=Object.keys(W.DG_REWARDS).find(k=>W.DG_REWARDS[k].pool.includes(kind)); return t&&W.DG_THEMES[t]?W.DG_THEMES[t].name:'—'; };
-    const stat=it=>it.kind==='weapon'?String(it.atk):it.kind==='armor'?it.hp+'/'+it.def:(it.pct*100).toFixed(1)+'%';
+    const stat=it=>it.kind==='weapon'?String(it.atk):it.kind==='armor'?it.hp+'/'+it.def:'+'+it.ratk;
     const table=(kinds,head,mk,idOf,nameRef)=>{
       const rows=[]; for(const kind of kinds) for(let r=0;r<5;r++){
         const b=W.dgItem(idOf(kind,r,0)), steps=[]; for(let n=0;n<=W.ENH_MAX[r];n++) steps.push(stat(W.dgItem(idOf(kind,r,n))));
@@ -237,7 +237,7 @@ function equipmentDoc(){
     };
     s+=`### 7.1 Weapons (${W.WEAPON_SLOTS.length*5})\n\nNames \`DG_NAMES\` ${loc(DR,/^const DG_NAMES=/)}; attack \`DG_ATK\` ${loc(DR,/^const DG_ATK=/)} × \`RAR_MULT\` × (1 + ${W.ENH_STEP} n).\n\n`+table(W.WEAPON_SLOTS,['Attack'],b=>[b.atk],(k,r,n)=>W.dgGearId(k,r,n),k=>'DG_NAMES.'+k)+'\n\n';
     s+=`### 7.2 Armour (${W.ARMOR_SLOTS.length*5})\n\nNames \`DG_NAMES\`; health \`DG_HP\` and defense \`DG_DEF\` ${loc(DR,/^const DG_ATK=/)} × the rarity and the enhancement.\n\n`+table(W.ARMOR_SLOTS,['Health','Defense'],b=>[b.hp,b.def],(k,r,n)=>W.dgGearId(k,r,n),k=>'DG_NAMES.'+k)+'\n\n';
-    s+=`### 7.3 Rings (${W.RING_ELS.length*5}; the ring slot, \`eq.ring\`)\n\nNames \`RING_NAMES\` ${loc(DR,/^const RING_NAMES=/)}; a common ring adds \`RING_PCT\` = ${W.RING_PCT*100}% of the weapon's attack (× the rarity multiplier × the enhancement), shown in the stat columns.\n\n`+table(W.RING_ELS,['Share of weapon attack'],b=>[(b.pct*100).toFixed(1)+'%'],(k,r,n)=>W.dgRingId(k,r,n),k=>'RING_NAMES.'+k)+'\n';
+    s+=`### 7.3 Rings (${W.RING_ELS.length*5}; the ring slot, \`eq.ring\`)\n\nNames \`RING_NAMES\` ${loc(DR,/^const RING_NAMES=/)}; a common ring adds \`RING_ATK\` = ${W.RING_ATK} attack (× the rarity multiplier × the enhancement), shown in the stat columns.\n\n`+table(W.RING_ELS,['Attack (matching soul)'],b=>['+'+b.ratk],(k,r,n)=>W.dgRingId(k,r,n),k=>'RING_NAMES.'+k)+'\n';
     s+=`\nWhat each dungeon pays: ${Object.keys(W.DG_REWARDS).map(t=>(W.DG_THEMES[t]?W.DG_THEMES[t].name:t)+': '+W.DG_REWARDS[t].kind+' ('+W.DG_REWARDS[t].pool.join(', ')+')').join('; ')} (\`DG_REWARDS\` ${loc(DR,/^const DG_REWARDS=/)}; odds \`DG_REWARD_W\` ${loc(DR,/^const DG_REWARD_W=/)}; enhancing \`ENH_MAX\` / \`ENH_STEP\` / \`ENH_DROP\` ${loc(DR,/^const ENH_MAX=/)}).\n`;
   }
   return s;

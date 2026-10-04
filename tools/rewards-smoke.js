@@ -4,7 +4,7 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const io={dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }};
-const NAMES=['MONS','ITEM','ITEM_LIST','TOOL_LIST','dgAllIds','dgItem','dgGearId','dgRingId','sanitizeGear','soulOfP','monK','rewardKill','dgGrantItemP','dgTemperP','VIL2','ENH_LV','ENH_DROP','ENH_NAME','ENH_MAX','DG_STONE_MAX','BAG_MAX','sellPrice','mergedId','effectiveLookOf','ARMOR_LOOK','clsOfP','gearStatsOf','RING_ELS','ALL_SLOTS','ELEM_LIST','newGearFor','fLv','defRed','RED_KNEE','RED_CAP','DEF_KNEE','DMG_TAKEN_MIN','setDef','expRed','tierFor','hurtP','DG_ATK','TIER_ATK','ENH_STEP','ARMOR_SLOTS','SKILLS','POT_BUFF','S','psP','recalcP'];
+const NAMES=['MONS','ITEM','ITEM_LIST','TOOL_LIST','dgAllIds','dgItem','dgGearId','dgRingId','sanitizeGear','soulOfP','monK','rewardKill','dgGrantItemP','dgTemperP','VIL2','ENH_LV','ENH_DROP','ENH_NAME','ENH_MAX','DG_STONE_MAX','BAG_MAX','sellPrice','mergedId','effectiveLookOf','ARMOR_LOOK','clsOfP','gearStatsOf','recalcP','symbolBonus','RING_ELS','ALL_SLOTS','ELEM_LIST','newGearFor','fLv','defRed','RED_KNEE','RED_CAP','DEF_KNEE','DMG_TAKEN_MIN','setDef','expRed','tierFor','hurtP','DG_ATK','TIER_ATK','ENH_STEP','ARMOR_SLOTS','SKILLS','POT_BUFF','S','psP','recalcP'];
 const {api:W,x}=loadServer(io,NAMES);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
@@ -18,7 +18,7 @@ const near=(a,b,e)=>Math.abs(a-b)<=(e||0.01);
 // ---- the items ----
 { const ids=x.dgAllIds(), bad=[];
   for(const id of ids){ const it=x.ITEM[id]; if(!it||!it.dg||it.lv!==30||it.tier!==6||!it.name||!(it.price>0)||typeof it.n!=='number'||!(it.rar>=0)) { bad.push(id); continue; }
-    if(it.kind==='weapon'?!(it.atk>0):it.kind==='armor'?!(it.hp>0&&it.def>0):it.kind==='ring'?!(it.pct>0&&it.el&&it.slot==='ring'):it.kind==='pendant'?!(it.v>0&&it.stat&&it.slot==='pendant'):true) bad.push(id); }
+    if(it.kind==='weapon'?!(it.atk>0):it.kind==='armor'?!(it.hp>0&&it.def>0):it.kind==='ring'?!(it.ratk>0&&it.el&&it.slot==='ring'&&it.atk===undefined):it.kind==='pendant'?!(it.v>0&&it.stat&&it.slot==='pendant'):true) bad.push(id); }
   ok('all '+ids.length+' level-30 ids are ITEM records with kind, slot, tier 6, level 30, rarity, name, price and stats, and none is in ITEM_LIST or TOOL_LIST (shops, drops and "give every item" ignore them)',
     ids.length===665&&!bad.length&&x.ITEM_LIST.length===210&&x.TOOL_LIST.length===90&&!ids.some(id=>x.ITEM_LIST.includes(x.ITEM[id])||x.TOOL_LIST.includes(x.ITEM[id])),bad.slice(0,4).join(', ')); }
 
@@ -90,23 +90,26 @@ ok('a ring can be taken off',a.gear.eq.ring===null&&a.gear.inv.includes('ring-ba
   ok('enhancing carries the weight: the level-30 tier is a x'+stepTier.toFixed(2)+' step over the top world tier, enhancing to the limit is x'+[0,1,2,3,4].map(r=>mult(r).toFixed(1)).join(' / x')+' (common ... legendary), and from a rare up the enhancement is worth more than the tier',
     near(x.ENH_STEP,0.10,1e-9)&&stepTier<1.3&&mult(0)>=stepTier-0.06&&[1,2,3,4].every(r=>mult(r)>stepTier)&&near(mult(4),2,1e-9)&&x.ITEM['sword7-l+10'].atk===2*x.ITEM['sword7-l'].atk,'tier x'+stepTier.toFixed(2)); }
 
-// ---- the ring's attack and the soul ----
+// ---- the ring's attack and the soul: a flat number added to the weapon's, only for a matching soul ----
 { const r=join('r',30,'warrior'); r.gear.east=2; give(r,'sword7-l','sword7','ring-fire-l','ring-water','ring-basic','ring-basic-u'); send('r',{t:'equip',id:'sword7-l'}); const noRing=r.dmg;
   send('r',{t:'equip',id:'ring-fire-l'});
   ok('a fire ring on an unbound soul adds nothing',near(r.dmg,noRing)&&x.soulOfP(r)==='basic','dmg '+r.dmg);
   r.x=x.VIL2.x; r.z=x.VIL2.z; send('r',{t:'soul',el:'fire'});
-  ok('binding the soul to fire recalculates at once: a legendary ring on a legendary sword (375) adds 56 attack ("15%")',near(r.dmg-noRing,56,0.5)&&r.gear.soul==='fire'&&near(you('r').dmg,r.dmg),'+'+(r.dmg-noRing).toFixed(2));
+  ok('binding the soul to fire recalculates at once: a legendary ring adds its flat 60 attack to the weapon\'s 375',near(r.dmg-noRing,60,0.5)&&r.gear.soul==='fire'&&near(you('r').dmg,r.dmg),'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'soul',el:'water'});
   ok('changing the soul to the opposite takes the bonus away again, with no other change to the hiker',near(r.dmg,noRing),'dmg '+r.dmg);
   send('r',{t:'soul',el:'fire'}); send('r',{t:'soul',el:'basic'});
   ok('unbinding the soul takes it away too',near(r.dmg,noRing));
   send('r',{t:'equip',id:'ring-basic'});
-  ok('the plain ring is the one for the unbound soul: +5% of a legendary sword (19)',near(r.dmg-noRing,19,0.5),'+'+(r.dmg-noRing).toFixed(2));
+  ok('the plain ring is the one for the unbound soul: a flat +20 (a common ring)',near(r.dmg-noRing,20,0.5),'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'equip',id:'ring-basic-u'});
-  ok('and it grows with rarity (unique: 11% = 41)',near(r.dmg-noRing,41,0.5),'+'+(r.dmg-noRing).toFixed(2));
+  ok('and it grows with rarity (unique: 44)',near(r.dmg-noRing,44,0.5),'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'unequip',slot:'ring'}); ok('taking the ring off removes it',near(r.dmg,noRing));
-  send('r',{t:'equip',id:'ring-water'}); send('r',{t:'soul',el:'water'}); const w1=r.dmg; send('r',{t:'equip',id:'sword7'});
-  ok('the ring follows the weapon: a smaller weapon gives a smaller bonus',r.dmg<w1&&near(r.dmg-(noRing-(375-125)),6,0.5),'dmg '+r.dmg); }
+  send('r',{t:'equip',id:'ring-basic'}); const w1=r.dmg; send('r',{t:'equip',id:'sword7'});
+  ok('the ring does not depend on the weapon: a smaller weapon (125 for 375) takes exactly its own difference away and the ring still adds its +20',near(w1-r.dmg,375-125,0.5)&&near(r.dmg-(noRing-(375-125)),20,0.5),'dmg '+r.dmg);
+  // "weapon 90 + ring 20 = 110 before the other calculations": the ring is added to the attack before the symbol's multiplier, so +20 becomes +24 with a symbol of +20%
+  send('r',{t:'unequip',slot:'ring'}); r.gear.zt.home.max=2; x.recalcP(r); const sym0=r.dmg; send('r',{t:'equip',id:'ring-basic'});
+  ok('and it is added to the attack before the other calculations: with the zone-tier symbol at +20% the ring\'s +20 shows as +24',near(r.dmg-sym0,24,0.5)&&near(x.symbolBonus(r.gear),0.2,1e-9),'+'+(r.dmg-sym0).toFixed(2)); }
 
 // ---- the Tempering Stone drop ----
 const lv30=x.MONS.find(m=>!m.def.boss&&m.def.level===30), lv29=x.MONS.find(m=>!m.def.boss&&m.def.level===29), slime=x.MONS.find(m=>m.def.id==='slime'), boss=x.MONS.find(m=>m.def.boss&&m.def.level===30);
