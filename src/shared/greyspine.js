@@ -66,6 +66,7 @@ function glenCarve(x,z,h){
 // keep trees, rocks and camps out of the glen (m = extra margin)
 const inGlen=(x,z,m)=>Math.abs(z-GLEN.z)<GLEN.w+8+(m||0)&&x>GLEN.x0-30&&x<GLEN.x1+30;
 function greyspineBase(x,z){
+  const c=coastDist(x,z); if(c<-8&&borderX(z)-x>46&&x-WX0>60) return -5;   // open sea: nothing else to compute (the north of the Greyspine's rectangle is this now)
   const f=greyFloor(x,z), vm=greyValley(x,z), up=GV.up, far=smoothstep(40,210,GV.d);   // far: the high ground is away from the troughs, their flanks are foothills
   const wx=x+noise2(x*0.0031+3.7,z*0.0031-8.1)*46, wz=z+noise2(x*0.0031-12.3,z*0.0031+4.9)*46;
   const amp=lerp(62,124,smoothstep(-690,-900,z))*(1-0.4*smoothstep(-940,-1030,z));   // the spine is highest at z -900 and lowers to the northern sea beyond
@@ -85,7 +86,7 @@ function greyspineBase(x,z){
       h=0.5*(h+c+Math.sqrt((h-c)*(h-c)+196)); }
     if(d<Q.r+22) h=lerp(h,Q.h,smoothstep(Q.r+22,Q.r,d)); }
   // the northern sea: the ground comes down to a beach (shore, shared/terrain.js) except by the crests (the west wall, the Reach's wall, the Queen's cone), which end in headlands
-  const c=coastDist(x,z);   // (a crest running into the sea goes under it: its keep fades out over the last 64 m to the water)
+  // (a crest running into the sea goes under it: its keep fades out over the last 64 m to the water)
   return shore(h,c,Math.max(Math.max(smoothstep(60,14,x-WX0),smoothstep(46,14,bx-x))*smoothstep(12,64,c),smoothstep(120,64,Math.hypot(x-GREY_QUEEN.x,z-GREY_QUEEN.z))),csWide(x,z,60));
 }
 /* ---- water (docs/WORLD.md: tarns, a river that leaves the range, a fjord on the south-west coast) ----

@@ -211,7 +211,7 @@ downed or far away**, the item the same for all. Per-player modifiers still appl
 The server has **one world**: one `S`, one `MONS` list, one event queue flushed to **everyone**, one heightmap, and the main loop calls `updateMonstersS` over all of it.
 There is no instance concept. Two designs were weighed:
 - **A second `createWorldServer` per run**: clean isolation, but players, saves, accounts, chat and the socket all live inside one, so a player cannot move between the world and a run.
-- **A run is a far-away slot inside the same world (chosen)**: each run gets a slot of coordinates **outside the walkable rectangle** (`WX1` = 990, so slots start a few km
+- **A run is a far-away slot inside the same world (chosen)**: each run gets a slot of coordinates **outside the walkable rectangle** (`WX1` = 1270 now, 990 when this was written, so slots start a few km
   east: constants `DG_X0` = `WX1` + 1500 (`shared/dungeon-slots.js`), one slot per 600 m, 4 across, at most 16 runs `DG_MAX_INST`; 600 m is more than the largest snapshot radius `SNAP_PLAYERS` 250 + a
   dungeon's 288 m (the biggest grid is 6 x 6 tiles), so runs never see each other by distance). Existing combat, projectile, hit-test and AI code work unchanged because they work in x,z.
   The same machinery is what **the Rootdeep** needs (`docs/WORLD.md` section 8: "its own kind of space... a portal... like a separate instance"): build it once.

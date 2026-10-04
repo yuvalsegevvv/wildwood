@@ -5,7 +5,7 @@
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['MONS','BOSSES','VIL','VIL2','VIL3','PASS','ARENA26','ARENA30','ARENAS','rewardKill','zoneAt','rawHeight','iceDist','FROST_LAKES','BOSS_DEFS','MON_DEFS','ZONES','NODES','NODE_BACK','NODE_KINDS','S','genQuest','expToNext','xpFor','sanitizeGear','SKILL_IDS','PASSIVE_IDS','upgradeNeeds','HZ0','WZ0','WX1','inHoar','sanitizeProf','MATS','profLvOf','respawnVil','PROF_IDS','ITEM']);
+  ['MONS','BOSSES','VIL','VIL2','VIL3','PASS','ARENA26','ARENA30','ARENAS','rewardKill','zoneAt','rawHeight','iceDist','FROST_LAKES','BOSS_DEFS','MON_DEFS','ZONES','NODES','NODE_BACK','NODE_KINDS','S','genQuest','expToNext','xpFor','sanitizeGear','SKILL_IDS','PASSIVE_IDS','upgradeNeeds','HZ0','WZ0','WX1','HALF','GREY_N','VALE_E','inHoar','sanitizeProf','MATS','profLvOf','respawnVil','PROF_IDS','ITEM']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const at=(xx,zz)=>W.setPos('a',[xx,x.rawHeight(xx,zz),zz,0,0,0]);
@@ -15,7 +15,7 @@ const grab=()=>{ for(const m of (inbox.a||[])) if(m.t==='snap'&&m.ev) evs.push(.
 const dev=(cmd,v)=>{ W.receive('a',{t:'dev',cmd,v}); tick(1); };
 
 // ---- the land ----
-ok('the world reaches 600 m north of the old edge',x.WZ0===x.HZ0-600&&x.HZ0===-440);
+ok('the world reaches 800 m north of the forest\'s old edge (the vale\'s and the Greyspine\'s own edges are where they were: GREY_N, VALE_E) and 830 m east of it',x.WZ0===x.HZ0-800&&x.HZ0===-440&&x.GREY_N===x.HZ0-600&&x.VALE_E===x.HALF+550&&x.WX1===x.HALF+830);
 { const V=x.VIL3, hs=[]; for(let a=0;a<8;a++) hs.push(x.rawHeight(V.x+Math.sin(a)*20,V.z+Math.cos(a)*20));
   ok('Rimehold stands on the plateau (about 55 m up), flat',V.h>45&&Math.max(...hs)-Math.min(...hs)<2,'h '+V.h.toFixed(1)+', spread '+(Math.max(...hs)-Math.min(...hs)).toFixed(2)); }
 { const P=x.PASS; let prev=-1e9, mono=true; for(let z=P.z0;z>=P.z1;z-=6){ const h=x.rawHeight(P.x,z); if(h<prev-0.6) mono=false; prev=h; }

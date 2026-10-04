@@ -1,13 +1,16 @@
 //@ Map size (SIZE, HALF, WATER; the whole world WX0..WX1 x WZ0..WZ1 with the Sakura Vale east and the Hoarfrost Reach north of it), river (riverX), lakes, the lands' edges (coast, the Sunwall and Redgate, snowy rims), the hills' shape (hillShape: warped, eroded fbm; ridged mountains), baseHeight (where the Greyspine, shared/greyspine.js, meets the home forest's rim and the vale's wall), inGrey, forestDensity, autumnAmt. Pure.
 /* ---------- world shape ---------- */
 const SIZE=880, HALF=SIZE/2, WATER=0;
-/* The home forest is the square -HALF..HALF. East of its border mountains lies the Sakura Vale (EAST_W wide),
+/* The home forest is the square -HALF..HALF. East of its border mountains lies the Sakura Vale (550 m wide: VALE_E),
    reached through the tunnel in shared/vale.js. North of the vale, over its crest at z = HZ0 (the old north edge of both lands),
-   lies the Hoarfrost Reach, a high frozen plateau NORTH_D deep (shared/hoarfrost.js); the rest of the rectangle north of the
+   lies the Hoarfrost Reach, a high frozen plateau that runs on east and north past the vale's and the Greyspine's edges (shared/hoarfrost.js); the rest of the rectangle north of the
    home forest is the Greyspine, the fourth land (shared/greyspine.js: its terrain; no village, monsters or way in yet).
    The whole world is the rectangle WX0..WX1 x WZ0..WZ1. */
-const NORTH_D=600, HZ0=-HALF;
-const EAST_W=550, WX0=-HALF, WX1=HALF+EAST_W, WZ0=HZ0-NORTH_D, WZ1=HALF, WW=WX1-WX0, WD=WZ1-WZ0;
+const NORTH_D=800, HZ0=-HALF;
+const EAST_W=830, WX0=-HALF, WX1=HALF+EAST_W, WZ0=HZ0-NORTH_D, WZ1=HALF, WW=WX1-WX0, WD=WZ1-WZ0;
+/* The rectangle grew for the Hoarfrost Reach (it was 550 m east and 600 m north of the forest's corner, 244,000 m2 of land against the vale's 433,000): the vale's east edge and the
+   Greyspine's north edge stay where they were (VALE_E, GREY_N), and the sea fills the rest of the rectangle; the coast (shared/coasts.js) is an outline drawn over it. */
+const VALE_E=HALF+550, GREY_N=HZ0-600;
 /* ---------- the borders between the lands (they used to be ruler-straight lines, x = HALF and z = HZ0) ----------
    Each border is a mountain range whose crest line wanders. borderX(z) is the x of the Vale Wall's crest (the home forest | the vale to the south,
    the Greyspine | the Hoarfrost Reach to the north: one range), borderZ(x) the z of the north wall's crest (the home forest | the Greyspine to the west,
@@ -175,6 +178,7 @@ function hoarHeight(x,z){
 }
 // the Sakura Vale: softer rolling hills and ponds, no river
 function valeHeight(x,z){
+  const c=coastDist(x,z); if(c<-8&&x-borderX(z)>46&&csHold(x,z)===0) return -5;   // open sea, away from the river's mouth: shore() would say -5 after all the work below (most of the world's rectangle east and north of the lands is this)
   let h = hillShape(x,z,HILL_VALE);
   h = lakeCut(x,z,h);
   const bx=borderX(z), bz=borderZ(x), dxw=Math.abs(x-bx), dnv=z-bz-rimWobble(x,23), nearW=dxw<250||dnv<250, f=nearW?fbm(x*0.02,z*0.02,3)*0.5+0.5:0, cr=(dxw<130||dnv<134)?crest(x,z):0;
@@ -182,7 +186,7 @@ function valeHeight(x,z){
   h += wallAdd(dnv,x,3,58,18,22,f,cr);   // up to the crest along borderZ (the Hoarfrost Reach's south wall)
   h = riverCut(h,Math.abs(x-bx),z);   // (the Vale Wall is a river along most of its length)
   if(z<bz-2) h=lerp(h,hoarHeight(x,z),smoothstep(bz-2,bz-62,z));   // past the crest it eases down onto the plateau
-  const c=coastDist(x,z), nth=smoothstep(bz+10,bz-30,z);   // (nth: in the Reach, where a crest running into the sea goes under it: its keep fades out over the last 64 m to the water)
+  const nth=smoothstep(bz+10,bz-30,z);   // (nth: in the Reach, where a crest running into the sea goes under it: its keep fades out over the last 64 m to the water)
   return shore(h, c, Math.max(smoothstep(46,14,x-bx)*lerp(1,smoothstep(12,64,c),nth),csHold(x,z)), csWide(x,z,lerp(24,60,smoothstep(70,0,x-bx))*smoothstep(bz,bz-120,z)));   // (the Reach, 50 m up, takes a little longer to come down to its coast, and much longer in a bay; by its west wall the Greyspine's 60 m, so the two lands meet without a step)
 }
 /* the hills' shape, shared by the home forest and the vale: fbm bent by a slow domain warp (so ridges and valleys meander instead of sitting

@@ -11,7 +11,7 @@ const MM_R=90, DPR=Math.min(2,devicePixelRatio||1);
 const mapX=x=>(x-WX0)*MAP.k, mapZ=z=>(z-WZ0)*MAP.k;
 // the three lands as the full map shows them (the vale's crop ends at its north crest, the Hoarfrost Reach's begins just south of it)
 // (the borders wander: the river bulges the vale 210 m west of x = HALF and the north walls move up to 120 m either side of z = HZ0, so the crops are wider than the old rectangles)
-const LANDS={home:{x0:-HALF,x1:HALF+40,z0:HZ0,z1:HALF,name:'The home forest'},vale:{x0:HALF-230,x1:WX1,z0:HZ0-125,z1:HALF,name:'The Sakura Vale'},hoar:{x0:HALF+10,x1:WX1,z0:WZ0,z1:HZ0+60,name:'The Hoarfrost Reach'},grey:{x0:WX0,x1:HALF+115,z0:WZ0,z1:HZ0+105,name:'The Greyspine'}};
+const LANDS={home:{x0:-HALF,x1:HALF+40,z0:HZ0,z1:HALF,name:'The home forest'},vale:{x0:HALF-230,x1:VALE_E+50,z0:HZ0-125,z1:HALF,name:'The Sakura Vale'},hoar:{x0:HALF+10,x1:WX1,z0:WZ0,z1:HZ0+60,name:'The Hoarfrost Reach'},grey:{x0:WX0,x1:HALF+115,z0:WZ0,z1:HZ0+105,name:'The Greyspine'}};
 let mapLand=null;   // null: the land you are in
 const landHere=()=>inHoar(P.x,P.z)?'hoar':inVale(P.x,P.z)?'vale':inGrey(P.x,P.z)?'grey':'home';
 const landOpen=id=>id==='home'||(id==='vale'&&valeOpen())||(id==='hoar'&&northOpen())||(id==='grey'&&(westOpen()||inGrey(P.x,P.z)));

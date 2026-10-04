@@ -290,7 +290,7 @@ storyline). What it means for the geography:
     Canyon** cut through it at z = 40 and choked by a rock fall; south the **Crownsea shore** (a ~20 m beach, the river runs into the sea);
     east the Greyfall River (the Vale Wall, with its one bridge).
   - The Sakura Vale: west the Greyfall River (and the bridge), north the snowy climb towards the Hoarfrost, south and east the Crownsea shore (bays, capes and islets).
-  - **The sea is the edge of the Hoarfrost Reach and the Greyspine as well**: no mountain wall closes the north or the east. Their ground comes down to beaches and bluffs, with bays and islets (`shared/coasts.js`, `docs/areas/regions.md`); the bays leave the boss arenas and the dungeon doors alone (`CS_HOLD`), the Queen's cone stays a headland.
+  - **The sea is the edge of the Hoarfrost Reach and the Greyspine as well, and the continent is no rectangle**: no mountain wall closes the north or the east. The coast is a drawn outline (`CS_BASE` in `shared/coasts.js`, `docs/areas/regions.md`): an L, with the Reach running out past the vale as a broad cape (one long cape of its own to the east), capes and bays along the Greyspine's north coast (the Gryphon Queen's mountain runs on into the sea as a cape), a step north where the Greyspine meets the Reach, and bays along the vale's east and south shores; islets lie off the bays. Still straight: Wildwood's south shore (the Tide King's beach depends on it) and the west edge (the Sunwall, the Greyspine's west wall).
   - On the shore you can wade in to the knees and no further (`worldBounds` in `game/player/movement.js`).
   - **None of the four lands' borders is a straight line** (`borderX(z)`, `borderZ(x)` in `shared/terrain.js`; `docs/areas/regions.md`): the Vale Wall's river meanders up to 215 m west into Wildwood, the north walls bend 90-110 m, the mountain range between lands has broad massifs and necks, and the gates (the bridge, Frostgate Pass, the glacier valley) and the junction of the four lands are pinned where they were.
   - No edge is a straight line: the shore has bays up to ~28 m deep (the vale's south-east corner is rounded), the Sunwall's cliff
@@ -315,7 +315,9 @@ storyline). What it means for the geography:
     Trees and bushes keep clear of them (`storyClear`).
   - The lake in the west forest is **Mistmere** (the Greywater name belongs to the Bight).
 - **The Hoarfrost Reach** (what it leaves out is commented in `docs/NOT-BUILT.md`) (`shared/hoarfrost.js`, heights in `shared/terrain.js`, dressing in `game/village/buildings-hoar.js`):
-  - The world rectangle grew 600 m north (`NORTH_D`, `HZ0` = the vale's and forest's old north edge at z = -440, `WZ0` = -1040): 1430 x 1480 m. The
+  - The world rectangle grew twice (`NORTH_D` = 800, `EAST_W` = 830, `HZ0` = the vale's and forest's old north edge at z = -440, `WZ0` = -1240, `WX1` = 1270): 1710 x 1680 m. The first growth (600 m north) made room for the Reach and the Greyspine;
+    the second made the **Reach a landmass as big as the others** (244,000 m2 of land became about 495,000: the vale has 515,000, Wildwood 586,000, the Greyspine 642,000) by running its plateau on east and north past the vale's and the Greyspine's
+    own edges (`VALE_E` = HALF + 550 and `GREY_N` = HZ0 - 600 stay where they were; the rectangle east of the vale and north of the Greyspine is sea). The new snow land has no camps, nodes or villages yet (`docs/NOT-BUILT.md` 3c). The
     part north of the home forest is the Greyspine (`greyspineHeight` in `shared/greyspine.js`; section 8 below).
   - **Shape**: the vale's north rim goes on as a crest (~80-90 m) along z = HZ0 and eases down over ~60 m onto the plateau (~50 m up, rolling white
     domes, `hoarHeight`), with the Vale Wall in the west and the sea in the north and the east (a coast of bluffs, long beaches in the bays and islets: `shared/coasts.js`). Three **frozen lakes**

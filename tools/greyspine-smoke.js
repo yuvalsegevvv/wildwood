@@ -6,7 +6,7 @@
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['FALL','borderX','borderZ','rawHeight','baseHeight','homeHeight','valeHeight','hoarHeight','GREY_VALLEYS','GREY_HM','GREY_QUEEN','greyTreeline','greyspineHeight','zoneAt','zoneRidge','NODES','MONS','inGrey','HALF','HZ0','WX0','WZ0','VIL','TUN','GLEN','inGlen','rewardKill','sanitizeGear','MQ_BY_ID','VIL3','VIL4','VILS','CIRCLES','vilAt','ROADS','respawnVil','nearLodge','defZone','arenaDist','MON_DEFS','ZONES','MATS','MAX_ZONE_LV','VR','ARENAS','landAt','zoneTierOn','ARENA29','ARENA32','BOSS_DEFS','BOSS_SKILLS','BOSS_QUESTS','SKILLS','BOSSES','GREY_TARNS','GREY_RIVER','GREY_RIVER_W','GREY_FJORD','waterSurf','greyWet','greyRiverAt','fjordDist','WATER','GREY_GATES','inGate']);
+  ['FALL','borderX','borderZ','rawHeight','baseHeight','homeHeight','valeHeight','hoarHeight','GREY_VALLEYS','GREY_HM','GREY_QUEEN','greyTreeline','greyspineHeight','zoneAt','zoneRidge','NODES','MONS','inGrey','HALF','HZ0','WX0','WZ0','GREY_N','VIL','TUN','GLEN','inGlen','rewardKill','sanitizeGear','MQ_BY_ID','VIL3','VIL4','VILS','CIRCLES','vilAt','ROADS','respawnVil','nearLodge','defZone','arenaDist','MON_DEFS','ZONES','MATS','MAX_ZONE_LV','VR','ARENAS','landAt','zoneTierOn','ARENA29','ARENA32','BOSS_DEFS','BOSS_SKILLS','BOSS_QUESTS','SKILLS','BOSSES','GREY_TARNS','GREY_RIVER','GREY_RIVER_W','GREY_FJORD','waterSurf','greyWet','greyRiverAt','fjordDist','WATER','GREY_GATES','inGate']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const H=x.rawHeight, slope=(a,b)=>Math.hypot(H(a+2,b)-H(a-2,b),H(a,b+2)-H(a,b-2))/4;
@@ -14,7 +14,7 @@ const X0=x.WX0+14, X1=x.HALF-14, Z0=x.WZ0+14, Z1=x.HZ0-14;   // what a player ca
 
 // ---- the ground ----
 { let n=0, lo=1e9, hi=-1e9, bad=0;
-  for(let zz=x.WZ0;zz<x.HZ0;zz+=8) for(let xx=x.WX0;xx<x.HALF;xx+=8){ const h=H(xx,zz); n++; if(!isFinite(h)) bad++; if(x.fjordDist(xx,zz)>70&&zz>x.WZ0+200) lo=Math.min(lo,h); hi=Math.max(hi,h); }
+  for(let zz=x.WZ0;zz<x.HZ0;zz+=8) for(let xx=x.WX0;xx<x.HALF;xx+=8){ const h=H(xx,zz); n++; if(!isFinite(h)) bad++; if(x.fjordDist(xx,zz)>70&&zz>x.GREY_N+200) lo=Math.min(lo,h); hi=Math.max(hi,h); }
   ok('every point of the Greyspine has a finite height, nowhere near the sea (>= 20 m) except in the fjord and in the north (the last 200 m come down to the northern sea), peaks of 200-330 m',bad===0&&lo>=20&&hi>200&&hi<330,'lowest '+lo.toFixed(0)+' m, highest '+hi.toFixed(0)+' m, '+n+' samples'); }
 { let steep=0, n=0; for(let zz=-900;zz<-540;zz+=8) for(let xx=-370;xx<370;xx+=8){ n++; if(slope(xx,zz)>0.95) steep++; }   // (north of z -900 the ground comes down to the sea: its cliffs are not the inner country)
   ok('it is mountains but not a wall: under 30% of the inner country is steeper than 0.95 (the home forest is 9%, the Reach 13%)',steep/n<0.3,(100*steep/n).toFixed(0)+'%'); }
