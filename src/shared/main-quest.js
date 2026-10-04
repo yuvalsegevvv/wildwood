@@ -1,13 +1,13 @@
-//@ The main quest line (MQ: acts I-III, docs/MAIN-QUEST.md), its places (Wren's sickbed, Odran's carts, heartleaf, grey spots) and the readable lore spots (LORE: carvings, signs, the drowned roads, the Hoarfrost's runes and wreck). Pure.
+//@ The main quest line (MQ: acts I-IV, docs/MAIN-QUEST.md), its places (Wren's sickbed, Odran's carts, heartleaf, grey spots) and the readable lore spots (LORE: carvings, signs, the drowned roads, the Hoarfrost's runes and wreck). Pure.
 /* The story is docs/STORY.md (mind its spoiler rule: hints only, no modern words). Each step:
      id, title, gate (level it is offered from), from (villager id who offers it; null = starts by itself when the step before ends),
      to (villager id you hand it in to), r (XP reward: r x expToNext(gate), so it keeps its share if the curve is tuned),
      tip (a one-time tutorial toast when the step starts), offer / done (what the giver says when offering / handing in; the
      client shows them), parts (what to do; all at once unless a part says after:true, which waits for the parts before it).
    Parts: talk:'<villager id>' (say: their lines; night: only after dark, wait: their lines before that) · kill:'<monster id>', n ·
-     grey:'<GREY_DEFS id>', n, zone (a few are spawned for you there) · pick:'herb', n (glowing heartleaf, HERBS) ·
-     collect:'<what>', from:[monster ids], n, chance (a quest drop) · gather:'<NODE_KINDS id or profession id>', n (a resource node gathered) · read:'<LORE id>' (walk up
-     and read it) · act:'<system>', n (class, buy, armor, skill, burst, board, sell, upskill, merge, soul, warp, hanami, rimehold, learn (prof:'<profession>'), tool (tool:'pick|axe|sickle', tier: a tool
+     grey:'<GREY_DEFS id>', n, zone (a few are spawned for you there; night:true: only after dark) · pick:'herb', n (glowing heartleaf, HERBS) ·
+     collect:'<what>', from:[monster ids], n, chance (a quest drop; with gather:'<NODE_KINDS id>' too, either counts: dig it or take it from the monsters) · gather:'<NODE_KINDS id or profession id>', n (a resource node gathered) · read:'<LORE id>' (walk up
+     and read it) · act:'<system>', n (class, buy, armor, skill, burst, board, sell, upskill, merge, soul, warp, hanami, rimehold, highmark, learn (prof:'<profession>'), tool (tool:'pick|axe|sickle', tier: a tool
      of at least that tier is worn), craft (kind:'weapon|armor'), brew (kind:'heal|might|guard', minTier 0-2), potion (kind): see server/main-quest.js) · level · tier
      (a weapon of that item tier, 0-based) · boss:'<boss monster id>' (bossLine: toasted when it falls).
    Progress is gear.mq = {s: step index, st: 0 offered / 1 in progress / 2 ready to hand in, n: [per part]}; the server
@@ -229,17 +229,69 @@ const MQ=[
   {id:'F9',title:'Where the earth\'s heat runs black',gate:25,from:'sigrun',to:'hallvard',r:0.1,
    offer:['Listen now, while the giant is quiet. The saga has a second verse that I did not tell you, because it made no sense.'],
    parts:[{talk:'sigrun',text:'Hear Old Sigrun\'s last verse',say:['"The sickness has a root, where the earth\'s heat runs black. Under the mountains men dig for the root, and call it stone."','The mountains are west, past the glacier valley that has just split. The miners of Highmark dig them. If the grey sleep has a root, that is where your road goes.','But you are not ready. The stone there is older, and what guards it is worse. Grow first. There is a great deal of Hoarfrost yet to see, and a wyrm in the north that nobody has beaten.']}],
-   done:['The west valley is open? Then the way to Highmark is open. It is a hard road. Come back and tell us of it, if you can.']}
+   done:['The west valley is open? Then the way to Highmark is open. It is a hard road. Come back and tell us of it, if you can.']},
+  /* ---------------- Act IV: The Black Stone (the Greyspine, levels 26-32; it ends at the Mountain Golem) ---------------- */
+  {id:'G1',title:'The glacier valley',gate:26,from:null,to:'brenna',r:0.08,
+   tip:'The glacier valley runs west from the Reach. Walking into Highmark attunes its teleport circle: the circles now link all four villages.',
+   parts:[{act:'highmark',text:'Walk the glacier valley west to Highmark'}],
+   done:['You came up the valley? Then the ice fall is down, and Konrad was right, and I owe him a drink. He wrote it in the gate book three weeks ago: "the sky tore".','I am Brenna. I keep the mine and the board. Sit by the fire and get your breath: the air is thin up here and the stairs are long.']},
+  {id:'G2',title:'The hearth of Highmark',gate:26,from:'brenna',to:'brenna',r:0.06,
+   tip:'Highmark has the same jobs as your other villages: a quest board, stalls, a forge, a trainer, and the Wayfarers\' Lodge.',
+   offer:['Highmark is a small place built on a big rock, and everyone in it is needed. Walk it, and meet the ones who keep it standing: the abbot at the fire, Gerhard at the forge, Brother Matthias who teaches.'],
+   parts:[{talk:'ansgar',text:'Meet Abbot Ansgar at the fire',say:['Sit, sit. The fire is for everyone. The abbey keeps the records of four hundred winters: births, floods, the year the bell cracked.','There is a gap in the oldest book, you know. Eleven years of it, cut out with a fine blade so neatly that the binding did not even loosen. Nobody remembers who read it last.']},
+          {talk:'gerhard',text:'Meet Gerhard, the weaponsmith',say:['Steel from the deep seams, tempered in meltwater. Three of a kind and a hot fire and the mountain makes one better: Hilda has the anvil for that.','Odd thing. The new black stone eats my files. Brenna thinks that is funny. I do not.']},
+          {talk:'matthias',text:'Meet Brother Matthias, the skill trainer',say:['The abbey teaches what Aldric teaches, only slower and with more bells.','Learn your skills before the peaks. The air up there is thin, and so is the patience of the gryphons.']}],
+   done:['Now you know who to shout for. Good.','Sit a moment longer. There is something I want you to see, and I would rather you saw it with your own hands.']},
+  {id:'G3',title:'Black stone',gate:27,from:'brenna',to:'brenna',r:0.15,
+   tip:'Mining: a vein needs a pickaxe of the best tier (the Lodge sells it). The black veins lie in the Miners\' Scree and the Ledgeway. The stone slimes carry lumps too, if you would rather fight than dig.',
+   offer:['The mine has been giving us something new these three months: black stone. Heavy, and cold even in the sun, and it hums if you hold it to your ear. The buyer wants every lump we dig.','Bring me six. Dig them out of the black veins in the Scree, or take what the stone slimes carry in their bellies: they swallow anything. Mind your hands. It is colder than it has any right to be.'],
+   parts:[{collect:'Black stone',from:['granitslime','quartzslime'],gather:'blackstone',n:6,chance:0.3,text:'Bring Brenna six lumps of black stone (mine the black veins, or take them from the stone slimes)'}],
+   done:['(She turns a lump over in her bare hand, then sets it down rather fast.)','Cold as a well bottom. And listen... there. A hum, like a bee in a jar. The men who dig it say it calls things down the mountain. I thought they were drunk.','Whatever it is, the buyer pays three times the coal price for it. Odran. A pleasant man. I think I shall have a word with him.']},
+  {id:'G4',title:'Too perfect',gate:28,from:'brenna',to:'brenna',r:0.12,
+   tip:'Odran\'s cart stands outside Highmark\'s gate. Sell him something, anything, and see what he pays you in.',
+   offer:['Odran has set up outside the gate: you will know his cart. He pays the miners for the black stone in coin, and the miners have started to give me odd looks about it.','Sell him something. A spare knife, a lump of ore, anything. Then bring me what he pays you with.'],
+   parts:[{act:'sell',n:1,at:'cart',text:'Sell Odran something at his cart outside Highmark\'s gate'},
+          {talk:'brenna',after:true,text:'Show Brenna the coins Odran paid you',say:['(She tips the coins out onto the scale and weighs them one by one. Her mouth goes thin.)','Look at that. Every one the same: not a hair of difference in the weight, not a nick on the edge, every face pressed to the same depth. The mint in the capital cannot do that. Nothing a hand makes comes out alike.']}],
+   done:['Odran? Oh, he is lovely. He asked after my mother by name. I do not recall telling him her name.','...Keep the coins. Spend them somewhere far from here. And stay out of the Scree after dark.']},
+  {id:'G5',title:'The grey shift',gate:29,from:'brenna',to:'brenna',r:0.2,
+   tip:'Some things only happen after dark. Grey-veined monsters are tougher, and worth more. Hold the Miners\' Scree at night: they come to you.',
+   offer:['They come at night now. Down from the high scree, grey as ash, and straight for the shaft head where the black stone is stacked. The night shift will not go in.','Hold the shaft head in the Miners\' Scree after dark. A dozen should break them. A dozen, no more: I counted.'],
+   parts:[{grey:'greystone',n:12,zone:'g28',night:true,text:'Hold the shaft head in the Miners\' Scree after dark: defeat 12 grey-veined stone monsters'}],
+   done:['Twelve. And not one of them wanted you. They wanted the stack behind you.','The stone calls, and they come, and when they get there they do not even eat it. They just stand around it and hum. I have never seen anything so patient.','Ansgar knows more about humming than I do. And the Queen on the high peak has begun to roost on the black ledges: her eaglets are on every trail now. Somebody has to do something about her.']},
+  {id:'G6',title:'The gryphon queen',gate:29,from:'brenna',to:'brenna',r:0.25,
+   tip:'A boss shows where its big attacks will land: step out of the marked ground. Boss skills drop at 10% each, for everyone who helped.',
+   offer:['She nests on the peak above the cirque, west across the Long Valley. Half of Highmark has lost a goat to her and two families have lost more than that. Her eaglets guard the nest.','There is an old miners\' saying that a rock fall has choked the river road for a hundred years, and that it would slide away on the day the Queen fell. Konrad swears to it. Konrad swears to a great deal.'],
+   parts:[{boss:'gryphonqueen',text:'Defeat the Gryphon Queen on her peak'}],
+   bossLine:'The Gryphon Queen, as she falls: "It hums... it calls us... we cannot stop." Far to the west, a rock fall slides down into a canyon.',
+   done:['The Queen is down? Then the sky over the cirque is empty for the first time since my grandfather\'s day.','Konrad says he heard stone move in the west at dawn. I told him he heard his own knees.']},
+  {id:'G7',title:'What the miners dug into',gate:30,from:'brenna',to:'brenna',r:0.1,
+   tip:'Lore spots can be read: walk up and press the talk key. This one is in the Miners\' Scree.',
+   offer:['The deepest shaft broke through something a month ago. The crew that went down came up grey in the face and will not say what they saw. The shaft is still timbered, but nobody goes in.','Go and look at the mouth of it, in the Scree. Look, I said. Only look.'],
+   parts:[{read:'deepshaft',text:'Look at the mouth of the deepest shaft in the Miners\' Scree'}],
+   done:['A hole that round, in a place we never dug? Ansgar says the mountain has older rooms than the village. I told him mountains do not have rooms.','Do not go down. I do not need to say it: I can see it in your face.']},
+  {id:'G8',title:'The old giant',gate:31,from:'ansgar',to:'ansgar',r:0.12,
+   tip:'The Mountain Golem\'s cavern lies in the Sink, in the south-west of the Greyspine. Read what lies on the ground before you fight it.',
+   offer:['Sit. Brenna told me about the shaft. I told her what I tell nobody: the abbey\'s oldest picture-book shows a giant of stone walking down this mountain, with a lamp in its chest, and people kneeling to it.','The picture is older than the abbey. Go and look at the golem\'s cavern in the Sink, at the edge of the clearing, where the frost has broken its stone. If it is only stone, I shall be glad.'],
+   parts:[{read:'golemframe',text:'Look at the Mountain Golem\'s broken stone at the edge of its cavern (the Sink)'}],
+   done:['Metal. Under the stone. Jointed like a man, and studded like a boat.','Then it is not a giant, whatever the villagers say. Somebody made it, a very long time ago, to fight, and the stone grew over it while it slept.','And the ring with a sun in it? The picture-book has that too, on the lamp. I thought it was a decoration.']},
+  {id:'G9',title:'The mountain wakes',gate:32,from:'ansgar',to:'brenna',r:0.25,
+   tip:'Boss skills drop at 10% each, for everyone who helped. Break its stone, and take care of its stamp.',
+   offer:['It walks, then. The black stone hums louder every night, and every night the cavern rumbles under it. Whatever woke the giant will not stop at one mountain.','End it, if you can. The old road behind its cavern climbs to the neck pass in the west, and the pass has been choked with fallen stone since before my grandfather: it may give way, as the river road did.'],
+   parts:[{boss:'mountaingolem',text:'Defeat the Mountain Golem in its cavern'}],
+   bossLine:'The Mountain Golem, as it falls: "...the lamp... goes out... the others... are still lit." Far to the west, stone crumbles from a pass.',
+   done:['(The mountain is quiet. For the first time in months the stone does not hum.)','Gone dumb, hasn\'t it? I put a lump of the black stone on the table this morning and it just lay there, cold and sulking.','Listen. Odran asked me to tell you something before he packed up his cart. Glasswell, in the Sunscar, he said: the physician there cures what nobody else can. Then he winked and sold me a spoon.']}
 ];
 const MQ_BY_ID={}; MQ.forEach((s,i)=>{ s.i=i; MQ_BY_ID[s.id]=s; });
-const MQ_END='Act III is over. The glacier valley west of the Hoarfrost Reach has split, and the road to Highmark is open: the story goes on in the Greyspine.';
-// which village each quest villager lives in (the server checks you are there when you talk to them); odran2 is Odran's cart in Hanami, odran3 his cart at Rimehold
+const MQ_END='Act IV is over. The mountain is quiet, the black stone sleeps, and a road leads on: Glasswell, in the Sunscar, where a physician is said to cure what nobody else can. The story goes on there, once it is told.';
+// which village each quest villager lives in (the server checks you are there when you talk to them); odran2 is Odran's cart in Hanami, odran3 his cart at Rimehold, odran4 at Highmark
 const MQ_NPC_VIL={tamsin:1,isamu:2,hinata:2,ylva:3,wren:1,linnea:1,odran:1,bram:1,aldric:1,tomas:1,ilse:1,maren:1,greta:1,oskar:1,
   odran2:2,daisuke:2,sayuri:2,kenji:2,haruka:2,tetsuo:2,ryu:2,chiyo:2,kaede:2,
-  odran3:3,hallvard:3,ragna:3,bjorn:3,ulfhild:3,thorvald:3,sigrun:3,gudrun:3};
+  odran3:3,hallvard:3,ragna:3,bjorn:3,ulfhild:3,thorvald:3,sigrun:3,gudrun:3,
+  odran4:4,brenna:4,ansgar:4,gerhard:4,matthias:4};
 const MQ_NAMES={tamsin:'Tamsin',isamu:'Isamu',hinata:'Herbalist Hinata',ylva:'Alchemist Ylva',wren:'Wren',linnea:'Healer Linnea',odran:'Odran',odran2:'Odran',bram:'Bram',aldric:'Aldric',tomas:'Tomas',ilse:'Ilse',maren:'Maren',greta:'Greta',oskar:'Oskar',
   daisuke:'Daisuke',sayuri:'Sayuri',kenji:'Kenji',haruka:'Haruka',tetsuo:'Tetsuo',ryu:'Master Ryu',chiyo:'Grandmother Chiyo',kaede:'Shrine Maiden Kaede',
-  odran3:'Odran',hallvard:'Hallvard',ragna:'Ragna',bjorn:'Bjorn',ulfhild:'Ulfhild',thorvald:'Thorvald',sigrun:'Old Sigrun',gudrun:'Gudrun'};
+  odran3:'Odran',hallvard:'Hallvard',ragna:'Ragna',bjorn:'Bjorn',ulfhild:'Ulfhild',thorvald:'Thorvald',sigrun:'Old Sigrun',gudrun:'Gudrun',
+  odran4:'Odran',brenna:'Foreman Brenna',ansgar:'Abbot Ansgar',gerhard:'Gerhard',matthias:'Brother Matthias'};
 const mqNeed=pt=>pt.n||1;
 // a part can progress: not waiting for the parts before it (after:true)
 function mqOpen(step,n,i){ const pt=step.parts[i]; if((n[i]||0)>=mqNeed(pt)) return false; if(!pt.after) return true; for(let k=0;k<i;k++) if((n[k]||0)<mqNeed(step.parts[k])) return false; return true; }
@@ -343,6 +395,16 @@ const LORE=(()=>{
     if(best) add('hullplate',best[0],best[1],'hull','A grey plate in the ice','A slab of grey metal juts out of the glacier at a slant, smooth as glass and cold to the touch. It has not rusted or dented. Round-headed studs run across it in even rows, and half scoured away by the wind, a ring with a small sun inside is painted on it. The hunters call it a dragon\'s scale.',{rot:0.6}); }
   { const A=ARENA30, a0=Math.atan2(A.x-VIL3.x,A.z-VIL3.z);
     add('ironbird',A.x+Math.sin(a0)*(A.r+3.5),A.z+Math.cos(a0)*(A.r+3.5),'ironbird','The iron bird','Ahead, nose down in the glacier with one wing snapped, lies a body of grey metal as long as a longhouse, set with even rows of studs and a glass eye cracked black. On its tail fin is a painted ring with a small sun inside it. The hunters call it the dragon\'s skeleton. Warm air sighs from under a wing, and the snow around it never settles.',{rot:a0}); }
+  // the Greyspine's two: the deepest shaft (a timbered mouth in the Miners' Scree, the mine) and the golem's broken stone at the near edge of its cavern (the Sink)
+  { const [x,z]=mqSpot(ZONES.find(zn=>zn.key==='g28'),0.3,0.4);
+    add('deepshaft',x,z,'shaft','The deepest shaft','The mouth is timbered like any other shaft in the Scree, but the black stone round it has been cut through clean, in a perfect round, wider than a wagon, and it goes down and down. Cold air breathes out of it, and the breath smells of nothing: not damp, not smoke, not rock. Ten fathoms down the walls stop being stone and turn to black metal, ribs as thick as a man, running into the dark like the roots of a tree. Far below, something very large is moving, slowly, with a sound like a hundred bells under water. The crew\'s lamps lie on the lip, still burning.',{rot:Math.atan2(VIL4.x-x,VIL4.z-z)}); }
+  // two roadside shrines (optional lore, no step reads them: STORY.md section 7): a piled-slate shrine on the Ledgeway's pass and the miners' lamp shrine at an old drift in the Scree
+  { const [x,z]=mqSpot(ZONES.find(zn=>zn.key==='g27'),-0.2,0.45);
+    add('ledgeshrine',x,z,'shrine','A shrine on the pass','A little shrine of piled slate stands on the pass, hung with twists of blue wool. Slips of paper are pinned under its stones: "Mountain, keep your sleep." "For the shift that did not come home." "Let the bell ring true." The wool is new. The slate is very old, and every stone in the pile has been cut to exactly the same size.',{rot:0.5}); }
+  { const [x,z]=mqSpot(ZONES.find(zn=>zn.key==='g28'),-0.3,0.55);
+    add('scrubshrine',x,z,'shrine','The miners\' lamp shrine','A shrine at the mouth of an old drift, with a lamp in its niche, lit and trimmed. The miners always left a lump of coal on the ledge for luck. Lately some have left a lump of black stone instead, and every one of them has been turned face to the wall.',{rot:-0.7}); }
+  { const A=ARENA32, a0=Math.atan2(VIL4.x-A.x,VIL4.z-A.z);
+    add('golemframe',A.x+Math.sin(a0)*(A.r+3.5),A.z+Math.cos(a0)*(A.r+3.5),'frame','The golem\'s broken stone','The frost has split the golem\'s stone shell here, and a slab of it has fallen away from what lies underneath: a jointed frame of grey metal, thick as a tree trunk, with hinges a man could stand in. Every joint is fitted close, and the whole is studded with round-headed rivets in even rows. On a flat plate at the hip a ring is painted, with a small sun inside it, half gone with weather. Nobody carved this. Somebody made it, long ago, with tools no smith in Highmark owns.',{rot:a0}); }
   return out;
 })();
 const LORE_BY_ID={}; LORE.forEach(L=>{ LORE_BY_ID[L.id]=L; });

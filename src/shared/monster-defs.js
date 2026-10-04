@@ -200,5 +200,7 @@ function greyDef(base,id,name,o){
 }
 const GREY_DEFS=[
   greyDef('bogslime','greybog','Grey-veined Bog Slime',{scale:1.9,hpK:2.6,per:0,glow:0x101418,pal:{body:0x6a7470,top:0xc8d0cc,mouth:0x14181a}}),
-  greyDef('kitsune','greyfox','Grey Kitsune',{scale:1.15,hpK:2.2,glow:0x101418,pal:{body:0x8a8a86,belly:0xd8d8d2,tip:0x4a4a48,eye:0xe8f0ff,legs:0x3a3a38,tails:3}})];
+  greyDef('kitsune','greyfox','Grey Kitsune',{scale:1.15,hpK:2.2,glow:0x101418,pal:{body:0x8a8a86,belly:0xd8d8d2,tip:0x4a4a48,eye:0xe8f0ff,legs:0x3a3a38,tails:3}}),
+  // the Greyspine's (G5, the night shift): a granite slime gone grey to the core, drawn to the black stone; level 29, the step's own
+  greyDef('granitslime','greystone','Grey-veined Granite Slime',{level:29,scale:2.1,hpK:2.4,per:0,glow:0x101418,pal:{body:0x4a4a52,top:0x9a9aa6,mouth:0x101014}})];
 const ALL_MON_DEFS=[...MON_DEFS,...GREY_DEFS,...BOSS_DEFS.flatMap(b=>[b.def,b.totem,b.add,b.prop].filter(Boolean))];

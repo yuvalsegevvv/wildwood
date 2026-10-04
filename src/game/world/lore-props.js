@@ -1,4 +1,4 @@
-//@ The story's props: Wren's sickbed under its awning, Odran's two carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside shrine, a grey plate in the ice) and the heartleaf you pick
+//@ The story's props: Wren's sickbed under its awning, Odran's carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside shrine, a grey plate in the ice, the Greyspine's deepest shaft and the golem's broken stone) and the heartleaf you pick
 /* Places come from shared/main-quest.js (VIL.bed, V.cart, LORE, HERBS). The static props are one merged mesh; each cart is its own
    mesh (hidden unless Odran stands beside it: odranHere in game/economy/main-quest.js), the herbs glow while you are picking them. */
 const LP={carts:[],herbs:[]};
@@ -49,6 +49,19 @@ function buildLoreProps(){
       for(let k=0;k<6;k++){ const [px,pz]=L(-0.9+k*0.36,0.05); put(out,new THREE.SphereGeometry(0.05,5,4),0x6a7076,px,y+0.95+k*0.09,pz,yaw); }
       put(out,new THREE.CylinderGeometry(0.34,0.34,0.02,14),0xd8b040,x+Math.sin(yaw)*0.05,y+1.02,z+Math.cos(yaw)*0.05,yaw,0.55+Math.PI/2,0.12);
       put(out,new THREE.IcosahedronGeometry(0.9,0).scale(1.4,0.6,1.1),0xe6eff4,x,y+0.15,z,yaw+0.4);
+    } else if(Lo.kind==='shaft'){   // the deepest shaft (G7): a stone-ringed round pit wider than a wagon, a timber frame with a windlass beam, the crew's lamps still lit on the lip
+      put(out,new THREE.CylinderGeometry(2.7,2.9,0.5,18),0x4a4a54,x,y+0.25,z,yaw);
+      put(out,new THREE.CylinderGeometry(2.0,2.0,0.52,18),0x050507,x,y+0.26,z,yaw);
+      for(const sx of [-2.6,2.6]){ const [px,pz]=L(sx,0); put(out,new THREE.BoxGeometry(0.34,3.6,0.34),wood,px,y+1.8,pz,yaw); }
+      { const [px,pz]=L(0,0); put(out,new THREE.BoxGeometry(5.6,0.34,0.4),dark,px,y+3.55,pz,yaw); put(out,cyl(0.16,0.16,5.0,8),wood,px,y+3.1,pz,yaw,0,Math.PI/2); }   // the windlass
+      for(const [lx,lz] of [[-1.4,2.5],[1.6,2.4]]){ const [px,pz]=L(lx,lz); put(out,new THREE.BoxGeometry(0.26,0.34,0.26),0x3a3a42,px,y+0.2,pz,yaw); put(out,new THREE.BoxGeometry(0.2,0.24,0.2),0xffd890,px,y+0.42,pz,yaw); }
+    } else if(Lo.kind==='frame'){   // the golem's broken stone (G8): a fallen slab, and under it a jointed frame of grey metal with riveted rows and the ring with a sun (docs/STORY.md: the emblem)
+      put(out,new THREE.BoxGeometry(3.4,1.8,1.4),0x7a7870,x,y+0.8,z,yaw+0.3,0.15,0.4);
+      { const [px,pz]=L(-1.6,1.2); put(out,new THREE.DodecahedronGeometry(0.9,0),0x6a6860,px,y+0.5,pz,yaw); }
+      for(const [lx,lz,len,rot] of [[0.2,1.3,3.2,0.35],[1.2,1.0,2.6,-0.5]]){ const [px,pz]=L(lx,lz); put(out,new THREE.CylinderGeometry(0.3,0.3,len,9),0x8a9096,px,y+1.15,pz,yaw,0,Math.PI/2+rot); }   // the limb's bars
+      for(const [lx,lz] of [[-1.1,1.4],[0.2,1.3],[1.5,0.9]]){ const [px,pz]=L(lx,lz); put(out,new THREE.SphereGeometry(0.46,9,7),0x9aa2a8,px,y+1.15,pz,yaw); }   // the joints
+      for(let k=0;k<7;k++){ const [px,pz]=L(-0.9+k*0.34,1.62); put(out,new THREE.SphereGeometry(0.05,5,4),0x5a6066,px,y+1.3+(k%2)*0.04,pz,yaw); }
+      { const [px,pz]=L(0.5,1.7); put(out,new THREE.BoxGeometry(0.9,0.7,0.06),0xa0a8ae,px,y+0.9,pz,yaw,0.1,0.05); put(out,new THREE.CylinderGeometry(0.22,0.22,0.02,14),0xd8b040,px+Math.sin(yaw)*0.04,y+0.92,pz+Math.cos(yaw)*0.04,yaw,Math.PI/2+0.1,0.05); }
     }   // (the ice wall, the rune stones and the iron bird are dressed in game/village/buildings-hoar.js)
   }
   const mat=new THREE.MeshLambertMaterial({vertexColors:true});

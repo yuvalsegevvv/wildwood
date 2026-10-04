@@ -65,7 +65,7 @@ ok('wet ground: a point in a tarn or in the river is greyWet, a dry one is not; 
   ok('levels stretch to 32 (MAX_ZONE_LV) and a monster there is in the Greyspine\'s land, with no zone tier of its own yet',x.MAX_ZONE_LV===32&&x.landAt(g[0].camp.x,g[0].camp.z)==='grey'&&x.zoneTierOn({zt:{home:{on:3,max:3}}},'grey')===0);
   const sc={}; for(const d of defs){ const k=x.MON_DEFS.find(o=>o.id===d.id); sc[d.level]=sc[d.level]||k.hp; }
   ok('the numbers follow the level curve: a level-32 monster has more health than a level-26 one of the same kind of toughness',defs.find(d=>d.level===32&&d.id==='galedrake').hp>defs.find(d=>d.level===26&&d.id==='granitslime').hp); }
-ok('no resource node in the Greyspine yet',x.NODES.every(n=>!x.inGrey(n.x,n.z)),x.NODES.length+' nodes');
+ok('the Greyspine has its resource nodes (53, tools/professions-smoke.js has the plan) and only the Greyspine\'s',x.NODES.filter(n=>x.inGrey(n.x,n.z)).length===53&&x.NODES.every(n=>x.inGrey(n.x,n.z)===(String(n.zone)[0]==='g')),x.NODES.length+' nodes');
 // ---- the two bosses ----
 for(const [A,id,lv,el] of [[x.ARENA29,'gryphonqueen',29,'air'],[x.ARENA32,'mountaingolem',32,'earth']]){
   const bd=x.BOSS_DEFS.find(b=>b.def.id===id), hs=[]; for(let a=0;a<12;a++) hs.push(H(A.x+Math.sin(a/12*6.283)*A.r*0.9,A.z+Math.cos(a/12*6.283)*A.r*0.9));

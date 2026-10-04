@@ -1,6 +1,6 @@
 # The Greyspine, the fourth land (levels 26-32)
 
-Area guide. Written when the land was built on top of the home forest, the Vale and the Reach; moved here from `CLAUDE.md` in the version2 merge (the router keeps a short row). Design: `docs/WORLD.md` section 8; what is not built: `docs/NOT-BUILT.md` section 3b; its dungeon, the Blackseam under Highmark Pastures, and its boss Garrick (built): `docs/DUNGEON-THEMES.md` section 9; the pendants it pays: `docs/PENDANTS.md`.
+Area guide. Written when the land was built on top of the home forest, the Vale and the Reach; moved here from `CLAUDE.md` in the version2 merge (the router keeps a short row). Design: `docs/WORLD.md` section 8; what is not built: `docs/NOT-BUILT.md` section 3b; its dungeon, the Blackseam under Highmark Pastures, and its boss Garrick (built): `docs/DUNGEON-THEMES.md` section 9; the pendants it pays: `docs/PENDANTS.md`. Its story, act IV of the main quest (G1-G9, Odran's cart at Highmark, the black stone veins, the deep shaft and the golem's frame): `docs/MAIN-QUEST.md` section 3c.
 
 ## Where to change what
 

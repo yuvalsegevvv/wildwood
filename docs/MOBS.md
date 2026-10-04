@@ -5,7 +5,7 @@ Every monster kind in the game, with the numbers the server uses and the place i
 
 Generated from the live code by `node tools/gen-docs.js` (`--check` tells you when this file is out of date). Line numbers are those of the code when it was generated.
 
-72 monster kinds in 44 zones, 8 bosses, 11 boss helpers (summons and props) and 2 grey-veined quest monsters: 93 definitions, plus 4 dungeon bosses with their helpers (section 11). 1187 monsters exist in the world at start (72 kinds in their camps + 8 bosses).
+72 monster kinds in 44 zones, 8 bosses, 11 boss helpers (summons and props) and 3 grey-veined quest monsters: 94 definitions, plus 4 dungeon bosses with their helpers (section 11). 1187 monsters exist in the world at start (72 kinds in their camps + 8 bosses).
 
 ## 1. Where it is defined
 
@@ -17,7 +17,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | The level formulas (expected player damage / health, armour cut, XP, coins) | `expDmg` / `expHP` / `xpFor` / `coinsFor` src/shared/balance.js:37-60 |
 | The six bosses, their move set (`kit`), arena, summons (`add`), props, boss-bar texts | `BOSS_DEFS` src/shared/monster-defs.js:184 |
 | The grey-veined monsters of the main quest | `GREY_DEFS` src/shared/monster-defs.js:201 |
-| Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:204 |
+| Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:206 |
 | How many of each kind exist, and where their camps are (a zone holds 40 of the level-1 kind down to 20 of level 15; the vale and the Reach 12 of each; `count` overrides) | `MON_COUNT` src/server/monsters.js:18, `initMonstersS` src/server/monsters.js:19 |
 | Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King's beach | `ZONES` src/shared/zones.js:10, src/shared/vale.js:108, src/shared/hoarfrost.js:84, src/shared/beach.js:21 |
 | Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:46 |
@@ -246,6 +246,7 @@ Tougher copies of a zone's kind (`greyDef`, tripled XP). Not in `MON_DEFS`: the 
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `greybog` | Grey-veined Bog Slime | 7 | water | 711 | 18.6 | 22 | 1.6 | 2.2 | 18 m | 35 | 21 | on demand | The Bog | — | slime ×1.9 | src/shared/monster-defs.js:202 |
 | `greyfox` | Grey Kitsune | 18 | fire | 4459 | 39.9 | 155 | 1.5 | 3.8 | 18 m | 615 | 230 | on demand | Inari Hills | — | fox ×1.15 | src/shared/monster-defs.js:203 |
+| `greystone` | Grey-veined Granite Slime | 29 | earth | 13354 | 61.4 | 264 | 1.6 | 2.2 | 18 m | 5048 | 1158 | on demand | — | — | slime ×2.1 | src/shared/monster-defs.js:205 |
 
 ## 11. Dungeons: bosses, their helpers and the mob pools
 
@@ -332,7 +333,7 @@ A def's `model` picks a family model (`MODELS.<model>={geo,build,anim}`) and its
 
 | Model | Kinds using it | Family defaults (hpK / dmgPct / atk s / speed / rad / height / aggro / camp) | Family row | Client model |
 |---|---|---|---|---|
-| `slime` | 10 | 0.85 / 0.06 / 1.6 / 2.2 / 0.45 / 0.8 / 10 / 6 | src/shared/monster-defs.js:3 | src/game/combat/monster-blobs.js:5 |
+| `slime` | 11 | 0.85 / 0.06 / 1.6 / 2.2 / 0.45 / 0.8 / 10 / 6 | src/shared/monster-defs.js:3 | src/game/combat/monster-blobs.js:5 |
 | `shroom` | 3 | 0.95 / 0.07 / 1.7 / 1.8 / 0.4 / 1.1 / 10 / 5 | src/shared/monster-defs.js:4 | src/game/combat/monster-blobs.js:44 |
 | `beetle` | 13 | 1.15 / 0.08 / 1.4 / 2.6 / 0.6 / 0.8 / 11 / 5 | src/shared/monster-defs.js:5 | src/game/combat/monster-bugs.js:84 |
 | `boar` | 7 | 1 / 0.11 / 2 / 3.4 / 0.6 / 1 / 13 / 4 | src/shared/monster-defs.js:6 | src/game/combat/monster-beasts.js:5 |

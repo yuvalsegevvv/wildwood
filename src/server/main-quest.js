@@ -57,7 +57,7 @@ function mqReadP(p,id){
   const L=LORE_BY_ID[id], M=mqOf(p), step=mqStep(p); if(!L||!step||M.st!==1||Math.hypot(p.x-L.x,p.z-L.z)>LORE_R+2) return;
   step.parts.forEach((pt,i)=>{ if(pt.read===id) mqProgressP(p,i,1); });
 }
-// a system use: class, buy, armor, skill, burst, board, sell, upskill, merge, soul, warp, hanami, rimehold, learn, tool, craft, brew, potion. at:'cart' = only beside Odran's cart.
+// a system use: class, buy, armor, skill, burst, board, sell, upskill, merge, soul, warp, hanami, rimehold, highmark, learn, tool, craft, brew, potion. at:'cart' = only beside Odran's cart.
 // arg says which: {prof} for learn, {tool, tier} for tool, {kind, tier} for craft, brew and potion: a part that names one of those only counts a match
 function mqActP(p,kind,n,arg){
   const M=mqOf(p), step=mqStep(p); if(!step||M.st!==1) return;
@@ -91,11 +91,11 @@ function mqAutoP(p){
   step.parts.forEach((pt,i)=>{
     if(!mqOpen(step,M.n,i)) return;
     const tool=pt.act==='tool'&&ITEM[g.eq[pt.tool]];
-    const has=(pt.level&&p.level>=pt.level)||(pt.tier!==undefined&&!pt.act&&w&&w.tier>=pt.tier)||(pt.act==='soul'&&g.soul!=='basic')||(pt.act==='hanami'&&g.east>=2)||(pt.act==='rimehold'&&g.north>=2)||(pt.act==='learn'&&!!g.prof[pt.prof||'gathering'])||(tool&&tool.tier>=(pt.tier||0))||(pt.boss==='boss'&&g.east>=1);
+    const has=(pt.level&&p.level>=pt.level)||(pt.tier!==undefined&&!pt.act&&w&&w.tier>=pt.tier)||(pt.act==='soul'&&g.soul!=='basic')||(pt.act==='hanami'&&g.east>=2)||(pt.act==='rimehold'&&g.north>=2)||(pt.act==='highmark'&&g.west>=2)||(pt.act==='learn'&&!!g.prof[pt.prof||'gathering'])||(tool&&tool.tier>=(pt.tier||0))||(pt.boss==='boss'&&g.east>=1);
     if(has) mqProgressP(p,i,mqNeed(pt),true);
   });
 }
-/* the grey monsters: a few spawn for you at the part's spot while you are within 80 m (three at a time), and go away when you
+/* the grey monsters: a few spawn for you at the part's spot while you are within 80 m (three at a time; only after dark when the part says night), and go away when you
    leave (160 m), finish the part, or log off. Anyone can fight them; they count for whoever's part it is */
 const MQ_GREY_AT={};
 function mqGreyAt(key){ return MQ_GREY_AT[key]||(MQ_GREY_AT[key]=mqGreySpot(key)); }
@@ -108,7 +108,7 @@ function mqTickP(p){
   const i=step.parts.findIndex((pt,k)=>pt.grey&&mqOpen(step,M.n,k)), mine=MONS.filter(m=>m.owner===p.id&&!m.remove&&!m.dead);
   if(i<0){ if(mine.length) mqRemoveGreyP(p); return; }
   const pt=step.parts[i], [gx,gz]=mqGreyAt(pt.zone), d=Math.hypot(p.x-gx,p.z-gz);
-  if(d>160){ for(const m of mine) if(!m.aggro) removeMonS(m); return; }
+  if(d>160||(pt.night&&!mqNight(S.day))){ for(const m of mine) if(!m.aggro) removeMonS(m); return; }   // (a night part: nothing comes by day)
   if(d>80||S.t<(p.mqSpawnT||0)) return;
   const want=Math.min(3,mqNeed(pt)-M.n[i])-mine.length; if(want<=0) return;
   const def=GREY_DEFS.find(x=>x.id===pt.grey);

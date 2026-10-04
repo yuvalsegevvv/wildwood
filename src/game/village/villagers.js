@@ -200,7 +200,11 @@ const VILLAGERS=[
   { id:'odran3', vil:3, late:true, title:'Peddler', icon:'peddler', name:'Odran', role:'peddler', show:()=>odranHere(3),
     look:{sex:'male',height:1.02,build:1.05,face:'oval',hair:'short',hairColor:0x3a2a20,facial:'stubble',top:'jacket',topColor:0x5a4a6a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'ranger',hatColor:0x3a3230,pack:true,shoes:'boots',shoeColor:0x2a1e14},
     behavior:{type:'stationary',at:'cart'}, home:'house:4', schedule:'always', voice:{rate:1.1,pitch:0.95},
-    lines:['Furs, flasks and the odd bit of grey plate. Cold work, but somebody has to keep the north supplied with buttons.','It snows even inside my hat. Do not ask how.','The pass is open? Marvellous. I was beginning to think I had come to the end of the world.'] }
+    lines:['Furs, flasks and the odd bit of grey plate. Cold work, but somebody has to keep the north supplied with buttons.','It snows even inside my hat. Do not ask how.','The pass is open? Marvellous. I was beginning to think I had come to the end of the world.'] },
+  { id:'odran4', vil:4, late:true, title:'Peddler', icon:'peddler', name:'Odran', role:'peddler', show:()=>odranHere(4),
+    look:{sex:'male',height:1.02,build:1.05,face:'oval',hair:'short',hairColor:0x3a2a20,facial:'stubble',top:'jacket',topColor:0x4a4a5a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'ranger',hatColor:0x3a3230,pack:true,shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'cart'}, home:'house:4', schedule:'always', voice:{rate:1.1,pitch:0.95},
+    lines:['Black stone, they call it. I call it a good price. Do not tell the foreman I said that.','Up the glacier valley with a cart. Do not ask me how. I do not know either.','Everyone up here has a headache. It is the thin air. Or the humming. Mostly the air.'] }
 ];
 const FILLER_COUNT=LITE?3:(LOW?4:8);
 const NAMES_M=['Anders','Henrik','Lukas','Emil','Jonas','Felix','Mattis','Arvid','Elias','Nils','Viggo','Karl'];

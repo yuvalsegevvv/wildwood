@@ -158,6 +158,7 @@ the meaning of its bosses, and the hook that sends the player on.
   and the wreck itself are beyond the main quest (levels 26-30 are side content).
 
 ### Act IV: the Greyspine (26-32), the crossroads
+*Built as the main quest's steps G1-G9 (`docs/MAIN-QUEST.md` section 3c); the wording avoids "machine": the golem is a giant of stone over "metal, jointed like a man".*
 - **Beats**: in Highmark, miners dig **black stone that hums**: dark energy gone solid. They sell it to a travelling buyer (Odran) and
   many are falling grey. The mine's deepest shaft broke into something vast below (the Rootdeep).
 - **Hints**: *object*: black stone, cold to touch, that makes monsters come. *Person*: the foreman **Brenna** notes that the buyer's

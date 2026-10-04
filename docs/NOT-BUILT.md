@@ -6,7 +6,7 @@ keeps the short list of ideas; the story for levels 26-50 is planned step by ste
 
 ## 1. Professions, tools, crafting and potions (`shared/professions.js`, `shared/crafting.js`; built, see `docs/MAIN-QUEST.md` section 5b)
 
-What is built: three professions each with a **tool slot** (a node needs a tool of the tier of its zone), 314 nodes in every land, ore / logs in six grades and
+What is built: three professions each with a **tool slot** (a node needs a tool of the tier of its zone), 367 nodes in every land (the Greyspine's included), ore / logs in six grades and
 three lands' herbs, a Wayfarers' Lodge in every village (learn, buy tools, sell resources), a **cast** of about a second for every gather (a bar, no animation),
 **crafting** at the weaponsmiths' (ore) and armourers' (logs), **brewing** at the healers' (herbs) and three potions drunk with Z / X / C.
 
@@ -55,13 +55,11 @@ three lands' herbs, a Wayfarers' Lodge in every village (learn, buy tools, sell 
 
 ## 2. The rest of the story (levels 26-50)
 
-Only planned, in `docs/MAIN-QUEST.md` section 7: the Greyspine (Highmark), the Sunscar (Glasswell, Rook, the medicine that wakes Wren), Amber Reach (the song and
-the reveal), the Emberwake Isles (the Sink and the ending), and the Stormhorn and Rootdeep side branches. The main quest ends at F9 with "the road to Highmark is
-not open yet" (`MQ_END`). Levels 26-30 in the Hoarfrost are walkable side content without quest steps. The story's payoffs for the iron bird, the plate and
+Only planned, in `docs/MAIN-QUEST.md` section 7: the Sunscar (Glasswell, Rook, the medicine that wakes Wren), Amber Reach (the song and
+the reveal), the Emberwake Isles (the Sink and the ending), and the Stormhorn and Rootdeep side branches. The main quest ends at G9 with Odran's tip about Glasswell's physician (`MQ_END`; the Greyspine's act IV is built, section 3b). Levels 26-30 in the Hoarfrost are walkable side content without quest steps. The story's payoffs for the iron bird, the plate and
 Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md`): no NPC explains them yet, by design.
 
-- **The west glacier valley** is built (section 3b): the ice fall opens when Ymrik falls and leads to Highmark. What is not built is the story around it: no NPC mentions it,
-  F8's boss line and F9 ("the road to Highmark is not open yet", `MQ_END`) still read as before, and the steps G1-G9 (`docs/MAIN-QUEST.md` section 7) do not exist.
+- **The west glacier valley** is built (section 3b), and so is the story around it: F9 hands over to **Act IV, G1-G9** (`docs/MAIN-QUEST.md` section 3c: Highmark, the black stone, Odran's coins, the night shift, the Gryphon Queen, the shaft, the golem's frame, the Mountain Golem). What is left is acts V-VII and the hooks that wait for the reveal.
 - **The Nine Tails** (Kyuubi's side story, vale levels 21-25) is still only hinted (`docs/MAIN-QUEST.md` section 4).
 - **More Hoarfrost side content**: Sigrun's other sagas, the hunters' hunts, ice-fishing on Frostmere, a story reason to go to the wyrm's nest (the iron bird can be
   read there, but no step asks for it).
@@ -101,6 +99,7 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
 - **two bosses**: the Gryphon Queen (29; her peak, a flat nest on a cone-shaped mountain; kit `gryphon`) and the Mountain Golem (32; a cavern; kit `golem`), 12 boss skills, two board quests;
 - **water**: three tarns, a river that leaves the range to the west, and a fjord on the south-west coast, with wading, banks, plants, camps and the map all reading one `waterSurf`;
 - **the two rock falls** in the west wall (the river road, opened by the Gryphon Queen: `gear.river`; the neck pass, by the Golem: `gear.neck`): canyons through the wall to the world's edge;
+- **the main quest, act IV** (`docs/MAIN-QUEST.md` section 3c): G1-G9, Odran's cart at Highmark, the black stone veins, a night guard against grey-veined granite slimes, the deepest shaft and the golem's broken stone as lore spots;
 - **zone tiers** (`ZTIER_LANDS` has `grey`: the picker, the Mountain Golem opening them) and **its dungeon, the Blackseam**, a mine under Highmark Pastures with the boss Garrick (`docs/DUNGEON-THEMES.md` section 9), whose clear pays a **pendant** (`docs/PENDANTS.md`);
 - testing tools: `dev tunnel` `glen` / `glenw` / `highmark` / `grey` / `queen` / `cavern` / `riverfall` / `neckfall`, `dev west`, `dev gate`, and the buttons in the Testing section (the Old Adit's door button included).
 
@@ -108,11 +107,9 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
 
 - **The lands beyond the gates.** The two canyons end at the world's edge: nothing lies behind them (the Sunscar behind the river road, the Stormhorn behind the neck pass). When they are built
   the rectangle must grow west (section 5) and each canyon becomes a real road; until then opening a gate only changes a toast and a mesh.
-- **The main quest in the Greyspine** (`docs/MAIN-QUEST.md` section 7, steps G1-G9): no step asks you to go there, ore veins (G3) and the Rootdeep's mine have no home. Highmark's NPCs are
-  ambient (lines and labels, no quests beyond the board) and the two bosses' quests are board notices.
-- **Resource nodes and the professions' tier**: `NODES` has none in the Greyspine (the planner skips `zn.grey`), so mining, woodcutting and gathering have nothing to do there; the Lodge buys
-  and sells but a node needs a grade of ore, log and herb that does not exist yet (`ORE_GRADES`, `LOG_GRADES`, `HERB_LANDS`, a tool tier 6).
-- **Gear tier 6 and the economy past 25**: gear stays at tier 5, drops and the shop do not follow the levels 26-32 (`tierFor`), `VALE_TOP_LV` is still 25, and the XP curve is the stopgap of
+- **The Rootdeep and the story's loose ends in the Greyspine**: G7 (the deepest shaft) is a hook only (a lore spot you read): the mine below has no home, and the optional bits of act IV are not built (the abbey's cut page, Konrad's and the other NPCs' own lines about the black stone, a reason to read the Queen's nest). Highmark's fillers say a few things about the coins and the humming (`SMALLTALK4`) and nothing more.
+- **The Greyspine's own grades of ore, logs and herbs, and a tool tier 6**: the Greyspine has nodes now (53: 6 in each of its seven zones of the Reach's rime ore, frostpines and snowmoss, plus 11 veins of **black stone**, `RES.blackstone`, `NODE_KINDS.blackstone`; the Lodge buys it, nothing is forged from it), but no grade of its own: `ORE_GRADES`, `LOG_GRADES` and `HERB_LANDS` stop at the Reach, so the best weapons and armour still come from rime ore and frostwood, and potions have no Greyspine herb (Aurel's "gentian and edelweiss" are only words). A new grade means gear tier 6 (below).
+- **Gear tier 6 and the economy past 25** (a decision, not a gap in the Greyspine's content: the level-30 dungeon gear fills the level above tier 5, and its ids end in 7): gear stays at tier 5, drops and the shop do not follow the levels 26-32 (`tierFor`), `VALE_TOP_LV` is still 25, and the XP curve is the stopgap of
   section 5.
 - **The Greyspine's zone-tier symbol is a placeholder** (to replace later): its tier points now count toward the symbol and it has a fourth badge (`ZTIER_SYMBOL_LANDS`, `.zs.grey` in `22-tiers.css`: a slate-silver stand-in colour), but the **symbol stops at +150%** (`ZTIER_SYMBOL_CAP` in `shared/tiers.js`). Why: the balance yardstick `tools/boss-duel.js` (docs/areas/tiers.md) was tuned with three lands' fifteen points (+150%); with the Greyspine's five on top (+200%) the maxed level-60 hero beat the tier V Vetrmaw standing still (3 of 3 won), which the owner's targets forbid. So today a hero with the three older lands maxed gains nothing from the Greyspine's points. To replace: the cap (raise or remove it and re-tune the bosses' creep, `BOSS_CREEP_*`, or give the Greyspine a smaller value per point), the badge's look, and the Greyspine's tier numbers themselves (tiers I-V of its monsters and Garrick are unchecked).
 - **A use for coins at level 30 and above: not implemented yet.** Past the last shop tier (gear stays at tier 5, `tierFor`), level-30 gear is only paid by dungeons and tempered with stones (no coins), so the coins a level 30+ hiker earns (`coinsFor`, x20 from bosses, +pendants of Fortune) have nowhere to go but potions and brewing. Ideas, none chosen: a coin cost on tempering or merging, a coin price on Tempering Stones, a Highmark shop, buying a dungeon's key. Recorded here only; it is not part of the Greyspine work.

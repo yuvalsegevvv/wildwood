@@ -3,8 +3,8 @@
    shared mqTalk the server applies, so what a villager says always matches what happens. */
 const mqG=()=>(GEAR&&GEAR.mq)||null;
 const mqCur=()=>{ const M=mqG(); return M?MQ[M.s]||null:null; };
-// Odran's cart stands by the village gate from W8 (when he arrives) until V8 (he moves to Hanami's gate), and by Rimehold's from F7
-function odranHere(vil){ const M=mqG(); if(!M) return false; return vil===1?M.s>=MQ_BY_ID.W8.i&&M.s<MQ_BY_ID.V8.i:vil===2?M.s>=MQ_BY_ID.V8.i&&M.s<MQ_BY_ID.F7.i:vil===3?M.s>=MQ_BY_ID.F7.i:false; }   // (Highmark has no cart yet: the Greyspine's story is not built)
+// Odran's cart stands by the village gate from W8 (when he arrives) until V8 (he moves to Hanami's gate), by Rimehold's from F7 until G4, and by Highmark's from G4
+function odranHere(vil){ const M=mqG(); if(!M) return false; return vil===1?M.s>=MQ_BY_ID.W8.i&&M.s<MQ_BY_ID.V8.i:vil===2?M.s>=MQ_BY_ID.V8.i&&M.s<MQ_BY_ID.F7.i:vil===3?M.s>=MQ_BY_ID.F7.i&&M.s<MQ_BY_ID.G4.i:vil===4?M.s>=MQ_BY_ID.G4.i:false; }
 // what a quest villager has to say about the main quest right now (null: nothing, their usual lines)
 function mqLinesFor(n){ const M=mqG(); if(!M||!MQ_NPC_VIL[n.def.id]) return null; const T=mqTalk(M,n.def.id,PL.level,mqNight(dayClock)); return T.lines.length?T:null; }
 // the mark over a villager: ! a step to take (or a part to do with them), ? a step to hand in
@@ -20,17 +20,21 @@ function nearHerb(){ if(!mqPicking()) return -1; const M=mqG(); for(let i=0;i<HE
 function npcSpot(id){ const n=npcById(id); if(n) return {x:n.x,z:n.z,name:n.def.name}; return null; }
 const MQ_ACT_AT={buy:'ilse',board:'maren',upskill:'aldric',merge:'greta',soul:'kaede'};
 const MQ_GREY_C={};
+// the nearest node of a gather part that your gear can work and is not taken (else null)
+function mqGatherTarget(pt){ let best=null,bd=1e9; for(const n of NODES) if((n.kind===pt.gather||NODE_KINDS[n.kind].prof===pt.gather)&&!nodeBlock(GEAR,n)){ const d=Math.hypot(n.x-P.x,n.z-P.z); if(d<bd&&!nodeTaken(n.i)){ bd=d; best=n; } } return best?{x:best.x,z:best.z,name:NODE_KINDS[best.kind].name}:null; }
 function mqPartTarget(s,pt){
   if(pt.talk) return npcSpot(pt.talk);
+  if(pt.gather&&pt.collect){ const T=mqGatherTarget(pt); if(T) return T; }   // (dig it or take it from the monsters: the veins first, else the monsters' zone)
   if(pt.kill||pt.collect){ const d=MON_DEFS.find(m=>m.id===(pt.kill||pt.from[0])), zn=d&&defZone(d); if(!zn) return null; const [x,z]=zonePoint(zn,0,0.5); return {x,z,name:zn.name}; }
   if(pt.grey){ const g=MQ_GREY_C[pt.zone]||(MQ_GREY_C[pt.zone]=mqGreySpot(pt.zone)); return {x:g[0],z:g[1],name:ZONES.find(z=>z.key===pt.zone).name}; }
   if(pt.pick){ const M=mqG(); let best=null,bd=1e9; HERBS.forEach(([x,z],i)=>{ const d=Math.hypot(x-P.x,z-P.z); if(!((M.h>>i)&1)&&d<bd){ bd=d; best={x,z,name:'Heartleaf'}; } }); return best; }
   if(pt.read){ const L=LORE_BY_ID[pt.read]; return {x:L.x,z:L.z,name:L.name}; }
   if(pt.boss){ const bd=BOSS_DEFS.find(b=>b.def.id===pt.boss), A=ARENAS.find(a=>a.key===bd.arena); return {x:A.x,z:A.z,name:A.name}; }
-  if(pt.gather){ let best=null,bd=1e9; for(const n of NODES) if((n.kind===pt.gather||NODE_KINDS[n.kind].prof===pt.gather)&&!nodeBlock(GEAR,n)){ const d=Math.hypot(n.x-P.x,n.z-P.z); if(d<bd&&!nodeTaken(n.i)){ bd=d; best=n; } } return best?{x:best.x,z:best.z,name:NODE_KINDS[best.kind].name}:null; }
+  if(pt.gather) return mqGatherTarget(pt);
   if(pt.act==='sell'){ const V=VILS[MQ_NPC_VIL[s.from]-1]; return {x:V.cart.x,z:V.cart.z,name:'Odran\'s cart'}; }
   if(pt.act==='warp'){ const V=vilAt(P.x,P.z); return V!==VIL?{x:V.tele.x,z:V.tele.z,name:'the teleport circle'}:null; }
   if(pt.act==='rimehold') return inHoar(P.x,P.z)?{x:VIL3.anchors.gate.x,z:VIL3.anchors.gate.z,name:'Rimehold'}:{x:PASS.x,z:PASS.ice+4,name:'Frostgate Pass'};
+  if(pt.act==='highmark') return inGrey(P.x,P.z)?{x:VIL4.anchors.gate.x,z:VIL4.anchors.gate.z,name:'Highmark'}:{x:GLEN.x1,z:GLEN.z,name:'the glacier valley'};
   if(pt.act==='hanami') return inVale(P.x)?{x:VIL2.anchors.gate.x,z:VIL2.anchors.gate.z,name:'Hanami'}:{x:TUN.x0,z:TUN.z,name:'the tunnel'};
   { const v=(MQ_NPC_VIL[s.from]||1)-1;   // the professions' places are in the giver's village: its lodge keeper, healer, weaponsmith or armourer
     if(pt.act==='learn'||pt.act==='tool') return npcSpot(['tamsin','isamu','gudrun'][v]);

@@ -111,7 +111,7 @@ function openNorthP(p){ if(p.gear.north>=1) return; p.gear.north=1; p.dirty=true
 // the Greyspine: the ice fall in the glacier valley breaks up for everyone who helped defeat Ymrik; walking into Highmark attunes its circle
 function openWestP(p){ if(p.gear.west>=1) return; p.gear.west=1; p.dirty=true; ev('west',p.id,1);
   toastTo(p.id,'Far to the west, the ice fall in the glacier valley groans and breaks apart: the road to the Greyspine is open for you.','good'); }
-function reachHighmarkP(p){ if(p.gear.west!==1||Math.hypot(p.x-VIL4.x,p.z-VIL4.z)>VIL4.r+14) return; p.gear.west=2; p.dirty=true; ev('west',p.id,2);
+function reachHighmarkP(p){ if(p.gear.west!==1||Math.hypot(p.x-VIL4.x,p.z-VIL4.z)>VIL4.r+14) return; p.gear.west=2; p.dirty=true; ev('west',p.id,2); mqActP(p,'highmark');
   toastTo(p.id,'Welcome to Highmark! Its teleport circle is attuned to you now: the circles will take you between all four villages.','good'); }
 // the Greyspine's two gates in its west wall: a rock fall slides away for everyone who helped defeat the boss that guards the road
 function openGateP(p,id){ if(p.gear[id]>=1) return; p.gear[id]=1; p.dirty=true; ev('gate',p.id,id);

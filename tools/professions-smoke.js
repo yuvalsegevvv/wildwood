@@ -5,7 +5,7 @@
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['NODES','NODE_KINDS','NODE_BACK','ITEM','ITEM_LIST','TOOL_LIST','RES','POTS','POT_MAX','craftCost','canCraft','potBuffP','hurtP','rollDmgS','S','sanitizeGear','sanitizePots','tierFor','nodeBlock','doubleChance','VIL','VIL2','VIL3','getH','ZONES','MERGE_COUNT','BAG_MAX','ORE_GRADES','LOG_GRADES','HERB_LANDS','TIERS','rawHeight','castTime','NODE_R']);
+  ['NODES','NODE_KINDS','NODE_BACK','ITEM','ITEM_LIST','TOOL_LIST','RES','POTS','POT_MAX','craftCost','canCraft','potBuffP','hurtP','rollDmgS','S','sanitizeGear','sanitizePots','tierFor','nodeBlock','doubleChance','VIL','VIL2','VIL3','getH','ZONES','MERGE_COUNT','BAG_MAX','ORE_GRADES','LOG_GRADES','HERB_LANDS','TIERS','rawHeight','waterSurf','inGrey','castTime','NODE_R']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const evs=[]; const grab=()=>{ for(const m of (inbox.a||[])) if(m.t==='snap'&&m.ev) evs.push(...m.ev); inbox.a=[]; };
@@ -37,7 +37,7 @@ send({t:'equip',id:'pick1-r'});
 
 // ---- the nodes of every land ----
 { const byZone={}, bad=[]; for(const n of x.NODES){ (byZone[n.zone]=byZone[n.zone]||[]).push(n); if(x.rawHeight(n.x,n.z)<2.0) bad.push(n.i); }
-  ok('314 nodes: 90 in the Hoarfrost Reach (first, unchanged) and 7 to 9 in each of the home forest\'s and the vale\'s zones',x.NODES.length===314&&x.NODES.slice(0,90).every(n=>['rimeore','frostpine','frostbloom','snowmoss'].includes(n.kind)&&String(n.zone)[0]==='h'),Object.keys(byZone).length+' zones');
+  ok('367 nodes: 90 in the Hoarfrost Reach (first, unchanged), 7 to 9 in each of the home forest\'s and the vale\'s zones, and the Greyspine\'s 53 last (so every older node keeps its number)',x.NODES.length===367&&x.NODES.slice(0,90).every(n=>['rimeore','frostpine','frostbloom','snowmoss'].includes(n.kind)&&String(n.zone)[0]==='h')&&x.NODES.slice(314).every(n=>String(n.zone)[0]==='g')&&x.NODES.slice(90,314).every(n=>String(n.zone)[0]!=='g'&&String(n.zone)[0]!=='h'),Object.keys(byZone).length+' zones');
   ok('no node is at the waterline (the shared terrain: the server\'s coarse map can dip lower at a steep edge)',!bad.length,bad.length+' in water');
   ok('every ring zone of the home forest has its veins, trees and herbs (9 in the inner woods, levels 1-14, 7 in zone 15)',[1,2,3,4,5,6,7,8,9,10,11,12,13,14].every(z=>(byZone[z]||[]).length===9)&&(byZone[15]||[]).length===7); }
 { const at1=k=>x.NODES.filter(n=>String(n.zone)===String(k));
@@ -46,7 +46,9 @@ send({t:'equip',id:'pick1-r'});
     kinds(1)==='copper,copper,copper,ironroot,pine,pine,pine,sunpetal,sunpetal'&&kinds(5)==='iron,iron,iron,ironroot,oak,oak,oak,sunpetal,sunpetal'&&kinds(10)==='ironroot,silver,silver,silver,sunpetal,sunpetal,yew,yew,yew'&&kinds(15)==='ironroot,sunpetal,sunpetal,sunstone,sunstone,sunwood,sunwood');
   ok('the vale grows hagane and cherry from level 20, with the vale\'s own herbs',kinds(20)==='cherry,cherry,hagane,hagane,kikyo,kikyo,yomogi'&&kinds(16)==='kikyo,kikyo,sunstone,sunstone,sunwood,sunwood,yomogi');
   ok('a node needs a tool of the tier of its zone (the vale\'s best zone still needs no more than hagane)',at1(1).every(n=>n.need===0)&&at1(5).every(n=>n.need===1)&&at1(20).every(n=>n.need===4)&&at1(25).every(n=>n.need===4)&&at1('h22').every(n=>n.need===4)&&at1('h26').every(n=>n.need===5)); }
-ok('every resource has a name, colour, sell price and node kind (ore and logs in six grades)',Object.keys(x.RES).length===6+6+6&&Object.values(x.RES).every(r=>r.name&&r.col&&r.sell>0)&&x.ORE_GRADES.length===6&&x.LOG_GRADES.length===6);
+ok('every resource has a name, colour, sell price and node kind (ore and logs in six grades, six herbs, and the Greyspine\'s black stone)',Object.keys(x.RES).length===6+6+6+1&&Object.values(x.RES).every(r=>r.name&&r.col&&r.sell>0)&&x.ORE_GRADES.length===6&&x.LOG_GRADES.length===6&&x.RES.blackstone.prof==='mining'&&x.NODE_KINDS.blackstone.res==='blackstone'&&!x.ORE_GRADES.some(g=>g[0]==='blackstone'));
+{ const gn=x.NODES.filter(n=>String(n.zone)[0]==='g'), per={}; for(const n of gn) per[n.zone]=(per[n.zone]||0)+1;
+  ok('the Greyspine\'s plan: 6 rime ore, frostpine and snowmoss nodes in each of its seven zones, and 11 black veins where the miners dig (the Ledgeway 3, the Scree 5, the Sink 3), every one needing the best tier of tool',gn.length===53&&gn.every(n=>n.need===5&&x.inGrey(n.x,n.z)&&x.rawHeight(n.x,n.z)>=x.waterSurf(n.x,n.z)+2.2)&&gn.filter(n=>n.kind==='blackstone').length===11&&Object.keys(per).length===7&&per.g26===6&&per.g28===11&&per.g27===9&&per.g32===9,JSON.stringify(per)); }
 
 // ---- gathering with a tool ----
 dev('prof'); g().prof={}; g().res={}; for(const k of ['pick','axe','sickle']) g().eq[k]=null;

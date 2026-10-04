@@ -1,9 +1,9 @@
 // Headless test of the main quest (shared/main-quest.js + server/main-quest.js), straight from src/: walks a fresh character through
-// steps with talks, herbs, kills, grey monsters, the night, a lore spot, old-save flags, and acts II and III to the end (the Hoarfrost Reach: Rimehold, the Wayfarers' Lodge, frostbloom, the circle home, the Rimeking). Exits 1 on failure.
+// steps with talks, herbs, kills, grey monsters, the night, a lore spot, old-save flags, and acts II, III and IV to the end (the Hoarfrost Reach: Rimehold, the Wayfarers' Lodge, frostbloom, the circle home, the Rimeking; the Greyspine: Highmark, black stone dug or taken from slimes, Odran's coins, the night shift, the Gryphon Queen, the shaft, the golem's frame, the Mountain Golem). Exits 1 on failure.
 // Usage: node tools/mainquest-smoke.js
 const {loadServer}=require('./load');
 const inbox={};
-const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','getH','MQ','MQ_BY_ID','MQ_VER','HERBS','LORE_BY_ID','VIL','VIL2','VIL3','S','mqGreySpot','sanitizeMq','TUN','NODES','rewardKill','PASS','ITEM']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','getH','MQ','MQ_BY_ID','MQ_VER','MQ_END','HERBS','LORE_BY_ID','VIL','VIL2','VIL3','VIL4','ZONES','S','mqGreySpot','sanitizeMq','TUN','NODES','rewardKill','PASS','ITEM']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const at=(xx,zz)=>W.setPos('a',[xx,x.getH(xx,zz),zz,0,0,0]);
@@ -116,11 +116,60 @@ rime(); talk('odran3'); ok('F7 handed in to Odran at Rimehold; F8 waits for leve
 dev('level',25); talk('hallvard'); ok('F8 offered',M().st===1);
 { const ym=x.MONS.find(m=>m.def.id==='ymrik'); x.rewardKill(p,ym); tick(2); ok('F8: killing Ymrik counts for the boss part',M().st===2); }
 talk('sigrun'); ok('F8 handed in to Sigrun; F9 starts in the same talk',id()==='F9'&&M().st===1);
-talk('sigrun'); ok('F9: the last verse',M().st===2); talk('hallvard'); ok('the story ends after F9 (act III ends at the Rimeking)',M().s===x.MQ.length);
+talk('sigrun'); ok('F9: the last verse',M().st===2); talk('hallvard'); ok('F9 handed in: act III is over and act IV starts by itself (G1, the way into Highmark)',id()==='G1'&&M().st===1);
+// ---- Act IV: the Greyspine (G1-G9) ----
+const hm=()=>at(x.VIL4.x+3,x.VIL4.z+3), cartAt=()=>at(x.VIL4.cart.x,x.VIL4.cart.z), seamAt=zone=>x.NODES.filter(n=>n.kind==='blackstone'&&n.zone===zone);
+p.gear.west=1; dev('level',26); hm(); tick(14);
+ok('G1: walking into Highmark sets gear.west 2 and finishes the step',p.gear.west===2&&M().st===2);
+talk('brenna'); ok('G1 handed in to Brenna; G2 starts in the same talk',id()==='G2'&&M().st===1);
+at(900,0); talk('ansgar'); ok('the people of Highmark only answer in Highmark',M().n.every(v=>!v)); hm();
+talk('ansgar'); talk('gerhard'); ok('G2: two of the three met',M().n.filter(Boolean).length===2&&M().st===1); talk('matthias'); ok('G2: all three met',M().st===2);
+dev('level',27); talk('brenna'); ok('G2 handed in; G3 starts in the same talk (level 27)',id()==='G3'&&M().st===1);
+// G3: black stone, dug from the veins or taken from the stone slimes
+{ const all=x.NODES.filter(n=>n.kind==='blackstone');
+  ok('the Greyspine has 11 black veins: the Ledgeway, the Miners\' Scree and the Sink',all.length===11&&seamAt('g27').length===3&&seamAt('g28').length===5&&seamAt('g32').length===3);
+  ok('the veins stay away from the village',all.every(n=>Math.hypot(n.x-x.VIL4.x,n.z-x.VIL4.z)>x.VIL4.r+14));
+  const veins=seamAt('g28'); p.gear.prof.mining={xp:0};
+  at(veins[0].x,veins[0].z); W.receive('a',{t:'gather',i:veins[0].i}); tick(30); ok('a black vein cannot be worked without a pickaxe',!p.gear.res.blackstone&&M().n[0]===0);
+  p.gear.eq.pick='pick1'; at(veins[0].x,veins[0].z); W.receive('a',{t:'gather',i:veins[0].i}); tick(30); ok('and not with a weak one (the best tier is needed)',!p.gear.res.blackstone);
+  p.gear.eq.pick='pick6'; for(const nd of veins.slice(0,3)){ at(nd.x,nd.z); W.receive('a',{t:'gather',i:nd.i}); tick(30); }
+  ok('three veins mined: black stone kept in gear.res, and counted for G3',p.gear.res.blackstone>=3&&M().n[0]===3&&M().st===1,'n '+M().n+' stone '+p.gear.res.blackstone);
+  const real=Math.random; Math.random=()=>0; let k=0; for(const m of x.MONS.filter(m=>(m.def.id==='granitslime'||m.def.id==='quartzslime')&&!m.dead).slice(0,3)){ x.rewardKill(p,m); k++; } Math.random=real; tick(2);
+  ok('three more from the stone slimes (a 30% drop, pinned): G3 is ready to hand in',k===3&&M().st===2,'n '+M().n); }
+hm(); talk('brenna'); ok('G3 handed in; G4 waits for level 28',id()==='G4'&&M().st===0);
+dev('level',28); talk('brenna'); ok('G4: Brenna sends you to Odran',id()==='G4'&&M().st===1);
+// G4: a sale at Odran's cart, then the coins to Brenna
+p.gear.inv.push('sword1','sword1'); hm(); W.receive('a',{t:'sell',id:'sword1'}); tick(1); ok('selling away from Odran\'s cart does not count',M().n[0]===0);
+cartAt(); W.receive('a',{t:'sell',id:'sword1'}); tick(1); ok('selling at his cart outside Highmark\'s gate counts',M().n[0]===1&&M().st===1);
+hm(); talk('brenna'); ok('G4: she weighs the coins and the step is done (it is handed in to her too); G5 waits for level 29',id()==='G5'&&M().st===0);
+// the black stone sells at the Lodge
+{ const c0=p.gear.coins; hm(); W.receive('a',{t:'sellres',id:'blackstone',n:1}); tick(1); ok('the Lodge buys black stone (100 coins a lump)',p.gear.coins===c0+100); }
+// G5: the night shift (only after dark)
+dev('level',29); talk('brenna'); ok('G5 offered',id()==='G5'&&M().st===1);
+{ const [sx,sz]=x.mqGreySpot('g28'); x.S.day=0.3; at(sx,sz); tick(40);
+  ok('by day nothing comes to the shaft head',x.MONS.filter(m=>m.owner==='a'&&!m.dead&&!m.remove).length===0);
+  x.S.day=0.7; at(sx,sz); tick(30); const mine=x.MONS.filter(m=>m.owner==='a'&&!m.dead&&!m.remove);
+  ok('after dark three grey-veined granite slimes (level 29) come for you',mine.length===3&&mine.every(m=>m.def.id==='greystone'&&m.def.level===29&&m.def.grey),mine.length+' spawned');
+  for(let r=0;r<12&&M().st===1;r++){ for(const m of x.MONS.filter(m=>m.owner==='a'&&!m.dead&&!m.remove)){ m.hp=Math.min(m.hp,20); kill(m); } x.S.t+=10; tick(130); }
+  ok('twelve of them: G5 is ready to hand in',M().st===2&&M().n[0]===12,'n '+M().n); }
+hm(); talk('brenna'); ok('G5 handed in; G6 starts in the same talk',id()==='G6'&&M().st===1);
+{ const gq=x.MONS.find(m=>m.def.id==='gryphonqueen'); x.rewardKill(p,gq); tick(2); ok('G6: the Gryphon Queen\'s death counts for the boss part',M().st===2); }
+talk('brenna'); ok('G6 handed in; G7 waits for level 30',id()==='G7'&&M().st===0); dev('level',30); talk('brenna'); ok('G7 offered',M().st===1);
+{ const L=x.LORE_BY_ID.deepshaft, zn=x.ZONES.find(z=>z.key==='g28'); at(900,0); W.receive('a',{t:'mq',a:'read',id:'deepshaft'}); tick(1); ok('the shaft cannot be read from afar',M().n[0]===0);
+  at(L.x,L.z); W.receive('a',{t:'mq',a:'read',id:'deepshaft'}); tick(1); ok('G7: the mouth of the deepest shaft read (in the Miners\' Scree)',M().st===2&&Math.hypot(L.x-zn.x,L.z-zn.z)<zn.R); }
+hm(); talk('brenna'); ok('G7 handed in; G8 waits for the abbot (level 31)',id()==='G8'&&M().st===0);
+dev('level',31); talk('ansgar'); ok('G8: Ansgar offers it',id()==='G8'&&M().st===1);
+{ const L=x.LORE_BY_ID.golemframe; at(L.x,L.z); W.receive('a',{t:'mq',a:'read',id:'golemframe'}); tick(1); ok('G8: the golem\'s broken stone read at the edge of its cavern',M().st===2); }
+hm(); talk('ansgar'); ok('G8 handed in to the abbot; G9 waits for level 32',id()==='G9'&&M().st===0); dev('level',32); talk('ansgar'); ok('G9 offered',M().st===1);
+{ const gm=x.MONS.find(m=>m.def.id==='mountaingolem'); x.rewardKill(p,gm); tick(2); ok('G9: the Mountain Golem\'s death counts for the boss part',M().st===2); }
+hm(); talk('brenna'); ok('G9 handed in to Brenna: the story ends after G9 (act IV ends at the Mountain Golem)',M().s===x.MQ.length&&/Glasswell/.test(x.MQ_END));
+ok('every Act IV step has parts, an offer (or starts by itself) and a hand-in',['G1','G2','G3','G4','G5','G6','G7','G8','G9'].every(i=>{ const st=x.MQ_BY_ID[i]; return st&&st.parts.length&&(st.from===null||(st.offer&&st.offer.length))&&st.done&&st.done.length; }));
+{ const sh=['ledgeshrine','scrubshrine'].map(i=>x.LORE_BY_ID[i]), zs=['g27','g28'].map(k=>x.ZONES.find(z=>z.key===k));
+  ok('two optional shrines in the Greyspine (the Ledgeway\'s pass and the Scree\'s old drift): readable lore no step asks for, each in its own zone, clear of every black vein',sh.every((L,i)=>L&&L.kind==='shrine'&&L.text.length>60&&Math.hypot(L.x-zs[i].x,L.z-zs[i].z)<zs[i].R&&!x.MQ.some(st=>st.parts.some(pt=>pt.read===L.id)))&&x.NODES.every(n=>sh.every(L=>Math.hypot(L.x-n.x,L.z-n.z)>=8))); }
 // saves
 const bad=x.sanitizeMq({s:999,st:7,n:['x',-3],h:'q'}), bad2=x.sanitizeMq({s:x.MQ_BY_ID.W2.i,st:2,n:[1,0]});
 ok('a broken save is cleaned',bad.s===x.MQ.length&&bad.st===0&&Array.isArray(bad.n)&&bad2.st===1&&x.sanitizeMq(null).s===0);
 { const old=(id,st)=>{ const o=x.sanitizeMq({s:OLD_INDEX[id],st:st||1,n:[0,0,0,0]}); return x.MQ[o.s].id; }, OLD_INDEX={W6:5,W7:6,W11:10,W12:11,V7:22,V8:23,F4:30};
   ok('saves from before the profession steps keep their place (the step index moves up by the steps inserted before it)',old('W6')==='W6'&&old('W7')==='W7'&&old('W12')==='W12'&&old('V8')==='V8'&&old('F4')==='F4');
-  ok('a save that already has a version is not moved',x.sanitizeMq({s:x.MQ_BY_ID.V8.i,st:1,n:[0],ver:x.MQ_VER}).s===x.MQ_BY_ID.V8.i&&x.sanitizeMq({s:36,st:0,ver:1}).s===x.MQ.length); }
+  ok('a save that already has a version is not moved',x.sanitizeMq({s:x.MQ_BY_ID.V8.i,st:1,n:[0],ver:x.MQ_VER}).s===x.MQ_BY_ID.V8.i&&x.sanitizeMq({s:36,st:0,ver:1}).s===x.MQ_BY_ID.G1.i); }
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

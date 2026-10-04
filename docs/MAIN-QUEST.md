@@ -1,9 +1,9 @@
-# Main quest line: Wildwood, the Sakura Vale and the Hoarfrost Reach (built, levels 1-25), and the plan for levels 26-50
+# Main quest line: Wildwood, the Sakura Vale, the Hoarfrost Reach and the Greyspine (built, levels 1-32), and the plan for levels 28-50
 
-The first three chapters of the main quest line: **Act I** (Wildwood, levels 1-15), **Act II** (the Sakura Vale, levels 15-20; it
-ends at the first vale boss, Akaoni) and **Act III** (the Hoarfrost Reach, levels 20-25; it ends at Ymrik the Rimeking). They follow
+The first four chapters of the main quest line: **Act I** (Wildwood, levels 1-15), **Act II** (the Sakura Vale, levels 15-20; it
+ends at the first vale boss, Akaoni), **Act III** (the Hoarfrost Reach, levels 20-25; it ends at Ymrik the Rimeking) and **Act IV** (the Greyspine, levels 26-32; it ends at the Mountain Golem, section 3c). They follow
 `docs/STORY.md` (the story, the spoiler rule, the hints) and `docs/WORLD.md` (the lands), and teach the game's systems as the story needs
-them. **Built**: the steps are data in `src/shared/main-quest.js`; section 6 says how the code fits together. **Levels 26-50 are only
+them. **Built**: the steps are data in `src/shared/main-quest.js`; section 6 says how the code fits together. **The rest of the story (acts V-VII, the Sunscar onward) is only
 planned** (section 7): nothing in it exists in the game yet (`docs/NOT-BUILT.md` comments on this and the other gaps). The vale's second boss (Kyuubi, level 25) is saved for a side story
 (section 4), not built yet.
 
@@ -134,6 +134,30 @@ gate, `MQ_END`).
 weather; the gate on the vale's north wall; the north's tier of **professions** (section 5b: the Reach's ore, pines and herbs need a Hagane
 tool or better, and Ylva brews the frostbloom tea). **Not built in the Reach**: the Greyspine gate (the west valley), regional weather on the server.
 
+## 3c. Act IV: "The Black Stone" (the Greyspine, levels 26-32)
+
+The Greyspine is the fourth land (`docs/WORLD.md`, `docs/NOT-BUILT.md` section 3b, `docs/areas/greyspine.md`). Highmark, its village, is an alpine mining and monastery village on a shelf at the mouth of the North Fork, with the same
+jobs as the others (board, stalls, forge, trainer, the Wayfarers' Lodge, Aurel's kettle, a teleport circle). The glacier valley that Ymrik's fall opens leads to it.
+
+**People** (all `late:true`, village 4; ids in `MQ_NPC_VIL`): **Foreman Brenna** (`brenna`: the mine and the board), **Abbot Ansgar** (`ansgar`: the abbey's records, the cut page), **Gerhard** (weaponsmith), **Brother Matthias** (trainer), and **Odran**
+(`odran4`: his cart stands outside Highmark's gate from G4, and no longer at Rimehold's: `odranHere(3)` is F7-G3, `odranHere(4)` from G4).
+
+| # | Step | Gate | Giver → hand in | Objective | Teaches | r |
+|---|---|---|---|---|---|---|
+| G1 | The glacier valley | 26 | (starts) → Brenna | Walk the valley west into Highmark (`act:'highmark'`: attunes its circle, now linking all four villages) | the fourth village | .08 |
+| G2 | The hearth of Highmark | 26 | Brenna | Meet Ansgar, Gerhard and Matthias | a fourth hub | .06 |
+| G3 | Black stone | 27 | Brenna | Six lumps of black stone: **dig them** from the black veins (best-tier pickaxe) **or take them** from the granite and quartz slimes (30%): one part counts both | the first ore the story asks for | .15 |
+| G4 | Too perfect | 28 | Brenna | Sell Odran anything at his cart, then show Brenna the coins | the hint *person*: coins "all alike" | .12 |
+| G5 | The grey shift | 29 | Brenna | **After dark**, defeat 12 grey-veined granite slimes at the shaft head in the Miners' Scree (three at a time; nothing comes by day) | night parts; the hint *object*: stone that calls monsters | .2 |
+| G6 | The gryphon queen | 29 | Brenna | Defeat the Gryphon Queen (boss 29: opens the river road) | boss, skills | .25 |
+| G7 | What the miners dug into | 30 | Brenna | Read the mouth of the deepest shaft (`deepshaft`, Miners' Scree): black metal ribs "like the roots of a tree" | the Rootdeep hook | .1 |
+| G8 | The old giant | 31 | Ansgar | Read the golem's broken stone at its cavern's edge (`golemframe`, the Sink): a jointed grey frame with the ring and the small sun | the hint *place* | .12 |
+| G9 | The mountain wakes | 32 | Ansgar → Brenna | Defeat the Mountain Golem (boss 32: opens the neck pass); Brenna passes on Odran's tip, Glasswell's physician | the road on (`MQ_END`) | .25 |
+
+The spoiler rule holds (`docs/STORY.md` section 0): no "machine" (the golem is "a giant of stone", under it "metal, jointed like a man", "somebody made it"), and the emblem (the ring with a small sun) is shown, not explained. **Systems introduced**: the black
+stone (`RES.blackstone`, `NODE_KINDS.blackstone`: 11 veins in the Ledgeway, the Scree and the Sink; the Lodge buys it at 100; nothing is forged from it), a part that counts two sources (`collect` with `gather`), a night-only guard part (`grey` with `night:true`), the
+`act:'highmark'` part, and `GREY_DEFS` gets the Greyspine's `greystone`. The Greyspine's other nodes (rime ore, frostpines and snowmoss, 6 in each zone) are the Reach's own grades. **Not built**: grades of ore, logs and herbs of the Greyspine's own and a tool tier 6 (gear stays at tier 5; level-30 gear comes from the dungeons), and the steps after G9.
+
 ## 4. Side story, planned (not built): "The Nine Tails"
 
 Kyuubi (level 25, the Foxfire Shrine) is no longer on the main path. The pieces are already hinted: Chiyo's "then one of them grew nine
@@ -173,7 +197,7 @@ tool worn in its slot**: the inventory has three tool slots (`pick`, `axe`, `sic
 tier's level to wear), no stats, and the forge merges three into the next rarity. A common tool costs 30 / 90 / 270 / 700 / 1500 / 3200
 coins by tier. The tier decides **which nodes it can work** and the rarity **how often a node gives double**.
 
-**Nodes** (`NODES`, 314, the same on client and server from seeded rngs): every ring zone of the home forest, the three edge zones and
+**Nodes** (`NODES`, 367, the same on client and server from seeded rngs; the Greyspine's 53 are last: rime ore, frostpines and snowmoss in each of its zones, and 11 veins of black stone for act IV, section 3c): every ring zone of the home forest, the three edge zones and
 every zone of the vale has 2 ore veins, 2 trees (3 of each in the home zones of levels 1-14, which are only 4-5 zones per grade), two of its land's healing herb and one
 strengthening herb; the Hoarfrost Reach keeps its own plan of 90. A node
 needs a tool of the **gear tier of its zone** (`tierFor(zone level)`: levels 1-4 tier 1, 5-9 tier 2, 10-14 tier 3, 15-19 tier 4, 20-24
@@ -225,14 +249,14 @@ that cleanse a boss's freeze or slow, resources for the lands to come.
   violet ! / ? over villagers (`mqMark`, `npc-labels.js`), the main quest's row at the top of the quest log (`mqLogRow`), its violet
   marker on the maps (`mqTarget`: people, kill zones, lore spots, resource nodes, the pass). Props: `game/world/lore-props.js` (sickbed,
   carts, lore props, heartleaf), `game/village/buildings-hoar.js` (the ice wall, the rune stones, the iron bird).
-- **Tests**: `node tools/mainquest-smoke.js` (walks a character through acts I-III to the end, the profession steps and the save migration
+- **Tests**: `node tools/mainquest-smoke.js` (walks a character through acts I-IV to the end, the profession steps and the save migration
   included), `node tools/hoarfrost-smoke.js`, `node tools/professions-smoke.js`.
 - **To add a step**: a row in `MQ` (and its people in `MQ_NPC_VIL` / `MQ_NAMES`, `VILLAGERS`), a lore spot in `LORE` if it reads something,
   a test line; a new kind of part needs a hook in `server/main-quest.js` and a marker in `mqPartTarget` (client).
 
-## 7. Planned, not built: the rest of the story, levels 26-50
+## 7. Planned, not built: the rest of the story (act IV, the Greyspine, is built: section 3c)
 
-**Nothing in this section exists in the game.** It turns `docs/STORY.md` (the acts, the hidden truth, the spoiler rule) and
+**Nothing in this section exists in the game, except act IV (7.2), which is section 3c's.** It turns `docs/STORY.md` (the acts, the hidden truth, the spoiler rule) and
 `docs/WORLD.md` (the lands, their level ranges and gates) into main quest steps, level by level, so the next chapters can be built one
 land at a time. The spoiler rule (`STORY.md` section 0) is unchanged: no answers before the end of the Amber Reach storyline (act VI);
 every hint keeps an innocent reading. Step ids continue the built ones: **G** the Greyspine, **S** the Sunscar, **A** Amber Reach,
@@ -255,7 +279,7 @@ A player follows the main line **Hoarfrost → Greyspine → Sunscar → Amber R
 land more than about 2 levels above you; the overlap means that from 28 on the player chooses the order of the side branches.
 The Sunscar and Amber Reach each give a real cure beat for Wren (act V-a: the medicine that wakes them; act VI: none, the truth).
 
-### 7.2 Act IV: "The Black Stone" (the Greyspine, levels 26-32)
+### 7.2 Act IV: "The Black Stone" (the Greyspine, levels 26-32): built as section 3c (this is the plan it followed)
 
 Hub: **Highmark**, an alpine mining and monastery village built into the rock (rope bridges, shrines on the passes). Cast: **Foreman
 Brenna** (the mine; notices the too-perfect coins), **Abbot Ansgar** (the monastery's archive: a page of the Silent Years is cut out),

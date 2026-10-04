@@ -1,4 +1,4 @@
-//@ Professions: mining, woodcutting and gathering (learned at a Wayfarers' Lodge, each with its own tool slot), the six grades of ore and logs and the three lands' herbs, the resource nodes in every land, profession levels. Pure.
+//@ Professions: mining, woodcutting and gathering (learned at a Wayfarers' Lodge, each with its own tool slot), the six grades of ore and logs and the three lands' herbs, the resource nodes in every land (the Greyspine's black stone included), profession levels. Pure.
 /* A profession is learned once, for coins, at a Wayfarers' Lodge (one in each village; gear.prof[id] = {xp}). To work a node you need its profession
    AND the tool in its slot (pick, axe, sickle: shared/items.js, tier = TIER_LV steps like gear): a node needs a tool of tier n.need or better, where
    need = the gear tier of its zone (tierFor: zone level 1-4 tier 0, 5-9 tier 1, ... 25+ tier 5), so the tools you buy keep pace with the land.
@@ -6,7 +6,7 @@
    for NODE_KINDS.respawn seconds. Resources are used in shared/crafting.js: ore makes weapons, logs make armour, herbs make potions (brewing and
    crafting are not professions: they are done at NPCs). NODES are the same on the client and the server (a seeded rng): each ring zone of the home
    forest, the edge zones and each vale zone get 2 ore veins, 2 trees (3 of each in the home forest's zones of levels 1-14), 2 of the land's healing herb and one of its
-   strengthening herb; the Hoarfrost Reach has its own plan. */
+   strengthening herb; the Hoarfrost Reach and the Greyspine have their own plans. */
 const PROFS={
   mining:{name:'Mining',verb:'mine',price:60,tool:'pick',desc:'Swing a pickaxe at the veins of ore in the rock. Ore is what weapons are forged from.'},
   woodcutting:{name:'Woodcutting',verb:'chop',price:60,tool:'axe',desc:'Fell trees with an axe. Logs are what armour is made of.'},
@@ -36,6 +36,10 @@ HERB_LANDS.forEach((pair,land)=>pair.forEach(([id,name,col],k)=>{
   RES[id]={name,col,prof:'gathering',grade:land+1,role:k?'buff':'heal',sell:HERB_SELL[land]};
   NODE_KINDS[id]={prof:'gathering',name,res:id,lv:1,xp:1+2*land,respawn:id==='frostbloom'?120:k?75:90,r:0.7};
 }));
+// the Greyspine's own ore (docs/MAIN-QUEST.md G3): black stone, the dark made solid. Not a gear grade: nothing is forged from it (the best gear still comes from the six grades),
+// the main quest asks for it and the Lodge buys it. Its veins need the same top-tier pickaxe as the Reach's rime ore (a node's need is its zone's gear tier)
+RES.blackstone={name:'Black Stone',col:'#5a4e6a',prof:'mining',grade:6,sell:100};
+NODE_KINDS.blackstone={prof:'mining',name:'Black vein',res:'blackstone',lv:1,xp:6,respawn:90,r:1.6};
 const NODE_R=3.4;   // how close you must be to gather one
 /* the Hoarfrost Reach's plan: [zone level, kind, how many]. Frostbloom grows where the ice is thin over warm springs: the first zones and the lakes' shores */
 const NODE_PLAN=[[22,'frostbloom',6],[22,'snowmoss',4],[22,'frostpine',4],[22,'rimeore',3],
@@ -64,6 +68,11 @@ const NODES=(()=>{
       const n=!land&&zn.level<=14?3:2, herbA=HERB_LANDS[land][0][0], herbB=HERB_LANDS[land][1][0];   // the inner woods (copper, iron, silverstone) have only 4-5 zones each: a third vein and tree in each
       for(const kind of [...Array(n).fill(ore),...Array(n).fill(log),herbA,herbA,herbB]) put(rng,zn,kind,good,t);   // (the vale's best zone still gives hagane: no tier-6 tool needed)
     }
+  // the Greyspine, last so that every older node keeps its number: in each of its seven zones 2 rime ore, 2 frostpines and 2 snowmoss (the Reach's own top grades: its mountains grow the same),
+  // and black stone veins where the miners dig (GREY_BLACK: zone level -> veins): the Ledgeway, the Miners' Scree and the Sink
+  { const rng=mulberry32(5153), good=(x,z)=>rawHeight(x,z)>=waterSurf(x,z)+2.2&&!LORE.some(L=>Math.hypot(L.x-x,L.z-z)<8), GREY_BLACK={27:3,28:5,32:3};   // (and clear of the story's lore spots)
+    for(const lv of [26,27,28,29,30,31,32]){ const zn=ZONES.find(z=>z.key==='g'+lv);
+      for(const kind of ['rimeore','rimeore','frostpine','frostpine','snowmoss','snowmoss',...Array(GREY_BLACK[lv]||0).fill('blackstone')]) put(rng,zn,kind,good); } }
   return out;
 })();
 // the nearest node within r metres of (x, z) (index into NODES), or -1
