@@ -7,8 +7,9 @@
    vents are dgVentAt. Events of their own: 'dglamp' [lamp monster id, 1 lit / 0 dark], 'dgch' / 'dgchx' (the relight channel's cast bar, server/dungeons/boss-fx.js). */
 
 // adds at the hall's monster mouths (all four, or n of them at random)
-function dgBossMouthAddsS(B,n){
+function dgBossMouthAddsS(B,n,max){
   const A=B.A, mouths=DG_HALL_MOUTHS.slice();
+  if(max) n=Math.min(n,Math.max(0,max-B.adds.filter(a=>a.def===B.bd.add&&!a.dead&&!a.remove).length));   // (max: the most of his adds the hall holds at once)
   for(let i=mouths.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [mouths[i],mouths[j]]=[mouths[j],mouths[i]]; }
   for(let i=0;i<n;i++){ const [mx,mz]=mouths[i%mouths.length]; spawnAddsS(B,1,A.x+mx,A.z+mz,1.2); }
 }
@@ -120,6 +121,7 @@ BOSS_KITS.dish={
 };
 
 // ---- Haugbui, the Barrow Lord (Bonefrost Barrow): the dead who keep their grave; the clan's lamps are what it fears ----
+const DG_THRALL_MAX=8;   // the hall holds at most this many thralls at once: a hero cannot kill them (level 79), so without a cap each wave and each blackout only adds to the pile
 const DG_LAMP_SAFE=8, DG_LAMP_REACH=3, DG_LAMP_CHANNEL=2.5;   // the wail spares whoever is within 8 m of a lit lamp; relighting: within 3 m, holding still 2.5 s
 const DG_BLACKOUT=8, DG_BLACKOUT_RELIT=2;   // the blackout lasts 8 s, or ends early (and stuns him 4 s) when two lamps are relit
 // the grasping chain: a hand-ring under one player that roots, then jumps to the nearest other player within 9 m of it, up to three jumps
@@ -141,7 +143,7 @@ function dgHaugRelightS(B,L){
 }
 function dgHaugBlackoutS(B,m){
   B.k.black={t:0,relit:0}; B.mode=2; m.immune=true; B.busy=1e3; m.act=null; m.vx=m.vz=0; clearTeleS(B);
-  dgBossMouthAddsS(B,8); ev('roar',m.id);
+  dgBossMouthAddsS(B,8,DG_THRALL_MAX); ev('roar',m.id);
   toastTo(null,'The lamps fail: Haugbui fades into the dark! Relight the lamps!','bad');
 }
 function dgHaugBlackoutEndS(B,m,early){
@@ -171,7 +173,7 @@ BOSS_KITS.barrow={
       return;
     }
     k.breathT-=dt; if(B.phase>=2){ k.snuffT-=dt; k.wailT-=dt; }
-    if(k.thrallT<=0){ k.thrallT=24; dgBossMouthAddsS(B,4); }
+    if(k.thrallT<=0){ k.thrallT=24; dgBossMouthAddsS(B,4,DG_THRALL_MAX); }
     if(B.phase>=2&&!dgHaugLit(B)&&k.blackCd<=0){ dgHaugBlackoutS(B,m); return; }   // the last lamp went out
     if(k.snuffT<=0){ k.snuffT=B.enraged?6:7; const lit=k.lamps.filter(L=>L.lit);   // he snuffs a lamp: a ring at it, then it goes dark
       if(lit.length){ const L=lit[Math.floor(Math.random()*lit.length)], e=addTeleS(B,L.x,L.z,3,1.5,'snuff',Math.round(D));

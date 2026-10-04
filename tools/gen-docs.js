@@ -78,7 +78,7 @@ function mobsDoc(){
 `Let L be the monster's level and \`f(L) = L + (13/12)^L\`.
 
 - **HP** = round(expDmg(L) × (4 + 0.45 L) × hpK × highMult(L)): the hits a same-level, normally geared player needs, times how tough the kind is. \`highMult\` is 1.5 from level ${10} up. A boss or prop has a fixed hit count instead (\`d.hits\`: 70 for a boss, 9 for a prop). \`expDmg(L) = 3 f(L) + TIER_ATK[tierFor(L)]\`.
-- **Dmg** (per hit, before the player's armour) = round(expHP(L) × dmgPct / (1 − expRed(L))): a share of a same-level player's health. A boss uses 16%. \`expHP(L) = 20 f(L) + setHP(tierFor(L))\`. Armour then cuts damage by \`def / (def + 60)\`, soft-capped above 60% (defense 90) toward 90% (\`defRed\`, src/shared/balance.js).
+- **Dmg** (per hit, before the player's armour) = round(expHP(L) × dmgPct / (1 − expRed(L))): a share of a same-level player's health. A boss uses 16% (and creeps stronger above level 60: section 8). \`expHP(L) = 20 f(L) + setHP(tierFor(L))\`. Armour then cuts damage by \`def / (def + 60)\`, soft-capped above 60% (defense 90) toward 90% (\`defRed\`, src/shared/balance.js).
 - **XP** = xpFor(L) = f(L) × 1.15^(L−5) × highMult (a boss ×25, a prop 0; above level 60 the pay keeps its level-60 rate and doubles every 10 levels, \`PAY_LV\` in src/shared/balance.js, so zone tiers IV and V stay sane). **Coins** per kill = round(f(L) × U(1.5, 2.5) × 1.1^(L−5) × highMult); the tables show the mean (boss ×20).
 - **A kill never pays for more than 10 levels above you** (\`xpLeadK\`, \`XP_LEAD\` in src/shared/balance.js): the XP is that of a monster of level min(its level, yours + 10), so a zone tier or a dungeon difficulty that makes a monster stronger than that pays no more XP (coins and drops go on rising). **Level 50 is a soft cap**: every level from 50 on costs ×1.5 the one before (\`expToNext\`, \`LV_SOFT_GROWTH\`).
 - **Hits** in the tables is HP / expDmg(L): how many hits of a same-level, normally geared player it takes.
@@ -95,7 +95,7 @@ function mobsDoc(){
   s+=section(6,'Sakura Vale (levels 16-25)','Two kinds per level, 12 of each, in ten zones.',groups.vale);
   s+=section(7,'Hoarfrost Reach (levels 22-30)','Two kinds per level, 12 of each, in nine zones.',groups.hoar);
 
-  s+='## 8. Bosses (6)\n\nHealth is 70 hits of a same-level player (×1.5 from level 10); a hit is 16% of that player\'s health. Each boss has its own move set on top of the shared melee and the phases at 60% and 30% (`server/boss.js`).\n\n';
+  s+='## 8. Bosses (6)\n\nHealth is 70 hits of a same-level player (×1.5 from level 10); a hit is 16% of that player\'s health. Above level 60 (zone tiers IV and V, dungeons +IV and +V) a boss creeps: +1.25% health and +5% damage for every level over 60 (`BOSS_CREEP_*`, `defAt`). Each boss has its own move set on top of the shared melee and the phases at 60% and 30% (`server/boss.js`).\n\n';
   s+=rowsOf(['Id','Name','Lv','El','HP','Dmg','Atk s','Spd','XP','Coins','Material','Arena','Summons','Prop','Music','Move set','Defined'],W.BOSS_DEFS.map(b=>{
     const d=b.def, L=d.level;
     return [code(d.id),d.name,L,d.el,d.hp,d.dmg,d.atk,d.speed,num(d.xp),coinsAvg(d,L),W.MATS[d.id].name,zoneOf(d,b.arena),b.add?b.add.name:'—',b.prop?b.prop.name:b.totem?b.totem.name:'—',d.music||'boss'+L,

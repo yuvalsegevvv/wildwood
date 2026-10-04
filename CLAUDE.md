@@ -96,7 +96,7 @@ Short rows: the files that matter. A row ending in `→ docs/areas/<x>.md` has t
 | Hoarfrost Reach (levels 22-30): the plateau, Frostgate Pass and its ice wall, Rimehold `VIL3`, zones `h22`-`h30`, two boss arenas | `shared/hoarfrost.js` (pass, village, zones, arenas, `CIRCLES`), `hoarHeight` in `shared/terrain.js`; the gate: `frostWall` (`movement.js`) + `setPos` (`api.js`), saved as `gear.north`; meshes `game/village/buildings-hoar.js` → `docs/areas/regions.md` |
 | Snow instead of rain in the Reach; the aurora | `WX.snow` in `game/world/weather.js`, `game/world/aurora.js`, wind in `game/audio/rain.js` and `driver.js` → `docs/areas/regions.md` |
 | Professions (mining, woodcutting, gathering): the Wayfarers' Lodge, resource nodes, resources | `shared/professions.js` (`NODES`, `RES`, `PROFS`, `nodeBlock`, `castTime`), `server/professions.js` (`gatherP`; `gear.prof`, `gear.res`), `game/economy/professions.js`; test `node tools/professions-smoke.js` → `docs/areas/professions.md` |
-| Zone tiers (a harder setting per land, tiers I-V, opened by its second boss) | `shared/tiers.js` (`zoneTierK`, `landAt`), `server/tiers.js`, `game/economy/tiers.js`. The tier is per player and a monster exists once: always go through `monK(m,p)` (`damageMonsterS`, `hurtP`, `rewardKill`); test `node tools/tiers-smoke.js` → `docs/areas/tiers.md` |
+| Zone tiers (a harder setting per land, tiers I-V, opened by its second boss) | `shared/tiers.js` (`zoneTierK`, `landAt`), `server/tiers.js`, `game/economy/tiers.js`. The tier is per player and a monster exists once: always go through `monK(m,p)` (`damageMonsterS`, `hurtP`, `rewardKill`); a boss above level 60 creeps stronger (`BOSS_CREEP_*` in `defAt`); test `node tools/tiers-smoke.js`, balance yardstick `node tools/boss-duel.js` → `docs/areas/tiers.md` |
 | Tools (pickaxe, axe, sickle: slots `eq.pick`, `eq.axe`, `eq.sickle`) | `TOOL_*` in `shared/items.js`; `equipP` / `buyP` / `sanitizeGear`; `BODY_SLOTS` in `game/economy/inventory.js` → `docs/areas/professions.md` |
 | Crafting (weapons from ore, armour from logs) and brewing (potions from herbs) | `shared/crafting.js`, `server/crafting.js` (`craftP`, `brewP`), `game/economy/crafting.js`, `21-crafting.css` → `docs/areas/professions.md` |
 | Potions (drinking, buffs, the belt, keys Z / X / C) | `drinkP` (`server/crafting.js`), `game/ui/potions.js`; counts in `gear.pot` → `docs/areas/professions.md` |
@@ -196,7 +196,7 @@ node tools/hoarfrost-smoke.js    # 37 checks: the Hoarfrost Reach, ~5 s
 node tools/dungeons-smoke.js     # 97 checks: the pure setup: tiles of every theme, boss hall vs arenas, layouts, grid, flow field, party table, the three dungeons and bosses, offer, entrances, reward rules, ~3 s
 node tools/party-smoke.js        # 22 checks: invites, /invite, the cap, lead, kick, leave, expiry, ~2 s
 node tools/dungeon-runs-smoke.js # 81 checks: runs isolated from the world and each other, walls, party health, loot for all, down / revive / lost, a Purge won with the save and the clear's piece, ~10 s
-node tools/dungeon-boss-smoke.js # 36 checks: the three dungeon bosses in a real hall, ~5 s
+node tools/dungeon-boss-smoke.js # 37 checks: the three dungeon bosses in a real hall (and Haugbui's thrall cap), ~5 s
 node tools/dungeon-missions-smoke.js # 112 checks: the seven mission kits won and lost, HUD, chests, hazards, ~15 s
 node tools/rewards-smoke.js      # 67 checks: level-30 gear, defence soft cap and the worst-case stack, the ring and the soul, the Tempering Stone, temper, merge, saves, ~5 s
 node tools/rewards-client-smoke.js     # 23 checks: ring slot, Temper tab (runs dist/: build first)
@@ -204,7 +204,8 @@ node tools/entrances-client-smoke.js   # 30 checks: the three doors' client dres
 node tools/dungeon-board-client-smoke.js # 37 checks: the Delve board and the join prompt (runs dist/)
 node tools/dungeon-client-smoke.js     # 44 checks: a run's client: view, walls, camera, party frame, HUD, results (runs dist/)
 node tools/entrance-map.js       # draws docs/dungeon-entrances.png (the three doors on the real terrain); regenerates byte-identically
-node tools/tiers-smoke.js        # 41 checks: zone tiers I-V and what a kill pays, ~2 s
+node tools/tiers-smoke.js        # 45 checks: zone tiers I-V, what a kill pays, the boss creep above level 60, ~2 s
+node tools/boss-duel.js --check  # 7 checks: a maxed level-60 hero vs the level-80 bosses (standing loses, avoiding half wins), ~10 s; without --check a table (--boss --tier --class --avoid)
 node tools/levels-smoke.js       # 11 checks: the XP curve, the soft cap from level 50, saves and the testing tool, a kill never pays for more than 10 levels above you, ~2 s
 node tools/professions-smoke.js  # 73 checks: tools, nodes, gathering, crafting, brewing, potions, ~8 s
 node tools/skills-smoke.js       # 58 checks: elements, soul, drops, upgrades, passives, boss skills, ~15 s
@@ -262,6 +263,7 @@ The universal ones are here. An area's own pitfalls are in its guide (`docs/area
   tiles (64 x 128 cells) culled beyond the fog in both directions, and plant chunks more than 320 m away are only grown when you come closer.
 - Rarity stat multipliers 1 / 1.3 / 1.7 / 2.2 / 3; 3 identical → next rarity at Greta's forge.
 - Shop: unlimited, +20% of base per copy bought, reset at sunrise (server day wraps).
+- Bosses above level 60 creep: +1.25% health and +5% damage a level over 60 (x1.25 / x2 at 80); a maxed level-60 hero standing in melee with potions loses to the level-80 bosses, one that avoids half the damage wins in 1.5-3 minutes (`tools/boss-duel.js`).
 - Quests: 4 notices, level −4…+2 weighted to yours; hunts 10-20 (L1) → 30-50 (L15), bounties 1.5×.
 - Slots: skill at level 3, burst at 10; prices 180/650, bursts 2000/4000, mage basics 250/900.
 - Day 20 min; rain 5-7 min every 40-60 min, 30% storms.

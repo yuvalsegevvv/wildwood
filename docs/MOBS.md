@@ -13,11 +13,11 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 |---|---|
 | Every monster kind (one row each: id, name, level, element, model, scale, look flags `pal`, tuning `hpK` / `dmgPct` / `count` / `zone`) | `MON_DEFS` src/shared/monster-defs.js:14 |
 | Family defaults a row inherits (health toughness `hpK`, damage share `dmgPct`, attack interval `atk`, `speed`, `rad`, `height`, `aggro`, `per`: camp size - 2) | `FAM` src/shared/monster-defs.js:2 |
-| How HP, damage and XP are made from the level (also used by zone tiers and by anything that wants a monster at another level) | `defAt` src/shared/monster-defs.js:85, `prepDef` src/shared/monster-defs.js:91 |
+| How HP, damage and XP are made from the level (also used by zone tiers and by anything that wants a monster at another level) | `defAt` src/shared/monster-defs.js:91, `prepDef` src/shared/monster-defs.js:97 |
 | The level formulas (expected player damage / health, armour cut, XP, coins) | `expDmg` / `expHP` / `xpFor` / `coinsFor` src/shared/balance.js:33-56 |
-| The six bosses, their move set (`kit`), arena, summons (`add`), props, boss-bar texts | `BOSS_DEFS` src/shared/monster-defs.js:139 |
-| The grey-veined monsters of the main quest | `GREY_DEFS` src/shared/monster-defs.js:153 |
-| Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:156 |
+| The six bosses, their move set (`kit`), arena, summons (`add`), props, boss-bar texts | `BOSS_DEFS` src/shared/monster-defs.js:145 |
+| The grey-veined monsters of the main quest | `GREY_DEFS` src/shared/monster-defs.js:159 |
+| Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:162 |
 | How many of each kind exist, and where their camps are (a zone holds 40 of the level-1 kind down to 20 of level 15; the vale and the Reach 12 of each; `count` overrides) | `MON_COUNT` src/server/monsters.js:18, `initMonstersS` src/server/monsters.js:19 |
 | Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King's beach | `ZONES` src/shared/zones.js:10, src/shared/vale.js:108, src/shared/hoarfrost.js:84, src/shared/beach.js:21 |
 | Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:46 |
@@ -26,7 +26,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:29, `monK` src/server/tiers.js:13 |
 | Boss fights: engagement, phases, reset / one move set per boss / the move primitives | `BOSSES` src/server/boss.js:11 / `BOSS_KITS` src/server/boss-fx.js:16 / src/server/boss-fx.js |
 | The boss notices on the quest board | `BOSS_QUESTS` src/shared/quests.js:31 |
-| The dungeon bosses and their helpers (made on demand in a run's round hall, not in `BOSS_DEFS`) | `DG_BOSSES` src/shared/dungeons/bosses.js:17, `DG_BOSS_DEFS` (same file), move sets src/server/dungeons/boss-kits.js:42 |
+| The dungeon bosses and their helpers (made on demand in a run's round hall, not in `BOSS_DEFS`) | `DG_BOSSES` src/shared/dungeons/bosses.js:17, `DG_BOSS_DEFS` (same file), move sets src/server/dungeons/boss-kits.js:43 |
 | Which kinds a dungeon uses (`mobs.walkers`, `mobs.guardians`: ids of `MON_DEFS`), its land, entrance zone, boss and level | `defineDungeonTheme` src/shared/dungeons.js:126, one file per theme in src/shared/dungeons/themes/ |
 | How a run spawns a monster at its level with the party's health (elites, no respawn) | `dgSpawnS` src/server/dungeons/mobs.js:34, `dgKOf` src/server/dungeons/mobs.js:15, `dgParty` src/shared/dungeons.js:330 |
 | How each model looks (client) | see section 13 |
@@ -36,7 +36,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 Let L be the monster's level and `f(L) = L + (13/12)^L`.
 
 - **HP** = round(expDmg(L) × (4 + 0.45 L) × hpK × highMult(L)): the hits a same-level, normally geared player needs, times how tough the kind is. `highMult` is 1.5 from level 10 up. A boss or prop has a fixed hit count instead (`d.hits`: 70 for a boss, 9 for a prop). `expDmg(L) = 3 f(L) + TIER_ATK[tierFor(L)]`.
-- **Dmg** (per hit, before the player's armour) = round(expHP(L) × dmgPct / (1 − expRed(L))): a share of a same-level player's health. A boss uses 16%. `expHP(L) = 20 f(L) + setHP(tierFor(L))`. Armour then cuts damage by `def / (def + 60)`, soft-capped above 60% (defense 90) toward 90% (`defRed`, src/shared/balance.js).
+- **Dmg** (per hit, before the player's armour) = round(expHP(L) × dmgPct / (1 − expRed(L))): a share of a same-level player's health. A boss uses 16% (and creeps stronger above level 60: section 8). `expHP(L) = 20 f(L) + setHP(tierFor(L))`. Armour then cuts damage by `def / (def + 60)`, soft-capped above 60% (defense 90) toward 90% (`defRed`, src/shared/balance.js).
 - **XP** = xpFor(L) = f(L) × 1.15^(L−5) × highMult (a boss ×25, a prop 0; above level 60 the pay keeps its level-60 rate and doubles every 10 levels, `PAY_LV` in src/shared/balance.js, so zone tiers IV and V stay sane). **Coins** per kill = round(f(L) × U(1.5, 2.5) × 1.1^(L−5) × highMult); the tables show the mean (boss ×20).
 - **A kill never pays for more than 10 levels above you** (`xpLeadK`, `XP_LEAD` in src/shared/balance.js): the XP is that of a monster of level min(its level, yours + 10), so a zone tier or a dungeon difficulty that makes a monster stronger than that pays no more XP (coins and drops go on rising). **Level 50 is a soft cap**: every level from 50 on costs ×1.5 the one before (`expToNext`, `LV_SOFT_GROWTH`).
 - **Hits** in the tables is HP / expDmg(L): how many hits of a same-level, normally geared player it takes.
@@ -136,16 +136,16 @@ Two kinds per level, 12 of each, in nine zones.
 
 ## 8. Bosses (6)
 
-Health is 70 hits of a same-level player (×1.5 from level 10); a hit is 16% of that player's health. Each boss has its own move set on top of the shared melee and the phases at 60% and 30% (`server/boss.js`).
+Health is 70 hits of a same-level player (×1.5 from level 10); a hit is 16% of that player's health. Above level 60 (zone tiers IV and V, dungeons +IV and +V) a boss creeps: +1.25% health and +5% damage for every level over 60 (`BOSS_CREEP_*`, `defAt`). Each boss has its own move set on top of the shared melee and the phases at 60% and 30% (`server/boss.js`).
 
 | Id | Name | Lv | El | HP | Dmg | Atk s | Spd | XP | Coins | Material | Arena | Summons | Prop | Music | Move set | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `boss` | The Rootwarden | 15 | dark | 10497 | 227 | 2.6 | 1.9 | 2779.6 | 2860 | Rootwarden Heart | The Stone Circle | Thornling | Heartwood Totem | boss15 | `roots` src/server/boss-kits-home.js:10 | src/shared/monster-defs.js:102 |
-| `carapax` | Carapax, the Tide King | 20 | water | 15212 | 396 | 2.5 | 2 | 7615.5 | 6260 | Tide King's Claw | The Tide King's Beach | Tide Hatchling | — | boss15 | `tide` src/server/boss-kits-home.js:58 | src/shared/monster-defs.js:109 |
-| `akaoni` | Akaoni, the Gate Demon | 20 | fire | 15212 | 396 | 2.4 | 2.1 | 7615.5 | 6260 | Gate Demon Horn | Demon Gate | Oni Imp | — | boss20 | `oni` src/server/boss-kits-vale.js:26 | src/shared/monster-defs.js:114 |
-| `kyuubi` | Kyuubi, the Nine-Tailed | 25 | light | 20705 | 656 | 2.2 | 2.6 | 19883.5 | 13080 | Kyuubi Tail | Foxfire Shrine | Fox Spirit | — | boss25 | `kitsune` src/server/boss-kits-vale.js:68 | src/shared/monster-defs.js:119 |
-| `ymrik` | Ymrik, the Rimeking | 26 | water | 21214 | 667 | 2.4 | 2.1 | 24006.9 | 15100 | Rimeking's Crown | The Rimeking's Hall | Frost Thrall | — | boss26 | `rime` src/server/boss-kits-north.js:27 | src/shared/monster-defs.js:125 |
-| `vetrmaw` | Vetrmaw, the Frost Wyrm | 30 | water | 23427 | 718 | 2.2 | 2.5 | 50658.9 | 26680 | Wyrm Scale | The Wyrm's Nest | Wyrmling | Warm Core | boss30 | `wyrm` src/server/boss-kits-north.js:85 | src/shared/monster-defs.js:130 |
+| `boss` | The Rootwarden | 15 | dark | 10497 | 227 | 2.6 | 1.9 | 2779.6 | 2860 | Rootwarden Heart | The Stone Circle | Thornling | Heartwood Totem | boss15 | `roots` src/server/boss-kits-home.js:10 | src/shared/monster-defs.js:108 |
+| `carapax` | Carapax, the Tide King | 20 | water | 15212 | 396 | 2.5 | 2 | 7615.5 | 6260 | Tide King's Claw | The Tide King's Beach | Tide Hatchling | — | boss15 | `tide` src/server/boss-kits-home.js:58 | src/shared/monster-defs.js:115 |
+| `akaoni` | Akaoni, the Gate Demon | 20 | fire | 15212 | 396 | 2.4 | 2.1 | 7615.5 | 6260 | Gate Demon Horn | Demon Gate | Oni Imp | — | boss20 | `oni` src/server/boss-kits-vale.js:26 | src/shared/monster-defs.js:120 |
+| `kyuubi` | Kyuubi, the Nine-Tailed | 25 | light | 20705 | 656 | 2.2 | 2.6 | 19883.5 | 13080 | Kyuubi Tail | Foxfire Shrine | Fox Spirit | — | boss25 | `kitsune` src/server/boss-kits-vale.js:68 | src/shared/monster-defs.js:125 |
+| `ymrik` | Ymrik, the Rimeking | 26 | water | 21214 | 667 | 2.4 | 2.1 | 24006.9 | 15100 | Rimeking's Crown | The Rimeking's Hall | Frost Thrall | — | boss26 | `rime` src/server/boss-kits-north.js:27 | src/shared/monster-defs.js:131 |
+| `vetrmaw` | Vetrmaw, the Frost Wyrm | 30 | water | 23427 | 718 | 2.2 | 2.5 | 50658.9 | 26680 | Wyrm Scale | The Wyrm's Nest | Wyrmling | Warm Core | boss30 | `wyrm` src/server/boss-kits-north.js:85 | src/shared/monster-defs.js:136 |
 
 Boss quest notices (`BOSS_QUESTS`, src/shared/quests.js:31): The Rootwarden from level 13; Carapax, the Tide King from level 17; Akaoni, the Gate Demon from level 18; Kyuubi, the Nine-Tailed from level 23; Ymrik, the Rimeking from level 25; Vetrmaw, the Frost Wyrm from level 29.
 
@@ -198,14 +198,14 @@ Summoned by a boss kit or placed by it; not in `MON_DEFS`, so no camps, no quest
 
 | Id | Name | Lv | El | HP | Dmg | Atk s | Spd | Aggro | XP | Role | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `thornling` | Thornling | 14 | dark | 716 | 60 | 1.8 | 2.4 | 30 m | 90.1 | summoned by The Rootwarden | src/shared/monster-defs.js:105 |
-| `totem` | Heartwood Totem | 15 | dark | 1350 | — | — | — | — | — | shield-phase totem of The Rootwarden | src/shared/monster-defs.js:104 |
-| `crabhatch` | Tide Hatchling | 19 | water | 1307 | 112 | 1.5 | 3.2 | 30 m | 250.2 | summoned by Carapax | src/shared/monster-defs.js:111 |
-| `oniimp` | Oni Imp | 19 | fire | 1307 | 112 | 1.5 | 3.2 | 30 m | 250.2 | summoned by Akaoni | src/shared/monster-defs.js:116 |
-| `foxkit` | Fox Spirit | 24 | light | 2164 | 189 | 1.4 | 4 | 30 m | 658.1 | summoned by Kyuubi | src/shared/monster-defs.js:121 |
-| `frostthrall` | Frost Thrall | 25 | water | 2706 | 287 | 1.5 | 3.2 | 30 m | 795.3 | summoned by Ymrik | src/shared/monster-defs.js:127 |
-| `wyrmling` | Wyrmling | 29 | water | 3339 | 308 | 1.6 | 3.6 | 30 m | 1682.7 | summoned by Vetrmaw | src/shared/monster-defs.js:133 |
-| `warmcore` | Warm Core | 30 | water | 3012 | — | — | — | — | — | shelter prop of Vetrmaw | src/shared/monster-defs.js:132 |
+| `thornling` | Thornling | 14 | dark | 716 | 60 | 1.8 | 2.4 | 30 m | 90.1 | summoned by The Rootwarden | src/shared/monster-defs.js:111 |
+| `totem` | Heartwood Totem | 15 | dark | 1350 | — | — | — | — | — | shield-phase totem of The Rootwarden | src/shared/monster-defs.js:110 |
+| `crabhatch` | Tide Hatchling | 19 | water | 1307 | 112 | 1.5 | 3.2 | 30 m | 250.2 | summoned by Carapax | src/shared/monster-defs.js:117 |
+| `oniimp` | Oni Imp | 19 | fire | 1307 | 112 | 1.5 | 3.2 | 30 m | 250.2 | summoned by Akaoni | src/shared/monster-defs.js:122 |
+| `foxkit` | Fox Spirit | 24 | light | 2164 | 189 | 1.4 | 4 | 30 m | 658.1 | summoned by Kyuubi | src/shared/monster-defs.js:127 |
+| `frostthrall` | Frost Thrall | 25 | water | 2706 | 287 | 1.5 | 3.2 | 30 m | 795.3 | summoned by Ymrik | src/shared/monster-defs.js:133 |
+| `wyrmling` | Wyrmling | 29 | water | 3339 | 308 | 1.6 | 3.6 | 30 m | 1682.7 | summoned by Vetrmaw | src/shared/monster-defs.js:139 |
+| `warmcore` | Warm Core | 30 | water | 3012 | — | — | — | — | — | shelter prop of Vetrmaw | src/shared/monster-defs.js:138 |
 
 ## 10. Grey-veined monsters (main quest)
 
@@ -213,8 +213,8 @@ Tougher copies of a zone's kind (`greyDef`, tripled XP). Not in `MON_DEFS`: the 
 
 | Id | Name | Lv | El | HP | Hits | Dmg | Atk s | Spd | Aggro | XP | Coins | Count | Zone | Drop | Model | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `greybog` | Grey-veined Bog Slime | 7 | water | 711 | 18.6 | 22 | 1.6 | 2.2 | 18 m | 35 | 21 | on demand | The Bog | — | slime ×1.9 | src/shared/monster-defs.js:154 |
-| `greyfox` | Grey Kitsune | 18 | fire | 4459 | 39.9 | 155 | 1.5 | 3.8 | 18 m | 615 | 230 | on demand | Inari Hills | — | fox ×1.15 | src/shared/monster-defs.js:155 |
+| `greybog` | Grey-veined Bog Slime | 7 | water | 711 | 18.6 | 22 | 1.6 | 2.2 | 18 m | 35 | 21 | on demand | The Bog | — | slime ×1.9 | src/shared/monster-defs.js:160 |
+| `greyfox` | Grey Kitsune | 18 | fire | 4459 | 39.9 | 155 | 1.5 | 3.8 | 18 m | 615 | 230 | on demand | Inari Hills | — | fox ×1.15 | src/shared/monster-defs.js:161 |
 
 ## 11. Dungeons: bosses, their helpers and the mob pools
 
@@ -224,9 +224,9 @@ A dungeon (`src/shared/dungeons/themes/<id>.js`) is built from the world's own m
 
 | Id | Name | Lv | El | HP | Dmg | Atk s | Spd | XP | Coins | Dungeon | Clear pays | Summons | Prop | Music | Move set | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `amanita` | Amanita, the Sporemother | 30 | earth | 23427 | 718 | 2.6 | 1.7 | 50658.9 | 26680 | The Hollow Roots | a level-30 weapon | Sporeling | Puffball | boss15 | `spore` src/server/dungeons/boss-kits.js:42 | src/shared/dungeons/bosses.js:18 |
-| `gawataro` | Gawataro, the Jade Elder | 30 | water | 23427 | 718 | 2.3 | 2.4 | 50658.9 | 26680 | Jade Spring Grottoes | a level-30 armour piece | Kappa Whelp | — | boss20 | `dish` src/server/dungeons/boss-kits.js:88 | src/shared/dungeons/bosses.js:31 |
-| `haugbui` | Haugbui, the Barrow Lord | 30 | dark | 23427 | 718 | 2 | 2.6 | 50658.9 | 26680 | Bonefrost Barrow | a level-30 ring | Grave Wisp | Barrow Lamp | boss26 | `barrow` src/server/dungeons/boss-kits.js:151 | src/shared/dungeons/bosses.js:44 |
+| `amanita` | Amanita, the Sporemother | 30 | earth | 23427 | 718 | 2.6 | 1.7 | 50658.9 | 26680 | The Hollow Roots | a level-30 weapon | Sporeling | Puffball | boss15 | `spore` src/server/dungeons/boss-kits.js:43 | src/shared/dungeons/bosses.js:18 |
+| `gawataro` | Gawataro, the Jade Elder | 30 | water | 23427 | 718 | 2.3 | 2.4 | 50658.9 | 26680 | Jade Spring Grottoes | a level-30 armour piece | Kappa Whelp | — | boss20 | `dish` src/server/dungeons/boss-kits.js:89 | src/shared/dungeons/bosses.js:31 |
+| `haugbui` | Haugbui, the Barrow Lord | 30 | dark | 23427 | 718 | 2 | 2.6 | 50658.9 | 26680 | Bonefrost Barrow | a level-30 ring | Grave Wisp | Barrow Lamp | boss26 | `barrow` src/server/dungeons/boss-kits.js:153 | src/shared/dungeons/bosses.js:44 |
 
 ### 11.2 Dungeon boss helpers (summons and props)
 

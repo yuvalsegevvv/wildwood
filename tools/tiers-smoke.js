@@ -6,7 +6,7 @@ const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev.map(e=>[pid,...e])); }},
   ['MONS','BOSSES','BOSS_DEFS','MON_DEFS','DEF_BY_ID','VIL','VIL2','VIL3','S','damageMonsterS','killMonsterS','rewardKill','hurtP','monK','recalcP','sanitizeGear','newGearFor',
-   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV']);
+   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
@@ -42,6 +42,20 @@ ok('with every land at tier V (fifteen points) the symbol is +150%',near(x.symbo
     ok('a tier V Vetrmaw (level 80) pays '+Math.round(a.xp/1e6)+' million XP, not the 915 million the old curve gave, and its tier multiplier is 4x tier III\'s',near(a.xp,4*b.xp,1e-9)&&a.xp<1e8&&near(k.xp,4*k3.xp,1e-6),'x'+k.xp.toFixed(0)+' vs x'+k3.xp.toFixed(0));
     ok('the pay still rises with every tier (V > IV > III > II > I > 0), for a boss and for a level-1 slime',[x.DEF_BY_ID.vetrmaw,x.DEF_BY_ID.slime].every(m=>[0,1,2,3,4,5].map(t=>x.zoneTierK(m,t).xp).every((v,i,r)=>i===0||v>r[i-1])));
   } finally { Math.random=real; } }
+
+// ---- bosses above level 60 creep (the lever that keeps tier V and +V bosses from being walked over by a maxed level-60 hero) ----
+{ const boss={hits:70,boss:true}, mob={hpK:1,dmgPct:0.1}, rd=L=>1-x.expRed(L);
+  const bossHp=(L,c)=>Math.round(x.expDmg(L)*70*x.highMult(L)*(1+x.BOSS_CREEP_HP*c)), bossDmg=(L,c)=>Math.round(x.expHP(L)*0.16/rd(L)*(1+x.BOSS_CREEP_DMG*c));
+  const flat=[1,15,30,45,60].every(L=>{ const a=x.defAt(boss,L); return a.hp===bossHp(L,0)&&a.dmg===bossDmg(L,0); });
+  ok('up to level '+x.BOSS_CREEP_LV+' a boss is exactly "70 hits, 16%" (every boss at zone tiers up to III, the dungeons up to +III, are untouched)',flat&&x.BOSS_CREEP_LV===60&&x.bossCreep(boss,60)===0&&x.bossCreep(boss,30)===0);
+  const a70=x.defAt(boss,70), a80=x.defAt(boss,80);
+  ok('above it a boss gets +'+x.BOSS_CREEP_HP*100+'% health and +'+x.BOSS_CREEP_DMG*100+'% damage for every level (70: x1.125 / x1.5, 80: x1.25 / x2)',
+    a70.hp===bossHp(70,10)&&a70.dmg===bossDmg(70,10)&&a80.hp===bossHp(80,20)&&a80.dmg===bossDmg(80,20)&&x.BOSS_CREEP_HP===0.0125&&x.BOSS_CREEP_DMG===0.05&&x.bossCreep(boss,80)===20);
+  const m80=x.defAt(mob,80), m60=x.defAt(mob,60);
+  ok('an ordinary monster of level 80 has no creep (its damage is the plain share of a level-80 player\'s health)',x.bossCreep(mob,80)===0&&m80.dmg===Math.round(x.expHP(80)*0.1/rd(80))&&m60.dmg===Math.round(x.expHP(60)*0.1/rd(60)));
+  const v=x.DEF_BY_ID.vetrmaw, k5=x.zoneTierK(v,5), k4=x.zoneTierK(v,4), k3=x.zoneTierK(v,3), b30=x.defAt(v,30);
+  ok('Vetrmaw at tier V (level 80) is '+k5.hp.toFixed(2)+'x health and '+k5.dmg.toFixed(2)+'x damage of his level-30 self, through the creep: tier IV (level 70) is gentler, tier III (level 60) has none',
+    near(k5.hp,x.defAt(v,80).hp/b30.hp,1e-9)&&near(k5.dmg,x.defAt(v,80).dmg/b30.dmg,1e-9)&&k5.dmg/k4.dmg>1.3&&near(k3.dmg,x.defAt(v,60).dmg/b30.dmg,1e-9)&&near(k3.hp,bossHp(60,0)/b30.hp,1e-9),'IV x'+k4.hp.toFixed(2)+' / x'+k4.dmg.toFixed(2)); }
 
 // ---- saves ----
 { const g=x.sanitizeGear({zt:{home:{on:9,max:9},vale:{on:5,max:1},hoar:'x',extra:{on:1,max:1}}},'warrior');

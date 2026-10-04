@@ -10,7 +10,7 @@ const fs=require('fs'), path=require('path'), {loadServer,SRC,strip}=require('./
 const evs=[];   // the events of the snapshots sent to player a (every player in the world is sent the same events: one copy)
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...JSON.parse(JSON.stringify(m.ev))); }},
   ['MONS','BOSSES','BOSS_KITS','DG_BOSS_DEFS','DG_BOSSES','DG_BOSS_NEEDS','DG_HALL_PILLARS','DG_HALL_MOUTHS','DG_HALL_LAMPS','dgVentAt','dgHallArena','dgLayout','dgBake','makeBossS','resetBossS',
-   'getH','S','damageMonsterS','arenaDist','vDist','VR','defAt','ZONE_HIT']);
+   'getH','S','damageMonsterS','arenaDist','vDist','VR','defAt','ZONE_HIT','DG_THRALL_MAX']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.maxHp=1e7; p.hp=1e7; p.dead=false; } } };   // (a player who dies would reset the fight)
 W.join('a',{name:'Tanker',look:{cls:'warrior'},save:{level:30}}); W.join('b',{name:'Runner',look:{cls:'archer'},save:{level:30}});
@@ -151,6 +151,12 @@ const hurtsIn=(fn,n)=>{ const got={a:0,b:0}; evs.length=0; for(let i=0;i<n;i++){
   tick(1);
   ok('haugbui: when the last lamp goes out he vanishes and cannot be hit (mode 2: the client darkens the hall), and two lamps relit end it early with a 4 s stun',black&&B.mode===0&&!m.immune&&B.stunT>0&&B.k.unmoored===1&&x.DG_BOSS_DEFS.haugbui.gloom===2,'stun '+B.stunT.toFixed(1));
   if(black&&B.k.unmoored===1){ seen.add('stun'); seen.add('gloom'); }
+  // the thrall cap: waves and blackouts add Grave Wisps only up to DG_THRALL_MAX alive (at +V a hero cannot kill them, so without a cap they only piled up)
+  const alive=()=>B.adds.filter(a=>a.def===B.bd.add&&!a.dead&&!a.remove).length;
+  for(const l of L()) l.lit=true; hold(B); B.busy=0; B.mv=null; B.k.black=null; B.mode=0; m.immune=false; B.stunT=0; let most=0;
+  for(let i=0;i<14;i++){ B.k.thrallT=0; B.busy=0; B.mv=null; place(B.A,[3,0],[-3,0]); tick(2); most=Math.max(most,alive()); }
+  ok('haugbui: his waves stop at '+x.DG_THRALL_MAX+' thralls alive (more rise as they fall)',x.DG_THRALL_MAX===8&&most===8&&alive()===8,'most alive '+most);
+  for(const a of B.adds) if(a.def===B.bd.add) a.remove=true;
   away(); }
 
 // ---- every move of each boss's design happened, and each has moves no other boss has ----
