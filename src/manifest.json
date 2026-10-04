@@ -120,6 +120,7 @@
     "village/buildings-vale.js",
     "village/buildings-hoar.js",
     "village/buildings-grey.js",
+    "village/buildings-greyfall.js",
     "village/buildings-beach.js",
     "village/buildings-dungeon.js",
     "village/villagers.js",

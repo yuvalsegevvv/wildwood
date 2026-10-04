@@ -43,14 +43,14 @@ function greyColor(x,z,h,g,out){
   out.lerp(COL.snow,smoothstep(128-(z<-860?10:0)+n1*18,142-(z<-860?10:0)+n1*18,h)*(1-smoothstep(0.85,1.4,g)));
   { const d=Math.hypot(x-GREY_HM.x,z-GREY_HM.z); if(d<GREY_HM.r+4) out.lerp(COL.gravel,smoothstep(GREY_HM.r+4,GREY_HM.r-6,d)*0.65); }
   { const wd=waterSurf(x,z)-h; if(wd>-0.9) out.lerp(wd>0.3?COL.mud:COL.gravel,smoothstep(-0.9,0.5,wd)*0.85); }   // wet banks and the beds of the tarns and the river
-  { const e=smoothstep(HALF-46,HALF-4,x); if(e>0){ hoarColor(x,z,h,g,_gc); out.lerp(_gc,e*0.7); } }   // the Hoarfrost's snow over the east crest
+  { const bx=borderX(z), e=smoothstep(bx-46,bx-4,x); if(e>0){ hoarColor(x,z,h,g,_gc); out.lerp(_gc,e*0.7); } }   // the Hoarfrost's snow over the east crest
   return out.multiplyScalar(0.92+n2*0.16);
 }
 const _hc=new THREE.Color(), _gc=new THREE.Color();
 function terrainColor(x,z,h,g,out,noCut){   // noCut: colour as if the tunnel's cutting were not there (its lid)
-  const hf=x>HALF+2?smoothstep(HZ0+8,HZ0-56,z):0;   // the vale's north crest, over which the ground turns to the Hoarfrost's
+  const bx=borderX(z), bz=borderZ(x), hf=x>bx+2?smoothstep(bz+8,bz-56,z):0;   // the vale's north crest, over which the ground turns to the Hoarfrost's
   if(hf>=1) return dgEntTint(x,z,hoarColor(x,z,h,g,out));   // dungeons: the Barrow Door's patch of trodden snow
-  const gf=x<HALF?smoothstep(HZ0+8,HZ0-56,z):0;   // the home forest's north crest, over which the ground turns to the Greyspine's
+  const gf=x<bx?smoothstep(bz+8,bz-56,z):0;   // the home forest's north crest, over which the ground turns to the Greyspine's
   if(gf>=1) return dgEntTint(x,z,greyColor(x,z,h,g,out));   // dungeons: the Old Adit's patch of coal dust
   const n1=noise2(x*0.02,z*0.02)*0.5+0.5, n2=noise2(x*0.11+5,z*0.11)*0.5+0.5;
   out.copy(COL.lush).lerp(COL.dry, smoothstep(0.45,0.85,n1)*0.8);
@@ -61,18 +61,18 @@ function terrainColor(x,z,h,g,out,noCut){   // noCut: colour as if the tunnel's 
   { const c=coastDist(x,z); if(c<50) out.lerp(COL.beach, smoothstep(46,32,c)*(1-smoothstep(3.2,5.5,h))); }
   out.lerp(COL.rock, smoothstep(0.7,1.2,g));
   // the Sunwall (home forest, west): red cliffs, a sandy plateau on top, dry scree at its foot, no snow
-  const cl=x<HALF?sunwallLine(z):0, sw=x<HALF?smoothstep(cl+20,cl,x-WX0):0;
-  if(x<HALF&&x-WX0<cl+70){
+  const cl=x<bx?sunwallLine(z):0, sw=x<bx?smoothstep(cl+20,cl,x-WX0):0;
+  if(x<bx&&x-WX0<cl+70){
     out.lerp(COL.dirt2, smoothstep(cl+68,cl+12,x-WX0)*0.35*(1-smoothstep(0.7,1.1,g)));
     out.lerp(COL.redRock, Math.max(sw*smoothstep(0.45,0.9,g), smoothstep(14,9,Math.abs(z-REDGATE_Z))*smoothstep(REDGATE_CL+48,REDGATE_CL+28,x-WX0)*0.85));
     out.lerp(COL.desert, sw*(1-smoothstep(0.35,0.6,g))*smoothstep(40,48,h));
   }
   out.lerp(COL.rockHi, smoothstep(26,36,h)*0.7*(1-sw));
   // snow: lower on the vale's northern slopes, and it clings to steeper ground there (the Hoarfrost is beyond them)
-  { const hn=x>HALF&&z-HZ0<80, lo=hn?34:42; out.lerp(COL.snow, smoothstep(lo,lo+10,h)*(1-(hn?smoothstep(1.4,2.0,g):smoothstep(0.9,1.4,g)))*(1-sw)); }
+  { const hn=x>bx&&z-bz<80, lo=hn?34:42; out.lerp(COL.snow, smoothstep(lo,lo+10,h)*(1-(hn?smoothstep(1.4,2.0,g):smoothstep(0.9,1.4,g)))*(1-sw)); }
   { const da=arenaDist(x,z); if(da<ARENA.r+3) out.lerp(COL.arena,smoothstep(ARENA.r+3,ARENA.r-3,da)*0.7); }
-  if(x>HALF-10){   // the vale: fresher green, the forest floor dusted pink with fallen petals
-    const v=smoothstep(HALF-10,HALF+30,x)*(1-smoothstep(0.7,1.2,g))*(1-smoothstep(24,34,h));
+  if(x>bx-30){   // the vale: fresher green, the forest floor dusted pink with fallen petals (it thins out over the mountains between the lands, so there is no line to see)
+    const v=smoothstep(bx-30,bx+70,x)*(1-smoothstep(0.7,1.2,g))*(1-smoothstep(24,34,h));
     out.lerp(COL.valeLush,v*0.45*(1-smoothstep(0.45,0.85,n1)));
     out.lerp(COL.petal,v*smoothstep(0.35,0.8,forestDensity(x,z))*0.45);
   }

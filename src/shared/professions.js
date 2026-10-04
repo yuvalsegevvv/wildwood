@@ -48,13 +48,15 @@ const NODE_PLAN=[[22,'frostbloom',6],[22,'snowmoss',4],[22,'frostpine',4],[22,'r
   [25,'rimeore',4],[25,'frostpine',3],[25,'snowmoss',3],
   [26,'rimeore',3],[26,'frostpine',2],[26,'snowmoss',2],[27,'rimeore',3],[27,'frostpine',2],[27,'snowmoss',2],
   [28,'rimeore',3],[28,'frostpine',2],[28,'snowmoss',2],[29,'rimeore',3],[29,'frostpine',2],[29,'snowmoss',2],[30,'rimeore',3],[30,'frostpine',2],[30,'snowmoss',2]];
+// the four dungeon doors (shared/dungeons.js loads after this file: tools/dungeons-smoke.js checks these stay equal to DG_ENTRANCES): no node within 22 m of one
+const NODE_KEEPOUT=[[244,148],[826,82],[688,-950],[316,-692]];
 const NODES=(()=>{
   const out=[];
   const flat=(x,z)=>Math.abs(rawHeight(x+3,z)-rawHeight(x-3,z))<=2.2&&Math.abs(rawHeight(x,z+3)-rawHeight(x,z-3))<=2.2;
   const apart=(x,z)=>!out.some(o=>Math.hypot(o.x-x,o.z-z)<9);
   const put=(rng,zn,kind,good,need)=>{ for(let t=0;t<80;t++){
     const [x,z]=zonePoint(zn,rng()-0.5,rng());
-    if(zoneAt(x,z)!==zn||!good(x,z)||nearRoad(x,z,5)||vDist(x,z)<VR+14||arenaDist(x,z)<34||zoneRidge(x,z)>0.6||!flat(x,z)||!apart(x,z)) continue;
+    if(zoneAt(x,z)!==zn||!good(x,z)||nearRoad(x,z,5)||vDist(x,z)<VR+14||arenaDist(x,z)<34||zoneRidge(x,z)>0.6||NODE_KEEPOUT.some(d=>Math.hypot(d[0]-x,d[1]-z)<22)||!flat(x,z)||!apart(x,z)) continue;
     out.push({i:out.length,kind,x,z,zone:zn.key,need:need===undefined?tierFor(zn.level):need}); return; } };
   // the Hoarfrost Reach (first, so its nodes keep their numbers)
   { const rng=mulberry32(5150);

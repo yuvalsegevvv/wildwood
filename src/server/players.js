@@ -119,7 +119,7 @@ function openGateP(p,id){ if(p.gear[id]>=1) return; p.gear[id]=1; p.dirty=true; 
 function reachRimeholdP(p){ if(p.gear.north!==1||Math.hypot(p.x-VIL3.x,p.z-VIL3.z)>VIL3.r+14) return; p.gear.north=2; p.dirty=true; ev('north',p.id,2); mqActP(p,'rimehold');
   toastTo(p.id,'Welcome to Rimehold! Its teleport circle is attuned to you now: the circles will take you between all three villages.','good'); }
 // where you wake after being knocked out: the village of the land you are in, once you have been there
-const respawnVil=p=>p.x>HALF?(p.z<HZ0?(p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):(p.gear.east>=2?VIL2:VIL)):(p.z<HZ0?(p.gear.west>=2?VIL4:p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):VIL);
+const respawnVil=p=>inVale(p.x,p.z)?(inHoar(p.x,p.z)?(p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):(p.gear.east>=2?VIL2:VIL)):(inGrey(p.x,p.z)?(p.gear.west>=2?VIL4:p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):VIL);
 function gainExpP(p,v,monId){
   if(!(v>0)) return;
   p.exp+=v; ev('xp',p.id,r1(v),monId==null?null:monId);

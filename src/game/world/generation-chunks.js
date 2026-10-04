@@ -58,7 +58,7 @@ function* genChunk(ci){
     const alt=smoothstep(6,24,h)+noise2(x*0.03,z*0.03)*0.25;
     let type;
     if(hoar) type=rand()<0.5+0.42*fringe?'frostspruce':rand()<0.62?'dwarfbirch':'snag';
-    else if(inVale(x)){   // bamboo groves where the noise says so, pines up the hills, cherries everywhere else, a few maples
+    else if(inVale(x,z)){   // bamboo groves where the noise says so, pines up the hills, cherries everywhere else, a few maples
       const grove=noise2(x*0.02-60,z*0.02+14);
       if(grove>0.42 && h<22) type='bamboo';
       else if(rand()<alt*0.7) type='pine';
@@ -100,7 +100,7 @@ function* genChunk(ci){
     if(inGrey(x,z)&&h>greyTreeline(x,z)-12 || inGlen(x,z,2) || greyWet(x,z,-1)) continue;
     const fd=forestDensity(x,z);
     if(rand()>clamp(1-Math.abs(fd-0.55)*2)+0.08) continue;
-    const s=R(0.6,1.5), vale=inVale(x), bloom=!hoar&&rand()<(vale?0.35:0.1);   // the vale's azaleas
+    const s=R(0.6,1.5), vale=inVale(x,z), bloom=!hoar&&rand()<(vale?0.35:0.1);   // the vale's azaleas
     bushItems[n%2].push({x,z,m:mtx(x,h-0.1,z,rand()*TAU,s*R(0.9,1.2),s*R(0.7,1.1),s*R(0.9,1.2)),c:tint(pick(hoar?PAL.frostBush:bloom?(vale?PAL.azalea:PAL.shrubBloom):PAL.bush))});
     n++;
   }
@@ -156,7 +156,7 @@ function* genChunk(ci){
     const [x,z]=pt(6), h=getH(x,z);
     if(h<0.8 || grad(x,z)>0.6 || forestDensity(x,z)>0.5 || vDist(x,z)<VR+1 || inTunnelCut(x,z) || bareGround(x,z) || inHoar(x,z) || (inGrey(x,z)&&h>greyTreeline(x,z)-6) || greyWet(x,z,-0.5)) continue;
     if(noise2(x*0.04+11,z*0.04-3)<0.15) continue;
-    const FL=inVale(x)?PAL.valeFlowers:PAL.flowers;
+    const FL=inVale(x,z)?PAL.valeFlowers:PAL.flowers;
     const idx=rand()<0.8?Math.floor((noise2(x*0.02-50,z*0.02+50)*0.5+0.5)*FL.length)%FL.length:Math.floor(rand()*FL.length);
     const s=R(0.7,1.35), m=mtx(x,h-0.02,z,rand()*TAU,s,s,s);
     stemItems.push({x,z,m}); headItems.push({x,z,m,c:tint(FL[idx],0.08)}); n++;

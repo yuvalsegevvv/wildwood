@@ -125,8 +125,8 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
 - **More wildlife**: only the chamois exist; marmots on the meadows, eagles or a lammergeier over the peaks, and a bird or two at the tarns are not made (animals in the Vale and the Reach are not either). The chamois themselves are plain dressing: no call or hoof sound, no sleeping at night (they graze all night),
   no use in quests or the map, nothing to hunt or drop, and they are not synced (every player sees their own herds, `CHAM_HERDS` is 2 in lite mode and 3 otherwise, 3-5 goats each, the numbers are guesses); they stay on slopes 88-205 m high and keep away from Highmark, the two boss arenas and the glacier valley, so the valley floors have none; the model (about 700 triangles) was checked in the model preview but not
   measured on a phone; and they are not drawn in a dungeon run (the Blackseam is under Highmark Pastures, a different place).
-- **Dressing of the village and the land**: Highmark has no palisade, no rope bridges on the troughs' flanks and no shrines (the doc's dressing); no waterfalls (the tarns, river and fjord are
-  surfaces without falls, foam or sound beyond the shared water); no **wonder** (a floating rock, `WORLD.md` rule 9) and no mine entrance.
+- **Dressing of the village and the land**: Highmark has no palisade, no rope bridges on the troughs' flanks and no shrines (the doc's dressing); no waterfalls in the Greyspine itself (the tarns, river and fjord are
+  surfaces without falls, foam or sound beyond the shared water; the one waterfall of the world, the Greyfall, is on the home forest's rim: `docs/areas/regions.md`); no **wonder** (a floating rock, `WORLD.md` rule 9) and no mine entrance.
 - **The monsters' mechanics**: the 14 kinds are new models (the gryphon family, crystals, the troll) but share the ordinary AI; no kind uses terrain (rock fall from cliffs, wind gusts), and the
   bosses' moves and numbers are first guesses, **not balance-tested by play** (the Queen's swoop and the Golem's quake are telegraphed on purpose).
 - **The far lands**: the placeholder mountains beyond the north and west edges still use `farHeight` ('grey' region, `game/world/far-lands.js`): its edge vertices take the real
@@ -135,6 +135,21 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
 - **Balance of the ground**: 26% of the inner country is steeper than 0.95 (the home forest 9%, the Reach 13%); that is how the mountains read, and camps keep to ground under 0.55
   (54% of the inner country). If the zones turn out cramped, widen the troughs (`in` / `out` in `GREY_VALLEYS`) first.
 - **Performance was not measured on a phone** with the Greyspine's extra meshes (Highmark, the nest, the cavern, the water surfaces, the rock falls); the terrain tiles are the same.
+
+## 3c. The borders between the lands, the Greyfall River and the Greyfall (`shared/terrain.js`; guide `docs/areas/regions.md`)
+
+**Built** (test `node tools/greyfall-smoke.js`, and `client-smoke`): the four lands' borders are curves that wander instead of the rectangle's straight sides (`borderX(z)`, `borderZ(x)`, pinned straight at the tunnel, the glacier valley, Frostgate Pass and the junction), the
+mountain range between lands varies (broad massifs and necks, a ramp or a steep wall, foothills running out into the land); **the Vale Wall south of the junction is a river** (the Greyfall River, 32-60 m wide, a mountain spur only where the tunnel crosses it), born at **the Greyfall**, a
+waterfall of about 125 m off the home forest's north rim (a tarn on the rim, a slot cut through the crest, a plunge pool, a streaked sheet with foam, spray and a roar); every rule that asked "which land" asks both coordinates now.
+
+**Not built**:
+
+- **Only the tunnel crosses the river.** No bridge, ford, ferry or boat (it is deeper than a hiker may wade); the story still says the Vale Wall is a mountain in places (`docs/STORY.md`, `docs/MAIN-QUEST.md` say "the tunnel through the border mountains": still true at the spur). The river just ends on both sides of the spur: **no sink and no spring are drawn** where it goes under.
+- **The river has no life of its own**: no sound (only the Greyfall's roar, from 420 m), no fish, reeds, stepping stones or banks dressed differently from the meadow, no mist over the pool; the sheet is a texture on a ribbon (no foam at the lip, no inflow stream above the tarn, no rainbow), and nothing measured its cost on a phone (a ribbon of 38 rows, 150 spray points on a desktop, 90 / 50 on low / lite).
+- **Other kinds of natural barrier**: the two north walls and the Greyspine | Reach wall are still mountain ranges (only their profile varies); cliff bands, gorges, lakes or another river are not built.
+- **How far the lines bend is my numbers** (`borderX` / `borderZ`: the river up to 215 m west into the home forest, the north wall 90 m south, the Reach's wall 110 m north, the Greyspine's 55 m east): limited by where zones, camps, Highmark and the Sink stand. Moving that content would allow more; the strip the river gives the vale (up to 215 m wide, west of x = 440) has trees but no zone and no monsters.
+- **Things that still assume the rectangle**: the continent's overview map `docs/world-map.svg` (drawn by `docs/world-map.py`), the far-lands placeholders (`game/world/far-lands.js`) and a few sizes in the map's crops (`LANDS`, widened by hand) were not redrawn; the dungeon entrances' map `docs/dungeon-entrances.png` is drawn from the real terrain and was regenerated.
+- **The sub-zones' own borders** (the Greyspine's seven zones are still nearest-seed cells with a small warp; they cut across the valleys as straight-ish lines, and the zone map shows it): not reworked, that was not what was asked. A terrain-following version (a walking-cost partition, borders on ridges and at necks) and gentler slopes in the Greyspine (26% of the inner country is steeper than 0.95) are the next candidates.
 
 ## 4. Music (done)
 

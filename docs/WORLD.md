@@ -50,7 +50,7 @@ owner's yes.
    Greyspine peaks), the tropics in the south (the isles). The savanna sits between the desert and the tropics because rain grows southward.
 2. **The Greyspine is the backbone.** A young, high range along the north coast, from the Stormhorn in the west to the Hoarfrost plateau
    in the east. A lower spur runs south from it between Wildwood and the Sakura Vale: **the Vale Wall** (the game's border mountains, the
-   tunnel the Rootwarden opens). Snow stays on every peak above the snowline; the snowline is lower the farther north you are.
+   tunnel the Rootwarden opens), which ends in a waterfall (**the Greyfall**, off the Greyspine's high rim above Wildwood's north-east): below it the Wall is **the Greyfall River**, a wide meandering river to the Crownsea, with one mountain spur left where the tunnel crosses. Snow stays on every peak above the snowline; the snowline is lower the farther north you are.
 3. **The Hoarfrost Reach is a plateau, not a range.** Where the Greyspine meets the north-east it widens into a high, flat, ice-covered
    tableland with rounded domes and slow glaciers. Its glaciers melt south into the Sakura Vale: that is why the Vale's rivers and
    waterfalls (Jade Falls) are cold, clear and full all year.
@@ -289,9 +289,10 @@ storyline). What it means for the geography:
   `game/world/terrain-color.js`; names on the world map in `edgeName`, `game/ui/map.js`):
   - Wildwood: north the Greyspine's snowy foothills; west **the Sunwall**, red cliffs up to a sandy plateau (52 m), with **Redgate
     Canyon** cut through it at z = 40 and choked by a rock fall; south the **Crownsea shore** (a ~20 m beach, the river runs into the sea);
-    east the Vale Wall with the tunnel.
-  - The Sakura Vale: west the Vale Wall, north the snowy climb towards the Hoarfrost, south and east the Crownsea shore.
+    east the Greyfall River (the Vale Wall, with the tunnel through its one spur).
+  - The Sakura Vale: west the Greyfall River (and the spur), north the snowy climb towards the Hoarfrost, south and east the Crownsea shore.
   - On the shore you can wade in to the knees and no further (`worldBounds` in `game/player/movement.js`).
+  - **None of the four lands' borders is a straight line** (`borderX(z)`, `borderZ(x)` in `shared/terrain.js`; `docs/areas/regions.md`): the Vale Wall's river meanders up to 215 m west into Wildwood, the north walls bend 90-110 m, the mountain range between lands has broad massifs and necks, and the gates (the tunnel, Frostgate Pass, the glacier valley) and the junction of the four lands are pinned where they were.
   - No edge is a straight line: the shore has bays up to ~28 m deep (the vale's south-east corner is rounded), the Sunwall's cliff
     wanders +-22 m (`sunwallLine`), the northern rims start rising up to 40 m early (`rimWobble`), and the world map fades each land
     out along a wavy line (`mapEdgeAlpha`), so neither land looks like a rectangle.

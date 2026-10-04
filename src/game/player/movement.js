@@ -56,17 +56,18 @@ function worldBounds(o,ox,rad,oz){
     glenWall(o,ox,oz,rad);   // the Vale Wall, with the glacier valley the one way across it in the north
   }
   o.z=clamp(o.z,WZ0+14,WZ1-14); if(o.x<WX0+14) o.x=WX0+14;
-  if(o.x<HALF){ greyWall(o,oz); for(const G of GREY_GATES) if(!gateOpen(G)&&o.z<HZ0&&Math.abs(o.z-G.z)<40&&ox>=G.x&&o.x<G.x+0.8) o.x=G.x+0.8; }   // (the rock falls in the Greyspine's west wall)
+  if(o.x<borderX(o.z)){ greyWall(o,oz); for(const G of GREY_GATES) if(!gateOpen(G)&&o.z<borderZ(o.x)&&Math.abs(o.z-G.z)<40&&ox>=G.x&&o.x<G.x+0.8) o.x=G.x+0.8; }   // (the rock falls in the Greyspine's west wall)
   else frostWall(o,ox,oz,rad);
   if(oz!==undefined && coastDist(o.x,o.z)<34){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }
+  if(oz!==undefined && riverK(o.z)>0.15){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }   // the border river (shared/terrain.js): wade to the knees, no deeper, so the water is a wall too
 }
-/* The vale's north wall (its crest is at z = HZ0) is climbable up to 14 m short of the crest from either side; the only way through is Frostgate
+/* The vale's north wall (its crest line is z = borderZ(x), HZ0 at the pass) is climbable up to 14 m short of the crest from either side; the only way through is Frostgate
    Pass, and its ice wall stays shut until Akaoni falls (GEAR.north >= 1). In the pass you are kept between its walls near the crest. */
 function frostWall(o,ox,oz,rad){
   if(oz===undefined) oz=o.z;
-  const inC=Math.abs(o.x-PASS.x)<PASS.w-rad+0.2;
-  if(Math.abs(o.z-HZ0)<14){
-    if(!inC){ if(Math.abs(oz-HZ0)<14) o.x=clamp(o.x,PASS.x-PASS.w+rad,PASS.x+PASS.w-rad); else o.z=oz>=HZ0?HZ0+14:HZ0-14; }
+  const inC=Math.abs(o.x-PASS.x)<PASS.w-rad+0.2, bz=borderZ(o.x);
+  if(Math.abs(o.z-bz)<14){
+    if(!inC){ if(Math.abs(oz-bz)<14) o.x=clamp(o.x,PASS.x-PASS.w+rad,PASS.x+PASS.w-rad); else o.z=oz>=bz?bz+14:bz-14; }
   }
   if(!northOpen() && inC && oz>=PASS.ice && o.z<PASS.ice+0.8) o.z=PASS.ice+0.8;   // the ice wall
 }
@@ -74,14 +75,15 @@ function frostWall(o,ox,oz,rad){
    Greyspine. Inside the cut you are kept between its walls near the crest, and an ice fall across it (x = GLEN.ice) stays shut until Ymrik falls (GEAR.west >= 1). */
 function glenWall(o,ox,oz,rad){
   const cw=GLEN.w-rad, inNow=Math.abs(o.z-GLEN.z)<cw+0.2, was=oz!==undefined&&Math.abs(oz-GLEN.z)<cw+0.2;
-  if(o.z<HZ0&&Math.abs(o.x-HALF)<14&&(inNow||was)) o.z=clamp(o.z,GLEN.z-cw,GLEN.z+cw);   // inside the cut near the crest: between its walls
-  else if(o.x<HALF) o.x=Math.min(o.x,HALF-14); else o.x=clamp(o.x,HALF+14,WX1-14);      // anywhere else the Vale Wall holds
-  if(!westOpen()&&o.z<HZ0&&ox>HALF&&o.x<GLEN.ice+0.8) o.x=GLEN.ice+0.8;                 // the ice fall (it shuts the Reach's whole west edge, so you cannot climb round it)
+  const bx=borderX(o.z);   // (the crest line wanders; it is straight at the cut)
+  if(o.z<borderZ(o.x)&&Math.abs(o.x-bx)<14&&(inNow||was)) o.z=clamp(o.z,GLEN.z-cw,GLEN.z+cw);   // inside the cut near the crest: between its walls
+  else if(o.x<bx) o.x=Math.min(o.x,bx-14); else o.x=clamp(o.x,bx+14,WX1-14);      // anywhere else the Vale Wall holds
+  if(!westOpen()&&o.z<borderZ(o.x)&&ox>borderX(oz===undefined?o.z:oz)&&o.x<GLEN.ice+0.8) o.x=GLEN.ice+0.8;                 // the ice fall (it shuts the Reach's whole west edge, so you cannot climb round it)
 }
 /* The home forest's north rim (its crest is at z = HZ0) walls it off from the Greyspine beyond it (shared/greyspine.js): climbable up to 14 m short of
    the crest from either side and no further. The side you are on is the one you were on before the move (oz), so a teleport into the Greyspine stays
    there. There is no way over the rim: the Greyspine is reached through the Hoarfrost Reach's west wall, a gate that is not built yet. */
-function greyWall(o,oz){ if((oz===undefined?o.z:oz)<HZ0) o.z=Math.min(o.z,HZ0-14); else o.z=Math.max(o.z,HZ0+14); }
+function greyWall(o,oz){ const bz=borderZ(o.x); if((oz===undefined?o.z:oz)<bz) o.z=Math.min(o.z,bz-14); else o.z=Math.max(o.z,bz+14); }
 const inTunnelBore=(x,z)=>x>TUN.p0-1&&x<TUN.p1+1&&Math.abs(z-TUN.z)<TUN.w+0.5;
 function updateCamera(dt){
   if(customizing){ editorCamera(dt); return; }

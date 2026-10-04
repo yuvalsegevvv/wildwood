@@ -74,9 +74,9 @@ function greyspineBase(x,z){
   const fine=noise2(x*0.06,z*0.06)*0.4+erodeFbm(x*0.075+9,z*0.075-4,2,0.5)*0.55; h+=fine*(0.4+0.6*vm);
   // the walls: the east one is the Hoarfrost Reach's west wall seen from the other side (its ground blended into the Reach's and the same crest on
   // top, so the two lands meet at x = HALF without a step); the north and west ones are crests of their own
-  const f2=fbm(x*0.02,z*0.02,3)*0.5+0.5, re=smoothstep(62,4,HALF-x), rn=smoothstep(62,4,z-WZ0-rimWobble(x,31)), rw=smoothstep(62,4,x-WX0-rimWobble(z,41));
+  const bx=borderX(z), dxe=Math.abs(bx-x), f2=fbm(x*0.02,z*0.02,3)*0.5+0.5, re=dxe<130?smoothstep(wallW(z,1),4,dxe):0, rn=smoothstep(62,4,z-WZ0-rimWobble(x,31)), rw=smoothstep(62,4,x-WX0-rimWobble(z,41));
   const cr=(re>0||rn>0||rw>0)?crest(x,z):0;
-  if(re>0){ h=lerp(h,hoarBase(x,z),re); h+=re*re*46+re*f2*14+re*re*re*cr*20; }
+  if(re>0){ h=lerp(h,hoarBase(x,z),re); h+=wallAdd(Math.abs(bx-x),z,1,46,14,20,f2,cr); }
   if(rn>0) h+=rn*rn*46+rn*f2*16+rn*rn*rn*cr*22;
   if(rw>0) h+=rw*rw*40+rw*f2*14+rw*rw*rw*cr*20;
   // (after the walls, so a bench and a crown stay flat)
@@ -139,7 +139,8 @@ const greyspineHeight=(x,z)=>westCarve(x,z,greyWaterCut(x,z,greyspineBase(x,z)))
 const inGate=(x,z,m)=>x<-310&&GREY_GATES.some(G=>Math.abs(z-G.z)<G.w+8+(m||0));
 // the water surface under (x, z): a tarn's level, the river's, or the sea's. greyWet: under it, by more than m (no plant grows, no camp is made)
 function waterSurf(x,z){
-  if(x<HALF&&z<HZ0){
+  if(Math.hypot(x-FALL.tx,z-FALL.tz)<FALL.tr*1.15) return FALL.tl;   // the Greyfall's tarn on the home forest's north rim (shared/terrain.js)
+  if(inGrey(x,z)){
     for(const T of GREY_TARNS) if(Math.hypot(x-T.x,z-T.z)<T.r*1.2) return T.l;
     const r=greyRiverAt(x,z); if(r.d<2.6) return r.y;
   }

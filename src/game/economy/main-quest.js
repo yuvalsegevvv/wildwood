@@ -35,7 +35,7 @@ function mqPartTarget(s,pt){
   if(pt.act==='warp'){ const V=vilAt(P.x,P.z); return V!==VIL?{x:V.tele.x,z:V.tele.z,name:'the teleport circle'}:null; }
   if(pt.act==='rimehold') return inHoar(P.x,P.z)?{x:VIL3.anchors.gate.x,z:VIL3.anchors.gate.z,name:'Rimehold'}:{x:PASS.x,z:PASS.ice+4,name:'Frostgate Pass'};
   if(pt.act==='highmark') return inGrey(P.x,P.z)?{x:VIL4.anchors.gate.x,z:VIL4.anchors.gate.z,name:'Highmark'}:{x:GLEN.x1,z:GLEN.z,name:'the glacier valley'};
-  if(pt.act==='hanami') return inVale(P.x)?{x:VIL2.anchors.gate.x,z:VIL2.anchors.gate.z,name:'Hanami'}:{x:TUN.x0,z:TUN.z,name:'the tunnel'};
+  if(pt.act==='hanami') return inVale(P.x,P.z)?{x:VIL2.anchors.gate.x,z:VIL2.anchors.gate.z,name:'Hanami'}:{x:TUN.x0,z:TUN.z,name:'the tunnel'};
   { const v=(MQ_NPC_VIL[s.from]||1)-1;   // the professions' places are in the giver's village: its lodge keeper, healer, weaponsmith or armourer
     if(pt.act==='learn'||pt.act==='tool') return npcSpot(['tamsin','isamu','gudrun'][v]);
     if(pt.act==='brew') return npcSpot(['linnea','hinata','ylva'][v]);

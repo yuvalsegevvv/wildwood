@@ -102,6 +102,7 @@ Short rows: the files that matter. A row ending in `→ docs/areas/<x>.md` has t
 | Crafting (weapons from ore, armour from logs) and brewing (potions from herbs) | `shared/crafting.js`, `server/crafting.js` (`craftP`, `brewP`), `game/economy/crafting.js`, `21-crafting.css` → `docs/areas/professions.md` |
 | Potions (drinking, buffs, the belt, keys Z / X / C) | `drinkP` (`server/crafting.js`), `game/ui/potions.js`; counts in `gear.pot` → `docs/areas/professions.md` |
 | Teleport circles and their travel window | `CIRCLES` (`shared/hoarfrost.js`), `warpP` (`server/players.js`), `game/village/talking.js`, `game/ui/travel.js` → `docs/areas/regions.md` |
+| The lands' borders (curves, not the rectangle's sides: `borderX(z)`, `borderZ(x)`, pinned at the gates), the Greyfall River (the Vale Wall south of the junction) and the Greyfall waterfall; **land tests take both coordinates**: `inVale(x,z)`, `landAt(x,z)` | `shared/terrain.js` (`borderX`, `borderZ`, `wallAdd`, `riverK`, `riverCut`, `FALL`, `fallCut`), `game/village/buildings-greyfall.js`, the clamps in `game/player/movement.js`; test `node tools/greyfall-smoke.js` → `docs/areas/regions.md` |
 | Sakura Vale: tunnel `TUN`, Hanami `VIL2`, zones, arenas, `vilAt` | `shared/vale.js`, `game/village/buildings-vale.js`, tunnel collision `worldBounds` (`movement.js`), unlock / `warpP` (`server/players.js`) → `docs/areas/regions.md` |
 | Items, rarity, prices, drop rates, merge | `shared/items.js` (`RARITY`, `RAR_MULT`, `rollMonsterRarity`, `rollBossRarity`, `shopPrice`) |
 | Item icons | `game/ui/item-icons.js` |
@@ -195,6 +196,7 @@ node tools/accounts-smoke.js     # 17 checks: register, login, tokens, unique na
 node tools/mainquest-smoke.js    # 128 checks: the main quest, acts I-IV, ~15 s
 node tools/boss-smoke.js         # 46 checks: the eight world bosses' move sets, ~2 s
 node tools/hoarfrost-smoke.js    # 37 checks: the Hoarfrost Reach, ~5 s
+node tools/greyfall-smoke.js     # 19 checks: the four lands' wandering borders and their pins, one land per point, the Greyfall River (depth, width, banks, the spur and the tunnel), the Greyfall (path, tarn, pool), ~2 s
 node tools/greyspine-smoke.js    # 50 checks: the Greyspine's ground, glacier valley and ice fall, Highmark, zones and monsters, the two bosses, water, the two rock falls, ~3 s
 node tools/pendants-smoke.js     # 44 checks: the pendants, level-30 pieces (see docs/PENDANTS.md), ~2 s
 node tools/dungeons-smoke.js     # 97 checks: the pure setup: tiles of every theme, boss hall vs arenas, layouts, grid, flow field, party table, the four dungeons and bosses, offer, entrances, reward rules, ~3 s
@@ -252,6 +254,7 @@ The universal ones are here. An area's own pitfalls are in its guide (`docs/area
 - three r128 has no `BufferGeometry.applyQuaternion` (use `applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(q))`). An exception while a monster
   model is built inside the `mons` message aborts the rest of the roster (monsters silently missing): run `client-smoke` after touching model builders.
   `paint(geo,fn)` calls `fn(x,y,z,nx,ny,nz,c)`, `pc(geo,fn)` calls `fn(x,y,z,c)` (or `fn(c)`): a `pc`-style function given to `paint` throws "c.set is not a function".
+- **A point's land needs both coordinates.** The borders between the lands wander (`borderX(z)`, `borderZ(x)`, `shared/terrain.js`): never write `x > HALF` or `z < HZ0` to mean "the vale" or "the north", ask `inVale(x,z)` / `inHoar(x,z)` / `inGrey(x,z)` / `landAt(x,z)`; a gate on a border needs a pin there first (`docs/areas/regions.md`).
 - **Every instanced mesh must have `instanceColor`.** r128 picks a material's shader program once, from whichever instanced mesh draws first, so a material shared by meshes with and without colours crashes the render loop ("Cannot read properties of null (reading 'isInterleavedBufferAttribute')") in some runs. `addInstanced` and `animMesh` add colours; a new `InstancedMesh` made any other way must too (`client-smoke` checks). Full story: `docs/areas/render.md`.
 - Where the rest is: monster models (never mirror with `scale(-1,1,1)`, `poseRig` overwrites the limbs, every `pc(...)` geometry needs normals) → `monsters-bosses.md`; zone tiers (go through `monK`) → `tiers.md`; adding a region (`WZ0` / `HZ0`, constants at load) → `regions.md`; changing the terrain moves things found by scanning (tunnel, Hanami, arenas, the village entrance) → `world.md`; skill cooldowns, the skills panel's drag and drop, fast projectiles → `skills-items.md`; rotations, character facets, a new villager's seeded rng → `character-ui.md`; the dead-server Reconnect page, the class chip, testing the Shared mode → `accounts-net.md`; the browser pane, Windows / OneDrive, flaky tests, reading events in server tests → `docs/TESTING.md`.
 
@@ -261,9 +264,10 @@ The universal ones are here. An area's own pitfalls are in its guide (`docs/area
   (`defRed` in `shared/balance.js`; with armour, passives, buffs and potions together a hit still does at least 10%, `DMG_TAKEN_MIN`; the worst case, the best set + Iron Will + the best buff and potion, is exactly that 90%, `docs/EQUIPMENT.md` section 2); ±5% per level difference (the damage you deal never falls below ×0.5, reached 10 levels above you: `LV_DMG_MIN`; the damage you take keeps growing); crits 12% ×1.7.
 - XP to next `10(L²+(7/6)^L)·K15^((L-5)/10)` up to level 25; from 25 on a level costs as many same-level kills as 25 → 26 (about 2,100: `expToNext` in `shared/balance.js`, so 26-30 are a long but bounded grind); **level 50 is a soft cap**: from 50 every level costs ×1.5 the one before (`LV_SOFT_GROWTH`; the ceiling is 99, `PLAYER_MAX_LV`); **a kill never pays for more than 10 levels above you** (`xpLeadK`); level 10-15 monsters 1.5× HP/XP/coins (`highMult`). `MAX_ZONE_LV` is 32 (quest board, sanitizing); `VALE_TOP_LV` (25) caps the level of the drops skill upgrades ask for; gear stays at tier 5 for levels 25-30.
 - Drops: monsters 2% common, 0.5% rare, 0.1% epic; boss 50/10/3/1/0.1% (common…legendary).
-- World: the home forest is -HALF..HALF; the whole world is `WX0..WX1` x `WZ0..WZ1` (the vale is x > HALF, 550 m wide; the Hoarfrost Reach is x > HALF
-  and z < `HZ0` = -440, down to `WZ0` = -1040: `inHoar(x,z)`; north of the home forest is unwalkable mountains). Use those bounds (not ±HALF) for clamps
-  (the home forest's north edge is `HZ0`, not `WZ0`). The heightmap is rectangular (`NVX` x `NVZ`), the terrain is drawn in
+- World: the home forest is about -HALF..HALF; the whole world is `WX0..WX1` x `WZ0..WZ1` (the vale is east of the Vale Wall's line `x > borderX(z)`, about x > HALF, 550 m wide, with a river
+  for a border that bulges up to 215 m west of it; the Hoarfrost Reach is `inHoar(x,z)`: east of that line and north of the north wall's line `z < borderZ(x)`, about z < `HZ0` = -440, down to `WZ0` = -1040;
+  north of the home forest is unwalkable mountains). `HALF` and `HZ0` are the lines' mean and the junction, not the borders: ask the border functions. Use `WX0..WX1` / `WZ0..WZ1` for clamps
+  (the home forest's north edge is `borderZ(x)`, not `WZ0`). The heightmap is rectangular (`NVX` x `NVZ`), the terrain is drawn in
   tiles (64 x 128 cells) culled beyond the fog in both directions, and plant chunks more than 320 m away are only grown when you come closer.
 - Rarity stat multipliers 1 / 1.3 / 1.7 / 2.2 / 3; 3 identical → next rarity at Greta's forge.
 - Shop: unlimited, +20% of base per copy bought, reset at sunrise (server day wraps).

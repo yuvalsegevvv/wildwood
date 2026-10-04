@@ -10,7 +10,7 @@
    (the portals), where the mountain stands more than 7.5 m above the floor. w: half the floor's width. */
 function findTunnel(){
   const x0=HALF-66, x1=HALF+66; let best=null;
-  for(let z=-150;z<=-30;z+=5){
+  for(let z=-125;z<=-75;z+=5){   // (the border is straight here: borderX is pinned at the tunnel)
     const a=baseHeight(x0-8,z), b=baseHeight(x1+8,z);
     const score=Math.abs(a-b)*0.6+Math.abs(z-ARENA.z)*0.05+(a<3?30:0)+(b<3?30:0)+(a>24?20:0)+(b>24?20:0)+(riverDist(x0-20,z)<30?40:0);
     if(!best||score<best.score) best={z,score,h0:Math.max(3,a),h1:Math.max(3,b)};
@@ -55,7 +55,7 @@ VIL2.name='Hanami'; VIL.name='the village';
 // on (or m metres from) any village's teleport circle
 function nearTele(x,z,m){ const V=vilAt(x,z); return Math.hypot(x-V.tele.x,z-V.tele.z)<V.tele.r+m; }
 // the village whose land a point is in (every "near the village" test uses this one): the home forest, the vale, the Hoarfrost Reach
-function vilAt(x,z){ return x>HALF?(z<HZ0?VIL3:VIL2):(z<HZ0?VIL4:VIL); }
+function vilAt(x,z){ return x>borderX(z)?(z<borderZ(x)?VIL3:VIL2):(z<borderZ(x)?VIL4:VIL); }
 
 /* ---- zones: seeds on a rough 3 x 4 grid east of Hanami. key null = Hanami's meadows (no monsters) */
 const VALE_ZONE_NAMES={16:'Petal Meadow',17:'Kodama Wood',18:'Inari Hills',19:'Bamboo Sea',20:'Ghostlight Marsh',21:'Oni Crags',22:'Jade Falls',23:'Tengu Peaks',24:'Warlord Ruins',25:'Thunder Grove',boss25:'Foxfire Shrine'};
@@ -72,12 +72,15 @@ function valeSeeds(x,z){
   return [a,b];
 }
 function valeZoneAt(x,z){
-  if(Math.min(x-HALF,WX1-x,z-HZ0,WZ1-z)<40) return null;   // the border mountains
+  if(Math.min(x-borderX(z),WX1-x,z-borderZ(x),WZ1-z)<40) return null;   // the border mountains
   for(const A of ARENAS) if(A.zone&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;
-  const [wx,wz]=valeWarp(x,z), s=valeSeeds(wx,wz)[0]; return s.key===null?null:ZONES.find(zn=>zn.vale&&zn.key===s.key);
+  const [wx,wz]=valeWarp(x,z), s=valeSeeds(wx,wz)[0];
+  // (the border river and the north wall bulge, so the vale has ground far from any seed: no zone there, 190 m is as far as a cell reaches)
+  if(s.key===null||Math.hypot(wx-s.x,wz-s.z)>190) return null;
+  return ZONES.find(zn=>zn.vale&&zn.key===s.key);
 }
 function valeRidge(x,z){
-  const e=Math.min(x-HALF,WX1-x,z-HZ0,WZ1-z); if(e<30) return 0;
+  const e=Math.min(x-borderX(z),WX1-x,z-borderZ(x),WZ1-z); if(e<30) return 0;
   const [wx,wz]=valeWarp(x,z), [a,b]=valeSeeds(wx,wz), ux=b.x-a.x, uz=b.z-a.z, L=Math.hypot(ux,uz);
   const da=Math.hypot(wx-a.x,wz-a.z), dbb=Math.hypot(wx-b.x,wz-b.z), d=(dbb*dbb-da*da)/(2*L);   // distance to the wall between a and b
   if(d>=10) return 0;
@@ -92,7 +95,7 @@ function flatSpot(cx,cz,span){
   let best=null;
   for(let dx=-span;dx<=span;dx+=10) for(let dz=-span;dz<=span;dz+=10){
     const x=cx+dx, z=cz+dz;
-    if(Math.min(x-HALF,WX1-x,z-WZ0,WZ1-z)<75||(x>HALF&&Math.abs(z-HZ0)<75)) continue;
+    if(Math.min(x-borderX(z),WX1-x,z-WZ0,WZ1-z)<75||(x>borderX(z)&&Math.abs(z-borderZ(x))<75)) continue;
     if(LAKES.some(L=>Math.hypot(x-L.x,z-L.z)<L.r+25)) continue;
     let mn=1e9,mx=-1e9,sum=0,c=0;
     for(let rr=0;rr<=22;rr+=11) for(let j=0;j<8;j++){ const b=j/8*TAU, h=baseHeight(x+Math.sin(b)*rr,z+Math.cos(b)*rr); mn=Math.min(mn,h); mx=Math.max(mx,h); sum+=h; c++; }

@@ -31,15 +31,15 @@ function edgeZoneAt(x,z){
   for(const A of ARENAS) if(A.beach&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;   // the Tide King's beach (shared/beach.js)
   const c=coastDist(x,z); if(c<74) return c>20?EDGE_ZONES[0]:null;
   const w=x-WX0-sunwallLine(z); if(w<62) return w>8?EDGE_ZONES[1]:null;
-  if(z-HZ0-rimWobble(x,11)<100) return EDGE_ZONES[2];
-  if(HALF-x<58) return null;
+  if(z-borderZ(x)-rimWobble(x,11)<100) return EDGE_ZONES[2];
+  if(borderX(z)-x<lerp(wallW(z,1),56,riverK(z))) return null;   // the Vale Wall's body, or the river and its bank
   return undefined;
 }
 // the monster kind's zone: its own (edge kinds) or the zone of its level
 function defZone(d){ const k=d.zone||d.level; return ZONES.find(zn=>zn.key===k); }
 function zoneAt(x,z){
   if(inGrey(x,z)) return greyZoneAt(x,z);
-  if(inVale(x)) return inHoar(x,z)?hoarZoneAt(x,z):valeZoneAt(x,z);
+  if(inVale(x,z)) return inHoar(x,z)?hoarZoneAt(x,z):valeZoneAt(x,z);
   const ez=edgeZoneAt(x,z); if(ez!==undefined) return ez;
   const dx=x-VIL.x, dz=z-VIL.z, r=Math.hypot(dx,dz);
   if(r<RINGS[0]) return null;
@@ -57,13 +57,13 @@ function zonePoint(zn,fa,fr,full){
   if(zn.vale||zn.arena){ const a=fa*TAU, r=Math.abs(fr-0.5)*2*zn.R; return [zn.x+Math.sin(a)*r,zn.z+Math.cos(a)*r]; }
   if(zn.edge==='shore') return [lerp(-410,410,fa+0.5), WZ1-lerp(30,78,fr)];
   if(zn.edge==='west'){ const z=lerp(-400,400,fa+0.5); return [WX0+sunwallLine(z)+lerp(12,60,fr), z]; }
-  if(zn.edge==='north'){ const x=lerp(-330,420,fa+0.5); return [x, HZ0+rimWobble(x,11)+lerp(30,98,fr)]; }
+  if(zn.edge==='north'){ const x=lerp(-330,420,fa+0.5); return [x, borderZ(x)+rimWobble(x,11)+lerp(30,98,fr)]; }
   const a=zn.center+fa*zn.w, r1=full&&zn.ring===2&&!zn.boss?Math.max(zn.r1,ringReach(a)):zn.r1, r=zn.r0+fr*(r1-zn.r0);
   return [VIL.x+Math.sin(a)*r,VIL.z+Math.cos(a)*r];
 }
 function zoneRidge(x,z){
   if(inGrey(x,z)) return 0;
-  if(inVale(x)) return inHoar(x,z)?hoarRidge(x,z):valeRidge(x,z);
+  if(inVale(x,z)) return inHoar(x,z)?hoarRidge(x,z):valeRidge(x,z);
   // the walls wander: their radius and angle are pushed by slow noise (+-5 m), so they are not perfect arcs and spokes (the passes move with them)
   const dx=x-VIL.x, dz=z-VIL.z, r=Math.hypot(dx,dz)+noise2(x*0.022+4,z*0.022-9)*5;
   if(r<RINGS[0]-2||r>RINGS[3]-4) return 0;

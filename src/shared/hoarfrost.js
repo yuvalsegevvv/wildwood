@@ -11,6 +11,8 @@
    carved into the heightmap (passCarve, called by rawHeight); the ice wall stands across it at PASS.ice. w: half the floor's
    width. z0: where the cutting starts in the vale (south), z1: where it reaches the plateau. */
 const PASS={x:636,w:5,z0:HZ0+95,z1:HZ0-90,ice:HZ0+42};
+// the z a hiker without the Reach's key (gear.north) must stay south of: the ice wall in the pass, the crest line (borderZ, shared/terrain.js) elsewhere along the vale's north wall
+const northBarZ=x=>Math.abs(x-PASS.x)<PASS.w+10?PASS.ice:borderZ(x)+8;
 PASS.h0=Math.max(3,baseHeight(PASS.x,PASS.z0)); PASS.h1=hoarBase(PASS.x,PASS.z1);
 PASS.floor=z=>lerp(PASS.h0,PASS.h1,smoothstep(PASS.z0,PASS.z1,z));
 function passCarve(x,z,h){
@@ -64,17 +66,17 @@ function hoarSeeds(x,z){
   return [a,b];
 }
 function hoarZoneAt(x,z){
-  if(Math.min(x-HALF,WX1-x,z-WZ0)<44) return null;   // the walls and the cliffs
+  if(Math.min(x-borderX(z),WX1-x,z-WZ0)<44) return null;   // the walls and the cliffs
   for(const A of ARENAS) if(A.hoar&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;
   const [wx,wz]=hoarWarp(x,z), s=hoarSeeds(wx,wz)[0]; return s.key===null?null:ZONES.find(zn=>zn.hoar&&zn.key==='h'+s.key);
 }
 function hoarRidge(x,z){
-  const e=Math.min(x-HALF,WX1-x,z-WZ0); if(e<44) return 0;
+  const e=Math.min(x-borderX(z),WX1-x,z-WZ0); if(e<44) return 0;
   const [wx,wz]=hoarWarp(x,z), [a,b]=hoarSeeds(wx,wz), ux=b.x-a.x, uz=b.z-a.z, L=Math.hypot(ux,uz);
   const da=Math.hypot(wx-a.x,wz-a.z), dbb=Math.hypot(wx-b.x,wz-b.z), d=(dbb*dbb-da*da)/(2*L);   // distance to the wall between a and b
   if(d>=9) return 0;
   const mx=(a.x+b.x)/2, mz=(a.z+b.z)/2, along=Math.abs((wx-mx)*(-uz/L)+(wz-mz)*(ux/L));   // how far along the wall from the pass
-  const h=(1-smoothstep(1.5,9,d))*smoothstep(5,12,along)*smoothstep(44,74,e)*smoothstep(HZ0-70,HZ0-110,z)*smoothstep(4,12,iceDist(x,z));   // (none across the frozen lakes)
+  const h=(1-smoothstep(1.5,9,d))*smoothstep(5,12,along)*smoothstep(44,74,e)*smoothstep(borderZ(x)-70,borderZ(x)-110,z)*smoothstep(4,12,iceDist(x,z));   // (none across the frozen lakes)
   return h<=0?0:h*RIDGE_H*(0.75+0.5*(noise2(x*0.035+7,z*0.035-3)*0.5+0.5));
 }
 

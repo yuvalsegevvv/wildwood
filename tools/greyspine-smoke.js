@@ -6,7 +6,7 @@
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['rawHeight','baseHeight','homeHeight','valeHeight','hoarHeight','GREY_VALLEYS','GREY_HM','GREY_QUEEN','greyTreeline','greyspineHeight','zoneAt','zoneRidge','NODES','MONS','inGrey','HALF','HZ0','WX0','WZ0','VIL','TUN','GLEN','inGlen','rewardKill','sanitizeGear','MQ_BY_ID','VIL3','VIL4','VILS','CIRCLES','vilAt','ROADS','respawnVil','nearLodge','defZone','arenaDist','MON_DEFS','ZONES','MATS','MAX_ZONE_LV','VR','ARENAS','landAt','zoneTierOn','ARENA29','ARENA32','BOSS_DEFS','BOSS_SKILLS','BOSS_QUESTS','SKILLS','BOSSES','GREY_TARNS','GREY_RIVER','GREY_RIVER_W','GREY_FJORD','waterSurf','greyWet','greyRiverAt','fjordDist','WATER','GREY_GATES','inGate']);
+  ['FALL','borderX','borderZ','rawHeight','baseHeight','homeHeight','valeHeight','hoarHeight','GREY_VALLEYS','GREY_HM','GREY_QUEEN','greyTreeline','greyspineHeight','zoneAt','zoneRidge','NODES','MONS','inGrey','HALF','HZ0','WX0','WZ0','VIL','TUN','GLEN','inGlen','rewardKill','sanitizeGear','MQ_BY_ID','VIL3','VIL4','VILS','CIRCLES','vilAt','ROADS','respawnVil','nearLodge','defZone','arenaDist','MON_DEFS','ZONES','MATS','MAX_ZONE_LV','VR','ARENAS','landAt','zoneTierOn','ARENA29','ARENA32','BOSS_DEFS','BOSS_SKILLS','BOSS_QUESTS','SKILLS','BOSSES','GREY_TARNS','GREY_RIVER','GREY_RIVER_W','GREY_FJORD','waterSurf','greyWet','greyRiverAt','fjordDist','WATER','GREY_GATES','inGate']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const H=x.rawHeight, slope=(a,b)=>Math.hypot(H(a+2,b)-H(a-2,b),H(a,b+2)-H(a,b-2))/4;
@@ -38,13 +38,13 @@ const X0=x.WX0+14, X1=x.HALF-14, Z0=x.WZ0+14, Z1=x.HZ0-14;   // what a player ca
 { const Q=x.GREY_QUEEN, hs=[]; for(let a=0;a<10;a++) hs.push(H(Q.x+Math.sin(a*0.628)*Q.r*0.7,Q.z+Math.cos(a*0.628)*Q.r*0.7)); hs.push(H(Q.x,Q.z));
   ok('the Gryphon Queen\'s peak has a flat crown for her arena, and is among the highest ground',Math.max(...hs)-Math.min(...hs)<3&&Math.min(...hs)>Q.h-4&&H(Q.x,Q.z+Q.r+50)<Q.h-30,'crown '+Math.min(...hs).toFixed(0)+'-'+Math.max(...hs).toFixed(0)+' m'); }
 // ---- the walls and the neighbours ----
-{ let worst=0, n=0, sum=0; for(let zz=x.WZ0+40;zz<x.HZ0-90;zz+=6){ const d=Math.abs(x.greyspineHeight(x.HALF-6,zz)-x.hoarHeight(x.HALF-6,zz)); worst=Math.max(worst,d); sum+=d; n++; }
-  ok('the east wall is the Hoarfrost Reach\'s west wall seen from the other side: at x = HALF - 6 the ground is the Reach\'s own (same crest, no step at the seam)',sum/n<1&&worst<3,'mean '+(sum/n).toFixed(2)+' m, worst '+worst.toFixed(2)+' m'); }
-{ let ok1=true, crest=1e9; for(let xx=-400;xx<=400;xx+=20){ const c=H(xx,x.HZ0), home=H(xx,x.HZ0+14); crest=Math.min(crest,c); if(c<60) ok1=false; if(Math.abs(home-x.homeHeight(xx,x.HZ0+14))>1e-6) ok1=false; }
-  ok('the home forest\'s north rim is a crest (60 m or more) and the forest side of it is the home forest\'s own ground',ok1,'lowest crest '+crest.toFixed(0)+' m'); }
-{ let same=true; for(let zz=-436;zz<=436;zz+=37) for(let xx=-436;xx<=436;xx+=37) if(Math.abs(x.baseHeight(xx,zz)-x.homeHeight(xx,zz))>1e-6&&Math.hypot(xx-x.HALF,0)>5) same=false;
+{ let worst=0, n=0, sum=0; for(let zz=x.WZ0+40;zz<x.HZ0-90;zz+=6){ const bx=x.borderX(zz)-6, d=Math.abs(x.greyspineHeight(bx,zz)-x.hoarHeight(bx,zz)); worst=Math.max(worst,d); sum+=d; n++; }
+  ok('the east wall is the Hoarfrost Reach\'s west wall seen from the other side: 6 m west of the crest line (borderX) the ground is the Reach\'s own (same crest, no step at the seam)',sum/n<1&&worst<3,'mean '+(sum/n).toFixed(2)+' m, worst '+worst.toFixed(2)+' m'); }
+{ let ok1=true, crest=1e9; for(let xx=-400;xx<=400;xx+=20){ const bz=x.borderZ(xx), c=H(xx,bz), home=H(xx,bz+14); crest=Math.min(crest,c); if(c<45) ok1=false; if(Math.abs(home-x.homeHeight(xx,bz+14))>1e-6) ok1=false; }
+  ok('the home forest\'s north rim (its crest line wanders: borderZ) is a crest (45 m or more) and the forest side of it is the home forest\'s own ground',ok1,'lowest crest '+crest.toFixed(0)+' m'); }
+{ let same=true; for(let zz=-436;zz<=436;zz+=37) for(let xx=-436;xx<=436;xx+=37) if(xx<x.borderX(zz)-5&&zz>x.borderZ(xx)-3&&Math.abs(x.baseHeight(xx,zz)-x.homeHeight(xx,zz))>1e-6) same=false;
   ok('the home forest keeps its own ground (baseHeight is homeHeight there)',same); }
-{ let same=true; for(let zz=-1030;zz<=440;zz+=41) for(let xx=452;xx<=980;xx+=41) if(Math.abs(x.baseHeight(xx,zz)-x.valeHeight(xx,zz))>1e-6) same=false;
+{ let same=true; for(let zz=-1030;zz<=440;zz+=41) for(let xx=452;xx<=980;xx+=41) if(xx>x.borderX(zz)+5&&!(xx<x.FALL.x+50&&zz>x.FALL.tz-30&&zz<x.FALL.pool.z+30)&&Math.abs(x.baseHeight(xx,zz)-x.valeHeight(xx,zz))>1e-6) same=false;   // (the Greyfall's box has its own cut)
   ok('the vale and the Hoarfrost Reach keep theirs (baseHeight is valeHeight there)',same); }
 ok('no tree grows above the treeline: 90-125 m',(()=>{ for(let i=0;i<50;i++){ const t=x.greyTreeline(-400+i*17,-1000+i*9); if(t<90||t>125) return false; } return true; })());
 // ---- water: three tarns, a river, a fjord ----

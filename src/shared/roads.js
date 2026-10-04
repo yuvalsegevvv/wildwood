@@ -65,7 +65,7 @@ const BRIDGE_LEN=30, BRIDGE_W=2.4, CAUSE_W=1.5;
 const BRIDGES=[];
 for(const rd of ROADS) for(let i=1;i<rd.pts.length;i++){
   const [ax,az]=rd.pts[i-1], [bx,bz]=rd.pts[i];
-  if(ax>HALF||bx>HALF) continue;
+  if(inVale(ax,az)||inVale(bx,bz)) continue;
   const sa=ax-riverX(az), sb=bx-riverX(bz); if(sa*sb>0) continue;
   const t=sa/(sa-sb), x=ax+(bx-ax)*t, z=az+(bz-az)*t, L=Math.hypot(bx-ax,bz-az), dx=(bx-ax)/L, dz=(bz-az)/L;
   const h0=Math.max(baseHeight(x-dx*BRIDGE_LEN/2,z-dz*BRIDGE_LEN/2),WATER+0.6), h1=Math.max(baseHeight(x+dx*BRIDGE_LEN/2,z+dz*BRIDGE_LEN/2),WATER+0.6);
@@ -80,7 +80,7 @@ const CAUSEWAY_NAMES={'The Redgate Road':'The Drowned Road','The Shore Road':'Th
       if(!wet(...S[i])) continue;
       let j=i; while(j+1<S.length&&(wet(...S[j+1])||wet(...S[Math.min(S.length-1,j+2)])||wet(...S[Math.min(S.length-1,j+3)]))) j++;
       const [ax,az]=S[Math.max(0,i-3)], [bx,bz]=S[Math.min(S.length-1,j+3)];
-      if(!inVale(ax)&&BRIDGES.some(B=>B.kind==='bridge'&&Math.hypot((ax+bx)/2-B.x,(az+bz)/2-B.z)<BRIDGE_LEN)){ i=j; continue; }   // the river: its bridge already spans it
+      if(!inVale(ax,az)&&BRIDGES.some(B=>B.kind==='bridge'&&Math.hypot((ax+bx)/2-B.x,(az+bz)/2-B.z)<BRIDGE_LEN)){ i=j; continue; }   // the river: its bridge already spans it
       const L=Math.hypot(bx-ax,bz-az); if(L<4||bridgeAt((ax+bx)/2,(az+bz)/2,2)){ i=j; continue; }   // (where two roads meet in the water, one walkway)
       const nm=!named.has(rd.name)&&CAUSEWAY_NAMES[rd.name]; if(nm) named.add(rd.name);
       BRIDGES.push({x:(ax+bx)/2,z:(az+bz)/2,dx:(bx-ax)/L,dz:(bz-az)/L,h0:Math.max(baseHeight(ax,az),WATER+0.5),h1:Math.max(baseHeight(bx,bz),WATER+0.5),len:L,w:CAUSE_W,kind:'causeway',road:rd.name,name:nm||'a plank causeway'});

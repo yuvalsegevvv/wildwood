@@ -18,7 +18,7 @@ for(const k of [26,27,28,29,30,31,32]){ const ss=GREY_SEEDS.filter(s=>s.key===k)
   ZONES.push({key:'g'+k,ring:3,vale:true,grey:true,x,z,R:125,name:GREY_ZONE_NAMES[k],level:k}); }
 const greyWarp=(x,z)=>[x+noise2(x*0.009+3,z*0.009-8)*26,z+noise2(x*0.009-11,z*0.009+5)*26];
 function greyZoneAt(x,z){
-  if(Math.min(x-WX0,z-WZ0,HZ0-z,HALF-x)<44) return null;   // the walls
+  if(Math.min(x-WX0,z-WZ0,borderZ(x)-z,borderX(z)-x)<44) return null;   // the walls
   for(const A of ARENAS) if(A.grey&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;
   const [wx,wz]=greyWarp(x,z); let best=null, bd=1e18;
   for(const s of GREY_SEEDS){ const d=(wx-s.x)*(wx-s.x)+(wz-s.z)*(wz-s.z); if(d<bd){ bd=d; best=s; } }
@@ -28,7 +28,7 @@ function greyZoneAt(x,z){
 function greyFlat(cx,cz,span){
   let best=null;
   for(let dx=-span;dx<=span;dx+=10) for(let dz=-span;dz<=span;dz+=10){
-    const x=cx+dx, z=cz+dz; if(Math.min(x-WX0,z-WZ0,HZ0-z,HALF-x)<75) continue;
+    const x=cx+dx, z=cz+dz; if(Math.min(x-WX0,z-WZ0,borderZ(x)-z,borderX(z)-x)<75) continue;
     let mn=1e9,mx=-1e9,sum=0,c=0;
     for(let rr=0;rr<=22;rr+=11) for(let j=0;j<8;j++){ const b=j/8*TAU, h=baseHeight(x+Math.sin(b)*rr,z+Math.cos(b)*rr); mn=Math.min(mn,h); mx=Math.max(mx,h); sum+=h; c++; }
     const score=mx-mn+Math.hypot(dx,dz)*0.05; if(!best||score<best.score) best={x,z,h:sum/c,score};

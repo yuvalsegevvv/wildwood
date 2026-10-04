@@ -8,7 +8,7 @@ const petMat=new THREE.PointsMaterial({size:0.16,map:new THREE.CanvasTexture(pet
 const petals=new THREE.Points(petGeo,petMat); petals.frustumCulled=false; petals.visible=false; scene.add(petals);
 for(let i=0;i<PET_N;i++) petData.push({x:AR(-30,30),z:AR(-30,30),y:AR(0,14),sp:AR(0.5,1.1),ph:AR(0,TAU)});
 function updatePetals(dt,t){
-  const cx=camera.position.x, cz=camera.position.z, k=smoothstep(TUN.p1-10,TUN.p1+30,cx)*(1-smoothstep(HZ0+30,HZ0-40,cz));   // (none over the vale's north crest: the Hoarfrost Reach has no blossoms)
+  const cx=camera.position.x, cz=camera.position.z, k=smoothstep(TUN.p1-10,TUN.p1+30,cx)*(1-smoothstep(borderZ(cx)+30,borderZ(cx)-40,cz));   // (none over the vale's north crest: the Hoarfrost Reach has no blossoms)
   petMat.opacity=k*0.9; petals.visible=k>0.01; if(!petals.visible) return;
   for(let i=0;i<PET_N;i++){
     const d=petData[i];

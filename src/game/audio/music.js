@@ -89,7 +89,7 @@ function musicThemeHere(){
   if(P.inTun) return MUSIC.theme||'wild3';
   const zn=zoneAt(P.x,P.z), L=zn?zn.level:0;
   if(inHoar(P.x,P.z)||inGrey(P.x,P.z)) return L>=27?'hoar2':'hoar1';   // (the Greyspine has no song of its own yet: the Reach's)
-  if(inVale(P.x)) return L>=21?'vale2':'vale1';
+  if(inVale(P.x,P.z)) return L>=21?'vale2':'vale1';
   return L>=12?'wild3':L>=7?'wild2':'wild1';
 }
 // instruments (t = start time)

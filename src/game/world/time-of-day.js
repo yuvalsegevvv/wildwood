@@ -30,7 +30,7 @@ function applyEnv(s){
   skyU.uBot.value.copy(s.hg); skyU.uSunCol.value.copy(s.sun); skyU.uCloud.value.copy(s.cloud); skyU.uNight.value=s.night;
   if(waterMat) waterMat.color.copy(wDay).lerp(wNight,s.night);
   pMat.color.copy(dayMote).lerp(fly,s.night); pMat.size=lerp(0.13,0.34,s.night); pMat.opacity=lerp(0.45,1,s.night);
-  { const cold=P.x>HALF?smoothstep(HZ0+40,HZ0-30,P.z):0; if(cold>0){ pMat.color.lerp(iceMote,cold); pMat.size=lerp(pMat.size,lerp(0.09,0.15,s.night),cold); pMat.opacity*=1-0.35*cold; } }   // over the snow: glints of diamond dust, not fireflies
+  { const cold=P.x>borderX(P.z)?smoothstep(borderZ(P.x)+40,borderZ(P.x)-30,P.z):0; if(cold>0){ pMat.color.lerp(iceMote,cold); pMat.size=lerp(pMat.size,lerp(0.09,0.15,s.night),cold); pMat.opacity*=1-0.35*cold; } }   // over the snow: glints of diamond dust, not fireflies
 }
 function envAt(c,out){
   const n=TOD_KEYS.length;
@@ -49,7 +49,7 @@ function envAt(c,out){
 let todLabelT=0;
 let curZone='';
 function updateZoneLabel(){
-  const V=vilAt(P.x,P.z), inV=vDist(P.x,P.z)<VR+22, zn=inV?null:zoneAt(P.x,P.z), vale=inVale(P.x), hoar=inHoar(P.x,P.z), grey=inGrey(P.x,P.z), pass=!zn&&!inV&&inPass(P.x,P.z);
+  const V=vilAt(P.x,P.z), inV=vDist(P.x,P.z)<VR+22, zn=inV?null:zoneAt(P.x,P.z), vale=inVale(P.x,P.z), hoar=inHoar(P.x,P.z), grey=inGrey(P.x,P.z), pass=!zn&&!inV&&inPass(P.x,P.z);
   const key=zn?String(zn.key):inV?(V===VIL4?'highmark':V===VIL3?'rimehold':V===VIL2?'hanami':'village'):P.inTun?'tunnel':pass?'pass':hoar?'hoar':grey?'grey':vale?'vale':'wild';
   const txt=zn?zn.name+(zn.boss?' (boss)':' (Lv '+zoneLvText(zn)+')'):inV?(V===VIL4?'Highmark':V===VIL3?'Rimehold':V===VIL2?'Hanami':'The village'):P.inTun?'The mountain tunnel':pass?'Frostgate Pass':hoar?'The Hoarfrost Reach':grey?'The Greyspine':vale?'The Sakura Vale':'Deep forest';
   $('#zone').textContent=txt;

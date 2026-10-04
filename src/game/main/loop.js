@@ -18,6 +18,7 @@ function frame(){
     animateHiker(dt);
     updateMotes(dt,t); updatePetals(dt,t);
     updateAnimals(dt);
+    updateGreyfall(dt);   // greyfall: the sheet, spray and roar (village/buildings-greyfall.js)
     chamoisUpdate(dt);   // chamois: the Greyspine's harmless mountain goats (wildlife/chamois.js)
     updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateGreyspine(dt); updateNodes(); updateLoreProps();
     updateNPCs(dt);
