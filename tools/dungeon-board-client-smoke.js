@@ -30,7 +30,7 @@ const find=(e,cls)=>{ const out=[]; walk(e,k=>{ if(typeof k.className==='string'
   // ---- an open door, the leader ----
   swallow=true; sent.length=0; G.dgBoardOpen('hollowroots'); deliver(MSG());
   { const t=tx(body()), cards=find(body(),'dgb-card'), btns=find(body(),'dgb-start');
-    ok('the board for an open door: name, door and land, level at your tier, entry level, "the way is open"',/The Hollow Roots/.test(t)&&/The Hollowed Elder · Wildwood/.test(t)&&/Level 40/.test(t)&&/Wildwood \+2/.test(t)&&/Enter from level 35/.test(t)&&/The way is open for you/.test(t)&&find(body(),'ok').length===1,t.slice(0,260));
+    ok('the board for an open door: name, door and land, level at your tier, entry level 25 (the same at every difficulty), "the way is open"',/The Hollow Roots/.test(t)&&/The Hollowed Elder · Wildwood/.test(t)&&/Level 40/.test(t)&&/Wildwood \+2/.test(t)&&/Enter from level 25/.test(t)&&/The way is open for you/.test(t)&&find(body(),'ok').length===1,t.slice(0,260));
     ok('it tells the dungeon in a sentence and each mission in a line (with the dungeon\'s own name for the objective)',/Heartwood go down/.test(t)&&cards.length===2&&/Purge/.test(tx(cards[0]))&&/round hall/.test(tx(cards[0]))&&/Defense/.test(tx(cards[1]))&&/Hold the Heartwood Knot/.test(tx(cards[1])),tx(cards[1]));
     ok('the leader gets a Start button on each mission on offer, naming its id',btns.length===2&&btns[0].dataset.mission==='purge'&&btns[1].dataset.mission==='defense');
     ok('the footer: the countdown to the next offer and the party line (alone: how to invite)',/The offer changes in 2:0[45]/.test(tx(c.el('#dgClock')))&&/You go in alone/.test(tx(c.el('#dgParty')))&&/\/invite/.test(tx(c.el('#dgParty'))),tx(c.el('#dgClock'))+' | '+tx(c.el('#dgParty')));

@@ -46,7 +46,7 @@ const DG_SET_BARE=[
 /* THE THREE DUNGEONS, one for each built land (docs/DUNGEON-THEMES.md has the designs: feel, tile kit, hazard, objective skins, bosses), one file each in shared/dungeons/themes/,
    entered through defineDungeonTheme below. Each is level DG_LV at its land's base difficulty (see DG_LANDS for the difficulty). Which two mission types a dungeon offers changes
    every hour (dgOffer); what a clear pays is shared/dungeon-rewards.js. */
-const DG_LV=30, DG_ENTRY_GAP=5;   // a dungeon is level 30 at its land's base difficulty; you may enter from its level - 5 (but never above the top hiker level: the +III to +V dungeons are level 55 to 80)
+const DG_LV=30, DG_ENTRY_LV=25;   // a dungeon is level 30 at its land's base difficulty; you may enter from level 25 at EVERY difficulty (+0 to +V): the tiers make the monsters harder, not the way in
 /* The difficulty a dungeon is played at is its land's own zone tier setting (gear.zt[land].on: the +N chosen under the map in a village, shared/tiers.js). Each land has a
    `base`, the lowest +N its dungeons open at, where they are level DG_LV; every tier above adds ZTIER_STEP (10) levels, as everywhere. Wildwood's base is +1 (its dungeon
    is locked at +0, level 30 at +1, 40 at +2, 50 at +3, 60 at +4, 70 at +5); the Vale's and the Reach's are +0 (level 30, 40, 50, 60, 70, 80). `unlock` is the land's progress gate. */
@@ -187,14 +187,14 @@ const dgOfferLeft=nowMs=>Math.ceil((DG_OFFER_HOUR-((nowMs%DG_OFFER_HOUR)+DG_OFFE
 const dgTierOf=(gear,land)=>{ const z=gear&&gear.zt&&gear.zt[land]; return z?z.on|0:0; };   // the +N you play the land at
 const dgLevel=(T,tier)=>(T.lv||DG_LV)+ZTIER_STEP*Math.max(0,(tier|0)-DG_LANDS[T.land].base);   // a dungeon's level at +tier
 /* can this hiker (gear as the server keeps it, level) enter the theme at +tier (default: the land's tier they play at)? {ok, why, tier, level}. A party plays at its leader's
-   tier, so a member is checked at that tier: they need it unlocked (gear.zt[land].max) and the level for it, whatever tier they play at themselves. A theme may carry its own `unlock`. */
+   tier, so a member is checked at that tier: they need it unlocked (gear.zt[land].max) and level DG_ENTRY_LV, whatever tier they play at themselves. A theme may carry its own `unlock`. */
 function dgUnlocked(gear,level,T,tier){
   const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}, z=g.zt&&g.zt[T.land], t=tier===undefined?dgTierOf(g,T.land):tier|0;
   if(t<L.base) return {ok:false,why:L.hint};
   if(t>((z?z.max:0)|0)) return {ok:false,why:'You have not unlocked +'+t+' in '+L.name+' yet.'};
   if(U.east!==undefined&&(g.east|0)<U.east) return {ok:false,why:L.hint};
   if(U.north!==undefined&&(g.north|0)<U.north) return {ok:false,why:L.hint};
-  const lv=dgLevel(T,t), need=Math.min(PLAYER_MAX_LV,lv-DG_ENTRY_GAP); if((level|0)<need) return {ok:false,why:'Reach level '+need+' first.'};   // (a level-60 dungeon would ask for 55: more than anyone can have)
+  const lv=dgLevel(T,t); if((level|0)<DG_ENTRY_LV) return {ok:false,why:'Reach level '+DG_ENTRY_LV+' first.'};   // (the same at every tier: a level-60 dungeon used to ask for 55, which nobody can have)
   return {ok:true,why:'',tier:t,level:lv};
 }
 // the door's look and what pressing the talk key says: open at the tier you play (Wildwood's roots are knotted shut at +0) and the land's progress; the level is not part of it

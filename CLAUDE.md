@@ -193,7 +193,7 @@ node tools/accounts-smoke.js     # 17 checks: register, login, tokens, unique na
 node tools/mainquest-smoke.js    # 91 checks: the main quest, acts I-III, ~15 s
 node tools/boss-smoke.js         # 36 checks: the six bosses' move sets, ~2 s
 node tools/hoarfrost-smoke.js    # 37 checks: the Hoarfrost Reach, ~5 s
-node tools/dungeons-smoke.js     # 98 checks: the pure setup: tiles of every theme, boss hall vs arenas, layouts, grid, flow field, party table, the three dungeons and bosses, offer, entrances, reward rules, ~3 s
+node tools/dungeons-smoke.js     # 97 checks: the pure setup: tiles of every theme, boss hall vs arenas, layouts, grid, flow field, party table, the three dungeons and bosses, offer, entrances, reward rules, ~3 s
 node tools/party-smoke.js        # 22 checks: invites, /invite, the cap, lead, kick, leave, expiry, ~2 s
 node tools/dungeon-runs-smoke.js # 80 checks: runs isolated from the world and each other, walls, party health, loot for all, down / revive / lost, a Purge won with the save and the clear's piece, ~10 s
 node tools/dungeon-boss-smoke.js # 36 checks: the three dungeon bosses in a real hall, ~5 s

@@ -31,4 +31,4 @@ rules in `shared/tiers.js` (`ZTIER_STEP` / `ZTIER_MAX` / `ZTIER_BONUS`, `ZTIER_B
   **What a kill pays is damped above level 60** (`PAY_LV`, `payMult`, `xpFor` / `coinsFor` in `shared/balance.js`): up to level 60 (a level-30 boss at tier III) nothing changed, above it the pay keeps
   its level-60 rate and doubles every 10 levels (x2 at 70, x4 at 80). Without that a tier V Vetrmaw would pay 915 million XP (six levels at once) and 62 million coins; it pays 59 million and 8 million. A level-1 slime at
   tier V (level 51) is below the damping and pays 100,000 XP, as the old curve says. The dungeons use the same tiers (`dgLevel`: a dungeon is level 30 at its base and +10 a tier, so up to level 70 / 80);
-  the entry level is capped at the top hiker level 50 (`PLAYER_MAX_LV`), else a level-60 dungeon would ask for 55.
+  the way in is level 25 at every difficulty (`DG_ENTRY_LV`), not the dungeon's level less 5, which at +III in the Vale or the Reach would have asked for 55.

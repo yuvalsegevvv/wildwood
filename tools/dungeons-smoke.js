@@ -5,7 +5,7 @@
 // Usage: node tools/dungeons-smoke.js            the checks
 //        node tools/dungeons-smoke.js --show defense 7   draws that dungeon (the tile graph, then the cells: one character per 2 x 2 cells)
 const {loadShared}=require('./load');
-const X=loadShared(['PLAYER_MAX_LV','DG_CELL','DG_TC','DG_BOSS_R','ARENAS','DG_N','DG_E','DG_S','DG_W','DG_STEP','DG_SET_BARE','DG_MISSIONS','DG_PARTY','DG_MAX_PARTY','dgVariants','dgRotArt','dgRotMask','dgOpp','dgLayout','dgBake','dgSolid','dgFree','dgSlide','dgLos','dgFlow','dgStep','dgParty','dgFightRatio','mulberry32','DG_THEMES','DG_LANDS','DG_LV','DG_ENTRY_GAP','dgUnlocked','dgLevel','dgTierOf','ZTIER_STEP','ZTIER_MAX','DG_ENTRANCES','DG_APRON','DG_ENT_CLEAR','DG_ENT_TALK','dgApron','dgEntranceNear','dgGateOpen','rawHeight','zoneAt','vDist','VR','roadDist','arenaDist','inTunnelCut','zoneRidge','NODES','STORY_SPOTS','LAKES','FROST_LAKES','bareGround','ROADS','ROAD_W','WATER','DG_BOSSES','dgOffer','dgOfferLeft','DG_OFFER_HOUR','FAM','ELEMS','ALL_MON_DEFS','MON_DEFS','BOSS_DEFS','ZONES',
+const X=loadShared(['DG_CELL','DG_TC','DG_BOSS_R','ARENAS','DG_N','DG_E','DG_S','DG_W','DG_STEP','DG_SET_BARE','DG_MISSIONS','DG_PARTY','DG_MAX_PARTY','dgVariants','dgRotArt','dgRotMask','dgOpp','dgLayout','dgBake','dgSolid','dgFree','dgSlide','dgLos','dgFlow','dgStep','dgParty','dgFightRatio','mulberry32','DG_THEMES','DG_LANDS','DG_LV','DG_ENTRY_LV','dgUnlocked','dgLevel','dgTierOf','ZTIER_STEP','ZTIER_MAX','DG_ENTRANCES','DG_APRON','DG_ENT_CLEAR','DG_ENT_TALK','dgApron','dgEntranceNear','dgGateOpen','rawHeight','zoneAt','vDist','VR','roadDist','arenaDist','inTunnelCut','zoneRidge','NODES','STORY_SPOTS','LAKES','FROST_LAKES','bareGround','ROADS','ROAD_W','WATER','DG_BOSSES','dgOffer','dgOfferLeft','DG_OFFER_HOUR','FAM','ELEMS','ALL_MON_DEFS','MON_DEFS','BOSS_DEFS','ZONES',
   'DG_BAD','defineDungeonTheme','dgTileProblems','dgCarve','DG_SHAPES','DG_MARKS','DG_TAGS','DG_HALL_PILLARS','DG_HALL_PILLAR_HALF','DG_HALL_MOUTHS','DG_BOSS_DEFS','DG_HALL_LAMPS','dgVentAt','dgHallArena']);
 const {DG_TC,DG_CELL}=X;
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
@@ -261,16 +261,14 @@ ok('the three are different: three model families, three elements, three kits, t
   ok('the Vale\'s and the Reach\'s dungeons are level '+X.DG_LV+' at their base, +0 (no tier needed)',[...vale,...hoar].every(t=>{ const g=gear(Z,Z,Z,{east:2,north:2}), r=un(g,25,t); return r.ok&&r.level===30&&r.tier===0; }));
   ok('each tier above the base adds '+X.ZTIER_STEP+' levels, up to tier V: Wildwood +1 ... +5 = 30/40/50/60/70, the Vale and the Reach +0 ... +5 = 30/40/50/60/70/80',
     X.ZTIER_MAX===5&&home.every(t=>[1,2,3,4,5].map(k=>X.dgLevel(t,k)).join()==='30,40,50,60,70')&&[...vale,...hoar].every(t=>[0,1,2,3,4,5].map(k=>X.dgLevel(t,k)).join()==='30,40,50,60,70,80'));
-  ok('the way in never asks for more than the top hiker level ('+X.PLAYER_MAX_LV+'): the Vale +3 (level 60) opens at 50, not 55 (nobody has 55), and +5 (level 80) opens at 50 too; Wildwood +5 (level 70) as well',
-    vale.every(t=>{ const g3=gear(Z,[3,3],Z,{east:2}), g5=gear(Z,[5,5],Z,{east:2}); return !un(g3,49,t).ok&&un(g3,50,t).ok&&un(g3,50,t).level===60&&!un(g5,49,t).ok&&un(g5,50,t).ok&&un(g5,50,t).level===80&&/level 50/.test(un(g5,10,t).why); })&&
-    hoar.every(t=>un(gear(Z,Z,[5,5],{north:2}),50,t).ok&&un(gear(Z,Z,[5,5],{north:2}),50,t).level===80)&&home.every(t=>un(gear([5,5],Z,Z),50,t).ok&&un(gear([5,5],Z,Z),50,t).level===70&&!un(gear([5,5],Z,Z),49,t).ok));
-  ok('the way in needs the dungeon\'s level less '+X.DG_ENTRY_GAP+' at that tier: Wildwood +1 and the Vale +0 from level 25, the Vale +1 from level 35',
-    home.every(t=>!un(gear([1,1],Z,Z),24,t).ok&&un(gear([1,1],Z,Z),25,t).ok&&/level 25/.test(un(gear([1,1],Z,Z),10,t).why))&&
-    vale.every(t=>!un(gear(Z,Z,Z,{east:2}),24,t).ok&&un(gear(Z,Z,Z,{east:2}),25,t).ok&&!un(gear(Z,[1,1],Z,{east:2}),34,t).ok&&un(gear(Z,[1,1],Z,{east:2}),35,t).ok));
+  ok('the way in is level '+X.DG_ENTRY_LV+' at every difficulty, whatever the dungeon\'s own level: Wildwood +1 ... +5 (levels 30-70) and the Vale and the Reach +0 ... +5 (30-80) all open at 25 and not at 24',
+    home.every(t=>[1,2,3,4,5].every(k=>!un(gear([k,k],Z,Z),24,t).ok&&un(gear([k,k],Z,Z),25,t).ok&&un(gear([k,k],Z,Z),25,t).level===X.dgLevel(t,k)&&/level 25/.test(un(gear([k,k],Z,Z),10,t).why)))&&
+    vale.every(t=>[0,1,2,3,4,5].every(k=>!un(gear(Z,[k,k],Z,{east:2}),24,t).ok&&un(gear(Z,[k,k],Z,{east:2}),25,t).ok&&un(gear(Z,[k,k],Z,{east:2}),25,t).level===X.dgLevel(t,k)))&&
+    hoar.every(t=>[0,3,5].every(k=>!un(gear(Z,Z,[k,k],{north:2}),24,t).ok&&un(gear(Z,Z,[k,k],{north:2}),25,t).ok&&un(gear(Z,Z,[k,k],{north:2}),25,t).level===X.dgLevel(t,k))));
   ok('the Vale\'s dungeons need Hanami walked into (gear.east 2) and the Reach\'s Rimehold (gear.north 2); each land uses its own tier, not Wildwood\'s',
     vale.every(t=>!un(gear(Z,Z,Z,{east:1}),30,t).ok&&un(gear(Z,Z,Z,{east:2}),30,t).ok&&un(gear([3,3],Z,Z,{east:2}),30,t).tier===0)&&
     hoar.every(t=>!un(gear(Z,Z,Z,{north:1}),30,t).ok&&un(gear(Z,Z,Z,{north:2}),30,t).ok&&!un(gear(Z,Z,Z,{east:2}),30,t).ok));
-  ok('a party plays at its leader\'s tier: a member needs that tier unlocked (not played) and the level for it',vale.every(t=>{ const m=gear(Z,[1,1],Z,{east:2}); return un(m,35,t,1).ok&&!un(gear(Z,Z,Z,{east:2}),60,t,1).ok&&/not unlocked \+1/.test(un(gear(Z,Z,Z,{east:2}),60,t,1).why)&&!un(m,34,t,1).ok; })&&
+  ok('a party plays at its leader\'s tier: a member needs that tier unlocked (not played) and level 25',vale.every(t=>{ const m=gear(Z,[1,1],Z,{east:2}); return un(m,25,t,1).ok&&!un(gear(Z,Z,Z,{east:2}),60,t,1).ok&&/not unlocked \+1/.test(un(gear(Z,Z,Z,{east:2}),60,t,1).why)&&!un(m,24,t,1).ok; })&&
     home.every(t=>un(gear([0,2],Z,Z),40,t,2).ok&&!un(gear([0,2],Z,Z),40,t,0).ok)); }
 
 

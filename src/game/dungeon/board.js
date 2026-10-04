@@ -77,7 +77,7 @@ function dgBoardRender(){
     $('#dgClock').textContent=''; $('#dgParty').textContent=''; return;
   }
   const facts=dgBoardEl('div','dgb-facts');
-  dgBoardAdd(facts,dgBoardEl('span','dgb-fact lv','Level '+m.L),dgBoardEl('span','dgb-fact',(land?land.name+' ':'')+'+'+m.tier),dgBoardEl('span','dgb-fact','Enter from level '+(m.L-DG_ENTRY_GAP)));
+  dgBoardAdd(facts,dgBoardEl('span','dgb-fact lv','Level '+m.L),dgBoardEl('span','dgb-fact',(land?land.name+' ':'')+'+'+m.tier),dgBoardEl('span','dgb-fact','Enter from level '+DG_ENTRY_LV));
   hero.appendChild(facts); body.appendChild(hero);
   body.appendChild(dgBoardEl('p','dgb-state '+(m.ok?'ok':'no'),m.ok?'The way is open for you.':(m.gate?'':'Sealed. ')+(m.why||'You cannot enter yet.')));
   const offer=m.offer||[], pool=m.pool||offer, cards=dgBoardEl('div','dgb-cards');

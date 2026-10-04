@@ -2,7 +2,7 @@
 
 **Status: designs plus data, not playable.** The machinery they run on is in `docs/DUNGEONS.md` (tiles, missions, parties, the server plan). What exists in code is the data of the three
 dungeons (`DG_THEMES`), of their three entrances (`DG_ENTRANCES`, section 6), of their three bosses (`DG_BOSSES`), the hourly offer (`dgOffer`) and the entry rule (`dgUnlocked`, `dgLevel`, `dgGateOpen`) in `src/shared/dungeons.js`, and the rewards (section 7: `DG_REWARDS`, the level-30 gear, the ring, enhancing, the stone) in `src/shared/dungeon-rewards.js`, checked by
-`tools/dungeons-smoke.js` (98 checks); `tools/entrance-map.js` draws the map of section 6; the doors' client dressing (section 6) is built and tested by `tools/entrances-client-smoke.js`. The tile art is drawn (section 3: one file per dungeon in `src/shared/dungeons/themes/`, entered through `defineDungeonTheme`) and the three bosses are built (section 4: `src/server/dungeons/boss-kits.js`, tested by `tools/dungeon-boss-smoke.js`).
+`tools/dungeons-smoke.js` (97 checks); `tools/entrance-map.js` draws the map of section 6; the doors' client dressing (section 6) is built and tested by `tools/entrances-client-smoke.js`. The tile art is drawn (section 3: one file per dungeon in `src/shared/dungeons/themes/`, entered through `defineDungeonTheme`) and the three bosses are built (section 4: `src/server/dungeons/boss-kits.js`, tested by `tools/dungeon-boss-smoke.js`).
 *(proposed)* = my suggestion. An earlier version of this file had nine dungeons and bosses drawn at random; those are gone, and the six dungeons I did not pick are kept in section 5.
 
 ## 1. What the owner decided
@@ -12,7 +12,7 @@ dungeons (`DG_THEMES`), of their three entrances (`DG_ENTRANCES`, section 6), of
 - **Three new bosses, one for each dungeon** (section 4). No more random draw of the old six.
 - **The base is level 30** (`DG_LV`). The difficulty is the land's own +N setting (`gear.zt[land].on`, picked under the map in a village), each land having a base: **Wildwood's dungeon is locked
   at +0 and level 30 at +1**; the Vale's and the Reach's are level 30 at +0. Above the base the zone-tier rule applies (the owner confirmed it), **+10 levels a tier** (`ZTIER_STEP`), now up to tier V: Wildwood +1 ... +5 = 30 / 40 / 50 / 60 / 70,
-  the others +0 ... +5 = 30 / 40 / 50 / 60 / 70 / 80. You may enter from the dungeon's level less 5 (`DG_ENTRY_GAP`), but never above the top hiker level 50 (`PLAYER_MAX_LV`): without that cap the +III Vale and Reach dungeons (level 60) asked for level 55, which nobody can have. A party plays at its **leader's tier** for that land; a member needs that tier
+  the others +0 ... +5 = 30 / 40 / 50 / 60 / 70 / 80. You may enter from **level 25 at every difficulty** (`DG_ENTRY_LV`, the owner's rule; it used to be the dungeon's level less 5, which asked for level 55 at the +III Vale and Reach dungeons, more than anyone can have). A party plays at its **leader's tier** for that land; a member needs that tier
   **unlocked**, not played, and the level for it. The Vale's dungeon also needs Hanami walked into (`gear.east` 2), the Reach's Rimehold (`gear.north` 2). Tested.
 - **Rewards** (section 7): a clear pays one random level-30 item, weapons / armour / rings by dungeon. Kills still pay what the world pays at the dungeon's level (`rewardKill`) and the boss the boss table; from level 30 a normal monster's equipment roll becomes the tempering stone.
 
@@ -283,7 +283,7 @@ phones get fewer details and nothing moves, light mode the bare shapes) and `gam
 
 ## 7. The rewards
 
-Decided by the owner; the data and the rules are in `src/shared/dungeon-rewards.js` and are checked (14 of the 98 checks of `tools/dungeons-smoke.js`, the odds, the caps and the soul rule written out in the test, not read from the code). **Status: built, except the clear's hand-out** (`dgGrantItemP` exists, nothing calls it until a run does): the items, the ring slot and its attack, the stone, tempering and the UI work today, tested by `tools/rewards-smoke.js` and `tools/rewards-client-smoke.js`; the end of this section lists what was built and every hook.
+Decided by the owner; the data and the rules are in `src/shared/dungeon-rewards.js` and are checked (14 of the 97 checks of `tools/dungeons-smoke.js`, the odds, the caps and the soul rule written out in the test, not read from the code). **Status: built, except the clear's hand-out** (`dgGrantItemP` exists, nothing calls it until a run does): the items, the ring slot and its attack, the stone, tempering and the UI work today, tested by `tools/rewards-smoke.js` and `tools/rewards-client-smoke.js`; the end of this section lists what was built and every hook.
 
 | Dungeon | A clear pays | Pool of the one random piece |
 |---|---|---|
@@ -354,7 +354,7 @@ become `ITEM` records at load (not in `ITEM_LIST`, like the tools), so the save 
 
 1. **Which dungeon for each land**: Hollow Roots, Jade Spring Grottoes, Bonefrost Barrow (section 3 says why). Swapping one for a spare of section 5 is a data change.
 2. **The offer**: all seven types in the pool, a 21-hour cycle, UTC, never the same pair twice running, no gating by clears (section 2).
-3. **Levels above the base**: +10 a tier *(assumed)*; entry at the dungeon's level less 5; a party plays at its leader's tier.
+3. **Levels above the base**: +10 a tier *(assumed)*; entry from level 25 at every difficulty (the owner's rule); a party plays at its leader's tier.
 4. **The bosses** (names, looks, moves, numbers) are my proposal. The six existing bosses are untouched and still guard the world; the new three exist only in the dungeons. Small model work: a `haugbui` branch in the ghost builder; optional trimmings for Amanita.
 5. **Boss drops**: the boss pays the boss table (section 7 changes nothing about it); the old six's skills do not drop here.
 6. **A dungeon boss is the same whichever type was chosen**: the type changes the road to the boss, not the boss.
