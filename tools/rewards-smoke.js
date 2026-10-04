@@ -4,7 +4,7 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const io={dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }};
-const NAMES=['MONS','ITEM','ITEM_LIST','TOOL_LIST','dgAllIds','dgItem','dgGearId','dgRingId','sanitizeGear','soulOfP','monK','rewardKill','dgGrantItemP','dgTemperP','VIL2','ENH_LV','ENH_DROP','ENH_NAME','ENH_MAX','DG_STONE_MAX','BAG_MAX','sellPrice','mergedId','effectiveLookOf','ARMOR_LOOK','clsOfP','gearStatsOf','RING_ELS','ALL_SLOTS','ELEM_LIST','newGearFor','fLv','defRed','RED_KNEE','RED_CAP','DEF_KNEE','DMG_TAKEN_MIN','setDef','expRed','tierFor','hurtP','DG_ATK','TIER_ATK','ENH_STEP','ARMOR_SLOTS'];
+const NAMES=['MONS','ITEM','ITEM_LIST','TOOL_LIST','dgAllIds','dgItem','dgGearId','dgRingId','sanitizeGear','soulOfP','monK','rewardKill','dgGrantItemP','dgTemperP','VIL2','ENH_LV','ENH_DROP','ENH_NAME','ENH_MAX','DG_STONE_MAX','BAG_MAX','sellPrice','mergedId','effectiveLookOf','ARMOR_LOOK','clsOfP','gearStatsOf','RING_ELS','ALL_SLOTS','ELEM_LIST','newGearFor','fLv','defRed','RED_KNEE','RED_CAP','DEF_KNEE','DMG_TAKEN_MIN','setDef','expRed','tierFor','hurtP','DG_ATK','TIER_ATK','ENH_STEP','ARMOR_SLOTS','SKILLS','POT_BUFF','S','psP','recalcP'];
 const {api:W,x}=loadServer(io,NAMES);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
@@ -66,6 +66,25 @@ ok('a ring can be taken off',a.gear.eq.ring===null&&a.gear.inv.includes('ring-ba
 { const h=join('h',30), hit=(red,buff)=>{ h.hp=h.maxHp; h.lastHit=-99; h.red=red; h.buff=buff||null; x.hurtP(h,1000); return Math.round(h.maxHp-h.hp); };
   const plain=hit(0.5), stacked=hit(0.9,{red:0.9,until:1e9});
   ok('armour, buffs and potions together can never take off more than '+Math.round((1-x.DMG_TAKEN_MIN)*100)+'%: a hit of 1000 does at least '+1000*x.DMG_TAKEN_MIN+' however much is stacked (0.9 armour x 0.9 buff would be 1%)',stacked===1000*x.DMG_TAKEN_MIN&&plain>300&&plain<=500,'plain '+plain+', stacked '+stacked); }
+// the real worst case, built from the game's own data (so a new item, a higher enhancement or a stronger skill is caught): the best armour piece of each slot in the whole item table, Iron Will at its
+// top level, the strongest damage-reduction skill buff and the best guard potion, all on one hiker
+{ const best={}; for(const id in x.ITEM){ const it=x.ITEM[id]; if(it.kind==='armor'&&(!best[it.slot]||it.def>best[it.slot].def)) best[it.slot]=it; }
+  const q=join('q',50); for(const sl of x.ARMOR_SLOTS){ q.gear.inv.push(best[sl].id); q.gear.eq[sl]=best[sl].id; }
+  q.gear.skills.owned.push('ironwill'); q.gear.skills.lv=q.gear.skills.lv||{}; q.gear.skills.lv.ironwill=5; q.gear.skills.pass=['ironwill',null,null]; x.recalcP(q);
+  const buffRed=Math.max(...Object.values(x.SKILLS).map(k=>k.buff&&k.buff.red||0)), potion=Math.max(...x.POT_BUFF), setDef=x.ARMOR_SLOTS.reduce((n,sl)=>n+best[sl].def,0);
+  const prod=(1-q.red)*(1-x.psP(q,'red'))*(1-buffRed)*(1-potion);
+  const hit=(raw,buff,pot,m)=>{ q.dead=false; q.hp=q.maxHp; q.lastHit=-99; q.buff=buff?{id:'guard',until:x.S.t+99,dmg:1,cd:1,crit:0,red:buffRed,steal:0,regen:0,el:null}:null; q.potb=pot?{guard:{until:x.S.t+99,v:potion}}:null; x.hurtP(q,raw,m); return Math.round(q.maxHp-q.hp); };
+  ok('the best gear in the game ('+x.ARMOR_SLOTS.map(sl=>best[sl].id).join(', ')+': '+setDef+' defense) negates '+(q.red*100).toFixed(1)+'% by itself: under the '+x.RED_CAP*100+'% ceiling, far from 100%',q.def===setDef&&q.red<x.RED_CAP&&q.red>0.8,'def '+q.def);
+  const alone=hit(10000,false,false);
+  ok('with Iron Will ('+(x.psP(q,'red')*100).toFixed(0)+'%) on top, a hit of 10,000 still does '+alone+' ('+(alone/100).toFixed(1)+'%): more than the floor, so the formula itself is what protects here',alone>=1000&&alone<=1600,String(alone));
+  const all=hit(10000,true,true);
+  ok('everything at once (+ the best skill buff '+buffRed*100+'% and a guard potion '+potion*100+'): the plain product would be '+((1-prod)*100).toFixed(1)+'% negated, the floor holds it at '+Math.round((1-x.DMG_TAKEN_MIN)*100)+'%: a hit of 10,000 does '+all,
+    prod<x.DMG_TAKEN_MIN&&all===10000*x.DMG_TAKEN_MIN,'product '+prod.toFixed(4));
+  const raws=[1,2,7,50,333,10000], got=raws.map(r=>hit(r,true,true));
+  ok('whatever the hit, even fully stacked, some of it always lands: never less than 1, never less than 10% (hits of '+raws.join(', ')+' do '+got.join(', ')+')',raws.every((r,i)=>got[i]>=1&&got[i]>=Math.round(r*x.DMG_TAKEN_MIN)-1));
+  const wolf=x.MONS.find(m=>m.def.id==='alphawolf'); q.gear.zt={home:{on:0,max:0},vale:{on:0,max:0},hoar:{on:5,max:5}}; const K=x.monK(wolf,q), scaled=wolf.T.dmg*K.dmg*(1+0.05*Math.max(0,K.lv-q.level)), tv=hit(wolf.T.dmg,true,true,wolf);
+  ok('against a tier V monster (level '+K.lv+': its hit is '+Math.round(scaled)+' before armour) the fully stacked best hiker takes '+tv+' = '+(tv/scaled*100).toFixed(1)+'%: the monster\'s own multipliers apply first, then the floor',Math.abs(tv-scaled*x.DMG_TAKEN_MIN)<=2&&tv>=1,String(tv));
+  q.buff=null; q.potb=null; }
 // the weight of enhancing against the weight of the tier: a level-30 piece is a small step over the top world tier, and enhancing it is a big one
 { const stepTier=x.DG_ATK/x.TIER_ATK[5], mult=r=>1+x.ENH_STEP*x.ENH_MAX[r];
   ok('enhancing carries the weight: the level-30 tier is a x'+stepTier.toFixed(2)+' step over the top world tier, enhancing to the limit is x'+[0,1,2,3,4].map(r=>mult(r).toFixed(1)).join(' / x')+' (common ... legendary), and from a rare up the enhancement is worth more than the tier',

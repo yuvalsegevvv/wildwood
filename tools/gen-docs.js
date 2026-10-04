@@ -13,7 +13,7 @@ const NAMES=['FAM','MON_DEFS','ALL_MON_DEFS','BOSS_DEFS','GREY_DEFS','MONS','ZON
   'CLASS_OF','WEAPON_SLOTS','ARMOR_SLOTS','MERGE_COUNT','SHOP_STEP','CRAFT_MAX_RAR','tierFor','fLv','expDmg','expHP','expRed','xpFor','expToNext','highMult','defRed',
   // the dungeons (version2): bosses, themes and their mob pools, the level-30 gear, rings and tempering
   'DG_BOSS_DEFS','DG_THEMES','DG_LANDS','DG_LV','DG_ELITE_HP','DG_REWARDS','DG_REWARD_W','DG_NAMES','DG_GEAR_LV','RING_ELS','RING_NAMES','RING_PCT','ENH_MAX','ENH_STEP','ENH_LV','ENH_DROP','ENH_NAME',
-  'dgItem','dgGearId','dgRingId','dgAllIds','ITEM'];
+  'dgItem','dgGearId','dgRingId','dgAllIds','ITEM','POT_BUFF','passiveValue','SKILL_MAX_LV','DMG_TAKEN_MIN','RED_CAP'];
 const {x:W}=loadServer({send(){},broadcast(){}},NAMES);
 const CHECK=process.argv.includes('--check'), STRICT=process.argv.includes('--strict');
 
@@ -154,6 +154,14 @@ const resName=id=>(W.ORE_GRADES.concat(W.LOG_GRADES).find(g=>g[0]===id)||[id,id]
 function levelsOfTier(t){ const ls=[]; for(let L=1;L<=W.MAX_ZONE_LV;L++) if(W.tierFor(L)===t) ls.push(L); return ls.length?(ls.length>1?ls[0]+'-'+ls[ls.length-1]:String(ls[0])):'—'; }
 const SLOT_TITLE={sword:'Sword (Warrior weapon)',bow:'Bow (Archer weapon)',wand:'Wand (Mage weapon)',helmet:'Helmet',top:'Top (chest)',bottom:'Bottom (legs)',shoes:'Shoes'};
 
+// the worst case on one hiker, from the data: the best armour piece of every slot in the item table, Iron Will at its top level, the strongest skill buff, the best guard potion
+function worstCase(){
+  let def=0; for(const sl of W.ARMOR_SLOTS) def+=Math.max(...Object.values(W.ITEM).filter(i=>i.kind==='armor'&&i.slot===sl).map(i=>i.def));
+  const gear=W.defRed(def), iron=W.passiveValue('ironwill',W.SKILL_MAX_LV), buff=Math.max(...Object.values(W.SKILLS).map(k=>k.buff&&k.buff.red||0)), pot=Math.max(...W.POT_BUFF);
+  const withIron=1-(1-gear)*(1-iron), plain=1-(1-gear)*(1-iron)*(1-buff)*(1-pot), all=1-Math.max(W.DMG_TAKEN_MIN,1-plain);
+  const pc=n=>(n*100).toFixed(1)+'%';
+  return {def,text:`The worst case on one hiker, worked out from the data: the best piece of every slot (${def} defense) negates ${pc(gear)}; Iron Will (${pc(iron)}) makes it ${pc(withIron)}; the strongest skill buff (${pc(buff)}) and the best guard potion (${pc(pot)}) on top would make it ${pc(plain)} by plain multiplication, and the floor holds it at ${pc(all)}. Nothing in the game reaches 100%: armour never passes ${Math.round(W.RED_CAP*100)}%, the sum of all sources never passes ${Math.round((1-W.DMG_TAKEN_MIN)*100)}%, and a hit always does at least 1.`};
+}
 function equipmentDoc(){
   let s=HEADER('Equipment: every piece of gear and tool','Every item in `ITEM`: 7 pieces × 6 level tiers × 5 rarities = 210 pieces of gear, the 90 profession tools, and the '+W.dgAllIds().length+' level-30 dungeon pieces and rings (section 7), with the numbers the server uses and where they are defined.');
 
@@ -183,7 +191,7 @@ function equipmentDoc(){
 
   s+='\n## 2. How the stats are made\n\n'+
 `- **Weapon attack** = round(TIER_ATK[tier] × RAR_MULT[rarity]). The weapon you wield sets your class (sword: Warrior, bow: Archer, wand: Mage). A player's damage is \`(3 f(L) + gear attack) × (1 + symbol)\`.
-- **Armour health** = round(ARMOR_HP[piece][tier] × RAR_MULT[rarity]); **defense** = max(ARMOR_DEF[piece][tier] + rarity, round(ARMOR_DEF × RAR_MULT)). A player's health is \`(20 f(L) + gear health) × (1 + passives) × (1 + symbol)\`; damage taken is cut by \`def / (def + 60)\` up to 60% negation (defense 90) and then softly capped toward 90% (\`defRed\`): the maxed level-30 set (576 defense) negates 84%, not 91%; a hit always does at least 10% (\`DMG_TAKEN_MIN\`).
+- **Armour health** = round(ARMOR_HP[piece][tier] × RAR_MULT[rarity]); **defense** = max(ARMOR_DEF[piece][tier] + rarity, round(ARMOR_DEF × RAR_MULT)). A player's health is \`(20 f(L) + gear health) × (1 + passives) × (1 + symbol)\`; damage taken is cut by \`def / (def + 60)\` up to 60% negation (defense 90) and then softly capped toward 90% (\`defRed\`): the maxed level-30 set (576 defense) negates 84%, not 91%; a hit always does at least 10% (\`DMG_TAKEN_MIN\`). ${worstCase().text}
 - **Price** = round(PRICE[tier] × SLOT_PRICE[piece] × 3^rarity); sells for 40% (\`sellPrice\`). Only **common** items are in the shops, unlimited, each copy bought costs 20% of the base more until sunrise.
 - **Level**: an item needs \`lv\` = TIER_LV[tier] (${W.TIER_LV.join(', ')}) to be worn. Tiers 1-4 are the home forest's, 5-6 the Sakura Vale's samurai gear; **tier 6 is the top of the world's gear**: levels 25-30 (the Hoarfrost Reach) still drop tier 6; the level-30 dungeon pieces (section 7) are a tier above and only dungeons pay them.
 - **Rarity** (${W.RARITY.map((r,i)=>r+' ×'+W.RAR_MULT[i]).join(', ')}): ${W.MERGE_COUNT} identical items merge into one of the next rarity at the forge (same tier needed). Drops: a monster 2% common, 0.5% rare, 0.1% epic per kill; a boss 50 / 10 / 3 / 1 / 0.1% (common to legendary). The rarity is rolled first, then one of the seven pieces with equal chance, of the tier of the monster's level (\`tierFor\`).

@@ -198,7 +198,7 @@ node tools/party-smoke.js        # 22 checks: invites, /invite, the cap, lead, k
 node tools/dungeon-runs-smoke.js # 81 checks: runs isolated from the world and each other, walls, party health, loot for all, down / revive / lost, a Purge won with the save and the clear's piece, ~10 s
 node tools/dungeon-boss-smoke.js # 36 checks: the three dungeon bosses in a real hall, ~5 s
 node tools/dungeon-missions-smoke.js # 112 checks: the seven mission kits won and lost, HUD, chests, hazards, ~15 s
-node tools/rewards-smoke.js      # 62 checks: level-30 gear, defence soft cap, the ring and the soul, the Tempering Stone, temper, merge, saves, ~5 s
+node tools/rewards-smoke.js      # 67 checks: level-30 gear, defence soft cap and the worst-case stack, the ring and the soul, the Tempering Stone, temper, merge, saves, ~5 s
 node tools/rewards-client-smoke.js     # 23 checks: ring slot, Temper tab (runs dist/: build first)
 node tools/entrances-client-smoke.js   # 30 checks: the three doors' client dressing (runs dist/)
 node tools/dungeon-board-client-smoke.js # 37 checks: the Delve board and the join prompt (runs dist/)
@@ -253,7 +253,7 @@ The universal ones are here. An area's own pitfalls are in its guide (`docs/area
 ## 9. Reference numbers
 
 - Stats: `f(L)=L+(13/12)^L`; HP `20f+armor`; damage `3f+weapon`; defence cut `def/(def+60)` up to 60% (defense 90), then soft-capped toward 90%
-  (`defRed` in `shared/balance.js`; with armour, passives, buffs and potions together a hit still does at least 10%, `DMG_TAKEN_MIN`); ±5% per level difference; crits 12% ×1.7.
+  (`defRed` in `shared/balance.js`; with armour, passives, buffs and potions together a hit still does at least 10%, `DMG_TAKEN_MIN`; the worst case, the best set + Iron Will + the best buff and potion, is exactly that 90%, `docs/EQUIPMENT.md` section 2); ±5% per level difference; crits 12% ×1.7.
 - XP to next `10(L²+(7/6)^L)·K15^((L-5)/10)` up to level 25; from 25 on a level costs as many same-level kills as 25 → 26 (about 2,100: `expToNext` in `shared/balance.js`, so 26-30 are a long but bounded grind); **level 50 is a soft cap**: from 50 every level costs ×1.5 the one before (`LV_SOFT_GROWTH`; the ceiling is 99, `PLAYER_MAX_LV`); **a kill never pays for more than 10 levels above you** (`xpLeadK`); level 10-15 monsters 1.5× HP/XP/coins (`highMult`). `MAX_ZONE_LV` is 30 (quest board, sanitizing); `VALE_TOP_LV` (25) caps the level of the drops skill upgrades ask for; gear stays at tier 5 for levels 25-30.
 - Drops: monsters 2% common, 0.5% rare, 0.1% epic; boss 50/10/3/1/0.1% (common…legendary).
 - World: the home forest is -HALF..HALF; the whole world is `WX0..WX1` x `WZ0..WZ1` (the vale is x > HALF, 550 m wide; the Hoarfrost Reach is x > HALF
