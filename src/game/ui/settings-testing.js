@@ -1,4 +1,4 @@
-//@ Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, reset
+//@ Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, the Greyspine, reset
 /* ----- settings: testing tools ----- */
 $('#tLevel').value=PL.level;
 $('#tSetLv').addEventListener('click',()=>{ const v=clamp(parseInt($('#tLevel').value,10)||1,1,50); netSend({t:'dev',cmd:'level',v}); toast('Level set to '+v,'good'); });
@@ -27,6 +27,13 @@ $('#tSeal').addEventListener('click',()=>{ netSend({t:'dev',cmd:'vale',v:0}); to
 $('#tNorth').addEventListener('click',()=>netSend({t:'dev',cmd:'north',v:1}));
 $('#tPass').addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}));
 for(const id of ['tRime','tHall','tNest']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'north',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });
+// the Greyspine: open the ice fall in the glacier valley (as if you had helped beat Ymrik), go to it, to Highmark's shelf or the Gryphon Queen's peak (those open the way first), seal it again
+$('#tWest').addEventListener('click',()=>netSend({t:'dev',cmd:'west',v:1}));
+$('#tGlen').addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'north',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });
+for(const id of ['tGateR','tGateN']) $('#'+id).addEventListener('click',e=>netSend({t:'dev',cmd:'gate',v:e.currentTarget.dataset.v,n:1}));
+$('#tSealG').addEventListener('click',()=>{ for(const v of ['river','neck']) netSend({t:'dev',cmd:'gate',v,n:0}); toast('Both rock falls are sealed again','good'); });
+for(const id of ['tGrey','tQueen','tCavern','tRiverFall','tNeckFall']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'north',v:2}); netSend({t:'dev',cmd:'west',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });   // (they open the way first)
+$('#tSealW').addEventListener('click',()=>{ netSend({t:'dev',cmd:'west',v:0}); toast('The ice fall is sealed again','good'); });
 // the boss arenas (to try each boss's moves): the vale's two open the tunnel first
 for(const id of ['tCircle','tTide']) $('#'+id).addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}));
 for(const id of ['tGate','tShrine']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });

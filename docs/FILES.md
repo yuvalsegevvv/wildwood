@@ -32,17 +32,20 @@ styles
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
   noise.js                           Seeded RNG (rand, R, pick), simplex noise2 (and noiseD with its slope), fbm, erodeFbm (fbm that looks eroded), clamp, lerp, smoothstep, h3 hash. Pure.
-  terrain.js                         Map size (SIZE, HALF, WATER; the whole world WX0..WX1 x WZ0..WZ1 with the Sakura Vale east and the Hoarfrost Reach north of it), river (riverX), lakes, the lands' edges (coast, the Sunwall and Redgate, snowy rims), the hills' shape (hillShape: warped, eroded fbm; ridged mountains), baseHeight, forestDensity, autumnAmt. Pure.
+  terrain.js                         Map size (SIZE, HALF, WATER; the whole world WX0..WX1 x WZ0..WZ1 with the Sakura Vale east and the Hoarfrost Reach north of it), river (riverX), lakes, the lands' edges (coast, the Sunwall and Redgate, snowy rims), the hills' shape (hillShape: warped, eroded fbm; ridged mountains), baseHeight (where the Greyspine, shared/greyspine.js, meets the home forest's rim and the vale's wall), inGrey, forestDensity, autumnAmt. Pure.
+  greyspine.js                       The Greyspine, the fourth land (levels 26-32, docs/WORLD.md): its ground (greyspineHeight: U-shaped valleys between ridged peaks, walls on four sides, Highmark's shelf, the Gryphon Queen's peak), the glacier valley (GLEN) and the two canyons in the west wall (GREY_GATES), its tarns, river and fjord (waterSurf, greyWet). Pure.
   village-layout.js                  Village placement and layout (VIL): houses, stalls, anchors, paths, colliders. Pure.
-  zones.js                           Monster zones of the home forest (ZONES, zoneAt, zonePoint, defZone): three rings round the village plus the edge zones (shore, Sunwall, foothills), dividing ridges (zoneRidge), boss arena (ARENA); the vale's zones are in vale.js, the Hoarfrost Reach's in hoarfrost.js. Pure.
-  vale.js                            The Sakura Vale east of the mountains: the tunnel (TUN), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt (which knows all three villages). Pure.
+  zones.js                           Monster zones of the home forest (ZONES, zoneAt, zonePoint, defZone): three rings round the village plus the edge zones (shore, Sunwall, foothills), dividing ridges (zoneRidge), boss arena (ARENA); the Greyspine's are in greyzones.js; the vale's zones are in vale.js, the Hoarfrost Reach's in hoarfrost.js. Pure.
+  vale.js                            The Sakura Vale east of the mountains: the tunnel (TUN), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt (which knows all four villages). Pure.
   hoarfrost.js                       The Hoarfrost Reach north of the vale: Frostgate Pass and its ice wall (PASS), Rimehold village (VIL3, VILS), zones 22-30 (Voronoi cells, ridges), two boss arenas. Pure.
+  highmark.js                        Highmark, the Greyspine's village (VIL4): an alpine mining and monastery village on its shelf (GREY_HM), its teleport circle; joins VILS and CIRCLES. Pure.
+  greyzones.js                       The Greyspine's zones 26-32 (cells round seeds along the troughs, like the Reach's) and its two boss arenas (the Gryphon Queen's crown, the golem's cavern). Pure.
   village-helpers.js                 vDist, nearPath, pathAmt, plazaAmt, inBox, pushOutBoxes: each works on the village on that side of the mountains (vilAt). Pure.
-  roads.js                           Roads between the three villages and the key places (ROADS), the river bridge and the plank causeways over the drowned stretches (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck, bridgeAt. Pure.
+  roads.js                           Roads between the four villages and the key places (ROADS), the river bridge and the plank causeways over the drowned stretches (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck, bridgeAt. Pure.
   beach.js                           The Crownsea Shore's boss arena (ARENA_TIDE): a flat terrace on the home forest's south beach, where Carapax, the Tide King, lives. Pure.
-  terrain-height.js                  rawHeight: base terrain + zone ridges (cut away where a road crosses) + village, arena, tunnel and Frostgate Pass flattening. Pure.
+  terrain-height.js                  rawHeight: base terrain + zone ridges (cut away where a road crosses) + village, arena, tunnel, Frostgate Pass and glacier valley flattening. Pure.
   balance.js                         Level formulas: fLv, gear tiers, expected gear, XP curve, coins. Pure.
-  monster-defs.js                    Monster families (FAM), the 58 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach), prepDef, the six bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
+  monster-defs.js                    Monster families (FAM), the 72 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach, 14 in the Greyspine), prepDef, the eight bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
   tiers.js                           Zone tiers: a harder setting for each land (every enemy in it, bosses included, +10 levels per tier), opened by its second boss, and the symbol bonus. Pure.
   elements.js                        Elements (ELEMS): your soul (SOUL_LV, opposite pairs) and a monster's element (the wheel), with the damage multipliers for both. Pure.
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
@@ -63,6 +66,7 @@ server
   boss-kits-home.js                  Boss move sets of the home forest: the Rootwarden (root spikes, ground slam, the totem shield, thornlings) and Carapax, the Tide King (geyser trails, tidal waves, burrow strikes, the whirlpool)
   boss-kits-vale.js                  Boss move sets of the Sakura Vale: Akaoni (demon leaps and fire pools, fire ripples, burning brands) and Kyuubi (foxfire volleys, blinking strikes, spoke beams, spirit foxes)
   boss-kits-north.js                 Boss move sets of the Hoarfrost Reach: Ymrik (icefall, ice prisons, the closing whiteout, the frost nova) and Vetrmaw (gust and breath, flight and dives, the blizzard with its warm cores)
+  boss-kits-grey.js                  Boss move sets of the Greyspine: the Gryphon Queen (talon rakes, swoops, the flight with her eaglets, the storm of quills) and the mountain golem (rockfalls, quakes, the iron-joint shield, rubble)
   boss.js                            The bosses on the server: engagement, the shared melee (cleave), phases, reset; each boss's own moves are its BOSS_KITS entry (boss-kits-*.js) built on boss-fx.js
   economy.js                         Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), the soul shrine, testing commands
   main-quest.js                      The main quest on the server: starting, progressing and handing in steps (MQ in shared/main-quest.js) from what the server sees (talks, kills, system uses, places), rewards, the grey monsters spawned for you
@@ -80,7 +84,7 @@ game
   core/setup.js                      Page helpers ($), device flags (isTouch, LOW, LITE, Q), TAU/DEG
   @shared                            (the shared files above are inserted here)
   world/heightmap.js                 Client heightmap over the whole world (WX0..WX1 x WZ0..WZ1): SEG (by device), HS, getH, grad. The server keeps its own coarser copy.
-  world/terrain-color.js             Terrain colours (COL, terrainColor; hoarColor for the Hoarfrost Reach's snow, tundra, ice and needle floor)
+  world/terrain-color.js             Terrain colours (COL, terrainColor; hoarColor for the Hoarfrost Reach's snow, tundra, ice and needle floor; greyColor for the Greyspine's alpine meadows, scree, rock and snowfields)
   player/keybinds.js                 Rebindable keys (KB): every keyboard action and its keys, saved in this browser; key labels for the HUD hints and the legend; the Controls list in Settings
   ui/controls-legend.js              Fills the controls list on the start card (from the current keybinds; redrawn when a key changes)
   engine/renderer.js                 WebGL renderer, scene, camera, lights, sun shadow, timeU
@@ -92,7 +96,7 @@ game
   world/instancing.js                Chunked instanced meshes (frustum culled, with per-instance levels of detail), distance culling, tree collision grid (addCol, nearCols)
   player/state.js                    Player state P and spawn point
   world/generation-setup.js          Palettes, shared geometries (buildGeometries), terrain (in tiles, culled by distance, with a ground-detail shader) + water + the three villages (genTerrain)
-  world/generation-chunks.js         Per-chunk vegetation placement (genChunk): the home forest's mix, sakura, maple, pine and bamboo in the Sakura Vale, snowy spruce, dwarf birch and boulders in the Hoarfrost Reach
+  world/generation-chunks.js         Per-chunk vegetation placement (genChunk): the home forest's mix, sakura, maple, pine and bamboo in the Sakura Vale, snowy spruce, dwarf birch and boulders in the Hoarfrost Reach, conifers up to the treeline in the Greyspine
   world/far-lands.js                 The rest of Eldmere as placeholders around the three playable lands (Greyspine, Sunscar, Amber Reach, Stormhorn, Emberwake Isles; the Hoarfrost Reach is built): one smooth-shaded mesh of ridged mountains, high ground seen through the haze
   world/bridges.js                   The river bridge's and the plank causeways' models (BRIDGES in shared/roads.js): plank decks, rails, posts and piers, one merged mesh
   world/lore-props.js                The story's props: Wren's sickbed under its awning, Odran's two carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside shrine, a grey plate in the ice) and the heartleaf you pick
@@ -108,6 +112,7 @@ game
   village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)
   village/buildings-vale.js          The Sakura Vale's buildings: Hanami (tiled roofs, shoji, torii, stone lanterns), the tunnel (bore, roof, portals, sealed door), teleport circles, the two shrines
   village/buildings-hoar.js          The Hoarfrost Reach's buildings: Rimehold (timber houses under snow, gate and rune stones, the Wayfarers' Lodge yard), the ice wall in Frostgate Pass, the Rimeking's ice hall, the iron bird's wreck
+  village/buildings-grey.js          The Greyspine's buildings and dressing: its water (tarns, the river, the cold fjord), the rock falls in the west wall (the gates), Highmark (stone houses under slate and snow, bell tower, mine headframe, the Lodge yard) and the ice fall across the glacier valley (the gate, opened when Ymrik falls)
   village/buildings-beach.js         The Tide King's beach (ARENA_TIDE): a ring of whale ribs on the landward side, driftwood, big shells and shallow tide pools
   village/villagers.js               VILLAGERS (hard-coded NPCs of the three villages), random villagers, NPC behaviour (updateNPCs)
   village/talking.js                 Talking to villagers: bubble, prompt, talk key (E), the main quest's lines first, opening shop/quest panels; reading lore spots, picking heartleaf; stepping on a teleport circle
@@ -129,6 +134,7 @@ game
   combat/monster-bugs.js             Beetle, spider and crab models (model 'beetle'): horned / kabuto / scarab / ironshell / ice beetles, the Jorogumo and glacier spiders, crabs with claws, the Tide King
   combat/monster-beasts.js           Boar and fox / wolf / lynx models (models 'boar' and 'fox'): bristled hogs with tusks and a head that gores, slim kitsune with fans of tails, heavy wolves, tufted lynx
   combat/monster-wyrm.js             The frost wyrm model (model 'wyrm': Vetrmaw and the wyrmlings): a horned head with teeth, eight armoured body segments that undulate, membrane wings on finger bones, clawed legs, a spiked tail
+  combat/monster-gryphon.js          The gryphon model (model 'gryphon': the Gryphon Queen and her eaglets): a lion's body, an eagle's head and forelegs, great feathered wings that beat
   combat/monster-woods.js            Treant and totem models: gnarled walking trees with faces and hands of twigs; dead, mossy, snowy, blossoming, bamboo, rock and ice kinds; the Rootwarden; the totems
   combat/monster-spirits.js          Wisp and ghost models (model 'wisp'): fire spirits (onibi, rime wisp) with a bright core and rising tongues; the yurei, ice wraith and barrow wight, tattered figures that float
   combat/monster-boss.js             What sets the bosses apart in the goblin and fox models: Akaoni's iron, skulls and flames, Ymrik's ice crown, cape and greataxe, Kyuubi's gold, beads, rope and marks
@@ -156,15 +162,15 @@ game
   ui/potions.js                      Potions on the client: the potion belt above the action bar (healing, might and guard, with counts, keys, cooldowns and the running buff), drinking with the keys, and the potion icons
   ui/travel.js                       The travel window: stepping on a teleport circle and pressing the talk key lists every village (CIRCLES in shared/hoarfrost.js); the ones you have not walked to yet are locked
   economy/tiers.js                   Zone tiers, client side: a monster's level and health as you fight it, the symbol beside your health, the tier picker on the map panel
-  ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, reset
+  ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, the Greyspine, reset
   economy/init.js                    Inventory key and first-time gear setup
   combat/boss.js                     The bosses, client side: telegraph visuals (circle, cone, line, donut, marks) and how each ends, root spikes, slam waves, shield bubble, roars, boss bar, a boss's look in each mode
   combat/boss-fx.js                  Boss zones and waves (fire pools, whirlpools, the whiteout, the blizzard, tidal walls) and what a boss does to you: frozen, slowed, shoved, pulled into a whirlpool
   combat/skill-fx.js                 Visuals and sounds for the equippable skills: Arrow Rain, Meteor, Chain Lightning, Piercing Shot, Shield Bash, Charge, and every skill with generic effects (fx: the boss skills)
   world/weather.js                   Weather on the client: rain streaks around the camera (snowfall and blizzards instead in the Hoarfrost Reach), a darker foggy sky, lightning and thunder (rain and wind sound: audio/rain.js)
   world/aurora.js                    The aurora over the Hoarfrost Reach: slow green and violet curtains in the northern sky on clear nights
-  player/movement.js                 Player movement (with a boss's ice, shoves and whirlpools), collisions (the border mountains, the tunnel and its sealed door, the vale's north wall with Frostgate Pass and its ice wall), camera
-  ui/map.js                          World map: a map image painted from the terrain, the corner minimap, and the full map (N) of each land (home forest, Sakura Vale, Hoarfrost Reach) with zones, quests, resource nodes and players
+  player/movement.js                 Player movement (with a boss's ice, shoves and whirlpools), collisions (the border mountains, the tunnel and its sealed door, the vale's north wall with Frostgate Pass and its ice wall, the home forest's north rim above the Greyspine), camera
+  ui/map.js                          World map: a map image painted from the terrain, the corner minimap, and the full map (N) of each land (home forest, Sakura Vale, Hoarfrost Reach, Greyspine) with zones, quests, resource nodes and players
   net/transport.js                   Connections to the world server: solo (server in this tab), shared room (one player's tab hosts), WebSocket (node server)
   net/client.js                      Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
   net/remote.js                      Other players: avatars built from their look and gear, smoothed movement, attack animations, name tags

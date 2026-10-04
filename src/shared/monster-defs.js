@@ -1,4 +1,4 @@
-//@ Monster families (FAM), the 58 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach), prepDef, the six bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
+//@ Monster families (FAM), the 72 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach, 14 in the Greyspine), prepDef, the eight bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
 const FAM={
   slime: {hpK:0.85,dmgPct:0.06,atk:1.6,speed:2.2,rad:0.45,height:0.8,aggro:10,sound:'squish',per:4},
   shroom:{hpK:0.95,dmgPct:0.07,atk:1.7,speed:1.8,rad:0.4, height:1.1,aggro:10,sound:'pip',per:3},
@@ -9,7 +9,8 @@ const FAM={
   fox:   {hpK:1.0, dmgPct:0.1, atk:1.5,speed:3.8,rad:0.55,height:1.0,aggro:14,sound:'yelp',per:2},
   wisp:  {hpK:0.9, dmgPct:0.1, atk:1.7,speed:2.6,rad:0.45,height:1.6,aggro:13,sound:'pip',per:3},
   totem: {hpK:1,dmgPct:0,atk:99,speed:0,rad:0.55,height:2.7,aggro:0,sound:'click',per:0},
-  wyrm:  {hpK:1.0,dmgPct:0.12,atk:2.2,speed:2.6,rad:0.9,height:2.0,aggro:16,sound:'groan',per:1}
+  wyrm:  {hpK:1.0,dmgPct:0.12,atk:2.2,speed:2.6,rad:0.9,height:2.0,aggro:16,sound:'groan',per:1},
+  gryphon:{hpK:1.0,dmgPct:0.12,atk:2.1,speed:3.2,rad:0.8,height:2.0,aggro:16,sound:'groan',per:1}
 };
 const MON_DEFS=[
   {id:'slime',     name:'Slime',            level:1,el:'water', model:'slime', scale:1,   aggro:0, pal:{body:0x5fcf5a,top:0xc2f7a8,mouth:0x1d4a1a}},
@@ -77,9 +78,25 @@ const MON_DEFS=[
   {id:'revenant',  name:'Rime Revenant',    level:29,el:'dark', model:'goblin',scale:1.2, per:2,hpK:1.35,dmgPct:0.12,zone:'h29', glow:0x081420, pal:{form:'undead',skin:0x9ab0bc,eyes:0x9fe8ff,top:'plate',topColor:0x6a8298,bottom:'trousers',bottomColor:0x2a3644,hat:'helm',hatColor:0x54687c,club:0xdce8f0,weapon:'katana'}},
   {id:'barrowwight',name:'Barrow Wight',    level:29,el:'dark', model:'wisp',  scale:1.3, glow:0x0c1420, zone:'h29', pal:{body:0x8a9cb0,core:0xe8f4ff,eye:0x0a0e14,hair:0x141a24,ghost:1}},
   {id:'alphawolf', name:'Frostfang Alpha',  level:30,el:'air',  model:'fox',   scale:1.75,hpK:1.3, zone:'h30', glow:0x0c1a2c, pal:{body:0x9eb4cc,belly:0xeaf2fa,tip:0xffffff,eye:0xff6a5a,legs:0x566a84,tails:1,wolf:1}},
-  {id:'glaciergolem',name:'Glacier Golem',  level:30,el:'water',model:'treant',scale:1.95,hpK:1.6, zone:'h30', glow:0x0a2030, pal:{kind:'ice',bark:0x4a5a68,c1:0xa8d8f0,c2:0xc8ecfc,c3:0x88c0e0,eyes:0xffb040}}
-];
-/* The numbers of a monster def at level L: prepDef gives it those of its own level, a zone tier (tiers.js) asks for those of a higher one.
+  {id:'glaciergolem',name:'Glacier Golem',  level:30,el:'water',model:'treant',scale:1.95,hpK:1.6, zone:'h30', glow:0x0a2030, pal:{kind:'ice',bark:0x4a5a68,c1:0xa8d8f0,c2:0xc8ecfc,c3:0x88c0e0,eyes:0xffb040}},
+  /* the Greyspine (levels 26-32, docs/WORLD.md): two kinds per level, each in its own zone (zone:'g26'..'g32', ZONES in greyzones.js); elements earth and air.
+     The home families come back as mountain kinds (granite and quartz slimes, cliff boars and ibex, crystal and slate beetles, miners and trolls, stone treants
+     and golems); the creatures of the place use the models that fit: wyverns and drakes the wyrm, the snow leopard the cat, the mist wraith the ghost */
+  {id:'granitslime',name:'Granite Slime',    level:26,el:'earth',model:'slime', scale:1.7, per:3, zone:'g26', pal:{deco:'crust',body:0x8a8a86,top:0xc8c8c0,mouth:0x2a2a28}},
+  {id:'cliffboar', name:'Cliff Boar',       level:26,el:'earth',model:'boar',  scale:1.5, zone:'g26', pal:{ram:1,body:0x7a746a,ridge:0xd8d4ca,head:0x6a645a,snout:0x9a8a7a,tusk:0xf2ead8,legs:0x3a342c,eye:0xffa030}},
+  {id:'crystalbeetle',name:'Crystal Beetle',level:27,el:'earth',model:'beetle',scale:1.5, hpK:1.25, zone:'g27', glow:0x100a22, pal:{kind:'ice',shell:0x9a8ac8,seam:0x3a2a6a,sheen:0xe8e0ff,head:0x6a5a98,horn:0xdcd0ff,eye:0xffd040,legs:0x4a3a78}},
+  {id:'stonetreant',name:'Stone Treant',    level:27,el:'earth',model:'treant',scale:1.75,hpK:1.5, zone:'g27', pal:{kind:'rock',bark:0x6a665e,c1:0x7a8a6a,c2:0x8a9a7a,c3:0x6a7a5a,eyes:0xffd860}},
+  {id:'minegoblin',name:'Mountain Goblin',  level:28,el:'earth',model:'goblin',scale:1.1, zone:'g28', pal:{form:'hob',skin:0x8a9a6a,eyes:0xffd040,top:'jacket',topColor:0x5a5a52,bottom:'trousers',bottomColor:0x3a3a34,hat:'helm',hatColor:0x6a6a70,club:0x8a8a90,weapon:'axe'}},
+  {id:'snowleopard',name:'Snow Leopard',    level:28,el:'air',  model:'fox',   scale:1.45,zone:'g28', pal:{cat:1,body:0xcfc8bc,belly:0xf2eee6,tip:0x3a3a3e,eye:0xa0e0b0,legs:0x8a8478,tails:1}},
+  {id:'cragwyvern',name:'Crag Wyvern',     level:29,el:'air',  model:'wyrm',  scale:0.85,zone:'g29', pal:{body:0x8a7a6a,belly:0xd8ccb8,ridge:0x5a4a3a,horn:0xe8dcc0,eye:0xffd040,wing:0xa89a86}},
+  {id:'mistwraith',name:'Mist Wraith',      level:29,el:'air',  model:'wisp',  scale:1.25,zone:'g29', glow:0x101820, pal:{body:0xc8d4dc,core:0xffffff,eye:0x10141c,hair:0x1c2430,ghost:1}},
+  {id:'quartzslime',name:'Quartz Slime',    level:30,el:'earth',model:'slime', scale:1.9, per:3, zone:'g30', glow:0x14102a, pal:{deco:'crystal',body:0xb8a8d8,top:0xf0e8ff,mouth:0x2a2040}},
+  {id:'ibex',      name:'Ibex Ram',         level:30,el:'air',  model:'boar',  scale:1.55,zone:'g30', pal:{shaggy:1,ram:1,body:0x8a7a6a,ridge:0xe8e0d0,head:0x7a6a5a,snout:0x9a8a7a,tusk:0xf2ead8,legs:0x4a4036,eye:0xffa030}},
+  {id:'rocktroll', name:'Rock Troll',       level:31,el:'earth',model:'goblin',scale:1.9, per:2,hpK:1.5,dmgPct:0.12,zone:'g31', pal:{form:'troll',skin:0x8a8a82,eyes:0xffe060,top:'tshirt',topColor:0x4a4a44,bottom:'shorts',bottomColor:0x3a3a34,hat:'none',hatColor:0x2b2420,club:0x6a6a70,horns:0xcfcac2,fur:0x7a7a72}},
+  {id:'slatecrawler',name:'Slate Crawler',  level:31,el:'earth',model:'beetle',scale:1.75,hpK:1.3, zone:'g31', pal:{shell:0x5a5e66,seam:0x22262a,sheen:0xa0a8b8,head:0x3a3e46,horn:0x8a8e96,eye:0xff6a3a,legs:0x2e3238,spider:1}},
+  {id:'galedrake', name:'Gale Drake',       level:32,el:'air',  model:'wyrm',  scale:1.3, hpK:1.3, zone:'g32', pal:{body:0x8aa4b4,belly:0xe0eaf0,ridge:0x4a5a6a,horn:0xe8f0f4,eye:0xff7a3a,wing:0x7a94a8}},
+  {id:'granitegolem',name:'Granite Golem',  level:32,el:'earth',model:'treant',scale:2.0, hpK:1.6, zone:'g32', glow:0x0a1018, pal:{kind:'rock',bark:0x5a5a58,c1:0x8a8a84,c2:0x9a9a94,c3:0x74746e,eyes:0xffb040}}
+];/* The numbers of a monster def at level L: prepDef gives it those of its own level, a zone tier (tiers.js) asks for those of a higher one.
    Health: the hits a same-level, normally geared player needs (4 + 0.45 x level), times the enemy's toughness; a boss or a prop has a fixed
    count of hits instead (d.hits). Damage: a share of a same-level, normally geared player's health, before that player's armor (a boss: 16%). */
 function defAt(d,L){
@@ -133,6 +150,18 @@ const CORE_DEF=totemDef({id:'warmcore',name:'Warm Core',level:30,el:'water',mode
 const WYRMLING_DEF={id:'wyrmling',name:'Wyrmling',level:29,el:'water',model:'wyrm',scale:0.6,hpK:0.6,dmgPct:0.07,atk:1.6,speed:3.6,aggro:30,
   pal:{body:0x9cc4e0,belly:0xe4f2fa,ridge:0x3a6a8c,horn:0xe8f6ff,eye:0xff7a3a,wing:0x6a98bc}};
 prepDef(WYRMLING_DEF);
+// the Greyspine: the Gryphon Queen (level 29, on her peak) and the mountain golem (level 32, in his cavern at the head of the Sink Valley)
+const GRYPHON_DEF=bossDef({id:'gryphonqueen',name:'The Gryphon Queen',level:29,el:'air',model:'gryphon',scale:2.4,boss:true,heavy:true,glow:0x14100a,atk:2.2,speed:3.0,aggro:0,
+  pal:{body:0xc8963a,belly:0xe8d4a0,plume:0xf2ecdc,beak:0xe8b830,eye:0xffd040,wing:0xd8b878,tuft:0x8a5a24}});
+const EAGLET_DEF={id:'eaglet',name:'Gryphon Eaglet',level:28,el:'air',model:'gryphon',scale:0.62,hpK:0.6,dmgPct:0.07,atk:1.5,speed:3.8,aggro:30,
+  pal:{body:0xb88a3a,belly:0xe0cc98,plume:0xe8e0cc,beak:0xe0b030,eye:0xffd040,wing:0xc8aa70,tuft:0x7a5020}};
+prepDef(EAGLET_DEF);
+const GOLEM_DEF=bossDef({id:'mountaingolem',name:'The Mountain Golem',level:32,el:'earth',model:'treant',scale:3.1,boss:true,heavy:true,glow:0x1a0c02,atk:2.7,speed:1.8,aggro:0,
+  pal:{kind:'rock',bark:0x4a4a48,c1:0x7a7a74,c2:0x8a8a84,c3:0x64645e,eyes:0xff8a30}});
+const RUBBLE_DEF={id:'rubble',name:'Rubble Imp',level:31,el:'earth',model:'treant',scale:0.6,hpK:0.6,dmgPct:0.07,atk:1.8,speed:2.6,aggro:30,
+  pal:{kind:'rock',bark:0x4a4a48,c1:0x7a7a74,c2:0x8a8a84,c3:0x64645e,eyes:0xff8a30}};
+prepDef(RUBBLE_DEF);
+const JOINT_DEF=totemDef({id:'ironjoint',name:'Iron Joint',level:32,el:'earth',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x1a1208,pal:{crystal:0xc8a060,band:0x8a8a90}});
 /* kit: the boss's own move set (BOSS_KITS in server/boss-kits-*.js); arena: which clearing (ARENAS in vale.js, hoarfrost.js, beach.js); add: what it
    summons; totem: the Rootwarden's shield-phase totems; prop: what shelters players in Vetrmaw's blizzard; totems: the totems' name for the boss bar;
    bar: what the boss bar says while the boss is in a mode (1 airborne, 2 hidden, 3 shielded, 4 whiteout, 5 blizzard) or stunned */
@@ -142,7 +171,9 @@ const BOSS_DEFS=[
   {def:AKAONI_DEF,arena:'boss20',kit:'oni',add:IMP_DEF,short:'Akaoni',bar:{1:'Leaping!',stun:'Stunned!'}},
   {def:KYUUBI_DEF,arena:'boss25',kit:'kitsune',add:FOXKIT_DEF,short:'Kyuubi',bar:{2:'Vanished: where will it strike?',stun:'Stunned!'}},
   {def:YMRIK_DEF,arena:'boss26',kit:'rime',add:THRALL_DEF,short:'Ymrik',bar:{4:'Whiteout: stay inside the circle!',stun:'Spent: strike now!'}},
-  {def:VETRMAW_DEF,arena:'boss30',kit:'wyrm',add:WYRMLING_DEF,prop:CORE_DEF,short:'Vetrmaw',bar:{1:'Airborne: fend off the wyrmlings',5:'Blizzard: shelter at a Warm Core!',stun:'Grounded: hit it now!'}}];
+  {def:VETRMAW_DEF,arena:'boss30',kit:'wyrm',add:WYRMLING_DEF,prop:CORE_DEF,short:'Vetrmaw',bar:{1:'Airborne: fend off the wyrmlings',5:'Blizzard: shelter at a Warm Core!',stun:'Grounded: hit it now!'}},
+  {def:GRYPHON_DEF,arena:'boss29',kit:'gryphon',add:EAGLET_DEF,short:'The Gryphon Queen',bar:{1:'Airborne: she dives from the sky!',stun:'Grounded: hit her now!'}},
+  {def:GOLEM_DEF,arena:'boss32',kit:'golem',add:RUBBLE_DEF,totem:JOINT_DEF,short:'The Mountain Golem',totems:'Iron Joints',bar:{stun:'The shell is cracked: hit him now!'}}];
 /* The main quest's grey-veined monsters (docs/MAIN-QUEST.md, W9 and V7): tougher copies of a zone's kind, touched by the grey sleep.
    Not in MON_DEFS: no camps and no board quests; the server spawns a few for each player on that step (server/main-quest.js) */
 function greyDef(base,id,name,o){

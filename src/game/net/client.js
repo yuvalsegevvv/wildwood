@@ -75,6 +75,8 @@ function applyEvent(e){
     case 'warp': onWarp(e[1],e[2],e[3],e[4],e[5]); break;
     case 'vale': if(e[1]===me) onValeStep(e[2]); break;
     case 'north': if(e[1]===me) onNorthStep(e[2]); break;
+    case 'west': if(e[1]===me) onWestStep(e[2]); break;
+    case 'gate': if(e[1]===me) onGateStep(e[2]); break;
     case 'node': onNodeEvent(e[1],e[2]); break;
     case 'gather': if(e[1]===me) onGatherEvent(e[2],e[3],e[4]); break;
     case 'cast': if(e[1]===me) onCastEvent(e[2],e[3]); break;

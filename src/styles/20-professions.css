@@ -21,7 +21,7 @@
 .cb-bar{ height:6px; margin-top:5px; border-radius:3px; background:rgba(255,255,255,.14); overflow:hidden; }
 .cb-bar i{ display:block; width:0; height:100%; background:linear-gradient(90deg,#8adf9a,#e2f7a8); }
 body.editing #castbar{ display:none; }
-.tr-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.tr-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
 .tr-dest{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:14px 8px; border-radius:14px; border:1px solid var(--line); background:rgba(0,0,0,.22); color:var(--ink); font:inherit; cursor:pointer; text-align:center; }
 .tr-dest:hover:not(:disabled){ background:rgba(40,52,64,.7); border-color:#7fd0ff; }
 .tr-dest:disabled{ cursor:default; opacity:.6; }

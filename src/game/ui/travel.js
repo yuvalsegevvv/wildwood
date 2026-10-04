@@ -4,7 +4,8 @@
 const TR_ICON={
   home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
   hanami:'<path d="M12 3c2 3 2 6 0 9-2-3-2-6 0-9zM12 12c3-2 6-2 9 0-3 2-6 2-9 0zM12 12c2 3 2 6 0 9-2-3-2-6 0-9zM12 12c-3 2-6 2-9 0 3-2 6-2 9 0z"/>',
-  rimehold:'<path d="M12 2v20M4.5 6.5l15 11M19.5 6.5l-15 11"/><path d="M9 3.5l3 2.5 3-2.5M9 20.5l3-2.5 3 2.5"/>'
+  rimehold:'<path d="M12 2v20M4.5 6.5l15 11M19.5 6.5l-15 11"/><path d="M9 3.5l3 2.5 3-2.5M9 20.5l3-2.5 3 2.5"/>',
+  highmark:'<path d="M2 20l7-12 4 6 3-4 6 10z"/><path d="M7.5 12.5l1.5 1.5 1.5-1.5"/>'
 };
 function openTravel(){ openPanel('travel'); renderTravel(); }
 function renderTravel(){

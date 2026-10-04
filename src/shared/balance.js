@@ -15,8 +15,8 @@ const TIER_ATK=[4,12,26,45,70,100];
 const ARMOR_HP={helmet:[8,25,55,100,160,240],top:[15,45,100,180,290,430],bottom:[10,32,70,130,210,310],shoes:[6,18,40,75,120,180]};
 const ARMOR_DEF={helmet:[1,3,5,8,11,15],top:[2,5,10,16,22,30],bottom:[1,3,6,10,14,19],shoes:[1,2,4,6,9,12]};
 const tierFor=L=>L>=25?5:L>=20?4:L>=15?3:L>=10?2:L>=5?1:0;   // (tier 5 until the next land brings a better one)
-// the highest monster level (zones, quests): the Hoarfrost Reach's 30. VALE_TOP_LV: the highest level skill upgrades ask drops of (the vale's 25)
-const MAX_ZONE_LV=30, VALE_TOP_LV=25;
+// the highest monster level (zones, quests): the Greyspine's 32. VALE_TOP_LV: the highest level skill upgrades ask drops of (the vale's 25)
+const MAX_ZONE_LV=32, VALE_TOP_LV=25;
 const setHP=t=>ARMOR_HP.helmet[t]+ARMOR_HP.top[t]+ARMOR_HP.bottom[t]+ARMOR_HP.shoes[t];
 const setDef=t=>ARMOR_DEF.helmet[t]+ARMOR_DEF.top[t]+ARMOR_DEF.bottom[t]+ARMOR_DEF.shoes[t];
 const defRed=d=>d/(d+60);

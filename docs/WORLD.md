@@ -3,7 +3,7 @@
 Read this before adding a region, a village, a boss, lore, or anything that says where a place is or what lies beyond it.
 It turns the owner's hand-drawn draft of the home continent into a geography that makes sense, and sets the rules that keep
 future regions consistent. **It is a design document, not a description of the code**: only Wildwood, the Sakura Vale and the Hoarfrost Reach exist in
-the game today, and the game's current layout does not have to match this map yet (section 8 says how the two meet).
+the game today (and the Greyspine: its ground, Highmark, monsters, two bosses and water, but not the lands behind its gates), and the game's current layout does not have to match this map yet (section 8 says how the two meet).
 
 **Decided by the owner**: the shape of the continent, which region borders which, where the settlements are, the order of the
 journey (section 5), every region's level range, the Sunscar's oasis *city*, and a big cave region between Wildwood and the Greyspine
@@ -28,7 +28,7 @@ they are out of scope for now, but the Stormhorn's lighthouse is where the way t
 | wildwood - starter forest | **Wildwood** | 1-15 (built) | lowland basin, rivers to the Crownsea | mild, rainy (monsoon) | the village |
 | hanami - japanese zone | **Sakura Vale** | 16-25 (built) | temperate coastal vale, glacier-fed rivers | mild, four seasons | Hanami |
 | snowy zone | **Hoarfrost Reach** | 22-30 (built) | high frozen plateau: tundra, taiga fringe, glaciers | polar | Rimehold |
-| mountain zone | **the Greyspine** | 26-32 | young alpine range, snow above the snowline, fjords | alpine | Highmark |
+| mountain zone | **the Greyspine** | 26-32 (built, but for the lands behind its gates) | young alpine range, snow above the snowline, fjords | alpine | Highmark |
 | desert | **Sunscar** | 28-36 | raised plateau desert behind an escarpment, one river | hot and dry, cold nights | **Glasswell, an oasis city** |
 | narrow cliff shore | **Stormhorn** | 30-40 | narrow hooked peninsula of sea cliffs and stacks | cold, foggy, gales | Gullrest |
 | (not on the map) | **the Rootdeep** | 30-47 | caves under Wildwood's northern foothills and the Greyspine | underground | none (camps) |
@@ -120,6 +120,8 @@ wanted: hot springs (onsen) near the northern border, where the land starts to c
 - **The wonder** (rule 9 of section 6): the plateau's wonder is the iron bird, a wreck the hunters call a dragon's skeleton; the lore explains it (`STORY.md`).
 
 ### The Greyspine (levels 26-32)
+**Built so far: the terrain only** (section 8 has the numbers; `docs/NOT-BUILT.md` section 3b lists the rest). The design below is what it is built toward.
+
 - **Look**: alpine meadows, pine and larch, scree, waterfalls, snowfields above the snowline, fjords with cold dark water on the south-west.
 - **Culture** *(proposed)*: an alpine mining and monastery town (Highmark) built into the rock near the Hoarfrost border; rope bridges,
   shrines on passes. Its deepest mine broke into the Rootdeep.
@@ -313,7 +315,7 @@ storyline). What it means for the geography:
   - The lake in the west forest is **Mistmere** (the Greywater name belongs to the Bight).
 - **The Hoarfrost Reach** (what it leaves out is commented in `docs/NOT-BUILT.md`) (`shared/hoarfrost.js`, heights in `shared/terrain.js`, dressing in `game/village/buildings-hoar.js`):
   - The world rectangle grew 600 m north (`NORTH_D`, `HZ0` = the vale's and forest's old north edge at z = -440, `WZ0` = -1040): 1430 x 1480 m. The
-    part north of the home forest is the Greyspine's mountains (`greyspineHeight`, cheap, nobody can walk there).
+    part north of the home forest is the Greyspine (`greyspineHeight` in `shared/greyspine.js`; section 8 below).
   - **Shape**: the vale's north rim goes on as a crest (~80-90 m) along z = HZ0 and eases down over ~60 m onto the plateau (~50 m up, rolling white
     domes, `hoarHeight`), with a glacier wall in the north, the Vale Wall in the west and sea cliffs in the east. Three **frozen lakes**
     (`FROST_LAKES`: Frostmere, Mirrorice, Blue Tarn) are flat, walkable ice, not water.
@@ -336,12 +338,39 @@ storyline). What it means for the geography:
   - **Travel**: the teleport circle in each village opens a window to choose where to go (`CIRCLES`, `ui/travel.js`, `warp{to}`).
   - **Cost**: the heightmap grew from 716 x 441 to 716 x 741 cells (client, full detail), the terrain is drawn in 64 x 128-cell tiles culled by distance
     in both directions, the placeholder far-lands grid keeps its old origin.
+- **The Greyspine** (`shared/greyspine.js`, `highmark.js`, `greyzones.js`; the terrain first, then the rest below; heights, walls and the two places below are shared code, colours are `greyColor` in `game/world/terrain-color.js`):
+  - **Where**: the part of the world rectangle north of the home forest and west of the Reach, x -440..440 and z -1040..-440 (880 x 600 m, `inGrey(x,z)`). It fits inside the
+    rectangle that grew north for the Reach, so nothing had to grow. Ground 31 m (the troughs, west) to about 230 m (peaks); the walls reach about 300 m.
+  - **Shape** (a young, glacier-carved range): a long trough, **the Long Valley** (`GREY_VALLEYS[0]`: floor 34 m in the west to about 76 m in the east, 48 m wide and flat, flanks that
+    are foothills), wandering west to east between where the Reach's glacier valley will come in and where the river road to the Sunscar will leave; four side valleys that climb into
+    cirques (`up` metres to their heads): **the North Fork** (to the spine's snowfields), **the Queen's Fork** (under the Gryphon Queen's peak), **the Neck** (west, towards the
+    Stormhorn) and **the Sink Valley** (south, towards the rim where the Rootdeep's sinkholes will be). Between the troughs: ridged mountains whose height grows with the distance
+    from a trough and towards the north, so the spine along the north edge is the highest ground. A domain warp of +-38 m keeps the troughs from looking ruled.
+  - **Walls**: south, the home forest's rim goes on as its crest at z = HZ0 and eases down over ~66 m (`baseHeight`); east, the Reach's west wall seen from the other side (the ground
+    is blended into `hoarBase` and the same crest terms are added, so at x = HALF - 6 it differs from `hoarHeight` by 0.2 m on average and the lands meet without a step); north and west,
+    crests of their own (the Reach's glacier wall formula, `rn`, and a west one, `rw`). A player can climb to 14 m short of a crest (`greyWall`, `frostWall`), never over. The walls are
+    broken in three places, each by a canyon with a shut gate (below).
+  - **Two places are shaped for what comes next**: **Highmark's shelf** `GREY_HM` (292, -792 after the way in was cut): a flat bench 26 m above the trough at the North Fork's mouth, radius 34 m (the village
+    goes here); **the Gryphon Queen's peak** `GREY_QUEEN` (-200, -960): a mountain of about 48 degrees with ribs and a flat crown of radius 28 m at 232 m (her arena).
+  - **Ground and plants**: alpine meadow (yellow-dry only on the low ground), a darker needle floor under dense woods, grey scree from ~72 m, rock where steep, snow above ~128-142 m
+    (lower in the far north, never on steep rock), a red-badlands tint in the south-west where the river will leave the range (WORLD section 2: alluvial fans, red badlands), packed
+    earth on the shelf, the Reach's snow drifting over the east crest. The home forest's tree rules apply (pines and spruces, by height) up to the treeline (`greyTreeline`, 92-120 m);
+    above it no tree, bush, fern, flower or grass tuft. The zone label says "The Greyspine" on the spine and the zone's name in a zone.
+  - **What was built on it** (`docs/NOT-BUILT.md` section 3b lists what was not): **the glacier valley** `GLEN` (z -722; `glenCarve` cuts the Vale Wall at the same z from both sides, 11 m
+    half-width at the crest, the floor falling gently to the Reach's plateau) with an **ice fall** at `GLEN.ice` that opens when Ymrik falls (`gear.west`); **Highmark** (`VIL4`) on its shelf, stone
+    and slate houses under snow, a Lodge, nine named people, a circle; **seven zones** (26 Highmark Pastures, 27 The Ledgeway, 28 Miners' Scree, 29 Gryphon Cirque, 30 Stone Meadow, 31 The
+    Windswept Neck, 32 The Sink; `greyZoneAt`, cut from circle cells like the vale's) with two kinds of monster each (earth and air only) and two boss zones; the **Gryphon Queen** (29) on her
+    crown and the **Mountain Golem** (32) in a cavern (`ARENA29`, `ARENA32`); **water**: three tarns, a river that runs west out of the Long Valley, a fjord on the south-west coast; and
+    **the two gates** of this document's section 5: the river road (z -586, opened by the Queen) and the neck pass (z -776, opened by the Golem), canyons cut through the west wall (`westCarve`,
+    `GREY_GATES`) that end at the world's edge: the Sunscar and the Stormhorn are not built, so nothing lies behind them.
+  - **To see it**: Testing tools, "Go to the Greyspine (Highmark's shelf)", "Gryphon Queen's peak", the glen, the cavern and the two rock falls (`dev` `tunnel` `grey` / `queen` / `glen` / `cavern` / `riverfall` / `neckfall`), or `data-v="x,z,degrees"` on `tPass`.
+    Test: `node tools/greyspine-smoke.js`. To draw its shape offline: sample `rawHeight` with `loadShared(['rawHeight'])` into a hillshade (slopes: 35% under 0.3, 26% above 0.95).
 - **The rest of Eldmere is a low-poly placeholder** (`game/world/far-lands.js`): one flat-shaded mesh around the playable rectangle,
   shaped from this map (the Greyspine's peaks, the Hoarfrost plateau, the Sunscar plateau with mesas, Amber Reach, the Stormhorn, and the
   Emberwake Isles with a smoking volcano), plus one sea to the horizon. It can't be walked on. Its high ground shows faintly through the
   distance haze. When a land is built, it replaces its part of the placeholder.
 - The game's world is one rectangular heightmap (`WX0..WX1` x `WZ0..WZ1`, section 9 of `CLAUDE.md`). The rectangle has already grown north (the Hoarfrost
-  Reach); the Greyspine (north-west of Wildwood, today a cheap unwalkable massif), the Sunscar (west) and Amber Reach (south-west) need it to
+  Reach); the Greyspine now lies inside it (north-west of Wildwood), the Sunscar (west) and Amber Reach (south-west) need it to
   grow in those directions; the isles need water around them and boat or teleport travel.
 - **The Rootdeep cannot be made from the heightmap** (a heightmap has no ceilings or overhangs). It needs its own kind of space: enclosed
   cave meshes, reached through a portal at its entrances like a separate instance, with its own lighting (no sun, no sky, no weather).

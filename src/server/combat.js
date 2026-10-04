@@ -61,6 +61,9 @@ function rewardKill(q,m){
   mqKillP(q,m);
   if(m.def.id==='boss') openValeP(q);
   if(m.def.id==='akaoni') openNorthP(q);
+  if(m.def.id==='ymrik') openWestP(q);
+  if(m.def.id==='gryphonqueen') openGateP(q,'river');
+  if(m.def.id==='mountaingolem') openGateP(q,'neck');
 }
 // a boss kill: each of that boss's skills you do not own yet drops with BOSS_SKILL_CHANCE (drops.js); you choose when to equip it
 function bossSkillDropP(q,bossId){

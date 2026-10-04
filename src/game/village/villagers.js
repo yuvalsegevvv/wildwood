@@ -160,6 +160,43 @@ const VILLAGERS=[
     look:{sex:'female',height:0.97,build:1.0,face:'round',hair:'bun',hairColor:0xb8b0a4,chest:1.0,skin:0xe4c8ae,top:'hoodie',topColor:0x3a5a6a,bottom:'skirt',bottomColor:0x3a3a42,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2a1e,facial:'none'},
     behavior:{type:'stationary',at:'plaza5'}, home:'house:8', schedule:'always', voice:{rate:0.85,pitch:1.0},
     lines:['Sit. No, not there: that is where the kettle spits.','My mother sat in this chair forty years, and nobody after her. Frostbloom for the healing, snowmoss for the tonic. Bring me some and I will show you what the north can do.','Gudrun sends me everyone with green thumbs. I do not complain. Much.'] },
+  /* ---- Highmark, the Greyspine's village (VIL4): miners and monks. late, so the other villages' random looks stay as they were ---- */
+  { id:'brenna', vil:4, late:true, title:'Quest board · mine foreman', name:'Foreman Brenna', role:'quests',
+    look:{sex:'female',height:1.0,build:1.15,face:'angular',hair:'ponytail',hairColor:0x6a3a22,chest:1.05,skin:0xe0bc9c,top:'jacket',topColor:0x6a5a3a,bottom:'trousers',bottomColor:0x3a3a40,hat:'ranger',hatColor:0x4a4a52,shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'questboard'}, home:'house:3', schedule:'always', voice:{rate:0.92,pitch:0.95},
+    lines:['Welcome to Highmark. I keep the mine and the board; the board is the easier of the two. Gryphons, goats gone wrong, and the odd rockfall that is not an accident.','New notices go up at sunrise. The shifts run on the bell, and the bell runs on the monks.','If you are going up the North Fork, take a rope and a friend. Nobody who went alone has been back to complain.'] },
+  { id:'gerhard', vil:4, late:true, title:'Weaponsmith', name:'Gerhard', role:'weaponsmith',
+    look:{sex:'male',height:1.04,build:1.35,face:'round',hair:'short',hairColor:0x8a8a8a,facial:'beard',skin:0xd4a888,top:'jacket',topColor:0x4a4a52,bottom:'trousers',bottomColor:0x2b2b2e,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'stall:0:behind'}, home:'house:1', schedule:'always', voice:{rate:0.85,pitch:0.78},
+    lines:['Steel from the deep seams, tempered in meltwater. It takes an edge like a thought and holds it.','A blade from the lowlands? Soft as butter up here. Let me show you what the mountain makes.','The miners bring me ore, I bring them axes. We are even, and we both complain about it.'] },
+  { id:'mechthild', vil:4, late:true, title:'Armorer', name:'Mechthild', role:'armorer',
+    look:{sex:'female',height:0.99,build:1.2,face:'round',hair:'bun',hairColor:0x5a3a28,chest:1.1,skin:0xe2c0a0,top:'hoodie',topColor:0x6a6a70,bottom:'trousers',bottomColor:0x4a4a52,hat:'beanie',hatColor:0x4a5a6a},
+    behavior:{type:'stationary',at:'stall:1:behind'}, home:'house:5', schedule:'always', voice:{rate:0.95,pitch:1.0},
+    lines:['Plate for the pit, mail for the pass, leather for the ones who run. Tell me which you are and I will not argue.','A rockfall teaches the same lesson as a bad helm, only louder.'] },
+  { id:'hilda', vil:4, late:true, title:'Forge · merges items', name:'Hilda', role:'forge',
+    look:{sex:'female',height:1.02,build:1.3,face:'angular',hair:'ponytail',hairColor:0x2a1a12,chest:1.2,skin:0xd8b090,top:'jacket',topColor:0x3a3a3a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'stall:2:behind'}, home:'house:6', schedule:'always', voice:{rate:0.85,pitch:0.85},
+    lines:['Three of the same and a hot fire, and the mountain makes one better. Rare, epic, unique, legendary: it has done it before.','The stone down below does not like fire. Odd, that. Everything else does.'] },
+  { id:'matthias', vil:4, late:true, title:'Skill trainer', name:'Brother Matthias', role:'trainer',
+    look:{sex:'male',height:1.02,build:0.95,face:'oval',hair:'short',hairColor:0xb8b0a4,facial:'none',skin:0xe0c0a0,top:'hoodie',topColor:0x6a5a46,bottom:'trousers',bottomColor:0x4a4038,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'well'}, home:'house:2', schedule:'always', voice:{rate:0.8,pitch:0.8},
+    lines:['The abbey teaches what Aldric and Ryu teach, and Thorvald in the cold, only slower and with more bells.','Learn your skills before the peaks. The wind up there does not wait for you to remember them.','Breathe. The air is thin; use less of it.'] },
+  { id:'ansgar', vil:4, late:true, title:'Abbot', icon:'story', name:'Abbot Ansgar', role:null,
+    look:{sex:'male',height:0.97,build:0.9,face:'oval',hair:'short',hairColor:0xdad6ce,facial:'beard',skin:0xe4c8ae,top:'hoodie',topColor:0x3a3a42,bottom:'trousers',bottomColor:0x2a2830,hat:'none'},
+    behavior:{type:'stationary',at:'campfire:seat1',pose:'sit'}, home:'house:4', schedule:'always', voice:{rate:0.78,pitch:0.9},
+    lines:['Sit. The abbey keeps the records of four hundred winters, and the fire keeps me.','There is a page missing from our oldest book: cut out, neatly, with a very fine blade. Nobody remembers who read it last.','The miners say the stone hums. I say stones do not hum. We are both listening very carefully.'] },
+  { id:'konrad', vil:4, late:true, title:'Gate warden', name:'Warden Konrad', role:null,
+    look:{sex:'male',height:1.05,build:1.15,face:'angular',hair:'short',hairColor:0x4a3a2e,facial:'mustache',skin:0xdcb894,top:'jacket',topColor:0x4a5a5a,bottom:'trousers',bottomColor:0x3a3a2e,hat:'ranger',hatColor:0x4a4a52},
+    behavior:{type:'patrol',route:['gate','lamp:2','lamp:3','lamp:4','lamp:5','lamp:6','lamp:1','gate'],pause:3}, home:'house:7', schedule:'always', speed:1.2, voice:{rate:0.95,pitch:0.85},
+    lines:['Gryphons on the high ledges, goats on the scree, and a queen on the peak above the cirque. Nothing to worry about, so long as you stay in the village.','The glacier valley split open a few weeks back, with a sound like the sky being torn. Since then we have had more visitors than in ten years.','The mine road goes up the North Fork. I would not take it at night.'] },
+  { id:'ruprecht', vil:4, late:true, title:'Wayfarers\' Lodge · professions', icon:'lodge', name:'Ruprecht', role:'lodge',
+    look:{sex:'male',height:1.0,build:1.1,face:'oval',hair:'short',hairColor:0x6a4a2a,facial:'stubble',skin:0xe2c4a6,top:'jacket',topColor:0x5a6a4a,bottom:'trousers',bottomColor:0x4a3a2a,hat:'beanie',hatColor:0x3a5a6a,pack:true,shoes:'boots',shoeColor:0x3a2a1e},
+    behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.92,pitch:0.9},
+    lines:['The Lodge teaches the three ways of taking what the mountain gives: mining, woodcutting, and gathering. Sixty coins each, and the right tool. The veins here want a better edge than anything below.','Black stone in the deep seams, larch on the ledges, edelweiss above the treeline. Take only what you can carry down.','Ore goes to Gerhard, logs to Mechthild, herbs to Brother Aurel. Sell me the rest.'] },
+  { id:'aurel', vil:4, late:true, title:'Herbalist-monk · brews potions', icon:'healer', name:'Brother Aurel', role:'brew',
+    look:{sex:'male',height:0.98,build:0.95,face:'round',hair:'short',hairColor:0x9a8a78,facial:'none',skin:0xe4c8ae,top:'hoodie',topColor:0x5a6a52,bottom:'trousers',bottomColor:0x3a3a42,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2a1e},
+    behavior:{type:'stationary',at:'plaza5'}, home:'house:8', schedule:'always', voice:{rate:0.85,pitch:0.95},
+    lines:['Gentian for the lungs, edelweiss for the heart, and a little patience for everything else. Bring me herbs and a few coins and I will brew something that works.','Drink the healing draught when you are hurt, the others before a fight. The mountain gives no second chances, but it does give herbs.','The cold keeps them fresh, which is why we are good at this and bad at everything else.'] },
   { id:'odran3', vil:3, late:true, title:'Peddler', icon:'peddler', name:'Odran', role:'peddler', show:()=>odranHere(3),
     look:{sex:'male',height:1.02,build:1.05,face:'oval',hair:'short',hairColor:0x3a2a20,facial:'stubble',top:'jacket',topColor:0x5a4a6a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'ranger',hatColor:0x3a3230,pack:true,shoes:'boots',shoeColor:0x2a1e14},
     behavior:{type:'stationary',at:'cart'}, home:'house:4', schedule:'always', voice:{rate:1.1,pitch:0.95},
@@ -171,6 +208,8 @@ const NAMES_F=['Freya','Ingrid','Liv','Astrid','Sigrid','Elin','Hanna','Greta','
 const NAMES_M2=['Hiroshi','Takumi','Sora','Ren','Haruto','Kaito','Yuto','Daiki','Shun','Riku'];
 const NAMES_F2=['Yui','Aoi','Hina','Sakura','Mei','Rin','Emi','Nanami','Koharu','Akari'];
 const NAMES_M3=['Ulf','Leif','Eirik','Gunnar','Hakon','Ivar','Orm','Sten','Torben','Rurik'], NAMES_F3=['Ylva','Runa','Solveig','Brynja','Halla','Torvi','Yrsa','Signe','Vigdis','Asa'];
+const NAMES_M4=['Anselm','Florian','Josef','Konrad','Rupert','Ulrich','Matthias','Lorenz','Sepp','Veit'], NAMES_F4=['Berta','Frieda','Hedwig','Liesl','Marta','Theresa','Walburga','Agnes','Irmgard','Resi'];
+const SMALLTALK4=['The bell rings the shifts. Nobody has ever heard it ring wrong, and nobody likes to think what that means.','The goats up on the scree are not ours. We do not claim them.','The stone down the seam is cold even in summer. Cold and, well, loud.','My father cut the steps to the abbey. Four hundred and twelve. I count them every time.','There was a coin in the pay this month that was too round. I gave it to the foreman and she looked at it for a long time.','Mind the ledges after the thaw. The mountain rearranges itself overnight.'];
 const SMALLTALK3=['The lake has never frozen this thick. Or this quiet.','Wolves come to the edge of the firelight and just sit there. I do not care for it.','My grandfather fished Frostmere for sixty winters. He never once looked at the north shore.','If you see a blue flower, do not pick it in the daylight. It sulks.','The aurora was green last night. Green means a good winter. Red means the other kind.','They say the wall is open. They also say the Rimeking is friendly. They say a lot at the fire.'];
 const SMALLTALK2=['The cherry trees never stop blooming here. Nobody remembers why.','Mind the ponds. Kappa like to pull travellers in by the ankles.','Tetsuo and Kenji argue about steel every evening at the brazier.','The bamboo sings when the wind comes off the mountains.','My brother saw foxfire above the shrine again last night.','Sweep the petals in the morning, and by noon there are more.','Daisuke walks that circle so often the stones know his feet.','They say the tunnel was sealed by the Rootwarden itself. Strange that you got through.'];
 const SMALLTALK=['Lovely day for a walk in the woods.','The deer come right up to the garden at dawn.','Mind the river, the current is quicker than it looks.','Have you tried the apples at the market?','My grandmother planted half the birches around here.','Foxes got into the hen house again last week.','When the fireflies come out, you know summer is here.','The old path still leads down to the lake, if you know where to look.','The tavern gets loud after sunset. Oskar tells the same stories every night.','Bram thinks he is guarding us from wolves. There are no wolves.'];
@@ -213,6 +252,14 @@ function initNPCs(){
       const lines=[]; for(let k=0;k<3;k++) lines.push(SMALLTALK3[Math.floor(r3()*SMALLTALK3.length)]);
       const look={sex,hairColor:[0xc9b48a,0x8a5a2a,0x3a2a1e,0xb0703a,0xdad6ce][Math.floor(r3()*5)],hat:r3()<0.4?'beanie':'none',hatColor:[0x8a2a26,0x3a5a6a,0x5a4a3a][Math.floor(r3()*3)],top:r3()<0.5?'hoodie':'jacket'};
       defs.push({id:'villagerr'+i,vil:3,late:true,seed:i+1,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
+    } }
+  // Highmark's people: their own rng again
+  { const r4=mulberry32(9004);
+    for(let i=0;i<FILLER_COUNT;i++){
+      const sex=r4()<0.5?'male':'female', pool=sex==='male'?NAMES_M4:NAMES_F4; let name; do{ name=pool[Math.floor(r4()*pool.length)]; }while(used.has(name)); used.add(name);
+      const lines=[]; for(let k=0;k<3;k++) lines.push(SMALLTALK4[Math.floor(r4()*SMALLTALK4.length)]);
+      const look={sex,hairColor:[0x8a6a4a,0x4a3a2e,0x2a1e18,0xb08a5a,0xc8c0b4][Math.floor(r4()*5)],hat:r4()<0.35?'beanie':'none',hatColor:[0x5a5a62,0x4a5a6a,0x6a5a46][Math.floor(r4()*3)],top:r4()<0.5?'hoodie':'jacket'};
+      defs.push({id:'villagerg'+i,vil:4,late:true,seed:i+21,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
     } }
   defs.filter(d=>!d.late).forEach(d=>spawnNPC(d,rng));
   defs.filter(d=>d.late).forEach(d=>spawnNPC(d,mulberry32(9002+(d.seed||0))));

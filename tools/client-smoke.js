@@ -2,7 +2,7 @@
 // client code. Build first (python3 build.py). Needs the three package (npm install). Prints PASS/FAIL lines.
 // Usage: node tools/client-smoke.js
 const {bootClient}=require('./headless');
-const c=bootClient({expose:['NET','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt']});
+const c=bootClient({expose:['NET','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','GLEN','GREY_GATES','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const el=s=>document.querySelector(s);
 (async()=>{
@@ -52,6 +52,25 @@ const el=s=>document.querySelector(s);
   { const N0=G.GEAR.north, W=G.PASS, o1={x:W.x,z:W.ice-1,inTun:false}, o2={x:W.x+40,z:G.HZ0+5,inTun:false}, o3={x:0,z:G.HZ0-5,inTun:false}, o4={x:W.x,z:W.ice-1,inTun:false};
     G.GEAR.north=0; G.worldBounds(o1,W.x,0.32,W.ice+2); G.GEAR.north=1; G.worldBounds(o4,W.x,0.32,W.ice+2); G.worldBounds(o2,W.x+40,0.32,G.HZ0+20); G.worldBounds(o3,0,0.32,G.HZ0+30); G.GEAR.north=N0;
     ok('the sealed ice wall stops you in the pass, an open one does not; the north walls of the vale and the home forest hold',o1.z>=W.ice+0.79&&o4.z<W.ice-0.9&&o2.z>=G.HZ0+13.9&&o3.z>=G.HZ0+13.9,'sealed '+o1.z.toFixed(1)+', open '+o4.z.toFixed(1)+', wall '+o2.z.toFixed(1)+', forest '+o3.z.toFixed(1)); }
+  // ---- the Greyspine (the fourth land, terrain only): the client side ----
+  { const sv={x:G.P.x,y:G.P.y,z:G.P.z}, H=G.GREY_HM, q=G.GREY_QUEEN, a={x:H.x,z:H.z,inTun:false}, b={x:0,z:G.HZ0-100,inTun:false}, d={x:0,z:G.HZ0-5,inTun:false}, lo=new THREE.Color(), hi=new THREE.Color();
+    G.worldBounds(a,H.x,0.32,H.z); G.worldBounds(b,0,0.32,G.HZ0-100); G.worldBounds(d,0,0.32,G.HZ0-60);
+    ok('in the Greyspine you can stand and walk (a teleport there is not pulled back), but not over the home forest\'s rim: 14 m short of its crest',a.z===H.z&&b.z===G.HZ0-100&&d.z<=G.HZ0-13.9&&d.z>G.HZ0-60,'shelf '+a.z+', '+b.z.toFixed(0)+', rim '+d.z.toFixed(1));
+    G.terrainColor(-60,-650,G.getH(-60,-650),0.2,lo); G.terrainColor(q.x,q.z,q.h,0.2,hi);
+    ok('the Greyspine has ground colours of its own: green meadow in the trough, white snow on the Queen\'s crown; the map paints it',lo.g>lo.r&&lo.g>lo.b&&hi.r>0.8&&hi.g>0.8&&hi.b>0.8&&G.mapEdgeAlpha(0,-700)===255,'trough '+[lo.r,lo.g,lo.b].map(v=>v.toFixed(2))+', crown '+[hi.r,hi.g,hi.b].map(v=>v.toFixed(2)));
+    G.P.x=0; G.P.z=-700; G.P.y=G.getH(0,-700); G.updateZoneLabel(); const inZone=c.el('#zone').textContent;
+    G.P.x=0; G.P.z=-1025; G.P.y=G.getH(0,-1025); G.updateZoneLabel();
+    ok('standing in the Greyspine the zone label names its zone (levels 26-32) or, on the spine, the land, and the map shows its land',/^Miners' Scree \(Lv 28\)$/.test(inZone)&&c.el('#zone').textContent==='The Greyspine'&&G.landHere()==='grey'&&G.LANDS.grey.z1>G.HZ0,inZone+' / '+c.el('#zone').textContent+', '+G.landHere());
+    G.P.x=sv.x; G.P.y=sv.y; G.P.z=sv.z; }
+  { const W0=G.GEAR.west, g=G.GLEN, mk=(x,z)=>({x,z,inTun:false}), a=mk(g.ice-4,g.z), b=mk(G.HALF-5,g.z), c=mk(G.HALF-5,g.z+14);
+    G.GEAR.west=0; G.worldBounds(a,g.ice+1,0.32,g.z);
+    G.GEAR.west=1; G.worldBounds(b,G.HALF+3,0.32,g.z); G.worldBounds(c,G.HALF-4,0.32,g.z+9);
+    G.GEAR.west=W0;
+    ok('the shut ice fall stops you in the glacier valley; an open one lets you through to the Greyspine, and inside the cut near the crest you stay between its walls',a.x>=g.ice+0.79&&b.x<G.HALF-4.9&&Math.abs(c.z-g.z)<=g.w,'shut '+a.x.toFixed(1)+', open '+b.x.toFixed(1)+', walls '+(c.z-g.z).toFixed(1)); }
+  { const Gs=G.GREY_GATES, R0=G.GEAR.river, N0=G.GEAR.neck, mk=(x,z)=>({x,z,inTun:false}), res=[];
+    for(const T of Gs){ const a=mk(T.x-4,T.z), b=mk(T.x-4,T.z); G.GEAR[T.id]=0; G.worldBounds(a,T.x+1,0.32,T.z); G.GEAR[T.id]=1; G.worldBounds(b,T.x+1,0.32,T.z); res.push([a.x,b.x]); }
+    G.GEAR.river=R0; G.GEAR.neck=N0;
+    ok('a shut rock fall stops you east of each west-wall canyon; an open one lets you through to the edge',res.every(([s,o],i)=>s>=Gs[i].x+0.79&&o<Gs[i].x),res.map(r=>r.map(v=>v.toFixed(1)).join('/')).join(' ; ')); }
   ok('the ice wall is hidden once the way is open',G.HOAR.wall&&!G.HOAR.wall.visible);
   ok('Rimehold plays its own music and Frostgate Pass its own zone label',G.musicThemeHere()==='rimehold'&&G.landHere()==='hoar');
   G.P.x=G.PASS.x; G.P.z=G.PASS.z1-40; ok('the Reach\'s music (levels 22-26) outside the village',G.musicThemeHere()==='hoar1');
@@ -59,7 +78,7 @@ const el=s=>document.querySelector(s);
   G.openLodge(); { const h=el('#loBody').innerHTML; ok('the Wayfarers\' Lodge lists three professions (learned), a tool shop with six tier chips and three tools, and the resources to sell',(h.match(/class="lo-row/g)||[]).length===3&&(h.match(/>Learned</g)||[]).length===3&&(h.match(/data-tier=/g)||[]).length===6&&(h.match(/data-buytool=/g)||[]).length===3&&!/Coming later/.test(h)); }
   ok('the tools have icons of their own',['pick1','axe1','sickle1','pick6-l'].every(id=>G.itemIcon(G.ITEM[id]).includes('<svg'))&&G.itemIcon(G.ITEM.pick1)!==G.itemIcon(G.ITEM.axe1)&&G.itemIcon(G.ITEM.axe1)!==G.itemIcon(G.ITEM.sickle1));
   G.P.x=G.VIL3.tele.x; G.P.z=G.VIL3.tele.z; G.P.y=G.getH(G.P.x,G.P.z); G.openTravel();
-  { const h=el('#trBody').innerHTML; ok('stepping on a circle opens a window with every village: this one marked, the others open to travel',G.nearCircle()===G.VIL3&&(h.match(/data-to=/g)||[]).length===3&&/You are here/.test(h)&&(h.match(/Travel here/g)||[]).length===2&&(h.match(/<button[^>]*disabled/g)||[]).length===1); }
+  { const h=el('#trBody').innerHTML; ok('stepping on a circle opens a window with every village: this one marked, the open ones to travel to, Highmark cold until you have been there',G.nearCircle()===G.VIL3&&(h.match(/data-to=/g)||[]).length===4&&/You are here/.test(h)&&(h.match(/Travel here/g)||[]).length===2&&(h.match(/<button[^>]*disabled/g)||[]).length===2); }   // (four villages: this one, two open, Highmark still cold)
   await wait(400); G.NET.send({t:'warp',to:'hanami'}); await wait(500); G=c.G();   // (the server must have heard where you stand) ok('choosing Hanami in the window carries you there',Math.hypot(G.P.x-G.VIL2.x,G.P.z-G.VIL2.z)<G.VIL2.r);
   ok('a node is drawn for every resource node',G.NODE_VIEWS.length===G.NODES.length&&G.NODES.length>=60);
   { const first=G.NODES.find(n=>n.kind==='snowmoss'), far=n=>Math.min(...G.MONS.map(m=>Math.hypot(m.x-n.x,m.z-n.z)));   // (a snowmoss node of the same tier that is farthest from every monster: beside a camp a level-24 hiker is knocked out before the potion check below)

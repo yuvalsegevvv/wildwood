@@ -1,4 +1,4 @@
-//@ Terrain colours (COL, terrainColor; hoarColor for the Hoarfrost Reach's snow, tundra, ice and needle floor)
+//@ Terrain colours (COL, terrainColor; hoarColor for the Hoarfrost Reach's snow, tundra, ice and needle floor; greyColor for the Greyspine's alpine meadows, scree, rock and snowfields)
 const COL = {
   lush:new THREE.Color(0x4c7a2b), dry:new THREE.Color(0x8a8f42), floor:new THREE.Color(0x5b4a30),
   dirt:new THREE.Color(0x6e5738), sand:new THREE.Color(0xb3a27a), mud:new THREE.Color(0x4a3f2f),
@@ -6,7 +6,8 @@ const COL = {
   valeLush:new THREE.Color(0x5c9a38), petal:new THREE.Color(0xd6a2b6),
   beach:new THREE.Color(0xd9c89c), redRock:new THREE.Color(0x96553e), desert:new THREE.Color(0xd2a868),
   frost:new THREE.Color(0xc6d8e6), tundra:new THREE.Color(0x8a8468), needles:new THREE.Color(0x4a5a52), frozenRock:new THREE.Color(0x7d858c), iceBlue:new THREE.Color(0xa8cce4),
-  packed:new THREE.Color(0xb4b6b2), slush:new THREE.Color(0x8e8b80)
+  packed:new THREE.Color(0xb4b6b2), slush:new THREE.Color(0x8e8b80),
+  alpine:new THREE.Color(0x6a8c3c), scree:new THREE.Color(0x8c8b86), larch:new THREE.Color(0x4f5a34)
 };
 // the Hoarfrost Reach: white snow with a blue cast in the hollows, wind-scoured tundra showing through, a dark needle floor under the spruce of the
 // southern fringe, bare rock on steep ground, blue-white ice on the frozen lakes, trodden snow on roads and in the village
@@ -27,14 +28,30 @@ function hoarColor(x,z,h,g,out){
   out.multiplyScalar(0.94+n2*0.12);
   return out;
 }
-const _hc=new THREE.Color();
+// the Greyspine: alpine meadow in the troughs, a darker needle floor under the conifers, grey scree on the slopes and bare rock where it is steep, snow
+// above the snowline (about 130 m, lower on the gentle ground of the north), red badlands in the south-west where the river will leave the range, packed
+// earth on Highmark's shelf
+function greyColor(x,z,h,g,out){
+  const n1=noise2(x*0.02,z*0.02)*0.5+0.5, n2=noise2(x*0.11+5,z*0.11)*0.5+0.5, n3=noise2(x*0.045-30,z*0.045+12)*0.5+0.5, steep=smoothstep(0.62,1.15,g);
+  out.copy(COL.alpine).lerp(COL.dry,smoothstep(0.45,0.85,n1)*0.5*(1-smoothstep(55,95,h)));   // (the dry yellow only on the low meadows)
+  out.lerp(COL.larch,smoothstep(0.5,0.9,forestDensity(x,z))*0.55*(1-smoothstep(82,108,h+n3*12)));
+  out.lerp(COL.dirt,smoothstep(0.72,0.92,n2)*0.35);
+  out.lerp(COL.scree,smoothstep(72,118,h+n3*14)*0.8+smoothstep(0.45,0.8,g)*0.35);
+  out.lerp(n1<0.5?COL.rock:COL.rockHi,steep*0.9);
+  { const bad=smoothstep(WX0+210,WX0+70,x)*smoothstep(100,62,h)*smoothstep(-780,-650,z);
+    if(bad>0){ out.lerp(COL.desert,bad*(1-steep)*0.45); out.lerp(COL.redRock,bad*(0.25+0.6*steep)); } }
+  out.lerp(COL.snow,smoothstep(128-(z<-860?10:0)+n1*18,142-(z<-860?10:0)+n1*18,h)*(1-smoothstep(0.85,1.4,g)));
+  { const d=Math.hypot(x-GREY_HM.x,z-GREY_HM.z); if(d<GREY_HM.r+4) out.lerp(COL.gravel,smoothstep(GREY_HM.r+4,GREY_HM.r-6,d)*0.65); }
+  { const wd=waterSurf(x,z)-h; if(wd>-0.9) out.lerp(wd>0.3?COL.mud:COL.gravel,smoothstep(-0.9,0.5,wd)*0.85); }   // wet banks and the beds of the tarns and the river
+  { const e=smoothstep(HALF-46,HALF-4,x); if(e>0){ hoarColor(x,z,h,g,_gc); out.lerp(_gc,e*0.7); } }   // the Hoarfrost's snow over the east crest
+  return out.multiplyScalar(0.92+n2*0.16);
+}
+const _hc=new THREE.Color(), _gc=new THREE.Color();
 function terrainColor(x,z,h,g,out,noCut){   // noCut: colour as if the tunnel's cutting were not there (its lid)
   const hf=x>HALF+2?smoothstep(HZ0+8,HZ0-56,z):0;   // the vale's north crest, over which the ground turns to the Hoarfrost's
   if(hf>=1) return hoarColor(x,z,h,g,out);
-  if(x<HALF&&z<HZ0-30){   // the Greyspine's mountains north of the forest (nobody can walk there): bare rock, snow on the high ground, no need for the rest
-    const n=noise2(x*0.02,z*0.02)*0.5+0.5; out.copy(COL.rock).lerp(COL.rockHi,n*0.6); out.lerp(COL.snow,smoothstep(38,58,h)*(1-smoothstep(1.3,2.0,g)));
-    return out.multiplyScalar(0.92+n*0.16);
-  }
+  const gf=x<HALF?smoothstep(HZ0+8,HZ0-56,z):0;   // the home forest's north crest, over which the ground turns to the Greyspine's
+  if(gf>=1) return greyColor(x,z,h,g,out);
   const n1=noise2(x*0.02,z*0.02)*0.5+0.5, n2=noise2(x*0.11+5,z*0.11)*0.5+0.5;
   out.copy(COL.lush).lerp(COL.dry, smoothstep(0.45,0.85,n1)*0.8);
   out.lerp(COL.floor, smoothstep(0.45,0.9,forestDensity(x,z))*0.75);
@@ -67,6 +84,7 @@ function terrainColor(x,z,h,g,out,noCut){   // noCut: colour as if the tunnel's 
     const pz=plazaAmt(x,z); if(pz>0) out.lerp(COL.gravel,pz*0.95);
   }
   if(hf>0){ hoarColor(x,z,h,g,_hc); out.lerp(_hc,hf); }
+  if(gf>0){ greyColor(x,z,h,g,_hc); out.lerp(_hc,gf); }
   out.multiplyScalar(0.92+n2*0.16);
   return out;
 }

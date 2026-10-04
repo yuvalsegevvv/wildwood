@@ -62,6 +62,8 @@ function setPos(pid,d){
   p.x=clamp(v[0],WX0,WX1); p.y=v[1]; p.z=clamp(v[2],WZ0,WZ1); p.face=isFinite(v[3])?v[3]:p.face; p.vx=v[4]||0; p.vz=v[5]||0;
   if(p.gear.east<1 && p.x>TUN.p0) p.x=TUN.p0;   // the sealed tunnel
   if(p.gear.north<1 && p.x>HALF && p.z<PASS.ice) p.z=PASS.ice;   // the ice wall in Frostgate Pass
+  if(p.gear.west<1 && p.z<HZ0 && p.x<GLEN.ice && Math.abs(p.z-GLEN.z)<GLEN.w+6) p.x=GLEN.ice;   // the ice fall in the glacier valley
+  if(p.z<HZ0&&p.x<HALF) for(const G of GREY_GATES) if(p.gear[G.id]<1 && Math.abs(p.z-G.z)<40 && p.x<G.x) p.x=G.x;   // the rock falls in the west wall
 }
 function receive(pid,msg){
   if(!msg||typeof msg!=='object') return;

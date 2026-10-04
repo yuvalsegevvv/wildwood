@@ -273,10 +273,11 @@ Odran's cart. Gate in: the Hoarfrost's west glacier valley (opened by Ymrik, F8/
 | G8 | The old machine | 31 | Reach the mountain golem's cavern; read its jointed frame | **place**: a stone shell around a jointed metal frame, "an old war machine of our own, woken by the dark" |
 | G9 | The mountain wakes | 32 | Defeat the mountain golem (**boss 32**) | opens the neck pass west (Stormhorn) and the deep mine (Rootdeep); the road on: Glasswell's physician |
 
-Engine needs: the Greyspine built (replace `greyspineHeight` in `shared/terrain.js` with real terrain, grow `WX0..WZ0` where the map
-needs it: it lies north-west of Wildwood and west of the Hoarfrost); gear tier 6 (levels 30-34, `tierFor`, `TIER_ATK`, `ARMOR_*`,
-items and icons), monsters 26-32 (two kinds per level: `MON_DEFS`, models, materials), two bosses (12 boss skills each, `BOSS_DEFS`),
-`MAX_ZONE_LV` to 32, `VALE_TOP_LV` review (skill upgrades ask for drops of levels up to it).
+Engine needs: the Greyspine is built as a place (`shared/greyspine.js`, `highmark.js`, `greyzones.js`: the way in through the Reach's west glacier valley, Highmark, seven zones, the Gryphon Queen
+and the Mountain Golem with six skills each, tarns, a river, a fjord, and the two gates in its west wall; `docs/NOT-BUILT.md` section 3b), but not as a story: the steps G1-G9 below need
+their talks, props and hooks in `shared/main-quest.js` (`MQ`: bump `MQ_VER` and use `MQ_INSERTED` if a step goes in the middle), ore veins for G3 (resource nodes of a Greyspine grade: `ORE_GRADES`,
+`LOG_GRADES`, `HERB_LANDS`, a tool tier 6), gear tier 6 (levels 30-34, `tierFor`, `TIER_ATK`, `ARMOR_*`, items and icons), a `VALE_TOP_LV` review (skill upgrades ask for drops of levels up to it)
+and a zone tier for the land (`ZTIER_LANDS`). `MAX_ZONE_LV` is already 32.
 
 ### 7.3 Act V-a: "The Physician" (the Sunscar, levels 28-36; the main road)
 

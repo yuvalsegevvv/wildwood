@@ -1,14 +1,16 @@
-//@ Map size (SIZE, HALF, WATER; the whole world WX0..WX1 x WZ0..WZ1 with the Sakura Vale east and the Hoarfrost Reach north of it), river (riverX), lakes, the lands' edges (coast, the Sunwall and Redgate, snowy rims), the hills' shape (hillShape: warped, eroded fbm; ridged mountains), baseHeight, forestDensity, autumnAmt. Pure.
+//@ Map size (SIZE, HALF, WATER; the whole world WX0..WX1 x WZ0..WZ1 with the Sakura Vale east and the Hoarfrost Reach north of it), river (riverX), lakes, the lands' edges (coast, the Sunwall and Redgate, snowy rims), the hills' shape (hillShape: warped, eroded fbm; ridged mountains), baseHeight (where the Greyspine, shared/greyspine.js, meets the home forest's rim and the vale's wall), inGrey, forestDensity, autumnAmt. Pure.
 /* ---------- world shape ---------- */
 const SIZE=880, HALF=SIZE/2, WATER=0;
 /* The home forest is the square -HALF..HALF. East of its border mountains lies the Sakura Vale (EAST_W wide),
    reached through the tunnel in shared/vale.js. North of the vale, over its crest at z = HZ0 (the old north edge of both lands),
-   lies the Hoarfrost Reach, a high frozen plateau NORTH_D deep (shared/hoarfrost.js); what is left of the rectangle north of the
-   home forest is the Greyspine's mountains, which nobody can walk to. The whole world is the rectangle WX0..WX1 x WZ0..WZ1. */
+   lies the Hoarfrost Reach, a high frozen plateau NORTH_D deep (shared/hoarfrost.js); the rest of the rectangle north of the
+   home forest is the Greyspine, the fourth land (shared/greyspine.js: its terrain; no village, monsters or way in yet).
+   The whole world is the rectangle WX0..WX1 x WZ0..WZ1. */
 const NORTH_D=600, HZ0=-HALF;
 const EAST_W=550, WX0=-HALF, WX1=HALF+EAST_W, WZ0=HZ0-NORTH_D, WZ1=HALF, WW=WX1-WX0, WD=WZ1-WZ0;
 const inVale=x=>x>HALF;   // east of the border mountains: the Sakura Vale and, past its north crest, the Hoarfrost Reach
 const inHoar=(x,z)=>x>HALF&&z<HZ0;
+const inGrey=(x,z)=>x<HALF&&z<HZ0;   // the Greyspine: north of the home forest, west of the Hoarfrost Reach
 function riverBase(z){ return Math.sin(z*0.011+0.6)*34 + noise2(z*0.006,7.7)*24 + noise2(z*0.021+3.7,2.9)*6 + 28; }
 const RIVER_SIDE=Math.sign(riverBase(0))||1;
 // the river bends around the middle of the map so the village has room there
@@ -26,7 +28,7 @@ function lakeCut(x,z,h){
 }
 /* ---------- the edges of the two lands (docs/WORLD.md) ----------
    Each side of the playable rectangle faces its real neighbour on the map of Eldmere:
-   home forest: north the Greyspine's foothills (snow on top), west the Sunwall (red cliffs up to the Sunscar plateau,
+   home forest: north the Greyspine's foothills (snow on top; the Greyspine itself lies beyond their crest), west the Sunwall (red cliffs up to the Sunscar plateau,
    broken only by Redgate Canyon, choked by a rock fall), south the Crownsea's shore, east the Vale Wall (the tunnel);
    the vale: west the Vale Wall, north the climb to the Hoarfrost Reach, south and east the Crownsea's shore.
    The lands beyond (low-poly placeholders) are drawn by game/world/far-lands.js.
@@ -66,13 +68,13 @@ function bareGround(x,z){ return coastDist(x,z)<38 || (x<HALF && (x-WX0<sunwallL
 // the border mountains between the two lands are one range: the forest's rim rises to its crest at x = HALF,
 // the vale's own rim climbs from the other side, and the two meet there
 function baseHeight(x,z){
-  if(z<HZ0-96&&x<HALF-4) return greyspineHeight(x,z);   // the mountains north of the home forest: cheap, nobody walks there
   if(x>=HALF+4) return valeHeight(x,z);
+  // north of the home forest: the Greyspine (shared/greyspine.js). The forest's rim goes on as a crest at z = HZ0 and eases down onto it over ~66 m;
+  // beside the Hoarfrost's west wall (x within 4 m of HALF) it is blended into the vale's ground, whose crest it shares
+  if(z<HZ0-70) return x>HALF-4?lerp(greyspineHeight(x,z),valeHeight(x,z),(x-HALF+4)/8):greyspineHeight(x,z);
   if(x>HALF-4) return lerp(homeHeight(x,z),valeHeight(x,z),(x-HALF+4)/8);
-  return z<HZ0-36?lerp(homeHeight(x,z),greyspineHeight(x,z),smoothstep(HZ0-36,HZ0-96,z)):homeHeight(x,z);
+  return z<HZ0-4?lerp(homeHeight(x,z),greyspineHeight(x,z),smoothstep(HZ0-4,HZ0-70,z)):homeHeight(x,z);
 }
-// the Greyspine north of the home forest: the forest's rim goes on as a ridge and climbs (z < HZ0 - 96 is only this)
-function greyspineHeight(x,z){ return 42+ridged(x*0.0058+3.1,z*0.0058-1.7,5)*118+fbm(x*0.0045+3.1,z*0.0045-1.7,3)*14; }
 /* ---------- the Hoarfrost Reach: a high frozen plateau (docs/WORLD.md) ----------
    Its ground is ~50 m up (the vale's is 10-30 m), rolling in broad white domes, with frozen lakes (flat ice: walkable, no water). South,
    the vale's north rim goes on north of its crest at HZ0 and eases down to the plateau over ~60 m (only the pass through it is low,

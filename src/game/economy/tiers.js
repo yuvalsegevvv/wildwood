@@ -21,6 +21,7 @@ function renderSymbol(){
 function fitTierRow(row){ const h=row.offsetHeight||0; if(h!==ztRowH){ ztRowH=h; sizeFullMap(); } }
 // the picker under the map, for the land the map shows
 function renderTierRow(land){
+  if(!ZTIER_LANDS.includes(land)){ $('#mapTier').innerHTML=''; ztRowKey=''; fitTierRow($('#mapTier')); return; }   // (the Greyspine has no zone tier yet)
   const row=$('#mapTier'), max=zoneTierMax(GEAR,land), on=zoneTierOn(GEAR,land), inV=zoneTierVillage(P.x,P.z);
   const key=land+'|'+on+'|'+max+'|'+inV; if(key===ztRowKey) return; ztRowKey=key; row.dataset.land=land;
   if(!max){ row.innerHTML=`<span class="mt-i">Zone tiers: defeat ${ZT_SHORT(land)} to unlock a harder ${ZTIER_NAMES[land]}</span>`; fitTierRow(row); return; }

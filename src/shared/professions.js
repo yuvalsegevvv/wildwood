@@ -58,7 +58,7 @@ const NODES=(()=>{
   // the home forest (ring zones and the three edge zones) and the Sakura Vale: 2 ore, 2 trees and each herb of the land, by the zone's gear tier
   for(const [land,rng] of [[0,mulberry32(5151)],[1,mulberry32(5152)]])
     for(const zn of ZONES){
-      if(zn.boss||zn.arena||zn.hoar||!!zn.vale!==!!land) continue;
+      if(zn.boss||zn.arena||zn.hoar||zn.grey||!!zn.vale!==!!land) continue;   // (the Greyspine has no nodes yet: it wants its own ore, logs and herbs)
       const t=Math.min(tierFor(zn.level),land?4:3), ore=ORE_GRADES[t][0], log=LOG_GRADES[t][0]==='frostwood'?'frostpine':LOG_GRADES[t][0];
       const good=(x,z)=>rawHeight(x,z)>=2.2&&(land||riverDist(x,z)>8);   // (well above the waterline: the client's finer terrain must not dip a node under it)
       const n=!land&&zn.level<=14?3:2, herbA=HERB_LANDS[land][0][0], herbB=HERB_LANDS[land][1][0];   // the inner woods (copper, iron, silverstone) have only 4-5 zones each: a third vein and tree in each

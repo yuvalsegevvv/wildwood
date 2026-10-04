@@ -1,4 +1,4 @@
-//@ The Sakura Vale east of the mountains: the tunnel (TUN), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt (which knows all three villages). Pure.
+//@ The Sakura Vale east of the mountains: the tunnel (TUN), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt (which knows all four villages). Pure.
 /* ===================== THE SAKURA VALE =====================
    A second land behind the eastern border mountains, reached through a tunnel that stays sealed for each player
    until they help defeat the Rootwarden (gear.east: 0 sealed, 1 tunnel open, 2 walked to Hanami: circles attuned).
@@ -55,7 +55,7 @@ VIL2.name='Hanami'; VIL.name='the village';
 // on (or m metres from) any village's teleport circle
 function nearTele(x,z,m){ const V=vilAt(x,z); return Math.hypot(x-V.tele.x,z-V.tele.z)<V.tele.r+m; }
 // the village whose land a point is in (every "near the village" test uses this one): the home forest, the vale, the Hoarfrost Reach
-function vilAt(x,z){ return x>HALF?(z<HZ0?VIL3:VIL2):VIL; }
+function vilAt(x,z){ return x>HALF?(z<HZ0?VIL3:VIL2):(z<HZ0?VIL4:VIL); }
 
 /* ---- zones: seeds on a rough 3 x 4 grid east of Hanami. key null = Hanami's meadows (no monsters) */
 const VALE_ZONE_NAMES={16:'Petal Meadow',17:'Kodama Wood',18:'Inari Hills',19:'Bamboo Sea',20:'Ghostlight Marsh',21:'Oni Crags',22:'Jade Falls',23:'Tengu Peaks',24:'Warlord Ruins',25:'Thunder Grove',boss25:'Foxfire Shrine'};

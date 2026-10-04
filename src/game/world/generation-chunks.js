@@ -1,4 +1,4 @@
-//@ Per-chunk vegetation placement (genChunk): the home forest's mix, sakura, maple, pine and bamboo in the Sakura Vale, snowy spruce, dwarf birch and boulders in the Hoarfrost Reach
+//@ Per-chunk vegetation placement (genChunk): the home forest's mix, sakura, maple, pine and bamboo in the Sakura Vale, snowy spruce, dwarf birch and boulders in the Hoarfrost Reach, conifers up to the treeline in the Greyspine
 const NCH=CHX*CHZ;
 function chunkRect(ci,m){
   const cx=ci%CHX, cz=Math.floor(ci/CHX);
@@ -51,6 +51,8 @@ function* genChunk(ci){
     const g=grad(x,z); if(g>0.95) continue;
     const hoar=inHoar(x,z), fringe=hoar?smoothstep(-740,-570,z):0;   // the taiga fringe: spruce grows thickest on the plateau's southern edge
     if(hoar&&(iceDist(x,z)<4||inPass(x,z,4))) continue;                 // none on the frozen lakes or in the pass
+    if(inGrey(x,z)&&h>greyTreeline(x,z)) continue;                      // the Greyspine's treeline
+    if(inGlen(x,z,3)||inGate(x,z,2)||greyWet(x,z,-1.2)) continue;                        // none in the glacier valley or in the water
     const fd=forestDensity(x,z);
     if(rand()>(hoar?fd*fd*(0.3+0.85*fringe)+0.012:fd*fd*1.15+0.015)) continue;
     const alt=smoothstep(6,24,h)+noise2(x*0.03,z*0.03)*0.25;
@@ -95,6 +97,7 @@ function* genChunk(ci){
     if(h<0.6 || grad(x,z)>0.8 || bareGround(x,z) || storyClear(x,z)) continue;
     if(vDist(x,z)<VR+2 || nearPath(x,z,2) || arenaDist(x,z)<22 || inTunnelCut(x,z)) continue;
     const hoar=inHoar(x,z); if(hoar&&(iceDist(x,z)<3||inPass(x,z,3)||rand()<0.45)) continue;
+    if(inGrey(x,z)&&h>greyTreeline(x,z)-12 || inGlen(x,z,2) || greyWet(x,z,-1)) continue;
     const fd=forestDensity(x,z);
     if(rand()>clamp(1-Math.abs(fd-0.55)*2)+0.08) continue;
     const s=R(0.6,1.5), vale=inVale(x), bloom=!hoar&&rand()<(vale?0.35:0.1);   // the vale's azaleas
@@ -113,7 +116,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<30000*per && n<(Q*(LOW?2600:4200))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(8), h=getH(x,z);
-    if(h<0.8 || grad(x,z)>0.75 || forestDensity(x,z)<0.45 || vDist(x,z)<VR || arenaDist(x,z)<20 || inTunnelCut(x,z) || inHoar(x,z)) continue;
+    if(h<0.8 || grad(x,z)>0.75 || forestDensity(x,z)<0.45 || vDist(x,z)<VR || arenaDist(x,z)<20 || inTunnelCut(x,z) || inHoar(x,z) || (inGrey(x,z)&&h>greyTreeline(x,z)-12) || greyWet(x,z,-1)) continue;
     const s=R(0.6,1.3);
     fernItems.push({x,z,m:mtx(x,h-0.03,z,rand()*TAU,s,s*R(0.8,1.2),s),c:tint(pick(PAL.fern))}); n++;
   }
@@ -137,6 +140,7 @@ function* genChunk(ci){
     if(roadAmt(x,z)>0.4) continue;                                             // the roads
     if(nearTele(x,z,1.2)) continue;
     const hoar=inHoar(x,z); if(hoar&&(rand()<0.8||iceDist(x,z)<2||inPass(x,z,1))) continue;   // a few dry tussocks poke through the snow
+    if(inGrey(x,z)&&h>greyTreeline(x,z)+14 || greyWet(x,z,-0.5)) continue;   // no tufts in the Greyspine's snowfields or in the water
     const meadow=smoothstep(0.1,0.7,noise2(x*0.025+9,z*0.025-4))*(1-fd);
     const s=R(0.75,1.2);
     if(hoar) gc.set(pick(PAL.tussock)); else { terrainColor(x,z,h,g,gc); gc.lerp(fresh,0.3).multiplyScalar(R(0.95,1.2)); }
@@ -150,7 +154,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<60000*per && n<(Q*(LOW?2600:4600))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(6), h=getH(x,z);
-    if(h<0.8 || grad(x,z)>0.6 || forestDensity(x,z)>0.5 || vDist(x,z)<VR+1 || inTunnelCut(x,z) || bareGround(x,z) || inHoar(x,z)) continue;
+    if(h<0.8 || grad(x,z)>0.6 || forestDensity(x,z)>0.5 || vDist(x,z)<VR+1 || inTunnelCut(x,z) || bareGround(x,z) || inHoar(x,z) || (inGrey(x,z)&&h>greyTreeline(x,z)-6) || greyWet(x,z,-0.5)) continue;
     if(noise2(x*0.04+11,z*0.04-3)<0.15) continue;
     const FL=inVale(x)?PAL.valeFlowers:PAL.flowers;
     const idx=rand()<0.8?Math.floor((noise2(x*0.02-50,z*0.02+50)*0.5+0.5)*FL.length)%FL.length:Math.floor(rand()*FL.length);
@@ -166,7 +170,7 @@ function* genChunk(ci){
     if((a&511)===511) yield;
     const [x,z]=pt(6), h=getH(x,z);
     if(h<-1 || vDist(x,z)<VR+3 || nearPath(x,z,2) || arenaDist(x,z)<23 || inTunnelCut(x,z,1)) continue;
-    const hoar=inHoar(x,z); if(hoar&&(iceDist(x,z)<2||inPass(x,z,1)||inBox(x,z,1))) continue;
+    const hoar=inHoar(x,z); if(hoar&&(iceDist(x,z)<2||inPass(x,z,1)||inBox(x,z,1))||inGlen(x,z,1)||greyWet(x,z,-0.3)) continue;
     if(rand()>(hoar?0.2:0.12)+smoothstep(0.5,1.2,grad(x,z))*0.7) continue;
     const big=rand()<0.2, b=big?R(0.9,2.3):R(0.2,0.65);
     const sx=b*R(0.8,1.4), sy=b*R(0.5,1.0), sz=b*R(0.8,1.3);
@@ -180,7 +184,7 @@ function* genChunk(ci){
   const logItems=[];
   for(let a=0,n=0;a<20000*per && n<(Q*(LOW?110:160))*per;a++){
     const [x,z]=pt(10), h=getH(x,z);
-    if(h<1 || grad(x,z)>0.3 || forestDensity(x,z)<0.4 || vDist(x,z)<VR+4 || arenaDist(x,z)<23 || inTunnelCut(x,z) || inHoar(x,z)) continue;
+    if(h<1 || grad(x,z)>0.3 || forestDensity(x,z)<0.4 || vDist(x,z)<VR+4 || arenaDist(x,z)<23 || inTunnelCut(x,z) || inHoar(x,z) || (inGrey(x,z)&&h>greyTreeline(x,z)) || greyWet(x,z,-0.5)) continue;
     const s=R(0.8,1.2), l=R(0.7,1.4);
     logItems.push({x,z,m:mtx(x,h+0.18*s,z,rand()*TAU,l,s,s)}); n++;
   }

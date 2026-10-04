@@ -36,7 +36,7 @@ function useCircle(){ const C=CIRCLES.find(c=>c.V===nearCircle()); if(C&&C.open(
 function circlePrompt(V){
   const C=CIRCLES.find(c=>c.V===V);
   if(C&&C.open(GEAR)) return (isTouch?'Tap Travel to choose where to go':'Press '+(kbName('talk')||'the talk key')+' to choose where to travel');
-  return V===VIL3?'The circle hums, but it is not attuned: walk into Rimehold first':GEAR.east>=1?'The circle hums, but it is not attuned: walk to Hanami first':'An old teleport circle. It is cold';
+  return V===VIL4?'The circle hums, but it is not attuned: walk into Highmark first':V===VIL3?'The circle hums, but it is not attuned: walk into Rimehold first':GEAR.east>=1?'The circle hums, but it is not attuned: walk to Hanami first':'An old teleport circle. It is cold';
 }
 // stepping onto an attuned circle opens the travel window by itself (once per visit: step off and on again, or press the talk key, to open it again)
 let circleWas=null;

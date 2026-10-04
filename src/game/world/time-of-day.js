@@ -49,17 +49,19 @@ function envAt(c,out){
 let todLabelT=0;
 let curZone='';
 function updateZoneLabel(){
-  const V=vilAt(P.x,P.z), inV=vDist(P.x,P.z)<VR+22, zn=inV?null:zoneAt(P.x,P.z), vale=inVale(P.x), hoar=inHoar(P.x,P.z), pass=!zn&&!inV&&inPass(P.x,P.z);
-  const key=zn?String(zn.key):inV?(V===VIL3?'rimehold':V===VIL2?'hanami':'village'):P.inTun?'tunnel':pass?'pass':hoar?'hoar':vale?'vale':'wild';
-  const txt=zn?zn.name+(zn.boss?' (boss)':' (Lv '+zoneLvText(zn)+')'):inV?(V===VIL3?'Rimehold':V===VIL2?'Hanami':'The village'):P.inTun?'The mountain tunnel':pass?'Frostgate Pass':hoar?'The Hoarfrost Reach':vale?'The Sakura Vale':'Deep forest';
+  const V=vilAt(P.x,P.z), inV=vDist(P.x,P.z)<VR+22, zn=inV?null:zoneAt(P.x,P.z), vale=inVale(P.x), hoar=inHoar(P.x,P.z), grey=inGrey(P.x,P.z), pass=!zn&&!inV&&inPass(P.x,P.z);
+  const key=zn?String(zn.key):inV?(V===VIL4?'highmark':V===VIL3?'rimehold':V===VIL2?'hanami':'village'):P.inTun?'tunnel':pass?'pass':hoar?'hoar':grey?'grey':vale?'vale':'wild';
+  const txt=zn?zn.name+(zn.boss?' (boss)':' (Lv '+zoneLvText(zn)+')'):inV?(V===VIL4?'Highmark':V===VIL3?'Rimehold':V===VIL2?'Hanami':'The village'):P.inTun?'The mountain tunnel':pass?'Frostgate Pass':hoar?'The Hoarfrost Reach':grey?'The Greyspine':vale?'The Sakura Vale':'Deep forest';
   $('#zone').textContent=txt;
   if(started && key!==curZone && curZone!==''){
     if(zn) toast('Entering '+txt,zn.boss||zoneLvNum(zn)>PL.level+2?'bad':'');
     else if(key==='village') toast('Back in the village','good');
     else if(key==='hanami') toast('Hanami, village of the Sakura Vale','good');
     else if(key==='rimehold') toast('Rimehold, village of the Hoarfrost Reach','good');
+    else if(key==='highmark') toast('Highmark, village of the Greyspine','good');
     else if(key==='vale'&&curZone==='tunnel') toast('The Sakura Vale','good');
     else if(key==='hoar'&&curZone==='pass') toast('The Hoarfrost Reach','good');
+    else if(key==='grey') toast('The Greyspine, a young alpine range','good');
   }
   curZone=key;
 }

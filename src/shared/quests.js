@@ -34,7 +34,9 @@ const BOSS_QUESTS=[
   {target:'akaoni',from:18,level:20,title:'Akaoni, the Gate Demon',text:'A red oni the size of a gatehouse guards the Demon Gate in the far corner of the vale. It leaps like a cat, and fire follows where it lands. End it.'},
   {target:'kyuubi',from:23,level:25,title:'Kyuubi, the Nine-Tailed',text:'Nine tails of foxfire burn above the shrine in the north-west of the vale. The old fox has ruled there for a thousand years. End its reign.'},
   {target:'ymrik',from:25,level:26,title:'Ymrik, the Rimeking',text:'A frost giant has taken the ice hall in the middle of the Hoarfrost Reach, and his thralls raid the wold beyond the lake. The cold in his hall closes in on anyone who lingers: end him before it ends you.'},
-  {target:'vetrmaw',from:29,level:30,title:'Vetrmaw, the Frost Wyrm',text:'A wyrm nests in the glacier at the far north-east of the reach, where the iron bird fell. The hunters of Rimehold want it gone.'}];
+  {target:'gryphonqueen',from:28,level:29,title:'The Gryphon Queen',text:'A gryphon the size of a barn has taken the highest peak above the Queen\'s Fork, and her eaglets raid the miners\' ledges. She dives from the sky and shakes out her quills: stay between the lines, and end her.'},
+  {target:'vetrmaw',from:29,level:30,title:'Vetrmaw, the Frost Wyrm',text:'A wyrm nests in the glacier at the far north-east of the reach, where the iron bird fell. The hunters of Rimehold want it gone.'},
+  {target:'mountaingolem',from:31,level:32,title:'The Mountain Golem',text:'Something woke in the cavern at the head of the Sink: a golem of stone round a frame of old iron, and the shell hardens when it is hurt. Brother Matthias says the dark woke it. Break its joints, and end it.'}];
 function bossQuestFor(E){ const ok=BOSS_QUESTS.filter(b=>E>=b.from); if(!ok.length) return null; return ok.length>1&&Math.random()<0.3?ok[ok.length-2]:ok[ok.length-1]; }
 function genQuest(pl,id){
   const E=Math.max(1,Math.min(MAX_ZONE_LV,pl)), L=questLevelFor(pl), d=qpick(MON_DEFS.filter(m=>m.level===L)), zn=defZone(d);

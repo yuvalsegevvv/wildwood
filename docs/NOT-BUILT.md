@@ -1,6 +1,6 @@
 # What is not built yet (with comments)
 
-An honest list of what the Hoarfrost Reach update left out, and of the older gaps it touches, with a comment on each: why it is missing, what it
+An honest list of what the Hoarfrost Reach update (and the Greyspine, section 3b) left out, and of the older gaps it touches, with a comment on each: why it is missing, what it
 would take and where to start. Nothing here is a bug; it is the edge of what exists. Ask the owner before starting any of it (`CLAUDE.md` section 10
 keeps the short list of ideas; the story for levels 26-50 is planned step by step in `docs/MAIN-QUEST.md` section 7).
 
@@ -60,9 +60,8 @@ the reveal), the Emberwake Isles (the Sink and the ending), and the Stormhorn an
 not open yet" (`MQ_END`). Levels 26-30 in the Hoarfrost are walkable side content without quest steps. The story's payoffs for the iron bird, the plate and
 Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md`): no NPC explains them yet, by design.
 
-- **The west glacier valley** that "has just split" (F8's boss line, F9) is not built: nothing at the Reach's west wall leads to the Greyspine. The rectangle
-  north-west of Wildwood is a cheap unwalkable massif (`greyspineHeight`, `shared/terrain.js`). Building the Greyspine means replacing it with real terrain and
-  a gate in the Reach's west wall (`WORLD.md` section 5: the gate is opened by Ymrik).
+- **The west glacier valley** is built (section 3b): the ice fall opens when Ymrik falls and leads to Highmark. What is not built is the story around it: no NPC mentions it,
+  F8's boss line and F9 ("the road to Highmark is not open yet", `MQ_END`) still read as before, and the steps G1-G9 (`docs/MAIN-QUEST.md` section 7) do not exist.
 - **The Nine Tails** (Kyuubi's side story, vale levels 21-25) is still only hinted (`docs/MAIN-QUEST.md` section 4).
 - **More Hoarfrost side content**: Sigrun's other sagas, the hunters' hunts, ice-fishing on Frostmere, a story reason to go to the wyrm's nest (the iron bird can be
   read there, but no step asks for it).
@@ -91,6 +90,44 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
 - **Performance was not measured on a phone.** The heightmap grew from 716 x 441 to 716 x 741 cells and the terrain is drawn in tiles culled in both directions; the desktop cost
   of world generation went from about 1.1 s to about 1.8 s of JS, a phone will pay more. The far-lands placeholder north of the Reach is unchanged and has no LOD.
 
+## 3b. The Greyspine, fourth land (levels 26-32; `shared/greyspine.js`, `highmark.js`, `greyzones.js`; design in `docs/WORLD.md` sections 3 and 8)
+
+**Built** (`CLAUDE.md` section 4 has the file map; test `node tools/greyspine-smoke.js`):
+
+- the ground (valleys, ridged mountains, walls, colours, treeline) and a zone label, a map view while you stand in it;
+- **the way in**: the glacier valley `GLEN` cut through the Vale Wall at the Reach's west edge, shut by an ice fall until Ymrik falls (`gear.west`), with the Glacier Road from Rimehold to Highmark;
+- **Highmark** (`VIL4`, shelf `GREY_HM`, ~100 m up): nine named NPCs and fillers, a Wayfarers' Lodge, a teleport circle (the travel window now lists four villages), a respawn point once you have walked in (`gear.west` 2);
+- **seven zones and 14 monster kinds** (two per level 26-32, 12 of each, earth and air; a new gryphon model family, a golem, crystals, a rock troll...), their materials with names, `MAX_ZONE_LV` 32;
+- **two bosses**: the Gryphon Queen (29; her peak, a flat nest on a cone-shaped mountain; kit `gryphon`) and the Mountain Golem (32; a cavern; kit `golem`), 12 boss skills, two board quests;
+- **water**: three tarns, a river that leaves the range to the west, and a fjord on the south-west coast, with wading, banks, plants, camps and the map all reading one `waterSurf`;
+- **the two rock falls** in the west wall (the river road, opened by the Gryphon Queen: `gear.river`; the neck pass, by the Golem: `gear.neck`): canyons through the wall to the world's edge;
+- testing tools: `dev tunnel` `glen` / `glenw` / `highmark` / `grey` / `queen` / `cavern` / `riverfall` / `neckfall`, `dev west`, `dev gate`, and the buttons in the Testing section.
+
+**Not built**, in about this order:
+
+- **The lands beyond the gates.** The two canyons end at the world's edge: nothing lies behind them (the Sunscar behind the river road, the Stormhorn behind the neck pass). When they are built
+  the rectangle must grow west (section 5) and each canyon becomes a real road; until then opening a gate only changes a toast and a mesh.
+- **The main quest in the Greyspine** (`docs/MAIN-QUEST.md` section 7, steps G1-G9): no step asks you to go there, ore veins (G3) and the Rootdeep's mine have no home. Highmark's NPCs are
+  ambient (lines and labels, no quests beyond the board) and the two bosses' quests are board notices.
+- **Resource nodes and the professions' tier**: `NODES` has none in the Greyspine (the planner skips `zn.grey`), so mining, woodcutting and gathering have nothing to do there; the Lodge buys
+  and sells but a node needs a grade of ore, log and herb that does not exist yet (`ORE_GRADES`, `LOG_GRADES`, `HERB_LANDS`, a tool tier 6).
+- **Gear tier 6 and the economy past 25**: gear stays at tier 5, drops and the shop do not follow the levels 26-32 (`tierFor`), `VALE_TOP_LV` is still 25, and the XP curve is the stopgap of
+  section 5.
+- **A zone tier for the Greyspine**: `landAt` says `'grey'` but `ZTIER_LANDS` has three lands; the picker and the symbol skip it (`zoneTierOn` is 0), and the bosses open no tier.
+- **Music**: Highmark and the zones play the Rimehold and Reach tracks and the two boss fights the Reach's boss songs (`boss26` for the Queen, `boss30` for the Golem) as placeholders (`THEMES`, `musicThemeHere`); no recorded track exists
+  for the Greyspine, and no night mix for Highmark.
+- **Weather and sound**: sudden mist, thunderstorms on the peaks, avalanches as a boss move, an alpine wind of its own (the Greyspine uses the home forest's ambience; only the footsteps on water follow `waterSurf`). Regional weather is still client-side only (section 3).
+- **Dressing of the village and the land**: Highmark has no palisade, no rope bridges on the troughs' flanks and no shrines (the doc's dressing); no waterfalls (the tarns, river and fjord are
+  surfaces without falls, foam or sound beyond the shared water); no **wonder** (a floating rock, `WORLD.md` rule 9) and no mine entrance.
+- **The monsters' mechanics**: the 14 kinds are new models (the gryphon family, crystals, the troll) but share the ordinary AI; no kind uses terrain (rock fall from cliffs, wind gusts), and the
+  bosses' moves and numbers are first guesses, **not balance-tested by play** (the Queen's swoop and the Golem's quake are telegraphed on purpose).
+- **The far lands**: the placeholder mountains beyond the north and west edges still use `farHeight` ('grey' region, `game/world/far-lands.js`): its edge vertices take the real
+  height (`getH`), so they meet, but the shapes behind the walls are not related to the real range, and the canyons open onto them.
+- **Map**: the full map (N) shows the Greyspine only while you stand in it (`LANDS.grey`, `landOpen`); it names Highmark, the zones and the water, but not the gates' canyons, and has no zone tier row.
+- **Balance of the ground**: 26% of the inner country is steeper than 0.95 (the home forest 9%, the Reach 13%); that is how the mountains read, and camps keep to ground under 0.55
+  (54% of the inner country). If the zones turn out cramped, widen the troughs (`in` / `out` in `GREY_VALLEYS`) first.
+- **Performance was not measured on a phone** with the Greyspine's extra meshes (Highmark, the nest, the cavern, the water surfaces, the rock falls); the terrain tiles are the same.
+
 ## 4. Music (done)
 
 The four Hoarfrost songs exist (`music-rimehold`, `music-hoar`, `music-boss26`, `music-boss30`, made with Google's Flow Music; see `assets/audio/README.md`). What is left: the licence
@@ -98,9 +135,9 @@ of the free-plan tracks (all eleven) if the game ever earns money, and, if wante
 
 ## 5. Systems the next lands need (not started)
 
-- **XP curve and gear past 25/tier 5**: the curve is flattened to 2,100 same-level kills a level from 25 (a stopgap so 26-30 are playable), gear stays at tier 5, `MAX_ZONE_LV` is 30
+- **XP curve and gear past 25/tier 5**: the curve is flattened to 2,100 same-level kills a level from 25 (a stopgap so 26-30 are playable), gear stays at tier 5, `MAX_ZONE_LV` is 32
   and skill upgrades still ask for drops of at most level 25 (`VALE_TOP_LV`). Levels up to 50 need a real curve, more gear tiers (items, icons, looks) and a decision about upgrades.
-- **The world rectangle** must grow again (north-west, west, south-west) and the Rootdeep needs an enclosed instance (`docs/WORLD.md` section 8).
+- **The world rectangle** must grow again (west, south-west; the Greyspine fits inside it, but the lands behind its two gates do not) and the Rootdeep needs an enclosed instance (`docs/WORLD.md` section 8).
 - **Group play, trading between players, party quests** (`CLAUDE.md` section 10).
 - **Real passives** (the eight in `PASSIVES` are a placeholder set; only one slot is open).
 - **Server-side anti-cheat for movement**, and synced villagers.

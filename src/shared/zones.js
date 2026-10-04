@@ -1,4 +1,4 @@
-//@ Monster zones of the home forest (ZONES, zoneAt, zonePoint, defZone): three rings round the village plus the edge zones (shore, Sunwall, foothills), dividing ridges (zoneRidge), boss arena (ARENA); the vale's zones are in vale.js, the Hoarfrost Reach's in hoarfrost.js. Pure.
+//@ Monster zones of the home forest (ZONES, zoneAt, zonePoint, defZone): three rings round the village plus the edge zones (shore, Sunwall, foothills), dividing ridges (zoneRidge), boss arena (ARENA); the Greyspine's are in greyzones.js; the vale's zones are in vale.js, the Hoarfrost Reach's in hoarfrost.js. Pure.
 /* ---------- monster zones ----------
    The wilds are split into 16 zones in three rings around the village, one zone per monster (and one for the boss).
    Zones are walled off by low ridges (well below the border mountains) with a pass in the middle of each wall;
@@ -38,6 +38,7 @@ function edgeZoneAt(x,z){
 // the monster kind's zone: its own (edge kinds) or the zone of its level
 function defZone(d){ const k=d.zone||d.level; return ZONES.find(zn=>zn.key===k); }
 function zoneAt(x,z){
+  if(inGrey(x,z)) return greyZoneAt(x,z);
   if(inVale(x)) return inHoar(x,z)?hoarZoneAt(x,z):valeZoneAt(x,z);
   const ez=edgeZoneAt(x,z); if(ez!==undefined) return ez;
   const dx=x-VIL.x, dz=z-VIL.z, r=Math.hypot(dx,dz);
@@ -61,6 +62,7 @@ function zonePoint(zn,fa,fr,full){
   return [VIL.x+Math.sin(a)*r,VIL.z+Math.cos(a)*r];
 }
 function zoneRidge(x,z){
+  if(inGrey(x,z)) return 0;
   if(inVale(x)) return inHoar(x,z)?hoarRidge(x,z):valeRidge(x,z);
   // the walls wander: their radius and angle are pushed by slow noise (+-5 m), so they are not perfect arcs and spokes (the passes move with them)
   const dx=x-VIL.x, dz=z-VIL.z, r=Math.hypot(dx,dz)+noise2(x*0.022+4,z*0.022-9)*5;

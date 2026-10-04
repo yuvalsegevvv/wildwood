@@ -4,7 +4,7 @@
 const mqG=()=>(GEAR&&GEAR.mq)||null;
 const mqCur=()=>{ const M=mqG(); return M?MQ[M.s]||null:null; };
 // Odran's cart stands by the village gate from W8 (when he arrives) until V8 (he moves to Hanami's gate), and by Rimehold's from F7
-function odranHere(vil){ const M=mqG(); if(!M) return false; return vil===1?M.s>=MQ_BY_ID.W8.i&&M.s<MQ_BY_ID.V8.i:vil===2?M.s>=MQ_BY_ID.V8.i&&M.s<MQ_BY_ID.F7.i:M.s>=MQ_BY_ID.F7.i; }
+function odranHere(vil){ const M=mqG(); if(!M) return false; return vil===1?M.s>=MQ_BY_ID.W8.i&&M.s<MQ_BY_ID.V8.i:vil===2?M.s>=MQ_BY_ID.V8.i&&M.s<MQ_BY_ID.F7.i:vil===3?M.s>=MQ_BY_ID.F7.i:false; }   // (Highmark has no cart yet: the Greyspine's story is not built)
 // what a quest villager has to say about the main quest right now (null: nothing, their usual lines)
 function mqLinesFor(n){ const M=mqG(); if(!M||!MQ_NPC_VIL[n.def.id]) return null; const T=mqTalk(M,n.def.id,PL.level,mqNight(dayClock)); return T.lines.length?T:null; }
 // the mark over a villager: ! a step to take (or a part to do with them), ? a step to hand in

@@ -2,8 +2,8 @@
 /* A boss's move set (BOSS_KITS.<name>, in boss-kits-*.js) decides WHEN it does what; this file is HOW. B = one boss fight's state (server/boss.js).
    Telegraphs ('tele' / 'tend' events; the client draws each kind, game/combat/boss.js). addTeleS(B,x,z,r,dur,kind,dmg,face,half) warns for dur s, then
    hurts every player inside (dmg is the damage before armor):
-     circle  root slam icefall geyser gust    within r of (x,z)
-     cone    cleave breath                    within r and half radians of the direction face (a direction is (-sin face, -cos face))
+     circle  root slam icefall geyser gust swoop rockfall quake    within r of (x,z)
+     cone    cleave breath rake               within r and half radians of the direction face (a direction is (-sin face, -cos face))
      line    line                             a strip r long and 2 x half wide from (x,z) along face
      donut   donut                            between half (the safe middle) and r of (x,z)
      mark    mark prison                      a ring that follows player number half until it goes off (mark: everyone within r of that player, the player
@@ -38,7 +38,7 @@ function resolveTeleS(e,m){
     if(p.dead) continue;
     const dx=p.x-e.x, dz=p.z-e.z, pd=Math.hypot(dx,dz);
     let inside;
-    if(k==='cleave'||k==='breath') inside=pd<e.r+0.3&&(pd<1.2||Math.abs(angDiff(Math.atan2(-dx,-dz),e.face))<e.half);
+    if(k==='cleave'||k==='breath'||k==='rake') inside=pd<e.r+0.3&&(pd<1.2||Math.abs(angDiff(Math.atan2(-dx,-dz),e.face))<e.half);
     else if(k==='line'){ const ux=-Math.sin(e.face), uz=-Math.cos(e.face), al=dx*ux+dz*uz; inside=al>=0&&al<=e.r&&Math.abs(dx*uz-dz*ux)<e.half+0.3; }
     else if(k==='donut') inside=pd>=e.half-0.3&&pd<e.r+0.3;
     else if(k==='prison') inside=p.id===e.half;

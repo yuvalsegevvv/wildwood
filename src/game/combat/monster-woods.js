@@ -39,6 +39,10 @@ MODELS.treant={
     body.push(moEll(0.05,0.1,0.06,0,1.65,-0.4,bark,null,6),moEll(0.22,0.09,0.07,0,1.42,-0.4,0x0d0a08,null,8));
     for(let i=-2;i<=2;i++) body.push(moCone([i*0.08,1.47,-0.42],[0,-1,-0.1],0.09,0.02,bark,4),moCone([i*0.08+0.04,1.37,-0.42],[0,1,-0.1],0.07,0.02,bark,4));
     if(boss) bossTreant(body,p);
+    if(d.id==='mountaingolem'){   // the old machine under the shell: rusty iron bands round the trunk, bolts, a seam of orange light in the chest
+      const iron=(x,y,z,c)=>{ c.set(0x8a7a66).multiplyScalar(0.75+0.4*vn3(x*20,y*20,z*20)); };
+      for(const [y,r] of [[0.95,0.66],[1.55,0.62],[2.1,0.54]]){ body.push(pc(cyl(r+0.03,r+0.03,0.1,16).translate(0,y,0),iron)); for(let i=0;i<6;i++){ const a=i/6*TAU+y; body.push(moEll(0.045,0.045,0.045,Math.cos(a)*(r+0.03),y,Math.sin(a)*(r+0.03),iron,null,6)); } }
+      body.push(moEll(0.3,0.045,0.05,0,1.45,-0.58,0xff8a30,null,8)); }
     G.body=moMerge(body);
     for(const sd of W){   // an arm hanging from the shoulder: an upper branch, a forearm forking into twig fingers, a clump of leaves
       const arm=[];

@@ -232,7 +232,7 @@ const MQ=[
    done:['The west valley is open? Then the way to Highmark is open. It is a hard road. Come back and tell us of it, if you can.']}
 ];
 const MQ_BY_ID={}; MQ.forEach((s,i)=>{ s.i=i; MQ_BY_ID[s.id]=s; });
-const MQ_END='Act III is over. The glacier valley west of the Hoarfrost Reach has split, but the road to Highmark is not open yet: the story goes on in the Greyspine.';
+const MQ_END='Act III is over. The glacier valley west of the Hoarfrost Reach has split, and the road to Highmark is open: the story goes on in the Greyspine.';
 // which village each quest villager lives in (the server checks you are there when you talk to them); odran2 is Odran's cart in Hanami, odran3 his cart at Rimehold
 const MQ_NPC_VIL={tamsin:1,isamu:2,hinata:2,ylva:3,wren:1,linnea:1,odran:1,bram:1,aldric:1,tomas:1,ilse:1,maren:1,greta:1,oskar:1,
   odran2:2,daisuke:2,sayuri:2,kenji:2,haruka:2,tetsuo:2,ryu:2,chiyo:2,kaede:2,

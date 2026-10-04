@@ -33,7 +33,7 @@ ok('the east edge of the plateau ends in sea cliffs (still level where you can s
   ok('no monster camp on the frozen lakes, in the pass or in the village',x.MONS.filter(m=>m.def.zone&&m.def.zone[0]==='h').every(m=>x.iceDist(m.camp.x,m.camp.z)>0&&Math.hypot(m.camp.x-x.VIL3.x,m.camp.z-x.VIL3.z)>45&&Math.abs(m.camp.x-x.PASS.x)>8||m.camp.z<x.PASS.z1-40)); }
 ok('every new monster kind and boss has a drop material with a name',x.MON_DEFS.filter(d=>d.zone&&d.zone[0]==='h').every(d=>x.MATS[d.id]&&x.MATS[d.id].name)&&['ymrik','vetrmaw'].every(id=>x.MATS[id]&&x.MATS[id].name));
 // ---- bosses ----
-ok('six bosses in six arenas, two of them in the Hoarfrost Reach',x.BOSSES.length===6&&['boss26','boss30'].every(k=>x.ARENAS.some(a=>a.key===k&&a.hoar)));
+ok('eight bosses in eight arenas, two of them in the Hoarfrost Reach (and two in the Greyspine)',x.BOSSES.length===8&&['boss26','boss30'].every(k=>x.ARENAS.some(a=>a.key===k&&a.hoar)));
 for(const A of [x.ARENA26,x.ARENA30]){ const hs=[]; for(let a=0;a<12;a++) hs.push(x.rawHeight(A.x+Math.sin(a/12*6.283)*A.r*0.9,A.z+Math.cos(a/12*6.283)*A.r*0.9));
   ok(A.name+': the arena is a flat clearing',Math.max(...hs)-Math.min(...hs)<2.5,'spread '+(Math.max(...hs)-Math.min(...hs)).toFixed(2)); }
 { const y=x.BOSS_DEFS.find(b=>b.def.id==='ymrik').def, v=x.BOSS_DEFS.find(b=>b.def.id==='vetrmaw').def;

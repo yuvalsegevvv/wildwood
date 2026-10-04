@@ -1,6 +1,6 @@
 //@ The bosses, client side: telegraph visuals (circle, cone, line, donut, marks) and how each ends, root spikes, slam waves, shield bubble, roars, boss bar, a boss's look in each mode
 /* The fight itself runs on the world server (src/server/boss.js, boss-fx.js). The client draws what it is told:
-   'tele' events open a telegraph (kinds: cleave and breath are cones, root slam icefall geyser gust mark prison are circles, line a strip, donut a ring;
+   'tele' events open a telegraph (kinds: cleave breath and rake are cones, root slam icefall geyser gust swoop rockfall quake mark prison are circles, line a strip, donut a ring;
    mark and prison follow a player), 'tend' closes it (spikes, a shock wave, a flash... if it went off), and each snapshot carries every boss's state
    (kept on its view as m.bs: engaged, phase, immune, enraged, stunned, aux a number for the bar, mode 0 normal / 1 airborne / 2 hidden / 3 shielded /
    4 whiteout / 5 blizzard). BOSS.m is the boss nearest to you; the boss bar and the shield follow that one. Zones, waves and what happens to you
@@ -24,12 +24,12 @@ function pickBoss(){
   BOSS.m=best; const s=best&&best.bs||{};
   BOSS.engaged=!!s.engaged; BOSS.phase=s.phase||1; BOSS.immune=!!s.immune; BOSS.enraged=!!s.enraged; BOSS.stunned=!!s.stunned; BOSS.aux=s.aux||0; BOSS.mode=s.mode||0;
 }
-const TELE_COL={cleave:0xff5a8a,breath:0x8fdcff,root:0xff3a2a,slam:0xff9a2a,icefall:0x9fe0ff,geyser:0x3ac8e8,gust:0xc8f0ff,line:0xfff07a,mark:0xff4a2a,prison:0x7fd8ff};
+const TELE_COL={cleave:0xff5a8a,breath:0x8fdcff,root:0xff3a2a,slam:0xff9a2a,icefall:0x9fe0ff,geyser:0x3ac8e8,gust:0xc8f0ff,line:0xfff07a,mark:0xff4a2a,prison:0x7fd8ff,rake:0xffc04a,swoop:0xffe08a,rockfall:0xb8905a,quake:0xc8a060};
 function addTele(id,kind,x,z,r,dur,face,half){
   if(BOSS.tele.has(id)) return;
   const el=BOSS.m&&BOSS.m.def.el, col=kind==='donut'?(el==='fire'?0xff7a2a:0x8fdcff):TELE_COL[kind]||0xff3a2a, own=[];
   let fg=teleFill, eg=teleEdge, follow=null;
-  if(kind==='cleave'||kind==='breath'){ const ph=face+Math.PI/2; fg=new THREE.CircleGeometry(1,24,ph-half,half*2).rotateX(-Math.PI/2); eg=new THREE.RingGeometry(0.9,1,24,1,ph-half,half*2).rotateX(-Math.PI/2); own.push(fg,eg); }
+  if(kind==='cleave'||kind==='breath'||kind==='rake'){ const ph=face+Math.PI/2; fg=new THREE.CircleGeometry(1,24,ph-half,half*2).rotateX(-Math.PI/2); eg=new THREE.RingGeometry(0.9,1,24,1,ph-half,half*2).rotateX(-Math.PI/2); own.push(fg,eg); }
   else if(kind==='line'){ fg=eg=teleLine; }
   else if(kind==='donut'){ fg=new THREE.RingGeometry(half/r,1,56).rotateX(-Math.PI/2); own.push(fg); }
   else if(kind==='mark'||kind==='prison') follow=String(half);
@@ -55,8 +55,8 @@ function endTele(id,fired,x,z){
     return;
   }
   disposeTele(e);
-  if(e.kind==='cleave'){ cSfx.swing(true); return; }
-  if(e.kind==='root'||e.kind==='icefall'){
+  if(e.kind==='cleave'||e.kind==='rake'){ cSfx.swing(true); return; }
+  if(e.kind==='root'||e.kind==='icefall'||e.kind==='rockfall'){
     const ice=e.kind==='icefall', grp=new THREE.Group(); grp.position.set(e.x,y,e.z);
     for(let i=0;i<7;i++){ const s=new THREE.Mesh(spikeGeo,ice?iceSpikeMat:matChar), a=AR(0,TAU), r=i?AR(0.3,e.r*0.85):0; s.position.set(Math.sin(a)*r,0,Math.cos(a)*r); s.rotation.set(AR(-0.3,0.3),0,AR(-0.3,0.3)); s.scale.setScalar(AR(0.7,1.3)*(ice?1.5:1)); grp.add(s); }
     scene.add(grp); bossFxAdd({o:grp,t:0,life:0.9,kind:'spikes',dispose:()=>scene.remove(grp)});

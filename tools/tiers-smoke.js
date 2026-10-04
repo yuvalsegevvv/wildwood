@@ -20,7 +20,7 @@ const zt=(home,vale,hoar)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:
 { const lv=[0,1,2,3].map(t=>x.zoneTierLv(x.DEF_BY_ID.vetrmaw,t));
   ok('a boss goes up with the tiers too (Vetrmaw 30 / 40 / 50 / 60)',lv.join()==='30,40,50,60'); }
 ok('three lands, each opened by its second boss (the second of the two bosses that live there, by level)',(()=>{
-  const by={home:[],vale:[],hoar:[]}; for(const b of x.BOSS_DEFS){ const Ar=bossArena(b); by[x.landAt(Ar.x,Ar.z)].push(b); }
+  const by={home:[],vale:[],hoar:[],grey:[]}; for(const b of x.BOSS_DEFS){ const Ar=bossArena(b); by[x.landAt(Ar.x,Ar.z)].push(b); }
   return x.ZTIER_LANDS.every(l=>by[l].length===2&&by[l].slice().sort((p,q)=>p.def.level-q.def.level)[1].def.id===x.ZTIER_BOSS[l]); })(),JSON.stringify(x.ZTIER_BOSS));
 function bossArena(b){ const B=x.BOSSES.find(q=>q.bd===b); return B.A; }
 ok('the symbol: every unlocked tier point of every land adds +10% (2 + 2 + 1 points = +50%)',near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1])}),0.5,1e-9)&&x.symbolBonus({})===0&&x.symbolBonus({zt:zt([1,1],[0,0],[0,0])})===x.ZTIER_BONUS);

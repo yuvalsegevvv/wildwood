@@ -5,7 +5,7 @@
 function sanitizeGear(g,cls){
   const base=newGearFor(cls);
   if(!g||typeof g!=='object') return base;
-  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.max(0,Math.floor(+g.coins||0)),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
+  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.max(0,Math.floor(+g.coins||0)),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
   if(g.mats&&typeof g.mats==='object') for(const id in g.mats){ const n=MATS[id]?clampInt(g.mats[id],0,MAT_MAX,0):0; if(n) out.mats[id]=n; }
   if(g.eq) for(const k in out.eq){ const id=g.eq[k], it=ITEM[id]; if(it&&out.inv.includes(id)&&(k==='weapon'?it.kind==='weapon':it.slot===k)) out.eq[k]=id; else if(k!=='weapon') out.eq[k]=null; }
   if(!ITEM[out.eq.weapon]) out.eq.weapon=base.eq.weapon;
@@ -17,6 +17,7 @@ function sanitizeGear(g,cls){
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); }
   out.zt=sanitizeZt(g.zt);
   if(out.north<1&&out.mq.s>MQ_BY_ID.V10.i) out.north=1;   // saves that already got past Akaoni: the ice wall is open for them
+  if(out.west<1&&out.mq.s>MQ_BY_ID.F8.i) out.west=1;      // ... and past Ymrik: the glacier valley is
   return out;
 }
 // quests travel in the player's own save, so check every field and recompute the rewards here
@@ -86,7 +87,7 @@ function inVillage(p){ return vDist(p.x,p.z)<VR+12; }
 function warpP(p,to){
   if(p.dead||S.t-(p.warpT||-9)<2) return;
   const from=CIRCLES.find(C=>Math.hypot(p.x-C.V.tele.x,p.z-C.V.tele.z)<C.V.tele.r+1.5); if(!from) return;
-  if(!from.open(p.gear)){ toastTo(p.id,p.gear.east<1?'The circle is cold. Whatever it answers to lies beyond the eastern mountains.':from.id==='rimehold'?'The circle hums but will not wake. Walk into Rimehold through Frostgate Pass first.':'The circle hums but will not wake. Walk to Hanami on the far side of the tunnel first.','bad'); return; }
+  if(!from.open(p.gear)){ toastTo(p.id,p.gear.east<1?'The circle is cold. Whatever it answers to lies beyond the eastern mountains.':from.id==='highmark'?'The circle hums but will not wake. Walk into Highmark through the glacier valley first.':from.id==='rimehold'?'The circle hums but will not wake. Walk into Rimehold through Frostgate Pass first.':'The circle hums but will not wake. Walk to Hanami on the far side of the tunnel first.','bad'); return; }
   const dest=CIRCLES.find(C=>C.id===to)||(from.id==='home'?CIRCLES[1]:CIRCLES[0]);   // no destination given: home <-> Hanami
   if(dest===from) return;
   if(!dest.open(p.gear)){ toastTo(p.id,dest.hint,'bad'); return; }
@@ -102,10 +103,18 @@ function reachHanamiP(p){ if(p.gear.east!==1||Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>
 // the Hoarfrost Reach: the ice wall in Frostgate Pass cracks for everyone who helped defeat Akaoni; walking into Rimehold attunes its circle
 function openNorthP(p){ if(p.gear.north>=1) return; p.gear.north=1; p.dirty=true; ev('north',p.id,1);
   toastTo(p.id,'Far to the north, the ice wall in Frostgate Pass cracks and slides apart: the road to the Hoarfrost Reach is open for you.','good'); }
+// the Greyspine: the ice fall in the glacier valley breaks up for everyone who helped defeat Ymrik; walking into Highmark attunes its circle
+function openWestP(p){ if(p.gear.west>=1) return; p.gear.west=1; p.dirty=true; ev('west',p.id,1);
+  toastTo(p.id,'Far to the west, the ice fall in the glacier valley groans and breaks apart: the road to the Greyspine is open for you.','good'); }
+function reachHighmarkP(p){ if(p.gear.west!==1||Math.hypot(p.x-VIL4.x,p.z-VIL4.z)>VIL4.r+14) return; p.gear.west=2; p.dirty=true; ev('west',p.id,2);
+  toastTo(p.id,'Welcome to Highmark! Its teleport circle is attuned to you now: the circles will take you between all four villages.','good'); }
+// the Greyspine's two gates in its west wall: a rock fall slides away for everyone who helped defeat the boss that guards the road
+function openGateP(p,id){ if(p.gear[id]>=1) return; p.gear[id]=1; p.dirty=true; ev('gate',p.id,id);
+  toastTo(p.id,id==='river'?'Far to the west a rock fall slides down into the river canyon and the way clears: the river road toward the Sunscar is open for you.':'Far to the west the stone choking the neck pass crumbles and falls away: the pass toward the Stormhorn is open for you.','good'); }
 function reachRimeholdP(p){ if(p.gear.north!==1||Math.hypot(p.x-VIL3.x,p.z-VIL3.z)>VIL3.r+14) return; p.gear.north=2; p.dirty=true; ev('north',p.id,2); mqActP(p,'rimehold');
   toastTo(p.id,'Welcome to Rimehold! Its teleport circle is attuned to you now: the circles will take you between all three villages.','good'); }
 // where you wake after being knocked out: the village of the land you are in, once you have been there
-const respawnVil=p=>p.x>HALF?(p.z<HZ0?(p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):(p.gear.east>=2?VIL2:VIL)):VIL;
+const respawnVil=p=>p.x>HALF?(p.z<HZ0?(p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):(p.gear.east>=2?VIL2:VIL)):(p.z<HZ0?(p.gear.west>=2?VIL4:p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):VIL);
 function gainExpP(p,v,monId){
   if(!(v>0)) return;
   p.exp+=v; ev('xp',p.id,r1(v),monId==null?null:monId);
@@ -161,6 +170,6 @@ function updatePlayersS(dt){
     }
     if(S.t-p.lastHit>3 && p.hp<p.maxHp) p.hp=Math.min(p.maxHp,p.hp+p.maxHp*0.08*dt);
     if(p.act){ const a=p.act; a.t+=dt; if(!a.done && a.t>=a.dur*a.hitAt){ a.done=true; resolveHitS(p,a); } if(a.t>=a.dur) p.act=null; }
-    p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); reachHanamiP(p); reachRimeholdP(p); mqTickP(p); }
+    p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); reachHanamiP(p); reachRimeholdP(p); reachHighmarkP(p); mqTickP(p); }
   }
 }

@@ -84,10 +84,10 @@ const THEMES={
 // which theme fits where you are: a boss you are fighting (its own def.music, else the one for its level), then the village you are in, then the zone's level
 function musicThemeHere(){
   const m=BOSS.m; if(m&&BOSS.engaged&&!m.dead){ const A=arenaOf(m); if(Math.hypot(P.x-A.x,P.z-A.z)<A.r+30){ const bd=bossInfo(m); return (bd&&bd.def.music)||(m.def.level>=30?'boss30':m.def.level>=26?'boss26':m.def.level>=25?'boss25':m.def.level>=20?'boss20':'boss15'); } }
-  const V=vilAt(P.x,P.z); if(vDist(P.x,P.z)<VR+22) return V===VIL3?'rimehold':V===VIL2?'hanami':'village';
+  const V=vilAt(P.x,P.z); if(vDist(P.x,P.z)<VR+22) return V===VIL4||V===VIL3?'rimehold':V===VIL2?'hanami':'village';   // (Highmark has no song of its own yet: Rimehold's)
   if(P.inTun) return MUSIC.theme||'wild3';
   const zn=zoneAt(P.x,P.z), L=zn?zn.level:0;
-  if(inHoar(P.x,P.z)) return L>=27?'hoar2':'hoar1';
+  if(inHoar(P.x,P.z)||inGrey(P.x,P.z)) return L>=27?'hoar2':'hoar1';   // (the Greyspine has no song of its own yet: the Reach's)
   if(inVale(P.x)) return L>=21?'vale2':'vale1';
   return L>=12?'wild3':L>=7?'wild2':'wild1';
 }
