@@ -6,7 +6,7 @@ const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev.map(e=>[pid,...e])); }},
   ['MONS','BOSSES','BOSS_DEFS','MON_DEFS','DEF_BY_ID','VIL','VIL2','VIL3','S','damageMonsterS','killMonsterS','rewardKill','hurtP','monK','recalcP','sanitizeGear','newGearFor',
-   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','BOSS_DEFS','DG_BOSS_DEFS','LATE_CREEP_LV','LATE_CREEP_BOSS','LATE_CREEP_MOB','lvDmgK','LV_DMG_MIN']);
+   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','symbolCapped','ZTIER_SYMBOL_LANDS','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','BOSS_DEFS','DG_BOSS_DEFS','LATE_CREEP_LV','LATE_CREEP_BOSS','LATE_CREEP_MOB','lvDmgK','LV_DMG_MIN']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
@@ -26,9 +26,9 @@ ok('three lands, each opened by its second boss (the second of the two bosses th
   const by={home:[],vale:[],hoar:[],grey:[]}; for(const b of x.BOSS_DEFS){ const Ar=bossArena(b); by[x.landAt(Ar.x,Ar.z)].push(b); }
   return x.ZTIER_LANDS.every(l=>by[l].length===2&&by[l].slice().sort((p,q)=>p.def.level-q.def.level)[1].def.id===x.ZTIER_BOSS[l]); })(),JSON.stringify(x.ZTIER_BOSS));
 function bossArena(b){ const B=x.BOSSES.find(q=>q.bd===b); return B.A; }
-ok('the symbol: every unlocked tier point of every land adds +10% (2 + 2 + 1 points = +50%)',near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1])}),0.5,1e-9)&&x.symbolBonus({})===0&&x.symbolBonus({zt:zt([1,1],[0,0],[0,0])})===x.ZTIER_BONUS);
+ok('the symbol: every unlocked tier point of every land adds +10% (2 + 2 + 1 points = +50%, the Greyspine\'s too: +1 = +60%)',near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1])}),0.5,1e-9)&&near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1],[0,1])}),0.6,1e-9)&&x.symbolBonus({})===0&&x.symbolBonus({zt:zt([1,1],[0,0],[0,0])})===x.ZTIER_BONUS);
 ok('the symbol counts what you unlocked, not what you play at',x.symbolBonus({zt:zt([0,3],[0,0],[0,0])})===3*x.ZTIER_BONUS);
-ok('with every land at tier V (fifteen points) the symbol is +150%',near(x.symbolBonus({zt:zt([0,5],[0,5],[0,5])}),1.5,1e-9)&&near(x.symbolPoints({zt:zt([0,5],[0,5],[0,5])}),15,1e-9));
+ok('with every land at tier V (twenty points) the symbol stops at +150% (ZTIER_SYMBOL_CAP, a placeholder: the Greyspine\'s five points would make the level-60 hero of boss-duel beat the tier V bosses standing, docs/NOT-BUILT.md 3b); below the cap every point is +10%',near(x.symbolBonus({zt:zt([0,5],[0,5],[0,5],[0,5])}),1.5,1e-9)&&near(x.symbolPoints({zt:zt([0,5],[0,5],[0,5],[0,5])}),20,1e-9)&&x.symbolCapped({zt:zt([0,5],[0,5],[0,5],[0,5])})&&!x.symbolCapped({zt:zt([0,5],[0,5],[0,5])})&&near(x.symbolBonus({zt:zt([0,5],[0,5],[0,5],[0,1])}),1.5,1e-9)&&near(x.symbolBonus({zt:zt([0,4],[0,4],[0,4],[0,2])}),1.4,1e-9)&&x.ZTIER_SYMBOL_LANDS.join()==='home,vale,hoar,grey');
 
 // ---- what a kill pays at the high tiers (xpFor / coinsFor in shared/balance.js) ----
 { const oldXp=L=>x.fLv(L)*Math.pow(1.15,Math.max(0,L-5))*(L>=10?1.5:1), oldCoins=L=>Math.max(1,Math.round(x.fLv(L)*2*Math.pow(1.1,Math.max(0,L-5))*(L>=10?1.5:1)));

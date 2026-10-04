@@ -6,12 +6,13 @@
    scales each hit that lands on it and each hit it lands (server/tiers.js).
    Opening tiers: defeating a land's second boss (ZTIER_BOSS) while you play that land at your highest unlocked tier unlocks the next one
    (gear.zt[land].max). Tiers are changed in a village (the map panel; zoneTierVillage). The symbol: every unlocked tier point of every land, added together,
-   gives +ZTIER_BONUS attack and health (2 + 2 + 1 points = +50%; all fifteen = +150%), whichever tier you play at. The Greyspine's tiers do NOT add to the symbol (ZTIER_SYMBOL_LANDS):
-   the balance of the level-60 hero (tools/boss-duel.js, docs/areas/tiers.md) was tuned with three lands' fifteen points, and a fourth land would make every hero 50% stronger. "Tier" alone means the gear tiers 0-5 elsewhere
+   gives +ZTIER_BONUS attack and health (2 + 2 + 1 + 1 points = +60%), whichever tier you play at, up to ZTIER_SYMBOL_CAP. The Greyspine's badge counts too (ZTIER_SYMBOL_LANDS)
+   and the cap is a PLACEHOLDER (docs/NOT-BUILT.md section 3b): the level-60 hero of tools/boss-duel.js (docs/areas/tiers.md) was tuned with three lands' fifteen points (+150%), and with the
+   Greyspine's five on top (+200%) that hero beats the tier V bosses standing still, so the symbol stops at +150% until the owner replaces the number (raise or remove the cap) or the badge. "Tier" alone means the gear tiers 0-5 elsewhere
    in the code (tierFor, TIER_ATK): these are zone tiers, hence the zoneTier / ZTIER_ names. */
 // tiers IV and V were added for the power the level-30 dungeon gear and its enhancements bring; what a kill pays is damped above level 60 (PAY_LV in balance.js)
-const ZTIER_STEP=10, ZTIER_MAX=5, ZTIER_BONUS=0.10;
-const ZTIER_LANDS=['home','vale','hoar','grey'], ZTIER_SYMBOL_LANDS=['home','vale','hoar'];
+const ZTIER_STEP=10, ZTIER_MAX=5, ZTIER_BONUS=0.10, ZTIER_SYMBOL_CAP=1.5;   // (the cap: the three older lands' fifteen points, what boss-duel was tuned with; a placeholder)
+const ZTIER_LANDS=['home','vale','hoar','grey'], ZTIER_SYMBOL_LANDS=['home','vale','hoar','grey'];   // (the lands whose unlocked tiers count toward the symbol: a land left out of this list keeps its tiers but adds nothing)
 const ZTIER_NAMES={home:'the home forest',vale:'the Sakura Vale',hoar:'the Hoarfrost Reach',grey:'the Greyspine'};
 const ZTIER_ROMAN=['0','I','II','III','IV','V'];
 // the second boss of each land (BOSS_DEFS lists a land's two bosses in the order of their levels): Carapax on the beach, Kyuubi, Vetrmaw, the Mountain Golem
@@ -34,4 +35,5 @@ function zoneTierK(d,t){
   ZT_CACHE.set(key,k); return k;
 }
 const symbolPoints=gear=>ZTIER_SYMBOL_LANDS.reduce((n,l)=>n+zoneTierMax(gear,l),0);
-const symbolBonus=gear=>ZTIER_BONUS*symbolPoints(gear);
+const symbolBonus=gear=>Math.min(ZTIER_SYMBOL_CAP,ZTIER_BONUS*symbolPoints(gear));
+const symbolCapped=gear=>ZTIER_BONUS*symbolPoints(gear)>ZTIER_SYMBOL_CAP+1e-9;   // (points past the cap add nothing yet)

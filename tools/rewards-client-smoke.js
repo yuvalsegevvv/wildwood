@@ -1,4 +1,4 @@
-//@ Headless test of the dungeon rewards in the client UI: the ring slot, ring and +n tiles, the item details (ring and soul), the stone count, the forge's Temper tab, the events
+//@ Headless test of the dungeon rewards in the client UI: the ring slot, ring and +n tiles, the item details (the ring's additive attack), the stone count, the forge's Temper tab, the events
 // Usage: python3 build.py && node tools/rewards-client-smoke.js   (runs dist/wildwood.html in Node with a stub DOM, solo mode, ~20 s)
 // What it covers: game/economy/dungeon-gear.js and the marked hooks in inventory.js, forge.js, shops.js, ui/item-icons.js, combat/weapons.js, index.html. Server side: tools/rewards-smoke.js.
 const {bootClient}=require('./headless');
@@ -26,13 +26,13 @@ const el=s=>document.querySelector(s);
   G.equip('ring-fire'); await wait(500); G=c.G(); G.renderInv(); h=el('#invBody').innerHTML;
   ok('a worn ring is a tile in the ring slot, with its level and the rarity colour',G.GEAR.eq.ring==='ring-fire'&&/class="eqslot" data-slot="ring"[^>]*>(?:(?!<\/div>)[\s\S])*class="tile r0 dg[^"]*" data-id="ring-fire" data-from="ring"/.test(h),G.GEAR.eq.ring);
   G.INV.sel={id:'ring-fire',from:'ring'}; G.renderInvInfo(); h=el('#invInfo').innerHTML;
-  ok('the ring\'s details: its share of the weapon\'s attack, and that your soul is Basic so a fire ring has no effect',/Ring/.test(h)&&/\+5% of your weapon's attack, for a Fire soul/.test(h)&&/Your soul is Basic: no effect/.test(h)&&/Tempered \+0 of 2/.test(h),h.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').slice(0,260));
-  { const soul=G.GEAR.soul; G.GEAR.soul='fire'; G.renderInvInfo(); const t=el('#invInfo').innerHTML.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
-    const w=G.ITEM[G.GEAR.eq.weapon], want=Math.round(w.atk*0.05);   // (125 x 5% = 6)
-    ok('with a Fire soul the same ring says it matches, and how much attack it adds ("matches your soul: +N attack")',new RegExp('Matches your soul \\(Fire\\): \\+'+want+' attack').test(t),t.slice(0,200));
+  { const w=G.ITEM[G.GEAR.eq.weapon], want=Math.round(w.atk*0.05);   // (125 x 5% = 6)
+    ok('the ring\'s details: its share of the weapon\'s attack and how much attack it adds now, for any soul (additive: no soul match)',/Ring/.test(h)&&/\+5% of your weapon's attack/.test(h)&&/any soul/.test(h)&&!/no effect|Matches/.test(h)&&new RegExp('Adds \\+'+want+' attack with your weapon').test(h)&&/Tempered \+0 of 2/.test(h),h.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').slice(0,260));
+    const soul=G.GEAR.soul; G.GEAR.soul='water'; G.renderInvInfo(); const t=el('#invInfo').innerHTML.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
+    ok('and the same with another soul (a Water soul does not change a fire ring: "+N attack")',new RegExp('Adds \\+'+want+' attack with your weapon').test(t)&&!/no effect|Matches/.test(t),t.slice(0,200));
     G.GEAR.soul=soul; }
   G.INV.sel={id:'ring-water',from:'bag'}; G.renderInvInfo(); h=el('#invInfo').innerHTML.replace(/<[^>]*>/g,' ');
-  ok('a ring in the bag shows what swapping would change (a fire ring is worn, the water one has no effect either: no difference)',/Same as what you wear|attack/.test(h)&&/no effect/.test(h),h.replace(/\s+/g,' ').slice(0,200));
+  ok('a ring in the bag shows what swapping would change (a fire ring is worn, a water one of the same rarity adds the same: no difference)',/Same as what you wear/.test(h)&&!/no effect/.test(h),h.replace(/\s+/g,' ').slice(0,200));
   // ---- tiles: +n badge, jade accent ----
   G.NET.send({t:'temper',id:'sword7'}); G.NET.send({t:'temper',id:'helmet7'}); await wait(500); G=c.G(); G.renderInv(); h=el('#invBody').innerHTML;
   ok('tempering shows: the pieces are +1 now, their tiles have a "+1" badge and the dungeon accent, the stones are spent (20 -> 18)',G.GEAR.inv.includes('sword7+1')&&G.GEAR.inv.includes('helmet7+1')&&G.GEAR.temper===18&&/class="tile r0 dg[^"]*" data-id="sword7\+1" data-from="bag"[^>]*>(?:(?!<\/button>)[\s\S])*<span class="enh">\+1<\/span>/.test(h)&&/class="tile r0 dg[^"]*" data-id="bow7"/.test(h)&&!/enh/.test(h.split('data-id="bow7"')[1].split('</button>')[0]));
@@ -54,8 +54,9 @@ const el=s=>document.querySelector(s);
   { G.NET.send({t:'rwdev',cmd:'dgthree'}); await wait(500); G=c.G(); G.setForgeTab('merge'); G.renderForge(); h=el('#forgeBody').innerHTML;
     const three=G.GEAR.inv.slice(-3)[0], q=three.replace(/[+]/g,'\\+');
     ok('"3 of a level-30 piece" shows in the Merge tab with a ready Merge 3 button',new RegExp('data-merge="'+q+'"').test(h)&&/Merge 3/.test(h),three);
+    const had1=G.GEAR.inv.filter(i=>i===three+'+1').length;   // (the sword and the helmet were tempered above: the random piece may be one of them)
     G.NET.send({t:'temper',id:three}); G.NET.send({t:'temper',id:three}); await wait(500); G=c.G(); G.renderForge(); h=el('#forgeBody').innerHTML;
-    ok('once two of them are tempered (+1 x2, one +0 left) the Merge tab does not list the tempered pair and says why',G.GEAR.inv.filter(i=>i===three+'+1').length===2&&!new RegExp('data-merge="'+q+'\\+1"').test(h)&&/Tempered pieces \(\+1 and up\) cannot be merged/.test(h),three); }
+    ok('once two of them are tempered (+1 x2, one +0 left) the Merge tab does not list the tempered pair and says why',G.GEAR.inv.filter(i=>i===three+'+1').length===had1+2&&!new RegExp('data-merge="'+q+'\\+1"').test(h)&&/Tempered pieces \(\+1 and up\) cannot be merged/.test(h),three); }
   // ---- events ----
   { let threw=null; try{ G.applyEvent(['stone',G.NET.pid,1,null]); G.applyEvent(['stone','someone else',1,null]); G.applyEvent(['temper',G.NET.pid,'sword7+1','sword7']); G.applyEvent(['temper','someone else','sword7+1','sword7']); }catch(e){ threw=e; }
     ok('the stone and temper events are handled (yours and other players\') without errors',!threw,threw&&threw.message); }

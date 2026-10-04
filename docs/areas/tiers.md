@@ -21,7 +21,7 @@ rules in `shared/tiers.js` (`ZTIER_STEP` / `ZTIER_MAX` / `ZTIER_BONUS`, `ZTIER_B
 ## Reference numbers
 
 - Zone tiers: 5 tiers per land (`ZTIER_MAX`; IV and V were added for the power the level-30 dungeon gear and its enhancing bring), +10 levels each (`ZTIER_STEP`), the symbol +10% attack and health per unlocked point (`ZTIER_BONUS`, multiplied
-  with gear and the Vitality passive: 2 + 2 + 1 points = x1.5, all fifteen = x2.5), all three lands' points count wherever you are. Opened by the second boss of each land (Carapax,
+  with gear and the Vitality passive: 2 + 2 + 1 points = x1.5; the cap is +150% = x2.5, `ZTIER_SYMBOL_CAP`, a placeholder: the Greyspine's fourth badge counts, 20 points would be +200% but stop at the cap), all four lands' points count wherever you are. Opened by the second boss of each land (Carapax,
   Kyuubi, Vetrmaw) killed at your highest unlocked tier; changed in a village (`zoneTierVillage`: the whole village area, spawn included). What a tier
   multiplies (`zoneTierK`, from the level formulas, so it depends on the monster's level): Vetrmaw (30) at tier I / II / III / IV / V is level 40 / 50 / 60 / 70 / 80 with health
   x1.3 / 1.9 / 2.9 / 12.6 / 59.8, damage x1.2 / 1.6 / 2.4 / 6.1 / 15.0 (tiers IV and V include the creeps, below), XP x6.4 / 42 / 290 / 590 / 1,170; the Ancient Treant (15) is level 25 / 35 / 45 / 55 / 65 with health x2.8 / 4.7 / 7.8 / 14 / 36; a level-1 slime is
@@ -41,7 +41,7 @@ rules in `shared/tiers.js` (`ZTIER_STEP` / `ZTIER_MAX` / `ZTIER_BONUS`, `ZTIER_B
     30 s -> 17-22 s, 73-77 52 s -> 37-41 s; 78-80 stays about a minute, their danger is burst damage, not health). A boss's own adds (`bossAdd`) keep the boss's base: they are part of the boss fight, and
     with a weaker wyrmling the warrior's slash alone beat Vetrmaw V standing. Props (the totems and lamps: `hits` without `boss`) keep the hits of their design. Without it the new floor made the whole of tier V fall in seconds (a level-80 Vetrmaw in 34 s, a pack of four Frostfang Alphas in 13 s).
   - *Boss creep* (`BOSS_CREEP_LV` 60, `BOSS_CREEP_HP`, `BOSS_CREEP_DMG`, `bossCreep`): a boss also gets +1.25% health and +5% damage for every level over 60 (70: x1.125 / x1.5, 80: x1.25 / x2.0). It came first: with the old
-    floor a maxed level-60 hero (level-30 gear at +10, the ring, an earth soul, the symbol at 15 points, potions) standing in melee and drinking beat the tier V Vetrmaw 9 times out of 9 (94-116k damage taken = 3 to 3.7 x
+    floor a maxed level-60 hero (level-30 gear at +10, the ring, an earth soul, the symbol at its +150% cap, potions) standing in melee and drinking beat the tier V Vetrmaw 9 times out of 9 (94-116k damage taken = 3 to 3.7 x
     their health, in 104-115 s), because a greater heal potion (70% of max health per 15 s, about 1,440 a second) out-heals what a level-80 boss deals through 84% armour (870-1,040 a second).
   - What the two give a vetrmaw (level 30): tier I / II / III x1.3 / 1.9 / 2.9 health, tier IV x12.6 and tier V x59.8; damage x1.2 / 1.6 / 2.4 / 6.1 / 15.0. A boss's health at level 60 / 70 / 80 is 67,800 / 295,500 / 1,400,000
     (a hit 1,740 / 4,344 / 10,763).

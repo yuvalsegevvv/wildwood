@@ -326,12 +326,12 @@ ok('the level-30 gear is a tier of its own: its 490 ids are ITEM records (shared
   const tot=[0,1,2,3,4].map(R.dgEnhanceTotal), kills=tot.map(t=>Math.round(t/R.ENH_DROP));
   ok('enhancing walks from +0 to 2 / 4 / 6 / 8 / 10 and stops: the step to +n costs n stones ('+tot.join(' / ')+' to the limit = about '+kills.join(' / ')+' kills at '+R.ENH_DROP*100+'%), and every step raises weapons, armour and rings (the top is +'+Math.round(R.ENH_STEP*R.ENH_MAX[4]*100)+'% for a legendary)',
     !bad.length&&tot.join()==='3,10,21,36,55',bad.join('; ')); }
-{ const w=1000, e=R.RING_ELS, souls=['basic',...R.ELEM_LIST], bad=[];
-  for(const el of e) for(const so of souls){ const b=R.ringAtk(R.dgRingId(el,0,0),so,w); if((b>0)!==(el===so)) bad.push(el+' ring, '+so+' soul = '+b); }
-  const byRar=[0,1,2,3,4].map(r=>R.ringAtk(R.dgRingId('fire',r,0),'fire',w)), enh=R.ringAtk(R.dgRingId('fire',4,10),'fire',w);
-  ok('a ring adds a share of the weapon\'s attack only when its element is the soul\'s (7 rings x 7 souls: only the matching one pays; none for the opposite soul)',!bad.length&&R.ringAtk(R.dgRingId('fire',0,0),'water',w)===0,bad.join('; '));
-  ok('the share is 5 / 6.5 / 8.5 / 11 / 15% of the weapon by rarity, grows with the weapon (x2 weapon = x2 bonus) and with enhancement (a legendary +10 gives 30%), and a hiker with no soul (undefined) counts as basic',
-    byRar.join()==='50,65,85,110,150'&&R.ringAtk(R.dgRingId('fire',2,0),'fire',2*w)===2*R.ringAtk(R.dgRingId('fire',2,0),'fire',w)&&enh===300&&R.ringAtk(R.dgRingId('basic',0,0),undefined,w)===50&&R.ringAtk('sword7','fire',w)===0&&R.ringAtk(null,'fire',w)===0,byRar.join('/')+' '+enh); }
+{ const w=1000, e=R.RING_ELS, bad=[];
+  for(const el of e){ const b=R.ringAtk(R.dgRingId(el,0,0),w); if(b!==50) bad.push(el+' ring = '+b); }
+  const byRar=[0,1,2,3,4].map(r=>R.ringAtk(R.dgRingId('fire',r,0),w)), enh=R.ringAtk(R.dgRingId('fire',4,10),w);
+  ok('a ring adds a share of the weapon\'s attack whatever its element: all 7 rings pay the same 5% (additive: the soul is not asked)',!bad.length&&R.ringAtk(R.dgRingId('fire',0,0),w)===R.ringAtk(R.dgRingId('water',0,0),w),bad.join('; '));
+  ok('the share is 5 / 6.5 / 8.5 / 11 / 15% of the weapon by rarity, grows with the weapon (x2 weapon = x2 bonus) and with enhancement (a legendary +10 gives 30%), and nothing without a ring or for a piece that is not a ring',
+    byRar.join()==='50,65,85,110,150'&&R.ringAtk(R.dgRingId('fire',2,0),2*w)===2*R.ringAtk(R.dgRingId('fire',2,0),w)&&enh===300&&R.ringAtk('sword7',w)===0&&R.ringAtk(null,w)===0,byRar.join('/')+' '+enh); }
 { const real=Math.random, N=200000, rnd=mulberry(5); let a,b;
   Math.random=()=>R.ENH_DROP-1e-9; a=R.rollMonsterRarity(); Math.random=()=>R.ENH_DROP; b=R.rollMonsterRarity(); Math.random=real;
   ok('the stone\'s chance is exactly the equipment chance it replaces (2.6%: just under it a monster drops equipment, at it nothing)',a>=0&&b===-1&&R.ENH_DROP===0.026);

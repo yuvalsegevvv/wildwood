@@ -4,7 +4,7 @@
 .pl-sym span{ margin-left:2px; }
 .zs{ --zc:#cdd98f; display:inline-grid; place-items:center; min-width:16px; height:16px; padding:0 2px; border-radius:8px; font-style:normal; font-size:9px; font-weight:700; line-height:1;
   color:#15120e; background:var(--zc); box-shadow:0 0 0 1px rgba(0,0,0,.45), 0 0 6px var(--zc); }
-.zs.home{ --zc:#8fd06a; } .zs.vale{ --zc:#f29cc0; } .zs.hoar{ --zc:#8fd0f0; }
+.zs.home{ --zc:#8fd06a; } .zs.vale{ --zc:#f29cc0; } .zs.hoar{ --zc:#8fd0f0; } .zs.grey{ --zc:#b9c0d4; }   /* the Greyspine's slate-silver badge: a placeholder look, to be replaced (docs/NOT-BUILT.md 3b) */
 .zs.off{ opacity:.28; box-shadow:none; }
 .map-tier{ display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 10px; margin-top:8px; font-size:12.5px; color:var(--ink-dim); }
 .map-tier .mt-l{ color:var(--ink); }

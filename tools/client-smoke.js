@@ -105,7 +105,7 @@ const el=s=>document.querySelector(s);
   G.NET.send({t:'dev',cmd:'weather',v:'clear'});
   // zone tiers: unlock through the testing tool, the symbol shows, the picker works in the village, a monster's level and health follow your tier
   G.NET.send({t:'dev',cmd:'zt',v:1}); await wait(500); G=c.G();
-  ok('zone tiers: three lands unlocked at tier I show the symbol (three points, +30%)',G.GEAR.zt.home.max===1&&!c.el('#plSym').hidden&&/\+30%/.test(c.el('#plSym').title||''),c.el('#plSym').title);
+  ok('zone tiers: four lands unlocked at tier I show the symbol (four points, +40%, a badge for each land)',G.GEAR.zt.home.max===1&&G.GEAR.zt.grey.max===1&&!c.el('#plSym').hidden&&/\+40%/.test(c.el('#plSym').title||'')&&/Greyspine I/.test(c.el('#plSym').title||''),c.el('#plSym').title);
   G.P.x=G.VIL.x; G.P.z=G.VIL.z; G.P.y=G.getH(G.P.x,G.P.z); G.NET.send({t:'pos',p:[G.P.x,G.P.y,G.P.z,0,0,0]}); await wait(300);
   G.NET.send({t:'zt',land:'home',n:1}); await wait(400); G=c.G();
   { const m=G.MONS.find(q=>!q.boss&&G.landAt(q.camp.x,q.camp.z)==='home'&&q.T.level<15), v=G.MONS.find(q=>!q.boss&&G.landAt(q.camp.x,q.camp.z)==='vale'), zn=G.ZONES.find(z=>!z.boss&&!z.vale&&!z.hoar&&z.level===m.T.level);

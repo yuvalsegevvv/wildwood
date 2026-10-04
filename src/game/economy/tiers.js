@@ -1,7 +1,7 @@
 //@ Zone tiers, client side: a monster's level and health as you fight it, the symbol beside your health, the tier picker on the map panel
 /* The numbers are the server's (server/tiers.js, rules in shared/tiers.js). Here: the level a monster or zone shows at your tier for its land, and a
    monster's health in your own units (the snapshot sends it in the def's own units, the same for everyone: your tier's health multiplier turns it
-   into what a hit of yours is measured against). The symbol (three badges and the bonus) sits under your XP bar; the picker is a row under the
+   into what a hit of yours is measured against). The symbol (four badges and the bonus) sits under your XP bar; the picker is a row under the
    map, for the land the map shows, and works in a village only (the server checks it as well). */
 const monTierK=m=>m.dgK||zoneTierK(m.T,monTierOf(GEAR,m));   // dungeons: a run monster's numbers are its run's level (m.dgK), like the server's monK
 // a zone's level text at your tier for its land ('12', or '16-17' for a zone with two levels)
@@ -15,7 +15,7 @@ function renderSymbol(){
   if(key===ztSymKey) return; ztSymKey=key;
   el.hidden=!pts; if(!pts) return;
   el.innerHTML=ZTIER_SYMBOL_LANDS.map(l=>`<i class="zs ${l}${zoneTierMax(GEAR,l)?'':' off'}">${ZTIER_ROMAN[zoneTierMax(GEAR,l)]}</i>`).join('')+`<span>+${Math.round(symbolBonus(GEAR)*100)}%</span>`;
-  el.title='Zone tier symbol: +'+Math.round(symbolBonus(GEAR)*100)+'% attack and health ('+ZTIER_SYMBOL_LANDS.map(l=>ZTIER_NAMES[l]+' '+ZTIER_ROMAN[zoneTierMax(GEAR,l)]).join(', ')+')';
+  el.title='Zone tier symbol: +'+Math.round(symbolBonus(GEAR)*100)+'% attack and health'+(symbolCapped(GEAR)?' (the most it gives for now)':'')+' ('+ZTIER_SYMBOL_LANDS.map(l=>ZTIER_NAMES[l]+' '+ZTIER_ROMAN[zoneTierMax(GEAR,l)]).join(', ')+')';
 }
 // the row's height (it wraps on a phone) takes room from the map: when it changes the map is fitted again
 function fitTierRow(row){ const h=row.offsetHeight||0; if(h!==ztRowH){ ztRowH=h; sizeFullMap(); } }
