@@ -1,4 +1,4 @@
-//@ Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, and the three profession tools (TOOL_LIST) with the same tiers and rarities (the pendants are in pendants.js); prices, drop tables, merging, armour looks, gear helpers (the level-30 dungeon pieces join ITEM in dungeon-items.js). Pure.
+//@ Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, and the three profession tools (TOOL_LIST) with the same tiers and rarities (the pendants' rules are in pendants.js, the pieces in dungeon-items.js); prices, drop tables, merging, armour looks, gear helpers (the level-30 dungeon pieces join ITEM in dungeon-items.js). Pure.
 /* 6 tiers (level 1, 5, 10, 15; the Sakura Vale's samurai gear at 20 and 25). Weapons: sword (Warrior), bow (Archer), wand (Mage): the weapon you hold is your class.
    Armor (any class): helmet, top, bottom, shoes. It adds health and defense and changes your outfit. */
 const TIER_LV=[1,5,10,15,20,25], TIERS=TIER_LV.length;
@@ -45,7 +45,7 @@ const sellPrice=it=>Math.round(it.price*0.4);
 /* Shops have unlimited stock, but every one of an item you buy adds 20% of its base price (1st: 100%, 2nd: 120%,
    3rd: 140%...). Your purchase counts reset at sunrise. */
 const SHOP_STEP=0.2, shopPrice=(it,n)=>Math.round(it.price*(1+SHOP_STEP*(n||0)));
-const mergedId=id=>{ const it=ITEM[id]; if(it&&it.dg) return dgMergedId(it); return it&&it.rar<4?it.base+'-'+RAR_KEY[it.rar+1]:null; };   // dungeons: level-30 pieces merge by their own ids, and only at +0; the rest from `base` (gear and tools: slot + tier; a pendant's is pd-<stat><tier>)
+const mergedId=id=>{ const it=ITEM[id]; if(it&&it.dg) return dgMergedId(it); return it&&it.rar<4?it.base+'-'+RAR_KEY[it.rar+1]:null; };   // dungeons: level-30 pieces merge by their own ids, and only at +0; the rest from `base` (gear and tools: slot + tier)
 /* Drops. Monsters: 2% common, 0.5% rare, 0.1% epic. The boss: 50% common, 10% rare, 3% epic, 1% unique,
    0.1% legendary. The rarity is rolled first, then one of the 7 pieces with equal chance. -1 = nothing. */
 function rollMonsterRarity(){ const x=Math.random(); return x<0.001?2:x<0.006?1:x<0.026?0:-1; }

@@ -1,9 +1,9 @@
-//@ The three dungeon doors and their signposts: the Hollowed Elder (a half-dead giant tree with a root-arch door), the Falls Door (a cascade over three ledges, the door behind the water) and the Barrow Door (a snow-covered mound with a trilithon)
+//@ The four dungeon doors and their signposts: the Hollowed Elder (a half-dead giant tree with a root-arch door), the Falls Door (a cascade over three ledges, the door behind the water), the Barrow Door (a snow-covered mound with a trilithon) and the Old Adit (a timbered mine mouth in a crag, a head frame above)
 /* Agent map (docs/DUNGEON-THEMES.md section 6; the rules, prompt, maps and ground patch are game/dungeon/entrances.js; test tools/entrances-client-smoke.js).
    Each door is one THREE.Group at the door (x, ground height, z) turned by DG_ENTRANCES[..].a, so in the group's own frame +z is OUT of the door (toward the apron) and the bank is at -z.
    Props that stand on the ground take their height from getH at their own spot (S.gy), never from the door's: the ground falls 1-3 m in front of two of the doors.
    Per door: a few merged meshes (villageMat: solids, dgEntMat2: open shells, a Basic "glow" mesh that is not lit) and a handful of animated extras. The group's state is in DG_DOORS.doors[id].
-   dgEntBuild() builds all three plus the signposts (once, from generation-setup.js); dgEntUpdate(dt) every frame (main/loop.js): sealed or open follows your gear (dgGateOpen), animation only on the desktop.
+   dgEntBuild() builds all four plus the signposts (once, from generation-setup.js); dgEntUpdate(dt) every frame (main/loop.js): sealed or open follows your gear (dgGateOpen), animation only on the desktop.
    Phones (LOW) get fewer details and no animation; light mode (LITE) the bare shapes. Nothing here changes the terrain's height. */
 const dgEntDet=LITE?0:LOW?1:2;   // 2 desktop, 1 phone (fewer details, nothing moves), 0 light mode (the bare shapes)
 const DG_ENT_VIS=420;            // a door's group is hidden beyond this (the fog ends at about 230 m; the Elder's crown and the Barrow's column are what show from afar)
@@ -283,6 +283,51 @@ function dgEntBarrow(E){
     }});
 }
 
+/* ================= 4. The Old Adit ================= */
+function dgEntAdit(E){
+  const S=dgEntBegin(E), {main,glow}=S, det=dgEntDet;
+  const slateP=(x,y,z,nx,ny,nz,c)=>{ const n=noise2(x*0.8,y*0.6+z)*0.5+0.5; c.set(0x8a8d96).multiplyScalar(0.72+0.4*n); if(ny>0.6) c.lerp(dgEntC.set(0x6f8a54),0.4*n); };
+  const coalP=(x,y,z,nx,ny,nz,c)=>{ const n=noise2(x*1.3,z*1.3+y)*0.5+0.5; c.set(0x1c1d22).multiplyScalar(0.7+0.7*n); };
+  const woodP=dgEntWood(0x5e4630), iron=dgEntFlat(0x34343c);
+  // the hillside: a mound behind the doorway and two crags either side of it, one over the lintel (the cliff the adit was cut into)
+  const seg=det?[20,10]:[10,5];
+  main.push(dgEntDome(10,9,8,0,-0.4,-9,seg[0],seg[1],0.12,slateP));
+  main.push(dgEntRock(5.4,9,4.2,-5.2,3.8,-3.0,0.5,slateP,0.12),dgEntRock(5.4,8.6,4.2,5.2,3.6,-3.2,0.5,slateP,-0.1),dgEntRock(6.6,4.6,3.4,0,6.6,-1.9,0.4,slateP,0.03),dgEntRock(4.2,6.2,3.4,-8.6,2.8,-1.6,0.5,slateP,0.5,0.08),dgEntRock(4.2,5.6,3.4,8.8,2.5,-1.8,0.5,slateP,-0.6,-0.08));
+  // the timber portal: two posts, a lintel and a second frame inside with its braces, a cap of boards on top
+  for(const sx of [-1,1]){ main.push(paint(cyl(0.3,0.34,3.9,7).translate(sx*1.75,1.95,0.1),woodP),paint(cyl(0.26,0.3,3.7,7).translate(sx*1.7,1.85,-1.3),woodP),
+      paint(vbox(0.14,1.5,0.14,0,0,0).rotateZ(-sx*0.7).translate(sx*1.15,3.2,0.1),woodP)); S.col(sx*1.75,0.1,0.4); S.foot(sx*1.75,0.1,S.gy(sx*1.75,0.1)); }
+  main.push(paint(vbox(4.5,0.5,0.62,0,3.95,0.1),woodP),paint(vbox(4.2,0.46,0.5,0,3.8,-1.3),woodP),paint(vbox(5.2,0.18,2.2,0,4.3,-0.6),woodP));
+  // the sealing boards across the doorway, nailed, with iron straps (shown while the way is shut), and what is behind: a dark mouth with a lamp's warm gleam far in
+  const slab=new THREE.Mesh(merge([0,1,2,3,4].map(i=>paint(vbox(3.7,0.42,0.12,0,0.45+i*0.78,0.32),woodP)).concat([paint(vbox(0.16,4.0,0.1,-1.1,1.95,0.4),iron),paint(vbox(0.16,4.0,0.1,1.1,1.95,0.4),iron),paint(vbox(0.2,4.3,0.1,0,0,0).rotateZ(0.5).translate(0,2.0,0.44),woodP)])),villageMat); S.G.add(slab);
+  const voidMat=new THREE.MeshBasicMaterial({color:0x07080a}), voidMesh=new THREE.Mesh(new THREE.PlaneGeometry(3.3,3.8),voidMat); voidMesh.position.set(0,1.9,-0.4); S.G.add(voidMesh);
+  const gleam=new THREE.Mesh(new THREE.PlaneGeometry(3.2,3.7),new THREE.MeshBasicMaterial({color:0xd07a30,transparent:true,opacity:0.2,depthWrite:false,blending:THREE.AdditiveBlending})); gleam.position.set(0,1.9,-0.34); S.G.add(gleam);
+  // the track: two rails and sleepers running out from the mouth over the apron, following the ground
+  const rail=(lx,lz)=>{ const y=S.gy(lx,lz); return paint(vbox(0.09,0.09,0.9,lx,y+0.12,lz),dgEntFlat(0x6a6a74)); };
+  for(let k=0;k<(det?10:5);k++){ const lz=0.9+k*(det?0.85:1.7), y=S.gy(0,lz); main.push(paint(vbox(1.5,0.1,0.26,0,y+0.06,lz),woodP),rail(-0.55,lz),rail(0.55,lz)); if(k===0||k===(det?9:4)) S.foot(0,lz,y); }
+  // an ore cart parked beside the track, a spoil heap of coal, three kegs and a pick on the rock by the door
+  { const lx=-3.4, lz=3.6, y=S.gy(lx,lz);
+    main.push(paint(vbox(1.6,0.8,1.1,0,0,0).rotateY(0.3).translate(lx,y+0.8,lz),dgEntFlat(0x4e4036)),dgEntRock(1.2,0.5,0.9,lx,y+1.3,lz,0.2,coalP,0.3));
+    for(const [wx,wz] of [[-0.55,-0.6],[0.55,-0.6],[-0.55,0.6],[0.55,0.6]]) main.push(paint(cyl(0.24,0.24,0.1,8).rotateX(Math.PI/2).translate(lx+wx,y+0.26,lz+wz),iron));
+    S.foot(lx,lz,y); S.col(lx,lz,0.95); }
+  main.push(dgEntDome(2.8,1.5,2.4,5.2,0.0,2.0,det?12:6,det?6:3,0.2,coalP)); S.foot(5.2,2.0,S.gy(5.2,2.0)); S.col(5.2,2.0,2.2);
+  { const kx=-3.9, kz=1.0, y=S.gy(kx,kz), keg=(x,yy,z)=>[paint(cyl(0.34,0.34,0.8,9).translate(x,yy,z),dgEntFlat(0x6a4a2c)),paint(cyl(0.36,0.36,0.06,9).translate(x,yy+0.22,z),iron),paint(cyl(0.36,0.36,0.06,9).translate(x,yy-0.22,z),iron)];
+    main.push(...keg(kx+0.4,y+0.4,kz),...keg(kx-0.4,y+0.4,kz),...keg(kx,y+1.15,kz)); S.foot(kx,kz,y); S.col(kx,kz,0.9); }
+  // two lamps on posts either side of the way in: lit (the lamp is a glow, not lit) and dimmer while the door is sealed
+  for(const sx of [-1,1]){ const lx=sx*3.0, lz=2.2, y=S.gy(lx,lz);
+    main.push(paint(vbox(0.2,2.4,0.2,lx,y+1.2,lz),woodP),paint(vbox(0.75,0.14,0.14,lx-sx*0.38,y+2.4,lz),woodP),paint(vbox(0.34,0.4,0.34,lx-sx*0.75,y+2.1,lz),iron));
+    glow.push(paint(vbox(0.26,0.28,0.26,lx-sx*0.75,y+2.1,lz),dgEntFlat(0xffb870))); S.foot(lx,lz,y); S.col(lx,lz,0.3); }
+  // the head frame on the hill: two inclined beams, a cross-tie and a winding wheel, seen from afar
+  { const hx=2.6, hz=-9.5, y=S.gy(hx,hz), H=8.5;
+    for(const sz of [-1,1]) main.push(paint(vbox(0.34,H,0.34,0,0,0).rotateX(sz*0.22).translate(hx,y+H/2-0.2,hz+sz*1.0),woodP));
+    main.push(paint(vbox(0.3,0.3,2.4,hx,y+H-0.3,hz),woodP),paint(vbox(0.26,0.26,2.0,hx,y+H*0.5,hz),woodP),paint(new THREE.TorusGeometry(1.1,0.14,5,16).rotateY(Math.PI/2).translate(hx,y+H-0.2,hz),iron));
+    S.foot(hx,hz,y); S.col(hx,hz,1.4); }
+  // colliders: the crags, the mound, the way in plugged
+  for(const [x,z,r] of [[-5.2,-3.0,3.3],[5.2,-3.2,3.3],[-8.4,-1.6,2.4],[8.6,-1.8,2.4],[0,-6.5,4.6],[-1.0,-0.8,0.6],[0,-0.8,0.6],[1.0,-0.8,0.6]]) S.col(x,z,r);
+  dgEntEnd(S,{slab,sealMesh:slab,voidMat,gleam,
+    apply(sealed){ slab.visible=sealed; },
+    tick(dt,lit,d){ S.glowMat.color.setScalar(0.3+0.7*lit); gleam.material.opacity=0.2*lit*(0.8+0.2*Math.sin(t*3.1)*Math.sin(t*1.7)); }});
+}
+
 /* ================= the signposts =================
    One on the nearest road to each door (DG_ENTRANCES[..].sign, 3.5 m off it toward the door): a post with a pointed board that points at the door, its name and the distance
    painted on both faces (the sign stands where it was put, so the distance is fixed). */
@@ -311,7 +356,7 @@ function dgEntSign(E){
 let dgEntBuilt=false;
 function dgEntBuild(){
   if(dgEntBuilt) return; dgEntBuilt=true;
-  dgEntElder(DG_ENTRANCES.hollowroots); dgEntFalls(DG_ENTRANCES.jadesprings); dgEntBarrow(DG_ENTRANCES.bonefrostbarrow);
+  dgEntElder(DG_ENTRANCES.hollowroots); dgEntFalls(DG_ENTRANCES.jadesprings); dgEntBarrow(DG_ENTRANCES.bonefrostbarrow); dgEntAdit(DG_ENTRANCES.blackseam);
   for(const E of dgEntList) dgEntSign(E);
 }
 /* every frame: each door takes its sealed or open look from your gear (dgGateOpen, so +1 at Wildwood opens the Elder, Hanami / Rimehold the others; checked for all three wherever you are,

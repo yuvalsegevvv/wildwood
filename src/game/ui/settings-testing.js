@@ -6,7 +6,6 @@ $('#tSetLv').addEventListener('click',()=>{ const v=clamp(parseInt($('#tLevel').
 $('#tMq').innerHTML=MQ.map(s=>`<option value="${s.id}">${s.id} · ${s.title} (level ${s.gate})</option>`).join('');
 $('#tSetMq').addEventListener('click',()=>netSend({t:'dev',cmd:'mq',v:$('#tMq').value}));
 $('#tAll').addEventListener('click',()=>{ netSend({t:'dev',cmd:'giveAll'}); });
-$('#tPend').addEventListener('click',()=>{ netSend({t:'dev',cmd:'givePendants'}); });
 function syncStartAll(){ $('#tStartAll').setAttribute('aria-pressed',!!GEAR.startAll); $('#tStartAll').textContent='Start with every item: '+(GEAR.startAll?'on':'off'); }
 $('#tStartAll').addEventListener('click',()=>{ GEAR.startAll=!GEAR.startAll; saveGear(); syncStartAll(); netSend({t:'dev',cmd:'startAll',v:GEAR.startAll}); });
 $('#tCoins').addEventListener('click',()=>{ netSend({t:'dev',cmd:'coins'}); });

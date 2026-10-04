@@ -8,7 +8,7 @@ const got={}, msgs={};   // pid -> events / messages received
 const NAMES=['DG_RUNS','DG_SLOT_RUN','DG_KITS','DG_KIT_BAD','DG_THEMES','DG_MISSIONS','DG_PARTY','DG_X0','DG_SLOT','DG_FLOOR_Y','DG_MAX_INST','DG_ENTRANCES','DG_HOLD_S','DG_END_S','DG_EMPTY_S',
   'DG_DOWN_S','DG_REVIVE_HP','DG_LV','MONS','S','WX1','getH','dgWorldS','dgLocalS','dgSpawnS','dgRemoveS','dgPresentS','dgBossS','dgBossDefOf','dgSlotAt','dgSlotOrigin','dgSolid','dgFree','dgLos',
   'dgFlow','dgLayout','dgBake','dgOffer','dgPoolS','dgApron','dgDefineKit','dgMemberOf','dgKOf','damageMonsterS','killMonsterS','hurtP','monK','zoneTierK','landAt','recalcP','sanitizeGear',
-  'DEF_BY_ID','fireProjS','PROJS','partyOf','ITEM','xpFor','psP'];
+  'DEF_BY_ID','fireProjS','PROJS','partyOf','ITEM','xpFor','psP','dgParse','PENDANT_STATS'];
 const {api:W,x}=loadServer({dev:true,log(){},send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (msgs[pid]=msgs[pid]||[]).push(c); if(c.t==='snap'&&c.ev) (got[pid]=got[pid]||[]).push(...c.ev); }},NAMES);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const IMM=new Set();   // players kept at full health (monsters roam the runs)
@@ -238,6 +238,18 @@ const runK=runOf('k');
   ok('the fallen boss does not come back (no respawn timer in a run)',(secs(5),runK.boss.m.dead&&!runK.boss.engaged));
   secs(x.DG_END_S);
   ok('20 s after the clear both are back where the run started, the run is closed',!K.inst&&!L2.inst&&Math.hypot(K.x-kStart.x,K.z-kStart.z)<0.5&&!x.DG_RUNS.has(runK.id)&&!x.MONS.some(m=>m.inst===runK.id)); }
+
+// ---- the Blackseam (the fourth dungeon): a purge won through Garrick pays a pendant ----
+{ const Pp=join('p','Pia'); IMM.add('p'); tick(2); dev('p','blackseam:purge:5'); tick(3);
+  const runP=runOf('p');
+  ok('the Blackseam: a testing run of it has its own walkers, at level '+x.DG_LV,!!runP&&runP.th==='blackseam'&&runP.L===x.DG_LV&&[...runP.mons].every(m=>runP.theme.mobs.walkers.includes(m.def.id)||runP.theme.mobs.guardians.includes(m.def.id)),runP?runP.th+' L'+runP.L+' phase '+runP.phase+' k '+JSON.stringify(runP.k)+' mons '+[...runP.mons].map(m=>m.def.id+(m.dead?'(dead)':'')).join(','):'no run');
+  clear(); for(const m of [...runP.mons]) if(m.dgRole==='purge'&&!m.dead) x.killMonsterS(m,Pp); tick(3);
+  ok('Purge: killing them brings Garrick into the round hall',!!runP.boss&&runP.phase==='boss'&&runP.boss.bd===x.dgBossDefOf(runP.theme)&&runP.boss.bd.def.id==='garrick'&&runP.boss.m.dgK.lv===runP.L);
+  const A3=runP.boss.A; Pp.x=A3.x+3; Pp.z=A3.z+3; Pp.dgX=Pp.x; Pp.dgZ=Pp.z; secs(1);
+  const inv0=Pp.gear.inv.length; clear(); withRandom(0.0005,()=>x.killMonsterS(runP.boss.m,Pp)); tick(3);
+  const got=Pp.gear.inv.slice(inv0), pend=got.find(id=>/^pendant-/.test(id));
+  ok('its clear pays one level-30 pendant (a kind of the five, +0), and the clear is saved',runP.phase==='won'&&!!pend&&x.dgParse(pend)&&x.PENDANT_STATS.includes(x.dgParse(pend).stat)&&x.dgParse(pend).n===0&&Pp.gear.dg.clear['blackseam:purge']===1,got+'');
+  secs(x.DG_END_S+0.5); IMM.delete('p'); }
 
 // ---- a start at a door: the gate, the offer, leaving, an empty run closing ----
 { const Ent=x.DG_ENTRANCES.hollowroots, ap=x.dgApron(Ent);

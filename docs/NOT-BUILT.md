@@ -101,7 +101,8 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
 - **two bosses**: the Gryphon Queen (29; her peak, a flat nest on a cone-shaped mountain; kit `gryphon`) and the Mountain Golem (32; a cavern; kit `golem`), 12 boss skills, two board quests;
 - **water**: three tarns, a river that leaves the range to the west, and a fjord on the south-west coast, with wading, banks, plants, camps and the map all reading one `waterSurf`;
 - **the two rock falls** in the west wall (the river road, opened by the Gryphon Queen: `gear.river`; the neck pass, by the Golem: `gear.neck`): canyons through the wall to the world's edge;
-- testing tools: `dev tunnel` `glen` / `glenw` / `highmark` / `grey` / `queen` / `cavern` / `riverfall` / `neckfall`, `dev west`, `dev gate`, and the buttons in the Testing section.
+- **zone tiers** (`ZTIER_LANDS` has `grey`: the picker, the Mountain Golem opening them) and **its dungeon, the Blackseam**, a mine under Highmark Pastures with the boss Garrick (`docs/DUNGEON-THEMES.md` section 9), whose clear pays a **pendant** (`docs/PENDANTS.md`);
+- testing tools: `dev tunnel` `glen` / `glenw` / `highmark` / `grey` / `queen` / `cavern` / `riverfall` / `neckfall`, `dev west`, `dev gate`, and the buttons in the Testing section (the Old Adit's door button included).
 
 **Not built**, in about this order:
 
@@ -113,8 +114,8 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
   and sells but a node needs a grade of ore, log and herb that does not exist yet (`ORE_GRADES`, `LOG_GRADES`, `HERB_LANDS`, a tool tier 6).
 - **Gear tier 6 and the economy past 25**: gear stays at tier 5, drops and the shop do not follow the levels 26-32 (`tierFor`), `VALE_TOP_LV` is still 25, and the XP curve is the stopgap of
   section 5.
-- **A zone tier for the Greyspine**: `landAt` says `'grey'` but `ZTIER_LANDS` has three lands; the picker and the symbol skip it (`zoneTierOn` is 0), and the bosses open no tier.
-- **Music**: Highmark and the zones play the Rimehold and Reach tracks and the two boss fights the Reach's boss songs (`boss26` for the Queen, `boss30` for the Golem) as placeholders (`THEMES`, `musicThemeHere`); no recorded track exists
+- **The Greyspine's zone tiers are not in the symbol or the balance yardstick**: the picker and the tiers work (`ZTIER_LANDS`), but `ZTIER_SYMBOL_LANDS` is the three older lands so version 2's `boss-duel` calibration holds; the tiers' numbers for the Greyspine (and Garrick's at +1 ... +5) are unchecked, as the creep above level 60 was only tuned for the old lands.
+- **Music**: the Blackseam plays the Reach's `hoar1` track; Highmark and the zones play the Rimehold and Reach tracks and the two boss fights the Reach's boss songs (`boss26` for the Queen, `boss30` for the Golem) as placeholders (`THEMES`, `musicThemeHere`); no recorded track exists
   for the Greyspine, and no night mix for Highmark.
 - **Weather and sound**: sudden mist, thunderstorms on the peaks, avalanches as a boss move, an alpine wind of its own (the Greyspine uses the home forest's ambience; only the footsteps on water follow `waterSurf`). Regional weather is still client-side only (section 3).
 - **Dressing of the village and the land**: Highmark has no palisade, no rope bridges on the troughs' flanks and no shrines (the doc's dressing); no waterfalls (the tarns, river and fjord are

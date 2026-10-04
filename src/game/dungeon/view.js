@@ -12,6 +12,7 @@
    the nearest. Four meshes (floor; walls and lit props; glowing parts, unlit; soft see-through parts) plus one small group per objective. A prop kind no builder knows draws a rock. */
 const DG_WALL_H=6.5, DG_PAL_DEF={wall:0x4a4640,floor:0x3a352e,fog:0x0c0b0a,light:0xffd8a0};
 const DG_WOBBLE={hollowroots:0.3,jadesprings:0.2,bonefrostbarrow:0.05};   // how far the walls bulge (m): roots and caves, a little in the barrow's masonry, none in the test set
+const DG_AMB={bonefrostbarrow:0.45,blackseam:0.5};   // how bright the ambient light is where a theme is dark (the barrow's cold gloom, the mine's lamp-lit dark); else 0.66
 const DG_VIEW={g:null,geos:[],mats:[],anchors:[],glowMat:null,og:null,meshes:0,tris:0,objs:0,kinds:{}};
 const dgPalOf=T=>Object.assign({},DG_PAL_DEF,T&&T.pal||{});
 const dgvHash=(x,z)=>{ const s=Math.sin(x*127.1+z*311.7)*43758.5453; return s-Math.floor(s); };
@@ -148,7 +149,7 @@ const DG_PROP_KINDS={
 function dgvSees(B,x0,z0,x1,z1,skip){ const d=Math.hypot(x1-x0,z1-z0), n=Math.ceil(d/0.9); for(let i=1;i<n;i++){ const k=i/n; if(k*d<skip) continue; if(dgSolid(B,x0+(x1-x0)*k,z0+(z1-z0)*k)) return false; } return true; }
 function dgViewBuild(R){
   dgViewClear(); const B=R.B; if(!B) return;
-  const T=R.T, pal=dgPalOf(T), W=B.w, H=B.h, N=W*H, wob=T?DG_WOBBLE[T.id]||0.12:0, amb=T&&T.id==='bonefrostbarrow'?0.45:0.66;
+  const T=R.T, pal=dgPalOf(T), W=B.w, H=B.h, N=W*H, wob=T?DG_WOBBLE[T.id]||0.12:0, amb=(T&&DG_AMB[T.id])||0.66;
   const g=new THREE.Group(); g.position.set(R.ox,R.y,R.oz); g.name='dungeon'; scene.add(g); DG_VIEW.g=g;
   const kOf=new Array(N), kind=new Uint8Array(N), lg=B.legend||{}, lightOf={};
   for(const ch in lg){ const e=lg[ch]; if(e&&e.light!==undefined) lightOf[e.prop]=e.light; }

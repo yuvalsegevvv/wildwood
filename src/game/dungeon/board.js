@@ -14,12 +14,14 @@ const DG_BOARD={th:null,msg:null,want:0,until:0,sent:0,silent:false,polled:0};
 const DG_BOARD_INFO={
   hollowroots:{color:'#8fd06a',text:'A hollow under the Ancient Grove where the roots of the Heartwood go down: warm dark, sap and fungus for light, and root spikes in the floor.'},
   jadesprings:{color:'#5fd4a8',text:'Warm caves behind Jade Falls where the hot springs rise: jade pools, drifting steam, bamboo roots through the ceiling.'},
-  bonefrostbarrow:{color:'#8fd0f0',text:'The long grave of a vanished clan at Bonefrost Barrow: stone passages, cairns and bone-white rime, lightless but for the braziers.'}};
+  bonefrostbarrow:{color:'#8fd0f0',text:'The long grave of a vanished clan at Bonefrost Barrow: stone passages, cairns and bone-white rime, lightless but for the braziers.'},
+  blackseam:{color:'#e8a050',text:'An abandoned coal mine under Highmark Pastures, worked until the foreman sold the seam to the powder: timbered drifts, ore carts, scalding slag vents and the lamps he left burning.'}};
 // what each mission calls its objective in each dungeon (docs/DUNGEON-THEMES.md section 3, "What every mission calls its objectives")
 const DG_BOARD_OBJ={
   hollowroots:{defense:'the Heartwood Knot',survival:'a sap-lamp',sabotage:'heartroots',siege:'seed shrines',hunt:'a runaway Shroomling',escort:'a hunter in a root cocoon'},
   jadesprings:{defense:'the jade basin',survival:'a stone lantern',sabotage:'spring gates',siege:'offering stones',hunt:'a Karasu Tengu in flight',escort:'the bath-house keeper'},
-  bonefrostbarrow:{defense:'the warding rune stone',survival:'a grave lamp',sabotage:'burial cairns',siege:'rune pillars',hunt:'a Barrow Wight slipping between graves',escort:'a snared grave-warden'}};
+  bonefrostbarrow:{defense:'the warding rune stone',survival:'a grave lamp',sabotage:'burial cairns',siege:'rune pillars',hunt:'a Barrow Wight slipping between graves',escort:'a snared grave-warden'},
+  blackseam:{defense:'the winch house',survival:'a miner\'s lamp',sabotage:'the timber props',siege:'the winding gear',hunt:'a Mountain Goblin bolting through the drifts',escort:'a trapped surveyor'}};
 // one line for each of the seven missions (docs/DUNGEONS.md section 4); {o} is the dungeon's name for the objective
 const DG_BOARD_TEXT={
   purge:'Clear the rooms of everything that lives there, then face the boss in the round hall.',

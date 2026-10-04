@@ -1,6 +1,6 @@
 # The Greyspine, the fourth land (levels 26-32)
 
-Area guide. Written when the land was built on top of the home forest, the Vale and the Reach; moved here from `CLAUDE.md` in the version2 merge (the router keeps a short row). Design: `docs/WORLD.md` section 8; what is not built: `docs/NOT-BUILT.md` section 3b; the dungeon planned for it: `docs/DUNGEON-THEMES.md`.
+Area guide. Written when the land was built on top of the home forest, the Vale and the Reach; moved here from `CLAUDE.md` in the version2 merge (the router keeps a short row). Design: `docs/WORLD.md` section 8; what is not built: `docs/NOT-BUILT.md` section 3b; its dungeon, the Blackseam under Highmark Pastures, and its boss Garrick (built): `docs/DUNGEON-THEMES.md` section 9; the pendants it pays: `docs/PENDANTS.md`.
 
 ## Where to change what
 
@@ -27,4 +27,4 @@ Area guide. Written when the land was built on top of the home forest, the Vale 
 
 ## Reference numbers
 
-- The Greyspine: 14 monster kinds (two per level 26-32, `zone:'g26'`..`'g32'`, earth and air), 12 of each (168), two bosses (29 the Gryphon Queen, 32 the Mountain Golem, 6 skills each), three tarns, a river and a fjord, no resource nodes, no zone tier. Progress: `gear.west` 0 ice fall shut, 1 open (Ymrik; old saves past F8 get 1), 2 walked into Highmark (its circle works); `gear.river` / `gear.neck` 0 rock fall shut, 1 open (the Gryphon Queen / the Mountain Golem; anyone rewarded for the kill).
+- The Greyspine: 14 monster kinds (two per level 26-32, `zone:'g26'`..`'g32'`, earth and air), 12 of each (168), two bosses (29 the Gryphon Queen, 32 the Mountain Golem, 6 skills each), three tarns, a river and a fjord, no resource nodes, zone tiers on (`ZTIER_LANDS`; not counted in the symbol, `ZTIER_SYMBOL_LANDS`). Progress: `gear.west` 0 ice fall shut, 1 open (Ymrik; old saves past F8 get 1), 2 walked into Highmark (its circle works); `gear.river` / `gear.neck` 0 rock fall shut, 1 open (the Gryphon Queen / the Mountain Golem; anyone rewarded for the kill).

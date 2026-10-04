@@ -54,7 +54,7 @@ function itemIcon(it){
   else if(it.kind==='tool') g=toolIconArt(it);
   else if(it.kind==='ring') g=ringIconArt(it);   // dungeons: the ring
   else if(it.kind==='pendant') g=pendantIconArt(it);
-  if(it.dg&&it.kind!=='ring') g+=DG_SPARK;   // dungeons: a jade sparkle marks level-30 gear
+  if(it.dg&&it.kind!=='ring'&&it.kind!=='pendant') g+=DG_SPARK;   // dungeons: a jade sparkle marks level-30 gear (a ring and a pendant draw theirs when tempered)
   return `<svg class="ico" viewBox="0 0 32 32" aria-hidden="true">${g}</svg>`;
 }
 // the three tools: a wooden haft and a head in the colour of the tier's ore (ORE_GRADES)
@@ -71,19 +71,19 @@ function ringIconArt(it){
   return `<circle cx="16" cy="11" r="9" fill="${c}" opacity=".22"/><circle cx="16" cy="20" r="8" fill="none" stroke="#15120e" stroke-width="5"/><circle cx="16" cy="20" r="8" fill="none" stroke="${band}" stroke-width="3"/>
     <path d="M16 4.5l4.2 4.8-4.2 5.2-4.2-5.2z" fill="${c}" ${OUT}/><path d="M16 4.5l-1.8 4.8 1.8 5.2zM12 9.3h8.4" fill="none" stroke="${icoShade(c,1.3)}" stroke-width=".7"/>${it.n?DG_SPARK:''}`;
 }
-// the pendants: a chain in the metal of the dungeon tier and a gem whose colour and shape tell the kind (a diamond for XP, a drop for drops, a coin, a four-point star for crit rate, a shard for crit damage)
-const PENDANT_METAL=['#8a929c','#d3dbe4','#d4a83a','#6a6478'], PENDANT_GEM={xp:'#62d66e',drop:'#e8a23a',coin:'#f0cd45',crit:'#e0384a',critdmg:'#b77cf5'};
+// the pendants: a chain in the metal of the rarity (the ring's bands) and a gem whose colour and shape tell the kind (a diamond for XP, a drop for drops, a coin, a four-point star for crit rate, a shard for crit damage), a jade sparkle when tempered
+const PENDANT_METAL=['#cdbd8a','#c9d3e8','#d9c3f5','#f5dc70','#a8ee9c'], PENDANT_GEM={xp:'#62d66e',drop:'#e8a23a',coin:'#f0cd45',crit:'#e0384a',critdmg:'#b77cf5'};
 function pendantIconArt(it){
-  const m=PENDANT_METAL[it.tier], c=PENDANT_GEM[it.stat], d=icoShade(c,0.6), l=icoShade(c,1.35);
+  const m=PENDANT_METAL[it.rar], c=PENDANT_GEM[it.stat], d=icoShade(c,0.6), l=icoShade(c,1.35);
   let gem;
   if(it.stat==='xp') gem=`<path d="M16 14L22 20.5L16 28L10 20.5Z" fill="${c}" ${OUT}/><path d="M16 14L19 20.5L16 28L13 20.5Z" fill="${l}"/><path d="M10 20.5H22" stroke="${d}" stroke-width=".7"/>`;
   else if(it.stat==='drop') gem=`<path d="M16 13.5Q23.5 21 21.5 24.8Q19.8 28.5 16 28.5Q12.2 28.5 10.5 24.8Q8.5 21 16 13.5Z" fill="${c}" ${OUT}/><path d="M13.4 22Q13 25 15.2 26.3" fill="none" stroke="${l}" stroke-width="1.2"/>`;
   else if(it.stat==='coin') gem=`<circle cx="16" cy="21" r="7.4" fill="${c}" ${OUT}/><circle cx="16" cy="21" r="4.6" fill="none" stroke="${d}" stroke-width=".9"/><path d="M14.2 21H17.8M16 19.2V22.8" stroke="${d}" stroke-width="1"/>`;
   else if(it.stat==='crit') gem=`<path d="M16 12.5L18.3 18.7L24.5 21L18.3 23.3L16 29.5L13.7 23.3L7.5 21L13.7 18.7Z" fill="${c}" ${OUT}/><path d="M16 15.5L17.2 19.8L16 21Z" fill="${l}"/>`;
   else gem=`<path d="M17.5 13L23 19L19.4 20.6L22 29L10 21.5L14 20L11 16Z" fill="${c}" ${OUT}/><path d="M17 15.5L19.5 19L16 20.5Z" fill="${l}"/>`;
-  return `<path d="M6.5 3.5Q16 22 25.5 3.5" fill="none" stroke="#15120e" stroke-width="3" stroke-linecap="round"/><path d="M6.5 3.5Q16 22 25.5 3.5" fill="none" stroke="${m}" stroke-width="1.6" stroke-dasharray="2 1.2" stroke-linecap="round"/><circle cx="16" cy="13" r="1.6" fill="${m}" ${OUT}/>${gem}`;
+  return `<path d="M6.5 3.5Q16 22 25.5 3.5" fill="none" stroke="#15120e" stroke-width="3" stroke-linecap="round"/><path d="M6.5 3.5Q16 22 25.5 3.5" fill="none" stroke="${m}" stroke-width="1.6" stroke-dasharray="2 1.2" stroke-linecap="round"/><circle cx="16" cy="13" r="1.6" fill="${m}" ${OUT}/>${gem}${it.n?DG_SPARK:''}`;
 }
 // faint outline for an empty equipment slot
 function slotIcon(slot){
-  const fake=slot==='weapon'?ITEM.sword1:slot==='ring'?ITEM['ring-basic']:slot==='pendant'?ITEM['pd-xp1']:ITEM[slot+'1'];  return itemIcon(fake).replace('class="ico"','class="ico ghost"');
+  const fake=slot==='weapon'?ITEM.sword1:slot==='ring'?ITEM['ring-basic']:slot==='pendant'?ITEM['pendant-xp']:ITEM[slot+'1'];  return itemIcon(fake).replace('class="ico"','class="ico ghost"');
 }

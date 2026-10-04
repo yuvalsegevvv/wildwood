@@ -13,6 +13,7 @@ function dgStatChange(it,next){
   const up=(a,b,u)=>`<span class="up">(+${Math.round((b-a)*10)/10}${u||''})</span>`;
   if(it.kind==='weapon') return `+${next.atk} attack ${up(it.atk,next.atk)}`;
   if(it.kind==='armor') return `+${next.hp} health, +${next.def} defense ${up(it.hp,next.hp)}`;
+  if(it.kind==='pendant') return `${pendantText(next)} <span class="up">(+${it.stat==='critdmg'?Math.round((next.v-it.v)*100)/100:dgPct(next.v-it.v)+'%'})</span>`;
   const w=ITEM[GEAR.eq.weapon], a=dgRingShare(it,soulNow(),w).atk, b=dgRingShare(next,soulNow(),w).atk;
   return `+${dgPct(next.pct)}% of your weapon's attack ${up(dgPct(it.pct),dgPct(next.pct),'%')}${b>a?` <span class="muted">(+${b} attack with your soul, now +${a})</span>`:''}`;
 }

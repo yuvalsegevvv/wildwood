@@ -6,7 +6,7 @@ const ODRAN_CURIOS=['a coin with a sun inside a ring, far too round and far too 
 function openShop(n){ openPanel('shop',n); shopTab='buy'; renderShop(); }
 function renderShop(){
   const n=panelNPC; if(!n) return;
-  const ped=n.def.role==='peddler', kind=ped?null:n.def.role==='weaponsmith'?'weapon':'armor', ofKind=i=>!kind||i.kind===kind||(kind==='armor'&&i.kind==='ring');   // dungeons: the armourer also buys rings
+  const ped=n.def.role==='peddler', kind=ped?null:n.def.role==='weaponsmith'?'weapon':'armor', ofKind=i=>!kind||i.kind===kind||(kind==='armor'&&(i.kind==='ring'||i.kind==='pendant'));   // dungeons: the armourer also buys rings and pendants
   $('#shopTitle').textContent=n.def.name+(ped?"'s cart":kind==='weapon'?"'s weapons":"'s armor");
   $('#shopCoins').textContent=GEAR.coins+' coins';
   document.querySelectorAll('[data-shoptab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.shoptab===shopTab));

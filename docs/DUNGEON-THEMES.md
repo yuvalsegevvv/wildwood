@@ -1,13 +1,13 @@
-# The three dungeons, their entrances, their bosses and the hourly offer
+# The four dungeons, their entrances, their bosses and the hourly offer
 
-**Status: designs plus data, not playable.** The machinery they run on is in `docs/DUNGEONS.md` (tiles, missions, parties, the server plan). What exists in code is the data of the three
-dungeons (`DG_THEMES`), of their three entrances (`DG_ENTRANCES`, section 6), of their three bosses (`DG_BOSSES`), the hourly offer (`dgOffer`) and the entry rule (`dgUnlocked`, `dgLevel`, `dgGateOpen`) in `src/shared/dungeons.js`, and the rewards (section 7: `DG_REWARDS`, the level-30 gear, the ring, enhancing, the stone) in `src/shared/dungeon-rewards.js`, checked by
-`tools/dungeons-smoke.js` (97 checks); `tools/entrance-map.js` draws the map of section 6; the doors' client dressing (section 6) is built and tested by `tools/entrances-client-smoke.js`. The tile art is drawn (section 3: one file per dungeon in `src/shared/dungeons/themes/`, entered through `defineDungeonTheme`) and the three bosses are built (section 4: `src/server/dungeons/boss-kits.js`, tested by `tools/dungeon-boss-smoke.js`).
+**Status: designs plus data, not playable.** The machinery they run on is in `docs/DUNGEONS.md` (tiles, missions, parties, the server plan). What exists in code is the data of the four
+dungeons (`DG_THEMES`), of their four entrances (`DG_ENTRANCES`, section 6), of their four bosses (`DG_BOSSES`), the hourly offer (`dgOffer`) and the entry rule (`dgUnlocked`, `dgLevel`, `dgGateOpen`) in `src/shared/dungeons.js`, and the rewards (section 7: `DG_REWARDS`, the level-30 gear, the ring, enhancing, the stone) in `src/shared/dungeon-rewards.js`, checked by
+`tools/dungeons-smoke.js` (97 checks); `tools/entrance-map.js` draws the map of section 6; the doors' client dressing (section 6) is built and tested by `tools/entrances-client-smoke.js`. The tile art is drawn (section 3: one file per dungeon in `src/shared/dungeons/themes/`, entered through `defineDungeonTheme`) and the bosses are built (section 4: `src/server/dungeons/boss-kits.js`, tested by `tools/dungeon-boss-smoke.js`).
 *(proposed)* = my suggestion. An earlier version of this file had nine dungeons and bosses drawn at random; those are gone, and the six dungeons I did not pick are kept in section 5.
 
 ## 1. What the owner decided
 
-- **One dungeon for each built land** (Wildwood, the Sakura Vale, the Hoarfrost Reach): three in all.
+- **One dungeon for each built land** (Wildwood, the Sakura Vale, the Hoarfrost Reach): three in all; **the Greyspine's, the Blackseam, is the fourth** (section 9: it pays a pendant, `docs/PENDANTS.md`).
 - **The mission type rotates every hour.** Each dungeon offers **two types at a time, picked at random**; the players choose one of the two (section 2).
 - **Three new bosses, one for each dungeon** (section 4). No more random draw of the old six.
 - **The base is level 30** (`DG_LV`). The difficulty is the land's own +N setting (`gear.zt[land].on`, picked under the map in a village), each land having a base: **Wildwood's dungeon is locked
@@ -36,13 +36,14 @@ dungeons (`DG_THEMES`), of their three entrances (`DG_ENTRANCES`, section 6), of
 - **No gating by clears any more** (an earlier plan: Purge first, then Defense...): with a random offer a hiker might never be offered the type that unlocks the next. Every type is open from the start.
 - The pool is a parameter: until all seven missions are built the first release offers only the built ones (with two types it is always that pair). The time is the server's clock; in Solo the page's.
 
-## 3. The three dungeons
+## 3. The dungeons (the Blackseam's own design is section 9)
 
 | Dungeon | Land | Lies under | Elements | Walkers | Guardians | Boss |
 |---|---|---|---|---|---|---|
 | **The Hollow Roots** | Wildwood | Ancient Grove | earth, dark (+ air, water, light, fire) | Treant, Deathcap, Shroomling, Bog Slime, Dire Boar | Ancient Treant, Rotwood Treant | **Amanita, the Sporemother** |
 | **Jade Spring Grottoes** | Sakura Vale | Jade Falls | water, air, dark, earth | Kappa, Jade Slime, Blue Oni, Karasu Tengu, Jorogumo, Mountain Boar | Bamboo Treant | **Gawataro, the Jade Elder** |
 | **Bonefrost Barrow** | Hoarfrost Reach | Bonefrost Barrow | dark | Draugr, Rime Revenant, Barrow Wight, Ice Wraith, Frost Reaver | none | **Haugbui, the Barrow Lord** |
+| **The Blackseam** | The Greyspine | Highmark Pastures | earth, air | Mountain Goblin, Crystal Beetle, Granite Slime, Quartz Slime, Cliff Boar, Rock Troll, Mist Wraith | Granite Golem | **Garrick, the Seam Foreman** |
 
 Why these three: the Hollow Roots is the Wildwood lore (`WORLD.md`: the Heartwood, whose roots reach the Rootdeep); the Jade Springs are the onsen `WORLD.md` suggests for the Vale and give it a water
 dungeon its two bosses (Akaoni, Kyuubi) do not cover; the Barrow is the Reach's dark element and the one place the Reach's undead live. Each is a different feel (living and warm, wet and green, dead and lightless).
@@ -212,11 +213,11 @@ The six other dungeons of the earlier nine, kept in case one of them should repl
 
 A dungeon is entered through **a door in the world, in the zone it lies under** (`at`), and nowhere else: you walk there, open the door's **Delve board** with the talk key (the dungeon, its lock, the two mission types on offer this hour with a
 countdown, its level at your tier, your party and Ready, Start for the leader, Join run for a member), and the run starts from there. Leaving or finishing puts you back on the door's **apron**. No fast travel to a door (the teleport circles
-list villages only), so the walk, through the zone's monsters, is part of it. The three sites were **found by searching the real terrain** (`DG_ENTRANCES` in `shared/dungeons.js`; `node tools/entrance-map.js` redraws the map):
+list villages only), so the walk, through the zone's monsters, is part of it. The sites were **found by searching the real terrain** (`DG_ENTRANCES` in `shared/dungeons.js`; `node tools/entrance-map.js` redraws the map):
 
-![the three entrances](dungeon-entrances.png)
+![the four entrances](dungeon-entrances.png)
 
-*Left to right: 1 the Hollowed Elder (Wildwood, with the village's wall in the corner), 2 the Falls Door (the Sakura Vale), 3 the Barrow Door (the Hoarfrost Reach). Red ring: the door, with a yellow tick for the way it faces; white ring: its signpost on the
+*Left to right: 1 the Hollowed Elder (Wildwood, with the village's wall in the corner), 2 the Falls Door (the Sakura Vale), 3 the Barrow Door (the Hoarfrost Reach), 4 the Old Adit (the Greyspine, with Highmark's wall in the corner). Red ring: the door, with a yellow tick for the way it faces; white ring: its signpost on the
 nearest road; the dotted line: the route from the signpost; white lines: zone borders; brown: roads; orange: village walls; magenta: a boss arena; blue: water.*
 
 | | 1. The Hollowed Elder | 2. The Falls Door | 3. The Barrow Door |
@@ -246,7 +247,8 @@ and the Reach's snow domes are steep or flat, so the Barrow has one site and Wil
   with paper strips across it. A plume of mist rises 14 m, so it is seen from the Coast Road 120 m away (the road it faces). The sound of falling water. There is no waterfall in the game today (no stream anywhere): this is the first, and a prop only.
 - **3. The Barrow Door.** A burial mound (a mesh, 7 m high, under snow) with a stone doorway of two 4.5 m uprights and a lintel, runes cut in pale blue; two braziers burn blue either side, and seven standing stones ring the apron at 12 m. Rime on the ground,
   a low wind and a hum, a faint blue column of light at night and in a blizzard, visible at 80 m.
-- **On all three**: the apron's ground is **recoloured** (moss, jade stone, rimed turf) and the terrain is **not changed** (a height change moves things found by scanning the terrain, `CLAUDE.md` section 8); trees, rocks and bushes keep 14 m off the door
+- **4. The Old Adit** (the Greyspine's, section 9). A timbered mine mouth in a crag at (316, -692), a head frame on the hill above it, rails over the apron, a parked ore cart, a heap of coal, three powder kegs and two lamps; boards across the mouth while sealed (needs the ice fall open: `gear.west` 2).
+- **On all four**: the apron's ground is **recoloured** (moss, jade stone, rimed turf, coal dust) and the terrain is **not changed** (a height change moves things found by scanning the terrain, `CLAUDE.md` section 8); trees, rocks and bushes keep 14 m off the door
   (`DG_ENT_CLEAR`, through `storyClear`); **no new roads**: a **signpost** on the nearest road points the way ("The Hollowed Elder, 181 m", a readable sign like the drowned roads'), the world map shows each door with its name (a padlock on Wildwood's at +0), and
   the beacon (the crown, the mist, the blue light) shows it from afar. A worn trail from the signpost to the apron is an optional colour decal.
 
@@ -276,7 +278,7 @@ phones get fewer details and nothing moves, light mode the bare shapes) and `gam
 | every frame: sealed look, light, animation | `main/loop.js` | `dgEntUpdate(dt)` |
 | the talk key at a door | `village/talking.js` `interact` | `dgOpenDoor(theme)` |
 | the door within reach, and its prompt | `village/talking.js` `updateTalkUI` (2 lines) | `dgEntranceNear`, `dgEntPrompt` |
-| the ground patch (Reach's colours, then the others) | `world/terrain-color.js` (2 lines) | `dgEntTint` |
+| the ground patch (Reach's and the Greyspine's colours, then the others) | `world/terrain-color.js` (3 lines) | `dgEntTint` |
 | no trees / bushes / rocks at a door or signpost | `world/generation-chunks.js` (3 lines) | `dgEntClear` |
 | the full map's markers, the minimap's, the hover name | `ui/map.js` (3 lines) | `dgEntMapMarks`, `dgEntMiniMarks`, `dgEntName` |
 | the Falls Door's cascade through the water loop; drips and hum | `audio/driver.js` (2 lines) | `dgEntWater`, `dgEntSounds` |
@@ -290,6 +292,7 @@ Decided by the owner; the data and the rules are in `src/shared/dungeon-rewards.
 | Hollow Roots (Wildwood) | a **level-30 weapon** | sword, bow, wand (one for each class) |
 | Jade Spring Grottoes (the Vale) | a **level-30 armour piece** | helmet, top, bottom, shoes |
 | Bonefrost Barrow (the Reach) | a **ring**, a new piece of equipment | 7 types: no element and the six elements |
+| The Blackseam (the Greyspine) | a **pendant**, the necklace (`docs/PENDANTS.md`) | 5 kinds: exp, drop, coin, crit rate, crit damage |
 
 **One item a clear.** Its rarity is rolled first: **Common 70% / Rare 25% / Epic 4% / Unique 0.8% / Legendary 0.2%** (`DG_REWARD_W`), then one piece of the pool with equal chance. The whole party gets the same
 item (the all-loot rule; the same sword reaches a mage too: see decision 8).
@@ -363,3 +366,70 @@ become `ITEM` records at load (not in `ITEM_LIST`, like the tools), so the save 
    are one step on each table *(assumed numbers)*. **+10% a step (the owner raised my assumed 5%), n stones for the step to +n, always works, no coins** *(assumed)*. **One ring slot**, the plain ring for the `basic` soul *(assumed; the alternative is a ring that always works at a lower rate)*.
 9. **The stone** drops at the level you fight at, so zone tiers farm it *(assumed; the alternative is the def's own level)*; at 2.6%, the chance it replaces; **bosses keep dropping equipment** *(assumed: you said normal monsters)*.
 10. **Merging** (3 identical -> the next rarity) only takes +0 pieces, the result is +0 *(assumed)*; the stones in a merged piece are lost.
+
+## 9. The Blackseam and Garrick, the Seam Foreman (the Greyspine's dungeon, the fourth)
+
+**Status: built and tested** (`tools/dungeons-smoke.js`, `dungeon-boss-smoke.js`, `entrances-client-smoke.js`; the dressing seen only in the headless client, not yet by eye in a browser). The owner asked for "a dungeon, level 30 base boss level, that gives a pendant":
+this is it, in the framework the three others use (one theme file, one boss row and one kit, one door, one reward row). Nothing was added to the framework's rules.
+
+**The place.** An abandoned coal mine under **Highmark Pastures** (the Greyspine's zone 26): timbered drifts, ore carts, scalding slag vents and the lamps the foreman left burning. Theme `src/shared/dungeons/themes/blackseam.js`, land `grey`
+(`DG_LANDS.grey`: base +0, **needs the Greyspine walked into**: `gear.west` 2, which the ice fall opens when Ymrik falls, hint "Walk into Highmark..."). The land has **zone tiers** now (`ZTIER_LANDS`), so its dungeon rises +10 levels a tier like the Vale's and the Reach's: +0 ... +5 = 30 ... 80.
+The Greyspine's tiers do not count toward the zone-tier *symbol* (`ZTIER_SYMBOL_LANDS`), which keeps version 2's balance calibration (`boss-duel`) as it was.
+
+**Tile kit** (nine designs; legend: `W` coal seam wall, `T` pit prop, `X` buttress (the hall's four), `K` ore cart, `D` keg stack, `L` mine lamp (a warm light), `c` coal heap, `r` rails, `s` slag vent (hazard `steam`, the Jade Springs' geyser warning),
+`G` guardian post):
+
+| Tile | Role | What it is |
+|---|---|---|
+| Seam Foreman's Floor | hall | the round working face: four stone-and-timber buttresses, lamps and keg stacks on the rim |
+| Stope, Cart Yard, Powder Store | room | an open working with pit props and an ore cart; a long gallery with rails across; keg stacks along the walls and the **Granite Golem** that keeps them |
+| Drift, Sump | pass | a timbered passage on rails; a bend with slag vents that scald and slow |
+| Winding House | site | the objective at the pit-head winch, between four timbers |
+| Tally Room | cache | the foreman's stash behind stacked kegs |
+| Adit | start | the way in, between two lamps |
+
+Monsters are the Greyspine's own: walkers Mountain Goblin, Crystal Beetle, Granite Slime, Quartz Slime, Cliff Boar, Rock Troll and Mist Wraith (all within the 4 m doors: the Slate Crawler, radius 1.05 m, is too big); the Granite Golem is the guardian.
+Mission names (`game/dungeon/board.js`): the winch house, a miner's lamp, the timber props, the winding gear, a Mountain Goblin bolting through the drifts (the Hunt's quarry, `kits/hunt.js`), a trapped surveyor.
+
+**The door: The Old Adit** (`DG_ENTRANCES.blackseam`, kind `mine`): a timbered mine mouth cut into a crag at **(316, -692)**, facing north-north-east, **44 m from the Glacier Road** where its signpost stands; found by the same terrain search as the others
+(`tools/dungeons-smoke.js` checks the bank, the apron, the clearance and the dry route). Dressed in `game/village/buildings-dungeon.js` (`dgEntAdit`): the crag, a timber portal, boards across it while sealed, a dark mouth with a lamp's gleam, rails over the apron, a parked cart, a spoil heap, three kegs, two lamps
+and a head frame on the hill that shows from afar; the ground round it is coal dust (`dgEntTint`, `kind:'mine'`). Testing tab: **Go to the Old Adit** (opens the ice wall and the ice fall too).
+
+### 9.1 Garrick, the Seam Foreman (`DG_BOSSES.garrick`, kit `blast`)
+
+Level 30 (`DG_LV`), **70 hits** like the others (`DG_BOSS_DEFS.garrick`: 23,427 health, a hit of 718), **fire**, a troll of the goblin family in a miner's helm with an axe (`model:'goblin'`, `form:'troll'`, glowing embers), scale 2.7; his add is the **Slagling** (a small hob, 60% health, a level lower),
+his prop the **Powder Keg** (`model:'keg'`, one hit to pop, never attacks, pays no XP: `FAM.keg`, `game/combat/monster-mine.js`). The bar shows "Powder kegs: n". Music `boss30`. Server kit: `src/server/dungeons/boss-kits-mine.js`.
+
+| Phase | Move | What it does |
+|---|---|---|
+| 1 | **Chain Haul** (`haul`) | a 26 m strip from him through one player (a `line` warning, 1.2 s): whoever it catches is dragged to him (a `push` of 13 m/s) |
+| 1 | **Powder Kegs** (`kegs`, **the signature**, `new:keg-blast`) | four kegs roll out at least 6 m from him, each under a 7 s fuse warning (`blast`, radius 5, 1.7 hits). **Pop a keg (one hit) and it goes off 0.3 s later, 1.2 hits on everyone within 5 m, but if he stands within 7 m of it he loses 4% of his health, and within 3.5 m he is stunned 3 s (a stunned boss takes x1.5).** A keg left alone goes off when its fuse ends (no harm to him). A blast sets off any keg within 6 m of it 0.4 s later: lure him into a clump and pop it from far away |
+| 2 | **Slaglings** (`slaglings`) | 3 at a time every 22 s from the hall's mouths, at most 8 alive |
+| 2 | **Cave-in** (`cavein`) | every 13 s nine `rockfall` warnings over 4.5 s, the first two under players |
+| 3 | **Blasting Day** (`blasting`) | his kegs stop; every 10 s six kegs at once instead of four (the chains make a puzzle of it) |
+
+New telegraph look: `TELE_COL.blast` and its burst in `game/combat/boss.js`. Registered `DG_BOSS_NEEDS['new:keg-blast']`. The prop and its model: `FAM.keg` in `shared/monster-defs.js`, `MODELS.keg` in `game/combat/monster-mine.js`.
+
+### 9.2 What a clear pays
+
+One random **pendant** (`DG_REWARDS.blackseam`): kind at random of the five, rarity 70 / 25 / 4 / 0.8 / 0.2%, for the whole party: `docs/PENDANTS.md`.
+
+### 9.3 Hooks into existing files
+
+| Hook | File |
+|---|---|
+| `DG_LANDS.grey`, `dgUnlocked` / `dgGateOpen` read `gear.west`, `DG_ENTRANCES.blackseam` | `src/shared/dungeons.js` |
+| `DG_BOSSES.garrick` + `DG_BOSS_DEFS` | `src/shared/dungeons/bosses.js` |
+| the quarry of the Hunt | `src/server/dungeons/kits/hunt.js` |
+| the board's card and objective names | `src/game/dungeon/board.js` |
+| the mine's ambient light and the props' registration (`DG_AMB`, `view-mine.js` after `view.js`) | `src/game/dungeon/view.js`, `view-mine.js`, `look.js` |
+| the door mesh and the ground patch (`dgEntAdit`, `kind:'mine'`, one line in `greyColor`'s caller) | `src/game/village/buildings-dungeon.js`, `dungeon/entrances.js`, `world/terrain-color.js` |
+| the testing button `#tDoorMine` | `src/index.html`, `dungeon/entrances.js` |
+| the keg telegraph | `src/game/combat/boss.js` |
+
+### 9.4 Decisions for the owner (what I assumed)
+
+11. **Which dungeon for the Greyspine**: a mine (the Greyspine's own: *Miners' Scree* is its zone 28, the goblins and trolls are its monsters). Swapping it for another theme is a data change.
+12. **Garrick's element is fire** (powder), his look a troll of the goblin family; the keg is the one new monster model. The numbers (4% a pop, 3 s stun, 7 s fuse, 6 kegs on Blasting Day) are mine and one table to retune; `tools/boss-duel.js` does not cover dungeon bosses.
+13. **The door sits 44 m off the Glacier Road** (the terrain around Highmark Pastures has no bank beside the road), so the signpost is on the road and the route from it to the door was checked (at most 1.4 times the straight distance).
+14. **The Greyspine has zone tiers** (it did not before: version 2 had three lands), so the dungeon can be played at +1 ... +5; they are not part of the symbol (`docs/PENDANTS.md` decision 4).

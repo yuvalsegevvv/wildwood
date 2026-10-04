@@ -1,8 +1,8 @@
-// Headless test of the three dungeon bosses (Amanita, Gawataro, Haugbui: server/dungeons/boss-kits.js on the primitives of server/boss-fx.js and server/dungeons/boss-fx.js),
+// Headless test of the four dungeon bosses (Amanita, Gawataro, Haugbui: server/dungeons/boss-kits.js, Garrick: server/dungeons/boss-kits-mine.js, on the primitives of server/boss-fx.js and server/dungeons/boss-fx.js),
 // straight from src/, no build. Each boss is made with makeBossS in a real dungeon hall (a theme's layout baked and placed at a spot of the world, its pillars as A.solid) and fought
 // through its three phases by two players that cannot die; the test records what it does and checks that every move of its DG_BOSSES entry happens, that it has moves none of the
-// nine bosses has (the six world bosses are fought too), its signature mechanics (puffballs killed in time cancel their burst; a pillar shelters you from the pulse; hits from behind
-// spill Gawataro's dish and stun him; his charge stops at a pillar; Haugbui's lamps go dark, are relit by a channel, shelter you from the wail, and two relit end the blackout), that
+// other bosses has (the world bosses are fought too), its signature mechanics (puffballs killed in time cancel their burst; a pillar shelters you from the pulse; hits from behind
+// spill Gawataro's dish and stun him; his charge stops at a pillar; Haugbui's lamps go dark, are relit by a channel, shelter you from the wail, and two relit end the blackout; Garrick's powder kegs: one popped beside him hurts and stuns him and sets off its neighbours, one left alone burns down and spares him), that
 // nothing is left behind when a fight resets or the boss dies, and that its models (and its adds' and props') build on the client's model code. One line per check.
 // Usage: node tools/dungeon-boss-smoke.js
 global.THREE=require('three');
@@ -16,10 +16,10 @@ const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.val
 W.join('a',{name:'Tanker',look:{cls:'warrior'},save:{level:30}}); W.join('b',{name:'Runner',look:{cls:'archer'},save:{level:30}});
 for(const pid of ['a','b']){ W.receive(pid,{t:'dev',cmd:'vale',v:2}); W.receive(pid,{t:'dev',cmd:'north',v:2}); }
 tick(2);
-const P=id=>W.players.get(id), IDS=['amanita','gawataro','haugbui'], KIT={amanita:'spore',gawataro:'dish',haugbui:'barrow'};
+const P=id=>W.players.get(id), IDS=['amanita','gawataro','haugbui','garrick'], KIT={amanita:'spore',gawataro:'dish',haugbui:'barrow',garrick:'blast'};
 
-// ---- the data: three rows shaped like BOSS_DEFS, each with its kit ----
-ok('three dungeon bosses, each a row like BOSS_DEFS (def, kit, add, short, bar) whose kit is registered with start, tick and phase',IDS.every(id=>{ const r=x.DG_BOSS_DEFS[id], K=r&&x.BOSS_KITS[r.kit];
+// ---- the data: four rows shaped like BOSS_DEFS, each with its kit ----
+ok('four dungeon bosses, each a row like BOSS_DEFS (def, kit, add, short, bar) whose kit is registered with start, tick and phase',IDS.every(id=>{ const r=x.DG_BOSS_DEFS[id], K=r&&x.BOSS_KITS[r.kit];
   return r&&r.def.id===id&&r.def.boss&&r.kit===KIT[id]&&K&&['start','tick','phase'].every(f=>typeof K[f]==='function')&&r.add&&r.add.id===x.DG_BOSSES[id].add.id&&typeof r.short==='string'&&r.bar&&typeof r.bar.stun==='string'; }));
 { const want=x.defAt({hits:70,boss:true},30);
   ok('each is a level-30 boss of 70 hits: '+want.hp+' health, a hit of '+want.dmg+' (the doc: 23,400 and 718); its add has 60% health and is a level lower',IDS.every(id=>{ const r=x.DG_BOSS_DEFS[id];
@@ -28,15 +28,15 @@ ok('Amanita\'s puffballs fall to one hit; Haugbui\'s lamps are props that never 
   return pf.hits===1&&pf.noAttack&&pf.noXp&&pf.speed===0&&lp.model==='totem'&&lp.noAttack&&lp.noXp&&lp.speed===0; })());
 
 // ---- the hall: a theme's dungeon baked and placed at a quiet spot of the world (the ground is cleared of the world's monsters, which would blur who hit whom) ----
-const SPOTS=[];   // four quiet spots, one hall each (three bosses, and an open arena for Gawataro's charge), 150 m apart
+const SPOTS=[];   // five quiet spots, one hall each (four bosses, and an open arena for Gawataro's charge), 150 m apart
 for(let gx=-380;gx<=380;gx+=40) for(let gz=-380;gz<=380;gz+=40){
-  if(SPOTS.length>=4||x.arenaDist(gx,gz)<120||x.vDist(gx,gz)<x.VR+80||SPOTS.some(([sx,sz])=>Math.hypot(sx-gx,sz-gz)<150)) continue;
+  if(SPOTS.length>=5||x.arenaDist(gx,gz)<120||x.vDist(gx,gz)<x.VR+80||SPOTS.some(([sx,sz])=>Math.hypot(sx-gx,sz-gz)<150)) continue;
   if([0,1,2,3,4,5,6,7,8].every(k=>x.getH(gx+(k<8?Math.sin(k*Math.PI/4)*19:0),gz+(k<8?Math.cos(k*Math.PI/4)*19:0))>1.5)) SPOTS.push([gx,gz]);
 }
 for(const m of x.MONS) if(!m.boss&&SPOTS.some(([sx,sz])=>Math.hypot(m.x-sx,m.z-sz)<160)) m.remove=true;
 const hallOf=(theme,[X0,Z0])=>{ const L=x.dgLayout({mission:'purge',seed:3,theme}), B=x.dgBake(L); return x.dgHallArena(B,X0-B.boss.x,Z0-B.boss.z); };
-const HALL={amanita:hallOf('hollowroots',SPOTS[0]),gawataro:hallOf('jadesprings',SPOTS[1]),haugbui:hallOf('bonefrostbarrow',SPOTS[2])};
-ok('the boss hall is a boss arena: centred where it was placed, radius 20, solid at the four pillars and beyond its wall, open in between',SPOTS.length===4&&IDS.every((id,i)=>{ const A=HALL[id];
+const HALL={amanita:hallOf('hollowroots',SPOTS[0]),gawataro:hallOf('jadesprings',SPOTS[1]),haugbui:hallOf('bonefrostbarrow',SPOTS[2]),garrick:hallOf('blackseam',SPOTS[3])};
+ok('the boss hall is a boss arena: centred where it was placed, radius 20, solid at the four pillars and beyond its wall, open in between',SPOTS.length===5&&IDS.every((id,i)=>{ const A=HALL[id];
   return A.x===SPOTS[i][0]&&A.z===SPOTS[i][1]&&A.r===20&&x.DG_HALL_PILLARS.every(([px,pz])=>A.solid(A.x+px,A.z+pz))&&A.solid(A.x+21,A.z)&&!A.solid(A.x,A.z)&&!A.solid(A.x+5,A.z+5)&&x.DG_HALL_LAMPS.every(([lx,lz])=>!A.solid(A.x+lx,A.z+lz)); }),SPOTS.map(q=>q.join(', ')).join(' / '));
 
 // ---- a fight: what a boss does through its three phases ----
@@ -119,7 +119,7 @@ const hurtsIn=(fn,n)=>{ const got={a:0,b:0}; evs.length=0; for(let i=0;i<n;i++){
   if((B.k.charged||0)===c0+1) seen.add('wallstop');
   away();
   // in an open arena (a world arena has no grid) it runs to the arena's edge
-  const [X0,Z0]=SPOTS[3], O=x.makeBossS(x.DG_BOSS_DEFS.gawataro,{x:X0,z:Z0,r:20}); engage(O,[2,0],[-15,0]); O.phase=2; O.m.x=X0; O.m.z=Z0; O.busy=0; O.k.chargeT=0;
+  const [X0,Z0]=SPOTS[4], O=x.makeBossS(x.DG_BOSS_DEFS.gawataro,{x:X0,z:Z0,r:20}); engage(O,[2,0],[-15,0]); O.phase=2; O.m.x=X0; O.m.z=Z0; O.busy=0; O.k.chargeT=0;
   for(let i=0;i<3*20;i++){ place(O.A,[2,0],[-15,0]); tick(1); }
   ok('gawataro: without a hall\'s grid (an open arena) the charge runs to the arena\'s edge and stops there',(O.k.charged||0)===1&&Math.hypot(O.m.x-X0,O.m.z-Z0)>15,Math.hypot(O.m.x-X0,O.m.z-Z0).toFixed(1)+' m');
   away(); O.m.remove=true; }
@@ -159,17 +159,37 @@ const hurtsIn=(fn,n)=>{ const got={a:0,b:0}; evs.length=0; for(let i=0;i<n;i++){
   for(const a of B.adds) if(a.def===B.bd.add) a.remove=true;
   away(); }
 
+// Garrick: the powder kegs
+{ const B=DB.garrick, m=B.m, seen=sigs.blast; engage(B,[3,0],[-14,0]);
+  B.k.kegT=0; tick(1); hold(B); const kegs=B.k.kegs.slice();
+  ok('garrick: four powder kegs roll out at least 6 m from him, each under its own warning, and the bar counts them',kegs.length===4&&B.aux===4&&kegs.every(o=>Math.hypot(o.pb.x-m.x,o.pb.z-m.z)>=6-0.01&&B.tele.includes(o.e)&&o.pb.def.id==='powderkeg'),'kegs '+kegs.length+', aux '+B.aux);
+  // one popped beside him (within 3.5 m): he takes 4% and is stunned; a keg within 6 m of it follows 0.4 s later; one farther off waits for its own fuse
+  const k0=kegs[0], k1=kegs[1], k2=kegs[2], sp=(o,dx,dz)=>{ o.x=m.x+dx; o.z=m.z+dz; o.pb.x=o.x; o.pb.z=o.z; };
+  sp(k0,2,0); sp(k1,2,4); sp(k2,-15,0); const hp0=m.hp, kh0=B.k.kegHits||0; k0.pb.hp=1; x.damageMonsterS(k0.pb,5,P('a'),k0.pb.x,k0.pb.z,0);
+  let fired=new Set(); evs.length=0;
+  for(let i=0;i<2*20;i++){ place(B.A,[3,0],[-14,0]); tick(1); for(const e of evs.splice(0)) if(e[0]==='tend'&&e[2]===1) fired.add(e[1]); }
+  const lost=(hp0-m.hp)/m.maxHp;
+  ok('garrick: a keg popped beside him hurts him 4% and stuns him (the signature), and sets off the keg within 6 m of it while one farther away keeps its fuse',k0.gone&&k1.gone&&!k2.gone&&lost>=0.04-1e-6&&lost<=0.08+1e-6&&B.stunT>0&&(B.k.kegHits||0)>kh0,'lost '+(lost*100).toFixed(1)+'%, stun '+B.stunT.toFixed(1)+', hits '+((B.k.kegHits||0)-kh0));
+  if(k0.gone&&B.stunT>0) seen.add('keg');
+  // left alone, a keg burns down by itself (a warning that goes off, hurting whoever stands in it) and does him no harm
+  for(const o of B.k.kegs) if(!o.gone) o.pb.remove=true;
+  B.stunT=0; B.k.kegs.length=0; B.k.kegT=0; tick(1); hold(B); const alone=B.k.kegs.slice(); const hp1=m.hp; fired=new Set();
+  for(let i=0;i<8*20;i++){ place(B.A,[3,0],[-14,0]); tick(1); for(const e of evs.splice(0)) if(e[0]==='tend'&&e[2]===1) fired.add(e[1]); }
+  ok('garrick: kegs left alone all go off by themselves when the fuse runs out (none left standing, a blast for each; he is hurt only if a chain reaches him)',alone.length===4&&alone.every(o=>o.gone)&&fired.size>=4&&B.aux===0&&m.hp>=hp1-m.maxHp*0.16,'fired '+fired.size+', his health '+((m.hp-hp1)/m.maxHp*100).toFixed(1)+'%');
+  for(const a of B.adds) a.remove=true;
+  away(); }
+
 // ---- every move of each boss's design happened, and each has moves no other boss has ----
 const OBS=(row,tok)=>tok==='adds'?'summon:'+row.add.id:tok==='props'?'summon:'+row.prop.id:tok==='mode:hidden'?'mode:2':tok==='new:zone-spore'?'zone:spore':tok==='new:tele-cancel'?'cancel':
-  tok==='new:tele-safe'?'safe':tok==='new:hit-hook'?'dish':tok==='new:stop-at-wall'?'wallstop':tok==='new:channel'?'channel':tok==='new:gloom'?'gloom':tok;
+  tok==='new:tele-safe'?'safe':tok==='new:hit-hook'?'dish':tok==='new:stop-at-wall'?'wallstop':tok==='new:channel'?'channel':tok==='new:gloom'?'gloom':tok==='new:keg-blast'?'keg':tok;
 for(const id of IDS){
   const row=x.DG_BOSS_DEFS[id], s=sigs[row.kit], want=[...new Set(x.DG_BOSSES[id].moves.flatMap(mv=>mv.does).map(t=>OBS(row,t)))], miss=want.filter(t=>!s.has(t));
   ok(id+': every move of its design happens (each primitive its DG_BOSSES moves name, the new ones included)',!miss.length,miss.length?'missing '+miss.join(', '):want.join(' '));
 }
-const ONLY={spore:['tele:spore','tele:puff','tele:pulse','zone:spore','summon:puffball','summon:sporeling'],dish:['tele:vent','summon:kappawhelp'],barrow:['tele:wail','tele:snuff','summon:barrowlamp','summon:gravewisp']};
+const ONLY={spore:['tele:spore','tele:puff','tele:pulse','zone:spore','summon:puffball','summon:sporeling'],dish:['tele:vent','summon:kappawhelp'],barrow:['tele:wail','tele:snuff','summon:barrowlamp','summon:gravewisp'],blast:['tele:blast','summon:powderkeg','summon:slagling']};
 for(const kit of Object.keys(ONLY)){
   const others=Object.keys(sigs).filter(k=>k!==kit), mine=ONLY[kit].filter(k=>sigs[kit].has(k)&&!others.some(o=>sigs[o].has(k)));
-  ok(kit+': moves none of the other eight bosses has ('+ONLY[kit].length+')',mine.length===ONLY[kit].length,mine.join(' '));
+  ok(kit+': moves none of the other bosses has ('+ONLY[kit].length+')',mine.length===ONLY[kit].length,mine.join(' '));
 }
 ok('the six world bosses are untouched: their fights still show their own moves',['roots','tide','oni','kitsune','rime','wyrm'].every(k=>sigs[k]&&sigs[k].has('hurt')));
 
@@ -197,6 +217,6 @@ for(const id of IDS){
         let tris=0, meshes=0, okGeo=true; g.traverse(o=>{ if(!o.isMesh) return; meshes++; const ga=o.geometry.attributes; tris+=ga.position.count/3; if(!ga.normal||!ga.color||[...ga.position.array].some(n=>!isFinite(n))) okGeo=false; });
         if(!meshes||!okGeo||tris<50) bad.push(d.id); stats.push(d.id+' '+tris);
       }catch(e){ bad.push(d.id+': '+e.message); } } }
-  ok('the models of the three bosses, their adds and props build (meshes with normals and colours) and animate',!bad.length,bad.length?bad.join('; '):stats.join(', '));
+  ok('the models of the four bosses, their adds and props build (meshes with normals and colours) and animate',!bad.length,bad.length?bad.join('; '):stats.join(', '));
 }
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

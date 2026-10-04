@@ -18,12 +18,13 @@ const dgEntCentre=E=>({x:E.x+Math.sin(E.a)*DG_APRON*0.5,z:E.z+Math.cos(E.a)*DG_A
 
 /* ---- the ground ----
    A patch of DG_ENT_CLEAR + 1 m round each door, blended with noise so its edge is never a circle. The terrain's height is not touched (it moves what the scan finds,
-   CLAUDE.md section 8): only the colour. Moss and roots under the Elder, wet dark stone and jade round the Falls, trampled snow and bone-grey round the Barrow. */
+   CLAUDE.md section 8): only the colour. Moss and roots under the Elder, wet dark stone and jade round the Falls, trampled snow and bone-grey round the Barrow, coal dust and slate round the Adit. */
 const DG_ENT_R=DG_ENT_CLEAR+1;
 const dgEntPal={
   moss:new THREE.Color(0x3a5826), root:new THREE.Color(0x4a3524), ring:new THREE.Color(0x6f8f3c),
   wet:new THREE.Color(0x4a5a58), jade:new THREE.Color(0x4f7d6c), flag:new THREE.Color(0x6a7873),
-  tramp:new THREE.Color(0xc4cace), bone:new THREE.Color(0xb3b0a2), rime:new THREE.Color(0xe4edf2)};
+  tramp:new THREE.Color(0xc4cace), bone:new THREE.Color(0xb3b0a2), rime:new THREE.Color(0xe4edf2),
+  slate:new THREE.Color(0x3c3d44), coal:new THREE.Color(0x1a1b20), spoil:new THREE.Color(0x4a3c2e)};
 const dgEntTmp=new THREE.Color();
 function dgEntTint(x,z,out){
   if(DG_DOORS.noTint) return out;
@@ -41,6 +42,9 @@ function dgEntTint(x,z,out){
       const wetK=smoothstep(11,2,d);
       out.lerp(dgEntTmp.copy(dgEntPal.flag).lerp(dgEntPal.wet,wetK*0.8),w).lerp(dgEntPal.jade,w*smoothstep(0.55,0.9,n)*0.45);
       out.multiplyScalar(1-0.14*wetK);
+    } else if(E.kind==='mine'){   // the adit: coal dust and slate chippings trodden into the turf, spoil dark at the mouth
+      const darkK=smoothstep(10,2,d);
+      out.lerp(dgEntTmp.copy(dgEntPal.slate).lerp(dgEntPal.coal,darkK*0.7),w).lerp(dgEntPal.spoil,w*smoothstep(0.6,0.9,n2)*0.35);
     } else {   // the barrow: snow trodden grey by whoever comes, bone-grey in the hollows, rime at the edge
       out.lerp(dgEntTmp.copy(dgEntPal.tramp).lerp(dgEntPal.bone,smoothstep(0.35,0.85,n)*0.8),w).lerp(dgEntPal.rime,smoothstep(0.7,0.2,w)*w*0.5);
     }
@@ -115,9 +119,10 @@ function dgEntSounds(r,spatial){
   if(Math.hypot(P.x-B.x,P.z-B.z)<70&&r(0.035)){ const s=spatial(B.x,B.z,6,65); if(s) dgEntHum(s.pan,s.gain*1.8,dgEntSealed(B)); }
 }
 // Testing tools: Go to a door (its apron, facing the door); a land's gate is opened first so the walk is allowed (the server's dev `tunnel` refuses the Vale and the Reach while they are sealed)
-{ const go=(id,vale,north)=>{ const E=DG_ENTRANCES[id], A=dgApron(E);
-    if(vale) netSend({t:'dev',cmd:'vale',v:2}); if(north) netSend({t:'dev',cmd:'north',v:2});
+{ const go=(id,vale,north,west)=>{ const E=DG_ENTRANCES[id], A=dgApron(E);
+    if(vale) netSend({t:'dev',cmd:'vale',v:2}); if(north) netSend({t:'dev',cmd:'north',v:2}); if(west) netSend({t:'dev',cmd:'west',v:2});
     netSend({t:'dev',cmd:'tunnel',v:Math.round(A.x)+','+Math.round(A.z)+','+Math.round(E.a*180/Math.PI)}); };   // dungeons: the testing tool's door buttons
   $('#tDoorElder').addEventListener('click',()=>go('hollowroots',false,false));
   $('#tDoorFalls').addEventListener('click',()=>go('jadesprings',true,false));
-  $('#tDoorBarrow').addEventListener('click',()=>go('bonefrostbarrow',true,true)); }
+  $('#tDoorBarrow').addEventListener('click',()=>go('bonefrostbarrow',true,true));
+  $('#tDoorMine').addEventListener('click',()=>go('blackseam',true,true,true)); }

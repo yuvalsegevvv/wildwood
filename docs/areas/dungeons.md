@@ -8,9 +8,9 @@ Area guide. Moved word for word from `CLAUDE.md` section 4 (the row written with
 
 `shared/dungeons.js`, `shared/dungeon-rewards.js`; the designs `docs/DUNGEON-THEMES.md`; the design, the instance plan for the server (runs are far-away slots in the same world; every global that must become per-run is listed), the missions, loot for all, the milestones: `docs/DUNGEONS.md`; test `node tools/dungeons-smoke.js` (`--show defense 7` draws one)
 
-### Dungeon themes and bosses (**built**): the three tile kits through the theme registry (`defineDungeonTheme`, `DG_BAD`, legends, `B.props`), the three dungeon bosses (defs, kits, new primitives, client looks)
+### Dungeon themes and bosses (**built**): the four tile kits through the theme registry (`defineDungeonTheme`, `DG_BAD`, legends, `B.props`), the four dungeon bosses (defs, kits, new primitives, client looks); the Blackseam (the Greyspine's, a mine) and Garrick: `docs/DUNGEON-THEMES.md` section 9
 
-Registry, tile checks, carving, bake with props `shared/dungeons.js`; one file per theme `shared/dungeons/themes/<id>.js`; boss designs and defs `shared/dungeons/bosses.js` (`DG_BOSSES`, `DG_BOSS_DEFS`, `DG_HALL_LAMPS`, `dgVentAt`, `dgHallArena`); kits `server/dungeons/boss-kits.js`, primitives `server/dungeons/boss-fx.js`; client `game/combat/boss-dungeon.js`, `boss.js`, `boss-fx.js`, `monster-spirits.js`; design and hooks `docs/DUNGEON-THEMES.md` sections 3-4; tests `node tools/dungeons-smoke.js`, `node tools/dungeon-boss-smoke.js`
+Registry, tile checks, carving, bake with props `shared/dungeons.js`; one file per theme `shared/dungeons/themes/<id>.js`; boss designs and defs `shared/dungeons/bosses.js` (`DG_BOSSES`, `DG_BOSS_DEFS`, `DG_HALL_LAMPS`, `dgVentAt`, `dgHallArena`); kits `server/dungeons/boss-kits.js` (Garrick's, `blast`: `boss-kits-mine.js`), primitives `server/dungeons/boss-fx.js`; client `game/combat/boss-dungeon.js`, `boss.js`, `boss-fx.js`, `monster-spirits.js`; design and hooks `docs/DUNGEON-THEMES.md` sections 3-4; tests `node tools/dungeons-smoke.js`, `node tools/dungeon-boss-smoke.js`
 
 ### Parties and dungeon runs, server (**built**; their client is the entry "Dungeon runs and parties, client"): the party, run slots far east of the world, events / snapshots kept per run, the walker AI, loot for all, down / revive, the mission kits' registry with Purge, the boss finale, the save `gear.dg`
 
@@ -22,11 +22,11 @@ Kits `server/dungeons/kits/<mission>.js` (one `dgDefineKit` call each); shared m
 
 Pitfalls: a monster with `m.dgOwn` is skipped by the walkers' AI after its death check, so its kit must move it every tick (guardians are moved by `dgFxTickS`); the captive is an objective, not a monster; a kit's channel has `end: Infinity` (only `updateCastsS` breaks it, `dgFxTickS` finishes it); kits count time with `dt` in `run.k` (a test may tick fast: `dgWalkS` cuts a step to 0.1 s).
 
-### Dungeon rewards (**built**; a won run hands out the clear's piece: `dgWinS`): the 490 level-30 ids as items, the ring slot and its attack by soul, the Tempering Stone, the forge's Temper tab
+### Dungeon rewards (**built**; a won run hands out the clear's piece: `dgWinS`): the 665 level-30 ids as items (490 weapons, armour and rings, 175 pendants), the ring slot and its attack by soul, the Tempering Stone, the forge's Temper tab
 
 Rules and ids `shared/dungeon-rewards.js`; items, `dgVisTier`, `dgMergedId`, `dgRingAtkOf`, `dgEnhInfo` `shared/dungeon-items.js`; `dgRingAtkP`, `dgRollDropP`, `dgTemperP` (`temper{id[,worn]}`), `dgGrantItemP(p,id)` (call it for each member at a clear), `MSG.rwdev` (testing tools) `server/dungeon-gear.js`; details, stone chip, the Temper tab, events `stone` / `temper` `game/economy/dungeon-gear.js`; icons `game/ui/item-icons.js` (`ringIconArt`); hooks marked `// dungeons:` (table in `docs/DUNGEON-THEMES.md` section 7); tests `node tools/rewards-smoke.js` (server), `node tools/rewards-client-smoke.js` (client, runs `dist/`: build first).
 
-### Dungeon entrances, client (**built**): the three doors and signposts in the world, sealed or open by your gear, the talk prompt, the Delve board's hook, the ground patch, the maps
+### Dungeon entrances, client (**built**): the four doors and signposts in the world, sealed or open by your gear, the talk prompt, the Delve board's hook, the ground patch, the maps
 
 Meshes and animation `game/village/buildings-dungeon.js` (`dgEntBuild`, `dgEntUpdate`; per door a group in `DG_DOORS.doors[id]`, the signposts in `DG_DOORS.signs[id]`); rules `game/dungeon/entrances.js` (`dgEntSealed`, `dgOpenDoor(id)`: sealed -> a toast with the reason, open -> `dgBoardOpen(themeId)` if defined, else "The way is not ready yet"; `dgEntPrompt`, `dgEntTint` the ground, `dgEntClear` no plants, `dgEntMapMarks` / `dgEntMiniMarks` / `dgEntName`, `dgEntWater` / `dgEntSounds`); the data stays in `shared/dungeons.js` (`DG_ENTRANCES`, `dgGateOpen`). Hooks and choices: `docs/DUNGEON-THEMES.md` section 6. Test `node tools/entrances-client-smoke.js` (builds first: `python3 build.py`).
 

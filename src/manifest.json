@@ -55,7 +55,7 @@
     "crafting.js",
     "dungeon-slots.js",
     "dungeon-hud.js",
-    "dungeons.js", "dungeons/bosses.js", "dungeons/themes/hollowroots.js", "dungeons/themes/jadesprings.js", "dungeons/themes/bonefrostbarrow.js", "dungeon-rewards.js", "dungeon-items.js"
+    "dungeons.js", "dungeons/bosses.js", "dungeons/themes/hollowroots.js", "dungeons/themes/jadesprings.js", "dungeons/themes/bonefrostbarrow.js", "dungeons/themes/blackseam.js", "dungeon-rewards.js", "dungeon-items.js"
   ],
   "server": [
     "state.js",
@@ -68,7 +68,7 @@
     "boss-kits-vale.js",
     "boss-kits-north.js",
     "boss-kits-grey.js",
-    "dungeons/boss-fx.js", "dungeons/boss-kits.js",
+    "dungeons/boss-fx.js", "dungeons/boss-kits.js", "dungeons/boss-kits-mine.js",
     "boss.js",
     "economy.js",
     "dungeon-gear.js",
@@ -142,6 +142,7 @@
     "combat/monster-beasts.js",
     "combat/monster-wyrm.js",
     "combat/monster-gryphon.js",
+    "combat/monster-mine.js",
     "combat/monster-woods.js",
     "combat/monster-spirits.js",
     "combat/monster-boss.js",
@@ -184,7 +185,7 @@
     "net/remote.js",
     "economy/dungeon-gear.js",
     "dungeon/board.js",
-    "dungeon/run.js", "dungeon/view.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "dungeon/hud.js", "dungeon/minimap.js",
+    "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "dungeon/hud.js", "dungeon/minimap.js",
     "ui/account.js",
     "ui/chat.js",
     "ui/start-screen.js",

@@ -14,7 +14,7 @@
    back to the walkers' AI (m.dgOwn = false) at 0.4 of its speed (m.slowT) and it fights. The limit is 600 s from setup (not scaled): lose "the quarry got away.". The rest:
    packs of 1-2 walkers at 50% of the mouths, the room guardians. */
 dgDefineKit('hunt',{
-  quarry:{hollowroots:'shroom',jadesprings:'tengu',bonefrostbarrow:'barrowwight'}, boltV:8, near:18, limit:600, every:30,
+  quarry:{hollowroots:'shroom',jadesprings:'tengu',bonefrostbarrow:'barrowwight',blackseam:'minegoblin'}, boltV:8, near:18, limit:600, every:30,
   setup(run){
     const H=DG_KITS.hunt, walk=dgWalkersS(run), id=H.quarry[run.th]&&DEF_BY_ID[H.quarry[run.th]]?H.quarry[run.th]:walk[0]||'slime';
     const at=dgFarCellS(run,run.B.start.x,run.B.start.z,0.9)||{x:run.B.start.x,z:run.B.start.z};

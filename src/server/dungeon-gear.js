@@ -1,4 +1,4 @@
-//@ Dungeon gear on the server: the ring's attack, Tempering Stones (the drop that replaces equipment at level 30+, and the `temper` message), the forge's merge rule, a clear's item, testing commands
+//@ Dungeon gear on the server: the ring's attack (the pendant's bonuses are read by pendP in players.js), Tempering Stones (the drop that replaces equipment at level 30+, and the `temper` message), the forge's merge rule, a clear's item, testing commands
 /* Agent map (rules and ids: shared/dungeon-rewards.js; the items: shared/dungeon-items.js; the design: docs/DUNGEON-THEMES.md section 7)
    owns:    dgRingAtkP (recalcP adds it), dgRollDropP (rewardKill: a stone instead of equipment), dgAddStonesP, dgTemperP + MSG.temper, dgMergeRefusedP (mergeP),
             dgGrantItemP (a clear's item for one player: the integration step calls it once for every member), MSG.rwdev (testing tools: stones, every level-30 piece, three for the forge)
@@ -55,11 +55,11 @@ MSG.rwdev=(p,msg)=>{
   if(!S.dev){ toastTo(p.id,'Testing tools are off on this server','bad'); return; }
   if(msg.cmd==='stones'){ if(!dgAddStonesP(p,20)) toastTo(p.id,'You hold the most stones there can be','bad'); }
   else if(msg.cmd==='dgall'){
-    const ids=[...ALL_SLOTS.map(s=>dgGearId(s,0,0)),...RING_ELS.map(e=>dgRingId(e,0,0))];
+    const ids=[...ALL_SLOTS.map(s=>dgGearId(s,0,0)),...RING_ELS.map(e=>dgRingId(e,0,0)),...PENDANT_STATS.map(t=>dgPendantId(t,0,0))];
     for(const id of ids) if(p.gear.inv.length<BAG_MAX) p.gear.inv.push(id);
     p.dirty=true; toastTo(p.id,'A level-30 piece of every kind added (common, '+ids.length+' pieces)','good');
   } else if(msg.cmd==='dgthree'){
-    const ids=[...ALL_SLOTS.map(s=>dgGearId(s,0,0)),...RING_ELS.map(e=>dgRingId(e,0,0))], id=ids[Math.floor(Math.random()*ids.length)];
+    const ids=[...ALL_SLOTS.map(s=>dgGearId(s,0,0)),...RING_ELS.map(e=>dgRingId(e,0,0)),...PENDANT_STATS.map(t=>dgPendantId(t,0,0))], id=ids[Math.floor(Math.random()*ids.length)];
     for(let k=0;k<MERGE_COUNT;k++) if(p.gear.inv.length<BAG_MAX) p.gear.inv.push(id);
     p.dirty=true; toastTo(p.id,'Three '+ITEM[id].name+' added for the forge','good');
   }

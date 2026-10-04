@@ -15,15 +15,15 @@ const el=s=>document.querySelector(s);
   let G=c.G(); for(let i=0;i<400;i++){ await wait(100); G=c.G(); if(G.canStart()) break; }
   G.NET.onReady=()=>G.beginPlay(); G.startSolo(); await wait(1500); G=c.G();
   ok('solo world up',G.NET.ready&&G.MONS.length>400);
-  // ---- every prop kind of the three themes builds (several missions and seeds until each legend kind has been drawn), an unknown kind draws a rock ----
+  // ---- every prop kind of the four themes builds (several missions and seeds until each legend kind has been drawn), an unknown kind draws a rock ----
   { const T=G.THREE, miss=[], made={};
-    for(const th of ['hollowroots','jadesprings','bonefrostbarrow']){ const want=new Set(Object.values(G.DG_THEMES[th].legend).map(e=>e.prop)), seen=new Set();
+    for(const th of ['hollowroots','jadesprings','bonefrostbarrow','blackseam']){ const want=new Set(Object.values(G.DG_THEMES[th].legend).map(e=>e.prop)), seen=new Set();
       for(const m of Object.keys(G.DG_MISSIONS)) for(let seed=1;seed<4&&seen.size<want.size;seed++){ const lay=G.dgLayout({mission:m,seed,theme:th}); if(!lay) continue; const B=G.dgBake(lay);
         G.dgViewBuild({B,T:G.DG_THEMES[th],ox:9000,oz:0,y:10,seed,lay}); for(const k in G.DG_VIEW.kinds) seen.add(k); for(const k of Object.keys(G.DG_VIEW.kinds)) if(G.DG_PROP_KINDS[k]&&G.DG_PROP_KINDS[k].wall) seen.add(k);
         for(const pr of B.props) if(G.DG_PROP_KINDS[pr.k]&&G.DG_PROP_KINDS[pr.k].wall) seen.add(pr.k);
         made[th]=(made[th]||0)+1; G.dgViewClear(); }
       for(const k of want) if(!seen.has(k)||!G.DG_PROP_KINDS[k]) miss.push(th+':'+k); }
-    ok('every prop kind in the three themes\' legends has a builder and was drawn without an error',!miss.length&&!errs.length,miss.join(', ')||JSON.stringify(made));
+    ok('every prop kind in the four themes\' legends has a builder and was drawn without an error',!miss.length&&!errs.length,miss.join(', ')||JSON.stringify(made));
     const lay=G.dgLayout({mission:'purge',seed:3,theme:'bare'}), B=G.dgBake(lay); B.props.push({k:'nosuchthing',x:B.start.x+3,z:B.start.z},{k:'nosuchthing',x:B.start.x-3,z:B.start.z});
     G.dgViewBuild({B,T:null,ox:9000,oz:0,y:10,seed:3,lay}); ok('a prop kind no builder knows draws a rock (and the bare test set builds without a palette)',G.DG_VIEW.kinds.nosuchthing===2&&G.DG_VIEW.meshes>=3&&!errs.length); G.dgViewClear();
     let left=0; G.scene.traverse(o=>{ if(o.name==='dungeon') left++; }); ok('dgViewClear takes the group out of the scene',left===0&&!G.DG_VIEW.g); }

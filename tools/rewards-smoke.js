@@ -18,9 +18,9 @@ const near=(a,b,e)=>Math.abs(a-b)<=(e||0.01);
 // ---- the items ----
 { const ids=x.dgAllIds(), bad=[];
   for(const id of ids){ const it=x.ITEM[id]; if(!it||!it.dg||it.lv!==30||it.tier!==6||!it.name||!(it.price>0)||typeof it.n!=='number'||!(it.rar>=0)) { bad.push(id); continue; }
-    if(it.kind==='weapon'?!(it.atk>0):it.kind==='armor'?!(it.hp>0&&it.def>0):it.kind==='ring'?!(it.pct>0&&it.el&&it.slot==='ring'):true) bad.push(id); }
+    if(it.kind==='weapon'?!(it.atk>0):it.kind==='armor'?!(it.hp>0&&it.def>0):it.kind==='ring'?!(it.pct>0&&it.el&&it.slot==='ring'):it.kind==='pendant'?!(it.v>0&&it.stat&&it.slot==='pendant'):true) bad.push(id); }
   ok('all '+ids.length+' level-30 ids are ITEM records with kind, slot, tier 6, level 30, rarity, name, price and stats, and none is in ITEM_LIST or TOOL_LIST (shops, drops and "give every item" ignore them)',
-    ids.length===490&&!bad.length&&x.ITEM_LIST.length===210&&x.TOOL_LIST.length===90&&!ids.some(id=>x.ITEM_LIST.includes(x.ITEM[id])||x.TOOL_LIST.includes(x.ITEM[id])),bad.slice(0,4).join(', ')); }
+    ids.length===665&&!bad.length&&x.ITEM_LIST.length===210&&x.TOOL_LIST.length===90&&!ids.some(id=>x.ITEM_LIST.includes(x.ITEM[id])||x.TOOL_LIST.includes(x.ITEM[id])),bad.slice(0,4).join(', ')); }
 
 // ---- equip, class, sell ----
 const a=join('a',30,'warrior'); const base=a.dmg;

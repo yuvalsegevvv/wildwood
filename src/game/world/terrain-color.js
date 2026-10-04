@@ -51,7 +51,7 @@ function terrainColor(x,z,h,g,out,noCut){   // noCut: colour as if the tunnel's 
   const hf=x>HALF+2?smoothstep(HZ0+8,HZ0-56,z):0;   // the vale's north crest, over which the ground turns to the Hoarfrost's
   if(hf>=1) return dgEntTint(x,z,hoarColor(x,z,h,g,out));   // dungeons: the Barrow Door's patch of trodden snow
   const gf=x<HALF?smoothstep(HZ0+8,HZ0-56,z):0;   // the home forest's north crest, over which the ground turns to the Greyspine's
-  if(gf>=1) return greyColor(x,z,h,g,out);
+  if(gf>=1) return dgEntTint(x,z,greyColor(x,z,h,g,out));   // dungeons: the Old Adit's patch of coal dust
   const n1=noise2(x*0.02,z*0.02)*0.5+0.5, n2=noise2(x*0.11+5,z*0.11)*0.5+0.5;
   out.copy(COL.lush).lerp(COL.dry, smoothstep(0.45,0.85,n1)*0.8);
   out.lerp(COL.floor, smoothstep(0.45,0.9,forestDensity(x,z))*0.75);

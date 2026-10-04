@@ -21,8 +21,6 @@ function mergeP(p,id){
   const n=ITEM[nid]; toastTo(p.id,'Forged: '+n.name,'loot r'+n.rar); ev('merge',p.id,nid);
 }
 function giveAllP(p){ for(const it of ITEM_LIST) if(!p.gear.inv.includes(it.id)&&p.gear.inv.length<BAG_MAX) p.gear.inv.push(it.id); p.dirty=true; }
-// testing: one of every kind and rarity of a dungeon tier (-1: every tier), as many as the bag holds
-function givePendantsP(p,tier){ let n=0; for(const it of PENDANT_LIST) if((tier<0||it.tier===tier)&&p.gear.inv.length<BAG_MAX){ p.gear.inv.push(it.id); n++; } p.dirty=true; return n; }
 function gearChangedP(p){ recalcP(p); p.dirty=true; ev('pgear',p.id,p.gear.eq); }
 function equipP(p,id){
   const it=ITEM[id]; if(!it||!p.gear.inv.includes(id)) return;
@@ -37,7 +35,7 @@ function equipClassP(p,cls){
   if(!owned.length){ p.gear.inv.push(slot+'1'); owned=[slot+'1']; }
   const was=clsOfP(p); p.gear.eq.weapon=owned[0]; gearChangedP(p); if(clsOfP(p)!==was) mqActP(p,'class');
 }
-function buyP(p,id){ const it=ITEM[id]; if(!it||it.rar>0||it.kind==='pendant') return;   // shops only sell common items, as many as you like
+function buyP(p,id){ const it=ITEM[id]; if(!it||it.rar>0) return;   // shops only sell common items, as many as you like
   if(it.dg) return;   // dungeons: level-30 gear is only ever paid by a clear, never sold
   if(it.kind==='tool'&&!inVillage(p)){ toastTo(p.id,'Tools are sold at a Wayfarers\' Lodge, in a village','bad'); return; }
   const n=p.gear.bought[id]||0, price=shopPrice(it,n);
@@ -155,7 +153,6 @@ function devP(p,msg){
   const c=msg.cmd;
   if(c==='level') setLevelP(p,msg.v);
   else if(c==='giveAll'){ giveAllP(p); toastTo(p.id,'Every item added to your bag','good'); }
-  else if(c==='givePendants'){ const t=msg.v==null?-1:clampInt(msg.v,0,PENDANT_TIERS-1,0), got=givePendantsP(p,t); toastTo(p.id,got+' pendants added to your bag'+(t>=0?' (dungeon tier '+t+')':''),'good'); }
   else if(c==='startAll'){ p.gear.startAll=!!msg.v; if(p.gear.startAll) giveAllP(p); p.dirty=true; }
   else if(c==='skills'){ for(const id of [...SKILL_IDS,...PASSIVE_IDS]) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Every skill and passive learned','good'); }
   else if(c==='mats'){ for(const id of MAT_IDS) addMatP(p,id,20); toastTo(p.id,'20 of every monster drop added','good'); }

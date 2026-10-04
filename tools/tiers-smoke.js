@@ -10,7 +10,7 @@ const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.string
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
-const zt=(home,vale,hoar)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:vale[1]},hoar:{on:hoar[0],max:hoar[1]}});
+const zt=(home,vale,hoar,grey)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:vale[1]},hoar:{on:hoar[0],max:hoar[1]},grey:{on:(grey||[0,0])[0],max:(grey||[0,0])[1]}});
 
 // ---- the rules ----
 { const d=x.DEF_BY_ID.direboar, k0=x.zoneTierK(d,0), k1=x.zoneTierK(d,1), a=x.defAt(d,d.level+10);

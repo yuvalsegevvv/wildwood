@@ -14,7 +14,7 @@ const el=s=>document.querySelector(s);
   // ---- the paper doll ----
   el('#inv').hidden=false; G.renderInv(); let h=el('#invBody').innerHTML;
   ok('the paper doll has a ring slot beside the body slots (10 in all: the pendant has its own) with an empty-slot ring icon',(h.match(/class="eqslot"/g)||[]).length===10&&/data-slot="ring"/.test(h)&&G.BODY_SLOTS.some(s=>s[0]==='ring')&&G.SLOT_LABEL.ring==='Ring'&&/class="ico ghost"/.test(h.split('data-slot="ring"')[1].slice(0,400)));
-  ok('every one of the 490 level-30 ids draws an icon (weapons and armour reuse the top tier\'s art with a sparkle, rings a gem in their element\'s colour)',Object.keys(G.ITEM).filter(id=>G.ITEM[id].dg).length===490&&Object.keys(G.ITEM).filter(id=>G.ITEM[id].dg).every(id=>/<svg/.test(G.itemIcon(G.ITEM[id])))
+  ok('every one of the 665 level-30 ids draws an icon (weapons and armour reuse the top tier\'s art with a sparkle, rings a gem in their element\'s colour, pendants a chain and a gem)',Object.keys(G.ITEM).filter(id=>G.ITEM[id].dg).length===665&&Object.keys(G.ITEM).filter(id=>G.ITEM[id].dg).every(id=>/<svg/.test(G.itemIcon(G.ITEM[id])))
     &&G.itemIcon(G.ITEM['ring-fire'])!==G.itemIcon(G.ITEM['ring-water'])&&G.itemIcon(G.ITEM['ring-fire']).includes('#ff7a45')&&G.itemIcon(G.ITEM.sword7).includes('#9ff0c8')&&!G.itemIcon(G.ITEM.sword6).includes('#9ff0c8'));
   G.equip('wand7'); await wait(400); G=c.G();
   ok('a level-30 weapon is held in the hand (the model of the top tier is borrowed: nothing throws, the class follows)',G.GEAR.eq.weapon==='wand7'&&(()=>{ G.attachWeapons(); return G.hiker.wpn.length>0; })());

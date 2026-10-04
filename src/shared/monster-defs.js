@@ -9,6 +9,7 @@ const FAM={
   fox:   {hpK:1.0, dmgPct:0.1, atk:1.5,speed:3.8,rad:0.55,height:1.0,aggro:14,sound:'yelp',per:2},
   wisp:  {hpK:0.9, dmgPct:0.1, atk:1.7,speed:2.6,rad:0.45,height:1.6,aggro:13,sound:'pip',per:3},
   totem: {hpK:1,dmgPct:0,atk:99,speed:0,rad:0.55,height:2.7,aggro:0,sound:'click',per:0},
+  keg:   {hpK:1,dmgPct:0,atk:99,speed:0,rad:0.5, height:1.1,aggro:0,sound:'click',per:0},   // Garrick's powder keg (dungeons/bosses.js)
   wyrm:  {hpK:1.0,dmgPct:0.12,atk:2.2,speed:2.6,rad:0.9,height:2.0,aggro:16,sound:'groan',per:1},
   gryphon:{hpK:1.0,dmgPct:0.12,atk:2.1,speed:3.2,rad:0.8,height:2.0,aggro:16,sound:'groan',per:1}
 };

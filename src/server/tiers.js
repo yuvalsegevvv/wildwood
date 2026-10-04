@@ -25,5 +25,5 @@ function zoneTierKillP(q,m){
   const land=ZTIER_LANDS.find(l=>ZTIER_BOSS[l]===m.def.id); if(!land) return;
   const z=q.gear.zt[land]; if(z.on<z.max||z.max>=ZTIER_MAX) return;
   z.max++; q.dirty=true; recalcP(q);
-  toastTo(q.id,'Tier '+ZTIER_ROMAN[z.max]+' unlocked in '+ZTIER_NAMES[land]+'! Choose it in a village (the map): its enemies are '+ZTIER_STEP*z.max+' levels higher. Your symbol grows: +'+Math.round(symbolBonus(q.gear)*100)+'% attack and health.','good');
+  toastTo(q.id,'Tier '+ZTIER_ROMAN[z.max]+' unlocked in '+ZTIER_NAMES[land]+'! Choose it in a village (the map): its enemies are '+ZTIER_STEP*z.max+' levels higher.'+(ZTIER_SYMBOL_LANDS.includes(land)?' Your symbol grows: +'+Math.round(symbolBonus(q.gear)*100)+'% attack and health.':''),'good');
 }

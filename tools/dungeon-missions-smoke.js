@@ -59,12 +59,12 @@ ok('every mission has a kit (none left out) and the offer deals from all seven',
 ok('every mission has a HUD row; dgHudText always answers (no tuple, the start prompt, the end)',Object.keys(x.DG_MISSIONS).every(k=>typeof x.DG_HUD[k]==='function')&&x.dgHudText('defense',undefined).title&&/Waiting for 2/.test(x.dgHudText('siege',[0,0,2]).lines[0])&&x.dgHudText('hunt',[3,9,0]).warn===true&&x.dgHudText('escort',[2,9,0]).title==='Cleared!');
 { const t=x.dgHudText('defense',[1,200,0,2,3,41,0,0]), e=x.dgHudText('escort',[1,9,0,2,17,0]);
   ok('in the boss phase Defense still shows its stone and Escort its captive',/41%/.test(t.lines[0])&&t.bar.v===41&&e.bar.v===17&&e.warn===true); }
-ok('objective kinds have their dungeon\'s own names (docs/DUNGEON-THEMES.md section 3)',x.dgObjName('stone','hollowroots')==='the Heartwood Knot'&&x.dgObjName('altar','bonefrostbarrow')==='a rune pillar'&&x.dgObjName('captive','jadesprings')==='the bath-house keeper'&&x.dgObjName('stone')==='Ward stone');
+ok('objective kinds have their dungeon\'s own names (docs/DUNGEON-THEMES.md section 3)',x.dgObjName('stone','hollowroots')==='the Heartwood Knot'&&x.dgObjName('altar','bonefrostbarrow')==='a rune pillar'&&x.dgObjName('captive','jadesprings')==='the bath-house keeper'&&x.dgObjName('stone','blackseam')==='the winch house'&&x.dgObjName('ping','blackseam')==='the Mountain Goblin'&&x.dgObjName('stone')==='Ward stone');
 
 const A=join('a','Ash'), B=join('b','Bree'), C=join('c','Cole'), D=join('d','Dara'); tick(3);
 
-// ---- Purge, on two more dungeons (the runs smoke wins it in the Hollow Roots) ----
-for(const th of ['jadesprings','bonefrostbarrow']){
+// ---- Purge, on three more dungeons (the runs smoke wins it in the Hollow Roots and the Blackseam) ----
+for(const th of ['jadesprings','bonefrostbarrow','blackseam']){
   const run=startRun(A,th+':purge:4'); killAll(run,A,m=>m.dgRole==='purge'); tick(3);
   ok('Purge ('+th+'): its packs killed, the boss appears; its death clears the run',run.phase==='boss'&&!!run.boss&&winBoss(run,A)&&last('a','dge')[2]===1);
   secs(21);
@@ -281,6 +281,14 @@ const hzCell=(run,kind,pred)=>run.B.props.filter(p=>p.hz===kind).find(p=>!pred||
   secs(1.5);
   const hit=evs('a','hurt').find(e=>e[2]===Math.round(A.maxHp*0.08)), sl=evs('a','pfx').find(e=>e[2]==='slow');
   ok('Jade Springs: a steam vent warns with the geyser telegraph, then scalds 8% and slows',!!tele&&!!hit&&!!sl);
+  IMM.add('a'); leaveAll(run); }
+{ const run=hzRun('blackseam',18), H=x.dgHzBuildS(run), c=H.list.find(c=>c.kind==='steam'), s=c.cells[0];
+  IMM.delete('a'); A.hp=A.maxHp; put(A,run,s.x,s.z); put(B,run,run.B.start.x,run.B.start.z); clear();
+  const W0=x.dgWorldS(run,c.x,c.z); let tele=null;   // (the sump has two vent patches: only this patch's own warning counts)
+  for(let i=0;i<260&&!tele;i++){ tick(1); put(A,run,s.x,s.z); tele=evs('a','tele').find(e=>e[2]==='geyser'&&Math.hypot(e[3]-W0.x,e[4]-W0.z)<1); }
+  secs(1.5);
+  const hit=evs('a','hurt').find(e=>e[2]===Math.round(A.maxHp*0.08)), sl=evs('a','pfx').find(e=>e[2]==='slow');
+  ok('the Blackseam: a slag vent warns with the geyser telegraph, then scalds 8% and slows',!!tele&&!!hit&&!!sl,'tele '+!!tele+', hurt '+!!hit+', slow '+!!sl+', hurts '+JSON.stringify(evs('a','hurt').slice(0,3))+', patch r '+c.r.toFixed(1)+' of '+H.list.length);
   IMM.add('a'); leaveAll(run); }
 { const run=hzRun('bonefrostbarrow',19), H=x.dgHzBuildS(run), cells=[...H.rime], c0=cells[0], s={x:(c0%run.B.w+0.5)*2,z:(Math.floor(c0/run.B.w)+0.5)*2};
   IMM.delete('a'); A.hp=A.maxHp; put(A,run,s.x,s.z); put(B,run,run.B.start.x,run.B.start.z); clear(); tick(3);

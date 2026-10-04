@@ -14,14 +14,14 @@ function renderSymbol(){
   const el=$('#plSym'), pts=symbolPoints(GEAR), key=JSON.stringify(GEAR&&GEAR.zt);
   if(key===ztSymKey) return; ztSymKey=key;
   el.hidden=!pts; if(!pts) return;
-  el.innerHTML=ZTIER_LANDS.map(l=>`<i class="zs ${l}${zoneTierMax(GEAR,l)?'':' off'}">${ZTIER_ROMAN[zoneTierMax(GEAR,l)]}</i>`).join('')+`<span>+${Math.round(symbolBonus(GEAR)*100)}%</span>`;
-  el.title='Zone tier symbol: +'+Math.round(symbolBonus(GEAR)*100)+'% attack and health ('+ZTIER_LANDS.map(l=>ZTIER_NAMES[l]+' '+ZTIER_ROMAN[zoneTierMax(GEAR,l)]).join(', ')+')';
+  el.innerHTML=ZTIER_SYMBOL_LANDS.map(l=>`<i class="zs ${l}${zoneTierMax(GEAR,l)?'':' off'}">${ZTIER_ROMAN[zoneTierMax(GEAR,l)]}</i>`).join('')+`<span>+${Math.round(symbolBonus(GEAR)*100)}%</span>`;
+  el.title='Zone tier symbol: +'+Math.round(symbolBonus(GEAR)*100)+'% attack and health ('+ZTIER_SYMBOL_LANDS.map(l=>ZTIER_NAMES[l]+' '+ZTIER_ROMAN[zoneTierMax(GEAR,l)]).join(', ')+')';
 }
 // the row's height (it wraps on a phone) takes room from the map: when it changes the map is fitted again
 function fitTierRow(row){ const h=row.offsetHeight||0; if(h!==ztRowH){ ztRowH=h; sizeFullMap(); } }
 // the picker under the map, for the land the map shows
 function renderTierRow(land){
-  if(!ZTIER_LANDS.includes(land)){ $('#mapTier').innerHTML=''; ztRowKey=''; fitTierRow($('#mapTier')); return; }   // (the Greyspine has no zone tier yet)
+  if(!ZTIER_LANDS.includes(land)){ $('#mapTier').innerHTML=''; ztRowKey=''; fitTierRow($('#mapTier')); return; }
   const row=$('#mapTier'), max=zoneTierMax(GEAR,land), on=zoneTierOn(GEAR,land), inV=zoneTierVillage(P.x,P.z);
   const key=land+'|'+on+'|'+max+'|'+inV; if(key===ztRowKey) return; ztRowKey=key; row.dataset.land=land;
   if(!max){ row.innerHTML=`<span class="mt-i">Zone tiers: defeat ${ZT_SHORT(land)} to unlock a harder ${ZTIER_NAMES[land]}</span>`; fitTierRow(row); return; }

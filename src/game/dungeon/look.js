@@ -9,12 +9,12 @@
    never changes inside a run: a new count recompiles every material). Shadows are off in a run. */
 const DG_LOOK={on:false,save:null,torch:null,pool:[],poolT:0,far:42,farNow:42,near:3,fog:new THREE.Color(),hs:new THREE.Color(),hg:new THREE.Color(),sun:new THREE.Color(),hi:0.8,sunI:0.3,gloom:false};
 function dgLookEnter(R){
-  const L=DG_LOOK, pal=dgPalOf(R.T), barrow=R.T&&R.T.id==='bonefrostbarrow';
+  const L=DG_LOOK, pal=dgPalOf(R.T), barrow=R.T&&R.T.id==='bonefrostbarrow', mine=R.T&&R.T.id==='blackseam';
   if(!L.save) L.save={far:camera.far,near:scene.fog.near,sky:sky.visible,water:water?water.visible:true,cast:sun.castShadow,motes:motes.visible};
   camera.far=140; camera.updateProjectionMatrix();
   sky.visible=false; if(water) water.visible=false; sun.castShadow=false;
   L.fog.setHex(pal.fog); L.sun.setHex(pal.light); L.hs.setHex(pal.light).lerp(new THREE.Color(0xffffff),0.3).multiplyScalar(0.55); L.hg.setHex(pal.floor).multiplyScalar(1.4);
-  L.hi=barrow?0.62:0.85; L.sunI=barrow?0.18:0.32; L.far=L.farNow=barrow?36:42; L.gloom=barrow; L.on=true;
+  L.hi=barrow?0.62:mine?0.7:0.85; L.sunI=barrow?0.18:mine?0.22:0.32; L.far=L.farNow=barrow?36:mine?38:42; L.gloom=barrow; L.on=true;
   if(!L.torch){ L.torch=new THREE.PointLight(0xffd8a8,1.1,15,2); L.torch.name='dgTorch'; }
   L.torch.color.setHex(barrow?0xcfdcff:0xffd8a8); scene.add(L.torch);
   if(!L.pool.length) for(let i=0;i<(LOW||LITE?0:2);i++){ const p=new THREE.PointLight(0xffffff,0,11,2); p.name='dgLamp'; L.pool.push(p); }

@@ -1,10 +1,10 @@
-//@ The three dungeon bosses (Amanita the Sporemother, Gawataro the Jade Elder, Haugbui the Barrow Lord): their designs as data (DG_BOSSES: moves named by primitive, signature, needs), their defs as rows shaped like BOSS_DEFS (DG_BOSS_DEFS), the hall's lamps and steam vents, and the arena of a run's boss hall. Pure.
+//@ The four dungeon bosses (Amanita the Sporemother, Gawataro the Jade Elder, Haugbui the Barrow Lord, Garrick the Seam Foreman): their designs as data (DG_BOSSES: moves named by primitive, signature, needs), their defs as rows shaped like BOSS_DEFS (DG_BOSS_DEFS), the hall's lamps and steam vents, and the arena of a run's boss hall. Pure.
 /* Agent map: exports DG_BOSSES, DG_BOSS_DEFS (keyed by boss id = its def's id: {def, kit, add, prop, short, bar, auxBar, gloom, dungeon}), DG_HALL_LAMPS, DG_VENT_R, dgVentAt,
    dgHallArena. Used by: server/dungeons/boss-kits.js (BOSS_KITS.spore / dish / barrow read B.bd = a row), the run's boss finale (makeBossS(DG_BOSS_DEFS[theme.boss],
    dgHallArena(bake, ox, oz))), game/combat/boss-dungeon.js (the client's def lookup, bar texts, gloom), defineDungeonTheme (a theme's `boss` must be a key here).
    Tests: tools/dungeons-smoke.js (the data agrees with the kits and the primitives), tools/dungeon-boss-smoke.js (the fights). Designs: docs/DUNGEON-THEMES.md section 4. */
 
-/* THE THREE NEW BOSSES, one for each dungeon. Built on the pieces the six bosses use (shared/monster-defs.js: bossDef, a model family with its pal flags;
+/* THE FOUR NEW BOSSES, one for each dungeon (Garrick, the Greyspine's, was added with the pendants: docs/DUNGEON-THEMES.md section 9). Built on the pieces the six bosses use (shared/monster-defs.js: bossDef, a model family with its pal flags;
    server/boss-fx.js: telegraphs, zones, walls, pfx, summons, props), so a design here is what bossDef() is given, and `moves` name what each move is made of:
      tele:<kind> a telegraph: circle kinds root slam icefall geyser gust, and the dungeon bosses' own looks of a circle: spore (a cloud's warning) puff (a puffball swelling)
                  pulse (Amanita's hall-wide pulse) vent (a steam vent) wail (Haugbui's hall-wide wail) snuff (a lamp going dark) | cone: cleave breath | line | donut | mark prison
@@ -53,7 +53,19 @@ const DG_BOSSES={
       {id:'snuff',     name:'Snuff the Lamps', phase:2,does:['props','tele:snuff','new:channel'],x:1.0,signature:true},
       {id:'wail',      name:'Barrow Wail',     phase:2,does:['tele:wail','new:tele-safe'],x:1.6},
       {id:'blackout',  name:'Blackout',        phase:3,does:['mode:hidden','adds','stun','new:gloom']}],
-    needs:['new:channel','new:tele-safe','new:gloom']}};
+    needs:['new:channel','new:tele-safe','new:gloom']},
+  garrick:{id:'garrick',name:'Garrick, the Seam Foreman',short:'Garrick',dungeon:'blackseam',kit:'blast',lv:DG_LV,el:'fire',model:'goblin',scale:2.7,glow:0x2a0e04,atk:2.2,speed:2.2,music:'boss30',
+    pal:{form:'troll',embers:0xff7a30,skin:0x5c5c68,eyes:0xffb040,top:'jacket',topColor:0x3a2e24,bottom:'trousers',bottomColor:0x26221e,hat:'helm',hatColor:0x5a5a62,club:0x3c3c46,horns:0xb8b0c8,fur:0x4a4a54,weapon:'axe'},
+    add:{id:'slagling',name:'Slagling',scale:0.7,speed:2.8,glow:0x2a0e04,pal:{form:'hob',embers:0xff7a30,skin:0x4a4a54,eyes:0xffb040,top:'jacket',topColor:0x2e2a26,bottom:'trousers',bottomColor:0x201e1c,hat:'helm',hatColor:0x4a4a52,club:0x3c3c46,weapon:'axe'}},
+    prop:{id:'powderkeg',name:'Powder Keg',scale:1,model:'keg',hits:1,glow:0x1a1006,pal:{wood:0x6a4a2c,band:0x3a3a42,fuse:0xffa040}},
+    bar:{stun:'Garrick reels from the blast: strike now!'}, aux:'powder kegs ticking', auxBar:'Powder kegs: {n}',
+    moves:[
+      {id:'haul',     name:'Chain Haul',   phase:1,does:['tele:line','pfx:push'],x:1.1},
+      {id:'kegs',     name:'Powder Kegs',  phase:1,does:['props','tele:blast','new:keg-blast'],x:1.7,signature:true},
+      {id:'slaglings',name:'Slaglings',    phase:2,does:['adds']},
+      {id:'cavein',   name:'Cave-in',      phase:2,does:['tele:rockfall'],x:0.9},
+      {id:'blasting', name:'Blasting Day', phase:3,does:['props','tele:blast']}],
+    needs:['new:keg-blast']}};
 
 // a design as a row shaped like BOSS_DEFS (what makeBossS(bd, A) takes): the boss's def at its level, its add and its prop as monster defs
 function dgBossRow(b){
@@ -64,7 +76,7 @@ function dgBossRow(b){
   if(b.prop){ prop={id:b.prop.id,name:b.prop.name,level:b.lv,el:b.el,model:b.prop.model||b.model,scale:b.prop.scale,hits:b.prop.hits,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:b.prop.glow,pal:b.prop.pal}; prepDef(prop); }
   return {def,kit:b.kit,add,prop,short:b.short,bar:b.bar,aux:b.aux,auxBar:b.auxBar,gloom:b.gloom,dungeon:b.dungeon};
 }
-const DG_BOSS_DEFS=Object.assign(Object.create(null),{amanita:dgBossRow(DG_BOSSES.amanita),gawataro:dgBossRow(DG_BOSSES.gawataro),haugbui:dgBossRow(DG_BOSSES.haugbui)});   // (no prototype: a lookup by any def id is safe)
+const DG_BOSS_DEFS=Object.assign(Object.create(null),{amanita:dgBossRow(DG_BOSSES.amanita),gawataro:dgBossRow(DG_BOSSES.gawataro),haugbui:dgBossRow(DG_BOSSES.haugbui),garrick:dgBossRow(DG_BOSSES.garrick)});   // (no prototype: a lookup by any def id is safe)
 
 /* Where the kits put things in the hall, in metres from its middle (the hall's pillars and mouths are DG_HALL_PILLARS / DG_HALL_MOUTHS in shared/dungeons.js):
    Haugbui's four lamps stand at the inner corner of each pillar, 9.6 m from the middle (8 m round a lit lamp shelters you from the wail, which leaves the middle open);

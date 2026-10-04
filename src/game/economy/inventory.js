@@ -39,7 +39,7 @@ function renderInv(){
 }
 function statDiff(it,cur){
   if(it.kind==='ring') return dgRingDiffHtml(it,cur);   // dungeons: a ring's difference is in attack, by your soul
-  if(it.kind==='pendant') return cur&&cur.kind==='pendant'&&cur.stat===it.stat?(it.v===cur.v?'':`<span class="${it.v>cur.v?'up':'down'}">${it.v>cur.v?'+':'-'}${pendantPct(Math.abs(it.v-cur.v))}%</span>`):'<span class="muted">a different bonus</span>';
+  if(it.kind==='pendant') return cur&&cur.kind==='pendant'&&cur.stat===it.stat?(it.v===cur.v?'':`<span class="${it.v>cur.v?'up':'down'}">${it.v>cur.v?'+':'-'}${it.stat==='critdmg'?(Math.round(Math.abs(it.v-cur.v)*100)/100)+' crit multiplier':pendantPct(Math.abs(it.v-cur.v))+'%'}</span>`):'<span class="muted">a different bonus</span>';
   const k=it.kind==='tool'?[['tier','tier'],['rar','rarity']]:it.kind==='weapon'?[['atk','attack']]:[['hp','health'],['def','defense']];
   return k.map(([f,n])=>{ const d=(it[f]||0)-((cur&&cur[f])||0); return d?`<span class="${d>0?'up':'down'}">${d>0?'+':''}${d} ${n}</span>`:''; }).filter(Boolean).join(' ');
 }

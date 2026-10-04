@@ -53,7 +53,8 @@ const DG_LV=30, DG_ENTRY_LV=25;   // a dungeon is level 30 at its land's base di
 const DG_LANDS={
   home:{name:'Wildwood',    base:1,unlock:{},          hint:'Wildwood opens its dungeon at +1 difficulty: once Carapax, the Tide King, has fallen, set Wildwood to +1 on the map in a village.'},
   vale:{name:'Sakura Vale', base:0,unlock:{east:2},    hint:'Walk to Hanami, on the far side of the tunnel, first.'},
-  hoar:{name:'Hoarfrost Reach',base:0,unlock:{north:2},hint:'Walk into Rimehold, through Frostgate Pass, first.'}};
+  hoar:{name:'Hoarfrost Reach',base:0,unlock:{north:2},hint:'Walk into Rimehold, through Frostgate Pass, first.'},
+  grey:{name:'The Greyspine',base:0,unlock:{west:2},   hint:'Walk into Highmark, through the glacier valley west of the Reach, first (its ice fall opens when Ymrik falls).'}};
 /* THE THEME REGISTRY. A dungeon theme is one file, shared/dungeons/themes/<id>.js, holding a single defineDungeonTheme({...}) call and no top-level names, plus its line in
    src/manifest.json (after shared/dungeons/bosses.js). defineDungeonTheme checks the theme; a bad one is LEFT OUT (the game still boots), warned about (console.warn) and listed in
    DG_BAD as {id, field, why}: tools/dungeons-smoke.js fails naming them. Fields:
@@ -161,7 +162,8 @@ const DG_APRON=7, DG_ENT_CLEAR=14, DG_ENT_TALK=4.5;
 const DG_ENTRANCES={
   hollowroots:    {theme:'hollowroots',    name:'The Hollowed Elder', kind:'roots', x:244,z:148,  a:Math.PI/2, sign:{x:114.9,z:25.8,  road:'The East Road'}},
   jadesprings:    {theme:'jadesprings',    name:'The Falls Door',     kind:'falls', x:826,z:82,   a:Math.PI,   sign:{x:864.3,z:-28.5, road:'The Coast Road'}},
-  bonefrostbarrow:{theme:'bonefrostbarrow',name:'The Barrow Door',    kind:'barrow',x:688,z:-950, a:0,         sign:{x:752.1,z:-823.5,road:'The Wyrm Road'}}};
+  bonefrostbarrow:{theme:'bonefrostbarrow',name:'The Barrow Door',    kind:'barrow',x:688,z:-950, a:0,         sign:{x:752.1,z:-823.5,road:'The Wyrm Road'}},
+  blackseam:      {theme:'blackseam',      name:'The Old Adit',       kind:'mine',  x:316,z:-692, a:3.403,     sign:{x:347.8,z:-718.5,road:'The Glacier Road'}}};
 const dgApron=E=>({x:E.x+Math.sin(E.a)*DG_APRON,z:E.z+Math.cos(E.a)*DG_APRON});
 const dgEntranceNear=(x,z,r)=>{ let best=null,bd=r===undefined?DG_ENT_TALK:r; for(const k in DG_ENTRANCES){ const E=DG_ENTRANCES[k], d=Math.hypot(E.x-x,E.z-z); if(d<=bd){ bd=d; best=E; } } return best; };
 
@@ -194,11 +196,12 @@ function dgUnlocked(gear,level,T,tier){
   if(t>((z?z.max:0)|0)) return {ok:false,why:'You have not unlocked +'+t+' in '+L.name+' yet.'};
   if(U.east!==undefined&&(g.east|0)<U.east) return {ok:false,why:L.hint};
   if(U.north!==undefined&&(g.north|0)<U.north) return {ok:false,why:L.hint};
+  if(U.west!==undefined&&(g.west|0)<U.west) return {ok:false,why:L.hint};
   const lv=dgLevel(T,t); if((level|0)<DG_ENTRY_LV) return {ok:false,why:'Reach level '+DG_ENTRY_LV+' first.'};   // (the same at every tier: a level-60 dungeon used to ask for 55, which nobody can have)
   return {ok:true,why:'',tier:t,level:lv};
 }
 // the door's look and what pressing the talk key says: open at the tier you play (Wildwood's roots are knotted shut at +0) and the land's progress; the level is not part of it
-const dgGateOpen=(gear,T)=>{ const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}; return dgTierOf(g,T.land)>=L.base&&(U.east===undefined||(g.east|0)>=U.east)&&(U.north===undefined||(g.north|0)>=U.north); };
+const dgGateOpen=(gear,T)=>{ const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}; return dgTierOf(g,T.land)>=L.base&&(U.east===undefined||(g.east|0)>=U.east)&&(U.north===undefined||(g.north|0)>=U.north)&&(U.west===undefined||(g.west|0)>=U.west); };
 // every tile in every quarter turn (turns that come out the same are kept once)
 function dgVariants(set){
   const out=[], seen=new Set();
