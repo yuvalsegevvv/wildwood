@@ -8,7 +8,7 @@
      south  the home forest's northern rim goes on as a crest at z = HZ0 and eases down onto the Greyspine over ~66 m (baseHeight);
      east   the Vale Wall goes on along x = HALF as the Hoarfrost Reach's west wall (hoarHeight): the Greyspine rises to the very same
             crest, so the two lands meet without a seam. The glacier valley that will lead through it (the gate, opened by Ymrik) is not cut yet;
-     north  the spine, the highest ground, ends in a crest like the Reach's glacier wall (the sea lies beyond);
+     north  the spine, the highest ground (z -900), lowers to a coast on the northern sea (shared/coasts.js: bays, islets);
      west   a wall too: the neck to the Stormhorn and the river road to the Sunscar will be cut through it later.
    Every wall is climbable up to 14 m short of its crest (player/movement.js) and no further. Nothing finer than 8-16 m wavelength goes in:
    the server samples this on a 4 m grid. Water is not part of it: the ground stays well above the sea (the fjords on the south-west coast
@@ -68,16 +68,15 @@ const inGlen=(x,z,m)=>Math.abs(z-GLEN.z)<GLEN.w+8+(m||0)&&x>GLEN.x0-30&&x<GLEN.x
 function greyspineBase(x,z){
   const f=greyFloor(x,z), vm=greyValley(x,z), up=GV.up, far=smoothstep(40,210,GV.d);   // far: the high ground is away from the troughs, their flanks are foothills
   const wx=x+noise2(x*0.0031+3.7,z*0.0031-8.1)*46, wz=z+noise2(x*0.0031-12.3,z*0.0031+4.9)*46;
-  const amp=lerp(62,124,smoothstep(-690,-960,z));   // the spine in the north is the highest
+  const amp=lerp(62,124,smoothstep(-690,-900,z))*(1-0.4*smoothstep(-940,-1030,z));   // the spine is highest at z -900 and lowers to the northern sea beyond
   const rg=ridged(wx*0.0042+3.1,wz*0.0042-1.7,3), sm=erodeFbm(wx*0.0046+5,wz*0.0046-3,5,0.22)*0.5+0.5;
   let h=lerp(f+26+amp*(0.55*sm+1.05*rg*(0.5+0.6*rg))*(0.28+0.72*far), f+up+noise2(x*0.045,z*0.045)*0.5, vm);
   const fine=noise2(x*0.06,z*0.06)*0.4+erodeFbm(x*0.075+9,z*0.075-4,2,0.5)*0.55; h+=fine*(0.4+0.6*vm);
   // the walls: the east one is the Hoarfrost Reach's west wall seen from the other side (its ground blended into the Reach's and the same crest on
   // top, so the two lands meet at x = HALF without a step); the north and west ones are crests of their own
-  const bx=borderX(z), dxe=Math.abs(bx-x), f2=fbm(x*0.02,z*0.02,3)*0.5+0.5, re=dxe<130?smoothstep(wallW(z,1),4,dxe):0, rn=smoothstep(62,4,z-WZ0-rimWobble(x,31)), rw=smoothstep(62,4,x-WX0-rimWobble(z,41));
-  const cr=(re>0||rn>0||rw>0)?crest(x,z):0;
+  const bx=borderX(z), dxe=Math.abs(bx-x), f2=fbm(x*0.02,z*0.02,3)*0.5+0.5, re=dxe<130?smoothstep(wallW(z,1),4,dxe):0, rw=smoothstep(62,4,x-WX0-rimWobble(z,41));
+  const cr=(re>0||rw>0)?crest(x,z):0;
   if(re>0){ h=lerp(h,hoarBase(x,z),re); h+=wallAdd(Math.abs(bx-x),z,1,46,14,20,f2,cr); }
-  if(rn>0) h+=rn*rn*46+rn*f2*16+rn*rn*rn*cr*22;
   if(rw>0) h+=rw*rw*40+rw*f2*14+rw*rw*rw*cr*20;
   // (after the walls, so a bench and a crown stay flat)
   { const d=Math.hypot(x-GREY_HM.x,z-GREY_HM.z); if(d<GREY_HM.r+24) h=lerp(h,greyFloor(GREY_HM.x,GREY_HM.z)+GREY_HM.up,smoothstep(GREY_HM.r+24,GREY_HM.r+3,d)); }
@@ -85,7 +84,9 @@ function greyspineBase(x,z){
     if(d<Q.r+190){ const dw=Math.hypot(x-Q.x+noise2(x*0.011+2,z*0.011)*34,z-Q.z+noise2(x*0.011-6,z*0.011+8)*34), c=Q.h-Math.max(0,dw-Q.r)*1.15-ridged(x*0.017+9,z*0.017-4,3)*26*smoothstep(Q.r+20,Q.r+90,dw);
       h=0.5*(h+c+Math.sqrt((h-c)*(h-c)+196)); }
     if(d<Q.r+22) h=lerp(h,Q.h,smoothstep(Q.r+22,Q.r,d)); }
-  return h;
+  // the northern sea: the ground comes down to a beach (shore, shared/terrain.js) except by the crests (the west wall, the Reach's wall, the Queen's cone), which end in headlands
+  const c=coastDist(x,z);   // (a crest running into the sea goes under it: its keep fades out over the last 64 m to the water)
+  return shore(h,c,Math.max(Math.max(smoothstep(60,14,x-WX0),smoothstep(46,14,bx-x))*smoothstep(12,64,c),smoothstep(120,64,Math.hypot(x-GREY_QUEEN.x,z-GREY_QUEEN.z))),csWide(x,z,60));
 }
 /* ---- water (docs/WORLD.md: tarns, a river that leaves the range, a fjord on the south-west coast) ----
    Altitude water cannot be the sea's single plane at y = 0, so each piece has its own surface (game/village/buildings-grey.js): three tarns, flat shelves of

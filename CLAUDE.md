@@ -102,8 +102,10 @@ Short rows: the files that matter. A row ending in `→ docs/areas/<x>.md` has t
 | Crafting (weapons from ore, armour from logs) and brewing (potions from herbs) | `shared/crafting.js`, `server/crafting.js` (`craftP`, `brewP`), `game/economy/crafting.js`, `21-crafting.css` → `docs/areas/professions.md` |
 | Potions (drinking, buffs, the belt, keys Z / X / C) | `drinkP` (`server/crafting.js`), `game/ui/potions.js`; counts in `gear.pot` → `docs/areas/professions.md` |
 | Teleport circles and their travel window | `CIRCLES` (`shared/hoarfrost.js`), `warpP` (`server/players.js`), `game/village/talking.js`, `game/ui/travel.js` → `docs/areas/regions.md` |
-| The lands' borders (curves, not the rectangle's sides: `borderX(z)`, `borderZ(x)`, pinned at the gates), the Greyfall River (the Vale Wall south of the junction) and the Greyfall waterfall; **land tests take both coordinates**: `inVale(x,z)`, `landAt(x,z)` | `shared/terrain.js` (`borderX`, `borderZ`, `wallAdd`, `riverK`, `riverCut`, `FALL`, `fallCut`), `game/village/buildings-greyfall.js`, the clamps in `game/player/movement.js`; test `node tools/greyfall-smoke.js` → `docs/areas/regions.md` |
-| Sakura Vale: tunnel `TUN`, Hanami `VIL2`, zones, arenas, `vilAt` | `shared/vale.js`, `game/village/buildings-vale.js`, tunnel collision `worldBounds` (`movement.js`), unlock / `warpP` (`server/players.js`) → `docs/areas/regions.md` |
+| The lands' borders (curves, not the rectangle's sides: `borderX(z)`, `borderZ(x)`, pinned at the gates), the Greyfall River (the Vale Wall south of the junction, crossed by one bridge) and the Greyfall waterfall; **land tests take both coordinates**: `inVale(x,z)`, `landAt(x,z)` | `shared/terrain.js` (`borderX`, `borderZ`, `wallAdd`, `riverK`, `riverCut`, `FALL`, `fallCut`), `game/village/buildings-greyfall.js`, the clamps in `game/player/movement.js`; test `node tools/greyfall-smoke.js` → `docs/areas/regions.md` |
+| The outer coasts (no mountain wall on the north or east edge of the world: bays, capes, islets, beaches; the vale's south and east, the Reach's north and east, the Greyspine's north) | `shared/coasts.js` (`CS_BAYS`, `CS_HOLD`, `CS_ISLES`, `csOuter`), `coastDist` / `shore` in `shared/terrain.js`, `terrain-color.js` (shingle); keep arenas and doors off the edge (`CS_HOLD`); test `node tools/coasts-smoke.js` → `docs/areas/regions.md` |
+| Movement limits: the slope limit (`SLOPE_MAX`, a step climbing more than 1.2 m a metre is turned along the face or dropped), the border clamps that act only while a land is locked, the bridge's gate | `slopeBlock`, `worldBounds`, `glenWall`, `frostWall`, `greyWall` in `game/player/movement.js`; test `node tools/slope-smoke.js` (everything stays reachable), `client-smoke` → `docs/areas/regions.md` |
+| Sakura Vale: the Greyfall bridge `TUN` (once a tunnel), Hanami `VIL2`, zones, arenas, `vilAt` | `shared/vale.js`, `game/village/buildings-vale.js` (`buildBridge`), the bridge's gate and parapets in `worldBounds` (`movement.js`), unlock / `warpP` (`server/players.js`) → `docs/areas/regions.md` |
 | Items, rarity, prices, drop rates, merge | `shared/items.js` (`RARITY`, `RAR_MULT`, `rollMonsterRarity`, `rollBossRarity`, `shopPrice`) |
 | Item icons | `game/ui/item-icons.js` |
 | Skills (all 3 slots, all classes) | `shared/classes.js` (`SKILLS`, `abilityOf`) → `server/combat.js` (`resolveHitS`) → `game/combat/skill-fx.js`, `attacks.js`. A new attack path must hand its element to `damageMonsterS` → `docs/areas/skills-items.md` |
@@ -196,7 +198,9 @@ node tools/accounts-smoke.js     # 17 checks: register, login, tokens, unique na
 node tools/mainquest-smoke.js    # 128 checks: the main quest, acts I-IV, ~15 s
 node tools/boss-smoke.js         # 46 checks: the eight world bosses' move sets, ~2 s
 node tools/hoarfrost-smoke.js    # 37 checks: the Hoarfrost Reach, ~5 s
-node tools/greyfall-smoke.js     # 19 checks: the four lands' wandering borders and their pins, one land per point, the Greyfall River (depth, width, banks, the spur and the tunnel), the Greyfall (path, tarn, pool), ~2 s
+node tools/greyfall-smoke.js     # 19 checks: the four lands' wandering borders and their pins, one land per point, the Greyfall River (depth, width, banks, no spur, the bridge's deck), the Greyfall (path, tarn, pool), ~2 s
+node tools/coasts-smoke.js       # 10 checks: no wall on the north and east edges, the coasts wander, no sharp corners, the islets are islands, arenas and doors keep their ground, ~3 s
+node tools/slope-smoke.js        # 7 checks: with the slope limit every village, arena, zone, node and door is still reachable on foot, ~10 s
 node tools/greyspine-smoke.js    # 50 checks: the Greyspine's ground, glacier valley and ice fall, Highmark, zones and monsters, the two bosses, water, the two rock falls, ~3 s
 node tools/pendants-smoke.js     # 44 checks: the pendants, level-30 pieces (see docs/PENDANTS.md), ~2 s
 node tools/dungeons-smoke.js     # 97 checks: the pure setup: tiles of every theme, boss hall vs arenas, layouts, grid, flow field, party table, the four dungeons and bosses, offer, entrances, reward rules, ~3 s
@@ -215,7 +219,7 @@ node tools/boss-duel.js --check  # 18 checks: a maxed level-60 hero vs the level
 node tools/levels-smoke.js       # 11 checks: the XP curve, the soft cap from level 50, saves and the testing tool, a kill never pays for more than 10 levels above you, ~2 s
 node tools/professions-smoke.js  # 74 checks: tools, nodes, gathering, crafting, brewing, potions, ~8 s
 node tools/skills-smoke.js       # 58 checks: elements, soul, drops, upgrades, passives, boss skills, ~15 s
-node tools/client-smoke.js       # 83 checks, the built page headless (solo), ~60 s; runs dist/: build first
+node tools/client-smoke.js       # 91 checks, the built page headless (solo), ~60 s; runs dist/: build first
 node tools/start-smoke.js        # 31 checks: the start card + a new account's editor, ~20 s; runs dist/
 node tools/keys-smoke.js         # rebindable keys and hold-Alt; runs dist/
 python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)
@@ -266,7 +270,7 @@ The universal ones are here. An area's own pitfalls are in its guide (`docs/area
 - Drops: monsters 2% common, 0.5% rare, 0.1% epic; boss 50/10/3/1/0.1% (common…legendary).
 - World: the home forest is about -HALF..HALF; the whole world is `WX0..WX1` x `WZ0..WZ1` (the vale is east of the Vale Wall's line `x > borderX(z)`, about x > HALF, 550 m wide, with a river
   for a border that bulges up to 215 m west of it; the Hoarfrost Reach is `inHoar(x,z)`: east of that line and north of the north wall's line `z < borderZ(x)`, about z < `HZ0` = -440, down to `WZ0` = -1040;
-  north of the home forest is unwalkable mountains). `HALF` and `HZ0` are the lines' mean and the junction, not the borders: ask the border functions. Use `WX0..WX1` / `WZ0..WZ1` for clamps
+  north of the home forest, west of the Reach, is the Greyspine, `inGrey(x,z)`). The north and east edges of the vale, the Reach and the Greyspine are coasts with bays and islets, not walls (`shared/coasts.js`): `coastDist(x,z)` is the distance to the sea there too. `HALF` and `HZ0` are the lines' mean and the junction, not the borders: ask the border functions. Use `WX0..WX1` / `WZ0..WZ1` for clamps
   (the home forest's north edge is `borderZ(x)`, not `WZ0`). The heightmap is rectangular (`NVX` x `NVZ`), the terrain is drawn in
   tiles (64 x 128 cells) culled beyond the fog in both directions, and plant chunks more than 320 m away are only grown when you come closer.
 - Rarity stat multipliers 1 / 1.3 / 1.7 / 2.2 / 3; 3 identical → next rarity at Greta's forge.

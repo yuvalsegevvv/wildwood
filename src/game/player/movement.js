@@ -35,16 +35,19 @@ function updatePlayer(dt){
   P.walk+=Math.sqrt(sp)*dt*3.3;
   if(sp>0.3 && !CB.act) P.face=angLerp(P.face,Math.atan2(-P.vx,-P.vz),1-Math.exp(-10*dt));
 }
-/* Terrain steeper than SLOPE_MAX (rise over run: 1.2 is about 50 degrees) cannot be climbed: a move that would climb it is dropped, tried again along each axis alone so you
-   slide along the slope, and otherwise stops you. Going down is always allowed. Only on the ground (a jump clears nothing: it is 1.5 m) and outside dungeons. */
+/* Terrain steeper than SLOPE_MAX (rise over run: 1.2 is about 50 degrees) cannot be climbed: a move that would climb it is turned along the slope (20, 40 ... 80 degrees to
+   the side that is flatter, shorter the more it turns, so you slide along a cliff face instead of sticking to it) and, if no turn works, dropped. Going down is always allowed.
+   Only on the ground (a jump clears nothing: it is 1.5 m) and outside dungeons. */
 const SLOPE_MAX=1.2;
 function slopeBlock(ox,oz){
-  const d=Math.hypot(P.x-ox,P.z-oz); if(d<1e-4||d>4) return;   // (a teleport or a respawn is not a step)
+  const dx=P.x-ox, dz=P.z-oz, d=Math.hypot(dx,dz); if(d<1e-4||d>4) return;   // (a teleport or a respawn is not a step)
   const g0=Math.max(getH(ox,oz),bridgeDeck(ox,oz)), up=(x,z)=>(Math.max(getH(x,z),bridgeDeck(x,z))-g0)/Math.hypot(x-ox,z-oz);
   if(up(P.x,P.z)<=SLOPE_MAX) return;
-  const nx=P.x, nz=P.z;
-  if(Math.abs(nx-ox)>1e-4&&up(nx,oz)<=SLOPE_MAX){ P.x=nx; P.z=oz; P.vz*=0.3; return; }
-  if(Math.abs(nz-oz)>1e-4&&up(ox,nz)<=SLOPE_MAX){ P.x=ox; P.z=nz; P.vx*=0.3; return; }
+  for(const a of [0.35,0.7,1.05,1.4]){
+    const c=Math.cos(a), s=Math.sin(a); let best=null, bu=SLOPE_MAX;
+    for(const sg of [1,-1]){ const rx=(dx*c-sg*dz*s)*c, rz=(sg*dx*s+dz*c)*c, u=up(ox+rx,oz+rz); if(u<=bu){ bu=u; best=[rx,rz,sg]; } }
+    if(best){ P.x=ox+best[0]; P.z=oz+best[1]; const vx=P.vx, vz=P.vz, sg=best[2]; P.vx=(vx*c-sg*vz*s)*c; P.vz=(sg*vx*s+vz*c)*c; return; }
+  }
   P.x=ox; P.z=oz; P.vx=0; P.vz=0;
 }
 /* The home forest and the vale are walled off by the Greyfall River (too deep to wade: no deeper than the knees); the only way across is the bridge at z = TUN.z. On it you are

@@ -21,7 +21,9 @@ node tools/party-smoke.js        # 22 checks of parties (invite, /invite, cap, r
 node tools/dungeon-runs-smoke.js # 84 checks of dungeon runs (slots, isolation, walls, party health, loot for all, down / revive, a Purge won through its boss in the Hollow Roots and the Blackseam (which pays a pendant), a door start), server from src/, ~7 s
 node tools/dungeon-missions-smoke.js # 114 checks of the seven mission kits (each won through its boss on three dungeons and lost by its own condition, HUD text, party health, chests, the hazards), server from src/, ~15 s
 node tools/entrance-map.js       # draws docs/dungeon-entrances.png (the four doors on the real terrain, zone borders, roads, signposts and routes; pure node, regenerates byte-identically; run it again if an entrance moves)
-node tools/greyfall-smoke.js     # 19 checks of the four lands' wandering borders (curves, pins, one land per point), the Greyfall River and spur, and the Greyfall (path, tarn, pool), straight from src/, ~2 s
+node tools/greyfall-smoke.js     # 19 checks of the four lands' wandering borders (curves, pins, one land per point), the Greyfall River and its bridge, and the Greyfall (path, tarn, pool), straight from src/, ~2 s
+node tools/coasts-smoke.js       # 10 checks of the outer coasts (no wall north or east, wandering shores, rounded corners, islets that are islands, arenas and doors keep their ground), straight from src/, ~3 s
+node tools/slope-smoke.js        # 7 checks that the slope limit (1.2) leaves every village, arena, zone, node and door reachable and 90% of every land's ground (a flood fill on a 4 m grid), straight from src/, ~10 s
 node tools/dungeon-board-client-smoke.js  # 37 checks of the Delve board panel and the dgi join prompt on the built page (solo, ~25 s): fake dgboard messages (open, sealed, member, soon), the clock, Start, Esc, the real server at the Elder and the Falls Door; runs dist/: build first
 node tools/boss-duel.js --check  # 18 checks: a maxed level-60 hero against the level-80 bosses (standing in melee with potions loses, avoiding half the damage wins in 1.5-3 minutes) and the ramp below them; without --check a table (--camp for a pack, --level for the hero); a yardstick, not a player, ~10 s
 node tools/tiers-smoke.js        # 48 checks of the zone tiers (I to V): the rules, saves, choosing a tier in a village, the unlock by a land's second boss, and per-player damage dealt / taken / XP / coins / drops while two players at different tiers share a monster (server from src/), ~2 s
@@ -63,7 +65,8 @@ listeners and children (`c.el('#stGuest').click()`, `el._kids`, `el._a`), but th
   per-frame numbers (draw calls, fps) between two screenshots, not after a `setTimeout`.
 - The hidden browser pane pauses frames but a solo/host server keeps simulating (timers): teleporting next to
   monsters and taking screenshots gets you knocked out before a frame renders. Testing tools have "Go to the
-  tunnel" (the button's `data-v` can be `in`, `east`, `hanami` or `x,z` with **integers**: `-4.4,8.8` silently goes to the west portal).
+  bridge" (the button's `data-v` can be `in`, `east`, `hanami` or `x,z` with **integers**: `-4.4,8.8` silently goes to the west gate; the dev command is still called `tunnel`).
+- Seeing a coast or a far corner in a real browser: teleport with the dev tools first (`vale 2`, `north 2`, `west 2` open the clamps) and give the streaming 20-30 s (`Growing distant areas` counts down); at a low level monsters knock you out first, so set a high level. A shaded relief of `rawHeight` (a few lines with `loadShared(['rawHeight'])`, written to a PPM) shows a whole coast in a second.
 - `tools/client-smoke.js` used to count `requestAnimationFrame` calls: the world takes a few thousand frames to stream in, and a stopped
   loop stops `netTick`, so the server never learns the player moved and every attack misses. `headless.js` runs frames until `stop()`.
 - `tools/server-smoke.js` "forge merges 3" fails now and then (about 1 run in 15, also on older commits): it depends on a random item from the testing tool. Not a regression.

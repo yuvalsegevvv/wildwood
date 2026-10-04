@@ -4,7 +4,7 @@ const COL = {
   dirt:new THREE.Color(0x6e5738), sand:new THREE.Color(0xb3a27a), mud:new THREE.Color(0x4a3f2f),
   rock:new THREE.Color(0x7d796f), trodden:new THREE.Color(0x6c7436), arena:new THREE.Color(0x4a4238), dirt2:new THREE.Color(0x7a6446), gravel:new THREE.Color(0x8d8170), rockHi:new THREE.Color(0x8c8a83), snow:new THREE.Color(0xeef2f4),
   valeLush:new THREE.Color(0x5c9a38), petal:new THREE.Color(0xd6a2b6),
-  beach:new THREE.Color(0xd9c89c), redRock:new THREE.Color(0x96553e), desert:new THREE.Color(0xd2a868),
+  beach:new THREE.Color(0xd9c89c), shingle:new THREE.Color(0xb3ada0), redRock:new THREE.Color(0x96553e), desert:new THREE.Color(0xd2a868),
   frost:new THREE.Color(0xc6d8e6), tundra:new THREE.Color(0x8a8468), needles:new THREE.Color(0x4a5a52), frozenRock:new THREE.Color(0x7d858c), iceBlue:new THREE.Color(0xa8cce4),
   packed:new THREE.Color(0xb4b6b2), slush:new THREE.Color(0x8e8b80),
   alpine:new THREE.Color(0x6a8c3c), scree:new THREE.Color(0x8c8b86), larch:new THREE.Color(0x4f5a34)
@@ -18,6 +18,7 @@ function hoarColor(x,z,h,g,out){
   out.lerp(COL.needles,smoothstep(0.5,0.85,forestDensity(x,z))*smoothstep(-700,-570,z)*0.4*(1-steep));
   out.lerp(COL.frozenRock,steep*0.85);
   { const id=iceDist(x,z); if(id<7) out.lerp(COL.iceBlue,smoothstep(7,-2,id)*0.92); }
+  { const c=coastDist(x,z); if(c<50) out.lerp(COL.shingle,smoothstep(46,32,c)*(1-smoothstep(3.2,5.5,h))*0.9); }   // (the northern sea's beaches: cold shingle under the snow's edge)
   { const da=arenaDist(x,z); if(da<ARENA.r+3) out.lerp(COL.slush,smoothstep(ARENA.r+3,ARENA.r-3,da)*0.6); }
   { const ra=roadAmt(x,z); if(ra>0) out.lerp(COL.slush,ra*0.8); }
   if(vDist(x,z)<VR+30){
@@ -43,6 +44,7 @@ function greyColor(x,z,h,g,out){
   out.lerp(COL.snow,smoothstep(128-(z<-860?10:0)+n1*18,142-(z<-860?10:0)+n1*18,h)*(1-smoothstep(0.85,1.4,g)));
   { const d=Math.hypot(x-GREY_HM.x,z-GREY_HM.z); if(d<GREY_HM.r+4) out.lerp(COL.gravel,smoothstep(GREY_HM.r+4,GREY_HM.r-6,d)*0.65); }
   { const wd=waterSurf(x,z)-h; if(wd>-0.9) out.lerp(wd>0.3?COL.mud:COL.gravel,smoothstep(-0.9,0.5,wd)*0.85); }   // wet banks and the beds of the tarns and the river
+  { const c=coastDist(x,z); if(c<50) out.lerp(COL.shingle,smoothstep(46,32,c)*(1-smoothstep(3.2,5.5,h))*0.9); }   // (the northern sea's beaches)
   { const bx=borderX(z), e=smoothstep(bx-46,bx-4,x); if(e>0){ hoarColor(x,z,h,g,_gc); out.lerp(_gc,e*0.7); } }   // the Hoarfrost's snow over the east crest
   return out.multiplyScalar(0.92+n2*0.16);
 }

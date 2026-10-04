@@ -54,7 +54,7 @@ const NODES=(()=>{
   const out=[];
   const flat=(x,z)=>Math.abs(rawHeight(x+3,z)-rawHeight(x-3,z))<=2.2&&Math.abs(rawHeight(x,z+3)-rawHeight(x,z-3))<=2.2;
   const apart=(x,z)=>!out.some(o=>Math.hypot(o.x-x,o.z-z)<9);
-  const put=(rng,zn,kind,good,need)=>{ for(let t=0;t<80;t++){
+  const put=(rng,zn,kind,good,need)=>{ for(let t=0;t<240;t++){   // (240 tries: a zone that loses ground to a coast still gets its nodes)
     const [x,z]=zonePoint(zn,rng()-0.5,rng());
     if(zoneAt(x,z)!==zn||!good(x,z)||nearRoad(x,z,5)||vDist(x,z)<VR+14||arenaDist(x,z)<34||zoneRidge(x,z)>0.6||NODE_KEEPOUT.some(d=>Math.hypot(d[0]-x,d[1]-z)<22)||!flat(x,z)||!apart(x,z)) continue;
     out.push({i:out.length,kind,x,z,zone:zn.key,need:need===undefined?tierFor(zn.level):need}); return; } };

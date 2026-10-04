@@ -22,7 +22,7 @@ Area guide. Moved word for word from `CLAUDE.md` (sections 4, 8 and 9), where ea
 
 ## Pitfalls
 
-- Changing the terrain moves things that are found by scanning it: the tunnel (`findTunnel`), Hanami, the boss arenas, the home boss arena, and, worst, the home
+- Changing the terrain moves things that are found by scanning it: the bridge (`findTunnel`), Hanami, the boss arenas, the home boss arena, and, worst, the home
   village's entrance `ent` (`findVillage` scan), from which the whole spiral of monster zones starts: the eroded hills once turned it 180 degrees and every zone with it.
   `ent` is pinned to 315 degrees in `VIL`. After a terrain change print `VIL.ent`, `TUN.z` and the arenas with `loadShared` (old `git archive` copy next to the new one) and compare.
   Two tests also depended on where the first monster or node happens to be (`skills-smoke` put the hiker at the target's ground height, `client-smoke` took the first

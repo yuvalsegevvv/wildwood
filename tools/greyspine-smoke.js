@@ -14,9 +14,9 @@ const X0=x.WX0+14, X1=x.HALF-14, Z0=x.WZ0+14, Z1=x.HZ0-14;   // what a player ca
 
 // ---- the ground ----
 { let n=0, lo=1e9, hi=-1e9, bad=0;
-  for(let zz=x.WZ0;zz<x.HZ0;zz+=8) for(let xx=x.WX0;xx<x.HALF;xx+=8){ const h=H(xx,zz); n++; if(!isFinite(h)) bad++; if(x.fjordDist(xx,zz)>70) lo=Math.min(lo,h); hi=Math.max(hi,h); }
-  ok('every point of the Greyspine has a finite height, nowhere near the sea (>= 20 m) except in the fjord, peaks of 200-330 m',bad===0&&lo>=20&&hi>200&&hi<330,'lowest '+lo.toFixed(0)+' m, highest '+hi.toFixed(0)+' m, '+n+' samples'); }
-{ let steep=0, n=0; for(let zz=-980;zz<-540;zz+=8) for(let xx=-370;xx<370;xx+=8){ n++; if(slope(xx,zz)>0.95) steep++; }
+  for(let zz=x.WZ0;zz<x.HZ0;zz+=8) for(let xx=x.WX0;xx<x.HALF;xx+=8){ const h=H(xx,zz); n++; if(!isFinite(h)) bad++; if(x.fjordDist(xx,zz)>70&&zz>x.WZ0+200) lo=Math.min(lo,h); hi=Math.max(hi,h); }
+  ok('every point of the Greyspine has a finite height, nowhere near the sea (>= 20 m) except in the fjord and in the north (the last 200 m come down to the northern sea), peaks of 200-330 m',bad===0&&lo>=20&&hi>200&&hi<330,'lowest '+lo.toFixed(0)+' m, highest '+hi.toFixed(0)+' m, '+n+' samples'); }
+{ let steep=0, n=0; for(let zz=-900;zz<-540;zz+=8) for(let xx=-370;xx<370;xx+=8){ n++; if(slope(xx,zz)>0.95) steep++; }   // (north of z -900 the ground comes down to the sea: its cliffs are not the inner country)
   ok('it is mountains but not a wall: under 30% of the inner country is steeper than 0.95 (the home forest is 9%, the Reach 13%)',steep/n<0.3,(100*steep/n).toFixed(0)+'%'); }
 // the troughs: the Long Valley's floor is mostly gentle and runs the whole way from the east wall to the west one
 { const L=x.GREY_VALLEYS[0], pts=[]; for(let i=0;i<L.pts.length-1;i++) for(let t=0;t<1;t+=0.25) pts.push([L.pts[i][0]+(L.pts[i+1][0]-L.pts[i][0])*t,L.pts[i][1]+(L.pts[i+1][1]-L.pts[i][1])*t]);
@@ -38,8 +38,8 @@ const X0=x.WX0+14, X1=x.HALF-14, Z0=x.WZ0+14, Z1=x.HZ0-14;   // what a player ca
 { const Q=x.GREY_QUEEN, hs=[]; for(let a=0;a<10;a++) hs.push(H(Q.x+Math.sin(a*0.628)*Q.r*0.7,Q.z+Math.cos(a*0.628)*Q.r*0.7)); hs.push(H(Q.x,Q.z));
   ok('the Gryphon Queen\'s peak has a flat crown for her arena, and is among the highest ground',Math.max(...hs)-Math.min(...hs)<3&&Math.min(...hs)>Q.h-4&&H(Q.x,Q.z+Q.r+50)<Q.h-30,'crown '+Math.min(...hs).toFixed(0)+'-'+Math.max(...hs).toFixed(0)+' m'); }
 // ---- the walls and the neighbours ----
-{ let worst=0, n=0, sum=0; for(let zz=x.WZ0+40;zz<x.HZ0-90;zz+=6){ const bx=x.borderX(zz)-6, d=Math.abs(x.greyspineHeight(bx,zz)-x.hoarHeight(bx,zz)); worst=Math.max(worst,d); sum+=d; n++; }
-  ok('the east wall is the Hoarfrost Reach\'s west wall seen from the other side: 6 m west of the crest line (borderX) the ground is the Reach\'s own (same crest, no step at the seam)',sum/n<1&&worst<3,'mean '+(sum/n).toFixed(2)+' m, worst '+worst.toFixed(2)+' m'); }
+{ let worst=0, n=0, sum=0; for(let zz=x.WZ0+40;zz<x.HZ0-90;zz+=6){ const bx=x.borderX(zz)-6, d=Math.abs(x.greyspineHeight(bx,zz)-x.valeHeight(bx,zz)); worst=Math.max(worst,d); sum+=d; n++; }
+  ok('the east wall is the Hoarfrost Reach\'s west wall seen from the other side: 6 m west of the crest line (borderX) the ground is the Reach\'s own (same crest, same shore, no step at the seam)',sum/n<1&&worst<3,'mean '+(sum/n).toFixed(2)+' m, worst '+worst.toFixed(2)+' m'); }
 { let ok1=true, crest=1e9; for(let xx=-400;xx<=400;xx+=20){ const bz=x.borderZ(xx), c=H(xx,bz), home=H(xx,bz+14); crest=Math.min(crest,c); if(c<45) ok1=false; if(Math.abs(home-x.homeHeight(xx,bz+14))>1e-6) ok1=false; }
   ok('the home forest\'s north rim (its crest line wanders: borderZ) is a crest (45 m or more) and the forest side of it is the home forest\'s own ground',ok1,'lowest crest '+crest.toFixed(0)+' m'); }
 { let same=true; for(let zz=-436;zz<=436;zz+=37) for(let xx=-436;xx<=436;xx+=37) if(xx<x.borderX(zz)-5&&zz>x.borderZ(xx)-3&&Math.abs(x.baseHeight(xx,zz)-x.homeHeight(xx,zz))>1e-6) same=false;
@@ -55,7 +55,7 @@ ok('no tree grows above the treeline: 90-125 m',(()=>{ for(let i=0;i<50;i++){ co
   const t0=x.GREY_TARNS[0], head=R[0], dst=Math.hypot(t0.x-head[0],t0.z-head[1]);
   ok('a river leaves the Mirrortarn and runs west down the Long Valley, only ever downhill, in a channel a hand deep',mono&&deep&&west&&dst<t0.r,R.length+' points, '+R[0][2].toFixed(0)+' m to '+R[R.length-1][2].toFixed(0)+' m'); }
 { const F=x.GREY_FJORD, c=F.pts[1]; ok('a fjord: a gorge below the sea in the south-west, steep walls both sides, nobody\'s camp or tree in it',H(c[0],c[1])<=-8&&H(c[0],c[1]+F.w+14)>20&&x.waterSurf(c[0],c[1])===x.WATER&&x.MONS.filter(m=>x.inGrey(m.camp.x,m.camp.z)).every(m=>H(m.camp.x,m.camp.z)>1),'floor '+H(c[0],c[1]).toFixed(0)+' m, bank '+H(c[0],c[1]+F.w+14).toFixed(0)+' m'); }
-ok('wet ground: a point in a tarn or in the river is greyWet, a dry one is not; no camp is in water',x.greyWet(x.GREY_TARNS[1].x,x.GREY_TARNS[1].z)&&x.greyWet(x.GREY_RIVER[10][0],x.GREY_RIVER[10][1])&&!x.greyWet(0,-1000)&&!x.greyWet(x.VIL4.x,x.VIL4.z)&&x.MONS.every(m=>!x.greyWet(m.camp.x,m.camp.z,-3)));
+ok('wet ground: a point in a tarn or in the river is greyWet, a dry one is not; no camp is in water',x.greyWet(x.GREY_TARNS[1].x,x.GREY_TARNS[1].z)&&x.greyWet(x.GREY_RIVER[10][0],x.GREY_RIVER[10][1])&&!x.greyWet(0,-860)&&!x.greyWet(x.VIL4.x,x.VIL4.z)&&x.MONS.every(m=>!x.greyWet(m.camp.x,m.camp.z,-3)));
 // ---- zones and monsters, levels 26-32 ----
 { const Z=x.ZONES.filter(z=>z.grey&&!z.boss);
   ok('seven zones (26-32) and two boss zones, none of the Greyspine\'s ground in another land, no zone ridges',Z.length===7&&x.ZONES.filter(z=>z.grey&&z.boss).length===2&&(()=>{ for(let zz=-1030;zz<-446;zz+=16) for(let xx=-430;xx<430;xx+=16){ const zn=x.zoneAt(xx,zz); if(zn&&!zn.grey) return false; if(x.zoneRidge(xx,zz)) return false; } return true; })()); }

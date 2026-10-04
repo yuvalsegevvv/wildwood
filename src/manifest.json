@@ -30,6 +30,7 @@
     "math.js",
     "noise.js",
     "terrain.js",
+    "coasts.js",
     "greyspine.js",
     "village-layout.js",
     "zones.js",

@@ -49,8 +49,7 @@ owner's yes.
 1. **Latitude runs north (cold) to south (hot).** Eldmere lies in the northern half of its world: the snow is in the north (Hoarfrost,
    Greyspine peaks), the tropics in the south (the isles). The savanna sits between the desert and the tropics because rain grows southward.
 2. **The Greyspine is the backbone.** A young, high range along the north coast, from the Stormhorn in the west to the Hoarfrost plateau
-   in the east. A lower spur runs south from it between Wildwood and the Sakura Vale: **the Vale Wall** (the game's border mountains, the
-   tunnel the Rootwarden opens), which ends in a waterfall (**the Greyfall**, off the Greyspine's high rim above Wildwood's north-east): below it the Wall is **the Greyfall River**, a wide meandering river to the Crownsea, with one mountain spur left where the tunnel crosses. Snow stays on every peak above the snowline; the snowline is lower the farther north you are.
+   in the east. A lower spur runs south from it between Wildwood and the Sakura Vale: **the Vale Wall** (the game's border), which ends in a waterfall (**the Greyfall**, off the Greyspine's high rim above Wildwood's north-east): below it the Wall is **the Greyfall River**, a wide meandering river to the Crownsea, crossed by one stone bridge (its gate is the one the Rootwarden opens; there is no mountain spur any more). Snow stays on every peak above the snowline; the snowline is lower the farther north you are.
 3. **The Hoarfrost Reach is a plateau, not a range.** Where the Greyspine meets the north-east it widens into a high, flat, ice-covered
    tableland with rounded domes and slow glaciers. Its glaciers melt south into the Sakura Vale: that is why the Vale's rivers and
    waterfalls (Jade Falls) are cold, clear and full all year.
@@ -85,7 +84,7 @@ Neighbouring regions blend over a transition band (in the game about 50-100 m) w
 |---|---|
 | Wildwood → Sunscar | oak forest thins to dry pine and scrub, then the red cliffs of the Sunwall; **Redgate Canyon** is the one break in it |
 | Wildwood → Greyspine / Hoarfrost | foothills with sinkholes and cave mouths (the Rootdeep), then conifers, bare rock and snow |
-| Wildwood → Sakura Vale | the Vale Wall (the existing tunnel); maples and first cherry trees on the east side |
+| Wildwood → Sakura Vale | the Vale Wall (the Greyfall bridge); maples and first cherry trees on the east side |
 | Sakura Vale → Hoarfrost | cedar highlands with hot springs (volcanic heat under the ice), then a glacier tongue |
 | Greyspine → Hoarfrost | a wide glacier-carved valley; peaks give way to flat white domes |
 | Greyspine → Stormhorn | the range narrows to a single windswept ridge (a natural pass at the neck) |
@@ -228,7 +227,7 @@ Wildwood 1-15 → Sakura Vale 16-25 → Hoarfrost Reach 22-30 → Greyspine 26-3
 - The Sunscar borders Wildwood but is reached late, from the north, because the Sunwall is a cliff and Redgate Canyon is blocked:
   reopening it is a satisfying shortcut home.
 
-**Gates** *(proposed)* follow the pattern the game already has: a boss opens a road (the Rootwarden opens the tunnel; saved as `gear.east`).
+**Gates** *(proposed)* follow the pattern the game already has: a boss opens a road (the Rootwarden opens the bridge gate; saved as `gear.east`).
 
 | Road | Opened by |
 |---|---|
@@ -289,10 +288,11 @@ storyline). What it means for the geography:
   `game/world/terrain-color.js`; names on the world map in `edgeName`, `game/ui/map.js`):
   - Wildwood: north the Greyspine's snowy foothills; west **the Sunwall**, red cliffs up to a sandy plateau (52 m), with **Redgate
     Canyon** cut through it at z = 40 and choked by a rock fall; south the **Crownsea shore** (a ~20 m beach, the river runs into the sea);
-    east the Greyfall River (the Vale Wall, with the tunnel through its one spur).
-  - The Sakura Vale: west the Greyfall River (and the spur), north the snowy climb towards the Hoarfrost, south and east the Crownsea shore.
+    east the Greyfall River (the Vale Wall, with its one bridge).
+  - The Sakura Vale: west the Greyfall River (and the bridge), north the snowy climb towards the Hoarfrost, south and east the Crownsea shore (bays, capes and islets).
+  - **The sea is the edge of the Hoarfrost Reach and the Greyspine as well**: no mountain wall closes the north or the east. Their ground comes down to beaches and bluffs, with bays and islets (`shared/coasts.js`, `docs/areas/regions.md`); the bays leave the boss arenas and the dungeon doors alone (`CS_HOLD`), the Queen's cone stays a headland.
   - On the shore you can wade in to the knees and no further (`worldBounds` in `game/player/movement.js`).
-  - **None of the four lands' borders is a straight line** (`borderX(z)`, `borderZ(x)` in `shared/terrain.js`; `docs/areas/regions.md`): the Vale Wall's river meanders up to 215 m west into Wildwood, the north walls bend 90-110 m, the mountain range between lands has broad massifs and necks, and the gates (the tunnel, Frostgate Pass, the glacier valley) and the junction of the four lands are pinned where they were.
+  - **None of the four lands' borders is a straight line** (`borderX(z)`, `borderZ(x)` in `shared/terrain.js`; `docs/areas/regions.md`): the Vale Wall's river meanders up to 215 m west into Wildwood, the north walls bend 90-110 m, the mountain range between lands has broad massifs and necks, and the gates (the bridge, Frostgate Pass, the glacier valley) and the junction of the four lands are pinned where they were.
   - No edge is a straight line: the shore has bays up to ~28 m deep (the vale's south-east corner is rounded), the Sunwall's cliff
     wanders +-22 m (`sunwallLine`), the northern rims start rising up to 40 m early (`rimWobble`), and the world map fades each land
     out along a wavy line (`mapEdgeAlpha`), so neither land looks like a rectangle.
@@ -301,8 +301,8 @@ storyline). What it means for the geography:
     path): **the Crownsea Shore** (Shore Crabs 16, Tide Slimes 17, and on its beach west of the river the level-20 boss **Carapax, the Tide King**, a crab as big as a boat: `ARENA_TIDE`, `shared/beach.js`), **the Sunwall's Foot** (Sun Scarabs 18, in the red scree), **the
     Greyspine Foothills** (Ram-horned Boars 19, Crag Wardens 20). The Vale Wall has none. (The Vale's shores still hold the Vale's own
     zones: a coastal kind for them is a possible next step.)
-  - **Roads** (`shared/roads.js`): the East Road from the village over **the river bridge** to the tunnel, with the Circle Path to the
-    Stone Circle; the Redgate Road west to the sealed canyon; the Shore Road south to the beach. In the Vale: the Tunnel Road into
+  - **Roads** (`shared/roads.js`): the East Road from the village over **the river bridge** to the Greyfall bridge, with the Circle Path to the
+    Stone Circle; the Redgate Road west to the sealed canyon; the Shore Road south to the beach. In the Vale: the Tunnel Road (it kept its name) into
     Hanami, the Gate Road to the Demon Gate, the Shrine Road to the Foxfire Shrine, the Coast Road to the east shore and the North Road
     towards the Hoarfrost. Roads cut through the zone ridges, and trees and monster camps keep off them.
   - **The drowned roads**: where a road dips under still water, a plank causeway on posts carries it across (`BRIDGES` kind
@@ -310,7 +310,7 @@ storyline). What it means for the geography:
     (the Shore Road's flooded valley), the Heron Steps (a pond on the East Road), and short ones in the vale. The lore (`STORY.md`,
     act I): the ancients' paving runs on under the water.
   - **The story's places** (`shared/main-quest.js`): Wren's sickbed by the village gate, Odran's cart outside each village's gate,
-    heartleaf in the Slime Meadow, and readable spots (`LORE`: the Stone Circle's carvings, old letters by the tunnel, the drowned roads'
+    heartleaf in the Slime Meadow, and readable spots (`LORE`: the Stone Circle's carvings, old letters by the bridge, the drowned roads'
     signs and milestone, a grey wreck on the shore, the Demon Gate's stone, a roadside shrine, **the ice wall** closing the North Road).
     Trees and bushes keep clear of them (`storyClear`).
   - The lake in the west forest is **Mistmere** (the Greywater name belongs to the Bight).
@@ -318,7 +318,7 @@ storyline). What it means for the geography:
   - The world rectangle grew 600 m north (`NORTH_D`, `HZ0` = the vale's and forest's old north edge at z = -440, `WZ0` = -1040): 1430 x 1480 m. The
     part north of the home forest is the Greyspine (`greyspineHeight` in `shared/greyspine.js`; section 8 below).
   - **Shape**: the vale's north rim goes on as a crest (~80-90 m) along z = HZ0 and eases down over ~60 m onto the plateau (~50 m up, rolling white
-    domes, `hoarHeight`), with a glacier wall in the north, the Vale Wall in the west and sea cliffs in the east. Three **frozen lakes**
+    domes, `hoarHeight`), with the Vale Wall in the west and the sea in the north and the east (a coast of bluffs, long beaches in the bays and islets: `shared/coasts.js`). Three **frozen lakes**
     (`FROST_LAKES`: Frostmere, Mirrorice, Blue Tarn) are flat, walkable ice, not water.
   - **Frostgate Pass** (`PASS`, at x = 636): a canyon carved through the crest, its floor climbing from the vale (3 m) to the plateau (58 m) over 185 m
     between walls 30-40 m above it. **The ice wall** stands across it at `PASS.ice` until Akaoni falls (`gear.north` 1; stopped by
@@ -348,8 +348,7 @@ storyline). What it means for the geography:
     Stormhorn) and **the Sink Valley** (south, towards the rim where the Rootdeep's sinkholes will be). Between the troughs: ridged mountains whose height grows with the distance
     from a trough and towards the north, so the spine along the north edge is the highest ground. A domain warp of +-38 m keeps the troughs from looking ruled.
   - **Walls**: south, the home forest's rim goes on as its crest at z = HZ0 and eases down over ~66 m (`baseHeight`); east, the Reach's west wall seen from the other side (the ground
-    is blended into `hoarBase` and the same crest terms are added, so at x = HALF - 6 it differs from `hoarHeight` by 0.2 m on average and the lands meet without a step); north and west,
-    crests of their own (the Reach's glacier wall formula, `rn`, and a west one, `rw`). A player can climb to 14 m short of a crest (`greyWall`, `frostWall`), never over. The walls are
+    is blended into `hoarBase` and the same crest terms are added, so at x = HALF - 6 it differs from `hoarHeight` by 0.2 m on average and the lands meet without a step); west, a crest of its own (`rw`); north, no wall: the spine lowers and comes down to the northern sea (`shore` with a long run, `shared/coasts.js`; the Queen's cone stays a headland). A player can climb to 14 m short of a crest while the land beyond is locked (`greyWall`, `frostWall`), never over. The walls are
     broken in three places, each by a canyon with a shut gate (below).
   - **Two places are shaped for what comes next**: **Highmark's shelf** `GREY_HM` (292, -792 after the way in was cut): a flat bench 26 m above the trough at the North Fork's mouth, radius 34 m (the village
     goes here); **the Gryphon Queen's peak** `GREY_QUEEN` (-200, -960): a mountain of about 48 degrees with ribs and a flat crown of radius 28 m at 232 m (her arena).

@@ -76,10 +76,10 @@ const el=s=>document.querySelector(s);
   { const sv={x:G.P.x,y:G.P.y,z:G.P.z,g:G.P.ground,vx:G.P.vx,vz:G.P.vz}, S=G.SLOPE_MAX; let cx=null;   // a cliff face: find a place where one 2 m step west-east climbs more than the limit, and another that does not
     for(let z=-60;z>-440&&!cx;z-=4) for(let x=-400;x<400;x+=2) if((G.getH(x+2,z)-G.getH(x,z))/2>S*1.3){ cx=[x,z]; break; }
     const flat=[-40,100]; let ok1=false, ok2=false;
-    if(cx){ G.P.ground=true; G.P.x=cx[0]+2; G.P.z=cx[1]; G.P.vx=0; G.P.vz=0; G.slopeBlock(cx[0],cx[1]); ok1=Math.abs(G.P.x-cx[0])<1e-9&&Math.abs(G.P.z-cx[1])<1e-9; }
+    if(cx){ G.P.ground=true; G.P.x=cx[0]+2; G.P.z=cx[1]; G.P.vx=0; G.P.vz=0; G.slopeBlock(cx[0],cx[1]); const dd=Math.hypot(G.P.x-cx[0],G.P.z-cx[1]); ok1=dd<1e-9||(dd<2+1e-9&&(G.getH(G.P.x,G.P.z)-G.getH(cx[0],cx[1]))/dd<=S+1e-6); }   // (stopped, or slid along the face at a climb the limit allows)
     G.P.ground=true; G.P.x=flat[0]+0.5; G.P.z=flat[1]; G.slopeBlock(flat[0],flat[1]); ok2=Math.abs(G.P.x-(flat[0]+0.5))<1e-9;
     G.P.x=sv.x; G.P.y=sv.y; G.P.z=sv.z; G.P.ground=sv.g; G.P.vx=sv.vx; G.P.vz=sv.vz;
-    ok('terrain steeper than the slope limit (1.2) cannot be climbed: the step is dropped; gentle ground is no problem',!!cx&&ok1&&ok2,cx?'steep face at '+cx.join(', '):'no steep face found'); }
+    ok('terrain steeper than the slope limit (1.2) cannot be climbed: the step is turned along the face (or dropped) and never climbs more than the limit; gentle ground is no problem',!!cx&&ok1&&ok2,cx?'steep face at '+cx.join(', '):'no steep face found'); }
   { const Gs=G.GREY_GATES, R0=G.GEAR.river, N0=G.GEAR.neck, mk=(x,z)=>({x,z,inTun:false}), res=[];
     for(const T of Gs){ const a=mk(T.x-4,T.z), b=mk(T.x-4,T.z); G.GEAR[T.id]=0; G.worldBounds(a,T.x+1,0.32,T.z); G.GEAR[T.id]=1; G.worldBounds(b,T.x+1,0.32,T.z); res.push([a.x,b.x]); }
     G.GEAR.river=R0; G.GEAR.neck=N0;

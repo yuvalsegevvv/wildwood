@@ -23,7 +23,9 @@ ok('the world reaches 600 m north of the old edge',x.WZ0===x.HZ0-600&&x.HZ0===-4
   ok('Frostgate Pass climbs steadily from the vale to the plateau, between walls well above its floor',mono&&Math.abs(prev-P.h1)<3&&wall-floor>12,'floor '+floor.toFixed(1)+' at the ice wall, walls '+wall.toFixed(1)+', top '+prev.toFixed(1)); }
 { const L=x.FROST_LAKES[0], hs=[]; for(let a=0;a<8;a++) hs.push(x.rawHeight(L.x+Math.sin(a)*L.r*0.5,L.z+Math.cos(a)*L.r*0.5));
   ok('a frozen lake is flat, walkable ice (no water: its surface is far above the sea)',Math.max(...hs)-Math.min(...hs)<0.6&&hs[0]>40&&x.iceDist(L.x,L.z)<0); }
-ok('the east edge of the plateau ends in sea cliffs (still level where you can stand, 14 m short), the north in a glacier wall',x.rawHeight(x.WX1-2,-800)<35&&x.rawHeight(x.WX1-16,-800)>45&&x.rawHeight(700,x.WZ0+8)>70,'edge '+x.rawHeight(x.WX1-2,-800).toFixed(0)+' m, 16 m in '+x.rawHeight(x.WX1-16,-800).toFixed(0)+' m');
+{ const E=[], N=[]; for(let z=-1030;z<=-480;z+=6) E.push(x.rawHeight(x.WX1-2,z)); for(let xx=600;xx<=980;xx+=6) N.push(x.rawHeight(xx,x.WZ0+2));   // (the Greyspine | Reach wall's headland, west of x = 600, ends in the sea too)
+  const sea=a=>a.filter(h=>h<-1).length/a.length;
+  ok('the plateau comes down to the sea in the east and in the north (no glacier wall, no mountain rim): over 40% of each edge is under water, and no point of either rises above 70 m',sea(E)>0.4&&sea(N)>0.4&&Math.max(...E,...N)<70,'east '+(100*sea(E)).toFixed(0)+'% sea, north '+(100*sea(N)).toFixed(0)+'%, highest '+Math.max(...E,...N).toFixed(0)+' m'); }
 // ---- zones and monsters ----
 { const byZone={}; for(const m of x.MONS){ const d=m.def; if(!d.zone||d.zone[0]!=='h') continue; (byZone[d.zone]=byZone[d.zone]||[]).push(m); }
   const lv=[22,23,24,25,26,27,28,29,30];

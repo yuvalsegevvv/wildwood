@@ -11,7 +11,7 @@ const MM_R=90, DPR=Math.min(2,devicePixelRatio||1);
 const mapX=x=>(x-WX0)*MAP.k, mapZ=z=>(z-WZ0)*MAP.k;
 // the three lands as the full map shows them (the vale's crop ends at its north crest, the Hoarfrost Reach's begins just south of it)
 // (the borders wander: the river bulges the vale 210 m west of x = HALF and the north walls move up to 120 m either side of z = HZ0, so the crops are wider than the old rectangles)
-const LANDS={home:{x0:-HALF,x1:HALF+40,z0:HZ0,z1:HALF,name:'The home forest'},vale:{x0:HALF-230,x1:WX1,z0:HZ0-125,z1:HALF,name:'The Sakura Vale'},hoar:{x0:HALF+10,x1:WX1,z0:WZ0,z1:HZ0+30,name:'The Hoarfrost Reach'},grey:{x0:WX0,x1:HALF+60,z0:WZ0,z1:HZ0+95,name:'The Greyspine'}};
+const LANDS={home:{x0:-HALF,x1:HALF+40,z0:HZ0,z1:HALF,name:'The home forest'},vale:{x0:HALF-230,x1:WX1,z0:HZ0-125,z1:HALF,name:'The Sakura Vale'},hoar:{x0:HALF+10,x1:WX1,z0:WZ0,z1:HZ0+60,name:'The Hoarfrost Reach'},grey:{x0:WX0,x1:HALF+115,z0:WZ0,z1:HZ0+105,name:'The Greyspine'}};
 let mapLand=null;   // null: the land you are in
 const landHere=()=>inHoar(P.x,P.z)?'hoar':inVale(P.x,P.z)?'vale':inGrey(P.x,P.z)?'grey':'home';
 const landOpen=id=>id==='home'||(id==='vale'&&valeOpen())||(id==='hoar'&&northOpen())||(id==='grey'&&(westOpen()||inGrey(P.x,P.z)));
@@ -173,10 +173,9 @@ function placeName(wx,wz){
 }
 // the lands' edges by their names in docs/WORLD.md (shaped in shared/terrain.js)
 function edgeName(x,z){
-  if(coastDist(x,z)<40) return 'The Crownsea shore';
+  if(coastDist(x,z)<40) return inHoar(x,z)||inGrey(x,z)?'The Outer Deep shore':'The Crownsea shore';   // (the north of the Reach and the Greyspine looks on the open ocean)
   const bx=borderX(z), bz=borderZ(x), wx=lerp(wallW(z,1),56,riverK(z)), wz=wallW(x,3);   // (the walls' bodies are as wide as the terrain makes them there)
   if(inGrey(x,z)){
-    if(z-WZ0<62) return 'The spine';
     if(x-WX0<62) return 'The west wall';
     if(bx-x<wx) return riverK(z)>0.5?'The Greyfall River':'The Vale Wall';
     if(z>bz-wz) return 'The Greyspine foothills';
@@ -187,8 +186,6 @@ function edgeName(x,z){
     if(bx-x<wx) return riverK(z)>0.5?'The Greyfall River':'The Vale Wall';
   } else if(inHoar(x,z)){
     if(x-bx<wx) return riverK(z)>0.5?'The Greyfall River':'The Vale Wall';
-    if(z-WZ0<62) return 'The glacier wall';
-    if(WX1-x<40) return 'The ice cliffs';
     if(z>bz-wz) return 'The Frostwall';
   } else {
     if(x-bx<wx) return riverK(z)>0.5?'The Greyfall River':'The Vale Wall';
