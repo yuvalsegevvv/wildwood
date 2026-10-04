@@ -33,6 +33,7 @@ $('#tGlen').addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); net
 for(const id of ['tGateR','tGateN']) $('#'+id).addEventListener('click',e=>netSend({t:'dev',cmd:'gate',v:e.currentTarget.dataset.v,n:1}));
 $('#tSealG').addEventListener('click',()=>{ for(const v of ['river','neck']) netSend({t:'dev',cmd:'gate',v,n:0}); toast('Both rock falls are sealed again','good'); });
 for(const id of ['tGrey','tQueen','tCavern','tRiverFall','tNeckFall']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'north',v:2}); netSend({t:'dev',cmd:'west',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });   // (they open the way first)
+for(const id of ['tFall','tRiver','tWallN']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });   // (the borders' review spots: x,z,facing in degrees; the tunnel's gate opens first so the teleport is not refused)
 $('#tSealW').addEventListener('click',()=>{ netSend({t:'dev',cmd:'west',v:0}); toast('The ice fall is sealed again','good'); });
 // the boss arenas (to try each boss's moves): the vale's two open the tunnel first
 for(const id of ['tCircle','tTide']) $('#'+id).addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}));
