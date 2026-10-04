@@ -1,7 +1,7 @@
 //@ Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
 /* Drag an item from the bag onto its place on the body to put it on; drag a worn item back to the bag to take it off.
    Works with mouse and touch (pointer events). Tap an item to see its details and a button; double-click equips. */
-const BODY_SLOTS=[['helmet','head'],['weapon','hand'],['top','chest'],['bottom','legs'],['shoes','feet'],['pick','pick'],['axe','axe'],['sickle','sickle']];   // the last three are the profession tools
+const BODY_SLOTS=[['helmet','head'],['weapon','hand'],['top','chest'],['bottom','legs'],['shoes','feet'],['pick','pick'],['axe','axe'],['sickle','sickle'],['pendant','neck']];   // pick, axe and sickle are the profession tools; the pendant hangs beside the chest
 const INV={sel:null};   // selected item: {id, from:'bag'|slot}
 const slotOf=it=>it.kind==='weapon'?'weapon':it.slot;
 function bagCounts(){ // items in the bag that are not being worn (one copy of each worn item is on the body)
@@ -38,6 +38,7 @@ function renderInv(){
   renderInvInfo();
 }
 function statDiff(it,cur){
+  if(it.kind==='pendant') return cur&&cur.kind==='pendant'&&cur.stat===it.stat?(it.v===cur.v?'':`<span class="${it.v>cur.v?'up':'down'}">${it.v>cur.v?'+':'-'}${pendantPct(Math.abs(it.v-cur.v))}%</span>`):'<span class="muted">a different bonus</span>';
   const k=it.kind==='tool'?[['tier','tier'],['rar','rarity']]:it.kind==='weapon'?[['atk','attack']]:[['hp','health'],['def','defense']];
   return k.map(([f,n])=>{ const d=(it[f]||0)-((cur&&cur[f])||0); return d?`<span class="${d>0?'up':'down'}">${d>0?'+':''}${d} ${n}</span>`:''; }).filter(Boolean).join(' ');
 }

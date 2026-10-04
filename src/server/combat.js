@@ -22,8 +22,8 @@ function handleAttack(p,msg){
 function elemHitS(p,el,m){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=p.buff.el;   // an enchanting buff gives element-less attacks its element
   return soulMult(soulOfP(p),el,psP(p,'soul'))*(m?foeMult(el,elOf(m.T)):1); }
 function rollDmgS(p,mult,m,el){
-  const b=p.buff, crit=Math.random()<0.12+psP(p,'crit')+(b?b.crit:0), ld=m?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
-  return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg'))*(1+potBuffP(p,'might'))*em*Math.max(0.1,1-0.05*ld)*AR(0.85,1.15)*(crit?1.7:1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
+  const b=p.buff, crit=Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+pendP(p,'crit')+(b?b.crit:0)), ld=m?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
+  return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg'))*(1+potBuffP(p,'might'))*em*Math.max(0.1,1-0.05*ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
   if(m.dead||m.remove) return 0;
@@ -51,11 +51,11 @@ function killMonsterS(m,p){
 }
 function rewardKill(q,m){
   const K=monK(m,q);   // XP, coins and gear are those of the monster's level at your zone tier
-  gainExpP(q,m.T.xp*K.xp*(1+psP(q,'xp')),m.id);
-  const c=coinsFor(K.lv)*(m.def.boss?20:1); q.gear.coins+=c; ev('coins',q.id,c,m.id);
+  gainExpP(q,m.T.xp*K.xp*(1+psP(q,'xp')+pendP(q,'xp')),m.id);
+  const c=Math.round(coinsFor(K.lv)*(m.def.boss?20:1)*(1+pendP(q,'coin'))); q.gear.coins+=c; ev('coins',q.id,c,m.id);
   const r=m.def.boss?rollBossRarity():rollMonsterRarity();
   if(r>=0) addItemP(q,randomItem(tierFor(K.lv),r),false,m.id);
-  if(MATS[m.def.id]){ const n=rollDropCount(m.def,psP(q,'drop')); if(n) addMatP(q,m.def.id,n,m.id); }
+  if(MATS[m.def.id]){ const n=rollDropCount(m.def,psP(q,'drop')+pendP(q,'drop')); if(n) addMatP(q,m.def.id,n,m.id); }
   questKillP(q,m.def.id); q.dirty=true;
   if(m.def.boss){ bossSkillDropP(q,m.def.id); zoneTierKillP(q,m); }
   mqKillP(q,m);

@@ -1,4 +1,4 @@
-//@ Item icons: an SVG for every piece of equipment and every tool, coloured like the item looks on your character
+//@ Item icons: an SVG for every piece of equipment, every tool and every pendant, coloured like the item looks on your character
 /* itemIcon(item) draws the item; slotIcon(slot) draws the faint outline shown in an empty equipment slot.
    Colours come from the same numbers the 3D models use (ARMOR_LOOK, and the weapon colours below). */
 const colHex=n=>'#'+(n>>>0).toString(16).padStart(6,'0');
@@ -52,6 +52,7 @@ function itemIcon(it){
     else g+=`<path d="M18 18.5Q13 17 8 18.5" fill="none" stroke="${icoShade(c,1.3)}" stroke-width="1"/>${t>=3?'<circle cx="13" cy="12" r="1.2" fill="#e0384a" stroke="#15120e" stroke-width=".6"/>':''}`;
   }
   else if(it.kind==='tool') g=toolIconArt(it);
+  else if(it.kind==='pendant') g=pendantIconArt(it);
   return `<svg class="ico" viewBox="0 0 32 32" aria-hidden="true">${g}</svg>`;
 }
 // the three tools: a wooden haft and a head in the colour of the tier's ore (ORE_GRADES)
@@ -61,8 +62,20 @@ function toolIconArt(it){
   if(it.slot==='axe') return `<g transform="rotate(32 16 16)"><rect x="14.7" y="5" width="2.6" height="24" rx="1.1" fill="${h}" ${OUT}/><path d="M17.3 6Q29 4.5 28 16Q23 13.5 17.3 14.5Z" fill="${c}" ${OUT}/><path d="M20 8.5Q25 8 26 12" fill="none" stroke="${icoShade(c,1.3)}" stroke-width=".9"/></g>`;
   return `<g transform="rotate(20 16 16)"><rect x="14.7" y="17" width="2.6" height="12" rx="1.1" fill="${h}" ${OUT}/><path d="M16 17.6Q3.5 15 7 4.5Q9 10.5 22 10.5Q17 12 16 17.6Z" fill="${c}" ${OUT}/><path d="M9 7Q11 10.5 18 11" fill="none" stroke="${icoShade(c,1.35)}" stroke-width=".9"/></g>`;
 }
+// the pendants: a chain in the metal of the dungeon tier and a gem whose colour and shape tell the kind (a diamond for XP, a drop for drops, a coin, a four-point star for crit rate, a shard for crit damage)
+const PENDANT_METAL=['#8a929c','#d3dbe4','#d4a83a','#6a6478'], PENDANT_GEM={xp:'#62d66e',drop:'#e8a23a',coin:'#f0cd45',crit:'#e0384a',critdmg:'#b77cf5'};
+function pendantIconArt(it){
+  const m=PENDANT_METAL[it.tier], c=PENDANT_GEM[it.stat], d=icoShade(c,0.6), l=icoShade(c,1.35);
+  let gem;
+  if(it.stat==='xp') gem=`<path d="M16 14L22 20.5L16 28L10 20.5Z" fill="${c}" ${OUT}/><path d="M16 14L19 20.5L16 28L13 20.5Z" fill="${l}"/><path d="M10 20.5H22" stroke="${d}" stroke-width=".7"/>`;
+  else if(it.stat==='drop') gem=`<path d="M16 13.5Q23.5 21 21.5 24.8Q19.8 28.5 16 28.5Q12.2 28.5 10.5 24.8Q8.5 21 16 13.5Z" fill="${c}" ${OUT}/><path d="M13.4 22Q13 25 15.2 26.3" fill="none" stroke="${l}" stroke-width="1.2"/>`;
+  else if(it.stat==='coin') gem=`<circle cx="16" cy="21" r="7.4" fill="${c}" ${OUT}/><circle cx="16" cy="21" r="4.6" fill="none" stroke="${d}" stroke-width=".9"/><path d="M14.2 21H17.8M16 19.2V22.8" stroke="${d}" stroke-width="1"/>`;
+  else if(it.stat==='crit') gem=`<path d="M16 12.5L18.3 18.7L24.5 21L18.3 23.3L16 29.5L13.7 23.3L7.5 21L13.7 18.7Z" fill="${c}" ${OUT}/><path d="M16 15.5L17.2 19.8L16 21Z" fill="${l}"/>`;
+  else gem=`<path d="M17.5 13L23 19L19.4 20.6L22 29L10 21.5L14 20L11 16Z" fill="${c}" ${OUT}/><path d="M17 15.5L19.5 19L16 20.5Z" fill="${l}"/>`;
+  return `<path d="M6.5 3.5Q16 22 25.5 3.5" fill="none" stroke="#15120e" stroke-width="3" stroke-linecap="round"/><path d="M6.5 3.5Q16 22 25.5 3.5" fill="none" stroke="${m}" stroke-width="1.6" stroke-dasharray="2 1.2" stroke-linecap="round"/><circle cx="16" cy="13" r="1.6" fill="${m}" ${OUT}/>${gem}`;
+}
 // faint outline for an empty equipment slot
 function slotIcon(slot){
-  const fake=slot==='weapon'?ITEM.sword1:ITEM[slot+'1'];
+  const fake=slot==='weapon'?ITEM.sword1:slot==='pendant'?ITEM['pd-xp1']:ITEM[slot+'1'];
   return itemIcon(fake).replace('class="ico"','class="ico ghost"');
 }

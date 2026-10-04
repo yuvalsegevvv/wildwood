@@ -45,6 +45,7 @@
     "classes.js",
     "drops.js",
     "items.js",
+    "pendants.js",
     "quests.js",
     "main-quest.js",
     "professions.js",

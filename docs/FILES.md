@@ -50,7 +50,8 @@ shared
   elements.js                        Elements (ELEMS): your soul (SOUL_LV, opposite pairs) and a monster's element (the wheel), with the damage multipliers for both. Pure.
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
   drops.js                           Monster drops (MATS: one material per monster kind), the skills bosses drop (BOSS_SKILLS), and what upgrading a skill costs (upgradeNeeds). Pure.
-  items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, and the three profession tools (TOOL_LIST) with the same tiers and rarities; prices, drop tables, merging, armour looks, gear helpers. Pure.
+  items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, and the three profession tools (TOOL_LIST) with the same tiers and rarities (the pendants are in pendants.js); prices, drop tables, merging, armour looks, gear helpers. Pure.
+  pendants.js                        Pendants: the necklace slot (eq.pendant) and its five kinds (exp, drop, coin, crit rate, crit damage) in 4 dungeon tiers x 5 rarities, plus the crit constants and caps. Pure.
   quests.js                          Quest board: endless random quests (hunt, bounty, scout, boss) scaled to your level, and their rewards. Pure.
   main-quest.js                      The main quest line (MQ: acts I-III, docs/MAIN-QUEST.md), its places (Wren's sickbed, Odran's carts, heartleaf, grey spots) and the readable lore spots (LORE: carvings, signs, the drowned roads, the Hoarfrost's runes and wreck). Pure.
   professions.js                     Professions: mining, woodcutting and gathering (learned at a Wayfarers' Lodge, each with its own tool slot), the six grades of ore and logs and the three lands' herbs, the resource nodes in every land, profession levels. Pure.
@@ -148,7 +149,7 @@ game
   ui/combat-hud.js                   Target frame, player bars, damage numbers, action bar, attack input
   economy/items.js                   Your gear as told by the server (GEAR), saved in this browser; equip / unequip requests
   ui/toasts.js                       Toast messages
-  ui/item-icons.js                   Item icons: an SVG for every piece of equipment and every tool, coloured like the item looks on your character
+  ui/item-icons.js                   Item icons: an SVG for every piece of equipment, every tool and every pendant, coloured like the item looks on your character
   ui/panels.js                       Panel open/close helpers (openPanel, closePanels, uiOpen, releasePointer)
   economy/inventory.js               Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
   economy/shops.js                   Weapon and armour shops, and Odran the peddler (a bit of everything, and curiosities he will not sell)

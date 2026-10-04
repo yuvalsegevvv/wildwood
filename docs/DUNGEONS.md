@@ -1,6 +1,6 @@
 # Dungeons: a setup plan, the first dungeon (boss level 30) and the pendants
 
-**Status: design only. Nothing in this file is built.** It was written to be read before any dungeon code is started, the way `docs/WORLD.md` is read before a
+**Status: step 1 of section 5, the pendants, is built (`shared/pendants.js`, `tools/pendants-smoke.js`; they have no source yet but the testing tools). The dungeon itself (steps 2-7) is design only.** It was written to be read before any dungeon code is started, the way `docs/WORLD.md` is read before a
 region: it says what a dungeon is in this codebase, which existing machinery it reuses, what has to be new, in what order to build it, and which decisions are
 still the owner's. Section 7 lists those decisions with the default this plan assumed for each; change a default and only the part it names changes.
 
@@ -166,7 +166,7 @@ mine cart). Elements: earth and dark.
 
 ### 4.1 The five kinds
 
-One slot, `eq.pendant`; a pendant has **one** bonus. Working names: *Scholar's* (exp), *Gleaner's* (drop), *Fortune's* (coin), *Hawk's* (crit rate), *Ruin's* (crit damage).
+One slot, `eq.pendant`; a pendant has **one** bonus. Built names: *Pendant of Learning* (exp), *of Plenty* (drop), *of Fortune* (coin), *of Precision* (crit rate), *of Ruin* (crit damage), with the chain's metal by dungeon tier (Slate, Silver, Gilt, Obsidian) and the rarity in front ("Rare Silver Pendant of Fortune").
 
 | Kind | What it does exactly | Where it hooks in | Common | Rare | Epic | Unique | Legendary |
 |---|---|---|---|---|---|---|---|
@@ -245,7 +245,7 @@ Each step ends in a green `npm test` and is shippable alone. Sizes: S about half
 
 | # | Step | Size | Needs | Result |
 |---|---|---|---|---|
-| 1 | **Pendants**: item data, slot, `sanitizeGear`, the five effects, forge merge, inventory slot and icons, a dev command "give pendants", `tools/pendants-smoke.js` | M | nothing | the pendants work and can be worn and tested before any dungeon exists |
+| 1 | **Pendants (built)**: item data, slot, `sanitizeGear`, the five effects, forge merge, inventory slot and icons, a dev command "give pendants", `tools/pendants-smoke.js` | M | nothing | the pendants work and can be worn and tested before any dungeon exists |
 | 2 | **Dungeon data and the shared interior (milestone A)**: `shared/dungeons.js`, the carve and lid, the adit and rooms as meshes, the entrance clamp (`setPos`, `worldBounds`), trash in rooms, room doors | L | nothing | you can walk in and clear the rooms |
 | 3 | **The Seam Foreman**: the def, the kit with its four new telegraph kinds, the model, the arena, the arena meshes, `boss-smoke` additions | L | 2 | the boss fight at tier 0 |
 | 4 | **Rewards and unlock**: the guaranteed pendant (`pendP`'s source), first-clear choice, seam shards and the NPC, `gear.dg`, the quest | M | 1, 3 | the whole loop |

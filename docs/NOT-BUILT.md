@@ -138,7 +138,7 @@ of the free-plan tracks (all eleven) if the game ever earns money, and, if wante
 - **XP curve and gear past 25/tier 5**: the curve is flattened to 2,100 same-level kills a level from 25 (a stopgap so 26-30 are playable), gear stays at tier 5, `MAX_ZONE_LV` is 32
   and skill upgrades still ask for drops of at most level 25 (`VALE_TOP_LV`). Levels up to 50 need a real curve, more gear tiers (items, icons, looks) and a decision about upgrades.
 - **The world rectangle** must grow again (west, south-west; the Greyspine fits inside it, but the lands behind its two gates do not) and the Rootdeep needs an enclosed instance (`docs/WORLD.md` section 8).
-- **Dungeons and the pendants** are planned in `docs/DUNGEONS.md` (nothing is built): instanced runs need the server to scope monsters, events and bosses by run (`server/state.js`, `api.js`'s `broadcastSnap`, `boss.js`), and a party rule or a party system.
+- **Dungeons** are planned in `docs/DUNGEONS.md` (the pendants, its step 1, are built but have no source except the testing tools; the dungeon is not): instanced runs need the server to scope monsters, events and bosses by run (`server/state.js`, `api.js`'s `broadcastSnap`, `boss.js`), and a party rule or a party system.
 - **Group play, trading between players, party quests** (`CLAUDE.md` section 10).
 - **Real passives** (the eight in `PASSIVES` are a placeholder set; only one slot is open).
 - **Server-side anti-cheat for movement**, and synced villagers.

@@ -2,7 +2,7 @@
 #inv{ width:min(680px,calc(100vw - 24px)); }
 .inv-stats small{ font-weight:500; color:var(--ink-dim); font-size:11.5px; }
 .inv-wrap{ display:flex; gap:14px; align-items:stretch; }
-.doll{ position:relative; flex:none; display:grid; grid-template-columns:repeat(3,62px); grid-template-areas:". head ." "hand chest ." ". legs ." ". feet ." "pick axe sickle";
+.doll{ position:relative; flex:none; display:grid; grid-template-columns:repeat(3,62px); grid-template-areas:". head ." "hand chest neck" ". legs ." ". feet ." "pick axe sickle";
   gap:4px 10px; justify-items:center; padding:10px 8px; background:rgba(0,0,0,.2); border-radius:14px; }
 .doll-sil{ position:absolute; left:50%; top:10px; height:calc(100% - 100px); transform:translateX(-50%); fill:rgba(238,240,226,.06); pointer-events:none; }
 .eqslot{ position:relative; display:flex; flex-direction:column; align-items:center; gap:2px; }
