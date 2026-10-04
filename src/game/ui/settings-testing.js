@@ -19,7 +19,7 @@ $('#tThree').addEventListener('click',()=>{ netSend({t:'dev',cmd:'three'}); });
 $('#tRain').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'rain'}));
 $('#tStorm').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'storm'}));
 $('#tClear').addEventListener('click',()=>netSend({t:'dev',cmd:'weather',v:'clear'}));
-// the vale: open the tunnel (as if you had helped beat the Rootwarden), jump to its west portal, or seal it again
+// the vale: open the bridge gate (as if you had helped beat the Rootwarden), jump to its west portal, or seal it again
 $('#tVale').addEventListener('click',()=>netSend({t:'dev',cmd:'vale',v:1}));
 $('#tTunnel').addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}));
 $('#tSeal').addEventListener('click',()=>{ netSend({t:'dev',cmd:'vale',v:0}); toast('The vale is sealed again','good'); });
@@ -33,9 +33,9 @@ $('#tGlen').addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); net
 for(const id of ['tGateR','tGateN']) $('#'+id).addEventListener('click',e=>netSend({t:'dev',cmd:'gate',v:e.currentTarget.dataset.v,n:1}));
 $('#tSealG').addEventListener('click',()=>{ for(const v of ['river','neck']) netSend({t:'dev',cmd:'gate',v,n:0}); toast('Both rock falls are sealed again','good'); });
 for(const id of ['tGrey','tQueen','tCavern','tRiverFall','tNeckFall']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'north',v:2}); netSend({t:'dev',cmd:'west',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });   // (they open the way first)
-for(const id of ['tFall','tRiver','tWallN']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });   // (the borders' review spots: x,z,facing in degrees; the tunnel's gate opens first so the teleport is not refused)
+for(const id of ['tFall','tRiver','tWallN']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });   // (the borders' review spots: x,z,facing in degrees; the bridge gate opens first so the teleport is not refused)
 $('#tSealW').addEventListener('click',()=>{ netSend({t:'dev',cmd:'west',v:0}); toast('The ice fall is sealed again','good'); });
-// the boss arenas (to try each boss's moves): the vale's two open the tunnel first
+// the boss arenas (to try each boss's moves): the vale's two open the bridge gate first
 for(const id of ['tCircle','tTide']) $('#'+id).addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}));
 for(const id of ['tGate','tShrine']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });
 $('#tSealN').addEventListener('click',()=>{ netSend({t:'dev',cmd:'north',v:0}); toast('The ice wall is sealed again','good'); });

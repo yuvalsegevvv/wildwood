@@ -1,5 +1,5 @@
 //@ Cherry petals drifting down around you in the Sakura Vale
-/* A small cloud of petals kept around the camera, falling and swaying; they fade in as you come through the tunnel. */
+/* A small cloud of petals kept around the camera, falling and swaying; they fade in as you cross the bridge. */
 const PET_N=LITE?90:(LOW?150:260), petPos=new Float32Array(PET_N*3), petData=[];
 const petGeo=new THREE.BufferGeometry(); petGeo.setAttribute('position',new THREE.BufferAttribute(petPos,3));
 const petSpr=document.createElement('canvas'); petSpr.width=petSpr.height=32;

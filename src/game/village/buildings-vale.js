@@ -1,6 +1,6 @@
-//@ The Sakura Vale's buildings: Hanami (tiled roofs, shoji, torii, stone lanterns), the tunnel (bore, roof, portals, sealed door), teleport circles, the two shrines
+//@ The Sakura Vale's buildings: Hanami (tiled roofs, shoji, torii, stone lanterns), the border bridge (deck, piers, gatehouse, sealed door), teleport circles, the two shrines
 /* Hanami follows the home village's plan (VIL2 from shared/vale.js has the same houses, stalls, anchors and colliders),
-   so only the look changes here. The tunnel's bore is carved into the heightmap; this file covers it with a stone
+   so only the look changes here. The bridge's deck is ground for the player (bridgeDeck, shared/roads.js); this file draws it in stone
    vault and a lid of mountain on top, frames both portals, and shuts the west portal with a door until GEAR.east >= 1. */
 const VALE={door:null,doorOpen:0,circles:[],fx:[],lights:[]};
 function faceTri(P,a,b,c,hx,hy,hz){   // a triangle wound so that its normal points toward the hint direction
@@ -134,59 +134,54 @@ function buildVale(){
       items.push({x,z,m:mtx(x,getH(x,z)-0.15,z,a,s,s,s),c:tint(pick(PAL.sakura))}); addCol(x,z,RAD.sakura*s); }
     addTreeKind('sakura',items);
   }
-  buildTunnel(inF);
+  buildBridge(inF);   // (the tunnel, once)
   for(const A of [ARENA20,ARENA25]) buildShrine(A,inF);
   addVillageMeshes(out,win);
   for(const c of V.circles) addCol(c[0],c[1],c[2]);
   for(const VV of VILS) buildCircle(VV);
 }
-/* ---- the tunnel ---- */
-function buildTunnel(inF){
-  const T=TUN, R0=T.w+0.25, wallH=2.4, archH=T.roof-wallH, NA=10, x0=T.p0-0.5, x1=T.p1+0.5, step=2;
-  // the vault: straight walls then a half ellipse, stone blocks with darker mortar; seen from inside and out
-  const prof=[]; prof.push([-R0,-0.3]); for(let k=0;k<=NA;k++){ const a=Math.PI-k/NA*Math.PI; prof.push([Math.cos(a)*R0,wallH+Math.sin(a)*archH]); } prof.push([R0,-0.3]);
-  const P=[], C=[], col=new THREE.Color();
-  for(let x=x0;x<x1-0.01;x+=step){ const xb=Math.min(x1,x+step), ya=T.floor(x), yb=T.floor(xb);
-    for(let k=0;k<prof.length-1;k++){ const [za,ha]=prof[k], [zb,hb]=prof[k+1];
-      const q=[[x,ya+ha,T.z+za],[xb,yb+ha,T.z+za],[xb,yb+hb,T.z+zb],[x,ya+hb,T.z+zb]];
-      P.push(...q[0],...q[1],...q[2], ...q[0],...q[2],...q[3]);
-      const block=((Math.floor(x/1.2)+k)&1), m=0.62+0.2*block+h3(Math.floor(x),k,3)*0.1;
-      col.set(0x7a746a).multiplyScalar(m); for(let v=0;v<6;v++) C.push(col.r,col.g,col.b); } }
-  const vg=new THREE.BufferGeometry(); vg.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); vg.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); vg.computeVertexNormals();
-  const vault=new THREE.Mesh(vg,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); vault.receiveShadow=true; scene.add(vault);
-  // the lid: the mountain as it was before the bore, laid over the vault so the range looks whole from outside
-  const LW=T.w+5.5, nx=Math.ceil((x1-x0+2)/2), nz=22, lg=new THREE.PlaneGeometry(x1-x0+2,LW*2,nx,nz); lg.rotateX(-Math.PI/2); lg.translate((x0+x1)/2,0,T.z);
-  const lp=lg.attributes.position, lc=new Float32Array(lp.count*3);
-  for(let i=0;i<lp.count;i++){ const x=lp.getX(i), z=lp.getZ(i), edge=Math.abs(z-T.z)>LW-0.01;
-    const h=edge?rawHeight(x,z):Math.max(baseHeight(x,z),T.floor(x)+T.roof+0.8); lp.setY(i,h+(edge?0.02:0.05));
-    terrainColor(x,z,h,1.1,col,true); lc[i*3]=col.r; lc[i*3+1]=col.g; lc[i*3+2]=col.b; }
-  lg.setAttribute('color',new THREE.BufferAttribute(lc,3)); lg.computeVertexNormals();
-  const lid=new THREE.Mesh(lg,new THREE.MeshLambertMaterial({vertexColors:true})); lid.castShadow=true; lid.receiveShadow=true; scene.add(lid);
-  // portals: stone facades around each opening (the west one with violet runes like the stone circle's), a torii at the east end
-  for(const [px,sd] of [[x0,-1],[x1,1]]){
-    const f=T.floor(px), lidH=Math.max(baseHeight(px,T.z),f+T.roof+0.8)+0.4, {A}=inF(frameM(px,0,T.z,0));
-    for(const sz of [-1,1]) A(vbox(1.2,lidH-f+0.8,LW-R0+0.2,sd*0.3,f+(lidH-f)/2-0.4,sz*(R0+(LW-R0)/2)),(x,y,z,c)=>{ stoneC(x,y,z,c); if(sd<0&&Math.abs(y-f-3)<0.12) c.set(0xb07ae0); });
-    A(vbox(1.2,lidH-(f+T.roof-0.4),R0*2+0.2,sd*0.3,(lidH+f+T.roof-0.4)/2,0),stoneC);
-    for(const sz of [-1,1]) A(vbox(0.7,T.roof+0.6,0.7,sd*-0.4,f+(T.roof+0.6)/2-0.3,sz*(R0+0.2)),stoneC);
-    A(vbox(0.8,0.7,R0*2+2.2,sd*-0.4,f+T.roof+0.25,0),(x,y,z,c)=>{ stoneC(x,y,z,c); if(sd<0&&Math.abs(y-f-T.roof-0.25)<0.1) c.set(0xb07ae0); });
-    for(const sz of [-1,1]){ const {A:B,W}=inF(frameM(px+sd*3.2,f,T.z+sz*(T.w-0.3),0));
-      const s=1.5/1.9; B(cyl(0.34*s,0.4*s,0.16*s,6).translate(0,0.08*s,0),stoneC); B(cyl(0.1*s,0.13*s,0.8*s,8).translate(0,0.56*s,0),stoneC); W(vbox(0.34*s,0.34*s,0.34*s,0,1.24*s,0),0xf6e0b0); B(new THREE.ConeGeometry(0.44*s,0.3*s,6).translate(0,1.56*s,0),stoneC);
-      addCol(px+sd*3.2,T.z+sz*(T.w-0.3),0.35); }
+/* ---- the border bridge (it was the tunnel): a stone deck over the Greyfall River with parapets and piers, a gatehouse across its west end (two towers, a lintel, the rune-carved door
+   that sinks when the Rootwarden has fallen), stone lanterns along the parapets and a torii at the east end ---- */
+function buildBridge(inF){
+  const T=TUN, W=T.w+0.6, R0=T.w+0.25, x0=T.p0-0.5, x1=T.p1+0.5, step=2, bx=borderX(T.z), P=[], C=[], col=new THREE.Color();
+  const quad=(a,b,c,d,k)=>{ P.push(...a,...b,...c, ...a,...c,...d); for(let v=0;v<6;v++) C.push(k.r,k.g,k.b); };
+  for(let x=x0;x<x1-0.01;x+=step){ const xb=Math.min(x1,x+step), ya=T.floor(x), yb=T.floor(xb), block=Math.floor(x/1.2)&1, m=0.62+0.2*block+h3(Math.floor(x),1,3)*0.1;
+    col.set(0x8a847a).multiplyScalar(m); quad([x,ya,T.z-W],[xb,yb,T.z-W],[xb,yb,T.z+W],[x,ya,T.z+W],col);   // the deck's top
+    col.set(0x6a645a).multiplyScalar(m);
+    for(const sz of [-1,1]) quad([x,ya-1.1,T.z+sz*W],[xb,yb-1.1,T.z+sz*W],[xb,yb,T.z+sz*W],[x,ya,T.z+sz*W],col);   // the sides
+    col.set(0x56524a); quad([x,ya-1.1,T.z-W],[xb,yb-1.1,T.z-W],[xb,yb-1.1,T.z+W],[x,ya-1.1,T.z+W],col);            // the underside
+    col.set(0x7a746a).multiplyScalar(m);
+    for(const sz of [-1,1]){ const zo=T.z+sz*W, zi=T.z+sz*(W-0.5);   // the parapet: a low wall, 1 m high, 0.5 m thick
+      quad([x,ya,zo],[xb,yb,zo],[xb,yb+1,zo],[x,ya+1,zo],col); quad([x,ya,zi],[xb,yb,zi],[xb,yb+1,zi],[x,ya+1,zi],col); quad([x,ya+1,zi],[xb,yb+1,zi],[xb,yb+1,zo],[x,ya+1,zo],col); } }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals();
+  const deck=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})); deck.castShadow=true; deck.receiveShadow=true; scene.add(deck);
+  // piers standing in the river, one at the middle and one a third of the way to each bank
+  for(const u of [-0.3,0,0.3]){ const px=bx+u*(T.p1-T.p0), top=T.floor(px)-1.1, {A}=inF(frameM(px,0,T.z,0));
+    A(vbox(2.6,top+5,W*2-0.8,0,(top-5)/2,0),stoneC); A(vbox(3.2,0.4,W*2+0.2,0,top-0.2,0),stoneC); }
+  // the gatehouse across the west end: two towers, a lintel over the road, violet runes like the stone circle's
+  { const f=T.floor(x0), {A}=inF(frameM(x0,0,T.z,0)), th=T.roof+3.2;
+    for(const sz of [-1,1]){ const zc=sz*(W+1.1);
+      A(vbox(3.2,th,2.8,-0.4,f+th/2-0.4,zc),(x,y,z,c)=>{ stoneC(x,y,z,c); if(Math.abs(y-f-3)<0.12) c.set(0xb07ae0); });
+      A(vbox(3.8,0.5,3.4,-0.4,f+th-0.2,zc),stoneC);
+      for(const k of [-1,1]) A(vbox(0.7,0.7,0.7,-0.4+k*1.5,f+th+0.35,zc+k*1.2*sz),stoneC);   // a merlon at each corner
+      addCol(x0-0.4,T.z+zc,1.9); }
+    A(vbox(2.6,0.9,W*2+1.0,-0.4,f+T.roof+0.3,0),(x,y,z,c)=>{ stoneC(x,y,z,c); if(Math.abs(y-f-T.roof-0.3)<0.1) c.set(0xb07ae0); });   // the lintel
   }
+  // the torii at the east end
   { const px=x1+7, f=T.floor(Math.min(px,T.x1)), {A}=inF(frameM(px,f,T.z,Math.PI/2)), red=woodC(0xa8281e);
     for(const sx of [-1,1]){ A(cyl(0.18,0.22,4.4,10).translate(sx*3.2,2.2,0),red); addCol(px,T.z-sx*3.2,0.3); }
     A(vbox(7.2,0.24,0.34,0,3.7,0),red); A(vbox(8.2,0.28,0.44,0,4.42,0),c=>c.set(0x1a1414)); }
-  // paper lanterns hanging from the vault every 12 m
+  // stone lanterns on the parapets every 12 m (lit)
   { const lw=[], la=[];
-    for(let x=T.p0+5;x<T.p1-3;x+=12){ const y=T.floor(x)+T.roof-0.2;
-      lw.push(pc(csph(0.28,10,8).scale(1,1.3,1).translate(x,y-1.1,T.z),c=>c.set(0xf0c070)));
-      la.push(pc(cyl(0.015,0.015,0.7,4).translate(x,y-0.45,T.z),c=>c.set(0x1a1414))); }
+    for(let x=T.p0+6;x<T.p1-3;x+=12) for(const sz of [-1,1]){ const y=T.floor(x)+1.0, z=T.z+sz*(W-0.25);
+      la.push(pc(cyl(0.16,0.2,0.5,6).translate(x,y+0.25,z),c=>c.set(0x6a645a)));
+      lw.push(pc(csph(0.26,10,8).scale(1,1.2,1).translate(x,y+0.85,z),c=>c.set(0xf0c070))); }
     if(lw.length){ scene.add(new THREE.Mesh(merge(lw),windowMat)); scene.add(new THREE.Mesh(merge(la),villageMat)); } }
-  // the door: a slab of runed stone across the west portal, open once the Rootwarden has fallen (for you)
-  { const f=T.floor(x0), g=merge([pc(vbox(0.8,T.roof-0.1,R0*2-0.1,0,(T.roof-0.1)/2,0),(x,y,z,c)=>{ stoneC(x,y,z,c); c.multiplyScalar(0.8); }),
+  // the door: a slab of runed stone across the west end, open once the Rootwarden has fallen (for you)
+  { const f=T.floor(x0), g2=merge([pc(vbox(0.8,T.roof-0.1,R0*2-0.1,0,(T.roof-0.1)/2,0),(x,y,z,c)=>{ stoneC(x,y,z,c); c.multiplyScalar(0.8); }),
       pc(new THREE.TorusGeometry(1.1,0.07,6,24).rotateY(Math.PI/2).translate(-0.42,T.roof*0.5,0),c=>c.set(0xb07ae0)),
       pc(new THREE.OctahedronGeometry(0.35,0).rotateY(Math.PI/2).translate(-0.44,T.roof*0.5,0),c=>c.set(0xd8a8ff))]);
-    VALE.door=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,emissive:0x1a0828})); VALE.door.position.set(x0+0.7,f,T.z); VALE.door.castShadow=true; scene.add(VALE.door);
+    VALE.door=new THREE.Mesh(g2,new THREE.MeshLambertMaterial({vertexColors:true,emissive:0x1a0828})); VALE.door.position.set(x0+0.7,f,T.z); VALE.door.castShadow=true; scene.add(VALE.door);
     VALE.doorOpen=valeOpen()?1:0; VALE.door.visible=!VALE.doorOpen; }
 }
 /* ---- the shrines around the vale's boss arenas ---- */

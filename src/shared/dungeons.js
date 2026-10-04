@@ -52,7 +52,7 @@ const DG_LV=30, DG_ENTRY_LV=25;   // a dungeon is level 30 at its land's base di
    is locked at +0, level 30 at +1, 40 at +2, 50 at +3, 60 at +4, 70 at +5); the Vale's and the Reach's are +0 (level 30, 40, 50, 60, 70, 80). `unlock` is the land's progress gate. */
 const DG_LANDS={
   home:{name:'Wildwood',    base:1,unlock:{},          hint:'Wildwood opens its dungeon at +1 difficulty: once Carapax, the Tide King, has fallen, set Wildwood to +1 on the map in a village.'},
-  vale:{name:'Sakura Vale', base:0,unlock:{east:2},    hint:'Walk to Hanami, on the far side of the tunnel, first.'},
+  vale:{name:'Sakura Vale', base:0,unlock:{east:2},    hint:'Walk to Hanami, on the far side of the bridge, first.'},
   hoar:{name:'Hoarfrost Reach',base:0,unlock:{north:2},hint:'Walk into Rimehold, through Frostgate Pass, first.'},
   grey:{name:'The Greyspine',base:0,unlock:{west:2},   hint:'Walk into Highmark, through the glacier valley west of the Reach, first (its ice fall opens when Ymrik falls).'}};
 /* THE THEME REGISTRY. A dungeon theme is one file, shared/dungeons/themes/<id>.js, holding a single defineDungeonTheme({...}) call and no top-level names, plus its line in

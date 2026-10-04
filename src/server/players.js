@@ -92,7 +92,7 @@ function inVillage(p){ return vDist(p.x,p.z)<VR+12; }
 function warpP(p,to){
   if(p.dead||S.t-(p.warpT||-9)<2) return;
   const from=CIRCLES.find(C=>Math.hypot(p.x-C.V.tele.x,p.z-C.V.tele.z)<C.V.tele.r+1.5); if(!from) return;
-  if(!from.open(p.gear)){ toastTo(p.id,p.gear.east<1?'The circle is cold. Whatever it answers to lies beyond the eastern mountains.':from.id==='highmark'?'The circle hums but will not wake. Walk into Highmark through the glacier valley first.':from.id==='rimehold'?'The circle hums but will not wake. Walk into Rimehold through Frostgate Pass first.':'The circle hums but will not wake. Walk to Hanami on the far side of the tunnel first.','bad'); return; }
+  if(!from.open(p.gear)){ toastTo(p.id,p.gear.east<1?'The circle is cold. Whatever it answers to lies beyond the eastern mountains.':from.id==='highmark'?'The circle hums but will not wake. Walk into Highmark through the glacier valley first.':from.id==='rimehold'?'The circle hums but will not wake. Walk into Rimehold through Frostgate Pass first.':'The circle hums but will not wake. Walk to Hanami on the far side of the bridge first.','bad'); return; }
   const dest=CIRCLES.find(C=>C.id===to)||(from.id==='home'?CIRCLES[1]:CIRCLES[0]);   // no destination given: home <-> Hanami
   if(dest===from) return;
   if(!dest.open(p.gear)){ toastTo(p.id,dest.hint,'bad'); return; }
@@ -100,9 +100,9 @@ function warpP(p,to){
   p.warpT=S.t; ev('warp',p.id,r1(p.x),r1(p.z),r1(x),r1(z)); if(V===VIL) mqActP(p,'warp');
   p.x=x; p.z=z; p.y=getH(x,z); sendTo(p.id,{t:'tp',x,z,face:Math.atan2(-(V.x-x),-(V.z-z))});
 }
-// the vale: its tunnel opens for everyone who helped defeat the Rootwarden; walking to Hanami attunes the circles
+// the vale: its bridge gate opens for everyone who helped defeat the Rootwarden; walking to Hanami attunes the circles
 function openValeP(p){ if(p.gear.east>=1) return; p.gear.east=1; p.dirty=true; ev('vale',p.id,1);
-  toastTo(p.id,'A deep rumble rolls in from the eastern mountains: the sealed tunnel has opened for you. The Sakura Vale lies beyond.','good'); }
+  toastTo(p.id,'A deep rumble rolls in from the eastern mountains: the bridge gate has opened for you. The Sakura Vale lies beyond.','good'); }
 function reachHanamiP(p){ if(p.gear.east!==1||Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14) return; p.gear.east=2; p.dirty=true; ev('vale',p.id,2); mqActP(p,'hanami');
   toastTo(p.id,'Welcome to Hanami! The teleport circles in both villages are attuned to you now.','good'); }
 // the Hoarfrost Reach: the ice wall in Frostgate Pass cracks for everyone who helped defeat Akaoni; walking into Rimehold attunes its circle

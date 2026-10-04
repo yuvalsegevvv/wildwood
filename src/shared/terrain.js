@@ -54,10 +54,9 @@ function wallAdd(d,t,k,A,F,B,f,cr){
 }
 /* The Vale Wall south of the junction is a river, not a mountain: it rises as a waterfall off the home forest's north rim (game/village/buildings-river.js)
    and runs south to the Crownsea along the border line, a gorge-less channel 30-60 m wide and 2.8 m deep at the middle (water is the sea's level) with a low flat
-   flood plain either side. Only where the tunnel crosses it does the mountain stand (a spur, z -170..-30, the river is under it: it sinks at the foot of the spur
-   and wells up again south of it). riverK: 1 on the river, 0 on the mountain (the spur, and the Greyspine | Reach wall north of the junction). */
-const SPUR_Z=-100;
-const riverK=z=>smoothstep(HZ0+20,HZ0+90,z)*smoothstep(70,120,Math.abs(z-SPUR_Z));
+   flood plain either side. A stone bridge crosses it at z -100 (TUN, shared/vale.js); there is no mountain left between the home forest and the vale. riverK: 1 on the river,
+   0 on the mountain (the Greyspine | Reach wall north of the junction). */
+const riverK=z=>smoothstep(HZ0+20,HZ0+90,z);
 const riverHalfW=z=>16+14*(noise2(z*0.0052+8.1,2.2)*0.5+0.5);
 function riverCut(h,d,z){
   const rk=riverK(z); if(rk<=0||d>130) return h;

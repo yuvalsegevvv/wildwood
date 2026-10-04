@@ -1,35 +1,22 @@
-//@ The Sakura Vale east of the mountains: the tunnel (TUN), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt (which knows all four villages). Pure.
+//@ The Sakura Vale east of the Greyfall River: the border bridge (TUN, once a tunnel), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt (which knows all four villages). Pure.
 /* ===================== THE SAKURA VALE =====================
-   A second land behind the eastern border mountains, reached through a tunnel that stays sealed for each player
-   until they help defeat the Rootwarden (gear.east: 0 sealed, 1 tunnel open, 2 walked to Hanami: circles attuned).
+   A second land behind the Greyfall River, reached over a bridge whose gate stays shut for each player
+   until they help defeat the Rootwarden (gear.east: 0 sealed, 1 bridge open, 2 walked to Hanami: circles attuned).
    Zones are cells around fixed seeds (nearest seed wins), walled by low ridges with a pass halfway between two seeds.
    Hanami's own cell has no monsters. Levels 16-25, two monster kinds per zone, bosses at 20 (in zone 20) and 25. */
 
-/* ---- the tunnel: a straight bore east through the mountains at z = TUN.z, its floor ramping between the two lands.
-   x0..x1: where the floor is carved (the open cutting outside each portal included); p0..p1: the covered part
-   (the portals), where the mountain stands more than 7.5 m above the floor. w: half the floor's width. */
+/* ---- the border bridge (it was a tunnel through a mountain spur; the Vale Wall is a river now, shared/terrain.js): a stone bridge over the Greyfall River at z = TUN.z, where borderX is
+   pinned straight, with a gate across its west end that stays shut for each player until they help defeat the Rootwarden. The name TUN stays from the tunnel it replaced.
+   x0..x1: the paved approach (no plants, no camps); p0..p1: the deck from bank to bank, kept between its parapets (w: half its width), the gate at p0;
+   floor(x): the deck's height (the banks' at both ends, an arch of 1.4 m between); roof: the gate's height. ---- */
 function findTunnel(){
-  const x0=HALF-66, x1=HALF+66; let best=null;
-  for(let z=-125;z<=-75;z+=5){   // (the border is straight here: borderX is pinned at the tunnel)
-    const a=baseHeight(x0-8,z), b=baseHeight(x1+8,z);
-    const score=Math.abs(a-b)*0.6+Math.abs(z-ARENA.z)*0.05+(a<3?30:0)+(b<3?30:0)+(a>24?20:0)+(b>24?20:0)+(riverDist(x0-20,z)<30?40:0);
-    if(!best||score<best.score) best={z,score,h0:Math.max(3,a),h1:Math.max(3,b)};
-  }
-  const T={x0,x1,z:best.z,w:4,h0:best.h0,h1:best.h1,roof:6.2};
-  T.floor=x=>lerp(T.h0,T.h1,smoothstep(T.x0,T.x1,x));
-  T.p0=x1; T.p1=x0;
-  for(let x=x0;x<=x1;x+=0.5){ if(baseHeight(x,T.z)-T.floor(x)>7.5){ T.p0=Math.min(T.p0,x); T.p1=Math.max(T.p1,x); } }
-  if(T.p1<=T.p0){ T.p0=HALF-30; T.p1=HALF+30; }
+  const z=-100, hw=riverHalfW(z), p0=HALF-(hw+16), p1=HALF+(hw+16), h0=baseHeight(p0,z), h1=baseHeight(p1,z);
+  const T={x0:p0-14,x1:p1+14,z,w:4,h0,h1,roof:6.2,p0,p1};
+  T.floor=x=>lerp(h0,h1,smoothstep(p0,p1,x))+Math.sin(clamp((x-p0)/(p1-p0))*Math.PI)*1.4;
   return T;
 }
 const TUN=findTunnel();
-// the carved floor: flat across the bore, fading out beyond the ends of the cutting
-function tunnelCarve(x,z,h){
-  const dz=Math.abs(z-TUN.z); if(dz>TUN.w+5.5||x<TUN.x0-30||x>TUN.x1+30) return h;
-  const k=smoothstep(TUN.w+5.5,TUN.w+0.6,dz)*smoothstep(TUN.x0-30,TUN.x0-8,x)*(1-smoothstep(TUN.x1+8,TUN.x1+30,x));
-  return lerp(h,TUN.floor(x),k);
-}
-// keep trees, rocks and camps out of the cutting (m = extra margin)
+// keep trees, rocks and camps off the bridge's approach (m = extra margin)
 function inTunnelCut(x,z,m){ return Math.abs(z-TUN.z)<TUN.w+6+(m||0) && x>TUN.x0-30-(m||0) && x<TUN.x1+30+(m||0); }
 
 /* ---- Hanami, the vale's village: same plan as the home village (so every NPC role works the same), its road

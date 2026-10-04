@@ -46,8 +46,8 @@ const VILS=[VIL,VIL2,VIL3];
 /* the teleport circles (one in each village): where each leads and when it is awake. A land's circles wake when you have walked into its village:
    home and Hanami with gear.east 2, Rimehold with gear.north 2. Used by the server's warpP and the client's travel window (ui/travel.js) */
 const CIRCLES=[
-  {id:'home',name:'The village',land:'Wildwood',lv:'1-15',V:VIL,open:g=>g.east>=2,hint:'Walk to Hanami on the far side of the tunnel first'},
-  {id:'hanami',name:'Hanami',land:'The Sakura Vale',lv:'16-25',V:VIL2,open:g=>g.east>=2,hint:'Walk to Hanami on the far side of the tunnel first'},
+  {id:'home',name:'The village',land:'Wildwood',lv:'1-15',V:VIL,open:g=>g.east>=2,hint:'Walk to Hanami on the far side of the bridge first'},
+  {id:'hanami',name:'Hanami',land:'The Sakura Vale',lv:'16-25',V:VIL2,open:g=>g.east>=2,hint:'Walk to Hanami on the far side of the bridge first'},
   {id:'rimehold',name:'Rimehold',land:'The Hoarfrost Reach',lv:'22-30',V:VIL3,open:g=>g.north>=2,hint:'Walk into Rimehold through Frostgate Pass first'}];
 
 /* ---- zones: seeds on a 3 x 3 grid north of Rimehold. key null = Rimehold's snowfields (no monsters). The route winds:

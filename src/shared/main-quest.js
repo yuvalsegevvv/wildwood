@@ -104,8 +104,8 @@ const MQ=[
    done:['Coins, buckles, a spoon... and this. A glass ball, smooth as an egg, with a thread of metal inside. Like a lamp with no flame.','Odran saw it over my shoulder and offered thirty coins for it on the spot. Thirty! For a glass egg. I sold it. Should I have?']},
   {id:'W15',title:'Beyond the mountains',gate:13,from:'linnea',to:'bram',r:0.25,
    tip:'Every main quest step has a level. Between steps, hunt and take notices: the quest log says where.',
-   offer:['The sap no longer helps. Wren sleeps deeper each day.','Across the eastern mountains there is a village called Hanami. Their shrine is said to know every sickness of the soul.','But nobody has crossed since the tunnel was sealed. Ask Bram: he knows the way east.'],
-   parts:[{talk:'bram',text:'Ask Bram about the way east',say:['The tunnel east? Sealed, since the guardian woke. The Rootwarden sits in the Stone Circle, and the mountain door will not open while it lives.','Nobody has crossed in my lifetime. If you want to try, you need to be a great deal stronger.']}],
+   offer:['The sap no longer helps. Wren sleeps deeper each day.','Across the eastern mountains there is a village called Hanami. Their shrine is said to know every sickness of the soul.','But nobody has crossed since the bridge gate was sealed. Ask Bram: he knows the way east.'],
+   parts:[{talk:'bram',text:'Ask Bram about the way east',say:['The bridge east? Barred, since the guardian woke. The Rootwarden sits in the Stone Circle, and the gatehouse door will not open while it lives.','Nobody has crossed in my lifetime. If you want to try, you need to be a great deal stronger.']}],
    done:['Level 15, and a weapon worth the name. Then we talk about the Rootwarden.']},
   {id:'W16',title:'Ready',gate:14,from:'bram',to:'bram',r:0.22,
    tip:'A boss needs preparation: your best gear, upgraded skills, and friends if you have them.',
@@ -117,13 +117,13 @@ const MQ=[
    offer:['It sleeps in the Stone Circle, north-east along the East Road. Wake it, and do not stop until it falls.'],
    parts:[{boss:'boss',text:'Defeat the Rootwarden at the Stone Circle'}],
    bossLine:'The Rootwarden, as it falls: "The roots... cannot hold... for long."',
-   done:['It is over? The guardian is down?','...Listen. The mountain is humming. The tunnel door has opened.','Go and see Wren before you leave.']},
+   done:['It is over? The guardian is down?','...Listen. The river is humming. The bridge gate has opened.','Go and see Wren before you leave.']},
   {id:'W18',title:'Goodbye for now',gate:15,from:null,to:'daisuke',r:0.06,
-   tip:'The East Road leads through the mountain tunnel to the Sakura Vale. Walking to Hanami attunes the teleport circles.',
+   tip:'The East Road leads over the Greyfall bridge to the Sakura Vale. Walking to Hanami attunes the teleport circles.',
    parts:[{talk:'wren',text:'Say goodbye to Wren',say:['(Wren is awake, sitting up, pale but smiling.)','You are going over the mountains? Nobody goes over the mountains.','...Bring me back something pretty. And come back.']},
           {talk:'linnea',text:'See Linnea before you go',say:['Take this charm: heartleaf and treant sap, sewn in linen. It will not stop a blade, but it will remind you what you walk for.','Hanami\'s shrine maiden will know more than I do. Go.']},
-          {act:'hanami',after:true,text:'Walk through the tunnel to Hanami'}],
-   done:['You came through the tunnel? Then the Rootwarden is dead. Good riddance.','Welcome to Hanami, traveller from beyond the mountains. A sickness, you say? Then you want the shrine. But first, find your feet here.']},
+          {act:'hanami',after:true,text:'Walk over the bridge to Hanami'}],
+   done:['You came over the bridge? Then the Rootwarden is dead. Good riddance.','Welcome to Hanami, traveller from beyond the mountains. A sickness, you say? Then you want the shrine. But first, find your feet here.']},
   /* ---------------- Act II: The Blossom and the Blight (the Sakura Vale, levels 15-20; it ends at Akaoni) ---------------- */
   {id:'V3',title:'Hanami',gate:15,from:'daisuke',to:'daisuke',r:0.05,
    tip:'Hanami has the same jobs as your village: a quest board, stalls, a forge, a trainer.',
@@ -161,7 +161,7 @@ const MQ=[
    parts:[{act:'learn',prof:'woodcutting',text:'Learn Woodcutting at the Wayfarers\' Lodge (Isamu)'},{act:'tool',tool:'axe',tier:3,text:'Buy an axe of level 15 or better (Sunstone) and wear it'},{gather:'woodcutting',n:12,text:'Chop 12 logs in the Sakura Vale'},{act:'craft',kind:'armor',after:true,text:'Craft an armour piece at Haruka\'s (the Craft tab)'}],
    done:['Not bad. The lacquer will forgive the corners.','Rare and epic pieces take more logs, the way they take more of everything.']},
   {id:'V8',title:'A lantern with no flame',gate:19,from:'odran2',to:'odran2',r:0.2,
-   offer:['You again! Small world, is it not? Smaller than people think.','I came through the tunnel the day after you opened it. Business, you understand. Sell me something?'],
+   offer:['You again! Small world, is it not? Smaller than people think.','I came over the bridge the day after you opened it. Business, you understand. Sell me something?'],
    parts:[{act:'sell',n:1,at:'cart',text:'Sell Odran something at his cart by Hanami\'s gate'}],
    done:['Pleasure, as always. Oh, this? Just a lantern. See: no flame, and still it glows. Clever, is it not?','...No, it is not for sale. Forget you saw it. (He wraps it in cloth, quickly.)']},
   {id:'V9',title:'The old scrolls',gate:19,from:'kaede',to:'kaede',r:0.2,
@@ -372,7 +372,7 @@ for(const V of VILS){
 const LORE=(()=>{
   const out=[], add=(id,x,z,kind,name,text,o)=>out.push(Object.assign({id,x,z,kind,name,text,rot:0},o||{}));
   { const [x,z]=arenaGate(ARENA,230,-92,5); add('carvings',x,z,'stone','The Stone Circle\'s carvings','Carvings run round the stone, worn soft by rain: people with their hands raised, a great ring in the sky, and ships. Many ships, long and smooth, with no sails and no oars. Under them runs a line of marks nobody in Wildwood can read. Inside the circle the Rootwarden sleeps, and half its bark has gone grey.',{rot:Math.atan2(x-ARENA.x,z-ARENA.z)}); }
-  add('tunnelsign',TUN.x0-18,TUN.z+6,'sign','A sign by the tunnel','Under the painted "HANAMI, BEYOND THE MOUNTAINS", older letters are cut into the rock itself: straight, even, every one the same depth, as if one steady hand cut them all without tiring. Nobody can read them.',{rot:-Math.PI/2});
+  add('tunnelsign',TUN.x0-18,TUN.z+6,'sign','A sign by the bridge','Under the painted "HANAMI, BEYOND THE MOUNTAINS", older letters are cut into the rock itself: straight, even, every one the same depth, as if one steady hand cut them all without tiring. Nobody can read them.',{rot:-Math.PI/2});
   for(const B of BRIDGES){
     if(B.kind!=='causeway'||B.name[0]!=='T') continue;
     const e=B.len/2+2.5, x=B.x-B.dx*e+B.dz*2.6, z=B.z-B.dz*e-B.dx*2.6, rot=Math.atan2(-B.dx,-B.dz);

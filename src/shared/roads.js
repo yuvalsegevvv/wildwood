@@ -24,11 +24,11 @@ const ROADS=(()=>{
   const e1=VIL.paths[VIL.paths.length-1], S=[e1[2],e1[3]], e2=VIL2.paths[VIL2.paths.length-1], S2=[e2[2],e2[3]], e3=VIL3.paths[VIL3.paths.length-1], S3=[e3[2],e3[3]], e4=VIL4.paths[VIL4.paths.length-1], S4=[e4[2],e4[3]];
   const R=(name,wps,seed)=>({name,pts:roadPts(wps,seed)});
   return [
-    R('The East Road',[S,[0,64],[38,52],[82,46],[150,-10],[230,-92],[300,-120],[TUN.x0-4,TUN.z]],1),
+    R('The East Road',[S,[0,64],[38,52],[82,46],[150,-10],[230,-92],[300,-120],[TUN.p0-2,TUN.z]],1),
     R('The Circle Path',[[230,-92],arenaGate(ARENA,230,-92,3)],2),
     R('The Redgate Road',[S,[-70,14],[-105,16],[-160,20],[-240,32],[-320,40],[WX0+REDGATE_CL+30,REDGATE_Z]],3),
     R('The Shore Road',[[-105,16],[-122,110],[-110,220],[-92,330],[-84,WZ1-40]],4),
-    R('The Tunnel Road',[S2,[TUN.x1+4,TUN.z]],5),
+    R('The Tunnel Road',[S2,[TUN.p1+2,TUN.z]],5),
     R('The Gate Road',[S2,[560,-160],[650,-195],[760,-240],[850,-300],arenaGate(ARENA20,850,-300,3)],6),
     R('The Shrine Road',[S2,[560,-40],[600,80],[592,200],arenaGate(ARENA25,592,200,3)],7),
     R('The Coast Road',[[560,-40],[680,-22],[800,-52],[900,-22],[WX1-46,-12]],8),
@@ -92,6 +92,7 @@ const CAUSEWAY_NAMES={'The Redgate Road':'The Drowned Road','The Shore Road':'Th
 const bridgeY=(B,t)=>B.kind==='causeway'?Math.max(WATER+0.5,B.h0-t*B.len*0.3,B.h1-(1-t)*B.len*0.3):lerp(B.h0,B.h1,t)+Math.sin(t*Math.PI)*Math.max(0.9,WATER+1.4-(B.h0+B.h1)/2);
 // the deck's height under (x, z), or -Infinity off every bridge
 function bridgeDeck(x,z){
+  if(x>=TUN.p0&&x<=TUN.p1&&Math.abs(z-TUN.z)<=TUN.w) return TUN.floor(x);   // the border bridge's deck (shared/vale.js)
   for(const B of BRIDGES){ const px=x-B.x, pz=z-B.z, u=px*B.dx+pz*B.dz, v=-px*B.dz+pz*B.dx;
     if(Math.abs(u)<=B.len/2 && Math.abs(v)<=B.w) return bridgeY(B,u/B.len+0.5); }
   return -Infinity;

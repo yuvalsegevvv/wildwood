@@ -2,7 +2,7 @@
 /* The map image covers the whole world (all four lands, the Greyspine's peaks and tarns included) and is painted once, a few rows per frame after the ground is ready:
    terrain colours with hill shading, forests darker, water blue, zone borders, village houses and the boss arenas.
    The minimap shows the 90 m around you (north up, 10 times a second) wherever you are, the Greyspine too. The full map (N key, map button, or tap the
-   minimap) shows one land at a time: the one you are in, or the next one with the button in its header (once the tunnel is open; the Hoarfrost Reach once its ice wall is;
+   minimap) shows one land at a time: the one you are in, or the next one with the button in its header (once the bridge is open; the Hoarfrost Reach once its ice wall is;
    the Greyspine once the glacier valley's ice fall is, `westOpen`, or while you stand in it: `landOpen`). The Greyspine's map names its zones, bosses, Highmark, tarns and
    fjord, the Blackseam's door and the two rock falls in the west wall, and carries the zone-tier row like the other lands. Test: tools/client-smoke.js. */
 const MAP={size:LITE?320:(LOW?400:560),canvas:null,ctx:null,img:null,zone:null,row:0,done:false,mmT:0,fullT:0};
@@ -22,9 +22,9 @@ function mapInit(){
   MAP.canvas=c; MAP.ctx=c.getContext('2d'); MAP.img=MAP.ctx.createImageData(MAP.w,MAP.h); MAP.zone=new Uint8Array(MAP.w*MAP.h);
 }
 const _mc=new THREE.Color();
-// the map's outline: each land fades out along a wavy line 6-36 m inside its borders, so neither land is drawn as a rectangle
+// the map's outline: the world fades out along a wavy line 6-36 m inside its edge, so it is not drawn as a rectangle (the lands' borders are not outlined)
 function mapEdgeAlpha(x,z){
-  const bx=borderX(z), bz=borderZ(x), e=x<bx?(z<bz?Math.min(x-WX0,z-WZ0,bz-z,bx-x):Math.min(x-WX0,z-bz,WZ1-z,bx-x)):Math.min(x-bx,z-WZ0,WZ1-z,WX1-x);
+  const e=Math.min(x-WX0,z-WZ0,WZ1-z,WX1-x);   // (only the world's own edge fades, over the sea: the border between two lands is painted like the rest, no grey band between them)
   const t=6+(noise2(x*0.011+3,z*0.011-5)*0.5+0.5)*26+noise2(x*0.05,z*0.05)*4;
   return clamp((e-t)/6)*255;
 }
@@ -133,7 +133,7 @@ function drawFullMap(){
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.grey?'grey':A.hoar?'hoar':inVale(A.x,A.z)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bossLvIn(bd.def,land)+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
   { const V=land==='grey'?VIL4:land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='grey'?'Highmark':land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
   dgEntMapMarks(x,at,land,fs,label,DPR);   // dungeons: the three doors, the Elder greyed while sealed
-  if(land!=='hoar'&&land!=='grey'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Tunnel':'Tunnel (sealed)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
+  if(land!=='hoar'&&land!=='grey'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Bridge':'Bridge (barred)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='vale'){ const [cx,cy]=at(PASS.x,PASS.ice); dot(x,cx,cy,3.5*DPR,northOpen()?'#9fe0ff':'#8a8078'); label(northOpen()?'Frostgate Pass':'Frostgate Pass (ice wall)',cx-fs*4.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='hoar'){ const [cx,cy]=at(PASS.x,PASS.z1+50); label('Frostgate Pass',cx-fs*3.6,cy,fs*0.85,'#e8e0d0'); for(const Lk of FROST_LAKES){ const [lx,ly]=at(Lk.x,Lk.z); label(Lk.name,lx,ly,fs*0.85,'#cfe8f6'); }
   }
@@ -155,7 +155,7 @@ function drawFullMap(){
   { const [a,b]=at(P.x,P.z); drawArrow(x,a,b,-P.face,8*DPR,'#fff4d0'); }
   const zn=zoneAt(P.x,P.z), V=vilAt(P.x,P.z);
   const vn=V===VIL4?'Highmark':V===VIL3?'Rimehold':V===VIL2?'Hanami':'the village';
-  $('#mapHere').textContent=vDist(P.x,P.z)<VR+12?'You are in '+vn:P.inTun?'You are in the mountain tunnel':zn?(zn.boss?'You are near '+zn.name:'You are in '+zn.name+' (level '+zoneLvText(zn)+')'):inPass(P.x,P.z)?'You are in Frostgate Pass':inGrey(P.x,P.z)?'You are in the Greyspine':'You are near '+vn;
+  $('#mapHere').textContent=vDist(P.x,P.z)<VR+12?'You are in '+vn:P.inTun?'You are on the Greyfall bridge':zn?(zn.boss?'You are near '+zn.name:'You are in '+zn.name+' (level '+zoneLvText(zn)+')'):inPass(P.x,P.z)?'You are in Frostgate Pass':inGrey(P.x,P.z)?'You are in the Greyspine':'You are near '+vn;
 }
 function placeName(wx,wz){
   { const dn=dgEntName(wx,wz); if(dn) return dn; }   // dungeons: the door's name under the pointer
@@ -165,7 +165,7 @@ function placeName(wx,wz){
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if(Math.hypot(wx-A.x,wz-A.z)<A.r+6) return A.name+': '+bd.def.name+', level '+bossLvIn(bd.def,landAt(A.x,A.z))+' boss'; }
   if(inPass(wx,wz)&&Math.abs(wz-PASS.ice)<6) return northOpen()?'Frostgate Pass (the ice wall has fallen)':'Frostgate Pass: the ice wall (shut until Akaoni falls)';
   if(inPass(wx,wz)&&wz<HZ0+60) return 'Frostgate Pass';
-  if(inTunnelCut(wx,wz)&&wx>TUN.p0-4&&wx<TUN.p1+4) return valeOpen()?'The mountain tunnel':'The mountain tunnel (sealed until the Rootwarden falls)';
+  if(inTunnelCut(wx,wz)&&wx>TUN.p0-4&&wx<TUN.p1+4) return valeOpen()?'The Greyfall bridge':'The Greyfall bridge (barred until the Rootwarden falls)';
   const B=bridgeAt(wx,wz,2); if(B) return B.road+' ('+B.name+')';
   const rd=roadAt(wx,wz,3); if(rd) return rd.name;
   const zn=zoneAt(wx,wz); if(zn) return zn.key==='boss'?'Rootwarden Barrens':zn.boss?zn.name:zn.name+': level '+zoneLvText(zn)+' ('+MON_DEFS.filter(d=>defZone(d)===zn).map(d=>d.name).join(', ')+')';
