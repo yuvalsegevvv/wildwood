@@ -1,8 +1,10 @@
 //@ World map: a map image painted from the terrain, the corner minimap, and the full map (N) of each land (home forest, Sakura Vale, Hoarfrost Reach, Greyspine) with zones, quests, resource nodes and players
-/* The map image covers the whole world (both lands) and is painted once, a few rows per frame after the ground is ready:
+/* The map image covers the whole world (all four lands, the Greyspine's peaks and tarns included) and is painted once, a few rows per frame after the ground is ready:
    terrain colours with hill shading, forests darker, water blue, zone borders, village houses and the boss arenas.
-   The minimap shows the 90 m around you (north up, 10 times a second). The full map (N key, map button, or tap the
-   minimap) shows one land at a time: the one you are in, or the next one with the button in its header (once the tunnel is open; the Hoarfrost Reach once its ice wall is). */
+   The minimap shows the 90 m around you (north up, 10 times a second) wherever you are, the Greyspine too. The full map (N key, map button, or tap the
+   minimap) shows one land at a time: the one you are in, or the next one with the button in its header (once the tunnel is open; the Hoarfrost Reach once its ice wall is;
+   the Greyspine once the glacier valley's ice fall is, `westOpen`, or while you stand in it: `landOpen`). The Greyspine's map names its zones, bosses, Highmark, tarns and
+   fjord, the Blackseam's door and the two rock falls in the west wall, and carries the zone-tier row like the other lands. Test: tools/client-smoke.js. */
 const MAP={size:LITE?320:(LOW?400:560),canvas:null,ctx:null,img:null,zone:null,row:0,done:false,mmT:0,fullT:0};
 MAP.k=MAP.size/SIZE; MAP.w=Math.round(WW*MAP.k); MAP.h=Math.round(WD*MAP.k);   // pixels per metre, image size
 const MM_R=90, DPR=Math.min(2,devicePixelRatio||1);
@@ -133,7 +135,13 @@ function drawFullMap(){
   if(land!=='hoar'&&land!=='grey'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Tunnel':'Tunnel (sealed)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='vale'){ const [cx,cy]=at(PASS.x,PASS.ice); dot(x,cx,cy,3.5*DPR,northOpen()?'#9fe0ff':'#8a8078'); label(northOpen()?'Frostgate Pass':'Frostgate Pass (ice wall)',cx-fs*4.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='hoar'){ const [cx,cy]=at(PASS.x,PASS.z1+50); label('Frostgate Pass',cx-fs*3.6,cy,fs*0.85,'#e8e0d0'); for(const Lk of FROST_LAKES){ const [lx,ly]=at(Lk.x,Lk.z); label(Lk.name,lx,ly,fs*0.85,'#cfe8f6'); }
-    if(GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||nodeBlock(GEAR,n)) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.6*DPR,RES[NODE_KINDS[n.kind].res].col); } }   // the nodes of the professions you know
+  }
+  if((land==='hoar'||land==='grey')&&GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||nodeBlock(GEAR,n)||landAt(n.x,n.z)!==land) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.6*DPR,RES[NODE_KINDS[n.kind].res].col); }   // the nodes of the professions you know (the Reach's and the Greyspine's)
+  if(land==='grey'){   // the tarns and the fjord by name, the two rock falls in the west wall (a grey dot while shut, light blue once a boss has opened them)
+    for(const T of GREY_TARNS){ const [cx,cy]=at(T.x,T.z); label(T.name,cx,cy,fs*0.85,'#cfe8f6'); }
+    { const f=GREY_FJORD.pts[1], [cx,cy]=at(f[0],f[1]); label('The fjord',cx+fs*2.4,cy+fs*1.1,fs*0.85,'#cfe8f6'); }
+    for(const G of GREY_GATES){ const [cx,cy]=at(G.x,G.z), op=gateOpen(G); dot(x,cx,cy,3.5*DPR,op?'#9fe0ff':'#8a8078'); label(G.name,cx+fs*3.4,cy,fs*0.72,op?'#e8e0d0':'#b4aea4'); }   // (the dot says whether it is open; the name is short, the map is small on a phone)
+  }
   for(const Lk of LAKES){ if(!!Lk.vale!==(land==='vale')||land==='hoar'||land==='grey') continue; const [cx,cy]=at(Lk.x,Lk.z); label(Lk.name,cx,cy,fs*0.85,'#cfe8f6'); }
   for(const B of BRIDGES){ if(B.kind!=='causeway'||B.name[0]!=='T'||inVale(B.x)!==vale||land==='hoar'||land==='grey') continue; const [cx,cy]=at(B.x,B.z); label(B.name,cx,cy+fs*1.1,fs*0.8,'#cfe8f6'); }   // the named causeways
   // quests

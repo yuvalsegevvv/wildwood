@@ -126,7 +126,7 @@ Short rows: the files that matter. A row ending in `→ docs/areas/<x>.md` has t
 | Vegetation / animals | `game/world/plant-models*.js`, `grass-models.js`, `generation-*.js`, `instancing.js` (`addInstanced`, levels of detail), `game/wildlife/animals.js` (the home forest's), `chamois.js` (the Greyspine's goats); a new plant draws from its own `mrng(seed)`, never the global `rand` → `docs/areas/render.md` |
 | Background music (a theme per village, level range and boss; `THEMES`, `musicThemeHere`; recorded tracks `assets/audio/music-<theme>.m4a` override a theme) | `game/audio/music.js`, `game/audio/samples.js` (`musicBuffer`) |
 | Time of day / weather | `game/world/time-of-day.js` (`weatherTint` hook, the zone label), `server/weather.js`, `game/world/weather.js` (rain, and snow / blizzard in the Reach); rain and wind sound `game/audio/rain.js` (`RAIN_SND` volumes) |
-| Map / minimap | `game/ui/map.js` |
+| Map / minimap (all four lands; the Greyspine's full map opens with its ice fall, `landOpen`) | `game/ui/map.js` (`LANDS`, `drawFullMap`, `drawMinimap`); test `client-smoke` |
 | Chat / names / account code | `game/ui/chat.js`, `game/ui/account.js`; server `chatP`, `renameP` in `server/economy.js` |
 | Saves, accounts, migration | `server/api.js` (`beginJoin`, `saveP`, `flushAll`), `server/players.js` (`sanitize*`), `node/main.js` (stores, `AUTH` password hashing) |
 | Registered accounts (name + password, guest, unique names, gift levels `GIFT_LEVELS`) | `server/accounts.js`, client `game/ui/account.js` (settings, session) and `start-screen.js`; tests `node tools/accounts-smoke.js`, `start-smoke.js` |
@@ -213,7 +213,7 @@ node tools/boss-duel.js --check  # 18 checks: a maxed level-60 hero vs the level
 node tools/levels-smoke.js       # 11 checks: the XP curve, the soft cap from level 50, saves and the testing tool, a kill never pays for more than 10 levels above you, ~2 s
 node tools/professions-smoke.js  # 74 checks: tools, nodes, gathering, crafting, brewing, potions, ~8 s
 node tools/skills-smoke.js       # 58 checks: elements, soul, drops, upgrades, passives, boss skills, ~15 s
-node tools/client-smoke.js       # 76 checks, the built page headless (solo), ~60 s; runs dist/: build first
+node tools/client-smoke.js       # 83 checks, the built page headless (solo), ~60 s; runs dist/: build first
 node tools/start-smoke.js        # 31 checks: the start card + a new account's editor, ~20 s; runs dist/
 node tools/keys-smoke.js         # rebindable keys and hold-Alt; runs dist/
 python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)

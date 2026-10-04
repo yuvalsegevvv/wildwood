@@ -80,7 +80,9 @@ function chamoisStep(a,dt){
   if(moving&&!chamoisOK(a.x-Math.sin(a.heading)*2,a.z-Math.cos(a.heading)*2)) a.goal=a.heading+Math.PI*AR(0.7,1.3);   // turn back at water, a cliff or an arena
   a.speed+=((a.state==='walk'?K.walk:a.state==='flee'?K.run:0)-a.speed)*Math.min(1,dt*(a.state==='flee'?5:3));
   if(moving){ const rate=(a.state==='flee'?5:2)*dt; a.heading+=clamp(angDiff(a.goal,a.heading),-rate,rate); }
+  const px=a.x, pz=a.z;
   a.x-=Math.sin(a.heading)*a.speed*dt; a.z-=Math.cos(a.heading)*a.speed*dt;
+  if(moving&&!chamoisOK(a.x,a.z)){ a.x=px; a.z=pz; a.heading+=Math.PI*AR(0.6,1.4); a.goal=a.heading; }   // never off the allowed ground, whatever the look-ahead missed
   a.y=getH(a.x,a.z);
   const l=0.6*a.s, hf=getH(a.x-Math.sin(a.heading)*l,a.z-Math.cos(a.heading)*l), hb=getH(a.x+Math.sin(a.heading)*l,a.z+Math.cos(a.heading)*l);
   a.pitch=clamp(Math.atan2(hf-hb,2*l),-0.8,0.8);

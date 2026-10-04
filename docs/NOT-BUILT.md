@@ -92,7 +92,8 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
 
 **Built** (`CLAUDE.md` section 4 has the file map; test `node tools/greyspine-smoke.js`):
 
-- the ground (valleys, ridged mountains, walls, colours, treeline) and a zone label, a map view while you stand in it;
+- the ground (valleys, ridged mountains, walls, colours, treeline) and a zone label;
+- **the map and the minimap** (`game/ui/map.js`): the painted world map covers the Greyspine (peaks, snow, tarns, river and fjord read `waterSurf`), the corner minimap works there like anywhere, and the full map (N) has it as its fourth land (`LANDS.grey`): it opens from the other lands once the glacier valley's ice fall is open (`westOpen`, `gear.west` 1) or while you stand in it (`landOpen`), the "next land" button includes it, and it names the zones with their levels, Highmark, the two bosses, the three tarns and the fjord, the Blackseam's door (the Old Adit), the two rock falls in the west wall (grey while shut, light blue once open), the 53 resource nodes you can work (as in the Reach), and carries the zone-tier row; test `client-smoke`;
 - **the way in**: the glacier valley `GLEN` cut through the Vale Wall at the Reach's west edge, shut by an ice fall until Ymrik falls (`gear.west`), with the Glacier Road from Rimehold to Highmark;
 - **Highmark** (`VIL4`, shelf `GREY_HM`, ~100 m up): nine named NPCs and fillers, a Wayfarers' Lodge, a teleport circle (the travel window now lists four villages), a respawn point once you have walked in (`gear.west` 2);
 - **seven zones and 14 monster kinds** (two per level 26-32, 12 of each, earth and air; a new gryphon model family, a golem, crystals, a rock troll...), their materials with names, `MAX_ZONE_LV` 32;
@@ -130,7 +131,7 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
   bosses' moves and numbers are first guesses, **not balance-tested by play** (the Queen's swoop and the Golem's quake are telegraphed on purpose).
 - **The far lands**: the placeholder mountains beyond the north and west edges still use `farHeight` ('grey' region, `game/world/far-lands.js`): its edge vertices take the real
   height (`getH`), so they meet, but the shapes behind the walls are not related to the real range, and the canyons open onto them.
-- **Map**: the full map (N) shows the Greyspine only while you stand in it (`LANDS.grey`, `landOpen`); it names Highmark, the zones and the water, but not the gates' canyons, and has no zone tier row.
+- **Map** (built, see above; what is left): the river has no name on the map (it is the unnamed outflow of the Mirrortarn), the two canyons past the rock falls are painted only up to the world's edge (nothing lies behind them yet, section 5), and there are no marks for the monsters' camps or for the lore spots of act IV (the quest marker of the story step is the only pointer).
 - **Balance of the ground**: 26% of the inner country is steeper than 0.95 (the home forest 9%, the Reach 13%); that is how the mountains read, and camps keep to ground under 0.55
   (54% of the inner country). If the zones turn out cramped, widen the troughs (`in` / `out` in `GREY_VALLEYS`) first.
 - **Performance was not measured on a phone** with the Greyspine's extra meshes (Highmark, the nest, the cavern, the water surfaces, the rock falls); the terrain tiles are the same.

@@ -2,7 +2,7 @@
 // client code. Build first (python3 build.py). Needs the three package (npm install). Prints PASS/FAIL lines.
 // Usage: node tools/client-smoke.js
 const {bootClient}=require('./headless');
-const c=bootClient({expose:['NET','mqTarget','mqLogRow','mqMark','odranHere','MQ_BY_ID','VIL4','LORE_BY_ID','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','greySnowAmt','CHAM','chamoisUpdate','chamoisOK','GLEN','GREY_GATES','slotIcon','PENDANT_STATS','itemStat','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt',
+const c=bootClient({expose:['NET','mqTarget','mqLogRow','mqMark','odranHere','MQ_BY_ID','VIL4','LORE_BY_ID','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','greySnowAmt','drawFullMap','drawMinimap','mapCX','landOpen','CHAM','chamoisUpdate','chamoisOK','GLEN','GREY_GATES','slotIcon','PENDANT_STATS','itemStat','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt',
   'DG_RUN:()=>DG_RUN','DG_VIEW','DG_THEMES','dgFree','dgIn','dgHudText','dgHudTick','dgDownText','sky','water','sun','updateCamera','updateEnv','updatePlayer','applySnap','keys','TERRAIN_BANDS','cullChunks','playerDown','playerUp']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const el=s=>document.querySelector(s);
@@ -112,6 +112,21 @@ const el=s=>document.querySelector(s);
     ok('the line is colder to the north and lower ground never snows: Highmark 0, the queen\'s peak 1, the same height 10 m lower in the far north snows more',G.greySnowAmt(0,-700,0)===0&&G.greySnowAmt(0,-700,300)===1&&G.greySnowAmt(0,-900,125)>=G.greySnowAmt(0,-700,125)); }
   G.camera.position.set(0,10,0); for(let i=0;i<40;i++){ G.WX.t+=0.5; G.updateWeather(0.5); }
   G.NET.send({t:'dev',cmd:'weather',v:'clear'});
+  // the Greyspine's map: the full map names its zones, Highmark, bosses, tarns, fjord, the Blackseam's door and the two rock falls, carries the tier row, and opens with the ice fall; the minimap draws there
+  { const sv={x:G.P.x,z:G.P.z,done:G.MAP.done,west:G.GEAR.west}, texts=[]; G.mapCX.fillText=t=>texts.push(t); G.MAP.done=true;
+    G.P.x=G.VIL4.x; G.P.z=G.VIL4.z; G.drawFullMap(); const has=t=>texts.some(x=>x===t||String(x).startsWith(t));
+    ok('map: standing in the Greyspine its full map names Highmark and its zones',has('Highmark')&&has('Highmark Pastures')&&has('The Sink')&&has('Level 26'));
+    ok('...its tarns, the fjord, the two bosses and the Blackseam\'s door (the Old Adit)',has('Mirrortarn')&&has("Queen's Tarn")&&has('Highmark Tarn')&&has('The fjord')&&texts.some(x=>/Gryphon Queen/.test(x))&&texts.some(x=>/Mountain Golem/.test(x))&&has('The Old Adit'));
+    ok('...and the two rock falls in the west wall (the river road and the neck pass)',has('The river road')&&has('The neck pass'));
+    ok('...with its own zone tier row',c.el('#mapTier').dataset.land==='grey'&&/Zone tier/.test(c.el('#mapTier').innerHTML||''));
+    { let na=0; G.mapCX.arc=()=>{ na++; }; const prof=G.GEAR.prof, eq={pick:G.GEAR.eq.pick,axe:G.GEAR.eq.axe,sickle:G.GEAR.eq.sickle};
+      G.GEAR.prof={mining:{xp:0},woodcutting:{xp:0},gathering:{xp:0}}; G.GEAR.eq.pick='pick6'; G.GEAR.eq.axe='axe6'; G.GEAR.eq.sickle='sickle6'; G.drawFullMap(); const withP=na; na=0;
+      G.GEAR.prof=null; G.drawFullMap(); const without=na; G.GEAR.prof=prof; Object.assign(G.GEAR.eq,eq); G.mapCX.arc=()=>{};
+      ok('...and the resource nodes you can work show as dots on it (the Greyspine\'s, as in the Reach)',withP>without+20,withP+' dots with the professions and the best tools, '+without+' without'); }
+    let mmErr=null; try{ G.drawMinimap(); }catch(e){ mmErr=e; } ok('the minimap draws in the Greyspine without error (the 90 m around you, from the same painted image)',!mmErr);
+    G.P.x=0; G.P.z=0; G.GEAR.west=0; const shut=G.landOpen('grey'); G.GEAR.west=1; const open=G.landOpen('grey'); G.GEAR.west=sv.west;
+    ok('the Greyspine\'s map opens from the home forest once the ice fall in the glacier valley is open (gear.west), not before',!shut&&open);
+    G.mapCX.fillText=()=>{}; G.MAP.done=sv.done; G.P.x=sv.x; G.P.z=sv.z; }
   // chamois: harmless herds that exist only in the Greyspine, stand on the high slopes and bolt from you
   { const sv={x:G.P.x,y:G.P.y,z:G.P.z}; G.P.x=G.VIL4.x; G.P.z=G.VIL4.z; for(let i=0;i<60;i++) G.chamoisUpdate(0.1);
     const on=G.CHAM.list.filter(a=>a.herd.on);
@@ -147,6 +162,7 @@ const el=s=>document.querySelector(s);
       ok('dungeon: a wall stops you, and the server agrees where you are',G.dgFree(B,lx(),lz(),0.3)&&went<dir.d&&Math.hypot(sp().x-G.P.x,sp().z-G.P.z)<0.35,'went '+went.toFixed(2)+' of '+dir.d.toFixed(2)+' m'); }
     G.P.x-=dir.dx*1.2; G.P.z-=dir.dz*1.2; G.P.yaw=Math.atan2(dir.dx,dir.dz); G.P.pitch=0; for(let i=0;i<10;i++) G.updateCamera(0.05);
     { const d=Math.hypot(G.camera.position.x-G.P.x,G.camera.position.z-G.P.z); ok('dungeon: with a wall behind you the camera\'s arm shortens',d<2.2,'arm '+d.toFixed(2)+' m'); }
+    for(let i=0;i<15&&G.MONS.filter(m=>m.dgK).length<=3;i++){ await wait(200); G=c.G(); }   // (the roster arrives in a message of its own: wait for it, a loaded machine was slow once)
     ok('dungeon: the run\'s monsters have views at the run\'s level',G.MONS.filter(m=>m.dgK&&G.monTierK(m).lv===R.L).length>3);
     G.applySnap({dg:[0,40,0,3,9]}); G.dgHudTick(0.016); ok('dungeon: the dg snapshot drives the HUD text',el('#dgHudTitle').textContent==='Purge'&&el('#dgHudLines')._kids.some(k=>k.textContent==='Monsters slain: 3 / 9'));
     const me=G.NET.pid; G.applyEvent(['pty',me,me,[[me,'Me',100,100,50,0,R.id],[4242,'Ann',0,120,29,1,R.id]]]);
