@@ -68,7 +68,7 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
 
 - **Weather is regional only on the client.** The server still has one weather for the whole world; the client turns rain into snowfall and a storm into a
   blizzard when the camera is in the Reach. So everyone hears the same "it is starting to rain" schedule, thunder in the Reach is a thundersnow, and there is no
-  weather that only exists in the Reach (a snowfall without a storm, or clear cold nights with ground blizzards). Real regional weather (sandstorms, gales, tropical
+  weather that only exists in the Reach (a snowfall without a storm, or clear cold nights with ground blizzards). The Greyspine does the same by the ground's height (`greySnowAmt`). Real regional weather (sandstorms, gales, tropical
   storms are needed by later lands too) means a per-region schedule in `server/weather.js` and a region in the snapshot's weather field.
 - **The ice wall is opened per player.** The server lets each player through once `gear.north` is 1 and moves them back otherwise, and each client sinks the wall when its
   own save says so, so two players can see different things at the wall. That matches the tunnel's door and is fine for a shared world, but it is not a world event.
@@ -101,6 +101,8 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
 - **the two rock falls** in the west wall (the river road, opened by the Gryphon Queen: `gear.river`; the neck pass, by the Golem: `gear.neck`): canyons through the wall to the world's edge;
 - **the main quest, act IV** (`docs/MAIN-QUEST.md` section 3c): G1-G9, Odran's cart at Highmark, the black stone veins, a night guard against grey-veined granite slimes, the deepest shaft and the golem's broken stone as lore spots;
 - **zone tiers** (`ZTIER_LANDS` has `grey`: the picker, the Mountain Golem opening them) and **its dungeon, the Blackseam**, a mine under Highmark Pastures with the boss Garrick (`docs/DUNGEON-THEMES.md` section 9), whose clear pays a **pendant** (`docs/PENDANTS.md`);
+- **weather by height** (client only): rain in the valleys and on Highmark's shelf, a sleet band on the slopes (rain and flakes together), snow on the peaks, the line `greySnowAmt` (`shared/greyspine.js`) following the ground's own snowline (colder in the far north, like a Minecraft biome's temperature by height); `WX.snow` is driven by the ground's height under the camera (`updateWeather`, `game/world/weather.js`), so the sky tint and the wind sound follow too;
+- **wildlife**: the **chamois**, small harmless herds of mountain goats on the high slopes (`game/wildlife/chamois.js`, built the first time you stand in the Greyspine; they graze, look up and bolt from you; not synced, like the deer);
 - testing tools: `dev tunnel` `glen` / `glenw` / `highmark` / `grey` / `queen` / `cavern` / `riverfall` / `neckfall`, `dev west`, `dev gate`, and the buttons in the Testing section (the Old Adit's door button included).
 
 **Not built**, in about this order:
@@ -115,7 +117,8 @@ Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md
 - **A use for coins at level 30 and above: not implemented yet.** Past the last shop tier (gear stays at tier 5, `tierFor`), level-30 gear is only paid by dungeons and tempered with stones (no coins), so the coins a level 30+ hiker earns (`coinsFor`, x20 from bosses, +pendants of Fortune) have nowhere to go but potions and brewing. Ideas, none chosen: a coin cost on tempering or merging, a coin price on Tempering Stones, a Highmark shop, buying a dungeon's key. Recorded here only; it is not part of the Greyspine work.
 - **Music**: the Blackseam plays the Reach's `hoar1` track; Highmark and the zones play the Rimehold and Reach tracks and the two boss fights the Reach's boss songs (`boss26` for the Queen, `boss30` for the Golem) as placeholders (`THEMES`, `musicThemeHere`); no recorded track exists
   for the Greyspine, and no night mix for Highmark.
-- **Weather and sound**: sudden mist, thunderstorms on the peaks, avalanches as a boss move, an alpine wind of its own (the Greyspine uses the home forest's ambience; only the footsteps on water follow `waterSurf`). Regional weather is still client-side only (section 3).
+- **Weather and sound**: (rain below the peaks and snow on them is built, see above) sudden mist, thunderstorms on the peaks, avalanches as a boss move, an alpine wind of its own (the Greyspine uses the home forest's ambience, apart from the Reach's wind that `rainSoundTick` already blends in with `WX.snow` when it snows; only the footsteps on water follow `waterSurf`). Regional weather is still client-side only (section 3): everyone gets the same "it is starting to rain" schedule, and a clear sky is clear on the peaks too.
+- **More wildlife**: only the chamois exist; marmots on the meadows, eagles or a lammergeier over the peaks, and a bird or two at the tarns are not made (animals in the Vale and the Reach are not either).
 - **Dressing of the village and the land**: Highmark has no palisade, no rope bridges on the troughs' flanks and no shrines (the doc's dressing); no waterfalls (the tarns, river and fjord are
   surfaces without falls, foam or sound beyond the shared water); no **wonder** (a floating rock, `WORLD.md` rule 9) and no mine entrance.
 - **The monsters' mechanics**: the 14 kinds are new models (the gryphon family, crystals, the troll) but share the ordinary AI; no kind uses terrain (rock fall from cliffs, wind gusts), and the

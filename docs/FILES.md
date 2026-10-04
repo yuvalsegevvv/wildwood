@@ -140,6 +140,7 @@ game
   world/motes.js                     Floating pollen by day, fireflies by night
   world/petals.js                    Cherry petals drifting down around you in the Sakura Vale
   wildlife/animals.js                Deer, foxes, rabbits, ducks, birds/bats, butterflies
+  wildlife/chamois.js                Chamois: small harmless herds of mountain goats on the Greyspine's alpine slopes (client-only dressing, built the first time you stand in the Greyspine; they graze, look up and bolt from you)
   world/time-of-day.js               20-minute day/night cycle, sky keyframes, clock, zone label
   player/input.js                    Keyboard, hold Alt to free the mouse, mouse look, touch joystick, HUD buttons
   ui/character-editor.js             Character editor panel and camera: opened from the HUD, or in creating mode right after a new account is registered
@@ -203,7 +204,7 @@ game
   combat/boss.js                     The bosses, client side: telegraph visuals (circle, cone, line, donut, marks) and how each ends, root spikes, slam waves, shield bubble, roars, boss bar, a boss's look in each mode
   combat/boss-fx.js                  Boss zones and waves (fire pools, whirlpools, the whiteout, the blizzard, Amanita's spore clouds, tidal walls) and what a boss does to you: frozen, slowed, shoved, pulled into a whirlpool
   combat/skill-fx.js                 Visuals and sounds for the equippable skills: Arrow Rain, Meteor, Chain Lightning, Piercing Shot, Shield Bash, Charge, and every skill with generic effects (fx: the boss skills)
-  world/weather.js                   Weather on the client: rain streaks around the camera (snowfall and blizzards instead in the Hoarfrost Reach), a darker foggy sky, lightning and thunder (rain and wind sound: audio/rain.js)
+  world/weather.js                   Weather on the client: rain streaks around the camera (snowfall and blizzards instead in the Hoarfrost Reach and on the Greyspine's peaks), a darker foggy sky, lightning and thunder (rain and wind sound: audio/rain.js)
   world/aurora.js                    The aurora over the Hoarfrost Reach: slow green and violet curtains in the northern sky on clear nights
   player/movement.js                 Player movement (with a boss's ice, shoves and whirlpools), collisions (the border mountains, the tunnel and its sealed door, the vale's north wall with Frostgate Pass and its ice wall, the home forest's north rim above the Greyspine), camera
   ui/map.js                          World map: a map image painted from the terrain, the corner minimap, and the full map (N) of each land (home forest, Sakura Vale, Hoarfrost Reach, Greyspine) with zones, quests, resource nodes and players

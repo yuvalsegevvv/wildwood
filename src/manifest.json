@@ -112,6 +112,7 @@
     "world/motes.js",
     "world/petals.js",
     "wildlife/animals.js",
+    "wildlife/chamois.js",
     "world/time-of-day.js",
     "player/input.js",
     "ui/character-editor.js",

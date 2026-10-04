@@ -18,6 +18,7 @@ function frame(){
     animateHiker(dt);
     updateMotes(dt,t); updatePetals(dt,t);
     updateAnimals(dt);
+    chamoisUpdate(dt);   // chamois: the Greyspine's harmless mountain goats (wildlife/chamois.js)
     updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateGreyspine(dt); updateNodes(); updateLoreProps();
     updateNPCs(dt);
     dgEntUpdate(dt);   // dungeons: the doors' sealed look and animation

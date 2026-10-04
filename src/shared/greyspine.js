@@ -25,6 +25,10 @@ GREY_VALLEYS.forEach(v=>{ v.len=[0]; for(let i=1;i<v.pts.length;i++) v.len.push(
 const GREY_HM={x:292,z:-792,r:34,up:26};   // up: the bench's height above the trough's floor
 const GREY_QUEEN={x:-200,z:-960,r:28,h:232};
 const greyTreeline=(x,z)=>106+noise2(x*0.012+7,z*0.012-2)*14;   // no tree grows above it (the snowline is a little higher)
+// Where rain turns to snow (the client's weather, game/world/weather.js), as a Minecraft biome does by temperature: the air cools with height and
+// with the far north (10 m lower beyond z -860). Same noise and north shift as the white ground's line in terrain-color.js, so the flakes begin a
+// little below where the ground whitens: 0 = rain below the line (Highmark's shelf, ~100 m, stays wet), 1 = snow 34 m above it (the peaks), sleet in between.
+const greySnowAmt=(x,z,h)=>{ const sl=(z<-860?-10:0)+(noise2(x*0.02,z*0.02)*0.5+0.5)*18; return smoothstep(112+sl,146+sl,h); };
 const GV={m:0,up:0,d:0};
 /* how much of this point is valley floor: GV.m 1 on a trough's flat floor, 0 on the mountains; GV.up the floor's rise towards the head
    of a side valley, GV.d the distance to the nearest trough's centre line. The troughs wander (a domain warp of +-38 m), so they are not lines drawn with a ruler. */

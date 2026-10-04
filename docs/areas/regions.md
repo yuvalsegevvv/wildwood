@@ -10,7 +10,7 @@ shape `hoarHeight`, `FROST_LAKES`, `NORTH_D` in `shared/terrain.js` (the cheap G
 
 ### Weather: snow instead of rain in the Reach (the server still has one weather); the aurora at night over it (`game/world/aurora.js`)
 
-`WX.snow`, the snowfall layer and `weatherTint` in `game/world/weather.js`, the wind in `game/audio/rain.js`, wind / howls / crunch in `audio/driver.js`, `audio/ambience.js`
+`WX.snow`, the snowfall layer and `weatherTint` in `game/world/weather.js` (in the Greyspine `WX.snow` follows the ground's height instead: `greySnowAmt`, `docs/areas/greyspine.md`), the wind in `game/audio/rain.js`, wind / howls / crunch in `audio/driver.js`, `audio/ambience.js`
 
 ### Teleport circles and their travel window (choose among the villages; it opens by itself when you step onto an attuned circle)
 

@@ -1,9 +1,10 @@
-//@ Weather on the client: rain streaks around the camera (snowfall and blizzards instead in the Hoarfrost Reach), a darker foggy sky, lightning and thunder (rain and wind sound: audio/rain.js)
+//@ Weather on the client: rain streaks around the camera (snowfall and blizzards instead in the Hoarfrost Reach and on the Greyspine's peaks), a darker foggy sky, lightning and thunder (rain and wind sound: audio/rain.js)
 /* The server decides the weather (src/server/weather.js); snapshots carry [kind, seconds in, duration] and
    'thunder' events carry where lightning struck. Rain fades in and out over 25 seconds.
    The weather is one for the whole world, but what falls depends on where you stand: in the Hoarfrost Reach (WX.snow, 0..1, follows the
    camera's position over the vale's north rim) rain becomes snow and a storm a blizzard: slow, drifting flakes, a pale close sky, a wind
-   in place of the patter. */
+   in place of the patter. In the Greyspine WX.snow follows the height of the ground (greySnowAmt): rain on the valley floors and Highmark's
+   shelf, a sleet band on the slopes (rain and flakes at once, the counts scale by 1-snow and snow), snow on the peaks. */
 const WX={kind:0,t:0,dur:0,inten:0,flash:0,snd:null,snow:0};
 const RAIN_N=LITE?700:(LOW?1100:2000);
 const rainPos=new Float32Array(RAIN_N*6), rainGeo=new THREE.BufferGeometry();
@@ -44,8 +45,10 @@ function updateWeather(dt){
   WX.inten+=(weatherTarget()-WX.inten)*Math.min(1,dt*0.8);
   if(dgIn()) WX.inten=0;   // dungeons: no rain, snow or their sound under the ground (it eases back after a run)
   WX.flash=Math.max(0,WX.flash-dt*3.2);
-  // rain or snow: by where the camera is (over the vale's north crest and down onto the plateau it turns to snow over ~50 m)
-  { const cx=camera.position.x, cz=camera.position.z, tgt=cx>HALF?smoothstep(HZ0+25,HZ0-25,cz):0; WX.snow+=(tgt-WX.snow)*Math.min(1,dt*2); if(Math.abs(tgt-WX.snow)<0.004) WX.snow=tgt; }
+  // rain or snow: by where the camera is (over the vale's north crest and down onto the plateau it turns to snow over ~50 m; in the Greyspine by the
+  // height of the ground, rain in the valleys, sleet on the slopes, snow on the peaks: greySnowAmt, shared/greyspine.js)
+  { const cx=camera.position.x, cz=camera.position.z, tgt=cx>HALF?smoothstep(HZ0+25,HZ0-25,cz):(inGrey(cx,cz)?greySnowAmt(cx,cz,getH(cx,cz)):0);
+    WX.snow+=(tgt-WX.snow)*Math.min(1,dt*2); if(Math.abs(tgt-WX.snow)<0.004) WX.snow=tgt; }
   const on=WX.inten>0.01, sn=WX.snow; rain.visible=on&&sn<0.98; snowfall.visible=on&&sn>0.02;
   if(snowfall.visible){
     const nS=Math.floor(SNOW_N*WX.inten*(WX.kind===2?1:0.55)*sn), blow=WX.kind===2, wind=blow?7.5:0.9;

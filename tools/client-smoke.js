@@ -2,7 +2,7 @@
 // client code. Build first (python3 build.py). Needs the three package (npm install). Prints PASS/FAIL lines.
 // Usage: node tools/client-smoke.js
 const {bootClient}=require('./headless');
-const c=bootClient({expose:['NET','mqTarget','mqLogRow','mqMark','odranHere','MQ_BY_ID','VIL4','LORE_BY_ID','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','GLEN','GREY_GATES','slotIcon','PENDANT_STATS','itemStat','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt',
+const c=bootClient({expose:['NET','mqTarget','mqLogRow','mqMark','odranHere','MQ_BY_ID','VIL4','LORE_BY_ID','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','greySnowAmt','CHAM','chamoisUpdate','chamoisOK','GLEN','GREY_GATES','slotIcon','PENDANT_STATS','itemStat','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt',
   'DG_RUN:()=>DG_RUN','DG_VIEW','DG_THEMES','dgFree','dgIn','dgHudText','dgHudTick','dgDownText','sky','water','sun','updateCamera','updateEnv','updatePlayer','applySnap','keys','TERRAIN_BANDS','cullChunks','playerDown','playerUp']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const el=s=>document.querySelector(s);
@@ -102,7 +102,26 @@ const el=s=>document.querySelector(s);
   G.NET.send({t:'dev',cmd:'weather',v:'rain'}); await wait(300); G.camera.position.set(G.VIL3.x,G.VIL3.h+3,G.VIL3.z); for(let i=0;i<80;i++){ G.WX.t+=0.5; G.updateWeather(0.5); }
   ok('in the Reach the rain becomes snowfall',G.WX.snow>0.95&&G.snowfall.visible&&!G.rain.visible);
   G.camera.position.set(0,10,0); for(let i=0;i<40;i++){ G.WX.t+=0.5; G.updateWeather(0.5); } ok('and in the forest it is rain again',G.WX.snow<0.05&&G.rain.visible&&!G.snowfall.visible);
+  // the Greyspine by height: rain on Highmark's shelf, snow on the Gryphon Queen's peak, a sleet band between (both fall: counts scale by 1-snow and snow)
+  { const at=(x,z,y)=>{ G.camera.position.set(x,y===undefined?G.getH(x,z)+3:y,z); for(let i=0;i<40;i++){ G.WX.t+=0.5; G.updateWeather(0.5); } };
+    at(G.VIL4.x,G.VIL4.z); ok('in the Greyspine the rain stays rain down at Highmark (the shelf is below the snowline)',G.WX.snow<0.05&&G.rain.visible&&!G.snowfall.visible);
+    const q=G.GREY_QUEEN; at(q.x,q.z); ok('...and on the Gryphon Queen\'s peak it is snowfall',G.WX.snow>0.95&&G.snowfall.visible&&!G.rain.visible);
+    let mid=null; for(let x=-420;x<420&&!mid;x+=12) for(let z=-1030;z<-460;z+=12){ const a=G.greySnowAmt(x,z,G.getH(x,z)); if(a>0.4&&a<0.6){ mid=[x,z]; break; } }
+    ok('the sleet band exists on the slopes (some ground has the snow share between 0.4 and 0.6)',!!mid);
+    if(mid){ at(mid[0],mid[1]); ok('...there rain and flakes fall together',G.WX.snow>0.2&&G.WX.snow<0.8&&G.rain.visible&&G.snowfall.visible); }
+    ok('the line is colder to the north and lower ground never snows: Highmark 0, the queen\'s peak 1, the same height 10 m lower in the far north snows more',G.greySnowAmt(0,-700,0)===0&&G.greySnowAmt(0,-700,300)===1&&G.greySnowAmt(0,-900,125)>=G.greySnowAmt(0,-700,125)); }
+  G.camera.position.set(0,10,0); for(let i=0;i<40;i++){ G.WX.t+=0.5; G.updateWeather(0.5); }
   G.NET.send({t:'dev',cmd:'weather',v:'clear'});
+  // chamois: harmless herds that exist only in the Greyspine, stand on the high slopes and bolt from you
+  { const sv={x:G.P.x,y:G.P.y,z:G.P.z}; G.P.x=G.VIL4.x; G.P.z=G.VIL4.z; for(let i=0;i<60;i++) G.chamoisUpdate(0.1);
+    const on=G.CHAM.list.filter(a=>a.herd.on);
+    ok('chamois: in the Greyspine herds are built and placed (3-5 goats each)',G.CHAM.ready&&G.CHAM.herds.length>=2&&on.length>=3&&G.CHAM.herds.every(h=>h.list.length>=3&&h.list.length<=5));
+    ok('...on ground chamoisOK allows (high slopes, no water, not Highmark), within 150 m of you',on.every(a=>G.chamoisOK(a.x,a.z)&&Math.hypot(a.x-G.P.x,a.z-G.P.z)<150));
+    const a=on[0]; a.x=G.P.x+6; a.z=G.P.z; for(let i=0;i<3;i++) G.chamoisUpdate(0.05);
+    ok('...and one 6 m from you bolts away',a.state==='flee'&&a.speed>0);
+    G.P.x=0; G.P.z=0; G.chamoisUpdate(0.1);
+    ok('in the home forest none is shown (hidden, off, no cost)',!G.CHAM.shown&&G.CHAM.list.every(a=>!a.herd.on)&&G.CHAM.mT.instanceMatrix.array[0]===0&&G.CHAM.mT.instanceMatrix.array[5]===0);
+    G.P.x=sv.x; G.P.y=sv.y; G.P.z=sv.z; }
   // zone tiers: unlock through the testing tool, the symbol shows, the picker works in the village, a monster's level and health follow your tier
   G.NET.send({t:'dev',cmd:'zt',v:1}); await wait(500); G=c.G();
   ok('zone tiers: four lands unlocked at tier I show the symbol (four points, +40%, a badge for each land)',G.GEAR.zt.home.max===1&&G.GEAR.zt.grey.max===1&&!c.el('#plSym').hidden&&/\+40%/.test(c.el('#plSym').title||'')&&/Greyspine I/.test(c.el('#plSym').title||''),c.el('#plSym').title);
