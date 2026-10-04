@@ -44,6 +44,7 @@ const el=s=>document.querySelector(s);
     const j=G.Stream.job, n=G.Stream.pending.length; G.streamPump(50); ok('no chunks are grown in a run',G.Stream.job===j&&G.Stream.pending.length===n); }
   { let pl=0; G.scene.traverse(o=>{ if(o.isPointLight&&o.parent===G.scene) pl++; }); ok('a torch and two lamps (a desktop) light the run',pl===lights0+3&&G.DG_LOOK.torch.parent===G.scene,pl+' point lights'); }
   ok('the run plays its theme\'s music',G.musicThemeHere()===G.DG_THEMES.hollowroots.music);
+  for(let i=0;i<15&&G.MONS.filter(m=>m.dgK).length<=3;i++){ await wait(200); G=c.G(); }   // (the roster comes in a message of its own: a loaded machine was slow once)
   { const ms=G.MONS.filter(m=>m.dgK); ok('the run\'s monsters have views with the run\'s level and their health from the roster',ms.length>3&&ms.every(m=>G.monTierK(m).lv===R.L&&m.maxHp>m.def.hp*0.99&&m.y===R.y),ms.length+' monsters, lv '+(ms[0]&&G.monTierK(ms[0]).lv)); }
   // ---- walls ----
   const B=R.B, loc=()=>[G.P.x-R.ox,G.P.z-R.oz];
