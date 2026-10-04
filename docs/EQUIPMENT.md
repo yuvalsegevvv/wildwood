@@ -20,13 +20,14 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | The item id scheme (`sword2`, `sword2-e`) | `itemId` src/shared/items.js:23 |
 | Tools (pickaxe, axe, sickle): materials, prices, double-yield chance by rarity | `TOOL_MAT` / `TOOL_PRICE` / `TOOL_EXTRA` src/shared/items.js:36-37 |
 | What gear adds to a player (health, attack, defense) | `gearStatsOf` src/shared/items.js:61, `recalcP` src/server/players.js:75 |
+| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:122 |
 | Wearing an item (level check, slot) | `equipP` src/server/economy.js:25 |
 | Shops: common items only, +20% per copy bought | `buyP` src/server/economy.js:38, `shopPrice` src/shared/items.js:47, shop panel src/game/economy/shops.js:20 |
 | Monster and boss drops (the item roll and its tier) | `rollMonsterRarity` / `rollBossRarity` src/shared/items.js:51, used in `rewardKill` src/server/combat.js:55 |
 | Quest board rewards (item rarity) | `rollQuestItemRarity` src/shared/quests.js:62 |
 | Merging three identical items into the next rarity (Greta's forge) | `mergeP` src/server/economy.js:15, `mergedId` src/shared/items.js:48 |
 | Crafting from ore / logs (rarity common to epic) | `craftCost` src/shared/crafting.js:12, `craftP` src/server/crafting.js:6 |
-| The level-30 dungeon pieces and rings: stats, ids, rewards, enhancing | `dgItem` src/shared/dungeon-rewards.js:45, registered in `ITEM` by src/shared/dungeon-items.js:10; the drop of the Tempering Stone and tempering `dgTemperP` src/server/dungeon-gear.js:27 |
+| The level-30 dungeon pieces and rings: stats, ids, rewards, enhancing | `dgItem` src/shared/dungeon-rewards.js:46, registered in `ITEM` by src/shared/dungeon-items.js:10; the drop of the Tempering Stone and tempering `dgTemperP` src/server/dungeon-gear.js:27 |
 | How a piece looks on the character | `ARMOR_LOOK` src/shared/items.js:54 |
 | The inventory icon of every piece and tool | src/game/ui/item-icons.js:1 (the file) |
 | A save's gear (what is worn, what is in the bag) | `newGearFor` src/shared/items.js:60, `sanitizeGear` src/server/players.js:5 |
@@ -34,7 +35,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 ## 2. How the stats are made
 
 - **Weapon attack** = round(TIER_ATK[tier] × RAR_MULT[rarity]). The weapon you wield sets your class (sword: Warrior, bow: Archer, wand: Mage). A player's damage is `(3 f(L) + gear attack) × (1 + symbol)`.
-- **Armour health** = round(ARMOR_HP[piece][tier] × RAR_MULT[rarity]); **defense** = max(ARMOR_DEF[piece][tier] + rarity, round(ARMOR_DEF × RAR_MULT)). A player's health is `(20 f(L) + gear health) × (1 + passives) × (1 + symbol)`; damage taken is cut by `def / (def + 60)`.
+- **Armour health** = round(ARMOR_HP[piece][tier] × RAR_MULT[rarity]); **defense** = max(ARMOR_DEF[piece][tier] + rarity, round(ARMOR_DEF × RAR_MULT)). A player's health is `(20 f(L) + gear health) × (1 + passives) × (1 + symbol)`; damage taken is cut by `def / (def + 60)` up to 60% negation (defense 90) and then softly capped toward 90% (`defRed`): the maxed level-30 set (576 defense) negates 84%, not 91%; a hit always does at least 10% (`DMG_TAKEN_MIN`).
 - **Price** = round(PRICE[tier] × SLOT_PRICE[piece] × 3^rarity); sells for 40% (`sellPrice`). Only **common** items are in the shops, unlimited, each copy bought costs 20% of the base more until sunrise.
 - **Level**: an item needs `lv` = TIER_LV[tier] (1, 5, 10, 15, 20, 25) to be worn. Tiers 1-4 are the home forest's, 5-6 the Sakura Vale's samurai gear; **tier 6 is the top of the world's gear**: levels 25-30 (the Hoarfrost Reach) still drop tier 6; the level-30 dungeon pieces (section 7) are a tier above and only dungeons pay them.
 - **Rarity** (Common ×1, Rare ×1.3, Epic ×1.7, Unique ×2.2, Legendary ×3): 3 identical items merge into one of the next rarity at the forge (same tier needed). Drops: a monster 2% common, 0.5% rare, 0.1% epic per kill; a boss 50 / 10 / 3 / 1 / 0.1% (common to legendary). The rarity is rolled first, then one of the seven pieces with equal chance, of the tier of the monster's level (`tierFor`).
@@ -361,99 +362,99 @@ Three tool slots (`eq.pick`, `eq.axe`, `eq.sickle`), the same 6 tiers and 5 rari
 
 ## 7. Level-30 dungeon gear and rings (490 ids)
 
-A tier above the six of section 3, paid **only by dungeons**: level 30 (`DG_GEAR_LV`), not in `TIER_LV` / `ITEM_LIST`, so shops, drops, "give every item" and `tierFor` never see them (they are in `ITEM` and carry `dg:true`). 7 pieces and 7 rings, 5 rarities each, each of them enhanced from +0 up to **+2 / +4 / +6 / +8 / +10** (by rarity): 490 ids. Tempering Stones raise a piece one step (step n costs n stones) and add 5% of its own stats per step; they drop from normal monsters of level 30+ at 2.6% instead of equipment. One clear of a dungeon pays one random piece of its pool: the rarity is Common 70%, Rare 25%, Epic 4%, Unique 0.8%, Legendary 0.2%, then one kind of the pool with equal chance; everyone in the party gets the same piece.
+A tier above the six of section 3, paid **only by dungeons**: level 30 (`DG_GEAR_LV`), not in `TIER_LV` / `ITEM_LIST`, so shops, drops, "give every item" and `tierFor` never see them (they are in `ITEM` and carry `dg:true`). 7 pieces and 7 rings, 5 rarities each, each of them enhanced from +0 up to **+2 / +4 / +6 / +8 / +10** (by rarity): 490 ids. Tempering Stones raise a piece one step (step n costs n stones) and add 10% of its own stats per step; they drop from normal monsters of level 30+ at 2.6% instead of equipment. One clear of a dungeon pays one random piece of its pool: the rarity is Common 70%, Rare 25%, Epic 4%, Unique 0.8%, Legendary 0.2%, then one kind of the pool with equal chance; everyone in the party gets the same piece.
 
 Ids: `<piece>7[-r|-e|-u|-l][+n]` (`sword7-e+3` is an epic level-30 sword at +3) and `ring-<element>[-r|-e|-u|-l][+n]` (`ring-fire-l+10`). The tables list the **+0 base of each of the 14 kinds × 5 rarities** and, in the last stat column, the stat at every step from +0 to the rarity's maximum, so every id is covered. A ring adds a share of **your weapon's attack** and only when its element is your soul's (`basic` is the plain ring, for an unbound soul).
 
 ### 7.1 Weapons (15)
 
-Names `DG_NAMES` src/shared/dungeon-rewards.js:17; attack `DG_ATK` src/shared/dungeon-rewards.js:15 × `RAR_MULT` × (1 + 0.05 n).
+Names `DG_NAMES` src/shared/dungeon-rewards.js:18; attack `DG_ATK` src/shared/dungeon-rewards.js:16 × `RAR_MULT` × (1 + 0.1 n).
 
 | Id | Name | Req Lv | Rarity | Attack | Price | Sell | Max | Stat at +0, +1 ... +max | Paid by | Ref |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `sword7` | Elderwood Blade | 30 | Common | 135 | 39000 | 15600 | +2 | 135, 142, 149 | The Hollow Roots | DG_NAMES.sword |
-| `sword7-r` | Rare Elderwood Blade | 30 | Rare | 176 | 117000 | 46800 | +4 | 176, 184, 193, 202, 211 | The Hollow Roots | DG_NAMES.sword |
-| `sword7-e` | Epic Elderwood Blade | 30 | Epic | 230 | 351000 | 140400 | +6 | 230, 241, 252, 264, 275, 287, 298 | The Hollow Roots | DG_NAMES.sword |
-| `sword7-u` | Unique Elderwood Blade | 30 | Unique | 297 | 1053000 | 421200 | +8 | 297, 312, 327, 342, 356, 371, 386, 401, 416 | The Hollow Roots | DG_NAMES.sword |
-| `sword7-l` | Legendary Elderwood Blade | 30 | Legendary | 405 | 3159000 | 1263600 | +10 | 405, 425, 446, 466, 486, 506, 527, 547, 567, 587, 608 | The Hollow Roots | DG_NAMES.sword |
-| `bow7` | Elderwood Longbow | 30 | Common | 135 | 39000 | 15600 | +2 | 135, 142, 149 | The Hollow Roots | DG_NAMES.bow |
-| `bow7-r` | Rare Elderwood Longbow | 30 | Rare | 176 | 117000 | 46800 | +4 | 176, 184, 193, 202, 211 | The Hollow Roots | DG_NAMES.bow |
-| `bow7-e` | Epic Elderwood Longbow | 30 | Epic | 230 | 351000 | 140400 | +6 | 230, 241, 252, 264, 275, 287, 298 | The Hollow Roots | DG_NAMES.bow |
-| `bow7-u` | Unique Elderwood Longbow | 30 | Unique | 297 | 1053000 | 421200 | +8 | 297, 312, 327, 342, 356, 371, 386, 401, 416 | The Hollow Roots | DG_NAMES.bow |
-| `bow7-l` | Legendary Elderwood Longbow | 30 | Legendary | 405 | 3159000 | 1263600 | +10 | 405, 425, 446, 466, 486, 506, 527, 547, 567, 587, 608 | The Hollow Roots | DG_NAMES.bow |
-| `wand7` | Elderwood Wand | 30 | Common | 135 | 39000 | 15600 | +2 | 135, 142, 149 | The Hollow Roots | DG_NAMES.wand |
-| `wand7-r` | Rare Elderwood Wand | 30 | Rare | 176 | 117000 | 46800 | +4 | 176, 184, 193, 202, 211 | The Hollow Roots | DG_NAMES.wand |
-| `wand7-e` | Epic Elderwood Wand | 30 | Epic | 230 | 351000 | 140400 | +6 | 230, 241, 252, 264, 275, 287, 298 | The Hollow Roots | DG_NAMES.wand |
-| `wand7-u` | Unique Elderwood Wand | 30 | Unique | 297 | 1053000 | 421200 | +8 | 297, 312, 327, 342, 356, 371, 386, 401, 416 | The Hollow Roots | DG_NAMES.wand |
-| `wand7-l` | Legendary Elderwood Wand | 30 | Legendary | 405 | 3159000 | 1263600 | +10 | 405, 425, 446, 466, 486, 506, 527, 547, 567, 587, 608 | The Hollow Roots | DG_NAMES.wand |
+| `sword7` | Elderwood Blade | 30 | Common | 125 | 39000 | 15600 | +2 | 125, 138, 150 | The Hollow Roots | DG_NAMES.sword |
+| `sword7-r` | Rare Elderwood Blade | 30 | Rare | 163 | 117000 | 46800 | +4 | 163, 179, 195, 211, 227 | The Hollow Roots | DG_NAMES.sword |
+| `sword7-e` | Epic Elderwood Blade | 30 | Epic | 213 | 351000 | 140400 | +6 | 213, 234, 255, 276, 298, 319, 340 | The Hollow Roots | DG_NAMES.sword |
+| `sword7-u` | Unique Elderwood Blade | 30 | Unique | 275 | 1053000 | 421200 | +8 | 275, 303, 330, 358, 385, 413, 440, 468, 495 | The Hollow Roots | DG_NAMES.sword |
+| `sword7-l` | Legendary Elderwood Blade | 30 | Legendary | 375 | 3159000 | 1263600 | +10 | 375, 413, 450, 488, 525, 563, 600, 638, 675, 713, 750 | The Hollow Roots | DG_NAMES.sword |
+| `bow7` | Elderwood Longbow | 30 | Common | 125 | 39000 | 15600 | +2 | 125, 138, 150 | The Hollow Roots | DG_NAMES.bow |
+| `bow7-r` | Rare Elderwood Longbow | 30 | Rare | 163 | 117000 | 46800 | +4 | 163, 179, 195, 211, 227 | The Hollow Roots | DG_NAMES.bow |
+| `bow7-e` | Epic Elderwood Longbow | 30 | Epic | 213 | 351000 | 140400 | +6 | 213, 234, 255, 276, 298, 319, 340 | The Hollow Roots | DG_NAMES.bow |
+| `bow7-u` | Unique Elderwood Longbow | 30 | Unique | 275 | 1053000 | 421200 | +8 | 275, 303, 330, 358, 385, 413, 440, 468, 495 | The Hollow Roots | DG_NAMES.bow |
+| `bow7-l` | Legendary Elderwood Longbow | 30 | Legendary | 375 | 3159000 | 1263600 | +10 | 375, 413, 450, 488, 525, 563, 600, 638, 675, 713, 750 | The Hollow Roots | DG_NAMES.bow |
+| `wand7` | Elderwood Wand | 30 | Common | 125 | 39000 | 15600 | +2 | 125, 138, 150 | The Hollow Roots | DG_NAMES.wand |
+| `wand7-r` | Rare Elderwood Wand | 30 | Rare | 163 | 117000 | 46800 | +4 | 163, 179, 195, 211, 227 | The Hollow Roots | DG_NAMES.wand |
+| `wand7-e` | Epic Elderwood Wand | 30 | Epic | 213 | 351000 | 140400 | +6 | 213, 234, 255, 276, 298, 319, 340 | The Hollow Roots | DG_NAMES.wand |
+| `wand7-u` | Unique Elderwood Wand | 30 | Unique | 275 | 1053000 | 421200 | +8 | 275, 303, 330, 358, 385, 413, 440, 468, 495 | The Hollow Roots | DG_NAMES.wand |
+| `wand7-l` | Legendary Elderwood Wand | 30 | Legendary | 375 | 3159000 | 1263600 | +10 | 375, 413, 450, 488, 525, 563, 600, 638, 675, 713, 750 | The Hollow Roots | DG_NAMES.wand |
 
 ### 7.2 Armour (20)
 
-Names `DG_NAMES`; health `DG_HP` and defense `DG_DEF` src/shared/dungeon-rewards.js:15 × the rarity and the enhancement.
+Names `DG_NAMES`; health `DG_HP` and defense `DG_DEF` src/shared/dungeon-rewards.js:16 × the rarity and the enhancement.
 
 | Id | Name | Req Lv | Rarity | Health | Defense | Price | Sell | Max | Stat at +0, +1 ... +max | Paid by | Ref |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `helmet7` | Jadeplate Helm | 30 | Common | 340 | 19 | 24000 | 9600 | +2 | 340/19, 357/20, 374/21 | Jade Spring Grottoes | DG_NAMES.helmet |
-| `helmet7-r` | Rare Jadeplate Helm | 30 | Rare | 442 | 25 | 72000 | 28800 | +4 | 442/25, 464/26, 486/28, 508/29, 530/30 | Jade Spring Grottoes | DG_NAMES.helmet |
-| `helmet7-e` | Epic Jadeplate Helm | 30 | Epic | 578 | 32 | 216000 | 86400 | +6 | 578/32, 607/34, 636/35, 665/37, 694/38, 723/40, 751/42 | Jade Spring Grottoes | DG_NAMES.helmet |
-| `helmet7-u` | Unique Jadeplate Helm | 30 | Unique | 748 | 42 | 648000 | 259200 | +8 | 748/42, 785/44, 823/46, 860/48, 898/50, 935/53, 972/55, 1010/57, 1047/59 | Jade Spring Grottoes | DG_NAMES.helmet |
-| `helmet7-l` | Legendary Jadeplate Helm | 30 | Legendary | 1020 | 57 | 1944000 | 777600 | +10 | 1020/57, 1071/60, 1122/63, 1173/66, 1224/68, 1275/71, 1326/74, 1377/77, 1428/80, 1479/83, 1530/86 | Jade Spring Grottoes | DG_NAMES.helmet |
-| `top7` | Jadeplate Cuirass | 30 | Common | 600 | 38 | 36000 | 14400 | +2 | 600/38, 630/40, 660/42 | Jade Spring Grottoes | DG_NAMES.top |
-| `top7-r` | Rare Jadeplate Cuirass | 30 | Rare | 780 | 49 | 108000 | 43200 | +4 | 780/49, 819/51, 858/54, 897/56, 936/59 | Jade Spring Grottoes | DG_NAMES.top |
-| `top7-e` | Epic Jadeplate Cuirass | 30 | Epic | 1020 | 65 | 324000 | 129600 | +6 | 1020/65, 1071/68, 1122/72, 1173/75, 1224/78, 1275/81, 1326/85 | Jade Spring Grottoes | DG_NAMES.top |
-| `top7-u` | Unique Jadeplate Cuirass | 30 | Unique | 1320 | 84 | 972000 | 388800 | +8 | 1320/84, 1386/88, 1452/92, 1518/97, 1584/101, 1650/105, 1716/109, 1782/113, 1848/118 | Jade Spring Grottoes | DG_NAMES.top |
-| `top7-l` | Legendary Jadeplate Cuirass | 30 | Legendary | 1800 | 114 | 2916000 | 1166400 | +10 | 1800/114, 1890/120, 1980/125, 2070/131, 2160/137, 2250/143, 2340/148, 2430/154, 2520/160, 2610/165, 2700/171 | Jade Spring Grottoes | DG_NAMES.top |
-| `bottom7` | Jadeplate Greaves | 30 | Common | 435 | 24 | 30000 | 12000 | +2 | 435/24, 457/25, 479/26 | Jade Spring Grottoes | DG_NAMES.bottom |
-| `bottom7-r` | Rare Jadeplate Greaves | 30 | Rare | 566 | 31 | 90000 | 36000 | +4 | 566/31, 594/33, 622/34, 650/36, 679/37 | Jade Spring Grottoes | DG_NAMES.bottom |
-| `bottom7-e` | Epic Jadeplate Greaves | 30 | Epic | 740 | 41 | 270000 | 108000 | +6 | 740/41, 776/43, 813/45, 850/47, 887/49, 924/51, 961/53 | Jade Spring Grottoes | DG_NAMES.bottom |
-| `bottom7-u` | Unique Jadeplate Greaves | 30 | Unique | 957 | 53 | 810000 | 324000 | +8 | 957/53, 1005/56, 1053/58, 1101/61, 1148/64, 1196/66, 1244/69, 1292/72, 1340/74 | Jade Spring Grottoes | DG_NAMES.bottom |
-| `bottom7-l` | Legendary Jadeplate Greaves | 30 | Legendary | 1305 | 72 | 2430000 | 972000 | +10 | 1305/72, 1370/76, 1436/79, 1501/83, 1566/86, 1631/90, 1697/94, 1762/97, 1827/101, 1892/104, 1958/108 | Jade Spring Grottoes | DG_NAMES.bottom |
-| `shoes7` | Jadeplate Sabatons | 30 | Common | 255 | 15 | 21000 | 8400 | +2 | 255/15, 268/16, 281/17 | Jade Spring Grottoes | DG_NAMES.shoes |
-| `shoes7-r` | Rare Jadeplate Sabatons | 30 | Rare | 332 | 20 | 63000 | 25200 | +4 | 332/20, 348/21, 365/22, 381/23, 398/24 | Jade Spring Grottoes | DG_NAMES.shoes |
-| `shoes7-e` | Epic Jadeplate Sabatons | 30 | Epic | 434 | 26 | 189000 | 75600 | +6 | 434/26, 455/27, 477/29, 499/30, 520/31, 542/33, 564/34 | Jade Spring Grottoes | DG_NAMES.shoes |
-| `shoes7-u` | Unique Jadeplate Sabatons | 30 | Unique | 561 | 33 | 567000 | 226800 | +8 | 561/33, 589/35, 617/36, 645/38, 673/40, 701/41, 729/43, 757/45, 785/46 | Jade Spring Grottoes | DG_NAMES.shoes |
-| `shoes7-l` | Legendary Jadeplate Sabatons | 30 | Legendary | 765 | 45 | 1701000 | 680400 | +10 | 765/45, 803/47, 842/50, 880/52, 918/54, 956/56, 995/59, 1033/61, 1071/63, 1109/65, 1148/68 | Jade Spring Grottoes | DG_NAMES.shoes |
+| `helmet7` | Jadeplate Helm | 30 | Common | 300 | 19 | 24000 | 9600 | +2 | 300/19, 330/21, 360/23 | Jade Spring Grottoes | DG_NAMES.helmet |
+| `helmet7-r` | Rare Jadeplate Helm | 30 | Rare | 390 | 25 | 72000 | 28800 | +4 | 390/25, 429/28, 468/30, 507/33, 546/35 | Jade Spring Grottoes | DG_NAMES.helmet |
+| `helmet7-e` | Epic Jadeplate Helm | 30 | Epic | 510 | 32 | 216000 | 86400 | +6 | 510/32, 561/35, 612/38, 663/42, 714/45, 765/48, 816/51 | Jade Spring Grottoes | DG_NAMES.helmet |
+| `helmet7-u` | Unique Jadeplate Helm | 30 | Unique | 660 | 42 | 648000 | 259200 | +8 | 660/42, 726/46, 792/50, 858/55, 924/59, 990/63, 1056/67, 1122/71, 1188/76 | Jade Spring Grottoes | DG_NAMES.helmet |
+| `helmet7-l` | Legendary Jadeplate Helm | 30 | Legendary | 900 | 57 | 1944000 | 777600 | +10 | 900/57, 990/63, 1080/68, 1170/74, 1260/80, 1350/86, 1440/91, 1530/97, 1620/103, 1710/108, 1800/114 | Jade Spring Grottoes | DG_NAMES.helmet |
+| `top7` | Jadeplate Cuirass | 30 | Common | 540 | 38 | 36000 | 14400 | +2 | 540/38, 594/42, 648/46 | Jade Spring Grottoes | DG_NAMES.top |
+| `top7-r` | Rare Jadeplate Cuirass | 30 | Rare | 702 | 49 | 108000 | 43200 | +4 | 702/49, 772/54, 842/59, 913/64, 983/69 | Jade Spring Grottoes | DG_NAMES.top |
+| `top7-e` | Epic Jadeplate Cuirass | 30 | Epic | 918 | 65 | 324000 | 129600 | +6 | 918/65, 1010/72, 1102/78, 1193/85, 1285/91, 1377/98, 1469/104 | Jade Spring Grottoes | DG_NAMES.top |
+| `top7-u` | Unique Jadeplate Cuirass | 30 | Unique | 1188 | 84 | 972000 | 388800 | +8 | 1188/84, 1307/92, 1426/101, 1544/109, 1663/118, 1782/126, 1901/134, 2020/143, 2138/151 | Jade Spring Grottoes | DG_NAMES.top |
+| `top7-l` | Legendary Jadeplate Cuirass | 30 | Legendary | 1620 | 114 | 2916000 | 1166400 | +10 | 1620/114, 1782/125, 1944/137, 2106/148, 2268/160, 2430/171, 2592/182, 2754/194, 2916/205, 3078/217, 3240/228 | Jade Spring Grottoes | DG_NAMES.top |
+| `bottom7` | Jadeplate Greaves | 30 | Common | 390 | 24 | 30000 | 12000 | +2 | 390/24, 429/26, 468/29 | Jade Spring Grottoes | DG_NAMES.bottom |
+| `bottom7-r` | Rare Jadeplate Greaves | 30 | Rare | 507 | 31 | 90000 | 36000 | +4 | 507/31, 558/34, 608/37, 659/40, 710/43 | Jade Spring Grottoes | DG_NAMES.bottom |
+| `bottom7-e` | Epic Jadeplate Greaves | 30 | Epic | 663 | 41 | 270000 | 108000 | +6 | 663/41, 729/45, 796/49, 862/53, 928/57, 995/62, 1061/66 | Jade Spring Grottoes | DG_NAMES.bottom |
+| `bottom7-u` | Unique Jadeplate Greaves | 30 | Unique | 858 | 53 | 810000 | 324000 | +8 | 858/53, 944/58, 1030/64, 1115/69, 1201/74, 1287/80, 1373/85, 1459/90, 1544/95 | Jade Spring Grottoes | DG_NAMES.bottom |
+| `bottom7-l` | Legendary Jadeplate Greaves | 30 | Legendary | 1170 | 72 | 2430000 | 972000 | +10 | 1170/72, 1287/79, 1404/86, 1521/94, 1638/101, 1755/108, 1872/115, 1989/122, 2106/130, 2223/137, 2340/144 | Jade Spring Grottoes | DG_NAMES.bottom |
+| `shoes7` | Jadeplate Sabatons | 30 | Common | 225 | 15 | 21000 | 8400 | +2 | 225/15, 248/17, 270/18 | Jade Spring Grottoes | DG_NAMES.shoes |
+| `shoes7-r` | Rare Jadeplate Sabatons | 30 | Rare | 293 | 20 | 63000 | 25200 | +4 | 293/20, 322/22, 351/24, 380/26, 410/28 | Jade Spring Grottoes | DG_NAMES.shoes |
+| `shoes7-e` | Epic Jadeplate Sabatons | 30 | Epic | 383 | 26 | 189000 | 75600 | +6 | 383/26, 421/29, 459/31, 497/34, 536/36, 574/39, 612/42 | Jade Spring Grottoes | DG_NAMES.shoes |
+| `shoes7-u` | Unique Jadeplate Sabatons | 30 | Unique | 495 | 33 | 567000 | 226800 | +8 | 495/33, 545/36, 594/40, 644/43, 693/46, 743/50, 792/53, 842/56, 891/59 | Jade Spring Grottoes | DG_NAMES.shoes |
+| `shoes7-l` | Legendary Jadeplate Sabatons | 30 | Legendary | 675 | 45 | 1701000 | 680400 | +10 | 675/45, 743/50, 810/54, 878/59, 945/63, 1013/68, 1080/72, 1148/77, 1215/81, 1283/86, 1350/90 | Jade Spring Grottoes | DG_NAMES.shoes |
 
 ### 7.3 Rings (35; the ring slot, `eq.ring`)
 
-Names `RING_NAMES` src/shared/dungeon-rewards.js:19; a common ring adds `RING_PCT` = 5% of the weapon's attack (× the rarity multiplier × the enhancement), shown in the stat columns.
+Names `RING_NAMES` src/shared/dungeon-rewards.js:20; a common ring adds `RING_PCT` = 5% of the weapon's attack (× the rarity multiplier × the enhancement), shown in the stat columns.
 
 | Id | Name | Req Lv | Rarity | Share of weapon attack | Price | Sell | Max | Stat at +0, +1 ... +max | Paid by | Ref |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `ring-basic` | Plain Barrow Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.3%, 5.5% | Bonefrost Barrow | RING_NAMES.basic |
-| `ring-basic-r` | Rare Plain Barrow Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 6.8%, 7.2%, 7.5%, 7.8% | Bonefrost Barrow | RING_NAMES.basic |
-| `ring-basic-e` | Epic Plain Barrow Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 8.9%, 9.4%, 9.8%, 10.2%, 10.6%, 11.1% | Bonefrost Barrow | RING_NAMES.basic |
-| `ring-basic-u` | Unique Plain Barrow Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 11.6%, 12.1%, 12.7%, 13.2%, 13.8%, 14.3%, 14.9%, 15.4% | Bonefrost Barrow | RING_NAMES.basic |
-| `ring-basic-l` | Legendary Plain Barrow Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 15.8%, 16.5%, 17.3%, 18.0%, 18.8%, 19.5%, 20.3%, 21.0%, 21.8%, 22.5% | Bonefrost Barrow | RING_NAMES.basic |
-| `ring-water` | Tidebound Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.3%, 5.5% | Bonefrost Barrow | RING_NAMES.water |
-| `ring-water-r` | Rare Tidebound Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 6.8%, 7.2%, 7.5%, 7.8% | Bonefrost Barrow | RING_NAMES.water |
-| `ring-water-e` | Epic Tidebound Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 8.9%, 9.4%, 9.8%, 10.2%, 10.6%, 11.1% | Bonefrost Barrow | RING_NAMES.water |
-| `ring-water-u` | Unique Tidebound Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 11.6%, 12.1%, 12.7%, 13.2%, 13.8%, 14.3%, 14.9%, 15.4% | Bonefrost Barrow | RING_NAMES.water |
-| `ring-water-l` | Legendary Tidebound Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 15.8%, 16.5%, 17.3%, 18.0%, 18.8%, 19.5%, 20.3%, 21.0%, 21.8%, 22.5% | Bonefrost Barrow | RING_NAMES.water |
-| `ring-fire` | Emberbound Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.3%, 5.5% | Bonefrost Barrow | RING_NAMES.fire |
-| `ring-fire-r` | Rare Emberbound Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 6.8%, 7.2%, 7.5%, 7.8% | Bonefrost Barrow | RING_NAMES.fire |
-| `ring-fire-e` | Epic Emberbound Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 8.9%, 9.4%, 9.8%, 10.2%, 10.6%, 11.1% | Bonefrost Barrow | RING_NAMES.fire |
-| `ring-fire-u` | Unique Emberbound Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 11.6%, 12.1%, 12.7%, 13.2%, 13.8%, 14.3%, 14.9%, 15.4% | Bonefrost Barrow | RING_NAMES.fire |
-| `ring-fire-l` | Legendary Emberbound Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 15.8%, 16.5%, 17.3%, 18.0%, 18.8%, 19.5%, 20.3%, 21.0%, 21.8%, 22.5% | Bonefrost Barrow | RING_NAMES.fire |
-| `ring-air` | Windbound Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.3%, 5.5% | Bonefrost Barrow | RING_NAMES.air |
-| `ring-air-r` | Rare Windbound Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 6.8%, 7.2%, 7.5%, 7.8% | Bonefrost Barrow | RING_NAMES.air |
-| `ring-air-e` | Epic Windbound Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 8.9%, 9.4%, 9.8%, 10.2%, 10.6%, 11.1% | Bonefrost Barrow | RING_NAMES.air |
-| `ring-air-u` | Unique Windbound Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 11.6%, 12.1%, 12.7%, 13.2%, 13.8%, 14.3%, 14.9%, 15.4% | Bonefrost Barrow | RING_NAMES.air |
-| `ring-air-l` | Legendary Windbound Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 15.8%, 16.5%, 17.3%, 18.0%, 18.8%, 19.5%, 20.3%, 21.0%, 21.8%, 22.5% | Bonefrost Barrow | RING_NAMES.air |
-| `ring-earth` | Rootbound Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.3%, 5.5% | Bonefrost Barrow | RING_NAMES.earth |
-| `ring-earth-r` | Rare Rootbound Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 6.8%, 7.2%, 7.5%, 7.8% | Bonefrost Barrow | RING_NAMES.earth |
-| `ring-earth-e` | Epic Rootbound Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 8.9%, 9.4%, 9.8%, 10.2%, 10.6%, 11.1% | Bonefrost Barrow | RING_NAMES.earth |
-| `ring-earth-u` | Unique Rootbound Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 11.6%, 12.1%, 12.7%, 13.2%, 13.8%, 14.3%, 14.9%, 15.4% | Bonefrost Barrow | RING_NAMES.earth |
-| `ring-earth-l` | Legendary Rootbound Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 15.8%, 16.5%, 17.3%, 18.0%, 18.8%, 19.5%, 20.3%, 21.0%, 21.8%, 22.5% | Bonefrost Barrow | RING_NAMES.earth |
-| `ring-dark` | Duskbound Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.3%, 5.5% | Bonefrost Barrow | RING_NAMES.dark |
-| `ring-dark-r` | Rare Duskbound Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 6.8%, 7.2%, 7.5%, 7.8% | Bonefrost Barrow | RING_NAMES.dark |
-| `ring-dark-e` | Epic Duskbound Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 8.9%, 9.4%, 9.8%, 10.2%, 10.6%, 11.1% | Bonefrost Barrow | RING_NAMES.dark |
-| `ring-dark-u` | Unique Duskbound Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 11.6%, 12.1%, 12.7%, 13.2%, 13.8%, 14.3%, 14.9%, 15.4% | Bonefrost Barrow | RING_NAMES.dark |
-| `ring-dark-l` | Legendary Duskbound Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 15.8%, 16.5%, 17.3%, 18.0%, 18.8%, 19.5%, 20.3%, 21.0%, 21.8%, 22.5% | Bonefrost Barrow | RING_NAMES.dark |
-| `ring-light` | Dawnbound Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.3%, 5.5% | Bonefrost Barrow | RING_NAMES.light |
-| `ring-light-r` | Rare Dawnbound Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 6.8%, 7.2%, 7.5%, 7.8% | Bonefrost Barrow | RING_NAMES.light |
-| `ring-light-e` | Epic Dawnbound Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 8.9%, 9.4%, 9.8%, 10.2%, 10.6%, 11.1% | Bonefrost Barrow | RING_NAMES.light |
-| `ring-light-u` | Unique Dawnbound Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 11.6%, 12.1%, 12.7%, 13.2%, 13.8%, 14.3%, 14.9%, 15.4% | Bonefrost Barrow | RING_NAMES.light |
-| `ring-light-l` | Legendary Dawnbound Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 15.8%, 16.5%, 17.3%, 18.0%, 18.8%, 19.5%, 20.3%, 21.0%, 21.8%, 22.5% | Bonefrost Barrow | RING_NAMES.light |
+| `ring-basic` | Plain Barrow Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.5%, 6.0% | Bonefrost Barrow | RING_NAMES.basic |
+| `ring-basic-r` | Rare Plain Barrow Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 7.2%, 7.8%, 8.5%, 9.1% | Bonefrost Barrow | RING_NAMES.basic |
+| `ring-basic-e` | Epic Plain Barrow Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 9.4%, 10.2%, 11.1%, 11.9%, 12.8%, 13.6% | Bonefrost Barrow | RING_NAMES.basic |
+| `ring-basic-u` | Unique Plain Barrow Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 12.1%, 13.2%, 14.3%, 15.4%, 16.5%, 17.6%, 18.7%, 19.8% | Bonefrost Barrow | RING_NAMES.basic |
+| `ring-basic-l` | Legendary Plain Barrow Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 16.5%, 18.0%, 19.5%, 21.0%, 22.5%, 24.0%, 25.5%, 27.0%, 28.5%, 30.0% | Bonefrost Barrow | RING_NAMES.basic |
+| `ring-water` | Tidebound Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.5%, 6.0% | Bonefrost Barrow | RING_NAMES.water |
+| `ring-water-r` | Rare Tidebound Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 7.2%, 7.8%, 8.5%, 9.1% | Bonefrost Barrow | RING_NAMES.water |
+| `ring-water-e` | Epic Tidebound Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 9.4%, 10.2%, 11.1%, 11.9%, 12.8%, 13.6% | Bonefrost Barrow | RING_NAMES.water |
+| `ring-water-u` | Unique Tidebound Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 12.1%, 13.2%, 14.3%, 15.4%, 16.5%, 17.6%, 18.7%, 19.8% | Bonefrost Barrow | RING_NAMES.water |
+| `ring-water-l` | Legendary Tidebound Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 16.5%, 18.0%, 19.5%, 21.0%, 22.5%, 24.0%, 25.5%, 27.0%, 28.5%, 30.0% | Bonefrost Barrow | RING_NAMES.water |
+| `ring-fire` | Emberbound Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.5%, 6.0% | Bonefrost Barrow | RING_NAMES.fire |
+| `ring-fire-r` | Rare Emberbound Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 7.2%, 7.8%, 8.5%, 9.1% | Bonefrost Barrow | RING_NAMES.fire |
+| `ring-fire-e` | Epic Emberbound Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 9.4%, 10.2%, 11.1%, 11.9%, 12.8%, 13.6% | Bonefrost Barrow | RING_NAMES.fire |
+| `ring-fire-u` | Unique Emberbound Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 12.1%, 13.2%, 14.3%, 15.4%, 16.5%, 17.6%, 18.7%, 19.8% | Bonefrost Barrow | RING_NAMES.fire |
+| `ring-fire-l` | Legendary Emberbound Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 16.5%, 18.0%, 19.5%, 21.0%, 22.5%, 24.0%, 25.5%, 27.0%, 28.5%, 30.0% | Bonefrost Barrow | RING_NAMES.fire |
+| `ring-air` | Windbound Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.5%, 6.0% | Bonefrost Barrow | RING_NAMES.air |
+| `ring-air-r` | Rare Windbound Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 7.2%, 7.8%, 8.5%, 9.1% | Bonefrost Barrow | RING_NAMES.air |
+| `ring-air-e` | Epic Windbound Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 9.4%, 10.2%, 11.1%, 11.9%, 12.8%, 13.6% | Bonefrost Barrow | RING_NAMES.air |
+| `ring-air-u` | Unique Windbound Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 12.1%, 13.2%, 14.3%, 15.4%, 16.5%, 17.6%, 18.7%, 19.8% | Bonefrost Barrow | RING_NAMES.air |
+| `ring-air-l` | Legendary Windbound Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 16.5%, 18.0%, 19.5%, 21.0%, 22.5%, 24.0%, 25.5%, 27.0%, 28.5%, 30.0% | Bonefrost Barrow | RING_NAMES.air |
+| `ring-earth` | Rootbound Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.5%, 6.0% | Bonefrost Barrow | RING_NAMES.earth |
+| `ring-earth-r` | Rare Rootbound Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 7.2%, 7.8%, 8.5%, 9.1% | Bonefrost Barrow | RING_NAMES.earth |
+| `ring-earth-e` | Epic Rootbound Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 9.4%, 10.2%, 11.1%, 11.9%, 12.8%, 13.6% | Bonefrost Barrow | RING_NAMES.earth |
+| `ring-earth-u` | Unique Rootbound Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 12.1%, 13.2%, 14.3%, 15.4%, 16.5%, 17.6%, 18.7%, 19.8% | Bonefrost Barrow | RING_NAMES.earth |
+| `ring-earth-l` | Legendary Rootbound Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 16.5%, 18.0%, 19.5%, 21.0%, 22.5%, 24.0%, 25.5%, 27.0%, 28.5%, 30.0% | Bonefrost Barrow | RING_NAMES.earth |
+| `ring-dark` | Duskbound Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.5%, 6.0% | Bonefrost Barrow | RING_NAMES.dark |
+| `ring-dark-r` | Rare Duskbound Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 7.2%, 7.8%, 8.5%, 9.1% | Bonefrost Barrow | RING_NAMES.dark |
+| `ring-dark-e` | Epic Duskbound Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 9.4%, 10.2%, 11.1%, 11.9%, 12.8%, 13.6% | Bonefrost Barrow | RING_NAMES.dark |
+| `ring-dark-u` | Unique Duskbound Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 12.1%, 13.2%, 14.3%, 15.4%, 16.5%, 17.6%, 18.7%, 19.8% | Bonefrost Barrow | RING_NAMES.dark |
+| `ring-dark-l` | Legendary Duskbound Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 16.5%, 18.0%, 19.5%, 21.0%, 22.5%, 24.0%, 25.5%, 27.0%, 28.5%, 30.0% | Bonefrost Barrow | RING_NAMES.dark |
+| `ring-light` | Dawnbound Ring | 30 | Common | 5.0% | 36000 | 14400 | +2 | 5.0%, 5.5%, 6.0% | Bonefrost Barrow | RING_NAMES.light |
+| `ring-light-r` | Rare Dawnbound Ring | 30 | Rare | 6.5% | 108000 | 43200 | +4 | 6.5%, 7.2%, 7.8%, 8.5%, 9.1% | Bonefrost Barrow | RING_NAMES.light |
+| `ring-light-e` | Epic Dawnbound Ring | 30 | Epic | 8.5% | 324000 | 129600 | +6 | 8.5%, 9.4%, 10.2%, 11.1%, 11.9%, 12.8%, 13.6% | Bonefrost Barrow | RING_NAMES.light |
+| `ring-light-u` | Unique Dawnbound Ring | 30 | Unique | 11.0% | 972000 | 388800 | +8 | 11.0%, 12.1%, 13.2%, 14.3%, 15.4%, 16.5%, 17.6%, 18.7%, 19.8% | Bonefrost Barrow | RING_NAMES.light |
+| `ring-light-l` | Legendary Dawnbound Ring | 30 | Legendary | 15.0% | 2916000 | 1166400 | +10 | 15.0%, 16.5%, 18.0%, 19.5%, 21.0%, 22.5%, 24.0%, 25.5%, 27.0%, 28.5%, 30.0% | Bonefrost Barrow | RING_NAMES.light |
 
-What each dungeon pays: The Hollow Roots: weapon (sword, bow, wand); Jade Spring Grottoes: armor (helmet, top, bottom, shoes); Bonefrost Barrow: ring (basic, water, fire, air, earth, dark, light) (`DG_REWARDS` src/shared/dungeon-rewards.js:22; odds `DG_REWARD_W` src/shared/dungeon-rewards.js:26; enhancing `ENH_MAX` / `ENH_STEP` / `ENH_DROP` src/shared/dungeon-rewards.js:27).
+What each dungeon pays: The Hollow Roots: weapon (sword, bow, wand); Jade Spring Grottoes: armor (helmet, top, bottom, shoes); Bonefrost Barrow: ring (basic, water, fire, air, earth, dark, light) (`DG_REWARDS` src/shared/dungeon-rewards.js:23; odds `DG_REWARD_W` src/shared/dungeon-rewards.js:27; enhancing `ENH_MAX` / `ENH_STEP` / `ENH_DROP` src/shared/dungeon-rewards.js:28).

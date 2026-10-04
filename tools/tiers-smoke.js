@@ -6,7 +6,7 @@ const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev.map(e=>[pid,...e])); }},
   ['MONS','BOSSES','BOSS_DEFS','MON_DEFS','DEF_BY_ID','VIL','VIL2','VIL3','S','damageMonsterS','killMonsterS','rewardKill','hurtP','monK','recalcP','sanitizeGear','newGearFor',
-   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','coinsFor','expToNext','tierFor','xpFor']);
+   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
@@ -17,18 +17,35 @@ const zt=(home,vale,hoar)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:
   ok('tier 0 changes nothing; tier 1 is the same monster ten levels higher (its level, health, damage and XP are those of that level)',
     k0.lv===d.level&&k0.hp===1&&k0.dmg===1&&k0.xp===1&&k1.lv===d.level+10&&near(k1.hp*d.hp,a.hp,0.001)&&near(k1.dmg*d.dmg,a.dmg,0.001)&&near(k1.xp*d.xp,a.xp,0.001),
     'level '+d.level+' -> '+k1.lv+': hp x'+k1.hp.toFixed(2)+', dmg x'+k1.dmg.toFixed(2)+', xp x'+k1.xp.toFixed(2)); }
-{ const lv=[0,1,2,3].map(t=>x.zoneTierLv(x.DEF_BY_ID.vetrmaw,t));
-  ok('a boss goes up with the tiers too (Vetrmaw 30 / 40 / 50 / 60)',lv.join()==='30,40,50,60'); }
+{ const lv=[0,1,2,3,4,5].map(t=>x.zoneTierLv(x.DEF_BY_ID.vetrmaw,t));
+  ok('a boss goes up with the tiers too (Vetrmaw 30 / 40 / 50 / 60 / 70 / 80)',lv.join()==='30,40,50,60,70,80'); }
+{ const d=x.DEF_BY_ID.vetrmaw, K=[0,1,2,3,4,5].map(t=>x.zoneTierK(d,t));
+  ok('there are five tiers (IV and V added): the numerals are I to V, and every tier makes a monster tougher and harder-hitting than the one before',x.ZTIER_MAX===5&&x.ZTIER_ROMAN.join()==='0,I,II,III,IV,V'&&K.every((k,i)=>i===0||(k.hp>K[i-1].hp&&k.dmg>K[i-1].dmg&&k.lv===K[i-1].lv+x.ZTIER_STEP)),
+    K.map((k,i)=>i+': lv '+k.lv+' hp x'+k.hp.toFixed(1)+' dmg x'+k.dmg.toFixed(1)).join('; ')); }
 ok('three lands, each opened by its second boss (the second of the two bosses that live there, by level)',(()=>{
   const by={home:[],vale:[],hoar:[]}; for(const b of x.BOSS_DEFS){ const Ar=bossArena(b); by[x.landAt(Ar.x,Ar.z)].push(b); }
   return x.ZTIER_LANDS.every(l=>by[l].length===2&&by[l].slice().sort((p,q)=>p.def.level-q.def.level)[1].def.id===x.ZTIER_BOSS[l]); })(),JSON.stringify(x.ZTIER_BOSS));
 function bossArena(b){ const B=x.BOSSES.find(q=>q.bd===b); return B.A; }
 ok('the symbol: every unlocked tier point of every land adds +10% (2 + 2 + 1 points = +50%)',near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1])}),0.5,1e-9)&&x.symbolBonus({})===0&&x.symbolBonus({zt:zt([1,1],[0,0],[0,0])})===x.ZTIER_BONUS);
 ok('the symbol counts what you unlocked, not what you play at',x.symbolBonus({zt:zt([0,3],[0,0],[0,0])})===3*x.ZTIER_BONUS);
+ok('with every land at tier V (fifteen points) the symbol is +150%',near(x.symbolBonus({zt:zt([0,5],[0,5],[0,5])}),1.5,1e-9)&&near(x.symbolPoints({zt:zt([0,5],[0,5],[0,5])}),15,1e-9));
+
+// ---- what a kill pays at the high tiers (xpFor / coinsFor in shared/balance.js) ----
+{ const oldXp=L=>x.fLv(L)*Math.pow(1.15,Math.max(0,L-5))*(L>=10?1.5:1), oldCoins=L=>Math.max(1,Math.round(x.fLv(L)*2*Math.pow(1.1,Math.max(0,L-5))*(L>=10?1.5:1)));
+  const real=Math.random; Math.random=()=>0.5;   // the middle of the coin spread (AR(1.5, 2.5) = 2)
+  try{
+    const same=[]; for(let L=1;L<=x.PAY_LV;L++) if(!near(x.xpFor(L),oldXp(L),1e-9)||x.coinsFor(L)!==oldCoins(L)) same.push(L);
+    ok('up to level '+x.PAY_LV+' (every monster at tiers 0 to III, and the level curve of the hikers) the pay is exactly what it was',!same.length&&near(x.expToNext(40),x.xpFor(40)*x.expToNext(26)/x.xpFor(26),1e-9),same.join());
+    ok('above it the pay keeps its level-'+x.PAY_LV+' rate and doubles with every 10 levels: 70 pays 2x and 80 pays 4x of 60 (XP and coins)',
+      near(x.xpFor(70),2*x.xpFor(60),1e-9)&&near(x.xpFor(80),4*x.xpFor(60),1e-9)&&near(x.xpFor(65),Math.pow(2,0.5)*x.xpFor(60),1e-9)&&near(x.coinsFor(70),2*x.coinsFor(60),0.01)&&near(x.coinsFor(80),4*x.coinsFor(60),0.01));
+    const d=x.DEF_BY_ID.vetrmaw, a=x.defAt(d,80), b=x.defAt(d,60), k=x.zoneTierK(d,5), k3=x.zoneTierK(d,3);
+    ok('a tier V Vetrmaw (level 80) pays '+Math.round(a.xp/1e6)+' million XP, not the 915 million the old curve gave, and its tier multiplier is 4x tier III\'s',near(a.xp,4*b.xp,1e-9)&&a.xp<1e8&&near(k.xp,4*k3.xp,1e-6),'x'+k.xp.toFixed(0)+' vs x'+k3.xp.toFixed(0));
+    ok('the pay still rises with every tier (V > IV > III > II > I > 0), for a boss and for a level-1 slime',[x.DEF_BY_ID.vetrmaw,x.DEF_BY_ID.slime].every(m=>[0,1,2,3,4,5].map(t=>x.zoneTierK(m,t).xp).every((v,i,r)=>i===0||v>r[i-1])));
+  } finally { Math.random=real; } }
 
 // ---- saves ----
 { const g=x.sanitizeGear({zt:{home:{on:9,max:9},vale:{on:5,max:1},hoar:'x',extra:{on:1,max:1}}},'warrior');
-  ok('a save\'s tiers are clamped (unlocked 0-'+x.ZTIER_MAX+', the tier you play at no higher than that) and junk is dropped',JSON.stringify(g.zt)===JSON.stringify(zt([3,3],[1,1],[0,0])),JSON.stringify(g.zt));
+  ok('a save\'s tiers are clamped (unlocked 0-'+x.ZTIER_MAX+', the tier you play at no higher than that) and junk is dropped',JSON.stringify(g.zt)===JSON.stringify(zt([x.ZTIER_MAX,x.ZTIER_MAX],[1,1],[0,0])),JSON.stringify(g.zt));
   ok('an old save without tiers starts every land at 0',JSON.stringify(x.sanitizeGear({},'warrior').zt)===JSON.stringify(zt([0,0],[0,0],[0,0]))&&JSON.stringify(x.newGearFor('mage').zt)===JSON.stringify(zt([0,0],[0,0],[0,0]))); }
 W.join('a',{name:'Hiker',look:{cls:'warrior'},save:{level:10,gear:{zt:zt([1,2],[0,1],[0,0])}}}); W.join('b',{name:'Other',look:{cls:'warrior'},save:{level:10}}); tick(2);
 const A=W.players.get('a'), B=W.players.get('b');
@@ -93,7 +110,9 @@ ok('the second boss of the home forest (Carapax) unlocks tier I there, and only 
 ok('the player is told, and the symbol grows the health and attack',evs.some(e=>e[0]==='a'&&e[1]==='toast'&&/Tier I unlocked/.test(e[3]))&&A.maxHp>B.maxHp*1.05,A.maxHp+' vs '+B.maxHp);
 A.gear.zt.home.on=0; fell(A,'carapax'); ok('killed again at tier 0 (below your highest) it opens nothing more',A.gear.zt.home.max===1);
 A.gear.zt.home.on=1; fell(A,'carapax'); ok('killed at your highest unlocked tier it opens the next one',A.gear.zt.home.max===2);
-A.gear.zt.home.on=2; fell(A,'carapax'); A.gear.zt.home.on=3; fell(A,'carapax'); ok('up to tier '+x.ZTIER_MAX+', then no more',A.gear.zt.home.max===x.ZTIER_MAX);
+for(let t=2;t<x.ZTIER_MAX;t++){ A.gear.zt.home.on=t; fell(A,'carapax'); }
+ok('each kill at your highest tier opens the next, up to tier '+x.ZTIER_MAX+' (V)',A.gear.zt.home.max===x.ZTIER_MAX);
+A.gear.zt.home.on=x.ZTIER_MAX; fell(A,'carapax'); ok('and then no more',A.gear.zt.home.max===x.ZTIER_MAX);
 fell(A,'akaoni'); ok('the vale\'s first boss (Akaoni) opens nothing',A.gear.zt.vale.max===0);
 fell(A,'kyuubi'); ok('Kyuubi opens the vale\'s tier I',A.gear.zt.vale.max===1);
 fell(A,'ymrik'); ok('Ymrik opens nothing',A.gear.zt.hoar.max===0);

@@ -14,7 +14,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | Every monster kind (one row each: id, name, level, element, model, scale, look flags `pal`, tuning `hpK` / `dmgPct` / `count` / `zone`) | `MON_DEFS` src/shared/monster-defs.js:14 |
 | Family defaults a row inherits (health toughness `hpK`, damage share `dmgPct`, attack interval `atk`, `speed`, `rad`, `height`, `aggro`, `per`: camp size - 2) | `FAM` src/shared/monster-defs.js:2 |
 | How HP, damage and XP are made from the level (also used by zone tiers and by anything that wants a monster at another level) | `defAt` src/shared/monster-defs.js:85, `prepDef` src/shared/monster-defs.js:91 |
-| The level formulas (expected player damage / health, armour cut, XP, coins) | `expDmg` / `expHP` / `xpFor` / `coinsFor` src/shared/balance.js:23-39 |
+| The level formulas (expected player damage / health, armour cut, XP, coins) | `expDmg` / `expHP` / `xpFor` / `coinsFor` src/shared/balance.js:30-50 |
 | The six bosses, their move set (`kit`), arena, summons (`add`), props, boss-bar texts | `BOSS_DEFS` src/shared/monster-defs.js:139 |
 | The grey-veined monsters of the main quest | `GREY_DEFS` src/shared/monster-defs.js:153 |
 | Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:156 |
@@ -23,7 +23,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:46 |
 | What a kill pays (XP, coins, an item roll, the material, quests, boss skills) | `rewardKill` src/server/combat.js:55 |
 | Materials a kind drops (one per kind, `MAT_NAMES`) | `MATS` src/shared/drops.js:13 |
-| What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:28, `monK` src/server/tiers.js:13 |
+| What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:29, `monK` src/server/tiers.js:13 |
 | Boss fights: engagement, phases, reset / one move set per boss / the move primitives | `BOSSES` src/server/boss.js:11 / `BOSS_KITS` src/server/boss-fx.js:16 / src/server/boss-fx.js |
 | The boss notices on the quest board | `BOSS_QUESTS` src/shared/quests.js:31 |
 | The dungeon bosses and their helpers (made on demand in a run's round hall, not in `BOSS_DEFS`) | `DG_BOSSES` src/shared/dungeons/bosses.js:17, `DG_BOSS_DEFS` (same file), move sets src/server/dungeons/boss-kits.js:42 |
@@ -36,8 +36,8 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 Let L be the monster's level and `f(L) = L + (13/12)^L`.
 
 - **HP** = round(expDmg(L) × (4 + 0.45 L) × hpK × highMult(L)): the hits a same-level, normally geared player needs, times how tough the kind is. `highMult` is 1.5 from level 10 up. A boss or prop has a fixed hit count instead (`d.hits`: 70 for a boss, 9 for a prop). `expDmg(L) = 3 f(L) + TIER_ATK[tierFor(L)]`.
-- **Dmg** (per hit, before the player's armour) = round(expHP(L) × dmgPct / (1 − expRed(L))): a share of a same-level player's health. A boss uses 16%. `expHP(L) = 20 f(L) + setHP(tierFor(L))`. Armour then cuts damage by `def / (def + 60)`.
-- **XP** = xpFor(L) = f(L) × 1.15^(L−5) × highMult (a boss ×25, a prop 0). **Coins** per kill = round(f(L) × U(1.5, 2.5) × 1.1^(L−5) × highMult); the tables show the mean (boss ×20).
+- **Dmg** (per hit, before the player's armour) = round(expHP(L) × dmgPct / (1 − expRed(L))): a share of a same-level player's health. A boss uses 16%. `expHP(L) = 20 f(L) + setHP(tierFor(L))`. Armour then cuts damage by `def / (def + 60)`, soft-capped above 60% (defense 90) toward 90% (`defRed`, src/shared/balance.js).
+- **XP** = xpFor(L) = f(L) × 1.15^(L−5) × highMult (a boss ×25, a prop 0; above level 60 the pay keeps its level-60 rate and doubles every 10 levels, `PAY_LV` in src/shared/balance.js, so zone tiers IV and V stay sane). **Coins** per kill = round(f(L) × U(1.5, 2.5) × 1.1^(L−5) × highMult); the tables show the mean (boss ×20).
 - **Hits** in the tables is HP / expDmg(L): how many hits of a same-level, normally geared player it takes.
 - **Behaviour**: attack every `Atk s` seconds with a 0.28 s wind-up; moves at `Spd` m/s; a monster with `Aggro 0` ("passive") leaves you alone until hit; it gives up when 32 m from its camp; it only thinks while a player is within 110 m; a dead one respawns after 35 s if nobody is within 22 m of its camp. Bosses engage when a player steps inside their arena and reset when nobody is left inside.
 - **Level debuff**: ±5% damage per level of difference between player and monster. **Zone tiers** add 10 levels per tier to every monster of a land, and to a dungeon played at that land's tier (see `zoneTierK`); the tables show base values only.
@@ -286,7 +286,7 @@ The expected numbers at each level (a same-level player in the gear of their tie
 | 29 | 39.2 | 218 | 1944 | 56% | T6 | 5564 | 441 | 1682.7 | 3534126 | 2100 | 1158 |
 | 30 | 41.0 | 223 | 1981 | 56% | T6 | 5857 | 449 | 2026.4 | 4256009 | 2100 | 1334 |
 
-Formulas: `fLv` src/shared/balance.js:11, `tierFor` src/shared/balance.js:17, `expToNext` src/shared/balance.js:38 (from level 25 a level costs as many same-level kills as 25 → 26 does).
+Formulas: `fLv` src/shared/balance.js:11, `tierFor` src/shared/balance.js:17, `expToNext` src/shared/balance.js:49 (from level 25 a level costs as many same-level kills as 25 → 26 does).
 
 ## 13. Client models
 

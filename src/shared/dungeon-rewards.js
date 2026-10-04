@@ -3,7 +3,8 @@
    - Clearing the Wildwood dungeon pays a level-30 WEAPON (sword, bow or wand), the Vale's a level-30 ARMOUR piece (helmet, top, bottom or shoes), the Reach's a RING.
      One random item a clear: the rarity from DG_REWARD_W, then one of the dungeon's pool with equal chance. Everyone in the party gets the same item (the all-loot rule).
    - The level-30 gear is a tier of its own above the six of items.js (TIER_LV stops at 25): it is NOT in TIER_LV / ITEM_LIST, so shops, tools, drops and `tierFor` are
-     untouched; it is only ever paid by a dungeon. Its stats continue each table of balance.js by one more step (about x1.35 for a weapon, x1.4 for armour health).
+     untouched; it is only ever paid by a dungeon. Its stats continue each table of balance.js by one more step, a small one (about x1.25 for a weapon and for armour health): most of a level-30 piece's power is meant to
+     come from enhancing it (below: ENH_STEP, +10% of its own stats a step, so a legendary +10 is twice its +0), not from the tier it is.
    - The ring is a new slot. 7 types: no element (`basic`) and the six elements. It adds a share of YOUR WEAPON'S attack, but only when its element is your soul's
      (`soulOfP`: `basic` is what an unbound soul or a hiker below level 15 has, so the plain ring is the one for them).
    - Enhancing: a level-30 piece (weapon, armour or ring) can be raised +1, +2... up to ENH_MAX of its rarity (2 / 4 / 6 / 8 / 10). Each step costs the tempering stone
@@ -12,7 +13,7 @@
      equipment drop it replaces (2.6%: `rollMonsterRarity`). Those monsters no longer drop equipment. Bosses are unchanged.
    Ids carry the enhancement so a save stays a list of strings: 'sword7-e+3' is an epic level-30 sword at +3, 'ring-fire-l+10' a legendary fire ring at +10. */
 const DG_GEAR_LV=30, DG_TIER=6;   // DG_TIER: the tier index after the six of items.js (ids end in DG_TIER+1 = 7)
-const DG_ATK=135, DG_HP={helmet:340,top:600,bottom:435,shoes:255}, DG_DEF={helmet:19,top:38,bottom:24,shoes:15};   // TIER_ATK / ARMOR_HP / ARMOR_DEF one step on
+const DG_ATK=125, DG_HP={helmet:300,top:540,bottom:390,shoes:225}, DG_DEF={helmet:19,top:38,bottom:24,shoes:15};   // TIER_ATK / ARMOR_HP / ARMOR_DEF one step on (x1.25; it was x1.35-1.4 before enhancing was given more weight)
 const DG_PRICE=30000, DG_RING_PRICE=1.2;   // like PRICE x SLOT_PRICE x 3^rarity in items.js (nothing sells it in a shop: this is the sell-back value)
 const DG_NAMES={sword:'Elderwood Blade',bow:'Elderwood Longbow',wand:'Elderwood Wand',helmet:'Jadeplate Helm',top:'Jadeplate Cuirass',bottom:'Jadeplate Greaves',shoes:'Jadeplate Sabatons'};
 const RING_ELS=['basic',...ELEM_LIST];   // the seven ring types: no element, then the six
@@ -24,7 +25,7 @@ const DG_REWARDS={
   jadesprings:    {kind:'armor', pool:[...ARMOR_SLOTS]},
   bonefrostbarrow:{kind:'ring',  pool:[...RING_ELS]}};
 const DG_REWARD_W=[700,250,40,8,2];   // out of 1000, Common..Legendary: 70 / 25 / 4 / 0.8 / 0.2%
-const ENH_MAX=[2,4,6,8,10], ENH_STEP=0.05;   // steps by rarity, and what one step adds (a legendary +10 has half as much again)
+const ENH_MAX=[2,4,6,8,10], ENH_STEP=0.10;   // steps by rarity, and what one step adds: 10% of the piece's own stats, so at its limit a common is x1.2, a rare x1.4, an epic x1.6, a unique x1.8 and a legendary x2.0 (it was 5%)
 const ENH_STONES=n=>n, ENH_LV=30, ENH_DROP=0.026;   // the step to +n costs n stones; the stone's chance is the equipment chance it replaces
 const ENH_NAME='Tempering Stone';
 

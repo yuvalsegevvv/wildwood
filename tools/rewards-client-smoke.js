@@ -28,7 +28,7 @@ const el=s=>document.querySelector(s);
   G.INV.sel={id:'ring-fire',from:'ring'}; G.renderInvInfo(); h=el('#invInfo').innerHTML;
   ok('the ring\'s details: its share of the weapon\'s attack, and that your soul is Basic so a fire ring has no effect',/Ring/.test(h)&&/\+5% of your weapon's attack, for a Fire soul/.test(h)&&/Your soul is Basic: no effect/.test(h)&&/Tempered \+0 of 2/.test(h),h.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').slice(0,260));
   { const soul=G.GEAR.soul; G.GEAR.soul='fire'; G.renderInvInfo(); const t=el('#invInfo').innerHTML.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
-    const w=G.ITEM[G.GEAR.eq.weapon], want=Math.round(w.atk*0.05);   // (135 x 5% = 7)
+    const w=G.ITEM[G.GEAR.eq.weapon], want=Math.round(w.atk*0.05);   // (125 x 5% = 6)
     ok('with a Fire soul the same ring says it matches, and how much attack it adds ("matches your soul: +N attack")',new RegExp('Matches your soul \\(Fire\\): \\+'+want+' attack').test(t),t.slice(0,200));
     G.GEAR.soul=soul; }
   G.INV.sel={id:'ring-water',from:'bag'}; G.renderInvInfo(); h=el('#invInfo').innerHTML.replace(/<[^>]*>/g,' ');
@@ -37,7 +37,7 @@ const el=s=>document.querySelector(s);
   G.NET.send({t:'temper',id:'sword7'}); G.NET.send({t:'temper',id:'helmet7'}); await wait(500); G=c.G(); G.renderInv(); h=el('#invBody').innerHTML;
   ok('tempering shows: the pieces are +1 now, their tiles have a "+1" badge and the dungeon accent, the stones are spent (20 -> 18)',G.GEAR.inv.includes('sword7+1')&&G.GEAR.inv.includes('helmet7+1')&&G.GEAR.temper===18&&/class="tile r0 dg[^"]*" data-id="sword7\+1" data-from="bag"[^>]*>(?:(?!<\/button>)[\s\S])*<span class="enh">\+1<\/span>/.test(h)&&/class="tile r0 dg[^"]*" data-id="bow7"/.test(h)&&!/enh/.test(h.split('data-id="bow7"')[1].split('</button>')[0]));
   G.INV.sel={id:'sword7+1',from:'bag'}; G.renderInvInfo(); h=el('#invInfo').innerHTML.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
-  ok('a tempered weapon\'s details name it "+1", say how far it can go and what the next step costs and gives',/Elderwood Blade \+1/.test(h)&&/Tempered \+1 of 2/.test(h)&&/next: \+149 attack \(\+7\) for 2 Tempering Stones \(you have 18\)/.test(h),h.slice(0,300));
+  ok('a tempered weapon\'s details name it "+1", say how far it can go and what the next step costs and gives',/Elderwood Blade \+1/.test(h)&&/Tempered \+1 of 2/.test(h)&&/next: \+150 attack \(\+12\) for 2 Tempering Stones \(you have 18\)/.test(h),h.slice(0,300));
   ok('the stone count is among the materials',/<span class="mat"[^>]*><i[^>]*><\/i>Tempering Stone <b>18<\/b>/.test(el('#invBody').innerHTML));
   // ---- the forge ----
   G.openForge({def:{name:'Greta'}}); h=el('#forgeBody').innerHTML;

@@ -4,7 +4,7 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const io={dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }};
-const NAMES=['MONS','ITEM','ITEM_LIST','TOOL_LIST','dgAllIds','dgItem','dgGearId','dgRingId','sanitizeGear','soulOfP','monK','rewardKill','dgGrantItemP','dgTemperP','VIL2','ENH_LV','ENH_DROP','ENH_NAME','ENH_MAX','DG_STONE_MAX','BAG_MAX','sellPrice','mergedId','effectiveLookOf','ARMOR_LOOK','clsOfP','gearStatsOf','RING_ELS','ALL_SLOTS','ELEM_LIST','newGearFor','fLv'];
+const NAMES=['MONS','ITEM','ITEM_LIST','TOOL_LIST','dgAllIds','dgItem','dgGearId','dgRingId','sanitizeGear','soulOfP','monK','rewardKill','dgGrantItemP','dgTemperP','VIL2','ENH_LV','ENH_DROP','ENH_NAME','ENH_MAX','DG_STONE_MAX','BAG_MAX','sellPrice','mergedId','effectiveLookOf','ARMOR_LOOK','clsOfP','gearStatsOf','RING_ELS','ALL_SLOTS','ELEM_LIST','newGearFor','fLv','defRed','RED_KNEE','RED_CAP','DEF_KNEE','DMG_TAKEN_MIN','setDef','expRed','tierFor','hurtP','DG_ATK','TIER_ATK','ENH_STEP','ARMOR_SLOTS'];
 const {api:W,x}=loadServer(io,NAMES);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
@@ -28,11 +28,11 @@ send('a',{t:'rwdev',cmd:'dgall'});
 { const inv=you('a').gear.inv, want=[...x.ALL_SLOTS.map(s=>x.dgGearId(s,0,0)),...x.RING_ELS.map(e=>x.dgRingId(e,0,0))];
   ok('the testing command adds a level-30 piece of every kind: 3 weapons, 4 armour pieces, 7 rings (14 in all)',want.length===14&&want.every(id=>inv.includes(id))); }
 send('a',{t:'equip',id:'sword7'});
-ok('a level-30 hiker wears a level-30 sword: attack rises by the sword\'s 135 over the starter',a.gear.eq.weapon==='sword7'&&near(a.dmg-base,135-4,0.5),'dmg '+base+' -> '+a.dmg);
+ok('a level-30 hiker wears a level-30 sword: attack rises by the sword\'s 125 over the starter',a.gear.eq.weapon==='sword7'&&near(a.dmg-base,125-4,0.5),'dmg '+base+' -> '+a.dmg);
 const hp0=a.maxHp, def0=a.def;
 for(const s of ['helmet7','top7','bottom7','shoes7']) send('a',{t:'equip',id:s});
 { const st=x.gearStatsOf(a.gear);
-  ok('level-30 armour adds its health (340 + 600 + 435 + 255, before the Vitality passive) and defence (19 + 38 + 24 + 15), and is worn in its slots',['helmet','top','bottom','shoes'].every(s=>a.gear.eq[s]===s+'7')&&st.hp===1630&&a.def===def0+96&&a.maxHp-hp0>=1630,'hp '+hp0+' -> '+a.maxHp+', def '+def0+' -> '+a.def); }
+  ok('level-30 armour adds its health (300 + 540 + 390 + 225, before the Vitality passive) and defence (19 + 38 + 24 + 15), and is worn in its slots',['helmet','top','bottom','shoes'].every(s=>a.gear.eq[s]===s+'7')&&st.hp===1455&&a.def===def0+96&&a.maxHp-hp0>=1455,'hp '+hp0+' -> '+a.maxHp+', def '+def0+' -> '+a.def); }
 { const L=x.effectiveLookOf({},a.gear), top5=x.ARMOR_LOOK.top[5], hel5=x.ARMOR_LOOK.helmet[5], sho5=x.ARMOR_LOOK.shoes[5], bot5=x.ARMOR_LOOK.bottom[5];
   ok('the character wears the top tier\'s look for level-30 armour (the Shogun look is borrowed, nothing is undefined)',L.topColor===top5.topColor&&L.hatColor===hel5.hatColor&&L.shoeColor===sho5.shoeColor&&L.bottomColor===bot5.bottomColor&&L.hat==='helm'&&L.top==='plate'); }
 send('a',{t:'equip',id:'bow7'});
@@ -50,23 +50,44 @@ ok('a ring can be taken off',a.gear.eq.ring===null&&a.gear.inv.includes('ring-ba
 { a.gear.coins=10000000; const n=a.gear.inv.length; send('a',{t:'buy',id:'sword7'}); send('a',{t:'buy',id:'ring-basic'});
   ok('the shops never sell level-30 gear, whatever a client asks for',a.gear.inv.length===n&&a.gear.coins===10000000); }
 
+// ---- defence: the soft cap and the floor (shared/balance.js defRed, DMG_TAKEN_MIN; hurtP in server/players.js) ----
+{ const raw=d=>d/(d+60), K=x.DEF_KNEE;
+  ok('up to the knee ('+K+' defense = '+Math.round(x.RED_KNEE*100)+'%) armour negates exactly d / (d + 60) as it always did, so no world gear and no enemy\'s damage changes (a full level-25 set has '+x.setDef(5)+')',
+    [0,1,10,50,76,K].every(d=>x.defRed(d)===raw(d))&&x.setDef(5)<K&&[1,5,10,15,20,25,30,40,50].every(L=>x.expRed(L)===raw(x.setDef(x.tierFor(L)))));
+  const ds=[]; for(let d=0;d<=3000;d+=3) ds.push(d);
+  ok('above it the negation still rises with every point of defense, but bends toward '+x.RED_CAP*100+'% and never reaches it (it is always below the old curve there)',
+    ds.every((d,i)=>i===0||x.defRed(d)>=x.defRed(ds[i-1]))&&ds.every(d=>x.defRed(d)<x.RED_CAP&&(d<=K||x.defRed(d)<raw(d)))&&x.defRed(1e6)<x.RED_CAP&&x.defRed(1e6)>x.RED_CAP-0.001,
+    [150,288,432,576,1000,3000].map(d=>d+': '+(x.defRed(d)*100).toFixed(1)+'% (was '+(raw(d)*100).toFixed(1)+'%)').join(', '));
+  const w=0.01, below=(x.defRed(K)-x.defRed(K-w))/w, above=(x.defRed(K+w)-x.defRed(K))/w, exact=60/Math.pow(K+60,2);
+  ok('the bend starts without a kink: the slope just below and just above the knee both equal the old curve\'s slope there, 60 / (d + 60)^2 (within 0.1%), and the curve is continuous',
+    Math.abs(below-exact)<0.001*exact&&Math.abs(above-exact)<0.001*exact&&Math.abs(x.defRed(K+1e-9)-x.defRed(K))<1e-9,below.toExponential(4)+' / '+above.toExponential(4)+' vs '+exact.toExponential(4));
+  const top=x.ARMOR_SLOTS.reduce((n,sl2)=>n+x.ITEM[sl2+'7-l+10'].def,0);
+  ok('a full set of legendary level-30 armour at +10 ('+top+' defense) negates '+(x.defRed(top)*100).toFixed(1)+'% (the old curve gave '+(raw(top)*100).toFixed(1)+'%): high, and short of both the cap and 100%',top===576&&x.defRed(top)>0.83&&x.defRed(top)<0.86&&x.defRed(top)<raw(top)); }
+{ const h=join('h',30), hit=(red,buff)=>{ h.hp=h.maxHp; h.lastHit=-99; h.red=red; h.buff=buff||null; x.hurtP(h,1000); return Math.round(h.maxHp-h.hp); };
+  const plain=hit(0.5), stacked=hit(0.9,{red:0.9,until:1e9});
+  ok('armour, buffs and potions together can never take off more than '+Math.round((1-x.DMG_TAKEN_MIN)*100)+'%: a hit of 1000 does at least '+1000*x.DMG_TAKEN_MIN+' however much is stacked (0.9 armour x 0.9 buff would be 1%)',stacked===1000*x.DMG_TAKEN_MIN&&plain>300&&plain<=500,'plain '+plain+', stacked '+stacked); }
+// the weight of enhancing against the weight of the tier: a level-30 piece is a small step over the top world tier, and enhancing it is a big one
+{ const stepTier=x.DG_ATK/x.TIER_ATK[5], mult=r=>1+x.ENH_STEP*x.ENH_MAX[r];
+  ok('enhancing carries the weight: the level-30 tier is a x'+stepTier.toFixed(2)+' step over the top world tier, enhancing to the limit is x'+[0,1,2,3,4].map(r=>mult(r).toFixed(1)).join(' / x')+' (common ... legendary), and from a rare up the enhancement is worth more than the tier',
+    near(x.ENH_STEP,0.10,1e-9)&&stepTier<1.3&&mult(0)>=stepTier-0.06&&[1,2,3,4].every(r=>mult(r)>stepTier)&&near(mult(4),2,1e-9)&&x.ITEM['sword7-l+10'].atk===2*x.ITEM['sword7-l'].atk,'tier x'+stepTier.toFixed(2)); }
+
 // ---- the ring's attack and the soul ----
 { const r=join('r',30,'warrior'); r.gear.east=2; give(r,'sword7-l','sword7','ring-fire-l','ring-water','ring-basic','ring-basic-u'); send('r',{t:'equip',id:'sword7-l'}); const noRing=r.dmg;
   send('r',{t:'equip',id:'ring-fire-l'});
   ok('a fire ring on an unbound soul adds nothing',near(r.dmg,noRing)&&x.soulOfP(r)==='basic','dmg '+r.dmg);
   r.x=x.VIL2.x; r.z=x.VIL2.z; send('r',{t:'soul',el:'fire'});
-  ok('binding the soul to fire recalculates at once: a legendary ring on a legendary sword (405) adds 61 attack ("15%")',near(r.dmg-noRing,61,0.5)&&r.gear.soul==='fire'&&near(you('r').dmg,r.dmg),'+'+(r.dmg-noRing).toFixed(2));
+  ok('binding the soul to fire recalculates at once: a legendary ring on a legendary sword (375) adds 56 attack ("15%")',near(r.dmg-noRing,56,0.5)&&r.gear.soul==='fire'&&near(you('r').dmg,r.dmg),'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'soul',el:'water'});
   ok('changing the soul to the opposite takes the bonus away again, with no other change to the hiker',near(r.dmg,noRing),'dmg '+r.dmg);
   send('r',{t:'soul',el:'fire'}); send('r',{t:'soul',el:'basic'});
   ok('unbinding the soul takes it away too',near(r.dmg,noRing));
   send('r',{t:'equip',id:'ring-basic'});
-  ok('the plain ring is the one for the unbound soul: +5% of a legendary sword (20)',near(r.dmg-noRing,20,0.5),'+'+(r.dmg-noRing).toFixed(2));
+  ok('the plain ring is the one for the unbound soul: +5% of a legendary sword (19)',near(r.dmg-noRing,19,0.5),'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'equip',id:'ring-basic-u'});
-  ok('and it grows with rarity (unique: 11% = 45)',near(r.dmg-noRing,45,0.5),'+'+(r.dmg-noRing).toFixed(2));
+  ok('and it grows with rarity (unique: 11% = 41)',near(r.dmg-noRing,41,0.5),'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'unequip',slot:'ring'}); ok('taking the ring off removes it',near(r.dmg,noRing));
   send('r',{t:'equip',id:'ring-water'}); send('r',{t:'soul',el:'water'}); const w1=r.dmg; send('r',{t:'equip',id:'sword7'});
-  ok('the ring follows the weapon: a smaller weapon gives a smaller bonus',r.dmg<w1&&near(r.dmg-(noRing-(405-135)),7,0.5),'dmg '+r.dmg); }
+  ok('the ring follows the weapon: a smaller weapon gives a smaller bonus',r.dmg<w1&&near(r.dmg-(noRing-(375-125)),6,0.5),'dmg '+r.dmg); }
 
 // ---- the Tempering Stone drop ----
 const lv30=x.MONS.find(m=>!m.def.boss&&m.def.level===30), lv29=x.MONS.find(m=>!m.def.boss&&m.def.level===29), slime=x.MONS.find(m=>m.def.id==='slime'), boss=x.MONS.find(m=>m.def.boss&&m.def.level===30);
@@ -93,7 +114,7 @@ const withRandom=(v,f)=>{ const real=Math.random; Math.random=typeof v==='functi
   let n=send('t',{t:'temper',id:'sword7'});
   ok('tempering a bag copy: it becomes +1, the worn copy is untouched, one stone is spent, the answer is an event and a toast',t.gear.inv.filter(i=>i==='sword7').length===1&&t.gear.inv.includes('sword7+1')&&t.gear.eq.weapon==='sword7'&&t.gear.temper===9&&near(t.dmg,d0)&&evs.slice(n).some(e=>e[0]==='temper'&&e[1]==='t'&&e[2]==='sword7+1'&&e[3]==='sword7')&&toastsOf('t',n).some(m=>/Tempered/.test(m)));
   n=send('t',{t:'temper',id:'sword7',worn:true});
-  ok('tempering the worn copy (worn: true) swaps the slot and recalculates the hiker: 135 -> 142 attack',t.gear.eq.weapon==='sword7+1'&&!t.gear.inv.includes('sword7')&&t.gear.inv.filter(i=>i==='sword7+1').length===2&&t.gear.temper===8&&near(t.dmg-d0,7,0.5),'dmg +'+(t.dmg-d0).toFixed(2));
+  ok('tempering the worn copy (worn: true) swaps the slot and recalculates the hiker: 125 -> 138 attack (+10% a step)',t.gear.eq.weapon==='sword7+1'&&!t.gear.inv.includes('sword7')&&t.gear.inv.filter(i=>i==='sword7+1').length===2&&t.gear.temper===8&&near(t.dmg-d0,13,0.5),'dmg +'+(t.dmg-d0).toFixed(2));
   send('t',{t:'temper',id:'sword7+1'});
   ok('the step to +2 costs 2 stones; a copy that is both worn and in the bag is raised in the bag first',t.gear.temper===6&&t.gear.inv.includes('sword7+2')&&t.gear.eq.weapon==='sword7+1');
   n=send('t',{t:'temper',id:'sword7+2'});
@@ -117,7 +138,7 @@ const withRandom=(v,f)=>{ const real=Math.random; Math.random=typeof v==='functi
   ok('three +0 level-30 pieces merge into the next rarity at +0 (top7 -> top7-r)',m.gear.inv.filter(i=>i==='top7').length===0&&m.gear.inv.includes('top7-r')&&evs.slice(n).some(e=>e[0]==='merge'&&e[1]==='m'&&e[2]==='top7-r'));
   send('m',{t:'merge',id:'ring-fire'}); ok('rings merge the same way (ring-fire -> ring-fire-r)',m.gear.inv.includes('ring-fire-r')&&!m.gear.inv.includes('ring-fire'));
   send('m',{t:'merge',id:'helmet7-l'}); ok('a legendary piece has no next rarity: it stays',m.gear.inv.filter(i=>i==='helmet7-l').length===3);
-  give(m,'sword7','sword7','sword7'); send('m',{t:'merge',id:'sword7'}); ok('weapons: sword7 -> sword7-r',m.gear.inv.includes('sword7-r')&&x.ITEM['sword7-r'].atk===176);
+  give(m,'sword7','sword7','sword7'); send('m',{t:'merge',id:'sword7'}); ok('weapons: sword7 -> sword7-r',m.gear.inv.includes('sword7-r')&&x.ITEM['sword7-r'].atk===163);
   ok('every +0 id below legendary merges into a real record of the next rarity, +0, and a tempered one into nothing',x.dgAllIds().every(id=>{ const it=x.ITEM[id], nx=x.mergedId(id); return it.rar>=4||it.n>0?nx===null:!!x.ITEM[nx]&&x.ITEM[nx].rar===it.rar+1&&x.ITEM[nx].n===0&&x.ITEM[nx].slot===it.slot&&x.ITEM[nx].el===it.el; })); }
 
 // ---- saves ----

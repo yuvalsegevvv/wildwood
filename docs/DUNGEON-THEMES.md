@@ -2,7 +2,7 @@
 
 **Status: designs plus data, not playable.** The machinery they run on is in `docs/DUNGEONS.md` (tiles, missions, parties, the server plan). What exists in code is the data of the three
 dungeons (`DG_THEMES`), of their three entrances (`DG_ENTRANCES`, section 6), of their three bosses (`DG_BOSSES`), the hourly offer (`dgOffer`) and the entry rule (`dgUnlocked`, `dgLevel`, `dgGateOpen`) in `src/shared/dungeons.js`, and the rewards (section 7: `DG_REWARDS`, the level-30 gear, the ring, enhancing, the stone) in `src/shared/dungeon-rewards.js`, checked by
-`tools/dungeons-smoke.js` (97 checks); `tools/entrance-map.js` draws the map of section 6; the doors' client dressing (section 6) is built and tested by `tools/entrances-client-smoke.js`. The tile art is drawn (section 3: one file per dungeon in `src/shared/dungeons/themes/`, entered through `defineDungeonTheme`) and the three bosses are built (section 4: `src/server/dungeons/boss-kits.js`, tested by `tools/dungeon-boss-smoke.js`).
+`tools/dungeons-smoke.js` (98 checks); `tools/entrance-map.js` draws the map of section 6; the doors' client dressing (section 6) is built and tested by `tools/entrances-client-smoke.js`. The tile art is drawn (section 3: one file per dungeon in `src/shared/dungeons/themes/`, entered through `defineDungeonTheme`) and the three bosses are built (section 4: `src/server/dungeons/boss-kits.js`, tested by `tools/dungeon-boss-smoke.js`).
 *(proposed)* = my suggestion. An earlier version of this file had nine dungeons and bosses drawn at random; those are gone, and the six dungeons I did not pick are kept in section 5.
 
 ## 1. What the owner decided
@@ -11,8 +11,8 @@ dungeons (`DG_THEMES`), of their three entrances (`DG_ENTRANCES`, section 6), of
 - **The mission type rotates every hour.** Each dungeon offers **two types at a time, picked at random**; the players choose one of the two (section 2).
 - **Three new bosses, one for each dungeon** (section 4). No more random draw of the old six.
 - **The base is level 30** (`DG_LV`). The difficulty is the land's own +N setting (`gear.zt[land].on`, picked under the map in a village), each land having a base: **Wildwood's dungeon is locked
-  at +0 and level 30 at +1**; the Vale's and the Reach's are level 30 at +0. Above the base I assumed the zone-tier rule, **+10 levels a tier** (`ZTIER_STEP`): Wildwood +1 / +2 / +3 = 30 / 40 / 50,
-  the others +0 / +1 / +2 / +3 = 30 / 40 / 50 / 60. You may enter from the dungeon's level less 5 (`DG_ENTRY_GAP`). A party plays at its **leader's tier** for that land; a member needs that tier
+  at +0 and level 30 at +1**; the Vale's and the Reach's are level 30 at +0. Above the base the zone-tier rule applies (the owner confirmed it), **+10 levels a tier** (`ZTIER_STEP`), now up to tier V: Wildwood +1 ... +5 = 30 / 40 / 50 / 60 / 70,
+  the others +0 ... +5 = 30 / 40 / 50 / 60 / 70 / 80. You may enter from the dungeon's level less 5 (`DG_ENTRY_GAP`), but never above the top hiker level 50 (`PLAYER_MAX_LV`): without that cap the +III Vale and Reach dungeons (level 60) asked for level 55, which nobody can have. A party plays at its **leader's tier** for that land; a member needs that tier
   **unlocked**, not played, and the level for it. The Vale's dungeon also needs Hanami walked into (`gear.east` 2), the Reach's Rimehold (`gear.north` 2). Tested.
 - **Rewards** (section 7): a clear pays one random level-30 item, weapons / armour / rings by dungeon. Kills still pay what the world pays at the dungeon's level (`rewardKill`) and the boss the boss table; from level 30 a normal monster's equipment roll becomes the tempering stone.
 
@@ -283,7 +283,7 @@ phones get fewer details and nothing moves, light mode the bare shapes) and `gam
 
 ## 7. The rewards
 
-Decided by the owner; the data and the rules are in `src/shared/dungeon-rewards.js` and are checked (14 of the 97 checks of `tools/dungeons-smoke.js`, the odds, the caps and the soul rule written out in the test, not read from the code). **Status: built, except the clear's hand-out** (`dgGrantItemP` exists, nothing calls it until a run does): the items, the ring slot and its attack, the stone, tempering and the UI work today, tested by `tools/rewards-smoke.js` and `tools/rewards-client-smoke.js`; the end of this section lists what was built and every hook.
+Decided by the owner; the data and the rules are in `src/shared/dungeon-rewards.js` and are checked (14 of the 98 checks of `tools/dungeons-smoke.js`, the odds, the caps and the soul rule written out in the test, not read from the code). **Status: built, except the clear's hand-out** (`dgGrantItemP` exists, nothing calls it until a run does): the items, the ring slot and its attack, the stone, tempering and the UI work today, tested by `tools/rewards-smoke.js` and `tools/rewards-client-smoke.js`; the end of this section lists what was built and every hook.
 
 | Dungeon | A clear pays | Pool of the one random piece |
 |---|---|---|
@@ -295,26 +295,26 @@ Decided by the owner; the data and the rules are in `src/shared/dungeon-rewards.
 item (the all-loot rule; the same sword reaches a mage too: see decision 8).
 
 **Level-30 gear is a seventh tier** above the six of `items.js` (whose levels stop at 25). It is not in `TIER_LV` / `ITEM_LIST`, so shops, tools, drops and `tierFor` do not change; only a dungeon pays it. Each stat
-is one more step on its table (`TIER_ATK`, `ARMOR_HP`, `ARMOR_DEF` in `balance.js`), flatter than the last step (weapon x1.35 after x1.43). Placeholder names, one set for each dungeon.
+is one more step on its table (`TIER_ATK`, `ARMOR_HP`, `ARMOR_DEF` in `balance.js`), flatter than the last step (weapon **x1.25** after x1.43: a small step on purpose, since the owner asked for **enhancing, not the tier, to carry the power**; it was x1.35). Placeholder names, one set for each dungeon.
 
 | | level 25 now | level 30, common | rare | epic | unique | legendary | name |
 |---|---|---|---|---|---|---|---|
-| sword / bow / wand attack | 100 | **135** | 176 | 230 | 297 | 405 | Elderwood Blade / Longbow / Wand |
-| helmet health, defence | 240, 15 | 340, 19 | 442, 25 | 578, 32 | 748, 42 | 1020, 57 | Jadeplate Helm |
-| top | 430, 30 | 600, 38 | 780, 49 | 1020, 65 | 1320, 84 | 1800, 114 | Jadeplate Cuirass |
-| bottom | 310, 19 | 435, 24 | 566, 31 | 740, 41 | 957, 53 | 1305, 72 | Jadeplate Greaves |
-| shoes | 180, 12 | 255, 15 | 332, 20 | 434, 26 | 561, 33 | 765, 45 | Jadeplate Sabatons |
+| sword / bow / wand attack | 100 | **125** | 163 | 213 | 275 | 375 | Elderwood Blade / Longbow / Wand |
+| helmet health, defence | 240, 15 | 300, 19 | 390, 25 | 510, 32 | 660, 42 | 900, 57 | Jadeplate Helm |
+| top | 430, 30 | 540, 38 | 702, 49 | 918, 65 | 1188, 84 | 1620, 114 | Jadeplate Cuirass |
+| bottom | 310, 19 | 390, 24 | 507, 31 | 663, 41 | 858, 53 | 1170, 72 | Jadeplate Greaves |
+| shoes | 180, 12 | 225, 15 | 293, 20 | 383, 26 | 495, 33 | 675, 45 | Jadeplate Sabatons |
 
-Rarity still multiplies as it always did, so a level-30 piece beats the level-25 piece **of its own rarity**, not every level-25 piece: a level-25 legendary sword (300) beats a level-30 common (135), rare (176), epic (230) and
-unique (297). With 70% of clears common, most of what a dungeon pays is a side-step until it is merged (three identical pieces make the next rarity at Greta's forge) or enhanced. That is the owner's table; if it feels thin
-the first lever is the level-30 numbers (`DG_ATK`, `DG_HP`, `DG_DEF`), the second the odds.
+Rarity still multiplies as it always did, so a level-30 piece beats the level-25 piece **of its own rarity**, not every level-25 piece: a level-25 legendary sword (300) beats a level-30 common (125), rare (163), epic (213) and
+unique (275). With 70% of clears common, most of what a dungeon pays is a side-step until it is merged (three identical pieces make the next rarity at Greta's forge) or enhanced. The tier is a small step by design and the power is in enhancing (below). Levers, in
+order: `ENH_STEP` (what a step adds), `DG_ATK` / `DG_HP` / `DG_DEF` (the tier), then the odds.
 
 **The ring.** One new equipment slot. It adds a share of **your weapon's attack** (`RING_PCT` 5% x the rarity multiplier: 5 / 6.5 / 8.5 / 11 / 15%), **only if its element is your soul's**. `basic` (no element) is what a
 hiker with an unbound soul, or below level 15, has, so the plain ring is theirs; the opposite soul gets nothing (a fire ring on a water soul adds 0). It stacks with the soul's own x1.5 on skills of that element. A legendary
-sword (405) with a legendary ring on the right soul: +61 attack; both at +10 (below): 608 and 22.5%, **+137**. Names: Plain, Emberbound, Tidebound, Rootbound, Windbound, Duskbound, Dawnbound Ring (placeholders). The ring has no health or defence.
+sword (375) with a legendary ring on the right soul: +56 attack; both at +10 (below): 750 and 30%, **+225**. Names: Plain, Emberbound, Tidebound, Rootbound, Windbound, Duskbound, Dawnbound Ring (placeholders). The ring has no health or defence.
 
-**Enhancing.** A level-30 piece (weapon, armour, ring) can be raised **+1 ... +N**, N by rarity: **Common 2, Rare 4, Epic 6, Unique 8, Legendary 10**. Each step adds **5%** of the piece's own stats (`ENH_STEP`; a common at its
-limit is +10%, a legendary +50%; a ring's share grows the same way). The step to +n costs **n Tempering Stones** (`ENH_STONES`): +1 costs 1, +2 costs 2... so a piece to its limit costs 3 / 10 / 21 / 36 / 55 stones
+**Enhancing.** A level-30 piece (weapon, armour, ring) can be raised **+1 ... +N**, N by rarity: **Common 2, Rare 4, Epic 6, Unique 8, Legendary 10**. Each step adds **10%** of the piece's own stats (`ENH_STEP`, raised by the owner from 5% so that enhancing outweighs the tier: a common at its
+limit is +20%, a rare +40%, an epic +60%, a unique +80%, a legendary +100%, twice its +0; a ring's share grows the same way). The step to +n costs **n Tempering Stones** (`ENH_STONES`): +1 costs 1, +2 costs 2... so a piece to its limit costs 3 / 10 / 21 / 36 / 55 stones
 (common ... legendary). It always works: it never breaks and never loses a level. No coins in it (a coin cost is an easy later sink). Where: the **Temper tab** of every forge (Greta's and the others': the forge panel has two tabs, Merge and Temper).
 
 **The Tempering Stone** is the "item from normal monsters that replaces equipment from level 30 and up". A normal monster fought at level **30 or more** drops it at **2.6%**, exactly the chance of the equipment drop it replaces
@@ -360,6 +360,6 @@ become `ITEM` records at load (not in `ITEM_LIST`, like the tools), so the save 
 6. **A dungeon boss is the same whichever type was chosen**: the type changes the road to the boss, not the boss.
 7. **Doors in the world** replace the village gates of the earlier plan; the three sites above (the spares are in section 6); Wildwood's door **visibly sealed** at +0 (it could instead be hidden until +1); **no terrain change** (a colour patch only) and **no new roads** (signposts, map markers and a landmark instead); camps keep 32 m off a door.
 8. **Rewards** (the owner's rules, filled in by me): the clear's item is **the same for the whole party** (the all-loot rule), so a sword may land with a mage: the alternative is an independent roll for each member *(assumed the first)*. Level-30 stats
-   are one step on each table *(assumed numbers)*. **+5% a step, n stones for the step to +n, always works, no coins** *(assumed)*. **One ring slot**, the plain ring for the `basic` soul *(assumed; the alternative is a ring that always works at a lower rate)*.
+   are one step on each table *(assumed numbers)*. **+10% a step (the owner raised my assumed 5%), n stones for the step to +n, always works, no coins** *(assumed)*. **One ring slot**, the plain ring for the `basic` soul *(assumed; the alternative is a ring that always works at a lower rate)*.
 9. **The stone** drops at the level you fight at, so zone tiers farm it *(assumed; the alternative is the def's own level)*; at 2.6%, the chance it replaces; **bosses keep dropping equipment** *(assumed: you said normal monsters)*.
 10. **Merging** (3 identical -> the next rarity) only takes +0 pieces, the result is +0 *(assumed)*; the stones in a merged piece are lost.

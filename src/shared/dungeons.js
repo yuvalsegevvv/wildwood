@@ -46,10 +46,10 @@ const DG_SET_BARE=[
 /* THE THREE DUNGEONS, one for each built land (docs/DUNGEON-THEMES.md has the designs: feel, tile kit, hazard, objective skins, bosses), one file each in shared/dungeons/themes/,
    entered through defineDungeonTheme below. Each is level DG_LV at its land's base difficulty (see DG_LANDS for the difficulty). Which two mission types a dungeon offers changes
    every hour (dgOffer); what a clear pays is shared/dungeon-rewards.js. */
-const DG_LV=30, DG_ENTRY_GAP=5;   // a dungeon is level 30 at its land's base difficulty; you may enter from its level - 5
+const DG_LV=30, DG_ENTRY_GAP=5;   // a dungeon is level 30 at its land's base difficulty; you may enter from its level - 5 (but never above the top hiker level: the +III to +V dungeons are level 55 to 80)
 /* The difficulty a dungeon is played at is its land's own zone tier setting (gear.zt[land].on: the +N chosen under the map in a village, shared/tiers.js). Each land has a
    `base`, the lowest +N its dungeons open at, where they are level DG_LV; every tier above adds ZTIER_STEP (10) levels, as everywhere. Wildwood's base is +1 (its dungeon
-   is locked at +0, level 30 at +1, 40 at +2, 50 at +3); the Vale's and the Reach's are +0 (level 30, 40, 50, 60). `unlock` is the land's progress gate. */
+   is locked at +0, level 30 at +1, 40 at +2, 50 at +3, 60 at +4, 70 at +5); the Vale's and the Reach's are +0 (level 30, 40, 50, 60, 70, 80). `unlock` is the land's progress gate. */
 const DG_LANDS={
   home:{name:'Wildwood',    base:1,unlock:{},          hint:'Wildwood opens its dungeon at +1 difficulty: once Carapax, the Tide King, has fallen, set Wildwood to +1 on the map in a village.'},
   vale:{name:'Sakura Vale', base:0,unlock:{east:2},    hint:'Walk to Hanami, on the far side of the tunnel, first.'},
@@ -194,7 +194,7 @@ function dgUnlocked(gear,level,T,tier){
   if(t>((z?z.max:0)|0)) return {ok:false,why:'You have not unlocked +'+t+' in '+L.name+' yet.'};
   if(U.east!==undefined&&(g.east|0)<U.east) return {ok:false,why:L.hint};
   if(U.north!==undefined&&(g.north|0)<U.north) return {ok:false,why:L.hint};
-  const lv=dgLevel(T,t), need=lv-DG_ENTRY_GAP; if((level|0)<need) return {ok:false,why:'Reach level '+need+' first.'};
+  const lv=dgLevel(T,t), need=Math.min(PLAYER_MAX_LV,lv-DG_ENTRY_GAP); if((level|0)<need) return {ok:false,why:'Reach level '+need+' first.'};   // (a level-60 dungeon would ask for 55: more than anyone can have)
   return {ok:true,why:'',tier:t,level:lv};
 }
 // the door's look and what pressing the talk key says: open at the tier you play (Wildwood's roots are knotted shut at +0) and the land's progress; the level is not part of it

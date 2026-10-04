@@ -426,7 +426,7 @@ and 6 x 6 (sabotage, siege: 12-16 tiles).
 9. **The three dungeons and their bosses** are designed (`docs/DUNGEON-THEMES.md`): which dungeon for each land (my picks, six spares), the hourly offer (all seven types, a 21-hour cycle, UTC), the three bosses (names, looks, moves), whether big monsters should roam (then the wide-door work comes first) and the rewards (not designed: kills pay the world's rewards at the dungeon's level until then).
 10. **Difficulty** (clarified by the owner): Wildwood's dungeons are locked at +0 and level 30 at +1, the other lands' are level 30 at +0; above the base I assumed +10 levels a tier, and entry at the dungeon's level less 5.
 11. **Entrances** (asked by the owner): one door per dungeon, in its land, found on the real terrain (`DG_ENTRANCES`, `docs/dungeon-entrances.png`, `docs/DUNGEON-THEMES.md` section 6); no village gate, no terrain change, no new road, a camp keeps 32 m off a door; Wildwood's door is shown sealed at +0 *(assumed)*.
-12. **Rewards** (the owner's rules, my numbers): see `docs/DUNGEON-THEMES.md` section 8, decisions 8-10: the same item for the whole party, +5% a step and n stones for the step to +n, one ring slot, the stone dropping at the level you fight at (zone tiers farm it), bosses unchanged, merging only +0 pieces.
+12. **Rewards** (the owner's rules, my numbers): see `docs/DUNGEON-THEMES.md` section 8, decisions 8-10: the same item for the whole party, +10% a step and n stones for the step to +n, one ring slot, the stone dropping at the level you fight at (zone tiers farm it), bosses unchanged, merging only +0 pieces.
 
 ## 14. Notes from a second review (agent-first additions)
 

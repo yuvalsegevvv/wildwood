@@ -143,7 +143,7 @@ function renameP(p,name){
 }
 // jump straight to a level (testing tools, account gifts): opens the skill slots passed on the way
 function setLevelP(p,lv){
-  const was=p.level; p.level=clampInt(lv,1,50,1); p.exp=0; recalcP(p); p.hp=p.maxHp; refreshOffersP(p);
+  const was=p.level; p.level=clampInt(lv,1,PLAYER_MAX_LV,1); p.exp=0; recalcP(p); p.hp=p.maxHp; refreshOffersP(p);
   if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(was<PASSIVE_LV&&p.level>=PASSIVE_LV) unlockPassivesP(p);
   p.dirty=true; ev('lvset',p.id,p.level);
 }

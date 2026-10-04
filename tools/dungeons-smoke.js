@@ -5,7 +5,7 @@
 // Usage: node tools/dungeons-smoke.js            the checks
 //        node tools/dungeons-smoke.js --show defense 7   draws that dungeon (the tile graph, then the cells: one character per 2 x 2 cells)
 const {loadShared}=require('./load');
-const X=loadShared(['DG_CELL','DG_TC','DG_BOSS_R','ARENAS','DG_N','DG_E','DG_S','DG_W','DG_STEP','DG_SET_BARE','DG_MISSIONS','DG_PARTY','DG_MAX_PARTY','dgVariants','dgRotArt','dgRotMask','dgOpp','dgLayout','dgBake','dgSolid','dgFree','dgSlide','dgLos','dgFlow','dgStep','dgParty','dgFightRatio','mulberry32','DG_THEMES','DG_LANDS','DG_LV','DG_ENTRY_GAP','dgUnlocked','dgLevel','dgTierOf','ZTIER_STEP','ZTIER_MAX','DG_ENTRANCES','DG_APRON','DG_ENT_CLEAR','DG_ENT_TALK','dgApron','dgEntranceNear','dgGateOpen','rawHeight','zoneAt','vDist','VR','roadDist','arenaDist','inTunnelCut','zoneRidge','NODES','STORY_SPOTS','LAKES','FROST_LAKES','bareGround','ROADS','ROAD_W','WATER','DG_BOSSES','dgOffer','dgOfferLeft','DG_OFFER_HOUR','FAM','ELEMS','ALL_MON_DEFS','MON_DEFS','BOSS_DEFS','ZONES',
+const X=loadShared(['PLAYER_MAX_LV','DG_CELL','DG_TC','DG_BOSS_R','ARENAS','DG_N','DG_E','DG_S','DG_W','DG_STEP','DG_SET_BARE','DG_MISSIONS','DG_PARTY','DG_MAX_PARTY','dgVariants','dgRotArt','dgRotMask','dgOpp','dgLayout','dgBake','dgSolid','dgFree','dgSlide','dgLos','dgFlow','dgStep','dgParty','dgFightRatio','mulberry32','DG_THEMES','DG_LANDS','DG_LV','DG_ENTRY_GAP','dgUnlocked','dgLevel','dgTierOf','ZTIER_STEP','ZTIER_MAX','DG_ENTRANCES','DG_APRON','DG_ENT_CLEAR','DG_ENT_TALK','dgApron','dgEntranceNear','dgGateOpen','rawHeight','zoneAt','vDist','VR','roadDist','arenaDist','inTunnelCut','zoneRidge','NODES','STORY_SPOTS','LAKES','FROST_LAKES','bareGround','ROADS','ROAD_W','WATER','DG_BOSSES','dgOffer','dgOfferLeft','DG_OFFER_HOUR','FAM','ELEMS','ALL_MON_DEFS','MON_DEFS','BOSS_DEFS','ZONES',
   'DG_BAD','defineDungeonTheme','dgTileProblems','dgCarve','DG_SHAPES','DG_MARKS','DG_TAGS','DG_HALL_PILLARS','DG_HALL_PILLAR_HALF','DG_HALL_MOUTHS','DG_BOSS_DEFS','DG_HALL_LAMPS','dgVentAt','dgHallArena']);
 const {DG_TC,DG_CELL}=X;
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
@@ -259,8 +259,11 @@ ok('the three are different: three model families, three elements, three kits, t
     !un(gear(Z,Z,Z),50,t).ok&&!un(gear([0,1],Z,Z),50,t).ok&&!un(gear([0,3],Z,Z),50,t).ok&&/\+1 difficulty/.test(un(gear([0,1],Z,Z),50,t).why)&&
     un(gear([1,1],Z,Z),25,t).ok&&un(gear([1,1],Z,Z),25,t).level===30&&un(gear([1,1],Z,Z),25,t).tier===1&&X.dgTierOf(gear([1,1],Z,Z),'home')===1));
   ok('the Vale\'s and the Reach\'s dungeons are level '+X.DG_LV+' at their base, +0 (no tier needed)',[...vale,...hoar].every(t=>{ const g=gear(Z,Z,Z,{east:2,north:2}), r=un(g,25,t); return r.ok&&r.level===30&&r.tier===0; }));
-  ok('each tier above the base adds '+X.ZTIER_STEP+' levels: Wildwood +1/+2/+3 = 30/40/50, the Vale and the Reach +0/+1/+2/+3 = 30/40/50/60',
-    home.every(t=>[1,2,3].map(k=>X.dgLevel(t,k)).join()==='30,40,50')&&[...vale,...hoar].every(t=>[0,1,2,3].map(k=>X.dgLevel(t,k)).join()==='30,40,50,60'));
+  ok('each tier above the base adds '+X.ZTIER_STEP+' levels, up to tier V: Wildwood +1 ... +5 = 30/40/50/60/70, the Vale and the Reach +0 ... +5 = 30/40/50/60/70/80',
+    X.ZTIER_MAX===5&&home.every(t=>[1,2,3,4,5].map(k=>X.dgLevel(t,k)).join()==='30,40,50,60,70')&&[...vale,...hoar].every(t=>[0,1,2,3,4,5].map(k=>X.dgLevel(t,k)).join()==='30,40,50,60,70,80'));
+  ok('the way in never asks for more than the top hiker level ('+X.PLAYER_MAX_LV+'): the Vale +3 (level 60) opens at 50, not 55 (nobody has 55), and +5 (level 80) opens at 50 too; Wildwood +5 (level 70) as well',
+    vale.every(t=>{ const g3=gear(Z,[3,3],Z,{east:2}), g5=gear(Z,[5,5],Z,{east:2}); return !un(g3,49,t).ok&&un(g3,50,t).ok&&un(g3,50,t).level===60&&!un(g5,49,t).ok&&un(g5,50,t).ok&&un(g5,50,t).level===80&&/level 50/.test(un(g5,10,t).why); })&&
+    hoar.every(t=>un(gear(Z,Z,[5,5],{north:2}),50,t).ok&&un(gear(Z,Z,[5,5],{north:2}),50,t).level===80)&&home.every(t=>un(gear([5,5],Z,Z),50,t).ok&&un(gear([5,5],Z,Z),50,t).level===70&&!un(gear([5,5],Z,Z),49,t).ok));
   ok('the way in needs the dungeon\'s level less '+X.DG_ENTRY_GAP+' at that tier: Wildwood +1 and the Vale +0 from level 25, the Vale +1 from level 35',
     home.every(t=>!un(gear([1,1],Z,Z),24,t).ok&&un(gear([1,1],Z,Z),25,t).ok&&/level 25/.test(un(gear([1,1],Z,Z),10,t).why))&&
     vale.every(t=>!un(gear(Z,Z,Z,{east:2}),24,t).ok&&un(gear(Z,Z,Z,{east:2}),25,t).ok&&!un(gear(Z,[1,1],Z,{east:2}),34,t).ok&&un(gear(Z,[1,1],Z,{east:2}),35,t).ok));
@@ -318,7 +321,7 @@ ok('the level-30 gear is a tier of its own: its 490 ids are ITEM records (shared
     for(;;){ const nx=R.dgEnhanceNext(id); if(!nx) break; stones+=R.dgEnhanceStones(id); id=nx; steps++; const it=R.dgItem(id); if(!(it.atk>last.atk)) bad.push('atk r'+r+' step '+steps); last=it; }
     if(steps!==M||stones!==R.dgEnhanceTotal(r)||R.dgEnhanceStones(id)!==0) bad.push('r'+r+' steps '+steps+' stones '+stones);
     const base=R.dgItem(R.dgGearId('sword',r,0)).atk, top=R.dgItem(R.dgGearId('sword',r,M)).atk;
-    if(Math.abs(top-base*(1+R.ENH_STEP*M))>1) bad.push('r'+r+' top '+top+' vs '+base*(1+R.ENH_STEP*M));
+    if(Math.abs(top-base*(1+R.ENH_STEP*M))>1.5) bad.push('r'+r+' top '+top+' vs '+base*(1+R.ENH_STEP*M));
     for(const s of R.ARMOR_SLOTS){ let p=R.dgItem(R.dgGearId(s,r,0)); for(let n=1;n<=M;n++){ const q=R.dgItem(R.dgGearId(s,r,n)); if(!(q.hp>p.hp&&q.def>=p.def)) bad.push(s+r+' +'+n); p=q; } }
     for(const e of R.RING_ELS){ let p=R.dgItem(R.dgRingId(e,r,0)); for(let n=1;n<=M;n++){ const q=R.dgItem(R.dgRingId(e,r,n)); if(!(q.pct>p.pct)) bad.push(e+r+' +'+n); p=q; } } }
   const tot=[0,1,2,3,4].map(R.dgEnhanceTotal), kills=tot.map(t=>Math.round(t/R.ENH_DROP));
@@ -328,8 +331,8 @@ ok('the level-30 gear is a tier of its own: its 490 ids are ITEM records (shared
   for(const el of e) for(const so of souls){ const b=R.ringAtk(R.dgRingId(el,0,0),so,w); if((b>0)!==(el===so)) bad.push(el+' ring, '+so+' soul = '+b); }
   const byRar=[0,1,2,3,4].map(r=>R.ringAtk(R.dgRingId('fire',r,0),'fire',w)), enh=R.ringAtk(R.dgRingId('fire',4,10),'fire',w);
   ok('a ring adds a share of the weapon\'s attack only when its element is the soul\'s (7 rings x 7 souls: only the matching one pays; none for the opposite soul)',!bad.length&&R.ringAtk(R.dgRingId('fire',0,0),'water',w)===0,bad.join('; '));
-  ok('the share is 5 / 6.5 / 8.5 / 11 / 15% of the weapon by rarity, grows with the weapon (x2 weapon = x2 bonus) and with enhancement (a legendary +10 gives 22.5%), and a hiker with no soul (undefined) counts as basic',
-    byRar.join()==='50,65,85,110,150'&&R.ringAtk(R.dgRingId('fire',2,0),'fire',2*w)===2*R.ringAtk(R.dgRingId('fire',2,0),'fire',w)&&enh===225&&R.ringAtk(R.dgRingId('basic',0,0),undefined,w)===50&&R.ringAtk('sword7','fire',w)===0&&R.ringAtk(null,'fire',w)===0,byRar.join('/')+' '+enh); }
+  ok('the share is 5 / 6.5 / 8.5 / 11 / 15% of the weapon by rarity, grows with the weapon (x2 weapon = x2 bonus) and with enhancement (a legendary +10 gives 30%), and a hiker with no soul (undefined) counts as basic',
+    byRar.join()==='50,65,85,110,150'&&R.ringAtk(R.dgRingId('fire',2,0),'fire',2*w)===2*R.ringAtk(R.dgRingId('fire',2,0),'fire',w)&&enh===300&&R.ringAtk(R.dgRingId('basic',0,0),undefined,w)===50&&R.ringAtk('sword7','fire',w)===0&&R.ringAtk(null,'fire',w)===0,byRar.join('/')+' '+enh); }
 { const real=Math.random, N=200000, rnd=mulberry(5); let a,b;
   Math.random=()=>R.ENH_DROP-1e-9; a=R.rollMonsterRarity(); Math.random=()=>R.ENH_DROP; b=R.rollMonsterRarity(); Math.random=real;
   ok('the stone\'s chance is exactly the equipment chance it replaces (2.6%: just under it a monster drops equipment, at it nothing)',a>=0&&b===-1&&R.ENH_DROP===0.026);

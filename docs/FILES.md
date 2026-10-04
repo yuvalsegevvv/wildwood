@@ -44,7 +44,7 @@ shared
   roads.js                           Roads between the three villages and the key places (ROADS), the river bridge and the plank causeways over the drowned stretches (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck, bridgeAt. Pure.
   beach.js                           The Crownsea Shore's boss arena (ARENA_TIDE): a flat terrace on the home forest's south beach, where Carapax, the Tide King, lives. Pure.
   terrain-height.js                  rawHeight: base terrain + zone ridges (cut away where a road crosses) + village, arena, tunnel and Frostgate Pass flattening. Pure.
-  balance.js                         Level formulas: fLv, gear tiers, expected gear, XP curve, coins. Pure.
+  balance.js                         Level formulas: fLv, gear tiers, expected gear, armour negation (soft-capped at 90%), XP curve, coins (the pay doubles every 10 levels above 60). Pure.
   monster-defs.js                    Monster families (FAM), the 58 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach), prepDef, the six bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
   tiers.js                           Zone tiers: a harder setting for each land (every enemy in it, bosses included, +10 levels per tier), opened by its second boss, and the symbol bonus. Pure.
   elements.js                        Elements (ELEMS): your soul (SOUL_LV, opposite pairs) and a monster's element (the wheel), with the damage multipliers for both. Pure.
