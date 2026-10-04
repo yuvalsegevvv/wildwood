@@ -81,16 +81,18 @@ const MON_DEFS=[
 ];
 /* What a monster's level does to its health and damage past level 60, the top of the old zone tiers (a level-30 monster at tier III). Two creeps, both applied inside defAt so zone tiers, dungeons and prepDef
    get them alike, and nothing at or below level 60 changes:
-   - LATE CREEP (every monster except a prop, bosses too): health x (13/12)^(level - 60), the growth of f(L) itself (x1.5 at 65, x2.2 at 70, x3.3 at 75, x4.95 at 80). The level debuff on the damage you
-     deal stops at x0.5 (LV_DMG_MIN in balance.js, reached 10 levels above you), so beyond that the only thing that keeps a level-80 monster hard for a maxed level-60 hero is its own health; without this
-     a tier V pack fell in a few seconds and Vetrmaw in 34 s. Props (the totems and lamps: `hits` without `boss`) keep the "hits" of their design.
+   - LATE CREEP (every monster except a prop): health x base^(level - 60). A boss's base is 13/12, the growth of f(L) itself (x1.5 at 65, x2.2 at 70, x3.3 at 75, x4.95 at 80); a normal monster's is the gentler
+     LATE_CREEP_MOB 1.065 (x1.9 at 70, x2.6 at 75, x3.5 at 80: fights 10-40% shorter than at 13/12, "a bit easier to kill"). A boss's own adds (`bossAdd`, set below and in
+     shared/dungeons/bosses.js) keep the boss's base: they are part of the boss fight, which is calibrated as a whole (tools/boss-duel.js). The level debuff on the damage you deal stops at x0.5 (LV_DMG_MIN in
+     balance.js, reached 10 levels above you), so beyond that the only thing that keeps a level-80 monster hard for a maxed level-60 hero is its own health; without this a tier V pack fell in a few
+     seconds and Vetrmaw in 34 s. Props (the totems and lamps: `hits` without `boss`) keep the "hits" of their design.
    - BOSS CREEP (bosses only): +BOSS_CREEP_HP of health and +BOSS_CREEP_DMG of damage for every level over BOSS_CREEP_LV (level 70: x1.125 / x1.5, level 80: x1.25 / x2). The expected-gear numbers (balance.js)
      stop growing with the player's level, but a maxed level-60 player (level-30 dungeon gear at +10, the symbol, potions) brings far more than they assume and a boss's own damage is cut by 84% armour, so at x1
      a hero who only stands in melee and drinks potions beat every zone tier V and +V dungeon boss (a greater heal potion out-heals a level-80 boss; docs/areas/tiers.md, tools/boss-duel.js). */
 const BOSS_CREEP_LV=60, BOSS_CREEP_HP=0.0125, BOSS_CREEP_DMG=0.05;
 const bossCreep=(d,L)=>d.boss&&L>BOSS_CREEP_LV?L-BOSS_CREEP_LV:0;
-const LATE_CREEP_LV=60, LATE_CREEP_BASE=13/12;
-const lateCreep=(d,L)=>L>LATE_CREEP_LV&&(d.boss||!d.hits)?Math.pow(LATE_CREEP_BASE,L-LATE_CREEP_LV):1;
+const LATE_CREEP_LV=60, LATE_CREEP_BOSS=13/12, LATE_CREEP_MOB=1.065;
+const lateCreep=(d,L)=>L>LATE_CREEP_LV&&(d.boss||!d.hits)?Math.pow(d.boss||d.bossAdd?LATE_CREEP_BOSS:LATE_CREEP_MOB,L-LATE_CREEP_LV):1;
 /* The numbers of a monster def at level L: prepDef gives it those of its own level, a zone tier (tiers.js) asks for those of a higher one.
    Health: the hits a same-level, normally geared player needs (4 + 0.45 x level), times the enemy's toughness; a boss or a prop has a fixed
    count of hits instead (d.hits). Damage: a share of a same-level, normally geared player's health, before that player's armor (a boss: 16%). */
@@ -155,6 +157,7 @@ const BOSS_DEFS=[
   {def:KYUUBI_DEF,arena:'boss25',kit:'kitsune',add:FOXKIT_DEF,short:'Kyuubi',bar:{2:'Vanished: where will it strike?',stun:'Stunned!'}},
   {def:YMRIK_DEF,arena:'boss26',kit:'rime',add:THRALL_DEF,short:'Ymrik',bar:{4:'Whiteout: stay inside the circle!',stun:'Spent: strike now!'}},
   {def:VETRMAW_DEF,arena:'boss30',kit:'wyrm',add:WYRMLING_DEF,prop:CORE_DEF,short:'Vetrmaw',bar:{1:'Airborne: fend off the wyrmlings',5:'Blizzard: shelter at a Warm Core!',stun:'Grounded: hit it now!'}}];
+BOSS_DEFS.forEach(b=>{ b.add.bossAdd=true; });   // (the adds of a boss grow like the boss: LATE_CREEP_BOSS)
 /* The main quest's grey-veined monsters (docs/MAIN-QUEST.md, W9 and V7): tougher copies of a zone's kind, touched by the grey sleep.
    Not in MON_DEFS: no camps and no board quests; the server spawns a few for each player on that step (server/main-quest.js) */
 function greyDef(base,id,name,o){

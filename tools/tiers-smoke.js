@@ -6,7 +6,7 @@ const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev.map(e=>[pid,...e])); }},
   ['MONS','BOSSES','BOSS_DEFS','MON_DEFS','DEF_BY_ID','VIL','VIL2','VIL3','S','damageMonsterS','killMonsterS','rewardKill','hurtP','monK','recalcP','sanitizeGear','newGearFor',
-   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','LATE_CREEP_LV','LATE_CREEP_BASE','lvDmgK','LV_DMG_MIN']);
+   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','BOSS_DEFS','DG_BOSS_DEFS','LATE_CREEP_LV','LATE_CREEP_BOSS','LATE_CREEP_MOB','lvDmgK','LV_DMG_MIN']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
@@ -44,8 +44,8 @@ ok('with every land at tier V (fifteen points) the symbol is +150%',near(x.symbo
   } finally { Math.random=real; } }
 
 // ---- above level 60 monsters creep tougher (the lever that keeps tier IV and V from falling in seconds now that the level debuff stops at x0.5) ----
-{ const boss={hits:70,boss:true}, mob={hpK:1,dmgPct:0.1}, prop={hits:9}, rd=L=>1-x.expRed(L), late=L=>L>60?Math.pow(13/12,L-60):1;
-  const bossHp=(L,c)=>Math.round(x.expDmg(L)*70*x.highMult(L)*(1+x.BOSS_CREEP_HP*c)*late(L)), bossDmg=(L,c)=>Math.round(x.expHP(L)*0.16/rd(L)*(1+x.BOSS_CREEP_DMG*c));
+{ const boss={hits:70,boss:true}, mob={hpK:1,dmgPct:0.1}, prop={hits:9}, rd=L=>1-x.expRed(L), late=(L,base)=>L>60?Math.pow(base,L-60):1;
+  const bossHp=(L,c)=>Math.round(x.expDmg(L)*70*x.highMult(L)*(1+x.BOSS_CREEP_HP*c)*late(L,13/12)), bossDmg=(L,c)=>Math.round(x.expHP(L)*0.16/rd(L)*(1+x.BOSS_CREEP_DMG*c));
   const flat=[1,15,30,45,60].every(L=>{ const a=x.defAt(boss,L), m=x.defAt(mob,L); return a.hp===bossHp(L,0)&&a.dmg===bossDmg(L,0)&&m.hp===Math.round(x.expDmg(L)*(4+0.45*L)*x.highMult(L)); });
   ok('up to level '+x.LATE_CREEP_LV+' nothing creeps: a boss is exactly "70 hits, 16%" and a monster exactly its hits (every monster at zone tiers up to III, the dungeons up to +III, are untouched)',
     flat&&x.LATE_CREEP_LV===60&&x.BOSS_CREEP_LV===60&&x.lateCreep(mob,60)===1&&x.lateCreep(mob,30)===1&&x.bossCreep(boss,60)===0&&x.bossCreep(boss,30)===0);
@@ -53,8 +53,8 @@ ok('with every land at tier V (fifteen points) the symbol is +150%',near(x.symbo
   ok('a boss above it gets +'+x.BOSS_CREEP_HP*100+'% health and +'+x.BOSS_CREEP_DMG*100+'% damage for every level on top of the late creep (70: x1.125 / x1.5, 80: x1.25 / x2)',
     a70.hp===bossHp(70,10)&&a70.dmg===bossDmg(70,10)&&a80.hp===bossHp(80,20)&&a80.dmg===bossDmg(80,20)&&x.BOSS_CREEP_HP===0.0125&&x.BOSS_CREEP_DMG===0.05&&x.bossCreep(boss,80)===20);
   const m70=x.defAt(mob,70), m80=x.defAt(mob,80), m60=x.defAt(mob,60);
-  ok('every monster has the late creep, health x (13/12)^(level-60): x'+x.lateCreep(mob,70).toFixed(2)+' at 70, x'+x.lateCreep(mob,80).toFixed(2)+' at 80, and no damage creep (its damage is the plain share of a same-level player\'s health)',
-    near(x.lateCreep(mob,80),Math.pow(13/12,20),1e-12)&&m70.hp===Math.round(x.expDmg(70)*(4+0.45*70)*x.highMult(70)*late(70))&&m80.hp===Math.round(x.expDmg(80)*(4+0.45*80)*x.highMult(80)*late(80))&&
+  ok('every monster has the late creep, health x base^(level-60): a normal monster 1.065 (x'+x.lateCreep(mob,70).toFixed(2)+' at 70, x'+x.lateCreep(mob,80).toFixed(2)+' at 80), a boss and its own adds 13/12 (x'+x.lateCreep(boss,80).toFixed(2)+' at 80), and no damage creep (its damage is the plain share of a same-level player\'s health)',
+    near(x.lateCreep(mob,80),Math.pow(1.065,20),1e-12)&&near(x.lateCreep(boss,80),Math.pow(13/12,20),1e-12)&&x.LATE_CREEP_MOB===1.065&&x.LATE_CREEP_MOB<x.LATE_CREEP_BOSS&&near(x.lateCreep({hpK:1,bossAdd:true},80),Math.pow(13/12,20),1e-12)&&x.DEF_BY_ID.wyrmling.bossAdd===true&&x.BOSS_DEFS.every(b=>b.add.bossAdd===true)&&x.DG_BOSS_DEFS.haugbui.add.bossAdd===true&&m70.hp===Math.round(x.expDmg(70)*(4+0.45*70)*x.highMult(70)*late(70,1.065))&&m80.hp===Math.round(x.expDmg(80)*(4+0.45*80)*x.highMult(80)*late(80,1.065))&&
     m80.dmg===Math.round(x.expHP(80)*0.1/rd(80))&&m60.dmg===Math.round(x.expHP(60)*0.1/rd(60))&&x.bossCreep(mob,80)===0);
   ok('a prop (the totems and lamps: hits without boss) keeps the hits of its design at any level, so "one swing" and "nine hits" stay true',
     x.defAt(prop,80).hp===Math.round(x.expDmg(80)*9*x.highMult(80))&&x.lateCreep(prop,80)===1&&x.lateCreep({hits:1},75)===1&&x.lateCreep({hits:70,boss:true},75)>1);

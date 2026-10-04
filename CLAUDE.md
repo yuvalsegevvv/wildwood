@@ -263,7 +263,7 @@ The universal ones are here. An area's own pitfalls are in its guide (`docs/area
   tiles (64 x 128 cells) culled beyond the fog in both directions, and plant chunks more than 320 m away are only grown when you come closer.
 - Rarity stat multipliers 1 / 1.3 / 1.7 / 2.2 / 3; 3 identical → next rarity at Greta's forge.
 - Shop: unlimited, +20% of base per copy bought, reset at sunrise (server day wraps).
-- Above level 60 monsters creep tougher (`defAt`): health x (13/12)^(level-60) for all but props (x2.2 at 70, x4.95 at 80), bosses also +1.25% health and +5% damage a level (x1.25 / x2 at 80). The ramp for a maxed level-60 hero standing in melee with potions: level 65 bosses 4-8 s, 70 about 35 s, 75 about a minute, level 80 loses standing and wins in 1.5-3 minutes when half the damage is avoided (`tools/boss-duel.js`).
+- Above level 60 monsters creep tougher (`defAt`): health x base^(level-60) for all but props (bosses 13/12: x2.2 at 70, x4.95 at 80; normal monsters 1.065: x1.9 / x3.5), bosses also +1.25% health and +5% damage a level (x1.25 / x2 at 80). The ramp for a maxed level-60 hero standing in melee with potions: level 65 bosses 4-8 s, 70 about 35 s, 75 about a minute, level 80 loses standing and wins in 1.5-3 minutes when half the damage is avoided (`tools/boss-duel.js`).
 - Quests: 4 notices, level −4…+2 weighted to yours; hunts 10-20 (L1) → 30-50 (L15), bounties 1.5×.
 - Slots: skill at level 3, burst at 10; prices 180/650, bursts 2000/4000, mage basics 250/900.
 - Day 20 min; rain 5-7 min every 40-60 min, 30% storms.

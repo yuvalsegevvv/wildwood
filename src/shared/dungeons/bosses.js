@@ -58,7 +58,7 @@ const DG_BOSSES={
 // a design as a row shaped like BOSS_DEFS (what makeBossS(bd, A) takes): the boss's def at its level, its add and its prop as monster defs
 function dgBossRow(b){
   const def=bossDef({id:b.id,name:b.name,level:b.lv,el:b.el,model:b.model,scale:b.scale,boss:true,heavy:true,glow:b.glow,atk:b.atk,speed:b.speed,aggro:0,music:b.music,dungeon:b.dungeon,pal:b.pal});
-  const add={id:b.add.id,name:b.add.name,level:b.lv-1,el:b.el,model:b.add.model||b.model,scale:b.add.scale,hpK:0.6,dmgPct:0.07,atk:1.6,speed:b.add.speed,aggro:30,glow:b.add.glow,pal:b.add.pal};
+  const add={id:b.add.id,name:b.add.name,level:b.lv-1,el:b.el,model:b.add.model||b.model,scale:b.add.scale,hpK:0.6,dmgPct:0.07,bossAdd:true,atk:1.6,speed:b.add.speed,aggro:30,glow:b.add.glow,pal:b.add.pal};
   prepDef(add);
   let prop=null;
   if(b.prop){ prop={id:b.prop.id,name:b.prop.name,level:b.lv,el:b.el,model:b.prop.model||b.model,scale:b.prop.scale,hits:b.prop.hits,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:b.prop.glow,pal:b.prop.pal}; prepDef(prop); }
