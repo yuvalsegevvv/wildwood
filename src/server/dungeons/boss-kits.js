@@ -121,7 +121,7 @@ BOSS_KITS.dish={
 };
 
 // ---- Haugbui, the Barrow Lord (Bonefrost Barrow): the dead who keep their grave; the clan's lamps are what it fears ----
-const DG_THRALL_MAX=8;   // the hall holds at most this many thralls at once: a hero cannot kill them (level 79), so without a cap each wave and each blackout only adds to the pile
+const DG_THRALL_MAX=8;   // the hall holds at most this many thralls at once: a +V thrall (level 79) has 384,000 health, about a minute of a maxed hero's damage, so without a cap each wave and each blackout only added to the pile
 const DG_LAMP_SAFE=8, DG_LAMP_REACH=3, DG_LAMP_CHANNEL=2.5;   // the wail spares whoever is within 8 m of a lit lamp; relighting: within 3 m, holding still 2.5 s
 const DG_BLACKOUT=8, DG_BLACKOUT_RELIT=2;   // the blackout lasts 8 s, or ends early (and stuns him 4 s) when two lamps are relit
 // the grasping chain: a hand-ring under one player that roots, then jumps to the nearest other player within 9 m of it, up to three jumps

@@ -1,7 +1,7 @@
 //@ Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
 /* Your damage = 3 x f(level) + weapon attack, times the ability's multiplier (and its skill level: skillPower), +/-15%, 12% chance of x1.7,
    times the Ferocity passive and the element: your soul (elements.js: soulMult, the opposite pairs) and the element wheel against the monster (foeMult).
-   -5% damage dealt per level the enemy is above you (never below 10%).
+   -5% damage dealt per level the enemy is above you (never below 50%: lvDmgK, shared/balance.js).
    Everyone who hit a monster in the last 30 s and is within 80 m gets the XP, coins, quest credit and a loot roll. */
 const PROJS=[]; let nextProjId=1;
 function handleAttack(p,msg){
@@ -23,7 +23,7 @@ function elemHitS(p,el,m){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) e
   return soulMult(soulOfP(p),el,psP(p,'soul'))*(m?foeMult(el,elOf(m.T)):1); }
 function rollDmgS(p,mult,m,el){
   const b=p.buff, crit=Math.random()<0.12+psP(p,'crit')+(b?b.crit:0), ld=m?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
-  return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg'))*(1+potBuffP(p,'might'))*em*Math.max(0.1,1-0.05*ld)*AR(0.85,1.15)*(crit?1.7:1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
+  return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg'))*(1+potBuffP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?1.7:1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
   if(m.dead||m.remove) return 0;

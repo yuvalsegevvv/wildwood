@@ -96,7 +96,7 @@ Short rows: the files that matter. A row ending in `→ docs/areas/<x>.md` has t
 | Hoarfrost Reach (levels 22-30): the plateau, Frostgate Pass and its ice wall, Rimehold `VIL3`, zones `h22`-`h30`, two boss arenas | `shared/hoarfrost.js` (pass, village, zones, arenas, `CIRCLES`), `hoarHeight` in `shared/terrain.js`; the gate: `frostWall` (`movement.js`) + `setPos` (`api.js`), saved as `gear.north`; meshes `game/village/buildings-hoar.js` → `docs/areas/regions.md` |
 | Snow instead of rain in the Reach; the aurora | `WX.snow` in `game/world/weather.js`, `game/world/aurora.js`, wind in `game/audio/rain.js` and `driver.js` → `docs/areas/regions.md` |
 | Professions (mining, woodcutting, gathering): the Wayfarers' Lodge, resource nodes, resources | `shared/professions.js` (`NODES`, `RES`, `PROFS`, `nodeBlock`, `castTime`), `server/professions.js` (`gatherP`; `gear.prof`, `gear.res`), `game/economy/professions.js`; test `node tools/professions-smoke.js` → `docs/areas/professions.md` |
-| Zone tiers (a harder setting per land, tiers I-V, opened by its second boss) | `shared/tiers.js` (`zoneTierK`, `landAt`), `server/tiers.js`, `game/economy/tiers.js`. The tier is per player and a monster exists once: always go through `monK(m,p)` (`damageMonsterS`, `hurtP`, `rewardKill`); a boss above level 60 creeps stronger (`BOSS_CREEP_*` in `defAt`); test `node tools/tiers-smoke.js`, balance yardstick `node tools/boss-duel.js` → `docs/areas/tiers.md` |
+| Zone tiers (a harder setting per land, tiers I-V, opened by its second boss) | `shared/tiers.js` (`zoneTierK`, `landAt`), `server/tiers.js`, `game/economy/tiers.js`. The tier is per player and a monster exists once: always go through `monK(m,p)` (`damageMonsterS`, `hurtP`, `rewardKill`); above level 60 monsters creep tougher and bosses stronger (`LATE_CREEP_*`, `BOSS_CREEP_*` in `defAt`), and the level debuff on your damage stops at x0.5 (`lvDmgK`, `balance.js`); test `node tools/tiers-smoke.js`, balance yardstick `node tools/boss-duel.js` → `docs/areas/tiers.md` |
 | Tools (pickaxe, axe, sickle: slots `eq.pick`, `eq.axe`, `eq.sickle`) | `TOOL_*` in `shared/items.js`; `equipP` / `buyP` / `sanitizeGear`; `BODY_SLOTS` in `game/economy/inventory.js` → `docs/areas/professions.md` |
 | Crafting (weapons from ore, armour from logs) and brewing (potions from herbs) | `shared/crafting.js`, `server/crafting.js` (`craftP`, `brewP`), `game/economy/crafting.js`, `21-crafting.css` → `docs/areas/professions.md` |
 | Potions (drinking, buffs, the belt, keys Z / X / C) | `drinkP` (`server/crafting.js`), `game/ui/potions.js`; counts in `gear.pot` → `docs/areas/professions.md` |
@@ -204,8 +204,8 @@ node tools/entrances-client-smoke.js   # 30 checks: the three doors' client dres
 node tools/dungeon-board-client-smoke.js # 37 checks: the Delve board and the join prompt (runs dist/)
 node tools/dungeon-client-smoke.js     # 44 checks: a run's client: view, walls, camera, party frame, HUD, results (runs dist/)
 node tools/entrance-map.js       # draws docs/dungeon-entrances.png (the three doors on the real terrain); regenerates byte-identically
-node tools/tiers-smoke.js        # 45 checks: zone tiers I-V, what a kill pays, the boss creep above level 60, ~2 s
-node tools/boss-duel.js --check  # 7 checks: a maxed level-60 hero vs the level-80 bosses (standing loses, avoiding half wins), ~10 s; without --check a table (--boss --tier --class --avoid)
+node tools/tiers-smoke.js        # 48 checks: zone tiers I-V, what a kill pays, the creeps above level 60, the x0.5 floor of the level debuff, ~2 s
+node tools/boss-duel.js --check  # 18 checks: a maxed level-60 hero vs the level-80 bosses (standing loses, avoiding half wins) and the ramp below them, ~10 s; without --check a table (--boss|--camp --tier --level --class --avoid)
 node tools/levels-smoke.js       # 11 checks: the XP curve, the soft cap from level 50, saves and the testing tool, a kill never pays for more than 10 levels above you, ~2 s
 node tools/professions-smoke.js  # 73 checks: tools, nodes, gathering, crafting, brewing, potions, ~8 s
 node tools/skills-smoke.js       # 58 checks: elements, soul, drops, upgrades, passives, boss skills, ~15 s
@@ -254,7 +254,7 @@ The universal ones are here. An area's own pitfalls are in its guide (`docs/area
 ## 9. Reference numbers
 
 - Stats: `f(L)=L+(13/12)^L`; HP `20f+armor`; damage `3f+weapon`; defence cut `def/(def+60)` up to 60% (defense 90), then soft-capped toward 90%
-  (`defRed` in `shared/balance.js`; with armour, passives, buffs and potions together a hit still does at least 10%, `DMG_TAKEN_MIN`; the worst case, the best set + Iron Will + the best buff and potion, is exactly that 90%, `docs/EQUIPMENT.md` section 2); ±5% per level difference; crits 12% ×1.7.
+  (`defRed` in `shared/balance.js`; with armour, passives, buffs and potions together a hit still does at least 10%, `DMG_TAKEN_MIN`; the worst case, the best set + Iron Will + the best buff and potion, is exactly that 90%, `docs/EQUIPMENT.md` section 2); ±5% per level difference (the damage you deal never falls below ×0.5, reached 10 levels above you: `LV_DMG_MIN`; the damage you take keeps growing); crits 12% ×1.7.
 - XP to next `10(L²+(7/6)^L)·K15^((L-5)/10)` up to level 25; from 25 on a level costs as many same-level kills as 25 → 26 (about 2,100: `expToNext` in `shared/balance.js`, so 26-30 are a long but bounded grind); **level 50 is a soft cap**: from 50 every level costs ×1.5 the one before (`LV_SOFT_GROWTH`; the ceiling is 99, `PLAYER_MAX_LV`); **a kill never pays for more than 10 levels above you** (`xpLeadK`); level 10-15 monsters 1.5× HP/XP/coins (`highMult`). `MAX_ZONE_LV` is 30 (quest board, sanitizing); `VALE_TOP_LV` (25) caps the level of the drops skill upgrades ask for; gear stays at tier 5 for levels 25-30.
 - Drops: monsters 2% common, 0.5% rare, 0.1% epic; boss 50/10/3/1/0.1% (common…legendary).
 - World: the home forest is -HALF..HALF; the whole world is `WX0..WX1` x `WZ0..WZ1` (the vale is x > HALF, 550 m wide; the Hoarfrost Reach is x > HALF
@@ -263,7 +263,7 @@ The universal ones are here. An area's own pitfalls are in its guide (`docs/area
   tiles (64 x 128 cells) culled beyond the fog in both directions, and plant chunks more than 320 m away are only grown when you come closer.
 - Rarity stat multipliers 1 / 1.3 / 1.7 / 2.2 / 3; 3 identical → next rarity at Greta's forge.
 - Shop: unlimited, +20% of base per copy bought, reset at sunrise (server day wraps).
-- Bosses above level 60 creep: +1.25% health and +5% damage a level over 60 (x1.25 / x2 at 80); a maxed level-60 hero standing in melee with potions loses to the level-80 bosses, one that avoids half the damage wins in 1.5-3 minutes (`tools/boss-duel.js`).
+- Above level 60 monsters creep tougher (`defAt`): health x (13/12)^(level-60) for all but props (x2.2 at 70, x4.95 at 80), bosses also +1.25% health and +5% damage a level (x1.25 / x2 at 80). The ramp for a maxed level-60 hero standing in melee with potions: level 65 bosses 4-8 s, 70 about 35 s, 75 about a minute, level 80 loses standing and wins in 1.5-3 minutes when half the damage is avoided (`tools/boss-duel.js`).
 - Quests: 4 notices, level −4…+2 weighted to yours; hunts 10-20 (L1) → 30-50 (L15), bounties 1.5×.
 - Slots: skill at level 3, burst at 10; prices 180/650, bursts 2000/4000, mage basics 250/900.
 - Day 20 min; rain 5-7 min every 40-60 min, 30% storms.

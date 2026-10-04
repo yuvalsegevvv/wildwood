@@ -1,4 +1,4 @@
-//@ Level formulas: fLv, gear tiers, expected gear, armour negation (soft-capped at 90%), the XP curve (a soft cap at level 50, no kill pays for more than 10 levels above you), coins (the pay doubles every 10 levels above 60). Pure.
+//@ Level formulas: fLv, gear tiers, expected gear, armour negation (soft-capped at 90%), the level debuff on damage dealt (never below x0.5), the XP curve (a soft cap at level 50, no kill pays for more than 10 levels above you), coins (the pay doubles every 10 levels above 60). Pure.
 /* ===================== MONSTERS =====================
    15 monsters built from 6 models (slime, shroom, beetle, boar, goblin, treant), recoloured and resized.
    Camps sit at fixed spots in rings around the village: level 1 closest, level 15 farthest.
@@ -26,6 +26,10 @@ const RED_KNEE=0.6, RED_CAP=0.9, DEF_KNEE=60*RED_KNEE/(1-RED_KNEE), RED_H=(RED_C
 const defRed=d=>d<=DEF_KNEE?d/(d+60):RED_KNEE+(RED_CAP-RED_KNEE)*(d-DEF_KNEE)/(d-DEF_KNEE+RED_H);
 // whatever armour, passives, buffs and potions add up to, a hit still does at least this share of its damage (at most 90% negation in all)
 const DMG_TAKEN_MIN=0.1;
+/* The level debuff on the damage you deal: -5% for every level the enemy is above you, but never below x0.5 (LV_DMG_MIN, reached at 10 levels above you). It used to go on to a floor of x0.1 at 18 levels,
+   which made anything 18 or more levels up (zone tiers II to V for a low level, tier V for anyone under level 62) a wall, and a fight between 10 and 18 levels up worse with each level. The damage you TAKE
+   still grows 5% a level (hurtP). Together with the XP cap (XP_LEAD, also 10 levels) the level gap stops mattering past 10 levels: what keeps a high tier hard is the monster's own numbers (defAt). */
+const LV_DMG_MIN=0.5, lvDmgK=ld=>Math.max(LV_DMG_MIN,1-0.05*ld);
 /* Levels. Level 50 is a soft cap, not a wall: from it on every level costs LV_SOFT_GROWTH (x1.5) times what the one before cost (expToNext), so with the best XP a kill can pay
    (a monster 10 levels above you) the step 50 -> 51 takes about 450 kills, 55 -> 56 about 6,300 and 60 -> 61 about 90,000. PLAYER_MAX_LV is only the technical ceiling a save or the testing tool is
    clamped to, far beyond where anyone gets. */

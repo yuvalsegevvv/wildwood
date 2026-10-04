@@ -1,7 +1,7 @@
 //@ Zone tiers: a harder setting for each land (every enemy in it, bosses included, +10 levels per tier), opened by its second boss, and the symbol bonus. Pure.
 /* Each land (the home forest, the Sakura Vale, the Hoarfrost Reach) has a tier from 0 to ZTIER_MAX (V). At tier t every enemy there is ZTIER_STEP x t
    levels higher: its health, damage, XP, coins and the gear it drops are those of that level (defAt in monster-defs.js), and the level debuffs
-   (-5% damage dealt / +5% damage taken per level above you) use it too. The tier is the player's own setting (gear.zt[land].on), so two players in
+   (-5% damage dealt, at most -50%, / +5% damage taken per level above you) use it too. The tier is the player's own setting (gear.zt[land].on), so two players in
    the same land can fight the same monster at different tiers: the server keeps one health pool per monster in the def's own units and
    scales each hit that lands on it and each hit it lands (server/tiers.js).
    Opening tiers: defeating a land's second boss (ZTIER_BOSS) while you play that land at your highest unlocked tier unlocks the next one

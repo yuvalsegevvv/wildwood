@@ -6,7 +6,7 @@ const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev.map(e=>[pid,...e])); }},
   ['MONS','BOSSES','BOSS_DEFS','MON_DEFS','DEF_BY_ID','VIL','VIL2','VIL3','S','damageMonsterS','killMonsterS','rewardKill','hurtP','monK','recalcP','sanitizeGear','newGearFor',
-   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG']);
+   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','LATE_CREEP_LV','LATE_CREEP_BASE','lvDmgK','LV_DMG_MIN']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
@@ -43,19 +43,29 @@ ok('with every land at tier V (fifteen points) the symbol is +150%',near(x.symbo
     ok('the pay still rises with every tier (V > IV > III > II > I > 0), for a boss and for a level-1 slime',[x.DEF_BY_ID.vetrmaw,x.DEF_BY_ID.slime].every(m=>[0,1,2,3,4,5].map(t=>x.zoneTierK(m,t).xp).every((v,i,r)=>i===0||v>r[i-1])));
   } finally { Math.random=real; } }
 
-// ---- bosses above level 60 creep (the lever that keeps tier V and +V bosses from being walked over by a maxed level-60 hero) ----
-{ const boss={hits:70,boss:true}, mob={hpK:1,dmgPct:0.1}, rd=L=>1-x.expRed(L);
-  const bossHp=(L,c)=>Math.round(x.expDmg(L)*70*x.highMult(L)*(1+x.BOSS_CREEP_HP*c)), bossDmg=(L,c)=>Math.round(x.expHP(L)*0.16/rd(L)*(1+x.BOSS_CREEP_DMG*c));
-  const flat=[1,15,30,45,60].every(L=>{ const a=x.defAt(boss,L); return a.hp===bossHp(L,0)&&a.dmg===bossDmg(L,0); });
-  ok('up to level '+x.BOSS_CREEP_LV+' a boss is exactly "70 hits, 16%" (every boss at zone tiers up to III, the dungeons up to +III, are untouched)',flat&&x.BOSS_CREEP_LV===60&&x.bossCreep(boss,60)===0&&x.bossCreep(boss,30)===0);
+// ---- above level 60 monsters creep tougher (the lever that keeps tier IV and V from falling in seconds now that the level debuff stops at x0.5) ----
+{ const boss={hits:70,boss:true}, mob={hpK:1,dmgPct:0.1}, prop={hits:9}, rd=L=>1-x.expRed(L), late=L=>L>60?Math.pow(13/12,L-60):1;
+  const bossHp=(L,c)=>Math.round(x.expDmg(L)*70*x.highMult(L)*(1+x.BOSS_CREEP_HP*c)*late(L)), bossDmg=(L,c)=>Math.round(x.expHP(L)*0.16/rd(L)*(1+x.BOSS_CREEP_DMG*c));
+  const flat=[1,15,30,45,60].every(L=>{ const a=x.defAt(boss,L), m=x.defAt(mob,L); return a.hp===bossHp(L,0)&&a.dmg===bossDmg(L,0)&&m.hp===Math.round(x.expDmg(L)*(4+0.45*L)*x.highMult(L)); });
+  ok('up to level '+x.LATE_CREEP_LV+' nothing creeps: a boss is exactly "70 hits, 16%" and a monster exactly its hits (every monster at zone tiers up to III, the dungeons up to +III, are untouched)',
+    flat&&x.LATE_CREEP_LV===60&&x.BOSS_CREEP_LV===60&&x.lateCreep(mob,60)===1&&x.lateCreep(mob,30)===1&&x.bossCreep(boss,60)===0&&x.bossCreep(boss,30)===0);
   const a70=x.defAt(boss,70), a80=x.defAt(boss,80);
-  ok('above it a boss gets +'+x.BOSS_CREEP_HP*100+'% health and +'+x.BOSS_CREEP_DMG*100+'% damage for every level (70: x1.125 / x1.5, 80: x1.25 / x2)',
+  ok('a boss above it gets +'+x.BOSS_CREEP_HP*100+'% health and +'+x.BOSS_CREEP_DMG*100+'% damage for every level on top of the late creep (70: x1.125 / x1.5, 80: x1.25 / x2)',
     a70.hp===bossHp(70,10)&&a70.dmg===bossDmg(70,10)&&a80.hp===bossHp(80,20)&&a80.dmg===bossDmg(80,20)&&x.BOSS_CREEP_HP===0.0125&&x.BOSS_CREEP_DMG===0.05&&x.bossCreep(boss,80)===20);
-  const m80=x.defAt(mob,80), m60=x.defAt(mob,60);
-  ok('an ordinary monster of level 80 has no creep (its damage is the plain share of a level-80 player\'s health)',x.bossCreep(mob,80)===0&&m80.dmg===Math.round(x.expHP(80)*0.1/rd(80))&&m60.dmg===Math.round(x.expHP(60)*0.1/rd(60)));
+  const m70=x.defAt(mob,70), m80=x.defAt(mob,80), m60=x.defAt(mob,60);
+  ok('every monster has the late creep, health x (13/12)^(level-60): x'+x.lateCreep(mob,70).toFixed(2)+' at 70, x'+x.lateCreep(mob,80).toFixed(2)+' at 80, and no damage creep (its damage is the plain share of a same-level player\'s health)',
+    near(x.lateCreep(mob,80),Math.pow(13/12,20),1e-12)&&m70.hp===Math.round(x.expDmg(70)*(4+0.45*70)*x.highMult(70)*late(70))&&m80.hp===Math.round(x.expDmg(80)*(4+0.45*80)*x.highMult(80)*late(80))&&
+    m80.dmg===Math.round(x.expHP(80)*0.1/rd(80))&&m60.dmg===Math.round(x.expHP(60)*0.1/rd(60))&&x.bossCreep(mob,80)===0);
+  ok('a prop (the totems and lamps: hits without boss) keeps the hits of its design at any level, so "one swing" and "nine hits" stay true',
+    x.defAt(prop,80).hp===Math.round(x.expDmg(80)*9*x.highMult(80))&&x.lateCreep(prop,80)===1&&x.lateCreep({hits:1},75)===1&&x.lateCreep({hits:70,boss:true},75)>1);
   const v=x.DEF_BY_ID.vetrmaw, k5=x.zoneTierK(v,5), k4=x.zoneTierK(v,4), k3=x.zoneTierK(v,3), b30=x.defAt(v,30);
-  ok('Vetrmaw at tier V (level 80) is '+k5.hp.toFixed(2)+'x health and '+k5.dmg.toFixed(2)+'x damage of his level-30 self, through the creep: tier IV (level 70) is gentler, tier III (level 60) has none',
-    near(k5.hp,x.defAt(v,80).hp/b30.hp,1e-9)&&near(k5.dmg,x.defAt(v,80).dmg/b30.dmg,1e-9)&&k5.dmg/k4.dmg>1.3&&near(k3.dmg,x.defAt(v,60).dmg/b30.dmg,1e-9)&&near(k3.hp,bossHp(60,0)/b30.hp,1e-9),'IV x'+k4.hp.toFixed(2)+' / x'+k4.dmg.toFixed(2)); }
+  ok('Vetrmaw at tier V (level 80) is '+k5.hp.toFixed(1)+'x health and '+k5.dmg.toFixed(1)+'x damage of his level-30 self, through the creeps: tier IV (level 70: x'+k4.hp.toFixed(1)+' / x'+k4.dmg.toFixed(1)+') is gentler, tier III (level 60) has none',
+    near(k5.hp,x.defAt(v,80).hp/b30.hp,1e-9)&&near(k5.dmg,x.defAt(v,80).dmg/b30.dmg,1e-9)&&k5.dmg/k4.dmg>1.3&&k5.hp/k4.hp>2.5&&near(k3.dmg,x.defAt(v,60).dmg/b30.dmg,1e-9)&&near(k3.hp,x.defAt(v,60).hp/b30.hp,1e-9)); }
+
+// ---- the level debuff on the damage you deal stops at x0.5 ----
+{ const f=x.lvDmgK;
+  ok('lvDmgK: -5% a level above you, never below x'+x.LV_DMG_MIN+' (reached 10 levels up; 18, 30 or 60 levels up cost no more)',
+    x.LV_DMG_MIN===0.5&&f(0)===1&&near(f(4),0.8,1e-12)&&near(f(9),0.55,1e-12)&&f(10)===0.5&&f(11)===0.5&&f(18)===0.5&&f(30)===0.5&&f(60)===0.5&&[0,1,2,3,4,5,6,7,8,9,10,11,12,20,40].every((l,i,r)=>i===0||f(l)<=f(r[i-1]))); }
 
 // ---- saves ----
 { const g=x.sanitizeGear({zt:{home:{on:9,max:9},vale:{on:5,max:1},hoar:'x',extra:{on:1,max:1}}},'warrior');
@@ -90,7 +100,11 @@ try{
   A.gear.zt=zt([1,1],[1,1],[0,0]); B.gear.zt=zt([0,0],[0,0],[0,0]); A.dmg=B.dmg;
   const kA=x.monK(kappa,A), kB=x.monK(kappa,B), dA=hc(A,kappa), dB=hc(B,kappa);
   ok('a vale monster follows the vale\'s tier (the home\'s does not move it), and its tiered level sets the level debuff (-5% damage per level above you)',
-    kB.lv===kappa.T.level&&kA.lv===kappa.T.level+10&&near(dA/dB,Math.max(0.1,1-0.05*(kA.lv-25))/Math.max(0.1,1-0.05*Math.max(0,kB.lv-25)),0.03),'kappa '+kappa.T.level+' -> '+kA.lv+', damage '+dB+' vs '+dA);
+    kB.lv===kappa.T.level&&kA.lv===kappa.T.level+10&&near(dA/dB,x.lvDmgK(kA.lv-25)/x.lvDmgK(Math.max(0,kB.lv-25)),0.03),'kappa '+kappa.T.level+' -> '+kA.lv+', damage '+dB+' vs '+dA);
+  { const dmgAt=t=>{ A.gear.zt=zt([0,0],[t,5],[0,0]); return {d:hc(A,kappa),ld:Math.max(0,x.monK(kappa,A).lv-25)}; };   // (the unlocked points stay the same, so the symbol does not change the hit)
+    const r=[0,1,2,3,4,5].map(dmgAt), flat=r.filter(q=>q.ld>=10);
+    ok('the same hit against the same monster at every tier: -5% a level above you down to x0.5 at 10 levels up, and then no weaker ('+r.map(q=>'ld '+q.ld+': '+q.d).join(', ')+')',
+      flat.length>=3&&flat.every(q=>q.d===flat[0].d)&&r.every(q=>near(q.d/r[0].d,x.lvDmgK(q.ld)/x.lvDmgK(r[0].ld),0.03))&&r[1].d>flat[0].d); }
   A.gear.zt=zt([0,1],[0,1],[0,0]);
   // rewards: XP, coins and the tier of the gear dropped are those of the tiered level
   A.level=45; A.gear.zt=zt([0,1],[0,1],[0,0]); B.level=45; B.gear.zt=zt([0,0],[0,0],[0,0]); A.exp=0; B.exp=0; x.recalcP(A); x.recalcP(B);

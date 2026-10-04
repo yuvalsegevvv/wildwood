@@ -1,4 +1,4 @@
-//@ Monster families (FAM), the 58 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach), defAt (a def's numbers at a level; bosses above level 60 creep stronger), prepDef, the six bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
+//@ Monster families (FAM), the 58 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach), defAt (a def's numbers at a level; above level 60 monsters creep tougher, bosses also stronger), prepDef, the six bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
 const FAM={
   slime: {hpK:0.85,dmgPct:0.06,atk:1.6,speed:2.2,rad:0.45,height:0.8,aggro:10,sound:'squish',per:4},
   shroom:{hpK:0.95,dmgPct:0.07,atk:1.7,speed:1.8,rad:0.4, height:1.1,aggro:10,sound:'pip',per:3},
@@ -79,18 +79,24 @@ const MON_DEFS=[
   {id:'alphawolf', name:'Frostfang Alpha',  level:30,el:'air',  model:'fox',   scale:1.75,hpK:1.3, zone:'h30', glow:0x0c1a2c, pal:{body:0x9eb4cc,belly:0xeaf2fa,tip:0xffffff,eye:0xff6a5a,legs:0x566a84,tails:1,wolf:1}},
   {id:'glaciergolem',name:'Glacier Golem',  level:30,el:'water',model:'treant',scale:1.95,hpK:1.6, zone:'h30', glow:0x0a2030, pal:{kind:'ice',bark:0x4a5a68,c1:0xa8d8f0,c2:0xc8ecfc,c3:0x88c0e0,eyes:0xffb040}}
 ];
-/* A boss above level 60 is stronger than "70 hits, 16%" says: +BOSS_CREEP_HP of health and +BOSS_CREEP_DMG of damage for every level over BOSS_CREEP_LV (level 70: x1.125 health, x1.5 damage;
-   level 80: x1.25 and x2). The expected-gear numbers (balance.js) stop growing with the player's level, but a maxed level-60 player (the level-30 dungeon gear at +10, the symbol, potions) brings far
-   more than they assume, and a level-80 boss's own damage is cut to nothing by the 90% negation, so at x1 a hero who only stands in melee and drinks potions beat every zone tier V and +V dungeon boss.
-   Normal monsters and every boss up to level 60 (zone tiers up to III) are untouched. */
+/* What a monster's level does to its health and damage past level 60, the top of the old zone tiers (a level-30 monster at tier III). Two creeps, both applied inside defAt so zone tiers, dungeons and prepDef
+   get them alike, and nothing at or below level 60 changes:
+   - LATE CREEP (every monster except a prop, bosses too): health x (13/12)^(level - 60), the growth of f(L) itself (x1.5 at 65, x2.2 at 70, x3.3 at 75, x4.95 at 80). The level debuff on the damage you
+     deal stops at x0.5 (LV_DMG_MIN in balance.js, reached 10 levels above you), so beyond that the only thing that keeps a level-80 monster hard for a maxed level-60 hero is its own health; without this
+     a tier V pack fell in a few seconds and Vetrmaw in 34 s. Props (the totems and lamps: `hits` without `boss`) keep the "hits" of their design.
+   - BOSS CREEP (bosses only): +BOSS_CREEP_HP of health and +BOSS_CREEP_DMG of damage for every level over BOSS_CREEP_LV (level 70: x1.125 / x1.5, level 80: x1.25 / x2). The expected-gear numbers (balance.js)
+     stop growing with the player's level, but a maxed level-60 player (level-30 dungeon gear at +10, the symbol, potions) brings far more than they assume and a boss's own damage is cut by 84% armour, so at x1
+     a hero who only stands in melee and drinks potions beat every zone tier V and +V dungeon boss (a greater heal potion out-heals a level-80 boss; docs/areas/tiers.md, tools/boss-duel.js). */
 const BOSS_CREEP_LV=60, BOSS_CREEP_HP=0.0125, BOSS_CREEP_DMG=0.05;
 const bossCreep=(d,L)=>d.boss&&L>BOSS_CREEP_LV?L-BOSS_CREEP_LV:0;
+const LATE_CREEP_LV=60, LATE_CREEP_BASE=13/12;
+const lateCreep=(d,L)=>L>LATE_CREEP_LV&&(d.boss||!d.hits)?Math.pow(LATE_CREEP_BASE,L-LATE_CREEP_LV):1;
 /* The numbers of a monster def at level L: prepDef gives it those of its own level, a zone tier (tiers.js) asks for those of a higher one.
    Health: the hits a same-level, normally geared player needs (4 + 0.45 x level), times the enemy's toughness; a boss or a prop has a fixed
    count of hits instead (d.hits). Damage: a share of a same-level, normally geared player's health, before that player's armor (a boss: 16%). */
 function defAt(d,L){
   const hits=d.hits||(4+0.45*L), k=d.hits?1:d.hpK, rd=1-expRed(L), c=bossCreep(d,L);
-  return {hp:Math.round(expDmg(L)*hits*k*highMult(L)*(1+BOSS_CREEP_HP*c)),
+  return {hp:Math.round(expDmg(L)*hits*k*highMult(L)*(1+BOSS_CREEP_HP*c)*lateCreep(d,L)),
     dmg:d.boss?Math.round(expHP(L)*0.16/rd*(1+BOSS_CREEP_DMG*c)):Math.max(1,Math.round(expHP(L)*d.dmgPct/rd)),
     xp:d.noXp?0:xpFor(L)*(d.boss?25:1)};
 }
@@ -101,7 +107,7 @@ function prepDef(d){
   d.color=d.pal.body||d.pal.cap||d.pal.shell||d.pal.skin||d.pal.c1||0x7af0a0;
 }
 MON_DEFS.forEach(prepDef);
-/* Bosses: health = 70 hits of a same-level player, a hit = 16% of that player's health (more above level 60: BOSS_CREEP_*, in defAt); props (the Rootwarden's totems, Vetrmaw's warm
+/* Bosses: health = 70 hits of a same-level player, a hit = 16% of that player's health (more above level 60: BOSS_CREEP_* and LATE_CREEP_*, in defAt); props (the Rootwarden's totems, Vetrmaw's warm
    cores) 9 hits. Every boss has its own move set on top of the shared melee and phases (server/boss.js, boss-kits-*.js). */
 function bossDef(d){ d.hits=70; prepDef(d); return d; }
 function totemDef(d){ d.hits=9; prepDef(d); return d; }
