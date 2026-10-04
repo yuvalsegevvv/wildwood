@@ -22,7 +22,7 @@ Kits `server/dungeons/kits/<mission>.js` (one `dgDefineKit` call each); shared m
 
 Pitfalls: a monster with `m.dgOwn` is skipped by the walkers' AI after its death check, so its kit must move it every tick (guardians are moved by `dgFxTickS`); the captive is an objective, not a monster; a kit's channel has `end: Infinity` (only `updateCastsS` breaks it, `dgFxTickS` finishes it); kits count time with `dt` in `run.k` (a test may tick fast: `dgWalkS` cuts a step to 0.1 s).
 
-### Dungeon rewards (**built**; a won run hands out the clear's piece: `dgWinS`): the 665 level-30 ids as items (490 weapons, armour and rings, 175 pendants), the ring slot and its additive attack, the Tempering Stone, the forge's Temper tab
+### Dungeon rewards (**built**; a won run hands out the clear's piece: `dgWinS`): the 665 level-30 ids as items (490 weapons, armour and rings, 175 pendants), the ring slot and its attack by soul, the Tempering Stone, the forge's Temper tab
 
 Rules and ids `shared/dungeon-rewards.js`; items, `dgVisTier`, `dgMergedId`, `dgRingAtkOf`, `dgEnhInfo` `shared/dungeon-items.js`; `dgRingAtkP`, `dgRollDropP`, `dgTemperP` (`temper{id[,worn]}`), `dgGrantItemP(p,id)` (call it for each member at a clear), `MSG.rwdev` (testing tools) `server/dungeon-gear.js`; details, stone chip, the Temper tab, events `stone` / `temper` `game/economy/dungeon-gear.js`; icons `game/ui/item-icons.js` (`ringIconArt`); hooks marked `// dungeons:` (table in `docs/DUNGEON-THEMES.md` section 7); tests `node tools/rewards-smoke.js` (server), `node tools/rewards-client-smoke.js` (client, runs `dist/`: build first).
 

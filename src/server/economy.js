@@ -124,6 +124,7 @@ function bindSoulP(p,el){
   if(Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14){ toastTo(p.id,'The soul shrine is in Hanami, beyond the eastern mountains','bad'); return; }
   if(p.gear.soul===el) return;
   p.gear.soul=el; p.dirty=true; if(el!=='basic') mqActP(p,'soul'); toastTo(p.id,el==='basic'?'Your soul is unbound':'Your soul is bound to '+ELEMS[el].name,'good'); ev('soul',p.id,el);
+  recalcP(p);   // dungeons: the ring's attack depends on the soul (it used to touch no stats)
 }
 /* ---- chat and names ---- */
 // chat: up to 160 characters, at most one message every 0.7 s per player; everyone in the world hears it

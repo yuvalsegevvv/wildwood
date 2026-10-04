@@ -6,8 +6,8 @@
      untouched; it is only ever paid by a dungeon. Its stats continue each table of balance.js by one more step, a small one (about x1.25 for a weapon and for armour health): most of a level-30 piece's power is meant to
      come from enhancing it (below: ENH_STEP, +10% of its own stats a step, so a legendary +10 is twice its +0), not from the tier it is.
    - The pendant is a second jewellery slot (eq.pendant, pendants.js): 5 kinds, each with ONE bonus (exp, drop chance, coins, crit chance, crit multiplier), one random kind a clear.
-   - The ring is a new slot. 7 types: no element (`basic`) and the six elements. It ADDS a share of YOUR WEAPON'S attack to your attack, always: any ring on any soul (it used to work only for a
-     matching soul; the owner made it additive). The element is only its look and name for now (docs/NOT-BUILT.md section 3b: a use for it is not decided).
+   - The ring is a new slot. 7 types: no element (`basic`) and the six elements. It adds a share of YOUR WEAPON'S attack, but only when its element is your soul's
+     (`soulOfP`: `basic` is what an unbound soul or a hiker below level 15 has, so the plain ring is the one for them).
    - Enhancing: a level-30 piece (weapon, armour or ring) can be raised +1, +2... up to ENH_MAX of its rarity (2 / 4 / 6 / 8 / 10). Each step costs the tempering stone
      (ENH_STONES) and adds ENH_STEP of the piece's own stats; it always works.
    - The stone drops from NORMAL monsters of level ENH_LV or more (the level you fight them at, so a zone tier counts) at ENH_DROP, which is exactly the chance of an
@@ -19,7 +19,7 @@ const DG_PRICE=30000, DG_RING_PRICE=1.2, DG_PENDANT_PRICE=1.2;   // like PRICE x
 const DG_NAMES={sword:'Elderwood Blade',bow:'Elderwood Longbow',wand:'Elderwood Wand',helmet:'Jadeplate Helm',top:'Jadeplate Cuirass',bottom:'Jadeplate Greaves',shoes:'Jadeplate Sabatons'};
 const RING_ELS=['basic',...ELEM_LIST];   // the seven ring types: no element, then the six
 const RING_NAMES={basic:'Plain Barrow Ring',fire:'Emberbound Ring',water:'Tidebound Ring',earth:'Rootbound Ring',air:'Windbound Ring',dark:'Duskbound Ring',light:'Dawnbound Ring'};
-const RING_PCT=0.05;   // a common ring adds 5% of the weapon's attack, always; rarity multiplies it by RAR_MULT: 5 / 6.5 / 8.5 / 11 / 15%
+const RING_PCT=0.05;   // a common ring adds 5% of the weapon's attack; rarity multiplies it by RAR_MULT: 5 / 6.5 / 8.5 / 11 / 15%
 // what each dungeon (a DG_THEMES id) pays: a kind and the pool one random piece comes from
 const DG_REWARDS={
   hollowroots:    {kind:'weapon',pool:[...WEAPON_SLOTS]},
@@ -67,10 +67,10 @@ function dgAllIds(){
   const out=[]; for(let r=0;r<5;r++) for(let n=0;n<=ENH_MAX[r];n++){ for(const s of ALL_SLOTS) out.push(dgGearId(s,r,n)); for(const e of RING_ELS) out.push(dgRingId(e,r,n)); for(const t of PENDANT_STATS) out.push(dgPendantId(t,r,n)); }
   return out;
 }
-// the attack a ring adds: its share of the weapon's attack, whatever the ring's element and your soul (additive: it is simply added to your attack)
-function ringAtk(ring,weaponAtk){
+// the ring's share of the weapon's attack: only when its element is the soul's (a soul below level 15 is 'basic', as soulOfP says)
+function ringAtk(ring,soul,weaponAtk){
   const it=typeof ring==='string'?dgItem(ring):ring;
-  return it&&it.kind==='ring'?Math.round(weaponAtk*it.pct):0;
+  return it&&it.kind==='ring'&&it.el===(soul||'basic')?Math.round(weaponAtk*it.pct):0;
 }
 // enhancing a piece one step: the id after, or null (not a level-30 piece, or already at its rarity's limit); the stones that step costs
 function dgEnhanceNext(id){ const q=dgParse(id); if(!q||q.n>=ENH_MAX[q.rar]) return null; return q.el?dgRingId(q.el,q.rar,q.n+1):q.stat?dgPendantId(q.stat,q.rar,q.n+1):dgGearId(q.slot,q.rar,q.n+1); }

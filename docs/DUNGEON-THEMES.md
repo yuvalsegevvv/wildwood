@@ -285,7 +285,7 @@ phones get fewer details and nothing moves, light mode the bare shapes) and `gam
 
 ## 7. The rewards
 
-Decided by the owner; the data and the rules are in `src/shared/dungeon-rewards.js` and are checked (14 of the 97 checks of `tools/dungeons-smoke.js`, the odds, the caps and the ring's rule written out in the test, not read from the code). **Status: built, except the clear's hand-out** (`dgGrantItemP` exists, nothing calls it until a run does): the items, the ring slot and its attack, the stone, tempering and the UI work today, tested by `tools/rewards-smoke.js` and `tools/rewards-client-smoke.js`; the end of this section lists what was built and every hook.
+Decided by the owner; the data and the rules are in `src/shared/dungeon-rewards.js` and are checked (14 of the 97 checks of `tools/dungeons-smoke.js`, the odds, the caps and the soul rule written out in the test, not read from the code). **Status: built, except the clear's hand-out** (`dgGrantItemP` exists, nothing calls it until a run does): the items, the ring slot and its attack, the stone, tempering and the UI work today, tested by `tools/rewards-smoke.js` and `tools/rewards-client-smoke.js`; the end of this section lists what was built and every hook.
 
 | Dungeon | A clear pays | Pool of the one random piece |
 |---|---|---|
@@ -312,9 +312,9 @@ Rarity still multiplies as it always did, so a level-30 piece beats the level-25
 unique (275). With 70% of clears common, most of what a dungeon pays is a side-step until it is merged (three identical pieces make the next rarity at Greta's forge) or enhanced. The tier is a small step by design and the power is in enhancing (below). Levers, in
 order: `ENH_STEP` (what a step adds), `DG_ATK` / `DG_HP` / `DG_DEF` (the tier), then the odds.
 
-**The ring.** One new equipment slot. It **adds** a share of **your weapon's attack** to your attack (`RING_PCT` 5% x the rarity multiplier: 5 / 6.5 / 8.5 / 11 / 15%), **always: any ring on any soul** (the owner's change; it was "only if its
-element is your soul's", with the plain ring for the unbound). A legendary sword (375) with a legendary ring: +56 attack; both at +10 (below): 750 and 30%, **+225**. The seven types (no element and the six elements) are now only a look and a name: a use
-for the element is not decided (`docs/NOT-BUILT.md` section 3b). Names: Plain, Emberbound, Tidebound, Rootbound, Windbound, Duskbound, Dawnbound Ring (placeholders). The ring has no health or defence.
+**The ring.** One new equipment slot. It **adds** a share of **your weapon's attack** to your attack (`RING_PCT` 5% x the rarity multiplier: 5 / 6.5 / 8.5 / 11 / 15%), **only if its element is your soul's** (the owner's rule, confirmed after a
+try at "any soul"). `basic` (no element) is what a hiker with an unbound soul, or below level 15, has, so the plain ring is theirs; the opposite soul gets nothing (a fire ring on a water soul adds 0).
+It stacks with the soul's own x1.5 on skills of that element. A legendary sword (375) with a legendary ring on the right soul: +56 attack; both at +10 (below): 750 and 30%, **+225**. Names: Plain, Emberbound, Tidebound, Rootbound, Windbound, Duskbound, Dawnbound Ring (placeholders). The ring has no health or defence.
 
 **Enhancing.** A level-30 piece (weapon, armour, ring) can be raised **+1 ... +N**, N by rarity: **Common 2, Rare 4, Epic 6, Unique 8, Legendary 10**. Each step adds **10%** of the piece's own stats (`ENH_STEP`, raised by the owner from 5% so that enhancing outweighs the tier: a common at its
 limit is +20%, a rare +40%, an epic +60%, a unique +80%, a legendary +100%, twice its +0; a ring's share grows the same way). The step to +n costs **n Tempering Stones** (`ENH_STONES`): +1 costs 1, +2 costs 2... so a piece to its limit costs 3 / 10 / 21 / 36 / 55 stones
@@ -331,7 +331,7 @@ become `ITEM` records at load (not in `ITEM_LIST`, like the tools), so the save 
 
 **What was built** (M6r of `docs/DUNGEONS.md`). Files: `shared/dungeon-items.js` (the 490 `ITEM` records, `dgVisTier`, `dgMergedId`, `dgRingAtkOf`, `dgEnhInfo`, texts), `server/dungeon-gear.js` (`dgRingAtkP`, `dgRollDropP`, `dgAddStonesP`, `dgTemperP` + `MSG.temper`, `dgMergeRefusedP`, `dgGrantItemP`, `MSG.rwdev`), `game/economy/dungeon-gear.js` (details, stone chip, the Temper tab, events, test buttons), `styles/23-dungeon-gear.css`.
 - **The records.** `ITEM[id]` for all 490 ids (`dgItem`: `kind` weapon | armor | ring, `slot`, `tier` 6, `lv` 30, `rar`, `n` (the +n), `dg:true`, `atk` | `hp` + `def` | `pct` + `el`, `name`, `price`), never in `ITEM_LIST` / `TOOL_LIST`. A save keeps ids; `sanitizeGear` needs no new item rule. Level 30 to wear (`equipP` already checks `it.lv`).
-- **The ring** is `gear.eq.ring` (slot `ring`, `SLOT_LABEL.ring`). `recalcP` adds `dgRingAtkOf(gear)` (its share of the worn weapon's attack, always) to the attack; the soul is not asked, so `bindSoulP` does not recalculate. The client shows the result in `PL.dmg` (the server's) and, in the item details, "Adds +6 attack with your weapon (any soul)".
+- **The ring** is `gear.eq.ring` (slot `ring`, `SLOT_LABEL.ring`). `recalcP` adds `dgRingAtkOf(gear, soulOfP(p))` (its share of the worn weapon's attack, only for a matching soul) to the attack, and `bindSoulP` calls `recalcP`. The client shows the result in `PL.dmg` (the server's) and, in the item details, "Matches your soul (Fire): +61 attack" / "Your soul is Water: no effect".
 - **Look.** Level-30 armour and weapons borrow the top tier's look, icon and model (`dgVisTier`, `DG_LOOK_TIER` = 5) and get a jade sparkle on the icon; rings have their own icon (a gem in the element's colour).
 - **Stones.** `gear.temper` (0..`DG_STONE_MAX` = 9,999). `rewardKill` calls `dgRollDropP`: a normal monster fought at `K.lv` >= 30 rolls `dgRollStone` and never drops equipment; bosses and lower levels keep the old roll. Events `stone [pid,n,monId]` (a floating note) and the toast "Found: Tempering Stone".
 - **Tempering.** Message `temper{id[,worn]}` (a handler in `MSG`): the piece must be a level-30 piece in your bag, not at its limit, and you need `dgEnhanceStones(id)` stones; one copy of the id becomes `dgEnhanceNext(id)` (the bag copy, unless `worn` is set or the worn copy is the only one: then the slot follows and the hiker is recalculated). Event `temper [pid,newId,oldId]`.
@@ -343,7 +343,7 @@ become `ITEM` records at load (not in `ITEM_LIST`, like the tools), so the save 
 |---|---|
 | ring slot label, `mergedId`, `newGearFor` (`eq.ring`, `temper`), `effectiveLookOf` (tier look), `itemStat` (ring text) | `shared/items.js` |
 | `recalcP` (ring attack), `sanitizeGear` (`temper`) | `server/players.js` |
-| `mergeP` (refuse +n), `buyP` (never sell level-30 gear) | `server/economy.js` |
+| `mergeP` (refuse +n), `buyP` (never sell level-30 gear), `bindSoulP` (recalc) | `server/economy.js` |
 | `rewardKill` (the stone replaces equipment at level 30+) | `server/combat.js` |
 | `BODY_SLOTS` (ring), `tile` (badge, accent), `statDiff` (ring), `renderInvInfo` (details), the stone chip | `game/economy/inventory.js` |
 | forge tabs, Temper tab, merge filter and note | `game/economy/forge.js`, markup in `index.html` (`data-fgtab`) |
@@ -363,7 +363,7 @@ become `ITEM` records at load (not in `ITEM_LIST`, like the tools), so the save 
 6. **A dungeon boss is the same whichever type was chosen**: the type changes the road to the boss, not the boss.
 7. **Doors in the world** replace the village gates of the earlier plan; the three sites above (the spares are in section 6); Wildwood's door **visibly sealed** at +0 (it could instead be hidden until +1); **no terrain change** (a colour patch only) and **no new roads** (signposts, map markers and a landmark instead); camps keep 32 m off a door.
 8. **Rewards** (the owner's rules, filled in by me): the clear's item is **the same for the whole party** (the all-loot rule), so a sword may land with a mage: the alternative is an independent roll for each member *(assumed the first)*. Level-30 stats
-   are one step on each table *(assumed numbers)*. **+10% a step (the owner raised my assumed 5%), n stones for the step to +n, always works, no coins** *(assumed)*. **One ring slot**; the ring adds attack always, on any soul *(the owner's change; the soul-match rule is gone)*.
+   are one step on each table *(assumed numbers)*. **+10% a step (the owner raised my assumed 5%), n stones for the step to +n, always works, no coins** *(assumed)*. **One ring slot**, the plain ring for the `basic` soul; the ring's bonus applies only on a matching soul *(the owner's rule, confirmed)*.
 9. **The stone** drops at the level you fight at, so zone tiers farm it *(assumed; the alternative is the def's own level)*; at 2.6%, the chance it replaces; **bosses keep dropping equipment** *(assumed: you said normal monsters)*.
 10. **Merging** (3 identical -> the next rarity) only takes +0 pieces, the result is +0 *(assumed)*; the stones in a merged piece are lost.
 

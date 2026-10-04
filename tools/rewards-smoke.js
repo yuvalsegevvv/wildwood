@@ -1,4 +1,4 @@
-//@ Headless test of the dungeon rewards on the server: level-30 items, the ring's additive attack, Tempering Stone drops, tempering, the forge's merge rule, saves, testing commands
+//@ Headless test of the dungeon rewards on the server: level-30 items, the ring's attack and the soul, Tempering Stone drops, tempering, the forge's merge rule, saves, testing commands
 // Usage: node tools/rewards-smoke.js   (server straight from src/, no build; ~3 s)
 // What it covers: shared/dungeon-items.js, server/dungeon-gear.js and the marked hooks (`// dungeons:`) in items.js, players.js, economy.js, combat.js. Design: docs/DUNGEON-THEMES.md section 7.
 const {loadServer}=require('./load');
@@ -90,19 +90,22 @@ ok('a ring can be taken off',a.gear.eq.ring===null&&a.gear.inv.includes('ring-ba
   ok('enhancing carries the weight: the level-30 tier is a x'+stepTier.toFixed(2)+' step over the top world tier, enhancing to the limit is x'+[0,1,2,3,4].map(r=>mult(r).toFixed(1)).join(' / x')+' (common ... legendary), and from a rare up the enhancement is worth more than the tier',
     near(x.ENH_STEP,0.10,1e-9)&&stepTier<1.3&&mult(0)>=stepTier-0.06&&[1,2,3,4].every(r=>mult(r)>stepTier)&&near(mult(4),2,1e-9)&&x.ITEM['sword7-l+10'].atk===2*x.ITEM['sword7-l'].atk,'tier x'+stepTier.toFixed(2)); }
 
-// ---- the ring's attack: additive, whatever the soul (the owner changed it from "only for a matching soul") ----
+// ---- the ring's attack and the soul ----
 { const r=join('r',30,'warrior'); r.gear.east=2; give(r,'sword7-l','sword7','ring-fire-l','ring-water','ring-basic','ring-basic-u'); send('r',{t:'equip',id:'sword7-l'}); const noRing=r.dmg;
   send('r',{t:'equip',id:'ring-fire-l'});
-  ok('a legendary fire ring on a legendary sword (375) adds 56 attack ("15%") at once, on an unbound soul too',near(r.dmg-noRing,56,0.5)&&x.soulOfP(r)==='basic'&&near(you('r').dmg,r.dmg),'+'+(r.dmg-noRing).toFixed(2));
-  r.x=x.VIL2.x; r.z=x.VIL2.z; const seen=[];
-  for(const so of ['fire','water','dark','basic']){ send('r',{t:'soul',el:so}); seen.push(so+' '+(r.dmg-noRing).toFixed(1)); }
-  ok('and the soul changes nothing of it: a fire soul, the opposite soul, a dark one and an unbound one all keep the same +56 (additive to attack)',seen.every(t=>/ 56\.0$|55\.[5-9]$|56\.[0-4]$/.test(t)),seen.join(', '));
+  ok('a fire ring on an unbound soul adds nothing',near(r.dmg,noRing)&&x.soulOfP(r)==='basic','dmg '+r.dmg);
+  r.x=x.VIL2.x; r.z=x.VIL2.z; send('r',{t:'soul',el:'fire'});
+  ok('binding the soul to fire recalculates at once: a legendary ring on a legendary sword (375) adds 56 attack ("15%")',near(r.dmg-noRing,56,0.5)&&r.gear.soul==='fire'&&near(you('r').dmg,r.dmg),'+'+(r.dmg-noRing).toFixed(2));
+  send('r',{t:'soul',el:'water'});
+  ok('changing the soul to the opposite takes the bonus away again, with no other change to the hiker',near(r.dmg,noRing),'dmg '+r.dmg);
+  send('r',{t:'soul',el:'fire'}); send('r',{t:'soul',el:'basic'});
+  ok('unbinding the soul takes it away too',near(r.dmg,noRing));
   send('r',{t:'equip',id:'ring-basic'});
-  ok('the plain ring adds +5% of a legendary sword (19)',near(r.dmg-noRing,19,0.5),'+'+(r.dmg-noRing).toFixed(2));
+  ok('the plain ring is the one for the unbound soul: +5% of a legendary sword (19)',near(r.dmg-noRing,19,0.5),'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'equip',id:'ring-basic-u'});
   ok('and it grows with rarity (unique: 11% = 41)',near(r.dmg-noRing,41,0.5),'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'unequip',slot:'ring'}); ok('taking the ring off removes it',near(r.dmg,noRing));
-  send('r',{t:'equip',id:'ring-water'}); const w1=r.dmg; send('r',{t:'equip',id:'sword7'});
+  send('r',{t:'equip',id:'ring-water'}); send('r',{t:'soul',el:'water'}); const w1=r.dmg; send('r',{t:'equip',id:'sword7'});
   ok('the ring follows the weapon: a smaller weapon gives a smaller bonus',r.dmg<w1&&near(r.dmg-(noRing-(375-125)),6,0.5),'dmg '+r.dmg); }
 
 // ---- the Tempering Stone drop ----

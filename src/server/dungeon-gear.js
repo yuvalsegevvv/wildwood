@@ -2,12 +2,12 @@
 /* Agent map (rules and ids: shared/dungeon-rewards.js; the items: shared/dungeon-items.js; the design: docs/DUNGEON-THEMES.md section 7)
    owns:    dgRingAtkP (recalcP adds it), dgRollDropP (rewardKill: a stone instead of equipment), dgAddStonesP, dgTemperP + MSG.temper, dgMergeRefusedP (mergeP),
             dgGrantItemP (a clear's item for one player: the integration step calls it once for every member), MSG.rwdev (testing tools: stones, every level-30 piece, three for the forge)
-   uses:    state.js (MSG, ev, toastTo), economy.js (addItemP, unwornCount, gearChangedP).
+   uses:    state.js (MSG, ev, toastTo), players.js (soulOfP), economy.js (addItemP, unwornCount, gearChangedP).
    events:  stone [pid,n,monId] (a stone dropped), temper [pid,newId,oldId] (a piece was tempered); the toasts carry the words.
    gear:    gear.temper = the count of stones (0..DG_STONE_MAX, sanitized in sanitizeGear), gear.eq.ring = the worn ring.
-   hooks:   the lines marked `// dungeons:` in players.js (recalcP, sanitizeGear), economy.js (mergeP, buyP) and combat.js (rewardKill); listed in docs/DUNGEON-THEMES.md section 7.
+   hooks:   the lines marked `// dungeons:` in players.js (recalcP, sanitizeGear), economy.js (mergeP, buyP, bindSoulP) and combat.js (rewardKill); listed in docs/DUNGEON-THEMES.md section 7.
    test:    tools/rewards-smoke.js */
-const dgRingAtkP=p=>dgRingAtkOf(p.gear);   // what the worn ring adds to p's attack right now (0 without a ring or a weapon)
+const dgRingAtkP=p=>dgRingAtkOf(p.gear,soulOfP(p));   // what the worn ring adds to p's attack right now (0 without a ring, with another soul)
 // stones: a count in the save, not items in the bag
 function dgAddStonesP(p,n,monId){
   const have=p.gear.temper||0, add=Math.min(n,DG_STONE_MAX-have); if(!(add>0)) return 0;
