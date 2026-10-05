@@ -1,8 +1,8 @@
-//@ World map: a map image painted from the terrain, the corner minimap, and the full map (N) of each land (home forest, Sakura Vale, Hoarfrost Reach, Greyspine) with zones, quests, resource nodes and players
+//@ Map: a map image painted from the terrain, the corner minimap, and the full map (N) of each land (home forest, Sakura Vale, Hoarfrost Reach, Greyspine) with zones, quests, resource nodes and players
 /* The map image covers the whole world (all four lands, the Greyspine's peaks and tarns included) and is painted once, a few rows per frame after the ground is ready:
    terrain colours with hill shading, forests darker, water blue, zone borders, village houses and the boss arenas.
    The minimap shows the 90 m around you (north up, 10 times a second) wherever you are, the Greyspine too. The full map (N key, map button, or tap the
-   minimap) shows one land at a time: the one you are in, or the next one with the button in its header (once the bridge is open; the Hoarfrost Reach once its ice wall is;
+   minimap) shows one land at a time (its "World" button opens the world map of Eldmere, G: ui/world-map.js, which opens any of these): the one you are in, or the next one with the button in its header (once the bridge is open; the Hoarfrost Reach once its ice wall is;
    the Greyspine once the glacier valley's ice fall is, `westOpen`, or while you stand in it: `landOpen`). The Greyspine's map names its zones, bosses, Highmark, tarns and
    fjord, the Blackseam's door and the two rock falls in the west wall, and carries the zone-tier row like the other lands. Test: tools/client-smoke.js. */
 const MAP={size:LITE?320:(LOW?400:560),canvas:null,ctx:null,img:null,zone:null,row:0,done:false,mmT:0,fullT:0};
@@ -118,6 +118,7 @@ function sizeFullMap(){
   mapC.style.width=w+'px'; mapC.style.height=h+'px'; mapC.width=Math.round(w*DPR); mapC.height=Math.round(h*DPR); mapView.w=w; mapView.h=h;
   const here=landHere(), cur=mapLand||here, nx=nextLand(cur);
   mapLandBtn.hidden=!valeOpen()||nx===cur; mapLandBtn.textContent=nx===here?'Where I am':LANDS[nx].name;
+  $('#mapWorld').hidden=dgIn();   // world map: Eldmere's map is for the world, not a run (ui/world-map.js)
 }
 function drawFullMap(){
   if(dgIn()){ dgDrawFullMap(mapC,mapCX,DPR); return; }   // dungeons: the run's explored tiles instead of a land (dungeon/minimap.js)
@@ -215,4 +216,5 @@ function updateMap(dt){
   if(!started) return;
   MAP.mmT-=dt; if(MAP.mmT<=0){ MAP.mmT=0.1; drawMinimap(); }
   if(!$('#map').hidden){ MAP.fullT-=dt; if(MAP.fullT<=0){ MAP.fullT=0.15; drawFullMap(); } }
+  wmapUpdate(dt);   // world map: its frame (ui/world-map.js)
 }

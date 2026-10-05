@@ -16,6 +16,8 @@ borders `BRAW`, settlements `TOWNS`, labels `LABELS`, rivers `RIVERS`. Change th
 `python3 docs/world-map.py docs/world-map.svg` rather than editing the SVG by hand. The style (painted climates, terrain icons, roads,
 parchment banner and legend) takes its cues from open-world game maps in general, not from any one game.
 
+**In the game** the same drawing is the world map of Eldmere (G, or the "World" button in a land's map): `python3 docs/world-map.py <svg> --game <js>` draws it without title, compass, legend, frame and lettering, `node tools/world-map-bake.js` bakes it to `assets/img/world-map.webp` and writes the regions as polygons (`src/game/ui/world-map-data.js`); the built lands are clickable, the rest is under fog. How it works: `docs/areas/world-map.md`. Moving a region, a town or a banner here moves it there after a re-bake.
+
 ## 1. The continent at a glance
 
 Eldmere is a crescent of land curled around a warm inland sea, **the Crownsea**. The crescent's west end is a hooked cliff peninsula,

@@ -17,7 +17,7 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
   // rebinding, swapping, clearing
   ok('rebind: Inventory to B',G.kbSet('inv',0,'KeyB')===''&&G.kbIs('KeyB','inv')&&!G.kbIs('KeyI','inv'));
   const note=G.kbSet('map',0,'KeyB');
-  ok('binding a used key swaps: World map takes B, Inventory takes N',G.kbIs('KeyB','map')&&G.kbIs('KeyN','inv')&&/Inventory now uses N/.test(note),note);
+  ok('binding a used key swaps: Map takes B, Inventory takes N',G.kbIs('KeyB','map')&&G.kbIs('KeyN','inv')&&/Inventory now uses N/.test(note),note);
   ok('still no key used twice',unique(G));
   ok('clearing the last key says so',/Mute sound has no key now/.test(G.kbSet('mute',0,''))&&G.kbName('mute')==='');
   G.kbSet('mute',0,'KeyM');
@@ -26,14 +26,14 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
   G.keys.KeyJ=true; ok('the new key walks',G.kbHeld('fwd'));
   { const z0=G.P.z; G.P.yaw=0; for(let i=0;i<6;i++) G.updatePlayer(0.05); ok('updatePlayer moves forward on the new key',G.P.z<z0-0.05,(G.P.z-z0).toFixed(2)); G.keys.KeyJ=false; }
   // the HUD hints follow the keys, and drop the "(K)" for an action with no key
-  { const el={dataset:{kb:'map',kbt:'World map ({k})',kba:'Minimap. Open the world map ({k})'},_a:{},title:'',setAttribute(k,v){ this._a[k]=v; }};
+  { const el={dataset:{kb:'map',kbt:'Map ({k})',kba:'Minimap. Open the map ({k})'},_a:{},title:'',setAttribute(k,v){ this._a[k]=v; }};
     const qs=document.querySelectorAll; document.querySelectorAll=s=>s==='[data-kb]'?[el]:[]; G.kbHints();
-    ok('hint shows the new key',el.title==='World map (B)'&&el._a['aria-label']==='Minimap. Open the world map (B)',el.title);
-    G.kbSet('map',0,''); G.kbSet('map',1,''); G.kbHints(); ok('hint drops the key when there is none',el.title==='World map'&&el._a['aria-label']==='Minimap. Open the world map',el.title);
+    ok('hint shows the new key',el.title==='Map (B)'&&el._a['aria-label']==='Minimap. Open the map (B)',el.title);
+    G.kbSet('map',0,''); G.kbSet('map',1,''); G.kbHints(); ok('hint drops the key when there is none',el.title==='Map'&&el._a['aria-label']==='Minimap. Open the map',el.title);
     G.kbSet('map',0,'KeyB'); document.querySelectorAll=qs; }
   // the start card's legend is redrawn from the keys
-  G.kbChanged(); { const t=G.keysEl._kids.slice(-34).map(x=>x.textContent);
-    ok('the legend lists the current keys and Hold Alt',t.length===34&&t.includes('Hold Alt')&&t[t.indexOf('World map')-1]==='B'&&t[t.indexOf('Inventory (drag items onto your body)')-1]==='N',t.join('|')); }
+  G.kbChanged(); { const t=G.keysEl._kids.slice(-36).map(x=>x.textContent);
+    ok('the legend lists the current keys and Hold Alt',t.length===36&&t.includes('Hold Alt')&&t[t.indexOf('Map of the land you are in')-1]==='B'&&t[t.indexOf('World map of Eldmere')-1]==='G'&&t[t.indexOf('Inventory (drag items onto your body)')-1]==='N',t.join('|')); }
   // a key event reaches the right handler
   G.setStarted(true); G=c.G();
   { const v0=G.thirdPerson(); key('KeyV'); ok('V toggles the camera view',c.G().thirdPerson()!==v0); G.kbSet('view',0,'KeyX'); key('KeyV'); ok('after rebinding, V does nothing',c.G().thirdPerson()!==v0);

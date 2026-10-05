@@ -27,7 +27,7 @@
   </div>
   <div class="hud-r">
   <div class="btns">
-    <button class="icon-btn" id="bMap" aria-label="World map (N)" title="World map (N)" data-kb="map" data-kbt="World map ({k})">
+    <button class="icon-btn" id="bMap" aria-label="Map (N)" title="Map (N)" data-kb="map" data-kbt="Map ({k})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>
     </button>
     <button class="icon-btn" id="bTime" aria-label="Skip ahead to the next part of the day (T)" title="Skip ahead to the next part of the day (T)" data-kb="time" data-kbt="Skip ahead to the next part of the day ({k})">
@@ -46,7 +46,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>
     </button>
   </div>
-  <button id="minimap" aria-label="Minimap. Open the world map (N)" title="World map (N)" data-kb="map" data-kbt="World map ({k})" data-kba="Minimap. Open the world map ({k})"><canvas id="mmC"></canvas></button>
+  <button id="minimap" aria-label="Minimap. Open the map (N)" title="Map (N)" data-kb="map" data-kbt="Map ({k})" data-kba="Minimap. Open the map ({k})"><canvas id="mmC"></canvas></button>
   </div>
 </div>
 
@@ -68,11 +68,15 @@
   <div class="pn-head"><span class="pn-t" id="qTitle">Quests</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="qBody"></div>
 </div>
-<div id="map" class="panel" hidden role="dialog" aria-label="World map">
-  <div class="pn-head"><span class="pn-t">World map</span><button class="chip map-land" id="mapLand" hidden></button><span class="map-here" id="mapHere"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<div id="map" class="panel" hidden role="dialog" aria-label="Map">
+  <div class="pn-head"><span class="pn-t">Map</span><button class="chip map-land" id="mapWorld" title="The world map of Eldmere (G)" data-kb="world" data-kbt="The world map of Eldmere ({k})">World</button><button class="chip map-land" id="mapLand" hidden></button><span class="map-here" id="mapHere"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="map-box" id="mapBox"><canvas id="mapC"></canvas><div class="map-tip" id="mapTip" hidden></div></div>
   <div class="map-tier" id="mapTier"></div>
   <div class="map-legend"><span><i class="lg you"></i>You</span><span><i class="lg pl"></i>Other players</span><span><i class="lg q"></i>Quest</span><span><i class="lg qr"></i>Quest done</span><span><i class="lg mo"></i>Monster on your trail</span><span><i class="lg boss"></i>Boss</span></div>
+</div>
+<div id="wmap" class="panel" hidden role="dialog" aria-label="World map of Eldmere">
+  <div class="pn-head"><span class="pn-t">Eldmere</span><span class="map-here" id="wmapHere"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="map-box wm-box" id="wmapBox"><canvas id="wmapC"></canvas><div class="map-tip" id="wmapTip" hidden></div><div class="wm-zoom"><button class="chip" id="wmapIn" aria-label="Zoom in">+</button><button class="chip" id="wmapOut" aria-label="Zoom out">&minus;</button></div></div>
 </div>
 <div id="forge" class="panel" hidden role="dialog" aria-label="Forge">
   <div class="pn-head"><span class="pn-t">Greta's forge</span><span class="pn-coins" id="forgeCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>

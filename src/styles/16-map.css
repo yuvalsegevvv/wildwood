@@ -1,4 +1,4 @@
-/*@ Minimap and world map */
+/*@ Minimap, the map of a land and the world map of Eldmere */
 .hud-r{ display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
 #minimap{ pointer-events:auto; width:150px; height:150px; padding:0; border-radius:16px; overflow:hidden; cursor:pointer;
   border:1px solid var(--line); background:var(--glass); box-shadow:0 4px 18px rgba(0,0,0,.3); }
@@ -7,12 +7,17 @@
 body:not(.playing) #minimap{ visibility:hidden; }
 #qlog{ top:calc(env(safe-area-inset-top,0px) + 232px) !important; }
 body.touch #minimap{ width:104px; height:104px; border-radius:14px; }
-#map{ width:min(860px,calc(100vw - 24px)); height:min(92dvh,900px); max-height:none; }
+#map, #wmap{ width:min(860px,calc(100vw - 24px)); height:min(92dvh,900px); max-height:none; }
 .map-here{ margin-left:auto; font-size:13px; color:var(--lichen); }
 .map-land{ margin-left:12px; font-size:12px; padding:4px 10px; }
 .map-land[hidden]{ display:none; }
 .map-box{ position:relative; flex:1; min-height:0; display:grid; place-items:center; }
 #mapC{ border-radius:12px; touch-action:none; box-shadow:0 0 0 1px var(--line); }
+/* the world map: the canvas is the whole box (the map pans and zooms inside it) */
+.wm-box{ display:block; overflow:hidden; border-radius:12px; background:#16486c; box-shadow:0 0 0 1px var(--line); }
+#wmapC{ position:absolute; left:0; top:0; touch-action:none; cursor:grab; }
+.wm-zoom{ position:absolute; top:10px; right:10px; z-index:3; display:flex; flex-direction:column; gap:6px; }
+.wm-zoom .chip{ width:34px; height:34px; padding:0; font-size:20px; line-height:1; background:rgba(12,14,12,.7); }
 .map-tip{ position:absolute; z-index:2; transform:translate(-50%,calc(-100% - 12px)); pointer-events:none; white-space:nowrap;
   background:rgba(12,14,12,.88); border:1px solid var(--line); border-radius:8px; padding:4px 9px; font-size:12.5px; }
 .map-tip[hidden]{ display:none; }
@@ -23,7 +28,7 @@ body.touch #minimap{ width:104px; height:104px; border-radius:14px; }
 .lg.pl{ background:#6fb8ff; } .lg.mo{ background:#ff4a3a; } .lg.boss{ background:#c86bff; }
 .lg.q, .lg.qr{ border-radius:1px; transform:rotate(45deg); width:9px; height:9px; background:#f2cf5a; } .lg.qr{ background:#9fe08a; }
 @media (max-width:719px){
-  #map{ height:88dvh; }
+  #map, #wmap{ height:88dvh; }
   body.touch #qlog{ top:auto !important; }
   body:not(.touch) #qlog{ top:calc(env(safe-area-inset-top,0px) + 232px) !important; }
 }

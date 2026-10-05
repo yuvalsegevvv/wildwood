@@ -22,7 +22,8 @@ const KB_ACTIONS=[
   {id:'talk',  name:'Talk / travel', def:['KeyE','']},
   {id:'inv',   name:'Inventory',     def:['KeyI','']},
   {id:'skills',name:'Skills',        def:['KeyK','']},
-  {id:'map',   name:'World map',     def:['KeyN','']},
+  {id:'map',   name:'Map',           def:['KeyN','']},
+  {id:'world', name:'World map',     def:['KeyG','']},   // world map: the Eldmere panel (ui/world-map.js)
   {id:'chat',  name:'Chat',          def:['Enter','NumpadEnter']},
   {id:'mute',  name:'Mute sound',    def:['KeyM','']},
   {id:'time',  name:'Skip the day',  def:['KeyT','']},
@@ -74,7 +75,7 @@ function kbSet(act,slot,code){
 // after a change: save, and redraw everything that shows a key
 function kbRefresh(){ kbRender(); kbHints(); renderKeyLegend(); setActionBar(); }
 function kbChanged(note){ kbSave(); kbRefresh(); if(note) toast(note,'good'); }
-// the titles and labels in the page: elements with data-kb="<action>" and a template such as "World map ({k})"
+// the titles and labels in the page: elements with data-kb="<action>" and a template such as "Map ({k})"
 function kbHints(){
   document.querySelectorAll('[data-kb]').forEach(el=>{
     const k=kbName(el.dataset.kb), fill=t=>k?t.replace('{k}',k):t.replace(/\s*\([^)]*\)/,'');   // no key: drop the "(K)"

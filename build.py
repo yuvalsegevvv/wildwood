@@ -27,6 +27,7 @@ How the sources fit together:
   src/vendor/           three.js r128 (MIT)
   assets/audio/music-*  background music: copied to dist/audio/ (hashed names), fetched lazily by the client
   assets/audio/*        every other .wav .mp3 .ogg .m4a file: small sounds, embedded as base64; playSample('file-name')
+  assets/img/*          .webp .png .jpg pictures, embedded as data URIs in window.WILDWOOD_IMG['file-name'] (the world map's art: tools/world-map-bake.js)
 
 The first line of every source file may be a header: //@ ... in JS, /*@ ... */ in CSS.
 Headers document the file and are left out of the built page.
@@ -42,6 +43,8 @@ AUDIO_TYPES = ('.wav', '.mp3', '.ogg', '.m4a')
 MAX_BYTES = 15 * 1024 * 1024  # the host allows 16 MB per page (a page with embedded music must stay under this)
 MAX_FILE_BYTES = 15 * 1024 * 1024  # ... and 15 MB per published binary file
 AUDIO_OUT = os.path.join(ROOT, 'dist', 'audio')
+IMG = os.path.join(ROOT, 'assets', 'img')
+IMG_TYPES = {'.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg'}
 
 
 def read(path):
@@ -135,6 +138,17 @@ def audio_block(inline):
     return '<script>\n' + code + '</script>\n' if code else ''
 
 
+def image_block():
+    """assets/img/*: pictures embedded in the page as data URIs, window.WILDWOOD_IMG['file-name'] (keep them small: the page is capped at 16 MB)."""
+    files = sorted(f for f in os.listdir(IMG) if os.path.splitext(f)[1].lower() in IMG_TYPES) if os.path.isdir(IMG) else []
+    imgs = {}
+    for f in files:
+        key, ext = os.path.splitext(f)
+        with open(os.path.join(IMG, f), 'rb') as fh:
+            imgs[key] = 'data:%s;base64,%s' % (IMG_TYPES[ext.lower()], base64.b64encode(fh.read()).decode('ascii'))
+    return '<script>\nwindow.WILDWOOD_IMG=' + json.dumps(imgs, separators=(',', ':')) + ';\n</script>\n' if imgs else ''
+
+
 def build(inline_audio=False):
     manifest = json.loads(read(os.path.join(SRC, 'manifest.json')))
     styles = ''.join(strip_header(read(os.path.join(SRC, 'styles', f))) for f in manifest['styles'])
@@ -144,7 +158,7 @@ def build(inline_audio=False):
     slots = {
         '{{STYLES}}': styles,
         '{{EARLY}}': read(os.path.join(SRC, 'boot', 'early.js')),
-        '{{AUDIO}}': audio_block(inline_audio),
+        '{{AUDIO}}': audio_block(inline_audio) + image_block(),
         '{{SERVER}}': server,
         '{{GAME}}': game,
         '{{THREE}}': read(os.path.join(SRC, 'vendor', 'three.r128.min.js')),
