@@ -1,4 +1,4 @@
-# Regions: the Sakura Vale, the Hoarfrost Reach, teleport circles
+# Regions: the Sakura Vale, the Hoarfrost Reach, teleport circles, Glasswell's model
 
 Area guide. Moved word for word from `CLAUDE.md` (sections 4, 8 and 9), where each item now has a short row; open this file when your task touches this area.
 
@@ -19,6 +19,10 @@ shape `hoarHeight`, `FROST_LAKES`, `NORTH_D` in `shared/terrain.js` (the cheap G
 ### Sakura Vale: the Greyfall bridge `TUN` (once a tunnel), Hanami `VIL2`, vale zones/ridges, arenas `ARENAS`, `vilAt` (knows all four villages)
 
 `shared/vale.js`; meshes `game/village/buildings-vale.js`; the bridge's gate and parapets in `worldBounds` (`game/player/movement.js`); unlock / attune / `warpP` in `server/players.js`; Hanami NPCs (`vil:2`) in `game/village/villagers.js`
+
+### Glasswell, the Sunscar's desert city (design in `docs/DESERT-CITY.md`; **only its 3D model exists, it is not placed in the world**: the Bowl with three gates and the Weir, the Old Citadel with the broken statue at the centre, the Great Well, a lake and river, 30 places and 80 homes, palms)
+
+The layout is **generated** by `docs/glasswell-plan.py --js src/shared/sunscar.js` (change the script, not `shared/sunscar.js`); `gwRimH` (the Bowl as a height function) in `shared/sunscar-shape.js`; the model `game/village/sun-rim.js` (rim, floor, water, gates, `gwGround`), `sun-ruin.js`, `sun-houses.js`, `sun-halls.js`, `sun-shops.js`, `sun-props.js`, assembled by `buildGlasswell({x,z,h})` in `buildings-sun.js`; **see it** with `node tools/city-preview.js out/ --views overview,street,statue` (playwright + Chromium, real WebGL); test `node tools/glasswell-smoke.js`; what is missing (placement, collision, people, lore spots, the statue's function) is in `docs/NOT-BUILT.md` section 2
 
 ### The borders between the four lands, the Greyfall River and the Greyfall (a waterfall off the home forest's north rim)
 

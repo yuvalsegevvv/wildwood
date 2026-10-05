@@ -70,7 +70,7 @@ function renderSkills(){
   $('#skTitle').textContent=trainer?panelNPC.def.name+"'s lessons":'Skills'; $('#skCoins').textContent=GEAR.coins+' coins';
   const pass=skKind==='pass';
   let h=pass?'':`<div class="chips pn-tabs">${Object.keys(CLASSES).map(c=>`<button class="chip" data-sktab="${c}" aria-pressed="${c===cls}">${CLASSES[c].name}${c===clsOf()?' (you)':''}</button>`).join('')}</div>`;
-  h+=`<div class="sk-soul">Soul: ${elChip(soulNow())} <span>${PL.level>=SOUL_LV?'Skills of this element deal more damage. Change it at the shrine in Hanami.':'Bind your soul to an element at the shrine in Hanami, from level '+SOUL_LV+'.'}</span></div>`;
+  h+=`<div class="sk-soul">Soul: ${elChip(soulNow())} <span>${PL.level>=SOUL_LV?'Skills of this element deal more damage. Change it at the Soul Hall in Hanami.':'Bind your soul to an element at the Soul Hall in Hanami, from level '+SOUL_LV+'.'}</span></div>`;
   h+=skSlotsHtml(C,cls);
   h+=`<div class="sk-area"><div class="chips sk-kinds">${['basic','skill','burst','pass'].map(k=>`<button class="chip" data-skkind="${k}" aria-pressed="${k===skKind}">${KIND_TITLE[k]}</button>`).join('')}</div>`;
   let ids;

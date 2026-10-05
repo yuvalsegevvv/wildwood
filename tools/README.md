@@ -1,7 +1,7 @@
 # Tools
 
 Headless helpers, made so changes can be checked without a browser and without reading the game.
-Install once: `npm install` (three@0.128 for these tools). The model preview also needs Python 3 with numpy and pillow.
+Install once: `npm install` (three@0.128 for these tools). The character and monster previews also need Python 3 with numpy and pillow; the city preview needs playwright and a Chromium instead.
 
 | Tool | What it does | Needs a build? |
 |---|---|---|
@@ -27,6 +27,8 @@ Install once: `npm install` (three@0.128 for these tools). The model preview als
 | `node tools/dungeon-client-smoke.js` | 44 checks of a dungeon run's client (`dist/`, solo, ~15 s): every prop kind of the three themes builds (an unknown one draws a rock), the run built from the tp at its slot (meshes, cost, lights), the forest switched off and given back (sky, water, sun shadow, far plane, fog, streaming, weather), walls stop you (the server agrees), the camera's arm shortens, the run's monsters and boss bar, the HUD from the dg snapshot, objectives (marker, label, use prompt, moving, removed), hazard telegraphs, the party frame / invite / panel / map colour, the revive and channel bars, the downed screen, the results, both maps, leaving through the HUD button with everything disposed | yes |
 | `node tools/client-smoke.js` | 48 checks running `dist/wildwood.html` headless in solo mode (the last 9: a dungeon run, built, walked, left): streaming, monster views, attacking, equip, inventory, skills panel, chat, map, rain, and the Hoarfrost Reach's client side (ice wall, music, the Lodge and travel windows, resource nodes and their cast bar, snow instead of rain, the tool slots, the Craft tab, the Brewing panel, the potion belt) | yes (`python3 build.py`) |
 | `node tools/start-smoke.js` | 31 checks of the start card against a real world server in the same process (fake WebSocket): guest, log in, register, errors, the character editor after registering (class, look), Continue as, no-server page | yes |
+| `node tools/glasswell-smoke.js` | 13 checks: 11 of Glasswell's layout (80 homes and 30 places on the floor, no overlaps, off the roads and the lake, gates wide enough, the rim's height function, the bridges) and 2 that its 3D model builds in a real browser and stays in its triangle budget (skipped without playwright, or with `GW_SKIP_MODEL=1`) | no |
+| `node tools/city-preview.js [outDir] [--views a,b] [--cam x,y,z,tx,ty,tz]` | renders Glasswell's model (`src/game/village/sun-*.js`) to PNGs from several cameras in real WebGL (headless Chromium via playwright), lit like the game; prints triangles, meshes and the build time | no |
 | `python3 tools/unused.py` | dead-code candidates: names nothing uses, CSS nobody mentions | no |
 | `node tools/model-preview.js out.png [--head] [--looks '[...]']` | renders characters (front + side) from `src/game/character/model.js` to a PNG | no |
 | `node tools/monster-preview.js out.png [--ids a,b \| --bosses \| --all] [--pose \| --act] [--head] [--views 35,90] [--stats]` | renders monsters and bosses from `src/game/combat/monster-*.js` (a three-quarter and a side view each, at their in-game size; `--pose` trotting, `--act` mid-attack, `--head` faces only); `--stats` prints each model's triangles and meshes and the time to build them | no |

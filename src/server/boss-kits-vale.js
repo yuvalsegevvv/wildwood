@@ -69,7 +69,7 @@ BOSS_KITS.kitsune={
   start(B){ B.k={volT:4,blinkT:10,beamT:99}; },
   phase(B,m,n){
     if(n===2){ B.k.beamT=5; toastTo(null,'Kyuubi\'s tails spread into beams of light!','bad'); }
-    else { B.k.blinkT=4; spawnAddsS(B,3); toastTo(null,'Fox spirits pour out of the shrine!','bad'); }
+    else { B.k.blinkT=4; spawnAddsS(B,3); toastTo(null,'Fox spirits pour out of the hollow!','bad'); }
     ev('roar',m.id);
   },
   tick(B,m,dt,C){

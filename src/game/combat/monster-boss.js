@@ -42,7 +42,7 @@ function moBossFox(d,p,body){
   body.push(moTube([[-0.12,1.02,-0.7],[0,1.07,-0.74],[0.12,1.02,-0.7]],0.012,0.012,moGold,5,false),moEll(0.03,0.04,0.02,0,1.05,-0.76,0xe03020,null,6));   // a circlet with a ruby
   for(let i=0;i<14;i++){ const a=i/14*TAU; body.push(moEll(i%5?0.028:0.04,i%5?0.028:0.04,i%5?0.028:0.05,Math.cos(a)*0.2,0.82+Math.sin(a)*0.22,-0.55,i%5?moGold:(x,y,z,c)=>{ c.set(0xd03a2a); },null,6)); }   // a collar of beads
   const rope=[]; for(let i=0;i<=8;i++){ const a=-0.25+i/8*(TAU+0.5)/1.0; rope.push([Math.cos(a)*0.29,0.72+Math.sin(a)*0.32,-0.3+0.02*Math.sin(i*3)]); }
-  body.push(moTube(rope,0.032,0.032,(x,y,z,c)=>{ c.set(0xeae2c8).multiplyScalar(0.75+0.25*Math.sin((x+y)*90)); },5,false));   // a shimenawa rope round the chest
-  for(let i=0;i<5;i++){ const a=(i/4-0.5)*1.6; body.push(moEll(0.028,0.05,0.004,Math.sin(a)*0.28,0.5+0.03*Math.cos(a*2),-0.3-Math.cos(a)*0.03,0xfaf8f0,[0,0,0.3*Math.sin(a*3)],5)); }   // paper streamers
+  body.push(moTube(rope,0.032,0.032,(x,y,z,c)=>{ c.set(0xeae2c8).multiplyScalar(0.75+0.25*Math.sin((x+y)*90)); },5,false));   // a braided rope round the chest
+  for(let i=0;i<5;i++){ const a=(i/4-0.5)*1.6; body.push(moEll(0.028,0.05,0.004,Math.sin(a)*0.28,0.5+0.03*Math.cos(a*2),-0.3-Math.cos(a)*0.03,0xd8a030,[0,0,0.3*Math.sin(a*3)],5)); }   // gold tassels hanging from the rope
   for(let i=0;i<8;i++) body.push(moCone([0,0.98-i*0.015,-0.5+i*0.13],[0,1,0.2],0.32-i*0.02,0.04,p.tip,4));   // a mane of foxfire down the spine
 }

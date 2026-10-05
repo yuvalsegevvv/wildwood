@@ -45,7 +45,7 @@ function nearTele(x,z,m){ const V=vilAt(x,z); return Math.hypot(x-V.tele.x,z-V.t
 function vilAt(x,z){ return z<borderZ(x)?(x>borderXN(z)?VIL3:VIL4):(x>borderX(z)?VIL2:VIL); }
 
 /* ---- zones: seeds on a rough 3 x 4 grid east of Hanami. key null = Hanami's meadows (no monsters) */
-const VALE_ZONE_NAMES={16:'Petal Meadow',17:'Kodama Wood',18:'Inari Hills',19:'Bamboo Sea',20:'Ghostlight Marsh',21:'Oni Crags',22:'Jade Falls',23:'Tengu Peaks',24:'Warlord Ruins',25:'Thunder Grove',boss25:'Foxfire Shrine'};
+const VALE_ZONE_NAMES={16:'Petal Meadow',17:'Kodama Wood',18:'Fox Hills',19:'Bamboo Sea',20:'Ghostlight Marsh',21:'Oni Crags',22:'Jade Falls',23:'Tengu Peaks',24:'Warlord Ruins',25:'Thunder Grove',boss25:'Foxfire Hollow'};
 const VALE_SEEDS=[
   {key:null,x:VIL2.x,z:VIL2.z},
   {key:16,x:575,z:105},{key:17,x:570,z:-300},{key:18,x:735,z:-95},{key:19,x:725,z:-300},{key:20,x:880,z:-305},
@@ -77,7 +77,7 @@ function valeRidge(x,z){
 }
 
 /* ---- boss arenas: flat clearings like the stone circle. ARENA20 sits in the far corner of zone 20 (Akaoni, the
-   Demon Gate), ARENA25 in its own cell (Kyuubi, the Foxfire Shrine) */
+   Demon Gate), ARENA25 in its own cell (Kyuubi, the Foxfire Hollow) */
 function flatSpot(cx,cz,span){
   let best=null;
   for(let dx=-span;dx<=span;dx+=10) for(let dz=-span;dz<=span;dz+=10){
@@ -93,7 +93,7 @@ function flatSpot(cx,cz,span){
   return best||{x:cx,z:cz,h:Math.max(4,baseHeight(cx,cz))};
 }
 const ARENA20=Object.assign(flatSpot(895,-340,30),{r:20,key:'boss20',name:'Demon Gate'});
-const ARENA25=Object.assign(flatSpot(575,320,30),{r:20,key:'boss25',name:'Foxfire Shrine'});
+const ARENA25=Object.assign(flatSpot(575,320,30),{r:20,key:'boss25',name:'Foxfire Hollow'});
 ARENA.name='The Stone Circle';
 const ARENAS=[ARENA,ARENA20,ARENA25];
 ARENA.zone=ZONES.find(z=>z.key==='boss');

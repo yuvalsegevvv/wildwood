@@ -104,7 +104,7 @@ const MQ=[
    done:['Coins, buckles, a spoon... and this. A glass ball, smooth as an egg, with a thread of metal inside. Like a lamp with no flame.','Odran saw it over my shoulder and offered thirty coins for it on the spot. Thirty! For a glass egg. I sold it. Should I have?']},
   {id:'W15',title:'Beyond the mountains',gate:13,from:'linnea',to:'bram',r:0.25,
    tip:'Every main quest step has a level. Between steps, hunt and take notices: the quest log says where.',
-   offer:['The sap no longer helps. Wren sleeps deeper each day.','Across the eastern mountains there is a village called Hanami. Their shrine is said to know every sickness of the soul.','But nobody has crossed since the bridge gate was sealed. Ask Bram: he knows the way east.'],
+   offer:['The sap no longer helps. Wren sleeps deeper each day.','Across the eastern mountains there is a village called Hanami. Their soul-reader is said to know every sickness of the soul.','But nobody has crossed since the bridge gate was sealed. Ask Bram: he knows the way east.'],
    parts:[{talk:'bram',text:'Ask Bram about the way east',say:['The bridge east? Barred, since the guardian woke. The Rootwarden sits in the Stone Circle, and the gatehouse door will not open while it lives.','Nobody has crossed in my lifetime. If you want to try, you need to be a great deal stronger.']}],
    done:['Level 15, and a weapon worth the name. Then we talk about the Rootwarden.']},
   {id:'W16',title:'Ready',gate:14,from:'bram',to:'bram',r:0.22,
@@ -121,9 +121,9 @@ const MQ=[
   {id:'W18',title:'Goodbye for now',gate:15,from:null,to:'daisuke',r:0.06,
    tip:'The East Road leads over the Greyfall bridge to the Sakura Vale. Walking to Hanami attunes the teleport circles.',
    parts:[{talk:'wren',text:'Say goodbye to Wren',say:['(Wren is awake, sitting up, pale but smiling.)','You are going over the mountains? Nobody goes over the mountains.','...Bring me back something pretty. And come back.']},
-          {talk:'linnea',text:'See Linnea before you go',say:['Take this charm: heartleaf and treant sap, sewn in linen. It will not stop a blade, but it will remind you what you walk for.','Hanami\'s shrine maiden will know more than I do. Go.']},
+          {talk:'linnea',text:'See Linnea before you go',say:['Take this charm: heartleaf and treant sap, sewn in linen. It will not stop a blade, but it will remind you what you walk for.','Hanami\'s soul-reader will know more than I do. Go.']},
           {act:'hanami',after:true,text:'Walk over the bridge to Hanami'}],
-   done:['You came over the bridge? Then the Rootwarden is dead. Good riddance.','Welcome to Hanami, traveller from beyond the mountains. A sickness, you say? Then you want the shrine. But first, find your feet here.']},
+   done:['You came over the bridge? Then the Rootwarden is dead. Good riddance.','Welcome to Hanami, traveller from beyond the mountains. A sickness, you say? Then you want the Soul Hall. But first, find your feet here.']},
   /* ---------------- Act II: The Blossom and the Blight (the Sakura Vale, levels 15-20; it ends at Akaoni) ---------------- */
   {id:'V3',title:'Hanami',gate:15,from:'daisuke',to:'daisuke',r:0.05,
    tip:'Hanami has the same jobs as your village: a quest board, stalls, a forge, a trainer.',
@@ -135,13 +135,13 @@ const MQ=[
    done:['Now you know everyone worth knowing. Except Grandmother Chiyo at the fire. She will want to see you: she wants to see everyone.']},
   {id:'V4',title:'Home in a blink',gate:15,from:'chiyo',to:'wren',r:0.25,
    tip:'Step onto a teleport circle: a window lets you choose where to travel (the talk key opens it again).',
-   offer:['From beyond the mountains, and still on your feet! Sit, sit.','The circle of stones by the road hums for anyone who has walked here on their own feet. Step on it and it carries you home, and back again.','Go and tell your sibling you have found the shrine. Then come back.'],
+   offer:['From beyond the mountains, and still on your feet! Sit, sit.','The circle of stones by the road hums for anyone who has walked here on their own feet. Step on it and it carries you home, and back again.','Go and tell your sibling you have found the Soul Hall. Then come back.'],
    parts:[{act:'warp',text:'Travel home on the teleport circle'}],
    done:['(Wren stirs as you sit down beside the bed.) Cherry trees that bloom all year? ...You are making it up.','(They fall asleep smiling.)']},
-  {id:'V5',title:'The soul shrine',gate:16,from:'kaede',to:'kaede',r:0.25,
+  {id:'V5',title:'The soul hall',gate:16,from:'kaede',to:'kaede',r:0.25,
    tip:'Your soul\'s element makes skills of that element 1.5 times stronger, and its opposite weaker. Change it here whenever you like.',
    offer:['You have come about the sleeping sickness. Chiyo told me.','First, let me see you. Your soul, I mean. Choose an element and I will bind it.'],
-   parts:[{act:'soul',text:'Bind your soul to an element at Kaede\'s shrine'}],
+   parts:[{act:'soul',text:'Bind your soul to an element at Kaede\'s hall'}],
    done:['...','Your soul burns brighter than any I have bound. Brighter than anyone\'s from this side of the mountains.','I do not know what that means. I would like to.']},
   {id:'V6',title:'A light for Wren',gate:17,from:'kaede',to:'wren',r:0.2,
    tip:'Monsters have elements (the target frame shows it). Water beats fire, fire beats air, air beats earth, earth beats water; dark and light beat each other.',
@@ -151,9 +151,9 @@ const MQ=[
    done:['(The talisman glows on the blanket. Wren wakes, and stays awake long enough to talk.)','It is warm. It feels like you.','(They sleep again, but they breathe more easily.)']},
   {id:'V7',title:'The friendly foxes',gate:18,from:'chiyo',to:'chiyo',r:0.2,
    tip:'Passive skills unlock at level 18 and work all the time. Master Ryu and Aldric teach more of them.',
-   offer:['When I was a girl the kitsune were our friends. They brought lost children home.','Now some of them have gone grey, like your sibling\'s arms, and they bite. Five of them, up in the Inari Hills.','See Master Ryu first. You are old enough now for what he teaches.'],
+   offer:['When I was a girl the kitsune were our friends. They brought lost children home.','Now some of them have gone grey, like your sibling\'s arms, and they bite. Five of them, up in the Fox Hills.','See Master Ryu first. You are old enough now for what he teaches.'],
    parts:[{talk:'ryu',text:'Ask Master Ryu about passive skills',say:['Level 18? Then your body has learned something your hands have not. Passives: they work without you thinking of them.','Vitality is already in your first slot. I teach others. Now go: the foxes will not wait.']},
-          {grey:'greyfox',n:5,zone:18,text:'Drive off the grey kitsune in the Inari Hills'}],
+          {grey:'greyfox',n:5,zone:18,text:'Drive off the grey kitsune in the Fox Hills'}],
    done:['Grey foxes. In my day... well. In my day a great many things were different.','Then one of them grew nine tails. But that is a story for another night.']},
   {id:'V7b',title:'Lacquer and cherrywood',gate:18,from:'haruka',to:'haruka',r:0.4,
    tip:'Armour is made from logs (woodcutting: an axe). The vale\'s trees need an axe of tier 4 (Sunstone, level 15) or better. Craft at the armourer\'s: the Craft tab.',
@@ -166,7 +166,7 @@ const MQ=[
    done:['Pleasure, as always. Oh, this? Just a lantern. See: no flame, and still it glows. Clever, is it not?','...No, it is not for sale. Forget you saw it. (He wraps it in cloth, quickly.)']},
   {id:'V9',title:'The old scrolls',gate:19,from:'kaede',to:'kaede',r:0.2,
    tip:'Kenji and Haruka sell stronger gear from level 20.',
-   offer:['The shrine\'s oldest scrolls were stolen by the marsh spirits long ago, and they are the only ones that speak of the grey sleep.','The onibi and the spider-women of the Ghostlight Marsh carry the pieces. Bring me four.'],
+   offer:['The hall\'s oldest scrolls were stolen by the marsh spirits long ago, and they are the only ones that speak of the grey sleep.','The onibi and the spider-women of the Ghostlight Marsh carry the pieces. Bring me four.'],
    parts:[{collect:'Scroll piece',from:['onibi','jorogumo'],n:4,chance:0.45,text:'Recover scroll pieces in the Ghostlight Marsh'}],
    done:['"The grey sleep comes from the sea. It came before, when the sky went quiet, and it will come again."','The sea... A fisher on the east shore fell grey this morning. The first in Hanami.','The rest is written on the Demon Gate\'s own stone, and Akaoni guards it.']},
   {id:'V10',title:'The Demon Gate',gate:20,from:'daisuke',to:'kaede',r:0.2,
@@ -219,7 +219,7 @@ const MQ=[
    tip:'Some drops only come from one kind of monster, and not every time: keep hunting until you have enough.',
    offer:['The Frost Reavers have been wearing scraps of grey plate that does not rust and does not dent. They say they took it from the dragon in the ice at Frostmere, but nobody has seen a dragon in three hundred years.','A peddler has set up his cart outside the gate, and he pays good coin for that plate. Bring him two pieces and see what he says.'],
    parts:[{read:'hullplate',text:'Look at the grey plate in the ice at Frostmere Shore'},{collect:'Reaver plate',from:['reaver'],n:2,chance:0.45,text:'Take plates from the Frost Reavers of Frostmere Shore'}],
-   done:['Ah! The grey plate. Bless you. Thirty coins a piece, and I never ask where it came from, which is why people keep bringing it.','...It was not a dragon, you know. Dragons do not come in sheets, and the edges are cut clean. Someone made this. (He wraps it in cloth, quickly.) Forget I said that. I am a trader, not a scholar.']},
+   done:['Ah! The grey plate. Well done. Thirty coins a piece, and I never ask where it came from, which is why people keep bringing it.','...It was not a dragon, you know. Dragons do not come in sheets, and the edges are cut clean. Someone made this. (He wraps it in cloth, quickly.) Forget I said that. I am a trader, not a scholar.']},
   {id:'F8',title:'The Rimeking',gate:25,from:'hallvard',to:'sigrun',r:0.25,
    tip:'Ymrik\'s pillars shield him: smash them. Boss skills drop at 10% each, for everyone who helped.',
    offer:['The Rimeking has taken the old ice hall at the heart of the Reach. Hunters go in and come out grey, or do not come out. He was here before the village. The old people say he was never an enemy: that he kept the wolves from the doors.','Something has turned him, the same something that turned the foxes in your vale, I suppose. Go and see. Take friends. The hall is north-north-east of the village, past the lake.'],
@@ -289,7 +289,7 @@ const MQ_NPC_VIL={tamsin:1,isamu:2,hinata:2,ylva:3,wren:1,linnea:1,odran:1,bram:
   odran3:3,hallvard:3,ragna:3,bjorn:3,ulfhild:3,thorvald:3,sigrun:3,gudrun:3,
   odran4:4,brenna:4,ansgar:4,gerhard:4,matthias:4};
 const MQ_NAMES={tamsin:'Tamsin',isamu:'Isamu',hinata:'Herbalist Hinata',ylva:'Alchemist Ylva',wren:'Wren',linnea:'Healer Linnea',odran:'Odran',odran2:'Odran',bram:'Bram',aldric:'Aldric',tomas:'Tomas',ilse:'Ilse',maren:'Maren',greta:'Greta',oskar:'Oskar',
-  daisuke:'Daisuke',sayuri:'Sayuri',kenji:'Kenji',haruka:'Haruka',tetsuo:'Tetsuo',ryu:'Master Ryu',chiyo:'Grandmother Chiyo',kaede:'Shrine Maiden Kaede',
+  daisuke:'Daisuke',sayuri:'Sayuri',kenji:'Kenji',haruka:'Haruka',tetsuo:'Tetsuo',ryu:'Master Ryu',chiyo:'Grandmother Chiyo',kaede:'Soul-reader Kaede',
   odran3:'Odran',hallvard:'Hallvard',ragna:'Ragna',bjorn:'Bjorn',ulfhild:'Ulfhild',thorvald:'Thorvald',sigrun:'Old Sigrun',gudrun:'Gudrun',
   odran4:'Odran',brenna:'Foreman Brenna',ansgar:'Abbot Ansgar',gerhard:'Gerhard',matthias:'Brother Matthias'};
 const mqNeed=pt=>pt.n||1;
@@ -385,7 +385,7 @@ const LORE=(()=>{
   }
   { const sr=ROADS.find(r=>r.name==='The Shore Road'), [ex,ez]=sr.pts[sr.pts.length-1]; add('wreck',ex+14,ez+6,'wreck','An old fishing boat','The ribs of a fishing boat, bleached and split. Every plank has gone the colour of ash, and nothing grows in the sand around it, not even the sea grass. Farther out, the water is the same grey.',{rot:0.6}); }
   { const [x,z]=arenaGate(ARENA20,850,-300,6); add('demongate',x,z,'stone','The Demon Gate\'s stone','The gate\'s stone is smooth as glass and cold in the sun, with no chisel mark anywhere. Letters run across it, and Kaede\'s scroll gave you the key to them: "Where the ice meets the sky the frost flower grows, and the sleepers wake." Someone has scratched beneath it with a knife: "It was here before the village. It will be here after."',{rot:Math.atan2(x-ARENA20.x,z-ARENA20.z)}); }
-  add('offerings',566,-150,'shrine','A roadside shrine','Folded paper prayers are tied to a little roadside shrine. "For a quiet sky to speak again." "For my father, grey since the spring." "For the foxes to be kind again."',{rot:0.8});
+  add('offerings',566,-150,'wishpost','A roadside wish-post','Folded paper wishes are tied to a roadside post. "For a quiet sky to speak again." "For my father, grey since the spring." "For the foxes to be kind again."',{rot:0.8});
   add('icewall',PASS.x,PASS.ice+4.5,'ice','The ice wall','The pass north is shut by a wall of blue ice, taller than the tallest cedar. Deep inside it, dark shapes hang like flies in amber. Somewhere beyond lies the Hoarfrost Reach, and under its glaciers, the Frostbloom.',{rot:0,
     textOpen:'The ice wall is gone. Where it stood there is a slope of grey slush and broken blue blocks, and beyond it Frostgate Pass climbs north. The dark shapes it held lie in the meltwater: old timbers, coils of rope, one boot, and a smooth glass lantern that still glows faintly, with no flame in it.'});
   { const V=VIL3, e=V.ent, rx=4.6, rz=-0.6, px=V.x+Math.sin(e)*(VR+9), pz=V.z+Math.cos(e)*(VR+9);

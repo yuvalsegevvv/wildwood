@@ -117,7 +117,7 @@ the meaning of its bosses, and the hook that sends the player on.
   breath: "The roots... cannot hold... for long." (Nobody understands; later it will.)
 - **Already in the game and fitting**: Maren: "The forest remembers everything. Some of it is waking up." Oskar: "When I was young, the
   forest came right up to the well" (the Heartwood is shrinking).
-- **Hook**: Hanami's shrine is said to know every sickness of the soul.
+- **Hook**: Hanami's soul-reader is said to know every sickness of the soul.
 - **Built** (`docs/MAIN-QUEST.md`, steps W1-W18). Also in the world: **the drowned roads**. Where the roads dip under still water, the
   old paving runs on beneath it, fitted closer than anyone in Eldmere can cut stone (the ancients' roads, drowned when the Crown broke
   and the land sank); the villages laid plank causeways over them (the Drowned Road, the Long Planks, the Heron Steps). Oskar says the
@@ -125,8 +125,8 @@ the meaning of its bosses, and the hook that sends the player on.
   a small sun inside (the emblem, section 6). A grey fishing boat on the Crownsea shore, where nothing grows: the grey comes from the sea.
 
 ### Act II: Sakura Vale (16-20 in the main quest; 21-25 a side story)
-- **Beats**: the player reaches Hanami. Shrine Maiden Kaede reads the player's soul when it is bound (level 15-16) and falls silent: it
-  burns brighter than any she has seen. The shrine's old scrolls name the grey sleep and say "it comes from the sea". The oni of the
+- **Beats**: the player reaches Hanami. Soul-reader Kaede reads the player's soul when it is bound (level 15-16) and falls silent: it
+  burns brighter than any she has seen. The Soul Hall's old scrolls name the grey sleep and say "it comes from the sea". The oni of the
   Demon Gate and the nine-tailed fox are the Vale's spirits turned wrong.
 - **Cure**: Kaede makes a talisman from the player's own bound soul: its light holds Wren's sickness back (a first hint that the player's
   light matters).
@@ -234,10 +234,10 @@ the meaning of its bosses, and the hook that sends the player on.
 | **the player** | Wildwood | born under the Heartwood; their soul carries its light | from a sibling seeking a cure to the one who closes the Sink |
 | **Wren** | Wildwood (in the game) | the player's younger sibling | the Greying; wakes at Rook's medicine; healed at the end |
 | **Oskar** | Wildwood (in the game) | the village storyteller | remembers the forest bigger; the first to name the grey sleep |
-| **Shrine Maiden Kaede** | Hanami (in the game) | keeper of the soul shrine | sees the player's light; makes the talisman |
+| **Soul-reader Kaede** | Hanami (in the game) | keeper of the Soul Hall | sees the player's light; makes the talisman |
 | **Grandmother Chiyo** | Hanami (in the game) | the storyteller | remembers when the kitsune were friends |
 | **Akaoni** | the Demon Gate (boss, in the game) | an old oni spirit drowned in dark | the first voice of the truth, in dying |
-| **Kyuubi** | Foxfire Shrine (boss, in the game) | an ancient fox spirit, corrupted | a side story: the vale's oldest friend |
+| **Kyuubi** | Foxfire Hollow (boss, in the game) | an ancient fox spirit, corrupted | a side story: the vale's oldest friend |
 | **Healer Linnea** | Wildwood (in the game) | the village healer | treats Wren; sends the player east |
 | **Old Sigrun** | Rimehold (in the game) | seer, keeper of sagas | the burning sky; points to the root of the sickness |
 | **Hallvard** | Rimehold (in the game) | hunter-captain, keeps the gate | counts who comes through; sends the player to Sigrun and, later, to the Rimeking |

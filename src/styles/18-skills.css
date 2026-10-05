@@ -1,4 +1,4 @@
-/*@ Skills panel (slots, tabs, tiles, details, upgrades), the soul shrine, element chips, monster drops, the burst button, the skill slot's states */
+/*@ Skills panel (slots, tabs, tiles, details, upgrades), the Soul Hall, element chips, monster drops, the burst button, the skill slot's states */
 #skills, #soul{ width:min(680px,calc(100vw - 24px)); }
 /* ---- elements: a chip, the colour dot on tiles, the ring on the action bar ---- */
 .el-chip{ display:inline-flex; align-items:center; gap:4px; padding:1px 9px 1px 6px; border-radius:999px; font-size:11.5px; font-weight:600; line-height:1.5; color:var(--el); border:1px solid var(--el); background:rgba(238,240,226,.06); white-space:nowrap; }
@@ -70,7 +70,7 @@
 .mat-row{ display:flex; flex-wrap:wrap; gap:6px; }
 .mat{ display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:8px; font-size:12px; background:rgba(0,0,0,.22); border:1px solid var(--line); }
 .mat b{ color:#f2cf5a; }
-/* ---- the soul shrine ---- */
+/* ---- the Soul Hall ---- */
 .so-intro{ margin:0 0 8px; font-size:13px; line-height:1.5; color:var(--ink-dim); }
 .so-lock{ margin:0 0 8px; padding:6px 10px; border-radius:10px; background:rgba(255,122,106,.1); border:1px solid rgba(255,122,106,.35); color:#ff9a8a; font-size:12.5px; }
 .so-now{ margin:0 0 8px; font-size:13px; }

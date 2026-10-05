@@ -2,7 +2,7 @@
 /* Dirt roads that link each village to the places the story sends you (docs/MAIN-QUEST.md, docs/WORLD.md):
    home forest: the East Road (the village, over the river bridge, to the tunnel) with the Circle Path to the Stone Circle,
    the Redgate Road west to the sealed canyon, the Shore Road south to the beach;
-   the vale: the Tunnel Road into Hanami, the Gate Road to the Demon Gate, the Shrine Road to the Foxfire Shrine,
+   the vale: the Tunnel Road into Hanami, the Gate Road to the Demon Gate, the Hollow Road to the Foxfire Hollow,
    the Coast Road east to the shore and the North Road up to the ice wall in Frostgate Pass;
    the Hoarfrost Reach: the Frost Road from the wall through the pass to Rimehold, the Hall Road to the Rimeking's hall, the Wyrm Road on to the wyrm's nest;
    the Glacier Road from Rimehold west through the glacier valley (and its ice fall) to Highmark in the Greyspine.
@@ -30,8 +30,8 @@ const ROADS=(()=>{
     R('The Shore Road',[[-105,16],[-122,110],[-110,220],[-92,330],[-84,WZ1-40]],4),
     R('The Tunnel Road',[S2,[TUN.p1+2,TUN.z]],5),
     R('The Gate Road',[S2,[560,-160],[650,-195],[760,-240],[850,-300],arenaGate(ARENA20,850,-300,3)],6),
-    R('The Shrine Road',[S2,[560,-40],[600,80],[592,200],arenaGate(ARENA25,592,200,3)],7),
-    // the Warlord Isles (the vale's south-east corner is sea, shared/coasts.js): from the Shrine Road across zones 23 and 25, over a plank causeway, to the camps of Warlord Ruins
+    R('The Hollow Road',[S2,[560,-40],[600,80],[592,200],arenaGate(ARENA25,592,200,3)],7),
+    // the Warlord Isles (the vale's south-east corner is sea, shared/coasts.js): from the Hollow Road across zones 23 and 25, over a plank causeway, to the camps of Warlord Ruins
     R('The Isle Road',[[600,80],[650,150],[715,218],[790,250],[835,285],[895,305],[960,312],[1045,312]],14),
     R('The Coast Road',[[560,-40],[680,-22],[800,-52],[900,-22],[VALE_E-46,-12]],8),
     R('The North Road',[[560,-160],[600,-280],[PASS.x,-350],[PASS.x,-380],[PASS.x,PASS.ice+8]],9),

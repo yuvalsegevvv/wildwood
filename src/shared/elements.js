@@ -1,6 +1,6 @@
 //@ Elements (ELEMS): your soul (SOUL_LV, opposite pairs) and a monster's element (the wheel), with the damage multipliers for both. Pure.
 /* Six elements and 'basic' (none). Two different rules use them:
-   - Your soul (soulMult) works on PAIRS. Bind it at the shrine in Hanami (level SOUL_LV, free, as often as you like): skills of that element deal
+   - Your soul (soulMult) works on PAIRS. Bind it at the Soul Hall in Hanami (level SOUL_LV, free, as often as you like): skills of that element deal
      x1.5, skills of its opposite deal x1/1.5 (opposites: fire / water, earth / air, dark / light), every other skill is unchanged. Basic soul = nothing.
    - A monster's element (foeMult, el in monster-defs.js) works on the WHEEL: water beats fire beats air beats earth beats water (ELEM_BEATS, listed in
      that order in ELEM_WHEEL), and dark and light beat each other. A skill whose element beats the monster's deals x1.5, a skill the monster's element

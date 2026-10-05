@@ -5,7 +5,7 @@
      name      shown when you talk to them
      title     shown above their head with their name (their profession)
      role      'weaponsmith' / 'armorer' open a shop, 'quests' opens that villager's quest list, 'forge' opens the merge forge, 'trainer' opens the skills panel with lessons to buy,
-               'soul' opens the soul shrine where you bind your element, 'lodge' opens the Wayfarers' Lodge where you learn professions (null = just chat)
+               'soul' opens the Soul Hall where you bind your element, 'lodge' opens the Wayfarers' Lodge where you learn professions (null = just chat)
      look      any character-editor fields (sex, hair, top, colors...); anything missing is random
      behavior  { type:'stationary', at:'<anchor>', pose:'sit' (optional) }
                { type:'patrol', route:['<anchor>', ...], pause:seconds }
@@ -75,7 +75,7 @@ const VILLAGERS=[
   { id:'ryu', vil:2, title:'Skill trainer', name:'Master Ryu', role:'trainer',
     look:{sex:'male',height:0.98,build:0.9,face:'angular',hair:'bun',hairColor:0xd8d4cc,facial:'mustache',skin:0xd8b08a,top:'jacket',topColor:0x3d5a3a,bottom:'trousers',bottomColor:0x2a2830,hat:'none'},
     behavior:{type:'stationary',at:'well'}, home:'house:2', schedule:'always', voice:{rate:0.8,pitch:0.8},
-    lines:['A strong body is nothing without a practised hand. I teach the same arts Aldric does, and I charge the same.','The fox of the shrine has nine tails and nine tricks. Learn yours before you face her.','Breathe. Strike. Breathe again.'] },
+    lines:['A strong body is nothing without a practised hand. I teach the same arts Aldric does, and I charge the same.','The fox of the hollow has nine tails and nine tricks. Learn yours before you face her.','Breathe. Strike. Breathe again.'] },
   { id:'daisuke', vil:2, title:'Guard', name:'Daisuke', role:null,
     look:{sex:'male',build:1.1,face:'angular',hair:'short',hairColor:0x1d1714,facial:'none',skin:0xdcb48e,top:'jacket',topColor:0x6a2a26,bottom:'trousers',bottomColor:0x2a2830,hat:'kasa',hatColor:0xc8a868},
     behavior:{type:'patrol',route:['gate','lamp:2','lamp:3','lamp:4','lamp:5','lamp:6','lamp:1','gate'],pause:3}, home:'house:7', schedule:'always', speed:1.2, voice:{rate:1.0,pitch:0.9},
@@ -104,8 +104,8 @@ const VILLAGERS=[
     look:{sex:'male',height:1.02,build:1.05,face:'oval',hair:'short',hairColor:0x3a2a20,facial:'stubble',top:'jacket',topColor:0x5a4a6a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'ranger',hatColor:0x3a3230,pack:true,shoes:'boots',shoeColor:0x2a1e14},
     behavior:{type:'stationary',at:'cart'}, home:'house:4', schedule:'always', voice:{rate:1.1,pitch:0.95},
     lines:['Cherry blossoms all year round. Somebody here is very good at gardening.','The bridge was long, but I have a good lamp. A very good lamp.','Buy something, sell something. The roads do not pay for themselves.'] },
-  // the soul shrine: bind your soul to an element from level 15 (panel: economy/soul.js). late: spawned after everyone else, see above
-  { id:'kaede', vil:2, late:true, title:'Soul shrine', name:'Shrine Maiden Kaede', role:'soul',
+  // the Soul Hall: bind your soul to an element from level 15 (panel: economy/soul.js). late: spawned after everyone else, see above
+  { id:'kaede', vil:2, late:true, title:'Soul Hall', name:'Soul-reader Kaede', role:'soul',
     look:{sex:'female',height:0.97,face:'oval',hair:'long',hairColor:0x1d1714,chest:0.95,skin:0xeac8a6,top:'jacket',topColor:0xe8e4dc,bottom:'skirt',bottomColor:0xb03a3a,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
     behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.85,pitch:1.15},
     lines:['The three stones in the gravel are older than the village. Fire, water, earth, air, and the twins dark and light: every soul leans toward one.','Come to me at level 15 and I will bind your soul to an element. Your skills of that element grow stronger, and the skills of its opposite grow weaker.','Fire and water, earth and air, dark and light: each has exactly one opposite. Bind yourself as you please, and change your mind as often as you like.','Monsters have elements too, and they follow the wheel: water douses fire, fire burns air, air wears down earth, and earth drinks water, while light and dark break each other. Strike a monster with the element that beats its own and it will feel it. Strike it with its own and it will only shrug.'] },
@@ -215,7 +215,7 @@ const NAMES_M3=['Ulf','Leif','Eirik','Gunnar','Hakon','Ivar','Orm','Sten','Torbe
 const NAMES_M4=['Anselm','Florian','Josef','Konrad','Rupert','Ulrich','Matthias','Lorenz','Sepp','Veit'], NAMES_F4=['Berta','Frieda','Hedwig','Liesl','Marta','Theresa','Walburga','Agnes','Irmgard','Resi'];
 const SMALLTALK4=['The bell rings the shifts. Nobody has ever heard it ring wrong, and nobody likes to think what that means.','The goats up on the scree are not ours. We do not claim them.','The stone down the seam is cold even in summer. Cold and, well, loud.','My father cut the steps to the abbey. Four hundred and twelve. I count them every time.','There was a coin in the pay this month that was too round. I gave it to the foreman and she looked at it for a long time.','Mind the ledges after the thaw. The mountain rearranges itself overnight.'];
 const SMALLTALK3=['The lake has never frozen this thick. Or this quiet.','Wolves come to the edge of the firelight and just sit there. I do not care for it.','My grandfather fished Frostmere for sixty winters. He never once looked at the north shore.','If you see a blue flower, do not pick it in the daylight. It sulks.','The aurora was green last night. Green means a good winter. Red means the other kind.','They say the wall is open. They also say the Rimeking is friendly. They say a lot at the fire.'];
-const SMALLTALK2=['The cherry trees never stop blooming here. Nobody remembers why.','Mind the ponds. Kappa like to pull travellers in by the ankles.','Tetsuo and Kenji argue about steel every evening at the brazier.','The bamboo sings when the wind comes off the mountains.','My brother saw foxfire above the shrine again last night.','Sweep the petals in the morning, and by noon there are more.','Daisuke walks that circle so often the stones know his feet.','They say the bridge gate was sealed by the Rootwarden itself. Strange that you got through.'];
+const SMALLTALK2=['The cherry trees never stop blooming here. Nobody remembers why.','Mind the ponds. Kappa like to pull travellers in by the ankles.','Tetsuo and Kenji argue about steel every evening at the brazier.','The bamboo sings when the wind comes off the mountains.','My brother saw foxfire above the hollow again last night.','Sweep the petals in the morning, and by noon there are more.','Daisuke walks that circle so often the stones know his feet.','They say the bridge gate was sealed by the Rootwarden itself. Strange that you got through.'];
 const SMALLTALK=['Lovely day for a walk in the woods.','The deer come right up to the garden at dawn.','Mind the river, the current is quicker than it looks.','Have you tried the apples at the market?','My grandmother planted half the birches around here.','Foxes got into the hen house again last week.','When the fireflies come out, you know summer is here.','The old path still leads down to the lake, if you know where to look.','The tavern gets loud after sunset. Oskar tells the same stories every night.','Bram thinks he is guarding us from wolves. There are no wolves.'];
 
 const NPCs=[];

@@ -1,5 +1,5 @@
-//@ Element helpers for the interface (icons, chips) and the Soul Shrine panel in Hanami, where you bind your soul to an element
-/* Kaede, the shrine maiden at Hanami's raked garden, opens the panel (role 'soul'). It needs level SOUL_LV; changing your soul costs nothing
+//@ Element helpers for the interface (icons, chips) and the Soul Hall panel in Hanami, where you bind your soul to an element
+/* Kaede, the soul-reader at Hanami's raked garden, opens the panel (role 'soul'). It needs level SOUL_LV; changing your soul costs nothing
    and can be done as often as you like. The server checks the level and that you stand in Hanami (bindSoulP), so anywhere else the
    buttons only answer with a toast. The rules and the multipliers are in shared/elements.js. */
 const ELEM_ICON={
@@ -20,9 +20,9 @@ function renderSoul(){
   if($('#soul').hidden) return;
   const open=PL.level>=SOUL_LV, cur=soulNow(), cls=clsOf();
   const up=Math.round((ELEM_BOOST-1)*100), down=Math.round((1-1/ELEM_BOOST)*100);
-  $('#soTitle').textContent=panelNPC?panelNPC.def.name+"'s shrine":'Soul shrine';
+  $('#soTitle').textContent='Soul Hall';
   let h=`<p class="so-intro">Bind your soul to an element. Your skills of that element deal ${up}% more damage, and skills of its opposite deal ${down}% less. Change it whenever you like: it costs nothing.</p>`;
-  if(!open) h+=`<p class="so-lock">The shrine answers only hikers of level ${SOUL_LV} and above.</p>`;
+  if(!open) h+=`<p class="so-lock">The hall answers only hikers of level ${SOUL_LV} and above.</p>`;
   h+=`<div class="so-now">Your soul: ${elChip(cur)}</div><div class="so-grid">`;
   for(const el of [...ELEM_LIST,'basic']){
     const mine=SKILL_IDS.filter(id=>SKILLS[id].cls===cls&&elOf(SKILLS[id])===el).map(id=>SKILLS[id].name);

@@ -105,8 +105,8 @@ Elements: earth, water, some fire (Ember Flats). Future lore: the Heartwood is t
 down into the Rootdeep.
 
 ### Sakura Vale (built, levels 16-25)
-Temperate vale with cherry, maple, bamboo and cedar; Japanese folklore (kodama, kitsune, oni, tengu). Hanami village and the soul shrine.
-Bosses: Akaoni at the Demon Gate (20), Kyuubi at the Foxfire Shrine (25). Its rivers come from the Hoarfrost glaciers. Add later if
+Temperate vale with cherry, maple, bamboo and cedar; Japanese folklore (kodama, kitsune, oni, tengu). Hanami village and the Soul Hall.
+Bosses: Akaoni at the Demon Gate (20), Kyuubi at the Foxfire Hollow (25). Its rivers come from the Hoarfrost glaciers. Add later if
 wanted: hot springs (onsen) near the northern border, where the land starts to climb.
 
 ### Hoarfrost Reach (built, levels 22-30)
@@ -136,10 +136,13 @@ wanted: hot springs (onsen) near the northern border, where the land starts to c
   fields; a fog coast on the Bight.
 - **Glasswell, the oasis city**: the only city on the continent (every other settlement is a village). It stands on both banks of the
   river where it widens into an oasis lake, fed by a deep spring (the great well that names it). Walls with gate towers, domes and
-  minarets, a covered bazaar, palm gardens and irrigated fields around it, a harbour of river boats, caravan grounds outside the gate.
+  tall lamp towers, a covered bazaar, palm gardens and irrigated fields around it, a harbour of river boats, caravan grounds outside the gate.
   It is rich because every caravan between the north (Greyspine) and the south (Amber Reach) stops at its water. In the game it should be
   bigger than a village: districts (bazaar, palace or temple, harbour), more NPCs and shops, perhaps a place for the guild, trading
   between players or an arena later.
+  **Designed, with a 3D model but not in the game's world**: `docs/DESERT-CITY.md` (inside the city only; plan `docs/glasswell-plan.svg`). It changes this entry in two ways: the city stands in
+  a round basin, **the Bowl**, whose red-rock rim replaces the walls and whose three gates are the three roads (River Gate, Redgate, Dune Gate), and the irrigated
+  fields and the caravan grounds outside the gates are not designed yet.
 - **Culture** *(proposed)*: desert-trading culture inspired by the Middle East and North Africa: mud-brick and stone, domes, courtyards,
   caravans; sandstone ruins of an older people in the dunes.
 - **Monsters**: Sand Slime, Scarab Beetle, Tusked Warthog, Desert Goblin (raider), Cactus Treant; local: scorpions, sand worms, mummies, djinn.
@@ -306,7 +309,7 @@ storyline). What it means for the geography:
     zones: a coastal kind for them is a possible next step.)
   - **Roads** (`shared/roads.js`): the East Road from the village over **the river bridge** to the Greyfall bridge, with the Circle Path to the
     Stone Circle; the Redgate Road west to the sealed canyon; the Shore Road south to the beach. In the Vale: the Tunnel Road (it kept its name) into
-    Hanami, the Gate Road to the Demon Gate, the Shrine Road to the Foxfire Shrine, the Coast Road to the east shore and the North Road
+    Hanami, the Gate Road to the Demon Gate, the Hollow Road to the Foxfire Hollow, the Coast Road to the east shore and the North Road
     towards the Hoarfrost. Roads cut through the zone ridges, and trees and monster camps keep off them.
   - **The drowned roads**: where a road dips under still water, a plank causeway on posts carries it across (`BRIDGES` kind
     `causeway`, one per wet stretch, found automatically): the Drowned Road (the Redgate Road, west of the village), the Long Planks
@@ -314,7 +317,7 @@ storyline). What it means for the geography:
     act I): the ancients' paving runs on under the water.
   - **The story's places** (`shared/main-quest.js`): Wren's sickbed by the village gate, Odran's cart outside each village's gate,
     heartleaf in the Slime Meadow, and readable spots (`LORE`: the Stone Circle's carvings, old letters by the bridge, the drowned roads'
-    signs and milestone, a grey wreck on the shore, the Demon Gate's stone, a roadside shrine, **the ice wall** closing the North Road).
+    signs and milestone, a grey wreck on the shore, the Demon Gate's stone, a roadside wish-post, **the ice wall** closing the North Road).
     Trees and bushes keep clear of them (`storyClear`).
   - The lake in the west forest is **Mistmere** (the Greywater name belongs to the Bight).
 - **The Hoarfrost Reach** (what it leaves out is commented in `docs/NOT-BUILT.md`) (`shared/hoarfrost.js`, heights in `shared/terrain.js`, dressing in `game/village/buildings-hoar.js`):

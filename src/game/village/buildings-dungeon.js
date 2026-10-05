@@ -191,10 +191,10 @@ function dgEntFalls(E){
   for(let k=0;k<4;k++) lat.push(paint(vbox(DWD*2,0.07,0.07,0,0.5+k*0.95,-0.9),wood));
   for(const [x,y] of [[-0.6,2.4],[0.7,1.5],[0,3.0]]) lat.push(paint(vbox(0.22,0.62,0.02,x,y,-0.85),dgEntFlat(0xb02a1e)));
   const seal=new THREE.Mesh(merge(lat),villageMat); S.G.add(seal);
-  // the shimenawa: a straw rope across the door from two short posts, paper strips hanging from it
+  // a straw rope across the door from two short posts, gold tassels hanging from it
   for(const sx of [-1,1]) main.push(paint(cyl(0.09,0.11,DHT+0.3,6).translate(sx*(DWD+0.45),(DHT+0.3)/2-0.2,0.95),wood));
   main.push(dgEntTube([[-DWD-0.45,DHT-0.1,0.95],[-0.8,DHT-0.32,0.95],[0.8,DHT-0.32,0.95],[DWD+0.45,DHT-0.1,0.95]],0.07,0.07,10,5,dgEntFlat(0xd8c890)));
-  for(let k=0;k<7;k++){ const x=-1.7+k*0.57; main.push(paint(vbox(0.12,0.46,0.02,x,DHT-0.6-(k%2)*0.1,0.95).rotateZ((k%2?1:-1)*0.15),dgEntFlat(0xf4f0e6))); }
+  for(let k=0;k<7;k++){ const x=-1.7+k*0.57; main.push(paint(vbox(0.12,0.46,0.02,x,DHT-0.6-(k%2)*0.1,0.95).rotateZ((k%2?1:-1)*0.15),dgEntFlat(0xd8a030))); }
   // the pool in front of the door: water just over the doorway's floor, spread wide enough to cover every dip; where the ground rises above it the ground simply shows, so the pool takes the shape
   // of the hollow the door lies in (the ground is not touched) and a ring of boulders is set where the ground meets the water
   const PX=0, PZ=1.2, PR=4.2, wl=0.7, pg=new THREE.CircleGeometry(PR,32).rotateX(-Math.PI/2).translate(PX,0,PZ), pp=pg.attributes.position;

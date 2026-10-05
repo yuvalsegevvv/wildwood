@@ -38,7 +38,7 @@ for(const id of ['tCoastReach','tCoastCape','tCoastGrey']) $('#'+id).addEventLis
 $('#tSealW').addEventListener('click',()=>{ netSend({t:'dev',cmd:'west',v:0}); toast('The ice fall is sealed again','good'); });
 // the boss arenas (to try each boss's moves): the vale's two open the bridge gate first
 for(const id of ['tCircle','tTide']) $('#'+id).addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}));
-for(const id of ['tGate','tShrine']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });
+for(const id of ['tGate','tHollow']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });
 $('#tSealN').addEventListener('click',()=>{ netSend({t:'dev',cmd:'north',v:0}); toast('The ice wall is sealed again','good'); });
 let luckyN=0; $('#tLucky').addEventListener('click',()=>{ netSend({t:'dev',cmd:'lucky',v:2+(luckyN++%3)}); });
 $('#tReset').addEventListener('click',e=>{

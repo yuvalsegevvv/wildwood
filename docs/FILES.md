@@ -23,7 +23,7 @@ styles
   15-inventory.css                   Inventory: body slots, bag grid, item tiles and icons, drag and drop, item details
   16-map.css                         Minimap, the map of a land and the world map of Eldmere
   17-forge.css                       Rarity colours (tiles, rows, toasts), the forge panel, the lucky-drop banner
-  18-skills.css                      Skills panel (slots, tabs, tiles, details, upgrades), the soul shrine, element chips, monster drops, the burst button, the skill slot's states
+  18-skills.css                      Skills panel (slots, tabs, tiles, details, upgrades), the Soul Hall, element chips, monster drops, the burst button, the skill slot's states
   19-chat.css                        Chat: log, input, chat button, speech bubbles; the name field in settings
   20-professions.css                 Professions and travel: the Wayfarers' Lodge panel (mining, woodcutting, gathering, tools, resources) and the teleport circle's travel window
   21-crafting.css                    Crafting, brewing and potions: the Craft tab, the brewing panel, the lodge's tool shop and resource list, the potion belt above the action bar
@@ -47,6 +47,8 @@ shared
   village-helpers.js                 vDist, nearPath, pathAmt, plazaAmt, inBox, pushOutBoxes: each works on the village on that side of the mountains (vilAt). Pure.
   roads.js                           Roads between the four villages and the key places (ROADS), the river bridge and the plank causeways over the drowned stretches (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck, bridgeAt. Pure.
   beach.js                           The Crownsea Shore's boss arena (ARENA_TIDE): a flat terrace on the home forest's south beach, where Carapax, the Tide King, lives. Pure.
+  sunscar.js                         Glasswell, the oasis city of the Sunscar: the Bowl, its gates, river, lake, roads, places and 80 homes as plain data in the city's own frame (docs/DESERT-CITY.md). Pure.
+  sunscar-shape.js                   Glasswell's Bowl as a height function: the rim's radii, the three gates and the Weir cut through it, the floors of the cracks (gwRimH). In the city's own frame. Pure.
   terrain-height.js                  rawHeight: base terrain + zone ridges (cut away where a road crosses) + village, arena, Frostgate Pass and glacier valley flattening. Pure.
   balance.js                         Level formulas: fLv, gear tiers, expected gear, armour negation (soft-capped at 90%), the level debuff on damage dealt (never below x0.5), the XP curve (a soft cap at level 50, no kill pays for more than 10 levels above you), coins (the pay doubles every 10 levels above 60). Pure.
   monster-defs.js                    Monster families (FAM), the 72 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach, 14 in the Greyspine), defAt (a def's numbers at a level; above level 60 monsters creep tougher, bosses also stronger), prepDef, the eight bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
@@ -86,7 +88,7 @@ server
   dungeons/boss-kits.js              The dungeon bosses' move sets: Amanita the Sporemother (spore clouds, puffballs you pop to cancel, sporelings, a pulse a pillar shelters you from, sporefall), Gawataro the Jade Elder (sweep, vent dance, whirlpools, the dish you spill from behind, a sumo charge that stops at a pillar, whelps, spring surge), Haugbui the Barrow Lord (grasping chain, cold breath, thralls, lamps he snuffs and you relight, the wail, the blackout)
   dungeons/boss-kits-mine.js         The Seam Foreman's move set (Garrick, the Blackseam): a chain that hauls you in, powder kegs you pop beside him to hurt and stun him, slaglings, a cave-in, Blasting Day
   boss.js                            The bosses on the server: engagement, the shared melee (cleave), phases, reset; each boss's own moves are its BOSS_KITS entry (boss-kits-*.js) built on boss-fx.js
-  economy.js                         Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), the soul shrine, testing commands
+  economy.js                         Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), the Soul Hall, testing commands
   dungeon-gear.js                    Dungeon gear on the server: the ring's attack (the pendant's bonuses are read by pendP in players.js), Tempering Stones (the drop that replaces equipment at level 30+, and the `temper` message), the forge's merge rule, a clear's item, testing commands
   main-quest.js                      The main quest on the server: starting, progressing and handing in steps (MQ in shared/main-quest.js) from what the server sees (talks, kills, system uses, places), rewards, the grey monsters spawned for you
   professions.js                     Professions on the server: learning at a Wayfarers' Lodge (one in each village), gathering at resource nodes with the right tool after a short cast (they respawn), profession levels, resources kept in gear.res, selling them
@@ -134,7 +136,7 @@ game
   world/generation-chunks.js         Per-chunk vegetation placement (genChunk): the home forest's mix, sakura, maple, pine and bamboo in the Sakura Vale, snowy spruce, dwarf birch and boulders in the Hoarfrost Reach, conifers up to the treeline in the Greyspine
   world/far-lands.js                 The rest of Eldmere as placeholders around the three playable lands (Greyspine, Sunscar, Amber Reach, Stormhorn, Emberwake Isles; the Hoarfrost Reach is built): one smooth-shaded mesh of ridged mountains, high ground seen through the haze
   world/bridges.js                   The river bridge's and the plank causeways' models (BRIDGES in shared/roads.js): plank decks, rails, posts and piers, one merged mesh
-  world/lore-props.js                The story's props: Wren's sickbed under its awning, Odran's carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside shrine, a grey plate in the ice, the Greyspine's deepest shaft and the golem's broken stone) and the heartleaf you pick
+  world/lore-props.js                The story's props: Wren's sickbed under its awning, Odran's carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside wish-post, the Greyspine's wayside shrines, a grey plate in the ice, the Greyspine's deepest shaft and the golem's broken stone) and the heartleaf you pick
   world/streaming.js                 Streaming scheduler (Stream, streamPump): terrain first, nearest chunks next
   character/model.js                 Look presets, random looks (randomLook), save/load, buildCharacter (all outfits and armour looks), hiker, rebuildHiker
   character/pose.js                  poseRig (walk, run, sit, talk, attacks) and animateHiker
@@ -146,12 +148,19 @@ game
   player/input.js                    Keyboard, hold Alt to free the mouse, mouse look, touch joystick, HUD buttons
   ui/character-editor.js             Character editor panel and camera: opened from the HUD, or in creating mode right after a new account is registered
   village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)
-  village/buildings-vale.js          The Sakura Vale's buildings: Hanami (tiled roofs, shoji, torii, stone lanterns), the border bridge (deck, piers, gatehouse, sealed door), teleport circles, the two shrines
+  village/buildings-vale.js          The Sakura Vale's buildings: Hanami (tiled roofs, shoji, timber gates, stone lanterns), the border bridge (deck, piers, gatehouse, sealed door), teleport circles, the dressing of the two boss arenas
   village/buildings-hoar.js          The Hoarfrost Reach's buildings: Rimehold (timber houses under snow, gate and rune stones, the Wayfarers' Lodge yard), the ice wall in Frostgate Pass, the Rimeking's ice hall, the iron bird's wreck
   village/buildings-grey.js          The Greyspine's buildings and dressing: its water (tarns, the river, the cold fjord), the rock falls in the west wall (the gates), Highmark (stone houses under slate and snow, bell tower, mine headframe, the Lodge yard) and the ice fall across the glacier valley (the gate, opened when Ymrik falls)
   village/buildings-greyfall.js      The Greyfall, the waterfall that gives the border river its birth: a tarn on the home forest's north rim, a streaked sheet of water over the chute (shared/terrain.js, fallProfile), foam and spray at the plunge pool, and its roar
   village/buildings-beach.js         The Tide King's beach (ARENA_TIDE): a ring of whale ribs on the landward side, driftwood, big shells and shallow tide pools
   village/buildings-dungeon.js       The four dungeon doors and their signposts: the Hollowed Elder (a half-dead giant tree with a root-arch door), the Falls Door (a cascade over three ledges, the door behind the water), the Barrow Door (a snow-covered mound with a trilithon) and the Old Adit (a timbered mine mouth in a crag, a head frame above)
+  village/sun-rim.js                 Glasswell's Bowl, drawn: the red-rock rim with its gate cracks, the floor with its roads and paving, the Mirror Lake and the river with their curbs, bridges, the gate towers and the Weir
+  village/sun-ruin.js                Glasswell's heart: the Old Citadel (a broken ring wall with its towers, one face fused to black glass), the broken statue at the centre, the Great Well's pavilion, the Circle Court
+  village/sun-houses.js              Glasswell's homes (80 flat-roofed houses in four kinds), the caravanserais, stables and guardhouses at the gates, and the painted signs
+  village/sun-halls.js               Glasswell's great places: the Wardens' Hall (the palace: an arcade under a tall tower with a beacon lamp), the Archive in the Citadel's east wing, the Physician's Court, and the three shuttered plots held for later (Exchange Hall, Sandring, Guildhall)
+  village/sun-shops.js               Glasswell's shops and the market street: weaponsmith, armourer, forge, trainers' yard, alchemist, quest board, Wayfarers' Lodge, harbour master, fish market; stalls, shade cloths and lamps along the roads
+  village/sun-props.js               Glasswell's greenery and harbour: date palms (round the lake, the Well Court, the courtyards and in the gaps between houses), the jetties and the moored boats
+  village/buildings-sun.js           Glasswell's model: the whole city (the Bowl and its gates, the ruin and its statue, 80 homes, the halls, shops and inns, water, palms) as one group, built from GLASSWELL (shared/sunscar.js)
   village/villagers.js               VILLAGERS (hard-coded NPCs of the three villages), random villagers, NPC behaviour (updateNPCs)
   village/talking.js                 Talking to villagers: bubble, prompt, talk key (E), the main quest's lines first, opening shop/quest panels; reading lore spots, picking heartleaf; stepping on a teleport circle
   village/npc-labels.js              Name and profession labels above the special villagers, with ! / ? quest markers over quest givers
@@ -192,7 +201,7 @@ game
   economy/inventory.js               Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
   economy/shops.js                   Weapon and armour shops, and Odran the peddler (a bit of everything, and curiosities he will not sell)
   economy/forge.js                   Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
-  economy/soul.js                    Element helpers for the interface (icons, chips) and the Soul Shrine panel in Hanami, where you bind your soul to an element
+  economy/soul.js                    Element helpers for the interface (icons, chips) and the Soul Hall panel in Hanami, where you bind your soul to an element
   economy/skills.js                  Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, upgrade with coins and monster drops, learn from the trainers
   economy/quests.js                  The quest board panel (Maren) and the quest log: notices, quests in progress, hand-ins (all generated by the server)
   economy/main-quest.js              The main quest on the client: what quest villagers say (mqTalk), the marks over them, the main quest at the top of the quest log, its marker on the maps (people, places, resource nodes), where Odran is, heartleaf to pick

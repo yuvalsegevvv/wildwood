@@ -92,8 +92,8 @@ Two kinds per level, 12 of each, in ten zones.
 | `kappa` | Kappa | 16 | water | 1744 | 16.8 | 132 | 1.3 | 3 | 14 m | 136.8 | 168 | 12 | Petal Meadow | Kappa Dish | goblin ×0.78 | src/shared/monster-defs.js:43 |
 | `kodama` | Kodama | 17 | light | 1788 | 16.6 | 105 | 1.7 | 1.8 | 10 m | 167.7 | 197 | 12 | Kodama Wood | Spirit Bell | shroom ×1.25 | src/shared/monster-defs.js:44 |
 | `kabuto` | Kabuto Beetle | 17 | fire | 2353 | 21.8 | 120 | 1.4 | 2.6 | 11 m | 167.7 | 197 | 12 | Kodama Wood | Kabuto Horn | beetle ×1.45 | src/shared/monster-defs.js:45 |
-| `kitsune` | Kitsune | 18 | fire | 2027 | 18.2 | 155 | 1.5 | 3.8 | 14 m | 205.1 | 230 | 12 | Inari Hills | Foxfire Ash | fox ×1 | src/shared/monster-defs.js:46 |
-| `yamaboar` | Mountain Boar | 18 | earth | 2027 | 18.2 | 170 | 2 | 3.4 | 13 m | 205.1 | 230 | 12 | Inari Hills | Mountain Hide | boar ×1.45 | src/shared/monster-defs.js:47 |
+| `kitsune` | Kitsune | 18 | fire | 2027 | 18.2 | 155 | 1.5 | 3.8 | 14 m | 205.1 | 230 | 12 | Fox Hills | Foxfire Ash | fox ×1 | src/shared/monster-defs.js:46 |
+| `yamaboar` | Mountain Boar | 18 | earth | 2027 | 18.2 | 170 | 2 | 3.4 | 13 m | 205.1 | 230 | 12 | Fox Hills | Mountain Hide | boar ×1.45 | src/shared/monster-defs.js:47 |
 | `ashigaru` | Goblin Ashigaru | 19 | — | 2179 | 18.8 | 143 | 1.3 | 3 | 14 m | 250.2 | 269 | 12 | Bamboo Sea | Lacquered Plate | goblin ×0.95 | src/shared/monster-defs.js:48 |
 | `bamboo` | Bamboo Treant | 19 | earth | 2941 | 25.4 | 223 | 2.4 | 1.6 | 12 m | 250.2 | 269 | 12 | Bamboo Sea | Singing Bamboo | treant ×1.2 | src/shared/monster-defs.js:49 |
 | `onibi` | Onibi | 20 | fire | 2542 | 17.5 | 247 | 1.7 | 2.6 | 13 m | 304.6 | 313 | 12 | Ghostlight Marsh | Blue Flame | wisp ×1 | src/shared/monster-defs.js:50 |
@@ -157,7 +157,7 @@ Health is 70 hits of a same-level player (×1.5 from level 10); a hit is 16% of 
 | `boss` | The Rootwarden | 15 | dark | 10497 | 227 | 2.6 | 1.9 | 2779.6 | 2860 | Rootwarden Heart | The Stone Circle | Thornling | Heartwood Totem | boss15 | `roots` src/server/boss-kits-home.js:10 | src/shared/monster-defs.js:135 |
 | `carapax` | Carapax, the Tide King | 20 | water | 15212 | 396 | 2.5 | 2 | 7615.5 | 6260 | Tide King's Claw | The Tide King's Beach | Tide Hatchling | — | boss15 | `tide` src/server/boss-kits-home.js:58 | src/shared/monster-defs.js:142 |
 | `akaoni` | Akaoni, the Gate Demon | 20 | fire | 15212 | 396 | 2.4 | 2.1 | 7615.5 | 6260 | Gate Demon Horn | Demon Gate | Oni Imp | — | boss20 | `oni` src/server/boss-kits-vale.js:26 | src/shared/monster-defs.js:147 |
-| `kyuubi` | Kyuubi, the Nine-Tailed | 25 | light | 20705 | 656 | 2.2 | 2.6 | 19883.5 | 13080 | Kyuubi Tail | Foxfire Shrine | Fox Spirit | — | boss25 | `kitsune` src/server/boss-kits-vale.js:68 | src/shared/monster-defs.js:152 |
+| `kyuubi` | Kyuubi, the Nine-Tailed | 25 | light | 20705 | 656 | 2.2 | 2.6 | 19883.5 | 13080 | Kyuubi Tail | Foxfire Hollow | Fox Spirit | — | boss25 | `kitsune` src/server/boss-kits-vale.js:68 | src/shared/monster-defs.js:152 |
 | `ymrik` | Ymrik, the Rimeking | 26 | water | 21214 | 667 | 2.4 | 2.1 | 24006.9 | 15100 | Rimeking's Crown | The Rimeking's Hall | Frost Thrall | — | boss26 | `rime` src/server/boss-kits-north.js:27 | src/shared/monster-defs.js:158 |
 | `vetrmaw` | Vetrmaw, the Frost Wyrm | 30 | water | 23427 | 718 | 2.2 | 2.5 | 50658.9 | 26680 | Wyrm Scale | The Wyrm's Nest | Wyrmling | Warm Core | boss30 | `wyrm` src/server/boss-kits-north.js:85 | src/shared/monster-defs.js:163 |
 | `gryphonqueen` | The Gryphon Queen | 29 | air | 22844 | 705 | 2.2 | 3 | 42066.4 | 23160 | Queen's Plume | The Gryphon Queen's Peak | Gryphon Eaglet | — | boss29 | `gryphon` src/server/boss-kits-grey.js:33 | src/shared/monster-defs.js:170 |
@@ -245,7 +245,7 @@ Tougher copies of a zone's kind (`greyDef`, tripled XP). Not in `MON_DEFS`: the 
 | Id | Name | Lv | El | HP | Hits | Dmg | Atk s | Spd | Aggro | XP | Coins | Count | Zone | Drop | Model | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `greybog` | Grey-veined Bog Slime | 7 | water | 711 | 18.6 | 22 | 1.6 | 2.2 | 18 m | 35 | 21 | on demand | The Bog | — | slime ×1.9 | src/shared/monster-defs.js:202 |
-| `greyfox` | Grey Kitsune | 18 | fire | 4459 | 39.9 | 155 | 1.5 | 3.8 | 18 m | 615 | 230 | on demand | Inari Hills | — | fox ×1.15 | src/shared/monster-defs.js:203 |
+| `greyfox` | Grey Kitsune | 18 | fire | 4459 | 39.9 | 155 | 1.5 | 3.8 | 18 m | 615 | 230 | on demand | Fox Hills | — | fox ×1.15 | src/shared/monster-defs.js:203 |
 | `greystone` | Grey-veined Granite Slime | 29 | earth | 13354 | 61.4 | 264 | 1.6 | 2.2 | 18 m | 5048 | 1158 | on demand | — | — | slime ×2.1 | src/shared/monster-defs.js:205 |
 
 ## 11. Dungeons: bosses, their helpers and the mob pools

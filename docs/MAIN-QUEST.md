@@ -74,16 +74,16 @@ flame" that Odran buys at once (W14).
 ## 3. Act II: "The Blossom and the Blight" (the Sakura Vale, levels 15-20)
 
 Existing people: Daisuke (guard), Sayuri (board), Kenji and Haruka (shops), Tetsuo (forge), Master Ryu (trainer), Grandmother Chiyo
-(storyteller), Shrine Maiden Kaede (soul shrine); Odran's cart moves to Hanami's gate at V8. New with the professions: **Isamu** (the
+(storyteller), Soul-reader Kaede (Soul Hall); Odran's cart moves to Hanami's gate at V8. New with the professions: **Isamu** (the
 Wayfarers' Lodge) and **Herbalist Hinata** (brews potions), both `late:true`.
 
 | # | Step | Gate | Giver → hand in | Objective | Teaches | r |
 |---|---|---|---|---|---|---|
 | V3 | Hanami | 15 | Daisuke | Meet Sayuri, Kenji, Haruka, Tetsuo | a second hub | .05 |
 | V4 | Home in a blink | 15 | Chiyo → Wren | Travel home on the teleport circle | teleport circles | .25 |
-| V5 | The soul shrine | 16 | Kaede | Bind your soul | the soul, x1.5 | .25 |
+| V5 | The soul hall | 16 | Kaede | Bind your soul | the soul, x1.5 | .25 |
 | V6 | A light for Wren | 17 | Kaede → Wren | 6 kodama lanterns (50%); bring them to Kaede | monster elements, the wheel | .2 |
-| V7 | The friendly foxes | 18 | Chiyo | Ask Master Ryu about passives; 5 grey kitsune (spawned for you in the Inari Hills) | passives | .2 |
+| V7 | The friendly foxes | 18 | Chiyo | Ask Master Ryu about passives; 5 grey kitsune (spawned for you in the Fox Hills) | passives | .2 |
 | V7b | Lacquer and cherrywood | 18 | Haruka | Learn Woodcutting at Isamu's lodge; buy a Sunstone axe (level 15) and wear it; chop 12 logs in the vale; craft an armour piece at Haruka's | armour crafting, logs | .4 |
 | V8 | A lantern with no flame | 19 | Odran (Hanami) | Sell him something | (story) | .2 |
 | V9 | The old scrolls | 19 | Kaede | 4 scroll pieces (onibi, jorogumo, 45%) | tier 4 gear (level 20) | .2 |
@@ -160,8 +160,8 @@ stone (`RES.blackstone`, `NODE_KINDS.blackstone`: 11 veins in the Ledgeway, the 
 
 ## 4. Side story, planned (not built): "The Nine Tails"
 
-Kyuubi (level 25, the Foxfire Shrine) is no longer on the main path. The pieces are already hinted: Chiyo's "then one of them grew nine
-tails" (V7), the grey kitsune, Master Ryu's "the fox of the shrine has nine tails and nine tricks". A later side chain for levels 21-25
+Kyuubi (level 25, the Foxfire Hollow) is no longer on the main path. The pieces are already hinted: Chiyo's "then one of them grew nine
+tails" (V7), the grey kitsune, Master Ryu's "the fox of the hollow has nine tails and nine tricks". A later side chain for levels 21-25
 can reuse the old plan: Jade Falls' glacier water (the vale's water comes from the north), the tengu's "the sky went quiet", the mural of
 ships with no sails in the Warlord Ruins, the Thunder Grove, and Kyuubi herself, grey, the vale's oldest friend. Her last words should add
 to the story, not repeat Akaoni's (spoiler rule: still no answers before the end of Amber Reach).
@@ -170,7 +170,7 @@ to the story, not repeat Akaoni's (spoiler rule: still no answers before the end
 
 Readable lore spots (`LORE` in `shared/main-quest.js`; walk up and press the talk key): the Stone Circle's carvings; the old letters by
 the tunnel; **the drowned roads** (below); a grey fishing boat on the Crownsea shore where nothing grows; the Demon Gate's stone; a
-roadside shrine of paper prayers in the vale ("for a quiet sky to speak again"); **the ice wall** in Frostgate Pass (it reads differently
+roadside wish-post hung with paper wishes in the vale ("for a quiet sky to speak again"); **the ice wall** in Frostgate Pass (it reads differently
 once open: `textOpen`, with a lantern that glows with no flame in the meltwater); the rune stones at Rimehold's gate; the grey plate in
 the ice at Frostmere; the iron bird. Oskar's, Chiyo's, Sigrun's and Odran's lines; Odran's curiosities (a coin with a sun inside a ring,
 the lantern with no flame, a warm glass bulb).

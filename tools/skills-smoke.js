@@ -1,4 +1,4 @@
-// Headless test of elements, the soul shrine, monster drops, skill upgrades, passives and the boss skills (server straight from src/, no build): one line per check.
+// Headless test of elements, the Soul Hall, monster drops, skill upgrades, passives and the boss skills (server straight from src/, no build): one line per check.
 // Usage: node tools/skills-smoke.js
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
@@ -27,7 +27,7 @@ ok('upgrade costs coins and a monster drop that exists',up&&up.coins>0&&up.mats.
 const g=x.sanitizeGear({soul:'lava',mats:{slime:-5,nothing:3,boss:99999999,kappa:'7'},skills:{owned:['whirlwind','vitality','nope'],lv:{whirlwind:99,vitality:3,bash:4},pass:['vitality','vitality','ironwill']}},'warrior');
 ok('a save is sanitized: soul, drops, skill levels, passives',g.soul==='basic'&&!g.mats.slime&&!g.mats.nothing&&g.mats.boss===999&&g.mats.kappa===7&&g.skills.lv.whirlwind===5&&g.skills.lv.vitality===3&&!g.skills.lv.bash&&g.skills.pass[0]==='vitality'&&g.skills.pass[1]===null&&g.skills.pass[2]===null,JSON.stringify([g.mats,g.skills.lv,g.skills.pass]));
 
-// ---- the soul shrine in Hanami ----
+// ---- the Soul Hall in Hanami ----
 inbox.a=[]; W.join('a',{name:'Tester',look:{cls:'mage'},save:{level:14}}); tick(1);
 const p=W.players.get('a');
 W.receive('a',{t:'dev',cmd:'vale',v:2});

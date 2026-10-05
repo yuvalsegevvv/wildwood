@@ -33,7 +33,7 @@ function moFolkTorsoExtras(F,p,rings){
     for(const sd of [-1,1]) out.push(moEll(0.16,0.15,0.02,0,-0.12,sd*(at.rz*1.05)+at.z,stripe,[0.1*sd,0,0],8));
     for(const sd of [-1,1]){ const c=(x,y,z,cc)=>{ cc.set(p.skin).multiplyScalar(0.92+0.15*moNoise(x,y,z,8)); }; out.push(moEll(0.11,0.075,0.05,sd*0.12,0.36,-moRingAt(rings,0.36).rz*0.9,c,null,8),   // pecs
       moEll(0.06,0.04,0.03,sd*0.05,0.16,-moRingAt(rings,0.16).rz*0.95,c,null,6),moEll(0.06,0.04,0.03,sd*0.05,0.25,-moRingAt(rings,0.25).rz*0.95,c,null,6)); }
-    for(let i=0;i<10;i++){ const a=(i/10-0.5)*2.6+Math.PI/2; out.push(moEll(0.026,0.026,0.026,Math.cos(a)*0.2,0.46+Math.sin(i)*0.01,-Math.sin(a)*0.13-0.02,0xe8e2cc,null,5)); }   // prayer beads
+    for(let i=0;i<10;i++){ const a=(i/10-0.5)*2.6+Math.PI/2; out.push(moEll(0.026,0.026,0.026,Math.cos(a)*0.2,0.46+Math.sin(i)*0.01,-Math.sin(a)*0.13-0.02,0xe8e2cc,null,5)); }   // a string of beads
   }
   if(form==='undead'&&p.top==='plate'){                                                                         // lamellar plates: a kilt and shoulder guards
     const lame=(x,y,z,c)=>{ c.set(p.topColor).multiplyScalar(0.85+0.2*Math.sin(y*90)); };

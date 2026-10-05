@@ -1,4 +1,4 @@
-//@ The Sakura Vale's buildings: Hanami (tiled roofs, shoji, torii, stone lanterns), the border bridge (deck, piers, gatehouse, sealed door), teleport circles, the two shrines
+//@ The Sakura Vale's buildings: Hanami (tiled roofs, shoji, timber gates, stone lanterns), the border bridge (deck, piers, gatehouse, sealed door), teleport circles, the dressing of the two boss arenas
 /* Hanami follows the home village's plan (VIL2 from shared/vale.js has the same houses, stalls, anchors and colliders),
    so only the look changes here. The bridge's deck is ground for the player (bridgeDeck, shared/roads.js); this file draws it in stone
    vault and a lid of mountain on top, frames both portals, and shuts the west portal with a door until GEAR.east >= 1. */
@@ -120,13 +120,13 @@ function buildVale(){
     for(let x=-3;x<=3.01;x+=1.5) for(const sz of [-1,1]) A(cyl(0.04,0.04,0.7,5).translate(x,0.35,sz*2.2),c=>c.set(0x7aa04a));
   }
   { const S=V.sign, {A}=inF(frameM(S.x,Y,S.z,S.rot)); A(vbox(0.14,2.3,0.14,0,1.15,0),dark); A(vbox(0.5,1.3,0.08,0,1.55,0.08),woodC(0x8a6a44)); A(hipRoof(0.8,0.4,0.18,0.2,0.04).translate(0,2.3,0.04),tileC(0x3a4048)); }
-  // the torii on the road in
-  { const e=V.ent, p=[V.x+Math.sin(e)*(VR+9),V.z+Math.cos(e)*(VR+9)], {A}=inF(frameM(p[0],getH(p[0],p[1]),p[1],e));
-    for(const sx of [-1,1]){ A(cyl(0.2,0.24,4.6,10).translate(sx*2.3,2.3,0),red); A(cyl(0.3,0.3,0.3,10).translate(sx*2.3,0.15,0),c=>c.set(0x1a1414));
-      const c=Math.cos(e), s=Math.sin(e); V.circles.push([p[0]+sx*2.3*c,p[1]-sx*2.3*s,0.35]); }
-    A(vbox(5.6,0.26,0.36,0,3.85,0),red); A(vbox(6.6,0.3,0.46,0,4.62,0),c=>c.set(0x1a1414));
-    for(const sd of [-1,1]) A(vbox(0.9,0.3,0.46,sd*3.55,4.72,0).rotateZ(sd*0.18),c=>c.set(0x1a1414));
-    A(vbox(0.3,0.5,0.1,0,4.2,-0.2),c=>c.set(0x1a1414));
+  // the village gate on the road in: two timber posts on stone footings, a heavy beam and a small tiled roof, a paper lantern hanging under it
+  { const e=V.ent, p=[V.x+Math.sin(e)*(VR+9),V.z+Math.cos(e)*(VR+9)], {A,W}=inF(frameM(p[0],getH(p[0],p[1]),p[1],e)), post=woodC(0x4a3020), beam=woodC(0x2e2018);
+    for(const sx of [-1,1]){ A(vbox(0.9,0.4,0.9,sx*2.5,0.2,0),stoneC); A(cyl(0.22,0.26,4.4,10).translate(sx*2.5,2.6,0),post);
+      const c=Math.cos(e), s=Math.sin(e); V.circles.push([p[0]+sx*2.5*c,p[1]-sx*2.5*s,0.35]); }
+    A(vbox(5.8,0.36,0.46,0,4.5,0),beam); A(vbox(5.0,0.22,0.36,0,3.7,0),beam);
+    A(hipRoof(7.0,2.2,0.95,1.6,0.14).translate(0,4.68,0),tileC(0x3a4048));
+    A(cyl(0.012,0.012,0.5,4).translate(0,3.45,0),c=>c.set(0x1a1414)); W(csph(0.24,10,8).scale(1,1.3,1).translate(0,3.05,0),0xf0c070);
   }
   // cherry trees behind the houses (the forest keeps its distance from the village)
   { const items=[], hA=V.houses.map(h=>h.a);
@@ -135,13 +135,13 @@ function buildVale(){
     addTreeKind('sakura',items);
   }
   buildBridge(inF);   // (the tunnel, once)
-  for(const A of [ARENA20,ARENA25]) buildShrine(A,inF);
+  for(const A of [ARENA20,ARENA25]) buildArenaDressing(A,inF);
   addVillageMeshes(out,win);
   for(const c of V.circles) addCol(c[0],c[1],c[2]);
   for(const VV of VILS) buildCircle(VV);
 }
 /* ---- the border bridge (it was the tunnel): a stone deck over the Greyfall River with parapets and piers, a gatehouse across its west end (two towers, a lintel, the rune-carved door
-   that sinks when the Rootwarden has fallen), stone lanterns along the parapets and a torii at the east end ---- */
+   that sinks when the Rootwarden has fallen), stone lanterns along the parapets and a timber gate at the east end ---- */
 function buildBridge(inF){
   const T=TUN, W=T.w+0.6, R0=T.w+0.25, x0=T.p0-0.5, x1=T.p1+0.5, step=2, bx=borderX(T.z), P=[], C=[], col=new THREE.Color();
   const quad=(a,b,c,d,k)=>{ P.push(...a,...b,...c, ...a,...c,...d); for(let v=0;v<6;v++) C.push(k.r,k.g,k.b); };
@@ -167,10 +167,10 @@ function buildBridge(inF){
       addCol(x0-0.4,T.z+zc,1.9); }
     A(vbox(2.6,0.9,W*2+1.0,-0.4,f+T.roof+0.3,0),(x,y,z,c)=>{ stoneC(x,y,z,c); if(Math.abs(y-f-T.roof-0.3)<0.1) c.set(0xb07ae0); });   // the lintel
   }
-  // the torii at the east end
-  { const px=x1+7, f=T.floor(Math.min(px,T.x1)), {A}=inF(frameM(px,f,T.z,Math.PI/2)), red=woodC(0xa8281e);
-    for(const sx of [-1,1]){ A(cyl(0.18,0.22,4.4,10).translate(sx*3.2,2.2,0),red); addCol(px,T.z-sx*3.2,0.3); }
-    A(vbox(7.2,0.24,0.34,0,3.7,0),red); A(vbox(8.2,0.28,0.44,0,4.42,0),c=>c.set(0x1a1414)); }
+  // the timber gate at the east end
+  { const px=x1+7, f=T.floor(Math.min(px,T.x1)), {A}=inF(frameM(px,f,T.z,Math.PI/2)), post=woodC(0x4a3020);
+    for(const sx of [-1,1]){ A(vbox(0.8,0.36,0.8,sx*3.2,0.18,0),stoneC); A(cyl(0.2,0.24,4.0,10).translate(sx*3.2,2.36,0),post); addCol(px,T.z-sx*3.2,0.3); }
+    A(vbox(7.0,0.32,0.44,0,4.1,0),woodC(0x2e2018)); A(hipRoof(8.2,2.0,0.9,2.2,0.12).translate(0,4.26,0),tileC(0x3a4048)); }
   // stone lanterns on the parapets every 12 m (lit)
   { const lw=[], la=[];
     for(let x=T.p0+6;x<T.p1-3;x+=12) for(const sz of [-1,1]){ const y=T.floor(x)+1.0, z=T.z+sz*(W-0.25);
@@ -184,25 +184,27 @@ function buildBridge(inF){
     VALE.door=new THREE.Mesh(g2,new THREE.MeshLambertMaterial({vertexColors:true,emissive:0x1a0828})); VALE.door.position.set(x0+0.7,f,T.z); VALE.door.castShadow=true; scene.add(VALE.door);
     VALE.doorOpen=valeOpen()?1:0; VALE.door.visible=!VALE.doorOpen; }
 }
-/* ---- the shrines around the vale's boss arenas ---- */
-function buildShrine(A,inF){
+/* ---- the dressing of the vale's two boss arenas: the Demon Gate's red pillars and its great stone gate, the Foxfire Hollow's lanterns and standing stones ---- */
+function buildArenaDressing(A,inF){
   const red=woodC(0xa8281e);
-  if(A.key==='boss20'){   // the Demon Gate: red pillars round the ring, a great torii on the far side
+  if(A.key==='boss20'){   // the Demon Gate: red pillars round the ring, a great gate of dark stone on the far side (docs/STORY.md: the stone that cannot be cut)
     for(let k=0;k<10;k++){ const a=k/10*TAU+0.3, x=A.x+Math.sin(a)*(A.r+1.6), z=A.z+Math.cos(a)*(A.r+1.6), h=AR(3,4), {A:B}=inF(frameM(x,A.h-0.3,z,a));
       B(cyl(0.3,0.36,h,8).translate(0,h/2,0),red); B(vbox(0.9,0.28,0.9,0,h+0.1,0),c=>c.set(0x1a1414)); addCol(x,z,0.5); }
     const a=Math.atan2(A.x-VIL2.x,A.z-VIL2.z)+Math.PI, x=A.x-Math.sin(a)*(A.r+5), z=A.z-Math.cos(a)*(A.r+5), {A:B}=inF(frameM(x,A.h-0.3,z,a));
-    for(const sx of [-1,1]){ B(cyl(0.4,0.5,8,10).translate(sx*4.5,4,0),red); addCol(x+sx*4.5*Math.cos(a),z-sx*4.5*Math.sin(a),0.6); }
-    B(vbox(11,0.5,0.7,0,6.8,0),red); B(vbox(12.6,0.55,0.9,0,8.2,0),c=>c.set(0x1a1414));
-  } else {   // the Foxfire Shrine: white stone lanterns round the ring, two fox guardians at the way in
+    const dark=(px,py,pz,c)=>{ stoneC(px,py,pz,c); c.multiplyScalar(0.72); };
+    const seam=c=>c.set(0xd8502a);   // ember seams inlaid in the dark stone
+    for(const sx of [-1,1]){ B(vbox(1.9,8.4,1.7,sx*4.7,4.2,0),dark); addCol(x+sx*4.7*Math.cos(a),z-sx*4.7*Math.sin(a),1.1); }
+    B(vbox(13.4,1.4,2.1,0,9.1,0),dark); B(vbox(11.4,0.5,1.7,0,8.45,0),dark);
+    for(const sz of [-1,1]){ for(const sx of [-1,1]) B(vbox(0.16,6.4,0.06,sx*4.7,4.6,sz*0.88),seam); B(vbox(11.6,0.16,0.06,0,9.1,sz*1.08),seam); }
+  } else {   // the Foxfire Hollow: white stone lanterns round the ring, two tall standing stones at the way in, each with a foxfire light on top
     for(let k=0;k<9;k++){ const a=k/9*TAU+0.2, x=A.x+Math.sin(a)*(A.r+1.5), z=A.z+Math.cos(a)*(A.r+1.5), {A:B,W}=inF(frameM(x,A.h-0.3,z,a)), s=1.3;
       const wc=(px,py,pz,c)=>c.set(0xe8e4dc).multiplyScalar(0.8+h3(Math.floor(px*3),Math.floor(py*3),Math.floor(pz*3))*0.2);
       B(cyl(0.34*s,0.4*s,0.16*s,6).translate(0,0.08*s,0),wc); B(cyl(0.1*s,0.13*s,0.8*s,8).translate(0,0.56*s,0),wc); W(vbox(0.34*s,0.34*s,0.34*s,0,1.24*s,0),0xbfe0ff);
       B(new THREE.ConeGeometry(0.44*s,0.3*s,6).translate(0,1.56*s,0),wc); addCol(x,z,0.45); }
     const a0=Math.atan2(VIL2.x-A.x,VIL2.z-A.z);
-    for(const sd of [-1,1]){ const a=a0+sd*0.22, x=A.x+Math.sin(a)*(A.r+4), z=A.z+Math.cos(a)*(A.r+4), {A:B}=inF(frameM(x,A.h-0.3,z,a0+Math.PI));
-      B(vbox(1.2,0.8,1.2,0,0.4,0),stoneC); B(csph(0.45,10,8).scale(0.8,1.2,1.1).translate(0,1.3,0.1),c=>c.set(0xf2eee4)); B(csph(0.26,10,8).translate(0,2.0,-0.2),c=>c.set(0xf2eee4));
-      for(const ex of [-1,1]) B(new THREE.ConeGeometry(0.08,0.24,5).translate(ex*0.13,2.28,-0.2),c=>c.set(0xf2eee4));
-      B(new THREE.ConeGeometry(0.1,0.3,6).rotateX(-Math.PI/2).translate(0,1.95,-0.5),c=>c.set(0xf2eee4)); B(vbox(0.36,0.14,0.05,0,1.7,-0.34),c=>c.set(0xb02a1e)); addCol(x,z,0.8); }
+    for(const sd of [-1,1]){ const a=a0+sd*0.22, x=A.x+Math.sin(a)*(A.r+4), z=A.z+Math.cos(a)*(A.r+4), {A:B,W}=inF(frameM(x,A.h-0.3,z,a0+Math.PI));
+      const wc=(px,py,pz,c)=>c.set(0xe8e4dc).multiplyScalar(0.82+h3(Math.floor(px*4),Math.floor(py*4),Math.floor(pz*4))*0.18);
+      B(vbox(1.5,0.6,1.5,0,0.3,0),stoneC); B(vbox(0.95,3.8,0.55,0,2.5,0),wc); B(new THREE.ConeGeometry(0.42,0.8,4).rotateY(Math.PI/4).translate(0,4.8,0),wc); W(new THREE.OctahedronGeometry(0.28,0).translate(0,5.5,0),0xbfe0ff); addCol(x,z,0.9); }
   }
 }
 /* ---- teleport circles: a low stone disc with a glowing ring and four standing stones, bright when attuned ---- */

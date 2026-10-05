@@ -224,7 +224,7 @@ dark / light**), and monsters work on the wheel **water beats fire beats air bea
 | Archer | air: Volley · earth: Piercing Shot · water: Arrow Rain · dark: Hail of Arrows · light: Sniper Shot |
 | Mage | fire: Firebolt, Inferno · water: Ice Shard, Frost Nova, Blizzard · dark: Arcane Missiles · air: Chain Lightning · earth: Meteor |
 
-- **Your soul.** From level 15, the shrine maiden Kaede at Hanami's raked garden binds your soul to an element. It is free and
+- **Your soul.** From level 15, the soul-reader Kaede at Hanami's raked garden binds your soul to an element. It is free and
   you can change it as often as you like (a soul is `basic` until you do). Your skills of that element deal **x1.5**, skills of
   its opposite deal **x1/1.5**, everything else is unchanged. The panel is `src/game/economy/soul.js`, the server rule is
   `bindSoulP` (it checks the level and that you stand in Hanami).

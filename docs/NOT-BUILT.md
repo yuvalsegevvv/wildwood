@@ -59,6 +59,23 @@ Only planned, in `docs/MAIN-QUEST.md` section 7: the Sunscar (Glasswell, Rook, t
 the reveal), the Emberwake Isles (the Sink and the ending), and the Stormhorn and Rootdeep side branches. The main quest ends at G9 with Odran's tip about Glasswell's physician (`MQ_END`; the Greyspine's act IV is built, section 3b). Levels 26-30 in the Hoarfrost are walkable side content without quest steps. The story's payoffs for the iron bird, the plate and
 Ymrik's last words wait for the reveal at the end of Amber Reach (`docs/STORY.md`): no NPC explains them yet, by design.
 
+**Glasswell, the Sunscar's city: its model is built, the city is not in the game.** `docs/DESERT-CITY.md` (districts, 30 places, the cast, what building it takes) and the plan `docs/glasswell-plan.svg`; the 3D model
+(`src/game/village/sun-*.js`, `buildings-sun.js`, section 10 of that file) draws the whole Bowl from the layout data and is seen with `node tools/city-preview.js`. It covers only the inside of the city (the desert, its
+monsters and bosses are not designed). What is **not built**, with comments:
+
+- **The middle statue has no function.** The statue at the exact centre of the Citadel's court is modelled (a robed figure on a stepped plinth, head and one arm gone, the head at its foot, the inscription chiselled away) but nothing
+  can be done with it: no readable lore spot (`LORE` in `shared/main-quest.js`: the plinth's erased inscription is meant to be a Silent Years hint, `docs/STORY.md`), no talk-key prompt, no quest step that mentions it, no collision.
+  To build it: a `LORE` row of a new kind (`statue`) at the city's centre, its text and `mqActP` hook, a prompt in `game/village/talking.js` and `game/world/lore-props.js`. The same holds for the Archive's shelves and the Citadel's glazed face.
+- **The city is not placed in the world.** `buildGlasswell({x,z,h})` is called by nothing: the Sunscar has no ground (the world rectangle must grow west, `docs/MAIN-QUEST.md` section 7.7), no `VIL5` in `VILS` / `vilAt`, no
+  `CIRCLES` row, no respawn, and a village's radius is the constant `VR` (30) in about 47 lines of 18 files (`docs/DESERT-CITY.md` section 8).
+- **No collision, no anchors, no people.** The layout data has the 106 footprints (`GLASSWELL.places`, `.homes`) but nothing turns them into `V.boxes`, `V.anchors` or `V.houses`; the doors are decoration (closed boxes, no interiors),
+  there are no villagers, no shop or Lodge roles, no labels or quest marks, and the signs are painted boards only.
+- **The model draws its own ground** (the rim and the floor are a mesh of their own); when the Sunscar's heightmap carries the Bowl (`gwRimH` in `shared/sunscar-shape.js`, called by `rawHeight` like `passCarve`) the model's land can be left out
+  (36,000 of its 130,000 triangles) and the floor's colours come from `gwGround` (`sun-rim.js`) through `terrain-color.js`.
+- **Light and life**: the lamps and braziers are flame cones (animated by `buildings.js`) with no light of their own, the teleport circle has its stones but not the glow (`buildCircle` in `buildings-vale.js` adds it when the city is placed),
+  the lake and the river are still water (no ripples or shore foam), the boats do not move, and there are no camels, birds or townsfolk. No music theme `glasswell`, no sandstorm haze (the server has one weather, section 3).
+- **Performance was only measured headless**: about 93,000 triangles for the city and about 0.5 s of JavaScript to build it; not on a phone. The 80 homes could be instanced if the merged mesh is too heavy.
+
 - **The west glacier valley** is built (section 3b), and so is the story around it: F9 hands over to **Act IV, G1-G9** (`docs/MAIN-QUEST.md` section 3c: Highmark, the black stone, Odran's coins, the night shift, the Gryphon Queen, the shaft, the golem's frame, the Mountain Golem). What is left is acts V-VII and the hooks that wait for the reveal.
 - **The Nine Tails** (Kyuubi's side story, vale levels 21-25) is still only hinted (`docs/MAIN-QUEST.md` section 4).
 - **More Hoarfrost side content**: Sigrun's other sagas, the hunters' hunts, ice-fishing on Frostmere, a story reason to go to the wyrm's nest (the iron bird can be

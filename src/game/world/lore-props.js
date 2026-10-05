@@ -1,4 +1,4 @@
-//@ The story's props: Wren's sickbed under its awning, Odran's carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside shrine, a grey plate in the ice, the Greyspine's deepest shaft and the golem's broken stone) and the heartleaf you pick
+//@ The story's props: Wren's sickbed under its awning, Odran's carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside wish-post, the Greyspine's wayside shrines, a grey plate in the ice, the Greyspine's deepest shaft and the golem's broken stone) and the heartleaf you pick
 /* Places come from shared/main-quest.js (VIL.bed, V.cart, LORE, HERBS). The static props are one merged mesh; each cart is its own
    mesh (hidden unless Odran stands beside it: odranHere in game/economy/main-quest.js), the herbs glow while you are picking them. */
 const LP={carts:[],herbs:[]};
@@ -39,11 +39,17 @@ function buildLoreProps(){
       put(out,new THREE.BoxGeometry(0.25,0.3,6.2),0x8a8a84,x,y+0.2,z,yaw,0,0.08);   // the keel
       for(let k=-2;k<=2;k++){ const [rx,rz]=L(0,k*1.2); for(const sd of [-1,1]) put(out,new THREE.BoxGeometry(0.14,1.5-Math.abs(k)*0.2,0.14),0x9a9a94,rx+Math.cos(yaw)*sd*0.8,y+0.7,rz-Math.sin(yaw)*sd*0.8,yaw,0,-sd*0.45); }
       { const [px,pz]=L(0.6,1.3); put(out,new THREE.BoxGeometry(1.6,0.08,0.3),0x7a7a74,px,y+0.12,pz,yaw+0.5); }
-    } else if(Lo.kind==='shrine'){
+    } else if(Lo.kind==='wishpost'){   // a post with four strings of folded paper wishes running down to little stakes, like a maypole
+      put(out,new THREE.BoxGeometry(0.15,2.3,0.15),dark,x,y+1.15,z,yaw);
+      for(let k=0;k<4;k++){ const a=k*Math.PI/2+Math.PI/4, ex=Math.cos(a)*1.3, ez=Math.sin(a)*1.3, [sx,sz]=L(ex,ez);
+        put(out,new THREE.BoxGeometry(0.06,0.3,0.06),dark,sx,y+0.15,sz,yaw);
+        for(let i=1;i<=29;i++){ const t=i/30, [px,pz]=L(ex*t,ez*t); put(out,new THREE.BoxGeometry(0.03,0.03,0.03),dark,px,y+2.25-1.95*t,pz,yaw); }
+        for(const t of [0.3,0.55,0.8]){ const [px,pz]=L(ex*t,ez*t); put(out,new THREE.BoxGeometry(0.09,0.25,0.02),0xf4f0e6,px,y+2.25-1.95*t-0.16,pz,yaw+a); } }
+    } else if(Lo.kind==='shrine'){   // a wayside shrine on a post: a slate box under a slate cap, twists of blue wool hung beside it (the Greyspine's two)
       put(out,new THREE.BoxGeometry(0.16,1.1,0.16),dark,x,y+0.55,z,yaw);
-      put(out,new THREE.BoxGeometry(0.7,0.55,0.55),0x8a3a2a,x,y+1.35,z,yaw);
-      put(out,new THREE.ConeGeometry(0.62,0.4,4),0x3a3230,x,y+1.82,z,yaw+Math.PI/4);
-      for(let k=0;k<5;k++){ const [px,pz]=L(-0.3+k*0.15,0.3); put(out,new THREE.BoxGeometry(0.08,0.22,0.02),0xf4f0e6,px,y+0.95-(k%2)*0.08,pz,yaw); }
+      put(out,new THREE.BoxGeometry(0.7,0.55,0.55),0x6a6e72,x,y+1.35,z,yaw);
+      put(out,new THREE.ConeGeometry(0.62,0.4,4),0x3a3e44,x,y+1.82,z,yaw+Math.PI/4);
+      for(let k=0;k<5;k++){ const [px,pz]=L(-0.3+k*0.15,0.3); put(out,new THREE.BoxGeometry(0.08,0.22,0.02),0x4a6aa8,px,y+0.95-(k%2)*0.08,pz,yaw); }
     } else if(Lo.kind==='hull'){   // a slab of grey metal in the ice with the Concord's ring and sun (docs/STORY.md: the emblem, unexplained)
       put(out,new THREE.BoxGeometry(2.6,0.22,1.7),0x9aa2a8,x,y+0.85,z,yaw,0.55,0.12);
       for(let k=0;k<6;k++){ const [px,pz]=L(-0.9+k*0.36,0.05); put(out,new THREE.SphereGeometry(0.05,5,4),0x6a7076,px,y+0.95+k*0.09,pz,yaw); }

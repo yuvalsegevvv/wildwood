@@ -1,4 +1,4 @@
-//@ Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), the soul shrine, testing commands
+//@ Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), the Soul Hall, testing commands
 function addItemP(p,id,quiet,monId){
   if(p.gear.inv.length>=BAG_MAX){ toastTo(p.id,'Your bag is full','bad'); return; }
   p.gear.inv.push(id); p.dirty=true;
@@ -117,11 +117,11 @@ function upgradeSkillP(p,id){
   for(const m of need.mats){ const left=(p.gear.mats[m.id]||0)-m.n; if(left>0) p.gear.mats[m.id]=left; else delete p.gear.mats[m.id]; }
   S.lv[id]=to; recalcP(p); p.dirty=true; toastTo(p.id,s.name+' is now level '+to,'good'); ev('skillup',p.id,id,to); mqActP(p,'upskill');
 }
-// the soul shrine in Hanami (level SOUL_LV): bind your soul to an element, free and as often as you like ('basic' unbinds it)
+// the Soul Hall in Hanami (level SOUL_LV): bind your soul to an element, free and as often as you like ('basic' unbinds it)
 function bindSoulP(p,el){
   if(!ELEMS[el]||p.dead) return;
-  if(p.level<SOUL_LV){ toastTo(p.id,'The shrine answers only hikers of level '+SOUL_LV+' and above','bad'); return; }
-  if(Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14){ toastTo(p.id,'The soul shrine is in Hanami, beyond the eastern mountains','bad'); return; }
+  if(p.level<SOUL_LV){ toastTo(p.id,'The hall answers only hikers of level '+SOUL_LV+' and above','bad'); return; }
+  if(Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14){ toastTo(p.id,'The Soul Hall is in Hanami, beyond the eastern mountains','bad'); return; }
   if(p.gear.soul===el) return;
   p.gear.soul=el; p.dirty=true; if(el!=='basic') mqActP(p,'soul'); toastTo(p.id,el==='basic'?'Your soul is unbound':'Your soul is bound to '+ELEMS[el].name,'good'); ev('soul',p.id,el);
   recalcP(p);   // dungeons: the ring's attack depends on the soul (it used to touch no stats)
@@ -169,9 +169,9 @@ function devP(p,msg){
   else if(c==='west'){ const v=clampInt(msg.v,0,2,1); if(v>=1&&p.gear.west<1){ p.gear.west=1; ev('west',p.id,1); } if(v>=2){ p.gear.west=2; ev('west',p.id,2); } if(v===0) p.gear.west=0; p.dirty=true; }
   else if(c==='gate'){ const G=GREY_GATES.find(g=>g.id===msg.v); if(!G) return; p.gear[G.id]=msg.n===0?0:1; if(msg.n!==0) ev('gate',p.id,G.id); p.dirty=true; }   // v: 'river' / 'neck', n: 0 shut, 1 open
   else if(c==='north'){ const v=clampInt(msg.v,0,2,1); if(v>=1&&p.gear.north<1){ p.gear.north=1; ev('north',p.id,1); } if(v>=2){ p.gear.north=2; ev('north',p.id,2); } if(v===0) p.gear.north=0; p.dirty=true; }
-  else if(c==='tunnel'){   // v: 'in' (halfway through), 'east' (the east portal), 'hanami' (its gate), 'pass' / 'north' (either side of the ice wall), 'rimehold' (its gate), 'hall' / 'nest' / 'gate' / 'shrine' / 'tide' / 'circle' (the boss arenas), 'glen' / 'glenw' (either side of the ice fall in the glacier valley), 'highmark' (its gate), 'cavern' (the golem's), 'riverfall' / 'neckfall' (the rock falls in the west wall), 'grey' / 'queen' (the Greyspine: Highmark's shelf, the Gryphon Queen's peak); default the west portal
+  else if(c==='tunnel'){   // v: 'in' (halfway through), 'east' (the east portal), 'hanami' (its gate), 'pass' / 'north' (either side of the ice wall), 'rimehold' (its gate), 'hall' / 'nest' / 'gate' / 'hollow' / 'tide' / 'circle' (the boss arenas), 'glen' / 'glenw' (either side of the ice fall in the glacier valley), 'highmark' (its gate), 'cavern' (the golem's), 'riverfall' / 'neckfall' (the rock falls in the west wall), 'grey' / 'queen' (the Greyspine: Highmark's shelf, the Gryphon Queen's peak); default the west portal
     const xy=/^-?\d+,-?\d+(,-?\d+)?$/.test(msg.v||'')?msg.v.split(',').map(Number):null;   // or 'x,z[,facing in degrees: 0 north, 90 west]' anywhere (testing)
-    const N={pass:[PASS.x,PASS.ice+14],north:[PASS.x,PASS.ice-14],rimehold:[VIL3.anchors.gate.x,VIL3.anchors.gate.z],hall:[ARENA26.x,ARENA26.z+ARENA26.r+8],nest:[ARENA30.x,ARENA30.z+ARENA30.r+8],tide:[ARENA_TIDE.x,ARENA_TIDE.z-ARENA_TIDE.r-8],circle:[ARENA.x,ARENA.z+ARENA.r+8],gate:[ARENA20.x,ARENA20.z+ARENA20.r+8],shrine:[ARENA25.x,ARENA25.z+ARENA25.r+8],highmark:[VIL4.anchors.gate.x,VIL4.anchors.gate.z],cavern:[ARENA32.x,ARENA32.z+ARENA32.r+8],riverfall:[GREY_GATES[0].x+14,GREY_GATES[0].z],neckfall:[GREY_GATES[1].x+14,GREY_GATES[1].z],glen:[GLEN.ice+14,GLEN.z],glenw:[GLEN.ice-14,GLEN.z],grey:[GREY_HM.x,GREY_HM.z],queen:[GREY_QUEEN.x,GREY_QUEEN.z+GREY_QUEEN.r*0.5]}[msg.v];   // the Hoarfrost Reach's places, the Greyspine's and the boss arenas
+    const N={pass:[PASS.x,PASS.ice+14],north:[PASS.x,PASS.ice-14],rimehold:[VIL3.anchors.gate.x,VIL3.anchors.gate.z],hall:[ARENA26.x,ARENA26.z+ARENA26.r+8],nest:[ARENA30.x,ARENA30.z+ARENA30.r+8],tide:[ARENA_TIDE.x,ARENA_TIDE.z-ARENA_TIDE.r-8],circle:[ARENA.x,ARENA.z+ARENA.r+8],gate:[ARENA20.x,ARENA20.z+ARENA20.r+8],hollow:[ARENA25.x,ARENA25.z+ARENA25.r+8],highmark:[VIL4.anchors.gate.x,VIL4.anchors.gate.z],cavern:[ARENA32.x,ARENA32.z+ARENA32.r+8],riverfall:[GREY_GATES[0].x+14,GREY_GATES[0].z],neckfall:[GREY_GATES[1].x+14,GREY_GATES[1].z],glen:[GLEN.ice+14,GLEN.z],glenw:[GLEN.ice-14,GLEN.z],grey:[GREY_HM.x,GREY_HM.z],queen:[GREY_QUEEN.x,GREY_QUEEN.z+GREY_QUEEN.r*0.5]}[msg.v];   // the Hoarfrost Reach's places, the Greyspine's and the boss arenas
     const x=xy?clamp(xy[0],WX0+14,WX1-14):N?N[0]:msg.v==='in'?(TUN.p0+TUN.p1)/2:msg.v==='east'?TUN.x1+12:msg.v==='hanami'?VIL2.anchors.gate.x:TUN.x0-14, z=xy?clamp(xy[1],WZ0+14,WZ1-14):N?N[1]:msg.v==='hanami'?VIL2.anchors.gate.z:TUN.z;
     if(x>TUN.p0&&p.gear.east<1) return; if(inVale(x,z)&&z<northBarZ(x)&&p.gear.north<1) return; if(z<borderZ(x)&&x<GLEN.ice&&p.gear.west<1) return; p.x=x; p.z=z; p.y=getH(x,z); sendTo(p.id,{t:'tp',x,z,face:N?0:xy&&xy.length>2?xy[2]*Math.PI/180:-Math.PI/2}); }
   else if(c==='zt'){   // unlock the zone tiers of every land: up to v, or one more than the lowest (back to 0 after the last)
