@@ -15,7 +15,7 @@ const grab=()=>{ for(const m of (inbox.a||[])) if(m.t==='snap'&&m.ev) evs.push(.
 const dev=(cmd,v)=>{ W.receive('a',{t:'dev',cmd,v}); tick(1); };
 
 // ---- the land ----
-ok('the world reaches 800 m north of the forest\'s old edge (the vale\'s and the Greyspine\'s own edges are where they were: GREY_N, VALE_E) and 830 m east of it',x.WZ0===x.HZ0-800&&x.HZ0===-440&&x.GREY_N===x.HZ0-600&&x.VALE_E===x.HALF+550&&x.WX1===x.HALF+830);
+ok('the world reaches 840 m north of the forest\'s old edge (the vale\'s and the Greyspine\'s own edges are where they were: GREY_N, VALE_E) and 880 m east of it',x.WZ0===x.HZ0-840&&x.HZ0===-440&&x.GREY_N===x.HZ0-600&&x.VALE_E===x.HALF+550&&x.WX1===x.HALF+880);
 { const V=x.VIL3, hs=[]; for(let a=0;a<8;a++) hs.push(x.rawHeight(V.x+Math.sin(a)*20,V.z+Math.cos(a)*20));
   ok('Rimehold stands on the plateau (about 55 m up), flat',V.h>45&&Math.max(...hs)-Math.min(...hs)<2,'h '+V.h.toFixed(1)+', spread '+(Math.max(...hs)-Math.min(...hs)).toFixed(2)); }
 { const P=x.PASS; let prev=-1e9, mono=true; for(let z=P.z0;z>=P.z1;z-=6){ const h=x.rawHeight(P.x,z); if(h<prev-0.6) mono=false; prev=h; }

@@ -9,7 +9,8 @@ let fails=0; const ok=(n,c,d)=>{ if(!c) fails++; console.log((c?'PASS ':'FAIL ')
 const src=fs.readFileSync(path.join(__dirname,'../src/game/player/movement.js'),'utf8'), m=/const SLOPE_MAX=([0-9.]+);/.exec(src), LIM=m?+m[1]:NaN, C=4;
 ok('the limit is in movement.js and is a sensible number (1.0-1.5: a 45-56 degree face)',LIM>=1&&LIM<=1.5,'SLOPE_MAX '+LIM);
 const W=Math.floor((X.WX1-X.WX0)/C)+1, D=Math.floor((X.WZ1-X.WZ0)/C)+1, hh=new Float32Array(W*D), px=i=>X.WX0+i*C, pz=j=>X.WZ0+j*C;
-for(let j=0;j<D;j++) for(let i=0;i<W;i++) hh[j*W+i]=Math.max(X.rawHeight(px(i),pz(j)),X.bridgeDeck(px(i),pz(j)));
+const deck=(x,z)=>Math.max(X.bridgeDeck(x,z),X.bridgeDeck(x+2,z),X.bridgeDeck(x-2,z),X.bridgeDeck(x,z+2),X.bridgeDeck(x,z-2));   // (a causeway is 3 m wide and the grid 4 m: look 2 m either side so a cell on its line sees it)
+for(let j=0;j<D;j++) for(let i=0;i<W;i++) hh[j*W+i]=Math.max(X.rawHeight(px(i),pz(j)),deck(px(i),pz(j)));
 const walk=k=>hh[k]>X.WATER-0.8, seen=new Uint8Array(W*D), q=new Int32Array(W*D); let qh=0, qt=0;
 const s0=Math.round((X.VIL.z+8-X.WZ0)/C)*W+Math.round((X.VIL.x+8-X.WX0)/C); seen[s0]=1; q[qt++]=s0;
 const nb=[[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.414],[1,-1,1.414],[-1,1,1.414],[-1,-1,1.414]];

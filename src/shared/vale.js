@@ -49,7 +49,7 @@ const VALE_ZONE_NAMES={16:'Petal Meadow',17:'Kodama Wood',18:'Inari Hills',19:'B
 const VALE_SEEDS=[
   {key:null,x:VIL2.x,z:VIL2.z},
   {key:16,x:575,z:105},{key:17,x:570,z:-300},{key:18,x:735,z:-95},{key:19,x:725,z:-300},{key:20,x:880,z:-305},
-  {key:21,x:875,z:-90},{key:22,x:885,z:110},{key:23,x:730,z:115},{key:24,x:880,z:305},{key:25,x:725,z:310},{key:'boss25',x:570,z:315}];
+  {key:21,x:875,z:-90},{key:22,x:885,z:110},{key:23,x:730,z:115},{key:24,x:1045,z:312},{key:25,x:725,z:310},{key:'boss25',x:570,z:315}];   // (24, Warlord Ruins, stood at (880, 305) in the south-east corner, which is sea now: it lives on the first of the Warlord Isles, shared/coasts.js)
 for(const s of VALE_SEEDS) if(s.key!==null) ZONES.push({key:s.key,ring:3,vale:true,x:s.x,z:s.z,R:95,name:VALE_ZONE_NAMES[s.key],level:s.key==='boss25'?25:s.key,boss:s.key==='boss25'});
 // zone borders are bent by noise (the point is warped up to ~30 m before finding its nearest seeds) so the cells don't form a grid
 const valeWarp=(x,z)=>[x+noise2(x*0.009+3,z*0.009-8)*30,z+noise2(x*0.009-11,z*0.009+5)*30];

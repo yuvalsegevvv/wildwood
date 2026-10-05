@@ -6,8 +6,8 @@ const SIZE=880, HALF=SIZE/2, WATER=0;
    lies the Hoarfrost Reach, a high frozen plateau that runs on east and north past the vale's and the Greyspine's edges (shared/hoarfrost.js); the rest of the rectangle north of the
    home forest is the Greyspine, the fourth land (shared/greyspine.js: its terrain; no village, monsters or way in yet).
    The whole world is the rectangle WX0..WX1 x WZ0..WZ1. */
-const NORTH_D=800, HZ0=-HALF;
-const EAST_W=830, WX0=-HALF, WX1=HALF+EAST_W, WZ0=HZ0-NORTH_D, WZ1=HALF, WW=WX1-WX0, WD=WZ1-WZ0;
+const NORTH_D=840, HZ0=-HALF;
+const EAST_W=880, WX0=-HALF, WX1=HALF+EAST_W, WZ0=HZ0-NORTH_D, WZ1=HALF, WW=WX1-WX0, WD=WZ1-WZ0;
 /* The rectangle grew for the Hoarfrost Reach (it was 550 m east and 600 m north of the forest's corner, 244,000 m2 of land against the vale's 433,000): the vale's east edge and the
    Greyspine's north edge stay where they were (VALE_E, GREY_N), and the sea fills the rest of the rectangle; the coast (shared/coasts.js) is an outline drawn over it. */
 const VALE_E=HALF+550, GREY_N=HZ0-600;
@@ -185,6 +185,7 @@ function valeHeight(x,z){
   h += wallAdd(dxw,z,1,48,14,20,f,cr);   // the Vale Wall
   h += wallAdd(dnv,x,3,58,18,22,f,cr);   // up to the crest along borderZ (the Hoarfrost Reach's south wall)
   h = riverCut(h,Math.abs(x-bx),z);   // (the Vale Wall is a river along most of its length)
+  { const ci=csIslandMax(x,z); if(ci>30) h=Math.max(h,lerp(1.6,7,smoothstep(30,80,ci))); }   // (a big island has no ponds: its ground is at least a beach, 7 m in the middle)
   if(z<bz-2) h=lerp(h,hoarHeight(x,z),smoothstep(bz-2,bz-62,z));   // past the crest it eases down onto the plateau
   const nth=smoothstep(bz+10,bz-30,z);   // (nth: in the Reach, where a crest running into the sea goes under it: its keep fades out over the last 64 m to the water)
   return shore(h, c, Math.max(smoothstep(46,14,x-bx)*lerp(1,smoothstep(12,64,c),nth),csHold(x,z)), csWide(x,z,lerp(24,60,smoothstep(70,0,x-bx))*smoothstep(bz,bz-120,z)));   // (the Reach, 50 m up, takes a little longer to come down to its coast, and much longer in a bay; by its west wall the Greyspine's 60 m, so the two lands meet without a step)

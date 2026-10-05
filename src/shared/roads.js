@@ -31,7 +31,9 @@ const ROADS=(()=>{
     R('The Tunnel Road',[S2,[TUN.p1+2,TUN.z]],5),
     R('The Gate Road',[S2,[560,-160],[650,-195],[760,-240],[850,-300],arenaGate(ARENA20,850,-300,3)],6),
     R('The Shrine Road',[S2,[560,-40],[600,80],[592,200],arenaGate(ARENA25,592,200,3)],7),
-    R('The Coast Road',[[560,-40],[680,-22],[800,-52],[900,-22],[WX1-46,-12]],8),
+    // the Warlord Isles (the vale's south-east corner is sea, shared/coasts.js): from the Shrine Road across zones 23 and 25, over a plank causeway, to the camps of Warlord Ruins
+    R('The Isle Road',[[600,80],[650,150],[715,218],[790,250],[835,285],[895,305],[960,312],[1045,312]],14),
+    R('The Coast Road',[[560,-40],[680,-22],[800,-52],[900,-22],[VALE_E-46,-12]],8),
     R('The North Road',[[560,-160],[600,-280],[PASS.x,-350],[PASS.x,-380],[PASS.x,PASS.ice+8]],9),
     // beyond the ice wall: through Frostgate Pass onto the plateau and into Rimehold, then to the two boss halls
     R('The Frost Road',[[PASS.x,PASS.ice-8],[PASS.x,-450],[PASS.x,-490],[PASS.x,PASS.z1],S3],10),
@@ -72,7 +74,7 @@ for(const rd of ROADS) for(let i=1;i<rd.pts.length;i++){
   BRIDGES.push({x,z,dx,dz,h0,h1,len:BRIDGE_LEN,w:BRIDGE_W,kind:'bridge',road:rd.name,name:'the river bridge'});
 }
 // the drowned stretches, by road (the first causeway on that road gets the name)
-const CAUSEWAY_NAMES={'The Redgate Road':'The Drowned Road','The Shore Road':'The Long Planks','The East Road':'The Heron Steps'};
+const CAUSEWAY_NAMES={'The Redgate Road':'The Drowned Road','The Shore Road':'The Long Planks','The East Road':'The Heron Steps','The Isle Road':'The Warlord Causeway'};
 { const wet=(x,z)=>baseHeight(x,z)<WATER+0.35, named=new Set();
   for(const rd of ROADS){
     const S=[]; for(let i=1;i<rd.pts.length;i++){ const [ax,az]=rd.pts[i-1], [bx,bz]=rd.pts[i], n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/2)); for(let k=i===1?0:1;k<=n;k++) S.push([ax+(bx-ax)*k/n, az+(bz-az)*k/n]); }
