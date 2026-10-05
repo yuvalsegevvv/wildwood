@@ -109,8 +109,8 @@ function wmapHome(){   // the land and its isles fill the view (the art has a wi
 function wmapPath(x,poly){ x.beginPath(); poly.forEach((p,i)=>{ const sx=wmapSx(p[0]), sy=wmapSy(p[1]); if(i) x.lineTo(sx,sy); else x.moveTo(sx,sy); }); x.closePath(); }
 // a scroll with rolled ends, like the reference's labels; its width is guessed from the letters (measureText is not worth its cost here)
 const wmapBannerW=name=>Math.round(name.length*8.6+44);
-function wmapBanner(x,cx,cy,name,sub,hot){
-  const w=wmapBannerW(name), h=sub?38:27, s=hot?1.07:1;
+function wmapBanner(x,cx,cy,name,sub,hot,sc){   // sc: a scale for a small canvas (the land maps' title, ui/map-style.js)
+  const w=wmapBannerW(name), h=sub?38:27, s=(hot?1.07:1)*(sc||1);
   x.save(); x.translate(cx,cy); x.scale(s,s);
   x.shadowColor='rgba(0,0,0,.45)'; x.shadowBlur=7; x.shadowOffsetY=2;
   const g=x.createLinearGradient(0,-h/2,0,h/2); g.addColorStop(0,hot?'#fff6d8':'#f6ebc9'); g.addColorStop(1,hot?'#ecd9a4':'#dcc794');
@@ -154,7 +154,7 @@ function wmapDraw(){
     x.globalAlpha=a;
     const T=WMAP_TOWNS[WMAP_TOWN[id]]; x.font='italic 12px Georgia, serif'; x.lineWidth=3.6; x.lineJoin='round'; x.strokeStyle='rgba(247,238,214,.92)'; x.fillStyle='#3a2410';
     const tx=wmapSx(T[0]), ty=wmapSy(T[1])+Math.max(17,36*WM.k); x.strokeText(WMAP_TOWN_NAME[WMAP_TOWN[id]],tx,ty); x.fillText(WMAP_TOWN_NAME[WMAP_TOWN[id]],tx,ty);
-    const B=WMAP_BANNER[WMAP_LAND[id]]; wmapBanner(x,wmapSx(B.x),wmapSy(B.y),B.name,'Levels '+B.levels,WM.hot===id);
+    const B=WMAP_BANNER[WMAP_LAND[id]]; wmapBanner(x,wmapSx(B.x),wmapSy(B.y),B.name,'Levels '+B.levels,WM.hot===id,clamp(WM.w/760,0.72,1));   // (smaller scrolls on a phone)
     x.globalAlpha=1;
   }
   { const p=wmapPin(); if(p) wmapPinDraw(x,wmapSx(p[0]),wmapSy(p[1]),t); }

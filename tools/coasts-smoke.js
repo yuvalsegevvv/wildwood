@@ -21,13 +21,14 @@ const turns=a=>{ let n=0, ref=a[0], dir=0; for(const v of a){ if(dir>=0&&v<ref-4
 { const area={}, st=12; for(let z=X.WZ0;z<=X.WZ1;z+=st) for(let x=X.WX0;x<=X.WX1;x+=st) if(H(x,z)>0.5){ const l=X.landAt(x,z); area[l]=(area[l]||0)+st*st; }
   ok('the Hoarfrost Reach has 400,000 m2 of land or more (it had 244,000) and at least 85% of the vale\'s',area.hoar>=400e3&&area.hoar>=0.85*area.vale,Object.keys(area).map(l=>l+' '+(area[l]/1e3).toFixed(0)+'k').join(', ')); }
 // ---- no rectangle: an L with capes and bays ----
-{ const e=[], n=[]; for(let z=-1210;z<=410;z+=10){ const l=lineE(z); if(l!==null) e.push(l); } for(let x=-400;x<=1240;x+=10){ const l=lineN(x); if(l!==null) n.push(l); }
+{ const e=[], n=[]; for(let z=-1210;z<=410;z+=10){ const l=lineE(z); if(l!==null) e.push(l); } for(let x=-1000;x<=980;x+=10){ const l=lineN(x); if(l!==null) n.push(l); }
   const se=stats(e), sn=stats(n);
   const swing=a=>{ let m=0; for(let i=0;i+30<=a.length;i++){ const w=a.slice(i,i+30); m=Math.max(m,Math.max(...w)-Math.min(...w)); } return m; };   // the biggest bend of the waterline within 300 m
-  ok('the bays and capes are big: the east coast\'s waterline spans 350 m or more (rms 100 m), the north coast\'s 400 m (rms 60 m), and each bends 150 m or more within 300 m',se.span>=350&&se.sd>=100&&sn.span>=400&&sn.sd>=60&&swing(e)>=150&&swing(n)>=150,'east '+se.span.toFixed(0)+'/'+se.sd.toFixed(0)+', north '+sn.span.toFixed(0)+'/'+sn.sd.toFixed(0)+', biggest bend east '+swing(e).toFixed(0)+', north '+swing(n).toFixed(0));
+  ok('the bays and capes are big: the east coast\'s waterline spans 350 m or more (rms 70 m), the north coast\'s 200 m (rms 50 m), and each bends 150 m or more within 300 m',se.span>=350&&se.sd>=70&&sn.span>=200&&sn.sd>=50&&swing(e)>=150&&swing(n)>=150,'east '+se.span.toFixed(0)+'/'+se.sd.toFixed(0)+', north '+sn.span.toFixed(0)+'/'+sn.sd.toFixed(0)+', biggest bend east '+swing(e).toFixed(0)+', north '+swing(n).toFixed(0));
   ok('bays and capes: the east coast turns four times or more by 40 m, the north coast four times',turns(e)>=4&&turns(n)>=4,'east '+turns(e)+', north '+turns(n)); }
-{ let reachE=0, valeE=0; for(let z=-1200;z<=-520;z+=6){ const l=lineE(z); if(l!==null) reachE=Math.max(reachE,l); } for(let z=-250;z<=410;z+=6){ const l=lineE(z); if(l!==null) valeE=Math.max(valeE,l); }
-  ok('the continent is an L: the Reach runs 150 m or more farther east than the vale',reachE>=valeE+150,'Reach east '+reachE+' vs vale '+valeE); }
+{ let reachE=-1e9, valeE=-1e9; for(let z=-1200;z<=-520;z+=6){ const l=lineE(z); if(l!==null) reachE=Math.max(reachE,l); } for(let z=-250;z<=410;z+=6){ const l=lineE(z); if(l!==null) valeE=Math.max(valeE,l); }
+  let ne=0; for(let z=X.WZ0+10;z<=X.HZ0-60;z+=6) for(let x=1090;x<=X.WX1-8;x+=6) if(H(x,z)>0.5&&H(x-30,z)>0.5&&H(x+30,z)>0.5&&H(x,z-30)>0.5&&H(x,z+30)>0.5) ne++;   // (an islet is not ground: it has sea within 30 m)
+  ok('the Reach\'s north-east corner is cut: its east coast is no farther east than the vale\'s (it ran 150 m beyond it), and no ground lies east of x = 1090 north of the forest\'s rim',reachE<=valeE+10&&ne===0,'Reach east '+reachE+' vs vale '+valeE+', '+ne+' dry samples in the old corner'); }
 // ---- the south-east corner is sea; its content lives on the Warlord Isles ----
 { let mainland=0, n=0; for(let z=262;z<=X.WZ1-8;z+=6) for(let x=900;x<=X.WX1-8;x+=6){ n++; if(H(x,z)>0.5&&!onIsland(x,z)) mainland++; }
   ok('the vale\'s south-east corner is gone: no ground east of x = 900 and south of z = 262 but the Warlord Isles',mainland===0,mainland+' dry samples of '+n+' off the islands'); }

@@ -182,6 +182,8 @@
     "world/aurora.js",
     "player/movement.js",
     "ui/map.js",
+    "ui/map-paint.js",
+    "ui/map-style.js",
     "ui/world-map-data.js",
     "ui/world-map.js",
     "net/transport.js",

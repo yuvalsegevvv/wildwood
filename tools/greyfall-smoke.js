@@ -4,7 +4,7 @@
 // foot) feeds it. One line per check; exits 1 on failure.
 // Usage: node tools/greyfall-smoke.js
 const {loadShared}=require('./load');
-const X=loadShared(['borderX','borderZ','riverK','riverCut','riverHalfW','baseHeight','baseHeightRaw','rawHeight','inVale','inHoar','inGrey','landAt','vilAt','VIL','VIL2','VIL3','VIL4',
+const X=loadShared(['borderXN','GXJ','GDX','RDX','borderX','borderZ','riverK','riverCut','riverHalfW','baseHeight','baseHeightRaw','rawHeight','inVale','inHoar','inGrey','landAt','vilAt','VIL','VIL2','VIL3','VIL4',
   'HALF','HZ0','WX0','WX1','WZ0','WZ1','TUN','PASS','GLEN','FALL','fallProfile','fallY','waterSurf','zoneAt','valeZoneAt','northBarZ','WATER','wallW','NODES','bridgeDeck']);
 let fails=0; const ok=(n,c,d)=>{ if(!c) fails++; console.log((c?'PASS ':'FAIL ')+n+(d?'  ('+d+')':'')); };
 const H=(x,z)=>X.rawHeight(x,z);
@@ -14,10 +14,10 @@ const H=(x,z)=>X.rawHeight(x,z);
 { const zs=[]; for(let x=-436;x<=-20;x+=4) zs.push(X.borderZ(x)-X.HZ0); const sd=Math.sqrt(zs.reduce((a,b)=>a+b*b,0)/zs.length), hi=Math.max(...zs);
   ok('the home forest\'s north wall wanders too (never north of z = HZ0, so the Greyspine keeps its ground; south by 60 m or more in places)',Math.min(...zs)>=-1e-9&&hi>=60&&sd>15,'rms '+sd.toFixed(0)+' m, up to '+hi.toFixed(0)+' m south'); }
 { const zs=[]; for(let x=460;x<=980;x+=4) zs.push(X.borderZ(x)-X.HZ0); ok('and the vale | Reach wall: sinuous, up to 100 m north and 40 m south of z = HZ0 (the vale\'s zones are 140 m from it, the Reach\'s 260 m)',Math.min(...zs)<-80&&Math.max(...zs)<=45+1e-9,'from '+Math.min(...zs).toFixed(0)+' to +'+Math.max(...zs).toFixed(0)+' m'); }
-{ const xs=[]; for(let z=-1030;z<=-446;z+=4) xs.push(X.borderX(z)-X.HALF); ok('the Greyspine | Reach wall leans only east (0-105 m: Highmark and the Ledgeway keep their room) in bends, never a straight line',Math.min(...xs)>=-1e-9&&Math.max(...xs)<=105+1e-9&&Math.max(...xs)>60&&xs.length>100&&(()=>{ let L=0; for(let i=1;i<xs.length;i++) L+=Math.hypot(4,xs[i]-xs[i-1]); return L/(4*(xs.length-1))>1.1; })(),'0..'+Math.max(...xs).toFixed(0)+' m'); }
+{ const xs=[]; for(let z=-1030;z<=-446;z+=4) xs.push(X.borderXN(z)-X.GXJ); ok('the Greyspine | Reach wall (borderXN, over the middle of the home forest: GXJ = x -140) leans only east (0-105 m: Highmark and the Ledgeway keep their room) in bends, never a straight line',Math.min(...xs)>=-1e-9&&Math.max(...xs)<=105+1e-9&&Math.max(...xs)>60&&xs.length>100&&(()=>{ let L=0; for(let i=1;i<xs.length;i++) L+=Math.hypot(4,xs[i]-xs[i-1]); return L/(4*(xs.length-1))>1.1; })(),'0..'+Math.max(...xs).toFixed(0)+' m'); }
 // ---- pins: every gate stays where it was ----
 ok('the lines are pinned straight at the bridge, the glacier valley, Frostgate Pass and the junction of the four lands',Math.abs(X.borderX(X.TUN.z)-X.HALF)<1e-9&&Math.abs(X.borderX(X.GLEN.z)-X.HALF)<1e-9&&Math.abs(X.borderX(X.HZ0)-X.HALF)<1e-9&&Math.abs(X.borderZ(X.PASS.x)-X.HZ0)<1e-9&&Math.abs(X.borderZ(X.HALF)-X.HZ0)<1e-9);
-ok('so the bridge (z -100), Hanami, Frostgate Pass (x 636) and the glacier valley (z -722) are where they were',X.TUN.z===-100&&X.VIL2.x===600&&X.VIL2.z===-100&&X.PASS.x===636&&X.GLEN.z===-722&&X.VIL3.x===690&&X.VIL3.z===-610&&X.VIL4.x===292&&X.VIL4.z===-792);
+ok('so the bridge (z -100), Hanami, Frostgate Pass (x 636) and the glacier valley (z -722) are where they were',X.TUN.z===-100&&X.VIL2.x===600&&X.VIL2.z===-100&&X.PASS.x===636&&X.GLEN.z===-722&&X.VIL3.x===690+X.RDX&&X.VIL3.z===-610&&X.VIL4.x===292+X.GDX&&X.VIL4.z===-792);
 ok('northBarZ (what a hiker without the Reach\'s key must stay south of): the ice wall in the pass, the crest line elsewhere',X.northBarZ(X.PASS.x)===X.PASS.ice&&X.northBarZ(800)===X.borderZ(800)+8&&X.northBarZ(500)===X.borderZ(500)+8);
 // ---- the land tests ----
 { let bad=0, n=0; const names=['home','vale','hoar','grey'];

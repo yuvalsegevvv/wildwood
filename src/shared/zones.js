@@ -17,20 +17,20 @@ const ZONES=[], RING_START=[];
   });
 }
 /* The forest's edges have zones of their own, with the creatures that belong there (docs/WORLD.md): the Crownsea Shore
-   (shore crabs and tide slimes on the beach), the Sunwall's Foot (sun scarabs in the red scree) and the Greyspine Foothills
+   (shore crabs and tide slimes on the beach), the Sunwall's Foot (sun scarabs in the red scree) and the Northern Foothills (the forest's north rim: the Greyspine's foothills in the west, the Hoarfrost Reach's in the east)
    (ram-horned boars and crag wardens). Levels 16-20: optional ground for players back from the vale, not on the main quest's path. Their monsters name their zone (zone:'shore'... in MON_DEFS). Beyond the outer ring, the outer ring's
    zones reach on to the land's edge (all but the boss zone), so every part of the forest has monsters. The Vale Wall (east)
    has none. lvText: the levels a zone holds, when it holds more than one. */
 const EDGE_ZONES=[   // label: where the map writes the name (clear of the ring zones' names)
   {key:'shore',name:'The Crownsea Shore',level:16,lvText:'16-17',edge:'shore',label:[170,396]},
   {key:'sunfoot',name:"The Sunwall's Foot",level:18,edge:'west',label:[-350,170]},
-  {key:'foothills',name:'The Greyspine Foothills',level:19,lvText:'19-20',edge:'north',label:[250,-372]}];
+  {key:'foothills',name:'The Northern Foothills',level:19,lvText:'19-20',edge:'north',label:[250,-372]}];
 EDGE_ZONES.forEach(zn=>{ zn.ring=3; ZONES.push(zn); });
 // undefined: not near an edge (the rings decide); null: an edge with no monsters (the sea, the cliff face)
 function edgeZoneAt(x,z){
   for(const A of ARENAS) if(A.beach&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;   // the Tide King's beach (shared/beach.js)
   const c=coastDist(x,z); if(c<74) return c>20?EDGE_ZONES[0]:null;
-  const w=x-WX0-sunwallLine(z); if(w<62) return w>8?EDGE_ZONES[1]:null;
+  const w=x-HX0-sunwallLine(z); if(w<62) return w>8?EDGE_ZONES[1]:null;
   if(z-borderZ(x)-rimWobble(x,11)<100) return EDGE_ZONES[2];
   if(borderX(z)-x<lerp(wallW(z,1),56,riverK(z))) return null;   // the Vale Wall's body, or the river and its bank
   return undefined;
@@ -56,7 +56,7 @@ function ringReach(a){ const s=Math.sin(a), c=Math.cos(a), t=v=>v>1e-6?(HALF-20)
 function zonePoint(zn,fa,fr,full){
   if(zn.vale||zn.arena){ const a=fa*TAU, r=Math.abs(fr-0.5)*2*zn.R; return [zn.x+Math.sin(a)*r,zn.z+Math.cos(a)*r]; }
   if(zn.edge==='shore') return [lerp(-410,410,fa+0.5), WZ1-lerp(30,78,fr)];
-  if(zn.edge==='west'){ const z=lerp(-400,400,fa+0.5); return [WX0+sunwallLine(z)+lerp(12,60,fr), z]; }
+  if(zn.edge==='west'){ const z=lerp(-400,400,fa+0.5); return [HX0+sunwallLine(z)+lerp(12,60,fr), z]; }
   if(zn.edge==='north'){ const x=lerp(-330,420,fa+0.5); return [x, borderZ(x)+rimWobble(x,11)+lerp(30,98,fr)]; }
   const a=zn.center+fa*zn.w, r1=full&&zn.ring===2&&!zn.boss?Math.max(zn.r1,ringReach(a)):zn.r1, r=zn.r0+fr*(r1-zn.r0);
   return [VIL.x+Math.sin(a)*r,VIL.z+Math.cos(a)*r];

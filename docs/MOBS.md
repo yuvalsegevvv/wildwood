@@ -79,8 +79,8 @@ Side content with its own `zone` and `count` (the shore, the Sunwall's foot, the
 | `crab` | Shore Crab | 16 | water | 2093 | 20.2 | 117 | 1.4 | 2.6 | 11 m | 136.8 | 168 | 18 | The Crownsea Shore | Crab Claw | beetle ×1.15 | src/shared/monster-defs.js:34 |
 | `tideslime` | Tide Slime | 17 | water | 1600 | 14.9 | 90 | 1.6 | 2.2 | 10 m | 167.7 | 197 | 16 | The Crownsea Shore | Sea Glass | slime ×1.4 | src/shared/monster-defs.js:35 |
 | `scarab` | Sun Scarab | 18 | fire | 2331 | 20.9 | 124 | 1.4 | 2.6 | 11 m | 205.1 | 230 | 20 | The Sunwall's Foot | Scarab Wing | beetle ×1.3 | src/shared/monster-defs.js:36 |
-| `ramboar` | Ram-horned Boar | 19 | earth | 2179 | 18.8 | 175 | 2 | 3.4 | 13 m | 250.2 | 269 | 18 | The Greyspine Foothills | Ram Horn | boar ×1.4 | src/shared/monster-defs.js:37 |
-| `cragwarden` | Crag Warden | 20 | earth | 3955 | 27.3 | 346 | 2.4 | 1.6 | 12 m | 304.6 | 313 | 10 | The Greyspine Foothills | Crag Moss | treant ×1.45 | src/shared/monster-defs.js:38 |
+| `ramboar` | Ram-horned Boar | 19 | earth | 2179 | 18.8 | 175 | 2 | 3.4 | 13 m | 250.2 | 269 | 18 | The Northern Foothills | Ram Horn | boar ×1.4 | src/shared/monster-defs.js:37 |
+| `cragwarden` | Crag Warden | 20 | earth | 3955 | 27.3 | 346 | 2.4 | 1.6 | 12 m | 304.6 | 313 | 10 | The Northern Foothills | Crag Moss | treant ×1.45 | src/shared/monster-defs.js:38 |
 
 ## 6. Sakura Vale (levels 16-25)
 

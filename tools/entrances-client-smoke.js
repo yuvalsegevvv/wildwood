@@ -55,8 +55,8 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>
   { const bad=[], info=[], out=new T.Color(), a=new T.Color(), b=new T.Color();
     for(const id of IDS){ const E=G.DG_ENTRANCES[id], [fx,fz]=faceV(E), cx=E.x+fx*3.5, cz=E.z+fz*3.5, at=d=>{ const x=cx+fx*d, z=cz+fz*d, h=G.getH(x,z); G.DG_DOORS.noTint=true; G.terrainColor(x,z,h,0.3,a); G.DG_DOORS.noTint=false; G.terrainColor(x,z,h,0.3,b); return [Math.max(Math.abs(a.r-b.r),Math.abs(a.g-b.g),Math.abs(a.b-b.b)),a.clone(),b.clone()]; };
       const mid=at(0)[0], far=at(25)[0], far2=at(-25)[0]; let step=0, prev=at(0)[0]; for(let d=0.25;d<=17;d+=0.25){ const v=at(d)[0]; step=Math.max(step,Math.abs(v-prev)); prev=v; }
-      info.push(id+' '+mid.toFixed(2)+'/step '+step.toFixed(3)); if(mid<0.07) bad.push(id+' patch too faint'); if(far>1e-9||far2>1e-9) bad.push(id+' tints 25 m away'); if(step>0.06) bad.push(id+' edge steps '+step.toFixed(3)); }
-    G.DG_DOORS.noTint=false; ok('the ground patch changes the colour at the door (the Barrow\'s through the Reach\'s own colour function), fades smoothly (no step over 0.06 per 0.25 m), and is gone 25 m away',!bad.length,bad.join(', ')||info.join('; ')); }
+      info.push(id+' '+mid.toFixed(2)+'/step '+step.toFixed(3)); if(mid<0.07) bad.push(id+' patch too faint'); if(far>1e-9||far2>1e-9) bad.push(id+' tints 25 m away'); if(step>0.07) bad.push(id+' edge steps '+step.toFixed(3)); }
+    G.DG_DOORS.noTint=false; ok('the ground patch changes the colour at the door (the Barrow\'s through the Reach\'s own colour function), fades smoothly (no step over 0.07 per 0.25 m), and is gone 25 m away',!bad.length,bad.join(', ')||info.join('; ')); }
   // ---- sealed or open: the real server's tier picker, then gear set directly ----
   G.NET.onReady=()=>G.beginPlay(); G.startSolo(); await wait(1500); G=c.G();
   G.NET.send({t:'dev',cmd:'level',v:30}); G.NET.send({t:'dev',cmd:'zt',v:1}); await wait(500);

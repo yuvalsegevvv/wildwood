@@ -26,7 +26,7 @@ function inPass(x,z,m){ return Math.abs(x-PASS.x)<PASS.w+6+(m||0) && z<PASS.z0+3
 /* ---- Rimehold, the reach's village: the same plan as the other two villages (so every NPC role works the same), its road turned
    toward the pass. It stands on the plateau just north of the pass' end. */
 function findHoarVillage(){
-  const cx=690, cz=-610; let best=null;
+  const cx=690+RDX, cz=-610; let best=null;
   for(let r=0;r<=45;r+=5){
     const n=Math.max(1,Math.round(r/2.5));
     for(let k=0;k<n;k++){
@@ -55,9 +55,9 @@ const CIRCLES=[
 const HOAR_ZONE_NAMES={22:'Rimewood Edge',23:'Whitebirch Flats',24:'Frostmere Shore',25:"Hunters' Wold",26:"The Rimeking's Hall",27:'Glacier Tongue',28:'Blizzard Steppe',29:'Bonefrost Barrow',30:"The Wyrm's Glacier",boss26:"The Rimeking's Hall",boss30:"The Wyrm's Nest"};
 const HOAR_SEEDS=[
   {key:null,x:VIL3.x,z:VIL3.z},
-  {key:22,x:585,z:-705},{key:23,x:735,z:-705},{key:24,x:885,z:-705},
-  {key:25,x:885,z:-805},{key:26,x:735,z:-805},{key:27,x:585,z:-805},
-  {key:28,x:585,z:-905},{key:29,x:735,z:-905},{key:30,x:885,z:-905}];
+  {key:22,x:585+RDX,z:-705},{key:23,x:735+RDX,z:-705},{key:24,x:885+RDX,z:-705},
+  {key:25,x:885+RDX,z:-805},{key:26,x:735+RDX,z:-805},{key:27,x:585+RDX,z:-805},
+  {key:28,x:585+RDX,z:-905},{key:29,x:735+RDX,z:-905},{key:30,x:885+RDX,z:-905}];
 for(const s of HOAR_SEEDS) if(s.key!==null) ZONES.push({key:'h'+s.key,ring:3,vale:true,hoar:true,x:s.x,z:s.z,R:75,name:HOAR_ZONE_NAMES[s.key],level:s.key});
 const hoarWarp=(x,z)=>[x+noise2(x*0.009+3,z*0.009-8)*24,z+noise2(x*0.009-11,z*0.009+5)*24];
 function hoarSeeds(x,z){
@@ -66,12 +66,12 @@ function hoarSeeds(x,z){
   return [a,b];
 }
 function hoarZoneAt(x,z){
-  if(Math.min(x-borderX(z),WX1-x,z-WZ0)<44) return null;   // the walls and the cliffs
+  if(Math.min(x-borderXN(z),WX1-x,z-WZ0)<44) return null;   // the walls and the cliffs
   for(const A of ARENAS) if(A.hoar&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;
   const [wx,wz]=hoarWarp(x,z), s=hoarSeeds(wx,wz)[0]; return s.key===null?null:ZONES.find(zn=>zn.hoar&&zn.key==='h'+s.key);
 }
 function hoarRidge(x,z){
-  const e=Math.min(x-borderX(z),WX1-x,z-WZ0); if(e<44) return 0;
+  const e=Math.min(x-borderXN(z),WX1-x,z-WZ0); if(e<44) return 0;
   const [wx,wz]=hoarWarp(x,z), [a,b]=hoarSeeds(wx,wz), ux=b.x-a.x, uz=b.z-a.z, L=Math.hypot(ux,uz);
   const da=Math.hypot(wx-a.x,wz-a.z), dbb=Math.hypot(wx-b.x,wz-b.z), d=(dbb*dbb-da*da)/(2*L);   // distance to the wall between a and b
   if(d>=9) return 0;
@@ -81,6 +81,6 @@ function hoarRidge(x,z){
 }
 
 /* ---- boss arenas: flat clearings. ARENA26 (Ymrik the Rimeking, in the ice hall), ARENA30 (Vetrmaw the frost wyrm, at the wreck) */
-const ARENA26=Object.assign(flatSpot(735,-795,30),{r:20,key:'boss26',name:"The Rimeking's Hall",hoar:true});
-const ARENA30=Object.assign(flatSpot(885,-895,30),{r:20,key:'boss30',name:"The Wyrm's Nest",hoar:true});
+const ARENA26=Object.assign(flatSpot(735+RDX,-795,30),{r:20,key:'boss26',name:"The Rimeking's Hall",hoar:true});
+const ARENA30=Object.assign(flatSpot(885+RDX,-895,30),{r:20,key:'boss30',name:"The Wyrm's Nest",hoar:true});
 for(const A of [ARENA26,ARENA30]){ A.zone={key:A.key,ring:3,vale:true,hoar:true,x:A.x,z:A.z,R:20,name:A.name,level:A===ARENA26?26:30,boss:true}; ZONES.push(A.zone); ARENAS.push(A); }

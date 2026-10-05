@@ -42,7 +42,7 @@ VIL2.name='Hanami'; VIL.name='the village';
 // on (or m metres from) any village's teleport circle
 function nearTele(x,z,m){ const V=vilAt(x,z); return Math.hypot(x-V.tele.x,z-V.tele.z)<V.tele.r+m; }
 // the village whose land a point is in (every "near the village" test uses this one): the home forest, the vale, the Hoarfrost Reach
-function vilAt(x,z){ return x>borderX(z)?(z<borderZ(x)?VIL3:VIL2):(z<borderZ(x)?VIL4:VIL); }
+function vilAt(x,z){ return z<borderZ(x)?(x>borderXN(z)?VIL3:VIL4):(x>borderX(z)?VIL2:VIL); }
 
 /* ---- zones: seeds on a rough 3 x 4 grid east of Hanami. key null = Hanami's meadows (no monsters) */
 const VALE_ZONE_NAMES={16:'Petal Meadow',17:'Kodama Wood',18:'Inari Hills',19:'Bamboo Sea',20:'Ghostlight Marsh',21:'Oni Crags',22:'Jade Falls',23:'Tengu Peaks',24:'Warlord Ruins',25:'Thunder Grove',boss25:'Foxfire Shrine'};
@@ -82,7 +82,7 @@ function flatSpot(cx,cz,span){
   let best=null;
   for(let dx=-span;dx<=span;dx+=10) for(let dz=-span;dz<=span;dz+=10){
     const x=cx+dx, z=cz+dz;
-    if(Math.min(x-borderX(z),WX1-x,z-WZ0,WZ1-z)<75||(x>borderX(z)&&Math.abs(z-borderZ(x))<75)) continue;
+    if(Math.min(x-borderXat(x,z),WX1-x,z-WZ0,WZ1-z)<75||(x>borderXat(x,z)&&Math.abs(z-borderZ(x))<75)) continue;
     if(LAKES.some(L=>Math.hypot(x-L.x,z-L.z)<L.r+25)) continue;
     let mn=1e9,mx=-1e9,sum=0,c=0;
     for(let rr=0;rr<=22;rr+=11) for(let j=0;j<8;j++){ const b=j/8*TAU, h=baseHeight(x+Math.sin(b)*rr,z+Math.cos(b)*rr); mn=Math.min(mn,h); mx=Math.max(mx,h); sum+=h; c++; }

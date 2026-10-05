@@ -72,7 +72,7 @@ function worldBounds(o,ox,rad,oz){
     glenWall(o,ox,oz,rad);   // the Vale Wall, with the glacier valley the one way across it in the north
   }
   o.z=clamp(o.z,WZ0+14,WZ1-14); if(o.x<WX0+14) o.x=WX0+14;
-  if(o.x<borderX(o.z)){ greyWall(o,oz); for(const G of GREY_GATES) if(!gateOpen(G)&&o.z<borderZ(o.x)&&Math.abs(o.z-G.z)<40&&ox>=G.x&&o.x<G.x+0.8) o.x=G.x+0.8; }   // (the rock falls in the Greyspine's west wall)
+  if(o.x<(o.z<borderZ(o.x)+14?borderXN(o.z):borderX(o.z))){ greyWall(o,oz); for(const G of GREY_GATES) if(!gateOpen(G)&&o.z<borderZ(o.x)&&Math.abs(o.z-G.z)<40&&ox>=G.x&&o.x<G.x+0.8) o.x=G.x+0.8; }   // (the rock falls in the Greyspine's west wall)
   else frostWall(o,ox,oz,rad);
   if(oz!==undefined && coastDist(o.x,o.z)<34 && bridgeDeck(o.x,o.z)<WATER){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }
   if(oz!==undefined && riverK(o.z)>0.15 && bridgeDeck(o.x,o.z)<WATER){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }   // the border river (shared/terrain.js): wade to the knees, no deeper, so the water is a wall too
@@ -92,13 +92,13 @@ function frostWall(o,ox,oz,rad){
    Greyspine. Inside the cut you are kept between its walls near the crest, and an ice fall across it (x = GLEN.ice) stays shut until Ymrik falls (GEAR.west >= 1). */
 function glenWall(o,ox,oz,rad){
   const cw=GLEN.w-rad, inNow=Math.abs(o.z-GLEN.z)<cw+0.2, was=oz!==undefined&&Math.abs(oz-GLEN.z)<cw+0.2;
-  const bx=borderX(o.z);   // (the crest line wanders; it is straight at the cut)
+  const bx=o.z<borderZ(o.x)?borderXN(o.z):borderX(o.z);   // (the wall on this side of the north wall's crest: the Greyspine | Reach wall north of it, the Vale Wall south; the crest line wanders and is straight at the cut)
   const free=o.z<borderZ(o.x)?westOpen():valeOpen();   // the land beyond is open (for you): nothing but the ground and the water holds you (slopeBlock, the river's depth)
   if(!free){
     if(o.z<borderZ(o.x)&&Math.abs(o.x-bx)<14&&(inNow||was)) o.z=clamp(o.z,GLEN.z-cw,GLEN.z+cw);   // inside the cut near the crest: between its walls
     else if(o.x<bx) o.x=Math.min(o.x,bx-14); else o.x=clamp(o.x,bx+14,WX1-14);      // anywhere else the Vale Wall holds
   }
-  if(!westOpen()&&o.z<borderZ(o.x)&&ox>borderX(oz===undefined?o.z:oz)&&o.x<GLEN.ice+0.8) o.x=GLEN.ice+0.8;                 // the ice fall (it shuts the Reach's whole west edge, so you cannot climb round it)
+  if(!westOpen()&&o.z<borderZ(o.x)&&ox>borderXN(oz===undefined?o.z:oz)&&o.x<GLEN.ice+0.8) o.x=GLEN.ice+0.8;                 // the ice fall (it shuts the Reach's whole west edge, so you cannot climb round it)
 }
 /* The home forest's north rim (its crest is at z = HZ0) walls it off from the Greyspine beyond it (shared/greyspine.js): climbable up to 14 m short of
    the crest from either side and no further. The side you are on is the one you were on before the move (oz), so a teleport into the Greyspine stays

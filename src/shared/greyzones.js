@@ -14,11 +14,12 @@ const GREY_SEEDS=[
   {key:30,x:-172,z:-628},{key:30,x:-336,z:-582},
   {key:31,x:-298,z:-768},
   {key:32,x:150,z:-584},{key:32,x:112,z:-548}];
+for(const s of GREY_SEEDS) if(s.key!==null) s.x+=GDX;   // (drawn in the old frame, like the rest of the Greyspine: shifted GDX west, shared/terrain.js)
 for(const k of [26,27,28,29,30,31,32]){ const ss=GREY_SEEDS.filter(s=>s.key===k), x=ss.reduce((a,s)=>a+s.x,0)/ss.length, z=ss.reduce((a,s)=>a+s.z,0)/ss.length;
   ZONES.push({key:'g'+k,ring:3,vale:true,grey:true,x,z,R:125,name:GREY_ZONE_NAMES[k],level:k}); }
-const greyWarp=(x,z)=>[x+noise2(x*0.009+3,z*0.009-8)*26,z+noise2(x*0.009-11,z*0.009+5)*26];
+const greyWarp=(x,z)=>{ const u=x-GDX; return [x+noise2(u*0.009+3,z*0.009-8)*26,z+noise2(u*0.009-11,z*0.009+5)*26]; };   // (the noise in the old frame, so the zones' borders moved with the land)
 function greyZoneAt(x,z){
-  if(Math.min(x-WX0,z-WZ0,borderZ(x)-z,borderX(z)-x)<44) return null;   // the walls
+  if(Math.min(x-WX0,z-WZ0,borderZ(x)-z,borderXN(z)-x)<44) return null;   // the walls
   for(const A of ARENAS) if(A.grey&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;
   const [wx,wz]=greyWarp(x,z); let best=null, bd=1e18;
   for(const s of GREY_SEEDS){ const d=(wx-s.x)*(wx-s.x)+(wz-s.z)*(wz-s.z); if(d<bd){ bd=d; best=s; } }
@@ -28,7 +29,7 @@ function greyZoneAt(x,z){
 function greyFlat(cx,cz,span){
   let best=null;
   for(let dx=-span;dx<=span;dx+=10) for(let dz=-span;dz<=span;dz+=10){
-    const x=cx+dx, z=cz+dz; if(Math.min(x-WX0,z-WZ0,borderZ(x)-z,borderX(z)-x)<75) continue;
+    const x=cx+dx, z=cz+dz; if(Math.min(x-WX0,z-WZ0,borderZ(x)-z,borderXN(z)-x)<75) continue;
     let mn=1e9,mx=-1e9,sum=0,c=0;
     for(let rr=0;rr<=22;rr+=11) for(let j=0;j<8;j++){ const b=j/8*TAU, h=baseHeight(x+Math.sin(b)*rr,z+Math.cos(b)*rr); mn=Math.min(mn,h); mx=Math.max(mx,h); sum+=h; c++; }
     const score=mx-mn+Math.hypot(dx,dz)*0.05; if(!best||score<best.score) best={x,z,h:sum/c,score};
@@ -37,5 +38,5 @@ function greyFlat(cx,cz,span){
 }
 /* ---- boss arenas: ARENA29 is the Gryphon Queen's crown (shaped in greyspine.js, already flat), ARENA32 a clearing at the head of the Sink Valley ---- */
 const ARENA29={x:GREY_QUEEN.x,z:GREY_QUEEN.z,h:GREY_QUEEN.h,r:20,key:'boss29',name:GREY_ZONE_NAMES.boss29,grey:true};
-const ARENA32=Object.assign(greyFlat(112,-548,30),{r:20,key:'boss32',name:GREY_ZONE_NAMES.boss32,grey:true});
+const ARENA32=Object.assign(greyFlat(112+GDX,-548,30),{r:20,key:'boss32',name:GREY_ZONE_NAMES.boss32,grey:true});
 for(const A of [ARENA29,ARENA32]){ A.zone={key:A.key,ring:3,vale:true,grey:true,x:A.x,z:A.z,R:20,name:A.name,level:A===ARENA29?29:32,boss:true}; ZONES.push(A.zone); ARENAS.push(A); }

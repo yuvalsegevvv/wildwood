@@ -47,7 +47,7 @@ function updateWeather(dt){
   WX.flash=Math.max(0,WX.flash-dt*3.2);
   // rain or snow: by where the camera is (over the vale's north crest and down onto the plateau it turns to snow over ~50 m; in the Greyspine by the
   // height of the ground, rain in the valleys, sleet on the slopes, snow on the peaks: greySnowAmt, shared/greyspine.js)
-  { const cx=camera.position.x, cz=camera.position.z, tgt=cx>borderX(cz)?smoothstep(borderZ(cx)+25,borderZ(cx)-25,cz):(inGrey(cx,cz)?greySnowAmt(cx,cz,getH(cx,cz)):0);
+  { const cx=camera.position.x, cz=camera.position.z, tgt=cx>borderXN(cz)?smoothstep(borderZ(cx)+25,borderZ(cx)-25,cz):(inGrey(cx,cz)?greySnowAmt(cx,cz,getH(cx,cz)):0);
     WX.snow+=(tgt-WX.snow)*Math.min(1,dt*2); if(Math.abs(tgt-WX.snow)<0.004) WX.snow=tgt; }
   const on=WX.inten>0.01, sn=WX.snow; rain.visible=on&&sn<0.98; snowfall.visible=on&&sn>0.02;
   if(snowfall.visible){

@@ -54,7 +54,7 @@ at(x.VIL3.x+3,x.VIL3.z+3); tick(14); ok('walking into Rimehold attunes the circl
 { const g=x.sanitizeGear({north:0,mq:{s:x.MQ_BY_ID?0:0}},'warrior'); ok('a new save starts with the wall shut',g.north===0); }
 // ---- the level 22-30 economy ----
 { let bad=0, kinds=new Set(), boss=new Set(); for(let i=0;i<3000;i++){ const q=x.genQuest(22+(i%9),'g'+i); if(!q||!q.reward) { bad++; continue; } kinds.add(q.kind); if(q.kind==='boss') boss.add(q.target);
-    if(q.kind==='scout'&&(q.at.z<x.WZ0||q.at.z>440||q.at.x<-440||q.at.x>x.WX1)) bad++; if((q.kind==='hunt'||q.kind==='bounty')&&!x.MON_DEFS.some(m=>m.id===q.target)) bad++; }
+    if(q.kind==='scout'&&(q.at.z<x.WZ0||q.at.z>440||q.at.x<x.WX0||q.at.x>x.WX1)) bad++; if((q.kind==='hunt'||q.kind==='bounty')&&!x.MON_DEFS.some(m=>m.id===q.target)) bad++; }
   ok('the quest board works for levels 22-30 (hunts, bounties, scouts, bosses), never a broken notice',!bad&&kinds.size===4&&boss.has('ymrik'),'bosses offered: '+[...boss].join(',')); }
 { const k=L=>x.expToNext(L)/x.xpFor(L); ok('past level 25 a level costs as many same-level kills as 25 does (the curve no longer explodes)',Math.abs(k(30)-k(25))<1&&Math.abs(k(26)-k(25))<1&&x.expToNext(26)>x.expToNext(25)&&x.expToNext(30)>x.expToNext(29),Math.round(k(25))+' kills at 25, '+Math.round(k(30))+' at 30'); }
 ok('skill upgrades never ask for a drop above the vale\'s level 25 (no empty pool)',(()=>{ try{ for(const id of [...x.SKILL_IDS,...x.PASSIVE_IDS]) for(let to=2;to<=5;to++){ const n=x.upgradeNeeds(id,to); if(n&&!n.mats.every(m=>x.MATS[m.id])) return false; } return true; }catch(e){ return false; } })());

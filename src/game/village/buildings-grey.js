@@ -19,7 +19,7 @@ function buildGreyWater(){
     const m=new THREE.Mesh(g,waterMat); m.receiveShadow=true; scene.add(m); }
   GREY.fjord=new THREE.MeshPhongMaterial({color:0x14303a,transparent:true,opacity:0.94,shininess:140,specular:0x8fa4b4});
   GREY.fjord.onBeforeCompile=waterMat.onBeforeCompile; GREY.fjord.customProgramCacheKey=()=>'water2';
-  const fq=new THREE.Mesh(new THREE.PlaneGeometry(230,170).rotateX(-Math.PI/2).translate(-340,0.06,-505),GREY.fjord); fq.receiveShadow=true; scene.add(fq);
+  const fq=new THREE.Mesh(new THREE.PlaneGeometry(230,170).rotateX(-Math.PI/2).translate(WX0+100,0.06,-505),GREY.fjord); fq.receiveShadow=true; scene.add(fq);
 }
 /* Highmark follows the home village's plan (VIL4 from shared/highmark.js: the same houses, stalls, anchors and colliders): grey stone walls with a timber
    frame, steep slate roofs under snow, iron lanterns, and the two things only a mining monastery has: a bell tower behind the plaza and the mine's wooden

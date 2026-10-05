@@ -90,7 +90,7 @@ function farMaterial(){
   return m;
 }
 function buildFarLands(){
-  const C=FAR_CELL, X0=WX0-46*27.5, Z0=HZ0-32*27.5, NX=Math.round(104*27.5/C), NZ=Math.round(106*27.5/C), W=NX+1;   // (Z0 stays where it was when the rectangle ended at HZ0: the Hoarfrost Reach is built, its rectangle's cells are skipped below)
+  const C=FAR_CELL, X0=HX0-46*27.5, Z0=HZ0-32*27.5, NX=Math.round(104*27.5/C), NZ=Math.round(106*27.5/C), W=NX+1;   // (Z0 stays where it was when the rectangle ended at HZ0: the Hoarfrost Reach is built, its rectangle's cells are skipped below)
   const onRect=(x,z)=>x>=WX0-0.01&&x<=WX1+0.01&&z>=WZ0-0.01&&z<=WZ1+0.01;
   const H=new Float32Array(W*(NZ+1)), pos=new Float32Array(W*(NZ+1)*3), col=new Float32Array(W*(NZ+1)*3), cc=new THREE.Color();
   for(let iz=0;iz<=NZ;iz++) for(let ix=0;ix<=NX;ix++){

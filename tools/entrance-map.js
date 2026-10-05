@@ -37,7 +37,7 @@ function panel({x0,z0,x1,z1,ppm},E,num){
   return {W,H,img};
 }
 // the four panels: Wildwood (with the village in the corner), the Sakura Vale's Jade Falls, the Reach's Barrow, the Greyspine's Highmark Pastures
-const PANELS=[['hollowroots','1',{x0:-60,z0:-60,x1:400,z1:400,ppm:1}],['jadesprings','2',{x0:740,z0:-60,x1:990,z1:240,ppm:1.7}],['bonefrostbarrow','3',{x0:620,z0:-1020,x1:830,z1:-780,ppm:1.8}],['blackseam','4',{x0:250,z0:-780,x1:420,z1:-630,ppm:2}]];
+const PANELS=[['hollowroots','1',{x0:-60,z0:-60,x1:400,z1:400,ppm:1}],['jadesprings','2',{x0:740,z0:-60,x1:990,z1:240,ppm:1.7}],['bonefrostbarrow','3',{x0:230,z0:-1020,x1:440,z1:-780,ppm:1.8}],['blackseam','4',{x0:-330,z0:-780,x1:-160,z1:-630,ppm:2}]];
 const parts=PANELS.map(([id,num,box])=>panel(box,X.DG_ENTRANCES[id],num)), gap=12;
 const W=parts.reduce((a,p)=>a+p.W,0)+gap*(parts.length-1), H=Math.max(...parts.map(p=>p.H)), out=Buffer.alloc(W*H*3,24);
 let ox=0; for(const p of parts){ for(let y=0;y<p.H;y++) p.img.copy(out,(y*W+ox)*3,y*p.W*3,(y+1)*p.W*3); ox+=p.W+gap; }

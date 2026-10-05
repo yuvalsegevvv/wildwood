@@ -30,7 +30,7 @@ function applyEnv(s){
   skyU.uBot.value.copy(s.hg); skyU.uSunCol.value.copy(s.sun); skyU.uCloud.value.copy(s.cloud); skyU.uNight.value=s.night;
   if(waterMat) waterMat.color.copy(wDay).lerp(wNight,s.night);
   pMat.color.copy(dayMote).lerp(fly,s.night); pMat.size=lerp(0.13,0.34,s.night); pMat.opacity=lerp(0.45,1,s.night);
-  { const cold=P.x>borderX(P.z)?smoothstep(borderZ(P.x)+40,borderZ(P.x)-30,P.z):0; if(cold>0){ pMat.color.lerp(iceMote,cold); pMat.size=lerp(pMat.size,lerp(0.09,0.15,s.night),cold); pMat.opacity*=1-0.35*cold; } }   // over the snow: glints of diamond dust, not fireflies
+  { const cold=P.x>borderXN(P.z)?smoothstep(borderZ(P.x)+40,borderZ(P.x)-30,P.z):0; if(cold>0){ pMat.color.lerp(iceMote,cold); pMat.size=lerp(pMat.size,lerp(0.09,0.15,s.night),cold); pMat.opacity*=1-0.35*cold; } }   // over the snow: glints of diamond dust, not fireflies
 }
 function envAt(c,out){
   const n=TOD_KEYS.length;

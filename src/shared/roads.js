@@ -26,7 +26,7 @@ const ROADS=(()=>{
   return [
     R('The East Road',[S,[0,64],[38,52],[82,46],[150,-10],[230,-92],[300,-120],[TUN.p0-2,TUN.z]],1),
     R('The Circle Path',[[230,-92],arenaGate(ARENA,230,-92,3)],2),
-    R('The Redgate Road',[S,[-70,14],[-105,16],[-160,20],[-240,32],[-320,40],[WX0+REDGATE_CL+30,REDGATE_Z]],3),
+    R('The Redgate Road',[S,[-70,14],[-105,16],[-160,20],[-240,32],[-320,40],[HX0+REDGATE_CL+30,REDGATE_Z]],3),
     R('The Shore Road',[[-105,16],[-122,110],[-110,220],[-92,330],[-84,WZ1-40]],4),
     R('The Tunnel Road',[S2,[TUN.p1+2,TUN.z]],5),
     R('The Gate Road',[S2,[560,-160],[650,-195],[760,-240],[850,-300],arenaGate(ARENA20,850,-300,3)],6),
@@ -37,10 +37,10 @@ const ROADS=(()=>{
     R('The North Road',[[560,-160],[600,-280],[PASS.x,-350],[PASS.x,-380],[PASS.x,PASS.ice+8]],9),
     // beyond the ice wall: through Frostgate Pass onto the plateau and into Rimehold, then to the two boss halls
     R('The Frost Road',[[PASS.x,PASS.ice-8],[PASS.x,-450],[PASS.x,-490],[PASS.x,PASS.z1],S3],10),
-    R('The Hall Road',[S3,[700,-680],[722,-735],arenaGate(ARENA26,722,-735,3)],11),
-    R('The Wyrm Road',[arenaGate(ARENA26,790,-835,3),[825,-860],arenaGate(ARENA30,825,-860,3)],12),
+    R('The Hall Road',[S3,[700+RDX,-680],[722+RDX,-735],arenaGate(ARENA26,722+RDX,-735,3)],11),
+    R('The Wyrm Road',[arenaGate(ARENA26,790+RDX,-835,3),[825+RDX,-860],arenaGate(ARENA30,825+RDX,-860,3)],12),
     // beyond the second gate: from Rimehold west through the glacier valley to Highmark
-    R('The Glacier Road',[S3,[615,-605],[580,-668],[545,-714],[GLEN.x1,GLEN.z],[GLEN.ice+6,GLEN.z],[HALF-30,GLEN.z],[GLEN.x0,GLEN.z],S4],13)];
+    R('The Glacier Road',[S3,[238,-632],[203,-655],[188,-741],[GLEN.x1+90,GLEN.z],[GLEN.x1,GLEN.z],[GLEN.ice+6,GLEN.z],[GXJ-30,GLEN.z],[GLEN.x0,GLEN.z],S4],13)];
 })();
 // segments bucketed on a ROAD_CELL grid (with a margin) so a lookup only checks the few nearby ones
 const ROAD_GRID=new Map();

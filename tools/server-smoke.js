@@ -27,7 +27,7 @@ W.receive('a',{t:'dev',cmd:'level',v:15}); W.receive('a',{t:'dev',cmd:'giveAll'}
 ok('slots open at 3 and 10 with free abilities',p.gear.skills.eq.warrior.skill==='whirlwind'&&p.gear.skills.eq.warrior.burst==='quake');
 // interest management: each player is sent the monsters near them (not everyone's), other players mostly once a second
 inbox.c=[]; W.join('c',{name:'Far',look:{cls:'mage'},save:{level:5}});
-const mA=x.MONS.find(m=>m.def.id==='slime'), mC=x.MONS.filter(m=>!m.boss&&m.x<430).sort((p,q)=>Math.hypot(q.x-mA.x,q.z-mA.z)-Math.hypot(p.x-mA.x,p.z-mA.z))[0], byId=new Map(x.MONS.map(m=>[m.id,m]));   // mC: the farthest monster in the home forest (the vale is closed to a new player)
+const mA=x.MONS.find(m=>m.def.id==='slime'), mC=x.MONS.filter(m=>!m.boss&&m.x<430&&m.x>-430&&m.z>-430).sort((p,q)=>Math.hypot(q.x-mA.x,q.z-mA.z)-Math.hypot(p.x-mA.x,p.z-mA.z))[0], byId=new Map(x.MONS.map(m=>[m.id,m]));   // mC: the farthest monster in the home forest (the vale is closed to a new player)
 W.setPos('a',[mA.x,x.getH(mA.x,mA.z),mA.z,0,0,0]); W.setPos('c',[mC.x,x.getH(mC.x,mC.z),mC.z,0,0,0]); tick(3,true); inbox.a.length=0; inbox.c.length=0; tick(40,true);
 const snapsOf=pid=>inbox[pid].filter(m=>m.t==='snap'), idsOf=pid=>new Set(snapsOf(pid).flatMap(m=>m.mo.map(e=>e[0])));
 const inRange=(pid,px,pz)=>{ const ids=idsOf(pid); return ids.size>0&&[...ids].every(id=>{ const m=byId.get(id); return Math.hypot(m.x-px,m.z-pz)<=(m.boss?190:110)+15; }); };

@@ -162,8 +162,8 @@ const DG_APRON=7, DG_ENT_CLEAR=14, DG_ENT_TALK=4.5;
 const DG_ENTRANCES={
   hollowroots:    {theme:'hollowroots',    name:'The Hollowed Elder', kind:'roots', x:244,z:148,  a:Math.PI/2, sign:{x:114.9,z:25.8,  road:'The East Road'}},
   jadesprings:    {theme:'jadesprings',    name:'The Falls Door',     kind:'falls', x:826,z:82,   a:Math.PI,   sign:{x:864.3,z:-28.5, road:'The Coast Road'}},
-  bonefrostbarrow:{theme:'bonefrostbarrow',name:'The Barrow Door',    kind:'barrow',x:688,z:-950, a:0,         sign:{x:752.1,z:-823.5,road:'The Wyrm Road'}},
-  blackseam:      {theme:'blackseam',      name:'The Old Adit',       kind:'mine',  x:316,z:-692, a:3.403,     sign:{x:347.8,z:-718.5,road:'The Glacier Road'}}};
+  bonefrostbarrow:{theme:'bonefrostbarrow',name:'The Barrow Door',    kind:'barrow',x:368,z:-894, a:5.76,        sign:{x:406.9,z:-845.4,road:'The Wyrm Road'}},
+  blackseam:      {theme:'blackseam',      name:'The Old Adit',       kind:'mine',  x:316+GDX,z:-692, a:3.403,     sign:{x:-231.7,z:-718.5,road:'The Glacier Road'}}};
 const dgApron=E=>({x:E.x+Math.sin(E.a)*DG_APRON,z:E.z+Math.cos(E.a)*DG_APRON});
 const dgEntranceNear=(x,z,r)=>{ let best=null,bd=r===undefined?DG_ENT_TALK:r; for(const k in DG_ENTRANCES){ const E=DG_ENTRANCES[k], d=Math.hypot(E.x-x,E.z-z); if(d<=bd){ bd=d; best=E; } } return best; };
 

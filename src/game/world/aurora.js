@@ -15,6 +15,6 @@ if(!LITE){
 }
 function updateAurora(){
   if(!AURORA.length) return;
-  const cz=camera.position.z, cx=camera.position.x, k=(cx>borderX(cz)?smoothstep(borderZ(cx)+160,borderZ(cx)-20,cz):0)*smoothstep(0.35,0.8,envCur.night)*(1-clamp(WX.inten*1.4));
+  const cz=camera.position.z, cx=camera.position.x, k=(cx>borderXN(cz)?smoothstep(borderZ(cx)+160,borderZ(cx)-20,cz):0)*smoothstep(0.35,0.8,envCur.night)*(1-clamp(WX.inten*1.4));
   for(const m of AURORA){ m.visible=k>0.01; if(!m.visible) continue; m.material.uniforms.uAmt.value=k*0.85; m.position.set(cx+m.userData.o[0],m.userData.o[1]+camera.position.y*0.2,cz+m.userData.o[2]); }
 }

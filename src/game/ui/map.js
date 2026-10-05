@@ -5,13 +5,13 @@
    minimap) shows one land at a time (its "World" button opens the world map of Eldmere, G: ui/world-map.js, which opens any of these): the one you are in, or the next one with the button in its header (once the bridge is open; the Hoarfrost Reach once its ice wall is;
    the Greyspine once the glacier valley's ice fall is, `westOpen`, or while you stand in it: `landOpen`). The Greyspine's map names its zones, bosses, Highmark, tarns and
    fjord, the Blackseam's door and the two rock falls in the west wall, and carries the zone-tier row like the other lands. Test: tools/client-smoke.js. */
-const MAP={size:LITE?320:(LOW?400:560),canvas:null,ctx:null,img:null,zone:null,row:0,done:false,mmT:0,fullT:0};
+const MAP={size:LITE?320:(LOW?400:560),canvas:null,ctx:null,img:null,zone:null,row:0,done:false,mmT:0,fullT:0,kind:null,ink:false,ic:0,icz:0};   // kind / ink / ic / icz: the painter's masks and stages (ui/map-paint.js)
 MAP.k=MAP.size/SIZE; MAP.w=Math.round(WW*MAP.k); MAP.h=Math.round(WD*MAP.k);   // pixels per metre, image size
 const MM_R=90, DPR=Math.min(2,devicePixelRatio||1);
 const mapX=x=>(x-WX0)*MAP.k, mapZ=z=>(z-WZ0)*MAP.k;
 // the three lands as the full map shows them (the vale's crop ends at its north crest, the Hoarfrost Reach's begins just south of it)
-// (the borders wander: the river bulges the vale 210 m west of x = HALF and the north walls move up to 120 m either side of z = HZ0, so the crops are wider than the old rectangles)
-const LANDS={home:{x0:-HALF,x1:HALF+40,z0:HZ0,z1:HALF,name:'The home forest'},vale:{x0:HALF-230,x1:VALE_E+50,z0:HZ0-125,z1:HALF,name:'The Sakura Vale'},hoar:{x0:HALF+10,x1:WX1,z0:WZ0,z1:HZ0+60,name:'The Hoarfrost Reach'},grey:{x0:WX0,x1:HALF+115,z0:WZ0,z1:HZ0+105,name:'The Greyspine'}};
+// (the borders wander: the river bulges the vale 210 m west of x = HALF and the north walls move up to 120 m either side of z = HZ0, so the crops are wider than the old rectangles; the Reach lies over the forest's east half too, from the Glacier Wall, GXJ, to the vale's east edge, but its built part, the zones, Rimehold and the pass, is x 100-640 (docs/WORLD.md section 8): the map crops to x 0-720 so the labels have room; the empty land beyond is on the world map only)
+const LANDS={home:{x0:-HALF,x1:HALF+40,z0:HZ0,z1:HALF,name:'The home forest'},vale:{x0:HALF-230,x1:VALE_E+90,z0:HZ0-125,z1:HALF,name:'The Sakura Vale'},hoar:{x0:0,x1:720,z0:WZ0,z1:HZ0+110,name:'The Hoarfrost Reach'},grey:{x0:WX0,x1:GXJ+115,z0:WZ0,z1:HZ0+105,name:'The Greyspine'}};
 let mapLand=null;   // null: the land you are in
 const landHere=()=>inHoar(P.x,P.z)?'hoar':inVale(P.x,P.z)?'vale':inGrey(P.x,P.z)?'grey':'home';
 const landOpen=id=>id==='home'||(id==='vale'&&valeOpen())||(id==='hoar'&&northOpen())||(id==='grey'&&(westOpen()||inGrey(P.x,P.z)));
@@ -21,48 +21,11 @@ function mapInit(){
   const c=document.createElement('canvas'); c.width=MAP.w; c.height=MAP.h;
   MAP.canvas=c; MAP.ctx=c.getContext('2d'); MAP.img=MAP.ctx.createImageData(MAP.w,MAP.h); MAP.zone=new Uint8Array(MAP.w*MAP.h);
 }
-const _mc=new THREE.Color();
 // the map's outline: the world fades out along a wavy line 6-36 m inside its edge, so it is not drawn as a rectangle (the lands' borders are not outlined)
 function mapEdgeAlpha(x,z){
   const e=Math.min(x-WX0,z-WZ0,WZ1-z,WX1-x);   // (only the world's own edge fades, over the sea: the border between two lands is painted like the rest, no grey band between them)
   const t=6+(noise2(x*0.011+3,z*0.011-5)*0.5+0.5)*26+noise2(x*0.05,z*0.05)*4;
   return clamp((e-t)/6)*255;
-}
-function mapBuildStep(rows){
-  if(MAP.done) return; if(!MAP.canvas) mapInit();
-  const N=MAP.w, NZ=MAP.h, d=MAP.img.data, cell=1/MAP.k;
-  for(let r=0;r<rows&&MAP.row<NZ;r++,MAP.row++){
-    const iz=MAP.row, z=WZ0+(iz+0.5)*cell;
-    for(let ix=0;ix<N;ix++){
-      const x=WX0+(ix+0.5)*cell, h=getH(x,z), i=(iz*N+ix)*4;
-      const dhx=getH(x+cell,z)-getH(x-cell,z), dhz=getH(x,z+cell)-getH(x,z-cell), g=Math.hypot(dhx,dhz)/(2*cell)*2;
-      let R,G,B;
-      const ws=waterSurf(x,z);
-      if(h<ws-0.35){ const k=clamp((ws-h)/(ws>1?1.6:2.6)); R=lerp(0.44,0.18,k); G=lerp(0.66,0.37,k); B=lerp(0.74,0.49,k); }
-      else {
-        terrainColor(x,z,h,g,_mc);
-        let f=1-0.22*smoothstep(0.45,0.85,forestDensity(x,z))*(1-smoothstep(1.5,3,g))*(vDist(x,z)>VR+6?1:0);
-        const sh=clamp(1-(dhx+dhz)*0.9/cell*0.35,0.62,1.35);
-        R=_mc.r*f*sh; G=_mc.g*f*sh; B=_mc.b*f*sh;
-      }
-      const zn=zoneAt(x,z); MAP.zone[iz*N+ix]=zn?ZONES.indexOf(zn)+1:0;
-      d[i]=clamp(R)*255; d[i+1]=clamp(G)*255; d[i+2]=clamp(B)*255; d[i+3]=mapEdgeAlpha(x,z);
-    }
-  }
-  if(MAP.row<NZ) return;
-  // zone borders
-  for(let iz=0;iz<NZ-1;iz++) for(let ix=0;ix<N-1;ix++){ const k=iz*N+ix, a=MAP.zone[k]; if(a!==MAP.zone[k+1]||a!==MAP.zone[k+N]){ const i=k*4; d[i]*=0.55; d[i+1]*=0.55; d[i+2]*=0.5; } }
-  const x=MAP.ctx; x.putImageData(MAP.img,0,0);
-  const s=MAP.k;
-  for(const V of VILS){
-    for(const H of V.houses){ x.save(); x.translate(mapX(H.x),mapZ(H.z)); x.rotate(-H.rot); x.fillStyle=V===VIL2?'#3e4650':V===VIL3?'#4a3a2a':V===VIL4?'#4a4c52':colHex(H.roof); x.strokeStyle='rgba(0,0,0,.6)'; x.lineWidth=0.8; x.fillRect(-H.w/2*s,-H.d/2*s,H.w*s,H.d*s); x.strokeRect(-H.w/2*s,-H.d/2*s,H.w*s,H.d*s); x.restore(); }
-    x.fillStyle='#d8cfb8'; for(const st of V.stalls){ x.beginPath(); x.arc(mapX(st.x),mapZ(st.z),Math.max(1.2,1.6*s),0,TAU); x.fill(); }
-    x.strokeStyle='#9fe0ff'; x.lineWidth=Math.max(1,1.2*s); x.beginPath(); x.arc(mapX(V.tele.x),mapZ(V.tele.z),Math.max(2,V.tele.r*s),0,TAU); x.stroke();
-  }
-  x.strokeStyle='#cfc6b4'; x.lineWidth=Math.max(1,1.2*s); x.setLineDash([2,2]);
-  for(const A of ARENAS){ x.beginPath(); x.arc(mapX(A.x),mapZ(A.z),A.r*s,0,TAU); x.stroke(); }
-  x.setLineDash([]);
-  MAP.done=true;
 }
 /* ---- markers ---- */
 function questTargets(){
@@ -86,8 +49,8 @@ const mmC=$('#mmC'), mmX=mmC.getContext('2d');
 function drawMinimap(){
   if(dgIn()){ dgDrawMini(mmC,mmX,DPR); return; }   // dungeons: the run's explored tiles instead of the world (dungeon/minimap.js)
   const W=mmC.width, x=mmX; x.clearRect(0,0,W,W);
-  x.fillStyle='#2a3a4a'; x.fillRect(0,0,W,W);
-  if(!MAP.done){ x.fillStyle='rgba(238,240,226,.6)'; x.font=`${12*DPR}px Inter, system-ui, sans-serif`; x.textAlign='center'; x.fillText('Mapping…',W/2,W/2); return; }
+  x.fillStyle='#16486c'; x.fillRect(0,0,W,W);   // (the deep sea of the world map, where the picture ends)
+  if(!MAP.done){ x.fillStyle='rgba(247,238,214,.8)'; x.font=`italic ${12*DPR}px Georgia, serif`; x.textAlign='center'; x.fillText('Mapping…',W/2,W/2); mapStFrame(x,W,W,DPR); return; }
   const s=MAP.k; x.imageSmoothingEnabled=true;
   x.drawImage(MAP.canvas,mapX(P.x)-MM_R*s,mapZ(P.z)-MM_R*s,2*MM_R*s,2*MM_R*s,0,0,W,W);
   const k=W/(2*MM_R), at=(wx,wz)=>[(wx-P.x)*k+W/2,(wz-P.z)*k+W/2], inside=(wx,wz)=>Math.abs(wx-P.x)<MM_R&&Math.abs(wz-P.z)<MM_R;
@@ -101,11 +64,12 @@ function drawMinimap(){
     if(inside(q.x,q.z)){ const [a,b]=at(q.x,q.z); drawDiamond(x,a,b,(q.main?6:5)*DPR,col); }
     else { const ang=Math.atan2(q.x-P.x,-(q.z-P.z)), rr=W/2-9*DPR; x.save(); x.translate(W/2+Math.sin(ang)*rr,W/2-Math.cos(ang)*rr); drawDiamond(x,0,0,(q.main?5:4)*DPR,col); x.restore(); }
   }
-  // your view cone and arrow
-  x.save(); x.translate(W/2,W/2); x.rotate(-P.yaw); const g=x.createRadialGradient(0,0,0,0,0,W*0.32); g.addColorStop(0,'rgba(255,255,255,.28)'); g.addColorStop(1,'rgba(255,255,255,0)');
+  // your view cone and the red pin (the world map's), then the compass rose and the frame
+  x.save(); x.translate(W/2,W/2); x.rotate(-P.yaw); const g=x.createRadialGradient(0,0,0,0,0,W*0.32); g.addColorStop(0,'rgba(255,248,214,.4)'); g.addColorStop(1,'rgba(255,248,214,0)');
   x.fillStyle=g; x.beginPath(); x.moveTo(0,0); x.arc(0,0,W*0.32,-Math.PI/2-0.6,-Math.PI/2+0.6); x.closePath(); x.fill(); x.restore();
-  drawArrow(x,W/2,W/2,-P.face,6.5*DPR,'#fff4d0');
-  x.fillStyle='#fff'; x.font=`600 ${10*DPR}px Inter, system-ui, sans-serif`; x.textAlign='center'; x.textBaseline='top'; x.fillText('N',W/2,3*DPR);
+  mapStPin(x,W/2,W/2,4.6*DPR,-P.face);
+  mapStCompass(x,W-17*DPR,24*DPR,8*DPR);
+  mapStFrame(x,W,W,DPR);
 }
 /* ---- full map ---- */
 const mapC=$('#mapC'), mapCX=mapC.getContext('2d'), mapTip=$('#mapTip'), mapLandBtn=$('#mapLand');
@@ -124,12 +88,12 @@ function drawFullMap(){
   if(dgIn()){ dgDrawFullMap(mapC,mapCX,DPR); return; }   // dungeons: the run's explored tiles instead of a land (dungeon/minimap.js)
   renderTierRow(mapLand||landHere());
   const L=viewLand(), W=mapC.width, H=mapC.height, x=mapCX, k=W/(L.x1-L.x0), at=(wx,wz)=>[(wx-L.x0)*k,(wz-L.z0)*k];
-  x.clearRect(0,0,W,H);
-  if(!MAP.done){ x.fillStyle='rgba(238,240,226,.7)'; x.font=`${14*DPR}px Inter, system-ui, sans-serif`; x.textAlign='center'; x.fillText('Still mapping the forest…',W/2,H/2); return; }
+  x.fillStyle='#16486c'; x.fillRect(0,0,W,H);
+  if(!MAP.done){ x.fillStyle='rgba(247,238,214,.85)'; x.font=`italic ${14*DPR}px Georgia, serif`; x.textAlign='center'; x.fillText('Still mapping the forest…',W/2,H/2); mapStFrame(x,W,H,DPR); return; }
   x.imageSmoothingEnabled=true; x.drawImage(MAP.canvas,mapX(L.x0),mapZ(L.z0),(L.x1-L.x0)*MAP.k,(L.z1-L.z0)*MAP.k,0,0,W,H);
   const fs=Math.max(9,Math.min(13,W/DPR/48))*DPR, land=L===LANDS.hoar?'hoar':L===LANDS.vale?'vale':L===LANDS.grey?'grey':'home', vale=land==='vale'||land==='hoar', mine=zn=>landOfZone(zn)===land;
   x.textAlign='center'; x.textBaseline='middle';
-  const label=(t,cx,cy,size,col,bold)=>{ x.font=`${bold?'600 ':''}${size}px Inter, system-ui, sans-serif`; x.lineWidth=3*DPR; x.strokeStyle='rgba(10,12,10,.75)'; x.strokeText(t,cx,cy); x.fillStyle=col; x.fillText(t,cx,cy); };
+  const label=(t,cx,cy,size,col,bold)=>mapStLabel(x,t,cx,cy,size,col,bold,DPR);   // (serif, dark ink on a pale halo: ui/map-style.js)
   for(const zn of ZONES){ if(zn.boss||!mine(zn)) continue; const [cx,cy]=at(...(zn.label||zonePoint(zn,0,0.5))); label(zn.name,cx,cy-fs*0.55,fs,'#f2f0e4',true); label('Level '+zoneLvText(zn),cx,cy+fs*0.6,fs*0.85,'#ffcf8a'); }
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.grey?'grey':A.hoar?'hoar':inVale(A.x,A.z)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bossLvIn(bd.def,land)+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
   { const V=land==='grey'?VIL4:land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='grey'?'Highmark':land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
@@ -153,7 +117,8 @@ function drawFullMap(){
   }
   for(const m of MONS){ if(m.dead||!m.aggro) continue; const [a,b]=at(m.x,m.z); dot(x,a,b,2.4*DPR,'#ff4a3a'); }
   for(const r of REMOTES.values()){ if(r.tx===null) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,4*DPR,dgPartyCol(r.id)||'#6fb8ff'); label(r.name,a,b-fs*1.1,fs*0.85,'#cfe6ff'); }   // dungeons: party members in their colour (dungeon/party.js)
-  { const [a,b]=at(P.x,P.z); drawArrow(x,a,b,-P.face,8*DPR,'#fff4d0'); }
+  { const [a,b]=at(P.x,P.z); mapStPin(x,a,b,6.4*DPR,-P.face); }
+  { const nm=LANDS[land].name, B=WMAP_BANNER[WMAP_LAND[land]]; mapStRibbon(x,DPR,W,nm,'Levels '+B.levels); mapStCompass(x,W-30*DPR,H-30*DPR,13*DPR); mapStFrame(x,W,H,DPR); }   // the land's name on the scroll, the rose, the frame
   const zn=zoneAt(P.x,P.z), V=vilAt(P.x,P.z);
   const vn=V===VIL4?'Highmark':V===VIL3?'Rimehold':V===VIL2?'Hanami':'the village';
   $('#mapHere').textContent=vDist(P.x,P.z)<VR+12?'You are in '+vn:P.inTun?'You are on the Greyfall bridge':zn?(zn.boss?'You are near '+zn.name:'You are in '+zn.name+' (level '+zoneLvText(zn)+')'):inPass(P.x,P.z)?'You are in Frostgate Pass':inGrey(P.x,P.z)?'You are in the Greyspine':'You are near '+vn;
@@ -175,18 +140,19 @@ function placeName(wx,wz){
 // the lands' edges by their names in docs/WORLD.md (shaped in shared/terrain.js)
 function edgeName(x,z){
   if(coastDist(x,z)<40) return inHoar(x,z)||inGrey(x,z)?'The Outer Deep shore':'The Crownsea shore';   // (the north of the Reach and the Greyspine looks on the open ocean)
-  const bx=borderX(z), bz=borderZ(x), wx=lerp(wallW(z,1),56,riverK(z)), wz=wallW(x,3);   // (the walls' bodies are as wide as the terrain makes them there)
+  const bx=borderX(z), bn=borderXN(z), bz=borderZ(x), wx=lerp(wallW(z,1),56,riverK(z)), wn=wallW(z,1), wz=wallW(x,3);   // (the walls' bodies are as wide as the terrain makes them there)
   if(inGrey(x,z)){
     if(x-WX0<62) return 'The west wall';
-    if(bx-x<wx) return riverK(z)>0.5?'The Greyfall River':'The Vale Wall';
+    if(bn-x<wn) return 'The Glacier Wall';   // (the Greyspine | Reach wall)
     if(z>bz-wz) return 'The Greyspine foothills';
-  } else if(!inVale(x,z)){
-    if(Math.abs(z-REDGATE_Z)<16&&x-WX0<REDGATE_CL+45) return 'Redgate Canyon (sealed by a rock fall)';
-    if(x-WX0<sunwallLine(z)+18) return 'The Sunwall';
-    if(z-bz<wz) return 'The Greyspine foothills';
+  } else if(inSun(x,z)) return 'The Sunscar plateau';   // (not built: the Sunwall's top goes on west of the forest)
+  else if(!inVale(x,z)){
+    if(Math.abs(z-REDGATE_Z)<16&&x-HX0<REDGATE_CL+45) return 'Redgate Canyon (sealed by a rock fall)';
+    if(x-HX0<sunwallLine(z)+18) return 'The Sunwall';
+    if(z-bz<wz) return x<GXJ?'The Greyspine foothills':'The Frostwall';   // (the forest's north rim: the Greyspine's foothills west of its wall, the Reach's south wall east of it)
     if(bx-x<wx) return riverK(z)>0.5?'The Greyfall River':'The Vale Wall';
   } else if(inHoar(x,z)){
-    if(x-bx<wx) return riverK(z)>0.5?'The Greyfall River':'The Vale Wall';
+    if(x-bn<wn) return 'The Glacier Wall';
     if(z>bz-wz) return 'The Frostwall';
   } else {
     if(x-bx<wx) return riverK(z)>0.5?'The Greyfall River':'The Vale Wall';
@@ -210,7 +176,7 @@ $('#bMap').addEventListener('click',e=>{ e.currentTarget.blur(); toggleMap(); })
 $('#minimap').addEventListener('click',e=>{ e.currentTarget.blur(); toggleMap(); });
 addEventListener('keydown',e=>{ if(kbIs(e.code,'map') && started && !customizing && !e.repeat) toggleMap(); });
 addEventListener('resize',()=>{ if(!$('#map').hidden){ sizeFullMap(); drawFullMap(); } });
-{ const sz=Math.round((isTouch?104:150)*DPR); mmC.width=mmC.height=sz; }
+{ const sz=Math.round((isTouch?98:144)*DPR); mmC.width=mmC.height=sz; }   // (the frame's border takes 3 px each side)
 function updateMap(dt){
   if(Stream.terrainDone && !MAP.done) mapBuildStep(started?(LOW?4:8):(LOW?16:40));
   if(!started) return;
