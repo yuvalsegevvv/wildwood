@@ -23,6 +23,7 @@
     <div class="chat-in" id="chatIn" hidden><input id="chatText" maxlength="160" placeholder="Say something to everyone… (/name to rename)" autocomplete="off" enterkeyhint="send" aria-label="Chat message"><button class="chip" id="chatSend">Send</button></div>
     <button class="chat-btn" id="chatBtn" aria-label="Chat (Enter)" title="Chat (Enter)" data-kb="chat" data-kbt="Chat ({k})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg></button>
   </div>
+  <div id="qlog" hidden></div>
   </div>
   <div class="hud-r">
   <div class="btns">
@@ -51,7 +52,6 @@
 
 <div id="hint"></div>
 <div id="aiNote" role="note">Everything in this game, including the assets and music, was made with AI.</div>
-<div id="qlog" hidden></div>
 <div id="toasts"></div>
 <div id="bossbar" hidden><div class="bb-top"><b id="bbName">The Rootwarden</b><span class="bb-lv" id="bbLv">Lv 15 boss</span><span id="bbPhase"></span></div><div class="bb-bar"><i id="bbHp"></i></div></div>
 <div id="inv" class="panel" hidden role="dialog" aria-label="Inventory">

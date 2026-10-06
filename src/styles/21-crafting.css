@@ -22,6 +22,6 @@ body.playing #potbar:not([hidden]){ display:flex; }
 .pb::after{ content:""; position:absolute; inset:0; background:conic-gradient(rgba(0,0,0,.6) calc(var(--p)*360deg), transparent 0); pointer-events:none; }
 .pb.active{ box-shadow:0 0 0 2px var(--pc), 0 0 12px var(--pc); }
 .pb:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
-body.touch #potbar{ left:auto; transform:none; right:calc(104px + 72px + 22px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 26px); flex-direction:column-reverse; }
+body.touch #potbar{ left:auto; transform:none; right:calc(var(--col-r) + var(--ab) + 22px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 26px); flex-direction:column-reverse; }
 body.touch .pb .pk{ display:none; }
 body.editing #potbar{ display:none !important; }

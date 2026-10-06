@@ -25,6 +25,7 @@ body:not(.playing) .chat{ display:none; }
 .say{ position:fixed; left:0; top:0; z-index:5; pointer-events:none; }
 .say[hidden], .ntag q[hidden]{ display:none; }
 @media (min-width:720px){ body:not(.touch) .chat{ position:fixed; left:14px; bottom:calc(env(safe-area-inset-bottom,0px) + 38px); width:380px; } }   /* above the AI note (#aiNote) */
+body.touch .hud-l{ max-height:calc(100dvh - env(safe-area-inset-top,0px) - 14px - 48px); }   /* leaves the AI note's row free; the quest log (last in the column) is what gives way */
 body.touch .chat-log{ max-height:96px; font-size:12px; }
 body.touch .chat.open .chat-log{ max-height:28vh; }
 body.editing .chat, body.editing .say{ display:none; }

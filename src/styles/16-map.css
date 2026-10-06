@@ -5,8 +5,8 @@
 #minimap canvas{ display:block; width:100%; height:100%; }
 #minimap:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
 body:not(.playing) #minimap{ visibility:hidden; }
-#qlog{ top:calc(env(safe-area-inset-top,0px) + 232px) !important; }
 body.touch #minimap{ width:104px; height:104px; border-radius:14px; }
+@media (max-height:500px){ body.touch #minimap{ width:92px; height:92px; } }   /* a phone on its side: leave the attack column its room */
 #map{ width:min(860px,calc(100vw - 24px)); height:min(92dvh,900px); max-height:none; }
 .map-here{ margin-left:auto; font-size:13px; color:var(--lichen); }
 .map-land{ margin-left:12px; font-size:12px; padding:4px 10px; }
@@ -24,7 +24,5 @@ body.touch #minimap{ width:104px; height:104px; border-radius:14px; }
 .lg.q, .lg.qr{ border-radius:1px; transform:rotate(45deg); width:9px; height:9px; background:#f2cf5a; } .lg.qr{ background:#9fe08a; }
 @media (max-width:719px){
   #map{ height:88dvh; }
-  body.touch #qlog{ top:auto !important; }
-  body:not(.touch) #qlog{ top:calc(env(safe-area-inset-top,0px) + 232px) !important; }
 }
 body.touch #bMap{ display:none; }

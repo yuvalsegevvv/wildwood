@@ -3,6 +3,15 @@
   background:var(--glass-strong); border:1px solid var(--line); border-radius:12px; padding:7px 12px 8px; pointer-events:none;
   backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
 #tframe[hidden]{ display:none; }
+/* the top bar's middle is only as wide as the screen minus the stats box and the buttons: below 1000 px the frame drops under the button row, and on a portrait phone it sits under the minimap */
+@media (max-width:999px){
+  #tframe{ top:calc(env(safe-area-inset-top,0px) + 68px); }
+  body:has(#bossbar:not([hidden])) #tframe{ top:calc(env(safe-area-inset-top,0px) + 130px); }   /* a boss's add: the boss bar has the first row */
+}
+@media (max-width:520px){
+  #tframe{ left:auto; right:calc(16px + env(safe-area-inset-right,0px)); transform:none; width:min(176px,46vw); top:calc(env(safe-area-inset-top,0px) + 226px); }
+  body:has(#bossbar:not([hidden])) #tframe{ top:calc(env(safe-area-inset-top,0px) + 290px); }
+}
 .tf-top{ display:flex; justify-content:space-between; align-items:baseline; font-size:13.5px; }
 .tf-top span{ font-size:12px; color:var(--lichen); font-weight:600; }
 .tf-bar{ height:7px; border-radius:4px; background:rgba(0,0,0,.45); margin-top:5px; overflow:hidden; }
@@ -26,8 +35,8 @@ body.playing #actionbar{ display:flex; }
 .ab:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
 #hint{ bottom:calc(env(safe-area-inset-bottom,0px) + 100px); }
 #prompt{ bottom:calc(env(safe-area-inset-bottom,0px) + 150px); }   /* (above the potion belt) */
-body.touch #actionbar{ left:auto; transform:none; right:calc(104px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 26px); flex-direction:column-reverse; }
-body.touch .ab{ width:72px; height:72px; border-radius:50%; }
+body.touch #actionbar{ left:auto; transform:none; right:calc(var(--col-r) + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 26px); flex-direction:column-reverse; gap:var(--abg); }
+body.touch .ab{ width:var(--ab); height:var(--ab); border-radius:50%; }
 body.touch .ab .key{ display:none; }
 body.editing #actionbar, body.editing #tframe, body.editing .dmg, body.editing .hpb{ display:none !important; }
 .card{ max-height:calc(100dvh - 32px); overflow-y:auto; }

@@ -91,7 +91,7 @@
 #abSkill.empty svg{ opacity:.55; }
 #abSkill.flash{ animation:skflash 1.6s ease-out; }
 @keyframes skflash{ 0%{ box-shadow:0 0 0 0 rgba(159,224,138,.9); } 60%{ box-shadow:0 0 0 14px rgba(159,224,138,0); } 100%{ box-shadow:none; } }
-body.touch .ab-burst{ width:56px; height:56px; align-self:center; }
+body.touch .ab-burst{ width:var(--abs); height:var(--abs); align-self:center; }
 .ab.buffed{ box-shadow:0 0 0 2px rgba(255,120,90,.8), 0 0 14px rgba(255,120,90,.5); }
 .ab-burst{ opacity:1; }
 .ab-burst.empty{ opacity:.7; }

@@ -21,6 +21,10 @@ body.playing .hud-top{ opacity:1; }
 .icon-btn:hover{ background:var(--glass-strong); }
 .icon-btn:focus-visible, .touch-btn:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
 .icon-btn svg{ width:22px; height:22px; }
+@media (max-width:520px){   /* a narrow phone: the buttons take two rows, or they would sit on top of the stats box */
+  .btns{ width:calc(3*42px + 2*6px); flex-wrap:wrap; justify-content:flex-end; gap:6px; }
+  .icon-btn{ width:42px; height:42px; }
+}
 
 #hint{
   position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom,0px) + 22px); transform:translateX(-50%);
@@ -31,7 +35,8 @@ body.playing .hud-top{ opacity:1; }
   opacity:0; transition:opacity 1s; pointer-events:none;
 }
 #hint.show{ opacity:1; }
-body.touch #hint{ bottom:calc(env(safe-area-inset-bottom,0px) + 118px); }
+body.touch #hint{ left:calc(14px + env(safe-area-inset-left,0px)); transform:none; text-align:left; bottom:calc(env(safe-area-inset-bottom,0px) + 44px);
+  max-width:calc(100vw - var(--col-r) - var(--ab) - 40px); }   /* bottom left, above the AI note: it stops short of the round buttons */
 
 /* AI disclosure, bottom left: always there, over the start card too; on a phone it stops short of the round buttons on the right */
 #aiNote{
