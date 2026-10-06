@@ -59,6 +59,9 @@ function applyEvent(e){
   switch(e[0]){
     case 'dmg': onMonDmg(e[1],e[2],e[3],e[4],e[5]); break;
     case 'imm': onMonImmune(e[1]); break;
+    case 'aura': rxOnAura(e[1],e[2],e[3]); break;   // reactions: an aura on a monster (el 0: gone)
+    case 'react': rxOnReact(e[1],e[2]); break;   // reactions: two elements reacted
+    case 'st': rxOnStatus(e[1],e[2],e[3],e[4],e[5]); break;   // reactions: vuln / weak set
     case 'kill': onMonKill(e[1],e[2]); break;
     case 'mact': onMonAct(e[1],e[2]); break;
     case 'aggro': { const m=MON_BY_ID.get(e[1]); if(m) monSound(m,'aggro'); break; }

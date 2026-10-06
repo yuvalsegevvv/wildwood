@@ -23,21 +23,21 @@
 | **Dunstan** | support (buff) | fire | `burn` | all six fire; P1 leaves the aura | fire | fire is the rallying element; `burn` comes through reactions, a buffer does not debuff |
 | **Marigold** | mixed: safe DPS + support | light | `vuln` | all six light; P1 leaves the aura (no direct `vuln`: that is the debuffer's job) | light | stage light; single-element because a mixed set cannot be a hybrid |
 
-## 3. The wheel against the monsters (by the `el:` of `shared/monster-defs.js`: water 22, earth 18, air 16, dark 15, fire 10, light 6; counts are rough)
+## 3. The wheel against the monsters (non-boss monsters in the world by `el`: water 237, earth 222, air 195, dark 192, fire 153, light 61, none 119)
 
 | Element | x1.5 against | x1/1.5 against | Read |
 |---|---|---|---|
-| earth | water (22) | earth, air (34) | strong against the most common element |
-| air | earth (18) | air, fire (26) | solid |
-| fire | air (16) | fire, water (32) | rough |
-| water | fire (10) | water, earth (40) | **the roughest**: Ambrose pays for it in damage, not in healing |
-| light | dark (15) | light (6) | good, and light monsters are rare |
-| dark | light (6) | dark (15) | weak by count |
+| earth | water (237) | earth, air (417) | strong against the most common element |
+| air | earth (222) | air, fire (348) | solid |
+| fire | air (195) | fire, water (390) | rough |
+| water | fire (153) | water, earth (459) | **the roughest**: Ambrose pays for it in damage, not in healing |
+| light | dark (192) | light (61) | good, and light monsters are rare |
+| dark | light (61) | dark (192) | weak by count |
 
-- **A hybrid hedges the wheel**: Sazanka's air hits earth monsters x1.5 and her dark hits are neutral there, her dark hits are fine against air and fire monsters where air is resisted. That is a second advantage on top of the self-reaction; the soul trade-off should keep it fair, and playtests decide (decision 49).
-- **Two flags for the owner:** water is the roughest wheel (a healer's damage is the smaller part of its job, so it can bear it); dark has few light monsters to beat. Swapping an element is a one-row change in `THEMES.md` plus the row above.
+- **A hybrid hedges the wheel**: Sazanka's air hits earth monsters x1.5 and her dark hits are neutral there; her dark hits are fine against air and fire monsters where air is resisted. That is a second advantage on top of the self-reaction; the soul trade-off should keep it fair, and playtests decide (decision 49).
+- **Decided by the owner:** the existing monsters stay as they are, water's rough wheel included (a healer's damage is the smaller part of its job). Instead a **guideline for future monster releases** evens the element counts out: give new kinds to the elements furthest below the mean, light first (`docs/areas/monsters-bosses.md`, "Elements of new monsters"). Swapping a character's element is a one-row change in `THEMES.md` plus the row above.
 
-## 4. Who reacts with whom (a reaction = both flavours at 0.7; names come later as data)
+## 4. Who reacts with whom (a reaction = both flavours at 0.7; the names are the placeholders of `src/shared/reactions-chart.js`, the engine is built: `docs/REACTIONS.md`)
 
 | Pair | Result | Note |
 |---|---|---|
@@ -48,7 +48,7 @@
 | Tansy (none) + anyone | no reaction | never starts one, never disturbs one |
 | Dunstan (fire) + Ambrose (water) | `burn` + `slow` (a first-draft override: an amplified burst) | second wave |
 | Sorrel (air) + Dunstan (fire) | `spread` + `burn` | second wave |
-| Corvin + Marigold (both light) | **none**: the same element shares an aura and `vuln` never stacks | **flag:** two light sets in one party add nothing; say if Marigold should move to another element (fire: stage pyrotechnics; air: a singing wind) |
+| Corvin + Marigold (both light) | **none**: the same element shares an aura and `vuln` never stacks | accepted by the owner: these are only the first eight, and later kits use other elements |
 
 ## 5. Coverage of the eight
 

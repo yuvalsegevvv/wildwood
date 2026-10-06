@@ -27,7 +27,7 @@ function addMonView(r){ // [id, defId, campX, campZ, scale, x, z, dead, temp]
 }
 function removeMonView(id){
   const m=MON_BY_ID.get(id); if(!m) return;
-  scene.remove(m.g); m.mat.dispose(); MON_BY_ID.delete(id);
+  scene.remove(m.g); m.mat.dispose(); MON_BY_ID.delete(id); rxViewDrop(id);   // reactions: its aura marker goes too
   const i=MONS.indexOf(m); if(i>=0) MONS.splice(i,1);
   if(CB.target===m) CB.target=null; BOSS.list=BOSS.list.filter(b=>b!==m); if(BOSS.m===m) BOSS.m=null;
 }
@@ -67,7 +67,7 @@ function updateMonsters(dt){
     m.mat.emissive.setRGB(gl.r+f*0.9+bn,gl.g+f*0.35+sl*0.4+bn*0.4,gl.b+f*0.3+sl);
     if(m.burning&&m.g.visible&&Math.random()<dt*12){ const e=new THREE.Mesh(emberGeo,emberMat); e.position.set(m.x+AR(-0.35,0.35)*m.s,m.y+m.T.height*m.s*AR(0.2,1),m.z+AR(-0.35,0.35)*m.s); scene.add(e); CB.fx.push({mesh:e,life:0.5,max:0.5,shrink:true}); }
   }
-  updateBossFx(dt);
+  updateBossFx(dt); rxViewUpdate(dt);   // reactions: the aura markers follow their monsters
 }
 function animateMonster(m,dt,sp){
   const g=m.g;

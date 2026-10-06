@@ -19,7 +19,8 @@ function handleAttack(p,msg){
   if(k!=='basic') mqActP(p,k);   // the main quest's 'use your skill / burst' steps
 }
 // the element multiplier of an attack of element el (a skill's, 'basic' if none) from p on monster m: their soul and the monster's own element
-function elemHitS(p,el,m){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=p.buff.el;   // an enchanting buff gives element-less attacks its element
+function elemEffS(p,el){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=p.buff.el; return el; }   // reactions: the element an attack counts as (an enchanting buff gives element-less attacks its element), for the damage and the aura
+function elemHitS(p,el,m){ el=elemEffS(p,el);
   return soulMult(soulOfP(p),el,psP(p,'soul'))*(m?foeMult(el,elOf(m.T)):1); }
 function rollDmgS(p,mult,m,el){
   const b=p.buff, crit=Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+pendP(p,'crit')+(b?b.crit:0)), ld=m?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
@@ -31,6 +32,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(m.immune){ ev('imm',m.id); return 0; }
   if(m.boss && m.B.stunT>0) mult*=1.5;
   const d=rollDmgS(p,mult,m,el);
+  const vk=rxVulnK(m); if(vk) d.v=Math.max(1,Math.round(d.v*(1+vk)));   // reactions: a vulnerable monster takes more, whoever hits it
   if(m.T.heavy) kb=0;
   m.hp-=d.v/monK(m,p).hp; m.hitters.set(p.id,S.t);   // (the health pool is in the def's own units: a hit at a higher zone tier takes off less of it)
   if(m.boss&&m.B.kit.hit) m.B.kit.hit(m.B,m,p,d.v);   // dungeons: a boss kit's hit hook (Gawataro's dish spills from behind)
@@ -40,10 +42,12 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(!m.aggro||!S.players.get(m.tgt)){ m.aggro=true; m.tgt=p.id; }
   if(d.fx) ev('dmg',m.id,d.v,d.crit?1:0,p.id,d.fx); else ev('dmg',m.id,d.v,d.crit?1:0,p.id);
   if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }
+  else rxHitS(m,p,elemEffS(p,el),mult);   // reactions: a direct hit leaves an aura or reacts with the one there
   return d.v;
 }
 function killMonsterS(m,p){
-  m.burnT=0; m.dead=true; m.deadT=0; m.respawnT=35; m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
+  m.burnT=0; rxClearS(m); m.dead=true; m.deadT=0;   // reactions: aura and statuses go with it
+  m.respawnT=35; m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
   ev('kill',m.id,p?p.id:null);
   if(m.inst){ dgKilledS(m,p); return; }   // dungeons: a run's kill pays every member present (rewardAllS) and tells the mission; its boss ends the run
   if(!m.T.noXp){
@@ -168,6 +172,7 @@ function statusS(m,s,p,el,mult){
   if(s.stun&&!m.T.heavy&&!m.boss) m.stunT=Math.max(m.stunT||0,s.stun);
   if(s.slow) m.slowT=Math.max(m.slowT||0,s.slow);
   if(s.burn){ m.burnT=s.burn.dur; m.burnMult=mult*s.burn.k; m.burnBy=p.id; m.burnEl=el; m.burnTick=1; }
+  rxDirectS(m,s,p,mult);   // reactions: the entry's flavor and status keys
 }
 function updateBurnS(dt){
   for(const m of MONS){
@@ -175,7 +180,7 @@ function updateBurnS(dt){
     S.ctx=m.inst|0;   // dungeons: burning belongs to the monster's run
     if(m.dead||m.remove){ m.burnT=0; continue; }
     m.burnT-=dt; m.burnTick-=dt;
-    if(m.burnTick<=0){ m.burnTick+=1; const o=S.players.get(m.burnBy); if(o) damageMonsterS(m,m.burnMult,o,m.x,m.z,0,m.burnEl); else m.burnT=0; }
+    if(m.burnTick<=0){ m.burnTick+=1; const o=S.players.get(m.burnBy); if(o) rxQuietS(()=>damageMonsterS(m,m.burnMult,o,m.x,m.z,0,m.burnEl)); else m.burnT=0; }   // reactions: a burn tick leaves no aura and reacts to nothing
   }
 }
 /* Skills with generic effects: the row's fx lists what happens, resolved in this order when the swing lands (any of them can be combined):
@@ -187,7 +192,8 @@ function updateBurnS(dt){
    chain:{n,fall,range}                  the target and n-1 more, each the nearest within range of the last, fall x weaker every jump
    proj:{kind,n,spread,seek,speed,turn,life,splash:{r,k},zone:{...},burn,slow,stun}   n projectiles in a fan (seek: each picks a different enemy near you)
    zone:{r,dur,every,once,follow,self,kb,slow,stun}     a ground area at the target (or on you), hitting every 'every' s (once: a single hit at the end)
-   k = a share of the skill's mult. Statuses (stun, slow, burn:{dur,k}) go with the entry they are in. */
+   k = a share of the skill's mult. Statuses (stun, slow, burn:{dur,k}) go with the entry they are in, and so do flavor:'<element>' (that element's flavour at full strength:
+   burn, slow, stun, spread, weak or vuln; docs/REACTIONS.md) and status:{kind:'vuln'|'weak'|'slow'|'stun',v,dur} on a ring, cone, proj or zone entry. */
 function resolveFxS(p,a,tgt){
   const f=a.fx, alive=m=>!m.dead&&!m.remove, dist=m=>Math.hypot(m.x-p.x,m.z-p.z), inRange=tgt&&dist(tgt)<=a.range+2;
   const dmg=(m,mult,x,z,kb)=>damageMonsterS(m,mult,p,x,z,kb,a.el)||0;

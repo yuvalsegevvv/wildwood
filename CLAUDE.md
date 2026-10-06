@@ -89,7 +89,7 @@ Short rows: the files that matter. A row ending in `→ docs/areas/<x>.md` has t
 |---|---|
 | Look up a monster's or an item's numbers, or where it is defined | `docs/MOBS.md`, `docs/EQUIPMENT.md` (generated: `node tools/gen-docs.js`; `--check` says whether they are current) |
 | Balance formulas (HP, damage, XP curve, coins, 1.5× for level 10-15) | `shared/balance.js` |
-| Monster stats / new monster | `shared/monster-defs.js` (data; the look flags in `pal` are in `docs/areas/monsters-bosses.md`), `game/combat/monsters.js` (the views: `addMonView`, `updateMonsters`, `animateMonster`), `server/monsters.js` (spawn counts `MON_COUNT`, AI) |
+| Monster stats / new monster | `shared/monster-defs.js` (data; the look flags in `pal` and the guideline for a new monster's element are in `docs/areas/monsters-bosses.md`), `game/combat/monsters.js` (the views: `addMonView`, `updateMonsters`, `animateMonster`), `server/monsters.js` (spawn counts `MON_COUNT`, AI) |
 | How a monster or boss looks (models, animation, look flags) | `game/combat/monster-*.js`: one file per family, each fills `MODELS.<model>={geo,build,anim}`; helpers in `monster-parts.js`. **See them**: `node tools/monster-preview.js out.png --ids oni,boss` → `docs/areas/monsters-bosses.md` |
 | Boss mechanics / visuals (eight bosses: the Greyspine's two have kits in `boss-kits-grey.js`) | `BOSS_DEFS` (`shared/monster-defs.js`) → server `boss.js` (the shared part), `boss-fx.js` (move primitives), `boss-kits-*.js` (`BOSS_KITS.<kit>`) → client `game/combat/boss.js`, `boss-fx.js`; test `node tools/boss-smoke.js` → `docs/areas/monsters-bosses.md` |
 | Carapax, the Tide King (level 20, the south beach) | `shared/beach.js` (`ARENA_TIDE`), `CARAPAX_DEF`, `game/village/buildings-beach.js` → `docs/areas/monsters-bosses.md` |
@@ -112,6 +112,7 @@ Short rows: the files that matter. A row ending in `→ docs/areas/<x>.md` has t
 | Skills (all 3 slots, all classes) | `shared/classes.js` (`SKILLS`, `abilityOf`) → `server/combat.js` (`resolveHitS`) → `game/combat/skill-fx.js`, `attacks.js`. A new attack path must hand its element to `damageMonsterS` → `docs/areas/skills-items.md` |
 | Boss skills (48, dropped by bosses at 10% each) and generic skill effects (`fx`) | rows with `drop:'<boss id>'` in `SKILLS`, `BOSS_SKILLS` (`shared/drops.js`), `resolveFxS` (`server/combat.js`), `skill-fx.js`; a skill with `fx` needs no server or client code → `docs/areas/skills-items.md` |
 | Elements (`el` on skills and monsters, the soul bound at level 15, the x1.5 rules) | `shared/elements.js`, `elemHitS` / `rollDmgS` (`server/combat.js`), `bindSoulP`, `game/economy/soul.js` → `docs/areas/skills-items.md` |
+| Elemental reactions (a hit of an element leaves an aura, two elements react into two flavour statuses, a skill's `flavor` / `status` keys apply one directly, shared non-stacking `vuln` / `weak` on monsters; **built**, no kit uses it yet; `RX_ON` switches it off) | `shared/reactions.js` + `reactions-chart.js` (data), `server/reactions.js` (engine; its hooks are marked `// reactions:`), `game/combat/reactions.js` (the aura marker, names); test `node tools/reactions-smoke.js` → `docs/REACTIONS.md` |
 | Skill levels / upgrades and monster drops | `shared/drops.js` (`upgradeNeeds`), `shared/classes.js` (`skillPower`), `upgradeSkillP`, `addMatP` → `docs/areas/skills-items.md` |
 | Passive skills (class-universal, level 18) | `PASSIVES`, `PASSIVE_OPEN` (`shared/classes.js`), `psP(p,stat)` on the server → `docs/areas/skills-items.md` |
 | The skills panel (tabs, drag and drop onto slots) | `game/economy/skills.js` (`skTile`, `skInfoHtml`, `SKD` drag state; styles `18-skills.css`); test `client-smoke` |
@@ -216,6 +217,7 @@ node tools/entrances-client-smoke.js   # 32 checks: the four doors' client dress
 node tools/dungeon-board-client-smoke.js # 37 checks: the Delve board and the join prompt (runs dist/)
 node tools/dungeon-client-smoke.js     # 44 checks: a run's client: view, walls, camera, party frame, HUD, results (runs dist/)
 node tools/entrance-map.js       # draws docs/dungeon-entrances.png (the four doors on the real terrain); regenerates byte-identically
+node tools/reactions-smoke.js     # 47 checks: the 15-pair chart, auras, reactions, direct application, vuln / weak (shared, never stacking), the guards (cooldown, spread in a run, bosses), ~2 s
 node tools/tiers-smoke.js        # 48 checks: zone tiers I-V, what a kill pays, the creeps above level 60, the x0.5 floor of the level debuff, ~2 s
 node tools/boss-duel.js --check  # 18 checks: a maxed level-60 hero vs the level-80 bosses (standing loses, avoiding half wins) and the ramp below them, ~10 s; without --check a table (--boss|--camp --tier --level --class --avoid)
 node tools/levels-smoke.js       # 11 checks: the XP curve, the soft cap from level 50, saves and the testing tool, a kill never pays for more than 10 levels above you, ~2 s

@@ -54,6 +54,8 @@ shared
   monster-defs.js                    Monster families (FAM), the 72 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach, 14 in the Greyspine), defAt (a def's numbers at a level; above level 60 monsters creep tougher, bosses also stronger), prepDef, the eight bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
   tiers.js                           Zone tiers: a harder setting for each land (every enemy in it, bosses included, +10 levels per tier), opened by its second boss, and the symbol bonus. Pure.
   elements.js                        Elements (ELEMS): your soul (SOUL_LV, opposite pairs) and a monster's element (the wheel), with the damage multipliers for both. Pure.
+  reactions.js                       Elemental reactions (rules, pure): the constants, each element's flavour and the reaction registry defineReaction that builds the chart
+  reactions-chart.js                 The fifteen elemental reactions as data (one defineReaction row per pair of elements; the names are placeholders)
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
   drops.js                           Monster drops (MATS: one material per monster kind), the skills bosses drop (BOSS_SKILLS), and what upgrading a skill costs (upgradeNeeds). Pure.
   items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, and the three profession tools (TOOL_LIST) with the same tiers and rarities (the pendants' rules are in pendants.js, the pieces in dungeon-items.js); prices, drop tables, merging, armour looks, gear helpers (the level-30 dungeon pieces join ITEM in dungeon-items.js). Pure.
@@ -79,6 +81,7 @@ server
   players.js                         Players on the server: records, stats, XP and levels, damage taken, knock-out and respawn, private state ("you")
   monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
+  reactions.js                       Reactions on the server: elemental auras and reactions, the flavours as shared statuses on monsters (vuln, weak, burn, slow, stun) and direct application
   boss-fx.js                         What the bosses can do, shared by every move set: telegraphed hits (circle, cone, line, donut, marks), ground zones, tidal walls, orbs, effects on players, timed casts, summons
   boss-kits-home.js                  Boss move sets of the home forest: the Rootwarden (root spikes, ground slam, the totem shield, thornlings) and Carapax, the Tide King (geyser trails, tidal waves, burrow strikes, the whirlpool)
   boss-kits-vale.js                  Boss move sets of the Sakura Vale: Akaoni (demon leaps and fire pools, fire ripples, burning brands) and Kyuubi (foxfire volleys, blinking strikes, spoke beams, spirit foxes)
@@ -191,6 +194,7 @@ game
   combat/classes.js                  Classes and their abilities (CLASSES), combat state (CB), effect materials
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
   combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
+  combat/reactions.js                Reactions on the client: the aura marker over a monster, the reaction's name popping up, the vulnerable / weakened notes
   combat/lucky.js                    Lucky drops and forging: light beam, sparkles, banner and a bright jingle for epic, unique and legendary items
   combat/sounds.js                   Combat sounds (cSfx) and monster voices (monSound)
   ui/combat-hud.js                   Target frame, player bars, damage numbers, action bar, attack input

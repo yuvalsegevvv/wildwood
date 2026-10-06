@@ -57,8 +57,8 @@ The owner's order: **the combat changes first**, all of them, before any set con
 |---|---|---|
 | MB | boss skills upgradeable with boss materials | everyone (independent of the sets) |
 | M2a | marks, `pop`, `amp`; triggers (`hit` `crit` `kill` `hurt` `cast1-3` `tick` `low`); trade-offs (`cost`); `vsBoss`, `behind`, `rangeScale`, `shield`, `reflect`; the ladder harness (with the farming route and the two risk-DPS bots) | grind, risk and safe DPS, tank, and every kit's passives |
-| M2b | monster statuses `vuln` / `weak`; taunt; ally buffs and the ally heal | support, tank, healer, the mixed set |
-| M2c | auras, reactions (flavours), direct application (`flavor`), the chart in the skills panel, optional `infuse` | every elemental set passively; the debuff support and the hybrids actively |
+| M2b | monster statuses `vuln` / `weak` (**built**, `docs/REACTIONS.md`); taunt; ally buffs and the ally heal | support, tank, healer, the mixed set |
+| M2c | **built (R0 to R2, `docs/REACTIONS.md`)**: auras, reactions (flavours), direct application (`flavor`); still to do: the chart in the skills panel, optional `infuse` | every elemental set passively; the debuff support and the hybrids actively |
 | (world) | **more monsters a camp and a shorter respawn**, tuned with the farming route | the grinder (and everyone's farming) |
 | M5 | the look features, weapon skins, the transformation look (when looks are drafted again) | every look |
 
@@ -82,7 +82,6 @@ The owner's order: **the combat changes first**, all of them, before any set con
 - **All the numbers are light recommendations** (the owner): balancing by playtest, so none of the open items below blocks building.
 - **Support, healer and tank at a flat 90 / 90 / 90:** my reading is an absolute 90 at every step (the owner: "90/90/90 as the set effect probably enhancing support"). If 90% of the safe ladder at each step (99 / 112 / 135) was meant, it is one constant.
 - **Risk DPS:** only the 170 is the owner's number; "typical play equals safe DPS" and "careless about 0.8x" are my reading.
-- **Two light sets** (Corvin, Marigold) do not react with each other and their `vuln` never stacks: keep, or move Marigold to another element? (`ELEMENTS.md` section 4). Water is also the roughest wheel for the healer (section 3).
 - The reaction chart (a first draft in `docs/SKILL-SETS.md` 6b): the flavours, the strengths (0.7 / 1.0), the per-reaction cooldown.
 - The grinder: friendlier odds (decision 37), the farming route, what counts as "the best alternative", and **how much to buff the spawns**.
 - Risk and safe DPS: how do the archer and mage versions work at a very short or a very long range?

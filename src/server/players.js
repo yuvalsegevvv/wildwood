@@ -133,7 +133,7 @@ function gainExpP(p,v,monId){
 function hurtP(p,v,m){
   if(p.dead) return;
   const K=m?monK(m,p):null, ld=m?Math.max(0,K.lv-p.level):0;
-  v=Math.max(1,Math.round(v*(K?K.dmg:1)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red'))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard')))));
+  v=Math.max(1,Math.round(v*(K?K.dmg:1)*rxWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red'))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard')))));   // reactions: weak lowers what a monster deals
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){
     p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id);
