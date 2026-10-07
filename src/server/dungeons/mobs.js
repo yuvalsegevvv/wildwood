@@ -63,6 +63,7 @@ function dgMonTickS(run,m,dt){
   if(m.stunT>0){ m.stunT-=dt; m.pendingHit=-1; dgMoveS(run,m,m.kbx*dt,m.kbz*dt); m.kbx*=kd; m.kbz*=kd; m.vx=m.vz=0; return; }
   let p=m.tgt!=null?S.players.get(m.tgt):null;
   if(p&&(p.dead||p.inst!==run.id)) p=null;
+  { const tq=ssTauntedBy(m); if(tq&&tq.inst===run.id){ p=tq; m.tgt=tq.id; if(!m.aggro){ m.aggro=true; ev('aggro',m.id); } } }   // skillsets: a taunted monster of the run comes for the taunter
   if(!p){   // lost its target (or never had one): one that was hunting takes the nearest living member anywhere; a quiet one waits to see someone near
     const q=m.aggro||m.dgHunt?dgNearestS(run,m,1e9,false):dgNearestS(run,m,Math.max(DG_AGGRO_R,T.aggro||0),true);
     if(q){ if(!m.aggro) ev('aggro',m.id); m.aggro=true; m.tgt=q.id; p=q; } else { m.aggro=false; m.tgt=null; }

@@ -7,6 +7,7 @@
 | You are working on | Open (and nothing else) |
 |---|---|
 | **One kit's mechanics** (its pieces, bonuses, balance) | `RULES.md`, then `kit-<archetype>.md` |
+| **Turning one kit into code** (a set is one data file) | `AUTHORING.md` (what a piece may use, the file, the checks, how to test it) |
 | **A theme, a gender, a first name or an element** | `THEMES.md` (one row), and for an element also that character's row in `ELEMENTS.md` |
 | **How a character uses its element** (flavour, which pieces, the soul, the wheel, who it reacts with) | `RULES.md`, then `ELEMENTS.md` |
 | **A mixed-role set** (two kits in one set) | `RULES.md`, `kit-mixed.md`, and the two kits' files |
@@ -53,14 +54,18 @@ Details (gender, element(s), the theme line, an alternate) are **one row each in
 
 The owner's order: **the combat changes first**, all of them, before any set content (`docs/SKILL-SETS.md` section 12).
 
-| Milestone | Feature | Used by |
+| Milestone | Feature | State |
 |---|---|---|
-| MB | boss skills upgradeable with boss materials | everyone (independent of the sets) |
-| M2a | marks, `pop`, `amp`; triggers (`hit` `crit` `kill` `hurt` `cast1-3` `tick` `low`); trade-offs (`cost`); `vsBoss`, `behind`, `rangeScale`, `shield`, `reflect`; the ladder harness (with the farming route and the two risk-DPS bots) | grind, risk and safe DPS, tank, and every kit's passives |
-| M2b | monster statuses `vuln` / `weak` (**built**, `docs/REACTIONS.md`); taunt; ally buffs and the ally heal | support, tank, healer, the mixed set |
-| M2c | **built (R0 to R2, `docs/REACTIONS.md`)**: auras, reactions (flavours), direct application (`flavor`); still to do: the chart in the skills panel, optional `infuse` | every elemental set passively; the debuff support and the hybrids actively |
-| (world) | **more monsters a camp and a shorter respawn**, tuned with the farming route | the grinder (and everyone's farming) |
-| M5 | the look features, weapon skins, the transformation look (when looks are drafted again) | every look |
+| MB | boss skills upgradeable with boss materials | not built (independent of the sets) |
+| M0, M1 | the registry, `cls:'any'`, slot 1 for every class, counting, the 3- / 5-set bonuses, the passive slots at 18 / 24 / 30 | **built** |
+| M2a | marks, `pop`, `amp`; triggers (`hit` `crit` `kill` `hurt` `cast1-3` `tick` `low`); trade-offs (`cost`); `vsBoss`, `behind`, `rangeScale`, `reflect`; the ladder harness | **built** |
+| M2b | monster statuses `vuln` / `weak`; taunt; ally buffs, the party heal, shields | **built** |
+| M2c | auras, reactions (flavours), direct application (`flavor`) | **built** (`docs/REACTIONS.md`); the chart in the skills panel and `infuse` are not |
+| (world) | **more monsters a camp and a shorter respawn**, tuned with the farming route | not built (the grinder's note) |
+| M3 | where a set comes from: the boss and dungeon drops, their pity | not built (until then a set is only given by `dev set`) |
+| M4, M5 | gems, the wardrobe, the look features and weapon skins | not built |
+
+Everything a kit needs from the engine is in the built rows: `AUTHORING.md` lists what a piece may use.
 
 ## What the kits give each other
 

@@ -43,6 +43,7 @@ function updateBossS(m,dt){
   m.awake=B.engaged||anyPlayerNear(m.x,m.z,110);
   if(B.engaged){
     let p=null, dp=1e9; for(const q of inside){ const d=Math.hypot(q.x-m.x,q.z-m.z); if(d<dp){ dp=d; p=q; } }
+    { const tq=ssTauntedBy(m); if(tq&&inside.includes(tq)){ p=tq; dp=Math.hypot(tq.x-m.x,tq.z-m.z); } }   // skillsets: its melee turns on the taunter (its telegraphed moves choose by their own rules)
     const dx=p.x-m.x, dz=p.z-m.z; m.tgt=p.id;
     const f=m.hp/m.maxHp;
     if(B.phase===1 && f<0.6){ B.phase=2; B.kit.phase(B,m,2); }

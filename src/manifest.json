@@ -169,6 +169,7 @@
     "combat/weapons.js",
     "combat/attacks.js",
     "combat/reactions.js",
+    "skillsets/marks.js",
     "combat/lucky.js",
     "combat/sounds.js",
     "ui/combat-hud.js",

@@ -10,7 +10,8 @@ function handleAttack(p,msg){
   const cls=clsOfP(p), ab=abilityOf(cls,k,p.gear.skills,p.level); if(!ab) return;   // no skill equipped, or the slot is still locked
   const [kind,dur,hitAt]=ab.act;
   const lvl=skillLvOf(p.gear.skills,ab.id);
-  p.cd[k]=abilityCd(ab,p.gear.skills,p.level,cls)*(k==='basic'&&p.buff?p.buff.cd:1);
+  p.cd[k]=abilityCd(ab,p.gear.skills,p.level,cls)*(k==='basic'&&p.buff?p.buff.cd:1)*(1-allyP(p,'haste'));   // skillsets: an ally haste buff shortens it
+  ssTriggerS(p,'cast'+(1+SLOTS.indexOf(k)),{m:MON_BY_ID.get(msg.tg)});   // skillsets: on cast rows of slot 1, 2, 3
   if(isFinite(+msg.face)) p.face=+msg.face;
   const tg=MON_BY_ID.get(msg.tg);
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
@@ -23,8 +24,8 @@ function elemEffS(p,el){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=
 function elemHitS(p,el,m){ el=elemEffS(p,el);
   return soulMult(soulOfP(p),el,psP(p,'soul'))*(m?foeMult(el,elOf(m.T)):1); }
 function rollDmgS(p,mult,m,el){
-  const b=p.buff, crit=Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+pendP(p,'crit')+(b?b.crit:0)), ld=m?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
-  return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg'))*(1+potBuffP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
+  const b=p.buff, crit=Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+pendP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
+  return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg'))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+allyP(p,'critdmg')):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
   if(m.dead||m.remove) return 0;
@@ -33,6 +34,8 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(m.boss && m.B.stunT>0) mult*=1.5;
   const d=rollDmgS(p,mult,m,el);
   const vk=rxVulnK(m); if(vk) d.v=Math.max(1,Math.round(d.v*(1+vk)));   // reactions: a vulnerable monster takes more, whoever hits it
+  if(p.ss&&p.ss.amp.length) d.v=Math.max(1,Math.round(d.v*ssAmpK(p,m)));   // skillsets: the owner's marks make a marked target take more from them
+  p.lastDealt=S.t;   // skillsets: in a fight (tick triggers run only then)
   if(m.T.heavy) kb=0;
   m.hp-=d.v/monK(m,p).hp; m.hitters.set(p.id,S.t);   // (the health pool is in the def's own units: a hit at a higher zone tier takes off less of it)
   if(m.boss&&m.B.kit.hit) m.B.kit.hit(m.B,m,p,d.v);   // dungeons: a boss kit's hit hook (Gawataro's dish spills from behind)
@@ -43,12 +46,14 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(d.fx) ev('dmg',m.id,d.v,d.crit?1:0,p.id,d.fx); else ev('dmg',m.id,d.v,d.crit?1:0,p.id);
   if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }
   else rxHitS(m,p,elemEffS(p,el),mult);   // reactions: a direct hit leaves an aura or reacts with the one there
+  if(!rxQuiet&&p.ss&&p.ss.trig){ ssTriggerS(p,'hit',{m,v:d.v}); if(d.crit) ssTriggerS(p,'crit',{m,v:d.v}); }   // skillsets: on hit / on crit rows (a burn tick, a reaction's burst and a trigger's own damage are not hits)
   return d.v;
 }
 function killMonsterS(m,p){
-  m.burnT=0; rxClearS(m); m.dead=true; m.deadT=0;   // reactions: aura and statuses go with it
+  m.burnT=0; rxClearS(m); ssClearS(m); m.dead=true; m.deadT=0;   // reactions: aura and statuses go with it; skillsets: so do the marks
   m.respawnT=35; m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
   ev('kill',m.id,p?p.id:null);
+  if(p) ssTriggerS(p,'kill',{m});   // skillsets: on kill rows
   if(m.inst){ dgKilledS(m,p); return; }   // dungeons: a run's kill pays every member present (rewardAllS) and tells the mission; its boss ends the run
   if(!m.T.noXp){
     for(const [pid,tm] of m.hitters){ const q=S.players.get(pid); if(!q||S.t-tm>30||Math.hypot(q.x-m.x,q.z-m.z)>80) continue; rewardKill(q,m); }
@@ -173,6 +178,7 @@ function statusS(m,s,p,el,mult){
   if(s.slow) m.slowT=Math.max(m.slowT||0,s.slow);
   if(s.burn){ m.burnT=s.burn.dur; m.burnMult=mult*s.burn.k; m.burnBy=p.id; m.burnEl=el; m.burnTick=1; }
   rxDirectS(m,s,p,mult);   // reactions: the entry's flavor and status keys
+  if(s.mark) ssMarkS(p,m,s.mark);   // skillsets: the entry's mark
 }
 function updateBurnS(dt){
   for(const m of MONS){
@@ -196,7 +202,7 @@ function updateBurnS(dt){
    burn, slow, stun, spread, weak or vuln; docs/REACTIONS.md) and status:{kind:'vuln'|'weak'|'slow'|'stun',v,dur} on a ring, cone, proj or zone entry. */
 function resolveFxS(p,a,tgt){
   const f=a.fx, alive=m=>!m.dead&&!m.remove, dist=m=>Math.hypot(m.x-p.x,m.z-p.z), inRange=tgt&&dist(tgt)<=a.range+2;
-  const dmg=(m,mult,x,z,kb)=>damageMonsterS(m,mult,p,x,z,kb,a.el)||0;
+  const dmg=(m,mult,x,z,kb)=>damageMonsterS(m,mult*fxModK(f,p,m),p,x,z,kb,a.el)||0;   // skillsets: the skill's vsBoss / behind / rangeScale on each hit
   if(f.buff){ applyBuffS(p,a); return; }
   if(f.dash){
     const L=inRange?(()=>{ const dx=tgt.x-p.x, dz=tgt.z-p.z, d=Math.hypot(dx,dz)||1, o=tgt.T.rad+0.9; return {x:tgt.x-dx/d*o,z:tgt.z-dz/d*o}; })():{x:p.x-Math.sin(p.face)*f.dash.ahead,z:p.z-Math.cos(p.face)*f.dash.ahead};
@@ -226,25 +232,27 @@ function resolveFxS(p,a,tgt){
       if(seek){ tg=seek.length?seek[i%seek.length]:null; base=tg?dirToS(p,tg):a.aim; }
       else if(n===1) tg=inRange?tgt:null;
       else if(P.turn){ const dir=rotY(d0,off); let bs=0.26; for(const m of MONS){ if(!alive(m)||dist(m)>a.range+2) continue; const v=dirToS(p,m), ang=Math.acos(clamp(v[0]*dir[0]+v[1]*dir[1]+v[2]*dir[2],-1,1)); if(ang<bs){ bs=ang; tg=m; } } }
-      fireProjS(p,P.kind,rotY(base,off),tg,a.mult,a.el,P);
+      fireProjS(p,P.kind,rotY(base,off),tg,a.mult,a.el,P,f);
     } }
-  if(f.zone){ const Z=f.zone, c=Z.self?{x:p.x,z:p.z}:aimPoint(p,tgt,a.range,10); addAreaS(p,'zone',c.x,c.z,Z.r,Z.dur,a.mult,!!Z.follow,a.el,Z); }
+  if(f.zone){ const Z=f.zone, c=Z.self?{x:p.x,z:p.z}:aimPoint(p,tgt,a.range,10); addAreaS(p,'zone',c.x,c.z,Z.r,Z.dur,a.mult,!!Z.follow,a.el,Z,f); }
+  ssFxUtilS(p,f);   // skillsets: the skill's ally buffs, party heal, shield and taunt
+  if(f.pop) ssPopS(p,f.pop,inRange?tgt:null,a.mult,(m,mult)=>dmg(m,mult,p.x,p.z,0));   // skillsets: spend the player's marks
 }
 // where a generic projectile (a fx proj) lands: a hit, splash around it, a lingering zone
 function impactFxS(owner,pr,hit){
   const P=pr.fx, el=pr.el;
-  if(hit){ damageMonsterS(hit,pr.mult,owner,owner.x,owner.z,2,el); statusS(hit,P,owner,el,pr.mult); }
+  if(hit){ damageMonsterS(hit,pr.mult*fxModK(pr.mods,owner,hit),owner,owner.x,owner.z,2,el); statusS(hit,P,owner,el,pr.mult); }
   if(P.splash) for(const m of MONS){ if(m===hit||m.dead||m.remove) continue; const c=monCenterS(m);
-    if(Math.hypot(c.x-pr.x,c.y-pr.y,c.z-pr.z)<P.splash.r+m.T.rad*0.5){ damageMonsterS(m,pr.mult*P.splash.k,owner,pr.x,pr.z,3,el); statusS(m,P,owner,el,pr.mult); } }
-  if(P.zone){ const Z=P.zone; addAreaS(owner,'zone',pr.x,pr.z,Z.r,Z.dur,pr.mult*Z.k,false,el,Z); }
+    if(Math.hypot(c.x-pr.x,c.y-pr.y,c.z-pr.z)<P.splash.r+m.T.rad*0.5){ damageMonsterS(m,pr.mult*P.splash.k*fxModK(pr.mods,owner,m),owner,pr.x,pr.z,3,el); statusS(m,P,owner,el,pr.mult); } }
+  if(P.zone){ const Z=P.zone; addAreaS(owner,'zone',pr.x,pr.z,Z.r,Z.dur,pr.mult*Z.k,false,el,Z,pr.mods); }
 }
 // lingering ground effects: Arrow Rain hits 5 times, Meteor once when it lands
 const AREAS=[]; let nextAreaId=1;
 const AREA_TIMING={rain:[0.3,0.5],hail:[0.3,0.5],blizzard:[0.3,0.5],storm:[0.2,0.4]};   // first hit, then every ... s (meteor: once, at the end)
 // fx: a generic zone's entry (see resolveFxS): how often it hits, what it does to whatever is inside
-function addAreaS(p,kind,x,z,r,dur,mult,follow,el,fx){
+function addAreaS(p,kind,x,z,r,dur,mult,follow,el,fx,mods){
   const tm=fx?(fx.once?[dur,dur]:[fx.first||0.3,fx.every||0.5]):(AREA_TIMING[kind]||[dur,dur]);
-  const A={id:nextAreaId++,kind,owner:p.id,x,z,r,dur,mult,t:0,next:tm[0],every:tm[1],follow:!!follow,el,fx};
+  const A={id:nextAreaId++,kind,owner:p.id,x,z,r,dur,mult,t:0,next:tm[0],every:tm[1],follow:!!follow,el,fx,mods:mods||null};
   AREAS.push(A); ev('area',A.id,kind,r1(x),r1(z),r,dur,p.id,el,(fx&&fx.once?1:0)|(follow?2:0));
 }
 function updateAreasS(dt){
@@ -254,16 +262,18 @@ function updateAreasS(dt){
     if(A.follow&&o){ if(o.dead){ A.t=A.dur; } else { A.x=o.x; A.z=o.z; } }
     if(A.t>=A.next&&A.t<=A.dur+0.01){ A.next+=A.every;
       if(o) for(const m of MONS){ if(!m.dead&&!m.remove&&Math.hypot(m.x-A.x,m.z-A.z)<A.r+m.T.rad*0.5){
-        if(A.fx){ damageMonsterS(m,A.mult,o,A.x,A.z,A.fx.kb!==undefined?A.fx.kb:0.5,A.el); statusS(m,A.fx,o,A.el,A.mult); }
-        else { damageMonsterS(m,A.mult,o,A.x,A.z,A.kind==='meteor'?7:A.kind==='storm'?1.5:0.5,A.el); if(A.kind==='blizzard'&&!m.dead) m.slowT=1.5; } } } }
+        if(A.fx){ damageMonsterS(m,A.mult*fxModK(A.mods,o,m),o,A.x,A.z,A.fx.kb!==undefined?A.fx.kb:0.5,A.el); statusS(m,A.fx,o,A.el,A.mult); }
+        else { damageMonsterS(m,A.mult,o,A.x,A.z,A.kind==='meteor'?7:A.kind==='storm'?1.5:0.5,A.el); if(A.kind==='blizzard'&&!m.dead) m.slowT=1.5; } } }
+      if(o&&A.fx) ssZoneAlliesS(o,A);   // skillsets: the allies standing in a zone that carries ally / heal / shield
+    }
     if(A.t>=A.dur){ ev('aend',A.id); AREAS.splice(i,1); }
   }
 }
-function fireProjS(p,kind,dir,tg,mult,el,spec){   // spec: a generic projectile's fx entry (speed, life, turn, and what happens where it lands)
+function fireProjS(p,kind,dir,tg,mult,el,spec,mods){   // spec: a generic projectile's fx entry (speed, life, turn, and what happens where it lands)
   const h=handPosS(p), sp=kind==='arrow'?42:20;
   // speed, seconds of flight, how hard it homes
   const P_=spec?[spec.speed,spec.life,spec.turn||0]:(({pierce:[50,0.72,0],shard:[38,1.1,8],missile:[24,1.9,9],snipe:[75,0.9,14],arrow:[42,1.4,10]})[kind]||[20,1.8,6]), pierce=kind==='pierce', spd=P_[0];
-  const pr={id:nextProjId++,kind,owner:p.id,x:h.x,y:h.y,z:h.z,vx:dir[0]*spd,vy:dir[1]*spd,vz:dir[2]*spd,tg:tg?tg.id:null,mult,el,fx:spec||null,life:P_[1],turn:P_[2],hit:pierce?new Set():null};
+  const pr={id:nextProjId++,kind,owner:p.id,x:h.x,y:h.y,z:h.z,vx:dir[0]*spd,vy:dir[1]*spd,vz:dir[2]*spd,tg:tg?tg.id:null,mult,el,fx:spec||null,mods:mods||null,life:P_[1],turn:P_[2],hit:pierce?new Set():null};
   PROJS.push(pr);
   ev('proj',pr.id,kind,r1(pr.x),r1(pr.y),r1(pr.z),r1(pr.vx),r1(pr.vy),r1(pr.vz),pr.tg);
 }

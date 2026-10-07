@@ -135,12 +135,14 @@ function gainExpP(p,v,monId){
 function hurtP(p,v,m){
   if(p.dead) return;
   const K=m?monK(m,p):null, ld=m?Math.max(0,K.lv-p.level):0;
-  v=Math.max(1,Math.round(v*(K?K.dmg:1)*rxWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red'))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard')))));   // reactions: weak lowers what a monster deals
+  v=Math.max(1,Math.round(v*(K?K.dmg:1)*rxWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red'))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))*(1-allyP(p,'guard')))));   // reactions: weak lowers what a monster deals
+  if(p.shield&&p.shield.until>S.t&&p.shield.v>0){ const a=Math.min(v,p.shield.v); p.shield.v-=a; v-=a; if(v<=0){ p.lastHit=S.t; return; } }   // skillsets: a shield soaks the hit first
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){
     p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id);
     for(const mm of MONS) if(mm.tgt===p.id){ mm.aggro=false; mm.tgt=null; mm.state='return'; mm.pendingHit=-1; }
   }
+  if(m&&p.ss) ssHurtS(p,m,v);   // skillsets: reflect, on hurt and on low rows
 }
 // a slot opens (skill at level 3, burst at level 10): every class gets that slot's free ability equipped
 function autoEquipP(p,slot){
@@ -171,6 +173,7 @@ function updatePlayersS(dt){
   for(const p of S.players.values()){
     S.ctx=p.inst|0;   // dungeons: what a player's tick causes belongs to his run
     for(const k in p.cd) p.cd[k]=Math.max(0,p.cd[k]-dt);
+    ssTickS(p); ssRegenS(p,dt);   // skillsets: tick rows while in a fight; a regen buff
     if(p.buff&&S.t>=p.buff.until){ p.buff=null; }
     if(p.buff&&p.buff.regen&&!p.dead) healP(p,p.maxHp*p.buff.regen*dt);
     if(p.dead&&p.inst){ dgDownTickS(p,dt); continue; }   // dungeons: downed in a run: revived, or a respawn at its entrance, never the village

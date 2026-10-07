@@ -12,22 +12,56 @@
      pos:{1:{bound:'class', skill:{warrior:E, archer:E, mage:E}, passive:R, from:{chance, pity} (optional odds)}, 2:{bound:'class'|'any', skill:{...} | {any:E}, passive:R}, 3:{...}},
      bonus:{3:R, 5:R}, outfit (an outfit id, optional until outfits exist).
    E, a skill entry, is a SKILLS row minus what the registry fills in (cls, slot, id, lv, price, set, pos): name, desc, cd, range, mult, act:[kind, seconds, when it lands], and optionally anim, el, fx, buff, why.
-   R, a passive or bonus row, is {name, text} plus EITHER stat + v (a number, or [value at level 1, added a level]; text has {} for the percent) OR on (a trigger) + at least one of fx / heal / buff / mark / status /
-   shield (+ chance, icd, mult, el); and optionally cost:{stat, v} with a negative v: the price this same row pays (less maximum health, more damage taken, longer cooldowns).
+   R, a passive or bonus row, is {name, text} plus ONE of: stat + v (a number, or [value at level 1, added a level]; text has {} for the percent; stats: hp dmg crit red cd drop xp soul reflect rxk rxicd), OR on (a trigger:
+   hit crit kill hurt cast1 cast2 cast3 tick low) + at least one of fx / heal / buff / mark / status / shield (+ chance, icd (a tick's interval), mult, range, el, below (low: the health share)), OR amp:{id, per} (the
+   owner's marked targets take per x stacks more from you); and optionally cost:{stat, v} with a negative v: the price this same row pays (less maximum health, more damage taken, longer cooldowns).
+   The fx of a skill (docs/SKILL-SETS.md 6, docs/REACTIONS.md): the shapes ring cone beam chain proj zone dash buff, and modifiers vsBoss (damage x against bosses), behind (x from behind: {k} or a number),
+   rangeScale ({from, to, k}: damage grows to x k between those distances) and pop ({id, k, r, heal}: spend the player's marks of id: k x the hit's damage for each stack); the utility keys ally ({kind, v, dur, r}
+   or a list: the caster and the party within r metres, in the same run), heal ({v, r}), shield ({v, dur, r}) and taunt ({dur, r}: the monsters near the caster come for them); a zone may carry ally / heal /
+   shield too (for the allies standing in it); a shape may carry mark:{id, n, dur, max}, flavor ('<element>') and status:{kind, v, dur}.
    A bad set is LEFT OUT (the game still boots), warned about and listed in SS_BAD; nothing of it is registered. Piece ids: <set>_<pos>_<class|any> for an active, <set>_p<pos> for a passive. */
 const SS_ROLES=['risk','safe','grind','support','heal','tank'], SS_FOCUS=['buff','debuff','both'], SS_PARTS=['major','mild'], SS_HYBRID_ROLES=['risk','safe','grind'];
 const SS_CLASSES=['warrior','archer','mage'], SS_SLOT_OF=['basic','skill','burst'];
 // the three sources of a land (SS_SOURCES[land][position - 1]): boss 1, boss 2, the dungeon's theme id
 const SS_SOURCES={home:['boss','carapax','hollowroots'],vale:['akaoni','kyuubi','jadesprings'],hoar:['ymrik','vetrmaw','bonefrostbarrow'],grey:['gryphonqueen','mountaingolem','blackseam']};
-const SS_FX_KEYS=['buff','dash','ring','cone','beam','chain','proj','zone'];   // what resolveFxS knows (server/combat.js)
-const SS_ON=['hit','crit','kill','hurt','cast1','cast2','cast3','tick','low'], SS_EFFECT_KEYS=['fx','heal','buff','mark','status','shield'];
+const SS_FX_SHAPES=['buff','dash','ring','cone','beam','chain','proj','zone'], SS_FX_MODS=['vsBoss','behind','rangeScale','pop','ally','heal','shield','taunt'], SS_FX_KEYS=[...SS_FX_SHAPES,...SS_FX_MODS];   // what resolveFxS knows (server/combat.js)
+const SS_BUFF_KINDS=['might','guard','haste','crit','critdmg','regen'];   // the general ally buffs (docs/SKILL-SETS.md 6.3)
+// the most each can be (a share: might +50% damage, guard -50% damage taken (the 10% floor still holds), haste -40% cooldowns, crit +40% chance, critdmg +100%, regen 5% of maximum health a second)
+const SS_ALLY_CAP={might:0.5,guard:0.5,haste:0.4,crit:0.4,critdmg:1,regen:0.05}, SS_ALLY_R=25, SS_HEAL_CAP=0.5, SS_TAUNT_BOSS=0.5;   // SS_ALLY_R: metres from the caster; SS_HEAL_CAP: of maximum health a cast; SS_TAUNT_BOSS: a boss's share of a taunt's time
+const SS_ON=['hit','crit','kill','hurt','cast1','cast2','cast3','tick','low'], SS_EFFECT_KEYS=['fx','heal','buff','mark','status','shield'], SS_ST_KINDS=['vuln','weak','slow','stun'];
 const SS_ENTRY_KEYS=['name','desc','cd','range','mult','act','anim','el','fx','buff','why'];
 const SS_SETS=Object.create(null), SS_ORDER=[], SS_BAD=[], SS_PIECE_OF=Object.create(null);
 const ssIsEl=e=>typeof e==='string'&&(e==='basic'||!!ELEM_OPP[e]);   // 'basic' or one of the six elements
-function ssFxProblem(fx){
+const ssMarkProblem=m=>!m||!/^[a-z]+$/.test(m.id)||!(m.n===undefined||(m.n>=1&&m.n<=5))||!(m.dur===undefined||(m.dur>0&&m.dur<=60))||!(m.max===undefined||(m.max>=1&&m.max<=10))?'mark is {id (a lowercase word), n (1 to 5), dur (seconds, up to 60), max (1 to 10)}':null;
+const ssStatusProblem=t=>!t||!SS_ST_KINDS.includes(t.kind)||!(t.kind==='vuln'||t.kind==='weak'?t.v>0&&t.v<=0.5:true)||!(t.dur>0&&t.dur<=30)?'status is {kind: '+SS_ST_KINDS.join(' or ')+', v (vuln, weak: above 0, at most 0.5), dur (seconds)}':null;
+function ssFxProblem(fx,inTrigger){
   if(!fx||typeof fx!=='object'||Array.isArray(fx)) return 'fx is an object';
   for(const k in fx) if(!SS_FX_KEYS.includes(k)) return 'unknown fx key "'+k+'" (known: '+SS_FX_KEYS.join(' ')+')';
+  if(inTrigger&&fx.buff) return 'a trigger\'s fx cannot be a buff (use the row\'s own buff)';
+  if(fx.vsBoss!==undefined&&!(fx.vsBoss>0&&fx.vsBoss<=3)) return 'vsBoss is a number above 0, at most 3';
+  if(fx.behind!==undefined&&!(fx.behind>=1&&fx.behind<=4)) return 'behind is a number from 1 to 4';
+  const R=fx.rangeScale; if(R!==undefined&&!(R&&R.from>=0&&R.to>R.from&&R.k>0&&R.k<=4)) return 'rangeScale is {from, to (above from), k (up to 4)}';
+  { const u=ssUtilProblem(fx,''); if(u) return u; if(fx.zone&&typeof fx.zone==='object'){ const z=ssUtilProblem(fx.zone,'zone.'); if(z) return z; } }
+  const P=fx.pop; if(P!==undefined&&(!P||!/^[a-z]+$/.test(P.id)||!(P.k>0&&P.k<=3)||!(P.r===undefined||(P.r>0&&P.r<=20))||!(P.heal===undefined||(P.heal>0&&P.heal<=1)))) return 'pop is {id, k (up to 3), r (metres, optional), heal (a share of the damage, optional)}';
+  for(const k of SS_FX_SHAPES){ const e=fx[k]; if(e&&typeof e==='object'){ if(e.mark!==undefined){ const m=ssMarkProblem(e.mark); if(m) return k+'.'+m; } if(e.status!==undefined){ const m=ssStatusProblem(e.status); if(m) return k+'.'+m; } if(e.flavor!==undefined&&!ssIsEl(e.flavor)) return k+'.flavor "'+e.flavor+'" is not an element'; } }
   return null;
+}
+const ssAllyOk=a=>a&&SS_BUFF_KINDS.includes(a.kind)&&a.v>0&&a.v<=SS_ALLY_CAP[a.kind]&&a.dur>0&&a.dur<=30&&(a.r===undefined||(a.r>0&&a.r<=40));
+// the utility keys of a skill's fx (and of a zone entry): ally buffs, a party heal, a shield, a taunt
+function ssUtilProblem(o,where){
+  if(o.ally!==undefined){ const L=Array.isArray(o.ally)?o.ally:[o.ally]; if(L.length>3||!L.every(ssAllyOk)) return where+'ally is {kind: '+SS_BUFF_KINDS.join(' ')+', v (up to its cap), dur (up to 30 s), r (metres, optional)} or a list of up to 3'; }
+  if(o.heal!==undefined&&!(o.heal&&o.heal.v>0&&o.heal.v<=SS_HEAL_CAP&&(o.heal.r===undefined||(o.heal.r>0&&o.heal.r<=40)))) return where+'heal is {v (a share of maximum health, up to '+SS_HEAL_CAP+'), r (optional)}';
+  if(o.shield!==undefined&&!(o.shield&&o.shield.v>0&&o.shield.v<=1&&o.shield.dur>0&&o.shield.dur<=30&&(o.shield.r===undefined||(o.shield.r>0&&o.shield.r<=40)))) return where+'shield is {v (a share of maximum health), dur, r (optional)}';
+  if(o.taunt!==undefined&&!(o.taunt&&o.taunt.dur>0&&o.taunt.dur<=10&&o.taunt.r>0&&o.taunt.r<=20)) return where+'taunt is {dur (up to 10 s), r (up to 20 m)}';
+  return null;
+}
+// the mark ids a skill's fx or a row applies (so pop and amp can be checked against what the set really makes)
+function ssMarksMade(o,out){
+  if(!o||typeof o!=='object') return out;
+  if(o.mark&&o.mark.id) out.add(o.mark.id);
+  for(const k of SS_FX_SHAPES) if(o[k]&&typeof o[k]==='object'&&o[k].mark&&o[k].mark.id) out.add(o[k].mark.id);
+  if(o.fx) ssMarksMade(o.fx,out);
+  return out;
 }
 // what is wrong with one skill entry (null when nothing); taken: the attack kinds already used inside this set
 function ssSkillProblem(e,taken){
@@ -41,7 +75,8 @@ function ssSkillProblem(e,taken){
   if(ACT_SKILL[a[0]]||taken.has(a[0])) return 'the attack kind "'+a[0]+'" is already used (every skill has its own)';
   if(e.anim!==undefined&&!Object.values(ANIM_OF).includes(e.anim)) return 'anim "'+e.anim+'" is not a body animation that another skill already borrows';
   if(e.el!==undefined&&!ssIsEl(e.el)) return 'el "'+e.el+'" is not an element';
-  if(e.fx!==undefined){ const p=ssFxProblem(e.fx); if(p) return p; }
+  if(e.fx===undefined) return 'fx missing: a signature skill is data-only, what it does is its fx';
+  { const p=ssFxProblem(e.fx,false); if(p) return p; if(!SS_FX_SHAPES.some(k=>e.fx[k])) return 'fx needs a shape ('+SS_FX_SHAPES.join(' ')+')'; }
   if(e.buff!==undefined&&!(e.fx&&e.fx.buff)) return 'a buff needs fx:{buff:1}';
   if(e.why!==undefined&&typeof e.why!=='string') return 'why is a sentence';
   return null;
@@ -51,21 +86,28 @@ function ssRowProblem(r,needName){
   if(!r||typeof r!=='object') return 'missing';
   if(needName&&(typeof r.name!=='string'||!r.name)) return 'name missing';
   if(typeof r.text!=='string'||!r.text) return 'text missing';
-  const isStat=typeof r.stat==='string'&&!!r.stat, isOn=r.on!==undefined;
-  if(isStat===isOn) return 'give stat and v (a stat row) or on and an effect (a triggered row), not both and not neither';
+  const isStat=typeof r.stat==='string'&&!!r.stat, isOn=r.on!==undefined, isAmp=r.amp!==undefined;
+  if((isStat?1:0)+(isOn?1:0)+(isAmp?1:0)!==1) return 'give exactly one of: stat and v (a stat row), on and an effect (a triggered row), amp (a mark amplifier)';
   if(isStat){ const v=Array.isArray(r.v)?r.v:[r.v,0]; if(v.length!==2||!v.every(Number.isFinite)) return 'v is a number or [number, number]'; }
+  else if(isAmp){ const A=r.amp; if(!A||!/^[a-z]+$/.test(A.id)||!(A.per>0&&A.per<=0.5)) return 'amp is {id (a mark), per (a share per stack, up to 0.5)}'; }
   else {
     if(!SS_ON.includes(r.on)) return 'on is one of '+SS_ON.join(' ');
     if(!SS_EFFECT_KEYS.some(k=>r[k]!==undefined)) return 'a triggered row needs one of '+SS_EFFECT_KEYS.join(' ');
-    if(r.fx!==undefined){ const p=ssFxProblem(r.fx); if(p) return p; }
+    if(r.fx!==undefined){ const p=ssFxProblem(r.fx,true); if(p) return p; }
+    if(r.heal!==undefined&&!(r.heal>0&&r.heal<=1)) return 'heal is a share of maximum health (above 0, at most 1)';
+    if(r.mark!==undefined){ const p=ssMarkProblem(r.mark); if(p) return p; }
+    if(r.status!==undefined){ const p=ssStatusProblem(r.status); if(p) return p; }
+    if(r.buff!==undefined&&!ssAllyOk(r.buff)) return 'buff is {kind: '+SS_BUFF_KINDS.join(' ')+', v (up to its cap), dur (up to 30 s), r (optional)}';
+    if(r.shield!==undefined&&!(r.shield&&r.shield.v>0&&r.shield.v<=1&&r.shield.dur>0&&r.shield.dur<=30)) return 'shield is {v (a share of maximum health), dur}';
+    if(r.below!==undefined&&!(r.below>0&&r.below<1)) return 'below is a share of health (0 to 1)';
     if(r.chance!==undefined&&!(r.chance>0&&r.chance<=1)) return 'chance is above 0 and at most 1';
     if(r.icd!==undefined&&!(r.icd>=0)) return 'icd (seconds) is 0 or more';
-    if(['hit','crit','hurt','tick'].includes(r.on)&&!(r.icd>0)) return 'a '+r.on+' trigger needs an icd above 0 (so it cannot run away)';
+    if(['hit','crit','hurt','tick','low'].includes(r.on)&&!(r.icd>0)) return 'a '+r.on+' trigger needs an icd above 0 (so it cannot run away)';
   }
   if(r.cost!==undefined){ const c=r.cost; if(!c||typeof c.stat!=='string'||!c.stat||!Number.isFinite(c.v)||c.v>=0) return 'cost is {stat, v} with a negative v'; }
   return null;
 }
-const ssRow=(r,id,extra)=>Object.assign(JSON.parse(JSON.stringify(r)),{id},extra,{v:r.stat?(Array.isArray(r.v)?r.v.slice():[r.v,0]):[0,0]});
+const ssRow=(r,id,extra,defaults)=>Object.assign({},defaults,JSON.parse(JSON.stringify(r)),{id},extra,{v:r.stat?(Array.isArray(r.v)?r.v.slice():[r.v,0]):[0,0]});   // defaults sit under the row's own keys (an el of its own wins)
 function defineSkillSet(D){
   const id=D&&typeof D.id==='string'?D.id:'?', bad=(field,why)=>{ SS_BAD.push({id,field,why}); if(typeof console!=='undefined') console.warn('skill set '+id+' left out: '+field+': '+why); return null; };
   if(!D||typeof D!=='object') return bad('id','not an object');
@@ -117,6 +159,11 @@ function defineSkillSet(D){
   if(!hybrid&&D.el!=='basic'&&inEl(D.el)<4) return bad('el','at least 4 of the 6 pieces (2 of the 3 positions) are in "'+D.el+'"');
   if(hybrid&&els.some(e=>inEl(e)<2)) return bad('el','each of the two elements has at least one position');
   const bn=D.bonus; if(!bn||ssRowProblem(bn[3],true)||ssRowProblem(bn[5],true)) return bad('bonus','bonus 3 and bonus 5 are rows: '+(!bn?'missing':ssRowProblem(bn[3],true)||ssRowProblem(bn[5],true)));
+  // a pop or an amp spends marks: the set must make them (kit.mark, a skill's or a row's mark)
+  { const made2=new Set(D.kit&&D.kit.mark?[D.kit.mark]:[]), used=new Set(), rows=[...made.map(m=>m.P.passive),bn[3],bn[5]];
+    for(const m of made) for(const [,e] of m.variants){ ssMarksMade(e,made2); if(e.fx.pop) used.add(e.fx.pop.id); }
+    for(const r of rows){ ssMarksMade(r,made2); if(r.amp) used.add(r.amp.id); if(r.fx&&r.fx.pop) used.add(r.fx.pop.id); }
+    for(const u of used) if(!made2.has(u)) return bad('kit','"'+u+'" is popped or amplified but nothing in the set applies that mark (kit.mark, or a mark on a skill or a row)'); }
   // everything checks out: register the pieces
   const set={id,name:D.name,land:D.land,tier,dev,el:D.el,role:JSON.parse(JSON.stringify(R)),char:JSON.parse(JSON.stringify(C)),pal:Object.assign({},D.pal),kit:D.kit?JSON.parse(JSON.stringify(D.kit)):null,outfit:D.outfit||null,pos:{},bonus:{}};
   for(const m of made){
@@ -126,11 +173,11 @@ function defineSkillSet(D){
       SKILLS[rid]=row; SKILL_IDS.push(rid); ANIM_OF[row.act[0]]=row.anim||row.act[0]; ACT_SKILL[row.act[0]]=row; SS_PIECE_OF[rid]={set:id,pos:m.p,kind:'active'}; ids.push(rid);
     }
     const pid=id+'_p'+m.p;
-    PASSIVES[pid]=ssRow(m.P.passive,pid,{slot:'passive',cls:null,el:m.el,lv,price:0,set:id,pos:m.p});
+    PASSIVES[pid]=ssRow(m.P.passive,pid,{slot:'passive',cls:null,lv,price:0,set:id,pos:m.p},{el:m.el});
     PASSIVE_IDS.push(pid); SS_PIECE_OF[pid]={set:id,pos:m.p,kind:'passive'};
     set.pos[m.p]={slot:m.slot,bound:m.P.bound,from:{kind:m.p<3?'boss':'dungeon',id:src[m.p-1],chance:m.P.from&&m.P.from.chance,pity:m.P.from&&m.P.from.pity},ids,passive:pid,lv,el:m.el};
   }
-  for(const t of [3,5]) set.bonus[t]=ssRow(bn[t],id+'_b'+t,{set:id,tier:t,slot:'bonus'});
+  for(const t of [3,5]) set.bonus[t]=ssRow(bn[t],id+'_b'+t,{set:id,tier:t,slot:'bonus'},{el:hybrid?D.el[0]:D.el});
   SS_SETS[id]=set; SS_ORDER.push(id); return set;
 }
 // the worn pieces of each set for a class and a level: the three actives (as abilityOf resolves them) and the passives in the slots the level has opened

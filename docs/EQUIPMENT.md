@@ -19,11 +19,11 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | Base prices (tier) and weight of each piece | `PRICE` src/shared/items.js:21, `SLOT_PRICE` src/shared/items.js:21 |
 | The item id scheme (`sword2`, `sword2-e`) | `itemId` src/shared/items.js:23 |
 | Tools (pickaxe, axe, sickle): materials, prices, double-yield chance by rarity | `TOOL_MAT` / `TOOL_PRICE` / `TOOL_EXTRA` src/shared/items.js:36-37 |
-| What gear adds to a player (health, attack, defense) | `gearStatsOf` src/shared/items.js:61, `recalcP` src/server/players.js:76 |
-| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:133 |
+| What gear adds to a player (health, attack, defense) | `gearStatsOf` src/shared/items.js:61, `recalcP` src/server/players.js:77 |
+| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:135 |
 | Wearing an item (level check, slot) | `equipP` src/server/economy.js:25 |
 | Shops: common items only, +20% per copy bought | `buyP` src/server/economy.js:38, `shopPrice` src/shared/items.js:47, shop panel src/game/economy/shops.js:20 |
-| Monster and boss drops (the item roll and its tier) | `rollMonsterRarity` / `rollBossRarity` src/shared/items.js:51, used in `rewardKill` src/server/combat.js:55 |
+| Monster and boss drops (the item roll and its tier) | `rollMonsterRarity` / `rollBossRarity` src/shared/items.js:51, used in `rewardKill` src/server/combat.js:64 |
 | Quest board rewards (item rarity) | `rollQuestItemRarity` src/shared/quests.js:64 |
 | Merging three identical items into the next rarity (Greta's forge) | `mergeP` src/server/economy.js:15, `mergedId` src/shared/items.js:48 |
 | Crafting from ore / logs (rarity common to epic) | `craftCost` src/shared/crafting.js:12, `craftP` src/server/crafting.js:6 |

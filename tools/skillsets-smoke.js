@@ -5,7 +5,7 @@ const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(pid==='a'&&c.t==='snap'&&c.ev) evs.push(...c.ev); }},
   ['MONS','S','SKILLS','PASSIVES','SKILL_IDS','PASSIVE_IDS','ANIM_OF','ACT_SKILL','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','defineSkillSet','ssCount','ssBonuses','ssBonusSum','ssSetFor','ssLint','ssOwnsBasic',
-   'abilityOf','abilityCd','canSwap','newSkills','sanitizeSkills','sanitizeGear','psP','recalcP','clsOfP','passiveOpen','passiveSum','PASSIVE_SLOT_LV','getH','ZTIER_MAX']);
+   'VIL','ssEquipPieceP','ssGrantSetP','partyOf','ssAlliesOf','ssAllyS','allyP','ssShieldS','ssFxUtilS','ssTauntS','ssTauntedBy','ssRegenS','monK','SS_ALLY_CAP','SS_HEAL_CAP','SS_TAUNT_BOSS','DMG_TAKEN_MIN','statusS','resolveFxS','hurtP','killMonsterS','damageMonsterS','ssMarkN','ssMarkS','fxModK','ssTriggerS','healP','abilityOf','abilityCd','canSwap','newSkills','sanitizeSkills','sanitizeGear','psP','recalcP','clsOfP','passiveOpen','passiveSum','PASSIVE_SLOT_LV','getH','ZTIER_MAX']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 const near=(a,b,e)=>Math.abs(a-b)<=(e||1e-6);
@@ -18,7 +18,7 @@ function fixture(id,over){
   const E=(pos,k,extra)=>Object.assign({name:id+' '+pos+k,desc:'A test piece.',cd:5+pos,range:5,mult:1,act:[id+pos+k,0.6,0.4],anim:'slash'},extra);
   const d={id,name:'Test set '+id,land:'home',needs:{tier:1},dev:true,el:'fire',role:{main:'safe'},
     char:{name:'Name '+id,sex:'female',theme:'a test',ip:{kind:'original',riffs:'a genre'}},pal:{main:0xff0000,accent:0x00ff00,glow:0x0000ff},kit:{name:'Test',text:'A test kit.'},
-    pos:{1:{bound:'class',skill:{warrior:E(1,'w',{fx:{cone:{r:4,arc:1.2}}}),archer:E(1,'a',{anim:'shoot'}),mage:E(1,'m',{anim:'cast'})},passive:ST('P1','dmg',[0.04,0])},
+    pos:{1:{bound:'class',skill:{warrior:E(1,'w',{fx:{cone:{r:4,arc:1.2}}}),archer:E(1,'a',{anim:'shoot',fx:{proj:{kind:'thorn',speed:42,turn:9,life:1.4}}}),mage:E(1,'m',{anim:'cast',fx:{proj:{kind:'thorn',speed:38,turn:9,life:1.4}}})},passive:ST('P1','dmg',[0.04,0])},
          2:{bound:'any',skill:{any:E(2,'x',{anim:'nova',fx:{ring:{r:5}}})},passive:ST('P2','crit',[0.03,0])},
          3:{bound:'any',skill:{any:E(3,'x',{anim:'nova',fx:{ring:{r:6}}})},passive:ST('P3','hp',[0.05,0])}},
     bonus:{3:ST('B3','dmg',0.10),5:ST('B5','crit',0.10)}};
@@ -77,7 +77,19 @@ const BAD=[
   ['a cost that is not negative','pos',d=>{ d.pos[1].passive.cost={stat:'hp',v:0.1}; }],
   ['a bonus missing','bonus',d=>{ delete d.bonus[5]; }],
   ['odds of 150%','pos',d=>{ d.pos[1].from={chance:1.5}; }],
-  ['a name another set has','char',d=>{ d.char.name='name ALPHA'; }]];
+  ['a name another set has','char',d=>{ d.char.name='name ALPHA'; }],
+  ['a skill with no fx','pos',d=>{ delete d.pos[2].skill.any.fx; }],
+  ['an fx with no shape','pos',d=>{ d.pos[2].skill.any.fx={vsBoss:0.5}; }],
+  ['a bad vsBoss','pos',d=>{ d.pos[2].skill.any.fx.vsBoss=9; }],
+  ['a bad rangeScale','pos',d=>{ d.pos[2].skill.any.fx.rangeScale={from:10,to:5,k:2}; }],
+  ['a bad mark','pos',d=>{ d.pos[2].skill.any.fx.ring.mark={id:'Bad Id'}; }],
+  ['a bad status','pos',d=>{ d.pos[2].skill.any.fx.ring.status={kind:'vuln',v:0.9,dur:5}; }],
+  ['a flavor that is no element','pos',d=>{ d.pos[2].skill.any.fx.ring.flavor='lava'; }],
+  ['a pop of a mark the set never applies','kit',d=>{ d.pos[3].skill.any.fx.pop={id:'ghost',k:1}; }],
+  ['an amp of a mark the set never applies','kit',d=>{ d.pos[1].passive={name:'x',text:'y',amp:{id:'ghost',per:0.1}}; }],
+  ['a trigger whose fx is a buff','pos',d=>{ d.pos[1].passive={name:'x',text:'y',on:'kill',fx:{buff:1}}; }],
+  ['a stat row that is also a trigger','pos',d=>{ d.pos[1].passive.on='kill'; d.pos[1].passive.heal=0.1; }],
+  ['a bad ally buff','pos',d=>{ d.pos[1].passive={name:'x',text:'y',on:'kill',buff:{kind:'wings',v:1,dur:3}}; }]];
 const before=count();
 { x.SS_BAD.length=0; const results=[];
   quiet(()=>{ BAD.forEach(([what,field,f],i)=>{ const d=fixture('bad'+i); f(d); const n0=x.SS_BAD.length, r=x.defineSkillSet(d); results.push([what,field,r,x.SS_BAD.slice(n0)]); }); });
@@ -174,6 +186,184 @@ send({t:'dev',cmd:'set',v:'real1'});
   ok('a universal piece is used like any skill: its ring hits the monster beside the player and starts its cooldown',m.hp<hp0&&p.cd.skill>0&&evs.some(e=>e[0]==='pact'&&e[2]==='alpha2x'),(hp0-m.hp)+' hp, cd '+p.cd.skill.toFixed(1)); }
 { const ab=x.abilityOf('archer','skill',p.gear.skills,30), cd=x.abilityCd(ab,p.gear.skills,30,'archer');
   ok('cooldown reads the class\'s bonuses (a "cd" bonus row shortens it, a cost lengthens it)',(()=>{ x.SS_SETS.alpha.bonus[3].stat='cd'; x.SS_SETS.alpha.bonus[3].v=[0.2,0]; const c2=x.abilityCd(ab,p.gear.skills,30,'archer'); x.SS_SETS.alpha.bonus[3].stat='dmg'; x.SS_SETS.alpha.bonus[3].v=[0.10,0]; return c2<cd-0.1; })(),cd.toFixed(2)); }
+
+
+// ================= M2a: marks, modifiers, triggers, reflect =================
+const kitfix=()=>fixture('kitx',d=>{ d.role={main:'risk'}; d.el='basic'; d.char.name='Kit X'; d.kit={mark:'barb',name:'Barb',text:'marks'};
+  const mk={id:'barb',n:1,dur:10,max:3};
+  d.pos[1].skill.warrior.fx={cone:{r:4,arc:1.5,mark:mk},behind:2};
+  d.pos[1].skill.archer.fx={proj:{kind:'thorn',speed:60,turn:0,life:1},rangeScale:{from:5,to:30,k:2}};
+  d.pos[1].skill.mage.fx={proj:{kind:'thorn',speed:60,turn:0,life:1},vsBoss:0.5};
+  d.pos[1].passive={name:'KP1',text:'marks on hit',on:'hit',icd:1,mark:mk};
+  d.pos[2].skill.any.fx={ring:{r:6,mark:mk}};
+  d.pos[2].passive={name:'KP2',text:'marked targets take more',amp:{id:'barb',per:0.1}};
+  d.pos[3].skill.any.fx={ring:{r:8},pop:{id:'barb',k:1,r:8,heal:0.2}};
+  d.pos[3].passive={name:'KP3',text:'heal on kill',on:'kill',heal:0.1};
+  d.bonus[3]={name:'KB3',text:'a ring on crit',on:'crit',icd:1,fx:{ring:{r:3}},mult:0.5};
+  d.bonus[5]=ST('KB5','dmg',0.10,{cost:{stat:'red',v:-0.10}}); });
+const K=x.defineSkillSet(kitfix());
+ok('a kit with marks, a pop, an amp, triggers, modifiers and a cost registers (modifiers and marks are checked, not just stored)',!!K&&x.SS_BAD.length===0,JSON.stringify(x.SS_BAD));
+send({t:'dev',cmd:'set',v:'kitx'}); p.level=30; send({t:'dev',cmd:'level',v:30});
+const wear=()=>{ for(const id of ['kitx_1_archer','kitx_2_any','kitx_3_any']) send({t:'eqskill',id}); send({t:'eqskill',id:'kitx_p1',idx:0}); send({t:'eqskill',id:'kitx_p2',idx:1}); send({t:'eqskill',id:'kitx_p3',idx:2}); };
+const norm=x.MONS.filter(mm=>!mm.boss&&!mm.inst), mA=norm[0], mB=norm[1], mC=norm[2], bossM=x.MONS.find(mm=>mm.boss);
+const fresh=m=>{ m.dead=false; m.remove=false; m.hp=1e9; m.maxHp=1e9; m.mk=null; m.st=null; m.aura=null; m.rxIcd=null; m.inst=0; m.immune=false; m.burnT=m.slowT=m.stunT=0; return m; };
+const place=(m,dx,dz,face)=>{ fresh(m); m.x=p.x+dx; m.z=p.z+dz; if(face!==undefined) m.face=face; return m; };
+const still=fn=>{ const R=Math.random; Math.random=()=>0.5; try{ return fn(); } finally{ Math.random=R; } };
+const lost=(m,fn)=>{ const h=m.hp; fn(); return h-m.hp; };
+const toVillage=()=>{ W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); p.dead=false; };   // (no monster attacks there: health checks over time stay clean)
+const act=(f,ex)=>Object.assign({fx:f,mult:1,range:8,el:'basic',aim:[0,0,-1],sid:null},ex);
+x.SS_SETS.kitx.bonus[3].on='crit'; W.setPos('a',[mA.x,x.getH(mA.x,mA.z),mA.z,0,0,0]); p.dead=false; p.hp=p.maxHp;
+
+// ---- marks: personal, they stack to a cap, they run out, they die with the monster ----
+{ fresh(mA); for(let i=0;i<5;i++) x.statusS(mA,{mark:{id:'barb',n:1,dur:10,max:3}},p,'basic',1); tick(3);
+  ok('a mark stacks up to its cap (max 3), and the clients are told (to its owner)',x.ssMarkN(p,mA,'barb')===3&&evs.some(e=>e[0]==='mk'&&e[1]===mA.id&&e[2]==='barb'&&e[3]===3&&e[5]==='a'),'n '+x.ssMarkN(p,mA,'barb'));
+  const q=W.players.get('b')||(W.join('b',{name:'Other',look:{cls:'archer'},save:{level:30}}),W.players.get('b'));
+  x.ssMarkS(q,mA,{id:'barb',n:2,dur:10,max:3});
+  ok('marks are personal: another player\'s marks of the same kind on the same monster are their own',x.ssMarkN(p,mA,'barb')===3&&x.ssMarkN(q,mA,'barb')===2);
+  x.S.t+=11; ok('a mark runs out',x.ssMarkN(p,mA,'barb')===0&&x.ssMarkN(q,mA,'barb')===0);
+  x.ssMarkS(p,mA,{id:'barb',n:2,dur:10,max:3}); x.killMonsterS(mA,p); ok('marks die with the monster',mA.mk===null); }
+
+// ---- the skill modifiers: vsBoss, behind, rangeScale ----
+{ const base=still(()=>lost(place(mA,2,0,0),()=>x.resolveFxS(p,act({ring:{r:40}}),null)));
+  const bhd=still(()=>lost(place(mA,0,-3,0),()=>x.resolveFxS(p,act({ring:{r:40},behind:2}),null)));   // a monster with face 0 looks along -z: one 3 m toward -z of the player has its back to them
+  const fnt=still(()=>lost(place(mA,0,3,0),()=>x.resolveFxS(p,act({ring:{r:40},behind:2}),null)));
+  ok('behind: x2 from behind a monster, x1 from its front',base>0&&near(bhd/base,2,0.05)&&near(fnt/base,1,0.05),'behind x'+(bhd/base).toFixed(2)+' front x'+(fnt/base).toFixed(2)); }
+{ const near5=still(()=>lost(place(mA,5,0,0),()=>x.resolveFxS(p,act({ring:{r:60},rangeScale:{from:5,to:30,k:2}}),null)));
+  const far30=still(()=>lost(place(mA,30,0,0),()=>x.resolveFxS(p,act({ring:{r:60},rangeScale:{from:5,to:30,k:2}}),null)));
+  const mid=still(()=>lost(place(mA,17.5,0,0),()=>x.resolveFxS(p,act({ring:{r:60},rangeScale:{from:5,to:30,k:2}}),null)));
+  ok('rangeScale: x1 at 5 m, x2 at 30 m, x1.5 halfway',far30>0&&near(far30/near5,2,0.06)&&near(mid/near5,1.5,0.06),(far30/near5).toFixed(2)+' '+(mid/near5).toFixed(2)); }
+{ const plain=still(()=>lost(place(mA,2,0,0),()=>x.resolveFxS(p,act({ring:{r:60},vsBoss:0.5}),null)));
+  const noMod=still(()=>lost(place(mA,2,0,0),()=>x.resolveFxS(p,act({ring:{r:60}}),null)));
+  place(bossM,2,0,0); bossM.immune=false; const hb=bossM.hp; still(()=>x.resolveFxS(p,act({ring:{r:60},vsBoss:0.5}),null)); const onBoss=hb-bossM.hp;
+  const hb2=bossM.hp; still(()=>x.resolveFxS(p,act({ring:{r:60}}),null)); const onBoss2=hb2-bossM.hp;
+  ok('vsBoss: a normal monster takes the full hit, a boss takes the share (x0.5)',near(plain,noMod,noMod*0.02)&&onBoss2>0&&near(onBoss/onBoss2,0.5,0.06),(onBoss/onBoss2).toFixed(2)); }
+
+// ---- pop and amp ----
+wear();
+ok('the kit is worn: marks need the cone / ring, amp the second passive (level 30 opens all three slots)',p.ss.n.kitx===6&&p.ss.amp.length===1&&p.ss.amp[0].id==='barb');
+{ place(mA,3,0); const noMarks=still(()=>lost(mA,()=>x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic')));
+  place(mA,3,0); x.ssMarkS(p,mA,{id:'barb',n:3,dur:10,max:3}); const marked=still(()=>lost(mA,()=>x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic')));
+  ok('amp: a target carrying 3 marks of the owner takes 3 x 10% more from them (x1.3), not from someone else',near(marked/noMarks,1.3,0.04)&&(()=>{ const q=W.players.get('b'); q.dead=false; place(mA,3,0); x.ssMarkS(p,mA,{id:'barb',n:3,dur:10,max:3}); const h=mA.hp; still(()=>x.damageMonsterS(mA,1,q,q.x,q.z,0,'basic')); const byQ=h-mA.hp; place(mA,3,0); const h2=mA.hp; still(()=>x.damageMonsterS(mA,1,q,q.x,q.z,0,'basic')); return near(byQ,h2-mA.hp,2); })(),(marked/noMarks).toFixed(3)); }
+{ place(mA,3,0); place(mB,5,0); place(mC,40,0);   // marks on two monsters in reach and one far away
+  for(const m of [mA,mB,mC]) x.ssMarkS(p,m,{id:'barb',n:3,dur:10,max:3});
+  p.hp=Math.round(p.maxHp*0.5); const hp0=p.hp;
+  const hA=mA.hp, hB=mB.hp, hC=mC.hp; still(()=>x.resolveFxS(p,act({ring:{r:8},pop:{id:'barb',k:1,r:8,heal:0.2}}),mA));
+  ok('pop: the burst spends the marks on the target and on everything within r of it (not the one 40 m away) for k x damage a stack, and heals a share of what it dealt',x.ssMarkN(p,mA,'barb')===0&&x.ssMarkN(p,mB,'barb')===0&&x.ssMarkN(p,mC,'barb')===3&&(hA-mA.hp)>3*(hC-mC.hp+1)&&p.hp>hp0,'dealt '+Math.round(hA-mA.hp)+' on the target, healed '+(p.hp-hp0)); }
+{ place(mA,3,0); place(mB,4,0); mB.inst=7; x.ssMarkS(p,mA,{id:'barb',n:2,dur:10,max:3}); x.ssMarkS(p,mB,{id:'barb',n:2,dur:10,max:3}); still(()=>x.resolveFxS(p,act({ring:{r:8},pop:{id:'barb',k:1,r:8}}),mA)); const kept=x.ssMarkN(p,mB,'barb'); mB.inst=0;
+  ok('pop never reaches a monster of another run (a dungeon\'s) however close it is',x.ssMarkN(p,mA,'barb')===0&&kept===2,'kept '+kept); }
+{ place(mA,3,0); x.ssMarkS(p,mA,{id:'barb',n:3,dur:10,max:3}); const ring=still(()=>lost(mA,()=>x.resolveFxS(p,act({ring:{r:8}}),mA)));
+  place(mA,3,0); x.ssMarkS(p,mA,{id:'barb',n:3,dur:10,max:3}); const withPop=still(()=>lost(mA,()=>x.resolveFxS(p,act({ring:{r:8},pop:{id:'barb',k:1}}),mA)));
+  ok('pop deals k x the skill\'s damage for each stack on top of the hit (3 marks: hit + 3x = about x4 once amp is counted in both)',withPop>ring*3.2&&withPop<ring*4.8,(withPop/ring).toFixed(2)); }
+
+// ---- triggers ----
+x.SS_SETS.kitx.bonus[3].on='crit';
+{ place(mA,3,0); p.ssIcd={}; tick(3); const n0=evs.filter(e=>e[0]==='dmg'&&e[1]===mA.id).length, R=Math.random; Math.random=()=>0;   // every hit crits, every chance passes (tick first: the events of the earlier checks are still on their way)
+  x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic'); const n1=(tick(3),evs.filter(e=>e[0]==='dmg'&&e[1]===mA.id).length); Math.random=R;
+  ok('a crit trigger that deals damage runs once and its damage fires no trigger (the hit, then the 3 m ring: 2 damage events, not a chain)',n1-n0===2,(n1-n0)+' damage events'); }
+{ place(mA,3,0); p.ssIcd={}; fresh(mA); const R=Math.random; Math.random=()=>0.5;
+  x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic'); x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic'); const n1=x.ssMarkN(p,mA,'barb'); x.S.t+=1.1; x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic'); const n2=x.ssMarkN(p,mA,'barb'); Math.random=R;
+  ok('a trigger\'s icd holds: two hits in the same moment give one mark, a hit after the icd another',n1===1&&n2===2,n1+' then '+n2); }
+{ place(mA,3,0); p.ssIcd={}; const R=Math.random; fresh(mA);
+  Math.random=()=>0.9; x.SS_SETS.kitx.bonus[3]=Object.assign({},x.SS_SETS.kitx.bonus[3],{on:'hit',icd:0.2,chance:0.5,fx:undefined,mark:{id:'barb',n:1,dur:10,max:3}}); x.recalcP(p);
+  x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic'); const miss=x.ssMarkN(p,mA,'barb'); p.ssIcd={}; Math.random=()=>0.1; x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic'); const hit=x.ssMarkN(p,mA,'barb'); Math.random=R;
+  ok('chance: a row with chance 0.5 does not fire on a roll of 0.9 and fires on 0.1 (the passive\'s own mark adds one each time it is free)',hit>miss,miss+' then '+hit); }
+{ const row=(over)=>{ x.SS_SETS.kitx.bonus[3]={id:'kitx_b3',set:'kitx',tier:3,slot:'bonus',name:'t',text:'t',v:[0,0],el:'basic',...over}; x.recalcP(p); p.ssIcd={}; };
+  // kill
+  row({on:'kill',heal:0.5,icd:0}); delete x.SS_SETS.kitx.bonus[3].icd; p.hp=Math.round(p.maxHp*0.2); place(mB,3,0); mB.hp=1; const k0=p.hp; x.damageMonsterS(mB,50,p,p.x,p.z,0,'basic');
+  ok('kill: a row that heals on a kill heals (half of maximum health here)',p.hp>k0+p.maxHp*0.3&&mB.dead,k0+' -> '+p.hp);
+  // a trigger's own kills fire no trigger: heal + a ring that kills what is near, once
+  row({on:'kill',heal:0.1,fx:{ring:{r:9}},mult:99,range:9}); p.hp=Math.round(p.maxHp*0.2); const f0=p.hp;
+  place(mB,2,0); place(mC,3,0); place(mA,4,0); for(const m of [mA,mB,mC]) m.hp=1; x.damageMonsterS(mA,50,p,p.x,p.z,0,'basic');
+  ok('a trigger\'s own kills fire no trigger: the row that heals and kills what is near heals once (with the worn kill passive: 20% in all), not once for each monster it killed',mA.dead&&mB.dead&&mC.dead&&near((p.hp-f0)/p.maxHp,0.2,0.02),'healed '+((p.hp-f0)/p.maxHp*100).toFixed(1)+'% (the kit\'s own kill passive adds its 10% once, the row its 10% once)');
+  // hurt
+  row({on:'hurt',icd:1,heal:0.4}); p.hp=Math.round(p.maxHp*0.9); fresh(mA); const h0=p.hp; x.hurtP(p,10,mA); ok('hurt: a row that heals when a monster hurts you',p.hp>h0-10+p.maxHp*0.05,h0+' -> '+p.hp);
+  // low
+  row({on:'low',below:0.5,icd:5,heal:0.3}); p.hp=Math.round(p.maxHp*0.6); x.hurtP(p,Math.round(p.maxHp*0.15),mA); const low1=p.hp; p.hp=Math.round(p.maxHp*0.9); const l2=p.hp; x.hurtP(p,5,mA);
+  ok('low: below its share of health it fires (icd 5), above it does not',low1>p.maxHp*0.45+1&&p.hp<l2+1,Math.round(low1)+' '+Math.round(p.hp));
+  // cast
+  row({on:'cast1',icd:0}); x.SS_SETS.kitx.bonus[3].mark={id:'barb',n:1,dur:10,max:3}; delete x.SS_SETS.kitx.bonus[3].icd; x.recalcP(p); fresh(mA); place(mA,3,0); p.cd.basic=0; p.act=null; p.dead=false; send({t:'atk',k:'basic',tg:mA.id,face:0,aim:[0,0,-1]});
+  ok('cast1: a row that marks on casting slot 1 marks the target the cast was aimed at',x.ssMarkN(p,mA,'barb')>=1,String(x.ssMarkN(p,mA,'barb')));
+  // tick
+  row({on:'tick',icd:1,fx:{ring:{r:30}},mult:1,range:30}); place(mA,3,0); mA.hp=1e9; const t0=mA.hp; for(let i=0;i<50;i++){ p.lastDealt=x.S.t; W.tick(0.05); }
+  ok('tick: while you are in a fight the row fires every icd seconds (here a ring: 2.5 s of fighting hurt the monster beside you)',mA.hp<t0,String(Math.round(t0-mA.hp)));
+  mA.hp=1e9; const t1=mA.hp; p.lastDealt=x.S.t-100; for(let i=0;i<60;i++) W.tick(0.05); ok('...idle (no damage dealt for a while): the row does not fire',mA.hp===t1,String(Math.round(t1-mA.hp)));
+  // reflect: a passive stat read in hurtP
+  row({stat:'reflect',v:[0.5,0]}); delete x.SS_SETS.kitx.bonus[3].on; x.SS_SETS.kitx.bonus[3].stat='reflect'; x.recalcP(p); place(mA,3,0); p.hp=p.maxHp; const hm=mA.hp; x.hurtP(p,200,mA);
+  ok('reflect: half of the damage a monster does to you is dealt back to it',hm-mA.hp>30,'dealt back '+Math.round(hm-mA.hp));
+}
+// a bonus that costs: row kitx_b5 has +10% damage and -10% damage-taken reduction (a cost): both read
+{ x.SS_SETS.kitx.bonus[3]=Object.assign({},K.bonus[3]); x.recalcP(p);
+  ok('a cost is paid by the same bonus that has the benefit (the 5-set bonus: +10% damage, and 10% less damage reduction)',near(x.psP(p,'dmg'),0.10,0.001)&&near(x.psP(p,'red'),-0.10,0.001),x.psP(p,'dmg')+' / red '+x.psP(p,'red')); }
+
+
+// ================= M2b: ally buffs, party heal, shield, taunt =================
+const pb=W.players.get('b'); W.join('c',{name:'Third',look:{cls:'mage'},save:{level:30}}); tick(3); const pc=W.players.get('c');
+W.receive('a',{t:'party',a:'invite',name:'Other'}); tick(3); W.receive('b',{t:'party',a:'accept'}); tick(3);
+const standNear=(q,dx,dz)=>{ W.setPos(q.id,[p.x+dx,x.getH(p.x+dx,p.z+dz),p.z+dz,0,0,0]); q.dead=false; q.hp=q.maxHp; };
+standNear(pb,3,0); standNear(pc,0,3); p.dead=false; p.hp=p.maxHp; p.act=null;
+ok('the base: a and b are one party, c is not',x.partyOf(p)&&x.partyOf(p)===x.partyOf(pb)&&!x.partyOf(pc));
+ok('allies are the caster and the party members within range, in the same run: not the outsider, not a far member, not one in a dungeon run',(()=>{
+  const ids=()=>x.ssAlliesOf(p).map(q=>q.id).sort().join(); const near=ids();
+  standNear(pb,80,0); const far=ids(); standNear(pb,3,0);
+  pb.inst=5; const other=ids(); pb.inst=0;
+  return near==='a,b'&&far==='a'&&other==='a'; })());
+// ally effects through a skill's fx: might for the party
+x.resolveFxS(p,act({ring:{r:2},ally:{kind:'might',v:0.3,dur:10}}),null); tick(3);
+ok('a skill\'s ally buff reaches the caster and the party member in range, not the outsider, and the clients are told (ast)',x.allyP(p,'might')===0.3&&x.allyP(pb,'might')===0.3&&x.allyP(pc,'might')===0&&evs.some(e=>e[0]==='ast'&&e[1]==='a'&&e[2]==='might'&&e[3]===0.3&&e[4]===10));
+{ place(mA,3,0); pb.dead=false; const dB0=still(()=>lost(mA,()=>x.damageMonsterS(mA,1,pb,pb.x,pb.z,0,'basic'))); pb.ally=null; place(mA,3,0); const dB1=still(()=>lost(mA,()=>x.damageMonsterS(mA,1,pb,pb.x,pb.z,0,'basic')));
+  ok('might raises the damage the buffed player deals (+30%), a party member too',dB1>0&&near(dB0/dB1,1.3,0.04),(dB0/dB1).toFixed(3)); }
+for(const q of [p,pb,pc]) q.ally=null;
+{ x.ssAllyS(p,'might',0.2,10,'a'); const u=p.ally.might.until; x.ssAllyS(p,'might',0.1,10,'b'); const smaller=p.ally.might.v===0.2&&p.ally.might.until===u&&p.ally.might.by==='a';
+  x.S.t+=2; x.ssAllyS(p,'might',0.2,10,'b'); const equal=p.ally.might.v===0.2&&p.ally.might.until>u;
+  x.ssAllyS(p,'might',0.35,10,'b'); const larger=p.ally.might.v===0.35&&p.ally.might.by==='b'; x.ssAllyS(p,'might',9,10,'b');
+  ok('buffs never stack: a smaller one is ignored, an equal one refreshes the time (two sources never add), a larger one replaces it, and it is capped',smaller&&equal&&larger&&p.ally.might.v===x.SS_ALLY_CAP.might); }
+p.ally=null;
+// guard, with the 10% floor
+{ const loss=(m,pl)=>{ pl.hp=pl.maxHp; pl.dead=false; pl.shield=null; x.hurtP(pl,1000,m); return pl.maxHp-pl.hp; };
+  fresh(mA); const redKeep=p.red; p.red=0.3; const base=loss(mA,p); x.ssAllyS(p,'guard',0.5,10,'a'); const guarded=loss(mA,p);
+  p.ally=null; p.red=0.95; x.ssAllyS(p,'guard',0.5,10,'a'); const floor=loss(mA,p); const K=x.monK(mA,p), want=Math.round(1000*K.dmg*(1+0.05*Math.max(0,K.lv-p.level))*x.DMG_TAKEN_MIN); p.red=redKeep; p.ally=null;
+  ok('guard takes half off what a hit does, and stacked with a 95% armour the 10% floor still holds',near(guarded/base,0.5,0.06)&&Math.abs(floor-want)<=2,'x'+(guarded/base).toFixed(2)+', floor '+floor+' vs '+want); }
+// haste, regen
+{ p.cd.skill=0; p.act=null; p.dead=false; W.receive('a',{t:'atk',k:'skill',tg:mA.id,face:0,aim:[0,0,-1]}); const plain=p.cd.skill;
+  p.cd.skill=0; p.act=null; x.ssAllyS(p,'haste',0.4,10,'a'); W.receive('a',{t:'atk',k:'skill',tg:mA.id,face:0,aim:[0,0,-1]}); const fast=p.cd.skill; p.ally=null;
+  ok('haste: a quarter-second after the cast the cooldown is 40% shorter',plain>0&&near(fast/plain,0.6,0.03),fast.toFixed(2)+' vs '+plain.toFixed(2)); }
+{ toVillage(); p.hp=Math.round(p.maxHp*0.5); const h0=p.hp; for(let i=0;i<20;i++) W.tick(0.05); const natural=p.hp-h0;   // (what you heal anyway in a village)
+  p.hp=Math.round(p.maxHp*0.5); x.ssAllyS(p,'regen',0.02,10,'a'); const h1=p.hp; for(let i=0;i<20;i++) W.tick(0.05); const withBuff=p.hp-h1; p.ally=null;
+  ok('regen: 2% of maximum health a second on top of what you heal anyway (1 s: about +2%)',near((withBuff-natural)/p.maxHp,0.02,0.006),((withBuff-natural)/p.maxHp*100).toFixed(2)+'%'); }
+// shield
+{ p.dead=false; p.hp=p.maxHp; p.shield=null; x.ssShieldS(p,0.5,10); const pool=p.shield.v; x.hurtP(p,60,mA); const soaked=p.hp===p.maxHp&&p.shield.v<pool;
+  const left=p.shield.v; x.hurtP(p,Math.round(left/Math.max(0.01,x.monK(mA,p).dmg*(1-p.red)))+500,mA); const gone=p.shield.v===0&&p.hp<p.maxHp;
+  x.ssShieldS(p,0.5,10); const big=p.shield.v; x.ssShieldS(p,0.2,10); const keep=p.shield.v===big; x.S.t+=11; p.hp=p.maxHp; x.hurtP(p,60,mA); const ended=p.hp<p.maxHp; p.shield=null;
+  ok('a shield soaks hits until its pool is gone, the larger pool wins (never added), and it runs out',near(pool,p.maxHp*0.5,0.5)&&soaked&&gone&&keep&&ended,'pool '+Math.round(pool)); }
+// party heal
+{ standNear(pb,3,0); standNear(pc,0,3); for(const q of [p,pb,pc]){ q.hp=Math.round(q.maxHp*0.5); q.dead=false; } x.resolveFxS(p,act({ring:{r:2},heal:{v:0.3}}),null);
+  ok('a party heal heals the caster and the party member in range by 30% of maximum health, not the outsider',near((p.hp-Math.round(p.maxHp*0.5))/p.maxHp,0.3,0.01)&&near((pb.hp-Math.round(pb.maxHp*0.5))/pb.maxHp,0.3,0.01)&&pc.hp===Math.round(pc.maxHp*0.5)); }
+{ for(const q of [p,pb]){ q.hp=Math.round(q.maxHp*0.1); } x.ssFxUtilS(p,{heal:{v:0.9}});
+  ok('a heal is capped (a cast heals at most '+x.SS_HEAL_CAP*100+'% of maximum health)',near((p.hp-Math.round(p.maxHp*0.1))/p.maxHp,x.SS_HEAL_CAP,0.01)); }
+{ for(const q of [p,pb]){ q.shield=null; } x.ssFxUtilS(p,{shield:{v:0.25,dur:8}});
+  ok('a skill\'s shield is given to the caster and the party in range, each a pool of their own maximum health',near(p.shield.v,p.maxHp*0.25,0.5)&&near(pb.shield.v,pb.maxHp*0.25,0.5)&&!pc.shield); p.shield=pb.shield=null; }
+{ x.SS_SETS.kitx.bonus[3]={id:'kitx_b3',set:'kitx',tier:3,slot:'bonus',name:'t',text:'t',v:[0,0],el:'basic',on:'kill',buff:{kind:'might',v:0.2,dur:5},shield:{v:0.1,dur:5}}; x.recalcP(p); p.ally=null; pb.ally=null; p.shield=null;
+  place(mB,3,0); mB.hp=1; x.damageMonsterS(mB,50,p,p.x,p.z,0,'basic');
+  ok('a triggered row can give an ally buff and a shield (on kill: might to the party, a shield)',mB.dead&&x.allyP(p,'might')===0.2&&x.allyP(pb,'might')===0.2&&p.shield&&p.shield.v>0); p.ally=null; pb.ally=null; p.shield=null; x.SS_SETS.kitx.bonus[3]=Object.assign({},K.bonus[3]); x.recalcP(p); }
+// taunt
+{ const T=fresh(mC); standNear(p,5,0); standNear(pb,2,0); W.setPos('a',[T.x+5,x.getH(T.x+5,T.z),T.z,0,0,0]); W.setPos('b',[T.x+2,x.getH(T.x+2,T.z),T.z,0,0,0]); T.camp={x:T.x,z:T.z}; T.hp=1e9; T.aggro=true; T.tgt='b'; T.state='chase'; pb.dead=false; p.dead=false;
+  tick(3); const before=T.tgt;
+  x.ssTauntS(p,T,5); tick(3); const during=T.tgt;
+  x.S.t+=6; tick(3); T.tgt='b'; tick(3); const after=T.tgt;
+  ok('taunt: a monster fighting the nearer player turns on the taunter while it lasts and does not once it is over',before==='b'&&during==='a'&&after==='b',before+' '+during+' '+after); }
+{ const B=bossM; B.B.enraged=false; B.immune=false; B.taunt=null; x.ssTauntS(p,B,10); const shorter=B.taunt&&near(B.taunt.until-x.S.t,10*x.SS_TAUNT_BOSS,0.2); B.taunt=null; B.B.enraged=true; x.ssTauntS(p,B,10); const none=B.taunt===null; B.B.enraged=false; B.immune=true; x.ssTauntS(p,B,10); const noneImm=B.taunt===null; B.immune=false;
+  const o=fresh(mA); o.dgOwn=true; x.ssTauntS(p,o,5); const own=o.taunt===undefined||o.taunt===null; o.dgOwn=false;
+  ok('a boss takes half of a taunt\'s time, none while it is enraged or shielded, and a run\'s kit-driven monster ignores it',shorter&&none&&noneImm&&own); }
+{ const T=fresh(mA); x.ssTauntS(p,T,5); const before=!!x.ssTauntedBy(T); p.dead=true; const dead=x.ssTauntedBy(T); p.dead=false; T.taunt={by:'a',until:x.S.t-1}; const old=x.ssTauntedBy(T);
+  ok('a taunt ends with its time or when the taunter is down, and is dropped then',before&&dead===null&&old===null&&T.taunt===null); }
+
+
+// ================= the ladder harness (tools/skillsets-ladder.js) on the fixture kit =================
+{ const L=require('./skillsets-ladder'); const t0=Date.now();
+  const list=quiet(()=>L.ladder({W,x,pid:'a'},{secs:20,set:'kitx',classes:['mage']})); const r=list[0], S=r&&r.summary, J=r&&L.judge(r);
+  ok('the ladder harness measures a set: pieces, 3-set, 5-set and all six, on one target and on a pack, as a percent of the best non-set loadout',!!r&&r.id==='kitx'&&[S.pieces,S.three,S.five,S.six,S.piecesPack,S.fivePack].every(v=>Number.isFinite(v)&&v>0),r&&JSON.stringify(S)+' in '+((Date.now()-t0)/1000).toFixed(1)+' s');
+  ok('...a ring on a pack hits more than one target: the pack numbers are above the single-target ones for an area kit',S&&S.fivePack>=S.five,S&&S.fivePack+' vs '+S.five);
+  ok('...and it judges: warnings for a row outside its band, failures only for the damage kits\' orderings',!!J&&Array.isArray(J.warn)&&Array.isArray(J.fail),J&&JSON.stringify(J)); }
 
 ok('the world still ticks',(()=>{ try{ tick(20); return true; }catch(e){ console.log(e); return false; } })());
 console.log(fails?('\n'+fails+' FAILED'):'\nall passed'); process.exit(fails?1:0);

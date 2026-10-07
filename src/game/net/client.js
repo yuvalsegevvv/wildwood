@@ -60,6 +60,8 @@ function applyEvent(e){
     case 'dmg': onMonDmg(e[1],e[2],e[3],e[4],e[5]); break;
     case 'imm': onMonImmune(e[1]); break;
     case 'aura': rxOnAura(e[1],e[2],e[3]); break;   // reactions: an aura on a monster (el 0: gone)
+    case 'ast': ssOnAlly(e[1],e[2],e[3],e[4]); break;   // skillsets: an ally buff (haste: shorter cooldowns)
+    case 'mk': ssOnMark(e[1],e[2],e[3],e[4],e[5]); break;   // skillsets: a mark of yours on a monster (n 0: spent)
     case 'ssget': ssOnGet(e[1],e[2],e[3]); break;   // skillsets: a signature skill and its passive were earned
     case 'react': rxOnReact(e[1],e[2]); break;   // reactions: two elements reacted
     case 'st': rxOnStatus(e[1],e[2],e[3],e[4],e[5]); break;   // reactions: vuln / weak set
