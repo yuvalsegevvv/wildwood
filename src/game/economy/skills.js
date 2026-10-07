@@ -1,6 +1,6 @@
 //@ Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, upgrade with coins and monster drops, learn from the trainers
 /* Open it with K, the Skills button in the inventory, the empty skill button, or by talking to Aldric (or Master Ryu in Hanami).
-   Top: the active slots of the class you are looking at (drop targets) and the three passive slots (the same for every class, from level PASSIVE_LV).
+   Top: the active slots of the class you are looking at (drop targets) and the three passive slots (the same for every class, opening at levels 18, 24 and 30: PASSIVE_SLOT_LV).
    Below: a tab per kind and a grid of its skills. Drag a skill you own onto its slot to use it, drag one out of a slot back into the grid to take it
    off; tap a skill for its details, Equip / Take off buttons (for touch) and its upgrade. Learning and upgrading happen at a trainer. */
 let skTab=null, skKind='skill';
@@ -23,11 +23,12 @@ function skSlotsHtml(C,cls){
     return `<div class="sk-slot${a?' on':''}${locked?' locked':''}" data-slot="${slot}"><span class="sk-n">${SLOT_TITLE[slot]}</span>${a?skTile(a,C,'slot:'+slot):`<div class="sk-tile empty">${skIcon(locked?'lock':'plus')}</div>`}<b>${a?a.name:locked?'Opens at level '+slotLv(slot):'Empty'}</b><small>${a?abilityCd(a,C.S,C.lv).toFixed(1)+' s'+(elOf(a)!=='basic'?' · '+ELEMS[elOf(a)].name:''):locked?'':'Drag one here'}</small></div>`;
   }).join('');
   const open=C.lv>=PASSIVE_LV;
-  const pas=Array.from({length:PASSIVE_SLOTS},(_,i)=>{   // slots from PASSIVE_OPEN on are locked for now
-    const id=C.S.pass&&C.S.pass[i], P=PASSIVES[id], usable=open&&i<PASSIVE_OPEN;
-    return `<div class="sk-pslot${P?' on':''}${usable?'':' locked'}" data-idx="${i}"><span class="sk-n">Passive ${i+1}</span>${P?skTile(P,C,'pslot:'+i):`<div class="sk-tile empty">${skIcon(usable?'plus':'lock')}</div>`}<b>${P?P.name:usable?'Empty':i>=PASSIVE_OPEN?'Locked':'Level '+PASSIVE_LV}</b><small>${P?passiveText(id,skillLvOf(C.S,id)):usable?'Drag one here':i>=PASSIVE_OPEN?'Unlocks later':''}</small></div>`;
+  const pas=Array.from({length:PASSIVE_SLOTS},(_,i)=>{   // slot i opens at level PASSIVE_SLOT_LV[i]
+    const id=C.S.pass&&C.S.pass[i], P=PASSIVES[id], usable=C.lv>=PASSIVE_SLOT_LV[i];
+    return `<div class="sk-pslot${P?' on':''}${usable?'':' locked'}" data-idx="${i}"><span class="sk-n">Passive ${i+1}</span>${P?skTile(P,C,'pslot:'+i):`<div class="sk-tile empty">${skIcon(usable?'plus':'lock')}</div>`}<b>${P?P.name:usable?'Empty':'Level '+PASSIVE_SLOT_LV[i]}</b><small>${P?passiveText(id,skillLvOf(C.S,id)):usable?'Drag one here':''}</small></div>`;
   }).join('');
-  return `<div class="sk-load-h">Active skills</div><div class="sk-load">${act}</div><div class="sk-load-h">Passive skills <span>${open?'the same for every class'+(PASSIVE_OPEN<PASSIVE_SLOTS?' · '+(PASSIVE_SLOTS-PASSIVE_OPEN>1?'slots ':'slot ')+Array.from({length:PASSIVE_SLOTS-PASSIVE_OPEN},(_,i)=>PASSIVE_OPEN+i+1).join(', ').replace(/, (\d+)$/,' and $1')+' unlock later':''):'open at level '+PASSIVE_LV}</span></div><div class="sk-load pas">${pas}</div>`;
+  const later=PASSIVE_SLOT_LV.map((l,i)=>C.lv<l?'slot '+(i+1)+' at level '+l:'').filter(Boolean).join(', ');
+  return `<div class="sk-load-h">Active skills</div><div class="sk-load">${act}</div><div class="sk-load-h">Passive skills <span>${open?'the same for every class'+(later?' · '+later:''):'open at level '+PASSIVE_LV}</span></div><div class="sk-load pas">${pas}</div>`;
 }
 // details of the selected skill: what it does at its level, how to equip it, and what its next level costs
 function skInfoHtml(C,cls){
@@ -100,7 +101,7 @@ function skEquip(id,idx){
   if(!(GEAR.skills||newSkills()).owned.includes(id)){ no(s.name+' is not learned yet: '+(s.drop?BOSS_DEFS.find(b=>b.def.id===s.drop).short+' drops it':'Aldric (or Master Ryu in Hanami) teaches it at the well')); return; }
   if(s.slot==='basic'&&!canSwap(s.cls,'basic')){ no('Only mages can change their basic attack'); return; }
   if(PL.level<needLv(s)){ no(s.name+' needs level '+needLv(s)); return; }
-  if(s.slot==='passive'&&idx!==undefined&&idx>=PASSIVE_OPEN){ no('Passive slot '+(idx+1)+' is locked for now'); return; }
+  if(s.slot==='passive'&&idx!==undefined&&idx>=passiveOpen(PL.level)){ no('Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx]); return; }
   netSend(idx===undefined?{t:'eqskill',id}:{t:'eqskill',id,idx}); UI_SFX.pickup();
 }
 /* ---- drag and drop (pointer events, so it works with a finger too) ---- */
@@ -115,7 +116,7 @@ function skTarget(x,y){
 // a tile out of the grid goes onto its own slot; a tile out of a slot goes back to the grid
 function skCanDrop(src,tg){
   if(!tg) return false; const s=skillDef(src.id);
-  if(src.from==='grid') return s.slot==='passive'?tg.idx!==undefined&&tg.idx<PASSIVE_OPEN:tg.slot===s.slot;
+  if(src.from==='grid') return s.slot==='passive'?tg.idx!==undefined&&tg.idx<passiveOpen(PL.level):tg.slot===s.slot;
   return !!tg.area;
 }
 function skDown(e){

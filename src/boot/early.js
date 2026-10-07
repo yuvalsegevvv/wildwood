@@ -1,3 +1,4 @@
+//@ Runs first, before the game bundle: the error screen (showFatal) and the WebGL check
 function showFatal(msg, reload){
   var st=document.getElementById('status'), start=document.getElementById('start'), rl=document.getElementById('stReload');
   if(start){ start.classList.remove('hide'); }

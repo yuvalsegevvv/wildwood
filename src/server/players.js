@@ -56,8 +56,8 @@ function sanitizeSkills(g){
     for(const sl of SLOTS){ const id=slots[sl]; if(SKILLS[id]&&SKILLS[id].cls===c&&SKILLS[id].slot===sl&&out.owned.includes(id)&&canSwap(c,sl)) out.eq[c][sl]=id; }
   }
   if(g.lv&&typeof g.lv==='object') for(const id in g.lv){ const L=out.owned.includes(id)&&!(skillDef(id)&&skillDef(id).drop)?clampInt(g.lv[id],1,SKILL_MAX_LV,1):1; if(L>1) out.lv[id]=L; }   // (boss skills cannot be upgraded yet)
-  // only the open passive slots can be used for now: what a save had in a locked slot moves up into the open ones (the rest goes back to the bag)
-  if(Array.isArray(g.pass)) [...new Set(g.pass.slice(0,PASSIVE_SLOTS).filter(id=>PASSIVES[id]&&out.owned.includes(id)))].slice(0,PASSIVE_OPEN).forEach((id,i)=>{ out.pass[i]=id; });
+  // a passive keeps its slot (which slots a level can use is decided by newPlayer, which knows the level), and sits in one slot only
+  if(Array.isArray(g.pass)) g.pass.slice(0,PASSIVE_SLOTS).forEach((id,i)=>{ if(PASSIVES[id]&&out.owned.includes(id)&&!out.pass.includes(id)) out.pass[i]=id; });
   out.pgiven=!!g.pgiven;   // the free passive was handed out once (so taking it off does not bring it back)
   out.v=g.v===2?2:1;   // 1 = from before burst skills: they get their free burst on join
   return out;
@@ -70,6 +70,7 @@ function newPlayer(pid,hello){
     hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0},buff:null,act:null,dirty:true,travelT:0};
   if(p.gear.startAll) giveAllP(p);
   if(p.gear.skills.v!==2){ autoEquipP(p,'skill'); autoEquipP(p,'burst'); p.gear.skills.v=2; }   // saves from before skills / bursts get the free ones
+  p.gear.skills.pass.forEach((id,i)=>{ if(id&&i>=passiveOpen(p.level)) p.gear.skills.pass[i]=null; });   // a passive in a slot this level has not opened goes back to the bag
   autoEquipPassiveP(p);   // ... and from before passives
   recalcP(p); p.hp=p.maxHp; fillOffersP(p); return p;
 }
@@ -125,7 +126,7 @@ function gainExpP(p,v,monId){
   p.exp+=v; ev('xp',p.id,r1(v),monId==null?null:monId);
   let up=false; const was=p.level;
   while(p.level<PLAYER_MAX_LV && p.exp>=expToNext(p.level)){ p.exp-=expToNext(p.level); p.level++; up=true; }
-  if(up){ recalcP(p); p.hp=p.maxHp; ev('lvup',p.id,p.level); refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(was<PASSIVE_LV&&p.level>=PASSIVE_LV) unlockPassivesP(p); }
+  if(up){ recalcP(p); p.hp=p.maxHp; ev('lvup',p.id,p.level); refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(passiveOpen(p.level)>passiveOpen(was)) unlockPassivesP(p,was); }
   p.dirty=true;
 }
 // the attacker's damage at your zone tier (its tiered level's damage), +5% per level the attacker is above you, then your armor (soft-capped, defRed), the Iron Will passive, a buff and a guard potion;
@@ -152,16 +153,17 @@ function unlockSkillsP(p,slot){
   toastTo(p.id,(slot==='burst'?'Burst slot unlocked! ':'Skill slot unlocked! ')+(s?s.name:'Your new ability')+' is ready ('+(slot==='burst'?'R':'Q')+'). Aldric, the trainer at the well, teaches more.','good');
   ev('skillslot',p.id,slot);
 }
-// level 18: the passive slots open, with Vitality (free) in the first one
+// level 18: the passives open, with Vitality (free) in the first slot
 function autoEquipPassiveP(p){
   const S=p.gear.skills; if(S.pgiven||p.level<PASSIVE_LV) return false;
   S.pgiven=true; if(!S.owned.includes('vitality')) S.owned.push('vitality');
-  const i=S.pass.slice(0,PASSIVE_OPEN).indexOf(null); if(i>=0&&!S.pass.includes('vitality')) S.pass[i]='vitality';
+  const i=S.pass.slice(0,passiveOpen(p.level)).indexOf(null); if(i>=0&&!S.pass.includes('vitality')) S.pass[i]='vitality';
   p.dirty=true; return true;
 }
-function unlockPassivesP(p){
-  if(!autoEquipPassiveP(p)) return;
-  recalcP(p); toastTo(p.id,'Passive skills unlocked! Vitality is in your first passive slot. Aldric and Master Ryu teach more.','good'); ev('skillslot',p.id,'passive');
+// a level crossed one or more passive slot levels (18 / 24 / 30): tell the player about each new slot
+function unlockPassivesP(p,was){
+  if(autoEquipPassiveP(p)){ recalcP(p); toastTo(p.id,'Passive skills unlocked! Vitality is in your first passive slot. Aldric and Master Ryu teach more.','good'); ev('skillslot',p.id,'passive'); }
+  PASSIVE_SLOT_LV.forEach((lv,i)=>{ if(i>0&&was<lv&&p.level>=lv){ toastTo(p.id,'Passive slot '+(i+1)+' unlocked! Drag a passive onto it in the skills panel (K).','good'); ev('skillslot',p.id,'passive'); } });
 }
 function healP(p,v){ if(!p.dead&&v>0) p.hp=Math.min(p.maxHp,p.hp+v); }
 function updatePlayersS(dt){

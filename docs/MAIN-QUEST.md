@@ -223,7 +223,7 @@ cooldown), **might** (+20 / 30 / 40% damage for 90 s) and **guard** (-20 / 30 / 
 an axe, craft armour) and, in the Reach, F4 (a Hagane sickle), F5 (frostbloom) and F6 (Ylva brews the frostbloom tea: a Greater Healing
 Potion).
 
-**Gathering is a cast**: pressing the talk key at a node starts a bar that fills for `castTime` (1.2 s with a copper tool, 0.1 s less for each tier of the tool and
+**Gathering is a cast**: pressing the gather key (G, or the talk key) at a node starts a bar that fills for `castTime` (1.2 s with a copper tool, 0.1 s less for each tier of the tool and
 0.04 s for each rarity, never under 0.6 s); walking more than 1.5 m away or being knocked out breaks it, and the haul arrives when it ends. There is no gathering
 animation and tools never wear out, both on purpose. **Not built** (`docs/NOT-BUILT.md`, with a plan for the first): quest-board notices for gathering and crafting, potions
 that cleanse a boss's freeze or slow, resources for the lands to come.

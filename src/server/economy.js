@@ -85,13 +85,14 @@ function buySkillP(p,id){
   if(p.gear.coins<s.price){ toastTo(p.id,'Not enough coins','bad'); return; }
   p.gear.coins-=s.price; p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Learned '+s.name+'!','good'); ev('skillbuy',p.id,id);
 }
-// a passive goes into slot idx of the passive loadout (or the first free open one, or nowhere when they are all full); slots from PASSIVE_OPEN on are locked for now
+// a passive goes into slot idx of the passive loadout (or the first free open one, or nowhere when they are all full); slot i opens at PASSIVE_SLOT_LV[i]
 function equipPassiveP(p,id,idx){
-  const P=p.gear.skills.pass, need=Math.max(PASSIVE_LV,PASSIVES[id].lv);
+  const P=p.gear.skills.pass, need=Math.max(PASSIVE_LV,PASSIVES[id].lv), open=passiveOpen(p.level);
   if(p.level<need){ toastTo(p.id,PASSIVES[id].name+' needs level '+need,'bad'); return; }
-  if(idx>=PASSIVE_OPEN){ toastTo(p.id,'Passive slot '+(idx+1)+' is locked for now','bad'); return; }
-  const at=idx>=0?idx:P.slice(0,PASSIVE_OPEN).indexOf(null); if(at<0){ toastTo(p.id,'The passive slot is full: drop it onto the slot to replace it','bad'); return; }
-  const was=P.indexOf(id); if(was>=0) P[was]=null; P[at]=id; recalcP(p); p.dirty=true;
+  if(idx>=open){ toastTo(p.id,'Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx],'bad'); return; }
+  const at=idx>=0?idx:P.slice(0,open).indexOf(null); if(at<0){ toastTo(p.id,open>1?'Your passive slots are full: drop it onto one to replace it':'The passive slot is full: drop it onto the slot to replace it','bad'); return; }
+  const was=P.indexOf(id); if(was>=0) P[was]=P[at];   // already worn in another slot: the two swap places (the other slot gets whatever was here, or nothing)
+  P[at]=id; recalcP(p); p.dirty=true;
 }
 function equipSkillP(p,id,idx){
   const s=skillDef(id); if(!s||!p.gear.skills.owned.includes(id)) return;
@@ -144,7 +145,7 @@ function renameP(p,name){
 // jump straight to a level (testing tools, account gifts): opens the skill slots passed on the way
 function setLevelP(p,lv){
   const was=p.level; p.level=clampInt(lv,1,PLAYER_MAX_LV,1); p.exp=0; recalcP(p); p.hp=p.maxHp; refreshOffersP(p);
-  if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(was<PASSIVE_LV&&p.level>=PASSIVE_LV) unlockPassivesP(p);
+  if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(passiveOpen(p.level)>passiveOpen(was)) unlockPassivesP(p,was);
   p.dirty=true; ev('lvset',p.id,p.level);
 }
 // testing tools (settings panel); allowed when the server runs in dev mode (solo, shared room, or node --dev)

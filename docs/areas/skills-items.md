@@ -22,7 +22,7 @@ rows with `drop:'<boss id>'` at the end of `SKILLS` (`shared/classes.js`), `BOSS
 
 ### Passive skills (class-universal, level 18)
 
-`PASSIVES` in `shared/classes.js` (`stat`, `v`, `text`) read with `passiveSum` (`psP(p,stat)` on the server: hp in `recalcP`, dmg / crit in `rollDmgS`, red in `hurtP`, cd in `abilityCd`, drop / xp in `rewardKill`, soul in `elemHitS`); slots + unlock `autoEquipPassiveP` / `equipPassiveP` in `server/players.js` / `economy.js`; `PASSIVE_OPEN` (in `classes.js`) is how many of the 3 slots are usable: slots after it are locked in the panel, refused by the server, ignored by `passiveSum` and cleared from saves
+`PASSIVES` in `shared/classes.js` (`stat`, `v`, `text`) read with `passiveSum` (`psP(p,stat)` on the server: hp in `recalcP`, dmg / crit in `rollDmgS`, red in `hurtP`, cd in `abilityCd`, drop / xp in `rewardKill`, soul in `elemHitS`); slots + unlock `autoEquipPassiveP` / `equipPassiveP` in `server/players.js` / `economy.js`; `PASSIVE_SLOT_LV` = [18, 24, 30] (in `classes.js`) is the level that opens each of the 3 slots and `passiveOpen(level)` counts the open ones: a slot not open yet is locked in the panel, refused by the server, ignored by `passiveSum` and emptied when a save joins (`newPlayer`); `unlockPassivesP(p,was)` toasts each slot as a level crosses it; dropping a passive that is worn in another slot swaps the two
 
 ## Pitfalls
 
@@ -35,6 +35,6 @@ rows with `drop:'<boss id>'` at the end of `SKILLS` (`shared/classes.js`), `BOSS
 ## Reference numbers
 
 - Elements: soul match x1.5, soul opposite x1/1.5 (pairs fire/water, earth/air, dark/light: `ELEM_OPP`); against monsters the wheel water > fire > air > earth > water plus dark <> light (`ELEM_BEATS`): a skill that beats the monster's element x1.5, one it beats or its own element x1/1.5 (`ELEM_BOOST`, soul and wheel stack).
-  Soul unlocks at level `SOUL_LV` 15 (Hanami's Kaede), passives at `PASSIVE_LV` 18 (3 slots exist, only `PASSIVE_OPEN` = 1 is usable, the others are locked for now). Skill level 1-5: +12% damage and -3% cooldown per level.
+  Soul unlocks at level `SOUL_LV` 15 (Hanami's Kaede), passives at `PASSIVE_LV` 18 (3 slots, opened at levels 18 / 24 / 30: `PASSIVE_SLOT_LV`). Skill level 1-5: +12% damage and -3% cooldown per level.
   Boss skills: each of the boss's 6 skills has a 10% chance per kill, per player who helped. Burn: a share (k) of the hit's damage every second. Pull = negative knockback.
   Drops: 35% per kill (a boss always 3), upgrade to level n needs `UP_COUNT` 4 / 6 / 9 / 14 drops + coins (`UP_COINS` x (n-1)^1.7) and, at level 5, 2 boss trophies.

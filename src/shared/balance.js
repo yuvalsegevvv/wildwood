@@ -1,10 +1,10 @@
 //@ Level formulas: fLv, gear tiers, expected gear, armour negation (soft-capped at 90%), the level debuff on damage dealt (never below x0.5), the XP curve (a soft cap at level 50, no kill pays for more than 10 levels above you), coins (the pay doubles every 10 levels above 60). Pure.
 /* ===================== MONSTERS =====================
-   15 monsters built from 6 models (slime, shroom, beetle, boar, goblin, treant), recoloured and resized.
-   Camps sit at fixed spots in rings around the village: level 1 closest, level 15 farthest.
+   The monster kinds live in monster-defs.js (models, zones, levels 1-30); the home forest's camps sit in rings round the village,
+   level 1 closest, level 15 farthest, and the lands beyond have their own zones.
    Levels 1-2 leave you alone until hit; everything else comes for you when you get close.
 
-   Enemy stats are placeholders until you give the real formulas. For now each enemy has:
+   Every monster def scales from the same-level player with:
      hpK     how tough it is: health = your same-level hit damage x (4 + 0.45 x level) x hpK
      dmgPct  how hard it hits: damage per hit = this share of a same-level player's max health
      atk     seconds between its attacks */
