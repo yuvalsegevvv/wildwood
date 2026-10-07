@@ -53,9 +53,9 @@ function sanitizeSkills(g){
   if(Array.isArray(g.owned)) for(const id of g.owned) if(skillDef(id)&&!out.owned.includes(id)) out.owned.push(id);
   if(g.eq) for(const c in out.eq){
     const e=g.eq[c], slots=typeof e==='string'?{skill:e}:(e&&typeof e==='object'?e:{});
-    for(const sl of SLOTS){ const id=slots[sl]; if(SKILLS[id]&&SKILLS[id].cls===c&&SKILLS[id].slot===sl&&out.owned.includes(id)&&canSwap(c,sl)) out.eq[c][sl]=id; }
+    for(const sl of SLOTS){ const id=slots[sl]; if(SKILLS[id]&&(SKILLS[id].cls===c||SKILLS[id].cls==='any')&&SKILLS[id].slot===sl&&out.owned.includes(id)&&canSwap(c,sl,out)) out.eq[c][sl]=id; }   // skillsets: cls 'any' fits every class; owning a slot-1 piece frees the basic slot
   }
-  if(g.lv&&typeof g.lv==='object') for(const id in g.lv){ const L=out.owned.includes(id)&&!(skillDef(id)&&skillDef(id).drop)?clampInt(g.lv[id],1,SKILL_MAX_LV,1):1; if(L>1) out.lv[id]=L; }   // (boss skills cannot be upgraded yet)
+  if(g.lv&&typeof g.lv==='object') for(const id in g.lv){ const L=out.owned.includes(id)&&!(skillDef(id)&&(skillDef(id).drop||skillDef(id).set))?clampInt(g.lv[id],1,SKILL_MAX_LV,1):1; if(L>1) out.lv[id]=L; }   // (boss skills cannot be upgraded yet)
   // a passive keeps its slot (which slots a level can use is decided by newPlayer, which knows the level), and sits in one slot only
   if(Array.isArray(g.pass)) g.pass.slice(0,PASSIVE_SLOTS).forEach((id,i)=>{ if(PASSIVES[id]&&out.owned.includes(id)&&!out.pass.includes(id)) out.pass[i]=id; });
   out.pgiven=!!g.pgiven;   // the free passive was handed out once (so taking it off does not bring it back)
@@ -79,9 +79,10 @@ function recalcP(p){
   g.atk+=dgRingAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else (only for a matching soul)
   p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym); p.def=g.def; p.red=defRed(g.def);
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));
+  ssRefreshP(p);   // skillsets: the sets worn and their bonuses
 }
 const clsOfP=p=>classOfGear(p.gear);
-const psP=(p,stat)=>passiveSum(p.gear.skills,p.level,stat);   // a passive stat (Vitality's hp, Ferocity's dmg...)
+const psP=(p,stat)=>passiveSum(p.gear.skills,p.level,stat,clsOfP(p));   // a passive stat (Vitality's hp, Ferocity's dmg...)
 // the bonus of the worn pendant for one stat (pendants.js): read from the item id in the save, never from a number the client sent, and only while you are high enough for it
 function pendP(p,stat){ const it=ITEM[p.gear.eq.pendant]; return it&&it.kind==='pendant'&&it.stat===stat&&p.level>=it.lv?it.v:0; }
 const soulOfP=p=>p.level>=SOUL_LV?p.gear.soul:'basic';

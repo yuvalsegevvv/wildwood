@@ -29,7 +29,7 @@ function doAttack(kind){
   if(!tgtOK){ const t2=pickTarget(Math.max(ab.range+2,8)); if(t2) CB.target=t2; }
   const [k,dur,hitAt]=ab.act;
   CB.act={kind:ANIM_OF[k]||k,sk:k,t:0,dur,hitAt,done:false,skill:kind==='skill'};
-  CB.cd[kind]=abilityCd(ab,GEAR.skills,PL.level)*(kind==='basic'&&CB.buff?CB.buff.cd:1);
+  CB.cd[kind]=abilityCd(ab,GEAR.skills,PL.level,c)*(kind==='basic'&&CB.buff?CB.buff.cd:1);   // skillsets: the class the bonuses are read for
   const T=CB.target;
   if(T && !T.dead && Math.hypot(T.x-P.x,T.z-P.z)<ab.range+6) P.face=Math.atan2(-(T.x-P.x),-(T.z-P.z));
   else P.face=P.yaw;

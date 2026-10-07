@@ -10,7 +10,7 @@ function handleAttack(p,msg){
   const cls=clsOfP(p), ab=abilityOf(cls,k,p.gear.skills,p.level); if(!ab) return;   // no skill equipped, or the slot is still locked
   const [kind,dur,hitAt]=ab.act;
   const lvl=skillLvOf(p.gear.skills,ab.id);
-  p.cd[k]=abilityCd(ab,p.gear.skills,p.level)*(k==='basic'&&p.buff?p.buff.cd:1);
+  p.cd[k]=abilityCd(ab,p.gear.skills,p.level,cls)*(k==='basic'&&p.buff?p.buff.cd:1);
   if(isFinite(+msg.face)) p.face=+msg.face;
   const tg=MON_BY_ID.get(msg.tg);
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];

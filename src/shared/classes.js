@@ -138,10 +138,11 @@ const skillPower=L=>1+0.12*(L-1), skillCdMult=L=>1-0.03*(L-1);
 const passiveValue=(id,L)=>PASSIVES[id].v[0]+PASSIVES[id].v[1]*(L-1);
 const pctText=v=>+(v*100).toFixed(1);
 const passiveText=(id,L)=>PASSIVES[id].text.replace('{}',pctText(passiveValue(id,L)));
-// the total of one passive stat from a loadout (0 before level PASSIVE_LV; a slot the level has not opened yet does nothing)
-function passiveSum(skills,level,stat){
-  if(level<PASSIVE_LV||!skills||!Array.isArray(skills.pass)) return 0;
-  let t=0; for(const id of skills.pass.slice(0,passiveOpen(level))){ const P=PASSIVES[id]; if(P&&P.stat===stat&&skills.owned.includes(id)&&level>=P.lv) t+=passiveValue(id,skillLvOf(skills,id)); }
+// the total of one passive stat from a loadout (0 before level PASSIVE_LV; a slot the level has not opened yet does nothing); cls: the class whose loadout counts the set bonuses (none: no bonuses)
+function passiveSum(skills,level,stat,cls){
+  let t=ssBonusSum(skills,level,stat,cls);   // skillsets: the 3- / 5-set bonuses in force (a set's three actives count before level 18)
+  if(level<PASSIVE_LV||!skills||!Array.isArray(skills.pass)) return t;
+  for(const id of skills.pass.slice(0,passiveOpen(level))){ const P=PASSIVES[id]; if(!P||!skills.owned.includes(id)||level<P.lv) continue; if(P.stat===stat) t+=passiveValue(id,skillLvOf(skills,id)); if(P.cost&&P.cost.stat===stat) t+=P.cost.v; }   // skillsets: a row may pay a cost
   return t;
 }
 const ANIM_OF={}; for(const id in SKILLS){ const s=SKILLS[id]; s.id=id; ANIM_OF[s.act[0]]=s.anim||s.act[0]; }
@@ -150,15 +151,15 @@ for(const id in SKILLS){ const s=SKILLS[id]; if(!s.price&&!s.drop){ (DEFAULT_OF[
 const ACT_SKILL={}; for(const id in SKILLS){ ACT_SKILL[SKILLS[id].act[0]]=SKILLS[id]; }   // the skill behind an attack kind (every skill has its own kind): the client draws generic fx from it
 const slotLv=slot=>slot==='burst'?BURST_SLOT_LV:slot==='skill'?SKILL_SLOT_LV:1;
 // lv: skill / passive levels above 1 ({id:level}); pass: the passive loadout (PASSIVE_SLOTS ids or null)
-const newSkills=()=>({owned:SKILL_IDS.filter(id=>!SKILLS[id].price&&!SKILLS[id].drop),eq:{warrior:{basic:null,skill:null,burst:null},archer:{basic:null,skill:null,burst:null},mage:{basic:null,skill:null,burst:null}},lv:{},pass:new Array(PASSIVE_SLOTS).fill(null)});
+const newSkills=()=>({owned:SKILL_IDS.filter(id=>!SKILLS[id].price&&!SKILLS[id].drop&&!SKILLS[id].set),eq:{warrior:{basic:null,skill:null,burst:null},archer:{basic:null,skill:null,burst:null},mage:{basic:null,skill:null,burst:null}},lv:{},pass:new Array(PASSIVE_SLOTS).fill(null)});
 // only the mage chooses a basic attack; everyone else always has their class's
-const canSwap=(cls,slot)=>slot!=='basic'||cls==='mage';
+const canSwap=(cls,slot,skills)=>slot!=='basic'||cls==='mage'||ssOwnsBasic(skills,cls);   // skillsets: a class that owns a slot-1 piece may change its basic attack too
 // the ability behind a slot for a class and a loadout (null if that slot can't be used yet or is empty)
 function abilityOf(cls,slot,skills,level){
   if(level<slotLv(slot)) return null;
   if(slot==='basic'){ const id=skills&&skills.eq&&skills.eq[cls]&&skills.eq[cls].basic; const s=SKILLS[id]; return s&&s.cls===cls&&s.slot==='basic'&&skills.owned.includes(id)?s:SKILLS[DEFAULT_OF[cls].basic]; }
   const id=skills&&skills.eq&&skills.eq[cls]&&skills.eq[cls][slot]; const s=SKILLS[id];
-  return s&&s.cls===cls&&s.slot===slot&&skills.owned.includes(id)&&level>=s.lv?s:null;
+  return s&&(s.cls===cls||s.cls==='any')&&s.slot===slot&&skills.owned.includes(id)&&level>=s.lv?s:null;   // skillsets: cls 'any' is a skill every class can wear
 }
 // seconds until an ability can be used again: its own cooldown, shorter with skill level and the Quickhands passive
-function abilityCd(ab,skills,level){ return ab.cd*skillCdMult(skillLvOf(skills,ab.id))*(1-Math.min(0.6,passiveSum(skills,level,'cd'))); }
+function abilityCd(ab,skills,level,cls){ return ab.cd*skillCdMult(skillLvOf(skills,ab.id))*(1-Math.max(-1,Math.min(0.6,passiveSum(skills,level,'cd',cls||(ab.cls==='any'?undefined:ab.cls))))); }   // skillsets: the class the bonuses are read for (a cost makes it longer)

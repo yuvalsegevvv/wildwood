@@ -7,7 +7,7 @@ let skTab=null, skKind='skill';
 const SK={sel:null};   // the selected skill or passive id
 function openSkills(n,kind){ openPanel('skills',n||null); skTab=clsOf(); if(KIND_TITLE[kind]) skKind=kind; SK.sel=null; renderSkills(); }
 function toggleSkills(){ if(!started||customizing) return; if($('#skills').hidden) openSkills(); else closePanels(); }
-const skIcon=name=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||''}</svg>`;
+const skIcon=name=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||ICONS.burst||''}</svg>`;   // (skillsets: a signature skill without a glyph of its own gets the generic burst one, as the action bar does)
 const SLOT_TITLE={basic:'1 · Basic attack',skill:'2 · Skill',burst:'3 · Burst'}, KIND_TITLE={basic:'1 · Basic',skill:'2 · Skill',burst:'3 · Burst',pass:'Passive'};
 const needLv=s=>s.slot==='passive'?Math.max(PASSIVE_LV,s.lv):Math.max(slotLv(s.slot),s.lv);
 const SLOT_NO={basic:1,skill:2,burst:3};
@@ -20,7 +20,7 @@ function skTile(s,C,from){
 function skSlotsHtml(C,cls){
   const act=SLOTS.map(slot=>{
     const a=abilityOf(cls,slot,C.S,C.lv), locked=C.lv<slotLv(slot);
-    return `<div class="sk-slot${a?' on':''}${locked?' locked':''}" data-slot="${slot}"><span class="sk-n">${SLOT_TITLE[slot]}</span>${a?skTile(a,C,'slot:'+slot):`<div class="sk-tile empty">${skIcon(locked?'lock':'plus')}</div>`}<b>${a?a.name:locked?'Opens at level '+slotLv(slot):'Empty'}</b><small>${a?abilityCd(a,C.S,C.lv).toFixed(1)+' s'+(elOf(a)!=='basic'?' · '+ELEMS[elOf(a)].name:''):locked?'':'Drag one here'}</small></div>`;
+    return `<div class="sk-slot${a?' on':''}${locked?' locked':''}" data-slot="${slot}"><span class="sk-n">${SLOT_TITLE[slot]}</span>${a?skTile(a,C,'slot:'+slot):`<div class="sk-tile empty">${skIcon(locked?'lock':'plus')}</div>`}<b>${a?a.name:locked?'Opens at level '+slotLv(slot):'Empty'}</b><small>${a?abilityCd(a,C.S,C.lv,cls).toFixed(1)+' s'+(elOf(a)!=='basic'?' · '+ELEMS[elOf(a)].name:''):locked?'':'Drag one here'}</small></div>`;
   }).join('');
   const open=C.lv>=PASSIVE_LV;
   const pas=Array.from({length:PASSIVE_SLOTS},(_,i)=>{   // slot i opens at level PASSIVE_SLOT_LV[i]
@@ -35,24 +35,26 @@ function skInfoHtml(C,cls){
   const s=SK.sel&&skillDef(SK.sel);
   if(!s) return `<p class="muted">${isTouch?'Tap':'Click'} a skill for details. Drag one you own onto its slot to use it, or out of its slot to take it off.</p>`;
   const S=C.S, own=S.owned.includes(s.id), L=skillLvOf(S,s.id), pass=s.slot==='passive', low=C.lv<needLv(s), el=elOf(s);
-  const PS=S.pass||[], eq=pass?PS.includes(s.id):((abilityOf(s.cls,s.slot,S,C.lv)||{}).id===s.id);
+  const PS=S.pass||[], eq=pass?PS.includes(s.id):((abilityOf(s.cls==='any'?cls:s.cls,s.slot,S,C.lv)||{}).id===s.id);   // skillsets: a universal piece is looked up for the class being viewed
   let stats;
   if(pass) stats=passiveText(s.id,L);
-  else stats=abilityCd(s,S,C.lv).toFixed(1)+' s cooldown'+(s.buff?'':' · '+Math.round(s.mult*skillPower(L)*100)+'% damage')
+  else stats=abilityCd(s,S,C.lv,cls).toFixed(1)+' s cooldown'+(s.buff?'':' · '+Math.round(s.mult*skillPower(L)*100)+'% damage')
     +(s.buff?' · +'+Math.round((s.buff.dmg-1)*skillPower(L)*100)+'% damage for '+(s.buff.dur+0.5*(L-1))+' s':'');
   const boss=s.drop?BOSS_DEFS.find(b=>b.def.id===s.drop).short:'';   // the boss that drops it (boss skills are not sold and cannot be upgraded yet)
-  const tags=`<span class="sk-tag">${pass?'Passive':CLASSES[s.cls].name+' · '+KIND_TITLE[s.slot]}${boss?' · dropped by '+boss:''}</span>${pass?'':elChip(el)}`;
+  const tags=`<span class="sk-tag">${pass?'Passive':(s.cls==='any'?'Any class':CLASSES[s.cls].name)+' · '+KIND_TITLE[s.slot]}${boss?' · dropped by '+boss:''}${s.set?' · '+SS_SETS[s.set].char.name+'\'s set':''}</span>${pass?'':elChip(el)}`;
   let acts='';
   if(own){
     if(eq&&!pass&&s.slot!=='basic') acts+=`<button class="chip" data-unskill="${s.slot}">Take off</button>`;
     else if(eq&&pass) acts+=`<button class="chip" data-unpass="${PS.indexOf(s.id)}">Take off</button>`;
-    else if(!eq&&!(s.slot==='basic'&&!canSwap(s.cls,'basic'))) acts+=`<button class="chip" data-eqskill="${s.id}" ${low?'disabled':''}>${low?'Level '+needLv(s):'Equip'}</button>`;
+    else if(!eq&&!(s.slot==='basic'&&!canSwap(s.cls,'basic',S))) acts+=`<button class="chip" data-eqskill="${s.id}" ${low?'disabled':''}>${low?'Level '+needLv(s):'Equip'}</button>`;
   } else if(s.drop) acts+=`<span class="muted">Dropped by ${boss}: ${Math.round(BOSS_SKILL_CHANCE*100)}% per kill</span>`;
+  else if(s.set) acts+=`<span class="muted">A signature skill: earned from a boss or a dungeon</span>`;   // skillsets: never taught
   else if(C.trainer) acts+=`<button class="chip buy" data-buyskill="${s.id}" ${GEAR.coins<s.price||C.lv<needLv(s)?'disabled':''}>${C.lv<needLv(s)?'Level '+needLv(s):'Learn: '+s.price+' coins'}</button>`;
   else acts+=`<span class="muted">Aldric (or Master Ryu in Hanami) teaches it at the well: ${s.price} coins</span>`;
   let up='';
   if(own){
     if(s.drop) up=`<div class="sk-up"><b>Boss skill</b><span class="muted">It cannot be upgraded yet.</span></div>`;
+    else if(s.set) up=`<div class="sk-up"><b>Signature skill</b><span class="muted">It cannot be upgraded yet.</span></div>`;   // skillsets
     else if(L>=SKILL_MAX_LV) up=`<div class="sk-up"><b>Highest level</b><span class="muted">${s.name} cannot be upgraded any further.</span></div>`;
     else {
       const n=upgradeNeeds(s.id,L+1), have=GEAR.mats||{}, cOk=GEAR.coins>=n.coins, all=cOk&&n.mats.every(m=>(have[m.id]||0)>=m.n);
@@ -75,11 +77,12 @@ function renderSkills(){
   h+=skSlotsHtml(C,cls);
   h+=`<div class="sk-area"><div class="chips sk-kinds">${['basic','skill','burst','pass'].map(k=>`<button class="chip" data-skkind="${k}" aria-pressed="${k===skKind}">${KIND_TITLE[k]}</button>`).join('')}</div>`;
   let ids;
-  if(pass){ ids=PASSIVE_IDS; if(lv<PASSIVE_LV) h+=`<p class="muted sk-note">Passive skills open at level ${PASSIVE_LV}. They work for every class.</p>`; }
+  if(pass){ ids=PASSIVE_IDS.filter(id=>!PASSIVES[id].set||S.owned.includes(id)); if(lv<PASSIVE_LV)   // skillsets: a signature passive shows once it is yours
+    h+=`<p class="muted sk-note">Passive skills open at level ${PASSIVE_LV}. They work for every class.</p>`; }
   else {
-    ids=SKILL_IDS.filter(id=>SKILLS[id].cls===cls&&SKILLS[id].slot===skKind);
+    ids=SKILL_IDS.filter(id=>(SKILLS[id].cls===cls||SKILLS[id].cls==='any')&&SKILLS[id].slot===skKind&&(!SKILLS[id].set||S.owned.includes(id)));   // skillsets: a universal piece is in every class's grid; a signature piece shows once it is yours
     if(skKind!=='basic'&&lv<slotLv(skKind)) h+=`<p class="muted sk-note">This slot opens at level ${slotLv(skKind)}.</p>`;
-    if(skKind==='basic'&&!canSwap(cls,'basic')) h+=`<p class="muted sk-note">Only mages can change their basic attack.</p>`;
+    if(skKind==='basic'&&!canSwap(cls,'basic',S)) h+=`<p class="muted sk-note">Only mages can change their basic attack.</p>`;
   }
   h+=`<div class="sk-grid">${ids.map(id=>{ const s=skillDef(id); return `<div class="sk-cell">${skTile(s,C,'grid')}<span class="nm">${s.name}</span></div>`; }).join('')}</div></div>`;
   h+=`<div class="sk-info" id="skInfo">${skInfoHtml(C,cls)}</div>`;
@@ -98,8 +101,8 @@ function renderSkills(){
 function skEquip(id,idx){
   const s=skillDef(id); if(!s) return;
   const no=text=>{ toast(text,'bad'); UI_SFX.error(); };
-  if(!(GEAR.skills||newSkills()).owned.includes(id)){ no(s.name+' is not learned yet: '+(s.drop?BOSS_DEFS.find(b=>b.def.id===s.drop).short+' drops it':'Aldric (or Master Ryu in Hanami) teaches it at the well')); return; }
-  if(s.slot==='basic'&&!canSwap(s.cls,'basic')){ no('Only mages can change their basic attack'); return; }
+  if(!(GEAR.skills||newSkills()).owned.includes(id)){ no(s.name+' is not learned yet: '+(s.set?'it is a signature skill, earned from a boss or a dungeon':s.drop?BOSS_DEFS.find(b=>b.def.id===s.drop).short+' drops it':'Aldric (or Master Ryu in Hanami) teaches it at the well')); return; }
+  if(s.slot==='basic'&&!canSwap(s.cls,'basic',GEAR.skills)){ no('Only mages can change their basic attack'); return; }
   if(PL.level<needLv(s)){ no(s.name+' needs level '+needLv(s)); return; }
   if(s.slot==='passive'&&idx!==undefined&&idx>=passiveOpen(PL.level)){ no('Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx]); return; }
   netSend(idx===undefined?{t:'eqskill',id}:{t:'eqskill',id,idx}); UI_SFX.pickup();
@@ -169,7 +172,7 @@ function skDrop(src,tg){
       skEquip(s.id);
     }
   } else if(tg.area){
-    if(src.from==='slot:basic'){ toast(canSwap(skTab||clsOf(),'basic')?'The basic slot is never empty: drop another basic attack onto it':'Only mages can change their basic attack','bad'); UI_SFX.error(); return; }
+    if(src.from==='slot:basic'){ toast(canSwap(skTab||clsOf(),'basic',GEAR.skills)?'The basic slot is never empty: drop another basic attack onto it':'Only mages can change their basic attack','bad'); UI_SFX.error(); return; }
     if(src.from.startsWith('pslot')) netSend({t:'unskill',slot:'pass',idx:+src.from.split(':')[1]});
     else netSend({t:'unskill',cls:skTab||clsOf(),slot:src.from.split(':')[1]});
     UI_SFX.click();

@@ -38,7 +38,7 @@ function updateCombatUI(dt){
     tBar.style.width=(T.hp/T.maxHp*100)+'%'; tHp.textContent=Math.ceil(T.hp*K.hp)+' / '+Math.round(T.maxHp*K.hp); }
   else tframe.hidden=true;
   const L=GEAR&&GEAR.skills, c=clsOf(), ba=abilityOf(c,'basic',L,PL.level), sk=abilityOf(c,'skill',L,PL.level), bu=abilityOf(c,'burst',L,PL.level);
-  abBasic.style.setProperty('--p',ba?CB.cd.basic/(abilityCd(ba,L,PL.level)*(CB.buff?CB.buff.cd:1)):0); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PL.level):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PL.level):0);
+  abBasic.style.setProperty('--p',ba?CB.cd.basic/(abilityCd(ba,L,PL.level,c)*(CB.buff?CB.buff.cd:1)):0); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PL.level,c):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PL.level,c):0);   // (skillsets: the bonuses of the class in hand)
   abSkill.classList.toggle('ready',!!sk&&CB.cd.skill<=0); abBurst.classList.toggle('ready',!!bu&&CB.cd.burst<=0);
   abBasic.classList.toggle('buffed',!!CB.buff);
   const key=c+'|'+(ba?ba.id:'')+'|'+(sk?sk.id:'')+'|'+(bu?bu.id:'')+'|'+Math.min(PL.level,BURST_SLOT_LV); if(key!==abKey){ abKey=key; setActionBar(); }
