@@ -1,12 +1,13 @@
 # Tiny software renderer for tools/model-preview.js: smooth (per-pixel, interpolated normals) shading + z-buffer, front and side view per character.
-# Usage: python3 tools/rast.py in.json out.png [width height [headY]]   (needs numpy and pillow)
-import json, sys, numpy as np
+# Usage: python3 tools/rast.py in.json out.png [width height [headY]]   (needs numpy and pillow; env RAST_VIEWS=front for front views only, three for front + side + back)
+import json, os, sys, numpy as np
 from PIL import Image
 chars=json.load(open(sys.argv[1])); HEAD=float(sys.argv[5]) if len(sys.argv)>5 else 0; W,H=int(sys.argv[3]) if len(sys.argv)>3 else 180,int(sys.argv[4]) if len(sys.argv)>4 else 320; S=H*0.47 if len(sys.argv)<6 else H*2.4
 def render(tris,view):
     img=np.zeros((H,W,3)); img[:]=(0.18,0.22,0.2); zb=np.full((H,W),-1e9)
     a=np.array(tris).reshape(-1,3,9); P=a[:,:,:3].copy(); C=a[:,:,3:6]; N=a[:,:,6:9].copy()
     if view=='side': P=P[:,:,[2,1,0]]*[-1,1,1]; N=N[:,:,[2,1,0]]*[-1,1,1]
+    elif view=='back': P=P*[-1,1,1]; N=N*[-1,1,1]
     else: P=P*[1,1,-1]; N=N*[1,1,-1]
     n=np.cross(P[:,1]-P[:,0],P[:,2]-P[:,0]); ln=np.linalg.norm(n,axis=1)+1e-9; n=n/ln[:,None]
     miss=np.linalg.norm(N,axis=2)<0.5; N[miss]=np.repeat(n[:,None,:],3,1)[miss]   # no normals: flat
@@ -26,5 +27,6 @@ def render(tris,view):
         sh=np.clip(np.abs(nn@light),0.15,1)*0.85+0.15
         sub[upd]=z[upd]; img[y0:y1+1,x0:x1+1][upd]=(w@C[i])*sh[:,None]
     return img
-rows=[np.concatenate([render(t,'front'),render(t,'side')],1) for t in chars]
+VIEWS=os.environ.get('RAST_VIEWS','both')   # 'front' draws one view per character (for a sheet of many)
+rows=[np.concatenate([render(t,'front')]+([render(t,'side')] if VIEWS in ('both','three') else [])+([render(t,'back')] if VIEWS=='three' else []),1) for t in chars]
 Image.fromarray((np.clip(np.concatenate(rows,1),0,1)*255).astype(np.uint8)).save(sys.argv[2])

@@ -1,50 +1,87 @@
-//@ Character editor panel and camera: opened from the HUD, or in creating mode right after a new account is registered
+//@ Character editor panel and camera: tabs generated from the slider table (shared/character.js), recommended setups, opened from the HUD or in creating mode after registering
 /* ---------- character editor ----------
    Two ways in: the HUD button (Done just closes it) and creating mode, right after Register on the start card (it opens on the
-   Class tab and its Enter button starts the game). A tab with close:true frames the head (face, hair) instead of the whole body. */
+   Class tab and its Enter button starts the game). A tab with close:true frames the head (face, hair) instead of the whole body.
+   A row {slider:'legs'} takes its label, range and ends from BODY_SLIDERS; the character model's recommended range is drawn under the track and the row warns outside it.
+   The Body tab starts with the model's recommended setups (named presets of the sliders: shared/character.js, docs/CHARACTER.md). */
 let customizing=false, creating=false, edTab=0;
 const edEl=$('#editor'), edTabs=$('#edTabs'), edBody=$('#edBody');
 const cam={d:3,h:1.2,l:0.95};
 const EDIT=[
   {tab:'Body', rows:[
     {k:'sex',label:'Play as',type:'seg',opts:[['male','Male'],['female','Female']]},
-    {k:'height',label:'Height',type:'range',min:0.9,max:1.1,step:0.01,ends:['Shorter','Taller']},
-    {k:'build',label:'Build',type:'range',min:0.84,max:1.24,step:0.01,ends:['Slim','Sturdy']},
-    {k:'chest',label:'Chest',type:'range',min:0.5,max:1.6,step:0.01,ends:['Smaller','Larger'],fem:true},
+    {type:'setups'},
+    {slider:'height'},{slider:'build'},{slider:'chest'},
     {k:'skin',label:'Skin tone',type:'color',opts:SKINS}
   ]},
+  {tab:'Shape', rows:['shoulders','waist','hips','torso','legs','thighs','arms','neck','hands','feet'].map(k=>({slider:k}))},
   {tab:'Face', close:true, rows:[
-    {k:'face',label:'Face shape',type:'seg',opts:[['round','Round'],['oval','Oval'],['angular','Angular']]},
-    {k:'eyes',label:'Eye color',type:'color',opts:EYEC},
-    {k:'facial',label:'Facial hair',type:'seg',opts:[['none','None'],['stubble','Stubble'],['mustache','Mustache'],['beard','Beard']]}
-  ]},
+    {k:'face',label:'Face shape',type:'seg',opts:[['round','Round'],['oval','Oval'],['angular','Angular']]}
+  ].concat(['head','jaw','chin','cheeks'].map(k=>({slider:k})))},
+  {tab:'Eyes', close:true, rows:[
+    {k:'eyes',label:'Eye color',type:'color',opts:EYEC,base:true}
+  ].concat(['eyeSize','eyeGap','eyeHeight','eyeTilt','brow'].map(k=>({slider:k})))},
+  {tab:'Features', close:true, rows:['noseSize','mouthSize','lips','smile','earSize','earPoint'].map(k=>({slider:k})).concat([
+    {k:'facial',label:'Facial hair',type:'seg',base:true,opts:[['none','None'],['stubble','Stubble'],['mustache','Mustache'],['beard','Beard']]}
+  ])},
   {tab:'Hair', close:true, rows:[
-    {k:'hair',label:'Style',type:'seg',opts:[['bald','Bald'],['buzz','Buzz'],['short','Short'],['curly','Curly'],['bob','Bob'],['long','Long'],['ponytail','Ponytail'],['bun','Bun']]},
-    {k:'hairColor',label:'Hair color',type:'color',opts:HAIRC}
-  ]},
+    {k:'hair',label:'Style',type:'seg',base:true,opts:[['bald','Bald'],['buzz','Buzz'],['short','Short'],['messy','Messy'],['spiky','Spiky'],['curly','Curly'],['bob','Bob'],['long','Long'],['ponytail','Ponytail'],['twintail','Twin tails'],['braid','Braid'],['bun','Bun']]},
+    {k:'hairColor',label:'Hair color',type:'color',opts:HAIRC,base:true}
+  ].concat(['hairLength','hairVolume','bangs'].map(k=>({slider:k}))).concat([
+    {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:true,opts:[[true,'On'],[false,'Off']]}
+  ])},
   {tab:'Class', rows:[
     {k:'cls',label:'Class (by weapon)',type:'seg',opts:[['warrior','Sword: Warrior'],['archer','Bow: Archer'],['mage','Wand: Mage']]},
     {type:'info'}
   ]},
   {tab:'Clothes', rows:[
-    {k:'top',label:'Top',type:'seg',opts:[['tshirt','T-shirt'],['flannel','Flannel'],['jacket','Jacket'],['hoodie','Hoodie']]},
-    {k:'topColor',label:'',type:'color',opts:CLOTH},
-    {k:'bottom',label:'Bottoms',type:'seg',opts:[['trousers','Trousers'],['shorts','Shorts'],['skirt','Skirt']]},
-    {k:'bottomColor',label:'',type:'color',opts:CLOTH},
-    {k:'shoes',label:'Shoes',type:'seg',opts:[['boots','Boots'],['sneakers','Sneakers']]},
-    {k:'shoeColor',label:'',type:'color',opts:SHOEC},
+    // the signature outfits (src/game/outfits): one worn whole, replacing the rows marked `base` (hat, top, bottoms, shoes, hair, facial hair, eye colour); it takes its character's reference body
+    {k:'model',label:'Signature outfit (preview)',type:'seg',opts:[['base','None']].concat(Object.keys(OUTFITS).map(id=>[id,CHAR_MODELS[id].name]))},
+    {k:'top',label:'Top',type:'seg',base:true,opts:[['tshirt','T-shirt'],['flannel','Flannel'],['jacket','Jacket'],['hoodie','Hoodie']]},
+    {k:'topColor',label:'',type:'color',base:true,opts:CLOTH},
+    {k:'bottom',label:'Bottoms',type:'seg',base:true,opts:[['trousers','Trousers'],['shorts','Shorts'],['skirt','Skirt']]},
+    {k:'bottomColor',label:'',type:'color',base:true,opts:CLOTH},
+    {k:'shoes',label:'Shoes',type:'seg',base:true,opts:[['boots','Boots'],['sneakers','Sneakers']]},
+    {k:'shoeColor',label:'',type:'color',base:true,opts:SHOEC},
     {k:'armor',label:'Armor',type:'seg',opts:[['show','Show'],['hide','Hide (clothes only)']]},
-    {k:'hat',label:'Hat',type:'seg',opts:[['none','None'],['ranger','Ranger'],['beanie','Beanie'],['cap','Cap'],['kasa','Kasa']]},
-    {k:'hatColor',label:'',type:'color',opts:HATC},
-    {k:'pack',label:'Backpack',type:'seg',opts:[[true,'On'],[false,'Off']]}
+    {k:'hat',label:'Hat',type:'seg',base:true,opts:[['none','None'],['ranger','Ranger'],['beanie','Beanie'],['cap','Cap'],['kasa','Kasa']]},
+    {k:'hatColor',label:'',type:'color',base:true,opts:HATC},
+    {k:'pack',label:'Backpack',type:'seg',base:true,opts:[[true,'On'],[false,'Off']]}
   ]}
 ];
 const hex=n=>'#'+n.toString(16).padStart(6,'0');
 function setLook(k,v){
   if(k==='cls'){ equipClass(v); return; }   // the server equips your best weapon of that class; applyGear (economy/items.js) redraws this panel
-  if(k==='sex' && !LOOK.custom){ LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,{height:LOOK.height,build:LOOK.build,chest:LOOK.chest,skin:LOOK.skin,cls:LOOK.cls}); }
+  if(k==='sex' && !LOOK.custom){ const keep={skin:LOOK.skin,cls:LOOK.cls}; for(const s of SLIDER_KEYS) keep[s]=LOOK[s]; LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,keep); }   // the sliders and skin carry over
   else { LOOK[k]=v; if(k!=='sex') LOOK.custom=true; }
+  if(k==='model'&&v!=='base'){ const st=setupsOf(CHAR_MODELS[v],LOOK.sex)[0]; if(st) LOOK=applySetup(LOOK,st); }   // wearing a signature outfit starts on its character's reference body
   saveLook(); rebuildHiker();
+}
+// a slider being dragged: rebuild at low detail at most every 60 ms (a full-detail build takes about 70 ms); the release rebuilds at full detail
+let dragT=0, dragNeed=false;
+function dragLook(k,v){
+  LOOK[k]=v; LOOK.custom=true; dragNeed=true;
+  if(dragT) return; dragT=setTimeout(()=>{ dragT=0; if(dragNeed){ dragNeed=false; rebuildHiker(charDetail('hero')*0.45); } },60);
+}
+function releaseLook(){ clearTimeout(dragT); dragT=0; dragNeed=false; saveLook(); rebuildHiker(); }
+// does the look's slider set equal this recommended setup?
+function setupActive(st){ const want=Object.assign({},SLIDER_DEFS,st.v); return SLIDER_KEYS.every(k=>Math.abs(sliderVal(LOOK,k)-want[k])<0.005); }
+function pickSetup(st){ LOOK=applySetup(LOOK,st); LOOK.custom=true; saveLook(); rebuildHiker(); renderEditor(); }
+function sliderRow(wrap,row){
+  const s=SLIDER_BY_KEY[row.slider], mdl=charModelOf(LOOK), rec=sliderRange(mdl,s.k), cur=sliderVal(LOOK,s.k);
+  const lb=document.createElement('div'); lb.className='ed-label ed-slabel'; const nm=document.createElement('span'); nm.textContent=s.label; const val=document.createElement('span'); val.className='ed-val'; lb.append(nm,val); wrap.append(lb);
+  const box=document.createElement('div'); box.className='range'; const a=document.createElement('span'); a.textContent=s.ends[0];
+  const track=document.createElement('div'); track.className='range-track';
+  const inp=document.createElement('input'); inp.type='range'; inp.min=s.min; inp.max=s.max; inp.step=0.01; inp.value=cur; inp.setAttribute('aria-label',s.label);
+  const band=document.createElement('i'); band.className='rec'; band.style.left=((rec[0]-s.min)/(s.max-s.min)*100)+'%'; band.style.width=((rec[1]-rec[0])/(s.max-s.min)*100)+'%'; band.title='Recommended range for '+mdl.name;
+  track.append(inp,band);
+  const b=document.createElement('span'); b.textContent=s.ends[1];
+  const warn=document.createElement('div'); warn.className='ed-warn'; warn.textContent='Outside the recommended range: outfits may clip or stretch.';
+  const show=v=>{ val.textContent=(Math.round(v*100)/100).toFixed(2); warn.hidden=!(v<rec[0]-1e-6||v>rec[1]+1e-6); };
+  show(cur);
+  inp.oninput=()=>{ const v=parseFloat(inp.value); show(v); dragLook(s.k,v); };
+  inp.onchange=releaseLook;
+  box.append(a,track,b); wrap.append(box,warn);
 }
 function renderEditor(){
   edTabs.innerHTML='';
@@ -52,15 +89,28 @@ function renderEditor(){
     const b=document.createElement('button'); b.className='ed-tab'; b.textContent=tb.tab; b.setAttribute('aria-selected',i===edTab);
     b.onclick=()=>{ edTab=i; renderEditor(); }; edTabs.append(b);
   });
+  const sel=edTabs.children[edTab]; if(sel&&sel.scrollIntoView) try{ sel.scrollIntoView({block:'nearest',inline:'nearest'}); }catch(_){}
   edBody.innerHTML='';
   for(const row of EDIT[edTab].rows){
     if(row.fem && LOOK.sex!=='female') continue;
-    const wrap=document.createElement('div'); wrap.className='ed-row'+(row.label?'':' ed-sub');
+    if(row.base && OUTFITS[LOOK.model]) continue;   // a signature outfit brings its own: these rows do nothing while it is worn
+    const wrap=document.createElement('div'); wrap.className='ed-row'+(row.label||row.slider||row.type==='setups'?'':' ed-sub');
     if(row.label){ const lb=document.createElement('div'); lb.className='ed-label'; lb.textContent=row.label; wrap.append(lb); }
-    if(row.type==='seg'){
+    if(row.slider){ sliderRow(wrap,row); }
+    else if(row.type==='setups'){
+      const mdl=charModelOf(LOOK), list=setupsOf(mdl,LOOK.sex), lb=document.createElement('div'); lb.className='ed-label'; lb.textContent='Recommended setups'; wrap.append(lb);
+      const box=document.createElement('div'); box.className='chips'; let active=null;
+      if(!list.length){ const p0=document.createElement('p'); p0.className='ed-info'; p0.textContent='The '+mdl.name+' model has no recommended setups for this body.'; wrap.append(p0); edBody.append(wrap); continue; }
+      for(const st of list){ const b=document.createElement('button'); b.className='chip'; b.textContent=st.name; b.title=st.note; const on=setupActive(st); b.setAttribute('aria-pressed',on); if(on) active=st; b.onclick=()=>pickSetup(st); box.append(b); }
+      const rs=document.createElement('button'); rs.className='chip'; rs.textContent='Reset sliders'; rs.onclick=()=>pickSetup({v:{}}); box.append(rs);
+      wrap.append(box);
+      const out=lookOutOfRange(LOOK,mdl), p=document.createElement('p'); p.className='ed-info';
+      p.textContent=(active?active.note+' ':'')+'Sliders fitted for the '+mdl.name+' model; the band under each slider is its recommended range.'+(out.length?' Outside it now: '+out.map(k=>SLIDER_BY_KEY[k].label.toLowerCase()).join(', ')+'.':''); wrap.append(p);
+    }
+    else if(row.type==='seg'){
       const box=document.createElement('div'); box.className='chips';
       for(const [v,txt] of row.opts){
-        const b=document.createElement('button'); b.className='chip'; b.textContent=txt; b.setAttribute('aria-pressed',LOOK[row.k]===v);
+        const b=document.createElement('button'); b.className='chip'; b.textContent=txt; b.setAttribute('aria-pressed',(LOOK[row.k]||false)===v);
         b.onclick=()=>{ setLook(row.k,v); renderEditor(); }; box.append(b);
       }
       wrap.append(box);
@@ -80,13 +130,6 @@ function renderEditor(){
       if(PL.level>1){ const rb=document.createElement('button'); rb.className='chip'; rb.style.marginTop='12px'; rb.textContent='Start over at level 1';
         rb.onclick=()=>{ if(!rb.dataset.sure){ rb.dataset.sure='1'; rb.textContent='Tap again to reset your level'; return; } netSend({t:'dev',cmd:'level',v:1}); };
         wrap.append(rb); }
-    } else if(row.type==='range'){
-      const box=document.createElement('div'); box.className='range';
-      const a=document.createElement('span'); a.textContent=row.ends[0];
-      const inp=document.createElement('input'); inp.type='range'; inp.min=row.min; inp.max=row.max; inp.step=row.step; inp.value=LOOK[row.k]!=null?LOOK[row.k]:1; inp.setAttribute('aria-label',row.label);
-      inp.oninput=()=>setLook(row.k,parseFloat(inp.value));
-      const b=document.createElement('span'); b.textContent=row.ends[1];
-      box.append(a,inp,b); wrap.append(box);
     }
     edBody.append(wrap);
   }

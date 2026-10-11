@@ -4,16 +4,16 @@ const ACT_OF={}; for(const c in ACTS){ const a=ACTS[c].basic; ACT_OF[a[0]]={dur:
 const tagPool=[];
 function remoteAdd(info){
   if(!info||REMOTES.has(info.id)||info.id===NET.pid) return;
-  const r={id:info.id,name:String(info.name||'Hiker').slice(0,20),look:Object.assign({},LOOK_M,info.look||{}),eq:info.eq||{},level:info.level||1,
+  const r={id:info.id,name:String(info.name||'Hiker').slice(0,20),look:fullLook(info.look),eq:info.eq||{},level:info.level||1,
     x:0,y:0,z:0,face:0,tx:null,ty:0,tz:0,tface:0,walk:0,act:null,hp:1,maxHp:1,dead:false,g:new THREE.Group(),rig:null,scale:1};
   scene.add(r.g); remoteBuild(r); REMOTES.set(r.id,r);
 }
 function remoteBuild(r){
   if(r.rig){ r.g.remove(r.rig.root); r.rig.root.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
-  r.rig=buildCharacter(effectiveLookOf(r.look,{eq:r.eq}));
-  r.scale=(r.look.height||1)*(r.look.sex==='female'?0.95:1);
+  r.rig=buildCharacter(effectiveLookOf(r.look,{eq:r.eq}),{q:charDetail('remote')});
+  r.scale=lookScale(r.look);
   r.rig.root.scale.setScalar(r.scale); r.g.add(r.rig.root);
-  weaponsOn(r.rig,r.eq.weapon,r.look.build||1);
+  weaponsOn(r.rig,r.eq.weapon,sliderVal(r.look,'build'));
 }
 function remoteRemove(id){ const r=REMOTES.get(id); if(!r) return; scene.remove(r.g); r.rig.root.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); REMOTES.delete(id); }
 function clearRemotes(){ [...REMOTES.keys()].forEach(remoteRemove); }
@@ -24,7 +24,7 @@ function remoteSnap(a){ // [id,x,y,z,face,hp,maxHp,level,dead]
 }
 function remoteAct(id,kind,face){ const r=REMOTES.get(id); if(!r) return; const A=ACT_OF[kind]||{dur:0.5,hitAt:0.5}; r.act={kind:ANIM_OF[kind]||kind,sk:kind,t:0,dur:A.dur,hitAt:A.hitAt,done:false}; if(face!=null){ r.tface=face; r.face=face; } }
 function remoteGear(id,eq){ const r=REMOTES.get(id); if(!r) return; r.eq=eq; remoteBuild(r); }
-function remoteLook(id,look){ const r=REMOTES.get(id); if(!r) return; r.look=Object.assign({},LOOK_M,look); remoteBuild(r); }
+function remoteLook(id,look){ const r=REMOTES.get(id); if(!r) return; r.look=fullLook(look); remoteBuild(r); }
 function remoteHurt(id,v){ const r=REMOTES.get(id); if(r&&r.g.visible) popText(r.x,r.y+2*r.scale,r.z,'-'+v,'other'); }
 function remoteDown(id,down){ const r=REMOTES.get(id); if(r) r.dead=down; }
 function remoteLevelUp(id,lv){ const r=REMOTES.get(id); if(!r) return; r.level=lv; if(r.g.visible){ spawnRingAt(r.x,r.y,r.z,3,0xffd34d); popText(r.x,r.y+2.3*r.scale,r.z,'Level '+lv,'xp'); } }

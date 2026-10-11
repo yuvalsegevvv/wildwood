@@ -29,6 +29,7 @@ function poseRig(r,dt,o){
   r.hips.position.y+=(hipsY-r.hips.position.y)*(o.sit?k*0.5:1);
   r.head.rotation.y+=((o.headYaw||0)-r.head.rotation.y)*k;
   r.head.rotation.x=0.05*mv+(o.talk?Math.sin(t*4.2)*0.05:0)+(o.headPitch||0);
+  if(r.anims) for(const f of r.anims) f(t,dt,mv);   // an outfit's own motion (a swinging charm, a turning ring of lanterns)
 }
 function animateHiker(dt){
   if(!hiker.rig) return;
