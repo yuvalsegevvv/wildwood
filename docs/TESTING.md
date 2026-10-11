@@ -34,19 +34,22 @@ node tools/dungeon-client-smoke.js  # 44 checks of a dungeon run's client on the
 node tools/client-smoke.js       # 114 checks (the world map of Eldmere: its art embedded, regions and towns, the pin everywhere, fog, wheel / drag / pinch, clicks into each land's map, the G key; the act IV quest marks and map targets, the Greyspine's map, rain / sleet / snow by height and its chamois, and the last 9: a dungeon run) running the built page headless (solo), ~60 s (also draws every boss skill, and checks the Hoarfrost's client side: ice wall, music, the Lodge and travel windows, resource nodes and their cast bar, snow, the tool slots, the Craft tab, the Brewing panel and the potion belt). It runs dist/: build first
 node tools/start-smoke.js        # 31 checks of the start card + a new account's character editor, against a real server in-process, ~20 s
 node tools/keys-smoke.js         # checks of the rebindable keys (defaults, swap, save/load, hints) and of hold-Alt; runs dist/: build first
+node tools/character-smoke.js    # 60 checks of the character model: slider table, every model's recommended setups and ranges, proportions, joints, detail budget, the seeded villagers' looks (src/, no build), ~10 s
+node tools/outfit-smoke.js       # per signature outfit (`--only id`): builds on its body, every slider extreme on both bodies, the triangle budget, a weapon dressing on all three classes (src/), ~10 s each
+node tools/outfit-looks-check.js # the eight look documents (docs/skillkits/looks/) against the built outfits; `--write` regenerates their slider sections
 python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)
 npm test                         # build --check + all of the above
-node tools/model-preview.js out.png [--head] [--looks '[{...}]']   # character model → PNG (numpy+pillow)
+node tools/model-preview.js out.png [--head] [--bent] [--setups] [--outfit id] [--weapon warrior|archer|mage] [--views front|three] [--looks '[{...}]']   # character model or signature outfit → PNG (numpy+pillow)
 node tools/monster-preview.js out.png --ids slime,boss [--bosses|--all] [--pose|--act|--head|--stats]   # monster and boss models → PNG (numpy+pillow), or triangle / mesh counts
 node dist/wildwood-server.js --port 8080     # real server; open http://localhost:8080 in several tabs
 ```
 
 The model preview shades per pixel from the mesh normals (like the game), so seams and facets show in it.
 For a close-up of another body part, render once, then re-run the rasterizer on the JSON it leaves in the
-OS temp dir: `python3 tools/rast.py <tmp>/model-preview.json out.png 260 300 1.3` (last number = centre
+OS temp dir (the path model-preview prints): `python3 tools/rast.py <that json> out.png 260 300 1.3` (last number = centre
 height in metres: 1.3 torso, 1.7 head). On Windows `python3` needs `pip install numpy pillow` first.
 
-Pick the smallest test that covers your change: model/face/hats → `model-preview` only; a monster or boss model → `monster-preview` (then `client-smoke`); server rules →
+Pick the smallest test that covers your change: character model/face/hair/sliders → `model-preview` + `character-smoke` (then `start-smoke` if the editor changed); a signature outfit → `model-preview --outfit id` + `outfit-smoke --only id`; a monster or boss model → `monster-preview` (then `client-smoke`); server rules →
 `server-smoke` / `skills-smoke` (or a few lines with `tools/load.js`: `loadServer(io, ['MONS','genQuest'])` gives you the
 server API plus any internal names); client UI → `build --check` + `client-smoke`; the start card, accounts or the character editor →
 `start-smoke`. The headless client (`tools/headless.js`) stubs the DOM: elements are cached per selector and remember their

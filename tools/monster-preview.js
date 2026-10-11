@@ -13,10 +13,10 @@ const pm=rd('game/world/plant-models.js'), bl=rd('game/village/buildings.js');
 const helpers='const vbox=(w,h,d,x,y,z)=>new THREE.BoxGeometry(w,h,d).translate(x||0,y||0,z||0);\n'+
   pm.slice(pm.indexOf('const _c'),pm.indexOf('\n',pm.indexOf('const cyl'))+1)+
   bl.slice(bl.indexOf('function stoneC'),bl.indexOf('\n',bl.indexOf('function trisGeo'))+1);
-const model=rd('game/character/model.js').split('const hiker=')[0];
+const model=['game/character/model-parts.js','game/character/model-face.js','game/character/model-hair.js','game/character/model-body.js','game/character/outfit-tools.js'].map(rd).join('')+rd('game/character/model.js').split('const hiker=')[0];   // the character code is several files since the character rework (model.js assembles them; the slider table is shared/character.js)
 const game=JSON.parse(fs.readFileSync(path.join(SRC,'manifest.json'),'utf8')).game;
 const monFiles=game.filter(f=>/^combat\/monster/.test(f));   // parts, the families' files, then monsters.js itself (views and animation)
-const code=['shared/math.js','shared/noise.js','shared/balance.js','shared/monster-defs.js'].map(rd).join('')+helpers+
+const code=['shared/math.js','shared/noise.js','shared/balance.js','shared/monster-defs.js','shared/character.js'].map(rd).join('')+helpers+
   'const LITE=false,LOW=false;const localStorage={getItem(){return null},setItem(){}};const scene=new THREE.Scene();const matFlat=new THREE.MeshLambertMaterial();let t=0;const GAIT=[0,Math.PI,Math.PI,0];const getH=()=>0,BOSS={list:[]},CB={target:null};\n'+
   rd('game/world/plant-models-hi.js')+model+';\n'+rd('game/character/pose.js')+monFiles.map(f=>rd('game/'+f)).join('')+
   '\nreturn {ALL_MON_DEFS,buildMonster,monMat,AM:animateMonster};';

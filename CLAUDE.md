@@ -119,7 +119,8 @@ Short rows: the files that matter. A row ending in `→ docs/areas/<x>.md` has t
 | Shops / forge / skills panel / inventory | `game/economy/shops.js`, `forge.js`, `skills.js`, `inventory.js` (+ server `economy.js`) |
 | Village layout, board, stalls | `shared/village-layout.js` (positions, colliders `V.boxes`), `game/village/buildings.js` (meshes) |
 | NPCs (who, where, role, lines, labels) | `game/village/villagers.js` (`VILLAGERS`), `talking.js` (`openRolePanel`), `npc-labels.js` |
-| Character body, face, hair, hats | `game/character/model.js` (`buildCharacter`, `randomLook`, `LOOK_M` / `LOOK_F`), `ARMOR_LOOK` (`shared/items.js`), `EDIT` in `game/ui/character-editor.js`; see it: `node tools/model-preview.js out.png` → `docs/areas/character-ui.md` |
+| Character body, face, hair, hats (anime proportions, 31 sliders, recommended setups per character model; **read `docs/CHARACTER.md` first**) | `game/character/model-body.js` / `model-face.js` / `model-hair.js` / `model-parts.js`, assembled by `model.js` (`buildCharacter(look,{q})`, `randomLook`, `LOOK_M` / `LOOK_F`); the slider table and `CHAR_MODELS` in `shared/character.js`; `ARMOR_LOOK` (`shared/items.js`); `EDIT` in `game/ui/character-editor.js`; tests `character-smoke`; see it: `node tools/model-preview.js out.png` → `docs/CHARACTER.md`, `docs/areas/character-ui.md` |
+| **Signature outfits** (the eight characters of `docs/skillkits/`; cosmetic, no skill touched; `look.model='<id>'` wears one, the editor's Clothes tab has a preview picker) | `game/outfits/<id>.js`: `CHAR_MODELS.<id>` (one reference setup) + `OUTFITS.<id>` (a kit of hooks: `paint`, `torso`, `shoulder`, `hips`, `thigh`, `shin`, `head`, `hair`, `mark`, `extras`, `dress` the weapon dressing applied by `weaponsOn`); helpers `character/outfit-tools.js`; hooks and rules **`docs/CHARACTER.md` section 9** (`dunstan.js` is the worked example); designs `docs/skillkits/looks/`; tests `node tools/outfit-smoke.js [--only id]`, `outfit-looks-check.js`; see it `node tools/model-preview.js out.png --outfit id [--weapon warrior]` |
 | Start card: Log in / Register / Play as guest, loading, `beginPlay` | `game/ui/start-screen.js` (`enterWorld`), `#start` in `index.html`, `game/ui/account.js`; test `node tools/start-smoke.js` → `docs/areas/accounts-net.md` |
 | Animations | `game/character/pose.js` (`poseRig`; skill anims borrow kinds via `ANIM_OF`) |
 | World size, lakes, terrain | `shared/terrain.js` (`SIZE`, `LAKES`, `hillShape`), `noise.js`, `zones.js`; the server samples height on a 4 m grid, so nothing finer than 8-16 m → `docs/areas/world.md` |
@@ -165,8 +166,10 @@ Short rows: the files that matter. A row ending in `→ docs/areas/<x>.md` has t
 - Saves: new player fields go in `gear` (saved) and must be sanitized with a default for old saves.
 - Performance: the phone (low/lite mode: `LOW`, `LITE`, `Q` in `core/setup.js`) matters.
 - Character look (`LOOK`) fields: add a default to both `LOOK_M` and `LOOK_F` (old saves and other players'
-  looks are merged onto them) and clamp the value inside `buildCharacter`: the server passes looks through
-  unsanitized (only a 2 KB size limit), so a remote player's look can hold anything.
+  looks are merged onto them with `fullLook`) and clamp the value inside `buildCharacter`: the server passes looks through
+  unsanitized (only a 2 KB size limit), so a remote player's look can hold anything. A **slider** is a row of `BODY_SLIDERS` (`shared/character.js`): read it through `S.<key>`, never `L.<key>`.
+- **Every character model must ship recommended slider setups**: `CHAR_MODELS.<id> = {id, name, sexes, ranges, setups}`; the base model has 3+ per sex, a signature outfit (`signature:true`) just its one reference setup; `validateCharModel`, `character-smoke` and `outfit-smoke` fail without them (`docs/CHARACTER.md` sections 4 and 9).
+- Character joints (the owner's "lego" complaint): build limbs with `limb(...)` and let the part across a joint start with the SAME cross-section (`D.ER`, `D.KR`); keep the 0.7 mm cap margin; put colour edges on cut rings (`cuts`); judge joints in a bent pose (`model-preview.js --bent`).
 - Recipes. **A look field**: defaults in `LOOK_M`/`LOOK_F`, a row in `EDIT` (character-editor.js), the clamp and the drawing in `buildCharacter`,
   the pools in `randomLook` (model.js; append to a villager pool only if you accept every random villager changing). **A server message**:
   a `case` in `receive()` (server/api.js) → mutate → `ev(...)` / `p.dirty=true` → handle it in `applyEvent` / `netHandle`, plus a check
@@ -224,17 +227,20 @@ node tools/skills-smoke.js       # 58 checks: elements, soul, drops, upgrades, p
 node tools/client-smoke.js       # 114 checks, the built page headless (solo), ~60 s; runs dist/: build first
 node tools/start-smoke.js        # 31 checks: the start card + a new account's editor, ~20 s; runs dist/
 node tools/keys-smoke.js         # rebindable keys and hold-Alt; runs dist/
+node tools/character-smoke.js    # 60 checks of the character model: slider table, every model's recommended setups and ranges, proportions, joints, detail budget, the seeded villagers' looks (src/, no build), ~10 s
+node tools/outfit-smoke.js       # per signature outfit (`--only id`): builds on its body, every slider extreme on both bodies, the triangle budget, a weapon dressing on all three classes (src/), ~10 s each
+node tools/outfit-looks-check.js # the eight look documents against the built outfits (item ids, builder notes, one reference setup, generated slider section; `--write` regenerates it)
 node tools/glasswell-smoke.js    # 13 checks of Glasswell's layout (80 homes and 30 places on the floor, no overlaps, off roads and water, the rim's height function) and that its model builds in a real browser (skipped without playwright), ~15 s
 node tools/city-preview.js out/ --views overview,street,statue   # Glasswell's 3D model → PNGs from several cameras (headless Chromium, real WebGL; prints triangles and build time)
 python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)
 node tools/gen-docs.js           # rewrites docs/MOBS.md and docs/EQUIPMENT.md from the code (every mob and item, stats, file:line); --check: exit 1 if the data is stale (moved line numbers only warn; --strict fails on those too)
 npm test                         # build --check + all of the above
-node tools/model-preview.js out.png [--head]                 # character model → PNG (numpy + pillow)
+node tools/model-preview.js out.png [--head] [--outfit id] [--weapon warrior] [--bent]   # character model or a signature outfit → PNG (numpy + pillow)
 node tools/monster-preview.js out.png --ids slime,boss       # monster and boss models → PNG, or --stats
 node dist/wildwood-server.js --port 8080                     # real server; open http://localhost:8080 in several tabs
 ```
 
-Pick the smallest test that covers your change: model/face/hats → `model-preview` only; a monster or boss model → `monster-preview` (then `client-smoke`); server rules →
+Pick the smallest test that covers your change: character model/face/hair/sliders → `model-preview` + `character-smoke` (then `start-smoke` if the editor changed); a signature outfit → `model-preview --outfit id` + `outfit-smoke --only id`; a monster or boss model → `monster-preview` (then `client-smoke`); server rules →
 `server-smoke` / `skills-smoke` (or a few lines with `tools/load.js`: `loadServer(io, ['MONS','genQuest'])` gives you the
 server API plus any internal names); client UI → `build --check` + `client-smoke`; the start card, accounts or the character editor →
 `start-smoke`. The headless client (`tools/headless.js`) stubs the DOM: elements are cached per selector and remember their

@@ -227,7 +227,7 @@ function randomPOI(n){ const V=vilOf(n); let p; for(let i=0;i<6;i++){ p=V.pois[M
 function spawnNPC(def,rng){
   const look=randomLook(rng||Math.random,{villager:true,base:def.look});
   if(def.kin){ look.sex=LOOK.sex; look.hairColor=LOOK.hairColor; look.skin=new THREE.Color(LOOK.skin||0xe0b894).lerp(new THREE.Color(0x9a9a98),0.35).getHex(); }   // your family, greyed by the sickness
-  const rig=buildCharacter(look), s=look.height*(look.sex==='female'?0.95:1);
+  const rig=buildCharacter(look,{q:charDetail('npc')}), s=lookScale(look);
   rig.root.scale.setScalar(s);
   const g=new THREE.Group(); g.add(rig.root); scene.add(g);
   const B=def.behavior||{type:'wander'}; def.behavior=B;

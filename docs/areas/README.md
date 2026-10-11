@@ -13,7 +13,7 @@
 | `world-map.md` | the world map of Eldmere (G): the docs map's art with fog, banners and a pin, and the way to each land's map (baking the art, the fog, the pin) |
 | `world.md` | terrain, the ground you see, the lands' edges, roads and bridges, changing the terrain |
 | `render.md` | vegetation, instancing and levels of detail, `instanceColor`, measured costs and triangle budgets |
-| `character-ui.md` | the character model, rotations, keys, the AI note, hold-Alt |
+| `character-ui.md` | the character model and signature outfits (details in `docs/CHARACTER.md`), rotations, keys, the AI note, hold-Alt |
 | `accounts-net.md` | the start card, accounts, reconnecting, the Shared (room) mode |
 | `main-quest.md` | the main quest's code map (design: `../MAIN-QUEST.md`) |
 | `../TESTING.md` | every test and what it checks, the browser-pane workflow, Windows / OneDrive, flaky tests |

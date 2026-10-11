@@ -72,6 +72,7 @@ shared
   dungeons/themes/blackseam.js       Dungeon theme: The Blackseam (the Greyspine, an old coal mine under Highmark Pastures; boss Garrick, the Seam Foreman): its roster, palette and tile kit (Foreman's Floor, Stope, Cart Yard, Powder Store, Drift, Sump, Winding House, Tally Room, Adit)
   dungeon-rewards.js                 Dungeon rewards, setup only (nothing calls it yet): what a clear pays (level-30 weapons, armour, rings or pendants, one random item, 70 / 25 / 4 / 0.8 / 0.2% by rarity), the ring (7 types, adds flat attack when it matches your soul), the pendant (5 kinds: exp, drop, coin, crit rate, crit damage: pendants.js), enhancing up to 2 / 4 / 6 / 8 / 10 times, and the tempering stone that monsters of level 30 and above drop instead of equipment. Pure.
   dungeon-items.js                   Level-30 dungeon gear as items: the 665 ITEM records (not in ITEM_LIST, so no shop, drop or "all items" sees them), their look, merging, a ring's attack for a gear, enhancement info and texts. Pure.
+  character.js                       Character sliders (range, default, label), the character models with their recommended slider setups and ranges, and the checks every model must pass. Pure.
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -138,7 +139,20 @@ game
   world/bridges.js                   The river bridge's and the plank causeways' models (BRIDGES in shared/roads.js): plank decks, rails, posts and piers, one merged mesh
   world/lore-props.js                The story's props: Wren's sickbed under its awning, Odran's carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside wish-post, the Greyspine's wayside shrines, a grey plate in the ice, the Greyspine's deepest shaft and the golem's broken stone) and the heartleaf you pick
   world/streaming.js                 Streaming scheduler (Stream, streamPump): terrain first, nearest chunks next
-  character/model.js                 Look presets, random looks (randomLook), save/load, buildCharacter (all outfits and armour looks), hiker, rebuildHiker
+  character/model-parts.js           Character geometry helpers: Phong material, smooth normals, vertex colours, limbs whose ends match their neighbours (limb), swept tubes (sweepTube), shells
+  character/model-face.js            The hiker's head: an anime-leaning face (moderate eyes with highlights and lashes, a small nose and mouth, brows, ears, a rounded chin) on a sculpted skull that the face sliders reshape
+  character/model-hair.js            The hiker's hair (a cap plus tapered locks: fringe, side locks, tails, braids, spikes; length / volume / fringe sliders) and the hats
+  character/model-body.js            The hiker's body: chest, neck, shoulders and hips as one surface; arms and legs whose joints continue each other; hands with fingers; shaped feet
+  character/outfit-tools.js          Helpers for the signature outfits (game/outfits/*.js): the torso's size at a height, flat ribbons, lofts over an arc, rings round a path
+  outfits/dunstan.js                 Dunstan's outfit (a standard-bearer and drummer): a plumed shako, a copper braided queue, a tabard with a flame and a slung snare drum, striped breeches, marching boots, and the banner dressing for every weapon
+  outfits/tansy.js                   Tansy's outfit (a farm-hand who harvests a whole field): a wide coil-straw sunbrim with wheat sprigs, a braided wheat crown, a laced green-yoke smock with a sash, patchwork knee breeches with leg wraps, lugged field boots, and the sheaf-wrap dressing
+  outfits/torgeir.js                 Torgeir's outfit (a northern shield-wall veteran): an iron spangen cap-helm with a fur rim, paired bone-bound braids, a quilted slate coat with a fur mantle on one shoulder and a banded iron spaulder on the other, strapped iron greaves, fur-cuffed fell boots, a belt horn, and the lichen-wrap weapon dressing
+  outfits/sazanka.js                 Sazanka's outfit (a night courier): a peaked ink hood with a tall collar and a violet bead, one long cord-tied lock, slit eyes, a crossover wrap with a cord sash and moon-grey tails, cord-bound limbs, split-toe shoes, and the lacquer-and-cord weapon dressing
+  outfits/corvin.js                  Corvin's outfit (a lamplighter and mine surveyor): a brass-lamp surveyor's cap, silver swept-back hair, round brass spectacles, a long waxed coat to the calf whose tails follow the legs, nail boots, and the brass-and-lantern weapon dressing
+  outfits/sorrel.js                  Sorrel's outfit (a mountain lookout): a brass-goggled ridge band and an ear feather, long white-blond hair streaming one way, a layered tunic with a very long striped scarf, crag trousers, ledge boots, and the feather-and-lens weapon dressing
+  outfits/ambrose.js                 Ambrose's outfit (a marsh herbalist and field medic): a linen head-wrap with a mint sprig, a reed cone hat slung on the back, a nape knot pinned with a reed, clay smear and soft eyes, an open river-green apron-robe with a herb satchel and a belt of five aqua-glowing vials, clay wader breeches with shin guards, folded wading boots, and the reed-and-shell dressing for every weapon
+  outfits/marigold.js                Marigold's outfit (a stage idol of light): a floating ring of paper lanterns, curled twin tails with plum bows, a pleated plum curtain jacket over a laced cream bodice, a layered tulle skirt, bell boots and a stage-trim weapon dressing
+  character/model.js                 Look presets, random looks (randomLook), save/load, buildCharacter (puts the head, body and clothes together), the hiker, rebuildHiker
   character/pose.js                  poseRig (walk, run, sit, talk, attacks) and animateHiker
   world/motes.js                     Floating pollen by day, fireflies by night
   world/petals.js                    Cherry petals drifting down around you in the Sakura Vale
@@ -146,7 +160,7 @@ game
   wildlife/chamois.js                Chamois: small harmless herds of mountain goats on the Greyspine's alpine slopes (client-only dressing, built the first time you stand in the Greyspine; they graze, look up and bolt from you)
   world/time-of-day.js               20-minute day/night cycle, sky keyframes, clock, zone label
   player/input.js                    Keyboard, hold Alt to free the mouse, mouse look, touch joystick, HUD buttons
-  ui/character-editor.js             Character editor panel and camera: opened from the HUD, or in creating mode right after a new account is registered
+  ui/character-editor.js             Character editor panel and camera: tabs generated from the slider table (shared/character.js), recommended setups, opened from the HUD or in creating mode after registering
   village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)
   village/buildings-vale.js          The Sakura Vale's buildings: Hanami (tiled roofs, shoji, timber gates, stone lanterns), the border bridge (deck, piers, gatehouse, sealed door), teleport circles, the dressing of the two boss arenas
   village/buildings-hoar.js          The Hoarfrost Reach's buildings: Rimehold (timber houses under snow, gate and rune stones, the Wayfarers' Lodge yard), the ice wall in Frostgate Pass, the Rimeking's ice hall, the iron bird's wreck

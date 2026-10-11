@@ -6,7 +6,11 @@ Area guide. Moved word for word from `CLAUDE.md` (sections 4, 8 and 9), where ea
 
 ### Character body, face, hair, hats
 
-`game/character/model.js` (`buildCharacter`, `muscleLimb`, `sculpt`, `smoothN`; look defaults `LOOK_M`/`LOOK_F`, palettes `HAIRC` (+`HAIRC_NATURAL`), `SKINS`, `CLOTH`...; `randomLook(rng,{villager,base})` serves both "Surprise me" and random villagers: villagers use a seeded rng, so its draw order must not change); armour looks `ARMOR_LOOK` in `shared/items.js`; editor rows `EDIT` in `game/ui/character-editor.js` (`fem:true` = female-only row, `close:true` = the tab frames the head)
+**Read `docs/CHARACTER.md` first** (proportions, no "building blocks", the 31 sliders, recommended setups and ranges, the signature-outfit kits). Files: `game/character/model-body.js` (torso with the neck and shoulders in one surface, `limb` arms and legs, hands, `buildFoot`, `charDims`), `model-face.js` (the skull `headSculptFn`, `HEAD_TALL`, eyes / nose / mouth / brows / ears placed on the skull's real surface by `place`), `model-hair.js` (cap + locks, hats), `model-parts.js` (`limb`, `sweepTube`, `loftRings`, `smoothN`, `pc`, `OUTFITS`), `outfit-tools.js` (outfit helpers) and `model.js` (assembly `buildCharacter(look,{q})` → rig + `dims` + `sliders` + `anchors`; `charDetail`; look defaults `LOOK_M` / `LOOK_F`, palettes, `randomLook(rng,{villager,base})`: villagers use a seeded rng, so its draw order must not change). The slider table, `CHAR_MODELS`, `applySetup` and `validateCharModel` are in `shared/character.js`; the editor `EDIT` in `game/ui/character-editor.js`. **Do not rebuild the body from separate rounded parts**: joints must continue each other. See it: `node tools/model-preview.js out.png` (`--setups`, `--bent`, `--outfit id`); tests `node tools/character-smoke.js`, `outfit-smoke.js`, `outfit-looks-check.js`, `start-smoke.js` (editor).
+
+### Signature outfits
+
+One file per character in `game/outfits/<id>.js` (a kit of hooks over the base body, the weapon dressing, one reference setup): `docs/CHARACTER.md` section 9, designs and previews in `docs/skillkits/looks/` (README first), 2D art prompts in `docs/skillkits/looks/IMAGE-PROMPTS.md`.
 
 ### Keys: the rebindable actions (`KB_ACTIONS`: id, name, default main + spare key), saving (`wildwood-keys`), swapping, labels (`kbName`, AZERTY via `getLayoutMap`), the `data-kb` hints on HUD buttons, the Controls list in Settings (`#kbSec`). A key handler asks `kbIs(e.code,'<action>')` / `kbHeld('<action>')`, never a literal `KeyX`. A new action = a row in `KB_ACTIONS` + its handler (a new default key must not collide with another action's; `kbLoad` keeps saved keys first)
 
@@ -24,8 +28,7 @@ Area guide. Moved word for word from `CLAUDE.md` (sections 4, 8 and 9), where ea
 
 ## Reference numbers
 
-- Character proportions (style between realistic and anime): about 7.2 heads tall; hips at 0.92 m, head
-  centre 0.72 above the hips, head scale 1.18 (female 1.15), eyes ~15-25% larger than real; short neck.
-  Female `chest` 0.5-1.6 (default 1): a slider on the character editor's Body tab (`EDIT` in `ui/character-editor.js`,
-  `fem:true`; it is not in Settings); named NPCs set it in `VILLAGERS`, random villagers roll
-  0.7-1.35 in `randomLook`. Default looks have no backpack.
+- Character proportions (anime-leaning, see `docs/CHARACTER.md`): about 5.9 heads tall (the skull is 10% taller than a ball: `HEAD_TALL`), 1.9 m (female 1.8 m, the model is scaled 0.95), legs about 53% of the height; head scale 1.40 (female 1.37) on a skull of
+  radius 0.105; moderate (not exaggerated) eyes, a rounded chin, a small nose and mouth, a short slender neck, a flat broad male chest; hips at about 0.95 m. 31 sliders (`BODY_SLIDERS`), each editable on a tab of the character editor (Body, Shape, Face, Eyes, Features, Hair);
+  named NPCs set looks in `VILLAGERS`, random villagers get small slider offsets from a hash of their look. Default looks have no backpack and start on the base model's reference setup (Hero / Heroine).
+  Cost: the hiker about 54k triangles (`charDetail('hero')` 1.1), other players 23k, villagers 16k, phones and light mode 8-11k; a signature outfit adds 15-22k at full detail.
