@@ -23,7 +23,7 @@ accounts (guest or name + password; the start card offers Log in, Register, Play
 2. Section 4 below maps common tasks to files.
 3. `grep -n "name" -r src/` to find a function; then open only a line range.
 4. Every file starts with `//@ one-line description`. Keep that line accurate when you edit.
-5. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules); the main quest plan: `docs/MAIN-QUEST.md`; what is **not built yet**, with comments on each gap (gathering's animation, the balance of crafting and potions, the levels 26-50 story, regional weather, the tracks' licences...): `docs/NOT-BUILT.md`; professions, tools, crafting and potions: `docs/MAIN-QUEST.md` section 5b.
+5. Characters (the hiker, villagers, sliders, outfits): `docs/CHARACTER.md`. New regions, villages, bosses or lore: read `docs/WORLD.md` first (the continent's geography, planned regions, level ranges and their rules; map `docs/world-map.svg`, drawn by `docs/world-map.py`); story, quests, NPC lines or lore: also `docs/STORY.md` (spoilers; mind its hint rules); the main quest plan: `docs/MAIN-QUEST.md`; what is **not built yet**, with comments on each gap (gathering's animation, the balance of crafting and potions, the levels 26-50 story, regional weather, the tracks' licences...): `docs/NOT-BUILT.md`; professions, tools, crafting and potions: `docs/MAIN-QUEST.md` section 5b.
 
 ## 2. Architecture in one screen
 
@@ -117,7 +117,9 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 | Shops / forge / skills panel / inventory | `game/economy/shops.js`, `forge.js`, `skills.js`, `inventory.js` (+ server `economy.js`) |
 | Village layout, board, stalls | `shared/village-layout.js` (positions, colliders `V.boxes`), `game/village/buildings.js` (meshes) |
 | NPCs (who, where, role, lines, labels) | `game/village/villagers.js` (`VILLAGERS`), `talking.js` (`openRolePanel`), `npc-labels.js` |
-| Character body, face, hair, hats | `game/character/model.js` (`buildCharacter`, `muscleLimb`, `sculpt`, `smoothN`; look defaults `LOOK_M`/`LOOK_F`, palettes `HAIRC` (+`HAIRC_NATURAL`), `SKINS`, `CLOTH`...; `randomLook(rng,{villager,base})` serves both "Surprise me" and random villagers: villagers use a seeded rng, so its draw order must not change); armour looks `ARMOR_LOOK` in `shared/items.js`; editor rows `EDIT` in `game/ui/character-editor.js` (`fem:true` = female-only row, `close:true` = the tab frames the head) |
+| Character body, face, hair, hats (anime proportions, about 5.9 heads; **read `docs/CHARACTER.md` first**) | `game/character/model-body.js` (torso with the neck and shoulders in one surface, `limb` arms and legs, hands, `buildFoot`, `charDims`), `model-face.js` (the skull `headSculptFn`, eyes / nose / mouth / brows / ears placed on its real surface by `place`), `model-hair.js` (cap + locks, hats), `model-parts.js` (helpers: `limb`, `sweepTube`, `loftRings`, `smoothN`, `pc`), `model.js` (assembly `buildCharacter(look,{q})` → rig + `dims` + `sliders` + `anchors`; `charDetail`; look defaults `LOOK_M`/`LOOK_F`, palettes `HAIRC` (+`HAIRC_NATURAL`), `SKINS`, `CLOTH`...; `randomLook(rng,{villager,base})` serves both "Surprise me" and random villagers: villagers use a seeded rng, so its draw order must not change); armour looks `ARMOR_LOOK` in `shared/items.js`; editor `EDIT` in `game/ui/character-editor.js` (a row `{slider:key}` reads the slider table; `close:true` = the tab frames the head). **Do not rebuild the body from separate rounded parts**: joints must continue each other (section 5) |
+| **Sliders and recommended setups** (31 sliders: body, shape, face, eyes, features, hair; every character model, including each future signature skill outfit, must declare recommended slider setups and ranges) | `BODY_SLIDERS`, `CHAR_MODELS`, `applySetup`, `setupsOf`, `validateCharModel`, `lookOutOfRange` in `shared/character.js`; the editor's Recommended setups chips and range bands in `ui/character-editor.js`; tests `node tools/character-smoke.js` (a model without setups fails) and `node tools/model-preview.js out.png --setups` to look at them |
+| **Signature outfits** (the eight characters of `docs/skillkits/`: Tansy, Torgeir, Sazanka, Corvin, Sorrel, Ambrose, Dunstan, Marigold; cosmetic, no skill touched; `look.model = '<id>'` wears one whole, the editor's Clothes tab has a preview picker) | one file each, `game/outfits/<id>.js`: `CHAR_MODELS.<id>` (`signature:true`, ranges, ONE reference setup) and `OUTFITS.<id>` = a factory returning a **kit** whose hooks paint the body (`paint(part,c,x,y,z,sd)`) and add geometry on the torso, shoulders, forearms, hips, thighs, shins, the head (`head`, `hair`, `mark`, `facial`, `eyes` style) and loose animated parts (`extras`), plus the weapon dressing `dress` (palette, trim, charm; applied by `weaponsOn` in `game/combat/weapons.js` to any class's weapon). Hooks, helpers (`character/outfit-tools.js`: `torsoSize`, `ofRibbon`, `ofLoft`, `ofRingAt`, `ofPatch`, `ofCol`) and rules: **`docs/CHARACTER.md` section 9**; `game/outfits/dunstan.js` is the worked example; designs `docs/skillkits/looks/` (README first); tests `node tools/outfit-smoke.js [--only id]`, `node tools/outfit-looks-check.js [--write]`; see them `node tools/model-preview.js out.png --outfit id [--weapon warrior] [--bent]` |
 | Start card: Log in / Register / Play as guest (Solo / Shared without a server), loading state, connecting, `beginPlay`; the first steps of a new account (character editor in creating mode, `openEditor({create:true})`) | `game/ui/start-screen.js` (`enterWorld`, `showStart`), markup `#start` in `index.html`, `styles/04-start-screen.css`; session token and the server's auth answers `game/ui/account.js`; `netReset` in `game/net/transport.js`; test `node tools/start-smoke.js` |
 | Animations | `game/character/pose.js` (`poseRig`; skill anims borrow kinds via `ANIM_OF`) |
 | World size, lakes, terrain | `shared/terrain.js` (`SIZE`, `LAKES` and `lakeCut`, which digs each lake a bowl, `baseHeight`; the hills' shape is `hillShape` with `HILL_HOME` / `HILL_VALE`: fbm bent by a domain warp and eroded by `erodeFbm`, so ridges and valleys meander; `ridged` gives the mountain walls' crests and the Greyspine), `shared/noise.js` (`noiseD`: noise with its slope), `shared/zones.js` (`RINGS`, zones, arena; `zoneRidge` wobbles the walls). The shared height is sampled on the server's 4 m grid: put nothing finer than 8-16 m wavelength in it. Tune it offline: load the shared code with `loadShared(['rawHeight'])` (tools/load.js), sample a grid and draw a hillshade; slopes above 0.95 (no trees) were 9% of the home forest before and after the rework |
@@ -160,10 +162,15 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 - Saves: new player fields go in `gear` (saved) and must be sanitized with a default for old saves.
 - Performance: the phone (low/lite mode: `LOW`, `LITE`, `Q` in `core/setup.js`) matters.
 - Character look (`LOOK`) fields: add a default to both `LOOK_M` and `LOOK_F` (old saves and other players'
-  looks are merged onto them) and clamp the value inside `buildCharacter`: the server passes looks through
-  unsanitized (only a 2 KB size limit), so a remote player's look can hold anything.
+  looks are merged onto them with `fullLook`) and clamp the value inside `buildCharacter`: the server passes looks through
+  unsanitized (only a 2 KB size limit), so a remote player's look can hold anything. A **slider** is a row of `BODY_SLIDERS` (shared/character.js): read it
+  through `S.<key>` (clamped) in the model, never `L.<key>`; a look that lacks it means the neutral body.
+- **Every character model must ship recommended slider setups** (the body an outfit is drawn for: the base hiker and each signature outfit):
+  `CHAR_MODELS.<id> = {id, name, sexes, ranges, setups}` (`sexes` default both; a signature outfit has `signature:true` and is designed for its character's own sex) with the recommended range of every slider it was fitted for and, for the base model,
+  at least 3 named setups per designed sex (a signature outfit ships just its one reference setup), exactly one `def:true` reference fit per designed sex, all inside those ranges. `validateCharModel`, `tools/character-smoke.js` and `tools/outfit-smoke.js` fail a model without them.
+  Outfits attach through kit hooks and read `D` / `X.S` / `torsoSize`, never their own copy of a measurement. Details: `docs/CHARACTER.md` sections 4 and 9.
 - Recipes. **A look field**: defaults in `LOOK_M`/`LOOK_F`, a row in `EDIT` (character-editor.js), the clamp and the drawing in `buildCharacter`,
-  the pools in `randomLook` (model.js; append to a villager pool only if you accept every random villager changing). **A server message**:
+  the pools in `randomLook` (model.js; append to a villager pool only if you accept every random villager changing; new random values draw AFTER the old ones or come from a hash, see the smoke test). **A slider**: a row in `BODY_SLIDERS`, its use in model-body / -face / -hair, its recommended range in every `CHAR_MODELS` entry, a `{slider:key}` row in `EDIT` (`docs/CHARACTER.md` section 3). **A server message**:
   a `case` in `receive()` (server/api.js) → mutate → `ev(...)` / `p.dirty=true` → handle it in `applyEvent` / `netHandle`, plus a check
   in `tools/server-smoke.js`. **A panel**: markup `class="panel"` in index.html, its id in `PANELS` (ui/panels.js), a key in its file's
   `keydown`, CSS in `12-panels.css` or a new file in the manifest. **A way into the world**: `enterWorld({mode,name,login,register})`
@@ -171,6 +178,9 @@ animations, sounds, UI, villagers/animals/vegetation (identical per player, not 
 - Character shading: `matChar` is a Phong material (per-pixel light). For curved body/cloth surfaces call
   `smoothN(g)` instead of `g.computeVertexNormals()`, so lathe/sphere seams don't show. Shape body features
   (e.g. the bust) by deforming the torso lathe, not by adding spheres.
+- Character joints (the user's "lego" complaint): build limbs with `limb(...)` and let the part on the other side of a joint start with the SAME cross-section (`D.ER`, `D.KR`);
+  keep the 0.7 mm cap margin and the quadratic cap rings (two tangent surfaces z-fight along the ring); put colour edges on cut rings (`cuts`); pass `oy` to `pc` so tint noise
+  continues across a joint; judge joints in a bent pose (`model-preview.js --bent`), not only at rest.
 
 ## 6. Build and test cheaply
 
@@ -189,6 +199,10 @@ node tools/skills-smoke.js       # 58 checks of elements, the soul shrine, monst
 node tools/client-smoke.js       # 39 checks running the built page headless (solo), ~60 s (also draws every boss skill, and checks the Hoarfrost's client side: ice wall, music, the Lodge and travel windows, resource nodes and their cast bar, snow, the tool slots, the Craft tab, the Brewing panel and the potion belt). It runs dist/: build first
 node tools/start-smoke.js        # 31 checks of the start card + a new account's character editor, against a real server in-process, ~20 s
 node tools/keys-smoke.js         # checks of the rebindable keys (defaults, swap, save/load, hints) and of hold-Alt; runs dist/: build first
+node tools/character-smoke.js    # 60 checks of the character model: slider table, every model's recommended setups and ranges, proportions, joints, detail budget, sliders, the seeded villagers' looks (src/, no build), ~10 s
+node tools/outfit-smoke.js       # per signature outfit (`--only id`): builds on its body, every slider extreme on both bodies, the triangle budget (+35,000 max), a weapon dressing on all three classes (src/, no build), ~10 s each
+node tools/outfit-looks-check.js # the eight look documents against the built outfits (seven new item ids, builder notes, one reference setup, generated slider section; `--write` regenerates it), ~10 s
+node tools/outfit-looks-check.js  # checks of the eight draft outfit look documents (`docs/skillkits/looks/`): items, dressing, ranges and setups per persona sex; `--emit cast` feeds `model-preview.js --looks` (src/, no build)
 python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)
 npm test                         # build --check + all of the above
 node tools/model-preview.js out.png [--head] [--looks '[{...}]']   # character model → PNG (numpy+pillow)
@@ -196,12 +210,12 @@ node tools/monster-preview.js out.png --ids slime,boss [--bosses|--all] [--pose|
 node dist/wildwood-server.js --port 8080     # real server; open http://localhost:8080 in several tabs
 ```
 
-The model preview shades per pixel from the mesh normals (like the game), so seams and facets show in it.
+The model preview shades per pixel from the mesh normals (like the game), so seams and facets show in it (`--bent` poses the joints, `--at Y --size W H` zooms, `--setups` draws every recommended setup).
 For a close-up of another body part, render once, then re-run the rasterizer on the JSON it leaves in the
-OS temp dir: `python3 tools/rast.py <tmp>/model-preview.json out.png 260 300 1.3` (last number = centre
+OS temp dir: `python3 tools/rast.py <the json path model-preview printed> out.png 260 300 1.3` (last number = centre
 height in metres: 1.3 torso, 1.7 head). On Windows `python3` needs `pip install numpy pillow` first.
 
-Pick the smallest test that covers your change: model/face/hats → `model-preview` only; a monster or boss model → `monster-preview` (then `client-smoke`); server rules →
+Pick the smallest test that covers your change: character model/face/hair/sliders → `model-preview` + `character-smoke` (then `start-smoke` if the editor changed); a signature outfit → `model-preview --outfit id` + `outfit-smoke --only id`; a monster or boss model → `monster-preview` (then `client-smoke`); server rules →
 `server-smoke` / `skills-smoke` (or a few lines with `tools/load.js`: `loadServer(io, ['MONS','genQuest'])` gives you the
 server API plus any internal names); client UI → `build --check` + `client-smoke`; the start card, accounts or the character editor →
 `start-smoke`. The headless client (`tools/headless.js`) stubs the DOM: elements are cached per selector and remember their
@@ -401,11 +415,10 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
 - Quests: 4 notices, level −4…+2 weighted to yours; hunts 10-20 (L1) → 30-50 (L15), bounties 1.5×.
 - Slots: skill at level 3, burst at 10; prices 180/650, bursts 2000/4000, mage basics 250/900.
 - Day 20 min; rain 5-7 min every 40-60 min, 30% storms.
-- Character proportions (style between realistic and anime): about 7.2 heads tall; hips at 0.92 m, head
-  centre 0.72 above the hips, head scale 1.18 (female 1.15), eyes ~15-25% larger than real; short neck.
-  Female `chest` 0.5-1.6 (default 1): a slider on the character editor's Body tab (`EDIT` in `ui/character-editor.js`,
-  `fem:true`; it is not in Settings); named NPCs set it in `VILLAGERS`, random villagers roll
-  0.7-1.35 in `randomLook`. Default looks have no backpack.
+- Character proportions (anime, see `docs/CHARACTER.md`): about 5.9 heads tall (the skull is 10% taller than a ball: `HEAD_TALL`), 1.9 m (female 1.8 m, the model is scaled 0.95), legs about 53% of the height; head scale 1.40 (female 1.37) on a skull of
+  radius 0.105; moderate (not exaggerated) eyes, a rounded chin, a small nose and mouth, a short slender neck; hips at about 0.95 m. 31 sliders (`BODY_SLIDERS`), each editable on a tab of the character editor
+  (Body, Shape, Face, Eyes, Features, Hair); `chest` is for both sexes now; named NPCs set looks in `VILLAGERS`, random villagers get small slider offsets from a hash of their look. Default looks have no backpack
+  and start on the base model's reference setup (Hero / Heroine). Cost: the hiker about 54k triangles (`charDetail('hero')` 1.1), other players 23k, villagers 16k, phones and light mode 8-11k.
 
 ## 10. Ideas not done yet (ask the owner before starting)
 

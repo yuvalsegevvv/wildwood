@@ -104,3 +104,14 @@ of the free-plan tracks (all eleven) if the game ever earns money, and, if wante
 - **Group play, trading between players, party quests** (`CLAUDE.md` section 10).
 - **Real passives** (the eight in `PASSIVES` are a placeholder set; only one slot is open).
 - **Server-side anti-cheat for movement**, and synced villagers.
+
+## 6. Signature outfits (the eight characters of `docs/skillkits/`)
+
+Built: eight cosmetic outfits as 3D kits (`src/game/outfits/<id>.js`, hooks in `docs/CHARACTER.md` section 9), each with a weapon dressing; designs and previews in `docs/skillkits/looks/`. Not built:
+
+- **Nothing grants or selects them.** The skill-set system (`docs/SKILL-SETS.md` on the skill-sets branch) is not built; today `look.model = '<id>'` and a preview picker in the character editor's Clothes tab wear a whole outfit. Per-part mixing (Torgeir's boots with Corvin's coat) and the editor's rule for which setups it then shows are open.
+- **2D pictures.** No concept art, card art or portraits exist. Ready-to-paste prompts for an image generator (a turnaround, a portrait, a costume breakdown and the weapons of each of the eight, and a cast lineup) are in `docs/skillkits/looks/IMAGE-PROMPTS.md`; the generated pictures would go next to them.
+- **Fine weapon trim.** `weaponsOn` draws coarse meshes, so the dressing recolours them and hangs a charm; engraved ticks, blade nicks and similar need a geometry hook there.
+- **Phones.** The outfits add 15,000-22,000 triangles on the hiker; the other-player and phone detail levels scale them down through `sg(n)` but none of it was measured on a real device.
+- **Glow and motion** (lanterns, vials, lamp, scarves, drum, charms) are only seen in the game; the preview renderer draws neither unlit materials nor `rig.anims`.
+- **Names** have not been searched outside the repository (each look file's IP check says to).
