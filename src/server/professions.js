@@ -11,7 +11,7 @@ function learnProfP(p,id){
   if(p.gear.prof[id]){ toastTo(p.id,'You already know '+def.name,'bad'); return; }
   if(p.gear.coins<def.price){ toastTo(p.id,def.name+' costs '+def.price+' coins','bad'); return; }
   p.gear.coins-=def.price; p.gear.prof[id]={xp:0}; p.dirty=true;
-  toastTo(p.id,'You learned '+def.name+'. Buy '+(id==='mining'?'a pickaxe':id==='woodcutting'?'an axe':'a sickle')+' from the lodge keeper and wear it, then walk up to '+(id==='mining'?'a vein of ore':id==='woodcutting'?'a tree':'a herb')+' and use the talk key.','good');
+  toastTo(p.id,'You learned '+def.name+'. Buy '+(id==='mining'?'a pickaxe':id==='woodcutting'?'an axe':'a sickle')+' from the lodge keeper and wear it, then walk up to '+(id==='mining'?'a vein of ore':id==='woodcutting'?'a tree':'a herb')+' and press the gather key (G by default).','good');
   mqActP(p,'learn',1,{prof:id});
 }
 // every check a gather needs, at the start of the cast and again when it ends (returns the node, or null after telling the player why not)

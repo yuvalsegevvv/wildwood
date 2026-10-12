@@ -118,14 +118,15 @@ function dgReviveP(p,id){
   const q=S.players.get(id); if(!q||q===p||q.inst!==run.id||!q.dead) return;
   const mb=dgMemberOf(run,q); if(!mb||mb.out){ toastTo(p.id,q.name+' is out of this run: nobody can bring them back.','bad'); return; }
   if(Math.hypot(q.x-p.x,q.z-p.z)>DG_REVIVE_R){ toastTo(p.id,'Get closer to '+q.name+' to revive them.','bad'); return; }
-  p.cast={i:-1,rev:q.id,end:S.t+DG_REVIVE_S,x:p.x,z:p.z}; ev('cast',p.id,-1,DG_REVIVE_S,q.id);
+  const rs=DG_REVIVE_S*Math.max(0.4,1-psP(p,'revive'));   // skillsets: the revive stat shortens the channel (at most by 60%)
+  p.cast={i:-1,rev:q.id,end:S.t+rs,x:p.x,z:p.z}; ev('cast',p.id,-1,rs,q.id);
 }
 function dgReviveCastS(p,c){
   if(S.t<c.end) return;
   const c0=S.ctx; S.ctx=p.inst|0; p.cast=null;
   const run=dgRunOf(p), q=S.players.get(c.rev), mb=run&&q?dgMemberOf(run,q):null;
   if(!run||!q||q.inst!==run.id||!q.dead||!mb||mb.out||run.endT||Math.hypot(q.x-p.x,q.z-p.z)>DG_REVIVE_R+1) ev('castx',p.id);
-  else { q.dead=false; q.deadT=0; q.hp=Math.max(1,Math.round(q.maxHp*DG_REVIVE_HP)); q.lastHit=S.t; q.dirty=true; mb.down=false; ev('up',q.id); ev('dgr',p.id,q.id); toastTo(q.id,p.name+' got you back on your feet.','good'); }
+  else { q.dead=false; q.deadT=0; q.hp=Math.max(1,Math.round(q.maxHp*DG_REVIVE_HP)); q.lastHit=S.t; q.dirty=true; mb.down=false; ev('up',q.id); ev('dgr',p.id,q.id); toastTo(q.id,p.name+' got you back on your feet.','good'); ssTriggerS(p,'revive',{q}); }   // skillsets: on revive rows
   S.ctx=c0;
 }
 // won (the boss fell): the rest of the place goes quiet, the downed stand up, each member's clear and best time are saved, the clear's piece is handed out, dge tells each what they got

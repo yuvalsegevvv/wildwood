@@ -1,0 +1,33 @@
+//@ Tansy's skill set, The Harvest (a grinder, no element): a scythe sweep, a field that pulls a camp together, one huge swing to finish it; wheat and straw
+/* Agent map. Kit: docs/skillkits/kit-grind.md (the first grinder: PURE BASIC, never an elemental disadvantage); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md; outfit and palette: docs/skillkits/looks/tansy.md,
+   game/outfits/tansy.js; visuals: game/skillsets/look-tansy.js. Registry and what a piece may use: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-first8-smoke.js, tools/skillsets-ladder.js --set tansy.
+   Land: Wildwood (the first land, tier 1), so it is the easiest set to get: `from` carries friendlier odds on every position (the owner decides, docs/SKILL-SETS.md decision 37).
+   What the engine gives her: the `area` stat (Wide Berth widens every ring, cone and zone), a `crowd` condition (Steady Hands and Full Basket need three or more enemies near), a kill `streak` (a multi-kill) and `cdr`
+   (a cooldown refund); Wide Berth's price is a condition too: less damage against bosses (the "bad for bossing" lever). */
+defineSkillSet({
+  id:'tansy', name:'The Harvest', land:'home', needs:{tier:1}, el:'basic', outfit:'tansy',
+  role:{main:'grind'},
+  char:{name:'Tansy', sex:'female', theme:'a farm-hand who harvests a whole field at once: sweeping blades, bundled wheat', ip:{kind:'original', riffs:'the farm-hand and harvest genre (a hat, a smock, a sheaf); no existing character'}},
+  pal:{main:0xe0b95a, accent:0xb5532f, glow:0xece3c8},
+  pos:{
+    1:{bound:'class', from:{chance:0.15, pity:14},
+       skill:{
+         warrior:{name:'Windrow Sweep', desc:'Swing in a wide scythe arc: everything in front of you takes a light cut. Cheap enough to use while you walk between camps.', cd:0.8, range:3.6, mult:0.35, act:['tansy1w',0.5,0.35], anim:'slash',
+                  fx:{cone:{r:3.8, arc:2.3}}},
+         archer:{name:'Chaff Fan', desc:'Seven short arrows in a fan, each bursting a little where it lands: light on one enemy, a great deal on a crowd.', cd:0.9, range:16, mult:0.2, act:['tansy1a',0.55,0.5], anim:'shoot',
+                 fx:{proj:{kind:'thorn', n:7, spread:0.3, speed:40, turn:0, life:0.42, splash:{r:1.8, k:0.5}}}},
+         mage:{name:'Chaff Burst', desc:'A bolt that bursts wide on impact and scatters chaff over a whole crowd.', cd:1.1, range:22, mult:0.3, act:['tansy1m',0.6,0.5], anim:'cast',
+               fx:{proj:{kind:'spore', speed:30, turn:8, life:1.1, splash:{r:6, k:0.9}}}}},
+       passive:{name:'Steady Hands', text:'A kill in a crowd (three or more enemies within 8 m) heals you for 2% of your maximum health (at most every 2 s)', on:'kill', icd:2, heal:0.02, when:{crowd:{n:3, r:8}}}},
+    2:{bound:'any', from:{chance:0.15, pity:14},
+       skill:{any:{name:'Gather In', desc:'A wide field of pull at your target\'s feet: for 3 seconds everything in it is dragged to the middle and nicked. Wide enough to take in the next camp.', cd:10, range:16, mult:0.5, act:['tansy2x',0.7,0.5], anim:'nova',
+                   fx:{zone:{r:9.5, dur:3, every:0.5, kb:-4}}}},
+       passive:{name:'Wide Berth', text:'Every ring, cone and field of yours is {}% wider; you deal 25% less damage to bosses', stat:'area', v:[0.25, 0.03], cost:{stat:'dmg', v:-0.25, when:{boss:true}}}},
+    3:{bound:'any', from:{chance:0.30, pity:7},
+       skill:{any:{name:'Bumper Crop', desc:'The widest ring of any skill goes out around you, then a swathe lingers for 2.5 seconds: it finishes what you gathered.', cd:36, range:11, mult:0.9, act:['tansy3x',0.9,0.6], anim:'nova',
+                   fx:{ring:{r:11, kb:3}, zone:{r:8, dur:2.5, every:0.5, self:true}}}},
+       passive:{name:'Second Basket', text:'A multi-kill (four enemies within 2 s) takes 4 s off Gather In\'s cooldown (at most every 6 s)', on:'kill', icd:6, streak:{n:4, secs:2}, cdr:{skill:4}}}},
+  bonus:{
+    3:{name:'Windrow', text:'A kill takes 1 s off every cooldown (at most every 2 s)', on:'kill', icd:2, cdr:{all:1}},
+    5:{name:'Full Basket', text:'While three or more enemies are within 8 m, every 4 s a shockwave rolls out 8 m for 80% damage', on:'tick', icd:4, when:{crowd:{n:3, r:8}}, mult:0.8, range:8, fx:{ring:{r:8, kb:2}}}},
+});

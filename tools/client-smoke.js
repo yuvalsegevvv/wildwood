@@ -2,7 +2,7 @@
 // client code. Build first (python3 build.py). Needs the three package (npm install). Prints PASS/FAIL lines.
 // Usage: node tools/client-smoke.js
 const {bootClient}=require('./headless');
-const c=bootClient({expose:['GXJ','GDX','borderXN','closePanels','WZ0','WZ1','WX1','wmapOpen','wmapToggle','wmapClick','wmapGo','wmapPin','wmapFit','wmapUpdate','wmapRegionAt','wmapPip','wmapEdgeDist','WM','WMAP_REG','WMAP_ISLES','WMAP_TOWNS','WMAP_BANNER','WMAP_BANKS','WMAP_LOCK','mapLand:()=>mapLand','VIL2','WX0','slopeBlock','SLOPE_MAX','TUN','bridgeDeck','valeOpen','borderX','borderZ','riverK','FALL','fallProfile','GF','buildGreyfall','updateGreyfall','NET','mqTarget','mqLogRow','mqMark','odranHere','MQ_BY_ID','VIL4','LORE_BY_ID','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','greySnowAmt','drawFullMap','drawMinimap','mapCX','landOpen','CHAM','chamoisUpdate','chamoisOK','GLEN','GREY_GATES','slotIcon','PENDANT_STATS','itemStat','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt',
+const c=bootClient({expose:['LOOK','SSL','SS_ORDER','RXV','rxViewUpdate','defineSkillSet','SS_SETS','SK','renderSkills','canSwap','SSV','ssvUpdate','GXJ','GDX','borderXN','closePanels','WZ0','WZ1','WX1','wmapOpen','wmapToggle','wmapClick','wmapGo','wmapPin','wmapFit','wmapUpdate','wmapRegionAt','wmapPip','wmapEdgeDist','WM','WMAP_REG','WMAP_ISLES','WMAP_TOWNS','WMAP_BANNER','WMAP_BANKS','WMAP_LOCK','mapLand:()=>mapLand','VIL2','WX0','slopeBlock','SLOPE_MAX','TUN','bridgeDeck','valeOpen','borderX','borderZ','riverK','FALL','fallProfile','GF','buildGreyfall','updateGreyfall','NET','mqTarget','mqLogRow','mqMark','odranHere','MQ_BY_ID','VIL4','LORE_BY_ID','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','greySnowAmt','drawFullMap','drawMinimap','mapCX','landOpen','CHAM','chamoisUpdate','chamoisOK','GLEN','GREY_GATES','slotIcon','PENDANT_STATS','itemStat','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt',
   'DG_RUN:()=>DG_RUN','DG_VIEW','DG_THEMES','dgFree','dgIn','dgHudText','dgHudTick','dgDownText','sky','water','sun','updateCamera','updateEnv','updatePlayer','applySnap','keys','TERRAIN_BANDS','cullChunks','playerDown','playerUp']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const el=s=>document.querySelector(s);
@@ -14,6 +14,9 @@ const el=s=>document.querySelector(s);
   const s=G.MONS.find(m=>m.def.id==='slime'); G.P.x=s.x+1.5; G.P.z=s.z; G.P.y=G.getH(G.P.x,G.P.z);
   for(let i=0;i<120&&!s.dead;i++){ G.CB.target=s; G.P.yaw=Math.atan2(-(s.x-G.P.x),-(s.z-G.P.z)); G.doAttack('basic'); G.updateMonsters(0.033); G.updateCombat(0.033); await wait(33); }
   G=c.G(); ok('attack through the server kills a slime',s.dead,'xp '+G.PL.exp.toFixed(1));
+  { const m=G.MONS.find(x=>!x.dead&&x.def.id==='boar')||G.MONS.find(x=>!x.dead); G.applyEvent(['aura',m.id,'fire',6]); G.applyEvent(['aura',m.id,'water',6]); const n1=G.RXV.marks.size;   // reactions: the client's display
+    G.applyEvent(['react',m.id,'fire|water']); G.applyEvent(['st',m.id,'vuln',0.14,6,G.NET.pid]); G.rxViewUpdate(0.033); const shown=G.RXV.marks.get(m.id)&&G.RXV.marks.get(m.id).el==='water'; G.applyEvent(['aura',m.id,0,0]);
+    ok('reactions: one aura marker over a monster (it changes element), the reaction and status notes pop without error, and the marker goes with its aura',n1===1&&shown&&G.RXV.marks.size===0); }
   G.equip('bow1'); await wait(300); ok('equip round-trip',c.G().GEAR.eq.weapon==='bow1');
   el('#inv').hidden=false; G.renderInv(); ok('inventory renders body slots, the ring and pendant slots and the three tool slots',(el('#invBody').innerHTML.match(/class="eqslot"/g)||[]).length===10&&['pick','axe','sickle','ring','pendant'].every(k=>el('#invBody').innerHTML.includes('data-slot="'+k+'"')));
   G.openSkills(); ok('skills panel renders 3 slots',(el('#skBody').innerHTML.match(/class="sk-slot/g)||[]).length===3);
@@ -42,7 +45,34 @@ const el=s=>document.querySelector(s);
         if(!made) bad.push(id);
       }
       ok('all boss skills draw without errors (rings, arcs, projectiles, zones, beams, chains, auras)',!bad.length&&G.AREA_FX.size===0,bad.length?'nothing drawn for '+bad.join(', '):ids.length+' skills'); }
+    // the looks of the skill sets: every piece of every set, drawn through the real client code (swing, projectile and its landing, zone, beam, chain, buffs, heals and shields on an ally), in the set's own look
+    { const me=G.NET.pid, x0=G.P.x+2, y0=G.P.y+1.4, z0=G.P.z, bad=[], total=()=>G.SSL.parts.length+G.SSL.decals.length+G.CB.fx.length+G.CB.projs.length+G.AREA_FX.size+G.BOLTS.length; let n=0, areas=[];
+      for(const id of G.SS_ORDER) if(!G.SSL.looks[id]) bad.push(id+': no look');
+      for(const id of G.SS_ORDER) for(const pos of [1,2,3]) for(const sid of G.SS_SETS[id].pos[pos].ids){
+        const s=G.SKILLS[sid], f=s.fx, k=s.act[0], evs=[], b0=total(); n++;
+        G.attackVisuals({kind:G.ANIM_OF[k]||k,sk:k},null);
+        if(f.proj) evs.push(['proj',700+n,f.proj.kind,x0,y0,z0,-20,0,0,null,sid],['pend',700+n,x0-6,y0,z0,null]);
+        if(f.zone){ evs.push(['area',600+n,'zone',x0,z0,f.zone.r,f.zone.dur,me,s.el,(f.zone.follow?2:0),sid]); areas.push(600+n); }
+        if(f.beam) evs.push(['beam',x0,y0,z0,x0-20,y0,z0,s.el,1.4,sid]);
+        if(f.chain) evs.push(['chain',[[x0,y0,z0],[x0-3,y0,z0],[x0-6,y0,z0+2]],s.el,sid]);
+        if(f.ally) evs.push(['ast',me,(Array.isArray(f.ally)?f.ally[0]:f.ally).kind,0.1,0.2,sid]);
+        if(f.heal) evs.push(['fxa',me,'heal',sid]);
+        if(f.shield) evs.push(['fxa',me,'shield',sid]);
+        for(const e of evs) G.applyEvent(e);
+        let peak=total(); for(let j=0;j<6;j++){ G.updateCombat(0.033); peak=Math.max(peak,total()); }
+        if(peak<=b0) bad.push(sid);
+      }
+      for(const id of G.SS_ORDER) for(const t of [3,5]){ const r=G.SS_SETS[id].bonus[t]; G.applyEvent(['ast',me,'haste',0.1,0.2,r.id]); G.applyEvent(['fxa',me,'heal',r.id]); }   // (the passives' and bonuses' own rows name themselves)
+      G.applyEvent(['ast',me,'haste',0.1,0.2,'notaset_1']); G.applyEvent(['fxa',me,'heal','notaset_1']);   // (a piece that is not a set's draws nothing and breaks nothing)
+      for(const a of areas) G.applyEvent(['aend',a]);
+      await wait(350); for(let j=0;j<220;j++) G.updateCombat(0.033);
+      ok('skill sets: every set has a look, and every piece of the eight sets draws in it without errors',!bad.length&&!G.SSL.bad.length,bad.length?'nothing drawn for '+bad.join(', '):n+' pieces, '+G.SS_ORDER.length+' looks');
+      ok('...and everything they made is gone again (particles, ground patterns, auras, zones)',G.SSL.parts.length===0&&G.SSL.decals.length===0&&G.SSL.auras.size===0&&G.AREA_FX.size===0,G.SSL.parts.length+' particles, '+G.SSL.decals.length+' patterns, '+G.SSL.auras.size+' auras, '+G.AREA_FX.size+' zones'); }
   }
+  // version2 testing: every player may unlock a set and wear its outfit (index.html #tFree, game/skillsets/free.js, server/skillsets-free.js; remove with them)
+  { const sel=c.el('#tFreeSet'), n=(sel.innerHTML.match(/<option/g)||[]).length; sel.value='tansy'; c.el('#tFreeOut').click(); await wait(150); const wore=c.G().LOOK.model, sex=c.G().LOOK.sex;
+    c.el('#tFreeNone').click(); await wait(100); const off=c.G().LOOK.model; c.el('#tFreeGet').click(); await wait(400);
+    ok('free testing tools: a list of every set, one tap wears its outfit (on its character\'s body) and one takes it off, one unlocks the set\'s pieces',n===G.SS_ORDER.length&&wore==='tansy'&&sex==='female'&&off==='base'&&c.G().GEAR.skills.owned.includes('tansy_2_any')&&c.G().GEAR.skills.owned.includes(G.SS_SETS.tansy.pos[3].passive),n+' sets, '+wore+' / '+sex+' / '+off); }
   G.openChat(); G.chatText.value='hi'; G.sendChat(); await wait(300); ok('chat line arrives',c.G().CHAT.lines.length>0);
   for(let i=0;i<150&&!c.G().MAP.done;i++) await wait(100); ok('world map painted',c.G().MAP.done);
   G.NET.send({t:'dev',cmd:'weather',v:'rain'}); await wait(300); for(let i=0;i<60;i++){ G.WX.t+=0.5; G.updateWeather(0.5); } ok('rain fades in',G.WX.inten>0.9);
@@ -254,5 +284,20 @@ const el=s=>document.querySelector(s);
       G.wmapOpen(); G=c.G(); G.wmapClick(sx(G.WMAP_BANNER.grey.x+130),sy(G.WMAP_BANNER.grey.y)); G=c.G(); ok('...the Greyspine\'s map (a click on its banner counts as the land, even over the next region)',G.mapLand()==='grey'&&!el('#map').hidden);
       G.wmapOpen(); G=c.G(); G.wmapClick(sx(G.WMAP_BANNER.vale.x),sy(G.WMAP_BANNER.vale.y)); G=c.G(); ok('...and the Sakura Vale\'s map',G.mapLand()==='vale'&&!el('#map').hidden);
       el('#mapWorld').click(); G=c.G(); ok('the map\'s World button opens the world map, and the G key closes and opens it',!el('#wmap').hidden&&el('#map').hidden&&(c.fireWin('keydown',{code:'KeyG'}),el('#wmap').hidden)&&(c.fireWin('keydown',{code:'KeyG'}),!el('#wmap').hidden)); G.closePanels(); } }
+  // skill sets (the base): a fixture set defined in the page's scope (no kit is shipped); its pieces show in the grids once owned, a universal piece in every class's grid, and nothing throws
+  { G=c.G(); const E=(pos,k,ex)=>Object.assign({name:'Fx '+pos+k,desc:'A test piece.',cd:5,range:5,mult:1,act:['fx'+pos+k,0.6,0.4],anim:'slash',fx:{ring:{r:3}}},ex), ST=(n,stat,v)=>({name:n,text:'+{}% '+stat,stat,v});
+    const set=G.defineSkillSet({id:'fxset',name:'Fixture',land:'home',needs:{tier:1},dev:true,el:'fire',role:{main:'safe'},char:{name:'Fixture',sex:'male',theme:'t',ip:{kind:'original',riffs:'g'}},pal:{main:1,accent:2,glow:3},kit:{mark:'barb',name:'Barb',text:'t'},
+      pos:{1:{bound:'class',skill:{warrior:E(1,'w'),archer:E(1,'a'),mage:E(1,'m')},passive:ST('FP1','dmg',[0.04,0])},2:{bound:'any',skill:{any:E(2,'x',{anim:'nova'})},passive:ST('FP2','crit',[0.03,0])},3:{bound:'any',skill:{any:E(3,'x',{anim:'nova'})},passive:ST('FP3','hp',[0.05,0])}},
+      bonus:{3:ST('FB3','dmg',0.1),5:ST('FB5','crit',0.1)}});
+    ok('skill sets: a set defined in the page registers (the shared registry is in the client too)',!!set&&G.SS_SETS.fxset===set);
+    G.openSkills(null,'skill'); G=c.G(); ok('...its pieces stay out of the grids until they are yours',!/data-id="fxset_2_any"/.test(el('#skBody').innerHTML));
+    G.GEAR.skills.owned.push('fxset_2_any','fxset_1_warrior','fxset_p1'); G.SK.sel='fxset_2_any'; G.renderSkills(); let h=el('#skBody').innerHTML;
+    ok('...a universal piece you own is in the grid and its details say Any class and whose set it is',/data-id="fxset_2_any"[^>]*data-from="grid"/.test(h)&&/Any class/.test(h)&&/Fixture&#39;s set|Fixture's set/.test(h)&&/cannot be upgraded yet/.test(h)&&!/data-buyskill="fxset_2_any"/.test(h));
+    G.GEAR.skills.owned.push('fxset_1_archer'); G.openSkills(null,'basic'); G=c.G(); h=el('#skBody').innerHTML;
+    ok('...a slot-1 piece shows only in its own class\'s grid (the page plays an archer), and owning it lets that class swap its basic attack',/data-id="fxset_1_archer"/.test(h)&&!/data-id="fxset_1_warrior"/.test(h)&&G.canSwap('archer','basic',G.GEAR.skills)&&!G.canSwap('warrior','basic',{owned:[]})&&!/Only mages can change/.test(h),h.match(/Only mages[^<]*/));
+    G.openSkills(null,'pass'); G=c.G(); h=el('#skBody').innerHTML; ok('...an owned signature passive shows in the passive grid, an unowned one does not',/data-id="fxset_p1"/.test(h)&&!/data-id="fxset_p2"/.test(h));
+    { const m=G.MONS.find(x=>!x.dead), pid=G.NET.pid; G.applyEvent(['mk',m.id,'barb',2,10,pid]); G.applyEvent(['mk',m.id,'barb',3,10,pid+1000]); G.ssvUpdate(0.033); const two=G.SSV.marks.get(m.id)&&G.SSV.marks.get(m.id).barb.pips.length;   // (a mark of someone else is not drawn: marks are personal)
+      G.applyEvent(['mk',m.id,'barb',3,10,pid]); G.ssvUpdate(0.033); const three=G.SSV.marks.get(m.id).barb.pips.length; G.applyEvent(['mk',m.id,'barb',0,0,pid]);
+      ok('skill sets: a mark of yours on a monster shows as pips (2, then 3), someone else\'s is not drawn, and the pips go when the mark is spent',two===2&&three===3&&!G.SSV.marks.has(m.id),two+' '+three); } }
   c.stop(); console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);
 })();

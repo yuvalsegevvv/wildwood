@@ -81,33 +81,36 @@ function turnInP(p,id){
 function buySkillP(p,id){
   const s=skillDef(id); if(!s||p.gear.skills.owned.includes(id)) return;
   if(s.drop){ toastTo(p.id,s.name+' is not for sale: '+BOSS_DEFS.find(b=>b.def.id===s.drop).short+' drops it','bad'); return; }
+  if(s.set){ toastTo(p.id,s.name+' is not for sale: it is a signature skill, earned from a boss or a dungeon','bad'); return; }   // skillsets: a piece is never bought
   if(p.level<s.lv){ toastTo(p.id,s.name+' needs level '+s.lv,'bad'); return; }
   if(p.gear.coins<s.price){ toastTo(p.id,'Not enough coins','bad'); return; }
   p.gear.coins-=s.price; p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Learned '+s.name+'!','good'); ev('skillbuy',p.id,id);
 }
-// a passive goes into slot idx of the passive loadout (or the first free open one, or nowhere when they are all full); slots from PASSIVE_OPEN on are locked for now
+// a passive goes into slot idx of the passive loadout (or the first free open one, or nowhere when they are all full); slot i opens at PASSIVE_SLOT_LV[i]
 function equipPassiveP(p,id,idx){
-  const P=p.gear.skills.pass, need=Math.max(PASSIVE_LV,PASSIVES[id].lv);
+  const P=p.gear.skills.pass, need=Math.max(PASSIVE_LV,PASSIVES[id].lv), open=passiveOpen(p.level);
   if(p.level<need){ toastTo(p.id,PASSIVES[id].name+' needs level '+need,'bad'); return; }
-  if(idx>=PASSIVE_OPEN){ toastTo(p.id,'Passive slot '+(idx+1)+' is locked for now','bad'); return; }
-  const at=idx>=0?idx:P.slice(0,PASSIVE_OPEN).indexOf(null); if(at<0){ toastTo(p.id,'The passive slot is full: drop it onto the slot to replace it','bad'); return; }
-  const was=P.indexOf(id); if(was>=0) P[was]=null; P[at]=id; recalcP(p); p.dirty=true;
+  if(idx>=open){ toastTo(p.id,'Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx],'bad'); return; }
+  const at=idx>=0?idx:P.slice(0,open).indexOf(null); if(at<0){ toastTo(p.id,open>1?'Your passive slots are full: drop it onto one to replace it':'The passive slot is full: drop it onto the slot to replace it','bad'); return; }
+  const was=P.indexOf(id); if(was>=0) P[was]=P[at];   // already worn in another slot: the two swap places (the other slot gets whatever was here, or nothing)
+  P[at]=id; recalcP(p); p.dirty=true;
 }
 function equipSkillP(p,id,idx){
   const s=skillDef(id); if(!s||!p.gear.skills.owned.includes(id)) return;
   if(s.slot==='passive'){ equipPassiveP(p,id,clampInt(idx,0,PASSIVE_SLOTS-1,-1)); return; }
-  if(!canSwap(s.cls,s.slot)) return;
+  if(s.set){ ssEquipPieceP(p,s); return; }   // skillsets: a piece is worn for every class that owns a version of it
+  if(!canSwap(s.cls,s.slot,p.gear.skills)) return;
   const need=Math.max(slotLv(s.slot),s.lv); if(p.level<need){ toastTo(p.id,s.name+' needs level '+need,'bad'); return; }
-  p.gear.skills.eq[s.cls][s.slot]=id; p.dirty=true;
+  p.gear.skills.eq[s.cls][s.slot]=id; p.dirty=true; recalcP(p);   // (recalcP: the sets worn and their bonuses)
 }
 function unequipSkillP(p,cls,slot,idx){
   if(slot==='pass'){ const P=p.gear.skills.pass, i=clampInt(idx,0,PASSIVE_SLOTS-1,-1); if(i>=0&&P[i]){ P[i]=null; recalcP(p); p.dirty=true; } return; }
-  const e=p.gear.skills.eq[cls]; if(e&&(slot==='skill'||slot==='burst')){ e[slot]=null; p.dirty=true; }
+  const e=p.gear.skills.eq[cls]; if(e&&(slot==='skill'||slot==='burst'||(slot==='basic'&&SKILLS[e.basic]&&SKILLS[e.basic].set))){ e[slot]=null; p.dirty=true; recalcP(p); }   // skillsets: a slot-1 piece can be taken off (the class basic returns)
 }
 // level up a skill or passive you own: coins and monster drops (upgradeNeeds), at the trainer in either village
 function upgradeSkillP(p,id){
   const s=skillDef(id), S=p.gear.skills; if(!s||!S.owned.includes(id)) return;
-  if(s.drop){ toastTo(p.id,s.name+' cannot be upgraded yet','bad'); return; }
+  if(s.drop||s.set){ toastTo(p.id,s.name+' cannot be upgraded yet','bad'); return; }   // (signature skills: not in v1)
   if(!inVillage(p)){ toastTo(p.id,'Skills are upgraded by a trainer: Aldric at the well (or Master Ryu in Hanami)','bad'); return; }
   const to=skillLvOf(S,id)+1; if(to>SKILL_MAX_LV){ toastTo(p.id,s.name+' is already at its highest level','bad'); return; }
   const need=upgradeNeeds(id,to), lack=need.mats.find(m=>(p.gear.mats[m.id]||0)<m.n);
@@ -144,7 +147,7 @@ function renameP(p,name){
 // jump straight to a level (testing tools, account gifts): opens the skill slots passed on the way
 function setLevelP(p,lv){
   const was=p.level; p.level=clampInt(lv,1,PLAYER_MAX_LV,1); p.exp=0; recalcP(p); p.hp=p.maxHp; refreshOffersP(p);
-  if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(was<PASSIVE_LV&&p.level>=PASSIVE_LV) unlockPassivesP(p);
+  if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(passiveOpen(p.level)>passiveOpen(was)) unlockPassivesP(p,was);
   p.dirty=true; ev('lvset',p.id,p.level);
 }
 // testing tools (settings panel); allowed when the server runs in dev mode (solo, shared room, or node --dev)
@@ -155,6 +158,7 @@ function devP(p,msg){
   else if(c==='giveAll'){ giveAllP(p); toastTo(p.id,'Every item added to your bag','good'); }
   else if(c==='startAll'){ p.gear.startAll=!!msg.v; if(p.gear.startAll) giveAllP(p); p.dirty=true; }
   else if(c==='skills'){ for(const id of [...SKILL_IDS,...PASSIVE_IDS]) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Every skill and passive learned','good'); }
+  else if(c==='set'){ const id=String(msg.v||''); if(!SS_SETS[id]){ toastTo(p.id,'No skill set called "'+id+'" ('+(SS_ORDER.join(', ')||'none defined')+')','bad'); return; } ssGrantSetP(p,id); recalcP(p); toastTo(p.id,SS_SETS[id].char.name+'\'s set: all six pieces given','good'); }   // skillsets: give a whole set (testing)
   else if(c==='mats'){ for(const id of MAT_IDS) addMatP(p,id,20); toastTo(p.id,'20 of every monster drop added','good'); }
   else if(c==='weather'){ const k={clear:0,rain:1,storm:2}[msg.v]; if(k===0){ W.kind=0; W.t=0; W.dur=0; ev('weather',0); } else if(k) startWeatherS(k); }
   else if(c==='coins'){ p.gear.coins+=1000; p.dirty=true; }

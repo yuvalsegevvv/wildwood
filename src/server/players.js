@@ -53,11 +53,11 @@ function sanitizeSkills(g){
   if(Array.isArray(g.owned)) for(const id of g.owned) if(skillDef(id)&&!out.owned.includes(id)) out.owned.push(id);
   if(g.eq) for(const c in out.eq){
     const e=g.eq[c], slots=typeof e==='string'?{skill:e}:(e&&typeof e==='object'?e:{});
-    for(const sl of SLOTS){ const id=slots[sl]; if(SKILLS[id]&&SKILLS[id].cls===c&&SKILLS[id].slot===sl&&out.owned.includes(id)&&canSwap(c,sl)) out.eq[c][sl]=id; }
+    for(const sl of SLOTS){ const id=slots[sl]; if(SKILLS[id]&&(SKILLS[id].cls===c||SKILLS[id].cls==='any')&&SKILLS[id].slot===sl&&out.owned.includes(id)&&canSwap(c,sl,out)) out.eq[c][sl]=id; }   // skillsets: cls 'any' fits every class; owning a slot-1 piece frees the basic slot
   }
-  if(g.lv&&typeof g.lv==='object') for(const id in g.lv){ const L=out.owned.includes(id)&&!(skillDef(id)&&skillDef(id).drop)?clampInt(g.lv[id],1,SKILL_MAX_LV,1):1; if(L>1) out.lv[id]=L; }   // (boss skills cannot be upgraded yet)
-  // only the open passive slots can be used for now: what a save had in a locked slot moves up into the open ones (the rest goes back to the bag)
-  if(Array.isArray(g.pass)) [...new Set(g.pass.slice(0,PASSIVE_SLOTS).filter(id=>PASSIVES[id]&&out.owned.includes(id)))].slice(0,PASSIVE_OPEN).forEach((id,i)=>{ out.pass[i]=id; });
+  if(g.lv&&typeof g.lv==='object') for(const id in g.lv){ const L=out.owned.includes(id)&&!(skillDef(id)&&(skillDef(id).drop||skillDef(id).set))?clampInt(g.lv[id],1,SKILL_MAX_LV,1):1; if(L>1) out.lv[id]=L; }   // (boss skills cannot be upgraded yet)
+  // a passive keeps its slot (which slots a level can use is decided by newPlayer, which knows the level), and sits in one slot only
+  if(Array.isArray(g.pass)) g.pass.slice(0,PASSIVE_SLOTS).forEach((id,i)=>{ if(PASSIVES[id]&&out.owned.includes(id)&&!out.pass.includes(id)) out.pass[i]=id; });
   out.pgiven=!!g.pgiven;   // the free passive was handed out once (so taking it off does not bring it back)
   out.v=g.v===2?2:1;   // 1 = from before burst skills: they get their free burst on join
   return out;
@@ -70,6 +70,7 @@ function newPlayer(pid,hello){
     hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0},buff:null,act:null,dirty:true,travelT:0};
   if(p.gear.startAll) giveAllP(p);
   if(p.gear.skills.v!==2){ autoEquipP(p,'skill'); autoEquipP(p,'burst'); p.gear.skills.v=2; }   // saves from before skills / bursts get the free ones
+  p.gear.skills.pass.forEach((id,i)=>{ if(id&&i>=passiveOpen(p.level)) p.gear.skills.pass[i]=null; });   // a passive in a slot this level has not opened goes back to the bag
   autoEquipPassiveP(p);   // ... and from before passives
   recalcP(p); p.hp=p.maxHp; fillOffersP(p); return p;
 }
@@ -78,9 +79,10 @@ function recalcP(p){
   g.atk+=dgRingAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else (only for a matching soul)
   p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym); p.def=g.def; p.red=defRed(g.def);
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));
+  ssRefreshP(p);   // skillsets: the sets worn and their bonuses
 }
 const clsOfP=p=>classOfGear(p.gear);
-const psP=(p,stat)=>passiveSum(p.gear.skills,p.level,stat);   // a passive stat (Vitality's hp, Ferocity's dmg...)
+const psP=(p,stat)=>passiveSum(p.gear.skills,p.level,stat,clsOfP(p));   // a passive stat (Vitality's hp, Ferocity's dmg...)
 // the bonus of the worn pendant for one stat (pendants.js): read from the item id in the save, never from a number the client sent, and only while you are high enough for it
 function pendP(p,stat){ const it=ITEM[p.gear.eq.pendant]; return it&&it.kind==='pendant'&&it.stat===stat&&p.level>=it.lv?it.v:0; }
 const soulOfP=p=>p.level>=SOUL_LV?p.gear.soul:'basic';
@@ -125,7 +127,7 @@ function gainExpP(p,v,monId){
   p.exp+=v; ev('xp',p.id,r1(v),monId==null?null:monId);
   let up=false; const was=p.level;
   while(p.level<PLAYER_MAX_LV && p.exp>=expToNext(p.level)){ p.exp-=expToNext(p.level); p.level++; up=true; }
-  if(up){ recalcP(p); p.hp=p.maxHp; ev('lvup',p.id,p.level); refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(was<PASSIVE_LV&&p.level>=PASSIVE_LV) unlockPassivesP(p); }
+  if(up){ recalcP(p); p.hp=p.maxHp; ev('lvup',p.id,p.level); refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(passiveOpen(p.level)>passiveOpen(was)) unlockPassivesP(p,was); }
   p.dirty=true;
 }
 // the attacker's damage at your zone tier (its tiered level's damage), +5% per level the attacker is above you, then your armor (soft-capped, defRed), the Iron Will passive, a buff and a guard potion;
@@ -133,12 +135,14 @@ function gainExpP(p,v,monId){
 function hurtP(p,v,m){
   if(p.dead) return;
   const K=m?monK(m,p):null, ld=m?Math.max(0,K.lv-p.level):0;
-  v=Math.max(1,Math.round(v*(K?K.dmg:1)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red'))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard')))));
+  v=Math.max(1,Math.round(v*(K?K.dmg:1)*rxWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red')-ssCondP(p,'red',m))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))*(1-allyP(p,'guard')))));   // reactions: weak lowers what a monster deals
+  if(p.shield&&p.shield.until>S.t&&p.shield.v>0){ const a=Math.min(v,p.shield.v); p.shield.v-=a; v-=a; if(p.shield.v<=0&&!p.shield.done){ p.shield.done=true; ssShieldBreakS(p); } if(v<=0){ p.lastHit=S.t; return; } }   // skillsets: a shield soaks the hit first
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){
     p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id);
     for(const mm of MONS) if(mm.tgt===p.id){ mm.aggro=false; mm.tgt=null; mm.state='return'; mm.pendingHit=-1; }
   }
+  if(m&&p.ss) ssHurtS(p,m,v);   // skillsets: reflect, on hurt and on low rows
 }
 // a slot opens (skill at level 3, burst at level 10): every class gets that slot's free ability equipped
 function autoEquipP(p,slot){
@@ -152,22 +156,24 @@ function unlockSkillsP(p,slot){
   toastTo(p.id,(slot==='burst'?'Burst slot unlocked! ':'Skill slot unlocked! ')+(s?s.name:'Your new ability')+' is ready ('+(slot==='burst'?'R':'Q')+'). Aldric, the trainer at the well, teaches more.','good');
   ev('skillslot',p.id,slot);
 }
-// level 18: the passive slots open, with Vitality (free) in the first one
+// level 18: the passives open, with Vitality (free) in the first slot
 function autoEquipPassiveP(p){
   const S=p.gear.skills; if(S.pgiven||p.level<PASSIVE_LV) return false;
   S.pgiven=true; if(!S.owned.includes('vitality')) S.owned.push('vitality');
-  const i=S.pass.slice(0,PASSIVE_OPEN).indexOf(null); if(i>=0&&!S.pass.includes('vitality')) S.pass[i]='vitality';
+  const i=S.pass.slice(0,passiveOpen(p.level)).indexOf(null); if(i>=0&&!S.pass.includes('vitality')) S.pass[i]='vitality';
   p.dirty=true; return true;
 }
-function unlockPassivesP(p){
-  if(!autoEquipPassiveP(p)) return;
-  recalcP(p); toastTo(p.id,'Passive skills unlocked! Vitality is in your first passive slot. Aldric and Master Ryu teach more.','good'); ev('skillslot',p.id,'passive');
+// a level crossed one or more passive slot levels (18 / 24 / 30): tell the player about each new slot
+function unlockPassivesP(p,was){
+  if(autoEquipPassiveP(p)){ recalcP(p); toastTo(p.id,'Passive skills unlocked! Vitality is in your first passive slot. Aldric and Master Ryu teach more.','good'); ev('skillslot',p.id,'passive'); }
+  PASSIVE_SLOT_LV.forEach((lv,i)=>{ if(i>0&&was<lv&&p.level>=lv){ toastTo(p.id,'Passive slot '+(i+1)+' unlocked! Drag a passive onto it in the skills panel (K).','good'); ev('skillslot',p.id,'passive'); } });
 }
 function healP(p,v){ if(!p.dead&&v>0) p.hp=Math.min(p.maxHp,p.hp+v); }
 function updatePlayersS(dt){
   for(const p of S.players.values()){
     S.ctx=p.inst|0;   // dungeons: what a player's tick causes belongs to his run
     for(const k in p.cd) p.cd[k]=Math.max(0,p.cd[k]-dt);
+    ssTickS(p); ssRegenS(p,dt);   // skillsets: tick rows while in a fight; a regen buff
     if(p.buff&&S.t>=p.buff.until){ p.buff=null; }
     if(p.buff&&p.buff.regen&&!p.dead) healP(p,p.maxHp*p.buff.regen*dt);
     if(p.dead&&p.inst){ dgDownTickS(p,dt); continue; }   // dungeons: downed in a run: revived, or a respawn at its entrance, never the village

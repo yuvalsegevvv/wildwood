@@ -29,14 +29,14 @@ function doAttack(kind){
   if(!tgtOK){ const t2=pickTarget(Math.max(ab.range+2,8)); if(t2) CB.target=t2; }
   const [k,dur,hitAt]=ab.act;
   CB.act={kind:ANIM_OF[k]||k,sk:k,t:0,dur,hitAt,done:false,skill:kind==='skill'};
-  CB.cd[kind]=abilityCd(ab,GEAR.skills,PL.level)*(kind==='basic'&&CB.buff?CB.buff.cd:1);
+  CB.cd[kind]=abilityCd(ab,GEAR.skills,PL.level,c)*(kind==='basic'&&CB.buff?CB.buff.cd:1)*(1-ssHasteK());   // skillsets: the class the bonuses are read for
   const T=CB.target;
   if(T && !T.dead && Math.hypot(T.x-P.x,T.z-P.z)<ab.range+6) P.face=Math.atan2(-(T.x-P.x),-(T.z-P.z));
   else P.face=P.yaw;
   const a=aimDir();
   netSend({t:'atk',k:kind,tg:T&&!T.dead?T.id:null,face:Math.round(P.face*1000)/1000,aim:[a.x,a.y,a.z].map(v=>Math.round(v*1000)/1000)});
   if(k==='charge') startCharge(T);
-  else if(ACT_SKILL[k]&&ACT_SKILL[k].fx&&ACT_SKILL[k].fx.dash) startCharge(T,ACT_SKILL[k].range,ACT_SKILL[k].fx.dash.ahead);
+  else if(ACT_SKILL[k]&&ACT_SKILL[k].fx&&ACT_SKILL[k].fx.dash) startCharge(T,ACT_SKILL[k].range,ACT_SKILL[k].fx.dash.ahead,ACT_SKILL[k].fx.dash.behind);
   if(k==='quake'||k==='inferno'||k==='bladestorm'||k==='berserk') cSfx.swing(true);
   if(k==='hail'||k==='snipe'||k==='focus') cSfx.draw();
   if(k==='shard'||k==='missiles'||k==='blizzard'||k==='surge') cSfx.charge(k!=='shard');
@@ -114,9 +114,10 @@ function onMonAct(id,dur){
 }
 const arrowOf=()=>new THREE.Mesh(arrowGeo,matChar), orbGeo=new THREE.SphereGeometry(0.4,12,9), orbGlowGeo=new THREE.SphereGeometry(0.75,12,9);
 const shardGeo=new THREE.ConeGeometry(0.09,0.7,5).rotateX(Math.PI/2);
-function onProj(id,kind,x,y,z,vx,vy,vz,tg){
-  let mesh;
-  if(kind==='shard'){ mesh=new THREE.Mesh(shardGeo,fxMat(0xbfe8ff,0.95)); }
+function onProj(id,kind,x,y,z,vx,vy,vz,tg,src){
+  let mesh; const L=ssLookFor(src);   // skillsets: a piece with a look flies as its outfit's own shape
+  if(L) mesh=ssLookProj(L,kind,src);
+  else if(kind==='shard'){ mesh=new THREE.Mesh(shardGeo,fxMat(0xbfe8ff,0.95)); }
   else if(kind==='missile'){ mesh=new THREE.Mesh(coreGeo,fxMat(0xd8b0ff,1)); mesh.scale.setScalar(1.6); mesh.add(new THREE.Mesh(boltGeo,fxMat(0x9a6aff,0.55))); }
   else if(kind==='snipe'){ mesh=arrowOf(); mesh.scale.setScalar(2.2); const glow=new THREE.Mesh(coreGeo,fxMat(0xfff0a0,0.9)); glow.scale.set(1.6,1.6,6); mesh.add(glow); }
   else if(kind==='pierce'){ mesh=arrowOf(); mesh.scale.setScalar(1.8); const glow=new THREE.Mesh(coreGeo,fxMat(0xbfe8ff,0.8)); glow.scale.set(1.2,1.2,4); mesh.add(glow); }
@@ -127,13 +128,14 @@ function onProj(id,kind,x,y,z,vx,vy,vz,tg){
   else if(kind==='spirit'){ mesh=new THREE.Mesh(coreGeo,fxMat(GEN_PROJ.spirit,1)); mesh.scale.setScalar(2.2); mesh.add(new THREE.Mesh(boltGeo,fxMat(0xffb060,0.5))); }
   else if(kind==='arrow') mesh=arrowOf(); else { mesh=new THREE.Mesh(boltGeo,boltMat); mesh.add(new THREE.Mesh(coreGeo,boltCore)); }
   scene.add(mesh);
-  CB.projs.push({id,kind,mesh,pos:new THREE.Vector3(x,y,z),vel:new THREE.Vector3(vx,vy,vz),target:tg!=null?MON_BY_ID.get(tg):null,life:2.2,turn:({arrow:10,shard:8,missile:9,snipe:14,spore:8,ember:9,spirit:9,thorn:0})[kind]||6,emberT:0});
+  CB.projs.push({id,kind,mesh,look:L,src,pos:new THREE.Vector3(x,y,z),vel:new THREE.Vector3(vx,vy,vz),target:tg!=null?MON_BY_ID.get(tg):null,life:2.2,turn:({arrow:10,shard:8,missile:9,snipe:14,spore:8,ember:9,spirit:9,thorn:0})[kind]||6,emberT:0});
 }
 function onProjEnd(id,x,y,z,hit){
   const i=CB.projs.findIndex(p=>p.id===id); if(i<0) return;
   const p=CB.projs[i]; scene.remove(p.mesh); CB.projs.splice(i,1);
   const pos=new THREE.Vector3(x,y,z);
-  if(p.kind==='bolt'){ cSfx.boom(pos); spawnBurst(pos,0xff8a3a,0.9); }
+  if(p.look) ssLookImpact(p.look,pos,p,hit);   // skillsets
+  else if(p.kind==='bolt'){ cSfx.boom(pos); spawnBurst(pos,0xff8a3a,0.9); }
   else if(p.kind==='shard'){ spawnBurst(pos,0xbfe8ff,0.5); }
   else if(p.kind==='missile'){ spawnBurst(pos,0xb08aff,0.6); }
   else if(p.kind==='snipe'){ spawnBurst(pos,0xfff0a0,1.1); cSfx.boom(pos); }
@@ -165,7 +167,8 @@ function updateCombat(dt){
     if(p.kind==='pierce') p.pos.y=getH(p.pos.x,p.pos.z)+1.1;
     if(p.target && !p.target.dead && monCenter(p.target).distanceTo(p.pos)<0.5) p.pos.copy(monCenter(p.target));
     p.mesh.position.copy(p.pos);
-    if(p.kind==='arrow'||p.kind==='pierce'||p.kind==='snipe'||p.kind==='shard'||p.kind==='spore'||p.kind==='ember'||p.kind==='thorn'){ _pv2.copy(p.pos).add(p.vel); p.mesh.lookAt(_pv2); }
+    if(p.look){ _pv2.copy(p.pos).add(p.vel); p.mesh.lookAt(_pv2); ssLookTrail(p.look,p,dt); }   // skillsets: a look's projectile points along its flight and leaves its own trail
+    else if(p.kind==='arrow'||p.kind==='pierce'||p.kind==='snipe'||p.kind==='shard'||p.kind==='spore'||p.kind==='ember'||p.kind==='thorn'){ _pv2.copy(p.pos).add(p.vel); p.mesh.lookAt(_pv2); }
     else { p.mesh.scale.setScalar(1+Math.sin(t*30)*0.12); p.emberT-=dt; if(p.emberT<=0){ p.emberT=0.025; const e=new THREE.Mesh(emberGeo,emberMat); e.position.copy(p.pos); scene.add(e); CB.fx.push({mesh:e,life:0.35,max:0.35,shrink:true}); } }
   }
   for(let i=CB.fx.length-1;i>=0;i--){

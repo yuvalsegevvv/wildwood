@@ -58,6 +58,7 @@ function updateMonstersS(dt){
     if(m.stunT>0){ m.stunT-=dt; m.pendingHit=-1; m.x+=m.kbx*dt; m.z+=m.kbz*dt; const kd=Math.exp(-7*dt); m.kbx*=kd; m.kbz*=kd; m.vx=m.vz=0; continue; }
     const hd=Math.hypot(m.x-m.camp.x,m.z-m.camp.z);
     if(!m.aggro && m.T.aggro){ const p=nearestFighter(m.x,m.z,m.T.aggro); if(p){ m.aggro=true; m.tgt=p.id; ev('aggro',m.id); } }
+    { const tq=ssTauntedBy(m); if(tq&&!inVillage(tq)&&hd<=32){ m.tgt=tq.id; m.aggro=true; } }   // skillsets: a taunted monster comes for the taunter
     let p=m.aggro?S.players.get(m.tgt):null;
     if(m.aggro && (!p||p.dead||inVillage(p)||hd>32)){
       const alt=hd<=32?nearestFighter(m.x,m.z,14):null;

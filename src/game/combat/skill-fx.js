@@ -8,7 +8,7 @@ const AREA_FX=new Map(), BOLTS=[];
 const meteorGeo=new THREE.IcosahedronGeometry(0.9,1), fallArrowGeo=new THREE.CylinderGeometry(0.02,0.02,0.9,4);
 const AREA_COL={meteor:0xff6a2a,rain:0xf2cf5a,hail:0xf2cf5a,blizzard:0x9fd8ff,storm:0xdfe6ee};
 const snowGeo=new THREE.OctahedronGeometry(0.07,0), bladeGeo=new THREE.BoxGeometry(0.08,0.05,1.1);
-function onArea(id,kind,x,z,r,dur,owner,el,flags){
+function onArea(id,kind,x,z,r,dur,owner,el,flags,src){
   const zone=kind==='zone', once=zone&&(flags&1), y=getH(x,z)+0.07, col=zone?elCol(el):(AREA_COL[kind]||0xf2cf5a);
   const fill=new THREE.Mesh(teleFill,fxMat(col,0.22)), edge=new THREE.Mesh(teleEdge,fxMat(col,0.85));
   fill.position.set(x,y,z); edge.position.set(x,y+0.01,z); edge.scale.setScalar(r); fill.scale.setScalar(kind==='meteor'||once?0.01:r); scene.add(fill,edge);
@@ -20,9 +20,11 @@ function onArea(id,kind,x,z,r,dur,owner,el,flags){
     if(SND.ready){ const s=spatial(x,z,15,90); if(s) tone({bus:'ui',type:'sawtooth',freq:300,freq2:60,dur:dur,vol:0.06*s.gain,filter:'lowpass',ff:900,pan:s.pan}); }
   }
   AREA_FX.set(id,A);
+  if(src) ssLookArea(A,src);   // skillsets: a zone of a piece with a look wears its outfit's ground pattern and motes
 }
 function onAreaEnd(id){
   const A=AREA_FX.get(id); if(!A) return; AREA_FX.delete(id);
+  if(A.look) ssLookAreaEnd(A);   // skillsets
   for(const o of [A.fill,A.edge,A.meteor,...A.objs]) if(o){ scene.remove(o); if(o.material&&o.material!==matChar&&o.material.dispose) o.material.dispose(); }
   if(A.once){   // a zone that hits once, at the end (Demon Gate)
     const c=new THREE.Vector3(A.x,A.y+0.5,A.z);
@@ -36,9 +38,10 @@ function onAreaEnd(id){
     if(Math.hypot(P.x-A.x,P.z-A.z)<30) camShake=Math.max(camShake,0.45);
   }
 }
-function onChain(pts,el){
+function onChain(pts,el,src){
   if(!pts||pts.length<2) return;
-  const col=el&&el!=='basic'?elCol(el):0x8fd8ff;
+  const L=ssLookFor(src), col=L?L.hot:el&&el!=='basic'?elCol(el):0x8fd8ff;   // skillsets: a piece's chain is drawn in its look's glow
+  if(L) ssLookLine(L,pts);
   for(let pass=0;pass<2;pass++){
     const v=[];
     for(let i=0;i<pts.length-1;i++){ const a=pts[i], b=pts[i+1];
@@ -52,8 +55,9 @@ function onChain(pts,el){
     for(let i=0;i<pts.length;i++){ noiseHit({bus:'ui',filter:'highpass',ff:3000,dur:0.08,vol:0.14*s.gain,pan:s.pan,when:n+i*0.05}); tone({bus:'ui',type:'square',freq:1400-i*120,freq2:300,dur:0.08,vol:0.03*s.gain,pan:s.pan,when:n+i*0.05}); } } }
 }
 // a line of light (server event 'beam'): a bright core and a coloured glow that fade in a third of a second
-function onBeam(x1,y1,z1,x2,y2,z2,el,w){
-  const len=Math.hypot(x2-x1,y2-y1,z2-z1)||1, col=elCol(el);
+function onBeam(x1,y1,z1,x2,y2,z2,el,w,src){
+  const L=ssLookFor(src), len=Math.hypot(x2-x1,y2-y1,z2-z1)||1, col=L?L.hot:elCol(el);   // skillsets: a piece's beam is drawn in its look's glow
+  if(L) ssLookLine(L,[[x1,y1,z1],[x2,y2,z2]]);
   for(const [rad,c,op] of [[0.16*(w||1),0xffffff,0.95],[0.42*(w||1),col,0.5]]){
     const mesh=new THREE.Mesh(new THREE.CylinderGeometry(rad,rad,len,10,1,true).rotateX(Math.PI/2),fxMat(c,op));
     mesh.position.set((x1+x2)/2,(y1+y2)/2,(z1+z2)/2); mesh.lookAt(x2,y2,z2); scene.add(mesh); BOLTS.push({o:mesh,t:0,life:0.35});
@@ -63,18 +67,20 @@ function onBeam(x1,y1,z1,x2,y2,z2,el,w){
 }
 // the swing of a skill with generic effects: rings, arcs, a flare and a sound, in the colour of its element
 function fxVisuals(s,x,y,z,face,sc,mine){
-  const f=s.fx, col=elCol(elOf(s)), g=getH(x,z);
+  const f=s.fx, col=elCol(elOf(s)), g=getH(x,z), L=s.set?SSL.looks[s.set]:null;   // skillsets: a piece with a look is drawn by it (ssLookSwing); the sounds stay
   if(f.buff) return;   // onBuff draws the aura
-  if(f.dash){ spawnRingAt(x,g,z,f.ring?f.ring.r*0.7:3.2,col); spawnBurst(new THREE.Vector3(x,y+0.3,z),col,1.4); if(mine){ cSfx.boom({x,z}); camShake=Math.max(camShake,0.35); } }
-  if(f.ring){ const R=f.ring, pull=R.kb<0; for(let i=0;i<3;i++) spawnRingAt(x,g,z,R.r*(0.5+i*0.25),i?col:0xffffff,pull);
+  if(L) ssLookSwing(L,s,x,y,z,face,sc,mine);
+  if(f.dash){ if(!L){ spawnRingAt(x,g,z,f.ring?f.ring.r*0.7:3.2,col); spawnBurst(new THREE.Vector3(x,y+0.3,z),col,1.4); } if(mine){ cSfx.boom({x,z}); camShake=Math.max(camShake,0.35); } }
+  if(f.ring){ const R=f.ring, pull=R.kb<0; if(!L) for(let i=0;i<3;i++) spawnRingAt(x,g,z,R.r*(0.5+i*0.25),i?col:0xffffff,pull);
     if(mine||Math.hypot(P.x-x,P.z-z)<25) cSfx.nova(); }
-  if(f.cone){ const C=f.cone, n=C.hits||1; for(let h=0;h<n;h++) spawnArcAt(x,y+(0.8+0.22*h)*sc,z,face+(h-(n-1)/2)*0.28,col,C.r/2.6);
+  if(f.cone){ const C=f.cone, n=C.hits||1; if(!L) for(let h=0;h<n;h++) spawnArcAt(x,y+(0.8+0.22*h)*sc,z,face+(h-(n-1)/2)*0.28,col,C.r/2.6);
     if(mine) (C.r>6?cSfx.whoosh:cSfx.swing)(false); }
-  if(f.proj||f.zone||f.beam||f.chain){ spawnRingAt(x-Math.sin(face)*0.6,y+1.1*sc,z-Math.cos(face)*0.6,1.3,col); if(mine) (f.proj&&f.proj.kind!=='spirit'?cSfx.draw:cSfx.charge)(true); }
+  if(f.proj||f.zone||f.beam||f.chain){ if(!L) spawnRingAt(x-Math.sin(face)*0.6,y+1.1*sc,z-Math.cos(face)*0.6,1.3,col); if(mine) (f.proj&&f.proj.kind!=='spirit'?cSfx.draw:cSfx.charge)(true); }
 }
 function updateZoneFx(A,dt,k){   // a generic zone: motes of its element rising inside the circle (and following the caster if it does)
   if(A.follow){ const o=A.owner===NET.pid?P:REMOTES.get(A.owner); if(o){ A.x=o.x; A.z=o.z; A.y=getH(A.x,A.z)+0.07; A.fill.position.set(A.x,A.y,A.z); A.edge.position.set(A.x,A.y+0.01,A.z); } }
   if(A.once) A.fill.scale.setScalar(Math.max(0.01,k*A.r));
+  if(A.look){ ssLookZoneTick(A,dt,k); return; }   // skillsets: the look's own motes and extras
   A.spawn-=dt;
   while(A.spawn<=0&&A.t<A.dur-0.2){ A.spawn+=A.once?0.03:0.02; const a=AR(0,TAU), r=Math.sqrt(Math.random())*A.r, ax=A.x+Math.sin(a)*r, az=A.z+Math.cos(a)*r;
     const m=new THREE.Mesh(snowGeo,fxMat(A.col,0.9)); m.position.set(ax,getH(ax,az)+0.1,az); m.scale.setScalar(A.once?1.6:2.2); m.userData.v=AR(2,5); m.userData.life=AR(0.5,0.9); scene.add(m); A.objs.push(m); }
@@ -112,13 +118,13 @@ function updateSkillFx(dt){
     }
   }
   for(let i=BOLTS.length-1;i>=0;i--){ const b=BOLTS[i]; b.t+=dt; b.o.material.opacity=1-b.t/b.life; if(b.t>=b.life){ scene.remove(b.o); b.o.geometry.dispose(); b.o.material.dispose(); BOLTS.splice(i,1); } }
-  updateAuras();
+  updateAuras(); ssLookUpdate(dt);   // skillsets: the particles, ground patterns and auras of the looks
   if(CB.dash){ const d=CB.dash; d.t+=dt; const f=Math.min(1,d.t/d.dur), e=f*(2-f); P.x=d.fx+(d.tx-d.fx)*e; P.z=d.fz+(d.tz-d.fz)*e; P.y=Math.max(P.y,getH(P.x,P.z)); P.vx=P.vz=0; if(f>=1) CB.dash=null; }
 }
 // Charge: dash to the target (or 8 m ahead) right away; the server lands the blow
-function startCharge(T,range,ahead){   // range / ahead: the skill's reach and how far it goes with no target (Charge by default)
+function startCharge(T,range,ahead,behind){   // range / ahead: the skill's reach and how far it goes with no target (Charge by default); behind: land on the far side of the target (a signature dash)
   let tx,tz; range=range||SKILLS.charge.range; ahead=ahead||8;
-  if(T&&!T.dead&&Math.hypot(T.x-P.x,T.z-P.z)<=range+2){ const dx=T.x-P.x, dz=T.z-P.z, d=Math.hypot(dx,dz)||1, o=T.T.rad*T.s+0.9; tx=T.x-dx/d*o; tz=T.z-dz/d*o; }
+  if(T&&!T.dead&&Math.hypot(T.x-P.x,T.z-P.z)<=range+2){ const dx=T.x-P.x, dz=T.z-P.z, d=Math.hypot(dx,dz)||1, o=T.T.rad*T.s+0.9, sg=behind?1:-1; tx=T.x+sg*dx/d*o; tz=T.z+sg*dz/d*o; }
   else { tx=P.x-Math.sin(P.face)*ahead; tz=P.z-Math.cos(P.face)*ahead; }
   CB.dash={fx:P.x,fz:P.z,tx:clamp(tx,WX0+14,WX1-14),tz:clamp(tz,WZ0+14,WZ1-14),t:0,dur:0.26};
   if(SND.ready){ noiseHit({bus:'ui',filter:'bandpass',ff:500,ff2:1500,dur:0.3,vol:0.12}); }

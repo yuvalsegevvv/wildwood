@@ -5,9 +5,10 @@ const manifest=()=>JSON.parse(fs.readFileSync(path.join(SRC,'manifest.json'),'ut
 const strip=t=>t.startsWith('//@')?t.slice(t.indexOf('\n')+1):t;
 const read=(dir,f)=>strip(fs.readFileSync(path.join(SRC,dir,f),'utf8'));
 /* The world server straight from src/ (shared + server files), exactly as the build wraps it.
-   expose: extra top-level names to return alongside the API (e.g. ['MONS','genQuest']). */
-function loadServer(io,expose){
-  const m=manifest(); let code=m.shared.map(f=>read('shared',f)).join('')+m.server.map(f=>read('server',f)).join('');
+   expose: extra top-level names to return alongside the API (e.g. ['MONS','genQuest']).
+   opts.noSets: leave out the shipped skill sets (shared/skillsets/*.js), for a test that defines its own fixture sets and needs an empty registry. */
+function loadServer(io,expose,opts){
+  const m=manifest(), keep=f=>!(opts&&opts.noSets&&f.startsWith('skillsets/')); let code=m.shared.filter(keep).map(f=>read('shared',f)).join('')+m.server.map(f=>read('server',f)).join('');
   if(expose&&expose.length) code=code.replace(/return \{join:/,'globalThis.__EXPOSE={'+expose.join(',')+'};return {join:');
   const api=new Function('io',"'use strict';\n"+code)(Object.assign({send(){},broadcast(){}},io||{}));
   return {api,x:globalThis.__EXPOSE||{}};

@@ -6,7 +6,7 @@
    io.store (solo, or a shared world hosted in a tab) the browser's own save is used, as before.
    Registered accounts (name + password, Node server only) are in accounts.js.
    Messages in:  hello{acct,name,look,save[,user,pass|token]}  register{user,pass}  logout{token}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
-                 cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{to: 'home'|'hanami'|'rimehold'}  dev{cmd,v}
+                 cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{to: 'home'|'hanami'|'rimehold'}  dev{cmd,v}  ft{cmd,v} (version2 testing: free skill sets)
                  buyskill{id}  eqskill{id[,idx: passive slot]}  unskill{cls,slot[,idx]}  upskill{id}  soul{el}  mq{a:'talk'|'pick'|'read',id|i}  learn{id: a profession}  gather{i: a resource node}
    Messages out: welcome{pid,day,dev,players[,look: a logged-in account's own look]}  mons{list}  you  tp  snap{day,n,pl,mo,b:[per boss: id,engaged,phase,immune,enraged,stunned,aux,mode],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
 initMonstersS(); initBossS();
@@ -102,6 +102,7 @@ function receive(pid,msg){
     case 'potion': drinkP(p,msg.k); break;
     case 'zt': setZoneTierP(p,msg.land,msg.n); break;
     case 'dev': devP(p,msg); break;
+    case 'ft': ssFreeP(p,msg); break;   // version2 testing: free skill sets for everyone (server/skillsets-free.js); remove when M3 / M4 land
     case 'register': registerP(p,msg.user,msg.pass); break;
     case 'logout': logoutP(p,msg.token); break;
     default: if(MSG[msg.t]) MSG[msg.t](p,msg); break;   // dungeons: messages added by feature files (party, dg, ...)

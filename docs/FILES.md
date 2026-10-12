@@ -54,7 +54,10 @@ shared
   monster-defs.js                    Monster families (FAM), the 72 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach, 14 in the Greyspine), defAt (a def's numbers at a level; above level 60 monsters creep tougher, bosses also stronger), prepDef, the eight bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
   tiers.js                           Zone tiers: a harder setting for each land (every enemy in it, bosses included, +10 levels per tier), opened by its second boss, and the symbol bonus. Pure.
   elements.js                        Elements (ELEMS): your soul (SOUL_LV, opposite pairs) and a monster's element (the wheel), with the damage multipliers for both. Pure.
+  reactions.js                       Elemental reactions (rules, pure): the constants, each element's flavour and the reaction registry defineReaction that builds the chart
+  reactions-chart.js                 The fifteen elemental reactions as data (one defineReaction row per pair of elements; the names are placeholders)
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
+  skillsets.js                       Skill sets (rules, pure): the registry defineSkillSet (one file per set in shared/skillsets/), its checks, the expansion into SKILLS / PASSIVES rows, counting the worn pieces and the 3- / 5-set bonuses
   drops.js                           Monster drops (MATS: one material per monster kind), the skills bosses drop (BOSS_SKILLS), and what upgrading a skill costs (upgradeNeeds). Pure.
   items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, and the three profession tools (TOOL_LIST) with the same tiers and rarities (the pendants' rules are in pendants.js, the pieces in dungeon-items.js); prices, drop tables, merging, armour looks, gear helpers (the level-30 dungeon pieces join ITEM in dungeon-items.js). Pure.
   pendants.js                        Pendants, the rules: the five kinds a pendant can be (exp, drop, coin, crit rate, crit damage), their base values and names, their text, and the crit constants and caps rollDmgS uses. The pieces themselves are level-30 dungeon gear (dungeon-items.js). Pure.
@@ -73,6 +76,14 @@ shared
   dungeon-rewards.js                 Dungeon rewards, setup only (nothing calls it yet): what a clear pays (level-30 weapons, armour, rings or pendants, one random item, 70 / 25 / 4 / 0.8 / 0.2% by rarity), the ring (7 types, adds flat attack when it matches your soul), the pendant (5 kinds: exp, drop, coin, crit rate, crit damage: pendants.js), enhancing up to 2 / 4 / 6 / 8 / 10 times, and the tempering stone that monsters of level 30 and above drop instead of equipment. Pure.
   dungeon-items.js                   Level-30 dungeon gear as items: the 665 ITEM records (not in ITEM_LIST, so no shop, drop or "all items" sees them), their look, merging, a ring's attack for a gear, enhancement info and texts. Pure.
   character.js                       Character sliders (range, default, label), the character models with their recommended slider setups and ranges, and the checks every model must pass. Pure.
+  skillsets/tansy.js                 Tansy's skill set, The Harvest (a grinder, no element): a scythe sweep, a field that pulls a camp together, one huge swing to finish it; wheat and straw
+  skillsets/torgeir.js               Torgeir's skill set, The Shield-Wall (a tank, earth): a taunting strike, a brace that shields the party, and a wall that holds the line; stone, bone and iron
+  skillsets/sazanka.js               Sazanka's skill set, The Night Run (risk DPS, dark + air): quick jabs that hit hardest from behind, a slip to the target and a flurry that spends every Barb; ink, cord and moon-grey
+  skillsets/corvin.js                Corvin's skill set, The Lamplight (a debuff support, light): a flash that exposes, a shutter that opens on a whole group, and noon over the field; brass, lamp white and verdigris
+  skillsets/sorrel.js                Sorrel's skill set, The Lookout (safe DPS, air): a clean long line, a spotting shot that spreads the wind, and one charged gale that grows with the distance; sky, cream and feathers
+  skillsets/ambrose.js               Ambrose's skill set, The Marsh Remedy (a healer, water): a lash that mends, a ripple that returns the tide, and high water for the whole party; river green, shell white and aqua
+  skillsets/dunstan.js               Dunstan's skill set, The Rally (a buff support, fire): a striking pole that quickens the line, a cry of valor, and a banner planted for the whole fight; ember red, gold and drum cream
+  skillsets/marigold.js              Marigold's skill set, The Encore (a mixed set: safe DPS with a mild buff support, light): sparkles from afar, a stage that follows you, and the curtain call; marigold, cream, plum and paper lanterns
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -80,6 +91,9 @@ server
   players.js                         Players on the server: records, stats, XP and levels, damage taken, knock-out and respawn, private state ("you")
   monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
+  reactions.js                       Reactions on the server: elemental auras and reactions, the flavours as shared statuses on monsters (vuln, weak, burn, slow, stun) and direct application
+  skillsets.js                       Skill sets on the server: granting a set's pieces, wearing a piece for all three classes, the loadout cache p.ss (the sets worn and their bonuses)
+  skillsets-free.js                  version2 testing: every player may unlock any skill set and put it on (message ft); REMOVE this file when the real sources (M3) and the wardrobe (M4 / M5) land
   boss-fx.js                         What the bosses can do, shared by every move set: telegraphed hits (circle, cone, line, donut, marks), ground zones, tidal walls, orbs, effects on players, timed casts, summons
   boss-kits-home.js                  Boss move sets of the home forest: the Rootwarden (root spikes, ground slam, the totem shield, thornlings) and Carapax, the Tide King (geyser trails, tidal waves, burrow strikes, the whirlpool)
   boss-kits-vale.js                  Boss move sets of the Sakura Vale: Akaoni (demon leaps and fire pools, fire ripples, burning brands) and Kyuubi (foxfire volleys, blinking strikes, spoke beams, spirit foxes)
@@ -205,6 +219,8 @@ game
   combat/classes.js                  Classes and their abilities (CLASSES), combat state (CB), effect materials
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
   combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
+  combat/reactions.js                Reactions on the client: the aura marker over a monster, the reaction's name popping up, the vulnerable / weakened notes
+  skillsets/marks.js                 Skill-set marks on the client: pips over a monster, in the colour of the kit (only yours are drawn: marks are personal)
   combat/lucky.js                    Lucky drops and forging: light beam, sparkles, banner and a bright jingle for epic, unique and legendary items
   combat/sounds.js                   Combat sounds (cSfx) and monster voices (monSound)
   ui/combat-hud.js                   Target frame, player bars, damage numbers, action bar, attack input
@@ -217,9 +233,20 @@ game
   economy/forge.js                   Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
   economy/soul.js                    Element helpers for the interface (icons, chips) and the Soul Hall panel in Hanami, where you bind your soul to an element
   economy/skills.js                  Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, upgrade with coins and monster drops, learn from the trainers
+  economy/skillsets.js               Skill sets on the client: the toast when a piece is earned (the pieces themselves live in the skills panel's grids, economy/skills.js) and the ally buffs that change what you do (haste)
+  skillsets/looks.js                 Skill-set looks on the client: every signature skill is drawn in the colours and motifs of its outfit (particles, ground patterns, projectiles, auras), through hooks in skill-fx.js, attacks.js and net/client.js
+  skillsets/look-tansy.js            Tansy's skill look (The Harvest): chaff and wheat ears fall and swirl, a wheat-ear ring is laid on the ground, a twine tie closes every field she gathers
+  skillsets/look-torgeir.js          Torgeir's skill look (The Shield-Wall): a round shield flashes in front of him, stone chips and bone shards fly, a wall of slabs rises round him when he taunts, rivets are laid on the ground
+  skillsets/look-sazanka.js          Sazanka's skill look (The Night Run): crossed moon-grey crescents, ink wisps and vermilion cord flicks, a violet edge; a delivery tag drops where she lands
+  skillsets/look-corvin.js           Corvin's skill look (The Lamplight): a fan of lamp-white rays, brass dust and plumb lines, a measuring dial laid on the ground, a column of noon light, shutter bars sweeping the field
+  skillsets/look-sorrel.js           Sorrel's skill look (The Lookout): barred feathers on the wind, sky-blue wind streaks, a lens reticle on what she marks, a spiral of gale round a charged shot
+  skillsets/look-ambrose.js          Ambrose's skill look (The Marsh Remedy): dewdrops, rising bubbles and reed blades, ripples that go out and come back, waves laid on the ground, aqua bubbles round a healed or shielded ally
+  skillsets/look-dunstan.js          Dunstan's skill look (The Rally): embers, flame tongues and swallow-tail pennants, drum-beat rings, flame notches laid on the ground, a banner planted in the field that beats once a second
+  skillsets/look-marigold.js         Marigold's skill look (The Encore): paper lanterns drift up, ribbons and gold sparkles fly, a scalloped gold ring is laid on the ground, eight lanterns circle her stage
+  skillsets/free.js                  version2 testing: the settings popover's "Skill sets and outfits" (unlock any set, put it on, wear its outfit) for every player; REMOVE when the real sources (M3) and the wardrobe (M4 / M5) land
   economy/quests.js                  The quest board panel (Maren) and the quest log: notices, quests in progress, hand-ins (all generated by the server)
   economy/main-quest.js              The main quest on the client: what quest villagers say (mqTalk), the marks over them, the main quest at the top of the quest log, its marker on the maps (people, places, resource nodes), where Odran is, heartleaf to pick
-  economy/professions.js             Professions on the client: the Wayfarers' Lodge panel (learn mining, woodcutting and gathering, buy tools, sell resources), the resource nodes of every land (drawn, taken and back), gathering with the talk key and its cast bar
+  economy/professions.js             Professions on the client: the Wayfarers' Lodge panel (learn mining, woodcutting and gathering, buy tools, sell resources), the resource nodes of every land (drawn, taken and back), gathering with the gather key (G) or the talk key and its cast bar
   economy/crafting.js                Crafting and brewing on the client: the Craft tab of the weaponsmiths' and armourers' shops (gear from ore and logs), and the brewing panel of the healers (potions from herbs)
   ui/potions.js                      Potions on the client: the potion belt above the action bar (healing, might and guard, with counts, keys, cooldowns and the running buff), drinking with the keys, and the potion icons
   ui/travel.js                       The travel window: stepping on a teleport circle and pressing the talk key lists every village (CIRCLES in shared/hoarfrost.js); the ones you have not walked to yet are locked

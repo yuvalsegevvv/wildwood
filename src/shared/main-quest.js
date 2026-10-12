@@ -45,7 +45,7 @@ const MQ=[
    parts:[{act:'board',text:'Finish a notice from the quest board and hand it in'}],
    done:['There. The board is always here between the bigger things.','The forest remembers everything. Some of it is waking up.']},
   {id:'W6a',title:'Working hands',gate:5,from:'tamsin',to:'tamsin',r:0.5,
-   tip:'The Wayfarers\' Lodge teaches three professions, each with its own tool: mining (pickaxe), woodcutting (axe) and gathering (sickle). Wear the tool (inventory, I), walk up to a herb, a vein or a tree and press the talk key. What you take is used by the smiths, the armourers and the healers.',
+   tip:'The Wayfarers\' Lodge teaches three professions, each with its own tool: mining (pickaxe), woodcutting (axe) and gathering (sickle). Wear the tool (inventory, I), walk up to a herb, a vein or a tree and press the gather key (G). What you take is used by the smiths, the armourers and the healers.',
    offer:['You are Wren\'s elder, the one who walks the far woods? I am Tamsin. The Wayfarers keep a lodge in every village, for people like you.','You bring home a great many monster parts and not one plant. Let us mend that. Gathering first: sixty coins for the teaching, thirty for a sickle, and the woods start giving back.'],
    parts:[{act:'learn',prof:'gathering',text:'Learn Gathering at the Wayfarers\' Lodge (Tamsin)'},{act:'tool',tool:'sickle',text:'Buy a sickle from Tamsin and wear it (inventory)'},{gather:'gathering',n:3,text:'Gather 3 herbs in the woods (sunpetal grows in every zone)'}],
    done:['A sickle looks good on you. Sunpetal is the herb every healer starts with, and there is a knack to cutting it. You have it.','Linnea will want some. She has been asking who in the village still knows a plant from a weed.']},

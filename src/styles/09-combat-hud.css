@@ -10,6 +10,8 @@
 .tf-hp{ font-size:11px; color:var(--ink-dim); margin-top:3px; text-align:right; }
 .dmg{ position:fixed; left:0; top:0; z-index:6; pointer-events:none; font:700 19px Inter, system-ui, sans-serif; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.8); }
 .dmg.crit{ color:#ffd34d; font-size:25px; }
+.dmg.react{ color:#c8ecff; font-size:18px; letter-spacing:.04em; text-shadow:0 0 8px rgba(120,200,255,.95), 0 1px 3px rgba(0,0,0,.8); }   /* reactions: the name of a reaction */
+.dmg.rxst{ color:#e7cfff; font-size:14px; }   /* reactions: vulnerable / weakened */
 .dmg[hidden], .hpb[hidden]{ display:none; }
 .hpb{ position:fixed; left:0; top:0; z-index:5; width:54px; height:6px; border-radius:3px; background:rgba(0,0,0,.55); overflow:hidden; pointer-events:none; }
 .hpb i{ display:block; height:100%; background:#e5484d; }

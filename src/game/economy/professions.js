@@ -1,10 +1,11 @@
-//@ Professions on the client: the Wayfarers' Lodge panel (learn mining, woodcutting and gathering, buy tools, sell resources), the resource nodes of every land (drawn, taken and back), gathering with the talk key and its cast bar
+//@ Professions on the client: the Wayfarers' Lodge panel (learn mining, woodcutting and gathering, buy tools, sell resources), the resource nodes of every land (drawn, taken and back), gathering with the gather key (G) or the talk key and its cast bar
 /* The rules, the nodes' places and the resources are in shared/professions.js; the server (server/professions.js) checks everything. Here:
    - the lodge panel the lodge keepers open (role 'lodge', one in each village): a row per profession with its level and a Learn button (coins), the
      tools you can buy (a tier chip picks the tier), and the resources you carry with a Sell button;
    - the nodes: NODES drawn as small props (a vein of ore in the colour of its metal, a tree with a pale axe blaze, flowers or leaves), hidden while taken.
      Geometry is built once per kind and shared by every node of it;
-   - gathering: walk up to a node and press the talk key (talking.js asks nearNode / nodePrompt / gatherNode). The server starts a cast (cast event: a bar
+   - gathering: walk up to a node and press the gather key (a rebindable action of its own, handled below) or the talk key (talking.js asks nearNode /
+     nodePrompt / gatherNode, after any villager, heartleaf or lore spot in reach). The server starts a cast (cast event: a bar
      fills for castTime seconds) and finishes it with the gather event; walking off breaks it (the server sends castx, and the bar also hides at once). */
 const NODE_VIEWS=[], NODE_TAKEN=new Set(), NODE_GLOWS=[], NODE_GEO={};
 const nodeTaken=i=>NODE_TAKEN.has(i);
@@ -79,10 +80,12 @@ function updateNodes(){
 }
 function nearNode(){ if(!started||!NODES.length) return -1; const i=nodeNear(P.x,P.z,NODE_R); return i>=0&&!NODE_TAKEN.has(i)?i:-1; }
 function nodePrompt(i){
-  const n=NODES[i], K=NODE_KINDS[n.kind], why=GEAR?nodeBlock(GEAR,n):'learn';
-  return why?nodeBlockText(why,n):'Press '+(kbName('talk')||'the talk key')+' to '+PROFS[K.prof].verb+' '+K.name;
+  const n=NODES[i], K=NODE_KINDS[n.kind], why=GEAR?nodeBlock(GEAR,n):'learn', gk=kbName('gather'), tk=kbName('talk');
+  return why?nodeBlockText(why,n):'Press '+(gk&&tk?gk+' or '+tk:gk||tk||'the gather key')+' to '+PROFS[K.prof].verb+' '+K.name;
 }
 function gatherNode(i){ netSend({t:'gather',i}); UI_SFX.pickup(); }
+// the gather key works on its own (the talk key still gathers when nothing else is in reach): a villager or a lore spot next to the node cannot take it over
+addEventListener('keydown',e=>{ if(kbIs(e.code,'gather')&&!e.repeat&&started&&!PL.dead&&!uiOpen()){ const i=nearNode(); if(i>=0) gatherNode(i); } });
 // the server's answers: a node taken or back (everyone), your own haul
 function onNodeEvent(i,state){ if(state) NODE_TAKEN.add(i); else NODE_TAKEN.delete(i); }
 function onGatherEvent(i,res,n){
@@ -98,7 +101,7 @@ function renderLodge(){
   if($('#lodge').hidden) return;
   const g=GEAR||{}, prof=g.prof||{}, res=g.res||{}, coins=g.coins||0, best=Math.min(TIERS-1,tierFor(PL.level)), tier=loTier<0?best:Math.min(loTier,TIERS-1);
   $('#loTitle').textContent='Wayfarers\' Lodge'; $('#loCoins').textContent=coins+' coins';
-  let h=`<p class="lo-intro">${panelNPC?panelNPC.def.name+' keeps':'The Wayfarers keep'} a lodge in every village. Learn a profession once, wear its tool, and walk up to its resource in the woods: press the talk key. Ore becomes weapons at the weaponsmith\'s, logs become armour at the armourer\'s, and herbs become potions at the healer\'s. A better tool reaches the richer nodes of the deeper zones, and a higher level and rarer tool sometimes bring a double yield.</p><div class="lo-list">`;
+  let h=`<p class="lo-intro">${panelNPC?panelNPC.def.name+' keeps':'The Wayfarers keep'} a lodge in every village. Learn a profession once, wear its tool, and walk up to its resource in the woods: press <b>${kbName('gather')||kbName('talk')||'the gather key'}</b>. Ore becomes weapons at the weaponsmith\'s, logs become armour at the armourer\'s, and herbs become potions at the healer\'s. A better tool reaches the richer nodes of the deeper zones, and a higher level and rarer tool sometimes bring a double yield.</p><div class="lo-list">`;
   for(const id of PROF_IDS){
     const D=PROFS[id], mine=prof[id], lv=mine?profLvOf(mine.xp):0, from=lv?PROF_XP[lv-1]:0, to=lv&&lv<PROF_MAX_LV?PROF_XP[lv]:0, tool=ITEM[(g.eq||{})[D.tool]];
     h+=`<div class="lo-row${mine?' mine':''}"><div class="lo-main"><b>${D.name}</b><span>${D.desc}</span><small>Tool: ${TOOL_KIND[D.tool]}${tool?' (wearing '+tool.name+')':' (none worn)'}</small>`;
