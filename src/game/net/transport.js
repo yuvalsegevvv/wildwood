@@ -10,9 +10,14 @@
 var NET={mode:null,user:null,login:null,pid:null,ready:false,dev:true,host:false,send:null,room:null,server:null,loop:null,players:1,onReady:null,onStatus:null};
 function netSend(msg){ if(NET.send) NET.send(msg); }
 const WORLD_ROOM='wildwood-world';
+/* The world server's tick, in this page (solo, or the shared world's host). A throw inside it would reach the window's error handler, which turns ANY uncaught error into the
+   "Tap to reload" screen, and end the session over, say, one monster's odd state. So it is logged and the world goes on; 40 failing ticks in a row (2 s: the world is stuck)
+   are let through to that screen. The Node host does the same (node/main.js). */
+let tickFails=0;
+function safeTick(srv,dt){ try{ srv.tick(dt); tickFails=0; }catch(e){ if(++tickFails===1) console.error('world server tick failed:',e); if(tickFails>=40) throw e; } }
 function runServer(srv,snapDt){
   let last=performance.now();
-  NET.loop=setInterval(()=>{ const n=performance.now(); srv.tick((n-last)/1000); last=n; },50);
+  NET.loop=setInterval(()=>{ const n=performance.now(); safeTick(srv,(n-last)/1000); last=n; },50);
 }
 function stopServer(){ if(NET.loop){ clearInterval(NET.loop); NET.loop=null; } NET.server=null; NET.host=false; }
 function deliver(msg){ queueMicrotask(()=>netHandle(msg)); }
@@ -93,7 +98,7 @@ async function startRoom(name){
     let last=performance.now();
     NET.loop=setInterval(()=>{
       for(const p of room.peers()){ if(p.sameTab||!p.presence||!Array.isArray(p.presence.p)) continue; if(!srv.players.has(p.peer)) continue; srv.setPos(p.peer,p.presence.p); }
-      const n=performance.now(); srv.tick((n-last)/1000); last=n;
+      const n=performance.now(); safeTick(srv,(n-last)/1000); last=n;
     },50);
     room.presence({host:true});
     netHello();

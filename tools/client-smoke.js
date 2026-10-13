@@ -74,7 +74,7 @@ const el=s=>document.querySelector(s);
     c.el('#tFreeNone').click(); await wait(100); const off=c.G().LOOK.model; c.el('#tFreeGet').click(); await wait(400);
     ok('free testing tools: a list of every set, one tap wears its outfit (on its character\'s body) and one takes it off, one unlocks the set\'s pieces',n===G.SS_ORDER.length&&wore==='tansy'&&sex==='female'&&off==='base'&&c.G().GEAR.skills.owned.includes('tansy_2_any')&&c.G().GEAR.skills.owned.includes(G.SS_SETS.tansy.pos[3].passive),n+' sets, '+wore+' / '+sex+' / '+off); }
   G.openChat(); G.chatText.value='hi'; G.sendChat(); await wait(300); ok('chat line arrives',c.G().CHAT.lines.length>0);
-  for(let i=0;i<150&&!c.G().MAP.done;i++) await wait(100); ok('world map painted',c.G().MAP.done);
+  for(let i=0;i<450&&!c.G().MAP.done;i++) await wait(100); ok('world map painted',c.G().MAP.done);
   G.NET.send({t:'dev',cmd:'weather',v:'rain'}); await wait(300); for(let i=0;i<60;i++){ G.WX.t+=0.5; G.updateWeather(0.5); } ok('rain fades in',G.WX.inten>0.9);
   // ---- the Hoarfrost Reach (levels 22-30): the client side of the third land ----
   G.NET.send({t:'dev',cmd:'weather',v:'clear'}); G.NET.send({t:'dev',cmd:'level',v:24}); G.NET.send({t:'dev',cmd:'vale',v:2}); G.NET.send({t:'dev',cmd:'north',v:2}); G.NET.send({t:'dev',cmd:'prof'}); G.NET.send({t:'dev',cmd:'coins'}); await wait(700); G=c.G();
@@ -213,7 +213,7 @@ const el=s=>document.querySelector(s);
       ok('dungeon: a wall stops you, and the server agrees where you are',G.dgFree(B,lx(),lz(),0.3)&&went<dir.d&&Math.hypot(sp().x-G.P.x,sp().z-G.P.z)<0.35,'went '+went.toFixed(2)+' of '+dir.d.toFixed(2)+' m'); }
     G.P.x-=dir.dx*1.2; G.P.z-=dir.dz*1.2; G.P.yaw=Math.atan2(dir.dx,dir.dz); G.P.pitch=0; for(let i=0;i<10;i++) G.updateCamera(0.05);
     { const d=Math.hypot(G.camera.position.x-G.P.x,G.camera.position.z-G.P.z); ok('dungeon: with a wall behind you the camera\'s arm shortens',d<2.2,'arm '+d.toFixed(2)+' m'); }
-    for(let i=0;i<15&&G.MONS.filter(m=>m.dgK).length<=3;i++){ await wait(200); G=c.G(); }   // (the roster arrives in a message of its own: wait for it, a loaded machine was slow once)
+    for(let i=0;i<100&&G.MONS.filter(m=>m.dgK).length<=3;i++){ await wait(200); G=c.G(); }   // (the roster arrives in a message of its own: wait for it, a loaded machine was slow once)
     ok('dungeon: the run\'s monsters have views at the run\'s level',G.MONS.filter(m=>m.dgK&&G.monTierK(m).lv===R.L).length>3);
     G.applySnap({dg:[0,40,0,3,9]}); G.dgHudTick(0.016); ok('dungeon: the dg snapshot drives the HUD text',el('#dgHudTitle').textContent==='Purge'&&el('#dgHudLines')._kids.some(k=>k.textContent==='Monsters slain: 3 / 9'));
     const me=G.NET.pid; G.applyEvent(['pty',me,me,[[me,'Me',100,100,50,0,R.id],[4242,'Ann',0,120,29,1,R.id]]]);

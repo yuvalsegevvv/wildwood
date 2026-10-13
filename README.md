@@ -83,6 +83,9 @@ progress because saves live in each player's browser.
     python3 build.py --check    # also syntax-checks everything with node, if installed
     python3 build.py --index    # lists every source file and what it contains
 
+    node tools/run-tests.js            # the tests that cover what you changed, in parallel (--fast, --all, --list: docs/TESTING.md)
+    npm test                           # python3 build.py --check, then every test (about 4 minutes)
+
 Only Python 3 is needed to build. The page is one self-contained HTML file (the published page can't load
 anything from other sites); the Node server embeds the page and serves it.
 

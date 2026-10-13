@@ -120,6 +120,34 @@ function groundShade(c,cv){
 /* The terrain is one grid (HS) over the whole world, drawn as tiles of TBAND x TTILE cells (strips east to west, cut into tiles north to south)
    so that tiles beyond the fog (most of the other lands) are skipped; normals come from the heightmap so tiles meet seamlessly. */
 const TBAND=LITE?48:64, TTILE=LITE?96:128, TERRAIN_BANDS=[];
+const TCOLOR_NEAR=450, TCOLOR_R=700;   // metres: tiles this close to the spawn are coloured at boot; others are coloured when the player is this close (the fog ends at 230 m)
+// the colours of one terrain tile, a few rows at a time (yields every 16 rows like the rest of the generation); a tile is drawn once ready
+function* terrainTileColors(B){
+  const {g,tc,c0,b0,nx,nz}=B, tp=g.attributes.position, cc=new THREE.Color(), hq=(ix,iz)=>HS[clamp(iz,0,SEGZ)*NVX+clamp(ix,0,SEGX)];
+  for(let r=0;r<=nz;r++){
+    const iz=c0+r;
+    for(let k=0;k<=nx;k++){
+      const i=r*(nx+1)+k, ix=b0+k, h=HS[iz*NVX+ix], x=tp.getX(i), z=tp.getZ(i);
+      terrainColor(x,z,h,grad(x,z),cc);
+      groundShade(cc,(hq(ix-1,iz)+hq(ix+1,iz)+hq(ix,iz-1)+hq(ix,iz+1))*0.25-h);
+      tc[i*3]=cc.r; tc[i*3+1]=cc.g; tc[i*3+2]=cc.b;
+    }
+    if((r&15)===15) yield;
+  }
+  g.attributes.color.needsUpdate=true; B.ready=true; B.busy=false; if(B.lazy){ B.lazy=false; Stream.lazy--; }
+}
+// is a tile that is not coloured yet within sight of the player (the fog ends at 230 m)?
+function terrainHot(){
+  if(Stream.lazy<=0) return false;
+  for(const B of TERRAIN_BANDS) if(!B.ready&&Math.hypot(Math.max(B.x0-P.x,0,P.x-B.x1),Math.max(B.z0-P.z,0,P.z-B.z1))<300) return true;
+  return false;
+}
+// the nearest tile still waiting for its colours, within TCOLOR_R of the player
+function nextLazyTile(){
+  let best=null, bd=TCOLOR_R;
+  for(const B of TERRAIN_BANDS){ if(B.ready||B.busy) continue; const d=Math.hypot(Math.max(B.x0-P.x,0,P.x-B.x1),Math.max(B.z0-P.z,0,P.z-B.z1)); if(d<bd){ bd=d; best=B; } }
+  return best;
+}
 function* genTerrain(){
   for(let iz=0;iz<NVZ;iz++){
     const z=WZ0+iz*CELL;
@@ -127,27 +155,29 @@ function* genTerrain(){
     Stream.tp=iz/NVZ*0.6;
     if((iz&7)===7) yield;
   }
-  const tmat=terrainMaterial(), cc=new THREE.Color(), hs=(ix,iz)=>HS[clamp(iz,0,SEGZ)*NVX+clamp(ix,0,SEGX)];
+  const tmat=terrainMaterial(), hs=(ix,iz)=>HS[clamp(iz,0,SEGZ)*NVX+clamp(ix,0,SEGX)];
   const tiles=Math.ceil(SEGX/TBAND)*Math.ceil(SEGZ/TTILE); let done=0;
   for(let b0=0;b0<SEGX;b0+=TBAND) for(let c0=0;c0<SEGZ;c0+=TTILE){
     const nx=Math.min(TBAND,SEGX-b0), nz=Math.min(TTILE,SEGZ-c0), w=nx*CELL, d=nz*CELL, g=new THREE.PlaneGeometry(w,d,nx,nz); g.rotateX(-Math.PI/2);
     g.translate(WX0+b0*CELL+w/2,0,WZ0+c0*CELL+d/2);
-    const tp=g.attributes.position, tn=g.attributes.normal, tc=new Float32Array(tp.count*3), n=new THREE.Vector3();
+    const tp=g.attributes.position, tn=g.attributes.normal, n=new THREE.Vector3();
     for(let r=0;r<=nz;r++){
       const iz=c0+r;
       for(let k=0;k<=nx;k++){
-        const i=r*(nx+1)+k, ix=b0+k, h=HS[iz*NVX+ix], x=tp.getX(i), z=tp.getZ(i);
-        tp.setY(i,h);
+        const i=r*(nx+1)+k, ix=b0+k;
+        tp.setY(i,HS[iz*NVX+ix]);
         n.set(hs(ix-1,iz)-hs(ix+1,iz),2*CELL,hs(ix,iz-1)-hs(ix,iz+1)).normalize(); tn.setXYZ(i,n.x,n.y,n.z);
-        terrainColor(x,z,h,grad(x,z),cc);
-        groundShade(cc,(hs(ix-1,iz)+hs(ix+1,iz)+hs(ix,iz-1)+hs(ix,iz+1))*0.25-h);
-        tc[i*3]=cc.r; tc[i*3+1]=cc.g; tc[i*3+2]=cc.b;
       }
-      if((r&15)===15) yield;
+      if((r&31)===31) yield;
     }
-    g.setAttribute('color', new THREE.BufferAttribute(tc,3)); g.computeBoundingSphere();
+    const tc=new Float32Array(tp.count*3); g.setAttribute('color', new THREE.BufferAttribute(tc,3)); g.computeBoundingSphere();
     const mesh=new THREE.Mesh(g,tmat); mesh.receiveShadow=true; scene.add(mesh);
-    TERRAIN_BANDS.push({mesh,x0:WX0+b0*CELL,x1:WX0+b0*CELL+w,z0:WZ0+c0*CELL,z1:WZ0+c0*CELL+d});
+    const x0=WX0+b0*CELL, z0=WZ0+c0*CELL, B={mesh,x0,x1:x0+w,z0,z1:z0+d,g,tc,b0,c0,nx,nz,ready:false,busy:false};
+    TERRAIN_BANDS.push(B);
+    // The ground's colours cost ~3.7 us a vertex (about 4 s for the whole world, 1.5 M vertices) and four lands are mostly never seen in a session: only the tiles by the
+    // spawn are coloured now, the others when the player comes within TCOLOR_R of them (streamPump, job 'k'); until then they are not drawn (cullTerrain).
+    if(Math.hypot(Math.max(B.x0-VIL.spawn.x,0,VIL.spawn.x-B.x1),Math.max(B.z0-VIL.spawn.z,0,VIL.spawn.z-B.z1))<TCOLOR_NEAR) yield* terrainTileColors(B);
+    else { B.lazy=true; Stream.lazy++; mesh.visible=false; }
     Stream.tp=0.6+(++done)/tiles*0.4;
   }
   waterMat=new THREE.MeshPhongMaterial({color:0x2c5560, transparent:true, opacity:0.84, shininess:140, specular:0x8fa4b4});
@@ -176,5 +206,5 @@ function* genTerrain(){
   buildGreyfall();   // greyfall: the waterfall that gives the border river its birth (village/buildings-greyfall.js)
 }
 // terrain tiles farther than the fog are hidden (checked with the plant chunks, see cullChunks)
-function cullTerrain(){ const cx=camera.position.x, cz=camera.position.z, far=scene.fog.far+60; for(const b of TERRAIN_BANDS) b.mesh.visible=Math.hypot(Math.max(b.x0-cx,0,cx-b.x1),Math.max(b.z0-cz,0,cz-b.z1))<far; }
+function cullTerrain(){ const cx=camera.position.x, cz=camera.position.z, far=scene.fog.far+60; for(const b of TERRAIN_BANDS) b.mesh.visible=b.ready&&Math.hypot(Math.max(b.x0-cx,0,cx-b.x1),Math.max(b.z0-cz,0,cz-b.z1))<far; }
 

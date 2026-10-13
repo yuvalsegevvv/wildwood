@@ -3,7 +3,7 @@
 // Usage: node tools/start-smoke.js
 const {bootClient,memoryAccounts}=require('./headless');
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-const until=async(f,ms)=>{ for(let t=0;t<(ms||8000);t+=20){ if(f()) return true; await wait(20); } return false; };
+const until=async(f,ms)=>{ for(let t=0;t<(ms||30000);t+=20){ if(f()) return true; await wait(20); } return false; };
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const EXPOSE=['NET','netTick','started:()=>started','customizing:()=>customizing','creating:()=>creating','canStart:()=>canStart','clsOf','setLook','LOOK:()=>LOOK','edTab:()=>edTab','EDIT'];
 const find=(e,f)=>{ if(f(e)) return e; for(const k of e._kids||[]){ const r=find(k,f); if(r) return r; } return null; };

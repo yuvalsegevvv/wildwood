@@ -16,7 +16,7 @@
 | `character-ui.md` | the character model and signature outfits (details in `docs/CHARACTER.md`), rotations, keys, the AI note, hold-Alt |
 | `accounts-net.md` | the start card, accounts, reconnecting, the Shared (room) mode |
 | `main-quest.md` | the main quest's code map (design: `../MAIN-QUEST.md`) |
-| `../TESTING.md` | every test and what it checks, the browser-pane workflow, Windows / OneDrive, flaky tests |
+| `../TESTING.md` | the test runner (`node tools/run-tests.js`, the registry `tools/tests.json`), lint / fuzz / bench / profiling, the browser-pane workflow, Windows / OneDrive |
 | `../DEPLOY.md` | Render, traffic, the Postgres database, publishing the playtest artifact |
 | `dungeons.md` | the dungeons' code map (the design: `../DUNGEONS.md`) |
 | `../DUNGEONS.md` | dungeons: the design, the five rules, the build order (only an inert setup exists) |

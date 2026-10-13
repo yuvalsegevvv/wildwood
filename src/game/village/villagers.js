@@ -266,8 +266,14 @@ function initNPCs(){
       defs.push({id:'villagerg'+i,vil:4,late:true,seed:i+21,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
     } }
   defs.filter(d=>!d.late).forEach(d=>spawnNPC(d,rng));
-  defs.filter(d=>d.late).forEach(d=>spawnNPC(d,mulberry32(9002+(d.seed||0))));
+  defs.filter(d=>d.late&&(d.vil||1)<3).forEach(d=>spawnNPC(d,mulberry32(9002+(d.seed||0))));
+  NPC_DEFER.push(...defs.filter(d=>d.late&&(d.vil||1)>=3));   // Rimehold's and Highmark's people: built in the background (below)
 }
+/* Half of the villagers (36 of 74, ~36 ms each) live in the Hoarfrost Reach and the Greyspine, far from where the game starts. They are built after the loading screen,
+   one a slice, by the stream scheduler (job 'n', streaming.js) when nothing nearer is waiting. Each has an rng of its own (mulberry32(9002+seed)), so building them
+   later changes nobody's look; everything that looks an NPC up (npcById, the label loop, the maps) does it when it needs one. */
+const NPC_DEFER=[];
+function* spawnDeferredNPCs(){ while(NPC_DEFER.length){ const d=NPC_DEFER.shift(); spawnNPC(d,mulberry32(9002+(d.seed||0))); yield; } }
 function routeTo(n,pt,state){ n.route=[pt]; n.state=state||'walk'; n.stuckT=0; n.sx=n.x; n.sz=n.z; }
 function tryChat(n){
   for(const m of NPCs){
