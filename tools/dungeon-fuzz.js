@@ -5,12 +5,12 @@
 // Fails on: a throw in a handler or tick(), a non-finite number, an inconsistency between the registries (a run and its slot, a party and its members' p.party, a run's members and their
 // p.inst), and, after everyone has gone and 10 minutes have passed: a run, a party, a run's monster or a held slot left behind.
 // Usage: node tools/dungeon-fuzz.js [--steps 3000] [--seed 1] [--players 5] [--verbose]
-const {loadServer}=require('./load');
+const {loadServer,findNonFinite}=require('./load');
 const arg=(n,d)=>{ const i=process.argv.indexOf(n); return i>0?+process.argv[i+1]:d; };
 const STEPS=arg('--steps',3000), NP=arg('--players',5), VERBOSE=process.argv.includes('--verbose');
 let seed=arg('--seed',1)>>>0; const rnd=()=>{ seed=(seed+0x6D2B79F5)>>>0; let t=seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
 const pick=a=>a[Math.floor(rnd()*a.length)];
-const {api:W,x}=loadServer({dev:true,send(){},broadcast(){}},['MONS','getH','DG_RUNS','PARTIES','DG_SLOT_RUN','S','dgPoolS','DG_THEMES']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const nf=findNonFinite(m); if(nf) bad.push('a message to a client holds a NaN or an Infinity (JSON makes it null): '+nf); },broadcast(){}},['MONS','getH','DG_RUNS','PARTIES','DG_SLOT_RUN','S','dgPoolS','DG_THEMES']);
 const thrown=new Map(), bad=[]; const note=(where,e)=>{ const k=where+': '+String(e&&e.message).slice(0,100)+' @ '+String(e&&e.stack).split('\n').slice(1,3).map(s=>s.trim().replace(/\(.*[\\/]/,'(')).join(' < '); thrown.set(k,(thrown.get(k)||0)+1); };
 const tick=n=>{ for(let i=0;i<n;i++){ try{ W.tick(0.05); }catch(e){ note('tick()',e); } } };
 const send=(pid,m)=>{ try{ W.receive(pid,m); }catch(e){ note('receive '+m.t+(m.a?'/'+m.a:''),e); if(VERBOSE) console.log(JSON.stringify(m)); } };

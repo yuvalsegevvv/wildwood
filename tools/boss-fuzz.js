@@ -2,9 +2,9 @@
 // rejoin. Then everyone leaves, eight seconds pass, and the boss must have given up and reset: not engaged, full health, phase 1, and nothing of its fight left (zones, telegraphs, walls, orbs,
 // adds, totems); a boss that was killed must come back. boss-smoke fights each boss through three clean phases; this is the messy version of the same fight.
 // Fails on: a throw in a handler or tick(), a non-finite number on a player or a boss, or anything left behind. Usage: node tools/boss-fuzz.js [--seed 1] [--rounds 2] [--steps 300]
-const {loadServer}=require('./load');
+const {loadServer,findNonFinite}=require('./load');
 const arg=(n,d)=>{ const i=process.argv.indexOf(n); return i>0?+process.argv[i+1]:d; }, ROUNDS=arg('--rounds',2), STEPS=arg('--steps',300);
-const {api:W,x}=loadServer({dev:true,send(){},broadcast(){}},['MONS','getH','BOSSES','S','hurtP']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const nf=findNonFinite(m); if(nf) bad.push('a message to a client holds a NaN or an Infinity (JSON makes it null): '+nf); },broadcast(){}},['MONS','getH','BOSSES','S','hurtP']);
 let seed=arg('--seed',1)>>>0; const rnd=()=>{ seed=(seed+0x6D2B79F5)>>>0; let t=seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
 const pick=a=>a[Math.floor(rnd()*a.length)];
 const thrown=new Map(), bad=[]; const note=(w,e)=>{ const k=w+': '+String(e&&e.message).slice(0,100)+' @ '+String(e&&e.stack).split('\n').slice(1,3).map(s=>s.trim().replace(/\(.*[\\/]/,'(')).join(' < '); thrown.set(k,(thrown.get(k)||0)+1); };

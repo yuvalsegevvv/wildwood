@@ -15,4 +15,9 @@ function loadServer(io,expose,opts){
 }
 // Just the shared rules (pure): items, quests, balance, skills...
 function loadShared(names){ const m=manifest(); return new Function(m.shared.map(f=>read('shared',f)).join('')+';return {'+names.join(',')+'};')(); }
-module.exports={ROOT,SRC,manifest,strip,read,loadServer,loadShared};
+// Where a message to a client holds a NaN or an Infinity (JSON turns both into null, which the client then reads as a number), as 'snap.pl[0][2]=-Infinity'; null when it holds none. For the fuzzers' io.send.
+function findNonFinite(m,path,d){ path=path||String(m&&m.t||'msg'); d=d||0;
+  if(typeof m==='number') return isFinite(m)?null:path+'='+m;
+  if(m&&typeof m==='object'&&d<8){ for(const k in m){ const r=findNonFinite(m[k],path+(Array.isArray(m)?'['+k+']':'.'+k),d+1); if(r) return r; } }
+  return null; }
+module.exports={ROOT,SRC,manifest,strip,read,loadServer,loadShared,findNonFinite};

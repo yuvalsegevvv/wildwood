@@ -4,15 +4,13 @@
 // Fails on: a handler or tick() that throws (the Node host swallows a throw from receive() and CRASHES on one from tick()), a non-finite number in a
 // player or monster, a negative or fractional coin count, an inventory that is not an array of strings, a snapshot that cannot be serialized.
 // Usage: node tools/server-fuzz.js [--rounds 6000] [--seed 1] [--players 3] [--nodev] [--verbose]      (--nodev: the deployed server's setting)
-const {loadServer}=require('./load');
+const {loadServer,findNonFinite}=require('./load');
 const arg=(n,d)=>{ const i=process.argv.indexOf(n); return i>0?+process.argv[i+1]:d; };
 const ROUNDS=arg('--rounds',6000), NP=arg('--players',3), NODEV=process.argv.includes('--nodev'), VERBOSE=process.argv.includes('--verbose');
 let seed=arg('--seed',1)>>>0; const rnd=()=>{ seed=(seed+0x6D2B79F5)>>>0; let t=seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
 const pick=a=>a[Math.floor(rnd()*a.length)];
 const inbox=[];
-// JSON turns a NaN or an Infinity into null, which the client would then read as a number: no message to a client may hold one
-const nonFinite=(v,d)=>{ if(typeof v==='number') return !isFinite(v); if(v&&typeof v==='object'&&d<7){ for(const k in v) if(nonFinite(v[k],d+1)) return true; } return false; };
-const {api:W,x}=loadServer({dev:!NODEV,send(pid,m){ try{ JSON.stringify(m); }catch(e){ bad.push('unserializable message to a client: '+e.message); } if(nonFinite(m,0)) bad.push('a "'+m.t+'" message to a client holds a NaN or an Infinity: '+JSON.stringify(m,(k,v)=>typeof v==='number'&&!isFinite(v)?String(v):v).match(/.{0,60}(NaN|Infinity).{0,30}/)); },broadcast(){}},['MONS','getH','ITEM','SKILLS','NODES','CLASSES','MON_BY_ID','PASSIVES','SS_ORDER']);
+const {api:W,x}=loadServer({dev:!NODEV,send(pid,m){ try{ JSON.stringify(m); }catch(e){ bad.push('unserializable message to a client: '+e.message); } const nf=findNonFinite(m); if(nf) bad.push('a message to a client holds a NaN or an Infinity (JSON makes it null): '+nf); },broadcast(){}},['MONS','getH','ITEM','SKILLS','NODES','CLASSES','MON_BY_ID','PASSIVES','SS_ORDER']);
 const bad=[], thrown=new Map();
 const note=(where,e)=>{ const k=where+': '+String(e&&e.message).slice(0,100)+' @ '+String(e&&e.stack).split('\n').slice(1,3).map(s=>s.trim().replace(/\(.*[\\/]/,'(')).join(' < '); const n=thrown.get(k)||0; thrown.set(k,n+1); };
 // words the server really knows: random junk alone dies in the first guard
