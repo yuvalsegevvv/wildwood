@@ -1,10 +1,10 @@
 // Test of the phone paths of the built page (dist/, solo, headless): the owner plays on a phone, where LOW (a touch device) and LITE (light mode, a setting) change the detail, the size of the
 // terrain tiles, the villagers, the plants and the budgets of the streaming. Boots the page as a phone and then in light mode and checks that the world loads, that the ground of far tiles is
-// coloured when you come near (and not before), that the far villages' people are built after the loading screen, that solo starts with the monsters in place, and that nothing logs an error.
+// coloured when you come near (and not before), that the far villages' people are built after the loading screen, that solo starts with the monsters in place, that the touch controls work (the joystick on the left of the screen walks and stops, a drag on the right turns the view, the jump button jumps), and that nothing logs an error.
 // Build first (python3 build.py).   Usage: node tools/lowlite-client-smoke.js
 const {bootClient}=require('./headless');
-const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
-const EXPOSE=['NET','startSolo','beginPlay','canStart:()=>canStart','LOW','LITE','TBAND','TTILE','TERRAIN_BANDS','Stream','NPCs','NPC_DEFER','P','MONS','getH'];
+const wait=ms=>new Promise(r=>setTimeout(r,ms)); const until=async(f,ms)=>{ for(let t=0;t<(ms||10000);t+=50){ if(f()) return true; await wait(50); } return false; }; let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
+const EXPOSE=['NET','startSolo','beginPlay','canStart:()=>canStart','LOW','LITE','TBAND','TTILE','TERRAIN_BANDS','Stream','NPCs','NPC_DEFER','P','MONS','getH','started:()=>started'];
 (async()=>{
   const errors=[], err0=console.error; console.error=(...a)=>{ errors.push(a.map(String).join(' ').slice(0,200)); };
   for(const [name,opts,low,lite] of [['a phone (touch)',{touch:true},true,false],['light mode (touch + the LITE setting)',{touch:true,lite:true},true,true]]){
@@ -22,6 +22,19 @@ const EXPOSE=['NET','startSolo','beginPlay','canStart:()=>canStart','LOW','LITE'
     ok(name+': the far villages\' people are built after the loading screen',G.NPC_DEFER.length===0&&G.NPCs.length>npc0,npc0+' at boot, '+G.NPCs.length+' later');
     G.NET.onReady=()=>G.beginPlay(); G.startSolo(); await wait(2500); G=c.G();
     ok(name+': solo starts with the monsters in place',G.NET.ready&&G.MONS.length>400,G.MONS.length+' monster views');
+    // the phone's controls, driven by the touch events a phone sends: the left side of the screen is a joystick, the right side turns the view, the button jumps
+    const cv=c.el('#c'), T=(id,x,y)=>({identifier:id,clientX:x,clientY:y}), P=()=>c.G().P; await until(()=>c.G().started(),20000); G=c.G();
+    const p0={x:P().x,z:P().z,yaw:P().yaw};
+    cv.fire('touchstart',{changedTouches:[T(1,100,420)]}); const joyShown=c.el('#joy').style.display==='block';
+    cv.fire('touchmove',{changedTouches:[T(1,100,370)]}); await wait(1500);
+    const moved=Math.hypot(P().x-p0.x,P().z-p0.z);
+    ok(name+': the joystick appears under the thumb and walks the hiker',joyShown&&moved>3,'moved '+moved.toFixed(1)+' m in 1.5 s');
+    cv.fire('touchend',{changedTouches:[T(1,100,370)]}); await wait(400); const q0={x:P().x,z:P().z}; await wait(600);
+    ok(name+': letting go hides it and the hiker stops',c.el('#joy').style.display==='none'&&Math.hypot(P().x-q0.x,P().z-q0.z)<0.3,'drifted '+Math.hypot(P().x-q0.x,P().z-q0.z).toFixed(2)+' m');
+    const yaw0=P().yaw; cv.fire('touchstart',{changedTouches:[T(2,600,300)]}); cv.fire('touchmove',{changedTouches:[T(2,680,300)]}); cv.fire('touchend',{changedTouches:[T(2,680,300)]});
+    ok(name+': dragging on the right side turns the view',Math.abs(P().yaw-yaw0)>0.1,'yaw '+yaw0.toFixed(2)+' -> '+P().yaw.toFixed(2));
+    c.el('#bJump').fire('touchstart',{}); let air=false; for(let i=0;i<40&&!air;i++){ await wait(25); air=!P().ground; }
+    ok(name+': the jump button lifts the hiker',air);
     c.stop(); await wait(200);
   }
   console.error=err0;
