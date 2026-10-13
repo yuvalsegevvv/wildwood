@@ -35,22 +35,31 @@ const bordNoise=(t,s)=>(noise2(t*0.0030+s,s*0.37+1.15)*0.82+noise2(t*0.0072+s*2.
    camps), so the lines bulge into it: the north wall up to 210 m south of z = HZ0 and the Vale Wall's river up to 210 m west of x = HALF; the vale and the Greyspine
    own content close to the lines (the vale's zones begin at x = 570 and z = -300, Highmark and the Sink are 150 m from the Greyspine's edges), so they give 55 m at most
    (the Reach, east of the glacier valley and north of the vale, up to 120 m). A line never goes the other way, so the Greyspine keeps all of its ground. */
+/* Each border is a function of ONE coordinate and the land tests (inVale, inHoar, vilAt, zoneAt, rawHeight, the map painter...) ask it again and again for the same
+   point (a terrain sample makes about ten borderZ calls, nine in ten with the very argument of the call before), and each answer costs several noise2 calls: the last answer
+   of each is kept (var: a call while the shared files load, before this line, must not meet a temporal dead zone). Pure functions, so this changes no value. */
+var _bXz=NaN, _bXv=0, _bNz=NaN, _bNv=0, _bZx=NaN, _bZv=0;
 function borderX(z){
+  if(z===_bXz) return _bXv;
+  let r=HALF;   // (north of the junction the Vale Wall is a stub that ends in the north wall's crest; the wall that goes on north is borderXN)
   if(z>HZ0){   // the river, a meander mostly west of x = HALF (-210..+40 m), with bends of 300, 240 and 115 m
     const m=0.62*Math.sin(z*0.0108+1.3+0.8*noise2(z*0.004+3.1,1.15))+0.26*Math.sin(z*0.0265+0.4)+0.12*Math.sin(z*0.055+2.2);
-    return HALF+(-85+125*m)*pinK(z,BORDER_X_PINS);
+    r=HALF+(-85+125*m)*pinK(z,BORDER_X_PINS);
   }
-  return HALF;   // (north of the junction the Vale Wall is a stub that ends in the north wall's crest; the wall that goes on north is borderXN)
+  _bXz=z; return _bXv=r;
 }
 function borderXN(z){
+  if(z===_bNz) return _bNv;
   const m=clamp(0.45*bordNoise(z,3.1)+0.55*Math.sin(z*0.0235+0.8+0.8*noise2(z*0.003,2.4)),-1,1);
-  return GXJ+105*(0.5+0.5*m)*pinK(z,BORDER_XN_PINS);   // the Greyspine | Reach wall: 0..105 m east of GXJ, in bends of 150-300 m
+  _bNz=z; return _bNv=GXJ+105*(0.5+0.5*m)*pinK(z,BORDER_XN_PINS);   // the Greyspine | Reach wall: 0..105 m east of GXJ, in bends of 150-300 m
 }
 function borderZ(x){
-  const k=pinK(x,BORDER_Z_PINS);
-  if(x<HALF){ const m=clamp(0.5*bordNoise(x,-9.3)+0.5*Math.sin(x*0.0245+1.7+0.9*noise2(x*0.004+2.2,5.5)),-1,1); return HZ0+100*(1-0.68*Math.exp(-Math.pow((x+30)/150,2)))*(0.5+0.5*m)*k; }   // home | Greyspine: 0..100 m south (less in front of the north zone's camps, x -180..120), in bends of 200-300 m
-  const w=0.62*Math.sin(x*0.0125+2.2+0.7*noise2(x*0.004-9.3,2.9))+0.24*Math.sin(x*0.027+2.1)+0.14*Math.sin(x*0.058+0.9);   // vale | Reach: sinuous, 115 m north .. 45 m south
-  return HZ0+(-35+80*w)*k;
+  if(x===_bZx) return _bZv;
+  const k=pinK(x,BORDER_Z_PINS); let r;
+  if(x<HALF){ const m=clamp(0.5*bordNoise(x,-9.3)+0.5*Math.sin(x*0.0245+1.7+0.9*noise2(x*0.004+2.2,5.5)),-1,1); r=HZ0+100*(1-0.68*Math.exp(-Math.pow((x+30)/150,2)))*(0.5+0.5*m)*k; }   // home | Greyspine: 0..100 m south (less in front of the north zone's camps, x -180..120), in bends of 200-300 m
+  else{ const w=0.62*Math.sin(x*0.0125+2.2+0.7*noise2(x*0.004-9.3,2.9))+0.24*Math.sin(x*0.027+2.1)+0.14*Math.sin(x*0.058+0.9);   // vale | Reach: sinuous, 115 m north .. 45 m south
+    r=HZ0+(-35+80*w)*k; }
+  _bZx=x; return _bZv=r;
 }
 const borderXat=(x,z)=>z<borderZ(x)?borderXN(z):borderX(z);   // the wall on the west side of this point's land: the Vale Wall (south of the north wall), the Greyspine | Reach wall (north of it)
 const inVale=(x,z)=>x>borderXat(x,z);   // the Sakura Vale and the Hoarfrost Reach: east of the Vale Wall, or north of the north wall and east of the Greyspine | Reach wall

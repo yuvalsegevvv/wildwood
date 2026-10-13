@@ -1,5 +1,12 @@
 //@ vDist, nearPath, pathAmt, plazaAmt, inBox, pushOutBoxes: each works on the village on that side of the mountains (vilAt). Pure.
 function vDist(x,z){ const V=vilAt(x,z); return Math.hypot(x-V.x,z-V.z); }
+// vDist(x,z)<r, much cheaper: vilAt() evaluates the lands' wandering borders (noise), and the server asks this per monster and per player every tick.
+// A village can only be within r of the point if its centre is, so the four centres (squared distances, no noise) rule out almost every call first.
+function vNear(x,z,r){
+  const r2=r*r;
+  if((x-VIL.x)*(x-VIL.x)+(z-VIL.z)*(z-VIL.z)>=r2 && (x-VIL2.x)*(x-VIL2.x)+(z-VIL2.z)*(z-VIL2.z)>=r2 && (x-VIL3.x)*(x-VIL3.x)+(z-VIL3.z)*(z-VIL3.z)>=r2 && (x-VIL4.x)*(x-VIL4.x)+(z-VIL4.z)*(z-VIL4.z)>=r2) return false;
+  return vDist(x,z)<r;
+}
 // on (or m metres from) a village path or a road (shared/roads.js)
 function nearPath(x,z,m){ if(nearRoad(x,z,m)) return true; if(vDist(x,z)>VR+30) return false; for(const s of vilAt(x,z).paths) if(segDist(x,z,s)<m) return true; return false; }
 function pathAmt(x,z){ if(vDist(x,z)>VR+30) return 0; let m=0; for(const s of vilAt(x,z).paths){ const a=smoothstep(s[4],s[4]*0.4,segDist(x,z,s)); if(a>m) m=a; } return m; }

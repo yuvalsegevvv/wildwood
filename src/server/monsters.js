@@ -41,8 +41,9 @@ function respawnMonS(m){
   m.timer=AR(1,3); m.slowT=0; m.burnT=0; m.pendingHit=-1; m.kbx=m.kbz=0; ev('respawn',m.id,r1(m.x),r1(m.z));
 }
 function monCenterS(m){ return {x:m.x,y:getH(m.x,m.z)+m.T.height*0.5*m.s,z:m.z}; }
-function nearestFighter(x,z,maxD){ let best=null,bd=maxD; for(const p of S.players.values()){ if(p.dead||inVillage(p)) continue; const d=Math.hypot(p.x-x,p.z-z); if(d<bd){ bd=d; best=p; } } return best; }
-function anyPlayerNear(x,z,d){ for(const p of S.players.values()) if(Math.hypot(p.x-x,p.z-z)<d) return true; return false; }
+// the cheap distance test comes first: inVillage() is only worth asking about a player who is close enough to matter (it was 28% of the server's tick)
+function nearestFighter(x,z,maxD){ let best=null,bd=maxD*maxD; for(const p of S.players.values()){ const dx=p.x-x, dz=p.z-z, d=dx*dx+dz*dz; if(d>=bd||p.dead||inVillage(p)) continue; bd=d; best=p; } return best; }
+function anyPlayerNear(x,z,d){ const d2=d*d; for(const p of S.players.values()){ const dx=p.x-x, dz=p.z-z; if(dx*dx+dz*dz<d2) return true; } return false; }
 function updateMonstersS(dt){
   for(const m of MONS){
     if(m.remove) continue;
@@ -91,7 +92,7 @@ function updateMonstersS(dt){
     const ox=m.x, oz=m.z;
     m.x+=(m.vx+m.kbx)*dt; m.z+=(m.vz+m.kbz)*dt;
     const kd=Math.exp(-7*dt); m.kbx*=kd; m.kbz*=kd;
-    if(getH(m.x,m.z)<0.4 || vDist(m.x,m.z)<VR+8 || inTunnelCut(m.x,m.z)){ m.x=ox; m.z=oz; }
+    if(getH(m.x,m.z)<0.4 || vNear(m.x,m.z,VR+8) || inTunnelCut(m.x,m.z)){ m.x=ox; m.z=oz; }
     if(p && dp<m.T.rad+0.35){ const e=dp||1, mm=m.T.rad+0.35; m.x=p.x-dx/e*mm; m.z=p.z-dz/e*mm; }
     m.face=angLerp(m.face,m.faceGoal,1-Math.exp(-8*dt));
   }
