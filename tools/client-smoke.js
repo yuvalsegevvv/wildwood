@@ -3,12 +3,24 @@
 // Usage: node tools/client-smoke.js
 const {bootClient}=require('./headless');
 const c=bootClient({expose:['LOOK','SSL','SS_ORDER','RXV','rxViewUpdate','defineSkillSet','SS_SETS','SK','renderSkills','canSwap','SSV','ssvUpdate','GXJ','GDX','borderXN','closePanels','WZ0','WZ1','WX1','wmapOpen','wmapToggle','wmapClick','wmapGo','wmapPin','wmapFit','wmapUpdate','wmapRegionAt','wmapPip','wmapEdgeDist','WM','WMAP_REG','WMAP_ISLES','WMAP_TOWNS','WMAP_BANNER','WMAP_BANKS','WMAP_LOCK','mapLand:()=>mapLand','VIL2','WX0','slopeBlock','SLOPE_MAX','TUN','bridgeDeck','valeOpen','borderX','borderZ','riverK','FALL','fallProfile','GF','buildGreyfall','updateGreyfall','NET','mqTarget','mqLogRow','mqMark','odranHere','MQ_BY_ID','VIL4','LORE_BY_ID','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','greySnowAmt','drawFullMap','drawMinimap','mapCX','landOpen','CHAM','chamoisUpdate','chamoisOK','GLEN','GREY_GATES','slotIcon','PENDANT_STATS','itemStat','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt',
-  'DG_RUN:()=>DG_RUN','DG_VIEW','DG_THEMES','dgFree','dgIn','dgHudText','dgHudTick','dgDownText','sky','water','sun','updateCamera','updateEnv','updatePlayer','applySnap','keys','TERRAIN_BANDS','cullChunks','playerDown','playerUp']});
+  'DG_RUN:()=>DG_RUN','DG_VIEW','DG_THEMES','dgFree','dgIn','dgHudText','dgHudTick','dgDownText','sky','water','sun','updateCamera','updateEnv','updatePlayer','applySnap','keys','TERRAIN_BANDS','cullChunks','playerDown','playerUp','Stream','NPCs','NPC_DEFER','npcById','terrainHot','nextLazyTile']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const el=s=>document.querySelector(s);
 (async()=>{
   let G=c.G(); for(let i=0;i<300;i++){ await wait(100); G=c.G(); if(G.canStart()) break; }
   ok('world streams in',G.canStart());
+  // the first-load diet: the ground of far lands is coloured when you come near, and the far villages' people are built after the loading screen
+  { const bands=G.TERRAIN_BANDS, wait0=bands.filter(b=>!b.ready), ready0=bands.filter(b=>b.ready), npc0=G.NPCs.length;
+    ok('terrain: at boot only the tiles by the spawn are coloured; the rest wait for you and are not drawn',ready0.length>0&&wait0.length>ready0.length&&wait0.every(b=>b.lazy&&!b.mesh.visible)&&G.Stream.lazy===wait0.length,ready0.length+' coloured, '+wait0.length+' waiting');
+    ok('terrain: a tile coloured at boot has real colours (the ground is not black)',ready0.some(b=>{ let nz=0; for(let i=0;i<b.tc.length;i++) if(b.tc[i]>0) nz++; return nz>b.tc.length*0.9; }));
+    const far=wait0.sort((a,b)=>Math.hypot(b.x0-G.P.x,b.z0-G.P.z)-Math.hypot(a.x0-G.P.x,a.z0-G.P.z))[0], home={x:G.P.x,z:G.P.z,y:G.P.y};
+    G.P.x=(far.x0+far.x1)/2; G.P.z=(far.z0+far.z1)/2;   // walk (jump) there: the scheduler colours the tile you stand on first
+    let t=0; for(;t<600&&!far.ready;t++){ await wait(100); }
+    G=c.G(); let nz=0; for(let i=0;i<far.tc.length;i++) if(far.tc[i]>0) nz++;
+    ok('terrain: a far tile is coloured once you are there, within seconds, and the count of waiting tiles stays right',far.ready&&!far.lazy&&nz>far.tc.length*0.9&&G.Stream.lazy===G.TERRAIN_BANDS.filter(b=>b.lazy).length,(t/10)+' s, '+Math.round(100*nz/far.tc.length)+'% of the colours set');
+    G.P.x=home.x; G.P.z=home.z; G.P.y=home.y;
+    for(let i=0;i<300&&G.NPC_DEFER.length;i++){ await wait(100); G=c.G(); }
+    ok('villagers: Rimehold\'s and Highmark\'s people are built after the loading screen, not before it',npc0<G.NPCs.length&&G.NPC_DEFER.length===0&&!!G.npcById('villagerr0')&&!!G.npcById('villagerg0'),npc0+' at boot, '+G.NPCs.length+' later'); }
   G.NET.onReady=()=>G.beginPlay(); G.startSolo(); await wait(1500); G=c.G();
   ok('solo server: welcome and monster views',G.NET.ready&&G.MONS.length>400,G.MONS.length+' views');
   const s=G.MONS.find(m=>m.def.id==='slime'); G.P.x=s.x+1.5; G.P.z=s.z; G.P.y=G.getH(G.P.x,G.P.z);

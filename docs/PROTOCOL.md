@@ -30,6 +30,7 @@ Moved from CLAUDE.md section 3 (the router keeps the shape of it and the recipe 
 - **Sizes.** A WebSocket message is at most 1 MB (the Node host cuts the socket); in the claude.ai room (Shared mode) at most 4 KB, so bigger ones travel as parts in both directions (`chunkSend`, `docs/areas/accounts-net.md`).
 - **Rate.** One socket may send 120 messages a second (burst 240); the rest are dropped (`MSG_RATE` in `node/main.js`).
 - **Strings are not keys.** `receive()` drops a message that carries the name of an `Object.prototype` member (`constructor`, `__proto__`...) in any field but the free-text ones (`text`, `name`, `user`, `pass`, `token`): the registries are plain objects.
+- **A hello's nested JSON is cleaned at the door** (`cleanJsonS`, `server/api.js`): own `__proto__` / `constructor` / `toString` / `valueOf` keys are removed from the whole message, depth is capped at 12 and objects at 20,000 (JSON.parse makes an own `__proto__`; copied into another object it changes that object's prototype, and an own `toString` makes `parseInt(x)` / `obj[x]` throw).
 - **Looks are cut down** to flat primitives on arrival (`cleanLookS`, `server/players.js`), saves go through `sanitizeGear`, numbers are clamped (`clampInt`).
 - **A handler that throws** is logged by the host and does not stop the world; `S.ctx` (the dungeon run a message belongs to) is reset in a `finally`.
 - **Test.** `server-smoke` (a check per feature), `npm run fuzz` (garbage at every handler, mutated saves), `room-smoke` (parts).

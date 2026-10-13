@@ -16,6 +16,7 @@
     "test:keys": "python3 build.py >/dev/null && node tools/keys-smoke.js",
     "test:accounts": "node tools/accounts-smoke.js",
     "lint": "node tools/lint-bundles.js",
+    "doctor": "node tools/doctor.js",
     "fuzz": "node tools/server-fuzz.js",
     "bench": "node tools/server-bench.js",
     "unused": "python3 tools/unused.py",

@@ -182,7 +182,7 @@ Short rows: the files that matter. A row ending in `→ docs/areas/<x>.md` has t
 ## 6. Build and test cheaply
 
 ```
-npm install                      # three@0.128 for the tools (pg is optional)
+npm install                      # three@0.128 for the tools (pg is optional); `node tools/doctor.js` checks the whole setup and names the fix for anything missing
 python3 build.py                 # → dist/ (~1 s)
 python3 build.py --check         # + syntax, duplicate names, layout rules (a header on every file, every source file in the manifest, docs/FILES.md current, every tools/*-smoke.js in tools/tests.json)  (always run this)
 python3 build.py --write-index   # rewrite docs/FILES.md from the //@ headers (after adding, renaming or re-describing a file)

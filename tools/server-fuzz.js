@@ -44,6 +44,7 @@ const check=(r)=>{
     if(p.level<1||p.level>99||!Number.isInteger(p.level)) bad.push(`round ${r}: level = ${p.level}`);
     { const L=p.look; if(!L||typeof L!=='object'||Object.keys(L).length>80||Object.entries(L).some(([k,v])=>typeof v==='object'||(typeof v==='string'&&(v.length>24||v==='constructor'||v==='__proto__'))||(typeof v==='number'&&!isFinite(v)))) bad.push(`round ${r}: player ${id}'s look is not a flat object of short primitives: ${JSON.stringify(L).slice(0,120)}`); }   // every client in sight builds an avatar from it
     if(Object.prototype.polluted||({}).polluted) bad.push('prototype pollution: Object.prototype.polluted is set');
+    { const seen=new Set(); const walk=(o,path)=>{ if(!o||typeof o!=='object'||seen.has(o)) return; seen.add(o); const pr=Object.getPrototypeOf(o); if(!Array.isArray(o)&&pr!==Object.prototype&&pr!==null) bad.push(`round ${r}: gear${path} has a foreign prototype (a '__proto__' key from a save was copied)`); for(const k of Object.keys(o)) walk(o[k],path+'.'+k); }; walk(g,''); }
     try{ JSON.stringify(g); }catch(e){ bad.push(`round ${r}: gear cannot be serialized: ${e.message}`); }
   }
   for(const m of x.MONS) if(!m.remove&&(![m.x,m.z,m.hp].every(isFinite))) bad.push(`round ${r}: monster ${m.id} (${m.def&&m.def.id}) x=${m.x} z=${m.z} hp=${m.hp}`);
@@ -58,10 +59,12 @@ for(let r=1;r<=ROUNDS;r++){
 }
 tick(40); check('end');
 // the other untrusted input: a save in hello{} (a guest's browser copy, or a hand-edited one). Take a real, well-filled gear object and replace random parts with junk.
-{ const base=JSON.parse(JSON.stringify(W.players.get(ids[0]).gear));
+{ if(!W.players.size){ W.join('f0',{name:'Fuzz0',look:{cls:'warrior'},save:{level:30}}); W.receive('f0',{t:'dev',cmd:'giveAll'}); tick(2); }   // (a random hello may have ended every session: a failed login drops the old one)
+  const base=JSON.parse(JSON.stringify([...W.players.values()][0].gear));
   const mutate=(o,depth)=>{ if(!o||typeof o!=='object') return;
     for(const k of Object.keys(o)){ const r=rnd();
-      if(r<0.07) o[k]=junk(); else if(r<0.09) delete o[k]; else if(r<0.11&&Array.isArray(o[k])) o[k]=o[k].concat([junk(),junk()]); else if(depth<5) mutate(o[k],depth+1); } };
+      if(r<0.07) o[k]=junk(); else if(r<0.09) delete o[k]; else if(r<0.11&&Array.isArray(o[k])) o[k]=o[k].concat([junk(),junk()]); else if(depth<5) mutate(o[k],depth+1); }
+    if(!Array.isArray(o)&&rnd()<0.15){ const k=pick(['__proto__','constructor','toString','hasOwnProperty']); Object.defineProperty(o,k,{value:rnd()<0.5?{helmet1:-1000,sword1:-5,x:1,n:-9}:-7,enumerable:true,writable:true,configurable:true}); } };   // (an own '__proto__' key, as JSON.parse makes one)
   for(let i=0;i<Math.floor(ROUNDS/20);i++){
     const g=JSON.parse(JSON.stringify(base)); for(let k=0;k<1+Math.floor(rnd()*4);k++) mutate(g,0);
     const hello=JSON.parse(JSON.stringify({t:'hello',name:rnd()<0.2?junk():'Mut'+i,look:rnd()<0.3?junk():{cls:'mage'},save:{level:rnd()<0.3?junk():1+Math.floor(rnd()*60),exp:rnd()<0.2?junk():Math.floor(rnd()*1e5),gear:g}}));

@@ -70,8 +70,25 @@ function setPos(pid,d){
 // ITEM[id], SKILLS[id], ... are plain objects: an id of 'constructor' or '__proto__' finds a member of Object.prototype, passes `if(!it)` and made buyP charge NaN coins
 // (then nothing was ever too expensive again). No real id is such a name, so a message carrying one in an id-like field is dropped here, once, for every handler.
 const PROTO_KEY=new Set(Object.getOwnPropertyNames(Object.prototype)), FREE_TEXT=new Set(['text','name','user','pass','token']);
+/* The other way in is JSON nested inside a message (the hello's saved gear: the one big object a client sends): JSON.parse makes an OWN '__proto__' key (copying it into another
+   object would change that object's prototype), and an own 'toString' / 'valueOf' makes parseInt(x), String(x) and obj[x] throw on it. No real data key has such a name, so they are removed
+   from the whole message once, here (iteratively, so a deeply nested message cannot overflow the stack: below 12 levels or past 20,000 objects the rest is cut off). */
+function cleanJsonS(root){
+  const todo=[[root,0]]; let n=0;
+  while(todo.length){
+    const [o,d]=todo.pop();
+    if(++n>20000){ return false; }
+    for(const k of Object.keys(o)){
+      const v=o[k];
+      if(!Array.isArray(o)&&PROTO_KEY.has(k)){ delete o[k]; continue; }
+      if(v&&typeof v==='object'){ if(d>=12) o[k]=null; else todo.push([v,d+1]); }
+    }
+  }
+  return true;
+}
 function receive(pid,msg){
   if(!msg||typeof msg!=='object') return;
+  if(msg.t==='hello'&&!cleanJsonS(msg)) return;   // (a hello of more than 20,000 nested objects is not a save)
   for(const k in msg){ const v=msg[k]; if(typeof v==='string'&&PROTO_KEY.has(v)&&!FREE_TEXT.has(k)) return; }
   if(msg.t==='hello'){ if(S.players.has(pid)) leave(pid); beginJoin(pid,msg); return; }
   const p=S.players.get(pid); if(!p) return;
