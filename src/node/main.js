@@ -112,6 +112,10 @@ function serveAudio(req,res){
   if(req.method==='HEAD'){ res.end(); return; }
   const rs=fs.createReadStream(a.file); rs.on('error',()=>res.destroy()); rs.pipe(res);
 }
+// /status is public and the count is a query on the database: asked at most every 30 s (a crawler hitting it must not keep a sleeping free database awake or busy), and a failed query answers null
+let savesAt=0, savesN=null;
+function countSaves(){ if(Date.now()-savesAt<30000) return Promise.resolve(savesN); savesAt=Date.now();
+  return Promise.resolve().then(()=>STORE.count()).then(n=>(savesN=n),()=>(savesN=null)); }
 const server=http.createServer((req,res)=>{
   if(req.url==='/'||req.url.startsWith('/?')||req.url==='/index.html'){
     // no-cache + ETag: the browser asks every visit but gets a bodiless 304 unless the game was updated
@@ -122,7 +126,7 @@ const server=http.createServer((req,res)=>{
     res.end(br?pageBr:gz?pageGz:page); return; }
   if(req.url.startsWith('/audio/')&&(req.method==='GET'||req.method==='HEAD')){ serveAudio(req,res); return; }
   if(req.url==='/healthz'){ res.writeHead(200,{'content-type':'text/plain'}); res.end('ok'); return; }
-  if(req.url==='/status'){ Promise.resolve(STORE.count()).catch(()=>null).then(n=>{ res.writeHead(200,{'content-type':'application/json'}); res.end(JSON.stringify({players:world.players.size,monsters:world.monsters.length,day:world.state.day,saves:STORE.kind,accounts:n})); }); return; }
+  if(req.url==='/status'){ countSaves().then(n=>{ res.writeHead(200,{'content-type':'application/json'}); res.end(JSON.stringify({players:world.players.size,monsters:world.monsters.length,day:world.state.day,saves:STORE.kind,accounts:n})); }); return; }
   res.writeHead(404); res.end('not found');
 });
 server.on('upgrade',(req,sock)=>{

@@ -42,7 +42,7 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
 
 ## Publishing the claude.ai playtest artifact
 
-Publishing the claude.ai playtest artifact (in claude.ai sessions only): copy `dist/wildwood.html` (about 1.2 MB) to the
+Publishing the claude.ai playtest artifact (in claude.ai sessions only): copy `dist/wildwood.html` (about 3.5 MB; the artifact cap is 16 MB) to the
 outputs folder and publish it to the same link, https://claude.ai/artifact/VCvNoypJ63mXoU3bgztYtY
 (label "Wildwood forest", title "Wildwood — forest simulator", favicon 🌲), with capabilities
 `{room:{topics:{c:"interact",s:"interact"}}}` (needed for Shared mode). Publish the music as supporting files of the
