@@ -22,10 +22,10 @@ function wsOpen(port){ return new Promise((res,rej)=>{
 const msgs=c=>c.frames.filter(f=>f.op===1).map(f=>{ try{ return JSON.parse(f.data.toString()); }catch(e){ return null; } }).filter(Boolean);
 const send=(c,o)=>c.s.write(frame(1,JSON.stringify(o)));
 
-// starts the server; resolves to {port, dir, child, log(), exited(), stop(signal)}; `dir` can be given to start again on the same saves
+// starts the server; resolves to {port, dir, child, log(), exited(), stop(signal)}; `dir` can be given to start again on the same saves, `env` to add environment variables (DATABASE_URL), `dev` to leave the testing tools on
 async function startHost(o={}){
   const dir=o.dir||fs.mkdtempSync(path.join(os.tmpdir(),'wwhost-')), port=await freePort(); let log='', exited=null;
-  const env=Object.assign({},process.env,{DATA_DIR:dir}); delete env.DATABASE_URL; delete env.PORT; delete env.WILDWOOD_DEV;
+  const env=Object.assign({},process.env,{DATA_DIR:dir}); delete env.DATABASE_URL; delete env.PORT; delete env.WILDWOOD_DEV; Object.assign(env,o.env||{});   // (o.env: e.g. {DATABASE_URL} for pg-smoke)
   const child=cp.spawn(process.execPath,[exe,'--port',String(port),'--host','127.0.0.1',...(o.dev?[]:['--no-dev'])],{env,cwd:dir});
   child.stdout.on('data',d=>log+=d); child.stderr.on('data',d=>log+=d); child.on('exit',(code,sig)=>{ exited={code,sig}; });
   const up=await until(()=>/world server running/.test(log)||exited,60000);
