@@ -3,37 +3,13 @@
 // WebSocket: the handshake, hello -> welcome and snapshots, a ping answered with a pong, a message in two fragments, garbage that must not end the connection, a control frame too long, a flood of messages that ends the
 // connection and leaves the server up, the player gone from /status after a disconnect. Then SIGTERM: the process saves the player's progress to the folder and exits by itself.
 // Build first (python3 build.py).   Usage: node tools/host-smoke.js
-const fs=require('fs'), path=require('path'), os=require('os'), net=require('net'), http=require('http'), zlib=require('zlib'), crypto=require('crypto'), cp=require('child_process');
-const dist=path.join(__dirname,'..','dist'), exe=path.join(dist,'wildwood-server.js');
-if(!fs.existsSync(exe)){ console.log('FAIL dist/wildwood-server.js is not built (python3 build.py)'); process.exit(1); }
+const {fs,path,os,dist,wait,until,get,frame,wsOpen,msgs,send,startHost}=require('./host-lib'), zlib=require('zlib'), crypto=require('crypto');
+if(!fs.existsSync(path.join(dist,'wildwood-server.js'))){ console.log('FAIL dist/wildwood-server.js is not built (python3 build.py)'); process.exit(1); }
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
-const wait=ms=>new Promise(r=>setTimeout(r,ms));
-const until=async(f,ms=8000)=>{ const t0=Date.now(); for(;;){ const v=await f(); if(v) return v; if(Date.now()-t0>ms) return false; await wait(50); } };
-const freePort=()=>new Promise(r=>{ const s=net.createServer().listen(0,'127.0.0.1',()=>{ const p=s.address().port; s.close(()=>r(p)); }); });
-const get=(port,url,headers={},method='GET')=>new Promise((res,rej)=>{ const q=http.request({host:'127.0.0.1',port,path:url,method,headers,agent:false},r=>{ const b=[]; r.on('data',d=>b.push(d)); r.on('end',()=>res({status:r.statusCode,headers:r.headers,body:Buffer.concat(b)})); }); q.on('error',rej); q.end(); });
-// ---- WebSocket by hand: a masked client frame, and a reader of the server's (unmasked) frames
-const frame=(op,payload,fin=true)=>{ const d=Buffer.isBuffer(payload)?payload:Buffer.from(payload), n=d.length, mk=crypto.randomBytes(4);
-  const head=n<126?Buffer.from([(fin?0x80:0)|op,0x80|n]):n<65536?Buffer.from([(fin?0x80:0)|op,0x80|126,n>>8,n&255]):null; if(!head) throw new Error('frame too long for the test');
-  const body=Buffer.from(d); for(let i=0;i<n;i++) body[i]^=mk[i&3]; return Buffer.concat([head,mk,body]); };
-function wsOpen(port){ return new Promise((res,rej)=>{
-  const key=crypto.randomBytes(16).toString('base64'), s=net.connect(port,'127.0.0.1'); const c={s,frames:[],closed:false,head:''}; let buf=Buffer.alloc(0), upgraded=false;
-  s.on('connect',()=>s.write('GET /ws HTTP/1.1\r\nHost: x\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: '+key+'\r\nSec-WebSocket-Version: 13\r\n\r\n'));
-  s.on('data',d=>{ buf=Buffer.concat([buf,d]);
-    if(!upgraded){ const i=buf.indexOf('\r\n\r\n'); if(i<0) return; c.head=buf.slice(0,i).toString(); buf=buf.slice(i+4); upgraded=true;
-      c.accept=crypto.createHash('sha1').update(key+'258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64'); res(c); }
-    for(;;){ if(buf.length<2) break; const op=buf[0]&15; let len=buf[1]&127, off=2; if(len===126){ if(buf.length<4) break; len=buf.readUInt16BE(2); off=4; } else if(len===127){ if(buf.length<10) break; len=Number(buf.readBigUInt64BE(2)); off=10; }
-      if(buf.length<off+len) break; const data=buf.slice(off,off+len); buf=buf.slice(off+len); c.frames.push({op,data}); } });
-  s.on('close',()=>{ c.closed=true; }); s.on('error',e=>{ c.closed=true; if(!upgraded) rej(e); }); }); }
-const msgs=c=>c.frames.filter(f=>f.op===1).map(f=>{ try{ return JSON.parse(f.data.toString()); }catch(e){ return null; } }).filter(Boolean);
-const send=(c,o)=>c.s.write(frame(1,JSON.stringify(o)));
 (async()=>{
-  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'wwhost-')), port=await freePort(); let log='';
-  const env=Object.assign({},process.env,{DATA_DIR:dir}); delete env.DATABASE_URL; delete env.PORT; delete env.WILDWOOD_DEV;
-  const child=cp.spawn(process.execPath,[exe,'--port',String(port),'--host','127.0.0.1','--no-dev'],{env,cwd:dir}); let exited=null;
-  child.stdout.on('data',d=>log+=d); child.stderr.on('data',d=>log+=d); child.on('exit',(code,sig)=>{ exited={code,sig}; });
-  const up=await until(()=>/world server running/.test(log)||exited,60000);
-  ok('the server starts and listens',up&&!exited&&/saves: files/.test(log),exited?('exited '+JSON.stringify(exited)+'\n'+log.slice(-600)):'');
-  if(!up||exited){ fs.rmSync(dir,{recursive:true,force:true}); console.log('stopped: the server did not start'); process.exit(1); }
+  const H=await startHost(), dir=H.dir, port=H.port, child=H.child;
+  ok('the server starts and listens',H.up&&/saves: files/.test(H.log()),H.exited()?('exited '+JSON.stringify(H.exited())+'\n'+H.log().slice(-600)):'');
+  if(!H.up){ fs.rmSync(dir,{recursive:true,force:true}); console.log('stopped: the server did not start'); process.exit(1); }
   try{
     // ---- HTTP
     let r=await get(port,'/healthz'); ok('/healthz answers ok',r.status===200&&r.body.toString()==='ok');
@@ -79,12 +55,12 @@ const send=(c,o)=>c.s.write(frame(1,JSON.stringify(o)));
     ok('...and the server is still up, and the other player still gets snapshots',(await get(port,'/healthz')).status===200&&!c.closed&&await (async()=>{ const k=c.frames.length; await wait(500); return c.frames.length>k; })());
     st=JSON.parse((await get(port,'/status')).body.toString()); ok('/status: only the first player is left (the two cut off are gone)',await until(async()=>JSON.parse((await get(port,'/status')).body.toString()).players===1,4000),'players '+st.players);
     // ---- shutdown: SIGTERM saves everyone's progress, then the process ends by itself
-    child.kill('SIGTERM');
-    ok('SIGTERM: the server saves and exits by itself',!!await until(()=>exited,15000)&&exited.code===0&&/saved, bye/.test(log),exited?JSON.stringify(exited):'still running');
+    const ex=await H.stop('SIGTERM');
+    ok('SIGTERM: the server saves and exits by itself',!!ex&&ex.code===0&&/saved, bye/.test(H.log()),JSON.stringify(ex));
     const files=fs.existsSync(path.join(dir,'players'))?fs.readdirSync(path.join(dir,'players')).filter(f=>f.endsWith('.json')):[];
     let rec=null; for(const f of files){ try{ const r=JSON.parse(fs.readFileSync(path.join(dir,'players',f),'utf8')); if(r.name==='HostSmoke') rec=r; }catch(e){} }
     ok('...and the player who was online has a saved record (name, level)',!!rec&&rec.level>=1,files.length+' record(s)');
-    ok('the server logged no error',!/error|exception/i.test(log.replace(/postgres|ECONNRESET/gi,'')),(log.match(/.*(error|exception).*/i)||[''])[0].slice(0,200));
+    ok('the server logged no error',!/error|exception/i.test(H.log().replace(/postgres|ECONNRESET/gi,'')),(H.log().match(/.*(error|exception).*/i)||[''])[0].slice(0,200));
   }catch(e){ ok('the test ran to the end',false,e&&e.stack?e.stack.split('\n').slice(0,3).join(' | '):String(e)); }
   try{ child.kill('SIGKILL'); }catch(e){}
   await wait(200); fs.rmSync(dir,{recursive:true,force:true});

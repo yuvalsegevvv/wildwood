@@ -17,7 +17,7 @@ node tools/run-tests.js -v tiers-smoke  # print the whole log of what ran     -j
 
 Output is one line per test (`PASS name  N checks  secs`, or `FAIL` with its FAIL lines and the tail of its log; the full log stays in `<tmp>/wildwood-tests/<id>.log`) and a summary. The runner builds `dist/` first when a selected test needs the page, so a stale build cannot give a false failure. A row's `flaky` list names FAIL lines that are known to be random: such a test is run once more and reported as flaky if it then passes (none is listed now: the last two, in `skills-smoke` and `server-smoke`, were test bugs and are fixed).
 
-Adding a test: write `tools/<name>-smoke.js` (print `PASS ...` / `FAIL ...`, exit 1 on a failure), add its row to `tools/tests.json` (`covers` = regular expressions on the paths whose change should run it). Other single-purpose commands:
+Adding a test: write `tools/<name>-smoke.js` (print `PASS ...` / `FAIL ...`, exit 1 on a failure), add its row to `tools/tests.json` (`covers` = regular expressions on the paths whose change should run it; `args` = command-line arguments; `file` = the script to run when it is not `<id>.js`, so one script can have several rows, as `server-fuzz` and `server-fuzz-prod` do). Other single-purpose commands:
 
 ```
 python3 build.py --check       # syntax of every bundle, duplicate top-level names, the layout rules, the registry

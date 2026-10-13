@@ -19,7 +19,7 @@ The free plan allows 100 GB a month outbound: 100 players playing 3 hours a day 
 
 ## Checking the deployed server before a push
 
-`node tools/host-smoke.js` starts `dist/wildwood-server.js` as its own process (files in a temp folder, a free port, testing tools off) and speaks HTTP and raw WebSocket frames to it: the page in brotli / gzip / plain, the ETag and 304, the music route and its 404s, the handshake, hello -> welcome, ping / pong, fragmented and garbage messages, a control frame that is too long, a flood of messages (cut off: the excess is dropped, and more than 3000 drops net of 100 a second ends the connection), and SIGTERM (saves, exits). Build first. A connection that stops reading is cut when 2 MB are waiting in its socket (`SEND_CAP`).
+`node tools/host-smoke.js` starts `dist/wildwood-server.js` as its own process (files in a temp folder, a free port, testing tools off) and speaks HTTP and raw WebSocket frames to it: the page in brotli / gzip / plain, the ETag and 304, the music route and its 404s, the handshake, hello -> welcome, ping / pong, fragmented and garbage messages, a control frame that is too long, a flood of messages (cut off: the excess is dropped, and more than 3000 drops net of 100 a second ends the connection), and SIGTERM (saves, exits). `node tools/host-accounts-smoke.js` does the same for accounts with the real scrypt and file store, across a restart of the process (register, log in by password and by token, wrong passwords and the lock, take-over, logout). Both use `tools/host-lib.js`. Build first. A connection that stops reading is cut when 2 MB are waiting in its socket (`SEND_CAP`).
 
 ## Database
 
