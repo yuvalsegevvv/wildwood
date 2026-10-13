@@ -45,7 +45,9 @@ function sanitizeQuests(q){
   return out;
 }
 // player names: printable characters only, single spaces, 1-16 characters
-function cleanName(s){ return String(s||'').replace(/[\u0000-\u001f\u007f-\u009f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,16)||'Hiker'; }
+// invisible characters: zero-width spaces and the bidirectional controls (text that reads backwards): a name or a chat line with one looks like another player's, or reorders what is around it
+const INVISIBLE=/[\u200b\u200e\u200f\u202a-\u202e\u2060\u2066-\u2069\ufeff]/g;
+function cleanName(s){ return String(s||'').replace(/[\u0000-\u001f\u007f-\u009f<>]/g,'').replace(INVISIBLE,'').replace(/\s+/g,' ').trim().slice(0,16)||'Hiker'; }
 // loadouts: {owned:[ids: skills and passives], eq:{cls:{basic,skill,burst}}, lv:{id:level}, pass:[passive ids], pgiven, v}; older saves had eq:{cls:'skillId'}
 function sanitizeSkills(g){
   const out=newSkills(); out.v=2;

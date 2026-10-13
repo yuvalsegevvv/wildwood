@@ -76,6 +76,8 @@ W.receive('a',{t:'look',look:{cls:'mage',hair:'short',hat:'ranger',model:'constr
   ok('a forged save: coins and exp are capped, not Infinity',!!h&&g.coins===x.COINS_MAX&&h.exp===x.EXP_MAX,h&&('coins '+g.coins+', exp '+h.exp));
   ok('...and the inventory and the owned skills hold strings only',!!h&&g.inv.every(v=>typeof v==='string')&&g.skills.owned.every(v=>typeof v==='string')&&g.q.ready.every(v=>typeof v==='string'),h&&JSON.stringify([g.inv.slice(0,4),g.skills.owned.slice(0,4)]));
   W.leave('hz'); }
+{ W.join('iv',{name:'Zed\u200b\u202e',look:{cls:'warrior'},save:{level:1}}); const q=W.players.get('iv'); tick(1); W.receive('iv',{t:'chat',text:'a\u202eb\u200bc'}); tick(3);
+  ok('zero-width and bidirectional characters are dropped from a name and a chat line (no look-alike of another player, no backwards text)',q.name==='Zed'&&evs.some(e=>e[0]==='chat'&&e[1]==='iv'&&e[3]==='abc'),JSON.stringify(q.name)); W.leave('iv'); }
 W.receive('a',{t:'chat',text:'  hello   there '}); tick(3); ok('chat is cleaned and relayed',evs.some(e=>e[0]==='chat'&&e[3]==='hello there'));
 W.leave('b'); tick(3); ok('leave is broadcast',evs.some(e=>e[0]==='pleave'&&e[1]==='b'));
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);
