@@ -74,7 +74,7 @@ Pick the smallest test that covers your change: character model/face/hair/slider
 server API plus any internal names); client UI → `build --check` + `client-smoke`; the start card, accounts or the character editor →
 `start-smoke`. The headless client (`tools/headless.js`) stubs the DOM: elements are cached per selector and remember their
 listeners and children (`c.el('#stGuest').click()`, `el._kids`, `el._a`), but there is no layout, so read state from game variables
-(`expose` names) rather than DOM text where you can. To check that a test can fail, break the code it covers, run it, restore
+(`expose` names) rather than DOM text where you can. `bootClient({touch:true})` boots the page as a phone (LOW: touch device) and `{lite:true}` in light mode (LITE), the two paths the owner plays on (`lowlite-client-smoke` covers them: far tiles coloured on arrival, far villages' people built after loading). To check that a test can fail, break the code it covers, run it, restore
 (this is how `start-smoke` was validated).
 
 ## Pitfalls: tests, the browser pane, Windows / OneDrive

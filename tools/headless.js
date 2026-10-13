@@ -4,6 +4,7 @@
 //   const c=bootClient({online:true, expose:['NET','started:()=>started']});  // names from inside the game, read with c.G()
 //   c.el('#stGuest').click();   // fake elements remember their listeners: click(), requestSubmit(); ._kids = appended children, ._a = attributes
 //   c.stop();                   // ends the frame loop and the server tick
+//   bootClient({touch:true}) / ({lite:true})   // a phone (LOW: fewer plants, thin streaming slices) / light mode (LITE: the least), as the page decides them from the device and localStorage
 //   bootClient({fast:true})     // a world without the map's painting, the ground colours and the villagers: ~40% quicker to be ready (start card tests)
 const fs=require('fs'), path=require('path'), crypto=require('crypto'), {ROOT}=require('./load');
 
@@ -42,7 +43,8 @@ function bootClient(o){
     if(!stop) for(const h of L.filter(h=>!h.cap)){ h.f(e); if(stopAll) break; }
     return e; };
   const acc=o.accounts||memoryAccounts();
-  Object.defineProperty(global,'navigator',{value:{maxTouchPoints:0},configurable:true,writable:true});
+  if(o.lite) ls.set('wildwood-lite','1');   // light mode (settings): LITE
+  Object.defineProperty(global,'navigator',{value:{maxTouchPoints:o.touch?5:0},configurable:true,writable:true});   // touch: a phone, LOW
   Object.assign(global,{window:global,innerWidth:800,innerHeight:600,devicePixelRatio:1,addEventListener(t,f,opt){ (winH[t]=winH[t]||[]).push({f,cap:opt===true||!!(opt&&opt.capture)}); },
     location:{protocol:'http:',host:'test.local',reload(){}},
     localStorage:{getItem:k=>ls.has(k)?ls.get(k):null,setItem:(k,v)=>{ ls.set(k,String(v)); },removeItem:k=>{ ls.delete(k); }},
