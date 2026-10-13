@@ -79,6 +79,14 @@ tick(40); check('end');
     try{ for(let j=0;j<30;j++) W.receive(id,msg()); tick(3); }catch(e){ note('play after a mutated save',e); }
     check('save '+i);
   } }
+// the deployed server runs with the testing tools off (--no-dev): none of their messages may change a player, whatever it carries
+if(NODEV){
+  const id='nodev', snap=()=>{ const p=W.players.get(id), g=p.gear; return JSON.stringify([p.level,p.exp,g.coins,g.inv,g.eq,g.skills&&g.skills.owned,g.east,g.north,g.mq,g.zt,g.prof,g.res,g.pot,g.mats]); };
+  try{ W.join(id,{name:'NoDev',look:{cls:'mage'},save:{level:5}}); tick(3); const before=snap(); let sent=0;
+    for(const cmd of [...DEVC,'unlockAll','tier','tiers','stones','dgall','dgthree','mats','prof']) for(const v of [1,50,'x',null,{},[1,2],-5]){
+      for(const t of ['dev','rwdev']){ try{ W.receive(id,{t,cmd,v}); sent++; }catch(e){ note(t+' '+cmd,e); } } }
+    tick(3); if(snap()!==before) bad.push('with the testing tools off, a dev message changed a player: '+before.slice(0,120)+' -> '+snap().slice(0,120));
+  }catch(e){ note('dev gate check',e); } }
 let fails=0;
 for(const [k,n] of [...thrown].sort((a,b)=>b[1]-a[1])){ console.log(`FAIL threw ${n}x  ${k}`); fails++; }
 for(const b of [...new Set(bad)].slice(0,25)){ console.log('FAIL '+b); fails++; }

@@ -336,8 +336,9 @@ def lint_tests():
         if i in seen:
             problems.append('tools/tests.json lists %s twice' % i)
         seen.add(i)
-        if not os.path.isfile(os.path.join(ROOT, 'tools', i + '.js')):
-            problems.append('tools/tests.json lists %s but tools/%s.js does not exist' % (i, i))
+        f = t.get('file', i)   # (a row may name the script it runs: one script, several rows, e.g. with other arguments)
+        if not os.path.isfile(os.path.join(ROOT, 'tools', f + '.js')):
+            problems.append('tools/tests.json lists %s but tools/%s.js does not exist' % (i, f))
         for k in ('desc', 'covers', 'secs', 'needs'):
             if not t.get(k):
                 problems.append('tools/tests.json: %s has no "%s"' % (i, k))

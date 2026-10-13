@@ -4,6 +4,7 @@
 //   node tools/run-tests.js server-smoke tools/party-smoke.js ...   by id (or by file)       --group server|client      --for src/server/economy.js ...   as if these changed
 //   node tools/run-tests.js --list [--changed]  what exists (id, time, needs, description) / what would run          -v  print every log in full     -j N  parallel jobs (default: cores - 1)
 // Tests that need the built page (needs: dist) make the runner run `python3 build.py` first, so a stale dist/ can never give a false failure.
+// A registry row runs tools/<id>.js, or tools/<file>.js when it has a "file" (the same script with other "args" can be a row of its own).
 // A failing test prints its FAIL lines and the tail of its log (the whole log stays in <tmp>/wildwood-tests/<id>.log). A test whose failure matches a `flaky` substring in the
 // registry is run once more and reported as flaky if it then passes. Exit code 1 when anything failed.
 const fs=require('fs'), path=require('path'), os=require('os'), cp=require('child_process');
@@ -50,7 +51,7 @@ const results=[]; const t0=Date.now();
 function runOne(t){
   return new Promise(done=>{
     const s=Date.now(), logFile=path.join(OUT,t.id+'.log'); let log='';
-    const child=cp.spawn(process.execPath,[path.join(__dirname,t.id+'.js'),...(t.args||[])],{cwd:ROOT,env:process.env});
+    const child=cp.spawn(process.execPath,[path.join(__dirname,(t.file||t.id)+'.js'),...(t.args||[])],{cwd:ROOT,env:process.env});
     const timer=setTimeout(()=>{ log+='\nFAIL timed out after '+Math.round(t.secs*8+120)+' s\n'; child.kill('SIGKILL'); },(t.secs*8+120)*1000);
     child.stdout.on('data',d=>log+=d); child.stderr.on('data',d=>log+=d);
     child.on('close',code=>{ clearTimeout(timer); fs.writeFileSync(logFile,log); done({t,code,log,ms:Date.now()-s,logFile}); });
