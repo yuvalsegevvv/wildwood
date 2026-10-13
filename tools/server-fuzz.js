@@ -24,6 +24,11 @@ const junk=(d=0)=>{ const r=rnd();
   return rnd()*400-200; };
 const FIELDS=['id','slot','cls','tier','rar','n','k','tg','face','aim','idx','el','to','a','i','text','name','look','v','cmd','land','user','pass','token','p','worn','who','mission','dungeon','type','sel','m','set','piece','pid','dir','s','kind'];
 const TYPES=['pos','atk','equip','unequip','cls','buy','sell','merge','accept','turnin','abandon','buyskill','chat','name','eqskill','unskill','upskill','soul','look','warp','mq','learn','gather','sellres','craft','brew','potion','zt','dev','ft','party','temper','rwdev','dg','register','logout','hello','nonsense','','__proto__'];
+// the list above is for the odd names; every message type the server really handles is read from the source too (api.js `case 'x'`, feature files `MSG.x=`, in any folder under src/server), so a new message is fuzzed without anyone remembering to list it
+const srvFiles=d=>require('fs').readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?srvFiles(require('path').join(d,e.name)):e.name.endsWith('.js')?[require('path').join(d,e.name)]:[]);
+for(const f of srvFiles(require('path').join(__dirname,'..','src','server'))){ const src=require('fs').readFileSync(f,'utf8');
+  if(/[\\/]api\.js$/.test(f)) for(const m of src.matchAll(/^\s*case '(\w+)'/gm)) if(!TYPES.includes(m[1])) TYPES.push(m[1]);
+  for(const m of src.matchAll(/^MSG\.(\w+)\s*=/gm)) if(!TYPES.includes(m[1])) TYPES.push(m[1]); }
 const DEVC=['level','coins','giveAll','three','weather','vale','north','west','tunnel','hoar','mq','zt','set','god','all','heal','day','tp','pass','rime','hall','nest','rw','dg','xp','items','skills','unlock'];
 const msg=()=>{ const t=pick(TYPES), m={t}; const nf=Math.floor(rnd()*4); for(let i=0;i<nf;i++) m[pick(FIELDS)]=junk();
   if(t==='pos'&&rnd()<0.7) m.p=[(rnd()*2-1)*1500,rnd()*80,(rnd()*2-1)*1500,rnd()*7,rnd()*8-4,rnd()*8-4].map(v=>rnd()<0.05?junk():v);

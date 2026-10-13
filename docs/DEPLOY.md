@@ -32,6 +32,7 @@ repo or chat). One table, created automatically by `pgStore` in `node/main.js`:
   the owner would clear `data->'auth'` tokens or set a new hash by hand).
 - The pool is built for a sleeping free database: `'error'` listener (a dropped idle connection must not
   crash the server), 60 s idle close, 15 s connect timeout, table creation retried on the next query.
+- Writes of one account are queued in the order they were asked (`inOrder` in `pgStore`): the pool has 5 connections, and two saves of one account asked a few ms apart (the periodic save, then the one on leaving) used to run side by side and could commit in either order, the older record replacing the newer. Other accounts do not wait for each other; a failed write does not stop the ones behind it. `node tools/store-smoke.js` checks it against a fake pool. Known and left alone: the connection accepts any certificate (`rejectUnauthorized:false`; Neon's is valid, so it could be tightened by the owner when convenient).
 - Without `DATABASE_URL`, saves go to JSON files in `DATA_DIR` (default `./data`), which Render wipes on
   every deploy/restart. Don't use Render's own free Postgres: it is deleted after 30 days.
 

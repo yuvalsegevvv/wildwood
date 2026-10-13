@@ -40,10 +40,19 @@ function pgStore(url){
   let ready=null;
   const table=()=>ready||(ready=pool.query('CREATE TABLE IF NOT EXISTS wildwood_players (id text PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())').catch(e=>{ ready=null; throw e; }));
   table().catch(e=>log('postgres not ready yet:',e&&e.message));
+  /* Writes of ONE account go one after the other, in the order they were asked: the pool has 5 connections, so a periodic save and the save on leaving, asked a few ms apart,
+     ran side by side and could commit in either order - the older record then replaced the newer (the last seconds of a session lost: a level, a purchase, a logout token). */
+  const queued=new Map();   // account key -> the tail of its chain of writes
+  const inOrder=(k,job)=>{
+    const prev=queued.get(k), run=prev?prev.then(job,job):job();
+    const tail=run.then(()=>{},()=>{});   // (the chain goes on whether or not a write failed; the caller still gets its own result from `run`)
+    queued.set(k,tail); tail.then(()=>{ if(queued.get(k)===tail) queued.delete(k); });
+    return run;
+  };
   return { kind:'postgres', pool,
     load(acct){ return table().then(()=>pool.query('SELECT data FROM wildwood_players WHERE id=$1',[keyOf(acct)])).then(r=>r.rows.length?r.rows[0].data:null); },
-    save(acct,rec){ return table().then(()=>pool.query('INSERT INTO wildwood_players (id,data,updated_at) VALUES ($1,$2,now()) ON CONFLICT (id) DO UPDATE SET data=EXCLUDED.data, updated_at=now()',[keyOf(acct),rec])); },
-    create(acct,rec){ return table().then(()=>pool.query('INSERT INTO wildwood_players (id,data,updated_at) VALUES ($1,$2,now()) ON CONFLICT (id) DO NOTHING RETURNING id',[keyOf(acct),rec])).then(r=>r.rows.length>0); },
+    save(acct,rec){ const k=keyOf(acct); return inOrder(k,()=>table().then(()=>pool.query('INSERT INTO wildwood_players (id,data,updated_at) VALUES ($1,$2,now()) ON CONFLICT (id) DO UPDATE SET data=EXCLUDED.data, updated_at=now()',[k,rec]))); },
+    create(acct,rec){ const k=keyOf(acct); return inOrder(k,()=>table().then(()=>pool.query('INSERT INTO wildwood_players (id,data,updated_at) VALUES ($1,$2,now()) ON CONFLICT (id) DO NOTHING RETURNING id',[k,rec]))).then(r=>r.rows.length>0); },
     users(){ return table().then(()=>pool.query("SELECT data->'auth'->>'user' AS u FROM wildwood_players WHERE data ? 'auth'")).then(r=>r.rows.map(x=>x.u)); },
     count(){ return table().then(()=>pool.query('SELECT count(*)::int AS n FROM wildwood_players')).then(r=>r.rows[0].n); } };
 }
