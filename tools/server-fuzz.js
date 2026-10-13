@@ -46,6 +46,7 @@ const check=(r)=>{
     for(const k of ['x','y','z','hp','maxHp','exp','level','face']) if(typeof p[k]!=='number'||!isFinite(p[k])) bad.push(`round ${r}: player ${id}.${k} = ${p[k]}`);
     const g=p.gear; if(!g){ bad.push(`round ${r}: player ${id} has no gear`); continue; }
     if(!Number.isInteger(g.coins)||g.coins<0) bad.push(`round ${r}: coins = ${g.coins}`);
+    { const nf=findNonFinite({t:'gear',g,exp:p.exp,level:p.level}); if(nf) bad.push(`round ${r}: a number in ${p.id}'s save is not finite (the save would hold null): ${nf}`); }
     // saving and loading must not drift: what a save is cleaned to is cleaned to itself (else a hiker loses or gains something at every login)
     try{ const g1=x.sanitizeGear(JSON.parse(JSON.stringify(g)),p.look&&p.look.cls), g2=x.sanitizeGear(JSON.parse(JSON.stringify(g1)),p.look&&p.look.cls), a=JSON.stringify(g1), b=JSON.stringify(g2);
       if(a!==b){ let i=0; while(i<a.length&&a[i]===b[i]) i++; bad.push(`round ${r}: sanitizeGear is not idempotent, they differ at ...${a.slice(Math.max(0,i-60),i+60)}... / ...${b.slice(Math.max(0,i-60),i+60)}...`); } }catch(e){ note('sanitizeGear twice',e); }

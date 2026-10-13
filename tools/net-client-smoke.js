@@ -1,11 +1,12 @@
-// End to end over a real socket: the built page (headless, tools/headless.js `host` option: Node's own WebSocket) plays on the built server running as its own process (tools/host-lib.js), the way a browser plays on the Render deploy.
+// End to end over a real socket: the page the server sends (headless, tools/headless.js `host` and `page` options: Node's own WebSocket) plays on the built server running as its own process (tools/host-lib.js), the way a browser plays on the Render deploy.
 // The start card of a page served by the Node host, Play as guest, the roster and snapshots arriving, walking (a second, raw WebSocket client sees the hiker move), chat both ways, Register through the card (scrypt
 // on the real host) and Log in with it, and a server that dies under the open game (the Reconnect message). The pieces are covered one by one elsewhere (start-smoke with a fake socket, host-smoke with raw frames);
 // this is the join between them.   Build first (python3 build.py).   Usage: node tools/net-client-smoke.js
 const {fs,wait,until,get,wsOpen,msgs,send,startHost}=require('./host-lib'), {bootClient}=require('./headless'), crypto=require('crypto');
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const EXPOSE=['NET','netTick','started:()=>started','customizing:()=>customizing','creating:()=>creating','canStart:()=>canStart','P','PL','CHAT','REMOTES','MONS','getH'];
-const ready=async(H,o)=>{ const c=bootClient(Object.assign({host:'127.0.0.1:'+H.port,fast:true,expose:EXPOSE},o)); await until(()=>c.G().canStart(),90000); return c; };
+const ready=async(H,o)=>{ const html=(await get(H.port,'/')).body.toString();   // the page the server itself sends (the lean one: no world server inside), not dist/wildwood.html
+  const c=bootClient(Object.assign({host:'127.0.0.1:'+H.port,page:html,fast:true,expose:EXPOSE},o)); await until(()=>c.G().canStart(),90000); return c; };
 function fill(c,user,pass,pass2){ c.el('#stUser').value=user; c.el('#stPass').value=pass; c.el('#stPass2').value=pass2===undefined?'':pass2; c.el('#stForm').requestSubmit(); }
 (async()=>{
   const H=await startHost(), dir=H.dir; ok('the server starts',H.up); if(!H.up){ console.log(H.log().slice(-500)); process.exit(1); }

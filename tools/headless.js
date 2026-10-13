@@ -4,7 +4,7 @@
 //   const c=bootClient({online:true, expose:['NET','started:()=>started']});  // names from inside the game, read with c.G()
 //   c.el('#stGuest').click();   // fake elements remember their listeners: click(), requestSubmit(); ._kids = appended children, ._a = attributes
 //   c.stop();                   // ends the frame loop and the server tick
-//   options: online (a fake socket to a world server in this process), host:'127.0.0.1:8080' (Node's own WebSocket to a REAL server, see host-lib.js and net-client-smoke.js), fast, touch, lite, ls, accounts
+//   options: online (a fake socket to a world server in this process), host:'127.0.0.1:8080' (Node's own WebSocket to a REAL server, see host-lib.js and net-client-smoke.js), page (the HTML to boot instead of dist/wildwood.html), fast, touch, lite, ls, accounts
 //   bootClient({touch:true}) / ({lite:true})   // a phone (LOW: fewer plants, thin streaming slices) / light mode (LITE: the least), as the page decides them from the device and localStorage
 //   bootClient({fast:true})     // a world without the map's painting, the ground colours and the villagers: ~40% quicker to be ready (start card tests)
 const fs=require('fs'), path=require('path'), crypto=require('crypto'), {ROOT}=require('./load');
@@ -66,7 +66,7 @@ function bootClient(o){
       close(){ if(this.readyState===3) return; this.readyState=3; if(global.__srv) global.__srv.leave(this.pid); socks.delete(this.pid); if(this.onclose) this.onclose(); }
     };
   }
-  const page=fs.readFileSync(path.join(ROOT,'dist','wildwood.html'),'utf8');
+  const page=o.page||fs.readFileSync(path.join(ROOT,'dist','wildwood.html'),'utf8');   // (o.page: the HTML a server sent, see net-client-smoke)
   const blocks=page.split('<script>').slice(1).map(b=>b.split('</script>')[0]);
   const srvCode=blocks.find(b=>b.includes('function createWorldServer')); let main=blocks.find(b=>b.includes('function wildwoodMain'));
   if(o.fast){   // for tests of the start card and the account flow: skip what only matters to the eye (the map's painting, the ground's colours, the villagers' meshes, the plants). The world, the server and the UI stay real.
