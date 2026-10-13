@@ -29,3 +29,11 @@ Area guide. Moved word for word from `CLAUDE.md` (sections 4, 8 and 9), where ea
   snowmoss node beside a camp): both now pick their spot robustly.
 - A Phong terrain material needs no textures for detail: world-space noise in the fragment shader (`TERRAIN_COLOR`, `TERRAIN_BUMP`) breaks up the 2 m
   mesh. r128's Lambert is lit per vertex, so a bumped normal does nothing there.
+
+## Reference numbers
+
+- **The world's geometry**: the home forest is about -HALF..HALF; the whole world is `WX0..WX1` x `WZ0..WZ1` (the vale is east of the Vale Wall's line `x > borderX(z)`, about x > HALF, 550 m wide, with a river
+  for a border that bulges up to 215 m west of it; the Hoarfrost Reach is `inHoar(x,z)`: north of the north wall's line `z < borderZ(x)` (about z < `HZ0` = -440) and east of the Greyspine | Reach wall `x > borderXN(z)` (about x > `GXJ` = -140, over the forest's middle), up to `WZ0` = -1280; the world is 2340 x 1720 m: `WX0` = -1020, `WX1` = 1320 (`EAST_W` 880, `NORTH_D` 840; `VALE_E` and `GREY_N` stay where they were);
+  north of the home forest, west of that wall, is the Greyspine, `inGrey(x,z)` (it was built over x -440..440 and moved `GDX` = 580 m west as one piece, so docs and tests from before speak the old frame; the Reach's places moved `RDX` = 390 m; west of the forest, south of the Greyspine, is the unbuilt Sunscar plateau, `inSun`)). The north and east edges of the vale, the Reach and the Greyspine are coasts with bays and islets, not walls (`shared/coasts.js`): `coastDist(x,z)` is the distance to the sea there too. `HALF` and `HZ0` are the lines' mean and the junction, not the borders: ask the border functions. Use `WX0..WX1` / `WZ0..WZ1` for clamps
+  (the home forest's north edge is `borderZ(x)`, not `WZ0`). The heightmap is rectangular (`NVX` x `NVZ`), the terrain is drawn in
+  tiles (64 x 128 cells) culled beyond the fog in both directions, and plant chunks more than 320 m away are only grown when you come closer.

@@ -271,7 +271,7 @@ def lint_layout():
 
 
 # docs that describe the game as it is now (the design docs also name files that are planned and not built, so they are not checked)
-CURRENT_DOCS = ['CLAUDE.md', 'AGENTS.md', 'README.md', 'tools/README.md', 'docs/TESTING.md', 'docs/DEPLOY.md', 'docs/CHARACTER.md']
+CURRENT_DOCS = ['CLAUDE.md', 'AGENTS.md', 'README.md', 'tools/README.md', 'docs/TESTING.md', 'docs/DEPLOY.md', 'docs/CHARACTER.md', 'docs/PROTOCOL.md']
 DOC_REF = re.compile(r'`([A-Za-z0-9_./\-]+\.(?:js|py|md|json|css|html|svg|png|webp|m4a))(?::\d+)?`')
 BUILD_OUTPUTS = ('dist/', 'out.png', 'wildwood-server.js', 'wildwood.html')   # made by a build or a tool, not in the tree
 

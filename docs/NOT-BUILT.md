@@ -234,3 +234,17 @@ Built: eight cosmetic outfits as 3D kits (`src/game/outfits/<id>.js`, hooks in `
 - **Phones.** The outfits add 15,000-22,000 triangles on the hiker; the other-player and phone detail levels scale them down through `sg(n)` but none of it was measured on a real device.
 - **Glow and motion** (lanterns, vials, lamp, scarves, drum, charms) are only seen in the game; the preview renderer draws neither unlit materials nor `rig.anims`.
 - **Names** have not been searched outside the repository (each look file's IP check says to).
+
+## 7. Ideas not done yet (the list CLAUDE.md section 10 used to hold; ask the owner before starting any of them)
+
+(Each gap is commented in `docs/NOT-BUILT.md`.) **Placeholders to replace later** (section 3b there): the Greyspine's zone-tier symbol (its badge and the +150% cap). **Not implemented yet**: a use for coins at level 30+. Professions' next steps (quest-board notices for gathering and crafting, planned in `docs/NOT-BUILT.md` section 1; status-cleansing potions; resources for the lands to come). Zone tiers' next steps (none decided): quest-board notices and their rewards by tier (the board still scales by base level), tier-only loot or a gear tier above 5, a cap or damping on the XP a tier pays, a look for the symbol on the character, a tier picker at the teleport circles. **Dungeons**: built (parties, runs, seven missions, four dungeons, the board and the rewards: section 4 and `docs/DUNGEONS.md`; its section 13 lists the owner's decisions). **Agent docs**: CLAUDE.md is a router (rule 8 above): section-4 rows are short and the detail lives in `docs/areas/`; keep it that way. **Decided against**: a gathering animation and tool durability; levels 33-50 (acts V-VII, planned step by step in `docs/MAIN-QUEST.md` section 7; act IV, the Greyspine's, is built); regional weather on the server; the Hoarfrost's west glacier valley to the Greyspine; the licences of the free-plan music tracks (Suno and Google Flow Music: non-commercial) before the game earns money.
+The owner will define the real passive skills (the eight in `PASSIVES` are a placeholder set); monsters' elements do not change the damage they deal to you
+yet (a `hurtP` hook, same functions as `foeMult`); Special quests from Bram and other NPCs; party quests (the party itself is built with the dungeons: `docs/DUNGEONS.md` section 5); the XP curve past 15 (levels 16-25 need 400-2100 kills
+each: tune `expToNext` / `xpFor` in `shared/balance.js`); animals in the vale; trading between players; more zones or a
+second boss; server-side anti-cheat for movement; villagers synced between players; mobile UI polish
+seen on a real device.
+
+Performance ideas that would change how the forest looks, so they need the owner's yes (numbers: `docs/areas/render.md`): draw only a share of
+the trees in far chunks (`InstancedMesh.count` set in `cullChunks` from the distance, with the instances shuffled once; about -25%
+triangles), a low-poly variant of each tree for chunks beyond ~120 m, and rendering the sun's shadow map every few frames (character
+shadows would stutter). Also: events (`ev`) still go to everyone, and could be filtered by distance like monsters are.
