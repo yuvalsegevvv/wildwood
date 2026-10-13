@@ -7,7 +7,7 @@ Headless helpers, made so a change can be checked without a browser and without 
 | Kind | Files |
 |---|---|
 | Run and register tests | `run-tests.js`, `tests.json` |
-| Tests (`*-smoke.js`, and) | `boss-duel.js --check` (balance yardstick), `skillsets-ladder.js --check` (power ladder), `outfit-looks-check.js`, `server-fuzz.js` (garbage at every handler), `dungeon-fuzz.js` (random valid party and run actions), `boss-fuzz.js` (chaos at every boss), `lint-bundles.js` (undefined names per bundle) |
+| Tests (`*-smoke.js`, and) | `boss-duel.js --check` (balance yardstick), `skillsets-ladder.js --check` (power ladder), `outfit-looks-check.js`, `server-fuzz.js` (garbage at every handler), `dungeon-fuzz.js` (random valid party and run actions), `boss-fuzz.js` (chaos at every boss), `skillset-fuzz.js` (random loadout actions), `lint-bundles.js` (undefined names per bundle) |
 | Measure | `server-bench.js` (ms per tick and bytes per snapshot for N players; profile it with `node --cpu-prof`) |
 | Look at things | `model-preview.js` + `rast.py` (characters, outfits), `monster-preview.js` + `monster-rast.py` (monsters, bosses), `city-preview.js` (Glasswell), `shot.js` (a screenshot of the built game after a teleport: terrain, colours, lighting), `entrance-map.js` (the four dungeon doors on the terrain), `world-map-bake.js` (the in-game world map's art) |
 | Generate docs | `gen-docs.js` (`docs/MOBS.md`, `docs/EQUIPMENT.md`), `../docs/world-map.py`, `../docs/glasswell-plan.py` |
