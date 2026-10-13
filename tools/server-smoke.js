@@ -2,7 +2,7 @@
 // Usage: node tools/server-smoke.js
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
-const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['MONS','getH','W']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['MONS','getH','W','BOSSES']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ for(let i=0;i<n;i++){ W.tick(0.05); if(keepAlive) for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
@@ -50,6 +50,12 @@ ok('two players beat the boss (shield, totems, adds)',boss.dead,Math.round(secs)
 const snaps=inbox.b.filter(m=>m.t==='snap').map(m=>JSON.stringify(m).length);
 ok('snapshots fit the 4 KB room limit',Math.max(...snaps)<3800,'max '+Math.max(...snaps)+' bytes');
 W.receive('a',{t:'dev',cmd:'weather',v:'storm'}); tick(20*60); ok('weather: storm with thunder',x.W.kind===2&&evs.some(e=>e[0]==='thunder'));
+// the bosses' state (b, ~170 bytes) is sent when it changes, when a boss comes into range, and with the 3 s full resend, not in every snapshot
+{ inbox.bq=[]; W.join('bq',{name:'Bq',look:{cls:'mage'},save:{level:5}}); tick(3); const first=inbox.bq.find(m=>m.t==='snap'); inbox.bq.length=0; tick(100,true);   // (a snapshot every other tick)
+  const sn=inbox.bq.filter(m=>m.t==='snap'), withB=sn.filter(m=>m.b);
+  ok('boss state: the first snapshot carries b, an idle stream carries it only now and then (the 3 s full resend), and always with the eight',!!first&&!!first.b&&first.b.length===8&&withB.length>=1&&withB.length<=Math.ceil(sn.length/10)+1&&withB.every(m=>m.b.length===8),withB.length+' of '+sn.length+' snapshots');
+  const B0=x.BOSSES?x.BOSSES[0]:null; inbox.bq.length=0; if(B0){ B0.phase=2; tick(3); }
+  ok('boss state: a change reaches the player in the next snapshots',!B0||inbox.bq.some(m=>m.b&&m.b.some(r=>r[2]===2)),B0?'phase 2 sent':'(no boss list exposed)'); if(B0) B0.phase=1; tick(2); W.leave('bq'); }
 // a look is shown to every client in sight: the server cuts it down to flat primitives (no nested objects, long strings, non-finite numbers, or names of Object.prototype)
 W.receive('a',{t:'look',look:{cls:'mage',hair:'short',hat:'ranger',model:'constructor',skin:'__proto__',nested:{a:1},list:[1,2],long:'x'.repeat(60),huge:1e999,height:1.05,ahoge:true}}); tick(3);
 { const L=W.players.get('a').look; ok('a look message is cut down: primitives kept, prototype names / nested / long / non-finite dropped',L.cls==='mage'&&L.hair==='short'&&L.height===1.05&&L.ahoge===true&&!('model' in L)&&!('skin' in L)&&!('nested' in L)&&!('list' in L)&&!('long' in L)&&!('huge' in L),JSON.stringify(L));

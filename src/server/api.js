@@ -167,23 +167,27 @@ function broadcastSnap(){
     rows.push([m,a,a.join()]);
   }
   const all=[...S.players.values()], prow=all.map(p=>[p.id,r1(p.x),r1(p.y),r1(p.z),Math.round(p.face*100)/100,Math.round(p.hp),p.maxHp,p.level,p.dead?1:0]);
-  const day=Math.round(S.day*1e5)/1e5, b=bossState(), w=weatherState(), ev=EVQ; EVQ=[];
+  const day=Math.round(S.day*1e5)/1e5, b=bossState(), w=weatherState(), ev=EVQ, bj=JSON.stringify(b); EVQ=[];
   if(io.broadcastSnaps){
     const mo=[]; for(const [m,a,key] of rows) if(full||key!==m.snapKey){ m.snapKey=key; mo.push(a); }
     io.broadcast({t:'snap',day,n:all.length,pl:prow,mo,b,w,ev}); return;
   }
   const farToo=no%10===0;
   for(const p of all){
-    const seen=p.mk||(p.mk=new Map()), stamp=p.mkS||(p.mkS=new Map()), mo=[], pl=[];
+    const seen=p.mk||(p.mk=new Map()), stamp=p.mkS||(p.mkS=new Map()), mo=[], pl=[]; let bossNew=false;
     for(const [m,a,key] of rows){
       const dx=m.x-p.x, dz=m.z-p.z, d2=dx*dx+dz*dz, R=m.boss?SNAP_BOSS:SNAP_MON; if(d2>R*R) continue;
       stamp.set(m.id,no);
-      const known=seen.get(m.id);
+      const known=seen.get(m.id); if(m.boss&&known===undefined) bossNew=true;   // a boss just came into range: its row (engaged? phase?) is needed with it
       if(full||known===undefined||(known!==key&&(d2<=SNAP_NEAR*SNAP_NEAR||(no+m.id)%2===0))){ seen.set(m.id,key); mo.push(a); }
     }
     for(const [id,s] of stamp) if(s!==no){ stamp.delete(id); seen.delete(id); }   // left your range: sent again from scratch when it returns
     all.forEach((q,i)=>{ const dx=q.x-p.x, dz=q.z-p.z; if(q===p||farToo||dx*dx+dz*dz<=SNAP_PLAYERS*SNAP_PLAYERS) pl.push(prow[i]); });
-    io.send(p.id,dgSnapS(p,{t:'snap',day,n:all.length,pl,mo,b,w,ev}));   // dungeons: events of your own run (or the world), its players, its boss row (b) and its HUD tuple (dg)
+    // b (the eight bosses' state, ~170 bytes) is the same for everyone and rarely changes: it was 13-23% of every snapshot. It goes to a player when it differs from what they were last
+    // sent, when a boss comes into their range (that boss's view is made just then and needs its row), and with every full resend (3 s); the client keeps the last rows (applyBossState).
+    const sendB=full||bossNew||p.bSent!==bj, msg={t:'snap',day,n:all.length,pl,mo,w,ev}; if(sendB){ msg.b=b; p.bSent=bj; }
+    io.send(p.id,dgSnapS(p,msg));   // dungeons: events of your own run (or the world), its players, its boss row (b) and its HUD tuple (dg)
+    if(p.inst) p.bSent=null;
   }
 }
 return {join:beginJoin,leave,receive,setPos,tick,flushAll,state:S,monsters:MONS,players:S.players};

@@ -201,6 +201,7 @@ node tools/gen-docs.js           # rewrites docs/MOBS.md and docs/EQUIPMENT.md f
 node tools/model-preview.js out.png [--head] [--outfit id] [--weapon warrior] [--bent]   # character model or a signature outfit → PNG (numpy + pillow)
 node tools/monster-preview.js out.png --ids slime,boss       # monster and boss models → PNG, or --stats
 node tools/city-preview.js out/ --views overview,street,statue   # Glasswell's 3D model → PNGs (headless Chromium, real WebGL)
+node tools/shot.js out.png --at 120,-300,90      # the built game in headless Chromium: solo, level 60, teleported (x,z,degrees or --go tRime), a PNG to look at; 3-8 min (software GL: run it in the background)
 node tools/entrance-map.js       # draws docs/dungeon-entrances.png (the four doors on the real terrain)
 node dist/wildwood-server.js --port 8080                     # real server; open http://localhost:8080 in several tabs
 ```

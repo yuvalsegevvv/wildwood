@@ -61,7 +61,7 @@ clear(); tick(40);   // a few seconds, past a "send everyone" snapshot
   const moC=new Set(snC.flatMap(s=>(s.mo||[]).map(r=>r[0]))), runIds=new Set([...runA.mons,...runB.mons].map(m=>m.id));
   ok('players: a run\'s member sees only its members; the world sees no one in a run (even the once-a-second "everyone")',plA.has('a')&&!plA.has('b')&&!plA.has('c')&&plC.has('c')&&!plC.has('a')&&!plC.has('b'),'A sees '+[...plA]+', C sees '+[...plC]);
   ok('monsters: the world\'s snapshots carry none of a run\'s',![...moC].some(id=>runIds.has(id)));
-  ok('bosses: a run member\'s b holds only his run\'s boss (none yet); the world\'s holds the eight (the six of the three old lands and the Greyspine\'s two)',snA.every(s=>s.b.length===0)&&snC.every(s=>s.b.length===8)); }
+  ok('bosses: a run member\'s b holds only his run\'s boss (none yet); the world\'s holds the eight (the six of the three old lands and the Greyspine\'s two)',snA.every(s=>s.b.length===0)&&snC.every(s=>!s.b||s.b.length===8)); }   // (the world's b is only sent when it changed, so not every snapshot has one)
 clear();
 { const ma=[...runA.mons][0], mb=[...runB.mons][0];
   for(const [p,m] of [[A,ma],[B,mb]]){ p.face=0; m.x=p.x; m.z=p.z-1.5; m.stunT=1; W.receive(p.id,{t:'atk',k:'basic',tg:m.id,face:0}); }   // a real swing at a monster put in front of each

@@ -69,5 +69,13 @@ clear(); W.receive('h',{t:'chat',text:'/invite Bree'}); tick(3);
 ok('/invite name in the chat invites (and is not said aloud)',!!last('b','ptyi')&&last('b','ptyi')[2]==='h'&&!evs('a','chat').length&&!evs('h','chat').length);
 party('b','accept'); tick(3);
 ok('accepting that invite works',x.partyOf(P('b'))&&x.partyOf(P('b'))===x.partyOf(P('h')));
+// a decline clears the open invite, so without a cooldown a persistent griefer could put the prompt back on a victim's screen the moment they declined it
+{ for(const pid of 'abh') party(pid,'leave'); tick(3); clear();   // (b and h are in a party now: out of it first)
+  party('c','invite','dara'); tick(3); const first=evs('d','ptyi').length; party('d','decline'); tick(2); clear();
+  for(let i=0;i<30;i++) party('c','invite','dara'); tick(3);
+  ok('re-inviting the same person right after a decline is refused for a few seconds (30 tries: no prompt, a "wait a moment" toast)',first===1&&!evs('d','ptyi').length&&/Wait a moment before inviting Dara again/.test(toasts('c')),'first '+first+', then '+evs('d','ptyi').length+' prompts');
+  tick(20*4); clear(); party('c','invite','dara'); tick(3);
+  ok('...and works again after PARTY_REINVITE_S',evs('d','ptyi').length===1);
+  party('d','decline'); party('c','leave'); tick(3); }
 console.log(fails?fails+' FAILED':'all passed');
 process.exit(fails?1:0);

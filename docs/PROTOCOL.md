@@ -11,7 +11,7 @@ Moved from CLAUDE.md section 3 (the router keeps the shape of it and the recipe 
   `snap{day, n, pl, mo, b (one entry per boss), w (weather), ev:[events]}` 8-20×/s, **made per player**: `mo` holds only the monsters
   you can see (within 110 m, bosses 190 m: the client draws 95 / 170 m) and only when changed since the last time they were sent to
   you (those within 40 m every snapshot, farther ones every second), `pl` yourself and the players within 250 m (the rest once a
-  second), `n` the head count. Constants `SNAP_*` and the reasoning are in `server/api.js` (`broadcastSnap`). The claude.ai room
+  second), `n` the head count. **`b` (the bosses' state, ~170 bytes) is not in every snapshot**: it goes to a player when it differs from what they were last sent, when a boss comes into their range, and with every full resend (3 s); a player in a dungeon run gets the run's boss row in every snapshot (`dgSnapS`) and the world's again when they come back. The client keeps the last rows (`applyBossState`) and re-picks the nearest boss at every snapshot (`pickBoss`). The claude.ai room host still sends it every time. Constants `SNAP_*` and the reasoning are in `server/api.js` (`broadcastSnap`). The claude.ai room
   host keeps one message for everyone (`io.broadcastSnaps`), since its channel is one shared 4 KB topic.
 - Events (`ev(...)` on the server, `applyEvent` in `net/client.js`): dmg (`[id,v,crit,by[,fx]]`: fx 1 / -1 = the element helped / hurt), kill, imm, mact, aggro, respawn,
   spawn, despawn, proj, pend, tele (`[id,kind,x,z,r,dur,face,half]`), tend (`[id,fired,x,z]`), zone / zend, wall / wend, pfx (`[pid,kind,dur,vx,vz]`: root, slow, push; the client applies it to itself), roar, area, aend, chain, buff, xp, coins, loot, lvup, hurt, down,

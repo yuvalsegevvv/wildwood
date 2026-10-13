@@ -41,7 +41,7 @@ function applySnap(msg){
   if(msg.day!=null) serverDay=msg.day;
   if(msg.pl) applyPlayers(msg.pl,msg.n);
   if(msg.mo) msg.mo.forEach(applyMonSnap);
-  if(msg.b) applyBossState(msg.b);
+  if(msg.b) applyBossState(msg.b); else pickBoss();   // (b is sent when it changes, not in every snapshot: the nearest boss still follows you at every one)
   if(msg.w) applyWeather(msg.w);
   for(const k in SNAPH) if(msg[k]!==undefined) SNAPH[k](msg[k]);   // dungeons: snapshot fields added by feature files (dg, ...)
   if(msg.ev) msg.ev.forEach(applyEvent);

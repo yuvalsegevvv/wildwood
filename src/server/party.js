@@ -10,7 +10,7 @@
    test: tools/party-smoke.js.   Design: docs/DUNGEONS.md section 5 (the party), section 9 (the protocol).
    Rules: a player is in at most one party; only the leader invites, kicks and hands on the lead; the leader leaving or disconnecting hands the lead to the next
    member; a party left with one member and no pending invite dissolves (a lone hiker is a party of one only for runs, without a party object). */
-const PARTY_MAX=4, PARTY_INVITE_S=30, PARTY_SYNC_S=1;   // PARTY_MAX must equal DG_MAX_PARTY (shared/dungeons.js; party-smoke checks it)
+const PARTY_MAX=4, PARTY_INVITE_S=30, PARTY_SYNC_S=1, PARTY_REINVITE_S=3;   // PARTY_MAX must equal DG_MAX_PARTY (shared/dungeons.js; party-smoke checks it)
 const PARTIES=new Map(); let partyNextId=1, partySyncT=0;
 // an event for one player only (it carries their pid in e[1], so a Shared-mode client can tell it is not for them)
 function partyEvTo(kind,pid,...rest){ const e=ev(kind,pid,...rest); e.to=pid; return e; }
@@ -48,6 +48,9 @@ function partyInviteP(p,name){
   if(q.party){ toastTo(p.id,q.name+(pa&&q.party===pa.id?' is already in your party.':' is already in a party.'),'bad'); return; }
   if(pa&&pa.inv.has(q.id)&&pa.inv.get(q.id)>S.t){ toastTo(p.id,'You have already invited '+q.name+'.','bad'); return; }
   if((pa?pa.mem.length+pa.inv.size:1)>=PARTY_MAX){ toastTo(p.id,'Your party is full (at most '+PARTY_MAX+').','bad'); return; }
+  // the same person is not invited again within PARTY_REINVITE_S: a decline clears the open invite, so without this a persistent griefer could put the prompt back on a victim's screen the moment they declined it
+  const last=p.invAt||(p.invAt=new Map()); if(S.t-(last.get(q.id)||-99)<PARTY_REINVITE_S){ toastTo(p.id,'Wait a moment before inviting '+q.name+' again.','bad'); return; }
+  if(last.size>40) last.clear(); last.set(q.id,S.t);
   if(!pa) pa=partyNewS(p);
   pa.inv.set(q.id,S.t+PARTY_INVITE_S); q.pinv={party:pa.id,from:p.id,until:S.t+PARTY_INVITE_S};
   partyEvTo('ptyi',q.id,p.id,p.name,PARTY_INVITE_S);
