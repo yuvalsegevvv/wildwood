@@ -78,7 +78,9 @@ const world=createWorldServer({
 const ERRS=new Map();
 function logErr(where,e){ if(ERRS.size>500) ERRS.clear(); const k=where+': '+String(e&&e.message).slice(0,200), n=(ERRS.get(k)||0)+1; ERRS.set(k,n);   // (a message that varies with its input must not grow this map for ever)
   if(n===1||n%1000===0) log(where+' threw'+(n>1?' ('+n+' times)':'')+':',(e&&e.stack)||e); }
-process.on('unhandledRejection',e=>logErr('unhandled rejection',e)); process.on('uncaughtException',e=>logErr('uncaught exception',e));
+let listening=false;   // (set when the server is up: before that an error, say a port already in use, must end the process with its message, not leave it running with nothing listening)
+process.on('unhandledRejection',e=>logErr('unhandled rejection',e));
+process.on('uncaughtException',e=>{ if(!listening){ console.error(e); process.exit(1); } logErr('uncaught exception',e); });
 let last=Date.now(), tickFails=0;
 setInterval(()=>{ const now=Date.now(); try{ world.tick((now-last)/1000); tickFails=0; }catch(e){ logErr('tick',e); if(++tickFails>=100) shutdown('tick failed 100 times in a row'); } last=now; },50);
 const page=PAGE.replace('</head>','<script>window.WILDWOOD_WS=true;</script>\n</head>'), pageGz=zlib.gzipSync(page,{level:9});
@@ -149,9 +151,11 @@ server.on('upgrade',(req,sock)=>{
 setInterval(()=>{ for(const [pid,s] of SOCKETS){ if(s.destroyed){ SOCKETS.delete(pid); world.leave(pid); continue; } if(Date.now()-(s.lastSeen||0)>70000){ s.destroy(); continue; } s.write(Buffer.from([0x89,0])); } },25000);
 // Render (and most hosts) stop the server with SIGTERM on deploys: write everyone's progress first
 let stopping=false;
-function shutdown(sig){ if(stopping) return; stopping=true; log(sig+': saving',world.players.size,'players'); Promise.race([world.flushAll(),new Promise(r=>setTimeout(r,8000))]).then(()=>{ log('saved, bye'); process.exit(0); }); }
+function shutdown(sig){ if(stopping) return; stopping=true; log(sig+': saving',world.players.size,'players'); let flush; try{ flush=world.flushAll(); }catch(e){ logErr('flush',e); flush=Promise.resolve(); }   // (a broken world must still get to exit)
+  Promise.race([flush,new Promise(r=>setTimeout(r,8000))]).then(()=>{ log('saved, bye'); process.exit(0); }); }
 process.on('SIGTERM',()=>shutdown('SIGTERM')); process.on('SIGINT',()=>shutdown('SIGINT'));
 server.listen(PORT,HOST,()=>{
+  listening=true;
   const ips=Object.values(os.networkInterfaces()).flat().filter(i=>i&&i.family==='IPv4'&&!i.internal).map(i=>i.address);
   console.log('Wildwood world server running'+(DEV?' (testing tools on)':'')+', saves: '+STORE.kind);
   console.log('  this computer:  http://localhost:'+PORT);

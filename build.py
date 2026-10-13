@@ -149,6 +149,9 @@ def image_block():
     return '<script>\nwindow.WILDWOOD_IMG=' + json.dumps(imgs, separators=(',', ':')) + ';\n</script>\n' if imgs else ''
 
 
+LEAN_PAGE = ''   # the page the Node host serves (build() fills it): dist/wildwood.html without the in-page world server
+
+
 def build(inline_audio=False):
     manifest = json.loads(read(os.path.join(SRC, 'manifest.json')))
     styles = ''.join(strip_header(read(os.path.join(SRC, 'styles', f))) for f in manifest['styles'])
@@ -164,18 +167,26 @@ def build(inline_audio=False):
         '{{THREE}}': read(os.path.join(SRC, 'vendor', 'three.r128.min.js')),
         '{{START}}': read(os.path.join(SRC, 'boot', 'start.js')),
     }
-    page = read(os.path.join(SRC, 'index.html'))
-    for k, v in slots.items():
-        if k not in page:
-            sys.exit('index.html is missing the ' + k + ' slot')
-        page = page.replace(k, v, 1)
+    template = read(os.path.join(SRC, 'index.html'))
+
+    def render(tpl, sl):
+        for k, v in sl.items():
+            if k not in tpl:
+                sys.exit('index.html is missing the ' + k + ' slot')
+            tpl = tpl.replace(k, v, 1)
+        return tpl
+    page = render(template, slots)
+    # The Node host serves the page to players who connect to ITS world (the start card hides Play solo there), so the in-page copy of the world server (~770 KB, ~260 KB gzipped,
+    # a fifth of the first load) would only be downloaded and parsed for nothing: the page it embeds has a stub in its place. dist/wildwood.html keeps the full server (solo, shared room).
+    global LEAN_PAGE
+    lean = LEAN_PAGE = render(template, dict(slots, **{'{{SERVER}}': "throw new Error('This page has no world server of its own: it plays on the server that sent it.');\n"}))
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, 'w', encoding='utf-8') as f:
         f.write(page)
     node = ''.join(strip_header(read(os.path.join(SRC, 'node', f))) for f in manifest['node'])
     with open(SERVER_OUT, 'w', encoding='utf-8') as f:
         f.write('#!/usr/bin/env node\n/* Wildwood world server. Run: node wildwood-server.js [--port 8080] [--no-dev] */\n\'use strict\';\n'
-                'const PAGE=' + json.dumps(page) + ';\n'
+                'const PAGE=' + json.dumps(lean) + ';\n'
                 'function createWorldServer(io){\n' + server + '}\n' + node)
     print('built %s (%.0f KB)' % (os.path.relpath(SERVER_OUT, ROOT), os.path.getsize(SERVER_OUT) / 1024))
     size = os.path.getsize(OUT)
@@ -197,6 +208,12 @@ def check(page):
         os.unlink(t.name)
         if r.returncode:
             sys.exit('script block %d has a syntax error:\n%s' % (i, r.stderr))
+    # the Node host's copy of the page may differ from dist/wildwood.html in the world server's block and nowhere else
+    lean_blocks = [b.split('</script>', 1)[0] for b in LEAN_PAGE.split('<script>')[1:]]
+    if len(lean_blocks) != len(blocks) or [i for i, (a, b) in enumerate(zip(blocks, lean_blocks)) if a != b and 'function createWorldServer' not in a]:
+        sys.exit('the lean page (embedded in wildwood-server.js) differs from dist/wildwood.html outside the world server block: build() must only swap {{SERVER}}')
+    if not any('This page has no world server of its own' in b for b in lean_blocks):
+        sys.exit('the lean page does not have the world server stub')
     manifest = json.loads(read(os.path.join(SRC, 'manifest.json')))
     shared_f = [os.path.join(SRC, 'shared', f) for f in manifest['shared']]
     client_f = [os.path.join(SRC, 'game', f) for f in manifest['game'] if f != '@shared']

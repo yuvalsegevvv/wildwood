@@ -62,9 +62,7 @@ The repository is ready for [Render](https://render.com) as a Node web service; 
 Without either, players still don't lose progress (it's rebuilt from their browser's copy), but a player who
 cleared their browser would. `GET /status` shows which storage is in use and how many accounts it holds.
 
-Notes: `dist/` is not committed; Render builds it with `python3 build.py` on every deploy (run the same locally). The server listens on `$PORT`, serves the page gzip-compressed (about
-a quarter of its size), and pings connections every 25 s. Testing tools are on (`WILDWOOD_DEV=1` in `render.yaml`);
-set it to `0` in the Render dashboard for a public server. The free plan sleeps after about 15 minutes without
+Notes: `dist/` is not committed; Render builds it with `python3 build.py` on every deploy (run the same locally). The server listens on `$PORT`, serves the page gzip-compressed (about a third of its size, ~1 MB), and pings connections every 25 s. Testing tools are OFF on Render (`--no-dev` in `render.yaml`) and ON when you run `node dist/wildwood-server.js` locally without that flag (`WILDWOOD_DEV=0` turns them off too). The free plan sleeps after about 15 minutes without
 visitors and takes up to a minute to wake; the world (monsters, clock) restarts then, but players keep their
 progress because saves live in each player's browser.
 
