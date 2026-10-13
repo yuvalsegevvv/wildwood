@@ -67,12 +67,16 @@ function setPos(pid,d){
   if(p.gear.west<1 && p.z<borderZ(p.x) && p.x<GLEN.ice && Math.abs(p.z-GLEN.z)<GLEN.w+6) p.x=GLEN.ice;   // the ice fall in the glacier valley
   if(inGrey(p.x,p.z)) for(const G of GREY_GATES) if(p.gear[G.id]<1 && Math.abs(p.z-G.z)<40 && p.x<G.x) p.x=G.x;   // the rock falls in the west wall
 }
+// ITEM[id], SKILLS[id], ... are plain objects: an id of 'constructor' or '__proto__' finds a member of Object.prototype, passes `if(!it)` and made buyP charge NaN coins
+// (then nothing was ever too expensive again). No real id is such a name, so a message carrying one in an id-like field is dropped here, once, for every handler.
+const PROTO_KEY=new Set(Object.getOwnPropertyNames(Object.prototype)), FREE_TEXT=new Set(['text','name','user','pass','token']);
 function receive(pid,msg){
   if(!msg||typeof msg!=='object') return;
+  for(const k in msg){ const v=msg[k]; if(typeof v==='string'&&PROTO_KEY.has(v)&&!FREE_TEXT.has(k)) return; }
   if(msg.t==='hello'){ if(S.players.has(pid)) leave(pid); beginJoin(pid,msg); return; }
   const p=S.players.get(pid); if(!p) return;
   S.ctx=p.inst|0;   // dungeons: what a message causes belongs to the sender's run (0 = the world)
-  switch(msg.t){
+  try{ switch(msg.t){
     case 'pos': setPos(pid,msg.p); break;
     case 'atk': handleAttack(p,msg); break;
     case 'equip': equipP(p,msg.id); break;
@@ -91,7 +95,7 @@ function receive(pid,msg){
     case 'unskill': unequipSkillP(p,msg.cls,msg.slot||'skill',msg.idx); break;
     case 'upskill': upgradeSkillP(p,msg.id); break;
     case 'soul': bindSoulP(p,msg.el); break;
-    case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<2000){ p.look=msg.look; p.saveDirty=true; ev('plook',p.id,p.look); } break;
+    case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<2000){ const L=cleanLookS(msg.look); if(Object.keys(L).length){ p.look=L; p.saveDirty=true; ev('plook',p.id,p.look); } } break;
     case 'warp': warpP(p,typeof msg.to==='string'?msg.to:undefined); break;
     case 'mq': mqMsgP(p,msg); break;
     case 'learn': learnProfP(p,msg.id); break;
@@ -106,8 +110,7 @@ function receive(pid,msg){
     case 'register': registerP(p,msg.user,msg.pass); break;
     case 'logout': logoutP(p,msg.token); break;
     default: if(MSG[msg.t]) MSG[msg.t](p,msg); break;   // dungeons: messages added by feature files (party, dg, ...)
-  }
-  S.ctx=0;   // dungeons: back to the world's context
+  } }finally{ S.ctx=0; }   // dungeons: back to the world's context, even when a handler threw (the host logs it and carries on: its events must not land in a run)
 }
 function tick(dt){
   dt=Math.min(Math.max(dt,0),0.1); S.t+=dt;

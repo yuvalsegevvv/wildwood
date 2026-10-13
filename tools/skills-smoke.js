@@ -149,7 +149,7 @@ ok('a save keeps the boss skills you own, equipped, but not any upgrade level',s
 const target=x.MONS.find(m=>m.def.id==='slime');
 let grp=[], gids=new Set();   // the monsters around the target, made unkillable before every cast (so nothing else is rewarded)
 const gather=()=>{ if(target.dead){ target.dead=false; target.deadT=0; }   // (an earlier check may have killed it)
-  grp=x.MONS.filter(m=>!m.dead&&!m.remove&&Math.hypot(m.x-target.x,m.z-target.z)<16); for(const m of grp){ m.hp=m.maxHp=1e9; m.stunT=0; m.burnT=0; } gids=new Set(grp.map(m=>m.id)); };
+  grp=x.MONS.filter(m=>!m.dead&&!m.remove&&Math.hypot(m.x-target.x,m.z-target.z)<16); for(const m of grp){ m.hp=m.maxHp=1e9; m.stunT=0; m.burnT=0; m.aggro=false; m.tgt=null; m.state='idle'; m.timer=1e9; m.vx=m.vz=0; m.kbx=m.kbz=0; } gids=new Set(grp.map(m=>m.id)); };   // (and held still: a slime on its way back to camp walked out of Inferno Volley's splash about 1 cast in 60, which made this check flaky)
 const dmgTo=(ids,from)=>evs.slice(from).filter(e=>e[0]==='dmg'&&ids.has(e[1])).length;
 const castOne=(id,pid,ticks)=>{
   const s=x.SKILLS[id], cls=s.cls, lv=s.lv; inbox[pid]=[]; W.join(pid,{name:'C'+pid,look:{cls},save:{level:lv}}); tick(1);

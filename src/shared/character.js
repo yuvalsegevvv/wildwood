@@ -80,7 +80,7 @@ const CHAR_MODELS={
       noseSize:[0.7,1.25],mouthSize:[0.8,1.25],lips:[0.7,1.4],smile:[-0.6,0.9],earSize:[0.8,1.3],earPoint:[0,1],hairLength:[0.7,1.35],hairVolume:[0.9,1.25],bangs:[0.3,1.4]},
     setups:SETUP_BASE}
 };
-const charModelOf=L=>CHAR_MODELS[L&&L.model]||CHAR_MODELS.base;
+const charModelOf=L=>{ const m=L&&L.model; return (typeof m==='string'&&Object.prototype.hasOwnProperty.call(CHAR_MODELS,m)?CHAR_MODELS[m]:null)||CHAR_MODELS.base; };   // (own properties only: a look is another player's data)
 // the model's recommended range of a slider (the whole range when it lists none)
 function sliderRange(model,k){ const s=SLIDER_BY_KEY[k], r=model.ranges&&model.ranges[k]; return r?[Math.max(s.min,r[0]),Math.min(s.max,r[1])]:[s.min,s.max]; }
 // the recommended setups for one sex (a setup for 'any' fits both), the reference fit first. A new hiker starts on the reference setup of their sex (LOOK_M / LOOK_F in model.js).

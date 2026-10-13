@@ -142,4 +142,14 @@ const headsTall=r=>{ const d=r.dims, skullTop=d.hipY+d.headY+0.105*d.faceScale[1
   ok('"Surprise me" starts from a recommended setup: 150 draws stay inside the recommended ranges and build',!out&&setupish>100,out||setupish);
 }
 
+// a look is another player's data: a model named like a member of Object.prototype used to make buildCharacter throw for everyone who saw the player
+{ const names=['constructor','__proto__','toString','hasOwnProperty','valueOf'], bad=[];
+  const warn=console.warn; console.warn=()=>{};
+  for(const m of names) for(const sex of ['male','female']) for(const k of ['model','hat','hair','top','bottom','shoes','face','facial','armor']){
+    try{ const rig=C.buildCharacter(C.fullLook({sex,[k]:m}),{q:1}); if(C.stats(rig).bad) bad.push(k+'='+m+' (NaN)'); }catch(e){ bad.push(k+'='+m+': '+e.message); } }
+  console.warn=warn;
+  ok('a look whose model (or any field) is the name of an Object.prototype member still builds',!bad.length,bad.slice(0,3).join('; '));
+  ok('charModelOf falls back to the base model for those names',names.every(m=>C.charModelOf({model:m})===C.CHAR_MODELS.base)&&C.charModelOf({model:'tansy'})===C.CHAR_MODELS.tansy&&C.charModelOf(null)===C.CHAR_MODELS.base);
+}
+
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

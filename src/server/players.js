@@ -62,8 +62,23 @@ function sanitizeSkills(g){
   out.v=g.v===2?2:1;   // 1 = from before burst skills: they get their free burst on join
   return out;
 }
+/* A look is flat (about 50 fields: strings of up to 8 characters, numbers, booleans) and every client that sees the player builds an avatar from it, so what arrives is cut down to that:
+   a nested object, a long string, a number that is not finite, more than 80 fields, or a name of Object.prototype ('constructor', '__proto__'...: buildCharacter once threw on
+   look.model = 'constructor' for everyone in sight, and a new player joining while that hiker was online could not finish loading) is dropped. Used for hello and for the look message. */
+function cleanLookS(look){
+  const out={}; if(!look||typeof look!=='object'||Array.isArray(look)) return out;
+  let n=0;
+  for(const k of Object.keys(look)){
+    if(++n>80) break; if(k.length>32||PROTO_KEY.has(k)) continue;
+    const v=look[k], t=typeof v;
+    if(t==='number'){ if(isFinite(v)) out[k]=v; }
+    else if(t==='boolean') out[k]=v;
+    else if(t==='string'){ if(v.length<=24&&!PROTO_KEY.has(v)) out[k]=v; }
+  }
+  return out;
+}
 function newPlayer(pid,hello){
-  hello=hello||{}; const save=hello.save||{}, look=(hello.look&&typeof hello.look==='object')?hello.look:{};
+  hello=hello||{}; const save=hello.save||{}, look=cleanLookS(hello.look);
   const sp=VIL.spawn;
   const p={id:pid,name:cleanName(hello.name),look,x:sp.x,y:getH(sp.x,sp.z),z:sp.z,face:0,vx:0,vz:0,
     level:clampInt(save.level,1,PLAYER_MAX_LV,1),exp:Math.max(0,+save.exp||0),gear:sanitizeGear(save.gear,look.cls),
@@ -88,7 +103,7 @@ function pendP(p,stat){ const it=ITEM[p.gear.eq.pendant]; return it&&it.kind==='
 const soulOfP=p=>p.level>=SOUL_LV?p.gear.soul:'basic';
 function youMsg(p){ return {t:'you',level:p.level,exp:p.exp,maxHp:p.maxHp,hp:p.hp,dmg:p.dmg,def:p.def,red:p.red,dead:p.dead,gear:p.gear}; }
 function pubInfo(p){ return {id:p.id,name:p.name,look:p.look,eq:p.gear.eq,level:p.level}; }
-function inVillage(p){ return vDist(p.x,p.z)<VR+12; }
+function inVillage(p){ return vNear(p.x,p.z,VR+12); }
 // the teleport circles (one in each village): standing on one and choosing a destination (the client's travel window, warp{to}) takes you
 // there (CIRCLES in shared/hoarfrost.js: a land's circles wake when you have walked into its village).
 function warpP(p,to){

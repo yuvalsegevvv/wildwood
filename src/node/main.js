@@ -65,13 +65,22 @@ function frame(str){
   return Buffer.concat([head,data]);
 }
 function sendRaw(sock,str){ if(!sock.destroyed) sock.write(frame(str)); }
+const MSG_RATE=120, MSG_BURST=240;   // messages a second one client may send, and the burst it may save up (the game sends about 10 positions and a few attacks a second)
 const world=createWorldServer({
   dev:DEV, snapDt:0.1, store:STORE, auth:AUTH, log,
   kick(pid){ const s=SOCKETS.get(pid); if(s){ SOCKETS.delete(pid); setTimeout(()=>{ try{ s.end(Buffer.from([0x88,0])); }catch(_){} },300); } },
   send(pid,msg){ const s=SOCKETS.get(pid); if(s) sendRaw(s,JSON.stringify(msg)); }
 });
-let last=Date.now();
-setInterval(()=>{ const now=Date.now(); world.tick((now-last)/1000); last=now; },50);
+/* One exception must not take the world (and every player's unsaved progress) down: a throw in tick() or in a message handler is logged (the first time
+   and then every 1000th, so a broken state cannot flood the log) and the server carries on. A tick that fails 100 times in a row (5 s) is a world that is stuck
+   in a broken state: save everyone and exit so the host restarts it. Promise rejections and stray exceptions (a dropped database connection...) are logged too;
+   Node would end the process on them. */
+const ERRS=new Map();
+function logErr(where,e){ if(ERRS.size>500) ERRS.clear(); const k=where+': '+String(e&&e.message).slice(0,200), n=(ERRS.get(k)||0)+1; ERRS.set(k,n);   // (a message that varies with its input must not grow this map for ever)
+  if(n===1||n%1000===0) log(where+' threw'+(n>1?' ('+n+' times)':'')+':',(e&&e.stack)||e); }
+process.on('unhandledRejection',e=>logErr('unhandled rejection',e)); process.on('uncaughtException',e=>logErr('uncaught exception',e));
+let last=Date.now(), tickFails=0;
+setInterval(()=>{ const now=Date.now(); try{ world.tick((now-last)/1000); tickFails=0; }catch(e){ logErr('tick',e); if(++tickFails>=100) shutdown('tick failed 100 times in a row'); } last=now; },50);
 const page=PAGE.replace('</head>','<script>window.WILDWOOD_WS=true;</script>\n</head>'), pageGz=zlib.gzipSync(page,{level:9});
 const pageTag='"'+crypto.createHash('sha1').update(page).digest('hex').slice(0,20)+'"';
 /* Music files (dist/audio/, made by build.py; the page fetches them from /audio/ when a theme first plays). Their names hold a hash of
@@ -107,7 +116,7 @@ server.on('upgrade',(req,sock)=>{
   sock.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: '+acc+'\r\n\r\n');
   sock.setNoDelay(true);
   const pid='p'+(nextId++); SOCKETS.set(pid,sock);
-  let buf=Buffer.alloc(0), frag=[]; sock.lastSeen=Date.now();
+  let buf=Buffer.alloc(0), frag=[], fragLen=0, tokens=MSG_BURST, tokenT=Date.now(), dropped=0; sock.lastSeen=Date.now();
   const close=()=>{ if(SOCKETS.delete(pid)){ world.leave(pid); console.log(new Date().toISOString(),pid,'left, players:',world.players.size); } };
   sock.on('data',chunk=>{
     sock.lastSeen=Date.now();
@@ -123,7 +132,14 @@ server.on('upgrade',(req,sock)=>{
       buf=buf.slice(off+mk+len);
       if(op===8){ sock.end(); close(); return; }
       if(op===9){ sock.write(Buffer.concat([Buffer.from([0x8a,data.length]),data])); continue; }
-      if(op===1||op===0){ frag.push(data); if(fin){ const txt=Buffer.concat(frag).toString('utf8'); frag=[]; try{ world.receive(pid,JSON.parse(txt)); }catch(e){} } }
+      if(op===1||op===0){
+        frag.push(data); fragLen+=data.length; if(fragLen>1<<20){ sock.destroy(); return; }   // a message in endless fragments
+        if(fin){ const txt=Buffer.concat(frag).toString('utf8'); frag=[]; fragLen=0;
+          const now=Date.now(); tokens=Math.min(MSG_BURST,tokens+(now-tokenT)*MSG_RATE/1000); tokenT=now;
+          if(tokens<1){ if(++dropped>3000){ sock.destroy(); return; } continue; }   // a flood: the world's one thread is not for one client (3000 dropped in a row ends the connection)
+          tokens--; dropped=0;
+          let msg; try{ msg=JSON.parse(txt); }catch(e){ continue; }
+          try{ world.receive(pid,msg); }catch(e){ logErr('message '+(msg&&msg.t),e); } } }
     }
   });
   sock.on('close',close); sock.on('error',close);

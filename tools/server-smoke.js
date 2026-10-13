@@ -21,7 +21,9 @@ ok('quest progress and ready',y1.gear.q.ready.includes('g999'));
 W.receive('a',{t:'turnin',id:'g999'}); tick(1); ok('quest hand-in',you('a').gear.q.done===1);
 W.receive('a',{t:'dev',cmd:'coins'}); W.receive('a',{t:'buy',id:'helmet1'}); W.receive('a',{t:'buy',id:'helmet1'}); W.receive('a',{t:'equip',id:'helmet1'}); tick(1);
 const y2=you('a'); ok('shop, rising price, equip',y2.gear.eq.helmet==='helmet1'&&y2.gear.bought.helmet1===2);
-W.receive('a',{t:'dev',cmd:'three'}); tick(1); const three=you('a').gear.inv.find(id=>you('a').gear.inv.filter(v=>v===id).length>=3&&!id.includes('-'));
+for(const id of ['constructor','__proto__','toString','hasOwnProperty']) W.receive('a',{t:'buy',id});   // Object.prototype's names used to pass `if(!ITEM[id])` and charge NaN coins
+tick(1); ok('a prototype name is never an item id (coins stay a number, nothing is added)',Number.isInteger(p.gear.coins)&&p.gear.coins>=0&&!p.gear.inv.some(id=>typeof id!=='string'||id==='constructor'||id==='toString'),'coins '+p.gear.coins);
+W.receive('a',{t:'dev',cmd:'three'}); tick(1); const three=you('a').gear.inv.find(id=>you('a').gear.inv.filter(v=>v===id).length-(Object.values(you('a').gear.eq).includes(id)?1:0)>=3&&!id.includes('-'));   // (a worn copy does not count: the shop check above left three Leather Caps in the bag, one worn, and picking those made this flaky)
 W.receive('a',{t:'merge',id:three}); tick(1); ok('forge merges 3 into the next rarity',you('a').gear.inv.includes(three+'-r'),three+' -> '+three+'-r');
 W.receive('a',{t:'dev',cmd:'level',v:15}); W.receive('a',{t:'dev',cmd:'giveAll'}); ['sword4','helmet4','top4','bottom4','shoes4'].forEach(id=>W.receive('a',{t:'equip',id})); tick(1);
 ok('slots open at 3 and 10 with free abilities',p.gear.skills.eq.warrior.skill==='whirlwind'&&p.gear.skills.eq.warrior.burst==='quake');
@@ -48,6 +50,10 @@ ok('two players beat the boss (shield, totems, adds)',boss.dead,Math.round(secs)
 const snaps=inbox.b.filter(m=>m.t==='snap').map(m=>JSON.stringify(m).length);
 ok('snapshots fit the 4 KB room limit',Math.max(...snaps)<3800,'max '+Math.max(...snaps)+' bytes');
 W.receive('a',{t:'dev',cmd:'weather',v:'storm'}); tick(20*60); ok('weather: storm with thunder',x.W.kind===2&&evs.some(e=>e[0]==='thunder'));
+// a look is shown to every client in sight: the server cuts it down to flat primitives (no nested objects, long strings, non-finite numbers, or names of Object.prototype)
+W.receive('a',{t:'look',look:{cls:'mage',hair:'short',hat:'ranger',model:'constructor',skin:'__proto__',nested:{a:1},list:[1,2],long:'x'.repeat(60),huge:1e999,height:1.05,ahoge:true}}); tick(3);
+{ const L=W.players.get('a').look; ok('a look message is cut down: primitives kept, prototype names / nested / long / non-finite dropped',L.cls==='mage'&&L.hair==='short'&&L.height===1.05&&L.ahoge===true&&!('model' in L)&&!('skin' in L)&&!('nested' in L)&&!('list' in L)&&!('long' in L)&&!('huge' in L),JSON.stringify(L));
+  ok('the changed look reaches the others as an event',evs.some(e=>e[0]==='plook'&&e[2]&&e[2].hair==='short')); }
 W.receive('a',{t:'chat',text:'  hello   there '}); tick(3); ok('chat is cleaned and relayed',evs.some(e=>e[0]==='chat'&&e[3]==='hello there'));
 W.leave('b'); tick(3); ok('leave is broadcast',evs.some(e=>e[0]==='pleave'&&e[1]==='b'));
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

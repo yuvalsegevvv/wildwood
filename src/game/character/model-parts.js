@@ -3,7 +3,7 @@
 const csph=(r,w,h)=>new THREE.SphereGeometry(r,w||10,h||8);
 /* OUTFITS: the signature outfits (game/outfits/<id>.js). OUTFITS[id]=(X,D)=>kit builds one character's kit when look.model is that id; the hooks of a kit (what the body
    builders ask it) are listed in docs/CHARACTER.md section 9. Declared here because every outfit file loads after this one. */
-const OUTFITS={};
+const OUTFITS=Object.create(null);   // (no prototype: look.model comes from other players, and 'constructor' / '__proto__' found Object's members here and made buildCharacter throw for everyone who saw them)
 const matGlow=new THREE.MeshBasicMaterial({vertexColors:true});   // unlit vertex colours: a lantern's paper, a vial, an ember (an outfit's glow; never a light source)
 // Phong lights every pixel from the interpolated normal; Lambert (per-vertex light) showed each triangle's edges on bodies
 const matChar=new THREE.MeshPhongMaterial({vertexColors:true,shininess:6,specular:0x0b0b0b});

@@ -39,16 +39,19 @@ function startWS(){
   });
 }
 /* ---- claude.ai shared room ---- */
+/* A room message is at most 4 KB, so anything bigger travels as numbered parts of one id, in either direction: the host's snapshots and private state ('s', {to,m}) and a joiner's
+   hello, whose saved gear alone is 2-7 KB ('c'; before this it was sent whole, the room refused it and a player with a few items could never join a shared world). The envelope carries
+   c:1 because the messages themselves have a k of their own (atk{k:'basic'}, potion{k}): unchunk() must not take those for parts. */
 function chunkSend(room,topic,obj){
   const s=JSON.stringify(obj);
   if(s.length<3600) return room.emit(topic,obj).catch(netEmitError);
   const id=Math.random().toString(36).slice(2,8); let size=2400, parts=[];
-  for(;;){ parts=[]; for(let i=0;i<s.length;i+=size) parts.push(s.slice(i,i+size)); if(parts.every(p=>JSON.stringify({k:id,i:0,n:parts.length,p,to:obj.to}).length<3800)) break; size=Math.floor(size*0.7); }
-  parts.forEach((p,i)=>room.emit(topic,{k:id,i,n:parts.length,p,to:obj.to}).catch(netEmitError));
+  for(;;){ parts=[]; for(let i=0;i<s.length;i+=size) parts.push(s.slice(i,i+size)); if(parts.every(p=>JSON.stringify({c:1,k:id,i:0,n:parts.length,p,to:obj.to}).length<3800)) break; size=Math.floor(size*0.7); }
+  parts.forEach((p,i)=>room.emit(topic,{c:1,k:id,i,n:parts.length,p,to:obj.to}).catch(netEmitError));
 }
 const CHUNKS=new Map();
 function unchunk(d){
-  if(!d||d.k===undefined) return d;
+  if(!d||d.k===undefined||!(d.c===1||(typeof d.p==='string'&&d.n>0&&d.i>=0))) return d;   // (parts without c:1 come from a host running the page from before it was added)
   let c=CHUNKS.get(d.k); if(!c){ c={n:d.n,got:0,parts:[],t:Date.now()}; CHUNKS.set(d.k,c); }
   if(c.parts[d.i]===undefined){ c.parts[d.i]=d.p; c.got++; }
   for(const [k,v] of CHUNKS) if(Date.now()-v.t>5000) CHUNKS.delete(k);
@@ -75,7 +78,7 @@ async function startRoom(name){
     if(d.to==='*'||d.to===me) netHandle(d.m);
   });
   // messages from clients (only the host listens)
-  room.on('c',msg=>{ if(!NET.host||msg.sameTab||!NET.server) return; try{ NET.server.receive(msg.peer,msg.data); }catch(e){ console.error(e); } });
+  room.on('c',msg=>{ if(!NET.host||msg.sameTab||!NET.server) return; try{ const d=unchunk(msg.data); if(d) NET.server.receive(msg.peer,d); }catch(e){ console.error(e); } });
   room.onPeers(ch=>{
     if(NET.host&&NET.server) for(const p of ch.left) NET.server.leave(p.peer);
     if(!NET.host&&hostPeer&&ch.left.some(p=>p.peer===hostPeer)){ hostPeer=null; NET.ready=false; status('The host left. Finding a new host…'); toast('The host left; moving the world to another player','bad'); }
@@ -97,7 +100,7 @@ async function startRoom(name){
   };
   const joinHost=peer=>{
     hostPeer=peer; NET.host=false; status('Joining the world hosted by another player…');
-    NET.send=msg=>room.emit('c',msg).catch(netEmitError);
+    NET.send=msg=>chunkSend(room,'c',msg);
     netHello();
   };
   // election: every 1.5 s, check who hosts; the oldest page hosts when nobody does
