@@ -111,7 +111,7 @@ function dgSetPosS(p,v){
   const lx=v[0]-run.ox, lz=v[2]-run.oz, ox=p.x-run.ox, oz=p.z-run.oz;
   if(Math.hypot(lx-ox,lz-oz)>DG_POS_JUMP) return;
   const s=dgSlide(run.B,ox,oz,lx,lz,DG_PLAYER_R);
-  p.x=run.ox+s[0]; p.z=run.oz+s[1]; p.y=clamp(v[1],DG_FLOOR_Y,DG_FLOOR_Y+6); p.face=isFinite(v[3])?v[3]:p.face; p.vx=v[4]||0; p.vz=v[5]||0;
+  p.x=run.ox+s[0]; p.z=run.oz+s[1]; p.y=clamp(v[1],DG_FLOOR_Y,DG_FLOOR_Y+6); p.face=isFinite(v[3])?v[3]%(2*Math.PI):p.face; p.vx=clamp(v[4]||0,-POS_V,POS_V); p.vz=clamp(v[5]||0,-POS_V,POS_V);   // (face and speed bounded as in setPos: they go out in snapshots)
   p.dgX=p.x; p.dgZ=p.z;
 }
 // a charge or dash inside a run (combat.js clamps it to the world first): from the last good place toward the target, stopping short of the first wall

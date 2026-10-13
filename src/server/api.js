@@ -57,11 +57,14 @@ function leave(pid){
   ev('pleave',pid);
   for(const m of MONS) if(m.tgt===pid){ m.aggro=false; m.tgt=null; m.state='return'; m.pendingHit=-1; }
 }
+const POS_Y_MIN=-60, POS_Y_MAX=600, POS_V=80;   // what a client may report for its height (m) and its speed (m/s)
 function setPos(pid,d){
   const p=S.players.get(pid); if(!p||p.dead||!Array.isArray(d)) return;
   const v=d.map(Number); if(!v.slice(0,3).every(isFinite)) return;
   if(p.inst||dgInSlots(v[0])){ dgSetPosS(p,v); return; }   // dungeons: inside a run (its grid, never into a wall); slot coordinates from a hiker in no run are a late message: ignored
-  p.x=clamp(v[0],WX0,WX1); p.y=v[1]; p.z=clamp(v[2],WZ0,WZ1); p.face=isFinite(v[3])?v[3]:p.face; p.vx=v[4]||0; p.vz=v[5]||0;
+  // (the numbers come from the client and go out again in every other player's snapshot, rounded by r1(): a finite but huge y, face or speed (1e308) became Infinity there, and JSON turned it
+  // into null for everyone. The terrain is -10..232 m, an angle only matters modulo a turn, and nobody runs faster than a dash)
+  p.x=clamp(v[0],WX0,WX1); p.y=clamp(v[1],POS_Y_MIN,POS_Y_MAX); p.z=clamp(v[2],WZ0,WZ1); p.face=isFinite(v[3])?v[3]%(2*Math.PI):p.face; p.vx=clamp(v[4]||0,-POS_V,POS_V); p.vz=clamp(v[5]||0,-POS_V,POS_V);
   if(p.gear.east<1 && p.x>TUN.p0) p.x=TUN.p0;   // the barred bridge
   if(p.gear.north<1 && inVale(p.x,p.z) && p.z<northBarZ(p.x)) p.z=northBarZ(p.x);   // the ice wall in Frostgate Pass (and the crest elsewhere along the vale's north wall)
   if(p.gear.west<1 && p.z<borderZ(p.x) && p.x<GLEN.ice && Math.abs(p.z-GLEN.z)<GLEN.w+6) p.x=GLEN.ice;   // the ice fall in the glacier valley

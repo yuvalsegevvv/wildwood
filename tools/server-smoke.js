@@ -2,7 +2,7 @@
 // Usage: node tools/server-smoke.js
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
-const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['MONS','getH','W','BOSSES']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['MONS','getH','W','BOSSES','COINS_MAX','EXP_MAX']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ for(let i=0;i<n;i++){ W.tick(0.05); if(keepAlive) for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
@@ -63,6 +63,19 @@ W.receive('a',{t:'look',look:{cls:'mage',hair:'short',hat:'ranger',model:'constr
 // a save is JSON the client controls: an own '__proto__' key (JSON.parse makes one) must not become a map's prototype, an own 'toString' must not make the sanitizers throw
 { inbox.px=[]; let thrown=null; try{ W.receive('px',JSON.parse('{"t":"hello","name":"Proto","look":{"cls":"warrior"},"save":{"level":5,"gear":{"coins":{"toString":1},"bought":{"__proto__":{"helmet1":-1000},"toString":3,"helmet1":1},"inv":[{"toString":1},"sword1"],"skills":{"owned":[{"valueOf":1}]}}}}')); }catch(e){ thrown=e.message; } tick(2);
   const q=W.players.get('px'); ok('a hello whose save has own __proto__ / toString keys still joins, and no map inherits from it',!!q&&Object.getPrototypeOf(q.gear.bought)===Object.prototype&&!(Object.keys(q.gear.bought).length>0&&q.gear.bought.helmet1<0)&&q.gear.inv.every(id=>typeof id==='string')&&Number.isInteger(q.gear.coins),thrown?'threw: '+thrown:q?JSON.stringify(q.gear.bought):'did not join'); if(q) W.leave('px'); }
+// numbers a client reports go out again in everyone's snapshot, rounded (x10, x100): a huge but finite y, face or speed (1e308) became Infinity there, and JSON turned it into null for every other player
+{ inbox.pz=[]; inbox.qz=[]; W.join('pz',{name:'Huge',look:{cls:'warrior'},save:{level:3}}); W.join('qz',{name:'Watcher',look:{cls:'warrior'},save:{level:3}}); tick(2);
+  W.setPos('pz',[10,-1e308,10,1e308,1e308,-1e308]); W.receive('pz',{t:'atk',k:'basic',face:-1e308}); tick(4);
+  const row=[...inbox.qz].reverse().filter(m=>m.t==='snap').map(m=>(m.pl||[]).find(r=>r[0]==='pz')).find(Boolean), pacts=evs.filter(e=>e[0]==='pact'&&e[1]==='pz');
+  ok('a huge y, face or speed from a client is bounded: the others get a row of numbers (not null)',!!row&&row.slice(1).every(v=>typeof v==='number'),JSON.stringify(row));
+  ok('...and the attack event carries a number too',pacts.length>0&&pacts.every(e=>typeof e[3]==='number'),JSON.stringify(pacts[0]));
+  W.leave('pz'); W.leave('qz'); }
+// a save is the client's word: coins and exp are capped (an Infinity turns into null on the next save), and an id list holds strings only (an array ["sword1"] is the key 'sword1' to a plain object)
+{ inbox.hz=[]; W.receive('hz',JSON.parse('{"t":"hello","name":"Forged","look":{"cls":"warrior"},"save":{"level":3,"exp":1e999,"gear":{"coins":1e999,"inv":[["sword1"],"sword1",{"toString":1},7],"skills":{"owned":[["whirlwind"],"whirlwind"]},"q":{"ready":[["g1"]]}}}}'));
+  const h=W.players.get('hz'), g=h&&h.gear;
+  ok('a forged save: coins and exp are capped, not Infinity',!!h&&g.coins===x.COINS_MAX&&h.exp===x.EXP_MAX,h&&('coins '+g.coins+', exp '+h.exp));
+  ok('...and the inventory and the owned skills hold strings only',!!h&&g.inv.every(v=>typeof v==='string')&&g.skills.owned.every(v=>typeof v==='string')&&g.q.ready.every(v=>typeof v==='string'),h&&JSON.stringify([g.inv.slice(0,4),g.skills.owned.slice(0,4)]));
+  W.leave('hz'); }
 W.receive('a',{t:'chat',text:'  hello   there '}); tick(3); ok('chat is cleaned and relayed',evs.some(e=>e[0]==='chat'&&e[3]==='hello there'));
 W.leave('b'); tick(3); ok('leave is broadcast',evs.some(e=>e[0]==='pleave'&&e[1]==='b'));
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

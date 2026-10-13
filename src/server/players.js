@@ -5,7 +5,7 @@
 function sanitizeGear(g,cls){
   const base=newGearFor(cls);
   if(!g||typeof g!=='object') return base;
-  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.max(0,Math.floor(+g.coins||0)),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
+  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>typeof id==='string'&&ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.min(COINS_MAX,Math.max(0,Math.floor(+g.coins||0))),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
   if(g.mats&&typeof g.mats==='object') for(const id in g.mats){ const n=MATS[id]?clampInt(g.mats[id],0,MAT_MAX,0):0; if(n) out.mats[id]=n; }
   if(g.eq) for(const k in out.eq){ const id=g.eq[k], it=ITEM[id]; if(it&&out.inv.includes(id)&&(k==='weapon'?it.kind==='weapon':it.slot===k)) out.eq[k]=id; else if(k!=='weapon') out.eq[k]=null; }
   if(!ITEM[out.eq.weapon]) out.eq.weapon=base.eq.weapon;
@@ -40,7 +40,7 @@ function sanitizeQuests(q){
   out.next=clampInt(q.next,1,1e9,1); out.done=typeof q.done==='number'?clampInt(q.done,0,1e9,0):0;
   if(Array.isArray(q.offers)) out.offers=q.offers.map(sanitizeQuest).filter(Boolean).slice(0,QUEST_OFFERS);
   if(q.defs&&q.active) for(const id in q.active){ const d=sanitizeQuest(q.defs[id]); if(d&&Object.keys(out.active).length<QUEST_MAX_ACTIVE){ out.defs[id]=d; out.active[id]=clampInt(q.active[id],0,d.count||1,0); } }
-  if(Array.isArray(q.ready)) out.ready=q.ready.filter(id=>id in out.active);
+  if(Array.isArray(q.ready)) out.ready=q.ready.filter(id=>typeof id==='string'&&id in out.active);
   for(const x of [...out.offers,...Object.values(out.defs)]){ const n=parseInt(x.id.slice(1),10); if(n>=out.next) out.next=n+1; }
   return out;
 }
@@ -50,7 +50,7 @@ function cleanName(s){ return String(s||'').replace(/[\u0000-\u001f\u007f-\u009f
 function sanitizeSkills(g){
   const out=newSkills(); out.v=2;
   if(!g||typeof g!=='object') return out;
-  if(Array.isArray(g.owned)) for(const id of g.owned) if(skillDef(id)&&!out.owned.includes(id)) out.owned.push(id);
+  if(Array.isArray(g.owned)) for(const id of g.owned) if(typeof id==='string'&&skillDef(id)&&!out.owned.includes(id)) out.owned.push(id);   // (typeof: an id of ["sword1"] is the key 'sword1' to a plain object, passed the lookup and sat in the list as an array)
   if(g.eq) for(const c in out.eq){
     const e=g.eq[c], slots=typeof e==='string'?{skill:e}:(e&&typeof e==='object'?e:{});
     for(const sl of SLOTS){ const id=slots[sl]; if(SKILLS[id]&&(SKILLS[id].cls===c||SKILLS[id].cls==='any')&&SKILLS[id].slot===sl&&out.owned.includes(id)&&canSwap(c,sl,out)) out.eq[c][sl]=id; }   // skillsets: cls 'any' fits every class; owning a slot-1 piece frees the basic slot
@@ -81,7 +81,7 @@ function newPlayer(pid,hello){
   hello=hello||{}; const save=hello.save||{}, look=cleanLookS(hello.look);
   const sp=VIL.spawn;
   const p={id:pid,name:cleanName(hello.name),look,x:sp.x,y:getH(sp.x,sp.z),z:sp.z,face:0,vx:0,vz:0,
-    level:clampInt(save.level,1,PLAYER_MAX_LV,1),exp:Math.max(0,+save.exp||0),gear:sanitizeGear(save.gear,look.cls),
+    level:clampInt(save.level,1,PLAYER_MAX_LV,1),exp:Math.min(EXP_MAX,Math.max(0,+save.exp||0)),gear:sanitizeGear(save.gear,look.cls),
     hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0},buff:null,act:null,dirty:true,travelT:0};
   if(p.gear.startAll) giveAllP(p);
   if(p.gear.skills.v!==2){ autoEquipP(p,'skill'); autoEquipP(p,'burst'); p.gear.skills.v=2; }   // saves from before skills / bursts get the free ones

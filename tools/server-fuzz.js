@@ -10,12 +10,14 @@ const ROUNDS=arg('--rounds',6000), NP=arg('--players',3), NODEV=process.argv.inc
 let seed=arg('--seed',1)>>>0; const rnd=()=>{ seed=(seed+0x6D2B79F5)>>>0; let t=seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
 const pick=a=>a[Math.floor(rnd()*a.length)];
 const inbox=[];
-const {api:W,x}=loadServer({dev:!NODEV,send(pid,m){ try{ JSON.stringify(m); }catch(e){ bad.push('unserializable message to a client: '+e.message); } },broadcast(){}},['MONS','getH','ITEM','SKILLS','NODES','CLASSES','MON_BY_ID','PASSIVES','SS_ORDER']);
+// JSON turns a NaN or an Infinity into null, which the client would then read as a number: no message to a client may hold one
+const nonFinite=(v,d)=>{ if(typeof v==='number') return !isFinite(v); if(v&&typeof v==='object'&&d<7){ for(const k in v) if(nonFinite(v[k],d+1)) return true; } return false; };
+const {api:W,x}=loadServer({dev:!NODEV,send(pid,m){ try{ JSON.stringify(m); }catch(e){ bad.push('unserializable message to a client: '+e.message); } if(nonFinite(m,0)) bad.push('a "'+m.t+'" message to a client holds a NaN or an Infinity: '+JSON.stringify(m,(k,v)=>typeof v==='number'&&!isFinite(v)?String(v):v).match(/.{0,60}(NaN|Infinity).{0,30}/)); },broadcast(){}},['MONS','getH','ITEM','SKILLS','NODES','CLASSES','MON_BY_ID','PASSIVES','SS_ORDER']);
 const bad=[], thrown=new Map();
 const note=(where,e)=>{ const k=where+': '+String(e&&e.message).slice(0,100)+' @ '+String(e&&e.stack).split('\n').slice(1,3).map(s=>s.trim().replace(/\(.*[\\/]/,'(')).join(' < '); const n=thrown.get(k)||0; thrown.set(k,n+1); };
 // words the server really knows: random junk alone dies in the first guard
 const WORDS=[...Object.keys(x.ITEM||{}).slice(0,400),...Object.keys(x.SKILLS||{}),'warrior','archer','mage','fire','water','earth','air','dark','light','home','vale','hoar','grey','hanami','rimehold','highmark','mining','woodcutting','gathering','basic','skill','burst','pass','talk','pick','read','set','try','all','giveAll','level','coins','weather','storm','tunnel','vale','north','west','hoar','zt','mq','god','heal','three','storm','dg','join','invite','accept','decline','kick','leave','lead','start','gift','a','b','x','__proto__','constructor','prototype','toString','hasOwnProperty','','0','1','-1','NaN','Infinity','null','undefined'];
-const NUMS=[0,1,2,3,5,10,-1,-5,0.5,1e-9,255,256,1000,1e6,2**31,2**53,1e308,-1e308,1e999,-1e999];
+const NUMS=[0,1,2,3,5,10,-1,-5,0.5,1e-9,255,256,1000,1e6,2**31,2**53,1e308,-1e308,1e999,-1e999,1e300,-1e300,1e15,9e15,4e-324];
 const junk=(d=0)=>{ const r=rnd();
   if(r<0.22) return pick(WORDS); if(r<0.40) return pick(NUMS); if(r<0.46) return null; if(r<0.50) return rnd()<0.5; if(r<0.54) return 'x'.repeat(Math.floor(rnd()*6000));
   if(r<0.62) return Math.floor(rnd()*(x.NODES?x.NODES.length+5:400)); if(r<0.68) return pick(x.MONS).id; if(r<0.72&&d<3) return [junk(d+1),junk(d+1),junk(d+1),junk(d+1),junk(d+1),junk(d+1)].slice(0,Math.floor(rnd()*7));
@@ -46,6 +48,8 @@ const check=(r)=>{
     const g=p.gear; if(!g){ bad.push(`round ${r}: player ${id} has no gear`); continue; }
     if(!Number.isInteger(g.coins)||g.coins<0) bad.push(`round ${r}: coins = ${g.coins}`);
     if(!Array.isArray(g.inv)||g.inv.some(v=>typeof v!=='string')) bad.push(`round ${r}: inventory has a non-string`);
+    if(g.skills&&Array.isArray(g.skills.owned)&&g.skills.owned.some(v=>typeof v!=='string')) bad.push(`round ${r}: the owned skills have a non-string`);
+    if(g.q&&Array.isArray(g.q.ready)&&g.q.ready.some(v=>typeof v!=='string')) bad.push(`round ${r}: the ready quests have a non-string`);
     if(p.level<1||p.level>99||!Number.isInteger(p.level)) bad.push(`round ${r}: level = ${p.level}`);
     { const L=p.look; if(!L||typeof L!=='object'||Object.keys(L).length>80||Object.entries(L).some(([k,v])=>typeof v==='object'||(typeof v==='string'&&(v.length>24||v==='constructor'||v==='__proto__'))||(typeof v==='number'&&!isFinite(v)))) bad.push(`round ${r}: player ${id}'s look is not a flat object of short primitives: ${JSON.stringify(L).slice(0,120)}`); }   // every client in sight builds an avatar from it
     if(Object.prototype.polluted||({}).polluted) bad.push('prototype pollution: Object.prototype.polluted is set');

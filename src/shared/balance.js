@@ -34,6 +34,7 @@ const LV_DMG_MIN=0.5, lvDmgK=ld=>Math.max(LV_DMG_MIN,1-0.05*ld);
    (a monster 10 levels above you) the step 50 -> 51 takes about 450 kills, 55 -> 56 about 6,300 and 60 -> 61 about 90,000. PLAYER_MAX_LV is only the technical ceiling a save or the testing tool is
    clamped to, far beyond where anyone gets. */
 const LV_SOFT=50, LV_SOFT_GROWTH=1.5, PLAYER_MAX_LV=99;
+const COINS_MAX=1e12, EXP_MAX=1e12;   // what a saved or reported number may be at most: a save is data from the client ("Infinity", 1e308), and JSON turns an Infinity into null on the next save, a sum of two into NaN
 const expDmg=L=>3*fLv(L)+TIER_ATK[tierFor(L)];
 const expHP=L=>20*fLv(L)+setHP(tierFor(L));
 const expRed=L=>defRed(setDef(tierFor(L)));
