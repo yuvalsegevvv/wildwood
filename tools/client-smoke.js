@@ -226,7 +226,7 @@ const el=s=>document.querySelector(s);
     G.P.x-=dir.dx*1.2; G.P.z-=dir.dz*1.2; G.P.yaw=Math.atan2(dir.dx,dir.dz); G.P.pitch=0; for(let i=0;i<10;i++) G.updateCamera(0.05);
     { const d=Math.hypot(G.camera.position.x-G.P.x,G.camera.position.z-G.P.z); ok('dungeon: with a wall behind you the camera\'s arm shortens',d<2.2,'arm '+d.toFixed(2)+' m'); }
     for(let i=0;i<100&&G.MONS.filter(m=>m.dgK).length<=3;i++){ await wait(200); G=c.G(); }   // (the roster arrives in a message of its own: wait for it, a loaded machine was slow once)
-    ok('dungeon: the run\'s monsters have views at the run\'s level',G.MONS.filter(m=>m.dgK&&G.monTierK(m).lv===R.L).length>3);
+    { const dm=G.MONS.filter(m=>m.dgK); ok('dungeon: the run\'s monsters have views at the run\'s level',dm.filter(m=>G.monTierK(m).lv===R.L).length>3,dm.length+' views of the run, levels '+[...new Set(dm.map(m=>G.monTierK(m).lv))].join('/')+', the run\'s level '+R.L); }
     G.applySnap({dg:[0,40,0,3,9]}); G.dgHudTick(0.016); ok('dungeon: the dg snapshot drives the HUD text',el('#dgHudTitle').textContent==='Purge'&&el('#dgHudLines')._kids.some(k=>k.textContent==='Monsters slain: 3 / 9'));
     const me=G.NET.pid; G.applyEvent(['pty',me,me,[[me,'Me',100,100,50,0,R.id],[4242,'Ann',0,120,29,1,R.id]]]);
     ok('dungeon: a downed member shows in the party frame',!el('#dgPtyFrame').hidden&&el('#dgPtyFrame')._kids.length===1&&/down/.test(el('#dgPtyFrame')._kids[0].className));
