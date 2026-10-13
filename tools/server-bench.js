@@ -35,10 +35,10 @@ for(let k=0;k<ticks;k++){
   const s0=process.hrtime.bigint(), b0=snaps; W.tick(dt); const ms=Number(process.hrtime.bigint()-s0)/1e6;
   all.push(ms); if(snaps!==b0) snapT.push(ms); tt+=ms;
 }
-const stat=a=>{ const s=[...a].sort((p,q)=>p-q); return {mean:a.reduce((p,q)=>p+q,0)/a.length,p95:s[Math.floor(s.length*0.95)],max:s[s.length-1]}; };
+const stat=a=>{ if(!a.length) return {mean:0,p95:0,max:0}; const s=[...a].sort((p,q)=>p-q); return {mean:a.reduce((p,q)=>p+q,0)/a.length,p95:s[Math.floor(s.length*0.95)],max:s[s.length-1]}; };   // (no players: no snapshot is sent, so there are no snapshot ticks to measure)
 const A=stat(all), B=stat(snapT), f=v=>v.toFixed(2);
 console.log(`${N} players, ${SECS} s of play, ${x.MONS.length} monsters (${x.MONS.filter(m=>m.awake&&!m.dead).length} awake at the end)`);
 console.log(`tick, all:       mean ${f(A.mean)} ms   p95 ${f(A.p95)}   max ${f(A.max)}   (${(A.mean/50*100).toFixed(1)}% of a core at 20 Hz)`);
 console.log(`tick, snapshot:  mean ${f(B.mean)} ms   p95 ${f(B.p95)}   max ${f(B.max)}   (${snapT.length} of ${ticks} ticks)`);
-console.log(`snapshot size:   mean ${snaps?Math.round(bytes/snaps):0} bytes   max ${maxBytes}   per client ${(bytes/SECS/N/1024).toFixed(1)} KB/s`);
+console.log(`snapshot size:   mean ${snaps?Math.round(bytes/snaps):0} bytes   max ${maxBytes}   per client ${N?(bytes/SECS/N/1024).toFixed(1):0} KB/s`);
 if(CHECK&&A.mean>CHECK){ console.log('FAIL mean tick above '+CHECK+' ms'); process.exit(1); }
