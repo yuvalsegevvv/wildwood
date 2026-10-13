@@ -8,7 +8,7 @@
 const dgEntDet=LITE?0:LOW?1:2;   // 2 desktop, 1 phone (fewer details, nothing moves), 0 light mode (the bare shapes)
 const DG_ENT_VIS=420;            // a door's group is hidden beyond this (the fog ends at about 230 m; the Elder's crown and the Barrow's column are what show from afar)
 const dgEntMat2=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});   // open shells seen from both sides (a hollow trunk)
-const dgEntC=new THREE.Color(), dgEntC2=new THREE.Color();
+const dgEntC=new THREE.Color();
 let dgEntSpr=null;
 function dgEntSprite(){   // a soft round puff (mist, fireflies)
   if(!dgEntSpr){ const c=document.createElement('canvas'); c.width=c.height=32; const g=c.getContext('2d'), r=g.createRadialGradient(16,16,0,16,16,16);

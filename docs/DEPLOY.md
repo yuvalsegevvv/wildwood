@@ -17,6 +17,10 @@ Game traffic, per client (measured on the server's own snapshots, `broadcastSnap
 spread over the woods (before per-player snapshots: 63-79 KB/s, and the total out of the server grew with the square of the players).
 The free plan allows 100 GB a month outbound: 100 players playing 3 hours a day would use about 35 GB.
 
+## Checking the deployed server before a push
+
+`node tools/host-smoke.js` starts `dist/wildwood-server.js` as its own process (files in a temp folder, a free port, testing tools off) and speaks HTTP and raw WebSocket frames to it: the page in brotli / gzip / plain, the ETag and 304, the music route and its 404s, the handshake, hello -> welcome, ping / pong, fragmented and garbage messages, a control frame that is too long, a flood of messages (cut off: the excess is dropped, and more than 3000 drops net of 100 a second ends the connection), and SIGTERM (saves, exits). Build first. A connection that stops reading is cut when 2 MB are waiting in its socket (`SEND_CAP`).
+
 ## Database
 
 **Database (exists, in use).** A free **Neon** Postgres (neon.tech, project `wildwood`, branch `production`,

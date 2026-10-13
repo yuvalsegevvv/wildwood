@@ -74,7 +74,8 @@ function frame(str){
   const head=n<126?Buffer.from([0x81,n]):n<65536?Buffer.from([0x81,126,n>>8,n&255]):(()=>{ const b=Buffer.alloc(10); b[0]=0x81; b[1]=127; b.writeBigUInt64BE(BigInt(n),2); return b; })();
   return Buffer.concat([head,data]);
 }
-function sendRaw(sock,str){ if(!sock.destroyed) sock.write(frame(str)); }
+const SEND_CAP=2<<20;   // bytes a client may leave unread in its socket's buffer (about three minutes of snapshots): a connection that stopped reading but still answers pings would otherwise grow the server's memory for ever
+function sendRaw(sock,str){ if(sock.destroyed) return; if(sock.writableLength>SEND_CAP){ sock.destroy(); return; } sock.write(frame(str)); }
 const MSG_RATE=120, MSG_BURST=240;   // messages a second one client may send, and the burst it may save up (the game sends about 10 positions and a few attacks a second)
 const world=createWorldServer({
   dev:DEV, snapDt:0.1, store:STORE, auth:AUTH, log,
@@ -140,7 +141,7 @@ server.on('upgrade',(req,sock)=>{
       const fin=buf[0]&0x80, op=buf[0]&15, masked=buf[1]&0x80; let len=buf[1]&127, off=2;
       if(len===126){ if(buf.length<4) return; len=buf.readUInt16BE(2); off=4; }
       else if(len===127){ if(buf.length<10) return; len=Number(buf.readBigUInt64BE(2)); off=10; }
-      if(len>1<<20){ sock.destroy(); return; }
+      if(len>1<<20||(op>=8&&(len>125||!fin))){ sock.destroy(); return; }   // too long a message; a control frame (close, ping, pong) is one piece of at most 125 bytes, and the pong below is written with a one-byte length
       const mk=masked?4:0; if(buf.length<off+mk+len) return;
       const mask=masked?buf.slice(off,off+4):null, data=Buffer.from(buf.slice(off+mk,off+mk+len));
       if(mask) for(let i=0;i<data.length;i++) data[i]^=mask[i&3];
@@ -150,9 +151,9 @@ server.on('upgrade',(req,sock)=>{
       if(op===1||op===0){
         frag.push(data); fragLen+=data.length; if(fragLen>1<<20){ sock.destroy(); return; }   // a message in endless fragments
         if(fin){ const txt=Buffer.concat(frag).toString('utf8'); frag=[]; fragLen=0;
-          const now=Date.now(); tokens=Math.min(MSG_BURST,tokens+(now-tokenT)*MSG_RATE/1000); tokenT=now;
-          if(tokens<1){ if(++dropped>3000){ sock.destroy(); return; } continue; }   // a flood: the world's one thread is not for one client (3000 dropped in a row ends the connection)
-          tokens--; dropped=0;
+          const now=Date.now(), waited=now-tokenT; tokens=Math.min(MSG_BURST,tokens+waited*MSG_RATE/1000); dropped=Math.max(0,dropped-waited/10); tokenT=now;   // (the count of drops fades by 100 a second)
+          if(tokens<1){ if(++dropped>3000){ sock.destroy(); return; } continue; }   // a flood: the world's one thread is not for one client (an excess is dropped, and more than 3000 dropped, net of the 100 a second that fade, ends the connection; a refilled token letting one message through must not reset the count, or a steady flood is never cut off)
+          tokens--;
           let msg; try{ msg=JSON.parse(txt); }catch(e){ continue; }
           try{ world.receive(pid,msg); }catch(e){ logErr('message '+(msg&&msg.t),e); } } }
     }
