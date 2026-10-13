@@ -2,7 +2,8 @@
 // (JSON-shaped: nulls, huge and negative numbers, 1e999, strings that look like prototype keys, deep objects, arrays) mixed with real ids (items,
 // skills, nodes, monsters, lands), the world is ticked between them, and afterwards the state must still be sane.
 // Fails on: a handler or tick() that throws (the Node host swallows a throw from receive() and CRASHES on one from tick()), a non-finite number in a
-// player or monster, a negative or fractional coin count, an inventory that is not an array of strings, a snapshot that cannot be serialized.
+// player or monster, a negative or fractional coin count, an inventory that is not an array of strings, a message to a client that cannot be serialized or holds a NaN / Infinity (JSON makes it null: a
+// client-reported y of 1e308 once did, after x10 rounding), a save that changes when cleaned a second time (sanitizeGear must be idempotent), and, with --nodev, any effect of a dev / rwdev message.
 // Usage: node tools/server-fuzz.js [--rounds 6000] [--seed 1] [--players 3] [--nodev] [--verbose]      (--nodev: the deployed server's setting)
 const {loadServer,findNonFinite}=require('./load');
 const arg=(n,d)=>{ const i=process.argv.indexOf(n); return i>0?+process.argv[i+1]:d; };
@@ -10,7 +11,7 @@ const ROUNDS=arg('--rounds',6000), NP=arg('--players',3), NODEV=process.argv.inc
 let seed=arg('--seed',1)>>>0; const rnd=()=>{ seed=(seed+0x6D2B79F5)>>>0; let t=seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
 const pick=a=>a[Math.floor(rnd()*a.length)];
 const inbox=[];
-const {api:W,x}=loadServer({dev:!NODEV,send(pid,m){ try{ JSON.stringify(m); }catch(e){ bad.push('unserializable message to a client: '+e.message); } const nf=findNonFinite(m); if(nf) bad.push('a message to a client holds a NaN or an Infinity (JSON makes it null): '+nf); },broadcast(){}},['MONS','getH','ITEM','SKILLS','NODES','CLASSES','MON_BY_ID','PASSIVES','SS_ORDER']);
+const {api:W,x}=loadServer({dev:!NODEV,send(pid,m){ try{ JSON.stringify(m); }catch(e){ bad.push('unserializable message to a client: '+e.message); } const nf=findNonFinite(m); if(nf) bad.push('a message to a client holds a NaN or an Infinity (JSON makes it null): '+nf); },broadcast(){}},['MONS','getH','ITEM','SKILLS','NODES','CLASSES','MON_BY_ID','PASSIVES','SS_ORDER','sanitizeGear']);
 const bad=[], thrown=new Map();
 const note=(where,e)=>{ const k=where+': '+String(e&&e.message).slice(0,100)+' @ '+String(e&&e.stack).split('\n').slice(1,3).map(s=>s.trim().replace(/\(.*[\\/]/,'(')).join(' < '); const n=thrown.get(k)||0; thrown.set(k,n+1); };
 // words the server really knows: random junk alone dies in the first guard
@@ -45,6 +46,9 @@ const check=(r)=>{
     for(const k of ['x','y','z','hp','maxHp','exp','level','face']) if(typeof p[k]!=='number'||!isFinite(p[k])) bad.push(`round ${r}: player ${id}.${k} = ${p[k]}`);
     const g=p.gear; if(!g){ bad.push(`round ${r}: player ${id} has no gear`); continue; }
     if(!Number.isInteger(g.coins)||g.coins<0) bad.push(`round ${r}: coins = ${g.coins}`);
+    // saving and loading must not drift: what a save is cleaned to is cleaned to itself (else a hiker loses or gains something at every login)
+    try{ const g1=x.sanitizeGear(JSON.parse(JSON.stringify(g)),p.look&&p.look.cls), g2=x.sanitizeGear(JSON.parse(JSON.stringify(g1)),p.look&&p.look.cls), a=JSON.stringify(g1), b=JSON.stringify(g2);
+      if(a!==b){ let i=0; while(i<a.length&&a[i]===b[i]) i++; bad.push(`round ${r}: sanitizeGear is not idempotent, they differ at ...${a.slice(Math.max(0,i-60),i+60)}... / ...${b.slice(Math.max(0,i-60),i+60)}...`); } }catch(e){ note('sanitizeGear twice',e); }
     if(!Array.isArray(g.inv)||g.inv.some(v=>typeof v!=='string')) bad.push(`round ${r}: inventory has a non-string`);
     if(g.skills&&Array.isArray(g.skills.owned)&&g.skills.owned.some(v=>typeof v!=='string')) bad.push(`round ${r}: the owned skills have a non-string`);
     if(g.q&&Array.isArray(g.q.ready)&&g.q.ready.some(v=>typeof v!=='string')) bad.push(`round ${r}: the ready quests have a non-string`);
