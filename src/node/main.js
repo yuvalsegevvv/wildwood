@@ -1,4 +1,4 @@
-//@ Node host: serves the game page (gzip, ETag) and the music files (/audio/, cached for a year) over HTTP and runs the world server over WebSocket (no npm packages needed)
+//@ Node host: serves the game page (brotli or gzip, ETag) and the music files (/audio/, cached for a year) over HTTP and runs the world server over WebSocket (no npm packages needed)
 /* Usage:  node wildwood-server.js [--port 8080] [--host 0.0.0.0] [--no-dev]
    Then open http://localhost:8080 in several tabs or on several devices on your network.
    --no-dev (or the environment variable WILDWOOD_DEV=0) turns off the testing tools (set level, free items, coins).
@@ -84,6 +84,9 @@ process.on('uncaughtException',e=>{ if(!listening){ console.error(e); process.ex
 let last=Date.now(), tickFails=0;
 setInterval(()=>{ const now=Date.now(); try{ world.tick((now-last)/1000); tickFails=0; }catch(e){ logErr('tick',e); if(++tickFails>=100) shutdown('tick failed 100 times in a row'); } last=now; },50);
 const page=PAGE.replace('</head>','<script>window.WILDWOOD_WS=true;</script>\n</head>'), pageGz=zlib.gzipSync(page,{level:9});
+// brotli is another ~10% smaller than gzip (870 KB against 970 KB) and browsers ask for it over HTTPS (Render): compressed once, off the main thread (quality 9 takes ~0.5 s; 11 takes 7 s and
+// would hold a cold start back on a small instance), and until it is ready everyone gets gzip
+let pageBr=null; zlib.brotliCompress(page,{params:{[zlib.constants.BROTLI_PARAM_QUALITY]:9,[zlib.constants.BROTLI_PARAM_SIZE_HINT]:page.length,[zlib.constants.BROTLI_PARAM_LGWIN]:24}},(e,buf)=>{ if(!e) pageBr=buf; });
 const pageTag='"'+crypto.createHash('sha1').update(page).digest('hex').slice(0,20)+'"';
 /* Music files (dist/audio/, made by build.py; the page fetches them from /audio/ when a theme first plays). Their names hold a hash of
    their content, so a file never changes under its name: browsers may keep it for a year and never ask again (one download per client).
@@ -103,9 +106,9 @@ const server=http.createServer((req,res)=>{
     // no-cache + ETag: the browser asks every visit but gets a bodiless 304 unless the game was updated
     // (includes: a proxy may send the tag weakened, W/"...")
     if((req.headers['if-none-match']||'').includes(pageTag)){ res.writeHead(304,{'etag':pageTag,'cache-control':'no-cache'}); res.end(); return; }
-    const gz=/\bgzip\b/.test(req.headers['accept-encoding']||'');
-    res.writeHead(200,Object.assign({'content-type':'text/html; charset=utf-8','cache-control':'no-cache','etag':pageTag,'vary':'accept-encoding'},gz?{'content-encoding':'gzip'}:{}));
-    res.end(gz?pageGz:page); return; }
+    const ae=req.headers['accept-encoding']||'', br=pageBr&&/\bbr\b/.test(ae), gz=!br&&/\bgzip\b/.test(ae);
+    res.writeHead(200,Object.assign({'content-type':'text/html; charset=utf-8','cache-control':'no-cache','etag':pageTag,'vary':'accept-encoding'},br?{'content-encoding':'br'}:gz?{'content-encoding':'gzip'}:{}));
+    res.end(br?pageBr:gz?pageGz:page); return; }
   if(req.url.startsWith('/audio/')&&(req.method==='GET'||req.method==='HEAD')){ serveAudio(req,res); return; }
   if(req.url==='/healthz'){ res.writeHead(200,{'content-type':'text/plain'}); res.end('ok'); return; }
   if(req.url==='/status'){ Promise.resolve(STORE.count()).catch(()=>null).then(n=>{ res.writeHead(200,{'content-type':'application/json'}); res.end(JSON.stringify({players:world.players.size,monsters:world.monsters.length,day:world.state.day,saves:STORE.kind,accounts:n})); }); return; }

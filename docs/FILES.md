@@ -129,7 +129,7 @@ server
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 
 node
-  main.js                            Node host: serves the game page (gzip, ETag) and the music files (/audio/, cached for a year) over HTTP and runs the world server over WebSocket (no npm packages needed)
+  main.js                            Node host: serves the game page (brotli or gzip, ETag) and the music files (/audio/, cached for a year) over HTTP and runs the world server over WebSocket (no npm packages needed)
 
 game
   core/setup.js                      Page helpers ($), device flags (isTouch, LOW, LITE, Q), TAU/DEG

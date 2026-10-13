@@ -9,7 +9,7 @@ Moved word for word from `CLAUDE.md` sections 6 and 7; `CLAUDE.md` keeps a short
 Live at https://wildwood-wib9.onrender.com (service `wildwood`, free plan: sleeps after 15 min idle, ~30-50 s
 to wake). `dist/` is not committed. `GET /status` shows players, monsters, storage kind (`"saves":"postgres"`
 when the database is connected) and the number of saved accounts.
-Traffic: the page is ~1 MB gzipped (was ~350 KB before the Sakura Vale, the Reach, the Greyspine, dungeons, outfits and the world map: game code 600 KB, three.js 145 KB, sounds and the map's picture 195 KB; the Node host sends a page WITHOUT the in-page world server, 260 KB gzipped less than `dist/wildwood.html`, see `build.py`) with an `ETag` (`no-cache` + 304 when unchanged); music is served from `/audio/<name>.<hash>.m4a`
+Traffic: the page is ~0.9 MB as brotli (browsers ask over HTTPS; compressed once off the main thread, gzip until it is ready, ~1 MB)  (was ~350 KB before the Sakura Vale, the Reach, the Greyspine, dungeons, outfits and the world map: game code 600 KB, three.js 145 KB, sounds and the map's picture 195 KB; the Node host sends a page WITHOUT the in-page world server, 260 KB gzipped less than `dist/wildwood.html`, see `build.py`) with an `ETag` (`no-cache` + 304 when unchanged); music is served from `/audio/<name>.<hash>.m4a`
 (`dist/audio/`, whitelist of names read at start, `cache-control: public, max-age=31536000, immutable`), so a returning
 player downloads nothing but a 304, and a new player downloads only the tracks of the places they visit (~1-1.7 MB each).
 `wildwood-server.js` must stay next to its `audio/` folder (or set `AUDIO_DIR`); without it the game plays generated music.
