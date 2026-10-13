@@ -27,6 +27,9 @@ const A1='a'.repeat(32), A2='b'.repeat(32), A3='c'.repeat(32);
   W.receive('g1',{t:'name',name:'Other'}); ok('registered name is fixed',g.name==='Hayru');
   g.gear.coins=500; W.leave('g1'); await wait();
   // log in elsewhere with the password, then with the token
+  { let n=0; const v=auth.verify; auth.verify=(pw,h)=>{ n++; return v(pw,h); };   // a connection that sends its login again and again while the first is being checked costs one password check, not one each
+    for(let i=0;i<5;i++) W.receive('burst',{t:'hello',acct:A3,user:'hayru',pass:'wrong-'+i,name:'x',look:{},save:{level:1}}); await wait(); await wait();
+    auth.verify=v; ok('five logins in a row from one connection are one password check',n===1,n+' checks'); W.leave('burst'); inbox.burst=[]; }
   W.join('d1',{acct:A3,user:'hayru',pass:'wrong',name:'x',look:{},save:{level:1}}); await wait();
   ok('wrong password refused',!W.players.has('d1')&&last('d1','authfail').text==='Wrong password.');
   // the account's look: set while playing, restored by a login from a browser that has a different one

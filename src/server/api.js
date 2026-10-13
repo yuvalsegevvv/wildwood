@@ -93,7 +93,7 @@ function receive(pid,msg){
   if(!msg||typeof msg!=='object') return;
   if(msg.t==='hello'&&!cleanJsonS(msg)) return;   // (a hello of more than 20,000 nested objects is not a save)
   for(const k in msg){ const v=msg[k]; if(typeof v==='string'&&PROTO_KEY.has(v)&&!FREE_TEXT.has(k)) return; }
-  if(msg.t==='hello'){ if(S.players.has(pid)) leave(pid); beginJoin(pid,msg); return; }
+  if(msg.t==='hello'){ if(PENDING.has(pid)) return; if(S.players.has(pid)) leave(pid); beginJoin(pid,msg); return; }   // (a hello while the first is still being checked is ignored: each login costs a scrypt, and a connection may send 120 messages a second)
   const p=S.players.get(pid); if(!p) return;
   S.ctx=p.inst|0;   // dungeons: what a message causes belongs to the sender's run (0 = the world)
   try{ switch(msg.t){
