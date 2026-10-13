@@ -14,7 +14,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | Every monster kind (one row each: id, name, level, element, model, scale, look flags `pal`, tuning `hpK` / `dmgPct` / `count` / `zone`) | `MON_DEFS` src/shared/monster-defs.js:16 |
 | Family defaults a row inherits (health toughness `hpK`, damage share `dmgPct`, attack interval `atk`, `speed`, `rad`, `height`, `aggro`, `per`: camp size - 2) | `FAM` src/shared/monster-defs.js:2 |
 | How HP, damage and XP are made from the level (also used by zone tiers and by anything that wants a monster at another level) | `defAt` src/shared/monster-defs.js:118, `prepDef` src/shared/monster-defs.js:124 |
-| The level formulas (expected player damage / health, armour cut, XP, coins) | `expDmg` / `expHP` / `xpFor` / `coinsFor` src/shared/balance.js:37-60 |
+| The level formulas (expected player damage / health, armour cut, XP, coins) | `expDmg` / `expHP` / `xpFor` / `coinsFor` src/shared/balance.js:38-61 |
 | The six bosses, their move set (`kit`), arena, summons (`add`), props, boss-bar texts | `BOSS_DEFS` src/shared/monster-defs.js:184 |
 | The grey-veined monsters of the main quest | `GREY_DEFS` src/shared/monster-defs.js:201 |
 | Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:206 |
@@ -325,7 +325,7 @@ The expected numbers at each level (a same-level player in the gear of their tie
 | 31 | 43.0 | 229 | 2019 | 56% | T6 | 6162 | 458 | 2439.3 | 5123377 | 2100 | 1536 |
 | 32 | 45.0 | 235 | 2059 | 56% | T6 | 6482 | 467 | 2935.6 | 6165708 | 2100 | 1768 |
 
-Formulas: `fLv` src/shared/balance.js:11, `tierFor` src/shared/balance.js:17, `expToNext` src/shared/balance.js:59 (from level 25 a level costs as many same-level kills as 25 → 26 does).
+Formulas: `fLv` src/shared/balance.js:11, `tierFor` src/shared/balance.js:17, `expToNext` src/shared/balance.js:60 (from level 25 a level costs as many same-level kills as 25 → 26 does).
 
 ## 13. Client models
 
