@@ -17,11 +17,12 @@ const SOCKETS=new Map(); let nextId=1;
 const log=(...a)=>console.log(new Date().toISOString(),...a);
 /* ---- where saves go ---- */
 const keyOf=acct=>crypto.createHash('sha256').update('wildwood:'+acct).digest('hex').slice(0,40);
+let tmpSeq=0;
 function fileStore(dir){
   const d=path.join(dir,'players'); fs.mkdirSync(d,{recursive:true});
   return { kind:'files in '+dir,
     load(acct){ const f=path.join(d,keyOf(acct)+'.json'); try{ return JSON.parse(fs.readFileSync(f,'utf8')); }catch(e){ if(e.code==='ENOENT') return null; throw e; } },
-    save(acct,rec){ const f=path.join(d,keyOf(acct)+'.json'), tmp=f+'.'+process.pid+'.tmp';
+    save(acct,rec){ const f=path.join(d,keyOf(acct)+'.json'), tmp=f+'.'+process.pid+'.'+(++tmpSeq)+'.tmp';   // (one temp file per call: a disconnect during the periodic save made two saves of one account write the same temp file, and two writers on one file can leave a tail of the longer one)
       return fs.promises.writeFile(tmp,JSON.stringify(rec)).then(()=>fs.promises.rename(tmp,f)); },
     // registration: write only if nobody has this account yet ('wx' fails when the file exists)
     create(acct,rec){ return fs.promises.writeFile(path.join(d,keyOf(acct)+'.json'),JSON.stringify(rec),{flag:'wx'}).then(()=>true,e=>{ if(e.code==='EEXIST') return false; throw e; }); },

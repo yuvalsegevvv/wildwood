@@ -10,6 +10,8 @@ Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an
   **do not commit or push unless asked**; when only one part changes (e.g. the character model), test
   only that part.
 
+**The work loop** (each step is one command, sections 1 and 6 say more): `node tools/doctor.js` once per checkout (is it ready? it names the fix for anything missing) → find the files (section 4, `docs/FILES.md`, `grep -n`) → edit → `python3 build.py --check` (syntax, duplicate names, layout rules, the test registry, doc pointers) → `node tools/run-tests.js` (the tests that cover your diff, in parallel; `--fast` / `--all` before a commit) → for what numbers cannot judge (colours, models, a panel) look at it: `tools/shot.js`, `tools/model-preview.js`, `tools/monster-preview.js`. Server code: `npm run fuzz` and `npm run bench` show what a change did to robustness and to the tick.
+
 ## 1. How to find things (do this instead of reading files)
 
 1. `docs/FILES.md` lists every source file with a one-line description (the file's first line). It is generated: after adding, renaming or re-describing a file run `python3 build.py --write-index` (`--check` fails when it is stale).

@@ -28,7 +28,7 @@ function select(){
   const files=changedFiles(); return REG.filter(t=>files.some(f=>t.covers.some(c=>new RegExp(c).test(f))));
 }
 if(has('--list')){
-  const sel=has('--changed')||has('--for')?select():REG;
+  const sel=has('--changed')||has('--for')||has('--group')||has('--fast')||has('--all')||argv.some((a,i)=>!a.startsWith('-')&&!flagsWithValue.has(argv[i-1]))?select():REG;
   const w=Math.max(...sel.map(t=>t.id.length));
   for(const t of sel) console.log(`${t.id.padEnd(w)}  ${String(t.secs).padStart(3)}s  ${t.needs.padEnd(10)} ${t.desc}${t.slow?'  [slow]':''}`);
   console.log(`${sel.length} tests, about ${sel.reduce((a,t)=>a+t.secs,0)} s of work`); process.exit(0);
