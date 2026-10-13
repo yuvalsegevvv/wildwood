@@ -211,7 +211,7 @@ def check(page):
     problems = lint_layout()
     if problems:
         sys.exit('layout rules broken (CLAUDE.md section 5):\n  ' + '\n  '.join(problems))
-    print('layout ok (headers, manifest, docs/FILES.md)')
+    print('layout ok (headers, manifest, docs/FILES.md, test registry, doc pointers)')
 
 
 FILES_MD = os.path.join(ROOT, 'docs', 'FILES.md')
@@ -243,7 +243,8 @@ def lint_layout():
     """Rules that keep the tree navigable for agents (CLAUDE.md section 5, "Agent-first layout rules"). Each message says how to fix it.
        1. every file in the manifest starts with a header line (//@ in JS, /*@ in CSS): it is what docs/FILES.md shows
        2. every source file under src/<group>/ is in the manifest, and no file is listed twice (an unlisted file is never built)
-       3. docs/FILES.md is what `--write-index` would write now"""
+       3. docs/FILES.md is what `--write-index` would write now
+       4. tools/tests.json (the test registry that tools/run-tests.js runs) lists every tools/*-smoke.js, each entry has its file, a description, what it covers and a time"""
     manifest = json.loads(read(os.path.join(SRC, 'manifest.json')))
     problems = []
     for group, ext in GROUP_EXT.items():
@@ -264,6 +265,70 @@ def lint_layout():
     on_file = read(FILES_MD) if os.path.isfile(FILES_MD) else ''
     if norm(on_file) != norm(files_md()):
         problems.append('docs/FILES.md is out of date: run  python3 build.py --write-index')
+    problems += lint_tests()
+    problems += lint_docs()
+    return problems
+
+
+# docs that describe the game as it is now (the design docs also name files that are planned and not built, so they are not checked)
+CURRENT_DOCS = ['CLAUDE.md', 'AGENTS.md', 'README.md', 'tools/README.md', 'docs/TESTING.md', 'docs/DEPLOY.md', 'docs/CHARACTER.md']
+DOC_REF = re.compile(r'`([A-Za-z0-9_./\-]+\.(?:js|py|md|json|css|html|svg|png|webp|m4a))(?::\d+)?`')
+BUILD_OUTPUTS = ('dist/', 'out.png', 'wildwood-server.js', 'wildwood.html')   # made by a build or a tool, not in the tree
+
+
+def lint_docs():
+    """A file named in backticks in a current-state doc must exist (a bare name such as `movement.js` anywhere under src/, tools/, docs/ or assets/; a path relative to the repo, to
+       src/, to the doc, or ending the path of a file). Catches the pointers an agent would follow into nothing after a rename or a delete. Shorthands like `-woods.js`, patterns with * or <>
+       and music-* are skipped."""
+    names, paths = set(), set()
+    for top in ('src', 'tools', 'docs', 'assets'):
+        for folder, _, fs in os.walk(os.path.join(ROOT, top)):
+            for f in fs:
+                names.add(f)
+                paths.add(os.path.relpath(os.path.join(folder, f), ROOT).replace(os.sep, '/'))
+    for f in os.listdir(ROOT):
+        names.add(f)
+        paths.add(f)
+    docs = CURRENT_DOCS + ['docs/areas/' + f for f in sorted(os.listdir(os.path.join(ROOT, 'docs', 'areas'))) if f.endswith('.md')]
+    problems = []
+    for d in docs:
+        if not os.path.isfile(os.path.join(ROOT, d)):
+            continue
+        for n, line in enumerate(read(os.path.join(ROOT, d)).split('\n'), 1):
+            for m in DOC_REF.finditer(line):
+                t = m.group(1)
+                if t.startswith('-') or t.startswith('music-') or any(c in t for c in '*<>') or t.startswith(BUILD_OUTPUTS):
+                    continue
+                if '/' in t:
+                    rel = os.path.normpath(os.path.join(os.path.dirname(d), t)).replace(os.sep, '/')
+                    ok = any(c in paths for c in (t, 'src/' + t, 'docs/' + t, 'tools/' + t, rel)) or any(p.endswith('/' + t) for p in paths)
+                else:
+                    ok = t in names
+                if not ok:
+                    problems.append('%s:%d names `%s`, which does not exist: fix the pointer (renamed? deleted?) or reword it' % (d, n, t))
+    return problems
+
+
+def lint_tests():
+    reg_path = os.path.join(ROOT, 'tools', 'tests.json')
+    if not os.path.isfile(reg_path):
+        return ['tools/tests.json is missing (the test registry tools/run-tests.js runs)']
+    problems, seen = [], set()
+    for t in json.loads(read(reg_path))['tests']:
+        i = t.get('id', '?')
+        if i in seen:
+            problems.append('tools/tests.json lists %s twice' % i)
+        seen.add(i)
+        if not os.path.isfile(os.path.join(ROOT, 'tools', i + '.js')):
+            problems.append('tools/tests.json lists %s but tools/%s.js does not exist' % (i, i))
+        for k in ('desc', 'covers', 'secs', 'needs'):
+            if not t.get(k):
+                problems.append('tools/tests.json: %s has no "%s"' % (i, k))
+        if t.get('needs') not in ('src', 'dist', 'playwright'):
+            problems.append('tools/tests.json: %s needs "%s" (src, dist or playwright)' % (i, t.get('needs')))
+    for n in sorted(os.listdir(os.path.join(ROOT, 'tools'))):
+        if n.endswith('-smoke.js') and n[:-3] not in seen:
+            problems.append('tools/%s is a test but is not in tools/tests.json: add a row (id, needs, secs, desc, covers); until then `npm test` never runs it' % n)
     return problems
 
 

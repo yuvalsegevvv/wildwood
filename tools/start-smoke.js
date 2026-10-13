@@ -8,7 +8,7 @@ let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')
 const EXPOSE=['NET','netTick','started:()=>started','customizing:()=>customizing','creating:()=>creating','canStart:()=>canStart','clsOf','setLook','LOOK:()=>LOOK','edTab:()=>edTab','EDIT'];
 const find=(e,f)=>{ if(f(e)) return e; for(const k of e._kids||[]){ const r=find(k,f); if(r) return r; } return null; };
 function fill(c,user,pass,pass2){ c.el('#stUser').value=user; c.el('#stPass').value=pass; c.el('#stPass2').value=pass2===undefined?'':pass2; c.el('#stForm').requestSubmit(); }
-async function boot(o){ const c=bootClient(Object.assign({online:true,expose:EXPOSE},o)); await until(()=>c.G().canStart()); return c; }
+async function boot(o){ const c=bootClient(Object.assign({online:true,fast:true,expose:EXPOSE},o)); await until(()=>c.G().canStart()); return c; }
 
 (async()=>{
   const accounts=memoryAccounts();

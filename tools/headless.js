@@ -4,6 +4,7 @@
 //   const c=bootClient({online:true, expose:['NET','started:()=>started']});  // names from inside the game, read with c.G()
 //   c.el('#stGuest').click();   // fake elements remember their listeners: click(), requestSubmit(); ._kids = appended children, ._a = attributes
 //   c.stop();                   // ends the frame loop and the server tick
+//   bootClient({fast:true})     // a world without the map's painting, the ground colours and the villagers: ~40% quicker to be ready (start card tests)
 const fs=require('fs'), path=require('path'), crypto=require('crypto'), {ROOT}=require('./load');
 
 function makeEl(){
@@ -61,6 +62,13 @@ function bootClient(o){
   const page=fs.readFileSync(path.join(ROOT,'dist','wildwood.html'),'utf8');
   const blocks=page.split('<script>').slice(1).map(b=>b.split('</script>')[0]);
   const srvCode=blocks.find(b=>b.includes('function createWorldServer')); let main=blocks.find(b=>b.includes('function wildwoodMain'));
+  if(o.fast){   // for tests of the start card and the account flow: skip what only matters to the eye (the map's painting, the ground's colours, the villagers' meshes, the plants). The world, the server and the UI stay real.
+    const cut=(from,to)=>{ if(!main.includes(from)) throw new Error('headless fast mode: the game code changed, "'+from+'" is gone (update tools/headless.js)'); main=main.replace(from,to); };
+    cut('function mapBuildStep(rows){','function mapBuildStep(rows){ if(1) return;');
+    cut('terrainColor(x,z,h,grad(x,z),cc);','cc.setRGB(0.4,0.5,0.3);');
+    cut('initMotes(); initAnimals(); initNPCs(); renderQlog();','initMotes(); initAnimals(); renderQlog();');
+    cut('const NEAR_R=55, FAR_R=320;','const NEAR_R=1, FAR_R=0;');   // no plants are grown (the start card is ready as soon as the ground is)
+  }
   main=main.replace(/new THREE\.WebGLRenderer\([^)]*\)/,'({setPixelRatio(){},setSize(){},shadowMap:{},setClearColor(){},render(){}})')
     .replace('function frame(){','global.__G=()=>({'+(o.expose||[]).join(',')+'});\nfunction frame(){');
   new Function(srvCode+'\nglobal.__cws=createWorldServer;\n'+main+'\nwildwoodMain();')();

@@ -14,7 +14,7 @@ const VIEWS={   // eye, target (the city's frame: +x east, +z south, y up from t
 const read=(d,f)=>strip(fs.readFileSync(path.join(SRC,d,f),'utf8'));
 const pm=read('game/world','plant-models.js'), helpers=pm.slice(pm.indexOf('const _c'),pm.indexOf('\n',pm.indexOf('const cyl'))+1);   // _c, WHITE, paint, mkGeo, merge, bark, cyl
 const bd=read('game/village','buildings.js'), village=bd.slice(bd.indexOf('const villageMat'),bd.indexOf('function addVillageMeshes'))+bd.slice(bd.indexOf('function prism'),bd.indexOf('function buildVillage'));
-const pcFn=/^function pc\(.*$/m.exec(read('game/character','model.js'))[0];
+const pcFn=/^function pc\(.*$/m.exec(read('game/character','model-parts.js'))[0];
 const m=manifest(), sun=m.game.filter(f=>/^village\/(sun-|buildings-sun)/.test(f));
 if(!sun.length){ console.error('no village/sun-*.js in src/manifest.json yet'); process.exit(1); }
 const page=`<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#bcd4e6}canvas{display:block}</style><body><script>${fs.readFileSync(path.join(SRC,'vendor/three.r128.min.js'),'utf8')}</script><script>

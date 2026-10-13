@@ -1,52 +1,55 @@
 # Testing and tools
 
-Moved word for word from `CLAUDE.md` sections 6 and 8; `CLAUDE.md` keeps the short command list and the "smallest test" rule.
+The tests are listed in ONE place, the registry `tools/tests.json` (a row per test: what it proves, what it needs, about how long, which source paths it covers).
+`tools/run-tests.js` reads it. A test's own detail (every check it makes) is the comment at the top of its file in `tools/`; the one-line summaries are `node tools/run-tests.js --list`.
+`python3 build.py --check` fails for a `tools/*-smoke.js` that is not in the registry, so a test cannot exist without being run.
 
-## Commands (with what each test checks)
+## Running tests
 
 ```
-npm install                      # three@0.128 for the tools, pg for Postgres (optional)
-python3 build.py                 # → dist/ (quiet, ~1 s)
-python3 build.py --check         # + syntax check of every bundle + duplicate-name check + layout rules (a header on every file, every source file in the manifest, docs/FILES.md up to date)  (always run this)
-python3 build.py --write-index   # rewrite docs/FILES.md from the files' //@ headers (after adding, renaming or re-describing a file)
-node tools/server-smoke.js       # 16 headless server checks from src/ (no build), ~5 s, prints PASS/FAIL
-node tools/accounts-smoke.js     # 17 checks of accounts (register, login, tokens, unique names, the account's look), ~1 s
-node tools/mainquest-smoke.js    # 128 checks of the main quest, acts I-IV (talks, herbs, kills, grey monsters, night, lore, old saves, Highmark, black stone, Odran's coins, the night shift, the bosses, the shaft and the golem's frame, and the step migration, the profession steps W6a / W7b / W11b / V7b, and acts II-III to the end: Rimehold, the Lodge, tools, gathering, brewing, the circles, the Rimeking), ~15 s
-node tools/boss-smoke.js         # 36 checks of the six bosses' move sets (each fought through three phases; every boss must do its own moves, have moves no other has, and leave nothing behind), server from src/, ~2 s
-node tools/hoarfrost-smoke.js    # 37 checks of the Hoarfrost Reach: its shape, zones and monsters, bosses, the ice wall and how it opens, quest board and XP for levels 22-30, mining there with a tool of the right tier (server from src/), ~5 s
-node tools/greyspine-smoke.js    # 50 checks of the Greyspine's terrain: ground, troughs and routes, Highmark's shelf, the Queen's crown, the seams with the home forest and the Reach (which keep their heights), the glacier valley and its ice fall, Highmark's circle and respawn, seven zones and 168 monsters, the two bosses and their arenas, tarns / river / fjord, the two rock falls and their bosses, the testing teleports (server from src/), ~3 s
-node tools/pendants-smoke.js     # 44 checks of the pendants: the items and their numbers, the slot and its saves, equip / sell / merge, what each of the five bonuses does to a kill and a hit with randomness pinned, the caps and the level gate (server from src/), ~2 s
-node tools/dungeons-smoke.js     # 97 checks of the dungeon setup (shared/dungeons.js and dungeon-rewards.js, no server, ~2 s): the four dungeons (their monsters and zones exist, walkers fit the doors, their level by tier, Wildwood's lock at +0), their four bosses (built from the game's models and primitives, moves declared, each used once), the hourly offer (two types, fair, never the same pair twice running), every map tile in every turn, the boss hall against the arenas' radius, the seeded layouts of the seven missions (connected, doors paired, roles filled, one boss hall each, same seed = same dungeon), the baked grid, walking round walls by the flow field, the party-size table, the four entrances (zone, ground, clearances from water, camps, nodes, villages, a dry walk from the signpost), the rewards (the odds, the pools, the 665 ids and the enhancement caps, the ring's soul rule, the stone's drop rule); `--show <mission> <seed>` draws a dungeon
-node tools/party-smoke.js        # 22 checks of parties (invite, /invite, cap, roster and its refresh, lead, kick, leave, disconnect, decline, expiry), server from src/, ~1 s
-node tools/dungeon-runs-smoke.js # 84 checks of dungeon runs (slots, isolation, walls, party health, loot for all, down / revive, a Purge won through its boss in the Hollow Roots and the Blackseam (which pays a pendant), a door start), server from src/, ~7 s
-node tools/dungeon-missions-smoke.js # 114 checks of the seven mission kits (each won through its boss on three dungeons and lost by its own condition, HUD text, party health, chests, the hazards), server from src/, ~15 s
-node tools/entrance-map.js       # draws docs/dungeon-entrances.png (the four doors on the real terrain, zone borders, roads, signposts and routes; pure node, regenerates byte-identically; run it again if an entrance moves)
-node tools/reactions-smoke.js    # 47 checks of the elemental reactions (the 15-pair chart and its registry, auras, reactions and their cooldown, direct application, vuln / weak that never stack, bosses, spread inside a run, death clears everything), server from src/, ~2 s
-node tools/skillsets-smoke.js    # 93 checks of the skill-set base on fixture sets defined in the test (no kit is in src/: it loads the server without the shipped sets, `loadServer(io,names,{noSets:true})`): the registry and the 68 ways a set is left out, granting, wearing a piece for all three classes, 3- / 5- / 3+3 bonuses and level gates, saves, marks and modifiers, triggers, reflect, ally buffs, heals, shields, taunt, and the ladder harness; ~8 s
-node tools/skillsets-first8-smoke.js # 81 checks of the eight real sets (src/shared/skillsets/): the cast as a whole, what each piece and passive does (conditions, cooldown refunds, perMark shields...), and the free version-2 testing tools without the dev switch; ~4 s
-node tools/skillsets-ladder.js   # the power ladder of every registered set: damage with its pieces, the 3-set and the 5-set bonus and all six, one target and a pack, as a percent of the best non-set loadout; the hero is always on the move and the dummies turn to face him (a risk set: careless play) or turn their backs to him (the owner's 125 / 142 / 170, good play); a risk set also always behind its target, a set whose damage grows with distance also from 16 m (archer and mage); warnings outside the band, --check fails the damage kits' orderings only; ~1 min at --secs 40
-node tools/greyfall-smoke.js     # 19 checks of the four lands' wandering borders (curves, pins, one land per point), the Greyfall River and its bridge, and the Greyfall (path, tarn, pool), straight from src/, ~2 s
-node tools/coasts-smoke.js       # 10 checks of the outer coasts (no wall north or east, wandering shores, rounded corners, islets that are islands, arenas and doors keep their ground), straight from src/, ~3 s
-node tools/slope-smoke.js        # 7 checks that the slope limit (1.2) leaves every village, arena, zone, node and door reachable and 90% of every land's ground (a flood fill on a 4 m grid), straight from src/, ~10 s
-node tools/dungeon-board-client-smoke.js  # 37 checks of the Delve board panel and the dgi join prompt on the built page (solo, ~25 s): fake dgboard messages (open, sealed, member, soon), the clock, Start, Esc, the real server at the Elder and the Falls Door; runs dist/: build first
-node tools/boss-duel.js --check  # 18 checks: a maxed level-60 hero against the level-80 bosses (standing in melee with potions loses, avoiding half the damage wins in 1.5-3 minutes) and the ramp below them; without --check a table (--camp for a pack, --level for the hero); a yardstick, not a player, ~10 s
-node tools/tiers-smoke.js        # 48 checks of the zone tiers (I to V): the rules, saves, choosing a tier in a village, the unlock by a land's second boss, and per-player damage dealt / taken / XP / coins / drops while two players at different tiers share a monster (server from src/), ~2 s
-node tools/levels-smoke.js       # 11 checks of the levels: the curve, the soft cap from level 50, saves, the testing tool, and the 10-levels-above XP cap (the same cap inside a run is in dungeon-runs-smoke)
-node tools/professions-smoke.js  # 74 checks of the professions: tools and their slots, the nodes of every land and their tiers, gathering and its cast, selling, crafting, brewing and drinking potions (server from src/), ~8 s
-node tools/skills-smoke.js       # 58 checks of elements, the Soul Hall, monster drops, skill upgrades, passives and the 30 boss skills (server from src/), ~15 s
-node tools/dungeon-client-smoke.js  # 44 checks of a dungeon run's client on the built page (solo, ~15 s): props, the run at its slot, the forest off and back, walls, camera, HUD, objectives, party, results, maps, disposal
-node tools/client-smoke.js       # 123 checks (the skill-set panel and mark pips, the reactions marker, the world map of Eldmere: its art embedded, regions and towns, the pin everywhere, fog, wheel / drag / pinch, clicks into each land's map, the G key; the act IV quest marks and map targets, the Greyspine's map, rain / sleet / snow by height and its chamois, and the last 9: a dungeon run) running the built page headless (solo), ~60 s (also draws every boss skill, and checks the Hoarfrost's client side: ice wall, music, the Lodge and travel windows, resource nodes and their cast bar, snow, the tool slots, the Craft tab, the Brewing panel and the potion belt). It runs dist/: build first
-node tools/start-smoke.js        # 31 checks of the start card + a new account's character editor, against a real server in-process, ~20 s
-node tools/keys-smoke.js         # checks of the rebindable keys (defaults, swap, save/load, hints) and of hold-Alt; runs dist/: build first
-node tools/character-smoke.js    # 60 checks of the character model: slider table, every model's recommended setups and ranges, proportions, joints, detail budget, the seeded villagers' looks (src/, no build), ~10 s
-node tools/outfit-smoke.js       # per signature outfit (`--only id`): builds on its body, every slider extreme on both bodies, the triangle budget, a weapon dressing on all three classes (src/), ~10 s each
-node tools/outfit-looks-check.js # the eight look documents (docs/skillkits/looks/) against the built outfits; `--write` regenerates their slider sections
-python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)
-npm test                         # build --check + all of the above
+node tools/run-tests.js                 # the tests that cover what you changed (git diff against HEAD + new files), in parallel; says so when nothing covers it
+node tools/run-tests.js --list          # every test with its time, what it needs (src = straight from src/, dist = the built page, playwright = Chromium) and what it proves
+node tools/run-tests.js --fast          # everything except the [slow] ones
+node tools/run-tests.js --all           # everything: `npm test` is `python3 build.py --check && node tools/run-tests.js --all`  (about 4 minutes on 4 cores)
+node tools/run-tests.js client-smoke    # by name (several allowed)      --group server|client       --for src/shared/terrain.js    # as if that file had changed
+node tools/run-tests.js -v tiers-smoke  # print the whole log of what ran     -j 2  fewer parallel jobs (default: cores - 1, at most 4)
+```
+
+Output is one line per test (`PASS name  N checks  secs`, or `FAIL` with its FAIL lines and the tail of its log; the full log stays in `<tmp>/wildwood-tests/<id>.log`) and a summary. The runner builds `dist/` first when a selected test needs the page, so a stale build cannot give a false failure. A row's `flaky` list names FAIL lines that are known to be random: such a test is run once more and reported as flaky if it then passes (none is listed now: the last two, in `skills-smoke` and `server-smoke`, were test bugs and are fixed).
+
+Adding a test: write `tools/<name>-smoke.js` (print `PASS ...` / `FAIL ...`, exit 1 on a failure), add its row to `tools/tests.json` (`covers` = regular expressions on the paths whose change should run it). Other single-purpose commands:
+
+```
+python3 build.py --check       # syntax of every bundle, duplicate top-level names, the layout rules, the registry
+npm run lint                   # tools/lint-bundles.js: ESLint over each bundle as it runs (ONE scope: client = shared + game, server = shared + server)
+npm run fuzz [-- --nodev --seed N --rounds N]   # tools/server-fuzz.js
+npm run bench [-- --players 40 --secs 60]       # tools/server-bench.js
+python3 tools/unused.py        # dead-code candidates
+node tools/gen-docs.js [--check]   # docs/MOBS.md and docs/EQUIPMENT.md from the code
 node tools/model-preview.js out.png [--head] [--bent] [--setups] [--outfit id] [--weapon warrior|archer|mage] [--views front|three] [--looks '[{...}]']   # character model or signature outfit → PNG (numpy+pillow)
 node tools/monster-preview.js out.png --ids slime,boss [--bosses|--all] [--pose|--act|--head|--stats]   # monster and boss models → PNG (numpy+pillow), or triangle / mesh counts
+node tools/city-preview.js out/ --views overview,street   # Glasswell's 3D model → PNGs (playwright + Chromium)
 node dist/wildwood-server.js --port 8080     # real server; open http://localhost:8080 in several tabs
 ```
+
+## Static check: `lint-bundles`
+
+Every file of a group is concatenated into ONE function scope (client: `wildwoodMain`, server: `createWorldServer`), so a misspelled or never-defined top-level name is legal JavaScript that only throws when the line runs. `npm run lint` runs ESLint over the two bundles as they are assembled (same order as `build.py`) and reports the source file and line: undefined names, impossible code (unreachable statements, duplicate keys, assignment to a const...). `--unused` adds names that are declared and never read (shared files appear in both bundles: a name unused in only one of them is not dead). It needs ESLint (`npm i --no-save eslint`, or a global install) and skips itself without it. A browser global the list in the tool lacks is added there, not worked around in the game. The tree was clean when it was added (the one hit, `createWorldServer`, is a real global: the server bundle's own `<script>` block).
+
+## Fuzzing: `server-fuzz`
+
+Sends thousands of garbage messages of every type (JSON-shaped nulls, huge and negative numbers, `1e999`, strings like `constructor` and `__proto__`, deep objects, arrays) mixed with real ids (items, skills, nodes, monsters, lands) to a few players while the world ticks, then joins players with randomly corrupted saves. It fails on a throw in a handler or in `tick()` (the Node host swallows the first and, before the guard in `node/main.js`, crashed on the second), a non-finite number in a player or monster, a negative or fractional coin count, a non-string item, a broken serialization or a polluted `Object.prototype`, and names the message that broke the coins. It found `buy {id:'constructor'}` charging `NaN` coins. Run it with `--nodev` for the deployed server's setting (the dev commands refuse there) and with a few `--seed`s after touching a handler or `sanitizeGear`.
+
+## Measuring and profiling the server
+
+`tools/server-bench.js` puts N players on random camps, walks them and has them attack, ticks the real server at 20 Hz without a clock and prints the milliseconds per tick (all ticks, and the snapshot ticks alone, which also serialize) and the bytes a snapshot weighs. The numbers depend on the machine; compare before and after on the same one. For a profile:
+
+```
+node --cpu-prof --cpu-prof-dir=out tools/server-bench.js --players 40 --secs 30     # then read out/*.cpuprofile: self time per function, inclusive time per function
+node --no-turbo-inlining --cpu-prof ...       # attributes time to the real callees instead of the function they were inlined into
+```
+
+A `.cpuprofile` is JSON (`nodes` with `callFrame` and `children`, `samples`, `timeDeltas`): a 20-line script sums self and inclusive microseconds per function name (the line numbers are those of the concatenated server code plus 2). How the numbers moved: a tick of 40 fighting players cost 15.1 ms on average before the monster AI stopped asking `inVillage` of every player for every monster (28% of the tick; `nearestFighter`, `anyPlayerNear`, `vNear`) and 3.9-5.6 ms after (`updateMonstersS` 6.3 s -> 0.8 s per 30 s of play); the headless client's world is ready in 17 s instead of 21 s since the three border functions keep their last answer. Heap after 30 simulated minutes and 1,473 joins stayed at 9.5 MB (no leak).
 
 The model preview shades per pixel from the mesh normals (like the game), so seams and facets show in it.
 For a close-up of another body part, render once, then re-run the rasterizer on the JSON it leaves in the
@@ -76,8 +79,6 @@ listeners and children (`c.el('#stGuest').click()`, `el._kids`, `el._a`), but th
 - Seeing a coast or a far corner in a real browser: teleport with the dev tools first (`vale 2`, `north 2`, `west 2` open the clamps) and give the streaming 20-30 s (`Growing distant areas` counts down); at a low level monsters knock you out first, so set a high level. A shaded relief of `rawHeight` (a few lines with `loadShared(['rawHeight'])`, written to a PPM) shows a whole coast in a second.
 - `tools/client-smoke.js` used to count `requestAnimationFrame` calls: the world takes a few thousand frames to stream in, and a stopped
   loop stops `netTick`, so the server never learns the player moved and every attack misses. `headless.js` runs frames until `stop()`.
-- `tools/server-smoke.js` "forge merges 3" fails now and then (about 1 run in 15, also on older commits): it depends on a random item from the testing tool. Not a regression.
-- `tools/skills-smoke.js` "all boss skills cast and do what their fx says" fails now and then on `pyre` ("no hits": the Inferno Volley's five homing embers have random spread and can all miss): 3 failures in 25 runs on the code before the dungeons, about 1 in 8 now. Rerun it. Not a regression.
 - Server tests read events from the snapshots: an `ev(...)` reaches a test's log only with the next snapshot (about 2 ticks), so tick 3 times before checking `evs`.
   `client-smoke` / `start-smoke` run the *built* page: a stale `dist/` gives false failures, run `python3 build.py` first.
 - Windows: `shutil.rmtree` on `dist/audio` fails under OneDrive (build.py deletes the files, not the folder); a `cd dist` in one shell
