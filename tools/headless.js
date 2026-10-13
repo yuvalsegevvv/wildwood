@@ -4,12 +4,15 @@
 //   const c=bootClient({online:true, expose:['NET','started:()=>started']});  // names from inside the game, read with c.G()
 //   c.el('#stGuest').click();   // fake elements remember their listeners: click(), requestSubmit(); ._kids = appended children, ._a = attributes
 //   c.stop();                   // ends the frame loop and the server tick
+//   options: online (a fake socket to a world server in this process), host:'127.0.0.1:8080' (Node's own WebSocket to a REAL server, see host-lib.js and net-client-smoke.js), fast, touch, lite, ls, accounts
 //   bootClient({touch:true}) / ({lite:true})   // a phone (LOW: fewer plants, thin streaming slices) / light mode (LITE: the least), as the page decides them from the device and localStorage
 //   bootClient({fast:true})     // a world without the map's painting, the ground colours and the villagers: ~40% quicker to be ready (start card tests)
 const fs=require('fs'), path=require('path'), crypto=require('crypto'), {ROOT}=require('./load');
 
+// children[i] of a fake element is a fake element too (the game builds some of its elements from an innerHTML string, which the stub does not parse: a remote hiker's name tag reads tag.children[0..3])
+const kidsProxy=()=>new Proxy([],{get:(a,k)=>typeof k==='string'&&/^\d+$/.test(k)?(a[k]||(a[k]=makeEl())):a[k]});
 function makeEl(){
-  const e={_h:{},_a:{},_kids:[],children:[],style:{setProperty(){}},classList:{add(){},remove(){},toggle(){},contains(){return false}},textContent:'',dataset:{},
+  const e={_h:{},_a:{},_kids:[],children:kidsProxy(),style:{setProperty(){}},classList:{add(){},remove(){},toggle(){},contains(){return false}},textContent:'',dataset:{},
     offsetWidth:380,offsetHeight:300,scrollTop:0,scrollHeight:0,width:0,height:0,disabled:true,hidden:true,value:'',firstChild:{style:{}},
     remove(){},focus(){},blur(){},select(){},closest(){return null},querySelectorAll:()=>[],querySelector:()=>makeEl(),
     setAttribute(k,v){ e._a[k]=v; },getAttribute(k){ return k in e._a?e._a[k]:null; },
@@ -32,6 +35,7 @@ function memoryAccounts(){
   const auth={ hash:sha, verify:(p,h)=>h===sha(p), token:()=>crypto.randomBytes(8).toString('hex'), tokenHash:t=>'t'+t };
   return {DB,store,auth};
 }
+const NativeWS=global.WebSocket;   // (Node's own client; bootClient removes the global each time and puts it back for the `host` option)
 function bootClient(o){
   o=o||{};
   global.THREE=require('three');
@@ -46,13 +50,14 @@ function bootClient(o){
   if(o.lite) ls.set('wildwood-lite','1');   // light mode (settings): LITE
   Object.defineProperty(global,'navigator',{value:{maxTouchPoints:o.touch?5:0},configurable:true,writable:true});   // touch: a phone, LOW
   Object.assign(global,{window:global,innerWidth:800,innerHeight:600,devicePixelRatio:1,addEventListener(t,f,opt){ (winH[t]=winH[t]||[]).push({f,cap:opt===true||!!(opt&&opt.capture)}); },
-    location:{protocol:'http:',host:'test.local',reload(){}},
+    location:{protocol:'http:',host:o.host||'test.local',reload(){}},
     localStorage:{getItem:k=>ls.has(k)?ls.get(k):null,setItem:(k,v)=>{ ls.set(k,String(v)); },removeItem:k=>{ ls.delete(k); }},
     document:{addEventListener(){},hidden:false,querySelectorAll:()=>[],getElementById:s=>els['#'+s]||(els['#'+s]=makeEl()),querySelector:s=>els[s]||(els[s]=makeEl()),
       createElement:()=>makeEl(),createTextNode:t=>({textContent:t}),body:makeEl(),pointerLockElement:null,baseURI:'http://test.local/'}});
   global.requestAnimationFrame=f=>{ if(alive) setTimeout(f,2); };
   global.showFatal=m=>console.log('FATAL',m);
   delete global.WILDWOOD_WS; delete global.WebSocket;
+  if(o.host){ if(!NativeWS) throw new Error('headless host mode needs Node 22+ (a global WebSocket)'); global.WILDWOOD_WS=true; global.WebSocket=NativeWS; }   // the page as the Node host serves it, talking to a real server over a real socket
   if(o.online){
     global.WILDWOOD_WS=true;
     global.WebSocket=class{
