@@ -169,7 +169,7 @@ function broadcastSnap(){
     const a=[m.id,r1(m.x),r1(m.z),Math.round(m.face*100)/100,Math.ceil(m.hp),(m.aggro?1:0)|(m.slowT>0?4:0)|(m.immune?8:0)|(m.stunT>0?16:0)|(m.burnT>0?32:0)];
     rows.push([m,a,a.join()]);
   }
-  const all=[...S.players.values()], prow=all.map(p=>[p.id,r1(p.x),r1(p.y),r1(p.z),Math.round(p.face*100)/100,Math.round(p.hp),p.maxHp,p.level,p.dead?1:0]);
+  const all=[...S.players.values()], prow=all.map(p=>[p.id,r1(p.x),r1(p.y),r1(p.z),Math.round(p.face*100)/100,Math.round(p.hp),p.maxHp,p.pv?PVP.level:p.level,p.dead?1:0]);   // pvp: on the island everyone shows the one level they fight at
   const day=Math.round(S.day*1e5)/1e5, b=bossState(), w=weatherState(), ev=EVQ, bj=JSON.stringify(b); EVQ=[];
   if(io.broadcastSnaps){
     const mo=[]; for(const [m,a,key] of rows) if(full||key!==m.snapKey){ m.snapKey=key; mo.push(a); }

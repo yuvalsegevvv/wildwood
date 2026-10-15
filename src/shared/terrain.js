@@ -129,6 +129,19 @@ function lakeCut(x,z,h){
     h = lerp(h, Math.min(h,-2.6), smoothstep(L.r, L.r*0.42, ld)); }
   return h;
 }
+/* The Proving Isle (docs/PVP.md): a round island in a round lake in the home forest's south-west hollow, south of Slime Meadow, where players fight each other with fixed stats
+   (shared/pvp.js has the rules). It lives here because roads.js needs its ground at load (the causeway is found where a road runs under its water). x, z: the island's centre;
+   r: the island's grass, to where the beach starts; lakeR: the water's edge; h: the top. The Shore Road runs ~90 m east of it and is not touched: the banks (pvpIsleCut) only
+   cut ground that stands higher than 0.3 m per metre from the water's edge. */
+const PVP_ISLE={x:-190,z:300,r:33,lakeR:62,h:2.3,name:'The Proving Isle'};
+// the lake and the island: banks that ease down to the water, a flat floor, and the island with a beach (d: distance from the centre, with a wobbling shore)
+function pvpIsleCut(x,z,h){
+  const I=PVP_ISLE, lx=x-I.x, lz=z-I.z; if(Math.abs(lx)>I.lakeR+32||Math.abs(lz)>I.lakeR+32) return h;
+  const d=Math.sqrt(lx*lx+lz*lz)+noise2(x*0.05+I.x,z*0.05)*3;
+  h=lerp(h,Math.min(h,0.7+Math.max(0,d-I.lakeR)*0.3),smoothstep(I.lakeR+30,I.lakeR+2,d));
+  h=lerp(h,Math.min(h,-2.6),smoothstep(I.lakeR,I.lakeR*0.82,d));
+  return lerp(h,I.h-Math.pow(d/I.r,2)*0.9+noise2(x*0.09,z*0.09)*0.2,smoothstep(I.r+11,I.r-5,d));   // (the top is a little dome with a faint ripple; below ~0.3 m it is beach, then the lake floor)
+}
 /* ---------- the edges of the two lands (docs/WORLD.md) ----------
    Each side of the playable rectangle faces its real neighbour on the map of Eldmere:
    home forest: north the Greyspine's foothills (snow on top; the Greyspine itself lies beyond their crest), west the Sunwall (red cliffs up to the Sunscar plateau,
@@ -243,6 +256,7 @@ function homeHeight(x,z){
   h = lerp(h, h*0.35 + 2.2, smoothstep(70, 12, d));
   h = lerp(h, -1.7, smoothstep(11, 2.5, d));
   h = lakeCut(x,z,h);
+  h = pvpIsleCut(x,z,h);   // pvp: the Proving Isle's lake and island
   const bx=borderX(z), bz=borderZ(x), dn=z-bz-rimWobble(x,11), f=(Math.abs(bx-x)<250||dn<250)?fbm(x*0.02,z*0.02,3)*0.5+0.5:0;
   const cr=(Math.abs(bx-x)<130||dn<134)?crest(x,z):0;
   h += wallAdd(Math.abs(bx-x),z,1,48,14,20,f,cr)*smoothstep(bz-60,bz+10,z);   // the Vale Wall (it ends in the north wall's crest)

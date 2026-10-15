@@ -28,6 +28,8 @@ const ROADS=(()=>{
     R('The Circle Path',[[230,-92],arenaGate(ARENA,230,-92,3)],2),
     R('The Redgate Road',[S,[-70,14],[-105,16],[-160,20],[-240,32],[-320,40],[HX0+REDGATE_CL+30,REDGATE_Z]],3),
     R('The Shore Road',[[-105,16],[-122,110],[-110,220],[-92,330],[-84,WZ1-40]],4),
+    // pvp: a spur of the Shore Road west to the Proving Isle (shared/pvp.js); the lake's water makes its causeway (the Proving Bridge) by itself
+    R('The Proving Road',[[-102,282],[-128,283],[-156,285],[-172,292]],15),
     R('The Tunnel Road',[S2,[TUN.p1+2,TUN.z]],5),
     R('The Gate Road',[S2,[560,-160],[650,-195],[760,-240],[850,-300],arenaGate(ARENA20,850,-300,3)],6),
     R('The Hollow Road',[S2,[560,-40],[600,80],[592,200],arenaGate(ARENA25,592,200,3)],7),
@@ -74,7 +76,7 @@ for(const rd of ROADS) for(let i=1;i<rd.pts.length;i++){
   BRIDGES.push({x,z,dx,dz,h0,h1,len:BRIDGE_LEN,w:BRIDGE_W,kind:'bridge',road:rd.name,name:'the river bridge'});
 }
 // the drowned stretches, by road (the first causeway on that road gets the name)
-const CAUSEWAY_NAMES={'The Redgate Road':'The Drowned Road','The Shore Road':'The Long Planks','The East Road':'The Heron Steps','The Isle Road':'The Warlord Causeway'};
+const CAUSEWAY_NAMES={'The Redgate Road':'The Drowned Road','The Shore Road':'The Long Planks','The East Road':'The Heron Steps','The Isle Road':'The Warlord Causeway','The Proving Road':'The Proving Bridge'};
 { const wet=(x,z)=>baseHeight(x,z)<WATER+0.35, named=new Set();
   for(const rd of ROADS){
     const S=[]; for(let i=1;i<rd.pts.length;i++){ const [ax,az]=rd.pts[i-1], [bx,bz]=rd.pts[i], n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/2)); for(let k=i===1?0:1;k<=n;k++) S.push([ax+(bx-ax)*k/n, az+(bz-az)*k/n]); }

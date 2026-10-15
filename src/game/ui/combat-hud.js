@@ -29,7 +29,7 @@ function updateCombatUI(dt){
   }
   for(;bi<barPool.length;bi++) barPool[bi].hidden=true;
   const T=CB.target;
-  const soul=soulNow(); $('#plLv').textContent='Lv '+PL.level+(soul!=='basic'?' · '+ELEMS[soul].name:''); $('#plHpT').textContent=Math.ceil(PL.hp)+' / '+PL.maxHp;
+  const soul=soulNow(); $('#plLv').textContent='Lv '+(PVC&&PVC.on?PVP.level+' (PvP)':PL.level)+(soul!=='basic'?' · '+ELEMS[soul].name:''); $('#plHpT').textContent=Math.ceil(PL.hp)+' / '+PL.maxHp;
   $('#plHp').style.width=(PL.hp/PL.maxHp*100)+'%'; const need=expToNext(PL.level);
   $('#plXp').style.width=Math.min(100,PL.exp/need*100)+'%'; $('#plXpT').textContent='XP '+Math.floor(PL.exp)+' / '+Math.ceil(need);
   const bossUI=updateBossUI();
@@ -37,11 +37,11 @@ function updateCombatUI(dt){
     const te=elOf(T.T); tEl.textContent=te==='basic'?'':ELEMS[te].name; tEl.style.color=ELEMS[te].col; if(te==='basic') tEl.title=''; else { const tr=foeTraits(te), nm=l=>l.map(e=>ELEMS[e].name).join(' and '); tEl.title=ELEMS[te].name+': weak to '+nm(tr.weak)+', resists '+nm(tr.resist); }
     tBar.style.width=(T.hp/T.maxHp*100)+'%'; tHp.textContent=Math.ceil(T.hp*K.hp)+' / '+Math.round(T.maxHp*K.hp); }
   else tframe.hidden=true;
-  const L=GEAR&&GEAR.skills, c=clsOf(), ba=abilityOf(c,'basic',L,PL.level), sk=abilityOf(c,'skill',L,PL.level), bu=abilityOf(c,'burst',L,PL.level);
-  abBasic.style.setProperty('--p',ba?CB.cd.basic/(abilityCd(ba,L,PL.level,c)*(CB.buff?CB.buff.cd:1)):0); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PL.level,c):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PL.level,c):0);   // (skillsets: the bonuses of the class in hand)
+  const L=pvSkills(), PV=pvLevel(), c=clsOf(), ba=abilityOf(c,'basic',L,PV), sk=abilityOf(c,'skill',L,PV), bu=abilityOf(c,'burst',L,PV);   // pvp: the fixed loadout on the island
+  abBasic.style.setProperty('--p',ba?CB.cd.basic/(abilityCd(ba,L,PV,c)*(CB.buff?CB.buff.cd:1)):0); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PV,c):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PV,c):0);   // (skillsets: the bonuses of the class in hand)
   abSkill.classList.toggle('ready',!!sk&&CB.cd.skill<=0); abBurst.classList.toggle('ready',!!bu&&CB.cd.burst<=0);
   abBasic.classList.toggle('buffed',!!CB.buff);
-  const key=c+'|'+(ba?ba.id:'')+'|'+(sk?sk.id:'')+'|'+(bu?bu.id:'')+'|'+Math.min(PL.level,BURST_SLOT_LV); if(key!==abKey){ abKey=key; setActionBar(); }
+  const key=c+'|'+(ba?ba.id:'')+'|'+(sk?sk.id:'')+'|'+(bu?bu.id:'')+'|'+Math.min(PV,BURST_SLOT_LV); if(key!==abKey){ abKey=key; setActionBar(); }
 }
 const ICONS={
   Slash:'<path d="M5 19L17 7l2-4-4 2L3 17z"/><path d="M8 16l-3 3M15 5l4 4"/>',
@@ -121,9 +121,9 @@ const abBasic=$('#abBasic'), abSkill=$('#abSkill'), abBurst=$('#abBurst'); let a
 function burstSlot(){ doAttack('burst'); }
 function flashSkillSlot(slot){ abKey=''; const el=slot==='burst'?abBurst:abSkill; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
 function setActionBar(){
-  const c=clsOf(), L=GEAR&&GEAR.skills;
+  const c=clsOf(), L=pvSkills();   // pvp: the fixed loadout on the island
   // each button: the equipped ability, a lock until the slot's level, or a + when nothing is equipped
-  const fill=(el,slot,key)=>{ const a=abilityOf(c,slot,L,PL.level), locked=PL.level<slotLv(slot);
+  const fill=(el,slot,key)=>{ const a=abilityOf(c,slot,L,pvLevel()), locked=pvLevel()<slotLv(slot);
     el.querySelector('svg').innerHTML=ICONS[a?a.name:locked?'lock':'plus']||ICONS.burst;
     el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+slotLv(slot):(slot==='burst'?'Burst':'Skill');
     el.classList.toggle('empty',!a); const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);

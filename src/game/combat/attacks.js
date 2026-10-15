@@ -13,24 +13,25 @@ function pickTarget(range){
   return best;
 }
 function cycleTarget(){
+  if(PVC.on){ pvCycle(); return; }   // pvp: Tab picks among the other fighters on the island
   const list=MONS.filter(m=>!m.dead&&m.g.visible&&Math.hypot(m.x-P.x,m.z-P.z)<32).sort((a,b)=>Math.hypot(a.x-P.x,a.z-P.z)-Math.hypot(b.x-P.x,b.z-P.z));
   if(!list.length){ CB.target=null; return; }
   const i=list.indexOf(CB.target); CB.target=list[(i+1)%list.length];
 }
 function doAttack(kind){
   if(!started||!NET.ready||uiOpen()||PL.dead||CB.act||CB.cd[kind]>0) return;
-  const c=clsOf(), ab=abilityOf(c,kind,GEAR.skills,PL.level);
+  const c=clsOf(), ab=abilityOf(c,kind,pvSkills(),pvLevel());   // pvp: on the island the fixed loadout
   if(!ab){ // the slot is locked or empty
     if(PL.level<slotLv(kind)){ toast('Your '+kind+' slot opens at level '+slotLv(kind),'bad'); UI_SFX.error(); }
     else openSkills(null,kind);
     return;
   }
   const tgtOK=CB.target&&!CB.target.dead&&Math.hypot(CB.target.x-P.x,CB.target.z-P.z)<=ab.range+3;
-  if(!tgtOK){ const t2=pickTarget(Math.max(ab.range+2,8)); if(t2) CB.target=t2; }
+  if(!tgtOK&&!PVC.on){ const t2=pickTarget(Math.max(ab.range+2,8)); if(t2) CB.target=t2; }
   const [k,dur,hitAt]=ab.act;
   CB.act={kind:ANIM_OF[k]||k,sk:k,t:0,dur,hitAt,done:false,skill:kind==='skill'};
-  CB.cd[kind]=abilityCd(ab,GEAR.skills,PL.level,c)*(kind==='basic'&&CB.buff?CB.buff.cd:1)*(1-ssHasteK());   // skillsets: the class the bonuses are read for
-  const T=CB.target;
+  CB.cd[kind]=abilityCd(ab,pvSkills(),pvLevel(),c)*(kind==='basic'&&CB.buff?CB.buff.cd:1)*(1-ssHasteK());   // skillsets: the class the bonuses are read for
+  const T=PVC.on?pvTarget(ab.range):CB.target;   // pvp: another fighter
   if(T && !T.dead && Math.hypot(T.x-P.x,T.z-P.z)<ab.range+6) P.face=Math.atan2(-(T.x-P.x),-(T.z-P.z));
   else P.face=P.yaw;
   const a=aimDir();
@@ -186,4 +187,5 @@ function updateCombat(dt){
   if(T){ targetRing.visible=true; targetRing.position.set(T.x,T.y+0.06,T.z); targetRing.scale.setScalar(T.T.rad*1.4*T.s+0.3); targetRing.rotation.y+=dt; }
   else targetRing.visible=false;
   updateCombatUI(dt);
+  pvUpdate(dt);   // pvp: the badge, the picked fighter's ring
 }

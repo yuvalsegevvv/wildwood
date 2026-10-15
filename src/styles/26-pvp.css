@@ -1,0 +1,6 @@
+/*@ The Proving Isle (PvP): the badge under the zone name, other fighters' red name tags, the picked target */
+#pvBadge{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:6;padding:5px 14px;border-radius:14px;background:rgba(80,24,24,.82);color:#ffd9a0;font:600 13px/1.3 system-ui,sans-serif;letter-spacing:.02em;text-align:center;max-width:92vw;pointer-events:none;border:1px solid rgba(255,200,120,.45)}
+#pvBadge.shut{background:rgba(30,30,40,.88);color:#e8ecf4;border-color:rgba(160,180,220,.5)}
+#pvBadge[hidden]{display:none}
+.ntag.foe b{color:#ff9a8a}
+.ntag.tgt{filter:drop-shadow(0 0 4px rgba(255,90,74,.9))}

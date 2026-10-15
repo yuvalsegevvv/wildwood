@@ -92,6 +92,7 @@ function newPlayer(pid,hello){
   recalcP(p); p.hp=p.maxHp; fillOffersP(p); return p;
 }
 function recalcP(p){
+  if(p.pv){ pvpRecalcP(p); return; }   // pvp: on the Proving Isle everyone has the same numbers (server/pvp.js)
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
   g.atk+=dgRingAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else (only for a matching soul)
   p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym); p.def=g.def; p.red=defRed(g.def);
@@ -99,11 +100,11 @@ function recalcP(p){
   ssRefreshP(p);   // skillsets: the sets worn and their bonuses
 }
 const clsOfP=p=>classOfGear(p.gear);
-const psP=(p,stat)=>passiveSum(p.gear.skills,p.level,stat,clsOfP(p));   // a passive stat (Vitality's hp, Ferocity's dmg...)
-// the bonus of the worn pendant for one stat (pendants.js): read from the item id in the save, never from a number the client sent, and only while you are high enough for it
-function pendP(p,stat){ const it=ITEM[p.gear.eq.pendant]; return it&&it.kind==='pendant'&&it.stat===stat&&p.level>=it.lv?it.v:0; }
+const psP=(p,stat)=>passiveSum(skOfP(p),pvLvP(p),stat,p.pv?undefined:clsOfP(p));   // a passive stat (Vitality's hp, Ferocity's dmg...); pvp: on the island the fixed loadout at the fixed level, and no set bonuses
+// the bonus of the worn pendant for one stat (pendants.js): read from the item id in the save, never from a number the client sent, and only while you are high enough for it (pvp: none on the island)
+function pendP(p,stat){ if(p.pv) return 0; const it=ITEM[p.gear.eq.pendant]; return it&&it.kind==='pendant'&&it.stat===stat&&p.level>=it.lv?it.v:0; }   // pvp: no pendant on the island
 const soulOfP=p=>p.level>=SOUL_LV?p.gear.soul:'basic';
-function youMsg(p){ return {t:'you',level:p.level,exp:p.exp,maxHp:p.maxHp,hp:p.hp,dmg:p.dmg,def:p.def,red:p.red,dead:p.dead,gear:p.gear}; }
+function youMsg(p){ return {t:'you',level:p.level,exp:p.exp,maxHp:p.maxHp,hp:p.hp,dmg:p.dmg,def:p.def,red:p.red,dead:p.dead,pv:p.pv?1:0,gear:p.gear}; }   // pvp: pv = standing on the island, where the numbers above are the fixed ones
 function pubInfo(p){ return {id:p.id,name:p.name,look:p.look,eq:p.gear.eq,level:p.level}; }
 function inVillage(p){ return vNear(p.x,p.z,VR+12); }
 // the teleport circles (one in each village): standing on one and choosing a destination (the client's travel window, warp{to}) takes you
@@ -149,17 +150,19 @@ function gainExpP(p,v,monId){
 }
 // the attacker's damage at your zone tier (its tiered level's damage), +5% per level the attacker is above you, then your armor (soft-capped, defRed), the Iron Will passive, a buff and a guard potion;
 // together they can never take off more than 90% (DMG_TAKEN_MIN)
-function hurtP(p,v,m){
-  if(p.dead) return;
+function hurtP(p,v,m,by){   // returns the damage taken; by: the fighter who hit (pvp, no monster)
+  if(p.dead) return 0;
   const K=m?monK(m,p):null, ld=m?Math.max(0,K.lv-p.level):0;
   v=Math.max(1,Math.round(v*(K?K.dmg:1)*rxWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red')-ssCondP(p,'red',m))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))*(1-allyP(p,'guard')))));   // reactions: weak lowers what a monster deals
-  if(p.shield&&p.shield.until>S.t&&p.shield.v>0){ const a=Math.min(v,p.shield.v); p.shield.v-=a; v-=a; if(p.shield.v<=0&&!p.shield.done){ p.shield.done=true; ssShieldBreakS(p); } if(v<=0){ p.lastHit=S.t; return; } }   // skillsets: a shield soaks the hit first
+  if(p.shield&&p.shield.until>S.t&&p.shield.v>0){ const a=Math.min(v,p.shield.v); p.shield.v-=a; v-=a; if(p.shield.v<=0&&!p.shield.done){ p.shield.done=true; ssShieldBreakS(p); } if(v<=0){ p.lastHit=S.t; return 0; } }   // skillsets: a shield soaks the hit first
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){
     p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id);
     for(const mm of MONS) if(mm.tgt===p.id){ mm.aggro=false; mm.tgt=null; mm.state='return'; mm.pendingHit=-1; }
+    if(p.pv) pvpDownS(p,by);   // pvp: knocked out on the island
   }
   if(m&&p.ss) ssHurtS(p,m,v);   // skillsets: reflect, on hurt and on low rows
+  return v;
 }
 // a slot opens (skill at level 3, burst at level 10): every class gets that slot's free ability equipped
 function autoEquipP(p,slot){
@@ -196,10 +199,12 @@ function updatePlayersS(dt){
     if(p.dead&&p.inst){ dgDownTickS(p,dt); continue; }   // dungeons: downed in a run: revived, or a respawn at its entrance, never the village
     if(p.dead){
       p.deadT+=dt;
+      if(p.deadT>3&&p.pv){ pvpReviveP(p); continue; }   // pvp: a knock-out on the island wakes on the lake's shore, not in a village
       if(p.deadT>3){ const g=respawnVil(p).anchors.gate; p.x=g.x; p.z=g.z; p.y=getH(g.x,g.z); p.dead=false; p.hp=p.maxHp; p.lastHit=-99; sendTo(p.id,{t:'tp',x:g.x,z:g.z,face:g.face}); ev('up',p.id); p.dirty=true; }
       continue;
     }
-    if(S.t-p.lastHit>3 && p.hp<p.maxHp) p.hp=Math.min(p.maxHp,p.hp+p.maxHp*0.08*dt);
+    if(S.t-p.lastHit>(p.pv?PVP_REGEN_AFTER:3) && p.hp<p.maxHp) p.hp=Math.min(p.maxHp,p.hp+p.maxHp*(p.pv?PVP_REGEN_K:0.08)*dt);   // pvp: slower on the island
+    pvpTickP(p,dt);   // pvp: stepping onto / off the island, burning
     if(p.act){ const a=p.act; a.t+=dt; if(!a.done && a.t>=a.dur*a.hitAt){ a.done=true; resolveHitS(p,a); } if(a.t>=a.dur) p.act=null; }
     p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); reachHanamiP(p); reachRimeholdP(p); reachHighmarkP(p); mqTickP(p); }
   }

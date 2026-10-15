@@ -24,7 +24,8 @@
     "22-tiers.css",
     "23-dungeon-gear.css",
     "24-dungeon.css",
-    "25-dungeon-board.css"
+    "25-dungeon-board.css",
+    "26-pvp.css"
   ],
   "shared": [
     "math.js",
@@ -59,6 +60,7 @@
     "main-quest.js",
     "professions.js",
     "crafting.js",
+    "pvp.js",
     "dungeon-slots.js",
     "dungeon-hud.js",
     "dungeons.js", "dungeons/bosses.js", "dungeons/themes/hollowroots.js", "dungeons/themes/jadesprings.js", "dungeons/themes/bonefrostbarrow.js", "dungeons/themes/blackseam.js", "dungeon-rewards.js", "dungeon-items.js",
@@ -97,6 +99,7 @@
     "weather.js",
     "accounts.js",
     "party.js",
+    "pvp.js",
     "dungeons/instances.js", "dungeons/mobs.js", "dungeons/fx.js", "dungeons/hazards.js", "dungeons/kits.js", "dungeons/kits/purge.js", "dungeons/kits/defense.js", "dungeons/kits/survival.js", "dungeons/kits/sabotage.js", "dungeons/kits/siege.js", "dungeons/kits/hunt.js", "dungeons/kits/escort.js", "dungeons/runs.js", "dungeons/lobby.js",
     "api.js"
   ],
@@ -153,6 +156,7 @@
     "village/buildings-grey.js",
     "village/buildings-greyfall.js",
     "village/buildings-beach.js",
+    "village/buildings-pvp.js",
     "village/buildings-dungeon.js",
     "village/sun-rim.js",
     "village/sun-ruin.js",
@@ -242,7 +246,7 @@
     "net/remote.js",
     "economy/dungeon-gear.js",
     "dungeon/board.js",
-    "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "dungeon/hud.js", "dungeon/minimap.js",
+    "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "pvp/state.js", "dungeon/hud.js", "dungeon/minimap.js",
     "ui/account.js",
     "ui/chat.js",
     "ui/start-screen.js",

@@ -109,6 +109,7 @@ function drawFullMap(){
     for(const G of GREY_GATES){ const [cx,cy]=at(G.x,G.z), op=gateOpen(G); dot(x,cx,cy,3.5*DPR,op?'#9fe0ff':'#8a8078'); label(G.name,cx+fs*3.4,cy,fs*0.72,op?'#e8e0d0':'#b4aea4'); }   // (the dot says whether it is open; the name is short, the map is small on a phone)
   }
   for(const Lk of LAKES){ if(!!Lk.vale!==(land==='vale')||land==='hoar'||land==='grey') continue; const [cx,cy]=at(Lk.x,Lk.z); label(Lk.name,cx,cy,fs*0.85,'#cfe8f6'); }
+  if(land==='home'){ const [cx,cy]=at(PVP.x,PVP.z); label(PVP_ISLE.name,cx,cy,fs*0.85,'#ffd9a0'); }   // pvp: the island
   for(const B of BRIDGES){ if(B.kind!=='causeway'||B.name[0]!=='T'||inVale(B.x,B.z)!==vale||land==='hoar'||land==='grey') continue; const [cx,cy]=at(B.x,B.z); label(B.name,cx,cy+fs*1.1,fs*0.8,'#cfe8f6'); }   // the named causeways
   // quests
   for(const q of questTargets()){
@@ -128,6 +129,7 @@ function placeName(wx,wz){
   if(vDist(wx,wz)<VR+8) return vilAt(wx,wz)===VIL4?'Highmark':vilAt(wx,wz)===VIL3?'Rimehold':vilAt(wx,wz)===VIL2?'Hanami':'Village';
   for(const L of FROST_LAKES) if(inHoar(wx,wz)&&Math.hypot(wx-L.x,wz-L.z)<L.r*0.8) return L.name+' (frozen)';
   for(const L of LAKES) if(Math.hypot(wx-L.x,wz-L.z)<L.r*0.8) return L.name;
+  if(Math.hypot(wx-PVP.x,wz-PVP.z)<PVP.r+4) return PVP_ISLE.name+' (fighters, same stats for all)';   // pvp
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if(Math.hypot(wx-A.x,wz-A.z)<A.r+6) return A.name+': '+bd.def.name+', level '+bossLvIn(bd.def,landAt(A.x,A.z))+' boss'; }
   if(inPass(wx,wz)&&Math.abs(wz-PASS.ice)<6) return northOpen()?'Frostgate Pass (the ice wall has fallen)':'Frostgate Pass: the ice wall (shut until Akaoni falls)';
   if(inPass(wx,wz)&&wz<HZ0+60) return 'Frostgate Pass';

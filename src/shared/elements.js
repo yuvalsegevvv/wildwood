@@ -20,16 +20,18 @@ const ELEM_BEATS={water:'fire',fire:'air',air:'earth',earth:'water',dark:'light'
 const ELEM_OPP={fire:'water',water:'fire',earth:'air',air:'earth',dark:'light',light:'dark'};   // the soul's pairs
 const SOUL_LV=15, ELEM_BOOST=1.5;
 const elOf=x=>x&&ELEMS[x.el]?x.el:'basic';   // the element of a skill or monster definition
-// a skill of element el used by a soul bound to soul (bonus: added to the x1.5, from the Resonance passive)
-function soulMult(soul,el,bonus){
+// a skill of element el used by a soul bound to soul (bonus: added to the x1.5, from the Resonance passive; boost: another strength than ELEM_BOOST, PVP.elemBoost between fighters)
+function soulMult(soul,el,bonus,boost){
   if(el==='basic'||soul==='basic'||!ELEM_OPP[soul]) return 1;
-  return el===soul?ELEM_BOOST+(bonus||0):ELEM_OPP[soul]===el?1/ELEM_BOOST:1;
+  const B=boost||ELEM_BOOST;
+  return el===soul?B+(bonus||0):ELEM_OPP[soul]===el?1/B:1;
 }
-// a skill of element el hitting a monster of element foe: it beats the monster's element x1.5, is beaten by it (or shares it) x1/1.5
-function foeMult(el,foe){
+// a skill of element el hitting a monster of element foe: it beats the monster's element x1.5, is beaten by it (or shares it) x1/1.5 (boost: as in soulMult; a fighter's element is their soul)
+function foeMult(el,foe,boost){
   if(!ELEM_BEATS[el]||!ELEM_BEATS[foe]) return 1;   // 'basic' on either side
-  if(ELEM_BEATS[el]===foe) return ELEM_BOOST;
-  if(ELEM_BEATS[foe]===el||el===foe) return 1/ELEM_BOOST;
+  const B=boost||ELEM_BOOST;
+  if(ELEM_BEATS[el]===foe) return B;
+  if(ELEM_BEATS[foe]===el||el===foe) return 1/B;
   return 1;
 }
 // what a monster of element foe is weak to and what it resists, as lists of elements (the target frame shows them)

@@ -76,6 +76,7 @@ function worldBounds(o,ox,rad,oz){
   else frostWall(o,ox,oz,rad);
   if(oz!==undefined && coastDist(o.x,o.z)<34 && bridgeDeck(o.x,o.z)<WATER){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }
   if(oz!==undefined && riverK(o.z)>0.15 && bridgeDeck(o.x,o.z)<WATER){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }   // the border river (shared/terrain.js): wade to the knees, no deeper, so the water is a wall too
+  pvWall(o,ox,oz);   // pvp: the Proving Isle's lake is a wall too, and its gate stays shut after a knock-out (game/pvp/state.js)
 }
 /* The vale's north wall (its crest line is z = borderZ(x), HZ0 at the pass) is climbable up to 14 m short of the crest from either side while the Reach is locked; the only way
    through is Frostgate Pass, and its ice wall stays shut until Akaoni falls (GEAR.north >= 1). In the pass you are kept between its walls near the crest. Once the Reach is open

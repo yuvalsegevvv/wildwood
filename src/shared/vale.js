@@ -99,5 +99,5 @@ const ARENAS=[ARENA,ARENA20,ARENA25];
 ARENA.zone=ZONES.find(z=>z.key==='boss');
 ARENA20.zone={key:'boss20',ring:3,vale:true,x:ARENA20.x,z:ARENA20.z,R:20,name:'Demon Gate',level:20,boss:true}; ZONES.push(ARENA20.zone);
 ARENA25.zone=ZONES.find(z=>z.key==='boss25'); ARENA25.zone.x=ARENA25.x; ARENA25.zone.z=ARENA25.z;
-// the nearest arena's centre distance (vegetation and camps stay out of all three)
-function arenaDist(x,z){ let m=1e9; for(const A of ARENAS){ const d=Math.hypot(x-A.x,z-A.z); if(d<m) m=d; } return m; }
+// the nearest arena's centre distance (vegetation and camps stay out of all three; pvp: the Proving Isle counts as one, 15 m closer than it is, so trees, camps and nodes keep off it and its ground is tinted like an arena floor)
+function arenaDist(x,z){ let m=Math.hypot(x-PVP_ISLE.x,z-PVP_ISLE.z)-15; for(const A of ARENAS){ const d=Math.hypot(x-A.x,z-A.z); if(d<m) m=d; } return m; }

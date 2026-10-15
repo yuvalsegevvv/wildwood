@@ -2,7 +2,7 @@
 /* Messages: craft{slot,tier,rar} (rules and prices: shared/crafting.js), brew{id,n}, potion{k} (k: heal / might / guard; the strongest one you own is
    drunk). Events: craft [pid, item id], brew [pid, potion id, n], pot [pid, kind, tier, seconds] (a potion drunk: the client starts that kind's
    cooldown and shows the buff). Potion buffs live in p.potb {might|guard: {until, v}} and are read by rollDmgS (might) and hurtP (guard) through potBuffP. */
-function potBuffP(p,kind){ const b=p.potb&&p.potb[kind]; return b&&S.t<b.until?b.v:0; }
+function potBuffP(p,kind){ if(p.pv) return 0; const b=p.potb&&p.potb[kind]; return b&&S.t<b.until?b.v:0; }   // pvp: no potion buffs on the island
 function craftP(p,slot,t,r){
   t=clampInt(t,0,TIERS-1,-1); r=clampInt(r,0,CRAFT_MAX_RAR,-1);
   if(p.dead||!canCraft(slot,t,r)) return;
@@ -29,6 +29,7 @@ function brewP(p,id,n){
 }
 function drinkP(p,kind){
   const K=POT_KINDS[kind]; if(!K||p.dead) return;
+  if(p.pv){ toastTo(p.id,'No potions on the Proving Isle: everyone fights with the same numbers.','bad'); return; }   // pvp
   const P=potionToDrink(p.gear.pot,kind); if(!P){ toastTo(p.id,'You have no '+K.name,'bad'); return; }
   p.potCd=p.potCd||{}; if((p.potCd[kind]||0)>S.t) return;
   if(kind==='heal'&&p.hp>=p.maxHp){ toastTo(p.id,'You are not hurt','bad'); return; }

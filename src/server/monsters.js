@@ -18,7 +18,7 @@ const CAMPS=[];
 const MON_COUNT=d=>d.count||(d.level>15?12:Math.round((40-(d.level-1)*20/14)*(d.level>=12?1.25:1)));
 function initMonstersS(){
   const rng=mulberry32(31337), rr=(a,b)=>a+(b-a)*rng();
-  const ok=(x,z)=>{ const bz=borderZ(x), home=z>=bz&&x<borderX(z), grey=z<bz&&x<borderXN(z); return x>WX0+26&&x<WX1-26&&z>(home?bz:WZ0)+26&&z<(grey?bz:HALF)-26&&getH(x,z)>1&&grad(x,z)<0.55&&zoneRidge(x,z)<0.5&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&!inTunnelCut(x,z,15)&&!inGlen(x,z,8)&&!inGate(x,z,6)&&!greyWet(x,z,-3)&&!dgEntranceNear(x,z,32); };   // dungeons: a camp keeps 32 m off a dungeon's door (none was nearer: no camp moves)
+  const ok=(x,z)=>{ const bz=borderZ(x), home=z>=bz&&x<borderX(z), grey=z<bz&&x<borderXN(z); return x>WX0+26&&x<WX1-26&&z>(home?bz:WZ0)+26&&z<(grey?bz:HALF)-26&&getH(x,z)>1&&grad(x,z)<0.55&&zoneRidge(x,z)<0.5&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&!inTunnelCut(x,z,15)&&!inGlen(x,z,8)&&!inGate(x,z,6)&&!greyWet(x,z,-3)&&!dgEntranceNear(x,z,32)&&Math.hypot(x-PVP_ISLE.x,z-PVP_ISLE.z)>PVP_ISLE.lakeR+34; };   // dungeons: a camp keeps 32 m off a dungeon's door (none was nearer: no camp moves); pvp: and 96 m off the Proving Isle's centre (nothing lives by the lake or the bridgehead)
   for(const d of MON_DEFS){
     const zn=defZone(d), total=MON_COUNT(d), pack=d.per+2;
     let made=0;
@@ -42,7 +42,7 @@ function respawnMonS(m){
 }
 function monCenterS(m){ return {x:m.x,y:getH(m.x,m.z)+m.T.height*0.5*m.s,z:m.z}; }
 // the cheap distance test comes first: inVillage() is only worth asking about a player who is close enough to matter (it was 28% of the server's tick)
-function nearestFighter(x,z,maxD){ let best=null,bd=maxD*maxD; for(const p of S.players.values()){ const dx=p.x-x, dz=p.z-z, d=dx*dx+dz*dz; if(d>=bd||p.dead||inVillage(p)) continue; bd=d; best=p; } return best; }
+function nearestFighter(x,z,maxD){ let best=null,bd=maxD*maxD; for(const p of S.players.values()){ const dx=p.x-x, dz=p.z-z, d=dx*dx+dz*dz; if(d>=bd||p.dead||p.pv||inVillage(p)) continue; bd=d; best=p; } return best; }   // (pvp: nothing hunts a fighter on the island)
 function anyPlayerNear(x,z,d){ const d2=d*d; for(const p of S.players.values()){ const dx=p.x-x, dz=p.z-z; if(dx*dx+dz*dz<d2) return true; } return false; }
 function updateMonstersS(dt){
   for(const m of MONS){

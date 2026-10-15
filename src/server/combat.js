@@ -7,27 +7,29 @@ const PROJS=[]; let nextProjId=1;
 function handleAttack(p,msg){
   if(p.dead||p.act) return;
   const k=SLOTS.includes(msg.k)?msg.k:'basic'; if(p.cd[k]>0.08) return;
-  const cls=clsOfP(p), ab=abilityOf(cls,k,p.gear.skills,p.level); if(!ab) return;   // no skill equipped, or the slot is still locked
+  const cls=clsOfP(p), SK=skOfP(p), LV=p.pv?999:p.level, ab=abilityOf(cls,k,SK,LV); if(!ab) return;   // no skill equipped, or the slot is still locked; pvp: on the island the fixed loadout, every slot open
   const [kind,dur,hitAt]=ab.act;
-  const lvl=skillLvOf(p.gear.skills,ab.id);
-  p.cd[k]=abilityCd(ab,p.gear.skills,p.level,cls)*(k==='basic'&&p.buff?p.buff.cd:1)*(1-allyP(p,'haste'));   // skillsets: an ally haste buff shortens it
+  const lvl=skillLvOf(SK,ab.id);
+  p.cd[k]=abilityCd(ab,SK,LV,cls)*(k==='basic'&&p.buff?p.buff.cd:1)*(1-allyP(p,'haste'));   // skillsets: an ally haste buff shortens it
   ssTriggerS(p,'cast'+(1+SLOTS.indexOf(k)),{m:MON_BY_ID.get(msg.tg)});   // skillsets: on cast rows of slot 1, 2, 3
   if(isFinite(+msg.face)) p.face=+msg.face%(2*Math.PI);   // (modulo a turn: it goes out in the pact event and the snapshots, rounded by x100, and 1e308 became Infinity there)
-  const tg=MON_BY_ID.get(msg.tg);
+  const tg=foeByIdS(p,msg.tg);   // pvp: a fighter on the island may name another fighter
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
   p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:ab.fx,mult:ab.mult*skillPower(lvl),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim};
   ev('pact',p.id,kind,Math.round(p.face*100)/100);
-  if(k!=='basic') mqActP(p,k);   // the main quest's 'use your skill / burst' steps
+  if(k!=='basic'&&!p.pv) mqActP(p,k);   // the main quest's 'use your skill / burst' steps (pvp: nothing is credited on the island)
 }
 // the element multiplier of an attack of element el (a skill's, 'basic' if none) from p on monster m: their soul and the monster's own element
 function elemEffS(p,el){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=p.buff.el; return el; }   // reactions: the element an attack counts as (an enchanting buff gives element-less attacks its element), for the damage and the aura
 function elemHitS(p,el,m){ el=elemEffS(p,el);
-  return soulMult(soulOfP(p),el,psP(p,'soul'))*(m?foeMult(el,elOf(m.T)):1); }
+  const B=m&&m.pl?PVP.elemBoost:ELEM_BOOST;   // pvp: between fighters advantage and disadvantage are x1.15 and /1.15, and a fighter's element is their soul (the proxy's T.el)
+  return soulMult(soulOfP(p),el,psP(p,'soul'),B)*(m?foeMult(el,elOf(m.T),B):1); }
 function rollDmgS(p,mult,m,el){
-  const b=p.buff, crit=Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m)+pendP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
+  const b=p.buff, crit=Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m)+pendP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
   return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m)):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
+  if(m.pl) return pvpHitS(m,mult,p,fromX,fromZ,kb,el);   // pvp: m is another fighter on the island (server/pvp.js)
   if(m.dead||m.remove) return 0;
   if(m.inst&&!dgHitOkS(m,p,fromX,fromZ)) return 0;   // dungeons: a run's monster takes hits only from its run, and walls stop them
   if(m.immune){ ev('imm',m.id); return 0; }
@@ -95,30 +97,30 @@ function aimPoint(p,tgt,range,ahead){
   if(tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=range+3) return {x:tgt.x,z:tgt.z};
   return {x:p.x-Math.sin(p.face)*ahead,z:p.z-Math.cos(p.face)*ahead};
 }
-function nearestAhead(p,range){ let best=null,bs=1e9; for(const m of MONS){ if(m.dead||m.remove) continue; const dx=m.x-p.x, dz=m.z-p.z, d=Math.hypot(dx,dz); if(d>range) continue; const ang=Math.abs(angDiff(Math.atan2(-dx,-dz),p.face)); if(ang>1.1&&d>4) continue; const sc=d+ang*8; if(sc<bs){ bs=sc; best=m; } } return best; }
+function nearestAhead(p,range){ let best=null,bs=1e9; for(const m of foesS(p)){ if(m.dead||m.remove) continue; const dx=m.x-p.x, dz=m.z-p.z, d=Math.hypot(dx,dz); if(d>range) continue; const ang=Math.abs(angDiff(Math.atan2(-dx,-dz),p.face)); if(ang>1.1&&d>4) continue; const sc=d+ang*8; if(sc<bs){ bs=sc; best=m; } } return best; }
 function resolveHitS(p,a){
-  const cls=clsOfP(p), C=CLASSES[cls], T=a.tg?MON_BY_ID.get(a.tg):null, tgt=T&&!T.dead&&!T.remove?T:null;
+  const cls=clsOfP(p), C=CLASSES[cls], T=a.tg?foeByIdS(p,a.tg):null, tgt=T&&!T.dead&&!T.remove?T:null;
   if(tgt && a.kind!=='spin') p.face=Math.atan2(-(tgt.x-p.x),-(tgt.z-p.z));
-  const alive=m=>!m.dead&&!m.remove;
+  const alive=m=>!m.dead&&!m.remove, FO=foesS(p);   // pvp: FO is the monsters, or the other fighters when p stands on the island
   if(a.fx){ resolveFxS(p,a,tgt); return; }
   if(a.kind==='slash'||a.kind==='bash'){
     const bash=a.kind==='bash', reach=bash?3.2:2.9, arc=bash?0.9:1.1;
-    for(const m of MONS){ if(!alive(m)) continue; const dx=m.x-p.x, dz=m.z-p.z, d=Math.hypot(dx,dz); if(d>reach+m.T.rad) continue;
+    for(const m of FO){ if(!alive(m)) continue; const dx=m.x-p.x, dz=m.z-p.z, d=Math.hypot(dx,dz); if(d>reach+m.T.rad) continue;
       const ang=Math.abs(angDiff(Math.atan2(-dx,-dz),p.face)); if(ang<arc||d<m.T.rad+0.6){ damageMonsterS(m,a.mult,p,p.x,p.z,bash?5:4,a.el); if(bash&&!m.T.heavy&&!m.boss&&!m.dead) m.stunT=2; } }
   } else if(a.kind==='spin'){
-    for(const m of MONS){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<3.3+m.T.rad) damageMonsterS(m,a.mult,p,p.x,p.z,6,a.el); }
+    for(const m of FO){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<3.3+m.T.rad) damageMonsterS(m,a.mult,p,p.x,p.z,6,a.el); }
   } else if(a.kind==='charge'){
     const L=tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=a.range+2?(()=>{ const dx=tgt.x-p.x, dz=tgt.z-p.z, d=Math.hypot(dx,dz)||1, o=tgt.T.rad+0.9; return {x:tgt.x-dx/d*o,z:tgt.z-dz/d*o}; })():{x:p.x-Math.sin(p.face)*8,z:p.z-Math.cos(p.face)*8};
     p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z);
     if(p.inst) dgDashS(p,L);   // dungeons: a charge inside a run stays in it, short of the first wall
-    for(const m of MONS){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<2.6+m.T.rad) damageMonsterS(m,a.mult,p,p.x,p.z,6,a.el); }
+    for(const m of FO){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<2.6+m.T.rad) damageMonsterS(m,a.mult,p,p.x,p.z,6,a.el); }
   } else if(a.kind==='shoot'){
     fireProjS(p,'arrow',tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<36?dirToS(p,tgt):a.aim,tgt,a.mult,a.el);
   } else if(a.kind==='volley'){
     const base=tgt?dirToS(p,tgt):a.aim;
     for(const off of [-0.2,0,0.2]){
       const d=rotY(base,off); let best=null,bs=0.26;
-      for(const m of MONS){ if(!alive(m)||Math.hypot(m.x-p.x,m.z-p.z)>34) continue; const v=dirToS(p,m); const ang=Math.acos(clamp(v[0]*d[0]+v[1]*d[1]+v[2]*d[2],-1,1)); if(ang<bs){ bs=ang; best=m; } }
+      for(const m of FO){ if(!alive(m)||Math.hypot(m.x-p.x,m.z-p.z)>34) continue; const v=dirToS(p,m); const ang=Math.acos(clamp(v[0]*d[0]+v[1]*d[1]+v[2]*d[2],-1,1)); if(ang<bs){ bs=ang; best=m; } }
       fireProjS(p,'arrow',d,best,a.mult,a.el);
     }
   } else if(a.kind==='pierce'){
@@ -132,11 +134,11 @@ function resolveHitS(p,a){
   } else if(a.kind==='missiles'){
     // three homing missiles: the target first, then the nearest other enemies around it
     const first=tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=a.range+2?tgt:nearestAhead(p,a.range);
-    const near=first?MONS.filter(m=>alive(m)&&m!==first&&Math.hypot(m.x-first.x,m.z-first.z)<6).sort((x,y)=>Math.hypot(x.x-first.x,x.z-first.z)-Math.hypot(y.x-first.x,y.z-first.z)):[];
+    const near=first?FO.filter(m=>alive(m)&&m!==first&&Math.hypot(m.x-first.x,m.z-first.z)<6).sort((x,y)=>Math.hypot(x.x-first.x,x.z-first.z)-Math.hypot(y.x-first.x,y.z-first.z)):[];
     const tg3=[first,near[0]||first,near[1]||first];
     [-0.35,0,0.35].forEach((off,i)=>fireProjS(p,'missile',rotY(tg3[i]?dirToS(p,tg3[i]):a.aim,off),tg3[i],a.mult,a.el));
   } else if(a.kind==='quake'||a.kind==='inferno'){
-    for(const m of MONS){ if(!alive(m)||Math.hypot(m.x-p.x,m.z-p.z)>=a.range+m.T.rad) continue; damageMonsterS(m,a.mult,p,p.x,p.z,7,a.el); if(a.kind==='quake'&&!m.T.heavy&&!m.boss&&!m.dead) m.stunT=1.5; }
+    for(const m of FO){ if(!alive(m)||Math.hypot(m.x-p.x,m.z-p.z)>=a.range+m.T.rad) continue; damageMonsterS(m,a.mult,p,p.x,p.z,7,a.el); if(a.kind==='quake'&&!m.T.heavy&&!m.boss&&!m.dead) m.stunT=1.5; }
   } else if(a.kind==='bladestorm'){
     addAreaS(p,'storm',p.x,p.z,a.range,4,a.mult,true,a.el);
   } else if(a.kind==='hail'){
@@ -150,7 +152,7 @@ function resolveHitS(p,a){
   } else if(a.kind==='cast'){
     fireProjS(p,'bolt',tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<30?dirToS(p,tgt):a.aim,tgt,a.mult,a.el);
   } else if(a.kind==='nova'){
-    for(const m of MONS){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<5.5+m.T.rad){ damageMonsterS(m,a.mult,p,p.x,p.z,5,a.el); m.slowT=3.5; } }
+    for(const m of FO){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<5.5+m.T.rad){ damageMonsterS(m,a.mult,p,p.x,p.z,5,a.el); m.slowT=3.5; } }
   } else if(a.kind==='chain'){
     // lightning: the target, then up to 4 more, each the nearest unhit enemy within 7 m of the last, 15% weaker per jump
     let cur=tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=a.range+2?tgt:nearestAhead(p,a.range);
@@ -158,7 +160,7 @@ function resolveHitS(p,a){
     for(let i=0;i<5&&cur;i++){
       hit.add(cur); const c=monCenterS(cur); pts.push([r1(c.x),r1(c.y),r1(c.z)]);
       damageMonsterS(cur,a.mult*Math.pow(0.85,i),p,c.x,c.z,1,a.el);
-      let nx=null,nd=7; for(const m of MONS){ if(!alive(m)||hit.has(m)) continue; const d=Math.hypot(m.x-cur.x,m.z-cur.z); if(d<nd){ nd=d; nx=m; } } cur=nx;
+      let nx=null,nd=7; for(const m of FO){ if(!alive(m)||hit.has(m)) continue; const d=Math.hypot(m.x-cur.x,m.z-cur.z); if(d<nd){ nd=d; nx=m; } } cur=nx;
     }
     if(pts.length===1){ const e=[h.x-Math.sin(p.face)*8,h.y,h.z-Math.cos(p.face)*8]; pts.push(e.map(r1)); }
     ev('chain',pts);
@@ -174,6 +176,7 @@ function applyBuffS(p,a){
 }
 // what a hit does besides damage (an entry of a skill's fx): stun (not bosses or heavy enemies), slow, burn (a share k of the hit's damage again every second)
 function statusS(m,s,p,el,mult){
+  if(m.pl){ pvpStatusS(m,s,p,el,mult); return; }   // pvp: a fighter's stun / slow / burn (server/pvp.js)
   if(m.dead||m.remove) return;
   if(s.stun&&!m.T.heavy&&!m.boss) m.stunT=Math.max(m.stunT||0,s.stun);
   if(s.slow) m.slowT=Math.max(m.slowT||0,s.slow);
@@ -204,7 +207,7 @@ function updateBurnS(dt){
    burn, slow, stun, spread, weak or vuln; docs/REACTIONS.md) and status:{kind:'vuln'|'weak'|'slow'|'stun',v,dur} on a ring, cone, proj or zone entry. */
 function resolveFxS(p,a,tgt){
   const src=ssSrc(a);   // skillsets: the piece (or the passive / bonus row) this comes from, sent with the events so the client can dress them in its outfit's look
-  const f=a.fx, alive=m=>!m.dead&&!m.remove, dist=m=>Math.hypot(m.x-p.x,m.z-p.z), inRange=tgt&&dist(tgt)<=a.range+2;
+  const f=a.fx, FO=foesS(p), alive=m=>!m.dead&&!m.remove, dist=m=>Math.hypot(m.x-p.x,m.z-p.z), inRange=tgt&&dist(tgt)<=a.range+2;
   const O=()=>a.at||p, AK=1+psP(p,'area')+ssCondP(p,'area',tgt);   // skillsets: a trigger's effect may be centred on its monster (a.at); the area stat widens every ring, cone and zone
   const dmg=(m,mult,x,z,kb)=>damageMonsterS(m,mult*fxModK(f,p,m),p,x,z,kb,a.el)||0;   // skillsets: the skill's vsBoss / behind / rangeScale on each hit
   if(f.buff){ applyBuffS(p,a); return; }
@@ -213,12 +216,12 @@ function resolveFxS(p,a,tgt){
     p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z);
     if(p.inst) dgDashS(p,L);   // dungeons: a dash inside a run stays in it, short of the first wall
   }
-  if(f.ring){ const R=f.ring, o=O(); for(const m of MONS){ if(!alive(m)||Math.hypot(m.x-o.x,m.z-o.z)>=R.r*AK+m.T.rad) continue; dmg(m,a.mult,o.x,o.z,R.kb||0); statusS(m,R,p,a.el,a.mult); } }
+  if(f.ring){ const R=f.ring, o=O(); for(const m of FO){ if(!alive(m)||Math.hypot(m.x-o.x,m.z-o.z)>=R.r*AK+m.T.rad) continue; dmg(m,a.mult,o.x,o.z,R.kb||0); statusS(m,R,p,a.el,a.mult); } }
   if(f.cone){ const C=f.cone;
-    for(const m of MONS){ if(!alive(m)) continue; const dx=m.x-p.x, dz=m.z-p.z, d=Math.hypot(dx,dz); if(d>C.r*AK+m.T.rad) continue;
+    for(const m of FO){ if(!alive(m)) continue; const dx=m.x-p.x, dz=m.z-p.z, d=Math.hypot(dx,dz); if(d>C.r*AK+m.T.rad) continue;
       if(Math.abs(angDiff(Math.atan2(-dx,-dz),p.face))<C.arc||d<m.T.rad+0.6){ for(let h=0;h<(C.hits||1);h++) dmg(m,a.mult,p.x,p.z,h?0:C.kb||0); statusS(m,C,p,a.el,a.mult); } } }
   if(f.beam){ const B=f.beam, d=inRange?dirToS(p,tgt):a.aim, l=Math.hypot(d[0],d[2])||1, ux=d[0]/l, uz=d[2]/l, h0=handPosS(p); let dealt=0;
-    for(const m of MONS){ if(!alive(m)) continue; const rx=m.x-p.x, rz=m.z-p.z, along=rx*ux+rz*uz, perp=Math.abs(rx*uz-rz*ux);
+    for(const m of FO){ if(!alive(m)) continue; const rx=m.x-p.x, rz=m.z-p.z, along=rx*ux+rz*uz, perp=Math.abs(rx*uz-rz*ux);
       if(along<0||along>B.len+m.T.rad||perp>B.w+m.T.rad) continue; for(let h=0;h<(B.hits||1);h++) dealt+=dmg(m,a.mult,p.x,p.z,0); }
     if(B.steal&&dealt) healP(p,dealt*B.steal);
     ev('beam',r1(h0.x),r1(h0.y),r1(h0.z),r1(h0.x+ux*B.len),r1(h0.y),r1(h0.z+uz*B.len),a.el,B.w,...(src?[src]:[])); }
@@ -226,16 +229,16 @@ function resolveFxS(p,a,tgt){
     let cur=inRange?tgt:nearestAhead(p,a.range); const h=handPosS(p), pts=[[r1(h.x),r1(h.y),r1(h.z)]], hit=new Set();
     for(let i=0;i<C.n&&cur;i++){
       hit.add(cur); const c=monCenterS(cur); pts.push([r1(c.x),r1(c.y),r1(c.z)]); dmg(cur,a.mult*Math.pow(C.fall,i),c.x,c.z,1);
-      let nx=null,nd=C.range; for(const m of MONS){ if(!alive(m)||hit.has(m)) continue; const d=Math.hypot(m.x-cur.x,m.z-cur.z); if(d<nd){ nd=d; nx=m; } } cur=nx; }
+      let nx=null,nd=C.range; for(const m of FO){ if(!alive(m)||hit.has(m)) continue; const d=Math.hypot(m.x-cur.x,m.z-cur.z); if(d<nd){ nd=d; nx=m; } } cur=nx; }
     if(pts.length===1) pts.push([h.x-Math.sin(p.face)*8,h.y,h.z-Math.cos(p.face)*8].map(r1));
     ev('chain',pts,a.el,...(src?[src]:[])); }
   if(f.proj){ const P=f.proj, n=P.n||1, d0=inRange?dirToS(p,tgt):a.aim;
-    let seek=null; if(P.seek){ seek=MONS.filter(m=>alive(m)&&dist(m)<=a.range+2).sort((x,y)=>dist(x)-dist(y)); if(inRange&&seek.includes(tgt)) seek=[tgt,...seek.filter(m=>m!==tgt)]; }
+    let seek=null; if(P.seek){ seek=FO.filter(m=>alive(m)&&dist(m)<=a.range+2).sort((x,y)=>dist(x)-dist(y)); if(inRange&&seek.includes(tgt)) seek=[tgt,...seek.filter(m=>m!==tgt)]; }
     for(let i=0;i<n;i++){
       const off=(i-(n-1)/2)*(P.spread||0); let base=d0, tg=null;
       if(seek){ tg=seek.length?seek[i%seek.length]:null; base=tg?dirToS(p,tg):a.aim; }
       else if(n===1) tg=inRange?tgt:null;
-      else if(P.turn){ const dir=rotY(d0,off); let bs=0.26; for(const m of MONS){ if(!alive(m)||dist(m)>a.range+2) continue; const v=dirToS(p,m), ang=Math.acos(clamp(v[0]*dir[0]+v[1]*dir[1]+v[2]*dir[2],-1,1)); if(ang<bs){ bs=ang; tg=m; } } }
+      else if(P.turn){ const dir=rotY(d0,off); let bs=0.26; for(const m of FO){ if(!alive(m)||dist(m)>a.range+2) continue; const v=dirToS(p,m), ang=Math.acos(clamp(v[0]*dir[0]+v[1]*dir[1]+v[2]*dir[2],-1,1)); if(ang<bs){ bs=ang; tg=m; } } }
       fireProjS(p,P.kind,rotY(base,off),tg,a.mult,a.el,P,f,src);
     } }
   if(f.zone){ const Z=f.zone, c=Z.self||a.at?{x:O().x,z:O().z}:aimPoint(p,tgt,a.range,10); addAreaS(p,'zone',c.x,c.z,Z.r*AK,Z.dur,a.mult,!!Z.follow,a.el,Z,f,src); }
@@ -246,7 +249,7 @@ function resolveFxS(p,a,tgt){
 function impactFxS(owner,pr,hit){
   const P=pr.fx, el=pr.el;
   if(hit){ damageMonsterS(hit,pr.mult*fxModK(pr.mods,owner,hit),owner,owner.x,owner.z,2,el); statusS(hit,P,owner,el,pr.mult); }
-  if(P.splash) for(const m of MONS){ if(m===hit||m.dead||m.remove) continue; const c=monCenterS(m);
+  if(P.splash) for(const m of foesS(owner)){ if(m===hit||m.dead||m.remove) continue; const c=monCenterS(m);
     if(Math.hypot(c.x-pr.x,c.y-pr.y,c.z-pr.z)<P.splash.r+m.T.rad*0.5){ damageMonsterS(m,pr.mult*P.splash.k*fxModK(pr.mods,owner,m),owner,pr.x,pr.z,3,el); statusS(m,P,owner,el,pr.mult); } }
   if(P.zone){ const Z=P.zone; addAreaS(owner,'zone',pr.x,pr.z,Z.r,Z.dur,pr.mult*Z.k,false,el,Z,pr.mods,pr.src); }
 }
@@ -265,7 +268,7 @@ function updateAreasS(dt){
     S.ctx=dgCtxAt(A.x,A.z);   // dungeons: an area's hits belong to the run it lies in
     if(A.follow&&o){ if(o.dead){ A.t=A.dur; } else { A.x=o.x; A.z=o.z; } }
     if(A.t>=A.next&&A.t<=A.dur+0.01){ A.next+=A.every;
-      if(o) for(const m of MONS){ if(!m.dead&&!m.remove&&Math.hypot(m.x-A.x,m.z-A.z)<A.r+m.T.rad*0.5){
+      if(o) for(const m of foesS(o)){ if(!m.dead&&!m.remove&&Math.hypot(m.x-A.x,m.z-A.z)<A.r+m.T.rad*0.5){
         if(A.fx){ damageMonsterS(m,A.mult*fxModK(A.mods,o,m),o,A.x,A.z,A.fx.kb!==undefined?A.fx.kb:0.5,A.el); statusS(m,A.fx,o,A.el,A.mult); }
         else { damageMonsterS(m,A.mult,o,A.x,A.z,A.kind==='meteor'?7:A.kind==='storm'?1.5:0.5,A.el); if(A.kind==='blizzard'&&!m.dead) m.slowT=1.5; } } }
       if(o&&A.fx) ssZoneAlliesS(o,A);   // skillsets: the allies standing in a zone that carries ally / heal / shield
@@ -285,7 +288,7 @@ function updateProjS(dt){
   for(let i=PROJS.length-1;i>=0;i--){
     const pr=PROJS[i]; pr.life-=dt;
     S.ctx=dgCtxAt(pr.x,pr.z);   // dungeons: what a projectile does belongs to the run it flies in
-    const T=pr.tg?MON_BY_ID.get(pr.tg):null, sp=Math.hypot(pr.vx,pr.vy,pr.vz);
+    const own0=S.players.get(pr.owner), FO=foesS(own0), T=pr.tg?foeByIdS(own0,pr.tg):null, sp=Math.hypot(pr.vx,pr.vy,pr.vz);   // pvp: a projectile of a fighter on the island meets the other fighters
     if(T&&!T.dead&&!T.remove){ const c=monCenterS(T), w=norm3([c.x-pr.x,c.y-pr.y,c.z-pr.z]), k=Math.min(1,pr.turn*dt); pr.vx+=(w[0]*sp-pr.vx)*k; pr.vy+=(w[1]*sp-pr.vy)*k; pr.vz+=(w[2]*sp-pr.vz)*k; }
     else if(pr.kind==='arrow') pr.vy-=4*dt;
     const ox=pr.x, oy=pr.y, oz=pr.z;
@@ -297,12 +300,12 @@ function updateProjS(dt){
       const owner=S.players.get(pr.owner);
       pr.y=getH(pr.x,pr.z)+1.1;   // hugs the terrain, so the hit test is flat (x, z)
       const flat=c=>{ const vx=pr.x-ox, vz=pr.z-oz, l2=vx*vx+vz*vz||1, t=clamp(((c.x-ox)*vx+(c.z-oz)*vz)/l2); return Math.hypot(c.x-(ox+vx*t),c.z-(oz+vz*t)); };
-      for(const m of MONS){ if(m.dead||m.remove||pr.hit.has(m)) continue; const c=monCenterS(m), r=m.T.rad+0.6; if(flat(c)<r){ pr.hit.add(m); if(owner) damageMonsterS(m,pr.mult,owner,pr.x-pr.vx,pr.z-pr.vz,3,pr.el); } }
+      for(const m of FO){ if(m.dead||m.remove||pr.hit.has(m)) continue; const c=monCenterS(m), r=m.T.rad+0.6; if(flat(c)<r){ pr.hit.add(m); if(owner) damageMonsterS(m,pr.mult,owner,pr.x-pr.vx,pr.z-pr.vz,3,pr.el); } }
       if(pr.life<=0){ ev('pend',pr.id,r1(pr.x),r1(pr.y),r1(pr.z),null); PROJS.splice(i,1); }
       continue;
     }
     let hit=null;
-    for(const m of MONS){ if(m.dead||m.remove) continue; const c=monCenterS(m), r=m.T.rad+0.3+(m.model==='treant'?0.5:0)+(m.T.height*m.s>2?m.T.height*0.25:0); if(near(c)<r){ hit=m; break; } }
+    for(const m of FO){ if(m.dead||m.remove) continue; const c=monCenterS(m), r=m.T.rad+0.3+(m.model==='treant'?0.5:0)+(m.T.height*m.s>2?m.T.height*0.25:0); if(near(c)<r){ hit=m; break; } }
     const ground=pr.y<getH(pr.x,pr.z)-0.3;
     if(!hit&&!ground&&pr.life>0) continue;
     const owner=S.players.get(pr.owner);
@@ -312,7 +315,7 @@ function updateProjS(dt){
       else if(pr.kind!=='bolt'){ if(hit){ damageMonsterS(hit,pr.mult,owner,owner.x,owner.z,pr.kind==='snipe'?6:2,pr.el); if(pr.kind==='shard'&&!hit.dead) hit.slowT=2; } }
       else {
         if(hit) damageMonsterS(hit,pr.mult,owner,owner.x,owner.z,3,pr.el);
-        for(const m of MONS){ if(m!==hit&&!m.dead&&!m.remove){ const c=monCenterS(m); if(Math.hypot(c.x-pr.x,c.y-pr.y,c.z-pr.z)<2.2+m.T.rad*0.5) damageMonsterS(m,0.5,owner,pr.x,pr.z,3,pr.el); } }
+        for(const m of FO){ if(m!==hit&&!m.dead&&!m.remove){ const c=monCenterS(m); if(Math.hypot(c.x-pr.x,c.y-pr.y,c.z-pr.z)<2.2+m.T.rad*0.5) damageMonsterS(m,0.5,owner,pr.x,pr.z,3,pr.el); } }
       }
     }
     PROJS.splice(i,1);

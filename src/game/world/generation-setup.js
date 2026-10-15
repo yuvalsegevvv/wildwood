@@ -201,7 +201,7 @@ function* genTerrain(){
   spawn.x=VIL.spawn.x; spawn.z=VIL.spawn.z;
   P.x=spawn.x; P.z=spawn.z; P.y=getH(P.x,P.z);
   { const ux=VIL.x-P.x, uz=VIL.z-P.z; P.yaw=Math.atan2(-ux,-uz); P.face=P.yaw; }
-  buildVillage(); buildVale(); buildHoarfrost(); buildGreyspine(); buildTideBeach(); buildNodes();
+  buildVillage(); buildVale(); buildHoarfrost(); buildGreyspine(); buildTideBeach(); buildProvingIsle(); buildNodes();   // pvp: the Proving Isle's gate and banners (village/buildings-pvp.js)
   dgEntBuild();   // dungeons: the three doors and their signposts
   buildGreyfall();   // greyfall: the waterfall that gives the border river its birth (village/buildings-greyfall.js)
 }
