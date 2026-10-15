@@ -11,13 +11,13 @@ const CLOTH=[0xb4552f,0x3d5a3a,0x2f4a6b,0xd8c9a3,0x6b3a5b,0xc9a13a,0x2b2b2e,0xe8
 const SHOEC=[0x4a3526,0x2b2420,0x7a5a3a,0xe8e4dc,0x2f4a6b,0x8a2f2f];
 const HATC=[0x7a6142,0x3d5a3a,0x8a2f2f,0x2f4a6b,0xc9a13a,0xe8e4dc,0x2b2b2e];
 // every look field has a default here (old saves and other players' looks are merged onto them); the sliders start at the base model's reference setup (shared/character.js)
-const LOOK_M=Object.assign({armor:'show',sex:'male',model:'base',face:'angular',eyes:EYEC[0],facial:'stubble',skin:SKINS[1],hair:'short',hairColor:HAIRC[1],ahoge:false,top:'jacket',topColor:CLOTH[0],bottom:'trousers',bottomColor:CLOTH[6],shoes:'boots',shoeColor:SHOEC[0],hat:'ranger',hatColor:HATC[0],pack:false,custom:false,cls:'warrior'},SLIDER_DEFS,setupsOf(CHAR_MODELS.base,'male')[0].v);
-const LOOK_F=Object.assign({armor:'show',sex:'female',model:'base',face:'oval',eyes:EYEC[2],facial:'none',skin:SKINS[1],hair:'ponytail',hairColor:HAIRC[3],ahoge:false,top:'flannel',topColor:CLOTH[8],bottom:'trousers',bottomColor:CLOTH[9],shoes:'boots',shoeColor:SHOEC[0],hat:'none',hatColor:HATC[1],pack:false,custom:false,cls:'warrior'},SLIDER_DEFS,setupsOf(CHAR_MODELS.base,'female')[0].v);
+const LOOK_M=Object.assign({armor:'show',sex:'male',model:'base',face:'angular',eyes:EYEC[0],facial:'stubble',skin:SKINS[1],hair:'short',hairColor:HAIRC[1],ahoge:false,top:'jacket',topColor:CLOTH[0],bottom:'trousers',bottomColor:CLOTH[6],shoes:'boots',shoeColor:SHOEC[0],hat:'ranger',hatColor:HATC[0],pack:false,custom:false,cls:'warrior',faceItem:'',weaponItem:''},SLIDER_DEFS,setupsOf(CHAR_MODELS.base,'male')[0].v);
+const LOOK_F=Object.assign({armor:'show',sex:'female',model:'base',face:'oval',eyes:EYEC[2],facial:'none',skin:SKINS[1],hair:'ponytail',hairColor:HAIRC[3],ahoge:false,top:'flannel',topColor:CLOTH[8],bottom:'trousers',bottomColor:CLOTH[9],shoes:'boots',shoeColor:SHOEC[0],hat:'none',hatColor:HATC[1],pack:false,custom:false,cls:'warrior',faceItem:'',weaponItem:''},SLIDER_DEFS,setupsOf(CHAR_MODELS.base,'female')[0].v);
 // a character model that breaks the rules (no recommended setups, a setup outside its ranges) is reported once at load; tools/character-smoke.js fails on it
 for(const m of Object.values(CHAR_MODELS)){ const bad=validateCharModel(m); if(bad.length&&typeof console!=='undefined') console.warn('character model "'+m.id+'": '+bad.join('; ')); }
 // a look (from a save, the server or another player) with every missing field filled in: the sex's defaults, and any slider it does not carry at the neutral body
 // (lookForNet leaves neutral sliders out, and an old save has none; only a brand-new hiker starts on the reference setup)
-const fullLook=l=>Object.assign({},l&&l.sex==='female'?LOOK_F:LOOK_M,SLIDER_DEFS,l||{});
+const fullLook=l=>ofMigrate(l,Object.assign({},l&&l.sex==='female'?LOOK_F:LOOK_M,SLIDER_DEFS,l||{}));   // (ofMigrate: a look saved before outfit pieces existed)
 // the model's scale for a look: the Height slider (clamped: a remote look is not sanitized) and the female body's 0.95
 const lookScale=l=>sliderVal(l,'height')*(l&&l.sex==='female'?0.95:1);
 function loadLook(){
@@ -68,20 +68,22 @@ const anchorAt=(parent,name,x,y,z)=>{ const a=new THREE.Object3D(); a.name='a:'+
    rig.dims (the measurements: shoulder / hip joint offsets, limb lengths, head scale...), rig.sliders (the clamped slider values) and rig.anchors (named empty
    nodes on the bones: head top, face, neck, chest, back, waist, hips, shoulders, wrists, ankles). q is the detail factor (see charDetail). */
 function buildCharacter(L,opt){
-  const OF=OUTFITS[L.model];   // a signature outfit: it supplies the hat, hair, face marks, top, bottom and shoes; the look's own fields for those are ignored
-  if(OF) L=Object.assign({},L,{top:'outfit',bottom:'outfit',bottomStyle:'',shoes:'outfit',hat:'none',hair:'bald',facial:'none',pack:false,ahoge:false});
+  const PC=ofPieces(L), worn=Object.keys(PC).length>0;   // the slots that wear an item of a signature outfit (outfit-tools.js "mixing the pieces"): each one replaces the base item of that slot
+  if(worn){ const o={}; if(PC.top){ o.top='outfit'; o.pack=false; } if(PC.bottom){ o.bottom='outfit'; o.bottomStyle=''; } if(PC.shoes) o.shoes='outfit'; if(PC.hat) o.hat='outfit'; if(PC.hair){ o.hair='bald'; o.ahoge=false; } if(PC.face) o.facial='none'; L=Object.assign({},L,o); }
   const q=(opt&&opt.q)||1, sg=n=>Math.max(5,Math.round(n*q)), S=lookSliders(L), fem=L.sex==='female';
   const skin=new THREE.Color(L.skin), skinPaint=c=>c.copy(skin), hairCol=new THREE.Color(L.hairColor), {topPaint,botPaint}=clothPaints(L);
   const D=charDims(L,S,fem,faceShape(L)), X={L,S,fem,sg,q,skin,skinPaint,hairCol,topPaint,botPaint,D,kit:null};
-  if(OF){ X.kit=OF(X,D); if(X.kit.hairColor!==undefined) X.hairCol=new THREE.Color(X.kit.hairColor); }   // the outfit's own hair colour (the eyebrows and lashes follow it)
+  if(worn){ X.kit=ofBuild(X,D,PC); const kh=X.kit.sl.hair; if(kh&&kh.hairColor!==undefined) X.hairCol=new THREE.Color(kh.hairColor); }   // the hair item's own colour (the eyebrows and lashes follow it)
   const root=new THREE.Group(), hips=new THREE.Group(); hips.name='hips'; hips.position.y=D.hipY; root.add(hips);
   const spine=new THREE.Group(); spine.name='spine'; hips.add(spine);
 
   const torso=new THREE.Mesh(merge(buildTorso(X,D)),matChar); torso.castShadow=true; spine.add(torso);
-  if(X.kit&&X.kit.hips){ const ex=X.kit.hips(); if(ex&&ex.length){ const hm=new THREE.Mesh(merge(ex),matChar); hm.castShadow=true; hips.add(hm); } }   // skirts and sashes, in the hips' frame
+  if(X.kit){ const ex=ofRun(X,'hips'); if(ex.length){ const hm=new THREE.Mesh(merge(ex),matChar); hm.castShadow=true; hips.add(hm); } }   // skirts and sashes, in the hips' frame
   if(L.bottom==='skirt'){
-    const top=D.hx+D.tw*0.1+0.014;   // wide enough that the thighs stay inside it
-    const sk=pc(new THREE.CylinderGeometry(top,top*1.55,0.4*S.legs,sg(40),sg(6),true).scale(1,1,0.8).translate(0,-0.16*S.legs,0),(x,y,z,c)=>{ botPaint(c); if(y<-0.33*S.legs) c.multiplyScalar(0.85); });
+    /* an A-line skirt that follows the hips (it was a cone 20% too wide): the waist just clears the thighs, the hem is 1.4x the waist and flares along a curve */
+    const top=Math.max(0.165*D.B,D.hx+0.085), hem=top*1.4, rows=sg(8), prof=[];
+    for(let i=0;i<=rows;i++){ const t=i/rows; prof.push(new THREE.Vector2(top+(hem-top)*Math.pow(t,1.35),(0.04-0.4*t)*S.legs)); }
+    const sk=pc(new THREE.LatheGeometry(prof,sg(40)).scale(1,1,0.8),(x,y,z,c)=>{ botPaint(c); if(y<-0.33*S.legs) c.multiplyScalar(0.85); });
     const skirt=new THREE.Mesh(sk,matFlat); skirt.castShadow=true; hips.add(skirt);
   }
   /* head: the anime proportions come from its scale (about 5.9 heads tall: the skull is HEAD_TALL = 10% taller than a ball) */
@@ -98,8 +100,8 @@ function buildCharacter(L,opt){
   a('headTop',head,0,0.11*face.fs[1],0); a('face',head,0,0,-0.1); a('neck',spine,0,0.6*D.TK,0); a('chest',spine,0,0.3*D.TK,-0.1*D.B); a('back',spine,0,0.3*D.TK,0.1*D.B); a('waist',hips,0,0.02,0);
   a('hipL',hips,-D.hx,0,0); a('hipR',hips,D.hx,0,0); a('shoulderL',spine,-D.shX,D.shY,0); a('shoulderR',spine,D.shX,D.shY,0);
   a('wristL',elL,0,-D.wrist,0); a('wristR',elR,0,-D.wrist,0); a('ankleL',kneeL,0,-D.shin,0); a('ankleR',kneeR,0,-D.shin,0);
-  const rig={root,hips,spine,head,hipY:D.hipY,shL,elL,shR,elR,hipL,kneeL,hipR,kneeR,dims:Object.assign({},D,{faceScale:face.fs}),sliders:S,anchors:A,kit:X.kit,dress:X.kit?X.kit.dress||null:null,anims:null};
-  if(X.kit&&X.kit.extras){ rig.anims=[]; X.kit.extras(rig,X); if(!rig.anims.length) rig.anims=null; }   // loose parts and motion that the merged meshes cannot carry (a ring that turns, a charm that swings)
+  const rig={root,hips,spine,head,hipY:D.hipY,shL,elL,shR,elR,hipL,kneeL,hipR,kneeR,dims:Object.assign({},D,{faceScale:face.fs}),sliders:S,anchors:A,kit:X.kit,dress:X.kit&&X.kit.sl.weapon?X.kit.sl.weapon.dress||null:null,anims:null};
+  if(X.kit){ rig.anims=[]; for(const k of X.kit.kits) if(k.extras) k.extras(rig,X,slot=>X.kit.sl[slot]===k); if(!rig.anims.length) rig.anims=null; }   // loose parts and motion that the merged meshes cannot carry (a ring that turns, a charm that swings); `has(slot)` says which of the outfit's items are worn
   return rig;
 }
 

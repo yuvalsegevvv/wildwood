@@ -8,16 +8,16 @@ const only=process.argv.includes('--only')?process.argv[process.argv.indexOf('--
 
 /* ---- the signature outfits (src/game/outfits/*.js): each builds on its own body, on every slider extreme, on the other sex, within the triangle budget, with a working weapon dressing ---- */
 { const ids=Object.keys(C.OUTFITS).filter(k=>!only||k===only); ok('there are outfits to check ('+ids.length+')',ids.length>=1);
-  const worn=(id,sex,st)=>Object.assign(C.applySetup(look(sex),st||{v:{}}),{model:id});
+  const worn=(id,sex,st)=>C.ofWear(C.applySetup(look(sex),st||{v:{}}),id);
   for(const id of ids){
     const m=C.CHAR_MODELS[id], sex=m&&(m.sexes||[])[0], ref=m&&C.setupsOf(m,sex)[0];
     if(!(m&&m.signature&&sex&&ref)){ ok('outfit "'+id+'" has a signature character model with its reference setup',false); continue; }
     let rig, err=null; try{ rig=C.buildCharacter(worn(id,sex,ref),{q:1.1}); }catch(e){ err=e.message; }
     if(err){ ok('outfit "'+id+'" builds on its reference body',false,err); continue; }
-    const st=C.stats(rig), plain=C.stats(C.buildCharacter(Object.assign({},worn(id,sex,ref),{model:'base'}),{q:1.1}));
+    const st=C.stats(rig), plain=C.stats(C.buildCharacter(C.ofWear(worn(id,sex,ref),'base'),{q:1.1}));
     ok('outfit "'+id+'" builds on its reference body: no NaN, feet on the ground',st.bad===0&&Math.abs(st.minY)<0.03,'minY '+st.minY.toFixed(3));
     ok('outfit "'+id+'" stays within the triangle budget (+'+Math.round(st.tris-plain.tris)+' over the base clothes, at most 35,000)',st.tris-plain.tris<=35000);
-    ok('outfit "'+id+'" has the hooks: paint, hair, head, a distinct eye style, a weapon dressing',typeof rig.kit.paint==='function'&&typeof rig.kit.hair==='function'&&typeof rig.kit.head==='function'&&!!rig.kit.eyes&&!!rig.dress);
+    ok('outfit "'+id+'" has the hooks: paint, hair, head, a distinct eye style, a weapon dressing',typeof rig.kit.sl.top.paint==='function'&&typeof rig.kit.sl.hair.hair==='function'&&typeof rig.kit.sl.hat.head==='function'&&!!rig.kit.sl.face.eyes&&!!rig.dress);
     // every slider at both ends of the whole range, on the reference body and on the other sex, at a low detail
     let bad=null; for(const sx of ['male','female']){ for(const sl of C.BODY_SLIDERS){ for(const v of [sl.min,sl.max]){ try{ const r=C.buildCharacter(Object.assign(worn(id,sx,sx===sex?ref:{v:{}}),{[sl.k]:v}),{q:0.4}), t=C.stats(r); if(t.bad>0&&!bad) bad=sx+' '+sl.k+'='+v+' NaN'; }catch(e){ if(!bad) bad=sx+' '+sl.k+'='+v+': '+e.message; } } } }
     ok('outfit "'+id+'" builds with every slider at both ends, on both bodies',!bad,bad||'');
@@ -29,5 +29,38 @@ const only=process.argv.includes('--only')?process.argv[process.argv.indexOf('--
   }
 }
 
+
+/* ---- mixing the pieces (outfit-tools.js "mixing the pieces of the outfits"): any slot may wear any outfit's item, base items mix with them, a remote look cannot break the build ---- */
+if(!only){
+  const ids=Object.keys(C.OUTFITS), stat=(o,q)=>C.stats(C.buildCharacter(look(o&&o.sex||'male',o),{q:q||0.4}));
+  const SLOTS=C.OF_SLOTS, F=C.OF_FIELD, base=stat({}), mk=(sex,a,b)=>look(sex,{top:a,bottom:b,shoes:a,hat:b,hair:a,faceItem:b,weaponItem:b});
+  ok('the outfits name seven slots and every outfit has an item name for each (the editor rows)',SLOTS.length===7&&ids.every(id=>SLOTS.every(sl=>C.CHAR_MODELS[id].items&&C.CHAR_MODELS[id].items[sl])));
+  ok('the editor lists every outfit once per slot',SLOTS.every(sl=>C.ofItems(sl).length===ids.length));
+  // every ordered pair of outfits, interleaved slot by slot, on both bodies
+  let bad=null, n=0; for(const sex of ['male','female']) for(const a of ids) for(const b of ids){ if(a===b) continue; n++; try{ const t=stat(mk(sex,a,b)); if(t.bad>0||Math.abs(t.minY)>0.03) bad=bad||(sex+' '+a+'/'+b+' bad='+t.bad+' minY='+t.minY.toFixed(3)); }catch(e){ bad=bad||(sex+' '+a+'/'+b+': '+e.message); } }
+  ok('every pair of outfits mixed slot by slot builds on both bodies ('+n+' looks): no NaN, feet on the ground',!bad,bad||'');
+  // one outfit item at a time adds geometry to its slot, and the rest stays base
+  let none=null; for(const id of ids) for(const sl of SLOTS){ const t=stat({[F[sl]]:id}); if(!(t.tris>base.tris-3000)&&sl!=='weapon') none=none||(id+' '+sl+' '+t.tris+' vs '+base.tris); if(sl==='weapon'&&t.tris!==base.tris) none=none||(id+' weapon changed the body'); }
+  ok('every item builds alone on a base body (the weapon dressing is not part of the body)',!none,none||'');
+  let each=null; for(const id of ids){ const sex=C.CHAR_MODELS[id].sexes[0]; for(const sl of ['top','bottom','shoes','hat','hair','face']){ const L0=look(sex), L1=look(sex,{[F[sl]]:id}); const sum=L=>{ const t=C.tris(C.buildCharacter(L,{q:1})); let h=0; for(let i=0;i<t.length;i++) h=(h+t[i]*((i%97)+1))%1e9; return t.length+':'+Math.round(h*1000); }; if(sum(L0)===sum(L1)) each=each||(id+' '+sl+' changes nothing'); } }
+  ok('every body slot of every outfit changes the body (geometry or colour: a slot is not silently dropped)',!each,each||'');
+  // base items mix too
+  let bs=null; for(const o of [{top:'tansy',bottom:'skirt',shoes:'sneakers',hat:'beanie'},{top:'jacket',bottom:'corvin',shoes:'boots',hat:'ranger',hair:'ponytail'},{sex:'female',top:'hoodie',bottom:'marigold',shoes:'dunstan',facial:'beard'}]){ try{ const t=stat(o); if(t.bad>0) bs=bs||JSON.stringify(o); }catch(e){ bs=bs||JSON.stringify(o)+': '+e.message; } }
+  ok('base items and outfit items mix (a base top over an outfit bottom, outfit boots under base trousers...)',!bs,bs||'');
+  // loose parts follow the slot that owns them: Dunstan's drum is his tabard's, his hat has none; Marigold's lanterns are her hat's
+  const anim=o=>{ const r=C.buildCharacter(look('male',o),{q:0.4}); return r.anims?r.anims.length:0; };
+  ok('animated parts belong to their slot (Dunstan: the drum with the top; Marigold: the lanterns with the hat, the antenna strand with the hair)',anim({top:'dunstan'})>=1&&anim({hat:'dunstan'})===0&&anim({bottom:'dunstan'})===0&&anim({hat:'marigold'})>=1&&anim({hair:'marigold'})>=1&&anim({top:'marigold'})===0);
+  // the weapon dressing is the weapon slot's alone
+  { const r0=C.buildCharacter(look('male'),{q:0.4}), r1=C.buildCharacter(look('male',{weaponItem:'sorrel'}),{q:0.4}), r2=C.buildCharacter(look('male',{top:'sorrel',hat:'sorrel',hair:'sorrel'}),{q:0.4});
+    ok('the weapon dressing comes only from the weapon slot',!r0.dress&&!!r1.dress&&!r2.dress); }
+  // an item brings its own colours: hair colour and eye colour follow the hair and face items (a hair item changes the eyebrows' colour)
+  { const o={top:'constructor',bottom:'__proto__',shoes:'x',hat:'toString',hair:'nope',faceItem:'hasOwnProperty',weaponItem:'valueOf'}; let err=null, t=null; try{ t=stat(o); }catch(e){ err=e.message; }
+    ok('a look with nonsense piece names builds, wearing none of them (a remote look is not sanitized)',!err&&t.bad===0&&Object.keys(C.ofPieces(look('male',o))).length===0,err||''); }
+  // wearing a whole set and taking it off; a look saved before pieces existed
+  { const m=C.ofWear(look('female'),'tansy'), p=C.ofPieces(m), off=C.ofWear(m,'base'), mig=C.fullLook({sex:'female',model:'tansy',top:'tshirt'}), keep=C.fullLook({sex:'female',model:'tansy',top:'tshirt',faceItem:''});
+    ok('a whole set is seven pieces, taking it off restores the base items, an old save wearing a set through `model` gets its pieces',Object.keys(p).length===7&&Object.values(p).every(v=>v==='tansy')&&m.model==='tansy'&&Object.keys(C.ofPieces(off)).length===0&&off.model==='base'&&off.top===C.LOOK_F.top&&Object.keys(C.ofPieces(mig)).length===7&&Object.keys(C.ofPieces(keep)).length===0);
+    const t=C.ofTidy(Object.assign({},m,{top:'tshirt',bottom:'trousers',shoes:'boots',hat:'none',hair:'short',faceItem:'',weaponItem:''})), t2=C.ofTidy(Object.assign({},m,{top:'tshirt'}));
+    ok('the set name stays while one of its pieces is worn and goes back to base when none is',t.model==='base'&&t2.model==='tansy'); }
+}
 
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

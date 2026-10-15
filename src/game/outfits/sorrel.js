@@ -2,7 +2,7 @@
 /* ---------- Sorrel: safe DPS, air. Design: docs/skillkits/looks/sorrel.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: sky 0x8fb8d8, cream 0xf1ead8, slate 0x4a5560, snow 0xf4f6f8, feather grey 0xb7c0c9 (+ leather 0x6a5a48 and brass 0xc2a45a for the straps and rims). Silhouette: the tallest and lightest line, loose pale hair and
    a very long scarf both streaming back and to the left, feathers at the ear and the grip. The only glow is a pale sky glint in a lens (air): one in the goggles, one in the weapon charm. */
-CHAR_MODELS.sorrel={id:'sorrel',name:'Sorrel',signature:true,sexes:['female'],
+CHAR_MODELS.sorrel={id:'sorrel',name:'Sorrel',signature:true, items:{hat:'Ridge band',hair:'Gale long',face:'Wind streaks',top:'Lookout layers',bottom:'Crag trousers',shoes:'Ledge boots',weapon:'Feather flight'},sexes:['female'],
   note:'The lookout: the tallest and lightest line, drawn for a tall, slim, long-legged woman.',
   ranges:{height:[0.98,1.08],build:[0.88,1.08],chest:[0.6,1.2],shoulders:[0.88,1.08],waist:[0.85,1.05],legs:[1.0,1.14],thighs:[0.85,1.05],arms:[0.82,1.1],neck:[0.95,1.2],head:[0.92,1.08],eyeSize:[0.9,1.15],eyeTilt:[0.05,0.7],hairLength:[1.0,1.35],hairVolume:[1.0,1.25]},
   setups:[{id:'sorrel',name:'Sorrel',sex:'female',def:true,note:'The lookout as drawn: tall, slim, long-legged, a cool narrow stare.',v:{height:1.05,build:0.9,chest:0.95,shoulders:0.95,waist:0.9,hips:0.97,torso:1.02,legs:1.12,thighs:0.92,arms:0.92,neck:1.05,jaw:0.9,chin:0.95,cheeks:0.85,eyeSize:0.95,eyeGap:1.02,eyeTilt:0.4,brow:0.25,noseSize:0.9,mouthSize:0.9,lips:0.9,hairLength:1.3,hairVolume:1.15,bangs:0.7}}]};
@@ -271,8 +271,8 @@ OUTFITS.sorrel=(function(){
       return out; };
 
     /* ================= extras: the scarf's two tails and the hair's tails sway; the ear feather; the glint ================= */
-    const extras=(rig,Xx)=>{
-      const sgx=Xx.sg;
+    const extras=(rig,Xx,has)=>{   // has(slot): this outfit's item for the slot is worn: the scarf's tails go with the top, the hair's tails with the hair, the ear feather and the goggle's glint with the hat
+      const sgx=Xx.sg, wTop=has('top'), wHair=has('hair'), wHat=has('hat'); let tA,tB,hg,fg;
       // the scarf tails: striped ribbons from the knot, blown back and to the left, each with its own twist, a slate end band and a fringe
       const tails=[];
       const mkTail=(len,ph,x0,zoff,twist)=>{ const g=new THREE.Group(), P=[], N=9, parts=[];
@@ -282,30 +282,30 @@ OUTFITS.sorrel=(function(){
         const e=P[N]; parts.push(...tuft(e[0],e[1]-0.002,e[2],7,0.034,0.0019,CREAM,0.04,SKY));
         const m=new THREE.Mesh(merge(parts),matChar); m.castShadow=true; g.add(m); return g; };
       const kp=ringAt(KNOT_YD+0.012,0.024,KNOT_PHI);
-      const tA=mkTail(1.3,0,-0.008,0.012,0.5), tB=mkTail(1.05,2.2,0.012,-0.002,0.0);
-      for(const t of [tA,tB]){ t.position.set(kp[0],kp[1],kp[2]); rig.spine.add(t); tails.push(t); }
+      if(wTop){ tA=mkTail(1.3,0,-0.008,0.012,0.5); tB=mkTail(1.05,2.2,0.012,-0.002,0.0);
+        for(const t of [tA,tB]){ t.position.set(kp[0],kp[1],kp[2]); rig.spine.add(t); tails.push(t); } }
       // the hair's tails: bowed blades laid over the curtain's end and falling past it, blown back and to the left; they pivot near the nape
-      const fs=rig.dims.faceScale, parts=[], rng=mulberry32(33), nL=Math.max(7,sgx(8)), yR=yEnd+0.06, tR=(yTop-yR)/(yTop-yEnd), rR=cRing(tR);
+      if(wHair){ const fs=rig.dims.faceScale, parts=[], rng=mulberry32(33), nL=Math.max(7,sgx(8)), yR=yEnd+0.06, tR=(yTop-yR)/(yTop-yEnd), rR=cRing(tR);
       const zcR=rR.zc+0.045*drift(yR), xcR=-0.035*drift(yR);
       for(let i=0;i<nL;i++){ const f=nL>1?i/(nL-1)*2-1:0, af=Math.abs(f), a=f*1.15, x0=xcR+rR.rx*Math.sin(a)*0.97, z0=zcR+rR.rz*Math.cos(a)*0.9-0.002, L=(0.17+0.11*rng())*Lh*(1-0.28*f*f), dx=0.03+0.05*rng(), dz=0.07+0.06*rng(), P=[], tone=rng();
         for(let k=0;k<=4;k++){ const s2=k/4, e=Math.pow(s2,1.5); P.push([x0*(1-0.1*s2)-dx*e+0.007*Math.sin(s2*6+i),yR-L*s2,z0+dz*e+0.005*Math.sin(s2*5+i*2)]); }
         const tw=u=>0.35*f+0.6*u*(i%2?1:-1);
         for(const g of lockBlade(P,0.05*(1-0.2*af)*hvS,0.35,sgx(8),tw,(u,v,x,y,z,c)=>{ hairPaintFn(x,y,z,c); c.lerp(cSn,0.18*tone+0.12*Math.abs(2*v-1)); if(u>0.85) c.lerp(cSkyL,0.35*(u-0.85)/0.15); },u=>(0.3+0.7*Math.min(1,u*3))*(1-Math.pow(u,2.2)))) parts.push(g.scale(fs[0],1,1)); }
-      const hm=new THREE.Mesh(merge(parts),matChar); hm.castShadow=true; const hg=new THREE.Group(); hg.add(hm); hm.position.set(0,-yR,-zcR); hg.position.set(0,yR,zcR); rig.head.add(hg);
+      const hm=new THREE.Mesh(merge(parts),matChar); hm.castShadow=true; hg=new THREE.Group(); hg.add(hm); hm.position.set(0,-yR,-zcR); hg.position.set(0,yR,zcR); rig.head.add(hg); }
       // the ear feather: a long grey-white vane barred in slate, a short sky-tipped one behind it, loose so that it sways
-      const fg=new THREE.Group(), fp=[];
+      if(wHat){ fg=new THREE.Group(); const fp=[];
       { const P=[[0,0,0],[0.02,0.022,0.04],[0.033,0.058,0.08],[0.025,0.103,0.112]];
         fp.push(...feather(P,0.03,(d,c,e)=>{ c.copy(d<0.02?cSn:cFe); if(d>0.02&&((d-0.02)/0.017%1)<0.34) c.lerp(cSl,0.8*(1-0.7*e)); c.lerp(cSn,0.55*e*e); if(d>0.128) c.copy(cSn); if(d>0.139) c.lerp(cSkyD,0.5); },[1,0,0],sgx(16),0.0019));
         const P2=[[0.0,0,0.004],[0.022,0.012,0.04],[0.034,0.034,0.07]];
         fp.push(...feather(P2,0.022,(d,c,e)=>{ c.copy(cFe); c.lerp(cSn,0.5*e); if(d>0.05) c.lerp(cSky,0.9); if(d<0.016) c.copy(cSn); },[1,0,-0.2],sgx(10),0.0015)); }
-      const fm=new THREE.Mesh(merge(fp),matChar); fm.castShadow=true; fg.add(fm); fg.position.set(0.108,0.004,0.03); fg.rotation.set(0,0,-0.02); rig.head.add(fg);
+      const fm=new THREE.Mesh(merge(fp),matChar); fm.castShadow=true; fg.add(fm); fg.position.set(0.108,0.004,0.03); fg.rotation.set(0,0,-0.02); rig.head.add(fg); }
       // the glint in the goggle's lens (unlit, small)
-      if(glintGeo) rig.head.add(new THREE.Mesh(merge([glintGeo]),matGlow));
+      if(wHat&&glintGeo) rig.head.add(new THREE.Mesh(merge([glintGeo]),matGlow));
       rig.anims.push((t,dt,mv)=>{ const k=Math.min(1,mv);
-        tA.rotation.x=-(0.04+0.5*k)+Math.sin(t*1.3)*0.045*(0.5+k); tA.rotation.z=Math.sin(t*0.9+1)*0.05*(0.4+k);
-        tB.rotation.x=-(0.06+0.56*k)+Math.sin(t*1.6+2.1)*0.05*(0.5+k); tB.rotation.z=Math.sin(t*1.1+3)*0.06*(0.4+k);
-        hg.rotation.x=-0.02-0.12*k+Math.sin(t*1.2)*0.03; hg.rotation.z=Math.sin(t*0.8+0.5)*0.035*(0.5+k);
-        fg.rotation.x=Math.sin(t*1.9)*0.05*(0.4+k); fg.rotation.z=-0.02+Math.sin(t*1.4+1)*0.05*(0.4+k); });
+        if(tA){ tA.rotation.x=-(0.04+0.5*k)+Math.sin(t*1.3)*0.045*(0.5+k); tA.rotation.z=Math.sin(t*0.9+1)*0.05*(0.4+k);
+          tB.rotation.x=-(0.06+0.56*k)+Math.sin(t*1.6+2.1)*0.05*(0.5+k); tB.rotation.z=Math.sin(t*1.1+3)*0.06*(0.4+k); }
+        if(hg){ hg.rotation.x=-0.02-0.12*k+Math.sin(t*1.2)*0.03; hg.rotation.z=Math.sin(t*0.8+0.5)*0.035*(0.5+k); }
+        if(fg){ fg.rotation.x=Math.sin(t*1.9)*0.05*(0.4+k); fg.rotation.z=-0.02+Math.sin(t*1.4+1)*0.05*(0.4+k); } });
     };
 
     /* ================= the weapon dressing: white wax-wrapped grips, cream ash, silver, sky thread, slate feather-vein lines, a lens and a feather tuft ================= */
@@ -326,7 +326,7 @@ OUTFITS.sorrel=(function(){
         return {lit,glow}; } };
 
     return {
-      boot:true, skinFrom:0.6, hairColor:HAIR, eyeColor:EYE,
+      bootTop:0.6, shinCut:0.55, boot:true, skinFrom:0.6, hairColor:HAIR, eyeColor:EYE,
       eyes:{iris:0.82,h:0.7,w:1.1,lash:1.9,hl:1,tilt:0.24,browLift:0.004,browThick:0.85},
       cuts:{torso:[0.012,0.07,0.405,0.498],upperArm:[0.158/D.upper,0.17/D.upper,0.19/D.upper,0.202/D.upper],foreArm:[0.17/D.fore,0.2/D.fore,WRIST/D.fore]},
       paint, head, hair, mark, torso, shoulder, forearm, thigh, shin, extras, dress,

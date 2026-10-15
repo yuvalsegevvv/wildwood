@@ -86,7 +86,7 @@ for(const f of docs){
     const sr=sectionRange(md,'## Slider recommendations'); if(!sr||md.slice(sr[0],sr[1]).trimEnd()!==sliderSection(model).trimEnd()) bad('the "Slider recommendations" section is out of date: run node tools/outfit-looks-check.js --write');
     if(sectionRange(md,'## The stand-in patch (preview only: existing fields, never the design)')) bad('the old stand-in section is still in the doc (run --write)');
     o.model=model; o.setup=st;
-    try{ const L=Object.assign(C.applySetup(Object.assign({},model.sexes[0]==='female'?C.LOOK_F:C.LOOK_M),st),{model:id}), rig=C.buildCharacter(L,{q:0.5}); o.eyes=JSON.stringify(rig.kit.eyes||{}); o.hairColor=rig.kit.hairColor; o.dressOk=!!rig.dress; }catch(e){ bad('does not build: '+e.message); }
+    try{ const L=C.ofWear(C.applySetup(Object.assign({},model.sexes[0]==='female'?C.LOOK_F:C.LOOK_M),st),id), rig=C.buildCharacter(L,{q:0.5}); o.eyes=JSON.stringify(rig.kit.sl.face.eyes||{}); o.hairColor=rig.kit.sl.hair.hairColor; o.dressOk=!!rig.dress; }catch(e){ bad('does not build: '+e.message); }
   }
   O.push(o);
 }

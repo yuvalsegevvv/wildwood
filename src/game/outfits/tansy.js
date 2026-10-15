@@ -4,7 +4,7 @@
    smock over an A-line skirt, short breeches and boots. Every part has at least two colours; the emblems are wheat ears and patches, never a rayed sun.
    How it is built: bands of colour are cut rows of a loft (`rowLoft`: two rings a millimetre apart), patches and appliqué are grids and tubes laid on the real section of the body part (`wrapPatch`, `wpt`, with `torsoSize`
    and the limbs' own stations), so nothing blurs and nothing pokes through at any build. The skirt is two panels swung by the thighs in `extras`; the sash tails and the hat's wheat sprigs move there too. */
-CHAR_MODELS.tansy={id:'tansy',name:'Tansy',signature:true,sexes:['female'],
+CHAR_MODELS.tansy={id:'tansy',name:'Tansy',signature:true, items:{hat:'Sun brim',hair:'Sheaf crown',face:'Freckles',top:'Harvest smock',bottom:'Stook breeches',shoes:'Furrow boots',weapon:'Sheaf wrap'},sexes:['female'],
   note:'The farm-hand: a wide brim and round shapes, built for a short, strong, round-cheeked woman.',
   ranges:{chest:[0.7,1.3],waist:[0.88,1.15],legs:[0.92,1.1],thighs:[0.95,1.25],arms:[0.9,1.25],neck:[0.9,1.2],head:[0.94,1.1],hairLength:[0.9,1.25],hairVolume:[1.0,1.2]},
   setups:[{id:'tansy',name:'Tansy',sex:'female',def:true,note:'Tansy as drawn: short, strong, round-cheeked, always smiling.',v:{height:0.96,build:1.1,shoulders:1.04,hips:1.1,thighs:1.12,arms:1.15,hands:1.1,feet:1.05,jaw:1.05,chin:0.95,cheeks:1.15,eyeSize:1.1,noseSize:0.95,mouthSize:1.1,smile:0.5,hairVolume:1.1,bangs:0.8}}]};
@@ -253,7 +253,7 @@ OUTFITS.tansy=(function(){
       return {lit,glow:[]}; };
 
     return {
-      boot:true, hairColor:0xd8b56e, eyeColor:0xb8862f,
+      bootTop:0.8, shinCut:0.77, boot:true, hairColor:0xd8b56e, eyeColor:0xb8862f,
       eyes:{iris:1.05,h:1.06,lash:0.4,hl:1,tilt:0,browThick:1.3,browLift:0.003},    // the "sunny" style: a round wide-open amber eye, one big highlight, a light lash, thick friendly brows
       cuts:{torso:[0.03,0.434,0.4375],foreArm:[0.135/fore],thigh:[0.935],shin:[0.085,0.8]},
       paint:bodyPaint,
@@ -268,7 +268,8 @@ OUTFITS.tansy=(function(){
       thigh:thighHook, shin:shinHook,
 
       /* ---- loose parts: the sash's two tails (they trail when she moves) and three wheat sprigs tucked in the hat band (they sway) ---- */
-      extras:(rig)=>{
+      extras:(rig,Xx,has)=>{    // `has(slot)`: this outfit's piece for that slot is worn (the pieces mix: docs/CHARACTER.md section 9)
+        if(has('top')){
         const panel=front=>{ const m=new THREE.Mesh(merge(skirtPanel(front).map(g=>g.translate(0,-sashY,0))),matChar), g=new THREE.Group(); m.castShadow=true; g.position.y=sashY; g.add(m); rig.hips.add(g); return g; };
         const skF=panel(true), skB=panel(false);
         rig.anims.push(()=>{ const l=rig.hipL.rotation.x, r=rig.hipR.rotation.x; skF.rotation.x=0.5*Math.max(0,l,r); skB.rotation.x=0.4*Math.min(0,l,r); });   // the hem swings out with the leading thigh, front and back
@@ -279,6 +280,8 @@ OUTFITS.tansy=(function(){
           const tail=pc(ofRibbon(P,u=>0.034*(0.8+0.2*u),{up:[0,0,1],seg:sg(10)}),(x,y,z,c)=>{ const f=-y/L; c.set(WHEAT); if(f>0.8) c.set(CLAY); if(f>0.77&&f<0.8) c.set(TWINE); if(f>0.9&&f<0.92) c.set(TWINE); });
           const m=new THREE.Mesh(merge([tail]),matChar); m.castShadow=true; g.add(m); tailGroups.push([g,sx]); }
         rig.anims.push((t,dt,sp)=>{ for(const [g,sx] of tailGroups){ g.rotation.x=-0.1-0.28*Math.min(1,sp)+0.05*sin(t*5.2+sx)*Math.min(1,sp+0.2); g.rotation.z=sx*0.05*sin(t*3.1); } });
+        }
+        if(has('hat')){
         const fs=rig.dims.faceScale, sprigs=[];
         [[0.42,0.40,0.14],[0.6,0.52,0.16],[0.8,0.34,0.125]].forEach(([az,lean,Ls],i)=>{
           const outer=new THREE.Group(), inner=new THREE.Group(); outer.add(inner);
@@ -290,6 +293,7 @@ OUTFITS.tansy=(function(){
           parts.push(pc(ofRibbon([[0.002,0.004,0],[0.014,0.04,0.003],[0.03,0.07,0.004],[0.05,0.082,0.006]],u=>0.011*(1-0.85*u),{up:[0,0,-1],seg:sg(8)}),(x,y,z,c)=>{ c.set(FIELD); mixc(c,FIELD_L,clamp(y*8)*0.6); }));   // a green blade beside the stalk
           const m=new THREE.Mesh(merge(parts),matChar); m.castShadow=true; inner.add(m); rig.head.add(outer); sprigs.push([inner,i]); });
         rig.anims.push((t,dt,sp)=>{ for(const [g,i] of sprigs){ g.rotation.z=0.05*sin(t*2.1+i*1.7)+0.07*Math.min(1,sp)*sin(t*6+i); g.rotation.x=0.04*sin(t*1.7+i*2.3); } });
+        }
       },
 
       /* ---- the weapon dressing: ash grips wrapped in twine with clay cords, hazel limbs and shafts, dull steel, wheat-ear notches, a sheaf hung from the grip ---- */

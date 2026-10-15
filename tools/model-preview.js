@@ -26,7 +26,7 @@ if(has('--setups')){
   views='front'; size=head?['130','130','1.7']:['110','250'];
 } else if(arg('--outfit')){
   looks=[]; for(const id of arg('--outfit').split(',')){ const m=C.CHAR_MODELS[id]; if(!m){ console.error('no outfit',id); process.exit(1); } const sex=(m.sexes||['male'])[0], st=C.setupsOf(m,sex)[0];
-    looks.push(Object.assign(C.applySetup(Object.assign({},sex==='female'?C.LOOK_F:C.LOOK_M),st),{model:id})); }
+    looks.push(C.ofWear(C.applySetup(Object.assign({},sex==='female'?C.LOOK_F:C.LOOK_M),st),id)); }
   views='three'; size=head?['200','200','1.7']:['190','400'];
 } else looks=(arg('--looks')?JSON.parse(arg('--looks')):[{top:'tshirt',bottom:'shorts'},{sex:'female',top:'tshirt',bottom:'shorts'},{build:1.24,hat:'ranger'},{sex:'female',build:0.86,top:'flannel',bottom:'trousers',hat:'beanie'}]).map(o=>Object.assign({},o.sex==='female'?C.LOOK_F:C.LOOK_M,o));
 if(has('--front')) views='front';

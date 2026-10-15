@@ -1,7 +1,7 @@
 # The eight outfits (looks)
 
 > **Built, not approved.** These are the *outfits* of the eight signature characters of the skill-set plan (`docs/SKILL-SETS.md`, `docs/skillkits/THEMES.md` on the branch `claude/skill-sets-plan-lp2c72`),
-> built as real 3D kits in `src/game/outfits/<id>.js`. The skills and their rules are not touched. Nothing selects an outfit in the game yet except a **preview picker** in the character editor (Clothes tab).
+> built as real 3D kits in `src/game/outfits/<id>.js`. The skills and their rules are not touched. Nothing grants an outfit in the game yet: the character editor's Clothes, Hair and Features tabs let anyone wear any piece (a preview; unlocking is the wardrobe's job).
 > Each `<id>.md` is the design (persona, the seven items, what is built, the one recommended slider setup); `IMAGE-PROMPTS.md` has prompts for 2D pictures.
 
 ## What was asked (the scope, from the owner)
@@ -27,7 +27,7 @@
 The hiker is about 54,000 triangles; an outfit adds 15,000-22,000 at full detail (`charDetail('hero')`), proportionally fewer for other players and villagers (every segment count goes through `sg(n)`).
 
 Pictures, rendered by the preview tool (`node tools/model-preview.js`, the game's own geometry shaded like its lighting): [`img/cast.png`](img/cast.png) (all eight, front), [`img/weapons.png`](img/weapons.png) (the weapon dressing on the warrior's sword and shield),
-and per outfit `img/<id>.png` (front, side, back) and `img/<id>-head.png` (the head from three sides). The preview does not draw unlit glow materials or run the outfits' animations (swaying scarves, turning lanterns, a drum that follows the thigh): in the game they move.
+[`img/mix.png`](img/mix.png) (eight mixes of pieces from different outfits and base clothes, to judge how they sit together), and per outfit `img/<id>.png` (front, side, back) and `img/<id>-head.png` (the head from three sides). The preview does not draw unlit glow materials or run the outfits' animations (swaying scarves, turning lanterns, a drum that follows the thigh): in the game they move.
 
 ## How an outfit is built
 
@@ -48,7 +48,7 @@ Each doc's "Slider recommendations" section is **generated from that code** (`no
 
 ## Open questions and known gaps
 
-1. **Mixing outfits.** Any gender may wear any outfit (SKILL-SETS rule). Today `look.model = '<id>'` wears one **whole** (the preview picker). Putting Torgeir's boots with Corvin's coat needs per-part selection, and a rule for which model's setups and ranges the editor shows then.
+1. **Mixing outfits is built.** Any gender may wear any outfit (SKILL-SETS rule), and the seven items mix: the editor's Top / Bottoms / Shoes / Hat rows (Clothes), Style (Hair), Face marks and eyes (Features) and Weapon style (Clothes) list every outfit's item next to the base ones in gold, and "Signature set" puts a whole outfit on. Mixes are checked for NaN, ground contact and a look, not for taste: a long coat over a skirt clips, a hair item under another set's hat may poke through. The editor's recommended ranges follow the set last put on whole.
 2. **Nothing unlocks an outfit.** The skill-set system that would grant them is not built; the picker in the character editor is a preview, labelled so.
 3. **The weapon is a dressing, not a model.** It recolours the stock sword and shield, bow and quiver, or wand and hangs a charm; fine trim shows only as tints on those coarse meshes. A **held model that can be any object in the hand** (one prop per character, the same for every class) is designed in `docs/NOT-BUILT.md` section 9 and not built.
 4. **Some elements' glow is minimal on purpose** (Tansy none; Torgeir one bead; Ambrose only the vials, though his mage orb is tinted aqua; Sazanka a small violet bead). Judge them in the game, not the preview.
@@ -59,7 +59,7 @@ Each doc's "Slider recommendations" section is **generated from that code** (`no
 ## How these files are checked
 
 ```
-node tools/outfit-smoke.js [--only <id>]   # per outfit: builds on its body, every slider at both ends on both bodies, the triangle budget, a weapon dressing on all three classes
+node tools/outfit-smoke.js [--only <id>]   # per outfit: builds on its body, every slider at both ends on both bodies, the triangle budget, a weapon dressing on all three classes; without --only also the mix: every pair of outfits slot by slot, each slot alone, base items with outfit items, loose parts per slot, nonsense names, old saves
 node tools/outfit-looks-check.js           # the docs against the code: seven new item ids (none an existing one), builder notes, the dressing rows, one reference setup, the generated slider section
 node tools/outfit-looks-check.js --write   # regenerate the slider section of every doc from CHAR_MODELS (and drop the old stand-in section)
 node tools/model-preview.js out.png --outfit tansy,torgeir [--weapon warrior|archer|mage] [--bent] [--views front] [--size W H] [--at Y]

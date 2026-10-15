@@ -19,41 +19,47 @@ const EDIT=[
     {k:'face',label:'Face shape',type:'seg',opts:[['round','Round'],['oval','Oval'],['angular','Angular']]}
   ].concat(['head','jaw','chin','cheeks'].map(k=>({slider:k})))},
   {tab:'Eyes', close:true, rows:[
-    {k:'eyes',label:'Eye color',type:'color',opts:EYEC,base:true}
+    {k:'eyes',label:'Eye color',type:'color',opts:EYEC,base:'face'}
   ].concat(['eyeSize','eyeGap','eyeHeight','eyeTilt','brow'].map(k=>({slider:k})))},
   {tab:'Features', close:true, rows:['noseSize','mouthSize','lips','smile','earSize','earPoint'].map(k=>({slider:k})).concat([
-    {k:'facial',label:'Facial hair',type:'seg',base:true,opts:[['none','None'],['stubble','Stubble'],['mustache','Mustache'],['beard','Beard']]}
+    {k:'facial',label:'Facial hair',type:'seg',base:'face',opts:[['none','None'],['stubble','Stubble'],['mustache','Mustache'],['beard','Beard']]},
+    // an outfit's face item: its marks, eye style and eye colour, and its facial hair or glasses (src/game/outfits)
+    {k:'faceItem',label:'Face marks and eyes (signature)',type:'seg',opts:[['','None']].concat(ofItems('face'))}
   ])},
   {tab:'Hair', close:true, rows:[
-    {k:'hair',label:'Style',type:'seg',base:true,opts:[['bald','Bald'],['buzz','Buzz'],['short','Short'],['messy','Messy'],['spiky','Spiky'],['curly','Curly'],['bob','Bob'],['long','Long'],['ponytail','Ponytail'],['twintail','Twin tails'],['braid','Braid'],['bun','Bun']]},
-    {k:'hairColor',label:'Hair color',type:'color',opts:HAIRC,base:true}
+    {k:'hair',label:'Style',type:'seg',opts:[['bald','Bald'],['buzz','Buzz'],['short','Short'],['messy','Messy'],['spiky','Spiky'],['curly','Curly'],['bob','Bob'],['long','Long'],['ponytail','Ponytail'],['twintail','Twin tails'],['braid','Braid'],['bun','Bun']].concat(ofItems('hair'))},
+    {k:'hairColor',label:'Hair color',type:'color',opts:HAIRC,base:'hair'}
   ].concat(['hairLength','hairVolume','bangs'].map(k=>({slider:k}))).concat([
-    {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:true,opts:[[true,'On'],[false,'Off']]}
+    {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]}
   ])},
   {tab:'Class', rows:[
     {k:'cls',label:'Class (by weapon)',type:'seg',opts:[['warrior','Sword: Warrior'],['archer','Bow: Archer'],['mage','Wand: Mage']]},
     {type:'info'}
   ]},
   {tab:'Clothes', rows:[
-    // the signature outfits (src/game/outfits): one worn whole, replacing the rows marked `base` (hat, top, bottoms, shoes, hair, facial hair, eye colour); it takes its character's reference body
-    {k:'model',label:'Signature outfit (preview)',type:'seg',opts:[['base','None']].concat(Object.keys(OUTFITS).map(id=>[id,CHAR_MODELS[id].name]))},
-    {k:'top',label:'Top',type:'seg',base:true,opts:[['tshirt','T-shirt'],['flannel','Flannel'],['jacket','Jacket'],['hoodie','Hoodie']]},
-    {k:'topColor',label:'',type:'color',base:true,opts:CLOTH},
-    {k:'bottom',label:'Bottoms',type:'seg',base:true,opts:[['trousers','Trousers'],['shorts','Shorts'],['skirt','Skirt']]},
-    {k:'bottomColor',label:'',type:'color',base:true,opts:CLOTH},
-    {k:'shoes',label:'Shoes',type:'seg',base:true,opts:[['boots','Boots'],['sneakers','Sneakers']]},
-    {k:'shoeColor',label:'',type:'color',base:true,opts:SHOEC},
+    // the signature outfits (src/game/outfits): the first row puts a whole set on (all seven pieces, on its character's reference body); every piece also has its own row, here and in the Hair and Features tabs,
+    // so the pieces of different sets mix. A row marked base:'<slot>' (a colour, hair colour...) is hidden while that slot wears an outfit's piece, which has its own colours.
+    {k:'model',label:'Signature set (all seven pieces)',type:'seg',opts:[['base','None']].concat(Object.keys(OUTFITS).map(id=>[id,CHAR_MODELS[id].name]))},
+    {k:'top',label:'Top',type:'seg',opts:[['tshirt','T-shirt'],['flannel','Flannel'],['jacket','Jacket'],['hoodie','Hoodie']].concat(ofItems('top'))},
+    {k:'topColor',label:'',type:'color',base:'top',opts:CLOTH},
+    {k:'bottom',label:'Bottoms',type:'seg',opts:[['trousers','Trousers'],['shorts','Shorts'],['skirt','Skirt']].concat(ofItems('bottom'))},
+    {k:'bottomColor',label:'',type:'color',base:'bottom',opts:CLOTH},
+    {k:'shoes',label:'Shoes',type:'seg',opts:[['boots','Boots'],['sneakers','Sneakers']].concat(ofItems('shoes'))},
+    {k:'shoeColor',label:'',type:'color',base:'shoes',opts:SHOEC},
     {k:'armor',label:'Armor',type:'seg',opts:[['show','Show'],['hide','Hide (clothes only)']]},
-    {k:'hat',label:'Hat',type:'seg',base:true,opts:[['none','None'],['ranger','Ranger'],['beanie','Beanie'],['cap','Cap'],['kasa','Kasa']]},
-    {k:'hatColor',label:'',type:'color',base:true,opts:HATC},
-    {k:'pack',label:'Backpack',type:'seg',base:true,opts:[[true,'On'],[false,'Off']]}
+    {k:'hat',label:'Hat',type:'seg',opts:[['none','None'],['ranger','Ranger'],['beanie','Beanie'],['cap','Cap'],['kasa','Kasa']].concat(ofItems('hat'))},
+    {k:'hatColor',label:'',type:'color',base:'hat',opts:HATC},
+    {k:'pack',label:'Backpack',type:'seg',base:'top',opts:[[true,'On'],[false,'Off']]},
+    // an outfit's weapon dressing restyles whatever weapon you hold, whatever your class
+    {k:'weaponItem',label:'Weapon style (signature)',type:'seg',opts:[['','Plain']].concat(ofItems('weapon'))}
   ]}
 ];
 const hex=n=>'#'+n.toString(16).padStart(6,'0');
 function setLook(k,v){
   if(k==='cls'){ equipClass(v); return; }   // the server equips your best weapon of that class; applyGear (economy/items.js) redraws this panel
   if(k==='sex' && !LOOK.custom){ const keep={skin:LOOK.skin,cls:LOOK.cls}; for(const s of SLIDER_KEYS) keep[s]=LOOK[s]; LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,keep); }   // the sliders and skin carry over
-  else { LOOK[k]=v; if(k!=='sex') LOOK.custom=true; }
+  else if(k==='model'){ LOOK=ofWear(LOOK,v); LOOK.custom=true; }   // a whole set on (or off: 'base'); every piece row below it can then change one piece
+  else { LOOK[k]=v; if(k!=='sex') LOOK.custom=true; ofTidy(LOOK); }   // (ofTidy: the model is the base again once none of the set's pieces is worn)
   if(k==='model'&&v!=='base'){ const st=setupsOf(CHAR_MODELS[v],LOOK.sex)[0]; if(st) LOOK=applySetup(LOOK,st); }   // wearing a signature outfit starts on its character's reference body
   saveLook(); rebuildHiker();
 }
@@ -93,7 +99,7 @@ function renderEditor(){
   edBody.innerHTML='';
   for(const row of EDIT[edTab].rows){
     if(row.fem && LOOK.sex!=='female') continue;
-    if(row.base && OUTFITS[LOOK.model]) continue;   // a signature outfit brings its own: these rows do nothing while it is worn
+    if(row.base && ofPieces(LOOK)[row.base]) continue;   // an outfit's piece in that slot brings its own colours: these rows do nothing while it is worn
     const wrap=document.createElement('div'); wrap.className='ed-row'+(row.label||row.slider||row.type==='setups'?'':' ed-sub');
     if(row.label){ const lb=document.createElement('div'); lb.className='ed-label'; lb.textContent=row.label; wrap.append(lb); }
     if(row.slider){ sliderRow(wrap,row); }
@@ -109,8 +115,8 @@ function renderEditor(){
     }
     else if(row.type==='seg'){
       const box=document.createElement('div'); box.className='chips';
-      for(const [v,txt] of row.opts){
-        const b=document.createElement('button'); b.className='chip'; b.textContent=txt; b.setAttribute('aria-pressed',(LOOK[row.k]||false)===v);
+      for(const [v,txt,title] of row.opts){
+        const b=document.createElement('button'); b.className=title?'chip sig':'chip'; b.textContent=txt; if(title) b.title=title; b.setAttribute('aria-pressed',LOOK[row.k]===undefined?(v===false||v===''):LOOK[row.k]===v);   // a signature piece (tooltip: whose it is) is drawn a little gold
         b.onclick=()=>{ setLook(row.k,v); renderEditor(); }; box.append(b);
       }
       wrap.append(box);

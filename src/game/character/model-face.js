@@ -47,7 +47,7 @@ function frontSurface(g){
     return best<1e8?best:-0.09; };
 }
 function buildFace(X){
-  const {L,S,fem,sg,skin,skinPaint,hairCol,kit}=X, fs=faceShape(L), sculpt=headSculptFn(X), G=faceG, parts=[];
+  const {L,S,fem,sg,skin,skinPaint,hairCol}=X, kF=X.kit&&X.kit.sl.face, fs=faceShape(L), sculpt=headSculptFn(X), G=faceG, parts=[];
   const skull=sculpt(csph(0.105,sg(44),sg(30)),true).scale(fs[0],fs[1],1), zAt=frontSurface(skull);
   const blushC=new THREE.Color(0xe98c88), pos=skull.attributes.position;
   let earX=0.095; { let m=0; for(let i=0;i<pos.count;i++){ if(Math.abs(pos.getY(i)+0.008)<0.012&&pos.getZ(i)>-0.02&&pos.getZ(i)<0.03) m=Math.max(m,Math.abs(pos.getX(i))); } if(m>0) earX=m; }
@@ -63,8 +63,8 @@ function buildFace(X){
 
   /* eyes: a wide almond white, an iris that nearly fills its height (lighter below), a pupil, two highlights, an upper lash with a flick, the lid's crease,
      and (female) a fine lower lash. The upper lash line is what reads as "anime"; keep the rest quiet. */
-  const ES=(kit&&kit.eyes)||{}, eI=ES.iris||1, eHt=ES.h||1, eWd=ES.w||1, eLs=ES.lash||1;   // an outfit's eye style: iris size, eye height / width, lash weight, highlight count, tilt (docs/CHARACTER.md section 9)
-  const E=S.eyeSize*(fem?1.03:1)*0.74, ex=0.046*S.eyeGap*fs[0], ey=(-0.002+0.012*S.eyeHeight)*HEAD_TALL, eyeC=new THREE.Color(kit&&kit.eyeColor!==undefined?kit.eyeColor:L.eyes), lashC=new THREE.Color(0x251b1e).lerp(hairCol,0.15), white=new THREE.Color(0xf7f3ef);
+  const ES=(kF&&kF.eyes)||{}, eI=ES.iris||1, eHt=ES.h||1, eWd=ES.w||1, eLs=ES.lash||1;   // an outfit's eye style: iris size, eye height / width, lash weight, highlight count, tilt (docs/CHARACTER.md section 9)
+  const E=S.eyeSize*(fem?1.03:1)*0.74, ex=0.046*S.eyeGap*fs[0], ey=(-0.002+0.012*S.eyeHeight)*HEAD_TALL, eyeC=new THREE.Color(kF&&kF.eyeColor!==undefined?kF.eyeColor:L.eyes), lashC=new THREE.Color(0x251b1e).lerp(hairCol,0.15), white=new THREE.Color(0xf7f3ef);
   const SW=0.0295*E*eWd, SH=0.0245*E*eHt;
   for(const sd of [-1,1]){
     const e=[];
@@ -138,8 +138,8 @@ function buildFace(X){
       const r=lerp(0.098,0.1135,m); bp.setXYZ(i,x*r,y*r,z*r); }
     smoothN(g); parts.push(pc(sculpt(g,false).scale(fs[0],fs[1]*1.0,1),(x,y,z,c)=>{ c.copy(hairCol).multiplyScalar(0.9-0.12*smoothstep(-0.05,-0.1,y)); }));
   }
-  // an outfit's face mark (a decal laid on the skull) and facial hair: kit.mark(F) / kit.facial(F) return painted geometries in head-local coordinates; F carries the helpers
+  // the face item of an outfit (a decal laid on the skull) and its facial hair / glasses: kF.mark(F) / kF.facial(F) return painted geometries in head-local coordinates; F carries the helpers
   const F={parts,sculpt,fs,zAt,earX,place,col,el,skull,hairCol,skin};
-  if(kit){ if(kit.mark) parts.push(...kit.mark(F)); if(kit.facial) parts.push(...kit.facial(F)); }
+  if(kF){ if(kF.mark) parts.push(...kF.mark(F)); if(kF.facial) parts.push(...kF.facial(F)); }
   return F;
 }

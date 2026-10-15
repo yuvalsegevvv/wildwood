@@ -5,7 +5,7 @@ const {bootClient,memoryAccounts}=require('./headless');
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const until=async(f,ms)=>{ for(let t=0;t<(ms||30000);t+=20){ if(f()) return true; await wait(20); } return false; };
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
-const EXPOSE=['NET','netTick','started:()=>started','customizing:()=>customizing','creating:()=>creating','canStart:()=>canStart','clsOf','setLook','LOOK:()=>LOOK','edTab:()=>edTab','EDIT'];
+const EXPOSE=['NET','netTick','started:()=>started','customizing:()=>customizing','creating:()=>creating','canStart:()=>canStart','clsOf','setLook','LOOK:()=>LOOK','edTab:()=>edTab','EDIT','setTab:i=>{ edTab=i; renderEditor(); }'];
 const find=(e,f)=>{ if(f(e)) return e; for(const k of e._kids||[]){ const r=find(k,f); if(r) return r; } return null; };
 function fill(c,user,pass,pass2){ c.el('#stUser').value=user; c.el('#stPass').value=pass; c.el('#stPass2').value=pass2===undefined?'':pass2; c.el('#stForm').requestSubmit(); }
 async function boot(o){ const c=bootClient(Object.assign({online:true,fast:true,expose:EXPOSE},o)); await until(()=>c.G().canStart()); return c; }
@@ -56,6 +56,16 @@ async function boot(o){ const c=bootClient(Object.assign({online:true,fast:true,
   ok('...and the chip lights up once the server confirms',await until(()=>chip('Bow: Archer')&&chip('Bow: Archer')._a['aria-pressed']===true&&chip('Sword: Warrior')._a['aria-pressed']===false));
   c.G().setLook('cls','mage'); await until(()=>c.G().clsOf()==='mage');
   ok('Mage works too',c.G().clsOf()==='mage'&&chip('Wand: Mage')._a['aria-pressed']===true);
+  { // the signature outfits' pieces in the editor's rows (src/game/outfits, docs/areas/character-ui.md): every slot lists every outfit's item, picking one writes that slot, a whole set puts all seven on
+    const tab=n=>{ c.G().setTab(c.G().EDIT.findIndex(t=>t.tab===n)); }, gold=name=>find(c.el('#edBody'),e=>e.textContent===name&&String(e.className).includes('sig'));
+    tab('Clothes'); const cl=['Plumb coat','Footlight skirt','March boots','Lantern crown','Stage trim'].map(gold); tab('Hair'); const hr=gold('Gale long'); tab('Features'); const fc=gold('Scar & braid beard');
+    ok('the Clothes, Hair and Features rows list the outfits\' pieces (a top, bottoms, shoes, a hat, a weapon style, a hair style, a face style)',cl.every(Boolean)&&!!hr&&!!fc);
+    c.G().setLook('top','corvin'); c.G().setLook('hat','marigold'); c.G().setLook('hair','sorrel'); c.G().setLook('faceItem','torgeir'); c.G().setLook('bottom','marigold'); c.G().setLook('shoes','dunstan'); c.G().setLook('weaponItem','tansy'); const m=c.G().LOOK();
+    ok('picking pieces from different sets writes each slot and leaves the set name alone',m.top==='corvin'&&m.hat==='marigold'&&m.hair==='sorrel'&&m.faceItem==='torgeir'&&m.bottom==='marigold'&&m.shoes==='dunstan'&&m.weaponItem==='tansy'&&m.model==='base');
+    tab('Clothes'); ok('the chip of a worn piece is lit and the top\'s colour row is hidden while it is worn',find(c.el('#edBody'),e=>e.textContent==='Plumb coat')._a['aria-pressed']===true&&find(c.el('#edBody'),e=>e.textContent==='T-shirt')._a['aria-pressed']===false&&!(c.G().EDIT[c.G().edTab()].rows.some(r=>r.k==='topColor')&&find(c.el('#edBody'),e=>String(e.className).includes('swatches')&&e._kids&&e._kids[0]&&e._kids[0]._a&&/top color/.test(e._kids[0]._a['aria-label']||''))));
+    c.G().setLook('model','dunstan'); const w=c.G().LOOK(); c.G().setLook('model','base'); const b=c.G().LOOK();
+    ok('a whole set puts all seven pieces on and \'None\' takes them off again',['top','bottom','shoes','hat','hair','faceItem','weaponItem'].every(k=>w[k]==='dunstan')&&w.model==='dunstan'&&['faceItem','weaponItem'].every(k=>b[k]==='')&&b.top!=='dunstan'&&b.hair!=='dunstan'&&b.model==='base');
+    c.G().setLook('hair','short'); c.G().setLook('hat','ranger'); c.G().setLook('top','jacket'); }
   c.G().setLook('hair','bun'); await wait(1000);
   const me=[...c.server().players.values()].find(p=>p.user==='Newbie');
   ok('look changes reach the server while creating (before the game starts)',me&&me.look.hair==='bun'&&me.look.cls==='mage');

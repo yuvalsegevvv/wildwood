@@ -95,6 +95,7 @@ function validateCharModel(m){
   const sexes=m.sexes===undefined?['male','female']:m.sexes;
   if(!Array.isArray(sexes)||!sexes.length||sexes.some(x=>x!=='male'&&x!=='female')) bad.push('sexes must list male and / or female');
   if(!m.id||typeof m.id!=='string') bad.push('no id'); if(!m.name||typeof m.name!=='string') bad.push('no name');
+  if(m.signature) for(const sl of ['hat','hair','face','top','bottom','shoes','weapon']) if(!m.items||typeof m.items[sl]!=='string'||!m.items[sl]) bad.push('no item name for the '+sl+' slot (items: {hat, hair, face, top, bottom, shoes, weapon}, the labels of the editor\'s rows)');
   for(const k in (m.ranges||{})){ const s=SLIDER_BY_KEY[k], r=m.ranges[k]; if(!s){ bad.push('range of unknown slider '+k); continue; }
     if(!Array.isArray(r)||r.length!==2||!(r[0]<r[1])||r[0]<s.min-1e-9||r[1]>s.max+1e-9) bad.push('range of '+k+' is not inside '+s.min+'..'+s.max); }
   const ids=new Set();

@@ -138,8 +138,9 @@ New randomness goes after them. A villager's slider values come from a hash of t
 ## 9. Signature outfits: the kit hooks
 
 An outfit is **new geometry and new paint, not a recolour of the base clothes**: its own hat, hair, face marks, top, bottom, shoes and a weapon dressing, each in two or more colours with a silhouette of its own.
-`look.model = '<id>'` selects it; `buildCharacter` then ignores the look's `hat`, `hair`, `facial`, `top`, `bottom`, `shoes`, `pack` and `ahoge` (it sets them to neutral values) and asks the outfit's **kit** instead.
-The player's skin, face shape, body sliders and the head / body proportions stay the player's.
+An outfit is **seven items, one per slot**, and the slots mix freely (see **Pieces** below): the look's `top`, `bottom`, `shoes`, `hat`, `hair`, `faceItem` and `weaponItem` each hold either a base value (`'tshirt'`, `'skirt'`, `'beanie'`...) or an outfit's id (`'tansy'`).
+For each slot that holds an outfit id `buildCharacter` neutralises the base item (it sets `top`/`bottom`/`shoes`/`hat` to `'outfit'`, `hair` to `'bald'`, `facial` to `'none'`, `pack` and `ahoge` off) and asks that outfit's **kit** for the slot instead.
+`look.model = '<id>'` is the whole set at once (every slot) plus the editor's reference body and ranges. The player's skin, face shape, body sliders and the head / body proportions stay the player's.
 
 **The file.** `src/game/outfits/<id>.js` (listed in `src/manifest.json` before `character/model.js`; `tools/char-load.js` loads every file of the folder). It fills `CHAR_MODELS.<id>` (data, section 4) and `OUTFITS.<id>=(function(){ ...; return function(X,D){ return kit; }; })()`:
 keep every helper inside the IIFE (top-level names must be unique in the bundle). `X` = `{L, S (clamped sliders), fem, sg (segment count scaled by the detail factor q), q, skin, skinPaint, hairCol, D}`, `D` = `rig.dims` (section 5).
@@ -152,7 +153,7 @@ The kit is built once per character, so colours and sizes that depend on the bod
 | `paint(part, c, x, y, z, sd)` **required** | the body surfaces, per vertex: `part` = `'torso'` (y = design height 0..0.6, 0 = the belt line; the neck above `skinFrom` stays skin), `'upperArm'`, `'foreArm'`, `'thigh'`, `'shin'`, `'foot'`; `sd` = -1 left / +1 right; set the colour `c` (use `X.skinPaint(c)` for bare skin) | the body part's own frame (`y` runs down a limb) |
 | `cuts` `{torso:[design y], upperArm:[t], foreArm:[t], thigh:[t], shin:[t]}` | rings where the paint changes colour (the surface gets two rings 1 mm apart there, so the edge is crisp, not a gradient) | |
 | `skinFrom` (number) | the torso's design height where the neck's skin starts (default 0.555; a high collar painted on the body raises it) | |
-| `boot` (false = a bare-ankle low shoe) | the shin's shape | |
+| `boot` (false = a bare-ankle low shoe), `bootTop` (the fraction of the shin, from the knee, where the boots begin: 0.04 for a tall boot, 0.8 for a low one; 1.1 for none), `shinCut` (see Pieces) | the shin's shape and the split between the bottoms' and the shoes' paint and geometry |
 | `torso()` | collars, tabards, sashes, belts, straps, buckles | the spine's frame: origin at the hips, y up in metres (design y x `D.TK`), the front is -z |
 | `shoulder(sd)` | puffed sleeves, epaulets, pauldrons | the shoulder joint's frame: origin at the joint, y down the arm |
 | `forearm(sd)` | cuffs, bracers | the elbow's frame: y down the forearm (wrist at -`D.wrist`) |
@@ -163,8 +164,17 @@ The kit is built once per character, so colours and sizes that depend on the bod
 | `hairColor`, `eyeColor` (hex) | the hair's and the irises' colour (brows and lashes follow the hair) | |
 | `eyes` `{iris, h, w, lash, hl, tilt, browLift, browThick, browAngle}` | the eye style: iris size, eye height and width (multipliers), lash weight, highlights (1-3), tilt and brow angle (slider units), brow lift (metres) and thickness | |
 | `mark(F)` / `facial(F)` | face marks (a scar, stripes, a smear, a glyph) and facial hair | head-local; `F.place(geo, x, y, push)` lays a feature built around the origin (facing -z) on the skull's surface, `F.zAt(x, y)` is the skull's front surface, `F.el` / `F.col` shape helpers |
-| `extras(rig, X)` | loose parts and motion the merged meshes cannot carry: add `Object3D`s to any bone of `rig` and push per-frame functions `(t, dt, speed)` to `rig.anims` (a ring that turns, a drum that half-follows the thigh, a charm that swings) | any |
+| `extras(rig, X, has)` | loose parts and motion the merged meshes cannot carry: add `Object3D`s to any bone of `rig` and push per-frame functions `(t, dt, speed)` to `rig.anims` (a ring that turns, a drum that half-follows the thigh, a charm that swings). **Guard each part with `has('<slot>')`**: it is true when this outfit's item for that slot is worn, so a drum is built only with the tabard, lanterns only with the hat | any |
 | `dress` (the weapon dressing) | `weaponsOn` (game/combat/weapons.js) for the hiker and for other players | see below |
+
+**Pieces: how the seven items mix** (`character/outfit-tools.js`, "mixing the pieces"; the editor rows are in `docs/areas/character-ui.md`). A look names an item per slot in `top`, `bottom`, `shoes`, `hat`, `hair`, `faceItem` (the face marks `mark`, the eye style `eyes` / `eyeColor`, and `facial`: a beard, glasses) and `weaponItem` (`dress`), `OF_FIELD` maps slot to field.
+`ofPieces(L)` lists the slots wearing an outfit, `ofBuild` builds one kit per distinct outfit (`X.kit = {sl: kit per slot or null, kits}`), and every body part asks its own slot: the sleeves (`paint('upperArm'/'foreArm')`, `cuts`, `shoulder`, `forearm`, `torso`, `skinFrom`) are the **top**'s, `paint('thigh')`, `hips`, `thigh` the **bottom**'s, `paint('foot')`, `boot` the **shoes**',
+`hair`, `hairColor` the **hair**'s, `head` the **hat**'s. Three places are shared and need a rule:
+- the **torso** paint is cut at `OF_WAIST` (design height 0.03): above it the top paints, below it the bottom (a base garment fills its side when that slot is not an outfit's);
+- the **shin** paint is the bottoms' down to the shoes' `bootTop` and the shoes' below it; the bottoms' paint is sampled no lower than its own `bootTop`, so another outfit's boots never show under it;
+- the **`shin(sd)` geometry** holds both the bottoms' pieces (straps, wraps, a knee guard) and the shoes' (the boot's cuff, laces, welt, toe cap): `ofShin` tells them apart by where each geometry sits along the shin (`shinCut`: below that fraction it is the bottoms'; default `bootTop - 0.02`; `0` = all shoes, `9` = all bottoms). A whole outfit keeps all of it.
+A kit may say that a geometry hook belongs to another slot: `own: {thigh: 'top'}` (Corvin's coat tails hang in his `thigh` hook but are the coat's). `extras` is guarded by `has(slot)` as above. `CHAR_MODELS.<id>.items = {hat, hair, face, top, bottom, shoes, weapon}` are the labels the editor shows for the pieces (`validateCharModel` requires all seven).
+A hair item was drawn without a hat (its own volume rules), so a hat over it is the wearer's choice and may clip a little; every other combination was only checked for NaN, the feet on the ground and a look in the preview (`tools/outfit-smoke.js`, the *mix* section).
 
 **Weapon dressing** (`kit.dress`): one record that restyles whatever weapon the class carries: `grip`, `metal`, `wood`, `accent` (hex colours that replace the tier's), optionally `glow`; `trim(c, u, part)` (lay a pattern on the vertex colour `c`; `u` = metres along the blade / limb / shaft / grip,
 `part` = `'blade'`, `'limb'`, `'shaft'`, `'grip'`, `'rim'`, `'face'`, `'quiver'`); `charm()` returns `{lit:[geos], glow:[geos]}` hung from the grip (y down, origin at the grip; `glow` is drawn unlit, `matGlow`: never a light source).
@@ -172,7 +182,7 @@ The dressing is cosmetic: it touches no stat, no skill and no server code. It re
 
 **Helpers** (`character/outfit-tools.js`, plus everything in `model-parts.js`): `torsoSize(X, D, yd)` (half-width `rx`, front `rz` and back `rzBack` of the torso at a design height, belly, bust and glutes included: cloth must clear them), `ofRibbon(pts, width, {up, th, seg})` (a flat two-sided strip: sashes, pennants, feathers, ribbons),
 `ofLoft(rings, seg, a0, a1)` (a panel round part of the body: a tabard, a cape), `ofRingAt(point, axis, R, r, seg)` (a cord, band or ring round a curve), `ofPatch(x0, x1, y0, y1, nx, ny, surf, front)` (a fine grid on a surface for an emblem or buckle whose edge must be crisp),
-`ofCol(hex)` (a cached colour for paint functions); and `limb`, `loftRings`, `sweepTube`, `pc`, `solid`, `smoothN`, `csph`, `merge`, `vbox`, `cyl` as in the base model.
+`ofCol(hex)` (a cached colour for paint functions), and the piece helpers above (`ofPieces`, `ofWear(L, id)`: a look wearing a whole set, `'base'` takes it off, `ofTidy`, `ofItems(slot)`); and `limb`, `loftRings`, `sweepTube`, `pc`, `solid`, `smoothN`, `csph`, `merge`, `vbox`, `cyl` as in the base model.
 
 **Rules.**
 * **Colour**: every part has at least two colours (trim, piping, stripes, a lining, a pattern from a paint function); a flat single-colour garment is not a design. Paint patterns that are smaller than the mesh's cells (an emblem, a buckle) on an `ofPatch`, not on the coarse body mesh (vertex colours blur over a cell).

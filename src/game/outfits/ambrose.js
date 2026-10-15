@@ -3,7 +3,7 @@
    Palette: river green 0x4f7a6a, shell white 0xe6ecea, clay 0xa57b55, aqua 0x7fd0d8 (the glow of the vials ONLY: never a light), reed 0xcdbd8a. Soft, rounded shapes, nothing sharp.
    Silhouette: a soft triangle: a tall reed cone slung on the back, a robe that flares (the skirt is two shells that hang from the THIGH bones, so the legs never pierce it),
    a satchel at the left hip, wide folded boots. The cloth (skirt shells, the hat) is one thin surface drawn on both sides (matCloth). */
-CHAR_MODELS.ambrose={id:'ambrose',name:'Ambrose',signature:true,sexes:['male'],
+CHAR_MODELS.ambrose={id:'ambrose',name:'Ambrose',signature:true, items:{hat:'Marsh wrap',hair:'Reed knot',face:'Clay dab',top:'Ford robe',bottom:'Wader legs',shoes:'Ford boots',weapon:'Reed tend'},sexes:['male'],
   note:'The marsh herbalist: soft in the middle, gentle-faced, built for a slightly rounded man with good hands.',
   ranges:{build:[0.9,1.15],shoulders:[0.88,1.1],chest:[0.7,1.3],waist:[0.9,1.15],hands:[0.95,1.2],head:[0.95,1.1],eyeTilt:[-0.5,0.2],brow:[-0.6,0.2],hairLength:[0.8,1.2]},
   setups:[{id:'ambrose',name:'Ambrose',sex:'male',def:true,note:'The herbalist as drawn: soft in the middle, gentle-faced, good hands.',v:{build:0.98,shoulders:0.96,waist:1.06,hips:1.02,torso:1.02,arms:0.95,hands:1.12,head:1.02,jaw:0.95,chin:0.95,cheeks:1.05,eyeSize:1.05,eyeGap:1.02,eyeTilt:-0.25,brow:-0.3,lips:1.05,smile:0.35,hairLength:1.1,bangs:0.8}}]};
@@ -246,10 +246,10 @@ OUTFITS.ambrose=(function(){
     const shin=sd=>[...shaft(),...footShell(sd),...guards(sd)];
 
     /* ================= extras: the two skirt shells (on the thigh bones), the reed hat slung on the back, the herb satchel, the belt of vials ================= */
-    const extras=rig=>{
-      for(const sd of [-1,1]){ const m=mesh(skirt(sd),matCloth); (sd<0?rig.hipL:rig.hipR).add(m); }
+    const extras=(rig,Xx,has)=>{   // has(slot): this outfit's item for the slot is worn: the reed hat slung on the back goes with the hat, the robe's shells, flaps, satchel and vials with the top
+      if(has('top')) for(const sd of [-1,1]){ const m=mesh(skirt(sd),matCloth); (sd<0?rig.hipL:rig.hipR).add(m); }
       // ---- the reed cone hat: woven, a wide brim edged in green, a shell-white knob; slung on the back by a cord to the neck ----
-      { const HR=0.225, prof=[[0.003,0.158],[0.023,0.149],[0.054,0.125],[0.088,0.093],[0.122,0.06],[0.15,0.038],[0.178,0.0225],[0.1835,0.0215],[0.21,0.008],[0.2145,0.0072],[HR,0.0]].map(p=>new THREE.Vector2(p[0],p[1]));
+      if(has('hat')){ const HR=0.225, prof=[[0.003,0.158],[0.023,0.149],[0.054,0.125],[0.088,0.093],[0.122,0.06],[0.15,0.038],[0.178,0.0225],[0.1835,0.0215],[0.21,0.008],[0.2145,0.0072],[HR,0.0]].map(p=>new THREE.Vector2(p[0],p[1]));
         const segs=sg(44), g=new THREE.LatheGeometry(prof,segs);
         const hat=[pc(g,(x,y,z,c)=>{ const r=Math.hypot(x,z), a=Math.atan2(z,x), rib=((Math.floor((a+Math.PI)/TAU*segs)%3)+3)%3, ring=Math.floor(r/0.021)&1;
           c.set(REED); if(ring) c.multiplyScalar(0.93); if(rib===0) c.multiplyScalar(0.9); if(r>0.18) { c.set(GREEN); if(rib===0) c.multiplyScalar(0.9); } if(r>0.213) c.set(REED_D); })];
@@ -264,7 +264,7 @@ OUTFITS.ambrose=(function(){
           cord.push(solid(csph(0.0055,sg(6),sg(5)).translate(rim[0],rim[1],rim[2]),LEATHER)); }
         rig.spine.add(mesh(cord)); }
       // ---- the apron flaps: a short green panel in front of and behind the pelvis (so the open robe never shows a bare crotch); they hang from the hips and half-follow the thighs ----
-      { const mkFlap=(front)=>{ const sgn=front?-1:1, s0=ts(0.0), z0=(front?s0.rz:s0.rzBack)+0.0105, hh=0.185, hwT=0.098*B, hwB=0.118*B, Rc=0.09;
+      if(has('top')){ const mkFlap=(front)=>{ const sgn=front?-1:1, s0=ts(0.0), z0=(front?s0.rz:s0.rzBack)+0.0105, hh=0.185, hwT=0.098*B, hwB=0.118*B, Rc=0.09;
           const P=(u,v,m)=>{ const hw=lerp(hwT,hwB,u), x=(v-0.5)*2*hw, y=0.027-u*hh, k=Math.min(1,u*5); return [x,y,sgn*(z0+0.004*k+0.005*u+(m||0)-0.5*x*x/Rc*0.6)]; };
           const ot=(x,y,z)=>[0,0,sgn];
           const parts=[bake(grid(sg(8),sg(10),(u,v)=>P(u*0.935,0.04+v*0.92),ot),(u,v,x,y,z,c)=>{ c.set(GREEN); c.lerp(cGd,0.14*(0.5+0.5*Math.sin(v*TAU*4))); c.multiplyScalar(0.86+0.16*Math.min(1,u*2)); }),
@@ -275,7 +275,7 @@ OUTFITS.ambrose=(function(){
         const ff=mkFlap(true), fb=mkFlap(false);
         rig.anims=rig.anims||[]; rig.anims.push(()=>{ const a=rig.hipL.rotation.x, b=rig.hipR.rotation.x; ff.rotation.x=0.75*Math.max(0,a,b); fb.rotation.x=0.75*Math.min(0,a,b); }); }
       // ---- the herb satchel at the left hip: canvas bag with a green scalloped flap and a shell button, herbs sticking out of it ----
-      { const sg0=new THREE.Group(), bw=0.074, hw=0.082, bh=0.125, rc=0.014, bev={bevelEnabled:true,bevelThickness:0.003,bevelSize:0.003,bevelSegments:1,curveSegments:3}, parts=[];
+      if(has('top')){ const sg0=new THREE.Group(), bw=0.074, hw=0.082, bh=0.125, rc=0.014, bev={bevelEnabled:true,bevelThickness:0.003,bevelSize:0.003,bevelSegments:1,curveSegments:3}, parts=[];
         const body=new THREE.Shape(); body.moveTo(-hw,0); body.lineTo(hw,0); body.lineTo(hw,-bh+rc); body.quadraticCurveTo(hw,-bh,hw-rc,-bh); body.lineTo(-hw+rc,-bh); body.quadraticCurveTo(-hw,-bh,-hw,-bh+rc); body.closePath();
         const flap=new THREE.Shape(); flap.moveTo(-hw-0.002,0); flap.lineTo(hw+0.002,0); flap.lineTo(hw+0.002,-0.052);
         for(let i=0;i<4;i++){ const x1=hw+0.002-(i+1)*(2*hw+0.004)/4, x0=x1+(2*hw+0.004)/4; flap.quadraticCurveTo((x0+x1)/2,-0.052-0.02,x1,-0.052+(i===3?0:0)); }
@@ -296,7 +296,7 @@ OUTFITS.ambrose=(function(){
         sg0.add(mesh(parts)); sg0.position.set(-0.246,-0.005,0.012); rig.spine.add(sg0);
         rig.anims=rig.anims||[]; rig.anims.push((t,dt,mv)=>{ const k=Math.min(1,mv); sg0.rotation.z=-0.02-0.05*k*Math.sin(t*5.2)+0.012*Math.sin(t*1.7); sg0.rotation.x=0.04*k*Math.sin(t*2.6); }); }
       // ---- the belt of five glass vials: each a faint aqua glow (unlit parts, no light), a cork, a shell-white collar, hung from a leather loop ----
-      { const vg=[], mb=0.0128+0.01, y0=0.012*TK;
+      if(has('top')){ const vg=[], mb=0.0128+0.01, y0=0.012*TK;
         for(let i=0;i<5;i++){ const x=(i-2)*0.047*B, a=Math.asin(clamp(x/(ts(0.012).rx+mb),-0.95,0.95)), p=ringPt(0.012,a,mb), g=new THREE.Group(); g.position.set(p[0],y0,p[2]);
           const lit=[solid(sweepTube([[0,0.007,0],[0,0.0,0],[0,-0.004,0]],[0.0016,0.0016,0.0016],3,{cap:'round',rings:3}),LEATHER_D),
             solid(new THREE.CylinderGeometry(0.0045,0.0038,0.007,7).translate(0,-0.0045,0),CLAY),
@@ -333,7 +333,7 @@ OUTFITS.ambrose=(function(){
         return {lit,glow}; } };
 
     return {
-      boot:true, skinFrom:0.555, hairColor:HAIR, eyeColor:0x3f6b3a, eyes:EYES,
+      bootTop:0.5, shinCut:0.48, boot:true, skinFrom:0.555, hairColor:HAIR, eyeColor:0x3f6b3a, eyes:EYES,
       cuts:{torso:[0.065],thigh:[0.9],shin:[0.5]},
       paint,
       head:(F,T)=>wrap(F,T),

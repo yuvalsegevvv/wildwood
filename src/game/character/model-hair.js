@@ -3,7 +3,7 @@
    Anime hair is not a helmet: a thin cap carries ribbons of hair that lie on the scalp and end in points. `scalpLock` lays a ribbon along a meridian of the
    head; `fit` runs head-hugging pieces through the head's sculpt so they follow the jaw and skull, while hanging parts (tails, the back curtain) are only scaled. */
 function buildHair(X,F){
-  const {L,S,sg,hairCol}=X, {sculpt,fs}=F, H=L.hair, hat=L.hat!=='none', parts=[];
+  const {L,S,sg,hairCol}=X, {sculpt,fs}=F, H=L.hair, kH=X.kit&&X.kit.sl.hair, kHat=X.kit&&X.kit.sl.hat, hat=L.hat!=='none'&&!kH, parts=[];   // an outfit's hair item was drawn without a hat (its own volume rules): a hat over it is the wearer's choice
   const hv=hat?Math.min(S.hairVolume,1.04):S.hairVolume, hl=S.hairLength, bg=S.bangs, R=(hat?0.112:0.118)*hv, G=faceG;
   // hair colour: a bright band across the crown (the anime "ring"), darker underneath and toward the nape
   const hp=(x,y,z,c)=>{ c.copy(hairCol).multiplyScalar(0.84+0.3*G(y,0.075,0.03)*(z<0.04?1:0.45)+(y<0?0.05*y*10:0)); };
@@ -38,9 +38,9 @@ function buildHair(X,F){
     g.scale(1.55,1,0.5); g.applyMatrix4(new THREE.Matrix4().makeBasis(w,d,n)); g.translate(a[0],a[1],a[2]); return g; };
   const tie=(x,y,z,r)=>add(csph(r,sg(10),sg(8)).scale(1,0.8,1).translate(x,y,z),(xx,yy,zz,c)=>c.set(0xc83a4a));
 
-  // a signature outfit brings its own hair and head item: kit.hair(F, T) composes the pieces above (T) and its own geometry (T.add paints and collects it), kit.head(F) is the hat
-  if(X.kit){ const k=X.kit, T={add,sp,flat,fit,hang,scalpLock,crown,fringe,sideLocks,backLocks,blade,tie,hp,R,hv,hl,bg};
-    if(k.hair){ const ex=k.hair(F,T); if(ex) parts.push(...ex); } if(k.head) parts.push(...k.head(F,T)); return parts; }
+  // a signature outfit's hair item and head item (docs/CHARACTER.md section 9): kH.hair(F, T) composes the pieces above (T) and its own geometry (T.add paints and collects it), kHat.head(F, T) is the hat, built after the base hats below
+  const T={add,sp,flat,fit,hang,scalpLock,crown,fringe,sideLocks,backLocks,blade,tie,hp,R,hv,hl,bg};
+  if(kH&&kH.hair){ const ex=kH.hair(F,T); if(ex) parts.push(...ex); }
   if(H==='buzz') crown(0.108,0.42,0.38);
   if(H==='short'){ crown(0.114,0.5,0.32); add(fit(shell(0.111*hv,0.38*Math.PI,0.17*Math.PI,1.9,0,sg(30),sg(8)))); fringe(8,1.0,0.14); sideLocks(0.05); backLocks(sg(18),0,11); }
   if(H==='messy'){ crown(0.116,0.52,0.3); fringe(8,1.05,0.3); sideLocks(0.05); backLocks(sg(14),0.02,21);
@@ -98,5 +98,6 @@ function buildHair(X,F){
     parts.push(pc(scl(sculpt(shell(0.119,0,0.435*Math.PI,0,0.33,sg(34),sg(16)),false)),c=>c.set(hc)));
     parts.push(pc(new THREE.CylinderGeometry(0.1,0.1,0.01,sg(22),1,false,Math.PI/2,Math.PI).scale(1,1,1.15).rotateX(-0.12).translate(0,0.062*fs[1],-0.086),c=>c.set(hc).multiplyScalar(0.85)));
   }
+  if(kHat&&kHat.head) parts.push(...kHat.head(F,T));
   return parts;
 }

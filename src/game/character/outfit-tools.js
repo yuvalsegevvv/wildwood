@@ -1,4 +1,4 @@
-//@ Helpers for the signature outfits (game/outfits/*.js): the torso's size at a height, flat ribbons, lofts over an arc, rings round a path
+//@ Helpers for the signature outfits (game/outfits/*.js): the torso's size at a height, flat ribbons, lofts over an arc, rings round a path; and the mixing of their pieces (slots, which kit owns a hook)
 /* ---------- outfit helpers (docs/CHARACTER.md section 9) ----------
    Every outfit part is a painted geometry (pc / solid) in the frame of the node it hangs from. These build the shapes a garment needs that the character helpers (limb, loftRings,
    sweepTube) do not: a flat cloth strip, a panel that covers only part of the body's circumference, a ring round a curve. */
@@ -53,3 +53,39 @@ function ofRingAt(p,t,R,r,seg){
 }
 // a colour from a hex, cached (a paint function that runs once per vertex must not allocate)
 const _ofC={}; const ofCol=h=>_ofC[h]||(_ofC[h]=new THREE.Color(h));
+
+/* ---------- mixing the pieces of the outfits (docs/CHARACTER.md section 9, "Pieces") ----------
+   An outfit is seven items, one per slot, and any slot may wear any outfit's item. A look names them in its own fields (a base value like 'tshirt' or an outfit id like 'tansy'):
+   top, bottom, shoes, hat, hair and the two new ones, faceItem (the face marks, eye style and facial hair / glasses) and weaponItem (the weapon dressing). buildCharacter builds the kit of every outfit
+   that supplies at least one slot (X.kit = {sl: kit per slot or null, kits: the distinct kits}) and each consumer asks for its slot's kit (X.kit.sl.top ...) or runs a hook through ofRun / ofShin below.
+   Which kit owns what: the paint of the 'upperArm' / 'foreArm' is the top's, 'thigh' the bottom's, 'foot' the shoes', 'torso' is cut at OF_WAIST (above: top, below: bottom), 'shin' at the shoes' boot top (kit.bootTop);
+   the geometry hooks torso / shoulder / forearm are the top's, hips / thigh the bottom's (a kit may say otherwise: kit.own = {thigh:'top'}), shin is split by ofShin. Used by model*.js; tested by tools/outfit-smoke.js (mix). */
+const OF_SLOTS=['top','bottom','shoes','hat','hair','face','weapon'];
+const OF_FIELD={top:'top',bottom:'bottom',shoes:'shoes',hat:'hat',hair:'hair',face:'faceItem',weapon:'weaponItem'};   // the look field of each slot
+const OF_HOOK_SLOT={torso:'top',shoulder:'top',forearm:'top',hips:'bottom',thigh:'bottom'};
+const OF_WAIST=0.03;   // the design height where the top ends and the bottoms begin on the torso (the base T-shirt's hem)
+// the slots of a look that wear an outfit's item: {slot: outfit id}. OUTFITS has no prototype, so a remote look's 'constructor' finds nothing
+function ofPieces(L){ const p={}; for(const s of OF_SLOTS){ const v=L[OF_FIELD[s]]; if(typeof v==='string'&&OUTFITS[v]) p[s]=v; } return p; }
+// one kit per distinct outfit worn (a kit is built for this body: X, D)
+function ofBuild(X,D,pieces){ const built={}, sl={}; for(const s of OF_SLOTS) sl[s]=null; for(const s in pieces){ const id=pieces[s]; sl[s]=built[id]||(built[id]=OUTFITS[id](X,D)); } return {sl,kits:Object.values(built)}; }
+// the geometry that a hook (torso, shoulder, forearm, hips, thigh) adds, from the kits whose piece owns that hook
+function ofRun(X,hook,sd){ const out=[]; for(const k of X.kit.kits){ if(!k[hook]) continue; if(X.kit.sl[(k.own&&k.own[hook])||OF_HOOK_SLOT[hook]]!==k) continue; const ex=k[hook](sd); if(ex&&ex.length) out.push(...ex); } return out; }
+// the shin hook holds both the bottoms' pieces (straps, wraps, a knee guard) and the shoes' (the boot's cuff, laces, welt, toe cap): told apart by where each geometry sits along the shin
+// (kit.shinCut: below that fraction of the shin it belongs to the bottoms; default just above the boot top). A whole outfit keeps all of it.
+function ofShin(X,sd,shin){ const kb=X.kit.sl.bottom, ks=X.kit.sl.shoes, out=[];
+  const take=(k,low)=>{ if(!k.shin) return; const all=k.shin(sd)||[]; if(kb===ks){ out.push(...all); return; }
+    const cut=k.shinCut!==undefined?k.shinCut:(k.bootTop!==undefined?k.bootTop-0.02:0.58);
+    for(const g of all){ g.computeBoundingBox(); const t=-(g.boundingBox.min.y+g.boundingBox.max.y)/2/shin; if((t<cut)===low) out.push(g); } };
+  if(kb) take(kb,true); if(ks&&ks!==kb) take(ks,false); return out; }
+// where the boots begin along the shin (a fraction from the knee): the kit's own, else a base boot's 0.6, else no boot at all
+const ofBootTop=k=>k?(k.bootTop!==undefined?k.bootTop:(k.boot!==false?0.6:1.1)):1.1;
+// the items the outfits offer for a slot, as [outfit id, label, tooltip] for the editor's rows: CHAR_MODELS.<id>.items.<slot>
+const ofItems=slot=>Object.keys(OUTFITS).map(id=>{ const m=CHAR_MODELS[id], it=m&&m.items&&m.items[slot]; return it?[id,it,m.name+'\'s '+slot+' (from the '+m.name+' set)']:null; }).filter(Boolean);   // [id, label, tooltip]
+// a look wearing a whole outfit: its item in every slot and `model` (the editor's reference body and ranges follow it); id 'base' takes the outfit items off (each such slot back to the sex's default)
+function ofWear(L,id){ const o=Object.assign({},L), d=L.sex==='female'?LOOK_F:LOOK_M, w=ofPieces(L);
+  for(const s of OF_SLOTS){ const f=OF_FIELD[s]; if(id!=='base') o[f]=id; else if(w[s]) o[f]=d[f]; }
+  o.model=id; return o; }
+// `model` names the set whose body and ranges the editor shows: once none of its items is worn any more it is the base model again
+function ofTidy(L){ if(L.model!=='base'&&!Object.values(ofPieces(L)).includes(L.model)) L.model='base'; return L; }
+// a look saved before pieces existed wore a whole outfit through `model` alone (it has neither new field): give it that outfit's items
+function ofMigrate(raw,L){ const m=L.model; if(raw&&raw.faceItem===undefined&&raw.weaponItem===undefined&&typeof m==='string'&&OUTFITS[m]&&!Object.keys(ofPieces(L)).length) return ofWear(L,m); return L; }

@@ -3,7 +3,7 @@
    Palette: brass 0xc9a13a, charcoal 0x2b2b2e, lamp white 0xfff1c9 (only the cap lamp's and the lantern charm's glass glow), verdigris 0x5f8f7f (patina), leather 0x3a3228.
    Silhouette: a tall narrow column: a long waxed coat to the calf (each coat-tail is a flap that rides on its own leg, so no stride pushes a leg through the cloth), one bright
    point on the cap, round lenses on the face. Every part has at least two colours (charcoal wax with brass piping, leather and verdigris; leather with brass straps; hair in two greys). */
-CHAR_MODELS.corvin={id:'corvin',name:'Corvin',signature:true,sexes:['male'],
+CHAR_MODELS.corvin={id:'corvin',name:'Corvin',signature:true, items:{hat:'Lamp cap',hair:'Silver wave',face:'Lamp soot & specs',top:'Plumb coat',bottom:'Survey legs',shoes:'Nail boots',weapon:'Brass bind'},sexes:['male'],
   note:'The lamplighter and mine surveyor: a tall narrow column in a long coat, built for a slim, tall man.',
   ranges:{height:[0.98,1.08],legs:[0.96,1.14],build:[0.88,1.06],shoulders:[0.88,1.08],chest:[0.6,1.15],waist:[0.88,1.1],thighs:[0.85,1.1],neck:[0.85,1.15],head:[0.92,1.06],eyeGap:[0.96,1.1],noseSize:[0.85,1.2],earSize:[0.8,1.15],hairVolume:[0.9,1.05],bangs:[0.3,1.0]},
   setups:[{id:'corvin',name:'Corvin',sex:'male',def:true,note:'The surveyor as drawn: tall, narrow, a long nose for the spectacles.',v:{height:1.04,build:0.94,chest:0.9,shoulders:0.94,waist:0.95,hips:0.95,torso:1.04,legs:1.06,thighs:0.9,arms:0.9,hands:1.05,jaw:0.95,chin:0.95,cheeks:0.9,eyeGap:1.04,brow:-0.1,noseSize:1.1,lips:0.9,hairVolume:0.9,bangs:0.3}}]};
@@ -355,8 +355,9 @@ OUTFITS.corvin=(function(){
       charm };
 
     /* ================= loose parts: the lamp's glass and rays (unlit), the plumb bob swinging from the belt ================= */
-    const extras=rig=>{
-      if(lampGlow&&lampGlow.length) rig.head.add(new THREE.Mesh(merge(lampGlow),matGlow));
+    const extras=(rig,Xx,has)=>{   // has(slot): this outfit's item for the slot is worn: the cap lamp's glow goes with the hat, the plumb bob on the belt with the coat
+      if(has('hat')&&lampGlow&&lampGlow.length) rig.head.add(new THREE.Mesh(merge(lampGlow),matGlow));
+      if(!has('top')) return;
       // the plumb bob: a leather loop on the belt, a cord, a brass cone, hanging in front of the right hip
       const bx=0.076, g=new THREE.Group(), z0=frontZ(bx,BELT0,BM)-0.016; g.position.set(bx,BELT0*TK,z0); rig.spine.add(g);
       const pb=[solid(vbox(0.011,0.026,0.0035,0,0.004,0.014),LEATHER),
@@ -371,7 +372,7 @@ OUTFITS.corvin=(function(){
 
     /* ================= the kit ================= */
     return {
-      boot:true, skinFrom:0.605, hairColor:SILVER, eyeColor:0xaab4bd,
+      bootTop:0.72, shinCut:0.70, own:{thigh:'top'}, boot:true, skinFrom:0.605, hairColor:SILVER, eyeColor:0xaab4bd,
       eyes:{iris:0.92,h:0.84,w:1.05,lash:0.9,hl:2,tilt:-0.05,browLift:0.002,browThick:0.95,browAngle:0.2},
       cuts:{torso:[0.0],foreArm:[0.232/D.fore,0.07/D.fore],upperArm:[0.205/D.upper],shin:[BOOT]},
       paint,

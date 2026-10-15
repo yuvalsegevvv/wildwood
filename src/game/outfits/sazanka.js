@@ -2,7 +2,7 @@
 /* ---------- Sazanka: risk DPS, dark + air. Design: docs/skillkits/looks/sazanka.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: ink 0x1b1f2a, indigo 0x2f3f6b, moon-grey 0xc9ccd6 (only the sash tails and the tassels), vermilion 0xc23b2a (cords and thin trim only, never an area), violet 0x6a5ac8 + white-blue
    wisps for the small glow (the dark and the air). Silhouette: the narrowest and lowest of the eight: a peaked hood with a tall collar, one long lock, a low cord sash with two trailing tails, bound limbs. */
-CHAR_MODELS.sazanka={id:'sazanka',name:'Sazanka',signature:true,sexes:['female'],
+CHAR_MODELS.sazanka={id:'sazanka',name:'Sazanka',signature:true, items:{hat:'Dusk hood',hair:'Cord lock',face:'Tally marks',top:'Runner wrap',bottom:'Taper wraps',shoes:'Soft stalks',weapon:'Cord sheath'},sexes:['female'],
   note:'The night courier: the narrowest and lowest silhouette, drawn for a small, long-legged runner.',
   ranges:{height:[0.92,1.04],build:[0.88,1.05],chest:[0.6,1.1],shoulders:[0.88,1.05],arms:[0.82,1.1],thighs:[0.85,1.1],neck:[0.85,1.1],hands:[0.85,1.1],head:[0.92,1.06],eyeTilt:[0.1,0.7],hairLength:[0.7,1.05],hairVolume:[0.9,1.1]},
   setups:[{id:'sazanka',name:'Sazanka',sex:'female',def:true,note:'The courier as drawn: small, long-legged, narrow-eyed.',v:{height:0.95,build:0.9,chest:0.85,shoulders:0.93,waist:0.88,torso:0.97,legs:1.12,thighs:0.95,arms:0.9,neck:0.95,hands:0.95,feet:0.95,jaw:0.92,chin:0.95,cheeks:0.9,eyeSize:1.05,eyeHeight:0.05,eyeTilt:0.45,brow:0.3,noseSize:0.9,mouthSize:0.9,lips:0.9,smile:0.1,hairLength:0.9,bangs:1.1}}]};
@@ -183,7 +183,8 @@ OUTFITS.sazanka=(function(){
       return out; };
 
     /* ================= loose parts that move: the two sash tails (they hang from the left thigh's bone), the message pouch (right), the violet bead and its wisps ================= */
-    const extras=rig=>{
+    const extras=(rig,Xx,has)=>{   // has(slot): this outfit's item for the slot is worn: the sash tails and the pouch go with the top, the bead on the hood's peak with the hat
+      const wTop=has('top'), wHat=has('hat'); let tA,tB,pg,wisps;
       const [kxp,ky]=KNOT();
       // the tails: flat moon-grey ribbons with a vermilion edge cord and a camellia embroidered near the end; each hangs from the knot and swings
       const AN=0.8, nrm=[-Math.sin(AN),0,-Math.cos(AN)], wd=[Math.cos(AN),0,Math.sin(AN)];   // the flat face looks out and forward (so the tails read from the front), its width runs the other way
@@ -196,10 +197,10 @@ OUTFITS.sazanka=(function(){
         parts.push(flower.rotateY(AN).translate(fp.x+nrm[0]*0.0024,fp.y,fp.z+nrm[2]*0.0024));
         const m=new THREE.Mesh(merge(parts),matChar); m.castShadow=true; g.add(m);
         g.position.set(kxp+D.hx-0.008+sx*0.003,ky-0.004,0.0+zoff); g.userData.phase=phase; return g; };
-      const tA=mkTail(0.27,0.002,0,0), tB=mkTail(0.205,-0.006,-1,2.1);
-      tB.rotation.z=0.12; rig.hipL.add(tA,tB);
+      if(wTop){ tA=mkTail(0.27,0.002,0,0); tB=mkTail(0.205,-0.006,-1,2.1);
+        tB.rotation.z=0.12; rig.hipL.add(tA,tB); }
       // the pouch: ink leather with an indigo flap, a vermilion hem and toggle, hung from the sash by two cords; right hip
-      const pg=new THREE.Group(), pp=[];
+      if(wTop){ pg=new THREE.Group(); const pp=[];
       const hw=0.029, bh=0.064, rc=0.009, xs=(g,x)=>g.rotateY(Math.PI/2).translate(x,0,0);
       const bs=new THREE.Shape(); bs.moveTo(-hw,0); bs.lineTo(hw,0); bs.lineTo(hw,-bh+rc); bs.quadraticCurveTo(hw,-bh,hw-rc,-bh); bs.lineTo(-hw+rc,-bh); bs.quadraticCurveTo(-hw,-bh,-hw,-bh+rc); bs.closePath();
       const fs2=new THREE.Shape(); fs2.moveTo(-hw-0.001,0); fs2.lineTo(hw+0.001,0); fs2.lineTo(hw+0.001,-0.03); fs2.quadraticCurveTo(hw*0.5,-0.04,0,-0.05); fs2.quadraticCurveTo(-hw*0.5,-0.04,-hw-0.001,-0.03); fs2.closePath();
@@ -211,20 +212,20 @@ OUTFITS.sazanka=(function(){
       pp.push(solid(csph(0.0045,8,6).scale(0.8,1,1).translate(0.0185,-0.0505,0),VERM));
       for(const z of [-0.022,0.022]) pp.push(solid(sweepTube([[0.004,-0.002,z],[0.004,0.018,z*0.7]],[0.0019,0.0019],5,{cap:'round',rings:4}),VERM));
       const pm=new THREE.Mesh(merge(pp),matChar); pm.castShadow=true; pg.add(pm);
-      pg.position.set(latX(0.012)+0.0105+0.0035-D.hx,0.0108,0.03); rig.hipR.add(pg);
+      pg.position.set(latX(0.012)+0.0105+0.0035-D.hx,0.0108,0.03); rig.hipR.add(pg); }
       // the violet bead at the peak's tip with two white-blue wisps circling it (dark and air): small, unlit
-      const gl=new THREE.Group(), tip=PKCV.getPoint(0.97); gl.position.set(tip.x,tip.y-0.012,tip.z);
+      if(wHat){ const gl=new THREE.Group(), tip=PKCV.getPoint(0.97); gl.position.set(tip.x,tip.y-0.012,tip.z);
       const bead=merge([pc(csph(0.0072,10,8),(x,y,z,c)=>{ c.set(VIOLET); c.lerp(ofCol(0xb8aaff),clamp(-z*60+0.4)*0.5); })]);
       gl.add(new THREE.Mesh(bead,matGlow));
-      const wisps=new THREE.Group(); gl.add(wisps);
+      wisps=new THREE.Group(); gl.add(wisps);
       for(let w=0;w<2;w++){ const P=[]; for(let k=0;k<=9;k++){ const f=k/9, a=f*Math.PI*1.5+w*Math.PI, r=0.012+0.012*f; P.push([r*Math.cos(a),0.004*f-0.006+0.012*Math.sin(f*Math.PI),r*Math.sin(a)]); }
         const wg=pc(sweepTube(P,[0.0016,0.0017,0.0012,0.0005],5,{cap:'point',rings:18}),(x,y,z,c)=>{ c.copy(cW).lerp(cVi,clamp(Math.hypot(x,z)/0.026-0.4)*0.9); }); wisps.add(new THREE.Mesh(merge([wg]),matGlow)); }
-      rig.head.add(gl);
+      rig.head.add(gl); }
       rig.anims.push((t,dt,mv)=>{ const k=Math.min(1,mv);
-        tA.rotation.x=-(0.05+0.55*k)+Math.sin(t*2.3)*0.05*(0.4+k); tA.rotation.z=Math.sin(t*1.7+1)*0.05*(0.3+k);
-        tB.rotation.x=-(0.08+0.62*k)+Math.sin(t*2.7+2.1)*0.06*(0.4+k); tB.rotation.z=0.12+Math.sin(t*2.1+3)*0.06*(0.3+k);
-        pg.rotation.z=0.03+0.05*k*Math.sin(t*5)+0.02*Math.sin(t*1.9); pg.rotation.x=-0.04*k;
-        wisps.rotation.y=t*1.3; wisps.position.y=Math.sin(t*2.1)*0.003; });
+        if(tA){ tA.rotation.x=-(0.05+0.55*k)+Math.sin(t*2.3)*0.05*(0.4+k); tA.rotation.z=Math.sin(t*1.7+1)*0.05*(0.3+k);
+          tB.rotation.x=-(0.08+0.62*k)+Math.sin(t*2.7+2.1)*0.06*(0.4+k); tB.rotation.z=0.12+Math.sin(t*2.1+3)*0.06*(0.3+k);
+          pg.rotation.z=0.03+0.05*k*Math.sin(t*5)+0.02*Math.sin(t*1.9); pg.rotation.x=-0.04*k; }
+        if(wisps){ wisps.rotation.y=t*1.3; wisps.position.y=Math.sin(t*2.1)*0.003; } });
     };
 
     /* ================= the weapon dressing: black lacquer, vermilion cord spirals, dark steel, indigo inlay bands, a courier's tag with a violet edge ================= */
@@ -247,7 +248,7 @@ OUTFITS.sazanka=(function(){
         return {lit,glow}; } };
 
     const kit={
-      boot:false, skinFrom:0.605, hairColor:HAIR, eyeColor:0x8a86a8,
+      bootTop:1.1, shinCut:9, boot:false, skinFrom:0.605, hairColor:HAIR, eyeColor:0x8a86a8,
       eyes:EYES,
       cuts:{torso:[0.012,0.062],foreArm:[WRIST/D.fore]},
       paint:bodyPaint,

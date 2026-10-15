@@ -4,7 +4,7 @@
 global.THREE=global.THREE||require('three');
 const fs=require('fs'), path=require('path'), {SRC,strip}=require('./load');
 const NAMES=['buildCharacter','charDetail','LOOK_M','LOOK_F','fullLook','lookScale','randomLook','mulberry32','SKINS','HAIRC','HAIRC_NATURAL','EYEC','CLOTH','SHOEC','HATC',
-  'BODY_SLIDERS','SLIDER_KEYS','SLIDER_BY_KEY','SLIDER_DEFS','sliderVal','lookSliders','lookForNet','CHAR_MODELS','charModelOf','sliderRange','setupsOf','applySetup','lookOutOfRange','validateCharModel','faceShape','OUTFITS','weaponsOn','matGlow'];
+  'BODY_SLIDERS','SLIDER_KEYS','SLIDER_BY_KEY','SLIDER_DEFS','sliderVal','lookSliders','lookForNet','CHAR_MODELS','charModelOf','sliderRange','setupsOf','applySetup','lookOutOfRange','validateCharModel','faceShape','OUTFITS','OF_SLOTS','OF_FIELD','ofWear','ofPieces','ofItems','ofTidy','weaponsOn','matGlow'];
 module.exports=function loadCharacter(){
   const read=f=>strip(fs.readFileSync(path.join(SRC,f),'utf8'));
   const pm=read('game/world/plant-models.js');

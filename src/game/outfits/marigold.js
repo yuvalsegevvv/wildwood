@@ -3,7 +3,7 @@
    Palette: marigold 0xe59a2b, cream 0xfff2d6, plum 0x5a2a4a, glow gold 0xffd36b (the lanterns of the crown and the weapon charm only: unlit matGlow meshes, never a light), gold 0xe3b448 for the metal.
    Silhouette: a little stage: a turning ring of paper lanterns over high twin tails with bows and drill curls, a short puffed-sleeve pleated jacket with a ruffled collar and a big back bow,
    a bell of three tulle layers with ruffled hems, and tall plum boots with a cream frill and gold bells. Every part has at least two colours. */
-CHAR_MODELS.marigold={id:'marigold',name:'Marigold',signature:true,sexes:['female'],
+CHAR_MODELS.marigold={id:'marigold',name:'Marigold',signature:true, items:{hat:'Lantern crown',hair:'Ribbon tails',face:'Lantern glyph',top:'Curtain jacket',bottom:'Footlight skirt',shoes:'Bell boots',weapon:'Stage trim'},sexes:['female'],
   note:'The stage idol: small, big-headed, built for a light, slim figure.',
   ranges:{height:[0.92,1.02],build:[0.88,1.05],shoulders:[0.88,1.05],arms:[0.82,1.05],chest:[0.6,1.2],waist:[0.85,1.05],hips:[0.9,1.15],legs:[0.98,1.14],head:[1.0,1.12],eyeSize:[1.05,1.3],noseSize:[0.7,1.1],smile:[0.2,0.9],hairLength:[1.0,1.35],hairVolume:[1.0,1.25]},
   setups:[{id:'marigold',name:'Marigold',sex:'female',def:true,note:'The idol as drawn: small, big-headed, huge bright eyes.',v:{height:0.94,build:0.9,chest:0.85,shoulders:0.92,waist:0.9,torso:0.97,legs:1.06,thighs:0.95,arms:0.85,neck:0.95,hands:0.9,feet:0.92,head:1.08,jaw:0.9,chin:0.88,cheeks:1.15,eyeSize:1.3,eyeGap:1.04,eyeHeight:-0.2,eyeTilt:0.1,brow:-0.1,noseSize:0.75,mouthSize:0.9,lips:1.15,smile:0.6,hairLength:1.2,hairVolume:1.15}}]};
@@ -188,7 +188,7 @@ OUTFITS.marigold=(function(){
     const lanternPaint=(h,hot)=>(x,y,z,c)=>{ const k=Math.abs(y)/h, ang=Math.atan2(z,x); c.set(hot); c.lerp(cGl,clamp(k*1.3)); if(fr(ang/(TAU/8))<0.13) c.lerp(cM,0.75); if(k>0.9) c.lerp(cM,0.5); };
 
     const kit={
-      boot:true, hairColor:MARI, eyeColor:HAZEL,
+      bootTop:0.075, shinCut:0, boot:true, hairColor:MARI, eyeColor:HAZEL,
       eyes:{iris:1.15,hl:1,tilt:0.1,lash:0.85,h:1.04},
       cuts:{torso:[],upperArm:[0.4],thigh:[0.5,0.9,0.96],shin:[0.075,0.88,0.915,0.93]},
       paint, hair, head, mark,
@@ -230,14 +230,14 @@ OUTFITS.marigold=(function(){
         out.push(surf(rg.length-1,sg(12),(u,v)=>{ const r=rg[Math.round(u*(rg.length-1))], a=v*TAU, rx=r[1]*wf*1.07+0.0016, rz=r[2]*hf*1.07+0.0016, zc=-(r[3]*hf-A), x=rx*Math.sin(a), y=Math.max(-(rz*Math.cos(a)+zc),-A+0.0004), z=r[0]*sf;
             return [x*ct+z*sn,y-len,-x*sn+z*ct]; },(x,y,z)=>[x,y+len+A*0.4,z+0.05*0],(u,v,x,y,z,c)=>{ c.set(GOLD); c.multiplyScalar(0.9+0.2*sm(-0.4,0.6,Math.sin(v*TAU))); if(u<0.07) c.set(MARI); }));
         return out; },
-      extras:(rig)=>{
+      extras:(rig,Xx,has)=>{   // has(slot): this outfit's item for the slot is worn: the antenna strand goes with the hair, the lantern crown with the hat
         const fs=rig.dims.faceScale, headY=0.105*fs[1], head=rig.head;
         // the antenna strand: marigold hair that bobs
-        { const P=[[0,0,0],[-0.005,0.07,-0.008],[-0.024,0.128,0.004],[-0.006,0.168,0.03],[0.02,0.158,0.052]], g=pc(sweepTube(P,[0.0085,0.0075,0.0058,0.0035,0.0012],sg(7),{cap:'point',rings:sg(22)}),(x,y,z,c)=>{ c.copy(ofCol(MARI)).multiplyScalar(0.92+0.2*clamp(y*5)); c.lerp(cML,clamp((y-0.1)*8)*0.6); });
+        if(has('hair')){ const P=[[0,0,0],[-0.005,0.07,-0.008],[-0.024,0.128,0.004],[-0.006,0.168,0.03],[0.02,0.158,0.052]], g=pc(sweepTube(P,[0.0085,0.0075,0.0058,0.0035,0.0012],sg(7),{cap:'point',rings:sg(22)}),(x,y,z,c)=>{ c.copy(ofCol(MARI)).multiplyScalar(0.92+0.2*clamp(y*5)); c.lerp(cML,clamp((y-0.1)*8)*0.6); });
           const m=new THREE.Mesh(g,matChar); m.castShadow=true; const grp=new THREE.Group(); grp.position.set(0.004,0.113*fs[1]*0.93,-0.05); grp.add(m); head.add(grp);
           rig.anims.push((t,dt,mv)=>{ const k=Math.min(1,mv); grp.rotation.z=0.1*Math.sin(t*2.4)+0.06*Math.sin(t*9)*k; grp.rotation.x=0.06*Math.sin(t*1.9+1)-0.08*k*Math.abs(Math.sin(t*6)); }); }
         // the lantern crown: a gold ring with six paper lanterns hanging from it, turning slowly
-        { const R=0.15, NL=6, lit=[], glow=[], LR=0.026; lit.push(solid(new THREE.TorusGeometry(R,0.0017,4,sg(40)).rotateX(Math.PI/2),GOLD));
+        if(has('hat')){ const R=0.15, NL=6, lit=[], glow=[], LR=0.026; lit.push(solid(new THREE.TorusGeometry(R,0.0017,4,sg(40)).rotateX(Math.PI/2),GOLD));
           for(let i=0;i<NL;i++){ const a=i*TAU/NL, px=R*Math.sin(a), pz=R*Math.cos(a), cy=-0.055, hh=LR*1.1*1.3;
             glow.push(pc(lanternBody(LR).scale(1,1.3,1),lanternPaint(hh,0xffe6a8)).translate(px,cy,pz));
             lit.push(solid(sweepTube([[px,0.0,pz],[px,cy+hh,pz]],[0.0011,0.0011],4,{cap:'round',rings:3}),GOLD));
