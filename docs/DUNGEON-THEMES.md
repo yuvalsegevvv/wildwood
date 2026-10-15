@@ -434,3 +434,21 @@ One random **pendant** (`DG_REWARDS.blackseam`): kind at random of the five, rar
 12. **Garrick's element is fire** (powder), his look a troll of the goblin family; the keg is the one new monster model. The numbers (4% a pop, 3 s stun, 7 s fuse, 6 kegs on Blasting Day) are mine and one table to retune; `tools/boss-duel.js` does not cover dungeon bosses.
 13. **The door sits 44 m off the Glacier Road** (the terrain around Highmark Pastures has no bank beside the road), so the signpost is on the road and the route from it to the door was checked (at most 1.4 times the straight distance).
 14. **The Greyspine has zone tiers** (it did not before: version 2 had three lands), so the dungeon can be played at +1 ... +5; their points count toward the symbol up to its placeholder cap of +150% (`docs/PENDANTS.md` decision 4).
+
+## 10. The Trial Roots (version 2): the Wildwood dungeon at level 5, paying nothing
+
+*(Built; the owner's request: "identical to the Wildwood dungeon gameplay-wise, just level tuned down a lot", level 5, no rewards, a temporary entrance in the village, wild assets only; later: "allow all mission types to be opened constantly".)*
+
+- **What it is.** `defineDungeonVariant('hollowroots', {id:'trial', name:'The Trial Roots', lv:5, trial:true})` (`shared/dungeons/themes/trial.js`): a registered theme copied with three fields changed. Same tile kit, legend, walkers (Treant, Deathcap, Shroomling,
+  Bog Slime, Dire Boar), guardians (Ancient Treant, Rotwood), hazards (root spikes), boss (Amanita), music and palette, so it plays exactly like the Hollow Roots; only the level differs, and everything else the engine does with a level follows from it
+  (`run.L` = 5: every monster and the boss are scaled to level 5 by `dgKOf`, and the party's health multiplier on top).
+- **The `trial` flag** is the only difference in the rules: `dgLevel` returns the theme's level at every tier; `dgUnlocked` and `dgGateOpen` are always open (any level, any zone tier, no land progress); `dgTierFor` is 0 (the lobby uses it so a player's +N never reaches the trial);
+  `dgOffer` returns **the whole pool of built missions** (Purge, Defense, Survival, Sabotage, Siege, Hunt, Escort) instead of the hourly pair, so every mission can be started at any hour (the board says so in its clock line and shows a card for each).
+- **It pays nothing**: `dgKilledS` does not call `rewardAllS` (no XP, coins, items, materials or Tempering Stones), `dgChestOpenS` opens an empty chest, `dgSaveKeyOk` keeps no clear record or best time, `DG_REWARDS` has no entry (so `dgClearReward` is null), and
+  `SS_SOURCES` has no entry (so no skill set rolls). The party, down / revive, loot-for-all and the finale work as everywhere; the results list is just empty.
+- **The Trial Gate** (`DG_TRIAL_GATE`): a free-standing arch of root in the home village, mirrored from the teleport circle across the road in (angle ent + 0.5, 31 m). It is **not** one of `DG_ENTRANCES` (the four real doors keep their rules and tests), but `dgEntranceNear` finds it, so the talk key opens the same Delve board and
+  `dgStartP` / the apron work unchanged; its apron is explicit (`E.apron`) because the houses stand just inside the gate. Client: `dgTrialGate` in `game/village/buildings-dungeon.js` (two root pillars, a root bent over for the arch, a breathing green light, a sign on both faces, two flames), `dgOpenDoor` / `dgEntPrompt` accept it.
+- **A preview of its map**: `docs/trial-roots-map.png` (Purge, Defense and Escort at seed 5; drawn by `node tools/dungeon-map.js docs/trial-roots-map.png --theme trial --missions purge,defense,escort --seed 5`, any theme and mission works).
+- **Tests**: `tools/trial-dungeon-smoke.js` (18 checks: the variant, the rules, the gate, the board, a level-1 hiker at +2 starting every mission type, level-5 monsters, no pay for a kill, a chest or a won run, the Hollow Roots as the control that does pay).
+  The four-real-dungeons tests (`dungeons-smoke`, `gen-docs`) skip themes with `trial`.
+

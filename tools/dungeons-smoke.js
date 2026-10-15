@@ -111,7 +111,7 @@ for(const r of [0.5,0.9]){
 }
 
 // ---- the four dungeons, their bosses and the hourly offer (docs/DUNGEON-THEMES.md) ----
-const TH=Object.values(X.DG_THEMES).filter(t=>!t.dev), ids=X.MON_DEFS.map(d=>d.id), DEF=Object.fromEntries(X.MON_DEFS.map(d=>[d.id,d]));
+const TH=Object.values(X.DG_THEMES).filter(t=>!t.dev&&!t.trial), ids=X.MON_DEFS.map(d=>d.id), DEF=Object.fromEntries(X.MON_DEFS.map(d=>[d.id,d]));
 const MUSIC=['village','wild1','wild2','wild3','boss15','hanami','vale1','vale2','boss20','boss25','rimehold','hoar1','hoar2','boss26','boss30'];   // the music themes (game/audio/music.js THEMES)
 const iVale=ids.indexOf('sakuraslime'), iHoar=ids.indexOf('frostslime'), iGrey=ids.indexOf('granitslime'), landOfDef=id=>{ const i=ids.indexOf(id); return i<0?null:i<iVale?'home':i<iHoar?'vale':i<iGrey?'hoar':'grey'; };
 const landOfZone=z=>z.grey?'grey':z.hoar?'hoar':z.vale?'vale':'home';
@@ -285,7 +285,7 @@ const R=loadShared(['DG_THEMES','DG_REWARDS','DG_REWARD_W','DG_GEAR_LV','DG_TIER
 const mulberry=a=>()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
 const within=(obs,n,p)=>Math.abs(obs-n*p)<=4*Math.sqrt(n*p*(1-p))+1;   // 4 sigma
 const ODDS=[0.7,0.25,0.04,0.008,0.002];   // the owner's table, written out here so a change to the code's own table cannot hide
-const RT=Object.values(R.DG_THEMES).filter(t=>!t.dev), RKINDS={home:'weapon',vale:'armor',hoar:'ring',grey:'pendant'};
+const RT=Object.values(R.DG_THEMES).filter(t=>!t.dev&&!t.trial), RKINDS={home:'weapon',vale:'armor',hoar:'ring',grey:'pendant'};
 ok('each of the four dungeons pays one kind of reward: Wildwood weapons, the Vale armour, the Reach rings, the Greyspine pendants (a reward for every theme and no other)',
   RT.length===4&&RT.every(t=>R.DG_REWARDS[t.id]&&R.DG_REWARDS[t.id].kind===RKINDS[t.land])&&Object.keys(R.DG_REWARDS).length===4);
 { const P=id=>R.DG_REWARDS[id].pool;

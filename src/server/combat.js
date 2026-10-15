@@ -70,7 +70,7 @@ function rewardKill(q,m){
   if(r>=0) addItemP(q,randomItem(tierFor(K.lv),r),false,m.id);
   if(MATS[m.def.id]){ const n=rollDropCount(m.def,psP(q,'drop')+pendP(q,'drop')); if(n) addMatP(q,m.def.id,n,m.id); }
   questKillP(q,m.def.id); q.dirty=true;
-  if(m.def.boss){ bossSkillDropP(q,m.def.id); zoneTierKillP(q,m); }
+  if(m.def.boss){ bossSkillDropP(q,m.def.id); ssBossClearP(q,m); zoneTierKillP(q,m); }   // skillsets: the set of this boss's land at the tier fought (before the kill can unlock a tier)
   mqKillP(q,m);
   if(m.def.id==='boss') openValeP(q);
   if(m.def.id==='akaoni') openNorthP(q);

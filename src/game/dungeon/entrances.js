@@ -64,11 +64,11 @@ function dgEntClear(x,z){
 /* ---- the talk key ---- */
 function dgEntPrompt(E,el,btn){
   const sealed=dgEntSealed(E);
-  el.textContent=(isTouch?'Tap '+(sealed?'Look':'Enter'):(kbName('talk')||'the talk key'))+': '+E.name+(sealed?' (sealed)':'');
+  el.textContent=(isTouch?'Tap '+(sealed?'Look':'Enter'):(kbName('talk')||'the talk key'))+': '+E.name+(sealed?' (sealed)':E.temp?' (level '+dgEntTheme(E).lv+', no rewards)':'');
   el.hidden=false; btn.textContent=sealed?'Look':'Enter';
 }
 function dgOpenDoor(id){
-  const E=typeof id==='string'?DG_ENTRANCES[id]:id; if(!E) return;
+  const E=typeof id==='string'?DG_ENTRANCES[id]||(id===DG_TRIAL_GATE.theme?DG_TRIAL_GATE:null):id; if(!E) return;   // (the Trial Gate is not one of the four doors)
   const T=dgEntTheme(E);
   if(!dgGateOpen(GEAR,T)){ const u=dgUnlocked(GEAR,PL.level,T); toast(E.name+' is sealed. '+(u.ok?DG_LANDS[T.land].hint:u.why),'bad'); UI_SFX.click(); return; }
   if(typeof dgBoardOpen==='function') dgBoardOpen(E.theme); else toast('The way is not ready yet','');   // (the Delve board is another file's: it defines dgBoardOpen)

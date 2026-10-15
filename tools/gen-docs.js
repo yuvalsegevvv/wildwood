@@ -113,7 +113,7 @@ function mobsDoc(){
     rowsOf(MON_HEAD,W.GREY_DEFS.map(monRow))+'\n\n';
 
   {
-    const DB=W.DG_BOSS_DEFS, DBF=SH+'dungeons/bosses.js', ids=Object.keys(DB), themes=Object.values(W.DG_THEMES).filter(t=>!t.dev);
+    const DB=W.DG_BOSS_DEFS, DBF=SH+'dungeons/bosses.js', ids=Object.keys(DB), themes=Object.values(W.DG_THEMES).filter(t=>!t.dev&&!t.trial);
     const dbRef=id=>loc(DBF,new RegExp("\\bid:'"+id+"'")), themeName=id=>W.DG_THEMES[id]?W.DG_THEMES[id].name:'—';
     const kitFile=SV+'dungeons/boss-kits.js';
     s+='## 11. Dungeons: bosses, their helpers and the mob pools\n\n'+

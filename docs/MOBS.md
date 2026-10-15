@@ -28,7 +28,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | The boss notices on the quest board | `BOSS_QUESTS` src/shared/quests.js:31 |
 | The dungeon bosses and their helpers (made on demand in a run's round hall, not in `BOSS_DEFS`) | `DG_BOSSES` src/shared/dungeons/bosses.js:17, `DG_BOSS_DEFS` (same file), move sets src/server/dungeons/boss-kits.js:43 |
 | Which kinds a dungeon uses (`mobs.walkers`, `mobs.guardians`: ids of `MON_DEFS`), its land, entrance zone, boss and level | `defineDungeonTheme` src/shared/dungeons.js:127, one file per theme in src/shared/dungeons/themes/ |
-| How a run spawns a monster at its level with the party's health (elites, no respawn) | `dgSpawnS` src/server/dungeons/mobs.js:34, `dgKOf` src/server/dungeons/mobs.js:15, `dgParty` src/shared/dungeons.js:333 |
+| How a run spawns a monster at its level with the party's health (elites, no respawn) | `dgSpawnS` src/server/dungeons/mobs.js:34, `dgKOf` src/server/dungeons/mobs.js:15, `dgParty` src/shared/dungeons.js:358 |
 | How each model looks (client) | see section 13 |
 
 ## 2. How the numbers are made

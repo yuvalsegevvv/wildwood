@@ -14,7 +14,7 @@
 const DG_TXT_SHARED='Dungeons need Solo mode or a server: a shared room cannot keep a run apart from the world.';   // the room's one 4 KB message for everyone (io.broadcastSnaps) cannot be split per run
 function dgBoardP(p){
   const E=dgEntranceNear(p.x,p.z), T=E&&dgThemeOf(E.theme); if(!T||p.inst) return;
-  const tier=dgTierOf(p.gear,T.land), U=dgUnlocked(p.gear,p.level,T,tier), now=Date.now(), pool=dgPoolS(), pa=partyOf(p);
+  const tier=dgTierFor(p.gear,T), U=dgUnlocked(p.gear,p.level,T,tier), now=Date.now(), pool=dgPoolS(), pa=partyOf(p);
   sendTo(p.id,{t:'dgboard',th:T.id,name:T.name,door:E.name,offer:dgOffer(T.id,now,pool),pool,left:dgOfferLeft(now),L:dgLevel(T,tier),tier,gate:dgGateOpen(p.gear,T)?1:0,ok:U.ok?1:0,why:U.why||'',lead:!pa||pa.lead===p.id?1:0});
 }
 function dgStartP(p,msg){
@@ -26,7 +26,7 @@ function dgStartP(p,msg){
   if(!dgGateOpen(p.gear,T)){ toastTo(p.id,DG_LANDS[T.land].hint,'bad'); return; }
   const pool=dgPoolS(), offer=dgOffer(T.id,Date.now(),pool);
   if(!dgMissionOk(msg.type)||!offer.includes(msg.type)){ toastTo(p.id,'The offer changed: '+T.name+' offers '+offer.map(k=>DG_MISSIONS[k].name).join(' and ')+' now.','bad'); dgBoardP(p); return; }
-  const tier=dgTierOf(p.gear,T.land), U=dgUnlocked(p.gear,p.level,T,tier); if(!U.ok){ toastTo(p.id,U.why,'bad'); return; }
+  const tier=dgTierFor(p.gear,T), U=dgUnlocked(p.gear,p.level,T,tier); if(!U.ok){ toastTo(p.id,U.why,'bad'); return; }
   dgLaunchS(p,T,msg.type,{tier,L:U.level,back:dgApron(E),dev:false});
 }
 // the run p was prompted to (and may still answer), or else the party's run in progress
@@ -76,7 +76,7 @@ function dgDevP(p,v){
   if(!T||!dgMissionOk(mission)){ toastTo(p.id,'dg needs <theme>:<mission>[:seed], e.g. bare:purge or hollowroots:purge:7 (themes: '+Object.keys(DG_THEMES).join(', ')+').','bad'); return; }
   if(!DG_KITS[mission]){ toastTo(p.id,DG_MISSIONS[mission].name+' has no mission kit yet (built: '+dgPoolS().join(', ')+').','bad'); return; }
   const pa=partyOf(p); if(pa&&pa.lead!==p.id){ toastTo(p.id,'Only the party leader can start a run.','bad'); return; }
-  const tier=T.land?Math.max(dgTierOf(p.gear,T.land),DG_LANDS[T.land].base):0, seed=parts[2]!==undefined&&parts[2]!==''&&isFinite(+parts[2])?parseInt(parts[2],10):undefined;
+  const tier=T.trial?0:T.land?Math.max(dgTierOf(p.gear,T.land),DG_LANDS[T.land].base):0, seed=parts[2]!==undefined&&parts[2]!==''&&isFinite(+parts[2])?parseInt(parts[2],10):undefined;
   const run=dgLaunchS(p,T,mission,{tier,L:T.land?dgLevel(T,tier):DG_LV,back:{x:p.x,z:p.z},dev:true,seed});
   if(run) toastTo(p.id,'Testing run: '+(T.name||T.id)+', '+DG_MISSIONS[mission].name+', seed '+run.seed+', level '+run.L+'.','good');
 }

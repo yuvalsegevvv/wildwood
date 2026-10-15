@@ -28,6 +28,7 @@ python3 tools/unused.py        # dead-code candidates
 node tools/gen-docs.js [--check]   # docs/MOBS.md and docs/EQUIPMENT.md from the code
 node tools/model-preview.js out.png [--head] [--bent] [--setups] [--outfit id] [--weapon warrior|archer|mage] [--views front|three] [--looks '[{...}]']   # character model or signature outfit → PNG (numpy+pillow)
 node tools/monster-preview.js out.png --ids slime,boss [--bosses|--all] [--pose|--act|--head|--stats]   # monster and boss models → PNG (numpy+pillow), or triangle / mesh counts
+node tools/dungeon-map.js out.png [--theme trial] [--missions purge,defense,escort] [--seed 5]   # a dungeon's baked map for a mission and seed → PNG (pillow)
 node tools/city-preview.js out/ --views overview,street   # Glasswell's 3D model → PNGs (playwright + Chromium)
 node tools/shot.js out.png [--at x,z,deg | --go tRime] [--level 60] [--size 480x300] [--frames 25]   # a screenshot of the built game (no browser pane needed): boots dist/ in headless Chromium, plays solo, uses the testing tools to teleport (the ids are in src/index.html, #tSec). Software GL: small sizes, 3-8 minutes (run it in the background)
 node dist/wildwood-server.js --port 8080     # real server; open http://localhost:8080 in several tabs
