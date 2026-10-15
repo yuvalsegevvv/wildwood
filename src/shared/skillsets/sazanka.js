@@ -9,6 +9,7 @@ defineSkillSet({
   role:{main:'risk'},
   char:{name:'Sazanka', sex:'female', theme:'a night courier of lantern-lit streets (the shadow-runner genre)', ip:{kind:'original', riffs:'the night-courier and shadow-runner genre (a hood, a cord sash, a delivery tag); no existing character'}},
   pal:{main:0x2f3f6b, accent:0xc23b2a, glow:0x5a4cc0},
+  emblem:{col:0xa89cf0, glyph:'<circle cx="12" cy="5.8" r="3.2"/><circle cx="17.9" cy="10.1" r="3.2"/><circle cx="15.7" cy="17" r="3.2"/><circle cx="8.3" cy="17" r="3.2"/><circle cx="6.1" cy="10.1" r="3.2"/><circle cx="12" cy="12" r="1.3"/>'},   // the set's own symbol on its skills and passives (24 x 24 strokes, drawn in col): never the generic star
   kit:{mark:'barb', name:'Barb', text:'Every jab leaves a Barb (up to 5); Dusk Flurry spends them all, and Quick Study makes a barbed target take more from you.'},
   pos:{
     1:{bound:'class',

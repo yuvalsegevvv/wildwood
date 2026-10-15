@@ -9,6 +9,7 @@ defineSkillSet({
   role:{main:'grind'},
   char:{name:'Tansy', sex:'female', theme:'a farm-hand who harvests a whole field at once: sweeping blades, bundled wheat', ip:{kind:'original', riffs:'the farm-hand and harvest genre (a hat, a smock, a sheaf); no existing character'}},
   pal:{main:0xe0b95a, accent:0xb5532f, glow:0xece3c8},
+  emblem:{col:0xe6c35f, glyph:'<path d="M12 22V10"/><path d="M12 10c-2.8 0-3.8-2.2-3.8-4.2 2.6 0 3.8 1.8 3.8 4.2zM12 10c2.8 0 3.8-2.2 3.8-4.2-2.6 0-3.8 1.8-3.8 4.2z"/><path d="M12 15c-2.8 0-3.8-2.2-3.8-4.2M12 15c2.8 0 3.8-2.2 3.8-4.2M12 19.5c-2.4 0-3.4-1.8-3.4-3.6M12 19.5c2.4 0 3.4-1.8 3.4-3.6"/><path d="M12 2.5V6"/>'},   // the set's own symbol on its skills and passives (24 x 24 strokes, drawn in col): never the generic star
   pos:{
     1:{bound:'class', from:{chance:0.15, pity:14},
        skill:{

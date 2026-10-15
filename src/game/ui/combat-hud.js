@@ -70,6 +70,19 @@ const ICONS={
   'Blizzard':'<path d="M12 2v20M4 6l16 12M4 18L20 6"/><circle cx="12" cy="12" r="3"/>',
   'Inferno':'<path d="M12 22c-5 0-8-3-8-7 0-4 4-6 4-10 3 2 4 5 4 7 1-2 1-4 0-6 4 2 8 6 8 9 0 4-3 7-8 7z"/>',
   'Arcane Surge':'<path d="M12 2l3 7h7l-6 5 2 8-6-5-6 5 2-8-6-5h7z"/>',
+  // the Greyspine's two bosses (the Gryphon Queen's air skills, the Mountain Golem's earth skills)
+  'Talon Rake':'<path d="M6 3c2 6 2 12 0 18M12 3c2 6 2 12 0 18M18 3c2 6 2 12 0 18"/>',
+  "Eagle's Plunge":'<path d="M12 21V9M7 14l5 7 5-7"/><path d="M3 5c3 1 6 3 9 3s6-2 9-3"/>',
+  'Quill Shot':'<path d="M5 19L19 5"/><path d="M19 5c-5-1-9 1-11 5M19 5c1 5-1 9-5 11M12 12l-4 4"/>',
+  'Feather Storm':'<path d="M3 7c4-3 9-3 13 0M3 12c4-3 9-3 13 0M8 17c4-3 9-3 13 0"/><path d="M18 3l3 2-3 2"/>',
+  'Sky Lance':'<path d="M3 21L16 8"/><path d="M13 4h7v7z"/><path d="M4 11a3 3 0 0 1 5-2"/>',
+  'Updraft':'<path d="M6 21V8M3 11l3-4 3 4M12 21V4M9 7l3-4 3 4M18 21V10M15 13l3-4 3 4"/>',
+  'Stone Fist':'<path d="M5 9l3-4h8l3 4v6l-3 4H8l-3-4z"/><path d="M9 9v4M12 8v5M15 9v4"/>',
+  'Quake Slam':'<path d="M3 20h18"/><path d="M12 20l-1-5 2-3-2-3 1-4"/><path d="M5 12l3 2M19 12l-3 2M7 7l3 1M17 7l-3 1"/>',
+  'Boulder Arrow':'<circle cx="16" cy="8" r="4"/><path d="M13 11L3 21M3 21h5M3 21v-5"/>',
+  'Hail of Rock':'<path d="M6 3l2 4-3 1zM13 2l2 5-4 1zM19 8l2 4-3 1z"/><path d="M5 14l2 4-3 1zM12 13l2 5-4 1zM19 16l1 4-3 1z"/>',
+  'Stone Bind':'<circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/><path d="M2 12h2M20 12h2"/>',
+  'Avalanche':'<path d="M2 20L9 6l4 8 3-4 6 10z"/><path d="M11 6l3 4M8 20l1-3M13 20l1-2M18 20l1-2"/>',
   // boss skills
   'Bramble Snare':'<path d="M4 12c4-6 12-6 16 0M4 12c4 6 12 6 16 0"/><path d="M8 8l-1-3M12 6V3M16 8l1-3M8 16l-1 3M12 18v3M16 16l1 3"/>',
   'Lifesap Frenzy':'<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/><path d="M12 11v6M9 14h6"/>',
@@ -124,7 +137,8 @@ function setActionBar(){
   const c=clsOf(), L=pvSkills();   // pvp: the fixed loadout on the island
   // each button: the equipped ability, a lock until the slot's level, or a + when nothing is equipped
   const fill=(el,slot,key)=>{ const a=abilityOf(c,slot,L,pvLevel()), locked=pvLevel()<slotLv(slot);
-    el.querySelector('svg').innerHTML=ICONS[a?a.name:locked?'lock':'plus']||ICONS.burst;
+    el.querySelector('svg').innerHTML=(a&&ssGlyph(a))||ICONS[a?a.name:locked?'lock':'plus']||ICONS.burst;   // skillsets: a set piece draws its set's own symbol, in the set's colour
+    el.classList.toggle('has-set',!!(a&&ssTint(a))); el.style.setProperty('--set',a&&ssTint(a)||'transparent');
     el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+slotLv(slot):(slot==='burst'?'Burst':'Skill');
     el.classList.toggle('empty',!a); const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
     el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Burst':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };

@@ -32,6 +32,7 @@ styles
   24-dungeon.css                     A dungeon run's HUD (mission, clock, leave), objective labels and arrows, the results card, the party frame under your bars, the party panel and the invite prompt
   25-dungeon-board.css               The Delve board (the panel at a dungeon door: lock, the two missions on offer, countdown, party) and the prompt to join a party's run
   26-pvp.css                         The Proving Isle (PvP): the badge under the zone name, other fighters' red name tags, the picked target
+  27-skillsets.css                   Skill sets in the skills panel and on the action bar: a set piece's symbol in its set's colour, the set effect cards
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -226,6 +227,7 @@ game
   combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
   combat/reactions.js                Reactions on the client: the aura marker over a monster, the reaction's name popping up, the vulnerable / weakened notes
   skillsets/marks.js                 Skill-set marks on the client: pips over a monster, in the colour of the kit (only yours are drawn: marks are personal)
+  skillsets/panel.js                 Skill sets in the skills panel and the action bar: each set's own symbol and colour on its pieces (never the generic star), and the set effect (the 3-piece and 5-piece bonuses, lit by how many pieces are worn)
   combat/lucky.js                    Lucky drops and forging: light beam, sparkles, banner and a bright jingle for epic, unique and legendary items
   combat/sounds.js                   Combat sounds (cSfx) and monster voices (monSound)
   ui/combat-hud.js                   Target frame, player bars, damage numbers, action bar, attack input

@@ -9,6 +9,7 @@ defineSkillSet({
   role:{main:'heal'},
   char:{name:'Ambrose', sex:'male', theme:'a marsh herbalist and field medic', ip:{kind:'original', riffs:'the marsh herbalist and field-medic trade (reed, linen, shell and glass); no existing character'}},
   pal:{main:0x4f7a6a, accent:0xe6ecea, glow:0x7fd0d8},
+  emblem:{col:0x62d0c4, glyph:'<ellipse cx="12" cy="6.5" rx="2.1" ry="4.2"/><path d="M12 10.7V20"/><path d="M12 15c-3-.5-4.5-2.5-4.5-4.5M12 17c3-.5 4.5-2.5 4.5-4.5"/><path d="M4 21c2.3-1.8 4.6-1.8 8 0s5.7 1.8 8 0"/>'},   // the set's own symbol on its skills and passives (24 x 24 strokes, drawn in col): never the generic star
   kit:{mark:'ripple', name:'Ripple', text:'Every blow leaves a Ripple (up to 5) on its target; Ebb and Flow returns them all as a wave that hurts the enemy and heals you.'},
   pos:{
     1:{bound:'class',

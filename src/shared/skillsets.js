@@ -38,6 +38,9 @@ const SS_COND_STATS=['dmg','crit','critdmg','red','rxk','rxicd','heal','buffpow'
 const SS_WHEN_KEYS=['moved','still','dist','tgtHp','hp','taunting','marked','behind','boss','crowd','allies','exposed','combat','shield'];
 const SS_ENTRY_KEYS=['name','desc','cd','range','mult','act','anim','el','fx','buff','why'];
 const SS_SETS=Object.create(null), SS_ORDER=[], SS_BAD=[], SS_PIECE_OF=Object.create(null);
+// a set's emblem: {col: a colour, glyph: SVG shapes (path / circle / ellipse / rect / line with plain attributes, drawn as strokes in a 24 x 24 box)}; it goes into the page as markup, so only those shapes are accepted
+const SS_GLYPH_OK=/^(<(path|circle|ellipse|rect|line)( (d|cx|cy|r|rx|ry|x|y|x1|y1|x2|y2|width|height|fill|opacity|stroke-width|transform)="[^"<>&]*")*\/>)+$/;   // (only drawing attributes: no on... handler, no href, no style)
+const ssEmblemProblem=e=>!e||typeof e!=='object'||!Number.isInteger(e.col)||e.col<0||e.col>0xffffff||typeof e.glyph!=='string'||e.glyph.length>900||!SS_GLYPH_OK.test(e.glyph)?'emblem is {col: a colour, glyph: up to 900 characters of path / circle / ellipse / rect / line shapes}':null;
 const ssIsEl=e=>typeof e==='string'&&(e==='basic'||!!ELEM_OPP[e]);   // 'basic' or one of the six elements
 const ssMarkProblem=m=>!m||!/^[a-z]+$/.test(m.id)||!(m.n===undefined||(m.n>=1&&m.n<=5))||!(m.dur===undefined||(m.dur>0&&m.dur<=60))||!(m.max===undefined||(m.max>=1&&m.max<=10))||!(m.behind===undefined||m.behind===true)?'mark is {id (a lowercase word), n (1 to 5), dur (seconds, up to 60), max (1 to 10), behind (true: only from behind the monster)}':null;
 const ssStatusProblem=t=>!t||!SS_ST_KINDS.includes(t.kind)||!(t.kind==='vuln'||t.kind==='weak'?t.v>0&&t.v<=0.5:true)||!(t.dur>0&&t.dur<=30)||!(t.perMark===undefined||(t.perMark&&typeof t.perMark.id==='string'&&/^[a-z]+$/.test(t.perMark.id)&&t.perMark.v>0&&t.perMark.v<=0.2))?'status is {kind: '+SS_ST_KINDS.join(' or ')+', v (vuln, weak: above 0, at most 0.5), dur (seconds), perMark: {id (a mark), v (added for each stack of your mark on the target, up to 0.2)}}':null;
@@ -170,6 +173,7 @@ function defineSkillSet(D){
   if(typeof C.theme!=='string'||!C.theme) return bad('char','theme (one line) missing');
   const ip=C.ip; if(!ip||!(ip.kind==='original'?typeof ip.riffs==='string'&&ip.riffs:ip.kind==='licensed'&&['work','license','source','credit'].every(k=>typeof ip[k]==='string'&&ip[k]))) return bad('char','ip is {kind:"original", riffs} or {kind:"licensed", work, license, source, credit}');
   if(!D.pal||!['main','accent','glow'].every(k=>Number.isInteger(D.pal[k]))) return bad('pal','main, accent and glow colours (whole numbers)');
+  if(D.emblem!==undefined){ const ep=ssEmblemProblem(D.emblem); if(ep) return bad('emblem',ep); }
   if(D.kit!==undefined&&(!D.kit||typeof D.kit.name!=='string'||typeof D.kit.text!=='string'||(D.kit.mark!==undefined&&!/^[a-z]+$/.test(D.kit.mark)))) return bad('kit','kit is {mark (a lowercase word, optional), name, text}');
   if(!D.pos||typeof D.pos!=='object') return bad('pos','missing');
   const src=SS_SOURCES[D.land], taken=new Set(), posEl={}, made=[], th=DG_THEMES[src[2]];
@@ -205,7 +209,7 @@ function defineSkillSet(D){
     for(const r of rows){ ssMarksMade(r,made2); if(r.amp) used.add(r.amp.id); usedIn(r.fx,used); if(r.status&&r.status.perMark) used.add(r.status.perMark.id); if(r.when&&r.when.marked) used.add(r.when.marked); if(r.cost&&r.cost.when&&r.cost.when.marked) used.add(r.cost.when.marked); }
     for(const u of used) if(!made2.has(u)) return bad('kit','"'+u+'" is popped or amplified but nothing in the set applies that mark (kit.mark, or a mark on a skill or a row)'); }
   // everything checks out: register the pieces
-  const set={id,name:D.name,land:D.land,tier,dev,el:D.el,role:JSON.parse(JSON.stringify(R)),char:JSON.parse(JSON.stringify(C)),pal:Object.assign({},D.pal),kit:D.kit?JSON.parse(JSON.stringify(D.kit)):null,outfit:D.outfit||null,pos:{},bonus:{}};
+  const set={id,name:D.name,land:D.land,tier,dev,el:D.el,role:JSON.parse(JSON.stringify(R)),char:JSON.parse(JSON.stringify(C)),pal:Object.assign({},D.pal),emblem:D.emblem?{col:D.emblem.col,glyph:D.emblem.glyph}:null,kit:D.kit?JSON.parse(JSON.stringify(D.kit)):null,outfit:D.outfit||null,pos:{},bonus:{}};
   for(const m of made){
     const lv=m.p<3?BOSS_DEFS.find(b=>b.def.id===src[m.p-1]).def.level:th.lv, ids=[];
     for(const [k,e] of m.variants){

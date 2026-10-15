@@ -8,6 +8,7 @@ defineSkillSet({
   role:{main:'safe'},
   char:{name:'Sorrel', sex:'female', theme:'a mountain lookout who waits for one clean shot', ip:{kind:'original', riffs:'the mountain-lookout and marksman genre (a long scarf, goggles, feathers); no existing character'}},
   pal:{main:0x8fb8d8, accent:0xf1ead8, glow:0xbfe3ff},
+  emblem:{col:0x8fc7ec, glyph:'<path d="M3 8h10.5a2.7 2.7 0 1 0-2.7-2.7"/><path d="M3 12.5h15.5a2.7 2.7 0 1 1-2.7 2.7"/><path d="M3 17h6.5a2.2 2.2 0 1 1-2.2 2.2"/>'},   // the set's own symbol on its skills and passives (24 x 24 strokes, drawn in col): never the generic star
   kit:{mark:'sight', name:'Sight', text:'Mark the Gap puts Sight (up to 3) on its target; Long Gale spends it all, and Steady Breath makes a sighted target take more from you.'},
   pos:{
     1:{bound:'class',

@@ -9,6 +9,7 @@ defineSkillSet({
   role:{main:'tank'},
   char:{name:'Torgeir', sex:'male', theme:'a northern shield-wall veteran: round shield, heavy mantle, unhurried', ip:{kind:'original', riffs:'the shield-wall veteran genre (a round shield, a fur mantle); no existing character'}},
   pal:{main:0x7d8c5a, accent:0xe3dccb, glow:0xb59a4a},
+  emblem:{col:0xa8bd78, glyph:'<path d="M2 20L9.5 7l4 7 2.5-3.5L22 20z"/><path d="M9.5 7L8.2 10.2l2 1.3 1.2-1.7"/>'},   // the set's own symbol on its skills and passives (24 x 24 strokes, drawn in col): never the generic star
   kit:{mark:'fixation', name:'Fixation', text:'Every strike leaves a Fixation (up to 5) on what it hit; Hold the Line spends them all for a heavier blow that heals you.'},
   pos:{
     1:{bound:'class',

@@ -9,6 +9,7 @@ defineSkillSet({
   role:{main:'support', focus:'debuff'},
   char:{name:'Corvin', sex:'male', theme:'a lamplighter and mine surveyor: light that shows where a thing is weak', ip:{kind:'original', riffs:'the lamplighter and mine-surveyor trade (a cap lamp, a plumb bob, brass fittings); no existing character'}},
   pal:{main:0xc9a13a, accent:0x5f8f7f, glow:0xfff1c9},
+  emblem:{col:0xf4e9c8, glyph:'<circle cx="6" cy="12" r="3.2"/><path d="M9.6 8.6L21 3.5M9.9 12H22M9.6 15.4L21 20.5"/><path d="M2.5 12H1"/>'},   // the set's own symbol on its skills and passives (24 x 24 strokes, drawn in col): never the generic star
   kit:{mark:'glare', name:'Glare', text:'Every flash leaves a Glare (up to 3) on what it lit; a target carrying Glare takes more from you (the Second Look bonus).'},
   pos:{
     1:{bound:'class',

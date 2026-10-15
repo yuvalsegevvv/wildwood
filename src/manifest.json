@@ -25,7 +25,8 @@
     "23-dungeon-gear.css",
     "24-dungeon.css",
     "25-dungeon-board.css",
-    "26-pvp.css"
+    "26-pvp.css",
+    "27-skillsets.css"
   ],
   "shared": [
     "math.js",
@@ -197,6 +198,7 @@
     "combat/attacks.js",
     "combat/reactions.js",
     "skillsets/marks.js",
+    "skillsets/panel.js",
     "combat/lucky.js",
     "combat/sounds.js",
     "ui/combat-hud.js",

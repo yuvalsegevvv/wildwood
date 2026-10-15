@@ -9,6 +9,7 @@ defineSkillSet({
   role:{main:'safe', also:{role:'support', part:'mild'}},
   char:{name:'Marigold', sex:'female', theme:'a stage idol / magical girl (the genres; everything original): paper lanterns, ribbons, a stage of her own', ip:{kind:'original', riffs:'the stage-idol and magical-girl genres (lanterns, ribbons, a transformation); no existing character, mascot, catchphrase or sequence'}},
   pal:{main:0xe59a2b, accent:0x5a2a4a, glow:0xffd36b},
+  emblem:{col:0xe879b9, glyph:'<path d="M9 3h6M9 21h6M12 3v2"/><ellipse cx="12" cy="12.2" rx="6.2" ry="7"/><path d="M5.8 12.2h12.4M9 6c-1.2 3.6-1.2 8.4 0 12.4M15 6c1.2 3.6 1.2 8.4 0 12.4"/>'},   // the set's own symbol on its skills and passives (24 x 24 strokes, drawn in col): never the generic star
   kit:{mark:'applause', name:'Applause', text:'Every sparkle earns Applause (up to 5) from its target; Curtain Call spends it all in a flash of light.'},
   pos:{
     1:{bound:'class',

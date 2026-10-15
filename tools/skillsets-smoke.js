@@ -109,7 +109,11 @@ const BAD=[
   ['a taunt of an hour','pos',d=>{ d.pos[2].skill.any.fx.taunt={dur:3600}; }],
   ['a taunt inside a shape that is not a hit','pos',d=>{ d.pos[2].skill.any.fx.zone={r:5,dur:2,every:0.5,taunt:{dur:3}}; }],
   ['a heal that is not a share','pos',d=>{ d.pos[2].skill.any.fx.heal={v:3,r:10}; }],
-  ['a dash behind that is not true','pos',d=>{ d.pos[2].skill.any.fx.dash={ahead:6,behind:'yes'}; }]];
+  ['a dash behind that is not true','pos',d=>{ d.pos[2].skill.any.fx.dash={ahead:6,behind:'yes'}; }],
+  ['an emblem with a script in its glyph','emblem',d=>{ d.emblem={col:0xe0b95a,glyph:'<path d="M0 0"/><script>alert(1)</script>'}; }],
+  ['an emblem whose glyph has an event handler','emblem',d=>{ d.emblem={col:0xe0b95a,glyph:'<path d="M0 0" onload="x()"/>'}; }],
+  ['an emblem without a colour','emblem',d=>{ d.emblem={glyph:'<path d="M0 0"/>'}; }],
+  ['an emblem that is only a string','emblem',d=>{ d.emblem='<path d="M0 0"/>'; }]];
 const before=count();
 { x.SS_BAD.length=0; const results=[];
   quiet(()=>{ BAD.forEach(([what,field,f],i)=>{ const d=fixture('bad'+i); f(d); const n0=x.SS_BAD.length, r=x.defineSkillSet(d); results.push([what,field,r,x.SS_BAD.slice(n0)]); }); });

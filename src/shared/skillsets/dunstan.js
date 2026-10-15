@@ -8,6 +8,7 @@ defineSkillSet({
   role:{main:'support', focus:'buff'},
   char:{name:'Dunstan', sex:'male', theme:'a standard-bearer and drummer who rallies the line', ip:{kind:'original', riffs:'the standard-bearer and drummer genre (a plumed shako, a pennant, a drum at the hip); no existing character'}},
   pal:{main:0xb8432a, accent:0xd4a83a, glow:0xff7a3a},
+  emblem:{col:0xf0684a, glyph:'<path d="M6 21V4"/><path d="M6 4.5h12l-3.4 4.2 3.4 4.3H6"/><circle cx="6" cy="2.8" r="1"/>'},   // the set's own symbol on its skills and passives (24 x 24 strokes, drawn in col): never the generic star
   kit:{mark:'fervor', name:'Fervor', text:'Every strike leaves a Fervor (up to 5); Cry of Valor spends them for extra damage.'},
   pos:{
     1:{bound:'class',

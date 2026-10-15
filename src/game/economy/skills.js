@@ -8,6 +8,8 @@ const SK={sel:null};   // the selected skill or passive id
 function openSkills(n,kind){ openPanel('skills',n||null); skTab=clsOf(); if(KIND_TITLE[kind]) skKind=kind; SK.sel=null; renderSkills(); }
 function toggleSkills(){ if(!started||customizing) return; if($('#skills').hidden) openSkills(); else closePanels(); }
 const skIcon=name=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||ICONS.burst||''}</svg>`;   // (skillsets: a signature skill without a glyph of its own gets the generic burst one, as the action bar does)
+// a skill's icon: a set piece draws its own set's symbol (skillsets/panel.js), any other its glyph by name (a piece of no set without one gets the generic burst)
+const skIconOf=s=>{ const g=ssGlyph(s); return g?`<svg ${SS_ICON_ATTR}>${g}</svg>`:skIcon(s.name); };
 const SLOT_TITLE={basic:'1 · Basic attack',skill:'2 · Skill',burst:'3 · Burst'}, KIND_TITLE={basic:'1 · Basic',skill:'2 · Skill',burst:'3 · Burst',pass:'Passive'};
 const needLv=s=>s.slot==='passive'?Math.max(PASSIVE_LV,s.lv):Math.max(slotLv(s.slot),s.lv);
 const SLOT_NO={basic:1,skill:2,burst:3};
@@ -15,12 +17,13 @@ const SLOT_NO={basic:1,skill:2,burst:3};
 function skTile(s,C,from){
   const own=C.S.owned.includes(s.id), low=C.lv<needLv(s), L=skillLvOf(C.S,s.id), el=elOf(s);
   const drag=true;   // every tile can be dragged, so a drop that is refused always says why (not learned yet, level, the basic slot, a locked slot)
-  return `<button class="sk-tile${el!=='basic'?' has-el':''}${SK.sel===s.id?' sel':''}${own?'':' unowned'}${low?' locked':''}${drag?' drag':''}${s.slot==='burst'?' burst':''}" data-id="${s.id}" data-from="${from}" data-drag="${drag?1:0}" style="--el:${el==='basic'?'transparent':ELEMS[el].col}" aria-label="${s.name}${own?', level '+L:''}">${skIcon(s.name)}${el!=='basic'?'<i class="el-dot"></i>':''}<span class="lv">${own?'Lv '+L:s.drop?'Boss':low?'Lv '+needLv(s):s.price?s.price+'c':'Free'}</span></button>`;
+  const tint=ssTint(s);
+  return `<button class="sk-tile${el!=='basic'?' has-el':''}${tint?' has-set':''}${SK.sel===s.id?' sel':''}${own?'':' unowned'}${low?' locked':''}${drag?' drag':''}${s.slot==='burst'?' burst':''}" data-id="${s.id}" data-from="${from}" data-drag="${drag?1:0}" style="--el:${el==='basic'?'transparent':ELEMS[el].col}${tint?';--set:'+tint:''}" aria-label="${s.name}${s.set?' ('+SS_SETS[s.set].name+' set)':''}${own?', level '+L:''}">${skIconOf(s)}${el!=='basic'?'<i class="el-dot"></i>':''}<span class="lv">${own?'Lv '+L:s.drop?'Boss':low?'Lv '+needLv(s):s.price?s.price+'c':'Free'}</span></button>`;
 }
 function skSlotsHtml(C,cls){
   const act=SLOTS.map(slot=>{
     const a=abilityOf(cls,slot,C.S,C.lv), locked=C.lv<slotLv(slot);
-    return `<div class="sk-slot${a?' on':''}${locked?' locked':''}" data-slot="${slot}"><span class="sk-n">${SLOT_TITLE[slot]}</span>${a?skTile(a,C,'slot:'+slot):`<div class="sk-tile empty">${skIcon(locked?'lock':'plus')}</div>`}<b>${a?a.name:locked?'Opens at level '+slotLv(slot):'Empty'}</b><small>${a?abilityCd(a,C.S,C.lv,cls).toFixed(1)+' s'+(elOf(a)!=='basic'?' · '+ELEMS[elOf(a)].name:''):locked?'':'Drag one here'}</small></div>`;
+    return `<div class="sk-slot${a?' on':''}${locked?' locked':''}" data-slot="${slot}"><span class="sk-n">${SLOT_TITLE[slot]}</span>${a?skTile(a,C,'slot:'+slot):`<div class="sk-tile empty">${skIcon(locked?'lock':'plus')}</div>`}<b>${a?a.name:locked?'Opens at level '+slotLv(slot):'Empty'}</b><small>${a?abilityCd(a,C.S,C.lv,cls).toFixed(1)+' s'+(elOf(a)!=='basic'?' · '+ELEMS[elOf(a)].name:'')+(a.set?' · '+SS_SETS[a.set].name:''):locked?'':'Drag one here'}</small></div>`;
   }).join('');
   const open=C.lv>=PASSIVE_LV;
   const pas=Array.from({length:PASSIVE_SLOTS},(_,i)=>{   // slot i opens at level PASSIVE_SLOT_LV[i]
@@ -41,7 +44,7 @@ function skInfoHtml(C,cls){
   else stats=abilityCd(s,S,C.lv,cls).toFixed(1)+' s cooldown'+(s.buff?'':' · '+Math.round(s.mult*skillPower(L)*100)+'% damage')
     +(s.buff?' · +'+Math.round((s.buff.dmg-1)*skillPower(L)*100)+'% damage for '+(s.buff.dur+0.5*(L-1))+' s':'');
   const boss=s.drop?BOSS_DEFS.find(b=>b.def.id===s.drop).short:'';   // the boss that drops it (boss skills are not sold and cannot be upgraded yet)
-  const tags=`<span class="sk-tag">${pass?'Passive':(s.cls==='any'?'Any class':CLASSES[s.cls].name)+' · '+KIND_TITLE[s.slot]}${boss?' · dropped by '+boss:''}${s.set?' · '+SS_SETS[s.set].char.name+'\'s set':''}</span>${pass?'':elChip(el)}`;
+  const tags=`<span class="sk-tag">${pass?'Passive':(s.cls==='any'?'Any class':CLASSES[s.cls].name)+' · '+KIND_TITLE[s.slot]}${boss?' · dropped by '+boss:''}${s.set?' · '+SS_SETS[s.set].name+' ('+SS_SETS[s.set].char.name+'\'s set)':''}</span>${pass?'':elChip(el)}`;
   let acts='';
   if(own){
     if(eq&&!pass&&s.slot!=='basic') acts+=`<button class="chip" data-unskill="${s.slot}">Take off</button>`;
@@ -64,7 +67,7 @@ function skInfoHtml(C,cls){
     }
   }
   const lock=low?`<span class="req bad">needs level ${needLv(s)}</span>`:'';
-  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico">${skIcon(s.name)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags">${tags}</div><span class="sk-meta">${own?'Level '+L+' of '+SKILL_MAX_LV+' &middot; ':''}${stats} ${lock}</span></div><div class="sk-ii-btn">${acts}</div></div><p class="sk-desc">${pass?passiveText(s.id,L):s.desc}</p>${up}</div>`;
+  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico${ssTint(s)?' has-set':''}"${ssTint(s)?` style="--set:${ssTint(s)}"`:''}>${skIconOf(s)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags">${tags}</div><span class="sk-meta">${own?'Level '+L+' of '+SKILL_MAX_LV+' &middot; ':''}${stats} ${lock}</span></div><div class="sk-ii-btn">${acts}</div></div><p class="sk-desc">${pass?passiveText(s.id,L):s.desc}</p>${s.set?`<div class="sk-set-wrap"><div class="sk-load-h">Set effect <span>this piece is part of a set: wear 3 pieces for the first effect, 5 for the second</span></div>${ssCardHtml(s.set,ssCount(S,cls,C.lv)[s.set]||0,ssOwnedPairs(S,s.set))}</div>`:''}${up}</div>`;
 }
 function renderSkills(){
   if($('#skills').hidden) return;
@@ -75,6 +78,7 @@ function renderSkills(){
   let h=pass?'':`<div class="chips pn-tabs">${Object.keys(CLASSES).map(c=>`<button class="chip" data-sktab="${c}" aria-pressed="${c===cls}">${CLASSES[c].name}${c===clsOf()?' (you)':''}</button>`).join('')}</div>`;
   h+=`<div class="sk-soul">Soul: ${elChip(soulNow())} <span>${PL.level>=SOUL_LV?'Skills of this element deal more damage. Change it at the Soul Hall in Hanami.':'Bind your soul to an element at the Soul Hall in Hanami, from level '+SOUL_LV+'.'}</span></div>`;
   h+=skSlotsHtml(C,cls);
+  h+=ssSummaryHtml(C,cls);   // skillsets: the set effects
   h+=`<div class="sk-area"><div class="chips sk-kinds">${['basic','skill','burst','pass'].map(k=>`<button class="chip" data-skkind="${k}" aria-pressed="${k===skKind}">${KIND_TITLE[k]}</button>`).join('')}</div>`;
   let ids;
   if(pass){ ids=PASSIVE_IDS.filter(id=>!PASSIVES[id].set||S.owned.includes(id)); if(lv<PASSIVE_LV)   // skillsets: a signature passive shows once it is yours
@@ -134,7 +138,7 @@ function skMove(e){
   if(!SKD.on){
     if(Math.hypot(e.clientX-SKD.x0,e.clientY-SKD.y0)<7) return;
     SKD.on=true; const s=skillDef(SKD.src.id);
-    SKD.ghost=document.createElement('div'); SKD.ghost.className='drag-ghost sk-ghost'; SKD.ghost.style.borderColor=elOf(s)==='basic'?'':ELEMS[elOf(s)].col; SKD.ghost.innerHTML=skIcon(s.name); document.body.append(SKD.ghost);
+    SKD.ghost=document.createElement('div'); SKD.ghost.className='drag-ghost sk-ghost'; SKD.ghost.style.borderColor=elOf(s)==='basic'?'':ELEMS[elOf(s)].col; SKD.ghost.innerHTML=skIconOf(s); if(ssTint(s)){ SKD.ghost.classList.add('has-set'); SKD.ghost.style.setProperty('--set',ssTint(s)); } document.body.append(SKD.ghost);
     document.body.classList.add('dragging');
     if(SKD.src.from==='grid'){ document.querySelectorAll(s.slot==='passive'?'#skills .sk-pslot:not(.locked)':`#skills .sk-slot[data-slot="${s.slot}"]`).forEach(x=>x.classList.add('can')); }
     else { const a=document.querySelector('#skills .sk-area'); if(a) a.classList.add('can'); }

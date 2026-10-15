@@ -1,0 +1,19 @@
+/*@ Skill sets in the skills panel and on the action bar: a set piece's symbol in its set's colour, the set effect cards */
+/* a piece of a set: its own symbol in the set's colour (--set) on a tile, in the details, on the action bar and in the drag ghost */
+.sk-tile.has-set svg, .sk-ico.has-set svg, .sk-ghost.has-set svg, .ab.has-set svg{ color:var(--set); }
+.sk-tile.has-set::before{ content:""; position:absolute; inset:0; border-radius:9px; background:var(--set); opacity:.13; pointer-events:none; }
+.sk-tile.has-set.unowned svg, .sk-tile.has-set.locked svg{ opacity:.7; }
+.sk-ico.has-set{ border-color:var(--set); }
+/* the set effect: one card for a set, its two effects lit when that many pieces are worn */
+.sk-sets{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:8px; }
+.sk-set{ padding:8px 10px 9px; border-radius:12px; border:1px solid color-mix(in srgb,var(--set) 38%,transparent); border-left:3px solid var(--set); background:rgba(0,0,0,.2); font-size:12px; line-height:1.4; color:var(--ink-dim); }
+.sk-set.on{ box-shadow:inset 0 0 16px color-mix(in srgb,var(--set) 14%,transparent); }
+.sk-set-h{ display:flex; align-items:center; gap:9px; margin-bottom:6px; }
+.sk-set-ico{ flex:none; width:34px; height:34px; border-radius:9px; border:2px solid var(--set); display:grid; place-items:center; color:var(--set); background:rgba(18,22,18,.6); }
+.sk-set-ico svg{ width:22px; height:22px; }
+.sk-set-t{ display:flex; flex-direction:column; min-width:0; } .sk-set-t b{ font-size:13.5px; color:var(--ink); } .sk-set-t small{ font-size:11px; color:var(--ink-dim); }
+.sk-set-b{ display:flex; gap:8px; align-items:baseline; padding:4px 0 0; opacity:.62; }
+.sk-set-b.on{ opacity:1; color:var(--ink); }
+.sk-set-b i{ flex:none; min-width:58px; font-style:normal; font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--set); }
+.sk-set-b b{ color:var(--set); } .sk-set-b em{ font-style:normal; color:var(--ink-dim); }
+.sk-set-wrap{ margin-top:8px; } .sk-set-wrap .sk-set{ margin-top:4px; }

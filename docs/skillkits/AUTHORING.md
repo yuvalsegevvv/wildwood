@@ -27,6 +27,7 @@ defineSkillSet({
   role:{main:'grind'},                                   // risk | safe | grind | support (+ focus buff|debuff|both) | heal | tank; a mixed set adds also:{role, part:'major'|'mild'}
   char:{name:'Tansy', sex:'female', theme:'a farm-hand who harvests a whole field at once', ip:{kind:'original', riffs:'farming'}},
   pal:{main:0xd8c070, accent:0x9a7a30, glow:0xfff0b0},
+  emblem:{col:0xe6c35f, glyph:'<path d="M12 22V10"/>...'},   // the set's own symbol on its skills and passives (the panel and the action bar): up to 900 characters of path / circle / ellipse / rect / line shapes drawn as strokes in a 24 x 24 box, and the colour to draw them in; one symbol and one colour per set, never the generic star
   kit:{mark:'chaff', name:'Chaff', text:'what the three actives do with the mark'},             // optional; a mark is only needed if a piece applies one
   pos:{
     1:{bound:'class', skill:{                            // slot 1 (the basic attack): all three classes, always

@@ -1,7 +1,7 @@
 //@ Skill sets on the client: the toast when a piece is earned (the pieces themselves live in the skills panel's grids, economy/skills.js) and the ally buffs that change what you do (haste)
 /* Agent map. Plan: docs/SKILL-SETS.md; the registry is shared/skillsets.js. Server event ssget [pid, setId, pos] (server/skillsets.js ssGrantP) calls ssOnGet from applyEvent (net/client.js).
    Ally buffs: server event ast [pid, kind, v, dur] (a buff on a player, server/skillsets.js ssAllyS): the ones for you are kept in SSA; haste shortens the cooldowns shown and started here (the server decides the real one).
-   The Sets cards (a card for each set with its six tiles, locked ones with their source, the count and both bonuses) are not built: the pieces show in the normal grids once owned. Test: client-smoke. */
+   The set effect (a card for each set you own a piece of, the count worn and both bonuses) and each set's own symbol are in game/skillsets/panel.js; the Sets cards with six tiles and the locked pieces' sources are not built: the pieces show in the normal grids once owned. Test: client-smoke. */
 const SS_POS_WORD=['first','second','third'];
 function ssOnGet(pid,setId,pos){
   if(pid!==NET.pid||!SS_SETS[setId]) return;

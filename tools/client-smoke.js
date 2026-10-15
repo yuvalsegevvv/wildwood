@@ -311,5 +311,14 @@ const el=s=>document.querySelector(s);
     { const m=G.MONS.find(x=>!x.dead), pid=G.NET.pid; G.applyEvent(['mk',m.id,'barb',2,10,pid]); G.applyEvent(['mk',m.id,'barb',3,10,pid+1000]); G.ssvUpdate(0.033); const two=G.SSV.marks.get(m.id)&&G.SSV.marks.get(m.id).barb.pips.length;   // (a mark of someone else is not drawn: marks are personal)
       G.applyEvent(['mk',m.id,'barb',3,10,pid]); G.ssvUpdate(0.033); const three=G.SSV.marks.get(m.id).barb.pips.length; G.applyEvent(['mk',m.id,'barb',0,0,pid]);
       ok('skill sets: a mark of yours on a monster shows as pips (2, then 3), someone else\'s is not drawn, and the pips go when the mark is spent',two===2&&three===3&&!G.SSV.marks.has(m.id),two+' '+three); } }
+  // skill sets in the skills panel: a piece draws its own set's symbol (never the generic star) and the details and a card under the loadout say the set effect
+  { G=c.G(); const T=G.SS_SETS.tansy, star='M12 2l2.5 6.5L21 9';   // (the generic burst glyph)
+    G.GEAR.skills.owned.push('tansy_2_any','tansy_p2'); G.SK.sel='tansy_2_any'; G.openSkills(null,'skill'); G=c.G(); G.SK.sel='tansy_2_any'; G.renderSkills(); const h=el('#skBody').innerHTML;
+    const tile=(/<button class="sk-tile[^"]*" data-id="tansy_2_any".*?<\/button>/s.exec(h)||[''])[0], det=(/<div class="sk-ii">.*$/s.exec(h)||[''])[0];
+    ok('a set piece draws its set\'s own symbol in the set\'s colour, not the generic star (tile and details)',tile.includes(T.emblem.glyph)&&!tile.includes(star)&&/has-set/.test(tile)&&tile.includes('--set:#'+T.emblem.col.toString(16))&&det.includes(T.emblem.glyph)&&!det.includes(star));
+    ok('the details name the set and give its set effect: both bonuses by name and text, and how many more pieces each needs',/The Harvest \(Tansy&#39;s set\)|The Harvest \(Tansy's set\)/.test(det)&&/Set effect/.test(det)&&det.includes('Windrow')&&det.includes('Full Basket')&&/3 pieces/.test(det)&&/5 pieces/.test(det)&&/needs 3 more/.test(det)&&/needs 5 more/.test(det));
+    ok('a card for each set you own a piece of sits under the loadout (the set\'s name, its pieces worn, its pairs owned); with none a line says what sets are',/class="sk-sets"/.test(h)&&/The Harvest/.test(h)&&/0 of 6 pieces worn/.test(h)&&/1 of 3 pairs owned/.test(h)&&/Set effects/.test(h));
+    const sets=Object.keys(G.SS_SETS), syms=new Set(sets.map(id=>G.SS_SETS[id].emblem&&G.SS_SETS[id].emblem.glyph)), cols=new Set(sets.map(id=>G.SS_SETS[id].emblem&&G.SS_SETS[id].emblem.col));
+    ok('every set has a symbol of its own and a colour of its own ('+sets.length+' sets)',sets.filter(id=>!G.SS_SETS[id].dev).every(id=>!!G.SS_SETS[id].emblem)&&syms.size===sets.length-(sets.includes('fxset')?1:0)+(sets.includes('fxset')?1:0)&&cols.size>=8); }
   c.stop(); console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);
 })();
