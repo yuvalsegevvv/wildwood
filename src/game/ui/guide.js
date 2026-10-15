@@ -1,50 +1,65 @@
-//@ The Guide: a short in-game wiki (controls, day and night, skills and gear, dungeons, the Proving Isle) opened by the book button or its key; text only, keys read from the current binds
-/* The numbers here are the game's own (DAY_SECONDS, SKILL_SLOT_LV, PASSIVE_LV, PVP.level...) so the Guide cannot drift from the rules; keys come from kbName. Every string is static,
+//@ The Guide: a short in-game wiki (controls, combat, skills, upgrades, dungeons, the Proving Isle) opened by the book button or its key; text only, keys read from the current binds
+/* The numbers here are the game's own (SKILL_SLOT_LV, PASSIVE_LV, PVP.level...) so the Guide cannot drift from the rules; keys come from kbName. Every string is static,
    nothing typed by a player goes in, so innerHTML is safe. Opens with the book button (#bGuide) or the `guide` key; Esc and the X close it like any panel. */
 const GUIDE_TAB_KEY='wildwood-guide-tab';
 let guideTab='basics';
 function guidePages(){
-  const k=kbName, mins=Math.round(DAY_SECONDS/60);
+  const k=kbName;
   const kl=(...a)=>a.map(x=>'<kbd>'+x+'</kbd>').join(' ');
   return {
-    basics:{t:'Basics',h:`
-      <p>Wildwood is a forest full of monsters, villages full of people with work for you, and friends to share it with. Kill monsters for XP, coins and drops; spend them on better gear and skills; walk further out as you grow stronger.</p>
-      <h4>Controls</h4>
+    basics:{t:'Controls',h:`
+      <p>Kill monsters for XP, coins and drops, spend them on gear and skills, and walk further out as you grow. Every key can be changed in Settings.</p>
       <dl>
         <dt>${kl(['fwd','left','back','right'].map(k).join(' '))}</dt><dd>Walk. ${kl(k('run'))} runs, ${kl(k('jump'))} jumps. On a phone: left thumb moves, right thumb looks.</dd>
-        <dt>${kl(k('basic'))} / click</dt><dd>Attack. It picks the nearest target; ${kl(k('target'))} switches target.</dd>
-        <dt>${kl(k('skill'))} / right-click</dt><dd>Your class skill (from level ${SKILL_SLOT_LV}). ${kl(k('burst'))} is the burst skill (from level ${BURST_SLOT_LV}).</dd>
-        <dt>${kl(k('talk'))}</dt><dd>Talk to villagers, open shops and the quest board, use a teleport circle. ${kl(k('gather'))} mines, chops or picks what you stand beside.</dd>
-        <dt>${kl(k('inv'))} ${kl(k('skills'))} ${kl(k('map'))} ${kl(k('world'))}</dt><dd>Inventory, skills, the map of this land, the world map of Eldmere.</dd>
-        <dt>${kl(k('pot1'))} ${kl(k('pot2'))} ${kl(k('pot3'))}</dt><dd>Drink a healing, might or guard potion (brewed by the healers).</dd>
-        <dt>${kl(k('party'))}</dt><dd>Your party. ${kl(k('chat'))} opens chat. Hold ${kl('Alt')} to free the mouse for menus. Every key can be changed in Settings.</dd>
+        <dt>${kl(k('basic'))} / click</dt><dd>Basic attack. It picks the nearest target; ${kl(k('target'))} switches target.</dd>
+        <dt>${kl(k('skill'))} / right-click</dt><dd>Skill (from level ${SKILL_SLOT_LV}). ${kl(k('burst'))} is the burst (from level ${BURST_SLOT_LV}).</dd>
+        <dt>${kl(k('pot1'))} ${kl(k('pot2'))} ${kl(k('pot3'))}</dt><dd>Healing, might and guard potions.</dd>
+        <dt>${kl(k('talk'))}</dt><dd>Talk to villagers, open shops, the quest board and teleport circles. ${kl(k('gather'))} mines, chops or picks what you stand beside.</dd>
+        <dt>${kl(k('inv'))} ${kl(k('skills'))} ${kl(k('map'))} ${kl(k('world'))}</dt><dd>Inventory, skills, the land's map, the world map.</dd>
+        <dt>${kl(k('party'))} ${kl(k('chat'))}</dt><dd>Party and chat. Hold ${kl('Alt')} to free the mouse for menus.</dd>
       </dl>
-      <h4>Where to start</h4>
-      <p>Talk to the people in your village: the quest board has four notices at a time (hunts and bounties), the smith and the armourer sell gear, and the Wayfarers' Lodge teaches mining, woodcutting and gathering. The main quest starts with Wren's sickness. Monsters grow stronger the further you walk from the village, and a zone's name and level show in the top left, so turn back if it is far above yours.</p>
-      <p>When you are knocked out you wake in the village. Nothing is lost but time.</p>`},
-    day:{t:'Day & night',h:`
-      <p>A full day lasts ${mins} real minutes. The clock in the top left shows the hour; the hiker's day starts at about 07:00.</p>
-      <ul>
-        <li><b>Dawn and morning:</b> the sun climbs from the east, light and colour warm up.</li>
-        <li><b>Midday and afternoon:</b> the brightest, clearest hours.</li>
-        <li><b>Golden hour and dusk:</b> the sun sinks toward the west and sets below the horizon; the sky turns orange, then deep blue.</li>
-        <li><b>Night:</b> the moon rises in the east, stars come out, fog closes in and it is much darker. Lanterns burn in the villages and fireflies drift in the forest.</li>
-      </ul>
-      <p>The world server owns the clock, so everyone playing together sees the same hour and the same weather.</p>
-      <h4>Weather</h4>
-      <p>Rain comes every so often and sometimes turns into a thunderstorm. In the Hoarfrost Reach it snows instead, and blizzards roll over its high plateau.</p>`},
-    skills:{t:'Skills & gear',h:`
+      <p>The quest board offers four notices at a time (hunts and bounties). A zone's name and level show in the top left: turn back if it is far above yours. If you are knocked out you wake in the village and lose nothing but time.</p>`},
+    combat:{t:'Combat',h:`
       <h4>Classes</h4>
-      <p>Warrior (sword and shield, hits in an arc), Archer (homing arrows from far away) and Mage (fire bolts that burst). Wield another class's weapon to switch class; each class keeps its own skills.</p>
-      <h4>Skills</h4>
-      <p>Every class has three attack slots: the basic attack, a skill (level ${SKILL_SLOT_LV}) and a burst (level ${BURST_SLOT_LV}). Buy more skills in the skills window, drag them onto a slot, and upgrade them up to level 5 with coins and monster drops (+12% damage and shorter cooldown per level). Bosses drop special skills now and then.</p>
-      <p>At level ${SOUL_LV} the shrine maiden in Hanami binds a <b>soul</b> element to you. Elements matter: water beats fire, fire beats air, air beats earth, earth beats water, and dark and light beat each other. Passive skills open from level ${PASSIVE_LV}. Skill sets (a signature outfit with its own skills and bonuses) can be unlocked from the Settings popover in this version.</p>
-      <h4>Gear and coins</h4>
-      <p>Items come in five rarities: Common, Rare, Epic, Unique and Legendary, each stronger than the last. Drag an item onto your body to wear it. Three identical items merge into the next rarity at the forge. Shops never run out but the price rises as you buy more, and resets at sunrise. Sell what you do not need.</p>
-      <h4>Professions</h4>
-      <p>Learn mining, woodcutting or gathering at a Wayfarers' Lodge (every village has one) and wield a pickaxe, axe or sickle. Ore makes weapons and logs make armour at the smiths and armourers; herbs make potions at the healers.</p>
-      <h4>Harder settings</h4>
-      <p>Beat a land's second boss and you can set that land to a harder tier on the map in a village: stronger monsters, bigger rewards, and a symbol that makes you stronger everywhere.</p>`},
+      <p><b>Warrior:</b> sword and shield, Slash hits everything in an arc. <b>Archer:</b> homing arrows from far away. <b>Mage:</b> Firebolt bursts on impact. Your class is the weapon you hold; each class keeps its own skills.</p>
+      <h4>Damage</h4>
+      <ul>
+        <li>Your damage comes from your level and your weapon; your health from your level and your armour. Armour cuts incoming damage, with diminishing returns at high defence.</li>
+        <li><b>Critical hits</b> happen 12% of the time for 1.7x damage.</li>
+        <li><b>Levels matter:</b> every level an enemy is above you takes 5% off the damage you deal (down to half at 10 levels above) and makes its hits hurt 5% more. Below you, the reverse.</li>
+        <li><b>Elements:</b> water beats fire, fire beats air, air beats earth, earth beats water, dark and light beat each other. A skill that beats the monster's element deals 1.5x; the wrong way, a third less. The target frame shows the monster's element.</li>
+      </ul>
+      <h4>Bosses</h4>
+      <p>Each boss has its own moves, shown first as a warning shape on the ground: step out of it. Bosses change phase at 60% and 30% health, and the bar shows a percentage. They drop skills and better gear than normal monsters.</p>
+      <h4>Staying alive</h4>
+      <p>Drink potions (brewed at the healers from herbs), dodge the warning shapes, and fight monsters near your own level. In a dungeon, a party member can revive you.</p>`},
+    skills:{t:'Skills',h:`
+      <h4>Slots</h4>
+      <p>Each class has three attack slots: the basic attack, a <b>skill</b> (level ${SKILL_SLOT_LV}) and a <b>burst</b> (level ${BURST_SLOT_LV}). Buy skills in the skills window (${kl(k('skills'))}) and drag them onto a slot. Cooldowns belong to the slot, so swapping skills does not reset them.</p>
+      <h4>Boss skills</h4>
+      <p>Every boss has six skills it can drop, about a 10% chance per skill per kill for each player who helped. They cannot be bought.</p>
+      <h4>Soul and elements</h4>
+      <p>At level ${SOUL_LV} the shrine maiden in Hanami binds a <b>soul</b>: your skills of that element hit harder (x1.5), and the opposite element hurts less. Elements are on skills and monsters; pick skills that beat what you hunt.</p>
+      <h4>Passives</h4>
+      <p>Passive skills work all the time, whatever your class. Their slots open at levels ${PASSIVE_SLOT_LV.join(', ')}.</p>
+      <h4>Skill sets</h4>
+      <p>A skill set is a signature outfit with its own skills, set bonuses (for wearing 3 or 5 pieces), a symbol and an element. Sets drop from world bosses (10% per kill) and from won dungeon runs at +1 difficulty or higher (20%), and a long dry streak ends in a sure drop. In this version you can also unlock any set from Settings to try it.</p>`},
+    upgrades:{t:'Upgrades',h:`
+      <h4>Upgrading a skill</h4>
+      <p>Every skill goes up to level 5. Each level adds <b>+12% damage and shorter cooldown</b>. An upgrade costs <b>coins</b> (more for each level) and <b>monster drops</b>: materials that monsters leave behind (about a third of kills), of a kind that fits the skill's level. Level 5 also asks for two boss trophies. Open the skill in the skills window to see what it still needs.</p>
+      <h4>Gear</h4>
+      <p>Weapons and armour improve with your level and come in five rarities: Common, Rare, Epic, Unique, Legendary (stats x1, 1.3, 1.7, 2.2, 3). <b>Three identical items merge into the next rarity at the forge.</b> Shops never run out, but each copy you buy costs 20% more until sunrise.</p>
+      <h4>Dungeon gear: rings, pendants, tempering</h4>
+      <ul>
+        <li>Dungeons pay level-30 weapons, armour, <b>rings</b> and <b>pendants</b>.</li>
+        <li>A ring adds flat attack, but only when its element matches your soul.</li>
+        <li>A pendant gives one bonus: more XP, more drops, more coins, higher crit chance or stronger crits.</li>
+        <li><b>Tempering Stones</b> raise a piece +1, +2... (up to +2 for Common, up to +10 for Legendary); each step adds 10% of its power.</li>
+      </ul>
+      <h4>Professions and crafting</h4>
+      <p>Learn mining, woodcutting or gathering at a Wayfarers' Lodge, carry the matching tool, and work the nodes (a node needs a tool of the tier of its land; sometimes you get a double yield). Ore becomes weapons and logs become armour at the smiths and armourers; herbs become potions at the healers.</p>
+      <h4>Zone tiers</h4>
+      <p>Beat a land's second boss and you can set that land to a harder tier (up to V) on the map in a village. Enemies there gain 10 levels per tier, and pay much more XP and coins. Each unlocked tier also gives you a symbol: +10% attack and health, everywhere.</p>`},
     dungeons:{t:'Dungeons',h:`
       <p>Dungeons are private runs for a party of 1 to 4. Each has its own rooms, monsters and a boss at the end. Everything is balanced for one player; more players make monsters tougher. <b>Everyone in the party gets all of the loot.</b></p>
       <h4>Getting in</h4>

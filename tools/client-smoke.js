@@ -10,7 +10,7 @@ const el=s=>document.querySelector(s);
   let G=c.G(); for(let i=0;i<300;i++){ await wait(100); G=c.G(); if(G.canStart()) break; }
   ok('world streams in',G.canStart());
   { const pg=G.guidePages(), ids=Object.keys(pg);   // the Guide: five tabs of text, opened by its panel
-    ok('the guide has its five tabs, each with text',ids.length===5&&ids.every(i=>pg[i].h.length>200),ids.join());
+    ok('the guide has its six tabs, each with text',ids.length===6&&ids.every(i=>pg[i].h.length>200),ids.join());
     G.openGuide(); ok('the guide opens as a panel',!el('#guide').hidden); G.closePanels(); ok('and closes with the others',el('#guide').hidden); }
   // the first-load diet: the ground of far lands is coloured when you come near, and the far villages' people are built after the loading screen
   { const bands=G.TERRAIN_BANDS, wait0=bands.filter(b=>!b.ready), ready0=bands.filter(b=>b.ready), npc0=G.NPCs.length;

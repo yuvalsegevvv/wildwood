@@ -33,7 +33,7 @@ The biggest update so far: a fourth land, dungeons you can run with friends, a w
 - Bosses show their health as a percentage.
 
 ### Controls and screens
-- The sun button has been replaced by the **Guide** (key **J**), a short in-game manual with the controls, day and night, skills and gear, dungeons and the PvP island.
+- The sun button has been replaced by the **Guide** (key **J**), a short in-game manual covering controls, combat, skills, upgrades, dungeons and the PvP island.
 - A new minimap and land maps in the style of the world map.
 - The character editor's tabs wrap onto two rows so none is hidden.
 
