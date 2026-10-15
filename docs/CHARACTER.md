@@ -168,7 +168,7 @@ The kit is built once per character, so colours and sizes that depend on the bod
 
 **Weapon dressing** (`kit.dress`): one record that restyles whatever weapon the class carries: `grip`, `metal`, `wood`, `accent` (hex colours that replace the tier's), optionally `glow`; `trim(c, u, part)` (lay a pattern on the vertex colour `c`; `u` = metres along the blade / limb / shaft / grip,
 `part` = `'blade'`, `'limb'`, `'shaft'`, `'grip'`, `'rim'`, `'face'`, `'quiver'`); `charm()` returns `{lit:[geos], glow:[geos]}` hung from the grip (y down, origin at the grip; `glow` is drawn unlit, `matGlow`: never a light source).
-The dressing is cosmetic: it touches no stat, no skill and no server code.
+The dressing is cosmetic: it touches no stat, no skill and no server code. It restyles the stock weapons only; a **held model of its own** (any object in the hand) is designed in `docs/NOT-BUILT.md` section 9.
 
 **Helpers** (`character/outfit-tools.js`, plus everything in `model-parts.js`): `torsoSize(X, D, yd)` (half-width `rx`, front `rz` and back `rzBack` of the torso at a design height, belly, bust and glutes included: cloth must clear them), `ofRibbon(pts, width, {up, th, seg})` (a flat two-sided strip: sashes, pennants, feathers, ribbons),
 `ofLoft(rings, seg, a0, a1)` (a panel round part of the body: a tabard, a cape), `ofRingAt(point, axis, R, r, seg)` (a cord, band or ring round a curve), `ofPatch(x0, x1, y0, y1, nx, ny, surf, front)` (a fine grid on a surface for an emblem or buckle whose edge must be crisp),

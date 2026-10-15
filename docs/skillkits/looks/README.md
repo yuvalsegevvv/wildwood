@@ -50,7 +50,7 @@ Each doc's "Slider recommendations" section is **generated from that code** (`no
 
 1. **Mixing outfits.** Any gender may wear any outfit (SKILL-SETS rule). Today `look.model = '<id>'` wears one **whole** (the preview picker). Putting Torgeir's boots with Corvin's coat needs per-part selection, and a rule for which model's setups and ranges the editor shows then.
 2. **Nothing unlocks an outfit.** The skill-set system that would grant them is not built; the picker in the character editor is a preview, labelled so.
-3. **Weapon meshes are coarse.** The dressing recolours them and hangs a charm, but fine trim (blade nicks, engraved ticks) shows only as tints; real patterns need a geometry hook in `weaponsOn` (`game/combat/weapons.js`).
+3. **The weapon is a dressing, not a model.** It recolours the stock sword and shield, bow and quiver, or wand and hangs a charm; fine trim shows only as tints on those coarse meshes. A **held model that can be any object in the hand** (one prop per character, the same for every class) is designed in `docs/NOT-BUILT.md` section 9 and not built.
 4. **Some elements' glow is minimal on purpose** (Tansy none; Torgeir one bead; Ambrose only the vials, though his mage orb is tinted aqua; Sazanka a small violet bead). Judge them in the game, not the preview.
 5. **Contrast.** Sazanka and Corvin are deliberately dark; a lighter coat for Corvin would read better at distance.
 6. **Searching the names.** Each IP check says to search the character name and genre *outside this repository* before final art. That has not been done.
