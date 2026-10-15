@@ -30,8 +30,8 @@
     <button class="icon-btn" id="bMap" aria-label="Map (N)" title="Map (N)" data-kb="map" data-kbt="Map ({k})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>
     </button>
-    <button class="icon-btn" id="bTime" aria-label="Skip ahead to the next part of the day (T)" title="Skip ahead to the next part of the day (T)" data-kb="time" data-kbt="Skip ahead to the next part of the day ({k})">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+    <button class="icon-btn" id="bGuide" aria-label="Guide (J)" title="Guide: how the game works (J)" data-kb="guide" data-kbt="Guide: how the game works ({k})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C6.5 4 9.5 4 12 5.5c2.5-1.5 5.5-1.5 8 0v13c-2.5-1.5-5.5-1.5-8 0-2.5-1.5-5.5-1.5-8 0z"/><path d="M12 5.5v13"/></svg>
     </button>
     <button class="icon-btn" id="bInv" aria-label="Inventory (I)" title="Inventory (I)" data-kb="inv" data-kbt="Inventory ({k})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
@@ -102,6 +102,11 @@
 <div id="travel" class="panel" hidden role="dialog" aria-label="Teleport circle">
   <div class="pn-head"><span class="pn-t">Teleport circle</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="trBody"></div>
+</div>
+<div id="guide" class="panel" hidden role="dialog" aria-label="Guide">
+  <div class="pn-head"><span class="pn-t">Guide</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="chips pn-tabs" id="guTabs"></div>
+  <div class="pn-body" id="guBody"></div>
 </div>
 <!-- dungeons: the Delve board (game/dungeon/board.js, styles/25-dungeon-board.css) and the prompt to join a party's run -->
 <div id="dgBoard" class="panel" hidden role="dialog" aria-label="Delve board">

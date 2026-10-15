@@ -27,7 +27,7 @@ const KB_ACTIONS=[
   {id:'world', name:'World map',     def:['KeyG','']},   // world map: the Eldmere panel (ui/world-map.js)
   {id:'chat',  name:'Chat',          def:['Enter','NumpadEnter']},
   {id:'mute',  name:'Mute sound',    def:['KeyM','']},
-  {id:'time',  name:'Skip the day',  def:['KeyT','']},
+  {id:'guide', name:'Guide',         def:['KeyJ','']},   // the in-game guide (ui/guide.js)
   {id:'view',  name:'Camera view',   def:['KeyV','']},
   {id:'party', name:'Party',         def:['KeyP','']},   // dungeons: the party panel (dungeon/party.js)
   {id:'accept',name:'Accept an invite', def:['KeyY','']},   // dungeons: a party invite or a run's join prompt (dungeon/party.js)

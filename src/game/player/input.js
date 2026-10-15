@@ -26,7 +26,6 @@ addEventListener('keydown',e=>{
   if(isAlt(e)){ e.preventDefault(); if(!e.repeat) altDown(); return; }   // preventDefault: a lone Alt would focus the browser's menu bar
   if(!started) return;
   if(kbIs(e.code,'jump')){ jumpReq=true; e.preventDefault(); }
-  if(kbIs(e.code,'time')) cycleTime();
   if(kbIs(e.code,'view')) toggleView();
 });
 addEventListener('keyup',e=>{ keys[e.code]=false; if(isAlt(e)){ e.preventDefault(); altUp(); } });
@@ -71,5 +70,4 @@ canvas.addEventListener('touchend',endTouch); canvas.addEventListener('touchcanc
 const bJump=$('#bJump');
 bJump.addEventListener('touchstart',e=>{ e.preventDefault(); jumpReq=true; },{passive:false});
 bJump.addEventListener('click',()=>{ jumpReq=true; });
-$('#bTime').addEventListener('click',e=>{ cycleTime(); e.currentTarget.blur(); });
 $('#bView').addEventListener('click',e=>{ toggleView(); e.currentTarget.blur(); });

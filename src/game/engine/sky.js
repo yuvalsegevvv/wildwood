@@ -1,15 +1,16 @@
 //@ Sky dome shader (gradient, sun/moon, stars, clouds)
 /* ---------- sky ---------- */
+const skySun = new THREE.Vector3(0,1,0), skyMoon = new THREE.Vector3(0,-1,0);   // where the sky draws the sun and the moon (the light, sunDir, never sets)
 const skyU = {
   uTop:{value:new THREE.Color()}, uFog:{value:new THREE.Color()}, uHor:{value:new THREE.Color()},
-  uBot:{value:new THREE.Color()}, uSunDir:{value:sunDir}, uSunCol:{value:new THREE.Color()},
+  uBot:{value:new THREE.Color()}, uSunDir:{value:skySun}, uMoonDir:{value:skyMoon}, uSunCol:{value:new THREE.Color()},
   uCloud:{value:new THREE.Color()}, uNight:{value:0}, uTime:timeU
 };
 const sky = new THREE.Mesh(new THREE.SphereGeometry(900,32,16), new THREE.ShaderMaterial({
   uniforms:skyU, side:THREE.BackSide, depthWrite:false, depthTest:false, fog:false,
   vertexShader:`varying vec3 vDir; void main(){ vDir=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
   fragmentShader:`
-    uniform vec3 uTop,uFog,uHor,uBot,uSunDir,uSunCol,uCloud; uniform float uNight,uTime; varying vec3 vDir;
+    uniform vec3 uTop,uFog,uHor,uBot,uSunDir,uMoonDir,uSunCol,uCloud; uniform float uNight,uTime; varying vec3 vDir;
     float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
     float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
       return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x), mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),f.x), f.y); }
@@ -22,7 +23,11 @@ const sky = new THREE.Mesh(new THREE.SphereGeometry(900,32,16), new THREE.Shader
       vec3 col=mix(horiz,uTop,pow(clamp(h,0.0,1.0),0.55));
       col=mix(col,uBot,1.0-smoothstep(-0.25,0.0,h));
       float s=max(dot(d,sd),0.0);
-      col+=uSunCol*(pow(s,700.0)*3.0 + pow(s,9.0)*0.28*(1.0-uNight*0.8));
+      // the sun sinks under the horizon (disc cut at the ground, its glow fading below it); the moon rises elsewhere
+      float sunUp=1.0-smoothstep(0.3,0.9,uNight);
+      col+=uSunCol*sunUp*(pow(s,700.0)*3.0*smoothstep(-0.02,0.01,h) + pow(s,9.0)*0.28*smoothstep(-0.3,-0.02,sd.y));
+      float ms=max(dot(d,normalize(uMoonDir)),0.0);
+      col+=vec3(0.64,0.72,1.0)*uNight*(pow(ms,700.0)*3.0*smoothstep(-0.02,0.01,h) + pow(ms,9.0)*0.06*smoothstep(-0.3,-0.02,uMoonDir.y));
       if(h>0.0){
         if(uNight>0.01){
           vec3 sp=floor(d*320.0);

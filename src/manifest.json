@@ -26,7 +26,8 @@
     "24-dungeon.css",
     "25-dungeon-board.css",
     "26-pvp.css",
-    "27-skillsets.css"
+    "27-skillsets.css",
+    "28-guide.css"
   ],
   "shared": [
     "math.js",
@@ -228,6 +229,7 @@
     "economy/crafting.js",
     "ui/potions.js",
     "ui/travel.js",
+    "ui/guide.js",
     "economy/tiers.js",
     "ui/settings-testing.js",
     "economy/init.js",

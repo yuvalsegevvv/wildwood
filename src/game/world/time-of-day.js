@@ -23,7 +23,9 @@ const dayMote=new THREE.Color(0xfff7d6), fly=new THREE.Color(0xd8ff6a), wDay=new
 function applyEnv(s){
   const el=s.elev*DEG, az=s.azim*DEG;
   sunDir.set(Math.cos(el)*Math.sin(az), Math.sin(el), Math.cos(el)*Math.cos(az)).normalize();
-  sun.color.copy(s.sun); sun.intensity=s.sunI;
+  { const se=(s.sE===undefined?s.elev:s.sE)*DEG, sa=(s.sA===undefined?s.azim:s.sA)*DEG, me=(s.mE===undefined?-90:s.mE)*DEG, ma=(s.mA||0)*DEG;   // the sky's own sun and moon
+    skySun.set(Math.cos(se)*Math.sin(sa), Math.sin(se), Math.cos(se)*Math.cos(sa)); skyMoon.set(Math.cos(me)*Math.sin(ma), Math.sin(me), Math.cos(me)*Math.cos(ma)); }
+  sun.color.copy(s.sun); sun.intensity=s.sunI*(s.lk===undefined?1:s.lk);
   hemi.color.copy(s.hs); hemi.groundColor.copy(s.hg); hemi.intensity=s.hi;
   scene.fog.color.copy(s.fog); scene.fog.far=s.far; renderer.setClearColor(s.fog);
   skyU.uTop.value.copy(s.sky); skyU.uFog.value.copy(s.fog); skyU.uHor.value.copy(s.hor);
@@ -40,10 +42,15 @@ function envAt(c,out){
   const A=TOD_STATES[i], B=TOD_STATES[j];
   CK.forEach(k=>out[k].copy(A[k]).lerp(B[k],f));
   NK.forEach(k=>out[k]=lerp(A[k],B[k],f));
-  // the sun crosses the sky by day, the moon by night; the light follows whichever is higher
+  // the sun crosses the sky by day (c 0 to 0.5), the moon by night (0.5 to 1): each really rises and sets,
+  // and the sky draws both where they are. The light is one lamp that follows the body that is up, never
+  // lower than 4 degrees (a flat light would swallow the shadows), and it hands over at sunset and sunrise
+  // while it is dim: the lamp dips there (lk) so the shadows' jump from west to east is not seen.
   const th=c*TAU, sE=62*Math.sin(th), sA=75+c*420, mE=-45*Math.sin(th), mA=75+((c+0.5)%1)*420;
-  const w=smoothstep(-6,6,mE-sE);
-  out.elev=lerp(Math.max(sE,4),Math.max(mE,4),w); out.azim=lerp(sA,mA,w);
+  out.sE=sE; out.sA=sA; out.mE=mE; out.mA=mA;
+  const dayLamp=c<0.5, hand=c%0.5, d=Math.min(hand,0.5-hand);
+  out.elev=Math.max(dayLamp?sE:mE,4); out.azim=dayLamp?sA:mA;
+  out.lk=0.15+0.85*smoothstep(0,0.012,d);
   out.name=TOD_KEYS[i].name;
 }
 let todLabelT=0;
@@ -79,9 +86,8 @@ function updateEnv(dt){
   todLabelT-=dt;
   if(todLabelT<=0){ todLabelT=0.5; $('#tod').textContent=envCur.name+' '+clockText(dayClock)+(WX.kind&&WX.inten>0.2?(WX.snow>0.5?(WX.kind===2?' · Blizzard':' · Snow'):WX.kind===2?' · Thunderstorm':' · Rain'):''); updateZoneLabel(); }
 }
-// the sun button / T key skips ahead to the next part of the day
+// the testing tools' skip (dev command) jumps to the next part of the day
 let serverDay=null;
-function cycleTime(){ netSend({t:'dev',cmd:'skip'}); }
 envAt(dayClock,envCur);
 applyEnv(envCur);
 

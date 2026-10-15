@@ -33,6 +33,7 @@ styles
   25-dungeon-board.css               The Delve board (the panel at a dungeon door: lock, the two missions on offer, countdown, party) and the prompt to join a party's run
   26-pvp.css                         The Proving Isle (PvP): the badge under the zone name, other fighters' red name tags, the picked target
   27-skillsets.css                   Skill sets in the skills panel and on the action bar: a set piece's symbol in its set's colour, the set effect cards
+  28-guide.css                       The Guide panel: a short in-game wiki in tabs (text, lists and key caps)
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -257,6 +258,7 @@ game
   economy/crafting.js                Crafting and brewing on the client: the Craft tab of the weaponsmiths' and armourers' shops (gear from ore and logs), and the brewing panel of the healers (potions from herbs)
   ui/potions.js                      Potions on the client: the potion belt above the action bar (healing, might and guard, with counts, keys, cooldowns and the running buff), drinking with the keys, and the potion icons
   ui/travel.js                       The travel window: stepping on a teleport circle and pressing the talk key lists every village (CIRCLES in shared/hoarfrost.js); the ones you have not walked to yet are locked
+  ui/guide.js                        The Guide: a short in-game wiki (controls, day and night, skills and gear, dungeons, the Proving Isle) opened by the book button or its key; text only, keys read from the current binds
   economy/tiers.js                   Zone tiers, client side: a monster's level and health as you fight it, the symbol beside your health, the tier picker on the map panel
   ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, the Greyspine, reset
   economy/init.js                    Inventory key and first-time gear setup
