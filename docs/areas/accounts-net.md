@@ -10,9 +10,7 @@ Area guide. Moved word for word from `CLAUDE.md` (sections 4, 8 and 9), where ea
 
 ## Pitfalls
 
-- A class chip that "did nothing": `equipClass` only sends a message, so it can't work before a connection exists, and the editor
-  did not redraw when the server confirmed the new weapon. The start card no longer offers class or sex before connecting; the editor
-  redraws in `applyGear`. Anything on the start card that needs the server must wait for `NET.ready`.
+- A class chip that "did nothing" (history): it only sent a message, so it could not work before a connection existed. The editor has **no class row any more**: your class is the weapon you hold (`clsOf`), never a cosmetic choice, and nothing in the editor resets your level. The start card does not offer class or sex before connecting; anything on it that needs the server must wait for `NET.ready`.
 - A page whose server was stopped (or restarted) used to look alive but ignore everything (equip, attack, buy: the message went to a closed socket, the clock froze). It now shows a Reconnect message (`netDown` in `net/transport.js`: on a closed socket, a send to a closed socket, or no message for `NET_STALL_MS` while playing on the Node server). Remember it when testing: stopping the dev server under an open tab is what triggers it, and a recording of "nothing works" with a frozen clock is a dead connection, not a UI bug.
 - The Shared (room) mode is only testable against the mock in `tools/`-style harnesses; the host tab
   must stay visible (browser timers throttle in background tabs).

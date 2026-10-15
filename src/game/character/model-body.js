@@ -73,8 +73,8 @@ function buildTorso(X,D){
   const skinY=kT&&kT.skinFrom!==undefined?kT.skinFrom:0.555;   // an outfit top with a high collar paints the neck itself (skinFrom)
   const tp=(x,y,z,c)=>{ const yd=y/TK;   // one paint for every piece of the torso: neck skin, top, belt line, bottoms (each of the top and the bottoms is a base garment or an outfit's item)
     if(yd>skinY+0.02*sm(-0.04,0.04,z)) skinPaint(c);   // the neckline: lower in front, higher behind, blended
-    else if(yd>hem){ if(kT) kT.paint('torso',c,x,yd,z,0); else topPaint(c,x,yd); }
-    else if(kB) kB.paint('torso',c,x,yd,z,0);
+    else if(yd>hem){ if(kT) ofPaint(X,'top','torso',c,x,yd,z,0); else topPaint(c,x,yd); }
+    else if(kB) ofPaint(X,'bottom','torso',c,x,yd,z,0);
     else if(yd>hem-0.035 && L.bottom!=='skirt' && hem>0) c.set(0x3a2a1c);
     else botPaint(c,x,yd);
     if(!kT&&(L.top==='jacket'||L.top==='hoodie'||L.top==='mail') && yd<hem+0.03 && yd>hem) c.multiplyScalar(0.8);
@@ -116,13 +116,13 @@ function buildArm(X,D,sd){
   const {L,S,fem,sg,skinPaint,topPaint,q}=X, kit=X.kit&&X.kit.sl.top, {aw,ER,upper,fore}=D, longSleeve=L.top!=='tshirt', hh=S.hands;   // kit: the outfit's top (the sleeves are the top's)
   const sh=new THREE.Group(); sh.name=sd<0?'shL':'shR'; sh.position.set(sd*D.shX,D.shY,0); sh.rotation.z=sd*(0.1+(D.B-1)*0.35);
   // upper arm: the shoulder ball, the biceps in front, narrowing to the elbow
-  const ua=pc(limb([[0,0.05*aw,0.052*aw],[0.13,0.0505*aw,0.053*aw],[0.38,0.045*aw,0.048*aw,-0.003],[0.7,0.037*aw,0.039*aw],[1,ER,ER*1.04]],upper,sg(24),sg(24),{cuts:[0.13/upper].concat((kit&&kit.cuts&&kit.cuts.upperArm)||[])}),kit?(x,y,z,c)=>kit.paint('upperArm',c,x,y,z,sd):(x,y,z,c)=>{ if(longSleeve||y>-0.13) topPaint(c,x+sd*0.3,y); else skinPaint(c); });
+  const ua=pc(limb([[0,0.05*aw,0.052*aw],[0.13,0.0505*aw,0.053*aw],[0.38,0.045*aw,0.048*aw,-0.003],[0.7,0.037*aw,0.039*aw],[1,ER,ER*1.04]],upper,sg(24),sg(24),{cuts:[0.13/upper].concat((kit&&kit.cuts&&kit.cuts.upperArm)||[])}),kit?(x,y,z,c)=>ofPaint(X,'top','upperArm',c,x,y,z,sd):(x,y,z,c)=>{ if(longSleeve||y>-0.13) topPaint(c,x+sd*0.3,y); else skinPaint(c); });
   const m1=new THREE.Mesh(ua,matChar); m1.castShadow=true; sh.add(m1);
   if(X.kit){ const ex=ofRun(X,'shoulder',sd); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; sh.add(m); } }   // puffed sleeves, epaulets, in the shoulder joint's frame
   const el=new THREE.Group(); el.name=sd<0?'elL':'elR'; el.position.y=-upper; sh.add(el);
   // forearm and hand in one surface: thick below the elbow, slim at the wrist (t = 0.82), then the palm flattens out of it
   const wr=D.wrist/fore, ww=0.02*aw, pw=0.027*hh;
-  const fa=pc(limb([[0,ER,ER*1.04],[0.1,0.037*aw,0.038*aw],[0.34,0.0305*aw,0.03*aw],[wr-0.12,0.0235*aw,0.0235*aw],[wr,ww,ww],[wr+0.08,0.0125*hh,pw*0.9],[1,0.0115*hh,pw]],fore,sg(20),sg(26),{cuts:[0.2/fore,0.225/fore].concat((kit&&kit.cuts&&kit.cuts.foreArm)||[])}),kit?(x,y,z,c)=>kit.paint('foreArm',c,x,y,z,sd):(x,y,z,c)=>{ if(longSleeve && y>-0.225){ topPaint(c,x+sd*0.3,y-upper); if(y<-0.2) c.multiplyScalar(0.8); } else skinPaint(c); },-upper);
+  const fa=pc(limb([[0,ER,ER*1.04],[0.1,0.037*aw,0.038*aw],[0.34,0.0305*aw,0.03*aw],[wr-0.12,0.0235*aw,0.0235*aw],[wr,ww,ww],[wr+0.08,0.0125*hh,pw*0.9],[1,0.0115*hh,pw]],fore,sg(20),sg(26),{cuts:[0.2/fore,0.225/fore].concat((kit&&kit.cuts&&kit.cuts.foreArm)||[])}),kit?(x,y,z,c)=>ofPaint(X,'top','foreArm',c,x,y,z,sd):(x,y,z,c)=>{ if(longSleeve && y>-0.225){ topPaint(c,x+sd*0.3,y-upper); if(y<-0.2) c.multiplyScalar(0.8); } else skinPaint(c); },-upper);
   const hand=q>=0.5?[fa].concat(buildFingers(X,D,sd)):[fa];
   const m2=new THREE.Mesh(hand.length>1?merge(hand):fa,matChar); m2.castShadow=true; el.add(m2);
   if(X.kit){ const ex=ofRun(X,'forearm',sd); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; el.add(m); } }   // cuffs, bracers, in the elbow's frame (y down the forearm)
@@ -139,14 +139,14 @@ function buildFoot(X,D,sd,boot){
   const p=g.attributes.position; for(let i=0;i<p.count;i++) if(p.getY(i)<-A) p.setY(i,-A);   // a flat sole
   smoothN(g);
   const white=L.shoes!=='boots';
-  if(kit) return pc(g,(x,y,z,c)=>kit.paint('foot',c,x,y,z,sd),-D.thigh-D.shin);
+  if(kit) return pc(g,(x,y,z,c)=>ofPaint(X,'shoes','foot',c,x,y,z,sd),-D.thigh-D.shin);
   return pc(g,(x,y,z,c)=>{ c.set(L.shoeColor); if(y<-A+0.011) c.set(white?0xf2efe8:0x221a14); else if(white&&z<-0.1) c.multiplyScalar(1.12); },-D.thigh-D.shin);
 }
 function buildLeg(X,D,sd){
   const {L,S,fem,sg,skinPaint,botPaint}=X, kB=X.kit&&X.kit.sl.bottom, kS=X.kit&&X.kit.sl.shoes, {tw,cw,thigh,shin,KR,hx,B,lr}=D, boot=kS?kS.boot!==false:L.shoes==='boots';   // kB / kS: the outfits' bottoms and shoes, when worn
   const hp=new THREE.Group(); hp.name=sd<0?'hipL':'hipR'; hp.position.set(sd*hx,0,0);
   // thigh: the hip ball, full quads in front, tapering to the knee (radius KR, shared with the shin below)
-  const th=pc(limb([[0,0.088*tw,0.092*tw],[0.14,0.09*tw,0.094*tw],[0.42,0.077*tw,0.081*tw,-0.004],[0.76,Math.max(KR*1.1,0.057*tw),Math.max(KR*1.12,0.06*tw),-0.002],[1,KR,KR*1.04]],thigh,sg(24),sg(28),{cuts:[0.53,0.53-0.03/thigh].concat((kB&&kB.cuts&&kB.cuts.thigh)||[])}),kB?(x,y,z,c)=>kB.paint('thigh',c,x,y,z,sd):(x,y,z,c)=>{
+  const th=pc(limb([[0,0.088*tw,0.092*tw],[0.14,0.09*tw,0.094*tw],[0.42,0.077*tw,0.081*tw,-0.004],[0.76,Math.max(KR*1.1,0.057*tw),Math.max(KR*1.12,0.06*tw),-0.002],[1,KR,KR*1.04]],thigh,sg(24),sg(28),{cuts:[0.53,0.53-0.03/thigh].concat((kB&&kB.cuts&&kB.cuts.thigh)||[])}),kB?(x,y,z,c)=>ofPaint(X,'bottom','thigh',c,x,y,z,sd):(x,y,z,c)=>{
     if(L.bottom==='trousers'||(L.bottom==='shorts'&&y>-thigh*0.53)) botPaint(c,x,y); else skinPaint(c);
     if(L.bottom==='shorts'&&y>-thigh*0.53&&y<-thigh*0.53+0.03) c.multiplyScalar(0.85); });
   const m1=new THREE.Mesh(th,matChar); m1.castShadow=true; hp.add(m1);
@@ -158,9 +158,9 @@ function buildLeg(X,D,sd){
   // keeps another outfit's boots from showing under it
   const tb=kS?ofBootTop(kS):(L.shoes==='boots'?0.6:1.1), same=kB&&kB===kS, kcut=(k,low)=>((k&&k.cuts&&k.cuts.shin)||[]).filter(t=>(t<tb)===low);
   const sv=pc(limb([[0,KR,KR*1.04],[0.14,0.0505*cw,0.054*cw,0.005],[0.3,0.052*cw,0.057*cw,0.011]].concat(bs),shin,sg(24),sg(28),{cuts:[0.6].concat(same?(kB.cuts&&kB.cuts.shin)||[]:kcut(kB,true).concat(kcut(kS,false)))}),(x,y,z,c)=>{ const t=-y/shin;
-    if(same) kB.paint('shin',c,x,y,z,sd);
-    else if(t<tb){ if(kB) kB.paint('shin',c,x,-Math.min(t,ofBootTop(kB)-0.02)*shin,z,sd); else if(L.bottom==='trousers') botPaint(c,x,y); else skinPaint(c); }
-    else if(kS) kS.paint('shin',c,x,y,z,sd);
+    if(same) ofPaint(X,t<tb?'bottom':'shoes','shin',c,x,y,z,sd);
+    else if(t<tb){ if(kB) ofPaint(X,'bottom','shin',c,x,-Math.min(t,ofBootTop(kB)-0.02)*shin,z,sd); else if(L.bottom==='trousers') botPaint(c,x,y); else skinPaint(c); }
+    else if(kS) ofPaint(X,'shoes','shin',c,x,y,z,sd);
     else c.set(L.shoeColor); },-thigh);
   const parts=[sv];
   if(L.bottomStyle==='plate') parts.push(pc(csph(0.066*lr,sg(14),sg(10)).scale(1,0.9,0.8).translate(0,0,-0.03),c=>c.set(L.bottomColor).multiplyScalar(1.1)));   // a knee plate

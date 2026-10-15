@@ -304,7 +304,7 @@ OUTFITS.torgeir=(function(){
     const bracers=()=>{ const out=[]; for(const y of [-0.1,-0.17]){ const s=lin(FORE,-y/D.fore), R=s[0]+0.0035; out.push(eRing(y,R,R,0,0.0036,IRON_L,5)); out.push(solid(csph(0.0038,6,4).translate(0,y,-R-0.002),BONE)); } return out; };
 
     return {
-      bootTop:0.76, shinCut:0.73, boot:true, skinFrom:0.588, hairColor:HAIR, eyeColor:0x7a9ab0,
+      main:{top:0x3f5668,bottom:0x6a794c,shoes:0x4e3a2a,hat:0x5d6168}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.76, shinCut:0.73, boot:true, skinFrom:0.588, hairColor:HAIR, eyeColor:0x7a9ab0,
       eyes:{iris:0.97,h:0.7,lash:1.25,hl:1,tilt:-0.1,browLift:-0.004,browThick:1.25,browAngle:0.1},   // the "heavy" style: the upper lid drops over the pale iris, thick low brows
       cuts:{torso:[0.012,0.07,0.588],upperArm:[0.188/D.upper,0.2/D.upper],foreArm:[0.07/D.fore,0.082/D.fore,0.19/D.fore],thigh:[0.304/D.thigh,0.312/D.thigh,0.348/D.thigh,0.356/D.thigh],shin:[0.76]},
       paint,

@@ -253,7 +253,7 @@ OUTFITS.tansy=(function(){
       return {lit,glow:[]}; };
 
     return {
-      bootTop:0.8, shinCut:0.77, boot:true, hairColor:0xd8b56e, eyeColor:0xb8862f,
+      main:{top:0x7a9a3c,bottom:0xb59a64,shoes:0x7a5a3a,hat:0xe0b95a}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.8, shinCut:0.77, boot:true, hairColor:0xd8b56e, eyeColor:0xb8862f,
       eyes:{iris:1.05,h:1.06,lash:0.4,hl:1,tilt:0,browThick:1.3,browLift:0.003},    // the "sunny" style: a round wide-open amber eye, one big highlight, a light lash, thick friendly brows
       cuts:{torso:[0.03,0.434,0.4375],foreArm:[0.135/fore],thigh:[0.935],shin:[0.085,0.8]},
       paint:bodyPaint,

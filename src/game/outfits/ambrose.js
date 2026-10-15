@@ -333,7 +333,7 @@ OUTFITS.ambrose=(function(){
         return {lit,glow}; } };
 
     return {
-      bootTop:0.5, shinCut:0.48, boot:true, skinFrom:0.555, hairColor:HAIR, eyeColor:0x3f6b3a, eyes:EYES,
+      main:{top:0x4f7a6a,bottom:0xa57b55,shoes:0x4f7a6a,hat:0x4f7a6a}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.5, shinCut:0.48, boot:true, skinFrom:0.555, hairColor:HAIR, eyeColor:0x3f6b3a, eyes:EYES,
       cuts:{torso:[0.065],thigh:[0.9],shin:[0.5]},
       paint,
       head:(F,T)=>wrap(F,T),

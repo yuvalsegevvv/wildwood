@@ -1,9 +1,10 @@
 //@ Character editor panel and camera: tabs generated from the slider table (shared/character.js), recommended setups, opened from the HUD or in creating mode after registering
 /* ---------- character editor ----------
    Two ways in: the HUD button (Done just closes it) and creating mode, right after Register on the start card (it opens on the
-   Class tab and its Enter button starts the game). A tab with close:true frames the head (face, hair) instead of the whole body.
+   Body tab and its Enter button starts the game). There is no class row: the class is the weapon you hold, not a cosmetic choice. A tab with close:true frames the head (face, hair) instead of the whole body.
    A row {slider:'legs'} takes its label, range and ends from BODY_SLIDERS; the character model's recommended range is drawn under the track and the row warns outside it.
-   The Body tab starts with the model's recommended setups (named presets of the sliders: shared/character.js, docs/CHARACTER.md). */
+   The Body tab starts with the model's recommended setups (named presets of the sliders: shared/character.js, docs/CHARACTER.md).
+   The Signature tab sets up a whole signature character (gender, sliders, all seven outfit pieces, designed colours); the Clothes, Hair, Features and Eyes rows swap and recolour single pieces. */
 let customizing=false, creating=false, edTab=0;
 const edEl=$('#editor'), edTabs=$('#edTabs'), edBody=$('#edBody');
 const cam={d:3,h:1.2,l:0.95};
@@ -32,33 +33,31 @@ const EDIT=[
   ].concat(['hairLength','hairVolume','bangs'].map(k=>({slider:k}))).concat([
     {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]}
   ])},
-  {tab:'Class', rows:[
-    {k:'cls',label:'Class (by weapon)',type:'seg',opts:[['warrior','Sword: Warrior'],['archer','Bow: Archer'],['mage','Wand: Mage']]},
-    {type:'info'}
-  ]},
+  // (there is no class row: your class is the weapon you hold, never a cosmetic choice)
+  {tab:'Signature', rows:[{type:'sets'}]},
   {tab:'Clothes', rows:[
-    // the signature outfits (src/game/outfits): the first row puts a whole set on (all seven pieces, on its character's reference body); every piece also has its own row, here and in the Hair and Features tabs,
-    // so the pieces of different sets mix. A row marked base:'<slot>' (a colour, hair colour...) is hidden while that slot wears an outfit's piece, which has its own colours.
-    {k:'model',label:'Signature set (all seven pieces)',type:'seg',opts:[['base','None']].concat(Object.keys(OUTFITS).map(id=>[id,CHAR_MODELS[id].name]))},
+    // the signature outfits (src/game/outfits): the Signature tab puts a whole character on; every piece also has its own row, here and in the Hair and Features tabs, so the pieces of different sets mix.
+    // A colour row marked base:'<slot>' paints the base garment, or, while that slot wears an outfit's piece, recolours the piece (look.tint<Slot>; 'Designed colours' puts the original back).
     {k:'top',label:'Top',type:'seg',opts:[['tshirt','T-shirt'],['flannel','Flannel'],['jacket','Jacket'],['hoodie','Hoodie']].concat(ofItems('top'))},
-    {k:'topColor',label:'',type:'color',base:'top',opts:CLOTH},
+    {k:'topColor',label:'',type:'color',base:'top',opts:TINTC},
     {k:'bottom',label:'Bottoms',type:'seg',opts:[['trousers','Trousers'],['shorts','Shorts'],['skirt','Skirt']].concat(ofItems('bottom'))},
-    {k:'bottomColor',label:'',type:'color',base:'bottom',opts:CLOTH},
+    {k:'bottomColor',label:'',type:'color',base:'bottom',opts:TINTC},
     {k:'shoes',label:'Shoes',type:'seg',opts:[['boots','Boots'],['sneakers','Sneakers']].concat(ofItems('shoes'))},
-    {k:'shoeColor',label:'',type:'color',base:'shoes',opts:SHOEC},
+    {k:'shoeColor',label:'',type:'color',base:'shoes',opts:TINTC},
     {k:'armor',label:'Armor',type:'seg',opts:[['show','Show'],['hide','Hide (clothes only)']]},
     {k:'hat',label:'Hat',type:'seg',opts:[['none','None'],['ranger','Ranger'],['beanie','Beanie'],['cap','Cap'],['kasa','Kasa']].concat(ofItems('hat'))},
-    {k:'hatColor',label:'',type:'color',base:'hat',opts:HATC},
+    {k:'hatColor',label:'',type:'color',base:'hat',opts:TINTC},
     {k:'pack',label:'Backpack',type:'seg',base:'top',opts:[[true,'On'],[false,'Off']]},
     // an outfit's weapon dressing restyles whatever weapon you hold, whatever your class
-    {k:'weaponItem',label:'Weapon style (signature)',type:'seg',opts:[['','Plain']].concat(ofItems('weapon'))}
+    {k:'weaponItem',label:'Weapon style (signature)',type:'seg',opts:[['','Plain']].concat(ofItems('weapon'))},
+    {k:'tintWeapon',label:'',type:'color',base:'weapon',only:true,opts:TINTC}
   ]}
 ];
 const hex=n=>'#'+n.toString(16).padStart(6,'0');
 function setLook(k,v){
-  if(k==='cls'){ equipClass(v); return; }   // the server equips your best weapon of that class; applyGear (economy/items.js) redraws this panel
   if(k==='sex' && !LOOK.custom){ const keep={skin:LOOK.skin,cls:LOOK.cls}; for(const s of SLIDER_KEYS) keep[s]=LOOK[s]; LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,keep); }   // the sliders and skin carry over
-  else if(k==='model'){ LOOK=ofWear(LOOK,v); LOOK.custom=true; }   // a whole set on (or off: 'base'); every piece row below it can then change one piece
+  else if(k==='model'){ const M=v!=='base'&&CHAR_MODELS[v]; if(M&&M.sexes&&M.sexes.length&&M.sexes[0]!==LOOK.sex) LOOK.sex=M.sexes[0];   // the set-up: the character's recommended gender,
+    LOOK=ofWear(LOOK,v); LOOK.custom=true; }   // all seven pieces in their designed colours (and, below, the recommended sliders); every row can then change one piece or colour
   else { LOOK[k]=v; if(k!=='sex') LOOK.custom=true; ofTidy(LOOK); }   // (ofTidy: the model is the base again once none of the set's pieces is worn)
   if(k==='model'&&v!=='base'){ const st=setupsOf(CHAR_MODELS[v],LOOK.sex)[0]; if(st) LOOK=applySetup(LOOK,st); }   // wearing a signature outfit starts on its character's reference body
   saveLook(); rebuildHiker();
@@ -99,7 +98,8 @@ function renderEditor(){
   edBody.innerHTML='';
   for(const row of EDIT[edTab].rows){
     if(row.fem && LOOK.sex!=='female') continue;
-    if(row.base && ofPieces(LOOK)[row.base]) continue;   // an outfit's piece in that slot brings its own colours: these rows do nothing while it is worn
+    if(row.base && ofPieces(LOOK)[row.base] && row.type!=='color') continue;   // an outfit's piece in that slot has its own look: these rows (facial hair, antenna hair, backpack) do nothing while it is worn
+    if(row.only && !ofPieces(LOOK)[row.base]) continue;   // a recolour row of a piece that is not worn
     const wrap=document.createElement('div'); wrap.className='ed-row'+(row.label||row.slider||row.type==='setups'?'':' ed-sub');
     if(row.label){ const lb=document.createElement('div'); lb.className='ed-label'; lb.textContent=row.label; wrap.append(lb); }
     if(row.slider){ sliderRow(wrap,row); }
@@ -121,21 +121,25 @@ function renderEditor(){
       }
       wrap.append(box);
     } else if(row.type==='color'){
+      const tinted=row.base&&ofPieces(LOOK)[row.base], key=tinted?OF_TINT[row.base]:row.k;   // a worn outfit piece is recoloured (-1 = the colours it was designed in)
+      if(tinted){ const d=document.createElement('button'); d.className='chip'; d.textContent='Designed colours'; d.setAttribute('aria-pressed',!(LOOK[key]>=0)); d.onclick=()=>{ setLook(key,-1); renderEditor(); }; const dw=document.createElement('div'); dw.className='chips'; dw.append(d); wrap.append(dw); }
       const box=document.createElement('div'); box.className='swatches';
       row.opts.forEach((v,i)=>{
         const b=document.createElement('button'); b.className='sw'; b.style.background=hex(v);
-        b.setAttribute('aria-label',(row.label||row.k.replace('Color',''))+' color '+(i+1)); b.setAttribute('aria-pressed',LOOK[row.k]===v);
-        b.onclick=()=>{ setLook(row.k,v); renderEditor(); }; box.append(b);
+        b.setAttribute('aria-label',(row.label||row.k.replace('Color',''))+' color '+(i+1)); b.setAttribute('aria-pressed',LOOK[key]===v);
+        b.onclick=()=>{ setLook(key,v); renderEditor(); }; box.append(b);
       });
       wrap.append(box);
-    } else if(row.type==='info'){
-      const c=CLASSES[clsOf()], p=document.createElement('p'); p.className='ed-info';
-      p.textContent='Your class follows the weapon you hold (sword, bow or wand); picking one here equips the best one you own. '+c.desc; wrap.append(p);
-      const ul=document.createElement('p'); ul.className='ed-info'; const sk=abilityOf(clsOf(),'skill',GEAR&&GEAR.skills,PL.level); const ba=abilityOf(clsOf(),'basic',GEAR&&GEAR.skills,PL.level); ul.innerHTML='<b>'+(ba?ba.name:c.basic.name)+'</b> basic attack &nbsp; '+(sk?'<b>'+sk.name+'</b> skill':PL.level<SKILL_SLOT_LV?'skill slot opens at level '+SKILL_SLOT_LV:'no skill equipped'); wrap.append(ul);
-      const pr=document.createElement('p'); pr.className='ed-info'; pr.innerHTML='<b>Level '+PL.level+'</b> &nbsp; '+Math.floor(PL.exp)+' / '+Math.ceil(expToNext(PL.level))+' XP &nbsp; '+PL.maxHp+' health &nbsp; '+Math.round(PL.dmg)+' base damage'; wrap.append(pr);
-      if(PL.level>1){ const rb=document.createElement('button'); rb.className='chip'; rb.style.marginTop='12px'; rb.textContent='Start over at level 1';
-        rb.onclick=()=>{ if(!rb.dataset.sure){ rb.dataset.sure='1'; rb.textContent='Tap again to reset your level'; return; } netSend({t:'dev',cmd:'level',v:1}); };
-        wrap.append(rb); }
+    } else if(row.type==='sets'){
+      // the signature characters (src/game/outfits): one tap sets up the whole look: the recommended gender, body sliders, all seven pieces and the colours they were designed in
+      const p0=document.createElement('p'); p0.className='ed-info'; p0.textContent='Put a whole signature character on with one tap: its recommended gender, body sliders, all seven pieces and the colours it was designed in. Everything stays editable afterwards: swap a piece in the Clothes, Hair and Features tabs, recolour it with the colour rows, or move the sliders.'; wrap.append(p0);
+      const list=document.createElement('div'); list.className='sig-list';
+      for(const id of Object.keys(OUTFITS)){ const M=CHAR_MODELS[id], on=LOOK.model===id&&Object.keys(ofPieces(LOOK)).length===7, fem=!!(M.sexes&&M.sexes[0]==='female'), row2=document.createElement('div'); row2.className='sig-row';
+        const b=document.createElement('button'); b.className='chip sig'; b.textContent=M.name; b.setAttribute('aria-pressed',on); b.title=M.name+' ('+(fem?'female':'male')+')'; b.onclick=()=>{ setLook('model',id); renderEditor(); };
+        const t=document.createElement('span'); t.className='ed-info'; t.textContent=(fem?'Female. ':'Male. ')+(M.note||''); row2.append(b,t); list.append(row2); }
+      wrap.append(list);
+      const off=document.createElement('button'); off.className='chip'; off.textContent='Take the outfit off (plain clothes)'; off.onclick=()=>{ setLook('model','base'); renderEditor(); };
+      const ob=document.createElement('div'); ob.className='chips'; ob.append(off); wrap.append(ob);
     }
     edBody.append(wrap);
   }
@@ -147,7 +151,7 @@ function surpriseMe(){
 function openEditor(o){
   if(!Stream.terrainDone) return;
   customizing=true; creating=!!(o&&o.create);
-  if(creating) edTab=Math.max(0,EDIT.findIndex(tb=>tb.tab==='Class'));
+  if(creating) edTab=0;
   $('#edTitle').textContent=creating?'Create your hiker':'Your hiker'; $('#edDone').textContent=creating?'Enter the world':'Done';
   releasePointer();
   P.vx=P.vz=0; joyX=joyY=0;

@@ -39,3 +39,9 @@ body.editing .hud-top{ display:none; }
   #editor{ top:auto; left:0; width:auto; height:54%; border-left:0; border-top:1px solid var(--line); border-radius:20px 20px 0 0; padding-top:16px; }
   .ed-title{ font-size:21px; }
 }
+
+/* the Signature tab: one row per signature character, a gold chip and a line about it */
+.sig-list{ display:flex; flex-direction:column; gap:10px; margin:10px 0 14px; }
+.sig-row{ display:flex; align-items:flex-start; gap:10px; }
+.sig-row .chip{ flex:none; min-width:92px; }
+.sig-row .ed-info{ margin:0; font-size:12.5px; line-height:1.35; }

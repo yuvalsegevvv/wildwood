@@ -188,7 +188,7 @@ OUTFITS.marigold=(function(){
     const lanternPaint=(h,hot)=>(x,y,z,c)=>{ const k=Math.abs(y)/h, ang=Math.atan2(z,x); c.set(hot); c.lerp(cGl,clamp(k*1.3)); if(fr(ang/(TAU/8))<0.13) c.lerp(cM,0.75); if(k>0.9) c.lerp(cM,0.5); };
 
     const kit={
-      bootTop:0.075, shinCut:0, boot:true, hairColor:MARI, eyeColor:HAZEL,
+      main:{top:0x5a2a4a,bottom:0xe59a2b,shoes:0x5a2a4a,hat:0xe3b448}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.075, shinCut:0, boot:true, hairColor:MARI, eyeColor:HAZEL,
       eyes:{iris:1.15,hl:1,tilt:0.1,lash:0.85,h:1.04},
       cuts:{torso:[],upperArm:[0.4],thigh:[0.5,0.9,0.96],shin:[0.075,0.88,0.915,0.93]},
       paint, hair, head, mark,

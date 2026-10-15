@@ -64,7 +64,7 @@ function buildFace(X){
   /* eyes: a wide almond white, an iris that nearly fills its height (lighter below), a pupil, two highlights, an upper lash with a flick, the lid's crease,
      and (female) a fine lower lash. The upper lash line is what reads as "anime"; keep the rest quiet. */
   const ES=(kF&&kF.eyes)||{}, eI=ES.iris||1, eHt=ES.h||1, eWd=ES.w||1, eLs=ES.lash||1;   // an outfit's eye style: iris size, eye height / width, lash weight, highlight count, tilt (docs/CHARACTER.md section 9)
-  const E=S.eyeSize*(fem?1.03:1)*0.74, ex=0.046*S.eyeGap*fs[0], ey=(-0.002+0.012*S.eyeHeight)*HEAD_TALL, eyeC=new THREE.Color(kF&&kF.eyeColor!==undefined?kF.eyeColor:L.eyes), lashC=new THREE.Color(0x251b1e).lerp(hairCol,0.15), white=new THREE.Color(0xf7f3ef);
+  const E=S.eyeSize*(fem?1.03:1)*0.74, ex=0.046*S.eyeGap*fs[0], ey=(-0.002+0.012*S.eyeHeight)*HEAD_TALL, eyeC=new THREE.Color(X.kit&&X.kit.eye>=0?X.kit.eye:kF&&kF.eyeColor!==undefined?kF.eyeColor:L.eyes), lashC=new THREE.Color(0x251b1e).lerp(hairCol,0.15), white=new THREE.Color(0xf7f3ef);
   const SW=0.0295*E*eWd, SH=0.0245*E*eHt;
   for(const sd of [-1,1]){
     const e=[];

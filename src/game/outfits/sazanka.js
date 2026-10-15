@@ -248,7 +248,7 @@ OUTFITS.sazanka=(function(){
         return {lit,glow}; } };
 
     const kit={
-      bootTop:1.1, shinCut:9, boot:false, skinFrom:0.605, hairColor:HAIR, eyeColor:0x8a86a8,
+      main:{top:0x2f3f6b,bottom:0x2f3f6b,shoes:0x1b1f2a,hat:0x222c4e}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:1.1, shinCut:9, boot:false, skinFrom:0.605, hairColor:HAIR, eyeColor:0x8a86a8,
       eyes:EYES,
       cuts:{torso:[0.012,0.062],foreArm:[WRIST/D.fore]},
       paint:bodyPaint,

@@ -372,7 +372,7 @@ OUTFITS.corvin=(function(){
 
     /* ================= the kit ================= */
     return {
-      bootTop:0.72, shinCut:0.70, own:{thigh:'top'}, boot:true, skinFrom:0.605, hairColor:SILVER, eyeColor:0xaab4bd,
+      main:{top:0x2b2b2e,bottom:0x3a3228,shoes:0x241e18,hat:0x5c4b3a}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.72, shinCut:0.70, own:{thigh:'top'}, boot:true, skinFrom:0.605, hairColor:SILVER, eyeColor:0xaab4bd,
       eyes:{iris:0.92,h:0.84,w:1.05,lash:0.9,hl:2,tilt:-0.05,browLift:0.002,browThick:0.95,browAngle:0.2},
       cuts:{torso:[0.0],foreArm:[0.232/D.fore,0.07/D.fore],upperArm:[0.205/D.upper],shin:[BOOT]},
       paint,

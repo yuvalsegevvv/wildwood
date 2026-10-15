@@ -26,5 +26,4 @@ function equip(id){
   netSend({t:'equip',id}); UI_SFX.pickup();
 }
 function unequip(slot){ if(slot!=='weapon') netSend({t:'unequip',slot}); }
-function equipClass(cls){ netSend({t:'cls',cls}); }
 function giveAll(){ netSend({t:'dev',cmd:'giveAll'}); }

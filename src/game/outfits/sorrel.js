@@ -326,7 +326,7 @@ OUTFITS.sorrel=(function(){
         return {lit,glow}; } };
 
     return {
-      bootTop:0.6, shinCut:0.55, boot:true, skinFrom:0.6, hairColor:HAIR, eyeColor:EYE,
+      main:{top:0x8fb8d8,bottom:0x4a5560,shoes:0x6a5a48,hat:0x6a5a48}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.6, shinCut:0.55, boot:true, skinFrom:0.6, hairColor:HAIR, eyeColor:EYE,
       eyes:{iris:0.82,h:0.7,w:1.1,lash:1.9,hl:1,tilt:0.24,browLift:0.004,browThick:0.85},
       cuts:{torso:[0.012,0.07,0.405,0.498],upperArm:[0.158/D.upper,0.17/D.upper,0.19/D.upper,0.202/D.upper],foreArm:[0.17/D.fore,0.2/D.fore,WRIST/D.fore]},
       paint, head, hair, mark, torso, shoulder, forearm, thigh, shin, extras, dress,

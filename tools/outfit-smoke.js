@@ -18,6 +18,7 @@ const only=process.argv.includes('--only')?process.argv[process.argv.indexOf('--
     ok('outfit "'+id+'" builds on its reference body: no NaN, feet on the ground',st.bad===0&&Math.abs(st.minY)<0.03,'minY '+st.minY.toFixed(3));
     ok('outfit "'+id+'" stays within the triangle budget (+'+Math.round(st.tris-plain.tris)+' over the base clothes, at most 35,000)',st.tris-plain.tris<=35000);
     ok('outfit "'+id+'" has the hooks: paint, hair, head, a distinct eye style, a weapon dressing',typeof rig.kit.sl.top.paint==='function'&&typeof rig.kit.sl.hair.hair==='function'&&typeof rig.kit.sl.hat.head==='function'&&!!rig.kit.sl.face.eyes&&!!rig.dress);
+    ok('outfit "'+id+'" names the main colour of each piece for the player\'s recolouring (main: top, bottom, shoes, hat; hairColor; dress.accent)',['top','bottom','shoes','hat'].every(sl=>rig.kit.sl[sl].main&&typeof rig.kit.sl[sl].main[sl]==='number')&&typeof rig.kit.sl.hair.hairColor==='number'&&typeof rig.dress.accent==='number');
     // every slider at both ends of the whole range, on the reference body and on the other sex, at a low detail
     let bad=null; for(const sx of ['male','female']){ for(const sl of C.BODY_SLIDERS){ for(const v of [sl.min,sl.max]){ try{ const r=C.buildCharacter(Object.assign(worn(id,sx,sx===sex?ref:{v:{}}),{[sl.k]:v}),{q:0.4}), t=C.stats(r); if(t.bad>0&&!bad) bad=sx+' '+sl.k+'='+v+' NaN'; }catch(e){ if(!bad) bad=sx+' '+sl.k+'='+v+': '+e.message; } } } }
     ok('outfit "'+id+'" builds with every slider at both ends, on both bodies',!bad,bad||'');
@@ -56,6 +57,19 @@ if(!only){
   // an item brings its own colours: hair colour and eye colour follow the hair and face items (a hair item changes the eyebrows' colour)
   { const o={top:'constructor',bottom:'__proto__',shoes:'x',hat:'toString',hair:'nope',faceItem:'hasOwnProperty',weaponItem:'valueOf'}; let err=null, t=null; try{ t=stat(o); }catch(e){ err=e.message; }
     ok('a look with nonsense piece names builds, wearing none of them (a remote look is not sanitized)',!err&&t.bad===0&&Object.keys(C.ofPieces(look('male',o))).length===0,err||''); }
+  // recolouring (outfit-tools.js "Recolouring"): a look's tint<Slot> moves a worn piece's main colour to the player's colour; -1 and nonsense mean as designed; a slot without an outfit piece is not affected
+  { const sum=L=>{ const t=C.tris(C.buildCharacter(L,{q:0.7})); let h=0; for(let i=0;i<t.length;i++) h=(h+t[i]*((i%89)+1))%1e9; return Math.round(h*1000)+':'+t.length; };
+    const TINT={top:'tintTop',bottom:'tintBottom',shoes:'tintShoes',hat:'tintHat',hair:'tintHair',face:'tintFace',weapon:'tintWeapon'};
+    let bad=null; for(const id of ids){ const sex=C.CHAR_MODELS[id].sexes[0], W=C.ofWear(look(sex),id), base=sum(W);
+      for(const sl of ['top','bottom','shoes','hat','hair','face']){ const one=sum(Object.assign({},W,{[TINT[sl]]:0x2f6f73})); if(one===base) bad=bad||(id+' '+sl+' tint changes nothing'); const alone=sum(look(sex,{[C.OF_FIELD[sl]]:id})), alone0=sum(look(sex,{[C.OF_FIELD[sl]]:id,[TINT[sl]]:0x8a2f2f})); if(alone===alone0) bad=bad||(id+' '+sl+' tint alone changes nothing'); }
+      const colour=L=>{ const r=C.buildCharacter(L,{q:0.4}); C.weaponsOn(r,'warrior',1); const t=C.tris(r); let h=0; for(let i=0;i<t.length;i++) h=(h+t[i]*((i%83)+1))%1e9; return Math.round(h*1000); };
+      if(colour(W)===colour(Object.assign({},W,{tintWeapon:0x8a2f2f}))) bad=bad||(id+' weapon tint changes nothing'); }
+    ok('every slot of every outfit can be recoloured (body slots, the hair and the eyes, the weapon), also one piece alone on plain clothes',!bad,bad||'');
+    const W=C.ofWear(look('female'),'marigold'), base=sum(W);
+    ok('a tint of -1, a missing one and nonsense ("x", NaN, -5, 1e9) are the designed colours',sum(Object.assign({},W,{tintTop:-1}))===base&&sum(Object.assign({},W,{tintTop:'x',tintBottom:NaN,tintShoes:-5,tintHat:1e9}))===base);
+    ok('a tint on a slot that wears no outfit piece changes nothing (the base garments use topColor and the others)',sum(look('male',{tintTop:0x8a2f2f,tintHat:0x2f4a6b,tintWeapon:0x8a2f2f}))===sum(look('male')));
+    const a=sum(Object.assign({},W,{tintTop:0x8a2f2f})), b=sum(Object.assign({},W,{tintHat:0x8a2f2f})); ok('each slot is recoloured on its own (top and hat tints give different looks, both different from the designed one)',a!==base&&b!==base&&a!==b);
+    ok('wearing a whole set (ofWear) puts the designed colours back',(()=>{ const t=Object.assign({},W,{tintTop:0x8a2f2f,tintWeapon:1}); const w=C.ofWear(t,'tansy'); return Object.values(TINT).every(k=>w[k]===-1)&&Object.values(TINT).every(k=>C.ofWear(t,'base')[k]===-1); })()); }
   // wearing a whole set and taking it off; a look saved before pieces existed
   { const m=C.ofWear(look('female'),'tansy'), p=C.ofPieces(m), off=C.ofWear(m,'base'), mig=C.fullLook({sex:'female',model:'tansy',top:'tshirt'}), keep=C.fullLook({sex:'female',model:'tansy',top:'tshirt',faceItem:''});
     ok('a whole set is seven pieces, taking it off restores the base items, an old save wearing a set through `model` gets its pieces',Object.keys(p).length===7&&Object.values(p).every(v=>v==='tansy')&&m.model==='tansy'&&Object.keys(C.ofPieces(off)).length===0&&off.model==='base'&&off.top===C.LOOK_F.top&&Object.keys(C.ofPieces(mig)).length===7&&Object.keys(C.ofPieces(keep)).length===0);

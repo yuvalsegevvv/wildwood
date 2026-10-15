@@ -103,7 +103,7 @@ OUTFITS.dunstan=(function(){
     };
 
     return {
-      bootTop:0.04, shinCut:0, boot:true, skinFrom:0.605, hairColor:COPPER, eyeColor:0x4a2e1c,
+      main:{top:0xb8432a,bottom:0x2e2a2a,shoes:0x2e2a2a,hat:0xb8432a}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.04, shinCut:0, boot:true, skinFrom:0.605, hairColor:COPPER, eyeColor:0x4a2e1c,
       eyes:{iris:1.05,hl:2,browLift:0.003,browThick:1.2},           // the "hearty" style: a wide bright iris, brows lifted and thick
       cuts:{torso:[0.012,0.07,0.56,0.598],upperArm:[0.15/D.upper*1,0.158/D.upper,0.212/D.upper,0.22/D.upper],foreArm:[0.188/D.fore,0.197/D.fore,0.213/D.fore,0.222/D.fore],thigh:[0.9,0.98],shin:[0.04,0.12]},
       paint,

@@ -40,7 +40,7 @@ function buildHair(X,F){
 
   // a signature outfit's hair item and head item (docs/CHARACTER.md section 9): kH.hair(F, T) composes the pieces above (T) and its own geometry (T.add paints and collects it), kHat.head(F, T) is the hat, built after the base hats below
   const T={add,sp,flat,fit,hang,scalpLock,crown,fringe,sideLocks,backLocks,blade,tie,hp,R,hv,hl,bg};
-  if(kH&&kH.hair){ const ex=kH.hair(F,T); if(ex) parts.push(...ex); }
+  if(kH&&kH.hair){ const n0=parts.length, ex=kH.hair(F,T); if(ex) parts.push(...ex); ofTintFrom(X,'hair',parts,n0); }
   if(H==='buzz') crown(0.108,0.42,0.38);
   if(H==='short'){ crown(0.114,0.5,0.32); add(fit(shell(0.111*hv,0.38*Math.PI,0.17*Math.PI,1.9,0,sg(30),sg(8)))); fringe(8,1.0,0.14); sideLocks(0.05); backLocks(sg(18),0,11); }
   if(H==='messy'){ crown(0.116,0.52,0.3); fringe(8,1.05,0.3); sideLocks(0.05); backLocks(sg(14),0.02,21);
@@ -98,6 +98,6 @@ function buildHair(X,F){
     parts.push(pc(scl(sculpt(shell(0.119,0,0.435*Math.PI,0,0.33,sg(34),sg(16)),false)),c=>c.set(hc)));
     parts.push(pc(new THREE.CylinderGeometry(0.1,0.1,0.01,sg(22),1,false,Math.PI/2,Math.PI).scale(1,1,1.15).rotateX(-0.12).translate(0,0.062*fs[1],-0.086),c=>c.set(hc).multiplyScalar(0.85)));
   }
-  if(kHat&&kHat.head) parts.push(...kHat.head(F,T));
+  if(kHat&&kHat.head){ const n0=parts.length; parts.push(...kHat.head(F,T)); ofTintFrom(X,'hat',parts,n0); }
   return parts;
 }

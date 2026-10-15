@@ -10,9 +10,11 @@ const EYEC=[0x4a2e1c,0x6b5a2e,0x3f6b3a,0x3b6a9e,0x7a8288];
 const CLOTH=[0xb4552f,0x3d5a3a,0x2f4a6b,0xd8c9a3,0x6b3a5b,0xc9a13a,0x2b2b2e,0xe8e4dc,0x8a2f2f,0x5c7f9c];
 const SHOEC=[0x4a3526,0x2b2420,0x7a5a3a,0xe8e4dc,0x2f4a6b,0x8a2f2f];
 const HATC=[0x7a6142,0x3d5a3a,0x8a2f2f,0x2f4a6b,0xc9a13a,0xe8e4dc,0x2b2b2e];
+// the colours offered for a garment or an outfit piece (the editor's colour rows; a signature piece is recoloured to one of them: outfit-tools.js ofTinter)
+const TINTC=[0x2b2b2e,0x5c5c63,0xe8e4dc,0x8a2f2f,0xc23b2a,0xe59a2b,0xe3c04a,0x7a9a3c,0x3d5a3a,0x2f6f73,0x5c9fc7,0x2f4a6b,0x6b3f8f,0xc25a86,0x7a4a2c,0xd8b56e];
 // every look field has a default here (old saves and other players' looks are merged onto them); the sliders start at the base model's reference setup (shared/character.js)
-const LOOK_M=Object.assign({armor:'show',sex:'male',model:'base',face:'angular',eyes:EYEC[0],facial:'stubble',skin:SKINS[1],hair:'short',hairColor:HAIRC[1],ahoge:false,top:'jacket',topColor:CLOTH[0],bottom:'trousers',bottomColor:CLOTH[6],shoes:'boots',shoeColor:SHOEC[0],hat:'ranger',hatColor:HATC[0],pack:false,custom:false,cls:'warrior',faceItem:'',weaponItem:''},SLIDER_DEFS,setupsOf(CHAR_MODELS.base,'male')[0].v);
-const LOOK_F=Object.assign({armor:'show',sex:'female',model:'base',face:'oval',eyes:EYEC[2],facial:'none',skin:SKINS[1],hair:'ponytail',hairColor:HAIRC[3],ahoge:false,top:'flannel',topColor:CLOTH[8],bottom:'trousers',bottomColor:CLOTH[9],shoes:'boots',shoeColor:SHOEC[0],hat:'none',hatColor:HATC[1],pack:false,custom:false,cls:'warrior',faceItem:'',weaponItem:''},SLIDER_DEFS,setupsOf(CHAR_MODELS.base,'female')[0].v);
+const LOOK_M=Object.assign({armor:'show',sex:'male',model:'base',face:'angular',eyes:EYEC[0],facial:'stubble',skin:SKINS[1],hair:'short',hairColor:HAIRC[1],ahoge:false,top:'jacket',topColor:CLOTH[0],bottom:'trousers',bottomColor:CLOTH[6],shoes:'boots',shoeColor:SHOEC[0],hat:'ranger',hatColor:HATC[0],pack:false,custom:false,cls:'warrior',faceItem:'',weaponItem:'',tintTop:-1,tintBottom:-1,tintShoes:-1,tintHat:-1,tintHair:-1,tintFace:-1,tintWeapon:-1},SLIDER_DEFS,setupsOf(CHAR_MODELS.base,'male')[0].v);
+const LOOK_F=Object.assign({armor:'show',sex:'female',model:'base',face:'oval',eyes:EYEC[2],facial:'none',skin:SKINS[1],hair:'ponytail',hairColor:HAIRC[3],ahoge:false,top:'flannel',topColor:CLOTH[8],bottom:'trousers',bottomColor:CLOTH[9],shoes:'boots',shoeColor:SHOEC[0],hat:'none',hatColor:HATC[1],pack:false,custom:false,cls:'warrior',faceItem:'',weaponItem:'',tintTop:-1,tintBottom:-1,tintShoes:-1,tintHat:-1,tintHair:-1,tintFace:-1,tintWeapon:-1},SLIDER_DEFS,setupsOf(CHAR_MODELS.base,'female')[0].v);
 // a character model that breaks the rules (no recommended setups, a setup outside its ranges) is reported once at load; tools/character-smoke.js fails on it
 for(const m of Object.values(CHAR_MODELS)){ const bad=validateCharModel(m); if(bad.length&&typeof console!=='undefined') console.warn('character model "'+m.id+'": '+bad.join('; ')); }
 // a look (from a save, the server or another player) with every missing field filled in: the sex's defaults, and any slider it does not carry at the neutral body
@@ -73,7 +75,7 @@ function buildCharacter(L,opt){
   const q=(opt&&opt.q)||1, sg=n=>Math.max(5,Math.round(n*q)), S=lookSliders(L), fem=L.sex==='female';
   const skin=new THREE.Color(L.skin), skinPaint=c=>c.copy(skin), hairCol=new THREE.Color(L.hairColor), {topPaint,botPaint}=clothPaints(L);
   const D=charDims(L,S,fem,faceShape(L)), X={L,S,fem,sg,q,skin,skinPaint,hairCol,topPaint,botPaint,D,kit:null};
-  if(worn){ X.kit=ofBuild(X,D,PC); const kh=X.kit.sl.hair; if(kh&&kh.hairColor!==undefined) X.hairCol=new THREE.Color(kh.hairColor); }   // the hair item's own colour (the eyebrows and lashes follow it)
+  if(worn){ X.kit=ofBuild(X,D,PC); const kh=X.kit.sl.hair, th=ofTintOf(L,'hair'); if(kh&&th>=0) X.hairCol=new THREE.Color(th); else if(kh&&kh.hairColor!==undefined) X.hairCol=new THREE.Color(kh.hairColor); }   // the hair item's own colour (the eyebrows and lashes follow it)
   const root=new THREE.Group(), hips=new THREE.Group(); hips.name='hips'; hips.position.y=D.hipY; root.add(hips);
   const spine=new THREE.Group(); spine.name='spine'; hips.add(spine);
 
@@ -100,8 +102,13 @@ function buildCharacter(L,opt){
   a('headTop',head,0,0.11*face.fs[1],0); a('face',head,0,0,-0.1); a('neck',spine,0,0.6*D.TK,0); a('chest',spine,0,0.3*D.TK,-0.1*D.B); a('back',spine,0,0.3*D.TK,0.1*D.B); a('waist',hips,0,0.02,0);
   a('hipL',hips,-D.hx,0,0); a('hipR',hips,D.hx,0,0); a('shoulderL',spine,-D.shX,D.shY,0); a('shoulderR',spine,D.shX,D.shY,0);
   a('wristL',elL,0,-D.wrist,0); a('wristR',elR,0,-D.wrist,0); a('ankleL',kneeL,0,-D.shin,0); a('ankleR',kneeR,0,-D.shin,0);
-  const rig={root,hips,spine,head,hipY:D.hipY,shL,elL,shR,elR,hipL,kneeL,hipR,kneeR,dims:Object.assign({},D,{faceScale:face.fs}),sliders:S,anchors:A,kit:X.kit,dress:X.kit&&X.kit.sl.weapon?X.kit.sl.weapon.dress||null:null,anims:null};
-  if(X.kit){ rig.anims=[]; for(const k of X.kit.kits) if(k.extras) k.extras(rig,X,slot=>X.kit.sl[slot]===k); if(!rig.anims.length) rig.anims=null; }   // loose parts and motion that the merged meshes cannot carry (a ring that turns, a charm that swings); `has(slot)` says which of the outfit's items are worn
+  const rig={root,hips,spine,head,hipY:D.hipY,shL,elL,shR,elR,hipL,kneeL,hipR,kneeR,dims:Object.assign({},D,{faceScale:face.fs}),sliders:S,anchors:A,kit:X.kit,dress:X.kit?ofDress(X):null,anims:null};
+  if(X.kit){ rig.anims=[];   // loose parts and motion that the merged meshes cannot carry (a ring that turns, a charm that swings): a kit builds them once per slot it owns, `has(slot)` is true for that slot only, and the meshes it added are tinted with that slot's colour
+    for(const k of X.kit.kits) if(k.extras) for(const slot of ['top','bottom','shoes','hat','hair']){ if(X.kit.sl[slot]!==k) continue;
+      const f=X.kit.tr[slot], before=new Set(); if(f) rig.root.traverse(o=>before.add(o));
+      k.extras(rig,X,s=>s===slot);
+      if(f) rig.root.traverse(o=>{ if(o.isMesh&&!before.has(o)) ofTintGeo(o.geometry,f); }); }
+    if(!rig.anims.length) rig.anims=null; }
   return rig;
 }
 

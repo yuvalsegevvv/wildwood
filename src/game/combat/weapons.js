@@ -53,6 +53,7 @@ function weaponsOn(r,weaponId,build){
     const halo=new THREE.Mesh(new THREE.SphereGeometry(0.09+tr*0.015,10,8),fxMat(glow,0.35)); halo.position.copy(orb.position); wand.add(halo);
     wand.position.set(0,-0.3,0); wand.rotation.x=0.3; add(r.elR,wand); charm(wand,0,0.02,0);
   }
+  if(dr&&dr.tint) for(const o of objs) o.traverse(q=>{ if(q.isMesh) ofTintGeo(q.geometry,dr.tint); });   // a recoloured dressing (the owner's colour for the weapon): every vertex colour of the weapon and its charm
   return res;
 }
 function aimDir(){ const v=new THREE.Vector3(); camera.getWorldDirection(v); if(thirdPerson) v.y=Math.max(v.y,-0.05)+0.04; return v.normalize(); }
