@@ -108,15 +108,15 @@ function dgHurtPctS(p,share){
 function dgChestS(run,lx,lz,n){ const at=dgFreeNearS(run,lx,lz,1); toastTo(null,'A reward chest appears in the round hall.','good'); return dgObjS(run,'chest',at.x,at.z,{r:1.5,v:n}); }
 function dgChestOpenS(run,ob,p){
   if(ob.kind!=='chest'||ob.st!==1) return null;
-  const n=ob.v|0, items=[], coins=coinsFor(run.L)*DG_CHEST_COINS;
-  for(let i=0;i<2;i++) items.push(randomItem(tierFor(run.L),Math.min(4,Math.max(0,n-1,rollBossRarity()))));
+  const n=ob.v|0, items=[], trial=!!run.theme.trial, coins=trial?0:coinsFor(run.L)*DG_CHEST_COINS;   // (the trial dungeon's chests are empty: it pays nothing)
+  if(!trial) for(let i=0;i<2;i++) items.push(randomItem(tierFor(run.L),Math.min(4,Math.max(0,n-1,rollBossRarity()))));
   dgObjSetS(run,ob,2,n);
-  for(const q of dgPresentS(run)){
+  if(!trial) for(const q of dgPresentS(run)){
     const mb=dgMemberOf(run,q);
     for(const id of items){ const had=q.gear.inv.length; addItemP(q,id,false,null); if(mb&&q.gear.inv.length>had) mb.got.items.push(id); }
     q.gear.coins+=coins; ev('coins',q.id,coins,null); if(mb) mb.got.coins+=coins; q.dirty=true;
   }
-  toastTo(null,p.name+' opened the chest: the same for everyone.','good');
+  toastTo(null,p.name+(trial?' opened the chest: it is empty here, the trial pays nothing.':' opened the chest: the same for everyone.'),trial?'':'good');
   return items;
 }
 // the boss hall's tile, and every tile's distance from a tile through the doors (layout cells, door masks): key 'x,z' -> steps

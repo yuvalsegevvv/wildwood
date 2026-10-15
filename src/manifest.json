@@ -63,7 +63,7 @@
     "pvp.js",
     "dungeon-slots.js",
     "dungeon-hud.js",
-    "dungeons.js", "dungeons/bosses.js", "dungeons/themes/hollowroots.js", "dungeons/themes/jadesprings.js", "dungeons/themes/bonefrostbarrow.js", "dungeons/themes/blackseam.js", "dungeon-rewards.js", "dungeon-items.js",
+    "dungeons.js", "dungeons/bosses.js", "dungeons/themes/hollowroots.js", "dungeons/themes/trial.js", "dungeons/themes/jadesprings.js", "dungeons/themes/bonefrostbarrow.js", "dungeons/themes/blackseam.js", "dungeon-rewards.js", "dungeon-items.js",
     "character.js",
     "skillsets/tansy.js",
     "skillsets/torgeir.js",

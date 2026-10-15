@@ -108,23 +108,23 @@ const SKILLS={
 };
 const SKILL_IDS=Object.keys(SKILLS);
 /* ===================== PASSIVES =====================
-   Class-universal: one loadout of PASSIVE_SLOTS for every class, the first slot opened at level PASSIVE_LV and the next two at 24 and 30
+   Class-universal: one loadout of PASSIVE_SLOTS for every class, the first slot opened at level PASSIVE_LV (13) and the next two at 16 and 20
    (PASSIVE_SLOT_LV; passiveOpen(level) counts the slots a level has). They are learned from the trainers like the
    other skills (the first, Vitality, is free) and upgraded the same way. stat = what the server reads through passiveSum(); v = [value at
    skill level 1, added per level after that]. Stats: hp (max health), dmg (all damage), crit (crit chance), red (damage taken), cd (cooldowns),
    drop (chance of monster drops), xp (XP from kills), soul (added to the soul element's x1.5). These are a first set: swap or add rows freely,
    nothing else needs to change (name, lv, price, stat, v, text with {} for the percent). */
-const PASSIVE_LV=18, PASSIVE_SLOT_LV=[PASSIVE_LV,24,30], PASSIVE_SLOTS=PASSIVE_SLOT_LV.length;
+const PASSIVE_LV=13, PASSIVE_SLOT_LV=[PASSIVE_LV,16,20], PASSIVE_SLOTS=PASSIVE_SLOT_LV.length;
 const passiveOpen=level=>PASSIVE_SLOT_LV.filter(l=>level>=l).length;   // how many passive slots a level can use (slot i opens at PASSIVE_SLOT_LV[i])
 const PASSIVES={
-  vitality:  {name:'Vitality',  lv:18,price:0,   stat:'hp',  v:[0.06,0.02], text:'+{}% maximum health'},
-  ferocity:  {name:'Ferocity',  lv:18,price:1500,stat:'dmg', v:[0.05,0.02], text:'+{}% damage with every attack'},
-  precision: {name:'Precision', lv:19,price:2000,stat:'crit',v:[0.04,0.015],text:'+{}% critical hit chance'},
-  ironwill:  {name:'Iron Will', lv:20,price:2500,stat:'red', v:[0.05,0.015],text:'{}% less damage taken'},
-  quickhands:{name:'Quickhands',lv:21,price:3000,stat:'cd',  v:[0.06,0.02], text:'{}% shorter cooldowns'},
-  scavenger: {name:'Scavenger', lv:22,price:3500,stat:'drop',v:[0.15,0.05], text:'+{}% chance of monster drops'},
-  scholar:   {name:'Scholar',   lv:23,price:4000,stat:'xp',  v:[0.05,0.02], text:'+{}% XP from kills'},
-  resonance: {name:'Resonance', lv:24,price:4500,stat:'soul',v:[0.05,0.03], text:'soul element skills deal +{}% more damage'}
+  vitality:  {name:'Vitality',  lv:13,price:0,   stat:'hp',  v:[0.06,0.02], text:'+{}% maximum health'},
+  ferocity:  {name:'Ferocity',  lv:13,price:1500,stat:'dmg', v:[0.05,0.02], text:'+{}% damage with every attack'},
+  precision: {name:'Precision', lv:14,price:2000,stat:'crit',v:[0.04,0.015],text:'+{}% critical hit chance'},
+  ironwill:  {name:'Iron Will', lv:15,price:2500,stat:'red', v:[0.05,0.015],text:'{}% less damage taken'},
+  quickhands:{name:'Quickhands',lv:16,price:3000,stat:'cd',  v:[0.06,0.02], text:'{}% shorter cooldowns'},
+  scavenger: {name:'Scavenger', lv:17,price:3500,stat:'drop',v:[0.15,0.05], text:'+{}% chance of monster drops'},
+  scholar:   {name:'Scholar',   lv:18,price:4000,stat:'xp',  v:[0.05,0.02], text:'+{}% XP from kills'},
+  resonance: {name:'Resonance', lv:19,price:4500,stat:'soul',v:[0.05,0.03], text:'soul element skills deal +{}% more damage'}
 };
 const PASSIVE_IDS=Object.keys(PASSIVES);
 for(const id of PASSIVE_IDS){ const P=PASSIVES[id]; P.id=id; P.slot='passive'; P.cls=null; P.el=null; }
@@ -140,7 +140,7 @@ const pctText=v=>+(v*100).toFixed(1);
 const passiveText=(id,L)=>PASSIVES[id].text.replace('{}',pctText(passiveValue(id,L)));
 // the total of one passive stat from a loadout (0 before level PASSIVE_LV; a slot the level has not opened yet does nothing); cls: the class whose loadout counts the set bonuses (none: no bonuses)
 function passiveSum(skills,level,stat,cls){
-  let t=ssBonusSum(skills,level,stat,cls);   // skillsets: the 3- / 5-set bonuses in force (a set's three actives count before level 18)
+  let t=ssBonusSum(skills,level,stat,cls);   // skillsets: the 3- / 5-set bonuses in force (a set's three actives count before level PASSIVE_LV)
   if(level<PASSIVE_LV||!skills||!Array.isArray(skills.pass)) return t;
   for(const id of skills.pass.slice(0,passiveOpen(level))){ const P=PASSIVES[id]; if(!P||!skills.owned.includes(id)||level<P.lv) continue; if(P.stat===stat&&!P.when) t+=passiveValue(id,skillLvOf(skills,id)); if(P.cost&&P.cost.stat===stat&&!P.cost.when) t+=P.cost.v; }   // skillsets: a row may pay a cost; a row with a `when` is read by ssCondP (server/skillsets.js)
   return t;

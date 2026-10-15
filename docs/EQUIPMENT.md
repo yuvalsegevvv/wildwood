@@ -19,8 +19,8 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | Base prices (tier) and weight of each piece | `PRICE` src/shared/items.js:21, `SLOT_PRICE` src/shared/items.js:21 |
 | The item id scheme (`sword2`, `sword2-e`) | `itemId` src/shared/items.js:23 |
 | Tools (pickaxe, axe, sickle): materials, prices, double-yield chance by rarity | `TOOL_MAT` / `TOOL_PRICE` / `TOOL_EXTRA` src/shared/items.js:36-37 |
-| What gear adds to a player (health, attack, defense) | `gearStatsOf` src/shared/items.js:61, `recalcP` src/server/players.js:94 |
-| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:153 |
+| What gear adds to a player (health, attack, defense) | `gearStatsOf` src/shared/items.js:61, `recalcP` src/server/players.js:95 |
+| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:154 |
 | Wearing an item (level check, slot) | `equipP` src/server/economy.js:25 |
 | Shops: common items only, +20% per copy bought | `buyP` src/server/economy.js:38, `shopPrice` src/shared/items.js:47, shop panel src/game/economy/shops.js:20 |
 | Monster and boss drops (the item roll and its tier) | `rollMonsterRarity` / `rollBossRarity` src/shared/items.js:51, used in `rewardKill` src/server/combat.js:67 |

@@ -55,7 +55,7 @@ const swing=(pid,tg,slot)=>{ const p=P(pid); p.cd.basic=p.cd.skill=p.cd.burst=0;
 put('a',C.x,C.z,0); put('c',C.x,C.z-2,0); tick(2); Cc.hp=Cc.maxHp; clear();
 swing('a',null,'basic');
 ok('a slash hits the fighter in front: their health drops, a hurt event names them',Cc.hp<Cc.maxHp&&evs('a','hurt').some(e=>e[1]==='c'&&e[2]>0),Cc.hp+' / '+Cc.maxHp);
-const dealt=Cc.maxHp-Cc.hp; ok('the damage is about 3 x f(18) + the tier-3 sword, cut by 40% armour (±15%, x1.7 on a critical hit)',dealt>0.95*0.85*0.6*A.dmg&&dealt<1.05*1.15*1.7*0.6*A.dmg,dealt+' vs base '+A.dmg.toFixed(0));
+const dealt=Cc.maxHp-Cc.hp; const arm=1-Cc.red; ok('the damage is about 3 x f(level) + the fixed sword, cut by the fixed armour (±15%, x1.7 on a critical hit)',dealt>0.95*0.85*arm*A.dmg&&dealt<1.05*1.15*1.7*arm*A.dmg,dealt+' vs base '+A.dmg.toFixed(0));
 clear(); const hpB=B.hp; put('b',C.x+14,C.z,0); tick(2); swing('a',null,'basic');
 ok('out of reach nothing is hit',B.hp===B.maxHp);
 // across the water's edge: nobody outside can hit in, nobody inside can hit out

@@ -164,7 +164,7 @@ send({t:'eqskill',id:'alpha_p1',idx:0}); send({t:'eqskill',id:'alpha_p2',idx:1})
 { const sk=p.gear.skills, cl=x.clsOfP(p), n=x.ssCount(sk,cl,30);
   ok('5 pieces (3 actives + 2 passives at level 30): both bonuses in force',n.alpha===5&&x.ssBonuses(sk,cl,30).map(b=>b.tier).join()==='3,5',JSON.stringify(n));
   ok('...and the passives and both bonuses add up: damage +4% +10%, crit +3% +10%',near(x.psP(p,'dmg'),0.14)&&near(x.psP(p,'crit'),0.13),x.psP(p,'dmg')+' '+x.psP(p,'crit'));
-  ok('a piece the level cannot use counts for nothing: at level 20 the burst (needs 30) and the second passive slot (opens at 24) do not; at 24 the second passive does',x.passiveOpen(20)===1&&x.ssCount(sk,cl,20).alpha===3&&x.passiveOpen(24)===2&&x.ssCount(sk,cl,24).alpha===4,x.ssCount(sk,cl,20).alpha+' '+x.ssCount(sk,cl,24).alpha); }
+  ok('a piece the level cannot use counts for nothing: the slot-1 piece and the first passive at 15; the skill piece and the second passive (both need 20) at 20, the burst (needs 30) only at 30; the slots open at 13 / 16 / 20',x.passiveOpen(15)===1&&x.ssCount(sk,cl,15).alpha===2&&x.ssCount(sk,cl,16).alpha===2&&x.ssCount(sk,cl,20).alpha===4&&x.ssCount(sk,cl,30).alpha===5,[15,16,20,30].map(l=>x.ssCount(sk,cl,l).alpha).join(' ')); }
 send({t:'eqskill',id:'alpha_p3',idx:2});
 { const sk=p.gear.skills, cl=x.clsOfP(p);
   ok('all six pieces: still just the two bonuses (there is no 6-set bonus)',x.ssCount(sk,cl,30).alpha===6&&x.ssBonuses(sk,cl,30).length===2); }

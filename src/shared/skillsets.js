@@ -249,6 +249,14 @@ function ssSetFor(land,tier){
   let best=null; for(const id of SS_ORDER){ const s=SS_SETS[id]; if(!s.dev&&s.land===land&&s.tier<=tier&&(!best||s.tier>best.tier)) best=s; }
   return best;
 }
+/* WHERE A SET COMES FROM (docs/SKILL-SETS.md section 7): a clear of a land's boss 1, boss 2 or dungeon at the set's difficulty (+tier) or above rolls for the pair of that position (the active, every
+   class version of it, and its passive). The odds below are the defaults; a set's `from:{chance, pity}` overrides them for one position (the grinder's are friendlier). The pity count is per player and
+   per position (gear.ss.pity['<set>:<pos>']: qualifying clears since the last drop); the clear that reaches the pity is a sure drop. */
+const SS_CHANCE_BOSS=0.10, SS_PITY_BOSS=20, SS_CHANCE_DUNGEON=0.20, SS_PITY_DUNGEON=10;
+// the land and position (1 boss 1, 2 boss 2, 3 the dungeon) a source names: a world boss's def id or a dungeon theme's id; null for any other
+function ssSourceOf(srcId){ for(const land in SS_SOURCES){ const i=SS_SOURCES[land].indexOf(srcId); if(i>=0) return {land,pos:i+1}; } return null; }
+// the odds of one position of a set: its own or the default of its kind of source
+function ssOddsOf(set,pos){ const f=set.pos[pos].from, boss=pos<3; return {chance:f.chance!==undefined?f.chance:boss?SS_CHANCE_BOSS:SS_CHANCE_DUNGEON, pity:f.pity!==undefined?f.pity:boss?SS_PITY_BOSS:SS_PITY_DUNGEON}; }
 // what the owner's rules ask of the released sets as a whole (warnings, not failures of one set): the first grinder is pure basic, two women and two men in the first four, no hybrid of soul opposites,
 // a piece in another element than its set says why. Returns [{set, why}]
 function ssLint(){

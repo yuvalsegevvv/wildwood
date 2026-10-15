@@ -1,6 +1,6 @@
 //@ Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, upgrade with coins and monster drops, learn from the trainers
 /* Open it with K, the Skills button in the inventory, the empty skill button, or by talking to Aldric (or Master Ryu in Hanami).
-   Top: the active slots of the class you are looking at (drop targets) and the three passive slots (the same for every class, opening at levels 18, 24 and 30: PASSIVE_SLOT_LV).
+   Top: the active slots of the class you are looking at (drop targets) and the three passive slots (the same for every class, opening at levels 13, 16 and 20: PASSIVE_SLOT_LV).
    Below: a tab per kind and a grid of its skills. Drag a skill you own onto its slot to use it, drag one out of a slot back into the grid to take it
    off; tap a skill for its details, Equip / Take off buttons (for touch) and its upgrade. Learning and upgrading happen at a trainer. */
 let skTab=null, skKind='skill';

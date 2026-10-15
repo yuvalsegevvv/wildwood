@@ -59,7 +59,7 @@ The owner's order: **the combat changes first**, all of them, before any set con
 | Milestone | Feature | State |
 |---|---|---|
 | MB | boss skills upgradeable with boss materials | not built (independent of the sets) |
-| M0, M1 | the registry, `cls:'any'`, slot 1 for every class, counting, the 3- / 5-set bonuses, the passive slots at 18 / 24 / 30 | **built** |
+| M0, M1 | the registry, `cls:'any'`, slot 1 for every class, counting, the 3- / 5-set bonuses, the passive slots at 13 / 16 / 20 | **built** |
 | M2a | marks, `pop`, `amp`; triggers (`hit` `crit` `kill` `hurt` `cast1-3` `tick` `low`); trade-offs (`cost`); `vsBoss`, `behind`, `rangeScale`, `reflect`; the ladder harness | **built** |
 | M2b | monster statuses `vuln` / `weak`; taunt; ally buffs, the party heal, shields | **built** |
 | M2c | auras, reactions (flavours), direct application (`flavor`) | **built** (`docs/REACTIONS.md`); the chart in the skills panel and `infuse` are not |

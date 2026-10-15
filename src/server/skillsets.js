@@ -24,6 +24,27 @@ function ssGrantP(p,setId,pos,quiet){
   if(n){ p.dirty=true; if(!quiet) ev('ssget',p.id,setId,pos); }
   return n;
 }
+/* ---- where a set comes from (M3, docs/SKILL-SETS.md section 7): the rolls ---- */
+const ssRand=()=>Math.random();   // (every roll reads this one function; a test may replace Math.random)
+// gear.ss = {pity:{'<set>:<pos>': clears since the last drop}}: only real sets and positions, each count below its pity (reaching it is a sure drop)
+function ssSanitizeSave(g){
+  const out={pity:{}}, P=g&&typeof g==='object'?g.pity:null; if(!P||typeof P!=='object') return out;
+  for(const key of Object.keys(P).slice(0,64)){ const m=/^([a-z0-9]+):([123])$/.exec(key), S=m&&SS_SETS[m[1]]; if(!S||S.dev) continue; out.pity[key]=clampInt(P[key],0,ssOddsOf(S,+m[2]).pity-1,0); }
+  return out;
+}
+// one qualifying clear of source srcId (a world boss's id or a dungeon theme's) by p, fought at +tier: rolls for the land's set of that tier (none at +0). Returns the set id on a drop, else null
+function ssClearP(p,srcId,tier){
+  const src=ssSourceOf(srcId), set=src&&ssSetFor(src.land,tier|0); if(!set) return null;
+  if(ssPieceIdsOf(set.id,src.pos).every(id=>p.gear.skills.owned.includes(id))) return null;   // they own this pair: nothing left to roll
+  const ss=p.gear.ss||(p.gear.ss={pity:{}}), key=set.id+':'+src.pos, o=ssOddsOf(set,src.pos), n=(ss.pity[key]|0)+1;
+  if(n>=o.pity||ssRand()<o.chance){ ss.pity[key]=0; ssGrantP(p,set.id,src.pos); return set.id; }   // (ssGrantP: the pieces, the ssget event and the client's toast)
+  ss.pity[key]=n; p.dirty=true;
+  toastTo(p.id,set.char.name+"'s skill set (+"+set.tier+" or above): no drop this time, "+n+' of '+o.pity+' clears to a sure drop ('+Math.round(o.chance*100)+'% each)','');
+  return null;
+}
+// a world boss kill that p helped with: at the tier p fought it at (monTierOf). A dungeon's win: at the run's tier (the leader's; a member needs it unlocked to enter)
+const ssBossClearP=(q,m)=>ssClearP(q,m.def.id,monTierOf(q.gear,m));
+const ssDungeonClearP=(p,run)=>ssClearP(p,run.theme.id,run.tier);
 function ssGrantSetP(p,setId,quiet){ let n=0; for(let pos=1;pos<=3;pos++) n+=ssGrantP(p,setId,pos,quiet); return n; }   // (quiet: no ssget toast for each position)
 // wear the piece of skill row s in its slot for every class that owns a version of it (one action for all three: a weapon swap must not silently drop the set)
 function ssEquipPieceP(p,s){

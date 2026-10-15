@@ -120,7 +120,9 @@ function updateBossUI(){
   const m=BOSS.m, bb=$('#bossbar');
   if(!m||!BOSS.engaged||m.dead||!started){ bb.hidden=true; return false; }
   const A=arenaOf(m); if(Math.hypot(P.x-A.x,P.z-A.z)>A.r+40){ bb.hidden=true; return false; }
-  bb.hidden=false; $('#bbHp').style.width=(m.hp/m.maxHp*100)+'%';
+  const frac=m.hp/m.maxHp, pct=Math.max(1,Math.ceil(frac*100)); // never "0%" while it stands
+  bb.hidden=false; $('#bbHp').style.width=(frac*100)+'%';
+  const pt=pct+'%'; if($('#bbPct').textContent!==pt) $('#bbPct').textContent=pt;
   if(BOSS.shown!==m){ BOSS.shown=m; $('#bbName').textContent=m.def.name; }
   const bbLv='Lv '+monTierK(m).lv+' boss'; if($('#bbLv').textContent!==bbLv) $('#bbLv').textContent=bbLv;
   const bd=bossInfo(m)||{}, bar=bd.bar||{};

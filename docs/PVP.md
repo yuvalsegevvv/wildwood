@@ -16,12 +16,12 @@ The lake is a wall like the sea and the river (wade to the knees, no deeper: `pv
 | Rule | Where | Value |
 |---|---|---|
 | Who is "on the island" | `inPvp(x,z)` (`shared/pvp.js`), `pvpTickP` (`server/pvp.js`) | inside the circle `PVP.r`, alive or waiting to wake there |
-| One level for everyone | `PVP.level` | 18 (`PASSIVE_LV`: all three attack slots and the first passive are open) |
-| One set of gear | `pvpGearOf` | the common set of the tier of that level (tier 3), whatever you wear: no rarity, ring, pendant or potions (`potion` is refused) |
+| One level for everyone | `PVP.level` | `PASSIVE_LV` (13 when this was written; the fixed level follows it): all three attack slots and the first passive are open |
+| One set of gear | `pvpGearOf` | the common set of the tier of that level (`tierFor(PVP.level)`: the level-10 set at level 13), whatever you wear: no rarity, ring, pendant or potions (`potion` is refused) |
 | No symbol bonus | `pvpRecalcP` | the zone tiers' symbol is not read |
-| Health | `PVP.hpK` | x2, so a fight lasts a while (plain `20 f(18) + armour`, with the passive's share) |
+| Health | `PVP.hpK` | x2, so a fight lasts a while (plain `20 f(level) + armour`, with the passive's share; about 1,230 health and 73 damage at level 13) |
 | Skills | `pvpSkillsOf` | your own equipped attacks of the class in hand at **level 1**, boss skills included; a slot you have not opened or left empty gets the class's free skill; skill-set pieces and set bonuses are left out |
-| Passives | `pvpSkillsOf` | below level 18 you get the default (Vitality); from 18 up what you wear in your first slot (Vitality instead of a skill-set passive); all at level 1, one slot |
+| Passives | `pvpSkillsOf` | below `PASSIVE_LV` you get the default (Vitality); from it up what you wear in your first slot (Vitality instead of a skill-set passive); all at level 1, one slot |
 | Elements | `elemHitS` (`server/combat.js`), `PVP.elemBoost` | **your soul is your element when you are hit.** Advantage x1.15, disadvantage /1.15 (the wheel against the other's soul, and your own soul's match / opposite with your skill); against monsters it stays 1.5 |
 | Who can hit whom | `foesS(p)` | everybody on the island hits everybody on the island, except their own **party** (`server/party.js`, `/invite name`); nothing crosses the water's edge in either direction |
 | Rewards | none | no XP, coins, drops, quest or main-quest credit; your save is never touched (`p.pv` is a view on top of it) |
@@ -37,7 +37,7 @@ Monsters ignore a fighter (`nearestFighter`), and a fighter's attacks only look 
 `combat.js` loops over `foesS(p)` instead of `MONS`: for a fighter on the island that is every other living fighter, each as a **proxy** (`pvpFoeOf`) that looks like a monster to those loops.
 `damageMonsterS` and `statusS` see `m.pl` first and hand over to `pvpHitS` / `pvpStatusS`; the damage roll is the attacker's (`rollDmgS`), the target takes the hit through `hurtP`
 (their own armour, passive and buffs; the damage number is the usual `hurt` event). A stun or slow set on a proxy becomes a `pfx` root / slow on that player. Events: `pvp [pid,1|0]` (stepped on / off),
-`pvlock [pid,seconds]` (the gate is shut); `you.pv` is 1 on the island, and the snapshot shows everyone there at level 18. Client: `game/pvp/state.js` (the loadout the action bar uses, picking a
+`pvlock [pid,seconds]` (the gate is shut); `you.pv` is 1 on the island, and the snapshot shows everyone there at level `PVP.level`. Client: `game/pvp/state.js` (the loadout the action bar uses, picking a
 target with the usual keys / Tab among the other fighters, the badge, the walls), `game/village/buildings-pvp.js` (the gate and the banner poles).
 
 ## Knobs and open choices

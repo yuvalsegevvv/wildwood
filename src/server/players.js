@@ -16,6 +16,7 @@ function sanitizeGear(g,cls){
   out.mq=sanitizeMq(g.mq);
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); }
   out.zt=sanitizeZt(g.zt);
+  out.ss=ssSanitizeSave(g.ss);   // skillsets: the pity counts of the sources (an old save has none)
   out.dg=dgSanitizeSave(g.dg);   // dungeons: clears and best times per '<theme>:<mission>' (an old save has none)
   out.temper=clampInt(g.temper,0,DG_STONE_MAX,0);   // dungeons: the Tempering Stones (a count; an old save has none)
   if(out.north<1&&out.mq.s>MQ_BY_ID.V10.i) out.north=1;   // saves that already got past Akaoni: the ice wall is open for them
@@ -176,14 +177,14 @@ function unlockSkillsP(p,slot){
   toastTo(p.id,(slot==='burst'?'Burst slot unlocked! ':'Skill slot unlocked! ')+(s?s.name:'Your new ability')+' is ready ('+(slot==='burst'?'R':'Q')+'). Aldric, the trainer at the well, teaches more.','good');
   ev('skillslot',p.id,slot);
 }
-// level 18: the passives open, with Vitality (free) in the first slot
+// level 13 (PASSIVE_LV): the passives open, with Vitality (free) in the first slot
 function autoEquipPassiveP(p){
   const S=p.gear.skills; if(S.pgiven||p.level<PASSIVE_LV) return false;
   S.pgiven=true; if(!S.owned.includes('vitality')) S.owned.push('vitality');
   const i=S.pass.slice(0,passiveOpen(p.level)).indexOf(null); if(i>=0&&!S.pass.includes('vitality')) S.pass[i]='vitality';
   p.dirty=true; return true;
 }
-// a level crossed one or more passive slot levels (18 / 24 / 30): tell the player about each new slot
+// a level crossed one or more passive slot levels (13 / 16 / 20): tell the player about each new slot
 function unlockPassivesP(p,was){
   if(autoEquipPassiveP(p)){ recalcP(p); toastTo(p.id,'Passive skills unlocked! Vitality is in your first passive slot. Aldric and Master Ryu teach more.','good'); ev('skillslot',p.id,'passive'); }
   PASSIVE_SLOT_LV.forEach((lv,i)=>{ if(i>0&&was<lv&&p.level>=lv){ toastTo(p.id,'Passive slot '+(i+1)+' unlocked! Drag a passive onto it in the skills panel (K).','good'); ev('skillslot',p.id,'passive'); } });
