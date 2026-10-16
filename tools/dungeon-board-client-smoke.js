@@ -74,7 +74,7 @@ const find=(e,cls)=>{ const out=[]; walk(e,k=>{ if(typeof k.className==='string'
     ok('a board nobody answers: it asks once more after 2 s (once), and after 5 s says the board does not answer',resent&&once&&/does not answer/.test(tx(body())),tx(body()).slice(-120)); G.closePanels(); }
   // ---- the trial dungeon: its gate in the village, every mission always open ----
   { const Gt=G.DG_TRIAL_GATE, all=Object.keys(G.DG_MISSIONS); place(Gt.x+3,Gt.z); swallow=true; sent.length=0; G.updateTalkUI(); const prompt=c.el('#prompt').textContent;
-    ok('the Trial Gate is found like a door and its prompt says what it is (level 5, no rewards); the arch is built, and it is not one of the four doors',G.dgEntranceNear(Gt.x+3,Gt.z)===Gt&&/The Trial Gate \(level 5, no rewards\)/.test(prompt)&&!!G.DG_DOORS.trial&&!G.DG_DOORS.doors.trial&&Object.keys(G.DG_ENTRANCES).length===4,prompt);
+    ok('the Trial Gate is found like a door and its prompt says what it is (level 5, no rewards); the arch is built, and it is not one of the five doors',G.dgEntranceNear(Gt.x+3,Gt.z)===Gt&&/The Trial Gate \(level 5, no rewards\)/.test(prompt)&&!!G.DG_DOORS.trial&&!G.DG_DOORS.doors.trial&&Object.keys(G.DG_ENTRANCES).length===5,prompt);
     G.dgOpenDoor(G.dgEntranceNear(Gt.x+3,Gt.z).theme);
     ok('the talk key at the gate asks the server for the trial\'s board and opens the panel',mine().length===1&&last().a==='open'&&!hidden()&&/Trial Roots/.test(tx(body())),tx(body()));
     deliver(MSG({th:'trial',name:'The Trial Roots',door:'The Trial Gate',offer:all,pool:all,L:5,tier:0,left:1800}));

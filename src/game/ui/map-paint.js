@@ -50,7 +50,7 @@ function mapPaintLand(x,z,h,g,c,o){
     mapPaintSet(_mph,MPC.alpine); mapPaintMix(_mph,MPC.forest,smoothstep(0.5,0.9,fd)*0.4*(1-smoothstep(82,108,h+n3*12)));
     mapPaintMix(_mph,MPC.grassDry,smoothstep(0.45,0.85,n1)*0.35*(1-smoothstep(55,95,h)));
     mapPaintMix(_mph,MPC.scree,smoothstep(72,118,h+n3*14)*0.85+smoothstep(0.45,0.8,g)*0.3); mapPaintMix(_mph,n1<0.5?MPC.rock:MPC.rockHi,steep*0.9);
-    { const bad=smoothstep(WX0+210,WX0+70,x)*smoothstep(100,62,h)*smoothstep(-780,-650,z); if(bad>0){ mapPaintMix(_mph,MPC.plateau,bad*(1-steep)*0.5); mapPaintMix(_mph,MPC.redrock,bad*(0.25+0.6*steep)); } }
+    { const bad=smoothstep(GW0+210,GW0+70,x)*smoothstep(100,62,h)*smoothstep(-780,-650,z); if(bad>0){ mapPaintMix(_mph,MPC.plateau,bad*(1-steep)*0.5); mapPaintMix(_mph,MPC.redrock,bad*(0.25+0.6*steep)); } }
     mapPaintMix(_mph,MPC.snow,smoothstep(128-(z<-860?10:0)+n1*18,142-(z<-860?10:0)+n1*18,h)*(1-smoothstep(0.85,1.4,g)));
     if(gf>=1) mapPaintSet(o,_mph); else mapPaintMix(o,_mph,gf);
   }

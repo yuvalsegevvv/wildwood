@@ -1,6 +1,6 @@
-# The four dungeons, their entrances, their bosses and the hourly offer
+# The five dungeons, their entrances, their bosses and the hourly offer
 
-**Status: designs plus data, not playable.** The machinery they run on is in `docs/DUNGEONS.md` (tiles, missions, parties, the server plan). What exists in code is the data of the four
+**Status: designs plus data, not playable (the Sandglass, section 11, is the fifth and the newest).** The machinery they run on is in `docs/DUNGEONS.md` (tiles, missions, parties, the server plan). What exists in code is the data of the four
 dungeons (`DG_THEMES`), of their four entrances (`DG_ENTRANCES`, section 6), of their four bosses (`DG_BOSSES`), the hourly offer (`dgOffer`) and the entry rule (`dgUnlocked`, `dgLevel`, `dgGateOpen`) in `src/shared/dungeons.js`, and the rewards (section 7: `DG_REWARDS`, the level-30 gear, the ring, enhancing, the stone) in `src/shared/dungeon-rewards.js`, checked by
 `tools/dungeons-smoke.js` (97 checks); `tools/entrance-map.js` draws the map of section 6; the doors' client dressing (section 6) is built and tested by `tools/entrances-client-smoke.js`. The tile art is drawn (section 3: one file per dungeon in `src/shared/dungeons/themes/`, entered through `defineDungeonTheme`) and the bosses are built (section 4: `src/server/dungeons/boss-kits.js`, tested by `tools/dungeon-boss-smoke.js`).
 *(proposed)* = my suggestion. An earlier version of this file had nine dungeons and bosses drawn at random; those are gone, and the six dungeons I did not pick are kept in section 5.
@@ -452,3 +452,73 @@ One random **pendant** (`DG_REWARDS.blackseam`): kind at random of the five, rar
 - **Tests**: `tools/trial-dungeon-smoke.js` (18 checks: the variant, the rules, the gate, the board, a level-1 hiker at +2 starting every mission type, level-5 monsters, no pay for a kill, a chest or a won run, the Hollow Roots as the control that does pay).
   The four-real-dungeons tests (`dungeons-smoke`, `gen-docs`) skip themes with `trial`.
 
+## 11. The Sandglass and Khet, the Hourkeeper (the Sunscar's dungeon, the fifth; version 3)
+
+**Status: built and tested** (`tools/sandglass-dungeon-smoke.js`, plus `dungeons-smoke`, `dungeon-client-smoke`, `entrances-client-smoke`; the dressing seen only in the headless client). The owner asked for the Sunscar's dungeon behind the door the Sunscar agent reserved
+(`SUN_DG_DOOR`), a **base level 40 boss**, entry from level 35 or higher, and **a level-40 weapon** as the clear's pay. It is made in the framework the four others use: one theme file, one boss row and one kit, one door, one reward row (`DG_REWARDS.sandglass`, already there).
+
+**The place.** A sun-temple and glassworks buried under **The Whitefloor** (the Sunscar's zone s34, 230 m south of Glasswell): sandstone halls, cold kilns, amphorae, braziers still burning, a line of black glass let into the flags, glass spikes. Theme `src/shared/dungeons/themes/sandglass.js`, land `sun`
+(`DG_LANDS.sun`: base +0, unlock `{sun:2}` = **Glasswell walked into** (`gear.sun` 2), hint "Walk into Glasswell..."). The Sunscar has zone tiers already (`ZTIER_LANDS`, opened by the Sand Wyrm), so the dungeon is level **40 at +0 and rises 10 a tier**: +0 ... +5 = 40 ... 90.
+
+**Levels.** The theme is `lv:40` and the boss row is `lv:40` (`DG_BOSSES.khet.lv`, not `DG_LV`), so `dgLevel(T,0)` = 40 and the boss is level 40 exactly at +0; his add is 39. The monsters are the Sunscar's own 33-36 kinds; a run scales every monster to the run's level by `dgKOf(def, run.L)`
+(health, damage and XP against the def's own level), as in every dungeon, so at +0 they fight at level 40 whatever their own level is. Their `res` / `acc` (`docs/ROLLS.md`) are on the defs and pass through unchanged (`m.T.res`, `m.T.acc`).
+
+**Entry level: 36** *(my pick; the pattern is 25 for the real dungeons, the owner said "35 or higher")*. A new theme field `entry` (default `DG_ENTRY_LV` = 25) carries it: `dgUnlocked` asks `T.entry`, the message says "Reach level 36 first.". It is the same at every difficulty, like the others.
+
+**Tile kit** (nine designs from the Blackseam's skeleton, redrawn with new names, some mirrored; legend: `W` sandstone wall, `T` column, `X` sun pillar (the hall's four), `K` broken kiln, `D` amphora stack, `L` brazier (a warm light), `c` sand drift, `r` glass inlay,
+`s` glass spikes (hazard `spikes`: the Hollow Roots' warning, then the glass cuts), `G` guardian post):
+
+| Tile | Role | What it is |
+|---|---|---|
+| Hour Hall | hall | the round temple floor: four sun pillars, braziers and kilns on the rim |
+| Furnace, Column Hall, Glass Vault | room | an open working with columns; a long gallery with a glass inlay; amphorae along the walls and the guardian (**Sand Golem or Dune Drake**) |
+| Sand Corridor, Light Well | pass | a colonnaded passage; a bend with glass spikes |
+| Sun Altar | site | the objective, between four columns |
+| Treasury | cache | the glasswright's hoard behind amphorae |
+| Sand Stair | start | the way in, between two braziers |
+
+Monsters: walkers Dust Djinn, Dune Prowler, Tomb Guard, Sun Priest and Efreet (the Sunscar's kinds of level 33-36 that fit the 4 m doors); guardians Sand Golem and Dune Drake (the Elder Worm, 1.5 m, is too big). Mission names (`game/dungeon/board.js`): the sun altar, a temple brazier, the glass kilns, the sun mirrors,
+the Glass Wisp flitting through the halls (the Hunt's quarry, `kits/hunt.js`), a lost glassblower. Music `sun2`, the boss `boss30`. Client props: `game/dungeon/view-sand.js` (after `view-mine.js` in the manifest).
+
+**The door: The Sandglass Door** (`DG_ENTRANCES.sandglass`, kind `sand`): the prop the Sunscar agent placed at **(-700, 250)**, now a real door. It faces **north** toward the city (`a` = PI, the apron 7 m out). There is no road and no bank in the desert, so its
+signpost (`sign.road` is `null`) stands on the sand 24 m away at (-690, 226), and the door builds its own mound: `dgEntSand` in `game/village/buildings-dungeon.js` (a sandstone gateway on a low mound of sand and fallen blocks, a sun disc on the lintel, three worn steps, two braziers, a black-glass pane across the doorway
+while it is sealed, a violet gleam when open). The old prop in `buildSunscar` was removed. The ground round it is pale sand with dark glass chips (`dgEntTint`, `kind:'sand'`). Testing tab: **Go to the Sandglass Door** (sets `gear.sun` 2 and opens the River Pass first: `dev` `sun` now also sets `gear.river` when both rock falls are shut).
+The tests that check a door against the *world* (a bank to dig into, a road, the node planner's list, bare ground) apply to the four older doors only (`E4` in `dungeons-smoke`); the Sandglass's door has its own checks.
+
+### 11.1 Khet, the Hourkeeper (`DG_BOSSES.khet`, kit `hour`)
+
+**Level 40** (`lv:40`), **70 hits** like the others, **light**, a djinn (`model:'djinn'`, scale 3.3, gold and indigo); his add is the **Sand Imp** (a small djinn, 60% health, level 39), no prop. Server kit: `src/server/dungeons/boss-kits-sandglass.js`; it uses only primitives that exist.
+The bar shows "Turns of the glass: n" (the number of High Noons).
+
+| Phase | Move | What it does |
+|---|---|---|
+| 1 | **Scimitar Sweep** (`scimitar`) | a 120 degree arc of 7 m that shoves 14 m/s, when someone stands close |
+| 1 | **Glass Shards** (`shards`) | three rings (the first two under players), 1.5 s, then they shatter |
+| 1 | **High Noon** (`noon`, **the signature**) | the whole hall is a `pulse` with 2.6 s of warning (1.6 hits) and **only whoever stands behind one of the four pillars (out of his sight) is spared**; **if every player is sheltered the glass cracks and he is stunned 3 s** (a stunned boss takes x1.5). Every 16 s (12 s in phase 3) |
+| 2 | **Sand Imps** (`imps`) | 3 every 22 s from the hall's mouths, at most 6 alive |
+| 2 | **Sun Lance** (`lance`) | a 26 m strip through a player (1.3 s), 1.1 hits, slows 2 s |
+| 3 | **Radiant Ring** (`ring`) | a donut (20 m, only the 6 m round him is safe), 2.3 s, 1.9 hits |
+
+### 11.2 What a clear pays
+
+One random **level-40 weapon** (`DG_REWARDS.sandglass`, `t:8`): sword, bow or wand with equal chance, rarity 70 / 25 / 4 / 0.8 / 0.2%, the same piece for the whole party (the all-loot rule), granted by the same path as every theme (`dgClearReward` in `dgWinS`, then `dgGrantItemP`). The id is `sword8`, `bow8` or `wand8` (+ rarity),
++0 and **unrolled**: it carries no `~` roll code (`it.roll0`) until the player spends a Weapon Reroll Stone on it (`docs/ROLLS.md`). No skill set has this land as a source yet (`SS_SOURCES` has no `sun` key), so a clear rolls none.
+
+### 11.3 Hooks into existing files
+
+| Hook | File |
+|---|---|
+| `DG_LANDS.sun`, the theme field `entry`, `dgUnlocked` / `dgGateOpen` read `gear.sun`, `DG_ENTRANCES.sandglass` | `src/shared/dungeons.js` |
+| `DG_BOSSES.khet` + `DG_BOSS_DEFS` | `src/shared/dungeons/bosses.js` |
+| the quarry of the Hunt | `src/server/dungeons/kits/hunt.js` |
+| the board's card and objective names; the HUD names | `src/game/dungeon/board.js`, `src/shared/dungeon-hud.js` |
+| the door mesh (`dgEntSand`), the ground patch (`kind:'sand'`), the testing button `#tDoorSand`, the old prop removed | `src/game/village/buildings-dungeon.js`, `dungeon/entrances.js`, `src/index.html`, `village/buildings-sunscar.js` |
+| `dev` `sun` also opens the River Pass (testing) | `src/server/economy.js` |
+
+### 11.4 Decisions for the owner (what I assumed)
+
+15. **Entry level 36**, a theme field `entry`; the other four keep 25.
+16. **The monsters are the Sunscar's 33-36 kinds scaled to the run's level (40 at +0)**; the 28-32 kinds stay out.
+17. **Khet is light and a djinn**, High Noon his signature; no new primitive, no new model. The numbers (2.6 s, 16 s, 3 s stun, 6 imps) are mine and one table to retune.
+18. **The door is the Sunscar agent's prop** at (-700, 250), facing the city, with a signpost on the sand because the desert has no roads.
+19. **The Sunscar's tiers apply** (+1 ... +5 = 50 ... 90), unlocked by the Sunscar's own `gear.zt.sun.max`.

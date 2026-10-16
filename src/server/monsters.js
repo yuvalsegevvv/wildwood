@@ -18,7 +18,7 @@ const CAMPS=[];
 const MON_COUNT=d=>d.count||(d.level>15?12:Math.round((40-(d.level-1)*20/14)*(d.level>=12?1.25:1)));
 function initMonstersS(){
   const rng=mulberry32(31337), rr=(a,b)=>a+(b-a)*rng();
-  const ok=(x,z)=>{ const bz=borderZ(x), home=z>=bz&&x<borderX(z), grey=z<bz&&x<borderXN(z); return x>WX0+26&&x<WX1-26&&z>(home?bz:WZ0)+26&&z<(grey?bz:HALF)-26&&getH(x,z)>1&&grad(x,z)<0.55&&zoneRidge(x,z)<0.5&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&!inTunnelCut(x,z,15)&&!inGlen(x,z,8)&&!inGate(x,z,6)&&!greyWet(x,z,-3)&&(x>=HX0||!sunKeepOut(x,z,4))&&!dgEntranceNear(x,z,32)&&Math.hypot(x-PVP_ISLE.x,z-PVP_ISLE.z)>PVP_ISLE.lakeR+34; };   // dungeons: a camp keeps 32 m off a dungeon's door (none was nearer: no camp moves); pvp: and 96 m off the Proving Isle's centre (nothing lives by the lake or the bridgehead)
+  const ok=(x,z)=>{ const bz=borderZ(x), home=z>=bz&&x<borderX(z), grey=z<bz&&x<borderXN(z); return x>WX0+26&&x<WX1-26&&z>(home?bz:WZ0)+26&&z<(grey?bz:HALF)-26&&getH(x,z)>1&&grad(x,z)<0.55&&zoneRidge(x,z)<0.5&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&!inTunnelCut(x,z,15)&&!inGlen(x,z,8)&&!inGate(x,z,6)&&!greyWet(x,z,-3)&&(x>=HX0||!sunKeepOut(x,z,4))&&(x>=GW0||!gloamKeepOut(x,z,4))&&!dgEntranceNear(x,z,32)&&Math.hypot(x-PVP_ISLE.x,z-PVP_ISLE.z)>PVP_ISLE.lakeR+34; };   // dungeons: a camp keeps 32 m off a dungeon's door (none was nearer: no camp moves); pvp: and 96 m off the Proving Isle's centre (nothing lives by the lake or the bridgehead)
   for(const d of MON_DEFS){
     const zn=defZone(d), total=MON_COUNT(d), pack=d.per+2;
     let made=0;

@@ -17,8 +17,5 @@ function buildSunscar(){
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); g.computeVertexNormals();
     SUNS.river=new THREE.Mesh(g,waterMat); SUNS.river.receiveShadow=true; scene.add(SUNS.river); }
   { const S=SUN_SPRING; SUNS.pond=new THREE.Mesh(new THREE.CircleGeometry(S.r*1.2,28).rotateX(-Math.PI/2),waterMat); SUNS.pond.position.set(S.x,SUN_BASE-0.6+0.12,S.z); SUNS.pond.receiveShadow=true; scene.add(SUNS.pond); }
-  { const D=SUN_DG_DOOR, g=new THREE.Group(), st=new THREE.MeshLambertMaterial({color:0xb8845a}), gl=new THREE.MeshLambertMaterial({color:0x1a1822,emissive:0x2a1a3a});   // the reserved dungeon door: two sandstone piers, a lintel and a sealed pane of black glass (nothing opens it yet)
-    const box=(w,h,d,x,y,z,m)=>{ const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); b.position.set(x,y,z); b.castShadow=b.receiveShadow=true; g.add(b); };
-    box(2.2,7,2.2,-3.6,3.5,0,st); box(2.2,7,2.2,3.6,3.5,0,st); box(10,1.6,2.6,0,7.8,0,st); box(5,6.2,0.6,0,3.1,0,gl);
-    g.position.set(D.x,getH(D.x,D.z),D.z); g.rotation.y=D.rot; scene.add(g); SUNS.door=g; addCol(D.x-3.6,D.z,1.4); addCol(D.x+3.6,D.z,1.4); }
+  // (the Sandglass's door, SUN_DG_DOOR, is built with the other dungeon doors: dgEntSand in buildings-dungeon.js)
 }

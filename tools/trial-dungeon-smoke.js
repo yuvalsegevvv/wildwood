@@ -23,9 +23,9 @@ ok('it pays nothing by the rules either: no clear piece, no skill set source',x.
 
 // ---- the gate ----
 const dV=Math.hypot(G.x-x.VIL.x,G.z-x.VIL.z), ap=x.dgApron(G);
-ok('the gate stands in the home village, inside the houses\' ring of the road in, and is not one of the four doors',dV>28&&dV<34&&Object.keys(x.DG_ENTRANCES).length===4&&!Object.values(x.DG_ENTRANCES).includes(G)&&G.temp===true);
+ok('the gate stands in the home village, inside the houses\' ring of the road in, and is not one of the five doors',dV>28&&dV<34&&Object.keys(x.DG_ENTRANCES).length===5&&!Object.values(x.DG_ENTRANCES).includes(G)&&G.temp===true);
 ok('it is found from 3 m, not from 8 m; its apron is a few metres off, inside the village and on flat ground',x.dgEntranceNear(G.x+3,G.z)===G&&x.dgEntranceNear(G.x+8,G.z)===null&&Math.hypot(ap.x-G.x,ap.z-G.z)>3&&Math.hypot(ap.x-G.x,ap.z-G.z)<9&&Math.hypot(ap.x-x.VIL.x,ap.z-x.VIL.z)<x.VR+2&&Math.abs(x.getH(ap.x,ap.z)-x.getH(G.x,G.z))<0.6);
-{ const h=x.dgEntranceNear(x.DG_ENTRANCES.hollowroots.x+2,x.DG_ENTRANCES.hollowroots.z); ok('the four real doors are still found where they were',h===x.DG_ENTRANCES.hollowroots&&Object.values(x.DG_ENTRANCES).every(E=>x.dgEntranceNear(E.x,E.z)===E)); }
+{ const h=x.dgEntranceNear(x.DG_ENTRANCES.hollowroots.x+2,x.DG_ENTRANCES.hollowroots.z); ok('the five real doors are still found where they were',h===x.DG_ENTRANCES.hollowroots&&Object.values(x.DG_ENTRANCES).every(E=>x.dgEntranceNear(E.x,E.z)===E)); }
 
 // ---- the board and a run, as a level-1 hiker who has done nothing ----
 const A=join('a','Ash',{level:1,gear:{zt:{home:{on:2,max:2}}}}); tick(3);

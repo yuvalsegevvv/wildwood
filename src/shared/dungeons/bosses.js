@@ -1,4 +1,4 @@
-//@ The four dungeon bosses (Amanita the Sporemother, Gawataro the Jade Elder, Haugbui the Barrow Lord, Garrick the Seam Foreman): their designs as data (DG_BOSSES: moves named by primitive, signature, needs), their defs as rows shaped like BOSS_DEFS (DG_BOSS_DEFS), the hall's lamps and steam vents, and the arena of a run's boss hall. Pure.
+//@ The five dungeon bosses (Amanita the Sporemother, Gawataro the Jade Elder, Haugbui the Barrow Lord, Garrick the Seam Foreman, Khet the Hourkeeper): their designs as data (DG_BOSSES: moves named by primitive, signature, needs), their defs as rows shaped like BOSS_DEFS (DG_BOSS_DEFS), the hall's lamps and steam vents, and the arena of a run's boss hall. Pure.
 /* Agent map: exports DG_BOSSES, DG_BOSS_DEFS (keyed by boss id = its def's id: {def, kit, add, prop, short, bar, auxBar, gloom, dungeon}), DG_HALL_LAMPS, DG_VENT_R, dgVentAt,
    dgHallArena. Used by: server/dungeons/boss-kits.js (BOSS_KITS.spore / dish / barrow read B.bd = a row), the run's boss finale (makeBossS(DG_BOSS_DEFS[theme.boss],
    dgHallArena(bake, ox, oz))), game/combat/boss-dungeon.js (the client's def lookup, bar texts, gloom), defineDungeonTheme (a theme's `boss` must be a key here).
@@ -65,7 +65,21 @@ const DG_BOSSES={
       {id:'slaglings',name:'Slaglings',    phase:2,does:['adds']},
       {id:'cavein',   name:'Cave-in',      phase:2,does:['tele:rockfall'],x:0.9},
       {id:'blasting', name:'Blasting Day', phase:3,does:['props','tele:blast']}],
-    needs:['new:keg-blast']}};
+    needs:['new:keg-blast']},
+  /* Khet, the Hourkeeper (version 3, the Sandglass under the Sunscar: docs/DUNGEON-THEMES.md section 11). The only dungeon boss whose base level is 40 (`lv:40`, not DG_LV): the theme is level 40 at +0 and rises 10 a tier. Built from
+     primitives that already exist (no `new:` need but the shared tele-safe): his signature, High Noon, is a hall-wide pulse that only a pillar's shade spares you from. */
+  khet:{id:'khet',name:'Khet, the Hourkeeper',short:'Khet',dungeon:'sandglass',kit:'hour',lv:40,el:'light',model:'djinn',scale:3.3,glow:0x2a1a04,atk:2.3,speed:2.3,music:'boss30',
+    pal:{body:0x3a2a6a,skin:0xd8a860,gold:0xffd040,turban:0xfff0c8,eye:0xfff8a0},
+    add:{id:'sandimp',name:'Sand Imp',scale:0.7,speed:3.0,glow:0x2a1a04,pal:{body:0x8a6a3a,skin:0xe0b878,gold:0xe0b030,turban:0xd8c8a0,eye:0xffe070}},
+    bar:{stun:'The glass is cracked: strike now!'}, aux:'turns of the glass', auxBar:'Turns of the glass: {n}',
+    moves:[
+      {id:'scimitar', name:'Scimitar Sweep', phase:1,does:['tele:cleave','pfx:push','cast'],x:1.2},
+      {id:'shards',   name:'Glass Shards',   phase:1,does:['tele:icefall'],x:0.9},
+      {id:'noon',     name:'High Noon',      phase:1,does:['tele:pulse','new:tele-safe'],x:1.6,signature:true},
+      {id:'imps',     name:'Sand Imps',      phase:2,does:['adds']},
+      {id:'lance',    name:'Sun Lance',      phase:2,does:['tele:line','pfx:slow'],x:1.1},
+      {id:'ring',     name:'Radiant Ring',   phase:3,does:['tele:donut'],x:1.9}],
+    needs:['new:tele-safe']}};
 
 // a design as a row shaped like BOSS_DEFS (what makeBossS(bd, A) takes): the boss's def at its level, its add and its prop as monster defs
 function dgBossRow(b){
@@ -76,7 +90,7 @@ function dgBossRow(b){
   if(b.prop){ prop={id:b.prop.id,name:b.prop.name,level:b.lv,el:b.el,model:b.prop.model||b.model,scale:b.prop.scale,hits:b.prop.hits,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:b.prop.glow,pal:b.prop.pal}; prepDef(prop); }
   return {def,kit:b.kit,add,prop,short:b.short,bar:b.bar,aux:b.aux,auxBar:b.auxBar,gloom:b.gloom,dungeon:b.dungeon};
 }
-const DG_BOSS_DEFS=Object.assign(Object.create(null),{amanita:dgBossRow(DG_BOSSES.amanita),gawataro:dgBossRow(DG_BOSSES.gawataro),haugbui:dgBossRow(DG_BOSSES.haugbui),garrick:dgBossRow(DG_BOSSES.garrick)});   // (no prototype: a lookup by any def id is safe)
+const DG_BOSS_DEFS=Object.assign(Object.create(null),{amanita:dgBossRow(DG_BOSSES.amanita),gawataro:dgBossRow(DG_BOSSES.gawataro),haugbui:dgBossRow(DG_BOSSES.haugbui),garrick:dgBossRow(DG_BOSSES.garrick),khet:dgBossRow(DG_BOSSES.khet)});   // (no prototype: a lookup by any def id is safe)
 
 /* Where the kits put things in the hall, in metres from its middle (the hall's pillars and mouths are DG_HALL_PILLARS / DG_HALL_MOUTHS in shared/dungeons.js):
    Haugbui's four lamps stand at the inner corner of each pillar, 9.6 m from the middle (8 m round a lit lamp shelters you from the wail, which leaves the middle open);

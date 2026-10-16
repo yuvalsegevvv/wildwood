@@ -10,7 +10,7 @@ const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.string
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
-const zt=(home,vale,hoar,grey,sun)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:vale[1]},hoar:{on:hoar[0],max:hoar[1]},grey:{on:(grey||[0,0])[0],max:(grey||[0,0])[1]},sun:{on:(sun||[0,0])[0],max:(sun||[0,0])[1]}});
+const zt=(home,vale,hoar,grey,sun)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:vale[1]},hoar:{on:hoar[0],max:hoar[1]},grey:{on:(grey||[0,0])[0],max:(grey||[0,0])[1]},sun:{on:(sun||[0,0])[0],max:(sun||[0,0])[1]},gloam:{on:0,max:0}});
 
 // ---- the rules ----
 { const d=x.DEF_BY_ID.direboar, k0=x.zoneTierK(d,0), k1=x.zoneTierK(d,1), a=x.defAt(d,d.level+10);
@@ -23,7 +23,7 @@ const zt=(home,vale,hoar,grey,sun)=>({home:{on:home[0],max:home[1]},vale:{on:val
   ok('there are five tiers (IV and V added): the numerals are I to V, and every tier makes a monster tougher and harder-hitting than the one before',x.ZTIER_MAX===5&&x.ZTIER_ROMAN.join()==='0,I,II,III,IV,V'&&K.every((k,i)=>i===0||(k.hp>K[i-1].hp&&k.dmg>K[i-1].dmg&&k.lv===K[i-1].lv+x.ZTIER_STEP)),
     K.map((k,i)=>i+': lv '+k.lv+' hp x'+k.hp.toFixed(1)+' dmg x'+k.dmg.toFixed(1)).join('; ')); }
 ok('five lands, each opened by its second boss (the second of the two bosses that live there, by level)',(()=>{
-  const by={home:[],vale:[],hoar:[],grey:[],sun:[]}; for(const b of x.BOSS_DEFS){ const Ar=bossArena(b); by[x.landAt(Ar.x,Ar.z)].push(b); }
+  const by={home:[],vale:[],hoar:[],grey:[],sun:[],gloam:[]}; for(const b of x.BOSS_DEFS){ const Ar=bossArena(b); by[x.landAt(Ar.x,Ar.z)].push(b); }
   return x.ZTIER_LANDS.every(l=>by[l].length===2&&by[l].slice().sort((p,q)=>p.def.level-q.def.level)[1].def.id===x.ZTIER_BOSS[l]); })(),JSON.stringify(x.ZTIER_BOSS));
 function bossArena(b){ const B=x.BOSSES.find(q=>q.bd===b); return B.A; }
 ok('the symbol: every unlocked tier point of every land adds +10% (2 + 2 + 1 points = +50%, the Greyspine\'s too: +1 = +60%)',near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1])}),0.5,1e-9)&&near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1],[0,1])}),0.6,1e-9)&&x.symbolBonus({})===0&&x.symbolBonus({zt:zt([1,1],[0,0],[0,0])})===x.ZTIER_BONUS);

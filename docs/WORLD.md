@@ -23,7 +23,7 @@ parchment banner and legend) takes its cues from open-world game maps in general
 Eldmere is a crescent of land curled around a warm inland sea, **the Crownsea**. The crescent's west end is a hooked cliff peninsula,
 its spine is a snowy mountain range along the north, and a chain of volcanic islands closes the ring in the south. Under the land between
 Wildwood and the Greyspine lies a vast cave system, **the Rootdeep**. Other continents exist across **the Outer Deep** (the open ocean);
-they are out of scope for now, but the Stormhorn's lighthouse is where the way to them will begin.
+they are out of scope for now, but the Gloamhorn's lighthouse is where the way to them will begin.
 
 | Draft label | Name *(proposed)* | Levels | Landform | Climate | Settlement *(proposed name)* |
 |---|---|---|---|---|---|
@@ -32,12 +32,12 @@ they are out of scope for now, but the Stormhorn's lighthouse is where the way t
 | snowy zone | **Hoarfrost Reach** | 22-30 (built) | high frozen plateau: tundra, taiga fringe, glaciers | polar | Rimehold |
 | mountain zone | **the Greyspine** | 26-32 (built, but for the lands behind its gates) | young alpine range, snow above the snowline, fjords | alpine | Highmark |
 | desert | **Sunscar** | 28-36 | raised plateau desert behind an escarpment, one river | hot and dry, cold nights | **Glasswell, an oasis city** |
-| narrow cliff shore | **Stormhorn** | 30-40 | narrow hooked peninsula of sea cliffs and stacks | cold, foggy, gales | Gullrest |
+| dark cliff shore | **Gloamhorn** | 30-40 (built) | narrow hooked peninsula of sea cliffs and stacks, a land of permanent dusk | perpetual twilight, sea fog, gales | Wraithwick |
 | (not on the map) | **the Rootdeep** | 30-47 | caves under Wildwood's northern foothills and the Greyspine | underground | none (camps) |
 | savana | **Amber Reach** | 35-45 | rolling grassland, scattered trees, seasonal rivers | wet and dry seasons | Tallgrass |
 | tropical islands | **Emberwake Isles** | 40-50 | volcanic island arc, reefs, lagoons | hot, humid, storms | Coralhaven |
 
-Waters: **the Crownsea** (warm, sheltered, turquoise shallows), **the Greywater Bight** (the cold bay between Stormhorn and Amber
+Waters: **the Crownsea** (warm, sheltered, turquoise shallows), **the Greywater Bight** (the cold bay between Gloamhorn and Amber
 Reach), **the Outer Deep** (everything beyond).
 
 The level ranges overlap on purpose: when you outgrow one land, two or three others already suit you, so the world opens up instead of
@@ -50,15 +50,15 @@ owner's yes.
 
 1. **Latitude runs north (cold) to south (hot).** Eldmere lies in the northern half of its world: the snow is in the north (Hoarfrost,
    Greyspine peaks), the tropics in the south (the isles). The savanna sits between the desert and the tropics because rain grows southward.
-2. **The Greyspine is the backbone.** A young, high range along the north coast, from the Stormhorn in the west to the Hoarfrost plateau
+2. **The Greyspine is the backbone.** A young, high range along the north coast, from the Gloamhorn in the west to the Hoarfrost plateau
    in the east. A lower spur runs south from it between Wildwood and the Sakura Vale: **the Vale Wall** (the game's border), which ends in a waterfall (**the Greyfall**, off the Greyspine's high rim above Wildwood's north-east): below it the Wall is **the Greyfall River**, a wide meandering river to the Crownsea, crossed by one stone bridge (its gate is the one the Rootwarden opens; there is no mountain spur any more). Snow stays on every peak above the snowline; the snowline is lower the farther north you are.
 3. **The Hoarfrost Reach is a plateau, not a range.** Where the Greyspine meets the north-east it widens into a high, flat, ice-covered
    tableland with rounded domes and slow glaciers. Its glaciers melt south into the Sakura Vale: that is why the Vale's rivers and
    waterfalls (Jade Falls) are cold, clear and full all year.
-4. **The Stormhorn is the drowned tail of the Greyspine.** The range sinks westward into the sea; only its ridge still stands above water,
+4. **The Gloamhorn is the drowned tail of the Greyspine.** The range sinks westward into the sea; only its ridge still stands above water,
    which is why the peninsula is narrow, high, cliff-edged and hooked. The Greyspine's south-west coast is a fjord coast for the same reason.
-5. **A cold current hugs the west coast.** It comes down from the far north past the Stormhorn, fills the Greywater Bight and runs south
-   past Amber Reach. Cold water makes cold, foggy, rainless air: the Stormhorn is misty and the Sunscar's coast is a *fog desert* (like real
+5. **A cold current hugs the west coast.** It comes down from the far north past the Gloamhorn, fills the Greywater Bight and runs south
+   past Amber Reach. Cold water makes cold, foggy air: the Gloamhorn is misty and dim and the Sunscar's coast is a *fog desert* (like real
    deserts on the west coasts of continents).
 6. **The Crownsea is warm and brings the monsoon.** Sheltered by land on three sides and by the isles on the fourth, it heats up; its
    warm gyre turns clockwise and its summer winds blow north onto Wildwood and the Sakura Vale. That is why they are green and lush.
@@ -89,7 +89,7 @@ Neighbouring regions blend over a transition band (in the game about 50-100 m) w
 | Wildwood → Sakura Vale | the Vale Wall (the Greyfall bridge); maples and first cherry trees on the east side |
 | Sakura Vale → Hoarfrost | cedar highlands with hot springs (volcanic heat under the ice), then a glacier tongue |
 | Greyspine → Hoarfrost | a wide glacier-carved valley; peaks give way to flat white domes |
-| Greyspine → Stormhorn | the range narrows to a single windswept ridge (a natural pass at the neck) |
+| Greyspine → Gloamhorn | the range narrows to a single windswept ridge (a natural pass at the neck) |
 | Greyspine → Sunscar | alluvial fans and red badlands at the mountains' feet, where the river leaves the range |
 | Sunscar → Amber Reach | dunes → gravel plain → thorn scrub → grass; a dry riverbed marks the line |
 | Amber Reach → Emberwake Isles | the sea: reached by boat from the southern cape |
@@ -151,15 +151,16 @@ wanted: hot springs (onsen) near the northern border, where the land starts to c
 - **Weather**: no rain; sandstorms instead; hot days, cold nights; morning fog on the coast.
 - **Boss ideas**: a guardian of the glass fields (32); a sand wyrm under the dunes (36), whose defeat reopens **Redgate Canyon**, a shortcut home to Wildwood.
 
-### Stormhorn (levels 30-40)
-- **Look**: a narrow ridge of grass and heather over sheer sea cliffs, sea stacks, sea caves, shipwrecks, a tall dark lighthouse at the tip.
-- **Culture** *(proposed)*: Celtic-inspired fisher and wrecker village (Gullrest) at the neck: stone cottages, cairns, standing stones.
-- **Monsters**: Brine Slime, Crab-shelled Beetle, Sea Boar (walrus-like), Wrecker Goblin, Driftwood Treant; local: sirens, selkies, sea serpents, drowned sailors.
-- **Elements**: air, water, light (the lighthouse).
-- **Weather**: gales, sea fog, heavy rain. Walking along the narrow horn with wind and fog is the region's identity.
-- **Layout**: the levels climb along the horn, 30 at the neck to 40 at the tip. A side branch: a dead end you go down and come back from.
-- **Boss ideas**: drowned captain in the sea caves (35); a kraken at the tip, fought on the lighthouse rocks (40). The lighthouse stays dark
-  until the end of the whole journey (section 7).
+### Gloamhorn (levels 30-40, built)
+The old Stormhorn, renamed and re-themed as a permanently dark, gothic land. Code map, numbers and pitfalls: `docs/areas/gloamhorn.md`.
+- **Look**: a narrow ridge of dark heath, violet heather and black peat over sheer sea cliffs, sea stacks, sea caves, shipwrecks and a tall dark lighthouse at the tip. Cairns, standing stones and crooked lamps; always a violet dusk, a low moon, sea fog.
+- **Culture**: a Celtic-gothic fisher-and-wrecker hamlet, **Wraithwick**, at the neck: grey stone cottages under wet slate, crooked lamp-posts, cairns, standing stones, a chapel with graves.
+- **Monsters** (22 kinds, two per level): brine slime, gloom crab, sea boar, wrecker, driftwood treant, drowned sailor, siren, gloom bat, lantern wisp, banshee, ghoul, gloom serpent, gargoyle, wraith, grave hound, candle wisp, hollow knight, weeping widow, storm gargoyle, tide horror, black revenant, deep siren.
+- **Elements**: air, water, light, and dark (the soul-bound dark of the drowned and the dead).
+- **Weather**: the time of day is held at a violet dusk (a blend over the border band of the neck), with sea fog, a steady gale, rain allowed; no snow. Music: the dark themes `gloam1` / `gloam2`.
+- **Layout**: the levels climb along the horn, 30 at the neck to 40 at the tip. A side branch: a dead end you go down and come back from. It opens with the Mountain Golem (the neck rock fall); walking into Wraithwick attunes its teleport circle. No main-quest steps: villagers' small talk and quest-board notices only.
+- **Bosses**: **Captain Dredge**, the drowned captain in the sea caves (35); **the Gloam Warden**, the horror of the lighthouse at the tip (40), fought on the rocks below the tower with the lamp burning dim. The tower itself stays closed until the end of the whole journey (section 7).
+- **Reserved**: a sealed door of black stone, **The Gloamvault** (`GLOAM_DG_DOOR`), for a later level-40 dungeon that pays level-40 armour.
 
 ### The Rootdeep (levels 30-47, underground, not on the map)
 A great cave system under the land between Wildwood and the Greyspine, the biggest level range of any region. It goes down in three
@@ -208,7 +209,7 @@ Sakura Vale               |=========|
 Hoarfrost                        |========|
 Greyspine                            |======|
 Sunscar                                |========|
-Stormhorn                                |==========|
+Gloamhorn                                |==========|
 Rootdeep                                 |=================|
 Amber Reach                                   |==========|
 Emberwake                                          |==========|
@@ -221,14 +222,14 @@ finishing in the isles that close the ring. The overlapping levels turn the midd
 
 ```
 Wildwood 1-15 → Sakura Vale 16-25 → Hoarfrost Reach 22-30 → Greyspine 26-32 ─┬→ Sunscar 28-36 → Amber Reach 35-45 → Emberwake Isles 40-50
-                                                                             ├→ Stormhorn 30-40 (a side branch west)
+                                                                             ├→ Gloamhorn 30-40 (a side branch west)
                                                                              └→ the Rootdeep 30-47 (down, alongside everything else)
 ```
 
 - The Hoarfrost opens during the Vale (level 22), so players reach the snow before finishing the Vale's last boss.
-- The Greyspine is a short crossroads: from it the river leads south into the Sunscar, the neck pass west to the Stormhorn, and
+- The Greyspine is a short crossroads: from it the river leads south into the Sunscar, the neck pass west to the Gloamhorn, and
   Highmark's mine down into the Rootdeep. A player of 30-36 can pick any of the three.
-- The Rootdeep's long range means it is visited in stages: its upper layer alongside the Sunscar and Stormhorn, its deepest layer
+- The Rootdeep's long range means it is visited in stages: its upper layer alongside the Sunscar and Gloamhorn, its deepest layer
   alongside Amber Reach and the isles.
 - The Sunscar borders Wildwood but is reached late, from the north, because the Sunwall is a cliff and Redgate Canyon is blocked:
   reopening it is a satisfying shortcut home.
@@ -240,17 +241,17 @@ Wildwood 1-15 → Sakura Vale 16-25 → Hoarfrost Reach 22-30 → Greyspine 26-3
 | Vale → Hoarfrost (the ice wall in Frostgate Pass, north of Hanami) | Akaoni (20) **(built: `gear.north`)** |
 | Hoarfrost → Greyspine (the glacier valley) | Kyuubi (25) or the Hoarfrost's mid boss (26): **Ymrik (26) is chosen; the valley is not built yet** |
 | Greyspine → Sunscar (the river road) | the Greyspine's first boss (29) |
-| Greyspine → Stormhorn (the neck pass) and → Rootdeep (Highmark's mine) | the Greyspine's final boss (32) |
+| Greyspine → Gloamhorn (the neck pass) and → Rootdeep (Highmark's mine) | the Greyspine's final boss (32) |
 | Sunscar → Amber Reach (the dry riverbed) and Redgate back to Wildwood | the Sunscar's final boss (36) |
 | Amber Reach → Emberwake Isles (the boats) | the Amber Reach's final boss (45) |
-| the Stormhorn's lighthouse, and the way to other continents | the isles' final boss (50) |
+| the Gloamhorn's lighthouse, and the way to other continents | the isles' final boss (50) |
 
 A gate must be a real thing in the land (rock fall, ice, a closed door, no boat), never an invisible wall.
 
 ## 6. Rules for adding a region
 
 1. **Keep the draft's topology.** Who borders whom, the coastlines and the settlement positions are the owner's. The scale is not fixed.
-2. **Size**: a region is roughly 450-650 m across in the game (the Vale is 550 m wide, Wildwood 880 m); a wide level range (Stormhorn,
+2. **Size**: a region is roughly 450-650 m across in the game (the Vale is 550 m wide, Wildwood 880 m); a wide level range (Gloamhorn,
    the Rootdeep) needs more room than a short one (Greyspine). The draft is not to scale: the whole continent at Wildwood's scale would be
    about 3 x 2.2 km, too large to load at once.
 3. **The sea is the world's edge.** Where the draft has coast, the game needs a shore (beach, cliffs or mangrove) and water, not mountains.
@@ -280,13 +281,13 @@ storyline). What it means for the geography:
   and that everyone has forgotten; it erupted and drowned (Eldmere believes the gods did it: "the Sinking"). The Crownsea is its flooded
   caldera, Eldmere the northern half of its rim, the Emberwake Isles the southern rim, still burning.
 - **War scars disguised as wonders**: the Sunscar's glass fields (a weapon, "where the sun wept"), the iron bird in a Hoarfrost glacier
-  (a wrecked aircraft, "a dragon's skeleton"), steel shipwrecks on the Stormhorn, the Demon Gate's uncuttable stone, the stone and
+  (a wrecked aircraft, "a dragon's skeleton"), steel shipwrecks on the Gloamhorn, the Demon Gate's uncuttable stone, the stone and
   teleport circles (Eldmere's own lost craft, "gifts of the gods").
 - **Dark energy and monster strength**: the other continents pour their dark energy into the Sink in the Emberwake volcano; it spreads
   through the old lava tubes under the land (the Rootdeep's Emberdeep). Monsters grow stronger the closer a land is to the Sink, which is
   why the levels rise around the ring. Wildwood, over the Heartwood's roots, is touched least.
 - **The Rootdeep** holds the Heartwood's dying roots, the ruins of Eldmere's lost age, and the metal pipes of the dumping.
-- **Gates** (section 5) are the roads the story opens; the ending relights the Stormhorn's lighthouse, the way to the other continents.
+- **Gates** (section 5) are the roads the story opens; the ending relights the Gloamhorn's lighthouse, the way to the other continents.
 
 ## 8. The current game and this map
 
@@ -354,7 +355,7 @@ storyline). What it means for the geography:
   - **Shape** (a young, glacier-carved range): a long trough, **the Long Valley** (`GREY_VALLEYS[0]`: floor 34 m in the west to about 76 m in the east, 48 m wide and flat, flanks that
     are foothills), wandering west to east between where the Reach's glacier valley will come in and where the river road to the Sunscar will leave; four side valleys that climb into
     cirques (`up` metres to their heads): **the North Fork** (to the spine's snowfields), **the Queen's Fork** (under the Gryphon Queen's peak), **the Neck** (west, towards the
-    Stormhorn) and **the Sink Valley** (south, towards the rim where the Rootdeep's sinkholes will be). Between the troughs: ridged mountains whose height grows with the distance
+    Gloamhorn) and **the Sink Valley** (south, towards the rim where the Rootdeep's sinkholes will be). Between the troughs: ridged mountains whose height grows with the distance
     from a trough and towards the north, so the spine along the north edge is the highest ground. A domain warp of +-38 m keeps the troughs from looking ruled.
   - **Walls**: south, the home forest's rim goes on as its crest at z = HZ0 and eases down over ~66 m (`baseHeight`); east, the Reach's west wall seen from the other side (the ground
     is blended into `hoarBase` and the same crest terms are added, so at x = HALF - 6 it differs from `hoarHeight` by 0.2 m on average and the lands meet without a step); west, a crest of its own (`rw`); north, no wall: the spine lowers and comes down to the northern sea (`shore` with a long run, `shared/coasts.js`; the Queen's cone stays a headland). A player can climb to 14 m short of a crest while the land beyond is locked (`greyWall`, `frostWall`), never over. The walls are
@@ -371,11 +372,11 @@ storyline). What it means for the geography:
     Windswept Neck, 32 The Sink; `greyZoneAt`, cut from circle cells like the vale's) with two kinds of monster each (earth and air only) and two boss zones; the **Gryphon Queen** (29) on her
     crown and the **Mountain Golem** (32) in a cavern (`ARENA29`, `ARENA32`); **water**: three tarns, a river that runs west out of the Long Valley, a fjord on the south-west coast; and
     **the two gates** of this document's section 5: the river road (z -586, opened by the Queen) and the neck pass (z -776, opened by the Golem), canyons cut through the west wall (`westCarve`,
-    `GREY_GATES`) that end at the world's edge: the Sunscar and the Stormhorn are not built, so nothing lies behind them.
+    `GREY_GATES`) that end at the world's edge: the Sunscar and the Gloamhorn are both built since version 3, so the river road and the neck pass lead somewhere (the Gloamhorn's land, `docs/areas/gloamhorn.md`).
   - **To see it**: Testing tools, "Go to the Greyspine (Highmark's shelf)", "Gryphon Queen's peak", the glen, the cavern and the two rock falls (`dev` `tunnel` `grey` / `queen` / `glen` / `cavern` / `riverfall` / `neckfall`), or `data-v="x,z,degrees"` on `tPass`.
     Test: `node tools/greyspine-smoke.js`. To draw its shape offline: sample `rawHeight` with `loadShared(['rawHeight'])` into a hillshade (slopes: 35% under 0.3, 26% above 0.95).
 - **The rest of Eldmere is a low-poly placeholder** (`game/world/far-lands.js`): one flat-shaded mesh around the playable rectangle,
-  shaped from this map (the Greyspine's peaks, the Hoarfrost plateau, the Sunscar plateau with mesas, Amber Reach, the Stormhorn, and the
+  shaped from this map (the Greyspine's peaks, the Hoarfrost plateau, the Sunscar plateau with mesas, Amber Reach, the Gloamhorn, and the
   Emberwake Isles with a smoking volcano), plus one sea to the horizon. It can't be walked on. Its high ground shows faintly through the
   distance haze. When a land is built, it replaces its part of the placeholder.
 - The game's world is one rectangular heightmap (`WX0..WX1` x `WZ0..WZ1`, section 9 of `CLAUDE.md`). The rectangle has already grown north (the Hoarfrost

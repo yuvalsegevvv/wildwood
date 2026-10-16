@@ -1,4 +1,4 @@
-//@ The rest of Eldmere as placeholders around the three playable lands (Greyspine, Sunscar, Amber Reach, Stormhorn, Emberwake Isles; the Hoarfrost Reach is built): one smooth-shaded mesh of ridged mountains, high ground seen through the haze
+//@ The rest of Eldmere as placeholders around the three playable lands (Greyspine, Sunscar, Amber Reach, Gloamhorn, Emberwake Isles; the Hoarfrost Reach is built): one smooth-shaded mesh of ridged mountains, high ground seen through the haze
 /* Placeholders until each land is built (docs/WORLD.md: regions, map). Nothing here can be walked on: the playable
    rectangle's bounds (player/movement.js) keep you inside. The shapes follow docs/world-map.svg turned into world
    metres: the draft's Wildwood box is the home forest (about 2.1 m per map pixel east-west, 2.8 north-south), the
@@ -8,7 +8,7 @@
    real terrain's height (getH) so the two meet, and cells inside the rectangle or under the sea are left out. Shared vertices, smooth
    normals and colours from smooth noise (the old grid was flat-shaded with a random tint per face, which read as crumpled paper). */
 const FAR_CELL=27.5/1.5;
-// the continent's coastline (world metres, clockwise from the Stormhorn's tip)
+// the continent's coastline (world metres, clockwise from the Gloamhorn's tip)
 const FAR_COAST=[[-1566,-1244],[-1561,-1138],[-1497,-1028],[-1370,-917],[-1242,-806],[-1135,-751],[-901,-737],[-816,-834],
   [-645,-917],[-411,-1050],[-102,-1111],[100,-1166],[271,-1194],[441,-1125],[580,-958],[721,-723],[846,-560],[955,-470],
   [1005,-410],[1010,-86],[1012,136],[1005,300],[995,452],[700,455],[441,452],[100,456],[-305,455],[-432,579],[-518,745],
@@ -58,7 +58,7 @@ function farHeight(x,z){
   if(R==='frost') return 8+50*smoothstep(0,160,sd)+(fbm(x*0.005+2,z*0.005,3)*0.5+0.5)*30+Math.max(0,noise2(x*0.011,z*0.011+4))*34;
   if(R==='sun') return 4+48*smoothstep(0,45,sd)+noise2(x*0.03,z*0.03)*2.5+(noise2(x*0.007+9,z*0.007-2)>0.45?16:0);
   if(R==='amber') return lerp(1.2,3+16*smoothstep(0,140,sd)+fbm(x*0.008,z*0.008,3)*9,smoothstep(4,30,sd));
-  return 3+smoothstep(0,22,sd)*(30+(fbm(x*0.01,z*0.01,3)*0.5+0.5)*45);   // the Stormhorn's ridge
+  return 3+smoothstep(0,22,sd)*(30+(fbm(x*0.01,z*0.01,3)*0.5+0.5)*45);   // the Gloamhorn's ridge
 }
 function farColor(x,z,h,out){
   const j=0.9+(noise2(x*0.045+3,z*0.045-8)*0.5+0.5)*0.2, [isl,I]=farIsle(x,z);

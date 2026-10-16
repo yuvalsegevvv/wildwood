@@ -3,7 +3,7 @@
    Art: assets/img/world-map.webp (window.WILDWOOD_IMG['world-map'], embedded by build.py), drawn from docs/world-map.svg by tools/world-map-bake.js; its regions, towns and banner places are
    world-map-data.js (generated with it: WMAP_*). Coordinates here are "art pixels" (2000 x 1574) unless a name says screen.
    The docs map shows seven regions; four are built (home forest = wild, vale, frost = the Hoarfrost Reach, grey = the Greyspine) and sit under fog until `landOpen` says so (that map's own
-   locks: map.js). Stormhorn, Sunscar, Amber Reach and the Emberwake Isles are not built: fog always, and nothing but "uncharted" is said about them (the docs keep their names to themselves).
+   locks: map.js). Gloamhorn, Sunscar, Amber Reach and the Emberwake Isles are not built: fog always, and nothing but "uncharted" is said about them (the docs keep their names to themselves).
    A click on an open land opens that land's full map (`wmapGo`, the same panel the N key opens); a click on fog says what bars the way. The pin: `wmapPin`.
    Used by: map.js (the "World" button, `sizeFullMap` hides it in a dungeon, `updateMap` calls `wmapUpdate`), panels.js (PANELS), keybinds.js (the `world` key). Test: tools/client-smoke.js. */
 const WMAP_LAND={home:'wild',vale:'vale',hoar:'frost',grey:'grey'};   // the game's lands on the docs map's regions
@@ -42,7 +42,7 @@ function wmapFit(){
 }
 // your pin: from your land's village (exact there) by the fitted slopes, and never outside your land's region (a coast the drawing does not have is walked back to the shore)
 function wmapPin(){
-  if(dgIn()||landHere()==='sun') return null;   // (a run is far from the map; the Sunscar is not drawn on the docs map yet: no pin there)
+  if(dgIn()||landHere()==='sun'||landHere()==='gloam') return null;   // (a run is far from the map; the Sunscar is not drawn on the docs map yet: no pin there)
   const land=landHere(), V=[VIL,VIL2,VIL3,VIL4][['home','vale','hoar','grey'].indexOf(land)], T=WMAP_TOWNS[WMAP_TOWN[land]], F=wmapFit(), dx=P.x-V.x, dz=P.z-V.z;
   const tx=T[0]+F.u[0]*dx+F.u[1]*dz, ty=T[1]+F.v[0]*dx+F.v[1]*dz, poly=WMAP_REG[WMAP_LAND[land]];
   if(wmapPip(poly,tx,ty)&&wmapEdgeDist(poly,tx,ty)>6) return [tx,ty];

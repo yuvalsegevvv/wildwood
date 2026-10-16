@@ -1,4 +1,4 @@
-//@ Rain sound (rainSoundTick): a soft low wash, a slowly swelling patter, scattered droplets, a storm rumble; in the snow (WX.snow) a low wind and a blizzard's howl instead
+//@ Rain sound (rainSoundTick): a soft low wash, a slowly swelling patter, scattered droplets, a storm rumble; in the snow (WX.snow) a low wind and a blizzard's howl instead (a steady sea gale in the Gloamhorn)
 /* ---------- rain ----------
    Played by updateWeather in world/weather.js, scaled by WX.inten (0..1, fades over ~25 s).
    The old rain was one bright band of noise at 2.6 kHz: loud and hissy. This one keeps the energy low:
@@ -13,7 +13,7 @@ function rainSoundTick(dt){
   if(!SND.ready) return;
   const I=WX.inten, tc=SND.ctx.currentTime;
   if(!RAINS.nodes){
-    if(I<0.01) return;
+    if(I<0.01&&!(GLOAM_SKY.k>0.05)) return;
     RAINS.nodes={wash:noiseLoop('lowpass',RAIN_SND.washFF,0.5,'ambient'), patter:noiseLoop('bandpass',1600,0.45,'ambient'), rumble:noiseLoop('lowpass',300,0.7,'ambient'), wind:noiseLoop('bandpass',430,0.9,'ambient')};
   }
   const N=RAINS.nodes;
@@ -22,7 +22,7 @@ function rainSoundTick(dt){
   N.wash.g.gain.setTargetAtTime(RAIN_SND.wash*I*(1-SK*0.85),tc,0.5);
   N.patter.g.gain.setTargetAtTime(RAIN_SND.patter*I*RAINS.swell*(1-SK),tc,0.8);
   N.rumble.g.gain.setTargetAtTime((WX.kind===2?RAIN_SND.storm:RAIN_SND.rumble)*I*(1-SK*0.5),tc,0.8);
-  N.wind.g.gain.setTargetAtTime((WX.kind===2?RAIN_SND.howl*(0.6+0.4*RAINS.swell):RAIN_SND.wind*(0.5+0.5*RAINS.swell))*I*SK,tc,0.9);
+  N.wind.g.gain.setTargetAtTime(Math.max((WX.kind===2?RAIN_SND.howl*(0.6+0.4*RAINS.swell):RAIN_SND.wind*(0.5+0.5*RAINS.swell))*I*SK,GLOAM_SKY.k*RAIN_SND.wind*(0.55+0.7*RAINS.swell)*(1+0.8*I)),tc,0.9);   // the Gloamhorn: a steady sea gale, louder in rain (world/gloam-sky.js)
   if(N.wind.f) N.wind.f.frequency.setTargetAtTime(WX.kind===2?520+380*RAINS.swell:380+140*RAINS.swell,tc,0.8);
   if(I<0.05||SK>0.6) return;
   RAINS.dropT-=dt*RAIN_SND.drops*I;

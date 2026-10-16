@@ -18,7 +18,7 @@ for(const k of [28,29,30,31,32,33,34,35,36]){ const ss=SUN_SEEDS.filter(s=>s.key
   ZONES.push({key:'s'+k,ring:3,vale:true,sun:true,x,z,R:k===36?130:120,name:SUN_ZONE_NAMES[k],level:k}); }
 const sunWarp=(x,z)=>[x+noise2(x*0.009+3,z*0.009-8)*26,z+noise2(x*0.009-11,z*0.009+5)*26];
 function sunZoneAt(x,z){
-  if(Math.min(x-WX0,WZ1-z,z-borderZ(x))<44) return null;                // the Bight, the Crownsea's shore, the north wall
+  if(Math.min(x-GW0,WZ1-z,z-borderZ(x))<44) return null;                // the Bight, the Crownsea's shore, the north wall
   if(x>HX0-14||Math.hypot(x-SUN_CITY.x,z-SUN_CITY.z)<SUN_FLAT-20) return null;   // the Sunwall, and the city with its apron
   for(const A of ARENAS) if(A.sun&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;
   const [wx,wz]=sunWarp(x,z); let best=null, bd=1e18;

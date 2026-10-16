@@ -1,7 +1,7 @@
 //@ The Sunscar's monster models: scorpions (model 'scorpion'), walking cacti ('cactus'), sand worms and the sand wyrm ('sandworm'), djinn ('djinn') and the Glass Guardian ('sentinel')
 /* Agent map: fills MODELS.scorpion / cactus / sandworm / djinn / sentinel (same contract as monster-parts.js: geo, build, anim; models face -z, metres at scale 1). Their stats are the FAM rows of the same names
    (shared/monster-defs.js), their kinds the MON_DEFS rows with zone 's28'..'s36' (shared/sunland.js, sunzones.js). Look flags: scorpion pal.shell / sheen / head / eye / legs / horn (the sting), pal.glass (a
-   glass scorpion: crystal spines); cactus pal.bark (the green), c1 (flowers), c2 (spines); sandworm pal.body / belly / ridge / horn / eye, boss crest; djinn pal.body (smoke) / skin / gold / turban / eye;
+   glass scorpion: crystal spines); cactus pal.bark (the green), c1 (flowers), c2 (spines); sandworm pal.body / belly / ridge / horn / eye, boss crest; djinn pal.body (smoke) / skin / gold / turban / eye (pal.siren: the Gloamhorn's sirens, hair instead of a turban and no beard);
    sentinel pal.stone / glass / glow / gold. Uses the helpers of monster-parts.js and moBugLegs (monster-bugs.js). Tested by client-smoke (the roster builds) and tools/monster-preview.js. */
 const moDesBox=(w,h,d,x,y,z)=>new THREE.BoxGeometry(w,h,d).translate(x,y,z);
 // ---- scorpions: a flat armoured body, a curled tail with a sting, two claws that snap, eight legs ----
@@ -100,7 +100,8 @@ MODELS.djinn={
     body.push(moLoft([{y:0.1,rx:0.03,rz:0.03,x:0.18,z:0.1},{y:0.35,rx:0.09,rz:0.09,x:0.14,z:0.07},{y:0.65,rx:0.17,rz:0.15,x:0.07,z:0.03},{y:0.95,rx:0.22,rz:0.17,x:0.02},{y:1.2,rx:0.3,rz:0.18},{y:1.4,rx:0.4,rz:0.2},{y:1.52,rx:0.22,rz:0.14},{y:1.58,rx:0.09,rz:0.08}],moQ(16),sm));
     const sk=p.skin;
     body.push(moBone([0,1.5,0],[0,1.62,-0.02],0.07,0.06,sk,6),moEll(0.15,0.18,0.15,0,1.74,-0.02,sk,null,12),
-      moEll(0.18,0.1,0.18,0,1.88,0,p.turban,null,12),moEll(0.17,0.16,0.17,0,1.96,0.01,p.turban,null,12),moEll(0.045,0.05,0.04,0,1.88,-0.17,p.gold,null,6),moCone([0,1.8,-0.12],[0,-1,-0.2],0.3,0.07,0x1c1410,5));   // head, turban with a jewel, a pointed beard
+      ...(p.siren?[moEll(0.17,0.19,0.17,0,1.79,0.03,p.turban,null,12),moEll(0.04,0.04,0.03,0,1.93,-0.1,p.gold,null,6),...[0,1,2,3,4].map(i=>moTube([[(i-2)*0.06,1.82,0.1],[(i-2)*0.1,1.4,0.2],[(i-2)*0.12,0.95,0.16],[(i-2)*0.09,0.6,0.12]],0.06,0.015,p.turban,5,true))]   // a siren: long wet hair, a pearl on the brow
+        :[moEll(0.18,0.1,0.18,0,1.88,0,p.turban,null,12),moEll(0.17,0.16,0.17,0,1.96,0.01,p.turban,null,12),moEll(0.045,0.05,0.04,0,1.88,-0.17,p.gold,null,6),moCone([0,1.8,-0.12],[0,-1,-0.2],0.3,0.07,0x1c1410,5)]));   // head, turban with a jewel, a pointed beard
     for(const sd of W){ body.push(moEll(0.035,0.025,0.02,sd*0.06,1.76,-0.17,p.eye,null,5),
       moBone([sd*0.4,1.38,0],[sd*0.34,1.12,-0.3],0.1,0.08,sm,7),moBone([sd*0.34,1.12,-0.3],[sd*-0.1,1.14,-0.42],0.08,0.07,sm,7),moEll(0.1,0.04,0.04,sd*0.36,1.14,-0.3,p.gold,null,8),   // arms folded across the chest, a gold bracer
       moEll(0.06,0.06,0.06,sd*0.38,1.4,0,p.gold,null,6)); }

@@ -64,6 +64,14 @@ const THEMES={
   sun2:{beat:0.3,chordBars:2,chords:[[38,45,50,54],[43,50,55,58],[39,46,51,55],[38,45,50,54]],scale:[62,63,66,67,69,70,72,74,75],
     pad:{type:'sawtooth',vol:0.012,ff:800,attack:2.5},drone:26,bass:'x.x.x...',bassType:'sawtooth',arp:{pat:'x.xx.x.x',inst:'pluck',vol:0.016,from:'scale'},lead:{inst:'flute',p:0.1},
     drums:{kick:'x...x...',taiko:'o.o.o...'}},
+  // the Gloamhorn levels 30-35 (and Wraithwick): C# aeolian, a slow heartbeat drum, a low drone and tolling bells, a breathy flute for the wind
+  gloam1:{beat:0.56,chordBars:2,chords:[[37,44,49,52],[33,40,45,49],[35,42,47,51],[32,39,44,47]],scale:[61,63,64,66,68,69,71,73],
+    pad:{type:'sine',vol:0.026,ff:700,attack:4},drone:25,bass:'x.......',arp:{pat:'x...x...',inst:'bell',vol:0.014,from:'scale',echo:true},lead:{inst:'flute',p:0.09},
+    drums:{taiko:'o.......'}},
+  // levels 36-40: the same key, lower and heavier, the heartbeat quickening
+  gloam2:{beat:0.4,chordBars:2,chords:[[37,44,49,52],[32,39,44,47],[33,40,45,49],[37,44,49,52]],scale:[61,63,64,66,68,69,71,73,76],
+    pad:{type:'sawtooth',vol:0.011,ff:600,attack:3.5},drone:25,bass:'x...x...',bassType:'sawtooth',arp:{pat:'x...x.x.',inst:'bell',vol:0.013,from:'scale',echo:true},lead:{inst:'flute',p:0.07},
+    drums:{kick:'x.......',taiko:'o...o...'}},
   // Hoarfrost levels 22-26: cold and sparse, bells over a soft pad, a flute in the wind
   hoar1:{beat:0.44,chordBars:2,chords:[[45,52,57,60],[41,48,53,57],[43,50,55,59],[40,47,52,55]],scale:[69,72,74,76,79,81,84],
     pad:{type:'sine',vol:0.026,ff:800,attack:3.5},bass:'x.......',arp:{pat:'x...x...',inst:'bell',vol:0.013,from:'scale',echo:true},lead:{inst:'flute',p:0.12},
@@ -93,9 +101,10 @@ const THEMES={
 function musicThemeHere(){
   const m=BOSS.m; if(m&&BOSS.engaged&&!m.dead){ const A=arenaOf(m); if(Math.hypot(P.x-A.x,P.z-A.z)<A.r+30){ const bd=bossInfo(m); return (bd&&bd.def.music)||(m.def.level>=30?'boss30':m.def.level>=26?'boss26':m.def.level>=25?'boss25':m.def.level>=20?'boss20':'boss15'); } }
   if(dgIn()) return dgMusicTheme();   // dungeons: a run's own music (a boss in its hall plays its theme: the line above) (dungeon/look.js)
-  const V=vilAt(P.x,P.z); if(vDist(P.x,P.z)<VR+22) return V===VIL5?'sun1':V===VIL4||V===VIL3?'rimehold':V===VIL2?'hanami':'village';   // (Highmark has no song of its own yet: Rimehold's)
+  const V=vilAt(P.x,P.z); if(vDist(P.x,P.z)<VR+22) return V===VIL6?'gloam1':V===VIL5?'sun1':V===VIL4||V===VIL3?'rimehold':V===VIL2?'hanami':'village';   // (Highmark has no song of its own yet: Rimehold's)
   if(P.inTun) return MUSIC.theme||'wild3';
   const zn=zoneAt(P.x,P.z), L=zn?zn.level:0;
+  if(inGloam(P.x,P.z)) return L>=36?'gloam2':'gloam1';   // (the Gloamhorn's own songs)
   if(inHoar(P.x,P.z)||inGrey(P.x,P.z)) return L>=27?'hoar2':'hoar1';   // (the Greyspine has no song of its own yet: the Reach's)
   if(inSun(P.x,P.z)) return L>=33?'sun2':'sun1';   // (the Sunscar's own songs)
   if(inVale(P.x,P.z)) return L>=21?'vale2':'vale1';

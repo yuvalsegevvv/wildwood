@@ -63,7 +63,7 @@ function addZoneS(B,kind,x,z,r,dur,a,b){
 }
 const whiteR=zn=>lerp(zn.r,zn.b,clamp(zn.t/(zn.dur*0.8)));   // a whiteout's safe radius now: it closes over the first 80% of its life
 const shelteredS=(B,p)=>B.adds.some(a=>a.def.id==='warmcore'&&!a.dead&&!a.remove&&Math.hypot(a.x-p.x,a.z-p.z)<6.5);
-const ZONE_HIT={ember:[0.6,0.2],whirl:[0.5,0.18],whiteout:[0.8,0.3],sandstorm:[0.8,0.3],blizzard:[0.9,0.28]};   // seconds between hits, share of the boss's hit each does
+const ZONE_HIT={ember:[0.6,0.2],whirl:[0.5,0.18],whiteout:[0.8,0.3],sandstorm:[0.8,0.3],blizzard:[0.9,0.28],gloom:[0.6,0.16]};   // seconds between hits, share of the boss's hit each does
 function tickZoneS(B,m,zn,dt){
   zn.tick-=dt; if(zn.tick>0) return;
   const K=ZONE_HIT[zn.kind]; zn.tick=K[0];

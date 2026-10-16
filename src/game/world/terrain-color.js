@@ -39,7 +39,7 @@ function greyColor(x,z,h,g,out){
   out.lerp(COL.dirt,smoothstep(0.72,0.92,n2)*0.35);
   out.lerp(COL.scree,smoothstep(72,118,h+n3*14)*0.8+smoothstep(0.45,0.8,g)*0.35);
   out.lerp(n1<0.5?COL.rock:COL.rockHi,steep*0.9);
-  { const bad=smoothstep(WX0+210,WX0+70,x)*smoothstep(100,62,h)*smoothstep(-780,-650,z);
+  { const bad=smoothstep(GW0+210,GW0+70,x)*smoothstep(100,62,h)*smoothstep(-780,-650,z);
     if(bad>0){ out.lerp(COL.desert,bad*(1-steep)*0.45); out.lerp(COL.redRock,bad*(0.25+0.6*steep)); } }
   out.lerp(COL.snow,smoothstep(128-(z<-860?10:0)+n1*18,142-(z<-860?10:0)+n1*18,h)*(1-smoothstep(0.85,1.4,g)));
   { const d=Math.hypot(x-GREY_HM.x,z-GREY_HM.z); if(d<GREY_HM.r+4) out.lerp(COL.gravel,smoothstep(GREY_HM.r+4,GREY_HM.r-6,d)*0.65); }
@@ -53,7 +53,8 @@ function terrainColor(x,z,h,g,out,noCut){   // noCut: colour as if the tunnel's 
   const bx=borderX(z), bz=borderZ(x), bxc=z<bz+8?borderXN(z):bx, hf=x>bxc+2?smoothstep(bz+8,bz-56,z):0;   // the north crest (the vale's and the forest's east of the Greyspine's wall), over which the ground turns to the Hoarfrost's
   if(hf>=1) return dgEntTint(x,z,hoarColor(x,z,h,g,out));   // dungeons: the Barrow Door's patch of trodden snow
   const gf=x<bxc?smoothstep(bz+8,bz-56,z):0;   // the home forest's north crest west of the Greyspine's wall, over which the ground turns to the Greyspine's
-  if(gf>=1) return dgEntTint(x,z,greyColor(x,z,h,g,out));   // dungeons: the Old Adit's patch of coal dust
+  if(gf>=1){ const lk=x<GW0+30?smoothstep(GW0+30,GW0-30,x):0;   // the Gloamhorn west of the neck (terrain-color-gloam.js)
+    if(lk>=1) return dgEntTint(x,z,gloamColor(x,z,h,g,out)); if(lk>0){ greyColor(x,z,h,g,out); gloamColor(x,z,h,g,_hc); return dgEntTint(x,z,out.lerp(_hc,lk)); } return dgEntTint(x,z,greyColor(x,z,h,g,out)); }   // dungeons: the Old Adit's patch of coal dust
   const n1=noise2(x*0.02,z*0.02)*0.5+0.5, n2=noise2(x*0.11+5,z*0.11)*0.5+0.5;
   out.copy(COL.lush).lerp(COL.dry, smoothstep(0.45,0.85,n1)*0.8);
   out.lerp(COL.floor, smoothstep(0.45,0.9,forestDensity(x,z))*0.75);

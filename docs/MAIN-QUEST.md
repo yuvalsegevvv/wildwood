@@ -125,7 +125,7 @@ hand as the tunnel's letters and the Demon Gate); the hint *objects*: **the grey
 studs in even rows, a ring with a small sun painted on it, `hullplate`) and Odran's slip: "Dragons do not come in sheets, and the edges
 are cut clean. Someone made this."; the hint *person*: Odran pays for the plate and wraps it up quickly; the hint *place*: **the iron
 bird**, the wreck at the frost wyrm's nest (`ironbird`, a boss zone the main quest does not reach; a player who does read it). Ymrik,
-dying: *"The iron bird... still sings under the ice. And someone... sings back. From a far light on the sea."* (the Stormhorn's lighthouse
+dying: *"The iron bird... still sings under the ice. And someone... sings back. From a far light on the sea."* (the Gloamhorn's lighthouse
 relay, `STORY.md` act V-b: no answers before the reveal). F9 ends the act: the sickness "has a root, where the earth's heat runs black,
 under the mountains" (Highmark's miners, act IV), and the west glacier valley has split (**not built**: the road west is the Greyspine's
 gate, `MQ_END`).
@@ -260,7 +260,7 @@ that cleanse a boss's freeze or slow, resources for the lands to come.
 `docs/WORLD.md` (the lands, their level ranges and gates) into main quest steps, level by level, so the next chapters can be built one
 land at a time. The spoiler rule (`STORY.md` section 0) is unchanged: no answers before the end of the Amber Reach storyline (act VI);
 every hint keeps an innocent reading. Step ids continue the built ones: **G** the Greyspine, **S** the Sunscar, **A** Amber Reach,
-**E** the Emberwake Isles, plus the side branches **T** (Stormhorn) and **R** (Rootdeep). Rewards follow section 1 (about 30% of the
+**E** the Emberwake Isles, plus the side branches **T** (Gloamhorn) and **R** (Rootdeep). Rewards follow section 1 (about 30% of the
 XP a land needs, `r x expToNext(gate)`), 3-4 hub steps and one boss per land, gates rising with the levels below.
 
 ### 7.1 The road, level by level
@@ -272,7 +272,7 @@ Greyspine    G1----------G9 (26-32)
 Sunscar          S1---------------S10 (28-36)
 Amber Reach                  A1-----------A10 (35-45)   <- the reveal
 Emberwake                          E1------------E10 (40-50)   <- the ending
-side: Stormhorn T1..T6 (30-40), Rootdeep R1..R9 (30-47)
+side: Gloamhorn T1..T6 (30-40), Rootdeep R1..R9 (30-47)
 ```
 
 A player follows the main line **Hoarfrost → Greyspine → Sunscar → Amber Reach → Emberwake**. The main line's gates never send you to a
@@ -295,7 +295,7 @@ Odran's cart. Gate in: the Hoarfrost's west glacier valley (opened by Ymrik, F8/
 | G6 | The gryphon queen | 29 | Defeat the gryphon queen on her peak (**boss 29**) | opens the river road south (Sunscar) |
 | G7 | What the miners dug into | 30 | See the deepest shaft that broke into something vast (read; a cave mouth: the Rootdeep) | the Rootdeep hook (side branch R) |
 | G8 | The old machine | 31 | Reach the mountain golem's cavern; read its jointed frame | **place**: a stone shell around a jointed metal frame, "an old war machine of our own, woken by the dark" |
-| G9 | The mountain wakes | 32 | Defeat the mountain golem (**boss 32**) | opens the neck pass west (Stormhorn) and the deep mine (Rootdeep); the road on: Glasswell's physician |
+| G9 | The mountain wakes | 32 | Defeat the mountain golem (**boss 32**) | opens the neck pass west (Gloamhorn) and the deep mine (Rootdeep); the road on: Glasswell's physician |
 
 Engine needs: the Greyspine is built as a place (`shared/greyspine.js`, `highmark.js`, `greyzones.js`: the way in through the Reach's west glacier valley, Highmark, seven zones, the Gryphon Queen
 and the Mountain Golem with six skills each, tarns, a river, a fjord, and the two gates in its west wall; `docs/NOT-BUILT.md` section 3b), but not as a story: the steps G1-G9 below need
@@ -360,11 +360,11 @@ Sink), Odran (changed sides). Travel between the islands: boats and teleport cir
 | E7 | Rook's last stand | 48 | Defeat Rook's guards (a fight, not a boss) | the antagonist |
 | E8 | The warden | 50 | Defeat **the Sink's warden** (**boss 50**), the volcano's fire spirit fused with the machine | the Wildwood light against it |
 | E9 | The dark stops | 50 | Close the Sink | the ending |
-| E10 | Green again | 50 | Go home: the Heartwood's roots green, **Wren wakes for good**; the Quiet thins (NPC lines change); the Stormhorn's lamp room opens, the first Concord ship on the horizon | the epilogue and the hook for the next continent |
+| E10 | Green again | 50 | Go home: the Heartwood's roots green, **Wren wakes for good**; the Quiet thins (NPC lines change); the Gloamhorn's lamp room opens, the first Concord ship on the horizon | the epilogue and the hook for the next continent |
 
 ### 7.6 Side branches (optional, `STORY.md` section 7)
 
-- **The Stormhorn** (levels 30-40, `T1-T6`): Gullrest's fishers and Keeper Maelis (the lamp room with the lock that has no keyhole, the
+- **The Gloamhorn** (levels 30-40, `T1-T6`): Wraithwick's fishers and Keeper Maelis (the lamp room with the lock that has no keyhole, the
   tower at the same hour every night, steel-hulled wrecks with tins and a camera, the drowned captain in a uniform with the sun-in-a-ring,
   **boss 35**, the kraken **boss 40**). Ymrik's dying words point here.
 - **The Rootdeep** (levels 30-47, `R1-R9`, three layers: the Rootways 30-35, the Glimmer Halls 36-41, the Emberdeep 42-47): the Heartwood's

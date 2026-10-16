@@ -78,9 +78,9 @@ function guidePages(){
       <h4>The doors</h4>
       <ul>
         <li><b>The Trial Gate</b>, a temporary arch in your home village: a level-5 practice run (Hollow Roots) open to everyone, every mission always on offer. It pays nothing.</li>
-        <li><b>The Hollowed Elder</b> (the home forest), <b>the Falls Door</b> (Sakura Vale), <b>the Barrow Door</b> (Hoarfrost Reach) and <b>the Old Adit</b> (the Greyspine). Real dungeons need level ${DG_ENTRY_LV}, at every difficulty (the difficulty tiers make monsters harder, not the way in). Each opens once you have reached that land's village; the home forest's also needs difficulty +1, unlocked by beating Carapax.</li>
+        <li><b>The Hollowed Elder</b> (the home forest), <b>the Falls Door</b> (Sakura Vale), <b>the Barrow Door</b> (Hoarfrost Reach), <b>the Old Adit</b> (the Greyspine) and <b>the Sandglass Door</b> (the Sunscar, in the desert south of Glasswell): five dungeons. The first four need level ${DG_ENTRY_LV}, at every difficulty (the difficulty tiers make monsters harder, not the way in); the Sandglass is level 40 with a level-40 boss and needs level ${DG_THEMES.sandglass?DG_THEMES.sandglass.entry:36}. Each opens once you have reached that land's village; the home forest's also needs difficulty +1, unlocked by beating Carapax.</li>
       </ul>
-      <p>Dungeons drop level-30 rings, pendants and other gear, and Tempering Stones to improve it. If you fall in a run a party member can revive you; you can leave through the portal and keep what you already found.</p>`},
+      <p>Dungeons drop level-30 rings, pendants and other gear (the Sandglass a level-40 weapon), and Tempering Stones to improve it. If you fall in a run a party member can revive you; you can leave through the portal and keep what you already found.</p>`},
     reactions:{t:'Reactions',h:guideReactions()},
     pvp:{t:'PvP island',h:`
       <p>The <b>Proving Isle</b> is a round island in a lake on the home forest's south beach, with the open sea behind it. Follow the Shore Road all the way south and take the side road, <b>The Proving Road</b>, east; its plank bridge leads to a gate with red banners.</p>

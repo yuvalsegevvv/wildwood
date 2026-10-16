@@ -54,11 +54,12 @@ const DG_LANDS={
   home:{name:'Wildwood',    base:1,unlock:{},          hint:'Wildwood opens its dungeon at +1 difficulty: once Carapax, the Tide King, has fallen, set Wildwood to +1 on the map in a village.'},
   vale:{name:'Sakura Vale', base:0,unlock:{east:2},    hint:'Walk to Hanami, on the far side of the bridge, first.'},
   hoar:{name:'Hoarfrost Reach',base:0,unlock:{north:2},hint:'Walk into Rimehold, through Frostgate Pass, first.'},
-  grey:{name:'The Greyspine',base:0,unlock:{west:2},   hint:'Walk into Highmark, through the glacier valley west of the Reach, first (its ice fall opens when Ymrik falls).'}};
+  grey:{name:'The Greyspine',base:0,unlock:{west:2},   hint:'Walk into Highmark, through the glacier valley west of the Reach, first (its ice fall opens when Ymrik falls).'},
+  sun: {name:'The Sunscar',   base:0,unlock:{sun:2},    hint:'Walk into Glasswell, the desert city, first (the River Pass or Redgate Canyon leads there).'}};   // (version 3: the Sandglass, level 40 at +0, enter from level 36: theme field `entry`)
 /* THE THEME REGISTRY. A dungeon theme is one file, shared/dungeons/themes/<id>.js, holding a single defineDungeonTheme({...}) call and no top-level names, plus its line in
    src/manifest.json (after shared/dungeons/bosses.js). defineDungeonTheme checks the theme; a bad one is LEFT OUT (the game still boots), warned about (console.warn) and listed in
    DG_BAD as {id, field, why}: tools/dungeons-smoke.js fails naming them. Fields:
-     id ('hollowroots': a lowercase word), name, land (a DG_LANDS key), at (the ZONES name of the zone it lies under), lv (default DG_LV),
+     id ('hollowroots': a lowercase word), name, land (a DG_LANDS key), at (the ZONES name of the zone it lies under), lv (default DG_LV), entry (the level you need to enter, default DG_ENTRY_LV; the Sandglass: 36),
      mobs:{walkers, guardians} (MON_DEFS ids; walkers fit the 4 m doors: radius <= 0.9 m, at least 4 kinds; guardians are the big ones that stay in their room),
      boss (a DG_BOSS_DEFS id), music (a music theme), pal:{wall, floor, fog, light} (colours for the client builder),
      legend:{char:{solid, prop, hazard?, light?, post?}}: the theme's own characters (one character each, not # . S O C P B). solid: blocks like '#' (collision, line of sight,
@@ -149,7 +150,8 @@ function defineDungeonTheme(T){
     for(const v of made){ if(!v) return bad('tiles',t.id+': unknown shape in '+JSON.stringify(t.shapes)); const p=dgTileProblems(v,lg); if(p.length) return bad('tiles',v.id+': '+p.join('; ')); tiles.push(v); }
   }
   const cover=dgCoverProblems(tiles); if(cover.length) return bad('tiles',cover.join('; '));
-  const th={id,name:T.name,land:T.land,at:T.at,lv,mobs:{walkers:mobs.walkers.slice(),guardians:(mobs.guardians||[]).slice()},boss:T.boss,music:T.music,pal:Object.assign({},T.pal),legend:lg,tiles,art:true};
+  if(T.entry!==undefined&&(!Number.isInteger(T.entry)||T.entry<1||T.entry>99)) return bad('entry',String(T.entry));
+  const th={id,name:T.name,land:T.land,at:T.at,lv,entry:T.entry||DG_ENTRY_LV,mobs:{walkers:mobs.walkers.slice(),guardians:(mobs.guardians||[]).slice()},boss:T.boss,music:T.music,pal:Object.assign({},T.pal),legend:lg,tiles,art:true};
   DG_THEMES[id]=th; return th;
 }
 /* A VARIANT of a registered theme: the same tiles, legend, roster, boss, music and palette (so the same gameplay), with fields changed (id and name are required). The trial dungeon is the Hollow
@@ -174,7 +176,8 @@ const DG_ENTRANCES={
   hollowroots:    {theme:'hollowroots',    name:'The Hollowed Elder', kind:'roots', x:244,z:148,  a:Math.PI/2, sign:{x:114.9,z:25.8,  road:'The East Road'}},
   jadesprings:    {theme:'jadesprings',    name:'The Falls Door',     kind:'falls', x:826,z:82,   a:Math.PI,   sign:{x:864.3,z:-28.5, road:'The Coast Road'}},
   bonefrostbarrow:{theme:'bonefrostbarrow',name:'The Barrow Door',    kind:'barrow',x:368,z:-894, a:5.76,        sign:{x:406.9,z:-845.4,road:'The Wyrm Road'}},
-  blackseam:      {theme:'blackseam',      name:'The Old Adit',       kind:'mine',  x:316+GDX,z:-692, a:3.403,     sign:{x:-231.7,z:-718.5,road:'The Glacier Road'}}};
+  blackseam:      {theme:'blackseam',      name:'The Old Adit',       kind:'mine',  x:316+GDX,z:-692, a:3.403,     sign:{x:-231.7,z:-718.5,road:'The Glacier Road'}},
+  sandglass:      {theme:'sandglass',      name:'The Sandglass Door', kind:'sand',  x:SUN_DG_DOOR.x,z:SUN_DG_DOOR.z, a:Math.PI, sign:{x:-690,z:226,road:null}}};   // version 3: the Sunscar's door (shared/sunland.js SUN_DG_DOOR): flat desert, no road and no bank, so its signpost stands on the sand by the apron
 /* THE TRIAL GATE (version 2, temporary): the way into the Trial Roots, a copy of the Hollow Roots at level 5 that pays nothing (shared/dungeons/themes/trial.js). It is NOT one of the four doors (DG_ENTRANCES stays four,
    each dug into a bank far from any village): a free-standing arch in the home village, mirrored across the road in from the teleport circle (ent - 0.5, 31 m), so anyone can find it on their first day. It
    works like a door otherwise (dgEntranceNear finds it, the talk key opens the same Delve board, a run ends on its apron). `apron` is explicit: the village's houses stand just inside the gate. Move
@@ -222,11 +225,12 @@ function dgUnlocked(gear,level,T,tier){
   if(U.east!==undefined&&(g.east|0)<U.east) return {ok:false,why:L.hint};
   if(U.north!==undefined&&(g.north|0)<U.north) return {ok:false,why:L.hint};
   if(U.west!==undefined&&(g.west|0)<U.west) return {ok:false,why:L.hint};
-  const lv=dgLevel(T,t); if((level|0)<DG_ENTRY_LV) return {ok:false,why:'Reach level '+DG_ENTRY_LV+' first.'};   // (the same at every tier: a level-60 dungeon used to ask for 55, which nobody can have)
+  if(U.sun!==undefined&&(g.sun|0)<U.sun) return {ok:false,why:L.hint};
+  const need=T.entry||DG_ENTRY_LV, lv=dgLevel(T,t); if((level|0)<need) return {ok:false,why:'Reach level '+need+' first.'};   // (the same at every tier: a level-60 dungeon used to ask for 55, which nobody can have)
   return {ok:true,why:'',tier:t,level:lv};
 }
 // the door's look and what pressing the talk key says: open at the tier you play (Wildwood's roots are knotted shut at +0) and the land's progress; the level is not part of it
-const dgGateOpen=(gear,T)=>{ if(T.trial) return true; const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}; return dgTierOf(g,T.land)>=L.base&&(U.east===undefined||(g.east|0)>=U.east)&&(U.north===undefined||(g.north|0)>=U.north)&&(U.west===undefined||(g.west|0)>=U.west); };
+const dgGateOpen=(gear,T)=>{ if(T.trial) return true; const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}; return dgTierOf(g,T.land)>=L.base&&(U.east===undefined||(g.east|0)>=U.east)&&(U.north===undefined||(g.north|0)>=U.north)&&(U.west===undefined||(g.west|0)>=U.west)&&(U.sun===undefined||(g.sun|0)>=U.sun); };
 // every tile in every quarter turn (turns that come out the same are kept once)
 function dgVariants(set){
   const out=[], seen=new Set();

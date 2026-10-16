@@ -9,6 +9,7 @@
 | `professions.md` | mining / woodcutting / gathering, tools, crafting, brewing, potions |
 | `tiers.md` | zone tiers (per-player difficulty per land) |
 | `regions.md` | the Sakura Vale, the Hoarfrost Reach, teleport circles, snow, adding a region |
+| `gloamhorn.md` | the Gloamhorn (the sixth land, levels 30-40, a permanent dusk) and Wraithwick: ground, gate, zones, 22 monsters, two bosses, the dusk, the reserved Gloamvault door |
 | `sunscar.md` | the Sunscar (the fifth land, levels 28-36) and Glasswell: ground, gates, zones, monsters with accuracy / resistance, two bosses, plants, weather, the reserved dungeon door |
 | `greyspine.md` | the Greyspine: ground, the way in, Highmark, zones, bosses, water, the two rock falls (its dungeon, the Blackseam: `docs/DUNGEON-THEMES.md` section 9; the pendants it pays: `docs/PENDANTS.md`) |
 | `world-map.md` | the world map of Eldmere (G): the docs map's art with fog, banners and a pin, and the way to each land's map (baking the art, the fog, the pin) |
@@ -36,7 +37,7 @@ Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an
 | `../MAIN-QUEST.md` | the main quest plan; section 5b: professions, tools, crafting and potions |
 | `../NOT-BUILT.md` | what is **not built yet**, with a comment on each gap (gathering's animation, crafting and potion balance, the levels 33-50 story, regional weather, the tracks' licences...) and the ideas list: ask the owner before starting one |
 | `../DESERT-CITY.md` | Glasswell, the Sunscar's city (designed; its 3D model is built, not placed in the world; plan `../glasswell-plan.svg`, drawn by `../glasswell-plan.py`) |
-| `../DUNGEONS.md`, `../DUNGEON-THEMES.md` | dungeons: the design, the five rules, the build order, what is built; the four dungeons (one a land, level 30; the Greyspine's, the Blackseam, is section 9), the hourly offer of two mission types, their bosses, the four entrances (map `../dungeon-entrances.png`, drawn by `tools/entrance-map.js`) and the rewards |
+| `../DUNGEONS.md`, `../DUNGEON-THEMES.md` | dungeons: the design, the five rules, the build order, what is built; the five dungeons (one a land, level 30; the Greyspine's, the Blackseam, is section 9; the Sunscar's Sandglass, level 40, section 11), the hourly offer of two mission types, their bosses, the five entrances (map `../dungeon-entrances.png`, drawn by `tools/entrance-map.js`) and the rewards |
 | `../PVP.md` | the Proving Isle (PvP): where it is, the rules (fixed level / gear / skills, elements x1.15, parties spared, no rewards, the gate), how the hits reach players, the knobs; not balanced on purpose |
 | `../PENDANTS.md` | the pendants (the necklace slot): kinds, values, caps, the Blackseam's reward |
 | `../SKILL-SETS.md` | **skill sets** (signature skills, outfits, a currency for outfits, six kit archetypes (risk DPS, safe DPS, grind, support, healer, tank) and eight themes; the engine and the first eight sets are built): its section 0 says which part to read, its last section is the code map; for one kit or one theme only `../skillkits/README.md`, to write one set as data `../skillkits/AUTHORING.md` |

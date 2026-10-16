@@ -20,11 +20,11 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | The item id scheme (`sword2`, `sword2-e`) | `itemId` src/shared/items.js:23 |
 | Tools (pickaxe, axe, sickle): materials, prices, double-yield chance by rarity | `TOOL_MAT` / `TOOL_PRICE` / `TOOL_EXTRA` src/shared/items.js:38-39 |
 | What gear adds to a player (health, attack, defense) | `gearStatsOf` src/shared/items.js:63, `recalcP` src/server/players.js:96 |
-| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:162 |
+| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:165 |
 | Wearing an item (level check, slot) | `equipP` src/server/economy.js:25 |
 | Shops: common items only, +20% per copy bought | `buyP` src/server/economy.js:38, `shopPrice` src/shared/items.js:49, shop panel src/game/economy/shops.js:20 |
 | Monster and boss drops (the item roll and its tier) | `rollMonsterRarity` / `rollBossRarity` src/shared/items.js:53, used in `rewardKill` src/server/combat.js:68 |
-| Quest board rewards (item rarity) | `rollQuestItemRarity` src/shared/quests.js:67 |
+| Quest board rewards (item rarity) | `rollQuestItemRarity` src/shared/quests.js:69 |
 | Merging three identical items into the next rarity (Greta's forge) | `mergeP` src/server/economy.js:15, `mergedId` src/shared/items.js:50 |
 | Crafting from ore / logs (rarity common to epic) | `craftCost` src/shared/crafting.js:12, `craftP` src/server/crafting.js:6 |
 | The level-30 dungeon pieces and rings: stats, ids, rewards, enhancing | `dgItem` src/shared/dungeon-rewards.js:55, registered in `ITEM` by src/shared/dungeon-items.js:10; the drop of the Tempering Stone and tempering `dgTemperP` src/server/dungeon-gear.js:27 |
@@ -457,4 +457,4 @@ Names `RING_NAMES` src/shared/dungeon-rewards.js:25; a common ring adds `RING_AT
 | `ring-light-u` | Unique Dawnbound Ring | 30 | Unique | +44 | 972000 | 388800 | +8 | +44, +48, +53, +57, +62, +66, +70, +75, +79 | Bonefrost Barrow | RING_NAMES.light |
 | `ring-light-l` | Legendary Dawnbound Ring | 30 | Legendary | +60 | 2916000 | 1166400 | +10 | +60, +66, +72, +78, +84, +90, +96, +102, +108, +114, +120 | Bonefrost Barrow | RING_NAMES.light |
 
-What each dungeon pays: The Hollow Roots: weapon (sword, bow, wand); Jade Spring Grottoes: armor (helmet, top, bottom, shoes); Bonefrost Barrow: ring (basic, water, fire, air, earth, dark, light); The Blackseam: pendant (xp, drop, coin, crit, critdmg); sandglass: weapon (sword, bow, wand); gloamvault: armor (helmet, top, bottom, shoes) (`DG_REWARDS` src/shared/dungeon-rewards.js:28; odds `DG_REWARD_W` src/shared/dungeon-rewards.js:35; enhancing `ENH_MAX` / `ENH_STEP` / `ENH_DROP` src/shared/dungeon-rewards.js:36).
+What each dungeon pays: The Hollow Roots: weapon (sword, bow, wand); Jade Spring Grottoes: armor (helmet, top, bottom, shoes); Bonefrost Barrow: ring (basic, water, fire, air, earth, dark, light); The Blackseam: pendant (xp, drop, coin, crit, critdmg); The Sandglass: weapon (sword, bow, wand); gloamvault: armor (helmet, top, bottom, shoes) (`DG_REWARDS` src/shared/dungeon-rewards.js:28; odds `DG_REWARD_W` src/shared/dungeon-rewards.js:35; enhancing `ENH_MAX` / `ENH_STEP` / `ENH_DROP` src/shared/dungeon-rewards.js:36).

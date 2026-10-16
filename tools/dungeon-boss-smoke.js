@@ -1,4 +1,4 @@
-// Headless test of the four dungeon bosses (Amanita, Gawataro, Haugbui: server/dungeons/boss-kits.js, Garrick: server/dungeons/boss-kits-mine.js, on the primitives of server/boss-fx.js and server/dungeons/boss-fx.js),
+// Headless test of the four older dungeon bosses (Khet, the fifth, is fought in sandglass-dungeon-smoke; Amanita, Gawataro, Haugbui: server/dungeons/boss-kits.js, Garrick: server/dungeons/boss-kits-mine.js, on the primitives of server/boss-fx.js and server/dungeons/boss-fx.js),
 // straight from src/, no build. Each boss is made with makeBossS in a real dungeon hall (a theme's layout baked and placed at a spot of the world, its pillars as A.solid) and fought
 // through its three phases by two players that cannot die; the test records what it does and checks that every move of its DG_BOSSES entry happens, that it has moves none of the
 // other bosses has (the world bosses are fought too), its signature mechanics (puffballs killed in time cancel their burst; a pillar shelters you from the pulse; hits from behind

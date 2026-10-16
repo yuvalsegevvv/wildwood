@@ -57,6 +57,15 @@ function* genChunk(ci){
       const m=mtx(x,h-0.15,z,rand()*TAU,s,s*R(0.92,1.1),s,R(-0.04,0.04),R(-0.04,0.04));
       items[type].push({x,z,m,c:tint(type==='thorn'?pick(PAL.thorn):pick(PAL.palm))}); trees.push({x,z,s}); placed++; continue;
     }
+    if(inGloam(x,z)&&x<GW0-10){   // the Gloamhorn: a few gnarled snags and wind-bent dark spruce on the heath, none by the cliffs or at the keep-outs (bareGround is true all over the west)
+      if(h<1.5||g>0.6||gloamIn(x,z)<14||gloamKeepOut(x,z,3)||vDist(x,z)<VR+8||storyClear(x,z)||dgEntClear(x,z)) continue;
+      if(rand()>0.04+forestDensity(x,z)*0.05) continue;
+      const type=rand()<0.6?'snag':'spruce', s=R(0.75,1.35);
+      if(!canPlace(x,z,2.6*Math.min(s,1.1))) continue;
+      addCol(x,z,RAD[type]*s);
+      const m=mtx(x,h-0.15,z,rand()*TAU,s*R(0.92,1.08),s*R(0.9,1.15),s*R(0.92,1.08),R(-0.1,0.1),R(-0.1,0.1));
+      items[type].push({x,z,m,c:tint(pick(type==='spruce'?PAL.spruce:PAL.pine))}); trees.push({x,z,s}); placed++; continue;
+    }
     if(h<0.8 || bareGround(x,z) || storyClear(x,z) || dgEntClear(x,z)) continue;   // dungeons: no trees at a door or signpost
     if(g>0.95) continue;
     const hoar=inHoar(x,z), fringe=hoar?smoothstep(-740,-570,z):0;   // the taiga fringe: spruce grows thickest on the plateau's southern edge

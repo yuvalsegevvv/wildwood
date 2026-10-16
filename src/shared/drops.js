@@ -24,7 +24,11 @@ const MAT_NAMES={slime:'Slime Goo',shroom:'Spore Cap',beetle:'Beetle Shell',boar
   mistwraith:'Mist Essence',quartzslime:'Quartz Core',ibex:'Ibex Horn',rocktroll:'Troll Hide',slatecrawler:'Slate Plate',galedrake:'Drake Scale',granitegolem:'Golem Rune',
   sandslime:'Sand Jelly',gildedscarab:'Gilded Wing',warthog:'Warthog Tusk',dunescorpion:'Scorpion Sting',raider:'Raider Sash',cactustreant:'Cactus Bloom',sandworm:'Worm Tooth',mummy:'Linen Wrap',glasswisp:'Glass Spark',
   glassscorpion:'Glass Sting',dustdjinn:'Djinn Smoke',duneprowler:'Prowler Pelt',tombguard:'Tomb Seal',sandgolem:'Sandstone Core',dunedrake:'Drake Hide',sunpriest:'Sun Disc',elderworm:'Elder Fang',efreet:'Efreet Ember',
-  glassguardian:"Guardian's Prism",sandwyrm:'Wyrm Heartsand'};
+  glassguardian:"Guardian's Prism",sandwyrm:'Wyrm Heartsand',
+  brineslime:'Brine Jelly',gloomcrab:'Crab Plate',seaboar:'Walrus Tusk',wrecker:"Wrecker's Lantern",driftwood:'Bleached Bough',drownedsailor:'Sodden Rope',siren:'Siren Pearl',gloombat:'Bat Wing',
+  lanternwisp:'Wisp Glass',banshee:'Banshee Hair',ghoul:'Ghoul Claw',gloomserpent:'Serpent Scale',gargoyle:'Gargoyle Horn',wraith:'Wraith Cloth',gravehound:'Hound Fang',candlewisp:'Candle Wax',
+  hollowknight:'Hollow Plate',weepingwidow:'Widow Veil',stormgargoyle:'Storm Shard',tidehorror:'Horror Ink',blackrevenant:'Revenant Shard',deepsiren:'Deep Pearl',
+  drownedcaptain:"Captain's Compass",gloamwarden:"Warden's Lamp"};
 const DROP_CHANCE=0.35, BOSS_DROPS=3, MAT_MAX=999, BOSS_UP=2;
 const MATS={}, MAT_IDS=[];
 const lighten=c=>'#'+[16,8,0].map(sh=>{ const v=(c>>sh)&255; return Math.round(v+(255-v)*0.35).toString(16).padStart(2,'0'); }).join('');

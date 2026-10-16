@@ -47,7 +47,7 @@ const turns=a=>{ let n=0, ref=a[0], dir=0; for(const v of a){ if(dir>=0&&v<ref-4
 { const nb=X.ARENAS.filter(A=>X.landAt(A.x,A.z)!=='home').map(A=>[A.key,A.x,A.z,X.coastDist(A.x,A.z),H(A.x,A.z),A.h]), bad=nb.filter(a=>a[3]<40||Math.abs(a[4]-a[5])>0.01);
   ok('every boss arena outside the home forest stands 40 m or more from the water, flat at its own height',bad.length===0,nb.map(a=>a[0]+' c '+a[3].toFixed(0)).join(', ')); }
 { const doors=X.NODE_KEEPOUT.map(d=>[d,X.coastDist(d[0],d[1]),H(d[0],d[1])]), bad=doors.filter(d=>d[1]<45||d[2]<2.5);
-  ok('the four dungeon doors keep 45 m from the water',bad.length===0,doors.map(d=>d[0].join(',')+' c '+d[1].toFixed(0)).join(' ; ')); }
+  ok('the four older dungeon doors keep 45 m from the water',bad.length===0,doors.map(d=>d[0].join(',')+' c '+d[1].toFixed(0)).join(' ; ')); }
 ok('the Gryphon Queen\'s cone keeps its crown (232 m), a headland in the sea',H(X.GREY_QUEEN.x,X.GREY_QUEEN.z)>=Math.min(231,X.GREY_QUEEN.h),'crown '+H(X.GREY_QUEEN.x,X.GREY_QUEEN.z).toFixed(0)+' m');
 { const lo=X.NODES.map(n=>X.coastDist(n.x,n.z)).reduce((a,b)=>Math.min(a,b),1e9); ok('every resource node is 22 m or more from the waterline',lo>=40,'nearest c '+lo.toFixed(0)); }
 // ---- the sea is flat and everything is finite ----

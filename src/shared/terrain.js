@@ -12,8 +12,8 @@ const NORTH_D=840, HZ0=-HALF;
    wall with it (borderXN, GXJ: about x = -140, over the middle of the forest); the Reach's own places (Rimehold, its zones and arenas, the lakes, the barrow's door) moved RDX west to stand
    between that wall and Frostgate Pass. The world's rectangle grew west to hold the Greyspine's far end (WX0); the forest's own west edge, the Sunwall, stays at HX0, and beyond it, south
    of the Greyspine, lies the unbuilt Sunscar's plateau (the Sunwall's top goes on: homeHeight). The Reach's north-east corner (it ran 330 m east of the vale) is sea now. */
-const GDX=-580, RDX=-390;
-const EAST_W=880, HX0=-HALF, WX0=HX0+GDX, WX1=HALF+EAST_W, WZ0=HZ0-NORTH_D, WZ1=HALF, WW=WX1-WX0, WD=WZ1-WZ0;
+const GDX=-580, RDX=-390, GLX=720;   // GLX: the Gloamhorn (shared/gloamhorn.js) grew the rectangle this far west of the Greyspine's old edge GW0
+const EAST_W=880, HX0=-HALF, GW0=HX0+GDX, WX0=GW0-GLX, WX1=HALF+EAST_W, WZ0=HZ0-NORTH_D, WZ1=HALF, WW=WX1-WX0, WD=WZ1-WZ0;
 const GXJ=HALF+GDX;   // the Greyspine | Reach wall's mean line (x), and where it meets the forest's north wall
 /* The rectangle grew for the Hoarfrost Reach (it was 550 m east and 600 m north of the forest's corner, 244,000 m2 of land against the vale's 433,000): the vale's east edge and the
    Greyspine's north edge stay where they were (VALE_E, GREY_N), and the sea fills the rest of the rectangle; the coast (shared/coasts.js) is an outline drawn over it. */
@@ -65,6 +65,7 @@ const borderXat=(x,z)=>z<borderZ(x)?borderXN(z):borderX(z);   // the wall on the
 const inVale=(x,z)=>x>borderXat(x,z);   // the Sakura Vale and the Hoarfrost Reach: east of the Vale Wall, or north of the north wall and east of the Greyspine | Reach wall
 const inHoar=(x,z)=>z<borderZ(x)&&x>borderXN(z);   // the Hoarfrost Reach: north of the north wall (the forest's and the vale's), east of the Greyspine's wall
 const inGrey=(x,z)=>z<borderZ(x)&&x<borderXN(z);   // the Greyspine: north-west, over the Sunscar's plateau and the forest's north-west corner
+const inGloam=(x,z)=>x<GW0&&z<borderZ(x);           // the Gloamhorn, the sixth land (shared/gloamhorn.js): the peninsula west of the Greyspine's west wall (check it BEFORE inGrey, which is true there too)
 const inSun=(x,z)=>x<HX0&&z>=borderZ(x);           // the Sunscar, the fifth land (shared/sunland.js): south of the Greyspine, west of the Sunwall
 /* A border range's profile. Its width (to where its foot starts) and its height vary along the line (t: z for the Vale Wall, k 1; x for the north wall,
    k 3), so a wall is broad massifs and narrow necks, with a low irregular skirt of foothills beyond its body. Both lands on either side of a crest add the
@@ -153,6 +154,7 @@ function pvpIsleCut(x,z,h){
 const SUNWALL_H=52, REDGATE_Z=40;
 // distance to this land's sea edge: bays, small wiggles, the vale's corner rounded (a soft minimum of its two shores)
 function coastDist(x,z){
+  if(x<GW0&&z<borderZ(x)) return x<GW0-40?gloamCoast(x,z):lerp(csOuter(x,z),gloamCoast(x,z),smoothstep(GW0,GW0-40,x));   // the Gloamhorn (shared/gloamhorn.js; the Greyspine's west wall blends into it)
   if(z<borderZ(x)||x>borderX(z)) return csOuter(x,z);   // the vale, the Hoarfrost Reach and the Greyspine: their bays, rounded corners and islets (shared/coasts.js)
   if(x<HX0-12) return x<HX0-72?sunCoast(x,z):lerp((WZ1-z)+noise2(x*0.011+17,z*0.011-29)*10-(noise2(x*0.0045+5,z*0.0045-7)*0.5+0.5)*28,sunCoast(x,z),smoothstep(HX0-12,HX0-72,x));   // the Sunscar: the Bight in the west as well (shared/sunland.js)
   return (WZ1-z)+noise2(x*0.011+17,z*0.011-29)*10-(noise2(x*0.0045+5,z*0.0045-7)*0.5+0.5)*28;   // the home forest's south shore
@@ -186,6 +188,7 @@ function bareGround(x,z){ return coastDist(x,z)<38 || (x<HALF && (x-HX0<sunwallL
 // the vale's own rim climbs from the other side, and the two meet there
 function baseHeightRaw(x,z){
   const bz=borderZ(x);
+  if(x<GW0-70&&z>=bz-4) return -5;   // gloamhorn: the sea west of the Sunscar's coast (the world grew west for the peninsula, and its south is open water)
   if(z>=bz-4){   // south of the north wall's crest (and 4 m over it): the home forest, the vale east of the river, and the Sunscar's plateau west of the Sunwall
     const bx=borderX(z);
     if(x>=bx+4) return valeHeight(x,z);
@@ -265,7 +268,7 @@ function homeHeight(x,z){
   h = riverCut(h,Math.abs(bx-x),z);   // (the Vale Wall is a river along most of its length)
   h = sunwall(x,z,h,x-HX0);   // (west of HX0 the Sunwall's top goes on: the Sunscar's plateau)
   if(x<HX0-12) h = sunHook(x,z,h,wN);   // sunscar: the fifth land's ground (shared/sunland.js: mesas, dunes, pans, glass, the Bowl, the river)
-  h = lerp(h,-4,smoothstep(WX0+80,WX0+12,x));
+  h = lerp(h,-4,smoothstep(GW0+80,GW0+12,x));
   return shore(h, coastDist(x,z), Math.max(smoothstep(46,14,bx-x), smoothstep(PVP_ISLE.lakeR+14,PVP_ISLE.lakeR-2,Math.hypot(x-PVP_ISLE.x,z-PVP_ISLE.z))), x<HX0?60*smoothstep(HX0-12,HX0-72,x):0);   // (the Sunscar's coast eases down over a longer slope: wide)   // (the Proving Isle's lake lies on the south beach: shore() must not level its bowl)
 }
 function forestDensity(x,z){ return clamp(fbm(x*0.0085+31, z*0.0085-12, 3)*1.5 + 0.5 + noise2(x*0.03,z*0.03)*0.15); }

@@ -3,7 +3,7 @@
    (SUN_CITY, SUN_PASS, SUN_MESAS, SUN_PANS, SUN_GLASS, SUN_RIVER, sunPassCarve, sunRiverAt, waterSurf's river branch in greyspine.js, sunKeepOut for camps / plants, the colour weights sunPanK /
    sunGlassK / sunDuneK / sunRockK / sunGreenK for game/world/terrain-color.js). Used by shared/glasswell.js (VIL5), zones (sunzones.js), the client's meshes (game/village/buildings-sunscar.js), the map.
    Test: node tools/sunscar-smoke.js. Names: sun..., SUN_...
-   Where it is: west of the Sunwall (x < HX0 = -440), south of the north wall's crest (z >= borderZ(x), the Greyspine's south side), west to the Bight (x = WX0 = -1020), south to the Crownsea's western shore (z 440).
+   Where it is: west of the Sunwall (x < HX0 = -440), south of the north wall's crest (z >= borderZ(x), the Greyspine's south side), west to the Bight (x = GW0 = -1020), south to the Crownsea's western shore (z 440).
    The plateau is SUN_BASE (52 m, the Sunwall's top, so the Redgate Road runs onto it level). Features, each local and cheap to ask: the north wall (wallAdd, the same as the forest's), the River Pass
    (a canyon through it, the Greyspine's river road), the mesas (flat-topped, flanks under 1.0 so they can be climbed), the salt pans and the glass fields (flat, a little low), the dunes (long waves
    of 90-130 m), the Bowl (gwRimH carried by the heightmap, so the city's rim is real ground and the collision is the slope limit), and the river: born at the Springhead where the pass opens
@@ -132,7 +132,7 @@ function sunGround(x,z,wN){
   return h;
 }
 // the shore: west to the Bight and south to the Crownsea; coastDist's Sunscar part
-function sunCoast(x,z){ return Math.min((WZ1-z)+noise2(x*0.011+17,z*0.011-29)*10-(noise2(x*0.0045+5,z*0.0045-7)*0.5+0.5)*28, (x-WX0)+noise2(x*0.009+3,z*0.009-11)*14-(noise2(x*0.0042-4,z*0.0042+6)*0.5+0.5)*30+8); }
+function sunCoast(x,z){ return Math.min((WZ1-z)+noise2(x*0.011+17,z*0.011-29)*10-(noise2(x*0.0045+5,z*0.0045-7)*0.5+0.5)*28, (x-GW0)+noise2(x*0.009+3,z*0.009-11)*14-(noise2(x*0.0042-4,z*0.0042+6)*0.5+0.5)*30+8); }
 // called by homeHeight for the points west of the Sunwall's plateau (ks eases it in over the plateau's first 60 m)
 function sunHook(x,z,h,wN){
   const ks=smoothstep(HX0-12,HX0-72,x); if(ks<=0) return h;

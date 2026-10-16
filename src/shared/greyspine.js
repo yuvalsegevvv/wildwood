@@ -1,6 +1,6 @@
 //@ The Greyspine, the fourth land (levels 26-32, docs/WORLD.md): its ground (greyspineHeight: U-shaped valleys between ridged peaks, walls on four sides, Highmark's shelf, the Gryphon Queen's peak), the glacier valley (GLEN) and the two canyons in the west wall (GREY_GATES), its tarns, river and fjord (waterSurf, greyWet). Pure.
 /* ===================== THE GREYSPINE =====================
-   A young alpine range: the land north-west of the home forest, west of the Hoarfrost Reach (the rectangle WX0..GXJ x WZ0..HZ0, 880 x 600 m, over the Sunscar's plateau and the forest's north-west corner). It is
+   A young alpine range: the land north-west of the home forest, west of the Hoarfrost Reach (the rectangle GW0..GXJ x WZ0..HZ0, 880 x 600 m, over the Sunscar's plateau and the forest's north-west corner). It is
    a glacier-carved country: a long trough, GREY_VALLEYS[0], runs west from where the Hoarfrost's glacier valley will come in (east wall)
    to where the river road to the Sunscar will leave (west wall), with side valleys going up into cirques under the high peaks of the
    spine in the north. Between the troughs the ground is ridged mountains. This file is only the shape of the ground; nothing is
@@ -9,7 +9,7 @@
      east   the Vale Wall goes on along x = HALF as the Hoarfrost Reach's west wall (hoarHeight): the Greyspine rises to the very same
             crest, so the two lands meet without a seam. The glacier valley that will lead through it (the gate, opened by Ymrik) is not cut yet;
      north  the spine, the highest ground (z -900), lowers to a coast on the northern sea (shared/coasts.js: bays, islets);
-     west   a wall too: the neck to the Stormhorn and the river road to the Sunscar will be cut through it later.
+     west   a wall too: the neck to the Gloamhorn and the river road to the Sunscar will be cut through it later.
    (Everything here was designed with the Greyspine over the home forest, x -440..440; when the world was fitted to the planned map the whole land moved GDX metres west, shared/terrain.js. The numbers
    below are the design's own, in the old frame, and are shifted by GDX where they are defined; docs/areas/greyspine.md and the older docs speak the old frame too.)
    Every wall is climbable up to 14 m short of its crest (player/movement.js) and no further. Nothing finer than 8-16 m wavelength goes in:
@@ -71,7 +71,7 @@ function glenCarve(x,z,h){
 // keep trees, rocks and camps out of the glen (m = extra margin)
 const inGlen=(x,z,m)=>Math.abs(z-GLEN.z)<GLEN.w+8+(m||0)&&x>GLEN.x0-30&&x<GLEN.x1+30;
 function greyspineBase(x,z){
-  const c=coastDist(x,z); if(c<-8&&borderXN(z)-x>46&&x-WX0>60) return -5;   // open sea: nothing else to compute (the north of the Greyspine's rectangle is this now)
+  const c=coastDist(x,z); if(c<-8&&borderXN(z)-x>46&&x-GW0>60) return -5;   // open sea: nothing else to compute (the north of the Greyspine's rectangle is this now)
   const f=greyFloor(x,z), vm=greyValley(x,z), up=GV.up, far=smoothstep(40,210,GV.d);   // far: the high ground is away from the troughs, their flanks are foothills
   const ox=gnx(x), wx=ox+noise2(ox*0.0031+3.7,z*0.0031-8.1)*46, wz=z+noise2(ox*0.0031-12.3,z*0.0031+4.9)*46;
   const amp=lerp(62,124,smoothstep(-690,-900,z))*(1-0.4*smoothstep(-940,-1030,z));   // the spine is highest at z -900 and lowers to the northern sea beyond
@@ -80,7 +80,7 @@ function greyspineBase(x,z){
   const fine=noise2(ox*0.06,z*0.06)*0.4+erodeFbm(ox*0.075+9,z*0.075-4,2,0.5)*0.55; h+=fine*(0.4+0.6*vm);
   // the walls: the east one is the Hoarfrost Reach's west wall seen from the other side (its ground blended into the Reach's and the same crest on
   // top, so the two lands meet at x = HALF without a step); the north and west ones are crests of their own
-  const bx=borderXN(z), dxe=Math.abs(bx-x), f2=fbm(ox*0.02,z*0.02,3)*0.5+0.5, re=dxe<130?smoothstep(wallW(z,1),4,dxe):0, rw=smoothstep(62,4,x-WX0-rimWobble(z,41));
+  const bx=borderXN(z), dxe=Math.abs(bx-x), f2=fbm(ox*0.02,z*0.02,3)*0.5+0.5, re=dxe<130?smoothstep(wallW(z,1),4,dxe):0, rw=smoothstep(62,4,x-GW0-rimWobble(z,41));
   const cr=(re>0||rw>0)?crest(ox,z):0;
   if(re>0){ h=lerp(h,hoarBase(x,z),re); h+=wallAdd(Math.abs(bx-x),z,1,46,14,20,fbm(x*0.02,z*0.02,3)*0.5+0.5,crest(x,z)); }   // (the east wall's crest and bumps are the Reach's own, in the world's frame: both sides must draw the same ones)
   if(rw>0) h+=rw*rw*40+rw*f2*14+rw*rw*rw*cr*20;
@@ -92,7 +92,7 @@ function greyspineBase(x,z){
     if(d<Q.r+22) h=lerp(h,Q.h,smoothstep(Q.r+22,Q.r,d)); }
   // the northern sea: the ground comes down to a beach (shore, shared/terrain.js) except by the crests (the west wall, the Reach's wall, the Queen's cone), which end in headlands
   // (a crest running into the sea goes under it: its keep fades out over the last 64 m to the water)
-  return shore(h,c,Math.max(Math.max(smoothstep(60,14,x-WX0),smoothstep(46,14,bx-x))*smoothstep(12,64,c),smoothstep(120,64,Math.hypot(x-GREY_QUEEN.x,z-GREY_QUEEN.z))),csWide(x,z,60));
+  return shore(h,c,Math.max(Math.max(smoothstep(60,14,x-GW0),smoothstep(46,14,bx-x))*smoothstep(12,64,c),smoothstep(120,64,Math.hypot(x-GREY_QUEEN.x,z-GREY_QUEEN.z))),csWide(x,z,60));
 }
 /* ---- water (docs/WORLD.md: tarns, a river that leaves the range, a fjord on the south-west coast) ----
    Altitude water cannot be the sea's single plane at y = 0, so each piece has its own surface (game/village/buildings-grey.js): three tarns, flat shelves of
@@ -121,8 +121,8 @@ function greyRiverAt(x,z){
   }
   return GRV;
 }
-const GREY_FJORD={pts:[[WX0-12,-512],[WX0+40,-508],[WX0+88,-500],[WX0+132,-490]],w:21,floor:-9};   // the gorge's centre line, its half-width and floor
-function fjordDist(x,z){ if(x>WX0+200||z<-580||z>-420) return 1e9; let m=1e9; for(let i=1;i<GREY_FJORD.pts.length;i++){ const a=GREY_FJORD.pts[i-1], b=GREY_FJORD.pts[i], vx=b[0]-a[0], vz=b[1]-a[1], t=clamp(((x-a[0])*vx+(z-a[1])*vz)/(vx*vx+vz*vz)); m=Math.min(m,Math.hypot(x-a[0]-vx*t,z-a[1]-vz*t)); } return m; }
+const GREY_FJORD={pts:[[GW0-12,-512],[GW0+40,-508],[GW0+88,-500],[GW0+132,-490]],w:21,floor:-9};   // the gorge's centre line, its half-width and floor
+function fjordDist(x,z){ if(x>GW0+200||z<-580||z>-420) return 1e9; let m=1e9; for(let i=1;i<GREY_FJORD.pts.length;i++){ const a=GREY_FJORD.pts[i-1], b=GREY_FJORD.pts[i], vx=b[0]-a[0], vz=b[1]-a[1], t=clamp(((x-a[0])*vx+(z-a[1])*vz)/(vx*vx+vz*vz)); m=Math.min(m,Math.hypot(x-a[0]-vx*t,z-a[1]-vz*t)); } return m; }
 function greyWaterCut(x,z,h){
   for(const T of GREY_TARNS){ const d=Math.hypot(x-T.x,z-T.z); if(d>T.r*2.5) continue;
     h=lerp(h,T.l+0.4,smoothstep(T.r*2.5,T.r*1.45,d)); h=lerp(h,T.l-1.5,smoothstep(T.r*1.15,T.r*0.55,d)); }
@@ -130,26 +130,31 @@ function greyWaterCut(x,z,h){
   { const d=fjordDist(x,z), F=GREY_FJORD; if(d<F.w+30) h=lerp(h,F.floor,smoothstep(F.w+26,F.w*0.75,d)); }
   return h;
 }
-/* ---- the two gates in the west wall: the river road (the Long Valley's west end; to the Sunscar) and the neck pass (the Neck valley's; to the Stormhorn).
+/* ---- the two gates in the west wall: the river road (the Long Valley's west end; to the Sunscar) and the neck pass (the Neck valley's; to the Gloamhorn).
    Each is a canyon cut through the wall to the world's edge, shut by a rock fall at x = GATE.x until a boss falls: the river road opens with the Gryphon
    Queen (gear.river), the neck pass (and Highmark's deep mine, not built) with the mountain golem (gear.neck). Stopped by player/movement.js and
    server/api.js like the ice fall; drawn by game/village/buildings-grey.js. The lands beyond are not built: both canyons end at the edge of the world. */
-const GREY_GATES=[{id:'river',dir:'s',z:-392,x:-791,w:9,name:'The river road',boss:'gryphonqueen'},{id:'neck',z:-776,x:WX0+56,w:10,name:'The neck pass',boss:'mountaingolem'}];   // (the river road is the Sunscar's River Pass, shared/sunland.js, which sets its x, z and floor: it runs south, dir 's'; the neck pass runs west)
-for(const G of GREY_GATES) if(!G.dir) G.h=Math.min(greyspineBase(WX0+100,G.z),greyFloor(WX0+100,G.z)+4);
+const GREY_GATES=[{id:'river',dir:'s',z:-392,x:-791,w:9,name:'The river road',boss:'gryphonqueen'},{id:'neck',z:-776,x:GW0+56,w:10,name:'The neck pass',boss:'mountaingolem'}];   // (the river road is the Sunscar's River Pass, shared/sunland.js, which sets its x, z and floor: it runs south, dir 's'; the neck pass runs west)
+for(const G of GREY_GATES) if(!G.dir) G.h=Math.min(greyspineBase(GW0+100,G.z),greyFloor(GW0+100,G.z)+4);
 function westCarve(x,z,h){
-  if(x>WX0+120) return h;
-  for(const G of GREY_GATES){ if(G.dir) continue; const dz=Math.abs(z-G.z); if(dz<G.w+26) h=lerp(h,G.h,smoothstep(G.w+24,G.w+1,dz)*smoothstep(WX0+120,WX0+68,x)); }
+  if(x>GW0+120) return h;
+  for(const G of GREY_GATES){ if(G.dir) continue; const dz=Math.abs(z-G.z); if(dz<G.w+26) h=lerp(h,G.h,smoothstep(G.w+24,G.w+1,dz)*smoothstep(GW0+120,GW0+68,x)); }
   return h;
 }
-const greyspineHeight=(x,z)=>westCarve(x,z,greyWaterCut(x,z,greyspineBase(x,z)));
+// gloamhorn: west of the Greyspine's west wall (x < GW0) the ground is the Gloamhorn's (shared/gloamhorn.js); the wall's last 46 m blend into it
+const greyspineHeight=(x,z)=>{
+  if(x<GW0-40) return gloamGround(x,z);
+  const h=westCarve(x,z,greyWaterCut(x,z,greyspineBase(x,z)));
+  return x<GW0+6?lerp(gloamGround(x,z),h,smoothstep(GW0-40,GW0+6,x)):h;
+};
 // keep camps, trees and rocks out of the gates' canyons (m = extra margin)
-const inGate=(x,z,m)=>(x<WX0+130&&GREY_GATES.some(G=>!G.dir&&Math.abs(z-G.z)<G.w+8+(m||0)))||(z<-200&&z>-580&&Math.abs(x-sunPassX(z))<SUN_PASS.w+8+(m||0));   // (the River Pass too, from the Long Valley down to the Springhead)
+const inGate=(x,z,m)=>(x<GW0+130&&GREY_GATES.some(G=>!G.dir&&Math.abs(z-G.z)<G.w+8+(m||0)))||(z<-200&&z>-580&&Math.abs(x-sunPassX(z))<SUN_PASS.w+8+(m||0));   // (the River Pass too, from the Long Valley down to the Springhead)
 /* A shut rock fall stops whoever tries to cross its plane (a testing teleport is not a step): the neck pass's from the east, the river road's (the River Pass; it stands at the crest of the north wall) from either side.
    o: the new position, ox / oz: the old one. Used by the client's movement (worldBounds) and the server's setPos. */
 function gateHold(G,o,ox,oz){
   if(G.dir==='s'){ if(Math.abs(o.x-sunPassX(G.z))<SUN_PASS.w+30){ if(oz<=G.z&&o.z>G.z-0.8) o.z=G.z-0.8; else if(oz>G.z&&o.z<G.z+0.8) o.z=G.z+0.8; } }
   else if(G.dir==='e'){ if(Math.abs(o.z-G.z)<G.w+30){ if(ox>=G.x&&o.x<G.x+0.8) o.x=G.x+0.8; else if(ox<G.x&&o.x>G.x-0.8) o.x=G.x-0.8; } }   // (Redgate Canyon: from either side)
-  else if(o.z<borderZ(o.x)&&Math.abs(o.z-G.z)<40&&ox>=G.x&&o.x<G.x+0.8) o.x=G.x+0.8;
+  else if(o.z<borderZ(o.x)&&ox>=G.x&&o.x<G.x+0.8) o.x=G.x+0.8;   // (the neck pass: from the east, anywhere along the wall: the Gloamhorn lies behind it, shared/gloamhorn.js)
 }
 // the water surface under (x, z): a tarn's level, the river's, or the sea's. greyWet: under it, by more than m (no plant grows, no camp is made)
 function waterSurf(x,z){

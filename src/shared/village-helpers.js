@@ -5,7 +5,7 @@ function vDist(x,z){ const V=vilAt(x,z); return Math.hypot(x-V.x,z-V.z)-(V.r-VR)
 // A village can only be within r of the point if its centre is, so the four centres (squared distances, no noise) rule out almost every call first.
 function vNear(x,z,r){
   const r2=r*r, r5=(r+VIL5.r-VR)*(r+VIL5.r-VR);
-  if((x-VIL5.x)*(x-VIL5.x)+(z-VIL5.z)*(z-VIL5.z)>=r5 && (x-VIL.x)*(x-VIL.x)+(z-VIL.z)*(z-VIL.z)>=r2 && (x-VIL2.x)*(x-VIL2.x)+(z-VIL2.z)*(z-VIL2.z)>=r2 && (x-VIL3.x)*(x-VIL3.x)+(z-VIL3.z)*(z-VIL3.z)>=r2 && (x-VIL4.x)*(x-VIL4.x)+(z-VIL4.z)*(z-VIL4.z)>=r2) return false;
+  if((x-VIL5.x)*(x-VIL5.x)+(z-VIL5.z)*(z-VIL5.z)>=r5 && (x-VIL6.x)*(x-VIL6.x)+(z-VIL6.z)*(z-VIL6.z)>=r2 && (x-VIL.x)*(x-VIL.x)+(z-VIL.z)*(z-VIL.z)>=r2 && (x-VIL2.x)*(x-VIL2.x)+(z-VIL2.z)*(z-VIL2.z)>=r2 && (x-VIL3.x)*(x-VIL3.x)+(z-VIL3.z)*(z-VIL3.z)>=r2 && (x-VIL4.x)*(x-VIL4.x)+(z-VIL4.z)*(z-VIL4.z)>=r2) return false;
   return vDist(x,z)<r;
 }
 // on (or m metres from) a village path or a road (shared/roads.js)

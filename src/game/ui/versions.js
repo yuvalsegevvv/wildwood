@@ -70,6 +70,10 @@ function verPages(){ return {
       <li>The forge has two new tabs. <b>Roll</b> spends a Reroll Stone to roll (or reroll) all three lines of a piece; <b>Sacrifice</b> breaks a spare level-30 or level-40 weapon or armour piece into stones: 1 / 2 / 4 / 8 / 16 by rarity. Weapon pieces use weapon stones, armour uses armour stones.</li>
       <li>Cooldown reduction from gear stops at 40%.</li>
       <li><b>Accuracy</b> lowers the chance that a foe resists your hit; <b>resistance</b> is the chance to halve the damage of a hit and shrug off its debuffs (a resisted hit shows as "Resisted").</li>
+    </ul>
+    <h4>Dungeons</h4>
+    <ul>
+      <li>Five dungeons now: <b>The Sandglass</b>, a buried sun-temple under the Sunscar's Whitefloor south of Glasswell (its door stands in the desert). Its keeper, <b>Khet</b>, is a level-40 boss; you need level 36 and Glasswell walked into. A clear pays a level-40 weapon, which is unrolled until you spend a Weapon Reroll Stone on it.</li>
     </ul>`}
 }; }
 function verRender(){

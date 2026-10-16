@@ -24,7 +24,7 @@ const dgEntPal={
   moss:new THREE.Color(0x3a5826), root:new THREE.Color(0x4a3524), ring:new THREE.Color(0x6f8f3c),
   wet:new THREE.Color(0x4a5a58), jade:new THREE.Color(0x4f7d6c), flag:new THREE.Color(0x6a7873),
   tramp:new THREE.Color(0xc4cace), bone:new THREE.Color(0xb3b0a2), rime:new THREE.Color(0xe4edf2),
-  slate:new THREE.Color(0x3c3d44), coal:new THREE.Color(0x1a1b20), spoil:new THREE.Color(0x4a3c2e)};
+  slate:new THREE.Color(0x3c3d44), coal:new THREE.Color(0x1a1b20), spoil:new THREE.Color(0x4a3c2e), sand:new THREE.Color(0xd8c090), chip:new THREE.Color(0x3a2e50)};
 const dgEntTmp=new THREE.Color();
 function dgEntTint(x,z,out){
   if(DG_DOORS.noTint) return out;
@@ -45,6 +45,8 @@ function dgEntTint(x,z,out){
     } else if(E.kind==='mine'){   // the adit: coal dust and slate chippings trodden into the turf, spoil dark at the mouth
       const darkK=smoothstep(10,2,d);
       out.lerp(dgEntTmp.copy(dgEntPal.slate).lerp(dgEntPal.coal,darkK*0.7),w).lerp(dgEntPal.spoil,w*smoothstep(0.6,0.9,n2)*0.35);
+    } else if(E.kind==='sand'){   // the Sandglass door: pale trodden sand with a scatter of dark glass chips
+      out.lerp(dgEntTmp.copy(dgEntPal.sand).lerp(dgEntPal.chip,smoothstep(0.55,0.9,n)*0.4),w*0.6);
     } else {   // the barrow: snow trodden grey by whoever comes, bone-grey in the hollows, rime at the edge
       out.lerp(dgEntTmp.copy(dgEntPal.tramp).lerp(dgEntPal.bone,smoothstep(0.35,0.85,n)*0.8),w).lerp(dgEntPal.rime,smoothstep(0.7,0.2,w)*w*0.5);
     }
@@ -125,4 +127,5 @@ function dgEntSounds(r,spatial){
   $('#tDoorElder').addEventListener('click',()=>go('hollowroots',false,false));
   $('#tDoorFalls').addEventListener('click',()=>go('jadesprings',true,false));
   $('#tDoorBarrow').addEventListener('click',()=>go('bonefrostbarrow',true,true));
-  $('#tDoorMine').addEventListener('click',()=>go('blackseam',true,true,true)); }
+  $('#tDoorMine').addEventListener('click',()=>go('blackseam',true,true,true));
+  $('#tDoorSand').addEventListener('click',()=>{ netSend({t:'dev',cmd:'sun',v:2}); go('sandglass',false,false,false); }); }

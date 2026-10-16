@@ -20,7 +20,7 @@ function frame(){
     updateAnimals(dt);
     updateGreyfall(dt);   // greyfall: the sheet, spray and roar (village/buildings-greyfall.js)
     chamoisUpdate(dt);   // chamois: the Greyspine's harmless mountain goats (wildlife/chamois.js)
-    updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateGreyspine(dt); updateNodes(); updateLoreProps();
+    updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateGreyspine(dt); updateGloamhorn(dt); updateNodes(); updateLoreProps();
     updateNPCs(dt);
     dgEntUpdate(dt);   // dungeons: the doors' sealed look and animation
     updateNpcLabels();

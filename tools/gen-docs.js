@@ -100,7 +100,7 @@ function mobsDoc(){
   s+=rowsOf(['Id','Name','Lv','El','HP','Dmg','Atk s','Spd','XP','Coins','Material','Arena','Summons','Prop','Music','Move set','Defined'],W.BOSS_DEFS.map(b=>{
     const d=b.def, L=d.level;
     return [code(d.id),d.name,L,d.el,d.hp,d.dmg,d.atk,d.speed,num(d.xp),coinsAvg(d,L),W.MATS[d.id].name,zoneOf(d,b.arena),b.add?b.add.name:'—',b.prop?b.prop.name:b.totem?b.totem.name:'—',d.music||'boss'+L,
-      code(b.kit)+' '+loc(SV+'boss-kits-'+(['roots','tide'].includes(b.kit)?'home':['oni','kitsune'].includes(b.kit)?'vale':['gryphon','golem'].includes(b.kit)?'grey':['glass','sandwyrm'].includes(b.kit)?'sun':'north')+'.js',new RegExp('^BOSS_KITS\\.'+b.kit+'=')),defRef(d)];
+      code(b.kit)+' '+loc(SV+'boss-kits-'+(['roots','tide'].includes(b.kit)?'home':['oni','kitsune'].includes(b.kit)?'vale':['gryphon','golem'].includes(b.kit)?'grey':['glass','sandwyrm'].includes(b.kit)?'sun':['captain','gloamwarden'].includes(b.kit)?'gloam':'north')+'.js',new RegExp('^BOSS_KITS\\.'+b.kit+'=')),defRef(d)];
   }))+'\n\n';
   s+='Boss quest notices (`BOSS_QUESTS`, '+loc(SH+'quests.js',/^const BOSS_QUESTS=/)+'): '+W.BOSS_QUESTS.map(q=>`${q.title} from level ${q.from}`).join('; ')+'.\n\n';
   s+='### Boss skills (36: a skill and a burst for each class, each with a 10% drop chance per kill)\n\nRows `drop:\'<boss id>\'` at the end of `SKILLS` ('+loc(SH+'classes.js',/^const SKILLS=\{/)+' ...), listed by `BOSS_SKILLS` ('+loc(SH+'drops.js',/^const BOSS_SKILL_CHANCE/)+').\n\n';
@@ -118,11 +118,11 @@ function mobsDoc(){
     const dbRef=id=>loc(DBF,new RegExp("\\bid:'"+id+"'")), themeName=id=>W.DG_THEMES[id]?W.DG_THEMES[id].name:'—';
     const kitFile=SV+'dungeons/boss-kits.js';
     s+='## 11. Dungeons: bosses, their helpers and the mob pools\n\n'+
-      `A dungeon (\`src/shared/dungeons/themes/<id>.js\`) is built from the world's own monster kinds (its \`mobs.walkers\` and \`mobs.guardians\`, the rows of sections 4-7: base stats there) spawned at the run's level (**${W.DG_LV}**) with the party's health factor; an elite has ×${W.DG_ELITE_HP} health and is a quarter bigger; nothing respawns. Its boss is one of the ${ids.length} below, made on demand in a round hall. All numbers are base stats (\`hits\` 70, level ${W.DG_LV}, like a world boss); how a run scales them is in docs/DUNGEONS.md.\n\n`;
+      `A dungeon (\`src/shared/dungeons/themes/<id>.js\`) is built from the world's own monster kinds (its \`mobs.walkers\` and \`mobs.guardians\`, the rows of sections 4-7: base stats there) spawned at the run's level (**${W.DG_LV}** at the base difficulty; the Sandglass: **${W.DG_THEMES.sandglass.lv}**) with the party's health factor; an elite has ×${W.DG_ELITE_HP} health and is a quarter bigger; nothing respawns. Its boss is one of the ${ids.length} below, made on demand in a round hall. All numbers are base stats (\`hits\` 70, level ${W.DG_LV}, like a world boss); how a run scales them is in docs/DUNGEONS.md.\n\n`;
     s+='### 11.1 Dungeon bosses ('+ids.length+')\n\n'+rowsOf(['Id','Name','Lv','El','HP','Dmg','Atk s','Spd','XP','Coins','Dungeon','Clear pays','Summons','Prop','Music','Move set','Defined'],ids.map(id=>{
       const b=DB[id], d=b.def, L=d.level, R=W.DG_REWARDS[b.dungeon];
-      return [code(d.id),d.name,L,d.el,d.hp,d.dmg,d.atk,d.speed,num(d.xp),coinsAvg(d,L),themeName(b.dungeon),R?(R.kind==='weapon'?'a level-30 weapon':R.kind==='armor'?'a level-30 armour piece':R.kind==='pendant'?'a level-30 pendant':'a level-30 ring'):'—',b.add?b.add.name:'—',b.prop?b.prop.name:'—',d.music||'boss'+L,
-        code(b.kit)+' '+loc(b.kit==='blast'?SV+'dungeons/boss-kits-mine.js':kitFile,new RegExp('^BOSS_KITS\\.'+b.kit+'=')),dbRef(d.id)];
+      return [code(d.id),d.name,L,d.el,d.hp,d.dmg,d.atk,d.speed,num(d.xp),coinsAvg(d,L),themeName(b.dungeon),R?(R.kind==='weapon'?'a level-'+(R.t===8?40:30)+' weapon':R.kind==='armor'?'a level-'+(R.t===8?40:30)+' armour piece':R.kind==='pendant'?'a level-30 pendant':'a level-30 ring'):'—',b.add?b.add.name:'—',b.prop?b.prop.name:'—',d.music||'boss'+L,
+        code(b.kit)+' '+loc(b.kit==='blast'?SV+'dungeons/boss-kits-mine.js':b.kit==='hour'?SV+'dungeons/boss-kits-sandglass.js':kitFile,new RegExp('^BOSS_KITS\\.'+b.kit+'=')),dbRef(d.id)];
     }))+'\n\n';
     s+='### 11.2 Dungeon boss helpers (summons and props)\n\nNot in `MON_DEFS`: made by the boss kit.\n\n'+rowsOf(['Id','Name','Lv','El','HP','Dmg','Atk s','Spd','XP','Role','Defined'],ids.flatMap(id=>{
       const b=DB[id]; return [['add',b.add],['prop',b.prop]].filter(r=>r[1]).map(([kind,d])=>[code(d.id),d.name,d.level,d.el||'—',d.hp,d.noAttack?'—':d.dmg,d.noAttack?'—':d.atk,d.speed||'—',d.noXp?'—':num(d.xp),(kind==='add'?'summoned by ':'prop of ')+b.short,dbRef(d.id)]);

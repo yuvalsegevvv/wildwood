@@ -15,12 +15,12 @@ const CS_BASE=(()=>{
   // the Greyspine's coast was drawn over the old frame (the Greyspine over the home forest): its points are shifted GDX west with the land (shared/terrain.js)
   const G=[[-440,-1045,60],[-370,-1030,70],[-300,-1130,75],[-210,-1170,75],[-120,-1150,75],[-60,-1050,75],[10,-1030,80],[90,-1090,80],[190,-1165,80],[290,-1120,70],[370,-1040,70],   // bays at x -370, 10 and 370, the Queen's long cape (her mountain runs on into the sea) and a second cape at x 190
     [440,-1085,60],[520,-1105,70],[580,-1180,75]].map(p=>[p[0]+GDX,p[1],p[2]]);                                                                                                                   // the step north at the Greyspine | Reach wall
-  const P=[[-1500,-1060,0],[-1250,-1060,0],...G,
+  const P=[[GW0-70,-1060,0],...G,
     [100,-1225,80],[215,-1140,100],[330,-1230,80],[450,-1110,100],[565,-1225,75],[690,-1150,90],[800,-1215,80],[905,-1120,90],[985,-1040,80],                                                  // the Reach's north coast: capes and deep bays over the forest's north-east and the vale, and the corner
     [1035,-940,90],[950,-860,100],[1045,-780,90],[985,-690,80],[1040,-600,75],[1000,-510,60]];                                                                                                    // the Reach's east coast, in line with the vale's: a deep bay at z -860, a cape at z -780, a second bay (the old north-east corner, 330 m further east, is sea)
   P.push([VALE_E,-370,50],[1090,-300,75],[975,-190,75],[1115,-70,75],[960,40,70],[1075,150,65],      // the vale's east coast: capes at z -300 and -70 stand out 100 m, bays between
     [960,185,50],[890,228,50],[852,272,45],[840,335,40],[846,395,40],[812,428,45],                      // the south-east corner is gone: the coast turns west at z 190 and runs down the west side of a bay 150-300 m wide (the Warlord Isles lie in it)
-    [740,392,50],[660,436,45],[560,425,40],[470,420,35],[300,418,0],[-1500,418,0]);                      // the vale's south coast, then the home forest's (not used); the Greyspine and the Sunscar's plateau have no coast on their south side
+    [740,392,50],[660,436,45],[560,425,40],[470,420,35],[300,418,0],[GW0-70,418,0]);                      // the vale's south coast, then the home forest's (not used); the Greyspine and the Sunscar's plateau have no coast on their south side
   return P;
 })();
 // the outline: Chaikin-rounded, cut into pieces of at most 30 m, each pushed along its outward normal by noise times the local amp
@@ -84,7 +84,7 @@ const CS_ISLES=(()=>{
   const out=[], rng=mulberry32(7741), isSea=(x,z,r,m)=>{ for(let k=0;k<12;k++){ const a=k/12*TAU, rr=r+m; if(csMain(x+Math.sin(a)*rr,z+Math.cos(a)*rr)>6) return false; } return true; };
   for(let z=WZ0+20;z<=WZ1-20;z+=16) for(let x=WX0+20;x<=WX1-20;x+=16){
     if(out.length>=14) return out;
-    if(!(z<borderZ(x)||x>borderX(z))||(z<borderZ(x)&&Math.abs(x-borderXN(z))<90)) continue;   // (not outside the home forest; and not by the Greyspine | Reach wall, whose crest runs on into the sea as a headland)
+    if(!(z<borderZ(x)||x>borderX(z))||(z<borderZ(x)&&Math.abs(x-borderXN(z))<90)||(z<borderZ(x)&&x<GW0+120)) continue;   // (and none by the Greyspine's west wall or on the Gloamhorn: its sea is its own, shared/gloamhorn.js)   // (not outside the home forest; and not by the Greyspine | Reach wall, whose crest runs on into the sea as a headland)
     const c=csMain(x,z); if(c>-8||c<-110) continue;
     if(CS_ISLANDS.some(I=>csIslandC(I,x,z)>-60||Math.hypot((x-I[0])/(I[3]||1),z-I[1])<I[2]+90)) continue;
     if(rng()>0.12) continue;

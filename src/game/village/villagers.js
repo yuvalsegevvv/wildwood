@@ -237,7 +237,40 @@ const VILLAGERS=[
   { id:'amal', vil:5, late:true, title:'Healer · brews potions', icon:'healer', name:'Healer Amal', role:'brew',
     look:{sex:'female',height:0.97,build:0.9,face:'oval',hair:'long',hairColor:0x2a1810,chest:1.0,skin:0xb48a62,top:'jacket',topColor:0x5a7a4a,bottom:'skirt',bottomColor:0x8a6a3a,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2a1e},
     behavior:{type:'stationary',at:'place:physician'}, home:'house:8', schedule:'always', voice:{rate:0.9,pitch:1.05},
-    lines:['Aloe for burns, saltbush for thirst, and shade for everything else. Bring me herbs and a few coins and I will brew them.','Drink the healing draught when you are hurt, the others before a fight. The sun gives no second chances.'] }
+    lines:['Aloe for burns, saltbush for thirst, and shade for everything else. Bring me herbs and a few coins and I will brew them.','Drink the healing draught when you are hurt, the others before a fight. The sun gives no second chances.'] },
+  /* ---- Wraithwick, the Gloamhorn's hamlet (VIL6): fishers, wreckers' widows and lamp-keepers. late; no story steps, only a trade and small talk ---- */
+  { id:'maeve', vil:6, late:true, title:'Quest board · harbour reeve', name:'Reeve Maeve', role:'quests',
+    look:{sex:'female',height:1.02,build:1.05,face:'angular',hair:'ponytail',hairColor:0x2a2430,chest:1.0,skin:0xd8c8c0,top:'jacket',topColor:0x2e2a3e,bottom:'trousers',bottomColor:0x1e1c26,hat:'ranger',hatColor:0x24202e,shoes:'boots',shoeColor:0x1a1618},
+    behavior:{type:'stationary',at:'questboard'}, home:'house:3', schedule:'always', voice:{rate:0.92,pitch:0.95},
+    lines:['Wraithwick takes what the tide brings and gives back what it can. There are notices on the board; most of them involve something that should have stayed drowned.','New notices go up at dusk. It is always dusk here, so I put them up when I remember.','Keep a lamp lit and your back to the wall. That is the whole of the law out here.'] },
+  { id:'brannoch', vil:6, late:true, title:'Weaponsmith', name:'Brannoch', role:'weaponsmith',
+    look:{sex:'male',height:1.05,build:1.3,face:'round',hair:'short',hairColor:0x2a2830,facial:'beard',skin:0xcfc0b4,top:'tshirt',topColor:0x3a3646,bottom:'trousers',bottomColor:0x24222c,hat:'none',shoes:'boots',shoeColor:0x1a1618},
+    behavior:{type:'stationary',at:'place:weapons'}, home:'house:1', schedule:'always', voice:{rate:0.88,pitch:0.8},
+    lines:['Wreck-iron, salt-quenched. It takes an edge the dead cannot argue with.','Your steel will rust in this air by the week\'s end. Mine has had practice.','The sea gives me anchors and I give it back blades. It is a fair trade, as far as the sea understands trade.'] },
+  { id:'isolde', vil:6, late:true, title:'Armourer', name:'Isolde', role:'armorer',
+    look:{sex:'female',height:0.99,build:1.1,face:'round',hair:'bun',hairColor:0x3a3440,chest:1.05,skin:0xd4c4bc,top:'jacket',topColor:0x3e3a4e,bottom:'trousers',bottomColor:0x26242e,hat:'none'},
+    behavior:{type:'stationary',at:'place:armour'}, home:'house:5', schedule:'always', voice:{rate:0.95,pitch:1.0},
+    lines:['Oilskin over mail over wool. The cold gets in anyway, but it has to work for it.','Whatever follows you home from the cairns, plate will slow it by half a breath.'] },
+  { id:'corwin', vil:6, late:true, title:'Forge · merges items', name:'Corwin', role:'forge',
+    look:{sex:'male',height:1.0,build:1.25,face:'angular',hair:'short',hairColor:0x24222a,facial:'mustache',skin:0xcabcb0,top:'tshirt',topColor:0x4a3438,bottom:'trousers',bottomColor:0x22202a,hat:'none',shoes:'boots',shoeColor:0x1a1618},
+    behavior:{type:'stationary',at:'place:forge'}, home:'house:6', schedule:'always', voice:{rate:0.85,pitch:0.85},
+    lines:['Three of the same and a fire that does not go out. Out comes one better. The fire has not gone out since before my grandmother.','Do not ask what the coals were before they were coals.'] },
+  { id:'sorcha', vil:6, late:true, title:'Skill trainer', name:'Sorcha of the Cairns', role:'trainer',
+    look:{sex:'female',height:1.0,build:0.95,face:'oval',hair:'long',hairColor:0x2a2434,chest:1.0,skin:0xdccdc6,top:'hoodie',topColor:0x30304a,bottom:'skirt',bottomColor:0x24222e,hat:'none',shoes:'boots',shoeColor:0x1a1618},
+    behavior:{type:'stationary',at:'place:trainers'}, home:'house:2', schedule:'always', voice:{rate:0.9,pitch:1.05},
+    lines:['The same lessons Aldric and Ryu give, taught by lantern-light and with an ear on the dark.','Learn your skills before the heath. Out there, nothing waits for you to remember them.','Breathe slowly. Fear is the one thing that carries a long way in fog.'] },
+  { id:'warden_ross', vil:6, late:true, title:'Gate warden', name:'Warden Ross', role:null,
+    look:{sex:'male',height:1.06,build:1.15,face:'angular',hair:'short',hairColor:0x2a2830,facial:'beard',skin:0xcfc0b4,top:'jacket',topColor:0x3a2a4a,bottom:'trousers',bottomColor:0x24202a,hat:'ranger',hatColor:0x24202e},
+    behavior:{type:'patrol',route:['gate','lamp:2','lamp:3','lamp:4','lamp:5','lamp:6','lamp:1','gate'],pause:3}, home:'house:7', schedule:'always', speed:1.2, voice:{rate:0.95,pitch:0.85},
+    lines:['The neck pass is the only road in or out that is dry. The rest is cliff, fog and the sea\'s opinion of you.','A captain sleeps in the caves under the cliffs. Some nights the tide comes in with a bell in it. Do not go to meet it.','At the far tip the old light burns, though no keeper has climbed it in living memory. Do not go to meet that, either.'] },
+  { id:'finnian', vil:6, late:true, title:'Wayfarers\' Lodge · professions', icon:'lodge', name:'Finnian', role:'lodge',
+    look:{sex:'male',height:1.0,build:1.0,face:'oval',hair:'short',hairColor:0x2a2430,facial:'stubble',skin:0xd2c4ba,top:'jacket',topColor:0x38364a,bottom:'trousers',bottomColor:0x26242c,hat:'none',pack:true,shoes:'boots',shoeColor:0x1a1618},
+    behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.92,pitch:0.9},
+    lines:['The Lodge teaches the three ways of taking what the land gives: mining, woodcutting, and gathering. Sixty coins each, and the right tool.','Cold ore from the cliff seams, bent pine from the heath, grey moss from the cairns. The same grades as the north, if you can bear the company.'] },
+  { id:'nuala', vil:6, late:true, title:'Healer · brews potions', icon:'healer', name:'Healer Nuala', role:'brew',
+    look:{sex:'female',height:0.97,build:0.9,face:'oval',hair:'long',hairColor:0x3a3444,chest:1.0,skin:0xdccdc6,top:'jacket',topColor:0x3a4a4a,bottom:'skirt',bottomColor:0x2a2a34,hat:'none',pack:false,shoes:'boots',shoeColor:0x1a1618},
+    behavior:{type:'stationary',at:'place:physician'}, home:'house:8', schedule:'always', voice:{rate:0.9,pitch:1.05},
+    lines:['Moss for fever, salt for the wounds that will not close, and a candle in the window for the rest. Bring me herbs and a few coins and I will brew them.','Drink the healing draught when you are hurt, the others before a fight. The dark gives no second chances.'] },
 ];
 const FILLER_COUNT=LITE?3:(LOW?4:8);
 const NAMES_M=['Anders','Henrik','Lukas','Emil','Jonas','Felix','Mattis','Arvid','Elias','Nils','Viggo','Karl'];
@@ -252,6 +285,9 @@ const SMALLTALK4=['The bell rings the shifts. Nobody has ever heard it ring wron
 const SMALLTALK3=['The lake has never frozen this thick. Or this quiet.','Wolves come to the edge of the firelight and just sit there. I do not care for it.','My grandfather fished Frostmere for sixty winters. He never once looked at the north shore.','If you see a blue flower, do not pick it in the daylight. It sulks.','The aurora was green last night. Green means a good winter. Red means the other kind.','They say the wall is open. They also say the Rimeking is friendly. They say a lot at the fire.'];
 const SMALLTALK2=['The cherry trees never stop blooming here. Nobody remembers why.','Mind the ponds. Kappa like to pull travellers in by the ankles.','Tetsuo and Kenji argue about steel every evening at the brazier.','The bamboo sings when the wind comes off the mountains.','My brother saw foxfire above the hollow again last night.','Sweep the petals in the morning, and by noon there are more.','Daisuke walks that circle so often the stones know his feet.','They say the bridge gate was sealed by the Rootwarden itself. Strange that you got through.'];
 const SMALLTALK=['Lovely day for a walk in the woods.','The deer come right up to the garden at dawn.','Mind the river, the current is quicker than it looks.','Have you tried the apples at the market?','My grandmother planted half the birches around here.','Foxes got into the hen house again last week.','When the fireflies come out, you know summer is here.','The old path still leads down to the lake, if you know where to look.','The tavern gets loud after sunset. Oskar tells the same stories every night.','Bram thinks he is guarding us from wolves. There are no wolves.'];
+
+const NAMES_M6=['Callum','Eoghan','Fergus','Ruaridh','Tavish','Murdoch','Lachlan','Donal','Ewan','Aonghas'], NAMES_F6=['Morag','Isla','Catriona','Eilidh','Mairi','Una','Ailsa','Shona','Brigid','Fenella'];
+const SMALLTALK6=['The tide brings things in at night. We do not look at them until morning, and then only from a distance.','Never whistle near the cairns. The wind answers, and it does not whistle the same tune back.','My husband went out for crabs. The boat came home on its own, which is more than most do.','The old light at the tip still turns. Nobody has wound it in a hundred years.','Keep the lamp trimmed. A dark window is an invitation.','The standing stones lean a little more each winter. Toward us, we think.','There is a bell under the water by the caves. On calm nights you can hear it ring the hours.','The gulls here do not cry. They watch.','Grey fog off the sea, and in it, a ship with no lights. Count to a hundred and it is gone. Mostly.','We sing the drowned home on the longest nights. It is the only time the heath is quiet.'];
 
 const NPCs=[];
 let talkNPC=null, nearNPC=null;
@@ -307,6 +343,14 @@ function initNPCs(){
       const lines=[]; for(let k=0;k<3;k++) lines.push(SMALLTALK5[Math.floor(r5()*SMALLTALK5.length)]);
       const look={sex,hairColor:[0x1d1410,0x2a1a12,0x3a2418,0x5a3a22][Math.floor(r5()*4)],skin:[0xb88a62,0xa87c56,0xc09468,0x9a704c][Math.floor(r5()*4)],hat:r5()<0.3?'kasa':'none',hatColor:[0xd8c8a0,0xb8883a,0x8a5a3a][Math.floor(r5()*3)],top:r5()<0.5?'tshirt':'jacket'};
       defs.push({id:'villagers'+i,vil:5,late:true,seed:i+41,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
+    } }
+  // Wraithwick's people
+  { const r6=mulberry32(9006);
+    for(let i=0;i<FILLER_COUNT;i++){
+      const sex=r6()<0.5?'male':'female', pool=sex==='male'?NAMES_M6:NAMES_F6; let name; do{ name=pool[Math.floor(r6()*pool.length)]; }while(used.has(name)); used.add(name);
+      const lines=[]; for(let k=0;k<3;k++) lines.push(SMALLTALK6[Math.floor(r6()*SMALLTALK6.length)]);
+      const look={sex,hairColor:[0x2a2430,0x3a3440,0x4a4450,0x6a6470][Math.floor(r6()*4)],skin:[0xdccdc6,0xd2c4ba,0xcfc0b4][Math.floor(r6()*3)],hat:r6()<0.3?'beanie':'none',hatColor:[0x24202e,0x2e2a3e,0x3a3646][Math.floor(r6()*3)],top:r6()<0.5?'hoodie':'jacket'};
+      defs.push({id:'villagerw'+i,vil:6,late:true,seed:i+61,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
     } }
   defs.filter(d=>!d.late).forEach(d=>spawnNPC(d,rng));
   defs.filter(d=>d.late&&(d.vil||1)<3).forEach(d=>spawnNPC(d,mulberry32(9002+(d.seed||0))));

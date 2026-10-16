@@ -25,12 +25,12 @@ Playable since version 3. The design (what the land should be, the city's distri
 
 ## Numbers
 
-- World: `WX0` = -1020; the Sunscar is x -1020..-440 (`HX0`), z from `borderZ(x)` (about -400) to the south coast. The city: `SUN_CITY` (-700, 20), floor 44 m up, Bowl radius 80, flat plateau `SUN_FLAT` 190. Gloamhorn (the dark cliff land) is NOT placed here: if the world must grow west for it, `WX0` moves and the Sunscar's pieces (sunland.js uses absolute coordinates) stay.
+- World: `WX0` = -1020; the Sunscar is x -1020..-440 (`HX0`), z from `borderZ(x)` (about -400) to the south coast. The city: `SUN_CITY` (-700, 20), floor 44 m up, Bowl radius 80, flat plateau `SUN_FLAT` 190. The Gloamhorn (the dark cliff land) was built later west of the Greyspine (`docs/areas/gloamhorn.md`): `WX0` moved west to -1740 and the Sunscar's pieces (sunland.js uses absolute coordinates) stayed.
 - Ways in: the River Pass from the Greyspine (the `river` rock fall at (-798, -390)); Redgate Canyon through the Sunwall (`SUN_RED`, (-380, 40)). Both are shut by default; with both shut no Sunscar ground is reachable (sunscar-smoke floods it).
 - Monsters: 18 kinds, two per level 28-36, 12 each (216), elements fire / earth / light. **Rolls (version 3, `docs/ROLLS.md`)**: `res` (resistance) and/or `acc` (accuracy) on the row, 0.05 at level 28 rising to 0.20 at 36; some kinds have only one; bosses 0.25. `docs/MOBS.md` shows both columns.
 - Bosses: the Glass Guardian (level 32, light; shards, glassfall, the radiant ring, a black-mirror shield in phase 2 (break the three mirrors), the prism wheel in phase 3) and the Sand Wyrm (level 36, earth; tail sweeps, the burrow, sand walls, the sandstorm, whelps). The Wyrm opens Redgate.
 - `MAX_ZONE_LV` is 40; quests clamp to the highest monster level (`questTop` in `quests.js`, 36), so the board never asks for a level with no monsters.
-- The reserved dungeon door: `SUN_DG_DOOR` ('sandglass', 'The Sandglass', (-700, 250), 230 m south of the city's centre, zone s34): a prop only (two sandstone piers and a sealed glass pane, `buildSunscar`), nothing opens it; the later dungeon (level-40 weapons) should register it in `DG_ENTRANCES`.
+- The reserved dungeon door: `SUN_DG_DOOR` ('sandglass', 'The Sandglass', (-700, 250), 230 m south of the city's centre, zone s34): now the Sandglass's real door (`DG_ENTRANCES.sandglass`, built by `dgEntSand` in `buildings-dungeon.js`; the prop in `buildSunscar` is gone): the dungeon (boss Khet, level 40, enter from 36, needs `gear.sun` 2, pays a level-40 weapon) is `docs/DUNGEON-THEMES.md` section 11.
 
 ## Pitfalls
 

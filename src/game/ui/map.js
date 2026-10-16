@@ -11,12 +11,12 @@ const MM_R=90, DPR=Math.min(2,devicePixelRatio||1);
 const mapX=x=>(x-WX0)*MAP.k, mapZ=z=>(z-WZ0)*MAP.k;
 // the three lands as the full map shows them (the vale's crop ends at its north crest, the Hoarfrost Reach's begins just south of it)
 // (the borders wander: the river bulges the vale 210 m west of x = HALF and the north walls move up to 120 m either side of z = HZ0, so the crops are wider than the old rectangles; the Reach lies over the forest's east half too, from the Glacier Wall, GXJ, to the vale's east edge, but its built part, the zones, Rimehold and the pass, is x 100-640 (docs/WORLD.md section 8): the map crops to x 0-720 so the labels have room; the empty land beyond is on the world map only)
-const LANDS={home:{x0:-HALF,x1:HALF+40,z0:HZ0,z1:HALF,name:'The home forest'},vale:{x0:HALF-230,x1:VALE_E+90,z0:HZ0-125,z1:HALF,name:'The Sakura Vale'},hoar:{x0:0,x1:720,z0:WZ0,z1:HZ0+110,name:'The Hoarfrost Reach'},grey:{x0:WX0,x1:GXJ+115,z0:WZ0,z1:HZ0+105,name:'The Greyspine'},sun:{x0:WX0,x1:HX0+70,z0:-440,z1:HALF,name:'The Sunscar'}};
+const LANDS={home:{x0:-HALF,x1:HALF+40,z0:HZ0,z1:HALF,name:'The home forest'},vale:{x0:HALF-230,x1:VALE_E+90,z0:HZ0-125,z1:HALF,name:'The Sakura Vale'},hoar:{x0:0,x1:720,z0:WZ0,z1:HZ0+110,name:'The Hoarfrost Reach'},grey:{x0:WX0,x1:GXJ+115,z0:WZ0,z1:HZ0+105,name:'The Greyspine'},sun:{x0:WX0,x1:HX0+70,z0:-440,z1:HALF,name:'The Sunscar'},gloam:{x0:WX0,x1:GW0+80,z0:-1240,z1:-700,name:'The Gloamhorn'}};
 let mapLand=null;   // null: the land you are in
-const landHere=()=>inSun(P.x,P.z)?'sun':inHoar(P.x,P.z)?'hoar':inVale(P.x,P.z)?'vale':inGrey(P.x,P.z)?'grey':'home';
-const landOpen=id=>id==='home'||(id==='vale'&&valeOpen())||(id==='hoar'&&northOpen())||(id==='grey'&&(westOpen()||inGrey(P.x,P.z)))||(id==='sun'&&(GEAR.river>=1||GEAR.redgate>=1||GEAR.sun>=1||inSun(P.x,P.z)));
-const landOfZone=zn=>zn.sun?'sun':zn.grey?'grey':zn.hoar?'hoar':zn.vale?'vale':'home';
-const nextLand=cur=>{ const order=['home','vale','hoar','grey','sun'].filter(landOpen), i=order.indexOf(cur); return order[(i+1)%order.length]; };
+const landHere=()=>inGloam(P.x,P.z)?'gloam':inSun(P.x,P.z)?'sun':inHoar(P.x,P.z)?'hoar':inVale(P.x,P.z)?'vale':inGrey(P.x,P.z)?'grey':'home';
+const landOpen=id=>id==='home'||(id==='vale'&&valeOpen())||(id==='hoar'&&northOpen())||(id==='grey'&&(westOpen()||inGrey(P.x,P.z)))||(id==='sun'&&(GEAR.river>=1||GEAR.redgate>=1||GEAR.sun>=1||inSun(P.x,P.z)))||(id==='gloam'&&(GEAR.neck>=1||GEAR.gloam>=1||inGloam(P.x,P.z)));
+const landOfZone=zn=>zn.gloam?'gloam':zn.sun?'sun':zn.grey?'grey':zn.hoar?'hoar':zn.vale?'vale':'home';
+const nextLand=cur=>{ const order=['home','vale','hoar','grey','sun','gloam'].filter(landOpen), i=order.indexOf(cur); return order[(i+1)%order.length]; };
 function mapInit(){
   const c=document.createElement('canvas'); c.width=MAP.w; c.height=MAP.h;
   MAP.canvas=c; MAP.ctx=c.getContext('2d'); MAP.img=MAP.ctx.createImageData(MAP.w,MAP.h); MAP.zone=new Uint8Array(MAP.w*MAP.h);
@@ -91,18 +91,18 @@ function drawFullMap(){
   x.fillStyle='#16486c'; x.fillRect(0,0,W,H);
   if(!MAP.done){ x.fillStyle='rgba(247,238,214,.85)'; x.font=`italic ${14*DPR}px Georgia, serif`; x.textAlign='center'; x.fillText('Still mapping the forest…',W/2,H/2); mapStFrame(x,W,H,DPR); return; }
   x.imageSmoothingEnabled=true; x.drawImage(MAP.canvas,mapX(L.x0),mapZ(L.z0),(L.x1-L.x0)*MAP.k,(L.z1-L.z0)*MAP.k,0,0,W,H);
-  const fs=Math.max(9,Math.min(13,W/DPR/48))*DPR, land=L===LANDS.sun?'sun':L===LANDS.hoar?'hoar':L===LANDS.vale?'vale':L===LANDS.grey?'grey':'home', vale=land==='vale'||land==='hoar', mine=zn=>landOfZone(zn)===land;
+  const fs=Math.max(9,Math.min(13,W/DPR/48))*DPR, land=L===LANDS.gloam?'gloam':L===LANDS.sun?'sun':L===LANDS.hoar?'hoar':L===LANDS.vale?'vale':L===LANDS.grey?'grey':'home', vale=land==='vale'||land==='hoar', mine=zn=>landOfZone(zn)===land;
   x.textAlign='center'; x.textBaseline='middle';
   const label=(t,cx,cy,size,col,bold)=>mapStLabel(x,t,cx,cy,size,col,bold,DPR);   // (serif, dark ink on a pale halo: ui/map-style.js)
   for(const zn of ZONES){ if(zn.boss||!mine(zn)) continue; const [cx,cy]=at(...(zn.label||zonePoint(zn,0,0.5))); label(zn.name,cx,cy-fs*0.55,fs,'#f2f0e4',true); label('Level '+zoneLvText(zn),cx,cy+fs*0.6,fs*0.85,'#ffcf8a'); }
-  for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.sun?'sun':A.grey?'grey':A.hoar?'hoar':inVale(A.x,A.z)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bossLvIn(bd.def,land)+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
-  { const V=land==='sun'?VIL5:land==='grey'?VIL4:land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='sun'?'Glasswell':land==='grey'?'Highmark':land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
+  for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.gloam?'gloam':A.sun?'sun':A.grey?'grey':A.hoar?'hoar':inVale(A.x,A.z)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bossLvIn(bd.def,land)+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
+  { const V=land==='gloam'?VIL6:land==='sun'?VIL5:land==='grey'?VIL4:land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='gloam'?'Wraithwick':land==='sun'?'Glasswell':land==='grey'?'Highmark':land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
   dgEntMapMarks(x,at,land,fs,label,DPR);   // dungeons: the three doors, the Elder greyed while sealed
-  if(land!=='hoar'&&land!=='grey'&&land!=='sun'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Bridge':'Bridge (barred)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
+  if(land!=='hoar'&&land!=='grey'&&land!=='sun'&&land!=='gloam'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Bridge':'Bridge (barred)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='vale'){ const [cx,cy]=at(PASS.x,PASS.ice); dot(x,cx,cy,3.5*DPR,northOpen()?'#9fe0ff':'#8a8078'); label(northOpen()?'Frostgate Pass':'Frostgate Pass (ice wall)',cx-fs*4.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='hoar'){ const [cx,cy]=at(PASS.x,PASS.z1+50); label('Frostgate Pass',cx-fs*3.6,cy,fs*0.85,'#e8e0d0'); for(const Lk of FROST_LAKES){ const [lx,ly]=at(Lk.x,Lk.z); label(Lk.name,lx,ly,fs*0.85,'#cfe8f6'); }
   }
-  if((land==='hoar'||land==='grey'||land==='sun')&&GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||nodeBlock(GEAR,n)||landAt(n.x,n.z)!==land) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.6*DPR,RES[NODE_KINDS[n.kind].res].col); }   // the nodes of the professions you know (the Reach's and the Greyspine's)
+  if((land==='hoar'||land==='grey'||land==='sun'||land==='gloam')&&GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||nodeBlock(GEAR,n)||landAt(n.x,n.z)!==land) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.6*DPR,RES[NODE_KINDS[n.kind].res].col); }   // the nodes of the professions you know (the Reach's and the Greyspine's)
   if(land==='sun'){   // the river, the glass fields and the gates by name
     for(const G of GREY_GATES){ if(G.id!=='river'&&G.id!=='redgate') continue; const [cx,cy]=at(G.x,G.z), op=gateOpen(G); dot(x,cx,cy,3.5*DPR,op?'#9fe0ff':'#8a8078'); label(G.name,cx+fs*3.4,cy,fs*0.72,op?'#e8e0d0':'#b4aea4'); }
   }
@@ -111,9 +111,9 @@ function drawFullMap(){
     { const f=GREY_FJORD.pts[1], [cx,cy]=at(f[0],f[1]); label('The fjord',cx+fs*2.4,cy+fs*1.1,fs*0.85,'#cfe8f6'); }
     for(const G of GREY_GATES){ if(landAt(G.x,G.z)!=='grey') continue; const [cx,cy]=at(G.x,G.z), op=gateOpen(G); dot(x,cx,cy,3.5*DPR,op?'#9fe0ff':'#8a8078'); label(G.name,cx+fs*3.4,cy,fs*0.72,op?'#e8e0d0':'#b4aea4'); }   // (the dot says whether it is open; the name is short, the map is small on a phone)
   }
-  for(const Lk of LAKES){ if(!!Lk.vale!==(land==='vale')||land==='hoar'||land==='grey'||land==='sun') continue; const [cx,cy]=at(Lk.x,Lk.z); label(Lk.name,cx,cy,fs*0.85,'#cfe8f6'); }
+  for(const Lk of LAKES){ if(!!Lk.vale!==(land==='vale')||land==='hoar'||land==='grey'||land==='sun'||land==='gloam') continue; const [cx,cy]=at(Lk.x,Lk.z); label(Lk.name,cx,cy,fs*0.85,'#cfe8f6'); }
   if(land==='home'){ const [cx,cy]=at(PVP.x,PVP.z); label(PVP_ISLE.name,cx,cy,fs*0.85,'#ffd9a0'); }   // pvp: the island
-  for(const B of BRIDGES){ if(B.kind!=='causeway'||B.name[0]!=='T'||inVale(B.x,B.z)!==vale||land==='hoar'||land==='grey'||land==='sun') continue; const [cx,cy]=at(B.x,B.z); label(B.name,cx,cy+fs*1.1,fs*0.8,'#cfe8f6'); }   // the named causeways
+  for(const B of BRIDGES){ if(B.kind!=='causeway'||B.name[0]!=='T'||inVale(B.x,B.z)!==vale||land==='hoar'||land==='grey'||land==='sun'||land==='gloam') continue; const [cx,cy]=at(B.x,B.z); label(B.name,cx,cy+fs*1.1,fs*0.8,'#cfe8f6'); }   // the named causeways
   // quests
   for(const q of questTargets()){
     if(q.ring){ x.save(); x.setLineDash([5*DPR,5*DPR]); x.strokeStyle='rgba(242,207,90,.8)'; x.lineWidth=1.5*DPR; x.beginPath(); const [cx,cy]=at(VIL.x,VIL.z); x.arc(cx,cy,q.ring*k,0,TAU); x.stroke(); x.restore(); continue; }
@@ -122,10 +122,10 @@ function drawFullMap(){
   for(const m of MONS){ if(m.dead||!m.aggro) continue; const [a,b]=at(m.x,m.z); dot(x,a,b,2.4*DPR,'#ff4a3a'); }
   for(const r of REMOTES.values()){ if(r.tx===null) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,4*DPR,dgPartyCol(r.id)||'#6fb8ff'); label(r.name,a,b-fs*1.1,fs*0.85,'#cfe6ff'); }   // dungeons: party members in their colour (dungeon/party.js)
   { const [a,b]=at(P.x,P.z); mapStPin(x,a,b,6.4*DPR,-P.face); }
-  { const nm=LANDS[land].name, B=WMAP_BANNER[WMAP_LAND[land]]||{levels:'28–36'}; mapStRibbon(x,DPR,W,nm,'Levels '+B.levels); mapStCompass(x,W-30*DPR,H-30*DPR,13*DPR); mapStFrame(x,W,H,DPR); }   // the land's name on the scroll, the rose, the frame
+  { const nm=LANDS[land].name, B=WMAP_BANNER[WMAP_LAND[land]]||{levels:land==='gloam'?'30–40':'28–36'}; mapStRibbon(x,DPR,W,nm,'Levels '+B.levels); mapStCompass(x,W-30*DPR,H-30*DPR,13*DPR); mapStFrame(x,W,H,DPR); }   // the land's name on the scroll, the rose, the frame
   const zn=zoneAt(P.x,P.z), V=vilAt(P.x,P.z);
-  const vn=V===VIL5?'Glasswell':V===VIL4?'Highmark':V===VIL3?'Rimehold':V===VIL2?'Hanami':'the village';
-  $('#mapHere').textContent=vDist(P.x,P.z)<VR+12?'You are in '+vn:P.inTun?'You are on the Greyfall bridge':zn?(zn.boss?'You are near '+zn.name:'You are in '+zn.name+' (level '+zoneLvText(zn)+')'):inPass(P.x,P.z)?'You are in Frostgate Pass':inSun(P.x,P.z)?'You are in the Sunscar':inGrey(P.x,P.z)?'You are in the Greyspine':'You are near '+vn;
+  const vn=V===VIL6?'Wraithwick':V===VIL5?'Glasswell':V===VIL4?'Highmark':V===VIL3?'Rimehold':V===VIL2?'Hanami':'the village';
+  $('#mapHere').textContent=vDist(P.x,P.z)<VR+12?'You are in '+vn:P.inTun?'You are on the Greyfall bridge':zn?(zn.boss?'You are near '+zn.name:'You are in '+zn.name+' (level '+zoneLvText(zn)+')'):inPass(P.x,P.z)?'You are in Frostgate Pass':inGloam(P.x,P.z)?'You are in the Gloamhorn':inSun(P.x,P.z)?'You are in the Sunscar':inGrey(P.x,P.z)?'You are in the Greyspine':'You are near '+vn;
 }
 function placeName(wx,wz){
   { const dn=dgEntName(wx,wz); if(dn) return dn; }   // dungeons: the door's name under the pointer
@@ -140,14 +140,15 @@ function placeName(wx,wz){
   const B=bridgeAt(wx,wz,2); if(B) return B.road+' ('+B.name+')';
   const rd=roadAt(wx,wz,3); if(rd) return rd.name;
   const zn=zoneAt(wx,wz); if(zn) return zn.key==='boss'?'Rootwarden Barrens':zn.boss?zn.name:zn.name+': level '+zoneLvText(zn)+' ('+MON_DEFS.filter(d=>defZone(d)===zn).map(d=>d.name).join(', ')+')';
-  return edgeName(wx,wz)||(inHoar(wx,wz)?'The snowfields':inGrey(wx,wz)?'The Greyspine':inVale(wx,wz)?'Hanami meadows':'Village meadows');
+  return edgeName(wx,wz)||(inGloam(wx,wz)?'The Gloam heath':inHoar(wx,wz)?'The snowfields':inGrey(wx,wz)?'The Greyspine':inVale(wx,wz)?'Hanami meadows':'Village meadows');
 }
 // the lands' edges by their names in docs/WORLD.md (shaped in shared/terrain.js)
 function edgeName(x,z){
   if(coastDist(x,z)<40) return inHoar(x,z)||inGrey(x,z)?'The Outer Deep shore':'The Crownsea shore';   // (the north of the Reach and the Greyspine looks on the open ocean)
   const bx=borderX(z), bn=borderXN(z), bz=borderZ(x), wx=lerp(wallW(z,1),56,riverK(z)), wn=wallW(z,1), wz=wallW(x,3);   // (the walls' bodies are as wide as the terrain makes them there)
+  if(inGloam(x,z)) return gloamCoast(x,z)<30?'The Gloam cliffs':null;
   if(inGrey(x,z)){
-    if(x-WX0<62) return 'The west wall';
+    if(x-GW0<62) return 'The west wall';
     if(bn-x<wn) return 'The Glacier Wall';   // (the Greyspine | Reach wall)
     if(z>bz-wz) return 'The Greyspine foothills';
   } else if(inSun(x,z)) return 'The Sunscar plateau';   // (not built: the Sunwall's top goes on west of the forest)

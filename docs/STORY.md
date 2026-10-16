@@ -17,7 +17,7 @@ treating one as final.
 - Before the reveal, no NPC says "continent", "technology", "machine", "electricity", "war with..." or names the Concord. People of
   Eldmere describe outside things with their own words: *a lamp with no flame*, *a box that sings*, *an iron bird*, *black iron roots*.
 - Hints grow clearer region by region (section 4). Early ones are easy to miss; by the Rootdeep a careful player can guess.
-- The Stormhorn and the Rootdeep are side branches: their hints are rewards for exploring, and the reveal must make sense without them.
+- The Gloamhorn and the Rootdeep are side branches: their hints are rewards for exploring, and the reveal must make sense without them.
 - The watchers never act openly before the reveal. Afterwards, looking back, every one of their lines should read differently.
 
 ## 1. The hidden truth
@@ -69,7 +69,7 @@ sure nobody remembers. The people of Eldmere have no idea. *(proposed)*:
 | Watcher | Cover | Where | Role in the story |
 |---|---|---|---|
 | **Odran** | a travelling peddler of curiosities | turns up in every settlement, always one step ahead | assigned to watch the player once their light shows; grows to care for them; **tells the truth at the end of Amber Reach** and changes sides |
-| **Keeper Maelis** | the keeper of the Stormhorn's lighthouse | Gullrest | runs the relay home: the "dark lighthouse" shines in a light eyes can't see (radio). Loyal to the Concord |
+| **Keeper Maelis** | the keeper of the Gloamhorn's lighthouse | Wraithwick | runs the relay home: the "dark lighthouse" shines in a light eyes can't see (radio). Loyal to the Concord |
 | **Physician Anselm Rook** | Glasswell's court physician, famous for real cures | Glasswell | studies the Greying for the Concord; wants the player's Wildwood blood. The antagonist of the second half |
 
 There may be more watchers than these three (a hook for later).
@@ -154,7 +154,7 @@ the meaning of its bosses, and the hook that sends the player on.
   (a player must learn **gathering** to pick the Frostbloom); the Frostbloom tea that keeps the grey from spreading (Wren: "the grey water has a light
   in it now"); the grey plate at Frostmere and the Frost Reavers who wear it, Odran's price and his slip; **Ymrik, the Rimeking** (a frost giant, level 26,
   kept the wolves from the doors, then turned) whose dying words are the act's key hint: *"The iron bird... still sings under the ice. And someone... sings
-  back. From a far light on the sea."* (the Stormhorn's relay; no answer before the reveal); Sigrun's second verse points west to Highmark. The frost wyrm (30)
+  back. From a far light on the sea."* (the Gloamhorn's relay; no answer before the reveal); Sigrun's second verse points west to Highmark. The frost wyrm (30)
   and the wreck itself are beyond the main quest (levels 26-30 are side content).
 
 ### Act IV: the Greyspine (26-32), the crossroads
@@ -165,7 +165,7 @@ the meaning of its bosses, and the hook that sends the player on.
   coins are too perfect, "every one alike". *Place*: the mountain golem (32) is a stone shell around a jointed metal frame, an old war
   machine of Eldmere's own, woken by the dark.
 - **Bosses**: gryphon queen (29) opens the river road south; the golem (32) opens the neck pass west and the deep mine.
-- **Hook**: Glasswell's physician is famous for curing what nobody else can. Three roads open (Sunscar, Stormhorn, Rootdeep).
+- **Hook**: Glasswell's physician is famous for curing what nobody else can. Three roads open (Sunscar, Gloamhorn, Rootdeep).
 
 ### Act V-a: Sunscar (28-36), the main road
 - **Beats**: Glasswell, the oasis city, is the story's first great stage: bazaar, palace, library. **Physician Anselm Rook** examines
@@ -179,8 +179,8 @@ the meaning of its bosses, and the hook that sends the player on.
 - **Hook**: Rook sends the player south: the herders of Amber Reach have an herb for the relapse (he wants the player away while he
   studies the blood).
 
-### Act V-b: Stormhorn (30-40), side branch
-- **Beats**: the fishers of Gullrest ask for help against wreckers and drowned things. **Keeper Maelis** is kind but keeps the lamp room
+### Act V-b: Gloamhorn (30-40), side branch
+- **Beats**: the fishers of Wraithwick ask for help against wreckers and drowned things. **Keeper Maelis** is kind but keeps the lamp room
   locked with "a lock that has no keyhole" (a keypad).
 - **Hints**: *object*: wrecks of **steel-hulled ships** with propellers, with cargo of tins of food, glass bulbs, a camera. *Person*:
   Maelis goes up the tower at the same hour every night and comes down with news no ship could have brought. *Place*: the lighthouse
@@ -208,7 +208,7 @@ the meaning of its bosses, and the hook that sends the player on.
   - the other continents, the Lumen Concord, their cities of light (he shows a **photograph** of his home city and plays his **radio**);
   - the Crown War, the Crown broken, the Quiet, the burned books;
   - the dumping, the Black Line and the Sink in the Emberwake volcano; the monsters and the Greying are the Concord's waste;
-  - the watchers, himself among them, Rook, and the keeper of the Stormhorn;
+  - the watchers, himself among them, Rook, and the keeper of the Gloamhorn;
   - Wildwood and the Heartwood: why Wren fell sick, and why only someone born in Wildwood can close the Sink.
   Elder Tamsa then sings the old song slowly, and with Odran's words it finally makes sense: it is the herders' memory of the war.
 - **Cure**: there is no cure but one: close the Sink, and the Heartwood can heal, and Wren with it.
@@ -223,7 +223,7 @@ the meaning of its bosses, and the hook that sends the player on.
   with the Concord machine (Rook's work). The player turns their Wildwood light against it and closes the Sink.
 - **Ending**: the dark stops flowing. The Heartwood's roots turn green again, and **Wren wakes**, for good (the payoff scene at home).
   The Quiet starts to thin: people all over Eldmere recall fragments (NPC lines can change after the ending).
-- **Epilogue and hook for the next continent**: the Stormhorn's lamp room opens. Maelis is gone; the relay's last message says the
+- **Epilogue and hook for the next continent**: the Gloamhorn's lamp room opens. Maelis is gone; the relay's last message says the
   Concord knows the Sink is closed, and that **its own cities are going dark** (their waste now has nowhere to go). The player relights
   the lighthouse, now a beacon for Eldmere, and on the horizon the first Concord ship appears. The next continent's story begins there.
 
@@ -246,7 +246,7 @@ the meaning of its bosses, and the hook that sends the player on.
 | **Brenna** | Highmark | mine foreman | notices the too-perfect coins |
 | **Odran** | everywhere | watcher, peddler | watches, grows fond, reveals the truth, changes sides |
 | **Anselm Rook** | Glasswell | watcher, physician | helps, then hunts the player; defends the Sink |
-| **Keeper Maelis** | Gullrest | watcher, lighthouse keeper | the relay home; vanishes at the end |
+| **Keeper Maelis** | Wraithwick | watcher, lighthouse keeper | the relay home; vanishes at the end |
 | **Elder Tamsa** | Tallgrass | herders' elder | keeps the song that remembers the war |
 
 ## 6. Rules for writing hints and lines
@@ -271,7 +271,7 @@ the meaning of its bosses, and the hook that sends the player on.
   ruins, wrecks and odd objects found in the world (the iron bird, the steel shipwrecks, the Glimmer Halls' murals, the Silent Years'
   cut pages, Odran's curiosities), and extra lines at the camp fires. Side content adds hints and depth but is **never required** to follow
   the story, and it obeys the spoiler rule (section 0) like everything else.
-- The Stormhorn and the Rootdeep are side branches of the map, so their story is side content too (section 0).
+- The Gloamhorn and the Rootdeep are side branches of the map, so their story is side content too (section 0).
 - The main quest is separate from the quest board's endless random quests (`shared/quests.js`), which stay as they are.
 
 ## 8. Open questions for the owner

@@ -3,7 +3,7 @@
    'pfx' (an effect on you: root, slow, push). The hurting is done there; here the zones and waves are drawn, and the effects are applied to your own
    movement (pfxStep, called by updatePlayer): a whirlpool pulls you toward its middle while you stand in it. */
 const BZONES=new Map(), BWALLS=new Map(), PFX={root:0,slow:0,kx:0,kz:0,ice:null};
-const ZONE_COL={ember:0xff7a2a,whirl:0x3ac8e8,whiteout:0xeaf6ff,sandstorm:0xe0b878,blizzard:0xdff0ff,spore:0x9ad860};
+const ZONE_COL={ember:0xff7a2a,whirl:0x3ac8e8,whiteout:0xeaf6ff,sandstorm:0xe0b878,blizzard:0xdff0ff,spore:0x9ad860,gloom:0x6a3fa8};
 const sporeMoteMat=fxMat(0xd0f090,0.7);   // the spores drifting up out of a spore cloud (the server slows whoever stands in one)
 const whiteGeo=new THREE.RingGeometry(1,4,64).rotateX(-Math.PI/2);   // the snow outside a whiteout's safe circle: scale = the circle's radius
 const armGeo=new THREE.RingGeometry(0.5,0.6,24,1,0,2.4).rotateX(-Math.PI/2), waveGeo=new THREE.BoxGeometry(1,1,1);

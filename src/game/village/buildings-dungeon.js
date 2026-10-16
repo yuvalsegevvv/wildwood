@@ -1,9 +1,9 @@
-//@ The four dungeon doors and their signposts: the Hollowed Elder (a half-dead giant tree with a root-arch door), the Falls Door (a cascade over three ledges, the door behind the water), the Barrow Door (a snow-covered mound with a trilithon) and the Old Adit (a timbered mine mouth in a crag, a head frame above)
+//@ The five dungeon doors and their signposts: the Hollowed Elder (a half-dead giant tree with a root-arch door), the Falls Door (a cascade over three ledges, the door behind the water), the Barrow Door (a snow-covered mound with a trilithon) and the Old Adit (a timbered mine mouth in a crag, a head frame above) and the Sandglass Door (a sandstone gateway in the Sunscar's desert, a black-glass pane sealing it)
 /* Agent map (docs/DUNGEON-THEMES.md section 6; the rules, prompt, maps and ground patch are game/dungeon/entrances.js; test tools/entrances-client-smoke.js).
    Each door is one THREE.Group at the door (x, ground height, z) turned by DG_ENTRANCES[..].a, so in the group's own frame +z is OUT of the door (toward the apron) and the bank is at -z.
    Props that stand on the ground take their height from getH at their own spot (S.gy), never from the door's: the ground falls 1-3 m in front of two of the doors.
    Per door: a few merged meshes (villageMat: solids, dgEntMat2: open shells, a Basic "glow" mesh that is not lit) and a handful of animated extras. The group's state is in DG_DOORS.doors[id].
-   dgEntBuild() builds all four plus the signposts (once, from generation-setup.js); dgEntUpdate(dt) every frame (main/loop.js): sealed or open follows your gear (dgGateOpen), animation only on the desktop.
+   dgEntBuild() builds all five plus the signposts (once, from generation-setup.js); dgEntUpdate(dt) every frame (main/loop.js): sealed or open follows your gear (dgGateOpen), animation only on the desktop.
    Phones (LOW) get fewer details and no animation; light mode (LITE) the bare shapes. Nothing here changes the terrain's height. */
 const dgEntDet=LITE?0:LOW?1:2;   // 2 desktop, 1 phone (fewer details, nothing moves), 0 light mode (the bare shapes)
 const DG_ENT_VIS=420;            // a door's group is hidden beyond this (the fog ends at about 230 m; the Elder's crown and the Barrow's column are what show from afar)
@@ -328,6 +328,34 @@ function dgEntAdit(E){
     tick(dt,lit,d){ S.glowMat.color.setScalar(0.3+0.7*lit); gleam.material.opacity=0.2*lit*(0.8+0.2*Math.sin(t*3.1)*Math.sin(t*1.7)); }});
 }
 
+/* ================= 5. The Sandglass Door (the Sunscar's) =================
+   SUN_DG_DOOR in the flat desert south of Glasswell: a sandstone gateway set into a long low mound of sand and fallen stone (the temple lies under it), two massive piers, a lintel carrying a sun disc, steps down
+   to a doorway sealed with a pane of black glass while the way is shut (the slab) and a violet gleam behind it when open. There is no bank to dig into, so the mound is built. */
+function dgEntSand(E){
+  const S=dgEntBegin(E), {main,glow}=S, det=dgEntDet;
+  const stoneP=(x,y,z,nx,ny,nz,c)=>{ const n=noise2(x*0.7+y,z*0.7)*0.5+0.5; c.set(0xb8905a).multiplyScalar(0.78+0.4*n); if(ny>0.6) c.lerp(dgEntC.set(0xe0c890),0.35*n); };
+  const sandP=(x,y,z,nx,ny,nz,c)=>{ const n=noise2(x*0.5,z*0.5+y)*0.5+0.5; c.set(0xd8b878).multiplyScalar(0.82+0.3*n); };
+  const glassP=dgEntFlat(0x15121e), goldP=dgEntFlat(0xd8a830);
+  const seg=det?[20,10]:[10,5];
+  main.push(dgEntDome(11,5.5,7,0,-0.6,-6.5,seg[0],seg[1],0.1,sandP),dgEntDome(5,3,4,-9,-0.4,-3,det?12:6,det?6:3,0.15,sandP),dgEntDome(5,3,4,9,-0.4,-3,det?12:6,det?6:3,0.15,sandP));
+  main.push(dgEntRock(2.6,3.2,2.2,-12.5,1.3,-1.0,0.3,stoneP,0.3),dgEntRock(2.2,2.2,2.0,12.5,0.9,-0.8,0.3,stoneP,-0.4)); S.foot(-12.5,-1.0,S.gy(-12.5,-1.0)); S.foot(12.5,-0.8,S.gy(12.5,-0.8));   // fallen blocks at either end of the mound
+  for(const sx of [-1,1]){ main.push(paint(vbox(2.4,7.2,2.6,sx*3.6,3.6,0),stoneP),paint(vbox(2.9,0.6,3.1,sx*3.6,0.3,0),stoneP),paint(vbox(2.9,0.5,3.1,sx*3.6,7.3,0),stoneP));
+    glow.push(paint(vbox(0.16,3.6,0.1,sx*3.6,3.9,1.34),goldP)); S.col(sx*3.6,0,1.5); S.foot(sx*3.6,0,S.gy(sx*3.6,0)); }
+  main.push(paint(vbox(10.6,1.5,2.8,0,8.2,0),stoneP));   // the lintel
+  glow.push(paint(cyl(1.0,1.0,0.12,16).rotateX(Math.PI/2).translate(0,8.2,1.42),goldP));   // the sun disc on it
+  for(let k=0;k<3;k++){ const lz=1.6+k*0.9, y=S.gy(0,lz); main.push(paint(vbox(6.2-k*0.5,0.28,0.95,0,y+0.14+(2-k)*0.0,lz),stoneP)); S.foot(0,lz,y); }   // three worn steps
+  const slab=new THREE.Mesh(merge([paint(vbox(5,6.2,0.4,0,3.1,0.1),glassP),paint(vbox(5.3,0.3,0.5,0,6.3,0.1),goldP),paint(vbox(5.3,0.3,0.5,0,0.2,0.1),goldP)]),villageMat); slab.castShadow=slab.receiveShadow=true; S.G.add(slab);
+  const voidMat=new THREE.MeshBasicMaterial({color:0x0a0710}), voidMesh=new THREE.Mesh(new THREE.PlaneGeometry(4.8,6.0),voidMat); voidMesh.position.set(0,3.0,-0.5); S.G.add(voidMesh);
+  const gleam=new THREE.Mesh(new THREE.PlaneGeometry(4.6,5.8),new THREE.MeshBasicMaterial({color:0x7a5ab8,transparent:true,opacity:0.25,depthWrite:false,blending:THREE.AdditiveBlending})); gleam.position.set(0,3.0,-0.42); S.G.add(gleam);
+  for(const sx of [-1,1]){ const lx=sx*6.6, lz=3.2, y=S.gy(lx,lz);   // two braziers on stone feet either side of the steps
+    main.push(paint(vbox(0.9,0.9,0.9,lx,y+0.45,lz),stoneP),paint(cyl(0.12,0.2,1.3,6).translate(lx,y+1.5,lz),goldP),paint(cyl(0.5,0.3,0.3,8).translate(lx,y+2.3,lz),goldP));
+    glow.push(paint(new THREE.SphereGeometry(0.32,6,4).translate(lx,y+2.6,lz),dgEntFlat(0xffc860))); S.foot(lx,lz,y); S.col(lx,lz,0.6); }
+  for(const [x,z,r] of [[0,-5.0,4.4],[-8.5,-2.6,4],[8.5,-2.6,4],[-1.0,-0.4,0.7],[0,-0.4,0.7],[1.0,-0.4,0.7]]) S.col(x,z,r);
+  dgEntEnd(S,{slab,sealMesh:slab,voidMat,gleam,
+    apply(sealed){ slab.visible=sealed; },
+    tick(dt,lit,d){ S.glowMat.color.setScalar(0.3+0.7*lit); gleam.material.opacity=0.25*lit*(0.8+0.2*Math.sin(t*2.3)*Math.sin(t*1.3)); }});
+}
+
 /* ================= the signposts =================
    One on the nearest road to each door (DG_ENTRANCES[..].sign, 3.5 m off it toward the door): a post with a pointed board that points at the door, its name and the distance
    painted on both faces (the sign stands where it was put, so the distance is fixed). */
@@ -380,7 +408,7 @@ function dgTrialGate(){
 let dgEntBuilt=false;
 function dgEntBuild(){
   if(dgEntBuilt) return; dgEntBuilt=true;
-  dgEntElder(DG_ENTRANCES.hollowroots); dgEntFalls(DG_ENTRANCES.jadesprings); dgEntBarrow(DG_ENTRANCES.bonefrostbarrow); dgEntAdit(DG_ENTRANCES.blackseam);
+  dgEntElder(DG_ENTRANCES.hollowroots); dgEntFalls(DG_ENTRANCES.jadesprings); dgEntBarrow(DG_ENTRANCES.bonefrostbarrow); dgEntAdit(DG_ENTRANCES.blackseam); dgEntSand(DG_ENTRANCES.sandglass);
   for(const E of dgEntList) dgEntSign(E);
   dgTrialGate();
 }

@@ -1,6 +1,6 @@
 // Headless test of the dungeon setup (shared/dungeons.js), straight from src/, no build, no server: the map tiles (every tile in every turn: doors match the art; the round
 // hall is a boss arena's circle), the seeded layout generator (connected, reciprocal doors, one-door entrance, the roles each mission asks for, a boss hall in every
-// dungeon, same seed = same dungeon), the baked grid (collision, line of sight, the flow field walkers follow round walls), the party-size table, the four dungeons' tile kits through the
+// dungeon, same seed = same dungeon), the baked grid (collision, line of sight, the flow field walkers follow round walls), the party-size table, the five dungeons' tile kits through the
 // theme registry (legends, props, halls against the bosses' pillars, every mission on 300 seeds, bad themes refused into DG_BAD) and the bosses' data against their kits. One line per check.
 // Usage: node tools/dungeons-smoke.js            the checks
 //        node tools/dungeons-smoke.js --show defense 7   draws that dungeon (the tile graph, then the cells: one character per 2 x 2 cells)
@@ -66,7 +66,7 @@ for(const mi of ['sabotage','siege']) ok(mi+': its three sites are at least 3 ti
 ok('the missions\' roles all exist in the test set, their grids can hold their tile counts, and every mission has exactly one boss hall (role \'boss\')',MIS.every(mi=>{ const M=X.DG_MISSIONS[mi]; return M.rooms[1]<=M.grid[0]*M.grid[1]&&M.roles.every(R=>V.some(v=>v.tags.includes(R.tag)))&&M.roles.filter(R=>R.as==='boss'&&R.tag==='hall'&&R.n===1).length===1; }));
 
 // ---- the boss hall is the boss circle ----
-ok('every boss arena in ARENAS has the radius DG_BOSS_R ('+X.DG_BOSS_R+' m): the hall is exactly that circle, so the boss kits (they read A.x, A.z, A.r) fit',X.ARENAS.length>=6&&X.ARENAS.every(a=>a.r===X.DG_BOSS_R),X.ARENAS.map(a=>a.r).join(','));
+ok('every boss arena in ARENAS has the radius DG_BOSS_R ('+X.DG_BOSS_R+' m): the hall is exactly that circle, so the boss kits (they read A.x, A.z, A.r) fit',X.ARENAS.length>=6&&X.ARENAS.filter(a=>!a.sun&&!a.gloam).every(a=>a.r===X.DG_BOSS_R),X.ARENAS.map(a=>a.r).join(','));   // (the Sunscar's and the Gloamhorn's world-boss arenas, 22 and 24 m, are not dungeon halls)
 ok('a hall tile is that circle: open floor except its four pillars (16 cells) inside radius '+X.DG_BOSS_R+' m less a cell, one boss spot in the middle, and it fits the tile',DG_TC*DG_CELL>=2*X.DG_BOSS_R+2*DG_CELL&&V.filter(v=>v.tags.includes('hall')).every(v=>{
   const C=DG_TC/2, rIn=X.DG_BOSS_R/DG_CELL-1; let walls=0, b=0, bOk=true;
   for(let z=0;z<DG_TC;z++) for(let x=0;x<DG_TC;x++){ const ch=v.art[z][x]; if(Math.hypot(x+0.5-C,z+0.5-C)<=rIn&&ch==='#') walls++; if(ch==='B'){ b++; bOk=Math.hypot(x+0.5-C,z+0.5-C)<=1; } }
@@ -110,12 +110,12 @@ for(const r of [0.5,0.9]){
   ok('a walker of radius '+r+' m following the flow field reaches the portal from '+n+' random starting points in 30 dungeons',stuck===0,stuck+' got stuck');
 }
 
-// ---- the four dungeons, their bosses and the hourly offer (docs/DUNGEON-THEMES.md) ----
+// ---- the five dungeons, their bosses and the hourly offer (docs/DUNGEON-THEMES.md) ----
 const TH=Object.values(X.DG_THEMES).filter(t=>!t.dev&&!t.trial), ids=X.MON_DEFS.map(d=>d.id), DEF=Object.fromEntries(X.MON_DEFS.map(d=>[d.id,d]));
-const MUSIC=['village','wild1','wild2','wild3','boss15','hanami','vale1','vale2','boss20','boss25','rimehold','hoar1','hoar2','boss26','boss30'];   // the music themes (game/audio/music.js THEMES)
-const iVale=ids.indexOf('sakuraslime'), iHoar=ids.indexOf('frostslime'), iGrey=ids.indexOf('granitslime'), landOfDef=id=>{ const i=ids.indexOf(id); return i<0?null:i<iVale?'home':i<iHoar?'vale':i<iGrey?'hoar':'grey'; };
-const landOfZone=z=>z.grey?'grey':z.hoar?'hoar':z.vale?'vale':'home';
-ok('four dungeons, one for each built land (Wildwood, the Sakura Vale, the Hoarfrost Reach, the Greyspine), level '+X.DG_LV+' at their land\'s base difficulty',TH.length===4&&['home','vale','hoar','grey'].every(l=>TH.filter(t=>t.land===l).length===1)&&TH.every(t=>t.lv===30&&X.DG_LV===30),TH.map(t=>t.id).join(', '));
+const MUSIC=['village','wild1','wild2','wild3','boss15','hanami','vale1','vale2','boss20','boss25','rimehold','hoar1','hoar2','boss26','boss30','sun2'];   // the music themes (game/audio/music.js THEMES)
+const iVale=ids.indexOf('sakuraslime'), iHoar=ids.indexOf('frostslime'), iGrey=ids.indexOf('granitslime'), iSun=ids.indexOf('sandslime'), landOfDef=id=>{ const i=ids.indexOf(id); return i<0?null:i<iVale?'home':i<iHoar?'vale':i<iGrey?'hoar':i<iSun?'grey':'sun'; };
+const landOfZone=z=>z.sun?'sun':z.grey?'grey':z.hoar?'hoar':z.vale?'vale':'home';
+ok('five dungeons, one for each built land (Wildwood, the Sakura Vale, the Hoarfrost Reach, the Greyspine, the Sunscar), level '+X.DG_LV+' at their land\'s base difficulty (the Sunscar\'s Sandglass: 40)',TH.length===5&&['home','vale','hoar','grey','sun'].every(l=>TH.filter(t=>t.land===l).length===1)&&TH.every(t=>t.lv===(t.land==='sun'?40:30)&&X.DG_LV===30),TH.map(t=>t.id).join(', '));
 ok('every dungeon lies under a real zone of its own land',TH.every(t=>{ const z=X.ZONES.find(z=>z.name===t.at); return z&&landOfZone(z)===t.land; }),TH.map(t=>t.at).join(' / '));
 ok('every dungeon\'s monsters exist, come from its own land, and the walkers (they make the waves) fit a 4 m door (radius <= 0.9 m); at least 4 kinds of walker; none listed twice',TH.every(t=>{
   const all=[...t.mobs.walkers,...t.mobs.guardians];
@@ -123,13 +123,14 @@ ok('every dungeon\'s monsters exist, come from its own land, and the walkers (th
 ok('the guardians (they stay in their room) are the ones too big for the doors',TH.every(t=>t.mobs.guardians.every(id=>DEF[id].rad>0.9)));
 ok('every dungeon has a music track that exists, a palette, a legend and its own tile kit (the art is drawn: not the bare test set)',TH.every(t=>MUSIC.includes(t.music)&&['wall','floor','fog','light'].every(k=>Number.isInteger(t.pal[k]))&&t.tiles!==X.DG_SET_BARE&&t.art===true&&t.legend&&Object.keys(t.legend).length>=5),TH.map(t=>t.id+' '+t.tiles.length+' tiles').join(', '));
 ok('every dungeon makes a layout for all seven missions',TH.every(t=>MIS.every(mi=>[1,2,3].every(seed=>!!X.dgLayout({mission:mi,seed,set:t.tiles})))));
-// ---- the four dungeons' tile kits (shared/dungeons/themes/<id>.js through defineDungeonTheme; docs/DUNGEON-THEMES.md section 3) ----
+// ---- the five dungeons' tile kits (shared/dungeons/themes/<id>.js through defineDungeonTheme; docs/DUNGEON-THEMES.md section 3) ----
 ok('the theme registry left nothing out: DG_BAD is empty (each bad theme would be listed here by id and field)',X.DG_BAD.length===0,X.DG_BAD.map(b=>b.id+' '+b.field+': '+b.why).join('; '));
 ok('every dungeon\'s legend: one character each, none of # . S O C P B, solid true or false, a prop name; hazards and guardian posts are floor',TH.every(t=>Object.entries(t.legend).every(([ch,e])=>
   ch.length===1&&!'#.SOCPB'.includes(ch)&&typeof e.solid==='boolean'&&typeof e.prop==='string'&&e.prop&&(!(e.hazard||e.post)||!e.solid))),TH.map(t=>t.id+': '+Object.keys(t.legend).join('')).join(', '));
 { const NAMED={hollowroots:['cathedral','sapcellar','fungusalcove','crawlway','heartknot','seednook','burrow'],jadesprings:['basin','bathhall','bamboocellar','steamcorridor','springhead','offering','waterfall'],
     bonefrostbarrow:['burialchamber','cairnroom','urnhall','passagegrave','runecell','gravegoods','barrowdoor'],
-    blackseam:['foremansfloor','stope','cartyard','drift','windinghouse','tallyroom','adit']}, ROLE={0:'hall',1:'room',2:'room',3:'pass',4:'site',5:'cache',6:'start'};
+    blackseam:['foremansfloor','stope','cartyard','drift','windinghouse','tallyroom','adit'],
+    sandglass:['hourhall','furnace','columnhall','sandcorridor','sunaltar','treasury','sandstair']}, ROLE={0:'hall',1:'room',2:'room',3:'pass',4:'site',5:'cache',6:'start'};
   ok('every dungeon draws the tiles its design names (hall, two rooms, pass, site, cache, entrance), each in the role the design gives it',TH.every(t=>NAMED[t.id].every((nm,i)=>t.tiles.some(v=>v.id.split('-')[0]===nm&&v.tags.includes(ROLE[i])))),TH.map(t=>t.id+' '+new Set(t.tiles.map(v=>v.id.split('-')[0])).size+' designs').join(', ')); }
 // the test's own reading of a tile (not dgTileProblems): a legend's solid characters are wall, everything else floor
 const solidIn=t=>ch=>ch==='#'||!!(t.legend&&t.legend[ch]&&t.legend[ch].solid);
@@ -191,24 +192,24 @@ ok('a dungeon with guardians gives them posts (G) in its rooms or sites; one wit
   console.warn=warn;
   ok('a bad theme never stops the game: it is left out, warned about and listed in DG_BAD by id and field (a door off the middle, an unknown character, no cache, a pillar out of place, a missing or oversized walker, an unknown boss or zone, a marker in the legend, a bad id); a good one is taken',
     !!fine&&!!F.DG_THEMES.testcave&&res.every(Boolean)&&said.length===cases.length,res.map((r,i)=>r?'':cases[i][0]+i).filter(Boolean).join(' ')||said.length+' warnings'); }
-// ---- the four entrances: real places on the real map ----
+// ---- the five entrances: real places on the real map (the Sandglass's door stands on flat desert with no road, no bank and no node planner: those rules are the four older doors', E4) ----
 { const E=Object.values(X.DG_ENTRANCES), H=(x,z)=>X.rawHeight(x,z), slope=(x,z,d=2)=>Math.hypot(H(x+d,z)-H(x-d,z),H(x,z+d)-H(x,z-d))/(2*d);
-  const zoneName=(x,z)=>{ const q=X.zoneAt(x,z); return q&&q.name; }, landOf=q=>q&&(q.grey?'grey':q.hoar?'hoar':q.vale?'vale':'home');
+  const zoneName=(x,z)=>{ const q=X.zoneAt(x,z); return q&&q.name; }, landOf=q=>q&&(q.sun?'sun':q.grey?'grey':q.hoar?'hoar':q.vale?'vale':'home');
   const roadD=(x,z)=>{ let m=1e9; for(const rd of X.ROADS) for(let i=1;i<rd.pts.length;i++){ const [ax,az]=rd.pts[i-1],[bx,bz]=rd.pts[i],dx=bx-ax,dz=bz-az,L2=dx*dx+dz*dz||1,u=Math.max(0,Math.min(1,((x-ax)*dx+(z-az)*dz)/L2)); m=Math.min(m,Math.hypot(x-(ax+dx*u),z-(az+dz*u))); } return m; };
-  const nearest=(list,x,z,f)=>list.reduce((m,o)=>Math.min(m,f(o,x,z)),1e9);
-  ok('one entrance for each of the four dungeons (the dungeon names it, it names the dungeon), at least 300 m apart',E.length===4&&TH.every(t=>E.filter(e=>e.theme===t.id&&X.DG_ENTRANCES[t.id]===e).length===1)&&E.every((a,i)=>E.every((b,j)=>i===j||Math.hypot(a.x-b.x,a.z-b.z)>=300)),E.map(e=>e.name+' ('+e.x+', '+e.z+')').join(', '));
+  const nearest=(list,x,z,f)=>list.reduce((m,o)=>Math.min(m,f(o,x,z)),1e9), E4=E.filter(e=>e.theme!=='sandglass');
+  ok('one entrance for each of the five dungeons (the dungeon names it, it names the dungeon), at least 300 m apart',E.length===5&&TH.every(t=>E.filter(e=>e.theme===t.id&&X.DG_ENTRANCES[t.id]===e).length===1)&&E.every((a,i)=>E.every((b,j)=>i===j||Math.hypot(a.x-b.x,a.z-b.z)>=300)),E.map(e=>e.name+' ('+e.x+', '+e.z+')').join(', '));
   ok('each stands in its dungeon\'s zone, and the zone holds 25 m all round the door (so it is the right land and not at a zone\'s edge)',E.every(e=>{ const t=X.DG_THEMES[e.theme]; return zoneName(e.x,e.z)===t.at&&landOf(X.zoneAt(e.x,e.z))===t.land&&[0,1,2,3,4,5,6,7].every(k=>zoneName(e.x+Math.sin(k*Math.PI/4)*25,e.z+Math.cos(k*Math.PI/4)*25)===t.at); }));
   ok('the ground: the door at least 2.5 m above the water, the ground rising at least 2 m in the 10 m behind it (a bank to dig into), a flat apron in front (within 2.2 m of the door\'s height, slope <= 0.34 within 4.5 m)',E.every(e=>{
     const ux=Math.sin(e.a), uz=Math.cos(e.a), A=X.dgApron(e); let sm=0; for(let k=0;k<8;k++) for(const r of [2,4.5]) sm=Math.max(sm,slope(A.x+Math.sin(k*Math.PI/4)*r,A.z+Math.cos(k*Math.PI/4)*r));
-    return H(e.x,e.z)>=X.WATER+2.5&&H(e.x-ux*10,e.z-uz*10)-H(e.x,e.z)>=2&&Math.abs(H(A.x,A.z)-H(e.x,e.z))<=2.2&&sm<=0.34&&Math.abs(Math.hypot(A.x-e.x,A.z-e.z)-X.DG_APRON)<1e-9; }));
-  ok('the node planner\'s keep-out list (shared/professions.js) is the four doors',E.every(e=>X.NODE_KEEPOUT.some(d=>d[0]===e.x&&d[1]===e.z))&&X.NODE_KEEPOUT.length===E.length);
-  ok('clear of everything: villages 60 m beyond their walls, arenas 70 m, the tunnel cutting, resource nodes 16 m, story and lore spots 25 m, lakes 25 m, roads 12 m, no zone ridge, no bare ground',E.every(e=>
+    return H(e.x,e.z)>=X.WATER+2.5&&(e.theme==='sandglass'||H(e.x-ux*10,e.z-uz*10)-H(e.x,e.z)>=2)&&Math.abs(H(A.x,A.z)-H(e.x,e.z))<=2.2&&sm<=0.34&&Math.abs(Math.hypot(A.x-e.x,A.z-e.z)-X.DG_APRON)<1e-9; }));
+  ok('the node planner\'s keep-out list (shared/professions.js) is the four older doors (the Sunscar has no node planner: sunKeepOut keeps the Sandglass door clear)',E4.every(e=>X.NODE_KEEPOUT.some(d=>d[0]===e.x&&d[1]===e.z))&&X.NODE_KEEPOUT.length===E4.length);
+  ok('clear of everything: villages 60 m beyond their walls, arenas 70 m, the tunnel cutting, resource nodes 16 m, story and lore spots 25 m, lakes 25 m, roads 12 m, no zone ridge, no bare ground (the Sunscar is all bare ground: its door skips that one)',E.every(e=>
     X.vDist(e.x,e.z)>=X.VR+60&&X.arenaDist(e.x,e.z)>=70&&!X.inTunnelCut(e.x,e.z,40)&&nearest(X.NODES,e.x,e.z,(n,x,z)=>Math.hypot(n.x-x,n.z-z))>=16&&nearest(X.STORY_SPOTS,e.x,e.z,(s,x,z)=>Math.hypot(s[0]-x,s[1]-z))>=25&&
-    nearest([...X.LAKES,...X.FROST_LAKES],e.x,e.z,(L,x,z)=>Math.hypot(L.x-x,L.z-z)-L.r)>=25&&roadD(e.x,e.z)>=12&&X.zoneRidge(e.x,e.z)<0.4&&!X.bareGround(e.x,e.z)));
+    nearest([...X.LAKES,...X.FROST_LAKES],e.x,e.z,(L,x,z)=>Math.hypot(L.x-x,L.z-z)-L.r)>=25&&roadD(e.x,e.z)>=12&&X.zoneRidge(e.x,e.z)<0.4&&(e.theme==='sandglass'||!X.bareGround(e.x,e.z))));
   { const {loadServer}=require('./load'), camps=loadServer({dev:true},['CAMPS']).x.CAMPS;
     ok('no monster camp within 32 m of a door: keeping camps out of 32 m in server/monsters.js ok() changes none of the world\'s '+camps.length+' camps',E.every(e=>nearest(camps,e.x,e.z,(c,x,z)=>Math.hypot(c.x-x,c.z-z))>=32),E.map(e=>Math.round(nearest(camps,e.x,e.z,(c,x,z)=>Math.hypot(c.x-x,c.z-z)))+' m').join(', ')); }
-  ok('the signpost stands on a road (3.5 m off its centre line, toward the door) and a dry route of at most 1.4 times the straight distance leads from it to the apron',E.every(e=>{
-    const sg=e.sign, rd=X.roadDist(sg.x,sg.z); if(!(rd>2.5&&rd<4.5)||!X.ROADS.some(r=>r.name===sg.road)) return false;
+  ok('the signpost stands on a road (3.5 m off its centre line, toward the door; the Sandglass\'s has no road: it stands on the sand within 40 m of the apron) and a dry route of at most 1.4 times the straight distance leads from it to the apron',E.every(e=>{
+    const sg=e.sign, rd=X.roadDist(sg.x,sg.z); if(e.theme==='sandglass'){ if(sg.road!==null||Math.hypot(sg.x-X.dgApron(e).x,sg.z-X.dgApron(e).z)>40) return false; } else if(!(rd>2.5&&rd<4.5)||!X.ROADS.some(r=>r.name===sg.road)) return false;
     const A=X.dgApron(e), cs=4, x0=Math.min(sg.x,A.x)-100, z0=Math.min(sg.z,A.z)-100, W=Math.ceil((Math.abs(sg.x-A.x)+200)/cs), Hh=Math.ceil((Math.abs(sg.z-A.z)+200)/cs), dry=new Uint8Array(W*Hh);
     for(let j=0;j<Hh;j++) for(let i=0;i<W;i++) dry[j*W+i]=H(x0+i*cs,z0+j*cs)>0.2?1:0;
     const cell=(x,z)=>[Math.round((x-x0)/cs),Math.round((z-z0)/cs)], [si,sj]=cell(sg.x,sg.z), [ai,aj]=cell(A.x,A.z), dist=new Float64Array(W*Hh).fill(1e9), todo=[[0,si,sj]]; dist[sj*W+si]=0;
@@ -225,28 +226,28 @@ ok('a dungeon with guardians gives them posts (G) in its rooms or sites; one wit
 // resolved as circles by server/boss-fx.js), zones, waves, orbs, effects on players, summons, a glide, modes, stuns and casts
 const BS=Object.values(X.DG_BOSSES), KNOWN=new Set(['tele:circle','tele:root','tele:slam','tele:icefall','tele:geyser','tele:gust','tele:spore','tele:puff','tele:pulse','tele:vent','tele:wail','tele:snuff','tele:cleave','tele:breath','tele:line','tele:donut','tele:mark','tele:prison','tele:blast','tele:rockfall',
   'zone:ember','zone:whirl','zone:whiteout','zone:blizzard','wall','orb','pfx:root','pfx:slow','pfx:push','adds','props','move','mode:hidden','mode:shielded','mode:airborne','stun','cast']);
-const PALKEYS={shroom:['cap','spot','stem','gill','feet','spirit'],goblin:['form','skin','eyes','top','topColor','bottom','bottomColor','hat','hatColor','club','horns','weapon','fur','embers','shell'],wisp:['body','core','eye','hair','ghost'],totem:['crystal','band'],keg:['wood','band','fuse']};
-ok('four new bosses, one for each dungeon, each used once: the dungeon names its boss and the boss names its dungeon (no more random draw)',BS.length===4&&TH.every(t=>BS.filter(b=>b.id===t.boss&&b.dungeon===t.id).length===1)&&new Set(TH.map(t=>t.boss)).size===4,TH.map(t=>t.id+' -> '+t.boss).join(', '));
+const PALKEYS={shroom:['cap','spot','stem','gill','feet','spirit'],goblin:['form','skin','eyes','top','topColor','bottom','bottomColor','hat','hatColor','club','horns','weapon','fur','embers','shell'],wisp:['body','core','eye','hair','ghost'],totem:['crystal','band'],keg:['wood','band','fuse'],djinn:['body','skin','gold','turban','eye']};
+ok('five new bosses, one for each dungeon, each used once: the dungeon names its boss and the boss names its dungeon (no more random draw)',BS.length===5&&TH.every(t=>BS.filter(b=>b.id===t.boss&&b.dungeon===t.id).length===1)&&new Set(TH.map(t=>t.boss)).size===5,TH.map(t=>t.id+' -> '+t.boss).join(', '));
 ok('the bosses are new (their ids, and their adds\' and props\', are in no def), are built from a model and element the game has, with pal flags that model reads, a music track that exists, and fit the hall',BS.every(b=>{
   const ids=[b.id,b.add.id,...(b.prop?[b.prop.id]:[])], used=new Set(X.ALL_MON_DEFS.map(d=>d.id));
   const palOk=(model,pal)=>Object.keys(pal).every(k=>(PALKEYS[model]||[]).includes(k));
   return ids.every(i=>!used.has(i))&&new Set(ids).size===ids.length&&X.FAM[b.model]&&X.ELEMS[b.el]&&b.el!=='basic'&&palOk(b.model,b.pal)&&palOk(b.add.model||b.model,b.add.pal)&&(!b.prop||palOk(b.prop.model||b.model,b.prop.pal))&&
-    MUSIC.includes(b.music)&&b.lv===X.DG_LV&&X.FAM[b.model].rad*b.scale>=1&&X.FAM[b.model].rad*b.scale<=X.DG_BOSS_R/5&&b.speed>0&&b.atk>0&&typeof b.bar.stun==='string'; }),BS.map(b=>b.id+': radius '+(((X.FAM[b.model]||{rad:0}).rad)*b.scale).toFixed(2)+' m').join(', '));
+    MUSIC.includes(b.music)&&b.lv===X.DG_THEMES[b.dungeon].lv&&X.FAM[b.model].rad*b.scale>=1&&X.FAM[b.model].rad*b.scale<=X.DG_BOSS_R/5&&b.speed>0&&b.atk>0&&typeof b.bar.stun==='string'; }),BS.map(b=>b.id+': radius '+(((X.FAM[b.model]||{rad:0}).rad)*b.scale).toFixed(2)+' m').join(', '));
 ok('every boss has at least 5 moves in all three phases, each made of primitives the bosses already use or declared as new in its `needs` (and every need is used), exactly one signature move, no move id repeated',BS.every(b=>
   b.moves.length>=5&&[1,2,3].every(ph=>b.moves.some(m=>m.phase===ph))&&b.moves.every(m=>m.does.every(tok=>KNOWN.has(tok)||(tok.startsWith('new:')&&b.needs.includes(tok))))&&
   b.needs.every(n=>b.moves.some(m=>m.does.includes(n)))&&b.moves.filter(m=>m.signature).length===1)&&new Set(BS.flatMap(b=>b.moves.map(m=>m.id))).size===BS.reduce((n,b)=>n+b.moves.length,0));
-ok('the four are different: three model families (Garrick is a troll of the goblin family, Gawataro an elder), four elements, four kits, four signatures',new Set(BS.map(b=>b.model)).size===3&&new Set(BS.map(b=>b.model+':'+(b.pal.form||''))).size===4&&new Set(BS.map(b=>b.el)).size===4&&new Set(BS.map(b=>b.kit)).size===4&&new Set(BS.map(b=>b.moves.find(m=>m.signature).id)).size===4);
+ok('the five are different: four model families (Garrick is a troll of the goblin family, Gawataro an elder, Khet a djinn), five elements, five kits, five signatures',new Set(BS.map(b=>b.model)).size===4&&new Set(BS.map(b=>b.model+':'+(b.pal.form||''))).size===5&&new Set(BS.map(b=>b.el)).size===5&&new Set(BS.map(b=>b.kit)).size===5&&new Set(BS.map(b=>b.moves.find(m=>m.signature).id)).size===5);
 // the bosses' data against their code: the rows makeBossS takes, the kits (server/dungeons/boss-kits.js), what implements each new primitive, and what the client draws
 { const fs=require('fs'), path=require('path'), {SRC,manifest,loadServer}=require('./load'), SV=loadServer({dev:true},['BOSS_KITS','DG_BOSS_NEEDS']).x;
   const game=manifest().game.filter(f=>f!=='@shared').map(f=>fs.readFileSync(path.join(SRC,'game',f),'utf8')).join('\n'), cb=fs.readFileSync(path.join(SRC,'game/combat/boss.js'),'utf8'), cz=fs.readFileSync(path.join(SRC,'game/combat/boss-fx.js'),'utf8');
   const tele=new Set((cb.match(/const TELE_COL=\{([\s\S]*?)\};/)[1].match(/\w+(?=:0x)/g)||[])), zone=new Set((cz.match(/const ZONE_COL=\{([\s\S]*?)\};/)[1].match(/\w+(?=:0x)/g)||[]));
   ok('DG_BOSSES and DG_BOSS_DEFS agree (each design is a row for makeBossS: the def, its kit, add, prop, name, bar and music) and every kit is registered with start, tick and phase',
-    Object.keys(X.DG_BOSS_DEFS).length===4&&BS.every(b=>{ const r=X.DG_BOSS_DEFS[b.id], K=SV.BOSS_KITS[b.kit];
+    Object.keys(X.DG_BOSS_DEFS).length===5&&BS.every(b=>{ const r=X.DG_BOSS_DEFS[b.id], K=SV.BOSS_KITS[b.kit];
       return r&&r.def.id===b.id&&r.def.boss&&r.def.level===b.lv&&r.kit===b.kit&&r.add.id===b.add.id&&(b.prop?r.prop&&r.prop.id===b.prop.id:!r.prop)&&r.short===b.short&&r.bar===b.bar&&r.def.music===b.music&&r.dungeon===b.dungeon&&K&&['start','tick','phase'].every(f=>typeof K[f]==='function'); }));
   ok('every new primitive a boss needs is implemented (DG_BOSS_NEEDS: a server function, or a client function the page defines) and no implemented need is unused',BS.every(b=>b.needs.every(n=>{ const v=SV.DG_BOSS_NEEDS[n];
       return typeof v==='function'||(typeof v==='string'&&/^client:\w+$/.test(v)&&new RegExp('function '+v.slice(7)+'\\(').test(game)); }))&&Object.keys(SV.DG_BOSS_NEEDS).every(n=>BS.some(b=>b.needs.includes(n))),Object.keys(SV.DG_BOSS_NEEDS).join(' '));
-  ok('every telegraph and zone the dungeon bosses use has a look on the client (TELE_COL in game/combat/boss.js, ZONE_COL in game/combat/boss-fx.js), and their own circle kinds are no world boss\'s',
-    BS.every(b=>b.moves.every(m=>m.does.every(t=>t.startsWith('tele:')?tele.has(t.slice(5)):t.startsWith('zone:')?zone.has(t.slice(5)):true)))&&zone.has('spore')&&['spore','puff','pulse','vent','wail','snuff'].every(k=>tele.has(k)),[...tele].join(' ')); }
+  ok('every telegraph and zone the dungeon bosses use has a look on the client (TELE_COL in game/combat/boss.js, ZONE_COL in game/combat/boss-fx.js), and their own circle kinds are no world boss\'s (the donut is drawn by its own branch in boss.js, not through TELE_COL)',
+    BS.every(b=>b.moves.every(m=>m.does.every(t=>t.startsWith('tele:')?tele.has(t.slice(5))||t==='tele:donut':t.startsWith('zone:')?zone.has(t.slice(5)):true)))&&zone.has('spore')&&['spore','puff','pulse','vent','wail','snuff'].every(k=>tele.has(k)),[...tele].join(' ')); }
 // the hourly offer: two different mission types, changing at the top of every hour, the same for everyone
 { const H=X.DG_OFFER_HOUR, T0=Date.UTC(2026,9,3,0,0,0), P=MIS.length*(MIS.length-1)/2, off=(id,h)=>X.dgOffer(id,T0+h*H), key=a=>a.join('+');
   ok('a dungeon offers two different mission types of the seven, the same all hour long, and the same for everyone who asks',TH.every(t=>[0,1,2,3,50,999].every(h=>{ const a=off(t.id,h), b=X.dgOffer(t.id,T0+h*H+H-1); return a.length===2&&a[0]!==a[1]&&a.every(m=>MIS.includes(m))&&key(a)===key(b)&&key(a)===key(X.dgOffer(t.id,T0+h*H)); })));
@@ -285,9 +286,10 @@ const R=loadShared(['DG_THEMES','DG_REWARDS','DG_REWARD_W','DG_GEAR_LV','DG_TIER
 const mulberry=a=>()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
 const within=(obs,n,p)=>Math.abs(obs-n*p)<=4*Math.sqrt(n*p*(1-p))+1;   // 4 sigma
 const ODDS=[0.7,0.25,0.04,0.008,0.002];   // the owner's table, written out here so a change to the code's own table cannot hide
-const RT=Object.values(R.DG_THEMES).filter(t=>!t.dev&&!t.trial), RKINDS={home:'weapon',vale:'armor',hoar:'ring',grey:'pendant'};
-ok('each of the four dungeons pays one kind of reward: Wildwood weapons, the Vale armour, the Reach rings, the Greyspine pendants (a reward for every theme and no other)',
-  RT.length===4&&RT.every(t=>R.DG_REWARDS[t.id]&&R.DG_REWARDS[t.id].kind===RKINDS[t.land])&&Object.keys(R.DG_REWARDS).length===4);
+const RT=Object.values(R.DG_THEMES).filter(t=>!t.dev&&!t.trial), RKINDS={home:'weapon',vale:'armor',hoar:'ring',grey:'pendant',sun:'weapon'};
+// version 3: DG_REWARDS also holds a row for 'gloamvault' (the Gloamhorn's level-40 armour dungeon), which a later agent adds as a theme: until then that one row may exist without a theme, and no other may
+ok('each of the five dungeons pays one kind of reward: Wildwood weapons, the Vale armour, the Reach rings, the Greyspine pendants, the Sunscar level-40 weapons (a reward for every theme and no other, bar the Gloamhorn\'s waiting row)',
+  RT.length===5&&RT.every(t=>R.DG_REWARDS[t.id]&&R.DG_REWARDS[t.id].kind===RKINDS[t.land])&&Object.keys(R.DG_REWARDS).filter(id=>!RT.some(t=>t.id===id)&&!(id==='gloamvault'&&!R.DG_THEMES.gloamvault)).length===0&&R.DG_REWARDS.sandglass.t===8);
 { const P=id=>R.DG_REWARDS[id].pool;
   ok('the pools are "all kinds": the weapons of all three classes, the four armour pieces, 7 rings (no element and the six elements) and the 5 pendants',
     P('hollowroots').join()===R.WEAPON_SLOTS.join()&&new Set(P('hollowroots').map(s=>R.CLASS_OF[s])).size===3&&P('jadesprings').join()===R.ARMOR_SLOTS.join()&&
@@ -299,10 +301,10 @@ ok('each of the four dungeons pays one kind of reward: Wildwood weapons, the Val
 { const rnd=mulberry(11), N=60000, bad=[];
   for(const t of RT){ const K=R.DG_REWARDS[t.id], seen={}, rar=[0,0,0,0,0];
     for(let i=0;i<N;i++){ const id=R.dgClearReward(t.id,rnd), it=R.dgItem(id);
-      if(!it||it.kind!==K.kind||it.n!==0||it.lv!==30){ bad.push(t.id+' '+id); break; } const key=it.el||it.stat||it.slot; seen[key]=(seen[key]||0)+1; rar[it.rar]++; }
+      if(!it||it.kind!==K.kind||it.n!==0||it.lv!==(K.t===8?40:30)){ bad.push(t.id+' '+id); break; } const key=it.el||it.stat||it.slot; seen[key]=(seen[key]||0)+1; rar[it.rar]++; }
     if(!K.pool.every(s=>within(seen[s]||0,N,1/K.pool.length))) bad.push(t.id+' pool not uniform '+JSON.stringify(seen));
     if(!rar.every((c,r)=>within(c,N,ODDS[r]))) bad.push(t.id+' rarity '+rar); }
-  ok('a clear pays one fresh (+0) level-30 item of the dungeon\'s kind: every piece of the pool comes up equally often, at the table\'s rarities',!bad.length&&R.dgClearReward('bare')===null&&R.dgClearReward('nope')===null,bad.join('; ')); }
+  ok('a clear pays one fresh (+0) level-30 item (level 40 for the Sandglass) of the dungeon\'s kind: every piece of the pool comes up equally often, at the table\'s rarities',!bad.length&&R.dgClearReward('bare')===null&&R.dgClearReward('nope')===null,bad.join('; ')); }
 { const bad=[], all=R.dgAllIds(), ids=new Set(all);
   ok('the ids are a list of strings a save can keep: 19 kinds (7 pieces, 7 rings, 5 pendants) x 35 (rarity, enhancement) = 665, unique, each parses and rebuilds itself',all.length===665&&ids.size===665&&all.every(id=>{ const q=R.dgParse(id), it=R.dgItem(id);
     return q&&it&&it.id===id&&(q.el?R.dgRingId(q.el,q.rar,q.n):q.stat?R.dgPendantId(q.stat,q.rar,q.n):R.dgGearId(q.slot,q.rar,q.n))===id; }));
