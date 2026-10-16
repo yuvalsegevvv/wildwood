@@ -8,7 +8,7 @@ const NAMES=['buildCharacter','charDetail','LOOK_M','LOOK_F','fullLook','lookSca
 module.exports=function loadCharacter(){
   const read=f=>strip(fs.readFileSync(path.join(SRC,f),'utf8'));
   const pm=read('game/world/plant-models.js');
-  const helpers='const _c=new THREE.Color();const vbox=(w,h,d,x,y,z)=>new THREE.BoxGeometry(w,h,d).translate(x||0,y||0,z||0);\n'+pm.slice(pm.indexOf('function paint'),pm.indexOf('\n',pm.indexOf('const cyl'))+1);
+  const helpers='const _c=new THREE.Color();'+pm.slice(pm.indexOf('function paint'),pm.indexOf('\n',pm.indexOf('const cyl'))+1);
   const shared=['shared/math.js','shared/noise.js','shared/character.js'].map(read).join('');
   const pre=['model-parts.js','model-face.js','model-hair.js','model-body.js','outfit-tools.js'].map(f=>read('game/character/'+f)).join('');
   const outfits=fs.readdirSync(path.join(SRC,'game/outfits')).filter(f=>f.endsWith('.js')).sort().map(f=>{ const src=read('game/outfits/'+f);

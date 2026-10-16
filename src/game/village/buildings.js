@@ -8,7 +8,6 @@ const fireLight=new THREE.PointLight(0xff9a4a,0,18,2); scene.add(fireLight);
 const flames=[]; let smoke=null;
 const _vq=new THREE.Quaternion(), _vy=new THREE.Vector3(0,1,0), _vp=new THREE.Vector3(), _v1=new THREE.Vector3(1,1,1);
 function frameM(x,y,z,rot){ _vq.setFromAxisAngle(_vy,rot); _vp.set(x,y,z); return new THREE.Matrix4().compose(_vp,_vq,_v1); }
-const vbox=(w,h,d,x,y,z)=>new THREE.BoxGeometry(w,h,d).translate(x||0,y||0,z||0);
 const woodC=base=>(x,y,z,c)=>{ c.set(base).multiplyScalar(0.84+h3(x,y,z)*0.3); };
 function stoneC(x,y,z,c){ c.set(0x807a70).multiplyScalar(0.72+h3(Math.floor(x*3),Math.floor(y*3),Math.floor(z*3))*0.4); }
 // a mesh from a flat list of triangle corners [x,y,z, x,y,z, ...] with smooth normals
