@@ -6,6 +6,8 @@ function renderForge(){
   if($('#forge').hidden) return;
   $('#forgeCoins').textContent=GEAR.coins+' coins';
   document.querySelectorAll('[data-fgtab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.fgtab===forgeTab));   // dungeons: the tabs
+  if(forgeTab==='roll'){ $('#forgeBody').innerHTML=rlUiRollHtml(); rlUiBind($('#forgeBody')); return; }   // rolls: the Roll tab (economy/rolls.js)
+  if(forgeTab==='sac'){ $('#forgeBody').innerHTML=rlUiSacHtml(); rlUiBind($('#forgeBody')); return; }   // rolls: the Sacrifice tab
   if(forgeTab==='temper'){ $('#forgeBody').innerHTML=dgTemperHtml(); dgTemperBind($('#forgeBody')); return; }   // dungeons: the Temper tab (dungeon-gear.js)
   const counts=bagCounts(), worn={}; for(const s in GEAR.eq){ const id=GEAR.eq[s]; if(id) worn[id]=(worn[id]||0)+1; }
   const ids=Object.keys(counts).filter(id=>ITEM[id].rar<4&&counts[id]>=2&&!ITEM[id].n)   // dungeons: a tempered (+n) piece does not merge

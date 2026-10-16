@@ -251,6 +251,7 @@
     "combat/boss-dungeon.js",
     "net/remote.js",
     "economy/dungeon-gear.js",
+    "economy/rolls.js",
     "dungeon/board.js",
     "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "pvp/state.js", "dungeon/hud.js", "dungeon/minimap.js",
     "ui/account.js",

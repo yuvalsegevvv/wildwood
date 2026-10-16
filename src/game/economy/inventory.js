@@ -11,7 +11,7 @@ function bagCounts(){ // items in the bag that are not being worn (one copy of e
 }
 function tile(it,from,count){
   const locked=PL.level<it.lv, sel=INV.sel&&INV.sel.id===it.id&&INV.sel.from===from;
-  return `<button class="tile r${it.rar}${it.dg?' dg':''}${locked?' locked':''}${sel?' sel':''}${from==='bag'&&count>=MERGE_COUNT&&it.rar<4?' mergeable':''}" data-id="${it.id}" data-from="${from}" aria-label="${it.name}${locked?', needs level '+it.lv:''}">${itemIcon(it)}<span class="lv">${it.lv}</span>${it.n?`<span class="enh">+${it.n}</span>`:''}${count>1?`<span class="ct">x${count}</span>`:''}${from==='bag'&&count>=MERGE_COUNT&&it.rar<4?'<span class="mg" title="Enough to merge at the forge"></span>':''}</button>`;   // dungeons: level-30 tiles get a class and a +n badge
+  return `<button class="tile r${it.rar}${it.dg?' dg':''}${locked?' locked':''}${sel?' sel':''}${from==='bag'&&count>=MERGE_COUNT&&it.rar<4?' mergeable':''}" data-id="${it.id}" data-from="${from}" aria-label="${it.name}${locked?', needs level '+it.lv:''}">${itemIcon(it)}<span class="lv">${it.lv}</span>${it.roll?'<span class="rlm" title="Rolled"></span>':''}${it.n?`<span class="enh">+${it.n}</span>`:''}${count>1?`<span class="ct">x${count}</span>`:''}${from==='bag'&&count>=MERGE_COUNT&&it.rar<4?'<span class="mg" title="Enough to merge at the forge"></span>':''}</button>`;   // dungeons: level-30 tiles get a class and a +n badge
 }
 const SIL='<svg class="doll-sil" viewBox="0 0 120 240" aria-hidden="true"><circle cx="60" cy="30" r="20"/><path d="M60 54c-20 0-34 8-37 26l-8 58c-1 6 7 8 9 2l10-50v62l-4 76c0 7 10 7 11 0l12-66h14l12 66c1 7 11 7 11 0l-4-76v-62l10 50c2 6 10 4 9-2l-8-58c-3-18-17-26-37-26z"/></svg>';
 function renderInv(){
@@ -30,7 +30,7 @@ function renderInv(){
   h+=`<div class="inv-info" id="invInfo"></div>`;
   // monster drops: only used to upgrade skills (Skills panel)
   const mats=GEAR.mats||{}, have=MAT_IDS.filter(id=>mats[id]>0);
-  h+=`<div class="inv-h">Monster drops <span>${have.length?'for upgrading skills':''}</span></div><div class="mat-row">${have.length?have.map(id=>`<span class="mat" title="Dropped by ${MATS[id].from} (level ${MATS[id].lv})"><i style="background:${MATS[id].col}"></i>${MATS[id].name} <b>${mats[id]}</b></span>`).join(''):'<p class="muted">Monsters sometimes drop materials. You use them to upgrade your skills at a trainer.</p>'}${dgStoneChipHtml()}</div>`;   // dungeons: the stone count beside the drops
+  h+=`<div class="inv-h">Monster drops <span>${have.length?'for upgrading skills':''}</span></div><div class="mat-row">${have.length?have.map(id=>`<span class="mat" title="Dropped by ${MATS[id].from} (level ${MATS[id].lv})"><i style="background:${MATS[id].col}"></i>${MATS[id].name} <b>${mats[id]}</b></span>`).join(''):'<p class="muted">Monsters sometimes drop materials. You use them to upgrade your skills at a trainer.</p>'}${dgStoneChipHtml()}${rlUiStoneChipHtml()}</div>`;   // dungeons: the stone count beside the drops; rolls: the reroll stones
   { const res=GEAR.res||{}, haveR=Object.keys(RES).filter(id=>res[id]>0);   // gathered resources (professions)
     if(haveR.length||(GEAR.prof&&Object.keys(GEAR.prof).length)) h+=`<div class="inv-h">Resources <span>${haveR.length?'gathered with your professions':''}</span></div><div class="mat-row">${haveR.length?haveR.map(id=>`<span class="mat"><i style="background:${RES[id].col}"></i>${RES[id].name} <b>${res[id]}</b></span>`).join(''):'<p class="muted">Nothing gathered yet.</p>'}</div>`; }
   $('#invBody').innerHTML=h;

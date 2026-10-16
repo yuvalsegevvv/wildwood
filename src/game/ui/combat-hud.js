@@ -38,7 +38,7 @@ function updateCombatUI(dt){
     tBar.style.width=(T.hp/T.maxHp*100)+'%'; tHp.textContent=Math.ceil(T.hp*K.hp)+' / '+Math.round(T.maxHp*K.hp); }
   else tframe.hidden=true;
   const L=pvSkills(), PV=pvLevel(), c=clsOf(), ba=abilityOf(c,'basic',L,PV), sk=abilityOf(c,'skill',L,PV), bu=abilityOf(c,'burst',L,PV);   // pvp: the fixed loadout on the island
-  abBasic.style.setProperty('--p',ba?CB.cd.basic/(abilityCd(ba,L,PV,c)*(CB.buff?CB.buff.cd:1)):0); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PV,c):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PV,c):0);   // (skillsets: the bonuses of the class in hand)
+  abBasic.style.setProperty('--p',ba?CB.cd.basic/(abilityCd(ba,L,PV,c,rlUiCdr())*(CB.buff?CB.buff.cd:1)):0); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PV,c,rlUiCdr()):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PV,c,rlUiCdr()):0);   // (skillsets: the bonuses of the class in hand)
   abSkill.classList.toggle('ready',!!sk&&CB.cd.skill<=0); abBurst.classList.toggle('ready',!!bu&&CB.cd.burst<=0);
   abBasic.classList.toggle('buffed',!!CB.buff);
   const key=c+'|'+(ba?ba.id:'')+'|'+(sk?sk.id:'')+'|'+(bu?bu.id:'')+'|'+Math.min(PV,BURST_SLOT_LV); if(key!==abKey){ abKey=key; setActionBar(); }

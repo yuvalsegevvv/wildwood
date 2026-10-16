@@ -30,7 +30,7 @@ function doAttack(kind){
   if(!tgtOK&&!PVC.on){ const t2=pickTarget(Math.max(ab.range+2,8)); if(t2) CB.target=t2; }
   const [k,dur,hitAt]=ab.act;
   CB.act={kind:ANIM_OF[k]||k,sk:k,t:0,dur,hitAt,done:false,skill:kind==='skill'};
-  CB.cd[kind]=abilityCd(ab,pvSkills(),pvLevel(),c)*(kind==='basic'&&CB.buff?CB.buff.cd:1)*(1-ssHasteK());   // skillsets: the class the bonuses are read for
+  CB.cd[kind]=abilityCd(ab,pvSkills(),pvLevel(),c,rlUiCdr())*(kind==='basic'&&CB.buff?CB.buff.cd:1)*(1-ssHasteK());   // skillsets: the class the bonuses are read for
   const T=PVC.on?pvTarget(ab.range):CB.target;   // pvp: another fighter
   if(T && !T.dead && Math.hypot(T.x-P.x,T.z-P.z)<ab.range+6) P.face=Math.atan2(-(T.x-P.x),-(T.z-P.z));
   else P.face=P.yaw;
@@ -88,7 +88,8 @@ function onMonDmg(id,v,crit,by,fx){
   const m=MON_BY_ID.get(id); if(!m) return;
   m.flash=1; m.hp=Math.max(0,m.hp-v);
   // your own hits show whether the element helped (an arrow up) or hurt (down): your soul and the monster's element
-  const mine=by===NET.pid&&fx, c=monCenter(m); popText(c.x,c.y+m.T.height*0.5*m.s,c.z,String(v)+(mine?(fx>0?'▲':'▼'):''),(crit?'crit':(by===NET.pid?'':'other'))+(mine?(fx>0?' up':' down'):''));
+  const res=fx===2, mine=by===NET.pid&&fx&&!res, c=monCenter(m);   // rolls: fx 2 = the hit was resisted (half damage, no debuff)
+  popText(c.x,c.y+m.T.height*0.5*m.s,c.z,(res?'Resisted ':'')+String(v)+(mine?(fx>0?'▲':'▼'):''),(res?'resisted':crit?'crit':(by===NET.pid?'':'other'))+(mine?(fx>0?' up':' down'):''));
   if(by===NET.pid){ cSfx.hit(m,crit); if(!CB.target||CB.target.dead) CB.target=m; }
   else if(Math.random()<0.5) cSfx.hit(m,crit);
   if(Math.random()<0.4) monSound(m,'hurt');

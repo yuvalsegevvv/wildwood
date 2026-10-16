@@ -54,7 +54,7 @@ function itemIcon(it){
   else if(it.kind==='tool') g=toolIconArt(it);
   else if(it.kind==='ring') g=ringIconArt(it);   // dungeons: the ring
   else if(it.kind==='pendant') g=pendantIconArt(it);
-  if(it.dg&&it.kind!=='ring'&&it.kind!=='pendant') g+=DG_SPARK;   // dungeons: a jade sparkle marks level-30 gear (a ring and a pendant draw theirs when tempered)
+  if(it.dg&&it.kind!=='ring'&&it.kind!=='pendant') g+=it.roll0?RL_SPARK:DG_SPARK;   // rolls: level-40 gear sparkles gold   // dungeons: a jade sparkle marks level-30 gear (a ring and a pendant draw theirs when tempered)
   return `<svg class="ico" viewBox="0 0 32 32" aria-hidden="true">${g}</svg>`;
 }
 // the three tools: a wooden haft and a head in the colour of the tier's ore (ORE_GRADES)
@@ -65,6 +65,7 @@ function toolIconArt(it){
   return `<g transform="rotate(20 16 16)"><rect x="14.7" y="17" width="2.6" height="12" rx="1.1" fill="${h}" ${OUT}/><path d="M16 17.6Q3.5 15 7 4.5Q9 10.5 22 10.5Q17 12 16 17.6Z" fill="${c}" ${OUT}/><path d="M9 7Q11 10.5 18 11" fill="none" stroke="${icoShade(c,1.35)}" stroke-width=".9"/></g>`;
 }
 // the dungeon ring: a gold band and a gem in the colour of its element (ELEMS; the plain ring's gem is pale), a jade sparkle on the band when it is enhanced
+const RL_SPARK='<path d="M26.5 2.5l1.1 2.7 2.7 1.1-2.7 1.1-1.1 2.7-1.1-2.7-2.7-1.1 2.7-1.1z" fill="#ffd24a" stroke="#15120e" stroke-width=".6"/>';   // rolls: the level-40 sparkle
 const DG_SPARK='<path d="M26.5 2.5l1.1 2.7 2.7 1.1-2.7 1.1-1.1 2.7-1.1-2.7-2.7-1.1 2.7-1.1z" fill="#9ff0c8" stroke="#15120e" stroke-width=".6"/>';
 function ringIconArt(it){
   const c=ELEMS[it.el].col, band=['#cdbd8a','#c9d3e8','#d9c3f5','#f5dc70','#a8ee9c'][it.rar];

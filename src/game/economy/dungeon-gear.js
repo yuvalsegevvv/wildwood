@@ -20,6 +20,10 @@ function dgStatChange(it,next){
 // the extra lines in the item details panel (inventory.js renderInvInfo): '' for anything but a level-30 dungeon piece
 function dgInfoHtml(it){
   if(!it.dg) return '';
+  const rl=rlUiInfoHtml(it); if(rl) return rl+'<br>'+dgInfoTail(it);   // rolls: a level-40 piece's lines
+  return dgInfoTail(it);
+}
+function dgInfoTail(it){
   const E=dgEnhInfo(it.id), have=dgStones(); let h='';
   if(it.kind==='ring'){
     const sh=dgRingShare(it,soulNow()), sn=ELEMS[sh.soul].name;
