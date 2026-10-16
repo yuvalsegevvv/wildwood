@@ -22,7 +22,7 @@ testing tools can put you there: `tPass` with `data-v="-60,381,90"`.
 | One set of gear | `pvpGearOf` | the common set of the tier of that level (`tierFor(PVP.level)`: the level-10 set at level 13), whatever you wear: no rarity, ring, pendant or potions (`potion` is refused) |
 | No symbol bonus | `pvpRecalcP` | the zone tiers' symbol is not read |
 | Health | `PVP.hpK` | x2, so a fight lasts a while (plain `20 f(level) + armour`, with the passive's share; about 1,230 health and 73 damage at level 13) |
-| Skills | `pvpSkillsOf` | your own equipped attacks of the class in hand at **level 1**, boss skills included; a slot you have not opened or left empty gets the class's free skill; skill-set pieces and set bonuses are left out |
+| Skills | `pvpSkillsOf` | your own equipped attacks of the class in hand at **level 1**, boss skills included; all three slots are open whatever your level (the real level only decides what you own); an empty slot gets the class's free skill; skill-set pieces and set bonuses are left out |
 | Passives | `pvpSkillsOf` | below `PASSIVE_LV` you get the default (Vitality); from it up what you wear in your first slot (Vitality instead of a skill-set passive); all at level 1, one slot |
 | Elements | `elemHitS` (`server/combat.js`), `PVP.elemBoost` | **your soul is your element when you are hit.** Advantage x1.15, disadvantage /1.15 (the wheel against the other's soul, and your own soul's match / opposite with your skill); against monsters it stays 1.5 |
 | Who can hit whom | `foesS(p)` | everybody on the island hits everybody on the island, except their own **party** (`server/party.js`, `/invite name`); nothing crosses the water's edge in either direction |

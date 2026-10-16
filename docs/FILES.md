@@ -259,6 +259,7 @@ game
   ui/potions.js                      Potions on the client: the potion belt above the action bar (healing, might and guard, with counts, keys, cooldowns and the running buff), drinking with the keys, and the potion icons
   ui/travel.js                       The travel window: stepping on a teleport circle and pressing the talk key lists every village (CIRCLES in shared/hoarfrost.js); the ones you have not walked to yet are locked
   ui/guide.js                        The Guide: a short in-game wiki (controls, combat, skills, upgrades, dungeons, the Proving Isle) opened by the book button or its key; text only, keys read from the current binds
+  ui/versions.js                     The Versions panel (button left of the map): version 1 = everything in the released game, version 2 = what is new
   economy/tiers.js                   Zone tiers, client side: a monster's level and health as you fight it, the symbol beside your health, the tier picker on the map panel
   ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, the Greyspine, reset
   economy/init.js                    Inventory key and first-time gear setup

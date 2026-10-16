@@ -11,7 +11,7 @@ function qCard(q,btn,extra){
   const r=q.reward||questRewardFor(q), it=rewardItemText(r.item);
   const lv=q.level>PL.level?'req bad':q.level<PL.level-2?'req low':'req';
   return `<div class="qc k-${q.kind}"><div class="qc-top"><span class="qk">${KIND_LABEL[q.kind]||''}</span><b>${q.title}</b><span class="${lv}">Level ${q.level}</span></div><p>${q.text}</p>
-    <div class="qc-bot"><span>${extra||''}</span><span class="rw">${r.xp} XP &nbsp; ${r.coins} coins${it?` &nbsp; <b class="qi">+ ${it}</b>`:''}</span>${btn||''}</div></div>`;
+    <div class="qc-bot"><span>${extra||''}</span><span class="rw">${numC(r.xp)} XP &nbsp; ${r.coins} coins${it?` &nbsp; <b class="qi">+ ${it}</b>`:''}</span>${btn||''}</div></div>`;
 }
 function renderQuests(){
   const n=panelNPC; if(!n||$('#quests').hidden) return;

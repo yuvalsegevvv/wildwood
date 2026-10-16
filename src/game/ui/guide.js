@@ -74,6 +74,7 @@ function guidePages(){
         <li><b>The Hollowed Elder</b> (the home forest), <b>the Falls Door</b> (Sakura Vale), <b>the Barrow Door</b> (Hoarfrost Reach) and <b>the Old Adit</b> (the Greyspine). Real dungeons need level ${DG_ENTRY_LV}, at every difficulty (the difficulty tiers make monsters harder, not the way in). Each opens once you have reached that land's village; the home forest's also needs difficulty +1, unlocked by beating Carapax.</li>
       </ul>
       <p>Dungeons drop level-30 rings, pendants and other gear, and Tempering Stones to improve it. If you fall in a run a party member can revive you; you can leave through the portal and keep what you already found.</p>`},
+    reactions:{t:'Reactions',h:guideReactions()},
     pvp:{t:'PvP island',h:`
       <p>The <b>Proving Isle</b> is a round island in a lake on the home forest's south beach, with the open sea behind it. Follow the Shore Road all the way south and take the side road, <b>The Proving Road</b>, east; its plank bridge leads to a gate with red banners.</p>
       <ul>
@@ -86,6 +87,18 @@ function guidePages(){
       <p>The map shows it as <i>${PVP_ISLE.name}</i>. If you cannot find it, press ${kl(k('map'))} on the home forest's map and look at the south beach.</p>`}
   };
 }
+// the elemental reactions page, written from the chart itself (shared/reactions-chart.js) so it cannot drift
+const GUIDE_FLAVOR={fire:'burns',water:'slows',earth:'briefly stuns',air:'spreads the aura to enemies within '+RX_SPREAD_R+' m',dark:'weakens (it deals less)',light:'exposes (it takes more damage)'};
+function guideReactions(){
+  const el=e=>e[0].toUpperCase()+e.slice(1), rows=Object.keys(RX_CHART).sort().map(k=>{ const r=RX_CHART[k];
+    return `<tr><td><b>${r.name}</b></td><td>${el(r.a)} + ${el(r.b)}</td><td>${GUIDE_FLAVOR[r.a]} and ${GUIDE_FLAVOR[r.b]}${r.burst?', plus a burst of '+Math.round(r.burst*100)+'% of the hit':''}${r.k>RX_REACT_K?' (at full strength)':''}</td></tr>`; }).join('');
+  return `<p>A hit from an element skill leaves an <b>aura</b> on the monster for ${RX_AURA_DUR} seconds. Hit that monster with a <i>different</i> element while the aura is live and the two <b>react</b>: the aura is used up and both elements' effects land on the monster. The same element only refreshes the aura, and basic attacks do not count.</p>
+    <h4>What each element does</h4>
+    <dl><dt>Fire</dt><dd>burns the monster over time</dd><dt>Water</dt><dd>slows it</dd><dt>Earth</dt><dd>stuns it for a moment (never bosses)</dd><dt>Air</dt><dd>spreads the aura to nearby enemies</dd><dt>Dark</dt><dd>weakens it, so it hits less hard</dd><dt>Light</dt><dd>makes it take more damage</dd></dl>
+    <h4>The fifteen reactions</h4>
+    <table class="gu-tab"><tbody>${rows}</tbody></table>
+    <p>The same pair cannot react again on one monster for ${RX_ICD} seconds. Weaken and expose never add up: the strongest one counts, for everyone in the party.</p>`;
+}
 function guideSave(){ try{ localStorage.setItem(GUIDE_TAB_KEY,guideTab); }catch(_){} }
 function renderGuide(){
   const pages=guidePages(), keys=Object.keys(pages);
@@ -95,7 +108,14 @@ function renderGuide(){
   $('#guBody').scrollTop=0;
   $('#guTabs').querySelectorAll('[data-gt]').forEach(b=>b.onclick=()=>{ guideTab=b.dataset.gt; guideSave(); UI_SFX.click(); renderGuide(); });
 }
-function openGuide(){ try{ const s=localStorage.getItem(GUIDE_TAB_KEY); if(s) guideTab=s; }catch(_){} openPanel('guide'); renderGuide(); }
+function openGuide(){ try{ const s=localStorage.getItem(GUIDE_TAB_KEY); if(s) guideTab=s; }catch(_){} openPanel('guide'); renderGuide(); guideMarkSeen(); }
 function toggleGuide(){ if(!$('#guide').hidden) closePanels(); else openGuide(); }
 $('#bGuide').addEventListener('click',e=>{ toggleGuide(); e.currentTarget.blur(); });
 addEventListener('keydown',e=>{ if(kbIs(e.code,'guide') && started && !customizing && !e.repeat) toggleGuide(); });
+
+// the Guide button pulses until the player first opens it (remembered per browser)
+const GUIDE_SEEN_KEY='wildwood-guide-seen';
+function guideSeen(){ try{ return localStorage.getItem(GUIDE_SEEN_KEY)==='1'; }catch(_){ return true; } }
+function guideBlink(on){ $('#bGuide').classList.toggle('blink',on); }
+function guideMarkSeen(){ guideBlink(false); try{ localStorage.setItem(GUIDE_SEEN_KEY,'1'); }catch(_){} }
+if(!guideSeen()) guideBlink(true);

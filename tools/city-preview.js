@@ -13,7 +13,7 @@ const VIEWS={   // eye, target (the city's frame: +x east, +z south, y up from t
   lake:[[-12,7,26],[-52,0,10]], well:[[-8,7,20],[-26,2,6]], hall:[[22,11,-22],[4,6,-49]], inn:[[24,12,-34],[37,3,-52]], archive:[[4,8,10],[17,3,-4]], physician:[[24,9,-16],[42,2,-34]], reserved:[[20,13,62],[44,3,48]], homes:[[-20,24,64],[10,3,56]]};
 const read=(d,f)=>strip(fs.readFileSync(path.join(SRC,d,f),'utf8'));
 const pm=read('game/world','plant-models.js'), helpers=pm.slice(pm.indexOf('const _c'),pm.indexOf('\n',pm.indexOf('const cyl'))+1);   // _c, WHITE, paint, mkGeo, merge, bark, cyl
-const bd=read('game/village','buildings.js'), village=bd.slice(bd.indexOf('const villageMat'),bd.indexOf('function addVillageMeshes'))+bd.slice(bd.indexOf('function prism'),bd.indexOf('function buildVillage'));
+const bd=read('game/village','buildings.js'), village='const vbox=(w,h,d,x,y,z)=>new THREE.BoxGeometry(w,h,d).translate(x||0,y||0,z||0);\n'+bd.slice(bd.indexOf('const villageMat'),bd.indexOf('function addVillageMeshes'))+bd.slice(bd.indexOf('function prism'),bd.indexOf('function buildVillage'));
 const pcFn=/^function pc\(.*$/m.exec(read('game/character','model-parts.js'))[0];
 const m=manifest(), sun=m.game.filter(f=>/^village\/(sun-|buildings-sun)/.test(f));
 if(!sun.length){ console.error('no village/sun-*.js in src/manifest.json yet'); process.exit(1); }

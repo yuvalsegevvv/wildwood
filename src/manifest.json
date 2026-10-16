@@ -230,6 +230,7 @@
     "ui/potions.js",
     "ui/travel.js",
     "ui/guide.js",
+    "ui/versions.js",
     "economy/tiers.js",
     "ui/settings-testing.js",
     "economy/init.js",

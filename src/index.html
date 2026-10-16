@@ -27,6 +27,9 @@
   </div>
   <div class="hud-r">
   <div class="btns">
+    <button class="icon-btn" id="bVer" aria-label="Versions" title="Versions: what is in version 1 and what version 2 adds" data-kba="Versions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5-8 4.5-8-4.5z"/><path d="M4 12l8 4.5 8-4.5"/><path d="M4 16.5L12 21l8-4.5"/></svg>
+    </button>
     <button class="icon-btn" id="bMap" aria-label="Map (N)" title="Map (N)" data-kb="map" data-kbt="Map ({k})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>
     </button>
@@ -109,6 +112,11 @@
   <div class="pn-body" id="guBody"></div>
 </div>
 <!-- dungeons: the Delve board (game/dungeon/board.js, styles/25-dungeon-board.css) and the prompt to join a party's run -->
+<div id="versions" class="panel" hidden role="dialog" aria-label="Versions">
+  <div class="pn-head"><span class="pn-t">Versions</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="chips pn-tabs" id="vrTabs"></div>
+  <div class="pn-body" id="vrBody"></div>
+</div>
 <div id="dgBoard" class="panel" hidden role="dialog" aria-label="Delve board">
   <div class="pn-head"><span class="pn-t">Delve board</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="dgBody"></div>
@@ -146,6 +154,9 @@
   <div class="snd-sub">How villagers talk</div>
   <div class="chips"><button class="chip" data-voice="speech">Spoken</button><button class="chip" data-voice="babble">Babble</button><button class="chip" data-voice="off">Silent</button></div>
   <button id="sMute" class="chip snd-mute">Sound on</button>
+  <div class="snd-sub snd-sec">Graphics</div>
+  <div class="chips" id="gfxChips"><button class="chip" data-gfx="light">Light</button><button class="chip" data-gfx="medium">Medium</button><button class="chip" data-gfx="">Standard</button><button class="chip" data-gfx="high">High</button></div>
+  <p class="acct-note" id="gfxNote">Standard is the usual look. Light and Medium use less vegetation and a smaller picture for slow devices; High adds more plants and a sharper picture on a computer. The page reloads to apply it.</p>
   <div id="kbSec">
   <details class="kb-how"><summary>Controls</summary>
     <p class="acct-note">Click a key box, then press the key you want (Backspace clears, Esc cancels). Hold Alt any time to free the mouse and click menus; let go to look around again.</p>

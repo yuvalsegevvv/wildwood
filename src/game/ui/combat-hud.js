@@ -31,7 +31,7 @@ function updateCombatUI(dt){
   const T=CB.target;
   const soul=soulNow(); $('#plLv').textContent='Lv '+(PVC&&PVC.on?PVP.level+' (PvP)':PL.level)+(soul!=='basic'?' · '+ELEMS[soul].name:''); $('#plHpT').textContent=Math.ceil(PL.hp)+' / '+PL.maxHp;
   $('#plHp').style.width=(PL.hp/PL.maxHp*100)+'%'; const need=expToNext(PL.level);
-  $('#plXp').style.width=Math.min(100,PL.exp/need*100)+'%'; $('#plXpT').textContent='XP '+Math.floor(PL.exp)+' / '+Math.ceil(need);
+  $('#plXp').style.width=Math.min(100,PL.exp/need*100)+'%'; $('#plXpT').textContent='XP '+numC(PL.exp)+' / '+numC(need);
   const bossUI=updateBossUI();
   if(T && started && !customizing && !(bossUI&&T===BOSS.m)){ tframe.hidden=false; tName.textContent=T.T.name; const K=monTierK(T), ld=K.lv-PL.level; tLv.textContent='Lv '+K.lv+(ld>0?'  (-'+ld*5+'% dmg)':''); tLv.classList.toggle('bad',ld>0);
     const te=elOf(T.T); tEl.textContent=te==='basic'?'':ELEMS[te].name; tEl.style.color=ELEMS[te].col; if(te==='basic') tEl.title=''; else { const tr=foeTraits(te), nm=l=>l.map(e=>ELEMS[e].name).join(' and '); tEl.title=ELEMS[te].name+': weak to '+nm(tr.weak)+', resists '+nm(tr.resist); }

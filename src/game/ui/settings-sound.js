@@ -17,3 +17,11 @@ $('#bSound').addEventListener('click',e=>{ audioInit(); e.currentTarget.blur(); 
 $('#sClose').addEventListener('click',()=>{ sndEl.hidden=true; UI_SFX.close(); });
 addEventListener('keydown',e=>{ if(kbIs(e.code,'mute') && started) toggleMute(); if(e.code==='Escape') sndEl.hidden=true; });
 renderSound();
+/* graphics quality: stored, then the page reloads because the detail levels are read once at load (core/setup.js) */
+function renderGfx(){ $('#gfxChips').querySelectorAll('[data-gfx]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.gfx===GFX)); }
+$('#gfxChips').querySelectorAll('[data-gfx]').forEach(b=>b.addEventListener('click',()=>{
+  if(b.dataset.gfx===GFX) return;
+  try{ if(b.dataset.gfx) localStorage.setItem('wildwood-gfx',b.dataset.gfx); else localStorage.removeItem('wildwood-gfx'); localStorage.removeItem('wildwood-lite'); }catch(_){}
+  location.reload();
+}));
+renderGfx();

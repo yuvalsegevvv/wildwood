@@ -107,7 +107,7 @@ function applyEvent(e){
     case 'skillbuy': case 'skillup': if(e[1]===me) UI_SFX.success(); break;
     case 'soul': if(e[1]===me){ UI_SFX.success(); spawnRing(2.2,parseInt(ELEMS[e[2]].col.slice(1),16),P.y+0.2); } break;
     case 'drop': onDrop(e[1],e[2],e[3],e[4]); break;
-    case 'xp': if(e[1]===me){ const m=e[3]!=null?MON_BY_ID.get(e[3]):null; if(m){ const c=monCenter(m); popText(c.x,c.y+m.T.height*0.6,c.z,'+'+e[2].toFixed(1)+' XP','xp'); } } break;
+    case 'xp': if(e[1]===me){ const m=e[3]!=null?MON_BY_ID.get(e[3]):null; if(m){ const c=monCenter(m); popText(c.x,c.y+m.T.height*0.6,c.z,'+'+(e[2]>=1000?numC(e[2]):e[2].toFixed(1))+' XP','xp'); } } break;
     case 'coins': if(e[1]===me){ const m=MON_BY_ID.get(e[3]); if(m){ const c=monCenter(m); popText(c.x+0.4,c.y+m.T.height*0.35,c.z,'+'+e[2]+' coins','coin'); } } break;
     case 'loot': onLoot(e[1],e[2],e[3]); break;
     case 'merge': if(e[1]===me){ const it=ITEM[e[2]]; if(it) forgeFx(it); } else { const r=REMOTES.get(e[1]), it=ITEM[e[2]]; if(r&&it&&it.rar>=3) toast(r.name+' forged '+it.name+'!','loot r'+it.rar); } break;

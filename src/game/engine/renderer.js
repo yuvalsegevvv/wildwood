@@ -13,7 +13,7 @@ canvas.addEventListener('webglcontextlost',e=>{
   try{ localStorage.setItem('wildwood-lite','1'); }catch(_){}
   showFatal(LITE ? 'Your phone ran out of graphics memory, even in light mode. Close other apps and reload.' : 'Your phone ran out of graphics memory. Reload and the forest will use a lighter mode.', true);
 });
-const MAXPR = Math.min(window.devicePixelRatio||1, LITE?1:(LOW?1.25:2));
+const MAXPR = Math.min(window.devicePixelRatio||1, LITE?1:(LOW?1.25:(HIGH?3:2)));
 let pr = MAXPR;
 renderer.setPixelRatio(pr);
 renderer.setSize(innerWidth, innerHeight);

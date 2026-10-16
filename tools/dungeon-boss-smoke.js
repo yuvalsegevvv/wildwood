@@ -204,7 +204,7 @@ for(const id of IDS){
 
 // ---- the models: each boss, add and prop builds on the client's model code (an exception in a builder inside a network message drops the rest of the roster) ----
 { const rd=f=>strip(fs.readFileSync(path.join(SRC,f),'utf8')), pm=rd('game/world/plant-models.js'), bl=rd('game/village/buildings.js');
-  const helpers='const vbox=(w,h,d,x,y,z)=>new THREE.BoxGeometry(w,h,d).translate(x||0,y||0,z||0);\n'+pm.slice(pm.indexOf('const _c'),pm.indexOf('\n',pm.indexOf('const cyl'))+1)+bl.slice(bl.indexOf('function stoneC'),bl.indexOf('\n',bl.indexOf('function trisGeo'))+1);
+  const helpers=pm.slice(pm.indexOf('const _c'),pm.indexOf('\n',pm.indexOf('const cyl'))+1)+bl.slice(bl.indexOf('function stoneC'),bl.indexOf('\n',bl.indexOf('function trisGeo'))+1);
   const game=JSON.parse(fs.readFileSync(path.join(SRC,'manifest.json'),'utf8')).game, monFiles=game.filter(f=>/^combat\/monster/.test(f));
   const code=['shared/math.js','shared/noise.js','shared/balance.js','shared/monster-defs.js','shared/character.js'].map(rd).join('')+helpers+
     'const LITE=false,LOW=false;const localStorage={getItem(){return null},setItem(){}};const scene=new THREE.Scene();const matFlat=new THREE.MeshLambertMaterial();let t=0;const GAIT=[0,Math.PI,Math.PI,0];const getH=()=>0,BOSS={list:[]},CB={target:null};\n'+

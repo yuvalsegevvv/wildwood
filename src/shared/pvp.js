@@ -36,6 +36,7 @@ const pvpStatsOf=cls=>gearStatsOf({eq:pvpGearOf(cls)});   // {hp, atk, def}
 /* the loadout everyone fights with: your own equipped attacks of the class in hand (all three slots are open for everybody: a slot you have not opened, or left empty, gets the class's free
    ability) at skill level 1, a boss skill included; a skill-set piece is left out (its bonuses are progress, not fixed numbers). Passives: one slot (what PVP.level opens), all at level 1.
    Underleveled (below PASSIVE_LV, so you have none yet): the default, Vitality. Otherwise what you wear in your first slot (Vitality instead of a skill-set passive; an empty slot stays empty).
+   (abilityOf is asked at PLAYER_MAX_LV: the slot and the skill's own level gate are about progress, and an owned, equipped skill is already earned; asking at the real level made every underleveled slot fall back to the default.)
    Returns a skills object the shared helpers read like a save's (abilityOf with any level, passiveSum with PVP.level); level: the fighter's real level, which decides what they have earned. */
 function pvpSkillsOf(skills,level){
   const out={owned:[],eq:{},lv:{},pass:new Array(PASSIVE_SLOTS).fill(null),pgiven:true,v:2};
@@ -43,7 +44,7 @@ function pvpSkillsOf(skills,level){
   for(const c in CLASSES){
     out.eq[c]={};
     for(const slot of SLOTS){
-      const a=abilityOf(c,slot,skills,level), id=a&&!a.set?a.id:DEFAULT_OF[c][slot];
+      const a=abilityOf(c,slot,skills,PLAYER_MAX_LV), id=a&&!a.set?a.id:DEFAULT_OF[c][slot];
       out.eq[c][slot]=id; add(id);
     }
   }
