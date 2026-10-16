@@ -17,7 +17,7 @@
 | **Ogden** | male | grind | water | a drowned gravedigger who got up to finish the shift and feeds on the crowds that follow him (version 3, the Gloamhorn) | a bog-warden who drags the marsh with him |
 | **Ottoline** | female | support (buff and debuff) | dark | a porcelain doll who pulls strings: the enemy dances weaker and her friends dance stronger (version 3, the Gloamhorn) | a puppeteer's apprentice |
 
-**Version 3 adds four** (the first of ten new themes; six more come with the new zones): Nephra and Sabir belong to the Sunscar desert, Ogden and Ottoline to the perma-twilight Gloamhorn. Their lands have no boss or dungeon source yet, so the four are **dev sets** parked on the Greyspine's sources (`land:'grey'`, tiers 3 and 4): never rewarded, still given by the free testing tools; when a land gets its `SS_SOURCES` row, move the set and drop `dev:true`.
+**Version 3 adds four** (the first of ten new themes; six more come with the new zones): Nephra and Sabir belong to the Sunscar desert, Ogden and Ottoline to the perma-twilight Gloamhorn. Each land has two of them, told apart by the tier: `SS_SOURCES.sun` (Glass Guardian, Sand Wyrm, Sandglass) rolls Nephra at +3 and Sabir from +4; `SS_SOURCES.gloam` (Captain Dredge, Gloam Warden, Gloamvault) rolls Ogden at +3 and Ottoline from +4. The odds and the pity are the usual ones; the free testing tools still give them.
 
 ## Elements
 

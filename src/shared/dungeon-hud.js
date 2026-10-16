@@ -22,14 +22,14 @@
    captive also moves (st 2 = in the hall). */
 const DG_PHASE_TEXT=['Clear the dungeon','The boss has appeared!','Cleared!','Failed'];
 const DG_OBJ_KINDS={
-  stone:{name:'Ward stone',col:'#7fd0ff',r:2.5,th:{hollowroots:'the Heartwood Knot',jadesprings:'the jade basin',bonefrostbarrow:'the warding rune stone',blackseam:'the winch house',sandglass:'the sun altar'}},
+  stone:{name:'Ward stone',col:'#7fd0ff',r:2.5,th:{hollowroots:'the Heartwood Knot',jadesprings:'the jade basin',bonefrostbarrow:'the warding rune stone',blackseam:'the winch house',sandglass:'the sun altar',gloamvault:'the drowned font'}},
   chest:{name:'Reward chest',col:'#ffcf4a',r:1.5},
-  lantern:{name:'Lantern',col:'#ffd36b',r:2,th:{hollowroots:'the sap-lamp',jadesprings:'the stone lantern',bonefrostbarrow:'the grave lamp',blackseam:'a miner\'s lamp',sandglass:'a temple brazier'}},
-  flask:{name:'Oil flask',col:'#ffa94d',r:1.2,th:{hollowroots:'a flask of sap',jadesprings:'a flask of lamp oil',bonefrostbarrow:'a flask of tallow',blackseam:'a flask of lamp oil',sandglass:'a flask of palm oil'}},
-  heartroot:{name:'Heartroot',col:'#9be06a',r:2,th:{hollowroots:'a heartroot',jadesprings:'a spring gate',bonefrostbarrow:'a burial cairn',blackseam:'a timber prop',sandglass:'a glass kiln'}},
-  altar:{name:'Altar',col:'#d59cff',r:5,th:{hollowroots:'a seed shrine',jadesprings:'an offering stone',bonefrostbarrow:'a rune pillar',blackseam:'the winding gear',sandglass:'a sun mirror'}},
-  ping:{name:'Quarry sighted',col:'#ff6b6b',r:24,th:{hollowroots:'the runaway Shroomling',jadesprings:'the Karasu Tengu',bonefrostbarrow:'the Barrow Wight',blackseam:'the Mountain Goblin',sandglass:'the Glass Wisp'}},
-  captive:{name:'Captive',col:'#8ef0a8',r:1.5,th:{hollowroots:'the hunter in the root cocoon',jadesprings:'the bath-house keeper',bonefrostbarrow:'the snared grave-warden',blackseam:'the trapped surveyor',sandglass:'the lost glassblower'}}
+  lantern:{name:'Lantern',col:'#ffd36b',r:2,th:{hollowroots:'the sap-lamp',jadesprings:'the stone lantern',bonefrostbarrow:'the grave lamp',blackseam:'a miner\'s lamp',sandglass:'a temple brazier',gloamvault:'a votive candle'}},
+  flask:{name:'Oil flask',col:'#ffa94d',r:1.2,th:{hollowroots:'a flask of sap',jadesprings:'a flask of lamp oil',bonefrostbarrow:'a flask of tallow',blackseam:'a flask of lamp oil',sandglass:'a flask of palm oil',gloamvault:'a flask of whale oil'}},
+  heartroot:{name:'Heartroot',col:'#9be06a',r:2,th:{hollowroots:'a heartroot',jadesprings:'a spring gate',bonefrostbarrow:'a burial cairn',blackseam:'a timber prop',sandglass:'a glass kiln',gloamvault:'a sunken bell'}},
+  altar:{name:'Altar',col:'#d59cff',r:5,th:{hollowroots:'a seed shrine',jadesprings:'an offering stone',bonefrostbarrow:'a rune pillar',blackseam:'the winding gear',sandglass:'a sun mirror',gloamvault:'a saint\'s shrine'}},
+  ping:{name:'Quarry sighted',col:'#ff6b6b',r:24,th:{hollowroots:'the runaway Shroomling',jadesprings:'the Karasu Tengu',bonefrostbarrow:'the Barrow Wight',blackseam:'the Mountain Goblin',sandglass:'the Glass Wisp',gloamvault:'the Grave Hound'}},
+  captive:{name:'Captive',col:'#8ef0a8',r:1.5,th:{hollowroots:'the hunter in the root cocoon',jadesprings:'the bath-house keeper',bonefrostbarrow:'the snared grave-warden',blackseam:'the trapped surveyor',sandglass:'the lost glassblower',gloamvault:'the stranded lighthouse keeper'}}
 };
 const dgObjName=(kind,th)=>{ const K=DG_OBJ_KINDS[kind]; return K?(th&&K.th&&K.th[th])||K.name:String(kind); };
 const dgObjThe=(kind,th,generic)=>{ const K=DG_OBJ_KINDS[kind]; return (th&&K&&K.th&&K.th[th])||generic; };   // in a sentence: the dungeon's own name, or the generic words

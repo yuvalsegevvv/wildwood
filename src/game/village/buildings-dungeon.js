@@ -1,4 +1,4 @@
-//@ The five dungeon doors and their signposts: the Hollowed Elder (a half-dead giant tree with a root-arch door), the Falls Door (a cascade over three ledges, the door behind the water), the Barrow Door (a snow-covered mound with a trilithon) and the Old Adit (a timbered mine mouth in a crag, a head frame above) and the Sandglass Door (a sandstone gateway in the Sunscar's desert, a black-glass pane sealing it)
+//@ The dungeon doors (the Gloamvault's is buildings-dungeon-gloam.js) and their signposts: the Hollowed Elder (a half-dead giant tree with a root-arch door), the Falls Door (a cascade over three ledges, the door behind the water), the Barrow Door (a snow-covered mound with a trilithon) and the Old Adit (a timbered mine mouth in a crag, a head frame above) and the Sandglass Door (a sandstone gateway in the Sunscar's desert, a black-glass pane sealing it)
 /* Agent map (docs/DUNGEON-THEMES.md section 6; the rules, prompt, maps and ground patch are game/dungeon/entrances.js; test tools/entrances-client-smoke.js).
    Each door is one THREE.Group at the door (x, ground height, z) turned by DG_ENTRANCES[..].a, so in the group's own frame +z is OUT of the door (toward the apron) and the bank is at -z.
    Props that stand on the ground take their height from getH at their own spot (S.gy), never from the door's: the ground falls 1-3 m in front of two of the doors.
@@ -408,7 +408,7 @@ function dgTrialGate(){
 let dgEntBuilt=false;
 function dgEntBuild(){
   if(dgEntBuilt) return; dgEntBuilt=true;
-  dgEntElder(DG_ENTRANCES.hollowroots); dgEntFalls(DG_ENTRANCES.jadesprings); dgEntBarrow(DG_ENTRANCES.bonefrostbarrow); dgEntAdit(DG_ENTRANCES.blackseam); dgEntSand(DG_ENTRANCES.sandglass);
+  dgEntElder(DG_ENTRANCES.hollowroots); dgEntFalls(DG_ENTRANCES.jadesprings); dgEntBarrow(DG_ENTRANCES.bonefrostbarrow); dgEntAdit(DG_ENTRANCES.blackseam); dgEntSand(DG_ENTRANCES.sandglass); dgEntGloam(DG_ENTRANCES.gloamvault);
   for(const E of dgEntList) dgEntSign(E);
   dgTrialGate();
 }

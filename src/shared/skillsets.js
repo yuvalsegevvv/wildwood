@@ -25,7 +25,9 @@
 const SS_ROLES=['risk','safe','grind','support','heal','tank'], SS_FOCUS=['buff','debuff','both'], SS_PARTS=['major','mild'], SS_HYBRID_ROLES=['risk','safe','grind'];
 const SS_CLASSES=['warrior','archer','mage'], SS_SLOT_OF=['basic','skill','burst'];
 // the three sources of a land (SS_SOURCES[land][position - 1]): boss 1, boss 2, the dungeon's theme id
-const SS_SOURCES={home:['boss','carapax','hollowroots'],vale:['akaoni','kyuubi','jadesprings'],hoar:['ymrik','vetrmaw','bonefrostbarrow'],grey:['gryphonqueen','mountaingolem','blackseam']};
+const SS_SOURCES={home:['boss','carapax','hollowroots'],vale:['akaoni','kyuubi','jadesprings'],hoar:['ymrik','vetrmaw','bonefrostbarrow'],grey:['gryphonqueen','mountaingolem','blackseam'],sun:['glassguardian','sandwyrm','sandglass'],gloam:['drownedcaptain','gloamwarden','gloamvault']};
+// a dungeon theme that another file may register after the sets (or not at all yet): its land is not checked when a set names it, and ssSourceOf names it all the same (it is only an id)
+const SS_THEME_LATE=['gloamvault'], SS_LATE_LV={gloamvault:40};   // (and the level its pieces ask for, the theme's lv)
 const SS_FX_SHAPES=['buff','dash','ring','cone','beam','chain','proj','zone'], SS_FX_MODS=['vsBoss','behind','rangeScale','pop','ally','heal','shield','taunt'], SS_FX_KEYS=[...SS_FX_SHAPES,...SS_FX_MODS];   // what resolveFxS knows (server/combat.js)
 const SS_BUFF_KINDS=['might','guard','haste','crit','critdmg','regen'];   // the general ally buffs (docs/SKILL-SETS.md 6.3)
 // the most each can be (a share: might +50% damage, guard -50% damage taken (the 10% floor still holds), haste -40% cooldowns, crit +40% chance, critdmg +100%, regen 5% of maximum health a second)
@@ -177,7 +179,7 @@ function defineSkillSet(D){
   if(D.kit!==undefined&&(!D.kit||typeof D.kit.name!=='string'||typeof D.kit.text!=='string'||(D.kit.mark!==undefined&&!/^[a-z]+$/.test(D.kit.mark)))) return bad('kit','kit is {mark (a lowercase word, optional), name, text}');
   if(!D.pos||typeof D.pos!=='object') return bad('pos','missing');
   const src=SS_SOURCES[D.land], taken=new Set(), posEl={}, made=[], th=DG_THEMES[src[2]];
-  if(!th||th.land!==D.land) return bad('land','the dungeon "'+src[2]+'" of '+D.land+' is not defined');
+  if(!th&&SS_THEME_LATE.includes(src[2])){ /* registered later */ } else if(!th||th.land!==D.land) return bad('land','the dungeon "'+src[2]+'" of '+D.land+' is not defined');
   for(let p=1;p<=3;p++){
     const P=D.pos[p], at='pos '+p, slot=SS_SLOT_OF[p-1]; if(!P||typeof P!=='object') return bad('pos',at+' missing');
     if(P.bound!=='class'&&P.bound!=='any') return bad('pos',at+': bound is "class" or "any"'); if(p===1&&P.bound!=='class') return bad('pos','position 1 is always bound to the class');
@@ -211,7 +213,7 @@ function defineSkillSet(D){
   // everything checks out: register the pieces
   const set={id,name:D.name,land:D.land,tier,dev,el:D.el,role:JSON.parse(JSON.stringify(R)),char:JSON.parse(JSON.stringify(C)),pal:Object.assign({},D.pal),emblem:D.emblem?{col:D.emblem.col,glyph:D.emblem.glyph}:null,kit:D.kit?JSON.parse(JSON.stringify(D.kit)):null,outfit:D.outfit||null,pos:{},bonus:{}};
   for(const m of made){
-    const lv=m.p<3?BOSS_DEFS.find(b=>b.def.id===src[m.p-1]).def.level:th.lv, ids=[];
+    const lv=m.p<3?BOSS_DEFS.find(b=>b.def.id===src[m.p-1]).def.level:(th?th.lv:SS_LATE_LV[src[2]]), ids=[];
     for(const [k,e] of m.variants){
       const rid=id+'_'+m.p+'_'+k, row=Object.assign(JSON.parse(JSON.stringify(e)),{id:rid,cls:k,slot:m.slot,el:m.el,price:0,lv,set:id,pos:m.p});
       SKILLS[rid]=row; SKILL_IDS.push(rid); ANIM_OF[row.act[0]]=row.anim||row.act[0]; ACT_SKILL[row.act[0]]=row; SS_PIECE_OF[rid]={set:id,pos:m.p,kind:'active'}; ids.push(rid);

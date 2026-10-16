@@ -17,14 +17,16 @@ const DG_BOARD_INFO={
   bonefrostbarrow:{color:'#8fd0f0',text:'The long grave of a vanished clan at Bonefrost Barrow: stone passages, cairns and bone-white rime, lightless but for the braziers.'},
   trial:{color:'#b8e08a',text:'The Hollow Roots with its level turned right down: the same tiles, hazards, monsters, missions and boss, at level 5, open to anyone, and nothing in it pays. A place to learn a dungeon or try a skill.'},
   blackseam:{color:'#e8a050',text:'An abandoned coal mine under Highmark Pastures, worked until the foreman sold the seam to the powder: timbered drifts, ore carts, scalding slag vents and the lamps he left burning.'},
-  sandglass:{color:'#e8c060',text:'A sun-temple and glassworks buried under the Whitefloor south of Glasswell: sandstone halls, cold kilns, braziers still burning, glass spikes in the floor and a keeper who turns the hour.'}};
+  sandglass:{color:'#e8c060',text:'A sun-temple and glassworks buried under the Whitefloor south of Glasswell: sandstone halls, cold kilns, braziers still burning, glass spikes in the floor and a keeper who turns the hour.'},
+  gloamvault:{color:'#a890e0',text:'A drowned chapel-crypt and wreckers\' vault under the cliffs of Vault Heath on the Gloamhorn: black limestone, flooded aisles, tombs, salvage stacked in the dark, brine grates in the floor and an abbess who still rings her bell.'}};
 // what each mission calls its objective in each dungeon (docs/DUNGEON-THEMES.md section 3, "What every mission calls its objectives")
 const DG_BOARD_OBJ={
   hollowroots:{defense:'the Heartwood Knot',survival:'a sap-lamp',sabotage:'heartroots',siege:'seed shrines',hunt:'a runaway Shroomling',escort:'a hunter in a root cocoon'},
   jadesprings:{defense:'the jade basin',survival:'a stone lantern',sabotage:'spring gates',siege:'offering stones',hunt:'a Karasu Tengu in flight',escort:'the bath-house keeper'},
   bonefrostbarrow:{defense:'the warding rune stone',survival:'a grave lamp',sabotage:'burial cairns',siege:'rune pillars',hunt:'a Barrow Wight slipping between graves',escort:'a snared grave-warden'},
   blackseam:{defense:'the winch house',survival:'a miner\'s lamp',sabotage:'the timber props',siege:'the winding gear',hunt:'a Mountain Goblin bolting through the drifts',escort:'a trapped surveyor'},
-  sandglass:{defense:'the sun altar',survival:'a temple brazier',sabotage:'the glass kilns',siege:'the sun mirrors',hunt:'a Glass Wisp flitting through the halls',escort:'a lost glassblower'}};
+  sandglass:{defense:'the sun altar',survival:'a temple brazier',sabotage:'the glass kilns',siege:'the sun mirrors',hunt:'a Glass Wisp flitting through the halls',escort:'a lost glassblower'},
+  gloamvault:{defense:'the drowned font',survival:'a votive candle',sabotage:'the sunken bells',siege:'the saints\' shrines',hunt:'a Grave Hound slipping between the tombs',escort:'a stranded lighthouse keeper'}};
 DG_BOARD_OBJ.trial=DG_BOARD_OBJ.hollowroots;   // (the trial dungeon is the Hollow Roots)
 // one line for each of the seven missions (docs/DUNGEONS.md section 4); {o} is the dungeon's name for the objective
 const DG_BOARD_TEXT={

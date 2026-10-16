@@ -1,4 +1,4 @@
-# The five dungeons, their entrances, their bosses and the hourly offer
+# The six dungeons, their entrances, their bosses and the hourly offer
 
 **Status: designs plus data, not playable (the Sandglass, section 11, is the fifth and the newest).** The machinery they run on is in `docs/DUNGEONS.md` (tiles, missions, parties, the server plan). What exists in code is the data of the four
 dungeons (`DG_THEMES`), of their four entrances (`DG_ENTRANCES`, section 6), of their four bosses (`DG_BOSSES`), the hourly offer (`dgOffer`) and the entry rule (`dgUnlocked`, `dgLevel`, `dgGateOpen`) in `src/shared/dungeons.js`, and the rewards (section 7: `DG_REWARDS`, the level-30 gear, the ring, enhancing, the stone) in `src/shared/dungeon-rewards.js`, checked by
@@ -522,3 +522,32 @@ One random **level-40 weapon** (`DG_REWARDS.sandglass`, `t:8`): sword, bow or wa
 17. **Khet is light and a djinn**, High Noon his signature; no new primitive, no new model. The numbers (2.6 s, 16 s, 3 s stun, 6 imps) are mine and one table to retune.
 18. **The door is the Sunscar agent's prop** at (-700, 250), facing the city, with a signpost on the sand because the desert has no roads.
 19. **The Sunscar's tiers apply** (+1 ... +5 = 50 ... 90), unlocked by the Sunscar's own `gear.zt.sun.max`.
+
+## 12. The Gloamvault and Abbess Morrow (the Gloamhorn's dungeon, the sixth; version 3)
+
+**Status: built and tested** (`tools/gloamvault-dungeon-smoke.js`, plus `dungeons-smoke`, `dungeon-client-smoke`, `entrances-client-smoke`; the dressing seen only in the headless client). Built like the Sandglass (section 11): one theme file, one boss row and kit, one door, and the reward row `DG_REWARDS.gloamvault` that was waiting.
+
+**The place.** A drowned chapel-crypt and wreckers' vault under the cliffs of **Vault Heath** (zone m38). Theme `src/shared/dungeons/themes/gloamvault.js`, land `gloam` (`DG_LANDS.gloam`: base +0, unlock `{gloam:2}` = **Wraithwick walked into**). The Gloamhorn has zone tiers, so it is level **40 at +0** and rises 10 a tier (40 ... 90). Music `gloam2`, boss track `boss30`. **Entry level 38** (the Sandglass 36, the older four 25).
+
+**Tile kit** (nine designs from the Sandglass skeleton, redrawn): Drowned Nave (hall, four saint statues), Chapel of Bones, Flooded Ossuary, Wreckers' Vault (guardian post) (rooms), Side Aisle, Brine Cistern (passes; brine grates are hazard `steam`), Bell Altar (site), Wreckers' Hoard (cache), Drowned Stair (start). Legend: `W` crypt wall, `T` column, `X` saint statue, `N` sarcophagus, `Q` pew, `k` crates, `L` candelabra, `c` rubble and bones, `r` seawater, `s` brine grate, `G` guardian post. Client props: `game/dungeon/view-gloam.js`.
+**Monsters** (Gloamhorn kinds with `res` / `acc`, scaled to the run's level by `dgKOf`): walkers Hollow Knight, Weeping Widow, Black Revenant, Drowned Sailor, Deep Siren, Grave Hound; guardians Gargoyle and Storm Gargoyle. Hunt quarry: the Grave Hound.
+
+**The door: The Gloamvault** (`DG_ENTRANCES.gloamvault`, kind `gloam`): the reserved prop at `GLOAM_DG_DOOR` (-1664, -969, rot -1.35), replaced by `dgEntGloam` (`game/village/buildings-dungeon-gloam.js`; `buildGloamDoor` removed). Apron 7 m out, signpost at (-1676, -957) on the heath (`road:null`). Testing tab: **Go to the Gloamvault Door**. The door lies 25 m from Banshee Tor's edge, so `dungeons-smoke` checks it for its own zone only and, like the Sandglass's, skips the road / bank / bare-ground rules.
+
+### 12.1 Abbess Morrow, the Drowned Abbess (`DG_BOSSES.abbess`, kit `toll`)
+**Level 40**, 70 hits, water, goblin model (undead), res and acc 0.35 (`dgBossRow` passes them); add: Drowned Acolyte (level 39). Kit `server/dungeons/boss-kits-gloamvault.js`, existing primitives only.
+
+| Phase | Move | What it does |
+|---|---|---|
+| 1 | **Wreckers' Chain** (`wreckchain`) | a 24 m line through a player that hauls them to her |
+| 1 | **Brine Pools** (`brine`) | three rings (two under players), then gloom pools stay 8 s |
+| 1 | **The Drowning Toll** (`toll`, signature) | a donut over the hall, only the 6.5 m round her is safe (2.6 s warning); 1.5 s later an 8 m burst round her: get out. **If neither hurts anyone the bell cracks and she is stunned 3 s.** |
+| 2 | **Drowned Acolytes** (`acolytes`) | 3 every 22 s, at most 6 |
+| 2 | **Crypt Quake** (`quake`) | eight stones over 4 s |
+| 3 | **Requiem** (`requiem`) | eight water bursts round the rim, 0.35 s apart |
+
+### 12.2 What a clear pays
+One random **level-40 armour piece** (`DG_REWARDS.gloamvault`, `t:8`): helmet, top, bottom or shoes, rarity 70 / 25 / 4 / 0.8 / 0.2%, the same piece for the whole party (`dgClearReward` / `dgGrantItemP`). Ids `helmet8` ... `shoes8`, +0 and **unrolled** until an Armor Reroll Stone is spent (`docs/ROLLS.md`).
+
+### 12.3 Decisions (my picks)
+20. Entry level 38 and `gear.gloam >= 2`. 21. Water, goblin-family model (Haugbui already uses the wisp). 22. The Toll's numbers are constants at the top of the kit file.

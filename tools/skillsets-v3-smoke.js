@@ -1,5 +1,5 @@
 // Headless test of version 3's first four skill sets (Nephra, Sabir, Ogden, Ottoline: src/shared/skillsets/<id>.js), the server straight from src/, no build.
-// It checks that they register (nothing left out, nothing linted), that they cover four elements, roles and genders, that they are dev sets (never rewarded: the Sunscar and the Gloamhorn have no source yet) which the free
+// It checks that they register (nothing left out, nothing linted), that they cover four elements, roles and genders, that they are real sets with sources (the Sunscar and the Gloamhorn pairs) and that the free
 // testing tools still give, that every id is new, and then that each set's key pieces do what its file says. Usage: node tools/skillsets-v3-smoke.js
 const fs=require('fs'), path=require('path'), {loadServer, SRC}=require('./load');
 const evs=[];
@@ -12,7 +12,8 @@ const IDS=['nephra','sabir','ogden','ottoline'], FIRST8=['tansy','torgeir','saza
 
 // ---- the four as a whole ----
 ok('all four register (nothing left out, nothing linted) beside the first eight',IDS.every(i=>SET(i))&&FIRST8.every(i=>SET(i))&&x.SS_BAD.length===0&&x.ssLint().length===0,JSON.stringify(x.SS_BAD)+JSON.stringify(x.ssLint()));
-ok('they are dev sets parked on a land with sources (the Sunscar and the Gloamhorn have none yet): never rewarded, no source names them',IDS.every(i=>SET(i).dev===true&&x.SS_SOURCES[SET(i).land])&&FIRST8.every(i=>!SET(i).dev)&&IDS.every(i=>![1,2,3].some(p=>x.ssSetFor(SET(i).land,5)&&x.ssSetFor(SET(i).land,5).id===i)));
+ok('they are real sets with sources: the Sunscar pair (Nephra +3, Sabir +4) on the Glass Guardian, the Sand Wyrm and the Sandglass, the Gloamhorn pair (Ogden +3, Ottoline +4) on Captain Dredge, the Gloam Warden and the Gloamvault; the first eight stay as they were',IDS.every(i=>!SET(i).dev)&&FIRST8.every(i=>!SET(i).dev)&&x.ssSourceOf('glassguardian').land==='sun'&&x.ssSourceOf('sandglass').pos===3&&x.ssSourceOf('gloamvault').land==='gloam'&&x.ssSourceOf('drownedcaptain').pos===1
+  &&x.ssSetFor('sun',3).id==='nephra'&&x.ssSetFor('sun',4).id==='sabir'&&x.ssSetFor('sun',2)===null&&x.ssSetFor('gloam',3).id==='ogden'&&x.ssSetFor('gloam',5).id==='ottoline'&&x.ssSetFor('gloam',0)===null);
 ok('two women and two men: Nephra, Ottoline / Sabir, Ogden',IDS.filter(i=>SET(i).char.sex==='female').join()==='nephra,ottoline'&&IDS.filter(i=>SET(i).char.sex==='male').join()==='sabir,ogden');
 ok('four different elements, none a hybrid: earth, fire, water, dark (the desert pair earth + fire, the dark pair water + dark)',(()=>{ const e=IDS.map(i=>SET(i).el); return e.join()==='earth,fire,water,dark'&&new Set(e).size===4; })());
 ok('four different roles that the first eight do not pair with the same element: healer, risk DPS, grinder, support (both)',(()=>{ const r=i=>SET(i).role; return r('nephra').main==='heal'&&r('sabir').main==='risk'&&r('ogden').main==='grind'&&r('ottoline').main==='support'&&r('ottoline').focus==='both'; })());
@@ -61,7 +62,8 @@ reset(); put(m1,0,-2.5); put(m2,3,-3);
 { const r=lost(m1,()=>still(()=>cast('sabir_2_any',m1))); ok('Sabir: Smash and Grab hits the target and what stands round it, leaves Loot on each and sets them ablaze',r>0&&x.ssMarkN(p,m1,'loot')===1&&x.ssMarkN(p,m2,'loot')===1&&m2.burnT>0,Math.round(r)+' '+m2.burnT); }
 wear('sabir',3); reset(); put(m1,0,-3);
 ok('Sabir: Finish the Wounded: +12% damage only against a target below 35% health; Reckless costs 10% more damage taken',(()=>{ const full=x.ssCondP(p,'dmg',m1); m1.hp=m1.maxHp*0.2; const low=x.ssCondP(p,'dmg',m1); m1.hp=m1.maxHp; return near(low-full,0.12,0.0001); })());
-{ p.ssIcd={}; p.killTs=[]; p.cd={basic:0,skill:6,burst:9}; x.ssTriggerS(p,'kill',{m:m1}); x.ssTriggerS(p,'kill',{m:m1}); ok('Sabir: Quick Fingers (3 pieces): two kills within 6 s take 2 s off every cooldown',p.cd.skill<5,JSON.stringify(p.cd)); }
+{ const hit=()=>{ reset(); p.ssIcd={}; put(m1,0,-2.2,0); return still(()=>lost(m1,()=>{ x.damageMonsterS(m1,1,p,p.x,p.z,0,'basic'); tick(1); })); }; const bare=hit(); reset(); p.ssIcd={}; put(m1,0,-2.2,0); x.ssMarkS(p,m1,{id:'loot',n:1,dur:12,max:5}); const withLoot=still(()=>lost(m1,()=>{ x.damageMonsterS(m1,1,p,p.x,p.z,0,'basic'); tick(1); }));
+  ok('Sabir: Quick Fingers (3 pieces): a hit on a target carrying Loot cuts again (more damage than the same hit on a bare target)',withLoot>bare*1.5&&bare>0,Math.round(withLoot)+' vs '+Math.round(bare)); }
 wear('sabir',3); reset(); put(m1,0,-3); put(m2,2,-3); p.hp=p.maxHp*0.5; p.ssIcd={};
 { x.ssTriggerS(p,'kill',{m:m1}); ok('Sabir: Fence the Goods (5 pieces): a kill heals 3% of health and leaves Loot on the enemies near the body',near(hpOf(p),0.53,0.006)&&x.ssMarkN(p,m2,'loot')>=1,String(hpOf(p))+' '+x.ssMarkN(p,m2,'loot')); }
 

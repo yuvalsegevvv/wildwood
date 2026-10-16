@@ -1,16 +1,16 @@
-//@ The Gloamhorn's buildings and dressing: Wraithwick (dark stone cottages, crooked lamps, cairns, a chapel), the Gloam Light, wrecks, sea-cave mouths, the Captain's hold, standing stones and the reserved Gloamvault door
+//@ The Gloamhorn's buildings and dressing: Wraithwick (dark stone cottages, crooked lamps, cairns, a chapel), the Gloam Light, wrecks, sea-cave mouths, the Captain's hold, and standing stones (the Gloamvault's door is game/village/buildings-dungeon-gloam.js)
 /* Agent map: buildGloamhorn() is called by generation-setup.js after buildSunscar; updateGloamhorn(dt) by main/loop.js (the lighthouse's slow beam, the lamps' dim glow).
    Wraithwick follows the home village's plan (VIL6 from shared/wraithwick.js: the same houses, stalls, anchors and colliders) in grey-black stone under wet slate with moss, no snow.
    The ground itself (cliffs, sea stacks, the horn) is terrain (shared/gloamhorn.js gloamGround); what is built here sits on it. The lighthouse's lamp burns dimly on purpose
    (a violet-white glow and a pale beam sweeping the water every 14 s), the land is lit by moon and lamps (world/gloam-sky.js). Colliders: addCol. Test: tools/gloamhorn-smoke.js (client-smoke builds it). */
-const GLOAMB={beam:null,lamp:null,door:null,glow:[],built:false};
+const GLOAMB={beam:null,lamp:null,glow:[],built:false};
 const gloamFlame=new THREE.MeshBasicMaterial({color:0x9a8cff,transparent:true,opacity:0.8,depthWrite:false,blending:THREE.AdditiveBlending});
 const gloamSlate=base=>(x,y,z,nx,ny,nz,c)=>{ c.set(base).multiplyScalar(0.8+h3(Math.floor(x*3),Math.floor(y*3),Math.floor(z*3))*0.3); if(ny>0.5&&h3(Math.floor(x*2),7,Math.floor(z*2))>0.55) c.lerp(_gm,0.5); };
 const _gm=new THREE.Color(0x2c3a28);
 const gloamBlocks=base=>(x,y,z,c)=>{ const b=Math.floor(y*2.2), k=Math.floor((x+z)*1.6+(b&1)*0.5); c.set(base).multiplyScalar(0.78+h3(k,b,3)*0.3); if(y<0.9&&h3(k,b,9)>0.5) c.lerp(_gm,0.35); };   // wet stone, moss at the foot
 function buildGloamhorn(){
   if(GLOAMB.built) return; GLOAMB.built=true;
-  buildWraithwick(); buildGloamLight(); buildGloamWrecks(); buildGloamCaves(); buildGloamHold(); buildGloamStones(); buildGloamDoor();
+  buildWraithwick(); buildGloamLight(); buildGloamWrecks(); buildGloamCaves(); buildGloamHold(); buildGloamStones();
 }
 function buildWraithwick(){
   const out=[], win=[], V=VIL6, Y=V.h;
@@ -168,22 +168,8 @@ function buildGloamHold(){
   for(let k=0;k<10;k++){ const a=k/10*TAU+0.2, x=A.x+Math.sin(a)*(A.r+6+h3(k,2,2)*3), z=A.z+Math.cos(a)*(A.r+6+h3(k,2,2)*3); if(gloamIn(x,z)<2) continue; parts.push(pc(new THREE.DodecahedronGeometry(1.2+h3(k,3,3),0).translate(x,getH(x,z)+0.6,z),stoneC)); addCol(x,z,1.3); }
   const m=new THREE.Mesh(merge(parts),villageMat); m.castShadow=true; m.receiveShadow=true; scene.add(m);
 }
-// ---- the reserved Gloamvault door (GLOAM_DG_DOOR): a prop only, a sealed arch of black stone in the cliff with an unlit sign; the dungeon is built later ----
-function buildGloamDoor(){
-  const E=GLOAM_DG_DOOR, y=getH(E.x,E.z), G=new THREE.Group(), parts=[];
-  for(const s of [-1,1]){ parts.push(pc(vbox(1.6,6.4,1.8,s*3.6,3.2,0),gloamBlocks(0x3c3a44))); parts.push(pc(vbox(2.0,0.5,2.2,s*3.6,6.5,0),stoneC)); }
-  parts.push(pc(vbox(9.4,1.6,1.8,0,7.0,0),gloamBlocks(0x3c3a44)));
-  parts.push(pc(vbox(5.6,5.8,0.5,0,2.9,0.2),c=>c.set(0x0c0b12)));   // the sealed door
-  for(let k=0;k<3;k++) parts.push(pc(vbox(5.8,0.18,0.2,0,1.2+k*1.9,0.5),c=>c.set(0x2a2c32)));
-  const m=new THREE.Mesh(merge(parts),villageMat); m.castShadow=true; m.receiveShadow=true; G.add(m);
-  const glow=new THREE.Mesh(new THREE.PlaneGeometry(5.0,5.6),new THREE.MeshBasicMaterial({color:0x6a4ad0,transparent:true,opacity:0.1,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending})); glow.position.set(0,2.9,0.5); G.add(glow); GLOAMB.door=glow;
-  const sign=boardSign(E.name.toUpperCase(),{bg:'#14121c',line:'#6a5ac0',ink:'#d8d0ff',font:44,w:3.0,h:0.66,glow:0x080610}); sign.position.set(0,8.4,1.1); G.add(sign);
-  G.position.set(E.x,y,E.z); G.rotation.y=E.rot; scene.add(G);
-  for(const s of [-1,1]){ const c=Math.cos(E.rot), sn=Math.sin(E.rot); addCol(E.x+c*s*3.6,E.z-sn*s*3.6,1.2); }
-}
 function updateGloamhorn(dt){
   if(!GLOAMB.built) return;
   const near=Math.hypot(P.x-GLOAM_LIGHT.x,P.z-GLOAM_LIGHT.z)<420;
   if(GLOAMB.beam){ GLOAMB.beam.visible=near; GLOAMB.lamp.visible=near; if(near){ GLOAMB.beam.rotation.y=-t*0.45; GLOAMB.lamp.material.opacity=0.38+0.14*Math.sin(t*1.7)+0.04*Math.sin(t*6.1); } }
-  if(GLOAMB.door) GLOAMB.door.material.opacity=0.07+0.04*Math.sin(t*1.3);
 }

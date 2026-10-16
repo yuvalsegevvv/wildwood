@@ -5,7 +5,7 @@ Every monster kind in the game, with the numbers the server uses and the place i
 
 Generated from the live code by `node tools/gen-docs.js` (`--check` tells you when this file is out of date). Line numbers are those of the code when it was generated.
 
-112 monster kinds in 64 zones, 12 bosses, 17 boss helpers (summons and props) and 3 grey-veined quest monsters: 144 definitions, plus 5 dungeon bosses with their helpers (section 11). 1671 monsters exist in the world at start (112 kinds in their camps + 12 bosses).
+112 monster kinds in 64 zones, 12 bosses, 17 boss helpers (summons and props) and 3 grey-veined quest monsters: 144 definitions, plus 6 dungeon bosses with their helpers (section 11). 1671 monsters exist in the world at start (112 kinds in their camps + 12 bosses).
 
 ## 1. Where it is defined
 
@@ -27,8 +27,8 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | Boss fights: engagement, phases, reset / one move set per boss / the move primitives | `BOSSES` src/server/boss.js:11 / `BOSS_KITS` src/server/boss-fx.js:16 / src/server/boss-fx.js |
 | The boss notices on the quest board | `BOSS_QUESTS` src/shared/quests.js:32 |
 | The dungeon bosses and their helpers (made on demand in a run's round hall, not in `BOSS_DEFS`) | `DG_BOSSES` src/shared/dungeons/bosses.js:17, `DG_BOSS_DEFS` (same file), move sets src/server/dungeons/boss-kits.js:43 |
-| Which kinds a dungeon uses (`mobs.walkers`, `mobs.guardians`: ids of `MON_DEFS`), its land, entrance zone, boss and level | `defineDungeonTheme` src/shared/dungeons.js:128, one file per theme in src/shared/dungeons/themes/ |
-| How a run spawns a monster at its level with the party's health (elites, no respawn) | `dgSpawnS` src/server/dungeons/mobs.js:34, `dgKOf` src/server/dungeons/mobs.js:15, `dgParty` src/shared/dungeons.js:362 |
+| Which kinds a dungeon uses (`mobs.walkers`, `mobs.guardians`: ids of `MON_DEFS`), its land, entrance zone, boss and level | `defineDungeonTheme` src/shared/dungeons.js:129, one file per theme in src/shared/dungeons/themes/ |
+| How a run spawns a monster at its level with the party's health (elites, no respawn) | `dgSpawnS` src/server/dungeons/mobs.js:34, `dgKOf` src/server/dungeons/mobs.js:15, `dgParty` src/shared/dungeons.js:365 |
 | How each model looks (client) | see section 13 |
 
 ## 2. How the numbers are made
@@ -331,9 +331,9 @@ Tougher copies of a zone's kind (`greyDef`, tripled XP). Not in `MON_DEFS`: the 
 
 ## 11. Dungeons: bosses, their helpers and the mob pools
 
-A dungeon (`src/shared/dungeons/themes/<id>.js`) is built from the world's own monster kinds (its `mobs.walkers` and `mobs.guardians`, the rows of sections 4-7: base stats there) spawned at the run's level (**30** at the base difficulty; the Sandglass: **40**) with the party's health factor; an elite has ×2.5 health and is a quarter bigger; nothing respawns. Its boss is one of the 5 below, made on demand in a round hall. All numbers are base stats (`hits` 70, level 30, like a world boss); how a run scales them is in docs/DUNGEONS.md.
+A dungeon (`src/shared/dungeons/themes/<id>.js`) is built from the world's own monster kinds (its `mobs.walkers` and `mobs.guardians`, the rows of sections 4-7: base stats there) spawned at the run's level (**30** at the base difficulty; the Sandglass and the Gloamvault: **40**) with the party's health factor; an elite has ×2.5 health and is a quarter bigger; nothing respawns. Its boss is one of the 6 below, made on demand in a round hall. All numbers are base stats (`hits` 70, level 30, like a world boss); how a run scales them is in docs/DUNGEONS.md.
 
-### 11.1 Dungeon bosses (5)
+### 11.1 Dungeon bosses (6)
 
 | Id | Name | Lv | El | HP | Dmg | Atk s | Spd | XP | Coins | Dungeon | Clear pays | Summons | Prop | Music | Move set | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -342,6 +342,7 @@ A dungeon (`src/shared/dungeons/themes/<id>.js`) is built from the world's own m
 | `haugbui` | Haugbui, the Barrow Lord | 30 | dark | 23427 | 718 | 2 | 2.6 | 50658.9 | 26680 | Bonefrost Barrow | a level-30 ring | Grave Wisp | Barrow Lamp | boss26 | `barrow` src/server/dungeons/boss-kits.js:153 | src/shared/dungeons/bosses.js:44 |
 | `garrick` | Garrick, the Seam Foreman | 30 | fire | 23427 | 718 | 2.2 | 2.2 | 50658.9 | 26680 | The Blackseam | a level-30 pendant | Slagling | Powder Keg | boss30 | `blast` src/server/dungeons/boss-kits-mine.js:45 | src/shared/dungeons/bosses.js:57 |
 | `khet` | Khet, the Hourkeeper | 40 | light | 30841 | 889 | 2.3 | 2.3 | 322490.2 | 108880 | The Sandglass | a level-40 weapon | Sand Imp | — | boss30 | `hour` src/server/dungeons/boss-kits-sandglass.js:8 | src/shared/dungeons/bosses.js:71 |
+| `abbess` | Abbess Morrow, the Drowned Abbess | 40 | water | 30841 | 889 | 2.4 | 2.2 | 322490.2 | 108880 | The Gloamvault | a level-40 armour piece | Drowned Acolyte | — | boss30 | `toll` src/server/dungeons/boss-kits-gloamvault.js:9 | src/shared/dungeons/bosses.js:86 |
 
 ### 11.2 Dungeon boss helpers (summons and props)
 
@@ -357,6 +358,7 @@ Not in `MON_DEFS`: made by the boss kit.
 | `slagling` | Slagling | 29 | fire | 3339 | 308 | 1.6 | 2.8 | 1682.7 | summoned by Garrick | src/shared/dungeons/bosses.js:59 |
 | `powderkeg` | Powder Keg | 30 | fire | 335 | — | — | — | — | prop of Garrick | src/shared/dungeons/bosses.js:60 |
 | `sandimp` | Sand Imp | 39 | light | 5529 | 380 | 1.6 | 3 | 10715.0 | summoned by Khet | src/shared/dungeons/bosses.js:73 |
+| `drownedacolyte` | Drowned Acolyte | 39 | water | 5529 | 380 | 1.6 | 3.1 | 10715.0 | summoned by Abbess Morrow | src/shared/dungeons/bosses.js:88 |
 
 ### 11.3 Mob pools of each dungeon
 
@@ -369,6 +371,7 @@ Not in `MON_DEFS`: made by the boss kit.
 | Bonefrost Barrow | `bonefrostbarrow` | Hoarfrost Reach | Bonefrost Barrow | 30 | Draugr (26), Rime Revenant (29), Barrow Wight (29), Ice Wraith (26), Frost Reaver (24) | — | Haugbui, the Barrow Lord | hoar2 | src/shared/dungeons/themes/bonefrostbarrow.js:9 |
 | The Blackseam | `blackseam` | The Greyspine | Highmark Pastures | 30 | Mountain Goblin (28), Crystal Beetle (27), Granite Slime (26), Quartz Slime (30), Cliff Boar (26), Rock Troll (31), Mist Wraith (29) | Granite Golem (32) | Garrick, the Seam Foreman | hoar1 | src/shared/dungeons/themes/blackseam.js:9 |
 | The Sandglass | `sandglass` | The Sunscar | The Whitefloor | 40 | Dust Djinn (33), Dune Prowler (33), Tomb Guardian (34), Sun Priest (35), Efreet (36) | Sandstone Golem (34), Dune Drake (35) | Khet, the Hourkeeper | sun2 | src/shared/dungeons/themes/sandglass.js:9 |
+| The Gloamvault | `gloamvault` | The Gloamhorn | Vault Heath | 40 | Hollow Knight (38), Weeping Widow (38), Black Revenant (40), Drowned Sailor (32), Deep Siren (40), Grave Hound (37) | Gargoyle (36), Storm Gargoyle (39) | Abbess Morrow, the Drowned Abbess | gloam2 | src/shared/dungeons/themes/gloamvault.js:9 |
 
 ## 12. Level table
 

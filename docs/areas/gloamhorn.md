@@ -31,7 +31,7 @@ The old Stormhorn of `docs/WORLD.md`, renamed and made a permanently dark, gothi
 - Zones: m30 Wraithwick Heath, m31 Wreckers' Reach, m32 The Cairn Fields, m33 Drowned Meadow, m34 Siren Cliffs, m35 Gallows Down, m36 The Mourning Stones, m37 Banshee Tor, m38 Vault Heath, m39 Gargoyle Crag, m40 Lanternfall; arenas mboss35 (The Sea Caves, (-1530, -795)) and mboss40 (The Gloam Light, about (-1572, -1124)).
 - Rolls (`docs/ROLLS.md`): `res` / `acc` 0.10 at level 30 rising 0.02 a level to 0.30 at 40 (every kind has one or both); both bosses 0.35.
 - Bosses: Captain Dredge (35; cannon volleys, the anchor rake, deckhands, a tide wall, a broadside, the whirl) and the Gloam Warden (40; lantern beams, gloom pools, the wail ring, tentacle slams, a soul-lantern shield, the turning beam wheel).
-- Reserved door: `GLOAM_DG_DOOR` = `{id:'gloamvault', name:'The Gloamvault', x:-1664, z:-969, r:12, rot:-1.35}`, zone m38 (Vault Heath), ground h 36. Prop only (`buildGloamDoor`); the later dungeon makes it a real door (`DG_ENTRANCES.gloamvault`, level-40 armour).
+- Reserved door: `GLOAM_DG_DOOR` = `{id:'gloamvault', name:'The Gloamvault', x:-1664, z:-969, r:12, rot:-1.35}`, zone m38 (Vault Heath), ground h 36. Now the real door of the Gloamvault (`DG_ENTRANCES.gloamvault`, `buildings-dungeon-gloam.js`; docs/DUNGEON-THEMES.md section 12). The zone m38 lies only 25 m from Banshee Tor's edge there.
 
 ## Pitfalls
 
@@ -45,4 +45,4 @@ The old Stormhorn of `docs/WORLD.md`, renamed and made a permanently dark, gothi
 
 ## Left out (also in `docs/NOT-BUILT.md`)
 
-The dungeon behind the Gloamvault door; skill-set sources for the two bosses (`SS_SOURCES`); main-quest steps and the lamp-room story (`docs/STORY.md`); the land on the docs world map (it stays fog); recorded music; a shared zone-tier symbol for the land.
+(The Gloamvault dungeon is built: docs/DUNGEON-THEMES.md section 12.) (the skill-set sources are built: `SS_SOURCES.gloam`) main-quest steps and the lamp-room story (`docs/STORY.md`); the land on the docs world map (it stays fog); recorded music; a shared zone-tier symbol for the land.

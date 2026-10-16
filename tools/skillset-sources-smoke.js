@@ -43,6 +43,18 @@ reset(); roll(0.999); { const pity=x.ssOddsOf(T,3).pity; for(let i=0;i<pity-1;i+
 reset(); roll(0); x.ssDungeonClearP(p,{theme:{id:'hollowroots'},tier:0}); x.ssDungeonClearP(p,run('trial')); x.ssDungeonClearP(p,run('bare'));
 ok('a +0 run, the trial dungeon and the test set roll nothing',!owns(1)&&!owns(2)&&!owns(3)&&Object.keys(p.gear.ss.pity).length===0);
 
+// ---- the Sunscar and the Gloamhorn (version 3): two sets a land, told apart by the tier (+3 the first, +4 and above the second); the Gloamvault is registered by id even if its theme is not ----
+{ const has=id=>x.ssPieceIdsOf(id,1).every(i=>p.gear.skills.owned.includes(i)), has3=id=>x.ssPieceIdsOf(id,3).every(i=>p.gear.skills.owned.includes(i)), clearAll=()=>{ for(const id of ['nephra','sabir','ogden','ottoline']) for(let pos=1;pos<=3;pos++) for(const i of x.ssPieceIdsOf(id,pos)){ const k=p.gear.skills.owned.indexOf(i); if(k>=0) p.gear.skills.owned.splice(k,1); } p.gear.ss={pity:{}}; evs.length=0; };
+  clearAll(); roll(0); x.ssClearP(p,'glassguardian',3); x.ssClearP(p,'sandglass',3); x.ssClearP(p,'sandwyrm',2);
+  ok('the Glass Guardian and the Sandglass at +3 roll Nephra (pieces 1 and 3); +2 rolls nothing',has('nephra')&&has3('nephra')&&!x.ssPieceIdsOf('nephra',2).some(i=>p.gear.skills.owned.includes(i)));
+  clearAll(); roll(0); x.ssClearP(p,'sandwyrm',4); ok('the Sand Wyrm at +4 rolls Sabir\'s second piece, not Nephra\'s',x.ssPieceIdsOf('sabir',2).every(i=>p.gear.skills.owned.includes(i))&&!has('nephra'));
+  clearAll(); roll(0); x.ssClearP(p,'drownedcaptain',3); x.ssClearP(p,'gloamvault',3);
+  ok('Captain Dredge and the Gloamvault at +3 roll Ogden (named by id: the theme need not be registered)',has('ogden')&&has3('ogden'));
+  clearAll(); roll(0); x.ssClearP(p,'gloamwarden',5); ok('the Gloam Warden at +5 rolls Ottoline\'s second piece',x.ssPieceIdsOf('ottoline',2).every(i=>p.gear.skills.owned.includes(i)));
+  clearAll(); roll(0.999); { const pity=x.ssOddsOf(x.SS_SETS.sabir,3).pity; for(let i=0;i<pity-1;i++) x.ssClearP(p,'sandglass',4); const n=p.gear.ss.pity['sabir:3'], had=has3('sabir'); x.ssClearP(p,'sandglass',4);
+    ok('the Sandglass at +4 has its own pity count for Sabir (dungeon rules: 20% / 10) and a sure drop at the pity',!had&&n===pity-1&&has3('sabir')&&pity===10,'pity '+pity); }
+  clearAll(); const g=x.sanitizeGear({ss:{pity:{'sabir:1':3,'ottoline:2':5,'nephra:3':999}}},'warrior'); ok('the new sets\' pity counts are saved and clamped like any other',g.ss.pity['sabir:1']===3&&g.ss.pity['ottoline:2']===5&&g.ss.pity['nephra:3']===x.ssOddsOf(x.SS_SETS.nephra,3).pity-1); clearAll(); }
+
 // ---- the save ----
 { const g=x.sanitizeGear({ss:{pity:{'tansy:1':3,'tansy:9':2,'nobody:1':2,'__proto__':5,'tansy:2':9999,'tansy:3':-4,'tansy:x':1}}},'warrior');
   ok('a save keeps the pity counts of real sets and positions, clamped below the sure drop, and nothing else',g.ss.pity['tansy:1']===3&&g.ss.pity['tansy:2']===x.ssOddsOf(T,2).pity-1&&g.ss.pity['tansy:3']===0&&Object.keys(g.ss.pity).length===3&&!Object.prototype.hasOwnProperty.call(g.ss.pity,'nobody:1'));

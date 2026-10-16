@@ -41,4 +41,4 @@ Playable since version 3. The design (what the land should be, the city's distri
 
 ## Left out (also in `docs/NOT-BUILT.md`)
 
-The dungeon behind the door; the dark skill sets and their sources for this land's bosses (`SS_SOURCES` does not list them); the main quest (no steps; Glasswell's physician is only a villager); desert-specific ore, wood and herbs (the nodes reuse the top grades); gear above tier 5; the world map's art and fog for the Sunscar; recorded music; the Stormhorn and the Amber Reach beyond it.
+The dungeon behind the door; (its skill-set sources are built: `SS_SOURCES.sun`) the main quest (no steps; Glasswell's physician is only a villager); desert-specific ore, wood and herbs (the nodes reuse the top grades); gear above tier 5; the world map's art and fog for the Sunscar; recorded music; the Stormhorn and the Amber Reach beyond it.

@@ -73,7 +73,8 @@ function verPages(){ return {
     </ul>
     <h4>Dungeons</h4>
     <ul>
-      <li>Five dungeons now: <b>The Sandglass</b>, a buried sun-temple under the Sunscar's Whitefloor south of Glasswell (its door stands in the desert). Its keeper, <b>Khet</b>, is a level-40 boss; you need level 36 and Glasswell walked into. A clear pays a level-40 weapon, which is unrolled until you spend a Weapon Reroll Stone on it.</li>
+      <li>Six dungeons now. <b>The Gloamvault</b> is the Gloamhorn's: a drowned chapel-crypt and wreckers' vault under the cliffs of Vault Heath. Its boss, <b>Abbess Morrow</b>, is level 40; you need level 38 and Wraithwick walked into. A clear pays a level-40 armour piece, unrolled until you spend an Armor Reroll Stone on it.</li>
+      <li><b>The Sandglass</b>, a buried sun-temple under the Sunscar's Whitefloor south of Glasswell (its door stands in the desert). Its keeper, <b>Khet</b>, is a level-40 boss; you need level 36 and Glasswell walked into. A clear pays a level-40 weapon, which is unrolled until you spend a Weapon Reroll Stone on it.</li>
     </ul>`}
 }; }
 function verRender(){

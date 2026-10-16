@@ -1,11 +1,11 @@
 //@ Nephra's skill set, The Linen Rite (a shield healer, earth): wrappings that become shields, a salve that spends the linen it left on the enemy, and a shield that bites back when it breaks; sand gold, lapis and old linen
 /* Agent map. Kit: docs/skillkits/kit-healer.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (version 3, the Sunscar's first pair: all six pieces earth, the dry tomb-dust of the desert); outfit and palette:
    docs/skillkits/looks/nephra.md, game/outfits/nephra.js; visuals: game/skillsets/look-nephra.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3-smoke.js.
-   LAND: the Sunscar desert has no boss or dungeon source yet, so the set is a dev set parked on the Greyspine's sources (land 'grey', tier 3): it is never rewarded, and every player can still unlock it with the free
-   testing tools (server/skillsets-free.js). When the Sunscar gets its SS_SOURCES row, change `land` and `needs` and delete `dev:true`. Mark: Linen (left on enemies by the blows, spent by Salve for Sand).
+   LAND: the Sunscar's pair, from the Glass Guardian, the Sand Wyrm and the Sandglass at +3 (Sabir replaces it from +4; SS_SOURCES.sun); the free
+   testing tools (server/skillsets-free.js) still give it to anyone. Mark: Linen (left on enemies by the blows, spent by Salve for Sand).
    What makes her unlike Ambrose (the water healer): she heals by SHIELDS (blows shield the party, a salve shields and guards), not by lowest-health heals, and a broken shield strikes back (the `shield` trigger). */
 defineSkillSet({
-  id:'nephra', name:'The Linen Rite', land:'grey', needs:{tier:3}, dev:true, el:'earth', outfit:'nephra',
+  id:'nephra', name:'The Linen Rite', land:'sun', needs:{tier:3}, el:'earth', outfit:'nephra',
   role:{main:'heal'},
   char:{name:'Nephra', sex:'female', theme:'a risen tomb-keeper of the Sunscar who wraps the living in linen that turns blows aside', ip:{kind:'original', riffs:'the embalmer and tomb-keeper genre (linen wrappings, lapis, gold collars); no existing character'}},
   pal:{main:0xd9c79a, accent:0x2f55a0, glow:0x6fd6c8},
