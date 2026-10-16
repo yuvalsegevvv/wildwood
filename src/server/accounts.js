@@ -38,6 +38,11 @@ function checkUserName(raw){
 // 5 wrong passwords lock an account's logins for a minute (slows guessing)
 function locked(key){ const f=FAILS.get(key); return !!(f&&f.n>=5&&Date.now()<f.until); }
 function failed(key){ const f=FAILS.get(key)||{n:0,until:0}; if(Date.now()>f.until) f.n=0; f.n++; f.until=Date.now()+60000; FAILS.set(key,f); }
+/* guests (online server only: a browser's secret code, no name and password) are held back so progress cannot be farmed without an account: level 10 at most, the home forest only,
+   no zone tiers. Existing guest progress is never taken away, it just stops there. Each gate tells the player once in a while (event 'guest' -> the "Register to continue" popup). */
+const GUEST_MAX_LV=10;
+const isGuestP=p=>ACCOUNTS_ON&&!!p.acct&&!p.user;
+function guestGateP(p,why){ if(S.t-(p.guestT||-99)<5) return; p.guestT=S.t; ev('guest',p.id,why); }
 function giftP(p){
   const lv=GIFT_LEVELS[p.user.toLowerCase()];
   if(lv&&p.level<lv){ setLevelP(p,lv); toastTo(p.id,'Welcome back, '+p.user+'! Your level '+lv+' has been restored.','good'); }

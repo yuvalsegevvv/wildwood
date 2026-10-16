@@ -14,6 +14,7 @@ const monK=(m,p)=>m.dgK||zoneTierK(m.T,monTierOf(p.gear,m));   // dungeons: a ru
 // zt{land,n}: play a land at tier n (0 to your highest unlocked one). Only in a village: a fight cannot be made easier halfway
 function setZoneTierP(p,land,n){
   if(!ZTIER_LANDS.includes(land)) return;
+  if(isGuestP(p)){ guestGateP(p,'tier'); return; }   // accounts: guests cannot rank a zone up
   const z=p.gear.zt[land], to=clampInt(n,0,z.max,-1);
   if(to<0||to===z.on) return;
   if(!zoneTierVillage(p.x,p.z)){ toastTo(p.id,'Zone tiers can only be changed in a village.','bad'); return; }
@@ -23,6 +24,7 @@ function setZoneTierP(p,land,n){
 // a kill of a land's second boss while you play that land at your highest unlocked tier opens the next one (and grows your symbol)
 function zoneTierKillP(q,m){
   const land=ZTIER_LANDS.find(l=>ZTIER_BOSS[l]===m.def.id); if(!land) return;
+  if(isGuestP(q)) return;   // accounts
   const z=q.gear.zt[land]; if(z.on<z.max||z.max>=ZTIER_MAX) return;
   z.max++; q.dirty=true; recalcP(q);
   toastTo(q.id,'Tier '+ZTIER_ROMAN[z.max]+' unlocked in '+ZTIER_NAMES[land]+'! Choose it in a village (the map): its enemies are '+ZTIER_STEP*z.max+' levels higher.'+(ZTIER_SYMBOL_LANDS.includes(land)?' Your symbol grows: +'+Math.round(symbolBonus(q.gear)*100)+'% attack and health.':''),'good');

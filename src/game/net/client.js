@@ -111,6 +111,7 @@ function applyEvent(e){
     case 'coins': if(e[1]===me){ const m=MON_BY_ID.get(e[3]); if(m){ const c=monCenter(m); popText(c.x+0.4,c.y+m.T.height*0.35,c.z,'+'+e[2]+' coins','coin'); } } break;
     case 'loot': onLoot(e[1],e[2],e[3]); break;
     case 'merge': if(e[1]===me){ const it=ITEM[e[2]]; if(it) forgeFx(it); } else { const r=REMOTES.get(e[1]), it=ITEM[e[2]]; if(r&&it&&it.rar>=3) toast(r.name+' forged '+it.name+'!','loot r'+it.rar); } break;
+    case 'guest': if(e[1]===me) guestGateShow(e[2]); break;   // accounts: a guest hit a limit (level 10, the home forest, zone tiers)
     case 'lvup': if(e[1]===me) levelUpFx(e[2]); else remoteLevelUp(e[1],e[2]); break;
     case 'hurt': if(e[1]===me) hurtFx(e[2]); else remoteHurt(e[1],e[2]); break;
     case 'down': if(e[1]===me){ if(!PL.dead) playerDown(); } else remoteDown(e[1],true); break;

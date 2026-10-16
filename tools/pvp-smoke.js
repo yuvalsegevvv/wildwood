@@ -27,6 +27,9 @@ A.gear.skills.lv.whirlwind=5; Cc.gear.pot={heal1:2}; Cc.gear.eq.pendant=null;
 { const sk={owned:['charge','bash'],eq:{warrior:{basic:null,skill:'charge',burst:null},archer:{},mage:{}},lv:{charge:4},pass:[null,null,null]};
   const pv=x.pvpSkillsOf(sk,5);   // a level-5 hiker who owns Charge (a level-6 skill) and wears it: it is theirs there, at skill level 1
   ok('a level-5 hiker keeps the skill they wear (not the default), at skill level 1',pv.eq.warrior.skill==='charge'&&x.skillLvOf(pv,'charge')===1); }
+{ const sid=Object.keys(x.SKILLS).find(i=>x.SKILLS[i].set&&(x.SKILLS[i].cls==='mage'||x.SKILLS[i].cls==='any')&&x.SKILLS[i].slot==='skill');
+  const sk={owned:[sid],eq:{warrior:{},archer:{},mage:{basic:null,skill:sid,burst:null}},lv:{},pass:[null,null,null]}, pv=x.pvpSkillsOf(sk,40);
+  ok('a skill-set skill you wear stays yours on the island (not the class default)',!!sid&&pv.eq.mage.skill===sid); }
 const realMax={a:A.maxHp,b:B.maxHp,c:Cc.maxHp};
 put('a',C.x,C.z,0); put('c',C.x+3,C.z-30,0); put('b',C.x-3,C.z+25,0); put('d',C.x+20,C.z+10,0); tick(4);
 ok('stepping onto the island puts you "on" it (p.pv, event pvp 1, a toast)',!!A.pv&&!!B.pv&&!!Cc.pv&&evs('a','pvp').some(e=>e[1]==='a'&&e[2]===1)&&evs('a','toast').some(e=>/Proving Isle/.test(e[2])));

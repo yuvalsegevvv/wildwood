@@ -44,10 +44,14 @@ The biggest update so far: a fourth land, dungeons you can run with friends, a w
 - A new minimap and land maps in the style of the world map.
 - The character editor's tabs wrap onto two rows so none is hidden.
 
+### Guests
+- On the online server a guest can reach **level 10**, can only explore the **home forest** and cannot raise a zone's difficulty. A **Register to continue** popup explains it and opens the account box. Existing guest progress is never taken away; it just stops there until you register. Version 1 saves load into version 2 unchanged.
+
 ### Fixes
 - **Sunset**: the sun sinks below the horizon and the moon rises on the other side, instead of the sun stopping low and sliding east. The light fades gently as it changes over, and the same happens at dawn.
 - A saved signature outfit no longer stops the game from starting.
-- PvP no longer swaps your skills for the class defaults.
+- PvP no longer swaps your skills for the class defaults, skill-set skills included.
+- The river through the home forest can be waded across again; only the border river to the Sakura Vale is a barrier.
 - Fixed a coin exploit and a bug that could crash the game for other players.
 - Fixed problems with joining a shared world.
 - Names and chat lines no longer accept invisible control characters.

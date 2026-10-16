@@ -112,6 +112,7 @@ function inVillage(p){ return vNear(p.x,p.z,VR+12); }
 // there (CIRCLES in shared/hoarfrost.js: a land's circles wake when you have walked into its village).
 function warpP(p,to){
   if(p.dead||S.t-(p.warpT||-9)<2) return;
+  if(isGuestP(p)){ guestGateP(p,'travel'); return; }   // accounts: guests stay in the home forest
   const from=CIRCLES.find(C=>Math.hypot(p.x-C.V.tele.x,p.z-C.V.tele.z)<C.V.tele.r+1.5); if(!from) return;
   if(!from.open(p.gear)){ toastTo(p.id,p.gear.east<1?'The circle is cold. Whatever it answers to lies beyond the eastern mountains.':from.id==='highmark'?'The circle hums but will not wake. Walk into Highmark through the glacier valley first.':from.id==='rimehold'?'The circle hums but will not wake. Walk into Rimehold through Frostgate Pass first.':'The circle hums but will not wake. Walk to Hanami on the far side of the bridge first.','bad'); return; }
   const dest=CIRCLES.find(C=>C.id===to)||(from.id==='home'?CIRCLES[1]:CIRCLES[0]);   // no destination given: home <-> Hanami
@@ -145,8 +146,10 @@ function gainExpP(p,v,monId){
   if(!(v>0)) return;
   p.exp+=v; ev('xp',p.id,r1(v),monId==null?null:monId);
   let up=false; const was=p.level;
-  while(p.level<PLAYER_MAX_LV && p.exp>=expToNext(p.level)){ p.exp-=expToNext(p.level); p.level++; up=true; }
+  const cap=isGuestP(p)?GUEST_MAX_LV:PLAYER_MAX_LV;   // accounts: a guest stops at level 10
+  while(p.level<cap && p.exp>=expToNext(p.level)){ p.exp-=expToNext(p.level); p.level++; up=true; }
   if(up){ recalcP(p); p.hp=p.maxHp; ev('lvup',p.id,p.level); refreshOffersP(p); if(was<SKILL_SLOT_LV&&p.level>=SKILL_SLOT_LV) unlockSkillsP(p,'skill'); if(was<BURST_SLOT_LV&&p.level>=BURST_SLOT_LV) unlockSkillsP(p,'burst'); if(passiveOpen(p.level)>passiveOpen(was)) unlockPassivesP(p,was); }
+  if(p.level>=cap&&cap<PLAYER_MAX_LV&&p.exp>=expToNext(p.level)-1){ p.exp=Math.max(0,expToNext(p.level)-1); guestGateP(p,'level'); }   // accounts: no XP past the cap, the popup asks them to register
   p.dirty=true;
 }
 // the attacker's damage at your zone tier (its tiered level's damage), +5% per level the attacker is above you, then your armor (soft-capped, defRed), the Iron Will passive, a buff and a guard potion;

@@ -75,7 +75,7 @@ function worldBounds(o,ox,rad,oz){
   if(o.x<(o.z<borderZ(o.x)+14?borderXN(o.z):borderX(o.z))){ greyWall(o,oz); for(const G of GREY_GATES) if(!gateOpen(G)&&o.z<borderZ(o.x)&&Math.abs(o.z-G.z)<40&&ox>=G.x&&o.x<G.x+0.8) o.x=G.x+0.8; }   // (the rock falls in the Greyspine's west wall)
   else frostWall(o,ox,oz,rad);
   if(oz!==undefined && coastDist(o.x,o.z)<34 && bridgeDeck(o.x,o.z)<WATER){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }
-  if(oz!==undefined && riverK(o.z)>0.15 && bridgeDeck(o.x,o.z)<WATER){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }   // the border river (shared/terrain.js): wade to the knees, no deeper, so the water is a wall too
+  if(oz!==undefined && riverK(o.z)>0.15 && Math.abs(o.x-borderX(o.z))<140 && bridgeDeck(o.x,o.z)<WATER){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }   // the border river only (shared/terrain.js; not the home forest's own river through zone 1, which you may swim across): wade to the knees, no deeper, so the water is a wall too
   pvWall(o,ox,oz);   // pvp: the Proving Isle's lake is a wall too, and its gate stays shut after a knock-out (game/pvp/state.js)
 }
 /* The vale's north wall (its crest line is z = borderZ(x), HZ0 at the pass) is climbable up to 14 m short of the crest from either side while the Reach is locked; the only way

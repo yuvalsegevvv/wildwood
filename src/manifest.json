@@ -253,6 +253,7 @@
     "dungeon/board.js",
     "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "pvp/state.js", "dungeon/hud.js", "dungeon/minimap.js",
     "ui/account.js",
+    "ui/guest-gate.js",
     "ui/chat.js",
     "ui/start-screen.js",
     "main/loop.js"
