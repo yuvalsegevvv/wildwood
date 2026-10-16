@@ -14,6 +14,7 @@
 | `greyspine.md` | the Greyspine: ground, the way in, Highmark, zones, bosses, water, the two rock falls (its dungeon, the Blackseam: `docs/DUNGEON-THEMES.md` section 9; the pendants it pays: `docs/PENDANTS.md`) |
 | `world-map.md` | the world map of Eldmere (G): the docs map's art with fog, banners and a pin, and the way to each land's map (baking the art, the fog, the pin) |
 | `world.md` | terrain, the ground you see, the lands' edges, roads and bridges, changing the terrain |
+| `zone-props.md` | the zone dressing: per-zone ground tint, props that match each zone's monsters (huts, webs, graves, crystals), boss-arena surroundings, scattered ruins |
 | `render.md` | vegetation, instancing and levels of detail, `instanceColor`, measured costs and triangle budgets |
 | `character-ui.md` | the character model and signature outfits (details in `docs/CHARACTER.md`), rotations, keys, the AI note, hold-Alt |
 | `accounts-net.md` | the start card, accounts, reconnecting, the Shared (room) mode |
