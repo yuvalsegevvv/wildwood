@@ -9,7 +9,7 @@ The biggest update so far: a fourth land, dungeons you can run with friends, a w
 - **The world map of Eldmere** (key **G**): the whole continent, with fog over places you have not visited. Click a land to open its map.
 - The coastlines and borders between lands are now curved, with bays and islets. The old tunnel to the Sakura Vale is now a **bridge over the Greyfall River**, and you can walk freely once a land is open.
 - The Hoarfrost Reach is bigger.
-- **The Proving Isle**, an island in a lake south of Slime Meadow, reached by a plank bridge (see PvP below).
+- **The Proving Isle**, an island in a lake on the south beach, reached by a plank bridge from the Shore Road (see PvP below).
 
 ### Dungeons
 - Play dungeon runs alone or in a **party of up to 4** (key **P**, or `/invite name` in chat). Rooms are put together differently every time, and no door is locked.

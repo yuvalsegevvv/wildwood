@@ -1,6 +1,6 @@
 //@ The Proving Isle (PvP): the fighting ground, the fixed level, gear and loadout everyone fights with there, the gate on the bridge, where a knocked-out fighter wakes (a shore spot), the entry lock. Pure.
 /* agent map
-   What: a round island in a lake south of Slime Meadow (the terrain is PVP_ISLE in terrain.js, the bridge is the causeway of 'The Proving Road' in roads.js). Everyone who stands on it fights
+   What: a round island in a lake on the south beach (the terrain is PVP_ISLE in terrain.js, the bridge is the causeway of 'The Proving Road' in roads.js). Everyone who stands on it fights
    with the same numbers, whatever they wear or have learned, and nothing is won or lost there. Design and the numbers: docs/PVP.md.
    Exports: PVP (x, z, r: the fighting ground, level: the one level everyone fights at, lockS: seconds the gate stays shut after a knock-out, hpK: health x, gate / gateOut / bridge: the way in,
             shore: the spots a knocked-out fighter wakes at), inPvp(x,z), pvpGearOf(cls), pvpStatsOf(cls), pvpSkillsOf(skills,level), pvpShoreSpot().

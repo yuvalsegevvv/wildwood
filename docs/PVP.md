@@ -5,11 +5,13 @@ everyone fights with the same numbers and that nothing is won or lost. Code map:
 
 ## Where
 
-A round island in a round lake in the home forest's south-west, south of Slime Meadow (zone 1) and west of the Shore Road: centre (-190, 300) (`PVP_ISLE` in `shared/terrain.js`: island r 33,
-lake r 62; the fighting ground `PVP.r` is 35). A spur of the Shore Road, **The Proving Road**, leaves it at (-102, 282) and ends on the island; where it runs under the lake's water the road code
-makes a 45 m plank causeway by itself, **The Proving Bridge** (`BRIDGES`, `shared/roads.js`). The gate stands on the bridge where it meets the island (`PVP.gate`, about (-157, 288)).
-The lake is a wall like the sea and the river (wade to the knees, no deeper: `pvWall`, `game/pvp/state.js`), so the bridge is the way in. No monster camp lives within 96 m of the island
-(`ok()` in `server/monsters.js`) and no tree grows on it (`arenaDist` counts the island as an arena). The game's testing tools can put you there: `tPass` with `data-v="-121,284,90"`.
+A round island in a round lake on the home forest's south beach: centre (30, 385) (`PVP_ISLE` in `shared/terrain.js`: island r 33, lake r 62; the fighting ground `PVP.r` is 35), with the open sea behind it
+(the walkable world ends at z 426, the island's south end is z 418), east of the Shore Road's end and about 100 m east of Carapax's terrace (the Tide King, centre (-130, 376)). It used to sit in the forest south of
+Slime Meadow; it moved because that was a strange place for it. The beach's own shaping (`shore()` in `shared/terrain.js`) levels everything near the sea, so `homeHeight` gives it a `keep` around the isle to stay a lake.
+A spur of the Shore Road, **The Proving Road**, leaves it at (-86, 376) and ends on the island; where it runs under the lake's water the road code makes a 32 m plank causeway by itself, **The Proving Bridge**
+(`BRIDGES`, `shared/roads.js`). The gate stands on the bridge where it meets the island (`PVP.gate`, about (-5, 385)). The lake is a wall like the sea and the river (wade to the knees, no deeper: `pvWall`,
+`game/pvp/state.js`), so the bridge is the way in. No monster camp lives within 96 m of the island (`ok()` in `server/monsters.js`) and no tree grows on it (`arenaDist` counts the island as an arena). The game's
+testing tools can put you there: `tPass` with `data-v="-60,381,90"`.
 
 ## The rules
 

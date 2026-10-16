@@ -75,7 +75,7 @@ function guidePages(){
       </ul>
       <p>Dungeons drop level-30 rings, pendants and other gear, and Tempering Stones to improve it. If you fall in a run a party member can revive you; you can leave through the portal and keep what you already found.</p>`},
     pvp:{t:'PvP island',h:`
-      <p>The <b>Proving Isle</b> is a round island in a lake in the south-west of the home forest, south of Slime Meadow. Follow the Shore Road south and take the side road, <b>The Proving Road</b>, west; its plank bridge leads to a gate with red banners.</p>
+      <p>The <b>Proving Isle</b> is a round island in a lake on the home forest's south beach, with the open sea behind it. Follow the Shore Road all the way south and take the side road, <b>The Proving Road</b>, east; its plank bridge leads to a gate with red banners.</p>
       <ul>
         <li>On the island you can fight any other player who is there, except your party. Nothing is won or lost: no XP, coins or drops, and your save is never touched.</li>
         <li>Everyone fights at the same level (${PVP.level}) with the same set of gear, your own equipped attacks at skill level 1, and double health, so only skill and choices count.</li>
@@ -83,7 +83,7 @@ function guidePages(){
         <li>When you are knocked out you wake on the shore after 3 seconds, and the gate stays shut for ${PVP.lockS} seconds.</li>
         <li>You can wade at the lake's edge but not swim: the bridge is the way in.</li>
       </ul>
-      <p>The map shows it as <i>${PVP_ISLE.name}</i>. If you cannot find it, press ${kl(k('map'))} on the home forest's map and look south-west.</p>`}
+      <p>The map shows it as <i>${PVP_ISLE.name}</i>. If you cannot find it, press ${kl(k('map'))} on the home forest's map and look at the south beach.</p>`}
   };
 }
 function guideSave(){ try{ localStorage.setItem(GUIDE_TAB_KEY,guideTab); }catch(_){} }

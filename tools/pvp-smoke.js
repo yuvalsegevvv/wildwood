@@ -19,7 +19,7 @@ tick(3); clear();
 // ---- the place ----
 ok('the island is dry land and the bridge deck leads to its gate',x.rawHeight(C.x,C.z)>1&&!!C.gate&&x.bridgeDeck(C.gateOut.x,C.gateOut.z)>x.WATER&&Math.hypot(C.gate.x-C.x,C.gate.z-C.z)<=C.r+0.3);
 ok('the shore spots are dry and outside the circle',C.shore.length>=10&&C.shore.every(s=>x.rawHeight(s.x,s.z)>1.2&&!x.inPvp(s.x,s.z)));
-ok('the island is in the home forest south of Slime Meadow (z beyond its southern edge, x west of the road)',C.z>250&&C.x<-100&&C.x>-300);
+ok('the island lies off the home forest\'s south beach, east of the Shore Road and clear of the Tide King\'s terrace and the sea limit',C.z>350&&C.z+C.r<426&&C.x>-60&&Math.hypot(C.x+130,C.z-376)>C.r+60);
 
 // ---- the same numbers for everyone ----
 const A=P('a'), B=P('b'), Cc=P('c'), D=P('d'), E=P('e');

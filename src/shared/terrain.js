@@ -129,11 +129,11 @@ function lakeCut(x,z,h){
     h = lerp(h, Math.min(h,-2.6), smoothstep(L.r, L.r*0.42, ld)); }
   return h;
 }
-/* The Proving Isle (docs/PVP.md): a round island in a round lake in the home forest's south-west hollow, south of Slime Meadow, where players fight each other with fixed stats
+/* The Proving Isle (docs/PVP.md): a round island in a round lake on the home forest's south beach (the sea is 40 m south of it, east of the Shore Road, west of the Tide King's terrace), where players fight each other with fixed stats
    (shared/pvp.js has the rules). It lives here because roads.js needs its ground at load (the causeway is found where a road runs under its water). x, z: the island's centre;
-   r: the island's grass, to where the beach starts; lakeR: the water's edge; h: the top. The Shore Road runs ~90 m east of it and is not touched: the banks (pvpIsleCut) only
+   r: the island's grass, to where the beach starts; lakeR: the water's edge; h: the top. The Shore Road runs ~100 m west of it and is not touched: the banks (pvpIsleCut) only
    cut ground that stands higher than 0.3 m per metre from the water's edge. */
-const PVP_ISLE={x:-190,z:300,r:33,lakeR:62,h:2.3,name:'The Proving Isle'};
+const PVP_ISLE={x:30,z:385,r:33,lakeR:62,h:2.3,name:'The Proving Isle'};
 // the lake and the island: banks that ease down to the water, a flat floor, and the island with a beach (d: distance from the centre, with a wobbling shore)
 function pvpIsleCut(x,z,h){
   const I=PVP_ISLE, lx=x-I.x, lz=z-I.z; if(Math.abs(lx)>I.lakeR+32||Math.abs(lz)>I.lakeR+32) return h;
@@ -264,7 +264,7 @@ function homeHeight(x,z){
   h = riverCut(h,Math.abs(bx-x),z);   // (the Vale Wall is a river along most of its length)
   h = sunwall(x,z,h,x-HX0);   // (west of HX0 the Sunwall's top goes on: the Sunscar's plateau, which the world's west edge ends in a cliff to the sea)
   h = lerp(h,-4,smoothstep(WX0+80,WX0+12,x));
-  return shore(h, coastDist(x,z), smoothstep(46,14,bx-x));
+  return shore(h, coastDist(x,z), Math.max(smoothstep(46,14,bx-x), smoothstep(PVP_ISLE.lakeR+14,PVP_ISLE.lakeR-2,Math.hypot(x-PVP_ISLE.x,z-PVP_ISLE.z))));   // (the Proving Isle's lake lies on the south beach: shore() must not level its bowl)
 }
 function forestDensity(x,z){ return clamp(fbm(x*0.0085+31, z*0.0085-12, 3)*1.5 + 0.5 + noise2(x*0.03,z*0.03)*0.15); }
 function autumnAmt(x,z){ return smoothstep(0.3,0.65,noise2(x*0.013+90, z*0.013-40))*0.85; }

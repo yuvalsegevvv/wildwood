@@ -29,7 +29,7 @@ const ROADS=(()=>{
     R('The Redgate Road',[S,[-70,14],[-105,16],[-160,20],[-240,32],[-320,40],[HX0+REDGATE_CL+30,REDGATE_Z]],3),
     R('The Shore Road',[[-105,16],[-122,110],[-110,220],[-92,330],[-84,WZ1-40]],4),
     // pvp: a spur of the Shore Road west to the Proving Isle (shared/pvp.js); the lake's water makes its causeway (the Proving Bridge) by itself
-    R('The Proving Road',[[-102,282],[-128,283],[-156,285],[-172,292]],15),
+    R('The Proving Road',[[-86,376],[-60,381],[-30,384],[0,385]],15),
     R('The Tunnel Road',[S2,[TUN.p1+2,TUN.z]],5),
     R('The Gate Road',[S2,[560,-160],[650,-195],[760,-240],[850,-300],arenaGate(ARENA20,850,-300,3)],6),
     R('The Hollow Road',[S2,[560,-40],[600,80],[592,200],arenaGate(ARENA25,592,200,3)],7),
