@@ -87,6 +87,7 @@ function terrainColor(x,z,h,g,out,noCut){   // noCut: colour as if the tunnel's 
   }
   if(hf>0){ hoarColor(x,z,h,g,_hc); out.lerp(_hc,hf); }
   if(gf>0){ greyColor(x,z,h,g,_hc); out.lerp(_hc,gf); }
+  { const sf=smoothstep(HX0-12,HX0-72,x)*(1-gf); if(sf>0){ sunColor(x,z,h,g,_hc); out.lerp(_hc,sf); } }   // the Sunscar west of the Sunwall (terrain-color-sun.js)
   dgEntTint(x,z,out);   // dungeons: the ground round the Elder and the Falls Door
   out.multiplyScalar(0.92+n2*0.16);
   return out;

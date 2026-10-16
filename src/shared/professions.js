@@ -64,7 +64,7 @@ const NODES=(()=>{
   // the home forest (ring zones and the three edge zones) and the Sakura Vale: 2 ore, 2 trees and each herb of the land, by the zone's gear tier
   for(const [land,rng] of [[0,mulberry32(5151)],[1,mulberry32(5152)]])
     for(const zn of ZONES){
-      if(zn.boss||zn.arena||zn.hoar||zn.grey||!!zn.vale!==!!land) continue;   // (the Greyspine has no nodes yet: it wants its own ore, logs and herbs)
+      if(zn.boss||zn.arena||zn.hoar||zn.grey||zn.sun||!!zn.vale!==!!land) continue;   // (the Greyspine has no nodes yet: it wants its own ore, logs and herbs)
       const t=Math.min(tierFor(zn.level),land?4:3), ore=ORE_GRADES[t][0], log=LOG_GRADES[t][0]==='frostwood'?'frostpine':LOG_GRADES[t][0];
       const good=(x,z)=>rawHeight(x,z)>=2.2&&(land||riverDist(x,z)>8);   // (well above the waterline: the client's finer terrain must not dip a node under it)
       const n=!land&&zn.level<=14?3:2, herbA=HERB_LANDS[land][0][0], herbB=HERB_LANDS[land][1][0];   // the inner woods (copper, iron, silverstone) have only 4-5 zones each: a third vein and tree in each
@@ -75,6 +75,11 @@ const NODES=(()=>{
   { const rng=mulberry32(5153), good=(x,z)=>rawHeight(x,z)>=waterSurf(x,z)+2.2&&!LORE.some(L=>Math.hypot(L.x-x,L.z-z)<8), GREY_BLACK={27:3,28:5,32:3};   // (and clear of the story's lore spots)
     for(const lv of [26,27,28,29,30,31,32]){ const zn=ZONES.find(z=>z.key==='g'+lv);
       for(const kind of ['rimeore','rimeore','frostpine','frostpine','snowmoss','snowmoss',...Array(GREY_BLACK[lv]||0).fill('blackstone')]) put(rng,zn,kind,good); } }
+  // the Sunscar, after the Greyspine so that no older node moves: in each of its nine zones 2 rime ore, 2 frostpines and 1 snowmoss (the top grades again; the desert's own ore, wood and herbs are not made yet,
+  // docs/areas/sunscar.md), off the river, the pans and the glass
+  { const rng=mulberry32(5154), good=(x,z)=>rawHeight(x,z)>=waterSurf(x,z)+2.2&&!sunKeepOut(x,z,3)&&sunPanK(x,z)<0.2&&sunGlassK(x,z)<0.2;
+    for(let lv=28;lv<=36;lv++){ const zn=ZONES.find(z=>z.key==='s'+lv);
+      for(const kind of ['rimeore','rimeore','frostpine','frostpine','snowmoss']) put(rng,zn,kind,good); } }
   return out;
 })();
 // the nearest node within r metres of (x, z) (index into NODES), or -1

@@ -13,15 +13,7 @@ function gwWall(w,h,d,base,course,rag,seed){
   return pc(g,(x,y,z,c)=>{ const r=Math.round(y/segy), q=Math.round((x+w/2)/segx); c.set(base).multiplyScalar(0.8+0.17*((r+q)&1)+0.1*h3(r,q,Math.round(z*2))); });   // ashlar: blocks in a checker, each a little different
 }
 const gwRot=(tx,tz)=>Math.atan2(-tz,tx);   // the frame angle that turns a box's long side (local x) along the tangent (tx,tz)
-function gwPolyD(x,z,pts){ let m=1e9,bx=0,bz=0; for(let i=0;i<pts.length-1;i++){ const a=pts[i],b=pts[i+1],dx=b[0]-a[0],dz=b[1]-a[1],l2=dx*dx+dz*dz||1,t=clamp(((x-a[0])*dx+(z-a[1])*dz)/l2),px=a[0]+dx*t,pz=a[1]+dz*t,d=Math.hypot(x-px,z-pz); if(d<m){ m=d; bx=px; bz=pz; } } return [m,bx,bz]; }
-// a smooth curve through points (Catmull-Rom), a sample about every `step` metres
-function gwSpline(pts,step){ const out=[];
-  for(let i=0;i<pts.length-1;i++){ const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(pts.length-1,i+2)], n=Math.max(2,Math.ceil(Math.hypot(p2[0]-p1[0],p2[1]-p1[1])/step));
-    for(let k=0;k<n;k++){ const t=k/n, t2=t*t, t3=t2*t, f=(a,b,c,d)=>0.5*(2*b+(c-a)*t+(2*a-5*b+4*c-d)*t2+(-a+3*b-3*c+d)*t3); out.push([f(p0[0],p1[0],p2[0],p3[0]),f(p0[1],p1[1],p2[1],p3[1])]); } }
-  out.push(pts[pts.length-1].slice()); return out; }
-let GW_RV=null, GW_LN=null;
-function gwRiver(){ if(GW_RV) return GW_RV; const G=GLASSWELL, lk=G.lake;   // in from the River Gate to the lake's middle, and from the lake out by the Weir
-  return GW_RV={rin:gwSpline(G.river.concat([[lk.x,lk.z-lk.rz*0.4]]),1.5),rout:gwSpline([[lk.x-10,lk.z+6]].concat(G.riverOut),1.5)}; }
+let GW_LN=null;
 const gwInLake=(x,z,m)=>{ const k=GLASSWELL.lake; return ((x-k.x)/(k.rx+m))**2+((z-k.z)/(k.rz+m))**2<1; };
 function gwWaterAt(x,z,m){ if(gwInLake(x,z,m)) return true; const R=gwRiver(); return gwPolyD(x,z,R.rin)[0]<2.5+m||gwPolyD(x,z,R.rout)[0]<2.5+m; }
 // the lanes from every door to the nearest road, painted on the floor (like the village's door paths)

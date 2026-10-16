@@ -13,7 +13,7 @@ const el=s=>document.querySelector(s);
     ok('the guide has its seven tabs, each with text',ids.length===7&&ids.every(i=>pg[i].h.length>200),ids.join());
     ok('the reactions page lists all fifteen',(pg.reactions.h.match(/<tr>/g)||[]).length===15);
     G.guestGateShow('level'); ok('the guest popup says to register',!el('#guestGate').hidden&&/Register/.test(el('#ggText').textContent)); el('#ggLater').click(); ok('and closes with Not now',el('#guestGate').hidden);
-    G.openVersions(); ok('the versions panel opens with two lists',!el('#versions').hidden&&Object.keys(G.verPages()).length===2); G.closePanels();
+    G.openVersions(); ok('the versions panel opens with three lists',!el('#versions').hidden&&Object.keys(G.verPages()).length===3); G.closePanels();
     G.openGuide(); ok('the guide opens as a panel',!el('#guide').hidden); G.closePanels(); ok('and closes with the others',el('#guide').hidden); }
   // the first-load diet: the ground of far lands is coloured when you come near, and the far villages' people are built after the loading screen
   { const bands=G.TERRAIN_BANDS, wait0=bands.filter(b=>!b.ready), ready0=bands.filter(b=>b.ready), npc0=G.NPCs.length;
@@ -128,9 +128,9 @@ const el=s=>document.querySelector(s);
     G.P.ground=true; G.P.x=flat[0]+0.5; G.P.z=flat[1]; G.slopeBlock(flat[0],flat[1]); ok2=Math.abs(G.P.x-(flat[0]+0.5))<1e-9;
     G.P.x=sv.x; G.P.y=sv.y; G.P.z=sv.z; G.P.ground=sv.g; G.P.vx=sv.vx; G.P.vz=sv.vz;
     ok('terrain steeper than the slope limit (1.2) cannot be climbed: the step is turned along the face (or dropped) and never climbs more than the limit; gentle ground is no problem',!!cx&&ok1&&ok2,cx?'steep face at '+cx.join(', '):'no steep face found'); }
-  { const Gs=G.GREY_GATES, R0=G.GEAR.river, N0=G.GEAR.neck, mk=(x,z)=>({x,z,inTun:false}), res=[];
+  { const Gs=G.GREY_GATES.filter(T=>!T.dir), R0=G.GEAR.river, N0=G.GEAR.neck, mk=(x,z)=>({x,z,inTun:false}), res=[];
     for(const T of Gs){ const a=mk(T.x-4,T.z), b=mk(T.x-4,T.z); G.GEAR[T.id]=0; G.worldBounds(a,T.x+1,0.32,T.z); G.GEAR[T.id]=1; G.worldBounds(b,T.x+1,0.32,T.z); res.push([a.x,b.x]); }
-    G.GEAR.river=R0; G.GEAR.neck=N0;
+    G.GEAR.river=R0; G.GEAR.neck=N0;   // (the river gate's and Redgate's walls run east-west or north-south: sunscar-smoke tests them)
     ok('a shut rock fall stops you east of each west-wall canyon; an open one lets you through to the edge',res.every(([s,o],i)=>s>=Gs[i].x+0.79&&o<Gs[i].x),res.map(r=>r.map(v=>v.toFixed(1)).join('/')).join(' ; ')); }
   ok('the ice wall is hidden once the way is open',G.HOAR.wall&&!G.HOAR.wall.visible);
   ok('Rimehold plays its own music and Frostgate Pass its own zone label',G.musicThemeHere()==='rimehold'&&G.landHere()==='hoar');
@@ -143,7 +143,7 @@ const el=s=>document.querySelector(s);
     ok('a worn pendant shows in its slot beside the chest',/data-slot="pendant" style="grid-area:neck"/.test(h)&&h.includes('data-id="pendant-xp-e+3"')); }
   ok('the tools have icons of their own',['pick1','axe1','sickle1','pick6-l'].every(id=>G.itemIcon(G.ITEM[id]).includes('<svg'))&&G.itemIcon(G.ITEM.pick1)!==G.itemIcon(G.ITEM.axe1)&&G.itemIcon(G.ITEM.axe1)!==G.itemIcon(G.ITEM.sickle1));
   G.P.x=G.VIL3.tele.x; G.P.z=G.VIL3.tele.z; G.P.y=G.getH(G.P.x,G.P.z); G.openTravel();
-  { const h=el('#trBody').innerHTML; ok('stepping on a circle opens a window with every village: this one marked, the open ones to travel to, Highmark cold until you have been there',G.nearCircle()===G.VIL3&&(h.match(/data-to=/g)||[]).length===4&&/You are here/.test(h)&&(h.match(/Travel here/g)||[]).length===2&&(h.match(/<button[^>]*disabled/g)||[]).length===2); }   // (four villages: this one, two open, Highmark still cold)
+  { const h=el('#trBody').innerHTML; ok('stepping on a circle opens a window with every village: this one marked, the open ones to travel to, Highmark cold until you have been there',G.nearCircle()===G.VIL3&&(h.match(/data-to=/g)||[]).length===5&&/You are here/.test(h)&&(h.match(/Travel here/g)||[]).length===2&&(h.match(/<button[^>]*disabled/g)||[]).length===3); }   // (five villages: this one, two open, Highmark and Glasswell still cold)
   await wait(400); G.NET.send({t:'warp',to:'hanami'}); await wait(500); G=c.G();   // (the server must have heard where you stand) ok('choosing Hanami in the window carries you there',Math.hypot(G.P.x-G.VIL2.x,G.P.z-G.VIL2.z)<G.VIL2.r);
   ok('a node is drawn for every resource node',G.NODE_VIEWS.length===G.NODES.length&&G.NODES.length>=60);
   { const first=G.NODES.find(n=>n.kind==='snowmoss'), far=n=>Math.min(...G.MONS.map(m=>Math.hypot(m.x-n.x,m.z-n.z)));   // (a snowmoss node of the same tier that is farthest from every monster: beside a camp a level-24 hiker is knocked out before the potion check below)
@@ -267,7 +267,7 @@ const el=s=>document.querySelector(s);
       ok('the four villages fit the drawn towns within 25 art pixels (a drawing, not a survey)',vs.every((v,i)=>Math.hypot(F.u[0]*v.x+F.u[1]*v.z+F.u[2]-ts[i][0],F.v[0]*v.x+F.v[1]*v.z+F.v[2]-ts[i][1])<25));
       const p0={x:G.P.x,z:G.P.z}; let bad=[], n=0;
       for(const [i,l] of Object.keys(lands).entries()){ G.P.x=vs[i].x; G.P.z=vs[i].z; const p=G.wmapPin(); if(!p||Math.hypot(p[0]-ts[i][0],p[1]-ts[i][1])>1) bad.push(l+' village'); }
-      for(let z=G.WZ0;z<=G.WZ1;z+=30) for(let x=G.WX0;x<=G.WX1;x+=30){ if(G.getH(x,z)<0.5) continue; G.P.x=x; G.P.z=z; const l=G.landHere(), p=G.wmapPin(); n++; if(!p||G.wmapRegionAt(p[0],p[1])!==l) bad.push(l+' '+x+','+z); }
+      for(let z=G.WZ0;z<=G.WZ1;z+=30) for(let x=G.WX0;x<=G.WX1;x+=30){ if(G.getH(x,z)<0.5) continue; G.P.x=x; G.P.z=z; const l=G.landHere(), p=G.wmapPin(); n++; if(l==='sun'){ if(p) bad.push('sun pin '+x+','+z); continue; } if(!p||G.wmapRegionAt(p[0],p[1])!==l) bad.push(l+' '+x+','+z); }
       G.P.x=p0.x; G.P.z=p0.z;
       ok('your pin is exact at your land\'s village and stays in your own land\'s region at every dry point of the world',bad.length===0&&n>1500,n+' points'+(bad.length?'; off: '+bad.slice(0,6).join(' | '):'')); }
     // opening: the panel, the fog of the locked lands, the groups of puffs

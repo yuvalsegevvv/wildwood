@@ -36,15 +36,15 @@ const coinsAvg=(d,L)=>Math.max(1,Math.round(W.fLv(L)*2*Math.pow(1.1,Math.max(0,L
 const countOf=d=>W.MONS.filter(m=>m.def.id===d.id).length;
 function defRef(d){ return loc(MON_DEF_FILE,d.grey?new RegExp("greyDef\\('\\w+','"+d.id+"'"):new RegExp("\\bid:'"+d.id+"'")); }
 function zoneOf(d,arena){ const zn=arena?W.ZONES.find(z=>z.key===arena):W.defZone(d); return zn?zn.name:'—'; }
-function landOfZone(zn){ return zn.hoar?'hoar':zn.vale?'vale':zn.ring===3?'edge':'ring'; }
-const MON_HEAD=['Id','Name','Lv','El','HP','Hits','Dmg','Atk s','Spd','Aggro','XP','Coins','Count','Zone','Drop','Model','Defined'];
+function landOfZone(zn){ return zn.sun?'sun':zn.hoar?'hoar':zn.vale?'vale':zn.ring===3?'edge':'ring'; }
+const MON_HEAD=['Id','Name','Lv','El','HP','Hits','Dmg','Atk s','Spd','Aggro','XP','Coins','Count','Res','Acc','Zone','Drop','Model','Defined'];
 function monRow(d){
   const L=d.level, mat=W.MATS[d.id];
   return [code(d.id),d.name,L,d.el||'—',d.hp,num(d.hp/W.expDmg(L)),d.dmg,d.atk,d.speed,d.aggro?d.aggro+' m':'passive',num(d.xp),d.noXp?'—':coinsAvg(d,L),
-    countOf(d)||'on demand',zoneOf(d),mat?mat.name:'—',d.model+' ×'+d.scale,defRef(d)];
+    countOf(d)||'on demand',d.res?d.res:'—',d.acc?d.acc:'—',zoneOf(d),mat?mat.name:'—',d.model+' ×'+d.scale,defRef(d)];
 }
 const monTable=defs=>rowsOf(MON_HEAD,defs.map(monRow));
-const groups={ring:[],edge:[],vale:[],hoar:[]};
+const groups={ring:[],edge:[],vale:[],hoar:[],sun:[]};
 for(const d of W.MON_DEFS) groups[landOfZone(W.defZone(d))].push(d);
 
 function mobsDoc(){
@@ -94,12 +94,13 @@ function mobsDoc(){
   s+=section(5,'Home forest: the edges (levels 16-20)','Side content with its own `zone` and `count` (the shore, the Sunwall\'s foot, the Greyspine foothills).',groups.edge);
   s+=section(6,'Sakura Vale (levels 16-25)','Two kinds per level, 12 of each, in ten zones.',groups.vale);
   s+=section(7,'Hoarfrost Reach (levels 22-30)','Two kinds per level, 12 of each, in nine zones.',groups.hoar);
+  s+=section('7b','The Sunscar (levels 28-36)','Two kinds per level, in nine zones (`s28`-`s36`, `shared/sunzones.js`). `Res` and `Acc` are the resistance and accuracy of the rolls (`docs/ROLLS.md`).',groups.sun);
 
-  s+='## 8. Bosses (6)\n\nHealth is 70 hits of a same-level player (×1.5 from level 10); a hit is 16% of that player\'s health. Above level 60 (zone tiers IV and V, dungeons +IV and +V) a boss creeps on top of the late creep of every monster: +1.25% health and +5% damage for every level over 60 (`BOSS_CREEP_*`, `defAt`). Each boss has its own move set on top of the shared melee and the phases at 60% and 30% (`server/boss.js`).\n\n';
+  s+='## 8. Bosses ('+nBoss+')\n\nHealth is 70 hits of a same-level player (×1.5 from level 10); a hit is 16% of that player\'s health. Above level 60 (zone tiers IV and V, dungeons +IV and +V) a boss creeps on top of the late creep of every monster: +1.25% health and +5% damage for every level over 60 (`BOSS_CREEP_*`, `defAt`). Each boss has its own move set on top of the shared melee and the phases at 60% and 30% (`server/boss.js`).\n\n';
   s+=rowsOf(['Id','Name','Lv','El','HP','Dmg','Atk s','Spd','XP','Coins','Material','Arena','Summons','Prop','Music','Move set','Defined'],W.BOSS_DEFS.map(b=>{
     const d=b.def, L=d.level;
     return [code(d.id),d.name,L,d.el,d.hp,d.dmg,d.atk,d.speed,num(d.xp),coinsAvg(d,L),W.MATS[d.id].name,zoneOf(d,b.arena),b.add?b.add.name:'—',b.prop?b.prop.name:b.totem?b.totem.name:'—',d.music||'boss'+L,
-      code(b.kit)+' '+loc(SV+'boss-kits-'+(['roots','tide'].includes(b.kit)?'home':['oni','kitsune'].includes(b.kit)?'vale':['gryphon','golem'].includes(b.kit)?'grey':'north')+'.js',new RegExp('^BOSS_KITS\\.'+b.kit+'=')),defRef(d)];
+      code(b.kit)+' '+loc(SV+'boss-kits-'+(['roots','tide'].includes(b.kit)?'home':['oni','kitsune'].includes(b.kit)?'vale':['gryphon','golem'].includes(b.kit)?'grey':['glass','sandwyrm'].includes(b.kit)?'sun':'north')+'.js',new RegExp('^BOSS_KITS\\.'+b.kit+'=')),defRef(d)];
   }))+'\n\n';
   s+='Boss quest notices (`BOSS_QUESTS`, '+loc(SH+'quests.js',/^const BOSS_QUESTS=/)+'): '+W.BOSS_QUESTS.map(q=>`${q.title} from level ${q.from}`).join('; ')+'.\n\n';
   s+='### Boss skills (36: a skill and a burst for each class, each with a 10% drop chance per kill)\n\nRows `drop:\'<boss id>\'` at the end of `SKILLS` ('+loc(SH+'classes.js',/^const SKILLS=\{/)+' ...), listed by `BOSS_SKILLS` ('+loc(SH+'drops.js',/^const BOSS_SKILL_CHANCE/)+').\n\n';
@@ -166,7 +167,7 @@ function equipmentDoc(){
   let s=HEADER('Equipment: every piece of gear and tool','Every item in `ITEM`: 7 pieces × 6 level tiers × 5 rarities = 210 pieces of gear, the 90 profession tools, and the '+W.dgAllIds().length+' level-30 dungeon pieces and rings (section 7), with the numbers the server uses and where they are defined.');
 
   s+='## 1. Where it is defined\n\n'+rowsOf(['What','Where'],[
-    ['Every item (generated in two loops from the arrays below): `ITEM`, `ITEM_LIST` (gear: 210), `TOOL_LIST` (tools: 90, in `ITEM` but not in `ITEM_LIST`)',code('ITEM')+' '+loc(IT,/^const ITEM=\{\}/)],
+    ['Every item (generated in two loops from the arrays below): `ITEM`, `ITEM_LIST` (gear: 210), `TOOL_LIST` (tools: 90, in `ITEM` but not in `ITEM_LIST`)',code('ITEM')+' '+loc(IT,/^const ITEM=/)],
     ['Names of every piece and tier',code('SLOT_NAMES')+' '+loc(IT,/^const SLOT_NAMES=/)],
     ['Level a tier needs',code('TIER_LV')+' '+loc(IT,/^const TIER_LV=/)],
     ['Weapon attack by tier',code('TIER_ATK')+' '+loc(BAL,/^const TIER_ATK=/)],

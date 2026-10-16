@@ -1,4 +1,4 @@
-# The eight outfits (looks)
+# The twelve outfits (looks)
 
 > **Built, not approved.** These are the *outfits* of the eight signature characters of the skill-set plan (`docs/SKILL-SETS.md`, `docs/skillkits/THEMES.md` on the branch `claude/skill-sets-plan-lp2c72`),
 > built as real 3D kits in `src/game/outfits/<id>.js`. The skills and their rules are not touched. Nothing grants an outfit in the game yet: the character editor's Clothes, Hair and Features tabs let anyone wear any piece (a preview; unlocking is the wardrobe's job).
@@ -23,6 +23,10 @@
 | [Ambrose](ambrose.md) | M | healer, water | tending | a soft triangle: a reed cone hat on the back, a flared apron-robe, a vial belt | `reedknot` / `soft` | +18,800 |
 | [Dunstan](dunstan.md) | M | support (buff), fire | a flag and a beat | a rallying column: a plumed shako, a flame tabard, a drum at the hip | `goldqueue` / `hearty` | +20,800 |
 | [Marigold](marigold.md) | F | mixed (safe DPS + support), light | performance | a little stage: a ring of lanterns, twin tails, a puffed bolero, a tulle skirt | `ribbontails` / `bright` | +20,000 |
+| [Nephra](nephra.md) | F | healer (shields), earth | wrappings and gold | a narrow wrapped column under a tall striped headcloth and a broad collar | `kohlstrips` / `tombgaze` | +20,000 (version 3, the desert) |
+| [Sabir](sabir.md) | M | risk DPS, fire | a raid in motion | a wide turban, crossed bandoliers, a sash with fringed tails | `ropebraid` / `narrowsight` | +21,000 (version 3, the desert) |
+| [Ogden](ogden.md) | M | grind, water | a shift that never ended | a slouch: a flat cap with a weed, a torn waistcoat, green shins, a toe tag | `rotstraggle` / `deadgaze` | +14,000 (version 3, the dark land) |
+| [Ottoline](ottoline.md) | F | support (both), dark | a doll in mourning dress | a little bell: a lace headdress, ringlets, a corset, a tiered skirt | `himeringlets` / `glassgaze` | +25,000 (version 3, the dark land) |
 
 The hiker is about 54,000 triangles; an outfit adds 15,000-22,000 at full detail (`charDetail('hero')`), proportionally fewer for other players and villagers (every segment count goes through `sg(n)`).
 

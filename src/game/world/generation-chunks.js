@@ -47,8 +47,18 @@ function* genChunk(ci){
     const [x,z]=pt(10);
     if(Math.hypot(x-spawn.x,z-spawn.z)<7) continue;
     if(vDist(x,z)<VR+6 || nearPath(x,z,3.5) || arenaDist(x,z)<25 || inTunnelCut(x,z,2)) continue;
-    const h=getH(x,z); if(h<0.8 || bareGround(x,z) || storyClear(x,z) || dgEntClear(x,z)) continue;   // dungeons: no trees at a door or signpost
-    const g=grad(x,z); if(g>0.95) continue;
+    const h=getH(x,z), g=grad(x,z);
+    if(inSun(x,z)&&x<HX0-12){   // the Sunscar: palms and reeds by the river and the Springhead, cacti and thorn trees on the dry ground, nothing on the mesas, the pans or the glass
+      if(sunKeepOut(x,z,2)||g>0.55||sunPanK(x,z)>0.2||sunGlassK(x,z)>0.2||sunMesaH(x,z)>3) continue;
+      const gk=sunGreenK(x,z), pr=gk*0.5+0.014; if(rand()>pr) continue;
+      const type=gk>0.25&&rand()<0.7?'palm':rand()<0.55?'cactus':'thorn', s=type==='palm'?R(0.8,1.3):R(0.7,1.3);
+      if(!canPlace(x,z,3*Math.min(s,1.1))) continue;
+      addCol(x,z,RAD[type]*s);
+      const m=mtx(x,h-0.15,z,rand()*TAU,s,s*R(0.92,1.1),s,R(-0.04,0.04),R(-0.04,0.04));
+      items[type].push({x,z,m,c:tint(type==='thorn'?pick(PAL.thorn):pick(PAL.palm))}); trees.push({x,z,s}); placed++; continue;
+    }
+    if(h<0.8 || bareGround(x,z) || storyClear(x,z) || dgEntClear(x,z)) continue;   // dungeons: no trees at a door or signpost
+    if(g>0.95) continue;
     const hoar=inHoar(x,z), fringe=hoar?smoothstep(-740,-570,z):0;   // the taiga fringe: spruce grows thickest on the plateau's southern edge
     if(hoar&&(iceDist(x,z)<4||inPass(x,z,4))) continue;                 // none on the frozen lakes or in the pass
     if(inGrey(x,z)&&h>greyTreeline(x,z)) continue;                      // the Greyspine's treeline

@@ -2,6 +2,10 @@
 
 Area guide. Moved word for word from `CLAUDE.md` (sections 4, 8 and 9), where each item now has a short row; open this file when your task touches this area.
 
+## The Sunscar (the fifth land)
+
+Built in version 3: see `docs/areas/sunscar.md` (ground, gates `river` / `redgate`, `inSun`, Glasswell `VIL5`, zones `s28`-`s36`). `landAt(x,z)` returns `'sun'` for it; `GREY_GATES` now holds three rock falls (`neck`, `river` with `dir:'s'`, `redgate` with `dir:'e'`).
+
 ## Where to change what
 
 ### Hoarfrost Reach (levels 22-30): the plateau, Frostgate Pass and its ice wall, Rimehold `VIL3`, zones `h22`-`h30`, the two boss arenas, the rectangle `NORTH_D` / `EAST_W` / `HZ0` / `WZ0`

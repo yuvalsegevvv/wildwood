@@ -42,7 +42,7 @@ function wmapFit(){
 }
 // your pin: from your land's village (exact there) by the fitted slopes, and never outside your land's region (a coast the drawing does not have is walked back to the shore)
 function wmapPin(){
-  if(dgIn()) return null;   // (a run is far from the map)
+  if(dgIn()||landHere()==='sun') return null;   // (a run is far from the map; the Sunscar is not drawn on the docs map yet: no pin there)
   const land=landHere(), V=[VIL,VIL2,VIL3,VIL4][['home','vale','hoar','grey'].indexOf(land)], T=WMAP_TOWNS[WMAP_TOWN[land]], F=wmapFit(), dx=P.x-V.x, dz=P.z-V.z;
   const tx=T[0]+F.u[0]*dx+F.u[1]*dz, ty=T[1]+F.v[0]*dx+F.v[1]*dz, poly=WMAP_REG[WMAP_LAND[land]];
   if(wmapPip(poly,tx,ty)&&wmapEdgeDist(poly,tx,ty)>6) return [tx,ty];

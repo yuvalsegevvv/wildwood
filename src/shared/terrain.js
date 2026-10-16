@@ -65,7 +65,7 @@ const borderXat=(x,z)=>z<borderZ(x)?borderXN(z):borderX(z);   // the wall on the
 const inVale=(x,z)=>x>borderXat(x,z);   // the Sakura Vale and the Hoarfrost Reach: east of the Vale Wall, or north of the north wall and east of the Greyspine | Reach wall
 const inHoar=(x,z)=>z<borderZ(x)&&x>borderXN(z);   // the Hoarfrost Reach: north of the north wall (the forest's and the vale's), east of the Greyspine's wall
 const inGrey=(x,z)=>z<borderZ(x)&&x<borderXN(z);   // the Greyspine: north-west, over the Sunscar's plateau and the forest's north-west corner
-const inSun=(x,z)=>x<HX0&&z>=borderZ(x);           // the Sunscar's plateau (not built): south of the Greyspine, west of the Sunwall
+const inSun=(x,z)=>x<HX0&&z>=borderZ(x);           // the Sunscar, the fifth land (shared/sunland.js): south of the Greyspine, west of the Sunwall
 /* A border range's profile. Its width (to where its foot starts) and its height vary along the line (t: z for the Vale Wall, k 1; x for the north wall,
    k 3), so a wall is broad massifs and narrow necks, with a low irregular skirt of foothills beyond its body. Both lands on either side of a crest add the
    very same terms (d: distance to the crest line, negative past it on the north wall, which goes on as a plateau), so they meet without a step. */
@@ -154,6 +154,7 @@ const SUNWALL_H=52, REDGATE_Z=40;
 // distance to this land's sea edge: bays, small wiggles, the vale's corner rounded (a soft minimum of its two shores)
 function coastDist(x,z){
   if(z<borderZ(x)||x>borderX(z)) return csOuter(x,z);   // the vale, the Hoarfrost Reach and the Greyspine: their bays, rounded corners and islets (shared/coasts.js)
+  if(x<HX0-12) return x<HX0-72?sunCoast(x,z):lerp((WZ1-z)+noise2(x*0.011+17,z*0.011-29)*10-(noise2(x*0.0045+5,z*0.0045-7)*0.5+0.5)*28,sunCoast(x,z),smoothstep(HX0-12,HX0-72,x));   // the Sunscar: the Bight in the west as well (shared/sunland.js)
   return (WZ1-z)+noise2(x*0.011+17,z*0.011-29)*10-(noise2(x*0.0045+5,z*0.0045-7)*0.5+0.5)*28;   // the home forest's south shore
 }
 // how far in from the forest's west edge (HX0) the Sunwall's cliff stands (its middle), and how much earlier a northern rim starts to rise
@@ -168,7 +169,7 @@ function shore(h,c,keep,wide){
   return lerp(h,-5,smoothstep(28,6,c)*k);
 }
 /* the Sunwall: a scree slope, then a cliff (about 16 m wide) up to the flat plateau at SUNWALL_H, along sunwallLine.
-   Redgate Canyon cuts through it at z = REDGATE_Z: a floor climbing west, blocked by a rock fall inside the wall */
+   Redgate Canyon cuts through it at z = REDGATE_Z: a floor climbing west to the Sunscar's plateau, shut by a rock fall (SUN_RED) until the sand wyrm falls */
 const REDGATE_CL=sunwallLine(REDGATE_Z);
 function sunwall(x,z,h,eW){
   const cl=sunwallLine(z); if(eW>=cl+70) return h;
@@ -176,7 +177,7 @@ function sunwall(x,z,h,eW){
   const top=SUNWALL_H+noise2(x*0.03,z*0.03)*2.5, cliff=smoothstep(cl+8+noise2(z*0.02,3.3)*4,cl-8,eW);
   h=lerp(h,lerp(Math.max(h,top),top,smoothstep(-4,-60,eW)),cliff);   // (west of the forest's edge the plateau goes on, and flattens: the Sunscar's, not built)
   const dz=Math.abs(z-REDGATE_Z), c0=REDGATE_CL;
-  if(dz<16&&eW<c0+48){ const floor=4+Math.max(0,c0+38-eW)*0.22+13*Math.exp(-Math.pow((eW-c0+8)/6,2))*(0.8+0.4*(noise2(z*0.3,eW*0.3)*0.5+0.5)); h=lerp(h,Math.min(h,floor),smoothstep(16,7,dz)); }
+  if(dz<16&&eW<c0+48){ const floor=4+Math.max(0,c0+38-eW)*0.22; h=lerp(h,Math.min(h,floor),smoothstep(16,7,dz)); }   // (the rock fall that choked it is a thing of its own now: SUN_RED, shared/sunland.js, opened by the sand wyrm)
   return h;
 }
 // no trees or bushes on the beach, on the Sunwall's face and plateau, or in Redgate Canyon
@@ -260,11 +261,12 @@ function homeHeight(x,z){
   const bx=borderX(z), bz=borderZ(x), dn=z-bz-rimWobble(x,11), f=(Math.abs(bx-x)<250||dn<250)?fbm(x*0.02,z*0.02,3)*0.5+0.5:0;
   const cr=(Math.abs(bx-x)<130||dn<134)?crest(x,z):0;
   h += wallAdd(Math.abs(bx-x),z,1,48,14,20,f,cr)*smoothstep(bz-60,bz+10,z);   // the Vale Wall (it ends in the north wall's crest)
-  h += wallAdd(dn,x,3,62,18,22,f,cr);   // the foothills of the Greyspine and the Reach
+  const wN=wallAdd(dn,x,3,62,18,22,f,cr); h += wN;   // the foothills of the Greyspine and the Reach (wN: the Sunscar's north wall is this term on its plateau)
   h = riverCut(h,Math.abs(bx-x),z);   // (the Vale Wall is a river along most of its length)
-  h = sunwall(x,z,h,x-HX0);   // (west of HX0 the Sunwall's top goes on: the Sunscar's plateau, which the world's west edge ends in a cliff to the sea)
+  h = sunwall(x,z,h,x-HX0);   // (west of HX0 the Sunwall's top goes on: the Sunscar's plateau)
+  if(x<HX0-12) h = sunHook(x,z,h,wN);   // sunscar: the fifth land's ground (shared/sunland.js: mesas, dunes, pans, glass, the Bowl, the river)
   h = lerp(h,-4,smoothstep(WX0+80,WX0+12,x));
-  return shore(h, coastDist(x,z), Math.max(smoothstep(46,14,bx-x), smoothstep(PVP_ISLE.lakeR+14,PVP_ISLE.lakeR-2,Math.hypot(x-PVP_ISLE.x,z-PVP_ISLE.z))));   // (the Proving Isle's lake lies on the south beach: shore() must not level its bowl)
+  return shore(h, coastDist(x,z), Math.max(smoothstep(46,14,bx-x), smoothstep(PVP_ISLE.lakeR+14,PVP_ISLE.lakeR-2,Math.hypot(x-PVP_ISLE.x,z-PVP_ISLE.z))), x<HX0?60*smoothstep(HX0-12,HX0-72,x):0);   // (the Sunscar's coast eases down over a longer slope: wide)   // (the Proving Isle's lake lies on the south beach: shore() must not level its bowl)
 }
 function forestDensity(x,z){ return clamp(fbm(x*0.0085+31, z*0.0085-12, 3)*1.5 + 0.5 + noise2(x*0.03,z*0.03)*0.15); }
 function autumnAmt(x,z){ return smoothstep(0.3,0.65,noise2(x*0.013+90, z*0.013-40))*0.85; }

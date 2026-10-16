@@ -14,9 +14,11 @@ const PAL={
   sakura:[0xf6c6d6,0xf2b0c8,0xfad4e0,0xeea0bc,0xfbe6ee,0xf4bcd0], maple:[0xc8321e,0xd8502a,0xb82a24,0xe07030,0xa8281e],
   bamboo:[0x6f9a3a,0x7aa844,0x5f8a34], azalea:[0xe0508a,0xf07aa8,0xf4f0f2,0xd84a6a], valeFlowers:[0xf8f4f6,0xffb0cc,0xf6d23c,0xe0508a,0xb080e0,0xfad4e0],
   // the Hoarfrost Reach: snow-laden spruce, dwarf birch with its last rust leaves, frosted shrubs, dry pale tussocks
-  frostSpruce:[0x6f8f86,0x86a69c,0x9fbab0,0x7a9c92], frostBirch:[0x9a6438,0x8a5430,0xa8763e], frostBush:[0x7f918c,0x93a49f,0x6f807c], tussock:[0xb8b090,0xc6bfa0,0xa8a084]
+  frostSpruce:[0x6f8f86,0x86a69c,0x9fbab0,0x7a9c92], frostBirch:[0x9a6438,0x8a5430,0xa8763e], frostBush:[0x7f918c,0x93a49f,0x6f807c], tussock:[0xb8b090,0xc6bfa0,0xa8a084],
+  // the Sunscar: date palms by the river, dry thorn trees
+  palm:[0x6f9a3a,0x84a844,0x5f8a34], thorn:[0x8a8a3a,0x9a9648,0x7a7a34]
 };
-const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3,sakura:0.4,maple:0.3,bamboo:0.7,frostspruce:0.32,dwarfbirch:0.2};
+const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3,sakura:0.4,maple:0.3,bamboo:0.7,frostspruce:0.32,dwarfbirch:0.2,palm:0.35,cactus:0.4,thorn:0.25};
 const moss=new THREE.Color(0x56702f);
 
 function buildGeometries(){
@@ -31,7 +33,10 @@ function buildGeometries(){
     maple:makeBroadleaf({trunkH:2.6, tr:0.22, crownY:4.0, rMain:1.6, blobs:6, spread:1.5, sy:0.65, branches:3, bark:0x3e302a}),
     bamboo:makeBamboo(),
     frostspruce:makeConifer({trunkH:2.6, layers:9, r0:1.7, lh:2.3, spacing:0.95, start:1.1}),
-    dwarfbirch:makeBroadleaf({trunkH:2.4, tr:0.1, crownY:2.8, rMain:0.85, blobs:3, spread:0.6, sy:1.25, branches:0, birch:true})
+    dwarfbirch:makeBroadleaf({trunkH:2.4, tr:0.1, crownY:2.8, rMain:0.85, blobs:3, spread:0.6, sy:1.25, branches:0, birch:true}),
+    palm:makePalm(),
+    cactus:makeCactus(),
+    thorn:makeBroadleaf({trunkH:2.6, tr:0.13, crownY:3.4, rMain:1.9, blobs:4, spread:1.7, sy:0.3, branches:2, bark:0x5a4a38})
   };
   G.bush=[makeBush(4,0.6), makeBush(3,0.45)];
   G.fern=makeFern();
@@ -201,7 +206,7 @@ function* genTerrain(){
   spawn.x=VIL.spawn.x; spawn.z=VIL.spawn.z;
   P.x=spawn.x; P.z=spawn.z; P.y=getH(P.x,P.z);
   { const ux=VIL.x-P.x, uz=VIL.z-P.z; P.yaw=Math.atan2(-ux,-uz); P.face=P.yaw; }
-  buildVillage(); buildVale(); buildHoarfrost(); buildGreyspine(); buildTideBeach(); buildProvingIsle(); buildNodes();   // pvp: the Proving Isle's gate and banners (village/buildings-pvp.js)
+  buildVillage(); buildVale(); buildHoarfrost(); buildGreyspine(); buildSunscar(); buildTideBeach(); buildProvingIsle(); buildNodes();   // pvp: the Proving Isle's gate and banners (village/buildings-pvp.js)
   dgEntBuild();   // dungeons: the three doors and their signposts
   buildGreyfall();   // greyfall: the waterfall that gives the border river its birth (village/buildings-greyfall.js)
 }

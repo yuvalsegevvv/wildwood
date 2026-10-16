@@ -61,6 +61,15 @@ function verPages(){ return {
     <ul>
       <li>The <b>Guide</b> (key ${verKey('guide')}), this Versions list, a world map, new minimap, thousands separators in XP numbers, and a <b>Graphics</b> setting (Light, Medium, Standard, High) in Settings.</li>
       <li>A better sunset, and a first load about 47% faster on a sturdier server.</li>
+    </ul>`},
+  v3:{t:'Version 3',h:`
+    <p>What is new on top of version 2.</p>
+    <h4>Rolled level-40 gear</h4>
+    <ul>
+      <li>Level-40 weapons and armour carry <b>three rolled lines</b> out of <b>13 stats</b> (attack, health, defense, XP, drops, coins, crit chance, crit damage, cooldown reduction, buff duration, reaction strength, accuracy, resistance). Weapons roll higher offence, armour higher defence.</li>
+      <li>The forge has two new tabs. <b>Roll</b> spends a Reroll Stone to roll (or reroll) all three lines of a piece; <b>Sacrifice</b> breaks a spare level-30 or level-40 weapon or armour piece into stones: 1 / 2 / 4 / 8 / 16 by rarity. Weapon pieces use weapon stones, armour uses armour stones.</li>
+      <li>Cooldown reduction from gear stops at 40%.</li>
+      <li><b>Accuracy</b> lowers the chance that a foe resists your hit; <b>resistance</b> is the chance to halve the damage of a hit and shrug off its debuffs (a resisted hit shows as "Resisted").</li>
     </ul>`}
 }; }
 function verRender(){

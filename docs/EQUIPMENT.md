@@ -9,7 +9,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 
 | What | Where |
 |---|---|
-| Every item (generated in two loops from the arrays below): `ITEM`, `ITEM_LIST` (gear: 210), `TOOL_LIST` (tools: 90, in `ITEM` but not in `ITEM_LIST`) | `ITEM` src/shared/items.js:24 |
+| Every item (generated in two loops from the arrays below): `ITEM`, `ITEM_LIST` (gear: 210), `TOOL_LIST` (tools: 90, in `ITEM` but not in `ITEM_LIST`) | `ITEM` src/shared/items.js:25 |
 | Names of every piece and tier | `SLOT_NAMES` src/shared/items.js:10 |
 | Level a tier needs | `TIER_LV` src/shared/items.js:4 |
 | Weapon attack by tier | `TIER_ATK` src/shared/balance.js:14 |
@@ -18,24 +18,24 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | Rarities and their multiplier | `RARITY` src/shared/items.js:7, `RAR_MULT` src/shared/items.js:8 |
 | Base prices (tier) and weight of each piece | `PRICE` src/shared/items.js:21, `SLOT_PRICE` src/shared/items.js:21 |
 | The item id scheme (`sword2`, `sword2-e`) | `itemId` src/shared/items.js:23 |
-| Tools (pickaxe, axe, sickle): materials, prices, double-yield chance by rarity | `TOOL_MAT` / `TOOL_PRICE` / `TOOL_EXTRA` src/shared/items.js:36-37 |
-| What gear adds to a player (health, attack, defense) | `gearStatsOf` src/shared/items.js:61, `recalcP` src/server/players.js:95 |
-| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:154 |
+| Tools (pickaxe, axe, sickle): materials, prices, double-yield chance by rarity | `TOOL_MAT` / `TOOL_PRICE` / `TOOL_EXTRA` src/shared/items.js:38-39 |
+| What gear adds to a player (health, attack, defense) | `gearStatsOf` src/shared/items.js:63, `recalcP` src/server/players.js:96 |
+| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:162 |
 | Wearing an item (level check, slot) | `equipP` src/server/economy.js:25 |
-| Shops: common items only, +20% per copy bought | `buyP` src/server/economy.js:38, `shopPrice` src/shared/items.js:47, shop panel src/game/economy/shops.js:20 |
-| Monster and boss drops (the item roll and its tier) | `rollMonsterRarity` / `rollBossRarity` src/shared/items.js:51, used in `rewardKill` src/server/combat.js:67 |
-| Quest board rewards (item rarity) | `rollQuestItemRarity` src/shared/quests.js:64 |
-| Merging three identical items into the next rarity (Greta's forge) | `mergeP` src/server/economy.js:15, `mergedId` src/shared/items.js:48 |
+| Shops: common items only, +20% per copy bought | `buyP` src/server/economy.js:38, `shopPrice` src/shared/items.js:49, shop panel src/game/economy/shops.js:20 |
+| Monster and boss drops (the item roll and its tier) | `rollMonsterRarity` / `rollBossRarity` src/shared/items.js:53, used in `rewardKill` src/server/combat.js:68 |
+| Quest board rewards (item rarity) | `rollQuestItemRarity` src/shared/quests.js:67 |
+| Merging three identical items into the next rarity (Greta's forge) | `mergeP` src/server/economy.js:15, `mergedId` src/shared/items.js:50 |
 | Crafting from ore / logs (rarity common to epic) | `craftCost` src/shared/crafting.js:12, `craftP` src/server/crafting.js:6 |
-| The level-30 dungeon pieces and rings: stats, ids, rewards, enhancing | `dgItem` src/shared/dungeon-rewards.js:49, registered in `ITEM` by src/shared/dungeon-items.js:10; the drop of the Tempering Stone and tempering `dgTemperP` src/server/dungeon-gear.js:27 |
-| How a piece looks on the character | `ARMOR_LOOK` src/shared/items.js:54 |
+| The level-30 dungeon pieces and rings: stats, ids, rewards, enhancing | `dgItem` src/shared/dungeon-rewards.js:55, registered in `ITEM` by src/shared/dungeon-items.js:10; the drop of the Tempering Stone and tempering `dgTemperP` src/server/dungeon-gear.js:27 |
+| How a piece looks on the character | `ARMOR_LOOK` src/shared/items.js:56 |
 | The inventory icon of every piece and tool | src/game/ui/item-icons.js:1 (the file) |
-| A save's gear (what is worn, what is in the bag) | `newGearFor` src/shared/items.js:60, `sanitizeGear` src/server/players.js:5 |
+| A save's gear (what is worn, what is in the bag) | `newGearFor` src/shared/items.js:62, `sanitizeGear` src/server/players.js:5 |
 
 ## 2. How the stats are made
 
 - **Weapon attack** = round(TIER_ATK[tier] × RAR_MULT[rarity]). The weapon you wield sets your class (sword: Warrior, bow: Archer, wand: Mage). A player's damage is `(3 f(L) + gear attack) × (1 + symbol)`.
-- **Armour health** = round(ARMOR_HP[piece][tier] × RAR_MULT[rarity]); **defense** = max(ARMOR_DEF[piece][tier] + rarity, round(ARMOR_DEF × RAR_MULT)). A player's health is `(20 f(L) + gear health) × (1 + passives) × (1 + symbol)`; damage taken is cut by `def / (def + 60)` up to 60% negation (defense 90) and then softly capped toward 90% (`defRed`): the maxed level-30 set (576 defense) negates 84%, not 91%; a hit always does at least 10% (`DMG_TAKEN_MIN`). The worst case on one hiker, worked out from the data: the best piece of every slot (576 defense) negates 84.4%; Iron Will (11.0%) makes it 86.1%; the strongest skill buff (40.0%) and the best guard potion (40.0%) on top would make it 95.0% by plain multiplication, and the floor holds it at 90.0%. Nothing in the game reaches 100%: armour never passes 90%, the sum of all sources never passes 90%, and a hit always does at least 1.
+- **Armour health** = round(ARMOR_HP[piece][tier] × RAR_MULT[rarity]); **defense** = max(ARMOR_DEF[piece][tier] + rarity, round(ARMOR_DEF × RAR_MULT)). A player's health is `(20 f(L) + gear health) × (1 + passives) × (1 + symbol)`; damage taken is cut by `def / (def + 60)` up to 60% negation (defense 90) and then softly capped toward 90% (`defRed`): the maxed level-30 set (576 defense) negates 84%, not 91%; a hit always does at least 10% (`DMG_TAKEN_MIN`). The worst case on one hiker, worked out from the data: the best piece of every slot (726 defense) negates 85.5%; Iron Will (11.0%) makes it 87.1%; the strongest skill buff (40.0%) and the best guard potion (40.0%) on top would make it 95.4% by plain multiplication, and the floor holds it at 90.0%. Nothing in the game reaches 100%: armour never passes 90%, the sum of all sources never passes 90%, and a hit always does at least 1.
 - **Price** = round(PRICE[tier] × SLOT_PRICE[piece] × 3^rarity); sells for 40% (`sellPrice`). Only **common** items are in the shops, unlimited, each copy bought costs 20% of the base more until sunrise.
 - **Level**: an item needs `lv` = TIER_LV[tier] (1, 5, 10, 15, 20, 25) to be worn. Tiers 1-4 are the home forest's, 5-6 the Sakura Vale's samurai gear; **tier 6 is the top of the world's gear**: levels 25-30 (the Hoarfrost Reach) still drop tier 6; the level-30 dungeon pieces (section 7) are a tier above and only dungeons pay them.
 - **Rarity** (Common ×1, Rare ×1.3, Epic ×1.7, Unique ×2.2, Legendary ×3): 3 identical items merge into one of the next rarity at the forge (same tier needed). Drops: a monster 2% common, 0.5% rare, 0.1% epic per kill; a boss 50 / 10 / 3 / 1 / 0.1% (common to legendary). The rarity is rolled first, then one of the seven pieces with equal chance, of the tier of the monster's level (`tierFor`).
@@ -51,7 +51,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | T3 | 10 | 10-14 | 26 | 55 / 5 | 100 / 10 | 70 / 6 | 40 / 4 | 265 | 25 | 480 |
 | T4 | 15 | 15-19 | 45 | 100 / 8 | 180 / 16 | 130 / 10 | 75 / 6 | 485 | 40 | 1600 |
 | T5 | 20 | 20-24 | 70 | 160 / 11 | 290 / 22 | 210 / 14 | 120 / 9 | 780 | 56 | 4500 |
-| T6 | 25 | 25-32 | 100 | 240 / 15 | 430 / 30 | 310 / 19 | 180 / 12 | 1160 | 76 | 12000 |
+| T6 | 25 | 25-40 | 100 | 240 / 15 | 430 / 30 | 310 / 19 | 180 / 12 | 1160 | 76 | 12000 |
 
 | Tier | Sword | Bow | Wand | Helmet | Top | Bottom | Shoes |
 |---|---|---|---|---|---|---|---|
@@ -189,7 +189,7 @@ Names: `SLOT_NAMES.wand` src/shared/items.js:13; stats: `TIER_ATK` src/shared/ba
 
 ### 5.4 Helmet
 
-Names: `SLOT_NAMES.helmet` src/shared/items.js:14; stats: `ARMOR_HP.helmet` / `ARMOR_DEF.helmet` src/shared/balance.js:15, src/shared/balance.js:16; look: `ARMOR_LOOK.helmet` src/shared/items.js:55.
+Names: `SLOT_NAMES.helmet` src/shared/items.js:14; stats: `ARMOR_HP.helmet` / `ARMOR_DEF.helmet` src/shared/balance.js:15, src/shared/balance.js:16; look: `ARMOR_LOOK.helmet` src/shared/items.js:57.
 
 | Id | Name | Req Lv | Rarity | Health | Defense | Price | Sell | Craft | Ref |
 |---|---|---|---|---|---|---|---|---|---|
@@ -226,7 +226,7 @@ Names: `SLOT_NAMES.helmet` src/shared/items.js:14; stats: `ARMOR_HP.helmet` / `A
 
 ### 5.5 Top (chest)
 
-Names: `SLOT_NAMES.top` src/shared/items.js:15; stats: `ARMOR_HP.top` / `ARMOR_DEF.top` src/shared/balance.js:15, src/shared/balance.js:16; look: `ARMOR_LOOK.top` src/shared/items.js:56.
+Names: `SLOT_NAMES.top` src/shared/items.js:15; stats: `ARMOR_HP.top` / `ARMOR_DEF.top` src/shared/balance.js:15, src/shared/balance.js:16; look: `ARMOR_LOOK.top` src/shared/items.js:58.
 
 | Id | Name | Req Lv | Rarity | Health | Defense | Price | Sell | Craft | Ref |
 |---|---|---|---|---|---|---|---|---|---|
@@ -263,7 +263,7 @@ Names: `SLOT_NAMES.top` src/shared/items.js:15; stats: `ARMOR_HP.top` / `ARMOR_D
 
 ### 5.6 Bottom (legs)
 
-Names: `SLOT_NAMES.bottom` src/shared/items.js:16; stats: `ARMOR_HP.bottom` / `ARMOR_DEF.bottom` src/shared/balance.js:15, src/shared/balance.js:16; look: `ARMOR_LOOK.bottom` src/shared/items.js:57.
+Names: `SLOT_NAMES.bottom` src/shared/items.js:16; stats: `ARMOR_HP.bottom` / `ARMOR_DEF.bottom` src/shared/balance.js:15, src/shared/balance.js:16; look: `ARMOR_LOOK.bottom` src/shared/items.js:59.
 
 | Id | Name | Req Lv | Rarity | Health | Defense | Price | Sell | Craft | Ref |
 |---|---|---|---|---|---|---|---|---|---|
@@ -300,7 +300,7 @@ Names: `SLOT_NAMES.bottom` src/shared/items.js:16; stats: `ARMOR_HP.bottom` / `A
 
 ### 5.7 Shoes
 
-Names: `SLOT_NAMES.shoes` src/shared/items.js:17; stats: `ARMOR_HP.shoes` / `ARMOR_DEF.shoes` src/shared/balance.js:15, src/shared/balance.js:16; look: `ARMOR_LOOK.shoes` src/shared/items.js:58.
+Names: `SLOT_NAMES.shoes` src/shared/items.js:17; stats: `ARMOR_HP.shoes` / `ARMOR_DEF.shoes` src/shared/balance.js:15, src/shared/balance.js:16; look: `ARMOR_LOOK.shoes` src/shared/items.js:60.
 
 | Id | Name | Req Lv | Rarity | Health | Defense | Price | Sell | Craft | Ref |
 |---|---|---|---|---|---|---|---|---|---|
@@ -337,7 +337,7 @@ Names: `SLOT_NAMES.shoes` src/shared/items.js:17; stats: `ARMOR_HP.shoes` / `ARM
 
 ## 6. Profession tools (90)
 
-Three tool slots (`eq.pick`, `eq.axe`, `eq.sickle`), the same 6 tiers and 5 rarities as gear but **no combat stats**: the tier decides which resource nodes it can work (a node needs a tool of tier `need` or better) and the rarity how often a node gives a double yield. Bought (common only) at a Wayfarers' Lodge, merged at the forge. Defined in `items.js` (src/shared/items.js:35), not part of `ITEM_LIST`.
+Three tool slots (`eq.pick`, `eq.axe`, `eq.sickle`), the same 6 tiers and 5 rarities as gear but **no combat stats**: the tier decides which resource nodes it can work (a node needs a tool of tier `need` or better) and the rarity how often a node gives a double yield. Bought (common only) at a Wayfarers' Lodge, merged at the forge. Defined in `items.js` (src/shared/items.js:37), not part of `ITEM_LIST`.
 
 | Ids (common, rare, epic, unique, legendary) | Name (common) | Req Lv | Works nodes of tier | Profession | Price C / R / E / U / L | Ref |
 |---|---|---|---|---|---|---|
@@ -368,7 +368,7 @@ Ids: `<piece>7[-r|-e|-u|-l][+n]` (`sword7-e+3` is an epic level-30 sword at +3) 
 
 ### 7.1 Weapons (15)
 
-Names `DG_NAMES` src/shared/dungeon-rewards.js:20; attack `DG_ATK` src/shared/dungeon-rewards.js:18 × `RAR_MULT` × (1 + 0.1 n).
+Names `DG_NAMES` src/shared/dungeon-rewards.js:23; attack `DG_ATK` src/shared/dungeon-rewards.js:18 × `RAR_MULT` × (1 + 0.1 n).
 
 | Id | Name | Req Lv | Rarity | Attack | Price | Sell | Max | Stat at +0, +1 ... +max | Paid by | Ref |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -417,7 +417,7 @@ Names `DG_NAMES`; health `DG_HP` and defense `DG_DEF` src/shared/dungeon-rewards
 
 ### 7.3 Rings (35; the ring slot, `eq.ring`)
 
-Names `RING_NAMES` src/shared/dungeon-rewards.js:22; a common ring adds `RING_ATK` = 20 attack (× the rarity multiplier × the enhancement), shown in the stat columns.
+Names `RING_NAMES` src/shared/dungeon-rewards.js:25; a common ring adds `RING_ATK` = 20 attack (× the rarity multiplier × the enhancement), shown in the stat columns.
 
 | Id | Name | Req Lv | Rarity | Attack (matching soul) | Price | Sell | Max | Stat at +0, +1 ... +max | Paid by | Ref |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -457,4 +457,4 @@ Names `RING_NAMES` src/shared/dungeon-rewards.js:22; a common ring adds `RING_AT
 | `ring-light-u` | Unique Dawnbound Ring | 30 | Unique | +44 | 972000 | 388800 | +8 | +44, +48, +53, +57, +62, +66, +70, +75, +79 | Bonefrost Barrow | RING_NAMES.light |
 | `ring-light-l` | Legendary Dawnbound Ring | 30 | Legendary | +60 | 2916000 | 1166400 | +10 | +60, +66, +72, +78, +84, +90, +96, +102, +108, +114, +120 | Bonefrost Barrow | RING_NAMES.light |
 
-What each dungeon pays: The Hollow Roots: weapon (sword, bow, wand); Jade Spring Grottoes: armor (helmet, top, bottom, shoes); Bonefrost Barrow: ring (basic, water, fire, air, earth, dark, light); The Blackseam: pendant (xp, drop, coin, crit, critdmg) (`DG_REWARDS` src/shared/dungeon-rewards.js:25; odds `DG_REWARD_W` src/shared/dungeon-rewards.js:30; enhancing `ENH_MAX` / `ENH_STEP` / `ENH_DROP` src/shared/dungeon-rewards.js:31).
+What each dungeon pays: The Hollow Roots: weapon (sword, bow, wand); Jade Spring Grottoes: armor (helmet, top, bottom, shoes); Bonefrost Barrow: ring (basic, water, fire, air, earth, dark, light); The Blackseam: pendant (xp, drop, coin, crit, critdmg); sandglass: weapon (sword, bow, wand); gloamvault: armor (helmet, top, bottom, shoes) (`DG_REWARDS` src/shared/dungeon-rewards.js:28; odds `DG_REWARD_W` src/shared/dungeon-rewards.js:35; enhancing `ENH_MAX` / `ENH_STEP` / `ENH_DROP` src/shared/dungeon-rewards.js:36).

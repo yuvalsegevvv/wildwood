@@ -15,8 +15,9 @@ const QUEST_OFFERS=4, QUEST_MAX_ACTIVE=5, QUEST_MAX_COUNT=120;
 function huntCount(L){ const f=Math.min(1,(L-1)/14), lo=10+20*f, hi=20+30*f; return Math.round(lo+Math.random()*(hi-lo)); }
 const coinAvg=L=>fLv(L)*2*Math.pow(1.1,Math.max(0,L-5))*highMult(L);
 const qpick=a=>a[Math.floor(Math.random()*a.length)];
+const questTop=()=>MON_DEFS.reduce((a,m)=>Math.max(a,m.level),1);   // the highest level a monster exists at (MAX_ZONE_LV is 40, the Sunscar's monsters stop at 36)
 function questLevelFor(pl){
-  const E=Math.max(1,Math.min(MAX_ZONE_LV,pl)), lo=Math.max(1,E-4), hi=Math.min(MAX_ZONE_LV,E+2), w=[];
+  const T=Math.min(MAX_ZONE_LV,questTop()), E=Math.max(1,Math.min(T,pl)), lo=Math.max(1,E-4), hi=Math.min(T,E+2), w=[];
   let sum=0; for(let L=lo;L<=hi;L++){ const x=Math.exp(-0.9*Math.abs(L-E))*(L>E?0.55:1); w.push([L,x]); sum+=x; }
   let r=Math.random()*sum; for(const [L,x] of w){ r-=x; if(r<=0) return L; } return E;
 }
@@ -36,7 +37,9 @@ const BOSS_QUESTS=[
   {target:'ymrik',from:25,level:26,title:'Ymrik, the Rimeking',text:'A frost giant has taken the ice hall in the middle of the Hoarfrost Reach, and his thralls raid the wold beyond the lake. The cold in his hall closes in on anyone who lingers: end him before it ends you.'},
   {target:'gryphonqueen',from:28,level:29,title:'The Gryphon Queen',text:'A gryphon the size of a barn has taken the highest peak above the Queen\'s Fork, and her eaglets raid the miners\' ledges. She dives from the sky and shakes out her quills: stay between the lines, and end her.'},
   {target:'vetrmaw',from:29,level:30,title:'Vetrmaw, the Frost Wyrm',text:'A wyrm nests in the glacier at the far north-east of the reach, where the iron bird fell. The hunters of Rimehold want it gone.'},
-  {target:'mountaingolem',from:31,level:32,title:'The Mountain Golem',text:'Something woke in the cavern at the head of the Sink: a golem of stone round a frame of old iron, and the shell hardens when it is hurt. Brother Matthias says the dark woke it. Break its joints, and end it.'}];
+  {target:'mountaingolem',from:31,level:32,title:'The Mountain Golem',text:'Something woke in the cavern at the head of the Sink: a golem of stone round a frame of old iron, and the shell hardens when it is hurt. Brother Matthias says the dark woke it. Break its joints, and end it.'},
+  {target:'glassguardian',from:31,level:32,title:'The Glass Guardian',text:'A sentinel of black glass stands on the glass fields east of the city, and the light it throws burns. Glasswell\'s guard wants the road safe. Break it.'},
+  {target:'sandwyrm',from:34,level:36,title:'The Sand Wyrm',text:'A wyrm the length of a street lies under the dunes before Redgate Canyon, and the caravans no longer come. Wake it, and end it.'}];
 function bossQuestFor(E){ const ok=BOSS_QUESTS.filter(b=>E>=b.from); if(!ok.length) return null; return ok.length>1&&Math.random()<0.3?ok[ok.length-2]:ok[ok.length-1]; }
 function genQuest(pl,id){
   const E=Math.max(1,Math.min(MAX_ZONE_LV,pl)), L=questLevelFor(pl), d=qpick(MON_DEFS.filter(m=>m.level===L)), zn=defZone(d);

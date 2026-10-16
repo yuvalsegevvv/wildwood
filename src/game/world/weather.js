@@ -5,7 +5,7 @@
    camera's position over the vale's north rim) rain becomes snow and a storm a blizzard: slow, drifting flakes, a pale close sky, a wind
    in place of the patter. In the Greyspine WX.snow follows the height of the ground (greySnowAmt): rain on the valley floors and Highmark's
    shelf, a sleet band on the slopes (rain and flakes at once, the counts scale by 1-snow and snow), snow on the peaks. */
-const WX={kind:0,t:0,dur:0,inten:0,flash:0,snd:null,snow:0};
+const WX={kind:0,t:0,dur:0,inten:0,flash:0,snd:null,snow:0,dry:0};
 const RAIN_N=LITE?700:(LOW?1100:2000);
 const rainPos=new Float32Array(RAIN_N*6), rainGeo=new THREE.BufferGeometry();
 rainGeo.setAttribute('position',new THREE.BufferAttribute(rainPos,3));
@@ -25,7 +25,7 @@ const snowfall=new THREE.Points(flakeGeo,flakeMat); snowfall.frustumCulled=false
 for(let i=0;i<SNOW_N;i++){ flakeSpd[i]=AR(1.1,2.2); flakePh[i]=AR(0,TAU); flakePos.set([AR(-24,24),AR(-10,16),AR(-24,24)],i*3); }
 function applyWeather(w){
   if(!w) return; const was=WX.kind; WX.kind=w[0]; WX.t=w[1]; WX.dur=w[2];
-  if(WX.kind&&!was&&started) toast(WX.snow>0.5?(WX.kind===2?'A blizzard is rolling in…':'Snow is starting to fall…'):(WX.kind===2?'A thunderstorm is rolling in…':'It is starting to rain…'),'');
+  if(WX.kind&&!was&&started&&!inSun(P.x,P.z)) toast(WX.snow>0.5?(WX.kind===2?'A blizzard is rolling in…':'Snow is starting to fall…'):(WX.kind===2?'A thunderstorm is rolling in…':'It is starting to rain…'),'');
 }
 // how strong the weather is right now (0..1): fades in over the first 25 s and out over the last 25 s
 function weatherTarget(){ if(!WX.kind) return 0; return clamp(Math.min(WX.t/25,(WX.dur-WX.t)/25,1)); }
@@ -44,7 +44,8 @@ function updateWeather(dt){
   if(WX.kind) WX.t+=dt;
   WX.inten+=(weatherTarget()-WX.inten)*Math.min(1,dt*0.8);
   if(dgIn()) WX.inten=0;   // dungeons: no rain, snow or their sound under the ground (it eases back after a run)
-  WX.flash=Math.max(0,WX.flash-dt*3.2);
+  { const dry=inSun(camera.position.x,camera.position.z)?1:0; WX.dry=(WX.dry||0)+(dry-(WX.dry||0))*Math.min(1,dt*1.2); WX.inten=Math.min(WX.inten,1-WX.dry); }   // the Sunscar is dry: the weather thins out over a few seconds as you cross in and comes back as you leave
+  WX.flash=Math.max(0,WX.flash-dt*3.2)*((WX.dry||0)>0.5?0:1);
   // rain or snow: by where the camera is (over the vale's north crest and down onto the plateau it turns to snow over ~50 m; in the Greyspine by the
   // height of the ground, rain in the valleys, sleet on the slopes, snow on the peaks: greySnowAmt, shared/greyspine.js)
   { const cx=camera.position.x, cz=camera.position.z, tgt=cx>borderXN(cz)?smoothstep(borderZ(cx)+25,borderZ(cx)-25,cz):(inGrey(cx,cz)?greySnowAmt(cx,cz,getH(cx,cz)):0);

@@ -169,6 +169,8 @@ Anything else added to the city should take one of these plots, or a new one on 
 
 ## 8. What building it takes (in order)
 
+**Done in version 3** (`docs/areas/sunscar.md`): the Sunscar's ground carries the Bowl (`sunHook`, `gwRimH`), `VIL5` is in `VILS` / `CIRCLES` / `vilAt` (`shared/glasswell.js`), a village's radius is its own `V.r` (`vDist` / `vNear` take it, `VR` stays 30 for the other four), the colliders come from the footprints, the people are in `villagers.js` (`vil:5`), `respawnVil` and the travel window know it. The list below is the original plan and its findings.
+
 The model (section 10) is item 4 and the data of item 3; everything else is not started. What was found in the code, so the work is not a surprise:
 
 1. **A village is 30 m wide in about 47 lines of code.** `VR` (30) stands for "this village's radius" in `shared/village-helpers.js`, `shared/professions.js` (`nearLodge`), `server/monsters.js` (camps keep

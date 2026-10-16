@@ -362,6 +362,7 @@ const mqGreySpot=key=>mqSpot(ZONES.find(z=>z.key===key),0,0.5);
   VIL.anchors.bedside={x:VIL.bed.x+Math.sin(H.a)*-1.1,z:VIL.bed.z+Math.cos(H.a)*-1.1,face:H.a};
 }
 for(const V of VILS){
+  if(V.cart) continue;   // (Glasswell's cart stands where its plan puts it, shared/glasswell.js)
   const a=V.ent-0.28, cx=V.x+Math.sin(a)*(VR+9), cz=V.z+Math.cos(a)*(VR+9);
   V.cart={x:cx,z:cz,rot:V.ent+Math.PI/2};
   V.circles.push([cx,cz,1.5]);

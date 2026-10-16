@@ -72,8 +72,11 @@ function worldBounds(o,ox,rad,oz){
     glenWall(o,ox,oz,rad);   // the Vale Wall, with the glacier valley the one way across it in the north
   }
   o.z=clamp(o.z,WZ0+14,WZ1-14); if(o.x<WX0+14) o.x=WX0+14;
-  if(o.x<(o.z<borderZ(o.x)+14?borderXN(o.z):borderX(o.z))){ greyWall(o,oz); for(const G of GREY_GATES) if(!gateOpen(G)&&o.z<borderZ(o.x)&&Math.abs(o.z-G.z)<40&&ox>=G.x&&o.x<G.x+0.8) o.x=G.x+0.8; }   // (the rock falls in the Greyspine's west wall)
+  if(o.x<(o.z<borderZ(o.x)+14?borderXN(o.z):borderX(o.z))) greyWall(o,oz);
   else frostWall(o,ox,oz,rad);
+  for(const G of GREY_GATES) if(!gateOpen(G)) gateHold(G,o,ox,oz===undefined?o.z:oz);   // the rock falls: the neck pass in the Greyspine's west wall, the River Pass and Redgate Canyon into the Sunscar (shared/greyspine.js)
+  if(!(GEAR&&GEAR.redgate>=1)) sunWallHold(o,ox);   // the Sunwall's top edge while Redgate Canyon's rock fall stands
+  if(!(GEAR&&GEAR.river>=1)) sunCrestHold(o,oz===undefined?o.z:oz);   // the Sunscar's north crest while the River Pass is shut
   if(oz!==undefined && coastDist(o.x,o.z)<34 && bridgeDeck(o.x,o.z)<WATER){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }
   if(oz!==undefined && riverK(o.z)>0.15 && Math.abs(o.x-borderX(o.z))<140 && bridgeDeck(o.x,o.z)<WATER){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }   // the border river only (shared/terrain.js; not the home forest's own river through zone 1, which you may swim across): wade to the knees, no deeper, so the water is a wall too
   pvWall(o,ox,oz);   // pvp: the Proving Isle's lake is a wall too, and its gate stays shut after a knock-out (game/pvp/state.js)

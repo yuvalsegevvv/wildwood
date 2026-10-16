@@ -16,6 +16,10 @@ A skill with generic effects (`fx`) is drawn from its row, in the colour of its 
 | Ambrose | dewdrops, bubbles, reed blades; ripples go out and come back (Ebb and Flow), High Water raises a column of bubbles; a heal lifts bubbles off the ally, a shield is an aqua bubble | double wave line with shells |
 | Dunstan | embers, flame tongues and swallow-tail pennants; a ring is a drum beat in three rings; Banner Down plants a pole and a pennant and beats a ring every second; a buff lifts pennants off the buffed player | three-tongued flame notches |
 | Marigold | paper lanterns, ribbons and gold sparkles; Curtain Call is a fountain of lanterns and ribbons; Center Stage turns eight lanterns round the stage | a scalloped gold ring |
+| Nephra (v3) | linen ribbons and dust chaff drift in, lapis flecks and gold glints (data only: no override functions) | a gold-and-lapis dial |
+| Sabir (v3) | embers, flame tongues, crimson cloth scraps and coin glints rise | three-tongued flame notches |
+| Ogden (v3) | grave-water drops, bubbles, bone shards and mould specks pulled inward | double wave line |
+| Ottoline (v3) | black and rose ribbons, violet sparks and thread streaks orbit | cords looped round a ring |
 
 ## How it is wired
 

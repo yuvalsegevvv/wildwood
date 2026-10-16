@@ -204,7 +204,40 @@ const VILLAGERS=[
   { id:'odran4', vil:4, late:true, title:'Peddler', icon:'peddler', name:'Odran', role:'peddler', show:()=>odranHere(4),
     look:{sex:'male',height:1.02,build:1.05,face:'oval',hair:'short',hairColor:0x3a2a20,facial:'stubble',top:'jacket',topColor:0x4a4a5a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'ranger',hatColor:0x3a3230,pack:true,shoes:'boots',shoeColor:0x2a1e14},
     behavior:{type:'stationary',at:'cart'}, home:'house:4', schedule:'always', voice:{rate:1.1,pitch:0.95},
-    lines:['Black stone, they call it. I call it a good price. Do not tell the foreman I said that.','Up the glacier valley with a cart. Do not ask me how. I do not know either.','Everyone up here has a headache. It is the thin air. Or the humming. Mostly the air.'] }
+    lines:['Black stone, they call it. I call it a good price. Do not tell the foreman I said that.','Up the glacier valley with a cart. Do not ask me how. I do not know either.','Everyone up here has a headache. It is the thin air. Or the humming. Mostly the air.'] },
+  /* ---- Glasswell, the Sunscar's city (VIL5): caravaners and glass-workers. late; no story steps yet, only a trade and small talk ---- */
+  { id:'zahra', vil:5, late:true, title:'Quest board · caravan marshal', name:'Marshal Zahra', role:'quests',
+    look:{sex:'female',height:1.02,build:1.1,face:'angular',hair:'ponytail',hairColor:0x1d1410,chest:1.05,skin:0xb88a62,top:'jacket',topColor:0xb8883a,bottom:'trousers',bottomColor:0x5a3a24,hat:'ranger',hatColor:0xd8c8a0,shoes:'boots',shoeColor:0x3a2a1e},
+    behavior:{type:'stationary',at:'questboard'}, home:'house:3', schedule:'always', voice:{rate:0.95,pitch:0.95},
+    lines:['Glasswell keeps the caravans moving. Scorpions on the flats, wyrm-sign by Redgate, and a guardian of black glass that has not blinked in a century. Take a notice.','New notices go up at sunrise. The sun comes up early here, and it does not ask.','Water first, then coin, then glory. In that order, or you will not live to count the last.'] },
+  { id:'idris', vil:5, late:true, title:'Weaponsmith', name:'Idris', role:'weaponsmith',
+    look:{sex:'male',height:1.04,build:1.3,face:'round',hair:'short',hairColor:0x1d1410,facial:'beard',skin:0xa87c56,top:'tshirt',topColor:0xc8b898,bottom:'trousers',bottomColor:0x4a3626,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'place:weapons'}, home:'house:1', schedule:'always', voice:{rate:0.88,pitch:0.8},
+    lines:['Glass-edged, sand-tempered. A blade from here cuts the heat off the air.','Your lowland steel will bend in this sun. Let me show you what the desert makes.','The Guardian sheds shards on the fields. I grind them. It is not stealing if it falls off.'] },
+  { id:'samira', vil:5, late:true, title:'Armourer', name:'Samira', role:'armorer',
+    look:{sex:'female',height:0.99,build:1.15,face:'round',hair:'bun',hairColor:0x2a1a12,chest:1.1,skin:0xb08460,top:'jacket',topColor:0x8a5a3a,bottom:'trousers',bottomColor:0x4a3a2a,hat:'none'},
+    behavior:{type:'stationary',at:'place:armour'}, home:'house:5', schedule:'always', voice:{rate:0.95,pitch:1.0},
+    lines:['Layers: linen against the sun, leather against the sand, plate against whatever bites.','Wear light on the flats and heavy at the gate. Not the other way round.'] },
+  { id:'karim', vil:5, late:true, title:'Forge · merges items', name:'Karim', role:'forge',
+    look:{sex:'male',height:1.0,build:1.25,face:'angular',hair:'short',hairColor:0x1a1210,facial:'mustache',skin:0xa07850,top:'tshirt',topColor:0x6a3a2a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'place:forge'}, home:'house:6', schedule:'always', voice:{rate:0.85,pitch:0.85},
+    lines:['Three of the same and a fire hot enough to melt the dunes. Out comes one better. Sand into glass, same idea.','Do not stand downwind of the furnace. Or do, and be warm.'] },
+  { id:'nadia', vil:5, late:true, title:'Skill trainer', name:'Nadia of the Yards', role:'trainer',
+    look:{sex:'female',height:1.0,build:0.95,face:'oval',hair:'long',hairColor:0x2a1810,chest:1.0,skin:0xb48a62,top:'hoodie',topColor:0xd8c8a0,bottom:'skirt',bottomColor:0x7a5a3a,hat:'none',shoes:'boots',shoeColor:0x3a2a1e},
+    behavior:{type:'stationary',at:'place:trainers'}, home:'house:2', schedule:'always', voice:{rate:0.9,pitch:1.05},
+    lines:['The yards teach what Aldric and Ryu teach, with more sand in the boots.','Learn your skills before the glass fields. The light there does not wait for you to remember them.','Breathe slowly. The heat steals the air you waste.'] },
+  { id:'omar', vil:5, late:true, title:'Gate captain', name:'Captain Omar', role:null,
+    look:{sex:'male',height:1.06,build:1.15,face:'angular',hair:'short',hairColor:0x1d1410,facial:'beard',skin:0xa87c56,top:'jacket',topColor:0x8a2a22,bottom:'trousers',bottomColor:0x3a3028,hat:'ranger',hatColor:0xd8c8a0},
+    behavior:{type:'patrol',route:['gate','lamp:2','lamp:3','lamp:4','lamp:5','lamp:6','lamp:1','gate'],pause:3}, home:'house:7', schedule:'always', speed:1.2, voice:{rate:0.95,pitch:0.85},
+    lines:['Three gates, three roads: the river road home to the north-west, Redgate east to whatever is left, and the dunes south. Keep to the roads after dusk.','A wyrm sleeps under the dunes before Redgate. The caravans stopped when the sand started to move on its own.','Nothing gets through the city walls that I have not looked at twice.'] },
+  { id:'yusuf', vil:5, late:true, title:'Wayfarers\' Lodge · professions', icon:'lodge', name:'Yusuf', role:'lodge',
+    look:{sex:'male',height:1.0,build:1.0,face:'oval',hair:'short',hairColor:0x2a1a10,facial:'stubble',skin:0xb08460,top:'jacket',topColor:0x7a6a4a,bottom:'trousers',bottomColor:0x4a3a2a,hat:'none',pack:true,shoes:'boots',shoeColor:0x3a2a1e},
+    behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.92,pitch:0.9},
+    lines:['The Lodge teaches the three ways of taking what the land gives: mining, woodcutting, and gathering. Sixty coins each, and the right tool.','Red stone from the mesas, palm and thornwood by the river, desert herbs after the rare rains. Take only what you can carry in the heat.'] },
+  { id:'amal', vil:5, late:true, title:'Healer · brews potions', icon:'healer', name:'Healer Amal', role:'brew',
+    look:{sex:'female',height:0.97,build:0.9,face:'oval',hair:'long',hairColor:0x2a1810,chest:1.0,skin:0xb48a62,top:'jacket',topColor:0x5a7a4a,bottom:'skirt',bottomColor:0x8a6a3a,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2a1e},
+    behavior:{type:'stationary',at:'place:physician'}, home:'house:8', schedule:'always', voice:{rate:0.9,pitch:1.05},
+    lines:['Aloe for burns, saltbush for thirst, and shade for everything else. Bring me herbs and a few coins and I will brew them.','Drink the healing draught when you are hurt, the others before a fight. The sun gives no second chances.'] }
 ];
 const FILLER_COUNT=LITE?3:(LOW?4:8);
 const NAMES_M=['Anders','Henrik','Lukas','Emil','Jonas','Felix','Mattis','Arvid','Elias','Nils','Viggo','Karl'];
@@ -213,6 +246,8 @@ const NAMES_M2=['Hiroshi','Takumi','Sora','Ren','Haruto','Kaito','Yuto','Daiki',
 const NAMES_F2=['Yui','Aoi','Hina','Sakura','Mei','Rin','Emi','Nanami','Koharu','Akari'];
 const NAMES_M3=['Ulf','Leif','Eirik','Gunnar','Hakon','Ivar','Orm','Sten','Torben','Rurik'], NAMES_F3=['Ylva','Runa','Solveig','Brynja','Halla','Torvi','Yrsa','Signe','Vigdis','Asa'];
 const NAMES_M4=['Anselm','Florian','Josef','Konrad','Rupert','Ulrich','Matthias','Lorenz','Sepp','Veit'], NAMES_F4=['Berta','Frieda','Hedwig','Liesl','Marta','Theresa','Walburga','Agnes','Irmgard','Resi'];
+const NAMES_M5=['Tariq','Samir','Hakim','Rashid','Jamal','Faris','Nabil','Khalid','Bashir','Zayd'], NAMES_F5=['Layla','Farah','Dalia','Rania','Soraya','Yasmin','Nour','Huda','Leila','Maysa'];
+const SMALLTALK5=['The wells are deep and old. Nobody remembers who dug them.','Glass sings when the wind crosses the fields at night. Do not follow it.','The caravans come in with sand in their teeth and news in their pockets.','Shade is the true currency here. Coin is a distant second.','They say the Wardens kept a library under the Archive. They also say a lot of things.','My camel has opinions about the dunes. She is usually right.'];
 const SMALLTALK4=['The bell rings the shifts. Nobody has ever heard it ring wrong, and nobody likes to think what that means.','The goats up on the scree are not ours. We do not claim them.','The stone down the seam is cold even in summer. Cold and, well, loud.','My father cut the steps to the abbey. Four hundred and twelve. I count them every time.','There was a coin in the pay this month that was too round. I gave it to the foreman and she looked at it for a long time.','Mind the ledges after the thaw. The mountain rearranges itself overnight.'];
 const SMALLTALK3=['The lake has never frozen this thick. Or this quiet.','Wolves come to the edge of the firelight and just sit there. I do not care for it.','My grandfather fished Frostmere for sixty winters. He never once looked at the north shore.','If you see a blue flower, do not pick it in the daylight. It sulks.','The aurora was green last night. Green means a good winter. Red means the other kind.','They say the wall is open. They also say the Rimeking is friendly. They say a lot at the fire.'];
 const SMALLTALK2=['The cherry trees never stop blooming here. Nobody remembers why.','Mind the ponds. Kappa like to pull travellers in by the ankles.','Tetsuo and Kenji argue about steel every evening at the brazier.','The bamboo sings when the wind comes off the mountains.','My brother saw foxfire above the hollow again last night.','Sweep the petals in the morning, and by noon there are more.','Daisuke walks that circle so often the stones know his feet.','They say the bridge gate was sealed by the Rootwarden itself. Strange that you got through.'];
@@ -265,9 +300,17 @@ function initNPCs(){
       const look={sex,hairColor:[0x8a6a4a,0x4a3a2e,0x2a1e18,0xb08a5a,0xc8c0b4][Math.floor(r4()*5)],hat:r4()<0.35?'beanie':'none',hatColor:[0x5a5a62,0x4a5a6a,0x6a5a46][Math.floor(r4()*3)],top:r4()<0.5?'hoodie':'jacket'};
       defs.push({id:'villagerg'+i,vil:4,late:true,seed:i+21,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
     } }
+  // Glasswell's people: their own rng once more
+  { const r5=mulberry32(9005);
+    for(let i=0;i<FILLER_COUNT;i++){
+      const sex=r5()<0.5?'male':'female', pool=sex==='male'?NAMES_M5:NAMES_F5; let name; do{ name=pool[Math.floor(r5()*pool.length)]; }while(used.has(name)); used.add(name);
+      const lines=[]; for(let k=0;k<3;k++) lines.push(SMALLTALK5[Math.floor(r5()*SMALLTALK5.length)]);
+      const look={sex,hairColor:[0x1d1410,0x2a1a12,0x3a2418,0x5a3a22][Math.floor(r5()*4)],skin:[0xb88a62,0xa87c56,0xc09468,0x9a704c][Math.floor(r5()*4)],hat:r5()<0.3?'kasa':'none',hatColor:[0xd8c8a0,0xb8883a,0x8a5a3a][Math.floor(r5()*3)],top:r5()<0.5?'tshirt':'jacket'};
+      defs.push({id:'villagers'+i,vil:5,late:true,seed:i+41,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
+    } }
   defs.filter(d=>!d.late).forEach(d=>spawnNPC(d,rng));
   defs.filter(d=>d.late&&(d.vil||1)<3).forEach(d=>spawnNPC(d,mulberry32(9002+(d.seed||0))));
-  NPC_DEFER.push(...defs.filter(d=>d.late&&(d.vil||1)>=3));   // Rimehold's and Highmark's people: built in the background (below)
+  NPC_DEFER.push(...defs.filter(d=>d.late&&(d.vil||1)>=3));   // Rimehold's, Highmark's and Glasswell's people: built in the background (below)
 }
 /* Half of the villagers (36 of 74, ~36 ms each) live in the Hoarfrost Reach and the Greyspine, far from where the game starts. They are built after the loading screen,
    one a slice, by the stream scheduler (job 'n', streaming.js) when nothing nearer is waiting. Each has an rng of its own (mulberry32(9002+seed)), so building them

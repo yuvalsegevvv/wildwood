@@ -6,7 +6,7 @@
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['FALL','GXJ','GDX','borderXN','borderX','borderZ','rawHeight','baseHeight','homeHeight','valeHeight','hoarHeight','GREY_VALLEYS','GREY_HM','GREY_QUEEN','greyTreeline','greyspineHeight','zoneAt','zoneRidge','NODES','MONS','inGrey','HALF','HZ0','WX0','WZ0','GREY_N','VIL','TUN','GLEN','inGlen','rewardKill','sanitizeGear','MQ_BY_ID','VIL3','VIL4','VILS','CIRCLES','vilAt','ROADS','respawnVil','nearLodge','defZone','arenaDist','MON_DEFS','ZONES','MATS','MAX_ZONE_LV','VR','ARENAS','landAt','zoneTierOn','ARENA29','ARENA32','BOSS_DEFS','BOSS_SKILLS','BOSS_QUESTS','SKILLS','BOSSES','GREY_TARNS','GREY_RIVER','GREY_RIVER_W','GREY_FJORD','waterSurf','greyWet','greyRiverAt','fjordDist','WATER','GREY_GATES','inGate']);
+  ['FALL','sunPassX','inSun','GXJ','GDX','borderXN','borderX','borderZ','rawHeight','baseHeight','homeHeight','valeHeight','hoarHeight','GREY_VALLEYS','GREY_HM','GREY_QUEEN','greyTreeline','greyspineHeight','zoneAt','zoneRidge','NODES','MONS','inGrey','HALF','HZ0','WX0','WZ0','GREY_N','VIL','TUN','GLEN','inGlen','rewardKill','sanitizeGear','MQ_BY_ID','VIL3','VIL4','VILS','CIRCLES','vilAt','ROADS','respawnVil','nearLodge','defZone','arenaDist','MON_DEFS','ZONES','MATS','MAX_ZONE_LV','VR','ARENAS','landAt','zoneTierOn','ARENA29','ARENA32','BOSS_DEFS','BOSS_SKILLS','BOSS_QUESTS','SKILLS','BOSSES','GREY_TARNS','GREY_RIVER','GREY_RIVER_W','GREY_FJORD','waterSurf','greyWet','greyRiverAt','fjordDist','WATER','GREY_GATES','inGate']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const H=x.rawHeight, slope=(a,b)=>Math.hypot(H(a+2,b)-H(a-2,b),H(a,b+2)-H(a,b-2))/4;
@@ -62,7 +62,7 @@ ok('wet ground: a point in a tarn or in the river is greyWet, a dry one is not; 
 { const defs=x.MON_DEFS.filter(d=>d.zone&&d.zone[0]==='g'), g=x.MONS.filter(m=>m.def.zone&&m.def.zone[0]==='g'&&!m.temp), kinds={}; for(const m of g) kinds[m.def.id]=(kinds[m.def.id]||0)+1;
   ok('fourteen kinds, two of each level 26-32, twelve of every kind (168 monsters), earth and air only, each with a drop material with a name',defs.length===14&&[26,27,28,29,30,31,32].every(L=>defs.filter(d=>d.level===L).length===2)&&Object.keys(kinds).length===14&&Object.values(kinds).every(n=>n===12)&&defs.every(d=>(d.el==='earth'||d.el==='air')&&x.MATS[d.id]&&x.MATS[d.id].name),Object.keys(kinds).length+' kinds, '+g.length+' monsters');
   ok('every camp is inside its own zone, out of the village, the glen and the arenas, on ground you can stand on',g.every(m=>x.inGrey(m.camp.x,m.camp.z)&&x.zoneAt(m.camp.x,m.camp.z)===x.defZone(m.def)&&Math.hypot(m.camp.x-x.VIL4.x,m.camp.z-x.VIL4.z)>x.VR+15&&!x.inGlen(m.camp.x,m.camp.z,8)&&x.arenaDist(m.camp.x,m.camp.z)>50&&H(m.camp.x,m.camp.z)>1));
-  ok('levels stretch to 32 (MAX_ZONE_LV) and a monster there is in the Greyspine\'s land, with no zone tier of its own yet',x.MAX_ZONE_LV===32&&x.landAt(g[0].camp.x,g[0].camp.z)==='grey'&&x.zoneTierOn({zt:{home:{on:3,max:3}}},'grey')===0);
+  ok('levels stretch to 40 (MAX_ZONE_LV; the Sunscar monsters stop at 36) and a monster there is in the Greyspine\'s land, with no zone tier of its own yet',x.MAX_ZONE_LV===40&&x.landAt(g[0].camp.x,g[0].camp.z)==='grey'&&x.zoneTierOn({zt:{home:{on:3,max:3}}},'grey')===0);
   const sc={}; for(const d of defs){ const k=x.MON_DEFS.find(o=>o.id===d.id); sc[d.level]=sc[d.level]||k.hp; }
   ok('the numbers follow the level curve: a level-32 monster has more health than a level-26 one of the same kind of toughness',defs.find(d=>d.level===32&&d.id==='galedrake').hp>defs.find(d=>d.level===26&&d.id==='granitslime').hp); }
 ok('the Greyspine has its resource nodes (53, tools/professions-smoke.js has the plan) and only the Greyspine\'s',x.NODES.filter(n=>x.inGrey(n.x,n.z)).length===53&&x.NODES.every(n=>x.inGrey(n.x,n.z)===(String(n.zone)[0]==='g')),x.NODES.length+' nodes');
@@ -71,9 +71,12 @@ for(const [A,id,lv,el] of [[x.ARENA29,'gryphonqueen',29,'air'],[x.ARENA32,'mount
   const bd=x.BOSS_DEFS.find(b=>b.def.id===id), hs=[]; for(let a=0;a<12;a++) hs.push(H(A.x+Math.sin(a/12*6.283)*A.r*0.9,A.z+Math.cos(a/12*6.283)*A.r*0.9));
   ok(A.name+': '+bd.def.name+' (level '+lv+', '+el+') has a flat arena in the Greyspine, in its own boss zone, with six skills, a named material and a quest',
     bd.def.level===lv&&bd.def.el===el&&bd.arena===A.key&&x.inGrey(A.x,A.z)&&Math.max(...hs)-Math.min(...hs)<2.5&&x.zoneAt(A.x+A.r+10,A.z)===A.zone&&A.zone.boss&&(x.BOSS_SKILLS[id]||[]).length===6&&x.MATS[id]&&x.MATS[id].name&&x.BOSS_QUESTS.some(q=>q.target===id&&q.level===lv),'flat within '+(Math.max(...hs)-Math.min(...hs)).toFixed(2)+' m'); }
-ok('eight bosses: the Greyspine\'s two have kits of their own and their adds (eaglets, rubble, iron joints)',x.BOSSES.length===8&&x.BOSSES.filter(B=>B.bd.kit==='gryphon'||B.bd.kit==='golem').length===2&&x.BOSS_DEFS.find(b=>b.kit==='golem').totem.id==='ironjoint'&&x.BOSS_DEFS.find(b=>b.kit==='gryphon').add.id==='eaglet');
+ok('eight bosses: the Greyspine\'s two have kits of their own and their adds (eaglets, rubble, iron joints)',x.BOSSES.length===10&&x.BOSSES.filter(B=>B.bd.kit==='gryphon'||B.bd.kit==='golem').length===2&&x.BOSS_DEFS.find(b=>b.kit==='golem').totem.id==='ironjoint'&&x.BOSS_DEFS.find(b=>b.kit==='gryphon').add.id==='eaglet');
 // ---- the two gates in the west wall ----
-for(const G of x.GREY_GATES){ const E=x.WX0+14, floor=H(E,G.z), wall=Math.min(H(E,G.z-30),H(E,G.z+30)), flat=[x.WX0+56,x.WX0+30,E].every(xx=>Math.abs(H(xx,G.z)-G.h)<0.5); let ms=0; for(let xx=x.WX0+120;xx>E;xx-=6) ms=Math.max(ms,Math.abs(H(xx-6,G.z)-H(xx,G.z))/6);
+{ const G=x.GREY_GATES.find(g=>g.dir==='s'), xp=z=>x.sunPassX(z); let ms=0; for(let z=-560;z<-300;z+=6) ms=Math.max(ms,Math.abs(H(xp(z+6),z+6)-H(xp(z),z))/6);
+  const floor=H(xp(G.z),G.z), wall=Math.min(H(xp(G.z)-40,G.z),H(xp(G.z)+40,G.z)), flat=[-8,0,8].every(d=>Math.abs(H(xp(G.z)+d,G.z)-floor)<1.2);
+  ok(G.name+': the Sunscar\'s River Pass, a canyon from the Long Valley south through the north wall (its rock fall at its crest), a flat floor, a walkable ramp (under 0.2), walls 20 m or more above it, and no camp in it',flat&&ms<0.2&&wall-floor>20&&x.MONS.every(m=>!x.inGate(m.camp.x,m.camp.z))&&x.inSun(xp(-300),-300)&&x.inGrey(xp(-500),-500),'floor '+floor.toFixed(0)+' m, walls '+wall.toFixed(0)+' m, steepest '+ms.toFixed(2)); }
+for(const G of x.GREY_GATES.filter(g=>!g.dir)){ const E=x.WX0+14, floor=H(E,G.z), wall=Math.min(H(E,G.z-30),H(E,G.z+30)), flat=[x.WX0+56,x.WX0+30,E].every(xx=>Math.abs(H(xx,G.z)-G.h)<0.5); let ms=0; for(let xx=x.WX0+120;xx>E;xx-=6) ms=Math.max(ms,Math.abs(H(xx-6,G.z)-H(xx,G.z))/6);
   ok(G.name+': a canyon cut through the west wall to the edge, a level floor reached by a walkable ramp (under 0.5), walls 20 m or more above it, and no camp in it',flat&&ms<0.5&&wall-floor>20&&x.MONS.every(m=>!x.inGate(m.camp.x,m.camp.z)),'floor '+floor.toFixed(0)+' m, walls '+wall.toFixed(0)+' m, steepest '+ms.toFixed(2)); }
 // ---- the glacier valley: the one cut through the walls, and the ice fall that shuts it ----
 { const G=x.GLEN; let mono=true, prev=1e9, steep=0, n=0; for(let xx=G.x0;xx<=G.x1;xx+=6){ const h=H(xx,G.z); if(h>prev+0.8) mono=false; prev=h; n++; if(slope(xx,G.z)>0.45) steep++; }
@@ -96,7 +99,7 @@ ok('with it open the server lets you through',Math.abs(p.x-(x.GLEN.ice-10))<0.01
 { const g=x.sanitizeGear({west:7,mq:{s:0}},'warrior'); ok('a save\'s west flag is clamped (0-2) and a new save starts with the ice fall shut',g.west===2&&x.sanitizeGear({},'warrior').west===0); }
 // ---- Highmark ----
 { const V=x.VIL4, hs=[]; for(let a=0;a<8;a++) hs.push(H(V.x+Math.sin(a)*22,V.z+Math.cos(a)*22));
-  ok('Highmark stands on its shelf: flat, about 100 m up, a village like the others (VILS, CIRCLES, vilAt, a Lodge)',Math.max(...hs)-Math.min(...hs)<1.2&&V.h>90&&V.h<110&&x.vilAt(V.x,V.z)===V&&x.VILS.length===4&&x.CIRCLES.length===4&&x.CIRCLES[3].V===V&&x.nearLodge(V.x,V.z)&&V.name==='Highmark','spread '+(Math.max(...hs)-Math.min(...hs)).toFixed(2)+', h '+V.h.toFixed(0));
+  ok('Highmark stands on its shelf: flat, about 100 m up, a village like the others (VILS, CIRCLES, vilAt, a Lodge)',Math.max(...hs)-Math.min(...hs)<1.2&&V.h>90&&V.h<110&&x.vilAt(V.x,V.z)===V&&x.VILS.length===5&&x.CIRCLES.length===5&&x.CIRCLES[3].V===V&&x.nearLodge(V.x,V.z)&&V.name==='Highmark','spread '+(Math.max(...hs)-Math.min(...hs)).toFixed(2)+', h '+V.h.toFixed(0));
   const R=x.ROADS.find(r=>r.name==='The Glacier Road'), a=R.pts[0], b=R.pts[R.pts.length-1];
   let ms=0; for(let i=1;i<R.pts.length;i++){ const q=R.pts[i-1], r=R.pts[i]; ms=Math.max(ms,Math.abs(H(r[0],r[1])-H(q[0],q[1]))/Math.hypot(r[0]-q[0],r[1]-q[1])); }
   ok('the Glacier Road runs from Rimehold\'s entrance through the glen to Highmark\'s, nowhere steep',Math.hypot(a[0]-x.VIL3.x,a[1]-x.VIL3.z)<x.VIL3.r+30&&Math.hypot(b[0]-V.x,b[1]-V.z)<V.r+30&&ms<0.5,'steepest '+ms.toFixed(2)); }
@@ -118,13 +121,13 @@ W.receive('a',{t:'dev',cmd:'tunnel',v:'queen'}); tick(2);
 ok('... and "queen" onto the Gryphon Queen\'s crown',Math.hypot(p.x-x.GREY_QUEEN.x,p.z-x.GREY_QUEEN.z)<x.GREY_QUEEN.r&&p.y>x.GREY_QUEEN.h-8,p.y.toFixed(0)+' m');
 // ---- the gates: the server side (a rock fall shuts each canyon until its boss falls) ----
 { W.receive('a',{t:'dev',cmd:'gate',v:'river',n:0}); W.receive('a',{t:'dev',cmd:'gate',v:'neck',n:0}); p.gear.river=0; p.gear.neck=0; p.gear.west=2; p.gear.east=2; p.gear.north=2;
-  const G=x.GREY_GATES[0]; W.setPos('a',[G.x-10,H(G.x-10,G.z),G.z,0,0,0]);
-  ok('the server keeps you east of a shut rock fall (and lets you through an open one)',p.x>=G.x-0.01&&(p.gear.river=1,W.setPos('a',[G.x-10,H(G.x-10,G.z),G.z,0,0,0]),Math.abs(p.x-(G.x-10))<0.01),'x '+p.x.toFixed(1));
+  const G=x.GREY_GATES.find(g=>!g.dir), Gr=x.GREY_GATES.find(g=>g.id==='river'); W.setPos('a',[G.x-10,H(G.x-10,G.z),G.z,0,0,0]);
+  ok('the server keeps you east of a shut rock fall (and lets you through an open one)',p.x>=G.x-0.01&&(p.gear.neck=1,W.setPos('a',[G.x-10,H(G.x-10,G.z),G.z,0,0,0]),Math.abs(p.x-(G.x-10))<0.01),'x '+p.x.toFixed(1));
   p.gear.river=0; p.gear.neck=0; grab(); evs.length=0;
   x.rewardKill(p,x.MONS.find(m=>m.def.id==='gryphonqueen')); tick(3); grab(); const r1=p.gear.river===1&&p.gear.neck===0&&evs.some(e=>e[0]==='gate'&&e[1]==='a'&&e[2]==='river');
   evs.length=0; x.rewardKill(p,x.MONS.find(m=>m.def.id==='mountaingolem')); tick(3); grab();
   ok('beating the Gryphon Queen opens the river road, the golem the neck pass: each for everyone who helped, with an event and a toast',r1&&p.gear.neck===1&&evs.some(e=>e[0]==='gate'&&e[2]==='neck'));
   const g=x.sanitizeGear({river:9,neck:-3,mq:{s:0}},'warrior'); ok('the gate flags are saved and clamped (0 or 1); a new save has both rock falls in place',g.river===1&&g.neck===0&&x.sanitizeGear({},'warrior').river===0);
   p.gear.river=0; W.receive('a',{t:'dev',cmd:'tunnel',v:'riverfall'}); tick(2);
-  ok('the testing teleport "riverfall" takes you to the east side of the river road\'s rock fall',Math.abs(p.x-(G.x+14))<2&&Math.abs(p.z-G.z)<2,p.x.toFixed(0)+', '+p.z.toFixed(0)); }
+  ok('the testing teleport "riverfall" takes you to the Greyspine side of the river road\'s rock fall',Math.hypot(p.x-Gr.x,p.z-Gr.z)<30&&x.inGrey(p.x,p.z),p.x.toFixed(0)+', '+p.z.toFixed(0)); }
 console.log(fails?'\n'+fails+' FAILED':'\nall passed'); process.exit(fails?1:0);

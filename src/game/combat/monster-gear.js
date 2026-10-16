@@ -73,6 +73,11 @@ function moFolkHeadgear(F,p,sk){
   if(p.hat==='ranger'){   // a floppy hat with a feather
     out.push(moEll(r*1.9,r*0.06,r*1.9,0,r*0.62,0,hc,null,16),moHorn([0,r*0.6,0],[0.1,1,0],r*1.5,r*0.75,0.9,hc,10,[0,0,1]),moHorn([r*0.6,r*0.8,-r*0.3],[0.7,0.6,0.3],r*1.6,r*0.06,-0.7,0xd8d2c0,4,[0,1,0]));
   }
+  if(p.turban){   // a wrapped turban (the desert raiders and the Sunscar's mummies): a dome of cloth bands, a knot at the brow and a tail hanging at the back
+    const tc=p.turban, cl=(x,y,z,c)=>{ c.set(tc).multiplyScalar(0.78+0.22*Math.abs(Math.sin((y*9+Math.atan2(z,x)*1.3)))); };
+    out.push(moEll(r*1.2,r*0.66,r*1.22,0,r*0.5,0.01,cl,null,16),moEll(r*1.26,r*0.2,r*1.28,0,r*0.3,0.01,(x,y,z,c)=>c.set(tc).multiplyScalar(0.7),null,16),moEll(r*0.3,r*0.26,r*0.2,0,r*0.5,-r*1.1,(x,y,z,c)=>c.set(p.jewel||0xd9a032),null,8),
+      moTube([[0,r*0.35,r*1.1],[0,-r*0.2,r*1.25],[0,-r*1.0,r*1.15]],r*0.3,r*0.12,cl,6,true));
+  }
   if(p.kasa) out.push(pc(new THREE.ConeGeometry(r*2.4,r*1.0,20).translate(0,r*1.15,0),(x,y,z,c)=>c.set(p.kasa).multiplyScalar(0.82+0.25*h3(Math.round(Math.atan2(z,x)*9),0,5))));
   return out;
 }
@@ -89,10 +94,12 @@ const MO_W={   // weapon builders: hand-space geometry lists hanging from y=0 (t
   iceaxe:(k,p)=>{ const o=[moBone([0,0.25*k,0],[0,-1.5*k,0],0.04*k,0.045*k,0x4a3a2e,7),moEll(0.06*k,0.04*k,0.06*k,0,-1.5*k,0,moIce,null,8),moCone([0,-1.52*k,0],[0,-1,0],0.3*k,0.05*k,moIce,5)];   // the Rimeking's greataxe: a crescent of ice on a dark haft
     o.push(moEll(0.035*k,0.36*k,0.3*k,0,-1.15*k,-0.24*k,moIceBlade,null,12),moEll(0.03*k,0.2*k,0.16*k,0,-1.15*k,0.16*k,moIceBlade,null,8));
     for(let i=0;i<5;i++) o.push(moCone([0,-0.85*k-i*0.12*k,-0.42*k+Math.abs(i-2)*0.04*k],[0,-0.3,-1],0.22*k,0.04*k,moIce,4)); return o; },
+  scimitar:(k,p)=>{ const o=[moBone([0,0.08*k,0],[0,-0.2*k,0],0.02*k,0.02*k,0x3a2a14,6),moEll(0.1*k,0.014*k,0.05*k,0,-0.22*k,0,0xd9a032,null,8)];   // a curved blade: five segments swinging forward
+    for(let i=0;i<5;i++){ const t=i/4, y=-(0.3+i*0.19)*k, z=-Math.sin(t*1.0)*0.16*k; o.push(moEll(0.011*k,0.11*k*(1-t*0.2),0.045*k*(1-t*0.35),0,y,z,(x,yy,zz,c)=>{ c.set(p.club).multiplyScalar(0.8+0.5*clamp(zz*9+0.5)); },[-0.25*t,0,0],6)); } return o; },
   club:(k,p)=>[moBone([0,0.03,0],[0,-0.8*k,0],0.03*k,0.085*k,p.club,7),moEll(0.09*k,0.1*k,0.09*k,0,-0.85*k,0,(x,y,z,c)=>c.set(p.club).multiplyScalar(0.8),null,8),moCone([0.07*k,-0.7*k,0],[1,0.3,0],0.1*k,0.03*k,0xb8b0a0,4),moCone([-0.06*k,-0.6*k,0.03*k],[-1,0.3,0.3],0.1*k,0.03*k,0xb8b0a0,4)]
 };
 function moFolkWeapon(F,p){
-  const k=F.ar>1.5?1.15:F.ar>1?1.0:0.85, W=MO_W[p.weapon]||MO_W.club, tilt={spear:1.15,katana:0.75,axe:0.8,kanabo:1.0}[p.weapon]||0.85;
+  const k=F.ar>1.5?1.15:F.ar>1?1.0:0.85, W=MO_W[p.weapon]||MO_W.club, tilt={spear:1.15,katana:0.75,axe:0.8,kanabo:1.0,scimitar:0.8}[p.weapon]||0.85;
   return moMerge(W(k,p)).rotateX(tilt).translate(0,-F.arm[1]-0.02,0);   // tilted forward from the hand, so it does not drag on the ground (the swing itself is poseRig's)
 }
 function moFolkExtras(F,p){

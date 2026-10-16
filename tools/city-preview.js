@@ -18,7 +18,7 @@ const pcFn=/^function pc\(.*$/m.exec(read('game/character','model-parts.js'))[0]
 const m=manifest(), sun=m.game.filter(f=>/^village\/(sun-|buildings-sun)/.test(f));
 if(!sun.length){ console.error('no village/sun-*.js in src/manifest.json yet'); process.exit(1); }
 const page=`<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#bcd4e6}canvas{display:block}</style><body><script>${fs.readFileSync(path.join(SRC,'vendor/three.r128.min.js'),'utf8')}</script><script>
-${['math.js','noise.js','sunscar.js','sunscar-shape.js'].map(f=>read('shared',f)).join('\n')}
+${['math.js','noise.js','sunscar.js','sunscar-shape.js','sunscar-city.js'].map(f=>read('shared',f)).join('\n')}
 ${helpers}
 const scene=new THREE.Scene(), matBroadD=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});   // stand-ins for what the game's other files define
 ${pcFn}

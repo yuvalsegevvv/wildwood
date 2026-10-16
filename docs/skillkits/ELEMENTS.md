@@ -21,6 +21,10 @@
 | **Sorrel** | safe DPS | air | `spread` | all six air; P2 leaves the aura that spreads to enemies within 6 m | air | a reaction enabler: one marked target becomes several that carry the aura |
 | **Ambrose** | healer | water | `slow` | all six water; P2 and P3 leave the aura | water | the marsh healer; a slowed pack is a kinder fight (see the wheel note) |
 | **Dunstan** | support (buff) | fire | `burn` | all six fire; P1 leaves the aura | fire | fire is the rallying element; `burn` comes through reactions, a buffer does not debuff |
+| **Nephra** | healer (shields) | earth | short `stun` (the Curse Bites bonus exposes: `vuln`) | all six earth; the blows leave Linen | earth | tomb-dust and the desert's earth; a shield healer is the opposite of Torgeir's taunting tank: she keeps the party alive by shields, not by holding the line |
+| **Sabir** | risk DPS | fire | `burn` | all six fire; Smash and Grab and Powder Keg set targets ablaze directly | fire | lamp oil and powder; the finisher's burn adds to a wounded target |
+| **Ogden** | grind | water | `slow` | all six water; Open Grave slows what it pulls | water | grave damp and the flooded crypt; a slowed pack is a kinder grind |
+| **Ottoline** | support (buff and debuff) | dark | `weak` | all six dark; every blow applies `weak` directly | dark | the perma-twilight; `weak` is dark's flavour, her buffs are the general ally buffs |
 | **Marigold** | mixed: safe DPS + support | light | `vuln` | all six light; P1 leaves the aura (no direct `vuln`: that is the debuffer's job) | light | stage light; single-element because a mixed set cannot be a hybrid |
 
 ## 3. The wheel against the monsters (non-boss monsters in the world by `el`: water 237, earth 222, air 195, dark 192, fire 153, light 61, none 119)
@@ -50,7 +54,7 @@
 | Sorrel (air) + Dunstan (fire) | `spread` + `burn` | second wave |
 | Corvin + Marigold (both light) | **none**: the same element shares an aura and `vuln` never stacks | accepted by the owner: these are only the first eight, and later kits use other elements |
 
-## 5. Coverage of the eight
+## 5. Coverage of the first twelve (version 3 adds Nephra earth, Sabir fire, Ogden water, Ottoline dark: four elements, none hybrid)
 
 Fire 1 (Dunstan), water 1 (Ambrose), earth 1 (Torgeir), air 2 (Sazanka's half, Sorrel), dark 1 (Sazanka's half), light 2 (Corvin, Marigold), none 1 (Tansy). **The first four are disjoint** (none; earth; dark + air; light), so any two of them react when partied.
 

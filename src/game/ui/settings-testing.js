@@ -30,9 +30,12 @@ for(const id of ['tRime','tHall','tNest']) $('#'+id).addEventListener('click',e=
 // the Greyspine: open the ice fall in the glacier valley (as if you had helped beat Ymrik), go to it, to Highmark's shelf or the Gryphon Queen's peak (those open the way first), seal it again
 $('#tWest').addEventListener('click',()=>netSend({t:'dev',cmd:'west',v:1}));
 $('#tGlen').addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'north',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });
-for(const id of ['tGateR','tGateN']) $('#'+id).addEventListener('click',e=>netSend({t:'dev',cmd:'gate',v:e.currentTarget.dataset.v,n:1}));
-$('#tSealG').addEventListener('click',()=>{ for(const v of ['river','neck']) netSend({t:'dev',cmd:'gate',v,n:0}); toast('Both rock falls are sealed again','good'); });
+for(const id of ['tGateR','tGateN','tGateS']) $('#'+id).addEventListener('click',e=>netSend({t:'dev',cmd:'gate',v:e.currentTarget.dataset.v,n:1}));
+$('#tSealG').addEventListener('click',()=>{ for(const v of ['river','neck','redgate']) netSend({t:'dev',cmd:'gate',v,n:0}); netSend({t:'dev',cmd:'sun',v:0}); toast('All rock falls are sealed again','good'); });
 for(const id of ['tGrey','tQueen','tCavern','tRiverFall','tNeckFall']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'north',v:2}); netSend({t:'dev',cmd:'west',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });   // (they open the way first)
+// the Sunscar: the rock fall at Redgate Canyon (from the forest, it stays shut), the River Pass's, Glasswell and the Springhead (these open the way and the Greyspine's first)
+$('#tRedFall').addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}));
+for(const id of ['tSunPass','tGlasswell','tSpring']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'gate',v:'redgate',n:1}); netSend({t:'dev',cmd:'gate',v:'river',n:1}); netSend({t:'dev',cmd:'sun',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });
 for(const id of ['tFall','tRiver','tWallN','tCoastEast','tCoastVale','tIsle','tIsleEnd']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });
 for(const id of ['tCoastReach','tCoastCape','tCoastGrey']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'vale',v:2}); netSend({t:'dev',cmd:'north',v:2}); netSend({t:'dev',cmd:'west',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });   // (the coasts' review spots; the Reach and the Greyspine open their ways first)   // (the borders' review spots: x,z,facing in degrees; the bridge gate opens first so the teleport is not refused)
 $('#tSealW').addEventListener('click',()=>{ netSend({t:'dev',cmd:'west',v:0}); toast('The ice fall is sealed again','good'); });

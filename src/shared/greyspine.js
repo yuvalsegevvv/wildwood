@@ -134,19 +134,27 @@ function greyWaterCut(x,z,h){
    Each is a canyon cut through the wall to the world's edge, shut by a rock fall at x = GATE.x until a boss falls: the river road opens with the Gryphon
    Queen (gear.river), the neck pass (and Highmark's deep mine, not built) with the mountain golem (gear.neck). Stopped by player/movement.js and
    server/api.js like the ice fall; drawn by game/village/buildings-grey.js. The lands beyond are not built: both canyons end at the edge of the world. */
-const GREY_GATES=[{id:'river',z:-586,x:WX0+56,w:10,name:'The river road',boss:'gryphonqueen'},{id:'neck',z:-776,x:WX0+56,w:10,name:'The neck pass',boss:'mountaingolem'}];
-for(const G of GREY_GATES) G.h=Math.min(greyspineBase(WX0+100,G.z),greyFloor(WX0+100,G.z)+4);
+const GREY_GATES=[{id:'river',dir:'s',z:-392,x:-791,w:9,name:'The river road',boss:'gryphonqueen'},{id:'neck',z:-776,x:WX0+56,w:10,name:'The neck pass',boss:'mountaingolem'}];   // (the river road is the Sunscar's River Pass, shared/sunland.js, which sets its x, z and floor: it runs south, dir 's'; the neck pass runs west)
+for(const G of GREY_GATES) if(!G.dir) G.h=Math.min(greyspineBase(WX0+100,G.z),greyFloor(WX0+100,G.z)+4);
 function westCarve(x,z,h){
   if(x>WX0+120) return h;
-  for(const G of GREY_GATES){ const dz=Math.abs(z-G.z); if(dz<G.w+26) h=lerp(h,G.h,smoothstep(G.w+24,G.w+1,dz)*smoothstep(WX0+120,WX0+68,x)); }
+  for(const G of GREY_GATES){ if(G.dir) continue; const dz=Math.abs(z-G.z); if(dz<G.w+26) h=lerp(h,G.h,smoothstep(G.w+24,G.w+1,dz)*smoothstep(WX0+120,WX0+68,x)); }
   return h;
 }
 const greyspineHeight=(x,z)=>westCarve(x,z,greyWaterCut(x,z,greyspineBase(x,z)));
 // keep camps, trees and rocks out of the gates' canyons (m = extra margin)
-const inGate=(x,z,m)=>x<WX0+130&&GREY_GATES.some(G=>Math.abs(z-G.z)<G.w+8+(m||0));
+const inGate=(x,z,m)=>(x<WX0+130&&GREY_GATES.some(G=>!G.dir&&Math.abs(z-G.z)<G.w+8+(m||0)))||(z<-200&&z>-580&&Math.abs(x-sunPassX(z))<SUN_PASS.w+8+(m||0));   // (the River Pass too, from the Long Valley down to the Springhead)
+/* A shut rock fall stops whoever tries to cross its plane (a testing teleport is not a step): the neck pass's from the east, the river road's (the River Pass; it stands at the crest of the north wall) from either side.
+   o: the new position, ox / oz: the old one. Used by the client's movement (worldBounds) and the server's setPos. */
+function gateHold(G,o,ox,oz){
+  if(G.dir==='s'){ if(Math.abs(o.x-sunPassX(G.z))<SUN_PASS.w+30){ if(oz<=G.z&&o.z>G.z-0.8) o.z=G.z-0.8; else if(oz>G.z&&o.z<G.z+0.8) o.z=G.z+0.8; } }
+  else if(G.dir==='e'){ if(Math.abs(o.z-G.z)<G.w+30){ if(ox>=G.x&&o.x<G.x+0.8) o.x=G.x+0.8; else if(ox<G.x&&o.x>G.x-0.8) o.x=G.x-0.8; } }   // (Redgate Canyon: from either side)
+  else if(o.z<borderZ(o.x)&&Math.abs(o.z-G.z)<40&&ox>=G.x&&o.x<G.x+0.8) o.x=G.x+0.8;
+}
 // the water surface under (x, z): a tarn's level, the river's, or the sea's. greyWet: under it, by more than m (no plant grows, no camp is made)
 function waterSurf(x,z){
   if(Math.hypot(x-FALL.tx,z-FALL.tz)<FALL.tr*1.15) return FALL.tl;   // the Greyfall's tarn on the home forest's north rim (shared/terrain.js)
+  if(inSun(x,z)){ const w=sunWaterSurf(x,z); return w===null?WATER:w; }   // the Sunscar's river, Springhead and Mirror Lake (shared/sunland.js)
   if(inGrey(x,z)){
     for(const T of GREY_TARNS) if(Math.hypot(x-T.x,z-T.z)<T.r*1.2) return T.l;
     const r=greyRiverAt(x,z); if(r.d<2.6) return r.y;

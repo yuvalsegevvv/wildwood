@@ -5,7 +5,7 @@
 function sanitizeGear(g,cls){
   const base=newGearFor(cls);
   if(!g||typeof g!=='object') return base;
-  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>typeof id==='string'&&ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.min(COINS_MAX,Math.max(0,Math.floor(+g.coins||0))),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
+  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>typeof id==='string'&&ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.min(COINS_MAX,Math.max(0,Math.floor(+g.coins||0))),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),redgate:clampInt(g.redgate,0,1,0),sun:clampInt(g.sun,0,2,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
   if(g.mats&&typeof g.mats==='object') for(const id in g.mats){ const n=MATS[id]?clampInt(g.mats[id],0,MAT_MAX,0):0; if(n) out.mats[id]=n; }
   if(g.eq) for(const k in out.eq){ const id=g.eq[k], it=ITEM[id]; if(it&&out.inv.includes(id)&&(k==='weapon'?it.kind==='weapon':it.slot===k)) out.eq[k]=id; else if(k!=='weapon') out.eq[k]=null; }
   if(!ITEM[out.eq.weapon]) out.eq.weapon=base.eq.weapon;
@@ -139,11 +139,14 @@ function reachHighmarkP(p){ if(p.gear.west!==1||Math.hypot(p.x-VIL4.x,p.z-VIL4.z
   toastTo(p.id,'Welcome to Highmark! Its teleport circle is attuned to you now: the circles will take you between all four villages.','good'); }
 // the Greyspine's two gates in its west wall: a rock fall slides away for everyone who helped defeat the boss that guards the road
 function openGateP(p,id){ if(p.gear[id]>=1) return; p.gear[id]=1; p.dirty=true; ev('gate',p.id,id);
-  toastTo(p.id,id==='river'?'Far to the west a rock fall slides down into the river canyon and the way clears: the river road toward the Sunscar is open for you.':'Far to the west the stone choking the neck pass crumbles and falls away: the pass toward the Stormhorn is open for you.','good'); }
+  toastTo(p.id,id==='river'?'Far to the west a rock fall slides down into the river canyon and the way clears: the river road toward the Sunscar is open for you.':id==='redgate'?'In the west the rock fall that choked Redgate Canyon shudders and slides away: the Redgate Road to the Sunscar is open for you.':'Far to the west the stone choking the neck pass crumbles and falls away: the pass toward the Stormhorn is open for you.','good'); }
+// the Sunscar: either rock fall (the River Pass, Redgate Canyon) lets you in; walking into Glasswell attunes its circle (gear.sun 2)
+function reachGlasswellP(p){ if(p.gear.sun>=2||(p.gear.river<1&&p.gear.redgate<1)||Math.hypot(p.x-VIL5.x,p.z-VIL5.z)>VIL5.r+14) return; p.gear.sun=2; p.dirty=true; ev('sun',p.id,2);
+  toastTo(p.id,'Welcome to Glasswell! Its teleport circle is attuned to you now: the circles will take you between all five villages.','good'); }
 function reachRimeholdP(p){ if(p.gear.north!==1||Math.hypot(p.x-VIL3.x,p.z-VIL3.z)>VIL3.r+14) return; p.gear.north=2; p.dirty=true; ev('north',p.id,2); mqActP(p,'rimehold');
   toastTo(p.id,'Welcome to Rimehold! Its teleport circle is attuned to you now: the circles will take you between all three villages.','good'); }
 // where you wake after being knocked out: the village of the land you are in, once you have been there
-const respawnVil=p=>inVale(p.x,p.z)?(inHoar(p.x,p.z)?(p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):(p.gear.east>=2?VIL2:VIL)):(inGrey(p.x,p.z)?(p.gear.west>=2?VIL4:p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):VIL);
+const respawnVil=p=>inVale(p.x,p.z)?(inHoar(p.x,p.z)?(p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):(p.gear.east>=2?VIL2:VIL)):(inGrey(p.x,p.z)?(p.gear.west>=2?VIL4:p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):(inSun(p.x,p.z)&&p.gear.sun>=2?VIL5:VIL));
 function gainExpP(p,v,monId){
   if(!(v>0)) return;
   p.exp+=v; ev('xp',p.id,r1(v),monId==null?null:monId);
@@ -213,6 +216,6 @@ function updatePlayersS(dt){
     if(S.t-p.lastHit>(p.pv?PVP_REGEN_AFTER:3) && p.hp<p.maxHp) p.hp=Math.min(p.maxHp,p.hp+p.maxHp*(p.pv?PVP_REGEN_K:0.08)*dt);   // pvp: slower on the island
     pvpTickP(p,dt);   // pvp: stepping onto / off the island, burning
     if(p.act){ const a=p.act; a.t+=dt; if(!a.done && a.t>=a.dur*a.hitAt){ a.done=true; resolveHitS(p,a); } if(a.t>=a.dur) p.act=null; }
-    p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); reachHanamiP(p); reachRimeholdP(p); reachHighmarkP(p); mqTickP(p); }
+    p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); reachHanamiP(p); reachRimeholdP(p); reachHighmarkP(p); reachGlasswellP(p); mqTickP(p); }
   }
 }

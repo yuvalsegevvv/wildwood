@@ -123,7 +123,7 @@ function mapPaintIcons(x,rows){
       const fd=forestDensity(px,pz); if(fd<0.42&&h<80) continue;   // (no peak is shown on low ground, no tree in the open)
       if(vDist(px,pz)<VR+8||arenaDist(px,pz)<ARENA.r+8||nearPath(px,pz,4)) continue;
       const g=grad(px,pz)*2, hoar=inHoar(px,pz), grey=inGrey(px,pz), vale=inVale(px,pz)&&!hoar, ax=mapX(px), az=mapZ(pz);
-      if(h>108&&g>0.7&&(grey||(!hoar&&!vale&&h>90))){ if(roll<0.24) mapPaintPeak(x,ax,az,5+roll2*6); continue; }   // peaks: the Greyspine's, and the home forest's snowy north rim
+      if(h>108&&g>0.7&&(grey||(!hoar&&!vale&&h>90&&!inSun(px,pz)))){ if(roll<0.24) mapPaintPeak(x,ax,az,5+roll2*6); continue; }   // peaks: the Greyspine's, and the home forest's snowy north rim
       if(g>0.9||h>96||coastDist(px,pz)<44||waterSurf(px,pz)>h) continue;
       if(hoar){ if(fd>0.55&&pz>-700&&roll<0.55) mapPaintPine(x,ax,az,3.6,true); }
       else if(grey){ if(h<96&&fd>0.5&&roll<0.5) mapPaintPine(x,ax,az,3.4,false); }

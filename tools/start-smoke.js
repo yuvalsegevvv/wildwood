@@ -61,8 +61,8 @@ async function boot(o){ const c=bootClient(Object.assign({online:true,fast:true,
     c.G().setLook('model','dunstan'); const w=c.G().LOOK(); c.G().setLook('model','base'); const b=c.G().LOOK();
     ok('a whole set puts all seven pieces on and \'None\' takes them off again',['top','bottom','shoes','hat','hair','faceItem','weaponItem'].every(k=>w[k]==='dunstan')&&w.model==='dunstan'&&['faceItem','weaponItem'].every(k=>b[k]==='')&&b.top!=='dunstan'&&b.hair!=='dunstan'&&b.model==='base');
     // the Signature tab: one tap sets up the character (gender, sliders, all seven pieces, designed colours), and a worn piece can be recoloured
-    tab('Signature'); const names=['Tansy','Torgeir','Sazanka','Corvin','Sorrel','Ambrose','Dunstan','Marigold'];
-    ok('the Signature tab lists the eight characters and a way to take the outfit off',names.every(n=>gold(n))&&!!chip('Take the outfit off (plain clothes)'));
+    tab('Signature'); const names=['Tansy','Torgeir','Sazanka','Corvin','Sorrel','Ambrose','Dunstan','Marigold','Nephra','Sabir','Ogden','Ottoline'];
+    ok('the Signature tab lists the twelve characters and a way to take the outfit off',names.every(n=>gold(n))&&!!chip('Take the outfit off (plain clothes)'));
     c.G().setLook('tintTop',0x8a2f2f); c.G().setLook('tintHat',0x2f4a6b); gold('Tansy').onclick&&gold('Tansy').onclick();   // (a tap on Tansy's chip)
     const tn=c.G().LOOK(), st=tn.sex==='female'&&c.G().LOOK().model==='tansy';
     ok('tapping a character sets up the look: its gender, all seven pieces, its recommended sliders and the designed colours (the colours picked before are cleared)',st&&['top','bottom','shoes','hat','hair','faceItem','weaponItem'].every(k=>tn[k]==='tansy')&&['tintTop','tintHat','tintBottom','tintShoes','tintHair','tintFace','tintWeapon'].every(k=>tn[k]===-1)&&Object.entries(c.G().CHAR_MODELS.tansy.setups[0].v).every(([k,v])=>Math.abs(tn[k]-v)<0.005));

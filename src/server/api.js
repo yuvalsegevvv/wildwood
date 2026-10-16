@@ -64,6 +64,7 @@ function setPos(pid,d){
   if(p.inst||dgInSlots(v[0])){ dgSetPosS(p,v); return; }   // dungeons: inside a run (its grid, never into a wall); slot coordinates from a hiker in no run are a late message: ignored
   // (the numbers come from the client and go out again in every other player's snapshot, rounded by r1(): a finite but huge y, face or speed (1e308) became Infinity there, and JSON turned it
   // into null for everyone. The terrain is -10..232 m, an angle only matters modulo a turn, and nobody runs faster than a dash)
+  const ox=p.x, oz=p.z;
   p.x=clamp(v[0],WX0,WX1); p.y=clamp(v[1],POS_Y_MIN,POS_Y_MAX); p.z=clamp(v[2],WZ0,WZ1); p.face=isFinite(v[3])?v[3]%(2*Math.PI):p.face; p.vx=clamp(v[4]||0,-POS_V,POS_V); p.vz=clamp(v[5]||0,-POS_V,POS_V);
   if(isGuestP(p)){   // accounts: a guest never leaves the home forest (the last spot inside it is where they are put back)
     if(landAt(p.x,p.z)!=='home'){ p.x=p.okX==null?VIL.x:p.okX; p.z=p.okZ==null?VIL.z:p.okZ; p.y=getH(p.x,p.z); sendTo(p.id,{t:'tp',x:p.x,z:p.z,face:p.face}); guestGateP(p,'travel'); }
@@ -72,7 +73,9 @@ function setPos(pid,d){
   if(p.gear.east<1 && p.x>TUN.p0) p.x=TUN.p0;   // the barred bridge
   if(p.gear.north<1 && inVale(p.x,p.z) && p.z<northBarZ(p.x)) p.z=northBarZ(p.x);   // the ice wall in Frostgate Pass (and the crest elsewhere along the vale's north wall)
   if(p.gear.west<1 && p.z<borderZ(p.x) && p.x<GLEN.ice && Math.abs(p.z-GLEN.z)<GLEN.w+6) p.x=GLEN.ice;   // the ice fall in the glacier valley
-  if(inGrey(p.x,p.z)) for(const G of GREY_GATES) if(p.gear[G.id]<1 && Math.abs(p.z-G.z)<40 && p.x<G.x) p.x=G.x;   // the rock falls in the west wall
+  for(const G of GREY_GATES) if(p.gear[G.id]<1) gateHold(G,p,ox,oz);   // the rock falls: the west wall's neck pass, the River Pass, Redgate Canyon
+  if(p.gear.redgate<1) sunWallHold(p,ox);
+  if(p.gear.river<1) sunCrestHold(p,oz);   // the Sunscar's north crest while the River Pass is shut
 }
 // ITEM[id], SKILLS[id], ... are plain objects: an id of 'constructor' or '__proto__' finds a member of Object.prototype, passes `if(!it)` and made buyP charge NaN coins
 // (then nothing was ever too expensive again). No real id is such a name, so a message carrying one in an id-like field is dropped here, once, for every handler.

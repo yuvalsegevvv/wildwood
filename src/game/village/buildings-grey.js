@@ -182,8 +182,8 @@ function buildRockFalls(){
     for(let k=0;k<22;k++){ const s=1.6+h3(k,1,G.z)*2.6, a=(h3(k,2,G.z)-0.5)*2, tier=k<12?0:k<19?1:2, pz=a*(tier===0?13:tier===1?9:5), py=s*0.5+tier*2.6;
       parts.push(pc(new THREE.DodecahedronGeometry(s,0).scale(1,0.85,1).rotateY(k).translate((h3(k,3,G.z)-0.5)*3,py,pz),stoneC)); }
     for(let k=0;k<6;k++) parts.push(pc(new THREE.CylinderGeometry(0.2,0.3,4+h3(k,4,G.z)*3,5).rotateZ(1.1+h3(k,5,G.z)*0.8).translate((h3(k,6,G.z)-0.5)*3,3.4+h3(k,7,G.z)*3,(h3(k,8,G.z)-0.5)*14),woodC(0x5a4430)));   // snapped trunks
-    const m=new THREE.Mesh(merge(parts),villageMat); m.castShadow=true; m.receiveShadow=true; g.add(m); g.position.set(G.x,y0,G.z); scene.add(g);
-    for(let k=0;k<7;k++){ const px=G.x+(h3(k,9,G.z)-0.5)*3, pz=G.z+(k-3)*3.6; addCol(px,pz,2.4); }
+    const m=new THREE.Mesh(merge(parts),villageMat); m.castShadow=true; m.receiveShadow=true; g.add(m); g.position.set(G.x,y0,G.z); if(G.dir==='s') g.rotation.y=Math.PI/2; scene.add(g);   // (the River Pass runs north-south: its heap spreads across x)
+    for(let k=0;k<7;k++){ const a=G.x+(h3(k,9,G.z)-0.5)*3, b=G.z+(k-3)*3.6; if(G.dir==='s') addCol(G.x+(k-3)*3.6,G.z+(h3(k,9,G.z)-0.5)*3,2.4); else addCol(a,b,2.4); }
     GREY.falls[G.id]={g,opening:0,open:false,y0};
   }
 }

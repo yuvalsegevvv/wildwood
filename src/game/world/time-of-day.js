@@ -58,8 +58,8 @@ let curZone='';
 function updateZoneLabel(){
   const V=vilAt(P.x,P.z), inV=vDist(P.x,P.z)<VR+22, zn=inV?null:zoneAt(P.x,P.z), vale=inVale(P.x,P.z), hoar=inHoar(P.x,P.z), grey=inGrey(P.x,P.z), pass=!zn&&!inV&&inPass(P.x,P.z);
   const pvH=inPvp(P.x,P.z);   // pvp: the Proving Isle names itself
-  const key=pvH?'pvp':zn?String(zn.key):inV?(V===VIL4?'highmark':V===VIL3?'rimehold':V===VIL2?'hanami':'village'):P.inTun?'bridge':pass?'pass':hoar?'hoar':grey?'grey':vale?'vale':'wild';
-  const txt=pvH?PVP_ISLE.name+' (PvP)':zn?zn.name+(zn.boss?' (boss)':' (Lv '+zoneLvText(zn)+')'):inV?(V===VIL4?'Highmark':V===VIL3?'Rimehold':V===VIL2?'Hanami':'The village'):P.inTun?'The Greyfall bridge':pass?'Frostgate Pass':hoar?'The Hoarfrost Reach':grey?'The Greyspine':vale?'The Sakura Vale':'Deep forest';
+  const key=pvH?'pvp':zn?String(zn.key):inV?(V===VIL5?'glasswell':V===VIL4?'highmark':V===VIL3?'rimehold':V===VIL2?'hanami':'village'):P.inTun?'bridge':pass?'pass':hoar?'hoar':grey?'grey':inSun(P.x,P.z)?'sun':vale?'vale':'wild';
+  const txt=pvH?PVP_ISLE.name+' (PvP)':zn?zn.name+(zn.boss?' (boss)':' (Lv '+zoneLvText(zn)+')'):inV?(V===VIL5?'Glasswell':V===VIL4?'Highmark':V===VIL3?'Rimehold':V===VIL2?'Hanami':'The village'):P.inTun?'The Greyfall bridge':pass?'Frostgate Pass':hoar?'The Hoarfrost Reach':grey?'The Greyspine':inSun(P.x,P.z)?'The Sunscar':vale?'The Sakura Vale':'Deep forest';
   $('#zone').textContent=txt;
   if(started && key!==curZone && curZone!==''){
     if(zn) toast('Entering '+txt,zn.boss||zoneLvNum(zn)>PL.level+2?'bad':'');

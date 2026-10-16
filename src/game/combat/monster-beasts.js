@@ -1,6 +1,6 @@
 //@ Boar and fox / wolf / lynx models (models 'boar' and 'fox'): bristled hogs with tusks and a head that gores, slim kitsune with fans of tails, heavy wolves, tufted lynx
 /* boar: body (shoulders, haunches, a bristle ridge, a curled tail) with a head pivot (P0.head: it dips to gore) and four leg pivots; pal.ram (curled horns), pal.spiky (long bristles),
-   pal.shaggy (a fringe). fox: body (head, ears, ruff), tail (P0.tail: one tail, or a fan of pal.tails), four legs; pal.wolf (heavy, small ears, ruff), pal.cat (a lynx: round head, ear tufts,
+   pal.shaggy (a fringe), pal.warthog (long upper tusks and warts). fox: body (head, ears, ruff), tail (P0.tail: one tail, or a fan of pal.tails), four legs; pal.wolf (heavy, small ears, ruff), pal.cat (a lynx: round head, ear tufts,
    a bobbed tail), pal.flame (foxfire on the tails' tips), pal.mane (a ridge of spikes, the raiju). */
 MODELS.boar={
   geo(d,p){
@@ -17,6 +17,7 @@ MODELS.boar={
     for(const sd of W){
       head.push(moEll(0.03,0.03,0.02,sd*0.05,-0.08,-0.72,0x2a1418,null,5),moEll(0.03,0.03,0.03,sd*0.14,0.08,-0.32,p.eye,null,6),moEll(0.1,0.15,0.03,sd*0.18,0.24,0.06,dk,[0.4,0,-sd*0.45],7));   // nostrils, eyes, ears
       head.push(moHorn([sd*0.1,-0.17,-0.52],[sd*0.2,0.35,-0.8],0.34,0.045,1.5,p.tusk,5,[0,1,0]),moCone([sd*0.06,-0.15,-0.66],[0,-1,-0.4],0.1,0.02,p.tusk,4));
+      if(p.warthog) head.push(moHorn([sd*0.12,-0.1,-0.6],[sd*0.45,0.55,-0.65],0.62,0.06,1.6,p.tusk,5,[0,1,0]),moEll(0.06,0.05,0.05,sd*0.2,-0.04,-0.4,p.snout,null,6),moEll(0.05,0.045,0.05,sd*0.24,0.06,-0.28,p.snout,null,6));   // a warthog: long curved upper tusks and warts on the cheeks
       for(let i=0;i<3;i++) head.push(moCone([sd*0.2,-0.05-i*0.04,-0.28+i*0.06],[sd*0.6,-0.5,0.2],0.13,0.03,dk,4));   // cheek bristles
       if(p.ram) head.push(moHorn([sd*0.2,0.2,-0.02],[sd,0.2,0.3],0.75,0.09,2.2,0xe8e4dc,7,[0,-0.4,-1]));
     }

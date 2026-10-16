@@ -21,7 +21,10 @@ const MAT_NAMES={slime:'Slime Goo',shroom:'Spore Cap',beetle:'Beetle Shell',boar
   barrowwight:'Barrow Ash',alphawolf:'Alpha Fang',glaciergolem:'Golem Core',ymrik:"Rimeking's Crown",vetrmaw:'Wyrm Scale',
   gryphonqueen:"Queen's Plume",mountaingolem:'Black Stone',
   granitslime:'Granite Dust',cliffboar:'Cliff Tusk',crystalbeetle:'Crystal Shard',stonetreant:'Stone Heart',minegoblin:"Miner's Lamp",snowleopard:'Leopard Pelt',cragwyvern:'Wyvern Scale',
-  mistwraith:'Mist Essence',quartzslime:'Quartz Core',ibex:'Ibex Horn',rocktroll:'Troll Hide',slatecrawler:'Slate Plate',galedrake:'Drake Scale',granitegolem:'Golem Rune'};
+  mistwraith:'Mist Essence',quartzslime:'Quartz Core',ibex:'Ibex Horn',rocktroll:'Troll Hide',slatecrawler:'Slate Plate',galedrake:'Drake Scale',granitegolem:'Golem Rune',
+  sandslime:'Sand Jelly',gildedscarab:'Gilded Wing',warthog:'Warthog Tusk',dunescorpion:'Scorpion Sting',raider:'Raider Sash',cactustreant:'Cactus Bloom',sandworm:'Worm Tooth',mummy:'Linen Wrap',glasswisp:'Glass Spark',
+  glassscorpion:'Glass Sting',dustdjinn:'Djinn Smoke',duneprowler:'Prowler Pelt',tombguard:'Tomb Seal',sandgolem:'Sandstone Core',dunedrake:'Drake Hide',sunpriest:'Sun Disc',elderworm:'Elder Fang',efreet:'Efreet Ember',
+  glassguardian:"Guardian's Prism",sandwyrm:'Wyrm Heartsand'};
 const DROP_CHANCE=0.35, BOSS_DROPS=3, MAT_MAX=999, BOSS_UP=2;
 const MATS={}, MAT_IDS=[];
 const lighten=c=>'#'+[16,8,0].map(sh=>{ const v=(c>>sh)&255; return Math.round(v+(255-v)*0.35).toString(16).padStart(2,'0'); }).join('');

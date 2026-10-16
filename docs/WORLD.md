@@ -132,6 +132,7 @@ wanted: hot springs (onsen) near the northern border, where the land starts to c
 - **Boss ideas**: a gryphon queen on a peak (29); a mountain golem woken by the miners (32). A short range: it is mostly a crossroads.
 
 ### Sunscar (levels 28-36)
+- **Built (version 3; `docs/areas/sunscar.md`)**: the land west of the Wildwood's Sunwall, x -1020..-440 on the game's grid, with Glasswell (VIL5) at (-700, 20), nine zones `s28`-`s36` (Springhead Flats, The Weeping Pan, Anvil Cliffs, Lantern Wash, The Glass Fields, Twin Buttes, The Whitefloor, Bellrock, The Singing Dunes), 18 monsters, two world bosses (the Glass Guardian, level 32; the Sand Wyrm, level 36), the River Pass from the Greyspine and Redgate Canyon through the Sunwall. Not built: the Amber Reach beyond the Bight, the main-quest steps, the dungeon (a door is reserved).
 - **Look**: a high plateau of dunes, red mesas, salt pans, fields of black glass sand; the green ribbon of the river with palms and
   fields; a fog coast on the Bight.
 - **Glasswell, the oasis city**: the only city on the continent (every other settlement is a village). It stands on both banks of the

@@ -8,8 +8,8 @@ const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.string
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=(n)=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.maxHp=1e7; p.hp=1e7; p.dead=false; } } };   // (a player who dies would reset the fight)
 W.join('a',{name:'Tanker',look:{cls:'warrior'},save:{level:30}}); W.join('b',{name:'Runner',look:{cls:'archer'},save:{level:30}});
-W.receive('a',{t:'dev',cmd:'vale',v:2}); W.receive('a',{t:'dev',cmd:'north',v:2}); W.receive('b',{t:'dev',cmd:'vale',v:2}); W.receive('b',{t:'dev',cmd:'north',v:2}); tick(2);
-ok('eight bosses, each with its own kit',x.BOSSES.length===8&&new Set(x.BOSS_DEFS.map(b=>b.kit)).size===8&&x.BOSSES.every(B=>B.kit&&typeof B.kit.tick==='function'),x.BOSS_DEFS.map(b=>b.kit).join(' '));
+W.receive('a',{t:'dev',cmd:'vale',v:2}); W.receive('a',{t:'dev',cmd:'north',v:2}); for(const id of ['a','b']) for(const g of ['river','neck','redgate']) W.receive(id,{t:'dev',cmd:'gate',v:g,n:1}); W.receive('b',{t:'dev',cmd:'vale',v:2}); W.receive('b',{t:'dev',cmd:'north',v:2}); tick(2);
+ok('ten bosses, each with its own kit',x.BOSSES.length===10&&new Set(x.BOSS_DEFS.map(b=>b.kit)).size===10&&x.BOSSES.every(B=>B.kit&&typeof B.kit.tick==='function'),x.BOSS_DEFS.map(b=>b.kit).join(' '));
 const A=x.ARENA_TIDE, tide=x.BOSSES.find(B=>B.bd.kit==='tide');
 ok('the Tide King lives on the beach: level 20, in the shore zone, in the sea-side south of the forest, on dry land',tide.bd.def.level===20&&A.z>340&&A.z<430&&x.getH(A.x,A.z)>1.5&&x.zoneAt(A.x,A.z)===A.zone&&x.edgeZoneAt(A.x+30,A.z-10)===A.zone,'arena at '+Math.round(A.x)+','+Math.round(A.z)+' h '+x.getH(A.x,A.z).toFixed(1));
 ok('it plays the Rootwarden\'s music for now (theme boss15)',tide.bd.def.music==='boss15'&&!x.BOSS_DEFS.filter(b=>b!==tide.bd&&b.def.music).length);
@@ -40,12 +40,14 @@ function fight(B){
 }
 const KEY={ // what each boss must do (its signature), and what no other boss does
   roots:{must:['tele:root','tele:slam','mode:3','summon:totem','summon:thornling'],only:['tele:root','summon:totem']},
-  tide:{must:['wall','tele:geyser','mode:2','summon:crabhatch','zone:whirl','pfx:push'],only:['wall','tele:geyser','zone:whirl','summon:crabhatch']},
+  tide:{must:['wall','tele:geyser','mode:2','summon:crabhatch','zone:whirl','pfx:push'],only:['tele:geyser','zone:whirl','summon:crabhatch']},
   oni:{must:['tele:slam','mode:1','zone:ember','tele:donut','tele:mark','summon:oniimp'],only:['zone:ember','tele:mark','summon:oniimp']},
   kitsune:{must:['orb:foxfire','mode:2','tele:line','summon:foxkit'],only:['orb:foxfire','summon:foxkit']},
   rime:{must:['tele:icefall','tele:prison','pfx:root','zone:whiteout','mode:4','stun','tele:donut','summon:frostthrall'],only:['tele:icefall','tele:prison','zone:whiteout','summon:frostthrall']},
-  gryphon:{must:['tele:rake','tele:swoop','mode:1','stun','tele:line','summon:eaglet'],only:['tele:rake','tele:swoop','summon:eaglet']},
-  golem:{must:['tele:rockfall','tele:quake','mode:3','summon:ironjoint','summon:rubble','stun','tele:line'],only:['tele:rockfall','tele:quake','summon:ironjoint','summon:rubble']},
+  gryphon:{must:['tele:rake','tele:swoop','mode:1','stun','tele:line','summon:eaglet'],only:['tele:swoop','summon:eaglet']},
+  golem:{must:['tele:rockfall','tele:quake','mode:3','summon:ironjoint','summon:rubble','stun','tele:line'],only:['tele:quake','summon:ironjoint','summon:rubble']},
+  glass:{must:['tele:rockfall','tele:line','tele:donut','mode:3','stun','summon:blackmirror','summon:glassshard'],only:['summon:blackmirror','summon:glassshard']},
+  sandwyrm:{must:['tele:rake','tele:slam','mode:2','wall','zone:sandstorm','mode:4','summon:sandwhelp'],only:['zone:sandstorm','summon:sandwhelp']},
   wyrm:{must:['tele:gust','pfx:push','tele:breath','mode:1','tele:line','stun','zone:blizzard','mode:5','summon:warmcore','summon:wyrmling'],only:['tele:gust','tele:breath','zone:blizzard','summon:warmcore','summon:wyrmling']}};
 for(const B of x.BOSSES){
   const kit=B.bd.kit, r=fight(B); sigs[kit]=r.seen;

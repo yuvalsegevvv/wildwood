@@ -12,6 +12,12 @@
 | **Ambrose** | male | healer | water | a marsh herbalist and field medic | a river ferryman who tends travellers |
 | **Dunstan** | male | support (buff) | fire | a standard-bearer and drummer who rallies the line | a village bell-ringer and festival caller |
 | **Marigold** | female | safe DPS + support (a mixed set, the only one of the first eight) | light | a stage idol / magical girl (the genres; everything original): **a theme idea, not a kit** | none: the owner's own concept |
+| **Nephra** | female | healer (shields) | earth | a risen tomb-keeper of the Sunscar who wraps the living in linen that turns blows aside (version 3, the desert) | a caravan well-keeper who shields travellers with sand |
+| **Sabir** | male | risk DPS | fire | a dune raider who hits a caravan hard, takes what he can carry and is gone (version 3, the desert) | a smuggler with a lamp and a knife |
+| **Ogden** | male | grind | water | a drowned gravedigger who got up to finish the shift and feeds on the crowds that follow him (version 3, the Gloamhorn) | a bog-warden who drags the marsh with him |
+| **Ottoline** | female | support (buff and debuff) | dark | a porcelain doll who pulls strings: the enemy dances weaker and her friends dance stronger (version 3, the Gloamhorn) | a puppeteer's apprentice |
+
+**Version 3 adds four** (the first of ten new themes; six more come with the new zones): Nephra and Sabir belong to the Sunscar desert, Ogden and Ottoline to the perma-twilight Gloamhorn. Their lands have no boss or dungeon source yet, so the four are **dev sets** parked on the Greyspine's sources (`land:'grey'`, tiers 3 and 4): never rewarded, still given by the free testing tools; when a land gets its `SS_SOURCES` row, move the set and drop `dev:true`.
 
 ## Elements
 
@@ -24,7 +30,7 @@
 
 ## Checks
 
-- **Gender ratio: four and four** (female: Tansy, Sazanka, Sorrel, Marigold; male: Torgeir, Corvin, Ambrose, Dunstan), **two and two in the first four** (grind F, tank M, risk DPS F, debuff support M). Any character can use any skill and outfit regardless of gender (`RULES.md` section 6).
+- **Gender ratio: six and six** (female: Tansy, Sazanka, Sorrel, Marigold, Nephra, Ottoline; male: Torgeir, Corvin, Ambrose, Dunstan, Sabir, Ogden), **two and two in the first four** (grind F, tank M, risk DPS F, debuff support M). Any character can use any skill and outfit regardless of gender (`RULES.md` section 6).
 - **Names** are working first names, searched only against this repository (one clash, an existing NPC, was found earlier and dropped); a person searches the outside world before art starts.
 - **IP:** a theme is a genre or a trade, never an existing character; no copied names, catchphrases, signature moves or costumes. A licensed exception is allowed only if the licence clearly makes it legal, and it is then stated directly (`RULES.md` section 6).
 

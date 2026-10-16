@@ -1,4 +1,4 @@
-//@ Monster families (FAM), the 72 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach, 14 in the Greyspine), defAt (a def's numbers at a level; above level 60 monsters creep tougher, bosses also stronger), prepDef, the eight bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
+//@ Monster families (FAM), the 90 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach, 14 in the Greyspine, 18 in the Sunscar), defAt (a def's numbers at a level; above level 60 monsters creep tougher, bosses also stronger), prepDef, the ten bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
 const FAM={
   slime: {hpK:0.85,dmgPct:0.06,atk:1.6,speed:2.2,rad:0.45,height:0.8,aggro:10,sound:'squish',per:4},
   shroom:{hpK:0.95,dmgPct:0.07,atk:1.7,speed:1.8,rad:0.4, height:1.1,aggro:10,sound:'pip',per:3},
@@ -11,7 +11,12 @@ const FAM={
   totem: {hpK:1,dmgPct:0,atk:99,speed:0,rad:0.55,height:2.7,aggro:0,sound:'click',per:0},
   keg:   {hpK:1,dmgPct:0,atk:99,speed:0,rad:0.5, height:1.1,aggro:0,sound:'click',per:0},   // Garrick's powder keg (dungeons/bosses.js)
   wyrm:  {hpK:1.0,dmgPct:0.12,atk:2.2,speed:2.6,rad:0.9,height:2.0,aggro:16,sound:'groan',per:1},
-  gryphon:{hpK:1.0,dmgPct:0.12,atk:2.1,speed:3.2,rad:0.8,height:2.0,aggro:16,sound:'groan',per:1}
+  gryphon:{hpK:1.0,dmgPct:0.12,atk:2.1,speed:3.2,rad:0.8,height:2.0,aggro:16,sound:'groan',per:1},
+  scorpion:{hpK:1.05,dmgPct:0.1,atk:1.5,speed:3.0,rad:0.7,height:1.0,aggro:12,sound:'click',per:3},   // the Sunscar's (game/combat/monster-desert.js)
+  cactus: {hpK:1.35,dmgPct:0.13,atk:2.3,speed:1.5,rad:0.8,height:3.0,aggro:10,sound:'groan',per:1},
+  sandworm:{hpK:1.2,dmgPct:0.12,atk:2.2,speed:2.4,rad:0.95,height:2.0,aggro:14,sound:'groan',per:1},
+  djinn:  {hpK:0.95,dmgPct:0.11,atk:1.8,speed:2.8,rad:0.5,height:2.3,aggro:15,sound:'pip',per:2},
+  sentinel:{hpK:1.0,dmgPct:0.12,atk:2.6,speed:1.9,rad:1.0,height:3.1,aggro:0,sound:'groan',per:0}
 };
 const MON_DEFS=[
   {id:'slime',     name:'Slime',            level:1,el:'water', model:'slime', scale:1,   aggro:0, pal:{body:0x5fcf5a,top:0xc2f7a8,mouth:0x1d4a1a}},
@@ -96,7 +101,28 @@ const MON_DEFS=[
   {id:'rocktroll', name:'Rock Troll',       level:31,el:'earth',model:'goblin',scale:1.9, per:2,hpK:1.5,dmgPct:0.12,zone:'g31', pal:{form:'troll',skin:0x8a8a82,eyes:0xffe060,top:'tshirt',topColor:0x4a4a44,bottom:'shorts',bottomColor:0x3a3a34,hat:'none',hatColor:0x2b2420,club:0x6a6a70,horns:0xcfcac2,fur:0x7a7a72}},
   {id:'slatecrawler',name:'Slate Crawler',  level:31,el:'earth',model:'beetle',scale:1.75,hpK:1.3, zone:'g31', pal:{shell:0x5a5e66,seam:0x22262a,sheen:0xa0a8b8,head:0x3a3e46,horn:0x8a8e96,eye:0xff6a3a,legs:0x2e3238,spider:1}},
   {id:'galedrake', name:'Gale Drake',       level:32,el:'air',  model:'wyrm',  scale:1.3, hpK:1.3, zone:'g32', pal:{body:0x8aa4b4,belly:0xe0eaf0,ridge:0x4a5a6a,horn:0xe8f0f4,eye:0xff7a3a,wing:0x7a94a8}},
-  {id:'granitegolem',name:'Granite Golem',  level:32,el:'earth',model:'treant',scale:2.0, hpK:1.6, zone:'g32', glow:0x0a1018, pal:{kind:'rock',bark:0x5a5a58,c1:0x8a8a84,c2:0x9a9a94,c3:0x74746e,eyes:0xffb040}}
+  {id:'granitegolem',name:'Granite Golem',  level:32,el:'earth',model:'treant',scale:2.0, hpK:1.6, zone:'g32', glow:0x0a1018, pal:{kind:'rock',bark:0x5a5a58,c1:0x8a8a84,c2:0x9a9a94,c3:0x74746e,eyes:0xffb040}},
+  /* the Sunscar (levels 28-36, docs/areas/sunscar.md): two kinds per level, each in its own zone (zone:'s28'..'s36', ZONES in sunzones.js); elements fire, earth and light. res / acc (version 3, docs/ROLLS.md): the chance to
+     resist a hit (half damage, no debuff) and the accuracy that takes the same away from your resistance, 0.05 at level 28 rising to 0.20 at 36; a kind has one of them or both. Look flags: slime deco 'crust';
+     boar warthog (long upper tusks); goblin turban (a wrapped cloth) and weapon 'scimitar'; the new models scorpion / cactus / sandworm / djinn / sentinel (game/combat/monster-desert.js) */
+  {id:'sandslime', name:'Sand Slime',       level:28,el:'earth',model:'slime',   scale:1.8, per:3, zone:'s28', res:0.05, pal:{deco:'crust',body:0xd9b878,top:0xf6e6b4,mouth:0x4a3a18}},
+  {id:'gildedscarab',name:'Gilded Scarab',  level:28,el:'fire', model:'beetle',  scale:1.6, hpK:1.2, zone:'s28', acc:0.05, pal:{kind:'scarab',shell:0xd8a42e,seam:0x5a3a08,sheen:0xfff0a0,head:0x7a5a18,horn:0xf0d070,eye:0x111111,legs:0x4a3410}},
+  {id:'warthog',   name:'Tusked Warthog',   level:29,el:'earth',model:'boar',    scale:1.65,zone:'s29', res:0.06, acc:0.06, pal:{warthog:1,body:0xa88a64,ridge:0x5a4028,head:0x987854,snout:0xb89a74,tusk:0xf8f0dc,legs:0x5a4630,eye:0xffa030}},
+  {id:'dunescorpion',name:'Dune Scorpion',  level:29,el:'fire', model:'scorpion',scale:1.45,zone:'s29', acc:0.06, pal:{shell:0xb8602a,sheen:0xffb060,head:0x6a3418,eye:0x111111,legs:0x7a4020,horn:0x2a1a10}},
+  {id:'raider',    name:'Desert Raider',    level:30,el:'fire', model:'goblin',  scale:1.05,zone:'s30', per:3, res:0.07, acc:0.07, pal:{form:'hob',skin:0x9a7a4a,eyes:0xffd040,top:'jacket',topColor:0xc8a05a,bottom:'trousers',bottomColor:0x6a4a2a,hat:'none',hatColor:0x2b2420,club:0xc8ced4,weapon:'scimitar',turban:0xe8e0c8}},
+  {id:'cactustreant',name:'Cactus Treant',  level:30,el:'earth',model:'cactus',  scale:1.4, hpK:1.4, zone:'s30', res:0.08, pal:{bark:0x4f8a3a,c1:0xf06ab0,c2:0xf2ecd0,eyes:0xffe66a}},
+  {id:'sandworm',  name:'Sand Worm',        level:31,el:'earth',model:'sandworm',scale:1.1, hpK:1.3, zone:'s31', res:0.09, acc:0.08, pal:{body:0xc8a064,belly:0xe8d4a0,ridge:0x7a5a30,horn:0xe0d0a8,eye:0xffa040}},
+  {id:'mummy',     name:'Dune Mummy',       level:31,el:'light',model:'goblin',  scale:1.1, per:2, hpK:1.3, dmgPct:0.11, zone:'s31', res:0.1, pal:{form:'undead',skin:0xd8c9a0,eyes:0x9fffc0,top:'tshirt',topColor:0xcfc29a,bottom:'trousers',bottomColor:0xc2b48a,hat:'none',hatColor:0x2b2420,club:0x8a7a5a,turban:0xcfc29a}},
+  {id:'glasswisp', name:'Glass Wisp',       level:32,el:'light',model:'wisp',    scale:1.3, zone:'s32', glow:0x10243a, acc:0.1, pal:{body:0xa8d8f0,core:0xffffff,eye:0x14304a}},
+  {id:'glassscorpion',name:'Glass Scorpion',level:32,el:'earth',model:'scorpion',scale:1.7, hpK:1.2, zone:'s32', res:0.11, acc:0.1, pal:{glass:1,shell:0x3a4458,sheen:0x9ac8ff,head:0x242a38,eye:0xff6a3a,legs:0x2a3040,horn:0x8ac0f0}},
+  {id:'dustdjinn', name:'Dust Djinn',       level:33,el:'fire', model:'djinn',   scale:1.1, zone:'s33', glow:0x120a24, res:0.12, acc:0.12, pal:{body:0x7a5ab8,skin:0xb08ad8,gold:0xe0b030,turban:0xd8c8a0,eye:0xffe070}},
+  {id:'duneprowler',name:'Dune Prowler',    level:33,el:'earth',model:'fox',     scale:1.4, zone:'s33', acc:0.12, pal:{cat:1,body:0xd2a468,belly:0xf0e0bc,tip:0x3a2a1a,eye:0xffd040,legs:0x8a6a3a,tails:1}},
+  {id:'tombguard', name:'Tomb Guardian',    level:34,el:'light',model:'goblin',  scale:1.3, per:2, hpK:1.4, dmgPct:0.12, zone:'s34', res:0.14, pal:{form:'undead',skin:0xc8b070,eyes:0xffe880,top:'plate',topColor:0xd9a032,bottom:'trousers',bottomColor:0x7a5a2a,hat:'helm',hatColor:0xd9a032,club:0xe8c860,weapon:'scimitar'}},
+  {id:'sandgolem', name:'Sandstone Golem',  level:34,el:'earth',model:'treant',  scale:1.95,hpK:1.6, zone:'s34', res:0.14, acc:0.13, pal:{kind:'rock',bark:0x9a6a4a,c1:0xc08a5a,c2:0xd09a68,c3:0xa87448,eyes:0xffd860}},
+  {id:'dunedrake', name:'Dune Drake',       level:35,el:'fire', model:'wyrm',    scale:1.3, hpK:1.3, zone:'s35', acc:0.16, pal:{body:0xc88a50,belly:0xf0dcb0,ridge:0x8a4a20,horn:0xe8dcc0,eye:0xff6a3a,wing:0xd8a870}},
+  {id:'sunpriest', name:'Sun Priest',       level:35,el:'light',model:'goblin',  scale:1.15,per:2, hpK:1.2, zone:'s35', res:0.16, acc:0.15, pal:{form:'hob',skin:0x8a6a4a,eyes:0xffe880,top:'hoodie',topColor:0xf0e8d0,bottom:'trousers',bottomColor:0xd9a032,hat:'none',hatColor:0x2b2420,club:0xe8c860,weapon:'spear',turban:0xd9a032,jewel:0xff5a3a}},
+  {id:'elderworm', name:'Elder Sand Worm',  level:36,el:'earth',model:'sandworm',scale:1.6, hpK:1.5, zone:'s36', res:0.2, acc:0.18, pal:{body:0xb88a50,belly:0xe0c890,ridge:0x6a3a1a,horn:0xe8dcc0,eye:0xff8a30}},
+  {id:'efreet',    name:'Efreet',           level:36,el:'fire', model:'djinn',   scale:1.5, hpK:1.3, zone:'s36', glow:0x2a0c04, res:0.2, acc:0.2, pal:{body:0xd8501e,skin:0xe8884a,gold:0xffd040,turban:0xfff0c0,eye:0xfff080}}
 ];
 /* What a monster's level does to its health and damage past level 60, the top of the old zone tiers (a level-30 monster at tier III). Two creeps, both applied inside defAt so zone tiers, dungeons and prepDef
    get them alike, and nothing at or below level 60 changes:
@@ -178,6 +204,16 @@ const RUBBLE_DEF={id:'rubble',name:'Rubble Imp',level:31,el:'earth',model:'trean
   pal:{kind:'rock',bark:0x4a4a48,c1:0x7a7a74,c2:0x8a8a84,c3:0x64645e,eyes:0xff8a30}};
 prepDef(RUBBLE_DEF);
 const JOINT_DEF=totemDef({id:'ironjoint',name:'Iron Joint',level:32,el:'earth',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x1a1208,pal:{crystal:0xc8a060,band:0x8a8a90}});
+// the Sunscar: the Glass Guardian (level 32, in the middle of the Glass Fields) and the sand wyrm (level 36, in its pit in the dunes by Redgate Canyon: its fall opens the canyon, shared/sunland.js)
+const GLASSGUARD_DEF=bossDef({id:'glassguardian',name:'The Glass Guardian',level:32,el:'light',model:'sentinel',scale:2.2,boss:true,heavy:true,glow:0x14181e,atk:2.6,speed:1.9,aggro:0,res:0.25,acc:0.25,
+  pal:{stone:0xb08a5a,glass:0x1c2230,glow:0xffd870,gold:0xd9a032}});
+const SHARD_DEF={id:'glassshard',name:'Glass Shard',level:31,el:'light',model:'wisp',scale:0.62,hpK:0.6,dmgPct:0.07,atk:1.6,speed:3.6,aggro:30,glow:0x10243a,pal:{body:0x9ac8f0,core:0xffffff,eye:0x14304a}};
+prepDef(SHARD_DEF);
+const MIRROR_DEF=totemDef({id:'blackmirror',name:'Black Mirror',level:32,el:'light',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x10141c,pal:{crystal:0xffd870,band:0x8ac0f0}});
+const SANDWYRM_DEF=bossDef({id:'sandwyrm',name:'The Sand Wyrm',level:36,el:'earth',model:'sandworm',scale:2.9,boss:true,heavy:true,glow:0x2a1204,atk:2.3,speed:2.6,aggro:0,res:0.25,acc:0.25,
+  pal:{body:0xb88a50,belly:0xe8d4a0,ridge:0x6a3a1a,horn:0xe8dcc0,eye:0xff8a30}});
+const WHELP_DEF={id:'sandwhelp',name:'Sand Whelp',level:35,el:'earth',model:'sandworm',scale:0.6,hpK:0.6,dmgPct:0.07,atk:1.6,speed:3.4,aggro:30,pal:{body:0xc8a064,belly:0xe8d4a0,ridge:0x7a5a30,horn:0xe0d0a8,eye:0xffa040}};
+prepDef(WHELP_DEF);
 /* kit: the boss's own move set (BOSS_KITS in server/boss-kits-*.js); arena: which clearing (ARENAS in vale.js, hoarfrost.js, beach.js); add: what it
    summons; totem: the Rootwarden's shield-phase totems; prop: what shelters players in Vetrmaw's blizzard; totems: the totems' name for the boss bar;
    bar: what the boss bar says while the boss is in a mode (1 airborne, 2 hidden, 3 shielded, 4 whiteout, 5 blizzard) or stunned */
@@ -189,7 +225,9 @@ const BOSS_DEFS=[
   {def:YMRIK_DEF,arena:'boss26',kit:'rime',add:THRALL_DEF,short:'Ymrik',bar:{4:'Whiteout: stay inside the circle!',stun:'Spent: strike now!'}},
   {def:VETRMAW_DEF,arena:'boss30',kit:'wyrm',add:WYRMLING_DEF,prop:CORE_DEF,short:'Vetrmaw',bar:{1:'Airborne: fend off the wyrmlings',5:'Blizzard: shelter at a Warm Core!',stun:'Grounded: hit it now!'}},
   {def:GRYPHON_DEF,arena:'boss29',kit:'gryphon',add:EAGLET_DEF,short:'The Gryphon Queen',bar:{1:'Airborne: she dives from the sky!',stun:'Grounded: hit her now!'}},
-  {def:GOLEM_DEF,arena:'boss32',kit:'golem',add:RUBBLE_DEF,totem:JOINT_DEF,short:'The Mountain Golem',totems:'Iron Joints',bar:{stun:'The shell is cracked: hit him now!'}}];
+  {def:GOLEM_DEF,arena:'boss32',kit:'golem',add:RUBBLE_DEF,totem:JOINT_DEF,short:'The Mountain Golem',totems:'Iron Joints',bar:{stun:'The shell is cracked: hit him now!'}},
+  {def:GLASSGUARD_DEF,arena:'sboss32',kit:'glass',add:SHARD_DEF,totem:MIRROR_DEF,short:'The Glass Guardian',totems:'Black Mirrors',bar:{3:'Shielded: break the black mirrors!',stun:'The glass is cracked: hit it now!'}},
+  {def:SANDWYRM_DEF,arena:'sboss36',kit:'sandwyrm',add:WHELP_DEF,short:'The Sand Wyrm',bar:{2:'Burrowed: watch the sand!',4:'Sandstorm: stay inside the circle!',stun:'Beached: hit it now!'}}];
 BOSS_DEFS.forEach(b=>{ b.add.bossAdd=true; });   // (the adds of a boss grow like the boss: LATE_CREEP_BOSS)
 /* The main quest's grey-veined monsters (docs/MAIN-QUEST.md, W9 and V7): tougher copies of a zone's kind, touched by the grey sleep.
    Not in MON_DEFS: no camps and no board quests; the server spawns a few for each player on that step (server/main-quest.js) */
