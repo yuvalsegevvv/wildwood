@@ -46,7 +46,7 @@ function guidePages(){
       <p>A skill set is a signature outfit with its own skills, set bonuses (for wearing 3 or 5 pieces), a symbol and an element. Sets drop from world bosses (10% per kill) and from won dungeon runs at +1 difficulty or higher (20%), and a long dry streak ends in a sure drop. In this version you can also unlock any set from Settings to try it.</p>`},
     upgrades:{t:'Upgrades',h:`
       <h4>Upgrading a skill</h4>
-      <p>Every skill goes up to level 5. Each level adds <b>+12% damage and shorter cooldown</b>. An upgrade costs <b>coins</b> (more for each level) and <b>monster drops</b>: materials that monsters leave behind (about a third of kills), of a kind that fits the skill's level. Level 5 also asks for two boss trophies. Open the skill in the skills window to see what it still needs.</p>
+      <p>Every bought skill goes up to level 5 (boss skills cannot be upgraded yet). Each level adds <b>+12% damage and shorter cooldown</b>. An upgrade costs <b>coins</b> (more for each level) and <b>monster drops</b>: materials that monsters leave behind (about a third of kills), of a kind that fits the skill's level. Level 5 also asks for two boss trophies. Open the skill in the skills window to see what it still needs.</p>
       <h4>Gear</h4>
       <p>Weapons and armour improve with your level and come in five rarities: Common, Rare, Epic, Unique, Legendary (stats x1, 1.3, 1.7, 2.2, 3). <b>Three identical items merge into the next rarity at the forge.</b> Shops never run out, but each copy you buy costs 20% more until sunrise.</p>
       <h4>Dungeon gear: rings, pendants, tempering</h4>
@@ -70,8 +70,8 @@ function guidePages(){
       </ol>
       <h4>The doors</h4>
       <ul>
-        <li><b>The Trial Gate</b>, a temporary arch in your home village: the easiest run (Hollow Roots), open to everyone, from level 5.</li>
-        <li><b>The Hollowed Elder</b> (the home forest), <b>the Falls Door</b> (Sakura Vale), <b>the Barrow Door</b> (Hoarfrost Reach) and <b>the Old Adit</b> (the Greyspine). Each opens once you have reached that land's village.</li>
+        <li><b>The Trial Gate</b>, a temporary arch in your home village: a level-5 practice run (Hollow Roots) open to everyone, every mission always on offer. It pays nothing.</li>
+        <li><b>The Hollowed Elder</b> (the home forest), <b>the Falls Door</b> (Sakura Vale), <b>the Barrow Door</b> (Hoarfrost Reach) and <b>the Old Adit</b> (the Greyspine). Real dungeons need level ${DG_ENTRY_LV}, at every difficulty (the difficulty tiers make monsters harder, not the way in). Each opens once you have reached that land's village; the home forest's also needs difficulty +1, unlocked by beating Carapax.</li>
       </ul>
       <p>Dungeons drop level-30 rings, pendants and other gear, and Tempering Stones to improve it. If you fall in a run a party member can revive you; you can leave through the portal and keep what you already found.</p>`},
     pvp:{t:'PvP island',h:`
