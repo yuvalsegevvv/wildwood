@@ -19,7 +19,8 @@ function gatherOkP(p,i){
   const n=NODES[i]; if(!n||p.dead) return null;
   if(Math.hypot(p.x-n.x,p.z-n.z)>NODE_R+1.5) return null;
   const why=nodeBlock(p.gear,n); if(why){ toastTo(p.id,nodeBlockText(why,n),'bad'); return null; }
-  if(NODE_BACK[i]>S.t){ toastTo(p.id,'Someone has already taken this one','bad'); return null; }
+  if(n.home){ if(p.hback&&p.hback[i]>S.t){ toastTo(p.id,'You have already worked this one: it grows back soon','bad'); return null; } }   // the Wayfarers' Grounds: taken for you alone
+  else if(NODE_BACK[i]>S.t){ toastTo(p.id,'Someone has already taken this one','bad'); return null; }
   return n;
 }
 function gatherP(p,i){
@@ -36,7 +37,9 @@ function finishGatherP(p){
   const got=1+(Math.random()<doubleChance(L,tool,n.need)?1:0);
   p.gear.res[K.res]=Math.min(RES_MAX,(p.gear.res[K.res]||0)+got);
   pr.xp=Math.min(99999,pr.xp+K.xp); const L2=profLvOf(pr.xp);
-  NODE_BACK[i]=S.t+K.respawn; ev('node',i,1); ev('gather',p.id,i,K.res,got);
+  if(n.home){ (p.hback=p.hback||{})[i]=S.t+HOME_RESPAWN; homeEvTo(p.id,'node',i,1); homeRewardP(p,K,got); }   // (the grounds: no one else sees it taken)
+  else { NODE_BACK[i]=S.t+K.respawn; ev('node',i,1); }
+  ev('gather',p.id,i,K.res,got);
   if(L2>L) toastTo(p.id,PROFS[K.prof].name+' is now level '+L2,'good');
   mqGatherP(p,n.kind); p.dirty=true;
 }
@@ -56,6 +59,25 @@ function sellResP(p,id,n){
   p.gear.res[id]=have-k; if(!p.gear.res[id]) delete p.gear.res[id];
   p.gear.coins+=k*RES[id].sell; p.dirty=true; toastTo(p.id,'Sold '+k+' '+RES[id].name+' for '+k*RES[id].sell+' coins','good');
 }
+/* THE WAYFARERS' GROUNDS (shared/professions.js HOME_YARD): a node there is taken per player (p.hback = {node index: the time it is back}, not saved: a new session starts with all of them there),
+   the node events go to that player alone (e.to, like the party's and the dungeons' private events). What a gather there pays besides the resource, small on purpose (gear comes from the dungeons):
+   exp (HOME_XP of the exp to the next level, times the grade), coins (HOME_COIN of a kill's coins, times the grade) and, with HOME_UPG*grade, an upgrade item: a Tempering Stone from level 30
+   (the dungeon gear's upgrade), a skill-upgrade material before. */
+const HOME_XP=0.00008, HOME_COIN=0.25, HOME_UPG=0.0015;
+function homeEvTo(pid,...a){ const e=ev(...a); e.to=pid; return e; }
+function homeRewardP(p,K,got){
+  const grade=(RES[K.res]||{grade:1}).grade;
+  gainExpP(p,Math.max(1,Math.round(expToNext(p.level)*HOME_XP*grade)));
+  const c=Math.max(1,Math.round(coinsFor(Math.min(p.level,MAX_ZONE_LV))*HOME_COIN*(0.5+grade*0.25)*got)); p.gear.coins=Math.min(COINS_MAX,p.gear.coins+c); ev('coins',p.id,c,null);
+  if(Math.random()<HOME_UPG*grade*got){
+    if(p.level>=ENH_LV) dgAddStonesP(p,1,null);
+    else { const ids=MAT_IDS.filter(id=>MATS[id].lv<=p.level+2&&MATS[id].lv>=Math.max(1,p.level-6)&&!MATS[id].boss); if(ids.length) addMatP(p,ids[Math.floor(Math.random()*ids.length)],1,null); }
+  }
+}
 let nodeT=0;
-function updateNodesS(dt){ nodeT-=dt; if(nodeT>0) return; nodeT=1; for(let i=0;i<NODE_BACK.length;i++) if(NODE_BACK[i]&&NODE_BACK[i]<=S.t){ NODE_BACK[i]=0; ev('node',i,0); } }
+function updateNodesS(dt){
+  nodeT-=dt; if(nodeT>0) return; nodeT=1;
+  for(let i=0;i<NODE_BACK.length;i++) if(NODE_BACK[i]&&NODE_BACK[i]<=S.t){ NODE_BACK[i]=0; ev('node',i,0); }
+  for(const p of S.players.values()) if(p.hback) for(const k in p.hback) if(p.hback[k]<=S.t){ delete p.hback[k]; homeEvTo(p.id,'node',+k,0); }   // the grounds: back for that player
+}
 const nodeEvents=()=>{ const out=[]; NODE_BACK.forEach((t,i)=>{ if(t>S.t) out.push(['node',i,1]); }); return out; };

@@ -6,6 +6,7 @@
 //          [--front]            one front view per character (a wide sheet of many)
 //          [--sliders]          the base model with each slider at its minimum and maximum (front views)
 //          [--outfit a,b]       the signature outfits a and b worn on their reference setup (front, side and back views each; --front for the front only)
+//          (a cape or an aura: --looks '[{"cape":"regal","aura":"stellar"}]', ids in shared/cosmetics.js; their motion is run for 2 s first)
 //          [--weapon warrior|archer|mage]  put that class's weapon in the hands (an outfit's weapon dressing restyles it)
 //   e.g. node tools/model-preview.js /tmp/p.png --head --looks '[{"sex":"female","hat":"beanie"},{"facial":"beard"}]'
 // Each look override is merged onto the default male look, or the female one when it has "sex":"female".
@@ -34,7 +35,7 @@ if(has('--views')) views=arg('--views');
 const zoom=arg('--at')||(head?'1.7':null);
 if(arg('--size')) size=[arg('--size'),process.argv[process.argv.indexOf('--size')+2]].concat(zoom?[zoom]:[]); else if(arg('--at')) size=['260','300',arg('--at')];
 let tri=[];
-const chars=looks.map(L=>{ const rig=C.buildCharacter(L,{q}); if(arg('--weapon')) C.weaponsOn(rig,arg('--weapon'),1); if(has('--bent')) C.bend(rig,{out:0.3}); rig.root.scale.setScalar(C.lookScale(L)); const t=C.tris(rig); tri.push(t.length/27); return t; });
+const chars=looks.map(L=>{ const rig=C.buildCharacter(L,{q}); if(arg('--weapon')) C.weaponsOn(rig,arg('--weapon'),1); if(has('--bent')) C.bend(rig,{out:0.3}); if((L.cape||L.aura)&&rig.anims) for(let i=0;i<40;i++) for(const f of rig.anims) f(1+i*0.05,0.05,0); rig.root.scale.setScalar(C.lookScale(L)); const t=C.tris(rig); tri.push(t.length/27); return t; });
 const tmp=path.join(os.tmpdir(),'model-preview-'+process.pid+'.json'); fs.writeFileSync(tmp,JSON.stringify(chars));   // one file per run: several previews may run at once
 execFileSync('python3',[path.join(__dirname,'rast.py'),tmp,out].concat(size),{stdio:'inherit',env:Object.assign({},process.env,{RAST_VIEWS:views})});
 console.log('wrote',out,'('+chars.length+' characters, '+tri.join('/')+' triangles; geometry in '+tmp+')');

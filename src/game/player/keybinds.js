@@ -18,6 +18,9 @@ const KB_ACTIONS=[
   {id:'pot1',  name:'Healing potion', def:['KeyZ','']},
   {id:'pot2',  name:'Potion of might', def:['KeyX','']},
   {id:'pot3',  name:'Potion of guard', def:['KeyC','']},
+  {id:'pot4',  name:'Mossblood draught (heal over time)', def:['KeyT','']},   // version 3 potions (shared/crafting.js POT_KINDS)
+  {id:'pot5',  name:'Scholar\'s brew (exp)', def:['KeyU','']},
+  {id:'pot6',  name:'Fortune tea (coins and drops)', def:['KeyO','']},
   {id:'target',name:'Switch target', def:['Tab','']},
   {id:'talk',  name:'Talk / travel', def:['KeyE','']},
   {id:'gather',name:'Gather (mine, chop, pick herbs)', def:['KeyH','']},   // H: G is the world map's (a default key must not collide)

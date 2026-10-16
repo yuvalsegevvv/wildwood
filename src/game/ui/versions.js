@@ -75,6 +75,13 @@ function verPages(){ return {
     <ul>
       <li>Six dungeons now. <b>The Gloamvault</b> is the Gloamhorn's: a drowned chapel-crypt and wreckers' vault under the cliffs of Vault Heath. Its boss, <b>Abbess Morrow</b>, is level 40; you need level 38 and Wraithwick walked into. A clear pays a level-40 armour piece, unrolled until you spend an Armor Reroll Stone on it.</li>
       <li><b>The Sandglass</b>, a buried sun-temple under the Sunscar's Whitefloor south of Glasswell (its door stands in the desert). Its keeper, <b>Khet</b>, is a level-40 boss; you need level 36 and Glasswell walked into. A clear pays a level-40 weapon, which is unrolled until you spend a Weapon Reroll Stone on it.</li>
+    </ul>
+    <h4>Professions and cosmetics</h4>
+    <ul>
+      <li><b>The Wayfarers' Grounds</b>, a clearing near the home village (on the map): every grade of ore, tree and herb, and the nodes are yours alone. A gather there pays a little exp and coins and, rarely, an upgrade item.</li>
+      <li>A Silverstone-tier tool or better, worn, gives a small stat bonus (at most 2% each: pickaxe attack, axe health, sickle defence).</li>
+      <li>Three new potions: Mossblood Draught (heal over time), Scholar's Brew (more exp), Fortune Tea (more coins and drops).</li>
+      <li>Make <b>auras</b> and <b>capes</b> at a Wayfarers' Lodge from your ore, logs and herbs, then wear them in the character editor's Cosmetics tab.</li>
     </ul>`}
 }; }
 function verRender(){

@@ -67,11 +67,11 @@ function killMonsterS(m,p){
 }
 function rewardKill(q,m){
   const K=monK(m,q);   // XP, coins and gear are those of the monster's level at your zone tier
-  gainExpP(q,m.T.xp*K.xp*xpLeadK(q.level,K.lv)*(1+psP(q,'xp')+pendP(q,'xp')+rlP(q,'exp')),m.id);   // (never more than 10 levels above you pay: xpLeadK)
-  const c=Math.round(coinsFor(K.lv)*(m.def.boss?20:1)*(1+pendP(q,'coin')+rlP(q,'coin'))); q.gear.coins+=c; ev('coins',q.id,c,m.id);
+  gainExpP(q,m.T.xp*K.xp*xpLeadK(q.level,K.lv)*(1+psP(q,'xp')+pendP(q,'xp')+rlP(q,'exp')+potBuffP(q,'scholar')),m.id);   // (never more than 10 levels above you pay: xpLeadK)
+  const c=Math.round(coinsFor(K.lv)*(m.def.boss?20:1)*(1+pendP(q,'coin')+rlP(q,'coin')+potBuffP(q,'fortune'))); q.gear.coins+=c; ev('coins',q.id,c,m.id);
   const r=dgRollDropP(q,m,K,m.def.boss?rollBossRarity():rollMonsterRarity());   // dungeons: a Tempering Stone replaces the equipment drop of normal monsters fought at level 30+
   if(r>=0) addItemP(q,randomItem(tierFor(K.lv),r),false,m.id);
-  if(MATS[m.def.id]){ const n=rollDropCount(m.def,psP(q,'drop')+pendP(q,'drop')+rlP(q,'drop')); if(n) addMatP(q,m.def.id,n,m.id); }
+  if(MATS[m.def.id]){ const n=rollDropCount(m.def,psP(q,'drop')+pendP(q,'drop')+rlP(q,'drop')+potBuffP(q,'fortune')); if(n) addMatP(q,m.def.id,n,m.id); }
   questKillP(q,m.def.id); q.dirty=true;
   if(m.def.boss){ bossSkillDropP(q,m.def.id); ssBossClearP(q,m); zoneTierKillP(q,m); }   // skillsets: the set of this boss's land at the tier fought (before the kill can unlock a tier)
   mqKillP(q,m);

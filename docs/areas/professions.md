@@ -4,6 +4,8 @@ Area guide. Moved word for word from `CLAUDE.md` (sections 4, 8 and 9), where ea
 
 ## Where to change what
 
+Version 3 added the home grounds, the tools' bonus, three potions and the cosmetics: `docs/COSMETICS.md`.
+
 ### Professions (mining, woodcutting, gathering): the Wayfarers' Lodge in every village, resource nodes, resources, the double-yield rule
 
 rules, `NODES` (367: the Reach's plan first, then each home and vale zone, then the Greyspine's 53, last so older nodes keep their numbers; `blackstone`, the Greyspine's quest ore, is a resource outside the six gear grades), `RES`, `NODE_KINDS`, `PROFS`, `ORE_GRADES` / `LOG_GRADES` / `HERB_LANDS`, `nodeBlock` (why you cannot work a node), `doubleChance`, `castTime` (a gather is a cast of about a second), `nearLodge` in `shared/professions.js`; `learnProfP` / `gatherP` (starts the cast) / `finishGatherP` / `updateCastsS` / `sellResP` / node respawn in `server/professions.js` (`gear.prof`, `gear.res`, sanitized by `sanitizeProf`); the Lodge panel (keepers Tamsin, Isamu, Gudrun, role `lodge`: learn, buy tools, sell resources), node meshes (`oreGeo`, `treeParts`, `herbGeo`: geometry shared per kind), gathering with the gather key (`gather` in `KB_ACTIONS`, default H because G is the world map's; handled next to `gatherNode`; the talk key still gathers when no villager, heartleaf or lore spot is in reach) and its cast bar (`CAST`, `onCastEvent`) `game/economy/professions.js`; styles `20-professions.css`. A node needs a tool of the gear tier of its zone (`n.need`, `tierFor`), so a new land = a grade of ore and logs, two herbs, a node plan and a tool tier

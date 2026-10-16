@@ -63,6 +63,16 @@ function buildNodes(){
     }
     g.visible=false; scene.add(g); NODE_VIEWS.push({g,n});
   }
+  if(HOME_YARD) buildHomeSign();
+}
+// the Wayfarers' Grounds (shared/professions.js HOME_YARD): a signpost and a lantern in the middle of the ring of nodes, so the clearing reads as a place from far off
+let homeSign=null, homeSeen=false;
+function buildHomeSign(){
+  const g=new THREE.Group(), y=getH(HOME_YARD.x,HOME_YARD.z); g.position.set(HOME_YARD.x,y,HOME_YARD.z);
+  const wood=c=>(x,yy,z,nx,ny,nz,col)=>col.set(c);
+  g.add(new THREE.Mesh(merge([paint(new THREE.BoxGeometry(0.16,2.3,0.16).translate(0,1.15,0),wood(0x5a4026)),paint(new THREE.BoxGeometry(1.4,0.42,0.07).translate(0.5,2.0,0),wood(0xc9a86a)),paint(new THREE.BoxGeometry(1.3,0.06,0.075).translate(0.5,1.82,0),wood(0x7a5a34)),paint(new THREE.BoxGeometry(1.2,0.06,0.075).translate(0.5,2.18,0),wood(0x7a5a34)),
+    paint(new THREE.SphereGeometry(0.14,8,6).translate(-0.02,2.45,0),wood(0xffe39a))]),matBark));
+  g.visible=false; scene.add(g); homeSign=g;
 }
 // the cast bar: on from the cast event to the gather event (or castx), and hidden by walking off
 const CAST={on:false,t0:0,dur:1,x:0,z:0}, castBar=$('#castbar'), cbFill=$('#cbFill'), cbName=$('#cbName'), CAST_ING={mine:'Mining',chop:'Chopping',gather:'Gathering'};
@@ -74,6 +84,8 @@ function hideCast(){ CAST.on=false; castBar.hidden=true; }
 // every frame: nodes within 130 m that are not taken, and a slow glow on the ore and the flowers
 function updateNodes(){
   if(CAST.on){ const k=(t-CAST.t0)/CAST.dur; if(k>1.2||Math.hypot(P.x-CAST.x,P.z-CAST.z)>1.5) hideCast(); else cbFill.style.width=Math.round(Math.min(1,k)*100)+'%'; }
+  if(homeSign){ const d=Math.hypot(HOME_YARD.x-P.x,HOME_YARD.z-P.z); homeSign.visible=d<160;
+    if(!homeSeen&&started&&d<40){ homeSeen=true; toast('The Wayfarers\' Grounds: every grade of ore, tree and herb, yours alone. Gather here with your tools.','good'); } }
   if(!NODE_VIEWS.length) return;
   for(const v of NODE_VIEWS) v.g.visible=!NODE_TAKEN.has(v.n.i)&&Math.abs(v.n.x-P.x)<130&&Math.abs(v.n.z-P.z)<130;
   for(const G of NODE_GLOWS) G.m.emissiveIntensity=G.k*(0.85+0.5*Math.sin(t*2.2));
@@ -113,6 +125,7 @@ function renderLodge(){
   h+=`</div><div class="inv-h">Tools <span>${TOOL_MAT[tier]} tier (level ${TIER_LV[tier]})</span></div><div class="chips lo-tiers">`;
   for(let t=0;t<TIERS;t++) h+=`<button class="chip" data-tier="${t}" aria-pressed="${t===tier}" ${t>best?'disabled':''}>${TOOL_MAT[t]}</button>`;
   h+=`</div>`;
+  { const tb=cosToolBonusText(g); h+=`<p class="lo-intro">A good tool (tier ${TOOL_BONUS_FROM+1} and up) worn in its slot adds a little to your stats: ${tb?'<b>now '+tb+'</b>':'nothing yet'}. The Wayfarers' Grounds near the home village grow every grade of ore, log and herb for you alone.</p>`; }
   for(const slot of TOOL_SLOTS){
     const it=ITEM[itemId(slot,tier,0)], own=(g.inv||[]).filter(x=>x===it.id).length, n=(g.bought||{})[it.id]||0, price=shopPrice(it,n);
     h+=row(it,`<button class="chip buy" data-buytool="${it.id}" ${coins<price?'disabled':''}>${price} coins</button>`,own?'owned x'+own:'');
@@ -122,8 +135,9 @@ function renderLodge(){
   if(!have.length) h+='<p class="muted">You carry nothing yet.</p>';
   for(const id of have) h+=`<div class="lo-sell"><span class="mat"><i style="background:${RES[id].col}"></i>${RES[id].name} <b>${res[id]}</b></span><span class="muted">${RES[id].sell} coins each</span><button class="chip" data-sellres="${id}" data-n="1">Sell 1</button><button class="chip" data-sellres="${id}" data-n="0">Sell all</button></div>`;
   h+=`</div>`;
+  h+=cosLodgeHtml(g);   // cosmetics: auras and capes (economy/cosmetics.js)
   $('#loBody').innerHTML=h;
-  const B=$('#loBody');
+  const B=$('#loBody'); cosLodgeBind(B);
   B.querySelectorAll('[data-learn]').forEach(b=>b.onclick=()=>{ netSend({t:'learn',id:b.dataset.learn}); UI_SFX.click(); });
   B.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{ loTier=+b.dataset.tier; renderLodge(); UI_SFX.click(); });
   B.querySelectorAll('[data-buytool]').forEach(b=>b.onclick=()=>{ netSend({t:'buy',id:b.dataset.buytool}); UI_SFX.pickup(); });

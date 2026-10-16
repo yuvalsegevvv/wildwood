@@ -122,7 +122,7 @@ function receive(pid,msg){
     case 'unskill': unequipSkillP(p,msg.cls,msg.slot||'skill',msg.idx); break;
     case 'upskill': upgradeSkillP(p,msg.id); break;
     case 'soul': bindSoulP(p,msg.el); break;
-    case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<2000){ const L=cleanLookS(msg.look); if(Object.keys(L).length){ p.look=L; p.saveDirty=true; ev('plook',p.id,p.look); } } break;
+    case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<2000){ const L=cleanLookS(msg.look); if(Object.keys(L).length){ p.look=cosCleanLook(L,p.gear.cos); p.saveDirty=true; ev('plook',p.id,p.look); } } break;
     case 'warp': warpP(p,typeof msg.to==='string'?msg.to:undefined); break;
     case 'mq': mqMsgP(p,msg); break;
     case 'learn': learnProfP(p,msg.id); break;
@@ -145,7 +145,7 @@ function tick(dt){
   else S.day=(S.day+dt/DAY_SECONDS)%1;
   if(S.day<S.prevDay) sunrise();
   S.prevDay=S.day;
-  updatePlayersS(dt); S.ctx=0; updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateBurnS(dt); S.ctx=0; updateWeatherS(dt); updateNodesS(dt); updateCastsS(); updatePartiesS(dt); updateInstsS(dt); S.ctx=0;   // dungeons: the per-entity loops set S.ctx (the run an event belongs to), so it goes back to the world after them; parties and runs tick here
+  updatePlayersS(dt); S.ctx=0; updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateBurnS(dt); S.ctx=0; updateWeatherS(dt); updateNodesS(dt); updatePotionsS(dt); updateCastsS(); updatePartiesS(dt); updateInstsS(dt); S.ctx=0;   // dungeons: the per-entity loops set S.ctx (the run an event belongs to), so it goes back to the world after them; parties and runs tick here
   for(const p of S.players.values()) if(p.dirty){ p.dirty=false; p.saveDirty=true; sendTo(p.id,youMsg(p)); }
   S.saveT-=dt; if(S.saveT<=0){ S.saveT=5; for(const p of S.players.values()) if(p.saveDirty&&p.acct) saveP(p); }
   S.snapT-=dt; if(S.snapT<=0){ S.snapT=S.snapDt; broadcastSnap(); }

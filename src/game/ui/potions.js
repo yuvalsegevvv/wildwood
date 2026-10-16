@@ -1,7 +1,7 @@
-//@ Potions on the client: the potion belt above the action bar (healing, might and guard, with counts, keys, cooldowns and the running buff), drinking with the keys, and the potion icons
+//@ Potions on the client: the potion belt above the action bar (healing, might, guard, mossblood, scholar and fortune, with counts, keys, cooldowns and the running buff), drinking with the keys, and the potion icons
 /* The belt shows a button for each kind of potion you carry, or have running. A press sends potion{k}; the server drinks the strongest one you own,
    and answers with a pot event [pid, kind, tier, seconds] that starts the kind's cooldown here and, for might and guard, the buff timer.
-   The keys are the rebindable actions pot1 / pot2 / pot3 (player/keybinds.js). */
+   The keys are the rebindable actions pot1 .. pot6 (player/keybinds.js). */
 const POT_ST={cd:{},cdMax:{},until:{}};   // per kind: the time (t) its cooldown ends / its buff ends
 function potIcon(kind,tier){
   const c=POT_KINDS[kind].col, big=1+tier*0.06;
@@ -29,7 +29,7 @@ function onPotionEvent(kind,tier,secs){
   if(secs) POT_ST.until[kind]=t+secs;
   UI_SFX.success();
   for(let k=0;k<10;k++){ const m=new THREE.Mesh(emberGeo,emberMat); m.position.set(P.x+AR(-0.5,0.5),P.y+AR(0.2,1.8),P.z+AR(-0.5,0.5)); scene.add(m); CB.fx.push({mesh:m,life:0.7,max:0.7,shrink:true}); }
-  toast(kind==='heal'?'You feel better':kind==='might'?'Might: more damage for '+secs+' s':'Guard: less damage taken for '+secs+' s','good');
+  toast(kind==='heal'?'You feel better':kind==='might'?'Might: more damage for '+secs+' s':kind==='guard'?'Guard: less damage taken for '+secs+' s':kind==='regen'?'Mossblood: you heal over '+secs+' s':kind==='scholar'?'Scholar: more exp for '+Math.round(secs/60)+' min':'Fortune: more coins and drops for '+Math.round(secs/60)+' min','good');
   updatePotBar(true);
 }
 let potSig='';

@@ -154,7 +154,7 @@ const el=s=>document.querySelector(s);
   // ---- crafting, brewing and potions ----
   G.NET.send({t:'dev',cmd:'res'}); G.NET.send({t:'dev',cmd:'pots'}); G.NET.send({t:'dev',cmd:'coins'}); await wait(500); G=c.G();
   { const h=G.craftHtml('weapon'), a=G.craftHtml('armor'); ok('the Craft tab lists the three weapons at the weaponsmith\'s and the four armour pieces at the armourer\'s, with their costs',(h.match(/data-craft=/g)||[]).length===3&&(a.match(/data-craft=/g)||[]).length===4&&(h.match(/data-crtier=/g)||[]).length===6&&(h.match(/data-crrar=/g)||[]).length===3&&/Ore/.test(h)&&/Log/.test(a)); }
-  G.openBrew({def:{name:'Ylva'}}); { const h=el('#brBody').innerHTML; ok('the brewing panel lists nine potions with their herbs and a Brew button each',(h.match(/data-brew=/g)||[]).length===18&&(h.match(/class="it"/g)||[]).length===9&&/Greater Healing Potion/.test(h)); }
+  G.openBrew({def:{name:'Ylva'}}); { const h=el('#brBody').innerHTML; ok('the brewing panel lists eighteen potions with their herbs and a Brew button each',(h.match(/data-brew=/g)||[]).length===36&&(h.match(/class="it"/g)||[]).length===18&&/Greater Healing Potion/.test(h)); }
   G.updatePotBar(true); ok('the potion belt shows once you carry potions (its buttons are checked in the browser: the headless DOM does not parse innerHTML)',!G.potBar.hidden);
   G.P.y=G.getH(G.P.x,G.P.z); G.NET.send({t:'pos',p:[G.P.x,G.P.y,G.P.z,0,0,0]}); await wait(200);
   G.drinkPotion('might'); await wait(600); G=c.G(); ok('drinking a potion: the server drinks the strongest, the client shows its cooldown and buff timer',G.GEAR.pot.might3===4&&(G.POT_ST.until.might||0)>0&&(G.POT_ST.cd.might||0)>0);

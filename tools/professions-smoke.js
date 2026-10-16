@@ -37,7 +37,7 @@ send({t:'equip',id:'pick1-r'});
 
 // ---- the nodes of every land ----
 { const byZone={}, bad=[]; for(const n of x.NODES){ (byZone[n.zone]=byZone[n.zone]||[]).push(n); if(x.rawHeight(n.x,n.z)<2.0) bad.push(n.i); }
-  ok('467 nodes: 90 in the Hoarfrost Reach (first, unchanged), 7 to 9 in each of the home forest\'s and the vale\'s zones, the Greyspine\'s 53, then the Sunscar\'s 40-45, then the Gloamhorn\'s 50-55 last (so every older node keeps its number)',x.NODES.length>=457&&x.NODES.length<=467&&x.NODES.slice(367).every(n=>'sm'.includes(String(n.zone)[0]))&&x.NODES.filter(n=>String(n.zone)[0]==='m').length>=50&&x.NODES.slice(-50).every(n=>String(n.zone)[0]==='m')&&x.NODES.slice(0,90).every(n=>['rimeore','frostpine','frostbloom','snowmoss'].includes(n.kind)&&String(n.zone)[0]==='h')&&x.NODES.slice(314,367).every(n=>String(n.zone)[0]==='g')&&x.NODES.slice(90,314).every(n=>String(n.zone)[0]!=='g'&&String(n.zone)[0]!=='h'),Object.keys(byZone).length+' zones');
+  ok('485 nodes: 90 in the Hoarfrost Reach (first, unchanged), 7 to 9 in each of the home forest\'s and the vale\'s zones, the Greyspine\'s 53, then the Sunscar\'s 40-45, then the Gloamhorn\'s 50-55, then the 18 of the home grounds last (so every older node keeps its number)',x.NODES.length>=475&&x.NODES.length<=485&&x.NODES.slice(367).every(n=>'smh'.includes(String(n.zone)[0]))&&x.NODES.filter(n=>String(n.zone)[0]==='m').length>=50&&x.NODES.slice(-18).every(n=>n.home)&&x.NODES.slice(-68,-18).every(n=>String(n.zone)[0]==='m')&&x.NODES.slice(0,90).every(n=>['rimeore','frostpine','frostbloom','snowmoss'].includes(n.kind)&&String(n.zone)[0]==='h')&&x.NODES.slice(314,367).every(n=>String(n.zone)[0]==='g')&&x.NODES.slice(90,314).every(n=>String(n.zone)[0]!=='g'&&String(n.zone)[0]!=='h'),Object.keys(byZone).length+' zones');
   ok('no node is at the waterline (the shared terrain: the server\'s coarse map can dip lower at a steep edge)',!bad.length,bad.length+' in water');
   ok('every ring zone of the home forest has its veins, trees and herbs (9 in the inner woods, levels 1-14, 7 in zone 15)',[1,2,3,4,5,6,7,8,9,10,11,12,13,14].every(z=>(byZone[z]||[]).length===9)&&(byZone[15]||[]).length===7); }
 { const at1=k=>x.NODES.filter(n=>String(n.zone)===String(k));
@@ -101,7 +101,7 @@ g().coins=100; send({t:'craft',slot:'top',tier:1,rar:0}); ok('an oak-log chain h
 
 // ---- brewing ----
 { const P=x.POTS;
-  ok('nine potions: healing, might and guard, each in three strengths made from one land\'s herbs',Object.keys(P).length===9&&P.heal1.herbs[0].res==='sunpetal'&&P.might2.herbs.map(h=>h.res).join()==='kikyo,yomogi'&&P.guard3.herbs[0].res==='snowmoss'&&P.heal3.name==='Greater Healing Potion'); }
+  ok('eighteen potions: six kinds (healing, might, guard, and version 3\'s regen, scholar, fortune), each in three strengths made from one land\'s herbs',Object.keys(P).length===18&&P.heal1.herbs[0].res==='sunpetal'&&P.might2.herbs.map(h=>h.res).join()==='kikyo,yomogi'&&P.guard3.herbs[0].res==='snowmoss'&&P.heal3.name==='Greater Healing Potion'); }
 g().pot={}; g().res={sunpetal:7,ironroot:5}; g().coins=500; at(x.VIL.x+150,x.VIL.z+150); send({t:'brew',id:'heal1',n:1}); ok('brewing is done in a village',!g().pot.heal1);
 home(); send({t:'brew',id:'heal1',n:1}); ok('a Minor Healing Potion: 3 sunpetal and 8 coins',g().pot.heal1===1&&g().res.sunpetal===4&&g().coins===492);
 send({t:'brew',id:'heal1',n:5}); ok('a bulk brew stops at what the herbs allow (4 sunpetal: one more)',g().pot.heal1===2&&g().res.sunpetal===1);

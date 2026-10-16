@@ -14,7 +14,7 @@ function sanitizeGear(g,cls){
   out.q=sanitizeQuests(g.q);
   out.skills=sanitizeSkills(g.skills);
   out.mq=sanitizeMq(g.mq);
-  { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); }
+  { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); out.cos=sanitizeCos(g); }   // cosmetics: the auras and capes made at a lodge
   out.zt=sanitizeZt(g.zt);
   out.ss=ssSanitizeSave(g.ss);   // skillsets: the pity counts of the sources (an old save has none)
   out.dg=dgSanitizeSave(g.dg);   // dungeons: clears and best times per '<theme>:<mission>' (an old save has none)
@@ -87,6 +87,7 @@ function newPlayer(pid,hello){
   const p={id:pid,name:cleanName(hello.name),look,x:sp.x,y:getH(sp.x,sp.z),z:sp.z,face:0,vx:0,vz:0,
     level:clampInt(save.level,1,PLAYER_MAX_LV,1),exp:Math.min(EXP_MAX,Math.max(0,+save.exp||0)),gear:sanitizeGear(save.gear,look.cls),
     hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0},buff:null,act:null,dirty:true,travelT:0};
+  p.look=cosCleanLook(p.look,p.gear.cos);   // cosmetics: no aura or cape that you do not own
   if(p.gear.startAll) giveAllP(p);
   if(p.gear.skills.v!==2){ autoEquipP(p,'skill'); autoEquipP(p,'burst'); p.gear.skills.v=2; }   // saves from before skills / bursts get the free ones
   p.gear.skills.pass.forEach((id,i)=>{ if(id&&i>=passiveOpen(p.level)) p.gear.skills.pass[i]=null; });   // a passive in a slot this level has not opened goes back to the bag
@@ -98,7 +99,7 @@ function recalcP(p){
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
   g.atk+=dgRingAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else (only for a matching soul)
   rlRefreshP(p);   // rolls: the lines of the worn level-40 pieces (p.rl)
-  p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)*(1+rlP(p,'hp'))); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym)*(1+rlP(p,'atk')); p.def=Math.round(g.def*(1+rlP(p,'def'))); p.red=defRed(p.def);   // rolls: hp, atk and def lines
+  p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)*(1+rlP(p,'hp'))*(1+toolBonusStat(p.gear,'hp'))); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym)*(1+rlP(p,'atk'))*(1+toolBonusStat(p.gear,'atk')); p.def=Math.round(g.def*(1+rlP(p,'def'))*(1+toolBonusStat(p.gear,'def'))); p.red=defRed(p.def);   // rolls: hp, atk and def lines   // professions: the worn tools' small bonus (shared/professions.js)
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));
   ssRefreshP(p);   // skillsets: the sets worn and their bonuses
 }

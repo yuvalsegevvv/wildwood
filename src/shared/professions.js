@@ -50,6 +50,33 @@ const NODE_PLAN=[[22,'frostbloom',6],[22,'snowmoss',4],[22,'frostpine',4],[22,'r
   [28,'rimeore',3],[28,'frostpine',2],[28,'snowmoss',2],[29,'rimeore',3],[29,'frostpine',2],[29,'snowmoss',2],[30,'rimeore',3],[30,'frostpine',2],[30,'snowmoss',2]];
 // the four dungeon doors (shared/dungeons.js loads after this file: tools/dungeons-smoke.js checks these stay equal to DG_ENTRANCES): no node within 22 m of one
 const NODE_KEEPOUT=[[244,148],[826,82],[368,-894],[316+GDX,-692]];
+/* THE WAYFARERS' GROUNDS (version 3): the home forest's own gathering yard, a short walk from the first village. Every player has a copy: the nodes are the same on the client and the server,
+   but a node you take is taken for you alone (server/professions.js keeps p.hback) and comes back after HOME_RESPAWN seconds, so the yard is never picked clean by someone else. It holds one vein
+   of each of the six ore grades, one tree of each of the six log grades and one of each of the six herbs: the tool tier you wear decides how far up the rows you can work. Gear comes from the
+   dungeons, so what the yard pays is small (HOME_* below, server/professions.js): a little exp and coins, now and then an upgrade item, and the materials of the cosmetics (shared/cosmetics.js). */
+const HOME_RESPAWN=60, HOME_YARD_R=19;
+const HOME_HERBS=['sunpetal','ironroot','kikyo','yomogi','frostbloom','snowmoss'], HOME_HERB_NEED=[0,1,2,3,4,5];
+function homeYardPlan(cx,cz){   // the 18 nodes around a centre: ore on the inner ring, trees on the middle one, herbs on the outer one
+  const out=[];
+  for(let g=0;g<6;g++){
+    const a=g/6*TAU+0.3, b=g/6*TAU+0.95, c=g/6*TAU+1.6;
+    out.push({kind:ORE_GRADES[g][0],need:g,x:cx+Math.sin(a)*7,z:cz+Math.cos(a)*7});
+    out.push({kind:LOG_GRADES[g][0]==='frostwood'?'frostpine':LOG_GRADES[g][0],need:g,x:cx+Math.sin(b)*13,z:cz+Math.cos(b)*13});
+    out.push({kind:HOME_HERBS[g],need:HOME_HERB_NEED[g],x:cx+Math.sin(c)*HOME_YARD_R,z:cz+Math.cos(c)*HOME_YARD_R});
+  }
+  return out;
+}
+const HOME_YARD=(()=>{   // the flattest dry clearing 35-100 m from the first village's centre where all 18 nodes fit, off the road, the river and the coast
+  const V0=VILS[0], bad=(x,z)=>rawHeight(x,z)<2.4||riverDist(x,z)<9||coastDist(x,z)<42||nearRoad(x,z,5)||vDist(x,z)<VR+12||arenaDist(x,z)<34||zoneRidge(x,z)>0.6||NODE_KEEPOUT.some(d=>Math.hypot(d[0]-x,d[1]-z)<30);
+  let best=null;
+  for(let r=VR+36;r<=VR+100;r+=8) for(let k=0;k<24;k++){
+    const a=k/24*TAU, cx=V0.x+Math.sin(a)*r, cz=V0.z+Math.cos(a)*r, plan=homeYardPlan(cx,cz);
+    if(plan.some(n=>bad(n.x,n.z))||bad(cx,cz)) continue;
+    let mn=1e9,mx=-1e9; for(const n of plan){ const h=rawHeight(n.x,n.z); mn=Math.min(mn,h); mx=Math.max(mx,h); }
+    const score=(mx-mn)+r*0.02; if(!best||score<best.score) best={x:cx,z:cz,score};
+  }
+  return best?{x:best.x,z:best.z}:null;   // (null: no clearing found; the yard is then left out and the smoke test says so)
+})();
 const NODES=(()=>{
   const out=[];
   const flat=(x,z)=>Math.abs(rawHeight(x+3,z)-rawHeight(x-3,z))<=2.2&&Math.abs(rawHeight(x,z+3)-rawHeight(x,z-3))<=2.2;
@@ -84,6 +111,8 @@ const NODES=(()=>{
   { const rng=mulberry32(5155), good=(x,z)=>rawHeight(x,z)>=waterSurf(x,z)+2.2&&!gloamKeepOut(x,z,3);
     for(let lv=30;lv<=40;lv++){ const zn=ZONES.find(z=>z.key==='m'+lv);
       for(const kind of ['rimeore','rimeore','frostpine','frostpine','snowmoss']) put(rng,zn,kind,good); } }
+  // the Wayfarers' Grounds, last of all so that no older node moves: home:true nodes are taken per player (HOME_YARD above)
+  if(HOME_YARD) for(const h of homeYardPlan(HOME_YARD.x,HOME_YARD.z)) out.push({i:out.length,kind:h.kind,x:h.x,z:h.z,zone:'home',need:h.need,home:true});
   return out;
 })();
 // the nearest node within r metres of (x, z) (index into NODES), or -1
@@ -104,6 +133,12 @@ function doubleChance(L,tool,need){ return Math.min(0.9,0.08*(L-1)+(tool?tool.ex
 // how long a gather takes (a cast, no animation): 1.2 s with a copper tool, 0.1 s less for each tier of the tool and 0.04 s for each rarity, never under 0.6 s
 const GATHER_CAST=1.2, GATHER_CAST_MIN=0.6;
 function castTime(tool){ return Math.max(GATHER_CAST_MIN,GATHER_CAST-(tool?0.1*tool.tier+0.04*tool.rar:0)); }
+/* THE TOOLS' SMALL BONUS (version 3): a good enough tool worn in its slot (tier TOOL_BONUS_FROM or better) adds a little to your stats, far below any gear: a pickaxe attack, an axe health, a sickle defence.
+   TOOL_BONUS_STEP per tier above the first two plus TOOL_BONUS_RAR per rarity, never more than TOOL_BONUS_CAP each (2 %), so the three tools together are at most 6 %. */
+const TOOL_BONUS_FROM=2, TOOL_BONUS_STEP=0.003, TOOL_BONUS_RAR=0.0015, TOOL_BONUS_CAP=0.02;
+const TOOL_BONUS_STAT={pick:'atk',axe:'hp',sickle:'def'};
+function toolBonusOf(gear,slot){ const t=gear&&gear.eq?ITEM[gear.eq[slot]]:null; if(!t||t.kind!=='tool'||t.tier<TOOL_BONUS_FROM) return 0; return Math.min(TOOL_BONUS_CAP,TOOL_BONUS_STEP*(t.tier-TOOL_BONUS_FROM+1)+TOOL_BONUS_RAR*t.rar); }
+const toolBonusStat=(gear,stat)=>{ let v=0; for(const s of TOOL_SLOTS) if(TOOL_BONUS_STAT[s]===stat) v+=toolBonusOf(gear,s); return v; };
 // a Wayfarers' Lodge is in each village
 const nearLodge=(x,z)=>VILS.some(V=>Math.hypot(x-V.x,z-V.z)<=VR+8);
 // a save's professions and resources, checked

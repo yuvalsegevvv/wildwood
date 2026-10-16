@@ -1,8 +1,14 @@
 //@ Crafting, brewing and potions on the server: making gear from ore and logs, brewing potions from herbs (both in a village, at the NPCs), drinking them (healing at once, might and guard for a while)
 /* Messages: craft{slot,tier,rar} (rules and prices: shared/crafting.js), brew{id,n}, potion{k} (k: heal / might / guard; the strongest one you own is
    drunk). Events: craft [pid, item id], brew [pid, potion id, n], pot [pid, kind, tier, seconds] (a potion drunk: the client starts that kind's
-   cooldown and shows the buff). Potion buffs live in p.potb {might|guard: {until, v}} and are read by rollDmgS (might) and hurtP (guard) through potBuffP. */
+   cooldown and shows the buff). Potion buffs live in p.potb {might|guard|regen|scholar|fortune: {until, v}} and are read through potBuffP: rollDmgS (might), hurtP (guard), updatePotionsS (regen), rewardKill (scholar: exp, fortune: coins and drops). */
 function potBuffP(p,kind){ if(p.pv) return 0; const b=p.potb&&p.potb[kind]; return b&&S.t<b.until?b.v:0; }   // pvp: no potion buffs on the island
+// version 3: the Mossblood Draught heals over time (once a second while it lasts)
+let potRegenT=0;
+function updatePotionsS(dt){
+  potRegenT-=dt; if(potRegenT>0) return; potRegenT=1;
+  for(const p of S.players.values()){ const v=potBuffP(p,'regen'); if(v>0&&!p.dead&&p.hp<p.maxHp) healP(p,p.maxHp*v); }
+}
 function craftP(p,slot,t,r){
   t=clampInt(t,0,TIERS-1,-1); r=clampInt(r,0,CRAFT_MAX_RAR,-1);
   if(p.dead||!canCraft(slot,t,r)) return;
@@ -35,7 +41,8 @@ function drinkP(p,kind){
   if(kind==='heal'&&p.hp>=p.maxHp){ toastTo(p.id,'You are not hurt','bad'); return; }
   p.gear.pot[P.id]--; if(!p.gear.pot[P.id]) delete p.gear.pot[P.id];
   p.potCd[kind]=S.t+K.cd;
+  const dur=potDur(kind);
   if(kind==='heal') healP(p,p.maxHp*POT_HEAL[P.tier]);
-  else { p.potb=p.potb||{}; p.potb[kind]={until:S.t+POT_DUR*(1+rlP(p,'buffdur')),v:POT_BUFF[P.tier]}; }
-  p.dirty=true; ev('pot',p.id,kind,P.tier,kind==='heal'?0:POT_DUR); mqActP(p,'potion',1,{kind});
+  else { p.potb=p.potb||{}; p.potb[kind]={until:S.t+dur*(1+rlP(p,'buffdur')),v:potVal(kind,P.tier)}; }
+  p.dirty=true; ev('pot',p.id,kind,P.tier,kind==='heal'?0:dur); mqActP(p,'potion',1,{kind});
 }

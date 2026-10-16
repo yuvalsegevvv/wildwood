@@ -51,8 +51,15 @@ const EDIT=[
     // an outfit's weapon dressing restyles whatever weapon you hold, whatever your class
     {k:'weaponItem',label:'Weapon style (signature)',type:'seg',opts:[['','Plain']].concat(ofItems('weapon'))},
     {k:'tintWeapon',label:'',type:'color',base:'weapon',only:true,opts:TINTC}
+  ]},
+  // version 3: the parts the professions make (shared/cosmetics.js): only what you own is listed; they are made at a Wayfarers' Lodge from ore, logs and herbs
+  {tab:'Cosmetics', rows:[
+    {k:'aura',label:'Aura (made at a Wayfarers\' Lodge)',type:'seg',opts:()=>[['','None']].concat(cosOwnedOpts('a'))},
+    {k:'cape',label:'Cape (made at a Wayfarers\' Lodge)',type:'seg',opts:()=>[['','None']].concat(cosOwnedOpts('c'))}
   ]}
 ];
+// [id, name, tooltip] of the auras ('a') or capes ('c') you own, in the order they are defined
+function cosOwnedOpts(type){ const own=(GEAR&&GEAR.cos)||[], defs=type==='a'?COS_AURAS:COS_CAPES; return defs.filter(d=>own.includes(cosKey(type,d[0]))).map(d=>[d[0],d[1],d[type==='a'?8:6]]); }
 const hex=n=>'#'+n.toString(16).padStart(6,'0');
 function setLook(k,v){
   if(k==='sex' && !LOOK.custom){ const keep={skin:LOOK.skin,cls:LOOK.cls}; for(const s of SLIDER_KEYS) keep[s]=LOOK[s]; LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,keep); }   // the sliders and skin carry over
@@ -115,7 +122,7 @@ function renderEditor(){
     }
     else if(row.type==='seg'){
       const box=document.createElement('div'); box.className='chips';
-      for(const [v,txt,title] of row.opts){
+      for(const [v,txt,title] of (typeof row.opts==='function'?row.opts():row.opts)){
         const b=document.createElement('button'); b.className=title?'chip sig':'chip'; b.textContent=txt; if(title) b.title=title; b.setAttribute('aria-pressed',LOOK[row.k]===undefined?(v===false||v===''):LOOK[row.k]===v);   // a signature piece (tooltip: whose it is) is drawn a little gold
         b.onclick=()=>{ setLook(row.k,v); renderEditor(); }; box.append(b);
       }

@@ -28,7 +28,7 @@ function renderBrew(){
   if($('#brew').hidden) return;
   const g=GEAR||{}, pot=g.pot||{}, coins=g.coins||0;
   $('#brTitle').textContent=panelNPC?panelNPC.def.name+'\'s kettle':'Brewing'; $('#brCoins').textContent=coins+' coins';
-  let h=`<p class="lo-intro">Bring herbs and a few coins and I will brew them into potions. Drink them in a fight: <b>${kbName('pot1')||'Z'}</b> healing, <b>${kbName('pot2')||'X'}</b> might, <b>${kbName('pot3')||'C'}</b> guard (the strongest one you carry is used). Herbs are cut with a sickle (Gathering, learned at a Wayfarers' Lodge): each land has its own, and the stronger the potion the farther the herbs grow.</p>`;
+  let h=`<p class="lo-intro">Bring herbs and a few coins and I will brew them into potions. Drink them in a fight: <b>${kbName('pot1')||'Z'}</b> healing, <b>${kbName('pot2')||'X'}</b> might, <b>${kbName('pot3')||'C'}</b> guard, <b>${kbName('pot4')||'T'}</b> heal over time, <b>${kbName('pot5')||'U'}</b> more exp, <b>${kbName('pot6')||'O'}</b> more coins and drops (the strongest one you carry is used). Herbs are cut with a sickle (Gathering, learned at a Wayfarers' Lodge): each land has its own, and the stronger the potion the farther the herbs grow.</p>`;
   for(const k of POT_KIND_IDS){
     h+=`<div class="inv-h">${POT_KINDS[k].name}</div>`;
     for(let t=0;t<3;t++){
