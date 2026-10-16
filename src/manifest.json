@@ -224,6 +224,7 @@
     "combat/monsters.js",
     "player/progression.js",
     "combat/classes.js",
+    "combat/fx-pool.js",
     "combat/weapons.js",
     "combat/attacks.js",
     "combat/reactions.js",
