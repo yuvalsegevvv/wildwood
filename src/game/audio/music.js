@@ -142,7 +142,9 @@ function musicFileTick(now){
   const off=F.cur?Math.min(MUSIC_LOOP_FROM[F.key]||0,buf.duration/2):0;
   s.connect(g); g.connect(F.lp); s.start(t,off); F.cur={s,g}; F.next=t+buf.duration-off-xf;
 }
+const MUSIC_ON=false;   // background music is switched off for now (the tracks stay in assets/audio and the themes stay in this file); set true to bring it back
 function musicTick(){
+  if(!MUSIC_ON) return;
   const c=SND.ctx, now=c.currentTime;
   SND.verbIn.song=SND.verbIn.music;
   // switch themes after 2.5 s somewhere new (right away for a boss fight): fade the old node out, start the new one
