@@ -50,11 +50,12 @@ const NODE_PLAN=[[22,'frostbloom',6],[22,'snowmoss',4],[22,'frostpine',4],[22,'r
   [28,'rimeore',3],[28,'frostpine',2],[28,'snowmoss',2],[29,'rimeore',3],[29,'frostpine',2],[29,'snowmoss',2],[30,'rimeore',3],[30,'frostpine',2],[30,'snowmoss',2]];
 // the four dungeon doors (shared/dungeons.js loads after this file: tools/dungeons-smoke.js checks these stay equal to DG_ENTRANCES): no node within 22 m of one
 const NODE_KEEPOUT=[[244,148],[826,82],[368,-894],[316+GDX,-692]];
-/* THE WAYFARERS' GROUNDS (version 3): the home forest's own gathering yard, a short walk from the first village. Every player has a copy: the nodes are the same on the client and the server,
+/* YOUR HOME (version 3): a private plot reached from any Wayfarers' Lodge (server/professions.js homeP), standing in a clearing near the first village. Every player has a copy of it: whoever is inside
+   sees and is seen by no one else (server/professions.js homeSnapS), monsters leave them alone, and the nodes are the same on the client and the server,
    but a node you take is taken for you alone (server/professions.js keeps p.hback) and comes back after HOME_RESPAWN seconds, so the yard is never picked clean by someone else. It holds one vein
    of each of the six ore grades, one tree of each of the six log grades and one of each of the six herbs: the tool tier you wear decides how far up the rows you can work. Gear comes from the
    dungeons, so what the yard pays is small (HOME_* below, server/professions.js): a little exp and coins, now and then an upgrade item, and the materials of the cosmetics (shared/cosmetics.js). */
-const HOME_RESPAWN=60, HOME_YARD_R=19;
+const HOME_RESPAWN=60, HOME_YARD_R=19, HOME_PLOT_R=30;   // HOME_PLOT_R: inside this many metres of the clearing's centre you are at home
 const HOME_HERBS=['sunpetal','ironroot','kikyo','yomogi','frostbloom','snowmoss'], HOME_HERB_NEED=[0,1,2,3,4,5];
 function homeYardPlan(cx,cz){   // the 18 nodes around a centre: ore on the inner ring, trees on the middle one, herbs on the outer one
   const out=[];
@@ -77,6 +78,7 @@ const HOME_YARD=(()=>{   // the flattest dry clearing 35-100 m from the first vi
   }
   return best?{x:best.x,z:best.z}:null;   // (null: no clearing found; the yard is then left out and the smoke test says so)
 })();
+const homeAt=(x,z)=>!!HOME_YARD&&Math.hypot(x-HOME_YARD.x,z-HOME_YARD.z)<HOME_PLOT_R;   // at home (a cheap test: a hypot)
 const NODES=(()=>{
   const out=[];
   const flat=(x,z)=>Math.abs(rawHeight(x+3,z)-rawHeight(x-3,z))<=2.2&&Math.abs(rawHeight(x,z+3)-rawHeight(x,z-3))<=2.2;
@@ -111,7 +113,7 @@ const NODES=(()=>{
   { const rng=mulberry32(5155), good=(x,z)=>rawHeight(x,z)>=waterSurf(x,z)+2.2&&!gloamKeepOut(x,z,3);
     for(let lv=30;lv<=40;lv++){ const zn=ZONES.find(z=>z.key==='m'+lv);
       for(const kind of ['rimeore','rimeore','frostpine','frostpine','snowmoss']) put(rng,zn,kind,good); } }
-  // the Wayfarers' Grounds, last of all so that no older node moves: home:true nodes are taken per player (HOME_YARD above)
+  // your home's nodes, last of all so that no older node moves: home:true nodes are taken per player (HOME_YARD above, shown only to someone at home)
   if(HOME_YARD) for(const h of homeYardPlan(HOME_YARD.x,HOME_YARD.z)) out.push({i:out.length,kind:h.kind,x:h.x,z:h.z,zone:'home',need:h.need,home:true});
   return out;
 })();

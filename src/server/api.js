@@ -196,7 +196,7 @@ function broadcastSnap(){
     // b (the eight bosses' state, ~170 bytes) is the same for everyone and rarely changes: it was 13-23% of every snapshot. It goes to a player when it differs from what they were last
     // sent, when a boss comes into their range (that boss's view is made just then and needs its row), and with every full resend (3 s); the client keeps the last rows (applyBossState).
     const sendB=full||bossNew||p.bSent!==bj, msg={t:'snap',day,n:all.length,pl,mo,w,ev}; if(sendB){ msg.b=b; p.bSent=bj; }
-    io.send(p.id,dgSnapS(p,msg));   // dungeons: events of your own run (or the world), its players, its boss row (b) and its HUD tuple (dg)
+    io.send(p.id,homeSnapS(p,dgSnapS(p,msg)));   // home: no one else at your home, you in no one else's view (server/professions.js); dungeons: events of your own run (or the world), its players, its boss row (b) and its HUD tuple (dg)
     if(p.inst) p.bSent=null;
   }
 }

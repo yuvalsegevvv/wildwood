@@ -1,10 +1,10 @@
-// Headless test of version 3's professions and cosmetics revamp, straight from src/: the Wayfarers' Grounds (18 nodes, taken per player, small rewards), the tools' capped stat bonus,
+// Headless test of version 3's professions and cosmetics revamp, straight from src/: your home (18 nodes, taken per player, small rewards), the tools' capped stat bonus,
 // the three new potions (regen, scholar, fortune), making auras and capes at a lodge, the server's cleaning of a look, and the cape / aura on the character model.
 // Usage: node tools/revamp-smoke.js
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['NODES','HOME_YARD','HOME_RESPAWN','NODE_KINDS','RES','ITEM','POTS','POT_KINDS','S','VIL','getH','toolBonusOf','toolBonusStat','TOOL_BONUS_CAP','cosCost','cosCleanLook','sanitizeCos','COS_AURAS','COS_CAPES','cosDef','potBuffP','rewardKill','expToNext']);
+  ['NODES','HOME_YARD','homeAt','HOME_PLOT_R','HOME_RESPAWN','NODE_KINDS','RES','ITEM','POTS','POT_KINDS','S','VIL','getH','toolBonusOf','toolBonusStat','TOOL_BONUS_CAP','cosCost','cosCleanLook','sanitizeCos','COS_AURAS','COS_CAPES','cosDef','potBuffP','rewardKill','expToNext']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const evs={a:[],b:[]}; const grab=()=>{ for(const id of ['a','b']){ for(const m of (inbox[id]||[])) if(m.t==='snap'&&m.ev) evs[id].push(...m.ev); inbox[id]=[]; } };
@@ -14,9 +14,9 @@ const at=(id,xx,zz)=>W.setPos(id,[xx,x.getH(xx,zz),zz,0,0,0]);
 const send=(id,m)=>{ W.receive(id,m); tick(1); };
 const home=id=>at(id,x.VIL.x+3,x.VIL.z+3);
 
-// ---- the grounds ----
+// ---- your home ----
 const yard=x.NODES.filter(n=>n.home);
-ok('the Wayfarers\' Grounds exist: 18 nodes (6 ore, 6 trees, 6 herbs, every grade), last in the list',!!x.HOME_YARD&&yard.length===18&&x.NODES.slice(-18).every(n=>n.home)&&yard.filter(n=>x.NODE_KINDS[n.kind].prof==='mining').map(n=>n.need).sort().join()==='0,1,2,3,4,5');
+ok('your home exists: 18 nodes (6 ore, 6 trees, 6 herbs, every grade), last in the list',!!x.HOME_YARD&&yard.length===18&&x.NODES.slice(-18).every(n=>n.home)&&yard.filter(n=>x.NODE_KINDS[n.kind].prof==='mining').map(n=>n.need).sort().join()==='0,1,2,3,4,5');
 ok('the clearing is 35-130 m from the first village, dry ground',Math.hypot(x.HOME_YARD.x-x.VIL.x,x.HOME_YARD.z-x.VIL.z)>=35&&Math.hypot(x.HOME_YARD.x-x.VIL.x,x.HOME_YARD.z-x.VIL.z)<=140&&yard.every(n=>x.getH(n.x,n.z)>1.5));
 // tools and professions for both
 for(const [id,p] of [['a',pa],['b',pb]]){ p.gear.coins=1e6; home(id); for(const pr of ['mining','woodcutting','gathering']) send(id,{t:'learn',id:pr}); p.gear.inv.push('pick1','axe1','sickle1'); for(const t of ['pick1','axe1','sickle1']) send(id,{t:'equip',id:t}); }
@@ -32,6 +32,21 @@ tick(Math.round(x.HOME_RESPAWN/0.05)+40); grab();
 ok('after HOME_RESPAWN it is back for that player (a node 0 event to them)',!(pa.hback&&pa.hback[cu.i])&&evs.a.some(e=>e[0]==='node'&&e[1]===cu.i&&e[2]===0));
 { const n0=pa.gear.res.copper; gather('a',cu); ok('and can be worked again',pa.gear.res.copper>n0); }
 { const hi=yard.find(n=>n.kind==='rimeore'); const n0=pa.gear.res.rimeore||0; gather('a',hi); ok('a top-grade vein still needs a top-grade pickaxe',(pa.gear.res.rimeore||0)===n0); }
+
+// ---- the home door and its privacy ----
+{ const plOf=id=>{ let last=null; for(const m of (inbox[id]||[])) if(m.t==='snap'&&m.pl) last=m.pl; return last; };
+  at('a',x.VIL.x+150,x.VIL.z+150); tick(45); send('a',{t:'home',a:'enter'}); ok('the way home starts at a lodge',!x.homeAt(pa.x,pa.z));
+  home('a'); at('b',x.VIL.x+5,x.VIL.z+5); tick(45); inbox.a=[]; send('a',{t:'home',a:'enter'}); tick(20);
+  ok('Go home at a lodge puts you in your home and remembers where you were',x.homeAt(pa.x,pa.z)&&pa.homeFrom&&Math.hypot(pa.homeFrom.x-(x.VIL.x+3),pa.homeFrom.z-(x.VIL.z+3))<1&&(inbox.a||[]).some(m=>m.t==='tp'));
+  inbox.a=[]; inbox.b=[]; tick(10);
+  ok('at home you see nobody, and the one in the village does not see you',!(plOf('a')||[]).some(r=>r[0]==='b')&&(plOf('a')||[]).some(r=>r[0]==='a')&&!(plOf('b')||[]).some(r=>r[0]==='a')&&(plOf('b')||[]).some(r=>r[0]==='b'));
+  tick(45); home('b'); tick(45); send('b',{t:'home',a:'enter'}); inbox.a=[]; inbox.b=[]; tick(10);
+  ok('two players at home are each alone in their own home',x.homeAt(pb.x,pb.z)&&!(plOf('a')||[]).some(r=>r[0]==='b')&&!(plOf('b')||[]).some(r=>r[0]==='a'));
+  ok('the home\'s nodes work and the rest of the world cannot gather them',(()=>{ const n=yard.find(k=>k.kind==='pine'); pa.gear.res={}; gather('a',n); const got=(pa.gear.res.pine||0)>0; at('a',n.x,n.z); return got; })());
+  { const m0=pa.hp; tick(60); ok('monsters leave you alone at home (nearestFighter skips it)',pa.hp>=m0&&!pa.dead); }
+  tick(45); inbox.a=[]; send('a',{t:'home',a:'leave'}); tick(5);
+  ok('Leave home returns you to the village you came from',!x.homeAt(pa.x,pa.z)&&Math.hypot(pa.x-(x.VIL.x+3),pa.z-(x.VIL.z+3))<2);
+  tick(45); send('b',{t:'home',a:'leave'}); tick(5); inbox.a=[]; inbox.b=[]; tick(10); ok('and you see each other again',(plOf('a')||[]).some(r=>r[0]==='b')); }
 
 // ---- the tools' bonus ----
 { const g={eq:{pick:'pick1',axe:null,sickle:null}}; const b=(id,slot)=>x.toolBonusOf({eq:{[slot]:id}},slot);

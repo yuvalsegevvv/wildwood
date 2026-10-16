@@ -78,7 +78,7 @@ function verPages(){ return {
     </ul>
     <h4>Professions and cosmetics</h4>
     <ul>
-      <li><b>The Wayfarers' Grounds</b>, a clearing near the home village (on the map): every grade of ore, tree and herb, and the nodes are yours alone. A gather there pays a little exp and coins and, rarely, an upgrade item.</li>
+      <li><b>Your home</b>: press <i>Go home</i> in any Wayfarers' Lodge panel. It is a private plot where only you are, with every grade of ore, tree and herb that grows back for you alone, and a workbench to make cosmetics, sell and leave. A gather there pays a little exp and coins and, rarely, an upgrade item.</li>
       <li>A Silverstone-tier tool or better, worn, gives a small stat bonus (at most 2% each: pickaxe attack, axe health, sickle defence).</li>
       <li>Three new potions: Mossblood Draught (heal over time), Scholar's Brew (more exp), Fortune Tea (more coins and drops).</li>
       <li>Make <b>auras</b> and <b>capes</b> at a Wayfarers' Lodge from your ore, logs and herbs, then wear them in the character editor's Cosmetics tab.</li>

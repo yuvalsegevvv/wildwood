@@ -54,12 +54,12 @@ function updateCastsS(){
 }
 // sell resources to the lodge keeper (n of one kind, or all of it when n is 0)
 function sellResP(p,id,n){
-  if(!RES[id]||p.dead||!nearLodge(p.x,p.z)) return;
+  if(!RES[id]||p.dead||!(nearLodge(p.x,p.z)||homeAt(p.x,p.z))) return;   // (your home's bench buys too)
   const have=p.gear.res[id]||0, k=n>0?Math.min(n,have):have; if(k<=0) return;
   p.gear.res[id]=have-k; if(!p.gear.res[id]) delete p.gear.res[id];
   p.gear.coins+=k*RES[id].sell; p.dirty=true; toastTo(p.id,'Sold '+k+' '+RES[id].name+' for '+k*RES[id].sell+' coins','good');
 }
-/* THE WAYFARERS' GROUNDS (shared/professions.js HOME_YARD): a node there is taken per player (p.hback = {node index: the time it is back}, not saved: a new session starts with all of them there),
+/* YOUR HOME (shared/professions.js HOME_YARD): a node there is taken per player (p.hback = {node index: the time it is back}, not saved: a new session starts with all of them there),
    the node events go to that player alone (e.to, like the party's and the dungeons' private events). What a gather there pays besides the resource, small on purpose (gear comes from the dungeons):
    exp (HOME_XP of the exp to the next level, times the grade), coins (HOME_COIN of a kill's coins, times the grade) and, with HOME_UPG*grade, an upgrade item: a Tempering Stone from level 30
    (the dungeon gear's upgrade), a skill-upgrade material before. */
@@ -73,6 +73,29 @@ function homeRewardP(p,K,got){
     if(p.level>=ENH_LV) dgAddStonesP(p,1,null);
     else { const ids=MAT_IDS.filter(id=>MATS[id].lv<=p.level+2&&MATS[id].lv>=Math.max(1,p.level-6)&&!MATS[id].boss); if(ids.length) addMatP(p,ids[Math.floor(Math.random()*ids.length)],1,null); }
   }
+}
+/* The home door: home{a:'enter'} at a Wayfarers' Lodge takes you to your home (and remembers where you were), home{a:'leave'} brings you back. Inside (homeAt) you are alone: homeSnapS cuts the
+   other players out of your snapshots and you out of theirs, nearestFighter (monsters.js) never picks you. Not saved: a new session starts wherever you logged out. */
+function homeP(p,a){
+  if(!HOME_YARD||p.dead||S.t-(p.warpT||-9)<2||p.inst) return;
+  const here=homeAt(p.x,p.z);
+  if(a==='enter'){
+    if(here) return;
+    if(!nearLodge(p.x,p.z)){ toastTo(p.id,'The way home starts at a Wayfarers\' Lodge in a village','bad'); return; }
+    p.homeFrom={x:p.x,z:p.z}; homeMoveP(p,HOME_YARD.x,HOME_YARD.z+4.5); toastTo(p.id,'Welcome home. Only you are here: work your nodes, and use the bench to make cosmetics, sell and leave.','good');
+  } else if(a==='leave'){
+    if(!here) return;
+    const f=p.homeFrom&&!homeAt(p.homeFrom.x,p.homeFrom.z)?p.homeFrom:{x:VIL.spawn.x,z:VIL.spawn.z}; p.homeFrom=null; homeMoveP(p,f.x,f.z);
+  }
+}
+function homeMoveP(p,x,z){ p.warpT=S.t; ev('warp',p.id,r1(p.x),r1(p.z),r1(x),r1(z)); p.x=x; p.z=z; p.y=getH(x,z); p.cast=null; sendTo(p.id,{t:'tp',x,z,face:0}); }
+MSG.home=(p,msg)=>homeP(p,msg.a);
+// the snapshot hook: at home you see only yourself, and nobody sees you
+function homeSnapS(p,msg){
+  if(!HOME_YARD) return msg;
+  const me=homeAt(p.x,p.z);
+  msg.pl=msg.pl.filter(r=>{ if(r[0]===p.id) return true; const q=S.players.get(r[0]); return !q||(!me&&!homeAt(q.x,q.z)); });
+  return msg;
 }
 let nodeT=0;
 function updateNodesS(dt){

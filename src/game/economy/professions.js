@@ -63,17 +63,27 @@ function buildNodes(){
     }
     g.visible=false; scene.add(g); NODE_VIEWS.push({g,n});
   }
-  if(HOME_YARD) buildHomeSign();
+  if(HOME_YARD) buildHomeProps();
 }
-// the Wayfarers' Grounds (shared/professions.js HOME_YARD): a signpost and a lantern in the middle of the ring of nodes, so the clearing reads as a place from far off
-let homeSign=null, homeSeen=false;
-function buildHomeSign(){
+// your home (shared/professions.js HOME_YARD): a workbench with an anvil, a barrel and a lantern post in the middle of the ring of nodes, and a low fence round the plot. Drawn only while you are at home
+// (the server shows nobody else there), so from outside the clearing looks like any other
+let homeProps=null, homeSeen=false;
+function buildHomeProps(){
   const g=new THREE.Group(), y=getH(HOME_YARD.x,HOME_YARD.z); g.position.set(HOME_YARD.x,y,HOME_YARD.z);
-  const wood=c=>(x,yy,z,nx,ny,nz,col)=>col.set(c);
-  g.add(new THREE.Mesh(merge([paint(new THREE.BoxGeometry(0.16,2.3,0.16).translate(0,1.15,0),wood(0x5a4026)),paint(new THREE.BoxGeometry(1.4,0.42,0.07).translate(0.5,2.0,0),wood(0xc9a86a)),paint(new THREE.BoxGeometry(1.3,0.06,0.075).translate(0.5,1.82,0),wood(0x7a5a34)),paint(new THREE.BoxGeometry(1.2,0.06,0.075).translate(0.5,2.18,0),wood(0x7a5a34)),
-    paint(new THREE.SphereGeometry(0.14,8,6).translate(-0.02,2.45,0),wood(0xffe39a))]),matBark));
-  g.visible=false; scene.add(g); homeSign=g;
+  const wood=c=>(x,yy,z,nx,ny,nz,col)=>col.set(c), at=(geo,c,x,yy,z)=>paint(geo.translate(x,yy,z),wood(c)), parts=[];
+  parts.push(at(new THREE.BoxGeometry(2.2,0.12,0.9),0x8a6a3a,0,0.95,0));   // the bench's top
+  for(const sx of [-0.95,0.95]) parts.push(at(new THREE.BoxGeometry(0.14,0.95,0.7),0x5a4026,sx,0.47,0));
+  parts.push(at(new THREE.BoxGeometry(0.5,0.22,0.3),0x4a4e58,-0.6,1.12,0),at(new THREE.BoxGeometry(0.3,0.1,0.22),0x3a3e48,-0.6,1.27,0));   // an anvil
+  parts.push(at(new THREE.CylinderGeometry(0.34,0.3,0.7,10),0x6a4a2a,1.9,0.35,0.2));   // a barrel
+  parts.push(at(new THREE.BoxGeometry(0.16,2.6,0.16),0x5a4026,-2.2,1.3,0.3),at(new THREE.SphereGeometry(0.16,8,6),0xffe39a,-2.2,2.7,0.3));   // a lantern post
+  const R=HOME_PLOT_R-3, n=44;   // the fence: posts round the plot, a rail between each pair
+  for(let k=0;k<n;k++){ const a=k/n*TAU, px=Math.sin(a)*R, pz=Math.cos(a)*R, hy=getH(HOME_YARD.x+px,HOME_YARD.z+pz)-y;
+    parts.push(at(new THREE.BoxGeometry(0.12,1.0,0.12),0x6a5030,px,hy+0.5,pz)); }
+  g.add(new THREE.Mesh(merge(parts),matBark));
+  g.visible=false; scene.add(g); homeProps=g;
 }
+const atHome=()=>!!HOME_YARD&&homeAt(P.x,P.z);
+const nearHomeBench=()=>started&&atHome()&&Math.hypot(P.x-HOME_YARD.x,P.z-HOME_YARD.z)<4.5;
 // the cast bar: on from the cast event to the gather event (or castx), and hidden by walking off
 const CAST={on:false,t0:0,dur:1,x:0,z:0}, castBar=$('#castbar'), cbFill=$('#cbFill'), cbName=$('#cbName'), CAST_ING={mine:'Mining',chop:'Chopping',gather:'Gathering'};
 function onCastEvent(i,dur){
@@ -84,13 +94,13 @@ function hideCast(){ CAST.on=false; castBar.hidden=true; }
 // every frame: nodes within 130 m that are not taken, and a slow glow on the ore and the flowers
 function updateNodes(){
   if(CAST.on){ const k=(t-CAST.t0)/CAST.dur; if(k>1.2||Math.hypot(P.x-CAST.x,P.z-CAST.z)>1.5) hideCast(); else cbFill.style.width=Math.round(Math.min(1,k)*100)+'%'; }
-  if(homeSign){ const d=Math.hypot(HOME_YARD.x-P.x,HOME_YARD.z-P.z); homeSign.visible=d<160;
-    if(!homeSeen&&started&&d<40){ homeSeen=true; toast('The Wayfarers\' Grounds: every grade of ore, tree and herb, yours alone. Gather here with your tools.','good'); } }
+  if(homeProps){ const h=atHome(); homeProps.visible=h;
+    if(!homeSeen&&started&&h){ homeSeen=true; toast('Home: only you are here. Gather from your nodes, and use the bench to make cosmetics, sell and leave.','good'); } }
   if(!NODE_VIEWS.length) return;
-  for(const v of NODE_VIEWS) v.g.visible=!NODE_TAKEN.has(v.n.i)&&Math.abs(v.n.x-P.x)<130&&Math.abs(v.n.z-P.z)<130;
+  const hm=atHome(); for(const v of NODE_VIEWS) v.g.visible=!NODE_TAKEN.has(v.n.i)&&Math.abs(v.n.x-P.x)<130&&Math.abs(v.n.z-P.z)<130&&(!v.n.home||hm);   // (a home node is drawn only to someone at home)
   for(const G of NODE_GLOWS) G.m.emissiveIntensity=G.k*(0.85+0.5*Math.sin(t*2.2));
 }
-function nearNode(){ if(!started||!NODES.length) return -1; const i=nodeNear(P.x,P.z,NODE_R); return i>=0&&!NODE_TAKEN.has(i)?i:-1; }
+function nearNode(){ if(!started||!NODES.length) return -1; const i=nodeNear(P.x,P.z,NODE_R); return i>=0&&!NODE_TAKEN.has(i)&&(!NODES[i].home||atHome())?i:-1; }
 function nodePrompt(i){
   const n=NODES[i], K=NODE_KINDS[n.kind], why=GEAR?nodeBlock(GEAR,n):'learn', gk=kbName('gather'), tk=kbName('talk');
   return why?nodeBlockText(why,n):'Press '+(gk&&tk?gk+' or '+tk:gk||tk||'the gather key')+' to '+PROFS[K.prof].verb+' '+K.name;
@@ -125,7 +135,7 @@ function renderLodge(){
   h+=`</div><div class="inv-h">Tools <span>${TOOL_MAT[tier]} tier (level ${TIER_LV[tier]})</span></div><div class="chips lo-tiers">`;
   for(let t=0;t<TIERS;t++) h+=`<button class="chip" data-tier="${t}" aria-pressed="${t===tier}" ${t>best?'disabled':''}>${TOOL_MAT[t]}</button>`;
   h+=`</div>`;
-  { const tb=cosToolBonusText(g); h+=`<p class="lo-intro">A good tool (tier ${TOOL_BONUS_FROM+1} and up) worn in its slot adds a little to your stats: ${tb?'<b>now '+tb+'</b>':'nothing yet'}. The Wayfarers' Grounds near the home village grow every grade of ore, log and herb for you alone.</p>`; }
+  { const tb=cosToolBonusText(g); h+=`<p class="lo-intro">A good tool (tier ${TOOL_BONUS_FROM+1} and up) worn in its slot adds a little to your stats: ${tb?'<b>now '+tb+'</b>':'nothing yet'}. Your home (below) grows every grade of ore, log and herb for you alone.</p>`; }
   for(const slot of TOOL_SLOTS){
     const it=ITEM[itemId(slot,tier,0)], own=(g.inv||[]).filter(x=>x===it.id).length, n=(g.bought||{})[it.id]||0, price=shopPrice(it,n);
     h+=row(it,`<button class="chip buy" data-buytool="${it.id}" ${coins<price?'disabled':''}>${price} coins</button>`,own?'owned x'+own:'');
@@ -135,6 +145,7 @@ function renderLodge(){
   if(!have.length) h+='<p class="muted">You carry nothing yet.</p>';
   for(const id of have) h+=`<div class="lo-sell"><span class="mat"><i style="background:${RES[id].col}"></i>${RES[id].name} <b>${res[id]}</b></span><span class="muted">${RES[id].sell} coins each</span><button class="chip" data-sellres="${id}" data-n="1">Sell 1</button><button class="chip" data-sellres="${id}" data-n="0">Sell all</button></div>`;
   h+=`</div>`;
+  h+=cosHomeHtml();   // the way home (economy/cosmetics.js)
   h+=cosLodgeHtml(g);   // cosmetics: auras and capes (economy/cosmetics.js)
   $('#loBody').innerHTML=h;
   const B=$('#loBody'); cosLodgeBind(B);

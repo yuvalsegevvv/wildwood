@@ -42,7 +42,8 @@ function respawnMonS(m){
 }
 function monCenterS(m){ return {x:m.x,y:getH(m.x,m.z)+m.T.height*0.5*m.s,z:m.z}; }
 // the cheap distance test comes first: inVillage() is only worth asking about a player who is close enough to matter (it was 28% of the server's tick)
-function nearestFighter(x,z,maxD){ let best=null,bd=maxD*maxD; for(const p of S.players.values()){ const dx=p.x-x, dz=p.z-z, d=dx*dx+dz*dz; if(d>=bd||p.dead||p.pv||inVillage(p)) continue; bd=d; best=p; } return best; }   // (pvp: nothing hunts a fighter on the island)
+function nearestFighter(x,z,maxD){ let best=null,bd=maxD*maxD; for(const p of S.players.values()){ const dx=p.x-x, dz=p.z-z, d=dx*dx+dz*dz; if(d>=bd||p.dead||p.pv||inVillage(p)||homeAt(p.x,p.z)) continue;   // home: monsters leave you alone at home
+     bd=d; best=p; } return best; }   // (pvp: nothing hunts a fighter on the island)
 function anyPlayerNear(x,z,d){ const d2=d*d; for(const p of S.players.values()){ const dx=p.x-x, dz=p.z-z; if(dx*dx+dz*dz<d2) return true; } return false; }
 function updateMonstersS(dt){
   for(const m of MONS){
