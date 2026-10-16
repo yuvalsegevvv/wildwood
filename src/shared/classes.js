@@ -162,4 +162,4 @@ function abilityOf(cls,slot,skills,level){
   return s&&(s.cls===cls||s.cls==='any')&&s.slot===slot&&skills.owned.includes(id)&&level>=s.lv?s:null;   // skillsets: cls 'any' is a skill every class can wear
 }
 // seconds until an ability can be used again: its own cooldown, shorter with skill level and the Quickhands passive
-function abilityCd(ab,skills,level,cls){ return ab.cd*skillCdMult(skillLvOf(skills,ab.id))*(1-Math.max(-1,Math.min(0.6,passiveSum(skills,level,'cd',cls||(ab.cls==='any'?undefined:ab.cls))))); }   // skillsets: the class the bonuses are read for (a cost makes it longer)
+function abilityCd(ab,skills,level,cls,extra){ return ab.cd*skillCdMult(skillLvOf(skills,ab.id))*(1-Math.max(-1,Math.min(0.6,passiveSum(skills,level,'cd',cls||(ab.cls==='any'?undefined:ab.cls))+(extra||0)))); }   // rolls: extra = the cooldown reduction of rolled gear (at most 40% by itself, 60% with the passives, as before)   // skillsets: the class the bonuses are read for (a cost makes it longer)

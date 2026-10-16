@@ -191,7 +191,7 @@ function ssAlliesOf(p,r){
 const allyP=(p,kind)=>{ const a=p.ally&&p.ally[kind]; return a&&a.until>S.t?a.v:0; };   // a buff's value on a player now (0 when none)
 function ssAllyS(q,kind,v,dur,by,src){
   const cap=SS_ALLY_CAP[kind]; if(!cap||!(v>0)) return;
-  const o=S.players.get(by); if(o){ v*=1+psP(o,'buffpow')+ssCondP(o,'buffpow',null)+(kind==='regen'?psP(o,'heal')+ssCondP(o,'heal',null):0); dur=Math.min(45,dur*(1+psP(o,'buffdur')+ssCondP(o,'buffdur',null))); }   // buffpow, buffdur (and heal, for a regeneration): the giver's passives
+  const o=S.players.get(by); if(o){ v*=1+psP(o,'buffpow')+ssCondP(o,'buffpow',null)+(kind==='regen'?psP(o,'heal')+ssCondP(o,'heal',null):0); dur=Math.min(45,dur*(1+psP(o,'buffdur')+ssCondP(o,'buffdur',null)+rlP(o,'buffdur'))); }   // buffpow, buffdur (and heal, for a regeneration): the giver's passives
   v=Math.min(v,cap);
   const A=q.ally||(q.ally={}), cur=A[kind], live=!!cur&&cur.until>S.t;
   if(live&&v<cur.v-1e-6) return;

@@ -53,7 +53,7 @@ function rxHitS(m,p,el,mult){
   const r=rxChartOf(au.el,el); if(!r) return;
   const icd=m.rxIcd||(m.rxIcd={}); if(icd[r.key]>S.t) return;
   icd[r.key]=S.t+RX_ICD*Math.max(0.3,1-psP(p,'rxicd')-ssCondP(p,'rxicd',m));          // a passive's stat rxicd: reactions you trigger come back sooner
-  const k=Math.min(1.5,r.k*(1+psP(p,'rxk')+ssCondP(p,'rxk',m))), gone=au.el;        // a passive's stat rxk: they are stronger
+  const k=Math.min(1.5,r.k*(1+psP(p,'rxk')+ssCondP(p,'rxk',m)+rlP(p,'rxk'))), gone=au.el;        // a passive's stat rxk: they are stronger
   m.aura=null; ev('aura',m.id,0,0); ev('react',m.id,r.key);
   rxFlavorS(m,gone,p,k,mult); rxFlavorS(m,el,p,k,mult);
   if(RX_FLAVORS[gone].spread||RX_FLAVORS[el].spread) rxSpreadS(m,gone,p);

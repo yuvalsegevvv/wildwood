@@ -36,6 +36,6 @@ function drinkP(p,kind){
   p.gear.pot[P.id]--; if(!p.gear.pot[P.id]) delete p.gear.pot[P.id];
   p.potCd[kind]=S.t+K.cd;
   if(kind==='heal') healP(p,p.maxHp*POT_HEAL[P.tier]);
-  else { p.potb=p.potb||{}; p.potb[kind]={until:S.t+POT_DUR,v:POT_BUFF[P.tier]}; }
+  else { p.potb=p.potb||{}; p.potb[kind]={until:S.t+POT_DUR*(1+rlP(p,'buffdur')),v:POT_BUFF[P.tier]}; }
   p.dirty=true; ev('pot',p.id,kind,P.tier,kind==='heal'?0:POT_DUR); mqActP(p,'potion',1,{kind});
 }

@@ -10,7 +10,7 @@ function handleAttack(p,msg){
   const cls=clsOfP(p), SK=skOfP(p), LV=p.pv?999:p.level, ab=abilityOf(cls,k,SK,LV); if(!ab) return;   // no skill equipped, or the slot is still locked; pvp: on the island the fixed loadout, every slot open
   const [kind,dur,hitAt]=ab.act;
   const lvl=skillLvOf(SK,ab.id);
-  p.cd[k]=abilityCd(ab,SK,LV,cls)*(k==='basic'&&p.buff?p.buff.cd:1)*(1-allyP(p,'haste'));   // skillsets: an ally haste buff shortens it
+  p.cd[k]=abilityCd(ab,SK,LV,cls,rlP(p,'cdr'))*(k==='basic'&&p.buff?p.buff.cd:1)*(1-allyP(p,'haste'));   // skillsets: an ally haste buff shortens it
   ssTriggerS(p,'cast'+(1+SLOTS.indexOf(k)),{m:MON_BY_ID.get(msg.tg)});   // skillsets: on cast rows of slot 1, 2, 3
   if(isFinite(+msg.face)) p.face=+msg.face%(2*Math.PI);   // (modulo a turn: it goes out in the pact event and the snapshots, rounded by x100, and 1e308 became Infinity there)
   const tg=foeByIdS(p,msg.tg);   // pvp: a fighter on the island may name another fighter
@@ -25,8 +25,8 @@ function elemHitS(p,el,m){ el=elemEffS(p,el);
   const B=m&&m.pl?PVP.elemBoost:ELEM_BOOST;   // pvp: between fighters advantage and disadvantage are x1.15 and /1.15, and a fighter's element is their soul (the proxy's T.el)
   return soulMult(soulOfP(p),el,psP(p,'soul'),B)*(m?foeMult(el,elOf(m.T),B):1); }
 function rollDmgS(p,mult,m,el){
-  const b=p.buff, crit=Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m)+pendP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
-  return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m)):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
+  const b=p.buff, crit=Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m)+pendP(p,'crit')+rlP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
+  return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m)):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
   if(m.pl) return pvpHitS(m,mult,p,fromX,fromZ,kb,el);   // pvp: m is another fighter on the island (server/pvp.js)
@@ -35,6 +35,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(m.immune){ ev('imm',m.id); return 0; }
   if(m.boss && m.B.stunT>0) mult*=1.5;
   const d=rollDmgS(p,mult,m,el);
+  rlResM=null; if(rlResists(m.T.res,rlP(p,'acc'))){ d.v=Math.max(1,Math.round(d.v/2)); d.fx=2; rlResM=m; rlResT=S.t; }   // rolls: a resisted hit does half and lands no debuff (fx 2 on the damage event)
   const vk=rxVulnK(m); if(vk) d.v=Math.max(1,Math.round(d.v*(1+vk)));   // reactions: a vulnerable monster takes more, whoever hits it
   if(p.ss&&p.ss.amp.length) d.v=Math.max(1,Math.round(d.v*ssAmpK(p,m)));   // skillsets: the owner's marks make a marked target take more from them
   p.lastDealt=S.t;   // skillsets: in a fight (tick triggers run only then)
@@ -47,7 +48,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(!m.aggro||!S.players.get(m.tgt)){ m.aggro=true; m.tgt=p.id; }
   if(d.fx) ev('dmg',m.id,d.v,d.crit?1:0,p.id,d.fx); else ev('dmg',m.id,d.v,d.crit?1:0,p.id);
   if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }
-  else rxHitS(m,p,elemEffS(p,el),mult);   // reactions: a direct hit leaves an aura or reacts with the one there
+  else if(!(rlResM===m&&rlResT===S.t)) rxHitS(m,p,elemEffS(p,el),mult);   // reactions: a direct hit leaves an aura or reacts with the one there
   if(!rxQuiet&&p.ss&&p.ss.trig){ ssTriggerS(p,'hit',{m,v:d.v}); if(d.crit) ssTriggerS(p,'crit',{m,v:d.v}); }   // skillsets: on hit / on crit rows (a burn tick, a reaction's burst and a trigger's own damage are not hits)
   return d.v;
 }
@@ -66,11 +67,11 @@ function killMonsterS(m,p){
 }
 function rewardKill(q,m){
   const K=monK(m,q);   // XP, coins and gear are those of the monster's level at your zone tier
-  gainExpP(q,m.T.xp*K.xp*xpLeadK(q.level,K.lv)*(1+psP(q,'xp')+pendP(q,'xp')),m.id);   // (never more than 10 levels above you pay: xpLeadK)
-  const c=Math.round(coinsFor(K.lv)*(m.def.boss?20:1)*(1+pendP(q,'coin'))); q.gear.coins+=c; ev('coins',q.id,c,m.id);
+  gainExpP(q,m.T.xp*K.xp*xpLeadK(q.level,K.lv)*(1+psP(q,'xp')+pendP(q,'xp')+rlP(q,'exp')),m.id);   // (never more than 10 levels above you pay: xpLeadK)
+  const c=Math.round(coinsFor(K.lv)*(m.def.boss?20:1)*(1+pendP(q,'coin')+rlP(q,'coin'))); q.gear.coins+=c; ev('coins',q.id,c,m.id);
   const r=dgRollDropP(q,m,K,m.def.boss?rollBossRarity():rollMonsterRarity());   // dungeons: a Tempering Stone replaces the equipment drop of normal monsters fought at level 30+
   if(r>=0) addItemP(q,randomItem(tierFor(K.lv),r),false,m.id);
-  if(MATS[m.def.id]){ const n=rollDropCount(m.def,psP(q,'drop')+pendP(q,'drop')); if(n) addMatP(q,m.def.id,n,m.id); }
+  if(MATS[m.def.id]){ const n=rollDropCount(m.def,psP(q,'drop')+pendP(q,'drop')+rlP(q,'drop')); if(n) addMatP(q,m.def.id,n,m.id); }
   questKillP(q,m.def.id); q.dirty=true;
   if(m.def.boss){ bossSkillDropP(q,m.def.id); ssBossClearP(q,m); zoneTierKillP(q,m); }   // skillsets: the set of this boss's land at the tier fought (before the kill can unlock a tier)
   mqKillP(q,m);
@@ -169,13 +170,14 @@ function resolveHitS(p,a){
 // a buff skill (the row's buff): a timed boost; a higher skill level makes the bonus stronger and 0.5 s longer.
 // buff = {dur, dmg (damage x), cd (basic cooldown x), crit (+chance), red (damage taken less), steal (share of your damage you heal), regen (max health per second), el (element of element-less attacks), reset}
 function applyBuffS(p,a){
-  const b=SKILLS[a.sid].buff, dur=b.dur+0.5*(a.lvl-1);
+  const b=SKILLS[a.sid].buff, dur=(b.dur+0.5*(a.lvl-1))*(1+rlP(p,'buffdur'));   // rolls: longer buffs
   p.buff={id:a.sid,until:S.t+dur,dmg:1+(b.dmg-1)*skillPower(a.lvl),cd:b.cd,crit:b.crit,red:b.red||0,steal:b.steal||0,regen:b.regen||0,el:b.el||null};
   if(b.reset) p.cd.skill=0;
   ev('buff',p.id,a.sid,dur);
 }
 // what a hit does besides damage (an entry of a skill's fx): stun (not bosses or heavy enemies), slow, burn (a share k of the hit's damage again every second)
 function statusS(m,s,p,el,mult){
+  if(rlResM===m&&rlResT===S.t) return;   // rolls: a resisted hit lands no debuff
   if(m.pl){ pvpStatusS(m,s,p,el,mult); return; }   // pvp: a fighter's stun / slow / burn (server/pvp.js)
   if(m.dead||m.remove) return;
   if(s.stun&&!m.T.heavy&&!m.boss) m.stunT=Math.max(m.stunT||0,s.stun);

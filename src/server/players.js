@@ -18,6 +18,7 @@ function sanitizeGear(g,cls){
   out.zt=sanitizeZt(g.zt);
   out.ss=ssSanitizeSave(g.ss);   // skillsets: the pity counts of the sources (an old save has none)
   out.dg=dgSanitizeSave(g.dg);   // dungeons: clears and best times per '<theme>:<mission>' (an old save has none)
+  rlSanitizeStones(g,out);   // rolls: the weapon / armour reroll stones (an old save has none)
   out.temper=clampInt(g.temper,0,DG_STONE_MAX,0);   // dungeons: the Tempering Stones (a count; an old save has none)
   if(out.north<1&&out.mq.s>MQ_BY_ID.V10.i) out.north=1;   // saves that already got past Akaoni: the ice wall is open for them
   if(out.west<1&&out.mq.s>MQ_BY_ID.F8.i) out.west=1;      // ... and past Ymrik: the glacier valley is
@@ -96,7 +97,8 @@ function recalcP(p){
   if(p.pv){ pvpRecalcP(p); return; }   // pvp: on the Proving Isle everyone has the same numbers (server/pvp.js)
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
   g.atk+=dgRingAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else (only for a matching soul)
-  p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym); p.def=g.def; p.red=defRed(g.def);
+  rlRefreshP(p);   // rolls: the lines of the worn level-40 pieces (p.rl)
+  p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)*(1+rlP(p,'hp'))); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym)*(1+rlP(p,'atk')); p.def=Math.round(g.def*(1+rlP(p,'def'))); p.red=defRed(p.def);   // rolls: hp, atk and def lines
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));
   ssRefreshP(p);   // skillsets: the sets worn and their bonuses
 }
@@ -157,6 +159,7 @@ function gainExpP(p,v,monId){
 function hurtP(p,v,m,by){   // returns the damage taken; by: the fighter who hit (pvp, no monster)
   if(p.dead) return 0;
   const K=m?monK(m,p):null, ld=m?Math.max(0,K.lv-p.level):0;
+  if(m&&!p.pv&&!m.pl&&rlResists(rlP(p,'res'),m.T.acc)) v=Math.max(1,Math.round(v/2));   // rolls: a resisted hit does half (the monster's accuracy against your resistance)
   v=Math.max(1,Math.round(v*(K?K.dmg:1)*rxWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red')-ssCondP(p,'red',m))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))*(1-allyP(p,'guard')))));   // reactions: weak lowers what a monster deals
   if(p.shield&&p.shield.until>S.t&&p.shield.v>0){ const a=Math.min(v,p.shield.v); p.shield.v-=a; v-=a; if(p.shield.v<=0&&!p.shield.done){ p.shield.done=true; ssShieldBreakS(p); } if(v<=0){ p.lastHit=S.t; return 0; } }   // skillsets: a shield soaks the hit first
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);

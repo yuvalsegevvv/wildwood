@@ -21,7 +21,9 @@ const SLOT_LABEL={weapon:'Weapon',helmet:'Helmet',top:'Top',bottom:'Bottom',shoe
 const PRICE=[25,120,480,1600,4500,12000], SLOT_PRICE={sword:1.3,bow:1.3,wand:1.3,helmet:0.8,top:1.2,bottom:1,shoes:0.7};
 // ids: 'sword2' is a common Iron Longsword, 'sword2-e' the epic one (r, e, u, l = rare, epic, unique, legendary)
 const itemId=(slot,t,r)=>slot+(t+1)+(r?'-'+RAR_KEY[r]:'');
-const ITEM={}, ITEM_LIST=[];
+// ITEM is a Proxy over a plain object: an id that carries a roll ('sword8-e+3~a57k12c90', rolls.js) is made on first use (rlLazyItem); every other lookup is the plain object's own
+const ITEM=new Proxy({},{get(t,k){ const v=t[k]; return v!==undefined||typeof k!=='string'||k.indexOf('~')<1?v:rlLazyItem(t,k); }, has(t,k){ return k in t||(typeof k==='string'&&k.indexOf('~')>0&&!!rlLazyItem(t,k)); }});
+const ITEM_LIST=[];
 for(const slot of ALL_SLOTS) for(let t=0;t<TIERS;t++) for(let r=0;r<5;r++){
   const it={id:itemId(slot,t,r),base:slot+(t+1),slot,tier:t,rar:r,lv:TIER_LV[t],name:(r?RARITY[r]+' ':'')+SLOT_NAMES[slot][t],
     price:Math.round(PRICE[t]*SLOT_PRICE[slot]*Math.pow(3,r)),kind:WEAPON_SLOTS.includes(slot)?'weapon':'armor'};
@@ -57,7 +59,7 @@ const ARMOR_LOOK={
   bottom:[{bottom:'trousers',bottomColor:0x5a3e28,bottomStyle:''},{bottom:'trousers',bottomColor:0x7a7f84,bottomStyle:'mail'},{bottom:'trousers',bottomColor:0x9aa6b2,bottomStyle:'plate'},{bottom:'trousers',bottomColor:0xc9a13a,bottomStyle:'plate'},{bottom:'trousers',bottomColor:0x8a2a26,bottomStyle:'plate'},{bottom:'trousers',bottomColor:0x2a2830,bottomStyle:'plate'}],
   shoes:[{shoes:'boots',shoeColor:0x5a3e28},{shoes:'boots',shoeColor:0x55595e},{shoes:'boots',shoeColor:0x9aa6b2},{shoes:'boots',shoeColor:0xd4a83a},{shoes:'boots',shoeColor:0x7a2622},{shoes:'boots',shoeColor:0x1e1c22}]};
 // east: the Sakura Vale (0 sealed, 1 bridge gate open after the Rootwarden, 2 walked to Hanami: teleport circles attuned); north: the Hoarfrost Reach (0 ice wall shut, 1 open after Akaoni, 2 walked to Rimehold); west: the Greyspine (0 ice fall in the glacier valley shut, 1 open after Ymrik, 2 walked into Highmark); river / neck: its two gates in the west wall (0 rock fall, 1 open after the Gryphon Queen / the mountain golem); soul: the element you are bound to (elements.js); mats: monster drops {id:count}; prof: learned professions {id:{xp}}, res: gathered resources {id:count} (professions.js), pot: brewed potions {id:count} (crafting.js); eq also holds the three tools (pick, axe, sickle)
-function newGearFor(cls){ return {inv:['sword1','bow1','wand1'],eq:{weapon:(WEAPON_OF[cls]||'sword')+'1',helmet:null,top:null,bottom:null,shoes:null,pick:null,axe:null,sickle:null,ring:null,pendant:null},coins:0,q:{offers:[],active:{},defs:{},ready:[],done:0,next:1},startAll:false,bought:{},skills:newSkills(),east:0,north:0,west:0,river:0,neck:0,soul:'basic',mats:{},prof:{},res:{},pot:{},mq:newMq(),zt:newZt(),temper:0,ss:{pity:{}}}; }   // dungeons: eq.ring (one ring slot) and temper (the count of Tempering Stones); pendants.js: eq.pendant (one pendant slot)
+function newGearFor(cls){ return {inv:['sword1','bow1','wand1'],eq:{weapon:(WEAPON_OF[cls]||'sword')+'1',helmet:null,top:null,bottom:null,shoes:null,pick:null,axe:null,sickle:null,ring:null,pendant:null},coins:0,q:{offers:[],active:{},defs:{},ready:[],done:0,next:1},startAll:false,bought:{},skills:newSkills(),east:0,north:0,west:0,river:0,neck:0,soul:'basic',mats:{},prof:{},res:{},pot:{},mq:newMq(),zt:newZt(),temper:0,rsw:0,rsa:0,ss:{pity:{}}}; }   // dungeons: eq.ring (one ring slot) and temper (the count of Tempering Stones); pendants.js: eq.pendant (one pendant slot)
 function gearStatsOf(gear){ let hp=0,atk=0,def=0; if(gear&&gear.eq) for(const k in gear.eq){ const it=ITEM[gear.eq[k]]; if(!it) continue; hp+=it.hp||0; atk+=it.atk||0; def+=it.def||0; } return {hp,atk,def}; }
 function effectiveLookOf(look,gear){
   const L=Object.assign({},look||{});
