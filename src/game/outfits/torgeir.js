@@ -280,7 +280,7 @@ OUTFITS.torgeir=(function(){
     };
 
     /* ---- the weapon dressing: leather grips, iron fittings, ash wood, bone caps, lichen paint; a charm of three bone rings, a tiny iron shield and one dull ochre bead ---- */
-    const dress={ grip:LEATHER, metal:0x8a9098, wood:0x6a5a48, accent:BONE, glow:0x9a8440,
+    const dress={ shape:{sword:'axe',bow:'horn',staff:'rune'}, grip:LEATHER, metal:0x8a9098, wood:0x6a5a48, accent:BONE, glow:0x9a8440,
       trim:(c,u,part)=>{
         if(part==='shaft'){ c.lerp(u<0.01?cIronL:cLichen,0.75); }                                         // a wand: iron at the grip, lichen paint at the head
         else if(part==='limb'){ const f=((u/0.066)%1+1)%1; if(f<0.2) c.lerp(cLichen,0.85); }             // a bow: lichen-painted rings along the limb

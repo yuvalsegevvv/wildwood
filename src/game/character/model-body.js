@@ -3,14 +3,18 @@
    Why it does not look like building blocks: (1) the neck, the shoulder slope, the collarbones and the hip sockets are part of the torso's own surface;
    (2) every joint is a ball (see `limb` in model-parts.js) and the limb on the other side of it starts with the SAME cross-section (ELBOW / KNEE below), so
    bending shows a round joint and never a step; (3) the hand is the end of the forearm (the palm flattens out of the wrist) and the shin runs into a lofted foot. */
+// what shows where a garment is taken off (the editor's None tile): a man's chest is bare, a woman wears a band top; both wear briefs (cream, a darker waistband)
+const UNDER_COL=0xe9e3d6, UNDER_BAND=0xb8b2a4;
 function clothPaints(L){
   const topPaint=(c,u,v)=>{
-    if(L.top==='flannel') plaid(c,L.topColor,u,v);
+    if(L.top==='none'){ if(L.sex==='female'&&v>0.265&&v<0.375) c.set(v>0.36||v<0.28?UNDER_BAND:UNDER_COL); else c.set(L.skin); }
+    else if(L.top==='flannel') plaid(c,L.topColor,u,v);
     else if(L.top==='mail'){ c.set(L.topColor).multiplyScalar(0.72+0.38*((Math.floor(u*70)+Math.floor(v*70))&1)); }
     else if(L.top==='plate'){ c.set(L.topColor).multiplyScalar(0.82+0.3*(Math.floor(v*13)&1)); }
     else c.set(L.topColor);
   };
   const botPaint=(c,u,v)=>{
+    if(L.bottom==='none'){ if(v<0.045) c.set(v>0.025?UNDER_BAND:UNDER_COL); else c.set(L.skin); return; }
     c.set(L.bottomColor);
     if(L.bottomStyle==='mail') c.multiplyScalar(0.72+0.38*((Math.floor((u||0)*70)+Math.floor((v||0)*70))&1));
     else if(L.bottomStyle==='plate') c.multiplyScalar(0.82+0.3*(Math.floor((v||0)*11)&1));
@@ -42,7 +46,7 @@ function buildTorso(X,D){
   // rings exactly at the colour edges (the hem, the belt line, the plate band) so those edges are crisp
   // the colour edges: a whole outfit has its own; mixed, the top's lie above the waist and the bottoms' below it (a base garment's are the original list)
   const kc=k=>(k.cuts&&k.cuts.torso)||[], cutList=kT&&kT===kB?kc(kT):[hem].concat(kT?kc(kT).filter(y=>y>hem):[hem+0.03,0.07],kB?kc(kB).filter(y=>y<=hem):[hem-0.035,0.02]);
-  const cuts=(kT||kB?cutList:[hem,hem-0.035,hem+0.03,0.02,0.07]).filter(y=>y>-0.1&&y<0.5).sort((a,b)=>a-b), prof=[]; for(const pt of prof0){ while(cuts.length&&cuts[0]<pt[1]-0.001){ const y=cuts.shift(); prof.push([profR(prof0,y-0.0005),y-0.0005],[profR(prof0,y+0.0005),y+0.0005]); } prof.push(pt); }
+  const cuts=(kT||kB?cutList:[hem,hem-0.035,hem+0.03,0.02,0.07].concat(L.top==='none'&&fem?[0.265,0.28,0.36,0.375]:[]).concat(L.bottom==='none'?[0.025,0.045]:[])).filter(y=>y>-0.1&&y<0.5).sort((a,b)=>a-b), prof=[]; for(const pt of prof0){ while(cuts.length&&cuts[0]<pt[1]-0.001){ const y=cuts.shift(); prof.push([profR(prof0,y-0.0005),y-0.0005],[profR(prof0,y+0.0005),y+0.0005]); } prof.push(pt); }
   const tg=new THREE.LatheGeometry(densify(prof,fem?4:3).map(p=>new THREE.Vector2(p[0],p[1])),sg(fem?60:52)), p=tg.attributes.position, wy=fem?0.215:0.15;
   for(let i=0;i<p.count;i++){
     const y=p.getY(i), x0=p.getX(i), z0=p.getZ(i), belly=G(y,0.1,0.13)*(B-1)*1.4, sN=sm(0.5,0.6,y), front=z0<0;
@@ -75,7 +79,7 @@ function buildTorso(X,D){
     if(yd>skinY+0.02*sm(-0.04,0.04,z)) skinPaint(c);   // the neckline: lower in front, higher behind, blended
     else if(yd>hem){ if(kT) ofPaint(X,'top','torso',c,x,yd,z,0); else topPaint(c,x,yd); }
     else if(kB) ofPaint(X,'bottom','torso',c,x,yd,z,0);
-    else if(yd>hem-0.035 && L.bottom!=='skirt' && hem>0) c.set(0x3a2a1c);
+    else if(yd>hem-0.035 && L.bottom!=='skirt' && L.bottom!=='none' && hem>0) c.set(0x3a2a1c);
     else botPaint(c,x,yd);
     if(!kT&&(L.top==='jacket'||L.top==='hoodie'||L.top==='mail') && yd<hem+0.03 && yd>hem) c.multiplyScalar(0.8);
     if(!kT&&L.top==='plate' && yd>0.02 && yd<0.07) c.set(0x3a2a1c); };
@@ -113,7 +117,7 @@ function buildFingers(X,D,sd){
   return out;
 }
 function buildArm(X,D,sd){
-  const {L,S,fem,sg,skinPaint,topPaint,q}=X, kit=X.kit&&X.kit.sl.top, {aw,ER,upper,fore}=D, longSleeve=L.top!=='tshirt', hh=S.hands;   // kit: the outfit's top (the sleeves are the top's)
+  const {L,S,fem,sg,skinPaint,topPaint,q}=X, kit=X.kit&&X.kit.sl.top, {aw,ER,upper,fore}=D, longSleeve=L.top!=='tshirt'&&L.top!=='none', hh=S.hands;   // kit: the outfit's top (the sleeves are the top's)
   const sh=new THREE.Group(); sh.name=sd<0?'shL':'shR'; sh.position.set(sd*D.shX,D.shY,0); sh.rotation.z=sd*(0.1+(D.B-1)*0.35);
   // upper arm: the shoulder ball, the biceps in front, narrowing to the elbow
   const ua=pc(limb([[0,0.05*aw,0.052*aw],[0.13,0.0505*aw,0.053*aw],[0.38,0.045*aw,0.048*aw,-0.003],[0.7,0.037*aw,0.039*aw],[1,ER,ER*1.04]],upper,sg(24),sg(24),{cuts:[0.13/upper].concat((kit&&kit.cuts&&kit.cuts.upperArm)||[])}),kit?(x,y,z,c)=>ofPaint(X,'top','upperArm',c,x,y,z,sd):(x,y,z,c)=>{ if(longSleeve||y>-0.13) topPaint(c,x+sd*0.3,y); else skinPaint(c); });
@@ -131,7 +135,7 @@ function buildArm(X,D,sd){
 
 // the shoe: a loft from the heel to the toe, whose ankle opening is where the shin comes down into it
 function buildFoot(X,D,sd,boot){
-  const {L,S,sg}=X, kit=X.kit&&X.kit.sl.shoes, sf=S.feet, wf=0.55+0.45*sf, hf=0.8+0.2*sf, A=D.ankleH;
+  const {L,S,sg,skinPaint}=X, kit=X.kit&&X.kit.sl.shoes, sf=S.feet, wf=0.55+0.45*sf, hf=0.8+0.2*sf, A=D.ankleH;
   const st=[[0.056,0.004,0.004,0.02],[0.047,0.02,0.026,0.03],[0.026,0.029,0.04,0.04],[0.0,0.031,0.05,0.05],[-0.03,0.033,0.04,0.042],[-0.075,0.037,0.027,0.029],[-0.115,0.031,0.02,0.021],[-0.14,0.018,0.013,0.015],[-0.153,0.004,0.004,0.01]];
   const rings=[]; for(const s of st){ rings.push({y:s[0]*sf,rx:s[1]*wf,rz:s[2]*hf,zc:-(s[3]*hf-A)}); }
   const dense=[]; for(let i=0;i<rings.length-1;i++){ const k=Math.max(1,Math.round(sg(3))); for(let j=0;j<k;j++){ const f=j/k, a=rings[i], b=rings[i+1]; dense.push({y:lerp(a.y,b.y,f),rx:lerp(a.rx,b.rx,f),rz:lerp(a.rz,b.rz,f),zc:lerp(a.zc,b.zc,f)}); } } dense.push(rings[rings.length-1]);
@@ -140,6 +144,7 @@ function buildFoot(X,D,sd,boot){
   smoothN(g);
   const white=L.shoes!=='boots';
   if(kit) return pc(g,(x,y,z,c)=>ofPaint(X,'shoes','foot',c,x,y,z,sd),-D.thigh-D.shin);
+  if(L.shoes==='none') return pc(g,skinPaint,-D.thigh-D.shin);   // barefoot (the editor's None tile)
   return pc(g,(x,y,z,c)=>{ c.set(L.shoeColor); if(y<-A+0.011) c.set(white?0xf2efe8:0x221a14); else if(white&&z<-0.1) c.multiplyScalar(1.12); },-D.thigh-D.shin);
 }
 function buildLeg(X,D,sd){
@@ -147,7 +152,7 @@ function buildLeg(X,D,sd){
   const hp=new THREE.Group(); hp.name=sd<0?'hipL':'hipR'; hp.position.set(sd*hx,0,0);
   // thigh: the hip ball, full quads in front, tapering to the knee (radius KR, shared with the shin below)
   const th=pc(limb([[0,0.088*tw,0.092*tw],[0.14,0.09*tw,0.094*tw],[0.42,0.077*tw,0.081*tw,-0.004],[0.76,Math.max(KR*1.1,0.057*tw),Math.max(KR*1.12,0.06*tw),-0.002],[1,KR,KR*1.04]],thigh,sg(24),sg(28),{cuts:[0.53,0.53-0.03/thigh].concat((kB&&kB.cuts&&kB.cuts.thigh)||[])}),kB?(x,y,z,c)=>ofPaint(X,'bottom','thigh',c,x,y,z,sd):(x,y,z,c)=>{
-    if(L.bottom==='trousers'||(L.bottom==='shorts'&&y>-thigh*0.53)) botPaint(c,x,y); else skinPaint(c);
+    if(L.bottom==='trousers'||(L.bottom==='shorts'&&y>-thigh*0.53)) botPaint(c,x,y); else if(L.bottom==='none'&&y>-thigh*0.16) c.set(y>-thigh*0.03?UNDER_BAND:UNDER_COL); else skinPaint(c);
     if(L.bottom==='shorts'&&y>-thigh*0.53&&y<-thigh*0.53+0.03) c.multiplyScalar(0.85); });
   const m1=new THREE.Mesh(th,matChar); m1.castShadow=true; hp.add(m1);
   if(X.kit){ const ex=ofRun(X,'thigh',sd); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; hp.add(m); } }   // breeches' flares, stripes' shells, in the hip's frame (y down the thigh)
@@ -161,6 +166,7 @@ function buildLeg(X,D,sd){
     if(same) ofPaint(X,t<tb?'bottom':'shoes','shin',c,x,y,z,sd);
     else if(t<tb){ if(kB) ofPaint(X,'bottom','shin',c,x,-Math.min(t,ofBootTop(kB)-0.02)*shin,z,sd); else if(L.bottom==='trousers') botPaint(c,x,y); else skinPaint(c); }
     else if(kS) ofPaint(X,'shoes','shin',c,x,y,z,sd);
+    else if(L.shoes==='none') skinPaint(c);
     else c.set(L.shoeColor); },-thigh);
   const parts=[sv];
   if(L.bottomStyle==='plate') parts.push(pc(csph(0.066*lr,sg(14),sg(10)).scale(1,0.9,0.8).translate(0,0,-0.03),c=>c.set(L.bottomColor).multiplyScalar(1.1)));   // a knee plate

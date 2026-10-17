@@ -309,7 +309,7 @@ OUTFITS.sorrel=(function(){
     };
 
     /* ================= the weapon dressing: white wax-wrapped grips, cream ash, silver, sky thread, slate feather-vein lines, a lens and a feather tuft ================= */
-    const dress={ grip:CREAM, metal:0xd9e2ea, wood:0xe8e0c8, accent:SKY,
+    const dress={ shape:{sword:'pick',bow:'longbow',staff:'feather'}, grip:CREAM, metal:0xd9e2ea, wood:0xe8e0c8, accent:SKY,
       trim:(c,u,part)=>{ const f=((u/0.03)%1+1)%1;
         if(part==='grip'){ if(((u/0.014)%1+1)%1<0.4) c.lerp(cSky,0.92); return; }
         if(f<0.1) c.lerp(cSl,0.85); else if(f>0.5&&f<0.56) c.lerp(cSkyD,0.8); },

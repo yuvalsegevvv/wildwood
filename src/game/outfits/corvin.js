@@ -347,7 +347,7 @@ OUTFITS.corvin=(function(){
       lit.push(...chain([0,-0.004,0.0],[0,-0.0085,0.0105],1));
       for(const g of lit.concat(glow)) g.scale(1.3,1.3,1.3);
       return {lit,glow}; };
-    const dress={ grip:LEATHER, metal:STEEL, wood:WALNUT, accent:BRASS, glow:LAMP,
+    const dress={ shape:{sword:'rapier',bow:'crossbow',staff:'lantern'}, grip:LEATHER, metal:STEEL, wood:WALNUT, accent:BRASS, glow:LAMP,
       trim:(c,u,part)=>{ const f=((u/0.05)%1+1)%1;
         if(part==='blade') c.lerp(cB,0.38*clamp(1-u/0.12)); else if(part==='limb'||part==='shaft'||part==='rim'){ if(f<0.22) c.lerp(cBl,0.85); else if(f>0.5&&f<0.56) c.lerp(cV,0.7); }
         else if(part==='grip'){ if(((u/0.016)%1+1)%1<0.4) c.lerp(cB,0.8); }

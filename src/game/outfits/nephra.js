@@ -91,7 +91,7 @@ OUTFITS.nephra=(function(){
       thigh:sd=>[],
       shin:sd=>{ const out=[]; out.push(solid(ofRingAt([0,-D.shin*0.84,0],[0,1,0],0.0405*D.cw+0.0025,0.0026,sg(6)),GOLD),solid(csph(0.0058,6,5).translate(sd*(0.0405*D.cw+0.004),-D.shin*0.84,0),TURQ));
         out.push(solid(vbox(0.052*(0.55+0.45*S.feet),0.006,0.05,0,-D.shin-D.ankleH+0.003,0.04),0x8a6a28)); return out; },
-      dress:{ grip:LINEN_D, metal:BRONZE, wood:ACACIA, accent:LAPIS,
+      dress:{ shape:{sword:'khopesh',bow:'composite',staff:'ankh'}, grip:LINEN_D, metal:BRONZE, wood:ACACIA, accent:LAPIS,
         trim:(c,u,part)=>{ const f=((u/0.05)%1+1)%1; if((part==='blade'||part==='limb'||part==='shaft'||part==='rim')&&f<0.16) c.lerp(cG,0.9); if(part==='grip'&&((u/0.011)%1+1)%1<0.4) c.lerp(cS,0.8); },
         charm:()=>{ const lit=[], glow=[];
           lit.push(solid(sweepTube([[0,0.004,0],[0,-0.02,0.003]],[0.0014,0.0014],4,{cap:'round',rings:4}),LINEN_D));

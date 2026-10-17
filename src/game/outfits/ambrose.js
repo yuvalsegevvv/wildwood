@@ -308,7 +308,7 @@ OUTFITS.ambrose=(function(){
     };
 
     /* ================= the weapon dressing: reed-and-linen grips, willow wood, shell-brass metal, green thread, a wave trim, and a charm of a herb bundle, a shell bell and a glowing vial ================= */
-    const dress={ grip:REED, metal:BRASS, wood:WILLOW, accent:GREEN, glow:0x8fd6dc,   // (the mage's orb: a soft water aqua instead of the tier's colour)
+    const dress={ shape:{sword:'cleaver',bow:'branch',staff:'crook'}, grip:REED, metal:BRASS, wood:WILLOW, accent:GREEN, glow:0x8fd6dc,   // (the mage's orb: a soft water aqua instead of the tier's colour)
       trim:(c,u,part)=>{ if(part==='grip'){ if(((u/0.011)%1+1)%1<0.3) c.lerp(cS,0.8); return; } const w=Math.sin(u/0.04*TAU); if(part!=='face'&&w>0.74) c.lerp(cG,0.85); else if(part!=='face'&&w<-0.9) c.lerp(cR,0.5); },
       charm:()=>{ const lit=[], glow=[];
         lit.push(solid(sweepTube([[0,0.004,0],[0.002,-0.016,0.004],[0.004,-0.036,0.008]],[0.0013,0.0013,0.0013],5,{cap:'round',rings:6}),REED_D));
