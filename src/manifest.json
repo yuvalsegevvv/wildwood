@@ -227,6 +227,7 @@
     "village/buildings-sunscar.js",
     "village/buildings-gloam.js",
     "village/villagers.js",
+    "village/smith.js",
     "village/talking.js",
     "village/npc-labels.js",
     "audio/engine.js",

@@ -306,6 +306,7 @@ function spawnNPC(def,rng){
   const start=B.at?anchorOf(B.at,V):(B.route?anchorOf(B.route[0],V):randomPOI({def,x:V.x+99,z:V.z}));
   const n={def,V,look,rig,g,scale:s,x:start.x,z:start.z,y:V.h,face:start.face||0,faceGoal:start.face,vx:0,vz:0,walk:0,state:'idle',timer:AR(0.5,4),
     route:[],inside:false,headYaw:0,line:0,pi:0,stuckT:0,sx:start.x,sz:start.z,partner:null,seed:Math.random()*10};
+  if(def.role==='forge') smithAttach(n);   // smith: a hammer in the hand (village/smith.js)
   NPCs.push(n); return n;
 }
 function initNPCs(){
@@ -437,7 +438,8 @@ function updateNPCs(dt){
     if(n.g.visible){
       const speaking=talking||(n.state==='chat' && ((Math.floor(t/2.2+n.seed)%2===0)===!!n.leader));
       const bed=B.pose==='bed', lie=bed&&!wrenAwake(), sit=(B.pose==='sit'||(bed&&!lie)) && n.state==='idle' && !moving && (!talking||bed);
-      poseRig(n.rig,dt,{sp,ph:n.walk,sit,sitH:0.55/n.scale,talk:speaking&&!lie,headYaw:lie?0:n.headYaw,seed:n.seed});
+      const work=D.role==='forge'&&n.state==='idle'&&!moving&&!talking&&!B.pose?smithAct(n,dt,dp):null;   // smith: three blows on the anvil, a pause (village/smith.js)
+      poseRig(n.rig,dt,{sp,ph:n.walk,sit,sitH:0.55/n.scale,talk:speaking&&!lie,headYaw:lie?0:n.headYaw,seed:n.seed,act:work});
       if(bed){   // lying on the mattress (feet at the anchor, head at the headboard), or sitting on its front edge facing the plaza
         const a=VIL.bed.rot; n.g.rotation.order='YXZ'; n.g.rotation.x=lie?Math.PI/2:0; n.g.rotation.y=lie?a+Math.PI/2:a;
         if(lie) n.g.position.y=n.y+0.74; else n.g.position.set(n.x+Math.cos(a)*0.55-Math.sin(a)*0.3,n.y,n.z-Math.sin(a)*0.55-Math.cos(a)*0.3);
