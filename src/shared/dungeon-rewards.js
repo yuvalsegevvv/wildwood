@@ -39,7 +39,13 @@ const ENH_NAME='Tempering Stone';
 
 const enhMult=n=>1+ENH_STEP*n;
 // the rarity of one clear's item, from x in [0,1)
-function dgRewardRarity(x){ let t=x*1000; for(let r=0;r<DG_REWARD_W.length;r++){ if(t<DG_REWARD_W[r]) return r; t-=DG_REWARD_W[r]; } return DG_REWARD_W.length-1; }
+// version 3: every difficulty step above the land's base makes a better piece likelier: the weight of rarity r (not Common) grows by DG_REWARD_LUCK x r a step (+V in the Vale: 5 steps, Rare x1.75, Epic x2.5, Unique x3.25, Legendary x4); Common takes what is left
+const DG_REWARD_LUCK=0.15;
+function dgRewardWeights(steps){
+  const k=Math.max(0,steps|0)*DG_REWARD_LUCK, W=DG_REWARD_W.map((w,r)=>r?w*(1+k*r):w), rest=W.slice(1).reduce((a,b)=>a+b,0);
+  W[0]=Math.max(0,1000-rest); return W;
+}
+function dgRewardRarity(x,steps){ const W=steps>0?dgRewardWeights(steps):DG_REWARD_W; let t=x*1000; for(let r=0;r<W.length;r++){ if(t<W[r]) return r; t-=W[r]; } return W.length-1; }
 const dgSuffix=(r,n)=>(r?'-'+RAR_KEY[r]:'')+(n?'+'+n:'');
 const dgGearId=(slot,r,n)=>slot+(DG_TIER+1)+dgSuffix(r,n), dgGearId40=(slot,r,n,roll)=>slot+(DG40_TIER+1)+dgSuffix(r,n)+(roll||''), dgRingId=(el,r,n)=>'ring-'+el+dgSuffix(r,n), dgPendantId=(stat,r,n)=>'pendant-'+stat+dgSuffix(r,n);
 // an id back into its parts, or null when it is not a level-30 piece (or asks for more enhancement than its rarity allows)
@@ -70,9 +76,9 @@ function dgItem(id){
   return it;
 }
 // one clear's item for a dungeon (rnd: a function returning [0,1), Math.random when the server rolls it); null for a theme with no reward
-function dgClearReward(theme,rnd){
+function dgClearReward(theme,rnd,steps){
   const R=DG_REWARDS[theme]; if(!R) return null; rnd=rnd||Math.random;
-  const rar=dgRewardRarity(rnd()), pick=R.pool[Math.min(R.pool.length-1,Math.floor(rnd()*R.pool.length))];
+  const rar=dgRewardRarity(rnd(),steps), pick=R.pool[Math.min(R.pool.length-1,Math.floor(rnd()*R.pool.length))];
   return R.kind==='ring'?dgRingId(pick,rar):R.kind==='pendant'?dgPendantId(pick,rar):R.t===8?dgGearId40(pick,rar,0):dgGearId(pick,rar);
 }
 // every id the setup can make: 19 kinds (7 pieces, 7 rings, 5 pendants) x the steps each rarity allows (3 + 5 + 7 + 9 + 11 = 35)

@@ -66,3 +66,7 @@ function rlLazyItem(target,id){
   if(rlMade>=RL_MEMO){ for(const k of Object.keys(target)) if(k.indexOf('~')>0) delete target[k]; rlMade=0; }
   target[id]=it; rlMade++; return it;
 }
+// version 3: the world bosses (not the dungeons') drop Reroll Stones, more the further up the zone tiers you fight them. At tier t you get one stone of a random kind
+// with chance RL_BOSS_BASE + RL_BOSS_PER_TIER x t (tier 0: 25%, tier 7: 95%), and every RL_BOSS_EXTRA_EVERY tiers adds one more stone to a drop (tier 0-2: 1, 3-5: 2, 6-7: 3). The numbers to tune.
+const RL_BOSS_BASE=0.25, RL_BOSS_PER_TIER=0.10, RL_BOSS_EXTRA_EVERY=3;
+const rlBossStoneChance=t=>Math.min(1,RL_BOSS_BASE+RL_BOSS_PER_TIER*Math.max(0,t|0)), rlBossStoneCount=t=>1+Math.floor(Math.max(0,t|0)/RL_BOSS_EXTRA_EVERY);

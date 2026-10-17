@@ -161,7 +161,7 @@ const skillDef=id=>SKILLS[id]||PASSIVES[id]||null;   // an attack skill or a pas
    An attack skill deals skillPower(level) x its damage (a buff's bonus grows the same way, and lasts 0.5 s longer per level)
    and has a cooldown of skillCdMult(level) x. A passive's value grows by its per-level step. */
 const SKILL_MAX_LV=5;
-const skillLvOf=(skills,id)=>Math.max(1,Math.min(SKILL_MAX_LV,((skills&&skills.lv&&skills.lv[id])|0)||1));
+const skillLvOf=(skills,id)=>Math.max(1,Math.min(SKILLS[id]&&SKILLS[id].drop?BOSS_SKILL_MAX_LV:SKILL_MAX_LV,((skills&&skills.lv&&skills.lv[id])|0)||1));   // (version 3: a boss skill's level comes from the zone tiers you defeated, bossSkillLvOf in tiers.js)
 const skillPower=L=>1+0.12*(L-1), skillCdMult=L=>1-0.03*(L-1);
 const passiveValue=(id,L)=>PASSIVES[id].v[0]+PASSIVES[id].v[1]*(L-1);
 const pctText=v=>+(v*100).toFixed(1);

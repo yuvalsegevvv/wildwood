@@ -29,3 +29,8 @@ function zoneTierKillP(q,m){
   z.max++; q.dirty=true; recalcP(q);
   toastTo(q.id,'Tier '+ZTIER_ROMAN[z.max]+' unlocked in '+ZTIER_NAMES[land]+'! Choose it in a village (the map): its enemies are '+ZTIER_STEP*z.max+' levels higher.'+(ZTIER_SYMBOL_LANDS.includes(land)?' Your symbol grows: +'+Math.round(symbolBonus(q.gear)*100)+'% attack and health.':''),'good');
 }
+// a boss skill's level is 1 + the tiers you defeated in its boss's land (bossSkillLvOf, shared/tiers.js); recalcP and a drop call this. Not saved as an upgrade: sanitizeSkills drops it and the next recalcP sets it again.
+function bsRefreshP(p){
+  const sk=p.gear&&p.gear.skills; if(!sk||!sk.lv) return;
+  for(const id of sk.owned){ const s=SKILLS[id]; if(!s||!s.drop) continue; const L=bossSkillLvOf(p.gear,id); if(L>1) sk.lv[id]=L; else delete sk.lv[id]; }
+}

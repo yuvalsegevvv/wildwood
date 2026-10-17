@@ -19,7 +19,7 @@ function makeHero(cls,tier,level){
   const id='d'+(++uid), o=BUILD[cls]; W.join(id,{name:'D'+uid,look:{cls},save:{level:level||60}}); tick();
   const p=W.players.get(id), g=p.gear, items=[WEAPON[cls]+'7-l+10',...x.ARMOR_SLOTS.map(s=>s+'7-l+10'),'ring-'+o.soul+'-l+10'];
   g.inv.push(...items); g.eq.weapon=items[0]; x.ARMOR_SLOTS.forEach((s,i)=>{ g.eq[s]=items[i+1]; }); g.eq.ring=items[items.length-1];
-  g.soul=o.soul; g.east=2; g.north=2; for(const l of x.ZTIER_LANDS) g.zt[l]={on:tier,max:5};
+  g.soul=o.soul; g.east=2; g.north=2; for(const l of x.ZTIER_LANDS) g.zt[l]={on:tier,max:['home','vale','hoar'].includes(l)?5:0};   // (the yardstick keeps its symbol at the +150% it was tuned with: three lands' fifteen points; the stronger version-3 symbol, tiers VI and VII and the level-40 gear are not tuned here yet)
   const sk=g.skills; sk.owned=[...x.SKILL_IDS,...Object.keys(x.PASSIVES)]; sk.lv={}; for(const s of sk.owned){ const d=x.SKILLS[s]||x.PASSIVES[s]; if(d&&!d.drop) sk.lv[s]=5; }
   sk.eq[cls].skill=o.skill; sk.eq[cls].burst=o.burst; if(o.basic) sk.eq[cls].basic=o.basic; sk.pass=[o.passive,null,null];
   g.pot={heal3:999,might3:999,guard3:999}; g.coins=0; x.recalcP(p); p.hp=p.maxHp; p.dead=false;

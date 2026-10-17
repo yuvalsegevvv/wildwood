@@ -10,8 +10,10 @@ Level-40 weapons (the Sunscar's dungeon, `sandglass`) and armour (the Gloamhorn'
 
 **Caps** (summed over the worn set, `RL_CAPS`): cooldown reduction from gear 40% (passives add to it inside the old 60% overall cap, `abilityCd`'s `extra`), accuracy and resistance 60%. Crit chance and multiplier stay under `CRIT_CAP` / `CRIT_MULT_CAP`; reaction strength under the reaction cap 1.5. A piece counts only at its level (40).
 
-**Stones**: `gear.rsw` (Weapon Reroll Stone) and `gear.rsa` (Armor Reroll Stone). No other source: **sacrifice** an unworn level-30 or level-40 weapon (weapon stones) or armour piece (armour stones) for 1 / 2 / 4 / 8 / 16 by rarity (`sac{id}`; rings and pendants cannot be sacrificed). A roll or reroll costs 1 stone of the piece's kind (`reroll{id[,worn]}`) and replaces all three lines. Rolled pieces do not merge.
+**Stones**: `gear.rsw` (Weapon Reroll Stone) and `gear.rsa` (Armor Reroll Stone). Sources: world bosses (below) and **sacrifice** an unworn level-30 or level-40 weapon (weapon stones) or armour piece (armour stones) for 1 / 2 / 4 / 8 / 16 by rarity (`sac{id}`; rings and pendants cannot be sacrificed). A roll or reroll costs 1 stone of the piece's kind (`reroll{id[,worn]}`) and replaces all three lines. Rolled pieces do not merge.
 
 **Accuracy and resistance**: resistance is a chance, on each hit, to **halve the damage** and **negate the debuff / reaction** that hit would cause; the attacker's accuracy is subtracted from that chance (`rlResists`). Players get both from gear; monsters carry `res` / `acc` on their defs (`m.T.res`, `m.T.acc`), the Sunscar's and the Gloamhorn's do. A resisted hit on a monster sends fx 2 on the damage event.
 
 **Hooks** (`// rolls:`): `recalcP` / `hurtP` / `sanitizeGear` (players.js), `rollDmgS` / `damageMonsterS` / `statusS` / `applyBuffS` / `handleAttack` / `rewardKill` (combat.js), `rxHitS` (reactions.js), `drinkP` (crafting.js), `ssAllyS` (skillsets.js), `abilityCd` (classes.js), the Proxy in items.js.
+
+**Version 3 follow-up**: world bosses now drop Reroll Stones too (more the higher the zone tier fought at: `rlBossStoneChance`), see `docs/areas/tiers.md` (last section).

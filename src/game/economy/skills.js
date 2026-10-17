@@ -56,7 +56,7 @@ function skInfoHtml(C,cls){
   else acts+=`<span class="muted">Aldric (or Master Ryu in Hanami) teaches it at the well: ${s.price} coins</span>`;
   let up='';
   if(own){
-    if(s.drop) up=`<div class="sk-up"><b>Boss skill</b><span class="muted">It cannot be upgraded yet.</span></div>`;
+    if(s.drop) up=`<div class="sk-up"><b>Boss skill &middot; level ${L}</b><span class="muted">It gains a level for every zone tier you defeat in its boss's land (now ${L-1} of ${ZTIER_MAX}), not with coins.</span></div>`;
     else if(s.set) up=`<div class="sk-up"><b>Signature skill</b><span class="muted">It cannot be upgraded yet.</span></div>`;   // skillsets
     else if(L>=SKILL_MAX_LV) up=`<div class="sk-up"><b>Highest level</b><span class="muted">${s.name} cannot be upgraded any further.</span></div>`;
     else {

@@ -135,7 +135,7 @@ function dgWinS(run){
   const c0=S.ctx; S.ctx=run.id;
   for(const m of [...run.mons]) if(!(run.boss&&m===run.boss.m)) dgRemoveS(run,m);
   const key=run.th+':'+run.mission, secs=Math.max(1,Math.round(run.t)), saved=dgSaveKeyOk(key);
-  const prize=dgClearReward(run.th);   // the clear's own reward (docs/DUNGEON-THEMES.md section 7): one level-30 piece rolled once, handed to every member present (null for the test set)
+  const prize=dgClearReward(run.th,null,run.theme.land?run.tier-DG_LANDS[run.theme.land].base:0);   // the clear's own reward (docs/DUNGEON-THEMES.md section 7): one level-30 piece rolled once, handed to every member present (null for the test set)
   for(const p of dgPresentS(run)){
     const mb=dgMemberOf(run,p);
     if(p.dead){ p.dead=false; p.deadT=0; p.hp=Math.max(1,Math.round(p.maxHp*DG_REVIVE_HP)); p.lastHit=S.t; ev('up',p.id); }

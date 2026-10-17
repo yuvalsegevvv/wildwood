@@ -6,11 +6,11 @@ const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev.map(e=>[pid,...e])); }},
   ['MONS','BOSSES','BOSS_DEFS','MON_DEFS','DEF_BY_ID','VIL','VIL2','VIL3','S','damageMonsterS','killMonsterS','rewardKill','hurtP','monK','recalcP','sanitizeGear','newGearFor',
-   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','symbolCapped','ZTIER_SYMBOL_LANDS','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','BOSS_DEFS','DG_BOSS_DEFS','LATE_CREEP_LV','LATE_CREEP_BOSS','LATE_CREEP_MOB','lvDmgK','LV_DMG_MIN']);
+   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','symbolCapped','ZTIER_SYMBOL_LANDS','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','bossSkillLvOf','ztBossLand','SKILLS','BOSS_SKILL_MAX_LV','skillLvOf','rlBossStoneChance','rlBossStoneCount','dgRewardWeights','dgRewardRarity','DG_REWARD_W','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','BOSS_DEFS','DG_BOSS_DEFS','LATE_CREEP_LV','LATE_CREEP_BOSS','LATE_CREEP_MOB','lvDmgK','LV_DMG_MIN']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
-const zt=(home,vale,hoar,grey,sun)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:vale[1]},hoar:{on:hoar[0],max:hoar[1]},grey:{on:(grey||[0,0])[0],max:(grey||[0,0])[1]},sun:{on:(sun||[0,0])[0],max:(sun||[0,0])[1]},gloam:{on:0,max:0}});
+const zt=(home,vale,hoar,grey,sun,gloam)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:vale[1]},hoar:{on:hoar[0],max:hoar[1]},grey:{on:(grey||[0,0])[0],max:(grey||[0,0])[1]},sun:{on:(sun||[0,0])[0],max:(sun||[0,0])[1]},gloam:{on:(gloam||[0,0])[0],max:(gloam||[0,0])[1]}});
 
 // ---- the rules ----
 { const d=x.DEF_BY_ID.direboar, k0=x.zoneTierK(d,0), k1=x.zoneTierK(d,1), a=x.defAt(d,d.level+10);
@@ -19,8 +19,8 @@ const zt=(home,vale,hoar,grey,sun)=>({home:{on:home[0],max:home[1]},vale:{on:val
     'level '+d.level+' -> '+k1.lv+': hp x'+k1.hp.toFixed(2)+', dmg x'+k1.dmg.toFixed(2)+', xp x'+k1.xp.toFixed(2)); }
 { const lv=[0,1,2,3,4,5].map(t=>x.zoneTierLv(x.DEF_BY_ID.vetrmaw,t));
   ok('a boss goes up with the tiers too (Vetrmaw 30 / 40 / 50 / 60 / 70 / 80)',lv.join()==='30,40,50,60,70,80'); }
-{ const d=x.DEF_BY_ID.vetrmaw, K=[0,1,2,3,4,5].map(t=>x.zoneTierK(d,t));
-  ok('there are five tiers (IV and V added): the numerals are I to V, and every tier makes a monster tougher and harder-hitting than the one before',x.ZTIER_MAX===5&&x.ZTIER_ROMAN.join()==='0,I,II,III,IV,V'&&K.every((k,i)=>i===0||(k.hp>K[i-1].hp&&k.dmg>K[i-1].dmg&&k.lv===K[i-1].lv+x.ZTIER_STEP)),
+{ const d=x.DEF_BY_ID.vetrmaw, K=[0,1,2,3,4,5,6,7].map(t=>x.zoneTierK(d,t));
+  ok('there are seven tiers (IV and V added, VI and VII with version 3): the numerals are I to VII, and every tier makes a monster tougher and harder-hitting than the one before',x.ZTIER_MAX===7&&x.ZTIER_ROMAN.join()==='0,I,II,III,IV,V,VI,VII'&&K.every((k,i)=>i===0||(k.hp>K[i-1].hp&&k.dmg>K[i-1].dmg&&k.lv===K[i-1].lv+x.ZTIER_STEP)),
     K.map((k,i)=>i+': lv '+k.lv+' hp x'+k.hp.toFixed(1)+' dmg x'+k.dmg.toFixed(1)).join('; ')); }
 ok('five lands, each opened by its second boss (the second of the two bosses that live there, by level)',(()=>{
   const by={home:[],vale:[],hoar:[],grey:[],sun:[],gloam:[]}; for(const b of x.BOSS_DEFS){ const Ar=bossArena(b); by[x.landAt(Ar.x,Ar.z)].push(b); }
@@ -28,7 +28,7 @@ ok('five lands, each opened by its second boss (the second of the two bosses tha
 function bossArena(b){ const B=x.BOSSES.find(q=>q.bd===b); return B.A; }
 ok('the symbol: every unlocked tier point of every land adds +10% (2 + 2 + 1 points = +50%, the Greyspine\'s too: +1 = +60%)',near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1])}),0.5,1e-9)&&near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1],[0,1])}),0.6,1e-9)&&x.symbolBonus({})===0&&x.symbolBonus({zt:zt([1,1],[0,0],[0,0])})===x.ZTIER_BONUS);
 ok('the symbol counts what you unlocked, not what you play at',x.symbolBonus({zt:zt([0,3],[0,0],[0,0])})===3*x.ZTIER_BONUS);
-ok('with every land at tier V (twenty points) the symbol stops at +150% (ZTIER_SYMBOL_CAP, a placeholder: the Greyspine\'s five points would make the level-60 hero of boss-duel beat the tier V bosses standing, docs/NOT-BUILT.md 3b); below the cap every point is +10%',near(x.symbolBonus({zt:zt([0,5],[0,5],[0,5],[0,5])}),1.5,1e-9)&&near(x.symbolPoints({zt:zt([0,5],[0,5],[0,5],[0,5])}),20,1e-9)&&x.symbolCapped({zt:zt([0,5],[0,5],[0,5],[0,5])})&&!x.symbolCapped({zt:zt([0,5],[0,5],[0,5])})&&near(x.symbolBonus({zt:zt([0,5],[0,5],[0,5],[0,1])}),1.5,1e-9)&&near(x.symbolBonus({zt:zt([0,4],[0,4],[0,4],[0,2])}),1.4,1e-9)&&x.ZTIER_SYMBOL_LANDS.join()==='home,vale,hoar,grey');
+ok('with all six lands at tier VII (forty-two points) the symbol is +420% (ZTIER_SYMBOL_CAP, the owner\'s "x4.2 for now": it is exactly the sum, so the cap only bites past it); below the cap every point is +10%',near(x.symbolBonus({zt:zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,7])}),4.2,1e-9)&&near(x.symbolPoints({zt:zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,7])}),42,1e-9)&&!x.symbolCapped({zt:zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,7])})&&near(x.symbolBonus({zt:zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,3])}),3.8,1e-9)&&x.ZTIER_SYMBOL_LANDS.join()==='home,vale,hoar,grey,sun,gloam');
 
 // ---- what a kill pays at the high tiers (xpFor / coinsFor in shared/balance.js) ----
 { const oldXp=L=>x.fLv(L)*Math.pow(1.15,Math.max(0,L-5))*(L>=10?1.5:1), oldCoins=L=>Math.max(1,Math.round(x.fLv(L)*2*Math.pow(1.1,Math.max(0,L-5))*(L>=10?1.5:1)));
@@ -151,4 +151,21 @@ fell(A,'vetrmaw'); ok('Vetrmaw opens the Reach\'s tier I',A.gear.zt.hoar.max===1
   B.gear.zt=zt([0,1],[0,0],[0,0]); A.gear.zt=zt([1,1],[0,0],[0,0]); B.level=50; A.level=50;
   const m=x.BOSSES.find(q=>q.bd.def.id==='carapax').m; m.dead=false; m.hp=m.maxHp; A.x=m.x+3; A.z=m.z; B.x=m.x-3; B.z=m.z; m.hitters.set(A.id,x.S.t); m.hitters.set(B.id,x.S.t); x.killMonsterS(m,A);
   ok('two players share a kill: the one at their highest tier gets the next tier, the other does not',A.gear.zt.home.max===2&&B.gear.zt.home.max===1); }
+
+// ---- version 3: boss skills follow the tiers, world bosses drop Reroll Stones, dungeon clears get luckier ----
+{ const sid=x.SKILLS.vetrmawfang?'vetrmawfang':Object.keys(x.SKILLS).find(k=>x.SKILLS[k].drop==='carapax');
+  ok('a boss\'s land is read from its arena (Carapax: home, Kyuubi: vale, the Gloam Warden: gloam)',x.ztBossLand('carapax')==='home'&&x.ztBossLand('kyuubi')==='vale'&&x.ztBossLand('gloamwarden')==='gloam'&&x.ztBossLand('nobody')===null);
+  ok('a boss skill is level 1 + the tiers defeated in its boss\'s land, and an ordinary skill is not touched',x.bossSkillLvOf({zt:zt([0,3],[0,0],[0,0])},sid)===4&&x.bossSkillLvOf({zt:zt([0,0],[0,0],[0,0])},sid)===1&&x.bossSkillLvOf({zt:zt([0,7],[0,0],[0,0])},sid)===x.BOSS_SKILL_MAX_LV&&x.bossSkillLvOf({zt:zt([0,7],[0,7],[0,7])},'slash')===1);
+  A.gear.zt=zt([0,3],[0,0],[0,0]); if(!A.gear.skills.owned.includes(sid)) A.gear.skills.owned.push(sid); x.recalcP(A);
+  ok('recalcP gives the owned boss skill its level and skillLvOf reads it (past the old limit of 5 at tier V+)',A.gear.skills.lv[sid]===4&&x.skillLvOf(A.gear.skills,sid)===4);
+  A.gear.zt=zt([0,7],[0,0],[0,0]); x.recalcP(A); ok('at tier VII it is level 8',x.skillLvOf(A.gear.skills,sid)===8);
+  A.gear.zt=zt([0,0],[0,0],[0,0]); x.recalcP(A); ok('and back to level 1 without tiers',x.skillLvOf(A.gear.skills,sid)===1&&A.gear.skills.lv[sid]===undefined); }
+ok('Reroll Stone chance and number rise with the tier played (25% / 1 stone at tier 0, 95% / 3 at tier VII)',near(x.rlBossStoneChance(0),0.25,1e-9)&&near(x.rlBossStoneChance(7),0.95,1e-9)&&x.rlBossStoneCount(0)===1&&x.rlBossStoneCount(3)===2&&x.rlBossStoneCount(7)===3&&[0,1,2,3,4,5,6,7].every((t,i,a)=>i===0||x.rlBossStoneChance(t)>x.rlBossStoneChance(a[i-1])));
+{ const real=Math.random; A.gear.zt=zt([0,0],[0,0],[0,0]); A.level=50; A.gear.rsw=0; A.gear.rsa=0; A.gear.zt.home.on=0;
+  Math.random=()=>0.1; fell(A,'boss'); const lowGot=(A.gear.rsw|0)+(A.gear.rsa|0);
+  Math.random=()=>0.9; A.gear.rsw=0; A.gear.rsa=0; fell(A,'boss'); const none=(A.gear.rsw|0)+(A.gear.rsa|0);
+  Math.random=real;
+  ok('a world boss drops stones when the roll is under the chance and none when it is over',lowGot===1&&none===0,lowGot+' / '+none); }
+ok('dungeon clears roll luckier with every difficulty step: Common falls and every better rarity rises, the weights still add up to 1000',(()=>{ const W0=x.DG_REWARD_W, W5=x.dgRewardWeights(5); return W5.reduce((a,b)=>a+b,0)===1000&&W5[0]<W0[0]&&W5.slice(1).every((w,i)=>w>W0[i+1])&&x.dgRewardRarity(0.5,0)===0&&x.dgRewardRarity(0.5,5)<=x.dgRewardRarity(0.5,0)+1&&x.dgRewardRarity(0.999,0)===4; })());
+
 console.log(fails?'\n'+fails+' FAILED':'\nall passed'); process.exit(fails?1:0);
