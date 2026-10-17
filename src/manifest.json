@@ -202,6 +202,7 @@
     "world/ambient-life.js",
     "wildlife/animals.js",
     "wildlife/chamois.js",
+    "wildlife/fish.js",
     "world/gloam-sky.js",
     "world/time-of-day.js",
     "player/input.js",
