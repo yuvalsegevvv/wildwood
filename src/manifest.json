@@ -250,6 +250,7 @@
     "combat/monster-desert.js",
     "combat/monster-gloam.js",
     "combat/monster-mine.js",
+    "combat/monster-totems.js",
     "combat/monster-woods.js",
     "combat/monster-spirits.js",
     "combat/monster-boss.js",

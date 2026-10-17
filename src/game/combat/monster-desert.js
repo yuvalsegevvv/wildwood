@@ -13,12 +13,14 @@ MODELS.scorpion={
     for(const sd of W){ body.push(moEll(0.04,0.04,0.04,sd*0.1,0.5,-0.6,p.eye,null,6),moBone([sd*0.1,0.3,-0.55],[sd*0.14,0.2,-0.72],0.04,0.03,p.head,5));   // eyes, mouth palps
       if(p.glass) for(let i=0;i<3;i++) body.push(moCone([sd*(0.1+i*0.1),0.46,-0.1+i*0.25],[sd*0.4,1,-0.1],0.26+0.1*(i%2),0.05,(x,y,z,c)=>{ c.set(p.horn).multiplyScalar(0.8+0.3*clamp((y-0.45)*2)); },4)); }
     G.body=moMerge(body);
-    G.tail=moMerge([moTube([[0,0,0],[0,0.2,0.4],[0,0.62,0.62],[0,0.98,0.32],[0,1.04,-0.1]],0.13,0.06,sh,7,true),moEll(0.1,0.1,0.12,0,1.06,-0.16,p.horn,null,8),moCone([0,1.04,-0.2],[0,-0.7,-1],0.34,0.065,p.horn,5)]);
+    for(let r=0;r<2;r++) for(let i=0;i<6;i++) for(const sd of W) body.push(moPatch([sd*(0.1+0.07*r),0.465-0.03*Math.abs(i-2)*0.2+0.0,-0.28+i*0.12+(r?0.05:0)],[sd*0.2,1,0],0.032,0.016,(x,y,z,c)=>{ c.set(p.sheen).multiplyScalar(0.7+0.3*moNoise(x,y,z,18)); },5));   // the keels: rows of granules on the carapace
+    G.tail=moMerge([moTube([[0,0,0],[0,0.2,0.4],[0,0.62,0.62],[0,0.98,0.32],[0,1.04,-0.1]],0.13,0.06,(x,y,z,c)=>{ sh(x,y,z,c); if(Math.sin(y*40+z*30)>0.6) c.multiplyScalar(0.72); },7,true,t=>1+0.14*Math.sin(t*36)),moEll(0.1,0.1,0.12,0,1.06,-0.16,p.horn,null,8),moCone([0,1.04,-0.2],[0,-0.7,-1],0.34,0.065,p.horn,5)]);
     for(const sd of W){ const legs=[];
       moBugLegs(legs,[-0.28,-0.04,0.2,0.42].map(z=>[[sd*0.26,0.3,z],[sd*0.5,0.46,z+0.04],[sd*0.72,0.26,z+0.1],[sd*0.8,0.02,z+0.16]]),0.05,0.016,p.legs,1);
       G[sd<0?'lL':'lR']=moMerge(legs);
-      const cl=[moBone([0,0,0],[-sd*0.05,0.04,-0.5],0.1,0.08,p.legs,7),moEll(0.17,0.12,0.26,-sd*0.07,0.06,-0.72,sh,null,10)];
-      for(const f of [-1,1]) cl.push(moHorn([-sd*0.07,0.06+f*0.05,-0.9],[0,0,-1],0.42,0.07,0.8,p.head,6,[0,-f,0]));
+      const cl=[moBone([0,0,0],[-sd*0.12,0.06,-0.3],0.11,0.1,p.legs,7),moEll(0.11,0.11,0.11,-sd*0.12,0.06,-0.3,sh,null,8),moBone([-sd*0.12,0.06,-0.3],[-sd*0.06,0.05,-0.58],0.1,0.09,sh,7),moEll(0.23,0.15,0.3,-sd*0.07,0.06,-0.8,sh,null,12)];   // arm, elbow, forearm, the big palm
+      for(const f of [-1,1]){ cl.push(moHorn([-sd*0.07,0.06+f*0.07,-0.98],[0,0,-1],0.5,0.1,0.9,(x,y,z,c)=>{ c.set(p.head).lerp(_tint.set(p.shell),clamp(1-(z+1.3)*2)*0.5); },7,[0,-f,0]));
+        for(let k=0;k<3;k++) cl.push(moPatch([-sd*0.07+sd*0.05*(k-1),0.06+f*0.1,-0.7-k*0.1],[0,f,0],0.034,0.018,p.sheen,5)); }
       G[sd<0?'cL':'cR']=moMerge(cl); }
     return G;
   },

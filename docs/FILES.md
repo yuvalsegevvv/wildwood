@@ -285,6 +285,7 @@ game
   combat/monster-desert.js           The Sunscar's monster models: scorpions (model 'scorpion'), walking cacti ('cactus'), sand worms and the sand wyrm ('sandworm'), djinn ('djinn') and the Glass Guardian ('sentinel')
   combat/monster-gloam.js            The Gloamhorn's monster models: the gloom bat (model 'bat'); the rest of the land reuses the families with new look flags (djinn siren, wisp ghosts by id, goblin undead, treant dead, wyrm stone, sandworm sea)
   combat/monster-mine.js             The powder keg model (model 'keg': Garrick's kegs in the Blackseam): a barrel of dark staves with two iron bands and a fuse that spits a spark
+  combat/monster-totems.js           The five totems' own bodies (pal.style): the Heartwood carved wood, the Warm Core's frosted furnace, the Iron Joint, the Black Mirror, the Soul Lantern
   combat/monster-woods.js            Treant and totem models: gnarled walking trees with faces and hands of twigs; dead, mossy, snowy, blossoming, bamboo, rock and ice kinds; the Rootwarden; the totems
   combat/monster-spirits.js          Wisp and ghost models (model 'wisp'): fire spirits (onibi, rime wisp) with a bright core and rising tongues; the yurei, ice wraith and barrow wight, tattered figures that float (and the Gloamhorn's banshee and widow = yurei, wraith and specter = ice wraith, the Gloam Warden = a wight)
   combat/monster-boss.js             What sets the bosses apart in the goblin and fox models: Akaoni's iron, skulls and flames, Ymrik's ice crown, cape and greataxe, Kyuubi's gold, beads, rope and marks

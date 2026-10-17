@@ -96,7 +96,8 @@ function bossTreant(body,p){
 const moStone=(x,y,z,c)=>{ c.set(0x807a70).multiplyScalar(0.72+0.4*h3(Math.floor(x*4),Math.floor(y*4),Math.floor(z*4))); };
 MODELS.totem={
   geo(d,p){
-    const G={}, gl=p.crystal||0x7af0a0, band=p.band||0x6af08a, body=[];
+    const G={}, gl=p.crystal||0x7af0a0, band=p.band||0x6af08a, body=[], own=moTotemBody(p.style,gl,band);   // a totem with its own style (monster-totems.js) skips the plain stone one below
+    if(own){ G.body=moMerge(own); return G; }
     body.push(pc(vbox(1.0,0.3,1.0,0,0.15,0),moStone),moLoft([{y:0.3,rx:0.42,rz:0.42},{y:0.9,rx:0.34,rz:0.34},{y:1.6,rx:0.3,rz:0.3},{y:2.1,rx:0.36,rz:0.36},{y:2.3,rx:0.3,rz:0.3}],moQ(8),(x,y,z,c)=>{ moStone(x,y,z,c); if(((y*2.2)%1+1)%1<0.14) c.set(band); }));
     for(let i=0;i<3;i++){ const a=i/3*TAU+0.5; body.push(pc(vbox(0.05,0.34,0.03,Math.cos(a)*0.33,1.15+0.08*i,Math.sin(a)*0.33),c=>c.set(band))); }   // glowing rune bars up the trunk
     for(const sd of [-1,1]){ body.push(moTube([[sd*0.3,1.5,0.0],[sd*0.62,1.35,-0.05],[sd*0.72,0.95,-0.18]],0.09,0.05,0x4a3a28,6,true),moEll(0.1,0.1,0.1,sd*0.72,0.9,-0.2,moStone,null,6)); }   // stub branch arms ending in stone fists

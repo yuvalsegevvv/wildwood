@@ -186,7 +186,7 @@ function bossDef(d){ d.hits=70; prepDef(d); return d; }
 function totemDef(d){ d.hits=9; prepDef(d); return d; }
 const BOSS_DEF=bossDef({id:'boss',name:'The Rootwarden',level:15,el:'dark',model:'treant',scale:2.4,boss:true,heavy:true,glow:0x12001a,atk:2.6,speed:1.9,aggro:0,
   pal:{bark:0x2e2a36,c1:0x4a2a5a,c2:0x5a3a7a,c3:0x3a1f4a,eyes:0xff5cf0}});
-const TOTEM_DEF=totemDef({id:'totem',name:'Heartwood Totem',level:15,el:'dark',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x0a2a10,pal:{crystal:0x7af0a0,band:0x6af08a}});
+const TOTEM_DEF=totemDef({id:'totem',name:'Heartwood Totem',level:15,el:'dark',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x0a2a10,pal:{style:'heart',crystal:0x7af0a0,band:0x6af08a}});
 const THORN_DEF={id:'thornling',name:'Thornling',level:14,el:'dark',model:'treant',scale:0.6,hpK:0.6,dmgPct:0.07,atk:1.8,speed:2.4,aggro:30,
   pal:{kind:'thorn',bark:0x3a2e28,c1:0x5a3a7a,c2:0x4a2a5a,c3:0x3a1f4a,eyes:0xff5cf0}};
 prepDef(THORN_DEF);
@@ -214,7 +214,7 @@ const THRALL_DEF={id:'frostthrall',name:'Frost Thrall',level:25,el:'water',model
 prepDef(THRALL_DEF);
 const VETRMAW_DEF=bossDef({id:'vetrmaw',name:'Vetrmaw, the Frost Wyrm',level:30,el:'water',model:'wyrm',scale:2.3,boss:true,heavy:true,glow:0x081c30,atk:2.2,speed:2.5,aggro:0,
   pal:{body:0x9cc4e0,belly:0xe4f2fa,ridge:0x3a6a8c,horn:0xe8f6ff,eye:0xff7a3a,wing:0x6a98bc}});
-const CORE_DEF=totemDef({id:'warmcore',name:'Warm Core',level:30,el:'water',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x3a1400,pal:{crystal:0xff9a3a,band:0xffc060}});
+const CORE_DEF=totemDef({id:'warmcore',name:'Warm Core',level:30,el:'water',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x3a1400,pal:{style:'core',crystal:0xff9a3a,band:0xffc060}});
 const WYRMLING_DEF={id:'wyrmling',name:'Wyrmling',level:29,el:'water',model:'wyrm',scale:0.6,hpK:0.6,dmgPct:0.07,atk:1.6,speed:3.6,aggro:30,
   pal:{body:0x9cc4e0,belly:0xe4f2fa,ridge:0x3a6a8c,horn:0xe8f6ff,eye:0xff7a3a,wing:0x6a98bc}};
 prepDef(WYRMLING_DEF);
@@ -229,13 +229,13 @@ const GOLEM_DEF=bossDef({id:'mountaingolem',name:'The Mountain Golem',level:32,e
 const RUBBLE_DEF={id:'rubble',name:'Rubble Imp',level:31,el:'earth',model:'treant',scale:0.6,hpK:0.6,dmgPct:0.07,atk:1.8,speed:2.6,aggro:30,
   pal:{kind:'rock',style:'crack',lichen:0,crack:0xff8a30,bark:0x4a4a48,c1:0x7a7a74,c2:0x8a8a84,c3:0x64645e,eyes:0xff8a30}};
 prepDef(RUBBLE_DEF);
-const JOINT_DEF=totemDef({id:'ironjoint',name:'Iron Joint',level:32,el:'earth',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x1a1208,pal:{crystal:0xc8a060,band:0x8a8a90}});
+const JOINT_DEF=totemDef({id:'ironjoint',name:'Iron Joint',level:32,el:'earth',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x1a1208,pal:{style:'joint',crystal:0xc8a060,band:0x8a8a90}});
 // the Sunscar: the Glass Guardian (level 32, in the middle of the Glass Fields) and the sand wyrm (level 36, in its pit in the dunes by Redgate Canyon: its fall opens the canyon, shared/sunland.js)
 const GLASSGUARD_DEF=bossDef({id:'glassguardian',name:'The Glass Guardian',level:32,el:'light',model:'sentinel',scale:2.2,boss:true,heavy:true,glow:0x14181e,atk:2.6,speed:1.9,aggro:0,res:0.25,acc:0.25,
   pal:{stone:0xb08a5a,glass:0x1c2230,glow:0xffd870,gold:0xd9a032}});
 const SHARD_DEF={id:'glassshard',name:'Glass Shard',level:31,el:'light',model:'wisp',scale:0.62,hpK:0.6,dmgPct:0.07,atk:1.6,speed:3.6,aggro:30,glow:0x10243a,pal:{shards:0xdff4ff,body:0x9ac8f0,core:0xffffff,eye:0x14304a}};
 prepDef(SHARD_DEF);
-const MIRROR_DEF=totemDef({id:'blackmirror',name:'Black Mirror',level:32,el:'light',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x10141c,pal:{crystal:0xffd870,band:0x8ac0f0}});
+const MIRROR_DEF=totemDef({id:'blackmirror',name:'Black Mirror',level:32,el:'light',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x10141c,pal:{style:'mirror',crystal:0xffd870,band:0x8ac0f0}});
 const SANDWYRM_DEF=bossDef({id:'sandwyrm',name:'The Sand Wyrm',level:36,el:'earth',model:'sandworm',scale:2.9,boss:true,heavy:true,glow:0x2a1204,atk:2.3,speed:2.6,aggro:0,res:0.25,acc:0.25,
   pal:{body:0xb88a50,belly:0xe8d4a0,ridge:0x6a3a1a,horn:0xe8dcc0,eye:0xff8a30}});
 const WHELP_DEF={id:'sandwhelp',name:'Sand Whelp',level:35,el:'earth',model:'sandworm',scale:0.6,hpK:0.6,dmgPct:0.07,atk:1.6,speed:3.4,aggro:30,pal:{body:0xc8a064,belly:0xe8d4a0,ridge:0x7a5a30,horn:0xe0d0a8,eye:0xffa040}};
@@ -252,7 +252,7 @@ const WARDEN_DEF=bossDef({id:'gloamwarden',name:'The Gloam Warden',level:40,el:'
 const SPECTER_DEF={id:'gloamspecter',name:'Gloam Specter',level:39,el:'dark',model:'wisp',scale:0.75,hpK:0.6,dmgPct:0.07,atk:1.6,speed:3.4,aggro:30,glow:0x0c0818,
   pal:{body:0x3a3a52,core:0xb8b0e0,eye:0x14101c,hair:0x101018,ghost:1}};
 prepDef(SPECTER_DEF);
-const LANTERN_DEF=totemDef({id:'soullantern',name:'Soul Lantern',level:40,el:'light',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x1a1230,pal:{crystal:0xd8c8ff,band:0x8a78c8}});
+const LANTERN_DEF=totemDef({id:'soullantern',name:'Soul Lantern',level:40,el:'light',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x1a1230,pal:{style:'lantern',crystal:0xd8c8ff,band:0x8a78c8}});
 /* kit: the boss's own move set (BOSS_KITS in server/boss-kits-*.js); arena: which clearing (ARENAS in vale.js, hoarfrost.js, beach.js); add: what it
    summons; totem: the Rootwarden's shield-phase totems; prop: what shelters players in Vetrmaw's blizzard; totems: the totems' name for the boss bar;
    bar: what the boss bar says while the boss is in a mode (1 airborne, 2 hidden, 3 shielded, 4 whiteout, 5 blizzard) or stunned */
