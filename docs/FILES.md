@@ -190,6 +190,7 @@ game
   world/plant-models.js              Geometry helpers (paint, merge, mkGeo, cyl, blob) and plant models (trees, grass, ferns...)
   world/plant-models-hi.js           Detailed plant models for the desktop (the *Hi builders): conifers with drooping boughs, broadleaf crowns of leaf fans on forked limbs, leafy bushes, pinnate ferns, faceted rocks, fallen logs, reeds
   world/plant-models-sun.js          The Sunscar's plants: the date palm, the saguaro-like cactus and the flat-crowned thorn tree (G.trees.palm / cactus / thorn); the rest of the planting is the sun branch of genChunk (generation-chunks.js)
+  world/plant-models-more.js         More tree species for variety: poplar, beech, willow, stone pine, cedar, ginkgo, larch, acacia and the gloom oak (G.trees / G.treesHi, a low-poly and a detailed model each)
   world/grass-models.js              Grass tufts in three levels of detail (curved, tapering blades with a dark root and a bright tip) and flowers with petals
   world/instancing.js                Chunked instanced meshes (frustum culled, with per-instance levels of detail), distance culling, tree collision grid (addCol, nearCols)
   player/state.js                    Player state P and spawn point
@@ -290,6 +291,7 @@ game
   combat/weapon-shapes-v3b.js        Weapon shapes of version 3's second six signature outfits (Pell, Genzo, Brynja, Tamsin, Zahra, Hollis): a leister, a bell mallet, a skate blade, a sledge, a mirror, a vigil hook; reed, bamboo, ice, sling, sun and crape bows; a torch pole, a ringed staff, an icicle, a cairn, a sandglass, a vigil pole
   combat/fx-pool.js                  The spark pool: one THREE.Points draw call for the glows, sparks, trails and shockwave debris that every skill, monster attack and boss move adds to its effect
   combat/fx-extra.js                 The effects beyond light: scorch marks, dust and smoke, flying debris, jagged lightning, rotating rune circles, slash crescents, shock domes and the screen flash
+  combat/fx-decal.js                 Ground patterns for skill effects: canvas-drawn runes, flames, waves, cracks, gusts, eclipses, stars, frost, leaves and shock rings that replace the plain discs and rings
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
   combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
   combat/reactions.js                Reactions on the client: the aura marker over a monster, the reaction's name popping up, the vulnerable / weakened notes
