@@ -1,4 +1,4 @@
-//@ The forge keepers at work: a hammer in their hand, three blows then a pause, a spark shower and a clang at each blow when you are near
+//@ Villager life: the forge keepers at work (a hammer, three blows then a pause, sparks and a clang when you are near) and a wave for a player who walks up
 /* Agent map. Every VILLAGERS row with role 'forge' (Greta, Tetsuo, Ulfhild, Hilda, Karim, Corwin; villagers.js) gets a hammer on its right wrist anchor (smithAttach, called where the NPC is built)
    and, while it stands idle at its stall and nobody talks to it, smithAct(n,dt) (called from updateNPCs) returns the act poseRig plays ('hammer', character/pose.js) and fires the blow: sparks
    (fxpAdd, combat/fx-pool.js) over the anvil, in front of the smith, and a clang when the audio runs and you are within SMITH_NEAR metres. Nothing here is synced or saved. Test: client-smoke. */
@@ -23,4 +23,9 @@ function smithAct(n,dt,dp){   // the act to play this frame (or null), and the b
   const p=(cyc-k*SMITH_BEAT)/SMITH_BEAT, id=Math.floor(n.hamT/SMITH_CYCLE)*10+k;
   if(p>=0.5&&n.hamId!==id){ n.hamId=id; if(dp<SMITH_NEAR) smithBlow(n); }
   return {kind:'hammer',t:p*SMITH_BEAT,dur:SMITH_BEAT};
+}
+function villagerWave(n,dt,dp){   // a villager that stands idle waves once as you come within 8 m (then not again for a minute or so)
+  if(n.waveT>0){ n.waveT-=dt; return {kind:'wave',t:0,dur:1}; }
+  if(dp<8&&dp>2.6&&t>(n.waveAt||0)){ n.waveAt=t+AR(50,110); if(Math.random()<0.5) n.waveT=AR(1.3,2.0); }
+  return null;
 }

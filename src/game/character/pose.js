@@ -20,6 +20,7 @@ function poseRig(r,dt,o){
       case 'shoot': case 'volley': aL=1.5; eL=0.05; aR=1.45; eR=p<(a.hitAt||0.6)?2.1:0.7; twist=-0.3; break;
       case 'cast': aR=p<0.45?0.9:1.7; eR=p<0.45?1.4:0.3; aL=0.5; break;
       case 'hammer': if(p<0.5){ aR=1.35; eR=1.7; lean=0.05; } else { aR=0.6; eR=0.55; lean=-0.12; } break;   // a smith's blow: hammer up, then down on the anvil (village/smith.js)
+      case 'wave': aR=2.45; eR=0.85+Math.sin(t*10)*0.3; break;   // a villager waving as you come near (village/smith.js: villagerWave)
       case 'nova': if(p<0.45){ aL=aR=2.9; eL=eR=0.2; } else { aL=aR=0.5; eL=eR=0.2; tL=tR=0.45; kL=kR=-0.9; hipsY-=0.12; } break;
     }
   }

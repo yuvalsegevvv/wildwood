@@ -438,7 +438,7 @@ function updateNPCs(dt){
     if(n.g.visible){
       const speaking=talking||(n.state==='chat' && ((Math.floor(t/2.2+n.seed)%2===0)===!!n.leader));
       const bed=B.pose==='bed', lie=bed&&!wrenAwake(), sit=(B.pose==='sit'||(bed&&!lie)) && n.state==='idle' && !moving && (!talking||bed);
-      const work=D.role==='forge'&&n.state==='idle'&&!moving&&!talking&&!B.pose?smithAct(n,dt,dp):null;   // smith: three blows on the anvil, a pause (village/smith.js)
+      const idleOn=n.state==='idle'&&!moving&&!talking&&!B.pose, work=idleOn?(D.role==='forge'?smithAct(n,dt,dp):villagerWave(n,dt,dp)):null;   // smith: three blows on the anvil, a pause (village/smith.js)
       poseRig(n.rig,dt,{sp,ph:n.walk,sit,sitH:0.55/n.scale,talk:speaking&&!lie,headYaw:lie?0:n.headYaw,seed:n.seed,act:work});
       if(bed){   // lying on the mattress (feet at the anchor, head at the headboard), or sitting on its front edge facing the plaza
         const a=VIL.bed.rot; n.g.rotation.order='YXZ'; n.g.rotation.x=lie?Math.PI/2:0; n.g.rotation.y=lie?a+Math.PI/2:a;

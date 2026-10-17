@@ -262,7 +262,7 @@ game
   village/buildings-sunscar.js       The Sunscar placed in the game: Glasswell's model on the Bowl the heightmap carries, its colliders (no water outside the Bowl)
   village/buildings-gloam.js         The Gloamhorn's buildings and dressing: Wraithwick (dark stone cottages, crooked lamps, cairns, a chapel), the Gloam Light, wrecks, sea-cave mouths, the Captain's hold, and standing stones (the Gloamvault's door is game/village/buildings-dungeon-gloam.js)
   village/villagers.js               VILLAGERS (hard-coded NPCs of the three villages), random villagers, NPC behaviour (updateNPCs)
-  village/smith.js                   The forge keepers at work: a hammer in their hand, three blows then a pause, a spark shower and a clang at each blow when you are near
+  village/smith.js                   Villager life: the forge keepers at work (a hammer, three blows then a pause, sparks and a clang when you are near) and a wave for a player who walks up
   village/talking.js                 Talking to villagers: bubble, prompt, talk key (E), the main quest's lines first, opening shop/quest panels; reading lore spots, picking heartleaf; stepping on a teleport circle
   village/npc-labels.js              Name and profession labels above the special villagers, with ! / ? quest markers over quest givers
   audio/engine.js                    Web Audio setup (SND, buses, reverb, echo, noise), tone(), noiseHit(), spatial()
