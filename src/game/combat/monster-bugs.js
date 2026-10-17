@@ -20,6 +20,12 @@ function moBeetleGeo(d,p){
     body.push(moEll(0.045,0.05,0.045,sd*0.15,0.42,-0.7,p.eye,null,7),moHorn([sd*0.07,0.32,-0.8],[sd*0.18,-0.05,-1],0.28,0.045,1.3,0x1a1410,5,[-sd,0,0]));   // eyes, pincer jaws
     body.push(moTube([[sd*0.1,0.45,-0.78],[sd*0.2,0.58,-0.95],[sd*0.28,0.6,-1.08]],0.014,0.01,0x1a1410,4,false),moEll(0.03,0.03,0.05,sd*0.28,0.6,-1.1,0x1a1410,null,5));   // antennae
   }
+  {   // the wing cases' own relief: a raised suture down the middle and three ribs (costae) on each case, following the surface of the ellipsoids above
+    const cy=0.44+(hh-0.32), rib=(u,sd,r,col)=>{ const pts=[]; for(let z=-0.36;z<=0.72;z+=0.18){ const q=1-u*u-((z-0.17)/0.62)**2; if(q<=0.02) continue; pts.push([sd*(0.155+u*0.27*0.97),cy+hh*Math.sqrt(q)*0.99+0.006,z]); } if(pts.length>2) body.push(moTube(pts,r,r*0.7,col,5,true)); };
+    const ribC=(x,y,z,c)=>{ c.set(p.shell).multiplyScalar(0.62+0.2*moNoise(x,y,z,9)); };
+    rib(0,1,0.02,p.seam); for(const sd of W) for(const u of [0.28,0.56,0.8]) rib(u,sd,0.012,ribC);
+    body.push(moEll(0.2,0.025,0.34,0,0.64+(hh-0.32)*0.5,-0.28,ribC,null,8));   // a ridge along the shield behind the head
+  }
   if(k==='rhino') body.push(moHorn([0,0.42,-0.75],[0,0.45,-1],0.6,0.065,1.0,p.horn,7,[0,1,0]),moHorn([0,0.6,-0.34],[0,0.9,-0.6],0.3,0.06,0.6,p.horn,6,[0,0,-1]));
   if(k==='kabuto'){   // a long horn that rises and forks, a short one on the shield
     body.push(moHorn([0,0.42,-0.75],[0,0.55,-1],0.6,0.07,1.6,p.horn,7,[0,1,0]),moHorn([0,0.6,-0.32],[0,1,-0.3],0.3,0.06,0.5,p.horn,6,[0,0,-1]));
@@ -31,6 +37,7 @@ function moBeetleGeo(d,p){
   G.body=moMerge(body);
   for(const sd of W){ const legs=[];
     moBugLegs(legs,[-0.36,-0.02,0.34].map((z,i)=>{ const fz=z+(i===0?-0.22:i===2?0.24:0.02); return [[sd*0.26,0.36,z],[sd*0.44,0.5,z+(fz-z)*0.3],[sd*0.58,0.32,z+(fz-z)*0.75],[sd*0.64,0.02,fz]]; }),0.065,0.026,p.legs,2);
+    for(const z of [-0.36,-0.02,0.34]){ const fz=z+(z<-0.1?-0.22:z>0.2?0.24:0.02); legs.push(moCone([sd*0.64,0.05,fz],[sd*0.2,-0.9,-0.5],0.1,0.018,0x14100e,4)); }   // a claw on each foot
     G[sd<0?'lL':'lR']=moMerge(legs); }
   return G;
 }
