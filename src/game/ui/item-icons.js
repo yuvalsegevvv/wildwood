@@ -13,19 +13,20 @@ function itemIcon(it){
   const t=dgVisTier(it); let g='';   // dungeons: a level-30 piece borrows the top tier's art (and gets the sparkle below)
   if(it.slot==='sword'){
     const b=ICON_COL.blade[t], gd=ICON_COL.guard[t];
-    g=`<g transform="translate(16 16) rotate(45) scale(1.14) translate(-16 -16)"><path d="M14.4 21V6.5L16 3l1.6 3.5V21z" fill="${b}" ${OUT}/><path d="M16 4.5V20.5" stroke="${icoShade(b,0.72)}" stroke-width="0.8"/>
+    const BL=['M14.4 21V6.5L16 3l1.6 3.5V21z','M14 21V8L16 3l2 5V21z','M16 3Q20.4 9 18.8 21H13.2Q11.6 9 16 3z','M16 2.5L18.9 7.2L18.3 21H13.7L13.1 7.2z','M16 1.8L17.7 5.4L16.7 8L18.5 11.4L17.3 14.6L18.3 21H13.7L14.7 14.6L13.5 11.4L15.3 8L14.3 5.4z','M16 1L18.6 5.6L18.2 21H13.8L13.4 5.6z'][t];   // the blade grows with the tier: plain, broad, leaf, wide, flaming, long and runed
+    g=`<g transform="translate(16 16) rotate(45) scale(1.14) translate(-16 -16)">${t===5?`<path d="${BL}" fill="#6ab8ff" opacity=".4" transform="translate(16 12) scale(1.5 1.08) translate(-16 -12)"/>`:''}<path d="${BL}" fill="${b}" ${OUT}/><path d="M16 4.5V20.5" stroke="${icoShade(b,0.72)}" stroke-width="0.8"/>${t===5?'<path d="M16 7v1.6M16 11v1.6M16 15v1.6" stroke="#2a6ab8" stroke-width="1"/>':''}${t===2?`<path d="M14.2 20Q13.4 10 16 5" fill="none" stroke="${icoShade(b,1.25)}" stroke-width=".7"/>`:''}
        <rect x="${t>1?9.5:10.5}" y="20.5" width="${t>1?13:11}" height="2.6" rx="1.2" fill="${gd}" ${OUT}/><rect x="15" y="23" width="2" height="5" fill="#4a3424" ${OUT}/>
        <circle cx="16" cy="29.2" r="1.6" fill="${gd}" ${OUT}/>${t>=3?`<circle cx="16" cy="21.8" r="1" fill="${t===5?'#6ab8ff':'#e0384a'}"/>`:''}</g>`;
   } else if(it.slot==='bow'){
-    const w=ICON_COL.bow[t], tp=ICON_COL.bowTip[t];
-    g=`<path d="M11 4 Q27 16 11 28" fill="none" stroke="#15120e" stroke-width="4.2" stroke-linecap="round"/><path d="M11 4 Q27 16 11 28" fill="none" stroke="${w}" stroke-width="2.6" stroke-linecap="round"/>
+    const w=ICON_COL.bow[t], tp=ICON_COL.bowTip[t], BW=['M11 4 Q27 16 11 28','M11 4 Q28 16 11 28','M8.5 3.5 Q11 5 12 8 Q26 16 12 24 Q11 27 8.5 28.5','M9 3 Q12.5 5 12 9 Q27 16 12 23 Q12.5 27 9 29','M7.5 5 Q13 3.5 12.5 9 Q28 16 12.5 23 Q13 28.5 7.5 27','M6.5 6 Q14 2.5 13 9.5 Q29 16 13 22.5 Q14 29.5 6.5 26'][t];   // the limbs get longer and curl at the tips with the tier
+    g=`<path d="${BW}" fill="none" stroke="#15120e" stroke-width="4.2" stroke-linecap="round"/><path d="${BW}" fill="none" stroke="${w}" stroke-width="2.6" stroke-linecap="round"/>
        <path d="M11 4.5V27.5" stroke="#efe8d8" stroke-width="0.8"/><circle cx="11" cy="4" r="1.6" fill="${tp}" ${OUT}/><circle cx="11" cy="28" r="1.6" fill="${tp}" ${OUT}/>
        <path d="M8 16H25" stroke="#8a6a44" stroke-width="1.2"/><path d="M25 16l-3-1.8v3.6z" fill="#9aa0a6" ${OUT}/><path d="M8 16l-2-1.6M8 16l-2 1.6" stroke="#e8e4dc" stroke-width="1"/>
        ${t>=2?`<path d="M16.6 10.5l1.6 1.2M16.6 21.5l1.6-1.2" stroke="${tp}" stroke-width="1.4"/>`:''}`;
   } else if(it.slot==='wand'){
     const w=ICON_COL.wand[t], o=ICON_COL.orb[t];
     g=`<circle cx="22.5" cy="9.5" r="${6+t*0.6}" fill="${o}" opacity=".25"/><path d="M7 27L20.5 11.5" stroke="#15120e" stroke-width="3.6" stroke-linecap="round"/><path d="M7 27L20.5 11.5" stroke="${w}" stroke-width="2.2" stroke-linecap="round"/>
-       ${t===1?`<path d="M22.5 5.5l3.2 4-3.2 4-3.2-4z" fill="${o}" ${OUT}/>`:`<circle cx="22.5" cy="9.5" r="3.2" fill="${o}" ${OUT}/>`}<circle cx="21.6" cy="8.6" r="0.9" fill="#fff" opacity=".8"/>
+       ${[`<circle cx="22.5" cy="9.5" r="3.2" fill="${o}" ${OUT}/>`,`<path d="M22.5 5.5l3.2 4-3.2 4-3.2-4z" fill="${o}" ${OUT}/>`,`<path d="M18.6 6.4Q22.5 14.4 26.4 6.4" fill="none" stroke="#15120e" stroke-width="3" stroke-linecap="round"/><path d="M18.6 6.4Q22.5 14.4 26.4 6.4" fill="none" stroke="${w}" stroke-width="1.4" stroke-linecap="round"/><circle cx="22.5" cy="8.2" r="2.9" fill="${o}" ${OUT}/>`,`<path d="M22.5 3Q27.6 8.6 25.4 12.2Q22.5 14.6 19.6 12.2Q17.4 8.6 22.5 3z" fill="${o}" ${OUT}/><path d="M22.5 7Q24.2 10 22.5 12.2Q20.8 10 22.5 7z" fill="#fff6c0"/>`,`<ellipse cx="22.5" cy="9.5" rx="6" ry="2" fill="none" stroke="#15120e" stroke-width="2.6" transform="rotate(-30 22.5 9.5)"/><ellipse cx="22.5" cy="9.5" rx="6" ry="2" fill="none" stroke="${icoShade(o,1.2)}" stroke-width="1.2" transform="rotate(-30 22.5 9.5)"/><circle cx="22.5" cy="9.5" r="3.2" fill="${o}" ${OUT}/>`,`<path d="M22.5 2.5l2.4 5.2-2.4 4.8-2.4-4.8z" fill="${o}" ${OUT}/><path d="M26.6 6l2.2 3.6-2.4 3-2-3.4z" fill="${icoShade(o,0.85)}" ${OUT}/><path d="M18.4 6l-2.2 3.6 2.4 3 2-3.4z" fill="${icoShade(o,0.85)}" ${OUT}/>`][t]}<circle cx="21.6" cy="8.6" r="0.9" fill="#fff" opacity=".8"/>
        ${t>=2?`<path d="M18 14l2 1.2M16.2 16.2l2 1.2" stroke="${icoShade(o,0.8)}" stroke-width="1"/>`:''}`;
   } else if(it.slot==='helmet'){
     const L=ARMOR_LOOK.helmet[t], c=colHex(L.hatColor);

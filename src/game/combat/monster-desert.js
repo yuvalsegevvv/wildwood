@@ -126,6 +126,9 @@ MODELS.sentinel={
     body.push(moEll(0.12,0.28,0.06,0,2.5,-0.3,gl,null,8),moEll(0.28,0.1,0.08,0,2.0,-0.32,p.glow,null,8));   // a glass heart in the chest, a seam of light below it
     for(const sd of W){ body.push(moEll(0.36,0.22,0.34,sd*0.74,2.38,0,st,null,10));   // pauldrons
       for(let i=0;i<4;i++) body.push(moCone([sd*(0.6+i*0.1),2.5+0.04*i,0.04*i],[sd*0.5,1,-0.1+0.1*i],0.5+0.18*(i%2),0.07,gl,4)); }
+    for(let i=0;i<5;i++) body.push(pc(moDesBox(0.16,0.22,0.1,(i-2)*0.17,1.12,-0.2+0.03*Math.abs(i-2)),st),moCone([(i-2)*0.17,1.02,-0.24],[0,-1,-0.15],0.28,0.06,gl,4));   // a skirt of stone tassets edged with glass
+    for(let i=0;i<4;i++) body.push(moBone([-0.28+i*0.19,2.35,-0.3],[-0.22+i*0.15,1.55,-0.28],0.025,0.012,p.glow,4));   // lit veins of glass running down the cracked breastplate
+    body.push(pc(moDesBox(0.5,0.1,0.5,0,3.18,-0.02),st),moCone([0,3.2,0],[0,1,-0.2],0.5,0.1,gl,4),moCone([-0.2,3.15,0],[-0.5,1,-0.2],0.34,0.07,gl,4),moCone([0.2,3.15,0],[0.5,1,-0.2],0.34,0.07,gl,4));   // a crest of glass on the helm
     for(let i=0;i<9;i++){ const a=(i-4)*0.32; body.push(moCone([Math.sin(a)*0.34,2.0+0.1*Math.cos(i*3),0.3],[Math.sin(a)*0.5,0.6,1],0.7+0.25*(i%3),0.09,gl,4)); }   // shards down the back
     G.body=moMerge(body);
     for(const sd of W){

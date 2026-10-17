@@ -66,7 +66,7 @@ MODELS.fox={
       if(p.flame){ const e=q[q.length-1]; tails.push(moEll(0.07,0.11,0.07,e[0],e[1]+0.1,e[2],p.tip,null,7),moCone([e[0],e[1]+0.12,e[2]],[0,1,0.15],0.34,0.06,p.tip,5)); }
     }
     G.tail=moMerge(tails);
-    G.leg=moMerge([moLimb([[0,0.075*big],[0.25,0.062*big],[0.5,0.04],[0.85,0.032],[1,0.036]],0.46,1,1,(x,y,z,c)=>{ if(y<-0.22) c.set(p.legs).multiplyScalar(0.9); else c.set(p.body).multiplyScalar(0.85); },8),moEll(0.04,0.03,0.07,0,-0.46,-0.03,p.legs,null,6)]);
+    G.leg=moMerge([moLimb([[0,0.075*big],[0.25,0.062*big],[0.5,0.04],[0.85,0.032],[1,0.036]],0.46,1,1,(x,y,z,c)=>{ if(y<-0.22) c.set(p.legs).multiplyScalar(0.9); else c.set(p.body).multiplyScalar(0.85); },8),moEll(0.052,0.034,0.085,0,-0.46,-0.04,p.legs,null,7),moCone([-0.025,-0.47,-0.1],[0,-0.1,-1],0.05,0.012,0x1a1614,4),moCone([0.025,-0.47,-0.1],[0,-0.1,-1],0.05,0.012,0x1a1614,4),moEll(0.04,0.05,0.04,0,-0.34,0.04,p.legs,null,6)]);   // paw with claws, and a hock
     return G;
   },
   build(d,G,M,g,P0){
