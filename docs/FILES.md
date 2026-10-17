@@ -266,6 +266,7 @@ game
   audio/ui-sounds.js                 Interface / game sounds (UI_SFX) and hover/click hooks
   audio/music.js                     Background music: one theme per place (the three villages, three home ranges, two vale ranges, two Hoarfrost ranges, each boss), crossfaded; recorded tracks (music-*) or generative
   audio/ambience.js                  Footsteps, birds, crickets, owls, frogs, ducks, crackle, hooves
+  audio/ambience-lands.js            Per-land ambience: wind chimes and a temple bell in the Vale, eagles and far rock falls on the Greyspine, cicadas and a hawk over the Sunscar, whispers and a tolling bell in the Gloamhorn
   audio/rain.js                      Rain sound (rainSoundTick): a soft low wash, a slowly swelling patter, scattered droplets, a storm rumble; in the snow (WX.snow) a low wind and a blizzard's howl instead (a steady sea gale in the Gloamhorn)
   audio/voices.js                    Villager voices: text-to-speech voice picking and babble
   audio/driver.js                    Per-frame sound driver (soundTick): beds, random events, NPC steps

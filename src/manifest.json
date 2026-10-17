@@ -231,6 +231,7 @@
     "audio/ui-sounds.js",
     "audio/music.js",
     "audio/ambience.js",
+    "audio/ambience-lands.js",
     "audio/rain.js",
     "audio/voices.js",
     "audio/driver.js",
