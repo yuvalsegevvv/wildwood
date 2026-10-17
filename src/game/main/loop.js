@@ -7,7 +7,7 @@ function frame(){
   const dt=Math.min(clock.getDelta(),0.05);
   t+=dt; timeU.value=t;
   // stream the world: generous budget on the loading screen, a thin slice while playing
-  const busy=!Stream.terrainDone || Stream.pending.length || Stream.job || Stream.lazy>0 || NPC_DEFER.length;
+  const busy=!Stream.terrainDone || Stream.pending.length || Stream.job || Stream.lazy>0 || NPC_DEFER.length || cvNeed();   // caves: a site's mesh still to build
   if(busy){
     streamPump(started ? (terrainHot()?(LOW?14:24):(LOW?4:6)) : (LOW?28:40));   // (a bigger slice while ground next to you waits for its colours, e.g. just after a teleport)
     if(!Stream.terrainDone && Stream.tp!==undefined){ barEl.style.width=(35*Stream.tp).toFixed(0)+'%'; }
@@ -18,7 +18,7 @@ function frame(){
     animateHiker(dt);
     updateMotes(dt,t); updatePetals(dt,t);
     updateAnimals(dt);
-    updateGreyfall(dt);   // greyfall: the sheet, spray and roar (village/buildings-greyfall.js)
+    cvUpdate(dt);   // caves: sites out of sight are hidden, the cave's darkness is sampled (world/caves.js)
     chamoisUpdate(dt);   // chamois: the Greyspine's harmless mountain goats (wildlife/chamois.js)
     updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateGreyspine(dt); updateGloamhorn(dt); updateNodes(); updateLoreProps();
     updateNPCs(dt);

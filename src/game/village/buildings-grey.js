@@ -1,25 +1,11 @@
-//@ The Greyspine's buildings and dressing: its water (tarns, the river, the cold fjord), the rock falls in the west wall (the gates), Highmark (stone houses under slate and snow, bell tower, mine headframe, the Lodge yard) and the ice fall across the glacier valley (the gate, opened when Ymrik falls)
+//@ The Greyspine's buildings and dressing: the rock falls in the west wall (the gates), Highmark (stone houses under slate and snow, bell tower, mine headframe, the Lodge yard) and the ice fall across the glacier valley (the gate, opened when Ymrik falls)
 /* The ice fall is the glacier's own: a heap of broken blue blocks wedged across the cut GLEN (shared/greyspine.js) with dark shapes frozen in it, like the
    ice wall in Frostgate Pass (buildings-hoar.js, whose material and helpers it borrows). It stays until GEAR.west >= 1, then it sinks with a rumble.
    player/movement.js (glenWall) and server/api.js (setPos) stop you at it. */
-const GREY={fall:null,opening:0,open:false,fjord:null,falls:{}};
+const GREY={fall:null,opening:0,open:false,falls:{}};
 const gateOpen=G=>!!(GEAR&&GEAR[G.id]>=1);
 function buildGreyspine(){
-  buildGreyWater(); buildRockFalls(); buildHighmark(); buildIceFall(); buildQueenNest(ARENA29); buildGolemCavern(ARENA32);
-}
-/* Water at altitude (shared/greyspine.js): the sea's one plane lies at y = 0, so each tarn gets a disc at its own level, the river a ribbon a hand above its bed
-   (wider than the channel: the banks hide its edges), and the fjord (sea level, in a gorge) a darker, colder surface laid just over the sea's. All use the sea's
-   water material (waves, day and night tint). */
-function buildGreyWater(){
-  for(const T of GREY_TARNS){ const m=new THREE.Mesh(new THREE.CircleGeometry(T.r*1.25,32).rotateX(-Math.PI/2),waterMat); m.position.set(T.x,T.l,T.z); m.receiveShadow=true; scene.add(m); }
-  { const R=GREY_RIVER, pos=[], idx=[];
-    for(let i=0;i<R.length;i++){ const a=R[Math.max(0,i-1)], b=R[Math.min(R.length-1,i+1)], vx=b[0]-a[0], vz=b[1]-a[1], l=Math.hypot(vx,vz)||1, nx=-vz/l, nz=vx/l, y=R[i][2]+0.65;
-      pos.push(R[i][0]+nx*4.6,y,R[i][1]+nz*4.6,R[i][0]-nx*4.6,y,R[i][1]-nz*4.6); if(i>0){ const k=i*2; idx.push(k-2,k,k-1,k-1,k,k+1); } }
-    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); g.computeVertexNormals();
-    const m=new THREE.Mesh(g,waterMat); m.receiveShadow=true; scene.add(m); }
-  GREY.fjord=new THREE.MeshPhongMaterial({color:0x14303a,transparent:true,opacity:0.94,shininess:140,specular:0x8fa4b4});
-  GREY.fjord.onBeforeCompile=waterMat.onBeforeCompile; GREY.fjord.customProgramCacheKey=()=>'water2';
-  const fq=new THREE.Mesh(new THREE.PlaneGeometry(230,170).rotateX(-Math.PI/2).translate(GW0+100,0.06,-505),GREY.fjord); fq.receiveShadow=true; scene.add(fq);
+  buildRockFalls(); buildHighmark(); buildIceFall(); buildQueenNest(ARENA29); buildGolemCavern(ARENA32);
 }
 /* Highmark follows the home village's plan (VIL4 from shared/highmark.js: the same houses, stalls, anchors and colliders): grey stone walls with a timber
    frame, steep slate roofs under snow, iron lanterns, and the two things only a mining monastery has: a bell tower behind the plaza and the mine's wooden
@@ -201,7 +187,6 @@ function onWestStep(k){
   if(k>=2) UI_SFX.success();
 }
 function updateGreyspine(dt){
-  if(GREY.fjord&&waterMat) GREY.fjord.color.copy(waterMat.color).multiplyScalar(0.5);   // (colder and darker than the sea at every hour)
   for(const G of GREY_GATES){ const F=GREY.falls[G.id]; if(!F) continue;
     if(!gateOpen(G)){ F.open=false; F.opening=0; F.g.visible=true; F.g.position.y=F.y0; }
     else if(F.opening>0){ F.opening=Math.min(1,F.opening+dt/3.6); F.g.position.y=F.y0-F.opening*16; F.g.rotation.z=Math.sin(F.opening*38)*0.006*(1-F.opening); if(F.opening>=1){ F.opening=0; F.open=true; F.g.visible=false; } }

@@ -1,24 +1,15 @@
 //@ Village placement and layout (VIL): houses, stalls, anchors, paths, colliders. Pure.
 /* ---------- the village: layout (decided before the terrain is built) ---------- */
 const VR=30;
-function riverDist(x,z){ let m=1e9; for(let dz=-70;dz<=70;dz+=5){ const d=Math.hypot(x-riverX(z+dz),dz); if(d<m) m=d; } return m; }
-function findVillage(){
-  let best=null;
-  for(let r=0;r<=60;r+=5){
-    const n=Math.max(1,Math.round(r/2.5));
-    for(let k=0;k<n;k++){
-      const a=k/n*TAU, x=Math.sin(a)*r, z=Math.cos(a)*r;
-      if(Math.abs(x)>HALF-95||Math.abs(z)>HALF-95) continue;
-      if(riverDist(x,z)<VR+22) continue;
-      if(Math.hypot(x+75,z-65)<VR+48) continue;
-      let mn=1e9,mx=-1e9,sum=0,c=0;
-      for(let rr=0;rr<=VR;rr+=10) for(let j=0;j<8;j++){ const b=j/8*TAU, h=baseHeight(x+Math.sin(b)*rr,z+Math.cos(b)*rr); mn=Math.min(mn,h); mx=Math.max(mx,h); sum+=h; c++; }
-      const mean=sum/c; if(mean<1.5||mean>18) continue;
-      const score=(mx-mn)+r*0.3;
-      if(!best||score<best.score) best={x,z,h:Math.max(mean,2.5),score};
-    }
-  }
-  return best||{x:0,z:0,h:6};
+// metres to the nearest river or lake bank (0 in the water): the atlas's signed water distance (shared/world-atlas.js)
+function riverDist(x,z){ return Math.max(0,waWaterDist(x,z)); }
+// the home village stands on the atlas's hub of the home land (WA_HUBS.home): the world's layout is the atlas's, so the village is not searched for; only its pad height is measured
+function findVillage(){ return hubVillageSpot('home'); }
+// a land's hub as a village centre: {x,z,h}, h the mean ground over the village's disc (at least 2.5 m: the pad is never under the sea's skin)
+function hubVillageSpot(land){
+  const [x,z]=WA_HUBS[land]; let sum=0,c=0;
+  for(let rr=0;rr<=VR;rr+=10) for(let j=0;j<8;j++){ const b=j/8*TAU; sum+=baseHeight(x+Math.sin(b)*rr,z+Math.cos(b)*rr); c++; }
+  return {x,z,h:Math.max(sum/c,2.5)};
 }
 // v = {x,z,h} from findVillage; o.seed shapes the houses, o.ent forces the side the road comes in from (Hanami faces its tunnel)
 function layoutVillage(v,o){

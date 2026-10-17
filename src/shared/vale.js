@@ -1,16 +1,18 @@
-//@ The Sakura Vale east of the Greyfall River: the border bridge (TUN, once a tunnel), Hanami village (VIL2), zones 16-25 (Voronoi cells, ridges), two boss arenas, vilAt (which knows all four villages). Pure.
+//@ The Sakura Vale east of the Greyfall River on the atlas: the border bridge (TUN, once a tunnel, at the home | vale gate), Hanami village (VIL2, at the vale's hub), zones 16-25 (the atlas's cells), the boss arenas of the home forest and the vale (ARENAS), vilAt (which knows all the villages). Pure.
 /* ===================== THE SAKURA VALE =====================
    A second land behind the Greyfall River, reached over a bridge whose gate stays shut for each player
    until they help defeat the Rootwarden (gear.east: 0 sealed, 1 bridge open, 2 walked to Hanami: circles attuned).
-   Zones are cells around fixed seeds (nearest seed wins), walled by low ridges with a pass halfway between two seeds.
-   Hanami's own cell has no monsters. Levels 16-25, two monster kinds per zone, bosses at 20 (in zone 20) and 25. */
+   Everything stands where the world atlas puts it (shared/world-atlas.js): the bridge at the gate 'The Greyfall Bridge', Hanami at the vale's hub, zones 16-25 as the atlas's cells (zones.js makes their records),
+   the boss arenas at the atlas's pois. Hanami's own ground (70 m round the hub) has no monsters. Levels 16-25, two monster kinds per zone, bosses at 20 (in zone 20) and 25. */
 
-/* ---- the border bridge (it was a tunnel through a mountain spur; the Vale Wall is a river now, shared/terrain.js): a stone bridge over the Greyfall River at z = TUN.z, where borderX is
-   pinned straight, with a gate across its west end that stays shut for each player until they help defeat the Rootwarden. The name TUN stays from the tunnel it replaced.
+/* ---- the border bridge (it was a tunnel through a mountain spur; the home | vale border is the atlas's river now): a stone bridge over the Greyfall River at the atlas's gate, with a gate across its west end
+   that stays shut for each player until they help defeat the Rootwarden. The name TUN stays from the tunnel it replaced. The river runs north-south there, the deck east-west.
    x0..x1: the paved approach (no plants, no camps); p0..p1: the deck from bank to bank, kept between its parapets (w: half its width), the gate at p0;
    floor(x): the deck's height (the banks' at both ends, an arch of 1.4 m between); roof: the gate's height. ---- */
 function findTunnel(){
-  const z=-100, hw=riverHalfW(z), p0=HALF-(hw+16), p1=HALF+(hw+16), h0=baseHeight(p0,z), h1=baseHeight(p1,z);
+  const G=WA_GATES.find(g=>g.name==='The Greyfall Bridge'), z=G.z;
+  let xw=G.x, xe=G.x; while(waWaterDist(xw,z)<=1&&xw>G.x-90) xw-=2; while(waWaterDist(xe,z)<=1&&xe<G.x+90) xe+=2;   // the river's banks along the deck
+  const p0=xw-16, p1=xe+16, h0=baseHeight(p0,z), h1=baseHeight(p1,z);
   const T={x0:p0-14,x1:p1+14,z,w:4,h0,h1,roof:6.2,p0,p1};
   T.floor=x=>lerp(h0,h1,smoothstep(p0,p1,x))+Math.sin(clamp((x-p0)/(p1-p0))*Math.PI)*1.4;
   return T;
@@ -19,85 +21,42 @@ const TUN=findTunnel();
 // keep trees, rocks and camps off the bridge's approach (m = extra margin)
 function inTunnelCut(x,z,m){ return Math.abs(z-TUN.z)<TUN.w+6+(m||0) && x>TUN.x0-30-(m||0) && x<TUN.x1+30+(m||0); }
 
-/* ---- Hanami, the vale's village: same plan as the home village (so every NPC role works the same), its road
-   turned toward the tunnel's east portal */
-function findVale2Village(){
-  const cx=HALF+160, cz=TUN.z; let best=null;
-  for(let r=0;r<=45;r+=5){
-    const n=Math.max(1,Math.round(r/2.5));
-    for(let k=0;k<n;k++){
-      const a=k/n*TAU, x=cx+Math.sin(a)*r, z=cz+Math.cos(a)*r;
-      if(LAKES.some(L=>Math.hypot(x-L.x,z-L.z)<L.r+VR+30)) continue;
-      let mn=1e9,mx=-1e9,sum=0,c=0;
-      for(let rr=0;rr<=VR;rr+=10) for(let j=0;j<8;j++){ const b=j/8*TAU, h=baseHeight(x+Math.sin(b)*rr,z+Math.cos(b)*rr); mn=Math.min(mn,h); mx=Math.max(mx,h); sum+=h; c++; }
-      const mean=sum/c, score=(mx-mn)+r*0.3+(mean<1.5?40:0);
-      if(!best||score<best.score) best={x,z,h:Math.max(mean,2.5),score};
-    }
-  }
-  return best;
-}
-const VIL2=(()=>{ const v=findVale2Village(); return layoutVillage(v,{seed:7171,ent:Math.atan2(TUN.x1+10-v.x,TUN.z-v.z),plan:{arc:0.7,jit:0.05,turn:0.14,rad:i=>i===4?24:(i%2?19.5:24.5),dims:{w:[5.2,6.4],d:[5.2,6.2]},kinds:['wing','plain','loft','plain','tav','wing','plain','loft','plain']}}); })();
+/* ---- Hanami, the vale's village: same plan as the home village (so every NPC role works the same), at the atlas's hub of the vale, its road turned toward the bridge's east end */
+const VIL2=(()=>{ const v=hubVillageSpot('vale'); return layoutVillage(v,{seed:7171,ent:Math.atan2(TUN.x1+10-v.x,TUN.z-v.z),plan:{arc:0.7,jit:0.05,turn:0.14,rad:i=>i===4?24:(i%2?19.5:24.5),dims:{w:[5.2,6.4],d:[5.2,6.2]},kinds:['wing','plain','loft','plain','tav','wing','plain','loft','plain']}}); })();
 VIL2.name='Hanami'; VIL.name='the village';
 // (VILS, with Rimehold, is in hoarfrost.js)
 // on (or m metres from) any village's teleport circle
 function nearTele(x,z,m){ const V=vilAt(x,z); return Math.hypot(x-V.tele.x,z-V.tele.z)<V.tele.r+m; }
 // the village whose land a point is in (every "near the village" test uses this one): the home forest, the vale, the Hoarfrost Reach
-function vilAt(x,z){ return z<borderZ(x)?(x>borderXN(z)?VIL3:(x<GW0?VIL6:VIL4)):(x>borderX(z)?VIL2:(x<HX0?VIL5:VIL)); }   // (VIL5, Glasswell, is in shared/glasswell.js: the Sunscar is west of the Sunwall's plateau)
+function vilAt(x,z){ const l=waLandId(x,z); return l===0?VIL:l===1?VIL2:l===2?VIL3:l===3?VIL4:l===5?VIL6:VIL5; }   // the village of the point's land (the atlas): VIL5, Glasswell, is in shared/glasswell.js
 
-/* ---- zones: seeds on a rough 3 x 4 grid east of Hanami. key null = Hanami's meadows (no monsters) */
+/* ---- zones 16-25: the atlas's cells of the vale (zones.js: zoneOfAtlas). Zone 16 is Hanami's own (Petal Meadow round the village). */
 const VALE_ZONE_NAMES={16:'Petal Meadow',17:'Kodama Wood',18:'Fox Hills',19:'Bamboo Sea',20:'Ghostlight Marsh',21:'Oni Crags',22:'Jade Falls',23:'Tengu Peaks',24:'Warlord Ruins',25:'Thunder Grove',boss25:'Foxfire Hollow'};
-const VALE_SEEDS=[
-  {key:null,x:VIL2.x,z:VIL2.z},
-  {key:16,x:575,z:105},{key:17,x:570,z:-300},{key:18,x:735,z:-95},{key:19,x:725,z:-300},{key:20,x:880,z:-305},
-  {key:21,x:875,z:-90},{key:22,x:885,z:110},{key:23,x:730,z:115},{key:24,x:1045,z:312},{key:25,x:725,z:310},{key:'boss25',x:570,z:315}];   // (24, Warlord Ruins, stood at (880, 305) in the south-east corner, which is sea now: it lives on the first of the Warlord Isles, shared/coasts.js)
-for(const s of VALE_SEEDS) if(s.key!==null) ZONES.push({key:s.key,ring:3,vale:true,x:s.x,z:s.z,R:95,name:VALE_ZONE_NAMES[s.key],level:s.key==='boss25'?25:s.key,boss:s.key==='boss25'});
-// zone borders are bent by noise (the point is warped up to ~30 m before finding its nearest seeds) so the cells don't form a grid
-const valeWarp=(x,z)=>[x+noise2(x*0.009+3,z*0.009-8)*30,z+noise2(x*0.009-11,z*0.009+5)*30];
-function valeSeeds(x,z){
-  let a=null,b=null,da=1e18,db=1e18;
-  for(const s of VALE_SEEDS){ const d=(x-s.x)*(x-s.x)+(z-s.z)*(z-s.z); if(d<da){ b=a; db=da; a=s; da=d; } else if(d<db){ b=s; db=d; } }
-  return [a,b];
-}
-function valeZoneAt(x,z){
-  if(Math.min(x-borderX(z),WX1-x,z-borderZ(x),WZ1-z)<40) return null;   // the border mountains
-  for(const A of ARENAS) if(A.zone&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;
-  const [wx,wz]=valeWarp(x,z), s=valeSeeds(wx,wz)[0];
-  // (the border river and the north wall bulge, so the vale has ground far from any seed: no zone there, 190 m is as far as a cell reaches)
-  if(s.key===null||Math.hypot(wx-s.x,wz-s.z)>190) return null;
-  return ZONES.find(zn=>zn.vale&&zn.key===s.key);
-}
-function valeRidge(x,z){
-  const e=Math.min(x-borderX(z),WX1-x,z-borderZ(x),WZ1-z); if(e<30) return 0;
-  const [wx,wz]=valeWarp(x,z), [a,b]=valeSeeds(wx,wz), ux=b.x-a.x, uz=b.z-a.z, L=Math.hypot(ux,uz);
-  const da=Math.hypot(wx-a.x,wz-a.z), dbb=Math.hypot(wx-b.x,wz-b.z), d=(dbb*dbb-da*da)/(2*L);   // distance to the wall between a and b
-  if(d>=10) return 0;
-  const mx=(a.x+b.x)/2, mz=(a.z+b.z)/2, along=Math.abs((wx-mx)*(-uz/L)+(wz-mz)*(ux/L));   // how far along the wall from the pass
-  const h=(1-smoothstep(1.5,10,d))*smoothstep(5,12,along)*smoothstep(30,60,e);
-  return h<=0?0:h*RIDGE_H*(0.75+0.5*(noise2(x*0.035+7,z*0.035-3)*0.5+0.5));
-}
+for(let k=16;k<=25;k++) zoneOfAtlas(WA_ZONES.find(A=>A.land==='vale'&&A.key===k),{ring:3,vale:true,name:VALE_ZONE_NAMES[k],level:k,boss:false});
+function valeZoneAt(x,z){ return atlasZoneAt(x,z); }   // (the vale's zones and the home forest's are read the same way: zones.js)
 
-/* ---- boss arenas: flat clearings like the stone circle. ARENA20 sits in the far corner of zone 20 (Akaoni, the
-   Demon Gate), ARENA25 in its own cell (Kyuubi, the Foxfire Hollow) */
+/* ---- boss arenas: flat clearings like the stone circle, each at the atlas's poi: ARENA the Stone Circle (home zone 15), ARENA20 the Demon Gate (Akaoni, in zone 20), ARENA25 the Foxfire Hollow (Kyuubi, in zone 25) ---- */
+// the flattest spot within span of (cx, cz), on dry land clear of the coast, a land border, a river or a lake (for the lands that have not placed their arenas on the atlas's pois yet)
 function flatSpot(cx,cz,span){
   let best=null;
   for(let dx=-span;dx<=span;dx+=10) for(let dz=-span;dz<=span;dz+=10){
     const x=cx+dx, z=cz+dz;
-    if(Math.min(x-borderXat(x,z),WX1-x,z-WZ0,WZ1-z)<75||(x>borderXat(x,z)&&Math.abs(z-borderZ(x))<75)) continue;
-    if(LAKES.some(L=>Math.hypot(x-L.x,z-L.z)<L.r+25)) continue;
+    if(waCoast(x,z)<60||waLandBorderDist(x,z)<50||waWaterDist(x,z)<28) continue;
     let mn=1e9,mx=-1e9,sum=0,c=0;
     for(let rr=0;rr<=22;rr+=11) for(let j=0;j<8;j++){ const b=j/8*TAU, h=baseHeight(x+Math.sin(b)*rr,z+Math.cos(b)*rr); mn=Math.min(mn,h); mx=Math.max(mx,h); sum+=h; c++; }
-    const mean=sum/c; if(mean<2.5) continue;
+    const mean=sum/c; if(mean<1.2) continue;
     const score=mx-mn+Math.hypot(dx,dz)*0.05;
     if(!best||score<best.score) best={x,z,h:mean,score};
   }
   return best||{x:cx,z:cz,h:Math.max(4,baseHeight(cx,cz))};
 }
-const ARENA20=Object.assign(flatSpot(895,-340,30),{r:20,key:'boss20',name:'Demon Gate'});
-const ARENA25=Object.assign(flatSpot(575,320,30),{r:20,key:'boss25',name:'Foxfire Hollow'});
+const ARENA20=Object.assign(arenaAtPoi(poiNamed('Demon Gate')),{r:20,key:'boss20',name:'Demon Gate'});
+const ARENA25=Object.assign(arenaAtPoi(poiNamed('Foxfire Hollow')),{r:20,key:'boss25',name:'Foxfire Hollow'});
 ARENA.name='The Stone Circle';
 const ARENAS=[ARENA,ARENA20,ARENA25];
-ARENA.zone=ZONES.find(z=>z.key==='boss');
-ARENA20.zone={key:'boss20',ring:3,vale:true,x:ARENA20.x,z:ARENA20.z,R:20,name:'Demon Gate',level:20,boss:true}; ZONES.push(ARENA20.zone);
-ARENA25.zone=ZONES.find(z=>z.key==='boss25'); ARENA25.zone.x=ARENA25.x; ARENA25.zone.z=ARENA25.z;
+// an arena's own zone (a circle of 20 m: zoneAt gives it to anyone within r + 26 m)
+ARENA.zone={key:'boss',ring:2,arena:true,x:ARENA.x,z:ARENA.z,R:20,name:'The Stone Circle',level:15,boss:true}; ZONES.push(ARENA.zone);
+ARENA20.zone={key:'boss20',ring:3,arena:true,vale:true,x:ARENA20.x,z:ARENA20.z,R:20,name:'Demon Gate',level:20,boss:true}; ZONES.push(ARENA20.zone);
+ARENA25.zone={key:'boss25',ring:3,arena:true,vale:true,x:ARENA25.x,z:ARENA25.z,R:20,name:'Foxfire Hollow',level:25,boss:true}; ZONES.push(ARENA25.zone);
 // the nearest arena's centre distance (vegetation and camps stay out of all three; pvp: the Proving Isle counts as one, 15 m closer than it is, so trees, camps and nodes keep off it and its ground is tinted like an arena floor)
 function arenaDist(x,z){ let m=Math.hypot(x-PVP_ISLE.x,z-PVP_ISLE.z)-15; for(const A of ARENAS){ const d=Math.hypot(x-A.x,z-A.z); if(d<m) m=d; } return m; }

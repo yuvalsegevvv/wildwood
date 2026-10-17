@@ -93,7 +93,9 @@ const KIND={
 };
 const GAIT=[0,Math.PI,Math.PI,0];
 const W={ready:false};
-function groundOK(x,z){ return vDist(x,z)>VIL.r+5 && Math.abs(x)<HALF-20 && Math.abs(z)<HALF-20 && getH(x,z)>0.7 && grad(x,z)<0.7; }
+// the home forest's box (the atlas's land 0: shared/world-atlas.js): animals are scattered over it and kept to the forest itself
+const ANI_BOX=(()=>{ const b={x0:1e9,x1:-1e9,z0:1e9,z1:-1e9}; for(let z=WZ0;z<WZ1;z+=40) for(let x=WX0;x<WX1;x+=40) if(waLand(x,z)==='home'){ b.x0=Math.min(b.x0,x); b.x1=Math.max(b.x1,x); b.z0=Math.min(b.z0,z); b.z1=Math.max(b.z1,z); } return b; })();
+function groundOK(x,z){ return waLandId(x,z)===0 && waLandBorderDist(x,z)>24 && waCoast(x,z)>30 && vDist(x,z)>VIL.r+5 && getH(x,z)>0.7 && grad(x,z)<0.7; }
 function findSpot(cx,cz,rmin,rmax,dirAng,spread){
   for(let i=0;i<40;i++){
     const a=dirAng===undefined?AR(0,TAU):dirAng+AR(-spread,spread), r=AR(rmin,rmax), x=cx+Math.sin(a)*r, z=cz+Math.cos(a)*r;
@@ -133,7 +135,7 @@ function initAnimals(){
   // ducks live on open water
   W.duck=[];
   for(let i=0;i<6000 && W.duck.length<ducks;i++){
-    const x=AR(-HALF+20,HALF-20), z=AR(-HALF+20,HALF-20);
+    const x=AR(ANI_BOX.x0,ANI_BOX.x1), z=AR(ANI_BOX.z0,ANI_BOX.z1);
     if(getH(x,z)<-1){ const n=1+Math.floor(Math.random()*3); for(let k=0;k<n&&W.duck.length<ducks;k++) W.duck.push({x:x+AR(-1.5,1.5),z:z+AR(-1.5,1.5),h:AR(0,TAU),goal:AR(0,TAU),sp:0,timer:AR(0,4),dab:0,ph:AR(0,TAU)}); }
   }
   W.mDuck=animMesh(A.duck,matAnimal,W.duck.length,true);

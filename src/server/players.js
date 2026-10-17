@@ -5,7 +5,7 @@
 function sanitizeGear(g,cls){
   const base=newGearFor(cls);
   if(!g||typeof g!=='object') return base;
-  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>typeof id==='string'&&ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.min(COINS_MAX,Math.max(0,Math.floor(+g.coins||0))),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),redgate:clampInt(g.redgate,0,1,0),sun:clampInt(g.sun,0,2,0),gloam:clampInt(g.gloam,0,2,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
+  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>typeof id==='string'&&ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.min(COINS_MAX,Math.max(0,Math.floor(+g.coins||0))),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),redgate:clampInt(g.redgate,0,1,0),amber:0,wv:WORLD_VER,sun:clampInt(g.sun,0,2,0),gloam:clampInt(g.gloam,0,2,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
   if(g.mats&&typeof g.mats==='object') for(const id in g.mats){ const n=MATS[id]?clampInt(g.mats[id],0,MAT_MAX,0):0; if(n) out.mats[id]=n; }
   if(g.eq) for(const k in out.eq){ const id=g.eq[k], it=ITEM[id]; if(it&&out.inv.includes(id)&&(k==='weapon'?it.kind==='weapon':it.slot===k)) out.eq[k]=id; else if(k!=='weapon') out.eq[k]=null; }
   if(!ITEM[out.eq.weapon]) out.eq.weapon=base.eq.weapon;
@@ -81,9 +81,19 @@ function cleanLookS(look){
   }
   return out;
 }
+/* gear.wv (WORLD_VER, shared/items.js): a save from before the atlas world (no wv) may carry a position in the OLD frame (save.pos = [x, z]; the server itself never saved one, the spawn is the home village's).
+   Old-frame coordinates mean nothing now, so the hiker is put at the village of the land that point was in then (home x -HALF..HALF; the vale east of it; the Reach north of the vale; the Greyspine north-west; the
+   Sunscar west of the forest; the Gloamhorn beyond GW0), if that land is open for them, else at the home village. */
+function wvOldLand(x,z){ return x<GW0?'gloam':z<borderZ(x)?(x<borderXN(z)?'grey':'hoar'):x<HX0?'sun':x>borderX(z)?'vale':'home'; }
+function wvSpawnOf(pos,g){
+  if(!Array.isArray(pos)||pos.length<2||!isFinite(+pos[0])||!isFinite(+pos[1])) return null;
+  const l=wvOldLand(+pos[0],+pos[1]), V=l==='vale'&&g.east>=1?VIL2:l==='hoar'&&g.north>=1?VIL3:l==='grey'&&g.west>=1?VIL4:l==='sun'&&(g.river>=1||g.redgate>=1)?VIL5:l==='gloam'&&g.neck>=1?VIL6:VIL;
+  return V.spawn||{x:V.x,z:V.z};
+}
 function newPlayer(pid,hello){
   hello=hello||{}; const save=hello.save||{}, look=cleanLookS(hello.look);
-  const sp=VIL.spawn;
+  const oldWv=save.gear&&typeof save.gear==='object'?clampInt(save.gear.wv,0,99,0):0;
+  const p0=oldWv<WORLD_VER?wvSpawnOf(save.pos,save.gear||{}):null, sp=p0||VIL.spawn;   // (wv: a saved position of the old world frame is moved to its land's village)
   const p={id:pid,name:cleanName(hello.name),look,x:sp.x,y:getH(sp.x,sp.z),z:sp.z,face:0,vx:0,vz:0,
     level:clampInt(save.level,1,PLAYER_MAX_LV,1),exp:Math.min(EXP_MAX,Math.max(0,+save.exp||0)),gear:sanitizeGear(save.gear,look.cls),
     hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0},buff:null,act:null,dirty:true,travelT:0};

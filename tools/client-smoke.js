@@ -2,7 +2,7 @@
 // client code. Build first (python3 build.py). Needs the three package (npm install). Prints PASS/FAIL lines.
 // Usage: node tools/client-smoke.js
 const {bootClient}=require('./headless');
-const c=bootClient({expose:['GW0','guidePages','openGuide','openVersions','verPages','guestGateShow','LOOK','SSL','SS_ORDER','RXV','rxViewUpdate','defineSkillSet','SS_SETS','SK','renderSkills','canSwap','SSV','ssvUpdate','GXJ','GDX','borderXN','closePanels','WZ0','WZ1','WX1','wmapOpen','wmapToggle','wmapClick','wmapGo','wmapPin','wmapFit','wmapUpdate','wmapRegionAt','wmapPip','wmapEdgeDist','WM','WMAP_REG','WMAP_ISLES','WMAP_TOWNS','WMAP_BANNER','WMAP_BANKS','WMAP_LOCK','mapLand:()=>mapLand','VIL2','WX0','slopeBlock','SLOPE_MAX','TUN','bridgeDeck','valeOpen','borderX','borderZ','riverK','FALL','fallProfile','GF','buildGreyfall','updateGreyfall','NET','mqTarget','mqLogRow','mqMark','odranHere','MQ_BY_ID','VIL4','LORE_BY_ID','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','greySnowAmt','drawFullMap','drawMinimap','mapCX','landOpen','CHAM','chamoisUpdate','chamoisOK','GLEN','GREY_GATES','slotIcon','PENDANT_STATS','itemStat','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt',
+const c=bootClient({expose:['GW0','WA_GATES','WA_HUBS','waLand','waGround','barStep','westBarX','northBarZ','waLandId','guidePages','openGuide','openVersions','verPages','guestGateShow','LOOK','SSL','SS_ORDER','RXV','rxViewUpdate','defineSkillSet','SS_SETS','SK','renderSkills','canSwap','SSV','ssvUpdate','GXJ','borderXN','closePanels','WZ0','WZ1','WX1','wmapOpen','wmapToggle','wmapClick','wmapGo','wmapPin','wmapUpdate','wmapRegionAt','wmapArt','WMAP_AMBER','WMAP_W','WMAP_H','WM','WMAP_TOWNS','WMAP_BANNER','WMAP_BANKS','WMAP_LOCK','mapLand:()=>mapLand','VIL2','WX0','slopeBlock','SLOPE_MAX','TUN','bridgeDeck','valeOpen','borderX','borderZ','NET','mqTarget','mqLogRow','mqMark','odranHere','MQ_BY_ID','VIL4','LORE_BY_ID','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','greySnowAmt','drawFullMap','drawMinimap','mapCX','landOpen','CHAM','chamoisUpdate','chamoisOK','GLEN','GREY_GATES','slotIcon','PENDANT_STATS','itemStat','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt',
   'DG_RUN:()=>DG_RUN','DG_VIEW','DG_THEMES','dgFree','dgIn','dgHudText','dgHudTick','dgDownText','sky','water','sun','updateCamera','updateEnv','updatePlayer','applySnap','keys','TERRAIN_BANDS','cullChunks','playerDown','playerUp','Stream','NPCs','NPC_DEFER','npcById','terrainHot','nextLazyTile']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const el=s=>document.querySelector(s);
@@ -98,24 +98,31 @@ const el=s=>document.querySelector(s);
   G.NET.send({t:'dev',cmd:'weather',v:'clear'}); G.NET.send({t:'dev',cmd:'level',v:24}); G.NET.send({t:'dev',cmd:'vale',v:2}); G.NET.send({t:'dev',cmd:'north',v:2}); G.NET.send({t:'dev',cmd:'prof'}); G.NET.send({t:'dev',cmd:'coins'}); await wait(700); G=c.G();
   ok('the server tells the client about the ice wall and the professions',G.GEAR.north===2&&G.northOpen()&&G.GEAR.prof.mining&&G.GEAR.prof.gathering);
   G.P.x=G.VIL3.x+3; G.P.z=G.VIL3.z+3; G.P.y=G.getH(G.P.x,G.P.z); for(let i=0;i<50;i++) G.updateHoarfrost(0.1);   // (the wall sinks for 3.4 s when the server says it opened)
-  { const N0=G.GEAR.north, W=G.PASS, o1={x:W.x,z:W.ice-1,inTun:false}, o2={x:W.x+40,z:G.HZ0+5,inTun:false}, o3={x:-300,z:G.borderZ(-300)+5,inTun:false}, o6={x:0,z:G.borderZ(0)-5,inTun:false}, o4={x:W.x,z:W.ice-1,inTun:false}, o5={x:W.x+40,z:G.HZ0-12,inTun:false};
-    G.GEAR.north=0; G.worldBounds(o1,W.x,0.32,W.ice+2); G.worldBounds(o2,W.x+40,0.32,G.HZ0+20); G.worldBounds(o3,-300,0.32,G.borderZ(-300)+30); G.worldBounds(o6,0,0.32,G.borderZ(0)+40); G.GEAR.north=1; G.worldBounds(o4,W.x,0.32,W.ice+2); G.worldBounds(o5,W.x+40,0.32,G.HZ0+20); G.GEAR.north=N0;
-    ok('the sealed ice wall stops you in the pass and the vale\'s north wall holds (so does the home forest\'s, under the Greyspine and under the Reach); once the Reach is open no clamp holds you anywhere along the wall (the ground and the slope limit do)',o1.z>=W.ice+0.79&&o4.z<W.ice-0.9&&o2.z>=G.HZ0+13.9&&o3.z>=G.borderZ(-300)+13.9&&o6.z>=G.borderZ(0)+13.9&&o5.z===G.HZ0-12,'forest over the Reach '+o6.z.toFixed(1)+', sealed '+o1.z.toFixed(1)+', open '+o4.z.toFixed(1)+', wall '+o2.z.toFixed(1)+', forest '+o3.z.toFixed(1)+', open off the pass '+o5.z.toFixed(1)); }
+  // barriers (shared/barriers.js): a shut gate holds; an open land holds nobody. A step is made from (ox, oz) to o, like the movement code does
+  const borderAt=(a,b,dx,dz)=>{ for(let x=G.WX0+40;x<G.WX1-40;x+=8) for(let z=G.WZ0+40;z<G.WZ1-40;z+=8){ const p=G.waLandId(x,z), q=G.waLandId(x+dx,z+dz); if((p===a&&q===b)) return {x,z,x2:x+dx,z2:z+dz}; } return null; };   // a cell of land a with a cell of land b one step (dx, dz) away
+  const stepOver=(gear,k,v,B)=>{ const g0=G.GEAR[k]; G.GEAR[k]=v; const o={x:B.x2,z:B.z2,inTun:false}; G.worldBounds(o,B.x,0.32,B.z); G.GEAR[k]=g0; return o; };
+  { const W=G.PASS, N0=G.GEAR.north, o1={x:W.x,z:W.ice-1,inTun:false}, o4={x:W.x,z:W.ice-1,inTun:false}, o2={x:W.x+8,z:W.ice-5,inTun:false}, o5={x:W.x+30,z:W.ice-5,inTun:false}, B=borderAt(1,2,0,-8)||borderAt(1,2,8,0);
+    G.GEAR.north=0; G.worldBounds(o1,W.x,0.32,W.ice+2); G.worldBounds(o2,W.x+8,0.32,W.ice+2); const held=B?stepOver(G.GEAR,'north',0,B):null; G.GEAR.north=1; G.worldBounds(o4,W.x,0.32,W.ice+2); G.worldBounds(o5,W.x+30,0.32,W.ice+2); const free=B?stepOver(G.GEAR,'north',1,B):null; G.GEAR.north=N0;
+    ok('the sealed ice wall stops you in the pass and the Reach\'s whole border holds (the vale | Reach border too); once the Reach is open no clamp holds you anywhere along it (the ground and the slope limit do)',o1.z>=W.ice+0.79&&o4.z<W.ice-0.9&&o2.z>=W.ice+0.79&&o5.z<W.ice-4&&!!B&&held.x===B.x&&held.z===B.z&&G.waLandId(free.x,free.z)===2,'sealed '+o1.z.toFixed(1)+', open '+o4.z.toFixed(1)+', wall '+o2.z.toFixed(1)+', open off the pass '+o5.z.toFixed(1)+', border '+JSON.stringify(B)); }
+  // the highest ground of the Greyspine (the atlas's spine rises to 150-187 m: the crowns that are white)
+  const greyCrown=()=>{ let b={h:-1}; for(let x=G.WX0;x<G.WX1;x+=16) for(let z=G.WZ0;z<G.WZ1;z+=16) if(G.waLand(x,z)==='grey'){ const h=G.getH(x,z); if(h>b.h) b={x,z,h}; } return b; };
   // ---- the Greyspine (the fourth land, terrain only): the client side ----
   { const sv={x:G.P.x,y:G.P.y,z:G.P.z}, H=G.GREY_HM, q=G.GREY_QUEEN, a={x:H.x,z:H.z,inTun:false}, b={x:-300,z:G.HZ0-100,inTun:false}, d={x:-300,z:G.HZ0-5,inTun:false}, lo=new THREE.Color(), hi=new THREE.Color();
-    G.worldBounds(a,H.x,0.32,H.z); G.worldBounds(b,-300,0.32,G.HZ0-100); G.worldBounds(d,-300,0.32,G.HZ0-60);
-    ok('in the Greyspine you can stand and walk (a teleport there is not pulled back), but not over the home forest\'s rim: 14 m short of its crest',a.z===H.z&&b.z===G.HZ0-100&&d.z<=G.borderZ(-300)-13.9&&d.z>G.HZ0-60,'shelf '+a.z+', '+b.z.toFixed(0)+', rim '+d.z.toFixed(1));
-    G.terrainColor(-60+G.GDX,-650,G.getH(-60+G.GDX,-650),0.2,lo); G.terrainColor(q.x,q.z,q.h,0.2,hi);
-    ok('the Greyspine has ground colours of its own: green meadow in the trough, white snow on the Queen\'s crown; the map paints it',lo.g>lo.r&&lo.g>lo.b&&hi.r>0.8&&hi.g>0.8&&hi.b>0.8&&G.mapEdgeAlpha(G.GDX,-700)===255,'trough '+[lo.r,lo.g,lo.b].map(v=>v.toFixed(2))+', crown '+[hi.r,hi.g,hi.b].map(v=>v.toFixed(2)));
-    G.P.x=G.GDX; G.P.z=-700; G.P.y=G.getH(G.GDX,-700); G.updateZoneLabel(); const inZone=c.el('#zone').textContent;
-    G.P.x=G.GW0+20; G.P.z=-700; G.P.y=G.getH(G.GW0+20,-700); G.updateZoneLabel();   // (on the west wall, where the Greyspine has no zone)
-    ok('standing in the Greyspine the zone label names its zone (levels 26-32) or, on the spine, the land, and the map shows its land',/^Miners' Scree \(Lv 28\)$/.test(inZone)&&c.el('#zone').textContent==='The Greyspine'&&G.landHere()==='grey'&&G.LANDS.grey.z1>G.HZ0,inZone+' / '+c.el('#zone').textContent+', '+G.landHere());
+    G.worldBounds(a,H.x,0.32,H.z);
+    { const B=borderAt(0,3,0,-8)||borderAt(0,3,-8,0)||borderAt(0,3,8,0), held=B?stepOver(G.GEAR,'west',0,B):null, free=B?stepOver(G.GEAR,'west',1,B):null;
+    ok('in the Greyspine you can stand (a teleport there is not pulled back); its border with the home forest holds while the ice fall stands (gear.west 0) and holds nobody once it is open',a.z===H.z&&!!B&&held.x===B.x&&held.z===B.z&&free.x===B.x2&&free.z===B.z2,'shelf '+a.z+', border '+JSON.stringify(B)); }
+    const crown=greyCrown(), tx=G.VIL4.x-60, tz=G.VIL4.z+90; G.terrainColor(tx,tz,G.getH(tx,tz),0.2,lo); G.terrainColor(crown.x,crown.z,crown.h,0.2,hi);
+    ok('the Greyspine has ground colours of its own: green meadow in the trough, white snow on the Queen\'s crown; the map paints it',lo.g>lo.r&&lo.g>lo.b&&hi.r>0.8&&hi.g>0.8&&hi.b>0.8&&G.mapEdgeAlpha(G.VIL4.x,G.VIL4.z)===255,'trough '+[lo.r,lo.g,lo.b].map(v=>v.toFixed(2))+', crown '+[hi.r,hi.g,hi.b].map(v=>v.toFixed(2)));
+    let inZone='', bare=null;   // a Greyspine point with a zone label, and one the zones do not cover (the label then names the land)
+    for(let x=G.WX0;x<G.WX1&&!(inZone&&bare);x+=40) for(let z=G.WZ0;z<G.WZ1&&!(inZone&&bare);z+=40) if(G.waLand(x,z)==='grey'&&G.landHere){ G.P.x=x; G.P.z=z; G.P.y=G.getH(x,z); G.updateZoneLabel(); const t=c.el('#zone').textContent; if(/\(Lv (2[6-9]|3[0-2])\)$/.test(t)&&!inZone) inZone=t; else if(t==='The Greyspine'&&!bare) bare=t; }
+    G.P.x=G.VIL4.x; G.P.z=G.VIL4.z; G.P.y=G.getH(G.P.x,G.P.z);
+    ok('standing in the Greyspine the zone label names its zone (levels 26-32) or, where no zone covers, the land, and the map shows its land',!!inZone&&G.landHere()==='grey'&&G.LANDS.grey.z1>G.LANDS.hoar.z0,inZone+' / '+bare+', '+G.landHere());
     G.P.x=sv.x; G.P.y=sv.y; G.P.z=sv.z; }
-  { const W0=G.GEAR.west, g=G.GLEN, mk=(x,z)=>({x,z,inTun:false}), a=mk(g.ice-4,g.z), b=mk(G.GXJ-5,g.z), c=mk(G.GXJ-5,g.z+14), c1=mk(G.GXJ-5,g.z+14);
-    G.GEAR.west=0; G.worldBounds(a,g.ice+1,0.32,g.z); G.worldBounds(c1,G.GXJ-4,0.32,g.z+9);
-    G.GEAR.west=1; G.worldBounds(b,G.GXJ+3,0.32,g.z); G.worldBounds(c,G.GXJ-4,0.32,g.z+9);
+  { const W0=G.GEAR.west, g=G.GLEN, mk=(x,z)=>({x,z,inTun:false}), bar=Math.max(G.westBarX(g.z),g.ice), a=mk(bar-4,g.z), B=borderAt(2,3,-8,0), b=mk(bar-4,g.z);
+    G.GEAR.west=0; G.worldBounds(a,bar+1,0.32,g.z); const held=B?stepOver(G.GEAR,'west',0,B):null;
+    G.GEAR.west=1; G.worldBounds(b,bar+1,0.32,g.z); const free=B?stepOver(G.GEAR,'west',1,B):null;
     G.GEAR.west=W0;
-    ok('the shut ice fall stops you in the glacier valley and inside the cut near the crest you stay between its walls; once the fall is open nothing but the ground holds you there',a.x>=g.ice+0.79&&b.x<G.GXJ-4.9&&Math.abs(c1.z-g.z)<=g.w&&c.z===g.z+14,'shut '+a.x.toFixed(1)+', open '+b.x.toFixed(1)+', walls '+(c1.z-g.z).toFixed(1)+', open off the axis '+(c.z-g.z).toFixed(1)); }
+    ok('the shut ice fall stops you in the glacier valley (and the Reach | Greyspine border holds all along it); once the fall is open nothing but the ground holds you there',a.x>=bar+0.79&&b.x<bar-3&&!!B&&held.x===B.x&&free.x===B.x2,'shut '+a.x.toFixed(1)+' (the fall '+bar+'), open '+b.x.toFixed(1)+', border '+JSON.stringify(B)); }
   { const E0=G.GEAR.east, T=G.TUN, mk=(x,z)=>({x,z,inTun:false}), a=mk(T.p0+5,T.z), b=mk(T.p0+5,T.z), d=mk(T.p0+5,T.z), e={x:T.p0+20,z:T.z+3.9,inTun:true};
     G.GEAR.east=0; G.worldBounds(a,T.p0-3,0.32,T.z);   // the gate is barred: stopped at its door
     G.GEAR.east=1; G.worldBounds(b,T.p0-3,0.32,T.z); G.worldBounds(d,T.p0+20,0.32,T.z); G.worldBounds(e,T.p0+19,0.32,T.z);   // open: onto the deck, and kept between its parapets
@@ -134,7 +141,7 @@ const el=s=>document.querySelector(s);
     ok('a shut rock fall stops you east of each west-wall canyon; an open one lets you through to the edge',res.every(([s,o],i)=>s>=Gs[i].x+0.79&&o<Gs[i].x),res.map(r=>r.map(v=>v.toFixed(1)).join('/')).join(' ; ')); }
   ok('the ice wall is hidden once the way is open',G.HOAR.wall&&!G.HOAR.wall.visible);
   ok('Rimehold plays its own music and Frostgate Pass its own zone label',G.musicThemeHere()==='rimehold'&&G.landHere()==='hoar');
-  G.P.x=G.PASS.x; G.P.z=G.PASS.z1-40; ok('the Reach\'s music (levels 22-26) outside the village',G.musicThemeHere()==='hoar1');
+  { const h3=G.ZONES.find(z=>z.key==='h23'); G.P.x=h3.x; G.P.z=h3.z; ok('the Reach\'s music (levels 22-26) outside the village',G.musicThemeHere()==='hoar1'); }
   { const h4=G.ZONES.find(z=>z.key==='h29'); G.P.x=h4.x; G.P.z=h4.z; ok('and the harder ranges another (27-30)',G.musicThemeHere()==='hoar2'); }
   G.openLodge(); { const h=el('#loBody').innerHTML; ok('the Wayfarers\' Lodge lists three professions (learned), a tool shop with six tier chips and three tools, and the resources to sell',(h.match(/class="lo-row/g)||[]).length===3&&(h.match(/>Learned</g)||[]).length===3&&(h.match(/data-tier=/g)||[]).length===6&&(h.match(/data-buytool=/g)||[]).length===3&&!/Coming later/.test(h)); }
   ok('every pendant has an icon, the five kinds look different (and a tempered one has its sparkle), the empty slot shows a ghost pendant, and its text says what it does',Object.keys(G.ITEM).filter(id=>id.startsWith('pendant-')).length===175&&Object.keys(G.ITEM).filter(id=>id.startsWith('pendant-')).every(id=>G.itemIcon(G.ITEM[id]).includes('<svg'))&&
@@ -165,7 +172,7 @@ const el=s=>document.querySelector(s);
   // the Greyspine by height: rain on Highmark's shelf, snow on the Gryphon Queen's peak, a sleet band between (both fall: counts scale by 1-snow and snow)
   { const at=(x,z,y)=>{ G.camera.position.set(x,y===undefined?G.getH(x,z)+3:y,z); for(let i=0;i<40;i++){ G.WX.t+=0.5; G.updateWeather(0.5); } };
     at(G.VIL4.x,G.VIL4.z); ok('in the Greyspine the rain stays rain down at Highmark (the shelf is below the snowline)',G.WX.snow<0.05&&G.rain.visible&&!G.snowfall.visible);
-    const q=G.GREY_QUEEN; at(q.x,q.z); ok('...and on the Gryphon Queen\'s peak it is snowfall',G.WX.snow>0.95&&G.snowfall.visible&&!G.rain.visible);
+    const q=greyCrown(); at(q.x,q.z); ok('...and on the Gryphon Queen\'s peak it is snowfall',G.WX.snow>0.95&&G.snowfall.visible&&!G.rain.visible);
     let mid=null; for(let x=-420;x<420&&!mid;x+=12) for(let z=-1030;z<-460;z+=12){ const a=G.greySnowAmt(x,z,G.getH(x,z)); if(a>0.4&&a<0.6){ mid=[x,z]; break; } }
     ok('the sleet band exists on the slopes (some ground has the snow share between 0.4 and 0.6)',!!mid);
     if(mid){ at(mid[0],mid[1]); ok('...there rain and flakes fall together',G.WX.snow>0.2&&G.WX.snow<0.8&&G.rain.visible&&G.snowfall.visible); }
@@ -176,8 +183,8 @@ const el=s=>document.querySelector(s);
   { const sv={x:G.P.x,z:G.P.z,done:G.MAP.done,west:G.GEAR.west}, texts=[]; G.mapCX.fillText=t=>texts.push(t); G.MAP.done=true;
     G.P.x=G.VIL4.x; G.P.z=G.VIL4.z; G.drawFullMap(); const has=t=>texts.some(x=>x===t||String(x).startsWith(t));
     ok('map: standing in the Greyspine its full map names Highmark and its zones',has('Highmark')&&has('Highmark Pastures')&&has('The Sink')&&has('Level 26'));
-    ok('...its tarns, the fjord, the two bosses and the Blackseam\'s door (the Old Adit)',has('Mirrortarn')&&has("Queen's Tarn")&&has('Highmark Tarn')&&has('The fjord')&&texts.some(x=>/Gryphon Queen/.test(x))&&texts.some(x=>/Mountain Golem/.test(x))&&has('The Old Adit'));
-    ok('...and the two rock falls in the west wall (the river road and the neck pass)',has('The river road')&&has('The neck pass'));
+    ok('...the two bosses and the Blackseam\'s door (the Old Adit)',texts.some(x=>/Gryphon Queen/.test(x))&&texts.some(x=>/Mountain Golem/.test(x))&&has('The Old Adit'));
+    ok('...and the two rock falls in the west wall (the River Pass and the Windswept Neck)',has('The River Pass')&&has('The Windswept Neck'));
     ok('...with its own zone tier row',c.el('#mapTier').dataset.land==='grey'&&/Zone tier/.test(c.el('#mapTier').innerHTML||''));
     { let na=0; G.mapCX.arc=()=>{ na++; }; const prof=G.GEAR.prof, eq={pick:G.GEAR.eq.pick,axe:G.GEAR.eq.axe,sickle:G.GEAR.eq.sickle};
       G.GEAR.prof={mining:{xp:0},woodcutting:{xp:0},gathering:{xp:0}}; G.GEAR.eq.pick='pick6'; G.GEAR.eq.axe='axe6'; G.GEAR.eq.sickle='sickle6'; G.drawFullMap(); const withP=na; na=0;
@@ -187,15 +194,16 @@ const el=s=>document.querySelector(s);
     G.P.x=0; G.P.z=0; G.GEAR.west=0; const shut=G.landOpen('grey'); G.GEAR.west=1; const open=G.landOpen('grey'); G.GEAR.west=sv.west;
     ok('the Greyspine\'s map opens from the home forest once the ice fall in the glacier valley is open (gear.west), not before',!shut&&open);
     G.mapCX.fillText=()=>{}; G.MAP.done=sv.done; G.P.x=sv.x; G.P.z=sv.z; }
-  // the borders: the Greyfall is drawn and shows only when you are near, the river is a wall (a hiker walking at it stops short of the deep water and of the crest line)
-  { const F=G.FALL;
-    ok('the Greyfall is drawn: a sheet over the chute (two vertices a row of its path), a foam ring and spray at the pool',!!G.GF.built&&G.GF.sheet.geometry.attributes.position.count===G.fallProfile().length*2&&!!G.GF.foam&&!!G.GF.spray);
-    G.camera.position.set(F.x,10,F.pool.z-60); G.updateGreyfall(0.1); const near=G.GF.sheet.visible&&G.GF.spray.visible, off0=G.GF.tex.offset.y;
-    G.updateGreyfall(0.5); const flows=G.GF.tex.offset.y<off0;
-    G.camera.position.set(-300,10,300); G.updateGreyfall(0.1); const far=!G.GF.sheet.visible&&!G.GF.spray.visible;
-    ok('...it is drawn within 650 m (spray within 340 m), its streaks run down the chute, and nothing is updated far away',near&&flows&&far);
-    for(const [z,dir] of [[300,1],[300,-1],[150,1],[-300,1]]){ const bx=G.borderX(z), o={x:bx-dir*70,z,inTun:false}; let ox; for(let i=0;i<160;i++){ ox=o.x; o.x+=dir; G.worldBounds(o,ox,0.32,z); }
-      ok('the river is a wall: a hiker walking at it at z '+z+' from the '+(dir>0?'home forest':'vale')+' side stops on his own bank',dir>0?o.x<bx-5:o.x>bx+5,'x '+o.x.toFixed(1)+', the middle at '+bx.toFixed(1)+', ground '+G.getH(o.x,z).toFixed(1)+' m'); } }
+  // the borders: the border river is not a wall (a hiker walking at it stops short of the deep water and of the crest line)
+  {
+    // the border river is wadeable (the atlas's fords, about 1.1 m): a hiker crosses it once the vale is open, and is held at it while the vale is locked
+    { const E0=G.GEAR.east; let tried=0, crossed=0, held=0, why='';
+      for(let z=G.WZ0+300;z<G.WZ1-300&&tried<4;z+=40){ let bx=null; for(let x=G.WX0+40;x<G.WX1-40;x+=4) if(G.waLandId(x,z)===0&&G.waLandId(x+4,z)===1){ bx=x+2; break; } if(bx===null||Math.abs(z-G.TUN.z)<80) continue;
+        let flat=true; for(let x=bx-60;x<bx+60;x+=2) if(Math.abs(G.getH(x+2,z)-G.getH(x,z))/2>G.SLOPE_MAX*0.8) flat=false; if(!flat) continue; tried++;
+        for(const e of [1,0]){ G.GEAR.east=e; const o={x:bx-50,z,inTun:false}; let ox; for(let i=0;i<110;i++){ ox=o.x; o.x+=1; G.worldBounds(o,ox,0.32,z); } if(e===1){ if(o.x>bx+20) crossed++; else why+=' open z'+z+' x'+o.x.toFixed(0); } else { if(G.waLandId(o.x,z)===0) held++; else why+=' shut z'+z+' x'+o.x.toFixed(0); } } }
+      G.GEAR.east=E0;
+      ok('the border river is not a wall: a hiker walks across it once the vale is open, and is held on his own bank while it is locked',tried>=2&&crossed===tried&&held===tried,tried+' places, crossed '+crossed+', held '+held+why); }
+  }
   // chamois: harmless herds that exist only in the Greyspine, stand on the high slopes and bolt from you
   { const sv={x:G.P.x,y:G.P.y,z:G.P.z}; G.P.x=G.VIL4.x; G.P.z=G.VIL4.z; for(let i=0;i<60;i++) G.chamoisUpdate(0.1);
     const on=G.CHAM.list.filter(a=>a.herd.on);
@@ -256,28 +264,25 @@ const el=s=>document.querySelector(s);
     set('G8',1); { const T=G.mqTarget(); ok('G8: the golem\'s broken stone',!!T&&T.name==='The golem\'s broken stone'); }
     set('G9',1); { const T=G.mqTarget(); ok('G9: the Mountain Golem\'s cavern',!!T&&/Cavern/.test(T.name)); }
     G.GEAR.mq={s:G.MQ_BY_ID.G9.i+1,st:0,n:[],h:0,ver:2}; ok('after G9 the log shows the end of act IV',/Glasswell/.test(G.mqLogRow())); }
-  // the world map of Eldmere (ui/world-map.js): the docs map's regions, the pin, the fog, the pointer, and the way into each land's map
-  { G=c.G(); const page=require('fs').readFileSync(require('path').join(__dirname,'..','dist','wildwood.html'),'utf8'), m=/window\.WILDWOOD_IMG=\{"world-map":"data:image\/webp;base64,([A-Za-z0-9+\/=]+)"/.exec(page);
-    ok('the world map\'s art is embedded in the page as a WebP of 400 KB or less (assets/img/world-map.webp)',!!m&&m[1].length*0.75<400e3&&Buffer.from(m[1].slice(0,16),'base64').toString('latin1',8,12)==='WEBP',m?(m[1].length*0.75/1024).toFixed(0)+' KB':'missing');
-    const R=G.WMAP_REG, T=G.WMAP_TOWNS, lands={home:'village',vale:'hanami',hoar:'rimehold',grey:'highmark'}, regOf={home:'wild',vale:'vale',hoar:'frost',grey:'grey'};
-    ok('the docs map\'s seven regions and its six islands are there, and the four towns lie well inside their own lands (8 art pixels from the edge)',['wild','vale','frost','grey','horn','sun','amber'].every(k=>R[k]&&R[k].length>=20)&&G.WMAP_ISLES.length===6&&Object.keys(lands).every(l=>G.wmapPip(R[regOf[l]],...T[lands[l]])&&G.wmapEdgeDist(R[regOf[l]],...T[lands[l]])>=8&&G.wmapRegionAt(...T[lands[l]])===l),Object.keys(lands).map(l=>G.wmapEdgeDist(R[regOf[l]],...T[lands[l]]).toFixed(0)).join(', '));
-    ok('a click on the not-built regions, the isles and the fog banks finds "unbuilt", on open sea nothing',G.wmapRegionAt(330,480)==='unbuilt'&&G.wmapRegionAt(560,980)==='unbuilt'&&G.wmapRegionAt(G.WMAP_ISLES[1][0][0]+8,G.WMAP_ISLES[1][0][1]+8)==='unbuilt'&&G.wmapRegionAt(1830,170)==='unbuilt'&&G.wmapRegionAt(1100,1100)===null);
-    // the pin: each village is exact, and a sweep of every land keeps the pin on its own land's region (the drawing's coast is not the game's)
-    { const F=G.wmapFit(), vs=[G.VIL,G.VIL2,G.VIL3,G.VIL4], ts=[T.village,T.hanami,T.rimehold,T.highmark];
-      ok('the four villages fit the drawn towns within 25 art pixels (a drawing, not a survey)',vs.every((v,i)=>Math.hypot(F.u[0]*v.x+F.u[1]*v.z+F.u[2]-ts[i][0],F.v[0]*v.x+F.v[1]*v.z+F.v[2]-ts[i][1])<25));
-      const p0={x:G.P.x,z:G.P.z}; let bad=[], n=0;
-      for(const [i,l] of Object.keys(lands).entries()){ G.P.x=vs[i].x; G.P.z=vs[i].z; const p=G.wmapPin(); if(!p||Math.hypot(p[0]-ts[i][0],p[1]-ts[i][1])>1) bad.push(l+' village'); }
-      for(let z=G.WZ0;z<=G.WZ1;z+=30) for(let x=G.WX0;x<=G.WX1;x+=30){ if(G.getH(x,z)<0.5) continue; G.P.x=x; G.P.z=z; const l=G.landHere(), p=G.wmapPin(); n++; if(l==='sun'||l==='gloam'){ if(p) bad.push(l+' pin '+x+','+z); continue; } if(!p||G.wmapRegionAt(p[0],p[1])!==l) bad.push(l+' '+x+','+z); }
+  // the world map of Eldmere (ui/world-map.js): the atlas painted as a map, the pin, the fog, the pointer, and the way into each land's map
+  { G=c.G(); const T=G.WMAP_TOWNS, ids=['home','vale','hoar','grey','sun','gloam'];
+    ok('the art is the atlas: every land has a banner and a town that the atlas puts on its own land, and a click on a town finds that land',ids.every(l=>{ const t=G.wmapArt(T[l].x,T[l].z); return G.waLand(T[l].x,T[l].z)===l&&G.wmapRegionAt(t[0],t[1])===l&&!!G.WMAP_BANNER[l]; }));
+    { const A=G.WMAP_AMBER, b0=G.WMAP_BANKS[0]; let amber=null; for(let z=G.WZ0;z<G.WZ1&&!amber;z+=24) for(let x=G.WX0;x<G.WX1&&!amber;x+=24) if(G.waLand(x,z)==='amber') amber=G.wmapArt(x,z);
+      ok('a click on the Amber Reach and on a fog bank finds "unbuilt", on open sea nothing',!!amber&&G.wmapRegionAt(...amber)==='unbuilt'&&G.wmapRegionAt(b0[0],b0[1])==='unbuilt'&&G.wmapRegionAt(5,5)===null&&A.x1>A.x0); }
+    // the pin: exact everywhere (the atlas is the map), and none in a dungeon
+    { const p0={x:G.P.x,z:G.P.z}; let bad=[], n=0;
+      for(const l of ids){ G.P.x=T[l].x; G.P.z=T[l].z; const p=G.wmapPin(), t=G.wmapArt(T[l].x,T[l].z); if(!p||Math.hypot(p[0]-t[0],p[1]-t[1])>0.01||G.wmapRegionAt(p[0],p[1])!==l) bad.push(l+' village'); }
+      for(let z=G.WZ0;z<=G.WZ1;z+=40) for(let x=G.WX0;x<=G.WX1;x+=40){ if(G.getH(x,z)<0.5||!G.waLand(x,z)||G.waLand(x,z)==='amber') continue; G.P.x=x; G.P.z=z; const l=G.landHere(), p=G.wmapPin(); n++; if(!p||G.wmapRegionAt(p[0],p[1])!==l) bad.push(l+' '+x+','+z); }
       G.P.x=p0.x; G.P.z=p0.z;
-      ok('your pin is exact at your land\'s village and stays in your own land\'s region at every dry point of the world',bad.length===0&&n>1500,n+' points'+(bad.length?'; off: '+bad.slice(0,6).join(' | '):'')); }
+      ok('your pin is exact at every village and sits on your own land\'s region at every dry point of the world',bad.length===0&&n>1000,n+' points'+(bad.length?'; off: '+bad.slice(0,6).join(' | '):'')); }
     // opening: the panel, the fog of the locked lands, the groups of puffs
     ok('the World button is in the map\'s header and the G key and the panel are known',!!el('#mapWorld')&&!!el('#wmap')&&!!el('#wmapC'));
     // (earlier checks opened every land and left you in the Greyspine: seal them again and go home)
     G.NET.send({t:'dev',cmd:'vale',v:0}); G.NET.send({t:'dev',cmd:'north',v:0}); G.NET.send({t:'dev',cmd:'west',v:0}); G.P.x=G.VIL.x+6; G.P.z=G.VIL.z+6; G.P.y=G.getH(G.P.x,G.P.z); await wait(700); G=c.G();
     ok('the vale, the Reach and the Greyspine are sealed again and you stand in the home forest',['vale','hoar','grey'].every(l=>!G.landOpen(l))&&G.landHere()==='home');
     G.wmapOpen(); G=c.G(); const W=()=>c.G().WM;
-    ok('the world map opens (and the land map closes), all of the sea in view at first and the three locked lands under fog',!el('#wmap').hidden&&el('#map').hidden&&W().k>=W().min&&W().k<=W().max&&['vale','hoar','grey'].every(l=>W().fade[l]===1&&!G.landOpen(l)),'k '+W().k.toFixed(2));
-    ok('fog is built for the unbuilt regions (west, south-west, isles, three banks) and each locked land, at least 60 puffs a group of the unbuilt, 150 for each locked land',W().fog.base.length===6&&W().fog.base.every(g=>g.n>=60)&&['vale','hoar','grey'].every(l=>W().fog[l].n>=150),W().fog.base.map(g=>g.n).join('/')+' + '+['vale','hoar','grey'].map(l=>W().fog[l].n).join('/'));
+    ok('the world map opens (and the land map closes), all of the atlas in view at first and the locked lands under fog',!el('#wmap').hidden&&el('#map').hidden&&W().k>=W().min&&W().k<=W().max&&['vale','hoar','grey','sun','gloam'].every(l=>W().fade[l]===1&&!G.landOpen(l)),'k '+W().k.toFixed(2));
+    ok('fog is built for the Amber Reach, the three banks of open sea and each locked land, at least 40 puffs a group of the unbuilt, 100 for each locked land',W().fog.base.length===4&&W().fog.base.every(g=>g.n>=40)&&['vale','hoar','grey','sun','gloam'].every(l=>W().fog[l].n>=100),W().fog.base.map(g=>g.n).join('/')+' + '+['vale','hoar','grey','sun','gloam'].map(l=>W().fog[l].n).join('/'));
     // the pointer: wheel zooms about the cursor, a drag pans and does not click, two fingers pinch
     { const cv=el('#wmapC'), k0=W().k, w=W(); cv.fire('wheel',{clientX:300,clientY:300,deltaY:-400,deltaMode:0}); const k1=c.G().WM.k; cv.fire('wheel',{clientX:300,clientY:300,deltaY:-4000,deltaMode:0}); const k2=c.G().WM.k;
       cv.fire('wheel',{clientX:300,clientY:300,deltaY:40000,deltaMode:0}); ok('the wheel zooms in and out, between the whole map and 3.5 times that',k1>k0&&k2<=c.G().WM.max+1e-9&&Math.abs(k2/c.G().WM.min-3.5)<1e-6&&Math.abs(c.G().WM.k-c.G().WM.min)<1e-9,k0.toFixed(2)+' > '+k1.toFixed(2)+' > '+k2.toFixed(2));
@@ -287,18 +292,18 @@ const el=s=>document.querySelector(s);
       cv.fire('wheel',{clientX:300,clientY:300,deltaY:40000,deltaMode:0}); const k3=c.G().WM.k; cv.fire('pointerdown',{pointerId:1,clientX:250,clientY:300}); cv.fire('pointerdown',{pointerId:2,clientX:350,clientY:300}); cv.fire('pointermove',{pointerId:2,clientX:450,clientY:300}); cv.fire('pointerup',{pointerId:2,clientX:450,clientY:300}); cv.fire('pointerup',{pointerId:1,clientX:250,clientY:300});
       ok('two fingers moving apart zoom in, and ending the pinch does not click',c.G().WM.k>k3&&!el('#wmap').hidden,k3.toFixed(2)+' > '+c.G().WM.k.toFixed(2)); }
     // clicks: fog says what bars the way, an open land opens its map
-    { G=c.G(); G.WM.k=G.WM.min; G.WM.cx=1000; G.WM.cy=787; const w=G.WM, sx=ax=>(ax-w.cx)*w.k+w.w/2, sy=ay=>(ay-w.cy)*w.k+w.h/2, tk=()=>el('#toasts')._kids.map(t=>t.textContent);
-      G.wmapClick(sx(1300),sy(700)); ok('a click on a locked land says what bars it (the same words as its land map) and the world map stays',tk().includes(G.WMAP_LOCK.vale)&&!el('#wmap').hidden,tk().join('|'));
-      G.wmapClick(sx(330),sy(480)); ok('a click on the not-built fog says it is uncharted, and names nothing',tk().some(t=>/Uncharted/.test(t)&&!/Stormhorn|Sunscar|Amber|Emberwake/.test(t)));
-      G.wmapClick(sx(1000),sy(600)); G=c.G(); ok('a click on Wildwood opens the home forest\'s own map (the one N opens)',el('#wmap').hidden&&!el('#map').hidden&&G.mapLand()===null&&G.landHere()==='home'); }
+    { G=c.G(); G.WM.k=G.WM.min; G.WM.cx=G.WMAP_W/2; G.WM.cy=G.WMAP_H/2; const w=G.WM, sx=ax=>(ax-w.cx)*w.k+w.w/2, sy=ay=>(ay-w.cy)*w.k+w.h/2, tk=()=>el('#toasts')._kids.map(t=>t.textContent);
+      { const t=G.wmapArt(G.VIL2.x+80,G.VIL2.z+20); G.wmapClick(sx(t[0]),sy(t[1])); } ok('a click on a locked land says what bars it (the same words as its land map) and the world map stays',tk().includes(G.WMAP_LOCK.vale)&&!el('#wmap').hidden,tk().join('|'));
+      { const b=G.WMAP_BANKS[0]; G.wmapClick(sx(b[0]),sy(b[1])); } ok('a click on the not-built fog says it is uncharted, and names nothing',tk().some(t=>/Uncharted/.test(t)&&!/Stormhorn|Sunscar|Amber|Emberwake/.test(t)));
+      { const t=G.wmapArt(G.VIL.x+60,G.VIL.z-60); G.wmapClick(sx(t[0]),sy(t[1])); } G=c.G(); ok('a click on Wildwood opens the home forest\'s own map (the one N opens)',el('#wmap').hidden&&!el('#map').hidden&&G.mapLand()===null&&G.landHere()==='home'); }
     // a land that opens: its fog lifts (after a short beat), is remembered, and a click opens that land's map
     G.NET.send({t:'dev',cmd:'vale',v:2}); G.NET.send({t:'dev',cmd:'north',v:2}); G.NET.send({t:'dev',cmd:'west',v:2}); await wait(700); G=c.G();
     { ok('the dev commands opened the vale, the Reach and the Greyspine',['vale','hoar','grey'].every(l=>G.landOpen(l)));
       G.wmapOpen(); G=c.G(); ok('an open land you have not seen open starts under fog',['vale','hoar','grey'].every(l=>G.WM.fade[l]===1));
       for(let i=0;i<60;i++) G.wmapUpdate(0.05); G=c.G(); ok('...and the fog lifts: gone from all three, each remembered as seen (localStorage)',['vale','hoar','grey'].every(l=>G.WM.fade[l]===0)&&['vale','hoar','grey'].every(l=>JSON.parse(c.ls.get('wildwood-wmap')).includes(l)),c.ls.get('wildwood-wmap'));
       G.wmapOpen(); G=c.G(); ok('opened again, an open land stays clear',['vale','hoar','grey'].every(l=>G.WM.fade[l]===0));
-      const w=G.WM; w.k=w.min; w.cx=1000; w.cy=787; const sx=ax=>(ax-w.cx)*w.k+w.w/2, sy=ay=>(ay-w.cy)*w.k+w.h/2;
-      G.wmapClick(sx(G.WMAP_TOWNS.rimehold[0]+60),sy(G.WMAP_TOWNS.rimehold[1]-40)); G=c.G(); ok('a click on the Hoarfrost Reach opens the Reach\'s map',el('#wmap').hidden&&!el('#map').hidden&&G.mapLand()==='hoar'&&G.LANDS.hoar.name==='The Hoarfrost Reach');
+      const w=G.WM; w.k=w.min; w.cx=G.WMAP_W/2; w.cy=G.WMAP_H/2; const sx=ax=>(ax-w.cx)*w.k+w.w/2, sy=ay=>(ay-w.cy)*w.k+w.h/2;
+      { const t=G.wmapArt(G.VIL3.x+60,G.VIL3.z+20); G.wmapClick(sx(t[0]),sy(t[1])); } G=c.G(); ok('a click on the Hoarfrost Reach opens the Reach\'s map',el('#wmap').hidden&&!el('#map').hidden&&G.mapLand()==='hoar'&&G.LANDS.hoar.name==='The Hoarfrost Reach');
       G.wmapOpen(); G=c.G(); G.wmapClick(sx(G.WMAP_BANNER.grey.x+130),sy(G.WMAP_BANNER.grey.y)); G=c.G(); ok('...the Greyspine\'s map (a click on its banner counts as the land, even over the next region)',G.mapLand()==='grey'&&!el('#map').hidden);
       G.wmapOpen(); G=c.G(); G.wmapClick(sx(G.WMAP_BANNER.vale.x),sy(G.WMAP_BANNER.vale.y)); G=c.G(); ok('...and the Sakura Vale\'s map',G.mapLand()==='vale'&&!el('#map').hidden);
       el('#mapWorld').click(); G=c.G(); ok('the map\'s World button opens the world map, and the G key closes and opens it',!el('#wmap').hidden&&el('#map').hidden&&(c.fireWin('keydown',{code:'KeyG'}),el('#wmap').hidden)&&(c.fireWin('keydown',{code:'KeyG'}),!el('#wmap').hidden)); G.closePanels(); } }

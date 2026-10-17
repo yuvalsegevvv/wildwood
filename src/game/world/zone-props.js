@@ -127,7 +127,7 @@ function zpGroundTint(x,z,h,g,out){
   for(const E of dgEntList){ const dx=x-(E.x+Math.sin(E.a)*DG_APRON*0.5), dz=z-(E.z+Math.cos(E.a)*DG_APRON*0.5), R2=DG_ENT_R*1.6;   // and none on a dungeon door's own patch of ground (dgEntTint paints that)
     if(dx>R2||dx<-R2||dz>R2||dz<-R2) continue; k*=smoothstep(DG_ENT_R*0.7,R2,Math.hypot(dx,dz)); }
   out.r+=(r/sk-out.r)*k; out.g+=(gg/sk-out.g)*k; out.b+=(b/sk-out.b)*k; return out; }
-function terrainColor(x,z,h,g,out,noCut){ return zpGroundTint(x,z,h,g,terrainColorBase(x,z,h,g,out,noCut)); }   // (zpGroundTint leaves a dungeon door's own patch of ground alone)
+function terrainColor(x,z,h,g,out,noCut){ return cvGroundTint(x,z,h,zpGroundTint(x,z,h,g,terrainColorBase(x,z,h,g,out,noCut))); }   // caves: the shelf's colour   // (zpGroundTint leaves a dungeon door's own patch of ground alone)
 
 /* ---- the props ---- */
 let ZP_MATS=null;
@@ -138,14 +138,14 @@ const zpHash=s=>{ let h=7; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|
 // not here: keep-outs of the lands (the same list the trees use, plus villages, roads, the tunnel, story spots, dungeon doors)
 function zpBlocked(x,z){
   if(vDist(x,z)<VR+8||nearPath(x,z,3)||inTunnelCut(x,z,2)||storyClear(x,z)||dgEntClear(x,z)) return true;
-  if(inSun(x,z)&&x<HX0-12) return sunKeepOut(x,z,3);
-  if(inGloam(x,z)&&x<GW0-10) return gloamIn(x,z)<14||gloamKeepOut(x,z,3);
+  if(inSun(x,z)) return sunKeepOut(x,z,3);
+  if(inGloam(x,z)) return gloamIn(x,z)<14||gloamKeepOut(x,z,3);
   if(inHoar(x,z)&&(iceDist(x,z)<4||inPass(x,z,4))) return true;
   return inGlen(x,z,3)||inGate(x,z,2)||greyWet(x,z,-1.2); }
 const zpOk=(x,z,h,g,gmax)=>h>=0.7&&g<=gmax&&arenaDist(x,z)>=22&&!zpBlocked(x,z);
 function zpAge(x,z){   // how many ruins a land has: older and darker means more
-  if(inSun(x,z)&&x<HX0-12) return 0.34; if(inGloam(x,z)) return 0.5; if(inHoar(x,z)) return 0.22; if(inGrey(x,z)) return 0.3; if(inVale(x,z)) return 0.12; return 0.1; }
-function zpRuinTint(x,z){ const c=inSun(x,z)&&x<HX0-12?0xe6c88a:inGloam(x,z)?0x7c7c88:inHoar(x,z)?0xe4eef8:inGrey(x,z)?0xc8c8c0:inVale(x,z)?0xd0c4c4:0xc4d4a8; return tint(c,0.08); }
+  if(inSun(x,z)) return 0.34; if(inGloam(x,z)) return 0.5; if(inHoar(x,z)) return 0.22; if(inGrey(x,z)) return 0.3; if(inVale(x,z)) return 0.12; return 0.1; }
+function zpRuinTint(x,z){ const c=inSun(x,z)?0xe6c88a:inGloam(x,z)?0x7c7c88:inHoar(x,z)?0xe4eef8:inGrey(x,z)?0xc8c8c0:inVale(x,z)?0xd0c4c4:0xc4d4a8; return tint(c,0.08); }
 function zpMeshes(lists){
   const md=LOW?85:118;
   for(const kind in lists){ const K=ZP_KIND[kind], G=zpGeo(kind), items=lists[kind], o={cast:K.cast&&!LOW,receive:true,maxDist:md,hgt:K.hgt*1.5,rad:K.w*1.5+1};

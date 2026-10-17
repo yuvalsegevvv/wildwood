@@ -48,7 +48,7 @@ function* genChunk(ci){
     if(Math.hypot(x-spawn.x,z-spawn.z)<7) continue;
     if(vDist(x,z)<VR+6 || nearPath(x,z,3.5) || arenaDist(x,z)<25 || inTunnelCut(x,z,2)) continue;
     const h=getH(x,z), g=grad(x,z);
-    if(inSun(x,z)&&x<HX0-12){   // the Sunscar: palms and reeds by the river and the Springhead, cacti and thorn trees on the dry ground, nothing on the mesas, the pans or the glass
+    if(inSun(x,z)){   // the Sunscar: palms and reeds by the river and the Springhead, cacti and thorn trees on the dry ground, nothing on the mesas, the pans or the glass
       if(sunKeepOut(x,z,2)||g>0.55||sunPanK(x,z)>0.2||sunGlassK(x,z)>0.2||sunMesaH(x,z)>3) continue;
       const gk=sunGreenK(x,z), pr=gk*0.5+0.014; if(rand()>pr) continue;
       const type=gk>0.25&&rand()<0.7?'palm':rand()<0.55?'cactus':'thorn', s=type==='palm'?R(0.8,1.3):R(0.7,1.3);
@@ -57,7 +57,7 @@ function* genChunk(ci){
       const m=mtx(x,h-0.15,z,rand()*TAU,s,s*R(0.92,1.1),s,R(-0.04,0.04),R(-0.04,0.04));
       items[type].push({x,z,m,c:tint(type==='thorn'?pick(PAL.thorn):pick(PAL.palm))}); trees.push({x,z,s}); placed++; continue;
     }
-    if(inGloam(x,z)&&x<GW0-10){   // the Gloamhorn: a few gnarled snags and wind-bent dark spruce on the heath, none by the cliffs or at the keep-outs (bareGround is true all over the west)
+    if(inGloam(x,z)){   // the Gloamhorn: a few gnarled snags and wind-bent dark spruce on the heath, none by the cliffs or at the keep-outs (bareGround is true all over the west)
       if(h<1.5||g>0.6||gloamIn(x,z)<14||gloamKeepOut(x,z,3)||vDist(x,z)<VR+8||storyClear(x,z)||dgEntClear(x,z)) continue;
       if(rand()>0.04+forestDensity(x,z)*0.05) continue;
       const type=rand()<0.6?'snag':'spruce', s=R(0.75,1.35);

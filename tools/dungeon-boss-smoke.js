@@ -10,7 +10,7 @@ const fs=require('fs'), path=require('path'), {loadServer,SRC,strip}=require('./
 const evs=[];   // the events of the snapshots sent to player a (every player in the world is sent the same events: one copy)
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...JSON.parse(JSON.stringify(m.ev))); }},
   ['MONS','BOSSES','BOSS_KITS','DG_BOSS_DEFS','DG_BOSSES','DG_BOSS_NEEDS','DG_HALL_PILLARS','DG_HALL_MOUTHS','DG_HALL_LAMPS','dgVentAt','dgHallArena','dgLayout','dgBake','makeBossS','resetBossS',
-   'getH','S','damageMonsterS','arenaDist','vDist','VR','defAt','ZONE_HIT','DG_THRALL_MAX']);
+   'getH','waLandId','S','damageMonsterS','arenaDist','vDist','VR','defAt','ZONE_HIT','DG_THRALL_MAX']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.maxHp=1e7; p.hp=1e7; p.dead=false; } } };   // (a player who dies would reset the fight)
 W.join('a',{name:'Tanker',look:{cls:'warrior'},save:{level:30}}); W.join('b',{name:'Runner',look:{cls:'archer'},save:{level:30}});
@@ -29,9 +29,9 @@ ok('Amanita\'s puffballs fall to one hit; Haugbui\'s lamps are props that never 
 
 // ---- the hall: a theme's dungeon baked and placed at a quiet spot of the world (the ground is cleared of the world's monsters, which would blur who hit whom) ----
 const SPOTS=[];   // five quiet spots, one hall each (four bosses, and an open arena for Gawataro's charge), 150 m apart
-for(let gx=-380;gx<=380;gx+=40) for(let gz=-380;gz<=380;gz+=40){
+for(let gx=-700;gx<=700;gx+=40) for(let gz=-500;gz<=500;gz+=40){   // (the home forest only: the other lands are locked and hold a player who is put there)
   if(SPOTS.length>=5||x.arenaDist(gx,gz)<120||x.vDist(gx,gz)<x.VR+80||SPOTS.some(([sx,sz])=>Math.hypot(sx-gx,sz-gz)<150)) continue;
-  if([0,1,2,3,4,5,6,7,8].every(k=>x.getH(gx+(k<8?Math.sin(k*Math.PI/4)*19:0),gz+(k<8?Math.cos(k*Math.PI/4)*19:0))>1.5)) SPOTS.push([gx,gz]);
+  if(x.waLandId(gx,gz)===0&&[0,1,2,3,4,5,6,7,8].every(k=>x.waLandId(gx+(k<8?Math.sin(k*Math.PI/4)*60:0),gz+(k<8?Math.cos(k*Math.PI/4)*60:0))===0&&x.getH(gx+(k<8?Math.sin(k*Math.PI/4)*19:0),gz+(k<8?Math.cos(k*Math.PI/4)*19:0))>1.5)) SPOTS.push([gx,gz]);
 }
 for(const m of x.MONS) if(!m.boss&&SPOTS.some(([sx,sz])=>Math.hypot(m.x-sx,m.z-sz)<160)) m.remove=true;
 const hallOf=(theme,[X0,Z0])=>{ const L=x.dgLayout({mission:'purge',seed:3,theme}), B=x.dgBake(L); return x.dgHallArena(B,X0-B.boss.x,Z0-B.boss.z); };

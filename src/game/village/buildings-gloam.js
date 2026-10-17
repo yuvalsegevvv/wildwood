@@ -111,9 +111,9 @@ function gloamMenhir(x,z,s,seed){ const h=(3.2+h3(seed,1,1)*2.4)*s, w=(0.9+h3(se
   return pc(vbox(w,h,w*0.55,0,h/2-0.3,0).rotateZ(lean).rotateY(h3(seed,4,4)*TAU).translate(x,getH(x,z),z),(X,Y,Z,c)=>{ c.set(0x5a5860).multiplyScalar(0.7+h3(Math.floor(X*4),Math.floor(Y*3),Math.floor(Z*4))*0.35); if(Y<getH(x,z)+0.8) c.lerp(_gm,0.4); }); }
 function buildGloamStones(){   // cairns and standing stones scattered over the heath, thicker near the sea (deterministic)
   const rng=mulberry32(60707), parts=[];
-  for(let i=0,n=0;i<1400&&n<(LITE?40:LOW?70:110);i++){
-    const S=gloamSpine(rng()), side=rng()<0.5?-1:1, off=rng()*S.w*0.9, x=S.x+(-S.dz)*side*off, z=S.z+S.dx*side*off;
-    if(gloamIn(x,z)<8||gloamKeepOut(x,z,6)||vDist(x,z)<VR+10||x>GW0-20) continue;
+  for(let i=0,n=0;i<4000&&n<(LITE?40:LOW?70:110);i++){
+    const x=-1750+rng()*1200, z=-1100+rng()*980;
+    if(!inGloam(x,z)||gloamIn(x,z)<8||gloamKeepOut(x,z,6)||vDist(x,z)<VR+10||waWaterDist(x,z)<6) continue;
     const h=getH(x,z); if(h<2||h>60) continue;
     if(rng()<0.45){ parts.push(...gloamCairn(x,z,0.9+rng()*0.8,i)); addCol(x,z,0.7); } else { parts.push(gloamMenhir(x,z,0.8+rng()*0.9,i)); addCol(x,z,0.7); }
     n++;

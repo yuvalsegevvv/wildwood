@@ -1,53 +1,31 @@
-//@ The world map of Eldmere (G): the docs map's art with purple fog over what is locked or not built, a scroll banner on each open land and your pin; drag, wheel or pinch to move and zoom, click a land to open its map
+//@ The world map of Eldmere (G): the atlas painted as a map, purple fog over what is locked or not built, a scroll banner on each open land and your pin; drag, wheel or pinch to move and zoom, click a land to open its map
 /* Agent map. What it owns: the #wmap panel (a canvas that fills it), the fog, the banners, the pin and the pointer handling.
-   Art: assets/img/world-map.webp (window.WILDWOOD_IMG['world-map'], embedded by build.py), drawn from docs/world-map.svg by tools/world-map-bake.js; its regions, towns and banner places are
-   world-map-data.js (generated with it: WMAP_*). Coordinates here are "art pixels" (2000 x 1574) unless a name says screen.
-   The docs map shows seven regions; four are built (home forest = wild, vale, frost = the Hoarfrost Reach, grey = the Greyspine) and sit under fog until `landOpen` says so (that map's own
-   locks: map.js). Gloamhorn, Sunscar, Amber Reach and the Emberwake Isles are not built: fog always, and nothing but "uncharted" is said about them (the docs keep their names to themselves).
-   A click on an open land opens that land's full map (`wmapGo`, the same panel the N key opens); a click on fog says what bars the way. The pin: `wmapPin`.
+   Art: the atlas itself, painted once by wmapPaint (world-map-data.js, which also holds the art's frame: 1 art pixel = 2 m, wmapArt / wmapWorld). All six lands are built; each sits under fog until `landOpen` says so (that map's own
+   locks: map.js). The Amber Reach and the sea's corners (the Emberwake Isles in the south) are not built: fog always, and nothing but "uncharted" is said about them.
+   A click on an open land opens that land's full map (`wmapGo`, the same panel the N key opens); a click on fog says what bars the way. The pin: `wmapPin` (exact: the atlas is the map).
    Used by: map.js (the "World" button, `sizeFullMap` hides it in a dungeon, `updateMap` calls `wmapUpdate`), panels.js (PANELS), keybinds.js (the `world` key). Test: tools/client-smoke.js. */
-const WMAP_LAND={home:'wild',vale:'vale',hoar:'frost',grey:'grey'};   // the game's lands on the docs map's regions
-const WMAP_IDS=['home','vale','hoar','grey'];
-const WMAP_TOWN={home:'village',vale:'hanami',hoar:'rimehold',grey:'highmark'}, WMAP_TOWN_NAME={village:'the village',hanami:'Hanami',rimehold:'Rimehold',highmark:'Highmark'};
+const WMAP_IDS=['home','vale','hoar','grey','sun','gloam'], WMAP_FADE=['vale','hoar','grey','sun','gloam'];
+const WMAP_TOWN_NAME={home:'the village',vale:'Hanami',hoar:'Rimehold',grey:'Highmark',sun:'Glasswell',gloam:'Wraithwick'};
 // what stops you, by the same words the land maps use (`placeName`, map.js)
-const WMAP_LOCK={vale:'The Sakura Vale: the Greyfall bridge is barred until the Rootwarden falls',hoar:'The Hoarfrost Reach: Frostgate Pass is walled with ice until Akaoni falls',grey:'The Greyspine: the glacier valley\'s ice fall holds the way until Ymrik falls'};
-const WMAP_BANKS=[[1830,170,230,150],[1800,1400,260,150],[40,1050,130,300]];   // fog on the open sea: [x, y, rx, ry] (the corners of the known world)
-const WMAP_FOG_MAX={vale:.86,hoar:.86,grey:.86};   // a locked land's fog lets its shape show a little; the unbuilt regions' fog is solid
+const WMAP_LOCK={vale:'The Sakura Vale: the Greyfall bridge is barred until the Rootwarden falls',hoar:'The Hoarfrost Reach: Frostgate Pass is walled with ice until Akaoni falls',grey:'The Greyspine: the glacier valley\'s ice fall holds the way until Ymrik falls',sun:'The Sunscar: the River Pass and Redgate Canyon are shut until the Gryphon Queen falls',gloam:'The Gloamhorn: the Windswept Neck is shut until the Mountain Golem falls'};
+const WMAP_FOG_MAX={vale:.86,hoar:.86,grey:.86,sun:.86,gloam:.86};   // a locked land's fog lets its shape show a little; the unbuilt regions' fog is solid
 const wmapEl=$('#wmap'), wmapC=$('#wmapC'), wmapX=wmapC.getContext('2d'), wmapTip=$('#wmapTip'), wmapBox=$('#wmapBox');
-const WM={k:.5,min:.3,max:1.5,cx:WMAP_W/2,cy:WMAP_H/2,w:300,h:300,img:null,fog:null,hot:null,ptr:new Map(),moved:0,pinch:0,t:0,acc:0,delay:0,fade:{vale:1,hoar:1,grey:1},seen:null,fit:null};
+const WM={k:.5,min:.3,max:1.5,cx:WMAP_W/2,cy:WMAP_H/2,w:300,h:300,img:null,fog:null,hot:null,ptr:new Map(),moved:0,pinch:0,t:0,acc:0,delay:0,fade:{vale:1,hoar:1,grey:1,sun:1,gloam:1},seen:null,art:null,mask:{}};
 const wmapSx=ax=>(ax-WM.cx)*WM.k+WM.w/2, wmapSy=ay=>(ay-WM.cy)*WM.k+WM.h/2;
 const wmapAx=sx=>(sx-WM.w/2)/WM.k+WM.cx, wmapAy=sy=>(sy-WM.h/2)/WM.k+WM.cy;
 function wmapRng(s){ return ()=>{ s=s+0x6D2B79F5|0; let t=Math.imul(s^s>>>15,1|s); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
-function wmapPip(p,x,y){ let c=false; for(let i=0,j=p.length-1;i<p.length;j=i++){ const a=p[i], b=p[j]; if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0]) c=!c; } return c; }
-function wmapEdgeDist(p,x,y){ let m=1e9; for(let i=0,j=p.length-1;i<p.length;j=i++){ const a=p[j], b=p[i], dx=b[0]-a[0], dy=b[1]-a[1], t=clamp(((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy||1)); m=Math.min(m,Math.hypot(x-a[0]-dx*t,y-a[1]-dy*t)); } return m; }
-// what is under a point of the art: a land's id ('home'...), 'unbuilt' (a region or fog bank that does not exist yet), or null (open sea)
+// what is under a point of the art: a land's id ('home'...), 'unbuilt' (the Amber Reach or a fog bank that does not exist yet), or null (open sea)
 function wmapRegionAt(x,y){
-  for(const id of WMAP_IDS) if(wmapPip(WMAP_REG[WMAP_LAND[id]],x,y)) return id;
-  for(const k of ['horn','sun','amber']) if(wmapPip(WMAP_REG[k],x,y)) return 'unbuilt';
-  for(const I of WMAP_ISLES) if(wmapPip(I,x,y)) return 'unbuilt';
+  const w=wmapWorld(x,y), l=waLand(w[0],w[1]);
+  if(l&&l!=='amber') return l;
+  if(l==='amber') return 'unbuilt';
   for(const B of WMAP_BANKS) if(((x-B[0])/B[2])**2+((y-B[1])/B[3])**2<1) return 'unbuilt';
   return null;
 }
 /* ---- where you are on the art ---- */
-// least squares  art = a x + b z + c  through the four villages and the towns drawn for them; only its slopes are used (the docs map is a drawing, not a survey)
-function wmapFit(){
-  if(WM.fit) return WM.fit;
-  const W=[VIL,VIL2,VIL3,VIL4], T=[WMAP_TOWNS.village,WMAP_TOWNS.hanami,WMAP_TOWNS.rimehold,WMAP_TOWNS.highmark];
-  const solve=pick=>{ const M=[[0,0,0],[0,0,0],[0,0,0]], r=[0,0,0];
-    W.forEach((w,i)=>{ const a=[w.x,w.z,1]; for(let p=0;p<3;p++){ r[p]+=a[p]*T[i][pick]; for(let q=0;q<3;q++) M[p][q]+=a[p]*a[q]; } });
-    for(let i=0;i<3;i++){ let m=i; for(let j=i+1;j<3;j++) if(Math.abs(M[j][i])>Math.abs(M[m][i])) m=j; [M[i],M[m]]=[M[m],M[i]]; [r[i],r[m]]=[r[m],r[i]];
-      for(let j=i+1;j<3;j++){ const f=M[j][i]/M[i][i]; for(let k=i;k<3;k++) M[j][k]-=f*M[i][k]; r[j]-=f*r[i]; } }
-    const x=[0,0,0]; for(let i=2;i>=0;i--){ let s=r[i]; for(let j=i+1;j<3;j++) s-=M[i][j]*x[j]; x[i]=s/M[i][i]; } return x; };
-  return WM.fit={u:solve(0),v:solve(1)};
-}
-// your pin: from your land's village (exact there) by the fitted slopes, and never outside your land's region (a coast the drawing does not have is walked back to the shore)
 function wmapPin(){
-  if(dgIn()||landHere()==='sun'||landHere()==='gloam') return null;   // (a run is far from the map; the Sunscar is not drawn on the docs map yet: no pin there)
-  const land=landHere(), V=[VIL,VIL2,VIL3,VIL4][['home','vale','hoar','grey'].indexOf(land)], T=WMAP_TOWNS[WMAP_TOWN[land]], F=wmapFit(), dx=P.x-V.x, dz=P.z-V.z;
-  const tx=T[0]+F.u[0]*dx+F.u[1]*dz, ty=T[1]+F.v[0]*dx+F.v[1]*dz, poly=WMAP_REG[WMAP_LAND[land]];
-  if(wmapPip(poly,tx,ty)&&wmapEdgeDist(poly,tx,ty)>6) return [tx,ty];
-  let lo=0, hi=1; for(let i=0;i<14;i++){ const m=(lo+hi)/2; if(wmapPip(poly,T[0]+(tx-T[0])*m,T[1]+(ty-T[1])*m)&&wmapEdgeDist(poly,T[0]+(tx-T[0])*m,T[1]+(ty-T[1])*m)>6) lo=m; else hi=m; }
-  return [T[0]+(tx-T[0])*lo,T[1]+(ty-T[1])*lo];
+  if(dgIn()) return null;   // (a run is far from the map)
+  return wmapArt(clamp(P.x,WX0,WX1),clamp(P.z,WZ0,WZ1));
 }
 /* ---- the fog ---- */
 // one cloud: a lump of overlapping domes. The dark outlines of all of them go down first, then the fills over them, so only the lump's outside keeps an outline
@@ -60,33 +38,32 @@ function wmapPuff(x,cx,cy,r,rnd){
   x.fillStyle=g; for(const d of dome){ x.beginPath(); x.arc(cx+d[0],cy+d[1],r*d[2],0,TAU); x.fill(); }
   x.strokeStyle='rgba(205,160,245,.5)'; x.lineWidth=Math.max(1.5,r*0.09); x.beginPath(); x.arc(cx,cy,r*0.84,Math.PI*1.12,Math.PI*1.62); x.stroke();
 }
-// a fog group: puffs over some polygons / ellipses (a little past their edges), drawn once into a canvas of its own at `scale` of the art and cropped to its box
-function wmapFogGroup(polys,ells,spacing,seed,scale){
+// a fog group: puffs where test(artX, artY, spacing) says the ground is near what the group hides, drawn once into a canvas of its own at `scale` of the art and cropped to the box [x0,y0,x1,y1] (art pixels)
+function wmapFogGroup(test,box,spacing,seed,scale){
   const rnd=wmapRng(seed), pad=spacing*2.8;   // (a puff reaches about 1.8 spacings: the box must not cut one)
-  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
-  for(const p of polys) for(const q of p){ x0=Math.min(x0,q[0]); y0=Math.min(y0,q[1]); x1=Math.max(x1,q[0]); y1=Math.max(y1,q[1]); }
-  for(const e of ells){ x0=Math.min(x0,e[0]-e[2]); y0=Math.min(y0,e[1]-e[3]); x1=Math.max(x1,e[0]+e[2]); y1=Math.max(y1,e[1]+e[3]); }
-  x0=Math.floor(x0-pad); y0=Math.floor(y0-pad); x1=Math.ceil(x1+pad); y1=Math.ceil(y1+pad);
-  const near=(px,py)=>polys.some(p=>wmapPip(p,px,py)||wmapEdgeDist(p,px,py)<spacing*0.55)||ells.some(e=>((px-e[0])/(e[2]+spacing*0.4))**2+((py-e[1])/(e[3]+spacing*0.4))**2<1);
-  const puffs=[]; for(let py=y0;py<y1;py+=spacing*0.8) for(let px=x0;px<x1;px+=spacing){ const jx=px+(rnd()-0.5)*spacing*0.8+((Math.round((py-y0)/(spacing*0.8))&1)?spacing*0.5:0), jy=py+(rnd()-0.5)*spacing*0.6; if(near(jx,jy)) puffs.push([jx,jy,spacing*(0.72+rnd()*0.42)]); }
+  const x0=Math.floor(box[0]-pad), y0=Math.floor(box[1]-pad), x1=Math.ceil(box[2]+pad), y1=Math.ceil(box[3]+pad);
+  const puffs=[]; for(let py=y0;py<y1;py+=spacing*0.8) for(let px=x0;px<x1;px+=spacing){ const jx=px+(rnd()-0.5)*spacing*0.8+((Math.round((py-y0)/(spacing*0.8))&1)?spacing*0.5:0), jy=py+(rnd()-0.5)*spacing*0.6; if(test(jx,jy,spacing)) puffs.push([jx,jy,spacing*(0.72+rnd()*0.42)]); }
   puffs.sort((a,b)=>a[1]-b[1]);
   const cv=document.createElement('canvas'); cv.width=Math.ceil((x1-x0)*scale); cv.height=Math.ceil((y1-y0)*scale); const x=cv.getContext('2d'); x.scale(scale,scale); x.translate(-x0,-y0);
   for(const p of puffs){ const h=x.createRadialGradient(p[0],p[1],0,p[0],p[1],p[2]*2.3); h.addColorStop(0,'rgba(80,40,120,.34)'); h.addColorStop(1,'rgba(80,40,120,0)'); x.fillStyle=h; x.beginPath(); x.arc(p[0],p[1],p[2]*2.3,0,TAU); x.fill(); }   // (a haze under them, so the fringe is soft)
   for(const p of puffs) wmapPuff(x,p[0],p[1],p[2],rnd);
   return {cv,x0,y0,scale,n:puffs.length};
 }
+// near a land: the point, or one 0.55 spacings (2 m an art pixel) away, is on it
+const wmapNearLand=(l,px,py,sp)=>[[0,0],[1,0],[-1,0],[0,1],[0,-1]].some(d=>{ const w=wmapWorld(px+d[0]*sp*0.55,py+d[1]*sp*0.55); return waLand(w[0],w[1])===l; });
+function wmapLandBox(l){ const R=LANDS[l], a=wmapArt(R.x0,R.z0), b=wmapArt(R.x1,R.z1); return [a[0],a[1],b[0],b[1]]; }
 function wmapFogBuild(){
   if(WM.fog) return;
-  const sc=LITE?0.33:LOW?0.45:0.6, R=WMAP_REG;
-  WM.fog={base:[wmapFogGroup([R.horn],[],22,11,sc),wmapFogGroup([R.sun,R.amber],[],22,12,sc),wmapFogGroup(WMAP_ISLES,[],22,13,sc),   // the unbuilt regions and the banks of the open sea: never lift
-      ...WMAP_BANKS.map((b,i)=>wmapFogGroup([],[b],22,14+i,sc))],
-    vale:wmapFogGroup([R.vale],[],24,21,sc),hoar:wmapFogGroup([R.frost],[],24,31,sc),grey:wmapFogGroup([R.grey],[],24,41,sc)};   // these lift as their lands open (a group a cluster keeps the canvases small)
+  const sc=LITE?0.33:LOW?0.45:0.6, A=WMAP_AMBER;
+  WM.fog={base:[wmapFogGroup((px,py,sp)=>wmapNearLand('amber',px,py,sp),[A.x0,A.y0,A.x1,A.y1],22,12,sc),   // the unbuilt Amber Reach and the banks of the open sea: never lift
+      ...WMAP_BANKS.map((b,i)=>wmapFogGroup((px,py,sp)=>((px-b[0])/(b[2]+sp*0.4))**2+((py-b[1])/(b[3]+sp*0.4))**2<1,[b[0]-b[2],b[1]-b[3],b[0]+b[2],b[1]+b[3]],22,14+i,sc))]};
+  WMAP_FADE.forEach((l,i)=>{ WM.fog[l]=wmapFogGroup((px,py,sp)=>wmapNearLand(l,px,py,sp),wmapLandBox(l),24,21+10*i,sc); });   // these lift as their lands open (a group a cluster keeps the canvases small)
 }
 /* ---- state of the fog: which lands you have already seen open (so a new one is revealed once) ---- */
 function wmapSeen(){ if(!WM.seen){ try{ WM.seen=JSON.parse(localStorage.getItem('wildwood-wmap'))||[]; }catch(_){ WM.seen=[]; } if(!Array.isArray(WM.seen)) WM.seen=[]; } return WM.seen; }
 function wmapSeenAdd(id){ const s=wmapSeen(); if(!s.includes(id)){ s.push(id); try{ localStorage.setItem('wildwood-wmap',JSON.stringify(s)); }catch(_){} } }
 function wmapFogReset(){
-  for(const id of ['vale','hoar','grey']) WM.fade[id]=landOpen(id)&&wmapSeen().includes(id)?0:1;   // an open land you have not seen open yet starts under fog and the fog lifts when the map opens
+  for(const id of WMAP_FADE) WM.fade[id]=landOpen(id)&&wmapSeen().includes(id)?0:1;   // an open land you have not seen open yet starts under fog and the fog lifts when the map opens
   WM.delay=0.5;
 }
 /* ---- view ---- */
@@ -102,11 +79,17 @@ function wmapSize(){
   WM.k=clamp(WM.k,WM.min,WM.max); wmapClamp();
 }
 function wmapZoom(f,sx,sy){ const ax=wmapAx(sx), ay=wmapAy(sy); WM.k=clamp(WM.k*f,WM.min,WM.max); WM.cx=ax-(sx-WM.w/2)/WM.k; WM.cy=ay-(sy-WM.h/2)/WM.k; wmapClamp(); }
-function wmapHome(){   // the land and its isles fill the view (the art has a wide margin of sea), centred
-  WM.k=clamp(Math.min(WM.w/1500,WM.h/1300),WM.min,WM.max); WM.cx=935; WM.cy=855; wmapClamp();
+function wmapHome(){   // the whole atlas fills the view, centred
+  WM.k=clamp(Math.min(WM.w/WMAP_W,WM.h/WMAP_H)*1.05,WM.min,WM.max); WM.cx=WMAP_W/2; WM.cy=WMAP_H/2; wmapClamp();
 }
 /* ---- drawing ---- */
-function wmapPath(x,poly){ x.beginPath(); poly.forEach((p,i)=>{ const sx=wmapSx(p[0]), sy=wmapSy(p[1]); if(i) x.lineTo(sx,sy); else x.moveTo(sx,sy); }); x.closePath(); }
+// a land's silhouette as a canvas (drawn once, for the glow under the pointer): its ground in a pale fill, on the art's 12 m grid
+function wmapMask(l){
+  if(WM.mask[l]) return WM.mask[l];
+  const res=12, R=LANDS[l], w=Math.ceil((R.x1-R.x0)/res), h=Math.ceil((R.z1-R.z0)/res), cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+  const cx=cv.getContext('2d'), im=cx.createImageData(w,h); for(let j=0;j<h;j++) for(let i=0;i<w;i++) if(waLand(R.x0+(i+.5)*res,R.z0+(j+.5)*res)===l){ const k=(j*w+i)*4; im.data[k]=255; im.data[k+1]=244; im.data[k+2]=200; im.data[k+3]=255; }
+  cx.putImageData(im,0,0); return WM.mask[l]={cv,res};
+}
 // a scroll with rolled ends, like the reference's labels; its width is guessed from the letters (measureText is not worth its cost here)
 const wmapBannerW=name=>Math.round(name.length*8.6+44);
 function wmapBanner(x,cx,cy,name,sub,hot,sc){   // sc: a scale for a small canvas (the land maps' title, ui/map-style.js)
@@ -138,23 +121,22 @@ function wmapFogDraw(x,g,alpha,bob){
 function wmapDraw(){
   const x=wmapX, W=WM.w, H=WM.h, t=WM.t; x.setTransform(DPR,0,0,DPR,0,0);
   x.fillStyle='#16486c'; x.fillRect(0,0,W,H);
-  const ok=WM.img&&WM.img.complete&&WM.img.naturalWidth!==0;
-  if(ok){ x.imageSmoothingEnabled=true; x.imageSmoothingQuality='high'; x.drawImage(WM.img,wmapSx(0),wmapSy(0),WMAP_W*WM.k,WMAP_H*WM.k); }
-  else { x.fillStyle='rgba(238,240,226,.75)'; x.font='14px Inter, system-ui, sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText('Unrolling the map…',W/2,H/2); }
+  if(!WM.art) WM.art=wmapPaint(LITE||LOW?12:6);
+  { const a=wmapArt(WX0,WZ0), s=WM.k*WM.art.res/2; x.imageSmoothingEnabled=true; x.imageSmoothingQuality='high'; x.drawImage(WM.art.cv,wmapSx(a[0]),wmapSy(a[1]),WM.art.cv.width*s,WM.art.cv.height*s); }
   wmapFogBuild();
   WM.fog.base.forEach((g,i)=>wmapFogDraw(x,g,1,Math.sin(t*0.7+i)*3));
-  for(const id of ['vale','hoar','grey']) wmapFogDraw(x,WM.fog[id],WM.fade[id]*WMAP_FOG_MAX[id],Math.sin(t*0.7+id.length+id.charCodeAt(0))*3);
+  for(const id of WMAP_FADE) wmapFogDraw(x,WM.fog[id],WM.fade[id]*WMAP_FOG_MAX[id],Math.sin(t*0.7+id.length+id.charCodeAt(0))*3);
   if(WM.hot&&WM.hot!=='unbuilt'&&landOpen(WM.hot)){   // the land under the pointer glows (over the fog: its neighbours' clouds cover its edge)
-    wmapPath(x,WMAP_REG[WMAP_LAND[WM.hot]]); x.fillStyle='rgba(255,244,200,.1)'; x.fill();
-    x.save(); x.shadowColor='rgba(255,222,120,.8)'; x.shadowBlur=14; x.strokeStyle='rgba(255,240,180,.9)'; x.lineWidth=2.6; x.lineJoin='round'; x.stroke(); x.restore();
+    const M=wmapMask(WM.hot), R=LANDS[WM.hot], a=wmapArt(R.x0,R.z0), s=WM.k*M.res/2;
+    x.save(); x.globalAlpha=0.16; x.shadowColor='rgba(255,222,120,.9)'; x.shadowBlur=14; x.drawImage(M.cv,wmapSx(a[0]),wmapSy(a[1]),M.cv.width*s,M.cv.height*s); x.restore();
   }
   x.textAlign='center'; x.textBaseline='middle';
   for(const id of WMAP_IDS){
     const a=id==='home'?1:1-clamp(WM.fade[id]*1.6); if(a<=0.02||!landOpen(id)) continue;
     x.globalAlpha=a;
-    const T=WMAP_TOWNS[WMAP_TOWN[id]]; x.font='italic 12px Georgia, serif'; x.lineWidth=3.6; x.lineJoin='round'; x.strokeStyle='rgba(247,238,214,.92)'; x.fillStyle='#3a2410';
-    const tx=wmapSx(T[0]), ty=wmapSy(T[1])+Math.max(17,36*WM.k); x.strokeText(WMAP_TOWN_NAME[WMAP_TOWN[id]],tx,ty); x.fillText(WMAP_TOWN_NAME[WMAP_TOWN[id]],tx,ty);
-    const B=WMAP_BANNER[WMAP_LAND[id]]; wmapBanner(x,wmapSx(B.x),wmapSy(B.y),B.name,'Levels '+B.levels,WM.hot===id,clamp(WM.w/760,0.72,1));   // (smaller scrolls on a phone)
+    const T=wmapArt(WMAP_TOWNS[id].x,WMAP_TOWNS[id].z); x.font='italic 12px Georgia, serif'; x.lineWidth=3.6; x.lineJoin='round'; x.strokeStyle='rgba(247,238,214,.92)'; x.fillStyle='#3a2410';
+    const tx=wmapSx(T[0]), ty=wmapSy(T[1])+Math.max(17,36*WM.k); x.fillStyle='#3a2410'; x.beginPath(); x.arc(tx,wmapSy(T[1]),3,0,TAU); x.fill(); x.strokeText(WMAP_TOWN_NAME[id],tx,ty); x.fillText(WMAP_TOWN_NAME[id],tx,ty);
+    const B=WMAP_BANNER[id]; wmapBanner(x,wmapSx(B.x),wmapSy(B.y),B.name,'Levels '+B.levels,WM.hot===id,clamp(WM.w/760,0.72,1));   // (smaller scrolls on a phone)
     x.globalAlpha=1;
   }
   { const p=wmapPin(); if(p) wmapPinDraw(x,wmapSx(p[0]),wmapSy(p[1]),t); }
@@ -165,7 +147,7 @@ function wmapUpdate(dt){
   if(wmapEl.hidden) return;
   WM.acc+=dt; if(WM.acc<(LOW?0.05:0.033)) return; dt=WM.acc; WM.acc=0;   // (30 frames a second are plenty for a map; 20 on a weak phone)
   WM.t+=dt; WM.delay-=dt;
-  for(const id of ['vale','hoar','grey']){
+  for(const id of WMAP_FADE){
     const want=landOpen(id)?0:1;
     if(want===0&&WM.fade[id]>0&&WM.delay>0) continue;   // (a short beat before the fog lifts)
     WM.fade[id]=clamp(WM.fade[id]+(want?1:-1)*Math.min(dt,0.1)/1.4);
@@ -181,14 +163,14 @@ function wmapSay(sx,sy,text){
 function wmapWhat(id){
   if(id==='unbuilt') return 'Uncharted: fog hides what lies beyond';
   if(!id) return '';
-  const B=WMAP_BANNER[WMAP_LAND[id]];
+  const B=WMAP_BANNER[id];
   if(!landOpen(id)) return WMAP_LOCK[id];
   return B.name+' · levels '+B.levels+(landHere()===id?' · you are here':' · click to open its map');
 }
 // the banner of an open land counts as the land (it is drawn over the neighbours' edges)
 function wmapBannerAt(sx,sy){
   for(const id of WMAP_IDS){ if(!landOpen(id)||(id!=='home'&&WM.fade[id]>0.6)) continue;
-    const B=WMAP_BANNER[WMAP_LAND[id]]; if(Math.abs(sx-wmapSx(B.x))<=wmapBannerW(B.name)/2+6&&Math.abs(sy-wmapSy(B.y))<=23) return id; }
+    const B=WMAP_BANNER[id]; if(Math.abs(sx-wmapSx(B.x))<=wmapBannerW(B.name)/2+6&&Math.abs(sy-wmapSy(B.y))<=23) return id; }
   return null;
 }
 function wmapHover(sx,sy){
@@ -229,14 +211,9 @@ wmapC.addEventListener('wheel',e=>{ e.preventDefault(); const p=wmapPos(e); wmap
 $('#wmapIn').addEventListener('click',()=>wmapZoom(1.5,WM.w/2,WM.h/2));
 $('#wmapOut').addEventListener('click',()=>wmapZoom(1/1.5,WM.w/2,WM.h/2));
 /* ---- opening ---- */
-function wmapLoad(){
-  if(WM.img||typeof Image!=='function') return;
-  const src=(window.WILDWOOD_IMG||{})['world-map']; if(!src) return;
-  WM.img=new Image(); WM.img.src=src;
-}
 function wmapOpen(){
   if(dgIn()) return;   // (a run has its own map)
-  openPanel('wmap'); wmapLoad(); wmapSize(); wmapHome(); wmapFogReset(); WM.ptr.clear(); WM.hot=null; wmapTip.hidden=true; wmapDraw();
+  openPanel('wmap'); wmapSize(); wmapHome(); wmapFogReset(); WM.ptr.clear(); WM.hot=null; wmapTip.hidden=true; wmapDraw();
   $('#wmapHere').textContent='You are in '+LANDS[landHere()].name.replace(/^The /,'the ');
 }
 function wmapToggle(){ if(wmapEl.hidden) wmapOpen(); else closePanels(); }

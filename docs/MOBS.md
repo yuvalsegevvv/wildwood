@@ -19,11 +19,11 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | The grey-veined monsters of the main quest | `GREY_DEFS` src/shared/monster-defs.js:280 |
 | Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:285 |
 | How many of each kind exist, and where their camps are (a zone holds 40 of the level-1 kind down to 20 of level 15; the vale and the Reach 12 of each; `count` overrides) | `MON_COUNT` src/server/monsters.js:18, `initMonstersS` src/server/monsters.js:19 |
-| Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King's beach | `ZONES` src/shared/zones.js:10, src/shared/vale.js:98, src/shared/hoarfrost.js:86, src/shared/beach.js:21 |
-| Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:47 |
+| Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King's beach | `ZONES` src/shared/zones.js:12, src/shared/vale.js:56, src/shared/hoarfrost.js:88, src/shared/beach.js:6 |
+| Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:53 |
 | What a kill pays (XP, coins, an item roll, the material, quests, boss skills) | `rewardKill` src/server/combat.js:68 |
 | Materials a kind drops (one per kind, `MAT_NAMES`) | `MATS` src/shared/drops.js:13 |
-| What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:31, `monK` src/server/tiers.js:13 |
+| What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:32, `monK` src/server/tiers.js:13 |
 | Boss fights: engagement, phases, reset / one move set per boss / the move primitives | `BOSSES` src/server/boss.js:11 / `BOSS_KITS` src/server/boss-fx.js:16 / src/server/boss-fx.js |
 | The boss notices on the quest board | `BOSS_QUESTS` src/shared/quests.js:32 |
 | The dungeon bosses and their helpers (made on demand in a run's round hall, not in `BOSS_DEFS`) | `DG_BOSSES` src/shared/dungeons/bosses.js:17, `DG_BOSS_DEFS` (same file), move sets src/server/dungeons/boss-kits.js:43 |
@@ -366,10 +366,10 @@ Not in `MON_DEFS`: made by the boss kit.
 
 | Dungeon | Id | Land | Entrance zone | Lv | Walkers | Guardians | Boss | Music | Defined |
 |---|---|---|---|---|---|---|---|---|---|
-| The Hollow Roots | `hollowroots` | Wildwood | Ancient Grove | 30 | Treant (6), Deathcap (8), Shroomling (2), Bog Slime (7), Dire Boar (10) | Ancient Treant (15), Rotwood Treant (12) | Amanita, the Sporemother | wild3 | src/shared/dungeons/themes/hollowroots.js:9 |
+| The Hollow Roots | `hollowroots` | Wildwood | Treant Grove | 30 | Treant (6), Deathcap (8), Shroomling (2), Bog Slime (7), Dire Boar (10) | Ancient Treant (15), Rotwood Treant (12) | Amanita, the Sporemother | wild3 | src/shared/dungeons/themes/hollowroots.js:9 |
 | Jade Spring Grottoes | `jadesprings` | Sakura Vale | Jade Falls | 30 | Kappa (16), Jade Slime (22), Blue Oni (23), Karasu Tengu (23), Jorogumo (20), Mountain Boar (18) | Bamboo Treant (19) | Gawataro, the Jade Elder | vale2 | src/shared/dungeons/themes/jadesprings.js:9 |
 | Bonefrost Barrow | `bonefrostbarrow` | Hoarfrost Reach | Bonefrost Barrow | 30 | Draugr (26), Rime Revenant (29), Barrow Wight (29), Ice Wraith (26), Frost Reaver (24) | — | Haugbui, the Barrow Lord | hoar2 | src/shared/dungeons/themes/bonefrostbarrow.js:9 |
-| The Blackseam | `blackseam` | The Greyspine | Highmark Pastures | 30 | Mountain Goblin (28), Crystal Beetle (27), Granite Slime (26), Quartz Slime (30), Cliff Boar (26), Rock Troll (31), Mist Wraith (29) | Granite Golem (32) | Garrick, the Seam Foreman | hoar1 | src/shared/dungeons/themes/blackseam.js:9 |
+| The Blackseam | `blackseam` | The Greyspine | Miners' Scree | 30 | Mountain Goblin (28), Crystal Beetle (27), Granite Slime (26), Quartz Slime (30), Cliff Boar (26), Rock Troll (31), Mist Wraith (29) | Granite Golem (32) | Garrick, the Seam Foreman | hoar1 | src/shared/dungeons/themes/blackseam.js:9 |
 | The Sandglass | `sandglass` | The Sunscar | The Whitefloor | 40 | Dust Djinn (33), Dune Prowler (33), Tomb Guardian (34), Sun Priest (35), Efreet (36) | Sandstone Golem (34), Dune Drake (35) | Khet, the Hourkeeper | sun2 | src/shared/dungeons/themes/sandglass.js:9 |
 | The Gloamvault | `gloamvault` | The Gloamhorn | Vault Heath | 40 | Hollow Knight (38), Weeping Widow (38), Black Revenant (40), Drowned Sailor (32), Deep Siren (40), Grave Hound (37) | Gargoyle (36), Storm Gargoyle (39) | Abbess Morrow, the Drowned Abbess | gloam2 | src/shared/dungeons/themes/gloamvault.js:9 |
 
