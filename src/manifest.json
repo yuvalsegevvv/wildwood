@@ -165,6 +165,7 @@
     "world/zone-props-models.js",
     "world/zone-props-models2.js",
     "world/zone-props.js",
+    "world/zone-fire.js",
     "world/far-lands.js",
     "world/atlas-water.js",
     "world/bridges.js",
