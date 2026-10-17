@@ -50,7 +50,7 @@ function moFoot(w,len,h,f,n,cc,boot,bc){
 }
 function folkGeo(d,p){
   const F=FOLKS[p.form]||FOLKS.goblin, G={F}, skin=p.skin, lr=F.lr, ar=F.ar, fur=p.form==='yeti'?p.fur:null, top=p.top||'tshirt', bot=p.bottom||'shorts', tc=p.topColor, bc=p.bottomColor;
-  const furP=fur?moFurPaint(fur):null, skinF=(x,y,z,c)=>{ c.set(skin).multiplyScalar(0.9+0.2*moNoise(x,y,z,9)); if(p.embers&&Math.abs(moNoise(x,y,z,4)-0.5)<0.03) c.set(p.embers); if(p.form==='goblin'||p.form==='troll'){ if(moNoise(x+3,y,z,26)>0.78) c.multiplyScalar(0.72); } };   // blotches, warts
+  const furP=fur?moFurPaint(fur):null, skinF=(x,y,z,c)=>{ c.set(skin).multiplyScalar(0.9+0.2*moNoise(x,y,z,9)); if(p.embers&&Math.abs(moNoise(x,y,z,4)-0.5)<0.03) c.set(p.embers); if(p.form==='goblin'||p.form==='troll'){ if(moNoise(x+3,y,z,26)>0.78) c.multiplyScalar(0.72); } if(p.mottle&&moNoise(x+9,y,z,7)>0.6) moTint(c,p.mottle,0.55); };   // blotches, warts, and pal.mottle (frost, lichen)   // blotches, warts
   F.hipY=F.leg[0]+F.leg[1]+F.foot; F.shZ=0; F.headZ=-0.01;
   const clothed=top==='jacket'||top==='hoodie'||top==='plate', hem=clothed?-0.05:0.14;
   const plate=(c,y)=>{ c.set(tc).multiplyScalar(0.8+0.3*(Math.floor((y+1)*13)&1)); };

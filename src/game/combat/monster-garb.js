@@ -1,7 +1,7 @@
 //@ Armour and straps on the goblin family's jerkins (pal.garb): studded leather, lacquered lames and a banner, a miner's cuirass and pack, a sash and bandolier, hemp rope
 /* Agent map. Called by moFolkTorsoExtras (monster-gear.js) when a def's pal has `garb`; every part is in torso space (origin at the hip joint, -z the front, rings from
    monster-folk.js). garb: 'studs' (hobgoblin), 'lame' (Goblin Ashigaru), 'mail' (Mountain Goblin), 'sash' (Desert Raider), 'rope' (Wrecker Goblin), 'chief' (Goblin Chieftain), 'priest' (Sun Priest),
-   'yama' (Karasu Tengu). Parts add to the torso's own
+   'yama' (Karasu Tengu), 'ice' (Frost Troll), 'rock' (Rock Troll), 'wrap' (Dune Mummy). Parts add to the torso's own
    merged geometry (a few hundred triangles each). Look at it: node tools/monster-preview.js out.png --ids hobgoblin,ashigaru,minegoblin,raider,wrecker,chieftain,sunpriest,tengu */
 const moGarbLeather=(hex,k)=>(x,y,z,c)=>{ c.set(hex).multiplyScalar((k||1)*(0.85+0.3*moNoise(x,y,z,16))); };
 const moGarbMetal=hex=>(x,y,z,c)=>{ c.set(hex).multiplyScalar(0.8+0.3*clamp((y+0.1)*1.4)+0.12*moNoise(x,y,z,22)); };
@@ -121,6 +121,44 @@ function moGarbYama(F,p,rings){   // a yamabushi's: a rope collar with paper str
   const at=moRingAt(rings,0.04); out.push(moEll(0.02,0.09,0.008,0.0,-0.07,at.z-at.rz-0.04,moGarbLeather(0xa8322a),null,6),moEll(0.028,0.026,0.02,0.0,0.04,at.z-at.rz-0.03,moGarbLeather(0xa8322a),null,7));
   return out;
 }
+// a crystal or stone spike with a colour that runs from its base (c0) to its tip (c1)
+function moGarbCrystal(b,dir,len,r,c0,c1,seg){ return moCone(b,dir,len,r,(x,y,z,c)=>{ c.set(c0).lerp(_tint.set(c1),clamp(Math.hypot(x-b[0],y-b[1],z-b[2])/len)).multiplyScalar(0.9+0.2*moNoise(x,y,z,24)); },seg||5); }
+function moGarbIce(F,p,rings){   // the Frost Troll's: glassy crystals grown from the shoulders and down the spine, an ice heart in the chest, rime on the shoulders and a frozen collar
+  const rime=(x,y,z,c)=>{ c.set(0xe4f2fa).multiplyScalar(0.9+0.15*moNoise(x,y,z,18)); }, out=[], ry=0.06*F.ar+0.02, rx=0.09*F.ar+0.03;
+  for(const sd of [-1,1]){
+    out.push(moEll(rx*0.95,0.045,rx*0.85,sd*F.shX,F.shY+0.03+ry*0.7,0,rime,[0,0,sd*0.18],10));
+    for(const [ox,oz,lean,len,r] of [[0.02,0,0.5,0.4,0.088],[-0.08,0.07,-0.15,0.24,0.062],[0.1,-0.07,0.9,0.22,0.058]])   // a tall crystal leaning out over each shoulder and two smaller
+      out.push(moGarbCrystal([sd*(F.shX+ox),F.shY+0.03+ry*0.62,oz],[sd*lean,1.4,oz*3],len,r,0x7fbcdc,0xf4fcff,6));
+  }
+  for(let i=0;i<5;i++){ const y=0.08+i*0.1, q=moGarbAt(rings,(i&1?0.05:-0.05),y,1,-0.015);
+    out.push(moGarbCrystal(q,[(i&1?0.25:-0.25),0.45,1],0.1+0.04*Math.sin(i*1.7+1),0.042,0x7fbcdc,0xe8f8ff,5)); }
+  const h=moGarbAt(rings,0,0.3,-1,-0.01);
+  for(const [dx,dy,l,r] of [[0,0.1,0.22,0.062],[-0.07,-0.05,0.15,0.048],[0.07,-0.05,0.15,0.048]]) out.push(moGarbCrystal([h[0]+dx*0.5,h[1]+dy*0.5,h[2]],[dx*3,dy*3,-1],l,r,0x6aaed4,0xdff4ff,6));
+  out.push(moGarbBand(rings,0.45,0.54,0.026,rime));
+  return out;
+}
+function moGarbRock(F,p,rings){   // the Rock Troll's: boulders for shoulders, a slab on the back and chest, lichen, a kilt of stones
+  const st=k=>(x,y,z,c)=>{ c.set(p.fur).multiplyScalar(k*(0.78+0.4*moNoise(x,y,z,11))); if(moNoise(x+3,y,z,5)>0.7) moTint(c,0x5a7a3a,0.65); }, moss=(x,y,z,c)=>{ c.set(0x5c8a3a).multiplyScalar(0.8+0.35*moNoise(x,y,z,20)); }, out=[];
+  for(const sd of [-1,1]){
+    out.push(moEll(0.2,0.14,0.18,sd*(F.shX+0.03),F.shY+0.1,0,st(1.05),[0.1,sd*0.5,sd*0.2],9),moEll(0.1,0.08,0.09,sd*(F.shX+0.16),F.shY+0.02,0.07,st(0.9),[0.3,0,0.2],7),moEll(0.09,0.07,0.08,sd*(F.shX-0.04),F.shY+0.26,-0.06,st(1.15),[0,0.4,0],7));
+    for(let k=0;k<3;k++) out.push(moEll(0.045,0.022,0.045,sd*(F.shX+0.0+0.05*k)+0.02,F.shY+0.2+0.05*(k&1),0.04*(k-1),moss,null,6));   // moss on top
+  }
+  const bk=moRingAt(rings,0.3), fr=moRingAt(rings,0.3);
+  for(let i=0;i<3;i++) out.push(moEll(0.2-i*0.03,0.07,0.05,(i-1)*0.02,0.12+i*0.14,bk.z+bk.rz+0.02,st(0.8+0.15*i),[0.08*(i-1),0,0.12*(i-1)],9));   // slabs laid down the back
+  out.push(moEll(0.15,0.12,0.04,0,0.32,fr.z-fr.rz-0.01,st(0.85),null,9),moEll(0.07,0.05,0.025,-0.1,0.2,fr.z-fr.rz-0.01,st(1.1),[0,0,0.4],6));
+  for(let i=0;i<7;i++){ const a=i/7*TAU, r=0.2; out.push(moEll(0.065,0.1,0.04,Math.cos(a)*r,-0.07,Math.sin(a)*r*0.85,st(0.85),[0,-a+Math.PI/2,0],6)); }
+  out.push(moGarbBand(rings,0.45,0.53,0.024,st(0.7)));
+  return out;
+}
+function moGarbWrap(F,p,rings){   // the Dune Mummy's: bandages crossed over the chest and wound at neck and hip, with long loose ends trailing from the shoulder and the belt
+  const cl=k=>(x,y,z,c)=>{ c.set(p.wraps).multiplyScalar(k*(0.82+0.3*moNoise(x,y,z,15))); }, out=[];
+  for(const side of [-1,1]) for(const sd of [-1,1]) out.push(moGarbStrap(rings,[sd*0.17,0.46],[-sd*0.15,0.08],side,0.024,cl(1.0-0.08*sd),6));
+  out.push(moGarbBand(rings,0.44,0.54,0.022,cl(0.9)),moGarbBand(rings,-0.04,0.07,0.02,cl(0.85)),moGarbBand(rings,0.22,0.29,0.016,cl(0.8)));
+  const bk=moGarbAt(rings,0.06,0.5,1,0.03), hp=moGarbAt(rings,-0.12,0.02,-1,0.03);
+  out.push(moTube([bk,[bk[0]+0.03,bk[1]-0.14,bk[2]+0.04],[bk[0]-0.02,bk[1]-0.3,bk[2]+0.08],[bk[0]+0.04,bk[1]-0.52,bk[2]+0.08]],0.03,0.012,cl(0.95),6,true),
+    moTube([hp,[hp[0]-0.02,hp[1]-0.14,hp[2]-0.03],[hp[0]+0.03,hp[1]-0.3,hp[2]-0.05],[hp[0]-0.02,hp[1]-0.46,hp[2]-0.03]],0.026,0.01,cl(0.9),6,true));
+  return out;
+}
 function moGarb(F,p,rings){
   if(p.garb==='studs') return moGarbStuds(F,p,rings);
   if(p.garb==='lame') return moGarbLame(F,p,rings);
@@ -130,5 +168,8 @@ function moGarb(F,p,rings){
   if(p.garb==='chief') return moGarbChief(F,p,rings);
   if(p.garb==='priest') return moGarbPriest(F,p,rings);
   if(p.garb==='yama') return moGarbYama(F,p,rings);
+  if(p.garb==='wrap') return moGarbWrap(F,p,rings);
+  if(p.garb==='ice') return moGarbIce(F,p,rings);
+  if(p.garb==='rock') return moGarbRock(F,p,rings);
   return [];
 }
