@@ -63,6 +63,7 @@ function folkGeo(d,p){
     if(fur){ furP(x,y,z,c); return; }
     const rag=0.05*moNoise(x,0,z,14);
     if(p.form==='oni'){ return; }
+    if(p.ribs&&z<-0.01&&y>0.04&&y<0.46){ skinF(x,y,z,c); c.multiplyScalar(0.75); return; }   // a torn shirt: the front of the chest is bare (the ribs are added in monster-gear.js)
     if(y>hem+rag&&!(top==='tshirt'&&y>0.4&&Math.abs(x)>rings[5].rx*0.7)){ if(top==='plate') plate(c,y); else c.set(tc).multiplyScalar(0.85+0.3*moNoise(x,y,z,10)); }
   })];
   tparts.push(moBone([0,F.torso[F.torso.length-2][0]-0.03,0.01],[0,F.headY-0.03,F.headZ+0.02],F.hr*0.42+0.02,F.hr*0.36+0.015,skinF,8));   // the neck
@@ -77,13 +78,14 @@ function folkGeo(d,p){
   const uaFur=fur?moFurLimb(F.arm[0],0.07*ar,0.045*ar,4,8,fur):[];
   G.ua=moMerge([moLimb(armP.map(([t,r])=>[t,r*ar]),F.arm[0],1,1.02,(x,y,z,c)=>{ if(fur) furP(x,y,z,c); else if(sleeve&&y>-F.arm[0]*0.55) c.set(tc).multiplyScalar(top==='plate'?1:0.85); else skinF(x,y,z,c); },moQ(9)),...uaFur]);
   const faFur=fur?moFurLimb(F.arm[1],0.05*ar,0.035*ar,3,8,fur):[], faSides=[-1,1].map(sd=>moMerge([...faFur,moLimb(foreP.map(([t,r])=>[t,r*ar]),F.arm[1],1.1,0.9,(x,y,z,c)=>{ if(p.form==='undead'&&y>-F.arm[1]*0.6&&top==='plate') c.set(tc).multiplyScalar(0.9); else skinF(x,y,z,c); },moQ(9)),
-    ...moHand(ar*(p.form==='goblin'?1.1:1),skinF,p.form==='kappa'?3:(p.form==='yeti'||p.form==='troll'||p.form==='oni')?4:3,(p.form==='goblin'||p.form==='oni'||p.form==='yeti'||p.form==='troll'||p.form==='kappa')?0xd8cfa8:undefined,sd).map(g=>g.translate(0,-F.arm[1],0)),...(B?B.fa[sd]:[])]));
+    ...moHand(ar*(p.form==='goblin'?1.1:p.claws?1.5:1),skinF,p.form==='kappa'?3:(p.form==='yeti'||p.form==='troll'||p.form==='oni')?4:3,p.claws||((p.form==='goblin'||p.form==='oni'||p.form==='yeti'||p.form==='troll'||p.form==='kappa')?0xd8cfa8:undefined),sd).map(g=>g.translate(0,-F.arm[1],0)),...(B?B.fa[sd]:[])]));
   G.faL=faSides[0]; G.faR=faSides[1];
   const legSk=(x,y,z,c,leg)=>{ if(fur) furP(x,y,z,c); else if(bot==='trousers') c.set(bc).multiplyScalar(0.9+0.2*moNoise(x,y,z,12)); else if(bot==='shorts'&&leg==='th'&&y>-F.leg[0]*0.45) c.set(bc).multiplyScalar(0.9+0.2*moNoise(x,y,z,12)); else skinF(x,y,z,c); };
   G.th=moMerge([moLimb(thP.map(([t,r])=>[t,r*lr]),F.leg[0],1,1.05,(x,y,z,c)=>legSk(x,y,z,c,'th'),moQ(9)),...(fur?moFurLimb(F.leg[0],0.1*lr,0.065*lr,3,9,fur):[])]);
   const boot=p.form==='viking'||p.form==='undead'||(top==='jacket'&&p.form==='goblin'), boc=0x2b2420;
   G.sn=moMerge([...(fur?moFurLimb(F.leg[1],0.07*lr,0.045*lr,3,8,fur):[]),moLimb(shP.map(([t,r])=>[t,r*lr]),F.leg[1],0.95,1.05,(x,y,z,c)=>legSk(x,y,z,c,'sn'),moQ(9)),
     ...moFoot(0.05*lr+0.02,0.17,F.foot,skinF,3,p.form==='goblin'||p.form==='oni'||p.form==='troll'||p.form==='yeti'||p.form==='kappa'?0xd8cfa8:undefined,boot,boc).map(g=>g.translate(0,-F.leg[1],0))]);
+  if(p.wraps) for(const k of ['torso','ua','faL','faR','th','sn']) moWrapCloth(G[k],p.wraps);   // a mummy's bandages, over whatever each part wears
   G.weapon=moFolkWeapon(F,p);
   G.extras=moFolkExtras(F,p);
   return G;

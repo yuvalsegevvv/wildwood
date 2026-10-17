@@ -39,30 +39,47 @@ MODELS.boar={
 MODELS.fox={
   geo(d,p){
     const G={}, W=[-1,1], w=p.wolf?1:0, cat=!!p.cat, big=1+0.16*w;
-    const fur=(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.72+0.42*vn3(x*11,y*6,z*11)); const lo=clamp((0.6-y)*5); if(lo>0||(z<-0.4&&y<0.88)) moTint(c,p.belly,Math.max(lo,z<-0.4&&y<0.88?0.55:0)*0.75); };
+    const pat=p.pattern, spotC=p.spot||p.tip, lean=cat?0.88:1;
+    const fur=(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.72+0.42*vn3(x*11,y*6,z*11)); const lo=clamp((0.6-y)*5); if(lo>0||(z<-0.4&&y<0.88)) moTint(c,p.belly,Math.max(lo,z<-0.4&&y<0.88?0.55:0)*0.75);
+      if(pat==='rosette'){ const n=moNoise(x+1,y,z,8); if(y>0.55&&n>0.58) c.set(spotC).multiplyScalar(0.9+0.2*n); if(n>0.72) c.set(p.body).multiplyScalar(0.95); }   // rosettes: a dark ring round a pale centre
+      else if(pat==='lynx'){ if(moNoise(x,y,z,13)>0.7) c.multiplyScalar(0.62); }                                        // a faint speckle
+      else if(pat==='stripe'){ if(Math.sin(z*26+Math.sin(y*9)*0.8)>0.6&&y>0.5) c.multiplyScalar(0.58); }                 // tabby bars across the back
+      else if(pat==='frost'){ if(moNoise(x+4,y,z,7)>0.64) moTint(c,0xffffff,0.8); }                                      // rime frozen onto the coat
+      else if(pat==='saddle'){ if(y>0.74&&Math.abs(x)<0.17) c.multiplyScalar(0.7); }                                    // a dark saddle down the back
+    };
     const pale=(x,y,z,c)=>{ c.set(p.belly).multiplyScalar(0.9+0.15*moNoise(x,y,z,10)); };
-    const body=[moLoftZ([{z:-0.66,rx:0.1*big,ry:0.13*big,y:0.82},{z:-0.46,rx:0.19*big,ry:0.23*big,y:0.72},{z:-0.25,rx:0.24*big,ry:0.27*big,y:0.68},{z:0,rx:0.2*big,ry:0.22*big,y:0.65},{z:0.25,rx:0.22*big,ry:0.25*big,y:0.66},{z:0.5,rx:0.15*big,ry:0.18*big,y:0.66},{z:0.64,rx:0.07*big,ry:0.09*big,y:0.68}],moQ(16),fur),
+    const foxRings=r=>{ const o=[]; for(let i=0;i<r.length-1;i++) for(let k=0;k<3;k++){ const f=k/3, a=r[i], b=r[i+1]; o.push({z:lerp(a.z,b.z,f),rx:lerp(a.rx,b.rx,f),ry:lerp(a.ry,b.ry,f),y:lerp(a.y,b.y,f)}); } o.push(r[r.length-1]); return o; };   // more rings, so a pattern has pixels to live on
+    const trunk=cat?[{z:-0.62,rx:0.1,ry:0.12,y:0.84},{z:-0.45,rx:0.17,ry:0.21,y:0.7},{z:-0.25,rx:0.21,ry:0.25,y:0.66},{z:0,rx:0.16,ry:0.19,y:0.62},{z:0.25,rx:0.2,ry:0.24,y:0.65},{z:0.5,rx:0.15,ry:0.2,y:0.63},{z:0.64,rx:0.07,ry:0.1,y:0.6}]   // a cat: shoulders and haunches high, a tucked waist
+      :[{z:-0.66,rx:0.1*big,ry:0.13*big,y:0.82},{z:-0.46,rx:0.19*big*lean,ry:0.23*big,y:0.72},{z:-0.25,rx:0.24*big*lean,ry:0.27*big,y:0.68},{z:0,rx:0.2*big*lean,ry:0.22*big,y:0.65},{z:0.25,rx:0.22*big*lean,ry:0.25*big,y:0.66},{z:0.5,rx:0.15*big*lean,ry:0.18*big,y:0.66},{z:0.64,rx:0.07*big,ry:0.09*big,y:0.68}];
+    const body=[moLoftZ(foxRings(trunk),moQ(20),fur),
       moEll(0.14*big,0.19*big,0.22,0,0.84,-0.58,fur,null,10)];   // the trunk (chest, waist, hips), the neck
     const sn=cat?0.5:1;   // a cat's muzzle is short
-    body.push(moEll(0.16*big+(cat?0.03:0),0.15*big,0.18,0,0.93,-0.72,fur,null,12),moTube([[0,0.9,-0.8],[0,0.88,-0.8-0.18*sn],[0,0.86,-0.8-0.3*sn]],0.09*big,cat?0.065:0.045,(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.9); moTint(c,p.belly,clamp((0.88-y)*8)); },8,true),
+    body.push(moEll(cat?0.2:0.16*big,cat?0.18:0.15*big,cat?0.2:0.18,0,0.93,-0.72,fur,null,12),moTube([[0,0.9,-0.8],[0,0.88,-0.8-0.18*sn],[0,0.86,-0.8-0.3*sn]],0.09*big,cat?0.065:0.045,(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.9); moTint(c,p.belly,clamp((0.88-y)*8)); },8,true),
       moEll(0.03,0.025,0.035,0,0.86,-0.8-0.31*sn,0x141014,null,6),moEll(0.07*big,0.03,0.12*sn+0.04,0,0.8,-0.8-0.12*sn,pale,null,8),moEll(0.09,0.1,0.06,0,1.05,-0.66,p.tip,null,6));   // head, muzzle, nose, jaw, the blaze
     for(const sd of W){
       const ear=(len,wd)=>moCone([sd*0.1,1.03,-0.6],[sd*0.28,1,0.12],len,wd,(x,y,z,c)=>{ c.set(p.body); if(y>1.03+len*0.72) c.set(cat?0x14100e:0x1a1414); },4);
-      body.push(w?ear(0.2,0.06):cat?ear(0.19,0.06):ear(0.3,0.075));
+      if(cat) body.push(moEll(0.06,0.075,0.028,sd*0.11,1.08,-0.6,(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.9); if(y>1.1) c.set(0x14100e); },[-0.15,0,-sd*0.3],7),moEll(0.034,0.045,0.012,sd*0.11,1.075,-0.625,0xd8a8a0,[-0.15,0,-sd*0.3],6));   // a cat's ears: round, with a pink inside
+      else body.push(w?ear(0.2,0.06):ear(0.3,0.075));
       body.push(moEll(0.028,0.024,0.02,sd*0.1,0.97,-0.81,p.eye,[0,0,-sd*0.3],6),moEll(0.008,0.02,0.01,sd*0.1,0.97,-0.83,0x101010,null,4));
-      if(w||cat) for(let i=0;i<3;i++) body.push(moCone([sd*0.13,0.9-i*0.03,-0.66+i*0.03],[sd*0.6,-0.6,0.3],0.16,0.035,pale,4));   // cheek fur
-      if(cat) body.push(moCone([sd*0.09,1.2,-0.58],[sd*0.1,1,0.05],0.14,0.012,0x14100e,3));   // ear tufts
+      if(w||cat) for(let i=0;i<(p.pattern==='lynx'?6:3);i++) body.push(moCone([sd*0.13,0.9-i*0.03,-0.66+i*0.03],[sd*0.6,-0.6,0.3],p.pattern==='lynx'?0.24:0.16,0.035,pale,4));   // cheek fur (a lynx's long ruffs)
+      if(p.fangs) body.push(moCone([sd*0.045,0.8,-0.97],[sd*0.05,-1,-0.3],0.1,0.018,0xf4f0e0,4));   // lower fangs
+      if(p.pattern==='lynx') body.push(moCone([sd*0.11,1.13,-0.6],[sd*0.1,1,0.05],0.11,0.016,0x14100e,3));   // a lynx's ear tufts
     }
-    if(w||cat) for(let i=0;i<14;i++){ const a=i/14*TAU, ca=Math.cos(a), sa=Math.sin(a); body.push(moCone([ca*0.17*big,0.82+sa*0.19*big,-0.52],[ca*0.25,sa*0.25,1],0.22,0.1,(x,y,z,c)=>{ c.set(p.belly).lerp(_tint.set(p.body),0.3).multiplyScalar(0.8+0.3*vn3(x*12,y*8,z*12)); },4)); }   // the ruff: locks round the neck
-    if(p.mane) for(let i=0;i<9;i++){ const z=-0.6+i*0.12; body.push(moCone([0,0.93-Math.abs(i-2)*0.02-i*0.012,z],[0,1,0.3],0.3-i*0.02,0.045,p.tip,4)); }
+    if(w) for(let i=0;i<14;i++){ const a=i/14*TAU, ca=Math.cos(a), sa=Math.sin(a); body.push(moCone([ca*0.17*big,0.82+sa*0.19*big,-0.52],[ca*0.25,sa*0.25,1],0.22,0.1,(x,y,z,c)=>{ c.set(p.belly).lerp(_tint.set(p.body),0.3).multiplyScalar(0.8+0.3*vn3(x*12,y*8,z*12)); if(p.pattern==='frost') moTint(c,0xdcf4ff,0.55); },4)); }   // the ruff: locks round the neck
+    if(p.mane) for(let i=0;i<9;i++){ const z=-0.6+i*0.12; body.push(moCone([0,0.93-Math.abs(i-2)*0.02-i*0.012,z],[0,1,0.3],0.3-i*0.02,0.045,p.maneC||p.tip,4)); }
+    if(p.ribs){   // (a grave hound) bare ribs arching over each flank and a knobbed spine
+      for(let i=0;i<6;i++){ const z=-0.35+i*0.13, rr=0.27*big*lean; for(const sd of W) body.push(moTube([[sd*0.04,0.93-i*0.012,z],[sd*rr*0.92,0.78,z+0.02],[sd*(rr+0.02),0.55,z+0.04]],0.014,0.01,0xd8d0b8,5,true)); }
+      for(let i=0;i<9;i++) body.push(moEll(0.022,0.022,0.03,0,0.95-Math.abs(i-2)*0.004-i*0.012,-0.5+i*0.12,0xd8d0b8,null,5));
+    }
+    if(p.scar) body.push(moPatch([0.1,0.97,-0.805],[0.7,0.2,-0.7],0.02,0.006,p.scar,5,5));   // a scar across the left eye
     moBossFox(d,p,body);   // (Kyuubi) gold, beads, a rope and foxfire
     G.body=moMerge(body);
     // the tail, or a fan of them, in the pivot's own frame (starts at the origin, runs back along +z)
     const n=cat?1:Math.max(1,Math.min(9,p.tails|0||1)), tails=[];
-    const path=cat?[[0,0,0],[0,0.05,0.2],[0,0,0.36]]:w?[[0,0,0],[0,-0.05,0.4],[0,-0.3,0.75],[0,-0.6,0.95]]:[[0,0,0],[0,0.18,0.45],[0,0.35,0.9],[0,0.32,1.3]];
+    const path=cat&&!p.bob?[[0,0,0],[0,0.08,0.3],[0,0.04,0.65],[0,-0.1,0.95],[0,0,1.2]]:cat?[[0,0,0],[0,0.05,0.2],[0,0,0.36]]:w?[[0,0,0],[0,-0.05,0.4],[0,-0.3,0.75],[0,-0.6,0.95]]:[[0,0,0],[0,0.18,0.45],[0,0.35,0.9],[0,0.32,1.3]];
     for(let i=0;i<n;i++){
       const a=n>1?(i/(n-1)-0.5)*Math.min(2.6,0.55*n):0, lift=n>1?0.3*Math.sin(i*1.7):0, q=path.map(([X,Y,Z])=>[Math.sin(a)*Z,Y+lift*Z,Math.cos(a)*Z]), tipZ=path[path.length-1][2]*0.72;
-      tails.push(moTube(q,cat?0.055:0.06,0.02,(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.8+0.4*vn3(x*10,y*6,z*10)); if(Math.hypot(x,z)>tipZ) c.set(p.tip); },8,true,t=>1+(cat?0.4:2.3)*Math.pow(Math.sin(Math.PI*Math.min(1,t*1.05)),0.8)));
+      tails.push(moTube(q,cat?0.055:0.06,0.02,(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.8+0.4*vn3(x*10,y*6,z*10)); if(pat==='rosette'&&Math.sin(Math.hypot(x,z)*22)>0.5) c.set(spotC); if(pat==='stripe'&&Math.sin(Math.hypot(x,z)*22)>0.5) c.multiplyScalar(0.58); if(Math.hypot(x,z)>tipZ) c.set(p.tip); },8,true,t=>1+(cat?0.4:2.3)*Math.pow(Math.sin(Math.PI*Math.min(1,t*1.05)),0.8)));
       if(p.flame){ const e=q[q.length-1]; tails.push(moEll(0.07,0.11,0.07,e[0],e[1]+0.1,e[2],p.tip,null,7),moCone([e[0],e[1]+0.12,e[2]],[0,1,0.15],0.34,0.06,p.tip,5)); }
     }
     G.tail=moMerge(tails);
