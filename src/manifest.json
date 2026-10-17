@@ -32,7 +32,10 @@
   "shared": [
     "math.js",
     "noise.js",
+    "world-atlas-data.js",
+    "world-atlas.js",
     "terrain.js",
+    "world-atlas-ground.js",
     "coasts.js",
     "greyspine.js",
     "sunscar.js",

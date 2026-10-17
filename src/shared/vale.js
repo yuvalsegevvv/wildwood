@@ -42,7 +42,7 @@ VIL2.name='Hanami'; VIL.name='the village';
 // on (or m metres from) any village's teleport circle
 function nearTele(x,z,m){ const V=vilAt(x,z); return Math.hypot(x-V.tele.x,z-V.tele.z)<V.tele.r+m; }
 // the village whose land a point is in (every "near the village" test uses this one): the home forest, the vale, the Hoarfrost Reach
-function vilAt(x,z){ return z<borderZ(x)?(x>borderXN(z)?VIL3:(x<GW0?VIL6:VIL4)):(x>borderX(z)?VIL2:(x<HX0?VIL5:VIL)); }   // (VIL5, Glasswell, is in shared/glasswell.js: the Sunscar is west of the Sunwall's plateau)
+function vilAt(x,z){ const l=waLandId(x,z); return l===0?VIL:l===1?VIL2:l===2?VIL3:l===3?VIL4:l===5?VIL6:VIL5; }   // the village of the point's land (the atlas): VIL5, Glasswell, is in shared/glasswell.js
 
 /* ---- zones: seeds on a rough 3 x 4 grid east of Hanami. key null = Hanami's meadows (no monsters) */
 const VALE_ZONE_NAMES={16:'Petal Meadow',17:'Kodama Wood',18:'Fox Hills',19:'Bamboo Sea',20:'Ghostlight Marsh',21:'Oni Crags',22:'Jade Falls',23:'Tengu Peaks',24:'Warlord Ruins',25:'Thunder Grove',boss25:'Foxfire Hollow'};

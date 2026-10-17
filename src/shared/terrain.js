@@ -13,7 +13,10 @@ const NORTH_D=840, HZ0=-HALF;
    between that wall and Frostgate Pass. The world's rectangle grew west to hold the Greyspine's far end (WX0); the forest's own west edge, the Sunwall, stays at HX0, and beyond it, south
    of the Greyspine, lies the unbuilt Sunscar's plateau (the Sunwall's top goes on: homeHeight). The Reach's north-east corner (it ran 330 m east of the vale) is sea now. */
 const GDX=-580, RDX=-390, GLX=720;   // GLX: the Gloamhorn (shared/gloamhorn.js) grew the rectangle this far west of the Greyspine's old edge GW0
-const EAST_W=880, HX0=-HALF, GW0=HX0+GDX, WX0=GW0-GLX, WX1=HALF+EAST_W, WZ0=HZ0-NORTH_D, WZ1=HALF, WW=WX1-WX0, WD=WZ1-WZ0;
+/* THE WORLD FRAME is the atlas's canvas (shared/world-atlas.js, docs/world-atlas.py): x -1900..1650, z -1120..1180. Every constant above and below this line that is not WX0..WZ1 is the OLD frame,
+   kept (HALF, HZ0, GDX, RDX, GLX, EAST_W, HX0, GW0, GXJ, VALE_E, GREY_N, borderX / borderXN / borderZ ...) only because the lands' content modules (villages, zones, arenas, doors, gates) are still placed in it
+   until they are re-pointed to the atlas's anchors; the lands, the coast and the ground are the atlas's (landAt, inVale..., coastDist, baseHeight below). */
+const EAST_W=880, HX0=-HALF, GW0=HX0+GDX, WX0=WA_META.x0, WX1=WA_META.x1, WZ0=WA_META.z0, WZ1=WA_META.z1, WW=WX1-WX0, WD=WZ1-WZ0;
 const GXJ=HALF+GDX;   // the Greyspine | Reach wall's mean line (x), and where it meets the forest's north wall
 /* The rectangle grew for the Hoarfrost Reach (it was 550 m east and 600 m north of the forest's corner, 244,000 m2 of land against the vale's 433,000): the vale's east edge and the
    Greyspine's north edge stay where they were (VALE_E, GREY_N), and the sea fills the rest of the rectangle; the coast (shared/coasts.js) is an outline drawn over it. */
@@ -62,11 +65,13 @@ function borderZ(x){
   _bZx=x; return _bZv=r;
 }
 const borderXat=(x,z)=>z<borderZ(x)?borderXN(z):borderX(z);   // the wall on the west side of this point's land: the Vale Wall (south of the north wall), the Greyspine | Reach wall (north of it)
-const inVale=(x,z)=>x>borderXat(x,z);   // the Sakura Vale and the Hoarfrost Reach: east of the Vale Wall, or north of the north wall and east of the Greyspine | Reach wall
-const inHoar=(x,z)=>z<borderZ(x)&&x>borderXN(z);   // the Hoarfrost Reach: north of the north wall (the forest's and the vale's), east of the Greyspine's wall
-const inGrey=(x,z)=>z<borderZ(x)&&x<borderXN(z);   // the Greyspine: north-west, over the Sunscar's plateau and the forest's north-west corner
-const inGloam=(x,z)=>x<GW0&&z<borderZ(x);           // the Gloamhorn, the sixth land (shared/gloamhorn.js): the peninsula west of the Greyspine's west wall (check it BEFORE inGrey, which is true there too)
-const inSun=(x,z)=>x<HX0&&z>=borderZ(x);           // the Sunscar, the fifth land (shared/sunland.js): south of the Greyspine, west of the Sunwall
+/* The land tests answer from the atlas (shared/world-atlas.js: waLandId is total, the sea and the islands take the nearest land). Their old meanings stay: inVale is the vale AND the Reach, inGrey the Greyspine AND the Gloamhorn
+   (ask inGloam first), inSun the Sunscar (and the closed land link south of it, Amber Reach). */
+const inVale=(x,z)=>{ const l=waLandId(x,z); return l===1||l===2; };   // the Sakura Vale and the Hoarfrost Reach
+const inHoar=(x,z)=>waLandId(x,z)===2;   // the Hoarfrost Reach
+const inGrey=(x,z)=>{ const l=waLandId(x,z); return l===3||l===5; };   // the Greyspine and the Gloamhorn
+const inGloam=(x,z)=>waLandId(x,z)===5;   // the Gloamhorn, the sixth land (check it BEFORE inGrey, which is true there too)
+const inSun=(x,z)=>{ const l=waLandId(x,z); return l===4||l===6; };   // the Sunscar, the fifth land
 /* A border range's profile. Its width (to where its foot starts) and its height vary along the line (t: z for the Vale Wall, k 1; x for the north wall,
    k 3), so a wall is broad massifs and narrow necks, with a low irregular skirt of foothills beyond its body. Both lands on either side of a crest add the
    very same terms (d: distance to the crest line, negative past it on the north wall, which goes on as a plateau), so they meet without a step. */
@@ -114,7 +119,7 @@ function fallCut(h,x,z){
   { const d=Math.hypot(x-FALL.x,z-FALL.pool.z); if(d<FALL.pool.r+8) h=lerp(h,Math.min(h,-3.4),smoothstep(FALL.pool.r,FALL.pool.r*0.45,d)); }   // the plunge pool
   return h;
 }
-function baseHeight(x,z){ const h=baseHeightRaw(x,z); return (x>FALL.x-45&&x<FALL.x+50&&z>FALL.tz-30&&z<FALL.pool.z+30)?fallCut(h,x,z):h; }
+function baseHeight(x,z){ return waGround(x,z); }   // the atlas's ground (shared/world-atlas-ground.js); baseHeightRaw below is the old frame's ground, kept for the content modules that still read it (the Greyfall's fall profile)
 function riverBase(z){ return Math.sin(z*0.011+0.6)*34 + noise2(z*0.006,7.7)*24 + noise2(z*0.021+3.7,2.9)*6 + 28; }
 const RIVER_SIDE=Math.sign(riverBase(0))||1;
 // the river bends around the middle of the map so the village has room there
@@ -153,12 +158,7 @@ function pvpIsleCut(x,z,h){
    the Sunwall's cliff line wanders +-22 m (sunwallLine), and the northern rims start up to 40 m early (rimWobble). */
 const SUNWALL_H=52, REDGATE_Z=40;
 // distance to this land's sea edge: bays, small wiggles, the vale's corner rounded (a soft minimum of its two shores)
-function coastDist(x,z){
-  if(x<GW0&&z<borderZ(x)) return x<GW0-40?gloamCoast(x,z):lerp(csOuter(x,z),gloamCoast(x,z),smoothstep(GW0,GW0-40,x));   // the Gloamhorn (shared/gloamhorn.js; the Greyspine's west wall blends into it)
-  if(z<borderZ(x)||x>borderX(z)) return csOuter(x,z);   // the vale, the Hoarfrost Reach and the Greyspine: their bays, rounded corners and islets (shared/coasts.js)
-  if(x<HX0-12) return x<HX0-72?sunCoast(x,z):lerp((WZ1-z)+noise2(x*0.011+17,z*0.011-29)*10-(noise2(x*0.0045+5,z*0.0045-7)*0.5+0.5)*28,sunCoast(x,z),smoothstep(HX0-12,HX0-72,x));   // the Sunscar: the Bight in the west as well (shared/sunland.js)
-  return (WZ1-z)+noise2(x*0.011+17,z*0.011-29)*10-(noise2(x*0.0045+5,z*0.0045-7)*0.5+0.5)*28;   // the home forest's south shore
-}
+function coastDist(x,z){ return waCoast(x,z)+21; }   // the atlas's coast: metres inland of the waterline + 21 (the water line is near c = 21, as shore() and everything that reads c expects)
 // how far in from the forest's west edge (HX0) the Sunwall's cliff stands (its middle), and how much earlier a northern rim starts to rise
 const sunwallLine=z=>52+noise2(z*0.006+1.3,3.3)*22;
 const rimWobble=(x,s)=>(noise2(x*0.005+s,0.7)*0.5+0.5)*40;

@@ -158,6 +158,7 @@ function gateHold(G,o,ox,oz){
 }
 // the water surface under (x, z): a tarn's level, the river's, or the sea's. greyWet: under it, by more than m (no plant grows, no camp is made)
 function waterSurf(x,z){
+  if(waWaterDist(x,z)<0&&!waIsSea(x,z)) return waWaterSurf(x,z);   // the atlas's lakes and rivers (shared/world-atlas.js); the cases below are the old frame's tarns, still placed there
   if(Math.hypot(x-FALL.tx,z-FALL.tz)<FALL.tr*1.15) return FALL.tl;   // the Greyfall's tarn on the home forest's north rim (shared/terrain.js)
   if(inSun(x,z)){ const w=sunWaterSurf(x,z); return w===null?WATER:w; }   // the Sunscar's river, Springhead and Mirror Lake (shared/sunland.js)
   if(inGrey(x,z)){
