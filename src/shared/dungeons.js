@@ -174,8 +174,8 @@ function defineDungeonVariant(baseId,over){
    off it toward the door. DG_ENT_CLEAR: the radius kept clear of trees, rocks and camps (the terrain itself is not changed: a colour patch only). DG_ENT_TALK: how close the talk key works. */
 const DG_APRON=7, DG_ENT_CLEAR=14, DG_ENT_TALK=4.5;
 const DG_ENTRANCES={
-  hollowroots:    {theme:'hollowroots',    name:'The Hollowed Elder', kind:'roots', x:244,z:148,  a:Math.PI/2, sign:{x:114.9,z:25.8,  road:'The East Road'}},
-  jadesprings:    {theme:'jadesprings',    name:'The Falls Door',     kind:'falls', x:826,z:82,   a:Math.PI,   sign:{x:864.3,z:-28.5, road:'The Coast Road'}},
+  hollowroots:    {theme:'hollowroots',    name:'The Hollowed Elder', kind:'roots', x:193,z:-59,  a:3.142,     sign:{x:189.0,z:-71.0,road:null}},   // world atlas: the home door (WA_POIS 'home door', zone 6, the Treant Grove), the bank found within 5 m of it
+  jadesprings:    {theme:'jadesprings',    name:'The Falls Door',     kind:'falls', x:1081,z:82,  a:0.393,     sign:{x:1089.3,z:91.6,road:null}},   // world atlas: the vale door (WA_POIS 'vale door', zone 22, Jade Falls), the bank found within 40 m of it
   bonefrostbarrow:{theme:'bonefrostbarrow',name:'The Barrow Door',    kind:'barrow',x:368,z:-894, a:5.76,        sign:{x:406.9,z:-845.4,road:'The Wyrm Road'}},
   blackseam:      {theme:'blackseam',      name:'The Old Adit',       kind:'mine',  x:316+GDX,z:-692, a:3.403,     sign:{x:-231.7,z:-718.5,road:'The Glacier Road'}},
   sandglass:      {theme:'sandglass',      name:'The Sandglass Door', kind:'sand',  x:SUN_DG_DOOR.x,z:SUN_DG_DOOR.z, a:Math.PI, sign:{x:-690,z:226,road:null}},   // version 3: the Sunscar's door (shared/sunland.js SUN_DG_DOOR): flat desert, no road and no bank, so its signpost stands on the sand by the apron

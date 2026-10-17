@@ -5,7 +5,7 @@
      ^ root spikes (floor; hazard 'spikes': the rooted floors, where the run sets off the Rootwarden's root telegraph)    G guardian post (floor: the Rotwood in the alcove, the Ancient Treant in the knot)
    Tiles are drawn with their rim closed; `shapes` lists the door shapes each comes in (dgCarve opens the doors). The hall's pillars and mouths are DG_HALL_PILLARS / DG_HALL_MOUTHS. */
 defineDungeonTheme({
-  id:'hollowroots', name:'The Hollow Roots', land:'home', at:'Ancient Grove', lv:30,
+  id:'hollowroots', name:'The Hollow Roots', land:'home', at:'Treant Grove', lv:30,
   mobs:{walkers:['treant','deathcap','shroom','bogslime','direboar'], guardians:['ancient','rotwood']},
   boss:'amanita', music:'wild3',
   pal:{wall:0x3a2a1c, floor:0x2a2218, fog:0x120d08, light:0xe0a040},

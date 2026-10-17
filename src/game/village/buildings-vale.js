@@ -143,7 +143,7 @@ function buildVale(){
 /* ---- the border bridge (it was the tunnel): a stone deck over the Greyfall River with parapets and piers, a gatehouse across its west end (two towers, a lintel, the rune-carved door
    that sinks when the Rootwarden has fallen), stone lanterns along the parapets and a timber gate at the east end ---- */
 function buildBridge(inF){
-  const T=TUN, W=T.w+0.6, R0=T.w+0.25, x0=T.p0-0.5, x1=T.p1+0.5, step=2, bx=borderX(T.z), P=[], C=[], col=new THREE.Color();
+  const T=TUN, W=T.w+0.6, R0=T.w+0.25, x0=T.p0-0.5, x1=T.p1+0.5, step=2, bx=(T.p0+T.p1)/2, P=[], C=[], col=new THREE.Color();
   const quad=(a,b,c,d,k)=>{ P.push(...a,...b,...c, ...a,...c,...d); for(let v=0;v<6;v++) C.push(k.r,k.g,k.b); };
   for(let x=x0;x<x1-0.01;x+=step){ const xb=Math.min(x1,x+step), ya=T.floor(x), yb=T.floor(xb), block=Math.floor(x/1.2)&1, m=0.62+0.2*block+h3(Math.floor(x),1,3)*0.1;
     col.set(0x8a847a).multiplyScalar(m); quad([x,ya,T.z-W],[xb,yb,T.z-W],[xb,yb,T.z+W],[x,ya,T.z+W],col);   // the deck's top

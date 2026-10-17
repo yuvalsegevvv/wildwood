@@ -1,54 +1,48 @@
-// Headless test of the borders between the four lands and of the Greyfall (shared/terrain.js), straight from src/, no build: the border lines are curves
-// (borderX / borderZ), pinned where something is built across them, with the land tests (inVale / inHoar / inGrey / landAt) on one side of both; the Vale Wall south
-// of the junction is a river (riverK, riverCut), crossed by one stone bridge (TUN, bridgeDeck); the Greyfall (a tarn on the rim, a chute, a plunge pool at the
-// foot) feeds it. One line per check; exits 1 on failure.
+// Headless test of the home forest and the Sakura Vale on the world atlas (shared/world-atlas.js, vale.js, zones.js, village-layout.js), straight from src/, no build: the border between the two lands is the
+// atlas's river (a wadeable ford, never a wall), crossed by the Greyfall Bridge at the atlas's gate (TUN); each village stands on its land's hub; every zone of the two lands is the atlas's cell, with a
+// pole inside it, and zonePoint never leaves it; the boss arenas stand at the atlas's pois. (It used to test the old frame's wandering borderX / borderZ lines and the Greyfall waterfall's tarn and chute:
+// the atlas replaced the lines, and the fall is no longer carved into the ground.) One line per check; exits 1 on failure.
 // Usage: node tools/greyfall-smoke.js
 const {loadShared}=require('./load');
-const X=loadShared(['borderXN','GXJ','GDX','RDX','borderX','borderZ','riverK','riverCut','riverHalfW','baseHeight','baseHeightRaw','rawHeight','inVale','inHoar','inGrey','landAt','vilAt','VIL','VIL2','VIL3','VIL4',
-  'HALF','HZ0','WX0','WX1','WZ0','WZ1','TUN','PASS','GLEN','FALL','fallProfile','fallY','waterSurf','zoneAt','valeZoneAt','northBarZ','WATER','wallW','NODES','bridgeDeck']);
+const X=loadShared(['WA_GATES','WA_HUBS','WA_POIS','WA_ZONES','WA_META','waLandId','waWater','waWaterDist','waWaterSurf','rawHeight','baseHeight','TUN','bridgeDeck','VIL','VIL2','VIL3','VIL4','VIL5','VIL6','vilAt','landAt','inVale','inHoar','inGrey','inSun','inGloam',
+  'ZONES','ZONE_OF_ID','zoneAt','zonePoint','valeZoneAt','ARENA','ARENA20','ARENA25','ARENA_TIDE','ARENAS','WATER','LAKES','WA_LAKES','inTunnelCut','waCoast']);
 let fails=0; const ok=(n,c,d)=>{ if(!c) fails++; console.log((c?'PASS ':'FAIL ')+n+(d?'  ('+d+')':'')); };
 const H=(x,z)=>X.rawHeight(x,z);
-// ---- the lines wander ----
-{ const xs=[]; for(let z=-436;z<=440;z+=4) xs.push(X.borderX(z)-X.HALF); const mean=xs.reduce((a,b)=>a+b,0)/xs.length, sd=Math.sqrt(xs.reduce((a,b)=>a+(b-mean)*(b-mean),0)/xs.length), lo=Math.min(...xs), hi=Math.max(...xs);
-  ok('the Vale Wall is not a straight line: the river wanders 100 m or more either side of its mean, and bulges west into the home forest',sd>60&&hi-lo>200&&lo<-120,'sd '+sd.toFixed(0)+' m, from '+lo.toFixed(0)+' to +'+hi.toFixed(0)+' m of x = HALF'); }
-{ const zs=[]; for(let x=-436;x<=-20;x+=4) zs.push(X.borderZ(x)-X.HZ0); const sd=Math.sqrt(zs.reduce((a,b)=>a+b*b,0)/zs.length), hi=Math.max(...zs);
-  ok('the home forest\'s north wall wanders too (never north of z = HZ0, so the Greyspine keeps its ground; south by 60 m or more in places)',Math.min(...zs)>=-1e-9&&hi>=60&&sd>15,'rms '+sd.toFixed(0)+' m, up to '+hi.toFixed(0)+' m south'); }
-{ const zs=[]; for(let x=460;x<=980;x+=4) zs.push(X.borderZ(x)-X.HZ0); ok('and the vale | Reach wall: sinuous, up to 100 m north and 40 m south of z = HZ0 (the vale\'s zones are 140 m from it, the Reach\'s 260 m)',Math.min(...zs)<-80&&Math.max(...zs)<=45+1e-9,'from '+Math.min(...zs).toFixed(0)+' to +'+Math.max(...zs).toFixed(0)+' m'); }
-{ const xs=[]; for(let z=-1030;z<=-446;z+=4) xs.push(X.borderXN(z)-X.GXJ); ok('the Greyspine | Reach wall (borderXN, over the middle of the home forest: GXJ = x -140) leans only east (0-105 m: Highmark and the Ledgeway keep their room) in bends, never a straight line',Math.min(...xs)>=-1e-9&&Math.max(...xs)<=105+1e-9&&Math.max(...xs)>60&&xs.length>100&&(()=>{ let L=0; for(let i=1;i<xs.length;i++) L+=Math.hypot(4,xs[i]-xs[i-1]); return L/(4*(xs.length-1))>1.1; })(),'0..'+Math.max(...xs).toFixed(0)+' m'); }
-// ---- pins: every gate stays where it was ----
-ok('the lines are pinned straight at the bridge, the glacier valley, Frostgate Pass and the junction of the four lands',Math.abs(X.borderX(X.TUN.z)-X.HALF)<1e-9&&Math.abs(X.borderX(X.GLEN.z)-X.HALF)<1e-9&&Math.abs(X.borderX(X.HZ0)-X.HALF)<1e-9&&Math.abs(X.borderZ(X.PASS.x)-X.HZ0)<1e-9&&Math.abs(X.borderZ(X.HALF)-X.HZ0)<1e-9);
-ok('so the bridge (z -100), Hanami, Frostgate Pass (x 636) and the glacier valley (z -722) are where they were',X.TUN.z===-100&&X.VIL2.x===600&&X.VIL2.z===-100&&X.PASS.x===636&&X.GLEN.z===-722&&X.VIL3.x===690+X.RDX&&X.VIL3.z===-610&&X.VIL4.x===292+X.GDX&&X.VIL4.z===-792);
-ok('northBarZ (what a hiker without the Reach\'s key must stay south of): the ice wall in the pass, the crest line elsewhere',X.northBarZ(X.PASS.x)===X.PASS.ice&&X.northBarZ(800)===X.borderZ(800)+8&&X.northBarZ(500)===X.borderZ(500)+8);
-// ---- the land tests ----
-{ let bad=0, n=0; const names=['home','vale','hoar','grey'];
-  for(let z=-1030;z<=438;z+=19) for(let x=-436;x<=988;x+=19){ n++; const f=[!X.inVale(x,z)&&!X.inGrey(x,z),X.inVale(x,z)&&!X.inHoar(x,z),X.inHoar(x,z),X.inGrey(x,z)];
-      if(f.filter(Boolean).length!==1||names[f.indexOf(true)]!==X.landAt(x,z)) bad++;
-      if(z>=X.WZ0&&x>=X.WX0&&((X.inHoar(x,z)&&X.vilAt(x,z)!==X.VIL3)||(X.inGrey(x,z)&&X.vilAt(x,z)!==X.VIL4)||(X.landAt(x,z)==='vale'&&X.vilAt(x,z)!==X.VIL2)||(X.landAt(x,z)==='home'&&X.vilAt(x,z)!==X.VIL))) bad++; }
-  ok('every point is in exactly one of the four lands, and the village of its land (vilAt) agrees with landAt',bad===0,n+' points, '+bad+' wrong'); }
-// ---- the river ----
-{ const sec=[]; for(let z=-340;z<=-230;z+=10) sec.push(z); for(let z=-40;z<=438;z+=10) sec.push(z);   // (the bridge's own cross section, z -100, is checked below)
-  let worst=-1e9, dry=0, narrow=0;
-  for(const z of sec){ const bx=X.borderX(z), c=H(bx,z); worst=Math.max(worst,c); if(c>-2.3) dry++;
-    let w=0; for(let o=0;o<=60;o+=2) if(H(bx-o,z)<-0.3&&H(bx+o,z)<-0.3) w=o; if(w<10) narrow++; }
-  ok('the river runs the whole length of the border south of the junction, bridge included: the channel is 2.8 m deep at its middle and at least 20 m wide, every 10 m',dry===0&&narrow===0&&worst<-2.3,sec.length+' cross sections, '+dry+' shallow, '+narrow+' narrow, highest middle '+worst.toFixed(1)+' m'); }
-{ let bad=0; for(const z of [-300,-260,-100,150,300]){ const bx=X.borderX(z), w=X.riverHalfW(z); if(!(H(bx-w-35,z)>0.3&&H(bx+w+35,z)>0.3)) bad++; } ok('its banks are dry land 35 m from the channel on both sides (no flooding, nothing to swim)',bad===0,bad+' sections flooded'); }
-ok('the river is a wall too: the channel is deeper than a hiker may wade (0.8 m) over 20 m, so nobody can cross it but by the bridge',(()=>{ let n=0; for(const z of [-300,-100,100,300]){ const bx=X.borderX(z); for(let o=-10;o<=10;o+=2) if(H(bx+o,z)<-0.8) n++; } return n>=4*8; })());
-{ const T=X.TUN, bx=X.borderX(T.z), sp=[]; for(let z=-160;z<=-40;z+=10) sp.push(z);
-  ok('no mountain spur where the bridge crosses (the Vale Wall is a river all the way south of the junction): the river is there at full strength and the banks are low land',sp.every(z=>X.riverK(z)===1)&&sp.every(z=>X.baseHeight(X.borderX(z),z)<-1)&&X.baseHeight(bx-60,T.z)<30&&X.baseHeight(bx+60,T.z)<30,'banks '+X.baseHeight(bx-60,T.z).toFixed(0)+' / '+X.baseHeight(bx+60,T.z).toFixed(0)+' m'); }
-{ const T=X.TUN, bx=X.borderX(T.z); let gap=0, below=0, dry=0;
-  for(let x=T.p0;x<=T.p1;x+=1){ const d=X.bridgeDeck(x,T.z); if(!(d>-50)) gap++; else if(d<X.rawHeight(x,T.z)-0.35) below++; if(d>X.WATER+0.5) dry++; }
-  ok('the bridge: a continuous deck (z -100) from bank to bank over the river, above the water and never more than 35 cm under the ground of the banks at its ends, 4 m wide; none beside it',gap===0&&below===0&&dry>=T.p1-T.p0&&T.p0<bx-40&&T.p1>bx+40&&X.bridgeDeck(bx,T.z+T.w+1)<-50&&X.bridgeDeck(T.p0-3,T.z)<-50,'deck '+T.p0.toFixed(0)+'..'+T.p1.toFixed(0)+' over x '+bx.toFixed(0)+', '+gap+' gaps, '+below+' under ground'); }
-ok('north of the junction nothing is a river (the Greyspine | Reach wall stays a mountain range) and the river is born below the rim (riverK ramps in over 70 m)',X.riverK(-900)===0&&X.riverK(-500)===0&&X.riverK(X.HZ0+10)===0&&X.riverK(X.HZ0+95)>0.99);
-// ---- the Greyfall ----
-{ const P=X.fallProfile(); let up=0, float=0; for(let i=1;i<P.length;i++) if(P[i][1]>P[i-1][1]+1e-9) up++;
-  for(const p of P) if(p[1]>X.baseHeightRaw(X.FALL.x,p[0])-0.1+1e-6) float++;
-  const drop=P[0][1]-P[P.length-1][1];
-  ok('the fall\'s path never rises and never floats above the ground; it drops 120 m or more from the tarn to the pool',up===0&&float===0&&drop>=120,P.length+' points, drop '+drop.toFixed(0)+' m, '+up+' rises, '+float+' floating'); }
-{ const F=X.FALL, c=H(F.tx,F.tz); let hold=0, n=0; for(let k=0;k<16;k++){ const a=k/16*Math.PI*2, hx=F.tx+Math.sin(a)*(F.tr+2), hz=F.tz+Math.cos(a)*(F.tr+2); n++; if(H(hx,hz)>=F.tl-0.05) hold++; }
-  ok('the tarn on the rim: a bowl under its level (waterSurf says so), ringed by ground above the water all round but the outflow',X.waterSurf(F.tx,F.tz)===F.tl&&c<F.tl-1&&hold>=n-5,'floor '+c.toFixed(1)+' m, level '+F.tl+' m, '+hold+'/'+n+' of the rim above it'); }
-{ const F=X.FALL; ok('the plunge pool at the foot is below the sea (3 m or more) and the river\'s channel goes on from it',H(F.x,F.pool.z)<=-3&&H(X.borderX(-330),-330)<-2.3&&X.waterSurf(F.x,F.pool.z)===X.WATER); }
-{ const F=X.FALL, dry=[[F.tx+30,F.tz],[F.tx,F.tz-30],[F.x-40,F.pool.z-20]]; ok('no water level anywhere else on the rim: waterSurf is the sea\'s level off the tarn',dry.every(p=>X.waterSurf(p[0],p[1])===X.WATER||Math.hypot(p[0]-F.tx,p[1]-F.tz)<F.tr*1.15)); }
-// ---- zones ----
-{ let far=0; for(let z=-430;z<=430;z+=30) for(let x=240;x<=560;x+=30){ if(!X.inVale(x,z)||X.inHoar(x,z)) continue; const zn=X.valeZoneAt(x,z); if(zn){ let m=1e9; /* the seed the zone belongs to */ m=Math.hypot(x-zn.x,z-zn.z); if(m>260) far++; } }
-  ok('a vale zone never reaches far beyond its camps (190 m from its seed, warp included): the strip the river gives the vale has no zone',far===0,far+' points'); }
+// ---- the lands and their villages ----
+{ let bad=0, n=0; const names=['home','vale','hoar','grey','sun','gloam'];
+  for(let z=-1100;z<=1170;z+=25) for(let x=-1880;x<=1640;x+=25){ n++; const l=X.waLandId(x,z); if(l===6) continue;   // (6: the closed Amber Reach)
+    const f=[l===0,l===1,l===2,l===3,l===4,l===5];
+    if(f.filter(Boolean).length!==1||names[l]!==X.landAt(x,z)) bad++;
+    if((l===0&&X.vilAt(x,z)!==X.VIL)||(l===1&&X.vilAt(x,z)!==X.VIL2)||(l===2&&X.vilAt(x,z)!==X.VIL3)||(l===3&&X.vilAt(x,z)!==X.VIL4)||(l===4&&X.vilAt(x,z)!==X.VIL5)||(l===5&&X.vilAt(x,z)!==X.VIL6)) bad++; }
+  ok('every point is in exactly one land, landAt names it, and the village of its land (vilAt) agrees',bad===0,n+' points, '+bad+' wrong'); }
+ok('the home village stands on the atlas\'s home hub and Hanami on the vale\'s, each on dry ground in its own land',X.VIL.x===X.WA_HUBS.home[0]&&X.VIL.z===X.WA_HUBS.home[1]&&X.VIL2.x===X.WA_HUBS.vale[0]&&X.VIL2.z===X.WA_HUBS.vale[1]
+  &&X.landAt(X.VIL.x,X.VIL.z)==='home'&&X.landAt(X.VIL2.x,X.VIL2.z)==='vale'&&H(X.VIL.x,X.VIL.z)>2&&H(X.VIL2.x,X.VIL2.z)>2&&Math.abs(H(X.VIL.x,X.VIL.z)-X.VIL.h)<6&&Math.abs(H(X.VIL2.x,X.VIL2.z)-X.VIL2.h)<6);
+// ---- the border river ----
+const G=X.WA_GATES.find(g=>g.name==='The Greyfall Bridge');
+{ const bad=[]; let n=0;
+  for(let z=-60;z<=520;z+=20){ n++; let x0=null,x1=null; for(let x=300;x<=620;x+=2) if(X.waWaterDist(x,z)<=0){ if(x0===null) x0=x; x1=x; }
+    if(x0===null||x1-x0<14){ bad.push(z+': no river'); continue; }
+    const mid=(x0+x1)/2, w=x1-x0; if(X.waLandId(x0-70,z)!==0||X.waLandId(x1+70,z)!==1) bad.push(z+': not home|vale'); if(w>110) bad.push(z+': too wide'); }
+  ok('the home | vale border is a river from z -60 almost to the sea (it widens into its mouth below z 520): water at least 14 m wide at every 20 m, home on its west bank and the vale on its east',bad.length===0,n+' cross sections, '+bad.slice(0,4).join('; ')); }
+ok('the river is a ford, never a wall: every bed point at most 1.2 m under the water\'s surface (a hiker wades it: nothing is barred by the water alone)',(()=>{ let worst=0; for(let z=-40;z<=520;z+=20) for(let x=330;x<=600;x+=3){ if(X.waWaterDist(x,z)>0) continue; worst=Math.max(worst,X.waWaterSurf(x,z)-H(x,z)); } return worst<=1.2; })());
+// ---- the Greyfall Bridge ----
+{ const T=X.TUN; let gap=0, below=0, wet=0, low=0, n=0, wmin=1e9, wmax=-1e9;
+  for(let x=T.p0;x<=T.p1;x+=1){ n++; const d=X.bridgeDeck(x,T.z); if(!(d>-50)) gap++; else if(d<H(x,T.z)-0.35) below++; if(X.waWaterDist(x,T.z)<=0){ wmin=Math.min(wmin,x); wmax=Math.max(wmax,x); if(d<X.waWaterSurf(x,T.z)+0.3) low++; } else if(X.waWaterDist(x,T.z)>0&&d<H(x,T.z)-0.35) below++; }
+  ok('the Greyfall Bridge stands at the atlas\'s gate: TUN.z and its middle are the gate\'s, and the deck (4 m wide) runs from dry bank to dry bank over the whole river, above the water, with no gap and never more than 35 cm under the ground; none beside it',
+    T.z===G.z&&T.p0<G.x&&T.p1>G.x&&gap===0&&below===0&&low===0&&T.p0<wmin-10&&T.p1>wmax+10&&X.bridgeDeck(G.x,T.z+T.w+1)<-50&&X.bridgeDeck(T.p0-3,T.z)<-50,
+    'gate x '+G.x+', deck '+T.p0.toFixed(0)+'..'+T.p1.toFixed(0)+', water '+wmin+'..'+wmax+', '+gap+' gaps, '+below+' under ground, '+low+' under water'); }
+ok('the bridge\'s ends are dry land at a fair height (the river is born higher up: the deck is not a long climb), and the village at its east end faces it',H(X.TUN.p0,X.TUN.z)>X.waWaterSurf(X.TUN.p0,X.TUN.z)-0.5&&H(X.TUN.p1,X.TUN.z)>X.waWaterSurf(X.TUN.p1,X.TUN.z)-0.5&&Math.abs(X.TUN.h0-X.TUN.h1)<6&&Math.hypot(X.VIL2.x-X.TUN.x1,X.VIL2.z-X.TUN.z)<200);
+// ---- zones: the atlas's cells ----
+{ const wz=X.WA_ZONES.filter(A=>A.land==='home'||A.land==='vale'), bad=[];
+  for(const A of wz){ const zn=X.ZONE_OF_ID[A.id]; if(!zn||!zn.name||!(zn.level>=1)){ bad.push(A.land+' '+A.key+': no record'); continue; }
+    const pz=X.zoneAt(zn.x,zn.z); if(pz!==zn) bad.push(zn.name+': its pole is zone '+(pz&&pz.name));
+    if(H(zn.x,zn.z)<=0.5) bad.push(zn.name+': pole under water');
+    let out=0, n=300; for(let i=0;i<n;i++){ const a=Math.sin(i*12.9898)*43758.5453, fa=(a-Math.floor(a))-0.5, b=Math.sin(i*78.233)*12345.678, fr=b-Math.floor(b), [x,z]=X.zonePoint(zn,fa,fr,true), q=X.zoneAt(x,z); if(q!==zn&&q!==null&&!q.arena) out++; }
+    if(out>n*0.02) bad.push(zn.name+': '+out+'/'+n+' points outside'); }
+  ok('every zone of the home forest (1-15, shore, sunfoot, foothills) and the vale (16-25) is a record with a name and a level, its pole is inside it on dry ground, and zonePoint stays inside it',wz.length===28&&bad.length===0,wz.length+' atlas zones, '+bad.slice(0,4).join('; ')); }
+ok('the vale\'s zones are read by valeZoneAt like the forest\'s, level 16-25, and Hanami\'s own ground (70 m round the hub) holds no zone',X.ZONES.filter(z=>z.vale&&!z.boss&&z.wa).map(z=>z.level).sort((a,b)=>a-b).join()==='16,17,18,19,20,21,22,23,24,25'&&X.valeZoneAt(X.VIL2.x+20,X.VIL2.z)===null&&X.zoneAt(X.VIL.x+20,X.VIL.z)===null);
+// ---- the arenas: the atlas's pois ----
+{ const P=n=>X.WA_POIS.find(p=>p.name===n), pairs=[[X.ARENA,P('The Stone Circle')],[X.ARENA20,P('Demon Gate')],[X.ARENA25,P('Foxfire Hollow')],[X.ARENA_TIDE,P("Carapax's Beach (20)")]];
+  ok('the Stone Circle, the Demon Gate, the Foxfire Hollow and the Tide King\'s beach stand at the atlas\'s pois, on land, each with its own zone and a flat pad under it',pairs.every(([A,p])=>p&&A.x===p.x&&A.z===p.z&&H(A.x,A.z)>1&&Math.abs(H(A.x,A.z)-A.h)<0.01&&X.zoneAt(A.x+A.r+10,A.z)===A.zone&&A.zone.boss),pairs.map(([A])=>A.key+' '+H(A.x,A.z).toFixed(0)+' m').join(', ')); }
+ok('the lakes of the two lands are the atlas\'s (three of them)',X.LAKES.length===3&&X.LAKES.every(L=>X.WA_LAKES.some(A=>A.x===L.x&&A.z===L.z)));
 console.log(fails?'\n'+fails+' FAILED':'\nall passed'); process.exit(fails?1:0);

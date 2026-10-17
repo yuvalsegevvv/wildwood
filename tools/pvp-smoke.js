@@ -4,7 +4,7 @@
 // Usage: node tools/pvp-smoke.js
 const {loadServer}=require('./load');
 const got={};
-const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) (got[pid]=got[pid]||[]).push(...c.ev); }},['PVP','inPvp','S','MONS','hurtP','recalcP','partyOf','SKILLS','skillLvOf','bridgeDeck','rawHeight','WATER','pvpFoeOf','foesS','PVP_ISLE','pvpSkillsOf','tierFor','elemHitS','soulOfP','ELEM_BOOST']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) (got[pid]=got[pid]||[]).push(...c.ev); }},['PVP','inPvp','S','MONS','hurtP','recalcP','partyOf','SKILLS','skillLvOf','bridgeDeck','rawHeight','WATER','pvpFoeOf','foesS','PVP_ISLE','pvpSkillsOf','tierFor','elemHitS','soulOfP','ELEM_BOOST','WA_PVP','ARENA_TIDE','waLandId','waIsSea']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const P=pid=>W.players.get(pid);
@@ -19,7 +19,7 @@ tick(3); clear();
 // ---- the place ----
 ok('the island is dry land and the bridge deck leads to its gate',x.rawHeight(C.x,C.z)>1&&!!C.gate&&x.bridgeDeck(C.gateOut.x,C.gateOut.z)>x.WATER&&Math.hypot(C.gate.x-C.x,C.gate.z-C.z)<=C.r+0.3);
 ok('the shore spots are dry and outside the circle',C.shore.length>=10&&C.shore.every(s=>x.rawHeight(s.x,s.z)>1.2&&!x.inPvp(s.x,s.z)));
-ok('the island lies off the home forest\'s south beach, east of the Shore Road and clear of the Tide King\'s terrace and the sea limit',C.z>350&&C.z+C.r<426&&C.x>-60&&Math.hypot(C.x+130,C.z-376)>C.r+60);
+ok('the island lies offshore of the home forest\'s south beach where the atlas puts it (WA_PVP: home land, a deep moat between it and the beach, one bridge across) and clear of the Tide King\'s terrace',x.waLandId(C.x,C.z)===0&&Math.hypot(C.x-x.WA_PVP.x,C.z-x.WA_PVP.z)<1&&x.rawHeight(C.x,C.z-C.r-8)<-1&&C.z>600&&Math.hypot(C.x-x.ARENA_TIDE.x,C.z-x.ARENA_TIDE.z)>C.r+60);
 
 // ---- the same numbers for everyone ----
 const A=P('a'), B=P('b'), Cc=P('c'), D=P('d'), E=P('e');

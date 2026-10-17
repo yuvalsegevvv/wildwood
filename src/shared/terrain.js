@@ -119,14 +119,14 @@ function fallCut(h,x,z){
   { const d=Math.hypot(x-FALL.x,z-FALL.pool.z); if(d<FALL.pool.r+8) h=lerp(h,Math.min(h,-3.4),smoothstep(FALL.pool.r,FALL.pool.r*0.45,d)); }   // the plunge pool
   return h;
 }
-function baseHeight(x,z){ return waGround(x,z); }   // the atlas's ground (shared/world-atlas-ground.js); baseHeightRaw below is the old frame's ground, kept for the content modules that still read it (the Greyfall's fall profile)
+function baseHeight(x,z){ return pvpIsleCut(x,z,waGround(x,z)); }   // (pvp: the Proving Isle's moat and island over the atlas's ground)   // the atlas's ground (shared/world-atlas-ground.js); baseHeightRaw below is the old frame's ground, kept for the content modules that still read it (the Greyfall's fall profile)
 function riverBase(z){ return Math.sin(z*0.011+0.6)*34 + noise2(z*0.006,7.7)*24 + noise2(z*0.021+3.7,2.9)*6 + 28; }
 const RIVER_SIDE=Math.sign(riverBase(0))||1;
 // the river bends around the middle of the map so the village has room there
 function riverX(z){ const b=riverBase(z), w=Math.exp(-Math.pow(z/75,2)); return b+RIVER_SIDE*Math.max(0,62-RIVER_SIDE*b)*w; }
-// lakes: the still water by the village, a big lake in the far west and a pond out east
-const LAKES=[{x:-75,z:65,r:36,name:'Still Water'},{x:-250,z:-180,r:48,name:'Mistmere'},{x:235,z:215,r:30,name:'Heron Pond'},
-  {x:770,z:40,r:30,name:'Mirror Pond',vale:true},{x:860,z:-250,r:26,name:'Crane Lake',vale:true}];
+// lakes of the home forest and the vale: the atlas's (WA_LAKES; the Reach's frozen lakes are FROST_LAKES): Mistmere in the home forest's west (zone 10), the vale's Mirror Pond (zone 20, south) and Crane Lake (zone 22, east)
+const LAKE_NAMES={10:'Mistmere',20:'Mirror Pond',22:'Crane Lake'};
+const LAKES=WA_LAKES.filter(L=>L.land==='home'||L.land==='vale').map(L=>({x:L.x,z:L.z,r:L.r,name:LAKE_NAMES[L.zone]||'The lake',vale:L.land==='vale'}));
 function lakeCut(x,z,h){
   for(const L of LAKES){ const lx=x-L.x, lz=z-L.z; if(Math.abs(lx)>L.r*2.6||Math.abs(lz)>L.r*2.6) continue;
     const ld=Math.sqrt(lx*lx+lz*lz) + noise2(x*0.05+L.x,z*0.05)*6;
@@ -135,11 +135,10 @@ function lakeCut(x,z,h){
     h = lerp(h, Math.min(h,-2.6), smoothstep(L.r, L.r*0.42, ld)); }
   return h;
 }
-/* The Proving Isle (docs/PVP.md): a round island in a round lake on the home forest's south beach (the sea is 40 m south of it, east of the Shore Road, west of the Tide King's terrace), where players fight each other with fixed stats
-   (shared/pvp.js has the rules). It lives here because roads.js needs its ground at load (the causeway is found where a road runs under its water). x, z: the island's centre;
-   r: the island's grass, to where the beach starts; lakeR: the water's edge; h: the top. The Shore Road runs ~100 m west of it and is not touched: the banks (pvpIsleCut) only
-   cut ground that stands higher than 0.3 m per metre from the water's edge. */
-const PVP_ISLE={x:30,z:385,r:33,lakeR:62,h:2.3,name:'The Proving Isle'};
+/* The Proving Isle (docs/PVP.md): a round island offshore of the home forest's south beach (the atlas's WA_PVP: it sits in the sea, one plank bridge from the beach), where players fight each other with fixed stats
+   (shared/pvp.js has the rules). It lives here because roads.js needs its ground at load. x, z: the island's centre (the atlas's); r: the island's grass, to where the beach starts; lakeR: the deep moat's outer edge
+   (the water is -2.6 m from 0.82 lakeR in, so nobody wades across; the bridge crosses it); h: the top. baseHeight lays the island and its moat over the atlas's ground (pvpIsleCut). */
+const PVP_ISLE={x:WA_PVP.x,z:WA_PVP.z,r:33,lakeR:62,h:2.3,name:'The Proving Isle'};
 // the lake and the island: banks that ease down to the water, a flat floor, and the island with a beach (d: distance from the centre, with a wobbling shore)
 function pvpIsleCut(x,z,h){
   const I=PVP_ISLE, lx=x-I.x, lz=z-I.z; if(Math.abs(lx)>I.lakeR+32||Math.abs(lz)>I.lakeR+32) return h;
