@@ -5,10 +5,10 @@
 MODELS.bat={
   geo(d,p){
     const G={}, W=[-1,1], fur=(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.7+0.5*moNoise(x,y,z,8)); moTint(c,p.belly,clamp(-(y-1.0)*4)*0.6); };
-    const body=[moEll(0.17,0.2,0.27,0,1.0,0.02,fur,null,10),moEll(0.14,0.13,0.14,0,1.1,-0.3,fur,null,10),moEll(0.045,0.035,0.06,0,1.06,-0.42,p.belly,null,6),moCone([0,0.95,0.26],[0,-0.5,1],0.22,0.07,fur,4)];   // body, head, snout, a stub of tail
-    for(const sd of W){ body.push(moCone([sd*0.07,1.2,-0.3],[sd*0.35,1,-0.1],0.26,0.06,fur,4),moEll(0.028,0.03,0.02,sd*0.07,1.12,-0.4,p.eye,null,5),moCone([sd*0.025,1.0,-0.46],[0,-1,-0.1],0.07,0.012,p.horn,3),moBone([sd*0.1,0.85,-0.05],[sd*0.12,0.7,-0.1],0.03,0.015,p.horn,4)); }
+    const body=[moEll(0.2,0.23,0.3,0,1.0,0.02,fur,null,10),moEll(0.17,0.16,0.17,0,1.12,-0.32,fur,null,10),moEll(0.14,0.12,0.1,0,0.95,-0.2,p.belly,null,8),moEll(0.045,0.035,0.06,0,1.06,-0.42,p.belly,null,6),moCone([0,0.95,0.26],[0,-0.5,1],0.22,0.07,fur,4)];   // body, head, snout, a stub of tail
+    for(const sd of W){ body.push(moCone([sd*0.08,1.24,-0.32],[sd*0.3,1,-0.1],0.38,0.09,fur,5),moCone([sd*0.085,1.2,-0.33],[sd*0.2,0.9,-0.05],0.22,0.04,p.belly,4),moBone([sd*0.08,0.8,0.05],[sd*0.1,0.68,-0.02],0.03,0.018,p.horn,4),moEll(0.028,0.03,0.02,sd*0.07,1.12,-0.4,p.eye,null,5),moCone([sd*0.025,1.0,-0.46],[0,-1,-0.1],0.07,0.012,p.horn,3),moBone([sd*0.1,0.85,-0.05],[sd*0.12,0.7,-0.1],0.03,0.015,p.horn,4)); }
     G.body=moMerge(body);
-    G.wR=moWyrmWing(1,p).scale(0.4,0.4,0.4); G.wL=moWyrmWing(-1,p).scale(0.4,0.4,0.4);
+    G.wR=moWyrmWing(1,p).scale(0.55,0.55,0.55); G.wL=moWyrmWing(-1,p).scale(0.55,0.55,0.55);
     return G;
   },
   build(d,G,M,g,P0){
