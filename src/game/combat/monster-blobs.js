@@ -49,7 +49,7 @@ MODELS.shroom={
       const hg=csph(1,moQ(22),moQ(16)).scale(0.36,0.32,0.34); moLump(hg,0.02,3,4); body.push(pc(hg.translate(0,0.86,0),(x,y,z,c)=>{ c.set(p.cap).multiplyScalar(0.92+0.12*moNoise(x,y,z,6)); if(moNoise(x+5,y,z,9)>0.7) moTint(c,p.spot,0.6); }));
       for(const sd of W){ body.push(moEll(0.07,0.1,0.05,sd*0.13,0.9,-0.3,0x14201a,null,8),moEll(0.03,0.03,0.02,sd*0.13,0.89,-0.335,0x9fe8b0,null,5)); }
       body.push(moEll(0.05,0.06,0.03,0,0.74,-0.33,0x14201a,null,8));
-      for(const sd of W) body.push(moBone([sd*0.09,0.5,0],[sd*0.2,0.3,-0.04],0.028,0.02,p.stem,5),moPatch([sd*0.22,0.87,0.05],[sd,0.3,0],0.06,0.02,p.spot,6));
+      for(const sd of W) body.push(moBone([sd*0.09,0.5,0],[sd*0.19,0.34,-0.03],0.035,0.026,p.stem,6),moBone([sd*0.19,0.34,-0.03],[sd*0.2,0.18,-0.07],0.026,0.018,p.stem,6),moEll(0.03,0.035,0.03,sd*0.2,0.16,-0.07,p.stem,null,6),moEll(0.045,0.05,0.04,sd*0.08,0.25,0.0,p.stem,null,6),moPatch([sd*0.22,0.87,0.05],[sd,0.3,0],0.06,0.02,p.spot,6));
       G.body=moMerge(body); G.foot=moMerge([moEll(0.06,0.05,0.09,0,0.05,-0.02,p.feet,null,7)]); return G;
     }
     // the stem: a swollen foot, a slim neck, a fibrous surface

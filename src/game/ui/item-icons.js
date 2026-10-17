@@ -55,7 +55,7 @@ function itemIcon(it){
   else if(it.kind==='ring') g=ringIconArt(it);   // dungeons: the ring
   else if(it.kind==='pendant') g=pendantIconArt(it);
   if(it.dg&&it.kind!=='ring'&&it.kind!=='pendant') g+=it.roll0?RL_SPARK:DG_SPARK;   // rolls: level-40 gear sparkles gold   // dungeons: a jade sparkle marks level-30 gear (a ring and a pendant draw theirs when tempered)
-  return `<svg class="ico" viewBox="0 0 32 32" aria-hidden="true">${g}</svg>`;
+  return `<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${g}</g></svg>`;
 }
 // the three tools: a wooden haft and a head in the colour of the tier's ore (ORE_GRADES)
 function toolIconArt(it){
@@ -92,7 +92,7 @@ function matIconArt(col,kind){
   if(kind==='gathering') return `<path d="M16 28V13" stroke="#15120e" stroke-width="3.4" stroke-linecap="round"/><path d="M16 28V13" stroke="#5a8a3a" stroke-width="1.6" stroke-linecap="round"/><path d="M16 15Q8 14 7 6Q15 6 16 15Z" fill="${col}" ${OUT}/><path d="M16 19Q24 18 25 10Q17 10 16 19Z" fill="${col}" ${OUT}/><path d="M16 24Q10 24 8 18Q14 17 16 24Z" fill="${l}" ${OUT}/>`;
   return `<path d="M16 3L26 12L16 29L6 12Z" fill="${col}" ${OUT}/><path d="M6 12H26M16 3L12 12L16 29L20 12Z" fill="none" stroke="${d}" stroke-width=".9"/><path d="M9 11L14 5.5" stroke="${l}" stroke-width="1.3"/>`;
 }
-const matIcon=(col,kind)=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true">${matIconArt(col,kind)}</svg>`;
+const matIcon=(col,kind)=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${matIconArt(col,kind)}</g></svg>`;
 // faint outline for an empty equipment slot
 function slotIcon(slot){
   const fake=slot==='weapon'?ITEM.sword1:slot==='ring'?ITEM['ring-basic']:slot==='pendant'?ITEM['pendant-xp']:ITEM[slot+'1'];  return itemIcon(fake).replace('class="ico"','class="ico ghost"');
