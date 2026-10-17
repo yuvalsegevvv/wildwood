@@ -49,7 +49,7 @@ function greyColor(x,z,h,g,out){
   return out.multiplyScalar(0.92+n2*0.16);
 }
 const _hc=new THREE.Color(), _gc=new THREE.Color();
-function terrainColor(x,z,h,g,out,noCut){   // noCut: colour as if the tunnel's cutting were not there (its lid)
+function terrainColorBase(x,z,h,g,out,noCut){   // (terrainColor, in zone-props.js, adds the monster zones' ground tint on top)   // noCut: colour as if the tunnel's cutting were not there (its lid)
   const bx=borderX(z), bz=borderZ(x), bxc=z<bz+8?borderXN(z):bx, hf=x>bxc+2?smoothstep(bz+8,bz-56,z):0;   // the north crest (the vale's and the forest's east of the Greyspine's wall), over which the ground turns to the Hoarfrost's
   if(hf>=1) return dgEntTint(x,z,hoarColor(x,z,h,g,out));   // dungeons: the Barrow Door's patch of trodden snow
   const gf=x<bxc?smoothstep(bz+8,bz-56,z):0;   // the home forest's north crest west of the Greyspine's wall, over which the ground turns to the Greyspine's

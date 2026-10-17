@@ -4,6 +4,7 @@
 // Usage: node tools/shot.js out.png [--at x,z[,degrees]] [--go tRime] [--level 60] [--size 480x300] [--frames 25] [--settings]
 //   --at x,z,deg   put the hiker there facing deg degrees (integers: the testing tool's button `tPass` takes "x,z,degrees")
 //   --go <id>      press one of the testing tools' teleport buttons instead (tPass, tRime, tHall, tNest, tGlen, tGrey, tQueen, tCavern, ...: the ids in src/index.html, #tSec)
+//   --unlock       first open every land the way the testing tools' rock-fall buttons do (the Vale, the Reach, the Greyspine, the Sunscar, the Gloamhorn), so --at can go there
 //   --frames N     rendered frames to wait after the jump (default 25: the world streams in a slice per frame, a far land colours its ground on arrival, and software GL draws about one frame a second)
 //   --settings     leave the settings panel open in the picture (it is closed by default)
 // Prints the page's console errors (none is the good answer). The shots of a session are in the path you give; look at them with the Read tool.
@@ -30,6 +31,7 @@ srv.listen(0,'127.0.0.1',async()=>{
     if(AT||GO||LEVEL>1){
       await pg.evaluate(()=>document.getElementById('bSound').click()); await sleep(400);   // the settings popover holds the testing tools
       if(LEVEL>1){ await pg.evaluate(l=>{ document.getElementById('tLevel').value=l; document.getElementById('tSetLv').click(); },LEVEL); await sleep(1500); }
+      if(process.argv.includes('--unlock')){ for(const id of ['tRiverFall','tNeckFall']){ await pg.evaluate(i=>document.getElementById(i).click(),id); await sleep(700); } }   // opens the Vale, the Reach, the glacier valley and the Greyspine's rock falls (the Sunscar and the Gloamhorn need them)
       if(AT){ await pg.evaluate(v=>{ const t=document.getElementById('tPass'); t.setAttribute('data-v',v); t.click(); },AT.split(',').length<3?AT+',0':AT); await sleep(300); }
       else if(GO){ await pg.evaluate(i=>{ const t=document.getElementById(i); if(!t) throw new Error('no testing button #'+i); t.click(); },GO); await sleep(300); }
       if(!process.argv.includes('--settings')) await pg.evaluate(()=>document.getElementById('bSound').click());
