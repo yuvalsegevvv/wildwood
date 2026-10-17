@@ -113,9 +113,20 @@ zpDef('rotlog',{w:2.0,hgt:1.6,sink:0.1,rad:0.8,gen:()=>merge([paint(cyl(0.75,0.8
 zpDef('cinderrock',{w:1.5,hgt:1.4,sink:0.3,rad:0.9,gen:()=>merge([zpBlob(1.0,1.1,0.85,1,0,0.5,0,0x2c2826),zpBlob(0.55,1,0.7,1,1.1,0.25,0.4,0x2c2826)]),
   glow:()=>merge([zpBox(0.9,0.05,0.08,0,0.78,0.1,0xff7a20,{ry:0.5}),zpBox(0.6,0.05,0.07,-0.2,0.7,-0.3,0xffa030,{ry:-0.7}),zpBox(0.5,0.05,0.06,1.1,0.5,0.4,0xff7a20,{ry:0.2})])});
 zpDef('charstump',{w:0.9,hgt:2.0,rad:0.5,gen:()=>merge([zpCyl(0.35,0.5,1.8,7,0,0,0,0x1a1614,{rz:0.08}),zpCyl(0.1,0.3,0.7,5,0.2,1.7,0,0x1a1614,{rz:-0.3})]),glow:()=>zpBlob(0.14,1,0.5,1,0.1,1.78,0,0xff7a20)});
-zpDef('shell',{w:1.2,hgt:0.9,sink:0.1,gen:()=>zpShellGeo()});
-function zpShellGeo(){ const g=new THREE.SphereGeometry(1,10,5,0,TAU,0,Math.PI/2).scale(1,0.45,0.85); return paint(g,(x,y,z,nx,ny,nz,c)=>{ const a=Math.atan2(x,z); c.set(0xe8c0b0).lerp(new THREE.Color(0xf4e4d8),0.5+0.5*Math.sin(a*9)).multiplyScalar(0.9+h3(x,y,z)*0.15); }); }
-zpDef('crabpot',{w:0.9,hgt:0.9,gen:()=>merge([zpDome(0.7,0.9,8,0,0,0,0x9a7a48),zpCyl(0.72,0.72,0.06,8,0,0.0,0,0x5a4630),zpBlob(0.12,1,1,1,0.9,0.1,0.3,0xe05a20),zpCyl(0.01,0.01,1.0,3,0.7,0.0,0.25,0x8a7a58,{rz:Math.PI/2})])});
+zpDef('shell',{mat:'flat',w:1.4,hgt:0.9,sink:0.1,gen:()=>zpShellGeo()});
+function zpShellGeo(){   // a scallop: a fan of ribs opening toward +z, concentric growth lines, a pair of ears at the hinge
+  const g=new THREE.SphereGeometry(1,40,8,Math.PI/2-0.58*Math.PI,1.16*Math.PI,0,Math.PI/2), P=g.attributes.position;
+  for(let i=0;i<P.count;i++){ const x=P.getX(i), y=P.getY(i), z=P.getZ(i), a=Math.atan2(x,z), rib=Math.sin(a*11); P.setXYZ(i,x*(1+0.05*rib),y*(0.55+0.14*rib)+0.0,z*(1+0.05*rib)); }
+  g.scale(1,1,0.95).computeVertexNormals();
+  const body=paint(g,(x,y,z,nx,ny,nz,c)=>{ const a=Math.atan2(x,z), r=Math.hypot(x,z), rib=Math.sin(a*11), grow=Math.sin(r*22);
+    c.set(0xe8c0b0).lerp(new THREE.Color(0xf6e8dc),0.5+0.5*rib).multiplyScalar(0.86+0.14*grow+h3(x*5,y*5,z*5)*0.1); if(y<0.04) c.multiplyScalar(0.75); });
+  const ear=sd=>paint(new THREE.BoxGeometry(0.3,0.06,0.2).translate(sd*0.24,0.05,-0.12),(x,y,z,nx,ny,nz,c)=>c.set(0xdcb4a4).multiplyScalar(0.9+0.2*h3(x*6,y*6,z*6)));
+  return merge([body,ear(-1),ear(1)]);
+}
+zpDef('crabpot',{w:1.0,hgt:1.0,gen:()=>{   // a wicker pot: woven hoops and ribs, a funnel mouth, a rope and an orange float
+  const pot=paint(new THREE.SphereGeometry(0.7,18,10,0,TAU,0,Math.PI/2).scale(1,0.9,1),(x,y,z,nx,ny,nz,c)=>{ const a=Math.atan2(x,z), w=Math.sin(a*12)>0.55||Math.sin(y*20)>0.65; c.set(0x9a7a48).multiplyScalar((w?0.62:0.95)+0.15*h3(x*6,y*6,z*6)); });
+  return merge([pot,zpCyl(0.72,0.72,0.07,10,0,0,0,0x5a4630),paint(new THREE.TorusGeometry(0.42,0.05,5,12).rotateX(Math.PI/2).translate(0,0.55,0),zpShade(0x6a5230)),paint(new THREE.CylinderGeometry(0.1,0.22,0.3,8,1,true).translate(0.5,0.35,0.3).rotateZ(-1.0),(x,y,z,nx,ny,nz,c)=>c.set(0x3a2a1a)),
+    zpBlob(0.14,1,1,1,0.95,0.12,0.3,0xe05a20),zpBlob(0.05,1,0.5,1,0.95,0.3,0.3,0xf4f0e0,{d:0}),zpStrand([0.5,0.5,0.1],[0.95,0.15,0.3],0.014,0x8a7a58)]); }});
 zpDef('driftlog',{w:2.0,hgt:0.9,sink:0.05,rad:0.5,gen:()=>merge([paint(cyl(0.3,0.34,4,7).rotateZ(Math.PI/2).translate(0,0.34,0),zpShade(0x9a8e7a)),zpCyl(0.05,0.12,0.9,5,-0.6,0.5,0,0x8a7e6a,{rz:0.8})])});
 zpDef('cairn',{w:0.9,hgt:1.8,sink:0.1,rad:0.5,gen:()=>merge([zpBlob(0.55,1.2,0.5,1,0,0.25,0,ZP_STONE),zpBlob(0.42,1.1,0.45,1,0.05,0.7,0,0x7a766e),zpBlob(0.3,1,0.45,1,-0.03,1.05,0.02,0x8a867e),zpBlob(0.2,1,0.5,1,0,1.38,0,0x9a968c)])});
 zpDef('cairn_snow',{w:0.9,hgt:1.8,sink:0.1,rad:0.5,gen:()=>merge([zpBlob(0.55,1.2,0.5,1,0,0.25,0,0x7d858c,{top:ZP_SNOW}),zpBlob(0.42,1.1,0.45,1,0.05,0.7,0,0x7d858c,{top:ZP_SNOW}),zpBlob(0.3,1,0.45,1,-0.03,1.05,0.02,0x8a929a,{top:ZP_SNOW}),zpBlob(0.2,1,0.5,1,0,1.38,0,0x9aa2aa,{top:ZP_SNOW})])});
