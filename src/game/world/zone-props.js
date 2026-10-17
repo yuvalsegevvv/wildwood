@@ -127,7 +127,7 @@ function zpGroundTint(x,z,h,g,out){
   for(const E of dgEntList){ const dx=x-(E.x+Math.sin(E.a)*DG_APRON*0.5), dz=z-(E.z+Math.cos(E.a)*DG_APRON*0.5), R2=DG_ENT_R*1.6;   // and none on a dungeon door's own patch of ground (dgEntTint paints that)
     if(dx>R2||dx<-R2||dz>R2||dz<-R2) continue; k*=smoothstep(DG_ENT_R*0.7,R2,Math.hypot(dx,dz)); }
   out.r+=(r/sk-out.r)*k; out.g+=(gg/sk-out.g)*k; out.b+=(b/sk-out.b)*k; return out; }
-function terrainColor(x,z,h,g,out,noCut){ return zpGroundTint(x,z,h,g,terrainColorBase(x,z,h,g,out,noCut)); }   // (zpGroundTint leaves a dungeon door's own patch of ground alone)
+function terrainColor(x,z,h,g,out,noCut){ return cvGroundTint(x,z,h,zpGroundTint(x,z,h,g,terrainColorBase(x,z,h,g,out,noCut))); }   // caves: the shelf's colour   // (zpGroundTint leaves a dungeon door's own patch of ground alone)
 
 /* ---- the props ---- */
 let ZP_MATS=null;
