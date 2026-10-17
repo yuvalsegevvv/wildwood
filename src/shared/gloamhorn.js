@@ -49,8 +49,7 @@ const GLOAM_HOLD=(()=>{
 })();
 for(const c of GLOAM_HOLD.caves) GLOAM_CAVES.push(c);
 /* The Gloamvault's door (dungeons.js DG_ENTRANCES.gloamvault, the dungeon's: docs/DUNGEON-THEMES.md section 12) at the atlas's door of the Gloamhorn, in zone m38; it faces the road that comes to it */
-const GLOAM_DG_DOOR=(()=>{ const p=WA_POIS.find(q=>q.land==='gloam'&&q.kind==='door'), R=WA_ROADS.find(r=>r.name==='gloam door'), q=R?R.pts[Math.max(0,R.pts.length-8)]:[p.x+10,p.z];
-  return {id:'gloamvault',name:'The Gloamvault',x:p.x,z:p.z,r:12,rot:r2(Math.atan2(q[0]-p.x,q[1]-p.z))}; })();
+const GLOAM_DG_DOOR={id:'gloamvault',name:'The Gloamvault',x:-1215,z:-845,r:12,rot:3.927};   // the atlas's door (WA_POIS 'gloam door', -1195, -823) moved 30 m to the nearest ground with a level apron and 14 m off the Gloam Door Road, which ends at the poi
 // no camp, node or plant here: the lighthouse, its forecourt, the door, Wraithwick, the arenas, the water (the Glass River and the lakes) (m: extra margin)
 function gloamKeepOut(x,z,m){
   m=m||0;

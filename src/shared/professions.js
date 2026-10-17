@@ -49,7 +49,7 @@ const NODE_PLAN=[[22,'frostbloom',6],[22,'snowmoss',4],[22,'frostpine',4],[22,'r
   [26,'rimeore',3],[26,'frostpine',2],[26,'snowmoss',2],[27,'rimeore',3],[27,'frostpine',2],[27,'snowmoss',2],
   [28,'rimeore',3],[28,'frostpine',2],[28,'snowmoss',2],[29,'rimeore',3],[29,'frostpine',2],[29,'snowmoss',2],[30,'rimeore',3],[30,'frostpine',2],[30,'snowmoss',2]];
 // the four older dungeon doors, from the atlas (shared/dungeons.js loads after this file: tools/dungeons-smoke.js checks these stay equal to DG_ENTRANCES): no node within 22 m of one
-const NODE_KEEPOUT=WA_POIS.filter(p=>p.kind==='door'&&(p.land==='home'||p.land==='vale'||p.land==='hoar'||p.land==='grey')).map(p=>[p.x,p.z]);   // (the atlas's doors of the four older dungeons; the Sunscar's and the Gloamhorn's are kept clear by sunKeepOut / gloamKeepOut)
+const NODE_KEEPOUT=[[233,-39],[1081,82],[968,-886],[-65,-553]];   // the four older dungeons' doors (DG_ENTRANCES hollowroots, jadesprings, bonefrostbarrow, blackseam in shared/dungeons.js, which loads after this file: dungeons-smoke checks the two lists agree; the Sunscar's and the Gloamhorn's doors are kept clear by sunKeepOut / gloamKeepOut)
 /* YOUR HOME (version 3): a private plot reached from any Wayfarers' Lodge (server/professions.js homeP), standing in a clearing near the first village. Every player has a copy of it: whoever is inside
    sees and is seen by no one else (server/professions.js homeSnapS), monsters leave them alone, and the nodes are the same on the client and the server,
    but a node you take is taken for you alone (server/professions.js keeps p.hback) and comes back after HOME_RESPAWN seconds, so the yard is never picked clean by someone else. It holds one vein
