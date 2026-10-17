@@ -77,8 +77,8 @@ function renderSkills(){
   const pass=skKind==='pass';
   let h=pass?'':`<div class="chips pn-tabs">${Object.keys(CLASSES).map(c=>`<button class="chip" data-sktab="${c}" aria-pressed="${c===cls}">${CLASSES[c].name}${c===clsOf()?' (you)':''}</button>`).join('')}</div>`;
   h+=`<div class="sk-soul">Soul: ${elChip(soulNow())} <span>${PL.level>=SOUL_LV?'Skills of this element deal more damage. Change it at the Soul Hall in Hanami.':'Bind your soul to an element at the Soul Hall in Hanami, from level '+SOUL_LV+'.'}</span></div>`;
-  h+=skSlotsHtml(C,cls);
-  h+=ssSummaryHtml(C,cls);   // skillsets: the set effects
+  h+=`<div class="sk-main"><div class="sk-left">${skSlotsHtml(C,cls)}</div>`;   // loadout on the left, the skill list on the right
+  const setH=ssSummaryHtml(C,cls);   // skillsets: the set effects
   h+=`<div class="sk-area"><div class="chips sk-kinds">${['basic','skill','burst','pass'].map(k=>`<button class="chip" data-skkind="${k}" aria-pressed="${k===skKind}">${KIND_TITLE[k]}</button>`).join('')}</div>`;
   let ids;
   if(pass){ ids=PASSIVE_IDS.filter(id=>!PASSIVES[id].set||S.owned.includes(id)); if(lv<PASSIVE_LV)   // skillsets: a signature passive shows once it is yours
@@ -88,7 +88,7 @@ function renderSkills(){
     if(skKind!=='basic'&&lv<slotLv(skKind)) h+=`<p class="muted sk-note">This slot opens at level ${slotLv(skKind)}.</p>`;
     if(skKind==='basic'&&!canSwap(cls,'basic',S)) h+=`<p class="muted sk-note">Only mages can change their basic attack.</p>`;
   }
-  h+=`<div class="sk-grid">${ids.map(id=>{ const s=skillDef(id); return `<div class="sk-cell">${skTile(s,C,'grid')}<span class="nm">${s.name}</span></div>`; }).join('')}</div></div>`;
+  h+=`<div class="sk-grid">${ids.map(id=>{ const s=skillDef(id); return `<div class="sk-cell">${skTile(s,C,'grid')}<span class="nm">${s.name}</span></div>`; }).join('')}</div></div></div>${setH}`;
   h+=`<div class="sk-info" id="skInfo">${skInfoHtml(C,cls)}</div>`;
   if(cls!==clsOf()&&!pass) h+=`<p class="muted">You fight as a ${CLASSES[clsOf()].name} right now (your weapon decides). This ${CLASSES[cls].name} loadout is used whenever you hold a ${WEAPON_OF[cls]}.</p>`;
   $('#skBody').innerHTML=h;
