@@ -42,9 +42,10 @@ function moBeetleGeo(d,p){
   return G;
 }
 function moSpiderGeo(d,p){
-  const G={}, W=[-1,1], body=[], band=(x,y,z,c)=>{ c.set(p.shell).multiplyScalar(0.8+0.3*moNoise(x,y,z,5)); moTint(c,p.sheen,clamp((y-0.85)*2)*0.4); if(Math.abs(Math.sin(z*9))<0.2&&y>0.6) c.set(p.seam); };
+  const G={}, W=[-1,1], body=[], band=(x,y,z,c)=>{ c.set(p.shell).multiplyScalar(0.8+0.3*moNoise(x,y,z,5)); moTint(c,p.sheen,clamp((y-0.85)*2)*0.4); if(Math.abs(Math.sin(z*9))<0.2&&y>0.6) c.set(p.seam); else if(y>0.8&&z>0.15&&Math.abs(Math.sin((z-Math.abs(x)*1.1)*7.5))<0.16) moTint(c,p.seam,0.7); };   // rings, and a folium of chevrons down the back
   body.push(moEll(0.4,0.36,0.52,0,0.72,0.42,band,[-0.15,0,0],moQ(16)),moEll(0.27,0.22,0.32,0,0.56,-0.12,p.head,null,12),moEll(0.2,0.18,0.2,0,0.54,-0.4,p.head,null,12));
-  for(const [x,y,z,r] of [[0.06,0.62,-0.55,0.045],[0.12,0.6,-0.54,0.03],[0.16,0.56,-0.5,0.025]]) for(const sd of W) body.push(moEll(r,r,r,sd*x,y,z,p.eye,null,6));   // eyes
+  for(const [x,y,z,r] of [[0.06,0.62,-0.55,0.05],[0.12,0.6,-0.54,0.03],[0.16,0.56,-0.5,0.025],[0.07,0.7,-0.5,0.02]]) for(const sd of W) body.push(moEll(r,r,r,sd*x,y,z,p.eye,null,6));   // eight eyes, the front pair the largest
+  for(const sd of W) body.push(moCone([sd*0.07,0.58,0.9],[sd*0.12,-0.25,1],0.16,0.04,p.head,5),moCone([sd*0.14,0.62,0.86],[sd*0.3,-0.2,1],0.1,0.028,p.head,4));   // spinnerets
   for(const sd of W) body.push(moHorn([sd*0.07,0.45,-0.52],[sd*0.05,-1,-0.5],0.24,0.045,0.6,0x14100e,5,[0,0,-1]),moBone([sd*0.16,0.5,-0.5],[sd*0.2,0.3,-0.66],0.03,0.022,p.legs,5));   // fangs, palps
   for(let i=0;i<14;i++){ const a=i*2.3, y=0.72+0.34*Math.cos(i*1.1), z=0.42+0.5*Math.sin(i*1.7); body.push(moCone([Math.sin(a)*0.3,y,z],[Math.sin(a),0.6,0.1],0.07,0.012,0x14100e,3)); }   // bristles
   if(p.lady){   // the Jorogumo's woman: a kimono torso rising from the front, black hair, raised arms
@@ -58,15 +59,24 @@ function moSpiderGeo(d,p){
   G.body=moMerge(body);
   const zs=[-0.45,-0.15,0.15,0.45], fz=[-0.95,-0.4,0.35,0.95];
   for(const sd of W){ const legs=[];
-    moBugLegs(legs,zs.map((z,i)=>[[sd*0.2,0.55,z*0.5],[sd*0.6,0.95,z*0.9+(fz[i]-z)*0.2],[sd*0.98,1.05,z*1.1+(fz[i]-z)*0.5],[sd*1.35,0.5,z*1.2+(fz[i]-z)*0.85],[sd*1.55,0.02,fz[i]]]),0.04,0.011,p.legs,0);
+    const L=zs.map((z,i)=>[[sd*0.2,0.55,z*0.5],[sd*0.6,0.95,z*0.9+(fz[i]-z)*0.2],[sd*0.98,1.05,z*1.1+(fz[i]-z)*0.5],[sd*1.35,0.5,z*1.2+(fz[i]-z)*0.85],[sd*1.55,0.02,fz[i]]]);
+    moBugLegs(legs,L,0.045,0.011,p.legs,0);
+    for(const [i,Q] of L.entries()){ legs.push(moEll(0.062,0.062,0.062,Q[2][0],Q[2][1],Q[2][2],p.legs,null,5),moEll(0.045,0.045,0.045,Q[3][0],Q[3][1],Q[3][2],p.legs,null,5));   // the knees are round joints, not a bend in a pipe
+      for(const [k,u] of [[2,0.3],[2,0.7],[3,0.35],[3,0.75]]){ const a=Q[k], b=Q[k+1];
+        legs.push(moCone([lerp(a[0],b[0],u),lerp(a[1],b[1],u),lerp(a[2],b[2],u)],[sd*0.5,0.9,(i-1.5)*0.3],0.1,0.012,0x14100e,3)); } }   // the fine hair of a spider's leg
     G[sd<0?'lL':'lR']=moMerge(legs); }
   return G;
 }
 function moCrabGeo(d,p){
   const G={}, W=[-1,1], boss=!!d.boss, body=[], sh=(x,y,z,c)=>{ c.set(p.shell).multiplyScalar(0.8+0.32*moNoise(x,y,z,6)); if(moNoise(x+7,y,z,10)>0.7) moTint(c,p.horn,0.35); moTint(c,p.sheen,clamp((y-0.55)*3)*0.35);
+    if(y>0.66&&(Math.abs(z+0.06+0.22*x*x)<0.03||(Math.abs(x)>0.16&&Math.abs(x)<0.24&&z>0.02&&z<0.4))) c.multiplyScalar(0.55);   // the cervical groove and the two furrows behind it
     if(boss&&Math.abs(moNoise(x,y,z,3.2)-0.5)<0.022) c.set(0x6af0ff); };   // (the Tide King) cracks that glow with the sea
+  const top=(x,z)=>0.52+0.36*Math.sqrt(Math.max(0.01,1-(x/0.78)**2-(z/0.6)**2)), pad=(x,y,z,c)=>{ sh(x,y,z,c); moTint(c,p.sheen,0.25); c.multiplyScalar(1.12); };
   const gk=(x,y,z,c)=>{ c.set(p.legs).multiplyScalar(0.85+0.2*moNoise(x,y,z,8)); };
   body.push(moEll(0.78,0.36,0.6,0,0.52,0,sh,null,moQ(20)),moEll(0.3,0.14,0.2,0,0.4,-0.56,p.head,null,10));
+  for(const [x,z,rx,rz] of [[0.42,0.14,0.26,0.22],[-0.42,0.14,0.26,0.22],[0,0.22,0.14,0.16],[0,-0.28,0.16,0.14],[0.3,-0.3,0.14,0.1],[-0.3,-0.3,0.14,0.1]]) body.push(moEll(rx,0.09,rz,x,top(x,z)-0.05,z,pad,null,6));   // raised shell regions: the gill covers, the heart, the stomach
+  for(let i=0;i<(boss?0:20);i++){ const x=(h3(i,1,7)-0.5)*1.3, z=(h3(i,2,7)-0.5)*0.9; if((x/0.7)**2+(z/0.52)**2<1) body.push(moCone([x,top(x,z)-0.02,z],[x*0.3,1,z*0.3],0.05,0.028,p.horn,4)); }   // tubercles
+  for(const sd of W) for(const [z,k] of [[-0.2,1],[0.12,0.75],[0.36,0.5]]) body.push(moCone([sd*0.7,0.5,z],[sd,0.25,-0.15],0.34*k*(boss?1.5:1),0.07*k,p.horn,5));   // the side spines of the shell
   for(let i=-3;i<=3;i++){ const a=i*0.36, x=Math.sin(a)*0.74, z=-Math.cos(a)*0.56; body.push(moCone([x,0.48,z],[Math.sin(a),0.35,-Math.cos(a)],boss?0.3:0.16,boss?0.07:0.05,p.horn,5)); }   // a toothed front rim
   for(const sd of W){ body.push(moBone([sd*0.16,0.62,-0.45],[sd*0.2,0.88,-0.52],0.03,0.026,p.head,5),moEll(0.07,0.075,0.07,sd*0.2,0.94,-0.52,p.eye,null,8),moEll(0.02,0.02,0.02,sd*0.19,0.97,-0.57,0xffffff,null,4));
     body.push(moCone([sd*0.06,0.38,-0.68],[sd*0.2,-1,-0.4],0.14,0.03,0x2a1a10,4)); }
@@ -78,10 +88,14 @@ function moCrabGeo(d,p){
   }
   G.body=moMerge(body);
   for(const sd of W){ const legs=[];
-    moBugLegs(legs,[-0.34,-0.12,0.12,0.34].map(z=>[[sd*0.55,0.5,z*0.9],[sd*0.85,0.85,z*0.95],[sd*1.1,0.5,z*1.05],[sd*1.22,0.02,z*1.15]]),0.05,0.012,gk,0);
+    const LG=[-0.34,-0.12,0.12,0.34].map(z=>[[sd*0.55,0.5,z*0.9],[sd*0.85,0.85,z*0.95],[sd*1.1,0.5,z*1.05],[sd*1.22,0.02,z*1.15]]);
+    moBugLegs(legs,LG,0.06,0.014,gk,0);
+    for(const Q of LG) legs.push(moEll(0.075,0.07,0.075,Q[1][0],Q[1][1],Q[1][2],gk,null,5),moCone([Q[2][0],Q[2][1]-0.02,Q[2][2]],[Q[3][0]-Q[2][0],Q[3][1]-Q[2][1]-0.1,Q[3][2]-Q[2][2]],0.5,0.035,0x2a1a10,4));   // round knees, a dark pointed tip on each leg
     G[sd<0?'lL':'lR']=moMerge(legs);
     // a claw, from its shoulder forward: the arm, the palm, and two serrated fingers that close on each other
-    const cl=[moBone([0,0,0],[-sd*0.04,0.14,-0.6],0.12,0.1,gk,7),moEll(0.25,0.2,0.34,-sd*0.05,0.22,-0.85,(x,y,z,c)=>{ sh(x,y,z,c); },null,12)];
+    const cl=[moBone([0,0,0],[sd*0.22,0.1,-0.34],0.13,0.11,gk,7),moEll(0.12,0.11,0.12,sd*0.22,0.1,-0.34,gk,null,8),moBone([sd*0.22,0.1,-0.34],[-sd*0.04,0.17,-0.62],0.11,0.1,gk,7),   // the upper arm swings out to an elbow and the forearm brings the claw back in
+      moCone([sd*0.28,0.18,-0.36],[sd,0.7,0],0.3,0.06,p.horn,5),moEll(0.25,0.2,0.34,-sd*0.05,0.22,-0.85,sh,null,12)];
+    for(let i=0;i<5;i++) cl.push(moCone([-sd*0.05+(i-2)*0.07,0.38-0.02*Math.abs(i-2),-0.86+0.05*(i%2)],[0,1,0],0.06,0.03,p.horn,4));   // a row of tubercles on the back of the palm
     for(const f of [-1,1]){   // the fingers: one above, one below, each curving in toward the other
       cl.push(moHorn([-sd*0.05,0.22+f*0.07,-1.08],[0,0,-1],0.62,0.12,0.9,p.horn,6,[0,-f,0]));
       for(let i=0;i<4;i++) cl.push(moCone([-sd*0.05,0.22+f*0.05,-1.2-i*0.12],[0,-f*0.5,0.1],0.06,0.022,0xe8dcc0,4)); }
