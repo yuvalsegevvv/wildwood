@@ -10,7 +10,7 @@ function zpTheme(key,tintHex,tintK,dens,entries){ const c=new THREE.Color(tintHe
   for(const e of entries){ if(!ZP_KIND[e[0]]){ ZP_BAD.push(key+': '+e[0]); continue; } ok.push({kind:e[0],w:e[1],cmin:e[2]||0,o:e[3]||{}}); }
   ZP_THEME[key]={key,tr:c.r,tg:c.g,tb:c.b,tk:tintK,dens,entries:ok}; }
 /* ---- the home forest (docs/WORLD.md; the monster lists are in docs/MOBS.md) ---- */
-zpTheme('1',0x6fd05a,0.2,0.06,[['slimepool',3],['mosstone',1,0.1]]);                                                                   // slimes
+zpTheme('1',0x6fd05a,0.2,0.06,[['slimepool',3],['mosstone',1,0.1],['toadpurple',1]]);                                                                   // slimes
 zpTheme('2',0x5a3f6a,0.25,0.12,[['toadred',3],['toadpurple',3],['hollowstump',1,0.5]]);                                                 // shrooms
 zpTheme('3',0x4a4a2a,0.25,0.08,[['husk',2,0.3],['burrow',3],['mosstone',1,0.2]]);                                                      // beetles
 zpTheme('4',0x6a4a30,0.3,0.08,[['wallow',2,0.3],['barricade',2,0.4],['bonepile',1,0.2]]);                                              // boars
@@ -61,11 +61,11 @@ zpTheme('g31',0x6a6a68,0.25,0.08,[['cairn',2,0.2],['menhir',1,0.3],['bonepile',1
 zpTheme('g32',0x4a4a4c,0.3,0.09,[['sinkhole',2,0.4],['granitepile',3,0.1],['rockspire',1,0.4]]);
 zpTheme('boss29',0x9a9890,0.35,0,[]); zpTheme('boss32',0x4a4a50,0.4,0,[]);
 /* ---- the Sunscar ---- */
-zpTheme('s28',0x7aa05a,0.25,0.07,[['waterjar',2,0.3],['reedhut',1,0.55,{with:['campfire']}]]);
+zpTheme('s28',0x7aa05a,0.25,0.07,[['waterjar',2,0.3],['reedhut',1,0.55,{with:['campfire']}],['hoodoo',1]]);
 zpTheme('s29',0xe8e0d8,0.4,0.08,[['saltcrust',4],['sunskull',1,0.4],['burrow',2,0.3]]);                                                  // the salt pan, scorpions
 zpTheme('s30',0xb87a48,0.3,0.09,[['raidertent',2,0.5,{with:['campfire','banner_black']}],['weaponrack',1,0.45],['hoodoo',2,0.3]]);       // raiders
 zpTheme('s31',0xb89a5a,0.25,0.08,[['sandlantern',2,0.3],['sarcophagus',1,0.5],['wormcrater',2,0.3]]);                                    // sandworms and mummies
-zpTheme('s32',0x8ad8d0,0.3,0.09,[['glassspire',2,0.2],['glassshard',4]]);
+zpTheme('s32',0x8ad8d0,0.3,0.09,[['glassspire',2,0.2],['glassshard',4],['saltcrust',1]]);
 zpTheme('s33',0xc0643a,0.3,0.08,[['hoodoo',3,0.1],['djinnjar',1,0.5]]);                                                                 // djinn
 zpTheme('s34',0xf0e8d0,0.35,0.09,[['obelisk',2,0.4],['sarcophagus',2,0.35],['ruincol',2,0.3]]);                                          // tomb guards
 zpTheme('s35',0x8a5a38,0.3,0.08,[['brazier',2,0.4],['sunaltar',1,0.6],['sarcophagus',1,0.5],['ribs',1,0.5]]);                            // sun priests
