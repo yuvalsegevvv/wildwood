@@ -49,6 +49,9 @@ function doAttack(kind){
 function attackVisuals(a,who){
   const x=who?who.x:P.x, y=who?who.y:P.y, z=who?who.z:P.z, face=who?who.face:P.face, sc=who?who.scale:hiker.scale, mine=!who, k=a.sk||a.kind;
   const gs=ACT_SKILL[k]; if(gs&&gs.fx){ fxVisuals(gs,x,y,z,face,sc,mine); return; }   // a skill with generic effects (the boss skills)
+  if(k==='quake'){ fxxDust(x,getH(x,z),z,18,6,0x8a7a60); fxxDebris(x,getH(x,z),z,14,7,0x6a5030); fxxScorch(x,z,4,0xd8b07a); }
+  else if(k==='inferno'){ fxxDome(x,y,z,7,0xff7a2a); fxxScorch(x,z,5,0xff7a2a); fxxDust(x,y,z,10,5,0x4a3a30); }
+  else if(k==='charge'||k==='bash') fxxDust(x,getH(x,z),z,8,3,0x9a8a70);
   if(k==='bash'){ spawnArcAt(x,y+0.9*sc,z,face); const fx=x-Math.sin(face)*1.6, fz=z-Math.cos(face)*1.6; spawnRingAt(fx,getH(fx,fz),fz,2.4,0xffe08a);
     if(mine&&SND.ready){ noiseHit({bus:'ui',filter:'lowpass',ff:420,dur:0.22,vol:0.3}); tone({bus:'ui',type:'triangle',freq:180,freq2:90,dur:0.2,vol:0.08}); } }
   else if(k==='charge'){ spawnRingAt(x,y,z,3.2,0xffc070); spawnBurst(new THREE.Vector3(x,y+0.3,z),0xd8b07a,1.2); if(mine){ cSfx.boom({x,z}); camShake=Math.max(camShake,0.3); } }
@@ -70,18 +73,29 @@ function attackVisuals(a,who){
 function spawnBurst(pos,color,size){
   const mesh=new THREE.Mesh(new THREE.SphereGeometry(0.5,12,8),fxMat(color,0.6));
   mesh.position.copy(pos); scene.add(mesh);
-  CB.fx.push({mesh,life:0.45,max:0.45,grow:size*3,own:true});
+  CB.fx.push({mesh,life:0.3,max:0.3,grow:size*3,own:true});
+  mesh.material.opacity=0.35;
+  if(size>=0.5) fxpFlare(pos.x,pos.y,pos.z,color,Math.min(5,size*1.8),0.3);   // fx-pool: the glow and sparks that make a burst read as light
+  fxpSparks(pos.x,pos.y,pos.z,color,Math.min(18,3+size*5),3+size*2.2,{size:0.12+size*0.05});
 }
 function spawnRingAt(x,y,z,radius,color,inward){   // inward: shrinks to the middle instead of growing (a pull)
   const mesh=new THREE.Mesh(new THREE.RingGeometry(0.8,1,48).rotateX(-Math.PI/2),fxMat(color,0.8));
   mesh.position.set(x,y+0.15,z); scene.add(mesh);
   CB.fx.push({mesh,life:0.5,max:0.5,grow:radius,ring:true,own:true,inward:!!inward});
+  const e2=new THREE.Mesh(new THREE.RingGeometry(0.93,1,48).rotateX(-Math.PI/2),fxMat(0xffffff,0.9));   // a thin white leading edge outruns the coloured ring
+  e2.position.set(x,y+0.17,z); scene.add(e2); CB.fx.push({mesh:e2,life:0.4,max:0.4,grow:radius*1.05,ring:true,own:true,inward:!!inward});
+  fxpRingSparks(x,y,z,radius,color,Math.min(30,6+radius*3),0.5,inward);
 }
 function spawnRing(radius,color,y){ spawnRingAt(P.x,y||P.y,P.z,radius,color); }
 function spawnArcAt(x,y,z,face,col,size){   // col, size (x the normal reach): for skills with a longer reach or an element
   const mesh=new THREE.Mesh(new THREE.RingGeometry(1.2,2.6,24,1,-Math.PI*0.35,Math.PI*0.7).rotateX(-Math.PI/2),fxMat(col||0xeef4ff,0.45));
   mesh.position.set(x,y,z); mesh.rotation.y=face+Math.PI/2; if(size) mesh.scale.setScalar(size); scene.add(mesh);
   CB.fx.push({mesh,life:0.18,max:0.18,grow:0,own:true});
+  fxxSlash(x,y,z,face,col||0xeef4ff,(size||1)*0.9);   // fx-extra: a bright crescent sweeps through the blow
+  const sz=size||1, fx_=-Math.sin(face), fz_=-Math.cos(face);   // sparks fly off the edge of the swing
+  for(let k=0,n=fxpN(8);k<n;k++){ const a=(k/(n-1||1)-0.5)*2.1, c=Math.cos(a), s=Math.sin(a), r=2.2*sz;
+    const dx=fx_*c-fz_*s, dz=fz_*c+fx_*s;
+    fxpAdd(x+dx*r,y,z+dz*r,dx*5*sz,AR(0.5,2),dz*5*sz,col||0xeef4ff,0.2*AR(0.7,1.2),AR(0.2,0.4),{g:5,drag:3,white:0.5,grow:0.1}); }
 }
 /* ---- server combat events ---- */
 function onMonDmg(id,v,crit,by,fx){
@@ -90,6 +104,8 @@ function onMonDmg(id,v,crit,by,fx){
   // your own hits show whether the element helped (an arrow up) or hurt (down): your soul and the monster's element
   const res=fx===2, mine=by===NET.pid&&fx&&!res, c=monCenter(m);   // rolls: fx 2 = the hit was resisted (half damage, no debuff)
   popText(c.x,c.y+m.T.height*0.5*m.s,c.z,(res?'Resisted ':'')+String(v)+(mine?(fx>0?'▲':'▼'):''),(res?'resisted':crit?'crit':(by===NET.pid?'':'other'))+(mine?(fx>0?' up':' down'):''));
+  if(by===NET.pid||Math.random()<0.5||crit){ fxpSparks(c.x,c.y,c.z,crit?0xffd45a:0xffe8c0,crit?16:5,crit?7:4,{size:crit?0.26:0.16,life:0.4}); if(crit) fxpFlare(c.x,c.y,c.z,0xffd45a,2.4,0.25); }   // fx-pool: a hit spits sparks, a crit flares
+  if(crit&&by===NET.pid) fxxFlash(0xffd45a,0.14);   // fx-extra
   if(by===NET.pid){ cSfx.hit(m,crit); if(!CB.target||CB.target.dead) CB.target=m; }
   else if(Math.random()<0.5) cSfx.hit(m,crit);
   if(Math.random()<0.4) monSound(m,'hurt');
@@ -105,6 +121,8 @@ function onMonKill(id){
   const m=MON_BY_ID.get(id); if(!m) return;
   m.dead=true; m.deadT=0; m.hp=0; m.act=null;
   monSound(m,'die'); spawnBurst(monCenter(m),m.T.color,1.1*m.T.scale);
+  { const c=monCenter(m); fxxDust(c.x,m.y+0.2,c.z,6,0.8*m.T.scale*m.s,0x8a8070); }   // fx-extra: a puff of dust where it fell
+  { const c=monCenter(m); for(let i=0,n=fxpN(6);i<n;i++) fxpRise(c.x+AR(-0.4,0.4)*m.s,c.y+AR(-0.3,0.3),c.z+AR(-0.4,0.4)*m.s,m.T.color,0.22,AR(0.8,1.4)); }   // a wisp of the monster's colour drifts up
   if(CB.target===m) CB.target=null;
   if(m.boss){ clearBossVisuals(); }
 }
@@ -113,6 +131,7 @@ function onMonAct(id,dur){
   if(!m.boss) m.lunge=0.5;
   m.act={kind:'slash',t:0,dur:dur||0.6,slam:dur>2};
   monSound(m,'attack');
+  fxMonSwing(m,dur||0.6);
 }
 const arrowOf=()=>new THREE.Mesh(arrowGeo,matChar), orbGeo=new THREE.SphereGeometry(0.4,12,9), orbGlowGeo=new THREE.SphereGeometry(0.75,12,9);
 const shardGeo=new THREE.ConeGeometry(0.09,0.7,5).rotateX(Math.PI/2);
@@ -136,6 +155,7 @@ function onProjEnd(id,x,y,z,hit){
   const i=CB.projs.findIndex(p=>p.id===id); if(i<0) return;
   const p=CB.projs[i]; scene.remove(p.mesh); CB.projs.splice(i,1);
   const pos=new THREE.Vector3(x,y,z);
+  if(!p.look) fxProjImpact(pos,p.kind);   // fx-pool
   if(p.look) ssLookImpact(p.look,pos,p,hit);   // skillsets
   else if(p.kind==='bolt'){ cSfx.boom(pos); spawnBurst(pos,0xff8a3a,0.9); }
   else if(p.kind==='shard'){ spawnBurst(pos,0xbfe8ff,0.5); }
@@ -149,6 +169,31 @@ function onProjEnd(id,x,y,z,hit){
   else if(hit==null) cSfx.thunk(pos);
 }
 const _pv2=new THREE.Vector3();
+const FXP_PCOL={bolt:0xff8a3a,shard:0xbfe8ff,missile:0xb08aff,snipe:0xfff0a0,pierce:0xbfe8ff,spore:0x9adf6a,ember:0xff8a3a,thorn:0xa8834a,spirit:0xfff0a0,frost:0x9fd8ff,foxfire:0x9fe0ff,arrow:0xffe8b0};
+// a projectile in flight leaves a glowing tail (a bigger one for the heavy kinds); at its end it flares and throws sparks
+function fxProjTrail(p,dt){
+  p.fxT=(p.fxT||0)-dt; if(p.fxT>0) return; p.fxT=LOW?0.045:0.022;
+  const col=FXP_PCOL[p.kind]||0xffb060, big=p.kind==='snipe'||p.kind==='missile'||p.kind==='foxfire'||p.kind==='bolt'||p.kind==='ember';
+  fxpTrail(p.pos.x,p.pos.y,p.pos.z,col,big?0.5:0.3,big?0.4:0.28);
+  if(big&&Math.random()<0.5) fxpAdd(p.pos.x,p.pos.y,p.pos.z,AR(-1,1),AR(-0.5,1.5),AR(-1,1),col,0.14,0.4,{g:3,drag:2,white:0.5,grow:0.1});
+}
+function fxProjImpact(pos,kind){
+  const col=FXP_PCOL[kind]||0xffc070, big=kind==='snipe'||kind==='ember'||kind==='bolt'||kind==='foxfire';
+  fxpFlare(pos.x,pos.y,pos.z,col,big?3:1.6,0.28); fxpSparks(pos.x,pos.y,pos.z,col,big?14:7,big?6:4);
+}
+// a monster's blow: a glow gathers at it while it winds up, then an arc of its element (or a plain red-white one) cuts the air in front of it.
+// A boss's slam (dur over 2 s) gathers longer and cracks the ground with a ring.
+function fxMonSwing(m,dur){
+  const el=m.def&&m.def.el, col=el&&ELEMS[el]?elCol(el):0xffb890, c=monCenter(m), big=dur>2||m.boss, sc=Math.max(0.6,Math.min(3,m.T.scale*m.s*0.6));
+  fxpFlare(c.x-Math.sin(m.face)*m.T.rad*m.s,c.y,c.z-Math.cos(m.face)*m.T.rad*m.s,col,(big?3:1.2)*sc,Math.min(0.5,dur*0.5));
+  fxpLater(Math.min(dur*0.45,big?1.4:0.5),()=>{
+    if(m.dead||!m.g.visible) return;
+    const f=m.face, d=m.T.rad*m.s+0.4, x=m.x-Math.sin(f)*d, z=m.z-Math.cos(f)*d, y=m.y+m.T.height*0.45*m.s;
+    spawnArcAt(x,y,z,f,col,Math.min(3.2,0.7+sc*0.9));
+    fxpSparks(x,y,z,col,big?14:6,big?6:3.5,{size:0.2});
+    if(big){ spawnRingAt(m.x,getH(m.x,m.z),m.z,4+sc*2,col); fxxDust(m.x,m.y,m.z,14,4+sc,0x8a7a60); fxxDebris(m.x,m.y,m.z,10,5+sc,0x6a5a40); fxxScorch(m.x,m.z,2+sc,col); }   // fx-extra: a boss slam cracks and scorches the ground
+  });
+}
 function updateCombat(dt){
   for(const k in CB.cd) CB.cd[k]=Math.max(0,CB.cd[k]-dt);
   if(CB.buff&&performance.now()>CB.buff.until) CB.buff=null;
@@ -169,6 +214,7 @@ function updateCombat(dt){
     if(p.kind==='pierce') p.pos.y=getH(p.pos.x,p.pos.z)+1.1;
     if(p.target && !p.target.dead && monCenter(p.target).distanceTo(p.pos)<0.5) p.pos.copy(monCenter(p.target));
     p.mesh.position.copy(p.pos);
+    if(!p.look) fxProjTrail(p,dt);   // fx-pool
     if(p.look){ _pv2.copy(p.pos).add(p.vel); p.mesh.lookAt(_pv2); ssLookTrail(p.look,p,dt); }   // skillsets: a look's projectile points along its flight and leaves its own trail
     else if(p.kind==='arrow'||p.kind==='pierce'||p.kind==='snipe'||p.kind==='shard'||p.kind==='spore'||p.kind==='ember'||p.kind==='thorn'){ _pv2.copy(p.pos).add(p.vel); p.mesh.lookAt(_pv2); }
     else { p.mesh.scale.setScalar(1+Math.sin(t*30)*0.12); p.emberT-=dt; if(p.emberT<=0){ p.emberT=0.025; const e=new THREE.Mesh(emberGeo,emberMat); e.position.copy(p.pos); scene.add(e); CB.fx.push({mesh:e,life:0.35,max:0.35,shrink:true}); } }

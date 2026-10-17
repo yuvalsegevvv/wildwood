@@ -38,7 +38,8 @@ function addTele(id,kind,x,z,r,dur,face,half){
   const y=getH(x,z)+0.08; fill.position.set(x,y,z); edge.position.set(x,y+0.01,z);
   if(kind==='line'){ fill.rotation.y=edge.rotation.y=face; fill.scale.set(half,1,0.01); edge.scale.set(half,1,r); }
   else { edge.scale.setScalar(r); fill.scale.setScalar(kind==='donut'?r:0.01); }
-  scene.add(fill,edge); BOSS.tele.set(id,{x,z,r,t:0,dur,kind,fill,edge,half,follow,own});
+  if(kind!=='line'&&kind!=='donut'&&kind!=='cleave'&&kind!=='breath'&&kind!=='rake'&&!follow) fxxRune(x,y,z,r*0.8,col,dur);   // fx-extra: a glyph circle turns inside the warning
+  scene.add(fill,edge); BOSS.tele.set(id,{x,z,r,t:0,dur,kind,fill,edge,half,follow,own,face});
   if(SND.ready){ const s=spatial(x,z,10,60); if(s) noiseHit({bus:'ui',filter:'lowpass',ff:160,dur:0.6,vol:0.18*s.gain,pan:s.pan}); }
 }
 function disposeTele(e){ scene.remove(e.fill,e.edge); e.fill.material.dispose(); e.edge.material.dispose(); for(const g of e.own) g.dispose(); }
@@ -48,6 +49,7 @@ function endTele(id,fired,x,z){
   if(!fired){ disposeTele(e); return; }
   if(x!==undefined){ e.x=x; e.z=z; }
   const y=getH(e.x,e.z), c=new THREE.Vector3(e.x,y+0.6,e.z), near=Math.hypot(P.x-e.x,P.z-e.z);
+  fxBossBlast(e,y);
   const boom=(vol)=>{ if(SND.ready){ const s=spatial(e.x,e.z,10,60); if(s) noiseHit({bus:'ui',filter:'bandpass',ff:900,ff2:300,dur:0.35,vol:vol*s.gain,pan:s.pan}); } };
   if(e.kind==='line'||e.kind==='donut'||e.kind==='breath'){   // the warning flashes bright and fades where it stood
     scene.remove(e.edge); e.edge.material.dispose(); e.fill.material.opacity=0.9; bossFxAdd({o:e.fill,t:0,life:0.35,kind:'flash',dispose:()=>{ scene.remove(e.fill); e.fill.material.dispose(); for(const g of e.own) g.dispose(); }});
@@ -81,6 +83,27 @@ function endTele(id,fired,x,z){
     const ring=new THREE.Mesh(new THREE.RingGeometry(0.8,1,48).rotateX(-Math.PI/2),fxMat(0xffb04a,0.8));
     ring.position.set(e.x,y+0.2,e.z); scene.add(ring); bossFxAdd({o:ring,t:0,life:0.6,kind:'wave',r:e.r,dispose:()=>{ scene.remove(ring); ring.geometry.dispose(); ring.material.dispose(); }});
     cSfx.boom({x:e.x,z:e.z}); if(near<25) camShake=Math.max(camShake,0.4);
+  }
+}
+// fx-pool: what a telegraph going off throws up, by shape: a cone or a line spits sparks along its reach, a circle a flare, sparks and a shockwave of them
+function fxBossBlast(e,y){
+  const col=TELE_COL[e.kind]||0xff7a2a, k=Math.min(2,e.r/6);
+  if(e.kind==='cleave'||e.kind==='breath'||e.kind==='rake'){
+    const fx=-Math.sin(e.face), fz=-Math.cos(e.face);
+    for(let i=0,n=fxpN(18+e.r*2);i<n;i++){ const a=AR(-e.half,e.half), c=Math.cos(a), s=Math.sin(a), dx=fx*c-fz*s, dz=fz*c+fx*s, d=AR(0.2,1)*e.r;
+      fxpAdd(e.x+dx*d,y+AR(0.2,1.4),e.z+dz*d,dx*5,AR(0.5,2.5),dz*5,col,0.28,AR(0.3,0.6),{g:3,drag:2,white:0.45,grow:0.1}); }
+    fxpFlare(e.x,y+1,e.z,col,2.5,0.3);
+  } else if(e.kind==='line'){
+    const fx=-Math.sin(e.face), fz=-Math.cos(e.face);
+    for(let i=0,n=fxpN(10+e.r);i<n;i++){ const d=AR(0,1)*e.r, side=AR(-e.half,e.half); fxpAdd(e.x+fx*d-fz*side,y+0.2,e.z+fz*d+fx*side,AR(-1,1),AR(2,6),AR(-1,1),col,0.3,AR(0.3,0.6),{g:7,drag:1,white:0.5,grow:0.1}); }
+  } else if(e.kind!=='donut'){
+    fxpFlare(e.x,y+0.6,e.z,col,3.5*k+1.5,0.4); fxpSparks(e.x,y+0.3,e.z,col,18+k*10,6+k*4,{up:3,size:0.26,life:0.7});
+    fxpRingSparks(e.x,y,e.z,e.r,col,24,0.55);
+    const ground=e.kind==='slam'||e.kind==='root'||e.kind==='rockfall'||e.kind==='quake'||e.kind==='rake'||e.kind==='mark'||e.kind==='blast';   // fx-extra: the ground takes a blow; light moves air
+    if(ground){ fxxScorch(e.x,e.z,e.r*0.9,col); fxxDust(e.x,y,e.z,12+k*8,e.r*0.8,0x8a7a60); fxxDebris(e.x,y,e.z,8+k*8,5+k*2,0x6a5a40); }
+    else fxxDust(e.x,y,e.z,6,e.r*0.6,0xcfd8e0);
+    if(e.kind==='blast'||e.kind==='mark'||e.kind==='pulse'||e.kind==='wail'||e.kind==='slam') fxxDome(e.x,y,e.z,e.r,col);
+    if(Math.hypot(P.x-e.x,P.z-e.z)<e.r+4&&k>0.8) fxxFlash(col,0.25);
   }
 }
 function clearBossVisuals(){ [...BOSS.tele.keys()].forEach(id=>endTele(id,false)); clearBossZones(); }

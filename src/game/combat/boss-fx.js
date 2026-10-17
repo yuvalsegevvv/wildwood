@@ -27,6 +27,7 @@ function updateBossZones(dt){
   for(const [id,Z] of BZONES){
     Z.t+=dt; if(Z.t>Z.dur+1){ endBossZone(id); continue; }
     const pulse=0.5+0.5*Math.sin(t*5);
+    if(Z.kind!=='whiteout'&&Z.kind!=='sandstorm'&&Z.t<Z.dur&&Math.random()<dt*16*FXP_K){ const a=AR(0,TAU), r=Math.sqrt(Math.random())*Z.r; fxpRise(Z.x+Math.sin(a)*r,Z.y+0.1,Z.z+Math.cos(a)*r,ZONE_COL[Z.kind]||0xffffff,0.24,AR(0.8,1.5)); }   // fx-pool: glowing motes rise from every zone
     if(Z.kind==='ember'){ Z.fill.material.opacity=0.2+0.12*pulse; if(Math.random()<dt*10){ const e=new THREE.Mesh(emberGeo,emberMat); e.position.set(Z.x+AR(-Z.r,Z.r)*0.8,Z.y+0.1,Z.z+AR(-Z.r,Z.r)*0.8); scene.add(e); CB.fx.push({mesh:e,life:0.6,max:0.6,shrink:true}); } }
     else if(Z.kind==='whirl'){ Z.arms.rotation.y+=dt*2.4; Z.fill.material.opacity=0.2+0.1*pulse; }
     else if(Z.kind==='spore'){ Z.fill.material.opacity=0.22+0.1*pulse; if(Math.random()<dt*9){ const a=AR(0,TAU), r=Math.sqrt(Math.random())*Z.r, e=new THREE.Mesh(emberGeo,sporeMoteMat); e.position.set(Z.x+Math.sin(a)*r,Z.y+AR(0.2,1.6),Z.z+Math.cos(a)*r); scene.add(e); CB.fx.push({mesh:e,life:1.2,max:1.2,shrink:true}); } }
@@ -40,6 +41,7 @@ function updateBossZones(dt){
     const warn=W.t<W.delay; W.mat.opacity=warn?0.25+0.2*Math.sin(t*16):0.6;
     if(!warn&&!W.started){ W.started=true; if(SND.ready){ const q=spatial(px,pz,20,140); if(q) noiseHit({bus:'ui',filter:'lowpass',ff:900,ff2:300,dur:1.6,vol:0.26*q.gain,pan:q.pan}); } }
     W.foam.position.y=0.95+Math.sin(t*9)*0.12;
+    if(!warn&&Math.random()<dt*40*FXP_K){ const off=AR(-W.half,W.half); if(Math.abs(off-W.gapC)>W.gapHalf) fxpAdd(px+Math.cos(W.ang)*off,W.g.position.y+0.8,pz-Math.sin(W.ang)*off,W.ux*4,AR(2,5),W.uz*4,0xdffaff,0.28,0.5,{g:8,drag:1,white:0.6,grow:0.1}); }   // fx-pool: spray off the crest
   }
 }
 function clearBossZones(){ [...BZONES.keys()].forEach(endBossZone); [...BWALLS.keys()].forEach(endBossWall); }
@@ -54,7 +56,7 @@ function onBossWall(id,x,z,ang,speed,half,gapC,gapHalf,delay,life){
     const f=new THREE.Mesh(waveGeo,foamMat); f.scale.set(l1-l0,0.25,2.6); f.position.set((l0+l1)/2,1.0,0); foam.add(f);
   }
   g.position.set(x,Math.max(getH(x,z),WATER)+0.9,z); scene.add(g);
-  BWALLS.set(id,{g,mat,foam,foamMat,x,z,ux:-Math.sin(ang),uz:-Math.cos(ang),speed,delay,life,t:0,started:false});
+  BWALLS.set(id,{g,mat,foam,foamMat,half,gapC,gapHalf,ang,x,z,ux:-Math.sin(ang),uz:-Math.cos(ang),speed,delay,life,t:0,started:false});
 }
 function endBossWall(id){
   const W=BWALLS.get(id); if(!W) return; BWALLS.delete(id);
@@ -62,7 +64,7 @@ function endBossWall(id){
 }
 /* ---- effects on you ---- */
 function onPfx(kind,dur,vx,vz){
-  if(kind==='root'){ PFX.root=Math.max(PFX.root,dur); toast('Frozen in ice!','bad'); spawnRing(2.2,0x9fe8ff,P.y+0.2); }
+  if(kind==='root'){ PFX.root=Math.max(PFX.root,dur); toast('Frozen in ice!','bad'); spawnRing(2.2,0x9fe8ff,P.y+0.2); fxpSparks(P.x,P.y+1,P.z,0xcdf1ff,18,5,{size:0.2}); }
   else if(kind==='slow') PFX.slow=Math.max(PFX.slow,dur);
   else if(kind==='push'){ PFX.kx+=vx; PFX.kz+=vz; camShake=Math.max(camShake,0.3); }
 }
