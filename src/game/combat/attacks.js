@@ -49,6 +49,9 @@ function doAttack(kind){
 function attackVisuals(a,who){
   const x=who?who.x:P.x, y=who?who.y:P.y, z=who?who.z:P.z, face=who?who.face:P.face, sc=who?who.scale:hiker.scale, mine=!who, k=a.sk||a.kind;
   const gs=ACT_SKILL[k]; if(gs&&gs.fx){ fxVisuals(gs,x,y,z,face,sc,mine); return; }   // a skill with generic effects (the boss skills)
+  if(k==='quake'){ fxxDust(x,getH(x,z),z,18,6,0x8a7a60); fxxDebris(x,getH(x,z),z,14,7,0x6a5030); fxxScorch(x,z,4,0xd8b07a); }
+  else if(k==='inferno'){ fxxDome(x,y,z,7,0xff7a2a); fxxScorch(x,z,5,0xff7a2a); fxxDust(x,y,z,10,5,0x4a3a30); }
+  else if(k==='charge'||k==='bash') fxxDust(x,getH(x,z),z,8,3,0x9a8a70);
   if(k==='bash'){ spawnArcAt(x,y+0.9*sc,z,face); const fx=x-Math.sin(face)*1.6, fz=z-Math.cos(face)*1.6; spawnRingAt(fx,getH(fx,fz),fz,2.4,0xffe08a);
     if(mine&&SND.ready){ noiseHit({bus:'ui',filter:'lowpass',ff:420,dur:0.22,vol:0.3}); tone({bus:'ui',type:'triangle',freq:180,freq2:90,dur:0.2,vol:0.08}); } }
   else if(k==='charge'){ spawnRingAt(x,y,z,3.2,0xffc070); spawnBurst(new THREE.Vector3(x,y+0.3,z),0xd8b07a,1.2); if(mine){ cSfx.boom({x,z}); camShake=Math.max(camShake,0.3); } }
@@ -88,6 +91,7 @@ function spawnArcAt(x,y,z,face,col,size){   // col, size (x the normal reach): f
   const mesh=new THREE.Mesh(new THREE.RingGeometry(1.2,2.6,24,1,-Math.PI*0.35,Math.PI*0.7).rotateX(-Math.PI/2),fxMat(col||0xeef4ff,0.45));
   mesh.position.set(x,y,z); mesh.rotation.y=face+Math.PI/2; if(size) mesh.scale.setScalar(size); scene.add(mesh);
   CB.fx.push({mesh,life:0.18,max:0.18,grow:0,own:true});
+  fxxSlash(x,y,z,face,col||0xeef4ff,(size||1)*0.9);   // fx-extra: a bright crescent sweeps through the blow
   const sz=size||1, fx_=-Math.sin(face), fz_=-Math.cos(face);   // sparks fly off the edge of the swing
   for(let k=0,n=fxpN(8);k<n;k++){ const a=(k/(n-1||1)-0.5)*2.1, c=Math.cos(a), s=Math.sin(a), r=2.2*sz;
     const dx=fx_*c-fz_*s, dz=fz_*c+fx_*s;
@@ -101,6 +105,7 @@ function onMonDmg(id,v,crit,by,fx){
   const res=fx===2, mine=by===NET.pid&&fx&&!res, c=monCenter(m);   // rolls: fx 2 = the hit was resisted (half damage, no debuff)
   popText(c.x,c.y+m.T.height*0.5*m.s,c.z,(res?'Resisted ':'')+String(v)+(mine?(fx>0?'▲':'▼'):''),(res?'resisted':crit?'crit':(by===NET.pid?'':'other'))+(mine?(fx>0?' up':' down'):''));
   if(by===NET.pid||Math.random()<0.5||crit){ fxpSparks(c.x,c.y,c.z,crit?0xffd45a:0xffe8c0,crit?16:5,crit?7:4,{size:crit?0.26:0.16,life:0.4}); if(crit) fxpFlare(c.x,c.y,c.z,0xffd45a,2.4,0.25); }   // fx-pool: a hit spits sparks, a crit flares
+  if(crit&&by===NET.pid) fxxFlash(0xffd45a,0.14);   // fx-extra
   if(by===NET.pid){ cSfx.hit(m,crit); if(!CB.target||CB.target.dead) CB.target=m; }
   else if(Math.random()<0.5) cSfx.hit(m,crit);
   if(Math.random()<0.4) monSound(m,'hurt');
@@ -116,6 +121,7 @@ function onMonKill(id){
   const m=MON_BY_ID.get(id); if(!m) return;
   m.dead=true; m.deadT=0; m.hp=0; m.act=null;
   monSound(m,'die'); spawnBurst(monCenter(m),m.T.color,1.1*m.T.scale);
+  { const c=monCenter(m); fxxDust(c.x,m.y+0.2,c.z,6,0.8*m.T.scale*m.s,0x8a8070); }   // fx-extra: a puff of dust where it fell
   { const c=monCenter(m); for(let i=0,n=fxpN(6);i<n;i++) fxpRise(c.x+AR(-0.4,0.4)*m.s,c.y+AR(-0.3,0.3),c.z+AR(-0.4,0.4)*m.s,m.T.color,0.22,AR(0.8,1.4)); }   // a wisp of the monster's colour drifts up
   if(CB.target===m) CB.target=null;
   if(m.boss){ clearBossVisuals(); }
@@ -185,7 +191,7 @@ function fxMonSwing(m,dur){
     const f=m.face, d=m.T.rad*m.s+0.4, x=m.x-Math.sin(f)*d, z=m.z-Math.cos(f)*d, y=m.y+m.T.height*0.45*m.s;
     spawnArcAt(x,y,z,f,col,Math.min(3.2,0.7+sc*0.9));
     fxpSparks(x,y,z,col,big?14:6,big?6:3.5,{size:0.2});
-    if(big){ spawnRingAt(m.x,getH(m.x,m.z),m.z,4+sc*2,col); }
+    if(big){ spawnRingAt(m.x,getH(m.x,m.z),m.z,4+sc*2,col); fxxDust(m.x,m.y,m.z,14,4+sc,0x8a7a60); fxxDebris(m.x,m.y,m.z,10,5+sc,0x6a5a40); fxxScorch(m.x,m.z,2+sc,col); }   // fx-extra: a boss slam cracks and scorches the ground
   });
 }
 function updateCombat(dt){

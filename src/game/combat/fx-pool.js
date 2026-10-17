@@ -5,29 +5,34 @@
    onChain / onBeam / meteor / arrow rain / auras / zones (skill-fx.js), telegraph ends, zones and waves (boss.js, boss-fx.js), monster swings (onMonAct).
    fxpUpdate(dt) runs from updateSkillFx. Test: client-smoke (every skill is drawn; the pool stays finite). */
 const FXP_N=LOW?260:640, FXP_K=LOW?0.5:1;
-const FXP={i:0,n:0,vel:new Float32Array(FXP_N*3),life:new Float32Array(FXP_N),max:new Float32Array(FXP_N),g:new Float32Array(FXP_N),drag:new Float32Array(FXP_N),
-  s0:new Float32Array(FXP_N),s1:new Float32Array(FXP_N),a0:new Float32Array(FXP_N),later:[]};
-const fxpGeo=new THREE.BufferGeometry();
-fxpGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(FXP_N*3).fill(0),3));
-fxpGeo.setAttribute('aCol',new THREE.BufferAttribute(new Float32Array(FXP_N*3),3));
-fxpGeo.setAttribute('size',new THREE.BufferAttribute(new Float32Array(FXP_N),1));
-fxpGeo.setAttribute('alpha',new THREE.BufferAttribute(new Float32Array(FXP_N),1));
-const fxpMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:{uScale:{value:600}},
-  vertexShader:'attribute vec3 aCol; attribute float size; attribute float alpha; varying vec3 vC; varying float vA; uniform float uScale;\n'+
-    'void main(){ vC=aCol; vA=alpha; vec4 mv=modelViewMatrix*vec4(position,1.0); gl_PointSize=min(160.0,size*uScale/max(0.1,-mv.z)); gl_Position=projectionMatrix*mv; }',
-  fragmentShader:'varying vec3 vC; varying float vA;\n'+
-    'void main(){ float r=length(gl_PointCoord-0.5)*2.0; if(r>1.0) discard; float c=1.0-r; gl_FragColor=vec4(vC*(1.0+c*c*1.2),vA*c*(0.5+0.5*c)); }'});
-const fxpPts=new THREE.Points(fxpGeo,fxpMat); fxpPts.frustumCulled=false; fxpPts.renderOrder=4; scene.add(fxpPts);
-const _fxpC=new THREE.Color();
+// a pool of soft round points drawn in one call: additive for light (sparks, glows), normal for smoke
+function fxpMakePool(n,blending,soft){
+  const geo=new THREE.BufferGeometry(), pool={n,i:0,live:0,vel:new Float32Array(n*3),life:new Float32Array(n),max:new Float32Array(n),g:new Float32Array(n),drag:new Float32Array(n),
+    s0:new Float32Array(n),s1:new Float32Array(n),a0:new Float32Array(n),geo};
+  geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(n*3),3)); geo.setAttribute('aCol',new THREE.BufferAttribute(new Float32Array(n*3),3));
+  geo.setAttribute('size',new THREE.BufferAttribute(new Float32Array(n),1)); geo.setAttribute('alpha',new THREE.BufferAttribute(new Float32Array(n),1));
+  pool.mat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending,uniforms:{uScale:{value:600}},
+    vertexShader:'attribute vec3 aCol; attribute float size; attribute float alpha; varying vec3 vC; varying float vA; uniform float uScale;\n'+
+      'void main(){ vC=aCol; vA=alpha; vec4 mv=modelViewMatrix*vec4(position,1.0); gl_PointSize=min(180.0,size*uScale/max(0.1,-mv.z)); gl_Position=projectionMatrix*mv; }',
+    fragmentShader:'varying vec3 vC; varying float vA;\n'+(soft?
+      'void main(){ float r=length(gl_PointCoord-0.5)*2.0; if(r>1.0) discard; float c=1.0-r; gl_FragColor=vec4(vC,vA*c*c); }':
+      'void main(){ float r=length(gl_PointCoord-0.5)*2.0; if(r>1.0) discard; float c=1.0-r; gl_FragColor=vec4(vC*(1.0+c*c*1.2),vA*c*(0.5+0.5*c)); }')});
+  pool.pts=new THREE.Points(geo,pool.mat); pool.pts.frustumCulled=false; pool.pts.renderOrder=4; scene.add(pool.pts);
+  return pool;
+}
+const FXP=fxpMakePool(FXP_N,THREE.AdditiveBlending,false), FXP_SMOKE=fxpMakePool(LOW?60:150,THREE.NormalBlending,true);
+FXP.later=[];
+const _fxpC=new THREE.Color(), _fxpWhite=new THREE.Color(0xffffff);
 // one particle. o: g (gravity, m/s²), drag (1/s), grow (end size × start), a (start opacity), white (0-1: mixes the colour toward white)
-function fxpAdd(x,y,z,vx,vy,vz,col,size,life,o){
-  o=o||{}; const i=FXP.i; FXP.i=(i+1)%FXP_N; FXP.n=Math.min(FXP_N,FXP.n+1);
-  const P_=fxpGeo.attributes.position.array, C_=fxpGeo.attributes.aCol.array;
+function fxpAdd(x,y,z,vx,vy,vz,col,size,life,o){ fxpPut(FXP,x,y,z,vx,vy,vz,col,size,life,o); }
+function fxpSmoke(x,y,z,vx,vy,vz,col,size,life,o){ fxpPut(FXP_SMOKE,x,y,z,vx,vy,vz,col,size,life,o); }   // dust and smoke: dark, normal-blended, swelling as it rises
+function fxpPut(FXP,x,y,z,vx,vy,vz,col,size,life,o){
+  o=o||{}; const i=FXP.i; FXP.i=(i+1)%FXP.n; FXP.live=Math.min(FXP.n,FXP.live+1);
+  const P_=FXP.geo.attributes.position.array, C_=FXP.geo.attributes.aCol.array;
   P_[i*3]=x; P_[i*3+1]=y; P_[i*3+2]=z; FXP.vel[i*3]=vx; FXP.vel[i*3+1]=vy; FXP.vel[i*3+2]=vz;
   _fxpC.setHex(col); if(o.white) _fxpC.lerp(_fxpWhite,o.white); C_[i*3]=_fxpC.r; C_[i*3+1]=_fxpC.g; C_[i*3+2]=_fxpC.b;
   FXP.life[i]=FXP.max[i]=life; FXP.g[i]=o.g||0; FXP.drag[i]=o.drag||0; FXP.s0[i]=size; FXP.s1[i]=size*(o.grow===undefined?0.2:o.grow); FXP.a0[i]=o.a===undefined?1:o.a;
 }
-const _fxpWhite=new THREE.Color(0xffffff);
 const fxpN=n=>Math.max(1,Math.round(n*FXP_K));   // a count, scaled for the device
 function fxpFlare(x,y,z,col,size,life){   // a soft glow with a white heart, gone in a blink: the flash of a hit or a cast
   life=life||0.28; fxpAdd(x,y,z,0,0,0,col,size,life,{grow:1.6,a:0.7}); fxpAdd(x,y,z,0,0,0,0xffffff,size*0.45,life*0.7,{grow:0.4,a:0.9});
@@ -51,11 +56,10 @@ function fxpRise(x,y,z,col,size,life){   // a mote drifting up and shrinking (em
   fxpAdd(x,y,z,AR(-0.3,0.3),AR(0.8,2.2),AR(-0.3,0.3),col,size||0.16,life||0.9,{drag:0.4,white:0.3,grow:0.05,a:0.9});
 }
 function fxpLater(delay,fn){ FXP.later.push({t:delay,fn}); }   // runs fn after delay seconds (a monster's blow lands after its wind-up)
-function fxpUpdate(dt){
-  if(FXP.later.length) for(let i=FXP.later.length-1;i>=0;i--){ const q=FXP.later[i]; q.t-=dt; if(q.t<=0){ FXP.later.splice(i,1); try{ q.fn(); }catch(_){} } }
-  if(!FXP.n) return;
-  const pa=fxpGeo.attributes, P_=pa.position.array, S_=pa.size.array, A_=pa.alpha.array; let live=0;
-  for(let i=0;i<FXP_N;i++){
+function fxpStep(FXP,dt){
+  if(!FXP.live) return;
+  const pa=FXP.geo.attributes, P_=pa.position.array, S_=pa.size.array, A_=pa.alpha.array; let live=0;
+  for(let i=0;i<FXP.n;i++){
     let l=FXP.life[i]; if(l<=0){ S_[i]=0; continue; }
     l-=dt; FXP.life[i]=l; if(l<=0){ S_[i]=0; A_[i]=0; continue; }
     live++; const k=1-l/FXP.max[i], d=Math.max(0,1-FXP.drag[i]*dt), j=i*3, V=FXP.vel;
@@ -63,8 +67,11 @@ function fxpUpdate(dt){
     P_[j]+=V[j]*dt; P_[j+1]+=V[j+1]*dt; P_[j+2]+=V[j+2]*dt;
     S_[i]=FXP.s0[i]+(FXP.s1[i]-FXP.s0[i])*k; A_[i]=FXP.a0[i]*(1-k*k);
   }
-  FXP.n=live;
-  pa.position.needsUpdate=pa.size.needsUpdate=pa.alpha.needsUpdate=pa.aCol.needsUpdate=true;
-  if(typeof renderer!=='undefined'&&renderer&&renderer.getDrawingBufferSize&&camera){ const sz=renderer.getDrawingBufferSize(_fxpSz); if(sz&&sz.y) fxpMat.uniforms.uScale.value=sz.y/(2*Math.tan(camera.fov*Math.PI/360)); }
+  FXP.live=live; pa.position.needsUpdate=pa.size.needsUpdate=pa.alpha.needsUpdate=pa.aCol.needsUpdate=true;
+}
+function fxpUpdate(dt){
+  if(FXP.later.length) for(let i=FXP.later.length-1;i>=0;i--){ const q=FXP.later[i]; q.t-=dt; if(q.t<=0){ FXP.later.splice(i,1); try{ q.fn(); }catch(_){} } }
+  fxpStep(FXP,dt); fxpStep(FXP_SMOKE,dt);
+  if(typeof renderer!=='undefined'&&renderer&&renderer.getDrawingBufferSize&&camera){ const sz=renderer.getDrawingBufferSize(_fxpSz); if(sz&&sz.y){ FXP.mat.uniforms.uScale.value=FXP_SMOKE.mat.uniforms.uScale.value=sz.y/(2*Math.tan(camera.fov*Math.PI/360)); } }
 }
 const _fxpSz=new THREE.Vector2();

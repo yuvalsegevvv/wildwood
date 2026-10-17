@@ -29,12 +29,15 @@ function onAreaEnd(id){
   if(A.once){   // a zone that hits once, at the end (Demon Gate)
     const c=new THREE.Vector3(A.x,A.y+0.5,A.z);
     spawnBurst(c,A.col,2.2); spawnBurst(c,0xffffff,1); spawnRingAt(A.x,A.y,A.z,A.r+1.5,A.col); spawnRingAt(A.x,A.y+0.4,A.z,A.r,0xffffff);
+    fxxScorch(A.x,A.z,A.r,A.col); fxxDome(A.x,A.y,A.z,A.r*1.2,A.col); fxxDust(A.x,A.y,A.z,10,A.r*0.7,0x4a3a50);   // fx-extra
     fxpFlare(c.x,c.y,c.z,A.col,Math.max(5,A.r*1.4),0.45); fxpSparks(c.x,c.y,c.z,A.col,26,11,{up:5,size:0.26,life:0.8});   // fx-pool
     cSfx.boom(c); if(Math.hypot(P.x-A.x,P.z-A.z)<30) camShake=Math.max(camShake,0.4);
   }
   if(A.kind==='meteor'){
     const c=new THREE.Vector3(A.x,A.y+0.5,A.z);
     spawnBurst(c,0xff7a2a,2.4); spawnBurst(c,0xfff0b0,1.2); spawnRingAt(A.x,A.y,A.z,A.r+1.5,0xffa040); spawnRingAt(A.x,A.y+0.4,A.z,A.r,0xffe0a0);
+    fxxScorch(A.x,A.z,A.r,0xff7a2a); fxxDome(A.x,A.y,A.z,A.r*1.6,0xff8a3a); fxxDust(A.x,A.y,A.z,18,A.r*0.9,0x5a4a3a); fxxDebris(A.x,A.y,A.z,18,9,0x5a4030);   // fx-extra
+    if(Math.hypot(P.x-A.x,P.z-A.z)<A.r*3) fxxFlash(0xffa040,0.35);
     fxpFlare(c.x,c.y,c.z,0xffa040,Math.max(6,A.r*1.6),0.5); fxpSparks(c.x,c.y,c.z,0xff8a3a,34,14,{up:6,size:0.3,life:0.9}); fxpSparks(c.x,c.y,c.z,0xffe0a0,16,8,{size:0.2});
     for(let i=0,n=fxpN(14);i<n;i++) fxpRise(A.x+AR(-A.r,A.r)*0.6,A.y+0.2,A.z+AR(-A.r,A.r)*0.6,0xff9a3a,0.3,AR(1,1.8));   // fx-pool: debris and embers
     cSfx.boom(c); if(SND.ready){ const s=spatial(A.x,A.z,15,100); if(s) tone({bus:'ui',type:'sine',freq:70,freq2:30,dur:0.9,vol:0.2*s.gain,pan:s.pan}); }
@@ -55,6 +58,7 @@ function onChain(pts,el,src){
   }
   for(let i=1;i<pts.length;i++){ spawnBurst(new THREE.Vector3(pts[i][0],pts[i][1],pts[i][2]),col,0.45); const a=pts[i-1], b=pts[i]; fxpLine(a[0],a[1],a[2],b[0],b[1],b[2],col,8,0.32); fxpFlare(b[0],b[1],b[2],col,2,0.3); }
   fxpFlare(pts[0][0],pts[0][1],pts[0][2],col,1.4,0.25);   // fx-pool
+  for(let i=1;i<pts.length;i++) fxxBolt(pts[i-1],pts[i],col,1);   // fx-extra: a crawling jagged bolt over each link
   if(SND.ready){ const s=spatial(pts[0][0],pts[0][2],12,80); if(s){ const n=SND.ctx.currentTime;
     for(let i=0;i<pts.length;i++){ noiseHit({bus:'ui',filter:'highpass',ff:3000,dur:0.08,vol:0.14*s.gain,pan:s.pan,when:n+i*0.05}); tone({bus:'ui',type:'square',freq:1400-i*120,freq2:300,dur:0.08,vol:0.03*s.gain,pan:s.pan,when:n+i*0.05}); } } }
 }
@@ -67,6 +71,7 @@ function onBeam(x1,y1,z1,x2,y2,z2,el,w,src){
     mesh.position.set((x1+x2)/2,(y1+y2)/2,(z1+z2)/2); mesh.lookAt(x2,y2,z2); scene.add(mesh); BOLTS.push({o:mesh,t:0,life:0.35});
   }
   spawnBurst(new THREE.Vector3(x1,y1,z1),col,0.5); spawnBurst(new THREE.Vector3(x2,y2,z2),col,0.8);
+  if(el==='air') fxxBolt([x1,y1,z1],[x2,y2,z2],col,w||1);   // fx-extra
   fxpLine(x1,y1,z1,x2,y2,z2,col,Math.min(40,6+len*1.2),0.34*(w||1)); fxpFlare(x1,y1,z1,col,1.8*(w||1),0.3); fxpFlare(x2,y2,z2,col,2.6*(w||1),0.4);   // fx-pool
   if(SND.ready){ const s=spatial(x1,z1,12,80); if(s){ tone({bus:'ui',type:'sawtooth',freq:900,freq2:200,dur:0.35,vol:0.05*s.gain,filter:'lowpass',ff:2500,pan:s.pan}); noiseHit({bus:'ui',filter:'highpass',ff:2500,dur:0.25,vol:0.08*s.gain,pan:s.pan}); } }
 }
@@ -80,6 +85,7 @@ function fxVisuals(s,x,y,z,face,sc,mine){
     if(mine||Math.hypot(P.x-x,P.z-z)<25) cSfx.nova(); }
   if(f.cone){ const C=f.cone, n=C.hits||1; if(!L) for(let h=0;h<n;h++) spawnArcAt(x,y+(0.8+0.22*h)*sc,z,face+(h-(n-1)/2)*0.28,col,C.r/2.6);
     if(mine) (C.r>6?cSfx.whoosh:cSfx.swing)(false); }
+  if(!L&&!f.buff&&(f.zone||f.beam||f.chain||f.proj)) fxxRune(x,g,z,2.3,col,0.8);   // fx-extra: a glyph circle at the caster's feet
   if(!L&&!f.buff) fxpFlare(x-Math.sin(face)*0.6,y+1.1*sc,z-Math.cos(face)*0.6,col,2,0.3);   // fx-pool: the flash of the cast
   if(f.proj||f.zone||f.beam||f.chain){ if(!L) spawnRingAt(x-Math.sin(face)*0.6,y+1.1*sc,z-Math.cos(face)*0.6,1.3,col); if(mine) (f.proj&&f.proj.kind!=='spirit'?cSfx.draw:cSfx.charge)(true); }
 }
@@ -96,7 +102,7 @@ function updateZoneFx(A,dt,k){   // a generic zone: motes of its element rising 
   if(SND.ready&&Math.random()<dt*5){ const s=spatial(A.x,A.z,10,60); if(s) noiseHit({bus:'ui',filter:'bandpass',ff:800,dur:0.3,vol:0.05*s.gain,pan:s.pan}); }
 }
 function updateSkillFx(dt){
-  fxpUpdate(dt);
+  fxpUpdate(dt); fxxUpdate(dt);
   for(const A of AREA_FX.values()){
     A.t+=dt; const k=Math.min(1,A.t/A.dur); A.edge.material.opacity=0.55+0.35*Math.sin(t*12);
     if(A.kind==='zone'){ updateZoneFx(A,dt,k); continue; }
@@ -129,7 +135,7 @@ function updateSkillFx(dt){
   }
   for(let i=BOLTS.length-1;i>=0;i--){ const b=BOLTS[i]; b.t+=dt; b.o.material.opacity=1-b.t/b.life; if(b.t>=b.life){ scene.remove(b.o); b.o.geometry.dispose(); b.o.material.dispose(); BOLTS.splice(i,1); } }
   updateAuras(); ssLookUpdate(dt);   // skillsets: the particles, ground patterns and auras of the looks
-  if(CB.dash){ const d=CB.dash; d.t+=dt; const f=Math.min(1,d.t/d.dur), e=f*(2-f); P.x=d.fx+(d.tx-d.fx)*e; P.z=d.fz+(d.tz-d.fz)*e; P.y=Math.max(P.y,getH(P.x,P.z)); P.vx=P.vz=0; if(f>=1) CB.dash=null; }
+  if(CB.dash){ const d=CB.dash; d.t+=dt; fxpTrail(P.x,P.y+1,P.z,0xffe0b0,0.7,0.3); fxxDust(P.x,P.y,P.z,1,0.6,0x9a8a70); const f=Math.min(1,d.t/d.dur), e=f*(2-f); P.x=d.fx+(d.tx-d.fx)*e; P.z=d.fz+(d.tz-d.fz)*e; P.y=Math.max(P.y,getH(P.x,P.z)); P.vx=P.vz=0; if(f>=1) CB.dash=null; }
 }
 // Charge: dash to the target (or 8 m ahead) right away; the server lands the blow
 function startCharge(T,range,ahead,behind){   // range / ahead: the skill's reach and how far it goes with no target (Charge by default); behind: land on the far side of the target (a signature dash)
@@ -146,6 +152,7 @@ function onBuff(pid,id,dur){
   const s=SKILLS[id]; if(!s) return;
   if(pid===NET.pid){ CB.buff={id,until:performance.now()+dur*1000,cd:s.buff.cd}; if(s.buff.reset) CB.cd.skill=0; toast(s.name+'! '+dur+' seconds','good'); }
   const old=AURAS.get(pid); if(old){ scene.remove(old.mesh); old.mesh.material.dispose(); }
+  { const o=pid===NET.pid?P:REMOTES.get(pid); if(o) fxxRune(o.x,o.y||getH(o.x,o.z),o.z,1.8,AURA_COL[id]||(s.buff.el?elCol(s.buff.el):0xffffff),1.2); }   // fx-extra
   const mesh=new THREE.Mesh(auraGeo,fxMat(AURA_COL[id]||(s.buff.el?elCol(s.buff.el):0xffffff),0.7)); scene.add(mesh);
   AURAS.set(pid,{mesh,until:performance.now()+dur*1000});
 }

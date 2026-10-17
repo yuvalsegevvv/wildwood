@@ -38,6 +38,7 @@ function addTele(id,kind,x,z,r,dur,face,half){
   const y=getH(x,z)+0.08; fill.position.set(x,y,z); edge.position.set(x,y+0.01,z);
   if(kind==='line'){ fill.rotation.y=edge.rotation.y=face; fill.scale.set(half,1,0.01); edge.scale.set(half,1,r); }
   else { edge.scale.setScalar(r); fill.scale.setScalar(kind==='donut'?r:0.01); }
+  if(kind!=='line'&&kind!=='donut'&&kind!=='cleave'&&kind!=='breath'&&kind!=='rake'&&!follow) fxxRune(x,y,z,r*0.8,col,dur);   // fx-extra: a glyph circle turns inside the warning
   scene.add(fill,edge); BOSS.tele.set(id,{x,z,r,t:0,dur,kind,fill,edge,half,follow,own,face});
   if(SND.ready){ const s=spatial(x,z,10,60); if(s) noiseHit({bus:'ui',filter:'lowpass',ff:160,dur:0.6,vol:0.18*s.gain,pan:s.pan}); }
 }
@@ -98,6 +99,11 @@ function fxBossBlast(e,y){
   } else if(e.kind!=='donut'){
     fxpFlare(e.x,y+0.6,e.z,col,3.5*k+1.5,0.4); fxpSparks(e.x,y+0.3,e.z,col,18+k*10,6+k*4,{up:3,size:0.26,life:0.7});
     fxpRingSparks(e.x,y,e.z,e.r,col,24,0.55);
+    const ground=e.kind==='slam'||e.kind==='root'||e.kind==='rockfall'||e.kind==='quake'||e.kind==='rake'||e.kind==='mark'||e.kind==='blast';   // fx-extra: the ground takes a blow; light moves air
+    if(ground){ fxxScorch(e.x,e.z,e.r*0.9,col); fxxDust(e.x,y,e.z,12+k*8,e.r*0.8,0x8a7a60); fxxDebris(e.x,y,e.z,8+k*8,5+k*2,0x6a5a40); }
+    else fxxDust(e.x,y,e.z,6,e.r*0.6,0xcfd8e0);
+    if(e.kind==='blast'||e.kind==='mark'||e.kind==='pulse'||e.kind==='wail'||e.kind==='slam') fxxDome(e.x,y,e.z,e.r,col);
+    if(Math.hypot(P.x-e.x,P.z-e.z)<e.r+4&&k>0.8) fxxFlash(col,0.25);
   }
 }
 function clearBossVisuals(){ [...BOSS.tele.keys()].forEach(id=>endTele(id,false)); clearBossZones(); }
