@@ -179,6 +179,9 @@ game
   player/state.js                    Player state P and spawn point
   world/generation-setup.js          Palettes, shared geometries (buildGeometries), terrain (in tiles, culled by distance, with a ground-detail shader) + water + the three villages (genTerrain)
   world/generation-chunks.js         Per-chunk vegetation placement (genChunk): the home forest's mix, sakura, maple, pine and bamboo in the Sakura Vale, snowy spruce, dwarf birch and boulders in the Hoarfrost Reach, conifers up to the treeline in the Greyspine
+  world/zone-props-models.js         Zone dressing models, part 1: the helpers (zpDef registry, painted box / cylinder / blob parts) and the home forest's and the Sakura Vale's props (huts, camps, toadstools, webs, shrines, toro, torii)
+  world/zone-props-models2.js        Zone dressing models, part 2: the Hoarfrost Reach's, the Greyspine's, the Sunscar's and the Gloamhorn's props (ice, mines, tombs, wrecks, gravestones, lamps) and the ruins' pieces
+  world/zone-props.js                Zone dressing: each monster zone's ground tint and props that match its monsters (goblin huts, spider webs, crystals, graves...), the boss arenas' wider surroundings and ruins scattered over every land
   world/far-lands.js                 The rest of Eldmere as placeholders around the three playable lands (Greyspine, Sunscar, Amber Reach, Gloamhorn, Emberwake Isles; the Hoarfrost Reach is built): one smooth-shaded mesh of ridged mountains, high ground seen through the haze
   world/bridges.js                   The river bridge's and the plank causeways' models (BRIDGES in shared/roads.js): plank decks, rails, posts and piers, one merged mesh
   world/lore-props.js                The story's props: Wren's sickbed under its awning, Odran's carts (shown while he is there), the readable lore spots (carved stones, signs, the drowned milestone, the grey wreck, a roadside wish-post, the Greyspine's wayside shrines, a grey plate in the ice, the Greyspine's deepest shaft and the golem's broken stone) and the heartleaf you pick
@@ -261,6 +264,8 @@ game
   player/progression.js              Your health, level and XP as told by the server, the save kept in this browser, hurt / level-up / knocked-out effects
   combat/classes.js                  Classes and their abilities (CLASSES), combat state (CB), effect materials
   combat/weapon-shapes.js            Weapon shapes of the signature outfits: each set carries its own sword, bow and staff models (a katana, a crossbow, a lantern crook...) that replace the three plain weapons while its weapon style is worn
+  combat/fx-pool.js                  The spark pool: one THREE.Points draw call for the glows, sparks, trails and shockwave debris that every skill, monster attack and boss move adds to its effect
+  combat/fx-extra.js                 The effects beyond light: scorch marks, dust and smoke, flying debris, jagged lightning, rotating rune circles, slash crescents, shock domes and the screen flash
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
   combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
   combat/reactions.js                Reactions on the client: the aura marker over a monster, the reaction's name popping up, the vulnerable / weakened notes

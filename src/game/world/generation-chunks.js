@@ -248,5 +248,6 @@ function* genChunk(ci){
   }
   if(lilyItems.length) addInstanced(G.lily,matFlat,lilyItems,{receive:true,hgt:0.2,rad:0.7});
   if(lilyFlowers.length) addInstanced(G.lilyFlower,matFlat,lilyFlowers,{hgt:0.3,rad:0.2});
+  yield* genZoneProps(ci);   // zone dressing: camps, webs, graves, boss surroundings, ruins (zone-props.js; after the plants, so none of them moves)
 }
 
