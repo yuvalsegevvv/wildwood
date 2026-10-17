@@ -208,6 +208,7 @@
     "ui/character-thumbs.js",
     "ui/character-editor.js",
     "village/buildings.js",
+    "village/village-smoke.js",
     "village/buildings-vale.js",
     "village/buildings-hoar.js",
     "village/buildings-grey.js",

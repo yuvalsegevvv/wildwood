@@ -28,7 +28,7 @@ function buildWraithwick(){
     const shutters=(px,py,pz,ry)=>{ const M=new THREE.Matrix4().makeRotationY(ry).setPosition(px,py,pz);
       W(vbox(0.6,0.5,0.06).applyMatrix4(M)); for(const sd of [-1,1]) A(vbox(0.28,0.56,0.05,sd*0.44,0,-0.02).applyMatrix4(M),woodC(0x24202a)); };
     const wy=base+wh*0.6; shutters(w*0.3,wy,-d/2-0.05,0); shutters(-w/2-0.05,wy,0,Math.PI/2); shutters(w/2+0.05,wy,0,-Math.PI/2); shutters(0,wy,d/2+0.05,Math.PI);
-    if(H.chimney){ A(vbox(0.85,rh+1.3,0.85,w*0.26,base+wh+(rh+1.3)/2-0.3,d*0.12),stoneC); }
+    if(H.chimney){ A(vbox(0.85,rh+1.3,0.85,w*0.26,base+wh+(rh+1.3)/2-0.3,d*0.12),stoneC); vsmAdd(new THREE.Vector3(w*0.26,base+wh+rh+1.15,d*0.12).applyMatrix4(F)); }   // smoke: a plume from the chimney
     if(H.kind==='wing'||H.kind==='loft'||H.kind==='tower'){
       const o={A,R:N,wall:gloamBlocks(0x5c5a62),gable:gloamBlocks(0x4c4a52),roof:()=>gloamSlate(slate[H.i%5]),cap:gloamSlate(0x2c2e36),W,door:woodC(0x2a2018)};
       if(H.kind==='wing') vlAnnex(H,base,o); else if(H.kind==='loft') vlDormer(H,base,o); else vlTurret(H,base,o);
