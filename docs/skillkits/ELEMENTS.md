@@ -27,11 +27,11 @@
 | **Ottoline** | support (buff and debuff) | dark | `weak` | all six dark; every blow applies `weak` directly | dark | the perma-twilight; `weak` is dark's flavour, her buffs are the general ally buffs |
 | **Marigold** | mixed: safe DPS + support | light | `vuln` | all six light; P1 leaves the aura (no direct `vuln`: that is the debuffer's job) | light | stage light; single-element because a mixed set cannot be a hybrid |
 | **Pell** | safe DPS | fire | `burn` | all six fire; Dim the Lamp leaves the aura (`flavor:'fire'`) that spreads to enemies within 6 m, and The Pool Burns sets a circle ablaze | fire | torch fire and tar; a lured target is the one a partner's hit reacts on |
-| **Genzo** | tank | air | `spread` (taunted packs hold the aura) | all six air; the blows leave Toll and the pack that holds on him carries the aura | air | the bell's note; a held pack lets a partner's hit react on all of it |
-| **Brynja** | risk DPS | water | `slow` | all six water; Glide and Cut and Whiteout chill directly | water | ice and snow; a slowed target is easier to keep behind |
-| **Tamsin** | grind | earth | short `stun` through reactions | all six earth; rings and fields stagger a crowd | earth | grit and scree; the earth soul adds its x1.5 to every piece |
-| **Zahra** | support (buff) | light | `vuln` through reactions | all six light; her hits leave the aura a partner reacts with; she debuffs nothing herself | light | reflected noon; a buffer, never a debuffer |
-| **Hollis** | healer | dark | `weak` through reactions | all six dark; the blows leave Vigil | dark | the dusk he borrows; a weakened pack is a kinder fight |
+| **Genzo** | tank + healer | air | `spread` (taunted packs hold the aura) | all six air; the blows leave Toll and the pack that holds on him carries the aura | air | the bell's note; a held pack lets a partner's hit react on all of it |
+| **Brynja** | risk DPS (hybrid) | water + dark | `slow` | P1 and P3 water (the chill), P2 dark (Glide and Cut through the polar night); only the water pieces get a water soul's x1.5, in exchange her own water then dark hits react with each other | water | ice and snow; a slowed target is easier to keep behind |
+| **Tamsin** | grind + tank | earth | short `stun` through reactions | all six earth; rings and fields stagger a crowd | earth | grit and scree; the earth soul adds its x1.5 to every piece |
+| **Zahra** | support (buff) + safe DPS | light | `vuln` through reactions | all six light; her hits leave the aura a partner reacts with; she debuffs nothing herself | light | reflected noon; a buffer, never a debuffer |
+| **Hollis** | healer + debuff support | dark | `weak` through reactions | all six dark; the blows leave Vigil | dark | the dusk he borrows; a weakened pack is a kinder fight |
 
 ## 3. The wheel against the monsters (non-boss monsters in the world by `el`: water 237, earth 222, air 195, dark 192, fire 153, light 61, none 119)
 
@@ -60,7 +60,7 @@
 | Sorrel (air) + Dunstan (fire) | `spread` + `burn` | second wave |
 | Corvin + Marigold (both light) | **none**: the same element shares an aura and `vuln` never stacks | accepted by the owner: these are only the first eight, and later kits use other elements |
 
-## 5. Coverage of the first eighteen (version 3 adds Nephra earth, Sabir fire, Ogden water, Ottoline dark, then Pell fire, Genzo air, Brynja water, Tamsin earth, Zahra light, Hollis dark: none hybrid)
+## 5. Coverage of the first eighteen (version 3 adds Nephra earth, Sabir fire, Ogden water, Ottoline dark, then Pell fire, Genzo air, Brynja water + dark (the one hybrid of the six), Tamsin earth, Zahra light, Hollis dark; Genzo, Tamsin, Zahra and Hollis are mixed sets, so single-element)
 
 Fire 1 (Dunstan), water 1 (Ambrose), earth 1 (Torgeir), air 2 (Sazanka's half, Sorrel), dark 1 (Sazanka's half), light 2 (Corvin, Marigold), none 1 (Tansy). **The first four are disjoint** (none; earth; dark + air; light), so any two of them react when partied.
 

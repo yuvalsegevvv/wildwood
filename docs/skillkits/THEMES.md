@@ -17,22 +17,22 @@
 | **Ogden** | male | grind | water | a drowned gravedigger who got up to finish the shift and feeds on the crowds that follow him (version 3, the Gloamhorn) | a bog-warden who drags the marsh with him |
 | **Ottoline** | female | support (buff and debuff) | dark | a porcelain doll who pulls strings: the enemy dances weaker and her friends dance stronger (version 3, the Gloamhorn) | a puppeteer's apprentice |
 | **Pell** | male | safe DPS | fire | a night-fisher who spears eels by torchlight and never stands closer than he must (version 3, Wildwood +3) | a river poacher with a reed bow |
-| **Genzo** | male | tank | air | a temple gate-keeper and bell-ringer who stands in the doorway and lets the hour pass over him (version 3, the Sakura Vale +3) | a watchtower drummer |
-| **Brynja** | female | risk DPS | water | an ice-skater and frost-hunter who never stops moving across the frozen lake and cuts as she passes (version 3, the Hoarfrost Reach +3) | a sled-runner with a hooked pole |
-| **Tamsin** | female | grind | earth | a quarry-hand who breaks a whole slope at once: a sledge, a rope, a heap of loosened scree (version 3, the Greyspine +3) | a goat-herder who starts rockfalls |
-| **Zahra** | female | support (buff) | light | a glass-bearer of the desert noon who turns the sun with a polished mirror and counts the hour in falling sand (version 3, the Sunscar +2) | a caravan time-keeper |
-| **Hollis** | male | healer | dark | an undertaker's lamp-bearer who keeps the long vigil over the living and borrows the dusk to mend them (version 3, the Gloamhorn +2) | a lighthouse keeper of the dusk |
+| **Genzo** | male | tank + healer (mild) | air | a temple gate-keeper and bell-ringer who stands in the doorway and lets the hour pass over him (version 3, the Sakura Vale +3) | a watchtower drummer |
+| **Brynja** | female | risk DPS | water + dark (a hybrid: the dual-element DPS) | an ice-skater and frost-hunter who never stops moving across the frozen lake and cuts as she passes (version 3, the Hoarfrost Reach +3) | a sled-runner with a hooked pole |
+| **Tamsin** | female | grind + tank (mild) | earth | a quarry-hand who breaks a whole slope at once: a sledge, a rope, a heap of loosened scree (version 3, the Greyspine +3) | a goat-herder who starts rockfalls |
+| **Zahra** | female | support (buff) + safe DPS (mild) | light | a glass-bearer of the desert noon who turns the sun with a polished mirror and counts the hour in falling sand (version 3, the Sunscar +2) | a caravan time-keeper |
+| **Hollis** | male | healer + debuff support (mild) | dark | an undertaker's lamp-bearer who keeps the long vigil over the living and borrows the dusk to mend them (version 3, the Gloamhorn +2) | a lighthouse keeper of the dusk |
 
 **Version 3 adds ten, so there are eighteen** (the owner: one character for each land at +1, +2 and +3, and none at +4). Nephra, Sabir (Sunscar) and Ogden, Ottoline (Gloamhorn) came first; Pell, Genzo, Brynja, Tamsin, Zahra and Hollis are the second six. **The tier table** (one set for each land and tier, `ssSetFor` rolls the highest set at or below the tier fought, so +4 and +5 roll the +3 set; the sources are fixed by land in `SS_SOURCES`):
 
 | Land | +1 | +2 | +3 |
 |---|---|---|---|
 | Wildwood | Tansy (grind) | Ambrose (healer) | **Pell** (safe DPS) |
-| Sakura Vale | Sazanka (risk DPS) | Marigold (mixed) | **Genzo** (tank) |
-| Hoarfrost Reach | Torgeir (tank) | Dunstan (support, buff) | **Brynja** (risk DPS) |
-| Greyspine | Corvin (support, debuff) | Sorrel (safe DPS) | **Tamsin** (grind) |
-| Sunscar | Sabir (risk DPS, moved from +4) | **Zahra** (support, buff) | Nephra (healer) |
-| Gloamhorn | Ottoline (support, both, moved from +4) | **Hollis** (healer) | Ogden (grind) |
+| Sakura Vale | Sazanka (risk DPS) | Marigold (mixed) | **Genzo** (tank + healer) |
+| Hoarfrost Reach | Torgeir (tank) | Dunstan (support, buff) | **Brynja** (risk DPS, water + dark) |
+| Greyspine | Corvin (support, debuff) | Sorrel (safe DPS) | **Tamsin** (grind + tank) |
+| Sunscar | Sabir (risk DPS, moved from +4) | **Zahra** (support, buff + safe DPS) | Nephra (healer) |
+| Gloamhorn | Ottoline (support, both, moved from +4) | **Hollis** (healer + debuff support) | Ogden (grind) |
 
 The odds and the pity are the usual ones; the free testing tools still give them. Test: `tools/skillsets-v3b-smoke.js` (the table), `tools/skillsets-v3-smoke.js`.
 
