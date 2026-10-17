@@ -18,7 +18,10 @@ const CAMPS=[];
 const MON_COUNT=d=>d.count||(d.level>15?12:Math.round((40-(d.level-1)*20/14)*(d.level>=12?1.25:1)));
 function initMonstersS(){
   const rng=mulberry32(31337), rr=(a,b)=>a+(b-a)*rng();
-  const ok=(x,z)=>{ const bz=borderZ(x), home=z>=bz&&x<borderX(z), grey=z<bz&&x<borderXN(z); return x>WX0+26&&x<WX1-26&&z>(home?bz:WZ0)+26&&z<(grey?bz:HALF)-26&&getH(x,z)>1&&grad(x,z)<0.55&&zoneRidge(x,z)<0.5&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&!inTunnelCut(x,z,15)&&!inGlen(x,z,8)&&!inGate(x,z,6)&&!greyWet(x,z,-3)&&(x>=HX0||!sunKeepOut(x,z,4))&&(x>=GW0||!gloamKeepOut(x,z,4))&&!dgEntranceNear(x,z,32)&&Math.hypot(x-PVP_ISLE.x,z-PVP_ISLE.z)>PVP_ISLE.lakeR+34; };   // dungeons: a camp keeps 32 m off a dungeon's door (none was nearer: no camp moves); pvp: and 96 m off the Proving Isle's centre (nothing lives by the lake or the bridgehead)
+  /* where a camp may stand (the atlas's world, shared/world-atlas.js): on dry land clear of the coast, of every river and lake, of the villages and the roads (and trails), of the boss arenas, of every anchor
+     (a village, gate, boss, dungeon door, zone entrance, island spot: 22 m) and of the Proving Isle; on ground a hiker walks easily. The zone itself is asked by the caller (zoneAt), so each land's zone table decides which ground is whose.
+     (The old per-land keep-outs, sunKeepOut / gloamKeepOut, are not asked: their water, the Bowl's rim and the reserved doors are the atlas's water and anchors now.) */
+  const ok=(x,z)=>x>WX0+26&&x<WX1-26&&z>WZ0+26&&z<WZ1-26&&!waIsSea(x,z)&&waCoast(x,z)>26&&getH(x,z)>1&&grad(x,z)<0.55&&waWaterDist(x,z)>8&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&waAnchorDist(x,z)>22&&!dgEntranceNear(x,z,32)&&Math.hypot(x-WA_PVP.x,z-WA_PVP.z)>WA_PVP.r+62;   // dungeons: a camp keeps 32 m off a dungeon's door; pvp: and 62 m off the Proving Isle's shore (nothing lives by the bridgehead)
   for(const d of MON_DEFS){
     const zn=defZone(d), total=MON_COUNT(d), pack=d.per+2;
     let made=0;
@@ -40,6 +43,8 @@ function respawnMonS(m){
   const c=m.camp; m.x=c.x+AR(-3,3); m.z=c.z+AR(-3,3); m.hp=m.maxHp; m.dead=false; m.deadT=0; m.state='idle'; m.aggro=false; m.tgt=null;
   m.timer=AR(1,3); m.slowT=0; m.burnT=0; m.pendingHit=-1; m.kbx=m.kbz=0; ev('respawn',m.id,r1(m.x),r1(m.z));
 }
+// inside a lake (not its frozen ice, not a river's ford): the cheap bilinear first, the water type only when well inside
+const monInLake=(x,z)=>waWaterDist(x,z)<-1&&waWater(x,z)===WA_LAKE;
 function monCenterS(m){ return {x:m.x,y:getH(m.x,m.z)+m.T.height*0.5*m.s,z:m.z}; }
 // the cheap distance test comes first: inVillage() is only worth asking about a player who is close enough to matter (it was 28% of the server's tick)
 function nearestFighter(x,z,maxD){ let best=null,bd=maxD*maxD; for(const p of S.players.values()){ const dx=p.x-x, dz=p.z-z, d=dx*dx+dz*dz; if(d>=bd||p.dead||p.pv||inVillage(p)||homeAt(p.x,p.z)) continue;   // home: monsters leave you alone at home
@@ -93,7 +98,7 @@ function updateMonstersS(dt){
     const ox=m.x, oz=m.z;
     m.x+=(m.vx+m.kbx)*dt; m.z+=(m.vz+m.kbz)*dt;
     const kd=Math.exp(-7*dt); m.kbx*=kd; m.kbz*=kd;
-    if(getH(m.x,m.z)<0.4 || vNear(m.x,m.z,VR+8) || inTunnelCut(m.x,m.z)){ m.x=ox; m.z=oz; }
+    if(getH(m.x,m.z)<0.4 || vNear(m.x,m.z,VR+8) || monInLake(m.x,m.z)){ m.x=ox; m.z=oz; }   // (a river is a ford a monster wades; a lake is not)
     if(p && dp<m.T.rad+0.35){ const e=dp||1, mm=m.T.rad+0.35; m.x=p.x-dx/e*mm; m.z=p.z-dz/e*mm; }
     m.face=angLerp(m.face,m.faceGoal,1-Math.exp(-8*dt));
   }

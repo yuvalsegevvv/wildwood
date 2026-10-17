@@ -158,6 +158,7 @@
     "world/zone-props-models2.js",
     "world/zone-props.js",
     "world/far-lands.js",
+    "world/atlas-water.js",
     "world/bridges.js",
     "world/lore-props.js",
     "world/streaming.js",
