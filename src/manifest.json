@@ -318,6 +318,7 @@
     "world/weather.js",
     "world/aurora.js",
     "player/movement.js",
+    "player/footfx.js",
     "ui/map.js",
     "ui/map-paint.js",
     "ui/map-style.js",

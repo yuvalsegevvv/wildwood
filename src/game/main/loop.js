@@ -13,7 +13,7 @@ function frame(){
     if(!Stream.terrainDone && Stream.tp!==undefined){ barEl.style.width=(35*Stream.tp).toFixed(0)+'%'; }
   }
   if(Stream.terrainDone){
-    if(started && !customizing && !PL.dead) updatePlayer(dt);
+    if(started && !customizing && !PL.dead){ updatePlayer(dt); updateFootFx(dt); }
     else if(!started && !customizing) P.yaw+=dt*0.04;
     animateHiker(dt);
     updateMotes(dt,t); updatePetals(dt,t); updateAmbient(dt,t); updateVillageSmoke(dt);

@@ -353,6 +353,7 @@ game
   world/weather.js                   Weather on the client: rain streaks around the camera (snowfall and blizzards instead in the Hoarfrost Reach and on the Greyspine's peaks), a darker foggy sky, lightning and thunder (rain and wind sound: audio/rain.js)
   world/aurora.js                    The aurora over the Hoarfrost Reach: slow green and violet curtains in the northern sky on clear nights
   player/movement.js                 Player movement (with a boss's ice, shoves and whirlpools), a slope limit, collisions (the border bridge with its barred gate; the shut gates are shared/barriers.js), the shore's knee-deep rule, camera
+  player/footfx.js                   Footstep dust, snow powder and wading splashes at the player's feet: a puff a step, a ring on landing, drops while you wade
   ui/map.js                          Map: a map image painted from the terrain, the corner minimap, and the full map (N) of each land (home forest, Sakura Vale, Hoarfrost Reach, Greyspine) with zones, quests, resource nodes and players
   ui/map-paint.js                    The map's painter: the world as Eldmere's map draws it (the docs map's palette, shallows and a dark coast line, little pictures of trees, peaks and snow-pines); mapBuildStep paints MAP.canvas a few rows a frame
   ui/map-style.js                    The map's dressing, as Eldmere's map has it: a gold-lined frame with corner diamonds, a compass rose, the red pin, serif labels on a parchment halo and the land's title scroll
