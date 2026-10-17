@@ -6,7 +6,7 @@
             shore: the spots a knocked-out fighter wakes at), inPvp(x,z), pvpGearOf(cls), pvpStatsOf(cls), pvpSkillsOf(skills,level), pvpShoreSpot().
    Users: server/pvp.js (and the hooks marked `// pvp:` in players / combat / monsters / economy / crafting), game/pvp/*.js, game/player/movement.js (the lake and the gate).
    Test: tools/pvp-smoke.js. */
-const PVP={x:PVP_ISLE.x,z:PVP_ISLE.z,r:35,   // r: the island down to where the water gets too deep to wade (the client's knee-deep rule stops you there)
+const PVP={x:PVP_ISLE.x,z:PVP_ISLE.z,r:34,   // r: the island down to where the water gets too deep to wade (the client's knee-deep rule stops you there)
   level:PASSIVE_LV,   // the one level everyone fights at: the level the first passive opens, so a level-10 hiker (all three attack slots) with the default passive is on a par with a level 60
   lockS:10,           // the gate stays shut this long after you wake from a knock-out
   hpK:2,              // health x: fights last twice as long as the plain numbers would make them
