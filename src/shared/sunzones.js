@@ -6,7 +6,7 @@
    44 m of the coast or on the Amber link (land 6). */
 const SUN_ZONE_NAMES={28:'Springhead Flats',29:'The Weeping Pan',30:'Anvil Cliffs',31:'Lantern Wash',32:'The Glass Fields',33:'Twin Buttes',34:'The Whitefloor',35:'Bellrock',36:'The Singing Dunes',sboss32:"The Guardian's Court",sboss36:"The Wyrm's Pit"};
 const SUN_ZONE_OF={};   // 28..36 -> its ZONES record
-for(const k of [28,29,30,31,32,33,34,35,36]){ const Z=sunZoneRec(k), zn={key:'s'+k,ring:3,vale:true,sun:true,x:Math.round(Z.x),z:Math.round(Z.z),R:Math.round(Math.sqrt(Z.area/Math.PI)),name:SUN_ZONE_NAMES[k],level:k};
+for(const k of [28,29,30,31,32,33,34,35,36]){ const Z=sunZoneRec(k), zn={key:'s'+k,ring:3,vale:true,sun:true,x:Math.round(Z.x),z:Math.round(Z.z),R:Math.round(Math.sqrt(Z.area/Math.PI))+(k===28?SUN_CITY.r+90:0),name:SUN_ZONE_NAMES[k],level:k};   // (zone 28 is the city's own: its camps lie on the ring beyond the apron, so its circle reaches that far)
   ZONES.push(zn); SUN_ZONE_OF[k]=zn; }
 function sunZoneAt(x,z){
   if(waCoast(x,z)<44||Math.hypot(x-SUN_CITY.x,z-SUN_CITY.z)<SUN_CITY.r+90) return null;   // the shore, and the city with its apron
