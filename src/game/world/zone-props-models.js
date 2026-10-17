@@ -61,9 +61,10 @@ function zpFire(){ return merge([zpCyl(0.95,1.0,0.06,10,0,0,0,0x2a2420),...[0,1,
     ...[0,1,2].map(i=>zpCyl(0.09,0.1,1.0,6,0,0.12,0,0x3a2a1e,{rz:Math.PI/2-0.15,ry:i*2.1}))]); }
 const ZP_FIRE_GLOW=()=>merge([zpCyl(0,0.34,0.6,6,0,0.1,0,0xff8a20),zpCyl(0,0.18,0.8,6,0,0.1,0,0xffd060)]);
 function zpLamp(post,glow,h,cage){ const p=[zpCyl(0.04,0.06,h,5,0,0,0,post)];
-  if(cage) p.push(zpBox(0.55,0.1,0.1,0.25,h-0.05,0,post),zpBox(0.34,0.38,0.34,0.5,h-0.5,0,post)); else p.push(zpBox(0.3,0.06,0.06,0.12,h-0.08,0,post));
+  if(cage) p.push(zpBox(0.55,0.1,0.1,0.25,h-0.05,0,post),zpBox(0.34,0.38,0.34,0.5,h-0.5,0,post)); else p.push(zpBox(0.3,0.06,0.06,0.12,h-0.08,0,post),zpBox(0.2,0.05,0.05,0.28,h-0.05,0,post,{rz:-0.5}),zpCyl(0.012,0.012,0.22,4,0.26,h-0.42,0,post),   // a crook with a chain
+    zpCyl(0.03,0.06,0.07,6,0.26,h-0.5,0,post),zpBox(0.34,0.03,0.34,0.26,h-0.1,0,0x2a2420,{ry:0.8}),zpCyl(0.05,0.05,0.12,5,0,0,0,post),zpBlob(0.14,1.3,0.5,1,0,0,0,0x5a5248));   // a cap over the wisp, a stone at the foot
   return merge(p); }
-function zpLampGlow(glow,h,cage){ return cage?zpBox(0.37,0.28,0.37,0.5,h-0.455,0,glow):zpBlob(0.18,1,1.25,1,0.26,h-0.3,0,glow); }
+function zpLampGlow(glow,h,cage){ return cage?zpBox(0.37,0.28,0.37,0.5,h-0.455,0,glow):merge([zpBlob(0.2,1,1.25,1,0.26,h-0.34,0,glow),zpBlob(0.3,1,1.2,1,0.26,h-0.34,0,glow,{k:0.45})]); }
 
 /* ---- the home forest: slime meadow, mushroom hollow, beetle thicket, boar run, goblin woods and warrens, treants, bog, deathcaps, ironshell, rotwood, ember flats, the chieftain's hold, the ancient grove ---- */
 zpDef('slimepool',{w:1.4,hgt:0.3,sink:0.02,gen:()=>merge([zpPool(1.25,0x5aa83a,0,0x4a8a30),zpDome(0.8,0.35,8,0.2,0.08,-0.1,0x8be05a),zpDome(0.4,0.4,7,-0.6,0.08,0.4,0x9ae870)])});
@@ -82,14 +83,18 @@ zpDef('warhut',{w:3.0,hgt:4.2,rad:2.3,cast:true,gen:()=>zpHut(0x7a5a40,0x6a4a30,
 zpDef('campfire',{w:1.2,hgt:0.8,sink:0.05,gen:zpFire,glow:ZP_FIRE_GLOW});
 zpDef('gobtotem',{w:0.7,hgt:4.4,rad:0.4,cast:true,gen:()=>merge([zpCyl(0.16,0.2,3.4,7,0,0,0,ZP_WOOD),
   ...[[0xa83a28,0],[0xd0a038,1],[0x3a3028,2]].map(([c,i])=>zpBox(0.5,0.5,0.5,0,0.6+i*0.8,0,c,{ry:i*0.3})),zpBlob(0.2,1,1,1,0,3.6,0,ZP_BONE),zpCyl(0.02,0.03,0.9,4,0.2,3.3,0,0x8a3a2a,{rz:-0.5}),zpCyl(0.02,0.03,0.9,4,-0.2,3.3,0,0x3a5a8a,{rz:0.5})])});
-zpDef('bonepile',{w:1.0,hgt:0.8,gen:()=>merge([...[0,1,2,3,4,5].map(i=>zpCyl(0.05,0.06,0.8,5,Math.sin(i*1.9)*0.3,0.05*i%0.2,Math.cos(i*1.9)*0.3,ZP_BONE,{rz:Math.PI/2-0.1*i,ry:i*1.1})),zpBlob(0.2,1,0.85,1.1,0.1,0.2,0.1,ZP_BONE)])});
+zpDef('bonepile',{w:1.2,hgt:1.0,gen:()=>merge([...[0,1,2,3,4,5,6].map(i=>zpCyl(0.05,0.06,0.8,5,Math.sin(i*1.9)*0.35,0.05*i%0.2,Math.cos(i*1.9)*0.35,ZP_BONE,{rz:Math.PI/2-0.1*i,ry:i*1.1})),zpBlob(0.2,1,0.85,1.1,0.1,0.2,0.1,ZP_BONE),
+  zpBlob(0.24,1,0.9,1.15,-0.25,0.24,-0.2,ZP_BONE,{k:0.8}),zpBlob(0.07,1,1.2,0.6,-0.33,0.3,-0.4,0x1a1612,{d:0}),zpBlob(0.07,1,1.2,0.6,-0.17,0.3,-0.42,0x1a1612,{d:0}),zpBox(0.16,0.07,0.2,-0.25,0.08,-0.38,ZP_BONE),   // a skull with its eye sockets and jaw
+  ...[0,1,2].map(i=>paint(zpAt(new THREE.TorusGeometry(0.34-0.04*i,0.035,5,10,Math.PI).rotateY(0.6),0.35,0.02,0.1*i-0.1,{rz:0.1}),zpShade(ZP_BONE)))])});
 zpDef('banner',{w:0.8,hgt:4.4,rad:0.25,cast:true,gen:()=>zpBanner(ZP_RED)});
 zpDef('banner_blue',{w:0.8,hgt:4.4,rad:0.25,cast:true,gen:()=>zpBanner(0x2e5a9a)});
 zpDef('banner_black',{w:0.8,hgt:4.4,rad:0.25,cast:true,gen:()=>zpBanner(0x241c1c)});
 zpDef('banner_ice',{w:0.8,hgt:4.4,rad:0.25,cast:true,gen:()=>zpBanner(0x8ab8e0)});
 zpDef('rootarch',{w:2.0,hgt:2.4,sink:0.3,rad:0.5,cast:true,gen:()=>merge([paint(new THREE.TorusGeometry(1.3,0.26,6,10,Math.PI),zpShade(0x5a4128,ZP_MOSS,0.5)),zpCyl(0.05,0.3,0.7,5,1.4,-0.6,0,0x5a4128,{rz:0.5}),zpCyl(0.05,0.3,0.7,5,-1.4,-0.6,0,0x5a4128,{rz:-0.5}),zpBlob(0.3,1,0.6,1,1.3,0.1,0.2,0x4a3320)])});
 zpDef('hollowstump',{w:1.7,hgt:1.8,rad:1.2,cast:true,gen:()=>merge([zpCyl(1.2,1.5,1.7,9,0,0,0,0x5a4128,{top:ZP_MOSS,k:0.5}),zpCyl(0.7,0.7,0.05,9,0,1.68,0,0x1c140c),...[0,1,2,3].map(i=>zpCyl(0.05,0.3,0.8,5,Math.sin(i*1.57+0.4)*1.4,0,Math.cos(i*1.57+0.4)*1.4,0x4a3320,{rz:Math.sin(i*1.57+0.4)*0.8,rx:-Math.cos(i*1.57+0.4)*0.8}))])});
-zpDef('mosstone',{w:1.4,hgt:1.4,sink:0.3,rad:0.9,gen:()=>merge([zpBlob(1.0,1.2,0.8,1,0,0.55,0,0x7a766e,{top:ZP_MOSS,k:0.7}),zpBlob(0.5,1,0.7,1,1.1,0.25,0.5,0x7a766e,{top:ZP_MOSS,k:0.7})])});
+zpDef('mosstone',{w:1.6,hgt:1.4,sink:0.3,rad:0.9,gen:()=>merge([zpBlob(1.0,1.2,0.8,1,0,0.55,0,0x7a766e,{top:ZP_MOSS,k:0.6,d:2}),zpBlob(0.5,1,0.7,1,1.1,0.25,0.5,0x7a766e,{top:ZP_MOSS,k:0.6}),zpBlob(0.34,1,0.7,1,-0.9,0.15,0.7,0x6e6a62,{top:ZP_MOSS,k:0.6}),
+  zpBlob(0.8,1.2,0.28,1,-0.05,1.1,0.02,0x5f8a3a,{d:2}),...[0,1,2,3].map(i=>zpBlob(0.16,1,0.5,1,Math.sin(i*1.9)*0.7,0.1,Math.cos(i*1.9)*0.65,0x5a7a3a)),   // a cap of moss, tufts at the foot
+  zpCyl(0.025,0.03,0.2,5,0.35,1.05,0.2,0xe8dfcc),zpDome(0.1,0.6,7,0.35,1.24,0.2,0xc8503a)])});
 function zpRune(stone,top,glow){ return {gen:()=>merge([zpBox(1.1,2.9,0.55,0,0,0,stone,{top,rz:0.03}),zpBox(0.7,0.5,0.5,0.15,2.8,0,stone,{top,rz:0.2})]),
   glow:()=>merge([zpBox(0.12,0.9,0.04,0,0.8,0.28,glow),zpBox(0.5,0.1,0.04,0,1.8,0.28,glow),zpBox(0.1,0.5,0.04,0.2,2.0,0.28,glow)])}; }
 zpDef('runestone',Object.assign({w:1.0,hgt:3.2,rad:0.6,cast:true},zpRune(0x7a766e,ZP_MOSS,0x7af0c0)));
@@ -100,7 +105,9 @@ zpDef('bogpool',{w:1.8,hgt:0.2,sink:0.04,gen:()=>merge([zpPool(1.6,0x2e3d30,0,0x
 zpDef('wisplamp',{w:0.5,hgt:2.2,gen:()=>zpLamp(ZP_DARK,0,1.7,false),glow:()=>zpLampGlow(0x9ef0c0,1.7,false)});
 zpDef('wisplamp_blue',{w:0.5,hgt:2.2,gen:()=>zpLamp(0x3a3a48,0,1.7,false),glow:()=>zpLampGlow(0x8ab8ff,1.7,false)});
 zpDef('foxfire',{w:0.5,hgt:2.2,gen:()=>zpLamp(0x4a4038,0,1.7,false),glow:()=>zpLampGlow(0xa8d8ff,1.7,false)});
-zpDef('orerock',{w:1.4,hgt:1.4,sink:0.3,rad:0.9,gen:()=>merge([zpBlob(1.0,1.2,0.85,1,0,0.5,0,0x6a6460),...[0,1,2,3].map(i=>zpBlob(0.2,1,0.8,1,Math.sin(i*1.7)*0.65,0.55+0.2*(i%2),Math.cos(i*1.7)*0.55,0xa0502a))])});
+zpDef('orerock',{w:1.6,hgt:1.5,sink:0.3,rad:0.9,gen:()=>merge([zpBlob(1.0,1.2,0.85,1,0,0.5,0,0x6a6460,{d:2}),zpBlob(0.5,1,0.8,1,0.9,0.2,0.5,0x625c58),zpBlob(0.35,1,0.7,1,-0.8,0.15,0.6,0x625c58),
+  ...[0,1,2,3,4].map(i=>zpBlob(0.32+0.05*(i%2),1,0.8,1,Math.sin(i*1.3)*1.1,0.4+0.3*(i%2),Math.cos(i*1.3)*0.9,0xb8602e,{d:0,top:0xe8a060,k:0.7})),   // faceted ore nuggets
+  ...[0,1,2].map(i=>zpCyl(0,0.1,0.55+0.12*i,5,Math.sin(i*2.4+1)*0.4,1.1+0.05*i,Math.cos(i*2.4+1)*0.35,0xd8a070,{rx:Math.sin(i)*0.3,rz:Math.cos(i*2)*0.35}))])});   // and crystals standing out of the vein
 zpDef('rotlog',{w:2.0,hgt:1.6,sink:0.1,rad:0.8,gen:()=>merge([paint(cyl(0.75,0.8,3.6,9).rotateZ(Math.PI/2).translate(0,0.75,0),zpShade(0x4a3a28,ZP_MOSS,0.5)),paint(cyl(0.55,0.55,0.04,9).rotateZ(Math.PI/2).translate(1.82,0.75,0),zpShade(0x1c140c)),
   ...[0,1,2].map(i=>zpBlob(0.35,1,0.22,0.8,-0.9+i*0.8,1.1+0.1*(i%2),0.58,0xd28a3a))])});
 zpDef('cinderrock',{w:1.5,hgt:1.4,sink:0.3,rad:0.9,gen:()=>merge([zpBlob(1.0,1.1,0.85,1,0,0.5,0,0x2c2826),zpBlob(0.55,1,0.7,1,1.1,0.25,0.4,0x2c2826)]),
