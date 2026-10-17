@@ -16,10 +16,11 @@ function ssCardHtml(setId,worn,pairs){
   return `<div class="sk-set${worn>=3?' on':''}" style="--set:${tint}"><div class="sk-set-h"><span class="sk-set-ico"><svg ${SS_ICON_ATTR}>${T.emblem?T.emblem.glyph:''}</svg></span>`
     +`<div class="sk-set-t"><b>${T.name}</b><small>${T.char.name}'s set &middot; ${worn} of 6 pieces worn${pairs===undefined?'':' &middot; '+pairs+' of 3 pairs owned'}</small></div></div>${row(3)}${row(5)}</div>`;
 }
-// the cards under the loadout: every set you own a piece of, or a line that says what sets are
+// the cards under the loadout: only the sets you wear at least one piece of (all 18 at once was overcrowded), or a line that says what to do
 function ssSummaryHtml(C,cls){
-  const have=SS_ORDER.filter(id=>ssOwnedPairs(C.S,id)>0);
+  const worn=ssCount(C.S,cls,C.lv);
+  const have=SS_ORDER.filter(id=>(worn[id]||0)>0);
   const h=`<div class="sk-load-h">Set effects <span>wear 3 pieces of one set for its first effect, 5 for its second</span></div>`;
-  if(!have.length) return h+`<p class="muted sk-note">You own no signature set pieces yet. A world boss or a dungeon clear (at +1 or higher) can drop a set's skill and passive. A piece counts when it is worn: a skill in its slot, a passive in a passive slot.</p>`;
-  return h+`<div class="sk-sets">${have.map(id=>ssCardHtml(id,ssCount(C.S,cls,C.lv)[id]||0,ssOwnedPairs(C.S,id))).join('')}</div>`;
+  if(!have.length) return h+`<p class="muted sk-note">You wear no signature set pieces. A world boss or a dungeon clear (at +1 or higher) can drop a set's skill and passive; a set shows here once a piece is worn: a skill in its slot, a passive in a passive slot.</p>`;
+  return h+`<div class="sk-sets">${have.map(id=>ssCardHtml(id,worn[id],ssOwnedPairs(C.S,id))).join('')}</div>`;
 }
