@@ -5,7 +5,7 @@
      c coal heap (floor)    r rails (floor)    s slag vent (floor; hazard 'steam': where the run sets off the geyser telegraph, scalding and slowing)
    G guardian post (floor: the Granite Golem that keeps the Powder Store). Garrick's own kegs are the boss's props (shared/dungeons/bosses.js), not drawn here. */
 defineDungeonTheme({
-  id:'blackseam', name:'The Blackseam', land:'grey', at:'Highmark Pastures', lv:30,
+  id:'blackseam', name:'The Blackseam', land:'grey', at:"Miners' Scree", lv:30,
   mobs:{walkers:['minegoblin','crystalbeetle','granitslime','quartzslime','cliffboar','rocktroll','mistwraith'], guardians:['granitegolem']},
   boss:'garrick', music:'hoar1',
   pal:{wall:0x3a3c44, floor:0x2a2b30, fog:0x08090c, light:0xffb870},

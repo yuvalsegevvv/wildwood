@@ -5,7 +5,7 @@
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['MONS','BOSSES','VIL','VIL2','VIL3','PASS','ARENA26','ARENA30','ARENAS','rewardKill','zoneAt','rawHeight','iceDist','FROST_LAKES','BOSS_DEFS','MON_DEFS','ZONES','NODES','NODE_BACK','NODE_KINDS','S','genQuest','expToNext','xpFor','sanitizeGear','SKILL_IDS','PASSIVE_IDS','upgradeNeeds','HZ0','WZ0','WX1','HALF','GREY_N','VALE_E','inHoar','sanitizeProf','MATS','profLvOf','respawnVil','PROF_IDS','ITEM']);
+  ['MONS','BOSSES','VIL','VIL2','VIL3','PASS','ARENA26','ARENA30','ARENAS','rewardKill','zoneAt','rawHeight','iceDist','FROST_LAKES','BOSS_DEFS','MON_DEFS','ZONES','NODES','NODE_BACK','NODE_KINDS','S','genQuest','expToNext','xpFor','sanitizeGear','SKILL_IDS','PASSIVE_IDS','upgradeNeeds','HZ0','WZ0','WX1','HALF','GREY_N','VALE_E','inHoar','sanitizeProf','MATS','profLvOf','respawnVil','PROF_IDS','ITEM','WA_HUBS','WA_GATES','northBarZ','waterSurf','WATER','waLand','WZ1']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const at=(xx,zz)=>W.setPos('a',[xx,x.rawHeight(xx,zz),zz,0,0,0]);
@@ -15,14 +15,13 @@ const grab=()=>{ for(const m of (inbox.a||[])) if(m.t==='snap'&&m.ev) evs.push(.
 const dev=(cmd,v)=>{ W.receive('a',{t:'dev',cmd,v}); tick(1); };
 
 // ---- the land ----
-ok('the world reaches 840 m north of the forest\'s old edge (the vale\'s and the Greyspine\'s own edges are where they were: GREY_N, VALE_E) and 880 m east of it',x.WZ0===x.HZ0-840&&x.HZ0===-440&&x.GREY_N===x.HZ0-600&&x.VALE_E===x.HALF+550&&x.WX1===x.HALF+880);
+ok('the world is the atlas\'s canvas (x -1900..1650, z -1120..1180) and Rimehold stands on the Reach\'s hub, Frostgate Pass at the vale | Reach gate',x.WZ0===-1120&&x.WZ1===1180&&x.WX1===1650&&Math.hypot(x.VIL3.x-x.WA_HUBS.hoar[0],x.VIL3.z-x.WA_HUBS.hoar[1])<0.5&&x.PASS.x===x.WA_GATES.find(g=>g.b==='hoar'&&g.a==='vale').x&&x.waLand(x.PASS.x,x.PASS.ice)!==null);
 { const V=x.VIL3, hs=[]; for(let a=0;a<8;a++) hs.push(x.rawHeight(V.x+Math.sin(a)*20,V.z+Math.cos(a)*20));
   ok('Rimehold stands on the plateau (about 55 m up), flat',V.h>45&&Math.max(...hs)-Math.min(...hs)<2,'h '+V.h.toFixed(1)+', spread '+(Math.max(...hs)-Math.min(...hs)).toFixed(2)); }
-{ const P=x.PASS; let prev=-1e9, mono=true; for(let z=P.z0;z>=P.z1;z-=6){ const h=x.rawHeight(P.x,z); if(h<prev-0.6) mono=false; prev=h; }
-  const wall=Math.min(x.rawHeight(P.x-16,P.ice),x.rawHeight(P.x+16,P.ice)), floor=x.rawHeight(P.x,P.ice);
-  ok('Frostgate Pass climbs steadily from the vale to the plateau, between walls well above its floor',mono&&Math.abs(prev-P.h1)<3&&wall-floor>12,'floor '+floor.toFixed(1)+' at the ice wall, walls '+wall.toFixed(1)+', top '+prev.toFixed(1)); }
+{ const P=x.PASS; let worst=0, prev=x.rawHeight(P.x,P.z0); for(let z=P.z0-6;z>=P.z1;z-=6){ const h=x.rawHeight(P.x,z); worst=Math.max(worst,Math.abs(h-prev)/6); prev=h; }
+  ok('Frostgate Pass is walkable from the vale to the plateau (no step over the slope limit), the ice wall stands on it and northBarZ holds the line there',worst<1.2&&x.northBarZ(P.x)===P.ice&&x.northBarZ(P.x+400)>-1e8&&x.northBarZ(P.x+400)>P.ice-200,'steepest '+worst.toFixed(2)+', ice wall at z '+P.ice); }
 { const L=x.FROST_LAKES[0], hs=[]; for(let a=0;a<8;a++) hs.push(x.rawHeight(L.x+Math.sin(a)*L.r*0.5,L.z+Math.cos(a)*L.r*0.5));
-  ok('a frozen lake is flat, walkable ice (no water: its surface is far above the sea)',Math.max(...hs)-Math.min(...hs)<0.6&&hs[0]>40&&x.iceDist(L.x,L.z)<0); }
+  ok('a frozen lake is flat, walkable ice (not water: waterSurf says the sea\'s level)',Math.max(...hs)-Math.min(...hs)<0.6&&hs[0]>15&&x.iceDist(L.x,L.z)<0&&x.waterSurf(L.x,L.z)===x.WATER); }
 { const E=[], N=[]; for(let z=-1030;z<=-480;z+=6) E.push(x.rawHeight(x.WX1-2,z)); for(let xx=600;xx<=980;xx+=6) N.push(x.rawHeight(xx,x.WZ0+2));   // (the Greyspine | Reach wall's headland, west of x = 600, ends in the sea too)
   const sea=a=>a.filter(h=>h<-1).length/a.length;
   ok('the plateau comes down to the sea in the east and in the north (no glacier wall, no mountain rim): over 40% of each edge is under water, and no point of either rises above 70 m',sea(E)>0.4&&sea(N)>0.4&&Math.max(...E,...N)<70,'east '+(100*sea(E)).toFixed(0)+'% sea, north '+(100*sea(N)).toFixed(0)+'%, highest '+Math.max(...E,...N).toFixed(0)+' m'); }
@@ -54,7 +53,7 @@ at(x.VIL3.x+3,x.VIL3.z+3); tick(14); ok('walking into Rimehold attunes the circl
 { const g=x.sanitizeGear({north:0,mq:{s:x.MQ_BY_ID?0:0}},'warrior'); ok('a new save starts with the wall shut',g.north===0); }
 // ---- the level 22-30 economy ----
 { let bad=0, kinds=new Set(), boss=new Set(); for(let i=0;i<3000;i++){ const q=x.genQuest(22+(i%9),'g'+i); if(!q||!q.reward) { bad++; continue; } kinds.add(q.kind); if(q.kind==='boss') boss.add(q.target);
-    if(q.kind==='scout'&&(q.at.z<x.WZ0||q.at.z>440||q.at.x<x.WX0||q.at.x>x.WX1)) bad++; if((q.kind==='hunt'||q.kind==='bounty')&&!x.MON_DEFS.some(m=>m.id===q.target)) bad++; }
+    if(q.kind==='scout'&&(q.at.z<x.WZ0||q.at.z>x.WZ1||q.at.x<x.WX0||q.at.x>x.WX1)) bad++; if((q.kind==='hunt'||q.kind==='bounty')&&!x.MON_DEFS.some(m=>m.id===q.target)) bad++; }
   ok('the quest board works for levels 22-30 (hunts, bounties, scouts, bosses), never a broken notice',!bad&&kinds.size===4&&boss.has('ymrik'),'bosses offered: '+[...boss].join(',')); }
 { const k=L=>x.expToNext(L)/x.xpFor(L); ok('past level 25 a level costs as many same-level kills as 25 does (the curve no longer explodes)',Math.abs(k(30)-k(25))<1&&Math.abs(k(26)-k(25))<1&&x.expToNext(26)>x.expToNext(25)&&x.expToNext(30)>x.expToNext(29),Math.round(k(25))+' kills at 25, '+Math.round(k(30))+' at 30'); }
 ok('skill upgrades never ask for a drop above the vale\'s level 25 (no empty pool)',(()=>{ try{ for(const id of [...x.SKILL_IDS,...x.PASSIVE_IDS]) for(let to=2;to<=5;to++){ const n=x.upgradeNeeds(id,to); if(n&&!n.mats.every(m=>x.MATS[m.id])) return false; } return true; }catch(e){ return false; } })());

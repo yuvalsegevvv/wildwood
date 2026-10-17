@@ -9,9 +9,14 @@ const MAP={size:LITE?320:(LOW?400:560),canvas:null,ctx:null,img:null,zone:null,r
 MAP.k=MAP.size/SIZE; MAP.w=Math.round(WW*MAP.k); MAP.h=Math.round(WD*MAP.k);   // pixels per metre, image size
 const MM_R=90, DPR=Math.min(2,devicePixelRatio||1);
 const mapX=x=>(x-WX0)*MAP.k, mapZ=z=>(z-WZ0)*MAP.k;
-// the three lands as the full map shows them (the vale's crop ends at its north crest, the Hoarfrost Reach's begins just south of it)
-// (the borders wander: the river bulges the vale 210 m west of x = HALF and the north walls move up to 120 m either side of z = HZ0, so the crops are wider than the old rectangles; the Reach lies over the forest's east half too, from the Glacier Wall, GXJ, to the vale's east edge, but its built part, the zones, Rimehold and the pass, is x 100-640 (docs/WORLD.md section 8): the map crops to x 0-720 so the labels have room; the empty land beyond is on the world map only)
-const LANDS={home:{x0:-HALF,x1:HALF+40,z0:HZ0,z1:HALF,name:'The home forest'},vale:{x0:HALF-230,x1:VALE_E+90,z0:HZ0-125,z1:HALF,name:'The Sakura Vale'},hoar:{x0:0,x1:720,z0:WZ0,z1:HZ0+110,name:'The Hoarfrost Reach'},grey:{x0:WX0,x1:GXJ+115,z0:WZ0,z1:HZ0+105,name:'The Greyspine'},sun:{x0:WX0,x1:HX0+70,z0:-440,z1:HALF,name:'The Sunscar'},gloam:{x0:WX0,x1:GW0+80,z0:-1240,z1:-700,name:'The Gloamhorn'}};
+// the lands as the full map shows them: each land's dry cells (the atlas, shared/world-atlas.js) and 90 m round them; the Sunscar's includes the closed land south of it
+const LANDS=(()=>{
+  const names={home:'The home forest',vale:'The Sakura Vale',hoar:'The Hoarfrost Reach',grey:'The Greyspine',sun:'The Sunscar',gloam:'The Gloamhorn'}, out={};
+  for(const k in names) out[k]={x0:1e9,x1:-1e9,z0:1e9,z1:-1e9,name:names[k]};
+  for(let z=WZ0;z<WZ1;z+=24) for(let x=WX0;x<WX1;x+=24){ const l=waLand(x,z), k=l==='amber'?'sun':l; if(k===null||!out[k]) continue; const R=out[k]; R.x0=Math.min(R.x0,x); R.x1=Math.max(R.x1,x); R.z0=Math.min(R.z0,z); R.z1=Math.max(R.z1,z); }
+  for(const k in out){ const R=out[k]; R.x0=Math.max(WX0,R.x0-90); R.x1=Math.min(WX1,R.x1+90); R.z0=Math.max(WZ0,R.z0-90); R.z1=Math.min(WZ1,R.z1+90); }
+  return out;
+})();
 let mapLand=null;   // null: the land you are in
 const landHere=()=>inGloam(P.x,P.z)?'gloam':inSun(P.x,P.z)?'sun':inHoar(P.x,P.z)?'hoar':inVale(P.x,P.z)?'vale':inGrey(P.x,P.z)?'grey':'home';
 const landOpen=id=>id==='home'||(id==='vale'&&valeOpen())||(id==='hoar'&&northOpen())||(id==='grey'&&(westOpen()||inGrey(P.x,P.z)))||(id==='sun'&&(GEAR.river>=1||GEAR.redgate>=1||GEAR.sun>=1||inSun(P.x,P.z)))||(id==='gloam'&&(GEAR.neck>=1||GEAR.gloam>=1||inGloam(P.x,P.z)));
@@ -106,10 +111,8 @@ function drawFullMap(){
   if(land==='sun'){   // the river, the glass fields and the gates by name
     for(const G of GREY_GATES){ if(G.id!=='river'&&G.id!=='redgate') continue; const [cx,cy]=at(G.x,G.z), op=gateOpen(G); dot(x,cx,cy,3.5*DPR,op?'#9fe0ff':'#8a8078'); label(G.name,cx+fs*3.4,cy,fs*0.72,op?'#e8e0d0':'#b4aea4'); }
   }
-  if(land==='grey'){   // the tarns and the fjord by name, the two rock falls in the west wall (a grey dot while shut, light blue once a boss has opened them)
-    for(const T of GREY_TARNS){ const [cx,cy]=at(T.x,T.z); label(T.name,cx,cy,fs*0.85,'#cfe8f6'); }
-    { const f=GREY_FJORD.pts[1], [cx,cy]=at(f[0],f[1]); label('The fjord',cx+fs*2.4,cy+fs*1.1,fs*0.85,'#cfe8f6'); }
-    for(const G of GREY_GATES){ if(landAt(G.x,G.z)!=='grey') continue; const [cx,cy]=at(G.x,G.z), op=gateOpen(G); dot(x,cx,cy,3.5*DPR,op?'#9fe0ff':'#8a8078'); label(G.name,cx+fs*3.4,cy,fs*0.72,op?'#e8e0d0':'#b4aea4'); }   // (the dot says whether it is open; the name is short, the map is small on a phone)
+  if(land==='grey'){   // the two rock falls in the west wall (a grey dot while shut, light blue once a boss has opened them)
+    for(const G of GREY_GATES){ if(![[12,0],[-12,0],[0,12],[0,-12],[0,0]].some(d=>landAt(G.x+d[0],G.z+d[1])==='grey')) continue; const [cx,cy]=at(G.x,G.z), op=gateOpen(G); dot(x,cx,cy,3.5*DPR,op?'#9fe0ff':'#8a8078'); label(G.name,cx+fs*3.4,cy,fs*0.72,op?'#e8e0d0':'#b4aea4'); }   // (the dot says whether it is open; the name is short, the map is small on a phone)
   }
   for(const Lk of LAKES){ if(!!Lk.vale!==(land==='vale')||land==='hoar'||land==='grey'||land==='sun'||land==='gloam') continue; const [cx,cy]=at(Lk.x,Lk.z); label(Lk.name,cx,cy,fs*0.85,'#cfe8f6'); }
   if(land==='home'){ const [cx,cy]=at(PVP.x,PVP.z); label(PVP_ISLE.name,cx,cy,fs*0.85,'#ffd9a0'); }   // pvp: the island
@@ -122,7 +125,7 @@ function drawFullMap(){
   for(const m of MONS){ if(m.dead||!m.aggro) continue; const [a,b]=at(m.x,m.z); dot(x,a,b,2.4*DPR,'#ff4a3a'); }
   for(const r of REMOTES.values()){ if(r.tx===null) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,4*DPR,dgPartyCol(r.id)||'#6fb8ff'); label(r.name,a,b-fs*1.1,fs*0.85,'#cfe6ff'); }   // dungeons: party members in their colour (dungeon/party.js)
   { const [a,b]=at(P.x,P.z); mapStPin(x,a,b,6.4*DPR,-P.face); }
-  { const nm=LANDS[land].name, B=WMAP_BANNER[WMAP_LAND[land]]||{levels:land==='gloam'?'30–40':'28–36'}; mapStRibbon(x,DPR,W,nm,'Levels '+B.levels); mapStCompass(x,W-30*DPR,H-30*DPR,13*DPR); mapStFrame(x,W,H,DPR); }   // the land's name on the scroll, the rose, the frame
+  { const nm=LANDS[land].name, B=WMAP_BANNER[land]; mapStRibbon(x,DPR,W,nm,'Levels '+B.levels); mapStCompass(x,W-30*DPR,H-30*DPR,13*DPR); mapStFrame(x,W,H,DPR); }   // the land's name on the scroll, the rose, the frame
   const zn=zoneAt(P.x,P.z), V=vilAt(P.x,P.z);
   const vn=V===VIL6?'Wraithwick':V===VIL5?'Glasswell':V===VIL4?'Highmark':V===VIL3?'Rimehold':V===VIL2?'Hanami':'the village';
   $('#mapHere').textContent=vDist(P.x,P.z)<VR+12?'You are in '+vn:P.inTun?'You are on the Greyfall bridge':zn?(zn.boss?'You are near '+zn.name:'You are in '+zn.name+' (level '+zoneLvText(zn)+')'):inPass(P.x,P.z)?'You are in Frostgate Pass':inGloam(P.x,P.z)?'You are in the Gloamhorn':inSun(P.x,P.z)?'You are in the Sunscar':inGrey(P.x,P.z)?'You are in the Greyspine':'You are near '+vn;
@@ -135,35 +138,21 @@ function placeName(wx,wz){
   if(Math.hypot(wx-PVP.x,wz-PVP.z)<PVP.r+4) return PVP_ISLE.name+' (fighters, same stats for all)';   // pvp
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if(Math.hypot(wx-A.x,wz-A.z)<A.r+6) return A.name+': '+bd.def.name+', level '+bossLvIn(bd.def,landAt(A.x,A.z))+' boss'; }
   if(inPass(wx,wz)&&Math.abs(wz-PASS.ice)<6) return northOpen()?'Frostgate Pass (the ice wall has fallen)':'Frostgate Pass: the ice wall (shut until Akaoni falls)';
-  if(inPass(wx,wz)&&wz<HZ0+60) return 'Frostgate Pass';
+  if(inPass(wx,wz)) return 'Frostgate Pass';
   if(inTunnelCut(wx,wz)&&wx>TUN.p0-4&&wx<TUN.p1+4) return valeOpen()?'The Greyfall bridge':'The Greyfall bridge (barred until the Rootwarden falls)';
   const B=bridgeAt(wx,wz,2); if(B) return B.road+' ('+B.name+')';
   const rd=roadAt(wx,wz,3); if(rd) return rd.name;
   const zn=zoneAt(wx,wz); if(zn) return zn.key==='boss'?'Rootwarden Barrens':zn.boss?zn.name:zn.name+': level '+zoneLvText(zn)+' ('+MON_DEFS.filter(d=>defZone(d)===zn).map(d=>d.name).join(', ')+')';
   return edgeName(wx,wz)||(inGloam(wx,wz)?'The Gloam heath':inHoar(wx,wz)?'The snowfields':inGrey(wx,wz)?'The Greyspine':inVale(wx,wz)?'Hanami meadows':'Village meadows');
 }
-// the lands' edges by their names in docs/WORLD.md (shaped in shared/terrain.js)
+// the lands' edges by their names in docs/WORLD.md: the shore, and the range along a land border (the atlas's land ids: home 0, vale 1, hoar 2, grey 3, sun 4, gloam 5)
+const EDGE_NAMES={'0-1':'The Greyfall River','1-2':'The slopes of the Hoarfrost Reach','0-2':'The Frostwall','2-3':'The Glacier Wall','0-3':'The Greyspine foothills','0-4':'The Sunwall','3-4':'The Glass River range','3-5':'The west wall','4-5':'The Glass River','4-6':'The Sunscar plateau','0-6':'The Sunwall'};
 function edgeName(x,z){
   if(coastDist(x,z)<40) return inHoar(x,z)||inGrey(x,z)?'The Outer Deep shore':'The Crownsea shore';   // (the north of the Reach and the Greyspine looks on the open ocean)
-  const bx=borderX(z), bn=borderXN(z), bz=borderZ(x), wx=lerp(wallW(z,1),56,riverK(z)), wn=wallW(z,1), wz=wallW(x,3);   // (the walls' bodies are as wide as the terrain makes them there)
-  if(inGloam(x,z)) return gloamCoast(x,z)<30?'The Gloam cliffs':null;
-  if(inGrey(x,z)){
-    if(x-GW0<62) return 'The west wall';
-    if(bn-x<wn) return 'The Glacier Wall';   // (the Greyspine | Reach wall)
-    if(z>bz-wz) return 'The Greyspine foothills';
-  } else if(inSun(x,z)) return 'The Sunscar plateau';   // (not built: the Sunwall's top goes on west of the forest)
-  else if(!inVale(x,z)){
-    if(Math.abs(z-REDGATE_Z)<16&&x-HX0<REDGATE_CL+45) return 'Redgate Canyon (sealed by a rock fall)';
-    if(x-HX0<sunwallLine(z)+18) return 'The Sunwall';
-    if(z-bz<wz) return x<GXJ?'The Greyspine foothills':'The Frostwall';   // (the forest's north rim: the Greyspine's foothills west of its wall, the Reach's south wall east of it)
-    if(bx-x<wx) return riverK(z)>0.5?'The Greyfall River':'The Vale Wall';
-  } else if(inHoar(x,z)){
-    if(x-bn<wn) return 'The Glacier Wall';
-    if(z>bz-wz) return 'The Frostwall';
-  } else {
-    if(x-bx<wx) return riverK(z)>0.5?'The Greyfall River':'The Vale Wall';
-    if(z-bz<wz) return 'The slopes of the Hoarfrost Reach';
-  }
+  if(inGloam(x,z)&&gloamCoast(x,z)<30) return 'The Gloam cliffs';
+  const l=waLandId(x,z), d=waLandBorderDist(x,z);
+  if(d>=60) return null;
+  for(let r=d+8;r<=d+36;r+=14) for(let k=0;k<8;k++){ const q=waLandId(x+Math.sin(k*0.7854)*r,z+Math.cos(k*0.7854)*r); if(q!==l) return EDGE_NAMES[Math.min(l,q)+'-'+Math.max(l,q)]||null; }
   return null;
 }
 function mapPointer(e){

@@ -2,7 +2,7 @@
 // Usage: node tools/server-smoke.js
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
-const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['MONS','getH','W','BOSSES','COINS_MAX','EXP_MAX']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['sanitizeGear','waLandId','WX0','WX1','WZ0','WZ1','VIL','VIL2','VIL3','VIL5','MONS','getH','W','BOSSES','COINS_MAX','EXP_MAX']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ for(let i=0;i<n;i++){ W.tick(0.05); if(keepAlive) for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
@@ -79,5 +79,16 @@ W.receive('a',{t:'look',look:{cls:'mage',hair:'short',hat:'ranger',model:'constr
 { W.join('iv',{name:'Zed\u200b\u202e',look:{cls:'warrior'},save:{level:1}}); const q=W.players.get('iv'); tick(1); W.receive('iv',{t:'chat',text:'a\u202eb\u200bc'}); tick(3);
   ok('zero-width and bidirectional characters are dropped from a name and a chat line (no look-alike of another player, no backwards text)',q.name==='Zed'&&evs.some(e=>e[0]==='chat'&&e[1]==='iv'&&e[3]==='abc'),JSON.stringify(q.name)); W.leave('iv'); }
 W.receive('a',{t:'chat',text:'  hello   there '}); tick(3); ok('chat is cleaned and relayed',evs.some(e=>e[0]==='chat'&&e[3]==='hello there'));
+// barriers (shared/barriers.js): a shut gate holds on the server, an open land holds nobody; Amber Reach never opens; a save from the old world frame (gear.wv) is put in its land's village
+{ W.join('bw',{name:'Border',look:{cls:'warrior'},save:{level:30}}); const q=W.players.get('bw'); tick(1);
+  const cell=(a,b)=>{ for(let xx=x.WX0+40;xx<x.WX1-40;xx+=8) for(let zz=x.WZ0+40;zz<x.WZ1-40;zz+=8) if(x.waLandId(xx,zz)===a&&x.waLandId(xx+8,zz)===b) return [xx,zz]; return null; };
+  const step=(g,c)=>{ Object.assign(q.gear,g); q.x=c[0]; q.z=c[1]; W.setPos('bw',[c[0]+8,x.getH(c[0]+8,c[1]),c[1],0,0,0]); return x.waLandId(q.x,q.z); };
+  const hv=cell(0,1), am=cell(4,6);
+  ok('the Greyfall border holds while gear.east is 0 and lets you across once it is 1',!!hv&&step({east:0},hv)===0&&step({east:1},hv)===1,JSON.stringify(hv));
+  ok('Amber Reach never opens (gear.amber is 0 whatever the save says), even with every other gate open',!!am&&step({east:2,north:2,west:2,river:1,neck:1,redgate:1,amber:1},am)===4&&x.sanitizeGear({amber:1},'warrior').amber===0&&x.sanitizeGear({},'warrior').wv===2,JSON.stringify(am));
+  W.leave('bw');
+  const old=(pos,g)=>{ W.join('ow',{name:'Oldie',look:{cls:'warrior'},save:{level:30,pos,gear:Object.assign({},g)}}); const o=W.players.get('ow'); const r=[o.x,o.z]; W.leave('ow'); return r; };
+  const v2=old([900,-100],{east:2}), v0=old([900,-100],{east:0});
+  ok('a save from the old frame with a position in the vale starts at Hanami if the vale is open for it, else at the home village',Math.hypot(v2[0]-x.VIL2.spawn.x,v2[1]-x.VIL2.spawn.z)<1&&Math.hypot(v0[0]-x.VIL.spawn.x,v0[1]-x.VIL.spawn.z)<1,JSON.stringify([v2,v0])); }
 W.leave('b'); tick(3); ok('leave is broadcast',evs.some(e=>e[0]==='pleave'&&e[1]==='b'));
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

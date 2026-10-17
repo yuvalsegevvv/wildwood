@@ -24,7 +24,7 @@ const dgEntPal={
   moss:new THREE.Color(0x3a5826), root:new THREE.Color(0x4a3524), ring:new THREE.Color(0x6f8f3c),
   wet:new THREE.Color(0x4a5a58), jade:new THREE.Color(0x4f7d6c), flag:new THREE.Color(0x6a7873),
   tramp:new THREE.Color(0xc4cace), bone:new THREE.Color(0xb3b0a2), rime:new THREE.Color(0xe4edf2),
-  slate:new THREE.Color(0x3c3d44), coal:new THREE.Color(0x1a1b20), spoil:new THREE.Color(0x4a3c2e), sand:new THREE.Color(0xd8c090), chip:new THREE.Color(0x3a2e50), flagd:new THREE.Color(0x3a3a46), salt:new THREE.Color(0x8a9a98), brine:new THREE.Color(0x1e3a44)};
+  slate:new THREE.Color(0x3c3d44), coal:new THREE.Color(0x1a1b20), spoil:new THREE.Color(0x4a3c2e), sand:new THREE.Color(0x8f7142), chip:new THREE.Color(0x3a2e50), flagd:new THREE.Color(0x4a4e60), salt:new THREE.Color(0x8a9a98), brine:new THREE.Color(0x1e3a44)};
 const dgEntTmp=new THREE.Color();
 function dgEntTint(x,z,out){
   if(DG_DOORS.noTint) return out;
@@ -46,10 +46,10 @@ function dgEntTint(x,z,out){
       const darkK=smoothstep(10,2,d);
       out.lerp(dgEntTmp.copy(dgEntPal.slate).lerp(dgEntPal.coal,darkK*0.7),w).lerp(dgEntPal.spoil,w*smoothstep(0.6,0.9,n2)*0.35);
     } else if(E.kind==='sand'){   // the Sandglass door: pale trodden sand with a scatter of dark glass chips
-      out.lerp(dgEntTmp.copy(dgEntPal.sand).lerp(dgEntPal.chip,smoothstep(0.55,0.9,n)*0.4),w*0.6);
+      out.lerp(dgEntTmp.copy(dgEntPal.sand).lerp(dgEntPal.chip,smoothstep(0.55,0.9,n)*0.4),w*0.9);
     } else if(E.kind==='gloam'){   // the Gloamvault: wet dark flagstones with a white crust of salt, standing brine in the hollows
       const wetK=smoothstep(10,2,d);
-      out.lerp(dgEntTmp.copy(dgEntPal.flagd).lerp(dgEntPal.salt,smoothstep(0.6,0.92,n)*0.35),w).lerp(dgEntPal.brine,w*wetK*smoothstep(0.5,0.85,n2)*0.5);
+      out.lerp(dgEntTmp.copy(dgEntPal.flagd).lerp(dgEntPal.salt,smoothstep(0.6,0.92,n)*0.35),w*0.8).lerp(dgEntPal.brine,w*wetK*smoothstep(0.5,0.85,n2)*0.5);
     } else {   // the barrow: snow trodden grey by whoever comes, bone-grey in the hollows, rime at the edge
       out.lerp(dgEntTmp.copy(dgEntPal.tramp).lerp(dgEntPal.bone,smoothstep(0.35,0.85,n)*0.8),w).lerp(dgEntPal.rime,smoothstep(0.7,0.2,w)*w*0.5);
     }

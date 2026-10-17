@@ -2,7 +2,7 @@
 // the chunk generator really places camps / webs / ruins / boss rings where the themes say, and a chunk adds only a handful of draw calls. Needs a build (python3 build.py).
 // Usage: node tools/zoneprops-smoke.js        (about 20 s)
 const {bootClient}=require('./headless');
-const c=bootClient({expose:['ZP_KIND','ZP_BAD','ZP_THEME','ZP_TH_OF','ZP_BOSS','ZP_PLANS','ZP_GEO','zpGeo','zpGroundTint','terrainColorBase','ZONES','ARENAS','zonePoint','CHUNK_MESHES','CHX','CS','WX0','WZ0','genZoneProps','zpCellZone',
+const c=bootClient({expose:['VIL','ZP_KIND','ZP_BAD','ZP_THEME','ZP_TH_OF','ZP_BOSS','ZP_PLANS','ZP_GEO','zpGeo','zpGroundTint','terrainColorBase','ZONES','ARENAS','zonePoint','CHUNK_MESHES','CHX','CS','WX0','WZ0','genZoneProps','zpCellZone',
   'canStart:()=>canStart','setRand:r=>{ rand=r; }','mulberry32','NCH','chunkRect','THREE','zoneAt']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,cond,i)=>{ console.log((cond?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!cond) fails++; };
 (async()=>{
@@ -28,7 +28,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,cond,i
   // the ground: a goblin zone is tinted, the village is not
   { const zn=G.ZONES.find(z=>z.key===5), [x,z]=G.zonePoint(zn,0,0.5), a=new G.THREE.Color(0x808080), b=new G.THREE.Color(0x808080);
     G.zpGroundTint(x,z,5,0.2,a); const d=Math.abs(a.r-b.r)+Math.abs(a.g-b.g)+Math.abs(a.b-b.b); ok('a goblin zone\'s ground is tinted',d>0.02,d.toFixed(3));
-    const v=new G.THREE.Color(0x808080); G.zpGroundTint(0,0,5,0.2,v); ok('the village square is not',v.r===b.r&&v.g===b.g&&v.b===b.b); }
+    const v=new G.THREE.Color(0x808080); G.zpGroundTint(G.VIL.x,G.VIL.z,5,0.2,v); ok('the village square is not',v.r===b.r&&v.g===b.g&&v.b===b.b); }
   // the generator: run it over the chunks round a zone's centre and see what it built
   const chunkAt=(x,z)=>Math.floor((z-G.WZ0)/G.CS)*G.CHX+Math.floor((x-G.WX0)/G.CS);
   const run=(ci)=>{ G.setRand(G.mulberry32(1000+ci*7919)); const n0=G.CHUNK_MESHES.length, gen=G.genZoneProps(ci); while(!gen.next().done); return G.CHUNK_MESHES.length-n0; };

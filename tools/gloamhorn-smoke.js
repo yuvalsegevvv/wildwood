@@ -6,24 +6,27 @@ const fs=require('fs'), path=require('path');
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['WX0','WX1','WZ0','WZ1','GW0','GXJ','HX0','WATER','VR','inGloam','inGrey','inSun','gloamIn','gloamGround','gloamCoast','gloamSpine','gloamKeepOut','GLOAM_PTS','GLOAM_STACKS','GLOAM_WRECKS','GLOAM_CAVES','GLOAM_LIGHT','GLOAM_HOLD','GLOAM_DG_DOOR','GLOAM_ZONE_NAMES',
-   'VIL4','VIL6','VILS','CIRCLES','ZONES','ARENAS','ARENA_M35','ARENA_M40','MON_DEFS','DEF_BY_ID','BOSS_DEFS','BOSSES','BOSS_SKILLS','BOSS_QUESTS','MATS','SKILLS','GREY_GATES','NODES','MONS','rawHeight','getH','zoneAt','defZone','landAt','borderZ',
+  ['WX0','WX1','WZ0','WZ1','GW0','GXJ','HX0','WATER','VR','inGloam','inGrey','inSun','gloamIn','gloamGround','gloamCoast','waLandId','waIsSea','gloamKeepOut','GLOAM_STACKS','GLOAM_WRECKS','GLOAM_CAVES','GLOAM_LIGHT','GLOAM_HOLD','GLOAM_DG_DOOR','GLOAM_ZONE_NAMES',
+   'WA_HUBS','WA_POIS','WA_GATES','VIL4','VIL6','VILS','CIRCLES','ZONES','ARENAS','ARENA_M35','ARENA_M40','MON_DEFS','DEF_BY_ID','BOSS_DEFS','BOSSES','BOSS_SKILLS','BOSS_QUESTS','MATS','SKILLS','GREY_GATES','NODES','MONS','rawHeight','getH','zoneAt','defZone','landAt','borderZ',
    'ZTIER_LANDS','ZTIER_BOSS','MAX_ZONE_LV','genQuest','sanitizeGear','newGearFor','vDist','vilAt','vNear','rewardKill','bridgeDeck']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const H=x.rawHeight, V=x.VIL6, G=x.GREY_GATES.find(g=>g.id==='neck');
 
-// ---- the ground ----
+// ---- the ground (the atlas's: land id 5) ----
 { let n=0, bad=0, dry=0, hi=-1e9;
-  for(let zz=-1260;zz<-700;zz+=8) for(let xx=x.WX0;xx<x.GW0-70;xx+=8){ if(!x.inGloam(xx,zz)) continue; const h=H(xx,zz); n++; if(!isFinite(h)) bad++; else { hi=Math.max(hi,h); if(h>2) dry++; } }
-  ok('every point of the Gloamhorn has a finite height; a narrow horn of dry plateau (about 38 m) above a sea at -5, hundreds of cells of land',bad===0&&n>3000&&dry>400&&dry<n*0.5&&hi>30&&hi<60,n+' cells, '+dry+' dry, top '+hi.toFixed(1));
-  ok('the sea is -5 m outside the horn, and inGloam is west of GW0 and north of the border only (the Greyspine, Sunscar and forest are not it)',H(x.WX0+30,-700)<=-4&&x.inGloam(-1100,-790)&&!x.inGloam(x.GW0+10,-790)&&!x.inGloam(-1100,-300)&&!x.inGloam(x.HX0-50,-100)&&x.landAt(-1100,-790)==='gloam'&&x.landAt(x.GW0+40,-790)==='grey'); }
+  for(let zz=-1100;zz<-100;zz+=8) for(let xx=x.WX0;xx<-480;xx+=8){ if(!x.inGloam(xx,zz)) continue; const h=H(xx,zz); n++; if(!isFinite(h)) bad++; else { hi=Math.max(hi,h); if(h>2) dry++; } }
+  ok('every point of the Gloamhorn has a finite height; a broad land of crags and hills with dry ground in the thousands of cells',bad===0&&n>6000&&dry>3000&&hi>30,n+' cells, '+dry+' dry, top '+hi.toFixed(1));
+  ok('the sea lies off the land, and inGloam / landAt answer from the atlas (the Greyspine east of the neck, the Sunscar south of the Glass River, the forest are not the Gloamhorn)',x.waIsSea(x.WX0+30,-700)&&H(x.WX0+30,-700)<=-4&&x.inGloam(V.x,V.z)&&x.landAt(V.x,V.z)==='gloam'&&!x.inGloam(-300,-600)&&x.landAt(-300,-600)==='grey'&&!x.inGloam(-700,100)&&x.landAt(-700,100)==='sun'&&x.landAt(0,0)==='home'); }
 { const sl=(a,b)=>Math.hypot(H(a+2,b)-H(a-2,b),H(a,b+2)-H(a,b-2))/4;   // the village, the arenas, the door stand on near-flat ground
   const spots=[[V.x,V.z,'village'],[x.ARENA_M35.x,x.ARENA_M35.z,'captain'],[x.ARENA_M40.x,x.ARENA_M40.z,'warden'],[x.GLOAM_DG_DOOR.x,x.GLOAM_DG_DOOR.z,'door']];
-  ok('Wraithwick, both arenas and the reserved door stand on dry, level ground',spots.every(([a,b])=>H(a,b)>25&&sl(a,b)<0.35),spots.map(([a,b,n])=>n+' h'+H(a,b).toFixed(0)+' s'+sl(a,b).toFixed(2)).join(', ')); }
+  ok('Wraithwick, both arenas and the door stand on dry, level ground',spots.every(([a,b])=>H(a,b)>2&&sl(a,b)<0.5),spots.map(([a,b,n])=>n+' h'+H(a,b).toFixed(0)+' s'+sl(a,b).toFixed(2)).join(', '));
+  const hub=x.WA_HUBS.gloam, P=x.WA_POIS.filter(q=>q.land==='gloam'), door=P.find(q=>q.kind==='door'), gate=x.WA_GATES.find(g=>g.b==='gloam');
+  ok('the places are the atlas\'s: Wraithwick at the hub, the arenas at the two bosses, the door within 45 m of the atlas\'s door (moved to a level apron off its road), the neck rock fall at the Windswept Neck',Math.hypot(V.x-hub[0],V.z-hub[1])<1&&P.filter(q=>q.kind==='boss').every(q=>[x.ARENA_M35,x.ARENA_M40].some(A=>Math.hypot(A.x-q.x,A.z-q.z)<1))&&Math.hypot(x.GLOAM_DG_DOOR.x-door.x,x.GLOAM_DG_DOOR.z-door.z)<45&&G.dir==='e'&&Math.hypot(G.x-gate.x,G.z-gate.z)<1);
+  ok('wrecks lie in the sea, cave mouths on the shore, the lighthouse on land at the cape',x.GLOAM_WRECKS.length===5&&x.GLOAM_WRECKS.every(q=>x.waIsSea(q[0],q[1]))&&x.GLOAM_CAVES.length>=6&&x.GLOAM_HOLD.caves.length===3&&H(x.GLOAM_LIGHT.x,x.GLOAM_LIGHT.z)>1,x.GLOAM_WRECKS.length+' wrecks, '+x.GLOAM_CAVES.length+' caves'); }
 
 // ---- reachability on foot (slope limit 1.2 per metre, 4 m cells), from the neck's east side ----
-{ const C=4, LIM=1.2, X0=x.WX0, X1=x.GW0+110, Z0=-1280, Z1=-690, Wd=Math.floor((X1-X0)/C)+1, Dd=Math.floor((Z1-Z0)/C)+1, HH=new Float32Array(Wd*Dd);
+{ const C=4, LIM=1.2, X0=x.WX0, X1=-380, Z0=-1100, Z1=300, Wd=Math.floor((X1-X0)/C)+1, Dd=Math.floor((Z1-Z0)/C)+1, HH=new Float32Array(Wd*Dd);
   for(let j=0;j<Dd;j++) for(let i=0;i<Wd;i++) HH[j*Wd+i]=H(X0+i*C,Z0+j*C);
   const seen=new Uint8Array(Wd*Dd), q=[Math.round((G.z-Z0)/C)*Wd+Math.round((G.x+14-X0)/C)]; seen[q[0]]=1;
   const nb=[[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.414],[1,-1,1.414],[-1,1,1.414],[-1,-1,1.414]];
@@ -33,15 +36,15 @@ const H=x.rawHeight, V=x.VIL6, G=x.GREY_GATES.find(g=>g.id==='neck');
   const miss=pts.filter(p=>!reach(p[0],p[1],20)).map(p=>p[2]);
   ok('from the neck pass every zone, both arenas, Wraithwick, the lighthouse and the reserved door can be walked to',miss.length===0&&zs.length===11,zs.length+' zones'+(miss.length?'; not: '+miss.join(' '):''));
   const nodes=x.NODES.filter(n=>/^m\d+$/.test(String(n.zone))), nm=nodes.filter(n=>!reach(n.x,n.z,8));
-  ok('55 resource nodes (rime ore, frostpine, snowmoss) in the zones m30..m40, all on reachable ground and off the keep-outs',nodes.length===55&&nm.length===0&&nodes.every(n=>x.inGloam(n.x,n.z)&&!x.gloamKeepOut(n.x,n.z,0)),nodes.length+' nodes, '+nm.length+' unreachable'); }
+  ok('55 resource nodes (rime ore, frostpine, snowmoss) in the zones m30..m40, all on reachable ground and off the keep-outs',nodes.length===55&&nm.length===0&&nodes.every(n=>x.inGloam(n.x,n.z)&&!x.gloamKeepOut(n.x,n.z,0)),nodes.length+' nodes, '+nm.length+' unreachable'+(nm.length?': '+nm.map(n=>n.zone+'@'+Math.round(n.x)+','+Math.round(n.z)).join(' '):'')); }
 
 // ---- the village ----
 { const src=fs.readFileSync(path.join(__dirname,'../src/game/village/villagers.js'),'utf8'), people=(src.match(/vil:6,/g)||[]).length;
   const ats=[...src.matchAll(/vil:6[^\n]*\n[^\n]*\n[^\n]*at:'([^']+)'/g)].map(m=>m[1]), roles=['quests','weaponsmith','armorer','forge','trainer','lodge','brew'].filter(r=>src.split('\n').some((l,i,a)=>/vil:6/.test(a[i-1]||'')===false&&new RegExp("vil:6,.*role:'"+r+"'").test(l)));
   ok('Wraithwick (VIL6): the home village\'s plan (houses, stalls, board, fire, circles), a name, a teleport circle, in VILS and CIRCLES as the sixth village',V.name==='Wraithwick'&&V.houses.length===x.VIL4.houses.length&&V.boxes.length>=x.VIL4.boxes.length&&V.board&&V.tele&&x.VILS[5]===V&&x.CIRCLES.length===6&&x.CIRCLES[5].V===V&&x.CIRCLES[5].open({gloam:2})&&!x.CIRCLES[5].open({gloam:1}),V.boxes.length+' boxes'); 
   ok('Wraithwick\'s people in villagers.js: a trade each (quests, weaponsmith, armourer, forge, trainer, Lodge, healer), a gate warden, and every anchor they stand at exists',people>=9&&roles.length===7&&ats.length>=6&&ats.filter(a=>!a.startsWith('place:')).every(a=>V.anchors[a]),people+' people, roles '+roles.join(',')+', anchors '+ats.join(',')); }
-{ const mid=x.vilAt(V.x,V.z), far=x.vilAt(-1500,-900);
-  ok('vilAt / vNear / vDist know Wraithwick; the Highmark side of the neck is still Highmark\'s; a knocked-out hero in the Gloamhorn wakes at Wraithwick once attuned, else at Highmark / home',mid===V&&x.vNear(V.x+5,V.z,10)&&x.vDist(V.x,V.z)<2&&x.vilAt(x.GW0+200,-790)===x.VIL4&&far===x.VIL4||far===V); }
+{ const mid=x.vilAt(V.x,V.z), far=x.vilAt(-1500,-700);
+  ok('vilAt / vNear / vDist know Wraithwick; the Highmark side of the neck is still Highmark\'s; a knocked-out hero in the Gloamhorn wakes at Wraithwick once attuned, else at Highmark / home',mid===V&&x.vNear(V.x+5,V.z,10)&&x.vDist(V.x,V.z)<2&&x.vilAt(-300,-600)===x.VIL4&&far===V); }
 
 // ---- zones and monsters ----
 { const zs=x.ZONES.filter(z=>z.gloam&&!z.boss), byL=L=>x.MON_DEFS.filter(d=>d.level===L&&d.zone==='m'+L);

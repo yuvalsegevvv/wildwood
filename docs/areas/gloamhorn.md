@@ -7,8 +7,8 @@ The old Stormhorn of `docs/WORLD.md`, renamed and made a permanently dark, gothi
 | What | Where |
 |---|---|
 | The ground: the spine `GLOAM_PTS`, `gloamGround`, `gloamIn` (metres inside the cliff edge), `gloamCoast`, 16 sea stacks `GLOAM_STACKS`, 5 wrecks, 9 cave mouths, the lighthouse `GLOAM_LIGHT`, the Captain's hold `GLOAM_HOLD`, the reserved door `GLOAM_DG_DOOR`, `gloamKeepOut` | `shared/gloamhorn.js` |
-| Land test `inGloam(x,z)` (x < `GW0` and north of the border), `GW0`, `GLX`, `WX0 = GW0 - GLX`; `coastDist` and `baseHeightRaw` branches | `shared/terrain.js` |
-| The Greyspine meets it: `greyspineHeight` eases into `gloamGround` west of `GW0 - 40`; the neck gate `GREY_GATES[1]` at `x = GW0 + 56`, the gate hold along the whole wall | `shared/greyspine.js` |
+| Land test `inGloam(x,z)` (the atlas's land 5); `coastDist` = `waCoast + 21`; the old `GW0` / `GLX` frame is retired | `shared/terrain.js`, `shared/world-atlas.js` |
+| The Greyspine meets it at the atlas's border: the neck gate `GREY_GATES[1]` at the Windswept Neck, `gloamNeckHold` along the whole border (and the Glass River with the Sunscar), both called by `barStep` while `gear.neck` is 0 | `shared/gloamhorn.js`, `shared/barriers.js` |
 | Wraithwick `VIL6` (`layoutVillage`, seed 6161), its row in `CIRCLES` (`open: g => g.gloam >= 2`) | `shared/wraithwick.js` |
 | Zones m30..m40 (R 100, along the spine), the two boss arenas `ARENA_M35` / `ARENA_M40`, `gloamZoneAt` | `shared/gloamzones.js`, `zoneAt` in `shared/zones.js` |
 | 22 monsters (two per level), `CAPTAIN_DEF`, `WARDEN_DEF` and their adds, `BOSS_DEFS` rows | `shared/monster-defs.js` (the `bat` family: `game/combat/monster-gloam.js`; ghost looks `monster-spirits.js`; `siren` flag in `monster-desert.js`) |
@@ -26,7 +26,7 @@ The old Stormhorn of `docs/WORLD.md`, renamed and made a permanently dark, gothi
 
 ## Numbers
 
-- Rectangle: `WX0 = GW0 - 720 = -1740` (`GW0 = HX0 + GDX = -1020`). All Greyspine and Sunscar geometry keeps its coordinates (they use `GW0`, no longer `WX0`).
+- Frame: the atlas's (`WX0` -1900); the door `GLOAM_DG_DOOR` is at (-1215, -845), 15 m from its signpost and off the Gloam Door Road.
 - Ground: a plateau 38 m up (`GLOAM_TOP`), cliffs rise from the waterline in 9 m, sea floor -5. The spine is about 966 m long; Wraithwick at (-1116, -787) h 38; the lighthouse at the tip (-1551, -1153).
 - Zones: m30 Wraithwick Heath, m31 Wreckers' Reach, m32 The Cairn Fields, m33 Drowned Meadow, m34 Siren Cliffs, m35 Gallows Down, m36 The Mourning Stones, m37 Banshee Tor, m38 Vault Heath, m39 Gargoyle Crag, m40 Lanternfall; arenas mboss35 (The Sea Caves, (-1530, -795)) and mboss40 (The Gloam Light, about (-1572, -1124)).
 - Rolls (`docs/ROLLS.md`): `res` / `acc` 0.10 at level 30 rising 0.02 a level to 0.30 at 40 (every kind has one or both); both bosses 0.35.
@@ -36,8 +36,8 @@ The old Stormhorn of `docs/WORLD.md`, renamed and made a permanently dark, gothi
 ## Pitfalls
 
 - `inGloam(x,z)` must be asked **before** `inGrey` (also true there): `landAt`, `vilAt`, `zoneAt`, `respawnVil` and the music / label code do.
-- Anything that used `WX0` as "the Greyspine's west wall" now means `GW0`. Fresh code that clamps to the world keeps `WX0`.
-- `bareGround` is true everywhere west of `HX0`; the Gloamhorn plants in its own branch (`gloamIn(x,z) >= 14`, `gloamKeepOut`).
+- Code that clamps to the world keeps `WX0`.
+- `bareGround` is the beach only (`coastDist < 38`); the Gloamhorn plants in its own branch (`gloamIn(x,z) >= 14`, `gloamKeepOut`).
 - Sea stacks count as land for `coastDist` and are terrain (`gloamGround`), not meshes.
 - The sky blend runs on the camera's position (`gloamDepth`); it changes `envCur` after `weatherTint` and before `dgGloomTint`.
 - No snow falls here: `greySnowAmt` is 0 at the plateau's height.

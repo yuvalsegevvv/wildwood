@@ -18,6 +18,7 @@ function streamPump(budgetMs){
             if(bd<=FAR_R){ const ci=Stream.pending.splice(bi,1)[0]; job={gen:genChunk(ci), rng:mulberry32(1000+ci*7919), kind:'c', ci}; }
           }
           if(!job&&Stream.lazy>0){ const B=nextLazyTile(); if(B){ B.busy=true; job={gen:terrainTileColors(B), rng:mulberry32(77), kind:'k'}; } }   // ground colours of a tile the player is nearing
+          if(!job){ const cs=cvNeed(); if(cs) job={gen:cvBuildJob(cs), rng:mulberry32(31), kind:'v'}; }   // caves: a site's rock mesh when you are within 420 m (world/caves.js)
           if(!job&&NPC_DEFER.length) job={gen:spawnDeferredNPCs(), rng:mulberry32(5), kind:'n'};   // the far villages' people, when nothing nearer is waiting
           if(!job) return;
           Stream.job=job;

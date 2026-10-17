@@ -1,45 +1,41 @@
-//@ The Hoarfrost Reach north of the vale: Frostgate Pass and its ice wall (PASS), Rimehold village (VIL3, VILS), zones 22-30 (Voronoi cells, ridges), two boss arenas. Pure.
+//@ The Hoarfrost Reach on the atlas: Frostgate Pass and its ice wall (PASS, at the vale | Reach gate), Rimehold (VIL3, the Reach's hub), zones h22-h30 (the atlas's zones), two boss arenas (the atlas's bosses). Pure.
 /* ===================== THE HOARFROST REACH =====================
-   A high frozen plateau north of the Sakura Vale (docs/WORLD.md, docs/MAIN-QUEST.md). The vale's north rim is a wall along
-   z = HZ0; the only way through is Frostgate Pass, a canyon cut into the rim at PASS.x. An ice wall shuts it (a real wall, drawn
-   by game/village/buildings-hoar.js and stopped in player/movement.js and server/api.js) until the player helps defeat Akaoni
-   (gear.north: 0 sealed, 1 wall open, 2 walked into Rimehold: the teleport circles are attuned).
-   Zones are cells around fixed seeds (as in the vale), levels 22-30, two monster kinds per level; the mid boss (26) has his hall
-   and the wyrm (30) her nest in their own cells' arenas. Terrain height itself (plateau, walls, cliffs, lakes) is in terrain.js. */
+   A high frozen plateau north of the Sakura Vale (docs/WORLD.md, docs/MAIN-QUEST.md). Everything here stands where the atlas (shared/world-atlas.js, docs/world-atlas.py) puts it: Rimehold on the Reach's hub
+   (WA_HUBS.hoar), Frostgate Pass at the vale | Reach gate (WA_GATES), the two boss arenas at the bosses (WA_POIS), the zones h22-h30 are the atlas's zones 22-30 of the Reach. The ground, the lakes (all frozen:
+   flat ice, no flowing water) and the passes are the atlas's too (world-atlas-ground.js); this file keeps no terrain, no carve and no ridge.
+   While the Reach is locked an ice wall (a mesh, game/village/buildings-hoar.js) stands in the pass at PASS.ice, and northBarZ(x) is the z a hiker without the Reach's key (gear.north) must stay south of;
+   it is drawn from the atlas's own border, so it follows the land (the clamps that read it: player/movement.js and server/api.js). gear.north: 0 sealed, 1 wall open, 2 walked into Rimehold (the circles are attuned).
+   Agent map: PASS {x, w, z0, z1, ice}, northBarZ, inPass, findHoarVillage, VIL3, VILS, CIRCLES, HOAR_ZONE_NAMES, hoarZoneAt, hoarRidge (0: retired), ARENA26 / ARENA30, northHubH(x,z,R) (the mean ground under a disc: a village's or an arena's pad height; also used by highmark.js and greyzones.js).
+   Used by: zones.js (hoarZoneAt, hoarRidge), roads.js, main-quest.js, professions.js, the server (economy.js, api.js), the client (movement, map, buildings-hoar). Tests: tools/hoarfrost-smoke.js, atlas-smoke.js. */
 
-/* ---- Frostgate Pass: a canyon straight north through the rim, its floor climbing from the vale to the plateau. The floor is
-   carved into the heightmap (passCarve, called by rawHeight); the ice wall stands across it at PASS.ice. w: half the floor's
-   width. z0: where the cutting starts in the vale (south), z1: where it reaches the plateau. */
-const PASS={x:636,w:5,z0:HZ0+95,z1:HZ0-90,ice:HZ0+42};
-// the z a hiker without the Reach's key (gear.north) must stay south of: the ice wall in the pass, the crest line (borderZ, shared/terrain.js) elsewhere along the vale's north wall
-const northBarZ=x=>Math.abs(x-PASS.x)<PASS.w+10?PASS.ice:borderZ(x)+8;
-PASS.h0=Math.max(3,baseHeight(PASS.x,PASS.z0)); PASS.h1=hoarBase(PASS.x,PASS.z1);
-PASS.floor=z=>lerp(PASS.h0,PASS.h1,smoothstep(PASS.z0,PASS.z1,z));
-function passCarve(x,z,h){
-  const dx=Math.abs(x-PASS.x); if(dx>PASS.w+5.5||z>PASS.z0+30||z<PASS.z1-30) return h;
-  const k=smoothstep(PASS.w+5.5,PASS.w+0.6,dx)*smoothstep(PASS.z0+30,PASS.z0,z)*smoothstep(PASS.z1-30,PASS.z1,z);
-  return lerp(h,PASS.floor(z),k);
+/* ---- Frostgate Pass: the atlas's vale | Reach gate. The wall of ice stands across the road at PASS.ice (11 m south of the border, on the vale's side); z0 / z1 are where the pass's keep-out strip (trees, rocks, camps) starts in
+   the vale (south) and ends on the plateau. w: half the wall's width (the keep-out strip is a little wider). The ground is the atlas's saddle, not a carved canyon. */
+const PASS=(()=>{ const G=WA_GATES.find(g=>g.a==='vale'&&g.b==='hoar'); return {x:G.x,w:5,z0:G.z+95,z1:G.z-90,ice:G.z}; })();
+// the Reach's southern edge per 8 m of x (the most southern z of its land there), for northBarZ; null where the Reach does not reach
+const HOAR_S0=Math.floor(WX0/8)*8, HOAR_S=(()=>{
+  const n=Math.ceil((WX1-WX0)/8)+1, out=new Array(n).fill(null);
+  for(let i=0;i<n;i++){ const x=HOAR_S0+i*8; for(let z=-80;z>WZ0;z-=8) if(waLand(x,z)==='hoar'){ for(let zz=z;zz<z+80;zz+=2) if(waLand(x,zz)==='hoar') z=zz; out[i]=z; break; } }
+  return out;
+})();
+// the z a hiker without the Reach's key (gear.north) must stay south of: the ice wall in the pass, 11 m inside the vale from the Reach's edge elsewhere (the pass's gate stands 11 m south of the border, so the two agree)
+function northBarZ(x){
+  if(Math.abs(x-PASS.x)<PASS.w+10) return PASS.ice;
+  const i=Math.round((x-HOAR_S0)/8), s=i>=0&&i<HOAR_S.length?HOAR_S[i]:null;
+  return s===null?-1e9:s+11;
 }
+// how deep inside the Reach a point is, 0 at its border (with any other land) to 1 at w metres in, 0 outside it: the cold the weather, the sky and the ground colours fade in with
+function hoarDepth(x,z,w){ return waLandId(x,z)===2?smoothstep(0,w,waLandBorderDist(x,z)):0; }
 // keep trees, rocks and camps out of the pass (m = extra margin)
 function inPass(x,z,m){ return Math.abs(x-PASS.x)<PASS.w+6+(m||0) && z<PASS.z0+30+(m||0) && z>PASS.z1-30-(m||0); }
 
-/* ---- Rimehold, the reach's village: the same plan as the other two villages (so every NPC role works the same), its road turned
-   toward the pass. It stands on the plateau just north of the pass' end. */
-function findHoarVillage(){
-  const cx=690+RDX, cz=-610; let best=null;
-  for(let r=0;r<=45;r+=5){
-    const n=Math.max(1,Math.round(r/2.5));
-    for(let k=0;k<n;k++){
-      const a=k/n*TAU, x=cx+Math.sin(a)*r, z=cz+Math.cos(a)*r;
-      if(iceDist(x,z)<VR+30) continue;
-      let mn=1e9,mx=-1e9,sum=0,c=0;
-      for(let rr=0;rr<=VR;rr+=10) for(let j=0;j<8;j++){ const b=j/8*TAU, h=baseHeight(x+Math.sin(b)*rr,z+Math.cos(b)*rr); mn=Math.min(mn,h); mx=Math.max(mx,h); sum+=h; c++; }
-      const score=(mx-mn)+r*0.3;
-      if(!best||score<best.score) best={x,z,h:sum/c,score};
-    }
-  }
-  return best;
+/* ---- Rimehold, the reach's village: the same plan as the other villages (so every NPC role works the same), its road turned toward the pass. It stands on the Reach's hub, moved as one piece:
+   the village disc's mean ground is its height (rawHeight flattens a pad round it, terrain-height.js). */
+function northHubH(x,z,R){
+  let sum=0,c=0;
+  for(let rr=0;rr<=(R||VR);rr+=10) for(let j=0;j<8;j++){ const b=j/8*TAU; sum+=baseHeight(x+Math.sin(b)*rr,z+Math.cos(b)*rr); c++; }
+  return sum/c;
 }
+function findHoarVillage(){ const [x,z]=WA_HUBS.hoar; return {x,z,h:northHubH(x,z),score:0}; }
 const VIL3=(()=>{ const v=findHoarVillage(); return layoutVillage(v,{seed:9393,ent:Math.atan2(PASS.x-v.x,PASS.z1-v.z)}); })();
 VIL3.name='Rimehold';
 const VILS=[VIL,VIL2,VIL3];
@@ -50,37 +46,44 @@ const CIRCLES=[
   {id:'hanami',name:'Hanami',land:'The Sakura Vale',lv:'16-25',V:VIL2,open:g=>g.east>=2,hint:'Walk to Hanami on the far side of the bridge first'},
   {id:'rimehold',name:'Rimehold',land:'The Hoarfrost Reach',lv:'22-30',V:VIL3,open:g=>g.north>=2,hint:'Walk into Rimehold through Frostgate Pass first'}];
 
-/* ---- zones: seeds on a 3 x 3 grid north of Rimehold. key null = Rimehold's snowfields (no monsters). The route winds:
-   22, 23, 24 eastward, 25, 26 (the Rimeking's Hall), 27 back west, then 28, 29, 30 eastward again */
+/* ---- zones: the atlas's zones 22-30 of the Reach (WA_ZONES, land 'hoar'; the route winds as the atlas has it: 22 at Rimehold, 23, 24 east, 25, 26 (the Rimeking's Hall), 27 back west, then 28, 29, 30).
+   A zone is a circle for camps (zonePoint: x, z, R) around the atlas's heart spot of the zone (WA_SPOTS, heart), cut to the atlas's own cell by hoarZoneAt. */
 const HOAR_ZONE_NAMES={22:'Rimewood Edge',23:'Whitebirch Flats',24:'Frostmere Shore',25:"Hunters' Wold",26:"The Rimeking's Hall",27:'Glacier Tongue',28:'Blizzard Steppe',29:'Bonefrost Barrow',30:"The Wyrm's Glacier",boss26:"The Rimeking's Hall",boss30:"The Wyrm's Nest"};
-const HOAR_SEEDS=[
-  {key:null,x:VIL3.x,z:VIL3.z},
-  {key:22,x:585+RDX,z:-705},{key:23,x:735+RDX,z:-705},{key:24,x:885+RDX,z:-705},
-  {key:25,x:885+RDX,z:-805},{key:26,x:735+RDX,z:-805},{key:27,x:585+RDX,z:-805},
-  {key:28,x:585+RDX,z:-905},{key:29,x:735+RDX,z:-905},{key:30,x:885+RDX,z:-905}];
-for(const s of HOAR_SEEDS) if(s.key!==null) ZONES.push({key:'h'+s.key,ring:3,vale:true,hoar:true,x:s.x,z:s.z,R:75,name:HOAR_ZONE_NAMES[s.key],level:s.key});
-const hoarWarp=(x,z)=>[x+noise2(x*0.009+3,z*0.009-8)*24,z+noise2(x*0.009-11,z*0.009+5)*24];
-function hoarSeeds(x,z){
-  let a=null,b=null,da=1e18,db=1e18;
-  for(const s of HOAR_SEEDS){ const d=(x-s.x)*(x-s.x)+(z-s.z)*(z-s.z); if(d<da){ b=a; db=da; a=s; da=d; } else if(d<db){ b=s; db=d; } }
-  return [a,b];
+const HOAR_ZN=new Map();   // the atlas's zone id -> its ZONES entry
+for(let k=22;k<=30;k++){
+  const Z=waZoneOfKey('hoar',k), H=WA_SPOTS.find(s=>s.land==='hoar'&&s.zone===k&&s.heart)||Z;
+  const zn={key:'h'+k,ring:3,vale:true,hoar:true,x:Math.round(H.x),z:Math.round(H.z),R:Math.round(Math.sqrt(Z.area/Math.PI)*0.8),name:HOAR_ZONE_NAMES[k],level:k};
+  ZONES.push(zn); HOAR_ZN.set(Z.id,zn);
 }
 function hoarZoneAt(x,z){
-  if(Math.min(x-borderXN(z),WX1-x,z-WZ0)<44) return null;   // the walls and the cliffs
   for(const A of ARENAS) if(A.hoar&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;
-  const [wx,wz]=hoarWarp(x,z), s=hoarSeeds(wx,wz)[0]; return s.key===null?null:ZONES.find(zn=>zn.hoar&&zn.key==='h'+s.key);
+  return HOAR_ZN.get(waZoneId(x,z))||null;
 }
-function hoarRidge(x,z){
-  const e=Math.min(x-borderXN(z),WX1-x,z-WZ0); if(e<44) return 0;
-  const [wx,wz]=hoarWarp(x,z), [a,b]=hoarSeeds(wx,wz), ux=b.x-a.x, uz=b.z-a.z, L=Math.hypot(ux,uz);
-  const da=Math.hypot(wx-a.x,wz-a.z), dbb=Math.hypot(wx-b.x,wz-b.z), d=(dbb*dbb-da*da)/(2*L);   // distance to the wall between a and b
-  if(d>=9) return 0;
-  const mx=(a.x+b.x)/2, mz=(a.z+b.z)/2, along=Math.abs((wx-mx)*(-uz/L)+(wz-mz)*(ux/L));   // how far along the wall from the pass
-  const h=(1-smoothstep(1.5,9,d))*smoothstep(5,12,along)*smoothstep(44,74,e)*smoothstep(borderZ(x)-70,borderZ(x)-110,z)*smoothstep(4,12,iceDist(x,z));   // (none across the frozen lakes)
-  return h<=0?0:h*RIDGE_H*(0.75+0.5*(noise2(x*0.035+7,z*0.035-3)*0.5+0.5));
-}
+const hoarRidge=()=>0;   // (retired: a zone border is the atlas ground's own low ridge, ravine or broken band, world-atlas-ground.js; zones.js still asks)
 
-/* ---- boss arenas: flat clearings. ARENA26 (Ymrik the Rimeking, in the ice hall), ARENA30 (Vetrmaw the frost wyrm, at the wreck) */
-const ARENA26=Object.assign(flatSpot(735+RDX,-795,30),{r:20,key:'boss26',name:"The Rimeking's Hall",hoar:true});
-const ARENA30=Object.assign(flatSpot(885+RDX,-895,30),{r:20,key:'boss30',name:"The Wyrm's Nest",hoar:true});
-for(const A of [ARENA26,ARENA30]){ A.zone={key:A.key,ring:3,vale:true,hoar:true,x:A.x,z:A.z,R:20,name:A.name,level:A===ARENA26?26:30,boss:true}; ZONES.push(A.zone); ARENAS.push(A); }
+/* ---- boss arenas: flat clearings at the atlas's bosses (northArena also builds the Greyspine's two, greyzones.js). ARENA26 (Ymrik the Rimeking, in the ice hall), ARENA30 (Vetrmaw the frost wyrm, at the wreck).
+   The atlas's ground at a boss anchor is rugged, and rawHeight flattens a pad (radius 20, blended out to 42 m, terrain-height.js) to the arena's height: so the pad is laid within 22 m of the anchor (the anchor stays
+   on the flat) at the spot and height (within 6 m of the disc's mean ground) at which the atlas's road to the boss, once flattened, stays gentlest (its steepest step: atlas-smoke walks it). ---- */
+function northArenaSpot(P){
+  const rp=[];   // every atlas road within 85 m of the anchor (the boss's own and any that pass by), [x, z, ground, index in its road + 1e6 * the road's number]
+  WA_ROADS.forEach((road,ri)=>road.pts.forEach((q,i)=>{ if(Math.hypot(q[0]-P.x,q[1]-P.z)<85) rp.push([q[0],q[1],baseHeight(q[0],q[1]),i+ri*1e6]); }));
+  let best=null;
+  for(let dx=-22;dx<=22;dx+=3) for(let dz=-22;dz<=22;dz+=3){
+    const d0=Math.hypot(dx,dz); if(d0>22) continue;
+    const x=P.x+dx, z=P.z+dz, gc=baseHeight(x,z), hm=northHubH(x,z,20); if(gc<4||waWaterDist(x,z)<45||[...WA_SPOTS,...WA_ENTRANCES,...WA_GATES,...WA_POIS].some(o=>{ const d=Math.hypot(o.x-x,o.z-z); return o!==P&&d>=23&&d<45; })) continue;   // (every other anchor is on the flat or clear of the pad's rim)
+    for(const dh of [0,-2,2,-4,4,-6,6,-8,8,-10,10]){
+      const h=hm+dh; if(Math.abs(h-gc)>=9) continue;
+      let rs=0, pm=null;
+      for(const q of rp){ const m=lerp(q[2],h,smoothstep(42,22,Math.hypot(q[0]-x,q[1]-z)));
+        if(pm&&q[3]===pm[1]+1) rs=Math.max(rs,Math.abs(m-pm[0])/Math.hypot(q[0]-pm[2],q[1]-pm[3])); pm=[m,q[3],q[0],q[1]]; }
+      const score=rs+0.01*Math.abs(dh)+0.004*d0; if(!best||score<best.score) best={x,z,h,score,rs};
+    }
+  }
+  return best||{x:P.x,z:P.z,h:northHubH(P.x,P.z,20)};
+}
+function northArena(poi,key,name,level,land){
+  const P=WA_POIS.find(p=>p.name===poi), S=northArenaSpot(P), A={x:S.x,z:S.z,h:S.h,r:20,key,name}; A[land]=true;
+  A.zone={key,ring:3,vale:true,x:A.x,z:A.z,R:20,name,level,boss:true}; A.zone[land]=true; ZONES.push(A.zone); ARENAS.push(A); return A;
+}
+const ARENA26=northArena("The Rimeking's Hall",'boss26',"The Rimeking's Hall",26,'hoar');
+const ARENA30=northArena("The Wyrm's Nest",'boss30',"The Wyrm's Nest",30,'hoar');

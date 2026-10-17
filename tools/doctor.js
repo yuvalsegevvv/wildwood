@@ -14,7 +14,7 @@ line(fs.existsSync(path.join(ROOT,'node_modules','pg')),false,'pg (only for a Po
 line(run('python3 -c "import numpy, PIL"')!==null,false,'numpy + pillow (tools/model-preview.js, monster-preview.js)','pip install numpy pillow');
 const has=m=>{ for(const b of [ROOT,'/opt/node-tools','/usr/lib','/usr/local/lib',run('npm root -g')||'']){ try{ require.resolve(m,{paths:[b,path.join(b,'node_modules')]}); return true; }catch(e){} } return false; };
 line(has('eslint'),false,'eslint (npm run lint)','npm i --no-save eslint');
-line(has('playwright'),false,'playwright (glasswell-smoke, city-preview.js, world-map-bake.js)','npm i --no-save playwright   (and a Chromium: PLAYWRIGHT_BROWSERS_PATH)');
+line(has('playwright'),false,'playwright (glasswell-smoke, city-preview.js)','npm i --no-save playwright   (and a Chromium: PLAYWRIGHT_BROWSERS_PATH)');
 // dist/ older than the sources?
 const newest=dir=>{ let t=0; for(const f of fs.readdirSync(dir,{withFileTypes:true})){ const p=path.join(dir,f.name); t=Math.max(t,f.isDirectory()?newest(p):fs.statSync(p).mtimeMs); } return t; };
 const page=path.join(ROOT,'dist','wildwood.html');

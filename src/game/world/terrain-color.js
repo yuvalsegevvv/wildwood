@@ -39,22 +39,20 @@ function greyColor(x,z,h,g,out){
   out.lerp(COL.dirt,smoothstep(0.72,0.92,n2)*0.35);
   out.lerp(COL.scree,smoothstep(72,118,h+n3*14)*0.8+smoothstep(0.45,0.8,g)*0.35);
   out.lerp(n1<0.5?COL.rock:COL.rockHi,steep*0.9);
-  { const bad=smoothstep(GW0+210,GW0+70,x)*smoothstep(100,62,h)*smoothstep(-780,-650,z);
-    if(bad>0){ out.lerp(COL.desert,bad*(1-steep)*0.45); out.lerp(COL.redRock,bad*(0.25+0.6*steep)); } }
-  out.lerp(COL.snow,smoothstep(128-(z<-860?10:0)+n1*18,142-(z<-860?10:0)+n1*18,h)*(1-smoothstep(0.85,1.4,g)));
+  out.lerp(COL.snow,smoothstep(112-(z<-860?10:0)+n1*14,128-(z<-860?10:0)+n1*14,h)*(1-smoothstep(0.85,1.4,g)));   // (the snowline fits the atlas's peaks: the spine rises to 150-187 m, its crowns are white from about 115 m)
   { const d=Math.hypot(x-GREY_HM.x,z-GREY_HM.z); if(d<GREY_HM.r+4) out.lerp(COL.gravel,smoothstep(GREY_HM.r+4,GREY_HM.r-6,d)*0.65); }
   { const wd=waterSurf(x,z)-h; if(wd>-0.9) out.lerp(wd>0.3?COL.mud:COL.gravel,smoothstep(-0.9,0.5,wd)*0.85); }   // wet banks and the beds of the tarns and the river
   { const c=coastDist(x,z); if(c<50) out.lerp(COL.shingle,smoothstep(46,32,c)*(1-smoothstep(3.2,5.5,h))*0.9); }   // (the northern sea's beaches)
-  { const bx=borderXN(z), e=smoothstep(bx-46,bx-4,x); if(e>0){ hoarColor(x,z,h,g,_gc); out.lerp(_gc,e*0.7); } }   // the Hoarfrost's snow over the east crest
   return out.multiplyScalar(0.92+n2*0.16);
 }
-const _hc=new THREE.Color(), _gc=new THREE.Color();
-function terrainColorBase(x,z,h,g,out,noCut){   // (terrainColor, in zone-props.js, adds the monster zones' ground tint on top)   // noCut: colour as if the tunnel's cutting were not there (its lid)
-  const bx=borderX(z), bz=borderZ(x), bxc=z<bz+8?borderXN(z):bx, hf=x>bxc+2?smoothstep(bz+8,bz-56,z):0;   // the north crest (the vale's and the forest's east of the Greyspine's wall), over which the ground turns to the Hoarfrost's
-  if(hf>=1) return dgEntTint(x,z,hoarColor(x,z,h,g,out));   // dungeons: the Barrow Door's patch of trodden snow
-  const gf=x<bxc?smoothstep(bz+8,bz-56,z):0;   // the home forest's north crest west of the Greyspine's wall, over which the ground turns to the Greyspine's
-  if(gf>=1){ const lk=x<GW0+30?smoothstep(GW0+30,GW0-30,x):0;   // the Gloamhorn west of the neck (terrain-color-gloam.js)
-    if(lk>=1) return dgEntTint(x,z,gloamColor(x,z,h,g,out)); if(lk>0){ greyColor(x,z,h,g,out); gloamColor(x,z,h,g,_hc); return dgEntTint(x,z,out.lerp(_hc,lk)); } return dgEntTint(x,z,greyColor(x,z,h,g,out)); }   // dungeons: the Old Adit's patch of coal dust
+const _hc=new THREE.Color(), _nb=new THREE.Color();
+/* The ground's colour is chosen by the atlas's land (waLandId): the home forest and the vale (landColor 0 / 1 below), the Reach, the Greyspine, the Gloamhorn, the Sunscar (and the closed land south of it).
+   Near a land border (within 20 m of the crest) the colour of the land on the other side is mixed in, half and half at the border itself, so the two meet without a line. */
+function landColor(l,x,z,h,g,out,noCut){
+  if(l===2) return hoarColor(x,z,h,g,out);
+  if(l===3) return greyColor(x,z,h,g,out);
+  if(l===5) return gloamColor(x,z,h,g,out);
+  if(l>=4) return sunColor(x,z,h,g,out);
   const n1=noise2(x*0.02,z*0.02)*0.5+0.5, n2=noise2(x*0.11+5,z*0.11)*0.5+0.5;
   out.copy(COL.lush).lerp(COL.dry, smoothstep(0.45,0.85,n1)*0.8);
   out.lerp(COL.floor, smoothstep(0.45,0.9,forestDensity(x,z))*0.75);
@@ -63,19 +61,11 @@ function terrainColorBase(x,z,h,g,out,noCut){   // (terrainColor, in zone-props.
   if(h<-0.2) out.lerp(COL.mud, clamp(-h/2));
   { const c=coastDist(x,z); if(c<50) out.lerp(COL.beach, smoothstep(46,32,c)*(1-smoothstep(3.2,5.5,h))); }
   out.lerp(COL.rock, smoothstep(0.7,1.2,g));
-  // the Sunwall (home forest, west): red cliffs, a sandy plateau on top, dry scree at its foot, no snow
-  const cl=x<bx?sunwallLine(z):0, sw=x<bx?smoothstep(cl+20,cl,x-HX0):0;
-  if(x<bx&&x-HX0<cl+70){
-    out.lerp(COL.dirt2, smoothstep(cl+68,cl+12,x-HX0)*0.35*(1-smoothstep(0.7,1.1,g)));
-    out.lerp(COL.redRock, Math.max(sw*smoothstep(0.45,0.9,g), smoothstep(14,9,Math.abs(z-REDGATE_Z))*smoothstep(REDGATE_CL+48,REDGATE_CL+28,x-HX0)*0.85));
-    out.lerp(COL.desert, sw*(1-smoothstep(0.35,0.6,g))*smoothstep(40,48,h));
-  }
-  out.lerp(COL.rockHi, smoothstep(26,36,h)*0.7*(1-sw));
-  // snow: lower on the vale's northern slopes, and it clings to steeper ground there (the Hoarfrost is beyond them)
-  { const hn=x>bx&&z-bz<80, lo=hn?34:42; out.lerp(COL.snow, smoothstep(lo,lo+10,h)*(1-(hn?smoothstep(1.4,2.0,g):smoothstep(0.9,1.4,g)))*(1-sw)); }
+  out.lerp(COL.rockHi, smoothstep(26,36,h)*0.7);
+  out.lerp(COL.snow, smoothstep(42,52,h)*(1-smoothstep(0.9,1.4,g)));   // (snow on the high ground of the forest and the vale)
   { const da=arenaDist(x,z); if(da<ARENA.r+3) out.lerp(COL.arena,smoothstep(ARENA.r+3,ARENA.r-3,da)*0.7); }
-  if(x>bx-30){   // the vale: fresher green, the forest floor dusted pink with fallen petals (it thins out over the mountains between the lands, so there is no line to see)
-    const v=smoothstep(bx-30,bx+70,x)*(1-smoothstep(0.7,1.2,g))*(1-smoothstep(24,34,h));
+  if(l===1){   // the vale: fresher green, the forest floor dusted pink with fallen petals
+    const v=(1-smoothstep(0.7,1.2,g))*(1-smoothstep(24,34,h));
     out.lerp(COL.valeLush,v*0.45*(1-smoothstep(0.45,0.85,n1)));
     out.lerp(COL.petal,v*smoothstep(0.35,0.8,forestDensity(x,z))*0.45);
   }
@@ -86,11 +76,16 @@ function terrainColorBase(x,z,h,g,out,noCut){   // (terrainColor, in zone-props.
     const pa=pathAmt(x,z); if(pa>0) out.lerp(COL.dirt2,pa*0.9);
     const pz=plazaAmt(x,z); if(pz>0) out.lerp(COL.gravel,pz*0.95);
   }
-  if(hf>0){ hoarColor(x,z,h,g,_hc); out.lerp(_hc,hf); }
-  if(gf>0){ greyColor(x,z,h,g,_hc); out.lerp(_hc,gf); }
-  { const sf=smoothstep(HX0-12,HX0-72,x)*(1-gf); if(sf>0){ sunColor(x,z,h,g,_hc); out.lerp(_hc,sf); } }   // the Sunscar west of the Sunwall (terrain-color-sun.js)
-  dgEntTint(x,z,out);   // dungeons: the ground round the Elder and the Falls Door
   out.multiplyScalar(0.92+n2*0.16);
   return out;
+}
+function terrainColorBase(x,z,h,g,out,noCut){   // (terrainColor, in zone-props.js, adds the monster zones' ground tint on top)   // noCut: colour as if the tunnel's cutting were not there (its lid)
+  const l=waLandId(x,z), d=waLandBorderDist(x,z);
+  landColor(l,x,z,h,g,out,noCut);
+  if(d<20){   // the land on the other side of the crest, found by looking round for a different land id
+    let b=l; for(let r=d+10;r<=d+40&&b===l;r+=15) for(let k=0;k<8;k++){ const a=k*0.7854, q=waLandId(x+Math.sin(a)*r,z+Math.cos(a)*r); if(q!==l){ b=q; break; } }
+    if(b!==l){ landColor(b,x,z,h,g,_nb,noCut); out.lerp(_nb,0.5*smoothstep(20,0,d)); }
+  }
+  return dgEntTint(x,z,out);   // dungeons: the ground round the Elder, the Falls Door, the Barrow Door, the Old Adit
 }
 

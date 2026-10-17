@@ -3,7 +3,7 @@
    The land is gothic and dim: a rim of last light on the western horizon, a low moon, stars (night ~0.85), a short view (far) so the lighthouse beam and the lamps carry.
    Rain and gales are allowed on top (weather.js); no snow falls here (greySnowAmt stays 0 at the plateau's height). Tested by tools/gloamhorn-smoke.js (the grep and the geometry). */
 const GLOAM_SKY={k:0,sun:new THREE.Color(0x6a5a9a),sky:new THREE.Color(0x0c0a1e),hor:new THREE.Color(0x4a2a58),fog:new THREE.Color(0x1c1830),hs:new THREE.Color(0x3a3470),hg:new THREE.Color(0x0c0a14),cloud:new THREE.Color(0x2a2244)};
-function gloamDepth(x,z){ return z<borderZ(x)?smoothstep(GW0+70,GW0-50,x):0; }   // 0 in the Greyspine, 1 inside the Gloamhorn: a 120 m blend over the neck
+function gloamDepth(x,z){ const k=smoothstep(0,60,waLandBorderDist(x,z)); return inGloam(x,z)?0.5+0.5*k:0.5*(1-k); }   // 0 in the Greyspine, 1 inside the Gloamhorn: a 120 m blend over the neck
 function gloamTint(s,dt){
   const want=gloamDepth(camera.position.x,camera.position.z);
   GLOAM_SKY.k+=(want-GLOAM_SKY.k)*Math.min(1,(dt||0.016)*2.5); if(Math.abs(want-GLOAM_SKY.k)<0.002) GLOAM_SKY.k=want;

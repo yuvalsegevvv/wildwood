@@ -48,8 +48,8 @@ const NODE_PLAN=[[22,'frostbloom',6],[22,'snowmoss',4],[22,'frostpine',4],[22,'r
   [25,'rimeore',4],[25,'frostpine',3],[25,'snowmoss',3],
   [26,'rimeore',3],[26,'frostpine',2],[26,'snowmoss',2],[27,'rimeore',3],[27,'frostpine',2],[27,'snowmoss',2],
   [28,'rimeore',3],[28,'frostpine',2],[28,'snowmoss',2],[29,'rimeore',3],[29,'frostpine',2],[29,'snowmoss',2],[30,'rimeore',3],[30,'frostpine',2],[30,'snowmoss',2]];
-// the four dungeon doors (shared/dungeons.js loads after this file: tools/dungeons-smoke.js checks these stay equal to DG_ENTRANCES): no node within 22 m of one
-const NODE_KEEPOUT=[[244,148],[826,82],[368,-894],[316+GDX,-692]];
+// the four older dungeon doors, from the atlas (shared/dungeons.js loads after this file: tools/dungeons-smoke.js checks these stay equal to DG_ENTRANCES): no node within 22 m of one
+const NODE_KEEPOUT=[[233,-39],[1081,82],[968,-886],[-65,-553]];   // the four older dungeons' doors (DG_ENTRANCES hollowroots, jadesprings, bonefrostbarrow, blackseam in shared/dungeons.js, which loads after this file: dungeons-smoke checks the two lists agree; the Sunscar's and the Gloamhorn's doors are kept clear by sunKeepOut / gloamKeepOut)
 /* YOUR HOME (version 3): a private plot reached from any Wayfarers' Lodge (server/professions.js homeP), standing in a clearing near the first village. Every player has a copy of it: whoever is inside
    sees and is seen by no one else (server/professions.js homeSnapS), monsters leave them alone, and the nodes are the same on the client and the server,
    but a node you take is taken for you alone (server/professions.js keeps p.hback) and comes back after HOME_RESPAWN seconds, so the yard is never picked clean by someone else. It holds one vein
@@ -68,7 +68,7 @@ function homeYardPlan(cx,cz){   // the 18 nodes around a centre: ore on the inne
   return out;
 }
 const HOME_YARD=(()=>{   // the flattest dry clearing 35-100 m from the first village's centre where all 18 nodes fit, off the road, the river and the coast
-  const V0=VILS[0], bad=(x,z)=>rawHeight(x,z)<2.4||riverDist(x,z)<9||coastDist(x,z)<42||nearRoad(x,z,5)||vDist(x,z)<VR+12||arenaDist(x,z)<34||zoneRidge(x,z)>0.6||NODE_KEEPOUT.some(d=>Math.hypot(d[0]-x,d[1]-z)<30);
+  const V0=VILS[0], bad=(x,z)=>rawHeight(x,z)<2.4||waWaterDist(x,z)<12||coastDist(x,z)<42||nearRoad(x,z,5)||vDist(x,z)<VR+12||arenaDist(x,z)<34||waBorderDist(x,z)<12||NODE_KEEPOUT.some(d=>Math.hypot(d[0]-x,d[1]-z)<30);
   let best=null;
   for(let r=VR+36;r<=VR+100;r+=8) for(let k=0;k<24;k++){
     const a=k/24*TAU, cx=V0.x+Math.sin(a)*r, cz=V0.z+Math.cos(a)*r, plan=homeYardPlan(cx,cz);
@@ -85,17 +85,17 @@ const NODES=(()=>{
   const apart=(x,z)=>!out.some(o=>Math.hypot(o.x-x,o.z-z)<9);
   const put=(rng,zn,kind,good,need)=>{ for(let t=0;t<240;t++){   // (240 tries: a zone that loses ground to a coast still gets its nodes)
     const [x,z]=zonePoint(zn,rng()-0.5,rng());
-    if(zoneAt(x,z)!==zn||!good(x,z)||coastDist(x,z)<42||nearRoad(x,z,5)||vDist(x,z)<VR+14||arenaDist(x,z)<34||zoneRidge(x,z)>0.6||NODE_KEEPOUT.some(d=>Math.hypot(d[0]-x,d[1]-z)<22)||!flat(x,z)||!apart(x,z)) continue;
+    if(zoneAt(x,z)!==zn||!good(x,z)||coastDist(x,z)<42||waWaterDist(x,z)<8||waBorderDist(x,z)<10||waAnchorDist(x,z)<14||nearRoad(x,z,5)||vDist(x,z)<VR+14||arenaDist(x,z)<34||NODE_KEEPOUT.some(d=>Math.hypot(d[0]-x,d[1]-z)<22)||!flat(x,z)||!apart(x,z)) continue;
     out.push({i:out.length,kind,x,z,zone:zn.key,need:need===undefined?tierFor(zn.level):need}); return; } };
   // the Hoarfrost Reach (first, so its nodes keep their numbers)
   { const rng=mulberry32(5150);
-    for(const [lv,kind,n] of NODE_PLAN){ const zn=ZONES.find(z=>z.key==='h'+lv); for(let k=0;k<n;k++) put(rng,zn,kind,(x,z)=>rawHeight(x,z)>=30&&iceDist(x,z)>=5&&!inPass(x,z,6)); } }
+    for(const [lv,kind,n] of NODE_PLAN){ const zn=ZONES.find(z=>z.key==='h'+lv); for(let k=0;k<n;k++) put(rng,zn,kind,(x,z)=>rawHeight(x,z)>=waterSurf(x,z)+2.2); } }   // (dry ground; put keeps 8 m off the Reach's lakes and ice)
   // the home forest (ring zones and the three edge zones) and the Sakura Vale: 2 ore, 2 trees and each herb of the land, by the zone's gear tier
   for(const [land,rng] of [[0,mulberry32(5151)],[1,mulberry32(5152)]])
     for(const zn of ZONES){
       if(zn.boss||zn.arena||zn.hoar||zn.grey||zn.sun||zn.gloam||!!zn.vale!==!!land) continue;   // (the Greyspine has no nodes yet: it wants its own ore, logs and herbs)
       const t=Math.min(tierFor(zn.level),land?4:3), ore=ORE_GRADES[t][0], log=LOG_GRADES[t][0]==='frostwood'?'frostpine':LOG_GRADES[t][0];
-      const good=(x,z)=>rawHeight(x,z)>=2.2&&(land||riverDist(x,z)>8);   // (well above the waterline: the client's finer terrain must not dip a node under it)
+      const good=(x,z)=>rawHeight(x,z)>=waterSurf(x,z)+2.2;   // (well above the waterline, the sea's or a river's or lake's: the client's finer terrain must not dip a node under it)
       const n=!land&&zn.level<=14?3:2, herbA=HERB_LANDS[land][0][0], herbB=HERB_LANDS[land][1][0];   // the inner woods (copper, iron, silverstone) have only 4-5 zones each: a third vein and tree in each
       for(const kind of [...Array(n).fill(ore),...Array(n).fill(log),herbA,herbA,herbB]) put(rng,zn,kind,good,t);   // (the vale's best zone still gives hagane: no tier-6 tool needed)
     }

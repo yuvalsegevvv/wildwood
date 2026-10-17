@@ -27,7 +27,7 @@ How the sources fit together:
   src/vendor/           three.js r128 (MIT)
   assets/audio/music-*  background music: copied to dist/audio/ (hashed names), fetched lazily by the client
   assets/audio/*        every other .wav .mp3 .ogg .m4a file: small sounds, embedded as base64; playSample('file-name')
-  assets/img/*          .webp .png .jpg pictures, embedded as data URIs in window.WILDWOOD_IMG['file-name'] (the world map's art: tools/world-map-bake.js)
+  assets/img/*          .webp .png .jpg pictures, embedded as data URIs in window.WILDWOOD_IMG['file-name']
 
 The first line of every source file may be a header: //@ ... in JS, /*@ ... */ in CSS.
 Headers document the file and are left out of the built page.
