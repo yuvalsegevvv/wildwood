@@ -8,7 +8,7 @@ const CHAM_HERDS=LITE?2:3, CHAM_MAX=5;   // herds and goats per herd at most (th
 const CHAM={ready:false, shown:false, list:[], herds:[], mT:null, mH:null, mL:null};
 // where a chamois may stand: the high slopes and meadows above the trees (steep is fine: they climb), not the water, Highmark, the boss arenas or the glacier valley
 function chamoisOK(x,z){
-  if(!inGrey(x,z)||x<GW0+40||z<WZ0+40||z>borderZ(x)-90||x>borderXN(z)-30) return false;
+  if(waLandId(x,z)!==3||z<WZ0+40||waLandBorderDist(x,z)<30) return false;   // (the Greyspine itself, not the Gloamhorn, and off its borders)
   const h=getH(x,z); if(h<88||h>205||grad(x,z)>1.15) return false;
   return !greyWet(x,z,-1)&&vDist(x,z)>VIL4.r+30&&Math.hypot(x-ARENA29.x,z-ARENA29.z)>55&&Math.hypot(x-ARENA32.x,z-ARENA32.z)>55&&!inGlen(x,z,12);
 }

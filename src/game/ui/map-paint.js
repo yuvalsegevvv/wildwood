@@ -9,7 +9,7 @@ const MPC={   // the docs map's colours (docs/world-map.py COL and its symbols),
   seaShallow:[.62,.89,.88], seaMid:[.25,.64,.80], seaDeep:[.09,.30,.50], foam:[.93,.98,.98], lake:[.45,.76,.91], lakeDeep:[.19,.45,.62], beach:[.94,.86,.64],
   grass:[.37,.58,.26], grassDry:[.60,.64,.30], forest:[.21,.44,.17], plateau:[.91,.78,.49], redrock:[.78,.45,.30], vale:[.64,.75,.47], pink:[.91,.73,.78],
   snow:[.94,.96,.98], frost:[.80,.88,.94], tundra:[.68,.66,.55], iceRock:[.58,.63,.68], ice:[.66,.83,.94], needle:[.27,.44,.40],
-  alpine:[.46,.61,.35], scree:[.64,.62,.57], rock:[.60,.56,.50], rockHi:[.72,.69,.64], coast:[.17,.14,.09]
+  alpine:[.46,.61,.35], scree:[.64,.62,.57], rock:[.60,.56,.50], rockHi:[.72,.69,.64], coast:[.17,.14,.09], heath:[.44,.47,.45]
 };
 const _mpc=[0,0,0], _mph=[0,0,0];
 const mapPaintSet=(o,c)=>{ o[0]=c[0]; o[1]=c[1]; o[2]=c[2]; };
@@ -20,42 +20,49 @@ function mapPaintSea(c,o){
   if(t<0.4){ mapPaintSet(o,MPC.seaShallow); mapPaintMix(o,MPC.seaMid,t/0.4); } else { mapPaintSet(o,MPC.seaMid); mapPaintMix(o,MPC.seaDeep,(t-0.4)/0.6); }
   mapPaintMix(o,MPC.foam,smoothstep(15,20,c)*(1-smoothstep(21.5,23,c))*0.7);
 }
-// land: the lowland (grass, forest, the vale's pink, the Sunwall's red and the Sunscar's sand) with the Hoarfrost's and the Greyspine's grounds painted over it north of the north wall's crest
-// returns how much of the relief shading to keep (the plateau is drawn flat)
-function mapPaintLand(x,z,h,g,c,o){
-  let flat=0;
-  const bz=borderZ(x), bs=borderX(z), bxc=z<bz+8?borderXN(z):bs, crest=smoothstep(bz+8,bz-56,z), hf=smoothstep(bxc-10,bxc+10,x)*crest, gf=smoothstep(bxc+10,bxc-10,x)*crest;   // (the Greyspine | Reach wall is a crest: the two grounds blend over it)
+// land: painted by the atlas's land (waLandId): the home forest and the vale (grass, forest, the vale's pink), the Reach (snow), the Greyspine (alpine, scree, snow), the Gloamhorn (a dim heath), the Sunscar (sand and red rock);
+// within 18 m of a border the other side's painting is mixed in (half at the crest), so no line shows. Returns how much of the relief shading to keep (the Sunscar's mesas are drawn flat)
+const _mpa=[0,0,0];
+function mapPaintOne(l,x,z,h,g,o){
   const n1=noise2(x*0.02,z*0.02)*0.5+0.5, n3=noise2(x*0.045-30,z*0.045+12)*0.5+0.5, fd=forestDensity(x,z), steep=smoothstep(0.62,1.15,g);
-  if(hf<1&&gf<1){   // the lowland under it
-    const village=vDist(x,z)<VR+10, cl=x<bs?sunwallLine(z):0, pl=x<bs?smoothstep(HX0+4,HX0-14,x):0, sw=x<bs?smoothstep(cl+20,cl,x-HX0)*(1-pl):0;   // pl: the Sunscar plateau (flat sand: no relief, no cliffs but its rim)
-    mapPaintSet(o,MPC.grass); mapPaintMix(o,MPC.grassDry,smoothstep(0.45,0.85,n1)*0.55);
-    mapPaintMix(o,MPC.forest,smoothstep(0.5,0.85,fd)*0.8*(1-smoothstep(1.2,2,g))*(village?0:1));
-    if(x>bs-30){ const v=smoothstep(bs-30,bs+70,x)*(1-smoothstep(0.7,1.2,g))*(1-smoothstep(24,34,h)); mapPaintMix(o,MPC.vale,v*0.5); mapPaintMix(o,MPC.pink,v*smoothstep(0.35,0.8,fd)*0.5*(1-village)); }   // (the vale: fresher green, dusted pink)
-    if(x<bs&&x-HX0<cl+70){   // the Sunwall: sand on top, red cliffs; west of it the Sunscar's plateau, not built
-      mapPaintMix(o,MPC.plateau,Math.max(sw*(1-smoothstep(0.35,0.6,g))*smoothstep(36,46,h),pl*0.97));
-      mapPaintMix(o,MPC.redrock,smoothstep(0.58,0.85,n3)*0.2*pl);   // (a faint mottling so the flat mesa is not a blank)
-      mapPaintMix(o,MPC.redrock,Math.max(sw*smoothstep(0.45,0.9,g),smoothstep(14,9,Math.abs(z-REDGATE_Z))*smoothstep(REDGATE_CL+48,REDGATE_CL+28,x-HX0)*0.85));
-    }
-    mapPaintMix(o,MPC.rock,steep*0.75*(1-pl*0.8)); mapPaintMix(o,MPC.rockHi,smoothstep(26,40,h)*0.6*(1-sw)*(1-pl));
-    { const lo=x>bs&&z-bz<80?34:42; mapPaintMix(o,MPC.snow,smoothstep(lo,lo+12,h)*(1-steep*0.9)*(1-sw)*(1-pl)); }   // (snow on the rims: lower on the vale's northern slopes)
-    flat=pl;
+  if(l===2){   // the Hoarfrost Reach: snow with a blue cast, tundra showing through, a needle floor on its southern fringe, bare rock where steep, blue-white ice on the frozen lakes
+    mapPaintSet(o,MPC.snow); mapPaintMix(o,MPC.frost,n1*0.55); mapPaintMix(o,MPC.tundra,smoothstep(0.64,0.84,n3)*0.45*(1-smoothstep(0.9,1.4,g)));
+    mapPaintMix(o,MPC.needle,smoothstep(0.5,0.85,fd)*smoothstep(-700,-570,z)*0.45*(1-steep)); mapPaintMix(o,MPC.iceRock,smoothstep(0.75,1.3,g)*0.85);
+    { const id=iceDist(x,z); if(id<7) mapPaintMix(o,MPC.ice,smoothstep(7,-2,id)*0.95); }
+    return 1;
   }
-  if(hf>0){   // the Hoarfrost Reach: snow with a blue cast, tundra showing through, a needle floor on its southern fringe, bare rock where steep, blue-white ice on the frozen lakes
-    mapPaintSet(_mph,MPC.snow); mapPaintMix(_mph,MPC.frost,n1*0.55); mapPaintMix(_mph,MPC.tundra,smoothstep(0.64,0.84,n3)*0.45*(1-smoothstep(0.9,1.4,g)));
-    mapPaintMix(_mph,MPC.needle,smoothstep(0.5,0.85,fd)*smoothstep(-700,-570,z)*0.45*(1-steep)); mapPaintMix(_mph,MPC.iceRock,smoothstep(0.75,1.3,g)*0.85);
-    { const id=iceDist(x,z); if(id<7) mapPaintMix(_mph,MPC.ice,smoothstep(7,-2,id)*0.95); }
-    if(hf>=1) mapPaintSet(o,_mph); else mapPaintMix(o,_mph,hf);
+  if(l===3){   // the Greyspine: alpine meadow in the troughs, scree and bare rock on the slopes, snow above the snowline (about 115 m, 10 m lower in the north)
+    mapPaintSet(o,MPC.alpine); mapPaintMix(o,MPC.forest,smoothstep(0.5,0.9,fd)*0.4*(1-smoothstep(82,108,h+n3*12)));
+    mapPaintMix(o,MPC.grassDry,smoothstep(0.45,0.85,n1)*0.35*(1-smoothstep(55,95,h)));
+    mapPaintMix(o,MPC.scree,smoothstep(72,118,h+n3*14)*0.85+smoothstep(0.45,0.8,g)*0.3); mapPaintMix(o,n1<0.5?MPC.rock:MPC.rockHi,steep*0.9);
+    mapPaintMix(o,MPC.snow,smoothstep(112-(z<-860?10:0)+n1*14,128-(z<-860?10:0)+n1*14,h)*(1-smoothstep(0.85,1.4,g)));
+    return 1;
   }
-  if(gf>0){   // the Greyspine: alpine meadow in the troughs, scree and bare rock on the slopes, snow above the snowline (about 130 m, 10 m lower in the north), red badlands in the south-west
-    mapPaintSet(_mph,MPC.alpine); mapPaintMix(_mph,MPC.forest,smoothstep(0.5,0.9,fd)*0.4*(1-smoothstep(82,108,h+n3*12)));
-    mapPaintMix(_mph,MPC.grassDry,smoothstep(0.45,0.85,n1)*0.35*(1-smoothstep(55,95,h)));
-    mapPaintMix(_mph,MPC.scree,smoothstep(72,118,h+n3*14)*0.85+smoothstep(0.45,0.8,g)*0.3); mapPaintMix(_mph,n1<0.5?MPC.rock:MPC.rockHi,steep*0.9);
-    { const bad=smoothstep(GW0+210,GW0+70,x)*smoothstep(100,62,h)*smoothstep(-780,-650,z); if(bad>0){ mapPaintMix(_mph,MPC.plateau,bad*(1-steep)*0.5); mapPaintMix(_mph,MPC.redrock,bad*(0.25+0.6*steep)); } }
-    mapPaintMix(_mph,MPC.snow,smoothstep(128-(z<-860?10:0)+n1*18,142-(z<-860?10:0)+n1*18,h)*(1-smoothstep(0.85,1.4,g)));
-    if(gf>=1) mapPaintSet(o,_mph); else mapPaintMix(o,_mph,gf);
+  if(l===5){   // the Gloamhorn: a dim heath under a dusk sky, dark rock on its crags
+    mapPaintSet(o,MPC.heath); mapPaintMix(o,MPC.forest,smoothstep(0.5,0.9,fd)*0.3); mapPaintMix(o,MPC.scree,smoothstep(0.4,0.8,g)*0.5+smoothstep(60,110,h)*0.3); mapPaintMix(o,MPC.rock,steep*0.85);
+    return 1;
+  }
+  if(l>=4){   // the Sunscar: sand, red rock on the steep ground and the mesas' flanks
+    mapPaintSet(o,MPC.plateau); mapPaintMix(o,MPC.redrock,smoothstep(0.58,0.85,n3)*0.22+steep*0.8); mapPaintMix(o,MPC.rockHi,smoothstep(70,120,h)*0.3*(1-steep));
+    return 0.6;
+  }
+  const village=vDist(x,z)<VR+10;
+  mapPaintSet(o,MPC.grass); mapPaintMix(o,MPC.grassDry,smoothstep(0.45,0.85,n1)*0.55);
+  mapPaintMix(o,MPC.forest,smoothstep(0.5,0.85,fd)*0.8*(1-smoothstep(1.2,2,g))*(village?0:1));
+  if(l===1){ const v=(1-smoothstep(0.7,1.2,g))*(1-smoothstep(24,34,h)); mapPaintMix(o,MPC.vale,v*0.5); mapPaintMix(o,MPC.pink,v*smoothstep(0.35,0.8,fd)*0.5*(1-village)); }   // (the vale: fresher green, dusted pink)
+  mapPaintMix(o,MPC.rock,steep*0.75); mapPaintMix(o,MPC.rockHi,smoothstep(26,40,h)*0.6);
+  mapPaintMix(o,MPC.snow,smoothstep(42,54,h)*(1-steep*0.9));   // (snow on the high ground)
+  return 1;
+}
+function mapPaintLand(x,z,h,g,c,o){
+  const l=waLandId(x,z), d=waLandBorderDist(x,z);
+  let keep=mapPaintOne(l,x,z,h,g,o);
+  if(d<18){
+    let b=l; for(let r=d+10;r<=d+40&&b===l;r+=15) for(let k=0;k<8;k++){ const a=k*0.7854, q=waLandId(x+Math.sin(a)*r,z+Math.cos(a)*r); if(q!==l){ b=q; break; } }
+    if(b!==l){ const kb=mapPaintOne(b,x,z,h,g,_mpa), t=0.5*smoothstep(18,0,d); mapPaintMix(o,_mpa,t); keep=keep+(kb-keep)*t; }
   }
   mapPaintMix(o,MPC.beach,smoothstep(46,32,c)*(1-smoothstep(3.2,5.5,h)));   // (a beach where the land meets the sea)
-  return 1-flat*0.92;
+  return keep;
 }
 // the picture: terrain rows (a few a frame), then the coast line, the zones' dashed borders and the villages; then the little pictures, a few rows of their grid a frame
 function mapBuildStep(rows){
@@ -122,13 +129,13 @@ function mapPaintIcons(x,rows){
       const h=getH(px,pz); if(h<3) continue;
       const fd=forestDensity(px,pz); if(fd<0.42&&h<80) continue;   // (no peak is shown on low ground, no tree in the open)
       if(vDist(px,pz)<VR+8||arenaDist(px,pz)<ARENA.r+8||nearPath(px,pz,4)) continue;
-      const g=grad(px,pz)*2, hoar=inHoar(px,pz), grey=inGrey(px,pz), vale=inVale(px,pz)&&!hoar, ax=mapX(px), az=mapZ(pz);
-      if(h>108&&g>0.7&&(grey||(!hoar&&!vale&&h>90&&!inSun(px,pz)))){ if(roll<0.24) mapPaintPeak(x,ax,az,5+roll2*6); continue; }   // peaks: the Greyspine's, and the home forest's snowy north rim
+      const g=grad(px,pz)*2, hoar=inHoar(px,pz), grey=waLandId(px,pz)===3, vale=inVale(px,pz)&&!hoar, ax=mapX(px), az=mapZ(pz);
+      if(h>108&&g>0.7&&(grey||(!hoar&&!vale&&h>90&&!inSun(px,pz)&&!inGloam(px,pz)))){ if(roll<0.24) mapPaintPeak(x,ax,az,5+roll2*6); continue; }   // peaks: the Greyspine's, and the home forest's snowy north rim
       if(g>0.9||h>96||coastDist(px,pz)<44||waterSurf(px,pz)>h) continue;
       if(hoar){ if(fd>0.55&&pz>-700&&roll<0.55) mapPaintPine(x,ax,az,3.6,true); }
       else if(grey){ if(h<96&&fd>0.5&&roll<0.5) mapPaintPine(x,ax,az,3.4,false); }
       else if(vale){ if(fd>0.45&&roll<0.6) mapPaintTree(x,ax,az,3.2,roll2<0.62); }
-      else if(px>HX0+40&&fd>0.5&&roll<0.7) mapPaintTree(x,ax,az,3.3,false);
+      else if(!inSun(px,pz)&&!inGloam(px,pz)&&fd>0.5&&roll<0.7) mapPaintTree(x,ax,az,3.3,false);
     }
   }
 }

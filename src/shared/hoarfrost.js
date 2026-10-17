@@ -23,6 +23,8 @@ function northBarZ(x){
   const i=Math.round((x-HOAR_S0)/8), s=i>=0&&i<HOAR_S.length?HOAR_S[i]:null;
   return s===null?-1e9:s+11;
 }
+// how deep inside the Reach a point is, 0 at its border (with any other land) to 1 at w metres in, 0 outside it: the cold the weather, the sky and the ground colours fade in with
+function hoarDepth(x,z,w){ return waLandId(x,z)===2?smoothstep(0,w,waLandBorderDist(x,z)):0; }
 // keep trees, rocks and camps out of the pass (m = extra margin)
 function inPass(x,z,m){ return Math.abs(x-PASS.x)<PASS.w+6+(m||0) && z<PASS.z0+30+(m||0) && z>PASS.z1-30-(m||0); }
 
