@@ -95,7 +95,28 @@ const GAIT=[0,Math.PI,Math.PI,0];
 const W={ready:false};
 // the home forest's box (the atlas's land 0: shared/world-atlas.js): animals are scattered over it and kept to the forest itself
 const ANI_BOX=(()=>{ const b={x0:1e9,x1:-1e9,z0:1e9,z1:-1e9}; for(let z=WZ0;z<WZ1;z+=40) for(let x=WX0;x<WX1;x+=40) if(waLand(x,z)==='home'){ b.x0=Math.min(b.x0,x); b.x1=Math.max(b.x1,x); b.z0=Math.min(b.z0,z); b.z1=Math.max(b.z1,z); } return b; })();
-function groundOK(x,z){ return waLandId(x,z)===0 && waLandBorderDist(x,z)>24 && waCoast(x,z)>30 && vDist(x,z)>VIL.r+5 && getH(x,z)>0.7 && grad(x,z)<0.7; }
+let ANI_LAND=0;   // the land the player is in: the animals live in it and wear its colours (aniLandChanged), so every land has its own ground life
+function groundOK(x,z){ return waLandId(x,z)===ANI_LAND && waLandBorderDist(x,z)>24 && waCoast(x,z)>30 && vDist(x,z)>VIL.r+5 && getH(x,z)>0.7 && grad(x,z)<0.7 && (ANI_LAND!==2||iceDist(x,z)>3); }
+// [deer, fox, rabbit, bird] tints and the birds' size per land (home, vale, hoar, grey, sun, gloam): the same models read as sika, arctic fox and snow hare, sand hares and vultures, shadow foxes and ravens.
+// A tint above 1 lightens (the vertex colours are brown), so the Reach's animals come out pale.
+const ANI_LOOK=[
+  {deer:[1,1,1],fox:[1,1,1],rabbit:[1,1,1],bird:[1,1,1],birdK:1},
+  {deer:[1.05,0.82,0.78],fox:[0.85,0.85,0.95],rabbit:[1.15,1.05,1.05],bird:[1.5,1.5,1.5],birdK:1.15},
+  {deer:[1.9,1.9,1.95],fox:[2.5,2.5,2.6],rabbit:[2.1,2.1,2.2],bird:[0.45,0.45,0.52],birdK:1.15},
+  {deer:[0.95,0.98,1.1],fox:[1.15,1.15,1.2],rabbit:[1.2,1.2,1.25],bird:[0.6,0.6,0.66],birdK:1.6},
+  {deer:[1.4,1.28,0.95],fox:[1.25,1.22,0.9],rabbit:[1.35,1.3,0.95],bird:[0.32,0.28,0.28],birdK:2.1},
+  {deer:[0.5,0.5,0.62],fox:[0.38,0.38,0.52],rabbit:[0.45,0.45,0.55],bird:[0.2,0.2,0.26],birdK:1.25}
+];
+const _aniC=new THREE.Color();
+function aniTintMesh(m,rgb){ if(!m) return; _aniC.setRGB(rgb[0],rgb[1],rgb[2]); for(let i=0;i<m.count;i++) m.setColorAt(i,_aniC); if(m.instanceColor) m.instanceColor.needsUpdate=true; }
+function aniLandChanged(){   // the player is in another land: recolour everything and move the ground animals next to the player
+  const L=ANI_LOOK[ANI_LAND]||ANI_LOOK[0];
+  for(const m of [W.mDeerT,W.mDeerHD,W.mDeerHB,W.mDeerL]) aniTintMesh(m,L.deer);
+  for(const m of [W.mFox,W.mFoxL]) aniTintMesh(m,L.fox);
+  aniTintMesh(W.mRabbit,L.rabbit); aniTintMesh(W.mBird,L.bird); W.birdK=L.birdK;
+  for(const h of W.herds){ const c=findSpot(P.x,P.z,30,100); if(!c) continue; for(const a of W.deer) if(a.herd===h){ const p=findSpot(c[0],c[1],0,6)||c; a.x=p[0]; a.z=p[1]; a.state='idle'; a.timer=AR(0,2); a.speed=0; } }
+  for(const a of W.fox.concat(W.rabbit)){ const p=findSpot(P.x,P.z,25,95); if(p){ a.x=p[0]; a.z=p[1]; a.state='idle'; a.timer=AR(0,2); a.speed=0; } }
+}
 function findSpot(cx,cz,rmin,rmax,dirAng,spread){
   for(let i=0;i<40;i++){
     const a=dirAng===undefined?AR(0,TAU):dirAng+AR(-spread,spread), r=AR(rmin,rmax), x=cx+Math.sin(a)*r, z=cz+Math.cos(a)*r;
@@ -107,7 +128,8 @@ function newGround(kind,x,z,extra){
   return Object.assign({kind,x,z,y:getH(x,z),heading:AR(0,TAU),goal:0,speed:0,state:'idle',timer:AR(0,3),phase:AR(0,TAU),ph0:AR(0,TAU),hp:0,hy:0,pitch:0,s:1},extra||{});
 }
 function initAnimals(){
-  const A=buildAnimalGeos(); W.A=A;
+  const A=buildAnimalGeos(); W.A=A; W.birdK=1; W.landT=0;
+  { const l=waLandId(P.x,P.z); ANI_LAND=l>=0&&l<6?l:0; }
   const herds=LITE?4:7, rabbits=LITE?16:34, foxes=LITE?3:5, ducks=LITE?10:22, flocks=LITE?3:4, flies=LITE?26:56;
   W.deer=[]; W.herds=[];
   const fwd=Math.atan2(-Math.sin(P.yaw),-Math.cos(P.yaw)); // direction the player faces, in (sin,cos) angle form
@@ -161,7 +183,7 @@ function initAnimals(){
     W.flies.push({x:P.x+AR(-28,28),z:P.z+AR(-28,28),h:AR(0,TAU),sp:AR(0.8,1.6),ph:AR(0,TAU)});
     W.mFlyL.setColorAt(i,c); W.mFlyR.setColorAt(i,c);
   }
-  W.ready=true;
+  W.ready=true; if(ANI_LAND) aniLandChanged();
 }
 
 function chooseState(a){
@@ -233,6 +255,7 @@ function updateGround(a,dt){
 
 function updateAnimals(dt){
   if(!W.ready) return;
+  W.landT-=dt; if(W.landT<=0){ W.landT=0.5; const l=waLandId(P.x,P.z); if(l>=0&&l<6&&l!==ANI_LAND&&waLandBorderDist(P.x,P.z)>12){ ANI_LAND=l; aniLandChanged(); } }
   const night=envCur.night;
   // deer herds
   for(const h of W.herds){ h.cx=0; h.cz=0; h.n=0; h.far=true; }
@@ -290,7 +313,7 @@ function updateAnimals(dt){
       const heading=f.speed>0?Math.PI-th:-th;
       const gliding=!bat&&Math.sin(t*0.4+b.off*5)<-0.3;
       const flap=gliding?0.08:Math.sin(t*(bat?22:9)+b.off*7)*0.8;
-      baseM(_am,x,y,z,heading,0,0.3*Math.sign(f.speed),bat?0.8:1.3);
+      baseM(_am,x,y,z,heading,0,0.3*Math.sign(f.speed),bat?0.8:1.3*W.birdK);
       W.mBird.setMatrixAt(b.idx,_am);
       partM(_bm,_am,0.03,0,0,0,0,flap); W.mBWL.setMatrixAt(b.idx,_bm);
       partM(_bm,_am,-0.03,0,0,0,0,-flap); W.mBWR.setMatrixAt(b.idx,_bm);

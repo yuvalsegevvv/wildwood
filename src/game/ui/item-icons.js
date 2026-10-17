@@ -40,17 +40,25 @@ function itemIcon(it){
     if(L.top==='jacket') g+=`<path d="M16 7.5V27.5" stroke="${icoShade(c,0.65)}" stroke-width="1"/><circle cx="17.6" cy="12" r=".8" fill="#2a1e14"/><circle cx="17.6" cy="17" r=".8" fill="#2a1e14"/><circle cx="17.6" cy="22" r=".8" fill="#2a1e14"/>`;
     else if(L.top==='mail') g+=`<g fill="none" stroke="${icoShade(c,0.62)}" stroke-width=".7">${[10,13,16,19,22,25].map(y=>`<path d="M10.5 ${y}q1.5 1.4 3 0t3 0 3 0 3 0"/>`).join('')}</g>`;
     else g+=`<path d="M10 12.5Q16 15.5 22 12.5M10 18Q16 21 22 18M10 23Q16 25.5 22 23" fill="none" stroke="${icoShade(c,0.62)}" stroke-width="1"/><path d="M13 5.5Q16 9 19 5.5" fill="none" stroke="${icoShade(c,1.3)}" stroke-width="1"/>${t>=3?'<circle cx="16" cy="11" r="1.4" fill="#e0384a" stroke="#15120e" stroke-width=".6"/>':''}`;
+    if(t>=2) g+=[6.2,25.8].map(x=>`<ellipse cx="${x}" cy="10.4" rx="3.6" ry="2.7" fill="${icoShade(c,1.12)}" ${OUT}/><path d="M${x-2.4} 10.2Q${x} 8.8 ${x+2.4} 10.2" fill="none" stroke="${icoShade(c,1.4)}" stroke-width=".7"/>`).join('');   // plate pauldrons from the third tier
+    if(t>=4) g+=[4.6,27.4].map((x,i)=>`<path d="M${x-1.4} 8.4L${x+(i?1.2:-1.2)} 4.2L${x+1.4} 8.4z" fill="${icoShade(c,1.25)}" ${OUT}/>`).join('');   // spikes on them
+    if(t>=1) g+=`<rect x="9.5" y="22.4" width="13" height="2.4" fill="#2a1e14" ${OUT}/><rect x="14.6" y="22.2" width="2.8" height="2.8" rx=".6" fill="${t>=3?'#f0cd45':'#b8bec4'}" ${OUT}/>`;   // a belt
   } else if(it.slot==='bottom'){
     const L=ARMOR_LOOK.bottom[t], c=colHex(L.bottomColor);
     g=`<path d="M9 4.5H23L24.5 28H18L16 12.5L14 28H7.5Z" fill="${c}" ${OUT}/><path d="M9 4.5H23V7.5H9Z" fill="${icoShade(c,0.7)}" ${OUT}/>`;
     if(t===0) g+=`<rect x="14.8" y="4.8" width="2.4" height="2.4" fill="#c9a24a"/>`;
     else if(t===1) g+=`<g fill="none" stroke="${icoShade(c,0.62)}" stroke-width=".7">${[11,15,19,23].map(y=>`<path d="M9 ${y}q1.3 1.2 2.6 0t2.6 0M18.2 ${y}q1.3 1.2 2.6 0t2.6 0"/>`).join('')}</g>`;
     else g+=`<path d="M8.6 15H14.6M17.4 15H23.6M8.2 21H14.2M17.8 21H24" stroke="${icoShade(c,0.62)}" stroke-width="1.1"/><circle cx="11.5" cy="18" r="1.1" fill="${icoShade(c,1.3)}"/><circle cx="21" cy="18" r="1.1" fill="${icoShade(c,1.3)}"/>`;
+    if(t>=2) g+=[11.2,20.8].map(x=>`<ellipse cx="${x}" cy="17.4" rx="2.6" ry="2.2" fill="${icoShade(c,1.15)}" ${OUT}/>`).join('');   // knee plates
+    if(t>=3) g+=`<path d="M9.5 8H22.5" stroke="#f0cd45" stroke-width="1.4"/><path d="M7.8 26H13.4M18.6 26H24.2" stroke="${icoShade(c,0.55)}" stroke-width="1.6"/>`;   // a gilded waist and cuffs
   } else if(it.slot==='shoes'){
     const L=ARMOR_LOOK.shoes[t], c=colHex(L.shoeColor);
     g=`<path d="M8 4H18V18.5L25.5 20.5Q28.5 21.5 28.5 25V27.5H8Z" fill="${c}" ${OUT}/><path d="M8 25H28.5" stroke="${icoShade(c,0.55)}" stroke-width="1.6"/><path d="M8 8H18" stroke="${icoShade(c,0.7)}" stroke-width="1.2"/>`;
     if(t===0) g+=`<path d="M11 11H15M11 14H15" stroke="#e8dcc0" stroke-width=".8"/>`;
     else g+=`<path d="M18 18.5Q13 17 8 18.5" fill="none" stroke="${icoShade(c,1.3)}" stroke-width="1"/>${t>=3?'<circle cx="13" cy="12" r="1.2" fill="#e0384a" stroke="#15120e" stroke-width=".6"/>':''}`;
+    g+=`<path d="M25.6 21.4Q28.6 22.2 28.6 25.6" fill="none" stroke="${icoShade(c,1.35)}" stroke-width="1"/>`;   // a lit toe cap
+    if(t>=2) g+=`<rect x="7.4" y="9.4" width="11.2" height="2.2" fill="${icoShade(c,0.5)}" ${OUT}/><rect x="11.6" y="9.2" width="2.6" height="2.6" rx=".5" fill="#c9b27a" ${OUT}/><rect x="7.4" y="14.6" width="11.2" height="2" fill="${icoShade(c,0.5)}" ${OUT}/>`;   // straps and a buckle
+    if(t>=4) g+=`<path d="M8 12Q2.6 11.4 2.2 5.6Q6.4 8 8.6 8.4z" fill="${icoShade(c,1.3)}" ${OUT}/>`;   // a wing at the ankle
   }
   else if(it.kind==='tool') g=toolIconArt(it);
   else if(it.kind==='ring') g=ringIconArt(it);   // dungeons: the ring

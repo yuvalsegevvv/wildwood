@@ -233,6 +233,7 @@ game
   character/pose.js                  poseRig (walk, run, sit, talk, attacks) and animateHiker
   world/motes.js                     Floating pollen by day, fireflies by night
   world/petals.js                    Cherry petals drifting down around you in the Sakura Vale
+  world/ambient-life.js              Ambient life for every land: falling leaves in the forest, ice glints in the Reach, wind-blown snow on the Greyspine, blown sand and tumbleweeds on the Sunscar, drifting spirit lights in the Gloamhorn
   wildlife/animals.js                Deer, foxes, rabbits, ducks, birds/bats, butterflies
   wildlife/chamois.js                Chamois: small harmless herds of mountain goats on the Greyspine's alpine slopes (client-only dressing, built the first time you stand in the Greyspine; they graze, look up and bolt from you)
   world/gloam-sky.js                 The Gloamhorn's permanent dusk: gloamTint(s,dt) pulls the sky, fog and light toward a fixed violet twilight with a low moon, whatever the hour, blended over the border band

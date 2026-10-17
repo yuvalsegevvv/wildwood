@@ -199,6 +199,7 @@
     "character/pose.js",
     "world/motes.js",
     "world/petals.js",
+    "world/ambient-life.js",
     "wildlife/animals.js",
     "wildlife/chamois.js",
     "world/gloam-sky.js",
