@@ -18,13 +18,18 @@ function moWyrmWing(sd,p){
 MODELS.wyrm={
   geo(d,p){
     const G={}, W=[-1,1], boss=!!d.boss, R=[0.62,0.6,0.55,0.5,0.44,0.38,0.31,0.24], ice=(x,y,z,c)=>{ c.set(0xeaf8ff).multiplyScalar(0.8+0.3*clamp(y*0.5+0.5)); };
-    G.segs=R.map((r,i)=>{ const L=[moEll(r,r*0.92,r*1.25,0,0,0,(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.72+0.4*vn3(x*7,y*7,z*7)); if(y<-r*0.25) moTint(c,p.belly,0.85); if(Math.abs(Math.sin(z*7))<0.16&&y>-r*0.2) c.multiplyScalar(0.8); },null,moQ(14))];
+    const paintOn=(c,x,y,z,i)=>{   // what sets the kinds apart: pal.stone (chipped rock, a plain belly), pal.crack (glowing veins), pal.stripe (bars down the back)
+      if(p.stone&&moNoise(x,y,z,12)>0.7) c.multiplyScalar(0.68);
+      if(p.crack&&Math.abs(moNoise(x+i*3,y,z,4.5)-0.5)<0.03) c.set(p.crack);
+      if(p.stripe&&y>0&&Math.abs(Math.sin(x*16+i))<0.2) c.multiplyScalar(0.6); };
+    G.segs=R.map((r,i)=>{ const L=[moEll(r,r*0.92,r*1.25,0,0,0,(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.72+0.4*vn3(x*7,y*7,z*7)); if(y<-r*0.25) moTint(c,p.belly,p.stone?0.3:0.85); if(Math.abs(Math.sin(z*7))<0.16&&y>-r*0.2) c.multiplyScalar(0.8); paintOn(c,x,y,z,i); },null,moQ(14))];
+      if(p.sail) L.push(moEll(0.02,r*0.8,r*1.15,0,r*1.05,0,(x,y,z,c)=>{ c.set(p.wing).multiplyScalar(0.7+0.5*Math.abs(Math.sin(z*9+i))); },null,8));   // a sail of skin along the back
       for(const dz of [-0.25,0,0.25]) L.push(moCone([0,r*0.85,dz*r*2],[0,1,0.15],r*0.75*(dz===0?1.2:1),r*0.13,p.ridge,5));   // the back's spines
       if(boss&&i<6) for(const sd of W) L.push(moCone([sd*r*0.5,r*0.8,-r*0.3],[sd*0.6,1,0],r*1.1,r*0.12,ice,5),moCone([sd*r*0.8,r*0.5,r*0.2],[sd,0.7,0],r*0.7,r*0.09,ice,5));   // frost crystals
       return moMerge(L); });
     G.tailTip=moMerge([moEll(0.16,0.15,0.2,0,0,0.1,p.body,null,8),moEll(0.44,0.04,0.36,0,0,0.75,(x,y,z,c)=>{ c.set(p.ridge).multiplyScalar(0.8+0.3*clamp(z)); },null,8),moCone([0,0,0.9],[0,0,1],0.5,0.09,p.horn,5),
       ...[-1,1].map(sd=>moCone([0,sd*0.3,0.55],[0,sd,0.7],0.3,0.05,p.ridge,4))]);
-    const bone=(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.72+0.4*vn3(x*7,y*7,z*7)); if(y<-0.12) moTint(c,p.belly,0.7); };
+    const bone=(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.72+0.4*vn3(x*7,y*7,z*7)); if(y<-0.12) moTint(c,p.belly,p.stone?0.25:0.7); paintOn(c,x,y,z,9); };
     const head=[moEll(0.42,0.34,0.5,0,0,-0.3,bone,null,moQ(14)),moTube([[0,0.0,-0.55],[0,-0.05,-0.9],[0,-0.08,-1.22]],0.27,0.15,bone,8,true),moEll(0.25,0.08,0.52,0,-0.29,-0.75,p.belly,null,10),
       moEll(0.1,0.05,0.08,0,-0.06,-1.28,0x14202a,null,6)];
     for(const sd of W){

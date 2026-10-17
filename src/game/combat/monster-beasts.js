@@ -9,6 +9,10 @@ MODELS.boar={
     const body=[moLoftZ([{z:-0.76,rx:0.18,ry:0.2,y:0.68},{z:-0.55,rx:0.36,ry:0.38,y:0.68},{z:-0.28,rx:0.42,ry:0.42,y:0.68},{z:0.05,rx:0.38,ry:0.38,y:0.64},{z:0.32,rx:0.4,ry:0.4,y:0.62},{z:0.62,rx:0.3,ry:0.3,y:0.6},{z:0.8,rx:0.13,ry:0.13,y:0.6}],moQ(18),fur)];
     for(let i=0;i<11;i++){ const z=-0.55+i*0.115, sh=Math.exp(-Math.pow((z+0.3)/0.3,2)); body.push(moCone([0,backY(z)-0.05,z],[0,1,-0.25],(0.16+0.12*sh)*(p.spiky?1.7:1),0.05,dk,4)); }   // the bristle ridge
     body.push(moTube([[0,0.72,0.72],[0,0.86,0.86],[0.05,0.96,0.86],[0.07,0.97,0.78]],0.035,0.014,dk,5,true));   // the curled tail
+    if(p.sea){   // barnacles crusted on the back and flanks, and strands of kelp
+      for(let i=0;i<30;i++){ const z=-0.5+1.05*h3(i,1,1), x=(h3(i,2,2)-0.5)*0.7, y=0.66+0.37*Math.sqrt(Math.max(0,1-Math.pow(x/0.4,2)))-0.03; body.push(moCone([x,y,z],[x*3,1,0.1],0.11+0.08*h3(i,3,3),0.05+0.03*h3(i,4,4),(X,Y,Z,c)=>{ c.set(0xd2d4c4).multiplyScalar(0.78+0.3*clamp((Y-y)*9)); },5)); }
+      for(const sd of [-1,1]) body.push(moTube([[sd*0.12,backY(-0.1)-0.05,-0.1],[sd*0.34,0.9,0.0],[sd*0.46,0.62,0.12],[sd*0.48,0.36,0.2]],0.03,0.012,(x,y,z,c)=>{ c.set(0x3a6a3a).multiplyScalar(0.8+0.5*moNoise(x,y,z,8)); },5,true));
+    }
     if(p.shaggy) for(let i=0;i<16;i++){ const z=-0.5+(i>>1)*0.16, sd=i&1?1:-1; body.push(moCone([sd*0.34,0.5,z],[sd*0.3,-1,0],0.2,0.06,fur,4)); }
     G.body=moMerge(body);
     // the head, at the neck (pivot): skull, snout, nose disc, jaw, tusks, ears, eyes
@@ -19,7 +23,9 @@ MODELS.boar={
       head.push(moHorn([sd*0.1,-0.17,-0.52],[sd*0.2,0.35,-0.8],0.34,0.045,1.5,p.tusk,5,[0,1,0]),moCone([sd*0.06,-0.15,-0.66],[0,-1,-0.4],0.1,0.02,p.tusk,4));
       if(p.warthog) head.push(moHorn([sd*0.12,-0.1,-0.6],[sd*0.45,0.55,-0.65],0.62,0.06,1.6,p.tusk,5,[0,1,0]),moEll(0.06,0.05,0.05,sd*0.2,-0.04,-0.4,p.snout,null,6),moEll(0.05,0.045,0.05,sd*0.24,0.06,-0.28,p.snout,null,6));   // a warthog: long curved upper tusks and warts on the cheeks
       for(let i=0;i<3;i++) head.push(moCone([sd*0.2,-0.05-i*0.04,-0.28+i*0.06],[sd*0.6,-0.5,0.2],0.13,0.03,dk,4));   // cheek bristles
-      if(p.ram) head.push(moHorn([sd*0.2,0.2,-0.02],[sd,0.2,0.3],0.75,0.09,2.2,0xe8e4dc,7,[0,-0.4,-1]));
+      const hornC=(x,y,z,c)=>{ c.set(0xe8e2d4).multiplyScalar(0.85+0.2*moNoise(x,y,z,10)); if(Math.sin(Math.hypot(x-sd*0.17,y-0.2,z)*60)>0.45) c.multiplyScalar(0.7); };   // growth rings
+      if(p.ibex) head.push(moTube([[sd*0.13,0.22,-0.02],[sd*0.2,0.5,0.1],[sd*0.26,0.74,0.38],[sd*0.3,0.78,0.7]],0.075,0.02,hornC,7,true));   // an ibex: long horns swept back
+      else if(p.ram) head.push(moTube([[sd*0.17,0.2,-0.02],[sd*0.3,0.3,0.08],[sd*0.42,0.2,0.2],[sd*0.42,0.0,0.22],[sd*0.32,-0.08,0.1],[sd*0.25,-0.02,-0.06]],0.09,0.022,hornC,7,true));   // a ram's horns curl back, down and forward
     }
     G.head=moMerge(head);
     G.leg=moMerge([moLimb([[0,0.095],[0.3,0.075],[0.55,0.05],[0.85,0.04],[1,0.045]],0.42,1,1.05,(x,y,z,c)=>{ c.set(p.legs).multiplyScalar(0.8+0.4*vn3(x*13,y*5,z*13)); },8),moEll(0.05,0.035,0.065,0,-0.445,-0.02,0x1a1410,null,6)]);

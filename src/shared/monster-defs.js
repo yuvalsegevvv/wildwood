@@ -41,7 +41,7 @@ const MON_DEFS=[
   {id:'tideslime', name:'Tide Slime',       level:17,el:'water',model:'slime', scale:1.4, zone:'shore',count:16,per:3,glow:0x04202a,pal:{deco:'shell',body:0x3aa8c8,top:0xbff0ff,mouth:0x0a2a3a}},
   {id:'scarab',    name:'Sun Scarab',       level:18,el:'fire', model:'beetle',scale:1.3, zone:'sunfoot',count:20,pal:{kind:'scarab',shell:0xc0782e,seam:0x4a2a10,sheen:0xffd070,head:0x7a4418,horn:0xe0a040,eye:0x111111,legs:0x5a3418}},
   {id:'ramboar',   name:'Ram-horned Boar',  level:19,el:'earth',model:'boar',  scale:1.4, zone:'foothills',count:18,pal:{ram:1,body:0x8a8478,ridge:0xe8e4dc,head:0x7a7468,snout:0x9a8a7a,tusk:0xf2ead8,legs:0x4a443c,eye:0xffa030}},
-  {id:'cragwarden',name:'Crag Warden',      level:20,el:'earth',model:'treant',scale:1.45,zone:'foothills',count:10,hpK:1.4,pal:{kind:'rock',bark:0x6a665e,c1:0x8a8a82,c2:0x9a968c,c3:0x74726a,eyes:0x9fd8ff}},
+  {id:'cragwarden',name:'Crag Warden',      level:20,el:'earth',model:'treant',scale:1.45,zone:'foothills',count:10,hpK:1.4,pal:{kind:'rock',style:'crack',crack:0x9fd8ff,bark:0x6a665e,c1:0x8a8a82,c2:0x9a968c,c3:0x74726a,eyes:0x9fd8ff}},
   /* the Sakura Vale: two kinds per level. Extra look flags for the client models: goblin horns / kasa (straw hat) /
      shell (kappa) / nose + wings (tengu) / weapon 'kanabo' | 'spear' | 'katana'; beetle spider (8 long legs, no horn);
      fox tails (how many); wisp ghost (a trailing body and arms instead of a flame) */
@@ -95,14 +95,14 @@ const MON_DEFS=[
   {id:'stonetreant',name:'Stone Treant',    level:27,el:'earth',model:'treant',scale:1.75,hpK:1.5, zone:'g27', pal:{kind:'rock',bark:0x6a665e,c1:0x7a8a6a,c2:0x8a9a7a,c3:0x6a7a5a,eyes:0xffd860}},
   {id:'minegoblin',name:'Mountain Goblin',  level:28,el:'earth',model:'goblin',scale:1.1, zone:'g28', pal:{form:'hob',skin:0x8a9a6a,eyes:0xffd040,top:'jacket',topColor:0x5a5a52,bottom:'trousers',bottomColor:0x3a3a34,hat:'helm',hatColor:0x6a6a70,club:0x8a8a90,weapon:'axe'}},
   {id:'snowleopard',name:'Snow Leopard',    level:28,el:'air',  model:'fox',   scale:1.45,zone:'g28', pal:{cat:1,pattern:'rosette',spot:0x3a3a3e,body:0xcfc8bc,belly:0xf2eee6,tip:0x3a3a3e,eye:0xa0e0b0,legs:0x8a8478,tails:1}},
-  {id:'cragwyvern',name:'Crag Wyvern',     level:29,el:'air',  model:'wyrm',  scale:0.85,zone:'g29', pal:{body:0x8a7a6a,belly:0xd8ccb8,ridge:0x5a4a3a,horn:0xe8dcc0,eye:0xffd040,wing:0xa89a86}},
+  {id:'cragwyvern',name:'Crag Wyvern',     level:29,el:'air',  model:'wyrm',  scale:0.85,zone:'g29', pal:{stone:1,body:0x8a7a6a,belly:0xd8ccb8,ridge:0x5a4a3a,horn:0xe8dcc0,eye:0xffd040,wing:0xa89a86}},
   {id:'mistwraith',name:'Mist Wraith',      level:29,el:'air',  model:'wisp',  scale:1.25,zone:'g29', glow:0x101820, pal:{body:0xc8d4dc,core:0xffffff,eye:0x10141c,hair:0x1c2430,ghost:1}},
   {id:'quartzslime',name:'Quartz Slime',    level:30,el:'earth',model:'slime', scale:1.9, per:3, zone:'g30', glow:0x14102a, pal:{deco:'crystal',body:0xb8a8d8,top:0xf0e8ff,mouth:0x2a2040}},
-  {id:'ibex',      name:'Ibex Ram',         level:30,el:'air',  model:'boar',  scale:1.55,zone:'g30', pal:{shaggy:1,ram:1,body:0x8a7a6a,ridge:0xe8e0d0,head:0x7a6a5a,snout:0x9a8a7a,tusk:0xf2ead8,legs:0x4a4036,eye:0xffa030}},
+  {id:'ibex',      name:'Ibex Ram',         level:30,el:'air',  model:'boar',  scale:1.55,zone:'g30', pal:{shaggy:1,ram:1,ibex:1,body:0x8a7a6a,ridge:0xe8e0d0,head:0x7a6a5a,snout:0x9a8a7a,tusk:0xf2ead8,legs:0x4a4036,eye:0xffa030}},
   {id:'rocktroll', name:'Rock Troll',       level:31,el:'earth',model:'goblin',scale:1.9, per:2,hpK:1.5,dmgPct:0.12,zone:'g31', pal:{form:'troll',skin:0x8a8a82,eyes:0xffe060,top:'tshirt',topColor:0x4a4a44,bottom:'shorts',bottomColor:0x3a3a34,hat:'none',hatColor:0x2b2420,club:0x6a6a70,horns:0xcfcac2,fur:0x7a7a72}},
   {id:'slatecrawler',name:'Slate Crawler',  level:31,el:'earth',model:'beetle',scale:1.75,hpK:1.3, zone:'g31', pal:{shell:0x5a5e66,seam:0x22262a,sheen:0xa0a8b8,head:0x3a3e46,horn:0x8a8e96,eye:0xff6a3a,legs:0x2e3238,spider:1}},
-  {id:'galedrake', name:'Gale Drake',       level:32,el:'air',  model:'wyrm',  scale:1.3, hpK:1.3, zone:'g32', pal:{body:0x8aa4b4,belly:0xe0eaf0,ridge:0x4a5a6a,horn:0xe8f0f4,eye:0xff7a3a,wing:0x7a94a8}},
-  {id:'granitegolem',name:'Granite Golem',  level:32,el:'earth',model:'treant',scale:2.0, hpK:1.6, zone:'g32', glow:0x0a1018, pal:{kind:'rock',bark:0x5a5a58,c1:0x8a8a84,c2:0x9a9a94,c3:0x74746e,eyes:0xffb040}},
+  {id:'galedrake', name:'Gale Drake',       level:32,el:'air',  model:'wyrm',  scale:1.3, hpK:1.3, zone:'g32', pal:{stripe:1,body:0x8aa4b4,belly:0xe0eaf0,ridge:0x4a5a6a,horn:0xe8f0f4,eye:0xff7a3a,wing:0x7a94a8}},
+  {id:'granitegolem',name:'Granite Golem',  level:32,el:'earth',model:'treant',scale:2.0, hpK:1.6, zone:'g32', glow:0x0a1018, pal:{kind:'rock',style:'granite',lichen:0,crack:0xffb040,bark:0x5a5a58,c1:0x8a8a84,c2:0x9a9a94,c3:0x74746e,eyes:0xffb040}},
   /* the Sunscar (levels 28-36, docs/areas/sunscar.md): two kinds per level, each in its own zone (zone:'s28'..'s36', ZONES in sunzones.js); elements fire, earth and light. res / acc (version 3, docs/ROLLS.md): the chance to
      resist a hit (half damage, no debuff) and the accuracy that takes the same away from your resistance, 0.05 at level 28 rising to 0.20 at 36; a kind has one of them or both. Look flags: slime deco 'crust';
      boar warthog (long upper tusks); goblin turban (a wrapped cloth) and weapon 'scimitar'; the new models scorpion / cactus / sandworm / djinn / sentinel (game/combat/monster-desert.js) */
@@ -119,8 +119,8 @@ const MON_DEFS=[
   {id:'dustdjinn', name:'Dust Djinn',       level:33,el:'fire', model:'djinn',   scale:1.1, zone:'s33', glow:0x120a24, res:0.12, acc:0.12, pal:{body:0x7a5ab8,skin:0xb08ad8,gold:0xe0b030,turban:0xd8c8a0,eye:0xffe070}},
   {id:'duneprowler',name:'Dune Prowler',    level:33,el:'earth',model:'fox',     scale:1.4, zone:'s33', acc:0.12, pal:{cat:1,pattern:'stripe',fangs:1,body:0xd2a468,belly:0xf0e0bc,tip:0x3a2a1a,eye:0xffd040,legs:0x8a6a3a,tails:1}},
   {id:'tombguard', name:'Tomb Guardian',    level:34,el:'light',model:'goblin',  scale:1.3, per:2, hpK:1.4, dmgPct:0.12, zone:'s34', res:0.14, pal:{form:'undead',skin:0xc8b070,eyes:0xffe880,top:'plate',topColor:0xd9a032,bottom:'trousers',bottomColor:0x7a5a2a,hat:'helm',hatColor:0xd9a032,club:0xe8c860,weapon:'scimitar'}},
-  {id:'sandgolem', name:'Sandstone Golem',  level:34,el:'earth',model:'treant',  scale:1.95,hpK:1.6, zone:'s34', res:0.14, acc:0.13, pal:{kind:'rock',bark:0x9a6a4a,c1:0xc08a5a,c2:0xd09a68,c3:0xa87448,eyes:0xffd860}},
-  {id:'dunedrake', name:'Dune Drake',       level:35,el:'fire', model:'wyrm',    scale:1.3, hpK:1.3, zone:'s35', acc:0.16, pal:{body:0xc88a50,belly:0xf0dcb0,ridge:0x8a4a20,horn:0xe8dcc0,eye:0xff6a3a,wing:0xd8a870}},
+  {id:'sandgolem', name:'Sandstone Golem',  level:34,el:'earth',model:'treant',  scale:1.95,hpK:1.6, zone:'s34', res:0.14, acc:0.13, pal:{kind:'rock',style:'sand',lichen:0,bark:0x9a6a4a,c1:0xc08a5a,c2:0xd09a68,c3:0xa87448,eyes:0xffd860}},
+  {id:'dunedrake', name:'Dune Drake',       level:35,el:'fire', model:'wyrm',    scale:1.3, hpK:1.3, zone:'s35', acc:0.16, pal:{sail:1,body:0xc88a50,belly:0xf0dcb0,ridge:0x8a4a20,horn:0xe8dcc0,eye:0xff6a3a,wing:0xd8a870}},
   {id:'sunpriest', name:'Sun Priest',       level:35,el:'light',model:'goblin',  scale:1.15,per:2, hpK:1.2, zone:'s35', res:0.16, acc:0.15, pal:{form:'hob',skin:0x8a6a4a,eyes:0xffe880,top:'hoodie',topColor:0xf0e8d0,bottom:'trousers',bottomColor:0xd9a032,hat:'none',hatColor:0x2b2420,club:0xe8c860,weapon:'spear',turban:0xd9a032,jewel:0xff5a3a}},
   {id:'elderworm', name:'Elder Sand Worm',  level:36,el:'earth',model:'sandworm',scale:1.6, hpK:1.5, zone:'s36', res:0.2, acc:0.18, pal:{body:0xb88a50,belly:0xe0c890,ridge:0x6a3a1a,horn:0xe8dcc0,eye:0xff8a30}},
   {id:'efreet',    name:'Efreet',           level:36,el:'fire', model:'djinn',   scale:1.5, hpK:1.3, zone:'s36', glow:0x2a0c04, res:0.2, acc:0.2, pal:{body:0xd8501e,skin:0xe8884a,gold:0xffd040,turban:0xfff0c0,eye:0xfff080}},
@@ -129,7 +129,7 @@ const MON_DEFS=[
      weepingwidow: the yurei again, veiled in black); treant kind 'dead' for the driftwood; beetle spider:1 for the crab; boar warthog for the walrus-tusked sea boar; the new model 'bat' (monster-gloam.js) */
   {id:'brineslime', name:'Brine Slime',      level:30,el:'water',model:'slime',   scale:1.9, per:3, zone:'m30', res:0.10, pal:{deco:'foam',body:0x3f7f8a,top:0x9ad8d0,mouth:0x0c2428}},
   {id:'gloomcrab',  name:'Gloom Crab',       level:30,el:'water',model:'beetle',  scale:1.7, hpK:1.3, zone:'m30', acc:0.10, pal:{shell:0x6a3a48,seam:0x241018,sheen:0xb08aa0,head:0x3a2030,horn:0xc8b8b0,eye:0xffe060,legs:0x4a2838,spider:1}},
-  {id:'seaboar',    name:'Sea Boar',         level:31,el:'water',model:'boar',    scale:1.7, zone:'m31', res:0.12, acc:0.12, pal:{warthog:1,body:0x5c6670,ridge:0x2a323a,head:0x4c565e,snout:0x7a7e86,tusk:0xf0ead8,legs:0x30363c,eye:0xff6a50}},
+  {id:'seaboar',    name:'Sea Boar',         level:31,el:'water',model:'boar',    scale:1.7, zone:'m31', res:0.12, acc:0.12, pal:{warthog:1,sea:1,body:0x5c6670,ridge:0x2a323a,head:0x4c565e,snout:0x7a7e86,tusk:0xf0ead8,legs:0x30363c,eye:0xff6a50}},
   {id:'wrecker',    name:'Wrecker Goblin',   level:31,el:'dark', model:'goblin',  scale:1.1, per:3, zone:'m31', acc:0.12, pal:{form:'hob',skin:0x6a7a5a,eyes:0xffc040,top:'jacket',topColor:0x2a3038,bottom:'trousers',bottomColor:0x1e2228,hat:'ranger',hatColor:0x1a1a20,club:0x9aa0a8,weapon:'scimitar'}},
   {id:'driftwood',  name:'Driftwood Treant', level:32,el:'water',model:'treant',  scale:1.5, hpK:1.5, zone:'m32', res:0.14, pal:{kind:'dead',bark:0x8a8478,c1:0x6a7a6a,c2:0x7a8a78,c3:0x5a6a5a,eyes:0x9fe8ff}},
   {id:'drownedsailor',name:'Drowned Sailor', level:32,el:'water',model:'goblin',  scale:1.15,per:3, hpK:1.2, zone:'m32', res:0.14, acc:0.14, pal:{form:'undead',skin:0x7a9a8a,eyes:0x9fffe0,top:'jacket',topColor:0x24384a,bottom:'trousers',bottomColor:0x1c2a36,hat:'ranger',hatColor:0x1a1a22,club:0x8a9094,weapon:'scimitar',weeds:0x2f6a46}},
@@ -139,13 +139,13 @@ const MON_DEFS=[
   {id:'banshee',    name:'Banshee',          level:34,el:'dark', model:'wisp',    scale:1.25,zone:'m34', glow:0x14102a, acc:0.18, pal:{body:0xcfd0e8,core:0xf6f4ff,eye:0x14101c,hair:0x1c1824,ghost:1}},
   {id:'ghoul',      name:'Ghoul',            level:35,el:'dark', model:'goblin',  scale:1.35,per:2, hpK:1.4, dmgPct:0.12, zone:'m35', res:0.20, pal:{form:'undead',skin:0x8a9084,eyes:0xff4a4a,top:'tshirt',topColor:0x3a3a3c,bottom:'shorts',bottomColor:0x2a2a2e,hat:'none',hatColor:0x2b2420,club:0xcfc8b0,ribs:true,claws:0xd8cfa8,rags:0x2a2a2e}},
   {id:'gloomserpent',name:'Gloom Serpent',   level:35,el:'water',model:'sandworm',scale:1.4, hpK:1.4, zone:'m35', res:0.20, acc:0.20, pal:{body:0x2a4a5a,belly:0x7a9aa0,ridge:0x14262e,horn:0xc8d8d8,eye:0xffe060}},
-  {id:'gargoyle',   name:'Gargoyle',         level:36,el:'dark', model:'wyrm',    scale:1.3, hpK:1.5, zone:'m36', res:0.22, pal:{body:0x6a6a72,belly:0x8a8a92,ridge:0x3a3a42,horn:0xb8b8c0,eye:0xff3a3a,wing:0x4a4a54}},
+  {id:'gargoyle',   name:'Gargoyle',         level:36,el:'dark', model:'wyrm',    scale:1.3, hpK:1.5, zone:'m36', res:0.22, pal:{stone:1,crack:0xff6a3a,body:0x6a6a72,belly:0x8a8a92,ridge:0x3a3a42,horn:0xb8b8c0,eye:0xff3a3a,wing:0x4a4a54}},
   {id:'wraith',     name:'Wraith',           level:36,el:'dark', model:'wisp',    scale:1.3, zone:'m36', glow:0x0c0a1c, acc:0.22, pal:{body:0x3a3a52,core:0xb8b0e0,eye:0x14101c,hair:0x101018,ghost:1}},
   {id:'gravehound', name:'Grave Hound',      level:37,el:'dark', model:'fox',     scale:1.5, hpK:1.2, zone:'m37', res:0.24, acc:0.24, pal:{wolf:1,ribs:1,fangs:1,body:0x1c1a22,belly:0x3a3640,tip:0x14121a,eye:0x9fffe0,legs:0x14121a}},
   {id:'candlewisp', name:'Candle Wisp',      level:37,el:'light',model:'wisp',    scale:1.4, zone:'m37', glow:0x2a2008, res:0.24, pal:{body:0xf0d890,core:0xffffff,eye:0x3a2a08}},
   {id:'hollowknight',name:'Hollow Knight',   level:38,el:'dark', model:'goblin',  scale:1.4, per:2, hpK:1.5, dmgPct:0.13, zone:'m38', glow:0x0a0814, res:0.26, acc:0.26, pal:{form:'undead',skin:0x5a5a66,eyes:0xb8a0ff,top:'plate',topColor:0x3a3a48,bottom:'trousers',bottomColor:0x24242e,hat:'helm',hatColor:0x30303c,club:0xa8a8b8,weapon:'katana'}},
   {id:'weepingwidow',name:'Weeping Widow',   level:38,el:'dark', model:'wisp',    scale:1.4, zone:'m38', glow:0x08060e, acc:0.26, pal:{body:0x1a1a22,core:0xd8d0e8,eye:0x6a5a8a,hair:0x08080c,ghost:1}},
-  {id:'stormgargoyle',name:'Storm Gargoyle', level:39,el:'air',  model:'wyrm',    scale:1.5, hpK:1.5, zone:'m39', res:0.28, acc:0.28, pal:{body:0x5a6a7a,belly:0x8a9aaa,ridge:0x2e3a46,horn:0xc8d4e0,eye:0x9fe8ff,wing:0x3a4a5a}},
+  {id:'stormgargoyle',name:'Storm Gargoyle', level:39,el:'air',  model:'wyrm',    scale:1.5, hpK:1.5, zone:'m39', res:0.28, acc:0.28, pal:{stone:1,crack:0x7fe0ff,body:0x5a6a7a,belly:0x8a9aaa,ridge:0x2e3a46,horn:0xc8d4e0,eye:0x9fe8ff,wing:0x3a4a5a}},
   {id:'tidehorror', name:'Tide Horror',      level:39,el:'water',model:'sandworm',scale:1.7, hpK:1.5, zone:'m39', glow:0x041820, res:0.28, pal:{body:0x1e3a4a,belly:0x5a8090,ridge:0x0c1c26,horn:0xb8d0d8,eye:0x9fffe0}},
   {id:'blackrevenant',name:'Black Revenant', level:40,el:'dark', model:'goblin',  scale:1.6, per:2, hpK:1.6, dmgPct:0.13, zone:'m40', glow:0x0a0610, res:0.30, acc:0.30, pal:{form:'undead',skin:0x4a4a58,eyes:0xd8a0ff,top:'plate',topColor:0x26263a,bottom:'trousers',bottomColor:0x181824,hat:'helm',hatColor:0x22223a,club:0x9890c0,weapon:'katana'}},
   {id:'deepsiren',  name:'Deep Siren',       level:40,el:'water',model:'djinn',   scale:1.5, hpK:1.3, zone:'m40', glow:0x041828, res:0.30, acc:0.30, pal:{siren:1,body:0x12405a,skin:0x9ac0c8,gold:0xb8e0e8,turban:0x0c2038,eye:0xd8ffff}}
@@ -225,9 +225,9 @@ const EAGLET_DEF={id:'eaglet',name:'Gryphon Eaglet',level:28,el:'air',model:'gry
   pal:{body:0xb88a3a,belly:0xe0cc98,plume:0xe8e0cc,beak:0xe0b030,eye:0xffd040,wing:0xc8aa70,tuft:0x7a5020}};
 prepDef(EAGLET_DEF);
 const GOLEM_DEF=bossDef({id:'mountaingolem',name:'The Mountain Golem',level:32,el:'earth',model:'treant',scale:3.1,boss:true,heavy:true,glow:0x1a0c02,atk:2.7,speed:1.8,aggro:0,
-  pal:{kind:'rock',bark:0x4a4a48,c1:0x7a7a74,c2:0x8a8a84,c3:0x64645e,eyes:0xff8a30}});
+  pal:{kind:'rock',style:'granite',crack:0xff8a30,bark:0x4a4a48,c1:0x7a7a74,c2:0x8a8a84,c3:0x64645e,eyes:0xff8a30}});
 const RUBBLE_DEF={id:'rubble',name:'Rubble Imp',level:31,el:'earth',model:'treant',scale:0.6,hpK:0.6,dmgPct:0.07,atk:1.8,speed:2.6,aggro:30,
-  pal:{kind:'rock',bark:0x4a4a48,c1:0x7a7a74,c2:0x8a8a84,c3:0x64645e,eyes:0xff8a30}};
+  pal:{kind:'rock',style:'crack',lichen:0,crack:0xff8a30,bark:0x4a4a48,c1:0x7a7a74,c2:0x8a8a84,c3:0x64645e,eyes:0xff8a30}};
 prepDef(RUBBLE_DEF);
 const JOINT_DEF=totemDef({id:'ironjoint',name:'Iron Joint',level:32,el:'earth',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x1a1208,pal:{crystal:0xc8a060,band:0x8a8a90}});
 // the Sunscar: the Glass Guardian (level 32, in the middle of the Glass Fields) and the sand wyrm (level 36, in its pit in the dunes by Redgate Canyon: its fall opens the canyon, shared/sunland.js)

@@ -433,10 +433,10 @@ A def's `model` picks a family model (`MODELS.<model>={geo,build,anim}`) and its
 | `beetle` | 15 | 1.15 / 0.08 / 1.4 / 2.6 / 0.6 / 0.8 / 11 / 5 | src/shared/monster-defs.js:5 | src/game/combat/monster-bugs.js:84 |
 | `boar` | 9 | 1 / 0.11 / 2 / 3.4 / 0.6 / 1 / 13 / 4 | src/shared/monster-defs.js:6 | src/game/combat/monster-beasts.js:5 |
 | `goblin` | 31 | 1 / 0.09 / 1.3 / 3 / 0.45 / 1.8 / 14 / 5 | src/shared/monster-defs.js:7 | src/game/combat/monster-folk.js:112 |
-| `treant` | 16 | 1.35 / 0.14 / 2.4 / 1.6 / 0.85 / 3.3 / 12 / 3 | src/shared/monster-defs.js:8 | src/game/combat/monster-woods.js:6 |
-| `fox` | 13 | 1 / 0.1 / 1.5 / 3.8 / 0.55 / 1 / 14 / 4 | src/shared/monster-defs.js:9 | src/game/combat/monster-beasts.js:39 |
+| `treant` | 16 | 1.35 / 0.14 / 2.4 / 1.6 / 0.85 / 3.3 / 12 / 3 | src/shared/monster-defs.js:8 | src/game/combat/monster-woods.js:13 |
+| `fox` | 13 | 1 / 0.1 / 1.5 / 3.8 / 0.55 / 1 / 14 / 4 | src/shared/monster-defs.js:9 | src/game/combat/monster-beasts.js:45 |
 | `wisp` | 15 | 0.9 / 0.1 / 1.7 / 2.6 / 0.45 / 1.6 / 13 / 5 | src/shared/monster-defs.js:10 | src/game/combat/monster-spirits.js:4 |
-| `totem` | 5 | 1 / 0 / 99 / 0 / 0.55 / 2.7 / 0 / 2 | src/shared/monster-defs.js:11 | src/game/combat/monster-woods.js:83 |
+| `totem` | 5 | 1 / 0 / 99 / 0 / 0.55 / 2.7 / 0 / 2 | src/shared/monster-defs.js:11 | src/game/combat/monster-woods.js:97 |
 | `keg` | 0 | 1 / 0 / 99 / 0 / 0.5 / 1.1 / 0 / 2 | src/shared/monster-defs.js:12 | src/game/combat/monster-mine.js:4 |
 | `wyrm` | 7 | 1 / 0.12 / 2.2 / 2.6 / 0.9 / 2 / 16 / 3 | src/shared/monster-defs.js:13 | src/game/combat/monster-wyrm.js:18 |
 | `gryphon` | 2 | 1 / 0.12 / 2.1 / 3.2 / 0.8 / 2 / 16 / 3 | src/shared/monster-defs.js:14 | src/game/combat/monster-gryphon.js:15 |
