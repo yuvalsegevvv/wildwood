@@ -8,6 +8,8 @@ MODELS.wisp={
       const fl=(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.85+0.3*moNoise(x,y,z,6)); moTint(c,p.core,clamp(1-Math.hypot(x,z)*2.2)*0.5+clamp((y-1.3)*0.7)*0.4); };
       body.push(moEll(0.42,0.46,0.42,0,0.95,0,fl,null,moQ(16)),moEll(0.26,0.28,0.26,0,0.98,0,p.core,null,10));
       for(let i=0;i<9;i++){ const a=i/9*TAU+0.3, r=0.3, L=0.5+0.35*h3(i,1,1); body.push(moTube([[Math.cos(a)*r,1.12,Math.sin(a)*r],[Math.cos(a+0.5)*r*0.75,1.12+L*0.45,Math.sin(a+0.5)*r*0.75],[Math.cos(a+1.0)*r*0.2,1.12+L,Math.sin(a+1.0)*r*0.2]],0.12,0.015,fl,6,true,t=>1+0.3*Math.sin(Math.PI*Math.min(1,t*1.1)))); }   // tongues of flame
+      for(let i=0;i<3;i++){ const a=i/3*TAU+0.8; body.push(moTube([[Math.cos(a)*0.16,0.62,Math.sin(a)*0.16],[Math.cos(a+0.7)*0.2,0.38,Math.sin(a+0.7)*0.2],[Math.cos(a+1.4)*0.08,0.12,Math.sin(a+1.4)*0.08]],0.15,0.012,fl,6,true,t=>1+0.2*Math.sin(Math.PI*Math.min(1,t*1.1)))); }   // a tail of flame trailing below
+      for(let i=0;i<5;i++){ const a=i*1.7+0.4, r=0.62+0.1*(i%2); body.push(moEll(0.035,0.05,0.035,Math.cos(a)*r,0.7+0.2*i,Math.sin(a)*r,p.core,null,5)); }   // sparks drifting round it
       for(const sd of W) body.push(moEll(0.07,0.1,0.05,sd*0.14,1.02,-0.4,p.eye,null,7),moEll(0.02,0.03,0.02,sd*0.135,1.05,-0.435,0xffffff,null,4));
       body.push(moEll(0.06,0.025,0.03,0,0.82,-0.42,p.eye,null,6));
       G.flick=moTube([[0,0,0],[0.05,0.28,0],[0,0.55,0.04]],0.11,0.01,(x,y,z,c)=>{ c.set(p.body).lerp(_tint.set(p.core),clamp(y*1.6)); },6,true,t=>1+0.3*Math.sin(Math.PI*t));
