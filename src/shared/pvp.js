@@ -14,15 +14,23 @@ const PVP={x:PVP_ISLE.x,z:PVP_ISLE.z,r:35,   // r: the island down to where the 
   bridge:null,gate:null,gateOut:null,shore:[]};
 const inPvp=(x,z)=>Math.hypot(x-PVP.x,z-PVP.z)<PVP.r;
 // the way in: the causeway's centre line runs mainland -> island; the gate is where it crosses into the ground, gateOut a few metres back on the planks (a locked-out hiker is held there)
-{ const B=BRIDGES.find(b=>b.road==='The Proving Road');
+/* the plank bridge is the atlas's WA_PVP.bridge (two points: the beach end and the island end). roads.js lists it as the causeway of 'The Proving Road' when its roads come from the atlas; until then this record
+   (the same fields as a BRIDGES entry: centre, unit direction, length, ends' heights) stands in, so the gate and the shore spots never depend on a road. */
+function pvpBridge(){
+  const f=BRIDGES.find(b=>b.road==='The Proving Road'); if(f) return f;
+  const [a,b]=WA_PVP.bridge, L=Math.hypot(b[0]-a[0],b[1]-a[1]);
+  const B={x:(a[0]+b[0])/2,z:(a[1]+b[1])/2,dx:(b[0]-a[0])/L,dz:(b[1]-a[1])/L,h0:Math.max(baseHeight(a[0],a[1]),WATER+0.5),h1:Math.max(baseHeight(b[0],b[1]),WATER+0.5),len:L,w:1.5,kind:'causeway',road:'The Proving Road',name:'The Proving Bridge'};
+  BRIDGES.push(B); return B;   // (the deck is walkable and drawn like any causeway)
+}
+{ const B=pvpBridge();
   if(B){
     PVP.bridge=B; let u=-B.len/2;
     for(;u<B.len/2;u+=0.25) if(Math.hypot(B.x+B.dx*u-PVP.x,B.z+B.dz*u-PVP.z)<=PVP.r) break;
     PVP.gate={x:B.x+B.dx*u,z:B.z+B.dz*u,face:Math.atan2(-B.dx,-B.dz)};   // face: looking along the bridge toward the island (a character's front is -z)
     PVP.gateOut={x:B.x+B.dx*(u-3),z:B.z+B.dz*(u-3),face:PVP.gate.face};
-    // the shore a fallen fighter wakes on: the lake's mainland bank on the bridge's side, 4-10 m from the water's edge, never in the water
+    // the shore a fallen fighter wakes on: the beach on the bridge's side, 4-40 m from the moat's edge, never in the water
     const st=[B.x-B.dx*B.len/2,B.z-B.dz*B.len/2], a0=Math.atan2(st[0]-PVP.x,st[1]-PVP.z);   // st: the bridge's mainland end
-    for(let k=-12;k<=12;k++) for(const dr of [4,7,10]){
+    for(let k=-12;k<=12;k++) for(const dr of [4,7,10,16,24,32,40]){   // (the sea is shallow off the beach: the dry bank can be 40 m from the moat's edge)
       const a=a0+k*0.1, R=PVP_ISLE.lakeR+dr, x=PVP.x+Math.sin(a)*R, z=PVP.z+Math.cos(a)*R;
       if(rawHeight(x,z)>1.2&&!bridgeAt(x,z,2)) PVP.shore.push({x,z,face:Math.atan2(PVP.x-x,PVP.z-z)+Math.PI});
     }
