@@ -55,3 +55,9 @@ MSG.rldev=(p,msg)=>{
   else if(msg.cmd==='all40'){ for(const s of ALL_SLOTS) if(p.gear.inv.length<BAG_MAX) p.gear.inv.push(dgGearId40(s,0,0)); p.dirty=true; toastTo(p.id,'A level-40 piece of every slot added (common, unrolled)','good'); }
   else if(msg.cmd==='rolled'){ for(const s of ALL_SLOTS) if(p.gear.inv.length<BAG_MAX) p.gear.inv.push(dgGearId40(s,4,0,rlRoll())); p.dirty=true; toastTo(p.id,'A rolled legendary level-40 piece of every slot added','good'); }
 };
+// rewardKill: a world boss may drop Reroll Stones, chance and number by the zone tier it was fought at (rlBossStoneChance, shared/rolls.js); dungeon bosses pay through their clear instead
+function rlBossStonesP(q,m,K){
+  if(m.inst||isGuestP(q)) return;
+  const t=monTierOf(q.gear,m); if(Math.random()>=rlBossStoneChance(t)) return;
+  rlAddStonesP(q,Math.random()<0.5?'rsw':'rsa',rlBossStoneCount(t));
+}

@@ -59,7 +59,7 @@ function sanitizeSkills(g){
     const e=g.eq[c], slots=typeof e==='string'?{skill:e}:(e&&typeof e==='object'?e:{});
     for(const sl of SLOTS){ const id=slots[sl]; if(SKILLS[id]&&(SKILLS[id].cls===c||SKILLS[id].cls==='any')&&SKILLS[id].slot===sl&&out.owned.includes(id)&&canSwap(c,sl,out)) out.eq[c][sl]=id; }   // skillsets: cls 'any' fits every class; owning a slot-1 piece frees the basic slot
   }
-  if(g.lv&&typeof g.lv==='object') for(const id in g.lv){ const L=out.owned.includes(id)&&!(skillDef(id)&&(skillDef(id).drop||skillDef(id).set))?clampInt(g.lv[id],1,SKILL_MAX_LV,1):1; if(L>1) out.lv[id]=L; }   // (boss skills cannot be upgraded yet)
+  if(g.lv&&typeof g.lv==='object') for(const id in g.lv){ const L=out.owned.includes(id)&&!(skillDef(id)&&(skillDef(id).drop||skillDef(id).set))?clampInt(g.lv[id],1,SKILL_MAX_LV,1):1; if(L>1) out.lv[id]=L; }   // (boss skills cannot be upgraded: their level follows the zone tiers, bsRefreshP)
   // a passive keeps its slot (which slots a level can use is decided by newPlayer, which knows the level), and sits in one slot only
   if(Array.isArray(g.pass)) g.pass.slice(0,PASSIVE_SLOTS).forEach((id,i)=>{ if(PASSIVES[id]&&out.owned.includes(id)&&!out.pass.includes(id)) out.pass[i]=id; });
   out.pgiven=!!g.pgiven;   // the free passive was handed out once (so taking it off does not bring it back)
@@ -112,6 +112,7 @@ function recalcP(p){
   p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)*(1+rlP(p,'hp'))*(1+toolBonusStat(p.gear,'hp'))); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym)*(1+rlP(p,'atk'))*(1+toolBonusStat(p.gear,'atk')); p.def=Math.round(g.def*(1+rlP(p,'def'))*(1+toolBonusStat(p.gear,'def'))); p.red=defRed(p.def);   // rolls: hp, atk and def lines   // professions: the worn tools' small bonus (shared/professions.js)
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));
   ssRefreshP(p);   // skillsets: the sets worn and their bonuses
+  bsRefreshP(p);   // tiers: boss skills follow the zone tiers defeated
 }
 const clsOfP=p=>classOfGear(p.gear);
 const psP=(p,stat)=>passiveSum(skOfP(p),pvLvP(p),stat,p.pv?undefined:clsOfP(p));   // a passive stat (Vitality's hp, Ferocity's dmg...); pvp: on the island the fixed loadout at the fixed level, and no set bonuses

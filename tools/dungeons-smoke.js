@@ -264,7 +264,7 @@ ok('the six are different: four model families (Garrick is a troll of the goblin
     un(gear([1,1],Z,Z),25,t).ok&&un(gear([1,1],Z,Z),25,t).level===30&&un(gear([1,1],Z,Z),25,t).tier===1&&X.dgTierOf(gear([1,1],Z,Z),'home')===1));
   ok('the Vale\'s and the Reach\'s dungeons are level '+X.DG_LV+' at their base, +0 (no tier needed)',[...vale,...hoar].every(t=>{ const g=gear(Z,Z,Z,{east:2,north:2}), r=un(g,25,t); return r.ok&&r.level===30&&r.tier===0; }));
   ok('each tier above the base adds '+X.ZTIER_STEP+' levels, up to tier V: Wildwood +1 ... +5 = 30/40/50/60/70, the Vale and the Reach +0 ... +5 = 30/40/50/60/70/80',
-    X.ZTIER_MAX===5&&home.every(t=>[1,2,3,4,5].map(k=>X.dgLevel(t,k)).join()==='30,40,50,60,70')&&[...vale,...hoar].every(t=>[0,1,2,3,4,5].map(k=>X.dgLevel(t,k)).join()==='30,40,50,60,70,80'));
+    X.ZTIER_MAX===7&&home.every(t=>[1,2,3,4,5,6,7].map(k=>X.dgLevel(t,k)).join()==='30,40,50,60,70,80,90')&&[...vale,...hoar].every(t=>[0,1,2,3,4,5,6,7].map(k=>X.dgLevel(t,k)).join()==='30,40,50,60,70,80,90,100'));
   ok('the way in is level '+X.DG_ENTRY_LV+' at every difficulty, whatever the dungeon\'s own level: Wildwood +1 ... +5 (levels 30-70) and the Vale and the Reach +0 ... +5 (30-80) all open at 25 and not at 24',
     home.every(t=>[1,2,3,4,5].every(k=>!un(gear([k,k],Z,Z),24,t).ok&&un(gear([k,k],Z,Z),25,t).ok&&un(gear([k,k],Z,Z),25,t).level===X.dgLevel(t,k)&&/level 25/.test(un(gear([k,k],Z,Z),10,t).why)))&&
     vale.every(t=>[0,1,2,3,4,5].every(k=>!un(gear(Z,[k,k],Z,{east:2}),24,t).ok&&un(gear(Z,[k,k],Z,{east:2}),25,t).ok&&un(gear(Z,[k,k],Z,{east:2}),25,t).level===X.dgLevel(t,k)))&&
@@ -294,7 +294,7 @@ ok('each of the six dungeons pays one kind of reward: Wildwood weapons, the Vale
   ok('the pools are "all kinds": the weapons of all three classes, the four armour pieces, 7 rings (no element and the six elements) and the 5 pendants',
     P('hollowroots').join()===R.WEAPON_SLOTS.join()&&new Set(P('hollowroots').map(s=>R.CLASS_OF[s])).size===3&&P('jadesprings').join()===R.ARMOR_SLOTS.join()&&
     P('bonefrostbarrow').length===7&&new Set(P('bonefrostbarrow')).size===7&&P('bonefrostbarrow')[0]==='basic'&&R.ELEM_LIST.length===6&&R.ELEM_LIST.every(e=>P('bonefrostbarrow').includes(e)&&R.ELEMS[e])&&P('blackseam').join()===R.PENDANT_STATS.join()&&P('blackseam').length===5); }
-{ const B=[0,0.6999,0.70,0.9499,0.95,0.9899,0.99,0.9979,0.998,0.99999].map(R.dgRewardRarity).join();
+{ const B=[0,0.6999,0.70,0.9499,0.95,0.9899,0.99,0.9979,0.998,0.99999].map(v=>R.dgRewardRarity(v)).join();
   ok('the rarity of a clear is 70 / 25 / 4 / 0.8 / 0.2% (the table adds up to 100% and every boundary falls in the right rarity)',R.DG_REWARD_W.reduce((a,b)=>a+b,0)===1000&&B==='0,0,1,1,2,2,3,3,4,4',B); }
 { const N=200000, rnd=mulberry(7), cnt=[0,0,0,0,0]; for(let i=0;i<N;i++) cnt[R.dgRewardRarity(rnd())]++;
   ok('over '+N+' rolls the rarities come out at their odds (within 4 sigma)',cnt.every((c,r)=>within(c,N,ODDS[r])),cnt.map(c=>(c/N*100).toFixed(2)+'%').join(' / ')); }

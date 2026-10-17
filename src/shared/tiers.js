@@ -8,13 +8,14 @@
    (gear.zt[land].max). Tiers are changed in a village (the map panel; zoneTierVillage). The symbol: every unlocked tier point of every land, added together,
    gives +ZTIER_BONUS attack and health (2 + 2 + 1 + 1 points = +60%), whichever tier you play at, up to ZTIER_SYMBOL_CAP. The Greyspine's badge counts too (ZTIER_SYMBOL_LANDS)
    and the cap is a PLACEHOLDER (docs/NOT-BUILT.md section 3b): the level-60 hero of tools/boss-duel.js (docs/areas/tiers.md) was tuned with three lands' fifteen points (+150%), and with the
-   Greyspine's five on top (+200%) that hero beats the tier V bosses standing still, so the symbol stops at +150% until the owner replaces the number (raise or remove the cap) or the badge. "Tier" alone means the gear tiers 0-5 elsewhere
+   Greyspine's five on top (+200%) that hero beats the tier V bosses standing still, so the symbol stopped at +150%. Version 3: six lands x seven tiers = 42 points = +420% (the owner's "x4.2 from symbols, for now"), ZTIER_SYMBOL_CAP is that whole sum and the one number to change. "Tier" alone means the gear tiers 0-5 elsewhere
    in the code (tierFor, TIER_ATK): these are zone tiers, hence the zoneTier / ZTIER_ names. */
+// tiers VI and VII (version 3) came with the level-40 gear and the Sunscar's and the Gloamhorn's symbols; their tiers count toward the symbol like the others
 // tiers IV and V were added for the power the level-30 dungeon gear and its enhancements bring; what a kill pays is damped above level 60 (PAY_LV in balance.js)
-const ZTIER_STEP=10, ZTIER_MAX=5, ZTIER_BONUS=0.10, ZTIER_SYMBOL_CAP=1.5;   // (the cap: the three older lands' fifteen points, what boss-duel was tuned with; a placeholder)
-const ZTIER_LANDS=['home','vale','hoar','grey','sun','gloam'], ZTIER_SYMBOL_LANDS=['home','vale','hoar','grey'];   // (the lands whose unlocked tiers count toward the symbol: a land left out of this list keeps its tiers but adds nothing)
+const ZTIER_STEP=10, ZTIER_MAX=7, ZTIER_BONUS=0.10, ZTIER_SYMBOL_CAP=4.2;   // (version 3: seven tiers in six lands = 42 points = +420%, the symbol's "x4.2"; the cap is the whole of it and is the number to tune, a placeholder)
+const ZTIER_LANDS=['home','vale','hoar','grey','sun','gloam'], ZTIER_SYMBOL_LANDS=['home','vale','hoar','grey','sun','gloam'];   // (the lands whose unlocked tiers count toward the symbol: a land left out of this list keeps its tiers but adds nothing)
 const ZTIER_NAMES={home:'the home forest',vale:'the Sakura Vale',hoar:'the Hoarfrost Reach',grey:'the Greyspine',sun:'the Sunscar',gloam:'the Gloamhorn'};
-const ZTIER_ROMAN=['0','I','II','III','IV','V'];
+const ZTIER_ROMAN=['0','I','II','III','IV','V','VI','VII'];
 // the second boss of each land (BOSS_DEFS lists a land's two bosses in the order of their levels): Carapax on the beach, Kyuubi, Vetrmaw, the Mountain Golem
 const ZTIER_BOSS={home:'carapax',vale:'kyuubi',hoar:'vetrmaw',grey:'mountaingolem',sun:'sandwyrm',gloam:'gloamwarden'};
 const WA_LAND_OF_ID=['home','vale','hoar','grey','sun','gloam','sun'];
@@ -38,3 +39,12 @@ function zoneTierK(d,t){
 const symbolPoints=gear=>ZTIER_SYMBOL_LANDS.reduce((n,l)=>n+zoneTierMax(gear,l),0);
 const symbolBonus=gear=>Math.min(ZTIER_SYMBOL_CAP,ZTIER_BONUS*symbolPoints(gear));
 const symbolCapped=gear=>ZTIER_BONUS*symbolPoints(gear)>ZTIER_SYMBOL_CAP+1e-9;   // (points past the cap add nothing yet)
+// version 3: a boss skill (the 72 a world boss drops, SKILLS[id].drop) rises one level for every zone tier of its boss's land you have defeated: level 1 + tiers (up to 1 + ZTIER_MAX), the same skillPower / skillCdMult curve as any skill.
+const BOSS_SKILL_MAX_LV=1+ZTIER_MAX;
+const ztBossLandCache=new Map();
+function ztBossLand(bossId){   // the land of a boss's arena ('home'... 'gloam'), or null for an unknown id
+  if(ztBossLandCache.has(bossId)) return ztBossLandCache.get(bossId);
+  const b=BOSS_DEFS.find(x=>x.def.id===bossId), A=b&&ARENAS.find(a=>a.key===b.arena), land=A?landAt(A.x,A.z):null;
+  if(A) ztBossLandCache.set(bossId,land); return land;
+}
+const bossSkillLvOf=(gear,id)=>{ const s=SKILLS[id], land=s&&s.drop?ztBossLand(s.drop):null; return land?1+zoneTierMax(gear,land):1; };
