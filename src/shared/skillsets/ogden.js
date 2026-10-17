@@ -1,7 +1,7 @@
 //@ Ogden's skill set, The Grave Shift (a grinder, water): wide shoves of grave-water, a mire that drags a whole crowd in, and a feeding frenzy that mends him from the rot; moss green, drowned teal and old bone
 /* Agent map. Kit: docs/skillkits/kit-grind.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (version 3, the Gloamhorn's first pair: all six pieces water, the grave-damp and the flooded crypt); outfit and palette:
    docs/skillkits/looks/ogden.md, game/outfits/ogden.js; visuals: game/skillsets/look-ogden.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3-smoke.js.
-   LAND: the Gloamhorn's set at +3 (Captain Dredge, the Gloam Warden, the Gloamvault; Ottoline replaces it from +4; SS_SOURCES.gloam). Mark: Rot (the shoves leave it, Feeding Frenzy spends it and mends him). Unlike Tansy (the farmer: pure basic, a pulled field) he is
+   LAND: the Gloamhorn's set at +3 (Captain Dredge, the Gloam Warden, the Gloamvault; Ottoline at +1 and Hollis at +2 are the Gloamhorn's other two; +4 and +5 roll Ogden; SS_SOURCES.gloam). Mark: Rot (the shoves leave it, Feeding Frenzy spends it and mends him). Unlike Tansy (the farmer: pure basic, a pulled field) he is
    a survivor-grinder: he heals from kills, finds more drops, and pays in damage taken. Friendlier odds like every grinder (`from`). */
 defineSkillSet({
   id:'ogden', name:'The Grave Shift', land:'gloam', needs:{tier:3}, el:'water', outfit:'ogden',

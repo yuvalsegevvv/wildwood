@@ -18,6 +18,12 @@ A skill with generic effects (`fx`) is drawn from its row, in the colour of its 
 | Marigold | paper lanterns, ribbons and gold sparkles; Curtain Call is a fountain of lanterns and ribbons; Center Stage turns eight lanterns round the stage | a scalloped gold ring |
 | Nephra (v3) | linen ribbons and dust chaff drift in, lapis flecks and gold glints (data only: no override functions) | a gold-and-lapis dial |
 | Sabir (v3) | embers, flame tongues, crimson cloth scraps and coin glints rise | three-tongued flame notches |
+| Pell (v3) | embers and flame tongues drift up, reed flecks and river-cream glints (data only) | rings of lenses |
+| Genzo (v3) | bronze chimes and cloud-white wisps swirl outward, vermilion scraps | a ring of rivets |
+| Brynja (v3) | ice shards and snow flurries, pale blue sparks and streaks | wave lines |
+| Tamsin (v3) | pebbles and grit tumble, dust motes and rope scraps drift inward | a ring of rivets |
+| Zahra (v3) | gold glints and falling sand, lapis flecks, light rays | a gold dial |
+| Hollis (v3) | lantern sparks and fog wisps, black crape scraps orbit | wave lines |
 | Ogden (v3) | grave-water drops, bubbles, bone shards and mould specks pulled inward | double wave line |
 | Ottoline (v3) | black and rose ribbons, violet sparks and thread streaks orbit | cords looped round a ring |
 

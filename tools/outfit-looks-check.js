@@ -92,14 +92,14 @@ for(const f of docs){
 }
 
 for(const o of O) ok('outfit '+o.id+': persona, seven new items with builder notes, one weapon dressing, built with one reference setup, slider section current',o.problems.length===0,o.problems.slice(0,3).join(' | '));
-ok('there are twelve outfits: the eight characters of THEMES.md and version 3\'s first four (Nephra, Sabir, Ogden, Ottoline)',O.length===12&&['tansy','torgeir','sazanka','corvin','sorrel','ambrose','dunstan','marigold','nephra','sabir','ogden','ottoline'].every(n=>O.some(o=>o.id===n)),O.map(o=>o.id).join(','));
-ok('gender ratio: six female and six male',O.filter(o=>o.sex==='female').length===6&&O.filter(o=>o.sex==='male').length===6);
+ok('there are eighteen outfits: the eight characters of THEMES.md, version 3\'s first four (Nephra, Sabir, Ogden, Ottoline) and its second six (Pell, Genzo, Brynja, Tamsin, Zahra, Hollis)',O.length===18&&['tansy','torgeir','sazanka','corvin','sorrel','ambrose','dunstan','marigold','nephra','sabir','ogden','ottoline','pell','genzo','brynja','tamsin','zahra','hollis'].every(n=>O.some(o=>o.id===n)),O.map(o=>o.id).join(','));
+ok('gender ratio: nine female and nine male',O.filter(o=>o.sex==='female').length===9&&O.filter(o=>o.sex==='male').length===9);
 ok('each outfit ships exactly one recommended setup, the reference, for its own sex',O.every(o=>o.model&&o.model.setups.length===1&&o.model.setups[0].def&&o.model.setups[0].sex===o.sex));
-{ const all=O.flatMap(o=>o.itemIds); ok('every item id is new and distinct: '+all.length+' ids, '+new Set(all).size+' different, none an existing model value',all.length>=84&&new Set(all).size===all.length); }
-ok('each outfit has its own hair item, none shared',new Set(O.map(o=>o.hairFinal)).size===12,O.map(o=>o.id+':'+o.hairFinal).join(' '));
-ok('each outfit has its own weapon dressing with its own charm (12 distinct)',O.every(o=>(o.parts['Weapon']||[]).length)&&new Set(O.map(o=>(o.parts['Weapon']||[])[0])).size===12&&new Set(O.map(o=>o.charm)).size===12,O.map(o=>o.charm).join(' '));
-ok('the main colour of each palette is different (no two outfits share a first colour)',new Set(O.map(o=>o.palette[0])).size===12);
-ok('each outfit has its own eye style and its own hair colour',new Set(O.map(o=>o.eyes)).size===12&&new Set(O.map(o=>o.hairColor)).size===12,O.map(o=>o.id+':'+(o.hairColor||0).toString(16)).join(' '));
-{ const bodies=O.map(o=>{ const s=o.setup; return s?Object.keys(s.v).sort().map(k=>k+s.v[k]).join(','):''; }); ok('the twelve reference bodies are all different',new Set(bodies).size===12); }
+{ const all=O.flatMap(o=>o.itemIds); ok('every item id is new and distinct: '+all.length+' ids, '+new Set(all).size+' different, none an existing model value',all.length>=126&&new Set(all).size===all.length); }
+ok('each outfit has its own hair item, none shared',new Set(O.map(o=>o.hairFinal)).size===O.length,O.map(o=>o.id+':'+o.hairFinal).join(' '));
+ok('each outfit has its own weapon dressing with its own charm (all distinct)',O.every(o=>(o.parts['Weapon']||[]).length)&&new Set(O.map(o=>(o.parts['Weapon']||[])[0])).size===O.length&&new Set(O.map(o=>o.charm)).size===O.length,O.map(o=>o.charm).join(' '));
+ok('the main colour of each palette is different (no two outfits share a first colour)',new Set(O.map(o=>o.palette[0])).size===O.length);
+ok('each outfit has its own eye style and its own hair colour',new Set(O.map(o=>o.eyes)).size===O.length&&new Set(O.map(o=>o.hairColor)).size===O.length,O.map(o=>o.id+':'+(o.hairColor||0).toString(16)).join(' '));
+{ const bodies=O.map(o=>{ const s=o.setup; return s?Object.keys(s.v).sort().map(k=>k+s.v[k]).join(','):''; }); ok('the reference bodies are all different',new Set(bodies).size===O.length); }
 ok('every Face row names two or more new ids (a mark and an eye style, at least)',O.every(o=>(o.parts['Face']||[]).length>=2));
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

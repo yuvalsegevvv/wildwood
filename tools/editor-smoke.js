@@ -35,7 +35,7 @@ if(have){
     if(!sh){ bad.push(id+': no shape'); continue; }
     for(const [kind,cls] of [['sword','warrior'],['bow','archer'],['staff','mage']]){ seen[kind].add(sh[kind]);
       try{ const r=C.buildCharacter(L,{q:0.4}); const res=C.weaponsOn(r,cls,1); if(!res.objs.length||C.stats(r).bad) bad.push(id+' '+kind+': empty or NaN'); if(!C.WPN_SHAPES[kind][sh[kind]]) bad.push(id+' '+kind+': unknown shape '+sh[kind]); }catch(e){ bad.push(id+' '+kind+': '+e.message); } } }
-  ok('every outfit has its own sword, bow and staff shape and all of them build',names.length>=12&&!bad.length,bad.slice(0,4).join('; '));
+  ok('every outfit has its own sword, bow and staff shape and all of them build',names.length>=18&&!bad.length,bad.slice(0,4).join('; '));
   ok('the swords and the staves are all different (twelve each)',seen.sword.size===names.length&&seen.staff.size===names.length,seen.sword.size+' / '+seen.staff.size); }
 // the editor's tree
 const ed=fs.readFileSync(path.join(SRC,'game/ui/character-editor.js'),'utf8');

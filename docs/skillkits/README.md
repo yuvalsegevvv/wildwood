@@ -43,12 +43,12 @@ Details (gender, element(s), the theme line, an alternate) are **one row each in
 | Torgeir | tank | Hoarfrost Reach | first |
 | Sazanka | risk DPS (a hybrid, dark + air) | Sakura Vale | first |
 | Corvin | support (debuff) | The Greyspine | first |
-| Sorrel | safe DPS | not assigned | second |
-| Ambrose | healer | not assigned | second |
-| Dunstan | support (buff) | not assigned | second |
-| Marigold | **mixed**: safe DPS + support (mild); its description names the theme idea | not assigned | second |
+| Sorrel | safe DPS | The Greyspine, +2 | second |
+| Ambrose | healer | Wildwood, +2 | second |
+| Dunstan | support (buff) | Hoarfrost Reach, +2 | second |
+| Marigold | **mixed**: safe DPS + support (mild); its description names the theme idea | Sakura Vale, +2 | second |
 
-- **Wave** and **land** are my suggestions (the choice is the owner's, `docs/SKILL-SETS.md` decision 31). "First" = the recommended first four, one for each land at difficulty +1; "second" = the sets for the next zones and tiers.
+- **Wave** and **land** are my suggestions (the choice is the owner's, `docs/SKILL-SETS.md` decision 31). "First" = the recommended first four, one for each land at difficulty +1; "second" = the same four lands at difficulty +2 (assigned in the code: `needs.tier` 2 in each set file).
 - **Gender ratio: four and four**, two and two in the first four. **Elements:** one or none; **a hybrid of two for risk DPS, safe DPS and grind only** (a trade-off: only the soul's pieces get x1.5, in exchange it can react with itself; never two soul opposites; blocked for support, healer, tank and mixed sets; the design of each: `ELEMENTS.md`); **the first grinder is pure basic**; the first four use disjoint element sets, so any two react when partied.
 - **The first grinder is the easiest set to get** (it boosts progression): the first land, and optionally friendlier odds; and **the world's spawn counts and rates need a buff** to make the build viable (a note in `kit-grind.md`, and in `docs/NOT-BUILT.md`).
 

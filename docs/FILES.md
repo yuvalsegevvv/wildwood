@@ -104,6 +104,12 @@ shared
   skillsets/sabir.js                 Sabir's skill set, The Caravan Raid (risk DPS, fire): smash-and-grab dashes, a powder keg that spends the plunder, and a bonus for finishing the wounded; sand cloth, indigo and crimson
   skillsets/ogden.js                 Ogden's skill set, The Grave Shift (a grinder, water): wide shoves of grave-water, a mire that drags a whole crowd in, and a feeding frenzy that mends him from the rot; moss green, drowned teal and old bone
   skillsets/ottoline.js              Ottoline's skill set, The Porcelain Hour (a debuff and buff support, dark): strings tied to the enemy that weaken it, a dance that quickens the party, and a curtsy that guards everyone; black, porcelain and blood rose
+  skillsets/pell.js                  Pell's skill set, The Lantern Spear (safe DPS, fire): a torchlit dart from a safe distance, a lure that draws the quarry into the light, and one thrown spear that spends the lure; tar black, torch orange and river cream
+  skillsets/genzo.js                 Genzo's skill set, The Gate Bell (a tank, air): a taunting toll, a held note that wards the party, and the great bell that answers a broken ward; bronze, lacquer red and cloud white
+  skillsets/brynja.js                Brynja's skill set, The Rime Run (risk DPS, water): fast cuts while she keeps moving, a skate-dash that chills what it crosses, and a whiteout that spends the frost; ice blue, slate and snow
+  skillsets/tamsin.js                Tamsin's skill set, The Rockbreaker (a grinder, earth): a hammer sweep, a quake that pulls a camp into a heap, and one landslide to finish it; granite, dust and rope
+  skillsets/zahra.js                 Zahra's skill set, The Hour of Glass (a buff support, light): a mirror strike that quickens the line, a blessing of the long noon, and a sandglass planted for the whole fight; gold, glass and lapis
+  skillsets/hollis.js                Hollis's skill set, The Wake Lantern (a healer, dark): a lantern swing that mends, a vigil that returns borrowed dusk, and a long night that carries the party through; lamp amber, mourning black and fog grey
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -204,6 +210,12 @@ game
   outfits/sabir.js                   Sabir's outfit (a dune raider): a wrapped sand turban with a trailing crimson tail, a face veil and a bandit's kohl, a crossed bandolier and a single leather pauldron, baggy sarwal with a fringed crimson sash and a scabbard, buckled boots and the raider-rig weapon dressing
   outfits/ogden.js                   Ogden's outfit (a drowned gravedigger): a moth-eaten flat cap with a weed growing from it, straggling grey hair, stitched and blotched face, a burgundy waistcoat over a torn shirt and an open rib patch, ragged breeches, one split boot and the grave-spade weapon dressing with a rusted bell
   outfits/ottoline.js                Ottoline's outfit (a porcelain doll): a lace headband with a black bow and a blood rose, long ringlets under a straight hime fringe, glassy violet eyes with painted cheeks and seams, a corset over a white puff-sleeved blouse, a tiered bell skirt with lace, striped stockings, buckled shoes and the key-and-doll weapon dressing
+  outfits/pell.js                    Pell's outfit (a night-fisher): a wide conical reed hat with a cord, a tied-back crop and soot-smudged face, an oilskin jerkin with a draped net and a hip lantern, rolled waders and tall tarred boots, and the leister-and-torch weapon dressing
+  outfits/genzo.js                   Genzo's outfit (a temple gate-keeper): a white headband with a bronze plate, a cropped head with a knot, bushy brows and a scar, a vermilion robe with a white collar, a rope belt with a bronze bell and bronze shoulder guards, wide dark trousers and straw sandals, and the bell-mallet weapon dressing
+  outfits/brynja.js                  Brynja's outfit (an ice-skater and frost-hunter): a fur-rimmed slate hood with ice-blue stitching, two long white braids and frost freckles, a quilted jacket with a fur collar, a short pleated skirt with a fur hem, leggings and skate boots with a blade under each sole, and the skate-blade weapon dressing
+  outfits/tamsin.js                  Tamsin's outfit (a quarry-hand): an ochre dust-wrap headscarf, braids pinned up, dust-smudged cheeks, a sleeveless granite work shirt under a rope harness with a tool loop, heavy canvas trousers with stone knee pads and steel-toed boots, and the sledge weapon dressing
+  outfits/zahra.js                   Zahra's outfit (a glass-bearer of the desert noon): a gold circlet with a lapis headcloth and a veil of hanging gold beads, a long braid strung with gold, gold dot marks, a lapis-and-gold cropped robe with wide sleeves, a split white skirt with gold borders and gold sandals, and the mirror weapon dressing
+  outfits/hollis.js                  Hollis's outfit (an undertaker's lamp-bearer): a tall black hat with a crape band and a trailing ribbon, slicked hair, a gaunt tired face, a long black frock coat with amber buttons and a white collar, striped dark trousers, polished boots with amber buckles, and the vigil-hook weapon dressing
   character/model.js                 Look presets, random looks (randomLook), save/load, buildCharacter (puts the head, body and clothes together), the hiker, rebuildHiker
   character/pose.js                  poseRig (walk, run, sit, talk, attacks) and animateHiker
   world/motes.js                     Floating pollen by day, fireflies by night
@@ -264,6 +276,7 @@ game
   player/progression.js              Your health, level and XP as told by the server, the save kept in this browser, hurt / level-up / knocked-out effects
   combat/classes.js                  Classes and their abilities (CLASSES), combat state (CB), effect materials
   combat/weapon-shapes.js            Weapon shapes of the signature outfits: each set carries its own sword, bow and staff models (a katana, a crossbow, a lantern crook...) that replace the three plain weapons while its weapon style is worn
+  combat/weapon-shapes-v3b.js        Weapon shapes of version 3's second six signature outfits (Pell, Genzo, Brynja, Tamsin, Zahra, Hollis): a leister, a bell mallet, a skate blade, a sledge, a mirror, a vigil hook; reed, bamboo, ice, sling, sun and crape bows; a torch pole, a ringed staff, an icicle, a cairn, a sandglass, a vigil pole
   combat/fx-pool.js                  The spark pool: one THREE.Points draw call for the glows, sparks, trails and shockwave debris that every skill, monster attack and boss move adds to its effect
   combat/fx-extra.js                 The effects beyond light: scorch marks, dust and smoke, flying debris, jagged lightning, rotating rune circles, slash crescents, shock domes and the screen flash
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
@@ -297,6 +310,12 @@ game
   skillsets/look-sabir.js            Sabir's skill look (The Caravan Raid): embers and flame tongues, crimson cloth scraps and coin glints fly, a three-tongued flame ring is laid on the ground
   skillsets/look-ogden.js            Ogden's skill look (The Grave Shift): drops of grave-water, bubbles, bone shards and mould specks, a double wave line laid on the ground; the swell pulls in
   skillsets/look-ottoline.js         Ottoline's skill look (The Porcelain Hour): black ribbons and lace scraps, violet sparks and thread streaks, cords looped round a ring on the ground; porcelain-white glints
+  skillsets/look-pell.js             Pell's skill look (The Lantern Spear): embers and flame tongues drift up, reed flecks and river-cream glints fly, a ring of lens rings is laid on the ground
+  skillsets/look-genzo.js            Genzo's skill look (The Gate Bell): bronze chimes and cloud-white wisps swirl outward, vermilion scraps and gold glints fly, a ring of rivets is laid on the ground
+  skillsets/look-brynja.js           Brynja's skill look (The Rime Run): ice shards and snow flurries fly, pale blue sparks and glints cross, a ring of wave lines is laid on the ground
+  skillsets/look-tamsin.js           Tamsin's skill look (The Rockbreaker): pebbles and grit tumble, dust motes and rope scraps drift, a ring of rivets is laid on the ground
+  skillsets/look-zahra.js            Zahra's skill look (The Hour of Glass): gold glints and falling sand drift, lapis flecks and light rays fly, a gold dial is laid on the ground
+  skillsets/look-hollis.js           Hollis's skill look (The Wake Lantern): lantern sparks and fog wisps drift, black crape scraps and amber glints orbit, a ring of waves is laid on the ground
   skillsets/free.js                  version2 testing: the settings popover's "Skill sets and outfits" (unlock any set, put it on, wear its outfit) for every player; REMOVE when the real sources (M3) and the wardrobe (M4 / M5) land
   economy/quests.js                  The quest board panel (Maren) and the quest log: notices, quests in progress, hand-ins (all generated by the server)
   economy/main-quest.js              The main quest on the client: what quest villagers say (mqTalk), the marks over them, the main quest at the top of the quest log, its marker on the maps (people, places, resource nodes), where Odran is, heartleaf to pick
