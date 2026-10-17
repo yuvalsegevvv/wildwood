@@ -62,7 +62,7 @@ const GLEN=(()=>{
 // the Reach's west edge per 8 m of z (the most western x of its land there, +15 m as the fall itself): the x a hiker coming from the Reach must stay east of while the ice fall stands; -1e9 where the Reach does not border the Greyspine
 const WEST_Z0=Math.floor(WZ0/8)*8, WEST_BAR=(()=>{
   const n=Math.ceil((WZ1-WZ0)/8)+1, out=new Array(n).fill(null);
-  for(let i=0;i<n;i++){ const z=WEST_Z0+i*8; for(let x=-700;x<GLEN.gx+400;x+=8) if(waLand(x,z)==='hoar'){ if(waLand(x-16,z)==='grey'||waLand(x-8,z)==='grey') out[i]=x+15; break; } }
+  for(let i=0;i<n;i++){ const z=WEST_Z0+i*8; for(let x=-700;x<GLEN.gx+400;x+=8) if(waLand(x,z)==='hoar'){ if(waLand(x-16,z)==='grey'||waLand(x-8,z)==='grey'){ let e=x; while(e>x-9&&waLand(e-1,z)==='hoar') e--; out[i]=e+15; } break; } }
   return out;
 })();
 function westBarX(z){ const i=Math.round((z-WEST_Z0)/8); return i>=0&&i<WEST_BAR.length&&WEST_BAR[i]!==null?WEST_BAR[i]:-1e9; }

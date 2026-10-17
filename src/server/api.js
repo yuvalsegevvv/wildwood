@@ -70,12 +70,7 @@ function setPos(pid,d){
     if(landAt(p.x,p.z)!=='home'){ p.x=p.okX==null?VIL.x:p.okX; p.z=p.okZ==null?VIL.z:p.okZ; p.y=getH(p.x,p.z); sendTo(p.id,{t:'tp',x:p.x,z:p.z,face:p.face}); guestGateP(p,'travel'); }
     else { p.okX=p.x; p.okZ=p.z; }
   }
-  if(p.gear.east<1 && p.x>TUN.p0) p.x=TUN.p0;   // the barred bridge
-  if(p.gear.north<1 && inVale(p.x,p.z) && p.z<northBarZ(p.x)) p.z=northBarZ(p.x);   // the ice wall in Frostgate Pass (and the crest elsewhere along the vale's north wall)
-  if(p.gear.west<1 && p.z<borderZ(p.x) && p.x<GLEN.ice && Math.abs(p.z-GLEN.z)<GLEN.w+6) p.x=GLEN.ice;   // the ice fall in the glacier valley
-  for(const G of GREY_GATES) if(p.gear[G.id]<1) gateHold(G,p,ox,oz);   // the rock falls: the west wall's neck pass, the River Pass, Redgate Canyon
-  if(p.gear.redgate<1) sunWallHold(p,ox);
-  if(p.gear.river<1) sunCrestHold(p,oz);   // the Sunscar's north crest while the River Pass is shut
+  barStep(p,ox,oz,p.gear);   // the gates that are still shut for this player (shared/barriers.js); an open land holds nobody
 }
 // ITEM[id], SKILLS[id], ... are plain objects: an id of 'constructor' or '__proto__' finds a member of Object.prototype, passes `if(!it)` and made buyP charge NaN coins
 // (then nothing was ever too expensive again). No real id is such a name, so a message carrying one in an id-like field is dropped here, once, for every handler.
