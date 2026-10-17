@@ -62,7 +62,7 @@ function mobsDoc(){
     ['The grey-veined monsters of the main quest',code('GREY_DEFS')+' '+loc(MON_DEF_FILE,/^const GREY_DEFS=/)],
     ['Every definition in one list (what `DEF_BY_ID` on the server indexes)',code('ALL_MON_DEFS')+' '+loc(MON_DEF_FILE,/^const ALL_MON_DEFS=/)],
     ['How many of each kind exist, and where their camps are (a zone holds 40 of the level-1 kind down to 20 of level 15; the vale and the Reach 12 of each; `count` overrides)',code('MON_COUNT')+' '+loc(SV+'monsters.js',/^const MON_COUNT=/)+', '+code('initMonstersS')+' '+loc(SV+'monsters.js',/^function initMonstersS/)],
-    ['Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King\'s beach',code('ZONES')+' '+loc(SH+'zones.js',/^const ZONES=/)+', '+loc(SH+'vale.js',/^const ARENAS=/)+', '+loc(SH+'hoarfrost.js',/^for\(const A of \[ARENA26/)+', '+loc(SH+'beach.js',/ZONES\.push\(ARENA_TIDE/)],
+    ['Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King\'s beach',code('ZONES')+' '+loc(SH+'zones.js',/^const ZONES=/)+', '+loc(SH+'vale.js',/^const ARENAS=/)+', '+loc(SH+'hoarfrost.js',/^const ARENA26=/)+', '+loc(SH+'beach.js',/ZONES\.push\(ARENA_TIDE/)],
     ['Monster behaviour (aggro, chase, attack, leash, wander, respawn)',code('updateMonstersS')+' '+loc(SV+'monsters.js',/^function updateMonstersS/)],
     ['What a kill pays (XP, coins, an item roll, the material, quests, boss skills)',code('rewardKill')+' '+loc(SV+'combat.js',/^function rewardKill/)],
     ['Materials a kind drops (one per kind, `MAT_NAMES`)',code('MATS')+' '+loc(SH+'drops.js',/^const MAT_NAMES=/)],

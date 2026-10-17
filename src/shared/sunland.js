@@ -89,7 +89,7 @@ function sunCrestHold(o,oz){
   if(sunPairCrest(a,b)) o.z=oz;
 }
 // ---- the door of the Sandglass (the dungeon's, shared/dungeons.js DG_ENTRANCES.sandglass) at the atlas's door of the Sunscar, in zone s34 ----
-const SUN_DG_DOOR={id:'sandglass',name:'The Sandglass',x:-1017,z:311,r:12,rot:2.618};   // the atlas's door (WA_POIS 'sun door', -1003, 311) moved 14 m to flat ground 14 m off the Sun Door Road, which ends at the poi (dungeons-smoke asks 12 m of every road)
+const SUN_DG_DOOR={id:'sandglass',name:'The Sandglass',x:-1045,z:365,r:12,rot:1.571};   // the atlas's door (WA_POIS 'sun door', -1003, 311) moved 70 m to flat ground 24 m off the Sun Door Road, clear of the Arches cave's rock (its ground tint would hide the door's patch) and the Bowl's apron
 function sunKeepOut(x,z,m,early){   // early: asked while this file loads (ARENAS does not exist yet)   // water (the border river), the Bowl and its apron, the dungeon door: no camp, node or plant here (m: extra margin)
   m=m||0; if(Math.hypot(x-SUN_DG_DOOR.x,z-SUN_DG_DOOR.z)<SUN_DG_DOOR.r+m+6) return true;
   if(Math.hypot(x-SUN_CITY.x,z-SUN_CITY.z)<SUN_CITY.r+80+m) return true;

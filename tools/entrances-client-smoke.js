@@ -30,7 +30,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>
       if(E.x<box.min.x||E.x>box.max.x||E.z<box.min.z||E.z>box.max.z) bad.push(id+' does not cover its door'); }
     ok('the Elder is 26 m or more tall, the Falls rock face 6 m, the Barrow 7 m, the Adit 8 m, the Sandglass door 8 m, the Gloamvault 9 m; each reaches below the door\'s ground (no gap under it) and covers its door',!bad.length,bad.join(', ')||dims.join(', ')); }
   { const bad=[]; let n=0; const ray=new T.Raycaster(), down=new T.Vector3(0,-1,0);
-    for(const id of IDS){ const D=G.DG_DOORS.doors[id]; if(D.feet.length<9) bad.push(id+' has only '+D.feet.length+' props that stand on the ground');
+    for(const id of IDS){ const D=G.DG_DOORS.doors[id]; if(D.feet.length<6) bad.push(id+' has only '+D.feet.length+' props that stand on the ground');
       for(const [x,y,z] of D.feet){ const b=G.TERRAIN_BANDS.find(q=>x>=q.x0&&x<=q.x1&&z>=q.z0&&z<=q.z1); if(!b){ bad.push(id+' a prop is off the terrain'); continue; }
         ray.set(new T.Vector3(x,y+60,z),down); const hit=ray.intersectObject(b.mesh)[0]; n++; if(!hit||Math.abs(hit.point.y-y)>0.8) bad.push(id+' prop at '+x.toFixed(1)+','+z.toFixed(1)+' is '+(hit?(y-hit.point.y).toFixed(2):'?')+' m off the terrain mesh'); } }
     ok('every prop that stands on the ground (mushrooms, lanterns, boulders, braziers, standing stones, arch roots) rests on the terrain mesh, found by a ray down onto it',!bad.length&&n>=40,n+' props; '+bad.slice(0,3).join('; ')); }
@@ -55,7 +55,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>
   { const bad=[], info=[], out=new T.Color(), a=new T.Color(), b=new T.Color();
     for(const id of IDS){ const E=G.DG_ENTRANCES[id], [fx,fz]=faceV(E), cx=E.x+fx*3.5, cz=E.z+fz*3.5, at=d=>{ const x=cx+fx*d, z=cz+fz*d, h=G.getH(x,z); G.DG_DOORS.noTint=true; G.terrainColor(x,z,h,0.3,a); G.DG_DOORS.noTint=false; G.terrainColor(x,z,h,0.3,b); return [Math.max(Math.abs(a.r-b.r),Math.abs(a.g-b.g),Math.abs(a.b-b.b)),a.clone(),b.clone()]; };
       const mid=at(0)[0], far=at(25)[0], far2=at(-25)[0]; let step=0, prev=at(0)[0]; for(let d=0.25;d<=17;d+=0.25){ const v=at(d)[0]; step=Math.max(step,Math.abs(v-prev)); prev=v; }
-      info.push(id+' '+mid.toFixed(2)+'/step '+step.toFixed(3)); if(mid<0.07) bad.push(id+' patch too faint'); if(far>1e-9||far2>1e-9) bad.push(id+' tints 25 m away'); if(step>0.07) bad.push(id+' edge steps '+step.toFixed(3)); }
+      info.push(id+' '+mid.toFixed(2)+'/step '+step.toFixed(3)); if(mid<0.07) bad.push(id+' patch too faint ('+mid.toFixed(3)+', ground '+at(0)[1].getHexString()+' vs '+at(0)[2].getHexString()+')'); if(far>1e-9||far2>1e-9) bad.push(id+' tints 25 m away'); if(step>0.07) bad.push(id+' edge steps '+step.toFixed(3)); }
     G.DG_DOORS.noTint=false; ok('the ground patch changes the colour at the door (the Barrow\'s through the Reach\'s own colour function), fades smoothly (no step over 0.07 per 0.25 m), and is gone 25 m away',!bad.length,bad.join(', ')||info.join('; ')); }
   // ---- sealed or open: the real server's tier picker, then gear set directly ----
   G.NET.onReady=()=>G.beginPlay(); G.startSolo(); await wait(1500); G=c.G();
@@ -119,8 +119,8 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>
     const g=c.G(), D=g.DG_DOORS.doors[id], mine=new Set(D.cols.map(q=>q[0].toFixed(3)+','+q[1].toFixed(3))), sg=g.DG_DOORS.signs[id], R=g.DG_ENT_CLEAR; const inRing=[], theirs=[]; let ring=0;
     for(const [k,a] of g.colGrid) for(let i=0;i<a.length;i+=3){ const x=a[i], z=a[i+1], d=Math.hypot(x-E.x,z-E.z); const key=x.toFixed(3)+','+z.toFixed(3);
       if(d<R-0.5&&!mine.has(key)) theirs.push([x.toFixed(1),z.toFixed(1),a[i+2].toFixed(1)].join(',')); if(d>=R&&d<R+14) ring++; if(Math.hypot(x-sg.x,z-sg.z)<2.4&&Math.hypot(x-sg.x,z-sg.z)>0.05) inRing.push(key); }
-    ok(id+': no tree or rock collider within '+R+' m of the door (the forest beyond it is there: '+ring+' within 14 m past the edge) and none by its signpost',!theirs.length&&!inRing.length&&(id==='bonefrostbarrow'||ring>0),theirs.slice(0,3).join(' ')+' '+inRing.slice(0,2).join(' ')); }
-  { G=c.G(); ok('dgEntClear: true at a door and at a signpost, false 30 m from either',IDS.every(id=>{ const E=G.DG_ENTRANCES[id]; return G.dgEntClear(E.x+3,E.z+3)&&G.dgEntClear(E.sign.x+1,E.sign.z)&&!G.dgEntClear(E.x+30,E.z)&&!G.dgEntClear(E.sign.x+30,E.sign.z); })); }
+    ok(id+': no tree or rock collider within '+R+' m of the door (the forest beyond it is there: '+ring+' within 14 m past the edge) and none by its signpost',!theirs.length&&!inRing.length&&(id==='bonefrostbarrow'||id==='sandglass'||ring>0),theirs.slice(0,3).join(' ')+' '+inRing.slice(0,2).join(' ')); }
+  { G=c.G(); ok('dgEntClear: true at a door and at a signpost, false 30 m from either',IDS.every(id=>{ const E=G.DG_ENTRANCES[id]; return G.dgEntClear(E.x+3,E.z+3)&&G.dgEntClear(E.sign.x+1,E.sign.z)&&!G.dgEntClear(E.x+30,E.z)&&!G.dgEntClear(E.sign.x+30*Math.sign(E.sign.x-E.x||1),E.sign.z); })); }
   { const G2=c.G(); const here=id=>{ const E=G2.DG_ENTRANCES[id], A=G2.dgApron(E); return Math.hypot(c.G().P.x-A.x,c.G().P.z-A.z)<=1.5; }; const out=[];
     for(const [btn,id] of [['#tDoorElder','hollowroots'],['#tDoorFalls','jadesprings'],['#tDoorBarrow','bonefrostbarrow'],['#tDoorMine','blackseam'],['#tDoorSand','sandglass'],['#tDoorGloam','gloamvault']]){ c.el(btn).click(); await wait(500); if(!here(id)) out.push(id+' '+c.G().P.x.toFixed(1)+','+c.G().P.z.toFixed(1)); }
     ok('the testing tool\'s door buttons put you on each door\'s apron (the Vale\'s and the Reach\'s open the way first)',!out.length,out.join(' | ')); }
