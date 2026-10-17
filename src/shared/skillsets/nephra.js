@@ -1,7 +1,7 @@
 //@ Nephra's skill set, The Linen Rite (a shield healer, earth): wrappings that become shields, a salve that spends the linen it left on the enemy, and a shield that bites back when it breaks; sand gold, lapis and old linen
 /* Agent map. Kit: docs/skillkits/kit-healer.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (version 3, the Sunscar's first pair: all six pieces earth, the dry tomb-dust of the desert); outfit and palette:
    docs/skillkits/looks/nephra.md, game/outfits/nephra.js; visuals: game/skillsets/look-nephra.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3-smoke.js.
-   LAND: the Sunscar's pair, from the Glass Guardian, the Sand Wyrm and the Sandglass at +3 (Sabir replaces it from +4; SS_SOURCES.sun); the free
+   LAND: the Sunscar's pair, from the Glass Guardian, the Sand Wyrm and the Sandglass at +3 (Sabir at +1 and Zahra at +2 are the Sunscar's other two; +4 and +5 roll Nephra; SS_SOURCES.sun); the free
    testing tools (server/skillsets-free.js) still give it to anyone. Mark: Linen (left on enemies by the blows, spent by Salve for Sand).
    What makes her unlike Ambrose (the water healer): she heals by SHIELDS (blows shield the party, a salve shields and guards), not by lowest-health heals, and a broken shield strikes back (the `shield` trigger). */
 defineSkillSet({

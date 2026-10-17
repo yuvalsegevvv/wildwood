@@ -85,7 +85,8 @@ function cthRender(sp){
 function cthPump(){
   cthTimer=0; const job=CTH_QUEUE.shift(); if(!job) return;
   let url=''; try{ url=cthRender(job.sp); }catch(e){ url=''; }
-  CTH_CACHE[job.key]=url; const cbs=CTH_PENDING[job.key]||[]; delete CTH_PENDING[job.key]; for(const f of cbs) f(url);
+  CTH_CACHE[job.key]=url; const cbs=CTH_PENDING[job.key]||[]; delete CTH_PENDING[job.key];
+  try{ for(const f of cbs) f(url); }catch(e){}   // a tile that went away must never stop the queue: the last tiles of a long list (the newest signature outfits) stayed blank when one callback threw
   if(CTH_QUEUE.length) cthTimer=setTimeout(cthPump,12);
 }
 function cthGet(sp,cb){

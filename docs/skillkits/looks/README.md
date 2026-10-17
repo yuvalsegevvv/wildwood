@@ -1,4 +1,4 @@
-# The twelve outfits (looks)
+# The eighteen outfits (looks)
 
 > **Built, not approved.** These are the *outfits* of the eight signature characters of the skill-set plan (`docs/SKILL-SETS.md`, `docs/skillkits/THEMES.md` on the branch `claude/skill-sets-plan-lp2c72`),
 > built as real 3D kits in `src/game/outfits/<id>.js`. The skills and their rules are not touched. Nothing grants an outfit in the game yet: the character editor's Clothes, Hair and Features tabs let anyone wear any piece (a preview; unlocking is the wardrobe's job).
@@ -27,6 +27,12 @@
 | [Sabir](sabir.md) | M | risk DPS, fire | a raid in motion | a wide turban, crossed bandoliers, a sash with fringed tails | `ropebraid` / `narrowsight` | +21,000 (version 3, the desert) |
 | [Ogden](ogden.md) | M | grind, water | a shift that never ended | a slouch: a flat cap with a weed, a torn waistcoat, green shins, a toe tag | `rotstraggle` / `deadgaze` | +14,000 (version 3, the dark land) |
 | [Ottoline](ottoline.md) | F | support (both), dark | a doll in mourning dress | a little bell: a lace headdress, ringlets, a corset, a tiered skirt | `himeringlets` / `glassgaze` | +25,000 (version 3, the dark land) |
+| [Pell](pell.md) | M | safe DPS, fire | a long patient night | a wide reed cone hat, a draped net, a hip lantern, tall tarred boots | `taillock` / `squintgaze` | version 3, Wildwood |
+| [Genzo](genzo.md) | M | tank, air | a doorway that holds | a bound head with a knot, a vermilion robe, a rope belt with a bell, wide trousers | `gateknot` / `heavybrow` | version 3, the Vale |
+| [Brynja](brynja.md) | F | risk DPS, water | a blade on the ice | a fur-rimmed hood, twin white braids, a short pleated skirt, skate blades | `frostbraids` / `icegaze` | version 3, the Reach |
+| [Tamsin](tamsin.md) | F | grind, earth | a slope coming down | a wrapped head, bare strong arms, a rope harness, knee-pad trousers | `pinnedbraids` / `grittygaze` | version 3, the Greyspine |
+| [Zahra](zahra.md) | F | support (buff), light | noon on glass | a bead-veiled circlet, a wide-sleeve robe, a split white skirt | `goldbraid` / `noongaze` | version 3, the Sunscar |
+| [Hollis](hollis.md) | M | healer, dark | a lamp in the dark | a tall crape hat, a long frock coat, a hooked lantern | `slickback` / `vigilgaze` | version 3, the Gloamhorn |
 
 The hiker is about 54,000 triangles; an outfit adds 15,000-22,000 at full detail (`charDetail('hero')`), proportionally fewer for other players and villagers (every segment count goes through `sg(n)`).
 

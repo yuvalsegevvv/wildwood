@@ -1,10 +1,10 @@
 //@ Ottoline's skill set, The Porcelain Hour (a debuff and buff support, dark): strings tied to the enemy that weaken it, a dance that quickens the party, and a curtsy that guards everyone; black, porcelain and blood rose
 /* Agent map. Kit: docs/skillkits/kit-support.md (focus 'both': the only set that buffs and debuffs); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (version 3, the Gloamhorn's pair: all six pieces dark, the
    perma-twilight); outfit and palette: docs/skillkits/looks/ottoline.md, game/outfits/ottoline.js; visuals: game/skillsets/look-ottoline.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3-smoke.js.
-   LAND: the Gloamhorn's set from +4 (see ogden.js). Mark: String (tied by the blows; Dance, Dolly and the bonus read it: weaker enemies, stronger allies). Corvin (debuff) and Dunstan (buff)
+   LAND: the Gloamhorn's set at +1 (moved down from +4 when every land got a set at +1, +2 and +3: see ogden.js). Mark: String (tied by the blows; Dance, Dolly and the bonus read it: weaker enemies, stronger allies). Corvin (debuff) and Dunstan (buff)
    do one half each; she does both at half strength and is fragile for it (Porcelain). */
 defineSkillSet({
-  id:'ottoline', name:'The Porcelain Hour', land:'gloam', needs:{tier:4}, el:'dark', outfit:'ottoline',
+  id:'ottoline', name:'The Porcelain Hour', land:'gloam', needs:{tier:1}, el:'dark', outfit:'ottoline',
   role:{main:'support', focus:'both'},
   char:{name:'Ottoline', sex:'female', theme:'a porcelain doll who pulls strings: the enemy dances weaker and her friends dance stronger', ip:{kind:'original', riffs:'the porcelain-doll and gothic-fashion genre (a bonnet, ringlets, lace, a corset, a key); no existing character'}},
   pal:{main:0x2a2234, accent:0xf3eee8, glow:0xb06ad8},

@@ -15,7 +15,7 @@ module.exports=function loadCharacter(){
     try{ new Function(src); return src; }catch(e){ console.warn('char-load: skipping src/game/outfits/'+f+' (syntax error: '+e.message+')'); return ''; } }).join('');   // a half-edited outfit must not break every preview and test (several are written at once)   // the order of src/manifest.json does not matter here: they only fill OUTFITS / CHAR_MODELS
   const model=read('game/character/model.js').split('const hiker=')[0];
   const ws=read('game/combat/weapons.js'), wpn=ws.slice(ws.indexOf('function weaponsOn'),ws.indexOf('function aimDir'));   // the weapon models, to preview an outfit's weapon dressing
-  const wsh=read('game/combat/weapon-shapes.js');
+  const wsh=read('game/combat/weapon-shapes.js')+read('game/combat/weapon-shapes-v3b.js');
   const stubs='const ITEM={warrior:{slot:"W",tier:2},archer:{slot:"A",tier:2},mage:{slot:"M",tier:2}},CLASS_OF={W:"warrior",A:"archer",M:"mage"};const fxMat=(c,o)=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o});const dgVisTier=w=>w?w.tier:0;\n';
   const code=shared+helpers+'const localStorage={getItem(){return null},setItem(){}};const scene=new THREE.Scene();const matFlat=new THREE.MeshLambertMaterial();\n'+pre+outfits+model+stubs+wsh+wpn+';return {'+NAMES.join(',')+'};';
   const C=new Function(code)();
