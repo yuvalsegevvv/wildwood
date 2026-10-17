@@ -84,6 +84,15 @@ function pendantIconArt(it){
   else gem=`<path d="M17.5 13L23 19L19.4 20.6L22 29L10 21.5L14 20L11 16Z" fill="${c}" ${OUT}/><path d="M17 15.5L19.5 19L16 20.5Z" fill="${l}"/>`;
   return `<path d="M6.5 3.5Q16 22 25.5 3.5" fill="none" stroke="#15120e" stroke-width="3" stroke-linecap="round"/><path d="M6.5 3.5Q16 22 25.5 3.5" fill="none" stroke="${m}" stroke-width="1.6" stroke-dasharray="2 1.2" stroke-linecap="round"/><circle cx="16" cy="13" r="1.6" fill="${m}" ${OUT}/>${gem}${it.n?DG_SPARK:''}`;
 }
+// bag icons for what is not equipment: a monster drop (a faceted shard in the monster's colour), ore (a rock), a log, a herb (a sprig)
+function matIconArt(col,kind){
+  const d=icoShade(col,0.62), l=icoShade(col,1.3);
+  if(kind==='mining') return `<path d="M5 24L9 11L17 6L26 11L28 23L18 28Z" fill="${col}" ${OUT}/><path d="M9 11L17 15L26 11M17 15L18 28" fill="none" stroke="${d}" stroke-width=".9"/><path d="M10.5 12.5L16 9.5" stroke="${l}" stroke-width="1.2"/><circle cx="22" cy="19" r="1.6" fill="${l}"/>`;
+  if(kind==='woodcutting') return `<rect x="4" y="11" width="24" height="12" rx="2" fill="${col}" ${OUT}/><path d="M7 14H25M7 17.5H25M7 20.5H25" stroke="${d}" stroke-width=".8" opacity=".7"/><ellipse cx="26" cy="17" rx="3" ry="6" fill="${l}" ${OUT}/><ellipse cx="26" cy="17" rx="1.4" ry="3" fill="none" stroke="${d}" stroke-width=".8"/>`;
+  if(kind==='gathering') return `<path d="M16 28V13" stroke="#15120e" stroke-width="3.4" stroke-linecap="round"/><path d="M16 28V13" stroke="#5a8a3a" stroke-width="1.6" stroke-linecap="round"/><path d="M16 15Q8 14 7 6Q15 6 16 15Z" fill="${col}" ${OUT}/><path d="M16 19Q24 18 25 10Q17 10 16 19Z" fill="${col}" ${OUT}/><path d="M16 24Q10 24 8 18Q14 17 16 24Z" fill="${l}" ${OUT}/>`;
+  return `<path d="M16 3L26 12L16 29L6 12Z" fill="${col}" ${OUT}/><path d="M6 12H26M16 3L12 12L16 29L20 12Z" fill="none" stroke="${d}" stroke-width=".9"/><path d="M9 11L14 5.5" stroke="${l}" stroke-width="1.3"/>`;
+}
+const matIcon=(col,kind)=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true">${matIconArt(col,kind)}</svg>`;
 // faint outline for an empty equipment slot
 function slotIcon(slot){
   const fake=slot==='weapon'?ITEM.sword1:slot==='ring'?ITEM['ring-basic']:slot==='pendant'?ITEM['pendant-xp']:ITEM[slot+'1'];  return itemIcon(fake).replace('class="ico"','class="ico ghost"');
