@@ -26,7 +26,7 @@ const H=x.rawHeight, V=x.VIL6, G=x.GREY_GATES.find(g=>g.id==='neck');
   ok('wrecks lie in the sea, cave mouths on the shore, the lighthouse on land at the cape',x.GLOAM_WRECKS.length===5&&x.GLOAM_WRECKS.every(q=>x.waIsSea(q[0],q[1]))&&x.GLOAM_CAVES.length>=6&&x.GLOAM_HOLD.caves.length===3&&H(x.GLOAM_LIGHT.x,x.GLOAM_LIGHT.z)>1,x.GLOAM_WRECKS.length+' wrecks, '+x.GLOAM_CAVES.length+' caves'); }
 
 // ---- reachability on foot (slope limit 1.2 per metre, 4 m cells), from the neck's east side ----
-{ const C=4, LIM=1.2, X0=x.WX0, X1=-380, Z0=-1100, Z1=-100, Wd=Math.floor((X1-X0)/C)+1, Dd=Math.floor((Z1-Z0)/C)+1, HH=new Float32Array(Wd*Dd);
+{ const C=4, LIM=1.2, X0=x.WX0, X1=-380, Z0=-1100, Z1=300, Wd=Math.floor((X1-X0)/C)+1, Dd=Math.floor((Z1-Z0)/C)+1, HH=new Float32Array(Wd*Dd);
   for(let j=0;j<Dd;j++) for(let i=0;i<Wd;i++) HH[j*Wd+i]=H(X0+i*C,Z0+j*C);
   const seen=new Uint8Array(Wd*Dd), q=[Math.round((G.z-Z0)/C)*Wd+Math.round((G.x+14-X0)/C)]; seen[q[0]]=1;
   const nb=[[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.414],[1,-1,1.414],[-1,1,1.414],[-1,-1,1.414]];
@@ -36,7 +36,7 @@ const H=x.rawHeight, V=x.VIL6, G=x.GREY_GATES.find(g=>g.id==='neck');
   const miss=pts.filter(p=>!reach(p[0],p[1],20)).map(p=>p[2]);
   ok('from the neck pass every zone, both arenas, Wraithwick, the lighthouse and the reserved door can be walked to',miss.length===0&&zs.length===11,zs.length+' zones'+(miss.length?'; not: '+miss.join(' '):''));
   const nodes=x.NODES.filter(n=>/^m\d+$/.test(String(n.zone))), nm=nodes.filter(n=>!reach(n.x,n.z,8));
-  ok('55 resource nodes (rime ore, frostpine, snowmoss) in the zones m30..m40, all on reachable ground and off the keep-outs',nodes.length===55&&nm.length===0&&nodes.every(n=>x.inGloam(n.x,n.z)&&!x.gloamKeepOut(n.x,n.z,0)),nodes.length+' nodes, '+nm.length+' unreachable'); }
+  ok('55 resource nodes (rime ore, frostpine, snowmoss) in the zones m30..m40, all on reachable ground and off the keep-outs',nodes.length===55&&nm.length===0&&nodes.every(n=>x.inGloam(n.x,n.z)&&!x.gloamKeepOut(n.x,n.z,0)),nodes.length+' nodes, '+nm.length+' unreachable'+(nm.length?': '+nm.map(n=>n.zone+'@'+Math.round(n.x)+','+Math.round(n.z)).join(' '):'')); }
 
 // ---- the village ----
 { const src=fs.readFileSync(path.join(__dirname,'../src/game/village/villagers.js'),'utf8'), people=(src.match(/vil:6,/g)||[]).length;
