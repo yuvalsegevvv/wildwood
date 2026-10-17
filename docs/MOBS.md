@@ -443,6 +443,6 @@ A def's `model` picks a family model (`MODELS.<model>={geo,build,anim}`) and its
 | `scorpion` | 2 | 1.05 / 0.1 / 1.5 / 3 / 0.7 / 1 / 12 / 5 | src/shared/monster-defs.js:15 | src/game/combat/monster-desert.js:8 |
 | `cactus` | 1 | 1.35 / 0.13 / 2.3 / 1.5 / 0.8 / 3 / 10 / 3 | src/shared/monster-defs.js:16 | src/game/combat/monster-desert.js:39 |
 | `sandworm` | 6 | 1.2 / 0.12 / 2.2 / 2.4 / 0.95 / 2 / 14 / 3 | src/shared/monster-defs.js:17 | src/game/combat/monster-desert.js:67 |
-| `djinn` | 4 | 0.95 / 0.11 / 1.8 / 2.8 / 0.5 / 2.3 / 15 / 4 | src/shared/monster-defs.js:18 | src/game/combat/monster-desert.js:97 |
-| `sentinel` | 1 | 1 / 0.12 / 2.6 / 1.9 / 1 / 3.1 / 0 / 2 | src/shared/monster-defs.js:19 | src/game/combat/monster-desert.js:120 |
+| `djinn` | 4 | 0.95 / 0.11 / 1.8 / 2.8 / 0.5 / 2.3 / 15 / 4 | src/shared/monster-defs.js:18 | src/game/combat/monster-desert.js:102 |
+| `sentinel` | 1 | 1 / 0.12 / 2.6 / 1.9 / 1 / 3.1 / 0 / 2 | src/shared/monster-defs.js:19 | src/game/combat/monster-desert.js:135 |
 | `bat` | 1 | 0.8 / 0.09 / 1.4 / 4 / 0.45 / 1 / 16 / 6 | src/shared/monster-defs.js:20 | src/game/combat/monster-gloam.js:5 |

@@ -35,7 +35,8 @@ MODELS.wisp={
       for(const sd of W) body.push(moEll(0.028,0.02,0.016,sd*0.05,1.65,-0.19,0x9fe8ff,null,5));
       for(const sd of W){ body.push(moBone([sd*0.22,1.28,0],[sd*0.3,1.0,-0.3],0.05,0.04,sh,6),moBone([sd*0.3,1.0,-0.3],[sd*0.26,0.8,-0.5],0.04,0.03,skinC,6));
         for(let i=0;i<4;i++) body.push(moHorn([sd*0.26+(i-1.5)*0.02,0.8,-0.5],[sd*0.05,-1,-0.5],0.18,0.012,0.3,skinC,4,[0,0,-1])); }
-      if(st==='wight') for(let i=0;i<7;i++){ const a=(i-3)*0.32; body.push(moCone([Math.sin(a)*0.15,1.82,-0.04+Math.cos(a)*0.02],[Math.sin(a)*0.4,1,0],0.28+0.1*(3-Math.abs(i-3))*0.4,0.03,0xdff4ff,4)); }   // a crown of ice
+      if(d.id==='gloamwarden') moBossWarden(body,p);
+      else if(st==='wight') for(let i=0;i<7;i++){ const a=(i-3)*0.32; body.push(moCone([Math.sin(a)*0.15,1.82,-0.04+Math.cos(a)*0.02],[Math.sin(a)*0.4,1,0],0.28+0.1*(3-Math.abs(i-3))*0.4,0.03,0xdff4ff,4)); }   // a crown of ice
       if(st==='wraith') for(let i=0;i<5;i++) body.push(moCone([(i-2)*0.06,1.8,0.0],[(i-2)*0.15,1,0.2],0.2,0.03,0xdff4ff,4));
       for(let i=0;i<8;i++){ const a=i/8*TAU+0.2; body.push(moTube([[Math.cos(a)*0.22,1.3,Math.sin(a)*0.16+0.05],[Math.cos(a)*0.35,0.9,Math.sin(a)*0.28+0.08],[Math.cos(a)*0.4,0.4,Math.sin(a)*0.34+0.1]],0.07,0.012,hood,5,true)); }   // a cloak in rags behind
     }

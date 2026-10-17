@@ -71,6 +71,10 @@ MODELS.sandworm={
     G.segs=R.map((r,i)=>{ const L=[moEll(r,r*0.95,r*1.25,0,0,0,sk,null,moQ(14))];
       for(const dz of [-0.25,0.25]) L.push(moCone([0,r*0.85,dz*r*2],[0,1,0.1],r*(boss?1.3:0.7),r*0.14,p.ridge,5));
       if(boss&&i<6) for(const sd of W) L.push(moCone([sd*r*0.8,r*0.45,0],[sd,0.6,0],r*0.9,r*0.1,p.ridge,5));
+      if(boss||p.plates) L.push(moEll(r*0.9,r*0.07,r*0.62,0,r*0.9,0,(x,y,z,c)=>{ c.set(p.horn).multiplyScalar(0.7+0.4*Math.abs(Math.sin(z*14+i))); },[0,0,0],8));   // a bone plate over each segment
+      if(p.fin){ const fn=(x,y,z,c)=>{ c.set(p.fin).multiplyScalar(0.7+0.5*Math.abs(Math.sin(z*12+i))); };   // a sea serpent: a dorsal fin along the back and fins on its flanks
+        L.push(moEll(0.016,r*0.7,r*1.25,0,r*0.98,0,fn,null,8)); if(i<5) for(const sd of W) L.push(moEll(r*0.7,0.018,r*0.5,sd*r*1.1,-r*0.15,0,fn,[0,sd*0.3,sd*0.45],8)); }
+      if(p.spots) for(const sd of W) for(const a of [-0.35,0.25,0.8]) L.push(moEll(0.035,0.035,0.035,sd*Math.cos(a)*r*0.97,Math.sin(a)*r*0.9,0.12*(a>0?1:-1),p.spots,null,5));   // lights along the flanks
       return moMerge(L); });
     G.tailTip=moMerge([moEll(0.16,0.15,0.22,0,0,0.1,sk,null,8),moCone([0,0,0.1],[0,0,1],0.7,0.14,p.horn,5),...W.map(sd=>moCone([sd*0.1,0,0.2],[sd*0.8,0.2,0.8],0.4,0.06,p.horn,4))]);
     const head=[moEll(0.55,0.5,0.62,0,0,-0.1,sk,null,moQ(16)),moEll(0.42,0.4,0.07,0,-0.02,-0.66,0x1a0a08,null,12)];   // the skull and the dark mouth
@@ -78,6 +82,7 @@ MODELS.sandworm={
     for(let i=0;i<14;i++){ const a=i/14*TAU+0.2, r=0.42; head.push(moCone([Math.cos(a)*r,Math.sin(a)*r-0.02,-0.64],[-Math.cos(a)*0.5,-Math.sin(a)*0.5,-1],0.3,0.045,0xf2ead2,4)); }   // the ring of teeth, pointing in
     for(let i=0;i<10;i++){ const a=i/10*TAU+0.5, r=0.24; head.push(moCone([Math.cos(a)*r,Math.sin(a)*r-0.02,-0.66],[-Math.cos(a)*0.2,-Math.sin(a)*0.2,-1],0.22,0.035,0xe0d6bc,4)); }
     for(const sd of W){ head.push(moEll(0.08,0.09,0.06,sd*0.36,0.28,-0.38,p.eye,null,7),moHorn([sd*0.32,0.34,-0.1],[sd*0.5,0.8,-0.3],boss?1.1:0.7,0.1,0.9,p.horn,6,[0,0,-1]),moHorn([sd*0.45,-0.05,-0.2],[sd,0.1,-0.5],0.6,0.08,0.7,p.horn,5,[0,0.5,0])); }
+    if(boss||p.barbels) for(const sd of W) head.push(moTube([[sd*0.3,0.12,-0.62],[sd*0.6,0.1,-1.0],[sd*0.85,-0.15,-1.35],[sd*0.8,-0.5,-1.5]],0.04,0.012,p.horn,5,true));   // whiskers trailing from the mouth
     G.head=moMerge(head);
     return G;
   },
@@ -106,8 +111,18 @@ MODELS.djinn={
       moBone([sd*0.4,1.38,0],[sd*0.34,1.12,-0.3],0.1,0.08,sm,7),moBone([sd*0.34,1.12,-0.3],[sd*-0.1,1.14,-0.42],0.08,0.07,sm,7),moEll(0.1,0.04,0.04,sd*0.36,1.14,-0.3,p.gold,null,8),   // arms folded across the chest, a gold bracer
       moEll(0.06,0.06,0.06,sd*0.38,1.4,0,p.gold,null,6)); }
     body.push(moEll(0.34,0.05,0.2,0,0.98,-0.02,p.gold,null,12));   // a gold sash
+    if(p.fire){   // an efreet: gold horns, flames licking up from the turban and the shoulders, embers drifting round the tail
+      const fl=(x,y,z,c)=>{ c.set(p.flame).multiplyScalar(0.75+0.45*clamp((y-1.4)*0.9)); };
+      for(const sd of W) body.push(moHorn([sd*0.11,1.9,0],[sd*0.5,1,-0.1],0.42,0.055,0.9,p.gold,6,[0,0,-1]),moCone([sd*0.38,1.5,0],[sd*0.25,1,0],0.55,0.1,fl,5),moCone([sd*0.3,1.46,0.1],[sd*0.1,1,0.2],0.4,0.08,fl,5));
+      for(let i=0;i<3;i++) body.push(moCone([(i-1)*0.07,2.12,0],[(i-1)*0.2,1,0],0.34+0.1*(i===1),0.07,fl,5));
+      for(let i=0;i<7;i++){ const a=i*0.9, r=0.18+0.05*i; body.push(moEll(0.03,0.03,0.03,Math.cos(a)*r,0.35+0.16*i,Math.sin(a)*r*0.8,p.flame,null,5)); } }
+    if(p.dust) for(let i=0;i<6;i++) body.push(moEll(0.26+0.045*i,0.012,0.22+0.04*i,0.1-0.03*i,0.28+0.17*i,0.05,(x,y,z,c)=>{ c.set(p.dust).multiplyScalar(0.8+0.3*moNoise(x,y,z,12)); },[0.18*Math.sin(i*1.7),i*0.9,0.15*Math.cos(i*1.3)],12));   // a whirlwind of sand wound round the tail
+    if(p.siren){   // fins on the ears and back, and a fluke where the tail ends
+      const fin=(x,y,z,c)=>{ c.set(p.fin).multiplyScalar(0.75+0.4*Math.abs(Math.sin(y*30+z*20))); };
+      for(const sd of W){ body.push(moEll(0.015,0.12,0.08,sd*0.17,1.78,0.02,fin,[0,0,sd*0.5],7),moEll(0.012,0.09,0.06,sd*0.19,1.7,0.04,fin,[0,0,sd*0.8],7),moEll(0.26,0.02,0.1,0.2+sd*0.14,0.08,0.12,fin,[0.2,sd*0.6,sd*0.2],8)); }
+      body.push(moEll(0.014,0.34,0.14,0,0.95,0.2,fin,[0.25,0,0],8),moEll(0.014,0.22,0.1,0,1.45,0.2,fin,[0.3,0,0],8)); }
     if(boss) for(let i=0;i<7;i++){ const a=(i-3)*0.3; body.push(moCone([Math.sin(a)*0.2,2.0,0],[Math.sin(a)*0.6,1,0],0.4,0.04,p.gold,4)); }
-    for(let i=0;i<6;i++){ const a=i*1.05; body.push(moTube([[Math.cos(a)*0.12,0.6,Math.sin(a)*0.1],[Math.cos(a+0.6)*0.26,0.32,Math.sin(a+0.6)*0.2],[Math.cos(a+1.1)*0.18,0.06,Math.sin(a+1.1)*0.14]],0.05,0.01,sm,5,true)); }   // wisps of smoke round the tail
+    if(!p.siren) for(let i=0;i<6;i++){ const a=i*1.05; body.push(moTube([[Math.cos(a)*0.12,0.6,Math.sin(a)*0.1],[Math.cos(a+0.6)*0.26,0.32,Math.sin(a+0.6)*0.2],[Math.cos(a+1.1)*0.18,0.06,Math.sin(a+1.1)*0.14]],0.05,0.01,sm,5,true)); }   // wisps of smoke round the tail
     G.body=moMerge(body); return G;
   },
   build(d,G,M,g,P0){ P0.body=M(G.body); g.add(P0.body); },
