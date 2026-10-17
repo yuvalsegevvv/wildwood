@@ -19,7 +19,6 @@ function frame(){
     updateMotes(dt,t); updatePetals(dt,t);
     updateAnimals(dt);
     cvUpdate(dt);   // caves: sites out of sight are hidden, the cave's darkness is sampled (world/caves.js)
-    updateGreyfall(dt);   // greyfall: the sheet, spray and roar (village/buildings-greyfall.js)
     chamoisUpdate(dt);   // chamois: the Greyspine's harmless mountain goats (wildlife/chamois.js)
     updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateGreyspine(dt); updateGloamhorn(dt); updateNodes(); updateLoreProps();
     updateNPCs(dt);
