@@ -5,7 +5,7 @@
    hoarfrost.js, before anything that walks VILS at load (roads, the main quest's carts). */
 const VIL4=(()=>{
   const H=GREY_HM, h=greyFloor(H.x,H.z)+H.up;
-  return layoutVillage({x:H.x,z:H.z,h},{seed:4747,ent:Math.atan2(GLEN.x0+30-H.x,GLEN.z-H.z)});
+  return layoutVillage({x:H.x,z:H.z,h},{seed:4747,ent:Math.atan2(GLEN.x0+30-H.x,GLEN.z-H.z),plan:{arc:0.6,rad:i=>i===4?25:17.8+i*0.95,dims:{w:[5.0,6.0],d:[6.0,7.4],wh:[3.4,4.2],rh:[2.2,2.8]},kinds:['tower','plain','wing','plain','tav','tower','plain','wing','plain']}});
 })();
 VIL4.name='Highmark';
 VILS.push(VIL4);

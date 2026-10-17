@@ -38,18 +38,31 @@ function layoutVillage(v,o){
   const sp=at(ent,VR+15); V.spawn={x:sp[0],z:sp[1]};
   // the teleport circle, just outside the houses beside the road in (see shared/vale.js)
   { const tp=at(ent-0.5,31); V.tele={x:tp[0],z:tp[1],r:2.4}; }
-  // houses around a ring, doors facing the plaza
-  const N=9, a0=ent+0.62, step=(TAU-1.24)/(N-1);
+  // houses around a ring, doors facing the plaza. o.plan gives a village its own plan (no plan = the home village's ring, bit for bit):
+  //   arc: half the gap left for the road in (rad), rad(i): the house's distance from the well, jit: random swing of its angle, turn: random swing of its rotation off the radial,
+  //   dims: {w,d,wh,rh:[min,max]} and tav:{w,d,wh,rh}, kinds[i]: 'plain' | 'wing' (an annex on its right side, collider included) | 'loft' | 'tower' (builders draw these in their village's style)
+  const pl=o.plan||{}, pr=mulberry32((o.seed||4242)^0x5f3a), pR=(a,b)=>a+(b-a)*pr();
+  const N=9, arc=pl.arc||0.62, a0=ent+arc, step=(TAU-2*arc)/(N-1);
   const plasters=[0xe8e0cc,0xd9cdb0,0xcfc2a4,0xe2d6c0,0xd6c7b2], roofs=[0x8e6c3e,0x7d5c34,0x6a4a3a,0x5a4a4a,0x7a5040], accents=[0x3d5a3a,0x2f4a6b,0x8a2f2f,0x6b5a2e,0x4a5a6a];
   const hAng=[];
   for(let i=0;i<N;i++){
-    const a=a0+i*step, tav=i===4; hAng.push(a);
-    const w=tav?9:vR(5,6.6), d=tav?7:vR(5.5,7.2), wh=tav?4.4:vR(2.8,3.4), rh=tav?3:vR(2,2.8);
-    const rad=tav?23:vR(20.5,22.5);
+    const tav=i===4, a=a0+i*step+(pl.jit&&!tav?(pr()-0.5)*2*pl.jit:0);
+    hAng.push(a);
+    let w=tav?9:vR(5,6.6), d=tav?7:vR(5.5,7.2), wh=tav?4.4:vR(2.8,3.4), rh=tav?3:vR(2,2.8);
+    let rad=tav?23:vR(20.5,22.5);
+    if(pl.dims){ const D=tav&&pl.tav?pl.tav:pl.dims, g=(k,v)=>Array.isArray(D[k])?pR(D[k][0],D[k][1]):(D[k]!==undefined?D[k]:v); w=g('w',w); d=g('d',d); wh=g('wh',wh); rh=g('rh',rh); }
+    if(pl.rad) rad=pl.rad(i,pr);
+    const rot=a+(pl.turn&&!tav?(pr()-0.5)*2*pl.turn:0), kind=tav?'tav':(pl.kinds&&pl.kinds[i])||'plain';
     const p=at(a,rad);
-    const H={i,a,x:p[0],z:p[1],rot:a,w,d,wh,rh,tavern:tav,plaster:plasters[i%5],roof:roofs[(i*3)%5],accent:accents[(i*2)%5],chimney:tav||vr()<0.65,woodpile:!tav&&vr()<0.4,flowers:vr()<0.6};
+    const H={i,a,x:p[0],z:p[1],rot,w,d,wh,rh,tavern:tav,kind,plaster:plasters[i%5],roof:roofs[(i*3)%5],accent:accents[(i*2)%5],chimney:tav||vr()<0.65,woodpile:!tav&&vr()<0.4,flowers:vr()<0.6};
     V.houses.push(H);
-    V.boxes.push({x:H.x,z:H.z,rot:a,hw:w/2+0.2,hd:d/2+0.2});
+    V.boxes.push({x:H.x,z:H.z,rot,hw:w/2+0.2,hd:d/2+0.2});
+    if(kind==='wing'){   // (no woodpile on that side)
+      H.woodpile=false;   // an annex on the right side, flush with the back wall
+      const ww=3.4, wd=d*0.62, lx=w/2+ww/2-0.1, lz=d/2-wd/2, c=Math.cos(rot), s=Math.sin(rot);
+      H.wing={w:ww,d:wd,x:lx,z:lz};
+      V.boxes.push({x:H.x+lx*c+lz*s,z:H.z-lx*s+lz*c,rot,hw:ww/2+0.2,hd:wd/2+0.2});
+    }
     anchor('house:'+i,at(a,rad-d/2-1.5),a,true);
     V.paths.push([...at(a,V.plaza-0.5),...at(a,rad-d/2-0.2),1.3]);
   }
@@ -111,4 +124,4 @@ function segDist(px,pz,s){
 }
 // (ent: the road comes in from the north-west, as it always did. Left to the scan above, a change in the hills round the village can turn the entrance
 // right round, and with it the whole spiral of monster zones, which starts at the entrance: the world's layout must not depend on the noise's details)
-const VIL=layoutVillage(findVillage(),{seed:4242,ent:14/16*TAU});
+const VIL=layoutVillage(findVillage(),{seed:4242,ent:14/16*TAU,plan:{kinds:['plain','wing','plain','loft','tav','plain','loft','wing','plain']}});

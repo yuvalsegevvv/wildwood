@@ -50,6 +50,10 @@ function buildHighmark(){
       W(vbox(0.6,0.5,0.06).applyMatrix4(M)); for(const sd of [-1,1]) A(vbox(0.28,0.56,0.05,sd*0.44,0,-0.02).applyMatrix4(M),woodC(H.accent)); };
     const wy=base+wh*0.6; shutters(w*0.3,wy,-d/2-0.05,0); shutters(-w/2-0.05,wy,0,Math.PI/2); shutters(w/2+0.05,wy,0,-Math.PI/2); shutters(0,wy,d/2+0.05,Math.PI);
     if(H.chimney){ A(vbox(0.85,rh+1.3,0.85,w*0.26,base+wh+(rh+1.3)/2-0.3,d*0.12),stoneC); A(vbox(1.0,0.16,1.0,w*0.26,base+wh+rh+1.05,d*0.12),snowC); }
+    if(H.kind==='wing'||H.kind==='loft'||H.kind==='tower'){
+      const o={A,R:N,wall:blocks(0x8a8a86),gable:blocks(0x7a7a76),roof:()=>snowOn(slate[H.i%5]),cap:snowOn(0x3c424a),W,door:woodC(0x3a2a1c)};
+      if(H.kind==='wing') vlAnnex(H,base,o); else if(H.kind==='loft') vlDormer(H,base,o); else vlTurret(H,base,o);
+    }
     if(H.tavern){   // the miners' hall: banners in the abbey's green and gold over the door
       for(let k=0;k<3;k++) A(vbox(0.6,1.5,0.04,-w/3+k*w/3,base+2.9,-d/2-0.12),c=>c.set([0x2f5a3a,0xc9a13a,0x2f5a3a][k]));
     }

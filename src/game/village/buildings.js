@@ -35,6 +35,35 @@ function prism(w,h,d){
   tri([hw,0,-hd],[0,h,hd],[hw,0,hd]); tri([hw,0,-hd],[0,h,-hd],[0,h,hd]);
   return trisGeo(P);
 }
+// The extra shapes a village plan gives its houses (H.kind, shared/village-layout.js; every village draws them in its own materials).
+// o: A (walls, painted with pc), R (roof slabs: A, or a snow painter), wall / gable (colour fns), roof(sd) (a colour fn per slope side), cap (turret roof colour), W (window glass adder or null), door (colour fn)
+// 'wing': an annex on the right side, a gable roof with its ridge along z like the main roof (its collider is in the layout)
+function vlAnnex(H,base,o){
+  const q=H.wing, ww=q.w, wd=q.d, wh=Math.min(H.wh*0.74,2.6), rh=o.rh||1.5, A=o.A, R=o.R||o.A;
+  A(vbox(ww+0.3,0.6,wd+0.3,q.x,base-0.3,q.z),stoneC);
+  A(vbox(ww,wh,wd,q.x,base+wh/2,q.z),o.wall);
+  const a=Math.atan2(rh,ww/2), len=Math.hypot(ww/2,rh)+0.4, rd=wd+0.7, th=0.22;
+  for(const sd of [-1,1]){ const g=new THREE.BoxGeometry(len,th,rd,4,1,1); g.rotateZ(-sd*a);
+    g.translate(q.x+sd*(ww/4+Math.cos(a)*0.2+Math.sin(a)*th/2), base+wh+rh/2-Math.sin(a)*0.2+Math.cos(a)*th/2, q.z); R(g,o.roof(sd)); }
+  A(prism(ww,rh,wd).translate(q.x,base+wh,q.z),o.gable||o.wall);
+  A(vbox(0.9,1.8,0.1,q.x,base+0.9,q.z-wd/2-0.04),o.door||woodC(0x4a3020));
+  if(o.W) o.W(vbox(0.06,0.55,0.6,q.x+ww/2+0.04,base+wh*0.6,q.z));
+}
+// 'loft': a dormer on the right-hand slope, a little gabled room with a window under its own roof
+function vlDormer(H,base,o){
+  const x0=H.w*0.16, y0=base+H.wh+H.rh*(1-x0/(H.w/2)), z0=-H.d*0.12, A=o.A, R=o.R||o.A;
+  A(vbox(1.5,1.5,1.5,x0+0.25,y0+0.25,z0),o.wall);
+  const g=prism(1.9,0.8,2.1).rotateY(Math.PI/2).translate(x0+0.35,y0+1.0,z0); R(g,o.roof(1));
+  A(vbox(0.1,1.0,0.8,x0+1.04,y0+0.4,z0).rotateZ(0),o.door||woodC(0x3a2a1c));
+  if(o.W) o.W(vbox(0.06,0.7,0.6,x0+1.03,y0+0.4,z0));
+}
+// 'tower': a stair turret in the back-left corner, standing above the ridge under a pyramid cap
+function vlTurret(H,base,o){
+  const tx=-H.w/2+1.2, tz=H.d/2-1.2, top=base+H.wh+H.rh+1.8, A=o.A, R=o.R||o.A;
+  A(vbox(2.2,top-base,2.2,tx,base+(top-base)/2,tz),o.wall);
+  R(new THREE.ConeGeometry(1.9,1.6,4).rotateY(Math.PI/4).translate(tx,top+0.8,tz),o.cap);
+  if(o.W) for(const sd of [-1,1]) o.W(vbox(0.14,0.7,0.06,tx+sd*0.5,top-0.7,tz-1.13));
+}
 function buildVillage(){
   const out=[], win=[], Y=VIL.h, smokePts=[];
   const inF=(F)=>({A:(g,fn)=>out.push(pc(g,fn).applyMatrix4(F)), W:(g)=>win.push(pc(g,(x,y,z,c)=>c.set(0x2e3944)).applyMatrix4(F))});
@@ -66,6 +95,10 @@ function buildVillage(){
     const wy=base+wh*0.56;
     if(w>=5.4){ winAt(-w*0.3,wy,-d/2-0.07,0); winAt(w*0.3,wy,-d/2-0.07,0); } else winAt(w*0.3,wy,-d/2-0.07,0);
     winAt(-w/2-0.07,wy,0,Math.PI/2); winAt(w/2+0.07,wy,0,-Math.PI/2); winAt(0,wy,d/2+0.07,Math.PI);
+    if(H.kind==='wing'||H.kind==='loft'||H.kind==='tower'){
+      const o={A,wall:(x,y,z,c)=>{ c.set(H.plaster).multiplyScalar(0.93+h3(x,y,z)*0.1); },roof:()=>(x,y,z,c)=>{ const band=Math.floor(y*4.5); c.set(H.roof).multiplyScalar(0.82+(band%2)*0.1+h3(x,band,z)*0.12); },cap:(x,y,z,c)=>c.set(H.roof).multiplyScalar(0.9),W};
+      if(H.kind==='wing') vlAnnex(H,base,o); else if(H.kind==='loft') vlDormer(H,base,o); else vlTurret(H,base,o);
+    }
     if(H.tavern){
       for(const x of [-2.6,0,2.6]) winAt(x,base+wh*0.85,-d/2-0.07,0);
       A(vbox(0.12,0.12,1.2,w/2-0.9,base+2.9,-d/2-0.6),T);

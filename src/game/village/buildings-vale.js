@@ -61,6 +61,13 @@ function buildVale(){
       for(const sx of [-1,1]){ W(csph(0.24,10,8).scale(1,1.25,1).translate(sx*1.6,base+2.25,-d/2-0.6),0xe8401e); A(cyl(0.02,0.02,0.4,4).translate(sx*1.6,base+2.75,-d/2-0.6),dark); }
       for(let k=0;k<3;k++) A(vbox(0.38,0.7,0.02,-0.42+k*0.42,base+1.8,-d/2-0.14),c=>c.set(0x2f3a6b));
     }
+    if(H.kind==='wing'){   // the annex: a low plastered room under its own hip roof, shoji on its front
+      const q=H.wing, aw=Math.min(wh*0.74,2.6);
+      A(vbox(q.w+0.3,0.6,q.d+0.3,q.x,base-0.3,q.z),stoneC); A(vbox(q.w,aw,q.d,q.x,base+aw/2,q.z),plaster);
+      for(const sx of [-1,1]) for(const sz of [-1,1]) A(vbox(0.18,aw,0.18,q.x+sx*q.w/2,base+aw/2,q.z+sz*q.d/2),dark);
+      A(hipRoof(q.d+1.3,q.w+1.3,1.1,Math.max(0.2,(q.d-q.w)/2+0.3),0.14).rotateY(Math.PI/2).translate(q.x,base+aw-0.05,q.z),tileC(roof));
+      shoji(q.x,base+aw*0.55,q.z-q.d/2-0.06,0,1.2);
+    } else if(H.kind==='loft') vlDormer({w:w+1.9,wh:wh-0.05,rh:1.7,d},base,{A,wall:plaster,roof:()=>tileC(roof),W:g=>W(g)});
     if(H.flowers) for(const sx of [-1,1]) A(cyl(0.24,0.18,0.36,8).translate(sx*(w/2-0.5),base+0.2,-d/2-1.3),c=>c.set(0x6a5a4a));
   }
   // the well, with a small tiled roof

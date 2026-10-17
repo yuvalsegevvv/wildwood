@@ -48,6 +48,10 @@ function buildRimehold(){
     const wy=base+wh*0.6;
     shutters(w*0.3,wy,-d/2-0.05,0); shutters(-w/2-0.05,wy,0,Math.PI/2); shutters(w/2+0.05,wy,0,-Math.PI/2); shutters(0,wy,d/2+0.05,Math.PI);
     if(H.chimney){ A(vbox(0.85,rh+1.3,0.85,w*0.26,base+wh+(rh+1.3)/2-0.3,d*0.12),stoneC); A(vbox(1.0,0.16,1.0,w*0.26,base+wh+rh+1.05,d*0.12),snowC); }
+    if(H.kind==='wing'||H.kind==='loft'||H.kind==='tower'){
+      const o={A,R:N,wall:logs(0x6a4630,base),gable:logs(0x5a3c26,base),roof:()=>snowOn(roofs[H.i%5]),cap:snowOn(0x4e4a38),W,door:woodC(0x3a2618)};
+      if(H.kind==='wing') vlAnnex(H,base,o); else if(H.kind==='loft') vlDormer(H,base,o); else vlTurret(H,base,o);
+    }
     if(H.tavern){   // the mead hall: a row of round shields along the front, a banner over the door
       for(let k=0;k<5;k++){ const cx=-w/2+1.2+k*(w-2.4)/4, col=[0x8a2a26,0x2f4a6b,0xc9a13a,0x3d5a3a,0x8a2a26][k]; A(cyl(0.42,0.42,0.07,14).rotateX(Math.PI/2).translate(cx,base+wh*0.86,-d/2-0.09),(x,y,z,c)=>{ c.set(col); if(Math.hypot(x-cx,y-base-wh*0.86)<0.09) c.set(0xd8d4c8); }); }
       A(vbox(0.9,1.6,0.04,w*0.3,base+2.9,-d/2-0.12),c=>c.set(0x7a1e1e));

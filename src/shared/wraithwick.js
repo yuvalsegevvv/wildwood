@@ -4,7 +4,7 @@
    the server's warpP and the client's travel window). The model is game/village/buildings-gloam.js (buildGloamhorn). Defined right after gloamhorn.js, before anything that walks VILS at load. */
 const VIL6=(()=>{
   const x=-1116, z=-787, h=gloamGround(x,z);
-  return layoutVillage({x,z,h},{seed:6161,ent:Math.atan2(-1030-x,-778-z)});
+  return layoutVillage({x,z,h},{seed:6161,ent:Math.atan2(-1030-x,-778-z),plan:{arc:0.66,jit:0.1,turn:0.24,rad:(i,pr)=>i===4?24:19.5+pr()*5.5,dims:{w:[4.8,6.2],d:[5.0,6.6],wh:[2.6,3.4]},kinds:['plain','wing','plain','loft','tav','plain','wing','loft','plain']}});
 })();
 VIL6.name='Wraithwick';
 VILS.push(VIL6);

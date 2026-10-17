@@ -36,7 +36,7 @@ function findVale2Village(){
   }
   return best;
 }
-const VIL2=(()=>{ const v=findVale2Village(); return layoutVillage(v,{seed:7171,ent:Math.atan2(TUN.x1+10-v.x,TUN.z-v.z)}); })();
+const VIL2=(()=>{ const v=findVale2Village(); return layoutVillage(v,{seed:7171,ent:Math.atan2(TUN.x1+10-v.x,TUN.z-v.z),plan:{arc:0.7,jit:0.05,turn:0.14,rad:i=>i===4?24:(i%2?19.5:24.5),dims:{w:[5.2,6.4],d:[5.2,6.2]},kinds:['wing','plain','loft','plain','tav','wing','plain','loft','plain']}}); })();
 VIL2.name='Hanami'; VIL.name='the village';
 // (VILS, with Rimehold, is in hoarfrost.js)
 // on (or m metres from) any village's teleport circle
