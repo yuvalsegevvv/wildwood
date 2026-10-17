@@ -6,7 +6,7 @@ const fs=require('fs');
 const {loadShared,SRC}=require('./load');
 const X=loadShared(['rawHeight','baseHeight','landAt','inVale','inHoar','inGrey','inSun','inGloam','vilAt','coastDist','waterSurf','WX0','WX1','WZ0','WZ1','WA_META','WA_ANCHORS','WA_HUBS','WA_GATES','WA_ZONES','WA_POIS',
   'WA_ENTRANCES','WA_SPOTS','WA_ISLANDS','WA_PVP','WA_LAKES','WA_RIVERS','WA_ROADS','waLandId','waLand','waZone','waZoneId','waTarget','waWater','waWaterDist','waWaterSurf','waRoadDist','waBorderDist','waLandBorderDist',
-  'waCoast','waIsSea','VIL','VIL2','VIL3','VIL4','VIL5','VIL6','WATER','smoothstep']);
+  'waCoast','waIsSea','cvNear','SUN_CITY','VIL','VIL2','VIL3','VIL4','VIL5','VIL6','WATER','smoothstep']);
 let fails=0; const ok=(n,c,d)=>{ if(!c) fails++; console.log((c?'PASS ':'FAIL ')+n+(d?'  ('+d+')':'')); };
 const verbose=process.argv.includes('--verbose');
 const H=X.rawHeight, SLOPE_MAX=1.2;   // (movement.js: a step climbing more than 1.2 m a metre is turned or dropped)
@@ -43,7 +43,8 @@ const dry=(x,z)=>{ const h=H(x,z); return h>0.3&&X.waWater(x,z)===0&&X.waWaterDi
 const ford=(x,z)=>{ const h=H(x,z), w=X.waWater(x,z), s=(w&&w!==1)?X.waWaterSurf(x,z):0; return h>X.WATER-1.5&&(w===0||w===4||(w===3&&s-h<1.3)); };   // (dry, on ice, or in a river's ford)
 const gradAt=(x,z)=>Math.max(Math.abs(H(x+4,z)-H(x-4,z)),Math.abs(H(x,z+4)-H(x,z-4)))/8;
 { const bad=[], chk=(what,a)=>{ const x=a.x, z=a.z; const lands=a.land?[a.land]:[a.a,a.b].filter(Boolean); const wl=X.waLand(x,z); const landOk=lands.includes(wl)||(a.b==='amber'&&wl==='amber')||(wl===null&&false);
-      if(!landOk) bad.push(what+' '+(a.name||a.key||a.land)+' is on '+wl+', not '+lands.join('/')); const inLake=what==='spot'&&(X.waWater(x,z)===2||X.waWater(x,z)===4); if(!(what==='hub'||what==='poi'||what==='gate'&&a.kind!=='bridge'?dry(x,z):ford(x,z)||inLake)) bad.push(what+' '+(a.name||a.key||a.land)+' is wet or low ('+H(x,z).toFixed(1)+' m)'); const s=inLake?0:gradAt(x,z); if(s>SLOPE_MAX) bad.push(what+' '+(a.name||a.key||a.land)+' slope '+s.toFixed(2)); };
+      if(!landOk) bad.push(what+' '+(a.name||a.key||a.land)+' is on '+wl+', not '+lands.join('/')); const inLake=what==='spot'&&(X.waWater(x,z)===2||X.waWater(x,z)===4); if(!(what==='hub'||what==='poi'||what==='gate'&&a.kind!=='bridge'?dry(x,z):ford(x,z)||inLake)) bad.push(what+' '+(a.name||a.key||a.land)+' is wet or low ('+H(x,z).toFixed(1)+' m)'); const s=(inLake||X.cvNear(x,z,12))?0:gradAt(x,z);   // (a cave site carves its own floor: the caves task owns it)
+       if(s>SLOPE_MAX) bad.push(what+' '+(a.name||a.key||a.land)+' slope '+s.toFixed(2)); };
   for(const k of LANDS) chk('hub',{x:X.WA_HUBS[k][0],z:X.WA_HUBS[k][1],land:k,name:k});
   for(const g of X.WA_GATES) chk('gate',g);
   for(const p of X.WA_POIS) chk('poi',p);
@@ -83,10 +84,11 @@ const walkable=k=>HG[k]>X.WATER-1.0&&SURF[k]-HG[k]<1.3;   // (wading to the knee
   const zs=100*cnt.zone[1]/Math.max(1,cnt.zone[0]), ls=100*cnt.land[1]/Math.max(1,cnt.land[0]);
   ok('no zone outline is a cliff line: under 6% of the zone-border cells are steeper than the slope limit',zs<6,zs.toFixed(1)+'% of '+cnt.zone[0]);
   ok('the land borders are ranges with saddles, not walls: under 25% of their cells are steeper than the slope limit',ls<25,ls.toFixed(1)+'% of '+cnt.land[0]); }
-// the roads
+// the roads. Not counted: a road inside a cave site (the caves carve their own floor; that task owns them and their roads) and inside Glasswell's rim (the Bowl's three gates stand at the plan's bearings, docs/glasswell-plan.py; an atlas road reaches the city by its gate, whose crack is the only way through the rim)
+const skipRoad=(x,z)=>X.cvNear(x,z,12)||Math.hypot(x-X.SUN_CITY.x,z-X.SUN_CITY.z)<X.SUN_CITY.r+75;
 { let worst=0, n=0, steep=0, wet=0, wn=0, at=null;
   for(const R of X.WA_ROADS){ let prev=null; for(let q=1;q<R.pts.length;q++){ const a=R.pts[q-1], b=R.pts[q], L=Math.hypot(b[0]-a[0],b[1]-a[1]), m=Math.max(1,Math.ceil(L/STEP)); for(let s=0;s<=m;s++){ const x=a[0]+(b[0]-a[0])*s/m, z=a[1]+(b[1]-a[1])*s/m, h=H(x,z), sw=(!X.waIsSea(x,z)&&X.waWaterDist(x,z)<0)?X.waWaterSurf(x,z):0;
-        if(prev!==null){ const sl=Math.abs(h-prev)/(L/m); n++; if(sl>worst){ worst=sl; at=R.name; } if(sl>SLOPE_MAX) steep++; } prev=h; wn++; if(sw-h>1.3||h<X.WATER-1.0) wet++; } prev=null; } }
+        if(prev!==null&&!skipRoad(x,z)){ const sl=Math.abs(h-prev)/(L/m); n++; if(sl>worst){ worst=sl; at=R.name; } if(sl>SLOPE_MAX) steep++; } prev=h; wn++; if(sw-h>1.3||h<X.WATER-1.0) wet++; } prev=null; } }
   ok('every road is walkable end to end: no step of a road climbs more than the slope limit',steep===0,'steepest '+worst.toFixed(2)+' on '+at+', '+n+' steps');
   ok('no road runs through deep water (a river is a ford; the sea and the lakes are not crossed)',wet<=wn*0.002,wet+' of '+wn+' points'); }
 // reachability: from each village, over the whole map (the gates are open), climbing no more than the slope limit; wading to the knees

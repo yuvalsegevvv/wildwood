@@ -11,24 +11,30 @@
    Where it is (the atlas, shared/world-atlas.js): land id 4 'sun' south of the Greyspine and the Gloamhorn (the Glass River is the border with the Gloamhorn, no water of its own), west of the home forest's Sunwall,
    to the south coast; land 6 'amber' is the planned link south of it (a closed gate, nothing built behind it). Glasswell stands at the hub, zone s28 around it; the River Pass comes down from the north-east, Redgate
    Canyon from the south-east. */
-var SUN_CITY=null, SUN_BASE=0;   // (var: sunBowlHook is called by rawHeight, which may run before this file has)
-const SUN_FLAT=250, SUN_BLEND=100;   // the Bowl's own ground to SUN_FLAT - SUN_BLEND, easing into the atlas's by SUN_FLAT (a ridge rises 40 m north of the hub: the blend is wide so it never becomes a wall)
+var SUN_CITY=null, SUN_BASE=0, SUN_SKIRT=[];   // (var: sunBowlHook is called by rawHeight, which may run before this file has)
+const SUN_FLAT=300, SUN_BLEND=150;   // the Bowl's own ground to SUN_FLAT - SUN_BLEND, easing into the atlas's by SUN_FLAT (a ridge rises 40 m north of the hub: the blend is wide so it never becomes a wall)
 const SUN_HUB=WA_HUBS.sun;
 { // the skirt's level: the median of the atlas's ground round the Bowl; the floor lies skirtH below it
   const hs=[]; for(let k=0;k<24;k++){ const a=k/24*TAU, r=165+(k%3)*12; hs.push(baseHeight(SUN_HUB[0]+Math.sin(a)*r,SUN_HUB[1]+Math.cos(a)*r)); }
+  for(let k=0;k<24;k++) SUN_SKIRT.push(hs[k]);   // (the ground at each bearing: the skirt follows it, so a ridge beside the Bowl does not meet a cliff)
   hs.sort((p,q)=>p-q); SUN_BASE=Math.round(hs[12]);
   SUN_CITY={x:SUN_HUB[0],z:SUN_HUB[1],h:SUN_BASE-GLASSWELL.skirtH,r:GLASSWELL.r};
 }
 // the Bowl in the heightmap: the floor, the rim, the cracks and the city's lake and river channel (gwRimH + gwCityCut), laid over the atlas's ground. Beyond the rim the Weir's gorge (it ran down to the Bight,
 // there is no Bight now) is filled back up to the skirt, and the apron keeps off the atlas's water (the border river lies about 140 m north of the hub)
+// the skirt's level at a bearing: the atlas's ground round the Bowl there (a ring of 24 samples, eased between them), never below the Bowl's own flat skirt
+function sunSkirtAt(cx,cz){
+  const a=(Math.atan2(cx,cz)/TAU+1)*24, i=Math.floor(a)%24, t=a-Math.floor(a), u=t*t*(3-2*t);
+  return Math.max(SUN_BASE,lerp(SUN_SKIRT[i],SUN_SKIRT[(i+1)%24],u));
+}
 function sunBowlHook(x,z,h){
   if(SUN_CITY===null) return h;
   const cx=x-SUN_CITY.x; if(cx>SUN_FLAT||cx<-SUN_FLAT) return h;
   const cz=z-SUN_CITY.z, r2=cx*cx+cz*cz; if(r2>=SUN_FLAT*SUN_FLAT) return h;
   const r=Math.sqrt(r2); let t=smoothstep(SUN_FLAT,SUN_FLAT-SUN_BLEND,r);
-  if(r>185){ const wd=waWaterDist(x,z); if(wd<45) t*=lerp(1,smoothstep(0,45,wd),smoothstep(185,205,r)); }   // (only the border river: the atlas's stray stream through the hub lies under the Bowl)
+  if(r>120){ const wd=waWaterDist(x,z); if(wd<70) t*=lerp(1,smoothstep(0,70,wd),smoothstep(120,240,r)); }   // (only the border river: the atlas's stray stream through the hub lies under the Bowl)
   if(t<=0) return h;
-  let b=gwRimH(cx,cz); if(r>118) b=Math.max(b,lerp(-6,GLASSWELL.skirtH,smoothstep(118,165,r)));
+  let b=gwRimH(cx,cz); if(r>118) b=Math.max(b,lerp(-6,sunSkirtAt(cx,cz)-SUN_CITY.h,smoothstep(118,190,r)));
   return lerp(h,SUN_CITY.h+b+gwCityCut(cx,cz),t);
 }
 function sunHook(x,z,h){ return h; }   // (the old frame's ground hook, still named by baseHeightRaw in terrain.js: the atlas's ground needs none)
