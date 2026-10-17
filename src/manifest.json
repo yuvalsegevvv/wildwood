@@ -241,6 +241,7 @@
     "combat/monster-folk.js",
     "combat/monster-heads.js",
     "combat/monster-gear.js",
+    "combat/monster-garb.js",
     "combat/monster-blobs.js",
     "combat/monster-bugs.js",
     "combat/monster-beasts.js",

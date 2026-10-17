@@ -65,6 +65,7 @@ function moFolkTorsoExtras(F,p,rings){
     out.push(...moFurLocks(rings,F.shY+0.02,0.9,form==='viking'?12:14,0.14,p.fur,1));
     if(form==='yeti') for(const y of [0.16,0.3,0.44]) out.push(...moFurLocks(rings,y,0.95,12,0.2,p.fur,1));   // the whole chest is shaggy
   }
+  if(p.garb) out.push(...moGarb(F,p,rings));                                                                     // garb: jerkin armour and straps (monster-garb.js)
   if(p.wraps) out.push(...moFolkRags(at,p.wraps,7,0.3));
   if(p.rags) out.push(...moFolkRags(at,p.rags,7,0.17));
   if(p.ribs){   // an exposed ribcage: a dark hollow, six bone arcs wrapped round the chest and the breastbone
@@ -143,9 +144,15 @@ function moFolkWeapon(F,p){
 }
 function moFolkExtras(F,p){
   const out=[];
-  if(p.shell){   // a kappa's shell: a domed plate with hexagon lines
-    const g=csph(1,14,10).scale(0.24,0.3,0.13).translate(0,0.27,0.17);
-    out.push(['back',pc(smoothN(g),(x,y,z,c)=>{ c.set(p.shell); const u=Math.abs(Math.sin(x*16)*Math.sin((y+x*0.5)*14)); if(u>0.75) c.multiplyScalar(0.62); else c.multiplyScalar(0.92+0.15*moNoise(x,y,z,10)); })]);
+  if(p.shell){   // a kappa's shell: a domed plate of hexagonal scutes in a dark seam, a pale rim and a plastron edge
+    const cx=0, cy=0.27, cz=0.17, ax=0.24, ay=0.3, az=0.13, base=new THREE.Color(p.shell).multiplyScalar(0.58), hi=new THREE.Color(p.shell), parts=[];
+    parts.push(pc(smoothN(csph(1,14,10).scale(ax,ay,az).translate(cx,cy,cz)),(x,y,z,c)=>{ c.copy(base).multiplyScalar(0.92+0.15*moNoise(x,y,z,10)); }));
+    for(let r=-2;r<=2;r++) for(let k=-2;k<=2;k++){ const x=(k+(r&1?0.5:0))*0.088, y=cy+r*0.077, u=(x/ax)**2+((y-cy)/ay)**2; if(u>0.62) continue;
+      const w=Math.sqrt(1-u), z=cz+az*w+0.004, n=[x/ax**2,(y-cy)/ay**2,az*w/az**2];
+      parts.push(moPatch([x,y,z],n,0.043,0.012,(xx,yy,zz,c)=>{ c.copy(hi).multiplyScalar(0.85+0.4*moNoise(xx,yy,zz,18)+(r===0&&k===0?0.1:0)); },6)); }
+    const rim=[]; for(let i=0;i<=22;i++){ const a=i/22*TAU; rim.push([Math.cos(a)*ax*0.97,cy+Math.sin(a)*ay*0.97,cz-0.005]); }
+    parts.push(moTube(rim,0.016,0.016,(x,y,z,c)=>{ c.set(0xc8b878).multiplyScalar(0.8+0.3*moNoise(x,y,z,14)); },6,true));
+    out.push(['back',moMerge(parts)]);
   }
   if(p.wings){   // a crow's black wings: fans of long feathers
     for(const sd of [-1,1]){ const f=[];

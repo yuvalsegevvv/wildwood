@@ -276,6 +276,7 @@ game
   combat/monster-folk.js             The goblin family's bodies (model 'goblin': goblins, oni, kappa, tengu, undead, yeti, trolls, reavers, Akaoni, Ymrik): one rig, a body plan for each form (pal.form)
   combat/monster-heads.js            Heads of the goblin family (monster-folk.js), one builder per body plan: goblin, oni, kappa, tengu, undead skull, yeti, troll, viking
   combat/monster-gear.js             What the goblin family carries and wears (monster-folk.js): weapons, helms, hats, horns, torso trimmings, fur, shells and wings
+  combat/monster-garb.js             Armour and straps on the goblin family's jerkins (pal.garb): studded leather, lacquered lames and a banner, a miner's cuirass and pack, a sash and bandolier, hemp rope
   combat/monster-blobs.js            Slime and mushroom models: jelly bodies with a skirt and highlights, moss / lava crust / shells / petals / crystals / ice growing on them; gilled, spotted mushrooms and the kodama spirit
   combat/monster-bugs.js             Beetle, spider and crab models (model 'beetle'): horned / kabuto / scarab / ironshell / ice beetles, the Jorogumo and glacier spiders, crabs with claws, the Tide King
   combat/monster-beasts.js           Boar and fox / wolf / lynx models (models 'boar' and 'fox'): bristled hogs with tusks and a head that gores, slim kitsune with fans of tails, heavy wolves, tufted lynx
