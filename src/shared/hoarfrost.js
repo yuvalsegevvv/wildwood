@@ -36,7 +36,7 @@ function northHubH(x,z,R){
   return sum/c;
 }
 function findHoarVillage(){ const [x,z]=WA_HUBS.hoar; return {x,z,h:northHubH(x,z),score:0}; }
-const VIL3=(()=>{ const v=findHoarVillage(); return layoutVillage(v,{seed:9393,ent:Math.atan2(PASS.x-v.x,PASS.z1-v.z)}); })();
+const VIL3=(()=>{ const v=findHoarVillage(); return layoutVillage(v,{seed:9393,ent:Math.atan2(PASS.x-v.x,PASS.z1-v.z),plan:{arc:0.55,jit:0.03,rad:i=>i===4?24:20.5+(i%3)*0.8,dims:{w:[6.8,8.2],d:[5.0,5.8],wh:[2.8,3.2],rh:[2.6,3.2]},kinds:['plain','wing','tower','plain','tav','plain','wing','plain','tower']}}); })();
 VIL3.name='Rimehold';
 const VILS=[VIL,VIL2,VIL3];
 /* the teleport circles (one in each village): where each leads and when it is awake. A land's circles wake when you have walked into its village:

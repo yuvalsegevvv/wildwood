@@ -3,7 +3,7 @@
    the server's warpP and the client's travel window). The model is game/village/buildings-gloam.js (buildGloamhorn). Defined right after gloamhorn.js, before anything that walks VILS at load. */
 const VIL6=(()=>{
   const x=GLOAM_HUB[0], z=GLOAM_HUB[1], h=baseHeight(x,z);   // the atlas's hub of the Gloamhorn; the road comes in from the Windswept Neck, east
-  return layoutVillage({x,z,h},{seed:6161,ent:Math.atan2(GLOAM_GATE.x-x,GLOAM_GATE.z-z)});
+  return layoutVillage({x,z,h},{seed:6161,ent:Math.atan2(GLOAM_GATE.x-x,GLOAM_GATE.z-z),plan:{arc:0.66,jit:0.1,turn:0.24,rad:(i,pr)=>i===4?24:19.5+pr()*5.5,dims:{w:[4.8,6.2],d:[5.0,6.6],wh:[2.6,3.4]},kinds:['plain','wing','plain','loft','tav','plain','wing','loft','plain']}});
 })();
 VIL6.name='Wraithwick';
 VILS.push(VIL6);

@@ -29,6 +29,10 @@ function buildWraithwick(){
       W(vbox(0.6,0.5,0.06).applyMatrix4(M)); for(const sd of [-1,1]) A(vbox(0.28,0.56,0.05,sd*0.44,0,-0.02).applyMatrix4(M),woodC(0x24202a)); };
     const wy=base+wh*0.6; shutters(w*0.3,wy,-d/2-0.05,0); shutters(-w/2-0.05,wy,0,Math.PI/2); shutters(w/2+0.05,wy,0,-Math.PI/2); shutters(0,wy,d/2+0.05,Math.PI);
     if(H.chimney){ A(vbox(0.85,rh+1.3,0.85,w*0.26,base+wh+(rh+1.3)/2-0.3,d*0.12),stoneC); }
+    if(H.kind==='wing'||H.kind==='loft'||H.kind==='tower'){
+      const o={A,R:N,wall:gloamBlocks(0x5c5a62),gable:gloamBlocks(0x4c4a52),roof:()=>gloamSlate(slate[H.i%5]),cap:gloamSlate(0x2c2e36),W,door:woodC(0x2a2018)};
+      if(H.kind==='wing') vlAnnex(H,base,o); else if(H.kind==='loft') vlDormer(H,base,o); else vlTurret(H,base,o);
+    }
     if(H.tavern){ for(let k=0;k<3;k++) A(vbox(0.6,1.5,0.04,-w/3+k*w/3,base+2.9,-d/2-0.12),c=>c.set([0x3a2a4a,0x7a6a3a,0x3a2a4a][k])); }   // the wake-house: faded banners
     if(H.woodpile){ for(let r=0;r<3;r++) for(let k=0;k<4-r;k++) A(cyl(0.16,0.16,1.2,7).rotateZ(Math.PI/2).translate(w/2+0.9,0.2+r*0.3,-d*0.2+k*0.34+r*0.17),woodC(0x4a3a2c)); }
     if(H.i%3===0){ A(vbox(0.9,0.4,0.6,-w/2-1.1,0.5,0.4),timber); for(let j=0;j<6;j++) A(new THREE.DodecahedronGeometry(0.15,0).translate(-w/2-1.3+(j%3)*0.22,0.82+(j>2?0.1:0),0.3+(j%2)*0.2),c=>c.set(0x2a2e34)); }   // a barrow of wet stones
