@@ -91,7 +91,7 @@ OUTFITS.ottoline=(function(){
       shin:sd=>{ const out=[]; out.push(frill(-D.shin*0.82,0.035,[0.0405*D.cw+0.002,0.0405*D.cw+0.002],[0.062*D.cw,0.062*D.cw],12,0.005,LACE,PORC));
         out.push(solid(ofRingAt([0,-D.shin*0.935,0],[0,1,0],0.036*D.cw+0.002,0.0026,sg(5)),SILVER),solid(vbox(0.014,0.012,0.006,0,-D.shin*0.935,-0.036*D.cw-0.004),SILVER));
         out.push(solid(vbox(0.056*(0.55+0.45*S.feet),0.012,0.046,0,-D.shin-D.ankleH+0.006,0.045),SILVER)); return out; },
-      dress:{ grip:BLACK_L, metal:SILVER, wood:0x2e2638, accent:ROSE,
+      dress:{ shape:{sword:'key',bow:'crescent',staff:'key'}, grip:BLACK_L, metal:SILVER, wood:0x2e2638, accent:ROSE,
         trim:(c,u,part)=>{ const f=((u/0.05)%1+1)%1; if((part==='blade'||part==='limb'||part==='shaft'||part==='rim')&&Math.abs(f-0.5)<0.12) c.lerp(cRL,0.85); if(part==='grip'&&((u/0.012)%1+1)%1<0.35) c.lerp(cP,0.8); },
         charm:()=>{ const lit=[], glow=[];   // a tiny porcelain doll on a ribbon: round head, a rose bow, a black dress, button eyes; a key beside it
           lit.push(solid(sweepTube([[0,0.004,0],[0,-0.022,0.003]],[0.0014,0.0014],4,{cap:'round',rings:4}),ROSE));

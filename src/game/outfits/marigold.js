@@ -248,7 +248,7 @@ OUTFITS.marigold=(function(){
           const grp=new THREE.Group(), mL=new THREE.Mesh(merge(lit),matChar), mG=new THREE.Mesh(merge(glow),matGlow); mL.castShadow=true; grp.add(mL,mG); const y0=headY+0.18; grp.position.y=y0; head.add(grp);
           rig.anims.push((t)=>{ grp.rotation.y=t*0.42; grp.position.y=y0+0.004*Math.sin(t*1.7); }); }
       },
-      dress:{ grip:PLUM, metal:PGOLD, wood:CREAM, accent:MARI,
+      dress:{ shape:{sword:'fan',bow:'hoop',staff:'star'}, grip:PLUM, metal:PGOLD, wood:CREAM, accent:MARI,
         trim:(c,u,part)=>{ const f=fr(u/0.05);
           if(part==='grip'){ if(fr(u/0.016)<0.45) c.lerp(cM,0.92); return; }
           if(f<0.16) c.lerp(cG,0.92); else if(fr(u/0.05+0.5)<0.07) c.lerp(cM,0.88); },

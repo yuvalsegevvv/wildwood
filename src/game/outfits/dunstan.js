@@ -163,7 +163,7 @@ OUTFITS.dunstan=(function(){
       },
 
       /* ---- the weapon dressing: red leather and gold wire, steel with gold fittings, dark ash, flame notches, a pennant and a tiny drum ---- */
-      dress:{ grip:EMBER, metal:0xd9e2ea, wood:0x4a3a2c, accent:GOLD,
+      dress:{ shape:{sword:'saber',bow:'crescent',staff:'banner'}, grip:EMBER, metal:0xd9e2ea, wood:0x4a3a2c, accent:GOLD,
         trim:(c,u,part)=>{ const f=((u/0.04)%1+1)%1; if((part==='blade'||part==='limb'||part==='shaft'||part==='rim')&&f<0.3) c.lerp(cG,0.85); if(part==='grip'&&((u/0.012)%1+1)%1<0.35) c.lerp(cG,0.9); },
         charm:()=>{ const lit=[], glow=[];
           const P=[[0,-0.02,0.004],[0,-0.06,0.012],[0,-0.1,0.014],[0.005,-0.14,0.026]];

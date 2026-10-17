@@ -90,7 +90,7 @@ OUTFITS.sabir=(function(){
       shin:sd=>{ const out=[]; out.push(solid(ofRingAt([0,-D.shin*0.075,0],[0,1,0],0.055*D.cw+0.002,0.0045,sg(6)),BRASS));
         for(const t of [0.17,0.51]) out.push(solid(ofRingAt([0,-D.shin*t,0],[0,1,0],(t<0.3?0.05:0.043)*D.cw+0.002,0.0033,sg(6)),BRASS));
         out.push(solid(vbox(0.058*(0.55+0.45*S.feet),0.012,0.045,0,-D.shin-D.ankleH+0.006,0.045),0x2e2018)); return out; },
-      dress:{ grip:CRIM, metal:STEEL, wood:0x4a3020, accent:BRASS,
+      dress:{ shape:{sword:'scimitar',bow:'recurve',staff:'crescent'}, grip:CRIM, metal:STEEL, wood:0x4a3020, accent:BRASS,
         trim:(c,u,part)=>{ const f=((u/0.06)%1+1)%1; if((part==='blade'||part==='limb'||part==='shaft'||part==='rim')&&f<0.14) c.lerp(cC,0.85); if(part==='grip'&&((u/0.012)%1+1)%1<0.35) c.lerp(cB,0.9); },
         charm:()=>{ const lit=[], glow=[];   // a coin purse on a cord: a leather bag, a brass coin, a spark of ember
           lit.push(solid(sweepTube([[0,0.004,0],[0,-0.025,0.004]],[0.0014,0.0014],4,{cap:'round',rings:4}),CRIM));

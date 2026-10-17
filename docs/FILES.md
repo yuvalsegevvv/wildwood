@@ -213,7 +213,8 @@ game
   world/gloam-sky.js                 The Gloamhorn's permanent dusk: gloamTint(s,dt) pulls the sky, fog and light toward a fixed violet twilight with a low moon, whatever the hour, blended over the border band
   world/time-of-day.js               20-minute day/night cycle, sky keyframes, clock, zone label
   player/input.js                    Keyboard, hold Alt to free the mouse, mouse look, touch joystick, HUD buttons
-  ui/character-editor.js             Character editor panel and camera: tabs generated from the slider table (shared/character.js), recommended setups, opened from the HUD or in creating mode after registering
+  ui/character-thumbs.js             Pictures for the character editor: every hair style, hat, garment, set, cape and aura drawn once on a small off-screen target and cached as an image
+  ui/character-editor.js             Character editor panel and camera: four tabs (Presets, Body, Face, Clothes) with sub-tabs, picture tiles for every part, five outfit slots, per-piece armour visibility, opened from the HUD or in creating mode after registering
   village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)
   village/buildings-vale.js          The Sakura Vale's buildings: Hanami (tiled roofs, shoji, timber gates, stone lanterns), the border bridge (deck, piers, gatehouse, sealed door), teleport circles, the dressing of the two boss arenas
   village/buildings-hoar.js          The Hoarfrost Reach's buildings: Rimehold (timber houses under snow, gate and rune stones, the Wayfarers' Lodge yard), the ice wall in Frostgate Pass, the Rimeking's ice hall, the iron bird's wreck
@@ -262,6 +263,7 @@ game
   combat/monsters.js                 Monster views: made from the family models (monster-*.js), moved smoothly toward the server's snapshots, flashed, burning, dying
   player/progression.js              Your health, level and XP as told by the server, the save kept in this browser, hurt / level-up / knocked-out effects
   combat/classes.js                  Classes and their abilities (CLASSES), combat state (CB), effect materials
+  combat/weapon-shapes.js            Weapon shapes of the signature outfits: each set carries its own sword, bow and staff models (a katana, a crossbow, a lantern crook...) that replace the three plain weapons while its weapon style is worn
   combat/fx-pool.js                  The spark pool: one THREE.Points draw call for the glows, sparks, trails and shockwave debris that every skill, monster attack and boss move adds to its effect
   combat/fx-extra.js                 The effects beyond light: scorch marks, dust and smoke, flying debris, jagged lightning, rotating rune circles, slash crescents, shock domes and the screen flash
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers

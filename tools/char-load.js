@@ -4,7 +4,7 @@
 global.THREE=global.THREE||require('three');
 const fs=require('fs'), path=require('path'), {SRC,strip}=require('./load');
 const NAMES=['cosDef','cosCleanLook','COS_AURAS','COS_CAPES','buildCharacter','charDetail','LOOK_M','LOOK_F','fullLook','lookScale','randomLook','mulberry32','SKINS','HAIRC','HAIRC_NATURAL','EYEC','CLOTH','SHOEC','HATC',
-  'BODY_SLIDERS','SLIDER_KEYS','SLIDER_BY_KEY','SLIDER_DEFS','sliderVal','lookSliders','lookForNet','CHAR_MODELS','charModelOf','sliderRange','setupsOf','applySetup','lookOutOfRange','validateCharModel','faceShape','OUTFITS','OF_SLOTS','OF_FIELD','ofWear','ofPieces','ofItems','ofTidy','weaponsOn','matGlow'];
+  'BODY_SLIDERS','SLIDER_KEYS','SLIDER_BY_KEY','SLIDER_DEFS','sliderVal','lookSliders','lookForNet','CHAR_MODELS','charModelOf','sliderRange','setupsOf','applySetup','lookOutOfRange','validateCharModel','faceShape','OUTFITS','OF_SLOTS','OF_FIELD','ofWear','ofPieces','ofItems','ofTidy','weaponsOn','matGlow','WPN_SHAPES'];
 module.exports=function loadCharacter(){
   const read=f=>strip(fs.readFileSync(path.join(SRC,f),'utf8'));
   const pm=read('game/world/plant-models.js');
@@ -15,8 +15,9 @@ module.exports=function loadCharacter(){
     try{ new Function(src); return src; }catch(e){ console.warn('char-load: skipping src/game/outfits/'+f+' (syntax error: '+e.message+')'); return ''; } }).join('');   // a half-edited outfit must not break every preview and test (several are written at once)   // the order of src/manifest.json does not matter here: they only fill OUTFITS / CHAR_MODELS
   const model=read('game/character/model.js').split('const hiker=')[0];
   const ws=read('game/combat/weapons.js'), wpn=ws.slice(ws.indexOf('function weaponsOn'),ws.indexOf('function aimDir'));   // the weapon models, to preview an outfit's weapon dressing
+  const wsh=read('game/combat/weapon-shapes.js');
   const stubs='const ITEM={warrior:{slot:"W",tier:2},archer:{slot:"A",tier:2},mage:{slot:"M",tier:2}},CLASS_OF={W:"warrior",A:"archer",M:"mage"};const fxMat=(c,o)=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o});const dgVisTier=w=>w?w.tier:0;\n';
-  const code=shared+helpers+'const localStorage={getItem(){return null},setItem(){}};const scene=new THREE.Scene();const matFlat=new THREE.MeshLambertMaterial();\n'+pre+outfits+model+stubs+wpn+';return {'+NAMES.join(',')+'};';
+  const code=shared+helpers+'const localStorage={getItem(){return null},setItem(){}};const scene=new THREE.Scene();const matFlat=new THREE.MeshLambertMaterial();\n'+pre+outfits+model+stubs+wsh+wpn+';return {'+NAMES.join(',')+'};';
   const C=new Function(code)();
   // every vertex of the rig as world-space numbers: position, colour, normal (the renderer shades per pixel like the game's Phong material)
   C.tris=rig=>{ rig.root.updateMatrixWorld(true); const t=[];

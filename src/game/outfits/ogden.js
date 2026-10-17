@@ -83,7 +83,7 @@ OUTFITS.ogden=(function(){
       shin:sd=>{ const out=[]; out.push(solid(ofRingAt([0,-D.shin*0.05,0],[0,1,0],0.053*D.cw+0.002,0.004,sg(6)),ROPE)); out.push(solid(ofRingAt([0,-D.shin*0.72,0],[0,1,0],0.044*D.cw+0.002,0.0042,sg(6)),RUST));
         out.push(solid(csph(0.012,sg(8),sg(6)).scale(1.2,0.7,1).translate(sd*0.03,-D.shin*0.76,-0.03*D.cw),MOSS_D));
         out.push(solid(vbox(0.058*(0.55+0.45*S.feet),0.012,0.046,0,-D.shin-D.ankleH+0.006,0.045),0x14110f)); return out; },
-      dress:{ grip:ROPE, metal:RUST, wood:MUD, accent:MOSS,
+      dress:{ shape:{sword:'spade',bow:'crossbow',staff:'bell'}, grip:ROPE, metal:RUST, wood:MUD, accent:MOSS,
         trim:(c,u,part)=>{ const f=((u/0.07)%1+1)%1; if((part==='blade'||part==='limb'||part==='shaft'||part==='rim')&&f<0.22) c.lerp(cMu,0.7); if(part==='grip'&&((u/0.012)%1+1)%1<0.4) c.lerp(ofCol(MUD),0.6); },
         charm:()=>{ const lit=[], glow=[];   // a rusted grave bell on a cord, its clapper dripping
           lit.push(solid(sweepTube([[0,0.004,0],[0,-0.022,0.003]],[0.0014,0.0014],4,{cap:'round',rings:4}),ROPE));

@@ -297,7 +297,7 @@ OUTFITS.tansy=(function(){
       },
 
       /* ---- the weapon dressing: ash grips wrapped in twine with clay cords, hazel limbs and shafts, dull steel, wheat-ear notches, a sheaf hung from the grip ---- */
-      dress:{ grip:0x9a7a4a, metal:0xb9bcc0, wood:0x8a6a3a, accent:CLAY, glow:0xa88a4a,    // (the mage's orb is drawn unlit by weapons.js; a dull straw colour keeps it from shining)
+      dress:{ shape:{sword:'sickle',bow:'longbow',staff:'sheaf'}, grip:0x9a7a4a, metal:0xb9bcc0, wood:0x8a6a3a, accent:CLAY, glow:0xa88a4a,    // (the mage's orb is drawn unlit by weapons.js; a dull straw colour keeps it from shining)
         trim:(c,u,part)=>{ const f=((u/0.02)%1+1)%1;
           if(part==='grip'){ const g=((u/0.006)%1+1)%1; if(g<0.55) c.lerp(ofCol(TWINE),0.85); if((((u/0.045)%1+1)%1)<0.1) c.lerp(ofCol(CLAY),0.9); }
           else if(part==='blade'||part==='limb'||part==='shaft'||part==='rim'){ if(f<0.3) c.lerp(ofCol(0xa8803a),0.85); else if(f>0.5&&f<0.62) c.lerp(ofCol(WHEAT),0.7); } },

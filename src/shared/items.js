@@ -61,10 +61,11 @@ const ARMOR_LOOK={
 // east: the Sakura Vale (0 sealed, 1 bridge gate open after the Rootwarden, 2 walked to Hanami: teleport circles attuned); north: the Hoarfrost Reach (0 ice wall shut, 1 open after Akaoni, 2 walked to Rimehold); west: the Greyspine (0 ice fall in the glacier valley shut, 1 open after Ymrik, 2 walked into Highmark); river / neck: its two gates in the west wall (0 rock fall, 1 open after the Gryphon Queen / the mountain golem); soul: the element you are bound to (elements.js); mats: monster drops {id:count}; prof: learned professions {id:{xp}}, res: gathered resources {id:count} (professions.js), pot: brewed potions {id:count} (crafting.js); eq also holds the three tools (pick, axe, sickle)
 function newGearFor(cls){ return {inv:['sword1','bow1','wand1'],eq:{weapon:(WEAPON_OF[cls]||'sword')+'1',helmet:null,top:null,bottom:null,shoes:null,pick:null,axe:null,sickle:null,ring:null,pendant:null},coins:0,q:{offers:[],active:{},defs:{},ready:[],done:0,next:1},startAll:false,bought:{},skills:newSkills(),east:0,north:0,west:0,river:0,neck:0,redgate:0,sun:0,gloam:0,soul:'basic',mats:{},prof:{},res:{},pot:{},mq:newMq(),zt:newZt(),temper:0,rsw:0,rsa:0,ss:{pity:{}}}; }   // dungeons: eq.ring (one ring slot) and temper (the count of Tempering Stones); pendants.js: eq.pendant (one pendant slot)
 function gearStatsOf(gear){ let hp=0,atk=0,def=0; if(gear&&gear.eq) for(const k in gear.eq){ const it=ITEM[gear.eq[k]]; if(!it) continue; hp+=it.hp||0; atk+=it.atk||0; def+=it.def||0; } return {hp,atk,def}; }
+const ARMOR_SHOW={helmet:'armorHat',top:'armorTop',bottom:'armorBottom',shoes:'armorShoes'};
 function effectiveLookOf(look,gear){
   const L=Object.assign({},look||{});
   if(L.armor==='hide') return L;   // the player chose to show their own clothes over their armour (stats still count)
-  if(gear&&gear.eq) for(const s of ARMOR_SLOTS){ const it=ITEM[gear.eq[s]]; if(it) Object.assign(L,ARMOR_LOOK[s][dgVisTier(it)]); }   // dungeons: a level-30 piece looks like the top tier's
+  if(gear&&gear.eq) for(const s of ARMOR_SLOTS){ if(L[ARMOR_SHOW[s]]==='hide') continue; const it=ITEM[gear.eq[s]]; if(it) Object.assign(L,ARMOR_LOOK[s][dgVisTier(it)]); }   // dungeons: a level-30 piece looks like the top tier's; the editor's per-piece Show / Hide is look.armorHat / armorTop / armorBottom / armorShoes
   return L;
 }
 function classOfGear(gear,fallback){ const w=gear&&gear.eq&&ITEM[gear.eq.weapon]; return w?CLASS_OF[w.slot]:(fallback||'warrior'); }

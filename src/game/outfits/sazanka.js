@@ -229,7 +229,7 @@ OUTFITS.sazanka=(function(){
     };
 
     /* ================= the weapon dressing: black lacquer, vermilion cord spirals, dark steel, indigo inlay bands, a courier's tag with a violet edge ================= */
-    const dress={ grip:LAC, metal:STEEL, wood:LAC, accent:INDIGO,
+    const dress={ shape:{sword:'katana',bow:'yumi',staff:'tassel'}, grip:LAC, metal:STEEL, wood:LAC, accent:INDIGO,
       trim:(c,u,part)=>{ const f=((u/0.06)%1+1)%1;
         if(part==='grip'){ if(((u/0.008)%1+1)%1<0.5) c.lerp(cV,0.92); return; }
         if(f<0.07) c.lerp(ofCol(LAPEL),0.9); else if(f>0.5&&f<0.54) c.lerp(cV,0.9); },
