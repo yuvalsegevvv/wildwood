@@ -82,6 +82,7 @@ const CAUSEWAY_NAMES={'The Redgate Road':'The Drowned Road','The Proving Road':'
         if(bridgeAt(x,z,2)) continue;   // (where two roads meet in the water, one walkway)
         const wy0=kind===3?WATER:waWaterSurf(x0,z0), wy1=kind===3?WATER:waWaterSurf(x1,z1), up=br?0.6:0.5, h0=Math.max(baseHeight(x0,z0),wy0+up), h1=Math.max(baseHeight(x1,z1),wy1+up);   // (the surface at each end: a river falls, so the pieces of a long causeway meet at one height)
         let gate=null; for(const G of WA_GATES) if(Math.hypot(G.x-x,G.z-z)<60){ gate=G.name; break; }
+        if(gate==='The Greyfall Bridge') continue;   // (that crossing is TUN's stone bridge: bridgeDeck)
         let nm=br?'a river bridge':'a plank causeway';
         if(!br&&!named.has(rd.name)&&CAUSEWAY_NAMES[rd.name]){ nm=CAUSEWAY_NAMES[rd.name]; named.add(rd.name); }
         BRIDGES.push({x,z,dx:(x1-x0)/L,dz:(z1-z0)/L,h0,h1,len:L,w:br?BRIDGE_W:CAUSE_W,wy0,wy1,kind:pk,road:rd.name,name:nm,gate,r:L/2+(br?BRIDGE_W:CAUSE_W)+1});   // (r: a quick reject for bridgeDeck / bridgeAt)
@@ -95,6 +96,7 @@ const bridgeWy=(B,t)=>B.wy0+(B.wy1-B.wy0)*t;   // the water surface under the de
 const bridgeY=(B,t)=>B.kind==='causeway'?Math.max(bridgeWy(B,t)+0.5,B.h0-t*B.len*0.3,B.h1-(1-t)*B.len*0.3):lerp(B.h0,B.h1,t)+Math.sin(t*Math.PI)*Math.max(0.9,bridgeWy(B,0.5)+1.4-(B.h0+B.h1)/2);
 // the deck's height under (x, z), or -Infinity off every bridge
 function bridgeDeck(x,z){
+  if(x>=TUN.p0&&x<=TUN.p1&&Math.abs(z-TUN.z)<=TUN.w) return TUN.floor(x);   // the Greyfall Bridge's own deck (shared/vale.js: TUN, drawn by buildings-vale.js)
   for(const B of BRIDGES){ const px=x-B.x, pz=z-B.z; if(px*px+pz*pz>B.r*B.r) continue; const u=px*B.dx+pz*B.dz, v=-px*B.dz+pz*B.dx;
     if(Math.abs(u)<=B.len/2 && Math.abs(v)<=B.w) return bridgeY(B,u/B.len+0.5); }
   return -Infinity;

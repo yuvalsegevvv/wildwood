@@ -6,7 +6,7 @@ const fs=require('fs'), path=require('path');
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['rawHeight','bridgeDeck','landAt','inSun','inVale','inHoar','inGrey','WX0','WX1','WZ0','WZ1','HX0','HALF','VIL','VIL5','VILS','CIRCLES','vilAt','vDist','VR','SUN_CITY','SUN_PASS','sunPassX','sunwallLine','SUN_RED','SUN_DG_DOOR','sunKeepOut','sunRiverAt','SUN_RIVER',
+  ['rawHeight','bridgeDeck','landAt','inSun','inVale','inHoar','inGrey','WX0','WX1','WZ0','WZ1','HX0','HALF','VIL','VIL5','VILS','CIRCLES','vilAt','vDist','VR','SUN_CITY','SUN_PASS','sunPassX','SUN_RED','SUN_AMBER','SUN_DG_DOOR','sunKeepOut','sunWaterSurf','sunWallHold','sunCrestHold','gateHold','SUN_FLAT','SUN_BASE','WA_HUBS','WA_GATES','WA_POIS','waLandId',
    'borderZ','WATER','GREY_GATES','ZONES','ARENAS','MON_DEFS','MONS','MATS','BOSS_DEFS','BOSSES','BOSS_SKILLS','BOSS_QUESTS','MAX_ZONE_LV','genQuest','NODES','defZone','zoneAt','rewardKill','sanitizeGear','sanitizeQuest','respawnVil','ZTIER_LANDS','ZTIER_BOSS','sunZoneAt','ARENA_S32','ARENA_S36','GW_PLACE','SKILLS']);
 let fails=0; const ok=(n,c,d)=>{ if(!c) fails++; console.log((c?'PASS ':'FAIL ')+n+(d?'  ('+d+')':'')); };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
@@ -15,22 +15,21 @@ const H=x.rawHeight, C0=x.SUN_CITY, V=x.VIL5;
 // ---- the ground ----
 { const hs=[]; for(let a=0;a<12;a++) hs.push(H(C0.x+Math.sin(a/12*6.283)*40,C0.z+Math.cos(a/12*6.283)*40));
   ok('the Bowl: the city stands on a flat floor about '+C0.h+' m up, carried by the heightmap (the terrain under the model is its floor)',Math.max(...hs)-Math.min(...hs)<2.5&&Math.abs(H(C0.x,C0.z)-C0.h)<4,'spread '+(Math.max(...hs)-Math.min(...hs)).toFixed(2)+', centre '+H(C0.x,C0.z).toFixed(1)); }
-ok('land tests: the city, its plateau and the pass are the Sunscar; the home forest, the vale, the Reach and the Greyspine are not',x.inSun(C0.x,C0.z)&&x.landAt(C0.x,C0.z)==='sun'&&x.landAt(0,0)==='home'&&x.landAt(-300,200)==='home'&&!x.inSun(x.HX0+30,0)&&x.landAt(x.sunPassX(-300),-300)==='sun'&&x.landAt(x.sunPassX(-520),-520)==='grey');
+ok('land tests (the atlas\'s): the city, its apron and the pass\'s south end are the Sunscar; the home forest, the Greyspine and the Gloamhorn are not; the closed link south is land 6 but still inSun',x.inSun(C0.x,C0.z)&&x.landAt(C0.x,C0.z)==='sun'&&x.landAt(0,0)==='home'&&x.landAt(-300,200)==='home'&&!x.inSun(-300,-400)&&x.landAt(x.sunPassX(-300),-300)==='grey'&&x.landAt(-700,-300)==='gloam'&&x.inSun(x.SUN_AMBER.x,x.SUN_AMBER.z+40)&&x.waLandId(x.SUN_AMBER.x,x.SUN_AMBER.z+40)===6);
+ok('the Bowl is at the atlas\'s hub of the Sunscar, the gates at its gates: the River Pass (grey | sun), Redgate Canyon (home | sun) and the Amber link (closed, nothing behind it)',Math.hypot(C0.x-x.WA_HUBS.sun[0],C0.z-x.WA_HUBS.sun[1])<1&&x.GREY_GATES.length>=4&&[['river',x.WA_GATES.find(g=>g.a==='grey'&&g.b==='sun')],['redgate',x.WA_GATES.find(g=>g.a==='home'&&g.b==='sun')],['amber',x.WA_GATES.find(g=>g.b==='amber')]].every(([id,g])=>{ const G=x.GREY_GATES.find(q=>q.id===id); return G&&Math.hypot(G.x-g.x,G.z-g.z)<40; })&&x.SUN_DG_DOOR&&Math.hypot(x.SUN_DG_DOOR.x-x.WA_POIS.find(q=>q.land==='sun'&&q.kind==='door').x,x.SUN_DG_DOOR.z-x.WA_POIS.find(q=>q.land==='sun'&&q.kind==='door').z)<1);
 ok('Glasswell is a village like the others: in VILS and CIRCLES (fifth), vilAt finds it from the middle and from the plaza, its teleport circle is the Glasswell one',x.VILS.length>=5&&x.VILS[4]===V&&x.CIRCLES.length>=5&&x.CIRCLES[4].V===V&&x.vilAt(C0.x,C0.z)===V&&x.vilAt(V.tele.x,V.tele.z)===V&&x.vDist(C0.x,C0.z)<x.VR);
 { const gw=H(C0.x,C0.z+45)-C0.h; ok('the city is walled by its Bowl: the rim is well above the floor',H(C0.x,C0.z-C0.r-40)>C0.h+8||H(C0.x+C0.r+40,C0.z)>C0.h+8||H(C0.x-C0.r-40,C0.z)>C0.h+8,'floor +'+gw.toFixed(1)); }
-{ const r=x.sunRiverAt(x.SUN_RIVER[3][0],x.SUN_RIVER[3][1]); ok('the Glass River: a ribbon of points that only falls, from the Springhead to the River Gate mouth',x.SUN_RIVER.length>20&&x.SUN_RIVER.every((p,i)=>i===0||p[2]<=x.SUN_RIVER[i-1][2]+0.5)&&r.d<3,x.SUN_RIVER.length+' points'); }
+{ const lk=x.SUN_CITY; ok('the Sunscar has no water of its own: only the Bowl\'s lake stands (the model\'s), none on the plateau round it',x.sunWaterSurf(C0.x-52,C0.z+10)!==null&&x.sunWaterSurf(C0.x+200,C0.z+200)===null&&x.sunWaterSurf(C0.x-300,C0.z)===null); }
 
 // ---- reachability: the leak model (gates shut) and the open land ----
 { const C=4, LIM=1.2, Wd=Math.floor((x.WX1-x.WX0)/C)+1, Dd=Math.floor((x.WZ1-x.WZ0)/C)+1, HH=new Float32Array(Wd*Dd), px=i=>x.WX0+i*C, pz=j=>x.WZ0+j*C;
   for(let j=0;j<Dd;j++) for(let i=0;i<Wd;i++) HH[j*Wd+i]=Math.max(H(px(i),pz(j)),x.bridgeDeck(px(i),pz(j)));
-  const G=x.GREY_GATES.find(g=>g.id==='river'), R=x.SUN_RED;
-  const blocked=(X,Z)=>{ if(Math.abs(Z-R.z)<R.w+30&&Math.abs(X-R.x)<=C*1.3) return true; if(Math.abs(X-x.sunPassX(G.z))<x.SUN_PASS.w+30&&Math.abs(Z-G.z)<=C*0.6) return true;
-    if(Math.abs(Z-R.z)>=R.w+30){ const L=x.HX0+x.sunwallLine(Z)-8; if(Math.abs(X-L)<=C*1.3) return true; }
-    if(X<x.HX0){ const bz=x.borderZ(X); if(Math.abs(Z-bz)<14&&Math.abs(X-x.sunPassX(Z))>=x.SUN_PASS.w+2) return true; } return false; };
+    const shutG=x.GREY_GATES.filter(g=>g.id==='river'||g.id==='redgate'||g.id==='amber');
+  const blockedStep=(ox,oz,X,Z)=>{ if(X>-250&&ox>-250) return false; const o={x:X,z:Z}; for(const g of shutG) x.gateHold(g,o,ox,oz); x.sunWallHold(o,ox); x.sunCrestHold(o,oz); return o.x!==X||o.z!==Z; };
   const nb=[[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.414],[1,-1,1.414],[-1,1,1.414],[-1,-1,1.414]];
   const flood=shut=>{ const seen=new Uint8Array(Wd*Dd), q=new Int32Array(Wd*Dd); let qh=0,qt=0; const s0=Math.round((x.VIL.z+8-x.WZ0)/C)*Wd+Math.round((x.VIL.x+8-x.WX0)/C); seen[s0]=1; q[qt++]=s0;
-    while(qh<qt){ const k=q[qh++], i=k%Wd, j=(k-i)/Wd; for(const [di,dj,r] of nb){ const a=i+di,b=j+dj; if(a<2||b<2||a>=Wd-2||b>=Dd-2) continue; const n=b*Wd+a; if(seen[n]||HH[n]<=x.WATER-0.8||(HH[n]-HH[k])/(C*r)>LIM||(shut&&blocked(px(a),pz(b)))) continue; seen[n]=1; q[qt++]=n; } } return seen; };
-  const count=S=>{ let n=0; for(let j=0;j<Dd;j++) for(let i=0;i<Wd;i++) if(S[j*Wd+i]&&x.inSun(px(i),pz(j))&&HH[j*Wd+i]>1) n++; return n; };
+    while(qh<qt){ const k=q[qh++], i=k%Wd, j=(k-i)/Wd; for(const [di,dj,r] of nb){ const a=i+di,b=j+dj; if(a<2||b<2||a>=Wd-2||b>=Dd-2) continue; const n=b*Wd+a; if(seen[n]||HH[n]<=x.WATER-0.8||(HH[n]-HH[k])/(C*r)>LIM||(shut&&blockedStep(px(i),pz(j),px(a),pz(b)))) continue; seen[n]=1; q[qt++]=n; } } return seen; };
+  const GR=x.GREY_GATES.find(g=>g.id==='river'), RR=x.GREY_GATES.find(g=>g.id==='redgate'), count=S=>{ let n=0; for(let j=0;j<Dd;j++) for(let i=0;i<Wd;i++) if(S[j*Wd+i]&&x.inSun(px(i),pz(j))&&HH[j*Wd+i]>1) n++; return n; };
   const shut=flood(true), open=flood(false);
   ok('with the River Pass and Redgate shut, no Sunscar ground can be walked to from the home village (the holds are the only doors)',count(shut)===0,count(shut)+' cells');
   const reach=(X,Z,r)=>{ for(let dz=-r;dz<=r;dz+=C) for(let dx=-r;dx<=r;dx+=C){ const i=Math.round((X+dx-x.WX0)/C), j=Math.round((Z+dz-x.WZ0)/C); if(i>=0&&j>=0&&i<Wd&&j<Dd&&open[j*Wd+i]) return true; } return false; };

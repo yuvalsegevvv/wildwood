@@ -205,11 +205,11 @@ function baseHeightRaw(x,z){
    Its ground is ~50 m up (the vale's is 10-30 m), rolling in broad white domes, with frozen lakes (flat ice: walkable, no water). South,
    the vale's north rim goes on north of its crest at HZ0 and eases down to the plateau over ~60 m (only the pass through it is low,
    shared/hoarfrost.js); west the Vale Wall goes on; north and east it comes down to the sea (a coast with bays and islets, shared/coasts.js). */
-const FROST_LAKES=[{x:790+RDX,z:-742,r:46,name:'Frostmere'},{x:585+RDX,z:-850,r:30,name:'Mirrorice'},{x:905+RDX,z:-812,r:26,name:'Blue Tarn'}];
+const FROST_LAKES=WA_LAKES.filter(L=>L.frozen).map(L=>({x:L.x,z:L.z,r:L.r,name:L.zone===24?'Frostmere':L.zone===28?'Mirrorice':'Frozen lake'}));   // the Reach's frozen lakes, the atlas's (the first, zone 24, is the one with the hull plate)
 const hoarBase=(x,z)=>50+erodeFbm(x*0.0055+13.7,z*0.0055-4.1,5,0.2)*19+Math.pow(1-Math.abs(noise2(x*0.011+61,z*0.011-9)),2)*5+noise2(x*0.06,z*0.06)*0.4;
 function iceLevel(L){ return hoarBase(L.x,L.z)-1.6; }
-// distance to the nearest frozen lake's edge (negative inside); the ice sheet itself is flat
-function iceDist(x,z){ let m=1e9; for(const L of FROST_LAKES){ const d=Math.hypot(x-L.x,z-L.z)-L.r+noise2(x*0.05+L.x,z*0.05)*4; if(d<m) m=d; } return m; }
+// distance to the nearest frozen lake's edge (negative inside); the ice sheet itself is flat (the atlas bakes it, shared/world-atlas-ground.js)
+function iceDist(x,z){ return waLandId(x,z)===2&&!waIsSea(x,z)?waWaterDist(x,z):1e9; }   // (the atlas's bank distance: the Reach's water is all ice; 1e9 elsewhere)
 function hoarHeight(x,z){
   let h=hoarBase(x,z);
   for(const L of FROST_LAKES){ const lx=x-L.x, lz=z-L.z; if(Math.abs(lx)>L.r+14||Math.abs(lz)>L.r+14) continue;

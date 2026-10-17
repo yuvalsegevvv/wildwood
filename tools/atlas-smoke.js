@@ -56,7 +56,7 @@ const gradAt=(x,z)=>Math.max(Math.abs(H(x+4,z)-H(x-4,z)),Math.abs(H(x,z+4)-H(x,z
     H(X.WA_PVP.x,X.WA_PVP.z).toFixed(1)+' / '+H(X.WA_PVP.bridge[0][0],X.WA_PVP.bridge[0][1]).toFixed(1)+' / '+H(X.WA_PVP.bridge[1][0],X.WA_PVP.bridge[1][1]).toFixed(1)); }
 // ---- the lakes and rivers
 { const bad=[]; for(const L of X.WA_LAKES){ const w=X.waWater(L.x,L.z), d=X.waWaterDist(L.x,L.z); if(!(d<0&&(w===2||w===4))) bad.push(L.zone+' '+L.land+' '+w+' '+d.toFixed(1)); else if(L.frozen!==(w===4)) bad.push('frozen mismatch '+L.land);
-    else if(w===4?!(Math.abs(X.waterSurf(L.x,L.z)-X.rawHeight(L.x,L.z))<0.5):!(X.waterSurf(L.x,L.z)>X.rawHeight(L.x,L.z)+0.3)) bad.push('lake not deep (or ice not flat) '+L.zone); }
+    else if(w===4?!(Math.abs(X.waWaterSurf(L.x,L.z)-X.rawHeight(L.x,L.z))<0.5&&X.waterSurf(L.x,L.z)===X.WATER):!(X.waterSurf(L.x,L.z)>X.rawHeight(L.x,L.z)+0.3)) bad.push('lake not deep (or ice not flat) '+L.zone); }
   ok('every lake is water at its centre (frozen only in the Reach), with its surface above its bed',bad.length===0,bad.join('; ')); }
 { const bad=[]; for(const R of X.WA_RIVERS){ const p=R.pts, a=p[0], b=p[p.length-1]; if(!(X.waCoast(b[0],b[1])<60)) bad.push(R.name+' does not reach the sea ('+X.waCoast(b[0],b[1]).toFixed(0)+' m inland)'); let wet=0; for(const q of p) if(X.waWaterDist(q[0],q[1])<12) wet++; if(wet<p.length*0.8) bad.push(R.name+' is dry along '+(p.length-wet)+' of '+p.length+' points'); }
   ok('the three main rivers run to the sea and are water along their line',bad.length===0,bad.join('; ')); }
