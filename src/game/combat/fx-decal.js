@@ -1,7 +1,7 @@
 //@ Ground patterns for skill effects: canvas-drawn runes, flames, waves, cracks, gusts, eclipses, stars, frost, leaves and shock rings that replace the plain discs and rings
 /* Agent map. fxdMesh(kind,col,op) is a flat 2 m square (radius 1, like teleFill) with the pattern on it, additive and tinted by col; scale it by the radius and turn it with rotation.y.
    fxdKindOfEl(el) gives the pattern of an element (fire flame, water wave, earth cracks, air gust, dark eclipse, light star, basic rune); fxdKindOfArea(kind,el) the one of an area
-   event (meteor flame, rain and hail target, blizzard frost, storm gust, zone: its element's). Kinds: rune flame wave cracks gust eclipse star frost leaf target shock aura.
+   event (meteor flame, rain and hail target, blizzard frost, storm gust, zone: its element's). Kinds: rune flame wave cracks gust eclipse star frost leaf target shock aura flash. fxdBillboard(kind,col,op) is the camera-facing 1 m square for bursts (spawnBurst).
    The textures are drawn once (128 px on phones) from a seeded stream, so a pattern looks the same every time. Used by skill-fx.js (onArea, auras), attacks.js (spawnRingAt),
    fx-extra.js (fxxRune). A piece with a skill-set look keeps its own patterns (skillsets/looks.js). Test: client-smoke. */
 const FXD={tex:{},geo:null};
@@ -68,6 +68,10 @@ function fxdDraw(kind,g){
     const k=g.createRadialGradient(C,C,70,C,C,124); k.addColorStop(0,'rgba(255,255,255,0)'); k.addColorStop(0.8,'rgba(255,255,255,0.35)'); k.addColorStop(0.93,'rgba(255,255,255,1)'); k.addColorStop(1,'rgba(255,255,255,0)');
     g.shadowBlur=0; g.fillStyle=k; g.beginPath(); g.arc(C,C,124,0,TAU); g.fill(); g.shadowBlur=3; g.fillStyle='#fff';
     for(let i=0;i<46;i++){ g.save(); g.translate(C,C); g.rotate(rr(0,TAU)); g.lineWidth=rr(0.8,2); g.globalAlpha=rr(0.4,0.9); g.beginPath(); const r0=rr(72,100); g.moveTo(0,-r0); g.lineTo(0,-r0-rr(10,26)); g.stroke(); g.restore(); } g.globalAlpha=1;
+  } else if(kind==='flash'){
+    glow(124,0.9);
+    around(11,()=>{ const L=rr(70,124), w=rr(3,7); g.globalAlpha=rr(0.6,1); g.beginPath(); g.moveTo(-w,-16); g.lineTo(0,-L); g.lineTo(w,-16); g.closePath(); g.fill(); }, rr(0,TAU)); g.globalAlpha=1;
+    around(9,()=>{ const L=rr(40,70), w=rr(2,4); g.beginPath(); g.moveTo(-w,-10); g.lineTo(0,-L); g.lineTo(w,-10); g.closePath(); g.fill(); }, rr(0,TAU)); glow(50,1);
   } else if(kind==='aura'){
     ring(118,4); ring(84,1.5,0.7);
     around(24,i=>{ g.lineWidth=2.4; g.beginPath(); g.moveTo(-6,-98); g.lineTo(0,-108); g.lineTo(6,-98); g.stroke(); });
@@ -83,4 +87,9 @@ function fxdTex(kind){
 function fxdMesh(kind,col,op){
   if(!FXD.geo) FXD.geo=new THREE.PlaneGeometry(2,2).rotateX(-Math.PI/2);
   return new THREE.Mesh(FXD.geo,new THREE.MeshBasicMaterial({map:fxdTex(kind),color:col,transparent:true,opacity:op===undefined?0.8:op,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));
+}
+function fxdBillboard(kind,col,op){   // a square that faces the camera as it is made, rolled at random: the flash of a burst
+  if(!FXD.board) FXD.board=new THREE.PlaneGeometry(1,1);
+  const m=new THREE.Mesh(FXD.board,new THREE.MeshBasicMaterial({map:fxdTex(kind),color:col,transparent:true,opacity:op===undefined?0.8:op,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));
+  m.quaternion.copy(camera.quaternion); m.rotateZ(AR(0,TAU)); return m;
 }

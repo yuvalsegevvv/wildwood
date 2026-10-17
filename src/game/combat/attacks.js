@@ -71,10 +71,9 @@ function attackVisuals(a,who){
   else if(mine && a.kind==='cast') cSfx.whoosh();
 }
 function spawnBurst(pos,color,size){
-  const mesh=new THREE.Mesh(new THREE.SphereGeometry(0.5,12,8),fxMat(color,0.6));
+  const mesh=fxdBillboard('flash',color,0.8);   // fx-decal: rays and a glow that face you, not a plain ball
   mesh.position.copy(pos); scene.add(mesh);
-  CB.fx.push({mesh,life:0.3,max:0.3,grow:size*3,own:true});
-  mesh.material.opacity=0.35;
+  CB.fx.push({mesh,life:0.3,max:0.3,grow:size*3,own:true,shareGeo:true});
   if(size>=0.5) fxpFlare(pos.x,pos.y,pos.z,color,Math.min(5,size*1.8),0.3);   // fx-pool: the glow and sparks that make a burst read as light
   fxpSparks(pos.x,pos.y,pos.z,color,Math.min(18,3+size*5),3+size*2.2,{size:0.12+size*0.05});
 }
