@@ -238,6 +238,7 @@ game
   wildlife/animals.js                Deer, foxes, rabbits, ducks, birds/bats, butterflies
   wildlife/chamois.js                Chamois: small harmless herds of mountain goats on the Greyspine's alpine slopes (client-only dressing, built the first time you stand in the Greyspine; they graze, look up and bolt from you)
   wildlife/fish.js                   Fish that leap out of lakes, rivers and the sea near you: an arc, a ring of ripples where they rise and a splash where they fall
+  wildlife/dragonflies.js            Dragonflies that hover and dart low over ponds, rivers and tarns by day: a few pooled meshes with humming wings
   world/gloam-sky.js                 The Gloamhorn's permanent dusk: gloamTint(s,dt) pulls the sky, fog and light toward a fixed violet twilight with a low moon, whatever the hour, blended over the border band
   world/time-of-day.js               20-minute day/night cycle, sky keyframes, clock, zone label
   player/input.js                    Keyboard, hold Alt to free the mouse, mouse look, touch joystick, HUD buttons

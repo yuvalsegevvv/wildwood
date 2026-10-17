@@ -204,6 +204,7 @@
     "wildlife/animals.js",
     "wildlife/chamois.js",
     "wildlife/fish.js",
+    "wildlife/dragonflies.js",
     "world/gloam-sky.js",
     "world/time-of-day.js",
     "player/input.js",
