@@ -38,9 +38,11 @@ function checkUserName(raw){
 // 5 wrong passwords lock an account's logins for a minute (slows guessing)
 function locked(key){ const f=FAILS.get(key); return !!(f&&f.n>=5&&Date.now()<f.until); }
 function failed(key){ const f=FAILS.get(key)||{n:0,until:0}; if(Date.now()>f.until) f.n=0; f.n++; f.until=Date.now()+60000; FAILS.set(key,f); }
-/* guests (online server only: a browser's secret code, no name and password) are held back so progress cannot be farmed without an account: level 10 at most, the home forest only,
-   no zone tiers. Existing guest progress is never taken away, it just stops there. Each gate tells the player once in a while (event 'guest' -> the "Register to continue" popup). */
-const GUEST_MAX_LV=10;
+/* guests (online server only: a browser's secret code, no name and password) are held back so progress cannot be farmed without an account: level 20 at most, the first three
+   lands only (GUEST_LANDS: the home forest, the Sakura Vale, the Hoarfrost Reach; each land's own gate still holds until the story opens it), no zone tiers. Existing guest progress is never taken away, it just stops there. Each gate tells the player once in a while (event 'guest' -> the "Register to continue" popup). */
+const GUEST_MAX_LV=20;
+const GUEST_LANDS=['home','vale','hoar'];   // landAt() names (shared/tiers.js)
+const guestLandOk=(x,z)=>GUEST_LANDS.includes(landAt(x,z));
 const isGuestP=p=>ACCOUNTS_ON&&!!p.acct&&!p.user;
 function guestGateP(p,why){ if(S.t-(p.guestT||-99)<5) return; p.guestT=S.t; ev('guest',p.id,why); }
 function giftP(p){

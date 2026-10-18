@@ -398,7 +398,7 @@ game
   dungeon/hud.js                     A run's HUD: the mission's title, lines and bar (dgHudText of the dg tuple) with the run's clock, the objectives' labels and compass arrows, the boss hall's arrow, the use / revive / relight / portal prompt and key, the leave button, the downed screen, the results panel, and the Testing tools' Dungeons row
   dungeon/minimap.js                 The maps in a run: the minimap and the full map draw the dungeon's tiles instead of the world, only the tiles you have walked into (explored), with the objectives, the portal, the boss's hall, the run's monsters and your party
   ui/account.js                      Accounts on the online server: session token, the server's auth answers, register / log out / guest code in settings
-  ui/guest-gate.js                   The "Register to continue" popup a guest sees at the online server's limits (level 10, the home forest, zone tiers)
+  ui/guest-gate.js                   The "Register to continue" popup a guest sees at the online server's limits (level 20, the first three lands, zone tiers)
   ui/chat.js                         Chat between players: the chat log, the input (Enter / chat button), speech bubbles, /name, joins and leaves
   ui/start-screen.js                 Start card: loading state, Log in / Register / Play as guest (Solo / Shared without a server), connecting, beginPlay
   main/loop.js                       Main loop (frame) and boot; the start card and loading progress are in ui/start-screen.js
