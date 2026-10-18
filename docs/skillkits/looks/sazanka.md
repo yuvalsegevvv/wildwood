@@ -85,17 +85,20 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `feet` (Feet) | 0.95 |
 | `jaw` (Jaw width) | 0.92 |
 | `chin` (Chin) | 0.95 |
-| `cheeks` (Cheeks) | 0.9 |
-| `eyeSize` (Eye size) | 1.05 |
+| `cheeks` (Cheeks) | 0.95 |
+| `eyeSize` (Eye size) | 1.1 |
 | `eyeHeight` (Eye height) | 0.05 |
-| `eyeTilt` (Eye tilt) | 0.45 |
+| `eyeTilt` (Eye tilt) | 0.5 |
 | `brow` (Brows) | 0.3 |
 | `noseSize` (Nose) | 0.9 |
 | `mouthSize` (Mouth width) | 0.9 |
-| `lips` (Lips) | 0.9 |
-| `smile` (Expression) | 0.1 |
+| `lips` (Lips) | 1 |
+| `smile` (Expression) | 0.35 |
 | `hairLength` (Hair length) | 0.9 |
 | `bangs` (Fringe length) | 1.1 |
+| `blush` (Blush) | 0.4 |
+| `earSize` (Ear size) | 1.15 |
+| `undertone` (Skin undertone) | 0.2 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 

@@ -399,7 +399,7 @@ OUTFITS.corvin=oxPlus(OUTFITS.corvin,(X,D)=>({   // round 6: a brass lamp swingi
 OUTFITS.corvin=oxPlus(OUTFITS.corvin,(X,D)=>({   // round 3: brass-trimmed shoulder plates and a long waxed cape with brass stitching
   shoulder:sd=>oxPauldron(X,D,{col:0x2b2b2e,trim:0xc59c39,r:0.062}),
   cos:{cape:{col:0x2b2b2e,trim:0xc59c39,len:0.95,pat:'stitch',mantle:0}}}));
-oxTune('corvin',{noseSize:1.22,brow:-0.2,eyeSize:0.9,jaw:1.0,cheeks:0.82,lips:0.85,undertone:0.2,blush:0.1,earSize:1.1});
+oxTune('corvin',{noseSize:1.18,brow:-0.2,eyeSize:0.9,jaw:1.0,cheeks:0.82,lips:0.85,undertone:0.2,blush:0.1,earSize:1.1});
 OUTFITS.corvin=oxPlus(OUTFITS.corvin,(X,D)=>({   // face round 4: lamp soot on one cheek, late nights under the spectacles, a brass ear ring
   mark:F=>oxMarks(F,[{t:'bags',col:0x6a6058},{t:'crow',col:0x7a6a58},{t:'scar',side:-1,col:0x3a3430}]),
   hair:()=>oxHairBits(X,[{t:'ring',side:1,col:0xc59c39}])}));

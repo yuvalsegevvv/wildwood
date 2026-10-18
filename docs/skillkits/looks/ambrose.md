@@ -79,15 +79,19 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `head` (Head size) | 1.02 |
 | `jaw` (Jaw width) | 0.95 |
 | `chin` (Chin) | 0.95 |
-| `cheeks` (Cheeks) | 1.05 |
-| `eyeSize` (Eye size) | 1.05 |
+| `cheeks` (Cheeks) | 1.15 |
+| `eyeSize` (Eye size) | 1.18 |
 | `eyeGap` (Eye spacing) | 1.02 |
 | `eyeTilt` (Eye tilt) | -0.25 |
-| `brow` (Brows) | -0.3 |
-| `lips` (Lips) | 1.05 |
-| `smile` (Expression) | 0.35 |
+| `brow` (Brows) | -0.6 |
+| `lips` (Lips) | 1.1 |
+| `smile` (Expression) | 0.5 |
 | `hairLength` (Hair length) | 1.1 |
 | `bangs` (Fringe length) | 0.8 |
+| `blush` (Blush) | 0.55 |
+| `undertone` (Skin undertone) | -0.2 |
+| `noseSize` (Nose) | 0.9 |
+| `earSize` (Ear size) | 1.1 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -102,7 +106,7 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 | `hands` (Hands) | 0.95 .. 1.2 | 0.85 .. 1.2 |
 | `head` (Head size) | 0.95 .. 1.1 | 0.9 .. 1.12 |
 | `eyeTilt` (Eye tilt) | -0.5 .. 0.2 | -0.7 .. 0.7 |
-| `brow` (Brows) | -0.6 .. 0.2 | -0.7 .. 0.7 |
+| `brow` (Brows) | -0.65 .. 0.2 | -0.7 .. 0.7 |
 | `hairLength` (Hair length) | 0.8 .. 1.2 | 0.7 .. 1.35 |
 
 ## Body fit
