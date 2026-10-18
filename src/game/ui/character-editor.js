@@ -317,7 +317,9 @@ $('#edView').addEventListener('click',e=>{
 });
 function editorCamera(dt){
   const sb=edCur(), close=!!(EDIT[edTab].close||sb.close), s=hiker.scale;
-  const td=close?(LOW?1.25:1.05):(LOW?3.6:3.1), th=close?1.64:1.15, tl=close?1.6:0.92;
+  // a phone: the sheet covers the lower half, so the camera steps back until the whole hiker fits the strip above it (the head was cut off)
+  const fit=innerWidth<720?Math.min(2,Math.max(1,0.75*innerHeight/Math.max(1,innerHeight-edEl.offsetHeight))):1;
+  const td=(close?(LOW?1.25:1.05):(LOW?3.6:3.1))*(close?Math.sqrt(fit):fit), th=close?1.64:1.15, tl=close?1.6:0.92;
   const k=Math.min(1,dt*4); cam.d+=(td-cam.d)*k; cam.h+=(th-cam.h)*k; cam.l+=(tl-cam.l)*k;
   if(edAzT!==null){ const d=Math.atan2(Math.sin(edAzT-edAz),Math.cos(edAzT-edAz)); edAz+=d*Math.min(1,dt*10); if(Math.abs(d)<0.002){ edAz=edAzT; edAzT=null; } }
   const fx=-Math.sin(P.face+edAz), fz=-Math.cos(P.face+edAz);
