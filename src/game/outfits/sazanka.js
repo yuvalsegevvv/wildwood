@@ -310,6 +310,6 @@ OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // face round 4: a red runner
   hair:()=>oxHairBits(X,[{t:'beads',both:true,col:0xc8323a,col2:0xf3ead2}])}));
 oxTune('sazanka',{height:1.0,build:0.98,chest:0.8,shoulders:1.0,waist:0.85,hips:1.0,thighs:1.2,legs:1.12,arms:1.0,neck:0.95,head:1.0});
 Object.assign(CHAR_MODELS.sazanka.setups[0],{note:'The courier as drawn: lean and long-limbed with a runner\'s legs.'});
-OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // uniqueness round 3: a courier's banner rising from a rod on her back, a red sun on white cloth
-  torso:()=>oxBanner(X,D,{col:0xf3ead2,disc:0xc8323a,rod:0x4a3220,len:0.62})}));
+OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // uniqueness round 3: a courier's banner on a rod on her back, blown out sideways in plum with a moon-grey edge and a vermilion sun
+  torso:()=>oxBanner(X,D,{col:0x6a2a62,trim:0xc9ccd6,disc:0xc23b2a,rod:0x4a3220,len:0.62})}));
 oxTune('sazanka',{height:0.93,chest:0.7,legs:1.12,thighs:1.2,head:0.98});

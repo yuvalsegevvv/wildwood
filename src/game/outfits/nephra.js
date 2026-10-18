@@ -108,5 +108,5 @@ OUTFITS.nephra=oxPlus(OUTFITS.nephra,(X,D)=>({   // face round 4: kohl under the
   mark:F=>oxMarks(F,[{t:'stripe',col:0x1a1418},{t:'mole',side:1,col:0xd8b050}]),
   hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xd8b050},{t:'locks',len:0.28,col:0xe3d5b0}])}));
 oxTune('nephra',{height:1.08,build:0.88,chest:0.62,shoulders:1.1,waist:0.95,hips:0.88,torso:1.06,legs:1.1,thighs:0.86,arms:1.2,neck:1.15,head:0.92,hands:1.18,feet:1.1});
-OUTFITS.nephra=oxPlus(OUTFITS.nephra,(X,D)=>({   // uniqueness round 1: a thin, angular figure under a wide banded usekh collar (gold, teal, kohl, gold, blue)
-  torso:()=>oxMantle(X,D,{cols:[0xd8b050,0x39b8a8,0x1a1418,0xd8b050,0x2f55a0],flat:true,out:0.085,trim:0xd8b050,trimR:0.012})}));
+OUTFITS.nephra=oxPlus(OUTFITS.nephra,(X,D)=>({   // uniqueness round 1 (reworked): a thin, angular figure in a close shoulder collar of wrapped linen: cream bands with gold and one teal stripe, following the shoulders
+  torso:()=>oxMantle(X,D,{cols:[0xe3d5b0,0xd8b050,0xe3d5b0,0x39b8a8,0xd8b050],drop:0.43,out:0.05,trim:0xd8b050,trimR:0.011})}));

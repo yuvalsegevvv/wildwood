@@ -3,6 +3,7 @@
    The pieces: model-parts.js (helpers), model-face.js (skull, eyes, nose, mouth, ears), model-hair.js (hair, hats), model-body.js (torso, arms, legs, hands, feet);
    this file keeps the look data and assembles them. The sliders (BODY_SLIDERS) and the recommended setups live in shared/character.js. Docs: docs/CHARACTER.md. */
 const SKINS=[0xf3d3bd,0xe6b894,0xc98e66,0xa56c45,0x7a4a2c,0x4f2f1d];
+const SKINS_ODD=[0x9aae82,0x7f9a86,0xb5bea4];   // zombie green, mossy grey-green and corpse pale: only in the editor's swatches, so randomLook's pool (and every random villager) is unchanged
 // natural shades first (random looks pick from HAIRC.slice(0,HAIRC_NATURAL)), then the dyed / fantasy ones
 const HAIRC=[0x1d1714,0x3b2619,0x6a4428,0x9a4a24,0xd8b56e,0xb9b3aa,0x5e2418,0xc47a45,0xeadcb4,0xeeece6,0x2f6f73,0x3a5fa0,0x6b3f8f,0xc25a86,0x9c2a2a];
 const HAIRC_NATURAL=10;   // black, dark brown, brown, red, blonde, grey, auburn, copper, platinum, white
@@ -74,9 +75,10 @@ function buildCharacter(L,opt){
   const PC=ofPieces(L), worn=Object.keys(PC).length>0;   // the slots that wear an item of a signature outfit (outfit-tools.js "mixing the pieces"): each one replaces the base item of that slot
   if(worn){ const o={}; if(PC.top){ o.top='outfit'; o.pack=false; } if(PC.bottom){ o.bottom='outfit'; o.bottomStyle=''; } if(PC.shoes) o.shoes='outfit'; if(PC.hat) o.hat='outfit'; if(PC.glove) o.gloves='outfit'; if(PC.hair){ o.hair='bald'; o.ahoge=false; } if(PC.face) o.facial='none'; L=Object.assign({},L,o); }
   const q=(opt&&opt.q)||1, sg=n=>Math.max(5,Math.round(n*q)), S=lookSliders(L), fem=L.sex==='female';
-  const skin=new THREE.Color(L.skin).lerp(new THREE.Color(S.undertone>0?0xe39a5c:0xb8a0c8),0.16*Math.abs(S.undertone)), skinPaint=c=>c.copy(skin), hairCol=new THREE.Color(L.hairColor), {topPaint,botPaint}=clothPaints(L);
+  const skin=new THREE.Color(L.skin).lerp(new THREE.Color(S.undertone>0?0xe39a5c:0xb8a0c8),0.16*Math.abs(S.undertone)), skinPaint=c=>c.copy(X.skin), hairCol=new THREE.Color(L.hairColor), {topPaint,botPaint}=clothPaints(L);
   const D=charDims(L,S,fem,faceShape(L)), X={L,S,fem,sg,q,skin,skinPaint,hairCol,topPaint,botPaint,D,kit:null,glove:null};
-  if(worn){ X.kit=ofBuild(X,D,PC); const kh=X.kit.sl.hair, th=ofTintOf(L,'hair'); if(kh&&th>=0) X.hairCol=new THREE.Color(th); else if(kh&&kh.hairColor!==undefined) X.hairCol=new THREE.Color(kh.hairColor); }
+  if(worn){ X.kit=ofBuild(X,D,PC); const kh=X.kit.sl.hair, th=ofTintOf(L,'hair'); if(kh&&th>=0) X.hairCol=new THREE.Color(th); else if(kh&&kh.hairColor!==undefined) X.hairCol=new THREE.Color(kh.hairColor); 
+    const kfs=X.kit.sl.face; if(kfs&&kfs.skin!==undefined) X.skin=new THREE.Color(kfs.skin).lerp(new THREE.Color(S.undertone>0?0xe39a5c:0xb8a0c8),0.16*Math.abs(S.undertone)); }   // a face item with its own skin tone (Ogden's drowned green-grey) overrides the wearer's
   X.glove=glPlan(X);   // the gloves (model-gloves.js): read by buildArm and buildFingers   // the hair item's own colour (the eyebrows and lashes follow it)
   const root=new THREE.Group(), hips=new THREE.Group(); hips.name='hips'; hips.position.y=D.hipY; root.add(hips);
   const spine=new THREE.Group(); spine.name='spine'; hips.add(spine);

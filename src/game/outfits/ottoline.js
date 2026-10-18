@@ -105,5 +105,3 @@ OUTFITS.ottoline=(function(){
   };
 })();
 oxTune('ottoline',{height:0.92,build:0.88,chest:0.75,waist:0.82,hips:0.95,legs:0.93,arms:0.85,neck:0.9,head:1.12,hands:0.85,feet:0.85,thighs:0.9});
-OUTFITS.ottoline=oxPlus(OUTFITS.ottoline,(X,D)=>({   // uniqueness round 3: a tiny stiff doll with a big head, a huge lace ruff round the neck
-  torso:()=>oxRuff(X,D,{col:0xf4eee4,col2:0x8a3a5a,r:0.15,n:4})}));

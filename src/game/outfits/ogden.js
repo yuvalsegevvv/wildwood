@@ -117,3 +117,5 @@ Object.assign(CHAR_MODELS.ogden,{hairGrad:{mode:'ombre',c2:0x5a7a50,c3:0x2a4a40}
 oxTune('ogden',{height:1.08,build:1.1,chest:0.85,shoulders:0.88,waist:1.15,hips:1.2,thighs:1.2,arms:1.25,hands:1.2,neck:0.88,head:0.92});
 OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // uniqueness round 3: a tall pear-shaped drowned man draped in a cloak of long hanging kelp
   torso:()=>oxFringe(X,D,{cols:[0x3f6b4a,0x2f4f3a,0x6f8f5a,0x4a3a2a],n:20,len:0.6,w:0.055})}));
+OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // skin: a zombie green-grey, with the drowned man's face item (the new swatches in the editor: SKINS_ODD)
+  kit:{skin:0x8fa684}}));

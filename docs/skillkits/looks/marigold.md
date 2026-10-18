@@ -73,7 +73,7 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 1.04 |
+| `height` (Height) | 0.97 |
 | `build` (Build) | 0.92 |
 | `chest` (Chest) | 1.15 |
 | `shoulders` (Shoulders) | 0.95 |
@@ -111,6 +111,7 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 
 | Slider | Range | Base model |
 |---|---|---|
+| `height` (Height) | 0.92 .. 1.07 | 0.92 .. 1.08 |
 | `build` (Build) | 0.88 .. 1.15 | 0.88 .. 1.18 |
 | `chest` (Chest) | 0.6 .. 1.25 | 0.6 .. 1.4 |
 | `shoulders` (Shoulders) | 0.88 .. 1.05 | 0.88 .. 1.18 |

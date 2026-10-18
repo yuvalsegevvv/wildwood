@@ -24,7 +24,7 @@ const EDIT=[
   {tab:'Body', subs:[
     {name:'Gender', rows:[
       {k:'sex',type:'grid',kind:'sex',ids:()=>[['male'],['female']]},
-      {k:'skin',label:'Skin tone',type:'color',opts:SKINS},{slider:'undertone'}]},
+      {k:'skin',label:'Skin tone',type:'color',opts:SKINS.concat(SKINS_ODD)},{slider:'undertone'}]},
     {name:'Build', rows:[{type:'setups'},{slider:'height'},{slider:'build'},{slider:'chest'}]},
     {name:'Upper body', rows:['shoulders','waist','hips','torso'].map(k=>({slider:k}))},
     {name:'Limbs', rows:['legs','thighs','calves','arms','neck','hands','feet'].map(k=>({slider:k}))}

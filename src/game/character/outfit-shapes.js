@@ -87,9 +87,16 @@ function oxTripod(X,D,o){
   out.push(solid(new THREE.CylinderGeometry(0.04,0.04,0.05,sg(10)).translate(ap[0],ap[1]+0.025,ap[2]),o.brass),solid(new THREE.CylinderGeometry(0.018,0.018,0.1,sg(8)).rotateX(Math.PI/2).translate(ap[0],ap[1]+0.075,ap[2]-0.04),o.brass),solid(ofRingAt([ap[0],ap[1]-0.12,ap[2]],[0,1,0.2],0.032,0.006,sg(6)),o.brass),solid(ofRingAt([ap[0]-0.02,ap[1]-0.3,ap[2]+0.03],[0,1,0.3],0.045,0.006,sg(6)),o.brass));
   return out; }
 function oxBanner(X,D,o){
-  const {sg}=X, TK=D.TK, zb=torsoSize(X,D,0.3).rzBack+0.07, top=0.55*TK+(o.len||0.62), out=[];
+  const {sg}=X, TK=D.TK, zb=torsoSize(X,D,0.3).rzBack+0.07, top=0.55*TK+(o.len||0.62), out=[], X0=0.012, LX=o.span||0.46, N=sg(22);
   out.push(solid(sweepTube([[0,0.06*TK,zb],[0,0.3*TK,zb],[0,top,zb]],[0.011,0.011,0.009],sg(6),{cap:'round',rings:sg(12)}),o.rod||0x5a3a22),solid(csph(0.02,sg(7),sg(5)).translate(0,top+0.012,zb),o.rod||0x5a3a22));
-  out.push(pc(ofRibbon([[0.01,top-0.02,zb+0.004],[0.1,top-0.15,zb+0.03],[0.17,top-0.32,zb+0.02],[0.2,top-0.5,zb+0.01]],u=>0.2*(1-0.25*u),{up:[0,0,1],seg:sg(14),th:0.006}),(x,y,z,c)=>{ c.set(o.col); const dx=x-0.08, dy=y-(top-0.17); if(dx*dx+dy*dy<0.0036) c.set(o.disc); }));
+  // a flag blown out sideways: the centre line streams to +x and sags, with a travelling ripple (growing toward the free end) in depth and height
+  const cy=t=>top-0.07-0.07*t-0.018*Math.sin(t*10+0.6)*t, cz=t=>zb+0.01+0.09*t+0.05*Math.sin(t*9)*t, wd=t=>(o.w||0.2)*(1-0.55*t)*(1+0.06*Math.sin(t*12));
+  const NS=sg(22), MS=sg(10), pos=[], idx=[];   // a grid of cloth: NS cells along the flag, MS across, so the plum, the edge and the sun can be painted crisply
+  for(let j=0;j<=MS;j++) for(let i=0;i<=NS;i++){ const t=i/NS, sv=j/MS*2-1, w=wd(t)/2; pos.push(X0+LX*t, cy(t)+sv*w, cz(t)+0.012*Math.sin(t*9+sv*1.5)); }
+  for(let j=0;j<MS;j++) for(let i=0;i<NS;i++){ const a0=j*(NS+1)+i, b0=a0+1, c0=a0+NS+1, d0=c0+1; idx.push(a0,b0,c0,b0,d0,c0); }
+  const flagPaint=(x,y,z,c)=>{ const t=clamp((x-X0)/LX,0,1), d=(y-cy(t))/(wd(t)/2); c.set(o.col); if(d>0.8) c.set(o.trim||o.col); const dx=x-(X0+LX*0.3), dy=y-cy(0.3); if(dx*dx+dy*dy<0.0021) c.set(o.disc); };
+  for(const back of [false,true]){ const gi=back?idx.map((v,i)=>i%3===1?idx[i+1]:i%3===2?idx[i-1]:v):idx, fg=new THREE.BufferGeometry(); fg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pos),3)); fg.setIndex(gi); fg.computeVertexNormals(); out.push(pc(fg,flagPaint)); }   // two sheets back to back (the back one wound the other way) so the cloth shows from both sides
+  for(const k of [-1,0,1]) out.push(pc(ofRibbon([[X0+LX,cy(1)+k*0.02,cz(1)],[X0+LX+0.05,cy(1)+k*0.03-0.015,cz(1)+0.03],[X0+LX+0.1,cy(1)+k*0.04-0.04,cz(1)+0.01]],0.012,{up:[0,0,1],seg:sg(8),th:0.004}),(x,y,z,c)=>c.set(o.trim||o.col)));   // frayed tail ends
   return out; }
 function oxFringe(X,D,o){
   const {sg}=X, TK=D.TK, s=torsoSize(X,D,0.5), n=o.n||16, out=[];
