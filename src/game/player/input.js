@@ -2,7 +2,7 @@
 /* ---------- input ---------- */
 const keys={};
 let joyX=0, joyY=0, jumpReq=false, thirdPerson=true, started=false, dragging=false;
-function look(dx,dy,s){ if(customizing){ P.face-=dx*0.01; return; } P.yaw-=dx*s; P.pitch=clamp(P.pitch-dy*s,-1.35,1.35); }
+function look(dx,dy,s){ if(customizing){ P.face-=dx*0.01; edYawT=null; return; } P.yaw-=dx*s; P.pitch=clamp(P.pitch-dy*s,-1.35,1.35); }
 function toggleView(){ thirdPerson=!thirdPerson; hiker.g.visible=thirdPerson||customizing; }
 // Hold Alt to get the mouse pointer back and click the HUD, panels and settings without opening a panel or pressing Esc;
 // let go and the mouse look locks again (the browser only allows that shortly after a key press, about 5 s: after a longer

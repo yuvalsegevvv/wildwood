@@ -292,25 +292,39 @@ function openEditor(o){
   $('#start').classList.add('hide');
   document.body.classList.add('editing');
   edEl.hidden=false; renderEditor(); UI_SFX.open();
-  const fwd=P.face; cam.d=3; cam.h=1.2; cam.l=0.95; P.editYaw=fwd;
+  const fwd=P.face; edFront=fwd; edYawT=null; cam.d=3; cam.h=1.2; cam.l=0.95; P.editYaw=fwd;
 }
 function closeEditor(){
   if(edTrying()){ edFlashTry(); return; }   // a try-on cannot be kept: make the pieces or go back (edTryBar)
   saveLook();
   const enter=creating; customizing=creating=false; UI_SFX.close();
-  camera.clearViewOffset();
+  camera.clearViewOffset(); edLamp.intensity=0;
   edEl.hidden=true; document.body.classList.remove('editing');
   hiker.g.visible=thirdPerson||!started;
   if(enter) beginPlay();
 }
+/* Turning the hiker to see the side and back, and a light for the night: the buttons of #edView. The light follows the camera (a key light from the viewer's side), on by itself when it is dark (envCur.night), and the Light button overrides that for the session. */
+var edFront=0, edYawT=null, edLightForce=null;
+const edLamp=new THREE.DirectionalLight(0xfff0dc,0); scene.add(edLamp); scene.add(edLamp.target);
+function edDark(){ return envCur.night>0.25; }
+function edLit(){ return edLightForce===null?edDark():edLightForce; }
+$('#edView').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return; const v=b.dataset.v;
+  if(v==='light'){ edLightForce=!edLit(); return; }
+  const base=edYawT===null?P.face:edYawT;
+  edYawT = v==='l'?base+Math.PI/2 : v==='r'?base-Math.PI/2 : edFront+(+v)*Math.PI/2;   // data-v 0 front, 1 side, 2 back
+});
 function editorCamera(dt){
   const sb=edCur(), close=!!(EDIT[edTab].close||sb.close), s=hiker.scale;
   const td=close?(LOW?1.25:1.05):(LOW?3.6:3.1), th=close?1.64:1.15, tl=close?1.6:0.92;
   const k=Math.min(1,dt*4); cam.d+=(td-cam.d)*k; cam.h+=(th-cam.h)*k; cam.l+=(tl-cam.l)*k;
+  if(edYawT!==null){ const d=Math.atan2(Math.sin(edYawT-P.face),Math.cos(edYawT-P.face)); P.face+=d*k; if(Math.abs(d)<0.003) edYawT=null; }
   const fx=-Math.sin(P.face), fz=-Math.cos(P.face);
   const cx=P.x+fx*cam.d, cz=P.z+fz*cam.d;
   camera.position.set(cx,Math.max(P.y+cam.h*s,Math.max(getH(cx,cz),WATER)+0.35),cz);
   camera.lookAt(P.x,P.y+cam.l*s,P.z);
+  edLamp.position.set(cx-fz*1.2,P.y+(cam.h+1.4)*s,cz+fx*1.2); edLamp.target.position.set(P.x,P.y+cam.l*s,P.z);
+  edLamp.intensity+=((edLit()?(edDark()?1.15:0.5):0)-edLamp.intensity)*k; $('#edLight').setAttribute('aria-pressed',edLit()?'true':'false');
   if(innerWidth>=720) camera.setViewOffset(innerWidth,innerHeight,Math.round(edEl.offsetWidth/2),0,innerWidth,innerHeight);
   else camera.setViewOffset(innerWidth,innerHeight,0,Math.round(edEl.offsetHeight/2),innerWidth,innerHeight);
 }

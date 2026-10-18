@@ -40,7 +40,7 @@ decoReg('halo','headTop',F=>{ const {c,sg}=F;   // a small ring of light floatin
 decoReg('brooch','chest',F=>{ const {c,sg}=F;   // a gem in a metal setting pinned to the chest
   return {parts:[solid(gmRingAt([0.05,0.06,-0.012],[0,0,1],0.017,0.0032,sg(10)),F.l),solid(csph(0.0125,sg(10),sg(8)).scale(1,1,0.55).translate(0.05,0.06,-0.014),c),solid(csph(0.0045,sg(6),sg(5)).translate(0.046,0.066,-0.022),0xffffff)]}; });
 decoReg('pouch','waist',F=>{ const {c,sg}=F;   // a belt pouch with a flap, on the right hip
-  return {parts:[solid(gmRingAt([0,0.04,0],[0,1,0],0.145,0.0045,sg(18)).scale(1,1,0.92),F.k),pc(csph(0.036,sg(10),sg(8)).scale(1,1.1,0.8).translate(0.115,-0.02,-0.055),(x,y,z,cc)=>{ cc.set(c); if(y>-0.0) cc.set(F.k); }),solid(csph(0.0065,sg(6),sg(5)).translate(0.115,0.003,-0.092),F.l)]}; });
+  return {parts:[solid(gmRingAt([0,0.04,0],[0,1,0],0.145,0.0045,sg(18)).scale(1,1,0.92),F.k),pc(csph(0.036,sg(10),sg(8)).scale(1,1.1,0.8).translate(0.115,-0.02,-0.055),(x,y,z,cc)=>{ cc.set(c); if(y>0) cc.set(F.k); }),solid(csph(0.0065,sg(6),sg(5)).translate(0.115,0.003,-0.092),F.l)]}; });
 decoReg('lantern','waist',F=>{ const {c,sg}=F;   // a small lantern hanging from the belt
   return {parts:[solid(sweepTube([[-0.1,0.035,-0.07],[-0.12,-0.01,-0.085],[-0.125,-0.05,-0.09]],[0.0022,0.0022,0.0022],4,{cap:'round',rings:6}),F.k),solid(vbox(0.034,0.006,0.034,-0.125,-0.052,-0.09),F.k),solid(vbox(0.03,0.04,0.03,-0.125,-0.076,-0.09),F.l),pc(csph(0.014,sg(8),sg(6)).translate(-0.125,-0.076,-0.09),(x,y,z,cc)=>cc.set(c).lerp(_decoC.set(0xffffff),0.35)),solid(vbox(0.036,0.006,0.036,-0.125,-0.098,-0.09),F.k)]}; });
 decoReg('tail','waist',F=>{ const {c,sg}=F;   // a long soft tail, tipped in a lighter colour

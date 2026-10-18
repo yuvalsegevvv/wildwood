@@ -29,6 +29,9 @@
 .range-track .rec{ position:absolute; bottom:1px; height:3px; border-radius:2px; background:var(--lichen); opacity:.55; pointer-events:none; }   /* the model's recommended range */
 .ed-warn{ font-size:11.5px; color:#e8b04a; margin-top:2px; }
 .ed-warn[hidden]{ display:none; }
+.ed-view{ display:flex; gap:6px; padding:8px 0; }
+.ed-view button{ flex:1; height:34px; border-radius:10px; background:transparent; border:1px solid var(--line); color:var(--ink); font:600 13px Inter, system-ui, sans-serif; cursor:pointer; }
+.ed-view button[aria-pressed="true"]{ background:var(--lichen); color:var(--lichen-ink); border-color:transparent; }
 .ed-foot{ display:flex; gap:10px; padding-top:12px; border-top:1px solid var(--line); }
 .ed-foot button{ flex:1; height:46px; border-radius:12px; font:600 14.5px Inter, system-ui, sans-serif; cursor:pointer; }
 .ed-foot .ghost{ background:transparent; border:1px solid var(--line); color:var(--ink); }
