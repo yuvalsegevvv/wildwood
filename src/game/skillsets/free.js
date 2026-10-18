@@ -5,6 +5,7 @@ function ssFreeWear(id){   // version2 testing: remove when M4 / M5 land
   const M=id==='base'?null:CHAR_MODELS[id];
   if(id!=='base'&&!(M&&OUTFITS[id])) return;
   if(M&&M.sexes&&M.sexes.length===1&&M.sexes[0]!==LOOK.sex) setLook('sex',M.sexes[0]);   // an outfit is drawn for its character's body
+  if(M) osUnlock(id);   // the testing tools unlock the outfit set in the editor too
   setLook('model',id);
   toast(M?M.name+'\'s outfit is on':'Outfit taken off','good');
 }

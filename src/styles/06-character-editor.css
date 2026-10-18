@@ -100,3 +100,5 @@ body.editing .hud-top{ display:none; }
 .ed-try.flash{ animation:edTryFlash .9s ease-out; }
 @keyframes edTryFlash{ 0%,40%{ background:rgba(242,207,90,.4); box-shadow:0 0 0 3px rgba(242,207,90,.5); } 100%{ background:rgba(242,207,90,.08); box-shadow:none; } }
 #edDone.blocked{ opacity:.55; }
+
+.tiles.scroll{ overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; padding-right:4px; }
