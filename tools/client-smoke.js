@@ -37,9 +37,10 @@ const el=s=>document.querySelector(s);
     ok('reactions: one aura marker over a monster (it changes element), the reaction and status notes pop without error, and the marker goes with its aura',n1===1&&shown&&G.RXV.marks.size===0); }
   G.equip('bow1'); await wait(300); ok('equip round-trip',c.G().GEAR.eq.weapon==='bow1');
   el('#inv').hidden=false; G.renderInv(); ok('inventory renders body slots, the ring and pendant slots and the three tool slots',(el('#invBody').innerHTML.match(/class="eqslot"/g)||[]).length===10&&['pick','axe','sickle','ring','pendant'].every(k=>el('#invBody').innerHTML.includes('data-slot="'+k+'"')));
-  { G.openQuests(null); const q=()=>el('#qBody').innerHTML;   // the quest panel: three tabs, the main quest first; notices to defeat monsters show the monster's picture
-    ok('the quest panel opens on the main quest, with its tabs',!el('#quests').hidden&&(el('#qTabs').innerHTML.match(/data-qt=/g)||[]).length===3&&/jq-step/.test(q())&&q().includes(G.MQ[G.GEAR.mq.s].title),q().slice(0,120));
+  { G.openQuests(null); const q=()=>el('#qBody').innerHTML;   // the quest panel: four tabs, the main quest first; notices to defeat monsters show the monster's picture
+    ok('the quest panel opens on the main quest, with its tabs',!el('#quests').hidden&&(el('#qTabs').innerHTML.match(/data-qt=/g)||[]).length===4&&/jq-step/.test(q())&&q().includes(G.MQ[G.GEAR.mq.s].title),q().slice(0,120));
     G.qShowTab('board'); ok('the board tab lists the notices, a hunt with its monster\'s picture, and no Accept away from Maren',(q().match(/class="qc /g)||[]).length===G.GEAR.q.offers.length&&(!G.GEAR.q.offers.some(o=>o.type==='kill')||/data-mp="/.test(q()))&&!/data-accept/.test(q()));
+    G.qShowTab('side'); ok('the side quests tab lists the six chains, each with its land, level and cosmetic, none under way yet',(q().match(/class="sq-card/g)||[]).length===6&&/The Grey Tide/.test(q())&&/Tide King&#39;s Mantle|Tide King's Mantle/.test(q())&&/From level 15/.test(q()),q().slice(0,200));
     G.qShowTab('taken'); ok('the taken tab says when you carry nothing',/carry no notices/.test(q())); G.closePanels(); }
   G.openSkills(); ok('skills panel renders 3 slots',(el('#skBody').innerHTML.match(/class="sk-slot/g)||[]).length===3);
   { const h=()=>el('#skBody').innerHTML; ok('skills panel: a tab for 1, 2, 3 and Passive, and three passive slots',(h().match(/data-skkind=/g)||[]).length===4&&(h().match(/class="sk-pslot/g)||[]).length===3);

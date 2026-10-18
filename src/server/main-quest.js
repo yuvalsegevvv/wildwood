@@ -37,7 +37,7 @@ function mqCompleteP(p,chained){   // chained: the next step starts in the same 
   if(!nx){ mqToast(p,MQ_END); return; }
   M.n=nx.parts.map(()=>0);
   if(nx.from===null) mqStartP(p);
-  else if(!chained) mqToast(p,'Next in the main quest: '+nx.title+', from '+MQ_NAMES[nx.from]+(p.level<nx.gate?' at level '+nx.gate:''));
+  else if(!chained) mqToast(p,'Next in the main quest: '+nx.title+', from '+MQ_NAMES[nx.from]+(p.level<mqGate(nx)?' at level '+mqGate(nx):''));
 }
 function mqTalkP(p,npc){
   const vil=MQ_NPC_VIL[npc]; if(!vil||p.dead) return;
@@ -45,7 +45,7 @@ function mqTalkP(p,npc){
   const M=mqOf(p), T=mqTalk(M,npc,p.level,mqNight(S.day));
   if(T.start) mqStartP(p);
   mqHush=T.complete; for(const i of T.parts) mqProgressP(p,i,mqNeed(mqStep(p).parts[i]),true); mqHush=false;
-  if(T.complete){ mqReadyP(p,true); mqCompleteP(p,T.next); if(T.next&&mqStep(p)&&mqStep(p).from===npc&&p.level>=mqStep(p).gate) mqStartP(p); }
+  if(T.complete){ mqReadyP(p,true); mqCompleteP(p,T.next); if(T.next&&mqStep(p)&&mqStep(p).from===npc&&p.level>=mqGate(mqStep(p))) mqStartP(p); }
 }
 function mqPickP(p,i){
   const M=mqOf(p), step=mqStep(p), H=HERBS[i]; if(!step||M.st!==1||!H||(M.h>>i)&1) return;
@@ -121,5 +121,5 @@ function mqTickP(p){
 function mqMsgP(p,msg){
   if(msg.a==='talk'&&typeof msg.id==='string') mqTalkP(p,msg.id);
   else if(msg.a==='pick') mqPickP(p,clampInt(msg.i,0,HERBS.length-1,-1));
-  else if(msg.a==='read'&&typeof msg.id==='string') mqReadP(p,msg.id);
+  else if(msg.a==='read'&&typeof msg.id==='string'){ mqReadP(p,msg.id); sqReadP(p,msg.id); }   // sidequests: a lore spot read
 }

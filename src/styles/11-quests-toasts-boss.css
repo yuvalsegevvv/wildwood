@@ -37,3 +37,5 @@
 /* the ticks at 60% and 30% are where the bosses change phase (server/boss.js); the percentage is the share of the boss's health left */
 .bb-tick{ position:absolute; top:0; bottom:0; width:2px; margin-left:-1px; background:rgba(255,255,255,.55); }
 #bbPct{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:600; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.9); font-variant-numeric:tabular-nums; }
+.ql.sq{ border-left:3px solid #5fd6c8; } .ql.sq b{ color:#9fefe2; } .ql.sq.ok b{ color:#9fe08a; }   /* sidequests: the tracked chain's row */
+.toast.sq{ border-color:rgba(95,214,200,.6); max-width:min(560px,92vw); }

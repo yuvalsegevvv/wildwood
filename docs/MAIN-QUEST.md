@@ -13,8 +13,10 @@ planned** (section 7): nothing in it exists in the game yet (`docs/NOT-BUILT.md`
   spends levelling between steps is not counted in it.
 - **The main quest is the best path, not enough on its own.** Its rewards give about **30% of the XP** a land requires (Wildwood:
   levels 1 to 15, 29%; the Vale: levels 15 to 20, 31%; the Hoarfrost Reach: levels 20 to 25, 27%). The rest comes from hunting and the
-  quest board (Maren, Sayuri, Ragna). Steps have a **level gate**: a step is offered only from its level; until then the giver says to
-  hunt and take notices, and the quest log says "From level N".
+  quest board (Maren, Sayuri, Ragna). Steps have a **level gate per act**: the level asked rises only between acts
+  (`mqGate(step)`, the gate of the act's first step: act I 1, act II 15, act III 20, act IV 26). Inside an act the steps follow one
+  another with no wait; a step's own `gate` still sizes its reward and says where its monsters are. Below the act's level the giver says
+  to hunt and take notices, and the quest log says "From level N".
 - **Teach one system at a time, when the story needs it.** A step's `tip` is a one-time toast when it starts.
 - **The story comes first in the main quest** (`STORY.md` section 7): a player who follows only it understands the acts built so far.
   Side content (section 5) adds hints and is never required.
@@ -158,7 +160,7 @@ The spoiler rule holds (`docs/STORY.md` section 0): no "machine" (the golem is "
 stone (`RES.blackstone`, `NODE_KINDS.blackstone`: 11 veins in the Ledgeway, the Scree and the Sink; the Lodge buys it at 100; nothing is forged from it), a part that counts two sources (`collect` with `gather`), a night-only guard part (`grey` with `night:true`), the
 `act:'highmark'` part, and `GREY_DEFS` gets the Greyspine's `greystone`. The Greyspine's other nodes (rime ore, frostpines and snowmoss, 6 in each zone) are the Reach's own grades. **Not built**: grades of ore, logs and herbs of the Greyspine's own and a tool tier 6 (gear stays at tier 5; level-30 gear comes from the dungeons), and the steps after G9.
 
-## 4. Side story, planned (not built): "The Nine Tails"
+## 4. Side story: "The Nine Tails" (built: `docs/SIDE-QUESTS.md`)
 
 Kyuubi (level 25, the Foxfire Hollow) is no longer on the main path. The pieces are already hinted: Chiyo's "then one of them grew nine
 tails" (V7), the grey kitsune, Master Ryu's "the fox of the hollow has nine tails and nine tricks". A later side chain for levels 21-25

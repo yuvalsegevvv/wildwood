@@ -1,6 +1,6 @@
 # The Gloamhorn (6th land, levels 30-40) and Wraithwick
 
-The old Stormhorn of `docs/WORLD.md`, renamed and made a permanently dark, gothic land: a narrow hooked horn of heath over sheer sea cliffs west of the Greyspine, always a violet dusk with a low moon, sea fog and a steady gale. It opens with the Mountain Golem (the neck rock fall). No main-quest steps: villagers' small talk and quest-board notices only. Test: `node tools/gloamhorn-smoke.js`.
+The old Stormhorn of `docs/WORLD.md`, renamed and made a permanently dark, gothic land: a narrow hooked horn of heath over sheer sea cliffs west of the Greyspine, always a violet dusk with a low moon, sea fog and a steady gale. It opens with the Mountain Golem (the neck rock fall). No main-quest steps: villagers' small talk, quest-board notices and two side quest chains (The Drowned Captain, The Keeper's Light: `docs/SIDE-QUESTS.md`), with Keeper Maelis. Test: `node tools/gloamhorn-smoke.js`.
 
 ## Code map
 

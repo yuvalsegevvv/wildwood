@@ -122,6 +122,8 @@ function applyEvent(e){
     case 'qdone': if(e[1]===me) UI_SFX.notify(); break;
     case 'qturn': if(e[1]===me) UI_SFX.success(); break;
     case 'mq': if(e[1]===me) { if(e[3]===2) UI_SFX.success(); else UI_SFX.notify(); } break;   // a main quest step started (1) or handed in (2)
+    case 'sq': if(e[1]===me) { if(e[4]===2) UI_SFX.success(); else UI_SFX.notify(); } break;   // sidequests: a chain's step started (1) or handed in (2)
+    case 'sqsay': if(e[1]===me) sqShowScene(e[2],e[3]); break;   // sidequests: a place's scene
     case 'pact': if(e[1]!==me) remoteAct(e[1],e[2],e[3]); break;
     case 'pjoin': if(e[1].id!==me && !REMOTES.has(e[1].id)){ remoteAdd(e[1]); chatLine('sys',e[1].name,'joined the world'); } break;
     case 'pleave': { const r=REMOTES.get(e[1]); if(r){ chatLine('sys',r.name,'left the world'); remoteRemove(e[1]); } break; }

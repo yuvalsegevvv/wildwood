@@ -37,7 +37,7 @@ function updateNpcLabels(){
     if(!started||customizing||n.inside||n===talkNPC||d>34||!n.g.visible){ el.hidden=true; continue; }
     _nv.set(n.x,n.y+2.2*n.scale,n.z).project(camera);
     if(_nv.z>1||Math.abs(_nv.x)>1.1||Math.abs(_nv.y)>1.1){ el.hidden=true; continue; }
-    const qm=MQ_NPC_VIL[n.def.id]?mqMark(n.def.id):'', mk=qm||(n.def.role==='quests'?questMark(n.def.id):''), m=el.firstChild, cls='nt-mark'+(mk==='?'?' ready':'')+(qm?' mq':'');   // the main quest's mark wins
+    const qm=MQ_NPC_VIL[n.def.id]?mqMark(n.def.id):'', sm=qm?'':sqMark(n.def.id), mk=qm||sm||(n.def.role==='quests'?questMark(n.def.id):''), m=el.firstChild, cls='nt-mark'+(mk==='?'?' ready':'')+(qm?' mq':sm?' sq':'');   // the main quest's mark wins, then a side quest's (sidequests:)
     if(m.textContent!==mk||m.className!==cls){ m.textContent=mk; m.className=cls; }
     _ntShown.push({el,d,mk,x:(_nv.x*0.5+0.5)*innerWidth,y:(-_nv.y*0.5+0.5)*innerHeight,s:clamp(1.25-d/40,0.72,1.1)});
   }

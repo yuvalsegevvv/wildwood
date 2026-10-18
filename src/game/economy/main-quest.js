@@ -10,7 +10,7 @@ function mqLinesFor(n){ const M=mqG(); if(!M||!MQ_NPC_VIL[n.def.id]) return null
 // the mark over a villager: ! a step to take (or a part to do with them), ? a step to hand in
 function mqMark(id){
   const M=mqG(), s=mqCur(); if(!s) return '';
-  if(M.st===0) return s.from===id&&PL.level>=s.gate?'!':'';
+  if(M.st===0) return s.from===id&&PL.level>=mqGate(s)?'!':'';
   if(M.st===2) return s.to===id?'?':'';
   return s.parts.some((pt,i)=>pt.talk===id&&mqOpen(s,M.n,i))?'!':'';
 }
@@ -45,7 +45,7 @@ function mqPartTarget(s,pt){
 // the main quest's marker for the maps: the giver, the first open part that has a place, or whom to hand in to
 function mqTarget(){
   const M=mqG(), s=mqCur(); if(!s) return null;
-  if(M.st===0) return s.from&&PL.level>=s.gate?npcSpot(s.from):null;
+  if(M.st===0) return s.from&&PL.level>=mqGate(s)?npcSpot(s.from):null;
   if(M.st===2) return npcSpot(s.to);
   for(let i=0;i<s.parts.length;i++) if(mqOpen(s,M.n,i)){ const T=mqPartTarget(s,s.parts[i]); if(T) return T; }
   return null;
@@ -55,11 +55,11 @@ function mqLogRow(){
   const M=mqG(); if(!M) return '';
   const s=mqCur(); if(!s) return `<div class="ql mq"><b>The main quest</b><span>${MQ_END}</span></div>`;
   let what;
-  if(M.st===0) what=PL.level<s.gate?'From level '+s.gate+': '+MQ_NAMES[s.from]+'. Until then, hunt and take notices from the quest board':'Talk to '+MQ_NAMES[s.from];
+  if(M.st===0) what=PL.level<mqGate(s)?'From level '+mqGate(s)+': '+MQ_NAMES[s.from]+'. Until then, hunt and take notices from the quest board':'Talk to '+MQ_NAMES[s.from];
   else if(mqAllDone(s,M.n)) what=mqObjective(s,M.n);
   else what=s.parts.map((pt,i)=>{ if(!mqOpen(s,M.n,i)&&!(M.n[i]>=mqNeed(pt))) return ''; const need=mqNeed(pt), got=Math.min(need,M.n[i]||0);   // every part that runs at once, each with its count (Heartleaf: herbs and slimes together)
     return got>=need?'<i class="ql-done">&#10003; '+pt.text+'</i>':pt.text+(need>1?' ('+got+' / '+need+')':''); }).filter(Boolean).join('<br>');
-  const T=mqTarget(), where=T&&!(M.st===0&&PL.level<s.gate)?(Math.hypot(T.x-P.x,T.z-P.z)<12?'':' &middot; '+Math.round(Math.hypot(T.x-P.x,T.z-P.z))+' m '+dirWord(T.x-P.x,T.z-P.z)):'';
+  const T=mqTarget(), where=T&&!(M.st===0&&PL.level<mqGate(s))?(Math.hypot(T.x-P.x,T.z-P.z)<12?'':' &middot; '+Math.round(Math.hypot(T.x-P.x,T.z-P.z))+' m '+dirWord(T.x-P.x,T.z-P.z)):'';
   // the first steps keep their how-to under the objective while they run (the toast that brought it fades, and a new player reads it when they need it)
   const tip=M.st===1&&s.tip&&M.s<=MQ_BY_ID.W5.i?`<small class="ql-tip">${s.tip}</small>`:'';
   return `<div class="ql mq${M.st===2?' ok':''}"><b>${s.title}</b><span>${what}${where}</span>${tip}</div>`;
@@ -76,7 +76,7 @@ function mqJournalHtml(){
   let h=`<div class="jq-act"><span>${act?act[1]:''}</span><span>Step ${k+1} of ${inAct.length}</span></div><div class="jq-actbar"><i style="width:${Math.max(4,Math.round(k/inAct.length*100))}%"></i></div>`;
   h+=`<div class="jq-step"><h3>${s.title}</h3>`;
   if(M.st===0){
-    h+=PL.level<s.gate?`<p class="jq-say">${MQ_NAMES[s.from]} will have the next step for you at level ${s.gate}. Until then, hunt and take notices from the quest board.</p>`
+    h+=PL.level<mqGate(s)?`<p class="jq-say">${MQ_NAMES[s.from]} will have the next step for you at level ${mqGate(s)}. Until then, hunt and take notices from the quest board.</p>`
       :`<div class="jq-obj"><span class="jq-dot"></span><div><b>Talk to ${MQ_NAMES[s.from]}</b><span class="jq-n">${mqWhere(mqTarget())}</span></div></div>`;
   } else {
     if(s.offer&&s.offer.length) h+=`<p class="jq-say">\u201C${s.offer[s.offer.length-1]}\u201D <span>${MQ_NAMES[s.from]||''}</span></p>`;

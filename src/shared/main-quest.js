@@ -293,6 +293,10 @@ const MQ_NAMES={tamsin:'Tamsin',isamu:'Isamu',hinata:'Herbalist Hinata',ylva:'Al
   odran3:'Odran',hallvard:'Hallvard',ragna:'Ragna',bjorn:'Bjorn',ulfhild:'Ulfhild',thorvald:'Thorvald',sigrun:'Old Sigrun',gudrun:'Gudrun',
   odran4:'Odran',brenna:'Foreman Brenna',ansgar:'Abbot Ansgar',gerhard:'Gerhard',matthias:'Brother Matthias'};
 const mqNeed=pt=>pt.n||1;
+// the level a step is offered from: its act's (the gate of the act's first step), so the level asked rises only between acts. step.gate stays the step's own
+// level, which sizes its reward (mqReward) and says where its monsters are
+const MQ_ACT_GATE={}; MQ.forEach(s=>{ const a=s.id[0]; if(MQ_ACT_GATE[a]===undefined) MQ_ACT_GATE[a]=s.gate; });
+const mqGate=step=>MQ_ACT_GATE[step.id[0]];
 // a part can progress: not waiting for the parts before it (after:true)
 function mqOpen(step,n,i){ const pt=step.parts[i]; if((n[i]||0)>=mqNeed(pt)) return false; if(!pt.after) return true; for(let k=0;k<i;k++) if((n[k]||0)<mqNeed(step.parts[k])) return false; return true; }
 function mqAllDone(step,n){ return step.parts.every((pt,i)=>(n[i]||0)>=mqNeed(pt)); }
@@ -321,7 +325,7 @@ function mqTalk(mq,npc,level,night){
   const out={lines:[],start:false,parts:[],complete:false,next:false}, step=MQ[mq.s]; if(!step) return out;
   let st=mq.st; const n=mq.n.slice();
   if(st===0&&step.from===npc){
-    if(level<step.gate){ out.lines.push('Come back when you are level '+step.gate+'. Until then, hunt and take notices from the quest board.'); return out; }
+    if(level<mqGate(step)){ out.lines.push('Come back when you are level '+mqGate(step)+'. Until then, hunt and take notices from the quest board.'); return out; }
     out.start=true; st=1; for(let i=0;i<n.length;i++) n[i]=0; out.lines.push(...(step.offer||[]));
   }
   if(st===1){
@@ -333,7 +337,7 @@ function mqTalk(mq,npc,level,night){
   }
   if(st===2&&step.to===npc){
     out.complete=true; out.lines.push(...(step.done||[]));
-    const nx=MQ[mq.s+1]; if(nx&&nx.from===npc&&level>=nx.gate){ out.next=true; out.lines.push(...(nx.offer||[])); }
+    const nx=MQ[mq.s+1]; if(nx&&nx.from===npc&&level>=mqGate(nx)){ out.next=true; out.lines.push(...(nx.offer||[])); }
   }
   return out;
 }

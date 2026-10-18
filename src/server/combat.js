@@ -75,6 +75,7 @@ function rewardKill(q,m){
   questKillP(q,m.def.id); q.dirty=true;
   if(m.def.boss){ rlBossStonesP(q,m,K); bossSkillDropP(q,m.def.id); ssBossClearP(q,m); zoneTierKillP(q,m); }   // skillsets: the set of this boss's land at the tier fought (before the kill can unlock a tier)
   mqKillP(q,m);
+  sqKillP(q,m);   // sidequests: kills, quest drops and bosses count for every running chain
   if(m.def.id==='boss') openValeP(q);
   if(m.def.id==='akaoni') openNorthP(q);
   if(m.def.id==='ymrik') openWestP(q);

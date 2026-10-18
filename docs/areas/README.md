@@ -35,6 +35,7 @@ Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an
 |---|---|
 | `../WORLD.md` | **new regions, villages, bosses**: the continent's geography, planned regions, level ranges and their rules (map `../world-map.svg`, drawn by `../world-map.py`) |
 | `../STORY.md` | story, quests, NPC lines, lore (spoilers; mind its hint rules) |
+| `../SIDE-QUESTS.md` | the side quest chains, their rules, pay and code map |
 | `../MAIN-QUEST.md` | the main quest plan; section 5b: professions, tools, crafting and potions |
 | `../NOT-BUILT.md` | what is **not built yet**, with a comment on each gap (gathering's animation, crafting and potion balance, the levels 33-50 story, regional weather, the tracks' licences...) and the ideas list: ask the owner before starting one |
 | `../DESERT-CITY.md` | Glasswell, the Sunscar's city (designed; its 3D model is built, not placed in the world; plan `../glasswell-plan.svg`, drawn by `../glasswell-plan.py`) |

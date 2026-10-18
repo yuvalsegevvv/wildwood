@@ -68,3 +68,4 @@ body.editing .npctag{ display:none; }
 .req.low{ color:var(--ink-dim); }
 #quests .inv-h{ display:flex; justify-content:space-between; gap:10px; }
 #quests .inv-h span{ font-weight:500; text-align:right; }
+.nt-mark.sq{ color:#7fe8da; text-shadow:0 0 10px rgba(95,214,200,.9), 0 2px 3px #000; }   /* sidequests: a side quest's mark */

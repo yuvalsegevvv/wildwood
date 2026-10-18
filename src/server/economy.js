@@ -188,6 +188,7 @@ function devP(p,msg){
   else if(c==='three'){ const id=randomItem(tierFor(p.level),0); for(let k=0;k<MERGE_COUNT;k++) addItemP(p,id,true); toastTo(p.id,'Three '+ITEM[id].name+' added for the forge','good'); }
   else if(c==='lucky'){ const r=clampInt(msg.v,2,4,2); addItemP(p,randomItem(tierFor(p.level),r)); }
   else if(c==='mq'){ const s=MQ_BY_ID[msg.v]; if(!s) return; mqRemoveGreyP(p); p.gear.mq={s:s.i,st:0,n:s.parts.map(()=>0),h:0,ver:MQ_VER}; if(s.from===null) mqStartP(p); p.dirty=true; toastTo(p.id,'Main quest set to '+s.id+': '+s.title,'good'); }
+  else if(c==='sq'){ let C=null,s=null; for(const K of SQ) for(const st of K.steps) if(st.id===msg.v){ C=K; s=st; } if(!C) return; sqOf(p).c[C.id]={s:s.i,st:0,n:s.parts.map(()=>0)}; if(s.from===null) sqStartP(p,C); p.dirty=true; toastTo(p.id,'Side quest set to '+C.name+': '+s.title,'good'); }   // sidequests: jump a chain to a step (testing tools)
   else if(c==='reset'){ const keep=p.gear.startAll; p.gear=newGearFor(clsOfP(p)); p.gear.startAll=keep; if(keep) giveAllP(p); p.level=1; fillOffersP(p); p.exp=0; p.dead=false; recalcP(p); p.hp=p.maxHp; gearChangedP(p); toastTo(p.id,'Progress reset','good'); }
   else if(c==='dg') dgDevP(p,msg.v);   // dungeons: start a run without a door: v = '<theme>:<mission>[:seed]'
   else if(c==='skip'){ const stops=[0.045,0.25,0.47,0.62], from=S.ff!==null?S.ff:S.day; S.ff=stops.find(s=>s>from+0.01); if(S.ff===undefined) S.ff=stops[0]; }
