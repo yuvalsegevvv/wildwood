@@ -78,3 +78,4 @@ button, input, select, textarea{ font-family:var(--font-ui) !important; }
 .bar{ border-radius:1px; background:rgba(10,7,3,.5); box-shadow:0 0 0 1px rgba(217,178,106,.25); }
 .bar i{ background:linear-gradient(90deg,#c9a058,#ebcd88); border-radius:1px; }
 .ql .ql-done{ font-style:normal; color:#9fe08a; }
+.st-fine.st-center{ text-align:center; margin-top:-2px; }
