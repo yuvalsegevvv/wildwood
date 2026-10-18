@@ -150,6 +150,7 @@ function updateBossUI(){
   const bbLv='Lv '+monTierK(m).lv+' boss'; if($('#bbLv').textContent!==bbLv) $('#bbLv').textContent=bbLv;
   const bd=bossInfo(m)||{}, bar=bd.bar||{};
   $('#bbPhase').textContent=BOSS.mode===3?'Shielded: break the '+(bd.totems||'totems')+' ('+BOSS.aux+' left)':BOSS.stunned?(bar.stun||'Stunned!'):bar[BOSS.mode]||(BOSS.enraged?'Enraged':'');
+  if(bd.auxText&&!BOSS.mode&&!BOSS.stunned) $('#bbPhase').textContent=bd.auxText.replace('{n}',BOSS.aux);   // a number the kit keeps in aux (the golem's shell, Dredge's bilge)
   const dgBar=dgBossBarText(bd,bar); if(dgBar) $('#bbPhase').textContent=dgBar;   // dungeons: what a dungeon boss's number means (its dish, its puffballs, its lamps)
   return true;
 }

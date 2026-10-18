@@ -257,17 +257,17 @@ const LANTERN_DEF=totemDef({id:'soullantern',name:'Soul Lantern',level:40,el:'li
    summons; totem: the Rootwarden's shield-phase totems; prop: what shelters players in Vetrmaw's blizzard; totems: the totems' name for the boss bar;
    bar: what the boss bar says while the boss is in a mode (1 airborne, 2 hidden, 3 shielded, 4 whiteout, 5 blizzard) or stunned */
 const BOSS_DEFS=[
-  {def:BOSS_DEF,arena:'boss',kit:'roots',totem:TOTEM_DEF,add:THORN_DEF,short:'The Rootwarden',totems:'Heartwood Totems',bar:{stun:'Stunned!'}},
+  {def:BOSS_DEF,arena:'boss',kit:'roots',totem:TOTEM_DEF,add:THORN_DEF,short:'The Rootwarden',totems:'Heartwood Totems',bar:{6:'Spring: thornlings sprout!',7:'Summer: the ground scorches!',8:'Autumn: leaves fall like blades!',9:'Winter: the bark is frozen!',stun:'Stunned!'}},
   {def:CARAPAX_DEF,arena:'boss20b',kit:'tide',add:HATCH_DEF,short:'Carapax',bar:{2:'Burrowed: watch the sand!',stun:'Claws stuck: hit it now!'}},
   {def:AKAONI_DEF,arena:'boss20',kit:'oni',add:IMP_DEF,short:'Akaoni',bar:{1:'Leaping!',stun:'Stunned!'}},
   {def:KYUUBI_DEF,arena:'boss25',kit:'kitsune',add:FOXKIT_DEF,short:'Kyuubi',bar:{2:'Vanished: where will it strike?',stun:'Stunned!'}},
   {def:YMRIK_DEF,arena:'boss26',kit:'rime',add:THRALL_DEF,short:'Ymrik',bar:{4:'Whiteout: stay inside the circle!',stun:'Spent: strike now!'}},
   {def:VETRMAW_DEF,arena:'boss30',kit:'wyrm',add:WYRMLING_DEF,prop:CORE_DEF,short:'Vetrmaw',bar:{1:'Airborne: fend off the wyrmlings',5:'Blizzard: shelter at a Warm Core!',stun:'Grounded: hit it now!'}},
   {def:GRYPHON_DEF,arena:'boss29',kit:'gryphon',add:EAGLET_DEF,short:'The Gryphon Queen',bar:{1:'Airborne: she dives from the sky!',stun:'Grounded: hit her now!'}},
-  {def:GOLEM_DEF,arena:'boss32',kit:'golem',add:RUBBLE_DEF,totem:JOINT_DEF,short:'The Mountain Golem',totems:'Iron Joints',bar:{stun:'The shell is cracked: hit him now!'}},
-  {def:GLASSGUARD_DEF,arena:'sboss32',kit:'glass',add:SHARD_DEF,totem:MIRROR_DEF,short:'The Glass Guardian',totems:'Black Mirrors',bar:{3:'Shielded: break the black mirrors!',stun:'The glass is cracked: hit it now!'}},
-  {def:SANDWYRM_DEF,arena:'sboss36',kit:'sandwyrm',add:WHELP_DEF,short:'The Sand Wyrm',bar:{2:'Burrowed: watch the sand!',4:'Sandstorm: stay inside the circle!',stun:'Beached: hit it now!'}},
-  {def:CAPTAIN_DEF,arena:'mboss35',kit:'captain',add:DECKHAND_DEF,short:'Captain Dredge',bar:{2:'The tide is coming in: find the gap!',stun:'Winded: hit him now!'}},
+  {def:GOLEM_DEF,arena:'boss32',kit:'golem',add:RUBBLE_DEF,totem:JOINT_DEF,short:'The Mountain Golem',auxText:'Stone shell: {n}%',bar:{stun:'The shell is broken: hit him now!'}},
+  {def:GLASSGUARD_DEF,arena:'sboss32',kit:'glass',add:SHARD_DEF,totem:MIRROR_DEF,short:'The Glass Guardian',totems:'Black Mirrors',bar:{6:'Mirror: hold your attacks!',stun:'The glass is clouded: hit it now!'}},
+  {def:SANDWYRM_DEF,arena:'sboss36',kit:'sandwyrm',add:WHELP_DEF,short:'The Sand Wyrm',bar:{2:'Burrowed: watch the sand!',7:'Listening: keep moving!',8:'Sandslide: run from the maw!',4:'Sandstorm: stay inside the circle!',stun:'Beached: hit it now!'}},
+  {def:CAPTAIN_DEF,arena:'mboss35',kit:'captain',add:DECKHAND_DEF,short:'Captain Dredge',auxText:'Bilge: {n}% (kill his crew to bail)',bar:{2:'The tide is coming in: find the gap!',stun:'Winded: hit him now!'}},
   {def:WARDEN_DEF,arena:'mboss40',kit:'gloamwarden',add:SPECTER_DEF,totem:LANTERN_DEF,short:'The Gloam Warden',totems:'Soul Lanterns',bar:{3:'The light is shielded: break the soul lanterns!',4:'Gloom: stay out of the dark pools!',stun:'The dark is torn: hit it now!'}}];
 BOSS_DEFS.forEach(b=>{ b.add.bossAdd=true; });   // (the adds of a boss grow like the boss: LATE_CREEP_BOSS)
 /* The main quest's grey-veined monsters (docs/MAIN-QUEST.md, W9 and V7): tougher copies of a zone's kind, touched by the grey sleep.

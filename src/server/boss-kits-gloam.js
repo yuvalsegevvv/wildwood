@@ -22,6 +22,7 @@ function dredgeTideS(B,m){
   castS(B,m,2.0,2.3);
   addWallS(B,A.x-ux*(A.r+4),A.z-uz*(A.r+4),a,9,hw,AR(-hw*0.5,hw*0.5),3.6,Math.round(m.T.dmg*1.6),1.6);
   toastTo(null,'The tide comes in through the caves! Find the gap.','bad');
+  if(B.k.bilge>=60){ addWallS(B,A.x+ux*(A.r+4),A.z+uz*(A.r+4),a+Math.PI,9,hw,AR(-hw*0.5,hw*0.5),3.6,Math.round(m.T.dmg*1.6),3.4); toastTo(null,'High water: a second wave comes back!','bad'); }   // (the flooded hold doubles the tide)
 }
 // phase 3: a whirlpool at the middle, pulling in
 function dredgeWhirlS(B,m){
@@ -29,22 +30,54 @@ function dredgeWhirlS(B,m){
   castS(B,m,2.2,2.3); addZoneS(B,'whirl',x,z,8,9,0,0);
   toastTo(null,'Captain Dredge opens the drowned deep! Keep out of the whirl.','bad');
 }
-// the broadside (phase 2+): two crossing lines of shot across the whole hold
+// the broadside (phase 2+): the four cannon ports in the hold's rim fire one after the other round the hold (0.6 s apart), each at wherever a player is when it fires
 function dredgeBroadsideS(B,m){
-  const A=B.A, a0=AR(0,TAU); castS(B,m,2.4,2.3);
-  for(let i=0;i<4;i++) addTeleS(B,A.x,A.z,A.r+10,1.6,'line',Math.round(m.T.dmg*1.7),a0+i*TAU/4,1.6);
-  toastTo(null,'A broadside! Stand between the lines.','bad');
+  const A=B.A, a0=AR(0,TAU); castS(B,m,3.0,2.3);
+  for(let i=0;i<4;i++) laterS(B,i*0.6,()=>{ const ins=playersInArena(A,4); if(!ins.length||m.dead) return;
+    const a=a0+i*TAU/4, px=A.x+Math.sin(a)*(A.r-2), pz=A.z+Math.cos(a)*(A.r-2), q=randPlayerS(ins);
+    addTeleS(B,px,pz,2*A.r,1.5,'line',Math.round(m.T.dmg*1.7),Math.atan2(-(q.x-px),-(q.z-pz)),1.6); });
+  toastTo(null,'A broadside! The ports fire one after the other.','bad');
+}
+// the anchor chain: he hooks one player and hauls them in for DREDGE_CHAIN s (a pull every 0.5 s, the chain drawn as a line); when it ends the anchor slams down on him, so whoever is
+// still on the chain is crushed. A crewmate standing within 3 m of the hooked player cuts it: nobody is slammed, and he is winded for a moment
+const DREDGE_CHAIN=7;
+function dredgeHookS(B,m,C){
+  const k=B.k, q=randPlayerS(C.inside); faceS(m,q.x,q.z); castS(B,m,1.2,1.0);
+  k.chain={id:q.id,t:0,pull:0.4}; toastTo(null,'Dredge hooks '+q.name+' with the anchor! Cut the chain: stand next to them.','bad'); ev('roar',m.id);
+}
+function dredgeChainTickS(B,m,dt){
+  const k=B.k, c=k.chain, q=S.players.get(c.id);
+  if(!q||q.dead){ k.chain=null; return; }
+  c.t+=dt; c.pull-=dt;
+  const ally=playersInArena(B.A,0).find(o=>o!==q&&Math.hypot(o.x-q.x,o.z-q.z)<3);
+  if(ally){ k.chain=null; B.stunT=2.5; m.act=null; k.cut=(k.cut||0)+1; toastTo(null,'The chain is cut! Dredge is winded: strike now!','good'); return; }
+  if(c.pull<=0){ c.pull=0.5; const dx=m.x-q.x, dz=m.z-q.z, d=Math.hypot(dx,dz)||1;
+    if(d>3.5) pfxS(q,'push',0,dx/d*20,dz/d*20);
+    addTeleS(B,m.x,m.z,d,0.5,'line',0,Math.atan2(-(q.x-m.x),-(q.z-m.z)),0.35); }
+  if(c.t>=DREDGE_CHAIN){ k.chain=null; castS(B,m,1.2,2.3); addTeleS(B,m.x,m.z,7.5,0.9,'slam',Math.round(m.T.dmg*2.2)); toastTo(null,'The anchor slams down!','bad'); }
+}
+// the bilge: the hold floods all fight long (the bar's number is the water, in %). Every drowned hand put down bails a fifth of it out; at 100 the hold floods: a whirl at the middle for 8 s,
+// everyone slowed, and the water starts again from nothing. Keep killing his crew
+const DREDGE_BILGE_RATE=2.4, DREDGE_BAIL=20;
+function dredgeBilgeTickS(B,m,dt){
+  const k=B.k; for(const a of B.adds) if(a.dead&&!a.bailed){ a.bailed=true; k.bilge=Math.max(0,k.bilge-DREDGE_BAIL); }
+  const was=k.bilge; k.bilge=Math.min(100,k.bilge+DREDGE_BILGE_RATE*dt*(B.enraged?1.3:1)); B.aux=Math.round(k.bilge);
+  if(was<50&&k.bilge>=50) toastTo(null,'The hold is half flooded: put down his crew to bail it out.','bad');
+  if(k.bilge>=100){ k.bilge=0; B.aux=0; k.floods++; addZoneS(B,'whirl',B.A.x,B.A.z,12,8,0,0); for(const q of playersInArena(B.A,0)) pfxS(q,'slow',3); castS(B,m,1.5,2.3); ev('roar',m.id); toastTo(null,'The hold floods!','bad'); }
 }
 BOSS_KITS.captain={
-  start(B){ B.k={volleyT:4,anchorT:6,tideT:99,whirlT:99,sideT:99,handT:99}; },
+  start(B){ B.k={volleyT:4,anchorT:6,tideT:99,whirlT:99,sideT:99,handT:6,hookT:9,chain:null,cut:0,bilge:0,floods:0}; B.aux=0; },
   phase(B,m,n){
-    if(n===2){ B.k.tideT=8; B.k.sideT=13; B.k.handT=3; spawnAddsS(B,2); }
-    else { B.k.whirlT=5; B.k.handT=10; spawnAddsS(B,3); }
+    if(n===2){ B.k.tideT=8; B.k.sideT=13; spawnAddsS(B,2); }
+    else { B.k.whirlT=5; spawnAddsS(B,3); }
     ev('roar',m.id);
   },
   tick(B,m,dt,C){
-    const k=B.k; k.volleyT-=dt; k.anchorT-=dt; k.tideT-=dt; k.whirlT-=dt; k.sideT-=dt; k.handT-=dt;
-    if(k.handT<=0){ k.handT=B.enraged?14:20; spawnAddsS(B,B.enraged?3:2); }
+    const k=B.k; k.volleyT-=dt; k.anchorT-=dt; k.tideT-=dt; k.whirlT-=dt; k.sideT-=dt; k.handT-=dt; k.hookT-=dt;
+    dredgeBilgeTickS(B,m,dt);
+    if(k.chain) dredgeChainTickS(B,m,dt);
+    if(k.hookT<=0&&!k.chain&&B.busy<=0){ k.hookT=B.enraged?14:18; dredgeHookS(B,m,C); }
+    if(k.handT<=0){ k.handT=B.enraged?12:15; spawnAddsS(B,B.enraged?3:2); }
     if(B.busy>0) return;
     if(k.whirlT<=0){ k.whirlT=B.enraged?14:19; dredgeWhirlS(B,m); }
     else if(k.sideT<=0){ k.sideT=B.enraged?10:15; dredgeBroadsideS(B,m); }
@@ -58,7 +91,7 @@ BOSS_KITS.captain={
 // the lantern beam: a fan of three lines of cold light swept at the nearest player
 function wardenBeamS(B,m,p){
   faceS(m,p.x,p.z); castS(B,m,1.6,1.0);
-  const a0=Math.atan2(p.x-m.x,p.z-m.z);
+  const a0=Math.atan2(-(p.x-m.x),-(p.z-m.z));
   for(const d of [-0.3,0,0.3]) addTeleS(B,m.x,m.z,26,1.3,'line',Math.round(m.T.dmg*1.5),a0+d,1.4);
 }
 // gloom pools: black water wells up where players stand and stays, hurting whoever lingers
