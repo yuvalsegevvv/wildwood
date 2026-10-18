@@ -85,4 +85,10 @@ bad.length=0; build('three','female',{deco1:'wings',deco2:'tail',deco3:'halo',de
   const miss=[]; for(const [slot,ids] of cr) for(const id of ids){ const L=look('male',{[slot]:id}), P=C.gmxPalDef(L,slot); if(P.length<3){ miss.push(slot+':'+id+' has '+P.length+' colours'); continue; }
     const k=slot==='top'?'tintTop':'tintBottom'; for(let i=2;i<=P.length;i++){ if(sig(Object.assign({},L))===sig(Object.assign({},L,{[k+i]:0x22ccff}))) miss.push(slot+':'+id+' colour '+i+' changes nothing'); } }
   ok('every crafted top and bottom has 3-4 colours and each one recolours the piece',!miss.length,miss.slice(0,4).join('; ')); }
+// ---- a big look still reaches the server (a 2000-char cap once dropped it silently, so a shield could not be taken off) ----
+{ pa.gear.cos=['w:round']; const big=o=>Object.assign({cls:'warrior',top:'jacket',shield:'round',pad:'x'.repeat(20)},o);
+  const fat=o=>{ const L=big(o); for(let i=0;i<110;i++) L['k'+i]=i*1234.5678; return L; };   // ~2.3k chars of JSON, as a set outfit with colours is
+  P.receive('a',{t:'look',look:fat({shield:'round'})}); ok('a large look with a shield is kept',pa.look.shield==='round');
+  ok('the test look is above the old cap',JSON.stringify(fat({shield:''})).length>2000);
+  P.receive('a',{t:'look',look:fat({shield:''})}); ok('a large look with no shield takes the shield off',pa.look.shield===''); }
 console.log(fails?fails+' FAILED':'all passed'); process.exitCode=fails?1:0;

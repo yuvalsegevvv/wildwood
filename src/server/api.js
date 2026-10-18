@@ -75,6 +75,8 @@ function setPos(pid,d){
 // ITEM[id], SKILLS[id], ... are plain objects: an id of 'constructor' or '__proto__' finds a member of Object.prototype, passes `if(!it)` and made buyP charge NaN coins
 // (then nothing was ever too expensive again). No real id is such a name, so a message carrying one in an id-like field is dropped here, once, for every handler.
 const PROTO_KEY=new Set(Object.getOwnPropertyNames(Object.prototype)), FREE_TEXT=new Set(['text','name','user','pass','token']);
+// A look message is dropped whole above this size; the look grew (decorations, shield, tints, set pieces), and at 2000 chars a big look was silently ignored so the server kept the old one.
+const LOOK_MAX=6000;
 /* The other way in is JSON nested inside a message (the hello's saved gear: the one big object a client sends): JSON.parse makes an OWN '__proto__' key (copying it into another
    object would change that object's prototype), and an own 'toString' / 'valueOf' makes parseInt(x), String(x) and obj[x] throw on it. No real data key has such a name, so they are removed
    from the whole message once, here (iteratively, so a deeply nested message cannot overflow the stack: below 12 levels or past 20,000 objects the rest is cut off). */
@@ -117,7 +119,7 @@ function receive(pid,msg){
     case 'unskill': unequipSkillP(p,msg.cls,msg.slot||'skill',msg.idx); break;
     case 'upskill': upgradeSkillP(p,msg.id); break;
     case 'soul': bindSoulP(p,msg.el); break;
-    case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<2000){ const L=cleanLookS(msg.look); if(Object.keys(L).length){ p.look=cosCleanLook(L,p.gear.cos); p.saveDirty=true; ev('plook',p.id,p.look); } } break;
+    case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<LOOK_MAX){ const L=cleanLookS(msg.look); if(Object.keys(L).length){ p.look=cosCleanLook(L,p.gear.cos); p.saveDirty=true; ev('plook',p.id,p.look); } } break;
     case 'warp': warpP(p,typeof msg.to==='string'?msg.to:undefined); break;
     case 'mq': mqMsgP(p,msg); break;
     case 'learn': learnProfP(p,msg.id); break;
