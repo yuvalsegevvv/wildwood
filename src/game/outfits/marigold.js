@@ -266,3 +266,8 @@ OUTFITS.marigold=(function(){
     return kit;
   };
 })();
+oxTune('marigold',{eyeSize:1.2,blush:0.85,cheeks:1.2,smile:0.6,lips:1.1,undertone:0.4,earSize:0.9});
+OUTFITS.marigold=oxPlus(OUTFITS.marigold,(X,D)=>({   // face round 5: a sunny round face: rosy cheek patches, a dusting of freckles, small gold hoops, bright big eyes
+  mark:F=>oxMarks(F,[{t:'cheek',col:0xf08a90},{t:'freckles',col:0xb06a48}]),
+  hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xffc23a}]),
+  kit:{eyes:{iris:1.15,hl:2,lash:0.9}}}));

@@ -334,3 +334,7 @@ OUTFITS.torgeir=(function(){
     };
   };
 })();
+oxTune('torgeir',{jaw:1.2,chin:1.2,cheeks:1.1,brow:0.6,noseSize:1.12,lips:0.85,undertone:0.2,blush:0.35,eyeTilt:-0.1,earSize:1.1});
+OUTFITS.torgeir=oxPlus(OUTFITS.torgeir,(X,D)=>({   // face round 5: a mountain warrior: a scar through the brow, wind-lines, a bone-bead braid-tie and a bronze ear ring
+  mark:F=>oxMarks(F,[{t:'scar',side:-1,col:0xb88a7a},{t:'crow',col:0x8a7060}]),
+  hair:()=>oxHairBits(X,[{t:'beads',side:1,col:0xe8e2d4,col2:0x8a6a4a},{t:'ring',side:-1,col:0xb8864a}])}));

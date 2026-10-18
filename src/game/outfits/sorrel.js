@@ -337,3 +337,8 @@ OUTFITS.sorrel=(function(){
 OUTFITS.sorrel=oxPlus(OUTFITS.sorrel,(X,D)=>({   // round 4: a climbing rope coil, a rolled bivouac pack, a brass plate on one shoulder
   torso:()=>oxCoil(X,D,{col:0xd88a3a,col2:0xf3ead2,dir:-1}).concat(oxPack(X,D,{col:0x58c0b8,trim:0xe8e2d4,w:0.095,h:0.1})),
   shoulder:sd=>sd>0?oxPauldron(X,D,{col:0xc8d8e4,trim:0xc59c39,r:0.065}):[]}));
+oxTune('sorrel',{eyeTilt:0.12,lips:0.9,undertone:-0.2,blush:0.3,cheeks:0.9,smile:0.15,earSize:1.0});
+OUTFITS.sorrel=oxPlus(OUTFITS.sorrel,(X,D)=>({   // face round 5: a calm river-guide: snowmelt-blue eyes, tiny dew dots under one eye, a teal sprig and bead strand at the ear
+  mark:F=>oxMarks(F,[{t:'tear',side:1,col:0xbfe0ea},{t:'crow',col:0x9ab0b8}]),
+  hair:()=>oxHairBits(X,[{t:'sprig',side:1,col:0x58c0b8},{t:'beads',side:-1,col:0x58c0b8,col2:0xe8e2d4}]),
+  kit:{eyeColor:0x58b0c8,eyes:{iris:1.05}}}));
