@@ -52,12 +52,13 @@ function buildHair(X,F){
   if(kH&&kH.hair){ const n0=parts.length, ex=kH.hair(F,T); if(ex) parts.push(...ex); ofTintFrom(X,'hair',parts,n0); }
   if(H==='buzz') crown(0.108,0.42,0.38);
   if(H==='short'){ crown(0.114,0.5,0.32); add(fit(shell(0.111*hv,0.38*Math.PI,0.17*Math.PI,1.9,0,sg(30),sg(8)))); fringe(8,1.0,0.14); sideLocks(0.05); backLocks(sg(18),0,11); }
+  const hatOver=hat&&!['circlet','bandana','laurel','catphones'].includes(L.hat);   // a hat that covers the crown: the blades standing off the scalp would poke through it
   if(H==='messy'){ crown(0.116,0.52,0.3); fringe(8,1.05,0.3); sideLocks(0.05); backLocks(sg(14),0.02,21);
-    const rng=mulberry32(4242); for(let i=0;i<10;i++){ const th=rng()*TAU, ph=(0.14+rng()*0.3)*Math.PI; add(hang(blade(th,ph,(0.04+rng()*0.04)*(0.8+0.3*hl),0.016+rng()*0.006,[(rng()-0.5)*0.6,0.1+rng()*0.3,0.2+rng()*0.4]))); } }
+    const rng=mulberry32(4242); for(let i=0;i<(hatOver?0:10);i++){ const th=rng()*TAU, ph=(0.14+rng()*0.3)*Math.PI; add(hang(blade(th,ph,(0.04+rng()*0.04)*(0.8+0.3*hl),0.016+rng()*0.006,[(rng()-0.5)*0.6,0.1+rng()*0.3,0.2+rng()*0.4]))); } }
   if(H==='spiky'){ crown(0.114,0.5,0.32); sideLocks(0.05); backLocks(sg(12),0.01,31);
     // blades fanned over the crown and swept back, three longer ones pointing forward over the brow
-    for(const [th,ph,len,lean] of [[0.25,0.13,0.085,[0,0.5,0.9]],[-0.35,0.15,0.08,[0,0.5,0.9]],[0.9,0.2,0.085,[0.2,0.35,0.8]],[-0.95,0.2,0.085,[-0.2,0.35,0.8]],[1.7,0.28,0.085,[0.2,0.2,0.7]],[-1.7,0.28,0.085,[-0.2,0.2,0.7]],[2.5,0.27,0.08,[0,0.1,0.6]],[-2.5,0.27,0.08,[0,0.1,0.6]],[3.1,0.25,0.085,[0,0,0.6]]]) add(hang(blade(th,ph*Math.PI,len*(0.85+0.25*hl),0.03,lean)));
-    for(const f of [-0.75,0,0.75]){ const th=f*0.8, ph=0.2*Math.PI, len=0.06*Math.max(0.3,bg), a=sp(th,ph,R*0.97), d=sp(th,0.42*Math.PI,1);
+    for(const [th,ph,len,lean] of [[0.25,0.13,0.085,[0,0.5,0.9]],[-0.35,0.15,0.08,[0,0.5,0.9]],[0.9,0.2,0.085,[0.2,0.35,0.8]],[-0.95,0.2,0.085,[-0.2,0.35,0.8]],[1.7,0.28,0.085,[0.2,0.2,0.7]],[-1.7,0.28,0.085,[-0.2,0.2,0.7]],[2.5,0.27,0.08,[0,0.1,0.6]],[-2.5,0.27,0.08,[0,0.1,0.6]],[3.1,0.25,0.085,[0,0,0.6]]]) if(!hatOver) add(hang(blade(th,ph*Math.PI,len*(0.85+0.25*hl),0.03,lean)));
+    if(!hatOver) for(const f of [-0.75,0,0.75]){ const th=f*0.8, ph=0.2*Math.PI, len=0.06*Math.max(0.3,bg), a=sp(th,ph,R*0.97), d=sp(th,0.42*Math.PI,1);
       add(fit(sweepTube([a,[a[0]+d[0]*len*0.5,a[1]+d[1]*len*0.2+0.01,a[2]+d[2]*len*0.5],[a[0]+d[0]*len,a[1]-0.045*Math.max(0.3,bg),a[2]+d[2]*len*1.1]],[0.022,0.02,0.002],sg(8),{cap:'point',rings:sg(9)}))); } }
   if(H==='curly'){ const r=hat?(L.hat==='helm'?0.11:0.118):0.138*hv; const g=cap(r,0.56,0.3), p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i),y=p.getY(i),z=p.getZ(i),j=1+(h3(x*3,y*3,z*3)-0.5)*0.12; p.setXYZ(i,x*j,y*j,z*j); } smoothN(g); add(fit(g));
     add(fit(shell(r*0.95,0.4*Math.PI,0.22*Math.PI,1.9,0,sg(30),sg(8))));
