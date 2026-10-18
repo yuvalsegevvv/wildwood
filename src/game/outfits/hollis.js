@@ -81,3 +81,8 @@ OUTFITS.hollis=(function(){
 OUTFITS.hollis=oxPlus(OUTFITS.hollis,(X,D)=>({   // round 4: a long jet-bead rosary with amber beads, black mourning ribbon tails at the belt
   torso:()=>oxBeads(X,D,{col:0x1d1a22,col2:0xe6a44a,n:24,r:0.014,drop:0.34}),
   hips:()=>oxSash(X,D,{col:0x2a2630,col2:0xe6a44a,len:1.3,side:1})}));
+oxTune('hollis',{jaw:1.0,cheeks:0.72,eyeSize:0.92,brow:0.3,lips:0.75,undertone:-0.3,blush:0.0,smile:0.0,earSize:1.1});
+OUTFITS.hollis=oxPlus(OUTFITS.hollis,(X,D)=>({   // face round 4: a mourner's hollow face: deep bags, one tear, an amber earring, long grey locks over the collar
+  mark:F=>oxMarks(F,[{t:'bags',col:0x6a5a70},{t:'tear',side:1,col:0xbfc8d8}]),
+  hair:()=>oxHairBits(X,[{t:'ring',side:1,col:0xe6a44a},{t:'locks',len:0.3,col:0x8a8494}]),
+  kit:{eyeColor:0xe6a44a,eyes:{iris:0.85,lash:0.2}}}));

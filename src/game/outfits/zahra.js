@@ -85,3 +85,7 @@ OUTFITS.zahra=oxPlus(OUTFITS.zahra,(X,D)=>({   // round 5: a layered gold bead c
   shoulder:sd=>oxPauldron(X,D,{col:0xe8c050,trim:0x2b6aa8,r:0.068}),
   hips:()=>oxSash(X,D,{col:0xe8c050,col2:0x2b6aa8,len:1.05,side:-1}),
   cos:{cape:{col:0x2b6aa8,trim:0xffd24a,len:0.95,pat:'rays',mantle:0}}}));
+oxTune('zahra',{lips:1.15,eyeSize:1.12,eyeTilt:0.22,brow:-0.1,undertone:0.5,blush:0.25,cheeks:1.05,earSize:0.95});
+OUTFITS.zahra=oxPlus(OUTFITS.zahra,(X,D)=>({   // face round 4: gilded cheekbones, a beauty mark, gold beads at both temples
+  mark:F=>oxMarks(F,[{t:'stripe',col:0xe0b840},{t:'mole',side:-1,col:0x3a2a20}]),
+  hair:()=>oxHairBits(X,[{t:'beads',both:true,col:0xe8c050,col2:0x2b6aa8}])}));

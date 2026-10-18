@@ -103,3 +103,7 @@ OUTFITS.nephra=(function(){
     };
   };
 })();
+oxTune('nephra',{eyeSize:1.2,lips:1.2,brow:-0.1,undertone:0.3,blush:0.0,cheeks:0.82,smile:0.1,earSize:0.95});
+OUTFITS.nephra=oxPlus(OUTFITS.nephra,(X,D)=>({   // face round 4: kohl under the eyes, a gold dot at the brow, gold ear rings and two long bandaged locks
+  mark:F=>oxMarks(F,[{t:'stripe',col:0x1a1418},{t:'mole',side:1,col:0xd8b050}]),
+  hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xd8b050},{t:'locks',len:0.28,col:0xe3d5b0}])}));

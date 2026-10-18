@@ -304,3 +304,7 @@ OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 6: a big vermilion o
   forearm:sd=>oxStreamer(X,D,{col:0xc8323a,col2:0x2a1a40,len:0.55,side:sd})}));
 OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 3: a curtain of paper talismans hanging from the belt
   hips:()=>oxTags(X,D,{col:0xf3ead2,mark:0xc8323a,n:14,len:0.24})}));
+oxTune('sazanka',{eyeSize:1.1,eyeTilt:0.5,lips:1.0,smile:0.35,blush:0.4,cheeks:0.95,earSize:1.15,undertone:0.2});
+OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // face round 4: a red runner's stripe under the eyes, red cords hung at both ears, a cheeky grin
+  mark:F=>oxMarks(F,[{t:'stripe',col:0xc8323a},{t:'freckles',col:0x8a5a48}]),
+  hair:()=>oxHairBits(X,[{t:'beads',both:true,col:0xc8323a,col2:0xf3ead2}])}));
