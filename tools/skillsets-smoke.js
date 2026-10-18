@@ -195,11 +195,11 @@ send({t:'dev',cmd:'set',v:'real1'});
   ok('a passive\'s cost is paid: -20% maximum health while it is worn (its own +5% included)',lower<base&&near(lower/p.maxHp,(1+0.05-0.20)/(1+0.05),0.03),lower+' vs '+p.maxHp); }
 
 // ---- the rules about what a piece is not ----
-{ const lv0=p.gear.skills.lv.alpha_2_any; send({t:'upskill',id:'alpha_2_any'}); ok('a piece cannot be upgraded in v1',p.gear.skills.lv.alpha_2_any===lv0&&toasts().some(t=>/cannot be upgraded/.test(t))); }
-// saves: ownership and the worn pieces survive, levels on pieces do not, a removed set's ids vanish
+{ const lv0=p.gear.skills.lv.alpha_2_any; send({t:'upskill',id:'alpha_2_any'}); ok('a piece is not upgraded without its price (raids: coins, monster material and the raid material; tools/raids-smoke.js tests the price)',p.gear.skills.lv.alpha_2_any===lv0&&toasts().length>0); }
+// saves: ownership and the worn pieces survive, a piece keeps its level, a removed set's ids vanish
 { const g=J(p.gear); g.skills.lv.alpha_2_any=4; g.skills.owned.push('ghostset_1_any'); g.skills.eq.mage.skill='ghostset_1_any';
   const out=x.sanitizeGear(g,'mage').skills;
-  ok('a save keeps the set pieces and where they are worn, drops ids that no longer exist, and forces a piece to level 1',out.owned.includes('alpha_2_any')&&out.eq.mage.skill!=='ghostset_1_any'&&out.eq.warrior.skill==='alpha_2_any'&&!out.lv.alpha_2_any&&out.eq.warrior.basic==='alpha_1_warrior'&&!out.owned.includes('ghostset_1_any')); }
+  ok('a save keeps the set pieces and where they are worn, drops ids that no longer exist, and keeps a piece\'s level (raids: pieces level with raid material)',out.owned.includes('alpha_2_any')&&out.eq.mage.skill!=='ghostset_1_any'&&out.eq.warrior.skill==='alpha_2_any'&&out.lv.alpha_2_any===4&&out.eq.warrior.basic==='alpha_1_warrior'&&!out.owned.includes('ghostset_1_any')); }
 { const g=J(p.gear); g.skills.owned=g.skills.owned.filter(i=>!/^alpha_1_/.test(i)); const out=x.sanitizeGear(g,'warrior').skills;
   ok('a worn piece that is no longer owned is not worn (and the warrior is back to its class basic)',out.eq.warrior.basic===null&&x.abilityOf('warrior','basic',out,30).set===undefined); }
 { const out=x.sanitizeGear(J({skills:{owned:['alpha_1_warrior'],eq:{warrior:{basic:'alpha_1_warrior'}}}}),'warrior').skills; const bare=x.sanitizeGear(J({skills:{eq:{warrior:{basic:'alpha_1_warrior'}}}}),'warrior').skills;

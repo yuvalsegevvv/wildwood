@@ -71,6 +71,8 @@ function applyEvent(e){
     case 'mact': onMonAct(e[1],e[2]); break;
     case 'aggro': { const m=MON_BY_ID.get(e[1]); if(m) monSound(m,'aggro'); break; }
     case 'respawn': { const m=MON_BY_ID.get(e[1]); if(m) monRespawned(m,e[2],e[3]); break; }
+    case 'rdst': rdOnState(e.slice(1)); break;   // raids: a stronghold's state
+    case 'rdlv': rdOnLevel(e[1],e[2]); break;   // raids: the first hit locked the tier, every monster's level
     case 'spawn': addMonView(e[1]); break;
     case 'despawn': removeMonView(e[1]); break;
     case 'proj': onProj(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8],e[9],e[10]); break;

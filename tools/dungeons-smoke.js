@@ -66,7 +66,7 @@ for(const mi of ['sabotage','siege']) ok(mi+': its three sites are at least 3 ti
 ok('the missions\' roles all exist in the test set, their grids can hold their tile counts, and every mission has exactly one boss hall (role \'boss\')',MIS.every(mi=>{ const M=X.DG_MISSIONS[mi]; return M.rooms[1]<=M.grid[0]*M.grid[1]&&M.roles.every(R=>V.some(v=>v.tags.includes(R.tag)))&&M.roles.filter(R=>R.as==='boss'&&R.tag==='hall'&&R.n===1).length===1; }));
 
 // ---- the boss hall is the boss circle ----
-ok('every boss arena in ARENAS has the radius DG_BOSS_R ('+X.DG_BOSS_R+' m): the hall is exactly that circle, so the boss kits (they read A.x, A.z, A.r) fit',X.ARENAS.length>=6&&X.ARENAS.filter(a=>!a.sun&&!a.gloam).every(a=>a.r===X.DG_BOSS_R),X.ARENAS.map(a=>a.r).join(','));   // (the Sunscar's and the Gloamhorn's world-boss arenas, 22 and 24 m, are not dungeon halls)
+ok('every boss arena in ARENAS has the radius DG_BOSS_R ('+X.DG_BOSS_R+' m): the hall is exactly that circle, so the boss kits (they read A.x, A.z, A.r) fit',X.ARENAS.length>=6&&X.ARENAS.filter(a=>!a.sun&&!a.gloam&&!a.raid).every(a=>a.r===X.DG_BOSS_R),X.ARENAS.map(a=>a.r).join(','));   // (the Sunscar's and the Gloamhorn's world-boss arenas, 22 and 24 m, are not dungeon halls)
 ok('a hall tile is that circle: open floor except its four pillars (16 cells) inside radius '+X.DG_BOSS_R+' m less a cell, one boss spot in the middle, and it fits the tile',DG_TC*DG_CELL>=2*X.DG_BOSS_R+2*DG_CELL&&V.filter(v=>v.tags.includes('hall')).every(v=>{
   const C=DG_TC/2, rIn=X.DG_BOSS_R/DG_CELL-1; let walls=0, b=0, bOk=true;
   for(let z=0;z<DG_TC;z++) for(let x=0;x<DG_TC;x++){ const ch=v.art[z][x]; if(Math.hypot(x+0.5-C,z+0.5-C)<=rIn&&ch==='#') walls++; if(ch==='B'){ b++; bOk=Math.hypot(x+0.5-C,z+0.5-C)<=1; } }

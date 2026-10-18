@@ -35,6 +35,7 @@ function frame(){
   updateChat();
   updateEnv(dt);
   cullChunks(dt);
+  rdFrame(dt);   // raids: the strip near a stronghold, the far ruins hidden
   dgFrame(dt);   // dungeons: a run's view, light and HUD, the party's prompts (dungeon/run.js)
   updateCamera(dt); updateShadow();
   sky.position.copy(camera.position);

@@ -9,7 +9,7 @@
                  cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{to: 'home'|'hanami'|'rimehold'}  dev{cmd,v}  ft{cmd,v} (version2 testing: free skill sets)
                  buyskill{id}  eqskill{id[,idx: passive slot]}  unskill{cls,slot[,idx]}  upskill{id}  soul{el}  mq{a:'talk'|'pick'|'read',id|i}  learn{id: a profession}  gather{i: a resource node}
    Messages out: welcome{pid,day,dev,players[,look: a logged-in account's own look]}  mons{list}  you  tp  snap{day,n,pl,mo,b:[per boss: id,engaged,phase,immune,enraged,stunned,aux,mode],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
-initMonstersS(); initBossS();
+initMonstersS(); initBossS(); initRaidsS();   // raids: after the world's monsters and bosses
 const ACCT=new Map(), PENDING=new Set();   // account -> pid online; pids whose save is still loading
 const recordOf=p=>Object.assign({v:1,name:p.name,look:p.look,level:p.level,exp:p.exp,gear:p.gear,updated:Date.now()},p.auth?{auth:p.auth}:{});
 function saveP(p){ if(!io.store||!p.acct) return Promise.resolve(); p.saveDirty=false; return Promise.resolve().then(()=>io.store.save(p.acct,recordOf(p))).catch(e=>{ p.saveDirty=true; if(io.log) io.log('save failed',e&&e.message); }); }
@@ -39,10 +39,11 @@ function join(pid,hello,auth){
   sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth?p.look:undefined});
   const ros=MONS.filter(m=>!m.remove&&!m.inst).map(monRoster);   // dungeons: the world's monsters only (a run's reach its members on entry)
   for(let i=0;i<ros.length;i+=40) sendTo(pid,{t:'mons',list:ros.slice(i,i+40)});
-  for(const B of BOSSES){   // what a boss has set up right now, for someone who arrives in the middle of the fight
+  for(const B of BOSSES.concat(rdBossesS())){   // what a boss has set up right now, for someone who arrives in the middle of the fight
     for(const e of B.tele) sendTo(pid,{t:'snap',ev:[['tele',e.id,e.kind,r1(e.x),r1(e.z),r1(e.r),e.dur-e.t,Math.round(e.face*100)/100,e.half]]});
     for(const zn of B.zones) sendTo(pid,{t:'snap',ev:[['zone',zn.id,zn.kind,r1(zn.x),r1(zn.z),r1(zn.r),zn.dur-zn.t,zn.a,zn.b]]});
   }
+  sendTo(pid,{t:'snap',ev:rdEventsS()});   // raids: where each stronghold stands
   { const ne=nodeEvents(); if(ne.length) sendTo(pid,{t:'snap',ev:ne}); }   // the resource nodes that are taken right now
   sendTo(pid,youMsg(p)); p.dirty=false;
   ev('pjoin',pubInfo(p));
@@ -142,7 +143,7 @@ function tick(dt){
   else S.day=(S.day+dt/DAY_SECONDS)%1;
   if(S.day<S.prevDay) sunrise();
   S.prevDay=S.day;
-  updatePlayersS(dt); S.ctx=0; updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateBurnS(dt); S.ctx=0; updateWeatherS(dt); updateNodesS(dt); updatePotionsS(dt); updateCastsS(); updatePartiesS(dt); updateInstsS(dt); S.ctx=0;   // dungeons: the per-entity loops set S.ctx (the run an event belongs to), so it goes back to the world after them; parties and runs tick here
+  updatePlayersS(dt); S.ctx=0; updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateBurnS(dt); rdTickS(dt); S.ctx=0; updateWeatherS(dt); updateNodesS(dt); updatePotionsS(dt); updateCastsS(); updatePartiesS(dt); updateInstsS(dt); S.ctx=0;   // dungeons: the per-entity loops set S.ctx (the run an event belongs to), so it goes back to the world after them; parties and runs tick here
   for(const p of S.players.values()) if(p.dirty){ p.dirty=false; p.saveDirty=true; sendTo(p.id,youMsg(p)); }
   S.saveT-=dt; if(S.saveT<=0){ S.saveT=5; for(const p of S.players.values()) if(p.saveDirty&&p.acct) saveP(p); }
   S.snapT-=dt; if(S.snapT<=0){ S.snapT=S.snapDt; broadcastSnap(); }

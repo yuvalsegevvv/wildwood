@@ -51,9 +51,9 @@ const snaps=inbox.b.filter(m=>m.t==='snap').map(m=>JSON.stringify(m).length);
 ok('snapshots fit the 4 KB room limit',Math.max(...snaps)<3800,'max '+Math.max(...snaps)+' bytes');
 W.receive('a',{t:'dev',cmd:'weather',v:'storm'}); tick(20*60); ok('weather: storm with thunder',x.W.kind===2&&evs.some(e=>e[0]==='thunder'));
 // the bosses' state (b, ~170 bytes) is sent when it changes, when a boss comes into range, and with the 3 s full resend, not in every snapshot
-{ inbox.bq=[]; W.join('bq',{name:'Bq',look:{cls:'mage'},save:{level:5}}); tick(3); const first=inbox.bq.find(m=>m.t==='snap'); inbox.bq.length=0; tick(100,true);   // (a snapshot every other tick)
+{ inbox.bq=[]; W.join('bq',{name:'Bq',look:{cls:'mage'},save:{level:5}}); tick(3); const first=inbox.bq.find(m=>m.t==='snap'&&!m.ev.every(e=>e[0]==='rdst'));   // (raids: the join sends the strongholds' states in a snapshot of their own first) inbox.bq.length=0; tick(100,true);   // (a snapshot every other tick)
   const sn=inbox.bq.filter(m=>m.t==='snap'), withB=sn.filter(m=>m.b);
-  ok('boss state: the first snapshot carries b, an idle stream carries it only now and then (the 3 s full resend), and always with the twelve',!!first&&!!first.b&&first.b.length===12&&withB.length>=1&&withB.length<=Math.ceil(sn.length/10)+1&&withB.every(m=>m.b.length===12),withB.length+' of '+sn.length+' snapshots');
+  ok('boss state: the first snapshot carries b, an idle stream carries it only now and then (the 3 s full resend), and always with the eighteen (the twelve world bosses and the six raid bosses)',!!first&&!!first.b&&first.b.length===18&&withB.length>=1&&withB.length<=Math.ceil(sn.length/10)+1&&withB.every(m=>m.b.length===18),withB.length+' of '+sn.length+' snapshots');
   const B0=x.BOSSES?x.BOSSES[0]:null; inbox.bq.length=0; if(B0){ B0.phase=2; tick(3); }
   ok('boss state: a change reaches the player in the next snapshots',!B0||inbox.bq.some(m=>m.b&&m.b.some(r=>r[2]===2)),B0?'phase 2 sent':'(no boss list exposed)'); if(B0) B0.phase=1; tick(2); W.leave('bq'); }
 // a look is shown to every client in sight: the server cuts it down to flat primitives (no nested objects, long strings, non-finite numbers, or names of Object.prototype)

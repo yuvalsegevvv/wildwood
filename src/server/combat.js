@@ -31,6 +31,7 @@ function rollDmgS(p,mult,m,el){
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
   if(m.pl) return pvpHitS(m,mult,p,fromX,fromZ,kb,el);   // pvp: m is another fighter on the island (server/pvp.js)
   if(m.dead||m.remove) return 0;
+  if(m.rd&&!rdHitS(m,p)) return 0;   // raids: the first hit locks the raid's tier; a boss behind its wards takes none
   if(m.inst&&!dgHitOkS(m,p,fromX,fromZ)) return 0;   // dungeons: a run's monster takes hits only from its run, and walls stop them
   if(m.immune){ ev('imm',m.id); return 0; }
   if(m.boss && m.B.stunT>0) mult*=1.5;
@@ -55,7 +56,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
 function killMonsterS(m,p){
   m.expoDeath=rxVulnK(m)>0||rxWeakK(m)<1;   // skillsets: it was exposed when it died (the `exposed` condition of a kill row; the statuses go with it just below)
   m.burnT=0; rxClearS(m); ssClearS(m); m.dead=true; m.deadT=0;   // reactions: aura and statuses go with it; skillsets: so do the marks
-  m.respawnT=35; m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
+  m.respawnT=35; if(m.rd) rdKilledS(m,p); m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
   ev('kill',m.id,p?p.id:null);
   if(p) ssTriggerS(p,'kill',{m});   // skillsets: on kill rows
   if(m.inst){ dgKilledS(m,p); return; }   // dungeons: a run's kill pays every member present (rewardAllS) and tells the mission; its boss ends the run
@@ -73,6 +74,7 @@ function rewardKill(q,m){
   if(r>=0) addItemP(q,randomItem(tierFor(K.lv),r),false,m.id);
   if(MATS[m.def.id]){ const n=rollDropCount(m.def,psP(q,'drop')+pendP(q,'drop')+rlP(q,'drop')+potBuffP(q,'fortune')); if(n) addMatP(q,m.def.id,n,m.id); }
   questKillP(q,m.def.id); q.dirty=true;
+  if(m.rd) return;   // raids: a raid copy of a boss pays the kill (above) but opens no tier, rolls no set, drops no boss skill and advances no quest
   if(m.def.boss){ rlBossStonesP(q,m,K); bossSkillDropP(q,m.def.id); ssBossClearP(q,m); zoneTierKillP(q,m); }   // skillsets: the set of this boss's land at the tier fought (before the kill can unlock a tier)
   mqKillP(q,m);
   sqKillP(q,m);   // sidequests: kills, quest drops and bosses count for every running chain

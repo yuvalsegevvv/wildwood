@@ -1,7 +1,7 @@
-//@ The five totems' own bodies (pal.style): the Heartwood carved wood, the Warm Core's frosted furnace, the Iron Joint, the Black Mirror, the Soul Lantern
+//@ The totems' own bodies (pal.style): the Heartwood carved wood, the Warm Core's frosted furnace, the Iron Joint, the Black Mirror, the Soul Lantern, and the raids' Warding Stone, War Banner and Barricade
 /* Agent map. MODELS.totem (monster-woods.js) calls moTotemBody(style,p,gl,band) and merges what it returns; each builder gives a list of geometries around the y axis
    (the model turns slowly, so nothing has a front), about 3 m tall with the crystal floating above. Defs: TOTEM_DEF, CORE_DEF, JOINT_DEF, MIRROR_DEF, LANTERN_DEF
-   (shared/monster-defs.js; `pal.style`, `pal.crystal`, `pal.band`). Look at them: node tools/monster-preview.js out.png --ids totem,warmcore,ironjoint,blackmirror,soullantern */
+   (shared/monster-defs.js; `pal.style`, `pal.crystal`, `pal.band`); the raids' RD_WARD_DEF / RD_SPAWNER_DEF / RD_BARRICADE_DEF use the styles ward, banner, barricade. Look at them: node tools/monster-preview.js out.png --ids totem,warmcore,ironjoint,blackmirror,soullantern,rdward,rdspawner,rdbarricade */
 const moTotemIron=(x,y,z,c)=>{ c.set(0x50545c).multiplyScalar(0.7+0.5*moNoise(x,y,z,10)+0.1*clamp(y*0.4)); };
 const moTotemRing=(a,n,r,y)=>{ const pts=[]; for(let i=0;i<=n;i++){ const t=i/n*TAU; pts.push([Math.cos(t)*r*a[0],y+Math.sin(t)*r*a[1],0]); } return pts; };
 function moTotemCrystal(gl,band,y){
@@ -71,11 +71,41 @@ function moTotemLantern(gl,band){   // an iron lamp-post with a caged soul-flame
   out.push(...moTotemCrystal(gl,band,3.15).slice(0,1).map(g=>g.translate(-0.55,-0.1,0)));
   return out;
 }
+function moTotemWard(gl,band){   // a warding stone: a squared rune obelisk with glowing bands, a broken cap and a crystal turning above it
+  const out=[];
+  out.push(pc(vbox(1.2,0.3,1.2,0,0.15,0),moStone),moLoft([{y:0.3,rx:0.5,rz:0.5},{y:1.0,rx:0.4,rz:0.4},{y:1.9,rx:0.34,rz:0.34},{y:2.3,rx:0.3,rz:0.3}],moQ(4),moStone));
+  for(let i=0;i<3;i++) out.push(moLoft([{y:0.75+i*0.5,rx:0.43-i*0.04,rz:0.43-i*0.04},{y:0.83+i*0.5,rx:0.43-i*0.04,rz:0.43-i*0.04}],moQ(4),c=>c.set(band)));   // rune bands
+  for(let i=0;i<4;i++){ const a=i/4*TAU+0.8; out.push(moCone([Math.cos(a)*0.28,2.3,Math.sin(a)*0.28],[Math.cos(a)*0.4,1,Math.sin(a)*0.4],0.35,0.07,moStone,4)); }   // the broken cap's teeth
+  out.push(...moTotemCrystal(gl,band,3.0));
+  return out;
+}
+function moTotemBanner(gl,band){   // a war banner: a horned pole on a cairn with a ragged cloth, a skull-and-horn crest and a brazier flame
+  const out=[], cloth=(x,y,z,c)=>{ c.set(band).multiplyScalar(0.55+0.5*clamp((y-0.9)*0.8)+0.1*moNoise(x,y,z,8)); };
+  out.push(pc(vbox(1.3,0.35,1.3,0,0.17,0),moStone),pc(vbox(0.9,0.3,0.9,0.1,0.5,0.05),moStone));
+  out.push(moBone([0,0.5,0],[0,2.9,0],0.08,0.06,moTotemIron,6),moBone([-0.7,2.5,0],[0.7,2.5,0],0.05,0.05,moTotemIron,5));
+  out.push(pc(vbox(1.3,1.5,0.05,0,1.7,0.04),cloth));
+  for(let i=0;i<5;i++) out.push(pc(vbox(0.2,0.3+0.12*(i%3),0.05,-0.55+i*0.275,0.8,0.04),cloth));   // the ragged hem
+  out.push(moEll(0.2,0.2,0.2,0,3.0,0,0xd8d0c0,null,8));
+  for(const sd of [-1,1]) out.push(moTube([[sd*0.18,3.0,0],[sd*0.45,3.1,0],[sd*0.55,3.4,0]],0.05,0.02,0xd8d0c0,5,true));   // horns
+  out.push(moEll(0.16,0.28,0.16,0,3.5,0,(x,y,z,c)=>{ c.set(gl).multiplyScalar(0.8+0.5*clamp((y-3.3)*2)); },null,8));
+  return out;
+}
+function moTotemBarricade(gl,band){   // a barricade: sharpened stakes leaning out of a lashed log, sandbags at the foot
+  const out=[], wood=(x,y,z,c)=>{ c.set(0x5a4430).multiplyScalar(0.62+0.75*vn3(x*14,y*1.6,z*14)); };
+  for(let i=0;i<9;i++){ const x=-1.6+i*0.4, lean=(i%2?0.35:-0.35); out.push(moBone([x,0,0.3*Math.sign(lean)],[x+lean*0.3,1.9+0.15*h3(i,1,2),0],0.09,0.02,wood,5)); }
+  out.push(moBone([-1.9,0.9,0],[1.9,0.9,0],0.1,0.1,wood,6),moBone([-1.9,1.4,0],[1.9,1.4,0],0.1,0.1,wood,6));
+  for(let i=0;i<5;i++) out.push(moEll(0.42,0.22,0.3,-1.6+i*0.8,0.18,0.55*(i%2?1:-1),(x,y,z,c)=>{ c.set(0x9a8e6c).multiplyScalar(0.8+0.3*moNoise(x,y,z,9)); },null,7));   // sandbags
+  out.push(pc(vbox(0.1,0.5,0.04,0,2.0,0),c=>c.set(band)));
+  return out;
+}
 function moTotemBody(style,gl,band){
   if(style==='heart') return moTotemHeart(gl,band);
   if(style==='core') return moTotemCore(gl,band);
   if(style==='joint') return moTotemJoint(gl,band);
   if(style==='mirror') return moTotemMirror(gl,band);
   if(style==='lantern') return moTotemLantern(gl,band);
+  if(style==='ward') return moTotemWard(gl,band);
+  if(style==='banner') return moTotemBanner(gl,band);
+  if(style==='barricade') return moTotemBarricade(gl,band);
   return null;
 }

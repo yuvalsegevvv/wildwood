@@ -17,7 +17,8 @@ function applyBossState(b){
   pickBoss();
 }
 const bossInfo=m=>BOSS_DEFS.find(b=>b.def===m.def)||DG_BOSS_DEFS[m.def.id];   // dungeons: a dungeon boss's row (shared/dungeons/bosses.js)
-const arenaOf=m=>{ const bd=bossInfo(m); if(bd&&bd.dungeon) return {x:m.camp.x,z:m.camp.z,r:DG_BOSS_R}; return ARENAS.find(A=>A.key===(bd?bd.arena:'boss'))||ARENA; };   // dungeons: a dungeon boss's arena is its hall (its camp is the hall's middle)
+const arenaOf=m=>{ const rc=rdCourtAt(m.camp.x,m.camp.z); if(rc) return rc; const bd=bossInfo(m);   // raids: a raid boss fights in its stronghold's court
+   if(bd&&bd.dungeon) return {x:m.camp.x,z:m.camp.z,r:DG_BOSS_R}; return ARENAS.find(A=>A.key===(bd?bd.arena:'boss'))||ARENA; };   // dungeons: a dungeon boss's arena is its hall (its camp is the hall's middle)
 // the boss you are closest to drives the boss bar and the shared flags below
 function pickBoss(){
   let best=null,bd=1e9; for(const m of BOSS.list){ const d=Math.hypot(m.x-P.x,m.z-P.z); if(d<bd){ bd=d; best=m; } }

@@ -57,13 +57,13 @@ function skInfoHtml(C,cls){
   let up='';
   if(own){
     if(s.drop) up=`<div class="sk-up"><b>Boss skill &middot; level ${L}</b><span class="muted">It gains a level for every zone tier you defeat in its boss's land (now ${L-1} of ${ZTIER_MAX}), not with coins.</span></div>`;
-    else if(s.set) up=`<div class="sk-up"><b>Signature skill</b><span class="muted">It cannot be upgraded yet.</span></div>`;   // skillsets
     else if(L>=SKILL_MAX_LV) up=`<div class="sk-up"><b>Highest level</b><span class="muted">${s.name} cannot be upgraded any further.</span></div>`;
     else {
-      const n=upgradeNeeds(s.id,L+1), have=GEAR.mats||{}, cOk=GEAR.coins>=n.coins, all=cOk&&n.mats.every(m=>(have[m.id]||0)>=m.n);
+      const n=upgradeNeeds(s.id,L+1); if(!n) up=`<div class="sk-up"><b>Signature skill</b><span class="muted">It cannot be upgraded yet.</span></div>`;   // (a set whose land has no raid)
+      else { const have=GEAR.mats||{}, cOk=GEAR.coins>=n.coins, rdHave=n.rd?rdMatHave(n.rd.land):0, rdOk=!n.rd||rdHave>=n.rd.n, all=cOk&&rdOk&&n.mats.every(m=>(have[m.id]||0)>=m.n);   // raids: a signature piece also needs its land's raid material
       const gain=pass?passiveText(s.id,L+1):Math.round((skillPower(L+1)/skillPower(L)-1)*1000)/10+'% more '+(s.buff?'bonus':'damage')+', '+Math.round((1-skillCdMult(L+1)/skillCdMult(L))*1000)/10+'% shorter cooldown';
-      up=`<div class="sk-up"><b>Level ${L} &rarr; ${L+1}</b><span>${gain}</span><div class="sk-cost"><span class="${cOk?'ok':'bad'}">${n.coins} coins</span>${n.mats.map(m=>`<span class="${(have[m.id]||0)>=m.n?'ok':'bad'}" title="Dropped by ${MATS[m.id].from} (level ${MATS[m.id].lv})"><i style="background:${MATS[m.id].col}"></i>${MATS[m.id].name} ${have[m.id]||0}/${m.n}</span>`).join('')}</div>`
-        +(C.trainer?`<button class="chip buy" data-upskill="${s.id}" ${all?'':'disabled'}>Upgrade</button>`:'<span class="muted">Upgrades happen at Aldric (or Master Ryu in Hanami).</span>')+'</div>';
+      up=`<div class="sk-up"><b>Level ${L} &rarr; ${L+1}</b><span>${gain}</span><div class="sk-cost"><span class="${cOk?'ok':'bad'}">${n.coins} coins</span>${n.mats.map(m=>`<span class="${(have[m.id]||0)>=m.n?'ok':'bad'}" title="Dropped by ${MATS[m.id].from} (level ${MATS[m.id].lv})"><i style="background:${MATS[m.id].col}"></i>${MATS[m.id].name} ${have[m.id]||0}/${m.n}</span>`).join('')}${n.rd?`<span class="${rdOk?'ok':'bad'}" title="Won by clearing ${rdOfLand(n.rd.land).name}"><i style="background:#e8b84a"></i>${rdOfLand(n.rd.land).mat} ${rdHave}/${n.rd.n}</span>`:''}</div>`
+        +(C.trainer?`<button class="chip buy" data-upskill="${s.id}" ${all?'':'disabled'}>Upgrade</button>`:'<span class="muted">Upgrades happen at Aldric (or Master Ryu in Hanami).</span>')+'</div>'; }
     }
   }
   const lock=low?`<span class="req bad">needs level ${needLv(s)}</span>`:'';

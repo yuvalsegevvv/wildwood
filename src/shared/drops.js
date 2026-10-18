@@ -42,6 +42,7 @@ const idHash=str=>[...str].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7);
 // what it costs to raise skill or passive id to level `to`: {coins, mats:[{id,n}]}, or null when there is no such upgrade
 function upgradeNeeds(id,to){
   const s=skillDef(id); if(!s||s.drop||!(to>=2)||to>SKILL_MAX_LV) return null;   // (boss skills cannot be upgraded yet)
+  if(s.set) return rdUpNeeds(s,to);   // raids: a signature piece also needs the raid material of its land (shared/raids.js)
   if(s.up&&s.up[to]) return s.up[to];
   const lv=Math.min(VALE_TOP_LV,(s.slot==='passive'?PASSIVE_LV:s.lv)+2*(to-1)), pool=MON_DEFS.filter(d=>d.level===lv&&!d.zone), d=pool.find(x=>elOf(x)===elOf(s))||pool[idHash(id)%pool.length];
   const mats=[{id:d.id,n:UP_COUNT[to]}];

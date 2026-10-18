@@ -19,12 +19,13 @@ function initBossS(){
   for(const bd of BOSS_DEFS) BOSSES.push(makeBossS(bd,ARENAS.find(a=>a.key===bd.arena)));
 }
 // snapshot: one entry per boss [monster id, engaged, phase, immune, enraged, stunned, aux, mode]
-function bossState(){ return BOSSES.map(B=>[B.m.id,B.engaged?1:0,B.phase,B.m.immune?1:0,B.enraged?1:0,B.stunT>0?1:0,B.aux,B.mode]); }
+function bossState(){ return BOSSES.concat(rdBossesS()).map(B=>[B.m.id,B.engaged?1:0,B.phase,B.m.immune?1:0,B.enraged?1:0,B.stunT>0?1:0,B.aux,B.mode]); }
 function resetBossS(B){
   const m=B.m; B.engaged=false; B.phase=1; B.enraged=false; B.stunT=0; m.immune=false; m.aggro=false; m.tgt=null; m.hp=m.maxHp; m.act=null; m.pendingHit=-1; m.hitters.clear();
   clearBossFxS(B); [...B.totems,...B.adds].forEach(removeMonS); B.totems=[]; B.adds=[];
 }
 function bossDefeatedS(m){
+  if(m.rd){ rdBossDownS(m); return; }   // raids: its own end (server/raids.js)
   const B=m.B; m.respawnT=120; clearBossFxS(B); [...B.totems,...B.adds].forEach(x=>{ if(!x.dead) removeMonS(x); }); B.totems=[]; B.adds=[];
   B.engaged=false; m.immune=false; toastTo(null,B.bd.short+' has fallen!','good');
 }

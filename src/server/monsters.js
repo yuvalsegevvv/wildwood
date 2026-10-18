@@ -8,6 +8,7 @@ function makeMon(d,x,z,camp,s,temp){
   const m={id:nextMonId++,def:d,T:d,model:d.model,camp:camp||{x,z},s:s||1,x,z,face:AR(0,TAU),faceGoal:0,vx:0,vz:0,kbx:0,kbz:0,
     state:'idle',timer:AR(0,3),ph:AR(0,TAU),slowT:0,dead:false,deadT:0,respawnT:0,atkT:0,aggro:false,tgt:null,gx:x,gz:z,
     pendingHit:-1,act:null,temp:!!temp,hp:d.hp,maxHp:d.hp,hitters:new Map(),awake:false};
+  if(rdCtx) rdAdoptS(m);   // raids: what is made while a raid builds or its boss ticks (a boss's adds, a kit's spawns) belongs to the raid and fights at its level
   if(S.ctx) dgAdoptS(m);   // dungeons: a monster made while a run updates (a boss's adds, a kit's spawn, the boss) belongs to that run: its level, the party's health
   m.faceGoal=m.face; MONS.push(m); MON_BY_ID.set(m.id,m); return m;
 }
@@ -36,7 +37,7 @@ function initMonstersS(){
     }
   }
 }
-function monRoster(m){ return [m.id,m.def.id,r1(m.camp.x),r1(m.camp.z),Math.round(m.s*100)/100,r1(m.x),r1(m.z),m.dead?1:0,m.temp?1:0].concat(m.inst?[m.dgK.lv,Math.round(m.maxHp)]:[]); }   // dungeons: a run's monster adds [level, maxHp in the def's units]
+function monRoster(m){ return [m.id,m.def.id,r1(m.camp.x),r1(m.camp.z),Math.round(m.s*100)/100,r1(m.x),r1(m.z),m.dead?1:0,m.temp?1:0].concat(m.inst||m.rd?[m.dgK.lv,Math.round(m.maxHp)]:[]); }   // raids: a raid monster too   // dungeons: a run's monster adds [level, maxHp in the def's units]
 function spawnMonS(d,x,z,camp,temp){ const m=makeMon(d,x,z,camp,1,temp); ev('spawn',monRoster(m)); return m; }
 function removeMonS(m){ if(m.remove) return; m.remove=true; ev('despawn',m.id); }
 function respawnMonS(m){
@@ -54,7 +55,7 @@ function updateMonstersS(dt){
   for(const m of MONS){
     if(m.remove) continue;
     if(m.inst) continue;   // dungeons: a run's monsters (its boss too) move in updateInstsS
-    if(m.boss){ updateBossS(m,dt); continue; }
+    if(m.boss){ if(m.rd) rdBossTickS(m,dt); else updateBossS(m,dt); continue; }   // raids: a raid boss sleeps until its wards are broken (rdBossTickS, server/raids.js)
     if(m.dead){
       m.deadT+=dt;
       if(m.deadT>1.2){ if(m.temp) removeMonS(m); else { m.respawnT-=dt; if(m.respawnT<=0 && !anyPlayerNear(m.camp.x,m.camp.z,22)) respawnMonS(m); } }
