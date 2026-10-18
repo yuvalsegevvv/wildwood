@@ -13,7 +13,11 @@ const GL_BASE={
   gauntlet:{name:'Gauntlets',start:0.1,fingers:'full',text:'A long flared cuff with steel bands and a knuckle plate.'},
   mitten:{name:'Mittens',start:0.2,fingers:'mitt',text:'Thick and warm, a cuff and a thumb.'},
   opera:{name:'Long gloves',start:0.03,fingers:'full',text:'Cloth to the elbow with a frilled top.'},
-  wraps:{name:'Hand wraps',start:0.165,fingers:'bare',text:'Bound strips of cloth over the wrist and palm.'}
+  wraps:{name:'Hand wraps',start:0.165,fingers:'bare',text:'Bound strips of cloth over the wrist and palm.'},
+  // the crafted gloves (shared/cospieces.js 'g:'): lace, fur mitts and studded leather
+  lace:{name:'Lace Gloves',start:0.19,fingers:'tips',text:'Fine open lace to the wrist with a small bow.',crafted:true},
+  furmitts:{name:'Fur Mitts',start:0.16,fingers:'mitt',text:'Deep fur mitts with a stitched hide palm.',crafted:true},
+  studded:{name:'Studded Gloves',start:0.2,fingers:'full',text:'Black leather with brass studs along the knuckles.',crafted:true}
 };
 const glBase=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(GL_BASE,id)?GL_BASE[id]:null;
 const GL_STEEL=0xb9bdc2, GL_SKIN_Y=-0.285;   // below this the fingertips of a 'tips' glove are bare
@@ -30,6 +34,9 @@ function glPlan(X){
   const b=glBase(L.gloves); if(!b) return null;
   const col=new THREE.Color(Number.isFinite(L.gloveColor)?L.gloveColor:GLOVEC[0]), dark=col.clone().multiplyScalar(0.78), light=col.clone().lerp(new THREE.Color(0xffffff),0.35), id=L.gloves, st=b.start;
   const paint=(c,x,y,z,sd)=>{ const d=-y; c.copy(col);
+    if(id==='lace'){ const k=((Math.floor(z*80)+Math.floor(d*80))&1); c.copy(col).multiplyScalar(k?1:0.8); if(d<st+0.025) c.copy(light); return; }
+    if(id==='furmitts'){ c.copy(col).multiplyScalar(0.86+0.2*h3(Math.round(x*150),Math.round(y*150),Math.round(z*150))); if(x*sd<0&&d>0.2) c.set(0x6a4a30); if(d<st+0.03) c.copy(light); return; }
+    if(id==='studded'&&d>0.25&&d<0.27) c.multiplyScalar(0.7);
     if(id==='wraps'){ const k=((d*58)%1+1)%1; if(k<0.2) c.copy(dark); else if(k>0.9) c.copy(light); return; }
     if(id==='gauntlet'&&d<0.235){ const k=((d*20)%1+1)%1; if(k<0.2||(d>st&&d<st+0.03)) c.set(GL_STEEL).multiplyScalar(0.92); else c.multiplyScalar(0.9); }
     if(id==='opera'&&d<st+0.045) c.copy(light);
@@ -61,6 +68,17 @@ function glBaseGeos(X,D,sd,gp){
     const s=gp.start; out.push(tube(s,0.235,0.0,(x,y,z,c)=>{ c.copy(col); if(-y<s+0.05) c.lerp(new THREE.Color(0xffffff),0.35); },8));
     for(let i=0;i<8;i++){ const a=i/8*TAU; out.push(solid(csph(0.0065,5,4).translate(Math.sin(a)*(glRadius(D,s)+0.012),-s+0.003,Math.cos(a)*(glRadius(D,s)+0.012)),lt)); }   // the frill: a ring of beads at the top
     out.push(band(s,0.0035,lt),band(0.235,0.003,dk));
+  } else if(id==='lace'){
+    const s=gp.start; out.push(tube(s,s+0.04,0.003,(x,y,z,c)=>c.set(lt).multiplyScalar(0.94)),band(s+0.04,0.0028,lt));
+    for(let i=0;i<10;i++){ const a=i/10*TAU; out.push(solid(csph(0.0045,5,4).translate(Math.sin(a)*(glRadius(D,s+0.04)+0.007),-s-0.044,Math.cos(a)*(glRadius(D,s+0.04)+0.007)),0xffffff)); }   // the scalloped edge
+    out.push(solid(csph(0.008,6,5).scale(1.2,0.8,0.8).translate(sd*(glRadius(D,s)+0.01),-s-0.01,0),dk),solid(ofRibbon([[sd*(glRadius(D,s)+0.012),-s-0.01,0],[sd*(glRadius(D,s)+0.02),-s-0.035,0.014],[sd*(glRadius(D,s)+0.02),-s-0.06,0.012]],0.012,{up:[sd,0,0],seg:6,th:0.003}),dk),solid(ofRibbon([[sd*(glRadius(D,s)+0.012),-s-0.01,0],[sd*(glRadius(D,s)+0.02),-s-0.035,-0.014],[sd*(glRadius(D,s)+0.02),-s-0.06,-0.012]],0.012,{up:[sd,0,0],seg:6,th:0.003}),dk));   // a small bow on the back of the wrist
+  } else if(id==='furmitts'){
+    const s=gp.start; for(let r=0;r<2;r++) for(let i=0;i<12;i++){ const a=i/12*TAU+r*0.26, d=s+0.012+r*0.02; out.push(solid(csph(0.0105,5,4).translate(Math.sin(a)*(glRadius(D,d)+0.011),-d,Math.cos(a)*(glRadius(D,d)+0.011)),r?0xf0e8d8:0xdcd2c0)); }   // the fur cuff
+    out.push(band(s+0.05,0.0035,dk));
+  } else if(id==='studded'){
+    const s=gp.start; out.push(tube(s,s+0.05,0.008,(x,y,z,c)=>c.copy(col).multiplyScalar(y<-s-0.043?0.7:0.88)),band(s+0.05,0.0035,dk));
+    for(let i=0;i<8;i++){ const a=i/8*TAU, r=glRadius(D,s+0.025)+0.012; out.push(solid(csph(0.0034,5,4).translate(Math.sin(a)*r,-s-0.025,Math.cos(a)*r),0xc9a13a)); }
+    for(const z of [-0.018,-0.006,0.006,0.018]) out.push(solid(csph(0.004,5,4).translate(sd*(0.0125*hh+0.007),-0.268,z*hh),0xc9a13a));   // studs on the knuckles
   } else if(id==='wraps'){
     const s=gp.start; for(let i=0;i<5;i++){ const d=s+0.012+i*0.012; out.push(solid(gmRingAt([0,-d,0],[0.05*(i%2?1:-1),1,0],glRadius(D,d)+0.0035,0.0034,sg(6)),i%2?lt:col.getHex())); }
     out.push(pc(ofRibbon([[sd*0.01,-0.23,glRadius(D,0.23)+0.004],[sd*0.02,-0.27,glRadius(D,0.23)+0.012],[sd*0.03,-0.31,glRadius(D,0.23)+0.016]],0.012,{up:[sd,0,0],seg:sg(6),th:0.003}),(x,y,z,c)=>c.copy(col).multiplyScalar(0.9)));   // the loose end

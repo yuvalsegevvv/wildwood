@@ -32,6 +32,7 @@ function cosShape(name){
   else if(name==='flake') g=cosJoin([cosStar(6,0.012,0.055), new THREE.RingGeometry(0.02,0.026,6)]);
   else if(name==='star') g=cosJoin([cosStar(4,0.011,0.06), cosStar(4,0.02,0.032).rotateZ(Math.PI/4)]);
   else if(name==='wisp') g=cosJoin([new THREE.OctahedronGeometry(0.022,1), new THREE.ConeGeometry(0.02,0.17,6).rotateZ(-Math.PI/2).translate(0.085,0,0)]);
+  else if(name==='bubble') g=cosJoin([new THREE.RingGeometry(0.026,0.036,12), new THREE.CircleGeometry(0.012,6).translate(-0.01,0.012,0)]);
   else g=new THREE.OctahedronGeometry(0.035,0);
   return COS_GEO[name]=g;
 }
@@ -66,12 +67,26 @@ function cosPattern(def,c,u,v){
     case 'ash': { const n=noise2(u*6,v*4); c.multiplyScalar(0.8+0.5*(n+0.5)); const tear=0.18*(0.35+0.65*Math.abs(Math.sin(u*7.3+n*3))); if(v>0.96-tear){ c.copy(trim).multiplyScalar(0.5+1.0*(v-(0.96-tear))/tear); } break; }
     case 'waves': { const f=((v*7+0.18*Math.sin(u*8))%1+1)%1; if(Math.abs(f-0.5)<0.07) c.copy(trim); break; }
     case 'dunes': { const f=((v*5+0.12*Math.sin(u*5+v*3))%1+1)%1; if(Math.abs(f-0.5)<0.045) c.copy(trim); if(v>0.9) c.copy(trim).multiplyScalar(0.9); break; }
+    case 'hide': { const n=noise2(u*7,v*5); c.multiplyScalar(0.8+0.32*(n+0.5)); if(v<0.1) c.copy(trim).multiplyScalar(0.88+0.14*cosHash(Math.floor(u*50),Math.floor(v*80)));
+      if(v>0.9) c.multiplyScalar(0.78); if(v>0.84&&v<0.86&&((u*15+20)%1)<0.5) c.copy(trim).multiplyScalar(0.85); break; }
+    case 'scales': { const row=Math.floor(v*17), fu=((u*9+20+(row%2)*0.5)%1), fv=((v*17)%1), d=Math.hypot(fu-0.5,(fv-0.15)*1.1);
+      c.multiplyScalar(0.78+0.4*Math.max(0,1-d*1.5)); if(d>0.5||fv<0.06) c.copy(trim).multiplyScalar(0.5); else if(fv>0.8) c.lerp(trim,0.25); break; }
+    case 'leaves': { const row=Math.floor(v*10), fu=((u*7+20+(row%2)*0.5)%1)-0.5, fv=((v*10)%1), k=cosHash(Math.floor(u*7+20+(row%2)*0.5),row);
+      c.multiplyScalar(0.8+0.35*k); if(Math.abs(fu)<0.025&&fv>0.1&&fv<0.9) c.copy(trim).multiplyScalar(0.7); else if(Math.abs(fu)>0.4*(1-0.5*Math.abs(fv-0.5))) c.multiplyScalar(0.7); if(k>0.8) c.lerp(trim,0.45); break; }
     case 'gloam': { c.multiplyScalar(1-0.35*v); const d=Math.hypot(((u*10+20)%1)-0.5,((v*13)%1)-0.5); if(cell(10,13)>0.86&&d<0.1) c.copy(trim); break; }
   }
   // the collar and hem bands: every cape
   if(v<0.045) c.copy(trim).multiplyScalar(0.92);
   else if(v>0.955&&def.pat!=='fur'&&def.pat!=='ermine'&&def.pat!=='ash') c.copy(trim);
   return c;
+}
+// a cape's or an aura's colours with the look's own on top (look.capeColor / capeTrim, look.auraColor / auraColor2; -1 or missing = as designed). Quantised to 4 bits a channel: a remote look is not trusted, and the colour caches stay small.
+function cosQ(v){ return Number.isFinite(v)&&v>=0?(Math.floor(v)&0xf8f8f8)|0x040404:-1; }
+function cosTint(def,L,kind){
+  if(!def) return def;
+  const a=cosQ(kind==='cape'?L.capeColor:L.auraColor), b=cosQ(kind==='cape'?L.capeTrim:L.auraColor2);
+  if(a<0&&b<0) return def;
+  const o=Object.assign({},def); if(a>=0) o.col=a; if(b>=0){ if(kind==='cape') o.trim=b; else o.col2=b; } return o;
 }
 // the cape on a rig: hinges at the back of the shoulders, four panels down to a hem near the knees, a collar, a clasp and, for some, a shoulder cape
 function cosBuildCape(rig,X,def){
@@ -95,9 +110,9 @@ function cosBuildCape(rig,X,def){
     parent.add(grp); segs.push(grp); parent=grp;
   }
   // fixed to the body: a rolled collar (fur, for the furred capes), the clasp with its chain, and the shoulder cape
-  const fixed=[], ts=yd=>torsoSize(X,D,yd), TK=D.TK, nr=D.neckR, furry=def.pat==='fur'||def.pat==='ermine';
-  const cy=0.56*TK, fur=furry?0xf4f8fc:0, rollR=nr*1.75;
-  if(furry){ for(let i=0;i<14;i++){ const a=i/14*TAU; fixed.push(solid(csph(0.021,sg(7),sg(6)).translate(Math.sin(a)*rollR*1.05,cy,Math.cos(a)*rollR),i%3?fur:0xdfe8f0)); } }
+  const fixed=[], ts=yd=>torsoSize(X,D,yd), TK=D.TK, nr=D.neckR, furry=def.pat==='fur'||def.pat==='ermine', ruff=furry||def.pat==='hide';
+  const cy=0.56*TK, fur=furry?0xf4f8fc:def.trim, rollR=nr*1.75;
+  if(ruff){ for(let i=0;i<14;i++){ const a=i/14*TAU; fixed.push(solid(csph(0.021,sg(7),sg(6)).translate(Math.sin(a)*rollR*1.05,cy,Math.cos(a)*rollR),i%3?fur:0xdfe8f0)); } }
   else fixed.push(solid(gmRingAt([0,cy-0.004,0],[0,1,0],rollR,0.0125,sg(8)),def.col),solid(gmRingAt([0,cy+0.006,0],[0,1,0],rollR*0.98,0.004,sg(6)),def.trim));
   const cs=ts(0.52), cz=-(cs.rz+0.014), cyy=0.52*TK;
   for(const sd of [-1,1]) fixed.push(solid(csph(0.0115,sg(8),sg(6)).translate(sd*nr*1.5,cyy+0.004,cz),def.trim));
@@ -156,7 +171,7 @@ function cosBuildAura(rig,X,def){
 // called at the end of buildCharacter
 function cosDress(rig,X){
   const L=X.L;
-  const cape=cosDef('c',L.cape), aura=cosDef('a',L.aura);
-  if(cape) cosBuildCape(rig,X,cape);
+  const cape=cosTint(cosDef('c',L.cape),L,'cape'), aura=cosTint(cosDef('a',L.aura),L,'aura');
+  if(cape&&cape.pat!=='pack') cosBuildCape(rig,X,cape);   // (the backpack is drawn on the torso: model-body.js buildTorso)
   if(aura) cosBuildAura(rig,X,aura);
 }

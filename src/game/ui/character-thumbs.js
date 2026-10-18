@@ -15,7 +15,7 @@ function cthBase(sex,skin){
 }
 // the look and the framing of a tile: view = head | chest | legs | feet | body | back; spin = a quarter turn so a side or back shows
 function cthLookFor(sp){
-  const sex=sp.sex||LOOK.sex, skin=sp.skin!==undefined?sp.skin:LOOK.skin, L=cthBase(sex,skin), id=sp.id;
+  const sex=sp.sex||LOOK.sex, skin=sp.skin!==undefined?sp.skin:LOOK.skin, L=cthBase(sex,skin), id=sp.id;   // (a decoration: DECOS in character/model-decos.js)
   L.hairColor=LOOK.hairColor; L.hair=LOOK.hair; L.face=LOOK.face; L.eyes=LOOK.eyes;
   let view='body', spin=0.35;
   switch(sp.kind){
@@ -28,9 +28,12 @@ function cthLookFor(sp){
     case 'bottom': L.bottom=id; L.bottomColor=sp.col!==undefined?sp.col:LOOK.bottomColor; view='legs'; break;
     case 'shoes': L.shoes=id; L.shoeColor=sp.col!==undefined?sp.col:LOOK.shoeColor; view='feet'; break;
     case 'gloves': L.gloves=id; L.gloveColor=sp.col!==undefined?sp.col:LOOK.gloveColor; L.top='tshirt'; view='hands'; spin=0.55; break;
+    case 'pupil': L.pupil=id; L.hair='bald'; L.eyes=LOOK.eyes; L.eyes2=LOOK.eyes2; view='eyes'; break;
     case 'pack': L.pack=true; view='back'; spin=Math.PI-0.35; break;
     case 'cape': L.cape=id; view='back'; spin=Math.PI-0.35; break;
     case 'aura': L.aura=id; view='body'; break;
+    case 'shield': L.shield=id; view='body'; spin=-Math.PI/2+0.35; break;
+    case 'deco': { L.deco1=id; if(sp.col!==undefined&&sp.col>=0) L.decoColor1=sp.col; const an=DECOS[id]?DECOS[id].anchor:'headTop'; view=an==='headTop'||an==='face'?'head':an==='neck'||an==='chest'||an==='shoulderR'?'chest':an==='back'?'back':an==='waist'?'legs':an==='wristL'?'hands':an==='ankleL'?'feet':'body'; if(view==='back'||id==='tail') spin=Math.PI-0.35; break; }
     case 'sex': L.hair=sex==='female'?'ponytail':'short'; L.top='tshirt'; view='body'; break;
     case 'weapon': L.weaponItem=id; L.top='jacket'; view='body'; break;
     case 'outfit': { const M=CHAR_MODELS[id]; const sx=(M.sexes&&M.sexes[0])||sex; const B=cthBase(sx,skin); Object.assign(L,ofWear(B,id)); L.sex=sx; const st=setupsOf(M,sx)[0]; if(st) Object.assign(L,applySetup(L,st)); L.armor='hide'; view='body'; break; }
@@ -43,6 +46,7 @@ function cthLookFor(sp){
 function cthKey(sp){
   const k=sp.kind, cx=[];
   if(k==='hair'||k==='face') cx.push(LOOK.face,LOOK.eyes);
+  if(k==='pupil') cx.push(LOOK.eyes,LOOK.eyes2,LOOK.face);
   if(k==='hair'||k==='facial'||k==='hat') cx.push(LOOK.hairColor);
   if(k==='hat') cx.push(LOOK.hair);
   if(k==='weapon') cx.push(GEAR&&GEAR.eq&&GEAR.eq.weapon);
@@ -70,7 +74,7 @@ function cthRender(sp){
   if(sp.kind==='weapon'&&typeof weaponsOn==='function'){ try{ weaponsOn(rig,GEAR&&GEAR.eq&&GEAR.eq.weapon||'sword1',L.build); }catch(_){} }
   const H=rig.hipY, D=rig.dims;
   // [centre height, half the height shown, distance factor]
-  const F={head:[H+D.headY,0.17*D.hs+0.03,1],chest:[H+0.25*D.TK,0.34,1],legs:[H*0.62,0.5,1],feet:[0.1,0.2,1],body:[H+0.33,0.98,1],hands:[H-0.15,0.3,1],back:[H+0.3,0.62,1]}[view];
+  const F={head:[H+D.headY,0.17*D.hs+0.03,1],chest:[H+0.25*D.TK,0.34,1],legs:[H*0.62,0.5,1],feet:[0.1,0.2,1],body:[H+0.33,0.98,1],hands:[H-0.15,0.3,1],eyes:[H+D.headY+0.004,0.052*D.hs+0.012,1],back:[H+0.3,0.62,1]}[view];
   const half=F[1], dist=half/Math.tan(cthCam.fov*Math.PI/360)*1.0;
   cthCam.position.set(0,F[0],-dist); cthCam.lookAt(0,F[0],0); cthCam.updateMatrixWorld();
   const old=renderer.getRenderTarget(), oc=new THREE.Color(), oa=renderer.getClearAlpha(), ot=renderer.shadowMap.enabled;

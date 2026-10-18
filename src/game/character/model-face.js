@@ -46,6 +46,23 @@ function frontSurface(g){
       if(l1<-1e-6||l2<-1e-6||l3<-1e-6) continue; const z=l1*t[2]+l2*t[5]+l3*t[8]; if(z<best) best=z; }
     return best<1e8?best:-0.09; };
 }
+/* the pupil: look.pupil is one of FACE_PUPILS (an unknown id is the round one). k = the eye's size factor (E * the iris size); the shapes face -z, centred on the iris, in the pupil's dark colour.
+   Round, dot, slit and wide are ellipsoids, the rest flat cut-outs just in front of the iris. */
+const FACE_PUPILS=[['round','Round'],['dot','Dot'],['slit','Slit'],['wide','Wide'],['diamond','Diamond'],['star','Star'],['heart','Heart'],['sparkle','Sparkle']];
+function facePupil(shape,k,sg){
+  const cy=-0.0008*k, ell=(rx,ry,rz,z)=>csph(1,sg(12),sg(9)).scale(rx*k,ry*k,rz*k).translate(0,cy,z);
+  const flat=(sh,r)=>new THREE.ShapeGeometry(sh,6).scale(r*k,r*k,1).rotateY(Math.PI).translate(0,cy,-0.0112);
+  if(shape==='dot') return ell(0.0058,0.0078,0.0042,-0.0074);
+  if(shape==='slit') return ell(0.0028,0.0225,0.0042,-0.0074);
+  if(shape==='wide') return ell(0.0165,0.0062,0.0042,-0.0074);
+  if(shape==='diamond'||shape==='star'||shape==='sparkle'){
+    const n=shape==='diamond'?2:shape==='star'?5:4, r0=shape==='diamond'?0.0105:shape==='star'?0.0062:0.0035, r1=shape==='diamond'?0.0175:shape==='star'?0.0155:0.0185, sh=new THREE.Shape();
+    for(let i=0;i<2*n;i++){ const a=i/(2*n)*TAU+(shape==='star'?0:0), r=(i%2?r0:r1)*(shape==='diamond'&&i%4===2?0.8:1), x=Math.sin(a)*(shape==='diamond'?0.6:1)*r, y=Math.cos(a)*r; if(i) sh.lineTo(x,y); else sh.moveTo(x,y); }
+    return flat(sh,1);
+  }
+  if(shape==='heart'){ const sh=new THREE.Shape(); sh.moveTo(0,-0.0145); sh.bezierCurveTo(-0.0235,0.0015,-0.0135,0.0185,0,0.0085); sh.bezierCurveTo(0.0135,0.0185,0.0235,0.0015,0,-0.0145); return flat(sh,1); }
+  return ell(0.0088,0.0138,0.0042,-0.0074);
+}
 function buildFace(X){
   const {L,S,fem,sg,skin,skinPaint,hairCol}=X, kF=X.kit&&X.kit.sl.face, fs=faceShape(L), sculpt=headSculptFn(X), G=faceG, parts=[];
   const skull=sculpt(csph(0.105,sg(44),sg(30)),true).scale(fs[0],fs[1],1), zAt=frontSurface(skull);
@@ -64,14 +81,14 @@ function buildFace(X){
   /* eyes: a wide almond white, an iris that nearly fills its height (lighter below), a pupil, two highlights, an upper lash with a flick, the lid's crease,
      and (female) a fine lower lash. The upper lash line is what reads as "anime"; keep the rest quiet. */
   const ES=(kF&&kF.eyes)||{}, eI=ES.iris||1, eHt=ES.h||1, eWd=ES.w||1, eLs=ES.lash||1;   // an outfit's eye style: iris size, eye height / width, lash weight, highlight count, tilt (docs/CHARACTER.md section 9)
-  const E=S.eyeSize*(fem?1.03:1)*0.74, ex=0.046*S.eyeGap*fs[0], ey=(-0.002+0.012*S.eyeHeight)*HEAD_TALL, eyeC=new THREE.Color(X.kit&&X.kit.eye>=0?X.kit.eye:kF&&kF.eyeColor!==undefined?kF.eyeColor:L.eyes), lashC=new THREE.Color(0x251b1e).lerp(hairCol,0.15), white=new THREE.Color(0xf7f3ef);
+  const E=S.eyeSize*(fem?1.03:1)*0.74, ex=0.046*S.eyeGap*fs[0], ey=(-0.002+0.012*S.eyeHeight)*HEAD_TALL, eyeC=new THREE.Color(X.kit&&X.kit.eye>=0?X.kit.eye:kF&&kF.eyeColor!==undefined?kF.eyeColor:L.eyes), eyeC2=Number.isFinite(L.eyes2)&&L.eyes2>=0&&!(X.kit&&X.kit.eye>=0)&&!(kF&&kF.eyeColor!==undefined)?new THREE.Color(L.eyes2):eyeC, lashC=new THREE.Color(0x251b1e).lerp(hairCol,0.15), white=new THREE.Color(0xf7f3ef);
   const SW=0.0295*E*eWd, SH=0.0245*E*eHt;
   for(const sd of [-1,1]){
     const e=[];
     e.push(pc(el(SW,SH,0.008,0,0,0),(x,y,z,c)=>{ c.copy(white); if(y>SH*0.35) c.multiplyScalar(0.84); }));
     e.push(pc(el(0.0185*E*eI,0.0242*E*eI*Math.min(1,eHt*1.05),0.0052,0,-0.0008*E,-0.0046),(x,y,z,c)=>{ const u=x/(0.0185*E*eI), v=(y+0.0008*E)/(0.0242*E*eI*Math.min(1,eHt*1.05)), r=Math.hypot(u,v);
-      c.copy(eyeC).multiplyScalar((0.86-0.28*v)*(1-0.4*smoothstep(0.66,1,r))); if(v<0) c.lerp(white,-0.16*v); }));
-    e.push(solid(el(0.0088*E*eI,0.0138*E*eI,0.0042,0,-0.0008*E,-0.0074),0x14101a));
+      c.copy(sd>0?eyeC2:eyeC).multiplyScalar((0.86-0.28*v)*(1-0.4*smoothstep(0.66,1,r))); if(v<0) c.lerp(white,-0.16*v); }));
+    e.push(solid(facePupil(L.pupil,E*eI,sg),0x14101a));   // (look.pupil: model-face.js FACE_PUPILS)
     if((ES.hl===undefined?2:ES.hl)>=1) e.push(solid(el(0.0068*E,0.0074*E,0.002,-0.0062*E,0.0092*E,-0.0098),0xffffff));
     if((ES.hl===undefined?2:ES.hl)>=2) e.push(solid(el(0.0033*E,0.0033*E,0.0015,0.0075*E,-0.0105*E,-0.0094),0xf2f2f2));
     if((ES.hl||2)>=3) e.push(solid(el(0.0022*E,0.0022*E,0.0013,-0.0105*E,-0.0035*E,-0.0092),0xf6efe0));

@@ -56,6 +56,7 @@ function gmTop(X,D){
     for(const sd of [-1,1]) out.push(solid(sweepTube([[sd*0.012,0.555*TK,fz(0.55)-0.004],[sd*0.02,0.5*TK,fz(0.5)-0.005],[sd*0.012,0.46*TK,fz(0.46)-0.005]],[0.0025,0.0025,0.0025],4,{cap:'round',rings:6}),0xe8d9b0));   // the laced neck
     out.push(gmBand(X,D,0.54,0.505,(x,y,z,c)=>{ c.set(L.topColor).lerp(ofCol(0xe8d9b0),0.6); },0.004));
   }
+  out.push(...gmxTop(X,D));   // the crafted tops (model-garments-more.js)
   return out;
 }
 // ---- cuffs, in the elbow's frame ----
@@ -65,13 +66,14 @@ function gmCuff(X,D,sd){
   if(top==='jacket'||top==='hoodie') out.push(pc(ofLoft([{y:-0.205,rx:0.0235*aw+0.004,rz:0.0235*aw+0.004},{y:-0.245,rx:0.0215*aw+0.0045,rz:0.0215*aw+0.0045}],sg(22),0,TAU),c=>gmCol(c,L.topColor,0.62)),band(-0.205,0.0235,col.clone().multiplyScalar(0.5).getHex()));
   else if(top==='flannel') out.push(pc(ofLoft([{y:-0.2,rx:0.0245*aw+0.004,rz:0.0245*aw+0.004},{y:-0.243,rx:0.0215*aw+0.004,rz:0.0215*aw+0.004}],sg(22),0,TAU),c=>gmCol(c,L.topColor,0.72)),solid(new THREE.SphereGeometry(0.0055,6,5).translate(sd*0.0215*aw*0.2,-0.222,-(0.0215*aw+0.005)),0xe8e4dc));
   else if(top==='tunic') out.push(band(-0.24,0.021,0x4a3626),band(-0.2,0.0235,0xe8d9b0));
+  out.push(...gmxCuff(X,D,sd));   // the robe's hanging sleeves, the crop top's band (model-garments-more.js)
   return out;
 }
 // ---- the skirt family: a lathe from the waist, a number of sharp pleats or a smooth flare; hem and waistband are painted ----
 function gmSkirt(X,D,kind){
-  const {L,S,sg}=X, prof=[], rows=sg(10), legs=S.legs, top=Math.max(0.165*D.B,D.hx+0.085), kilt=kind==='kilt', pl=kind==='pleated', len=kilt?0.46:pl?0.3:0.4, hem=top*(kilt?1.22:pl?1.55:1.4);
+  const {L,S,sg}=X, prof=[], rows=sg(10), legs=S.legs, top=Math.max(0.165*D.B,D.hx+0.085), kilt=kind==='kilt', hk=kind==='hakama', wr=kind==='wrapskirt', pl=kind==='pleated'||hk, len=kilt?0.46:hk?0.8:pl?0.3:wr?0.25:0.4, hem=top*(kilt?1.22:hk?1.4:pl?1.55:wr?1.25:1.4);
   for(let i=0;i<=rows;i++){ const t=i/rows; prof.push(new THREE.Vector2(top+(hem-top)*Math.pow(t,kilt?1.1:1.35),(0.04-len*t)*legs)); }
-  const g=new THREE.LatheGeometry(prof,sg(pl?48:40)).scale(1,1,0.8), p=g.attributes.position;
+  const g=(wr?new THREE.LatheGeometry(prof,sg(40),Math.PI*1.5+0.65,TAU-1.3):new THREE.LatheGeometry(prof,sg(pl?48:40))).scale(1,1,0.8), p=g.attributes.position;
   if(pl) for(let i=0;i<p.count;i++){ const x=p.getX(i), z=p.getZ(i), a=Math.atan2(x,z), k=(Math.floor(((a/TAU)*36+36)%1*0)+0)+0.045*Math.sin(a*18)*(1-(p.getY(i)>-0.01?1:0)*0.9); const r=Math.hypot(x,z); p.setX(i,x*(1+k*0.5)); p.setZ(i,z*(1+k*0.5)); }
   smoothN(g);
   return pc(g,(x,y,z,c)=>{ const t=Math.min(1,Math.max(0,(0.04*legs-y)/(len*legs)));
@@ -102,6 +104,7 @@ function gmHips(X,D){
     const rows=[{y:0.0,rx:s0.rx+0.014,rz},{y:-0.07,rx:s0.rx+0.045,rz:rz+0.03},{y:-0.18,rx:s0.rx+0.075,rz:rz+0.052}];
     out.push(pc(ofLoft(rows,sg(36),0,TAU),(x,y,z,c)=>{ c.set(L.topColor); if(y<-0.16) c.set(0xe8d9b0); else if(y<-0.15) c.multiplyScalar(0.7); }));
   }
+  out.push(...gmxHips(X,D));   // the crafted bottoms' belts, flaps and sashes (model-garments-more.js)
   return out;
 }
 // ---- the knee's frame: trouser cuffs, and the shoes' straps, laces, cuffs and heels ----

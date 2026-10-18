@@ -74,5 +74,5 @@ function htBase(X,F,parts){
     parts.push(...htBrim(sg,0.105,0.23,0.072,{side:0.026,dip:0.01,rim:0.01},(x,y,z,c)=>{ tone(c,0.92); const r=Math.hypot(x,z); if(fr(r*38)<0.2) tone(c,0.74); if(r>0.222) tone(c,0.62); }));
     parts.push(pc(scl(sculpt(shell(0.116,0,0.43*Math.PI,0,0.05,sg(34),sg(14)),false)).translate(0,0.056*fs[1],0),w));
     parts.push(pc(new THREE.CylinderGeometry(0.1215,0.1215,0.024,sg(30),1,true).translate(0,0.09,0),c=>c.set(0xb8452e)),pc(ofRibbon([[0.1,0.09,0.07],[0.14,0.05,0.095],[0.17,-0.02,0.09],[0.18,-0.09,0.07]],u=>0.032*(1+0.3*u),{up:[0,1,0.3],seg:sg(10),th:0.003}),(x,y,z,c)=>c.set(0xb8452e)));
-  }
+  } else htxBuild(X,F,parts,id,hc);   // the crafted hats (model-hats-more.js)
 }

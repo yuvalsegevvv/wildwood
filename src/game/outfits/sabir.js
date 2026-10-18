@@ -17,8 +17,8 @@ OUTFITS.sabir=(function(){
     /* ---- the paint of the body: a sand shirt under a leather vest, indigo knee bands, tall leather boots with a crimson top ---- */
     const paint=(part,c,x,y,z,sd)=>{
       switch(part){
-        case 'torso': { c.set(SAND); const ax=Math.abs(x); if(y>0.03&&y<0.54&&ax>0.034&&ax<0.2) c.set(LEATHER); if(y>0.03&&y<0.54&&ax>0.034&&ax<0.2&&fr(y*50)<0.06) c.set(SAND_D); if(y>0.545) c.set(INDIGO); return; }
-        case 'upperArm': c.set(SAND); if(-y>D.upper*0.5&&-y<D.upper*0.56) c.set(CRIM); return;
+        case 'torso': { c.set(SAND); const ax=Math.abs(x); const lo=modestOn()?0.034:0.105; if(!modestOn()&&y>0.07&&y<0.545) skinPaint(c); if(y>0.03&&y<0.54&&ax>lo&&ax<0.2){ c.set(LEATHER); if(fr(y*50)<0.06) c.set(SAND_D); } if(y>0.545) c.set(INDIGO); return; }   // (an open vest over a bare chest: only the straps and the vest's sides)
+        case 'upperArm': if(modestOn()) c.set(SAND); else skinPaint(c); if(-y>D.upper*0.5&&-y<D.upper*0.56) c.set(CRIM); return;   // bare arms with a crimson band
         case 'foreArm': { if(y<-0.222) skinPaint(c); else if(y<-0.12){ c.set(LEATHER); if(y<-0.128&&y>-0.138) c.set(BRASS); } else c.set(SAND); return; }
         case 'thigh': { const t=-y/D.thigh; c.set(SAND); if(t>0.86&&t<0.97) c.set(INDIGO); else if(Math.abs(Math.atan2(z,x*sd))<0.14) c.set(CRIM); return; }
         case 'shin': { const t=-y/D.shin; c.set(LEATHER); c.multiplyScalar(0.92+0.12*Math.max(0,-z*9)); if(t<0.04) c.set(INDIGO); else if(t<0.09) c.set(CRIM); else if(t>0.16&&t<0.19) c.set(BRASS); else if(t>0.5&&t<0.53) c.set(BRASS); return; }

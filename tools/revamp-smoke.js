@@ -4,7 +4,7 @@
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['NODES','HOME_YARD','homeAt','HOME_PLOT_R','HOME_RESPAWN','NODE_KINDS','RES','ITEM','POTS','POT_KINDS','S','VIL','getH','toolBonusOf','toolBonusStat','TOOL_BONUS_CAP','cosCost','cosCleanLook','sanitizeCos','COS_AURAS','COS_CAPES','cosDef','potBuffP','rewardKill','expToNext']);
+  ['NODES','HOME_YARD','homeAt','HOME_PLOT_R','HOME_RESPAWN','NODE_KINDS','RES','ITEM','POTS','POT_KINDS','S','VIL','getH','toolBonusOf','toolBonusStat','TOOL_BONUS_CAP','cosCost','cpIsFree','cosCleanLook','sanitizeCos','COS_AURAS','COS_CAPES','cosDef','potBuffP','rewardKill','expToNext']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const evs={a:[],b:[]}; const grab=()=>{ for(const id of ['a','b']){ for(const m of (inbox[id]||[])) if(m.t==='snap'&&m.ev) evs[id].push(...m.ev); inbox[id]=[]; } };
@@ -67,17 +67,19 @@ ok('Scholar\'s Brew and Fortune Tea start long buffs (5 minutes)',x.potBuffP(pa,
 pa.gear.res={}; pa.gear.coins=100000; home('a'); for(const [k,res] of [['regen',null]]) { const P=x.POTS.regen2; pa.gear.res[P.herbs[0].res]=20; pa.gear.res[P.herbs[1].res]=20; send('a',{t:'brew',id:'regen2',n:2}); ok('a new potion is brewed like the old ones',(pa.gear.pot.regen2||0)>=2); }
 
 // ---- cosmetics ----
-ok('10 auras and 12 capes, each with a cost in ore or logs, a herb and coins',x.COS_AURAS.length===10&&x.COS_CAPES.length===12&&x.COS_AURAS.every(d=>{ const c=x.cosCost('a',d[0]); return c&&c.res.length===2&&c.coins>0; })&&x.COS_CAPES.every(d=>{ const c=x.cosCost('c',d[0]); return c&&c.res.length===2; }));
+ok('every aura and cape is free or has a recipe (resources and/or drops) and a fee',x.COS_AURAS.length>=14&&x.COS_CAPES.length>=15&&[...x.COS_AURAS.map(d=>['a',d]),...x.COS_CAPES.map(d=>['c',d])].every(([t,d])=>{ const c=x.cosCost(t,d[0]); return c===null?x.cpIsFree(t,d[0]):c.coins>0&&c.res.length+c.mats.length>0; }));
 ok('ids are own properties only (constructor, __proto__ are nothing)',!x.cosDef('a','constructor')&&!x.cosDef('c','__proto__')&&!x.cosDef('a','toString')&&x.cosCost('a','constructor')===null);
-ok('a save\'s cosmetics are checked: unknown, repeated and malformed entries go',JSON.stringify(x.sanitizeCos({cos:['a:firefly','a:firefly','c:nope','x:y',7,'c:regal','a:constructor']}))==='["a:firefly","c:regal"]'&&x.sanitizeCos({cos:'a:firefly'}).length===0);
-{ at('a',x.VIL.x+150,x.VIL.z+150); pa.gear.res={pine:30,sunpetal:30}; pa.gear.cos=[]; send('a',{t:'cosmake',type:'c',id:'wayfarer'}); ok('cosmetics are made at a lodge only',pa.gear.cos.length===0);
-  home('a'); send('a',{t:'cosmake',type:'c',id:'wayfarer'}); const c=x.cosCost('c','wayfarer');
-  ok('making a cape takes its logs, herb and fee, and adds it to gear.cos',pa.gear.cos.join()==='c:wayfarer'&&pa.gear.res.pine===30-c.res[0][1]&&pa.gear.coins<100000);
-  const n0=pa.gear.coins; send('a',{t:'cosmake',type:'c',id:'wayfarer'}); ok('twice costs nothing the second time',pa.gear.coins===n0&&pa.gear.cos.length===1);
-  send('a',{t:'cosmake',type:'a',id:'stellar'}); ok('without the materials nothing is made',pa.gear.cos.length===1);
+ok('a save\'s cosmetics are checked: unknown, repeated and malformed entries go',JSON.stringify(x.sanitizeCos({cos:['a:firefly','a:firefly','c:nope','x:y',7,'c:regal','a:constructor']}))==='["c:regal"]'&&x.sanitizeCos({cos:'a:firefly'}).length===0);
+{ at('a',x.VIL.x+150,x.VIL.z+150); pa.gear.res={}; for(const k in x.RES) pa.gear.res[k]=0; pa.gear.mats={}; pa.gear.cos=[]; send('a',{t:'cosmake',type:'c',id:'regal'}); ok('cosmetics are made at a lodge only',pa.gear.cos.length===0);
+  home('a'); send('a',{t:'cosmake',type:'c',id:'wayfarer'}); ok('a free piece cannot be made',pa.gear.cos.length===0);
+  const c=x.cosCost('c','regal'); for(const k in x.RES) pa.gear.res[k]=30; send('a',{t:'cosmake',type:'c',id:'regal'}); ok('without the drops nothing is made',pa.gear.cos.length===0);
+  pa.gear.mats={}; for(const [m] of c.mats) pa.gear.mats[m]=30; const r0=pa.gear.res[c.res[0][0]]; send('a',{t:'cosmake',type:'c',id:'regal'});
+  ok('making a cape takes its resources, drops and fee, and adds it to gear.cos',pa.gear.cos.join()==='c:regal'&&pa.gear.res[c.res[0][0]]===r0-c.res[0][1]&&pa.gear.mats[c.mats[0][0]]===30-c.mats[0][1]&&pa.gear.coins<100000);
+  const n0=pa.gear.coins; send('a',{t:'cosmake',type:'c',id:'regal'}); ok('twice costs nothing the second time',pa.gear.coins===n0&&pa.gear.cos.length===1);
+  pa.gear.res={}; send('a',{t:'cosmake',type:'a',id:'stellar'}); ok('without the materials nothing is made',pa.gear.cos.length===1);
   send('a',{t:'cosmake',type:'c',id:'constructor'}); send('a',{t:'cosmake',type:'zz',id:'wayfarer'}); ok('garbage ids and types do nothing',pa.gear.cos.length===1); }
-send('a',{t:'look',look:{cls:'warrior',cape:'wayfarer',aura:'stellar'}});
-ok('the server keeps the cape you own and throws out the aura you do not',pa.look.cape==='wayfarer'&&pa.look.aura==='');
+send('a',{t:'look',look:{cls:'warrior',cape:'regal',aura:'stellar'}});
+ok('the server keeps the cape you own and throws out the aura you do not',pa.look.cape==='regal'&&pa.look.aura==='');
 { const q=W.join('c',{name:'Cy',look:{cls:'warrior',cape:'regal',aura:'wisp'},save:{level:5}}); const pc=W.players.get('c'); ok('a joining look is cleaned the same way',pc.look.cape===''&&pc.look.aura===''); }
 
 // ---- the character model ----
@@ -86,6 +88,6 @@ ok('the server keeps the cape you own and throws out the aura you do not',pa.loo
   ok('no cape and no aura adds nothing; a cape or an aura adds loose parts moved by rig.anims',!plain.anims&&cape.anims&&cape.anims.length===1&&aura.anims&&both.anims.length===2);
   for(const [id,rig] of [['cape',cape],['aura',aura],['both',both]]){ for(let i=0;i<60;i++) for(const f of rig.anims) f(i*0.05,0.05,i%2?0.8:0); const s=C.stats(rig); ok('the '+id+' animates without NaN and stays near the body',s.bad===0&&s.maxR<2.2,s.maxR.toFixed(2)); }
   ok('a hostile look (aura \'constructor\', cape \'__proto__\') builds the plain character',(()=>{ try{ const r=C.buildCharacter(look({aura:'constructor',cape:'__proto__'}),{q:1}); return !r.anims; }catch(e){ return false; } })());
-  ok('every cape and aura builds',C.COS_CAPES.every(d=>!!C.buildCharacter(look({cape:d[0]}),{q:0.6}).anims)&&C.COS_AURAS.every(d=>!!C.buildCharacter(look({aura:d[0]}),{q:0.6}).anims));
+  ok('every cape and aura builds',C.COS_CAPES.every(d=>d[0]==='pack'||!!C.buildCharacter(look({cape:d[0]}),{q:0.6}).anims)&&C.COS_AURAS.every(d=>!!C.buildCharacter(look({aura:d[0]}),{q:0.6}).anims));
   const fem=C.buildCharacter(Object.assign({},C.LOOK_F,{cape:'regal'}),{q:1}); ok('the female body wears a cape too',!!fem.anims); }
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);
