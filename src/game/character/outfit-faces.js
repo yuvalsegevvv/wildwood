@@ -2,7 +2,7 @@
 /* oxTune(id, v): sets values of CHAR_MODELS.<id>.setups[0].v (the reference fit) and widens the model's recommended range to hold them (never beyond the slider's own range).
    oxMarks(F, list) -> painted geometries for a kit's `mark` hook (F = the face helpers, F.place puts a decal on the skull at (x, y)); list items {t, col, side?}: freckles, bags, scar, stripe, crow, cheek, mole, tear.
    oxHairBits(X, list) -> geometries in the head frame for a kit's `hair` hook; list items {t, col, side?}: ring (an earring), beads (a strand of beads from the temple), sprig (leaves tucked behind the ear), pin (a hair pin),
-   tuft (a pair of upright hair tufts), locks (a strand down each temple, o.len), tail (a tail down the back with a tie, o.len). owns: oxTune, oxMarks, oxHairBits.   used by: game/outfits/*.js (the last lines); with oxPlus (outfit-extras.js), which also takes kit: {eyeColor, eyes}.   test: tools/cosmetic-items-smoke.js, tools/character-smoke.js */
+   tuft (a pair of upright hair tufts), braid (one plait with a tie), curl (a spiral curl at the temple), feather (tucked behind the ear), locks (a strand down each temple, o.len), tail (a tail down the back with a tie, o.len). owns: oxTune, oxMarks, oxHairBits.   used by: game/outfits/*.js (the last lines); with oxPlus (outfit-extras.js), which also takes kit: {eyeColor, eyes}.   test: tools/cosmetic-items-smoke.js, tools/character-smoke.js */
 function oxTune(id,v){
   const m=CHAR_MODELS[id]; if(!m) return; const s0=m.setups[0]; m.ranges=m.ranges||{};
   for(const k in v){ const s=SLIDER_BY_KEY[k]; if(!s) continue; s0.v[k]=v[k]; const r=m.ranges[k]; if(r) m.ranges[k]=[Math.max(s.min,Math.min(r[0],v[k]-0.05)),Math.min(s.max,Math.max(r[1],v[k]+0.05))]; }
@@ -29,5 +29,14 @@ function oxHairBits(X,list){
     if(o.t==='pin') out.push(solid(vbox(0.052,0.006,0.005,sd*0.075,0.062,-0.09),col),solid(csph(0.008,sg(7),sg(5)).translate(sd*0.1,0.062,-0.09),col2));
     if(o.t==='locks') for(const s of [-1,1]){ const L=o.len||0.2, P=[[s*0.1,0.03,-0.045],[s*0.108,-0.04*L/0.2-0.02,-0.05],[s*0.104,-L*0.8,-0.044],[s*0.1,-L,-0.04]]; out.push(solid(sweepTube(P,[0.012,0.011,0.008,0.002],sg(6),{cap:'point',rings:sg(12)}),X.hairCol.getHex())); }   // a lock down each temple
     if(o.t==='tail'){ const L=o.len||0.3, P=[[0,0.03,0.095],[0,-0.03,0.125],[0,-L*0.6,0.13],[0,-L,0.12]]; out.push(solid(sweepTube(P,[0.026,0.026,0.02,0.002],sg(7),{cap:'point',rings:sg(14)}),X.hairCol.getHex()), solid(ofRingAt([0,0.0,0.118],[0,1,0.15],0.027,0.005,sg(6)),col||0xc83a4a)); }   // a tail down the back with a tie
+    if(o.t==='braid'){ const s=sd, L=o.len||0.22, P=[[s*0.1,0.03,-0.045],[s*0.108,-0.03,-0.05],[s*0.106,-L*0.7,-0.046],[s*0.102,-L,-0.042]], hc=X.hairCol.getHex();
+      out.push(solid(sweepTube(P,[0.011,0.011,0.009,0.003],sg(6),{cap:'point',rings:sg(12)}),hc));
+      for(const [y,r] of [[-0.035,0.0125],[-0.075,0.012],[-0.115,0.0105]]) if(-y<L) out.push(solid(csph(r,sg(7),sg(5)).scale(1,0.75,1).translate(s*0.107,y,-0.049),hc));
+      out.push(solid(ofRingAt([s*0.103,-L*0.88,-0.043],[0,1,0],0.011,0.003,sg(6)),col||0xc83a4a)); }   // one plait down a temple with a tie
+    if(o.t==='curl') for(const s of (o.both?[-1,1]:[sd])){ const P=[]; for(let i=0;i<=10;i++){ const t=i/10*Math.PI*2.6, r=0.03-0.018*i/10; P.push([s*(0.102+Math.sin(t)*r*0.4),-0.025-0.03+Math.cos(t)*r,-0.048-0.012*i/10]); }
+      out.push(solid(sweepTube(P,[0.009,0.009,0.008,0.007,0.006,0.005,0.004,0.004,0.003,0.003,0.002],sg(6),{cap:'point',rings:sg(14)}),col||X.hairCol.getHex())); }   // a spiral curl at the temple
+    if(o.t==='feather'){ const s=sd; out.push(solid(csph(1,sg(8),sg(5)).scale(0.013,0.07,0.004).rotateZ(s*-0.45).translate(s*0.108,0.012,0.03),col),
+      solid(csph(1,sg(7),sg(5)).scale(0.0145,0.016,0.0045).rotateZ(s*-0.45).translate(s*0.108+s*0.01,0.045,0.0305),col2||col),
+      solid(vbox(0.0025,0.085,0.0025,s*0.104,0.0,0.03).rotateZ(s*-0.45),0xe8e2d4)); }   // a feather tucked behind the ear
     if(o.t==='tuft') for(const s of [-1,1]) out.push(solid(new THREE.ConeGeometry(0.014,0.07,5).rotateZ(s*0.4).translate(s*0.03,0.145,-0.03),col)); }
   return out; }

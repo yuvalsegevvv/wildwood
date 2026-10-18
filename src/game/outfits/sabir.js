@@ -111,5 +111,5 @@ OUTFITS.sabir=oxPlus(OUTFITS.sabir,(X,D)=>({   // face round 1: sun-bronzed skin
   hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xe8c050},{t:'beads',side:-1,col:0xe8c050,col2:0xb02a2a}]),
   kit:{eyeColor:0xd8a030,eyes:{iris:1.05,lash:0.7}}}));
 Object.assign(CHAR_MODELS.sabir,{hairGrad:{mode:'ombre',c2:0xd8a030,c3:0xb02a2a}});   // face round 2: black to gold to crimson ends
-OUTFITS.sabir=oxPlus(OUTFITS.sabir,(X,D)=>({   // face round 3: long locks at the temples under the turban, a gold-tied tail
-  hair:()=>oxHairBits(X,[{t:'locks',len:0.22},{t:'tail',len:0.3,col:0xe8c050}])}));
+OUTFITS.sabir=oxPlus(OUTFITS.sabir,(X,D)=>({   // face round 3: a gold-tied tail under the turban
+  hair:()=>oxHairBits(X,[{t:'tail',len:0.3,col:0xe8c050}])}));

@@ -178,6 +178,6 @@ OUTFITS.dunstan=(function(){
   };
 })();
 oxTune('dunstan',{jaw:1.15,chin:1.12,cheeks:1.0,brow:0.3,noseSize:1.1,lips:0.9,undertone:0.5,blush:0.3,smile:0.35,earSize:1.1});
-OUTFITS.dunstan=oxPlus(OUTFITS.dunstan,(X,D)=>({   // face round 5: a sun-lined drum-major: laughter lines, a gold hoop, long sideburns under the shako
+OUTFITS.dunstan=oxPlus(OUTFITS.dunstan,(X,D)=>({   // face round 5: a sun-lined drum-major: laughter lines, a gold hoop
   mark:F=>oxMarks(F,[{t:'crow',col:0x8a5a3a}]),
-  hair:()=>oxHairBits(X,[{t:'ring',side:-1,col:0xe8c050},{t:'locks',len:0.14,col:0x7a4a28}])}));
+  hair:()=>oxHairBits(X,[{t:'ring',side:-1,col:0xe8c050}])}));

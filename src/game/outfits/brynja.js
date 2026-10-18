@@ -78,5 +78,5 @@ OUTFITS.brynja=(function(){
 oxTune('brynja',{eyeSize:1.12,lips:0.95,undertone:-0.4,blush:0.7,cheeks:1.05,smile:0.3,earSize:1.0});
 OUTFITS.brynja=oxPlus(OUTFITS.brynja,(X,D)=>({   // face round 5: frost-pale skin with cold-pinched cheeks and snow freckles, ice beads and two long pale locks under the hood
   mark:F=>oxMarks(F,[{t:'cheek',col:0xe8a0b0},{t:'freckles',col:0xa8b8d0}]),
-  hair:()=>oxHairBits(X,[{t:'beads',both:true,col:0xeaf4fb,col2:0x6fb4e0},{t:'locks',len:0.26,col:0xd8e8f4}]),
+  hair:()=>oxHairBits(X,[{t:'beads',both:true,col:0xeaf4fb,col2:0x6fb4e0}]),
   kit:{eyes:{iris:1.15,lash:1.1,hl:2}}}));

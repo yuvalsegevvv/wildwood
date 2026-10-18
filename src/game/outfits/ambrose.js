@@ -362,6 +362,6 @@ OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // face round 1: soft rosy ch
   mark:F=>oxMarks(F,[{t:'freckles',col:0xb08a68}]),
   hair:()=>oxHairBits(X,[{t:'sprig',side:1,col:0x6fae7a,col2:0xf3ead2}]),
   kit:{eyeColor:0x7a9a4a,eyes:{iris:1.08,lash:0.5}}}));
-OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // face round 3: soft locks at the temples and a short tail with a mint tie
-  hair:()=>oxHairBits(X,[{t:'locks',len:0.14},{t:'tail',len:0.2,col:0x8bc5a4}])}));
+OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // face round 3: spiral curls at both temples and a mint sprig
+  hair:()=>oxHairBits(X,[{t:'curl',both:true},{t:'sprig',side:-1,col:0x8bc5a4,col2:0xdff5c0}])}));
 Object.assign(CHAR_MODELS.ambrose,{hairGrad:{mode:'tips',c2:0x6fae7a,c3:0xdff5c0}});   // brown, moss, mint
