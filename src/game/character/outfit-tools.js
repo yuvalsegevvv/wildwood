@@ -108,6 +108,7 @@ const ofItems=slot=>Object.keys(OUTFITS).map(id=>{ const m=CHAR_MODELS[id], it=m
 // a look wearing a whole outfit: its item in every slot and `model` (the editor's reference body and ranges follow it); id 'base' takes the outfit items off (each such slot back to the sex's default)
 function ofWear(L,id){ const o=Object.assign({},L), d=L.sex==='female'?LOOK_F:LOOK_M, w=ofPieces(L);
   for(const s of OF_SLOTS){ const f=OF_FIELD[s]; if(id!=='base'){ if(s!=='glove'||ofHasGlove(id)) o[f]=id; } else if(w[s]) o[f]=d[f]; o[OF_TINT[s]]=-1; }   // (a set without gloves leaves the wearer's own)   // (a whole set is worn in the colours it was designed in)
+  { const g=id!=='base'&&CHAR_MODELS[id]&&CHAR_MODELS[id].hairGrad; if(g){ o.hairGrad=g.mode; o.hairColor2=g.c2; o.hairThird=g.c3!==undefined; if(g.c3!==undefined) o.hairColor3=g.c3; } else if(w.hair||id!=='base'){ o.hairGrad='none'; o.hairThird=false; } }   // a set's own hair gradient (CHAR_MODELS.<id>.hairGrad = {mode, c2, c3}); taking a set off, or a set without one, clears it
   o.model=id; return o; }
 // `model` names the set whose body and ranges the editor shows: once none of its items is worn any more it is the base model again
 function ofTidy(L){ if(L.model!=='base'&&!Object.values(ofPieces(L)).includes(L.model)) L.model='base'; return L; }

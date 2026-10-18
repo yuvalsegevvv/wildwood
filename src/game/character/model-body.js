@@ -30,7 +30,7 @@ function charDims(L,S,fem,fs){
     shX:(fem?0.138:0.156)*B*S.shoulders,            // shoulder joint, off the middle
     shY:0.45*TK,                                    // and its height above the hips
     hx:(fem?0.08:0.078)*B*(1+(S.hips-1)*0.6),      // hip joint, off the middle
-    aw:(fem?0.9:1.08)*lr*S.arms, tw:(fem?1.02:1.0)*lr*S.thighs, cw:(fem?0.96:1.04)*lr, upper:0.28, fore:0.305, wrist:0.25};
+    aw:(fem?0.9:1.08)*lr*S.arms, tw:(fem?1.02:1.0)*lr*S.thighs, cw:(fem?0.96:1.04)*lr*S.calves, upper:0.28, fore:0.305, wrist:0.25};
   D.ER=0.034*D.aw; D.KR=0.05*lr;                   // the elbow's and the knee's radius: both sides of the joint use it
   return D;
 }

@@ -52,6 +52,7 @@ OUTFITS.genzo=(function(){
       for(let i=0;i<4;i++) out.push(pc(new THREE.BoxGeometry(0.03,0.022,0.003).translate(-0.12+(i%2?0.012:-0.004),-0.01-i*0.022,bz),(x,y,z2,c)=>c.set(WHITE)));
       return out; };
     return {
+      aura:{col:0xd24a3a,col2:0xf3ead2,style:'fall',ring:false,n:6,shape:'petal',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{glove:0xf3ead2,top:0xb8452a,bottom:0x2a2020,shoes:0xc8a860,hat:0xf3ead2}, bootTop:1.1, shinCut:9, boot:false, skinFrom:0.585, hairColor:HAIR, eyeColor:0x4a3020,
       eyes:{iris:0.95,hl:1,tilt:0.05,lash:0.4,h:0.85,browLift:0.0,browThick:1.7,browAngle:0.1},
       cuts:{torso:[0.03,0.07],upperArm:[0.78],foreArm:[0.12/D.fore,0.222/D.fore],thigh:[],shin:[0.78,0.86]},

@@ -14,6 +14,7 @@ const BODY_SLIDERS=[
   {k:'height',   g:'Body',     label:'Height',        min:0.9,  max:1.1,  def:1, ends:['Shorter','Taller']},
   {k:'build',    g:'Body',     label:'Build',         min:0.84, max:1.24, def:1, ends:['Slim','Sturdy']},
   {k:'chest',    g:'Body',     label:'Chest',         min:0.5,  max:1.6,  def:1, ends:['Smaller','Larger']},
+  {k:'undertone',g:'Body',     label:'Skin undertone',min:-1,   max:1,    def:0, ends:['Cool','Warm']},
   // Shape (the proportions between the body's parts)
   {k:'shoulders',g:'Shape',    label:'Shoulders',     min:0.8,  max:1.25, def:1, ends:['Narrow','Broad']},
   {k:'waist',    g:'Shape',    label:'Waist',         min:0.75, max:1.3,  def:1, ends:['Cinched','Full']},
@@ -22,6 +23,7 @@ const BODY_SLIDERS=[
   {k:'legs',     g:'Shape',    label:'Leg length',    min:0.85, max:1.2,  def:1, ends:['Short','Long']},
   {k:'thighs',   g:'Shape',    label:'Thighs',        min:0.8,  max:1.35, def:1, ends:['Slender','Full']},
   {k:'arms',     g:'Shape',    label:'Arms',          min:0.75, max:1.35, def:1, ends:['Slender','Strong']},
+  {k:'calves',   g:'Shape',    label:'Calves',        min:0.8,  max:1.35, def:1, ends:['Slender','Full']},
   {k:'neck',     g:'Shape',    label:'Neck',          min:0.75, max:1.35, def:1, ends:['Slim','Thick']},
   {k:'hands',    g:'Shape',    label:'Hands',         min:0.8,  max:1.3,  def:1, ends:['Small','Large']},
   {k:'feet',     g:'Shape',    label:'Feet',          min:0.8,  max:1.3,  def:1, ends:['Small','Large']},
@@ -41,6 +43,8 @@ const BODY_SLIDERS=[
   {k:'mouthSize',g:'Features', label:'Mouth width',   min:0.7,  max:1.4,  def:1, ends:['Small','Wide']},
   {k:'lips',     g:'Features', label:'Lips',          min:0.6,  max:1.6,  def:1, ends:['Thin','Full']},
   {k:'smile',    g:'Features', label:'Expression',    min:-1,   max:1,    def:0, ends:['Serious','Smiling']},
+  {k:'mouthHeight',g:'Features',label:'Mouth height', min:-1,   max:1,    def:0, ends:['Lower','Higher']},
+  {k:'blush',    g:'Features', label:'Blush',         min:0,    max:1,    def:0, ends:['None','Rosy']},
   {k:'earSize',  g:'Features', label:'Ear size',      min:0.7,  max:1.5,  def:1, ends:['Small','Large']},
   {k:'earPoint', g:'Features', label:'Pointed ears',  min:0,    max:1,    def:0, ends:['Round','Elf']},
   // Hair

@@ -49,6 +49,7 @@ OUTFITS.pell=(function(){
     const lantern=()=>[solid(cyl(0.026,0.022,0.05,sg(8)).translate(0,0,0),BRASS),pc(cyl(0.02,0.02,0.04,sg(8)).translate(0,0.002,0),(x,y,z,c)=>c.set(0xffd9a0)),solid(cyl(0.01,0.026,0.012,sg(8)).translate(0,0.03,0),BRASS),solid(sweepTube([[0,0.034,0],[0.012,0.05,0],[0.03,0.05,0]],[0.0018,0.0018,0.0018],4,{cap:'round',rings:4}),TAR)];
 
     return {
+      aura:{col:0x6ab0d8,col2:0xcfeaf5,style:'fall',ring:false,n:7,shape:'drop',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0x2a2420,bottom:0xe9dfc4,shoes:0x2a2420,hat:0x8a7a44}, bootTop:0.04, shinCut:0, boot:true, skinFrom:0.545, hairColor:HAIR, eyeColor:0x8a5a28,
       eyes:{iris:0.9,hl:1,tilt:-0.1,lash:0.5,h:0.7,browLift:-0.002,browThick:1.15},
       cuts:{torso:[0.03,0.545],upperArm:[],foreArm:[0.17/D.fore,0.222/D.fore],thigh:[0.9],shin:[0.04,0.1,0.14]},

@@ -2,7 +2,7 @@
 /* ---------- Sabir: risk DPS, fire. Design: docs/skillkits/looks/sabir.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: sand 0xd2b27a, crimson 0xa8322a, indigo 0x23233a, leather 0x5a3a24, brass 0xc89a3c, ember 0xff8a3a (the weapon charm's glow only). Silhouette: a wide wrapped head, a lean torso under crossed straps,
    baggy shorts over tall boots, a sash with long tails and a curved sheath at the hip. Every part has at least two colours (sand and crimson at the least); the emblem is a brass coin, never a crescent or a star. */
-CHAR_MODELS.sabir={id:'sabir',name:'Sabir',signature:true, items:{hat:'Dune turban',hair:'Rope braid',face:'Veil & kohl',top:'Raider harness',bottom:'Sash sarwal',shoes:'Buckled boots',weapon:'Raider rig'},sexes:['male'],
+CHAR_MODELS.sabir={id:'sabir',name:'Sabir',signature:true, hairGrad:{mode:'tips',c2:0xb02a2a}, items:{hat:'Dune turban',hair:'Rope braid',face:'Veil & kohl',top:'Raider harness',bottom:'Sash sarwal',shoes:'Buckled boots',weapon:'Raider rig'},sexes:['male'],
   note:'The dune raider: lean, wide-shouldered and quick, built for a long-limbed man.',
   ranges:{height:[0.98,1.08],build:[0.9,1.08],chest:[0.8,1.15],waist:[0.82,1.05],hips:[0.88,1.1],legs:[1.0,1.14],neck:[0.9,1.15],arms:[0.95,1.2],head:[0.95,1.08],hairLength:[0.8,1.2],hairVolume:[0.9,1.15]},
   setups:[{id:'sabir',name:'Sabir',sex:'male',def:true,note:'The raider as drawn: lean, sharp-jawed, long in the leg.',v:{height:1.04,build:0.98,chest:0.95,shoulders:1.08,waist:0.92,torso:0.98,legs:1.08,thighs:0.95,arms:1.08,neck:1.0,hands:1.05,feet:1.0,jaw:1.08,chin:1.1,cheeks:0.9,noseSize:1.1,mouthSize:0.95,smile:0.35,hairLength:1.0,hairVolume:1.0}}]};
@@ -63,6 +63,7 @@ OUTFITS.sabir=(function(){
       return out; };
 
     return {
+      aura:{col:0xd8b070,col2:0xf0d9a0,style:'orbit',ring:false,n:8,shape:'grain',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0xd2b27a,bottom:0xd2b27a,shoes:0x5a3a24,hat:0xd2b27a}, bootTop:0.04, shinCut:0, boot:true, skinFrom:0.545, hairColor:HAIR, eyeColor:0xd09a30,
       eyes:{iris:0.95,hl:1,tilt:-0.15,lash:0.5,h:0.82,browLift:-0.002,browThick:1.3},
       cuts:{torso:[0.03,0.545],upperArm:[0.5,0.56],foreArm:[0.12/D.fore,0.128/D.fore,0.138/D.fore,0.222/D.fore],thigh:[0.86,0.97],shin:[0.04,0.09,0.16,0.19,0.5,0.53]},

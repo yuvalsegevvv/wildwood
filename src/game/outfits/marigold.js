@@ -3,7 +3,7 @@
    Palette: marigold 0xe59a2b, cream 0xfff2d6, plum 0x5a2a4a, glow gold 0xffd36b (the lanterns of the crown and the weapon charm only: unlit matGlow meshes, never a light), gold 0xe3b448 for the metal.
    Silhouette: a little stage: a turning ring of paper lanterns over high twin tails with bows and drill curls, a short puffed-sleeve pleated jacket with a ruffled collar and a big back bow,
    a bell of three tulle layers with ruffled hems, and tall plum boots with a cream frill and gold bells. Every part has at least two colours. */
-CHAR_MODELS.marigold={id:'marigold',name:'Marigold',signature:true, items:{hat:'Lantern crown',hair:'Ribbon tails',face:'Lantern glyph',top:'Curtain jacket',bottom:'Footlight skirt',shoes:'Bell boots',weapon:'Stage trim'},sexes:['female'],
+CHAR_MODELS.marigold={id:'marigold',name:'Marigold',signature:true, hairGrad:{mode:'ombre',c2:0xff7aa8,c3:0x9a5ad8}, items:{hat:'Lantern crown',hair:'Ribbon tails',face:'Lantern glyph',top:'Curtain jacket',bottom:'Footlight skirt',shoes:'Bell boots',weapon:'Stage trim'},sexes:['female'],
   note:'The stage idol: small, big-headed, built for a light, slim figure.',
   ranges:{height:[0.92,1.02],build:[0.88,1.05],shoulders:[0.88,1.05],arms:[0.82,1.05],chest:[0.6,1.2],waist:[0.85,1.05],hips:[0.9,1.15],legs:[0.98,1.14],head:[1.0,1.12],eyeSize:[1.05,1.3],noseSize:[0.7,1.1],smile:[0.2,0.9],hairLength:[1.0,1.35],hairVolume:[1.0,1.25]},
   setups:[{id:'marigold',name:'Marigold',sex:'female',def:true,note:'The idol as drawn: small, big-headed, huge bright eyes.',v:{height:0.94,build:0.9,chest:0.85,shoulders:0.92,waist:0.9,torso:0.97,legs:1.06,thighs:0.95,arms:0.85,neck:0.95,hands:0.9,feet:0.92,head:1.08,jaw:0.9,chin:0.88,cheeks:1.15,eyeSize:1.3,eyeGap:1.04,eyeHeight:-0.2,eyeTilt:0.1,brow:-0.1,noseSize:0.75,mouthSize:0.9,lips:1.15,smile:0.6,hairLength:1.2,hairVolume:1.15}}]};
@@ -188,6 +188,7 @@ OUTFITS.marigold=(function(){
     const lanternPaint=(h,hot)=>(x,y,z,c)=>{ const k=Math.abs(y)/h, ang=Math.atan2(z,x); c.set(hot); c.lerp(cGl,clamp(k*1.3)); if(fr(ang/(TAU/8))<0.13) c.lerp(cM,0.75); if(k>0.9) c.lerp(cM,0.5); };
 
     const kit={
+      aura:{col:0xffd070,col2:0xff9ac0,style:'orbit',ring:false,n:8,shape:'star',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0x5a2a4a,bottom:0xe59a2b,shoes:0x5a2a4a,hat:0xe3b448}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.075, shinCut:0, boot:true, hairColor:MARI, eyeColor:HAZEL,
       eyes:{iris:1.15,hl:1,tilt:0.1,lash:0.85,h:1.04},
       cuts:{torso:[],upperArm:[0.4],thigh:[0.5,0.9,0.96],shin:[0.075,0.88,0.915,0.93]},

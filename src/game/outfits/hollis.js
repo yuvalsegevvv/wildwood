@@ -2,7 +2,7 @@
 /* ---------- Hollis: healer, dark. Design: docs/skillkits/looks/hollis.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: crape 0x2a2630, plum 0x3a3548, lamp amber 0xe8a84a, fog 0x9c9aa6, collar white 0xe8e4dc, brass 0xb08a3a. Silhouette: a tall hat over a narrow body, a long coat with tails to the knee, a lantern hook in the hand.
    Every part has at least two colours (crape and amber at the least); the emblem is a hooded lantern, never a skull or a coffin. */
-CHAR_MODELS.hollis={id:'hollis',name:'Hollis',signature:true, items:{glove:'Mourning gloves',hat:'Crape top hat',hair:'Slicked hair',face:'Gaunt & tired',top:'Frock coat',bottom:'Striped trousers',shoes:'Amber boots',weapon:'Vigil rig'},sexes:['male'],
+CHAR_MODELS.hollis={id:'hollis',name:'Hollis',signature:true, hairGrad:{mode:'ombre',c2:0x8a8494}, items:{glove:'Mourning gloves',hat:'Crape top hat',hair:'Slicked hair',face:'Gaunt & tired',top:'Frock coat',bottom:'Striped trousers',shoes:'Amber boots',weapon:'Vigil rig'},sexes:['male'],
   note:'The lamp-bearer: tall, thin and quiet, built for a long, stooped man.',
   ranges:{height:[1.0,1.08],build:[0.88,1.0],chest:[0.7,1.05],waist:[0.82,1.0],hips:[0.88,1.05],legs:[1.0,1.14],neck:[1.0,1.2],arms:[0.9,1.15],head:[0.95,1.05],hairLength:[0.8,1.2],hairVolume:[0.9,1.1]},
   setups:[{id:'hollis',name:'Hollis',sex:'male',def:true,note:'The lamp-bearer as drawn: tall, gaunt and long-necked.',v:{height:1.06,build:0.9,chest:0.82,shoulders:0.94,waist:0.88,torso:1.02,legs:1.1,thighs:0.9,arms:1.05,neck:1.12,hands:1.1,feet:1.0,jaw:0.92,chin:1.0,cheeks:0.85,noseSize:1.1,mouthSize:0.9,smile:0.1,hairLength:1.0,hairVolume:0.95}}]};

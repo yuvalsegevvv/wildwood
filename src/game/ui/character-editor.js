@@ -23,20 +23,24 @@ const EDIT=[
   {tab:'Body', subs:[
     {name:'Gender', rows:[
       {k:'sex',type:'grid',kind:'sex',ids:()=>[['male'],['female']]},
-      {k:'skin',label:'Skin tone',type:'color',opts:SKINS}]},
+      {k:'skin',label:'Skin tone',type:'color',opts:SKINS},{slider:'undertone'}]},
     {name:'Build', rows:[{type:'setups'},{slider:'height'},{slider:'build'},{slider:'chest'}]},
     {name:'Upper body', rows:['shoulders','waist','hips','torso'].map(k=>({slider:k}))},
-    {name:'Limbs', rows:['legs','thighs','arms','neck','hands','feet'].map(k=>({slider:k}))}
+    {name:'Limbs', rows:['legs','thighs','calves','arms','neck','hands','feet'].map(k=>({slider:k}))}
   ]},
   {tab:'Face', close:true, subs:[
     {name:'Hair', rows:[
       {k:'hair',type:'grid',kind:'hair',ids:edHair},
-      {k:'hairColor',label:'',type:'color',opts:HAIRC,base:'hair'}
+      {k:'hairColor',label:'',type:'color',opts:HAIRC,base:'hair'},
+      {k:'hairGrad',label:'Gradient',type:'seg',base:'hair',opts:HG_MODES.map(m=>m.slice())},
+      {k:'hairColor2',label:'',type:'color',opts:HAIRC,base:'hair'},
+      {k:'hairThird',label:'Third colour',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]},
+      {k:'hairColor3',label:'',type:'color',opts:HAIRC,base:'hair'}
     ].concat(['hairLength','hairVolume','bangs'].map(k=>({slider:k}))).concat([
       {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]}])},
     {name:'Face', rows:[{k:'face',type:'grid',kind:'face',ids:()=>[['round'],['oval'],['angular']]}].concat(['head','jaw','chin','cheeks'].map(k=>({slider:k})))},
     {name:'Eyes', rows:[{k:'eyes',label:'',type:'color',opts:EYEC,base:'face'}].concat(['eyeSize','eyeGap','eyeHeight','eyeTilt','brow'].map(k=>({slider:k})))},
-    {name:'Nose & mouth', rows:['noseSize','mouthSize','lips','smile','earSize','earPoint'].map(k=>({slider:k}))},
+    {name:'Nose & mouth', rows:['noseSize','mouthSize','mouthHeight','lips','blush','smile','earSize','earPoint'].map(k=>({slider:k})).concat([{k:'lipColor',label:'Lip colour',type:'color',opts:[0xb04a52,0xd26a78,0x8a3040,0xc98a7a,0x5a2a4a,0x2a2a36,0xe8b0b8,0xa83a2a],base:'face'}])},
     {name:'Beard & marks', rows:[
       {k:'facial',type:'grid',kind:'facial',ids:()=>[['none'],['stubble'],['mustache'],['beard']],base:'face'},
       // an outfit's face item: its marks, eye style and eye colour, and its facial hair or glasses (src/game/outfits)
@@ -108,7 +112,7 @@ function armorRow(wrap,slot){
   wrap.append(box);
 }
 // ---- the five outfit slots ----
-const OUTFIT_KEYS=['gloves','gloveColor','tintGloves','top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','armor','armorHat','armorTop','armorBottom','armorShoes'];
+const OUTFIT_KEYS=['hairGrad','hairColor2','hairThird','hairColor3','gloves','gloveColor','tintGloves','top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','armor','armorHat','armorTop','armorBottom','armorShoes'];
 function outfitSlots(){ try{ const a=JSON.parse(localStorage.getItem('wildwood-outfits-v1')||'[]'); const out=[]; for(let i=0;i<5;i++) out.push(a&&typeof a[i]==='object'?a[i]:null); return out; }catch(_){ return [null,null,null,null,null]; } }
 function putOutfitSlots(a){ try{ localStorage.setItem('wildwood-outfits-v1',JSON.stringify(a)); }catch(_){} }
 function saveOutfitSlot(i){ const a=outfitSlots(), o={}; for(const k of OUTFIT_KEYS) if(LOOK[k]!==undefined) o[k]=LOOK[k]; a[i]=o; putOutfitSlots(a); renderEditor(); }

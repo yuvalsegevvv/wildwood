@@ -2,7 +2,7 @@
 /* ---------- Nephra: healer, earth. Design: docs/skillkits/looks/nephra.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: old linen 0xe3d5b0, stain 0x9c8458, lapis 0x2f55a0, gold 0xd4a83a, turquoise 0x3fb0a8, kohl 0x1f1a22. Silhouette: a narrow wrapped column topped by a flaring striped headcloth with two lappets, a broad
    collar over the shoulders, loose bandage ends trailing from the shoulders and wrists. Every part has at least two colours (linen with a stained wrap line, lapis, gold); the emblem is an ankh, a gold loop and cross. */
-CHAR_MODELS.nephra={id:'nephra',name:'Nephra',signature:true, items:{hat:'Striped headcloth',hair:'Kohl bob & strips',face:'Kohl wings & gold dots',top:'Wrapped collar',bottom:'Ragged kilt',shoes:'Wrapped sandals',weapon:'Ankh bind'},sexes:['female'],
+CHAR_MODELS.nephra={id:'nephra',name:'Nephra',signature:true, hairGrad:{mode:'tips',c2:0xd8b050,c3:0x2f55a0}, items:{hat:'Striped headcloth',hair:'Kohl bob & strips',face:'Kohl wings & gold dots',top:'Wrapped collar',bottom:'Ragged kilt',shoes:'Wrapped sandals',weapon:'Ankh bind'},sexes:['female'],
   note:'The tomb-keeper: tall, slim and still, built for a long, narrow figure.',
   ranges:{height:[0.96,1.08],build:[0.88,1.02],chest:[0.6,1.1],waist:[0.82,1.05],hips:[0.88,1.12],legs:[1.0,1.14],neck:[1.0,1.2],arms:[0.82,1.05],head:[0.95,1.08],hairLength:[0.8,1.2],hairVolume:[0.9,1.15]},
   setups:[{id:'nephra',name:'Nephra',sex:'female',def:true,note:'The tomb-keeper as drawn: tall, narrow, long-necked and calm.',v:{height:1.05,build:0.9,chest:0.8,shoulders:1.0,waist:0.9,torso:1.02,legs:1.1,thighs:0.9,arms:0.88,neck:1.15,hands:0.92,feet:0.95,head:0.98,jaw:0.88,chin:0.95,cheeks:0.9,eyeSize:1.1,eyeTilt:0.15,brow:0.1,noseSize:0.9,mouthSize:0.85,lips:1.1,smile:0.25,hairLength:1.0,hairVolume:1.0}}]};
@@ -74,6 +74,7 @@ OUTFITS.nephra=(function(){
       return out; };
 
     return {
+      aura:{col:0xe3c070,col2:0x4a70c0,style:'orbit',ring:false,n:8,shape:'grain',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0xe3d5b0,bottom:0xe3d5b0,shoes:0xe3d5b0,hat:0x2f55a0}, bootTop:0.3, shinCut:0, boot:false, skinFrom:0.592, hairColor:HAIR, eyeColor:0x39b8a8,
       eyes:{iris:1.1,hl:2,tilt:0.2,lash:1.4,browLift:0.003,browThick:1.0,h:0.9},
       cuts:{torso:[],upperArm:[0.3,0.36],foreArm:[0.188/D.fore,0.222/D.fore],thigh:[0.8],shin:[0.04,0.82,0.86]},

@@ -53,7 +53,7 @@ function buildFace(X){
   let earX=0.095; { let m=0; for(let i=0;i<pos.count;i++){ if(Math.abs(pos.getY(i)+0.008)<0.012&&pos.getZ(i)>-0.02&&pos.getZ(i)<0.03) m=Math.max(m,Math.abs(pos.getX(i))); } if(m>0) earX=m; }
   parts.push(pc(skull,(x,y,z,c)=>{ skinPaint(c);
     if(L.facial==='stubble'&&y<-0.018*HEAD_TALL&&z<-0.02) c.lerp(hairCol,0.3);
-    if(z<-0.03) c.lerp(blushC,(fem?0.2:0.1)*G(Math.abs(x),0.058*fs[0],0.022)*G(y,-0.03*HEAD_TALL,0.02)); }));     // a faint blush on the cheeks
+    if(z<-0.03) c.lerp(blushC,Math.min(0.75,(fem?0.2:0.1)+0.5*S.blush)*G(Math.abs(x),0.058*fs[0],0.022)*G(y,-0.03*HEAD_TALL,0.02)); }));     // a faint blush on the cheeks
   // put a feature (built around the origin, facing -z) on the face at (x,y), `push` metres out of the surface, turned to follow the surface's slope
   const place=(g,x,y,push)=>{ const d=0.004, z=zAt(x,y), n=new THREE.Vector3((zAt(x+d,y)-zAt(x-d,y))/(2*d),(zAt(x,y+d)-zAt(x,y-d))/(2*d),-1).normalize();
     g.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,-1),n)));
@@ -101,7 +101,7 @@ function buildFace(X){
     parts.push(place(merge(n),0,-0.02*HEAD_TALL,0)); }
 
   /* mouth: a fine line whose corners lift with a smile, a fuller lower lip (and an upper one on a female face) */
-  { const mw=0.0165*S.mouthSize*(fem?0.92:1), my=-0.062*HEAD_TALL, sm=S.smile, lipsC=skin.clone().lerp(_tint.set(0xb04a52),fem?0.62:0.4), line=lipsC.clone().multiplyScalar(0.5).getHex();
+  { const mw=0.0165*S.mouthSize*(fem?0.92:1), my=(-0.062+0.008*S.mouthHeight)*HEAD_TALL, sm=S.smile, lipsC=skin.clone().lerp(_tint.set(Number.isFinite(L.lipColor)&&L.lipColor>=0?L.lipColor:0xb04a52),Number.isFinite(L.lipColor)&&L.lipColor>=0?0.8:fem?0.62:0.4), line=lipsC.clone().multiplyScalar(0.5).getHex();
     const P=[]; for(let i=0;i<=6;i++){ const u=i/6*2-1, x=u*mw, y=my+sm*0.0055*u*u-0.0013*(1-u*u)*(1+0.3*sm); P.push([x,y,zAt(x,y)-0.0007]); }
     parts.push(col(sweepTube(P,[0.0008,0.0015,0.0019,0.002,0.0019,0.0015,0.0008],sg(6),{cap:'point',rings:sg(14)}),line));
     const lw=S.lips; const lo=new THREE.Color(lipsC);

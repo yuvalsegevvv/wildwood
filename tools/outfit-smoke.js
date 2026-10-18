@@ -51,7 +51,7 @@ if(!only){
   ok('base items and outfit items mix (a base top over an outfit bottom, outfit boots under base trousers...)',!bs,bs||'');
   // loose parts follow the slot that owns them: Dunstan's drum is his tabard's, his hat has none; Marigold's lanterns are her hat's
   const anim=o=>{ const r=C.buildCharacter(look('male',o),{q:0.4}); return r.anims?r.anims.length:0; };
-  ok('animated parts belong to their slot (Dunstan: the drum with the top; Marigold: the lanterns with the hat, the antenna strand with the hair)',anim({top:'dunstan'})>=1&&anim({hat:'dunstan'})===0&&anim({bottom:'dunstan'})===0&&anim({hat:'marigold'})>=1&&anim({hair:'marigold'})>=1&&anim({top:'marigold'})===0);
+  ok('animated parts belong to their slot (Dunstan: the drum with the top; Marigold: the lanterns with the hat, the antenna strand with the hair)',anim({top:'dunstan'})>=1&&anim({hat:'dunstan'})===0&&anim({bottom:'dunstan'})===0&&anim({hat:'marigold'})>=1&&anim({hair:'marigold'})>=1&&anim({top:'marigold'})===1);   // (the top's one animation is the set's aura)
   // the weapon dressing is the weapon slot's alone
   { const r0=C.buildCharacter(look('male'),{q:0.4}), r1=C.buildCharacter(look('male',{weaponItem:'sorrel'}),{q:0.4}), r2=C.buildCharacter(look('male',{top:'sorrel',hat:'sorrel',hair:'sorrel'}),{q:0.4});
     ok('the weapon dressing comes only from the weapon slot',!r0.dress&&!!r1.dress&&!r2.dress); }

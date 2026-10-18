@@ -2,7 +2,7 @@
 /* ---------- Sorrel: safe DPS, air. Design: docs/skillkits/looks/sorrel.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: sky 0x8fb8d8, cream 0xf1ead8, slate 0x4a5560, snow 0xf4f6f8, feather grey 0xb7c0c9 (+ leather 0x6a5a48 and brass 0xc2a45a for the straps and rims). Silhouette: the tallest and lightest line, loose pale hair and
    a very long scarf both streaming back and to the left, feathers at the ear and the grip. The only glow is a pale sky glint in a lens (air): one in the goggles, one in the weapon charm. */
-CHAR_MODELS.sorrel={id:'sorrel',name:'Sorrel',signature:true, items:{hat:'Ridge band',hair:'Gale long',face:'Wind streaks',top:'Lookout layers',bottom:'Crag trousers',shoes:'Ledge boots',weapon:'Feather flight'},sexes:['female'],
+CHAR_MODELS.sorrel={id:'sorrel',name:'Sorrel',signature:true, hairGrad:{mode:'ombre',c2:0xa8d4f0,c3:0x58c0b8}, items:{hat:'Ridge band',hair:'Gale long',face:'Wind streaks',top:'Lookout layers',bottom:'Crag trousers',shoes:'Ledge boots',weapon:'Feather flight'},sexes:['female'],
   note:'The lookout: the tallest and lightest line, drawn for a tall, slim, long-legged woman.',
   ranges:{height:[0.98,1.08],build:[0.88,1.08],chest:[0.6,1.2],shoulders:[0.88,1.08],waist:[0.85,1.05],legs:[1.0,1.14],thighs:[0.85,1.05],arms:[0.82,1.1],neck:[0.95,1.2],head:[0.92,1.08],eyeSize:[0.9,1.15],eyeTilt:[0.05,0.7],hairLength:[1.0,1.35],hairVolume:[1.0,1.25]},
   setups:[{id:'sorrel',name:'Sorrel',sex:'female',def:true,note:'The lookout as drawn: tall, slim, long-legged, a cool narrow stare.',v:{height:1.05,build:0.9,chest:0.95,shoulders:0.95,waist:0.9,hips:0.97,torso:1.02,legs:1.12,thighs:0.92,arms:0.92,neck:1.05,jaw:0.9,chin:0.95,cheeks:0.85,eyeSize:0.95,eyeGap:1.02,eyeTilt:0.4,brow:0.25,noseSize:0.9,mouthSize:0.9,lips:0.9,hairLength:1.3,hairVolume:1.15,bangs:0.7}}]};
@@ -326,6 +326,7 @@ OUTFITS.sorrel=(function(){
         return {lit,glow}; } };
 
     return {
+      aura:{col:0xdcefff,col2:0xffffff,style:'orbit',ring:false,n:6,shape:'wisp',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0x8fb8d8,bottom:0x4a5560,shoes:0x6a5a48,hat:0x6a5a48}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.6, shinCut:0.55, boot:true, skinFrom:0.6, hairColor:HAIR, eyeColor:EYE,
       eyes:{iris:0.82,h:0.7,w:1.1,lash:1.9,hl:1,tilt:0.24,browLift:0.004,browThick:0.85},
       cuts:{torso:[0.012,0.07,0.405,0.498],upperArm:[0.158/D.upper,0.17/D.upper,0.19/D.upper,0.202/D.upper],foreArm:[0.17/D.fore,0.2/D.fore,WRIST/D.fore]},

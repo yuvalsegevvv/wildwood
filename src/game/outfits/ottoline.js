@@ -2,7 +2,7 @@
 /* ---------- Ottoline: support (both), dark. Design: docs/skillkits/looks/ottoline.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: black 0x1c1822, porcelain 0xf3eee8, lace 0xf8f4ee, blood rose 0x8a1f3d, silver 0xb9b6c4, violet 0xb06ad8 (the weapon charm's spark only, an unlit glow). Silhouette: a little bell: a wide skirt, a narrow corset, big puffed
    sleeves and a lace-crowned head with long curls. Every part has at least two colours (black and white at the least, rose as the accent); the emblem is a rose and a key, never a skull. */
-CHAR_MODELS.ottoline={id:'ottoline',name:'Ottoline',signature:true, items:{hat:'Lace headdress',hair:'Hime ringlets',face:'Doll face',top:'Corset blouse',bottom:'Tier skirt',shoes:'Strap shoes',weapon:'Key & doll'},sexes:['female'],
+CHAR_MODELS.ottoline={id:'ottoline',name:'Ottoline',signature:true, hairGrad:{mode:'tips',c2:0x7a1a2a}, items:{hat:'Lace headdress',hair:'Hime ringlets',face:'Doll face',top:'Corset blouse',bottom:'Tier skirt',shoes:'Strap shoes',weapon:'Key & doll'},sexes:['female'],
   note:'The porcelain doll: small, narrow and big-eyed, built for a slight figure with a small waist.',
   ranges:{height:[0.92,1.02],build:[0.88,1.02],shoulders:[0.88,1.05],arms:[0.82,1.05],chest:[0.6,1.15],waist:[0.82,1.0],hips:[0.9,1.15],legs:[0.96,1.12],head:[1.0,1.12],eyeSize:[1.1,1.3],hairLength:[1.0,1.35],hairVolume:[1.0,1.25]},
   setups:[{id:'ottoline',name:'Ottoline',sex:'female',def:true,note:'The doll as drawn: small, a tiny waist, huge glassy eyes, a still face.',v:{height:0.93,build:0.9,chest:0.8,shoulders:0.92,waist:0.84,torso:0.96,legs:1.04,thighs:0.92,arms:0.84,neck:0.95,hands:0.88,feet:0.9,head:1.08,jaw:0.88,chin:0.85,cheeks:1.1,eyeSize:1.3,eyeGap:1.05,eyeHeight:-0.15,eyeTilt:0.05,brow:0.0,noseSize:0.7,mouthSize:0.8,lips:1.0,smile:0.1,hairLength:1.3,hairVolume:1.1}}]};
@@ -65,6 +65,7 @@ OUTFITS.ottoline=(function(){
       out.push(solid(F.place(csph(1,sg(6),sg(5)).scale(0.0028,0.0028,0.0008),0.03,-0.058,0.0007),0x2a2030)); return out; };
 
     return {
+      aura:{col:0x8a1a2a,col2:0x2a2030,style:'fall',ring:false,n:6,shape:'petal',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0x1c1822,bottom:0x1c1822,shoes:0x1c1822,hat:0x1c1822}, bootTop:0.82, shinCut:0.8, boot:false, skinFrom:0.582, hairColor:HAIR, eyeColor:0x8a52c8,
       eyes:{iris:1.3,hl:3,tilt:0.05,lash:1.3,h:1.12,browLift:0.003,browThick:0.9},
       cuts:{torso:[0.03,0.31,0.548,0.582],upperArm:[0.2],foreArm:[0.208/D.fore,0.222/D.fore],thigh:[0.15],shin:[0.82,0.86]},

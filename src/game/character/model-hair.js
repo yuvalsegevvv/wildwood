@@ -76,6 +76,7 @@ function buildHair(X,F){
   if(H==='bun'){ fringe(8,1.0,0.12); sideLocks(0.05); backLocks(sg(10),-0.02,41); if(!hat){ add(hang(csph(0.056,sg(16),sg(12)).translate(0,0.092,0.078))); tie(0,0.058,0.085,0.045); } }
   if(L.ahoge&&!hat&&H!=='bald'){ add(hang(sweepTube([[0.004,0.1,-0.042],[0.0,0.17,-0.05],[-0.02,0.23,-0.036],[0.0,0.27,-0.012],[0.02,0.26,0.008]],[0.0075,0.0065,0.005,0.003,0.0012],sg(6),{cap:'point',rings:sg(14)}))); }
 
+  hgApply(X,parts,0,parts.length);   // hair colour gradient (model-hairgrad.js), before any hat is added
   /* hats: the base hats are in model-hats.js */
   htBase(X,F,parts);
   if(kHat&&kHat.head){ const n0=parts.length; parts.push(...kHat.head(F,T)); ofTintFrom(X,'hat',parts,n0); }

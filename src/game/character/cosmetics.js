@@ -127,8 +127,8 @@ function cosBuildAura(rig,X,def){
   const geo=cosShape(def.shape||'mote'), shape=def.shape||'mote', halo=shape==='mote'||shape==='star'||shape==='wisp', upright=shape==='flame'||shape==='drop', spinny=shape==='petal'||shape==='flake'||shape==='star'||shape==='leaf'||shape==='grain';
   const ps=[];
   for(let i=0;i<n;i++){
-    const col=i%3===0?def.col2:def.col, m=new THREE.Mesh(geo,cosMat(col)); m.frustumCulled=false; g.add(m);
-    let h=null; if(halo&&!cheap){ h=new THREE.Mesh(geo,cosHaloMat(col)); h.frustumCulled=false; g.add(h); }
+    const col=i%3===0?def.col2:def.col, m=new THREE.Mesh(geo,cosMat(col)); m.frustumCulled=false; m.position.set(0,hgt*0.5,0.5); g.add(m);   // (a resting place until the first frame: never under the ground)
+    let h=null; if(halo&&!cheap){ h=new THREE.Mesh(geo,cosHaloMat(col)); h.frustumCulled=false; h.position.set(0,hgt*0.5,0.5); g.add(h); }
     ps.push({m,h,ph:i/n,r:0.38+0.14*((i*7)%5)/4,sp:0.5+0.35*((i*3)%4)/3,off:(i*2.399)%TAU});   // (fixed pseudo-random spread: the same every build)
   }
   const rings=def.ring?cosRings(def).map(r=>{ const m=new THREE.Mesh(r.geo,cosMat(def.col)); m.position.y=r.y; m.frustumCulled=false; g.add(m); return Object.assign({m},r); }):[];

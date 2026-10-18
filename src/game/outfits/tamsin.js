@@ -2,7 +2,7 @@
 /* ---------- Tamsin: grind, earth. Design: docs/skillkits/looks/tamsin.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: granite 0x8a8f96, dust 0xd2b48a, rope 0x9a7a4a, ochre 0xc2823a, canvas 0x6a5a44, steel 0xc9ccd4. Silhouette: a wrapped head with a knot, strong bare arms, a rope harness across the chest, a belt of tools and thick knees over heavy boots.
    Every part has at least two colours (granite and ochre at the least); the emblem is a cairn, never a mountain copied from a brand. */
-CHAR_MODELS.tamsin={id:'tamsin',name:'Tamsin',signature:true, items:{glove:'Quarry gloves',hat:'Dust wrap',hair:'Pinned braids',face:'Dust smudges',top:'Rope harness',bottom:'Knee-pad trousers',shoes:'Steel-toe boots',weapon:'Sledge rig'},sexes:['female'],
+CHAR_MODELS.tamsin={id:'tamsin',name:'Tamsin',signature:true, hairGrad:{mode:'streak',c2:0xd89a4a}, items:{glove:'Quarry gloves',hat:'Dust wrap',hair:'Pinned braids',face:'Dust smudges',top:'Rope harness',bottom:'Knee-pad trousers',shoes:'Steel-toe boots',weapon:'Sledge rig'},sexes:['female'],
   note:'The quarry-hand: strong, short in the stride and steady, built for a sturdy woman.',
   ranges:{height:[0.92,1.04],build:[1.0,1.18],chest:[0.9,1.4],waist:[0.9,1.15],hips:[1.0,1.2],legs:[0.92,1.06],neck:[0.95,1.2],arms:[1.0,1.25],head:[0.95,1.1],hairLength:[0.8,1.2],hairVolume:[0.9,1.2]},
   setups:[{id:'tamsin',name:'Tamsin',sex:'female',def:true,note:'The quarry-hand as drawn: broad-shouldered, strong-armed and sturdy.',v:{height:0.98,build:1.1,chest:1.1,shoulders:1.1,waist:1.0,torso:0.98,legs:0.98,thighs:1.1,arms:1.15,neck:1.05,hands:1.12,feet:1.05,jaw:1.05,chin:1.0,cheeks:1.05,noseSize:1.0,mouthSize:1.0,smile:0.4,hairLength:1.0,hairVolume:1.1}}]};

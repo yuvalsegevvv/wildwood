@@ -2,7 +2,7 @@
 /* ---------- Ogden: grinder, water. Design: docs/skillkits/looks/ogden.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: moss 0x6f8f6b, bone 0xe5e0c8, mud 0x5a4632, dirty linen 0xcfc7a8, black 0x24211f, burgundy 0x6a2c2c, drowned teal 0x4fd0c0 (the bell's drip only, an unlit glow). Silhouette: a slouch: a low flat cap, a long torn
    waistcoat, ragged breeches over bare green shins, a rope and a toe tag at the neck. The skin of the player stays (face, neck, hands); the arms and shins are painted moss green so the body reads dead. Two or more colours per part. */
-CHAR_MODELS.ogden={id:'ogden',name:'Ogden',signature:true, items:{hat:'Diggers cap',hair:'Straggle',face:'Stitches & blotches',top:'Grave waistcoat',bottom:'Torn breeches',shoes:'Split boots',weapon:'Grave spade'},sexes:['male'],
+CHAR_MODELS.ogden={id:'ogden',name:'Ogden',signature:true, hairGrad:{mode:'ombre',c2:0x5a7a50}, items:{hat:'Diggers cap',hair:'Straggle',face:'Stitches & blotches',top:'Grave waistcoat',bottom:'Torn breeches',shoes:'Split boots',weapon:'Grave spade'},sexes:['male'],
   note:'The gravedigger: heavy, stooped and long in the arm, built for a broad, tall man.',
   ranges:{height:[0.98,1.08],build:[1.0,1.18],chest:[0.9,1.2],waist:[0.95,1.15],hips:[0.9,1.15],legs:[0.92,1.06],neck:[0.9,1.15],arms:[1.0,1.25],head:[0.95,1.08],hairLength:[0.8,1.2],hairVolume:[0.9,1.1]},
   setups:[{id:'ogden',name:'Ogden',sex:'male',def:true,note:'The gravedigger as drawn: big, stooped, long-armed, a heavy jaw.',v:{height:1.04,build:1.1,chest:1.0,shoulders:1.05,waist:1.1,torso:1.0,legs:0.96,thighs:1.05,arms:1.15,neck:1.0,hands:1.15,feet:1.1,jaw:1.15,chin:1.1,cheeks:0.85,noseSize:1.1,mouthSize:1.05,smile:0.0,hairLength:0.9,hairVolume:0.92}}]};
@@ -61,6 +61,7 @@ OUTFITS.ogden=(function(){
       return out; };
 
     return {
+      aura:{col:0x7fbf9a,col2:0xc8e8d0,style:'rise',ring:false,n:5,shape:'wisp',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0x6a2c2c,bottom:0x24211f,shoes:0x5a4632,hat:0x5a4632}, bootTop:0.7, shinCut:0.7, boot:true, skinFrom:0.545, hairColor:GREY, eyeColor:0xd8d070,
       eyes:{iris:0.78,hl:1,tilt:-0.05,lash:0.2,h:0.92,browLift:-0.002,browThick:0.8},
       cuts:{torso:[0.545],upperArm:[0.35,0.8,0.86],foreArm:[0.19/D.fore,0.222/D.fore],thigh:[],shin:[0.05,0.7,0.74]},

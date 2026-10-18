@@ -210,6 +210,7 @@ game
   character/model-face.js            The hiker's head: an anime-leaning face (moderate eyes with highlights and lashes, a small nose and mouth, brows, ears, a rounded chin) on a sculpted skull that the face sliders reshape
   character/model-hair.js            The hiker's hair (a cap plus tapered locks: fringe, side locks, tails, braids, spikes; length / volume / fringe sliders) and the hats
   character/model-hats.js            The base hats (version 3.1): ranger, beanie, cap, kasa and helm redrawn with the detail of the signature sets, and the new bandana, hood, circlet, wizard and straw hats
+  character/model-hairgrad.js        Hair colour gradients: a second hair colour blended along the length of the hair (ombre, dipped tips, roots, a streak), applied to the finished hair geometry
   character/model-body.js            The hiker's body: chest, neck, shoulders and hips as one surface; arms and legs whose joints continue each other; hands with fingers; shaped feet
   character/model-gloves.js          Gloves (version 3.1): six base gloves and the glove slot of the signature outfits: the hand's paint, fatter fingers or a mitten, and the cuff (geometry on the forearm)
   character/model-garments.js        The base garments' details (version 3.1): collars, plackets, pockets, belts, cuffs, laces, soles and straps for the plain tops, bottoms and shoes, and the new vest, tunic, kilt, pleated skirt, sandals and tall boots

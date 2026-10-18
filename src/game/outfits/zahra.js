@@ -2,7 +2,7 @@
 /* ---------- Zahra: buff support, light. Design: docs/skillkits/looks/zahra.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: gold 0xe8c050, lapis 0x2b6aa8, white 0xf4efe0, sand 0xd6b87a, bronze 0xb08a3a. Silhouette: a crowned veiled head, a short robe with wide sleeves over a long split skirt, a sandglass on the hip.
    Every part has at least two colours (lapis and gold at the least); the emblem is a sandglass, never a crescent or a rayed sun. */
-CHAR_MODELS.zahra={id:'zahra',name:'Zahra',signature:true, items:{hat:'Beaded circlet',hair:'Gold-strung braid',face:'Gold dots',top:'Wide-sleeve robe',bottom:'Split noon skirt',shoes:'Gold sandals',weapon:'Mirror rig'},sexes:['female'],
+CHAR_MODELS.zahra={id:'zahra',name:'Zahra',signature:true, hairGrad:{mode:'tips',c2:0xe0b840,c3:0x2f55a0}, items:{hat:'Beaded circlet',hair:'Gold-strung braid',face:'Gold dots',top:'Wide-sleeve robe',bottom:'Split noon skirt',shoes:'Gold sandals',weapon:'Mirror rig'},sexes:['female'],
   note:'The glass-bearer: tall, composed and graceful, built for a long-limbed woman.',
   ranges:{height:[0.98,1.08],build:[0.88,1.05],chest:[0.7,1.2],waist:[0.82,1.02],hips:[0.9,1.15],legs:[1.0,1.14],neck:[1.0,1.2],arms:[0.85,1.1],head:[0.95,1.08],hairLength:[1.0,1.35],hairVolume:[0.9,1.2]},
   setups:[{id:'zahra',name:'Zahra',sex:'female',def:true,note:'The glass-bearer as drawn: tall, poised and long-necked.',v:{height:1.05,build:0.94,chest:0.95,shoulders:0.98,waist:0.9,torso:1.0,legs:1.08,thighs:0.96,arms:0.95,neck:1.12,hands:0.95,feet:0.96,jaw:0.95,chin:1.0,cheeks:1.0,noseSize:1.0,mouthSize:0.98,smile:0.35,hairLength:1.25,hairVolume:1.05}}]};
@@ -52,6 +52,7 @@ OUTFITS.zahra=(function(){
       return out; };
 
     return {
+      aura:{col:0xffd24a,col2:0x6aa0e8,style:'orbit',ring:false,n:8,shape:'mote',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0x2b6aa8,bottom:0xf4efe0,shoes:0xe8c050,hat:0x2b6aa8}, bootTop:1.1, shinCut:9, boot:false, skinFrom:0.592, hairColor:HAIR, eyeColor:0xc89a30,
       eyes:{iris:1.1,hl:2,tilt:0.18,lash:1.3,browLift:0.003,browThick:0.9,h:0.95},
       cuts:{torso:[0.03,0.06,0.2,0.235,0.545],upperArm:[0.7,0.78],foreArm:[0.19/D.fore,0.222/D.fore],thigh:[0.9],shin:[0.82,0.88]},
