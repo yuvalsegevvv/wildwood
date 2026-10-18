@@ -1,4 +1,4 @@
-//@ Boss move sets of the Sakura Vale: Akaoni (demon leaps and fire pools, stampede hops, the torii gate, fire ripples, burning brands, the embers he feeds on) and Kyuubi (foxfire volleys that widen as her tails burn, blinking strikes through the spirits, the fox trail, spoke beams)
+//@ Boss move sets of the Sakura Vale: Akaoni (demon leaps and fire pools, stampede hops, the toss, the torii gate, fire ripples, burning brands, the embers he feeds on) and Kyuubi (foxfire volleys that widen as her tails burn, blinking strikes through the spirits, the fox trail, spoke beams)
 /* See boss.js for the kit contract and boss-fx.js for the moves. Numbers: a boss's hit is m.T.dmg; a multiplier is how many hits a move is worth. */
 
 // ---- Akaoni, the Gate Demon (level 20): it does not walk to you, it jumps ----
@@ -21,6 +21,17 @@ function oniHopsS(B,m){
       laterS(B,dur-0.65,()=>{ B.mode=1; moveBossS(B,x,z,0.6); });
       laterS(B,dur,()=>{ B.mode=0; addZoneS(B,'ember',x,z,2.8,8); }); });
     t+=dur+0.1; }
+}
+// the toss: he seizes the nearest hero (a ring holds them 1.1 s), then hurls them 7 m toward the rim, and an ember pool is waiting where they land (a 4 m blast, 1.0 s of warning, hurts
+// everyone near: do not stand where a crewmate will land)
+function oniTossS(B,m,p){
+  const A=B.A, D=m.T.dmg; faceS(m,p.x,p.z); castS(B,m,2.0,1.0);
+  const e=addTeleS(B,p.x,p.z,2.0,1.1,'prison',0,0,p.id); pfxS(p,'root',1.1);
+  e.done=e2=>{ const q=S.players.get(p.id); if(!q||q.dead||!B.engaged) return;
+    const dx=q.x-A.x, dz=q.z-A.z, d=Math.hypot(dx,dz)||1, ux=dx/d, uz=dz/d, lx=q.x+ux*7, lz=q.z+uz*7;
+    pfxS(q,'push',0,ux*26,uz*26); const [bx,bz]=inArenaS(A,lx,lz,A.r-1);
+    addTeleS(B,bx,bz,4,1.0,'slam',Math.round(D*1.4)).done=e3=>addZoneS(B,'ember',e3.x,e3.z,2.8,7); };
+  toastTo(null,'Akaoni seizes '+p.name+'!','bad');
 }
 // the torii: two pillars of fire stand 11 m apart with a player between them (each 20 m long, 2.4 m either side, 1.5 s of warning) and, 0.7 s later, the lintel falls across the
 // gap through where that player stood. The middle looks safe and is the worst place to be: leave the gate along its length, or out past a pillar
@@ -52,7 +63,7 @@ function oniBrandS(B,m,inside){
   toastTo(null,'Akaoni brands '+picks.map(q=>q.name).join(' and ')+'! Get away from each other!','bad'); ev('roar',m.id);
 }
 BOSS_KITS.oni={
-  start(B){ B.k={leapT:6,rippleT:99,brandT:99,hopT:14,toriiT:9,fed:false}; },
+  start(B){ B.k={leapT:6,rippleT:99,brandT:99,hopT:14,toriiT:9,tossT:13,fed:false}; },
   phase(B,m,n){
     if(n===2){ B.k.rippleT=4; toastTo(null,'The Demon Gate flares! The ground ripples with fire.','bad'); }
     else { B.k.brandT=5; spawnAddsS(B,2); }
@@ -60,10 +71,11 @@ BOSS_KITS.oni={
   },
   tick(B,m,dt,C){
     const k=B.k;
-    k.leapT-=dt; k.hopT-=dt; k.toriiT-=dt; if(B.phase>=2) k.rippleT-=dt; if(B.phase>=3) k.brandT-=dt;
+    k.leapT-=dt; k.hopT-=dt; k.toriiT-=dt; k.tossT-=dt; if(B.phase>=2) k.rippleT-=dt; if(B.phase>=3) k.brandT-=dt;
     oniEmbersS(B,m,dt);
     if(B.busy>0||B.mv) return;
     if(k.hopT<=0){ k.hopT=B.enraged?15:20; oniHopsS(B,m); }
+    else if(k.tossT<=0&&C.dp<14){ k.tossT=B.enraged?14:18; oniTossS(B,m,C.p); if(B.enraged&&C.inside.length>1) oniTossS(B,m,farPlayerS(m,C.inside)); }
     else if(k.toriiT<=0){ k.toriiT=B.enraged?11:15; oniToriiS(B,m,C.p); }
     else if(k.brandT<=0){ k.brandT=13; oniBrandS(B,m,C.inside); }
     else if(k.rippleT<=0){ k.rippleT=B.enraged?10:13; oniRipplesS(B,m); }

@@ -1,9 +1,9 @@
-// Headless test of the signature mechanics of the ten reworked bosses (Glass Guardian, Mountain Golem, Captain Dredge, Sand Wyrm, Rootwarden; Gloam Warden, Gryphon Queen, Akaoni, Kyuubi, Carapax), straight from src/ (no build):
+// Headless test of the signature mechanics of the fifteen reworked bosses (Glass Guardian, Mountain Golem, Captain Dredge, Sand Wyrm, Rootwarden; Gloam Warden, Gryphon Queen, Akaoni, Kyuubi, Carapax; Ymrik, Vetrmaw, and the second moves of Dredge, Gryphon, Akaoni), straight from src/ (no build):
 // each mechanic is driven by hand and its effect on the players or on the boss is checked (the mirror throws a blow back, the shell soaks and cracks, the chain pulls and is cut,
 // the sand strikes whoever stands still, the seasons turn). boss-smoke.js checks that every move happens in a whole fight; this one checks what the moves DO.
 // Usage: node tools/boss-rework-smoke.js
 const {loadServer}=require('./load');
-const {api:W,x}=loadServer({dev:true,send(){}},['BOSSES','getH','BOSS_KITS','monK','golemCrackS','wyrmListenS','dredgeHookS','dredgeBilgeTickS','glassStanceS','glassPrismsS','glassSplitS','spawnAddsS','spawnMonS','wardenDarkS','wardenInBeamS','gryphStrafeS','gryphStragglerS','gryphCullS','foxBeamsS','oniBrandS','oniHopsS','oniToriiS','oniEmbersS','foxTrailS','foxBlinkS','tideMoltS','tideClampS','tideWaveS','S']);
+const {api:W,x}=loadServer({dev:true,send(){}},['BOSSES','getH','BOSS_KITS','monK','golemCrackS','wyrmListenS','dredgeHookS','dredgeBilgeTickS','glassStanceS','glassPrismsS','glassSplitS','spawnAddsS','spawnMonS','wardenDarkS','wardenInBeamS','gryphStrafeS','gryphStragglerS','gryphCullS','foxBeamsS','oniBrandS','oniHopsS','oniToriiS','oniEmbersS','foxTrailS','foxBlinkS','tideMoltS','tideClampS','tideWaveS','rimeDecreeS','rimeLaneS','wyrmColdS','wyrmLungeS','gryphHuntS','gryphPreyS','oniTossS','dredgeSpotS','dredgeSpotTickS','S']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const keep=()=>{ for(const p of W.players.values()){ p.maxHp=1e7; p.hp=1e7; p.dead=false; } };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); keep(); } };
@@ -14,6 +14,7 @@ const boss=k=>x.BOSSES.find(B=>B.bd.kit===k), pa=()=>W.players.get('a'), pb=()=>
 function engage(B,a,b){ const A=B.A, py=x.getH(A.x,A.z); const put=()=>{ W.setPos('a',[A.x+a[0],py,A.z+a[1],0,0,0]); W.setPos('b',[A.x+b[0],py,A.z+b[1],0,0,0]); }; put(); tick(2); put(); return put; }
 const run=(put,secs,mv)=>{ for(let i=0;i<secs*20;i++){ if(mv) mv(i); else put(); tick(1); } };
 const hurt=p=>1e7-p.hp;
+const raw=(secs,mv)=>{ for(let i=0;i<secs*20;i++){ mv(i); W.tick(0.05); } };   // (like run, but the players' health is left alone, to read what they lost)
 
 { // ---- Glass Guardian: a blow in the mirror stance comes back; a burst raises the stance; an unstruck stance stuns it
   const B=boss('glass'), m=B.m, put=engage(B,[4,0],[-9,3]); B.k.stanceT=99; B.k.stanceCd=99;
@@ -135,6 +136,46 @@ const hurt=p=>1e7-p.hp;
   B.walls=[]; B.adds=[]; x.tideWaveS(B,m); const w0=B.walls[0].speed; B.walls=[]; x.spawnAddsS(B,2); x.tideWaveS(B,m); ok('tide: living hatchlings call the tide (the wave runs faster)',B.walls[0].speed>w0+1.4,w0+' -> '+B.walls[0].speed);
   B.walls=[]; B.k.soft=0; B.mode=0; B.busy=0; B.mv=null; x.tideClampS(B,m,{p:pa(),inside:[pa(),pb()],dp:4}); ok('tide: it clamps a player in the claw',!!B.k.clamp&&B.tele.some(e=>e.kind==='prison'));
   x.BOSS_KITS.tide.hit(B,m,pb(),m.maxHp*x.monK(m,pb()).hp*0.05); ok('tide: enough blows pry the claw open and it reels',B.k.clamp===null&&B.stunT>0);
+  W.setPos('a',[0,5,0,0,0,0]); W.setPos('b',[2,5,0,0,0,0]); tick(3);
+}
+{ // ---- Ymrik: the decree (kneel: do not move; rise: do not stand still), the frost lane, the cold that spreads from a prison
+  const B=boss('rime'), m=B.m, A=B.A, py=x.getH(A.x,A.z), put=engage(B,[6,0],[-9,3]); B.k.fallT=99; B.k.prisonT=99; B.k.decreeT=99; B.k.laneT=99; B.stunT=0;
+  const walk=i=>{ W.setPos('a',[A.x+6+(i%40)*0.3,py,A.z,0,0,0]); W.setPos('b',[A.x-9,py,A.z+3,0,0,0]); };
+  x.rimeDecreeS(B,m,[pa(),pb()]); B.k.decree.kneel=true; B.k.decree.pos.set('a',[A.x+6,A.z]); B.k.decree.pos.set('b',[A.x-9,A.z+3]); let a0=pa().hp, b0=pb().hp;
+  raw(2.6,walk); ok('rime: KNEEL: the hero who moved was struck, the one who knelt was not',(a0-pa().hp)>0&&(b0-pb().hp)<=0&&B.mode===0,'a '+(a0-pa().hp)+' b '+(b0-pb().hp));
+  B.busy=0; x.rimeDecreeS(B,m,[pa(),pb()]); B.k.decree.kneel=false; a0=pa().hp; b0=pb().hp;
+  raw(2.6,i=>{ W.setPos('a',[A.x+6+(i%60)*0.4,py,A.z,0,0,0]); W.setPos('b',[A.x-9,py,A.z+3,0,0,0]); }); ok('rime: RISE: the hero who stood still was struck, the one who moved was not',(b0-pb().hp)>0&&(a0-pa().hp)<=0,'a '+(a0-pa().hp)+' b '+(b0-pb().hp));
+  B.tele=[]; x.rimeLaneS(B,m); ok('rime: the frost lane is a row of seven icicles (one gap in eight)',B.tele.filter(e=>e.kind==='icefall').length===7);
+  W.setPos('a',[0,5,0,0,0,0]); W.setPos('b',[2,5,0,0,0,0]); tick(3);
+}
+{ // ---- Vetrmaw: the chill climbs away from the Warm Cores and drains beside one; at 100 you are frozen; it lunges at a core
+  const B=boss('wyrm'), m=B.m, A=B.A, py=x.getH(A.x,A.z), put=engage(B,[4,0],[-9,3]); B.k.breathT=99; B.k.gustT=99; B.k.tailT=99; B.k.lungeT=99; B.stunT=0;
+  const cores=B.adds.filter(a=>a.def.id==='warmcore'&&!a.dead&&!a.remove); ok('wyrm: two Warm Cores stand from the start',cores.length===2);
+  B.k.cold=new Map(); const far=cores.map(c=>c).reduce((r,c)=>r,0); for(const c of cores){ c.x=A.x+40; c.z=A.z+40; }
+  run(null,5,()=>{ W.setPos('a',[A.x+4,py,A.z,0,0,0]); W.setPos('b',[A.x-9,py,A.z+3,0,0,0]); }); ok('wyrm: away from the cores the chill climbs (about 4% a second)',(B.k.cold.get('a')||0)>15&&B.aux>15,'a '+(B.k.cold.get('a')||0).toFixed(1));
+  cores[0].x=A.x+4; cores[0].z=A.z; run(null,2,()=>{ W.setPos('a',[A.x+4,py,A.z,0,0,0]); W.setPos('b',[A.x-9,py,A.z+3,0,0,0]); }); ok('wyrm: beside a core it drains',(B.k.cold.get('a')||0)<5);
+  B.k.cold.set('b',99); const hb=pb().hp; raw(0.6,()=>{ W.setPos('a',[A.x+4,py,A.z,0,0,0]); W.setPos('b',[A.x-9,py,A.z+3,0,0,0]); }); ok('wyrm: at 100 you are frozen (a bite of frost) and the chill starts again',hb-pb().hp>0&&(B.k.cold.get('b')||0)<10);
+  B.busy=0; B.mv=null; m.hp=m.maxHp*0.5; const h0=m.hp; x.wyrmLungeS(B,m,{p:pa()}); run(null,2.2,()=>{ W.setPos('a',[A.x+30,py,A.z,0,0,0]); W.setPos('b',[A.x-9,py,A.z+3,0,0,0]); });
+  ok('wyrm: it lunged at a core, smashed it and drank the warmth',cores[0].remove===true&&m.hp>h0);
+  W.setPos('a',[0,5,0,0,0,0]); W.setPos('b',[2,5,0,0,0,0]); tick(3);
+}
+{ // ---- Gryphon: the hunt (prey named, others hit her harder), Akaoni's toss, Dredge's black spot
+  const B=boss('gryphon'), m=B.m, put=engage(B,[4,0],[-9,3]); B.stunT=0; x.gryphHuntS(B,m,[pa(),pb()]); const prey=B.k.prey.id, other=prey==='a'?pb():pa(), preyP=prey==='a'?pa():pb();
+  ok('gryphon: she hunts one hero',!!prey&&x.gryphPreyS(B,[pa(),pb()]).id===prey);
+  const h0=m.hp; m.hp-=1000; x.BOSS_KITS.gryphon.hit(B,m,other,1000); ok('gryphon: a blow from anyone but the prey hits 25% harder',h0-m.hp>1200&&h0-m.hp<1300,'took '+(h0-m.hp));
+  const h1=m.hp; m.hp-=1000; x.BOSS_KITS.gryphon.hit(B,m,preyP,1000); ok('gryphon: the prey does not',h1-m.hp===1000);
+  W.setPos('a',[0,5,0,0,0,0]); W.setPos('b',[2,5,0,0,0,0]); tick(3);
+}
+{ const B=boss('oni'), m=B.m, A=B.A, put=engage(B,[5,0],[-9,3]); B.k.leapT=99; B.k.hopT=99; B.k.toriiT=99; B.k.tossT=99; B.stunT=0; B.tele=[]; B.q=[];
+  x.oniTossS(B,m,pa()); ok('oni: he seizes the nearest hero (a ring holds them)',B.tele.some(e=>e.kind==='prison'));
+  run(put,1.3,null); ok('oni: then hurls them, and a blast is waiting where they land',B.tele.some(e=>e.kind==='slam'&&e.dmg>0));
+  W.setPos('a',[0,5,0,0,0,0]); W.setPos('b',[2,5,0,0,0,0]); tick(3);
+}
+{ const B=boss('captain'), m=B.m, A=B.A, py=x.getH(A.x,A.z), put=engage(B,[12,0],[-12,3]); B.k.hookT=99; B.k.handT=99; B.k.volleyT=99; B.k.anchorT=99; B.k.spotT=99; B.stunT=0; B.k.bilge=0;
+  x.dredgeSpotS(B,m,[pa(),pb()]); const first=B.k.spot.id;
+  run(null,0.3,()=>{ W.setPos('a',[A.x+12,py,A.z,0,0,0]); W.setPos('b',[A.x+13.5,py,A.z,0,0,0]); }); ok('dredge: touch another hero and the black spot is theirs',B.k.spot&&B.k.spot.id!==first);
+  const holder=B.k.spot.id, hp0=holder==='a'?pa().hp:pb().hp; B.k.spot.t=0.05; raw(0.3,()=>{ W.setPos('a',[A.x+12,py,A.z,0,0,0]); W.setPos('b',[A.x-12,py,A.z+3,0,0,0]); });
+  ok('dredge: when the time is up it burns the holder',!B.k.spot&&(holder==='a'?pa().hp:pb().hp)<hp0);
   W.setPos('a',[0,5,0,0,0,0]); W.setPos('b',[2,5,0,0,0,0]); tick(3);
 }
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

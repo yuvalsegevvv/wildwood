@@ -23,6 +23,13 @@ function gryphCullS(B,m,inside){
   const e=addTeleS(B,cx,cz,5,1.3,'swoop',Math.round(m.T.dmg*1.3+bn*0.2*m.T.dmg)); e.hit=p=>{ pfxS(p,'slow',1.2); };   // (the bigger the huddle, the harder it lands)
   if(!B.k.culled){ B.k.culled=true; toastTo(null,'The Gryphon Queen circles the huddle! Spread out.','bad'); }
 }
+// the hunt: every 16 s she picks a hero as her prey for 10 s (a toast names them). Her swoops and strafing runs go for the prey, and every blow from anyone else hits her 25% harder:
+// the prey runs and the others hunt the hunter
+const GRYPH_HUNT=10;
+function gryphHuntS(B,m,inside){
+  const q=randPlayerS(inside); B.k.prey={id:q.id,t:GRYPH_HUNT}; toastTo(null,'The Gryphon Queen hunts '+q.name+'!','bad'); toastTo(q.id,'You are her prey: keep running!','bad'); ev('roar',m.id);
+}
+const gryphPreyS=(B,ins)=>{ const pr=B.k.prey&&ins.find(q=>q.id===B.k.prey.id); return pr||gryphStragglerS(ins); };
 // the strafing run: three passes, GRYPH_STEP s apart. She appears on the rim opposite the straggler, a line (2.2 m either side) through them warns 1.1 s, then she flies it end to end in 0.5 s
 // and sheds a trail of feathers along it that land a moment later. If all three passes hit nobody she is spent: stunned 4 s
 const GRYPH_PASSES=3, GRYPH_STEP=1.9;
@@ -31,7 +38,7 @@ function gryphStrafeS(B,m){
   toastTo(null,'The Gryphon Queen goes for a strafing run!','bad'); ev('roar',m.id);
   for(let i=0;i<GRYPH_PASSES;i++) laterS(B,i*GRYPH_STEP,()=>{
     const ins=playersInArena(A,4); if(!ins.length||m.dead||m.immune) return;   // (m.immune: the flight of phase 2 took over)
-    const q=gryphStragglerS(ins), dx=q.x-A.x, dz=q.z-A.z, d=Math.hypot(dx,dz)||1, ux=dx/d, uz=dz/d;
+    const q=gryphPreyS(B,ins), dx=q.x-A.x, dz=q.z-A.z, d=Math.hypot(dx,dz)||1, ux=dx/d, uz=dz/d;
     const sx=A.x-ux*R, sz=A.z-uz*R, ex=A.x+ux*R, ez=A.z+uz*R, f=Math.atan2(-ux,-uz);
     moveBossS(B,sx,sz,0.3); m.face=m.faceGoal=f;
     addTeleS(B,sx,sz,2*R+4,1.1,'line',Math.round(m.T.dmg*1.7),f,2.2).hit=()=>{ B.k.hits++; };
@@ -45,7 +52,7 @@ function gryphStrafeS(B,m){
 }
 // swoops: rings of her shadow close on players' positions and she drops on each; anyone caught is slowed for a moment
 function gryphSwoopS(B,m,inside,n){
-  const D=m.T.dmg, pool=inside.slice(), st=gryphStragglerS(inside);
+  const D=m.T.dmg, pool=inside.slice(), st=gryphPreyS(B,inside);
   if(inside.length>1) pool.splice(pool.indexOf(st),1);   // (the first ring is the straggler's)
   for(let i=0;i<n;i++){ const q=i===0?st:pool.length?pool.splice(Math.floor(Math.random()*pool.length),1)[0]:randPlayerS(inside), a=AR(0,TAU), r=i?AR(0,2.5):0;
     const e=addTeleS(B,q.x+Math.sin(a)*r,q.z+Math.cos(a)*r,3.6,1.5+i*0.15,'swoop',Math.round(D*1.5)); e.hit=p=>{ pfxS(p,'slow',1.6); }; }
@@ -68,7 +75,8 @@ function gryphStormS(B,m){
   toastTo(null,'The Gryphon Queen shakes out her quills! Stand between the lines.','bad');
 }
 BOSS_KITS.gryphon={
-  start(B){ B.k={rakeT:5,swoopT:9,stormT:99,strafeT:12,cullT:6,hits:0}; },
+  start(B){ B.k={rakeT:5,swoopT:9,stormT:99,strafeT:12,cullT:6,huntT:10,prey:null,hits:0}; },
+  hit(B,m,p,v){ const pr=B.k.prey; if(pr&&p.id!==pr.id) m.hp-=v*0.25/monK(m,p).hp; },   // (the hunter is open to everyone but her prey)
   phase(B,m,n){
     if(n===2){ B.busy=1e3; B.mode=1; m.immune=true; m.act=null; clearTeleS(B); spawnAddsS(B,2); gryphFlightS(B,m); toastTo(null,'The Gryphon Queen beats her wings and rises into the sky!','bad'); }
     else { B.k.stormT=4; spawnAddsS(B,2); }
@@ -77,7 +85,8 @@ BOSS_KITS.gryphon={
   tick(B,m,dt,C){
     const k=B.k;
     if(B.mode===1) return;   // in the air: the flight is a queue of steps
-    k.rakeT-=dt; k.swoopT-=dt; k.strafeT-=dt; k.cullT-=dt; if(B.phase>=3) k.stormT-=dt;
+    k.rakeT-=dt; k.swoopT-=dt; k.strafeT-=dt; k.cullT-=dt; k.huntT-=dt; if(k.prey){ k.prey.t-=dt; k.prey.ring=(k.prey.ring||0)-dt; if(k.prey.t<=0) k.prey=null; else if(k.prey.ring<=0){ k.prey.ring=1; const pq=S.players.get(k.prey.id); if(pq&&!pq.dead) addTeleS(B,pq.x,pq.z,2.4,0.9,'swoop',0); } }   // (a ring on the prey every second, so everyone can see who is hunted)
+    if(k.huntT<=0&&C.inside.length){ k.huntT=B.enraged?14:18; gryphHuntS(B,m,C.inside); } if(B.phase>=3) k.stormT-=dt;
     if(B.busy>0) return;
     if(k.cullT<=0){ k.cullT=4; gryphCullS(B,m,C.inside); }   // (a quick extra, it does not take the cast)
     if(k.strafeT<=0){ k.strafeT=B.enraged?16:21; gryphStrafeS(B,m); }

@@ -38,6 +38,24 @@ function dredgeBroadsideS(B,m){
     addTeleS(B,px,pz,2*A.r,1.5,'line',Math.round(m.T.dmg*1.7),Math.atan2(-(q.x-px),-(q.z-pz)),1.6); });
   toastTo(null,'A broadside! The ports fire one after the other.','bad');
 }
+// the black spot: he hands it to a hero and for DREDGE_SPOT s the holder is marked (a ring on them every 0.5 s). Touch (come within 2.5 m of) another hero and the spot is theirs, though never back
+// to the one who just passed it. When the time runs out it burns the holder (2.5 hits) and everyone within 5 m (1 hit): pass it to someone alone, or take it somewhere empty
+const DREDGE_SPOT=9;
+function dredgeSpotS(B,m,inside){
+  const q=randPlayerS(inside); B.k.spot={id:q.id,from:null,t:DREDGE_SPOT,tick:0,pass:0};
+  toastTo(null,'Dredge gives '+q.name+' the black spot! Pass it on, or take it away from the crew.','bad'); toastTo(q.id,'The black spot is yours: touch a crewmate to pass it!','bad'); ev('roar',m.id);
+}
+function dredgeSpotTickS(B,m,dt){
+  const k=B.k, sp=k.spot, q=S.players.get(sp.id);
+  if(!q||q.dead){ k.spot=null; return; }
+  sp.t-=dt; sp.tick-=dt; sp.pass-=dt;
+  if(sp.tick<=0){ sp.tick=0.5; addTeleS(B,q.x,q.z,2.2,0.5,'slam',0); }
+  if(sp.pass<=0){ const o=playersInArena(B.A,0).find(x=>x!==q&&x.id!==sp.from&&Math.hypot(x.x-q.x,x.z-q.z)<2.5);
+    if(o){ sp.from=sp.id; sp.id=o.id; sp.pass=1.2; toastTo(o.id,'The black spot is yours!','bad'); k.passed=(k.passed||0)+1; } }
+  if(sp.t<=0){ k.spot=null; const D=m.T.dmg, x=q.x, z=q.z; hurtP(q,Math.round(D*2.5),m);
+    for(const o of playersInArena(B.A,0)) if(o!==q&&Math.hypot(o.x-x,o.z-z)<5) hurtP(o,Math.round(D*1.0),m);
+    addTeleS(B,x,z,5,0.3,'slam',0); addZoneS(B,'ember',x,z,2.6,6); toastTo(null,'The black spot burns!','bad'); }   // (and leaves a smouldering patch)
+}
 // the anchor chain: he hooks one player and hauls them in for DREDGE_CHAIN s (a pull every 0.5 s, the chain drawn as a line); when it ends the anchor slams down on him, so whoever is
 // still on the chain is crushed. A crewmate standing within 3 m of the hooked player cuts it: nobody is slammed, and he is winded for a moment
 const DREDGE_CHAIN=7;
@@ -66,7 +84,7 @@ function dredgeBilgeTickS(B,m,dt){
   if(k.bilge>=100){ k.bilge=0; B.aux=0; k.floods++; addZoneS(B,'whirl',B.A.x,B.A.z,12,8,0,0); for(const q of playersInArena(B.A,0)) pfxS(q,'slow',3); castS(B,m,1.5,2.3); ev('roar',m.id); toastTo(null,'The hold floods!','bad'); }
 }
 BOSS_KITS.captain={
-  start(B){ B.k={volleyT:4,anchorT:6,tideT:99,whirlT:99,sideT:99,handT:6,hookT:9,chain:null,cut:0,bilge:0,floods:0}; B.aux=0; },
+  start(B){ B.k={volleyT:4,anchorT:6,tideT:99,whirlT:99,sideT:99,handT:6,hookT:9,chain:null,cut:0,bilge:0,floods:0,spotT:16,spot:null,passed:0}; B.aux=0; },
   phase(B,m,n){
     if(n===2){ B.k.tideT=8; B.k.sideT=13; spawnAddsS(B,2); }
     else { B.k.whirlT=5; spawnAddsS(B,3); }
@@ -76,6 +94,8 @@ BOSS_KITS.captain={
     const k=B.k; k.volleyT-=dt; k.anchorT-=dt; k.tideT-=dt; k.whirlT-=dt; k.sideT-=dt; k.handT-=dt; k.hookT-=dt;
     dredgeBilgeTickS(B,m,dt);
     if(k.chain) dredgeChainTickS(B,m,dt);
+    k.spotT-=dt; if(k.spot) dredgeSpotTickS(B,m,dt);
+    else if(k.spotT<=0&&C.inside.length>1){ k.spotT=B.enraged?18:24; dredgeSpotS(B,m,C.inside); }
     if(k.hookT<=0&&!k.chain&&B.busy<=0){ k.hookT=B.enraged?14:18; dredgeHookS(B,m,C); }
     if(k.handT<=0){ k.handT=B.enraged?12:15; spawnAddsS(B,B.enraged?3:2); }
     if(B.busy>0) return;
