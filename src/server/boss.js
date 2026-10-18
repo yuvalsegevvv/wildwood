@@ -6,7 +6,7 @@
      tick(B,m,dt,C)       every tick while it fights and is not stunned; C = {p: the nearest player, inside: everyone in the arena, dp: distance to p}
      phase(B,m,n)         it entered phase n (2 or 3)
    A kit casts through boss-fx.js (telegraphs, zones, walls, orbs, timed steps). While B.busy > 0 (a cast) or B.mv is set (a leap) the boss neither chases nor
-   cleaves; B.mode is what the client shows (0 normal, 1 airborne, 2 hidden, 3 shielded, 4 whiteout, 5 blizzard); B.aux a number for the boss bar. B = one
+   cleaves; B.mode is what the client shows (0 normal, 1 airborne, 2 hidden, 3 shielded, 4 whiteout, 5 blizzard; 6-9 have only a boss-bar text, which each boss's `bar` gives: the Rootwarden's seasons, the Glass Guardian's mirror, the Sand Wyrm's listening and sandslide); B.aux a number for the boss bar. B = one
    boss fight's state (m.B). */
 const BOSSES=[];
 // one boss fight's state for a def and an arena circle A = {x,z,r}: the six of the world are made through it at start, and a dungeon makes its boss on demand (dungeons: makeBossS)
