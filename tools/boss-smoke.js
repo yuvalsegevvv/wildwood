@@ -39,18 +39,18 @@ function fight(B){
   return {seen,engaged,p2,p3};
 }
 const KEY={ // what each boss must do (its signature), and what no other boss does
-  roots:{must:['tele:root','tele:slam','mode:3','summon:totem','summon:thornling'],only:['tele:root','summon:totem']},
-  tide:{must:['wall','tele:geyser','mode:2','summon:crabhatch','zone:whirl','pfx:push'],only:['tele:geyser','summon:crabhatch']},
-  oni:{must:['tele:slam','mode:1','zone:ember','tele:donut','tele:mark','summon:oniimp'],only:['zone:ember','tele:mark','summon:oniimp']},
+  roots:{must:['tele:root','tele:slam','mode:3','summon:totem','summon:thornling','mode:6','mode:7','mode:8','mode:9','zone:ember','tele:icefall'],only:['tele:root','summon:totem']},
+  tide:{must:['wall','tele:geyser','mode:2','mode:6','tele:prison','pfx:root','summon:crabhatch','zone:whirl','pfx:push','tele:rockfall'],only:['tele:geyser','summon:crabhatch']},
+  oni:{must:['tele:slam','mode:1','zone:ember','tele:donut','tele:mark','summon:oniimp'],only:['tele:mark','summon:oniimp']},
   kitsune:{must:['orb:foxfire','mode:2','tele:line','summon:foxkit'],only:['orb:foxfire','summon:foxkit']},
-  rime:{must:['tele:icefall','tele:prison','pfx:root','zone:whiteout','mode:4','stun','tele:donut','summon:frostthrall'],only:['tele:icefall','tele:prison','zone:whiteout','summon:frostthrall']},
-  gryphon:{must:['tele:rake','tele:swoop','mode:1','stun','tele:line','summon:eaglet'],only:['tele:swoop','summon:eaglet']},
-  golem:{must:['tele:rockfall','tele:quake','mode:3','summon:ironjoint','summon:rubble','stun','tele:line'],only:['tele:quake','summon:ironjoint','summon:rubble']},
-  glass:{must:['tele:rockfall','tele:line','tele:donut','mode:3','stun','summon:blackmirror','summon:glassshard'],only:['summon:blackmirror','summon:glassshard']},
-  sandwyrm:{must:['tele:rake','tele:slam','mode:2','wall','zone:sandstorm','mode:4','summon:sandwhelp'],only:['zone:sandstorm','summon:sandwhelp']},
-  wyrm:{must:['tele:gust','pfx:push','tele:breath','mode:1','tele:line','stun','zone:blizzard','mode:5','summon:warmcore','summon:wyrmling'],only:['tele:gust','tele:breath','zone:blizzard','summon:warmcore','summon:wyrmling']},
+  rime:{must:['tele:icefall','tele:prison','pfx:root','zone:whiteout','mode:4','stun','tele:donut','summon:frostthrall'],only:['zone:whiteout','summon:frostthrall']},
+  gryphon:{must:['tele:rake','tele:swoop','mode:1','stun','tele:line','tele:icefall','summon:eaglet'],only:['tele:swoop','summon:eaglet']},
+  golem:{must:['tele:rockfall','tele:quake','summon:rubble','stun','tele:line'],only:['tele:quake','summon:rubble']},
+  glass:{must:['tele:rockfall','tele:line','tele:donut','mode:6','stun','summon:glassshard','summon:blackmirror'],only:['summon:glassshard','summon:blackmirror']},
+  sandwyrm:{must:['tele:rake','tele:slam','mode:2','mode:7','wall','zone:sandstorm','mode:4','summon:sandwhelp'],only:['zone:sandstorm','summon:sandwhelp']},
+  wyrm:{must:['tele:gust','pfx:push','tele:breath','mode:1','tele:line','stun','zone:blizzard','mode:5','summon:warmcore','summon:wyrmling'],only:['tele:gust','zone:blizzard','summon:warmcore','summon:wyrmling']},
   captain:{must:['tele:rockfall','tele:rake','tele:line','wall','zone:whirl','summon:drownedhand'],only:['summon:drownedhand']},
-  gloamwarden:{must:['tele:line','tele:donut','tele:slam','zone:gloom','mode:3','stun','summon:soullantern','summon:gloamspecter'],only:['zone:gloom','summon:soullantern','summon:gloamspecter']}};
+  gloamwarden:{must:['tele:line','tele:donut','tele:slam','tele:light','zone:gloom','mode:6','summon:soullantern','summon:gloamspecter'],only:['zone:gloom','summon:soullantern','summon:gloamspecter']}};
 for(const B of x.BOSSES){
   const kit=B.bd.kit, r=fight(B); sigs[kit]=r.seen;
   ok(kit+': engages, reaches phase 2 and the enraged phase 3',r.engaged&&r.p2&&r.p3);
