@@ -71,9 +71,9 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 1 |
+| `height` (Height) | 0.93 |
 | `build` (Build) | 0.98 |
-| `chest` (Chest) | 0.8 |
+| `chest` (Chest) | 0.7 |
 | `shoulders` (Shoulders) | 1 |
 | `waist` (Waist) | 0.85 |
 | `torso` (Torso length) | 0.97 |
@@ -100,7 +100,7 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `earSize` (Ear size) | 1.15 |
 | `undertone` (Skin undertone) | 0.2 |
 | `hips` (Hips) | 1 |
-| `head` (Head size) | 1 |
+| `head` (Head size) | 0.98 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 

@@ -5,7 +5,7 @@
    oxDisc(X,D,o)     torso frame: a round plate on the back, o = {col, rim, boss, R, y (design height), rays (n spikes round it), ray}
    oxPole(X,D,o)     torso frame: a pole strapped across the back, rising past the head with a hooked arm and a lit lantern, o = {col, frame, glow, len}
    oxVeil(X,D,o)     head frame: a long ribbon from the hat's crown down the back, o = {col, col2, len, w}
-   owns: oxSkirt, oxMantle, oxDisc, oxPole, oxVeil, and the pieces listed in the second block below.   used by: game/outfits/*.js (the last lines); test: tools/outfit-smoke.js, tools/cosmetic-items-smoke.js */
+   owns: oxSkirt, oxMantle, oxDisc, oxPole, oxVeil, and the pieces listed in the later blocks below.   used by: game/outfits/*.js (the last lines); test: tools/outfit-smoke.js, tools/cosmetic-items-smoke.js */
 function oxSkirt(X,D,o){
   const {sg}=X, s=torsoSize(X,D,0.03), R=Math.max(s.rx,s.rz)+0.018, L=o.len||0.3, n=7, rings=[];
   for(let i=0;i<=n;i++){ const t=i/n, r=R*(1+(o.flare||0.8)*Math.pow(t,1.35)); rings.push({y:-L*t+0.01,rx:r,rz:r}); }
@@ -96,3 +96,16 @@ function oxFringe(X,D,o){
   for(let i=0;i<n;i++){ const a=i/n*TAU, L=(o.len||0.5)*(0.7+0.3*Math.abs(Math.sin(i*2.1))), rx=s.rx+0.045, rz=(Math.cos(a)>0?s.rzBack:s.rz)+0.045, sw=0.025*Math.sin(i*1.7), P=[[Math.sin(a)*rx*0.8,0.53*TK,Math.cos(a)*rz*0.8],[Math.sin(a)*rx,0.5*TK,Math.cos(a)*rz],[Math.sin(a)*(rx+0.03)+sw,0.5*TK-L*0.5,Math.cos(a)*(rz+0.03)],[Math.sin(a)*(rx+0.05)+sw*2,0.5*TK-L,Math.cos(a)*(rz+0.05)]], cols=o.cols;
     out.push(pc(ofRibbon(P,o.w||0.05,{up:[Math.sin(a),0,Math.cos(a)],seg:sg(8),th:0.004}),(x,y,z,c)=>{ c.set(cols[(i+Math.floor((0.5*TK-y)*10))%cols.length]); })); }
   return out; }
+/* oxAntlers(X,D,o)  head frame: a pair of branching antlers rising from the crown, o = {col, tip, tines}
+   oxPlume(X,D,o)    head frame: a tall curved feather plume on a hat, o = {col, col2, base (y of its root), len}
+   owns (fourth block): oxAntlers, oxPlume. */
+function oxAntlers(X,D,o){
+  const {sg}=X, out=[];
+  for(const s of [-1,1]){
+    out.push(solid(sweepTube([[s*0.05,0.085,0.0],[s*0.075,0.17,-0.01],[s*0.11,0.26,0.0],[s*0.115,0.36,0.015]],[0.011,0.0095,0.008,0.004],sg(6),{cap:'point',rings:sg(14)}),o.col));
+    for(const [t,dx,dy,dz] of [[0.45,0.07,0.08,-0.05],[0.75,0.06,0.08,0.05],[0.25,0.045,0.06,-0.04]]){ const y0=0.085+0.28*t, x0=s*(0.05+0.065*t); out.push(solid(sweepTube([[x0,y0,0.0],[x0+s*dx*0.6,y0+dy*0.6,dz*0.5],[x0+s*dx,y0+dy,dz]],[0.007,0.006,0.002],sg(5),{cap:'point',rings:sg(8)}),o.tip||o.col)); }
+  }
+  return out; }
+function oxPlume(X,D,o){
+  const {sg}=X, y0=o.base||0.3, L=o.len||0.32;
+  return [pc(ofRibbon([[0.0,y0,-0.01],[0.02,y0+L*0.45,0.0],[0.06,y0+L*0.85,0.04],[0.05,y0+L*1.05,0.1]],u=>0.07*Math.sin(Math.PI*Math.min(1,u*0.85+0.12)),{up:[1,0,0],seg:sg(14),th:0.004}),(x,y,z,c)=>{ c.set(((y*60)%1+1)%1<0.5?o.col:o.col2); }),solid(ofRingAt([0,y0-0.005,-0.01],[0,1,0],0.012,0.005,sg(6)),o.col2)]; }

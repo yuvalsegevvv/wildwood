@@ -312,3 +312,4 @@ oxTune('sazanka',{height:1.0,build:0.98,chest:0.8,shoulders:1.0,waist:0.85,hips:
 Object.assign(CHAR_MODELS.sazanka.setups[0],{note:'The courier as drawn: lean and long-limbed with a runner\'s legs.'});
 OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // uniqueness round 3: a courier's banner rising from a rod on her back, a red sun on white cloth
   torso:()=>oxBanner(X,D,{col:0xf3ead2,disc:0xc8323a,rod:0x4a3220,len:0.62})}));
+oxTune('sazanka',{height:0.93,chest:0.7,legs:1.12,thighs:1.2,head:0.98});

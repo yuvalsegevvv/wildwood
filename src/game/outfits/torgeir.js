@@ -338,3 +338,7 @@ oxTune('torgeir',{jaw:1.2,chin:1.2,cheeks:1.1,brow:0.6,noseSize:1.12,lips:0.85,u
 OUTFITS.torgeir=oxPlus(OUTFITS.torgeir,(X,D)=>({   // face round 5: a mountain warrior: a scar through the brow, wind-lines, a bone-bead braid-tie and a bronze ear ring
   mark:F=>oxMarks(F,[{t:'scar',side:-1,col:0xb88a7a},{t:'crow',col:0x8a7060}]),
   hair:()=>oxHairBits(X,[{t:'beads',side:1,col:0xe8e2d4,col2:0x8a6a4a},{t:'ring',side:-1,col:0xb8864a}])}));
+oxTune('torgeir',{height:1.08,build:1.18,chest:1.4,shoulders:1.18,waist:1.15,hips:1.1,thighs:1.25,arms:1.25,neck:1.2,head:0.95,hands:1.2,feet:1.2});
+Object.assign(CHAR_MODELS.torgeir.setups[0],{note:'The mountain warrior as drawn: a towering bull of a man, a huge chest and a small head.'});
+OUTFITS.torgeir=oxPlus(OUTFITS.torgeir,(X,D)=>({   // uniqueness round 4: a towering bull-chested giant in a skirt of riveted steel plates
+  hips:()=>oxTags(X,D,{col:0x9aa4ae,mark:0xb8864a,n:12,len:0.3})}));

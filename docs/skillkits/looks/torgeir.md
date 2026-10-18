@@ -68,23 +68,23 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 
 ### Recommended setup (reference, male)
 
-**`torgeir`**: The veteran as drawn: wide, tall, a plain stern face.
+**`torgeir`**: The mountain warrior as drawn: a towering bull of a man, a huge chest and a small head.
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 1.04 |
-| `build` (Build) | 1.16 |
-| `chest` (Chest) | 1.05 |
-| `shoulders` (Shoulders) | 1.14 |
-| `waist` (Waist) | 1.04 |
-| `hips` (Hips) | 0.98 |
+| `height` (Height) | 1.08 |
+| `build` (Build) | 1.18 |
+| `chest` (Chest) | 1.4 |
+| `shoulders` (Shoulders) | 1.18 |
+| `waist` (Waist) | 1.15 |
+| `hips` (Hips) | 1.1 |
 | `torso` (Torso length) | 1.04 |
 | `legs` (Leg length) | 0.98 |
-| `thighs` (Thighs) | 1.22 |
-| `arms` (Arms) | 1.2 |
-| `neck` (Neck) | 1.15 |
-| `hands` (Hands) | 1.15 |
-| `feet` (Feet) | 1.1 |
+| `thighs` (Thighs) | 1.25 |
+| `arms` (Arms) | 1.25 |
+| `neck` (Neck) | 1.2 |
+| `hands` (Hands) | 1.2 |
+| `feet` (Feet) | 1.2 |
 | `jaw` (Jaw width) | 1.2 |
 | `chin` (Chin) | 1.2 |
 | `cheeks` (Cheeks) | 1.1 |
@@ -99,6 +99,7 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `undertone` (Skin undertone) | 0.2 |
 | `blush` (Blush) | 0.35 |
 | `earSize` (Ear size) | 1.1 |
+| `head` (Head size) | 0.95 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -108,13 +109,13 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 |---|---|---|
 | `height` (Height) | 0.96 .. 1.08 | 0.92 .. 1.08 |
 | `build` (Build) | 1 .. 1.18 | 0.88 .. 1.18 |
-| `chest` (Chest) | 0.9 .. 1.25 | 0.6 .. 1.4 |
+| `chest` (Chest) | 0.9 .. 1.4 | 0.6 .. 1.4 |
 | `shoulders` (Shoulders) | 1 .. 1.18 | 0.88 .. 1.18 |
 | `legs` (Leg length) | 0.92 .. 1.06 | 0.92 .. 1.14 |
 | `thighs` (Thighs) | 0.95 .. 1.25 | 0.85 .. 1.25 |
 | `arms` (Arms) | 0.95 .. 1.25 | 0.82 .. 1.25 |
 | `neck` (Neck) | 0.95 .. 1.2 | 0.85 .. 1.2 |
-| `head` (Head size) | 0.95 .. 1.1 | 0.9 .. 1.12 |
+| `head` (Head size) | 0.9 .. 1.1 | 0.9 .. 1.12 |
 | `hairLength` (Hair length) | 1 .. 1.35 | 0.7 .. 1.35 |
 | `hairVolume` (Hair volume) | 0.9 .. 1.15 | 0.9 .. 1.25 |
 

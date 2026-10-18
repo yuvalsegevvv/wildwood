@@ -181,3 +181,7 @@ oxTune('dunstan',{jaw:1.15,chin:1.12,cheeks:1.0,brow:0.3,noseSize:1.1,lips:0.9,u
 OUTFITS.dunstan=oxPlus(OUTFITS.dunstan,(X,D)=>({   // face round 5: a sun-lined drum-major: laughter lines, a gold hoop
   mark:F=>oxMarks(F,[{t:'crow',col:0x8a5a3a}]),
   hair:()=>oxHairBits(X,[{t:'ring',side:-1,col:0xe8c050}])}));
+oxTune('dunstan',{height:1.08,build:1.0,chest:1.2,shoulders:1.18,waist:0.84,hips:0.9,torso:1.02,legs:1.14,arms:1.0,neck:1.0,head:0.95});
+Object.assign(CHAR_MODELS.dunstan.setups[0],{note:'The drum-major as drawn: a tall peacock, deep-chested and narrow in the waist, on long legs.'});
+OUTFITS.dunstan=oxPlus(OUTFITS.dunstan,(X,D)=>({   // uniqueness round 4: a tall drum-major with a tall red-and-white plume on the shako
+  head:()=>oxPlume(X,D,{col:0xf4efe4,col2:0xc8323a,base:0.31,len:0.34})}));

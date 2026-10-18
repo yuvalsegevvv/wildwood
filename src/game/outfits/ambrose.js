@@ -365,3 +365,7 @@ OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // face round 1: soft rosy ch
 OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // face round 3: spiral curls at both temples and a mint sprig
   hair:()=>oxHairBits(X,[{t:'curl',both:true},{t:'sprig',side:-1,col:0x8bc5a4,col2:0xdff5c0}])}));
 Object.assign(CHAR_MODELS.ambrose,{hairGrad:{mode:'tips',c2:0x6fae7a,c3:0xdff5c0}});   // brown, moss, mint
+oxTune('ambrose',{height:0.93,build:0.88,chest:0.9,shoulders:0.92,waist:0.9,hips:0.95,torso:0.98,legs:1.0,arms:0.95,hands:1.15,feet:1.15,head:1.1,earSize:1.28});
+Object.assign(CHAR_MODELS.ambrose.setups[0],{note:'The scout as drawn: a slight youth with big hands, big feet and a big head.'});
+OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // uniqueness round 4: a slight, big-handed youth with a pair of branching antlers rising from his crown
+  head:()=>oxAntlers(X,D,{col:0x8a6a44,tip:0xb89a68})}));
