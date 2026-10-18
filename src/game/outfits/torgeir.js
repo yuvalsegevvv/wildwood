@@ -2,7 +2,7 @@
 /* ---------- Torgeir: tank, earth. Design: docs/skillkits/looks/torgeir.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: slate 0x3f5668, bone 0xe3dccb, iron 0x5d6168, lichen 0x7d8c5a, fur grey 0x8f8a80. The silhouette is a wall: the widest body of the eight, a heavy fur mantle on the right shoulder,
    a banded iron spaulder on the left, a cap-helm with a fur rim over a small head, two thick braids on the chest, iron-plated shins. Earth: no glow but one dull ochre bead on the weapon charm. */
-CHAR_MODELS.torgeir={id:'torgeir',name:'Torgeir',signature:true, items:{hat:'Ward cap',hair:'Paired braids',face:'Scar & braid beard',top:'Hold coat',bottom:'Stone greaves',shoes:'Fell boots',weapon:'Lichen wrap'},sexes:['male'],
+CHAR_MODELS.torgeir={id:'torgeir',name:'Torgeir',signature:true, hairGrad:{mode:'streak',c2:0xd8dde0}, items:{hat:'Ward cap',hair:'Paired braids',face:'Scar & braid beard',top:'Hold coat',bottom:'Stone greaves',shoes:'Fell boots',weapon:'Lichen wrap'},sexes:['male'],
   note:'The shield-wall veteran: a heavy mantle, an iron cap-helm and a wall of a body, built for a broad, tall man.',
   ranges:{height:[0.96,1.08],build:[1.0,1.18],chest:[0.9,1.25],shoulders:[1.0,1.18],arms:[0.95,1.25],neck:[0.95,1.2],legs:[0.92,1.06],thighs:[0.95,1.25],head:[0.95,1.1],hairLength:[1.0,1.35],hairVolume:[0.9,1.15]},
   setups:[{id:'torgeir',name:'Torgeir',sex:'male',def:true,note:'The veteran as drawn: wide, tall, a plain stern face.',v:{height:1.04,build:1.16,chest:1.05,shoulders:1.14,waist:1.04,hips:0.98,torso:1.04,legs:0.98,thighs:1.22,arms:1.2,neck:1.15,hands:1.15,feet:1.1,jaw:1.1,chin:1.08,cheeks:0.95,eyeSize:0.95,eyeHeight:-0.1,eyeTilt:-0.1,brow:0.15,noseSize:1.1,lips:0.85,hairLength:1.25,bangs:0.5}}]};
@@ -304,6 +304,7 @@ OUTFITS.torgeir=(function(){
     const bracers=()=>{ const out=[]; for(const y of [-0.1,-0.17]){ const s=lin(FORE,-y/D.fore), R=s[0]+0.0035; out.push(eRing(y,R,R,0,0.0036,IRON_L,5)); out.push(solid(csph(0.0038,6,4).translate(0,y,-R-0.002),BONE)); } return out; };
 
     return {
+      aura:{col:0x9ac0dc,col2:0xffffff,style:'orbit',ring:false,n:6,shape:'flake',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0x3f5668,bottom:0x6a794c,shoes:0x4e3a2a,hat:0x5d6168}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.76, shinCut:0.73, boot:true, skinFrom:0.588, hairColor:HAIR, eyeColor:0x7a9ab0,
       eyes:{iris:0.97,h:0.7,lash:1.25,hl:1,tilt:-0.1,browLift:-0.004,browThick:1.25,browAngle:0.1},   // the "heavy" style: the upper lid drops over the pale iris, thick low brows
       cuts:{torso:[0.012,0.07,0.588],upperArm:[0.188/D.upper,0.2/D.upper],foreArm:[0.07/D.fore,0.082/D.fore,0.19/D.fore],thigh:[0.304/D.thigh,0.312/D.thigh,0.348/D.thigh,0.356/D.thigh],shin:[0.76]},
@@ -333,3 +334,11 @@ OUTFITS.torgeir=(function(){
     };
   };
 })();
+oxTune('torgeir',{jaw:1.2,chin:1.2,cheeks:1.1,brow:0.6,noseSize:1.12,lips:0.85,undertone:0.2,blush:0.35,eyeTilt:-0.1,earSize:1.1});
+OUTFITS.torgeir=oxPlus(OUTFITS.torgeir,(X,D)=>({   // face round 5: a mountain warrior: a scar through the brow, wind-lines, a bone-bead braid-tie and a bronze ear ring
+  mark:F=>oxMarks(F,[{t:'scar',side:-1,col:0xb88a7a},{t:'crow',col:0x8a7060}]),
+  hair:()=>oxHairBits(X,[{t:'beads',side:1,col:0xe8e2d4,col2:0x8a6a4a},{t:'ring',side:-1,col:0xb8864a}])}));
+oxTune('torgeir',{height:1.08,build:1.18,chest:1.4,shoulders:1.18,waist:1.15,hips:1.1,thighs:1.25,arms:1.25,neck:1.2,head:0.95,hands:1.2,feet:1.2});
+Object.assign(CHAR_MODELS.torgeir.setups[0],{note:'The mountain warrior as drawn: a towering bull of a man, a huge chest and a small head.'});
+OUTFITS.torgeir=oxPlus(OUTFITS.torgeir,(X,D)=>({   // uniqueness round 4: a towering bull-chested giant in a skirt of riveted steel plates
+  hips:()=>oxTags(X,D,{col:0x9aa4ae,mark:0xb8864a,n:12,len:0.3})}));

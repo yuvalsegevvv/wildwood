@@ -64,30 +64,38 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 
 ### Recommended setup (reference, female)
 
-**`tamsin`**: The quarry-hand as drawn: broad-shouldered, strong-armed and sturdy.
+**`tamsin`**: The quarry-hand as drawn: a powerful inverted triangle, short in the stride.
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 0.98 |
-| `build` (Build) | 1.1 |
-| `chest` (Chest) | 1.1 |
-| `shoulders` (Shoulders) | 1.1 |
-| `waist` (Waist) | 1 |
+| `height` (Height) | 0.97 |
+| `build` (Build) | 1.18 |
+| `chest` (Chest) | 1.2 |
+| `shoulders` (Shoulders) | 1.18 |
+| `waist` (Waist) | 1.05 |
 | `torso` (Torso length) | 0.98 |
 | `legs` (Leg length) | 0.98 |
-| `thighs` (Thighs) | 1.1 |
-| `arms` (Arms) | 1.15 |
+| `thighs` (Thighs) | 1.25 |
+| `arms` (Arms) | 1.25 |
 | `neck` (Neck) | 1.05 |
-| `hands` (Hands) | 1.12 |
+| `hands` (Hands) | 1.18 |
 | `feet` (Feet) | 1.05 |
-| `jaw` (Jaw width) | 1.05 |
-| `chin` (Chin) | 1 |
-| `cheeks` (Cheeks) | 1.05 |
-| `noseSize` (Nose) | 1 |
+| `jaw` (Jaw width) | 1.12 |
+| `chin` (Chin) | 1.05 |
+| `cheeks` (Cheeks) | 1.12 |
+| `noseSize` (Nose) | 1.05 |
 | `mouthSize` (Mouth width) | 1 |
-| `smile` (Expression) | 0.4 |
+| `smile` (Expression) | 0.2 |
 | `hairLength` (Hair length) | 1 |
 | `hairVolume` (Hair volume) | 1.1 |
+| `brow` (Brows) | 0.45 |
+| `eyeSize` (Eye size) | 1.02 |
+| `lips` (Lips) | 1.1 |
+| `undertone` (Skin undertone) | 0.5 |
+| `blush` (Blush) | 0.45 |
+| `earSize` (Ear size) | 1.05 |
+| `hips` (Hips) | 1 |
+| `head` (Head size) | 1 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -99,7 +107,7 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 | `build` (Build) | 1 .. 1.18 | 0.88 .. 1.18 |
 | `chest` (Chest) | 0.9 .. 1.4 | 0.6 .. 1.4 |
 | `waist` (Waist) | 0.9 .. 1.15 | 0.82 .. 1.15 |
-| `hips` (Hips) | 1 .. 1.2 | 0.85 .. 1.2 |
+| `hips` (Hips) | 0.95 .. 1.2 | 0.85 .. 1.2 |
 | `legs` (Leg length) | 0.92 .. 1.06 | 0.92 .. 1.14 |
 | `arms` (Arms) | 1 .. 1.25 | 0.82 .. 1.25 |
 | `neck` (Neck) | 0.95 .. 1.2 | 0.85 .. 1.2 |

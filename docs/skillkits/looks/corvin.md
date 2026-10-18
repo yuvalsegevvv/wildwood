@@ -66,30 +66,36 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 
 ### Recommended setup (reference, male)
 
-**`corvin`**: The surveyor as drawn: tall, narrow, a long nose for the spectacles.
+**`corvin`**: The surveyor as drawn: round-bellied and bespectacled, a big head on a short stride.
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 1.04 |
-| `build` (Build) | 0.94 |
-| `chest` (Chest) | 0.9 |
-| `shoulders` (Shoulders) | 0.94 |
-| `waist` (Waist) | 0.95 |
-| `hips` (Hips) | 0.95 |
-| `torso` (Torso length) | 1.04 |
-| `legs` (Leg length) | 1.06 |
-| `thighs` (Thighs) | 0.9 |
+| `height` (Height) | 1 |
+| `build` (Build) | 1.1 |
+| `chest` (Chest) | 1 |
+| `shoulders` (Shoulders) | 0.95 |
+| `waist` (Waist) | 1.15 |
+| `hips` (Hips) | 1.1 |
+| `torso` (Torso length) | 1 |
+| `legs` (Leg length) | 0.94 |
+| `thighs` (Thighs) | 1 |
 | `arms` (Arms) | 0.9 |
 | `hands` (Hands) | 1.05 |
-| `jaw` (Jaw width) | 0.95 |
+| `jaw` (Jaw width) | 1 |
 | `chin` (Chin) | 0.95 |
-| `cheeks` (Cheeks) | 0.9 |
+| `cheeks` (Cheeks) | 0.82 |
 | `eyeGap` (Eye spacing) | 1.04 |
-| `brow` (Brows) | -0.1 |
-| `noseSize` (Nose) | 1.1 |
-| `lips` (Lips) | 0.9 |
+| `brow` (Brows) | -0.2 |
+| `noseSize` (Nose) | 1.18 |
+| `lips` (Lips) | 0.85 |
 | `hairVolume` (Hair volume) | 0.9 |
 | `bangs` (Fringe length) | 0.3 |
+| `eyeSize` (Eye size) | 0.9 |
+| `undertone` (Skin undertone) | 0.2 |
+| `blush` (Blush) | 0.1 |
+| `earSize` (Ear size) | 1.1 |
+| `neck` (Neck) | 0.95 |
+| `head` (Head size) | 1.08 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -97,17 +103,16 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 
 | Slider | Range | Base model |
 |---|---|---|
-| `height` (Height) | 0.98 .. 1.08 | 0.92 .. 1.08 |
-| `build` (Build) | 0.88 .. 1.06 | 0.88 .. 1.18 |
+| `height` (Height) | 0.95 .. 1.08 | 0.92 .. 1.08 |
+| `build` (Build) | 0.88 .. 1.15 | 0.88 .. 1.18 |
 | `chest` (Chest) | 0.6 .. 1.15 | 0.6 .. 1.4 |
 | `shoulders` (Shoulders) | 0.88 .. 1.08 | 0.88 .. 1.18 |
-| `waist` (Waist) | 0.88 .. 1.1 | 0.82 .. 1.15 |
-| `legs` (Leg length) | 0.96 .. 1.14 | 0.92 .. 1.14 |
+| `waist` (Waist) | 0.88 .. 1.15 | 0.82 .. 1.15 |
 | `thighs` (Thighs) | 0.85 .. 1.1 | 0.85 .. 1.25 |
 | `neck` (Neck) | 0.85 .. 1.15 | 0.85 .. 1.2 |
-| `head` (Head size) | 0.92 .. 1.06 | 0.9 .. 1.12 |
+| `head` (Head size) | 0.92 .. 1.12 | 0.9 .. 1.12 |
 | `eyeGap` (Eye spacing) | 0.96 .. 1.1 | 0.92 .. 1.12 |
-| `noseSize` (Nose) | 0.85 .. 1.2 | 0.7 .. 1.25 |
+| `noseSize` (Nose) | 0.85 .. 1.23 | 0.7 .. 1.25 |
 | `earSize` (Ear size) | 0.8 .. 1.15 | 0.8 .. 1.3 |
 | `hairVolume` (Hair volume) | 0.9 .. 1.05 | 0.9 .. 1.25 |
 | `bangs` (Fringe length) | 0.3 .. 1 | 0.3 .. 1.4 |

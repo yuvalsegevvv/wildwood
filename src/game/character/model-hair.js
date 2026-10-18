@@ -76,28 +76,9 @@ function buildHair(X,F){
   if(H==='bun'){ fringe(8,1.0,0.12); sideLocks(0.05); backLocks(sg(10),-0.02,41); if(!hat){ add(hang(csph(0.056,sg(16),sg(12)).translate(0,0.092,0.078))); tie(0,0.058,0.085,0.045); } }
   if(L.ahoge&&!hat&&H!=='bald'){ add(hang(sweepTube([[0.004,0.1,-0.042],[0.0,0.17,-0.05],[-0.02,0.23,-0.036],[0.0,0.27,-0.012],[0.02,0.26,0.008]],[0.0075,0.0065,0.005,0.003,0.0012],sg(6),{cap:'point',rings:sg(14)}))); }
 
-  /* hats */
-  const hc=L.hatColor, scl=g=>g.scale(fs[0],fs[1],1);
-  if(L.hat==='ranger'){
-    parts.push(pc(new THREE.CylinderGeometry(0.205,0.205,0.012,sg(36)).translate(0,0.078,0),c=>c.set(hc)));
-    parts.push(pc(new THREE.CylinderGeometry(0.09,0.118,0.105,sg(28)).translate(0,0.135,0),c=>c.set(hc)));
-    parts.push(pc(new THREE.CylinderGeometry(0.119,0.119,0.024,sg(28)).translate(0,0.095,0),c=>c.set(hc).multiplyScalar(0.55)));
-  } else if(L.hat==='beanie'){
-    parts.push(pc(scl(sculpt(shell(0.123,0,0.46*Math.PI,0,0.415,sg(34),sg(16)),false)),c=>c.set(hc)));
-    parts.push(pc(scl(sculpt(shell(0.128,0.36*Math.PI,0.1*Math.PI,0,0.415,sg(34),sg(6)),false)),c=>c.set(hc).multiplyScalar(0.82)));
-    parts.push(pc(csph(0.032,sg(12),sg(10)).translate(0,0.125*fs[1],0.05),c=>c.set(0xf2eee4)));
-  } else if(L.hat==='helm'){
-    parts.push(pc(scl(sculpt(shell(0.128,0,0.475*Math.PI,0,0.4,sg(34),sg(16)),false)),(x,y,z,c)=>c.set(hc).multiplyScalar(0.88+0.18*clamp(y*6))));
-    parts.push(pc(scl(sculpt(shell(0.133,0.385*Math.PI,0.09*Math.PI,0,0.4,sg(34),sg(6)),false)),c=>c.set(hc).multiplyScalar(0.7)));
-    parts.push(pc(vbox(0.018,0.062,0.016,0,0.03,-0.116).rotateX(0.14),c=>c.set(hc).multiplyScalar(0.8)));
-    if(L.plume) parts.push(pc(new THREE.CylinderGeometry(0.13,0.13,0.024,sg(24),1,false,Math.PI,Math.PI).rotateZ(-Math.PI/2).scale(1,0.8,1.05).translate(0,0.03,0).rotateX(0.4).translate(0,0.02*fs[1],0.0),(x,y,z,c)=>c.set(L.plume).multiplyScalar(0.8+0.35*clamp((y-0.1)*8))));
-  } else if(L.hat==='kasa'){   // a conical straw hat (the Sakura Vale)
-    parts.push(pc(new THREE.ConeGeometry(0.3,0.15,sg(28)).translate(0,0.14*fs[1],0),(x,y,z,c)=>c.set(hc).multiplyScalar(0.84+0.22*h3(Math.round(Math.atan2(z,x)*8),0,5))));
-    parts.push(pc(new THREE.CylinderGeometry(0.1,0.11,0.05,sg(20)).translate(0,0.085*fs[1],0),c=>c.set(hc).multiplyScalar(0.6)));
-  } else if(L.hat==='cap'){
-    parts.push(pc(scl(sculpt(shell(0.119,0,0.435*Math.PI,0,0.33,sg(34),sg(16)),false)),c=>c.set(hc)));
-    parts.push(pc(new THREE.CylinderGeometry(0.1,0.1,0.01,sg(22),1,false,Math.PI/2,Math.PI).scale(1,1,1.15).rotateX(-0.12).translate(0,0.062*fs[1],-0.086),c=>c.set(hc).multiplyScalar(0.85)));
-  }
+  hgApply(X,parts,0,parts.length);   // hair colour gradient (model-hairgrad.js), before any hat is added
+  /* hats: the base hats are in model-hats.js */
+  htBase(X,F,parts);
   if(kHat&&kHat.head){ const n0=parts.length; parts.push(...kHat.head(F,T)); ofTintFrom(X,'hat',parts,n0); }
   return parts;
 }

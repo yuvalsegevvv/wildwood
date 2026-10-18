@@ -2,7 +2,7 @@
 /* ---------- Sabir: risk DPS, fire. Design: docs/skillkits/looks/sabir.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: sand 0xd2b27a, crimson 0xa8322a, indigo 0x23233a, leather 0x5a3a24, brass 0xc89a3c, ember 0xff8a3a (the weapon charm's glow only). Silhouette: a wide wrapped head, a lean torso under crossed straps,
    baggy shorts over tall boots, a sash with long tails and a curved sheath at the hip. Every part has at least two colours (sand and crimson at the least); the emblem is a brass coin, never a crescent or a star. */
-CHAR_MODELS.sabir={id:'sabir',name:'Sabir',signature:true, items:{hat:'Dune turban',hair:'Rope braid',face:'Veil & kohl',top:'Raider harness',bottom:'Sash sarwal',shoes:'Buckled boots',weapon:'Raider rig'},sexes:['male'],
+CHAR_MODELS.sabir={id:'sabir',name:'Sabir',signature:true, hairGrad:{mode:'tips',c2:0xb02a2a}, items:{hat:'Dune turban',hair:'Rope braid',face:'Veil & kohl',top:'Raider harness',bottom:'Sash sarwal',shoes:'Buckled boots',weapon:'Raider rig'},sexes:['male'],
   note:'The dune raider: lean, wide-shouldered and quick, built for a long-limbed man.',
   ranges:{height:[0.98,1.08],build:[0.9,1.08],chest:[0.8,1.15],waist:[0.82,1.05],hips:[0.88,1.1],legs:[1.0,1.14],neck:[0.9,1.15],arms:[0.95,1.2],head:[0.95,1.08],hairLength:[0.8,1.2],hairVolume:[0.9,1.15]},
   setups:[{id:'sabir',name:'Sabir',sex:'male',def:true,note:'The raider as drawn: lean, sharp-jawed, long in the leg.',v:{height:1.04,build:0.98,chest:0.95,shoulders:1.08,waist:0.92,torso:0.98,legs:1.08,thighs:0.95,arms:1.08,neck:1.0,hands:1.05,feet:1.0,jaw:1.08,chin:1.1,cheeks:0.9,noseSize:1.1,mouthSize:0.95,smile:0.35,hairLength:1.0,hairVolume:1.0}}]};
@@ -63,6 +63,7 @@ OUTFITS.sabir=(function(){
       return out; };
 
     return {
+      aura:{col:0xd8b070,col2:0xf0d9a0,style:'orbit',ring:false,n:8,shape:'grain',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0xd2b27a,bottom:0xd2b27a,shoes:0x5a3a24,hat:0xd2b27a}, bootTop:0.04, shinCut:0, boot:true, skinFrom:0.545, hairColor:HAIR, eyeColor:0xd09a30,
       eyes:{iris:0.95,hl:1,tilt:-0.15,lash:0.5,h:0.82,browLift:-0.002,browThick:1.3},
       cuts:{torso:[0.03,0.545],upperArm:[0.5,0.56],foreArm:[0.12/D.fore,0.128/D.fore,0.138/D.fore,0.222/D.fore],thigh:[0.86,0.97],shin:[0.04,0.09,0.16,0.19,0.5,0.53]},
@@ -101,3 +102,18 @@ OUTFITS.sabir=(function(){
     };
   };
 })();
+OUTFITS.sabir=oxPlus(OUTFITS.sabir,(X,D)=>({   // round 4: a wind-torn sand cloak with a crimson hem, knotted crimson sash tails
+  hips:()=>oxSash(X,D,{col:0xb02a2a,col2:0x5a1a1a,len:1.15,side:1}),
+  cos:{cape:{col:0xd2b27a,trim:0xb02a2a,len:0.9,pat:'dunes',mantle:0}}}));
+oxTune('sabir',{jaw:0.95,chin:1.1,cheeks:0.95,brow:0.75,eyeSize:1.12,eyeHeight:0.3,eyeTilt:0.4,noseSize:1.2,undertone:0.85,blush:0,lips:0.9,head:0.98,earSize:1.1});
+OUTFITS.sabir=oxPlus(OUTFITS.sabir,(X,D)=>({   // face round 1: sun-bronzed skin, a sharp-eyed amber stare, a brow scar, gold beads on the braid, a ring in the ear
+  mark:F=>oxMarks(F,[{t:'scar',side:1,col:0x8a4a3a},{t:'freckles',col:0x9a6a3a}]),
+  hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xe8c050},{t:'beads',side:-1,col:0xe8c050,col2:0xb02a2a}]),
+  kit:{eyeColor:0xd8a030,eyes:{iris:1.05,lash:0.7}}}));
+Object.assign(CHAR_MODELS.sabir,{hairGrad:{mode:'ombre',c2:0xd8a030,c3:0xb02a2a}});   // face round 2: black to gold to crimson ends
+OUTFITS.sabir=oxPlus(OUTFITS.sabir,(X,D)=>({   // face round 3: a gold-tied tail under the turban
+  hair:()=>oxHairBits(X,[{t:'tail',len:0.3,col:0xe8c050}])}));
+oxTune('sabir',{height:1.0,build:0.9,chest:1.0,shoulders:1.15,waist:0.82,hips:0.88,torso:1.0,legs:1.14,arms:1.1,neck:1.1,head:0.98});
+Object.assign(CHAR_MODELS.sabir.setups[0],{note:'The dune raider as drawn: a wiry inverted triangle on long legs.'});
+OUTFITS.sabir=oxPlus(OUTFITS.sabir,(X,D)=>({   // uniqueness round 2: two long sun-red wind tails split down the back of the sarwal
+  hips:()=>oxTabard(X,D,{col:0xc2452c,col2:0xe8c050,len:0.62,flare:0.5,front:false,split:true,half:0.95})}));

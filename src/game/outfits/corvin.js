@@ -3,13 +3,13 @@
    Palette: brass 0xc9a13a, charcoal 0x2b2b2e, lamp white 0xfff1c9 (only the cap lamp's and the lantern charm's glass glow), verdigris 0x5f8f7f (patina), leather 0x3a3228.
    Silhouette: a tall narrow column: a long waxed coat to the calf (each coat-tail is a flap that rides on its own leg, so no stride pushes a leg through the cloth), one bright
    point on the cap, round lenses on the face. Every part has at least two colours (charcoal wax with brass piping, leather and verdigris; leather with brass straps; hair in two greys). */
-CHAR_MODELS.corvin={id:'corvin',name:'Corvin',signature:true, items:{hat:'Lamp cap',hair:'Silver wave',face:'Lamp soot & specs',top:'Plumb coat',bottom:'Survey legs',shoes:'Nail boots',weapon:'Brass bind'},sexes:['male'],
+CHAR_MODELS.corvin={id:'corvin',name:'Corvin',signature:true, hairGrad:{mode:'streak',c2:0x8a7a60}, items:{glove:'Survey gloves',hat:'Lamp cap',hair:'Silver wave',face:'Lamp soot & specs',top:'Plumb coat',bottom:'Survey legs',shoes:'Nail boots',weapon:'Brass bind'},sexes:['male'],
   note:'The lamplighter and mine surveyor: a tall narrow column in a long coat, built for a slim, tall man.',
   ranges:{height:[0.98,1.08],legs:[0.96,1.14],build:[0.88,1.06],shoulders:[0.88,1.08],chest:[0.6,1.15],waist:[0.88,1.1],thighs:[0.85,1.1],neck:[0.85,1.15],head:[0.92,1.06],eyeGap:[0.96,1.1],noseSize:[0.85,1.2],earSize:[0.8,1.15],hairVolume:[0.9,1.05],bangs:[0.3,1.0]},
   setups:[{id:'corvin',name:'Corvin',sex:'male',def:true,note:'The surveyor as drawn: tall, narrow, a long nose for the spectacles.',v:{height:1.04,build:0.94,chest:0.9,shoulders:0.94,waist:0.95,hips:0.95,torso:1.04,legs:1.06,thighs:0.9,arms:0.9,hands:1.05,jaw:0.95,chin:0.95,cheeks:0.9,eyeGap:1.04,brow:-0.1,noseSize:1.1,lips:0.9,hairVolume:0.9,bangs:0.3}}]};
 
 OUTFITS.corvin=(function(){
-  const CHAR=0x2b2b2e, CHAR_L=0x4c4c55, CHAR_D=0x1c1c1f, LEATHER=0x3a3228, LEATHER_D=0x241e18, LEATHER_L=0x5c4b3a, BRASS=0xc9a13a, BRASS_D=0x8a6d27, BRASS_L=0xeccf6e,
+  const CHAR=0x6b6a3e, CHAR_L=0x8d8c58, CHAR_D=0x45441f, LEATHER=0x3a3228, LEATHER_D=0x241e18, LEATHER_L=0x5c4b3a, BRASS=0xc9a13a, BRASS_D=0x8a6d27, BRASS_L=0xeccf6e,
     LAMP=0xfff1c9, VERD=0x5f8f7f, VERD_D=0x2f4d44, STEEL=0xaab4bd, SOOT=0x6a5f55, SILVER=0xb9b3aa, WALNUT=0x4a3a2c, CHALK=0x9a9285;
   const cC=ofCol(0x3b3b41), cCl=ofCol(CHAR_L), cCd=ofCol(CHAR_D), cLe=ofCol(LEATHER), cLd=ofCol(LEATHER_D), cLl=ofCol(LEATHER_L), cB=ofCol(BRASS), cBd=ofCol(BRASS_D), cBl=ofCol(BRASS_L), cV=ofCol(VERD), cVd=ofCol(VERD_D), cCh=ofCol(CHALK);
   const V3=THREE.Vector3, G=faceG, sm=faceSm;
@@ -371,11 +371,14 @@ OUTFITS.corvin=(function(){
     };
 
     /* ================= the kit ================= */
+    const GLV={start:0.17,col:0x6a5640,col2:LEATHER,trim:BRASS,len:0.08,flare:0.008,studs:true,fingers:'full'};
     return {
-      main:{top:0x2b2b2e,bottom:0x3a3228,shoes:0x241e18,hat:0x5c4b3a}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.72, shinCut:0.70, own:{thigh:'top'}, boot:true, skinFrom:0.605, hairColor:SILVER, eyeColor:0xaab4bd,
+      aura:{col:0xffc870,col2:0xfff0c0,style:'orbit',ring:false,n:5,shape:'mote',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
+      main:{glove:0x6a5640,top:0x6b6a3e,bottom:0x3a3228,shoes:0x241e18,hat:0x5c4b3a}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.72, shinCut:0.70, own:{thigh:'top'}, boot:true, skinFrom:0.605, hairColor:SILVER, eyeColor:0xaab4bd,
       eyes:{iris:0.92,h:0.84,w:1.05,lash:0.9,hl:2,tilt:-0.05,browLift:0.002,browThick:0.95,browAngle:0.2},
       cuts:{torso:[0.0],foreArm:[0.232/D.fore,0.07/D.fore],upperArm:[0.205/D.upper],shin:[BOOT]},
       paint,
+      gloveStart:GLV.start, gloveFingers:GLV.fingers, glove:sd=>glKitGlove(X,D,sd,GLV), handPaint:glKitPaint(GLV),
       head:(F,T)=>cap(F,T),
       hair:(F,T)=>hair(F,T),
       mark:F=>mark(F),
@@ -390,3 +393,17 @@ OUTFITS.corvin=(function(){
     };
   };
 })();
+OUTFITS.corvin=oxPlus(OUTFITS.corvin,(X,D)=>({   // round 6: a brass lamp swinging at the belt, a surveyor's map tube across the back
+  torso:()=>oxTube(X,D,{col:0x5a4a39,cap:0xc59c39,strap:0xc59c39}),
+  hips:()=>oxLantern(X,D,{frame:0xc59c39,glow:0xffc870,side:-1})}));
+OUTFITS.corvin=oxPlus(OUTFITS.corvin,(X,D)=>({   // round 3: brass-trimmed shoulder plates and a long waxed cape with brass stitching
+  shoulder:sd=>oxPauldron(X,D,{col:0x6b6a3e,trim:0xc59c39,r:0.062}),
+  cos:{cape:{col:0x6b6a3e,trim:0xc59c39,len:0.95,pat:'stitch',mantle:0}}}));
+oxTune('corvin',{noseSize:1.18,brow:-0.2,eyeSize:0.9,jaw:1.0,cheeks:0.82,lips:0.85,undertone:0.2,blush:0.1,earSize:1.1});
+OUTFITS.corvin=oxPlus(OUTFITS.corvin,(X,D)=>({   // face round 4: lamp soot on one cheek, late nights under the spectacles, a brass ear ring
+  mark:F=>oxMarks(F,[{t:'bags',col:0x6a6058},{t:'crow',col:0x7a6a58},{t:'scar',side:-1,col:0x3a3430}]),
+  hair:()=>oxHairBits(X,[{t:'ring',side:1,col:0xc59c39}])}));
+oxTune('corvin',{height:1.0,build:1.1,chest:1.0,shoulders:0.95,waist:1.15,hips:1.1,torso:1.0,legs:0.94,thighs:1.0,arms:0.9,neck:0.95,head:1.08});
+Object.assign(CHAR_MODELS.corvin.setups[0],{note:'The surveyor as drawn: round-bellied and bespectacled, a big head on a short stride.'});
+OUTFITS.corvin=oxPlus(OUTFITS.corvin,(X,D)=>({   // uniqueness round 3: a round-bellied scholar with a folded brass-headed surveyor's tripod across his back
+  torso:()=>oxTripod(X,D,{col:0x6a4a2a,brass:0xc59c39,len:0.34})}));

@@ -3,7 +3,7 @@
    Palette: river green 0x4f7a6a, shell white 0xe6ecea, clay 0xa57b55, aqua 0x7fd0d8 (the glow of the vials ONLY: never a light), reed 0xcdbd8a. Soft, rounded shapes, nothing sharp.
    Silhouette: a soft triangle: a tall reed cone slung on the back, a robe that flares (the skirt is two shells that hang from the THIGH bones, so the legs never pierce it),
    a satchel at the left hip, wide folded boots. The cloth (skirt shells, the hat) is one thin surface drawn on both sides (matCloth). */
-CHAR_MODELS.ambrose={id:'ambrose',name:'Ambrose',signature:true, items:{hat:'Marsh wrap',hair:'Reed knot',face:'Clay dab',top:'Ford robe',bottom:'Wader legs',shoes:'Ford boots',weapon:'Reed tend'},sexes:['male'],
+CHAR_MODELS.ambrose={id:'ambrose',name:'Ambrose',signature:true, hairGrad:{mode:'tips',c2:0x6fae7a}, items:{hat:'Marsh wrap',hair:'Reed knot',face:'Clay dab',top:'Ford robe',bottom:'Wader legs',shoes:'Ford boots',weapon:'Reed tend'},sexes:['male'],
   note:'The marsh herbalist: soft in the middle, gentle-faced, built for a slightly rounded man with good hands.',
   ranges:{build:[0.9,1.15],shoulders:[0.88,1.1],chest:[0.7,1.3],waist:[0.9,1.15],hands:[0.95,1.2],head:[0.95,1.1],eyeTilt:[-0.5,0.2],brow:[-0.6,0.2],hairLength:[0.8,1.2]},
   setups:[{id:'ambrose',name:'Ambrose',sex:'male',def:true,note:'The herbalist as drawn: soft in the middle, gentle-faced, good hands.',v:{build:0.98,shoulders:0.96,waist:1.06,hips:1.02,torso:1.02,arms:0.95,hands:1.12,head:1.02,jaw:0.95,chin:0.95,cheeks:1.05,eyeSize:1.05,eyeGap:1.02,eyeTilt:-0.25,brow:-0.3,lips:1.05,smile:0.35,hairLength:1.1,bangs:0.8}}]};
@@ -333,6 +333,7 @@ OUTFITS.ambrose=(function(){
         return {lit,glow}; } };
 
     return {
+      aura:{col:0x8fcf8a,col2:0xdff5c0,style:'orbit',ring:false,n:6,shape:'leaf',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0x4f7a6a,bottom:0xa57b55,shoes:0x4f7a6a,hat:0x4f7a6a}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.5, shinCut:0.48, boot:true, skinFrom:0.555, hairColor:HAIR, eyeColor:0x3f6b3a, eyes:EYES,
       cuts:{torso:[0.065],thigh:[0.9],shin:[0.5]},
       paint,
@@ -345,3 +346,26 @@ OUTFITS.ambrose=(function(){
     };
   };
 })();
+OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // round 5: an herb satchel with hanging bundles, a bead string of dried seeds, a mossy leaf mantle
+  torso:()=>oxBeads(X,D,{col:0xcdbd8b,col2:0x4f7a6a,n:18,r:0.012,drop:0.2}),
+  hips:()=>oxSatchel(X,D,{col:0x6a5a3a,trim:0x4f7a6a,herbs:0x8bc5a4,side:1}),
+  cos:{cape:{col:0x4f7a6a,trim:0xdff5c0,len:0.45,pat:'petals',mantle:1}}}));
+OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // round 3: a mint linen scarf, a second satchel on the other hip, a leather plate with moss trim
+  torso:()=>oxScarf(X,D,{col:0xdff5c0,col2:0x4f7a6a,len:0.6}),
+  hips:()=>oxSatchel(X,D,{col:0x4f7a6a,trim:0x6a5a3a,herbs:0xe6eee6,side:-1}),
+  shoulder:sd=>sd<0?oxPauldron(X,D,{col:0x6a5a3a,trim:0x8bc5a4,r:0.06}):[]}));
+OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // round 4: a curtain of hanging herb tags at the belt and a big mint obi-style bow
+  torso:()=>oxBow(X,D,{col:0x8bc5a4,col2:0x4f7a6a}),
+  hips:()=>oxTags(X,D,{col:0xe6eee6,mark:0x4f7a6a,n:10,len:0.2})}));
+oxTune('ambrose',{eyeSize:1.18,brow:-0.6,smile:0.5,cheeks:1.15,blush:0.55,lips:1.1,undertone:-0.2,jaw:0.95,chin:0.95,noseSize:0.9,earSize:1.1});
+OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // face round 1: soft rosy cheeks, a warm smile, a tiny freckle sprinkle, a mint sprig tucked behind the ear, hazel-green eyes
+  mark:F=>oxMarks(F,[{t:'freckles',col:0xb08a68}]),
+  hair:()=>oxHairBits(X,[{t:'sprig',side:1,col:0x6fae7a,col2:0xf3ead2}]),
+  kit:{eyeColor:0x7a9a4a,eyes:{iris:1.08,lash:0.5}}}));
+OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // face round 3: spiral curls at both temples and a mint sprig
+  hair:()=>oxHairBits(X,[{t:'curl',both:true},{t:'sprig',side:-1,col:0x8bc5a4,col2:0xdff5c0}])}));
+Object.assign(CHAR_MODELS.ambrose,{hairGrad:{mode:'tips',c2:0x6fae7a,c3:0xdff5c0}});   // brown, moss, mint
+oxTune('ambrose',{height:0.93,build:0.88,chest:0.9,shoulders:0.92,waist:0.9,hips:0.95,torso:0.98,legs:1.0,arms:0.95,hands:1.15,feet:1.15,head:1.1,earSize:1.28});
+Object.assign(CHAR_MODELS.ambrose.setups[0],{note:'The scout as drawn: a slight youth with big hands, big feet and a big head.'});
+OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // uniqueness round 4: a slight, big-handed youth with a pair of branching antlers rising from his crown
+  head:()=>oxAntlers(X,D,{col:0x8a6a44,tip:0xb89a68})}));

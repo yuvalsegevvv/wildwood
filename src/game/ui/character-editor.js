@@ -11,6 +11,7 @@ let customizing=false, creating=false, edTab=0;
 const edSub=[0,0,0,0];
 const edEl=$('#editor'), edTabs=$('#edTabs'), edSubs=$('#edSubs'), edBody=$('#edBody');
 const cam={d:3,h:1.2,l:0.95};
+const ED_PAL_NAMES=['Main colour','Second colour','Third colour','Fourth colour'];
 const EDSIZE=k=>({k,label:'',type:'color',opts:TINTC});
 // one grid row: a picture tile per choice (v = the value, spec = what to draw, null = a crossed circle, cap = an optional tiny caption)
 const edHair=()=>[['bald'],['buzz'],['short'],['messy'],['spiky'],['curly'],['bob'],['long'],['ponytail'],['twintail'],['braid'],['bun']].concat(ofItems('hair'));
@@ -23,20 +24,24 @@ const EDIT=[
   {tab:'Body', subs:[
     {name:'Gender', rows:[
       {k:'sex',type:'grid',kind:'sex',ids:()=>[['male'],['female']]},
-      {k:'skin',label:'Skin tone',type:'color',opts:SKINS}]},
+      {k:'skin',label:'Skin tone',type:'color',opts:SKINS.concat(SKINS_ODD)},{slider:'undertone'}]},
     {name:'Build', rows:[{type:'setups'},{slider:'height'},{slider:'build'},{slider:'chest'}]},
     {name:'Upper body', rows:['shoulders','waist','hips','torso'].map(k=>({slider:k}))},
-    {name:'Limbs', rows:['legs','thighs','arms','neck','hands','feet'].map(k=>({slider:k}))}
+    {name:'Limbs', rows:['legs','thighs','calves','arms','neck','hands','feet'].map(k=>({slider:k}))}
   ]},
   {tab:'Face', close:true, subs:[
     {name:'Hair', rows:[
       {k:'hair',type:'grid',kind:'hair',ids:edHair},
-      {k:'hairColor',label:'',type:'color',opts:HAIRC,base:'hair'}
+      {k:'hairColor',label:'',type:'color',opts:HAIRC,base:'hair'},{type:'palette',slot:'hair'},
+      {k:'hairGrad',label:'Gradient',type:'seg',base:'hair',opts:HG_MODES.map(m=>m.slice())},
+      {k:'hairColor2',label:'',type:'color',opts:HAIRC,base:'hair'},
+      {k:'hairThird',label:'Third colour',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]},
+      {k:'hairColor3',label:'',type:'color',opts:HAIRC,base:'hair'}
     ].concat(['hairLength','hairVolume','bangs'].map(k=>({slider:k}))).concat([
       {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]}])},
     {name:'Face', rows:[{k:'face',type:'grid',kind:'face',ids:()=>[['round'],['oval'],['angular']]}].concat(['head','jaw','chin','cheeks'].map(k=>({slider:k})))},
     {name:'Eyes', rows:[{k:'eyes',label:'',type:'color',opts:EYEC,base:'face'}].concat(['eyeSize','eyeGap','eyeHeight','eyeTilt','brow'].map(k=>({slider:k})))},
-    {name:'Nose & mouth', rows:['noseSize','mouthSize','lips','smile','earSize','earPoint'].map(k=>({slider:k}))},
+    {name:'Nose & mouth', rows:['noseSize','mouthSize','mouthHeight','lips','blush','smile','earSize','earPoint'].map(k=>({slider:k})).concat([{k:'lipColor',label:'Lip colour',type:'color',opts:[0xb04a52,0xd26a78,0x8a3040,0xc98a7a,0x5a2a4a,0x2a2a36,0xe8b0b8,0xa83a2a],base:'face'}])},
     {name:'Beard & marks', rows:[
       {k:'facial',type:'grid',kind:'facial',ids:()=>[['none'],['stubble'],['mustache'],['beard']],base:'face'},
       // an outfit's face item: its marks, eye style and eye colour, and its facial hair or glasses (src/game/outfits)
@@ -45,16 +50,18 @@ const EDIT=[
   {tab:'Clothes', subs:[
     // the signature outfits (src/game/outfits): every piece has its own sub-tab, so the pieces of different sets mix. A colour row marked base:'<slot>' paints the base garment, or, while that slot wears an outfit's piece,
     // recolours the piece (look.tint<Slot>; 'Designed colours' puts the original back).
-    {name:'Hat', close:true, rows:[{k:'hat',type:'grid',kind:'hat',col:'hatColor',ids:()=>[['none'],['ranger'],['beanie'],['cap'],['kasa']].concat(ofItems('hat'))},{k:'hatColor',label:'',type:'color',base:'hat',opts:TINTC},{type:'armor',slot:'helmet'}]},
-    {name:'Top', rows:[{k:'top',type:'grid',kind:'top',col:'topColor',ids:()=>[['none'],['tshirt'],['flannel'],['jacket'],['hoodie']].concat(ofItems('top'))},{k:'topColor',label:'',type:'color',base:'top',opts:TINTC},{type:'armor',slot:'top'}]},
-    {name:'Bottom', rows:[{k:'bottom',type:'grid',kind:'bottom',col:'bottomColor',ids:()=>[['none'],['trousers'],['shorts'],['skirt']].concat(ofItems('bottom'))},{k:'bottomColor',label:'',type:'color',base:'bottom',opts:TINTC},{type:'armor',slot:'bottom'}]},
-    {name:'Shoes', rows:[{k:'shoes',type:'grid',kind:'shoes',col:'shoeColor',ids:()=>[['none'],['boots'],['sneakers']].concat(ofItems('shoes'))},{k:'shoeColor',label:'',type:'color',base:'shoes',opts:TINTC},{type:'armor',slot:'shoes'}]},
+    {name:'Hat', close:true, rows:[{k:'hat',type:'grid',kind:'hat',col:'hatColor',ids:()=>HT_HATS.map(h=>h.slice()).concat(ofItems('hat'))},{k:'hatColor',label:'',type:'color',base:'hat',opts:TINTC},{type:'palette',slot:'hat'},{type:'armor',slot:'helmet'}]},
+    {name:'Top', rows:[{k:'top',type:'grid',kind:'top',col:'topColor',ids:()=>GM_TOPS.map(h=>h.slice()).concat(ofItems('top'))},{k:'topColor',label:'',type:'color',base:'top',opts:TINTC},{type:'palette',slot:'top'},{type:'armor',slot:'top'}]},
+    {name:'Bottom', rows:[{k:'bottom',type:'grid',kind:'bottom',col:'bottomColor',ids:()=>GM_BOTTOMS.map(h=>h.slice()).concat(ofItems('bottom'))},{k:'bottomColor',label:'',type:'color',base:'bottom',opts:TINTC},{type:'palette',slot:'bottom'},{type:'armor',slot:'bottom'}]},
+    {name:'Shoes', rows:[{k:'shoes',type:'grid',kind:'shoes',col:'shoeColor',ids:()=>GM_SHOES.map(h=>h.slice()).concat(ofItems('shoes'))},{k:'shoeColor',label:'',type:'color',base:'shoes',opts:TINTC},{type:'palette',slot:'shoes'},{type:'armor',slot:'shoes'}]},
     // version 3: the parts the professions make (shared/cosmetics.js): only what you own is listed; they are made at a Wayfarers' Lodge from ore, logs and herbs
     {name:'Back & aura', rows:[
       {k:'pack',type:'grid',kind:'pack',ids:()=>[[false],[true]],base:'top'},
       {k:'cape',type:'grid',kind:'cape',ids:()=>[['']].concat(cosOwnedOpts('c')),empty:'Capes are made at a Wayfarers\' Lodge.'},
       {k:'aura',type:'grid',kind:'aura',ids:()=>[['']].concat(cosOwnedOpts('a')),empty:'Auras are made at a Wayfarers\' Lodge.'}]},
     // an outfit's weapon dressing restyles whatever weapon you hold, whatever your class
+    // version 3.1: gloves, the eighth piece: six plain ones and the glove of every set that has one (model-gloves.js)
+    {name:'Gloves', rows:[{k:'gloves',type:'grid',kind:'gloves',col:'gloveColor',ids:()=>[['none']].concat(Object.keys(GL_BASE).map(id=>[id,GL_BASE[id].name,GL_BASE[id].text]),ofItems('glove'))},{k:'gloveColor',label:'',type:'color',base:'glove',opts:TINTC},{type:'palette',slot:'glove'}]},
     {name:'Weapon', rows:[{k:'weaponItem',type:'grid',kind:'weapon',ids:()=>[['']].concat(ofItems('weapon'))},{k:'tintWeapon',label:'',type:'color',base:'weapon',only:true,opts:TINTC}]},
     {name:'Armor', rows:[{type:'armor',slot:'all'},{type:'armor',slot:'helmet'},{type:'armor',slot:'top'},{type:'armor',slot:'bottom'},{type:'armor',slot:'shoes'}]}
   ]}
@@ -106,7 +113,7 @@ function armorRow(wrap,slot){
   wrap.append(box);
 }
 // ---- the five outfit slots ----
-const OUTFIT_KEYS=['top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','armor','armorHat','armorTop','armorBottom','armorShoes'];
+const OUTFIT_KEYS=['tintTop2','tintTop3','tintTop4','tintBottom2','tintBottom3','tintBottom4','tintShoes2','tintShoes3','tintShoes4','tintHat2','tintHat3','tintHat4','tintHair2','tintHair3','tintHair4','tintGloves2','tintGloves3','tintGloves4','hairGrad','hairColor2','hairThird','hairColor3','gloves','gloveColor','tintGloves','top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','armor','armorHat','armorTop','armorBottom','armorShoes'];
 function outfitSlots(){ try{ const a=JSON.parse(localStorage.getItem('wildwood-outfits-v1')||'[]'); const out=[]; for(let i=0;i<5;i++) out.push(a&&typeof a[i]==='object'?a[i]:null); return out; }catch(_){ return [null,null,null,null,null]; } }
 function putOutfitSlots(a){ try{ localStorage.setItem('wildwood-outfits-v1',JSON.stringify(a)); }catch(_){} }
 function saveOutfitSlot(i){ const a=outfitSlots(), o={}; for(const k of OUTFIT_KEYS) if(LOOK[k]!==undefined) o[k]=LOOK[k]; a[i]=o; putOutfitSlots(a); renderEditor(); }
@@ -166,7 +173,7 @@ function renderEditor(){
       const ids=row.ids(), box=document.createElement('div'); box.className='tiles'+(row.kind==='sex'?' two':'');
       if(row.empty&&ids.length<2){ const p0=document.createElement('p'); p0.className='ed-info'; p0.textContent=row.empty; wrap.append(p0); }
       for(const [v,name,tip] of ids){
-        const sig=!!OUTFITS[v], gap=(v===''||v==='none')&&(row.kind==='hat'||row.kind==='faceItem'||row.kind==='cape'||row.kind==='aura')||(row.kind==='pack'&&v===false);   // "nothing": a crossed circle
+        const sig=!!OUTFITS[v], gap=(v===''||v==='none')&&(row.kind==='hat'||row.kind==='gloves'||row.kind==='faceItem'||row.kind==='cape'||row.kind==='aura')||(row.kind==='pack'&&v===false);   // "nothing": a crossed circle
         const spec=gap?null:{kind:row.kind,id:v};
         if(spec&&row.col&&!sig) spec.col=LOOK[row.col];
         if(spec&&row.kind==='sex') spec.sex=v;
@@ -174,6 +181,18 @@ function renderEditor(){
         const title=name?(tip?name+': '+tip:name):gap?'None':ED_NAMES[v]||String(v).replace(/^./,c=>c.toUpperCase());
         const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'?name:''}); b.onclick=()=>{ setLook(row.k,v); renderEditor(); }; box.append(b); }
       wrap.append(box);
+    }
+    else if(row.type==='palette'){
+      // more colours of a worn outfit piece (OF_PAL): one picker for each further colour the piece is drawn in; 'Designed' puts that colour back
+      const id=ofPieces(LOOK)[row.slot], P=id?ofPalOf(id,row.slot):[];
+      if(P.length<2){ continue; }
+      for(let i=1;i<P.length;i++){
+        const key=OF_TINTX[row.slot][i-1], cap=document.createElement('div'); cap.className='ed-info'; cap.textContent=ED_PAL_NAMES[i]; wrap.append(cap);
+        const d=document.createElement('button'); d.className='chip'; d.textContent='Designed'; d.style.borderLeft='10px solid '+hex(P[i]); d.setAttribute('aria-pressed',!(LOOK[key]>=0)); d.onclick=()=>{ setLook(key,-1); renderEditor(); };
+        const dw=document.createElement('div'); dw.className='chips'; dw.append(d); wrap.append(dw);
+        const box=document.createElement('div'); box.className='swatches';
+        TINTC.forEach((v,j)=>{ const b=document.createElement('button'); b.className='sw'; b.style.background=hex(v); b.setAttribute('aria-label',ED_PAL_NAMES[i]+' color '+(j+1)); b.setAttribute('aria-pressed',LOOK[key]===v); b.onclick=()=>{ setLook(key,v); renderEditor(); }; box.append(b); });
+        wrap.append(box); }
     }
     else if(row.type==='armor'){ armorRow(wrap,row.slot); }
     else if(row.type==='seg'){

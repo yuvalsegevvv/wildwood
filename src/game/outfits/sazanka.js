@@ -2,13 +2,13 @@
 /* ---------- Sazanka: risk DPS, dark + air. Design: docs/skillkits/looks/sazanka.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: ink 0x1b1f2a, indigo 0x2f3f6b, moon-grey 0xc9ccd6 (only the sash tails and the tassels), vermilion 0xc23b2a (cords and thin trim only, never an area), violet 0x6a5ac8 + white-blue
    wisps for the small glow (the dark and the air). Silhouette: the narrowest and lowest of the eight: a peaked hood with a tall collar, one long lock, a low cord sash with two trailing tails, bound limbs. */
-CHAR_MODELS.sazanka={id:'sazanka',name:'Sazanka',signature:true, items:{hat:'Dusk hood',hair:'Cord lock',face:'Tally marks',top:'Runner wrap',bottom:'Taper wraps',shoes:'Soft stalks',weapon:'Cord sheath'},sexes:['female'],
+CHAR_MODELS.sazanka={id:'sazanka',name:'Sazanka',signature:true, hairGrad:{mode:'ombre',c2:0x6a4ab0,c3:0xb89aff}, items:{glove:'Cord-bound gloves',hat:'Dusk hood',hair:'Cord lock',face:'Tally marks',top:'Runner wrap',bottom:'Taper wraps',shoes:'Soft stalks',weapon:'Cord sheath'},sexes:['female'],
   note:'The night courier: the narrowest and lowest silhouette, drawn for a small, long-legged runner.',
   ranges:{height:[0.92,1.04],build:[0.88,1.05],chest:[0.6,1.1],shoulders:[0.88,1.05],arms:[0.82,1.1],thighs:[0.85,1.1],neck:[0.85,1.1],hands:[0.85,1.1],head:[0.92,1.06],eyeTilt:[0.1,0.7],hairLength:[0.7,1.05],hairVolume:[0.9,1.1]},
   setups:[{id:'sazanka',name:'Sazanka',sex:'female',def:true,note:'The courier as drawn: small, long-legged, narrow-eyed.',v:{height:0.95,build:0.9,chest:0.85,shoulders:0.93,waist:0.88,torso:0.97,legs:1.12,thighs:0.95,arms:0.9,neck:0.95,hands:0.95,feet:0.95,jaw:0.92,chin:0.95,cheeks:0.9,eyeSize:1.05,eyeHeight:0.05,eyeTilt:0.45,brow:0.3,noseSize:0.9,mouthSize:0.9,lips:0.9,smile:0.1,hairLength:0.9,bangs:1.1}}]};
 
 OUTFITS.sazanka=(function(){
-  const INK=0x1b1f2a, INDIGO=0x2f3f6b, INDIGO_D=0x222c4e, BODICE=0x252f56, LAPEL=0x3b4e88, VERM=0xc23b2a, MOON=0xc9ccd6, LAC=0x1e1c22, STEEL=0x4a5260, VIOLET=0x6a5ac8, WISP=0xdfe8ff, HAIR=0x1b1c27, TAG=0x7a5a3c;
+  const INK=0x1b1f2a, INDIGO=0x6a2a62, INDIGO_D=0x4a1f46, BODICE=0x52244e, LAPEL=0x9a4a8a, VERM=0xc23b2a, MOON=0xc9ccd6, LAC=0x1e1c22, STEEL=0x4a5260, VIOLET=0x6a5ac8, WISP=0xdfe8ff, HAIR=0x1b1c27, TAG=0x7a5a3c;
   const cIL=ofCol(0x2a3248), cI=ofCol(INK), cIn=ofCol(INDIGO), cV=ofCol(VERM), cM=ofCol(MOON), cW=ofCol(WISP), cVi=ofCol(VIOLET);
   const V3=THREE.Vector3, G=faceG, sm=faceSm;
   // the peak of the hood (head-local, units of the skull): a cone curling up and back, its tip drooping; the violet bead sits at the tip (extras)
@@ -247,11 +247,13 @@ OUTFITS.sazanka=(function(){
         for(const g of lit.concat(glow)) g.scale(1.3,1.3,1.3);
         return {lit,glow}; } };
 
+    const GLV={start:0.19,col:INK,col2:INDIGO_D,trim:VERM,len:0.07,flare:0.0,fingers:'tips'};
     const kit={
-      main:{top:0x2f3f6b,bottom:0x2f3f6b,shoes:0x1b1f2a,hat:0x222c4e}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:1.1, shinCut:9, boot:false, skinFrom:0.605, hairColor:HAIR, eyeColor:0x8a86a8,
+      main:{glove:0x1b1f2a,top:0x6a2a62,bottom:0x6a2a62,shoes:0x1b1f2a,hat:0x4a1f46}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:1.1, shinCut:9, boot:false, skinFrom:0.605, hairColor:HAIR, eyeColor:0x8a86a8,
       eyes:EYES,
       cuts:{torso:[0.012,0.062],foreArm:[WRIST/D.fore]},
       paint:bodyPaint,
+      gloveStart:GLV.start, gloveFingers:GLV.fingers, glove:sd=>glKitGlove(X,D,sd,GLV), handPaint:glKitPaint(GLV),
       head:(F,T)=>hood(F,T),
       hair:(F,T)=>hair(F,T),
       mark,
@@ -284,9 +286,30 @@ OUTFITS.sazanka=(function(){
         out.push(solid(spiral(SH,len,t0*len+0.01,len-0.004,8,m+0.0017,0.002,0.3,f=>f<0.86?f/0.86*0.82:0.82+(f-0.86)/0.14*0.18),VERM));
         const q=SH(0.985); out.push(solid(csph(0.0055,sg(8),sg(6)).translate(sd*(q[0]+0.0072),-0.985*len,q[2]),VERM));
         return out; },
-      extras,
+      extras:(rig,XX,has)=>{ extras(rig,XX,has); ofCosmetics(rig,XX,has,{cape:{col:INDIGO_D,trim:VIOLET,len:0.78,pat:'gloam',mantle:0},aura:{col:VIOLET,col2:WISP,style:'orbit',ring:false,n:5,shape:'wisp',deco:'none'}}); },
       dress,
     };
     return kit;
   };
 })();
+OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 4: a vermilion scarf with long tails, an ink shoulder plate with violet trim, a knotted sash with two tails
+  torso:()=>oxScarf(X,D,{col:0xc8323a,col2:0x2a1a40,len:1.25,fat:0.022}),
+  shoulder:sd=>sd>0?oxPauldron(X,D,{col:0x1b1f2a,trim:0x8a6ae0,r:0.085}):[],
+  hips:()=>oxSash(X,D,{col:0xc8323a,col2:0x2a1a40,len:1.1,side:-1})}));
+OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 5: a white fox half-mask pushed up on the side of the head, a plate on the other shoulder too
+  head:()=>oxMask(X,D,{col:0xf3ead2,mark:0xc8323a,side:1}),
+  shoulder:sd=>sd<0?oxPauldron(X,D,{col:0x1b1f2a,trim:0xc8323a,r:0.075}):[]}));
+OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 6: a big vermilion obi bow at the back, long trailing sleeve streamers
+  torso:()=>oxBow(X,D,{col:0xc8323a,col2:0x2a1a40}),
+  forearm:sd=>oxStreamer(X,D,{col:0xc8323a,col2:0x2a1a40,len:0.55,side:sd})}));
+OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 3: a curtain of paper talismans hanging from the belt
+  hips:()=>oxTags(X,D,{col:0xf3ead2,mark:0xc8323a,n:14,len:0.24})}));
+oxTune('sazanka',{eyeSize:1.1,eyeTilt:0.5,lips:1.0,smile:0.35,blush:0.4,cheeks:0.95,earSize:1.15,undertone:0.2});
+OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // face round 4: a red runner's stripe under the eyes, red cords hung at both ears, a cheeky grin
+  mark:F=>oxMarks(F,[{t:'stripe',col:0xc8323a},{t:'freckles',col:0x8a5a48}]),
+  hair:()=>oxHairBits(X,[{t:'beads',both:true,col:0xc8323a,col2:0xf3ead2}])}));
+oxTune('sazanka',{height:1.0,build:0.98,chest:0.8,shoulders:1.0,waist:0.85,hips:1.0,thighs:1.2,legs:1.12,arms:1.0,neck:0.95,head:1.0});
+Object.assign(CHAR_MODELS.sazanka.setups[0],{note:'The courier as drawn: lean and long-limbed with a runner\'s legs.'});
+OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // uniqueness round 3: a courier's banner on a rod on her back, blown out sideways in plum with a moon-grey edge and a vermilion sun
+  torso:()=>oxBanner(X,D,{col:0x6a2a62,trim:0xc9ccd6,disc:0xc23b2a,rod:0x4a3220,len:0.62})}));
+oxTune('sazanka',{height:0.93,chest:0.7,legs:1.12,thighs:1.2,head:0.98});

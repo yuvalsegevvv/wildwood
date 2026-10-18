@@ -11,7 +11,7 @@ let cthRT=null, cthScene=null, cthCam=null, cthTimer=0, cthBuf=null, cthCv=null;
 const CTH_TEE=0x8c9096, CTH_TROUSERS=0x5a4a3c;
 function cthBase(sex,skin){
   const d=sex==='female'?LOOK_F:LOOK_M;
-  return Object.assign({},d,{skin,custom:true,armor:'hide',hat:'none',pack:false,aura:'',cape:'',faceItem:'',weaponItem:'',model:'base',facial:'none',top:'tshirt',topColor:CTH_TEE,bottom:'trousers',bottomColor:CTH_TROUSERS,shoes:'boots',shoeColor:SHOEC[0],tintTop:-1,tintBottom:-1,tintShoes:-1,tintHat:-1,tintHair:-1,tintFace:-1,tintWeapon:-1});
+  return Object.assign({},d,{skin,custom:true,armor:'hide',hat:'none',pack:false,gloves:'none',aura:'',cape:'',faceItem:'',weaponItem:'',model:'base',facial:'none',top:'tshirt',topColor:CTH_TEE,bottom:'trousers',bottomColor:CTH_TROUSERS,shoes:'boots',shoeColor:SHOEC[0],tintTop:-1,tintBottom:-1,tintShoes:-1,tintHat:-1,tintHair:-1,tintFace:-1,tintWeapon:-1});
 }
 // the look and the framing of a tile: view = head | chest | legs | feet | body | back; spin = a quarter turn so a side or back shows
 function cthLookFor(sp){
@@ -27,6 +27,7 @@ function cthLookFor(sp){
     case 'top': L.top=id; L.topColor=sp.col!==undefined?sp.col:LOOK.topColor; view='chest'; break;
     case 'bottom': L.bottom=id; L.bottomColor=sp.col!==undefined?sp.col:LOOK.bottomColor; view='legs'; break;
     case 'shoes': L.shoes=id; L.shoeColor=sp.col!==undefined?sp.col:LOOK.shoeColor; view='feet'; break;
+    case 'gloves': L.gloves=id; L.gloveColor=sp.col!==undefined?sp.col:LOOK.gloveColor; L.top='tshirt'; view='hands'; spin=0.55; break;
     case 'pack': L.pack=true; view='back'; spin=Math.PI-0.35; break;
     case 'cape': L.cape=id; view='back'; spin=Math.PI-0.35; break;
     case 'aura': L.aura=id; view='body'; break;
@@ -69,7 +70,7 @@ function cthRender(sp){
   if(sp.kind==='weapon'&&typeof weaponsOn==='function'){ try{ weaponsOn(rig,GEAR&&GEAR.eq&&GEAR.eq.weapon||'sword1',L.build); }catch(_){} }
   const H=rig.hipY, D=rig.dims;
   // [centre height, half the height shown, distance factor]
-  const F={head:[H+D.headY,0.17*D.hs+0.03,1],chest:[H+0.25*D.TK,0.34,1],legs:[H*0.62,0.5,1],feet:[0.1,0.2,1],body:[H+0.33,0.98,1],back:[H+0.3,0.62,1]}[view];
+  const F={head:[H+D.headY,0.17*D.hs+0.03,1],chest:[H+0.25*D.TK,0.34,1],legs:[H*0.62,0.5,1],feet:[0.1,0.2,1],body:[H+0.33,0.98,1],hands:[H-0.15,0.3,1],back:[H+0.3,0.62,1]}[view];
   const half=F[1], dist=half/Math.tan(cthCam.fov*Math.PI/360)*1.0;
   cthCam.position.set(0,F[0],-dist); cthCam.lookAt(0,F[0],0); cthCam.updateMatrixWorld();
   const old=renderer.getRenderTarget(), oc=new THREE.Color(), oa=renderer.getClearAlpha(), ot=renderer.shadowMap.enabled;

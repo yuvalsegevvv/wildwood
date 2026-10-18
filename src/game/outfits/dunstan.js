@@ -2,13 +2,13 @@
 /* ---------- Dunstan: support (buff), fire. Design: docs/skillkits/looks/dunstan.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: ember red 0xb8432a, gold 0xd4a83a, soot 0x2e2a2a, drum cream 0xeee2c0, copper 0xc47a45. The silhouette is a rallying column: a tall cap with a plume, a barrel chest
    under a red tabard, a drum at the hip, tall boots. Every part has at least two colours (red and gold at the least); the emblem is a flame, never a rayed sun. */
-CHAR_MODELS.dunstan={id:'dunstan',name:'Dunstan',signature:true, items:{hat:'Drum shako',hair:'Gold queue',face:'Stripes & handlebar',top:'Rally tabard',bottom:'Stripe breeches',shoes:'March boots',weapon:'Banner bind'},sexes:['male'],
+CHAR_MODELS.dunstan={id:'dunstan',name:'Dunstan',signature:true, hairGrad:{mode:'tips',c2:0xe8c050}, items:{hat:'Drum shako',hair:'Gold queue',face:'Stripes & handlebar',top:'Rally tabard',bottom:'Stripe breeches',shoes:'March boots',weapon:'Banner bind'},sexes:['male'],
   note:'The standard-bearer: a tall cap and long lines, built for a broad, tall man.',
   ranges:{height:[0.98,1.08],build:[1.02,1.18],chest:[0.9,1.2],waist:[0.95,1.15],hips:[0.9,1.15],legs:[0.92,1.06],neck:[1.0,1.2],arms:[0.95,1.25],head:[0.95,1.1],hairLength:[0.9,1.2],hairVolume:[1.0,1.2]},
   setups:[{id:'dunstan',name:'Dunstan',sex:'male',def:true,note:'The standard-bearer as drawn: tall, a barrel of a body, a big smile.',v:{height:1.04,build:1.12,chest:1.05,shoulders:1.1,waist:1.08,torso:1.02,legs:0.97,thighs:1.08,arms:1.12,neck:1.12,hands:1.1,feet:1.05,jaw:1.05,chin:1.05,cheeks:1.12,noseSize:1.1,mouthSize:1.15,smile:0.55,hairVolume:1.1,bangs:0.8}}]};
 
 OUTFITS.dunstan=(function(){
-  const EMBER=0xb8432a, GOLD=0xd4a83a, SOOT=0x2e2a2a, CREAM=0xeee2c0, COPPER=0xc47a45, LEATHER=0x5a3c26, WHITE=0xf2eee4, BRASS=0xb89a4a, WAX=0x8a4a28;
+  const EMBER=0x2d56a8, GOLD=0xd4a83a, SOOT=0x2e2a2a, CREAM=0xeee2c0, COPPER=0xc47a45, LEATHER=0x5a3c26, WHITE=0xf2eee4, BRASS=0xb89a4a, WAX=0x8a4a28;
   const cE=ofCol(EMBER), cG=ofCol(GOLD), cS=ofCol(SOOT), cC=ofCol(CREAM), cL=ofCol(LEATHER), cW=ofCol(WHITE);
   // a three-tongued flame (the emblem): u across, v up, both in metres from the flame's base centre; 1 inside, 0 outside
   const flame=(u,v,k)=>{ k=k||1; u/=k; v/=k; if(v<-0.007||v>0.095) return 0; if(v<0.004&&Math.abs(u)<0.05) return 1;
@@ -103,7 +103,8 @@ OUTFITS.dunstan=(function(){
     };
 
     return {
-      main:{top:0xb8432a,bottom:0x2e2a2a,shoes:0x2e2a2a,hat:0xb8432a}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.04, shinCut:0, boot:true, skinFrom:0.605, hairColor:COPPER, eyeColor:0x4a2e1c,
+      aura:{col:0xff8a3a,col2:0xffd070,style:'rise',ring:false,n:6,shape:'flame',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
+      main:{top:0x2d56a8,bottom:0x2e2a2a,shoes:0x2e2a2a,hat:0x2d56a8}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.04, shinCut:0, boot:true, skinFrom:0.605, hairColor:COPPER, eyeColor:0x4a2e1c,
       eyes:{iris:1.05,hl:2,browLift:0.003,browThick:1.2},           // the "hearty" style: a wide bright iris, brows lifted and thick
       cuts:{torso:[0.012,0.07,0.56,0.598],upperArm:[0.15/D.upper*1,0.158/D.upper,0.212/D.upper,0.22/D.upper],foreArm:[0.188/D.fore,0.197/D.fore,0.213/D.fore,0.222/D.fore],thigh:[0.9,0.98],shin:[0.04,0.12]},
       paint,
@@ -176,3 +177,11 @@ OUTFITS.dunstan=(function(){
     };
   };
 })();
+oxTune('dunstan',{jaw:1.15,chin:1.12,cheeks:1.0,brow:0.3,noseSize:1.1,lips:0.9,undertone:0.5,blush:0.3,smile:0.35,earSize:1.1});
+OUTFITS.dunstan=oxPlus(OUTFITS.dunstan,(X,D)=>({   // face round 5: a sun-lined drum-major: laughter lines, a gold hoop
+  mark:F=>oxMarks(F,[{t:'crow',col:0x8a5a3a}]),
+  hair:()=>oxHairBits(X,[{t:'ring',side:-1,col:0xe8c050}])}));
+oxTune('dunstan',{height:1.08,build:1.0,chest:1.2,shoulders:1.18,waist:0.84,hips:0.9,torso:1.02,legs:1.14,arms:1.0,neck:1.0,head:0.95});
+Object.assign(CHAR_MODELS.dunstan.setups[0],{note:'The drum-major as drawn: a tall peacock, deep-chested and narrow in the waist, on long legs.'});
+OUTFITS.dunstan=oxPlus(OUTFITS.dunstan,(X,D)=>({   // uniqueness round 4: a tall drum-major with a tall red-and-white plume on the shako
+  head:()=>oxPlume(X,D,{col:0xf4efe4,col2:0xc8323a,base:0.31,len:0.34})}));

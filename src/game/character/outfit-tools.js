@@ -60,17 +60,27 @@ const _ofC={}; const ofCol=h=>_ofC[h]||(_ofC[h]=new THREE.Color(h));
    that supplies at least one slot (X.kit = {sl: kit per slot or null, kits: the distinct kits}) and each consumer asks for its slot's kit (X.kit.sl.top ...) or runs a hook through ofRun / ofShin below.
    Which kit owns what: the paint of the 'upperArm' / 'foreArm' is the top's, 'thigh' the bottom's, 'foot' the shoes', 'torso' is cut at OF_WAIST (above: top, below: bottom), 'shin' at the shoes' boot top (kit.bootTop);
    the geometry hooks torso / shoulder / forearm are the top's, hips / thigh the bottom's (a kit may say otherwise: kit.own = {thigh:'top'}), shin is split by ofShin. Used by model*.js; tested by tools/outfit-smoke.js (mix). */
-const OF_SLOTS=['top','bottom','shoes','hat','hair','face','weapon'];
-const OF_FIELD={top:'top',bottom:'bottom',shoes:'shoes',hat:'hat',hair:'hair',face:'faceItem',weapon:'weaponItem'};   // the look field of each slot
-const OF_HOOK_SLOT={torso:'top',shoulder:'top',forearm:'top',hips:'bottom',thigh:'bottom'};
+const OF_SLOTS=['top','bottom','shoes','hat','hair','face','weapon','glove'];
+const OF_FIELD={top:'top',bottom:'bottom',shoes:'shoes',hat:'hat',hair:'hair',face:'faceItem',weapon:'weaponItem',glove:'gloves'};   // the look field of each slot
+const OF_HOOK_SLOT={torso:'top',shoulder:'top',forearm:'top',hips:'bottom',thigh:'bottom',glove:'glove'};
 const OF_WAIST=0.03;   // the design height where the top ends and the bottoms begin on the torso (the base T-shirt's hem)
 // the slots of a look that wear an outfit's item: {slot: outfit id}. OUTFITS has no prototype, so a remote look's 'constructor' finds nothing
-function ofPieces(L){ const p={}; for(const s of OF_SLOTS){ const v=L[OF_FIELD[s]]; if(typeof v==='string'&&OUTFITS[v]) p[s]=v; } return p; }
+// (a set wears a glove only when it has one: CHAR_MODELS.<id>.items.glove; a look wearing a set's id in `gloves` for a set without gloves is bare-handed)
+function ofPieces(L){ const p={}; for(const s of OF_SLOTS){ const v=L[OF_FIELD[s]]; if(typeof v==='string'&&OUTFITS[v]&&(s!=='glove'||ofHasGlove(v))) p[s]=v; } return p; }
+const ofHasGlove=id=>{ const m=CHAR_MODELS[id]; return !!(m&&m.items&&m.items.glove); };
 // one kit per distinct outfit worn (a kit is built for this body: X, D)
 function ofBuild(X,D,pieces){ const built={}, sl={}, tr={}; for(const s of OF_SLOTS) sl[s]=null; for(const s in pieces){ const id=pieces[s]; sl[s]=built[id]||(built[id]=OUTFITS[id](X,D)); }
   // recolouring: a slot with a tint gets a transform (see ofTinter) from the piece's main colour to the player's colour
   for(const s of OF_SLOTS){ const k=sl[s], T=ofTintOf(X.L,s); if(!k||T<0||s==='face') continue;
     const M=s==='hair'?k.hairColor:s==='weapon'?(k.dress&&k.dress.accent):(k.main&&k.main[s]); if(M!==undefined) tr[s]=ofTinter(M,T); }
+  // the other colours of a piece: a vertex colour near one of the piece's palette colours follows that colour's tint (a colour with none follows the main one, as before)
+  for(const s of ['top','bottom','shoes','hat','hair','glove']){ const k=sl[s]; if(!k) continue; const id=pieces[s], P=ofPalOf(id,s), Ts=[ofTintOf(X.L,s)]; let any=false;
+    for(let i=1;i<P.length;i++){ Ts.push(ofTintX(X.L,s,i)); if(Ts[i]>=0) any=true; }
+    if(!any) continue;
+    const M0=s==='hair'?k.hairColor:k.main&&k.main[s]; if(M0!==undefined) P[0]=M0; if(!P.length) continue;
+    const tin=P.map((m,i)=>Ts[i]>=0?ofTinter(m,Ts[i]):null), pc=P.map(ofHsl), h={h:0,s:0,l:0};
+    tr[s]=c=>{ c.getHSL(h); let bi=-1, bd=0.34; for(let i=0;i<pc.length;i++){ const d=ofHsd(h,pc[i]); if(d<bd){ bd=d; bi=i; } }
+      const f=bi>=0&&tin[bi]?tin[bi]:tin[0]; if(f) f(c); }; }
   return {sl,kits:Object.values(built),tr,eye:ofTintOf(X.L,'face')}; }
 // the geometry that a hook (torso, shoulder, forearm, hips, thigh) adds, from the kits whose piece owns that hook
 function ofRun(X,hook,sd){ const out=[]; for(const k of X.kit.kits){ if(!k[hook]) continue; const slot=(k.own&&k.own[hook])||OF_HOOK_SLOT[hook]; if(X.kit.sl[slot]!==k) continue; const ex=k[hook](sd); if(ex&&ex.length) out.push(...ofTintGeos(X,slot,ex)); } return out; }
@@ -84,11 +94,19 @@ function ofShin(X,sd,shin){ const kb=X.kit.sl.bottom, ks=X.kit.sl.shoes, out=[];
    of its pieces (kit.main = {top, bottom, shoes, hat}; the hair's is kit.hairColor, the weapon's dress.accent) and ofTinter(main, target) is a transform of one vertex colour that moves the main colour to the
    target and everything else with it: coloured vertices turn by the same hue and scale by the same saturation and lightness (so a design of five colours stays five colours), greys and creams take the target's
    tone at half strength. The paint of a body part goes through ofPaint, a geometry through ofTintGeos, loose parts (extras) by comparing the rig before and after, the weapon's meshes in weaponsOn. */
-const OF_TINT={top:'tintTop',bottom:'tintBottom',shoes:'tintShoes',hat:'tintHat',hair:'tintHair',face:'tintFace',weapon:'tintWeapon'};   // face: the eye colour (the marks keep their own)
+const OF_TINT={top:'tintTop',bottom:'tintBottom',shoes:'tintShoes',hat:'tintHat',hair:'tintHair',face:'tintFace',weapon:'tintWeapon',glove:'tintGloves'};   // face: the eye colour (the marks keep their own)
+// more colours on one piece (OF_PAL, character/outfit-palettes.js: the main colours a piece is drawn in, most vertices first): look.tint<Slot> recolours the first, tint<Slot>2 / 3 / 4 the next ones
+const OF_TINTX={top:['tintTop2','tintTop3','tintTop4'],bottom:['tintBottom2','tintBottom3','tintBottom4'],shoes:['tintShoes2','tintShoes3','tintShoes4'],hat:['tintHat2','tintHat3','tintHat4'],hair:['tintHair2','tintHair3','tintHair4'],glove:['tintGloves2','tintGloves3','tintGloves4']};
+const OF_PAL_N=4;
+const ofPalOf=(id,slot)=>{ const a=OF_PAL[id]&&OF_PAL[id][slot]; return Array.isArray(a)?a.slice(0,OF_PAL_N):[]; };   // (id is a worn outfit: a key of OUTFITS)
+const ofTintX=(L,slot,i)=>{ const f=OF_TINTX[slot]; const v=f?L[f[i-1]]:undefined; return typeof v==='number'&&v>=0&&v<=0xffffff?Math.floor(v):-1; };
 const ofTintOf=(L,slot)=>{ const v=L[OF_TINT[slot]]; return typeof v==='number'&&v>=0&&v<=0xffffff?Math.floor(v):-1; };   // (a remote look is not sanitized: anything else is "as designed")
 function ofTinter(M,T){ const m={h:0,s:0,l:0}, t={h:0,s:0,l:0}; new THREE.Color(M).getHSL(m); new THREE.Color(T).getHSL(t);
   const neutral=m.s<0.12, dh=neutral?0:t.h-m.h, gs=neutral?1:clamp((t.s+0.05)/(m.s+0.05),0.3,2.5), gl=Math.pow(clamp((t.l+0.05)/(m.l+0.05),0.45,1.9),0.85), ns=Math.min(0.5,t.s*0.45), h={h:0,s:0,l:0}, a=new THREE.Color(), b=new THREE.Color();
   return c=>{ c.getHSL(h); const w=smoothstep(0.04,0.22,h.s), l=clamp(h.l*gl); a.setHSL(((h.h+dh)%1+1)%1,clamp(h.s*gs),l); b.setHSL(t.h,ns,l); c.copy(b).lerp(a,w); }; }
+const ofHsl=m=>{ const o={h:0,s:0,l:0}; new THREE.Color(m).getHSL(o); return o; };
+// how far a colour is from a palette colour (hue counts with the colour's saturation; the lightness counts less, as the vertex colours carry shading)
+const ofHsd=(a,b)=>{ let dh=Math.abs(a.h-b.h); dh=Math.min(dh,1-dh); return dh*2*Math.min(a.s,b.s)+Math.abs(a.s-b.s)*0.7+Math.abs(a.l-b.l)*0.5; };
 // every vertex colour of one painted geometry through a transform
 function ofTintGeo(g,f){ const a=g.attributes.color; if(!a) return g; const c=new THREE.Color(); for(let i=0;i<a.count;i++){ c.setRGB(a.getX(i),a.getY(i),a.getZ(i)); f(c); a.setXYZ(i,c.r,c.g,c.b); } a.needsUpdate=true; return g; }
 function ofTintGeos(X,slot,geos){ const f=X.kit.tr[slot]; if(f) for(const g of geos) ofTintGeo(g,f); return geos; }
@@ -105,9 +123,12 @@ const ofBootTop=k=>k?(k.bootTop!==undefined?k.bootTop:(k.boot!==false?0.6:1.1)):
 const ofItems=slot=>Object.keys(OUTFITS).map(id=>{ const m=CHAR_MODELS[id], it=m&&m.items&&m.items[slot]; return it?[id,it,m.name+'\'s '+slot+' (from the '+m.name+' set)']:null; }).filter(Boolean);   // [id, label, tooltip]
 // a look wearing a whole outfit: its item in every slot and `model` (the editor's reference body and ranges follow it); id 'base' takes the outfit items off (each such slot back to the sex's default)
 function ofWear(L,id){ const o=Object.assign({},L), d=L.sex==='female'?LOOK_F:LOOK_M, w=ofPieces(L);
-  for(const s of OF_SLOTS){ const f=OF_FIELD[s]; if(id!=='base') o[f]=id; else if(w[s]) o[f]=d[f]; o[OF_TINT[s]]=-1; }   // (a whole set is worn in the colours it was designed in)
+  for(const s of OF_SLOTS){ const f=OF_FIELD[s]; if(id!=='base'){ if(s!=='glove'||ofHasGlove(id)) o[f]=id; } else if(w[s]) o[f]=d[f]; o[OF_TINT[s]]=-1; if(OF_TINTX[s]) for(const f of OF_TINTX[s]) o[f]=-1; }   // (a set without gloves leaves the wearer's own)   // (a whole set is worn in the colours it was designed in)
+  { const g=id!=='base'&&CHAR_MODELS[id]&&CHAR_MODELS[id].hairGrad; if(g){ o.hairGrad=g.mode; o.hairColor2=g.c2; o.hairThird=g.c3!==undefined; if(g.c3!==undefined) o.hairColor3=g.c3; } else if(w.hair||id!=='base'){ o.hairGrad='none'; o.hairThird=false; } }   // a set's own hair gradient (CHAR_MODELS.<id>.hairGrad = {mode, c2, c3}); taking a set off, or a set without one, clears it
   o.model=id; return o; }
 // `model` names the set whose body and ranges the editor shows: once none of its items is worn any more it is the base model again
 function ofTidy(L){ if(L.model!=='base'&&!Object.values(ofPieces(L)).includes(L.model)) L.model='base'; return L; }
 // a look saved before pieces existed wore a whole outfit through `model` alone (it has neither new field): give it that outfit's items
 function ofMigrate(raw,L){ const m=L.model; if(raw&&raw.faceItem===undefined&&raw.weaponItem===undefined&&typeof m==='string'&&OUTFITS[m]&&!Object.keys(ofPieces(L)).length) return ofWear(L,m); return L; }
+// a set's own cape and aura (the Lodge's parts, drawn in the set's colours): o = {cape: {col, trim, len, pat, mantle}, aura: {col, col2, style, ring, n, shape, deco}}; both come with the set's top (the cloth), `has` is the kit's extras guard
+function ofCosmetics(rig,X,has,o){ if(!has('top')) return; if(o.cape) cosBuildCape(rig,X,o.cape); if(o.aura) cosBuildAura(rig,X,o.aura); }

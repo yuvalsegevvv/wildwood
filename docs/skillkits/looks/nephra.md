@@ -68,31 +68,35 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 1.05 |
-| `build` (Build) | 0.9 |
-| `chest` (Chest) | 0.8 |
-| `shoulders` (Shoulders) | 1 |
-| `waist` (Waist) | 0.9 |
-| `torso` (Torso length) | 1.02 |
+| `height` (Height) | 1.08 |
+| `build` (Build) | 0.88 |
+| `chest` (Chest) | 0.62 |
+| `shoulders` (Shoulders) | 1.1 |
+| `waist` (Waist) | 0.95 |
+| `torso` (Torso length) | 1.06 |
 | `legs` (Leg length) | 1.1 |
-| `thighs` (Thighs) | 0.9 |
-| `arms` (Arms) | 0.88 |
+| `thighs` (Thighs) | 0.86 |
+| `arms` (Arms) | 1.2 |
 | `neck` (Neck) | 1.15 |
-| `hands` (Hands) | 0.92 |
-| `feet` (Feet) | 0.95 |
-| `head` (Head size) | 0.98 |
+| `hands` (Hands) | 1.18 |
+| `feet` (Feet) | 1.1 |
+| `head` (Head size) | 0.92 |
 | `jaw` (Jaw width) | 0.88 |
 | `chin` (Chin) | 0.95 |
-| `cheeks` (Cheeks) | 0.9 |
-| `eyeSize` (Eye size) | 1.1 |
+| `cheeks` (Cheeks) | 0.82 |
+| `eyeSize` (Eye size) | 1.2 |
 | `eyeTilt` (Eye tilt) | 0.15 |
-| `brow` (Brows) | 0.1 |
+| `brow` (Brows) | -0.1 |
 | `noseSize` (Nose) | 0.9 |
 | `mouthSize` (Mouth width) | 0.85 |
-| `lips` (Lips) | 1.1 |
-| `smile` (Expression) | 0.25 |
+| `lips` (Lips) | 1.2 |
+| `smile` (Expression) | 0.1 |
 | `hairLength` (Hair length) | 1 |
 | `hairVolume` (Hair volume) | 1 |
+| `undertone` (Skin undertone) | 0.3 |
+| `blush` (Blush) | 0 |
+| `earSize` (Ear size) | 0.95 |
+| `hips` (Hips) | 0.88 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -104,11 +108,10 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 | `build` (Build) | 0.88 .. 1.02 | 0.88 .. 1.18 |
 | `chest` (Chest) | 0.6 .. 1.1 | 0.6 .. 1.4 |
 | `waist` (Waist) | 0.82 .. 1.05 | 0.82 .. 1.15 |
-| `hips` (Hips) | 0.88 .. 1.12 | 0.85 .. 1.2 |
+| `hips` (Hips) | 0.85 .. 1.12 | 0.85 .. 1.2 |
 | `legs` (Leg length) | 1 .. 1.14 | 0.92 .. 1.14 |
-| `arms` (Arms) | 0.82 .. 1.05 | 0.82 .. 1.25 |
 | `neck` (Neck) | 1 .. 1.2 | 0.85 .. 1.2 |
-| `head` (Head size) | 0.95 .. 1.08 | 0.9 .. 1.12 |
+| `head` (Head size) | 0.9 .. 1.08 | 0.9 .. 1.12 |
 | `hairLength` (Hair length) | 0.8 .. 1.2 | 0.7 .. 1.35 |
 | `hairVolume` (Hair volume) | 0.9 .. 1.15 | 0.9 .. 1.25 |
 

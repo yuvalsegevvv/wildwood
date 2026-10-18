@@ -49,6 +49,7 @@ OUTFITS.pell=(function(){
     const lantern=()=>[solid(cyl(0.026,0.022,0.05,sg(8)).translate(0,0,0),BRASS),pc(cyl(0.02,0.02,0.04,sg(8)).translate(0,0.002,0),(x,y,z,c)=>c.set(0xffd9a0)),solid(cyl(0.01,0.026,0.012,sg(8)).translate(0,0.03,0),BRASS),solid(sweepTube([[0,0.034,0],[0.012,0.05,0],[0.03,0.05,0]],[0.0018,0.0018,0.0018],4,{cap:'round',rings:4}),TAR)];
 
     return {
+      aura:{col:0x6ab0d8,col2:0xcfeaf5,style:'fall',ring:false,n:7,shape:'drop',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0x2a2420,bottom:0xe9dfc4,shoes:0x2a2420,hat:0x8a7a44}, bootTop:0.04, shinCut:0, boot:true, skinFrom:0.545, hairColor:HAIR, eyeColor:0x8a5a28,
       eyes:{iris:0.9,hl:1,tilt:-0.1,lash:0.5,h:0.7,browLift:-0.002,browThick:1.15},
       cuts:{torso:[0.03,0.545],upperArm:[],foreArm:[0.17/D.fore,0.222/D.fore],thigh:[0.9],shin:[0.04,0.1,0.14]},
@@ -75,3 +76,33 @@ OUTFITS.pell=(function(){
     };
   };
 })();
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 4: a long oilskin cloak with wave stitching over the net, a rope coil, a knotted rag sash
+  torso:()=>oxCoil(X,D,{col:0x8a7a44,col2:0x2a2420,dir:-1}),
+  hips:()=>oxSash(X,D,{col:0xb8a258,col2:0x2a2420,len:1.0,side:1}),
+  cos:{cape:{col:0x3f5a52,trim:0xd8c070,len:0.85,pat:'waves',mantle:0}}}));
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 5: a woven creel on the back with a rope strap
+  torso:()=>oxPack(X,D,{col:0x8a7a44,trim:0x2a2420,w:0.1,h:0.11})}));
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 6: a yellow oilskin scarf, two silver fish hanging at the belt
+  torso:()=>oxScarf(X,D,{col:0xe0b030,col2:0x2a2420,len:0.7}),
+  hips:()=>oxFish(X,D,{col:0xb8c4cc,fin:0x5a6a74,side:-1})}));
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 3: a string of green glass net-floats across the chest, an oilskin plate on the right shoulder
+  torso:()=>oxBeads(X,D,{col:0x7fd6c8,col2:0xe0b030,n:14,r:0.021,drop:0.3}),
+  shoulder:sd=>sd>0?oxPauldron(X,D,{col:0x3f5a52,trim:0xd8c070,r:0.068}):[]}));
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 4: a yellow oilskin apron, a harpoon rod across the back
+  torso:()=>oxTube(X,D,{col:0x5a4632,cap:0xc9ccd4,strap:0x2a2420}),
+  hips:()=>oxApron(X,D,{col:0xb8a258,trim:0x2a2420,len:0.3,w:0.2})}));
+oxTune('pell',{jaw:1.0,chin:1.05,cheeks:0.88,brow:0.2,eyeSize:0.95,noseSize:1.12,lips:0.8,undertone:0.4,blush:0.5,earSize:1.15,smile:0.1});
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // face round 1: wind-reddened cheeks and nose, salt crow's feet, grey-blue sea eyes, a hook ring in the ear
+  mark:F=>oxMarks(F,[{t:'crow',col:0x8a6a50},{t:'cheek',col:0xd08878}]),
+  hair:()=>oxHairBits(X,[{t:'ring',side:-1,col:0xc9ccd4}]),
+  kit:{eyeColor:0x4a90a8,eyes:{iris:1.0,lash:0.3}}}));
+oxTune('pell',{jaw:1.12,chin:1.15,cheeks:0.8,brow:0.5,eyeTilt:-0.2,lips:0.7,smile:0.0});
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // face round 2: a weathered, hollow-cheeked old fisher with tired eyes and salt-grey streaks in the hair
+  mark:F=>oxMarks(F,[{t:'bags',col:0x7a6a5a}])}));
+Object.assign(CHAR_MODELS.pell,{hairGrad:{mode:'streak',c2:0xcfd8dc}});
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // face round 3: a gull feather tucked behind the ear
+  hair:()=>oxHairBits(X,[{t:'feather',side:1,col:0xdfe4e8,col2:0x4a5560}])}));
+oxTune('pell',{height:0.93,build:1.12,chest:1.15,shoulders:1.0,waist:1.12,torso:0.96,legs:0.92,thighs:0.95,arms:1.2,neck:0.88,head:1.05,hands:1.18,feet:1.15});
+Object.assign(CHAR_MODELS.pell.setups[0],{note:'The night-fisher as drawn: short, barrel-chested and long in the arm, a little stooped.'});
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // uniqueness round 2: a squat barrel-chested old hand under a rope casting net draped over the right shoulder
+  torso:()=>oxNet(X,D,{col:0xb89a62,side:-1,rows:6,cols:8})}));

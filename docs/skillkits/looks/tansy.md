@@ -65,27 +65,34 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 
 ### Recommended setup (reference, female)
 
-**`tansy`**: Tansy as drawn: short, strong, round-cheeked, always smiling.
+**`tansy`**: The farm-hand as drawn: a pear shape with wide hips and short legs, round-cheeked.
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 0.96 |
-| `build` (Build) | 1.1 |
-| `shoulders` (Shoulders) | 1.04 |
-| `hips` (Hips) | 1.1 |
-| `thighs` (Thighs) | 1.12 |
-| `arms` (Arms) | 1.15 |
+| `height` (Height) | 0.97 |
+| `build` (Build) | 1.05 |
+| `shoulders` (Shoulders) | 0.9 |
+| `hips` (Hips) | 1.2 |
+| `thighs` (Thighs) | 1.25 |
+| `arms` (Arms) | 0.95 |
 | `hands` (Hands) | 1.1 |
 | `feet` (Feet) | 1.05 |
-| `jaw` (Jaw width) | 1.05 |
-| `chin` (Chin) | 0.95 |
-| `cheeks` (Cheeks) | 1.15 |
-| `eyeSize` (Eye size) | 1.1 |
-| `noseSize` (Nose) | 0.95 |
+| `jaw` (Jaw width) | 0.9 |
+| `chin` (Chin) | 0.9 |
+| `cheeks` (Cheeks) | 1.2 |
+| `eyeSize` (Eye size) | 1.2 |
+| `noseSize` (Nose) | 0.85 |
 | `mouthSize` (Mouth width) | 1.1 |
-| `smile` (Expression) | 0.5 |
+| `smile` (Expression) | 0.7 |
 | `hairVolume` (Hair volume) | 1.1 |
 | `bangs` (Fringe length) | 0.8 |
+| `blush` (Blush) | 0.7 |
+| `lips` (Lips) | 1.1 |
+| `undertone` (Skin undertone) | 0.3 |
+| `chest` (Chest) | 1.1 |
+| `waist` (Waist) | 0.95 |
+| `legs` (Leg length) | 0.92 |
+| `head` (Head size) | 1.1 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -99,7 +106,7 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 | `thighs` (Thighs) | 0.95 .. 1.25 | 0.85 .. 1.25 |
 | `arms` (Arms) | 0.9 .. 1.25 | 0.82 .. 1.25 |
 | `neck` (Neck) | 0.9 .. 1.2 | 0.85 .. 1.2 |
-| `head` (Head size) | 0.94 .. 1.1 | 0.9 .. 1.12 |
+| `head` (Head size) | 0.94 .. 1.12 | 0.9 .. 1.12 |
 | `hairLength` (Hair length) | 0.9 .. 1.25 | 0.7 .. 1.35 |
 | `hairVolume` (Hair volume) | 1 .. 1.2 | 0.9 .. 1.25 |
 

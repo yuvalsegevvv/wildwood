@@ -4,7 +4,7 @@
    smock over an A-line skirt, short breeches and boots. Every part has at least two colours; the emblems are wheat ears and patches, never a rayed sun.
    How it is built: bands of colour are cut rows of a loft (`rowLoft`: two rings a millimetre apart), patches and appliqué are grids and tubes laid on the real section of the body part (`wrapPatch`, `wpt`, with `torsoSize`
    and the limbs' own stations), so nothing blurs and nothing pokes through at any build. The skirt is two panels swung by the thighs in `extras`; the sash tails and the hat's wheat sprigs move there too. */
-CHAR_MODELS.tansy={id:'tansy',name:'Tansy',signature:true, items:{hat:'Sun brim',hair:'Sheaf crown',face:'Freckles',top:'Harvest smock',bottom:'Stook breeches',shoes:'Furrow boots',weapon:'Sheaf wrap'},sexes:['female'],
+CHAR_MODELS.tansy={id:'tansy',name:'Tansy',signature:true, hairGrad:{mode:'tips',c2:0xe8c860}, items:{hat:'Sun brim',hair:'Sheaf crown',face:'Freckles',top:'Harvest smock',bottom:'Stook breeches',shoes:'Furrow boots',weapon:'Sheaf wrap'},sexes:['female'],
   note:'The farm-hand: a wide brim and round shapes, built for a short, strong, round-cheeked woman.',
   ranges:{chest:[0.7,1.3],waist:[0.88,1.15],legs:[0.92,1.1],thighs:[0.95,1.25],arms:[0.9,1.25],neck:[0.9,1.2],head:[0.94,1.1],hairLength:[0.9,1.25],hairVolume:[1.0,1.2]},
   setups:[{id:'tansy',name:'Tansy',sex:'female',def:true,note:'Tansy as drawn: short, strong, round-cheeked, always smiling.',v:{height:0.96,build:1.1,shoulders:1.04,hips:1.1,thighs:1.12,arms:1.15,hands:1.1,feet:1.05,jaw:1.05,chin:0.95,cheeks:1.15,eyeSize:1.1,noseSize:0.95,mouthSize:1.1,smile:0.5,hairVolume:1.1,bangs:0.8}}]};
@@ -253,6 +253,7 @@ OUTFITS.tansy=(function(){
       return {lit,glow:[]}; };
 
     return {
+      aura:{col:0xe0b95a,col2:0xf0e0a0,style:'rise',ring:false,n:8,shape:'grain',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0x7a9a3c,bottom:0xb59a64,shoes:0x7a5a3a,hat:0xe0b95a}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:0.8, shinCut:0.77, boot:true, hairColor:0xd8b56e, eyeColor:0xb8862f,
       eyes:{iris:1.05,h:1.06,lash:0.4,hl:1,tilt:0,browThick:1.3,browLift:0.003},    // the "sunny" style: a round wide-open amber eye, one big highlight, a light lash, thick friendly brows
       cuts:{torso:[0.03,0.434,0.4375],foreArm:[0.135/fore],thigh:[0.935],shin:[0.085,0.8]},
@@ -305,3 +306,16 @@ OUTFITS.tansy=(function(){
     };
   };
 })();
+OUTFITS.tansy=oxPlus(OUTFITS.tansy,(X,D)=>({   // round 6: a sheaf of wheat on the back, a red kerchief, a straw shoulder cape
+  torso:()=>oxSheaf(X,D,{col:0xd8b050,ear:0xe8c860,cord:0xa04030}).concat(oxScarf(X,D,{col:0xc0392b,col2:0xf3ead2,len:0.4})),
+  cos:{cape:{col:0xe0b95a,trim:0x7a9a3c,len:0.4,pat:'stitch',mantle:1}}}));
+oxTune('tansy',{eyeSize:1.2,smile:0.7,cheeks:1.2,blush:0.7,lips:1.1,noseSize:0.85,jaw:0.9,chin:0.9,undertone:0.3});
+OUTFITS.tansy=oxPlus(OUTFITS.tansy,(X,D)=>({   // face round 2: a round sunny face, rosy cheek patches, freckles, bright green eyes
+  mark:F=>oxMarks(F,[{t:'cheek',col:0xe89888},{t:'freckles',col:0xb08060}]),
+  hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xe0b95a}]),
+  kit:{eyeColor:0x58a848,eyes:{iris:1.1,lash:0.5}}}));
+Object.assign(CHAR_MODELS.tansy,{hairGrad:{mode:'ombre',c2:0xe8c860,c3:0xf3e0a0}});
+oxTune('tansy',{height:0.97,build:1.05,chest:1.1,shoulders:0.9,waist:0.95,hips:1.2,thighs:1.25,arms:0.95,legs:0.92,head:1.1});
+Object.assign(CHAR_MODELS.tansy.setups[0],{note:'The farm-hand as drawn: a pear shape with wide hips and short legs, round-cheeked.'});
+OUTFITS.tansy=oxPlus(OUTFITS.tansy,(X,D)=>({   // uniqueness round 2: two big quilted panniers at the hips, wide enough to read from across the field
+  hips:()=>oxPannier(X,D,{col:0xe8c050,col2:0x6a9a40,w:0.15,h:0.11})}));

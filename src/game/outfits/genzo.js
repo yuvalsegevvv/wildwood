@@ -2,7 +2,7 @@
 /* ---------- Genzo: tank, air. Design: docs/skillkits/looks/genzo.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: vermilion 0xb8452a, bronze 0xd2a24a, cloud white 0xf3ead2, ink 0x2a2020, straw 0xc8a860. Silhouette: a broad body in a straight robe, a heavy belt with a bell, wide trouser legs over flat sandals, a plain bound head.
    Every part has at least two colours (vermilion and white at the least); the emblem is a bell, never a wheel or a lotus. */
-CHAR_MODELS.genzo={id:'genzo',name:'Genzo',signature:true, items:{hat:'Bronze headband',hair:'Cropped knot',face:'Bushy brows & scar',top:'Gate robe',bottom:'Wide trousers',shoes:'Straw sandals',weapon:'Bell rig'},sexes:['male'],
+CHAR_MODELS.genzo={id:'genzo',name:'Genzo',signature:true, items:{glove:'Bound fists',hat:'Bronze headband',hair:'Cropped knot',face:'Bushy brows & scar',top:'Gate robe',bottom:'Wide trousers',shoes:'Straw sandals',weapon:'Bell rig'},sexes:['male'],
   note:'The gate-keeper: broad, steady and unhurried, built for a heavy-shouldered man.',
   ranges:{height:[0.98,1.08],build:[1.0,1.18],chest:[0.9,1.35],waist:[0.9,1.15],hips:[0.92,1.2],legs:[0.92,1.08],neck:[0.95,1.2],arms:[0.95,1.25],head:[0.95,1.1],hairLength:[0.7,1.1],hairVolume:[0.9,1.15]},
   setups:[{id:'genzo',name:'Genzo',sex:'male',def:true,note:'The gate-keeper as drawn: broad, thick-necked and calm.',v:{height:1.04,build:1.1,chest:1.15,shoulders:1.12,waist:1.02,torso:1.0,legs:0.98,thighs:1.1,arms:1.12,neck:1.1,hands:1.1,feet:1.05,jaw:1.1,chin:1.05,cheeks:1.0,noseSize:1.05,mouthSize:1.0,smile:0.3,hairLength:0.85,hairVolume:1.0}}]};
@@ -44,15 +44,24 @@ OUTFITS.genzo=(function(){
       out.push(pc(ofRibbon([[0.06,0.02,-rz-0.01],[0.07,-0.1,-rz-0.016],[0.075,-0.24,-rz-0.01]],0.03,{up:[0,0,-1],seg:sg(10),th:0.004}),(x,y,z,c)=>{ c.set(WHITE); if(y<-0.22) c.set(VERM); }));
       return out; };
 
+    const GLV={start:0.17,col:WHITE,col2:0xe0d4b4,trim:BRONZE,len:0.07,flare:0.002,studs:true,fingers:'bare'};
+    const addOn=()=>{ const out=[], q=torsoSize(X,D,0.36), z=-(q.rz+0.012);   // a white crest on the chest and a zigzag of paper hung from the belt
+      out.push(pc(new THREE.CylinderGeometry(0.034,0.034,0.004,sg(18)).rotateX(Math.PI/2).translate(0.0,0.37*TK,z-0.002),(x,y,z2,c)=>{ c.set(WHITE); const r=Math.hypot(x,y-0.37*TK); if(r>0.026) c.set(BRONZE); }),
+        solid(new THREE.BoxGeometry(0.008,0.034,0.005).translate(0,0.37*TK,z-0.0045),VERM_D),solid(new THREE.BoxGeometry(0.034,0.008,0.005).translate(0,0.378*TK,z-0.0045),VERM_D));
+      const bz=-(torsoSize(X,D,0.03).rz+0.03);
+      for(let i=0;i<4;i++) out.push(pc(new THREE.BoxGeometry(0.03,0.022,0.003).translate(-0.12+(i%2?0.012:-0.004),-0.01-i*0.022,bz),(x,y,z2,c)=>c.set(WHITE)));
+      return out; };
     return {
-      main:{top:0xb8452a,bottom:0x2a2020,shoes:0xc8a860,hat:0xf3ead2}, bootTop:1.1, shinCut:9, boot:false, skinFrom:0.585, hairColor:HAIR, eyeColor:0x4a3020,
+      aura:{col:0xd24a3a,col2:0xf3ead2,style:'fall',ring:false,n:6,shape:'petal',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
+      main:{glove:0xf3ead2,top:0xb8452a,bottom:0x2a2020,shoes:0xc8a860,hat:0xf3ead2}, bootTop:1.1, shinCut:9, boot:false, skinFrom:0.585, hairColor:HAIR, eyeColor:0x4a3020,
       eyes:{iris:0.95,hl:1,tilt:0.05,lash:0.4,h:0.85,browLift:0.0,browThick:1.7,browAngle:0.1},
       cuts:{torso:[0.03,0.07],upperArm:[0.78],foreArm:[0.12/D.fore,0.222/D.fore],thigh:[],shin:[0.78,0.86]},
       paint,
+      gloveStart:GLV.start, gloveFingers:GLV.fingers, glove:sd=>glKitGlove(X,D,sd,GLV), handPaint:glKitPaint(GLV),
       head:F=>headband(F),
       hair:(F,T)=>knot(F,T),
       mark:F=>{ const out=[]; out.push(solid(F.place(csph(1,sg(8),sg(6)).scale(0.0014,0.034,0.0008).rotateZ(-0.35),-0.05,0.01,0.0008),0xe0b8a0)); return out; },
-      torso:()=>belt(),
+      torso:()=>belt().concat(addOn()),
       shoulder:sd=>{ const out=[], r=0.062*aw; out.push(pc(new THREE.SphereGeometry(r,sg(16),sg(9),0,TAU,0,Math.PI*0.55).scale(1.1,0.75,1.1).translate(0,0.004,0),(x,y,z,c)=>{ c.set(BRONZE); c.multiplyScalar(0.9+0.2*Math.max(0,y*12)); if(y<0.004) c.set(BRONZE_D); }));
         out.push(solid(ofRingAt([0,-0.03,0],[0,1,0],r*0.95,0.005,sg(6)),VERM)); return out; },
       forearm:sd=>[solid(ofRingAt([0,-0.12,0],[0,1,0],0.0295*aw+0.001,0.0035,sg(6)),BRONZE)],
@@ -71,3 +80,18 @@ OUTFITS.genzo=(function(){
     };
   };
 })();
+OUTFITS.genzo=oxPlus(OUTFITS.genzo,(X,D)=>({   // round 5: a heavy bronze prayer-bead necklace, a gate-keeper's wind mantle (vermilion with white rays), a bronze plate on the left shoulder
+  torso:()=>oxBeads(X,D,{col:0xd2a24a,col2:0xb8452a,n:22,r:0.017,drop:0.26}),
+  shoulder:sd=>sd<0?oxPauldron(X,D,{col:0xd2a24a,trim:0xf3ead2,r:0.075}):[],
+  cos:{cape:{col:0xb8452a,trim:0xf3ead2,len:0.5,pat:'rays',mantle:1}}}));
+oxTune('genzo',{jaw:1.2,chin:1.15,brow:0.9,eyeSize:0.95,eyeTilt:-0.1,noseSize:1.15,lips:0.9,smile:-0.2,earSize:1.15,undertone:0.3});
+OUTFITS.genzo=oxPlus(OUTFITS.genzo,(X,D)=>({   // face round 2: a stern square jaw, gold earrings, dark amber eyes, a white streak in the hair
+  mark:F=>oxMarks(F,[{t:'crow',col:0x8a6a50}]),
+  hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xd2a24a}]),
+  kit:{eyeColor:0x8a5a28}}));
+Object.assign(CHAR_MODELS.genzo,{hairGrad:{mode:'streak',c2:0xe8e2d4}});
+oxTune('genzo',{height:0.95,build:1.12,chest:1.3,shoulders:1.18,waist:0.85,hips:0.9,legs:0.95,thighs:1.15,arms:1.25,neck:1.1,head:1.05});
+Object.assign(CHAR_MODELS.genzo.setups[0],{note:'The gate-keeper as drawn: short, a deep chest and a narrow waist, heavy-shouldered.'});
+OUTFITS.genzo=oxPlus(OUTFITS.genzo,(X,D)=>({   // uniqueness round 2: a compact V-shaped frame under a long front and back tabard to the shins
+  hips:()=>oxTabard(X,D,{col:0xb8432a,col2:0xe8c050,len:0.62,flare:0.3,half:0.8})}));
+oxTune('genzo',{height:1.0,build:1.05,chest:1.25,shoulders:1.15,waist:0.95,hips:0.95,legs:0.92,thighs:1.2,arms:1.25,neck:1.1,head:1.05});

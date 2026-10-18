@@ -2,7 +2,7 @@
 /* ---------- Zahra: buff support, light. Design: docs/skillkits/looks/zahra.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: gold 0xe8c050, lapis 0x2b6aa8, white 0xf4efe0, sand 0xd6b87a, bronze 0xb08a3a. Silhouette: a crowned veiled head, a short robe with wide sleeves over a long split skirt, a sandglass on the hip.
    Every part has at least two colours (lapis and gold at the least); the emblem is a sandglass, never a crescent or a rayed sun. */
-CHAR_MODELS.zahra={id:'zahra',name:'Zahra',signature:true, items:{hat:'Beaded circlet',hair:'Gold-strung braid',face:'Gold dots',top:'Wide-sleeve robe',bottom:'Split noon skirt',shoes:'Gold sandals',weapon:'Mirror rig'},sexes:['female'],
+CHAR_MODELS.zahra={id:'zahra',name:'Zahra',signature:true, hairGrad:{mode:'tips',c2:0xe0b840,c3:0x2f55a0}, items:{hat:'Beaded circlet',hair:'Gold-strung braid',face:'Gold dots',top:'Wide-sleeve robe',bottom:'Split noon skirt',shoes:'Gold sandals',weapon:'Mirror rig'},sexes:['female'],
   note:'The glass-bearer: tall, composed and graceful, built for a long-limbed woman.',
   ranges:{height:[0.98,1.08],build:[0.88,1.05],chest:[0.7,1.2],waist:[0.82,1.02],hips:[0.9,1.15],legs:[1.0,1.14],neck:[1.0,1.2],arms:[0.85,1.1],head:[0.95,1.08],hairLength:[1.0,1.35],hairVolume:[0.9,1.2]},
   setups:[{id:'zahra',name:'Zahra',sex:'female',def:true,note:'The glass-bearer as drawn: tall, poised and long-necked.',v:{height:1.05,build:0.94,chest:0.95,shoulders:0.98,waist:0.9,torso:1.0,legs:1.08,thighs:0.96,arms:0.95,neck:1.12,hands:0.95,feet:0.96,jaw:0.95,chin:1.0,cheeks:1.0,noseSize:1.0,mouthSize:0.98,smile:0.35,hairLength:1.25,hairVolume:1.05}}]};
@@ -52,6 +52,7 @@ OUTFITS.zahra=(function(){
       return out; };
 
     return {
+      aura:{col:0xffd24a,col2:0x6aa0e8,style:'orbit',ring:false,n:8,shape:'mote',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0x2b6aa8,bottom:0xf4efe0,shoes:0xe8c050,hat:0x2b6aa8}, bootTop:1.1, shinCut:9, boot:false, skinFrom:0.592, hairColor:HAIR, eyeColor:0xc89a30,
       eyes:{iris:1.1,hl:2,tilt:0.18,lash:1.3,browLift:0.003,browThick:0.9,h:0.95},
       cuts:{torso:[0.03,0.06,0.2,0.235,0.545],upperArm:[0.7,0.78],foreArm:[0.19/D.fore,0.222/D.fore],thigh:[0.9],shin:[0.82,0.88]},
@@ -79,3 +80,15 @@ OUTFITS.zahra=(function(){
     };
   };
 })();
+OUTFITS.zahra=oxPlus(OUTFITS.zahra,(X,D)=>({   // round 5: a layered gold bead collar, gold shoulder plates, a lapis cloak with sun rays, gold sash tails
+  torso:()=>oxBeads(X,D,{col:0xffd24a,col2:0x2b6aa8,n:24,r:0.0135,drop:0.22}),
+  shoulder:sd=>oxPauldron(X,D,{col:0xe8c050,trim:0x2b6aa8,r:0.068}),
+  hips:()=>oxSash(X,D,{col:0xe8c050,col2:0x2b6aa8,len:1.05,side:-1}),
+  cos:{cape:{col:0x2b6aa8,trim:0xffd24a,len:0.95,pat:'rays',mantle:0}}}));
+oxTune('zahra',{lips:1.15,eyeSize:1.12,eyeTilt:0.22,brow:-0.1,undertone:0.5,blush:0.25,cheeks:1.05,earSize:0.95});
+OUTFITS.zahra=oxPlus(OUTFITS.zahra,(X,D)=>({   // face round 4: gilded cheekbones, a beauty mark, gold beads at both temples
+  mark:F=>oxMarks(F,[{t:'stripe',col:0xe0b840},{t:'mole',side:-1,col:0x3a2a20}]),
+  hair:()=>oxHairBits(X,[{t:'beads',both:true,col:0xe8c050,col2:0x2b6aa8}])}));
+oxTune('zahra',{height:1.08,build:0.94,chest:1.3,shoulders:0.98,waist:0.84,hips:1.18,torso:1.02,legs:1.12,thighs:1.08,arms:0.95,neck:1.2,head:0.94});
+OUTFITS.zahra=oxPlus(OUTFITS.zahra,(X,D)=>({   // uniqueness round 1: a stately hourglass figure, and a gold sunburst plate standing behind her back
+  torso:()=>oxDisc(X,D,{col:0xe8c050,rim:0x2b6aa8,boss:0xfff0b0,R:0.14,y:0.34,rays:12,ray:0xe8c050})}));

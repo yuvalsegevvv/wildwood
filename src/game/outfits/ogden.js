@@ -2,7 +2,7 @@
 /* ---------- Ogden: grinder, water. Design: docs/skillkits/looks/ogden.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: moss 0x6f8f6b, bone 0xe5e0c8, mud 0x5a4632, dirty linen 0xcfc7a8, black 0x24211f, burgundy 0x6a2c2c, drowned teal 0x4fd0c0 (the bell's drip only, an unlit glow). Silhouette: a slouch: a low flat cap, a long torn
    waistcoat, ragged breeches over bare green shins, a rope and a toe tag at the neck. The skin of the player stays (face, neck, hands); the arms and shins are painted moss green so the body reads dead. Two or more colours per part. */
-CHAR_MODELS.ogden={id:'ogden',name:'Ogden',signature:true, items:{hat:'Diggers cap',hair:'Straggle',face:'Stitches & blotches',top:'Grave waistcoat',bottom:'Torn breeches',shoes:'Split boots',weapon:'Grave spade'},sexes:['male'],
+CHAR_MODELS.ogden={id:'ogden',name:'Ogden',signature:true, hairGrad:{mode:'ombre',c2:0x5a7a50}, items:{hat:'Diggers cap',hair:'Straggle',face:'Stitches & blotches',top:'Grave waistcoat',bottom:'Torn breeches',shoes:'Split boots',weapon:'Grave spade'},sexes:['male'],
   note:'The gravedigger: heavy, stooped and long in the arm, built for a broad, tall man.',
   ranges:{height:[0.98,1.08],build:[1.0,1.18],chest:[0.9,1.2],waist:[0.95,1.15],hips:[0.9,1.15],legs:[0.92,1.06],neck:[0.9,1.15],arms:[1.0,1.25],head:[0.95,1.08],hairLength:[0.8,1.2],hairVolume:[0.9,1.1]},
   setups:[{id:'ogden',name:'Ogden',sex:'male',def:true,note:'The gravedigger as drawn: big, stooped, long-armed, a heavy jaw.',v:{height:1.04,build:1.1,chest:1.0,shoulders:1.05,waist:1.1,torso:1.0,legs:0.96,thighs:1.05,arms:1.15,neck:1.0,hands:1.15,feet:1.1,jaw:1.15,chin:1.1,cheeks:0.85,noseSize:1.1,mouthSize:1.05,smile:0.0,hairLength:0.9,hairVolume:0.92}}]};
@@ -61,6 +61,7 @@ OUTFITS.ogden=(function(){
       return out; };
 
     return {
+      aura:{col:0x7fbf9a,col2:0xc8e8d0,style:'rise',ring:false,n:5,shape:'wisp',deco:'none'},   /* this set's own aura (kit.aura: model.js) */
       main:{top:0x6a2c2c,bottom:0x24211f,shoes:0x5a4632,hat:0x5a4632}, bootTop:0.7, shinCut:0.7, boot:true, skinFrom:0.545, hairColor:GREY, eyeColor:0xd8d070,
       eyes:{iris:0.78,hl:1,tilt:-0.05,lash:0.2,h:0.92,browLift:-0.002,browThick:0.8},
       cuts:{torso:[0.545],upperArm:[0.35,0.8,0.86],foreArm:[0.19/D.fore,0.222/D.fore],thigh:[],shin:[0.05,0.7,0.74]},
@@ -95,3 +96,26 @@ OUTFITS.ogden=(function(){
     };
   };
 })();
+OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // round 4: a wet rope coil across the chest, a bone lantern with a drowned-teal glow at the belt, a rotten moss shroud
+  torso:()=>oxCoil(X,D,{col:0x9a8a6a,col2:0x6a5a3a,dir:1}),
+  hips:()=>oxLantern(X,D,{frame:0xe5e0c8,glow:0x4fd0c0,side:-1}),
+  cos:{cape:{col:0x34382c,trim:0x6f8f6b,len:0.62,pat:'moss',mantle:0}}}));
+OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // round 6: a string of bone beads and a rotting scarf
+  torso:()=>oxBeads(X,D,{col:0xe5e0c8,col2:0x4fd0c0,n:18,r:0.012,drop:0.18}).concat(oxScarf(X,D,{col:0x5a4632,col2:0x6f8f6b,len:0.5}))}));
+OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // round 3: a mossy plate with bone trim on the right shoulder, a mud-brown sack on the back
+  torso:()=>oxPack(X,D,{col:0x5a4632,trim:0x9a8a6a,w:0.085,h:0.1}),
+  shoulder:sd=>sd>0?oxPauldron(X,D,{col:0x4f6b4b,trim:0xe5e0c8,r:0.068}):[]}));
+OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // round 4: burial-shroud rags hanging from the belt and trailing from the wrists
+  forearm:sd=>oxStreamer(X,D,{col:0x6f8f6b,col2:0x2a2420,len:0.45,side:sd}),
+  hips:()=>oxTags(X,D,{col:0x7a8a70,mark:0x2a2420,n:10,len:0.3})}));
+oxTune('ogden',{jaw:1.2,chin:1.3,cheeks:0.72,brow:0.8,eyeSize:0.92,eyeHeight:-0.3,eyeTilt:-0.45,noseSize:1.25,mouthSize:1.12,mouthHeight:-0.5,lips:0.7,smile:-0.6,earSize:1.3,undertone:-0.7,blush:0,head:1.05});
+OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // face round 1: a heavy sunken drowned face, grey-green skin, a long scar, dull pond-water eyes, a drip of weed in the hair
+  mark:F=>oxMarks(F,[{t:'scar',side:-1,col:0x5a3a3a},{t:'crow',col:0x4a5a52}]),
+  hair:()=>oxHairBits(X,[{t:'ring',side:1,col:0x9a8a6a},{t:'sprig',side:-1,col:0x4f6b4b,col2:0x6f8f6b}]),
+  kit:{eyeColor:0xb8c8a0,eyes:{iris:0.7,lash:0.1}}}));
+Object.assign(CHAR_MODELS.ogden,{hairGrad:{mode:'ombre',c2:0x5a7a50,c3:0x2a4a40}});   // grey, moss, deep pond green
+oxTune('ogden',{height:1.08,build:1.1,chest:0.85,shoulders:0.88,waist:1.15,hips:1.2,thighs:1.2,arms:1.25,hands:1.2,neck:0.88,head:0.92});
+OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // uniqueness round 3: a tall pear-shaped drowned man draped in a cloak of long hanging kelp
+  torso:()=>oxFringe(X,D,{cols:[0x3f6b4a,0x2f4f3a,0x6f8f5a,0x4a3a2a],n:20,len:0.6,w:0.055})}));
+OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // skin: a zombie green-grey, with the drowned man's face item (the new swatches in the editor: SKINS_ODD)
+  kit:{skin:0x8fa684}}));
