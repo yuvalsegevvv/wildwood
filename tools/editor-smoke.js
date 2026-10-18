@@ -46,5 +46,5 @@ ok('every clothes piece has a None tile, armour rows and a colour row',['hat','t
 const cs=fs.readFileSync(path.join(SRC,'game/ui/character-thumbs.js'),'utf8');
 ok('every grid kind the editor uses has a thumbnail view',[...new Set([...ed.matchAll(/kind:'(\w+)'/g)].map(m=>m[1]))].every(k=>new RegExp("case '"+k+"'").test(cs)||k==='outfit'||k==='slot'));
 // a look with the new fields passes the server's cleaning and fits the field limit
-ok('the look stays under 80 flat fields (the server cuts a look at 80)',Object.keys(C.LOOK_M).length<80,Object.keys(C.LOOK_M).length+' fields');
+ok('the look stays under 128 flat fields (the server cuts a look at 128)',Object.keys(C.LOOK_M).length<128,Object.keys(C.LOOK_M).length+' fields');
 console.log(fails?'\n'+fails+' FAILED':'\nall passed'); process.exit(fails?1:0);

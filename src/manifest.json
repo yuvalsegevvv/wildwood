@@ -177,6 +177,7 @@
     "character/model-hair.js",
     "character/model-hats.js",
     "character/model-hairgrad.js",
+    "character/outfit-palettes.js",
     "character/model-body.js",
     "character/model-gloves.js",
     "character/model-garments.js",
