@@ -93,6 +93,13 @@ function sliderRange(model,k){ const s=SLIDER_BY_KEY[k], r=model.ranges&&model.r
 function setupsOf(model,sex){ const l=(model.setups||[]).filter(s=>s.sex===sex||s.sex==='any'); return l.sort((a,b)=>(b.def?1:0)-(a.def?1:0)); }
 // a look with every slider reset to its default and then the setup's values on top (other fields stay)
 function applySetup(look,setup){ return Object.assign({},look,SLIDER_DEFS,setup.v); }
+// the look after its body is switched to the other sex (the editor's Gender row): the sliders were tuned for one body (a set's reference setup narrows the waist, widens the hips, sets the bust...), so they move to the
+// reference setup of the new sex (the worn model's own when it has one, else the base model's), keep the wearer's height, and are clamped into the worn model's recommended ranges: the outfit stays wearable and the design is not changed
+function charSexFit(L,sex){
+  const M=charModelOf(L), st=setupsOf(M,sex)[0]||setupsOf(CHAR_MODELS.base,sex)[0], h=sliderVal(L,'height');
+  let o=Object.assign({},L,{sex}); if(st) o=applySetup(o,st); o.height=h;
+  for(const s of BODY_SLIDERS){ const r=sliderRange(M,s.k), v=sliderVal(o,s.k); if(v<r[0]) o[s.k]=r[0]; else if(v>r[1]) o[s.k]=r[1]; }
+  return o; }
 // the sliders of a look that sit outside the model's recommended range (the editor flags them: an outfit may clip there)
 function lookOutOfRange(L,model){ const out=[]; model=model||charModelOf(L); for(const s of BODY_SLIDERS){ const v=sliderVal(L,s.k), r=sliderRange(model,s.k); if(v<r[0]-1e-6||v>r[1]+1e-6) out.push(s.k); } return out; }
 // the problems of a character model (empty = fine); the rules are the ones in the header comment

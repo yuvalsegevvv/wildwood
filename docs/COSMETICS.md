@@ -36,3 +36,6 @@ An optional cosmetic worn on the left forearm, off by default (`look.shield = ''
 
 ### Child-safe setting
 Settings > Child-safe (off by default, the page reloads to apply it; stored in `localStorage` as `wildwood-modest`). When on, `buildCharacter` first passes every look through `modestLook` (`game/character/modest.js`), so every person this client draws, other players too, wears the plain stand-in for each bare crafted piece (crop, halter, harness become the tunic; loincloth, short shorts and wrap skirt become trousers), and the five signature sets that bare skin (Sabir's chest and arms, Genzo's right side, Nephra's midriff, Marigold's midriff and short skirt, Torgeir's left arm) ask `modestOn()` and draw their covered version. Nothing is sent or saved. Test: `cospieces-smoke`.
+
+### Switching the sex of a worn set
+Signature sets are designed for one gender (their reference setup in `CHAR_MODELS.<id>.setups`; keep designing them that way). When the player flips the Gender row while a set is worn, `charSexFit` (`shared/character.js`) moves the sliders to the new sex's reference setup (the set's own if it has one, else the base model's), keeps the height and clamps every slider into the set's recommended ranges, so the pieces still fit the body without changing the design. Test: `cospieces-smoke`.

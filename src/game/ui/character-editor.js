@@ -100,6 +100,7 @@ function setLook(k,v){
   if(k==='sex' && !LOOK.custom){ const keep={skin:LOOK.skin,cls:LOOK.cls}; for(const s of SLIDER_KEYS) keep[s]=LOOK[s]; LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,keep); }   // the sliders and skin carry over
   else if(k==='model'){ const M=v!=='base'&&CHAR_MODELS[v]; if(M&&M.sexes&&M.sexes.length&&M.sexes[0]!==LOOK.sex) LOOK.sex=M.sexes[0];   // the set-up: the character's recommended gender,
     LOOK=ofWear(LOOK,v); LOOK.custom=true; }   // all seven pieces in their designed colours (and, below, the recommended sliders); every row can then change one piece or colour
+  else if(k==='sex'&&v!==LOOK.sex&&charModelOf(LOOK).id!=='base'){ LOOK=charSexFit(LOOK,v); LOOK.custom=true; ofTidy(LOOK); }   // a worn signature set: the body follows the new sex so the outfit still fits (charSexFit, shared/character.js)
   else { LOOK[k]=v; if(k!=='sex') LOOK.custom=true; ofTidy(LOOK); }   // (ofTidy: the model is the base again once none of the set's pieces is worn)
   if(k==='model'&&v!=='base'){ const st=setupsOf(CHAR_MODELS[v],LOOK.sex)[0]; if(st) LOOK=applySetup(LOOK,st); }   // wearing a signature outfit starts on its character's reference body
   saveLook(); rebuildHiker();

@@ -62,6 +62,14 @@ bad.length=0; build('three','female',{deco1:'wings',deco2:'tail',deco3:'halo',de
   ok('four shield shapes, off by default, each crafted, building on both bodies with colours',ids.length===4&&look('male').shield===''&&ids.every(i=>x.CP_RECIPE['w:'+i]&&!x.cpIsFree('w',i))&&!bad.length&&!bad2.length,bad2.join()+bad.join());
   ok('a shield is locked until made and stripped by the server',x.cosLocked({shield:'kite'},[]).length===1&&x.cosCleanLook({shield:'kite'},[]).shield===''&&x.cosCleanLook({shield:'kite'},['w:kite']).shield==='kite');
   build('hostile','male',{shield:'constructor',shieldColor:NaN}); }
+// ---- switching the sex of a worn set ----
+{ const miss=[], sig=Object.keys(C.OUTFITS);
+  for(const id of sig){ const m=C.CHAR_MODELS[id], sex0=m.sexes[0], sex1=sex0==='male'?'female':'male';
+    let L=C.ofWear(C.applySetup(Object.assign({},sex0==='female'?C.LOOK_F:C.LOOK_M),C.setupsOf(m,sex0)[0]),id); L.model=id;
+    const F=C.charSexFit(L,sex1); if(F.sex!==sex1) miss.push(id+' sex'); if(C.lookOutOfRange(F,m).length) miss.push(id+' out of range: '+C.lookOutOfRange(F,m).join('/'));
+    if(Object.keys(C.ofPieces(F)).length!==Object.keys(C.ofPieces(L)).length) miss.push(id+' lost pieces'); if(F.height!==L.height) miss.push(id+' height');
+    const t=build('fit '+id,sex1,F,0.5); if(!t) miss.push(id+' build'); }
+  ok('every signature set switched to the other sex keeps its pieces and height, lands inside its ranges and builds',!miss.length&&!bad.length,miss.slice(0,4).join('; ')+bad.slice(0,2).join('; ')); }
 // ---- the child-safe setting ----
 { const C2=require('./char-load')(code=>code.replace('getItem(){return null}',"getItem(k){return k==='wildwood-modest'?'1':null}"));
   const sig=(Cx,o)=>Cx.tris(Cx.buildCharacter(Object.assign({},Cx.LOOK_M,o),{q:0.5})).join();
