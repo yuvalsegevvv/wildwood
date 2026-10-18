@@ -20,7 +20,7 @@ const edHair=()=>[['bald'],['buzz'],['short'],['messy'],['spiky'],['curly'],['bo
 const edGrid=(k,kind,ids,o)=>Object.assign({type:'grid',k,kind,ids,colKey:null},o||{});
 const EDIT=[
   {tab:'Presets', subs:[
-    {name:'Signature', rows:[{type:'sets'}]},
+    {name:'Outfit sets', rows:[{type:'sets'}]},
     {name:'My outfits', rows:[{type:'slots'}]}
   ]},
   {tab:'Body', subs:[
@@ -81,6 +81,23 @@ const edCur=()=>EDIT[edTab].subs[edSub[edTab]];
 // ---- crafted pieces: locked, owned, and the try-on gate ----
 const edOwned=()=>(typeof GEAR!=='undefined'&&GEAR&&GEAR.cos)||[];
 const edLocks=()=>cosLocked(LOOK,edOwned());
+// outfit sets (the eight signature characters) are locked until their skill set is yours (any piece owned) or the testing tools unlocked them (a browser-side list, 'ww_outfits')
+const OS_KEY='ww_outfits', OS_SHOW=12;
+function osList(){ try{ const a=JSON.parse(localStorage.getItem(OS_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function osUnlock(id){ try{ const a=osList(); if(!a.includes(id)){ a.push(id); localStorage.setItem(OS_KEY,JSON.stringify(a)); } }catch(e){} }
+function osOwned(id){
+  if(!OUTFITS[id]) return true;
+  if(osList().includes(id)) return true;
+  const sk=typeof GEAR!=='undefined'&&GEAR&&GEAR.skills&&GEAR.skills.owned; if(!sk) return false;
+  const sid=SS_ORDER.find(k=>SS_SETS[k].outfit===id), T=sid&&SS_SETS[sid];
+  return !!T&&[1,2,3].some(n=>T.pos[n]&&sk.includes(T.pos[n].passive));
+}
+// a grid of more than OS_SHOW tiles shows the first OS_SHOW and scrolls, so the colour rows under it stay in sight
+function osCap(box){
+  if(box.children.length<=OS_SHOW) return;
+  requestAnimationFrame(()=>{ const a=box.children[0], cols=Math.max(1,getComputedStyle(box).gridTemplateColumns.split(' ').length); if(!a||!a.offsetHeight) return;
+    const gap=parseFloat(getComputedStyle(box).rowGap)||8, rows=Math.ceil(OS_SHOW/cols); box.style.maxHeight=Math.ceil(rows*a.offsetHeight+(rows-1)*gap+4)+'px'; box.classList.add('scroll'); });
+}
 // true while the look on the hiker wears a crafted piece that has not been made (saveLook: nothing is saved or sent then)
 function edTrying(){ return customizing&&edLocks().length>0; }
 function edRevert(){ LOOK=Object.assign({},LOOK_SAVED); rebuildHiker(); renderEditor(); }
@@ -206,12 +223,13 @@ function renderEditor(){
         if(spec&&row.col&&!sig) spec.col=LOOK[row.col];
         if(spec&&row.kind==='sex') spec.sex=v;
         const cur=LOOK[row.k], on=cur===undefined?(v===false||v===''):cur===v;
-        const D=row.slot&&!gap?cpDef(row.slot,v):null, made=!!D&&!D.free&&edOwned().includes(cpKey(row.slot,v)), locked=!!D&&!D.free&&!made;
+        const D=row.slot&&!gap?cpDef(row.slot,v):null, made=!!D&&!D.free&&edOwned().includes(cpKey(row.slot,v)), locked=!!D&&!D.free&&!made, osLock=sig&&!osOwned(v);
         const title=(name?(tip?name+': '+tip:name):gap?'None':ED_NAMES[v]||String(v).replace(/^./,c=>c.toUpperCase()))+(locked?' (locked: '+cosRecipeText(row.slot,v)+'. Tap to try it on.)':made?' (made)':'');
-        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='pupil'||(D&&!D.free)?name:''}); b.onclick=()=>{ setLook(row.k,v); renderEditor(); };
-        if(locked){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); } else if(made){ b.classList.add('made'); }
+        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='pupil'||(D&&!D.free)?name:''}); b.onclick=()=>{ if(osLock){ toast('Outfit sets unlock with their skill set','warn'); return; } setLook(row.k,v); renderEditor(); };
+        if(osLock){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); }
+        else if(locked){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); } else if(made){ b.classList.add('made'); }
         box.append(b); }
-      wrap.append(box);
+      wrap.append(box); osCap(box);
     }
     else if(row.type==='dcolor'){
       // a colour that may be left as designed (-1): the cape's cloth and trim, the aura's two colours, the second eye
@@ -251,12 +269,14 @@ function renderEditor(){
       });
       wrap.append(box);
     } else if(row.type==='sets'){
-      // the signature characters (src/game/outfits): one tap sets up the whole look: the recommended gender, body sliders, all seven pieces and the colours they were designed in; everything stays editable afterwards in the Clothes and Face tabs
+      // the outfit sets (src/game/outfits): one tap sets up the whole look: the recommended gender, body sliders, all seven pieces and the colours they were designed in; everything stays editable afterwards in the Clothes and Face tabs
       const box=document.createElement('div'); box.className='tiles';
       const off=cthTile(null,{title:'Take the outfit off (plain clothes)',on:false}); off.onclick=()=>{ setLook('model','base'); renderEditor(); }; box.append(off);
       for(const id of Object.keys(OUTFITS)){ const M=CHAR_MODELS[id], on=LOOK.model===id&&Object.keys(ofPieces(LOOK)).length===7, fem=!!(M.sexes&&M.sexes[0]==='female');
-        const b=cthTile({kind:'outfit',id},{on,sig:true,cap:M.name,title:M.name+' ('+(fem?'female':'male')+'). '+(M.note||'')}); b.onclick=()=>{ setLook('model',id); renderEditor(); }; box.append(b); }
-      wrap.append(box);
+        const lk=!osOwned(id), b=cthTile({kind:'outfit',id},{on,sig:true,cap:M.name,title:M.name+' ('+(fem?'female':'male')+'). '+(M.note||'')+(lk?' Locked: comes with its skill set.':'')}); b.onclick=()=>{ if(lk){ toast('Outfit sets unlock with their skill set','warn'); return; } setLook('model',id); renderEditor(); };
+        if(lk){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); }
+        box.append(b); }
+      wrap.append(box); osCap(box);
     } else if(row.type==='slots'){
       const a=outfitSlots(), box=document.createElement('div'); box.className='tiles slots';
       for(let i=0;i<5;i++){

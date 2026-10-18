@@ -92,13 +92,30 @@ function onCastEvent(i,dur){
 }
 function hideCast(){ CAST.on=false; castBar.hidden=true; }
 // every frame: nodes within 130 m that are not taken, and a slow glow on the ore and the flowers
-function updateNodes(){
+// a node you can gather: white sparkles drift up round it from 45 m, and the one in reach is painted white (a pulsing white copy over it)
+const NODE_WHITE_R=45, NODE_WHITE_MAT=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.5,depthWrite:false});
+function nodeWhite(v,on){
+  if(on&&!v.w){ v.w=new THREE.Group(); for(const c of v.g.children){ if(!c.isMesh) continue; const m=new THREE.Mesh(c.geometry,NODE_WHITE_MAT); m.scale.copy(c.scale).multiplyScalar(1.02); v.w.add(m); } v.g.add(v.w); }
+  if(v.w) v.w.visible=on;
+}
+function nodeSparkle(dt,near){
+  for(const v of NODE_VIEWS){
+    const on=v.g.visible&&v.n.i===near; nodeWhite(v,on);
+    if(!v.g.visible||Math.abs(v.n.x-P.x)>NODE_WHITE_R||Math.abs(v.n.z-P.z)>NODE_WHITE_R||Math.hypot(v.n.x-P.x,v.n.z-P.z)>NODE_WHITE_R) continue;
+    if(Math.random()>dt*(on?7:3)*FXP_K) continue;
+    const a=Math.random()*TAU, r=0.5+Math.random()*0.9, y=getH(v.n.x,v.n.z);
+    fxpAdd(v.n.x+Math.sin(a)*r,y+0.2+Math.random()*0.8,v.n.z+Math.cos(a)*r,(Math.random()-0.5)*0.2,0.5+Math.random()*0.4,(Math.random()-0.5)*0.2,0xffffff,0.16,1.3+Math.random()*0.7,{a:0.9,grow:0.3});
+  }
+}
+function updateNodes(dt){
   if(CAST.on){ const k=(t-CAST.t0)/CAST.dur; if(k>1.2||Math.hypot(P.x-CAST.x,P.z-CAST.z)>1.5) hideCast(); else cbFill.style.width=Math.round(Math.min(1,k)*100)+'%'; }
   if(homeProps){ const h=atHome(); homeProps.visible=h;
     if(!homeSeen&&started&&h){ homeSeen=true; toast('Home: only you are here. Gather from your nodes, and use the bench to make cosmetics, sell and leave.','good'); } }
   if(!NODE_VIEWS.length) return;
   const hm=atHome(); for(const v of NODE_VIEWS) v.g.visible=!NODE_TAKEN.has(v.n.i)&&Math.abs(v.n.x-P.x)<130&&Math.abs(v.n.z-P.z)<130&&(!v.n.home||hm);   // (a home node is drawn only to someone at home)
   for(const G of NODE_GLOWS) G.m.emissiveIntensity=G.k*(0.85+0.5*Math.sin(t*2.2));
+  nodeSparkle(dt||0.016,nearNode());
+  NODE_WHITE_MAT.opacity=0.38+0.14*Math.sin(t*4);
 }
 function nearNode(){ if(!started||!NODES.length) return -1; const i=nodeNear(P.x,P.z,NODE_R); return i>=0&&!NODE_TAKEN.has(i)&&(!NODES[i].home||atHome())?i:-1; }
 function nodePrompt(i){
