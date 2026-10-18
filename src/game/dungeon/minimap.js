@@ -42,13 +42,13 @@ function dgDrawMini(c,x,dpr){
   if(DG_MINI.seen){ x.imageSmoothingEnabled=false; const lx=(P.x-R.ox-MM_R)/DG_CELL, lz=(P.z-R.oz-MM_R)/DG_CELL, n=2*MM_R/DG_CELL; x.drawImage(DG_MINI.seen,lx,lz,n,n,0,0,W,W); }
   dgMapMarks(x,at,inside,k,dpr,null);
   drawArrow(x,W/2,W/2,-P.face,6.5*dpr,'#fff4d0');
-  x.fillStyle='#fff'; x.font=`600 ${10*dpr}px Inter, system-ui, sans-serif`; x.textAlign='center'; x.textBaseline='top'; x.fillText('N',W/2,3*dpr);
+  x.fillStyle='#fff'; x.font=`600 ${10*dpr}px "Alegreya Sans", system-ui, sans-serif`; x.textAlign='center'; x.textBaseline='top'; x.fillText('N',W/2,3*dpr);
 }
 function dgDrawFullMap(c,x,dpr){
   const W=c.width, H=c.height, R=DG_RUN, B=R.B; x.clearRect(0,0,W,H); x.fillStyle='#0b0a09'; x.fillRect(0,0,W,H);
   const sw=B?B.size[0]:288, sh=B?B.size[1]:288, s=Math.min(W/sw,H/sh)*0.94, ox=(W-sw*s)/2, oz=(H-sh*s)/2;
   const at=(wx,wz)=>[ox+(wx-R.ox)*s,oz+(wz-R.oz)*s], inside=(wx,wz)=>wx>=R.ox&&wz>=R.oz&&wx<=R.ox+sw&&wz<=R.oz+sh, fs=Math.max(9,Math.min(13,W/dpr/48))*dpr;
-  const label=(txt,a,b,col)=>{ x.font=`600 ${fs}px Inter, system-ui, sans-serif`; x.textAlign='center'; x.textBaseline='middle'; x.lineWidth=3*dpr; x.strokeStyle='rgba(10,12,10,.75)'; x.strokeText(txt,a,b); x.fillStyle=col; x.fillText(txt,a,b); };
+  const label=(txt,a,b,col)=>{ x.font=`600 ${fs}px "Alegreya Sans", system-ui, sans-serif`; x.textAlign='center'; x.textBaseline='middle'; x.lineWidth=3*dpr; x.strokeStyle='rgba(10,12,10,.75)'; x.strokeText(txt,a,b); x.fillStyle=col; x.fillText(txt,a,b); };
   if(DG_MINI.seen){ x.imageSmoothingEnabled=false; x.drawImage(DG_MINI.seen,0,0,B.w,B.h,ox,oz,sw*s,sh*s); }
   dgMapMarks(x,at,inside,s,dpr,label);
   { const [a,b]=at(P.x,P.z); drawArrow(x,a,b,-P.face,8*dpr,'#fff4d0'); }

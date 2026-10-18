@@ -21,7 +21,7 @@ function addVillageMeshes(out,win){
 function questSign(B,Y,o){
   const cv=document.createElement('canvas'); cv.width=512; cv.height=112; const g=cv.getContext('2d');
   g.fillStyle=o.bg; g.fillRect(0,0,512,112); g.strokeStyle=o.line; g.lineWidth=6; g.strokeRect(8,8,496,96);
-  g.fillStyle=o.ink; g.font='700 '+o.font+'px Fraunces, Georgia, serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('QUEST BOARD',256,60);
+  g.fillStyle=o.ink; g.font='700 '+o.font+'px Alegreya, Georgia, serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('QUEST BOARD',256,60);
   const tex=new THREE.CanvasTexture(cv); tex.anisotropy=4;
   const sign=new THREE.Mesh(new THREE.PlaneGeometry(o.w,o.h),new THREE.MeshLambertMaterial({map:tex,emissive:o.glow}));
   const sp=new THREE.Vector3(0,o.y,o.z).applyAxisAngle(new THREE.Vector3(0,1,0),B.rot);

@@ -17,16 +17,20 @@ async function boot(o){ const c=bootClient(Object.assign({online:true,fast:true,
   // 1. the card on the online server: three ways in, and Play as guest goes straight into the world
   let c=await boot({accounts}), G=c.G();
   ok('the card offers Log in, Register and Play as guest (no solo, no world picker)',!c.el('#stLogin').hidden&&!c.el('#stRegister').hidden&&!c.el('#stGuest').hidden&&c.el('#stSolo').hidden&&c.el('#stRoom').hidden);
+  ok('a new visitor\'s one button to press is Play now (a guest); Log in is not the primary one',c.el('#stGuest').textContent==='Play now'&&c.el('#stLogin').textContent==='Log in'&&!c.el('#stGuestNote').hidden);
   ok('the guest and submit buttons wait for the world',c.el('#stGuest').disabled===false&&c.el('#stSubmit').disabled===false);
   c.el('#stGuest').click();
-  ok('Play as guest starts the game as a guest',await until(()=>c.G().started())&&!c.G().NET.user&&c.G().NET.mode==='ws');
+  ok('a brand-new guest makes a character first: the editor opens in creating mode, on the signature characters',await until(()=>c.G().customizing())&&c.G().creating()&&!c.G().started()&&c.G().EDIT[c.G().edTab()].tab==='Presets');
+  c.el('#edDone').click();
+  ok('...and Enter the world starts the game as a guest',c.G().started()&&!c.G().NET.user&&c.G().NET.mode==='ws');
   // the server stops answering (no message for 8 s): a message that stays, with a Reconnect button, instead of a frozen game that ignores everything
   G=c.G(); ok('while the server answers there is no such message',c.el('#kicked').hidden!==false);
   G.NET.lastMsg=performance.now()-20000; G.netTick(0.016);
   ok('a server that stopped answering puts up a Reconnect message that stays',c.el('#kicked').hidden===false&&/stopped answering/.test(c.el('#kickedText').textContent)&&!c.G().NET.ready);
   c.stop();
   // the connection is closed (the server was stopped or restarted)
-  c=await boot({accounts}); c.el('#stGuest').click(); await until(()=>c.G().started()); G=c.G();
+  c=await boot({accounts,ls:new Map([['wildwood-look-v1',JSON.stringify({sex:'female',hair:'bun'})]])}); c.el('#stGuest').click();
+  ok('a browser that already has a hiker goes straight into the world (no editor)',await until(()=>c.G().started())&&!c.G().customizing()); G=c.G();
   ok('the game is running before the connection drops',G.NET.ready&&c.el('#kicked').hidden!==false);
   G.NET.ws.close();
   ok('a closed connection puts up the Reconnect message at once (it was only a toast that faded)',c.el('#kicked').hidden===false&&/Lost the connection/.test(c.el('#kickedText').textContent)&&!c.G().NET.ready);
@@ -48,7 +52,7 @@ async function boot(o){ const c=bootClient(Object.assign({online:true,fast:true,
   ok('a taken name is refused (any letter case) and the form stays',/already has the name/.test(c.el('#stMsg').textContent)&&!c.el('#stForm').hidden&&c.el('#stSubmit').disabled===false);
   fill(c,'Newbie','secret1','secret1');
   ok('a new account opens the character editor before the game starts',await until(()=>c.G().customizing())&&c.G().creating()&&!c.G().started()&&c.G().NET.user==='Newbie');
-  ok('the editor opens on the Body tab, titled for creating',c.G().EDIT[c.G().edTab()].tab==='Body'&&c.el('#edTitle').textContent==='Create your hiker'&&c.el('#edDone').textContent==='Enter the world');
+  ok('the editor opens on the signature characters, titled for creating',c.G().EDIT[c.G().edTab()].tab==='Presets'&&c.el('#edTitle').textContent==='Create your hiker'&&c.el('#edDone').textContent==='Enter the world');
   const chip=name=>find(c.el('#edBody'),e=>e.textContent===name);
   ok('there is no Class tab or class row in the editor, and nothing in it resets your level (class follows the weapon; a new hiker holds the sword)',!c.G().EDIT.some(t=>t.tab==='Class')&&!c.G().EDIT.some(t=>t.subs.some(u=>u.rows.some(r=>r.k==='cls'||r.type==='info')))&&c.G().clsOf()==='warrior');
   { // the signature outfits' pieces in the editor's rows (src/game/outfits, docs/areas/character-ui.md): every slot lists every outfit's item, picking one writes that slot, a whole set puts all seven on
@@ -72,8 +76,9 @@ async function boot(o){ const c=bootClient(Object.assign({online:true,fast:true,
     c.G().setLook('tintTop',0x2f4a6b); tab('Clothes','Top'); ok('...picking a colour lights the swatch and unlights Designed colours; Designed colours puts the original back',c.G().LOOK().tintTop===0x2f4a6b&&sw()._a['aria-pressed']===false&&(c.G().setLook('tintTop',-1),c.G().LOOK().tintTop===-1));
     c.G().setLook('model','base'); const bb=c.G().LOOK(); ok('taking the outfit off restores plain clothes and clears the colours',bb.model==='base'&&bb.top!=='dunstan'&&bb.tintHat===-1);
     c.G().setLook('hair','short'); c.G().setLook('hat','ranger'); c.G().setLook('top','jacket'); }
-  c.G().setLook('hair','bun'); await wait(1000);
-  const me=[...c.server().players.values()].find(p=>p.user==='Newbie');
+  c.G().setLook('hair','bun');
+  const meNow=()=>[...c.server().players.values()].find(p=>p.user==='Newbie'); await until(()=>{ const q=meNow(); return q&&q.look.hair==='bun'; },8000);   // (the look is sent 0.6 s after the last change: wait for it rather than a fixed second, which a busy machine misses)
+  const me=meNow();
   ok('look changes reach the server while creating (before the game starts)',me&&me.look.hair==='bun');
   c.el('#edDone').click();
   ok('Enter the world starts the game',c.G().started()&&!c.G().customizing()&&!c.G().creating());
@@ -98,8 +103,8 @@ async function boot(o){ const c=bootClient(Object.assign({online:true,fast:true,
   // 5. no server (the claude.ai artifact, a local file): no accounts, just Play solo
   c=await boot({online:false}); G=c.G();
   ok('without a server the card offers Play solo only',c.el('#stLogin').hidden&&c.el('#stRegister').hidden&&c.el('#stGuest').hidden&&!c.el('#stSolo').hidden&&c.el('#stRoom').hidden);
-  c.el('#stSolo').click();
-  ok('Play solo starts the game',await until(()=>c.G().started())&&c.G().NET.mode==='solo');
+  c.el('#stSolo').click(); await until(()=>c.G().customizing()); c.el('#edDone').click();
+  ok('Play solo starts the game (after making a character)',await until(()=>c.G().started())&&c.G().NET.mode==='solo');
   c.stop();
   console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);
 })().catch(e=>{ console.error(e); process.exit(1); });

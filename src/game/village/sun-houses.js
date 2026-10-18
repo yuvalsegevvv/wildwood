@@ -18,7 +18,7 @@ function gwArchWall(w,h,d,openings,col){
 function gwSign(C,F,text,x,y,z,w,h,o){
   o=o||{}; const cv=document.createElement('canvas'); cv.width=512; cv.height=Math.max(64,Math.round(512*h/w)); const g=cv.getContext('2d'), fs=48;
   g.fillStyle=o.bg||'#2d3f78'; g.fillRect(0,0,512,cv.height); g.strokeStyle=o.line||'#d9a032'; g.lineWidth=7; g.strokeRect(8,8,496,cv.height-16);
-  g.font='700 '+fs+'px Fraunces, Georgia, serif'; const mt=g.measureText(text), k=Math.min(1,440/((mt&&mt.width)||440)); g.font='700 '+Math.round(fs*k)+'px Fraunces, Georgia, serif';
+  g.font='700 '+fs+'px Alegreya, Georgia, serif'; const mt=g.measureText(text), k=Math.min(1,440/((mt&&mt.width)||440)); g.font='700 '+Math.round(fs*k)+'px Alegreya, Georgia, serif';
   g.fillStyle=o.ink||'#fff2d8'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,256,cv.height/2+3);
   const tex=new THREE.CanvasTexture(cv); tex.anisotropy=4; const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshLambertMaterial({map:tex,emissive:o.glow===undefined?0x14100a:o.glow}));
   m.applyMatrix4(new THREE.Matrix4().multiplyMatrices(F,new THREE.Matrix4().makeTranslation(x,y,z).multiply(new THREE.Matrix4().makeRotationY(Math.PI)))); C.root.add(m);

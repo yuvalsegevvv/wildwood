@@ -23,7 +23,7 @@ function mqReadyP(p,quiet){   // quiet: handed in by the same talk, no need to s
 function mqProgressP(p,i,add,quiet){
   const M=mqOf(p), step=mqStep(p); if(!step||M.st!==1||!mqOpen(step,M.n,i)) return false;
   const pt=step.parts[i], need=mqNeed(pt); M.n[i]=Math.min(need,(M.n[i]||0)+(add||1)); p.dirty=true;
-  if(!quiet&&need>1) mqToast(p,(pt.collect||pt.text)+': '+M.n[i]+' / '+need);
+  if(!quiet&&need>1&&pt.collect) mqToast(p,pt.collect+': '+M.n[i]+' / '+need);   // a quest drop is news; kill and pick counts are already live in the quest log (economy/main-quest.js), a toast each was noise
   if(M.n[i]>=need){ mqAutoP(p); mqReadyP(p); }
   return true;
 }

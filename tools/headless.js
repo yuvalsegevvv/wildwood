@@ -16,7 +16,7 @@ function makeEl(){
     offsetWidth:380,offsetHeight:300,scrollTop:0,scrollHeight:0,width:0,height:0,disabled:true,hidden:true,value:'',firstChild:{style:{}},
     remove(){},focus(){},blur(){},select(){},closest(){return null},querySelectorAll:()=>[],querySelector:()=>makeEl(),
     setAttribute(k,v){ e._a[k]=v; },getAttribute(k){ return k in e._a?e._a[k]:null; },
-    append(...k){ e._kids.push(...k); },appendChild(k){ e._kids.push(k); return k; },
+    append(...k){ e._kids.push(...k); },prepend(...k){ e._kids.unshift(...k); },appendChild(k){ e._kids.push(k); return k; },
     addEventListener(t,f){ (e._h[t]=e._h[t]||[]).push(f); },
     fire(t,ev){ for(const f of e._h[t]||[]) f(Object.assign({target:e,currentTarget:e,preventDefault(){},stopPropagation(){}},ev)); },
     click(){ e.fire('click'); },requestSubmit(){ e.fire('submit'); },

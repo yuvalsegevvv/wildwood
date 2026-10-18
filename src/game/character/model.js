@@ -28,8 +28,9 @@ const fullLook=l=>ofMigrate(l,cosMigrateLook(Object.assign({},l&&l.sex==='female
 function cosMigrateLook(L){ if(L.pack===true&&!L.cape&&L.custom){ L.cape='pack'; L.pack=false; } return L; }
 // the model's scale for a look: the Height slider (clamped: a remote look is not sanitized) and the female body's 0.95
 const lookScale=l=>sliderVal(l,'height')*(l&&l.sex==='female'?0.95:1);
+var LOOK_KEPT=false;   // a look was saved before (this browser, or the account's own from welcome): false means a brand-new hiker, who makes a character before the game starts (ui/start-screen.js)
 function loadLook(){
-  try{ const s=JSON.parse(localStorage.getItem('wildwood-look-v1')||'null'); if(s && (s.sex==='male'||s.sex==='female')) return fullLook(s); }catch(_){}
+  try{ const s=JSON.parse(localStorage.getItem('wildwood-look-v1')||'null'); if(s && (s.sex==='male'||s.sex==='female')){ LOOK_KEPT=true; return fullLook(s); } }catch(_){}
   return Object.assign({},LOOK_M);
 }
 /* A random look. rng: a function giving 0..1; villagers pass a seeded one so every player sees the same villagers, and the draw order of the lines
@@ -60,9 +61,9 @@ function randomLook(rng,o){
 // a logged-in account's own look (sent in welcome) replaces this browser's; not written to this browser's save
 function adoptLook(l){
   if(!l||typeof l!=='object'||(l.sex!=='male'&&l.sex!=='female')) return;
-  LOOK=fullLook(l); LOOK_SAVED=Object.assign({},LOOK); rebuildHiker();
+  LOOK=fullLook(l); LOOK_SAVED=Object.assign({},LOOK); LOOK_KEPT=true; rebuildHiker();
 }
-function saveLookLocal(){ try{ localStorage.setItem('wildwood-look-v1',JSON.stringify(LOOK)); }catch(_){} }
+function saveLookLocal(){ LOOK_KEPT=true; try{ localStorage.setItem('wildwood-look-v1',JSON.stringify(LOOK)); }catch(_){} }
 /* Saving a look. While the editor shows a look that wears a crafted piece you have not made (a try-on, cosLocked in shared/cospieces.js) nothing is saved or sent: LOOK_SAVED stays the
    last complete look, the one the world sees, and the editor reverts to it on request (ui/character-editor.js edRevert). */
 function saveLook(){ if(typeof edTrying==='function'&&edTrying()) return; LOOK_SAVED=Object.assign({},LOOK); saveLookLocal(); if(typeof netLookChanged==='function') netLookChanged(); }

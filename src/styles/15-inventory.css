@@ -3,7 +3,7 @@
 .inv-stats small{ font-weight:500; color:var(--ink-dim); font-size:11.5px; }
 .inv-wrap{ display:flex; gap:14px; align-items:stretch; }
 .doll{ position:relative; flex:none; display:grid; grid-template-columns:repeat(3,62px); grid-template-areas:". head neck" "hand chest ring" ". legs ." ". feet ." "pick axe sickle";
-  gap:4px 10px; justify-items:center; padding:10px 8px; background:rgba(0,0,0,.2); border-radius:14px; }
+  gap:4px 10px; justify-items:center; padding:10px 8px; background:rgba(0,0,0,.2); border-radius:6px; }
 .doll-sil{ position:absolute; left:50%; top:10px; height:calc(100% - 100px); transform:translateX(-50%); fill:rgba(238,240,226,.06); pointer-events:none; }
 .eqslot{ position:relative; display:flex; flex-direction:column; align-items:center; gap:2px; }
 .eqslot[data-slot=pick], .eqslot[data-slot=axe], .eqslot[data-slot=sickle]{ margin-top:10px; }   /* the profession tools, under the body */
@@ -30,10 +30,10 @@
 .tile.t3,.ii-ico.t3,.it-ico.t3,.drag-ghost.t3{ border-color:#f2cf5a; box-shadow:inset 0 0 12px rgba(242,207,90,.18); }
 .eqslot.can .tile{ outline:2px dashed var(--lichen); outline-offset:3px; }
 .eqslot.over .tile{ background:rgba(111,207,106,.28); transform:scale(1.08); }
-.bag{ flex:1; min-width:0; display:flex; flex-direction:column; border-radius:14px; transition:background .12s; }
+.bag{ flex:1; min-width:0; display:flex; flex-direction:column; border-radius:6px; transition:background .12s; }
 .bag .inv-h{ margin-top:0; display:flex; justify-content:space-between; }
 .bag .inv-h span{ font-weight:500; }
-.bag-grid{ flex:1; display:grid; grid-template-columns:repeat(auto-fill,56px); gap:8px; align-content:start; padding:6px; border-radius:12px; min-height:150px; background:rgba(0,0,0,.14); }
+.bag-grid{ flex:1; display:grid; grid-template-columns:repeat(auto-fill,56px); gap:8px; align-content:start; padding:6px; border-radius:6px; min-height:150px; background:rgba(0,0,0,.14); }
 .bag.can .bag-grid{ outline:2px dashed var(--lichen); outline-offset:-2px; }
 .bag.over .bag-grid{ background:rgba(111,207,106,.14); }
 .bag-empty{ grid-column:1/-1; margin:8px 4px; }
@@ -41,7 +41,7 @@
   display:grid; place-items:center; box-shadow:0 10px 26px rgba(0,0,0,.55); }
 .drag-ghost .ico{ width:44px; height:44px; }
 body.dragging, body.dragging *{ cursor:grabbing !important; }
-.inv-info{ display:flex; gap:12px; align-items:center; margin-top:10px; padding:10px 12px; background:rgba(0,0,0,.2); border-radius:12px; min-height:64px; }
+.inv-info{ display:flex; gap:12px; align-items:center; margin-top:10px; padding:10px 12px; background:rgba(0,0,0,.2); border-radius:6px; min-height:64px; }
 .inv-info > p{ margin:0; }
 .ii-ico{ width:48px; height:48px; flex:none; border-radius:10px; border:2px solid; background:rgba(18,22,18,.6); display:grid; place-items:center; }
 .ii-ico .ico{ width:38px; height:38px; }

@@ -44,9 +44,14 @@ function startMsg(text){ stMsg.textContent=text||''; stMsg.hidden=!text; }
 function syncStart(){
   const ses=ONLINE?loadSession():null, wait=!canStart||starting, home=startView==='home';
   stHome.hidden=!home; stForm.hidden=home;
-  $('#stLogin').hidden=$('#stRegister').hidden=$('#stGuest').hidden=!ONLINE;
+  $('#stLogin').hidden=$('#stRegister').hidden=$('#stGuest').hidden=$('#stAcct').hidden=!ONLINE;
   $('#stSolo').hidden=ONLINE; $('#stRoom').hidden=ONLINE||!IN_CLAUDE;
-  $('#stLogin').textContent=ses?'Continue as '+ses.user:'Log in';
+  // one button to press: Play now (a guest) for a new visitor, Continue as <name> for a remembered account; logging in and registering sit below it
+  const lg=$('#stLogin'), gu=$('#stGuest');
+  if(ses) stHome.prepend(lg); else $('#stAcct').prepend(lg);
+  lg.classList.toggle('primary',!!ses); gu.classList.toggle('primary',!ses);
+  gu.textContent=ses?'Play as guest':'Play now'; $('#stGuestNote').hidden=!ONLINE||!!ses;
+  lg.textContent=ses?'Continue as '+ses.user:'Log in';
   $('#stLogin').disabled=!!ses&&wait; $('#stGuest').disabled=$('#stSolo').disabled=$('#stRoom').disabled=$('#stSubmit').disabled=wait;
   stNote.hidden=!ses; stNote.textContent='';
   if(ses){ stNote.append('Logged in as '+ses.user+' on this device.'); const b=document.createElement('button'); b.className='linkbtn'; b.type='button'; b.textContent='Use another account';
@@ -71,7 +76,7 @@ async function enterWorld(o){
   if(NET.ready) netReset();
   NET.name=o.name; NET.login=o.login||null; pendingReg=o.register||null;
   if(!o.login&&!o.register) try{ localStorage.setItem('wildwood-name',NET.name); }catch(_){}
-  NET.onReady=()=>{ if(pendingReg) netSend({t:'register',user:pendingReg.user,pass:pendingReg.pass}); else { starting=false; beginPlay(); } };
+  NET.onReady=()=>{ if(pendingReg) netSend({t:'register',user:pendingReg.user,pass:pendingReg.pass}); else { starting=false; if(LOOK_KEPT) beginPlay(); else { statusEl.textContent=''; openEditor({create:true}); } } };   // a brand-new hiker (no look in this browser or on the server) makes a character first
   try{
     if(o.mode==='room') await startRoom(NET.name);
     else if(o.mode==='ws'){ statusEl.textContent='Connecting to the world server…'; await startWS(); }
@@ -115,7 +120,8 @@ function beginPlay(){
   $('#start').classList.add('hide');
   document.body.classList.add('playing');
   renderQlog();
-  hint.textContent=isTouch?'Drag on the left to walk, on the right to look around. Tap the minimap for the world map.':'WASD to walk, Shift to run, Space to jump, F or click to attack, Q for your skill, E to talk, I for your inventory, N for the map. Click to look with the mouse; T skips ahead in the day, V switches the camera.';
+  // only what the first minute needs: the main quest's own tips teach the rest one step at a time (shared/main-quest.js), and the guide has every key
+  hint.textContent=isTouch?'Drag on the left to walk, on the right to look around. Tap the minimap for the world map.':['fwd','left','back','right'].map(kbName).join(' ')+' to walk, the mouse to look, '+kbName('talk')+' to talk. '+kbName('guide')+' opens the guide.';
   if(LITE) hint.textContent+=' Running in light mode for this phone.';
   hint.classList.add('show'); setTimeout(()=>hint.classList.remove('show'),9000);
   if(!isTouch && canvas.requestPointerLock){ try{ const r=canvas.requestPointerLock(); if(r && r.catch) r.catch(()=>{}); }catch(_){} }

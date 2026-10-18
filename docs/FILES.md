@@ -34,6 +34,7 @@ styles
   26-pvp.css                         The Proving Isle (PvP): the badge under the zone name, other fighters' red name tags, the picked target
   27-skillsets.css                   Skill sets in the skills panel and on the action bar: a set piece's symbol in its set's colour, the set effect cards
   28-guide.css                       The Guide panel: a short in-game wiki in tabs (text, lists and key caps)
+  29-theme.css                       The storybook skin: dark bark panels, a brass frame with corner studs, parchment ink and the Alegreya fonts, laid over every HUD box, panel and button (the look of the world map)
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.

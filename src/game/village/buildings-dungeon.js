@@ -362,8 +362,8 @@ function dgEntSand(E){
 function dgEntSignTex(name,line){
   const c=document.createElement('canvas'); c.width=512; c.height=128; const g=c.getContext('2d');
   g.fillStyle='#8a6a44'; g.fillRect(0,0,512,128); g.strokeStyle='#2a1e14'; g.lineWidth=6; g.strokeRect(6,6,500,116);
-  g.fillStyle='#fff4dc'; g.font='700 44px Fraunces, Georgia, serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(name,256,50);
-  g.fillStyle='#ecdcb4'; g.font='600 30px Inter, system-ui, sans-serif'; g.fillText(line,256,98);
+  g.fillStyle='#fff4dc'; g.font='700 44px Alegreya, Georgia, serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(name,256,50);
+  g.fillStyle='#ecdcb4'; g.font='600 30px "Alegreya Sans", system-ui, sans-serif'; g.fillText(line,256,98);
   const tex=new THREE.CanvasTexture(c); tex.anisotropy=4; return tex;
 }
 function dgEntSign(E){

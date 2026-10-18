@@ -13,7 +13,7 @@
   right:calc(20px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 30px);
   width:74px; height:74px; border-radius:50%;
   border:1.5px solid rgba(238,240,226,.4); background:var(--glass); color:var(--ink);
-  font:600 13px Inter, system-ui, sans-serif; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  font:600 13px "Alegreya Sans", system-ui, sans-serif;
 }
 body.touch.playing .touch-btn{ display:grid; }
 .touch-btn:active{ background:var(--glass-strong); }

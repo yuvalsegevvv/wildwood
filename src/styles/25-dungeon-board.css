@@ -1,7 +1,7 @@
 /*@ The Delve board (the panel at a dungeon door: lock, the two missions on offer, countdown, party) and the prompt to join a party's run */
 @media (min-width:720px){ #dgBoard{ width:min(560px,calc(100vw - 24px)); } }   /* (on a phone the panel is a bottom sheet: 12-panels.css sets its width) */
-.dgb-hero{ --dgc:#cdd98f; padding:10px 12px 11px; margin-bottom:10px; border-radius:14px; border:1px solid var(--line); border-left:4px solid var(--dgc); background:rgba(0,0,0,.22); }
-.dgb-name{ margin:0; font-family:Fraunces, Georgia, serif; font-weight:400; font-size:21px; color:var(--dgc); }
+.dgb-hero{ --dgc:#cdd98f; padding:10px 12px 11px; margin-bottom:10px; border-radius:6px; border:1px solid var(--line); border-left:4px solid var(--dgc); background:rgba(0,0,0,.22); }
+.dgb-name{ margin:0; font-family:Alegreya, Georgia, serif; font-weight:400; font-size:21px; color:var(--dgc); }
 .dgb-door{ font-size:12px; color:var(--ink-dim); margin-top:1px; }
 .dgb-blurb{ margin:7px 0 8px; font-size:13px; line-height:1.45; color:var(--ink-dim); }
 .dgb-facts{ display:flex; flex-wrap:wrap; gap:6px; }
@@ -12,10 +12,10 @@
 .dgb-state.no{ color:#ffb09f; background:rgba(255,122,106,.09); border:1px solid rgba(255,122,106,.35); }
 .dgb-wait{ margin:6px 0 4px; font-size:13.5px; color:var(--ink-dim); }
 .dgb-cards{ display:flex; flex-direction:column; gap:8px; }
-.dgb-card{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:rgba(0,0,0,.22); }
+.dgb-card{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:6px; border:1px solid var(--line); background:rgba(0,0,0,.22); }
 .dgb-card.soon{ opacity:.6; }
 .dgb-ct{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
-.dgb-ct b{ font-family:Fraunces, Georgia, serif; font-size:16px; font-weight:600; }
+.dgb-ct b{ font-family:Alegreya, Georgia, serif; font-size:16px; font-weight:600; }
 .dgb-ct span{ font-size:12.5px; line-height:1.4; color:var(--ink-dim); }
 .dgb-act{ flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:3px; max-width:140px; text-align:right; font-size:12px; color:var(--ink-dim); }
 .dgb-start{ min-width:84px; min-height:40px; font-weight:600; }
@@ -23,8 +23,8 @@
 .dgb-foot{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:4px 14px; margin-top:10px; padding-top:8px; border-top:1px solid rgba(238,240,226,.1); font-size:12.5px; color:var(--ink-dim); }
 .dgb-foot b{ color:var(--ink); font-variant-numeric:tabular-nums; }
 /* the prompt to join a party's run: top of the screen, above the panels (9) */
-#dgJoin{ position:fixed; z-index:12; left:50%; top:calc(env(safe-area-inset-top,0px) + 74px); transform:translateX(-50%); width:min(400px,calc(100vw - 32px)); padding:12px 14px 13px; border-radius:16px; border:1px solid var(--line);
-  border-left:4px solid #f2cf5a; background:var(--glass-strong); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
+#dgJoin{ position:fixed; z-index:12; left:50%; top:calc(env(safe-area-inset-top,0px) + 74px); transform:translateX(-50%); width:min(400px,calc(100vw - 32px)); padding:12px 14px 13px; border-radius:6px; border:1px solid var(--line);
+  border-left:4px solid #f2cf5a; background:var(--glass-strong); }
 #dgJoin[hidden]{ display:none; }
 #dgJoin p{ margin:0 0 9px; font-size:13.5px; line-height:1.45; }
 .dgj-row{ display:flex; align-items:center; gap:8px; }
