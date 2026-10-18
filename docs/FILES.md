@@ -328,6 +328,7 @@ game
   ui/toasts.js                       Toast messages
   ui/item-icons.js                   Item icons: an SVG for every piece of equipment, every tool and every pendant, coloured like the item looks on your character
   ui/drop-icons.js                   Monster-drop icons (version 3.1): every drop in the bag drawn as what it is (goo, tusk, claw, feather, plate, pelt, flame...), picked from its name, in the monster's colours, with a variation per monster
+  ui/mon-pics.js                     Monster pictures for the quest panel: each monster a quest asks you to defeat, drawn once from its own model on a small off-screen target and kept as an image
   ui/panels.js                       Panel open/close helpers (openPanel, closePanels, uiOpen, releasePointer)
   economy/inventory.js               Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
   economy/shops.js                   Weapon and armour shops, and Odran the peddler (a bit of everything, and curiosities he will not sell)

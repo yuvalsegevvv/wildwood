@@ -293,6 +293,7 @@
     "ui/toasts.js",
     "ui/item-icons.js",
     "ui/drop-icons.js",
+    "ui/mon-pics.js",
     "ui/panels.js",
     "economy/inventory.js",
     "economy/shops.js",
