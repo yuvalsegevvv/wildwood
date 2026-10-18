@@ -84,3 +84,9 @@ OUTFITS.genzo=oxPlus(OUTFITS.genzo,(X,D)=>({   // round 5: a heavy bronze prayer
   torso:()=>oxBeads(X,D,{col:0xd2a24a,col2:0xb8452a,n:22,r:0.017,drop:0.26}),
   shoulder:sd=>sd<0?oxPauldron(X,D,{col:0xd2a24a,trim:0xf3ead2,r:0.075}):[],
   cos:{cape:{col:0xb8452a,trim:0xf3ead2,len:0.5,pat:'rays',mantle:1}}}));
+oxTune('genzo',{jaw:1.2,chin:1.15,brow:0.9,eyeSize:0.95,eyeTilt:-0.1,noseSize:1.15,lips:0.9,smile:-0.2,earSize:1.15,undertone:0.3});
+OUTFITS.genzo=oxPlus(OUTFITS.genzo,(X,D)=>({   // face round 2: a stern square jaw, gold earrings, dark amber eyes, a white streak in the hair
+  mark:F=>oxMarks(F,[{t:'crow',col:0x8a6a50}]),
+  hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xd2a24a}]),
+  kit:{eyeColor:0x8a5a28}}));
+Object.assign(CHAR_MODELS.genzo,{hairGrad:{mode:'streak',c2:0xe8e2d4}});

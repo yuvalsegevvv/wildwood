@@ -309,3 +309,9 @@ OUTFITS.tansy=(function(){
 OUTFITS.tansy=oxPlus(OUTFITS.tansy,(X,D)=>({   // round 6: a sheaf of wheat on the back, a red kerchief, a straw shoulder cape
   torso:()=>oxSheaf(X,D,{col:0xd8b050,ear:0xe8c860,cord:0xa04030}).concat(oxScarf(X,D,{col:0xc0392b,col2:0xf3ead2,len:0.4})),
   cos:{cape:{col:0xe0b95a,trim:0x7a9a3c,len:0.4,pat:'stitch',mantle:1}}}));
+oxTune('tansy',{eyeSize:1.2,smile:0.7,cheeks:1.2,blush:0.7,lips:1.1,noseSize:0.85,jaw:0.9,chin:0.9,undertone:0.3});
+OUTFITS.tansy=oxPlus(OUTFITS.tansy,(X,D)=>({   // face round 2: a round sunny face, rosy cheek patches, freckles, bright green eyes
+  mark:F=>oxMarks(F,[{t:'cheek',col:0xe89888},{t:'freckles',col:0xb08060}]),
+  hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xe0b95a}]),
+  kit:{eyeColor:0x58a848,eyes:{iris:1.1,lash:0.5}}}));
+Object.assign(CHAR_MODELS.tansy,{hairGrad:{mode:'ombre',c2:0xe8c860,c3:0xf3e0a0}});

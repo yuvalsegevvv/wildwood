@@ -96,3 +96,7 @@ OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // face round 1: wind-reddened chee
   mark:F=>oxMarks(F,[{t:'crow',col:0x8a6a50},{t:'cheek',col:0xd08878}]),
   hair:()=>oxHairBits(X,[{t:'ring',side:-1,col:0xc9ccd4}]),
   kit:{eyeColor:0x4a90a8,eyes:{iris:1.0,lash:0.3}}}));
+oxTune('pell',{jaw:1.12,chin:1.15,cheeks:0.8,brow:0.5,eyeTilt:-0.2,lips:0.7,smile:0.0});
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // face round 2: a weathered, hollow-cheeked old fisher with tired eyes and salt-grey streaks in the hair
+  mark:F=>oxMarks(F,[{t:'bags',col:0x7a6a5a}])}));
+Object.assign(CHAR_MODELS.pell,{hairGrad:{mode:'streak',c2:0xcfd8dc}});
