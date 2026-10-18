@@ -91,3 +91,8 @@ OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 3: a string of green glass
 OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 4: a yellow oilskin apron, a harpoon rod across the back
   torso:()=>oxTube(X,D,{col:0x5a4632,cap:0xc9ccd4,strap:0x2a2420}),
   hips:()=>oxApron(X,D,{col:0xb8a258,trim:0x2a2420,len:0.3,w:0.2})}));
+oxTune('pell',{jaw:1.0,chin:1.05,cheeks:0.88,brow:0.2,eyeSize:0.95,noseSize:1.12,lips:0.8,undertone:0.4,blush:0.5,earSize:1.15,smile:0.1});
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // face round 1: wind-reddened cheeks and nose, salt crow's feet, grey-blue sea eyes, a hook ring in the ear
+  mark:F=>oxMarks(F,[{t:'crow',col:0x8a6a50},{t:'cheek',col:0xd08878}]),
+  hair:()=>oxHairBits(X,[{t:'ring',side:-1,col:0xc9ccd4}]),
+  kit:{eyeColor:0x4a90a8,eyes:{iris:1.0,lash:0.3}}}));

@@ -108,3 +108,8 @@ OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // round 3: a mossy plate with bo
 OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // round 4: burial-shroud rags hanging from the belt and trailing from the wrists
   forearm:sd=>oxStreamer(X,D,{col:0x6f8f6b,col2:0x2a2420,len:0.45,side:sd}),
   hips:()=>oxTags(X,D,{col:0x7a8a70,mark:0x2a2420,n:10,len:0.3})}));
+oxTune('ogden',{jaw:1.2,chin:1.3,cheeks:0.72,brow:0.8,eyeSize:0.92,eyeHeight:-0.3,eyeTilt:-0.45,noseSize:1.25,mouthSize:1.12,mouthHeight:-0.5,lips:0.7,smile:-0.6,earSize:1.3,undertone:-0.7,blush:0,head:1.05});
+OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // face round 1: a heavy sunken drowned face, grey-green skin, a long scar, dull pond-water eyes, a drip of weed in the hair
+  mark:F=>oxMarks(F,[{t:'scar',side:-1,col:0x5a3a3a},{t:'crow',col:0x4a5a52}]),
+  hair:()=>oxHairBits(X,[{t:'ring',side:1,col:0x9a8a6a},{t:'sprig',side:-1,col:0x4f6b4b,col2:0x6f8f6b}]),
+  kit:{eyeColor:0xb8c8a0,eyes:{iris:0.7,lash:0.1}}}));

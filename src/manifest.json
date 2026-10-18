@@ -183,6 +183,7 @@
     "character/model-garments.js",
     "character/outfit-tools.js",
     "character/outfit-extras.js",
+    "character/outfit-faces.js",
     "character/cosmetics.js",
     "outfits/dunstan.js",
     "outfits/tansy.js",

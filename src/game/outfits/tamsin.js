@@ -87,3 +87,8 @@ OUTFITS.tamsin=oxPlus(OUTFITS.tamsin,(X,D)=>({   // round 4: a canvas apron with
   shoulder:sd=>sd<0?oxPauldron(X,D,{col:0x8a8f96,trim:0xc2823a,r:0.068}):[],
   hips:()=>oxApron(X,D,{col:0x4a3e30,trim:0xd2b48a,len:0.2,w:0.15}),
   cos:{cape:{col:0xc2823a,trim:0xd2b48a,len:0.5,pat:'ash',mantle:1}}}));
+oxTune('tamsin',{jaw:1.12,chin:1.05,cheeks:1.12,brow:0.45,eyeSize:1.02,noseSize:1.05,lips:1.1,undertone:0.5,blush:0.45,smile:0.2,earSize:1.05});
+OUTFITS.tamsin=oxPlus(OUTFITS.tamsin,(X,D)=>({   // face round 1: sun-warm skin, freckles and a beauty mark, chalk-white hair tips, steel studs in the ear
+  mark:F=>oxMarks(F,[{t:'freckles',col:0xb08060},{t:'mole',side:1,col:0x5a3a2a}]),
+  hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xc9ccd4},{t:'pin',side:1,col:0x9a7a4a,col2:0xc2823a}])}));
+Object.assign(CHAR_MODELS.tamsin,{hairGrad:{mode:'tips',c2:0xe8e2d4}});

@@ -357,3 +357,8 @@ OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // round 3: a mint linen scar
 OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // round 4: a curtain of hanging herb tags at the belt and a big mint obi-style bow
   torso:()=>oxBow(X,D,{col:0x8bc5a4,col2:0x4f7a6a}),
   hips:()=>oxTags(X,D,{col:0xe6eee6,mark:0x4f7a6a,n:10,len:0.2})}));
+oxTune('ambrose',{eyeSize:1.18,brow:-0.6,smile:0.5,cheeks:1.15,blush:0.55,lips:1.1,undertone:-0.2,jaw:0.95,chin:0.95,noseSize:0.9,earSize:1.1});
+OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // face round 1: soft rosy cheeks, a warm smile, a tiny freckle sprinkle, a mint sprig tucked behind the ear, hazel-green eyes
+  mark:F=>oxMarks(F,[{t:'freckles',col:0xb08a68}]),
+  hair:()=>oxHairBits(X,[{t:'sprig',side:1,col:0x6fae7a,col2:0xf3ead2}]),
+  kit:{eyeColor:0x7a9a4a,eyes:{iris:1.08,lash:0.5}}}));

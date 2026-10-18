@@ -6,7 +6,8 @@
 function oxPlus(base,fn){
   return function(X,D){
     const k=base(X,D), m=fn(X,D,k);
-    for(const hook of ['torso','hips','shoulder','head','forearm']){ const add=m[hook]; if(!add) continue; const old=k[hook]; k[hook]=(...a)=>(old?old(...a)||[]:[]).concat(add(...a)); }
+    for(const hook of ['torso','hips','shoulder','head','forearm','mark','hair']){ const add=m[hook]; if(!add) continue; const old=k[hook]; k[hook]=(...a)=>(old?old(...a)||[]:[]).concat(add(...a)); }
+    if(m.kit){ if(m.kit.eyes) k.eyes=Object.assign({},k.eyes,m.kit.eyes); if(m.kit.eyeColor!==undefined) k.eyeColor=m.kit.eyeColor; }   // eyes: the iris, the lashes, the colour
     if(m.cos){ const old=k.extras; k.extras=(rig,XX,has)=>{ if(old) old(rig,XX,has); ofCosmetics(rig,XX,has,m.cos); }; }
     return k; };
 }
