@@ -64,20 +64,20 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 
 ### Recommended setup (reference, male)
 
-**`sabir`**: The raider as drawn: lean, sharp-jawed, long in the leg.
+**`sabir`**: The dune raider as drawn: a wiry inverted triangle on long legs.
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 1.04 |
-| `build` (Build) | 0.98 |
-| `chest` (Chest) | 0.95 |
-| `shoulders` (Shoulders) | 1.08 |
-| `waist` (Waist) | 0.92 |
-| `torso` (Torso length) | 0.98 |
-| `legs` (Leg length) | 1.08 |
+| `height` (Height) | 1 |
+| `build` (Build) | 0.9 |
+| `chest` (Chest) | 1 |
+| `shoulders` (Shoulders) | 1.15 |
+| `waist` (Waist) | 0.82 |
+| `torso` (Torso length) | 1 |
+| `legs` (Leg length) | 1.14 |
 | `thighs` (Thighs) | 0.95 |
-| `arms` (Arms) | 1.08 |
-| `neck` (Neck) | 1 |
+| `arms` (Arms) | 1.1 |
+| `neck` (Neck) | 1.1 |
 | `hands` (Hands) | 1.05 |
 | `feet` (Feet) | 1 |
 | `jaw` (Jaw width) | 0.95 |
@@ -97,6 +97,7 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `lips` (Lips) | 0.9 |
 | `head` (Head size) | 0.98 |
 | `earSize` (Ear size) | 1.1 |
+| `hips` (Hips) | 0.88 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -104,11 +105,11 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 
 | Slider | Range | Base model |
 |---|---|---|
-| `height` (Height) | 0.98 .. 1.08 | 0.92 .. 1.08 |
-| `build` (Build) | 0.9 .. 1.08 | 0.88 .. 1.18 |
+| `height` (Height) | 0.95 .. 1.08 | 0.92 .. 1.08 |
+| `build` (Build) | 0.88 .. 1.08 | 0.88 .. 1.18 |
 | `chest` (Chest) | 0.8 .. 1.15 | 0.6 .. 1.4 |
 | `waist` (Waist) | 0.82 .. 1.05 | 0.82 .. 1.15 |
-| `hips` (Hips) | 0.88 .. 1.1 | 0.85 .. 1.2 |
+| `hips` (Hips) | 0.85 .. 1.1 | 0.85 .. 1.2 |
 | `legs` (Leg length) | 1 .. 1.14 | 0.92 .. 1.14 |
 | `arms` (Arms) | 0.95 .. 1.2 | 0.82 .. 1.25 |
 | `neck` (Neck) | 0.9 .. 1.15 | 0.85 .. 1.2 |

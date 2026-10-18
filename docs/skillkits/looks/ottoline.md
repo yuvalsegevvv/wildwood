@@ -68,19 +68,19 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 0.93 |
-| `build` (Build) | 0.9 |
-| `chest` (Chest) | 0.8 |
+| `height` (Height) | 0.92 |
+| `build` (Build) | 0.88 |
+| `chest` (Chest) | 0.75 |
 | `shoulders` (Shoulders) | 0.92 |
-| `waist` (Waist) | 0.84 |
+| `waist` (Waist) | 0.82 |
 | `torso` (Torso length) | 0.96 |
-| `legs` (Leg length) | 1.04 |
-| `thighs` (Thighs) | 0.92 |
-| `arms` (Arms) | 0.84 |
-| `neck` (Neck) | 0.95 |
-| `hands` (Hands) | 0.88 |
-| `feet` (Feet) | 0.9 |
-| `head` (Head size) | 1.08 |
+| `legs` (Leg length) | 0.93 |
+| `thighs` (Thighs) | 0.9 |
+| `arms` (Arms) | 0.85 |
+| `neck` (Neck) | 0.9 |
+| `hands` (Hands) | 0.85 |
+| `feet` (Feet) | 0.85 |
+| `head` (Head size) | 1.12 |
 | `jaw` (Jaw width) | 0.88 |
 | `chin` (Chin) | 0.85 |
 | `cheeks` (Cheeks) | 1.1 |
@@ -95,6 +95,7 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `smile` (Expression) | 0.1 |
 | `hairLength` (Hair length) | 1.3 |
 | `hairVolume` (Hair volume) | 1.1 |
+| `hips` (Hips) | 0.95 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -108,7 +109,7 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 | `shoulders` (Shoulders) | 0.88 .. 1.05 | 0.88 .. 1.18 |
 | `waist` (Waist) | 0.82 .. 1 | 0.82 .. 1.15 |
 | `hips` (Hips) | 0.9 .. 1.15 | 0.85 .. 1.2 |
-| `legs` (Leg length) | 0.96 .. 1.12 | 0.92 .. 1.14 |
+| `legs` (Leg length) | 0.92 .. 1.12 | 0.92 .. 1.14 |
 | `arms` (Arms) | 0.82 .. 1.05 | 0.82 .. 1.25 |
 | `head` (Head size) | 1 .. 1.12 | 0.9 .. 1.12 |
 | `eyeSize` (Eye size) | 1.1 .. 1.3 | 0.9 .. 1.3 |

@@ -403,3 +403,7 @@ oxTune('corvin',{noseSize:1.18,brow:-0.2,eyeSize:0.9,jaw:1.0,cheeks:0.82,lips:0.
 OUTFITS.corvin=oxPlus(OUTFITS.corvin,(X,D)=>({   // face round 4: lamp soot on one cheek, late nights under the spectacles, a brass ear ring
   mark:F=>oxMarks(F,[{t:'bags',col:0x6a6058},{t:'crow',col:0x7a6a58},{t:'scar',side:-1,col:0x3a3430}]),
   hair:()=>oxHairBits(X,[{t:'ring',side:1,col:0xc59c39}])}));
+oxTune('corvin',{height:1.0,build:1.1,chest:1.0,shoulders:0.95,waist:1.15,hips:1.1,torso:1.0,legs:0.94,thighs:1.0,arms:0.9,neck:0.95,head:1.08});
+Object.assign(CHAR_MODELS.corvin.setups[0],{note:'The surveyor as drawn: round-bellied and bespectacled, a big head on a short stride.'});
+OUTFITS.corvin=oxPlus(OUTFITS.corvin,(X,D)=>({   // uniqueness round 3: a round-bellied scholar with a folded brass-headed surveyor's tripod across his back
+  torso:()=>oxTripod(X,D,{col:0x6a4a2a,brass:0xc59c39,len:0.34})}));

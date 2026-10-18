@@ -73,19 +73,19 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 0.94 |
-| `build` (Build) | 0.9 |
-| `chest` (Chest) | 0.85 |
-| `shoulders` (Shoulders) | 0.92 |
+| `height` (Height) | 1.02 |
+| `build` (Build) | 1 |
+| `chest` (Chest) | 1.2 |
+| `shoulders` (Shoulders) | 0.95 |
 | `waist` (Waist) | 0.9 |
 | `torso` (Torso length) | 0.97 |
-| `legs` (Leg length) | 1.06 |
-| `thighs` (Thighs) | 0.95 |
-| `arms` (Arms) | 0.85 |
-| `neck` (Neck) | 0.95 |
-| `hands` (Hands) | 0.9 |
-| `feet` (Feet) | 0.92 |
-| `head` (Head size) | 1.08 |
+| `legs` (Leg length) | 1.1 |
+| `thighs` (Thighs) | 1.1 |
+| `arms` (Arms) | 0.95 |
+| `neck` (Neck) | 1 |
+| `hands` (Hands) | 1 |
+| `feet` (Feet) | 1 |
+| `head` (Head size) | 1 |
 | `jaw` (Jaw width) | 0.9 |
 | `chin` (Chin) | 0.88 |
 | `cheeks` (Cheeks) | 1.2 |
@@ -103,6 +103,7 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `blush` (Blush) | 0.85 |
 | `undertone` (Skin undertone) | 0.4 |
 | `earSize` (Ear size) | 0.9 |
+| `hips` (Hips) | 1.1 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -110,15 +111,15 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 
 | Slider | Range | Base model |
 |---|---|---|
-| `height` (Height) | 0.92 .. 1.02 | 0.92 .. 1.08 |
+| `height` (Height) | 0.92 .. 1.07 | 0.92 .. 1.08 |
 | `build` (Build) | 0.88 .. 1.05 | 0.88 .. 1.18 |
-| `chest` (Chest) | 0.6 .. 1.2 | 0.6 .. 1.4 |
+| `chest` (Chest) | 0.6 .. 1.25 | 0.6 .. 1.4 |
 | `shoulders` (Shoulders) | 0.88 .. 1.05 | 0.88 .. 1.18 |
 | `waist` (Waist) | 0.85 .. 1.05 | 0.82 .. 1.15 |
 | `hips` (Hips) | 0.9 .. 1.15 | 0.85 .. 1.2 |
 | `legs` (Leg length) | 0.98 .. 1.14 | 0.92 .. 1.14 |
 | `arms` (Arms) | 0.82 .. 1.05 | 0.82 .. 1.25 |
-| `head` (Head size) | 1 .. 1.12 | 0.9 .. 1.12 |
+| `head` (Head size) | 0.95 .. 1.12 | 0.9 .. 1.12 |
 | `eyeSize` (Eye size) | 1.05 .. 1.3 | 0.9 .. 1.3 |
 | `noseSize` (Nose) | 0.7 .. 1.1 | 0.7 .. 1.25 |
 | `smile` (Expression) | 0.2 .. 0.9 | -0.6 .. 0.9 |

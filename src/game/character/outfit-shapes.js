@@ -71,3 +71,28 @@ function oxNet(X,D,o){
   for(let j=0;j<=rows;j++){ const yd=0.53-j*0.075, P=[]; for(let i=0;i<=cols;i++) P.push(pt(yd,a0+(a1-a0)*i/cols)); out.push(solid(sweepTube(P,P.map(()=>0.0042),4,{cap:'round',rings:sg(14)}),o.col)); }
   for(let i=0;i<=cols;i++){ const a=a0+(a1-a0)*i/cols, P=[]; for(let j=0;j<=rows;j++) P.push(pt(0.53-j*0.075,a)); out.push(solid(sweepTube(P,P.map(()=>0.0042),4,{cap:'round',rings:sg(10)}),o.col)); }
   return out; }
+/* oxRuff(X,D,o)     torso frame: a stack of wide frilled rings round the neck, o = {col, col2, r, n}
+   oxTripod(X,D,o)   torso frame: a folded surveyor's tripod strapped across the back (three splayed legs, a brass head above the shoulder), o = {col, brass, len}
+   oxBanner(X,D,o)   torso frame: a rod up the back with a long cloth banner streaming from its top and a disc on it, o = {col, disc, rod, len}
+   oxFringe(X,D,o)   torso frame: many hanging strips round the shoulders like a kelp cloak, o = {cols, n, len, w}
+   owns (third block): oxRuff, oxTripod, oxBanner, oxFringe. */
+function oxRuff(X,D,o){
+  const {sg}=X, TK=D.TK, r=o.r||0.13, out=[];
+  for(let i=0;i<(o.n||3);i++) out.push(solid(ofRingAt([0,0.545*TK+0.006-i*0.014,0.003],[0,1,0],r*(1+0.16*i),0.02-0.002*i,sg(8)),i%2?o.col2:o.col));
+  return out; }
+function oxTripod(X,D,o){
+  const {sg}=X, TK=D.TK, zb=torsoSize(X,D,0.3).rzBack+0.06, ap=[0.1,0.55*TK+(o.len||0.34),zb+0.03], out=[];
+  for(const f of [[-0.24,0.0,zb+0.02],[0.2,0.02,zb+0.02],[-0.02,-0.04,zb+0.14]]){ const d=new THREE.Vector3(f[0]-ap[0],f[1]-ap[1],f[2]-ap[2]), L=d.length(), g=new THREE.CylinderGeometry(0.013,0.017,L,sg(7));
+    g.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()))); g.translate((ap[0]+f[0])/2,(ap[1]+f[1])/2,(ap[2]+f[2])/2); out.push(solid(g,o.col)); }
+  out.push(solid(new THREE.CylinderGeometry(0.04,0.04,0.05,sg(10)).translate(ap[0],ap[1]+0.025,ap[2]),o.brass),solid(new THREE.CylinderGeometry(0.018,0.018,0.1,sg(8)).rotateX(Math.PI/2).translate(ap[0],ap[1]+0.075,ap[2]-0.04),o.brass),solid(ofRingAt([ap[0],ap[1]-0.12,ap[2]],[0,1,0.2],0.032,0.006,sg(6)),o.brass),solid(ofRingAt([ap[0]-0.02,ap[1]-0.3,ap[2]+0.03],[0,1,0.3],0.045,0.006,sg(6)),o.brass));
+  return out; }
+function oxBanner(X,D,o){
+  const {sg}=X, TK=D.TK, zb=torsoSize(X,D,0.3).rzBack+0.07, top=0.55*TK+(o.len||0.62), out=[];
+  out.push(solid(sweepTube([[0,0.06*TK,zb],[0,0.3*TK,zb],[0,top,zb]],[0.011,0.011,0.009],sg(6),{cap:'round',rings:sg(12)}),o.rod||0x5a3a22),solid(csph(0.02,sg(7),sg(5)).translate(0,top+0.012,zb),o.rod||0x5a3a22));
+  out.push(pc(ofRibbon([[0.01,top-0.02,zb+0.004],[0.1,top-0.15,zb+0.03],[0.17,top-0.32,zb+0.02],[0.2,top-0.5,zb+0.01]],u=>0.2*(1-0.25*u),{up:[0,0,1],seg:sg(14),th:0.006}),(x,y,z,c)=>{ c.set(o.col); const dx=x-0.08, dy=y-(top-0.17); if(dx*dx+dy*dy<0.0036) c.set(o.disc); }));
+  return out; }
+function oxFringe(X,D,o){
+  const {sg}=X, TK=D.TK, s=torsoSize(X,D,0.5), n=o.n||16, out=[];
+  for(let i=0;i<n;i++){ const a=i/n*TAU, L=(o.len||0.5)*(0.7+0.3*Math.abs(Math.sin(i*2.1))), rx=s.rx+0.045, rz=(Math.cos(a)>0?s.rzBack:s.rz)+0.045, sw=0.025*Math.sin(i*1.7), P=[[Math.sin(a)*rx*0.8,0.53*TK,Math.cos(a)*rz*0.8],[Math.sin(a)*rx,0.5*TK,Math.cos(a)*rz],[Math.sin(a)*(rx+0.03)+sw,0.5*TK-L*0.5,Math.cos(a)*(rz+0.03)],[Math.sin(a)*(rx+0.05)+sw*2,0.5*TK-L,Math.cos(a)*(rz+0.05)]], cols=o.cols;
+    out.push(pc(ofRibbon(P,o.w||0.05,{up:[Math.sin(a),0,Math.cos(a)],seg:sg(8),th:0.004}),(x,y,z,c)=>{ c.set(cols[(i+Math.floor((0.5*TK-y)*10))%cols.length]); })); }
+  return out; }

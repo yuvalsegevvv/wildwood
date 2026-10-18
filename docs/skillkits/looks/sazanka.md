@@ -67,19 +67,19 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 
 ### Recommended setup (reference, female)
 
-**`sazanka`**: The courier as drawn: small, long-legged, narrow-eyed.
+**`sazanka`**: The courier as drawn: lean and long-limbed with a runner's legs.
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 0.95 |
-| `build` (Build) | 0.9 |
-| `chest` (Chest) | 0.85 |
-| `shoulders` (Shoulders) | 0.93 |
-| `waist` (Waist) | 0.88 |
+| `height` (Height) | 1 |
+| `build` (Build) | 0.98 |
+| `chest` (Chest) | 0.8 |
+| `shoulders` (Shoulders) | 1 |
+| `waist` (Waist) | 0.85 |
 | `torso` (Torso length) | 0.97 |
 | `legs` (Leg length) | 1.12 |
-| `thighs` (Thighs) | 0.95 |
-| `arms` (Arms) | 0.9 |
+| `thighs` (Thighs) | 1.2 |
+| `arms` (Arms) | 1 |
 | `neck` (Neck) | 0.95 |
 | `hands` (Hands) | 0.95 |
 | `feet` (Feet) | 0.95 |
@@ -99,6 +99,8 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `blush` (Blush) | 0.4 |
 | `earSize` (Ear size) | 1.15 |
 | `undertone` (Skin undertone) | 0.2 |
+| `hips` (Hips) | 1 |
+| `head` (Head size) | 1 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -106,11 +108,10 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 
 | Slider | Range | Base model |
 |---|---|---|
-| `height` (Height) | 0.92 .. 1.04 | 0.92 .. 1.08 |
+| `height` (Height) | 0.92 .. 1.05 | 0.92 .. 1.08 |
 | `build` (Build) | 0.88 .. 1.05 | 0.88 .. 1.18 |
 | `chest` (Chest) | 0.6 .. 1.1 | 0.6 .. 1.4 |
 | `shoulders` (Shoulders) | 0.88 .. 1.05 | 0.88 .. 1.18 |
-| `thighs` (Thighs) | 0.85 .. 1.1 | 0.85 .. 1.25 |
 | `arms` (Arms) | 0.82 .. 1.1 | 0.82 .. 1.25 |
 | `neck` (Neck) | 0.85 .. 1.1 | 0.85 .. 1.2 |
 | `hands` (Hands) | 0.85 .. 1.1 | 0.85 .. 1.2 |

@@ -64,22 +64,22 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 
 ### Recommended setup (reference, male)
 
-**`pell`**: The night-fisher as drawn: lean, long-armed and squinting.
+**`pell`**: The night-fisher as drawn: short, barrel-chested and long in the arm, a little stooped.
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 1.03 |
-| `build` (Build) | 0.94 |
-| `chest` (Chest) | 0.9 |
-| `shoulders` (Shoulders) | 0.98 |
-| `waist` (Waist) | 0.92 |
-| `torso` (Torso length) | 1 |
-| `legs` (Leg length) | 1.06 |
-| `thighs` (Thighs) | 0.94 |
-| `arms` (Arms) | 1.08 |
-| `neck` (Neck) | 1.05 |
-| `hands` (Hands) | 1.08 |
-| `feet` (Feet) | 1 |
+| `height` (Height) | 0.93 |
+| `build` (Build) | 1.12 |
+| `chest` (Chest) | 1.15 |
+| `shoulders` (Shoulders) | 1 |
+| `waist` (Waist) | 1.12 |
+| `torso` (Torso length) | 0.96 |
+| `legs` (Leg length) | 0.92 |
+| `thighs` (Thighs) | 0.95 |
+| `arms` (Arms) | 1.2 |
+| `neck` (Neck) | 0.88 |
+| `hands` (Hands) | 1.18 |
+| `feet` (Feet) | 1.15 |
 | `jaw` (Jaw width) | 1.12 |
 | `chin` (Chin) | 1.15 |
 | `cheeks` (Cheeks) | 0.8 |
@@ -95,6 +95,7 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `blush` (Blush) | 0.5 |
 | `earSize` (Ear size) | 1.15 |
 | `eyeTilt` (Eye tilt) | -0.2 |
+| `head` (Head size) | 1.05 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -102,15 +103,12 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 
 | Slider | Range | Base model |
 |---|---|---|
-| `height` (Height) | 0.96 .. 1.08 | 0.92 .. 1.08 |
-| `build` (Build) | 0.88 .. 1.05 | 0.88 .. 1.18 |
-| `chest` (Chest) | 0.7 .. 1.15 | 0.6 .. 1.4 |
-| `waist` (Waist) | 0.82 .. 1.05 | 0.82 .. 1.15 |
+| `build` (Build) | 0.88 .. 1.17 | 0.88 .. 1.18 |
+| `chest` (Chest) | 0.7 .. 1.2 | 0.6 .. 1.4 |
 | `hips` (Hips) | 0.88 .. 1.1 | 0.85 .. 1.2 |
-| `legs` (Leg length) | 0.98 .. 1.14 | 0.92 .. 1.14 |
-| `arms` (Arms) | 0.9 .. 1.15 | 0.82 .. 1.25 |
-| `neck` (Neck) | 0.9 .. 1.15 | 0.85 .. 1.2 |
-| `head` (Head size) | 0.95 .. 1.08 | 0.9 .. 1.12 |
+| `arms` (Arms) | 0.9 .. 1.25 | 0.82 .. 1.25 |
+| `neck` (Neck) | 0.85 .. 1.15 | 0.85 .. 1.2 |
+| `head` (Head size) | 0.95 .. 1.1 | 0.9 .. 1.12 |
 | `hairLength` (Hair length) | 0.8 .. 1.2 | 0.7 .. 1.35 |
 | `hairVolume` (Hair volume) | 0.9 .. 1.15 | 0.9 .. 1.25 |
 

@@ -64,19 +64,19 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 
 ### Recommended setup (reference, male)
 
-**`genzo`**: The gate-keeper as drawn: broad, thick-necked and calm.
+**`genzo`**: The gate-keeper as drawn: short, a deep chest and a narrow waist, heavy-shouldered.
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 1.04 |
-| `build` (Build) | 1.1 |
-| `chest` (Chest) | 1.15 |
-| `shoulders` (Shoulders) | 1.12 |
-| `waist` (Waist) | 1.02 |
+| `height` (Height) | 0.95 |
+| `build` (Build) | 1.12 |
+| `chest` (Chest) | 1.3 |
+| `shoulders` (Shoulders) | 1.18 |
+| `waist` (Waist) | 0.85 |
 | `torso` (Torso length) | 1 |
-| `legs` (Leg length) | 0.98 |
-| `thighs` (Thighs) | 1.1 |
-| `arms` (Arms) | 1.12 |
+| `legs` (Leg length) | 0.95 |
+| `thighs` (Thighs) | 1.15 |
+| `arms` (Arms) | 1.25 |
 | `neck` (Neck) | 1.1 |
 | `hands` (Hands) | 1.1 |
 | `feet` (Feet) | 1.05 |
@@ -94,6 +94,8 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `lips` (Lips) | 0.9 |
 | `earSize` (Ear size) | 1.15 |
 | `undertone` (Skin undertone) | 0.3 |
+| `hips` (Hips) | 0.9 |
+| `head` (Head size) | 1.05 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -101,11 +103,8 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 
 | Slider | Range | Base model |
 |---|---|---|
-| `height` (Height) | 0.98 .. 1.08 | 0.92 .. 1.08 |
 | `build` (Build) | 1 .. 1.18 | 0.88 .. 1.18 |
 | `chest` (Chest) | 0.9 .. 1.35 | 0.6 .. 1.4 |
-| `waist` (Waist) | 0.9 .. 1.15 | 0.82 .. 1.15 |
-| `hips` (Hips) | 0.92 .. 1.2 | 0.85 .. 1.2 |
 | `legs` (Leg length) | 0.92 .. 1.08 | 0.92 .. 1.14 |
 | `arms` (Arms) | 0.95 .. 1.25 | 0.82 .. 1.25 |
 | `neck` (Neck) | 0.95 .. 1.2 | 0.85 .. 1.2 |

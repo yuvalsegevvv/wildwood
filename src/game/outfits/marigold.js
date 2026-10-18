@@ -271,3 +271,6 @@ OUTFITS.marigold=oxPlus(OUTFITS.marigold,(X,D)=>({   // face round 5: a sunny ro
   mark:F=>oxMarks(F,[{t:'cheek',col:0xf08a90},{t:'freckles',col:0xb06a48}]),
   hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xffc23a}]),
   kit:{eyes:{iris:1.15,hl:2,lash:0.9}}}));
+oxTune('marigold',{height:1.02,build:1.0,chest:1.2,waist:0.9,hips:1.1,thighs:1.1,legs:1.1,arms:0.95,head:1.0,neck:1.0,hands:1.0,feet:1.0,shoulders:0.95});
+OUTFITS.marigold=oxPlus(OUTFITS.marigold,(X,D)=>({   // uniqueness round 3: a taller, curvier and cheerful figure inside a collar of big flower petals
+  torso:()=>oxFringe(X,D,{cols:[0xffb62e,0xff8a3a,0xffd45a],n:14,len:0.17,w:0.1})}));
