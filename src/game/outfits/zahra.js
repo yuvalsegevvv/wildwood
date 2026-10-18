@@ -80,3 +80,8 @@ OUTFITS.zahra=(function(){
     };
   };
 })();
+OUTFITS.zahra=oxPlus(OUTFITS.zahra,(X,D)=>({   // round 5: a layered gold bead collar, gold shoulder plates, a lapis cloak with sun rays, gold sash tails
+  torso:()=>oxBeads(X,D,{col:0xffd24a,col2:0x2b6aa8,n:24,r:0.0135,drop:0.22}),
+  shoulder:sd=>oxPauldron(X,D,{col:0xe8c050,trim:0x2b6aa8,r:0.068}),
+  hips:()=>oxSash(X,D,{col:0xe8c050,col2:0x2b6aa8,len:1.05,side:-1}),
+  cos:{cape:{col:0x2b6aa8,trim:0xffd24a,len:0.95,pat:'rays',mantle:0}}}));

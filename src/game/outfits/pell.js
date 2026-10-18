@@ -80,3 +80,5 @@ OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 4: a long oilskin cloak wi
   torso:()=>oxCoil(X,D,{col:0x8a7a44,col2:0x2a2420,dir:-1}),
   hips:()=>oxSash(X,D,{col:0xb8a258,col2:0x2a2420,len:1.0,side:1}),
   cos:{cape:{col:0x3f5a52,trim:0xd8c070,len:0.85,pat:'waves',mantle:0}}}));
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 5: a woven creel on the back with a rope strap
+  torso:()=>oxPack(X,D,{col:0x8a7a44,trim:0x2a2420,w:0.1,h:0.11})}));

@@ -1,12 +1,12 @@
 //@ Reusable extra pieces for the signature sets (scarf, apron, sash tails, rope coil, shoulder plate, hip lantern) and oxPlus, which adds them to a set's kit without editing its hooks
 /* oxPlus(base, fn): OUTFITS.<id> = oxPlus(OUTFITS.<id>, (X,D,k) => ({torso, hips, shoulder, extras: cosmetics})) wraps a set so each named hook returns what the set's own hook returns plus the pieces here
    (the set's own pieces are untouched; `cos` = the o of ofCosmetics, a cape and / or an aura). The pieces are drawn in torso / hips / shoulder frames like the hooks: y up, the front is -z, torso heights are design
-   heights (times D.TK), the hips hang down from y = 0, the shoulder frame has its origin at the joint with y down the arm. owns: oxPlus, oxScarf, oxApron, oxSash, oxCoil, oxPauldron, oxLantern.
+   heights (times D.TK), the hips hang down from y = 0, the shoulder frame has its origin at the joint with y down the arm. owns: oxPlus, oxScarf, oxApron, oxSash, oxCoil, oxPauldron, oxLantern, oxBeads, oxSatchel, oxPack, oxMask.
    used by: game/outfits/{sazanka,ogden,tamsin,pell,sabir}.js (the last line of each). test: tools/outfit-smoke.js, tools/cosmetic-items-smoke.js */
 function oxPlus(base,fn){
   return function(X,D){
     const k=base(X,D), m=fn(X,D,k);
-    for(const hook of ['torso','hips','shoulder']){ const add=m[hook]; if(!add) continue; const old=k[hook]; k[hook]=(...a)=>(old?old(...a)||[]:[]).concat(add(...a)); }
+    for(const hook of ['torso','hips','shoulder','head']){ const add=m[hook]; if(!add) continue; const old=k[hook]; k[hook]=(...a)=>(old?old(...a)||[]:[]).concat(add(...a)); }
     if(m.cos){ const old=k.extras; k.extras=(rig,XX,has)=>{ if(old) old(rig,XX,has); ofCosmetics(rig,XX,has,m.cos); }; }
     return k; };
 }
@@ -50,4 +50,33 @@ function oxLantern(X,D,o){
   out.push(solid(sweepTube([[x*0.88,0.0,0],[x,-0.05,0.0]],[0.0025,0.0025],4,{cap:'round',rings:3}),o.frame),
     solid(vbox(0.05,0.008,0.05,x,-0.056,0),o.frame), solid(vbox(0.05,0.008,0.05,x,-0.13,0),o.frame), solid(csph(0.019,sg(8),sg(6)).translate(x,-0.093,0),o.glow));
   for(const [a,b] of [[1,1],[1,-1],[-1,1],[-1,-1]]) out.push(solid(vbox(0.005,0.074,0.005,x+a*0.022,-0.093,b*0.022),o.frame));
+  return out; }
+// a loop of large beads hanging round the neck onto the chest (a prayer-bead necklace, gold beads); o = {col, col2 (every fifth bead), n, r, drop}; the torso frame
+function oxBeads(X,D,o){
+  const {sg}=X, TK=D.TK, out=[], n=o.n||20;
+  for(let i=0;i<n;i++){ const a=i/n*TAU, fr=Math.max(0,Math.cos(a)), yd=0.57-(o.drop||0.2)*Math.pow(fr,1.4), s=torsoSize(X,D,clamp(yd,0.1,0.6)), R=s.rx*0.62+0.034;
+    const z=fr>0?-(s.rz*0.55+0.03+0.03*fr+R*0.2):Math.cos(a)*(R*0.8);   // front: out over the chest; back: round the neck
+    out.push(solid(csph(o.r||0.0145,sg(8),sg(6)).translate(Math.sin(a)*R,yd*TK,z),i%5===0?o.col2:o.col)); }
+  return out; }
+// a small satchel with a flap and a strap at one hip; o = {col, trim, side}: the hips frame
+function oxSatchel(X,D,o){
+  const {sg}=X, s=torsoSize(X,D,0.03), x=o.side*(s.rx+0.05), out=[];
+  out.push(solid(vbox(0.085,0.075,0.05,x,-0.08,-0.01),o.col), solid(vbox(0.09,0.03,0.054,x,-0.052,-0.01),o.trim), solid(vbox(0.012,0.018,0.006,x,-0.062,-0.04),o.trim));
+  out.push(pc(ofRibbon([[x*0.5,0.03,-s.rz*0.5],[x*0.85,-0.01,-0.012],[x,-0.045,-0.01]],0.02,{up:[0,0,-1],seg:6,th:0.004}),(xx,y,z,c)=>c.set(o.trim)));
+  if(o.herbs) for(let i=0;i<3;i++) out.push(solid(new THREE.ConeGeometry(0.014,0.07,5).rotateX(Math.PI).translate(x+(i-1)*0.022,-0.14,0.01*i),o.herbs));
+  return out; }
+// a woven basket or pack on the lower back with two straps; o = {col, trim, w, h}: the torso frame
+function oxPack(X,D,o){
+  const {sg}=X, TK=D.TK, zb=torsoSize(X,D,0.28).rzBack+0.05, out=[];
+  out.push(pc(csph(1,sg(12),sg(8)).scale(o.w||0.09,o.h||0.1,0.06).translate(0,0.22*TK,zb),(x,y,z,c)=>{ c.set(o.col); if(((y*90+x*40)%1+1)%1<0.18) c.set(o.trim); }));
+  out.push(solid(ofRingAt([0,0.22*TK+(o.h||0.1)*0.8,zb],[0,1,0],(o.w||0.09)*0.8,0.007,sg(6)),o.trim));
+  for(const sd of [-1,1]) out.push(pc(ofRibbon([[sd*0.07,0.5*TK,zb-0.05],[sd*0.085,0.35*TK,zb-0.03],[sd*0.075,0.24*TK,zb-0.015]],0.026,{up:[0,0,1],seg:8,th:0.005}),(x,y,z,c)=>c.set(o.trim)));
+  return out; }
+// a fox / spirit half-mask pushed up on the side of the head with two ears and painted marks; o = {col, mark, side}: the head frame
+function oxMask(X,D,o){
+  const {sg}=X, sx=o.side, out=[], cx=sx*0.098, cy=0.045, cz=-0.03;
+  out.push(solid(csph(1,sg(14),sg(10)).scale(0.013,0.074,0.062).translate(cx,cy,cz),o.col));
+  for(const dz of [-0.03,0.03]) out.push(solid(new THREE.ConeGeometry(0.019,0.055,6).rotateZ(sx*-0.35).translate(cx+sx*0.006,cy+0.088,cz+dz),o.col), solid(new THREE.ConeGeometry(0.009,0.03,5).rotateZ(sx*-0.35).translate(cx+sx*0.0105,cy+0.082,cz+dz),o.mark));
+  for(const [dy,dz,w] of [[0.014,-0.03,0.02],[0.014,0.03,0.02],[-0.03,0,0.03]]) out.push(solid(csph(1,sg(8),sg(6)).scale(0.003,0.008,w*0.45).translate(cx+sx*0.011,cy+dy,cz+dz),o.mark));
+  out.push(solid(csph(1,sg(8),sg(6)).scale(0.004,0.02,0.0035).translate(cx+sx*0.011,cy-0.018,cz),o.mark));
   return out; }

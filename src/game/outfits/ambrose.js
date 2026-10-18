@@ -346,3 +346,7 @@ OUTFITS.ambrose=(function(){
     };
   };
 })();
+OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // round 5: an herb satchel with hanging bundles, a bead string of dried seeds, a mossy leaf mantle
+  torso:()=>oxBeads(X,D,{col:0xcdbd8b,col2:0x4f7a6a,n:18,r:0.012,drop:0.2}),
+  hips:()=>oxSatchel(X,D,{col:0x6a5a3a,trim:0x4f7a6a,herbs:0x8bc5a4,side:1}),
+  cos:{cape:{col:0x4f7a6a,trim:0xdff5c0,len:0.45,pat:'petals',mantle:1}}}));

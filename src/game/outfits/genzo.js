@@ -80,3 +80,7 @@ OUTFITS.genzo=(function(){
     };
   };
 })();
+OUTFITS.genzo=oxPlus(OUTFITS.genzo,(X,D)=>({   // round 5: a heavy bronze prayer-bead necklace, a gate-keeper's wind mantle (vermilion with white rays), a bronze plate on the left shoulder
+  torso:()=>oxBeads(X,D,{col:0xd2a24a,col2:0xb8452a,n:22,r:0.017,drop:0.26}),
+  shoulder:sd=>sd<0?oxPauldron(X,D,{col:0xd2a24a,trim:0xf3ead2,r:0.075}):[],
+  cos:{cape:{col:0xb8452a,trim:0xf3ead2,len:0.5,pat:'rays',mantle:1}}}));
