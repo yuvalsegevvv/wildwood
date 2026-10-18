@@ -24,13 +24,13 @@ function pickBoss(){
   BOSS.m=best; const s=best&&best.bs||{};
   BOSS.engaged=!!s.engaged; BOSS.phase=s.phase||1; BOSS.immune=!!s.immune; BOSS.enraged=!!s.enraged; BOSS.stunned=!!s.stunned; BOSS.aux=s.aux||0; BOSS.mode=s.mode||0;
 }
-const TELE_COL={cleave:0xff5a8a,breath:0x8fdcff,root:0xff3a2a,slam:0xff9a2a,icefall:0x9fe0ff,geyser:0x3ac8e8,gust:0xc8f0ff,line:0xfff07a,mark:0xff4a2a,prison:0x7fd8ff,rake:0xffc04a,swoop:0xffe08a,rockfall:0xb8905a,quake:0xc8a060,
+const TELE_COL={cleave:0xff5a8a,breath:0x8fdcff,root:0xff3a2a,slam:0xff9a2a,icefall:0x9fe0ff,geyser:0x3ac8e8,gust:0xc8f0ff,line:0xfff07a,mark:0xff4a2a,prison:0x7fd8ff,rake:0xffc04a,light:0xfff0a0,swoop:0xffe08a,rockfall:0xb8905a,quake:0xc8a060,
   spore:0xa8e060,puff:0xe0f0a0,pulse:0x9ae050,vent:0xeaf6f0,wail:0xb8c8f0,snuff:0x5a6a90,blast:0xff8a30};   // the last seven: the dungeon bosses' circles (a cloud's warning, a puffball, Amanita's pulse, a steam vent, Haugbui's wail, a lamp going dark, Garrick's powder keg going off)
 function addTele(id,kind,x,z,r,dur,face,half){
   if(BOSS.tele.has(id)) return;
   const el=BOSS.m&&BOSS.m.def.el, col=kind==='donut'?(el==='fire'?0xff7a2a:0x8fdcff):TELE_COL[kind]||0xff3a2a, own=[];
   let fg=teleFill, eg=teleEdge, follow=null;
-  if(kind==='cleave'||kind==='breath'||kind==='rake'){ const ph=face+Math.PI/2; fg=new THREE.CircleGeometry(1,24,ph-half,half*2).rotateX(-Math.PI/2); eg=new THREE.RingGeometry(0.9,1,24,1,ph-half,half*2).rotateX(-Math.PI/2); own.push(fg,eg); }
+  if(kind==='cleave'||kind==='breath'||kind==='rake'||kind==='light'){ const ph=face+Math.PI/2; fg=new THREE.CircleGeometry(1,24,ph-half,half*2).rotateX(-Math.PI/2); eg=new THREE.RingGeometry(0.9,1,24,1,ph-half,half*2).rotateX(-Math.PI/2); own.push(fg,eg); }
   else if(kind==='line'){ fg=eg=teleLine; }
   else if(kind==='donut'){ fg=new THREE.RingGeometry(half/r,1,56).rotateX(-Math.PI/2); own.push(fg); }
   else if(kind==='mark'||kind==='prison') follow=String(half);
@@ -38,7 +38,7 @@ function addTele(id,kind,x,z,r,dur,face,half){
   const y=getH(x,z)+0.08; fill.position.set(x,y,z); edge.position.set(x,y+0.01,z);
   if(kind==='line'){ fill.rotation.y=edge.rotation.y=face; fill.scale.set(half,1,0.01); edge.scale.set(half,1,r); }
   else { edge.scale.setScalar(r); fill.scale.setScalar(kind==='donut'?r:0.01); }
-  if(kind!=='line'&&kind!=='donut'&&kind!=='cleave'&&kind!=='breath'&&kind!=='rake'&&!follow) fxxRune(x,y,z,r*0.8,col,dur);   // fx-extra: a glyph circle turns inside the warning
+  if(kind!=='line'&&kind!=='donut'&&kind!=='cleave'&&kind!=='breath'&&kind!=='rake'&&kind!=='light'&&!follow) fxxRune(x,y,z,r*0.8,col,dur);   // fx-extra: a glyph circle turns inside the warning
   scene.add(fill,edge); BOSS.tele.set(id,{x,z,r,t:0,dur,kind,fill,edge,half,follow,own,face});
   if(SND.ready){ const s=spatial(x,z,10,60); if(s) noiseHit({bus:'ui',filter:'lowpass',ff:160,dur:0.6,vol:0.18*s.gain,pan:s.pan}); }
 }
@@ -87,6 +87,7 @@ function endTele(id,fired,x,z){
 }
 // fx-pool: what a telegraph going off throws up, by shape: a cone or a line spits sparks along its reach, a circle a flare, sparks and a shockwave of them
 function fxBossBlast(e,y){
+  if(e.kind==='light') return;   // the Gloam Warden's beam is only drawn (a cone of light that hurts nobody)
   const col=TELE_COL[e.kind]||0xff7a2a, k=Math.min(2,e.r/6);
   if(e.kind==='cleave'||e.kind==='breath'||e.kind==='rake'){
     const fx=-Math.sin(e.face), fz=-Math.cos(e.face);

@@ -8,6 +8,7 @@
      donut   donut                            between half (the safe middle) and r of (x,z)
      mark    mark prison                      a ring that follows player number half until it goes off (mark: everyone within r of that player, the player
                                               only half as hard; prison: only that player)
+   light   a cone drawn in gold that hurts nobody (the Gloam Warden's beam: stand in it); dmg 0
    addTeleS returns the telegraph: give it e.hit(p) (an extra effect on each player it hits) or e.done(e) (after it went off).
    Zones ('zone' / 'zend'): ember (a fire pool), whirl (a whirlpool: the client pulls you in), whiteout (a safe circle that closes from r to b), blizzard (the
    arena, after a windup a: hurts anyone not next to a live warm core). Walls ('wall'): a tidal wave rolling across the arena with a gap in it. Orbs ('proj',

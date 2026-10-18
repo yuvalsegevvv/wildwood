@@ -1,9 +1,9 @@
-// Headless test of the signature mechanics of the five reworked bosses (Glass Guardian, Mountain Golem, Captain Dredge, Sand Wyrm, Rootwarden), straight from src/ (no build):
+// Headless test of the signature mechanics of the ten reworked bosses (Glass Guardian, Mountain Golem, Captain Dredge, Sand Wyrm, Rootwarden; Gloam Warden, Gryphon Queen, Akaoni, Kyuubi, Carapax), straight from src/ (no build):
 // each mechanic is driven by hand and its effect on the players or on the boss is checked (the mirror throws a blow back, the shell soaks and cracks, the chain pulls and is cut,
 // the sand strikes whoever stands still, the seasons turn). boss-smoke.js checks that every move happens in a whole fight; this one checks what the moves DO.
 // Usage: node tools/boss-rework-smoke.js
 const {loadServer}=require('./load');
-const {api:W,x}=loadServer({dev:true,send(){}},['BOSSES','getH','BOSS_KITS','monK','golemCrackS','wyrmListenS','dredgeHookS','dredgeBilgeTickS','glassStanceS','glassPrismsS','glassSplitS','spawnAddsS','spawnMonS','S']);
+const {api:W,x}=loadServer({dev:true,send(){}},['BOSSES','getH','BOSS_KITS','monK','golemCrackS','wyrmListenS','dredgeHookS','dredgeBilgeTickS','glassStanceS','glassPrismsS','glassSplitS','spawnAddsS','spawnMonS','wardenDarkS','wardenInBeamS','gryphStrafeS','gryphStragglerS','gryphCullS','foxBeamsS','oniBrandS','oniHopsS','oniToriiS','oniEmbersS','foxTrailS','foxBlinkS','tideMoltS','tideClampS','tideWaveS','S']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const keep=()=>{ for(const p of W.players.values()){ p.maxHp=1e7; p.hp=1e7; p.dead=false; } };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); keep(); } };
@@ -74,6 +74,67 @@ const hurt=p=>1e7-p.hp;
   m.hp=m.maxHp*0.7; B.k.seasonT=0.1; run(put,2.5,null); B.k.sT=0; run(put,0.2,null);
   ok('roots: a bloom left standing when spring ends heals the Warden',!B.k.bloom&&m.hp>m.maxHp*0.7);
   B.k.season=3; B.k.seasonT=0.1; run(put,2.6,null); const bl=B.k.bloom; bl.dead=true; run(put,0.2,null); ok('roots: a bloom cut down stuns the Warden',B.stunT>0);
+  W.setPos('a',[0,5,0,0,0,0]); W.setPos('b',[2,5,0,0,0,0]); tick(3);
+}
+{ // ---- Gloam Warden: in the dark hour whoever is outside the beam and the lanterns burns; the beam also makes him weaker
+  const B=boss('gloamwarden'), m=B.m, A=B.A, py=x.getH(A.x,A.z), put=engage(B,[6,0],[-14,0]); B.k.darkT=99; B.k.beamT=99; B.k.gloomT=99; B.k.wailT=99; B.k.slamT=99; B.stunT=0;
+  const place=()=>{ W.setPos('a',[A.x+6,py,A.z,0,0,0]); W.setPos('b',[A.x-14,py,A.z+14,0,0,0]); };
+  x.wardenDarkS(B,m,{x:A.x+6,z:A.z}); B.k.beamDir=0; B.k.dFlip=[]; const lamps=B.k.lamps.slice();   // (the beam is pointed at a and stands still)
+  ok('warden: the dark hour sets two soul lanterns and the dark mode',B.mode===6&&lamps.length===2);
+  for(const lm of lamps){ lm.x=A.x+40; lm.z=A.z+40; }   // (out of the way: only the beam shelters)
+  const hb=pb().hp, ha=pa().hp; for(let i=0;i<40;i++){ place(); W.tick(0.05); } 
+  ok('warden: outside the beam (and the lanterns) you burn far more than inside it',(hb-pb().hp)>0&&(hb-pb().hp)>(ha-pa().hp),'a lost '+(ha-pa().hp)+', b lost '+(hb-pb().hp));
+  ok('warden: the beam itself is a cone that finds a and not b',x.wardenInBeamS(B,m,pa())&&!x.wardenInBeamS(B,m,pb()));
+  const h0=m.hp; m.hp-=1000; x.BOSS_KITS.gloamwarden.hit(B,m,pa(),1000); ok('warden: a blow struck from inside the beam does 25% more',h0-m.hp>1200&&h0-m.hp<1300,'took '+(h0-m.hp));
+  const h1=m.hp; m.hp-=1000; x.BOSS_KITS.gloamwarden.hit(B,m,pb(),1000); ok('warden: a blow from the dark does not',h1-m.hp===1000);
+  B.k.dark=1.4; B.k.flash=false; run(null,0.1,place); ok('warden: 1.5 s before the end the beam flashes (a cone that does hurt)',B.tele.some(e=>e.kind==='rake'&&e.dmg>0));
+  B.k.dark=0.1; run(null,0.4,place); ok('warden: the hour ends, the lanterns go and the mode clears',B.mode===0&&lamps.every(l=>l.remove||l.dead));
+  W.setPos('a',[0,5,0,0,0,0]); W.setPos('b',[2,5,0,0,0,0]); tick(3);
+}
+{ // ---- Gryphon Queen: she culls the straggler, flies strafing runs along a line through them, and is spent if three passes hit nobody
+  const B=boss('gryphon'), m=B.m, A=B.A, py=x.getH(A.x,A.z); engage(B,[4,0],[-9,3]); B.k.rakeT=99; B.k.swoopT=99; B.k.stormT=99; B.k.strafeT=99; B.stunT=0;
+  ok('gryphon: the straggler is the one farthest from the others',x.gryphStragglerS([{x:0,z:0},{x:2,z:0},{x:30,z:0}]).x===30);
+  B.tele=[]; x.gryphCullS(B,m,[{x:A.x,z:A.z},{x:A.x+3,z:A.z},{x:A.x+30,z:A.z}]); const cull=B.tele.find(e=>e.kind==='swoop');
+  ok('gryphon: she circles the huddle (the middle of the two players close together)',!!cull&&Math.abs(cull.x-(A.x+1.5))<0.1);
+  B.tele=[]; x.gryphCullS(B,m,[{x:A.x,z:A.z},{x:A.x+20,z:A.z}]); ok('gryphon: spread out, there is no huddle to circle',!B.tele.length);
+  const hit=n=>{ x.gryphStrafeS(B,m); let lines=0; for(let i=0;i<n*20;i++){ if(i%38<2||i%38>=36){ W.setPos('a',[A.x+10,py,A.z,0,0,0]); W.setPos('b',[A.x-10,py,A.z,0,0,0]); } else { W.setPos('a',[A.x+10,py,A.z+12,0,0,0]); W.setPos('b',[A.x-10,py,A.z-12,0,0,0]); } tick(1); if(B.tele.some(e=>e.kind==='line')) lines++; } return lines; };
+  const lines=hit(7.2); ok('gryphon: three passes warn with a line each, all dodged, and she lands spent',lines>0&&B.k.hits===0&&B.stunT>0&&B.mode===0,'hits '+B.k.hits+' stun '+B.stunT.toFixed(1));
+  B.stunT=0; x.gryphStrafeS(B,m); for(let i=0;i<7.2*20;i++){ W.setPos('a',[A.x+10,py,A.z,0,0,0]); W.setPos('b',[A.x-10,py,A.z,0,0,0]); tick(1); }
+  ok('gryphon: standing in the line gets you hit, and then she is not spent',B.k.hits>=1&&B.stunT<=0&&B.mode===0);
+  W.setPos('a',[0,5,0,0,0,0]); W.setPos('b',[2,5,0,0,0,0]); tick(3);
+}
+{ // ---- Akaoni: a stampede of hops leaves embers, he mends in his own fire, a dead imp leaves a pool
+  const B=boss('oni'), m=B.m, put=engage(B,[8,0],[-8,3]); B.k.leapT=99; B.k.hopT=99; B.stunT=0;
+  x.oniHopsS(B,m); const z0=B.zones.length; run(put,5,null); ok('oni: the hops land and leave ember pools',B.zones.filter(z=>z.kind==='ember').length>=2||B.zones.length>z0);
+  B.tele=[]; B.q=[]; x.oniToriiS(B,m,pa()); const pillars=B.tele.filter(e=>e.kind==='line').length; B.q.forEach(e=>{ e.t=0; }); run(put,0.1,null);
+  ok('oni: the torii has two pillars at once and the lintel 0.7 s later',pillars===2&&B.tele.filter(e=>e.kind==='line').length===3);
+  B.zones=[]; B.q=[]; B.tele=[]; x.oniBrandS(B,m,[pa(),pb()]); B.q.forEach(e=>{ e.t=0; }); run(put,0.1,null);
+  ok('oni: the branded leave a fire behind them as they run',B.zones.filter(z=>z.kind==='ember').length>=2,B.zones.length+' zones');
+  B.zones=[]; B.mv=null; B.busy=0; m.hp=m.maxHp*0.5; B.zones.push({id:9999,kind:'ember',x:m.x,z:m.z,r:3,dur:30,a:0,b:0,t:0,tick:9}); const h0=m.hp; x.oniEmbersS(B,m,1); ok('oni: standing in an ember pool he mends',m.hp>h0);
+  B.zones=[]; m.hp=m.maxHp*0.5; const h1=m.hp; x.oniEmbersS(B,m,1); ok('oni: out of the fire he does not',m.hp===h1);
+  B.adds.push({dead:true,flared:false,x:m.x+20,z:m.z}); x.oniEmbersS(B,m,0.05); ok('oni: a dead imp leaves an ember pool where it fell',B.zones.some(z=>z.kind==='ember'&&z.x===m.x+20));
+  W.setPos('a',[0,5,0,0,0,0]); W.setPos('b',[2,5,0,0,0,0]); tick(3);
+}
+{ // ---- Kyuubi: the fox trail lights up your last steps, a tail burns for every ninth of her health, she steps out of the nearest spirit
+  const B=boss('kitsune'), m=B.m, A=B.A, py=x.getH(A.x,A.z), put=engage(B,[6,0],[-9,3]); B.k.volT=99; B.k.blinkT=99; B.k.beamT=99; B.k.trailT=99; B.stunT=0;
+  run(null,3.6,i=>{ W.setPos('a',[A.x+6+(i%60)*0.4-12,py,A.z,0,0,0]); W.setPos('b',[A.x-9,py,A.z+3,0,0,0]); });
+  ok('kyuubi: her footsteps are followed (a trail per player)',(B.k.trail.get('a')||[]).length>=5);
+  B.tele=[]; B.q=[]; B.busy=0; x.foxTrailS(B,m,pa()); B.q.forEach(e=>{ e.t=0; }); run(put,0.1,null);
+  ok('kyuubi: the fox trail lights the circles of your path',B.q.length===0&&B.tele.filter(e=>e.kind==='slam').length>=4,B.tele.length+' teles');
+  B.k.trail.set('a',Array.from({length:8},()=>[A.x+3,A.z])); B.tele=[]; B.q=[]; B.busy=0; x.foxTrailS(B,m,pa()); ok('kyuubi: standing still lights one circle, not eight',B.q.length===1,B.q.length+' circles');
+  m.hp=m.maxHp*0.5; const n0=B.adds.length; run(put,0.2,null); ok('kyuubi: half her health gone: five tails left and a spirit has leapt out',B.aux===5&&B.adds.length>n0,'aux '+B.aux);
+  const spN=B.adds.filter(a=>!a.dead&&!a.remove).length; B.tele=[]; x.foxBeamsS(B,m,pa()); ok('kyuubi: every living fox spirit echoes her beams with one of its own',B.tele.filter(e=>e.kind==='line').length===spN,spN+' spirits, '+B.tele.length+' teles');   // (her own three beams come later, on the queue)
+  B.tele=[]; B.busy=0; x.foxBlinkS(B,m,[pa(),pb()]); ok('kyuubi: the blink comes with two illusions that fizzle out first',B.tele.filter(e=>e.kind==='slam'&&e.dmg===0&&e.dur<1).length===2&&B.tele.filter(e=>e.kind==='slam'&&e.dmg>0).length===1); B.q=[]; B.tele=[]; B.mode=0; m.immune=false;
+  const sp=B.adds[B.adds.length-1]; sp.x=A.x+3; sp.z=A.z-3; B.k.blinkT=99; B.busy=0; x.foxBlinkS(B,m,[pa(),pb()]); ok('kyuubi: she steps out of the spirit nearest her prey, and it is spent',sp.remove===true);
+  W.setPos('a',[0,5,0,0,0,0]); W.setPos('b',[2,5,0,0,0,0]); tick(3);
+}
+{ // ---- Carapax: it molts at 75% (soft, 40% more damage), clamps a player until the claw is pried open
+  const B=boss('tide'), m=B.m, put=engage(B,[4,0],[-9,3]); B.k.waveT=99; B.k.geyT=99; B.k.clampT=99; B.stunT=0; B.k.molts=0;
+  m.hp=m.maxHp*0.7; run(put,0.2,null); ok('tide: below 75% it molts: the soft shell, and two hatchlings crawl out',B.k.molts===1&&B.k.soft>0&&B.mode===6&&B.adds.length>=2);
+  const h0=m.hp; m.hp-=1000; x.BOSS_KITS.tide.hit(B,m,pa(),1000); ok('tide: a soft shell takes 40% more',h0-m.hp>1350&&h0-m.hp<1450,'took '+(h0-m.hp));
+  B.walls=[]; B.adds=[]; x.tideWaveS(B,m); const w0=B.walls[0].speed; B.walls=[]; x.spawnAddsS(B,2); x.tideWaveS(B,m); ok('tide: living hatchlings call the tide (the wave runs faster)',B.walls[0].speed>w0+1.4,w0+' -> '+B.walls[0].speed);
+  B.walls=[]; B.k.soft=0; B.mode=0; B.busy=0; B.mv=null; x.tideClampS(B,m,{p:pa(),inside:[pa(),pb()],dp:4}); ok('tide: it clamps a player in the claw',!!B.k.clamp&&B.tele.some(e=>e.kind==='prison'));
+  x.BOSS_KITS.tide.hit(B,m,pb(),m.maxHp*x.monK(m,pb()).hp*0.05); ok('tide: enough blows pry the claw open and it reels',B.k.clamp===null&&B.stunT>0);
   W.setPos('a',[0,5,0,0,0,0]); W.setPos('b',[2,5,0,0,0,0]); tick(3);
 }
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

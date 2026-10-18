@@ -1,4 +1,4 @@
-//@ Boss move sets of the Gloamhorn: Captain Dredge, the drowned captain (cannon volleys, the anchor rake, deckhands, a tide wall, the whirl, a broadside) and the Gloam Warden (lantern beams, gloom pools, the wail ring, the soul-lantern shield)
+//@ Boss move sets of the Gloamhorn: Captain Dredge, the drowned captain (cannon volleys, the anchor rake, deckhands, a tide wall, the whirl, a broadside) and the Gloam Warden (lantern beams, gloom pools, the wail ring, the dark hour with its turning beam and soul lanterns)
 /* See boss.js for the kit contract and boss-fx.js for the moves. Numbers: a boss's hit is m.T.dmg. Phase 2 starts at 66% and phase 3 at 33% (boss.js). */
 
 // ---- Captain Dredge (level 35, in the sea caves at the foot of the cliffs) ----
@@ -111,25 +111,46 @@ function wardenSlamS(B,m,C){
   const q=C.p; castS(B,m,1.4,1.0);
   addTeleS(B,q.x,q.z,5.5,1.2,'slam',Math.round(m.T.dmg*1.8));
 }
-// phase 2: the lantern shield; three soul lanterns ring the arena, snuff them to break it (stunned for 5 s)
-function wardenShieldS(B,m){
-  const A=B.A; m.immune=true; B.mode=3; B.aux=3; B.totems=[]; spawnAddsS(B,2,A.x,A.z,9);
-  for(let i=0;i<3;i++){ const a=m.face+i/3*TAU+0.5, x=A.x+Math.sin(a)*12, z=A.z+Math.cos(a)*12; B.totems.push(spawnMonS(B.bd.totem,x,z,{x,z},true)); }
-  toastTo(null,'The Gloam Warden draws the dark in! Snuff the '+B.bd.totems+'.','bad'); ev('roar',m.id);
+// the dark hour: the lighthouse goes dark for WARDEN_DARK s and its one beam turns slowly round the hall. Anyone outside the beam, and not within WARDEN_LAMP m of a soul lantern, is hurt
+// every 0.8 s; 1.5 s before the hour ends the beam flashes where it stands and hurts whoever is still in it. Whoever stands in the beam also hits him 25% harder. The beam stops for a moment and turns back twice (the toast says when); gloom wells up behind it where it has been.
+// Enraged, it turns faster, its cones are narrower and a second beam turns opposite the first
+const WARDEN_DARK=11, WARDEN_LAMP=5.5, WARDEN_LAMP_END=3.5;   // (a lantern's light shrinks from WARDEN_LAMP to WARDEN_LAMP_END m over the hour: it is failing)
+const wardenLampR=k=>WARDEN_LAMP+(WARDEN_LAMP_END-WARDEN_LAMP)*Math.min(1,k.dT/WARDEN_DARK);
+const wardenHalf=B=>B.enraged?0.42:0.55, wardenInBeamS=(B,m,q)=>{ if(Math.hypot(q.x-m.x,q.z-m.z)>=30) return false; const a=Math.atan2(-(q.x-m.x),-(q.z-m.z)); return Math.abs(angDiff(a,B.k.beamA))<wardenHalf(B)||(B.enraged&&Math.abs(angDiff(a,B.k.beamA+Math.PI))<wardenHalf(B)); };   // (enraged, a second beam turns opposite the first)
+function wardenDarkS(B,m,p){
+  const k=B.k, A=B.A; k.dark=WARDEN_DARK; k.beamA=Math.atan2(-(p.x-m.x),-(p.z-m.z)); k.beamDir=Math.random()<0.5?1:-1; k.dTick=1.0; k.dTrail=1.0; k.dFlip=[3.6,7.4]; k.dPause=0; k.dT=0; k.flash=false;
+  B.mode=6; castS(B,m,WARDEN_DARK+0.4,2.3); ev('roar',m.id);
+  k.lamps=[]; const a0=AR(0,TAU);
+  for(let i=0;i<2;i++){ const a=a0+i*Math.PI, x=A.x+Math.sin(a)*12, z=A.z+Math.cos(a)*12, lm=spawnMonS(B.bd.totem,x,z,{x,z},true); B.adds.push(lm); k.lamps.push(lm); }
+  toastTo(null,'The lighthouse goes dark! Stay in the beam, or beside a soul lantern.','bad');
+}
+function wardenDarkEndS(B,m){
+  const k=B.k; k.dark=0; B.mode=0;
+  for(const lm of k.lamps) if(!lm.dead&&!lm.remove) removeMonS(lm);
+  k.lamps=[]; toastTo(null,'The light returns.','good');
+}
+function wardenDarkTickS(B,m,dt){
+  const k=B.k, D=m.T.dmg; k.dark-=dt; k.dT+=dt;
+  if(k.dPause>0) k.dPause-=dt; else k.beamA+=k.beamDir*(B.enraged?0.8:0.55)*dt;
+  if(k.dFlip.length&&k.dT>=k.dFlip[0]){ k.dFlip.shift(); k.dPause=0.7; k.beamDir=-k.beamDir; toastTo(null,'The beam stops... and turns back!','bad'); }
+  k.dTick-=dt; if(k.dTick<=0){ k.dTick=0.8;
+    for(const q of playersInArena(B.A,0)){ if(wardenInBeamS(B,m,q)||k.lamps.some(lm=>!lm.dead&&!lm.remove&&Math.hypot(lm.x-q.x,lm.z-q.z)<wardenLampR(k))) continue; hurtP(q,Math.round(D*0.3),m); k.burnt=(k.burnt||0)+1; }
+    addTeleS(B,m.x,m.z,30,0.85,'light',0,k.beamA,wardenHalf(B)); if(B.enraged) addTeleS(B,m.x,m.z,30,0.85,'light',0,k.beamA+Math.PI,wardenHalf(B)); }   // (the beam itself, drawn as a cone of light that hurts nobody; redrawn as it turns)
+  k.dTrail-=dt; if(k.dTrail<=0){ k.dTrail=1.6; const a=k.beamA-k.beamDir*AR(0.7,1.3), r=AR(6,18), x=m.x-Math.sin(a)*r, z=m.z-Math.cos(a)*r; const [gx,gz]=inArenaS(B.A,x,z,B.A.r-2); addZoneS(B,'gloom',gx,gz,3.5,6,0,0); }
+  if(!k.flash&&k.dark<=1.5){ k.flash=true; for(const off of B.enraged?[0,Math.PI]:[0]) addTeleS(B,m.x,m.z,30,1.5,'rake',Math.round(D*1.8),k.beamA+off,wardenHalf(B)); toastTo(null,'The lighthouse is about to flash: leave the beam!','bad'); }   // the beam ends in a flash that hurts whoever still stands in it
+  if(k.dark<=0) wardenDarkEndS(B,m);
 }
 BOSS_KITS.gloamwarden={
-  start(B){ B.k={beamT:4,gloomT:7,wailT:11,slamT:99,wheelT:99}; },
-  phase(B,m,n){ if(n===2) wardenShieldS(B,m); else { B.k.wheelT=4; B.k.slamT=6; spawnAddsS(B,3); ev('roar',m.id); } },
+  start(B){ B.k={beamT:4,gloomT:7,wailT:11,slamT:99,wheelT:99,darkT:12,dark:0,lamps:[],burnt:0}; },
+  hit(B,m,p,v){ const k=B.k; if(k.dark>0&&wardenInBeamS(B,m,p)) m.hp-=v*0.25/monK(m,p).hp; },   // (the light that keeps you alive is the light he is weakest in)
+  phase(B,m,n){ if(n===2) spawnAddsS(B,2); else { B.k.wheelT=4; B.k.slamT=6; spawnAddsS(B,3); } ev('roar',m.id); },
   tick(B,m,dt,C){
     const k=B.k;
-    if(m.immune){
-      B.totems=B.totems.filter(x=>!x.dead&&!x.remove); B.aux=B.totems.length;
-      if(!B.totems.length){ m.immune=false; B.mode=0; B.stunT=5; m.act=null; clearTeleS(B); toastTo(null,'The dark breaks! '+B.bd.short+' is stunned.','good'); return; }
-      m.hp=Math.min(m.maxHp*0.6,m.hp+m.maxHp*0.004*dt);
-    }
-    k.gloomT-=dt; k.beamT-=dt; k.wailT-=dt; k.slamT-=dt; if(B.phase>=3) k.wheelT-=dt;
-    if(B.busy>0||m.immune) return;
-    if(k.wheelT<=0){ k.wheelT=14; const a0=AR(0,TAU); castS(B,m,2.4,2.3); for(let f=0;f<2;f++) laterS(B,f*1.2,()=>{ for(let i=0;i<6;i++) addTeleS(B,m.x,m.z,26,1.3,'line',Math.round(m.T.dmg*1.6),a0+f*TAU/12+i*TAU/6,1.5); }); toastTo(null,'The lighthouse turns! Stand between the beams.','bad'); }
+    if(k.dark>0){ wardenDarkTickS(B,m,dt); return; }
+    k.gloomT-=dt; k.beamT-=dt; k.wailT-=dt; k.slamT-=dt; k.darkT-=dt; if(B.phase>=3) k.wheelT-=dt;
+    if(B.busy>0) return;
+    if(k.darkT<=0){ k.darkT=B.enraged?18:22; wardenDarkS(B,m,C.p); }
+    else if(k.wheelT<=0){ k.wheelT=14; const a0=AR(0,TAU); castS(B,m,2.4,2.3); for(let f=0;f<2;f++) laterS(B,f*1.2,()=>{ for(let i=0;i<6;i++) addTeleS(B,m.x,m.z,26,1.3,'line',Math.round(m.T.dmg*1.6),a0+f*TAU/12+i*TAU/6,1.5); }); toastTo(null,'The lighthouse turns! Stand between the beams.','bad'); }
     else if(k.gloomT<=0){ k.gloomT=B.enraged?6:9; wardenGloomS(B,m,C); }
     else if(k.wailT<=0&&C.dp<16){ k.wailT=B.enraged?8:11; wardenWailS(B,m); }
     else if(k.slamT<=0){ k.slamT=B.enraged?5:8; wardenSlamS(B,m,C); }

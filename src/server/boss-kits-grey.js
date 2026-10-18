@@ -7,10 +7,47 @@ function gryphRakeS(B,m,p){
   faceS(m,p.x,p.z); castS(B,m,1.5,1.0);
   addTeleS(B,m.x,m.z,12,1.2,'rake',Math.round(m.T.dmg*1.8),Math.atan2(-(p.x-m.x),-(p.z-m.z)),0.8);
 }
+// the straggler: the player farthest from everyone else (a lone player is their own). She culls the herd: swoops go for the straggler first, strafing runs for the straggler alone
+function gryphStragglerS(ins){
+  let best=ins[0], bd=-1;
+  for(const q of ins){ let d=1e9; for(const o of ins) if(o!==q) d=Math.min(d,Math.hypot(o.x-q.x,o.z-q.z)); if(d===1e9) d=0; if(d>bd){ bd=d; best=q; } }
+  return best;
+}
+// culling the herd: every 4 s she circles over the biggest huddle (two or more players within 4.5 m of each other) and drops on its middle (5 m, 1.3 s of warning). Spread out, and the straggler is hers
+function gryphCullS(B,m,inside){
+  if(inside.length<2) return;
+  let best=null, bn=1;
+  for(const q of inside){ const near=inside.filter(o=>Math.hypot(o.x-q.x,o.z-q.z)<4.5); if(near.length>bn){ bn=near.length; best=near; } }
+  if(!best) return;
+  const cx=best.reduce((a,o)=>a+o.x,0)/best.length, cz=best.reduce((a,o)=>a+o.z,0)/best.length;
+  const e=addTeleS(B,cx,cz,5,1.3,'swoop',Math.round(m.T.dmg*1.3+bn*0.2*m.T.dmg)); e.hit=p=>{ pfxS(p,'slow',1.2); };   // (the bigger the huddle, the harder it lands)
+  if(!B.k.culled){ B.k.culled=true; toastTo(null,'The Gryphon Queen circles the huddle! Spread out.','bad'); }
+}
+// the strafing run: three passes, GRYPH_STEP s apart. She appears on the rim opposite the straggler, a line (2.2 m either side) through them warns 1.1 s, then she flies it end to end in 0.5 s
+// and sheds a trail of feathers along it that land a moment later. If all three passes hit nobody she is spent: stunned 4 s
+const GRYPH_PASSES=3, GRYPH_STEP=1.9;
+function gryphStrafeS(B,m){
+  const A=B.A, R=A.r-3; B.k.hits=0; B.busy=1e3; B.mode=1; m.act=null; clearTeleS(B);
+  toastTo(null,'The Gryphon Queen goes for a strafing run!','bad'); ev('roar',m.id);
+  for(let i=0;i<GRYPH_PASSES;i++) laterS(B,i*GRYPH_STEP,()=>{
+    const ins=playersInArena(A,4); if(!ins.length||m.dead||m.immune) return;   // (m.immune: the flight of phase 2 took over)
+    const q=gryphStragglerS(ins), dx=q.x-A.x, dz=q.z-A.z, d=Math.hypot(dx,dz)||1, ux=dx/d, uz=dz/d;
+    const sx=A.x-ux*R, sz=A.z-uz*R, ex=A.x+ux*R, ez=A.z+uz*R, f=Math.atan2(-ux,-uz);
+    moveBossS(B,sx,sz,0.3); m.face=m.faceGoal=f;
+    addTeleS(B,sx,sz,2*R+4,1.1,'line',Math.round(m.T.dmg*1.7),f,2.2).hit=()=>{ B.k.hits++; };
+    for(const eg of B.adds.filter(a=>!a.dead&&!a.remove).slice(0,3)) addTeleS(B,eg.x,eg.z,16,1.1,'line',Math.round(m.T.dmg*0.7),Math.atan2(-(q.x-eg.x),-(q.z-eg.z)),1.0);   // the brood dives with her: every living eaglet streaks at the straggler too
+    laterS(B,1.1,()=>{ if(m.dead||m.immune) return; B.mv=null; moveBossS(B,ex,ez,0.5); ev('mact',m.id,1.0);
+      for(const o of playersInArena(A,0)){ const rx=o.x-sx, rz=o.z-sz, al=rx*ux+rz*uz, off=-rx*uz+rz*ux; if(al>0&&al<2*R&&Math.abs(off)<7) pfxS(o,'push',0,-uz*Math.sign(off||1)*9,ux*Math.sign(off||1)*9); }   // her wake shoves everyone within 7 m of the path away from it
+      for(let j=1;j<=5;j++) laterS(B,j*0.1,()=>addTeleS(B,sx+(ex-sx)*j/6,sz+(ez-sz)*j/6,2.0,1.0,'icefall',Math.round(m.T.dmg*0.6))); });
+  });
+  laterS(B,GRYPH_PASSES*GRYPH_STEP+0.1,()=>{ if(m.immune) return; B.mode=0; B.busy=0; B.mv=null; m.act=null;
+    if(!B.k.hits){ B.stunT=4; toastTo(null,'Three passes and nobody hit: the Gryphon Queen is spent! Strike now!','good'); } });
+}
 // swoops: rings of her shadow close on players' positions and she drops on each; anyone caught is slowed for a moment
 function gryphSwoopS(B,m,inside,n){
-  const D=m.T.dmg, pool=inside.slice();
-  for(let i=0;i<n;i++){ const q=pool.length?pool.splice(Math.floor(Math.random()*pool.length),1)[0]:randPlayerS(inside), a=AR(0,TAU), r=i?AR(0,2.5):0;
+  const D=m.T.dmg, pool=inside.slice(), st=gryphStragglerS(inside);
+  if(inside.length>1) pool.splice(pool.indexOf(st),1);   // (the first ring is the straggler's)
+  for(let i=0;i<n;i++){ const q=i===0?st:pool.length?pool.splice(Math.floor(Math.random()*pool.length),1)[0]:randPlayerS(inside), a=AR(0,TAU), r=i?AR(0,2.5):0;
     const e=addTeleS(B,q.x+Math.sin(a)*r,q.z+Math.cos(a)*r,3.6,1.5+i*0.15,'swoop',Math.round(D*1.5)); e.hit=p=>{ pfxS(p,'slow',1.6); }; }
 }
 // phase 2: she takes off (immune, in the air) and drops on players in four waves, with eaglets on the ground; then she crashes down and lies stunned for 5 s
@@ -31,7 +68,7 @@ function gryphStormS(B,m){
   toastTo(null,'The Gryphon Queen shakes out her quills! Stand between the lines.','bad');
 }
 BOSS_KITS.gryphon={
-  start(B){ B.k={rakeT:5,swoopT:9,stormT:99}; },
+  start(B){ B.k={rakeT:5,swoopT:9,stormT:99,strafeT:12,cullT:6,hits:0}; },
   phase(B,m,n){
     if(n===2){ B.busy=1e3; B.mode=1; m.immune=true; m.act=null; clearTeleS(B); spawnAddsS(B,2); gryphFlightS(B,m); toastTo(null,'The Gryphon Queen beats her wings and rises into the sky!','bad'); }
     else { B.k.stormT=4; spawnAddsS(B,2); }
@@ -40,9 +77,11 @@ BOSS_KITS.gryphon={
   tick(B,m,dt,C){
     const k=B.k;
     if(B.mode===1) return;   // in the air: the flight is a queue of steps
-    k.rakeT-=dt; k.swoopT-=dt; if(B.phase>=3) k.stormT-=dt;
+    k.rakeT-=dt; k.swoopT-=dt; k.strafeT-=dt; k.cullT-=dt; if(B.phase>=3) k.stormT-=dt;
     if(B.busy>0) return;
-    if(k.stormT<=0){ k.stormT=15; gryphStormS(B,m); }
+    if(k.cullT<=0){ k.cullT=4; gryphCullS(B,m,C.inside); }   // (a quick extra, it does not take the cast)
+    if(k.strafeT<=0){ k.strafeT=B.enraged?16:21; gryphStrafeS(B,m); }
+    else if(k.stormT<=0){ k.stormT=15; gryphStormS(B,m); }
     else if(k.swoopT<=0){ k.swoopT=B.enraged?7:9.5; gryphSwoopS(B,m,C.inside,Math.min(B.enraged?3:2,Math.max(1,C.inside.length))); }
     else if(k.rakeT<=0&&C.dp<14){ k.rakeT=B.enraged?5:7; gryphRakeS(B,m,C.p); }
   }
