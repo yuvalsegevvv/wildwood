@@ -82,3 +82,18 @@ body.editing .hud-top{ display:none; }
 .ibtn{ width:34px; height:30px; border-radius:8px; border:1px solid var(--line); background:rgba(238,240,226,.06); color:var(--ink); cursor:pointer; padding:5px; }
 .ibtn svg{ width:100%; height:100%; }
 @media (max-width:719px){ #editor{ height:58%; } .tiles{ grid-template-columns:repeat(auto-fill,minmax(64px,1fr)); gap:6px; } .tiles.slots{ grid-template-columns:repeat(5,minmax(0,1fr)); } .ed-tab{ font-size:13.5px; padding:6px 2px 8px; } .ed-subs{ padding-top:6px; } .ed-row{ margin-top:12px; } .ed-foot button{ height:42px; } }
+
+/* version 3.2: crafted pieces you have not made are drawn dimmed with a padlock (they can still be tried on); the try-on bar and the blocked Done */
+.ctile.locked .ctile-pic{ opacity:.62; filter:saturate(.55); }
+.ctile.locked{ border-style:dashed; }
+.ctile.made::after{ content:"\2713"; position:absolute; right:4px; top:3px; font-size:12px; color:#bfe08a; text-shadow:0 1px 2px #000; }
+.ctile-lock{ position:absolute; right:3px; top:2px; font-size:13px; line-height:1; text-shadow:0 1px 2px #000; pointer-events:none; }
+.ed-try{ margin:0 0 12px; padding:10px 12px; border:1px solid rgba(242,207,90,.55); border-radius:10px; background:rgba(242,207,90,.08); font-size:13px; line-height:1.4; }
+.ed-try b{ color:#f2dc8a; }
+.ed-try p{ margin:3px 0 8px; opacity:.85; }
+.ed-try-row{ display:flex; flex-direction:column; padding:4px 0; border-top:1px solid rgba(238,240,226,.12); }
+.ed-try-row small{ opacity:.75; font-size:11.5px; }
+.ed-try .chip{ margin-top:8px; }
+.ed-try.flash{ animation:edTryFlash .9s ease-out; }
+@keyframes edTryFlash{ 0%,40%{ background:rgba(242,207,90,.4); box-shadow:0 0 0 3px rgba(242,207,90,.5); } 100%{ background:rgba(242,207,90,.08); box-shadow:none; } }
+#edDone.blocked{ opacity:.55; }

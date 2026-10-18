@@ -8,7 +8,7 @@ function torsoSize(X,D,yd){
   const {S,fem}=X, B=D.B, r=profR(fem?TORSO_F:TORSO_M,yd), up=faceSm(0.22,0.4,yd), gw=faceG(yd,fem?0.215:0.15,0.11), gh=faceG(yd,-0.03,0.1), belly=faceG(yd,0.1,0.13)*(B-1)*1.4;
   const rz=r*(fem?0.66:0.62)*B*(1+(S.waist-1)*0.7*gw+(S.hips-1)*0.5*gh+(S.shoulders-1)*0.2*up);
   // rz is the front (the belly and the stomach pushed out, a woman's bust); rzBack the back (a third of the belly, the shoulder blades, the glutes): cloth on the back must clear these or the body shows through
-  return {rx:r*B*(fem?1:1.04)*(1+(S.shoulders-1)*up+(S.waist-1)*gw+(S.hips-1)*gh), rz:rz*(1+belly)+0.008*faceG(yd,0.1,0.08)+(fem?0.034*D.lr*S.chest*faceG(yd,0.315-0.012*(S.chest-1),0.06):0),   // (a woman's front includes the bust)
+  return {rx:r*B*(fem?1:1.04)*(1+(S.shoulders-1)*up+(S.waist-1)*gw+(S.hips-1)*gh+chestRibs(S.chest)*faceG(yd,0.32,0.1)), rz:rz*(1+belly)+0.008*faceG(yd,0.1,0.08)+(fem?0.034*D.lr*chestEff(S.chest)*faceG(yd,0.315-0.012*(chestEff(S.chest)-1),0.06):0.012*B*Math.min(Math.max(S.chest-1,0),1.2)*faceG(yd,0.34,0.07)),   // (a woman's front includes the bust)
     rzBack:rz*(1+belly*0.3)+0.012*B*faceG(yd,0.37,0.07)+(fem?0.034:0.022)*B*faceG(yd,0,0.055)};
 }
 /* A flat ribbon (sash, pennant, strap, feather, tail of a bow) along a smooth curve through pts ([x,y,z]); width: a number or a function of 0..1 along it; both faces are drawn

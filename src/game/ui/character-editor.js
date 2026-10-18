@@ -6,6 +6,8 @@
    color (swatches), seg (text chips: only the few things a picture cannot show), setups, sets, slots (the five saved outfits), armor (show / hide one equipped armour piece).
    A row {slider:'legs'} takes its label, range and ends from BODY_SLIDERS; the character model's recommended range is drawn under the track and the row warns outside it.
    A garment can be None (top / bottom / shoes 'none': the body shows, with underwear where the clothes were: model-body.js UNDER_COL); equipped armour is shown or hidden per piece (look.armorHat / armorTop / armorBottom / armorShoes, items.js effectiveLookOf).
+   Version 3.2, the general pieces (shared/cospieces.js): every grid row of a slot with crafted pieces carries slot:'<letter>'; a piece that is crafted and not yet made is drawn locked (a padlock and its recipe in the tooltip) but can still be tried on.
+   A look that wears a locked piece is a try-on: it is not saved or sent (saveLook, model.js), the bar at the top of the editor lists what is missing, and Done will not close until the piece is made or the saved look is back (edTrying, edRevert).
    The five outfit slots live in this browser (localStorage 'wildwood-outfits-v1'): a slot keeps the clothes, hair, cape and aura, never the body. test: tools/editor-smoke.js, start-smoke */
 let customizing=false, creating=false, edTab=0;
 const edSub=[0,0,0,0];
@@ -25,8 +27,8 @@ const EDIT=[
     {name:'Gender', rows:[
       {k:'sex',type:'grid',kind:'sex',ids:()=>[['male'],['female']]},
       {k:'skin',label:'Skin tone',type:'color',opts:SKINS.concat(SKINS_ODD)},{slider:'undertone'}]},
-    {name:'Build', rows:[{type:'setups'},{slider:'height'},{slider:'build'},{slider:'chest'}]},
-    {name:'Upper body', rows:['shoulders','waist','hips','torso'].map(k=>({slider:k}))},
+    {name:'Build', rows:[{type:'setups'},{slider:'height'},{slider:'build'}]},
+    {name:'Upper body', rows:['chest','shoulders','waist','hips','torso'].map(k=>({slider:k}))},
     {name:'Limbs', rows:['legs','thighs','calves','arms','neck','hands','feet'].map(k=>({slider:k}))}
   ]},
   {tab:'Face', close:true, subs:[
@@ -40,7 +42,7 @@ const EDIT=[
     ].concat(['hairLength','hairVolume','bangs'].map(k=>({slider:k}))).concat([
       {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]}])},
     {name:'Face', rows:[{k:'face',type:'grid',kind:'face',ids:()=>[['round'],['oval'],['angular']]}].concat(['head','jaw','chin','cheeks'].map(k=>({slider:k})))},
-    {name:'Eyes', rows:[{k:'eyes',label:'',type:'color',opts:EYEC,base:'face'}].concat(['eyeSize','eyeGap','eyeHeight','eyeTilt','brow'].map(k=>({slider:k})))},
+    {name:'Eyes', rows:[{k:'eyes',label:'',type:'color',opts:EYEC.concat(EYEC_MORE),base:'face'},{k:'eyes2',label:'Second eye colour',type:'dcolor',opts:EYEC.concat(EYEC_MORE),none:'Same'},{k:'pupil',type:'grid',kind:'pupil',ids:()=>FACE_PUPILS.map(p=>p.slice())}].concat(['eyeSize','eyeGap','eyeHeight','eyeTilt','brow'].map(k=>({slider:k})))},
     {name:'Nose & mouth', rows:['noseSize','mouthSize','mouthHeight','lips','blush','smile','earSize','earPoint'].map(k=>({slider:k})).concat([{k:'lipColor',label:'Lip colour',type:'color',opts:[0xb04a52,0xd26a78,0x8a3040,0xc98a7a,0x5a2a4a,0x2a2a36,0xe8b0b8,0xa83a2a],base:'face'}])},
     {name:'Beard & marks', rows:[
       {k:'facial',type:'grid',kind:'facial',ids:()=>[['none'],['stubble'],['mustache'],['beard']],base:'face'},
@@ -50,26 +52,43 @@ const EDIT=[
   {tab:'Clothes', subs:[
     // the signature outfits (src/game/outfits): every piece has its own sub-tab, so the pieces of different sets mix. A colour row marked base:'<slot>' paints the base garment, or, while that slot wears an outfit's piece,
     // recolours the piece (look.tint<Slot>; 'Designed colours' puts the original back).
-    {name:'Hat', close:true, rows:[{k:'hat',type:'grid',kind:'hat',col:'hatColor',ids:()=>HT_HATS.map(h=>h.slice()).concat(ofItems('hat'))},{k:'hatColor',label:'',type:'color',base:'hat',opts:TINTC},{type:'palette',slot:'hat'},{type:'armor',slot:'helmet'}]},
-    {name:'Top', rows:[{k:'top',type:'grid',kind:'top',col:'topColor',ids:()=>GM_TOPS.map(h=>h.slice()).concat(ofItems('top'))},{k:'topColor',label:'',type:'color',base:'top',opts:TINTC},{type:'palette',slot:'top'},{type:'armor',slot:'top'}]},
-    {name:'Bottom', rows:[{k:'bottom',type:'grid',kind:'bottom',col:'bottomColor',ids:()=>GM_BOTTOMS.map(h=>h.slice()).concat(ofItems('bottom'))},{k:'bottomColor',label:'',type:'color',base:'bottom',opts:TINTC},{type:'palette',slot:'bottom'},{type:'armor',slot:'bottom'}]},
-    {name:'Shoes', rows:[{k:'shoes',type:'grid',kind:'shoes',col:'shoeColor',ids:()=>GM_SHOES.map(h=>h.slice()).concat(ofItems('shoes'))},{k:'shoeColor',label:'',type:'color',base:'shoes',opts:TINTC},{type:'palette',slot:'shoes'},{type:'armor',slot:'shoes'}]},
-    // version 3: the parts the professions make (shared/cosmetics.js): only what you own is listed; they are made at a Wayfarers' Lodge from ore, logs and herbs
-    {name:'Back & aura', rows:[
-      {k:'pack',type:'grid',kind:'pack',ids:()=>[[false],[true]],base:'top'},
-      {k:'cape',type:'grid',kind:'cape',ids:()=>[['']].concat(cosOwnedOpts('c')),empty:'Capes are made at a Wayfarers\' Lodge.'},
-      {k:'aura',type:'grid',kind:'aura',ids:()=>[['']].concat(cosOwnedOpts('a')),empty:'Auras are made at a Wayfarers\' Lodge.'}]},
+    {name:'Hat', close:true, rows:[{k:'hat',type:'grid',kind:'hat',slot:'h',col:'hatColor',ids:()=>HT_HATS.map(h=>h.slice()).concat(HTX_HATS.map(h=>h.slice()),ofItems('hat'))},{k:'hatColor',label:'',type:'color',base:'hat',opts:TINTC},{type:'palette',slot:'hat'},{type:'armor',slot:'helmet'}]},
+    {name:'Top', rows:[{k:'top',type:'grid',kind:'top',slot:'t',col:'topColor',ids:()=>GM_TOPS.map(h=>h.slice()).concat(GMX_TOPS.map(h=>h.slice()),ofItems('top'))},{k:'topColor',label:'',type:'color',base:'top',opts:TINTC},{type:'palette',slot:'top'},{type:'armor',slot:'top'}]},
+    {name:'Bottom', rows:[{k:'bottom',type:'grid',kind:'bottom',slot:'b',col:'bottomColor',ids:()=>GM_BOTTOMS.map(h=>h.slice()).concat(GMX_BOTTOMS.map(h=>h.slice()),ofItems('bottom'))},{k:'bottomColor',label:'',type:'color',base:'bottom',opts:TINTC},{type:'palette',slot:'bottom'},{type:'armor',slot:'bottom'}]},
+    {name:'Shoes', rows:[{k:'shoes',type:'grid',kind:'shoes',slot:'s',col:'shoeColor',ids:()=>GM_SHOES.map(h=>h.slice()).concat(GMX_SHOES.map(h=>h.slice()),ofItems('shoes'))},{k:'shoeColor',label:'',type:'color',base:'shoes',opts:TINTC},{type:'palette',slot:'shoes'},{type:'armor',slot:'shoes'}]},
+    // version 3.2: the cape (the backpack is the free one) and the aura, each with its own colours; crafted ones are made at a Wayfarers' Lodge (shared/cospieces.js), and every one can be tried on
+    {name:'Cape', rows:[
+      {k:'cape',type:'grid',kind:'cape',slot:'c',ids:()=>[['']].concat(COS_CAPES.map(d=>[d[0],d[1],d[6]]))},
+      {type:'dcolor',k:'capeColor',label:'Cloth colour',need:'cape',opts:TINTC},{type:'dcolor',k:'capeTrim',label:'Trim colour',need:'cape',opts:TINTC}]},
+    {name:'Aura', rows:[
+      {k:'aura',type:'grid',kind:'aura',slot:'a',ids:()=>[['']].concat(COS_AURAS.map(d=>[d[0],d[1],d[8]]))},
+      {type:'dcolor',k:'auraColor',label:'Main colour',need:'aura',opts:TINTC},{type:'dcolor',k:'auraColor2',label:'Second colour',need:'aura',opts:TINTC}]},
     // an outfit's weapon dressing restyles whatever weapon you hold, whatever your class
     // version 3.1: gloves, the eighth piece: six plain ones and the glove of every set that has one (model-gloves.js)
-    {name:'Gloves', rows:[{k:'gloves',type:'grid',kind:'gloves',col:'gloveColor',ids:()=>[['none']].concat(Object.keys(GL_BASE).map(id=>[id,GL_BASE[id].name,GL_BASE[id].text]),ofItems('glove'))},{k:'gloveColor',label:'',type:'color',base:'glove',opts:TINTC},{type:'palette',slot:'glove'}]},
+    {name:'Gloves', rows:[{k:'gloves',type:'grid',kind:'gloves',slot:'g',col:'gloveColor',ids:()=>[['none']].concat(Object.keys(GL_BASE).map(id=>[id,GL_BASE[id].name,GL_BASE[id].text]),ofItems('glove'))},{k:'gloveColor',label:'',type:'color',base:'glove',opts:TINTC},{type:'palette',slot:'glove'}]},
     {name:'Weapon', rows:[{k:'weaponItem',type:'grid',kind:'weapon',ids:()=>[['']].concat(ofItems('weapon'))},{k:'tintWeapon',label:'',type:'color',base:'weapon',only:true,opts:TINTC}]},
     {name:'Armor', rows:[{type:'armor',slot:'all'},{type:'armor',slot:'helmet'},{type:'armor',slot:'top'},{type:'armor',slot:'bottom'},{type:'armor',slot:'shoes'}]}
   ]}
 ];
 const ED_NAMES={tshirt:'T-shirt',twintail:'Twin tails',kasa:'Kasa hat',sneakers:'Sneakers',true:'Backpack',false:'No backpack'};
 const edCur=()=>EDIT[edTab].subs[edSub[edTab]];
-// [id, name, tooltip] of the auras ('a') or capes ('c') you own, in the order they are defined
-function cosOwnedOpts(type){ const own=(GEAR&&GEAR.cos)||[], defs=type==='a'?COS_AURAS:COS_CAPES; return defs.filter(d=>own.includes(cosKey(type,d[0]))).map(d=>[d[0],d[1],d[type==='a'?8:6]]); }
+// ---- crafted pieces: locked, owned, and the try-on gate ----
+const edOwned=()=>(typeof GEAR!=='undefined'&&GEAR&&GEAR.cos)||[];
+const edLocks=()=>cosLocked(LOOK,edOwned());
+// true while the look on the hiker wears a crafted piece that has not been made (saveLook: nothing is saved or sent then)
+function edTrying(){ return customizing&&edLocks().length>0; }
+function edRevert(){ LOOK=Object.assign({},LOOK_SAVED); rebuildHiker(); renderEditor(); }
+function edFlashTry(){ const el=edBody.querySelector('.ed-try'); edBody.scrollTop=0; if(el){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } UI_SFX.click(); }
+// the try-on bar: what the look is missing, how to make it, and the way back
+function edTryBar(){
+  const L=edLocks(); if(!L.length) return null;
+  const bar=document.createElement('div'); bar.className='ed-try'; bar.setAttribute('role','status');
+  const h=document.createElement('b'); h.textContent='Trying on: not saved yet'; bar.append(h);
+  const p=document.createElement('p'); p.textContent='Only you see this look. Make every piece below at a Wayfarers\' Lodge to keep it.'; bar.append(p);
+  for(const l of L){ const r=document.createElement('div'); r.className='ed-try-row'; const n=document.createElement('span'); n.textContent=CP_SLOTS[l.slot][2]+': '+l.name; const m=document.createElement('small'); m.textContent=cosRecipeText(l.slot,l.id); r.append(n,m); bar.append(r); }
+  const b=document.createElement('button'); b.className='chip'; b.textContent='Back to my saved look'; b.onclick=edRevert; bar.append(b);
+  return bar;
+}
 const hex=n=>'#'+n.toString(16).padStart(6,'0');
 function setLook(k,v){
   if(k==='sex' && !LOOK.custom){ const keep={skin:LOOK.skin,cls:LOOK.cls}; for(const s of SLIDER_KEYS) keep[s]=LOOK[s]; LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,keep); }   // the sliders and skin carry over
@@ -113,7 +132,7 @@ function armorRow(wrap,slot){
   wrap.append(box);
 }
 // ---- the five outfit slots ----
-const OUTFIT_KEYS=['tintTop2','tintTop3','tintTop4','tintBottom2','tintBottom3','tintBottom4','tintShoes2','tintShoes3','tintShoes4','tintHat2','tintHat3','tintHat4','tintHair2','tintHair3','tintHair4','tintGloves2','tintGloves3','tintGloves4','hairGrad','hairColor2','hairThird','hairColor3','gloves','gloveColor','tintGloves','top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','armor','armorHat','armorTop','armorBottom','armorShoes'];
+const OUTFIT_KEYS=['tintTop2','tintTop3','tintTop4','tintBottom2','tintBottom3','tintBottom4','tintShoes2','tintShoes3','tintShoes4','tintHat2','tintHat3','tintHat4','tintHair2','tintHair3','tintHair4','tintGloves2','tintGloves3','tintGloves4','hairGrad','hairColor2','hairThird','hairColor3','gloves','gloveColor','tintGloves','top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','capeColor','capeTrim','auraColor','auraColor2','pupil','eyes2','armor','armorHat','armorTop','armorBottom','armorShoes'];
 function outfitSlots(){ try{ const a=JSON.parse(localStorage.getItem('wildwood-outfits-v1')||'[]'); const out=[]; for(let i=0;i<5;i++) out.push(a&&typeof a[i]==='object'?a[i]:null); return out; }catch(_){ return [null,null,null,null,null]; } }
 function putOutfitSlots(a){ try{ localStorage.setItem('wildwood-outfits-v1',JSON.stringify(a)); }catch(_){} }
 function saveOutfitSlot(i){ const a=outfitSlots(), o={}; for(const k of OUTFIT_KEYS) if(LOOK[k]!==undefined) o[k]=LOOK[k]; a[i]=o; putOutfitSlots(a); renderEditor(); }
@@ -151,10 +170,12 @@ function renderEditor(){
     b.onclick=()=>{ edSub[edTab]=i; renderEditor(); }; edSubs.append(b);
   });
   edBody.innerHTML=''; edBody.dataset.at=edTab+':'+edSub[edTab];
+  { const tb=edTryBar(); if(tb) edBody.append(tb); $('#edDone').classList.toggle('blocked',!!tb); $('#edDone').title=tb?'Make the pieces you are trying on, or go back to your saved look':''; }
   for(const row of edCur().rows){
     if(row.fem && LOOK.sex!=='female') continue;
     if(row.base && ofPieces(LOOK)[row.base] && row.type!=='color') continue;   // an outfit's piece in that slot has its own look: these rows (facial hair, antenna hair, backpack) do nothing while it is worn
-    if(row.only && !ofPieces(LOOK)[row.base]) continue;   // a recolour row of a piece that is not worn
+    if(row.only && !ofPieces(LOOK)[row.base]) continue;
+    if(row.need&&!LOOK[row.need]) continue;   // a colour row of a cape or an aura that is not worn   // a recolour row of a piece that is not worn
     const wrap=document.createElement('div'); wrap.className='ed-row'+(row.label||row.slider||row.type==='setups'?'':' ed-sub');
     if(row.label){ const lb=document.createElement('div'); lb.className='ed-label'; lb.textContent=row.label; wrap.append(lb); }
     if(row.slider){ sliderRow(wrap,row); }
@@ -178,8 +199,18 @@ function renderEditor(){
         if(spec&&row.col&&!sig) spec.col=LOOK[row.col];
         if(spec&&row.kind==='sex') spec.sex=v;
         const cur=LOOK[row.k], on=cur===undefined?(v===false||v===''):cur===v;
-        const title=name?(tip?name+': '+tip:name):gap?'None':ED_NAMES[v]||String(v).replace(/^./,c=>c.toUpperCase());
-        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'?name:''}); b.onclick=()=>{ setLook(row.k,v); renderEditor(); }; box.append(b); }
+        const D=row.slot&&!gap?cpDef(row.slot,v):null, made=!!D&&!D.free&&edOwned().includes(cpKey(row.slot,v)), locked=!!D&&!D.free&&!made;
+        const title=(name?(tip?name+': '+tip:name):gap?'None':ED_NAMES[v]||String(v).replace(/^./,c=>c.toUpperCase()))+(locked?' (locked: '+cosRecipeText(row.slot,v)+'. Tap to try it on.)':made?' (made)':'');
+        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='pupil'||(D&&!D.free)?name:''}); b.onclick=()=>{ setLook(row.k,v); renderEditor(); };
+        if(locked){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); } else if(made){ b.classList.add('made'); }
+        box.append(b); }
+      wrap.append(box);
+    }
+    else if(row.type==='dcolor'){
+      // a colour that may be left as designed (-1): the cape's cloth and trim, the aura's two colours, the second eye
+      const key=row.k, dw=document.createElement('div'); dw.className='chips'; const d=document.createElement('button'); d.className='chip'; d.textContent=row.none||'As designed'; d.setAttribute('aria-pressed',!(LOOK[key]>=0)); d.onclick=()=>{ setLook(key,-1); renderEditor(); }; dw.append(d); wrap.append(dw);
+      const box=document.createElement('div'); box.className='swatches';
+      row.opts.forEach((v,i)=>{ const b=document.createElement('button'); b.className='sw'; b.style.background=hex(v); b.setAttribute('aria-label',row.label+' '+(i+1)); b.setAttribute('aria-pressed',LOOK[key]===v); b.onclick=()=>{ setLook(key,v); renderEditor(); }; box.append(b); });
       wrap.append(box);
     }
     else if(row.type==='palette'){
@@ -240,7 +271,7 @@ function renderEditor(){
   if(same) edBody.scrollTop=keepTop;
 }
 function surpriseMe(){
-  LOOK=randomLook(Math.random,{base:{custom:true,cls:LOOK.cls}});
+  LOOK=randomLook(Math.random,{base:{custom:true,cls:LOOK.cls}}); if(LOOK.pack){ LOOK.pack=false; LOOK.cape='pack'; }   // (the backpack is the free cape 'pack')
   saveLook(); rebuildHiker(); renderEditor();
 }
 function openEditor(o){
@@ -257,6 +288,8 @@ function openEditor(o){
   const fwd=P.face; cam.d=3; cam.h=1.2; cam.l=0.95; P.editYaw=fwd;
 }
 function closeEditor(){
+  if(edTrying()){ edFlashTry(); return; }   // a try-on cannot be kept: make the pieces or go back (edTryBar)
+  saveLook();
   const enter=creating; customizing=creating=false; UI_SFX.close();
   camera.clearViewOffset();
   edEl.hidden=true; document.body.classList.remove('editing');

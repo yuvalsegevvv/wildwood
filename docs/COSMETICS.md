@@ -15,3 +15,12 @@ A tool worn in its slot of tier 3 or better (Silverstone) adds attack (pickaxe),
 
 ## Auras and capes
 `shared/cosmetics.js` (7 auras, 7 capes, costs in ore or logs + a herb + coins, `gear.cos`), `server/cosmetics.js` (`cosmake`), `cosCleanLook` (in `newPlayer` and the `look` message: no unowned aura or cape), the model `game/character/cosmetics.js` (`cosDress`, called at the end of `buildCharacter`; loose meshes moved by `rig.anims`), the lodge's Cosmetics list `game/economy/cosmetics.js`, the editor's Cosmetics tab. Look fields `aura` and `cape` (default `''`). See one: `node tools/model-preview.js out.png --looks '[{"cape":"regal","aura":"stellar"}]'`.
+
+## Version 3.2: the general pieces, crafting and try-on
+Seven slots hold pieces that belong to no set: hat, top, bottom, shoes, gloves, cape, aura (`CP_SLOTS` in `shared/cospieces.js`, the letters h/t/b/s/g/c/a are the first letter of a `gear.cos` key such as `'h:catphones'`). Every base garment from before is **free**; new pieces (`CP_PIECES`) and most capes and auras are **crafted** at a Wayfarers' Lodge from profession resources (`gear.res`) and/or monster drops (`gear.mats`) plus coins (`CP_RECIPE`, the materials fit the piece: ore for metal, logs for wood, herbs for cloth, a matching monster's drop for hide, scales and the like). Free capes: Backpack (the old `pack` switch is now `cape:'pack'`, migrated in `fullLook`), Wayfarer's, Mossback; free auras: Firefly, Dewfall.
+- Server: `cosMakeP` (`server/cosmetics.js`) refuses free pieces and takes materials; `cosCleanLook` strips any crafted piece you do not own, in every slot.
+- Colours: `look.capeColor` / `capeTrim` / `auraColor` / `auraColor2` (-1 = as designed), read through `cosTint` (`game/character/cosmetics.js`).
+- Eyes: `look.pupil` (`FACE_PUPILS`), `look.eyes2` (second eye colour), `EYEC_MORE`. Chest slider max 2.2, in the Shape group, widened ribs through `chestEff` / `chestRibs`.
+- Bold garments (crop, halter, harness, loincloth, short shorts...) draw underwear where skin would otherwise show (`gmxBare*`, `model-garments-more.js`); the new hats are in `model-hats-more.js`, the new gloves in `GL_BASE`.
+- **Try-on**: the editor lists locked pieces with a padlock and their recipe and lets you wear them; while a locked piece is worn (`edTrying`) the look is neither saved nor sent (`saveLook`, `lookForNet(LOOK_SAVED)`) and the Done button is blocked until every worn part is owned or you go back (`edRevert`).
+Test: `node tools/cospieces-smoke.js`.

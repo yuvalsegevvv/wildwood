@@ -2,7 +2,7 @@
 # Usage: python3 tools/rast.py in.json out.png [width height [headY]]   (needs numpy and pillow; env RAST_VIEWS=front for front views only, three for front + side + back)
 import json, os, sys, numpy as np
 from PIL import Image
-chars=json.load(open(sys.argv[1])); HEAD=float(sys.argv[5]) if len(sys.argv)>5 else 0; W,H=int(sys.argv[3]) if len(sys.argv)>3 else 180,int(sys.argv[4]) if len(sys.argv)>4 else 320; S=H*0.47 if len(sys.argv)<6 else H*2.4
+chars=json.load(open(sys.argv[1])); HEAD=float(sys.argv[5]) if len(sys.argv)>5 else 0; W,H=int(sys.argv[3]) if len(sys.argv)>3 else 180,int(sys.argv[4]) if len(sys.argv)>4 else 320; S=H*0.47 if len(sys.argv)<6 else H*float(__import__('os').environ.get('RAST_K','2.4'))   # RAST_K: pixels per metre / H of a zoomed view (2.4 = 0.42 m shown)
 def render(tris,view):
     img=np.zeros((H,W,3)); img[:]=(0.18,0.22,0.2); zb=np.full((H,W),-1e9)
     a=np.array(tris).reshape(-1,3,9); P=a[:,:,:3].copy(); C=a[:,:,3:6]; N=a[:,:,6:9].copy()

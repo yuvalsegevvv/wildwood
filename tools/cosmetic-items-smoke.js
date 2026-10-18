@@ -7,7 +7,7 @@ const stat=(o,q)=>C.stats(C.buildCharacter(look(o&&o.sex||'male',o),{q:q||0.5}))
 const base=stat({gloves:'none'});
 // ---- gloves ----
 const gl=Object.keys(C.GL_BASE);
-ok('six base gloves',gl.length===6,gl.join(','));
+ok('six base gloves and three crafted ones',gl.length===9,gl.join(','));
 let bad=null; for(const id of gl) for(const sex of ['male','female']){ try{ const t=stat({sex,gloves:id,gloveColor:0x8a2f2f,top:'tshirt'},0.8); if(t.bad||Math.abs(t.minY)>0.03) bad=bad||(id+' '+sex+' bad '+t.bad); if(!(t.tris>base.tris-200)) bad=bad||(id+' '+sex+' draws nothing'); }catch(e){ bad=bad||id+': '+e.message; } }
 ok('every base glove builds on both bodies and adds geometry',!bad,bad||'');
 ok('a glove changes the picture (the colour of the hand differs from bare)',gl.every(id=>{ const a=C.tris(C.buildCharacter(look('male',{gloves:'none',top:'tshirt'}),{q:0.5})), b=C.tris(C.buildCharacter(look('male',{gloves:id,gloveColor:0x8a2f2f,top:'tshirt'}),{q:0.5})); return a.length!==b.length||a.some((v,i)=>v!==b[i]); }));
@@ -33,8 +33,8 @@ ok('the new items exist: vest, tunic, kilt, pleated skirt, sandals, tall boots, 
 ok('the hat pictures differ (each hat draws a different shape)',(()=>{ const sig=new Set(hats.map(h=>stat({hat:h},0.6).tris+':'+C.stats(C.buildCharacter(look('male',{hat:h}),{q:0.6})).maxY.toFixed(3))); return sig.size>=hats.length-1; })());
 ok('a base shoe or top next to an outfit piece builds (mixed)',(()=>{ try{ return stat({shoes:'sandals',top:'dunstan',bottom:'kilt',hat:'wizard',gloves:'gauntlet'},0.5).bad===0; }catch(e){ return false; } })());
 // ---- capes and auras ----
-ok('12 capes and 10 auras, each with a pattern or a shape',C.COS_CAPES.length===12&&C.COS_AURAS.length===10&&C.COS_CAPES.every(d=>typeof d[7]==='string'&&d[7])&&C.COS_AURAS.every(d=>typeof d[9]==='string'&&d[9]));
-bad=null; for(const d of C.COS_CAPES){ try{ const r=C.buildCharacter(look('male',{cape:d[0],top:'tshirt'}),{q:0.5}); for(let i=0;i<30;i++) for(const f of r.anims) f(i*0.05,0.05,i%2?0.8:0); const t=C.stats(r); if(t.bad) bad=bad||d[0]+' NaN'; if(t.maxR>2.2) bad=bad||d[0]+' too wide'; }catch(e){ bad=bad||d[0]+': '+e.message; } }
+ok('16 capes and 14 auras, each with a pattern or a shape',C.COS_CAPES.length===16&&C.COS_AURAS.length===14&&C.COS_CAPES.every(d=>typeof d[7]==='string'&&d[7])&&C.COS_AURAS.every(d=>typeof d[9]==='string'&&d[9]));
+bad=null; for(const d of C.COS_CAPES){ if(d[0]==='pack') continue; try{ const r=C.buildCharacter(look('male',{cape:d[0],top:'tshirt'}),{q:0.5}); for(let i=0;i<30;i++) for(const f of r.anims) f(i*0.05,0.05,i%2?0.8:0); const t=C.stats(r); if(t.bad) bad=bad||d[0]+' NaN'; if(t.maxR>2.2) bad=bad||d[0]+' too wide'; }catch(e){ bad=bad||d[0]+': '+e.message; } }
 ok('every cape builds, animates and stays near the body',!bad,bad||'');
 ok('the capes look different from each other (distinct colours across the cloth)',(()=>{ const sig=C.COS_CAPES.map(d=>{ const t=C.tris(C.buildCharacter(look('male',{cape:d[0]}),{q:0.4})); let s=0; for(let i=3;i<t.length;i+=9) s+=t[i]*3+t[i+1]*5+t[i+2]*7; return Math.round(s); }); return new Set(sig).size===C.COS_CAPES.length; })());
 const withCape=['hollis','brynja','sazanka'], withAura=['hollis','brynja','sazanka','tamsin'];

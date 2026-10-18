@@ -151,7 +151,7 @@ function netTick(dt){
   if(!NET.ready) return;
   // a server that stopped answering (a closed socket is caught by onclose); after a long frame gap (a tab that was asleep) give it time to deliver what it sent
   if(NET.mode==='ws'&&started){ if(dt>1.5) NET.lastMsg=performance.now(); else if(performance.now()-NET.lastMsg>NET_STALL_MS){ netDown('The world server stopped answering. Reconnect to carry on (your progress is kept on the server).'); return; } }
-  if(lookDirty){ lookT-=dt; if(lookT<=0){ lookDirty=false; netSend({t:'look',look:lookForNet(LOOK)}); } }   // also while creating a hiker, before the game starts
+  if(lookDirty){ lookT-=dt; if(lookT<=0){ lookDirty=false; netSend({t:'look',look:lookForNet(LOOK_SAVED)}); } }   // also while creating a hiker, before the game starts
   if(!started) return;
   posT-=dt;
   if(posT<=0 && !PL.dead){

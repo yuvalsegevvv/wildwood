@@ -6,7 +6,11 @@ function buildHair(X,F){
   const {L,S,sg,hairCol}=X, {sculpt,fs}=F, H=L.hair, kH=X.kit&&X.kit.sl.hair, kHat=X.kit&&X.kit.sl.hat, hat=L.hat!=='none'&&!kH, parts=[];   // an outfit's hair item was drawn without a hat (its own volume rules): a hat over it is the wearer's choice
   const hv=hat?Math.min(S.hairVolume,1.04):S.hairVolume, hl=S.hairLength, bg=S.bangs, R=(hat?0.112:0.118)*hv, G=faceG;
   // hair colour: a bright band across the crown (the anime "ring"), darker underneath and toward the nape
-  const hp=(x,y,z,c)=>{ c.copy(hairCol).multiplyScalar(0.84+0.3*G(y,0.075,0.03)*(z<0.04?1:0.45)+(y<0?0.05*y*10:0)); };
+  // (version 3.2: fine strand streaks along every lock, a softer sheen with a bright core, and a darker underlayer toward the nape and the roots)
+  const hp=(x,y,z,c)=>{ const a=Math.atan2(x,z), streak=0.5+0.5*Math.sin(a*38+y*58+3*h3(Math.round(x*46),Math.round(y*20),Math.round(z*46))), sheen=G(y,0.082,0.02)*(z<0.06?1:0.3);
+    c.copy(hairCol).multiplyScalar(0.8+0.3*G(y,0.075,0.03)*(z<0.04?1:0.45)+(y<0?0.05*y*10:0)).multiplyScalar(0.9+0.16*streak);
+    if(y<-0.03) c.multiplyScalar(0.9+0.4*y);
+    c.lerp(_tint.set(0xffffff),0.17*sheen*(0.6+0.4*streak)); };
   const add=(g,fn)=>{ parts.push(pc(g,fn||hp)); };
   const sp=(th,ph,r)=>[r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph),-r*Math.sin(ph)*Math.cos(th)];   // a point on a sphere: azimuth th (0 = front, + toward +x), polar angle ph
   // lay hair flat on the scalp: shrink every vertex's distance from the head's centre toward R (a ribbon, not a rope)
@@ -23,14 +27,19 @@ function buildHair(X,F){
   // the fringe: ribbons from the crown down over the forehead, each a different length and ending in a point, swept to one side; the slider sets how far they hang
   const fringe=(n,spread,sweep)=>{ if(bg<0.05) return; const rng=mulberry32(77+n);
     for(let i=0;i<n;i++){ const f=i/(n-1)*2-1, af=Math.abs(f), yb=0.074-0.03*bg-0.016*bg*(i%2)-0.012*rng()*bg, ph1=Math.acos(clamp(yb/R,-0.9,0.9)), w=0.0155-0.0035*af+0.003*rng();
-      add(scalpLock(f*spread,0.15*Math.PI,ph1,[0.009,w,w*1.1,w*0.6,0.0015],{sw:sweep*(0.7+0.6*(1-af))+f*0.2,tip:0.11*bg,lift:0.002+0.006*(1-af),k:0.42})); } };
+      add(scalpLock(f*spread,0.15*Math.PI,ph1,[0.009,w,w*1.1,w*0.6,0.0015],{sw:sweep*(0.7+0.6*(1-af))+f*0.2,tip:0.11*bg,lift:0.002+0.006*(1-af),k:0.42})); }
+    // between them a finer, shorter lock each, so the fringe breaks into strands and the scalp does not show between the broad ones
+    if(sg(100)>=50) for(let i=0;i<n-1;i++){ const f=(i+0.5)/(n-1)*2-1, af=Math.abs(f), yb=0.082-0.026*bg-0.012*rng()*bg, ph1=Math.acos(clamp(yb/R,-0.9,0.9)), w=0.0068+0.002*rng();
+      add(scalpLock(f*spread,0.17*Math.PI,ph1,[0.006,w,w*1.05,w*0.5,0.001],{sw:sweep*(0.7+0.6*(1-af))+f*0.2+0.03*(rng()-0.5),tip:0.09*bg,lift:0.009+0.004*(1-af),k:0.4})); } };
   // locks in front of the ears, hanging toward the jaw and curling in at the tip; `len` (head units) says how far
   const sideLocks=len=>{ for(const sd of [-1,1]){
     const P=[sp(sd*1.2,0.34*Math.PI,R),sp(sd*1.33,0.5*Math.PI,R),[sd*0.103,-0.03,-0.04],[sd*0.099,-0.03-len*0.55,-0.045],[sd*0.088,-0.03-len,-0.052]];
     const g=sweepTube(P,[0.007,0.0135,0.0125,0.0075,0.0015],sg(8),{cap:'point',rings:sg(14)}); flat(g,0.5); add(len>0.08?hang(g):fit(g)); } };
   // the back and sides: overlapping ribbons from the crown, each ending in a point at its own height (above the ears at the sides, lower at the nape), so the edge is jagged, not a bowl's rim
   const backLocks=(n,drop,seed)=>{ const rng=mulberry32(seed||11); for(let i=0;i<n;i++){ const th=1.15+(TAU-2.3)*(i+0.5+(rng()-0.5)*0.6)/n, back=Math.max(0,-Math.cos(th)), pe=(0.455+0.15*smoothstep(0.05,0.85,back)+drop*(0.5+0.8*rng()))*Math.PI, w=0.0175+0.004*rng();
-    add(scalpLock(th,0.2*Math.PI,pe,[0.01,w,w*1.1,w*0.65,0.002],{sw:(rng()-0.5)*0.12,tip:0.05+0.07*rng()+drop*2,lift:0.003+0.004*rng(),k:0.6,R:R-0.002*(i%2)})); } };
+    add(scalpLock(th,0.2*Math.PI,pe,[0.01,w,w*1.1,w*0.65,0.002],{sw:(rng()-0.5)*0.12,tip:0.05+0.07*rng()+drop*2,lift:0.003+0.004*rng(),k:0.6,R:R-0.002*(i%2)})); }
+    if(sg(100)>=50) for(let i=0;i<n;i++){ const th=1.15+(TAU-2.3)*(i+rng()*0.9)/n, back=Math.max(0,-Math.cos(th)), pe=(0.435+0.15*smoothstep(0.05,0.85,back)+drop*(0.4+0.6*rng()))*Math.PI;   // a finer layer between and over them
+      add(scalpLock(th,0.22*Math.PI,pe,[0.006,0.0095,0.0105,0.006,0.0015],{sw:(rng()-0.5)*0.1,tip:0.04+0.05*rng()+drop*1.5,lift:0.008+0.003*rng(),k:0.55,R:R+0.001})); } };
   // a flat curved blade of hair standing out of the scalp at (th, ph): wide across the head, thin front to back, ending in a point; `lean` tips it (x, y, z) from straight out
   const blade=(th,ph,len,wid,lean)=>{ const a=sp(th,ph,R*0.95), d=new THREE.Vector3(...sp(th,ph,1)).add(new THREE.Vector3(lean[0],lean[1],lean[2])).normalize(), w=new THREE.Vector3(Math.cos(th),0,Math.sin(th)).normalize(), n=new THREE.Vector3().crossVectors(w,d).normalize();
     w.crossVectors(d,n).normalize();
@@ -76,6 +85,9 @@ function buildHair(X,F){
   if(H==='bun'){ fringe(8,1.0,0.12); sideLocks(0.05); backLocks(sg(10),-0.02,41); if(!hat){ add(hang(csph(0.056,sg(16),sg(12)).translate(0,0.092,0.078))); tie(0,0.058,0.085,0.045); } }
   if(L.ahoge&&!hat&&H!=='bald'){ add(hang(sweepTube([[0.004,0.1,-0.042],[0.0,0.17,-0.05],[-0.02,0.23,-0.036],[0.0,0.27,-0.012],[0.02,0.26,0.008]],[0.0075,0.0065,0.005,0.003,0.0012],sg(6),{cap:'point',rings:sg(14)}))); }
 
+  if(H!=='bald'&&H!=='buzz'&&!hat&&sg(100)>=50){   // (not on phones) a few loose strands standing off the crown (version 3.2), the same ones every build
+    const rng=mulberry32(909); for(let i=0;i<5;i++){ const th=rng()*TAU, ph=(0.1+rng()*0.22)*Math.PI, a=sp(th,ph,R*0.99), d=sp(th,ph+0.3,1), k=0.035+0.025*rng();
+      add(hang(sweepTube([a,[a[0]+d[0]*k*0.5,a[1]+d[1]*k*0.5+0.012,a[2]+d[2]*k*0.5],[a[0]+d[0]*k+0.012*(rng()-0.5),a[1]+d[1]*k+0.02,a[2]+d[2]*k+0.012*(rng()-0.5)]],[0.0016,0.0013,0.0004],4,{cap:'point',rings:6}))); } }
   hgApply(X,parts,0,parts.length);   // hair colour gradient (model-hairgrad.js), before any hat is added
   /* hats: the base hats are in model-hats.js */
   htBase(X,F,parts);

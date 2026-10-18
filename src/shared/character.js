@@ -13,7 +13,7 @@ const BODY_SLIDERS=[
   // Body
   {k:'height',   g:'Body',     label:'Height',        min:0.9,  max:1.1,  def:1, ends:['Shorter','Taller']},
   {k:'build',    g:'Body',     label:'Build',         min:0.84, max:1.24, def:1, ends:['Slim','Sturdy']},
-  {k:'chest',    g:'Body',     label:'Chest',         min:0.5,  max:1.6,  def:1, ends:['Smaller','Larger']},
+  {k:'chest',    g:'Shape',    label:'Chest',         min:0.5,  max:2.2,  def:1, ends:['Smaller','Larger']},
   {k:'undertone',g:'Body',     label:'Skin undertone',min:-1,   max:1,    def:0, ends:['Cool','Warm']},
   // Shape (the proportions between the body's parts)
   {k:'shoulders',g:'Shape',    label:'Shoulders',     min:0.8,  max:1.25, def:1, ends:['Narrow','Broad']},
@@ -52,6 +52,8 @@ const BODY_SLIDERS=[
   {k:'hairVolume',g:'Hair',    label:'Hair volume',   min:0.85, max:1.35, def:1, ends:['Sleek','Fluffy']},
   {k:'bangs',    g:'Hair',     label:'Fringe length', min:0,    max:1.5,  def:1, ends:['None','Long']}
 ];
+// the chest as the body uses it: past 1.6 it grows at four fifths of the slider, and a larger chest also broadens the ribcage (chestRibs), so the very large end still reads as one body (model-body.js buildTorso, outfit-tools.js torsoSize)
+const chestEff=ch=>ch<=1.6?ch:1.6+(ch-1.6)*0.8, chestRibs=ch=>0.05*Math.min(Math.max(ch-1,0),1.2);
 const SLIDER_KEYS=BODY_SLIDERS.map(s=>s.k), SLIDER_BY_KEY={}, SLIDER_DEFS={};
 BODY_SLIDERS.forEach(s=>{ SLIDER_BY_KEY[s.k]=s; SLIDER_DEFS[s.k]=s.def; });
 // one slider's value from a look, clamped to its range (a remote look is not sanitized: strings, NaN and huge numbers all fall back or clamp)
@@ -79,7 +81,7 @@ const SETUP_BASE=[
 ];
 const CHAR_MODELS={
   base:{id:'base', name:'Wayfarer', note:'The hiker every player starts as: anime proportions, about 6.3 heads tall.',
-    ranges:{height:[0.92,1.08],build:[0.88,1.18],chest:[0.6,1.4],shoulders:[0.88,1.18],waist:[0.82,1.15],hips:[0.85,1.2],torso:[0.94,1.08],legs:[0.92,1.14],thighs:[0.85,1.25],arms:[0.82,1.25],neck:[0.85,1.2],hands:[0.85,1.2],feet:[0.85,1.2],
+    ranges:{height:[0.92,1.08],build:[0.88,1.18],chest:[0.6,1.9],shoulders:[0.88,1.18],waist:[0.82,1.15],hips:[0.85,1.2],torso:[0.94,1.08],legs:[0.92,1.14],thighs:[0.85,1.25],arms:[0.82,1.25],neck:[0.85,1.2],hands:[0.85,1.2],feet:[0.85,1.2],
       head:[0.9,1.12],jaw:[0.85,1.15],chin:[0.8,1.25],cheeks:[0.8,1.25],eyeSize:[0.9,1.3],eyeGap:[0.92,1.12],eyeHeight:[-0.6,0.6],eyeTilt:[-0.7,0.7],brow:[-0.7,0.7],
       noseSize:[0.7,1.25],mouthSize:[0.8,1.25],lips:[0.7,1.4],smile:[-0.6,0.9],earSize:[0.8,1.3],earPoint:[0,1],hairLength:[0.7,1.35],hairVolume:[0.9,1.25],bangs:[0.3,1.4]},
     setups:SETUP_BASE}
