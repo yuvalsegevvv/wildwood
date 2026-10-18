@@ -302,3 +302,5 @@ OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 5: a white fox half-
 OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 6: a big vermilion obi bow at the back, long trailing sleeve streamers
   torso:()=>oxBow(X,D,{col:0xc8323a,col2:0x2a1a40}),
   forearm:sd=>oxStreamer(X,D,{col:0xc8323a,col2:0x2a1a40,len:0.55,side:sd})}));
+OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 3: a curtain of paper talismans hanging from the belt
+  hips:()=>oxTags(X,D,{col:0xf3ead2,mark:0xc8323a,n:14,len:0.24})}));

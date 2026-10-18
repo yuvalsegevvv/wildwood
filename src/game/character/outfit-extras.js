@@ -1,7 +1,7 @@
 //@ Reusable extra pieces for the signature sets (scarf, apron, sash tails, rope coil, shoulder plate, hip lantern) and oxPlus, which adds them to a set's kit without editing its hooks
 /* oxPlus(base, fn): OUTFITS.<id> = oxPlus(OUTFITS.<id>, (X,D,k) => ({torso, hips, shoulder, extras: cosmetics})) wraps a set so each named hook returns what the set's own hook returns plus the pieces here
    (the set's own pieces are untouched; `cos` = the o of ofCosmetics, a cape and / or an aura). The pieces are drawn in torso / hips / shoulder frames like the hooks: y up, the front is -z, torso heights are design
-   heights (times D.TK), the hips hang down from y = 0, the shoulder frame has its origin at the joint with y down the arm. owns: oxBow, oxStreamer, oxSheaf, oxFish, oxTube, oxPlus, oxScarf, oxApron, oxSash, oxCoil, oxPauldron, oxLantern, oxBeads, oxSatchel, oxPack, oxMask.
+   heights (times D.TK), the hips hang down from y = 0, the shoulder frame has its origin at the joint with y down the arm. owns: oxTags, oxBow, oxStreamer, oxSheaf, oxFish, oxTube, oxPlus, oxScarf, oxApron, oxSash, oxCoil, oxPauldron, oxLantern, oxBeads, oxSatchel, oxPack, oxMask.
    used by: game/outfits/{sazanka,ogden,tamsin,pell,sabir}.js (the last line of each). test: tools/outfit-smoke.js, tools/cosmetic-items-smoke.js */
 function oxPlus(base,fn){
   return function(X,D){
@@ -115,4 +115,12 @@ function oxTube(X,D,o){
   out.push(solid(g,o.col));
   for(const t of [0.02,0.98]) out.push(solid(ofRingAt([a[0]+dir.x*t,a[1]+dir.y*t,a[2]+dir.z*t],[dir.x,dir.y,dir.z],0.024,0.006,sg(6)),o.cap));
   out.push(solid(ofRingAt([a[0]+dir.x*0.5,a[1]+dir.y*0.5,a[2]+dir.z*0.5],[dir.x,dir.y,dir.z],0.025,0.005,sg(6)),o.strap));
+  return out; }
+// a curtain of hanging paper talismans (or tassels, plates) round the waist, each a flat tag tilted out a little; o = {col, mark, n, len}: the hips frame
+function oxTags(X,D,o){
+  const {sg}=X, s=torsoSize(X,D,0.03), out=[], n=o.n||12, R=Math.max(s.rx,s.rz)+0.045;
+  out.push(solid(ofRingAt([0,0.0,0],[0,1,0],R-0.01,0.007,sg(6)),o.mark));
+  for(let i=0;i<n;i++){ const a=i/n*TAU, L=(o.len||0.2)*(0.85+0.15*Math.sin(i*2.3)), r=R*(Math.abs(Math.sin(a))*0.4+0.6)+0.01, x=Math.sin(a)*s.rx*1.15+Math.sin(a)*0.05, z=Math.cos(a)*(Math.cos(a)>0?s.rzBack:s.rz)*1.15+Math.cos(a)*0.05;
+    const g=vbox(0.04,L,0.004,0,-L/2-0.01,0).rotateX(0.12).rotateY(a).translate(x,0,z);
+    out.push(pc(g,(xx,y,zz,c)=>{ c.set(o.col); if(y<-0.015-L*0.2&&y>-0.015-L*0.5) c.set(o.mark); })); }
   return out; }

@@ -396,3 +396,6 @@ OUTFITS.corvin=(function(){
 OUTFITS.corvin=oxPlus(OUTFITS.corvin,(X,D)=>({   // round 6: a brass lamp swinging at the belt, a surveyor's map tube across the back
   torso:()=>oxTube(X,D,{col:0x5a4a39,cap:0xc59c39,strap:0xc59c39}),
   hips:()=>oxLantern(X,D,{frame:0xc59c39,glow:0xffc870,side:-1})}));
+OUTFITS.corvin=oxPlus(OUTFITS.corvin,(X,D)=>({   // round 3: brass-trimmed shoulder plates and a long waxed cape with brass stitching
+  shoulder:sd=>oxPauldron(X,D,{col:0x2b2b2e,trim:0xc59c39,r:0.062}),
+  cos:{cape:{col:0x2b2b2e,trim:0xc59c39,len:0.95,pat:'stitch',mantle:0}}}));

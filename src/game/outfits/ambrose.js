@@ -350,3 +350,7 @@ OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // round 5: an herb satchel w
   torso:()=>oxBeads(X,D,{col:0xcdbd8b,col2:0x4f7a6a,n:18,r:0.012,drop:0.2}),
   hips:()=>oxSatchel(X,D,{col:0x6a5a3a,trim:0x4f7a6a,herbs:0x8bc5a4,side:1}),
   cos:{cape:{col:0x4f7a6a,trim:0xdff5c0,len:0.45,pat:'petals',mantle:1}}}));
+OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // round 3: a mint linen scarf, a second satchel on the other hip, a leather plate with moss trim
+  torso:()=>oxScarf(X,D,{col:0xdff5c0,col2:0x4f7a6a,len:0.6}),
+  hips:()=>oxSatchel(X,D,{col:0x4f7a6a,trim:0x6a5a3a,herbs:0xe6eee6,side:-1}),
+  shoulder:sd=>sd<0?oxPauldron(X,D,{col:0x6a5a3a,trim:0x8bc5a4,r:0.06}):[]}));
