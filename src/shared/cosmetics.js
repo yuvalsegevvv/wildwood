@@ -65,6 +65,6 @@ function cosCleanLook(look,owned){
   if(!look||typeof look!=='object') return look;
   const o=Object.assign({},look);
   o.aura=cosOwns(owned,'a',look.aura)?look.aura:''; o.cape=cosOwns(owned,'c',look.cape)?look.cape:'';
-  for(const l of cosLocked(look,owned)) if(l.slot!=='c'&&l.slot!=='a') o[CP_SLOTS[l.slot][0]]=CP_NONE[l.slot];
+  for(const l of cosLocked(look,owned)) if(l.slot!=='c'&&l.slot!=='a') o[l.field||CP_SLOTS[l.slot][0]]=CP_NONE[l.slot];
   return o;
 }

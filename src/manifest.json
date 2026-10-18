@@ -189,6 +189,7 @@
     "character/outfit-shapes.js",
     "character/outfit-faces.js",
     "character/cosmetics.js",
+    "character/model-decos.js",
     "outfits/dunstan.js",
     "outfits/tansy.js",
     "outfits/torgeir.js",

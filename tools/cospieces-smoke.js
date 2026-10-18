@@ -2,7 +2,7 @@
 // monster drops at a lodge, and that every piece, pupil, colour, the backpack cape and the largest chest build with no NaN.
 // Usage: node tools/cospieces-smoke.js
 const {loadServer}=require('./load');
-const {api:W,x}=loadServer({dev:true,send(){}},['CP_PIECES','CP_RECIPE','CP_SLOTS','CP_FREE','cpDef','cpIsFree','cosCost','cosLocked','cosCleanLook','sanitizeCos','RES','MATS','VIL','COS_CAPES','COS_AURAS']);
+const {api:W,x}=loadServer({dev:true,send(){}},['CP_PIECES','CP_DECO','CP_RECIPE','CP_SLOTS','CP_FREE','cpDef','cpIsFree','cosCost','cosLocked','cosCleanLook','sanitizeCos','RES','MATS','VIL','COS_CAPES','COS_AURAS']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i!==undefined&&i!==''?'  ('+i+')':'')); if(!c) fails++; };
 // ---- the catalog ----
 const keys=Object.keys(x.CP_RECIPE);
@@ -49,4 +49,11 @@ bad.length=0; for(const sex of ['male','female']) build('chest '+sex,sex,{chest:
 const pack=C.buildCharacter(look('male',{cape:'pack',top:'tshirt'}),{q:0.6}), plain=C.buildCharacter(look('male',{cape:'',top:'tshirt'}),{q:0.6});
 ok('the backpack cape draws a pack on the back',C.tris(pack).length>C.tris(plain).length);
 ok('an old save with pack:true and a custom cape becomes cape pack',C.fullLook({cls:'warrior',custom:true,pack:true}).cape==='pack');
+// ---- decorations ----
+const decos=C.CP_PIECES.filter(r=>r[0]==='d').map(r=>r[1]);
+ok('15 to 20 decorations, all crafted (none free), each with a model',decos.length>=15&&decos.length<=20&&decos.every(id=>!x.cpIsFree('d',id)&&C.DECOS[id]&&x.CP_RECIPE['d:'+id]),decos.length);
+ok('three decoration fields are locked until made, in any field, and stripped by the server',(()=>{ const w={deco1:'flower',deco2:'halo',deco3:'tail'}; const l=x.cosLocked(w,['d:halo']); const cl=x.cosCleanLook(Object.assign({cls:'warrior'},w),['d:halo']); return l.length===2&&l.every(q=>q.slot==='d')&&cl.deco1===''&&cl.deco2==='halo'&&cl.deco3===''; })());
+bad.length=0; for(const id of decos){ for(const sex of ['male','female']) for(const col of [-1,0x33cc88]){ const t=build('deco '+id,sex,{deco1:id,decoColor1:col}); const base=build('base','male',{}); if(t&&base&&t.tris<=base.tris) bad.push(id+' draws nothing'); } }
+ok('every decoration builds on both bodies, takes a colour and adds geometry',!bad.length,bad.slice(0,4).join('; '));
+bad.length=0; build('three','female',{deco1:'wings',deco2:'tail',deco3:'halo',decoColor2:0x222222}); build('hostile','male',{deco1:'constructor',deco2:'__proto__',deco3:'toString',decoColor1:NaN}); ok('three at once build, hostile ids and colours do not',!bad.length,bad.join('; '));
 console.log(fails?fails+' FAILED':'all passed'); process.exitCode=fails?1:0;

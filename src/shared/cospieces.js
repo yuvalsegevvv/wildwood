@@ -1,5 +1,5 @@
 //@ Cosmetic pieces (version 3.2): which general parts of every slot (hat, top, bottom, shoes, gloves, cape, aura) are free and which are crafted, from professions' materials and monsters' drops; the try-on lock rules. Pure.
-/* The general pieces, the ones that belong to no signature set. Seven slots, a letter each (the first letter of the key in gear.cos, 'c:regal'):
+/* The general pieces, the ones that belong to no signature set. Eight slots (the eighth, d, is three decoration fields), a letter each (the first letter of the key in gear.cos, 'c:regal'):
      h hat (look.hat)   t top (look.top)   b bottom (look.bottom)   s shoes (look.shoes)   g gloves (look.gloves)   c cape (look.cape)   a aura (look.aura)
    FREE: everything the game had before this update (every base hat, top, bottom, shoes and glove), the backpack (a cape, id 'pack'), two plain capes and two plain auras (CP_FREE). They are worn by anyone and nothing is stored.
    CRAFTED: a piece with a recipe (CP_RECIPE) is made at a Wayfarers' Lodge (cosmake: server/cosmetics.js) and kept in gear.cos. A recipe is {res:[[resource, n]...], mats:[[monster id, n]...], coins}:
@@ -9,8 +9,9 @@
    cosCleanLook (the server) takes them off with the slot's default (CP_NONE), and the editor will not close on one.
    owns: CP_SLOTS, CP_NONE, CP_PIECES, CP_RECIPE, CP_FREE, cpDef, cpIsFree, cpCost, cosLocked, cpSlotOf.   used by: shared/cosmetics.js, server/cosmetics.js, game/economy/cosmetics.js, ui/character-editor.js, character/model-*.js (the lists).   test: tools/cospieces-smoke.js */
 // slot letter: [look field, what a stripped slot falls back to, the name of the slot]
-const CP_SLOTS={h:['hat','none','Hat'],t:['top','tshirt','Top'],b:['bottom','trousers','Bottom'],s:['shoes','boots','Shoes'],g:['gloves','none','Gloves'],c:['cape','','Cape'],a:['aura','','Aura']};
-const CP_LETTERS=['h','t','b','s','g','c','a'];
+const CP_SLOTS={h:['hat','none','Hat'],t:['top','tshirt','Top'],b:['bottom','trousers','Bottom'],s:['shoes','boots','Shoes'],g:['gloves','none','Gloves'],c:['cape','','Cape'],a:['aura','','Aura'],d:['deco1','','Decoration']};   // d: three look fields, CP_DECO
+const CP_LETTERS=['h','t','b','s','g','c','a','d'];
+const CP_DECO=['deco1','deco2','deco3'];   // up to three decorations, any of them in any field
 const CP_NONE={}; for(const k of CP_LETTERS) CP_NONE[k]=CP_SLOTS[k][1];
 // the crafted pieces of the five garment slots: [slot, id, name, grade 1..6 (the land it is for), a short line]; the models are in game/character/model-*.js (their ids are listed there too)
 const CP_PIECES=[
@@ -35,6 +36,25 @@ const CP_PIECES=[
   ['s','sabatons','Steel Sabatons','6','Boots of overlapping steel plates with a pointed toe.'],
   ['g','lace','Lace Gloves','2','Fine open lace to the wrist with a small bow.'],
   ['g','furmitts','Fur Mitts','5','Deep fur mitts with a stitched hide palm.'],
+  ['d','flower','Hairpin Blossom','1','A small blossom pinned above the ear.'],
+  ['d','feather','Plume Feather','2','A long feather standing off the back of the crown.'],
+  ['d','bell','Ribbon Bell','1','A little bell on a ribbon round the neck.'],
+  ['d','scarf','Woollen Scarf','2','A thick wrap with one tail hanging down the front.'],
+  ['d','glasses','Round Spectacles','2','Round lenses in a thin frame.'],
+  ['d','eyepatch','Eyepatch','1','A leather patch on a strap.'],
+  ['d','kitsunemask','Fox Mask','3','A white fox mask pushed up to the side of the head.'],
+  ['d','earrings','Hoop Earrings','2','A hoop and a drop on each ear.'],
+  ['d','horns','Little Horns','3','Two small curved horns above the brow.'],
+  ['d','halo','Floating Halo','5','A small ring of light over the head.'],
+  ['d','brooch','Gem Brooch','2','A gem in a metal setting pinned to the chest.'],
+  ['d','pouch','Belt Pouch','1','A belt with a pouch on the right hip.'],
+  ['d','lantern','Belt Lantern','3','A small glowing lantern hanging from the belt.'],
+  ['d','tail','Soft Tail','4','A long fluffy tail with a pale tip.'],
+  ['d','wings','Feathered Wings','5','A pair of small wings on the back.'],
+  ['d','bow','Ribbon Bow','1','A big hair bow tied at the back of the head.'],
+  ['d','moth','Glow Moth','4','A small glowing moth resting on the shoulder.'],
+  ['d','bracelet','Charm Bangle','1','A bangle with a charm on the left wrist.'],
+  ['d','anklet','Bell Anklet','1','A chain with a bell round the left ankle.'],
   ['g','studded','Studded Gloves','2','Black leather with brass studs along the knuckles.']
 ];
 // [key, recipe]: every crafted piece, themed to what it is (metal from ore, wood from logs, cloth and flowers from herbs, and the drops of the monsters it looks like).
@@ -82,6 +102,25 @@ const CP_RECIPE={
   'a:dune':{res:[['sunstone',6]],mats:[['glasswisp',6],['dustdjinn',6]],coins:650},
   'a:wisp':{res:[['snowmoss',6]],mats:[['lanternwisp',8],['candlewisp',6]],coins:800},
   'a:stellar':{res:[['hagane',8],['rimeore',6],['snowmoss',8]],mats:[['glassguardian',3]],coins:2500},
+  'd:flower':{res:[['sunpetal',3],['kikyo',2]],mats:[],coins:80},
+  'd:feather':{res:[],mats:[['tengu',3],['gryphonqueen',1]],coins:300},
+  'd:bell':{res:[['silver',1]],mats:[['wolf',3]],coins:120},
+  'd:scarf':{res:[['yomogi',4]],mats:[['wolf',4],['snowboar',2]],coins:200},
+  'd:glasses':{res:[['silver',2]],mats:[['crystalbeetle',3]],coins:300},
+  'd:eyepatch':{res:[['pine',1]],mats:[['boar',4]],coins:100},
+  'd:kitsunemask':{res:[['cherry',4]],mats:[['kitsune',6]],coins:400},
+  'd:earrings':{res:[['silver',2],['sunstone',1]],mats:[],coins:250},
+  'd:horns':{res:[],mats:[['ramboar',5],['oni',2]],coins:350},
+  'd:halo':{res:[['sunstone',4],['silver',4]],mats:[['lanternwisp',4]],coins:900},
+  'd:brooch':{res:[['silver',2],['sunstone',1]],mats:[],coins:200},
+  'd:pouch':{res:[['pine',2]],mats:[['boar',6]],coins:100},
+  'd:lantern':{res:[['iron',3]],mats:[['onibi',4]],coins:300},
+  'd:tail':{res:[],mats:[['kitsune',8],['shadowfox',4]],coins:500},
+  'd:wings':{res:[['silver',4]],mats:[['gryphonqueen',3],['tengu',4]],coins:1200},
+  'd:bow':{res:[['yomogi',3],['sunpetal',2]],mats:[],coins:120},
+  'd:moth':{res:[],mats:[['glasswisp',3],['rimewisp',3]],coins:450},
+  'd:bracelet':{res:[['iron',2]],mats:[['beetle',3]],coins:100},
+  'd:anklet':{res:[['silver',1]],mats:[['crab',3]],coins:100},
   'a:spore':{res:[],mats:[['shroom',10],['deathcap',6]],coins:150},
   'a:bubble':{res:[],mats:[['tideslime',8],['crab',6]],coins:250},
   'a:spirit':{res:[],mats:[['kodama',8],['onibi',6]],coins:500},
@@ -115,11 +154,11 @@ const cpSlotOf=field=>{ for(const k of CP_LETTERS) if(CP_SLOTS[k][0]===field) re
 // the crafted pieces a look wears that you have not made: [{slot, id, name}]; `owned` is gear.cos
 function cosLocked(look,owned){
   const out=[]; if(!look||typeof look!=='object') return out;
-  for(const k of CP_LETTERS){
-    const id=look[CP_SLOTS[k][0]]; if(typeof id!=='string'||!id) continue;
+  for(const k of CP_LETTERS) for(const field of (k==='d'?CP_DECO:[CP_SLOTS[k][0]])){
+    const id=look[field]; if(typeof id!=='string'||!id) continue;
     const D=cpDef(k,id); if(!D||D.free) continue;
     if(Array.isArray(owned)&&owned.includes(cpKey(k,id))) continue;
-    out.push({slot:k,id,name:D.name});
+    out.push({slot:k,id,name:D.name,field});
   }
   return out;
 }

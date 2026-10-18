@@ -15,7 +15,7 @@ function cthBase(sex,skin){
 }
 // the look and the framing of a tile: view = head | chest | legs | feet | body | back; spin = a quarter turn so a side or back shows
 function cthLookFor(sp){
-  const sex=sp.sex||LOOK.sex, skin=sp.skin!==undefined?sp.skin:LOOK.skin, L=cthBase(sex,skin), id=sp.id;
+  const sex=sp.sex||LOOK.sex, skin=sp.skin!==undefined?sp.skin:LOOK.skin, L=cthBase(sex,skin), id=sp.id;   // (a decoration: DECOS in character/model-decos.js)
   L.hairColor=LOOK.hairColor; L.hair=LOOK.hair; L.face=LOOK.face; L.eyes=LOOK.eyes;
   let view='body', spin=0.35;
   switch(sp.kind){
@@ -32,6 +32,7 @@ function cthLookFor(sp){
     case 'pack': L.pack=true; view='back'; spin=Math.PI-0.35; break;
     case 'cape': L.cape=id; view='back'; spin=Math.PI-0.35; break;
     case 'aura': L.aura=id; view='body'; break;
+    case 'deco': { L.deco1=id; if(sp.col!==undefined&&sp.col>=0) L.decoColor1=sp.col; const an=DECOS[id]?DECOS[id].anchor:'headTop'; view=an==='headTop'||an==='face'?'head':an==='neck'||an==='chest'||an==='shoulderR'?'chest':an==='back'?'back':an==='waist'?'legs':an==='wristL'?'hands':an==='ankleL'?'feet':'body'; if(view==='back'||id==='tail') spin=Math.PI-0.35; break; }
     case 'sex': L.hair=sex==='female'?'ponytail':'short'; L.top='tshirt'; view='body'; break;
     case 'weapon': L.weaponItem=id; L.top='jacket'; view='body'; break;
     case 'outfit': { const M=CHAR_MODELS[id]; const sx=(M.sexes&&M.sexes[0])||sex; const B=cthBase(sx,skin); Object.assign(L,ofWear(B,id)); L.sex=sx; const st=setupsOf(M,sx)[0]; if(st) Object.assign(L,applySetup(L,st)); L.armor='hide'; view='body'; break; }

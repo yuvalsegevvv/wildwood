@@ -63,6 +63,9 @@ const EDIT=[
     {name:'Aura', rows:[
       {k:'aura',type:'grid',kind:'aura',slot:'a',ids:()=>[['']].concat(COS_AURAS.map(d=>[d[0],d[1],d[8]]))},
       {type:'dcolor',k:'auraColor',label:'Main colour',need:'aura',opts:TINTC},{type:'dcolor',k:'auraColor2',label:'Second colour',need:'aura',opts:TINTC}]},
+    // version 3.2: up to three decorations, all crafted, any in any field, each with its own colour
+    {name:'Decor', rows:[1,2,3].flatMap(n=>[{k:'deco'+n,label:'Decoration '+n,type:'grid',kind:'deco',slot:'d',col:'decoColor'+n,ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='d').map(r=>[r[1],r[2],r[4]]))},
+      {type:'dcolor',k:'decoColor'+n,label:'Colour',need:'deco'+n,opts:TINTC}])},
     // an outfit's weapon dressing restyles whatever weapon you hold, whatever your class
     // version 3.1: gloves, the eighth piece: six plain ones and the glove of every set that has one (model-gloves.js)
     {name:'Gloves', rows:[{k:'gloves',type:'grid',kind:'gloves',slot:'g',col:'gloveColor',ids:()=>[['none']].concat(Object.keys(GL_BASE).map(id=>[id,GL_BASE[id].name,GL_BASE[id].text]),ofItems('glove'))},{k:'gloveColor',label:'',type:'color',base:'glove',opts:TINTC},{type:'palette',slot:'glove'}]},
@@ -194,14 +197,14 @@ function renderEditor(){
       const ids=row.ids(), box=document.createElement('div'); box.className='tiles'+(row.kind==='sex'?' two':'');
       if(row.empty&&ids.length<2){ const p0=document.createElement('p'); p0.className='ed-info'; p0.textContent=row.empty; wrap.append(p0); }
       for(const [v,name,tip] of ids){
-        const sig=!!OUTFITS[v], gap=(v===''||v==='none')&&(row.kind==='hat'||row.kind==='gloves'||row.kind==='faceItem'||row.kind==='cape'||row.kind==='aura')||(row.kind==='pack'&&v===false);   // "nothing": a crossed circle
+        const sig=!!OUTFITS[v], gap=(v===''||v==='none')&&(row.kind==='hat'||row.kind==='gloves'||row.kind==='faceItem'||row.kind==='cape'||row.kind==='aura'||row.kind==='deco')||(row.kind==='pack'&&v===false);   // "nothing": a crossed circle
         const spec=gap?null:{kind:row.kind,id:v};
         if(spec&&row.col&&!sig) spec.col=LOOK[row.col];
         if(spec&&row.kind==='sex') spec.sex=v;
         const cur=LOOK[row.k], on=cur===undefined?(v===false||v===''):cur===v;
         const D=row.slot&&!gap?cpDef(row.slot,v):null, made=!!D&&!D.free&&edOwned().includes(cpKey(row.slot,v)), locked=!!D&&!D.free&&!made;
         const title=(name?(tip?name+': '+tip:name):gap?'None':ED_NAMES[v]||String(v).replace(/^./,c=>c.toUpperCase()))+(locked?' (locked: '+cosRecipeText(row.slot,v)+'. Tap to try it on.)':made?' (made)':'');
-        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='pupil'||(D&&!D.free)?name:''}); b.onclick=()=>{ setLook(row.k,v); renderEditor(); };
+        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='pupil'||(D&&!D.free)?name:''}); b.onclick=()=>{ setLook(row.k,v); renderEditor(); };
         if(locked){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); } else if(made){ b.classList.add('made'); }
         box.append(b); }
       wrap.append(box);
