@@ -284,8 +284,9 @@ function surpriseMe(){
 function openEditor(o){
   if(!Stream.terrainDone) return;
   customizing=true; creating=!!(o&&o.create);
-  if(creating){ edTab=1; edSub[1]=0; }   // creating starts on Body > Gender
+  if(creating){ edTab=0; edSub[0]=0; }   // creating starts on the signature characters: one tap is a finished hiker, and Body, Face and Clothes are there to change any of it
   $('#edTitle').textContent=creating?'Create your hiker':'Your hiker'; $('#edDone').textContent=creating?'Enter the world':'Done';
+  $('#edDrag').textContent=creating?'Pick a character to start from, or build your own in Body, Face and Clothes. You can change it all later.':'Drag the scene to turn around';
   releasePointer();
   P.vx=P.vz=0; joyX=joyY=0;
   hiker.g.visible=true;

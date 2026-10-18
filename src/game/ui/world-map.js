@@ -140,7 +140,7 @@ function wmapDraw(){
     x.globalAlpha=1;
   }
   { const p=wmapPin(); if(p) wmapPinDraw(x,wmapSx(p[0]),wmapSy(p[1]),t); }
-  x.font='600 12px Inter, system-ui, sans-serif'; x.textAlign='right'; x.textBaseline='alphabetic'; x.shadowColor='rgba(0,0,0,.9)'; x.shadowBlur=4; x.fillStyle='#fff';
+  x.font='600 12px "Alegreya Sans", system-ui, sans-serif'; x.textAlign='right'; x.textBaseline='alphabetic'; x.shadowColor='rgba(0,0,0,.9)'; x.shadowBlur=4; x.fillStyle='#fff';
   x.fillText(isTouch?'Tap a land · drag to pan · pinch to zoom':'Click a land · drag to pan · scroll to zoom',W-14,H-12); x.shadowColor='transparent'; x.shadowBlur=0;
 }
 function wmapUpdate(dt){

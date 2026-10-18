@@ -1,10 +1,10 @@
 /*@ Inventory / shop / quest panels */
 .panel{ position:fixed; z-index:9; left:50%; top:50%; transform:translate(-50%,-50%); width:min(620px,calc(100vw - 24px)); max-height:min(80dvh,700px);
-  display:flex; flex-direction:column; background:var(--glass-strong); border:1px solid var(--line); border-radius:18px; padding:14px 16px 12px;
-  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
+  display:flex; flex-direction:column; background:var(--glass-strong); border:1px solid var(--line); border-radius:6px; padding:14px 16px 12px;
+  }
 .panel[hidden]{ display:none; }
 .pn-head{ display:flex; align-items:center; gap:12px; margin-bottom:8px; }
-.pn-t{ font-family:Fraunces, Georgia, serif; font-size:22px; }
+.pn-t{ font-family:Alegreya, Georgia, serif; font-size:22px; }
 .pn-coins{ margin-left:auto; color:#f2cf5a; font-size:13.5px; font-weight:600; }
 .pn-tabs{ margin-bottom:8px; }
 .pn-body{ overflow-y:auto; padding-right:4px; touch-action:pan-y; -webkit-overflow-scrolling:touch; }
@@ -23,7 +23,7 @@
 .tag.on{ color:#9fe08a; }
 .chip:disabled{ opacity:.45; cursor:not-allowed; }
 .chip.buy{ color:#f2cf5a; }
-.qc{ background:rgba(0,0,0,.2); border-radius:12px; padding:10px 12px; margin-bottom:8px; }
+.qc{ background:rgba(0,0,0,.2); border-radius:6px; padding:10px 12px; margin-bottom:8px; }
 .qc-top{ display:flex; justify-content:space-between; align-items:baseline; }
 .qc-top b{ font-size:15px; }
 .qc p{ margin:6px 0 8px; font-size:13.5px; color:var(--ink-dim); line-height:1.45; }
@@ -31,7 +31,7 @@
 .qc-bot .rw{ margin-left:auto; color:#f2cf5a; }
 .muted{ color:var(--ink-dim); font-size:13px; }
 @media (max-width:719px){
-  .panel{ left:0; right:0; top:auto; bottom:0; transform:none; width:auto; max-height:72dvh; border-radius:18px 18px 0 0; padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px); }
+  .panel{ left:0; right:0; top:auto; bottom:0; transform:none; width:auto; max-height:72dvh; border-radius:6px 18px 0 0; padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px); }
   #qlog{ top:auto; bottom:calc(env(safe-area-inset-bottom,0px) + 200px); width:170px; }
   body:not(.touch) #qlog{ bottom:auto; top:calc(env(safe-area-inset-top,0px) + 72px); }
 }

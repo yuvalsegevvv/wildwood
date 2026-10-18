@@ -27,7 +27,8 @@
     "25-dungeon-board.css",
     "26-pvp.css",
     "27-skillsets.css",
-    "28-guide.css"
+    "28-guide.css",
+    "29-theme.css"
   ],
   "shared": [
     "math.js",

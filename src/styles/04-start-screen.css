@@ -7,27 +7,27 @@
 #start.hide{ opacity:0; pointer-events:none; }
 #start [hidden]{ display:none !important; }
 .card{
-  width:100%; max-width:410px; border-radius:22px; padding:28px 26px 22px; margin:auto;
+  width:100%; max-width:410px; border-radius:6px; padding:28px 26px 22px; margin:auto;
   background:var(--glass-strong); border:1px solid var(--line);
-  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+ 
 }
 .card h1{
-  font-family:Fraunces, Georgia, "Times New Roman", serif; font-weight:400;
+  font-family:Alegreya, Georgia, "Times New Roman", serif; font-weight:400;
   font-size:clamp(40px, 11vw, 54px); line-height:.95; letter-spacing:-.01em; margin:0 0 12px;
 }
 .card .tag{ margin:0 0 22px; color:var(--ink-dim); font-size:15px; line-height:1.55; }
 .st-btns, .st-form{ display:flex; flex-direction:column; gap:10px; }
-.st-form h2{ font:400 24px/1.1 Fraunces, Georgia, "Times New Roman", serif; margin:0 0 4px; }
+.st-form h2{ font:400 24px/1.1 Alegreya, Georgia, "Times New Roman", serif; margin:0 0 4px; }
 .st-btn{
-  width:100%; height:52px; border-radius:14px; cursor:pointer;
-  border:1px solid var(--line); background:rgba(238,240,226,.06); color:var(--ink); font:600 15.5px Inter, system-ui, sans-serif;
+  width:100%; height:52px; border-radius:6px; cursor:pointer;
+  border:1px solid var(--line); background:rgba(238,240,226,.06); color:var(--ink); font:600 15.5px "Alegreya Sans", system-ui, sans-serif;
 }
 .st-btn.primary{ background:var(--lichen); color:var(--lichen-ink); border-color:var(--lichen); }
 .st-btn:disabled{ opacity:.55; cursor:progress; }
 .st-btn:focus-visible, .start-in:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
 .start-in{
-  width:100%; height:46px; border-radius:12px; border:1px solid var(--line); background:rgba(0,0,0,.25); color:var(--ink);
-  padding:0 14px; font:500 15px Inter, system-ui, sans-serif; -webkit-user-select:text; user-select:text;
+  width:100%; height:46px; border-radius:6px; border:1px solid var(--line); background:rgba(0,0,0,.25); color:var(--ink);
+  padding:0 14px; font:500 15px "Alegreya Sans", system-ui, sans-serif; -webkit-user-select:text; user-select:text;
 }
 .st-fine{ margin:0; font-size:12.5px; line-height:1.5; color:var(--ink-dim); }
 .st-fine .linkbtn{ margin:0 0 0 6px; padding:0; font-size:12.5px; }

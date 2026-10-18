@@ -6,7 +6,7 @@
 <title>Wildwood, a forest to wander</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" id="fontcss">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet" media="print" id="fontcss">
 <style>
 {{STYLES}}</style>
 </head>
@@ -275,7 +275,7 @@
   </div>
 </div>
 <div id="editor" hidden>
-  <div class="ed-head"><div class="ed-title" id="edTitle">Your hiker</div><div class="ed-drag">Drag the scene to turn around</div></div>
+  <div class="ed-head"><div class="ed-title" id="edTitle">Your hiker</div><div class="ed-drag" id="edDrag">Drag the scene to turn around</div></div>
   <div id="edTabs" class="ed-tabs"></div>
   <div id="edSubs" class="ed-subs"></div>
   <div id="edBody" class="ed-body"></div>
@@ -300,12 +300,13 @@
 <div id="start">
   <div class="card">
     <h1>Wildwood</h1>
-    <p class="tag">A forest to wander: a village at its heart, monsters in the woods, a boss at the edge of the world.</p>
+    <div class="st-rule" aria-hidden="true"><i></i></div>
+    <p class="tag">Your sibling Wren has fallen into a grey sleep that will not break. Somewhere in the woods beyond the village is the reason.</p>
     <p class="st-msg" id="stMsg" role="alert" hidden></p>
     <div class="st-btns" id="stHome">
-      <button class="st-btn primary" id="stLogin" hidden>Log in</button>
-      <button class="st-btn" id="stRegister" hidden>Register</button>
-      <button class="st-btn" id="stGuest" hidden>Play as guest</button>
+      <button class="st-btn primary" id="stGuest" hidden>Play now</button>
+      <p class="st-fine st-center" id="stGuestNote" hidden>No account needed. Register later to keep your hiker on any device.</p>
+      <div class="st-row" id="stAcct" hidden><button class="st-btn" id="stLogin" hidden>Log in</button><button class="st-btn" id="stRegister" hidden>Create account</button></div>
       <button class="st-btn primary" id="stSolo" hidden>Play solo</button>
       <button class="st-btn" id="stRoom" hidden>Play in the shared world</button>
       <p class="st-fine" id="stNote" hidden></p>

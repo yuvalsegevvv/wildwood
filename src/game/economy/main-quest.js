@@ -56,9 +56,13 @@ function mqLogRow(){
   const s=mqCur(); if(!s) return `<div class="ql mq"><b>The main quest</b><span>${MQ_END}</span></div>`;
   let what;
   if(M.st===0) what=PL.level<s.gate?'From level '+s.gate+': '+MQ_NAMES[s.from]+'. Until then, hunt and take notices from the quest board':'Talk to '+MQ_NAMES[s.from];
-  else what=mqObjective(s,M.n);
+  else if(mqAllDone(s,M.n)) what=mqObjective(s,M.n);
+  else what=s.parts.map((pt,i)=>{ if(!mqOpen(s,M.n,i)&&!(M.n[i]>=mqNeed(pt))) return ''; const need=mqNeed(pt), got=Math.min(need,M.n[i]||0);   // every part that runs at once, each with its count (Heartleaf: herbs and slimes together)
+    return got>=need?'<i class="ql-done">&#10003; '+pt.text+'</i>':pt.text+(need>1?' ('+got+' / '+need+')':''); }).filter(Boolean).join('<br>');
   const T=mqTarget(), where=T&&!(M.st===0&&PL.level<s.gate)?(Math.hypot(T.x-P.x,T.z-P.z)<12?'':' &middot; '+Math.round(Math.hypot(T.x-P.x,T.z-P.z))+' m '+dirWord(T.x-P.x,T.z-P.z)):'';
-  return `<div class="ql mq${M.st===2?' ok':''}"><b>${s.title}</b><span>${what}${where}</span></div>`;
+  // the first steps keep their how-to under the objective while they run (the toast that brought it fades, and a new player reads it when they need it)
+  const tip=M.st===1&&s.tip&&M.s<=MQ_BY_ID.W5.i?`<small class="ql-tip">${s.tip}</small>`:'';
+  return `<div class="ql mq${M.st===2?' ok':''}"><b>${s.title}</b><span>${what}${where}</span>${tip}</div>`;
 }
 // Wren sits up when a step wants them awake (handing in to Wren, and the goodbye before the tunnel); otherwise they sleep
 function wrenAwake(){ const M=mqG(), s=mqCur(); if(!s) return !!M; return (M.st===2&&s.to==='wren')||(s.id==='W18'&&M.st===1&&mqOpen(s,M.n,0)); }

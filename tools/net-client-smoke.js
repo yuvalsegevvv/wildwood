@@ -19,6 +19,7 @@ function fill(c,user,pass,pass2){ c.el('#stUser').value=user; c.el('#stPass').va
     let c=await ready(H); clients.push(c);
     ok('the card offers Log in, Register and Play as guest and no solo / shared (it is a page of the Node host)',!c.el('#stLogin').hidden&&!c.el('#stRegister').hidden&&!c.el('#stGuest').hidden&&c.el('#stSolo').hidden&&c.el('#stRoom').hidden);
     c.el('#stGuest').click();
+    if(await until(()=>c.G().customizing()||c.G().started(),60000)&&c.G().customizing()) c.el('#edDone').click();   // a brand-new guest makes a character first (ui/start-screen.js)
     ok('Play as guest: the game starts, connected over a real WebSocket',await until(()=>c.G().started(),60000)&&c.G().NET.ready&&c.G().NET.mode==='ws'&&!c.G().NET.user);
     let G=c.G();
     ok('the roster of monsters arrives (the server has 1187)',await until(()=>c.G().MONS.length>1000,15000),c.G().MONS.length+' monsters');

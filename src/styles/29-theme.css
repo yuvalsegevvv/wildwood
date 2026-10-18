@@ -1,0 +1,80 @@
+/*@ The storybook skin: dark bark panels, a brass frame with corner studs, parchment ink and the Alegreya fonts, laid over every HUD box, panel and button (the look of the world map) */
+/* Why: the earlier frosted-glass cards with round corners and a pastel button read as a generic app. This file owns the look so it can be tuned
+   in one place: the colour tokens are in 01-base.css (--glass / --glass-strong are now bark, --line brass, --lichen the brass accent), the frame, grain and
+   studs are here. No backdrop blur anywhere (it was also the costliest thing the HUD drew on a phone). */
+:root{
+  --font-ui:"Alegreya Sans", "Trebuchet MS", system-ui, sans-serif;
+  --font-head:Alegreya, Georgia, "Times New Roman", serif;
+  --brass:#d9b26a; --brass-deep:#8a6630; --bark:#1d150d;
+  /* a faint wood grain (stretched noise) and four brass studs, layered over a panel's own colour */
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .32' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .4 0 0 0 0 .25 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)'/%3E%3C/svg%3E");
+  --stud:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M4 0L8 4L4 8L0 4Z' fill='%23d9b26a'/%3E%3Cpath d='M4 1.6L6.4 4L4 6.4L1.6 4Z' fill='%23f3dca0'/%3E%3C/svg%3E");
+  --frame:inset 0 0 0 3px rgba(10,7,3,.35), inset 0 0 0 4px rgba(217,178,106,.2), 0 8px 26px rgba(0,0,0,.42);
+}
+body{ font-family:var(--font-ui); font-size:15px; }
+button, input, select, textarea{ font-family:var(--font-ui) !important; }
+.card h1, .st-form h2, .brand .t, .pn-t, .ed-title, .snd-head, #lvup, #down b, .bb-top b, #bubble b{ font-family:var(--font-head) !important; }
+
+/* the big boxes: the start card, every panel, the editor, the settings */
+.card, .panel, #sound, #editor, .gg-box{
+  background:var(--stud) 7px 7px/8px no-repeat, var(--stud) right 7px top 7px/8px no-repeat, var(--stud) left 7px bottom 7px/8px no-repeat, var(--stud) right 7px bottom 7px/8px no-repeat,
+    var(--grain), linear-gradient(180deg, rgba(48,36,22,.94), rgba(26,19,12,.96)) !important;
+  border:1px solid var(--line) !important; box-shadow:var(--frame);
+  backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
+}
+.card{ border-radius:6px; }
+.panel, #sound, .gg-box{ border-radius:6px; }
+#editor{ border-radius:0; border-width:0 0 0 1px !important; }
+@media (max-width:719px){ .panel, #editor{ border-radius:8px 8px 0 0 !important; } #editor{ border-width:1px 0 0 !important; } }
+
+/* the small boxes of the HUD: the name box, quest rows, toasts, hints, the target frame, the action bar, the icon buttons */
+.brand, .ql, .toast, #hint, #prompt, #tframe, #bossbar, #bubble, #aiNote, .icon-btn, .ab, .touch-btn, .chat-btn{
+  background:var(--grain), linear-gradient(180deg, rgba(44,33,20,.86), rgba(24,18,11,.9)) !important;
+  border-color:var(--line) !important;
+  backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
+}
+.brand, #tframe, #bossbar{ border-radius:5px; box-shadow:inset 0 0 0 2px rgba(10,7,3,.3), inset 0 0 0 3px rgba(217,178,106,.14), 0 4px 14px rgba(0,0,0,.35); }
+.ql, .toast, #hint, #prompt, #bubble{ border-radius:4px; box-shadow:0 3px 12px rgba(0,0,0,.35); }
+#aiNote{ border-radius:3px; }
+.icon-btn{ border-radius:6px; box-shadow:inset 0 1px 0 rgba(243,220,160,.12), 0 2px 8px rgba(0,0,0,.35); color:#ecdcb4; }
+.icon-btn:hover{ border-color:var(--brass) !important; color:#fff4dc; }
+.ab{ border-radius:6px; box-shadow:inset 0 0 0 2px rgba(10,7,3,.3), inset 0 1px 0 rgba(243,220,160,.14), 0 3px 10px rgba(0,0,0,.4); }
+.ab .key{ color:var(--brass); }
+#bubble::after{ background:rgba(26,19,12,.92) !important; }
+
+/* the quest log: a pinned note; the main quest's row keeps its violet mark */
+.ql b{ font-family:var(--font-head); font-size:14px; font-weight:700; letter-spacing:.01em; }
+.ql.mq{ border-left:3px solid #b48ae6 !important; }
+.ql .ql-tip{ display:block; margin-top:4px; padding-top:4px; border-top:1px solid rgba(217,178,106,.18); color:#e6d7b4; font-size:12px; line-height:1.4; }
+
+/* buttons: brass for the one to press, dark wood with a brass edge for the rest */
+.st-btn, .ed-foot button, .chip, .ed-sub, .kb-key{ border-radius:4px !important; }
+.st-btn{ background:rgba(20,14,8,.45); border-color:rgba(217,178,106,.35); color:var(--ink); letter-spacing:.01em; font-size:16.5px !important; }
+.st-btn:hover:not(:disabled), .chip:hover:not(:disabled){ border-color:var(--brass); }
+.st-btn.primary, .ed-foot .primary, .chip[aria-pressed="true"], .ed-sub[aria-selected="true"], .kb-key.listening{
+  background:linear-gradient(180deg,#ebcd88,#c9a058) !important; color:#2a1b0b !important; border:1px solid #7a5524 !important;
+  box-shadow:inset 0 1px 0 rgba(255,246,214,.55), 0 2px 6px rgba(0,0,0,.35);
+}
+.st-btn.primary{ font-weight:700; font-size:17.5px !important; }
+.chip{ background:rgba(20,14,8,.4); border-color:rgba(217,178,106,.3); }
+.ed-tab[aria-selected="true"]{ border-bottom-color:var(--brass) !important; }
+.ctile{ border-radius:5px; }
+.ctile[aria-pressed="true"]{ border-color:var(--brass) !important; box-shadow:0 0 0 2px rgba(217,178,106,.35) !important; }
+
+/* the bars: health a deep red, experience gold, both in a sunken brass-edged groove */
+.pbar, .tf-bar, .bb-bar, .hpb{ border-radius:2px !important; box-shadow:inset 0 1px 2px rgba(0,0,0,.6), 0 0 0 1px rgba(217,178,106,.22); }
+.pbar.hp i{ background:linear-gradient(180deg,#d9574a,#9c2c24) !important; }
+.pl-top b, .brand .s.z{ color:var(--brass) !important; }
+
+/* the start card: a title plate with a rule under it */
+.card h1{ font-weight:700 !important; letter-spacing:.01em !important; color:#f6e7c4; text-shadow:0 2px 0 rgba(0,0,0,.35); text-align:center; margin-bottom:6px !important; }
+.card .st-rule{ display:flex; align-items:center; gap:10px; margin:0 0 16px; color:var(--brass); }
+.card .st-rule::before, .card .st-rule::after{ content:""; flex:1; height:1px; background:linear-gradient(90deg,transparent,rgba(217,178,106,.6),transparent); }
+.card .st-rule i{ width:7px; height:7px; transform:rotate(45deg); background:var(--brass); }
+.card .tag{ text-align:center; font-family:var(--font-head); font-style:italic; font-size:16.5px !important; color:#e2d3ae !important; }
+.st-row{ display:flex; gap:10px; }
+.st-row .st-btn{ flex:1; height:46px; font-size:15.5px !important; }
+.start-in{ border-radius:4px; background:rgba(10,7,3,.45); border-color:rgba(217,178,106,.3); }
+.bar{ border-radius:1px; background:rgba(10,7,3,.5); box-shadow:0 0 0 1px rgba(217,178,106,.25); }
+.bar i{ background:linear-gradient(90deg,#c9a058,#ebcd88); border-radius:1px; }
+.ql .ql-done{ font-style:normal; color:#9fe08a; }

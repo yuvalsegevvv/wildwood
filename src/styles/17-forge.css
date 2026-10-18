@@ -13,7 +13,7 @@
 .fg-intro{ margin:0 0 10px; font-size:13.5px; color:var(--ink-dim); line-height:1.45; }
 .fg-ladder{ display:flex; flex-wrap:wrap; align-items:center; gap:4px; margin-bottom:12px; font-size:13px; font-weight:600; }
 .fg-arrow{ width:16px; height:16px; color:var(--ink-dim); flex:none; }
-.fg-row{ display:flex; align-items:center; gap:10px; padding:9px 10px; margin-bottom:8px; border-radius:12px; background:rgba(0,0,0,.2); }
+.fg-row{ display:flex; align-items:center; gap:10px; padding:9px 10px; margin-bottom:8px; border-radius:6px; background:rgba(0,0,0,.2); }
 .fg-row.ready{ background:rgba(255,160,64,.1); box-shadow:inset 0 0 0 1px rgba(255,160,64,.35); }
 .fg-in{ display:flex; gap:3px; flex:none; }
 .fg-in .it-ico{ width:32px; height:32px; } .fg-in .it-ico .ico{ width:24px; height:24px; }
@@ -23,8 +23,8 @@
 .fg-main b{ font-size:14.5px; }
 .chip.forge{ flex:none; color:#ffb060; }
 #lucky{ position:fixed; left:50%; top:28%; z-index:8; transform:translate(-50%,-50%); text-align:center; pointer-events:none; opacity:0; }
-#lucky small{ display:block; font:700 15px Inter, system-ui, sans-serif; letter-spacing:.18em; text-transform:uppercase; color:var(--c); text-shadow:0 0 12px var(--c), 0 2px 6px #000; }
-#lucky b{ display:block; margin-top:4px; font:600 30px Fraunces, Georgia, serif; color:#fff; text-shadow:0 0 18px var(--c), 0 0 4px var(--c), 0 3px 8px #000; white-space:nowrap; }
+#lucky small{ display:block; font:700 15px "Alegreya Sans", system-ui, sans-serif; letter-spacing:.18em; text-transform:uppercase; color:var(--c); text-shadow:0 0 12px var(--c), 0 2px 6px #000; }
+#lucky b{ display:block; margin-top:4px; font:600 30px Alegreya, Georgia, serif; color:#fff; text-shadow:0 0 18px var(--c), 0 0 4px var(--c), 0 3px 8px #000; white-space:nowrap; }
 #lucky.show{ animation:lucky 3.2s ease-out forwards; }
 #lucky.show.r0, #lucky.show.r1{ animation-duration:2.2s; }
 #lucky.show.r0 b, #lucky.show.r1 b{ font-size:22px; }
@@ -41,14 +41,14 @@
 .npctag{ position:fixed; left:0; top:0; z-index:4; pointer-events:none; display:flex; flex-direction:column; align-items:center; gap:1px;
   white-space:nowrap; text-shadow:0 1px 3px rgba(0,0,0,.9), 0 0 8px rgba(0,0,0,.5); transform-origin:50% 100%; }
 .npctag[hidden]{ display:none; }
-.npctag b{ font:600 15px Fraunces, Georgia, serif; color:#fff4d0; }
+.npctag b{ font:600 15px Alegreya, Georgia, serif; color:#fff4d0; }
 .nt-role{ display:flex; align-items:center; gap:4px; font-size:11.5px; font-weight:600; letter-spacing:.02em; padding:2px 8px 2px 6px; border-radius:999px;
   background:rgba(14,16,12,.62); border:1px solid rgba(238,240,226,.18); text-shadow:none; }
 .nt-role svg{ width:13px; height:13px; }
 .role-quests .nt-role{ color:#f2cf5a; border-color:rgba(242,207,90,.45); }
 .role-weaponsmith .nt-role{ color:#e6a07a; } .role-armorer .nt-role{ color:#9fc4e6; } .role-forge .nt-role{ color:#ffb060; border-color:rgba(255,160,64,.45); }
 .role-none .nt-role{ color:#cfc6b4; }
-.nt-mark{ font:800 30px Fraunces, Georgia, serif; line-height:1; color:#ffd23a; text-shadow:0 0 10px rgba(255,200,40,.8), 0 2px 3px #000; animation:ntbob 1.6s ease-in-out infinite; }
+.nt-mark{ font:800 30px Alegreya, Georgia, serif; line-height:1; color:#ffd23a; text-shadow:0 0 10px rgba(255,200,40,.8), 0 2px 3px #000; animation:ntbob 1.6s ease-in-out infinite; }
 .nt-mark:empty{ display:none; }
 .nt-mark.ready{ color:#9fe08a; text-shadow:0 0 10px rgba(140,230,120,.85), 0 2px 3px #000; }
 .nt-mark.mq{ color:#d2a8ff; text-shadow:0 0 10px rgba(190,140,255,.9), 0 2px 3px #000; }   /* the main quest */

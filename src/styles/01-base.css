@@ -3,25 +3,22 @@
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
-  --ink:#eef0e2;
-  --ink-dim:rgba(238,240,226,.7);
-  --glass:rgba(22,30,22,.5);
-  --glass-strong:rgba(17,24,17,.8);
-  --line:rgba(238,240,226,.16);
-  --lichen:#cdd98f;
-  --lichen-ink:#1d2716;
-  --bg:#0f150e;
+  /* the storybook skin (styles/29-theme.css): parchment ink on dark bark, brass lines and accent */
+  --ink:#f1e6cc;
+  --ink-dim:rgba(241,230,204,.72);
+  --glass:rgba(34,25,15,.84);
+  --glass-strong:rgba(26,19,12,.94);
+  --line:rgba(217,178,106,.38);
+  --lichen:#d9b26a;
+  --lichen-ink:#2a1b0b;
+  --bg:#120d08;
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){ --glass:rgba(14,20,14,.56); --glass-strong:rgba(11,16,11,.84); }
-}
-:root[data-theme="dark"]{ --glass:rgba(14,20,14,.56); --glass-strong:rgba(11,16,11,.84); }
 html{ scroll-padding-top:env(safe-area-inset-top,0px); }
 *,*::before,*::after{ box-sizing:inherit; }
 html,body{ height:100%; margin:0; overflow:hidden; }
 body{
   background:var(--bg); color:var(--ink);
-  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family:"Alegreya Sans", system-ui, sans-serif;
   -webkit-user-select:none; user-select:none; touch-action:none; overscroll-behavior:none;
   -webkit-tap-highlight-color:transparent;
 }
