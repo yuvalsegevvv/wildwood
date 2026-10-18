@@ -68,14 +68,14 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 0.95 |
-| `build` (Build) | 1.12 |
-| `chest` (Chest) | 1.3 |
-| `shoulders` (Shoulders) | 1.18 |
-| `waist` (Waist) | 0.85 |
+| `height` (Height) | 1 |
+| `build` (Build) | 1.05 |
+| `chest` (Chest) | 1.25 |
+| `shoulders` (Shoulders) | 1.15 |
+| `waist` (Waist) | 0.95 |
 | `torso` (Torso length) | 1 |
-| `legs` (Leg length) | 0.95 |
-| `thighs` (Thighs) | 1.15 |
+| `legs` (Leg length) | 0.92 |
+| `thighs` (Thighs) | 1.2 |
 | `arms` (Arms) | 1.25 |
 | `neck` (Neck) | 1.1 |
 | `hands` (Hands) | 1.1 |
@@ -94,7 +94,7 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `lips` (Lips) | 0.9 |
 | `earSize` (Ear size) | 1.15 |
 | `undertone` (Skin undertone) | 0.3 |
-| `hips` (Hips) | 0.9 |
+| `hips` (Hips) | 0.95 |
 | `head` (Head size) | 1.05 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
