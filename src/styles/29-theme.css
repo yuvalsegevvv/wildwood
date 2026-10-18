@@ -51,7 +51,7 @@ button, input, select, textarea{ font-family:var(--font-ui) !important; }
 .st-btn, .ed-foot button, .chip, .ed-sub, .kb-key{ border-radius:4px !important; }
 .st-btn{ background:rgba(20,14,8,.45); border-color:rgba(217,178,106,.35); color:var(--ink); letter-spacing:.01em; font-size:16.5px !important; }
 .st-btn:hover:not(:disabled), .chip:hover:not(:disabled){ border-color:var(--brass); }
-.st-btn.primary, .ed-foot .primary, .chip[aria-pressed="true"], .ed-sub[aria-selected="true"], .kb-key.listening{
+.st-btn.primary, .ed-foot .primary, .chip[aria-pressed="true"], .ed-view button[aria-pressed="true"], .ed-sub[aria-selected="true"], .kb-key.listening{
   background:linear-gradient(180deg,#ebcd88,#c9a058) !important; color:#2a1b0b !important; border:1px solid #7a5524 !important;
   box-shadow:inset 0 1px 0 rgba(255,246,214,.55), 0 2px 6px rgba(0,0,0,.35);
 }
