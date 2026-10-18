@@ -88,3 +88,6 @@ OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 6: a yellow oilskin scarf,
 OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 3: a string of green glass net-floats across the chest, an oilskin plate on the right shoulder
   torso:()=>oxBeads(X,D,{col:0x7fd6c8,col2:0xe0b030,n:14,r:0.021,drop:0.3}),
   shoulder:sd=>sd>0?oxPauldron(X,D,{col:0x3f5a52,trim:0xd8c070,r:0.068}):[]}));
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 4: a yellow oilskin apron, a harpoon rod across the back
+  torso:()=>oxTube(X,D,{col:0x5a4632,cap:0xc9ccd4,strap:0x2a2420}),
+  hips:()=>oxApron(X,D,{col:0xb8a258,trim:0x2a2420,len:0.3,w:0.2})}));

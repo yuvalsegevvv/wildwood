@@ -354,3 +354,6 @@ OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // round 3: a mint linen scar
   torso:()=>oxScarf(X,D,{col:0xdff5c0,col2:0x4f7a6a,len:0.6}),
   hips:()=>oxSatchel(X,D,{col:0x4f7a6a,trim:0x6a5a3a,herbs:0xe6eee6,side:-1}),
   shoulder:sd=>sd<0?oxPauldron(X,D,{col:0x6a5a3a,trim:0x8bc5a4,r:0.06}):[]}));
+OUTFITS.ambrose=oxPlus(OUTFITS.ambrose,(X,D)=>({   // round 4: a curtain of hanging herb tags at the belt and a big mint obi-style bow
+  torso:()=>oxBow(X,D,{col:0x8bc5a4,col2:0x4f7a6a}),
+  hips:()=>oxTags(X,D,{col:0xe6eee6,mark:0x4f7a6a,n:10,len:0.2})}));

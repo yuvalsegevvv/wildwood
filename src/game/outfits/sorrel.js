@@ -334,3 +334,6 @@ OUTFITS.sorrel=(function(){
     };
   };
 })();
+OUTFITS.sorrel=oxPlus(OUTFITS.sorrel,(X,D)=>({   // round 4: a climbing rope coil, a rolled bivouac pack, a brass plate on one shoulder
+  torso:()=>oxCoil(X,D,{col:0xd88a3a,col2:0xf3ead2,dir:-1}).concat(oxPack(X,D,{col:0x58c0b8,trim:0xe8e2d4,w:0.095,h:0.1})),
+  shoulder:sd=>sd>0?oxPauldron(X,D,{col:0xc8d8e4,trim:0xc59c39,r:0.065}):[]}));

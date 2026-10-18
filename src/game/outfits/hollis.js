@@ -78,3 +78,6 @@ OUTFITS.hollis=(function(){
     };
   };
 })();
+OUTFITS.hollis=oxPlus(OUTFITS.hollis,(X,D)=>({   // round 4: a long jet-bead rosary with amber beads, black mourning ribbon tails at the belt
+  torso:()=>oxBeads(X,D,{col:0x1d1a22,col2:0xe6a44a,n:24,r:0.014,drop:0.34}),
+  hips:()=>oxSash(X,D,{col:0x2a2630,col2:0xe6a44a,len:1.3,side:1})}));
