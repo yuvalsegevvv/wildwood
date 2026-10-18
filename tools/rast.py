@@ -7,6 +7,7 @@ def render(tris,view):
     img=np.zeros((H,W,3)); img[:]=(0.18,0.22,0.2); zb=np.full((H,W),-1e9)
     a=np.array(tris).reshape(-1,3,9); P=a[:,:,:3].copy(); C=a[:,:,3:6]; N=a[:,:,6:9].copy()
     if view=='side': P=P[:,:,[2,1,0]]*[-1,1,1]; N=N[:,:,[2,1,0]]*[-1,1,1]
+    elif view=='left': P=P[:,:,[2,1,0]]*[1,1,-1]; N=N[:,:,[2,1,0]]*[1,1,-1]   # the character's left side (the shield's)
     elif view=='back': P=P*[-1,1,1]; N=N*[-1,1,1]
     else: P=P*[1,1,-1]; N=N*[1,1,-1]
     n=np.cross(P[:,1]-P[:,0],P[:,2]-P[:,0]); ln=np.linalg.norm(n,axis=1)+1e-9; n=n/ln[:,None]
@@ -28,5 +29,5 @@ def render(tris,view):
         sub[upd]=z[upd]; img[y0:y1+1,x0:x1+1][upd]=(w@C[i])*sh[:,None]
     return img
 VIEWS=os.environ.get('RAST_VIEWS','both')   # 'front' draws one view per character (for a sheet of many)
-rows=[np.concatenate([render(t,'front')]+([render(t,'side')] if VIEWS in ('both','three') else [])+([render(t,'back')] if VIEWS=='three' else []),1) for t in chars]
+rows=[np.concatenate([render(t,'front')]+([render(t,'side')] if VIEWS in ('both','three') else [])+([render(t,'left')] if VIEWS=='leftboth' else [])+([render(t,'back')] if VIEWS=='three' else []),1) for t in chars]
 Image.fromarray((np.clip(np.concatenate(rows,1),0,1)*255).astype(np.uint8)).save(sys.argv[2])

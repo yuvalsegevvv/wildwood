@@ -56,6 +56,22 @@ ok('three decoration fields are locked until made, in any field, and stripped by
 bad.length=0; for(const id of decos){ for(const sex of ['male','female']) for(const col of [-1,0x33cc88]){ const t=build('deco '+id,sex,{deco1:id,decoColor1:col}); const base=build('base','male',{}); if(t&&base&&t.tris<=base.tris) bad.push(id+' draws nothing'); } }
 ok('every decoration builds on both bodies, takes a colour and adds geometry',!bad.length,bad.slice(0,4).join('; '));
 bad.length=0; build('three','female',{deco1:'wings',deco2:'tail',deco3:'halo',decoColor2:0x222222}); build('hostile','male',{deco1:'constructor',deco2:'__proto__',deco3:'toString',decoColor1:NaN}); ok('three at once build, hostile ids and colours do not',!bad.length,bad.join('; '));
+// ---- shields ----
+{ const ids=Object.keys(C.SHIELDS); const none=C.tris(C.buildCharacter(look('male',{}),{q:0.6})).length; const bad2=[];
+  for(const id of ids) for(const sex of ['male','female']){ const t=build('shield '+id,sex,{shield:id,shieldColor:0x33aa66,shieldTrim:0xffd24a}); if(!t||t.tris<=0) bad2.push(id); const n=C.tris(C.buildCharacter(look(sex,{shield:id}),{q:0.6})).length; if(n<=none-1&&sex==='male') bad2.push(id+' adds nothing'); }
+  ok('four shield shapes, off by default, each crafted, building on both bodies with colours',ids.length===4&&look('male').shield===''&&ids.every(i=>x.CP_RECIPE['w:'+i]&&!x.cpIsFree('w',i))&&!bad.length&&!bad2.length,bad2.join()+bad.join());
+  ok('a shield is locked until made and stripped by the server',x.cosLocked({shield:'kite'},[]).length===1&&x.cosCleanLook({shield:'kite'},[]).shield===''&&x.cosCleanLook({shield:'kite'},['w:kite']).shield==='kite');
+  build('hostile','male',{shield:'constructor',shieldColor:NaN}); }
+// ---- the child-safe setting ----
+{ const C2=require('./char-load')(code=>code.replace('getItem(){return null}',"getItem(k){return k==='wildwood-modest'?'1':null}"));
+  const sig=(Cx,o)=>Cx.tris(Cx.buildCharacter(Object.assign({},Cx.LOOK_M,o),{q:0.5})).join();
+  const swaps=[['top','crop','tunic'],['top','halter','tunic'],['top','harness','tunic'],['bottom','loincloth','trousers'],['bottom','shortshorts','trousers'],['bottom','wrapskirt','trousers']];
+  ok('off by default: the bare pieces draw as themselves',swaps.every(([k,a,b])=>sig(C,{[k]:a})!==sig(C,{[k]:b})));
+  ok('on: every bare crafted top and bottom is drawn as its plain stand-in',swaps.every(([k,a,b])=>sig(C2,{[k]:a})===sig(C2,{[k]:b})));
+  const wear=(Cx,id)=>{ const m=Cx.CHAR_MODELS[id], sex=m.sexes[0]; return Cx.buildCharacter(Cx.ofWear(Cx.applySetup(Object.assign({},sex==='female'?Cx.LOOK_F:Cx.LOOK_M),Cx.setupsOf(m,sex)[0]),id),{q:0.5}); };
+  const diff=['sabir','genzo','nephra','marigold','torgeir'].filter(id=>Cx_same(wear(C,id),wear(C2,id)));
+  function Cx_same(a,b){ const x1=C.tris(a), x2=C2.tris(b); return x1.length===x2.length&&x1.every((v,i)=>v===x2[i]); }
+  ok('on: the five revealing sets are drawn differently (covered)',!diff.length,diff.join()); }
 // ---- multi-colour tops and bottoms ----
 { const sig=o=>C.tris(C.buildCharacter(look('male',o),{q:0.6})).join(); const cr=[['top',C.GMX_TOPS.map(r=>r[0]).filter(i=>i!=='none'&&C.GMX_PAL.top[i])],['bottom',C.GMX_BOTTOMS.map(r=>r[0]).filter(i=>i!=='none'&&C.GMX_PAL.bottom[i])]];
   const miss=[]; for(const [slot,ids] of cr) for(const id of ids){ const L=look('male',{[slot]:id}), P=C.gmxPalDef(L,slot); if(P.length<3){ miss.push(slot+':'+id+' has '+P.length+' colours'); continue; }

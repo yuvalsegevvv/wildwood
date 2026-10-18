@@ -30,3 +30,9 @@ Small details worn **up to three at once**, in any of `look.deco1`, `deco2`, `de
 
 ### Multi-colour crafted tops and bottoms
 Like a set's piece, every crafted top and bottom (`GMX_TOPS` / `GMX_BOTTOMS`) has up to four colours: the main one (`topColor` / `bottomColor`) and `tintTop2..4` / `tintBottom2..4` (-1 = as designed). `GMX_PAL` (`model-garments-more.js`) lists each piece's design colours; `gmxPalAt(L, slot)` resolves them for the builders and `gmxPalDef` feeds the editor's "Second / Third / Fourth colour" pickers. Free base garments stay single-colour. Test: `cospieces-smoke`.
+
+### Shields
+An optional cosmetic worn on the left forearm, off by default (`look.shield = ''`): four shapes (Buckler, Heater, Kite, Tower Shield), crafted like the rest (slot `w`, recipes `'w:<id>'`), colours `shieldColor` (field) and `shieldTrim` (rim, boss, emblem). `SHIELDS` / `shieldDress` in `game/character/model-shields.js`; it changes no number and no weapon. The editor's Shield tab lists them.
+
+### Child-safe setting
+Settings > Child-safe (off by default, the page reloads to apply it; stored in `localStorage` as `wildwood-modest`). When on, `buildCharacter` first passes every look through `modestLook` (`game/character/modest.js`), so every person this client draws, other players too, wears the plain stand-in for each bare crafted piece (crop, halter, harness become the tunic; loincloth, short shorts and wrap skirt become trousers), and the five signature sets that bare skin (Sabir's chest and arms, Genzo's right side, Nephra's midriff, Marigold's midriff and short skirt, Torgeir's left arm) ask `modestOn()` and draw their covered version. Nothing is sent or saved. Test: `cospieces-smoke`.

@@ -51,7 +51,8 @@ OUTFITS.torgeir=(function(){
         case 'torso':
           if(y>0.012&&y<0.07){ c.copy(cLeather); return; }
           c.copy(y<=0.012?cSlateD:cSlate); return;
-        case 'upperArm': { c.copy(cSlate); const a=-y; if(a>0.045){ const f=((a/0.07)%1+1)%1; if(f<0.09) c.lerp(cSlateD,0.85); else if(f>0.4&&f<0.6) c.lerp(cSlateL,0.18); }
+        case 'upperArm': { if(sd<0&&!modestOn()){ skinPaint(c); const a0=-y; if(a0>0.188&&a0<0.2) c.copy(cBone); return; }   // the left arm under the iron spaulder is bare
+          c.copy(cSlate); const a=-y; if(a>0.045){ const f=((a/0.07)%1+1)%1; if(f<0.09) c.lerp(cSlateD,0.85); else if(f>0.4&&f<0.6) c.lerp(cSlateL,0.18); }
           if(a>0.188&&a<0.2) c.copy(cBone); return; }
         case 'foreArm':
           if(y<-0.225) skinPaint(c); else if(y<-0.2) c.copy(cBone);                                     // a bone-white wool cuff

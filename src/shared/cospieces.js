@@ -9,8 +9,8 @@
    cosCleanLook (the server) takes them off with the slot's default (CP_NONE), and the editor will not close on one.
    owns: CP_SLOTS, CP_NONE, CP_PIECES, CP_RECIPE, CP_FREE, cpDef, cpIsFree, cpCost, cosLocked, cpSlotOf.   used by: shared/cosmetics.js, server/cosmetics.js, game/economy/cosmetics.js, ui/character-editor.js, character/model-*.js (the lists).   test: tools/cospieces-smoke.js */
 // slot letter: [look field, what a stripped slot falls back to, the name of the slot]
-const CP_SLOTS={h:['hat','none','Hat'],t:['top','tshirt','Top'],b:['bottom','trousers','Bottom'],s:['shoes','boots','Shoes'],g:['gloves','none','Gloves'],c:['cape','','Cape'],a:['aura','','Aura'],d:['deco1','','Decoration']};   // d: three look fields, CP_DECO
-const CP_LETTERS=['h','t','b','s','g','c','a','d'];
+const CP_SLOTS={h:['hat','none','Hat'],t:['top','tshirt','Top'],b:['bottom','trousers','Bottom'],s:['shoes','boots','Shoes'],g:['gloves','none','Gloves'],c:['cape','','Cape'],a:['aura','','Aura'],d:['deco1','','Decoration'],w:['shield','','Shield']};   // d: three look fields, CP_DECO
+const CP_LETTERS=['h','t','b','s','g','c','a','d','w'];
 const CP_DECO=['deco1','deco2','deco3'];   // up to three decorations, any of them in any field
 const CP_NONE={}; for(const k of CP_LETTERS) CP_NONE[k]=CP_SLOTS[k][1];
 // the crafted pieces of the five garment slots: [slot, id, name, grade 1..6 (the land it is for), a short line]; the models are in game/character/model-*.js (their ids are listed there too)
@@ -36,6 +36,10 @@ const CP_PIECES=[
   ['s','sabatons','Steel Sabatons','6','Boots of overlapping steel plates with a pointed toe.'],
   ['g','lace','Lace Gloves','2','Fine open lace to the wrist with a small bow.'],
   ['g','furmitts','Fur Mitts','5','Deep fur mitts with a stitched hide palm.'],
+  ['w','round','Buckler','1','A small round wooden shield with an iron rim and boss. Worn on the left forearm, for looks only.'],
+  ['w','heater','Heater Shield','2','A classic shield with a straight top and a pointed foot, a stripe cross in its trim colour.'],
+  ['w','kite','Kite Shield','3','A long tapering shield with a diamond emblem.'],
+  ['w','tower','Tower Shield','5','A tall banded shield with a rivet row.'],
   ['d','flower','Hairpin Blossom','1','A small blossom pinned above the ear.'],
   ['d','feather','Plume Feather','2','A long feather standing off the back of the crown.'],
   ['d','bell','Ribbon Bell','1','A little bell on a ribbon round the neck.'],
@@ -102,6 +106,10 @@ const CP_RECIPE={
   'a:dune':{res:[['sunstone',6]],mats:[['glasswisp',6],['dustdjinn',6]],coins:650},
   'a:wisp':{res:[['snowmoss',6]],mats:[['lanternwisp',8],['candlewisp',6]],coins:800},
   'a:stellar':{res:[['hagane',8],['rimeore',6],['snowmoss',8]],mats:[['glassguardian',3]],coins:2500},
+  'w:round':{res:[['pine',4],['iron',2]],mats:[],coins:120},
+  'w:heater':{res:[['iron',6]],mats:[['hobgoblin',5]],coins:300},
+  'w:kite':{res:[['silver',5]],mats:[['kabuto',4],['ashigaru',4]],coins:600},
+  'w:tower':{res:[['hagane',8]],mats:[['ironshell',8],['rocktroll',3]],coins:1100},
   'd:flower':{res:[['sunpetal',3],['kikyo',2]],mats:[],coins:80},
   'd:feather':{res:[],mats:[['tengu',3],['gryphonqueen',1]],coins:300},
   'd:bell':{res:[['silver',1]],mats:[['wolf',3]],coins:120},

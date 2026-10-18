@@ -60,7 +60,7 @@ OUTFITS.marigold=(function(){
     /* ---- the paint of the body: a cream bodice (the jacket, sash and skirt are geometry over it), bare arms, cream stockings with a plum garter band, plum boots with a marigold ankle band ---- */
     const paint=(part,c,x,y,z,sd)=>{
       switch(part){
-        case 'torso': c.set(CREAM); c.multiplyScalar(0.97+0.05*G(y,0.3,0.2)); return;
+        case 'torso': c.set(CREAM); c.multiplyScalar(0.97+0.05*G(y,0.3,0.2)); if(!modestOn()&&y>0.1&&y<0.3) skinPaint(c); return;   // a bare midriff under the short bodice
         case 'upperArm': if(-y<D.upper*0.4) c.set(PLUM); else skinPaint(c); return;
         case 'foreArm': skinPaint(c); return;
         case 'thigh': { const t=-y/D.thigh; if(t<0.5) skinPaint(c); else { c.set(CREAM); if(t>0.9&&t<0.96) c.set(PLUM); } return; }
@@ -101,8 +101,8 @@ OUTFITS.marigold=(function(){
 
     /* ---- the skirt: three tulle layers on one flaring cone (cream, plum, marigold from the longest to the shortest), each with a ruffled hem in the next colour; hung from the hips ---- */
     const s15=torsoSize(X,D,0.15), SRX0=s15.rx+0.007, SRZ0=Math.max(s15.rz,s15.rzBack)+0.007, SYT=0.15*TK;
-    const SRXH=Math.max(0.255,(D.hx+0.093*D.tw)*1.6), SRZH=SRXH*0.9, SYB=-0.19, NR=12, FRH=0.026;
-    const LAY=[{y:-0.19,off:0,main:CREAM,edge:PLUM,light:cC},{y:-0.15,off:0.013,main:PLUM,edge:MARI,light:cPL},{y:-0.11,off:0.026,main:MARI,edge:CREAM,light:cML}];
+    const SRXH=Math.max(0.255,(D.hx+0.093*D.tw)*1.6), SRZH=SRXH*0.9, SYB=modestOn()?-0.19:-0.12, NR=12, FRH=0.026;
+    const LAY=modestOn()?[{y:-0.19,off:0,main:CREAM,edge:PLUM,light:cC},{y:-0.15,off:0.013,main:PLUM,edge:MARI,light:cPL},{y:-0.11,off:0.026,main:MARI,edge:CREAM,light:cML}]:[{y:-0.12,off:0,main:CREAM,edge:PLUM,light:cC},{y:-0.09,off:0.013,main:PLUM,edge:MARI,light:cPL},{y:-0.06,off:0.026,main:MARI,edge:CREAM,light:cML}];   // (shorter than before: a short stage skirt)
     const skXZ=(k,y,a)=>{ const L=LAY[k], t=clamp((SYT-y)/(SYT-SYB)), f=Math.pow(t,0.66), rf=sm(L.y+FRH,L.y,y), pl=0.0075*sm(0.1,0.5,t)*Math.sin(12*a), fl=0.013*rf;
       return [(lerp(SRX0,SRXH,f)+L.off*f+fl+pl)*Math.sin(a),(lerp(SRZ0,SRZH,f)+L.off*f+fl+pl)*Math.cos(a)]; };
     const skirtLayer=k=>{ const L=LAY[k], H=SYT-L.y, uF=1-FRH/H, rows=[0,0.16,0.34,0.52,0.68,uF-0.0008,uF,0.96,1];

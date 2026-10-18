@@ -16,8 +16,9 @@ OUTFITS.genzo=(function(){
     /* ---- the paint: a vermilion robe with a white crossed collar and dark seams, white wrist wraps, dark trousers with white cuffs, bare feet ---- */
     const paint=(part,c,x,y,z,sd)=>{
       switch(part){
-        case 'torso': { c.set(VERM); if(y>0.5&&Math.abs(x+z*0.35*(x>0?1:-1))<0.17&&y<0.585) { const e=Math.abs(Math.abs(x)-(0.57-y)*0.9); if(e<0.022) c.set(WHITE); } if(y>0.03&&y<0.07) c.set(INK); if(fr(y*28)<0.04) c.multiplyScalar(0.9); return; }
-        case 'upperArm': c.set(VERM); if(-y>D.upper*0.78) c.set(WHITE); return;
+        case 'torso': { c.set(VERM); if(!modestOn()&&y>0.07&&y<0.585&&x>-0.03+z*0.2){ if(y<0.3){ c.set(WHITE); if(fr(y*34)<0.1) c.set(0xd8cfb4); } else skinPaint(c); }   // the robe slipped off the right shoulder: a bare chest above a white binding wrap
+          if(y>0.5&&Math.abs(x+z*0.35*(x>0?1:-1))<0.17&&y<0.585) { const e=Math.abs(Math.abs(x)-(0.57-y)*0.9); if(e<0.022) c.set(WHITE); } if(y>0.03&&y<0.07) c.set(INK); if(fr(y*28)<0.04) c.multiplyScalar(0.9); return; }
+        case 'upperArm': if(sd>0&&!modestOn()){ skinPaint(c); return; } c.set(VERM); if(-y>D.upper*0.78) c.set(WHITE); return;   // the right arm is bare
         case 'foreArm': { if(y<-0.222) skinPaint(c); else if(y<-0.12){ c.set(WHITE); if(fr(y*40)<0.12) c.set(0xd8cfb4); } else c.set(VERM); return; }
         case 'thigh': { const t=-y/D.thigh; c.set(INK); if(fr(t*5+Math.atan2(z,x*sd)*1.2)<0.05) c.set(0x3a3030); return; }
         case 'shin': { const t=-y/D.shin; c.set(INK); if(t>0.78&&t<0.86) c.set(WHITE); else if(t>=0.86) skinPaint(c); return; }

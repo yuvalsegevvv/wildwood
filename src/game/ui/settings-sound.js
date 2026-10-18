@@ -25,3 +25,11 @@ $('#gfxChips').querySelectorAll('[data-gfx]').forEach(b=>b.addEventListener('cli
   location.reload();
 }));
 renderGfx();
+/* child-safe drawing (character/modest.js): stored, then the page reloads so every character is built again */
+function renderModest(){ $('#modestChips').querySelectorAll('[data-modest]').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.modest==='1')===MODEST)); }
+$('#modestChips').querySelectorAll('[data-modest]').forEach(b=>b.addEventListener('click',()=>{
+  if((b.dataset.modest==='1')===MODEST) return;
+  try{ if(b.dataset.modest) localStorage.setItem('wildwood-modest','1'); else localStorage.removeItem('wildwood-modest'); }catch(_){}
+  location.reload();
+}));
+renderModest();

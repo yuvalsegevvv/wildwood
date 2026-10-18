@@ -25,7 +25,7 @@ OUTFITS.nephra=(function(){
     const wrap=(c,k,w)=>{ const f=fr(k); c.set(LINEN); if(f<w) c.set(STAIN); else if(((Math.floor(k)*7)&3)===0) c.set(LINEN_D); };
     const paint=(part,c,x,y,z,sd)=>{
       switch(part){
-        case 'torso': wrap(c,y*34+x*16,0.1); return;
+        case 'torso': wrap(c,y*34+x*16,0.1); if(!modestOn()&&y>0.08&&y<0.3) skinPaint(c); return;   // a bare midriff between the broad collar and the kilt
         case 'upperArm': { const t=-y/D.upper; if(t<0.3) skinPaint(c); else if(t<0.36){ c.set(GOLD); } else wrap(c,y*34,0.12); return; }
         case 'foreArm': { if(y<-0.222) skinPaint(c); else if(y<-0.188){ c.set(GOLD); } else wrap(c,y*30+z*8,0.12); return; }
         case 'thigh': { const t=-y/D.thigh; if(t>0.8) skinPaint(c); else wrap(c,y*30+x*10,0.12); return; }

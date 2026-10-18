@@ -32,6 +32,7 @@ function cthLookFor(sp){
     case 'pack': L.pack=true; view='back'; spin=Math.PI-0.35; break;
     case 'cape': L.cape=id; view='back'; spin=Math.PI-0.35; break;
     case 'aura': L.aura=id; view='body'; break;
+    case 'shield': L.shield=id; view='body'; spin=-Math.PI/2+0.35; break;
     case 'deco': { L.deco1=id; if(sp.col!==undefined&&sp.col>=0) L.decoColor1=sp.col; const an=DECOS[id]?DECOS[id].anchor:'headTop'; view=an==='headTop'||an==='face'?'head':an==='neck'||an==='chest'||an==='shoulderR'?'chest':an==='back'?'back':an==='waist'?'legs':an==='wristL'?'hands':an==='ankleL'?'feet':'body'; if(view==='back'||id==='tail') spin=Math.PI-0.35; break; }
     case 'sex': L.hair=sex==='female'?'ponytail':'short'; L.top='tshirt'; view='body'; break;
     case 'weapon': L.weaponItem=id; L.top='jacket'; view='body'; break;
