@@ -86,3 +86,7 @@ OUTFITS.hollis=oxPlus(OUTFITS.hollis,(X,D)=>({   // face round 4: a mourner's ho
   mark:F=>oxMarks(F,[{t:'bags',col:0x6a5a70},{t:'tear',side:1,col:0xbfc8d8}]),
   hair:()=>oxHairBits(X,[{t:'ring',side:1,col:0xe6a44a},{t:'locks',len:0.3,col:0x8a8494}]),
   kit:{eyeColor:0xe6a44a,eyes:{iris:0.85,lash:0.2}}}));
+oxTune('hollis',{height:1.08,build:0.88,chest:0.62,shoulders:0.9,waist:0.84,torso:1.07,legs:1.12,thighs:0.86,arms:1.22,neck:1.2,head:0.92,hands:1.2,feet:1.1});
+OUTFITS.hollis=oxPlus(OUTFITS.hollis,(X,D)=>({   // uniqueness round 1: a lanky stooped giant with a lamp pole strapped across his back and a long crape veil from the hat
+  torso:()=>oxPole(X,D,{col:0x6a4a2a,frame:0xc59c39,glow:0xffc060,len:0.6}),
+  head:()=>oxVeil(X,D,{col:0x1d1a22,col2:0x8a8494,len:0.9,w:0.11})}));

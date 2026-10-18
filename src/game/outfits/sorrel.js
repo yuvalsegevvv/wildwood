@@ -342,3 +342,6 @@ OUTFITS.sorrel=oxPlus(OUTFITS.sorrel,(X,D)=>({   // face round 5: a calm river-g
   mark:F=>oxMarks(F,[{t:'tear',side:1,col:0xbfe0ea},{t:'crow',col:0x9ab0b8}]),
   hair:()=>oxHairBits(X,[{t:'sprig',side:1,col:0x58c0b8},{t:'beads',side:-1,col:0x58c0b8,col2:0xe8e2d4}]),
   kit:{eyeColor:0x58b0c8,eyes:{iris:1.05}}}));
+oxTune('sorrel',{height:1.0,build:1.08,chest:0.95,shoulders:1.15,waist:0.95,hips:1.08,torso:1.0,legs:1.05,thighs:1.2,arms:1.1,neck:1.0,head:1.0});
+OUTFITS.sorrel=oxPlus(OUTFITS.sorrel,(X,D)=>({   // uniqueness round 1: a swimmer's broad shoulders and strong legs, and a teal oilcloth overskirt lifted at the front
+  hips:()=>oxSkirt(X,D,{col:0x2f8a88,col2:0xe8e2d4,len:0.34,flare:1.0,rise:0.14})}));

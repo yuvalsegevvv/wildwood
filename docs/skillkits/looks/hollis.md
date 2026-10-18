@@ -68,18 +68,18 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 1.06 |
-| `build` (Build) | 0.9 |
-| `chest` (Chest) | 0.82 |
-| `shoulders` (Shoulders) | 0.94 |
-| `waist` (Waist) | 0.88 |
-| `torso` (Torso length) | 1.02 |
-| `legs` (Leg length) | 1.1 |
-| `thighs` (Thighs) | 0.9 |
-| `arms` (Arms) | 1.05 |
-| `neck` (Neck) | 1.12 |
-| `hands` (Hands) | 1.1 |
-| `feet` (Feet) | 1 |
+| `height` (Height) | 1.08 |
+| `build` (Build) | 0.88 |
+| `chest` (Chest) | 0.62 |
+| `shoulders` (Shoulders) | 0.9 |
+| `waist` (Waist) | 0.84 |
+| `torso` (Torso length) | 1.07 |
+| `legs` (Leg length) | 1.12 |
+| `thighs` (Thighs) | 0.86 |
+| `arms` (Arms) | 1.22 |
+| `neck` (Neck) | 1.2 |
+| `hands` (Hands) | 1.2 |
+| `feet` (Feet) | 1.1 |
 | `jaw` (Jaw width) | 1 |
 | `chin` (Chin) | 1 |
 | `cheeks` (Cheeks) | 0.72 |
@@ -94,6 +94,7 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `undertone` (Skin undertone) | -0.3 |
 | `blush` (Blush) | 0 |
 | `earSize` (Ear size) | 1.1 |
+| `head` (Head size) | 0.92 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -103,13 +104,13 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 |---|---|---|
 | `height` (Height) | 1 .. 1.08 | 0.92 .. 1.08 |
 | `build` (Build) | 0.88 .. 1 | 0.88 .. 1.18 |
-| `chest` (Chest) | 0.7 .. 1.05 | 0.6 .. 1.4 |
+| `chest` (Chest) | 0.6 .. 1.05 | 0.6 .. 1.4 |
 | `waist` (Waist) | 0.82 .. 1 | 0.82 .. 1.15 |
 | `hips` (Hips) | 0.88 .. 1.05 | 0.85 .. 1.2 |
 | `legs` (Leg length) | 1 .. 1.14 | 0.92 .. 1.14 |
-| `arms` (Arms) | 0.9 .. 1.15 | 0.82 .. 1.25 |
+| `arms` (Arms) | 0.9 .. 1.25 | 0.82 .. 1.25 |
 | `neck` (Neck) | 1 .. 1.2 | 0.85 .. 1.2 |
-| `head` (Head size) | 0.95 .. 1.05 | 0.9 .. 1.12 |
+| `head` (Head size) | 0.9 .. 1.05 | 0.9 .. 1.12 |
 | `hairLength` (Hair length) | 0.8 .. 1.2 | 0.7 .. 1.35 |
 | `hairVolume` (Hair volume) | 0.9 .. 1.1 | 0.9 .. 1.25 |
 

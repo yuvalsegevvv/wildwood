@@ -1,0 +1,45 @@
+//@ Silhouette pieces for the signature sets (a flared skirt, a shoulder mantle or banded collar, a back disc or sunburst, a lamp pole, a crape veil) that change a set's outline, not just its trim
+/* The pieces of outfit-extras.js are small trims; these are big shapes, built to make two sets read differently from across a street. All go through oxPlus (outfit-extras.js) like the trims.
+   oxSkirt(X,D,o)    hips frame: a bell of cloth round the hips, o = {col, col2 (hem), len, flare, rise (the front hem lifted), th}
+   oxMantle(X,D,o)   torso frame: a cape over the shoulders or a wide banded collar, o = {cols: [one colour per band from the neck down], flat (a wide flat collar instead of a cape), drop (design height of its lower edge), out (how far past the shoulder), trim}
+   oxDisc(X,D,o)     torso frame: a round plate on the back, o = {col, rim, boss, R, y (design height), rays (n spikes round it), ray}
+   oxPole(X,D,o)     torso frame: a pole strapped across the back, rising past the head with a hooked arm and a lit lantern, o = {col, frame, glow, len}
+   oxVeil(X,D,o)     head frame: a long ribbon from the hat's crown down the back, o = {col, col2, len, w}
+   owns: oxSkirt, oxMantle, oxDisc, oxPole, oxVeil.   used by: game/outfits/*.js (the last lines); test: tools/outfit-smoke.js, tools/cosmetic-items-smoke.js */
+function oxSkirt(X,D,o){
+  const {sg}=X, s=torsoSize(X,D,0.03), R=Math.max(s.rx,s.rz)+0.018, L=o.len||0.3, n=7, rings=[];
+  for(let i=0;i<=n;i++){ const t=i/n, r=R*(1+(o.flare||0.8)*Math.pow(t,1.35)); rings.push({y:-L*t+0.01,rx:r,rz:r}); }
+  const g=ofLoft(rings,sg(26),0,TAU), p=g.attributes.position, rise=o.rise||0;
+  if(rise) for(let i=0;i<p.count;i++){ const y=p.getY(i), z=p.getZ(i); if(y<-0.02) p.setY(i,y+rise*Math.max(0,-z/(R*1.5))*(-y/L)); }
+  g.computeVertexNormals();
+  const out=[pc(g,(x,y,z,c)=>{ c.set(o.col); if(y<-L+0.035) c.set(o.col2||o.col); })];
+  out.push(solid(ofRingAt([0,-L+0.008+(rise?0:0),0],[0,1,0],rings[n].rx,0.0075,sg(8)),o.col2||o.col));
+  return out; }
+function oxMantle(X,D,o){
+  const {sg}=X, TK=D.TK, s=torsoSize(X,D,0.5), cols=o.cols, y1=(o.flat?0.45:(o.drop||0.36))*TK, rings=[], ex=o.out||0.1;
+  const prof=o.flat?[[0.565*TK,0.09],[0.535*TK,s.rx+ex*0.45],[0.51*TK,s.rx+ex*0.85],[0.47*TK,s.rx+ex],[0.45*TK,s.rx+ex*0.94]]:[[0.575*TK,0.09],[0.545*TK,s.rx*0.9+ex*0.45],[0.5*TK,s.rx+ex*0.85],[(0.5*TK+y1)/2,s.rx+ex],[y1,s.rx+ex*0.9]];
+  for(const [y,rx] of prof) rings.push({y,rx,rz:Math.max(0.085,rx*0.88)});
+  const g=ofLoft(rings,sg(26),0,TAU), top=(o.flat?0.565:0.575)*TK, span=top-y1;
+  const out=[pc(g,(x,y,z,c)=>{ const t=clamp((top-y)/span,0,0.999); c.set(cols[Math.floor(t*cols.length)]); })];
+  if(o.trim) out.push(solid(ofRingAt([0,y1+0.004,0],[0,1,0],rings[4].rx,o.trimR||0.02,sg(8)),o.trim));
+  return out; }
+function oxDisc(X,D,o){
+  const {sg}=X, TK=D.TK, zb=torsoSize(X,D,0.3).rzBack+0.05, R=o.R||0.17, y=(o.y||0.3)*TK, out=[];
+  out.push(solid(new THREE.CylinderGeometry(R,R,0.012,sg(24)).rotateX(Math.PI/2).translate(0,y,zb),o.col));
+  out.push(solid(ofRingAt([0,y,zb],[0,0,1],R,0.012,sg(8)),o.rim));
+  out.push(solid(csph(R*0.28,sg(10),sg(7)).scale(1,1,0.45).translate(0,y,zb+0.012),o.boss||o.rim));
+  for(let i=0;i<(o.rays||0);i++){ const a=i/o.rays*TAU; out.push(solid(new THREE.ConeGeometry(R*0.16,R*0.9,5).rotateZ(-a).translate(Math.sin(a)*(R+R*0.38),y+Math.cos(a)*(R+R*0.38),zb),o.ray||o.rim)); }
+  return out; }
+function oxPole(X,D,o){
+  const {sg}=X, TK=D.TK, zb=torsoSize(X,D,0.3).rzBack+0.05, a=[-0.13,0.0,zb+0.012], b=[0.3,0.55*TK+(o.len||0.5),zb+0.012], dir=new THREE.Vector3(b[0]-a[0],b[1]-a[1],b[2]-a[2]), L=dir.length(), out=[];
+  const g=new THREE.CylinderGeometry(0.014,0.017,L,sg(8)); g.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize()))); g.translate((a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2);
+  out.push(solid(g,o.col));
+  out.push(solid(sweepTube([b,[b[0]+0.02,b[1]+0.05,b[2]-0.04],[b[0]+0.02,b[1]+0.03,b[2]-0.14],[b[0]+0.02,b[1]-0.01,b[2]-0.2]],[0.011,0.01,0.009,0.008],sg(6),{cap:'round',rings:sg(10)}),o.col));
+  const lx=b[0]+0.02, ly=b[1]-0.1, lz=b[2]-0.2;
+  out.push(solid(new THREE.CylinderGeometry(0.036,0.036,0.1,sg(8),1,true).translate(lx,ly,lz),o.frame),solid(new THREE.ConeGeometry(0.046,0.04,sg(8)).translate(lx,ly+0.07,lz),o.frame),solid(new THREE.CylinderGeometry(0.04,0.03,0.014,sg(8)).translate(lx,ly-0.057,lz),o.frame),solid(csph(0.03,sg(9),sg(7)).translate(lx,ly,lz),o.glow));
+  for(let i=0;i<4;i++){ const q=i/4*TAU; out.push(solid(vbox(0.006,0.1,0.006,lx+Math.sin(q)*0.036,ly,lz+Math.cos(q)*0.036),o.frame)); }
+  for(const t of [0.3,0.62]) out.push(solid(ofRingAt([a[0]+dir.x*t,a[1]+dir.y*t,a[2]+dir.z*t],[dir.x,dir.y,dir.z],0.02,0.006,sg(6)),o.frame));
+  return out; }
+function oxVeil(X,D,o){
+  const {sg}=X, L=o.len||0.85, w=o.w||0.15;
+  return [pc(ofRibbon([[0,0.1,0.07],[0,0.04,0.145],[0,-0.2,0.175],[0,-L*0.55,0.165],[0,-L,0.15]],u=>w*(1-0.35*u),{up:[0,0,1],seg:sg(16),th:0.006}),(x,y,z,c)=>{ c.set(o.col); if(y<-L+0.05) c.set(o.col2||o.col); })]; }

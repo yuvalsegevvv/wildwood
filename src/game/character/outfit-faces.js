@@ -5,7 +5,7 @@
    tuft (a pair of upright hair tufts), braid (one plait with a tie), curl (a spiral curl at the temple), feather (tucked behind the ear), locks (a strand down each temple, o.len), tail (a tail down the back with a tie, o.len). owns: oxTune, oxMarks, oxHairBits.   used by: game/outfits/*.js (the last lines); with oxPlus (outfit-extras.js), which also takes kit: {eyeColor, eyes}.   test: tools/cosmetic-items-smoke.js, tools/character-smoke.js */
 function oxTune(id,v){
   const m=CHAR_MODELS[id]; if(!m) return; const s0=m.setups[0]; m.ranges=m.ranges||{};
-  for(const k in v){ const s=SLIDER_BY_KEY[k]; if(!s) continue; s0.v[k]=v[k]; const r=m.ranges[k]; if(r) m.ranges[k]=[Math.max(s.min,Math.min(r[0],v[k]-0.05)),Math.min(s.max,Math.max(r[1],v[k]+0.05))]; }
+  for(const k in v){ const s=SLIDER_BY_KEY[k]; if(!s) continue; const br=CHAR_MODELS.base.ranges[k]||[s.min,s.max]; s0.v[k]=v[k]; const r=m.ranges[k]; if(r) m.ranges[k]=[Math.max(br[0],Math.min(r[0],v[k]-0.05)),Math.min(br[1],Math.max(r[1],v[k]+0.05))]; }   // never wider than the base model's recommended range (outfit-looks-check)
 }
 function oxMarks(F,list){
   const out=[], sg=n=>Math.max(5,n>>1), dot=(rx,ry,x,y,col,rot)=>solid(F.place(csph(1,8,6).scale(rx,ry,0.0009).rotateZ(rot||0),x,y,0.0008),col);

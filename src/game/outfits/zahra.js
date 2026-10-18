@@ -89,3 +89,6 @@ oxTune('zahra',{lips:1.15,eyeSize:1.12,eyeTilt:0.22,brow:-0.1,undertone:0.5,blus
 OUTFITS.zahra=oxPlus(OUTFITS.zahra,(X,D)=>({   // face round 4: gilded cheekbones, a beauty mark, gold beads at both temples
   mark:F=>oxMarks(F,[{t:'stripe',col:0xe0b840},{t:'mole',side:-1,col:0x3a2a20}]),
   hair:()=>oxHairBits(X,[{t:'beads',both:true,col:0xe8c050,col2:0x2b6aa8}])}));
+oxTune('zahra',{height:1.08,build:0.94,chest:1.3,shoulders:0.98,waist:0.84,hips:1.18,torso:1.02,legs:1.12,thighs:1.08,arms:0.95,neck:1.2,head:0.94});
+OUTFITS.zahra=oxPlus(OUTFITS.zahra,(X,D)=>({   // uniqueness round 1: a stately hourglass figure, and a gold sunburst plate standing behind her back
+  torso:()=>oxDisc(X,D,{col:0xe8c050,rim:0x2b6aa8,boss:0xfff0b0,R:0.14,y:0.34,rays:12,ray:0xe8c050})}));

@@ -10,7 +10,7 @@ module.exports=function loadCharacter(patch){   // patch(code) -> code: a tool m
   const pm=read('game/world/plant-models.js');
   const helpers='const _c=new THREE.Color();'+pm.slice(pm.indexOf('function paint'),pm.indexOf('\n',pm.indexOf('const cyl'))+1);
   const shared=['shared/math.js','shared/noise.js','shared/character.js','shared/cosmetics.js'].map(read).join('');
-  const pre=['model-parts.js','model-face.js','model-hair.js','model-hats.js','model-hairgrad.js','outfit-palettes.js','model-body.js','model-gloves.js','model-garments.js','outfit-tools.js','outfit-extras.js','outfit-faces.js','cosmetics.js'].map(f=>read('game/character/'+f)).join('');
+  const pre=['model-parts.js','model-face.js','model-hair.js','model-hats.js','model-hairgrad.js','outfit-palettes.js','model-body.js','model-gloves.js','model-garments.js','outfit-tools.js','outfit-extras.js','outfit-shapes.js','outfit-faces.js','cosmetics.js'].map(f=>read('game/character/'+f)).join('');
   const outfits=fs.readdirSync(path.join(SRC,'game/outfits')).filter(f=>f.endsWith('.js')).sort().map(f=>{ const src=read('game/outfits/'+f);
     try{ new Function(src); return src; }catch(e){ console.warn('char-load: skipping src/game/outfits/'+f+' (syntax error: '+e.message+')'); return ''; } }).join('');   // a half-edited outfit must not break every preview and test (several are written at once)   // the order of src/manifest.json does not matter here: they only fill OUTFITS / CHAR_MODELS
   const model=read('game/character/model.js').split('const hiker=')[0];

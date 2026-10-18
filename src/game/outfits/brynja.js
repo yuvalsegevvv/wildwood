@@ -80,3 +80,6 @@ OUTFITS.brynja=oxPlus(OUTFITS.brynja,(X,D)=>({   // face round 5: frost-pale ski
   mark:F=>oxMarks(F,[{t:'cheek',col:0xe8a0b0},{t:'freckles',col:0xa8b8d0}]),
   hair:()=>oxHairBits(X,[{t:'beads',both:true,col:0xeaf4fb,col2:0x6fb4e0}]),
   kit:{eyes:{iris:1.15,lash:1.1,hl:2}}}));
+oxTune('brynja',{height:0.95,build:1.08,chest:1.1,shoulders:0.92,waist:0.95,hips:1.15,torso:0.96,legs:0.94,thighs:1.15,arms:0.9,neck:0.88,head:1.12,hands:0.88,feet:0.88});
+OUTFITS.brynja=oxPlus(OUTFITS.brynja,(X,D)=>({   // uniqueness round 1: a small round figure with a big head, under a deep white fur mantle
+  torso:()=>oxMantle(X,D,{cols:[0xf4f8fc,0xe6eef6,0xf4f8fc],drop:0.36,out:0.12,trim:0xffffff,trimR:0.03})}));

@@ -68,18 +68,18 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 
 | Slider | Value |
 |---|---|
-| `height` (Height) | 1.05 |
-| `build` (Build) | 0.92 |
-| `chest` (Chest) | 0.92 |
-| `shoulders` (Shoulders) | 0.96 |
-| `waist` (Waist) | 0.88 |
-| `torso` (Torso length) | 0.98 |
-| `legs` (Leg length) | 1.1 |
-| `thighs` (Thighs) | 0.94 |
-| `arms` (Arms) | 0.95 |
-| `neck` (Neck) | 1.05 |
-| `hands` (Hands) | 0.95 |
-| `feet` (Feet) | 0.95 |
+| `height` (Height) | 0.95 |
+| `build` (Build) | 1.08 |
+| `chest` (Chest) | 1.1 |
+| `shoulders` (Shoulders) | 0.92 |
+| `waist` (Waist) | 0.95 |
+| `torso` (Torso length) | 0.96 |
+| `legs` (Leg length) | 0.94 |
+| `thighs` (Thighs) | 1.15 |
+| `arms` (Arms) | 0.9 |
+| `neck` (Neck) | 0.88 |
+| `hands` (Hands) | 0.88 |
+| `feet` (Feet) | 0.88 |
 | `jaw` (Jaw width) | 0.95 |
 | `chin` (Chin) | 0.98 |
 | `cheeks` (Cheeks) | 1.05 |
@@ -93,6 +93,8 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `undertone` (Skin undertone) | -0.4 |
 | `blush` (Blush) | 0.7 |
 | `earSize` (Ear size) | 1 |
+| `hips` (Hips) | 1.15 |
+| `head` (Head size) | 1.12 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).
 
@@ -100,15 +102,12 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 
 | Slider | Range | Base model |
 |---|---|---|
-| `height` (Height) | 0.98 .. 1.08 | 0.92 .. 1.08 |
-| `build` (Build) | 0.88 .. 1.02 | 0.88 .. 1.18 |
+| `build` (Build) | 0.88 .. 1.13 | 0.88 .. 1.18 |
 | `chest` (Chest) | 0.7 .. 1.2 | 0.6 .. 1.4 |
 | `waist` (Waist) | 0.82 .. 1 | 0.82 .. 1.15 |
-| `hips` (Hips) | 0.9 .. 1.15 | 0.85 .. 1.2 |
-| `legs` (Leg length) | 1.02 .. 1.14 | 0.92 .. 1.14 |
+| `hips` (Hips) | 0.9 .. 1.2 | 0.85 .. 1.2 |
 | `arms` (Arms) | 0.85 .. 1.1 | 0.82 .. 1.25 |
-| `neck` (Neck) | 0.95 .. 1.2 | 0.85 .. 1.2 |
-| `head` (Head size) | 0.95 .. 1.08 | 0.9 .. 1.12 |
+| `head` (Head size) | 0.95 .. 1.12 | 0.9 .. 1.12 |
 | `hairLength` (Hair length) | 1 .. 1.35 | 0.7 .. 1.35 |
 | `hairVolume` (Hair volume) | 0.9 .. 1.2 | 0.9 .. 1.25 |
 
