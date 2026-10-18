@@ -209,9 +209,12 @@ game
   character/model-parts.js           Character geometry helpers: Phong material, smooth normals, vertex colours, limbs whose ends match their neighbours (limb), swept tubes (sweepTube), shells
   character/model-face.js            The hiker's head: an anime-leaning face (moderate eyes with highlights and lashes, a small nose and mouth, brows, ears, a rounded chin) on a sculpted skull that the face sliders reshape
   character/model-hair.js            The hiker's hair (a cap plus tapered locks: fringe, side locks, tails, braids, spikes; length / volume / fringe sliders) and the hats
+  character/model-hats.js            The base hats (version 3.1): ranger, beanie, cap, kasa and helm redrawn with the detail of the signature sets, and the new bandana, hood, circlet, wizard and straw hats
   character/model-body.js            The hiker's body: chest, neck, shoulders and hips as one surface; arms and legs whose joints continue each other; hands with fingers; shaped feet
+  character/model-gloves.js          Gloves (version 3.1): six base gloves and the glove slot of the signature outfits: the hand's paint, fatter fingers or a mitten, and the cuff (geometry on the forearm)
+  character/model-garments.js        The base garments' details (version 3.1): collars, plackets, pockets, belts, cuffs, laces, soles and straps for the plain tops, bottoms and shoes, and the new vest, tunic, kilt, pleated skirt, sandals and tall boots
   character/outfit-tools.js          Helpers for the signature outfits (game/outfits/*.js): the torso's size at a height, flat ribbons, lofts over an arc, rings round a path; and the mixing of their pieces (slots, which kit owns a hook)
-  character/cosmetics.js             Cosmetics on the character (version 3): the cape (a hinged cloth on the back that sways with the walk) and the aura (additive particles and a ground ring), added to a rig by buildCharacter
+  character/cosmetics.js             Cosmetics on the character (version 3, reworked in 3.1): the cape (a curved, rippled cloth in four hinged panels with a pattern, a collar, a clasp and sometimes a shoulder cape) and the aura (shaped additive particles and a decorated ring), added to a rig by buildCharacter
   outfits/dunstan.js                 Dunstan's outfit (a standard-bearer and drummer): a plumed shako, a copper braided queue, a tabard with a flame and a slung snare drum, striped breeches, marching boots, and the banner dressing for every weapon
   outfits/tansy.js                   Tansy's outfit (a farm-hand who harvests a whole field): a wide coil-straw sunbrim with wheat sprigs, a braided wheat crown, a laced green-yoke smock with a sash, patchwork knee breeches with leg wraps, lugged field boots, and the sheaf-wrap dressing
   outfits/torgeir.js                 Torgeir's outfit (a northern shield-wall veteran): an iron spangen cap-helm with a fur rim, paired bone-bound braids, a quilted slate coat with a fur mantle on one shoulder and a banded iron spaulder on the other, strapped iron greaves, fur-cuffed fell boots, a belt horn, and the lichen-wrap weapon dressing
@@ -312,6 +315,7 @@ game
   economy/items.js                   Your gear as told by the server (GEAR), saved in this browser; equip / unequip requests
   ui/toasts.js                       Toast messages
   ui/item-icons.js                   Item icons: an SVG for every piece of equipment, every tool and every pendant, coloured like the item looks on your character
+  ui/drop-icons.js                   Monster-drop icons (version 3.1): every drop in the bag drawn as what it is (goo, tusk, claw, feather, plate, pelt, flame...), picked from its name, in the monster's colours, with a variation per monster
   ui/panels.js                       Panel open/close helpers (openPanel, closePanels, uiOpen, releasePointer)
   economy/inventory.js               Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
   economy/shops.js                   Weapon and armour shops, and Odran the peddler (a bit of everything, and curiosities he will not sell)

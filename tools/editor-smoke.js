@@ -42,7 +42,7 @@ const ed=fs.readFileSync(path.join(SRC,'game/ui/character-editor.js'),'utf8');
 const tabs=[...ed.matchAll(/^  \{tab:'(\w+)'/gm)].map(m=>m[1]);
 ok('four main tabs: Presets, Body, Face, Clothes',tabs.join()==='Presets,Body,Face,Clothes',tabs.join());
 ok('the Presets tab has the signature sets and five outfit slots',/type:'sets'/.test(ed)&&/type:'slots'/.test(ed)&&/i<5;i\+\+/.test(ed));
-ok('every clothes piece has a None tile, armour rows and a colour row',['hat','top','bottom','shoes'].every(k=>new RegExp("k:'"+k+"',type:'grid'[^\\n]*\\['none'\\]").test(ed))&&(ed.match(/type:'armor',slot:/g)||[]).length>=8);
+ok('every clothes piece has a None tile, armour rows and a colour row',['hat','top','bottom','shoes'].every(k=>new RegExp("k:'"+k+"',type:'grid'[^\\n]*(\\['none'\\]|HT_HATS|GM_TOPS|GM_BOTTOMS|GM_SHOES)").test(ed))&&(ed.match(/type:'armor',slot:/g)||[]).length>=8);
 const cs=fs.readFileSync(path.join(SRC,'game/ui/character-thumbs.js'),'utf8');
 ok('every grid kind the editor uses has a thumbnail view',[...new Set([...ed.matchAll(/kind:'(\w+)'/g)].map(m=>m[1]))].every(k=>new RegExp("case '"+k+"'").test(cs)||k==='outfit'||k==='slot'));
 // a look with the new fields passes the server's cleaning and fits the field limit

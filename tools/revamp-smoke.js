@@ -67,7 +67,7 @@ ok('Scholar\'s Brew and Fortune Tea start long buffs (5 minutes)',x.potBuffP(pa,
 pa.gear.res={}; pa.gear.coins=100000; home('a'); for(const [k,res] of [['regen',null]]) { const P=x.POTS.regen2; pa.gear.res[P.herbs[0].res]=20; pa.gear.res[P.herbs[1].res]=20; send('a',{t:'brew',id:'regen2',n:2}); ok('a new potion is brewed like the old ones',(pa.gear.pot.regen2||0)>=2); }
 
 // ---- cosmetics ----
-ok('7 auras and 7 capes, each with a cost in ore or logs, a herb and coins',x.COS_AURAS.length===7&&x.COS_CAPES.length===7&&x.COS_AURAS.every(d=>{ const c=x.cosCost('a',d[0]); return c&&c.res.length===2&&c.coins>0; })&&x.COS_CAPES.every(d=>{ const c=x.cosCost('c',d[0]); return c&&c.res.length===2; }));
+ok('10 auras and 12 capes, each with a cost in ore or logs, a herb and coins',x.COS_AURAS.length===10&&x.COS_CAPES.length===12&&x.COS_AURAS.every(d=>{ const c=x.cosCost('a',d[0]); return c&&c.res.length===2&&c.coins>0; })&&x.COS_CAPES.every(d=>{ const c=x.cosCost('c',d[0]); return c&&c.res.length===2; }));
 ok('ids are own properties only (constructor, __proto__ are nothing)',!x.cosDef('a','constructor')&&!x.cosDef('c','__proto__')&&!x.cosDef('a','toString')&&x.cosCost('a','constructor')===null);
 ok('a save\'s cosmetics are checked: unknown, repeated and malformed entries go',JSON.stringify(x.sanitizeCos({cos:['a:firefly','a:firefly','c:nope','x:y',7,'c:regal','a:constructor']}))==='["a:firefly","c:regal"]'&&x.sanitizeCos({cos:'a:firefly'}).length===0);
 { at('a',x.VIL.x+150,x.VIL.z+150); pa.gear.res={pine:30,sunpetal:30}; pa.gear.cos=[]; send('a',{t:'cosmake',type:'c',id:'wayfarer'}); ok('cosmetics are made at a lodge only',pa.gear.cos.length===0);

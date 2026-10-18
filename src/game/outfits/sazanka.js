@@ -2,7 +2,7 @@
 /* ---------- Sazanka: risk DPS, dark + air. Design: docs/skillkits/looks/sazanka.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: ink 0x1b1f2a, indigo 0x2f3f6b, moon-grey 0xc9ccd6 (only the sash tails and the tassels), vermilion 0xc23b2a (cords and thin trim only, never an area), violet 0x6a5ac8 + white-blue
    wisps for the small glow (the dark and the air). Silhouette: the narrowest and lowest of the eight: a peaked hood with a tall collar, one long lock, a low cord sash with two trailing tails, bound limbs. */
-CHAR_MODELS.sazanka={id:'sazanka',name:'Sazanka',signature:true, items:{hat:'Dusk hood',hair:'Cord lock',face:'Tally marks',top:'Runner wrap',bottom:'Taper wraps',shoes:'Soft stalks',weapon:'Cord sheath'},sexes:['female'],
+CHAR_MODELS.sazanka={id:'sazanka',name:'Sazanka',signature:true, items:{glove:'Cord-bound gloves',hat:'Dusk hood',hair:'Cord lock',face:'Tally marks',top:'Runner wrap',bottom:'Taper wraps',shoes:'Soft stalks',weapon:'Cord sheath'},sexes:['female'],
   note:'The night courier: the narrowest and lowest silhouette, drawn for a small, long-legged runner.',
   ranges:{height:[0.92,1.04],build:[0.88,1.05],chest:[0.6,1.1],shoulders:[0.88,1.05],arms:[0.82,1.1],thighs:[0.85,1.1],neck:[0.85,1.1],hands:[0.85,1.1],head:[0.92,1.06],eyeTilt:[0.1,0.7],hairLength:[0.7,1.05],hairVolume:[0.9,1.1]},
   setups:[{id:'sazanka',name:'Sazanka',sex:'female',def:true,note:'The courier as drawn: small, long-legged, narrow-eyed.',v:{height:0.95,build:0.9,chest:0.85,shoulders:0.93,waist:0.88,torso:0.97,legs:1.12,thighs:0.95,arms:0.9,neck:0.95,hands:0.95,feet:0.95,jaw:0.92,chin:0.95,cheeks:0.9,eyeSize:1.05,eyeHeight:0.05,eyeTilt:0.45,brow:0.3,noseSize:0.9,mouthSize:0.9,lips:0.9,smile:0.1,hairLength:0.9,bangs:1.1}}]};
@@ -247,11 +247,13 @@ OUTFITS.sazanka=(function(){
         for(const g of lit.concat(glow)) g.scale(1.3,1.3,1.3);
         return {lit,glow}; } };
 
+    const GLV={start:0.19,col:INK,col2:INDIGO_D,trim:VERM,len:0.07,flare:0.0,fingers:'tips'};
     const kit={
-      main:{top:0x2f3f6b,bottom:0x2f3f6b,shoes:0x1b1f2a,hat:0x222c4e}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:1.1, shinCut:9, boot:false, skinFrom:0.605, hairColor:HAIR, eyeColor:0x8a86a8,
+      main:{glove:0x1b1f2a,top:0x2f3f6b,bottom:0x2f3f6b,shoes:0x1b1f2a,hat:0x222c4e}, /* the main colour of each piece, for the player's recolouring (outfit-tools.js: ofTinter) */ bootTop:1.1, shinCut:9, boot:false, skinFrom:0.605, hairColor:HAIR, eyeColor:0x8a86a8,
       eyes:EYES,
       cuts:{torso:[0.012,0.062],foreArm:[WRIST/D.fore]},
       paint:bodyPaint,
+      gloveStart:GLV.start, gloveFingers:GLV.fingers, glove:sd=>glKitGlove(X,D,sd,GLV), handPaint:glKitPaint(GLV),
       head:(F,T)=>hood(F,T),
       hair:(F,T)=>hair(F,T),
       mark,
@@ -284,7 +286,7 @@ OUTFITS.sazanka=(function(){
         out.push(solid(spiral(SH,len,t0*len+0.01,len-0.004,8,m+0.0017,0.002,0.3,f=>f<0.86?f/0.86*0.82:0.82+(f-0.86)/0.14*0.18),VERM));
         const q=SH(0.985); out.push(solid(csph(0.0055,sg(8),sg(6)).translate(sd*(q[0]+0.0072),-0.985*len,q[2]),VERM));
         return out; },
-      extras,
+      extras:(rig,XX,has)=>{ extras(rig,XX,has); ofCosmetics(rig,XX,has,{cape:{col:INDIGO_D,trim:VIOLET,len:0.78,pat:'gloam',mantle:0},aura:{col:VIOLET,col2:WISP,style:'orbit',ring:false,n:5,shape:'wisp',deco:'none'}}); },
       dress,
     };
     return kit;

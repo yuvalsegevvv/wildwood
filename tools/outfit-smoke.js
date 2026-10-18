@@ -35,8 +35,9 @@ const only=process.argv.includes('--only')?process.argv[process.argv.indexOf('--
 if(!only){
   const ids=Object.keys(C.OUTFITS), stat=(o,q)=>C.stats(C.buildCharacter(look(o&&o.sex||'male',o),{q:q||0.4}));
   const SLOTS=C.OF_SLOTS, F=C.OF_FIELD, base=stat({}), mk=(sex,a,b)=>look(sex,{top:a,bottom:b,shoes:a,hat:b,hair:a,faceItem:b,weaponItem:b});
-  ok('the outfits name seven slots and every outfit has an item name for each (the editor rows)',SLOTS.length===7&&ids.every(id=>SLOTS.every(sl=>C.CHAR_MODELS[id].items&&C.CHAR_MODELS[id].items[sl])));
-  ok('the editor lists every outfit once per slot',SLOTS.every(sl=>C.ofItems(sl).length===ids.length));
+  const SEVEN=SLOTS.filter(sl=>sl!=='glove');   // (the glove is the eighth slot and optional: only the sets that have a glove item name it)
+  ok('the outfits name seven slots (and an optional glove slot) and every outfit has an item name for each of the seven (the editor rows)',SLOTS.length===8&&SEVEN.length===7&&ids.every(id=>SEVEN.every(sl=>C.CHAR_MODELS[id].items&&C.CHAR_MODELS[id].items[sl])));
+  ok('the editor lists every outfit once per slot (the glove row lists only the sets that have a glove)',SEVEN.every(sl=>C.ofItems(sl).length===ids.length)&&C.ofItems('glove').length===ids.filter(id=>C.CHAR_MODELS[id].items.glove).length);
   // every ordered pair of outfits, interleaved slot by slot, on both bodies
   let bad=null, n=0; for(const sex of ['male','female']) for(const a of ids) for(const b of ids){ if(a===b) continue; n++; try{ const t=stat(mk(sex,a,b)); if(t.bad>0||Math.abs(t.minY)>0.03) bad=bad||(sex+' '+a+'/'+b+' bad='+t.bad+' minY='+t.minY.toFixed(3)); }catch(e){ bad=bad||(sex+' '+a+'/'+b+': '+e.message); } }
   ok('every pair of outfits mixed slot by slot builds on both bodies ('+n+' looks): no NaN, feet on the ground',!bad,bad||'');

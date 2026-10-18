@@ -11,10 +11,11 @@ const CLOTH=[0xb4552f,0x3d5a3a,0x2f4a6b,0xd8c9a3,0x6b3a5b,0xc9a13a,0x2b2b2e,0xe8
 const SHOEC=[0x4a3526,0x2b2420,0x7a5a3a,0xe8e4dc,0x2f4a6b,0x8a2f2f];
 const HATC=[0x7a6142,0x3d5a3a,0x8a2f2f,0x2f4a6b,0xc9a13a,0xe8e4dc,0x2b2b2e];
 // the colours offered for a garment or an outfit piece (the editor's colour rows; a signature piece is recoloured to one of them: outfit-tools.js ofTinter)
+const GLOVEC=[0x5a3a22,0x2b2b2e,0xe8e4dc,0x8a2f2f,0x2f4a6b,0x3d5a3a,0xc9a13a,0x7a7e86];   // glove leathers and cloths
 const TINTC=[0x2b2b2e,0x5c5c63,0xe8e4dc,0x8a2f2f,0xc23b2a,0xe59a2b,0xe3c04a,0x7a9a3c,0x3d5a3a,0x2f6f73,0x5c9fc7,0x2f4a6b,0x6b3f8f,0xc25a86,0x7a4a2c,0xd8b56e];
 // every look field has a default here (old saves and other players' looks are merged onto them); the sliders start at the base model's reference setup (shared/character.js)
-const LOOK_M=Object.assign({armor:'show',armorHat:'show',armorTop:'show',armorBottom:'show',armorShoes:'show',sex:'male',model:'base',face:'angular',eyes:EYEC[0],facial:'stubble',skin:SKINS[1],hair:'short',hairColor:HAIRC[1],ahoge:false,top:'jacket',topColor:CLOTH[0],bottom:'trousers',bottomColor:CLOTH[6],shoes:'boots',shoeColor:SHOEC[0],hat:'ranger',hatColor:HATC[0],pack:false,custom:false,cls:'warrior',faceItem:'',weaponItem:'',tintTop:-1,tintBottom:-1,tintShoes:-1,tintHat:-1,tintHair:-1,tintFace:-1,tintWeapon:-1,aura:'',cape:''},SLIDER_DEFS,setupsOf(CHAR_MODELS.base,'male')[0].v);
-const LOOK_F=Object.assign({armor:'show',armorHat:'show',armorTop:'show',armorBottom:'show',armorShoes:'show',sex:'female',model:'base',face:'oval',eyes:EYEC[2],facial:'none',skin:SKINS[1],hair:'ponytail',hairColor:HAIRC[3],ahoge:false,top:'flannel',topColor:CLOTH[8],bottom:'trousers',bottomColor:CLOTH[9],shoes:'boots',shoeColor:SHOEC[0],hat:'none',hatColor:HATC[1],pack:false,custom:false,cls:'warrior',faceItem:'',weaponItem:'',tintTop:-1,tintBottom:-1,tintShoes:-1,tintHat:-1,tintHair:-1,tintFace:-1,tintWeapon:-1,aura:'',cape:''},SLIDER_DEFS,setupsOf(CHAR_MODELS.base,'female')[0].v);
+const LOOK_M=Object.assign({armor:'show',armorHat:'show',armorTop:'show',armorBottom:'show',armorShoes:'show',sex:'male',model:'base',face:'angular',eyes:EYEC[0],facial:'stubble',skin:SKINS[1],hair:'short',hairColor:HAIRC[1],ahoge:false,top:'jacket',topColor:CLOTH[0],bottom:'trousers',bottomColor:CLOTH[6],shoes:'boots',shoeColor:SHOEC[0],hat:'ranger',hatColor:HATC[0],pack:false,custom:false,cls:'warrior',faceItem:'',weaponItem:'',tintTop:-1,tintBottom:-1,tintShoes:-1,tintHat:-1,tintHair:-1,tintFace:-1,tintWeapon:-1,tintGloves:-1,gloves:'none',gloveColor:GLOVEC[0],aura:'',cape:''},SLIDER_DEFS,setupsOf(CHAR_MODELS.base,'male')[0].v);
+const LOOK_F=Object.assign({armor:'show',armorHat:'show',armorTop:'show',armorBottom:'show',armorShoes:'show',sex:'female',model:'base',face:'oval',eyes:EYEC[2],facial:'none',skin:SKINS[1],hair:'ponytail',hairColor:HAIRC[3],ahoge:false,top:'flannel',topColor:CLOTH[8],bottom:'trousers',bottomColor:CLOTH[9],shoes:'boots',shoeColor:SHOEC[0],hat:'none',hatColor:HATC[1],pack:false,custom:false,cls:'warrior',faceItem:'',weaponItem:'',tintTop:-1,tintBottom:-1,tintShoes:-1,tintHat:-1,tintHair:-1,tintFace:-1,tintWeapon:-1,tintGloves:-1,gloves:'none',gloveColor:GLOVEC[0],aura:'',cape:''},SLIDER_DEFS,setupsOf(CHAR_MODELS.base,'female')[0].v);
 // a character model that breaks the rules (no recommended setups, a setup outside its ranges) is reported once at load; tools/character-smoke.js fails on it
 for(const m of Object.values(CHAR_MODELS)){ const bad=validateCharModel(m); if(bad.length&&typeof console!=='undefined') console.warn('character model "'+m.id+'": '+bad.join('; ')); }
 // a look (from a save, the server or another player) with every missing field filled in: the sex's defaults, and any slider it does not carry at the neutral body
@@ -71,23 +72,19 @@ const anchorAt=(parent,name,x,y,z)=>{ const a=new THREE.Object3D(); a.name='a:'+
    nodes on the bones: head top, face, neck, chest, back, waist, hips, shoulders, wrists, ankles). q is the detail factor (see charDetail). */
 function buildCharacter(L,opt){
   const PC=ofPieces(L), worn=Object.keys(PC).length>0;   // the slots that wear an item of a signature outfit (outfit-tools.js "mixing the pieces"): each one replaces the base item of that slot
-  if(worn){ const o={}; if(PC.top){ o.top='outfit'; o.pack=false; } if(PC.bottom){ o.bottom='outfit'; o.bottomStyle=''; } if(PC.shoes) o.shoes='outfit'; if(PC.hat) o.hat='outfit'; if(PC.hair){ o.hair='bald'; o.ahoge=false; } if(PC.face) o.facial='none'; L=Object.assign({},L,o); }
+  if(worn){ const o={}; if(PC.top){ o.top='outfit'; o.pack=false; } if(PC.bottom){ o.bottom='outfit'; o.bottomStyle=''; } if(PC.shoes) o.shoes='outfit'; if(PC.hat) o.hat='outfit'; if(PC.glove) o.gloves='outfit'; if(PC.hair){ o.hair='bald'; o.ahoge=false; } if(PC.face) o.facial='none'; L=Object.assign({},L,o); }
   const q=(opt&&opt.q)||1, sg=n=>Math.max(5,Math.round(n*q)), S=lookSliders(L), fem=L.sex==='female';
   const skin=new THREE.Color(L.skin), skinPaint=c=>c.copy(skin), hairCol=new THREE.Color(L.hairColor), {topPaint,botPaint}=clothPaints(L);
-  const D=charDims(L,S,fem,faceShape(L)), X={L,S,fem,sg,q,skin,skinPaint,hairCol,topPaint,botPaint,D,kit:null};
-  if(worn){ X.kit=ofBuild(X,D,PC); const kh=X.kit.sl.hair, th=ofTintOf(L,'hair'); if(kh&&th>=0) X.hairCol=new THREE.Color(th); else if(kh&&kh.hairColor!==undefined) X.hairCol=new THREE.Color(kh.hairColor); }   // the hair item's own colour (the eyebrows and lashes follow it)
+  const D=charDims(L,S,fem,faceShape(L)), X={L,S,fem,sg,q,skin,skinPaint,hairCol,topPaint,botPaint,D,kit:null,glove:null};
+  if(worn){ X.kit=ofBuild(X,D,PC); const kh=X.kit.sl.hair, th=ofTintOf(L,'hair'); if(kh&&th>=0) X.hairCol=new THREE.Color(th); else if(kh&&kh.hairColor!==undefined) X.hairCol=new THREE.Color(kh.hairColor); }
+  X.glove=glPlan(X);   // the gloves (model-gloves.js): read by buildArm and buildFingers   // the hair item's own colour (the eyebrows and lashes follow it)
   const root=new THREE.Group(), hips=new THREE.Group(); hips.name='hips'; hips.position.y=D.hipY; root.add(hips);
   const spine=new THREE.Group(); spine.name='spine'; hips.add(spine);
 
   const torso=new THREE.Mesh(merge(buildTorso(X,D)),matChar); torso.castShadow=true; spine.add(torso);
   if(X.kit){ const ex=ofRun(X,'hips'); if(ex.length){ const hm=new THREE.Mesh(merge(ex),matChar); hm.castShadow=true; hips.add(hm); } }   // skirts and sashes, in the hips' frame
-  if(L.bottom==='skirt'){
-    /* an A-line skirt that follows the hips (it was a cone 20% too wide): the waist just clears the thighs, the hem is 1.4x the waist and flares along a curve */
-    const top=Math.max(0.165*D.B,D.hx+0.085), hem=top*1.4, rows=sg(8), prof=[];
-    for(let i=0;i<=rows;i++){ const t=i/rows; prof.push(new THREE.Vector2(top+(hem-top)*Math.pow(t,1.35),(0.04-0.4*t)*S.legs)); }
-    const sk=pc(new THREE.LatheGeometry(prof,sg(40)).scale(1,1,0.8),(x,y,z,c)=>{ botPaint(c); if(y<-0.33*S.legs) c.multiplyScalar(0.85); });
-    const skirt=new THREE.Mesh(sk,matFlat); skirt.castShadow=true; hips.add(skirt);
-  }
+  if(L.bottom==='skirt'||L.bottom==='kilt'||L.bottom==='pleated'){ const skirt=new THREE.Mesh(gmSkirt(X,D,L.bottom),matFlat); skirt.castShadow=true; hips.add(skirt); }   // a flared skirt, a tartan kilt or a pleated skirt (model-garments.js)
+  { const ex=gmHips(X,D); if(ex.length){ const gm=new THREE.Mesh(merge(ex),matChar); gm.castShadow=true; hips.add(gm); } }   // belt, buckle, sporran, the tunic's flare
   /* head: the anime proportions come from its scale (about 5.9 heads tall: the skull is HEAD_TALL = 10% taller than a ball) */
   const head=new THREE.Group(); head.name='head'; head.position.y=D.headY; spine.add(head);
   const face=buildFace(X), hairParts=buildHair(X,face);
@@ -104,7 +101,7 @@ function buildCharacter(L,opt){
   a('wristL',elL,0,-D.wrist,0); a('wristR',elR,0,-D.wrist,0); a('ankleL',kneeL,0,-D.shin,0); a('ankleR',kneeR,0,-D.shin,0);
   const rig={root,hips,spine,head,hipY:D.hipY,shL,elL,shR,elR,hipL,kneeL,hipR,kneeR,dims:Object.assign({},D,{faceScale:face.fs}),sliders:S,anchors:A,kit:X.kit,dress:X.kit?ofDress(X):null,anims:null};
   if(X.kit){ rig.anims=[];   // loose parts and motion that the merged meshes cannot carry (a ring that turns, a charm that swings): a kit builds them once per slot it owns, `has(slot)` is true for that slot only, and the meshes it added are tinted with that slot's colour
-    for(const k of X.kit.kits) if(k.extras) for(const slot of ['top','bottom','shoes','hat','hair']){ if(X.kit.sl[slot]!==k) continue;
+    for(const k of X.kit.kits) if(k.extras) for(const slot of ['top','bottom','shoes','hat','hair','glove']){ if(X.kit.sl[slot]!==k) continue;
       const f=X.kit.tr[slot], before=new Set(); if(f) rig.root.traverse(o=>before.add(o));
       k.extras(rig,X,s=>s===slot);
       if(f) rig.root.traverse(o=>{ if(o.isMesh&&!before.has(o)) ofTintGeo(o.geometry,f); }); }

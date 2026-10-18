@@ -77,6 +77,8 @@
 .mat-row{ display:flex; flex-wrap:wrap; gap:6px; }
 .mat{ display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:8px; font-size:12px; background:rgba(0,0,0,.22); border:1px solid var(--line); }
 .mat b{ color:#f2cf5a; }
+.matc{ display:flex; flex-direction:column; align-items:center; gap:2px; width:68px; }
+.matc .nm{ font-size:10px; line-height:1.15; text-align:center; color:var(--ink,#d8dccb); opacity:.9; overflow-wrap:anywhere; max-height:2.4em; overflow:hidden; }   /* the name under a drop's or a resource's tile */
 .tile.matt{ cursor:default; touch-action:auto; }   /* drops and resources: icon tiles like the bag's, not draggable */
 /* ---- the Soul Hall ---- */
 .so-intro{ margin:0 0 8px; font-size:13px; line-height:1.5; color:var(--ink-dim); }

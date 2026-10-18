@@ -101,7 +101,8 @@ function matIconArt(col,kind){
   if(kind==='gathering') return `<path d="M16 28V13" stroke="#15120e" stroke-width="3.4" stroke-linecap="round"/><path d="M16 28V13" stroke="#5a8a3a" stroke-width="1.6" stroke-linecap="round"/><path d="M16 15Q8 14 7 6Q15 6 16 15Z" fill="${col}" ${OUT}/><path d="M16 19Q24 18 25 10Q17 10 16 19Z" fill="${col}" ${OUT}/><path d="M16 24Q10 24 8 18Q14 17 16 24Z" fill="${l}" ${OUT}/>`;
   return `<path d="M16 3L26 12L16 29L6 12Z" fill="${col}" ${OUT}/><path d="M6 12H26M16 3L12 12L16 29L20 12Z" fill="none" stroke="${d}" stroke-width=".9"/><path d="M9 11L14 5.5" stroke="${l}" stroke-width="1.3"/>`;
 }
-const matIcon=(col,kind)=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${matIconArt(col,kind)}</g></svg>`;
+// id + name given for a monster drop: its own picture (ui/drop-icons.js); a resource passes its profession as `kind`
+const matIcon=(col,kind,id,name)=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${kind==='drop'&&id?dropIconArt(id,col,name):matIconArt(col,kind)}</g></svg>`;
 // faint outline for an empty equipment slot
 function slotIcon(slot){
   const fake=slot==='weapon'?ITEM.sword1:slot==='ring'?ITEM['ring-basic']:slot==='pendant'?ITEM['pendant-xp']:ITEM[slot+'1'];  return itemIcon(fake).replace('class="ico"','class="ico ghost"');

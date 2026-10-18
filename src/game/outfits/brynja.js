@@ -2,7 +2,7 @@
 /* ---------- Brynja: risk DPS, water. Design: docs/skillkits/looks/brynja.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: ice 0x6fb4e0, snow 0xeaf4fb, slate 0x3c4a5a, fur 0xb8a890, steel 0xc9d4dc. Silhouette: a hooded head with two long braids, a fitted jacket, a short flared skirt, long slim legs ending in blades.
    Every part has at least two colours (slate and ice at the least); the emblem is a six-armed frost cross, never a snowflake copied from a brand. */
-CHAR_MODELS.brynja={id:'brynja',name:'Brynja',signature:true, items:{hat:'Fur-rim hood',hair:'Twin frost braids',face:'Frost freckles',top:'Quilted jacket',bottom:'Pleated skirt',shoes:'Skate boots',weapon:'Skate rig'},sexes:['female'],
+CHAR_MODELS.brynja={id:'brynja',name:'Brynja',signature:true, items:{glove:'Fur-cuff mittens',hat:'Fur-rim hood',hair:'Twin frost braids',face:'Frost freckles',top:'Quilted jacket',bottom:'Pleated skirt',shoes:'Skate boots',weapon:'Skate rig'},sexes:['female'],
   note:'The skater: long-legged, quick and light, built for a tall slim woman.',
   ranges:{height:[0.98,1.08],build:[0.88,1.02],chest:[0.7,1.2],waist:[0.82,1.0],hips:[0.9,1.15],legs:[1.02,1.14],neck:[0.95,1.2],arms:[0.85,1.1],head:[0.95,1.08],hairLength:[1.0,1.35],hairVolume:[0.9,1.2]},
   setups:[{id:'brynja',name:'Brynja',sex:'female',def:true,note:'The skater as drawn: tall, light and long in the leg.',v:{height:1.05,build:0.92,chest:0.92,shoulders:0.96,waist:0.88,torso:0.98,legs:1.1,thighs:0.94,arms:0.95,neck:1.05,hands:0.95,feet:0.95,jaw:0.95,chin:0.98,cheeks:1.0,noseSize:0.95,mouthSize:1.0,smile:0.4,hairLength:1.2,hairVolume:1.05}}]};
@@ -44,11 +44,14 @@ OUTFITS.brynja=(function(){
     const collar=()=>{ const r=[]; for(const [yd,k] of [[0.6,1.0],[0.57,1.05],[0.54,1.12]]) r.push({y:yd*TK,rx:D.neckR*1.55*k+0.006,rz:D.neckR*1.55*k+0.006,zc:-0.002});
       return [pc(ofLoft(r,sg(24),0,TAU),(x,y,z,c)=>{ c.set(FUR); c.multiplyScalar(0.88+0.2*fr(x*80+z*60+y*40)); })]; };
 
+    const GLV={start:0.16,col:SNOW,col2:ICE,trim:FUR,len:0.08,flare:0.016,fingers:'mitt'};
     return {
-      main:{top:0x3c4a5a,bottom:0x6fb4e0,shoes:0xeaf4fb,hat:0x3c4a5a}, bootTop:0.04, shinCut:0, boot:true, skinFrom:0.6, hairColor:HAIR, eyeColor:0x4aa0d8,
+      main:{glove:0xeaf4fb,top:0x3c4a5a,bottom:0x6fb4e0,shoes:0xeaf4fb,hat:0x3c4a5a}, bootTop:0.04, shinCut:0, boot:true, skinFrom:0.6, hairColor:HAIR, eyeColor:0x4aa0d8,
       eyes:{iris:1.1,hl:2,tilt:0.15,lash:1.1,browLift:0.002,browThick:0.8,h:0.95},
       cuts:{torso:[0.03,0.07,0.545],upperArm:[],foreArm:[0.15/D.fore,0.222/D.fore],thigh:[0.85],shin:[0.04,0.5,0.54]},
       paint,
+      gloveStart:GLV.start, gloveFingers:GLV.fingers, glove:sd=>glKitGlove(X,D,sd,GLV), handPaint:glKitPaint(GLV),
+      extras:(rig,XX,has)=>ofCosmetics(rig,XX,has,{cape:{col:SLATE,trim:FUR,len:0.7,pat:'fur',mantle:1},aura:{col:0xbfe3f5,col2:0xffffff,style:'orbit',ring:false,n:10,shape:'mote',deco:'none'}}),
       head:F=>hood(F),
       hair:(F,T)=>braids(F,T),
       mark:F=>{ const out=[]; for(let i=0;i<5;i++){ const sd=i%2?1:-1; out.push(solid(F.place(csph(0.0032,sg(6),sg(5)),sd*(0.04+0.006*i),-0.026-0.004*(i%3),0.0008),0xbfe3f5)); } return out; },

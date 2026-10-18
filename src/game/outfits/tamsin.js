@@ -2,7 +2,7 @@
 /* ---------- Tamsin: grind, earth. Design: docs/skillkits/looks/tamsin.md. The hooks of a kit are in docs/CHARACTER.md section 9. ----------
    Palette: granite 0x8a8f96, dust 0xd2b48a, rope 0x9a7a4a, ochre 0xc2823a, canvas 0x6a5a44, steel 0xc9ccd4. Silhouette: a wrapped head with a knot, strong bare arms, a rope harness across the chest, a belt of tools and thick knees over heavy boots.
    Every part has at least two colours (granite and ochre at the least); the emblem is a cairn, never a mountain copied from a brand. */
-CHAR_MODELS.tamsin={id:'tamsin',name:'Tamsin',signature:true, items:{hat:'Dust wrap',hair:'Pinned braids',face:'Dust smudges',top:'Rope harness',bottom:'Knee-pad trousers',shoes:'Steel-toe boots',weapon:'Sledge rig'},sexes:['female'],
+CHAR_MODELS.tamsin={id:'tamsin',name:'Tamsin',signature:true, items:{glove:'Quarry gloves',hat:'Dust wrap',hair:'Pinned braids',face:'Dust smudges',top:'Rope harness',bottom:'Knee-pad trousers',shoes:'Steel-toe boots',weapon:'Sledge rig'},sexes:['female'],
   note:'The quarry-hand: strong, short in the stride and steady, built for a sturdy woman.',
   ranges:{height:[0.92,1.04],build:[1.0,1.18],chest:[0.9,1.4],waist:[0.9,1.15],hips:[1.0,1.2],legs:[0.92,1.06],neck:[0.95,1.2],arms:[1.0,1.25],head:[0.95,1.1],hairLength:[0.8,1.2],hairVolume:[0.9,1.2]},
   setups:[{id:'tamsin',name:'Tamsin',sex:'female',def:true,note:'The quarry-hand as drawn: broad-shouldered, strong-armed and sturdy.',v:{height:0.98,build:1.1,chest:1.1,shoulders:1.1,waist:1.0,torso:0.98,legs:0.98,thighs:1.1,arms:1.15,neck:1.05,hands:1.12,feet:1.05,jaw:1.05,chin:1.0,cheeks:1.05,noseSize:1.0,mouthSize:1.0,smile:0.4,hairLength:1.0,hairVolume:1.1}}]};
@@ -47,15 +47,23 @@ OUTFITS.tamsin=(function(){
       out.push(pc(vbox(0.05,0.06,0.03,D.hx+0.07,-0.01,-rz-0.014),(x,y,z,c)=>{ c.set(ROPE); if(y>0.01) c.set(CANVAS_D); }));
       return out; };
 
+    const GLV={start:0.18,col:CANVAS,col2:CANVAS_D,trim:ROPE,len:0.08,flare:0.006,studs:true,fingers:'full'};
+    const addOn=()=>{ const out=[], zb=torsoSize(X,D,0.3).rzBack+0.034;   // a pick slung on the back
+      out.push(solid(sweepTube([[0.07,0.01*TK,zb],[0.03,0.3*TK,zb+0.008],[-0.03,0.6*TK,zb]],[0.011,0.011,0.011],5,{cap:'round',rings:10}),ROPE),
+        solid(sweepTube([[-0.13,0.62*TK,zb+0.01],[-0.07,0.665*TK,zb+0.004],[-0.02,0.675*TK,zb],[0.04,0.665*TK,zb+0.004],[0.09,0.63*TK,zb+0.01]],[0.003,0.014,0.016,0.014,0.003],6,{cap:'point',rings:14}),STEEL),
+        solid(ofRingAt([0.03,0.3*TK,zb+0.008],[0.15,1,0.1],0.015,0.004,sg(5)),OCHRE));
+      return out; };
     return {
-      main:{top:0x8a8f96,bottom:0x6a5a44,shoes:0x3a3028,hat:0xc2823a}, bootTop:0.04, shinCut:0, boot:true, skinFrom:0.545, hairColor:HAIR, eyeColor:0x6a8a4a,
+      main:{glove:0x6a5a44,top:0x8a8f96,bottom:0x6a5a44,shoes:0x3a3028,hat:0xc2823a}, bootTop:0.04, shinCut:0, boot:true, skinFrom:0.545, hairColor:HAIR, eyeColor:0x6a8a4a,
       eyes:{iris:1.0,hl:1,tilt:0.0,lash:0.7,browLift:0.0,browThick:1.3,h:0.9},
       cuts:{torso:[0.545],upperArm:[0.74],foreArm:[0.14/D.fore,0.222/D.fore],thigh:[0.88],shin:[0.04,0.16,0.6,0.66]},
       paint,
+      gloveStart:GLV.start, gloveFingers:GLV.fingers, glove:sd=>glKitGlove(X,D,sd,GLV), handPaint:glKitPaint(GLV),
+      extras:(rig,XX,has)=>ofCosmetics(rig,XX,has,{aura:{col:DUST,col2:0xfff0d0,style:'rise',ring:false,n:8,shape:'grain',deco:'none'}}),
       head:F=>wrap(F),
       hair:(F,T)=>braids(F,T),
       mark:F=>{ const out=[]; for(const sd of [-1,1]){ out.push(solid(F.place(csph(1,sg(8),sg(6)).scale(0.03,0.007,0.0009).rotateZ(sd*-0.1),sd*0.058,-0.03,0.0008),0x9a8466)); out.push(solid(F.place(csph(1,sg(8),sg(6)).scale(0.02,0.005,0.0009).rotateZ(sd*0.2),sd*0.05,-0.048,0.0008),0xb89a70)); } return out; },
-      torso:()=>harness(),
+      torso:()=>harness().concat(addOn()),
       shoulder:sd=>[solid(ofRingAt([0,-0.1,0],[0,1,0],0.05*aw+0.002,0.007,sg(6)),OCHRE)],
       forearm:sd=>[solid(ofRingAt([0,-0.14,0],[0,1,0],0.0295*aw+0.002,0.004,sg(6)),ROPE)],
       thigh:sd=>{ const tw=D.tw, st=[[0,0.105*tw,0.108*tw],[0.4,0.123*tw,0.123*tw],[0.8,0.115*tw,0.115*tw],[1,D.KR*1.12,D.KR*1.12]];
