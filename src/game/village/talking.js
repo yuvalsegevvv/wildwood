@@ -4,7 +4,9 @@ const bubble=$('#bubble'), bName=$('#bName'), bText=$('#bText'), promptEl=$('#pr
 const _bv=new THREE.Vector3();
 /* A quest villager (the main quest, game/economy/main-quest.js) says their quest lines first, one per talk key press, and the server
    is told once (it applies the same talk: starts, progresses or hands in the step); their shop or panel opens after the last one */
-function startTalk(n){ loreOpen=null; talkNPC=n; n.line=0; UI_SFX.talk(); const T=mqLinesFor(n); n.mq=T?T.lines.slice():null; if(T) netSend({t:'mq',a:'talk',id:n.def.id}); sayLine(n); if(!mqBusy(n)) openRolePanel(n); }
+function startTalk(n){ loreOpen=null; talkNPC=n; n.line=0; UI_SFX.talk(); const T=mqLinesFor(n), Q=sqLinesFor(n), L=(T?T.lines:[]).concat(Q?Q.lines:[]); n.mq=L.length?L:null; if(T) netSend({t:'mq',a:'talk',id:n.def.id});
+  if(Q) netSend({t:'sq',a:'talk',id:n.def.id});   // sidequests: their lines follow the main quest's
+  sayLine(n); if(!mqBusy(n)) openRolePanel(n); }
 const mqBusy=n=>!!(n.mq&&n.mq.length);
 function openRolePanel(n){ const r=n.def.role; if(r==='weaponsmith'||r==='armorer'||r==='peddler') openShop(n); else if(r==='quests') openQuests(n); else if(r==='forge') openForge(n); else if(r==='trainer') openSkills(n); else if(r==='soul') openSoul(n); else if(r==='lodge') openLodge(n); else if(r==='brew') openBrew(n); }
 function sayLine(n){
@@ -22,6 +24,7 @@ function pickHerb(i){ netSend({t:'mq',a:'pick',i}); UI_SFX.pickup(); }
 function endTalk(){ if(panelNPC && panelNPC===talkNPC) closePanels(); talkNPC=null; stopSpeech(); }
 function interact(){
   if(!started||customizing||PL.dead) return;
+  if(sqSceneOn()&&sqSceneNext()) return;   // sidequests: the talk key steps through a place's scene
   if(talkNPC && (nearNPC===talkNPC || Math.hypot(P.x-talkNPC.x,P.z-talkNPC.z)<4.5)){ sayLine(talkNPC); if(!panelNPC&&!mqBusy(talkNPC)) openRolePanel(talkNPC); }
   else if(nearNPC) startTalk(nearNPC);
   else if(nearHerb()>=0) pickHerb(nearHerb());
@@ -61,7 +64,8 @@ function updateTalkUI(){
   const free=started && !customizing && !canTalk && !PL.dead, herb=free?nearHerb():-1, lore=free&&herb<0?loreNear(P.x,P.z):null, node=free&&herb<0&&!lore?nearNode():-1, circ=free&&herb<0&&!lore&&node<0?nearCircle():null;
   const bench=free&&herb<0&&!lore&&node<0&&!circ&&nearHomeBench(), dgDoor=free&&herb<0&&!lore&&node<0&&!circ&&!bench?dgEntranceNear(P.x,P.z):null;   // dungeons: a door within reach
   const tk=kbName('talk')||'the talk key';
-  if(herb>=0||lore){
+  if(sqSceneOn()){ promptEl.textContent=isTouch?'':'Press '+tk+(sqScene.lines.length?' to go on':' to close'); promptEl.hidden=isTouch; bTalk.textContent='Next'; document.body.classList.add('can-talk'); }   // sidequests: a place's scene
+  else if(herb>=0||lore){
     promptEl.textContent=isTouch?'':herb>=0?'Press '+tk+' to pick the heartleaf':loreOpen===lore?'Press '+tk+' to stop reading':'Press '+tk+' to read: '+lore.name;
     promptEl.hidden=isTouch; bTalk.textContent=herb>=0?'Pick':'Read'; document.body.classList.add('can-talk');
   } else if(node>=0){

@@ -27,7 +27,8 @@ srv.listen(0,'127.0.0.1',async()=>{
   try{
     await pg.goto('http://127.0.0.1:'+srv.address().port+'/');
     for(let i=0;i<3000;i++){ const t=await pg.evaluate(()=>document.getElementById('status').textContent); if(/Ready|forest is ready/.test(t)) break; await sleep(100); }
-    await pg.evaluate(()=>document.getElementById('stSolo').click()); await sleep(5000);
+    await pg.evaluate(()=>document.getElementById('stSolo').click()); await sleep(3000);
+    await pg.evaluate(()=>{ const e=document.getElementById('editor'), d=document.getElementById('edDone'); if(e&&!e.hidden&&d) d.click(); }); await sleep(2000);   // a new hiker is shown "Create your hiker" first: keep the default look
     if(AT||GO||LEVEL>1){
       await pg.evaluate(()=>document.getElementById('bSound').click()); await sleep(400);   // the settings popover holds the testing tools
       if(LEVEL>1){ await pg.evaluate(l=>{ document.getElementById('tLevel').value=l; document.getElementById('tSetLv').click(); },LEVEL); await sleep(1500); }

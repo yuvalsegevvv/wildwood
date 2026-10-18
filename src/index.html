@@ -70,6 +70,7 @@
 </div>
 <div id="quests" class="panel" hidden role="dialog" aria-label="Quests">
   <div class="pn-head"><span class="pn-t" id="qTitle">Quests</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="chips pn-tabs" id="qTabs"></div>
   <div class="pn-body" id="qBody"></div>
 </div>
 <div id="map" class="panel" hidden role="dialog" aria-label="Map">
@@ -203,6 +204,7 @@
   <div class="test-row"><label for="tLevel">Level</label><input id="tLevel" type="number" min="1" max="99" value="1" inputmode="numeric"><button class="chip" id="tSetLv">Set level</button></div>
   <div class="test-row"><label for="tDgTheme">Dungeon</label><select id="tDgTheme" aria-label="Dungeon"></select><select id="tDgMission" aria-label="Mission"></select><button class="chip" id="tDgGo">Start a run</button></div>
   <div class="test-row"><label for="tMq">Main quest</label><select id="tMq"></select><button class="chip" id="tSetMq">Go to step</button></div>
+  <div class="test-row"><label for="tSq">Side quest</label><select id="tSq"></select><button class="chip" id="tSetSq">Go to step</button></div>
   <div class="test-col">
     <button class="chip" id="tAll">Add every item to my bag</button>
     <button class="chip" id="tStartAll" aria-pressed="false">Start with every item: off</button>

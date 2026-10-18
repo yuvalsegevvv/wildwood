@@ -113,7 +113,7 @@ function applyEvent(e){
     case 'coins': if(e[1]===me){ const m=MON_BY_ID.get(e[3]); if(m){ const c=monCenter(m); popText(c.x+0.4,c.y+m.T.height*0.35,c.z,'+'+e[2]+' coins','coin'); } } break;
     case 'loot': onLoot(e[1],e[2],e[3]); break;
     case 'merge': if(e[1]===me){ const it=ITEM[e[2]]; if(it) forgeFx(it); } else { const r=REMOTES.get(e[1]), it=ITEM[e[2]]; if(r&&it&&it.rar>=3) toast(r.name+' forged '+it.name+'!','loot r'+it.rar); } break;
-    case 'guest': if(e[1]===me) guestGateShow(e[2]); break;   // accounts: a guest hit a limit (level 10, the home forest, zone tiers)
+    case 'guest': if(e[1]===me) guestGateShow(e[2]); break;   // accounts: a guest hit a limit (level 20, the first three lands, zone tiers)
     case 'lvup': if(e[1]===me) levelUpFx(e[2]); else remoteLevelUp(e[1],e[2]); break;
     case 'hurt': if(e[1]===me) hurtFx(e[2]); else remoteHurt(e[1],e[2]); break;
     case 'down': if(e[1]===me){ if(!PL.dead) playerDown(); } else remoteDown(e[1],true); break;
@@ -122,6 +122,8 @@ function applyEvent(e){
     case 'qdone': if(e[1]===me) UI_SFX.notify(); break;
     case 'qturn': if(e[1]===me) UI_SFX.success(); break;
     case 'mq': if(e[1]===me) { if(e[3]===2) UI_SFX.success(); else UI_SFX.notify(); } break;   // a main quest step started (1) or handed in (2)
+    case 'sq': if(e[1]===me) { if(e[4]===2) UI_SFX.success(); else UI_SFX.notify(); } break;   // sidequests: a chain's step started (1) or handed in (2)
+    case 'sqsay': if(e[1]===me) sqShowScene(e[2],e[3]); break;   // sidequests: a place's scene
     case 'pact': if(e[1]!==me) remoteAct(e[1],e[2],e[3]); break;
     case 'pjoin': if(e[1].id!==me && !REMOTES.has(e[1].id)){ remoteAdd(e[1]); chatLine('sys',e[1].name,'joined the world'); } break;
     case 'pleave': { const r=REMOTES.get(e[1]); if(r){ chatLine('sys',r.name,'left the world'); remoteRemove(e[1]); } break; }

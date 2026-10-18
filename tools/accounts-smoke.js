@@ -3,7 +3,7 @@
 const {loadServer}=require('./load'), {memoryAccounts}=require('./headless');
 const inbox={};
 const {DB,store,auth}=memoryAccounts();   // accounts kept in memory instead of files or Postgres
-const {api:W,x}=loadServer({dev:false,store,auth,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); },broadcast(){}},['gainExpP','isGuestP','VIL2','setZoneTierP']);
+const {api:W,x}=loadServer({dev:false,store,auth,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); },broadcast(){}},['gainExpP','isGuestP','VIL2','VIL4','setZoneTierP','landAt']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const last=(pid,t)=>[...(inbox[pid]||[])].reverse().find(m=>m.t===t);
 const wait=()=>new Promise(r=>setTimeout(r,20));
@@ -21,11 +21,13 @@ const A1='a'.repeat(32), A2='b'.repeat(32), A3='c'.repeat(32);
   ok('register moves progress to the account',g.user==='Hayru'&&au&&au.token&&DB.get(A1).movedTo==='Hayru');
   ok('Hayru gets level 9',g.level===9,'level '+g.level);
   { const q=W.players.get('g2'); ok('a guest is a guest, a registered player is not',x.isGuestP(q)&&!x.isGuestP(g));
-    x.gainExpP(q,1e9); ok('a guest stops at level 10 and keeps no XP past it',q.level===10,'level '+q.level);
-    const ev0=(inbox.g2||[]).length; W.receive('g2',{t:'pos',p:[x.VIL2.x,5,x.VIL2.z,0,0,0]});
-    ok('a guest cannot walk out of the home forest (put back inside)',Math.hypot(q.x-x.VIL2.x,q.z-x.VIL2.z)>200);
+    x.gainExpP(q,1e9); ok('a guest stops at level 20 and keeps no XP past it',q.level===20,'level '+q.level);
+    W.receive('g2',{t:'pos',p:[x.VIL2.x,5,x.VIL2.z,0,0,0]});
+    ok('a guest may walk in the Sakura Vale (one of the first three lands)',Math.hypot(q.x-x.VIL2.x,q.z-x.VIL2.z)<1,'at '+Math.round(q.x)+','+Math.round(q.z));
+    W.receive('g2',{t:'pos',p:[x.VIL4.x,5,x.VIL4.z,0,0,0]});
+    ok('a guest cannot walk into the Greyspine (put back inside the first three lands)',Math.hypot(q.x-x.VIL4.x,q.z-x.VIL4.z)>200&&x.landAt(q.x,q.z)==='vale');
     q.gear.zt.home.max=2; x.setZoneTierP(q,'home',1); ok('a guest cannot rank a zone up',q.gear.zt.home.on===0);
-    const l0=g.level,e0=g.exp; x.gainExpP(g,1e9); ok('a registered player is not capped at 10',g.level>10,'level '+g.level); g.level=l0; g.exp=e0; }
+    const l0=g.level,e0=g.exp; x.gainExpP(g,1e9); ok('a registered player is not capped at 20',g.level>20,'level '+g.level); g.level=l0; g.exp=e0; }
   W.receive('g2',{t:'register',user:'HAYRU',pass:'secret2'}); await wait();
   ok('same name in other case refused',!W.players.get('g2').user&&/already/.test(last('g2','authfail').text));
   W.receive('g2',{t:'name',name:'Hayru'}); await wait();

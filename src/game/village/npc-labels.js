@@ -25,18 +25,30 @@ function npcTag(n){
   el.innerHTML=`<span class="nt-mark"></span><b>${D.name}</b><span class="nt-role"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>${D.title}</span>`;
   document.body.append(el); npcTags.set(n,el); return el;
 }
-const _nv=new THREE.Vector3();
+const _nv=new THREE.Vector3(), _ntShown=[], _ntBoxes=[];
+// Labels are laid out nearest first: a farther one that would overlap a nearer one on screen is hidden (kept, as a bare name, when it carries a quest mark), and past
+// NT_FULL_D metres a label shows only the name. (On the plaza six or seven labels used to pile into one unreadable stack.)
+const NT_FULL_D=16;
 function updateNpcLabels(){
+  _ntShown.length=0;
   for(const n of NPCs){
     if(!n.def.title) continue;
     const el=npcTag(n), d=Math.hypot(n.x-P.x,n.z-P.z);
     if(!started||customizing||n.inside||n===talkNPC||d>34||!n.g.visible){ el.hidden=true; continue; }
     _nv.set(n.x,n.y+2.2*n.scale,n.z).project(camera);
     if(_nv.z>1||Math.abs(_nv.x)>1.1||Math.abs(_nv.y)>1.1){ el.hidden=true; continue; }
-    el.hidden=false;
-    el.style.transform=`translate(${(_nv.x*0.5+0.5)*innerWidth}px,${(-_nv.y*0.5+0.5)*innerHeight}px) translate(-50%,-100%) scale(${clamp(1.25-d/40,0.72,1.1)})`;
-    el.style.opacity=clamp((34-d)/10,0,1);
-    const qm=MQ_NPC_VIL[n.def.id]?mqMark(n.def.id):'', mk=qm||(n.def.role==='quests'?questMark(n.def.id):''), m=el.firstChild, cls='nt-mark'+(mk==='?'?' ready':'')+(qm?' mq':'');   // the main quest's mark wins
+    const qm=MQ_NPC_VIL[n.def.id]?mqMark(n.def.id):'', sm=qm?'':sqMark(n.def.id), mk=qm||sm||(n.def.role==='quests'?questMark(n.def.id):''), m=el.firstChild, cls='nt-mark'+(mk==='?'?' ready':'')+(qm?' mq':sm?' sq':'');   // the main quest's mark wins, then a side quest's (sidequests:)
     if(m.textContent!==mk||m.className!==cls){ m.textContent=mk; m.className=cls; }
+    _ntShown.push({el,d,mk,x:(_nv.x*0.5+0.5)*innerWidth,y:(-_nv.y*0.5+0.5)*innerHeight,s:clamp(1.25-d/40,0.72,1.1)});
+  }
+  _ntShown.sort((a,b)=>a.d-b.d); _ntBoxes.length=0;
+  for(const L of _ntShown){
+    let short=L.d>NT_FULL_D;
+    const hit=()=>{ const w=(short?62:118)*L.s, h=(short?20:38)*L.s+(L.mk?30*L.s:0); return _ntBoxes.some(B=>Math.abs(B.x-L.x)<(B.w+w)/2&&L.y-h<B.y&&B.y-B.h<L.y); };
+    if(hit()){ if(!L.mk){ L.el.hidden=true; continue; } short=true; }
+    L.el.hidden=false; L.el.classList.toggle('nt-short',short);
+    _ntBoxes.push({x:L.x,y:L.y,w:(short?62:118)*L.s,h:(short?20:38)*L.s+(L.mk?30*L.s:0)});
+    L.el.style.transform=`translate(${L.x}px,${L.y}px) translate(-50%,-100%) scale(${L.s})`;
+    L.el.style.opacity=clamp((34-L.d)/10,0,1);
   }
 }

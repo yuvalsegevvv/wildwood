@@ -10,7 +10,7 @@ function mqLinesFor(n){ const M=mqG(); if(!M||!MQ_NPC_VIL[n.def.id]) return null
 // the mark over a villager: ! a step to take (or a part to do with them), ? a step to hand in
 function mqMark(id){
   const M=mqG(), s=mqCur(); if(!s) return '';
-  if(M.st===0) return s.from===id&&PL.level>=s.gate?'!':'';
+  if(M.st===0) return s.from===id&&PL.level>=mqGate(s)?'!':'';
   if(M.st===2) return s.to===id?'?':'';
   return s.parts.some((pt,i)=>pt.talk===id&&mqOpen(s,M.n,i))?'!':'';
 }
@@ -45,7 +45,7 @@ function mqPartTarget(s,pt){
 // the main quest's marker for the maps: the giver, the first open part that has a place, or whom to hand in to
 function mqTarget(){
   const M=mqG(), s=mqCur(); if(!s) return null;
-  if(M.st===0) return s.from&&PL.level>=s.gate?npcSpot(s.from):null;
+  if(M.st===0) return s.from&&PL.level>=mqGate(s)?npcSpot(s.from):null;
   if(M.st===2) return npcSpot(s.to);
   for(let i=0;i<s.parts.length;i++) if(mqOpen(s,M.n,i)){ const T=mqPartTarget(s,s.parts[i]); if(T) return T; }
   return null;
@@ -55,14 +55,43 @@ function mqLogRow(){
   const M=mqG(); if(!M) return '';
   const s=mqCur(); if(!s) return `<div class="ql mq"><b>The main quest</b><span>${MQ_END}</span></div>`;
   let what;
-  if(M.st===0) what=PL.level<s.gate?'From level '+s.gate+': '+MQ_NAMES[s.from]+'. Until then, hunt and take notices from the quest board':'Talk to '+MQ_NAMES[s.from];
+  if(M.st===0) what=PL.level<mqGate(s)?'From level '+mqGate(s)+': '+MQ_NAMES[s.from]+'. Until then, hunt and take notices from the quest board':'Talk to '+MQ_NAMES[s.from];
   else if(mqAllDone(s,M.n)) what=mqObjective(s,M.n);
   else what=s.parts.map((pt,i)=>{ if(!mqOpen(s,M.n,i)&&!(M.n[i]>=mqNeed(pt))) return ''; const need=mqNeed(pt), got=Math.min(need,M.n[i]||0);   // every part that runs at once, each with its count (Heartleaf: herbs and slimes together)
     return got>=need?'<i class="ql-done">&#10003; '+pt.text+'</i>':pt.text+(need>1?' ('+got+' / '+need+')':''); }).filter(Boolean).join('<br>');
-  const T=mqTarget(), where=T&&!(M.st===0&&PL.level<s.gate)?(Math.hypot(T.x-P.x,T.z-P.z)<12?'':' &middot; '+Math.round(Math.hypot(T.x-P.x,T.z-P.z))+' m '+dirWord(T.x-P.x,T.z-P.z)):'';
+  const T=mqTarget(), where=T&&!(M.st===0&&PL.level<mqGate(s))?(Math.hypot(T.x-P.x,T.z-P.z)<12?'':' &middot; '+Math.round(Math.hypot(T.x-P.x,T.z-P.z))+' m '+dirWord(T.x-P.x,T.z-P.z)):'';
   // the first steps keep their how-to under the objective while they run (the toast that brought it fades, and a new player reads it when they need it)
   const tip=M.st===1&&s.tip&&M.s<=MQ_BY_ID.W5.i?`<small class="ql-tip">${s.tip}</small>`:'';
   return `<div class="ql mq${M.st===2?' ok':''}"><b>${s.title}</b><span>${what}${where}</span>${tip}</div>`;
+}
+/* The main quest tab of the quest panel (economy/quests.js): the step, what its giver asked, every part with a picture of the monster it names (ui/mon-pics.js),
+   a bar and where to go, then the reward and the how-to. Text only from shared data, never from a player. */
+const MQ_ACTS=[['W','Act I: The Grey Rain'],['V','Act II: The Blossom and the Blight'],['F','Act III: The Frost Flower'],['G','Act IV: The Black Stone']];
+const mqPartMon=pt=>pt.kill||pt.boss||pt.grey||(pt.collect&&pt.from&&pt.from[0])||'';
+function mqWhere(T){ if(!T) return ''; const d=Math.hypot(T.x-P.x,T.z-P.z); return d<12?'You are here':T.name+', '+Math.round(d)+' m '+dirWord(T.x-P.x,T.z-P.z); }
+function mqJournalHtml(){
+  const M=mqG(); if(!M) return '';
+  const s=mqCur(); if(!s) return `<div class="jq-step"><p class="jq-say">${MQ_END}</p></div>`;
+  const act=MQ_ACTS.find(a=>s.id[0]===a[0]), inAct=MQ.filter(q=>q.id[0]===s.id[0]), k=inAct.indexOf(s), r=mqReward(s);
+  let h=`<div class="jq-act"><span>${act?act[1]:''}</span><span>Step ${k+1} of ${inAct.length}</span></div><div class="jq-actbar"><i style="width:${Math.max(4,Math.round(k/inAct.length*100))}%"></i></div>`;
+  h+=`<div class="jq-step"><h3>${s.title}</h3>`;
+  if(M.st===0){
+    h+=PL.level<mqGate(s)?`<p class="jq-say">${MQ_NAMES[s.from]} will have the next step for you at level ${mqGate(s)}. Until then, hunt and take notices from the quest board.</p>`
+      :`<div class="jq-obj"><span class="jq-dot"></span><div><b>Talk to ${MQ_NAMES[s.from]}</b><span class="jq-n">${mqWhere(mqTarget())}</span></div></div>`;
+  } else {
+    if(s.offer&&s.offer.length) h+=`<p class="jq-say">\u201C${s.offer[s.offer.length-1]}\u201D <span>${MQ_NAMES[s.from]||''}</span></p>`;
+    s.parts.forEach((pt,i)=>{
+      const need=mqNeed(pt), got=Math.min(need,M.n[i]||0), done=got>=need, open=mqOpen(s,M.n,i), mon=mqPartMon(pt);
+      const where=open?mqWhere(mqPartTarget(s,pt)):'', cnt=need>1?got+' / '+need:'';
+      h+=`<div class="jq-obj${done?' done':''}${!done&&!open?' later':''}">${mon?mpPic(mon,true):`<span class="jq-dot">${done?'&#10003;':''}</span>`}<div><b>${pt.text}</b>`
+        +(need>1?`<div class="jq-prog"><div class="jq-bar"><i style="width:${Math.max(got?6:0,Math.round(got/need*100))}%"></i></div><span class="jq-cnt">${cnt}</span></div>`:'')
+        +`<span class="jq-n">${done?'Done':!open?'After the step before it':where}</span></div></div>`;
+    });
+    if(M.st===2) h+=`<div class="jq-obj ready"><span class="jq-dot">!</span><div><b>Return to ${MQ_NAMES[s.to]}</b><span class="jq-n">${mqWhere(npcSpot(s.to))}</span></div></div>`;
+  }
+  h+=`<div class="jq-rw">Reward: <b>${numC(r.xp)} XP</b> and <b>${r.coins} coins</b></div>`;
+  if(s.tip) h+=`<p class="jq-tip">${s.tip}</p>`;
+  return h+'</div>';
 }
 // Wren sits up when a step wants them awake (handing in to Wren, and the goodbye before the tunnel); otherwise they sleep
 function wrenAwake(){ const M=mqG(), s=mqCur(); if(!s) return !!M; return (M.st===2&&s.to==='wren')||(s.id==='W18'&&M.st===1&&mqOpen(s,M.n,0)); }

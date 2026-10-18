@@ -23,7 +23,11 @@ const COS_AURAS=[
   ['bubble','Tidebubbles',3,0x9ae8ff,0xffffff,'rise',false,10,'Round bubbles float up from your feet and shimmer.','bubble','none'],
   ['spirit','Spirit Lanterns',4,0x7ad8ff,0xe0f6ff,'orbit',false,8,'Pale blue lanterns of spirit-fire circle you.','wisp','none'],
   ['rune','Rune Circle',5,0x9ab8ff,0xe8f0ff,'orbit',true,10,'A ring of turning runes with four-point stars circling above it.','star','runes'],
-  ['stellar','Stellar Crown',6,0xffd860,0xffffff,'orbit',true,14,'A golden ring, a halo over your head and a ring of stars.','star','halo']
+  ['stellar','Stellar Crown',6,0xffd860,0xffffff,'orbit',true,14,'A golden ring, a halo over your head and a ring of stars.','star','halo'],
+  // side quests' rewards (CP_QUEST in cospieces.js: earned, never made)
+  ['foxfire','Foxfire',5,0x8ad4ff,0xffffff,'rise',true,9,'Nine pale-blue foxfire flames climb round you from a rune ring. The Nine Tails\' reward.','flame','runes'],
+  ['sunwept','Where the Sun Wept',6,0xffc45a,0x3a2a4a,'orbit',true,14,'Flecks of sun-gold and black glass circle you above a crystal ring. Where the Sun Wept\'s reward.','grain','spikes'],
+  ['lamplight','Keeper\'s Lamplight',6,0xfff0b0,0xffcf6a,'orbit',true,6,'Slow motes of lamplight turn round you, under a halo. The Keeper\'s Light\'s reward.','mote','halo']
 ];
 // [id, name, grade, cloth colour, trim colour, length (1 = to the knee), a short line, pattern, mantle (a short shoulder cape over it)]
 // patterns (game/character/cosmetics.js cosPattern): stitch, flames, stars, rays, petals, fur, ermine, moss, ash, waves, dunes, gloam
@@ -43,7 +47,11 @@ const COS_CAPES=[
   ['dune','Sandsilk Cape',5,0xd8a850,0xb83a2a,1.15,'Layered desert silk with crimson dune lines.','dunes',0],
   ['rime','Rimehold Mantle',6,0xdfeaf2,0x7aa6c8,1.2,'White wool with a fur collar and a fur-edged shoulder cape.','fur',1],
   ['gloam','Duskweave Cape',6,0x3a2a5a,0xc8a0ff,1.2,'Dusk violet with glimmering threads and a moon clasp.','gloam',0],
-  ['regal','Highmark Regalia',6,0x2a3a8a,0xe8c860,1.3,'A deep blue train with ermine trim, gold crests and a shoulder cape.','ermine',1]
+  ['regal','Highmark Regalia',6,0x2a3a8a,0xe8c860,1.3,'A deep blue train with ermine trim, gold crests and a shoulder cape.','ermine',1],
+  // side quests' rewards (CP_QUEST in cospieces.js: earned, never made)
+  ['tideking','Tide King\'s Mantle',4,0x1d5866,0xf2a07a,1.15,'Sea-green with coral-pink waves and a short shoulder cape. The Grey Tide\'s reward.','waves',1],
+  ['wyrmscale','Wyrmscale Cloak',5,0x4a6a80,0xe0f0ff,1.2,'Pale blue scales that never freeze, edged in white. The Wyrm\'s Saga\'s reward.','scales',1],
+  ['greatcoat','Captain\'s Greatcoat',5,0x1a2636,0xd8b860,1.2,'A long sea-captain\'s coat in deep navy with a gold-stitched hem. The Drowned Captain\'s reward.','stitch',1]
 ];
 const COS_AURA={}, COS_CAPE={};
 const COS_HERB=['sunpetal','ironroot','kikyo','yomogi','frostbloom','snowmoss'];   // the herbs by grade (the recipes in shared/cospieces.js use them by name)

@@ -18,7 +18,7 @@ function guidePages(){
         <dt>${kl(k('inv'))} ${kl(k('skills'))} ${kl(k('map'))} ${kl(k('world'))}</dt><dd>Inventory, skills, the land's map, the world map.</dd>
         <dt>${kl(k('party'))} ${kl(k('chat'))}</dt><dd>Party and chat. Hold ${kl('Alt')} to free the mouse for menus.</dd>
       </dl>
-      <p>The quest board offers four notices at a time (hunts and bounties). A zone's name and level show in the top left: turn back if it is far above yours. If you are knocked out you wake in the village and lose nothing but time.</p>`},
+      <p>The quest board offers four notices at a time (hunts and bounties). ${kl(k('quests'))} (or a click on the quest list) opens your quests: the main quest's step with a picture of each monster it asks for, the board's notices and the ones you carry. A zone's name and level show in the top left: turn back if it is far above yours. If you are knocked out you wake in the village and lose nothing but time.</p>`},
     combat:{t:'Combat',h:`
       <h4>Classes</h4>
       <p><b>Warrior:</b> sword and shield, Slash hits everything in an arc. <b>Archer:</b> homing arrows from far away. <b>Mage:</b> Firebolt bursts on impact. Your class is the weapon you hold; each class keeps its own skills.</p>

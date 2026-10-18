@@ -4,7 +4,7 @@
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['NODES','HOME_YARD','homeAt','HOME_PLOT_R','HOME_RESPAWN','NODE_KINDS','RES','ITEM','POTS','POT_KINDS','S','VIL','getH','toolBonusOf','toolBonusStat','TOOL_BONUS_CAP','cosCost','cpIsFree','cosCleanLook','sanitizeCos','COS_AURAS','COS_CAPES','cosDef','potBuffP','rewardKill','expToNext']);
+  ['NODES','HOME_YARD','homeAt','HOME_PLOT_R','HOME_RESPAWN','NODE_KINDS','RES','ITEM','POTS','POT_KINDS','S','VIL','getH','toolBonusOf','toolBonusStat','TOOL_BONUS_CAP','cosCost','cpIsFree','cpDef','cosCleanLook','sanitizeCos','COS_AURAS','COS_CAPES','cosDef','potBuffP','rewardKill','expToNext']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const evs={a:[],b:[]}; const grab=()=>{ for(const id of ['a','b']){ for(const m of (inbox[id]||[])) if(m.t==='snap'&&m.ev) evs[id].push(...m.ev); inbox[id]=[]; } };
@@ -67,7 +67,7 @@ ok('Scholar\'s Brew and Fortune Tea start long buffs (5 minutes)',x.potBuffP(pa,
 pa.gear.res={}; pa.gear.coins=100000; home('a'); for(const [k,res] of [['regen',null]]) { const P=x.POTS.regen2; pa.gear.res[P.herbs[0].res]=20; pa.gear.res[P.herbs[1].res]=20; send('a',{t:'brew',id:'regen2',n:2}); ok('a new potion is brewed like the old ones',(pa.gear.pot.regen2||0)>=2); }
 
 // ---- cosmetics ----
-ok('every aura and cape is free or has a recipe (resources and/or drops) and a fee',x.COS_AURAS.length>=14&&x.COS_CAPES.length>=15&&[...x.COS_AURAS.map(d=>['a',d]),...x.COS_CAPES.map(d=>['c',d])].every(([t,d])=>{ const c=x.cosCost(t,d[0]); return c===null?x.cpIsFree(t,d[0]):c.coins>0&&c.res.length+c.mats.length>0; }));
+ok('every aura and cape is free, a side quest\'s reward, or has a recipe (resources and/or drops) and a fee',x.COS_AURAS.length>=14&&x.COS_CAPES.length>=15&&[...x.COS_AURAS.map(d=>['a',d]),...x.COS_CAPES.map(d=>['c',d])].every(([t,d])=>{ const c=x.cosCost(t,d[0]); return c===null?x.cpIsFree(t,d[0])||!!x.cpDef(t,d[0]).quest:c.coins>0&&c.res.length+c.mats.length>0; }));
 ok('ids are own properties only (constructor, __proto__ are nothing)',!x.cosDef('a','constructor')&&!x.cosDef('c','__proto__')&&!x.cosDef('a','toString')&&x.cosCost('a','constructor')===null);
 ok('a save\'s cosmetics are checked: unknown, repeated and malformed entries go',JSON.stringify(x.sanitizeCos({cos:['a:firefly','a:firefly','c:nope','x:y',7,'c:regal','a:constructor']}))==='["c:regal"]'&&x.sanitizeCos({cos:'a:firefly'}).length===0);
 { at('a',x.VIL.x+150,x.VIL.z+150); pa.gear.res={}; for(const k in x.RES) pa.gear.res[k]=0; pa.gear.mats={}; pa.gear.cos=[]; send('a',{t:'cosmake',type:'c',id:'regal'}); ok('cosmetics are made at a lodge only',pa.gear.cos.length===0);

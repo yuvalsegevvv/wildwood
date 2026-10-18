@@ -6,7 +6,7 @@ function cosMakeP(p,type,id){
   if(p.dead||typeof type!=='string'||!CP_SLOTS[type]) return;
   const D=cpDef(type,id); if(!D) return;
   if(D.free){ toastTo(p.id,D.name+' is free: just wear it','bad'); return; }
-  const C=D.recipe;
+  const C=D.recipe; if(!C){ toastTo(p.id,D.name+' is earned on a side quest, not made','bad'); return; }   // sidequests: a quest piece has no recipe
   if(!nearLodge(p.x,p.z)&&!homeAt(p.x,p.z)){ toastTo(p.id,'Cosmetics are made at a Wayfarers\' Lodge in a village, or at your home\'s bench','bad'); return; }
   if(p.gear.cos.includes(cosKey(type,id))){ toastTo(p.id,'You already have '+D.name,'bad'); return; }
   for(const [r,n] of C.res) if((p.gear.res[r]||0)<n){ toastTo(p.id,'You need '+n+' '+RES[r].name,'bad'); return; }

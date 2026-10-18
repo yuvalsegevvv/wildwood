@@ -5,28 +5,45 @@ const qDefs=()=>(GEAR.q&&GEAR.q.defs)||{};
 function acceptQuest(id){ if(Object.keys(GEAR.q.active).length>=QUEST_MAX_ACTIVE){ toast('You can carry five quests at a time','bad'); UI_SFX.error(); return; } netSend({t:'accept',id}); UI_SFX.click(); }
 function turnIn(id){ netSend({t:'turnin',id}); }
 function abandonQuest(id){ netSend({t:'abandon',id}); UI_SFX.click(); }
-function openQuests(n){ openPanel('quests',n); renderQuests(); }
+/* The quest panel has four tabs (a player found the one long list confusing): the main quest (economy/main-quest.js, mqJournalHtml), the board's notices,
+   and the quests you carry. Maren opens it on the board (or on what you carry when something is ready to hand in); the quests key and a click on the
+   quest log open it anywhere, where notices can be read but are taken and handed in only at the board. */
+let qTab='main', qHtml='';
+const QTABS=[['main','Main quest'],['side','Side quests'],['board','Quest board'],['taken','Your quests']];   // sidequests: the second tab (economy/side-quests.js)
+function openQuests(n){ const Q=GEAR.q; qTab=n?(Q&&Q.ready&&Q.ready.length?'taken':'board'):'main'; openPanel('quests',n); qHtml=''; renderQuests(); }
+function qShowTab(t){ qTab=t; $('#qBody').scrollTop=0; renderQuests(); }
+function toggleQuests(){ if(!$('#quests').hidden) closePanels(); else openQuests(null); }
 const KIND_LABEL={hunt:'Hunt',bounty:'Bounty',scout:'Scout',boss:'Boss'};
 function qCard(q,btn,extra){
   const r=q.reward||questRewardFor(q), it=rewardItemText(r.item);
-  const lv=q.level>PL.level?'req bad':q.level<PL.level-2?'req low':'req';
-  return `<div class="qc k-${q.kind}"><div class="qc-top"><span class="qk">${KIND_LABEL[q.kind]||''}</span><b>${q.title}</b><span class="${lv}">Level ${q.level}</span></div><p>${q.text}</p>
-    <div class="qc-bot"><span>${extra||''}</span><span class="rw">${numC(r.xp)} XP &nbsp; ${r.coins} coins${it?` &nbsp; <b class="qi">+ ${it}</b>`:''}</span>${btn||''}</div></div>`;
+  const lv=q.level>PL.level?'req bad':q.level<PL.level-2?'req low':'req', pic=q.type==='kill'?mpPic(q.target):'';
+  return `<div class="qc k-${q.kind}${pic?' has-pic':''}">${pic}<div class="qc-main"><div class="qc-top"><span class="qk">${KIND_LABEL[q.kind]||''}</span><b>${q.title}</b><span class="${lv}">Level ${q.level}</span></div><p>${q.text}</p>
+    <div class="qc-bot"><span>${extra||''}</span><span class="rw">${numC(r.xp)} XP &nbsp; ${r.coins} coins${it?` &nbsp; <b class="qi">+ ${it}</b>`:''}</span>${btn||''}</div></div></div>`;
 }
 function renderQuests(){
-  const n=panelNPC; if(!n||$('#quests').hidden) return;
-  $('#qTitle').textContent='The quest board';
-  const Q=GEAR.q, D=qDefs(), ids=Object.keys(Q.active);
-  let h='';
+  if($('#quests').hidden) return;
+  const Q=GEAR.q, D=qDefs(), ids=Object.keys(Q.active), atBoard=!!(panelNPC&&panelNPC.def.role==='quests');
   const ready=ids.filter(id=>Q.ready.includes(id)), going=ids.filter(id=>!Q.ready.includes(id));
-  if(ready.length){ h+='<div class="inv-h">Ready to hand in</div>'; for(const id of ready) h+=qCard(D[id],`<button class="chip buy" data-turnin="${id}">Hand in</button>`,'Done'); }
-  if(going.length){ h+=`<div class="inv-h">In progress <span>${ids.length} / ${QUEST_MAX_ACTIVE}</span></div>`; for(const id of going) h+=qCard(D[id],`<button class="chip" data-abandon="${id}">Abandon</button>`,qProgress(D[id])); }
-  const mins=Math.max(1,Math.round((1-dayClock)*DAY_SECONDS/60));
-  h+=`<div class="inv-h">On the board <span>new notices at sunrise, in about ${mins} min, and when you level up</span></div>`;
-  const full=ids.length>=QUEST_MAX_ACTIVE;
-  for(const q of Q.offers||[]) h+=qCard(q,`<button class="chip" data-accept="${q.id}" ${full?'disabled':''}>Accept</button>`,q.type==='kill'?'Defeat '+q.count:'Go and look');
-  if(full) h+='<p class="muted">You are carrying five quests. Finish or abandon one to take another.</p>';
-  $('#qBody').innerHTML=h;
+  $('#qTitle').textContent=atBoard?'The quest board':'Quests';
+  const tabs=QTABS.map(([id,t])=>`<button class="chip" aria-pressed="${id===qTab}" data-qt="${id}">${t}${id==='taken'&&ids.length?' <span class="qt-n'+(ready.length?' ok':'')+'">'+ids.length+'</span>':''}${id==='main'&&GEAR.mq&&GEAR.mq.st===2?' <span class="qt-n ok">!</span>':''}${id==='side'&&sqReadyN()?' <span class="qt-n ok">'+sqReadyN()+'</span>':''}</button>`).join('');
+  let h='';
+  if(qTab==='main') h=mqJournalHtml();
+  else if(qTab==='side') h=sqJournalHtml();   // sidequests: the chains
+  else if(qTab==='taken'){
+    if(ready.length){ h+='<div class="inv-h">Ready to hand in</div>'; for(const id of ready) h+=qCard(D[id],atBoard?`<button class="chip buy" data-turnin="${id}">Hand in</button>`:'','Done: hand it in to Maren at the quest board'); }
+    if(going.length){ h+=`<div class="inv-h">In progress <span>${ids.length} / ${QUEST_MAX_ACTIVE}</span></div>`; for(const id of going) h+=qCard(D[id],`<button class="chip" data-abandon="${id}">Abandon</button>`,qProgress(D[id])); }
+    if(!ids.length) h+='<p class="muted">You carry no notices from the quest board. Maren keeps the board by the road into the village.</p>';
+  } else {
+    const mins=Math.max(1,Math.round((1-dayClock)*DAY_SECONDS/60)), full=ids.length>=QUEST_MAX_ACTIVE;
+    h+=`<div class="inv-h">On the board <span>new notices at sunrise, in about ${mins} min, and when you level up</span></div>`;
+    if(!atBoard) h+='<p class="muted">Talk to Maren at the quest board to take a notice.</p>';
+    for(const q of Q.offers||[]) h+=qCard(q,atBoard?`<button class="chip" data-accept="${q.id}" ${full?'disabled':''}>Accept</button>`:'',q.type==='kill'?'Defeat '+q.count:'Go and look');
+    if(full) h+='<p class="muted">You are carrying five quests. Finish or abandon one to take another.</p>';
+  }
+  const all=tabs+'\u0000'+h; if(all===qHtml) return; qHtml=all;   // (redrawn twice a second: only when something changed, so a click or a picture is never lost)
+  $('#qTabs').innerHTML=tabs; $('#qBody').innerHTML=h; mpFill($('#qBody'));
+  $('#qTabs').querySelectorAll('[data-qt]').forEach(b=>b.onclick=()=>{ qShowTab(b.dataset.qt); UI_SFX.click(); });
+  $('#qBody').querySelectorAll('[data-sqt]').forEach(b=>b.onclick=()=>{ netSend({t:'sq',a:'track',c:b.dataset.sqt}); UI_SFX.click(); });   // sidequests: follow this chain in the quest log
   $('#qBody').querySelectorAll('[data-accept]').forEach(b=>b.onclick=()=>acceptQuest(b.dataset.accept));
   $('#qBody').querySelectorAll('[data-turnin]').forEach(b=>b.onclick=()=>turnIn(b.dataset.turnin));
   $('#qBody').querySelectorAll('[data-abandon]').forEach(b=>b.onclick=()=>{ if(b.dataset.sure){ abandonQuest(b.dataset.abandon); return; } b.dataset.sure='1'; b.textContent='Tap again to abandon'; });
@@ -46,9 +63,12 @@ function qProgress(q){
   return 'Defeated '+(GEAR.q.active[q.id]||0)+' of '+q.count+(where?' &middot; '+where:'');
 }
 function renderQlog(){
-  const el=$('#qlog'), Q=GEAR.q, ids=Object.keys(Q.active||{}), D=qDefs(), main=mqLogRow();
+  const el=$('#qlog'), Q=GEAR.q, ids=Object.keys(Q.active||{}), D=qDefs(), main=mqLogRow()+sqLogRow();   // sidequests: the tracked chain's row under the main quest's
   if((!ids.length&&!main)||!started){ el.hidden=true; return; }
   el.hidden=false;
   el.innerHTML=main+ids.map(id=>{ const q=D[id]; if(!q) return ''; const ready=Q.ready.includes(id);
     return `<div class="ql${ready?' ok':''}"><b>${q.title}</b><span>${ready?'Done! Return to the quest board':qProgress(q)}</span></div>`; }).join('');
 }
+// the quests key and a click on the quest log open the panel on the main quest
+$('#qlog').addEventListener('click',()=>{ if(started&&!customizing) openQuests(null); });
+addEventListener('keydown',e=>{ if(kbIs(e.code,'quests') && started && !customizing && !e.repeat) toggleQuests(); });

@@ -158,14 +158,15 @@ function* genChunk(ci){
     if(h<0.5 || (bareGround(x,z) && rand()<0.85)) continue;   // a few dry tufts on the beach and the Sunwall
     const g=grad(x,z), fd=forestDensity(x,z);
     if(rand()>(1-smoothstep(0.55,0.95,fd)*0.75)*(1-smoothstep(0.6,0.95,g))) continue;
-    if(vDist(x,z)<VR+26){ if(plazaAmt(x,z)>0.3 || pathAmt(x,z)>0.35 || inBox(x,z,0.3)) continue; if(vDist(x,z)<VR && rand()<0.4) continue; }
+    const vd=vDist(x,z);   // inside a village the green is kept: fewer, shorter tufts (the long meadow grass made the home village look unkempt)
+    if(vd<VR+26){ if(plazaAmt(x,z)>0.3 || pathAmt(x,z)>0.35 || inBox(x,z,0.3)) continue; if(vd<VR && rand()<0.7) continue; }
     if(Math.abs(z-TUN.z)<TUN.w+1 && x>TUN.x0-12 && x<TUN.x1+12) continue;   // the tunnel's gravel road
     if(roadAmt(x,z)>0.4) continue;                                             // the roads
     if(nearTele(x,z,1.2)) continue;
     const hoar=inHoar(x,z); if(hoar&&(rand()<0.8||iceDist(x,z)<2||inPass(x,z,1))) continue;   // a few dry tussocks poke through the snow
     if(inGrey(x,z)&&h>greyTreeline(x,z)+14 || greyWet(x,z,-0.5)) continue;   // no tufts in the Greyspine's snowfields or in the water
-    const meadow=smoothstep(0.1,0.7,noise2(x*0.025+9,z*0.025-4))*(1-fd);
-    const s=R(0.75,1.2);
+    const meadow=smoothstep(0.1,0.7,noise2(x*0.025+9,z*0.025-4))*(1-fd)*smoothstep(VR-4,VR+14,vd);
+    const s=R(0.75,1.2)*(0.55+0.45*smoothstep(VR-6,VR+8,vd));
     if(hoar) gc.set(pick(PAL.tussock)); else { terrainColor(x,z,h,g,gc); gc.lerp(fresh,0.3).multiplyScalar(R(0.95,1.2)); }
     grassItems.push({x,z,m:mtx(x,h-0.02,z,rand()*TAU,s,s*R(0.8,1.15)*(1+meadow*0.9),s),c:gc.clone()}); n++;
   }

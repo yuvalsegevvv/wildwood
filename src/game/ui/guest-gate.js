@@ -1,8 +1,8 @@
-//@ The "Register to continue" popup a guest sees at the online server's limits (level 10, the home forest, zone tiers)
+//@ The "Register to continue" popup a guest sees at the online server's limits (level 20, the first three lands, zone tiers)
 /* Agent map: the server sends event 'guest' with a reason ('level' | 'travel' | 'tier'), see isGuestP / guestGateP in server/accounts.js; applyEvent calls guestGateShow.
    The button opens Settings at the account box. Test: client-smoke. */
-const GUEST_WHY={level:'Guests can reach level 10. Register to keep levelling and to keep your progress under a name.',
-  travel:'Guests can only explore the home forest. Register to travel to the other lands.',
+const GUEST_WHY={level:'Guests can reach level 20. Register to keep levelling and to keep your progress under a name.',
+  travel:'Guests can explore the home forest, the Sakura Vale and the Hoarfrost Reach. Register to travel further.',
   tier:'Guests cannot raise a zone\'s difficulty. Register to unlock zone tiers.'};
 function guestGateShow(why){
   if(!$('#guestGate').hidden) return;

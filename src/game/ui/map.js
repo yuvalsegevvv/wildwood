@@ -36,6 +36,7 @@ function mapEdgeAlpha(x,z){
 function questTargets(){
   const out=[], D=(GEAR.q&&GEAR.q.defs)||{}, mq=mqTarget(), ms=mqCur();
   if(mq) out.push({x:mq.x,z:mq.z,label:ms.title+' (main quest)',main:true});
+  { const sq=sqMapTarget(); if(sq) out.push(sq); }   // sidequests: the tracked chain
   for(const qid in GEAR.q.active){
     const q=D[qid]; if(!q) continue;
     if(GEAR.q.ready.includes(qid)){ const B=vilAt(P.x,P.z).board; out.push({x:B.x,z:B.z,label:q.title+': return to the quest board',ready:true}); continue; }
@@ -65,7 +66,7 @@ function drawMinimap(){
   dgEntMiniMarks(x,at,inside,DPR);   // dungeons: a door in range
   for(const q of questTargets()){
     if(q.ring) continue;
-    const col=q.main?'#c89bff':q.ready?'#9fe08a':'#f2cf5a';
+    const col=q.main?'#c89bff':q.side?'#5fd6c8':q.ready?'#9fe08a':'#f2cf5a';
     if(inside(q.x,q.z)){ const [a,b]=at(q.x,q.z); drawDiamond(x,a,b,(q.main?6:5)*DPR,col); }
     else { const ang=Math.atan2(q.x-P.x,-(q.z-P.z)), rr=W/2-9*DPR; x.save(); x.translate(W/2+Math.sin(ang)*rr,W/2-Math.cos(ang)*rr); drawDiamond(x,0,0,(q.main?5:4)*DPR,col); x.restore(); }
   }
@@ -120,7 +121,7 @@ function drawFullMap(){
   // quests
   for(const q of questTargets()){
     if(q.ring){ x.save(); x.setLineDash([5*DPR,5*DPR]); x.strokeStyle='rgba(242,207,90,.8)'; x.lineWidth=1.5*DPR; x.beginPath(); const [cx,cy]=at(VIL.x,VIL.z); x.arc(cx,cy,q.ring*k,0,TAU); x.stroke(); x.restore(); continue; }
-    const [cx,cy]=at(q.x,q.z); drawDiamond(x,cx,cy,(q.main?7.5:6)*DPR,q.main?'#c89bff':q.ready?'#9fe08a':'#f2cf5a');
+    const [cx,cy]=at(q.x,q.z); drawDiamond(x,cx,cy,(q.main?7.5:6)*DPR,q.main?'#c89bff':q.side?'#5fd6c8':q.ready?'#9fe08a':'#f2cf5a');
   }
   for(const m of MONS){ if(m.dead||!m.aggro) continue; const [a,b]=at(m.x,m.z); dot(x,a,b,2.4*DPR,'#ff4a3a'); }
   for(const r of REMOTES.values()){ if(r.tx===null) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,4*DPR,dgPartyCol(r.id)||'#6fb8ff'); label(r.name,a,b-fs*1.1,fs*0.85,'#cfe6ff'); }   // dungeons: party members in their colour (dungeon/party.js)

@@ -41,7 +41,7 @@ function finishGatherP(p){
   else { NODE_BACK[i]=S.t+K.respawn; ev('node',i,1); }
   ev('gather',p.id,i,K.res,got);
   if(L2>L) toastTo(p.id,PROFS[K.prof].name+' is now level '+L2,'good');
-  mqGatherP(p,n.kind); p.dirty=true;
+  mqGatherP(p,n.kind); sqGatherP(p,n.kind); p.dirty=true;   // sidequests: a node gathered
 }
 // every tick: casts that ran out finish, casts that were interrupted break (you walked off or were knocked out)
 function updateCastsS(){

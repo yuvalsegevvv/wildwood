@@ -66,8 +66,8 @@ function setPos(pid,d){
   // into null for everyone. The terrain is -10..232 m, an angle only matters modulo a turn, and nobody runs faster than a dash)
   const ox=p.x, oz=p.z;
   p.x=clamp(v[0],WX0,WX1); p.y=clamp(v[1],POS_Y_MIN,POS_Y_MAX); p.z=clamp(v[2],WZ0,WZ1); p.face=isFinite(v[3])?v[3]%(2*Math.PI):p.face; p.vx=clamp(v[4]||0,-POS_V,POS_V); p.vz=clamp(v[5]||0,-POS_V,POS_V);
-  if(isGuestP(p)){   // accounts: a guest never leaves the home forest (the last spot inside it is where they are put back)
-    if(landAt(p.x,p.z)!=='home'){ p.x=p.okX==null?VIL.x:p.okX; p.z=p.okZ==null?VIL.z:p.okZ; p.y=getH(p.x,p.z); sendTo(p.id,{t:'tp',x:p.x,z:p.z,face:p.face}); guestGateP(p,'travel'); }
+  if(isGuestP(p)){   // accounts: a guest never leaves the first three lands (the last spot inside them is where they are put back)
+    if(!guestLandOk(p.x,p.z)){ p.x=p.okX==null?VIL.x:p.okX; p.z=p.okZ==null?VIL.z:p.okZ; p.y=getH(p.x,p.z); sendTo(p.id,{t:'tp',x:p.x,z:p.z,face:p.face}); guestGateP(p,'travel'); }
     else { p.okX=p.x; p.okZ=p.z; }
   }
   barStep(p,ox,oz,p.gear);   // the gates that are still shut for this player (shared/barriers.js); an open land holds nobody

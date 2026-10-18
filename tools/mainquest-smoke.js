@@ -3,7 +3,7 @@
 // Usage: node tools/mainquest-smoke.js
 const {loadServer}=require('./load');
 const inbox={};
-const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','getH','MQ','MQ_BY_ID','MQ_VER','MQ_END','HERBS','LORE_BY_ID','VIL','VIL2','VIL3','VIL4','ZONES','S','mqGreySpot','sanitizeMq','TUN','NODES','rewardKill','PASS','ITEM']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','getH','MQ','MQ_BY_ID','MQ_VER','MQ_END','HERBS','LORE_BY_ID','VIL','VIL2','VIL3','VIL4','ZONES','S','mqGreySpot','sanitizeMq','TUN','NODES','rewardKill','PASS','ITEM','mqGate']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const at=(xx,zz)=>W.setPos('a',[xx,x.getH(xx,zz),zz,0,0,0]);
@@ -25,12 +25,13 @@ ok('five heartleaf picked, each once',M().n[0]===5&&M().h===31);
 let k=0; for(const m of x.MONS.filter(m=>m.def.id==='slime'&&!m.dead).slice(0,5)) if(kill(m)) k++; tick(2);
 ok('five slimes: W2 is ready to hand in',k===5&&M().st===2);
 home(); talk('linnea'); ok('W2 handed in; W3 waits for Aldric',id()==='W3'&&M().st===0);
-dev('level',1); talk('aldric'); ok('W3 is gated at level 2',M().st===0);
+dev('level',1); talk('aldric'); ok('W3 is offered at level 1: a step asks its act\'s level (act I: 1), not its own',M().st===1);
+ok('the level asked rises only between acts: 1, 15, 20, 26',['W17','V3','V11','F1','F9','G1','G9'].map(k=>x.mqGate(x.MQ_BY_ID[k])).join()==='1,15,15,20,20,26,26',['W17','V3','V11','F1','F9','G1','G9'].map(k=>x.mqGate(x.MQ_BY_ID[k])).join());
 dev('level',2); talk('aldric'); W.receive('a',{t:'cls',cls:'archer'}); tick(1);
 ok('changing class counts',M().st===2); talk('aldric'); ok('W3 done',id()==='W4');
 // W6a, W7b, W11b: the Wayfarers' Lodge, the healer's kettle, crafting (professions, tools, herbs, ore, potions)
 const gather=(kinds,n,slot,tool)=>{ let got=0; for(let r=0;r<12&&got<n;r++){ for(const nd of x.NODES.filter(nd=>kinds.includes(nd.kind)&&nd.need<=tool)){ if(got>=n) break; at(nd.x,nd.z); W.receive('a',{t:'gather',i:nd.i}); tick(30); got+=1; } x.S.t+=200; tick(25); } };
-dev('mq','W6a'); dev('level',4); p.gear.coins=1000; talk('tamsin'); ok('W6a is gated at level 5',M().st===0); dev('level',5); talk('tamsin'); ok('W6a: Tamsin offers Working hands',id()==='W6a'&&M().st===1);
+dev('mq','W6a'); dev('level',4); p.gear.coins=1000; talk('tamsin'); ok('W6a is offered at level 4 (act I)',M().st===1); dev('level',5); talk('tamsin'); ok('W6a: Tamsin offers Working hands',id()==='W6a'&&M().st===1);
 at(x.VIL.x+150,x.VIL.z+150); W.receive('a',{t:'learn',id:'gathering'}); tick(1); ok('the lodge only teaches in a village',!p.gear.prof.gathering);
 home(); W.receive('a',{t:'learn',id:'gathering'}); tick(1); ok('learning Gathering (60 coins) counts for W6a',p.gear.prof.gathering&&p.gear.coins===940&&M().n[0]===1);
 { const nd=x.NODES.find(n=>n.kind==='sunpetal'&&n.need===0); at(nd.x,nd.z); W.receive('a',{t:'gather',i:nd.i}); tick(1); ok('a herb cannot be cut without a sickle',!p.gear.res.sunpetal);
@@ -76,12 +77,12 @@ home(); talk('wren'); ok('V11 handed in: F1 (the Hoarfrost Reach) starts by itse
 p.gear.north=0; rime(); talk('hallvard'); ok('F1 cannot be handed in before you have walked into Rimehold',M().st===1);
 p.gear.north=1; at(x.VIL3.x+3,x.VIL3.z+3); tick(12);
 ok('walking into Rimehold attunes its circle (gear.north 2) and finishes F1',p.gear.north===2&&M().st===2); talk('hallvard');
-ok('F1 handed in to Hallvard; F2 waits for level 21',id()==='F2'&&M().st===0); dev('level',21); talk('hallvard'); ok('F2 offered',M().st===1);
+ok('F1 handed in to Hallvard; F2 starts in the same talk at level 20 (act III asks 20)',id()==='F2'&&M().st===1); dev('level',21); talk('hallvard'); ok('F2 offered',M().st===1);
 for(const n of ['ragna','bjorn','ulfhild','thorvald']) talk(n); ok('F2: the four hearth-folk met',M().st===2); talk('hallvard'); ok('F2 done: F3 waits for Sigrun',id()==='F3'&&M().st===0);
 x.S.day=0.3; talk('sigrun'); talk('sigrun'); ok('Sigrun\'s saga waits for the night',M().st===1&&M().n[0]===0);
 x.S.day=0.7; talk('sigrun'); ok('after dark it counts',M().n[0]===1);
 { const R=x.LORE_BY_ID.runes; W.receive('a',{t:'mq',a:'read',id:'runes'}); tick(1); ok('the rune stones must be read in person',M().n[1]===0); at(R.x,R.z); W.receive('a',{t:'mq',a:'read',id:'runes'}); tick(1); ok('reading the rune stones',M().st===2); }
-rime(); talk('sigrun'); ok('F3 handed in; F4 waits for level 22',id()==='F4'&&M().st===0); dev('level',22); talk('sigrun'); ok('F4 offered',M().st===1);
+rime(); talk('sigrun'); ok('F3 handed in; F4 starts in the same talk',id()==='F4'&&M().st===1); dev('level',22); talk('sigrun'); ok('F4 offered',M().st===1);
 // the Wayfarers' Lodge: learning costs coins and needs a village; F4 also wants a sickle of tier 5 (Hagane, level 20)
 p.gear.prof={}; p.gear.eq.sickle=null; M().n[0]=0; M().n[1]=0;
 p.gear.coins=10; W.receive('a',{t:'learn',id:'gathering'}); tick(1); ok('a profession costs coins',!p.gear.prof.gathering&&M().st===1);
@@ -97,12 +98,12 @@ talk('gudrun'); ok('F4 handed in to Gudrun; F5 starts in the same talk',id()==='
   ok('three frostbloom gathered: they are kept in gear.res and count for F5',M().n[0]===3&&p.gear.res.frostbloom>=3&&p.gear.prof.gathering.xp>=6);
   at(bl[0].x,bl[0].z+1); W.receive('a',{t:'gather',i:bl[0].i}); tick(1); ok('a node that was taken gives nothing until it grows back',p.gear.res.frostbloom===got); }
 { let k5=0; for(const m of x.MONS.filter(m=>m.def.id==='snowboar'&&!m.dead).slice(0,5)){ m.hp=Math.min(m.hp,20); if(kill(m)) k5++; } tick(2); ok('five snow boars: F5 is ready to hand in',k5===5&&M().st===2); }
-rime(); talk('sigrun'); ok('F5 handed in; F6 waits for level 23',id()==='F6'&&M().st===0); dev('level',23); talk('sigrun'); ok('F6 offered',M().st===1);
+rime(); talk('sigrun'); ok('F5 handed in; F6 starts in the same talk',id()==='F6'&&M().st===1); dev('level',23); talk('sigrun'); ok('F6 offered',M().st===1);
 p.gear.coins=500; W.receive('a',{t:'brew',id:'heal3',n:1}); tick(1); ok('F6: brewing the frostbloom tea (a Greater Healing Potion) at Ylva\'s, then the way home waits',p.gear.pot.heal3===1&&M().n[0]===1&&M().st===1);
 // the teleport circle: a destination is chosen (warp{to}); each village's circle wakes when you have walked into it
 p.gear.east=2; at(x.VIL3.tele.x,x.VIL3.tele.z); W.receive('a',{t:'warp',to:'rimehold'}); tick(3); ok('choosing the circle you stand on does nothing',Math.hypot(p.x-x.VIL3.tele.x,p.z-x.VIL3.tele.z)<3.5);
 W.receive('a',{t:'warp',to:'nowhere'}); tick(3); ok('the default destination of Rimehold\'s circle is home',Math.hypot(p.x-x.VIL.x,p.z-x.VIL.z)<x.VIL.r&&M().n[1]===1);
-talk('wren'); ok('F6 handed in to Wren: F7 waits for level 24',id()==='F7'&&M().st===0);
+talk('wren'); ok('F6 handed in to Wren: F7 waits for its giver',id()==='F7'&&M().st===0);
 at(x.VIL.tele.x,x.VIL.tele.z); p.warpT=-99; W.receive('a',{t:'warp',to:'hanami'}); tick(3); ok('from home the circle can choose Hanami',Math.hypot(p.x-x.VIL2.x,p.z-x.VIL2.z)<x.VIL2.r);
 p.warpT=-99; at(x.VIL2.tele.x,x.VIL2.tele.z); p.gear.north=1; W.receive('a',{t:'warp',to:'rimehold'}); tick(3); ok('a circle you have not walked into (north 1) will not take you there',Math.hypot(p.x-x.VIL2.tele.x,p.z-x.VIL2.tele.z)<3); p.gear.north=2;
 p.warpT=-99; W.receive('a',{t:'warp',to:'rimehold'}); tick(3); ok('and once you have, it does',Math.hypot(p.x-x.VIL3.x,p.z-x.VIL3.z)<x.VIL3.r);
@@ -111,7 +112,7 @@ dev('level',24); talk('hallvard'); ok('F7 offered',M().st===1);
 { const L7=x.LORE_BY_ID.hullplate; at(L7.x,L7.z); W.receive('a',{t:'mq',a:'read',id:'hullplate'}); tick(1); ok('F7: the grey plate read',M().n[0]===1);
   let tries=0; for(const m of x.MONS.filter(m=>m.def.id==='reaver'&&!m.dead)){ if(M().st===2||tries++>40) break; m.hp=Math.min(m.hp,20); kill(m); } tick(2);
   ok('F7: two plates from the Frost Reavers (a 45% drop)',M().st===2,'after '+tries+' reavers'); }
-rime(); talk('odran3'); ok('F7 handed in to Odran at Rimehold; F8 waits for level 25',id()==='F8'&&M().st===0);
+rime(); talk('odran3'); ok('F7 handed in to Odran at Rimehold; F8 waits for its giver',id()==='F8'&&M().st===0);
 // F8: the Rimeking
 dev('level',25); talk('hallvard'); ok('F8 offered',M().st===1);
 { const ym=x.MONS.find(m=>m.def.id==='ymrik'); x.rewardKill(p,ym); tick(2); ok('F8: killing Ymrik counts for the boss part',M().st===2); }
@@ -136,12 +137,12 @@ dev('level',27); talk('brenna'); ok('G2 handed in; G3 starts in the same talk (l
   ok('three veins mined: black stone kept in gear.res, and counted for G3',p.gear.res.blackstone>=3&&M().n[0]===3&&M().st===1,'n '+M().n+' stone '+p.gear.res.blackstone);
   const real=Math.random; Math.random=()=>0; let k=0; for(const m of x.MONS.filter(m=>(m.def.id==='granitslime'||m.def.id==='quartzslime')&&!m.dead).slice(0,3)){ x.rewardKill(p,m); k++; } Math.random=real; tick(2);
   ok('three more from the stone slimes (a 30% drop, pinned): G3 is ready to hand in',k===3&&M().st===2,'n '+M().n); }
-hm(); talk('brenna'); ok('G3 handed in; G4 waits for level 28',id()==='G4'&&M().st===0);
+hm(); talk('brenna'); ok('G3 handed in; G4 starts in the same talk',id()==='G4'&&M().st===1);
 dev('level',28); talk('brenna'); ok('G4: Brenna sends you to Odran',id()==='G4'&&M().st===1);
 // G4: a sale at Odran's cart, then the coins to Brenna
 p.gear.inv.push('sword1','sword1'); hm(); W.receive('a',{t:'sell',id:'sword1'}); tick(1); ok('selling away from Odran\'s cart does not count',M().n[0]===0);
 cartAt(); W.receive('a',{t:'sell',id:'sword1'}); tick(1); ok('selling at his cart outside Highmark\'s gate counts',M().n[0]===1&&M().st===1);
-hm(); talk('brenna'); ok('G4: she weighs the coins and the step is done (it is handed in to her too); G5 waits for level 29',id()==='G5'&&M().st===0);
+hm(); talk('brenna'); ok('G4: she weighs the coins and the step is done (it is handed in to her too); G5 starts in the same talk',id()==='G5'&&M().st===1);
 // the black stone sells at the Lodge
 { const c0=p.gear.coins; hm(); W.receive('a',{t:'sellres',id:'blackstone',n:1}); tick(1); ok('the Lodge buys black stone (100 coins a lump)',p.gear.coins===c0+100); }
 // G5: the night shift (only after dark)
@@ -154,13 +155,13 @@ dev('level',29); talk('brenna'); ok('G5 offered',id()==='G5'&&M().st===1);
   ok('twelve of them: G5 is ready to hand in',M().st===2&&M().n[0]===12,'n '+M().n); }
 hm(); talk('brenna'); ok('G5 handed in; G6 starts in the same talk',id()==='G6'&&M().st===1);
 { const gq=x.MONS.find(m=>m.def.id==='gryphonqueen'); x.rewardKill(p,gq); tick(2); ok('G6: the Gryphon Queen\'s death counts for the boss part',M().st===2); }
-talk('brenna'); ok('G6 handed in; G7 waits for level 30',id()==='G7'&&M().st===0); dev('level',30); talk('brenna'); ok('G7 offered',M().st===1);
+talk('brenna'); ok('G6 handed in; G7 starts in the same talk',id()==='G7'&&M().st===1); dev('level',30); talk('brenna'); ok('G7 offered',M().st===1);
 { const L=x.LORE_BY_ID.deepshaft, zn=x.ZONES.find(z=>z.key==='g28'); at(900,0); W.receive('a',{t:'mq',a:'read',id:'deepshaft'}); tick(1); ok('the shaft cannot be read from afar',M().n[0]===0);
   at(L.x,L.z); W.receive('a',{t:'mq',a:'read',id:'deepshaft'}); tick(1); ok('G7: the mouth of the deepest shaft read (in the Miners\' Scree)',M().st===2&&Math.hypot(L.x-zn.x,L.z-zn.z)<zn.R); }
 hm(); talk('brenna'); ok('G7 handed in; G8 waits for the abbot (level 31)',id()==='G8'&&M().st===0);
 dev('level',31); talk('ansgar'); ok('G8: Ansgar offers it',id()==='G8'&&M().st===1);
 { const L=x.LORE_BY_ID.golemframe; at(L.x,L.z); W.receive('a',{t:'mq',a:'read',id:'golemframe'}); tick(1); ok('G8: the golem\'s broken stone read at the edge of its cavern',M().st===2); }
-hm(); talk('ansgar'); ok('G8 handed in to the abbot; G9 waits for level 32',id()==='G9'&&M().st===0); dev('level',32); talk('ansgar'); ok('G9 offered',M().st===1);
+hm(); talk('ansgar'); ok('G8 handed in to the abbot; G9 starts in the same talk',id()==='G9'&&M().st===1); dev('level',32); talk('ansgar'); ok('G9 offered',M().st===1);
 { const gm=x.MONS.find(m=>m.def.id==='mountaingolem'); x.rewardKill(p,gm); tick(2); ok('G9: the Mountain Golem\'s death counts for the boss part',M().st===2); }
 hm(); talk('brenna'); ok('G9 handed in to Brenna: the story ends after G9 (act IV ends at the Mountain Golem)',M().s===x.MQ.length&&/Glasswell/.test(x.MQ_END));
 ok('every Act IV step has parts, an offer (or starts by itself) and a hand-in',['G1','G2','G3','G4','G5','G6','G7','G8','G9'].every(i=>{ const st=x.MQ_BY_ID[i]; return st&&st.parts.length&&(st.from===null||(st.offer&&st.offer.length))&&st.done&&st.done.length; }));

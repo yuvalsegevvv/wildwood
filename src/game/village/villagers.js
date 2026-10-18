@@ -271,6 +271,11 @@ const VILLAGERS=[
     look:{sex:'female',height:0.97,build:0.9,face:'oval',hair:'long',hairColor:0x3a3444,chest:1.0,skin:0xdccdc6,top:'jacket',topColor:0x3a4a4a,bottom:'skirt',bottomColor:0x2a2a34,hat:'none',pack:false,shoes:'boots',shoeColor:0x1a1618},
     behavior:{type:'stationary',at:'place:physician'}, home:'house:8', schedule:'always', voice:{rate:0.9,pitch:1.05},
     lines:['Moss for fever, salt for the wounds that will not close, and a candle in the window for the rest. Bring me herbs and a few coins and I will brew them.','Drink the healing draught when you are hurt, the others before a fight. The dark gives no second chances.'] },
+  // the keeper of the Gloam Light (docs/STORY.md: a watcher; kind, never a villain on screen). The side quests' chains of the Gloamhorn are hers (shared/side-quests.js)
+  { id:'maelis', vil:6, late:true, title:'Keeper of the Gloam Light', icon:'story', name:'Keeper Maelis', role:null,
+    look:{sex:'female',height:1.0,build:0.92,face:'oval',hair:'bun',hairColor:0xb8b4bc,chest:1.0,skin:0xdccfc8,top:'jacket',topColor:0x2a3a4a,bottom:'skirt',bottomColor:0x22262e,hat:'none',shoes:'boots',shoeColor:0x1a1618},
+    behavior:{type:'stationary',at:'lamp:0'}, home:'house:0', schedule:'always', voice:{rate:0.86,pitch:1.0},
+    lines:['I keep the old light at the tip of the horn. Somebody has to, and I have always been good with stairs.','The beam is for ships. There have been no ships for a long time. I keep it lit all the same: a light is a promise.','Mind the fog after dark. It carries voices further than it should.'] },
 ];
 const FILLER_COUNT=LITE?3:(LOW?4:8);
 const NAMES_M=['Anders','Henrik','Lukas','Emil','Jonas','Felix','Mattis','Arvid','Elias','Nils','Viggo','Karl'];
