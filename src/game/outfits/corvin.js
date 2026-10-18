@@ -393,3 +393,6 @@ OUTFITS.corvin=(function(){
     };
   };
 })();
+OUTFITS.corvin=oxPlus(OUTFITS.corvin,(X,D)=>({   // round 6: a brass lamp swinging at the belt, a surveyor's map tube across the back
+  torso:()=>oxTube(X,D,{col:0x5a4a39,cap:0xc59c39,strap:0xc59c39}),
+  hips:()=>oxLantern(X,D,{frame:0xc59c39,glow:0xffc870,side:-1})}));

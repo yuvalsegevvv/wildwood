@@ -299,3 +299,6 @@ OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 4: a vermilion scarf
 OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 5: a white fox half-mask pushed up on the side of the head, a plate on the other shoulder too
   head:()=>oxMask(X,D,{col:0xf3ead2,mark:0xc8323a,side:1}),
   shoulder:sd=>sd<0?oxPauldron(X,D,{col:0x1b1f2a,trim:0xc8323a,r:0.075}):[]}));
+OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 6: a big vermilion obi bow at the back, long trailing sleeve streamers
+  torso:()=>oxBow(X,D,{col:0xc8323a,col2:0x2a1a40}),
+  forearm:sd=>oxStreamer(X,D,{col:0xc8323a,col2:0x2a1a40,len:0.55,side:sd})}));

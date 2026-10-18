@@ -100,3 +100,5 @@ OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // round 4: a wet rope coil acros
   torso:()=>oxCoil(X,D,{col:0x9a8a6a,col2:0x6a5a3a,dir:1}),
   hips:()=>oxLantern(X,D,{frame:0xe5e0c8,glow:0x4fd0c0,side:-1}),
   cos:{cape:{col:0x34382c,trim:0x6f8f6b,len:0.62,pat:'moss',mantle:0}}}));
+OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // round 6: a string of bone beads and a rotting scarf
+  torso:()=>oxBeads(X,D,{col:0xe5e0c8,col2:0x4fd0c0,n:18,r:0.012,drop:0.18}).concat(oxScarf(X,D,{col:0x5a4632,col2:0x6f8f6b,len:0.5}))}));

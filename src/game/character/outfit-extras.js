@@ -1,12 +1,12 @@
 //@ Reusable extra pieces for the signature sets (scarf, apron, sash tails, rope coil, shoulder plate, hip lantern) and oxPlus, which adds them to a set's kit without editing its hooks
 /* oxPlus(base, fn): OUTFITS.<id> = oxPlus(OUTFITS.<id>, (X,D,k) => ({torso, hips, shoulder, extras: cosmetics})) wraps a set so each named hook returns what the set's own hook returns plus the pieces here
    (the set's own pieces are untouched; `cos` = the o of ofCosmetics, a cape and / or an aura). The pieces are drawn in torso / hips / shoulder frames like the hooks: y up, the front is -z, torso heights are design
-   heights (times D.TK), the hips hang down from y = 0, the shoulder frame has its origin at the joint with y down the arm. owns: oxPlus, oxScarf, oxApron, oxSash, oxCoil, oxPauldron, oxLantern, oxBeads, oxSatchel, oxPack, oxMask.
+   heights (times D.TK), the hips hang down from y = 0, the shoulder frame has its origin at the joint with y down the arm. owns: oxBow, oxStreamer, oxSheaf, oxFish, oxTube, oxPlus, oxScarf, oxApron, oxSash, oxCoil, oxPauldron, oxLantern, oxBeads, oxSatchel, oxPack, oxMask.
    used by: game/outfits/{sazanka,ogden,tamsin,pell,sabir}.js (the last line of each). test: tools/outfit-smoke.js, tools/cosmetic-items-smoke.js */
 function oxPlus(base,fn){
   return function(X,D){
     const k=base(X,D), m=fn(X,D,k);
-    for(const hook of ['torso','hips','shoulder','head']){ const add=m[hook]; if(!add) continue; const old=k[hook]; k[hook]=(...a)=>(old?old(...a)||[]:[]).concat(add(...a)); }
+    for(const hook of ['torso','hips','shoulder','head','forearm']){ const add=m[hook]; if(!add) continue; const old=k[hook]; k[hook]=(...a)=>(old?old(...a)||[]:[]).concat(add(...a)); }
     if(m.cos){ const old=k.extras; k.extras=(rig,XX,has)=>{ if(old) old(rig,XX,has); ofCosmetics(rig,XX,has,m.cos); }; }
     return k; };
 }
@@ -79,4 +79,40 @@ function oxMask(X,D,o){
   for(const dz of [-0.03,0.03]) out.push(solid(new THREE.ConeGeometry(0.019,0.055,6).rotateZ(sx*-0.35).translate(cx+sx*0.006,cy+0.088,cz+dz),o.col), solid(new THREE.ConeGeometry(0.009,0.03,5).rotateZ(sx*-0.35).translate(cx+sx*0.0105,cy+0.082,cz+dz),o.mark));
   for(const [dy,dz,w] of [[0.014,-0.03,0.02],[0.014,0.03,0.02],[-0.03,0,0.03]]) out.push(solid(csph(1,sg(8),sg(6)).scale(0.003,0.008,w*0.45).translate(cx+sx*0.011,cy+dy,cz+dz),o.mark));
   out.push(solid(csph(1,sg(8),sg(6)).scale(0.004,0.02,0.0035).translate(cx+sx*0.011,cy-0.018,cz),o.mark));
+  return out; }
+// a big bow at the back of the waist (an obi bow): two flat loops and two tails; o = {col, col2}: the torso frame
+function oxBow(X,D,o){
+  const {sg}=X, TK=D.TK, zb=torsoSize(X,D,0.1).rzBack+0.03, y=0.1*TK, out=[];
+  for(const sd of [-1,1]) out.push(pc(csph(1,sg(12),sg(8)).scale(0.075,0.05,0.016).rotateZ(sd*0.25).translate(sd*0.075,y+0.01,zb+0.01),(x,yy,z,c)=>{ c.set(o.col); if(Math.abs(x)<0.04) c.set(o.col2); }));
+  out.push(solid(csph(1,sg(9),sg(7)).scale(0.028,0.03,0.022).translate(0,y,zb+0.014),o.col2));
+  for(const sd of [-1,1]) out.push(pc(ofRibbon([[sd*0.012,y-0.01,zb+0.02],[sd*0.03,y-0.12,zb+0.035],[sd*0.045,y-0.26,zb+0.03]],0.05,{up:[0,0,1],seg:sg(10),th:0.005}),(x,yy,z,c)=>{ c.set(o.col); if(yy<y-0.22) c.set(o.col2); }));
+  return out; }
+// a long sleeve streamer trailing from the wrist; o = {col, col2, len, side}: the forearm frame (y down the arm, the wrist at -0.25)
+function oxStreamer(X,D,o){
+  const {sg}=X, out=[], L=o.len||0.4;
+  out.push(pc(ofRibbon([[0,-0.235,0.0],[o.side*0.012,-0.235-0.3*L,0.03],[o.side*0.03,-0.235-0.65*L,0.05],[o.side*0.02,-0.235-L,0.04]],0.07,{up:[1,0,0],seg:sg(12),th:0.005}),(x,y,z,c)=>{ c.set(o.col); if(y<-0.235-0.85*L||y>-0.25) c.set(o.col2); }));
+  return out; }
+// a sheaf of wheat tied with a cord on the back: a fan of stalks with ears; o = {col, ear, cord}: the torso frame
+function oxSheaf(X,D,o){
+  const {sg}=X, TK=D.TK, zb=torsoSize(X,D,0.3).rzBack+0.045, out=[];
+  for(let i=-3;i<=3;i++){ const a=i*0.17, x0=i*0.008;
+    out.push(solid(sweepTube([[x0,0.06*TK,zb],[x0+Math.sin(a)*0.18,0.06*TK+0.28,zb+0.01+Math.abs(i)*0.004],[x0+Math.sin(a)*0.36,0.06*TK+0.5,zb+0.012+Math.abs(i)*0.006]],[0.004,0.0035,0.003],4,{cap:'round',rings:8}),o.col));
+    out.push(solid(csph(1,sg(7),sg(5)).scale(0.011,0.04,0.011).translate(x0+Math.sin(a)*0.375,0.06*TK+0.54,zb+0.012+Math.abs(i)*0.006),o.ear)); }
+  out.push(solid(ofRingAt([0,0.06*TK+0.04,zb],[0,1,0.05],0.034,0.006,sg(6)),o.cord));
+  return out; }
+// two fish hanging from the belt on a cord; o = {col, fin, side}: the hips frame
+function oxFish(X,D,o){
+  const {sg}=X, s=torsoSize(X,D,0.03), x0=o.side*(s.rx+0.04), out=[];
+  out.push(solid(sweepTube([[x0,-0.01,0.01],[x0,-0.09,0.01]],[0.0022,0.0022],4,{cap:'round',rings:3}),o.fin));
+  for(const [i,dz] of [[0,-0.02],[1,0.03]]){ const y=-0.15-0.04*i;
+    out.push(solid(csph(1,sg(10),sg(8)).scale(0.018,0.065,0.012).translate(x0,y,dz),o.col), solid(new THREE.ConeGeometry(0.02,0.04,4).translate(x0,y-0.08,dz),o.fin), solid(csph(1,sg(6),sg(5)).scale(0.003,0.012,0.012).translate(x0+0.016,y+0.02,dz),0x111111)); }
+  return out; }
+// a map / rod tube slung diagonally across the back; o = {col, cap, strap}: the torso frame
+function oxTube(X,D,o){
+  const {sg}=X, TK=D.TK, zb=torsoSize(X,D,0.3).rzBack+0.045, out=[];
+  const a=[0.12,0.52*TK,zb], b=[-0.11,0.04*TK,zb+0.01], dir=new THREE.Vector3(b[0]-a[0],b[1]-a[1],b[2]-a[2]), len=dir.length();
+  const g=new THREE.CylinderGeometry(0.022,0.022,len*0.95,sg(10)); g.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize()))); g.translate((a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2);
+  out.push(solid(g,o.col));
+  for(const t of [0.02,0.98]) out.push(solid(ofRingAt([a[0]+dir.x*t,a[1]+dir.y*t,a[2]+dir.z*t],[dir.x,dir.y,dir.z],0.024,0.006,sg(6)),o.cap));
+  out.push(solid(ofRingAt([a[0]+dir.x*0.5,a[1]+dir.y*0.5,a[2]+dir.z*0.5],[dir.x,dir.y,dir.z],0.025,0.005,sg(6)),o.strap));
   return out; }

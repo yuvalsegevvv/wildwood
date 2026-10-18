@@ -306,3 +306,6 @@ OUTFITS.tansy=(function(){
     };
   };
 })();
+OUTFITS.tansy=oxPlus(OUTFITS.tansy,(X,D)=>({   // round 6: a sheaf of wheat on the back, a red kerchief, a straw shoulder cape
+  torso:()=>oxSheaf(X,D,{col:0xd8b050,ear:0xe8c860,cord:0xa04030}).concat(oxScarf(X,D,{col:0xc0392b,col2:0xf3ead2,len:0.4})),
+  cos:{cape:{col:0xe0b95a,trim:0x7a9a3c,len:0.4,pat:'stitch',mantle:1}}}));
