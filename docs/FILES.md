@@ -35,6 +35,7 @@ styles
   27-skillsets.css                   Skill sets in the skills panel and on the action bar: a set piece's symbol in its set's colour, the set effect cards
   28-guide.css                       The Guide panel: a short in-game wiki in tabs (text, lists and key caps)
   29-theme.css                       The storybook skin: dark bark panels, a brass frame with corner studs, parchment ink and the Alegreya fonts, laid over every HUD box, panel and button (the look of the world map)
+  30-raids.css                       The raids' strip near a stronghold (game/raids/hud.js): one line under the top edge, below the boss bar when both show
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -123,6 +124,13 @@ shared
   skillsets/tamsin.js                Tamsin's skill set, The Rockbreaker (a grinder, earth): a hammer sweep, a quake that pulls a camp into a heap, and one landslide to finish it; granite, dust and rope
   skillsets/zahra.js                 Zahra's skill set, The Hour of Glass (a buff support, light): a mirror strike that quickens the line, a blessing of the long noon, and a sandglass planted for the whole fight; gold, glass and lapis
   skillsets/hollis.js                Hollis's skill set, The Wake Lantern (a healer, dark): a lantern swing that mends, a vigil that returns borrowed dusk, and a long night that carries the party through; lamp amber, mourning black and fog grey
+  raids.js                           Raids: one ruined stronghold per land (defineRaid registry, the common layout, level and pay by zone tier, the signature-skill upgrade price in raid material, the flat pads)
+  raids/thornwall.js                 Raid: Thornwall Keep, Wildwood's border castle taken over by the goblin warband (garrison, site, material)
+  raids/kurohana.js                  Raid: Kurohana Castle, the Sakura Vale's burnt hilltop castle held by oni and its last lord's undead samurai (garrison, site, material)
+  raids/jarnhall.js                  Raid: Jarnhall, the Hoarfrost Reach's ice-locked hill fort of the old jarls (garrison, site, material)
+  raids/stonewatch.js                Raid: Stonewatch, the Greyspine's collapsed watch fort on a ridge (garrison, site, material)
+  raids/sunken.js                    Raid: the Sunken Citadel, the Sunscar's sandstone citadel half buried by a dune (garrison, site, material)
+  raids/wrackmoor.js                 Raid: Wrackmoor Fort, the Gloamhorn's drowned sea fort with a wreck through its wall (garrison, site, material)
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -173,6 +181,7 @@ server
   dungeons/kits/escort.js            Dungeon mission kit Escort: free the captive in the far site room (a 5 s channel, six jailers on guard), then they follow the nearest member at 90% of a hiker's run; monsters go for them 30% of the time; stepping into the round hall with them wakes the boss, and they must live through the fight
   dungeons/runs.js                   Dungeon runs, the lifecycle: launching a run, the start prompt and joining in progress, the per-tick update (members, downs, respawns, the kit, the monsters), revives, won / lost and the results, closing, places held for 5 minutes, the save (gear.dg)
   dungeons/lobby.js                  Dungeon runs, the messages: the Delve board at a door (open), starting a run (checked against the door, the gate, the hourly offer and each member's level and tier), accepting / declining, leaving, reviving, using an objective; the testing tool's start
+  raids.js                           Raids on the server: build and rebuild each land's stronghold, lock its tier on the first hit, wards wake the boss, spawners call reinforcements, the clear pays raid material, a clear rebuilds half an hour later
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 
 node
@@ -306,7 +315,7 @@ game
   combat/monster-desert.js           The Sunscar's monster models: scorpions (model 'scorpion'), walking cacti ('cactus'), sand worms and the sand wyrm ('sandworm'), djinn ('djinn') and the Glass Guardian ('sentinel')
   combat/monster-gloam.js            The Gloamhorn's monster models: the gloom bat (model 'bat'); the rest of the land reuses the families with new look flags (djinn siren, wisp ghosts by id, goblin undead, treant dead, wyrm stone, sandworm sea)
   combat/monster-mine.js             The powder keg model (model 'keg': Garrick's kegs in the Blackseam): a barrel of dark staves with two iron bands and a fuse that spits a spark
-  combat/monster-totems.js           The five totems' own bodies (pal.style): the Heartwood carved wood, the Warm Core's frosted furnace, the Iron Joint, the Black Mirror, the Soul Lantern
+  combat/monster-totems.js           The totems' own bodies (pal.style): the Heartwood carved wood, the Warm Core's frosted furnace, the Iron Joint, the Black Mirror, the Soul Lantern, and the raids' Warding Stone, War Banner and Barricade
   combat/monster-woods.js            Treant and totem models: gnarled walking trees with faces and hands of twigs; dead, mossy, snowy, blossoming, bamboo, rock and ice kinds; the Rootwarden; the totems
   combat/monster-spirits.js          Wisp and ghost models (model 'wisp'): fire spirits (onibi, rime wisp) with a bright core and rising tongues; the yurei, ice wraith and barrow wight, tattered figures that float (and the Gloamhorn's banshee and widow = yurei, wraith and specter = ice wraith, the Gloam Warden = a wight)
   combat/monster-boss.js             What sets the bosses apart in the goblin and fox models: Akaoni's iron, skulls and flames, Ymrik's ice crown, cape and greataxe, Kyuubi's gold, beads, rope and marks
@@ -383,6 +392,8 @@ game
   ui/map-style.js                    The map's dressing, as Eldmere's map has it: a gold-lined frame with corner diamonds, a compass rose, the red pin, serif labels on a parchment halo and the land's title scroll
   ui/world-map-data.js               The world map's frame on the atlas: art pixels (half a metre each), the lands' banners, towns and fog banks, and the painted atlas (the art itself, drawn once when the map first opens)
   ui/world-map.js                    The world map of Eldmere (G): the atlas painted as a map, purple fog over what is locked or not built, a scroll banner on each open land and your pin; drag, wheel or pinch to move and zoom, click a land to open its map
+  raids/structure.js                 The six raid ruins: walls with a gate and a broken inner wall, towers, braziers and banners in each land's own stone and style; fires and banners go out when the raid is cleared
+  raids/hud.js                       The raids' HUD side: where each stronghold stands (server rows), the strip near one, its door sign, the map marks and tooltips, the raid materials in the bag, the level event
   net/transport.js                   Connections to the world server: solo (server in this tab), shared room (one player's tab hosts), WebSocket (node server)
   net/client.js                      Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
   combat/boss-dungeon.js             The dungeon bosses on the client: their defs in the roster lookup, what the boss bar's number means for each (dish, puffballs, lamps), Haugbui's lamps going dark and lit again, the relight channel's cast bar, and the gloom of his blackout

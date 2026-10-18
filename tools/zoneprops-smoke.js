@@ -11,7 +11,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,cond,i
   ok('no theme row names a missing prop kind',G.ZP_BAD.length===0,G.ZP_BAD.join(', '));
   const noTheme=G.ZONES.filter((z,i)=>!G.ZP_TH_OF[i]).map(z=>z.key);
   ok('every zone has a ground tint row ('+G.ZONES.length+' zones)',!noTheme.length,noTheme.join(','));
-  const rows=Object.values(G.ZP_THEME), bossArena=G.ARENAS.map(A=>A.key);
+  const rows=Object.values(G.ZP_THEME), bossArena=G.ARENAS.filter(A=>!A.raid).map(A=>A.key);
   ok('every row that places props has at least two kinds, a density and a tint',rows.every(t=>(t.dens===0&&!t.entries.length)||(t.dens>0&&t.dens<0.3&&t.entries.length>=2)&&t.tk>0&&t.tk<=0.5));
   ok('every boss arena has a surroundings ring and its kinds exist',bossArena.every(k=>G.ZP_BOSS[k]&&G.ZP_BOSS[k].every(r=>G.ZP_KIND[r[0]])),bossArena.filter(k=>!G.ZP_BOSS[k]).join(','));
   ok('ruin plans use real kinds',G.ZP_PLANS.every(p=>p.p.every(r=>G.ZP_KIND[r[0]])));
@@ -37,7 +37,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,cond,i
     return {meshes,built:kinds.filter(k=>G.ZP_GEO[k])}; };
   for(const [key,kinds,label] of [[5,['gobhut','campfire','gobtotem','barricade'],'goblin huts and fires in the Goblin Woods'],[20,['web','webdome','cocoon'],'spider webs in the Ghostlight Marsh'],['m35',['gallows','gravestone'],'gallows and graves on Gallows Down'],['s34',['obelisk','sarcophagus'],'obelisks and sarcophagi in the Whitefloor'],['g28',['minecart','mineframe','orepile'],'mine carts in the Miners\' Scree'],['h29',['barrowmound','gravestone_frost'],'barrow mounds in Bonefrost Barrow']]){
     const r=around(key,kinds); ok(label+' (built: '+r.built.join(',')+')',r.built.length>=1); ok('  ...and a chunk costs at most 16 more draw calls ('+r.meshes+')',r.meshes<=16); }
-  for(const A of G.ARENAS){ const kinds=G.ZP_BOSS[A.key].map(r=>r[0]); const before=new Set(Object.keys(G.ZP_GEO)); let hit=false;
+  for(const A of G.ARENAS.filter(a=>!a.raid)){ const kinds=G.ZP_BOSS[A.key].map(r=>r[0]); const before=new Set(Object.keys(G.ZP_GEO)); let hit=false;
     for(const ci of near(A.x,A.z,1)) run(ci); hit=kinds.some(k=>G.ZP_GEO[k]); ok('boss surroundings are placed round '+A.key+' ('+A.name+')',hit); }
   { let ruins=0; const gz=G.ZONES.find(z=>z.key==='m33'); const [x,z]=G.zonePoint(gz,0,0.5,true); for(const ci of near(x,z,3)) run(ci);
     ruins=['ruinplan0','ruinplan1','ruinplan2','ruinplan3','ruinplan4'].filter(k=>G.ZP_GEO[k]).length; ok('ruins are scattered over the Gloamhorn ('+ruins+' kinds built)',ruins>=2); }

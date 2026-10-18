@@ -28,7 +28,8 @@
     "26-pvp.css",
     "27-skillsets.css",
     "28-guide.css",
-    "29-theme.css"
+    "29-theme.css",
+    "30-raids.css"
   ],
   "shared": [
     "math.js",
@@ -105,7 +106,14 @@
  "skillsets/brynja.js",
  "skillsets/tamsin.js",
  "skillsets/zahra.js",
- "skillsets/hollis.js"
+ "skillsets/hollis.js",
+    "raids.js",
+    "raids/thornwall.js",
+    "raids/kurohana.js",
+    "raids/jarnhall.js",
+    "raids/stonewatch.js",
+    "raids/sunken.js",
+    "raids/wrackmoor.js"
   ],
   "server": [
     "state.js",
@@ -139,6 +147,7 @@
     "party.js",
     "pvp.js",
     "dungeons/instances.js", "dungeons/mobs.js", "dungeons/fx.js", "dungeons/hazards.js", "dungeons/kits.js", "dungeons/kits/purge.js", "dungeons/kits/defense.js", "dungeons/kits/survival.js", "dungeons/kits/sabotage.js", "dungeons/kits/siege.js", "dungeons/kits/hunt.js", "dungeons/kits/escort.js", "dungeons/runs.js", "dungeons/lobby.js",
+    "raids.js",
     "api.js"
   ],
   "node": [
@@ -347,7 +356,7 @@
     "ui/map-paint.js",
     "ui/map-style.js",
     "ui/world-map-data.js",
-    "ui/world-map.js",
+    "ui/world-map.js", "raids/structure.js", "raids/hud.js",
     "net/transport.js",
     "net/client.js",
     "combat/boss-dungeon.js",

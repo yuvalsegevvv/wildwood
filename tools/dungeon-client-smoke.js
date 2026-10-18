@@ -5,10 +5,11 @@
 // the revive cast bar, the downed screen, the results panel, both maps in a run, the Testing tools' row, leaving through the HUD button, everything disposed.  Usage: node tools/dungeon-client-smoke.js
 const errs=[]; const realErr=console.error; console.error=(...a)=>{ errs.push(a.map(String).join(' ')); };
 const {bootClient}=require('./headless');
-const c=bootClient({expose:['NET','startSolo','beginPlay','canStart:()=>canStart','P','PL','MONS','DG_RUN:()=>DG_RUN','DG_VIEW','DG_LOOK','DG_MINI','DG_HUD_EL','DG_THEMES','DG_MISSIONS','DG_PROP_KINDS','DG_CAM',
+const c=bootClient({expose:['RD_ORDER','RDS','RD_FOOT','NET','startSolo','beginPlay','canStart:()=>canStart','P','PL','MONS','DG_RUN:()=>DG_RUN','DG_VIEW','DG_LOOK','DG_MINI','DG_HUD_EL','DG_THEMES','DG_MISSIONS','DG_PROP_KINDS','DG_CAM',
   'dgLayout','dgBake','dgFree','dgViewBuild','dgViewClear','dgIn','dgUseNear','dgHudText','dgDownText','dgPartyState','dgPartyCol','dgUsePrompt','scene','camera','sky','water','sun','Stream','streamPump',
   'getH','updatePlayer','updateCamera','updateEnv','keys','applyEvent','applySnap','CAST','castBar','cbName','playerDown','playerUp','drawMinimap','drawFullMap','monTierK','musicThemeHere','updateBossUI',
   'BOSS','ITEM','TERRAIN_BANDS','cullChunks','motes','THREE','WX','updateWeather','promptEl','bTalk','updateTalkUI','thirdPerson:()=>thirdPerson','DG_STEP','DG_CELL','dgPtyOpen','dgHudTick','updateMonsters']});
+const runMon=m=>m.dgK&&!c.G().RD_ORDER.some(i=>Math.hypot(m.camp.x-c.G().RDS[i].x,m.camp.z-c.G().RDS[i].z)<c.G().RD_FOOT);   // (a dungeon run's monster; a raid's carry numbers too)
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const el=s=>document.querySelector(s);
 (async()=>{
@@ -44,8 +45,8 @@ const el=s=>document.querySelector(s);
     const j=G.Stream.job, n=G.Stream.pending.length; G.streamPump(50); ok('no chunks are grown in a run',G.Stream.job===j&&G.Stream.pending.length===n); }
   { let pl=0; G.scene.traverse(o=>{ if(o.isPointLight&&o.parent===G.scene) pl++; }); ok('a torch and two lamps (a desktop) light the run',pl===lights0+3&&G.DG_LOOK.torch.parent===G.scene,pl+' point lights'); }
   ok('the run plays its theme\'s music',G.musicThemeHere()===G.DG_THEMES.hollowroots.music);
-  for(let i=0;i<100&&G.MONS.filter(m=>m.dgK).length<=3;i++){ await wait(200); G=c.G(); }   // (the roster comes in a message of its own: up to 20 s, it leaves the loop as soon as it is there; 3 s was too little on a machine running other tests)
-  { const ms=G.MONS.filter(m=>m.dgK); ok('the run\'s monsters have views with the run\'s level and their health from the roster',ms.length>3&&ms.every(m=>G.monTierK(m).lv===R.L&&m.maxHp>m.def.hp*0.99&&m.y===R.y),ms.length+' monsters, lv '+(ms[0]&&G.monTierK(ms[0]).lv)); }
+  for(let i=0;i<100&&G.MONS.filter(runMon).length<=3;i++){ await wait(200); G=c.G(); }   // (the roster comes in a message of its own: up to 20 s, it leaves the loop as soon as it is there; 3 s was too little on a machine running other tests)
+  { const ms=G.MONS.filter(runMon); ok('the run\'s monsters have views with the run\'s level and their health from the roster',ms.length>3&&ms.every(m=>G.monTierK(m).lv===R.L&&m.maxHp>m.def.hp*0.99&&m.y===R.y),ms.length+' monsters, lv '+(ms[0]&&G.monTierK(ms[0]).lv)); }
   // ---- walls ----
   const B=R.B, loc=()=>[G.P.x-R.ox,G.P.z-R.oz];
   let dir=null; { const [x0,z0]=loc(); let bd=99; for(let a=0;a<8;a++){ const dx=Math.sin(a/8*Math.PI*2), dz=Math.cos(a/8*Math.PI*2); for(let d=0.5;d<14;d+=0.25) if(!G.dgFree(B,x0+dx*d,z0+dz*d,0.32)){ if(d<bd){ bd=d; dir={dx,dz,d}; } break; } } }
@@ -101,7 +102,7 @@ const el=s=>document.querySelector(s);
   el('#dgLeave').click(); el('#dgLeave').click(); await wait(700); G=c.G();
   for(let i=0;i<3;i++){ G.updateEnv(0.05); G.cullChunks(0.05); }
   { let g=0; G.scene.traverse(o=>{ if(o.name==='dungeon') g++; }); let pl=0; G.scene.traverse(o=>{ if(o.isPointLight&&o.parent===G.scene) pl++; });
-    ok('leaving: back in the world (the server too), the run\'s monsters gone',!G.dgIn()&&sp().inst===0&&!G.MONS.some(m=>m.dgK)&&G.P.x<1000);
+    ok('leaving: back in the world (the server too), the run\'s monsters gone',!G.dgIn()&&sp().inst===0&&!G.MONS.some(runMon)&&G.P.x<1000);
     ok('every geometry and material of the dungeon disposed, the group and the lights out of the scene',g===0&&pl===lights0&&disposed===geos.length+mats.length,disposed+' of '+(geos.length+mats.length));
     ok('the world\'s look is given back exactly: far plane, fog near, sky, water, sun shadow, motes; the fog is the world\'s again',G.camera.far===save.far&&G.scene.fog.near===save.near&&G.sky.visible===save.sky&&G.water.visible===save.water&&G.sun.castShadow===save.cast&&G.motes.visible&&G.scene.fog.far>100&&G.scene.fog.color.getHex()!==G.DG_THEMES.hollowroots.pal.fog,'fog far '+G.scene.fog.far);
     ok('the HUD and the labels are gone, the results stay to be read',el('#dgHud').hidden&&G.DG_HUD_EL.lbls.size===0&&!el('#dgResult').hidden); }

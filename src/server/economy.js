@@ -110,13 +110,16 @@ function unequipSkillP(p,cls,slot,idx){
 // level up a skill or passive you own: coins and monster drops (upgradeNeeds), at the trainer in either village
 function upgradeSkillP(p,id){
   const s=skillDef(id), S=p.gear.skills; if(!s||!S.owned.includes(id)) return;
-  if(s.drop||s.set){ toastTo(p.id,s.name+' cannot be upgraded yet','bad'); return; }   // (signature skills: not in v1)
+  if(s.drop){ toastTo(p.id,s.name+' cannot be upgraded yet','bad'); return; }   // (boss skills: their level follows the zone tiers; a signature piece levels with raid material: rdUpNeeds)
   if(!inVillage(p)){ toastTo(p.id,'Skills are upgraded by a trainer: Aldric at the well (or Master Ryu in Hanami)','bad'); return; }
   const to=skillLvOf(S,id)+1; if(to>SKILL_MAX_LV){ toastTo(p.id,s.name+' is already at its highest level','bad'); return; }
-  const need=upgradeNeeds(id,to), lack=need.mats.find(m=>(p.gear.mats[m.id]||0)<m.n);
+  const need=upgradeNeeds(id,to); if(!need){ toastTo(p.id,s.name+' cannot be upgraded yet','bad'); return; }
+  const lack=need.mats.find(m=>(p.gear.mats[m.id]||0)<m.n);
   if(p.gear.coins<need.coins){ toastTo(p.id,'Not enough coins','bad'); return; }
   if(lack){ toastTo(p.id,'You need '+lack.n+' '+MATS[lack.id].name,'bad'); return; }
+  if(need.rd&&(rdMatsOf(p)[need.rd.land]||0)<need.rd.n){ toastTo(p.id,'You need '+need.rd.n+' '+rdOfLand(need.rd.land).mat+' (raid material of that land)','bad'); return; }   // raids
   p.gear.coins-=need.coins;
+  if(need.rd){ const rm=rdMatsOf(p), left=(rm[need.rd.land]||0)-need.rd.n; if(left>0) rm[need.rd.land]=left; else delete rm[need.rd.land]; }   // raids
   for(const m of need.mats){ const left=(p.gear.mats[m.id]||0)-m.n; if(left>0) p.gear.mats[m.id]=left; else delete p.gear.mats[m.id]; }
   S.lv[id]=to; recalcP(p); p.dirty=true; toastTo(p.id,s.name+' is now level '+to,'good'); ev('skillup',p.id,id,to); mqActP(p,'upskill');
 }

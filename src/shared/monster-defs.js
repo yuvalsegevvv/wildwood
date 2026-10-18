@@ -282,4 +282,9 @@ const GREY_DEFS=[
   greyDef('kitsune','greyfox','Grey Kitsune',{scale:1.15,hpK:2.2,glow:0x101418,pal:{body:0x8a8a86,belly:0xd8d8d2,tip:0x4a4a48,eye:0xe8f0ff,legs:0x3a3a38,tails:3}}),
   // the Greyspine's (G5, the night shift): a granite slime gone grey to the core, drawn to the black stone; level 29, the step's own
   greyDef('granitslime','greystone','Grey-veined Granite Slime',{level:29,scale:2.1,hpK:2.4,per:0,glow:0x101418,pal:{deco:'crust',body:0x4a4a52,top:0x9a9aa6,mouth:0x101014,crust:0x2e2e36,crack:0xb8c8d4}})];
-const ALL_MON_DEFS=[...MON_DEFS,...GREY_DEFS,...BOSS_DEFS.flatMap(b=>[b.def,b.totem,b.add,b.prop].filter(Boolean))];
+/* The raids' destructibles (docs/RAIDS.md): props with the totems' mechanism (hits, no attack, no XP). A ward seals a raid's inner court, a spawner calls reinforcements, a barricade is cover. Level 40 = a raid's base level (RD_BASE_LV). */
+function rdPropDef(d,hits){ d.hits=hits; prepDef(d); return d; }
+const RD_WARD_DEF=rdPropDef({id:'rdward',name:'Warding Stone',level:40,el:'light',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x241a0a,pal:{style:'ward',crystal:0xffd870,band:0xe8b84a}},11);
+const RD_SPAWNER_DEF=rdPropDef({id:'rdspawner',name:'War Banner',level:40,el:'fire',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x240a0a,pal:{style:'banner',crystal:0xff7a3a,band:0xb02a2a}},8);
+const RD_BARRICADE_DEF=rdPropDef({id:'rdbarricade',name:'Barricade',level:40,el:'earth',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x120e08,pal:{style:'barricade',crystal:0x8a6a3a,band:0x8a6a3a}},5);
+const ALL_MON_DEFS=[...MON_DEFS,...GREY_DEFS,RD_WARD_DEF,RD_SPAWNER_DEF,RD_BARRICADE_DEF,...BOSS_DEFS.flatMap(b=>[b.def,b.totem,b.add,b.prop].filter(Boolean))];

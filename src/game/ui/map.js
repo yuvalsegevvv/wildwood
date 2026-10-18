@@ -104,6 +104,7 @@ function drawFullMap(){
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.gloam?'gloam':A.sun?'sun':A.grey?'grey':A.hoar?'hoar':inVale(A.x,A.z)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bossLvIn(bd.def,land)+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
   { const V=land==='gloam'?VIL6:land==='sun'?VIL5:land==='grey'?VIL4:land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='gloam'?'Wraithwick':land==='sun'?'Glasswell':land==='grey'?'Highmark':land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
   dgEntMapMarks(x,at,land,fs,label,DPR);   // dungeons: the three doors, the Elder greyed while sealed
+  rdMapMarks(x,at,land,fs,label,DPR);   // raids: the stronghold of this land and its state
   if(land!=='hoar'&&land!=='grey'&&land!=='sun'&&land!=='gloam'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Bridge':'Bridge (barred)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='vale'){ const [cx,cy]=at(PASS.x,PASS.ice); dot(x,cx,cy,3.5*DPR,northOpen()?'#9fe0ff':'#8a8078'); label(northOpen()?'Frostgate Pass':'Frostgate Pass (ice wall)',cx-fs*4.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='hoar'){ const [cx,cy]=at(PASS.x,PASS.z1+50); label('Frostgate Pass',cx-fs*3.6,cy,fs*0.85,'#e8e0d0'); for(const Lk of FROST_LAKES){ const [lx,ly]=at(Lk.x,Lk.z); label(Lk.name,lx,ly,fs*0.85,'#cfe8f6'); }
@@ -133,6 +134,7 @@ function drawFullMap(){
 }
 function placeName(wx,wz){
   { const dn=dgEntName(wx,wz); if(dn) return dn; }   // dungeons: the door's name under the pointer
+  { const rn=rdPlaceName(wx,wz); if(rn) return rn; }   // raids: a stronghold's state under the pointer
   if(vDist(wx,wz)<VR+8) return vilAt(wx,wz)===VIL5?'Glasswell':vilAt(wx,wz)===VIL4?'Highmark':vilAt(wx,wz)===VIL3?'Rimehold':vilAt(wx,wz)===VIL2?'Hanami':'Village';
   for(const L of FROST_LAKES) if(inHoar(wx,wz)&&Math.hypot(wx-L.x,wz-L.z)<L.r*0.8) return L.name+' (frozen)';
   for(const L of LAKES) if(Math.hypot(wx-L.x,wz-L.z)<L.r*0.8) return L.name;
