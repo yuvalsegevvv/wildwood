@@ -97,3 +97,7 @@ OUTFITS.tamsin=oxPlus(OUTFITS.tamsin,(X,D)=>({   // face round 2: a chalk-dust s
 Object.assign(CHAR_MODELS.tamsin,{hairGrad:{mode:'tips',c2:0xe8e2d4,c3:0xb8602a}});   // three colours: brown, chalk, rust
 OUTFITS.tamsin=oxPlus(OUTFITS.tamsin,(X,D)=>({   // face round 3: a single rope-tied plait down one temple
   hair:()=>oxHairBits(X,[{t:'braid',side:1,len:0.26,col:0x9a7a4a}])}));
+oxTune('tamsin',{height:0.97,build:1.18,chest:1.2,shoulders:1.18,waist:1.05,hips:1.0,thighs:1.25,arms:1.25,neck:1.05,head:1.0,hands:1.18});
+Object.assign(CHAR_MODELS.tamsin.setups[0],{note:'The quarry-hand as drawn: a powerful inverted triangle, short in the stride.'});
+OUTFITS.tamsin=oxPlus(OUTFITS.tamsin,(X,D)=>({   // uniqueness round 2: a carrying yoke across the shoulders with a stone bucket hanging from each end
+  torso:()=>oxYoke(X,D,{col:0x7a5a38,rope:0xc8b890,bucket:0x5a5560,load:0x9a948a})}));

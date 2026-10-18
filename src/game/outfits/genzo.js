@@ -90,3 +90,7 @@ OUTFITS.genzo=oxPlus(OUTFITS.genzo,(X,D)=>({   // face round 2: a stern square j
   hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xd2a24a}]),
   kit:{eyeColor:0x8a5a28}}));
 Object.assign(CHAR_MODELS.genzo,{hairGrad:{mode:'streak',c2:0xe8e2d4}});
+oxTune('genzo',{height:0.95,build:1.12,chest:1.3,shoulders:1.18,waist:0.85,hips:0.9,legs:0.95,thighs:1.15,arms:1.25,neck:1.1,head:1.05});
+Object.assign(CHAR_MODELS.genzo.setups[0],{note:'The gate-keeper as drawn: short, a deep chest and a narrow waist, heavy-shouldered.'});
+OUTFITS.genzo=oxPlus(OUTFITS.genzo,(X,D)=>({   // uniqueness round 2: a compact V-shaped frame under a long front and back tabard to the shins
+  hips:()=>oxTabard(X,D,{col:0xb8432a,col2:0xe8c050,len:0.62,flare:0.3,half:0.8})}));

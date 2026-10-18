@@ -102,3 +102,7 @@ OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // face round 2: a weathered, hollo
 Object.assign(CHAR_MODELS.pell,{hairGrad:{mode:'streak',c2:0xcfd8dc}});
 OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // face round 3: a gull feather tucked behind the ear
   hair:()=>oxHairBits(X,[{t:'feather',side:1,col:0xdfe4e8,col2:0x4a5560}])}));
+oxTune('pell',{height:0.93,build:1.12,chest:1.15,shoulders:1.0,waist:1.12,torso:0.96,legs:0.92,thighs:0.95,arms:1.2,neck:0.88,head:1.05,hands:1.18,feet:1.15});
+Object.assign(CHAR_MODELS.pell.setups[0],{note:'The night-fisher as drawn: short, barrel-chested and long in the arm, a little stooped.'});
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // uniqueness round 2: a squat barrel-chested old hand under a rope casting net draped over the right shoulder
+  torso:()=>oxNet(X,D,{col:0xb89a62,side:-1,rows:6,cols:8})}));

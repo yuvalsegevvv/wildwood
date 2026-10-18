@@ -315,3 +315,7 @@ OUTFITS.tansy=oxPlus(OUTFITS.tansy,(X,D)=>({   // face round 2: a round sunny fa
   hair:()=>oxHairBits(X,[{t:'ring',both:true,col:0xe0b95a}]),
   kit:{eyeColor:0x58a848,eyes:{iris:1.1,lash:0.5}}}));
 Object.assign(CHAR_MODELS.tansy,{hairGrad:{mode:'ombre',c2:0xe8c860,c3:0xf3e0a0}});
+oxTune('tansy',{height:0.97,build:1.05,chest:1.1,shoulders:0.9,waist:0.95,hips:1.2,thighs:1.25,arms:0.95,legs:0.92,head:1.1});
+Object.assign(CHAR_MODELS.tansy.setups[0],{note:'The farm-hand as drawn: a pear shape with wide hips and short legs, round-cheeked.'});
+OUTFITS.tansy=oxPlus(OUTFITS.tansy,(X,D)=>({   // uniqueness round 2: two big quilted panniers at the hips, wide enough to read from across the field
+  hips:()=>oxPannier(X,D,{col:0xe8c050,col2:0x6a9a40,w:0.15,h:0.11})}));

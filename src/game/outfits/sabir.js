@@ -113,3 +113,7 @@ OUTFITS.sabir=oxPlus(OUTFITS.sabir,(X,D)=>({   // face round 1: sun-bronzed skin
 Object.assign(CHAR_MODELS.sabir,{hairGrad:{mode:'ombre',c2:0xd8a030,c3:0xb02a2a}});   // face round 2: black to gold to crimson ends
 OUTFITS.sabir=oxPlus(OUTFITS.sabir,(X,D)=>({   // face round 3: a gold-tied tail under the turban
   hair:()=>oxHairBits(X,[{t:'tail',len:0.3,col:0xe8c050}])}));
+oxTune('sabir',{height:1.0,build:0.9,chest:1.0,shoulders:1.15,waist:0.82,hips:0.88,torso:1.0,legs:1.14,arms:1.1,neck:1.1,head:0.98});
+Object.assign(CHAR_MODELS.sabir.setups[0],{note:'The dune raider as drawn: a wiry inverted triangle on long legs.'});
+OUTFITS.sabir=oxPlus(OUTFITS.sabir,(X,D)=>({   // uniqueness round 2: two long sun-red wind tails split down the back of the sarwal
+  hips:()=>oxTabard(X,D,{col:0xc2452c,col2:0xe8c050,len:0.62,flare:0.5,front:false,split:true,half:0.95})}));
