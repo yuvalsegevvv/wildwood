@@ -100,3 +100,5 @@ oxTune('pell',{jaw:1.12,chin:1.15,cheeks:0.8,brow:0.5,eyeTilt:-0.2,lips:0.7,smil
 OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // face round 2: a weathered, hollow-cheeked old fisher with tired eyes and salt-grey streaks in the hair
   mark:F=>oxMarks(F,[{t:'bags',col:0x7a6a5a}])}));
 Object.assign(CHAR_MODELS.pell,{hairGrad:{mode:'streak',c2:0xcfd8dc}});
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // face round 3: grey locks at the temples and a short tail with a rope tie under the hat
+  hair:()=>oxHairBits(X,[{t:'locks',len:0.16},{t:'tail',len:0.22,col:0x9a7a4a}])}));

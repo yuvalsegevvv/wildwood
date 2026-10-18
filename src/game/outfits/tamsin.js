@@ -95,3 +95,5 @@ Object.assign(CHAR_MODELS.tamsin,{hairGrad:{mode:'tips',c2:0xe8e2d4}});
 OUTFITS.tamsin=oxPlus(OUTFITS.tamsin,(X,D)=>({   // face round 2: a chalk-dust stripe across the nose
   mark:F=>oxMarks(F,[{t:'stripe',col:0xd8d0c0}])}));
 Object.assign(CHAR_MODELS.tamsin,{hairGrad:{mode:'tips',c2:0xe8e2d4,c3:0xb8602a}});   // three colours: brown, chalk, rust
+OUTFITS.tamsin=oxPlus(OUTFITS.tamsin,(X,D)=>({   // face round 3: loose dusty locks at the temples and a thick braid down the back tied with rope
+  hair:()=>oxHairBits(X,[{t:'locks',len:0.12},{t:'tail',len:0.34,col:0x9a7a4a}])}));

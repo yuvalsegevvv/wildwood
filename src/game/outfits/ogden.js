@@ -113,3 +113,6 @@ OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // face round 1: a heavy sunken d
   mark:F=>oxMarks(F,[{t:'scar',side:-1,col:0x5a3a3a},{t:'crow',col:0x4a5a52}]),
   hair:()=>oxHairBits(X,[{t:'ring',side:1,col:0x9a8a6a},{t:'sprig',side:-1,col:0x4f6b4b,col2:0x6f8f6b}]),
   kit:{eyeColor:0xb8c8a0,eyes:{iris:0.7,lash:0.1}}}));
+OUTFITS.ogden=oxPlus(OUTFITS.ogden,(X,D)=>({   // face round 3: long dripping locks down both sides of the face
+  hair:()=>oxHairBits(X,[{t:'locks',len:0.3}])}));
+Object.assign(CHAR_MODELS.ogden,{hairGrad:{mode:'ombre',c2:0x5a7a50,c3:0x2a4a40}});   // grey, moss, deep pond green
