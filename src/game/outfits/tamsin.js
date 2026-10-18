@@ -82,3 +82,8 @@ OUTFITS.tamsin=(function(){
     };
   };
 })();
+OUTFITS.tamsin=oxPlus(OUTFITS.tamsin,(X,D)=>({   // round 4: a canvas apron with chisel loops, a granite plate on one shoulder, a rope coil, a dusty ochre cloak
+  torso:()=>oxCoil(X,D,{col:0x9a7a4a,col2:0xd2b48a,dir:-1}),
+  shoulder:sd=>sd<0?oxPauldron(X,D,{col:0x8a8f96,trim:0xc2823a,r:0.068}):[],
+  hips:()=>oxApron(X,D,{col:0x4a3e30,trim:0xd2b48a,len:0.2,w:0.15}),
+  cos:{cape:{col:0xc2823a,trim:0xd2b48a,len:0.5,pat:'ash',mantle:1}}}));

@@ -102,3 +102,6 @@ OUTFITS.sabir=(function(){
     };
   };
 })();
+OUTFITS.sabir=oxPlus(OUTFITS.sabir,(X,D)=>({   // round 4: a wind-torn sand cloak with a crimson hem, knotted crimson sash tails
+  hips:()=>oxSash(X,D,{col:0xb02a2a,col2:0x5a1a1a,len:1.15,side:1}),
+  cos:{cape:{col:0xd2b27a,trim:0xb02a2a,len:0.9,pat:'dunes',mantle:0}}}));

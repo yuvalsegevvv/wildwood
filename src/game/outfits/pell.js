@@ -76,3 +76,7 @@ OUTFITS.pell=(function(){
     };
   };
 })();
+OUTFITS.pell=oxPlus(OUTFITS.pell,(X,D)=>({   // round 4: a long oilskin cloak with wave stitching over the net, a rope coil, a knotted rag sash
+  torso:()=>oxCoil(X,D,{col:0x8a7a44,col2:0x2a2420,dir:-1}),
+  hips:()=>oxSash(X,D,{col:0xb8a258,col2:0x2a2420,len:1.0,side:1}),
+  cos:{cape:{col:0x3f5a52,trim:0xd8c070,len:0.85,pat:'waves',mantle:0}}}));

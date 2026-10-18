@@ -292,3 +292,7 @@ OUTFITS.sazanka=(function(){
     return kit;
   };
 })();
+OUTFITS.sazanka=oxPlus(OUTFITS.sazanka,(X,D)=>({   // round 4: a vermilion scarf with long tails, an ink shoulder plate with violet trim, a knotted sash with two tails
+  torso:()=>oxScarf(X,D,{col:0xc8323a,col2:0x2a1a40,len:1.25,fat:0.022}),
+  shoulder:sd=>sd>0?oxPauldron(X,D,{col:0x1b1f2a,trim:0x8a6ae0,r:0.085}):[],
+  hips:()=>oxSash(X,D,{col:0xc8323a,col2:0x2a1a40,len:1.1,side:-1})}));
