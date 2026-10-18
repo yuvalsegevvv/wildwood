@@ -73,7 +73,7 @@ function mqJournalHtml(){
   const M=mqG(); if(!M) return '';
   const s=mqCur(); if(!s) return `<div class="jq-step"><p class="jq-say">${MQ_END}</p></div>`;
   const act=MQ_ACTS.find(a=>s.id[0]===a[0]), inAct=MQ.filter(q=>q.id[0]===s.id[0]), k=inAct.indexOf(s), r=mqReward(s);
-  let h=`<div class="jq-act"><span>${act?act[1]:''}</span><span>Step ${k+1} of ${inAct.length}</span></div><div class="jq-actbar"><i style="width:${Math.round(k/inAct.length*100)}%"></i></div>`;
+  let h=`<div class="jq-act"><span>${act?act[1]:''}</span><span>Step ${k+1} of ${inAct.length}</span></div><div class="jq-actbar"><i style="width:${Math.max(4,Math.round(k/inAct.length*100))}%"></i></div>`;
   h+=`<div class="jq-step"><h3>${s.title}</h3>`;
   if(M.st===0){
     h+=PL.level<s.gate?`<p class="jq-say">${MQ_NAMES[s.from]} will have the next step for you at level ${s.gate}. Until then, hunt and take notices from the quest board.</p>`
@@ -84,8 +84,8 @@ function mqJournalHtml(){
       const need=mqNeed(pt), got=Math.min(need,M.n[i]||0), done=got>=need, open=mqOpen(s,M.n,i), mon=mqPartMon(pt);
       const where=open?mqWhere(mqPartTarget(s,pt)):'', cnt=need>1?got+' / '+need:'';
       h+=`<div class="jq-obj${done?' done':''}${!done&&!open?' later':''}">${mon?mpPic(mon,true):`<span class="jq-dot">${done?'&#10003;':''}</span>`}<div><b>${pt.text}</b>`
-        +(need>1?`<div class="jq-bar"><i style="width:${Math.round(got/need*100)}%"></i></div>`:'')
-        +`<span class="jq-n">${done?'Done'+(cnt?' &middot; '+cnt:''):!open?'After the step before it':[cnt,where].filter(Boolean).join(' &middot; ')}</span></div></div>`;
+        +(need>1?`<div class="jq-prog"><div class="jq-bar"><i style="width:${Math.max(got?6:0,Math.round(got/need*100))}%"></i></div><span class="jq-cnt">${cnt}</span></div>`:'')
+        +`<span class="jq-n">${done?'Done':!open?'After the step before it':where}</span></div></div>`;
     });
     if(M.st===2) h+=`<div class="jq-obj ready"><span class="jq-dot">!</span><div><b>Return to ${MQ_NAMES[s.to]}</b><span class="jq-n">${mqWhere(npcSpot(s.to))}</span></div></div>`;
   }
