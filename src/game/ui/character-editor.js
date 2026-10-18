@@ -218,7 +218,7 @@ function renderEditor(){
     }
     else if(row.type==='palette'){
       // more colours of a worn outfit piece (OF_PAL): one picker for each further colour the piece is drawn in; 'Designed' puts that colour back
-      const id=ofPieces(LOOK)[row.slot], P=id?ofPalOf(id,row.slot):[];
+      const id=ofPieces(LOOK)[row.slot], P=id?ofPalOf(id,row.slot):gmxPalDef(LOOK,row.slot);   // (a crafted top or bottom has its own further colours too: GMX_PAL)
       if(P.length<2){ continue; }
       for(let i=1;i<P.length;i++){
         const key=OF_TINTX[row.slot][i-1], cap=document.createElement('div'); cap.className='ed-info'; cap.textContent=ED_PAL_NAMES[i]; wrap.append(cap);

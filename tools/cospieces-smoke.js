@@ -56,4 +56,9 @@ ok('three decoration fields are locked until made, in any field, and stripped by
 bad.length=0; for(const id of decos){ for(const sex of ['male','female']) for(const col of [-1,0x33cc88]){ const t=build('deco '+id,sex,{deco1:id,decoColor1:col}); const base=build('base','male',{}); if(t&&base&&t.tris<=base.tris) bad.push(id+' draws nothing'); } }
 ok('every decoration builds on both bodies, takes a colour and adds geometry',!bad.length,bad.slice(0,4).join('; '));
 bad.length=0; build('three','female',{deco1:'wings',deco2:'tail',deco3:'halo',decoColor2:0x222222}); build('hostile','male',{deco1:'constructor',deco2:'__proto__',deco3:'toString',decoColor1:NaN}); ok('three at once build, hostile ids and colours do not',!bad.length,bad.join('; '));
+// ---- multi-colour tops and bottoms ----
+{ const sig=o=>C.tris(C.buildCharacter(look('male',o),{q:0.6})).join(); const cr=[['top',C.GMX_TOPS.map(r=>r[0]).filter(i=>i!=='none'&&C.GMX_PAL.top[i])],['bottom',C.GMX_BOTTOMS.map(r=>r[0]).filter(i=>i!=='none'&&C.GMX_PAL.bottom[i])]];
+  const miss=[]; for(const [slot,ids] of cr) for(const id of ids){ const L=look('male',{[slot]:id}), P=C.gmxPalDef(L,slot); if(P.length<3){ miss.push(slot+':'+id+' has '+P.length+' colours'); continue; }
+    const k=slot==='top'?'tintTop':'tintBottom'; for(let i=2;i<=P.length;i++){ if(sig(Object.assign({},L))===sig(Object.assign({},L,{[k+i]:0x22ccff}))) miss.push(slot+':'+id+' colour '+i+' changes nothing'); } }
+  ok('every crafted top and bottom has 3-4 colours and each one recolours the piece',!miss.length,miss.slice(0,4).join('; ')); }
 console.log(fails?fails+' FAILED':'all passed'); process.exitCode=fails?1:0;

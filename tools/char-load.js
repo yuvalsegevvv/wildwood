@@ -3,7 +3,7 @@
 // C.tris(rig) -> the flat vertex list tools/rast.py draws (position, colour, normal per vertex); C.stats(rig) -> {tris, meshes, minY, maxY, ...} in world metres.
 global.THREE=global.THREE||require('three');
 const fs=require('fs'), path=require('path'), {SRC,strip}=require('./load');
-const NAMES=['CP_PIECES','CP_RECIPE','CP_SLOTS','cpDef','cosLocked','HTX_HATS','DECOS','GMX_TOPS','GMX_BOTTOMS','GMX_SHOES','OF_PAL','OF_TINTX','ofPalOf','HT_HATS','HG_MODES','GM_TOPS','GM_BOTTOMS','GM_SHOES','GL_BASE','GLOVEC','glPlan','cosDef','cosCleanLook','COS_AURAS','COS_CAPES','buildCharacter','charDetail','LOOK_M','LOOK_F','fullLook','lookScale','randomLook','mulberry32','SKINS','HAIRC','HAIRC_NATURAL','EYEC','CLOTH','SHOEC','HATC',
+const NAMES=['CP_PIECES','CP_RECIPE','CP_SLOTS','cpDef','cosLocked','HTX_HATS','DECOS','GMX_PAL','gmxPalDef','GMX_TOPS','GMX_BOTTOMS','GMX_SHOES','OF_PAL','OF_TINTX','ofPalOf','HT_HATS','HG_MODES','GM_TOPS','GM_BOTTOMS','GM_SHOES','GL_BASE','GLOVEC','glPlan','cosDef','cosCleanLook','COS_AURAS','COS_CAPES','buildCharacter','charDetail','LOOK_M','LOOK_F','fullLook','lookScale','randomLook','mulberry32','SKINS','HAIRC','HAIRC_NATURAL','EYEC','CLOTH','SHOEC','HATC',
   'BODY_SLIDERS','SLIDER_KEYS','SLIDER_BY_KEY','SLIDER_DEFS','sliderVal','lookSliders','lookForNet','CHAR_MODELS','charModelOf','sliderRange','setupsOf','applySetup','lookOutOfRange','validateCharModel','faceShape','OUTFITS','OF_SLOTS','OF_FIELD','ofWear','ofPieces','ofItems','ofTidy','weaponsOn','matGlow','WPN_SHAPES'];
 module.exports=function loadCharacter(patch){   // patch(code) -> code: a tool may edit the assembled source (tools/outfit-palette.js probes the tints)
   const read=f=>strip(fs.readFileSync(path.join(SRC,f),'utf8'));
