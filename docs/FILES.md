@@ -190,6 +190,7 @@ game
   world/plant-models.js              Geometry helpers (paint, merge, mkGeo, cyl, blob) and plant models (trees, grass, ferns...)
   world/plant-models-hi.js           Detailed plant models for the desktop (the *Hi builders): conifers with drooping boughs, broadleaf crowns of leaf fans on forked limbs, leafy bushes, pinnate ferns, faceted rocks, fallen logs, reeds
   world/plant-models-sun.js          The Sunscar's plants: the date palm, the saguaro-like cactus and the flat-crowned thorn tree (G.trees.palm / cactus / thorn); the rest of the planting is the sun branch of genChunk (generation-chunks.js)
+  world/plant-models-more.js         More tree species for variety: poplar, beech, willow, stone pine, cedar, ginkgo, larch, acacia and the gloom oak (G.trees / G.treesHi, a low-poly and a detailed model each)
   world/grass-models.js              Grass tufts in three levels of detail (curved, tapering blades with a dark root and a bright tip) and flowers with petals
   world/instancing.js                Chunked instanced meshes (frustum culled, with per-instance levels of detail), distance culling, tree collision grid (addCol, nearCols)
   player/state.js                    Player state P and spawn point
@@ -198,6 +199,7 @@ game
   world/zone-props-models.js         Zone dressing models, part 1: the helpers (zpDef registry, painted box / cylinder / blob parts) and the home forest's and the Sakura Vale's props (huts, camps, toadstools, webs, shrines, toro, torii)
   world/zone-props-models2.js        Zone dressing models, part 2: the Hoarfrost Reach's, the Greyspine's, the Sunscar's and the Gloamhorn's props (ice, mines, tombs, wrecks, gravestones, lamps) and the ruins' pieces
   world/zone-props.js                Zone dressing: each monster zone's ground tint and props that match its monsters (goblin huts, spider webs, crystals, graves...), the boss arenas' wider surroundings and ruins scattered over every land
+  world/zone-fire.js                 Live fire for the zone dressing: smoke, embers and a flickering glow over camp fires and braziers, drifting blue wisps over fox-fire lamps
   world/far-lands.js                 The Emberwake Isles beyond the world's south edge, the one placeholder left (every land of the continent is built on the atlas): a strip of sea with their volcano and islets, seen through the haze
   world/atlas-water.js               The water of the atlas's rivers and lakes (the sea is the one plane at y = 0 in generation-setup.js): two merged meshes laid on the atlas's water layer at each surface height, water with the sea's material and frozen lakes as ice
   world/bridges.js                   The bridges' and the plank causeways' models (BRIDGES in shared/roads.js): plank decks, rails, posts and piers, one merged mesh; also starts the rivers' and lakes' water (atlas-water.js)
@@ -232,14 +234,18 @@ game
   character/pose.js                  poseRig (walk, run, sit, talk, attacks) and animateHiker
   world/motes.js                     Floating pollen by day, fireflies by night
   world/petals.js                    Cherry petals drifting down around you in the Sakura Vale
+  world/ambient-life.js              Ambient life for every land: falling leaves in the forest, ice glints in the Reach, wind-blown snow on the Greyspine, blown sand and tumbleweeds on the Sunscar, drifting spirit lights in the Gloamhorn
   wildlife/animals.js                Deer, foxes, rabbits, ducks, birds/bats, butterflies
   wildlife/chamois.js                Chamois: small harmless herds of mountain goats on the Greyspine's alpine slopes (client-only dressing, built the first time you stand in the Greyspine; they graze, look up and bolt from you)
+  wildlife/fish.js                   Fish that leap out of lakes, rivers and the sea near you: an arc, a ring of ripples where they rise and a splash where they fall
+  wildlife/dragonflies.js            Dragonflies that hover and dart low over ponds, rivers and tarns by day: a few pooled meshes with humming wings
   world/gloam-sky.js                 The Gloamhorn's permanent dusk: gloamTint(s,dt) pulls the sky, fog and light toward a fixed violet twilight with a low moon, whatever the hour, blended over the border band
   world/time-of-day.js               20-minute day/night cycle, sky keyframes, clock, zone label
   player/input.js                    Keyboard, hold Alt to free the mouse, mouse look, touch joystick, HUD buttons
   ui/character-thumbs.js             Pictures for the character editor: every hair style, hat, garment, set, cape and aura drawn once on a small off-screen target and cached as an image
   ui/character-editor.js             Character editor panel and camera: four tabs (Presets, Body, Face, Clothes) with sub-tabs, picture tiles for every part, five outfit slots, per-piece armour visibility, opened from the HUD or in creating mode after registering
   village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)
+  village/village-smoke.js           Chimney smoke for the villages after the home one (Rimehold, Highmark, Wraithwick): vsmAdd(point) from a house's chimney, updateVillageSmoke(dt) each frame
   village/buildings-vale.js          The Sakura Vale's buildings: Hanami (tiled roofs, shoji, timber gates, stone lanterns), the border bridge (deck, piers, gatehouse, sealed door), teleport circles, the dressing of the two boss arenas
   village/buildings-hoar.js          The Hoarfrost Reach's buildings: Rimehold (timber houses under snow, gate and rune stones, the Wayfarers' Lodge yard), the ice wall in Frostgate Pass, the Rimeking's ice hall, the iron bird's wreck
   village/buildings-grey.js          The Greyspine's buildings and dressing: the rock falls in the west wall (the gates), Highmark (stone houses under slate and snow, bell tower, mine headframe, the Lodge yard) and the ice fall across the glacier valley (the gate, opened when Ymrik falls)
@@ -257,6 +263,7 @@ game
   village/buildings-sunscar.js       The Sunscar placed in the game: Glasswell's model on the Bowl the heightmap carries, its colliders (no water outside the Bowl)
   village/buildings-gloam.js         The Gloamhorn's buildings and dressing: Wraithwick (dark stone cottages, crooked lamps, cairns, a chapel), the Gloam Light, wrecks, sea-cave mouths, the Captain's hold, and standing stones (the Gloamvault's door is game/village/buildings-dungeon-gloam.js)
   village/villagers.js               VILLAGERS (hard-coded NPCs of the three villages), random villagers, NPC behaviour (updateNPCs)
+  village/smith.js                   Villager life: the forge keepers at work (a hammer, three blows then a pause, sparks and a clang when you are near) and a wave for a player who walks up
   village/talking.js                 Talking to villagers: bubble, prompt, talk key (E), the main quest's lines first, opening shop/quest panels; reading lore spots, picking heartleaf; stepping on a teleport circle
   village/npc-labels.js              Name and profession labels above the special villagers, with ! / ? quest markers over quest givers
   audio/engine.js                    Web Audio setup (SND, buses, reverb, echo, noise), tone(), noiseHit(), spatial()
@@ -264,6 +271,7 @@ game
   audio/ui-sounds.js                 Interface / game sounds (UI_SFX) and hover/click hooks
   audio/music.js                     Background music: one theme per place (the three villages, three home ranges, two vale ranges, two Hoarfrost ranges, each boss), crossfaded; recorded tracks (music-*) or generative
   audio/ambience.js                  Footsteps, birds, crickets, owls, frogs, ducks, crackle, hooves
+  audio/ambience-lands.js            Per-land ambience: wind chimes and a temple bell in the Vale, eagles and far rock falls on the Greyspine, cicadas and a hawk over the Sunscar, whispers and a tolling bell in the Gloamhorn
   audio/rain.js                      Rain sound (rainSoundTick): a soft low wash, a slowly swelling patter, scattered droplets, a storm rumble; in the snow (WX.snow) a low wind and a blizzard's howl instead (a steady sea gale in the Gloamhorn)
   audio/voices.js                    Villager voices: text-to-speech voice picking and babble
   audio/driver.js                    Per-frame sound driver (soundTick): beds, random events, NPC steps
@@ -272,6 +280,7 @@ game
   combat/monster-folk.js             The goblin family's bodies (model 'goblin': goblins, oni, kappa, tengu, undead, yeti, trolls, reavers, Akaoni, Ymrik): one rig, a body plan for each form (pal.form)
   combat/monster-heads.js            Heads of the goblin family (monster-folk.js), one builder per body plan: goblin, oni, kappa, tengu, undead skull, yeti, troll, viking
   combat/monster-gear.js             What the goblin family carries and wears (monster-folk.js): weapons, helms, hats, horns, torso trimmings, fur, shells and wings
+  combat/monster-garb.js             Armour and straps on the goblin family's jerkins (pal.garb): studded leather, lacquered lames and a banner, a miner's cuirass and pack, a sash and bandolier, hemp rope
   combat/monster-blobs.js            Slime and mushroom models: jelly bodies with a skirt and highlights, moss / lava crust / shells / petals / crystals / ice growing on them; gilled, spotted mushrooms and the kodama spirit
   combat/monster-bugs.js             Beetle, spider and crab models (model 'beetle'): horned / kabuto / scarab / ironshell / ice beetles, the Jorogumo and glacier spiders, crabs with claws, the Tide King
   combat/monster-beasts.js           Boar and fox / wolf / lynx models (models 'boar' and 'fox'): bristled hogs with tusks and a head that gores, slim kitsune with fans of tails, heavy wolves, tufted lynx
@@ -280,6 +289,7 @@ game
   combat/monster-desert.js           The Sunscar's monster models: scorpions (model 'scorpion'), walking cacti ('cactus'), sand worms and the sand wyrm ('sandworm'), djinn ('djinn') and the Glass Guardian ('sentinel')
   combat/monster-gloam.js            The Gloamhorn's monster models: the gloom bat (model 'bat'); the rest of the land reuses the families with new look flags (djinn siren, wisp ghosts by id, goblin undead, treant dead, wyrm stone, sandworm sea)
   combat/monster-mine.js             The powder keg model (model 'keg': Garrick's kegs in the Blackseam): a barrel of dark staves with two iron bands and a fuse that spits a spark
+  combat/monster-totems.js           The five totems' own bodies (pal.style): the Heartwood carved wood, the Warm Core's frosted furnace, the Iron Joint, the Black Mirror, the Soul Lantern
   combat/monster-woods.js            Treant and totem models: gnarled walking trees with faces and hands of twigs; dead, mossy, snowy, blossoming, bamboo, rock and ice kinds; the Rootwarden; the totems
   combat/monster-spirits.js          Wisp and ghost models (model 'wisp'): fire spirits (onibi, rime wisp) with a bright core and rising tongues; the yurei, ice wraith and barrow wight, tattered figures that float (and the Gloamhorn's banshee and widow = yurei, wraith and specter = ice wraith, the Gloam Warden = a wight)
   combat/monster-boss.js             What sets the bosses apart in the goblin and fox models: Akaoni's iron, skulls and flames, Ymrik's ice crown, cape and greataxe, Kyuubi's gold, beads, rope and marks
@@ -290,6 +300,7 @@ game
   combat/weapon-shapes-v3b.js        Weapon shapes of version 3's second six signature outfits (Pell, Genzo, Brynja, Tamsin, Zahra, Hollis): a leister, a bell mallet, a skate blade, a sledge, a mirror, a vigil hook; reed, bamboo, ice, sling, sun and crape bows; a torch pole, a ringed staff, an icicle, a cairn, a sandglass, a vigil pole
   combat/fx-pool.js                  The spark pool: one THREE.Points draw call for the glows, sparks, trails and shockwave debris that every skill, monster attack and boss move adds to its effect
   combat/fx-extra.js                 The effects beyond light: scorch marks, dust and smoke, flying debris, jagged lightning, rotating rune circles, slash crescents, shock domes and the screen flash
+  combat/fx-decal.js                 Ground patterns for skill effects: canvas-drawn runes, flames, waves, cracks, gusts, eclipses, stars, frost, leaves and shock rings that replace the plain discs and rings
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
   combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
   combat/reactions.js                Reactions on the client: the aura marker over a monster, the reaction's name popping up, the vulnerable / weakened notes
@@ -346,6 +357,7 @@ game
   world/weather.js                   Weather on the client: rain streaks around the camera (snowfall and blizzards instead in the Hoarfrost Reach and on the Greyspine's peaks), a darker foggy sky, lightning and thunder (rain and wind sound: audio/rain.js)
   world/aurora.js                    The aurora over the Hoarfrost Reach: slow green and violet curtains in the northern sky on clear nights
   player/movement.js                 Player movement (with a boss's ice, shoves and whirlpools), a slope limit, collisions (the border bridge with its barred gate; the shut gates are shared/barriers.js), the shore's knee-deep rule, camera
+  player/footfx.js                   Footstep dust, snow powder and wading splashes at the player's feet: a puff a step, a ring on landing, drops while you wade
   ui/map.js                          Map: a map image painted from the terrain, the corner minimap, and the full map (N) of each land (home forest, Sakura Vale, Hoarfrost Reach, Greyspine) with zones, quests, resource nodes and players
   ui/map-paint.js                    The map's painter: the world as Eldmere's map draws it (the docs map's palette, shallows and a dark coast line, little pictures of trees, peaks and snow-pines); mapBuildStep paints MAP.canvas a few rows a frame
   ui/map-style.js                    The map's dressing, as Eldmere's map has it: a gold-lined frame with corner diamonds, a compass rose, the red pin, serif labels on a parchment halo and the land's title scroll

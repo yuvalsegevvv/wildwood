@@ -21,6 +21,26 @@ function moFurLimb(len,r0,r1,rows,n,fur){
   return out;
 }
 const moFurPaint=fur=>(x,y,z,c)=>{ c.set(fur).multiplyScalar(0.6+0.62*vn3(x*20,y*3.5,z*20)); };   // streaks of shaggy fur
+// bandages (a mummy): diagonal cloth bands recoloured over a part's own colours; the thin gaps between them stay dark and a few patches are left bare where the cloth rotted away
+function moWrapCloth(geo,hex){
+  const P=geo&&geo.attributes.position, C=geo&&geo.attributes.color; if(!C) return geo;
+  const w=new THREE.Color(hex);
+  for(let i=0;i<P.count;i++){
+    const x=P.getX(i), y=P.getY(i), z=P.getZ(i), u=y*10+x*6-z*4, f=u-Math.floor(u);
+    if(moNoise(x,y,z,7)>0.84) continue;
+    if(f<0.16||f>0.97){ const k=f<0.16?0.2+f*2:0.45; C.setXYZ(i,C.getX(i)*k,C.getY(i)*k*0.95,C.getZ(i)*k*0.9); continue; }   // the shadowed edge of a band
+    const k=0.68+0.5*h3(Math.floor(u),1,1)+0.08*moNoise(x,y,z,25)+0.12*f;
+    C.setXYZ(i,w.r*k,w.g*k,w.b*k*0.96);
+  }
+  C.needsUpdate=true; return geo;
+}
+// strips of cloth hanging from the belt: n ribbons round the waist, the length varying (mummy bandage ends, a ghoul's rags)
+function moFolkRags(at,color,n,len){
+  const out=[], cl=(x,y,z,c)=>{ c.set(color).multiplyScalar(0.72+0.3*moNoise(x,y,z,14)); };
+  for(let i=0;i<n;i++){ const a=(i+0.4)/n*TAU, L=len*(0.7+0.5*h3(i,2,9)), r=1.03;
+    out.push(moEll(0.03,L,0.008,Math.cos(a)*at.rx*r,-L*0.9,Math.sin(a)*at.rz*r+at.z,cl,[0.12*Math.sin(a),-a+Math.PI/2,0.1*Math.cos(a)],6)); }
+  return out;
+}
 function moFolkTorsoExtras(F,p,rings){
   const out=[], form=p.form, bc=p.bottomColor, at=moRingAt(rings,0.01), tc=p.topColor;
   out.push(moEll(0.045,0.03,0.02,0,0.02,-at.rz-0.01+at.z,0xc9a13a,null,8));                                    // the belt buckle
@@ -44,6 +64,26 @@ function moFolkTorsoExtras(F,p,rings){
     out.push(...moFurLocks(rings,0.02,0.98,form==='yeti'?12:12,form==='yeti'?0.22:0.14,p.fur,2));
     out.push(...moFurLocks(rings,F.shY+0.02,0.9,form==='viking'?12:14,0.14,p.fur,1));
     if(form==='yeti') for(const y of [0.16,0.3,0.44]) out.push(...moFurLocks(rings,y,0.95,12,0.2,p.fur,1));   // the whole chest is shaggy
+  }
+  if(p.garb) out.push(...moGarb(F,p,rings));                                                                     // garb: jerkin armour and straps (monster-garb.js)
+  if(p.wraps) out.push(...moFolkRags(at,p.wraps,7,0.3));
+  if(p.rags) out.push(...moFolkRags(at,p.rags,7,0.17));
+  if(p.ribs){   // an exposed ribcage: a dark hollow, six bone arcs wrapped round the chest and the breastbone
+    const bone=(x,y,z,c)=>{ c.set(0xd8cfb4).multiplyScalar(0.8+0.3*moNoise(x,y,z,18)); }, ch=moRingAt(rings,0.24);
+    out.push(moPatch([0,0.25,ch.z-ch.rz*0.95],[0,0,-1],0.11,0.014,0x2a1a1c,10,1.75));
+    for(let k=0;k<6;k++){ const y=0.1+k*0.062, rr=moRingAt(rings,y), pts=[];
+      for(let j=0;j<5;j++){ const th=(j/4-0.5)*2.5; pts.push([Math.sin(th)*rr.rx*1.03,y-0.03*Math.abs(th)-0.02*(1-k/5)*0,rr.z-Math.cos(th)*rr.rz*1.03]); }
+      out.push(moTube(pts,0.012,0.009,bone,5,true)); }
+    out.push(moBone([0,0.46,ch.z-ch.rz*1.0],[0,0.08,ch.z-ch.rz*1.02],0.014,0.011,bone,5));
+  }
+  if(p.weeds){   // seaweed draped over the shoulders and hanging down the chest and back, and barnacles crusted on the shoulders
+    const wd=(x,y,z,c)=>{ c.set(p.weeds).multiplyScalar(0.8+0.7*moNoise(x,y,z,10)); };
+    for(const [x0,top,bot,side] of [[-0.1,0.52,-0.05,-1],[0.12,0.5,0.0,-1],[-0.08,0.5,-0.08,1],[0.1,0.46,0.1,1]]){
+      const pts=[]; for(let i=0;i<4;i++){ const y=lerp(top,bot,i/3), a=moRingAt(rings,y); pts.push([x0+0.025*Math.sin(i*1.8+x0*9),y,a.z+side*(a.rz+0.02+0.01*i)]); }
+      out.push(moTube(pts,0.04,0.012,wd,6,true)); }
+    for(const sd of [-1,1]) for(let i=0;i<5;i++){ const a=h3(i,sd,7)*TAU, ph=0.25+0.75*h3(i,sd,8), rx=0.09*F.ar+0.03, ry=0.06*F.ar+0.02, cx=sd*F.shX, cy=F.shY+0.03,
+        dir=[Math.cos(a)*Math.sin(ph),Math.cos(ph)+0.2,Math.sin(a)*Math.sin(ph)];
+      out.push(moCone([cx+dir[0]*rx*0.92,cy+dir[1]*ry*0.92,dir[2]*rx*0.92],dir,0.035+0.025*h3(i,sd,9),0.022,(x,y,z,c)=>{ c.set(0xcfd2c0).multiplyScalar(0.75+0.3*clamp((y-cy)*9+0.5)); },5)); }
   }
   if(p.top==='hoodie') out.push(moEll(0.13,0.1,0.09,0,F.shY+0.05,0.09,(x,y,z,c)=>c.set(tc).multiplyScalar(0.85),null,10));   // a hood hanging behind the neck
   return out;
@@ -104,9 +144,15 @@ function moFolkWeapon(F,p){
 }
 function moFolkExtras(F,p){
   const out=[];
-  if(p.shell){   // a kappa's shell: a domed plate with hexagon lines
-    const g=csph(1,14,10).scale(0.24,0.3,0.13).translate(0,0.27,0.17);
-    out.push(['back',pc(smoothN(g),(x,y,z,c)=>{ c.set(p.shell); const u=Math.abs(Math.sin(x*16)*Math.sin((y+x*0.5)*14)); if(u>0.75) c.multiplyScalar(0.62); else c.multiplyScalar(0.92+0.15*moNoise(x,y,z,10)); })]);
+  if(p.shell){   // a kappa's shell: a domed plate of hexagonal scutes in a dark seam, a pale rim and a plastron edge
+    const cx=0, cy=0.27, cz=0.17, ax=0.24, ay=0.3, az=0.13, base=new THREE.Color(p.shell).multiplyScalar(0.58), hi=new THREE.Color(p.shell), parts=[];
+    parts.push(pc(smoothN(csph(1,14,10).scale(ax,ay,az).translate(cx,cy,cz)),(x,y,z,c)=>{ c.copy(base).multiplyScalar(0.92+0.15*moNoise(x,y,z,10)); }));
+    for(let r=-2;r<=2;r++) for(let k=-2;k<=2;k++){ const x=(k+(r&1?0.5:0))*0.088, y=cy+r*0.077, u=(x/ax)**2+((y-cy)/ay)**2; if(u>0.62) continue;
+      const w=Math.sqrt(1-u), z=cz+az*w+0.004, n=[x/ax**2,(y-cy)/ay**2,az*w/az**2];
+      parts.push(moPatch([x,y,z],n,0.043,0.012,(xx,yy,zz,c)=>{ c.copy(hi).multiplyScalar(0.85+0.4*moNoise(xx,yy,zz,18)+(r===0&&k===0?0.1:0)); },6)); }
+    const rim=[]; for(let i=0;i<=22;i++){ const a=i/22*TAU; rim.push([Math.cos(a)*ax*0.97,cy+Math.sin(a)*ay*0.97,cz-0.005]); }
+    parts.push(moTube(rim,0.016,0.016,(x,y,z,c)=>{ c.set(0xc8b878).multiplyScalar(0.8+0.3*moNoise(x,y,z,14)); },6,true));
+    out.push(['back',moMerge(parts)]);
   }
   if(p.wings){   // a crow's black wings: fans of long feathers
     for(const sd of [-1,1]){ const f=[];

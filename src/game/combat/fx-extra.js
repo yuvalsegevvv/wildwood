@@ -68,9 +68,10 @@ function fxxBoltShape(B){   // main line from a to b with random kinks, plus one
     for(;n<p.length;) put(E[0],E[1],E[2]);
     l.geometry.attributes.position.needsUpdate=true; }
 }
-function fxxRune(x,y,z,r,col,life){   // a glyph circle turning on the ground: an outer ring, a triangle and a hexagon turning against each other
+function fxxRune(x,y,z,r,col,life,kind){   // a glyph circle turning on the ground: an outer ring, a triangle and a hexagon turning against each other
   life=life||0.9; const g=new THREE.Group(), mats=[];
-  for(const [geo,s,sp] of [[fxxRingGeo,1,0],[fxxTriGeo,0.8,2.2],[fxxHexGeo,0.58,-3],[fxxTriGeo,0.4,-2.2]]){ const m=fxMat(col,0.85), o=new THREE.Mesh(geo,m); o.scale.setScalar(r*s); o.userData.sp=sp; g.add(o); mats.push(m); }
+  { const o=fxdMesh(kind||'rune',col,0.85); o.scale.setScalar(r); o.userData.sp=0.9; g.add(o); mats.push(o.material); }   // fx-decal: the glyph ring, drawn
+  for(const [geo,s,sp] of [[fxxHexGeo,0.5,-3],[fxxTriGeo,0.34,-2.2]]){ const m=fxMat(col,0.85), o=new THREE.Mesh(geo,m); o.scale.setScalar(r*s); o.userData.sp=sp; g.add(o); mats.push(m); }
   g.position.set(x,y+0.1,z); scene.add(g); FXX.runes.push({g,mats,t:0,life});
 }
 function fxxSlash(x,y,z,face,col,size){

@@ -71,17 +71,16 @@ function attackVisuals(a,who){
   else if(mine && a.kind==='cast') cSfx.whoosh();
 }
 function spawnBurst(pos,color,size){
-  const mesh=new THREE.Mesh(new THREE.SphereGeometry(0.5,12,8),fxMat(color,0.6));
+  const mesh=fxdBillboard('flash',color,0.8);   // fx-decal: rays and a glow that face you, not a plain ball
   mesh.position.copy(pos); scene.add(mesh);
-  CB.fx.push({mesh,life:0.3,max:0.3,grow:size*3,own:true});
-  mesh.material.opacity=0.35;
+  CB.fx.push({mesh,life:0.3,max:0.3,grow:size*3,own:true,shareGeo:true});
   if(size>=0.5) fxpFlare(pos.x,pos.y,pos.z,color,Math.min(5,size*1.8),0.3);   // fx-pool: the glow and sparks that make a burst read as light
   fxpSparks(pos.x,pos.y,pos.z,color,Math.min(18,3+size*5),3+size*2.2,{size:0.12+size*0.05});
 }
 function spawnRingAt(x,y,z,radius,color,inward){   // inward: shrinks to the middle instead of growing (a pull)
-  const mesh=new THREE.Mesh(new THREE.RingGeometry(0.8,1,48).rotateX(-Math.PI/2),fxMat(color,0.8));
+  const mesh=fxdMesh('shock',color,0.9); mesh.rotation.y=AR(0,TAU);   // fx-decal: a soft wave with streaks, not a thin line
   mesh.position.set(x,y+0.15,z); scene.add(mesh);
-  CB.fx.push({mesh,life:0.5,max:0.5,grow:radius,ring:true,own:true,inward:!!inward});
+  CB.fx.push({mesh,life:0.5,max:0.5,grow:radius,ring:true,own:true,shareGeo:true,inward:!!inward});
   const e2=new THREE.Mesh(new THREE.RingGeometry(0.93,1,48).rotateX(-Math.PI/2),fxMat(0xffffff,0.9));   // a thin white leading edge outruns the coloured ring
   e2.position.set(x,y+0.17,z); scene.add(e2); CB.fx.push({mesh:e2,life:0.4,max:0.4,grow:radius*1.05,ring:true,own:true,inward:!!inward});
   fxpRingSparks(x,y,z,radius,color,Math.min(30,6+radius*3),0.5,inward);
@@ -225,7 +224,7 @@ function updateCombat(dt){
     else if(f.ring){ f.mesh.scale.setScalar(f.inward?0.3+(1-k)*f.grow:0.3+k*f.grow); f.mesh.material.opacity=0.8*(1-k); }
     else if(f.grow){ f.mesh.scale.setScalar(0.3+k*f.grow); f.mesh.material.opacity=0.6*(1-k); }
     else f.mesh.material.opacity=0.45*(1-k);
-    if(f.life<=0){ scene.remove(f.mesh); if(f.own){ f.mesh.geometry.dispose(); f.mesh.material.dispose(); } CB.fx.splice(i,1); }
+    if(f.life<=0){ scene.remove(f.mesh); if(f.own){ if(!f.shareGeo) f.mesh.geometry.dispose(); f.mesh.material.dispose(); } CB.fx.splice(i,1); }
   }
   updateLucky(dt); updateSkillFx(dt);
   const T=CB.target;

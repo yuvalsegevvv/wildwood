@@ -15,7 +15,7 @@ function distToChunk(ci,x,z){
    tufts. Without the detailed set (phones, light mode) the low-poly models are drawn alone, as before. */
 const TREE_LOD=120;
 function addTreeKind(k,list){
-  const lo=G.trees[k], hi=G.treesHi&&G.treesHi[k], conifer=k==='pine'||k==='spruce'||k==='frostspruce';
+  const lo=G.trees[k], hi=G.treesHi&&G.treesHi[k], conifer=k==='pine'||k==='spruce'||k==='frostspruce'||!!MORE_CONIFER[k];
   const base=list.map(i=>({x:i.x,z:i.z,m:i.m})), leafMat=conifer?(hi?matConiferD:matConifer):k==='bamboo'?matBush:hi?matBroadD:matBroad;
   if(!hi){ addInstanced(lo.trunk,matBark,base,{cast:true,receive:true}); if(lo.leaves) addInstanced(lo.leaves,leafMat,list,{cast:true,receive:true}); return; }
   addInstanced(hi.trunk,matBark,base,{cast:true,receive:true,lods:[{geo:lo.trunk,from:TREE_LOD,cast:true}]});
@@ -51,20 +51,22 @@ function* genChunk(ci){
     if(inSun(x,z)){   // the Sunscar: palms and reeds by the river and the Springhead, cacti and thorn trees on the dry ground, nothing on the mesas, the pans or the glass
       if(sunKeepOut(x,z,2)||g>0.55||sunPanK(x,z)>0.2||sunGlassK(x,z)>0.2||sunMesaH(x,z)>3) continue;
       const gk=sunGreenK(x,z), pr=gk*0.5+0.014; if(rand()>pr) continue;
-      const type=gk>0.25&&rand()<0.7?'palm':rand()<0.55?'cactus':'thorn', s=type==='palm'?R(0.8,1.3):R(0.7,1.3);
+      let type=gk>0.25&&rand()<0.7?'palm':rand()<0.55?'cactus':'thorn'; const s=type==='palm'?R(0.8,1.3):R(0.7,1.3);
       if(!canPlace(x,z,3*Math.min(s,1.1))) continue;
       addCol(x,z,RAD[type]*s);
       const m=mtx(x,h-0.15,z,rand()*TAU,s,s*R(0.92,1.1),s,R(-0.04,0.04),R(-0.04,0.04));
-      items[type].push({x,z,m,c:tint(type==='thorn'?pick(PAL.thorn):pick(PAL.palm))}); trees.push({x,z,s}); placed++; continue;
+      type=treeVariety(type,x,z,h,'sun');   // (after the matrix: nothing above draws on the type)
+      items[type].push({x,z,m,c:tint(type==='thorn'?pick(PAL.thorn):type==='acacia'?pick(PAL.acacia):pick(PAL.palm))}); trees.push({x,z,s}); placed++; continue;
     }
     if(inGloam(x,z)){   // the Gloamhorn: a few gnarled snags and wind-bent dark spruce on the heath, none by the cliffs or at the keep-outs (bareGround is true all over the west)
       if(h<1.5||g>0.6||gloamIn(x,z)<14||gloamKeepOut(x,z,3)||vDist(x,z)<VR+8||storyClear(x,z)||dgEntClear(x,z)) continue;
       if(rand()>0.04+forestDensity(x,z)*0.05) continue;
-      const type=rand()<0.6?'snag':'spruce', s=R(0.75,1.35);
+      let type=rand()<0.6?'snag':'spruce'; const s=R(0.75,1.35);
       if(!canPlace(x,z,2.6*Math.min(s,1.1))) continue;
       addCol(x,z,RAD[type]*s);
       const m=mtx(x,h-0.15,z,rand()*TAU,s*R(0.92,1.08),s*R(0.9,1.15),s*R(0.92,1.08),R(-0.1,0.1),R(-0.1,0.1));
-      items[type].push({x,z,m,c:tint(pick(type==='spruce'?PAL.spruce:PAL.pine))}); trees.push({x,z,s}); placed++; continue;
+      type=treeVariety(type,x,z,h,'gloam');
+      items[type].push({x,z,m,c:tint(pick(type==='spruce'?PAL.spruce:type==='gloomoak'?PAL.gloomoak:PAL.pine))}); trees.push({x,z,s}); placed++; continue;
     }
     if(h<0.8 || bareGround(x,z) || storyClear(x,z) || dgEntClear(x,z)) continue;   // dungeons: no trees at a door or signpost
     if(g>0.95) continue;
@@ -85,12 +87,13 @@ function* genChunk(ci){
     }
     else if(rand()<alt*0.85+0.08) type=rand()<0.55?'pine':'spruce';
     else { const r2=rand(); type=r2<0.28?'oakA':r2<0.5?'oakB':r2<0.9?'birch':'snag'; }
+    type=treeVariety(type,x,z,h,hoar?'hoar':inVale(x,z)?'vale':'home');   // more species by a position hash (plant-models-more.js)
     const young=rand()<0.14;
     let s=young?R(0.3,0.55):R(0.75,1.35);
     if(type==='snag') s=R(0.7,1.1);
     if(type==='bamboo') s=R(0.8,1.15);
     if(type==='dwarfbirch') s=young?R(0.5,0.8):R(0.9,1.3);
-    const spacing=young?1.6:(type.startsWith('oak')||type==='sakura'?4.2:type==='bamboo'?2.2:2.6)*Math.min(s,1.1);
+    const spacing=young?1.6:(type.startsWith('oak')||type==='sakura'||MORE_WIDE[type]?4.2:type==='bamboo'?2.2:2.6)*Math.min(s,1.1);
     if(!canPlace(x,z,spacing)) continue;
     addCol(x,z,RAD[type]*s);
     const m=mtx(x,h-0.15,z,rand()*TAU,s*R(0.92,1.08),s*R(0.9,1.15),s*R(0.92,1.08),R(-0.05,0.05),R(-0.05,0.05));
@@ -101,6 +104,7 @@ function* genChunk(ci){
     else if(type==='sakura'||type==='maple'||type==='bamboo') pal=PAL[type];
     else if(type==='frostspruce') pal=PAL.frostSpruce;
     else if(type==='dwarfbirch') pal=PAL.frostBirch;
+    else if(MORE_TREE[type]) pal=PAL[type];
     items[type].push({x,z,m,c:tint(pick(pal))});
     trees.push({x,z,s});
     placed++;

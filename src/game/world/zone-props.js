@@ -157,6 +157,7 @@ function* genZoneProps(ci){
   const put=(kind,x,z,yaw,s,tc)=>{ const K=ZP_KIND[kind], r=K.w*s*0.8+0.4; if(!room(x,z,r)) return false;
     const h=getH(x,z), t=K.tilt, m=mtx(x,h-K.sink*s,z,yaw,s,s,s,t?R(-t,t):0,t?R(-t,t):0);
     (lists[kind]||(lists[kind]=[])).push({x,z,m,c:tc||tint(0xeeeeee,0.12)}); placed.push(x,z,r);
+    if(kind==='campfire'||kind==='brazier'||kind==='foxfire') zpfAdd(kind,x,h-K.sink*s,z,s);   // fire: smoke, embers and a flicker over it (zone-fire.js)
     if(K.rad) addCol(x,z,K.rad*s);
     if(K.cols) for(const [dx,dz,cr] of K.cols) addCol(x+dx*Math.cos(yaw)*s+dz*Math.sin(yaw)*s,z-dx*Math.sin(yaw)*s+dz*Math.cos(yaw)*s,cr*s);
     return true; };

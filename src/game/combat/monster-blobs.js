@@ -14,7 +14,10 @@ MODELS.slime={
     const body=[pc(g,(x,y,z,c)=>{
       const t=clamp((y-0.06)/0.62); c.set(p.body).multiplyScalar(0.74+0.3*t+0.14*moNoise(x,y,z,4)); moTint(c,p.top,clamp((t-0.4)/0.5)*0.55);
       const hl=Math.max(0,(x*SLIME_HL.x+(y-0.36)*SLIME_HL.y+z*SLIME_HL.z)/R); moTint(c,0xffffff,Math.pow(hl,14)*0.75);   // a painted highlight
-      if(deco==='crust'&&y>0.3&&moNoise(x,y,z,7)>0.55) c.set(0x2a1410).lerp(_tint.set(p.body),0.15);   // (magma) dark plates cooled on the lava
+      if(deco==='crust'){   // (magma, granite, sand) plates cooled over the body, with glowing cracks between them when pal.crack is set
+        if(p.crack&&y>0.18&&Math.abs(moNoise(x+2,y,z,3.6)-0.5)<0.034) c.set(p.crack);
+        else if(y>0.3&&moNoise(x,y,z,5)>0.5) c.set(p.crust||0x2a1410).multiplyScalar(0.78+0.45*moNoise(x,y,z,17)).lerp(_tint.set(p.body),0.08);
+      }
     })];
     for(const sd of [-1,1]){
       body.push(moEll(0.1,0.11,0.07,sd*0.16,0.47,-0.365,0xf4f4ee,null,10),moEll(0.056,0.062,0.04,sd*0.16,0.46,-0.43,0x111111,null,8),moEll(0.018,0.018,0.012,sd*0.145,0.485,-0.46,0xffffff,null,5));
@@ -26,10 +29,13 @@ MODELS.slime={
     const top=p.top;
     if(deco==='moss'){ for(let i=0;i<7;i++){ const a=i*2.4, r=0.16+0.1*h3(i,1,2), x=Math.cos(a)*r, z=Math.sin(a)*r, y=0.62-r*0.25; body.push(moPatch([x,y,z],[x,1,z],0.1+0.05*h3(i,2,2),0.05,(X,Y,Z,c)=>{ c.set(0x3f5a2c).multiplyScalar(0.8+0.4*moNoise(X,Y,Z,12)); },7)); }
       body.push(moTube([[0.12,0.6,0.1],[0.15,0.85,0.08],[0.1,1.1,0.1]],0.014,0.01,0x5a7a3a,5,true),moEll(0.03,0.09,0.03,0.1,1.08,0.1,0x5a3a20,null,6)); }   // a reed and its cattail
-    if(deco==='crust'){ for(let i=0;i<4;i++){ const a=i*1.9+0.5, x=Math.cos(a)*0.2, z=Math.sin(a)*0.2; body.push(moCone([x,0.55,z],[x*1.5,1,z*1.5],0.28+0.1*h3(i,3,3),0.06,0x1e0e0a,4)); } }
+    if(deco==='crust'){ for(let i=0;i<4;i++){ const a=i*1.9+0.5, x=Math.cos(a)*0.2, z=Math.sin(a)*0.2; body.push(moCone([x,0.55,z],[x*1.5,1,z*1.5],0.28+0.1*h3(i,3,3),0.06,p.crust||0x1e0e0a,4)); }
+      for(let i=0;i<6;i++){ const a=i*1.1+0.3, r=0.2+0.2*h3(i,7,7), x=Math.cos(a)*r, z=Math.sin(a)*r; body.push(moPatch([x,0.5+0.2*Math.sqrt(Math.max(0,1-r*r/0.25)),z],[x,1.2,z],0.07+0.04*h3(i,8,8),0.05,(X,Y,Z,c)=>{ c.set(p.crust||0x2a1410).multiplyScalar(0.8+0.5*moNoise(X,Y,Z,20)); },6)); } }   // plus a few chunks of rock on the back
     if(deco==='shell'){ body.push(moCone([-0.05,0.67,0.05],[0,1,0.3],0.26,0.11,0xf0e2c8,8),moEll(0.09,0.05,0.09,-0.05,0.68,0.05,0xe0c8a8,null,8),moEll(0.03,0.15,0.006,0.28,0.55,0.15,0x3aa8c8,[0,0,-0.4],6)); }   // a whelk shell, a fin
     if(deco==='petal'){ for(let i=0;i<9;i++){ const a=i*2.2, y=0.3+0.35*h3(i,4,4), r=Math.sqrt(Math.max(0.01,1-Math.pow((y-0.36)/0.34,2)))*0.45, x=Math.cos(a)*r, z=Math.sin(a)*r; body.push(moPatch([x,y,z],[x,(y-0.36)*0.6,z],0.07,0.012,0xffe2ee,6,0.7)); }
       for(let i=0;i<5;i++){ const a=i/5*TAU; body.push(moPatch([Math.cos(a)*0.08,0.72,Math.sin(a)*0.08],[Math.cos(a)*0.6,1,Math.sin(a)*0.6],0.075,0.012,0xffc8dc,6,0.7)); } body.push(moEll(0.03,0.02,0.03,0,0.735,0,0xf2d060,null,6)); }   // a blossom on the crown
+    if(deco==='foam') for(let i=0;i<12;i++){ const a=i*2.2, r=0.08+0.3*h3(i,9,9), x=Math.cos(a)*r, z=Math.sin(a)*r, y=0.38+0.3*Math.sqrt(Math.max(0,1-r*r/0.2)), b=0.045+0.04*h3(i,10,10);   // sea foam: pale bubbles heaped on the crown
+      body.push(moEll(b,b*0.9,b,x,y+b*0.5,z,(X,Y,Z,c)=>{ c.set(0xeaf8f4).multiplyScalar(0.88+0.2*clamp((Y-y)*9)); },null,7)); }
     if(deco==='crystal') for(let i=0;i<6;i++){ const a=i*1.5, x=Math.cos(a)*(0.05+0.1*(i%3)), z=Math.sin(a)*(0.05+0.1*(i%3)); body.push(moCone([x,0.55+0.05*(i%2),z],[x*1.2,1,z*1.2],0.24+0.08*(i%3),0.055,(X,Y,Z,c)=>{ c.set(top).multiplyScalar(0.85+0.4*clamp((Y-0.5)*2)); },6)); }
     if(deco==='shard') for(let i=0;i<8;i++){ const a=i*2.3, r=0.12+0.28*h3(i,5,5), x=Math.cos(a)*r, z=Math.sin(a)*r, y=0.4+0.28*Math.sqrt(Math.max(0,1-r*r/0.2)); body.push(moCone([x,y,z],[x*2,1,z*2],0.22+0.16*h3(i,6,6),0.045,(X,Y,Z,c)=>{ c.set(0xeaf8ff).multiplyScalar(0.8+0.35*clamp((Y-y)*4)); },5)); }
     G.body=moMerge(body); return G;
@@ -46,10 +52,12 @@ MODELS.shroom={
     const G={}, body=[], W=[-1,1];
     if(p.spirit){   // kodama: a big pale head with hollow eyes on a slim body, a few moss-green rattle marks
       body.push(moLoft([{y:0.05,rx:0.09,rz:0.08},{y:0.2,rx:0.11,rz:0.09},{y:0.4,rx:0.09,rz:0.08},{y:0.55,rx:0.1,rz:0.09}],10,(x,y,z,c)=>{ c.set(p.stem).multiplyScalar(0.85+0.2*moNoise(x,y,z,8)); }));
-      const hg=csph(1,moQ(22),moQ(16)).scale(0.36,0.32,0.34); moLump(hg,0.02,3,4); body.push(pc(hg.translate(0,0.86,0),(x,y,z,c)=>{ c.set(p.cap).multiplyScalar(0.92+0.12*moNoise(x,y,z,6)); if(moNoise(x+5,y,z,9)>0.7) moTint(c,p.spot,0.6); }));
+      const hg=csph(1,moQ(22),moQ(16)).scale(0.36,0.32,0.34); moLump(hg,0.02,3,4); body.push(pc(hg.translate(0,0.86,0),(x,y,z,c)=>{ c.set(p.cap).multiplyScalar(0.92+0.12*moNoise(x,y,z,6)); if(moNoise(x+5,y,z,9)>0.7) moTint(c,p.spot,0.6); if(Math.abs(moNoise(x,y,z,5)-0.5)<0.022) c.multiplyScalar(0.72); }));   // (veins of grain, like weathered wood)
+      body.push(moPatch([0.02,1.12,0.1],[0,1,0.5],0.13,0.03,0x5c8a3a,10),moBone([0.02,1.14,0.04],[0.03,1.3,0.03],0.02,0.012,0x6a5a38,5));   // moss on the crown and a sapling growing out of it
+      for(const sd of W) body.push(moEll(0.075,0.012,0.035,0.03+sd*0.07,1.31,0.03,0x6aaa48,[0,sd*0.4,sd*0.55],7),moEll(0.04,0.01,0.02,0.03+sd*0.03,1.36,0.03,0x8acc5a,[0,sd*0.6,sd*0.9],6));
       for(const sd of W){ body.push(moEll(0.07,0.1,0.05,sd*0.13,0.9,-0.3,0x14201a,null,8),moEll(0.03,0.03,0.02,sd*0.13,0.89,-0.335,0x9fe8b0,null,5)); }
       body.push(moEll(0.05,0.06,0.03,0,0.74,-0.33,0x14201a,null,8));
-      for(const sd of W) body.push(moBone([sd*0.09,0.5,0],[sd*0.2,0.3,-0.04],0.028,0.02,p.stem,5),moPatch([sd*0.22,0.87,0.05],[sd,0.3,0],0.06,0.02,p.spot,6));
+      for(const sd of W) body.push(moBone([sd*0.09,0.5,0],[sd*0.19,0.34,-0.03],0.035,0.026,p.stem,6),moBone([sd*0.19,0.34,-0.03],[sd*0.2,0.18,-0.07],0.026,0.018,p.stem,6),moEll(0.03,0.035,0.03,sd*0.2,0.16,-0.07,p.stem,null,6),moEll(0.045,0.05,0.04,sd*0.08,0.25,0.0,p.stem,null,6),moPatch([sd*0.22,0.87,0.05],[sd,0.3,0],0.06,0.02,p.spot,6));
       G.body=moMerge(body); G.foot=moMerge([moEll(0.06,0.05,0.09,0,0.05,-0.02,p.feet,null,7)]); return G;
     }
     // the stem: a swollen foot, a slim neck, a fibrous surface

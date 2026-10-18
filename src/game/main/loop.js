@@ -13,11 +13,11 @@ function frame(){
     if(!Stream.terrainDone && Stream.tp!==undefined){ barEl.style.width=(35*Stream.tp).toFixed(0)+'%'; }
   }
   if(Stream.terrainDone){
-    if(started && !customizing && !PL.dead) updatePlayer(dt);
+    if(started && !customizing && !PL.dead){ updatePlayer(dt); updateFootFx(dt); }
     else if(!started && !customizing) P.yaw+=dt*0.04;
     animateHiker(dt);
-    updateMotes(dt,t); updatePetals(dt,t);
-    updateAnimals(dt);
+    updateMotes(dt,t); updatePetals(dt,t); updateAmbient(dt,t); updateVillageSmoke(dt); updateZoneFire(dt);
+    updateAnimals(dt); updateFish(dt); updateDragonflies(dt);
     cvUpdate(dt);   // caves: sites out of sight are hidden, the cave's darkness is sampled (world/caves.js)
     chamoisUpdate(dt);   // chamois: the Greyspine's harmless mountain goats (wildlife/chamois.js)
     updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateGreyspine(dt); updateGloamhorn(dt); updateNodes(); updateLoreProps();

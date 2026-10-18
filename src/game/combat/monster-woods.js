@@ -3,19 +3,32 @@
    'moss' (ancient: stone bark, runes), 'snow', 'blossom', 'bamboo' (canes), 'rock' and 'ice' (stacked boulders / crystal), 'thorn' (the Rootwarden's thornlings); the boss
    (d.id 'boss') adds a crown of antlers, glowing runes, hanging vines and roots. totem: a stone pillar with a floating crystal (the Rootwarden's totems, Vetrmaw's warm cores). */
 const moBlob=(r,x,y,z,f,amp,seed)=>{ const g=csph(1,moQ(14),moQ(10)); moLump(g,amp||0.09,2.2,seed||1); return pc(smoothN(g.scale(r,r*0.92,r).translate(x,y,z)),moCol(f)); };
+// a faceted boulder: a coarse sphere pushed in and out by noise and shaded flat, so it reads as chipped rock (radii rx,ry,rz at x,y,z, f the paint, det the segments)
+function moRock(seed,rx,ry,rz,x,y,z,f,det){
+  const g=csph(1,det||8,Math.max(4,(det||8)-3)), P=g.attributes.position, v=new THREE.Vector3();
+  for(let i=0;i<P.count;i++){ v.fromBufferAttribute(P,i); const k=1+0.3*(moNoise(v.x+seed,v.y-seed,v.z,1.7)-0.5)*2; P.setXYZ(i,v.x*k,v.y*k,v.z*k); }
+  const n=g.toNonIndexed(); n.scale(rx,ry,rz).translate(x,y,z); n.computeVertexNormals();
+  return pc(n,moCol(f));
+}
 MODELS.treant={
   geo(d,p){
     const G={}, W=[-1,1], k=p.kind||'tree', boss=d.id==='boss', stone=k==='rock'||k==='ice', bam=k==='bamboo', thorn=k==='thorn';
     const bark=(x,y,z,c)=>{ c.set(p.bark).multiplyScalar(0.55+0.65*vn3(x*9,y*1.6,z*9)); if(y<0.9&&!stone) moTint(c,0x3a5a2a,0.25*(1-y/0.9)); if(boss&&Math.abs(moNoise(x,y,z,3.4)-0.5)<0.03) c.set(p.eyes); };   // (the boss) glowing rune veins
-    const rock=(x,y,z,c)=>{ c.set(k==='ice'?p.c2:p.c1).multiplyScalar(0.7+0.5*vn3(x*6,y*6,z*6)); if(k==='rock'&&y<1.2) c.multiplyScalar(0.8); };
+    const rock=(x,y,z,c)=>{ c.set(k==='ice'?p.c2:p.c1).multiplyScalar(0.7+0.5*vn3(x*6,y*6,z*6)); if(k==='rock'&&y<1.2) c.multiplyScalar(0.8);
+      if(p.style==='sand'){ const b=Math.floor(y*3.4+vn3(x*2,y,z*2)*1.6)%3; c.set([p.c1,p.c2,p.c3][b<0?b+3:b]).multiplyScalar(0.8+0.4*vn3(x*7,y*7,z*7)); }   // sediment strata
+      else if(p.style==='granite'){ if(moNoise(x,y,z,22)>0.72) c.multiplyScalar(1.28); if(Math.abs(moNoise(x+1,y,z,3.2)-0.5)<0.016) c.set(0xe8e8ee); if(p.crack&&moNoise(x+7,y,z,3.2)>0.74) c.set(p.crack); }   // speckle, quartz veins, glowing stones
+      else if(p.style==='crack'){ if(p.crack&&moNoise(x+7,y,z,3.2)>0.74) c.set(p.crack); } };
     const body=[];
     if(bam){   // a bundle of canes with nodes, leafy at the top
       const cane=(x,z,h,r,lean)=>{ for(let n=0;n<h/0.42;n++){ const y0=0.4+n*0.42; body.push(moBone([x+lean*n*0.05,y0,z],[x+lean*(n+1)*0.05,y0+0.4,z],r,r*0.95,(X,Y,Z,c)=>{ c.set(p.bark).multiplyScalar(0.85+0.2*moNoise(X,Y,Z,9)); },7),moBone([x+lean*(n+1)*0.05,y0+0.39,z],[x+lean*(n+1)*0.05,y0+0.43,z],r*1.18,r*1.18,0x5a7a30,7)); } };
       for(const [x,z,h,r,l] of [[0,0,2.1,0.2,0],[0.22,0.12,1.9,0.15,0.4],[-0.22,0.1,1.9,0.15,-0.4],[0.1,-0.2,1.7,0.13,0.2],[-0.12,-0.22,1.7,0.13,-0.2]]) cane(x,z,h,r,l);
       for(let i=0;i<7;i++){ const a=i*0.9; body.push(moBlob(0.4+0.1*(i%3),Math.cos(a)*0.5,2.5+0.15*(i%3),Math.sin(a)*0.5,[p.c1,p.c2,p.c3][i%3],0.16,i)); }
     } else if(stone){   // stacked, lichened boulders
-      for(const [x,y,z,r,s] of [[0,0.95,0,0.62,1],[0.05,1.55,0.02,0.58,2],[0,2.1,0.03,0.5,3],[0.55,2.2,0,0.32,4],[-0.55,2.2,0,0.32,5]]) body.push(pc(smoothN(moLump(csph(1,moQ(12),moQ(9)),0.2,2.4,s).scale(r,r*0.85,r*0.9).translate(x,y,z)),rock));
-      for(let i=0;i<10;i++){ const a=i*1.9; body.push(moPatch([Math.cos(a)*0.5,1+0.3*(i%4),Math.sin(a)*0.45-0.15],[Math.cos(a),0.3,Math.sin(a)-0.3],0.14,0.06,k==='ice'?0xeaf8ff:0x6a8a3a,6)); }
+      const facets=!!p.style, lichen=p.lichen===undefined?(k==='ice'?0xeaf8ff:0x6a8a3a):p.lichen;
+      for(const [x,y,z,r,s] of [[0,0.95,0,0.62,1],[0.05,1.55,0.02,0.58,2],[0,2.1,0.03,0.5,3],[0.55,2.2,0,0.32,4],[-0.55,2.2,0,0.32,5]]) body.push(facets?moRock(s,r*1.05,r*0.9,r*0.95,x,y,z,rock,8):pc(smoothN(moLump(csph(1,moQ(12),moQ(9)),0.2,2.4,s).scale(r,r*0.85,r*0.9).translate(x,y,z)),rock));
+      if(facets){ for(const [sd,y,z,r] of [[1,1.25,0.4,0.3],[-1,1.7,0.42,0.26],[0.3,2.05,0.5,0.28]]) body.push(moRock(sd*9,r,r*1.2,r,sd*0.3,y,z,rock,7));   // slabs piled on the back
+        for(let i=0;i<5;i++){ const a=i*1.26, rr=0.75; body.push(moRock(i+20,0.09,0.09,0.09,Math.cos(a)*rr,1.3+0.35*Math.sin(i*2.1),Math.sin(a)*rr*0.8,rock,5)); } }   // a few stones orbiting it
+      if(lichen) for(let i=0;i<10;i++){ const a=i*1.9; body.push(moPatch([Math.cos(a)*0.5,1+0.3*(i%4),Math.sin(a)*0.45-0.15],[Math.cos(a),0.3,Math.sin(a)-0.3],0.14,0.06,lichen,6)); }
       if(k==='ice') for(let i=0;i<9;i++){ const a=i*1.1; body.push(moCone([Math.cos(a)*0.4,1.8+0.25*(i%3),Math.sin(a)*0.3],[Math.cos(a),1.2,Math.sin(a)],0.55+0.2*(i%3),0.09,(x,y,z,c)=>{ c.set(p.c2).multiplyScalar(0.85+0.3*clamp((y-1.7)*0.5)); },5)); }
     } else {
       const rings=[[0.45,0.44,0.42,0],[0.75,0.5,0.47,0],[1.1,0.44,0.42,-0.02],[1.5,0.38,0.36,-0.03],[1.9,0.42,0.4,-0.02],[2.25,0.34,0.32,0],[2.42,0.2,0.2,0]];
@@ -46,7 +59,8 @@ MODELS.treant={
     G.body=moMerge(body);
     for(const sd of W){   // an arm hanging from the shoulder: an upper branch, a forearm forking into twig fingers, a clump of leaves
       const arm=[];
-      if(stone){ arm.push(pc(smoothN(moLump(csph(1,10,8),0.2,2.4,sd+5).scale(0.28,0.3,0.28).translate(0,-0.3,0)),rock),pc(smoothN(moLump(csph(1,10,8),0.2,2.4,sd+6).scale(0.24,0.26,0.24).translate(sd*0.05,-0.75,0)),rock),pc(smoothN(moLump(csph(1,10,8),0.22,2.4,sd+7).scale(0.3,0.28,0.28).translate(sd*0.08,-1.15,0)),rock)); }
+      if(stone&&p.style) arm.push(moRock(sd+5,0.3,0.32,0.3,0,-0.3,0,rock,7),moRock(sd+6,0.26,0.28,0.26,sd*0.05,-0.75,0,rock,7),moRock(sd+7,0.34,0.32,0.32,sd*0.08,-1.15,0,rock,8));   // chiselled arms
+      else if(stone){ arm.push(pc(smoothN(moLump(csph(1,10,8),0.2,2.4,sd+5).scale(0.28,0.3,0.28).translate(0,-0.3,0)),rock),pc(smoothN(moLump(csph(1,10,8),0.2,2.4,sd+6).scale(0.24,0.26,0.24).translate(sd*0.05,-0.75,0)),rock),pc(smoothN(moLump(csph(1,10,8),0.22,2.4,sd+7).scale(0.3,0.28,0.28).translate(sd*0.08,-1.15,0)),rock)); }
       else { arm.push(moTube([[0,0,0],[sd*0.1,-0.35,0.04],[sd*0.06,-0.75,0.0],[sd*0.12,-1.02,-0.05]],0.13,0.06,bark,7,false));
         for(let i=0;i<4;i++) arm.push(moTube([[sd*0.12,-1.02,-0.05],[sd*(0.12+(i-1.5)*0.07),-1.18,-0.1],[sd*(0.12+(i-1.5)*0.12),-1.34,-0.16]],0.035,0.01,bark,5,true));
         arm.push(moBlob(0.2,sd*0.12,-1.02,0,p.c1,0.1,sd+9),moBlob(0.14,sd*0.02,-0.35,0.05,p.c2,0.1,sd+4)); }
@@ -82,9 +96,14 @@ function bossTreant(body,p){
 const moStone=(x,y,z,c)=>{ c.set(0x807a70).multiplyScalar(0.72+0.4*h3(Math.floor(x*4),Math.floor(y*4),Math.floor(z*4))); };
 MODELS.totem={
   geo(d,p){
-    const G={}, gl=p.crystal||0x7af0a0, band=p.band||0x6af08a, body=[];
+    const G={}, gl=p.crystal||0x7af0a0, band=p.band||0x6af08a, body=[], own=moTotemBody(p.style,gl,band);   // a totem with its own style (monster-totems.js) skips the plain stone one below
+    if(own){ G.body=moMerge(own); return G; }
     body.push(pc(vbox(1.0,0.3,1.0,0,0.15,0),moStone),moLoft([{y:0.3,rx:0.42,rz:0.42},{y:0.9,rx:0.34,rz:0.34},{y:1.6,rx:0.3,rz:0.3},{y:2.1,rx:0.36,rz:0.36},{y:2.3,rx:0.3,rz:0.3}],moQ(8),(x,y,z,c)=>{ moStone(x,y,z,c); if(((y*2.2)%1+1)%1<0.14) c.set(band); }));
-    body.push(moEll(0.26,0.28,0.06,0,1.75,-0.3,moStone,null,8),moEll(0.07,0.05,0.04,-0.1,1.85,-0.35,gl,null,6),moEll(0.07,0.05,0.04,0.1,1.85,-0.35,gl,null,6),moEll(0.12,0.04,0.03,0,1.6,-0.34,0x10160e,null,6));   // a carved face
+    for(let i=0;i<3;i++){ const a=i/3*TAU+0.5; body.push(pc(vbox(0.05,0.34,0.03,Math.cos(a)*0.33,1.15+0.08*i,Math.sin(a)*0.33),c=>c.set(band))); }   // glowing rune bars up the trunk
+    for(const sd of [-1,1]){ body.push(moTube([[sd*0.3,1.5,0.0],[sd*0.62,1.35,-0.05],[sd*0.72,0.95,-0.18]],0.09,0.05,0x4a3a28,6,true),moEll(0.1,0.1,0.1,sd*0.72,0.9,-0.2,moStone,null,6)); }   // stub branch arms ending in stone fists
+    for(let i=0;i<5;i++){ const a=i*1.3; body.push(moEll(0.16,0.05,0.14,Math.cos(a)*0.28,2.18+0.02*i,Math.sin(a)*0.28,0x4f7a3a,null,5)); }   // moss on the crown
+    body.push(moEll(0.2,0.05,0.04,-0.12,1.95,-0.32,0x2a2a24,null,5),moEll(0.2,0.05,0.04,0.12,1.95,-0.32,0x2a2a24,null,5));   // heavy brow
+    body.push(moEll(0.26,0.28,0.06,0,1.75,-0.3,moStone,null,8),moEll(0.1,0.06,0.05,-0.11,1.83,-0.35,gl,null,6),moEll(0.1,0.06,0.05,0.11,1.83,-0.35,gl,null,6),moEll(0.12,0.04,0.03,0,1.6,-0.34,0x10160e,null,6));   // a carved face
     for(let i=0;i<6;i++){ const a=i/6*TAU; body.push(moTube([[Math.cos(a)*0.4,0.35,Math.sin(a)*0.4],[Math.cos(a)*0.62,0.22,Math.sin(a)*0.62],[Math.cos(a)*0.85,0.02,Math.sin(a)*0.85]],0.06,0.02,0x3a5a2a,5,true)); }   // roots
     body.push(pc(new THREE.OctahedronGeometry(0.3,0).scale(1,1.5,1).translate(0,2.9,0),c=>c.set(gl)));
     for(let i=0;i<4;i++){ const a=i/4*TAU; body.push(pc(new THREE.OctahedronGeometry(0.09,0).scale(1,1.6,1).translate(Math.cos(a)*0.55,2.75+0.15*Math.sin(i*2),Math.sin(a)*0.55),c=>c.set(band))); }

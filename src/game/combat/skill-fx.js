@@ -10,10 +10,11 @@ const AREA_COL={meteor:0xff6a2a,rain:0xf2cf5a,hail:0xf2cf5a,blizzard:0x9fd8ff,st
 const snowGeo=new THREE.OctahedronGeometry(0.07,0), bladeGeo=new THREE.BoxGeometry(0.08,0.05,1.1);
 function onArea(id,kind,x,z,r,dur,owner,el,flags,src){
   const zone=kind==='zone', once=zone&&(flags&1), y=getH(x,z)+0.07, col=zone?elCol(el):(AREA_COL[kind]||0xf2cf5a);
-  const fill=new THREE.Mesh(teleFill,fxMat(col,0.22)), edge=new THREE.Mesh(teleEdge,fxMat(col,0.85));
+  const fill=fxdMesh(fxdKindOfArea(kind,el),col,kind==='storm'?0.5:0.7), edge=new THREE.Mesh(teleEdge,fxMat(col,0.85));   // fx-decal: the zone's own pattern lies on the ground
+  fill.userData.spin=kind==='zone'&&(flags&1)?0:kind==='storm'?-1.4:kind==='rain'||kind==='hail'?0.15:0.45;
   fill.position.set(x,y,z); edge.position.set(x,y+0.01,z); edge.scale.setScalar(r); fill.scale.setScalar(kind==='meteor'||once?0.01:r); scene.add(fill,edge);
   const A={kind,x,z,r,dur,t:0,fill,edge,objs:[],spawn:0,y,owner,col,once:!!once,follow:zone&&!!(flags&2)};
-  if(kind==='storm'){ fill.material.opacity=0.12; const ring=new THREE.Group(); for(let i=0;i<6;i++){ const b=new THREE.Mesh(bladeGeo,matChar); const a=i/6*TAU; b.position.set(Math.sin(a)*r*0.75,1,Math.cos(a)*r*0.75); b.rotation.y=a; ring.add(b); } scene.add(ring); A.ring=ring; A.objs.push(ring); }
+  if(kind==='storm'){ const ring=new THREE.Group(); for(let i=0;i<6;i++){ const b=new THREE.Mesh(bladeGeo,matChar); const a=i/6*TAU; b.position.set(Math.sin(a)*r*0.75,1,Math.cos(a)*r*0.75); b.rotation.y=a; ring.add(b); } scene.add(ring); A.ring=ring; A.objs.push(ring); }
   if(kind==='meteor'){
     const m=new THREE.Mesh(meteorGeo,fxMat(0xff7a2a,0.95)); m.add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.55,1),new THREE.MeshBasicMaterial({color:0xfff0b0})));
     scene.add(m); A.meteor=m;
@@ -85,7 +86,7 @@ function fxVisuals(s,x,y,z,face,sc,mine){
     if(mine||Math.hypot(P.x-x,P.z-z)<25) cSfx.nova(); }
   if(f.cone){ const C=f.cone, n=C.hits||1; if(!L) for(let h=0;h<n;h++) spawnArcAt(x,y+(0.8+0.22*h)*sc,z,face+(h-(n-1)/2)*0.28,col,C.r/2.6);
     if(mine) (C.r>6?cSfx.whoosh:cSfx.swing)(false); }
-  if(!L&&!f.buff&&(f.zone||f.beam||f.chain||f.proj)) fxxRune(x,g,z,2.3,col,0.8);   // fx-extra: a glyph circle at the caster's feet
+  if(!L&&!f.buff&&(f.zone||f.beam||f.chain||f.proj)) fxxRune(x,g,z,2.3,col,0.8,fxdKindOfEl(elOf(s)));   // fx-extra: a glyph circle at the caster's feet, in its element's pattern
   if(!L&&!f.buff) fxpFlare(x-Math.sin(face)*0.6,y+1.1*sc,z-Math.cos(face)*0.6,col,2,0.3);   // fx-pool: the flash of the cast
   if(f.proj||f.zone||f.beam||f.chain){ if(!L) spawnRingAt(x-Math.sin(face)*0.6,y+1.1*sc,z-Math.cos(face)*0.6,1.3,col); if(mine) (f.proj&&f.proj.kind!=='spirit'?cSfx.draw:cSfx.charge)(true); }
 }
@@ -105,6 +106,7 @@ function updateSkillFx(dt){
   fxpUpdate(dt); fxxUpdate(dt);
   for(const A of AREA_FX.values()){
     A.t+=dt; const k=Math.min(1,A.t/A.dur); A.edge.material.opacity=0.55+0.35*Math.sin(t*12);
+    A.fill.rotation.y+=(A.fill.userData.spin||0)*dt; if(A.look){ A.fill.material.opacity=0.12; }   // (a piece with a look draws its own ground pattern)
     if(A.kind==='zone'){ updateZoneFx(A,dt,k); continue; }
     if(A.kind==='storm'){ // follows whoever cast it
       const o=A.owner===NET.pid?P:REMOTES.get(A.owner); if(o){ A.x=o.x; A.z=o.z; A.y=getH(A.x,A.z)+0.07; }
@@ -147,13 +149,12 @@ function startCharge(T,range,ahead,behind){   // range / ahead: the skill's reac
 }
 // buffs (Berserk, Hunter's Focus, Arcane Surge): a glowing ring at the feet for as long as they last
 const AURAS=new Map(), AURA_COL={berserk:0xff4a3a,focus:0x9fe08a,surge:0xb08aff};
-const auraGeo=new THREE.RingGeometry(0.75,1,40).rotateX(-Math.PI/2);
 function onBuff(pid,id,dur){
   const s=SKILLS[id]; if(!s) return;
   if(pid===NET.pid){ CB.buff={id,until:performance.now()+dur*1000,cd:s.buff.cd}; if(s.buff.reset) CB.cd.skill=0; toast(s.name+'! '+dur+' seconds','good'); }
   const old=AURAS.get(pid); if(old){ scene.remove(old.mesh); old.mesh.material.dispose(); }
   { const o=pid===NET.pid?P:REMOTES.get(pid); if(o) fxxRune(o.x,o.y||getH(o.x,o.z),o.z,1.8,AURA_COL[id]||(s.buff.el?elCol(s.buff.el):0xffffff),1.2); }   // fx-extra
-  const mesh=new THREE.Mesh(auraGeo,fxMat(AURA_COL[id]||(s.buff.el?elCol(s.buff.el):0xffffff),0.7)); scene.add(mesh);
+  const mesh=fxdMesh('aura',AURA_COL[id]||(s.buff.el?elCol(s.buff.el):0xffffff),0.7); scene.add(mesh);
   AURAS.set(pid,{mesh,until:performance.now()+dur*1000});
 }
 function updateAuras(){
@@ -161,7 +162,7 @@ function updateAuras(){
   for(const [pid,A] of AURAS){
     const o=pid===NET.pid?P:REMOTES.get(pid);
     if(!o||now>A.until){ scene.remove(A.mesh); A.mesh.material.dispose(); AURAS.delete(pid); continue; }
-    A.mesh.position.set(o.x,(o.y||getH(o.x,o.z))+0.08,o.z); A.mesh.scale.setScalar(1.1+0.12*Math.sin(now/120)); A.mesh.material.opacity=0.45+0.3*Math.sin(now/90);
+    A.mesh.position.set(o.x,(o.y||getH(o.x,o.z))+0.08,o.z); A.mesh.scale.setScalar(1.1+0.12*Math.sin(now/120)); A.mesh.rotation.y+=0.02; A.mesh.material.opacity=0.45+0.3*Math.sin(now/90);
     if(Math.random()<0.5*FXP_K){ const a=AR(0,TAU), r=AR(0.5,1.2); fxpRise(o.x+Math.sin(a)*r,(o.y||getH(o.x,o.z))+0.15,o.z+Math.cos(a)*r,A.mesh.material.color.getHex(),0.17,AR(0.7,1.2)); }   // fx-pool: motes streaming up off the aura
   }
 }

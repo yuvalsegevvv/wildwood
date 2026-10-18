@@ -47,7 +47,7 @@ function buildRimehold(){
       for(const sd of [-1,1]) A(vbox(0.3,0.56,0.05,sd*0.46,0,-0.02).applyMatrix4(M),woodC(H.accent)); A(vbox(0.78,0.08,0.12,0,0.3,0).applyMatrix4(M),dark); };
     const wy=base+wh*0.6;
     shutters(w*0.3,wy,-d/2-0.05,0); shutters(-w/2-0.05,wy,0,Math.PI/2); shutters(w/2+0.05,wy,0,-Math.PI/2); shutters(0,wy,d/2+0.05,Math.PI);
-    if(H.chimney){ A(vbox(0.85,rh+1.3,0.85,w*0.26,base+wh+(rh+1.3)/2-0.3,d*0.12),stoneC); A(vbox(1.0,0.16,1.0,w*0.26,base+wh+rh+1.05,d*0.12),snowC); }
+    if(H.chimney){ A(vbox(0.85,rh+1.3,0.85,w*0.26,base+wh+(rh+1.3)/2-0.3,d*0.12),stoneC); A(vbox(1.0,0.16,1.0,w*0.26,base+wh+rh+1.05,d*0.12),snowC); vsmAdd(new THREE.Vector3(w*0.26,base+wh+rh+1.25,d*0.12).applyMatrix4(F)); }   // smoke: a plume from the chimney
     if(H.kind==='wing'||H.kind==='loft'||H.kind==='tower'){
       const o={A,R:N,wall:logs(0x6a4630,base),gable:logs(0x5a3c26,base),roof:()=>snowOn(roofs[H.i%5]),cap:snowOn(0x4e4a38),W,door:woodC(0x3a2618)};
       if(H.kind==='wing') vlAnnex(H,base,o); else if(H.kind==='loft') vlDormer(H,base,o); else vlTurret(H,base,o);

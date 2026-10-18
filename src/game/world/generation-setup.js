@@ -16,9 +16,13 @@ const PAL={
   // the Hoarfrost Reach: snow-laden spruce, dwarf birch with its last rust leaves, frosted shrubs, dry pale tussocks
   frostSpruce:[0x6f8f86,0x86a69c,0x9fbab0,0x7a9c92], frostBirch:[0x9a6438,0x8a5430,0xa8763e], frostBush:[0x7f918c,0x93a49f,0x6f807c], tussock:[0xb8b090,0xc6bfa0,0xa8a084],
   // the Sunscar: date palms by the river, dry thorn trees
-  palm:[0x6f9a3a,0x84a844,0x5f8a34], thorn:[0x8a8a3a,0x9a9648,0x7a7a34]
+  palm:[0x6f9a3a,0x84a844,0x5f8a34], thorn:[0x8a8a3a,0x9a9648,0x7a7a34],
+  // more species (plant-models-more.js): poplar, copper beech, willow, stone pine, cedar, ginkgo, larch, acacia, the gloom oak
+  poplar:[0x9ec23c,0xb2d04a,0x88b035], beech:[0x7a8a2e,0x8e9a36,0xa07a2e,0x6a7c2c], willow:[0xa6c25a,0xb8d068,0x94b44e], umbrella:[0x2f5a33,0x3a6a38,0x284e2e],
+  cedar:[0x1f4a3a,0x25563f,0x1c4235], ginkgo:[0xe8c23a,0xf0d04a,0xd8b030,0xc8d04a], larch:[0x9aae44,0xb8b84a,0xc9a83a,0x86a23c],
+  acacia:[0x8a9a3a,0x9aa844,0x7a8a34], gloomoak:[0x5a3f78,0x6a4a8a,0x4a3468,0x3e3a5c]
 };
-const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3,sakura:0.4,maple:0.3,bamboo:0.7,frostspruce:0.32,dwarfbirch:0.2,palm:0.35,cactus:0.4,thorn:0.25};
+const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3,sakura:0.4,maple:0.3,bamboo:0.7,frostspruce:0.32,dwarfbirch:0.2,palm:0.35,cactus:0.4,thorn:0.25,poplar:0.2,beech:0.55,willow:0.4,umbrella:0.3,cedar:0.3,ginkgo:0.3,larch:0.28,acacia:0.25,gloomoak:0.45};
 const moss=new THREE.Color(0x56702f);
 
 function buildGeometries(){
@@ -65,6 +69,7 @@ function buildGeometries(){
     G.stemHi=makeStemHi(0.45,[0.35,0.55,0.2],41);
     G.headHi=makeFlowerHead(42);
   }
+  buildMoreTrees();   // plant-models-more.js: after the detailed set, so G.treesHi exists
   let rg=new THREE.DodecahedronGeometry(1,1);
   { const p=rg.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i),y=p.getY(i),z=p.getZ(i),j=1+(h3(x,y,z)-0.5)*0.5; p.setXYZ(i,x*j,y*j,z*j);} rg.computeVertexNormals(); }
   const rockSnowCol=new THREE.Color(0xf0f5f8);   // the Hoarfrost's boulders: cold grey stone with snow on every upward face

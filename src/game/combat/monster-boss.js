@@ -46,3 +46,21 @@ function moBossFox(d,p,body){
   for(let i=0;i<5;i++){ const a=(i/4-0.5)*1.6; body.push(moEll(0.028,0.05,0.004,Math.sin(a)*0.28,0.5+0.03*Math.cos(a*2),-0.3-Math.cos(a)*0.03,0xd8a030,[0,0,0.3*Math.sin(a*3)],5)); }   // gold tassels hanging from the rope
   for(let i=0;i<8;i++) body.push(moCone([0,0.98-i*0.015,-0.5+i*0.13],[0,1,0.2],0.32-i*0.02,0.04,p.tip,4));   // a mane of foxfire down the spine
 }
+
+// the Gloam Warden (model 'wisp', the 'wight' ghost): broad spiked shoulders, a staff with the lamp it is named for, dark antlers, a chain of keys and lights circling it (geometry in the wisp's own space)
+function moBossWarden(body,p){
+  const W=[-1,1], bone=(x,y,z,c)=>{ c.set(0x8a8498).multiplyScalar(0.75+0.35*moNoise(x,y,z,10)); }, glow=(x,y,z,c)=>{ c.set(p.core).multiplyScalar(0.9+0.2*clamp(y-1.9)); };
+  for(const sd of W){
+    body.push(moEll(0.17,0.09,0.15,sd*0.3,1.34,0,(x,y,z,c)=>{ c.set(p.body).multiplyScalar(0.7+0.3*moNoise(x,y,z,8)); },[0,0,sd*0.35],10));   // the mantle's shoulders
+    for(let i=0;i<3;i++) body.push(moCone([sd*(0.3+i*0.06),1.4-i*0.01,-0.04+i*0.05],[sd*0.5,1,-0.1+0.2*(i-1)],0.26-0.04*i,0.035,moIron,4));
+    body.push(moHorn([sd*0.1,1.82,0.0],[sd*0.45,1,-0.05],0.5,0.035,1.0,bone,6,[0,0,-1]),moHorn([sd*0.2,2.0,-0.02],[sd*0.8,0.8,-0.1],0.28,0.022,0.5,bone,5,[0,0,-1]),moHorn([sd*0.27,2.12,-0.03],[sd*0.3,1,-0.1],0.26,0.02,0.4,bone,5,[0,0,-1]));   // antlers
+    body.push(moEll(0.026,0.026,0.026,sd*0.45,2.34,-0.04,glow,null,6));   // a cold light at the tine's end
+  }
+  body.push(moBone([0.32,0.1,-0.52],[0.32,2.05,-0.52],0.028,0.022,moIron,6),moEll(0.045,0.03,0.045,0.32,2.06,-0.52,moIron,null,6));   // the staff and its hook
+  body.push(moCone([0.32,1.98,-0.52],[0,-1,0],0.1,0.16,moIron,6),moCone([0.32,2.5,-0.52],[0,1,0],0.14,0.14,moIron,6),moEll(0.14,0.21,0.14,0.32,2.24,-0.52,glow,null,10));   // the lamp: a cage round a core of violet light
+  for(let i=0;i<4;i++){ const a=i/4*TAU+0.8; body.push(moBone([0.32+Math.cos(a)*0.16,2.0,-0.52+Math.sin(a)*0.16],[0.32+Math.cos(a)*0.16,2.5,-0.52+Math.sin(a)*0.16],0.011,0.011,moIron,4)); }
+  for(let i=0;i<9;i++){ const a=i/9*TAU; body.push(moTube([[Math.cos(a)*0.2,0.9,Math.sin(a)*0.16],[Math.cos(a+0.2)*0.24,0.8,Math.sin(a+0.2)*0.19],[Math.cos(a+0.4)*0.2,0.9,Math.sin(a+0.4)*0.16]],0.02,0.02,moIron,4,false)); }   // a chain round the waist
+  for(let i=0;i<3;i++){ const a=-0.5+i*0.7; body.push(moBone([Math.cos(a)*0.22,0.85,-Math.sin(a+1.4)*0.2],[Math.cos(a)*0.24,0.55,-Math.sin(a+1.4)*0.22],0.014,0.01,moGold,4),moEll(0.04,0.03,0.015,Math.cos(a)*0.24,0.52,-Math.sin(a+1.4)*0.22,moGold,null,5)); }   // keys
+  body.push(moPatch([0,1.2,-0.15],[0,0,-1],0.09,0.012,glow,8,1.3));   // a sigil on the chest
+  for(let i=0;i<7;i++){ const a=i*0.9, r=0.55+0.08*(i%3); body.push(moEll(0.04,0.04,0.04,Math.cos(a)*r,0.5+0.22*i,Math.sin(a)*r,glow,null,6)); }   // lights circling it
+}
