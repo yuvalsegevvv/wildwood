@@ -29,7 +29,8 @@
     "27-skillsets.css",
     "28-guide.css",
     "29-theme.css",
-    "30-raids.css"
+    "30-raids.css",
+    "31-friends.css"
   ],
   "shared": [
     "math.js",
@@ -145,6 +146,7 @@
     "weather.js",
     "accounts.js",
     "party.js",
+    "friends.js",
     "pvp.js",
     "dungeons/instances.js", "dungeons/mobs.js", "dungeons/fx.js", "dungeons/hazards.js", "dungeons/kits.js", "dungeons/kits/purge.js", "dungeons/kits/defense.js", "dungeons/kits/survival.js", "dungeons/kits/sabotage.js", "dungeons/kits/siege.js", "dungeons/kits/hunt.js", "dungeons/kits/escort.js", "dungeons/runs.js", "dungeons/lobby.js",
     "raids.js",
@@ -364,7 +366,7 @@
     "economy/dungeon-gear.js",
     "economy/rolls.js",
     "dungeon/board.js",
-    "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/view-sand.js", "dungeon/view-gloam.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "pvp/state.js", "dungeon/hud.js", "dungeon/minimap.js",
+    "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/view-sand.js", "dungeon/view-gloam.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "ui/friends.js", "pvp/state.js", "dungeon/hud.js", "dungeon/minimap.js",
     "ui/account.js",
     "ui/guest-gate.js",
     "ui/chat.js",
