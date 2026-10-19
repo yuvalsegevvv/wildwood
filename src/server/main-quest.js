@@ -30,7 +30,7 @@ function mqProgressP(p,i,add,quiet){
 function mqCompleteP(p,chained){   // chained: the next step starts in the same talk (its own toast says so)
   const M=mqOf(p), step=mqStep(p); if(!step||M.st!==2) return;
   const r=mqReward(step); p.gear.coins+=r.coins; gainExpP(p,r.xp,null);
-  mqToast(p,'Main quest done: '+step.title+'. '+r.xp+' XP and '+r.coins+' coins','good'); ev('mq',p.id,step.id,2);
+  mqToast(p,'Main quest done: '+step.title+'. '+r.xp+' XP and '+r.coins+' coins','good'); ev('mq',p.id,step.id,2); gsGemP(p,GEM_MQ_STEP,'main quest');   // gems
   mqRemoveGreyP(p);
   M.s++; M.st=0; M.n=[]; M.h=0; p.dirty=true;
   const nx=mqStep(p);

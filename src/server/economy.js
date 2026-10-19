@@ -53,7 +53,7 @@ function newOfferP(p){
   Q.next++; return q;
 }
 function fillOffersP(p){ const Q=p.gear.q; while(Q.offers.length<QUEST_OFFERS) Q.offers.push(newOfferP(p)); p.dirty=true; }
-function refreshOffersP(p){ p.gear.q.offers=[]; fillOffersP(p); }
+function refreshOffersP(p,force){ p.gear.q.offers=force?[]:p.gear.q.offers.filter(o=>gsKeepOfferP(p,o.id)); fillOffersP(p); }   // gems: an unfinished daily notice stays through the sunrise refresh
 function questReadyP(p,q){ if(p.gear.q.ready.includes(q.id)) return; p.gear.q.ready.push(q.id); p.dirty=true; toastTo(p.id,'Quest done: '+q.title+'. Return to the quest board.','good'); ev('qdone',p.id,q.id); }
 function questKillP(p,defId){
   const Q=p.gear.q;
@@ -75,7 +75,7 @@ function turnInP(p,id){
   delete Q.active[id]; delete Q.defs[id]; Q.ready=Q.ready.filter(x=>x!==id); Q.done++;
   p.gear.coins+=r.coins; gainExpP(p,r.xp,null); toastTo(p.id,'Reward: '+r.xp+' XP and '+r.coins+' coins','good');
   const rar=rollQuestItemRarity(r.item); if(rar>=0) addItemP(p,randomItem(tierFor(q.level),rar));
-  ev('qturn',p.id,id); p.dirty=true; mqActP(p,'board');
+  ev('qturn',p.id,id); p.dirty=true; mqActP(p,'board'); gsTurnedInP(p,id);   // gems: a daily notice pays gems
 }
 /* ---- skills: bought from Aldric the trainer, equipped per class (passives: one loadout for every class), upgraded with coins and drops ---- */
 function buySkillP(p,id){

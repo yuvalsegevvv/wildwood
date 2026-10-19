@@ -18,7 +18,7 @@ function qCard(q,btn,extra){
   const r=q.reward||questRewardFor(q), it=rewardItemText(r.item);
   const lv=q.level>PL.level?'req bad':q.level<PL.level-2?'req low':'req', pic=q.type==='kill'?mpPic(q.target):'';
   return `<div class="qc k-${q.kind}${pic?' has-pic':''}">${pic}<div class="qc-main"><div class="qc-top"><span class="qk">${KIND_LABEL[q.kind]||''}</span><b>${q.title}</b><span class="${lv}">Level ${q.level}</span></div><p>${q.text}</p>
-    <div class="qc-bot"><span>${extra||''}</span><span class="rw">${numC(r.xp)} XP &nbsp; ${r.coins} coins${it?` &nbsp; <b class="qi">+ ${it}</b>`:''}</span>${btn||''}</div></div></div>`;
+    <div class="qc-bot"><span>${extra||''}</span><span class="rw">${numC(r.xp)} XP &nbsp; ${r.coins} coins${GEAR.dq&&GEAR.dq.ids.includes(q.id)&&!GEAR.dq.got.includes(q.id)?` &nbsp; <b class="qg">+${GEM_DQ_EACH} gems (daily)</b>`:''}${it?` &nbsp; <b class="qi">+ ${it}</b>`:''}</span>${btn||''}</div></div></div>`;
 }
 function renderQuests(){
   if($('#quests').hidden) return;
@@ -35,6 +35,7 @@ function renderQuests(){
     if(!ids.length) h+='<p class="muted">You carry no notices from the quest board. Maren keeps the board by the road into the village.</p>';
   } else {
     const mins=Math.max(1,Math.round((1-dayClock)*DAY_SECONDS/60)), full=ids.length>=QUEST_MAX_ACTIVE;
+    { const D=GEAR.dq; if(D&&D.ids.length) h+=`<p class="muted">Daily quests (marked with gems): ${D.got.length} / ${D.ids.length} handed in. +${GEM_DQ_EACH} gems each, +${GEM_DQ_ALL} more for all. New ones at 00:00 UTC.</p>`; }
     h+=`<div class="inv-h">On the board <span>new notices at sunrise, in about ${mins} min, and when you level up</span></div>`;
     if(!atBoard) h+='<p class="muted">Talk to Maren at the quest board to take a notice.</p>';
     for(const q of Q.offers||[]) h+=qCard(q,atBoard?`<button class="chip" data-accept="${q.id}" ${full?'disabled':''}>Accept</button>`:'',q.type==='kill'?'Defeat '+q.count:'Go and look');

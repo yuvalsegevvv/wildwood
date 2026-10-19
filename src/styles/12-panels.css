@@ -95,3 +95,11 @@
 #gemShop .pn-gems{ margin-left:auto; }
 details.tg{ margin:6px 0; border:1px solid rgba(255,255,255,.12); border-radius:8px; padding:4px 8px; }
 details.tg>summary{ cursor:pointer; font-weight:600; padding:4px 0; }
+.ach-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(56px,1fr)); gap:8px; margin:8px 0; }
+.ach{ position:relative; aspect-ratio:1; border-radius:12px; border:2px solid rgba(255,255,255,.15); background:rgba(255,255,255,.05); color:#8a8f98; display:grid; place-items:center; cursor:pointer; padding:0; }
+.ach svg{ width:60%; height:60%; opacity:.45; }
+.ach.done{ border-color:#f2cf5a; color:#f2cf5a; background:rgba(242,207,90,.12); }
+.ach.done svg{ opacity:1; }
+.ach.sel{ outline:2px solid #8fd4f2; }
+.ach .ag{ position:absolute; right:3px; bottom:2px; font-size:10px; font-weight:700; color:#8fd4f2; }
+.qg{ color:#8fd4f2; }

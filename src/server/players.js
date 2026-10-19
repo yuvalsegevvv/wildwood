@@ -17,6 +17,7 @@ function sanitizeGear(g,cls){
   out.sq=sanitizeSq(g.sq);   // sidequests: the chains' progress (an old save has none)
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); out.cos=sanitizeCos(g); }   // cosmetics: the auras and capes made at a lodge
   out.zt=sanitizeZt(g.zt);
+  gsSanitize(g,out);   // gems: claimed achievements, the daily set and today's ads
   ambSanitize(g,out);   // amber: the purse and the bought outfit sets (an old save has none)
   out.fr=frSanitize(g.fr);   // friends: the friend list (names; an old save has none)
   out.rd=rdSanitizeSave(g.rd);   // raids: the raid materials of each land
@@ -235,6 +236,6 @@ function updatePlayersS(dt){
     if(S.t-p.lastHit>(p.pv?PVP_REGEN_AFTER:3) && p.hp<p.maxHp) p.hp=Math.min(p.maxHp,p.hp+p.maxHp*(p.pv?PVP_REGEN_K:0.08)*dt);   // pvp: slower on the island
     pvpTickP(p,dt);   // pvp: stepping onto / off the island, burning
     if(p.act){ const a=p.act; a.t+=dt; if(!a.done && a.t>=a.dur*a.hitAt){ a.done=true; resolveHitS(p,a); } if(a.t>=a.dur) p.act=null; }
-    p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); reachHanamiP(p); reachRimeholdP(p); reachHighmarkP(p); reachGlasswellP(p); reachWraithwickP(p); mqTickP(p); sqTickP(p); }   // sidequests: the places walked to
+    p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); gsTickP(p); reachHanamiP(p); reachRimeholdP(p); reachHighmarkP(p); reachGlasswellP(p); reachWraithwickP(p); mqTickP(p); sqTickP(p); }   // sidequests: the places walked to
   }
 }
