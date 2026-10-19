@@ -6,6 +6,7 @@
    Used by: server/raids.js (the fight), server/economy.js + shared/drops.js (upgrades), game/raids/* (the ruins, the HUD), game/combat/boss.js (arenaOf). The data: shared/raids/<id>.js (one per land).
    Test: node tools/raids-smoke.js. A bad entry is left out and listed in RD_BAD (the game still boots). */
 const RD_BASE_LV=40, RD_RESET=1800, RD_ABANDON=600, RD_FOOT=62, RD_MAT_MAX=99999;   // the level at +0; seconds from a clear to the rebuild; seconds with nobody inside before an engaged raid resets; the radius that counts as inside for the clear's pay
+const RD_MOB_HP=0.3;   // a garrison monster's health against the same level's ordinary numbers: the boss stays at 22 hits at level 40 while a mob falls in about 7 x this (elites twice that again): 28 full-health mobs outweighed the boss 12 to 1
 const RD_UP={2:4,3:8,4:16,5:32};   // raid material a signature piece needs to reach level n (60 a piece, 360 a set); the one number to tune
 const RD_LANDS=['home','vale','hoar','grey','sun','gloam'];
 /* The layout every raid shares, in metres from the site's middle (x east, z south; the gate looks north). The court is the boss arena (kits read A.x, A.z, A.r). */

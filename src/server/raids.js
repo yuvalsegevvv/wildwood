@@ -8,7 +8,12 @@
    Exports: initRaidsS(), rdTickS(dt), rdAdoptS(m), rdHitS(m,p), rdKilledS(m,p), rdBossDownS(m), rdEventsS(), rdSanitizeSave(g), rdMatsOf(p), RD_STATE. */
 const RD_STATE=[];   // one state per raid, in RD_ORDER
 let rdCtx=null;      // the raid being built or ticked: makeMon adopts what is made meanwhile (a boss's adds, a kit's spawns)
-function rdAdoptS(m){ if(!rdCtx) return; m.rd=rdCtx; m.dgK=dgKOf(m.def,rdCtx.L); m.awake=true; }
+// the numbers of a raid monster at level L: the dungeon scaling, with a garrison monster's health cut to RD_MOB_HP (the boss and the destructibles keep theirs)
+function rdKOf(m,L){
+  const k=dgKOf(m.def,L); if(m.boss||m.def===RD_WARD_DEF||m.def===RD_SPAWNER_DEF||m.def===RD_BARRICADE_DEF) return k;
+  return {lv:k.lv,hp:k.hp*RD_MOB_HP,dmg:k.dmg,xp:k.xp};
+}
+function rdAdoptS(m){ if(!rdCtx) return; m.rd=rdCtx; m.dgK=rdKOf(m,rdCtx.L); m.awake=true; }
 // the raid bosses that exist (not in BOSSES: that list is the eight world fights; the snapshot's boss rows and a joiner's telegraphs read both)
 const rdBossesS=()=>RD_STATE.map(st=>st.boss).filter(Boolean);
 const rdAlive=list=>list.filter(m=>!m.dead&&!m.remove);
@@ -57,7 +62,7 @@ function initRaidsS(){ RD_STATE.length=0; for(const id of RD_ORDER){ const st={R
 // the first hit on a fresh raid locks its tier to the attacker's setting for the land and re-levels what stands (one event: the clients rebuild each monster's numbers)
 function rdLockS(st,p){
   st.tier=zoneTierOn(p.gear,st.R.land); st.L=rdLevel(st.tier); st.state='engaged'; st.emptyT=0;
-  const ids=[]; for(const m of st.all) if(!m.remove){ m.dgK=dgKOf(m.def,st.L); ids.push(m.id); }
+  const ids=[]; for(const m of st.all) if(!m.remove){ m.dgK=rdKOf(m,st.L); ids.push(m.id); }
   ev('rdlv',st.L,ids); rdSend(st);
   for(const q of S.players.values()) if(Math.hypot(q.x-st.R.x,q.z-st.R.z)<RD_FOOT+40) toastTo(q.id,st.R.name+' is locked to '+(st.tier?'tier '+['','I','II','III','IV','V','VI','VII'][st.tier]+', ':'')+'level '+st.L+'.','');
 }

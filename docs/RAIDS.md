@@ -40,7 +40,7 @@ Signature pieces (3 actives, 3 passives per set) could not be upgraded before. T
 |---|---|
 | shared | `shared/raids.js` (registry, layout, constants, `rdLevel`, `rdMatFor`, `rdUpNeeds`, `rdCapTier`, `rdCourtAt`), `shared/raids/<id>.js` x6, `RD_WARD_DEF` / `RD_SPAWNER_DEF` / `RD_BARRICADE_DEF` in `shared/monster-defs.js` |
 | server | `server/raids.js` (build, lock, wards, banners, clear, pay, reset, the boss's sleep) |
-| client | `game/raids/structure.js` (the six ruins: `buildRaids`, `RD_LOOKS`), `game/raids/hud.js` (events, strip, map marks, bag rows), `moTotemWard` / `Banner` / `Barricade` in `game/combat/monster-totems.js`, `styles/30-raids.css`, `#rdStrip` in `index.html` |
+| client | `game/raids/structure.js` (the six ruins: `buildRaids`, `RD_LOOKS`) and `structure-extras.js` (props and each land's dressing: `rdProps`, `rdExtras`), `game/raids/hud.js` (events, strip, map marks, bag rows), `moTotemWard` / `Banner` / `Barricade` in `game/combat/monster-totems.js`, `styles/30-raids.css`, `#rdStrip` in `index.html` |
 
 Hooks into existing files (`grep -rn "raids:" src`):
 
