@@ -18,6 +18,8 @@ function renderInv(){
   $('#plCoins').textContent=GEAR.coins;
   if($('#inv').hidden) return;
   $('#invCoins').textContent=GEAR.coins+' coins';
+  $('#invGems').textContent=(GEAR.gem||0)+' gems';
+  $('#invAmber').textContent=(GEAR.amb||0)+' amber';
   const g=gearStats(), c=CLASSES[clsOf()];
   let h=`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Soul</span><b style="color:${ELEMS[soulNow()].col}">${ELEMS[soulNow()].name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div></div>`;
   h+='<div class="inv-wrap"><div class="doll" id="invDoll">'+SIL;

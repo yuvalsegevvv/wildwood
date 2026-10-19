@@ -92,10 +92,9 @@ const el=s=>document.querySelector(s);
       ok('skill sets: every set has a look, and every piece of the eight sets draws in it without errors',!bad.length&&!G.SSL.bad.length,bad.length?'nothing drawn for '+bad.join(', '):n+' pieces, '+G.SS_ORDER.length+' looks');
       ok('...and everything they made is gone again (particles, ground patterns, auras, zones)',G.SSL.parts.length===0&&G.SSL.decals.length===0&&G.SSL.auras.size===0&&G.AREA_FX.size===0,G.SSL.parts.length+' particles, '+G.SSL.decals.length+' patterns, '+G.SSL.auras.size+' auras, '+G.AREA_FX.size+' zones'); }
   }
-  // version2 testing: every player may unlock a set and wear its outfit (index.html #tFree, game/skillsets/free.js, server/skillsets-free.js; remove with them)
-  { const sel=c.el('#tFreeSet'), n=(sel.innerHTML.match(/<option/g)||[]).length; sel.value='tansy'; c.el('#tFreeOut').click(); await wait(150); const wore=c.G().LOOK.model, sex=c.G().LOOK.sex;
-    c.el('#tFreeNone').click(); await wait(100); const off=c.G().LOOK.model; c.el('#tFreeGet').click(); await wait(400);
-    ok('free testing tools: a list of every set, one tap wears its outfit (on its character\'s body) and one takes it off, one unlocks the set\'s pieces',n===G.SS_ORDER.length&&wore==='tansy'&&sex==='female'&&off==='base'&&c.G().GEAR.skills.owned.includes('tansy_2_any')&&c.G().GEAR.skills.owned.includes(G.SS_SETS.tansy.pos[3].passive),n+' sets, '+wore+' / '+sex+' / '+off); }
+  // gems: the shop icon opens the gem shop, the public button grants 1000 gems, and a locked outfit tile buys on its second tap
+  { const n0=c.G().GEAR.gem||0; c.el('#bGems').click(); await wait(100); c.el('#gemFree').click(); await wait(400); const n1=c.G().GEAR.gem||0; const open=!c.el('#gemShop').hidden; c.el('#bInv').click(); await wait(100);
+    ok('gems: the shop icon opens the shop and its free button adds 1000 gems (shown in the inventory header)',open&&n1===n0+1000&&/1000 gems/.test(c.el('#invGems').textContent),n0+' -> '+n1); c.G().closePanels(); }
   G.openChat(); G.chatText.value='hi'; G.sendChat(); await wait(300); ok('chat line arrives',c.G().CHAT.lines.length>0);
   for(let i=0;i<450&&!c.G().MAP.done;i++) await wait(100); ok('world map painted',c.G().MAP.done);
   G.NET.send({t:'dev',cmd:'weather',v:'rain'}); await wait(300); for(let i=0;i<60;i++){ G.WX.t+=0.5; G.updateWeather(0.5); } ok('rain fades in',G.WX.inten>0.9);

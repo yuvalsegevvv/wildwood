@@ -5,7 +5,7 @@ const {bootClient,memoryAccounts}=require('./headless');
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const until=async(f,ms)=>{ for(let t=0;t<(ms||30000);t+=20){ if(f()) return true; await wait(20); } return false; };
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
-const EXPOSE=['osUnlock','NET','netTick','started:()=>started','customizing:()=>customizing','creating:()=>creating','canStart:()=>canStart','clsOf','setLook','LOOK:()=>LOOK','edTab:()=>edTab','EDIT','CHAR_MODELS','setSub:(t,u)=>{ edTab=t; edSub[t]=u; renderEditor(); }'];
+const EXPOSE=['GEAR','renderEditor','NET','netTick','started:()=>started','customizing:()=>customizing','creating:()=>creating','canStart:()=>canStart','clsOf','setLook','LOOK:()=>LOOK','edTab:()=>edTab','EDIT','CHAR_MODELS','setSub:(t,u)=>{ edTab=t; edSub[t]=u; renderEditor(); }'];
 const find=(e,f)=>{ if(f(e)) return e; for(const k of e._kids||[]){ const r=find(k,f); if(r) return r; } return null; };
 function fill(c,user,pass,pass2){ c.el('#stUser').value=user; c.el('#stPass').value=pass; c.el('#stPass2').value=pass2===undefined?'':pass2; c.el('#stForm').requestSubmit(); }
 async function boot(o){ const c=bootClient(Object.assign({online:true,fast:true,expose:EXPOSE},o)); await until(()=>c.G().canStart()); return c; }
@@ -53,7 +53,7 @@ async function boot(o){ const c=bootClient(Object.assign({online:true,fast:true,
   fill(c,'Newbie','secret1','secret1');
   ok('a new account opens the character editor before the game starts',await until(()=>c.G().customizing())&&c.G().creating()&&!c.G().started()&&c.G().NET.user==='Newbie');
   ok('the editor opens on the signature characters, titled for creating',c.G().EDIT[c.G().edTab()].tab==='Presets'&&c.el('#edTitle').textContent==='Create your hiker'&&c.el('#edDone').textContent==='Enter the world');
-  Object.keys(c.G().CHAR_MODELS).filter(k=>c.G().CHAR_MODELS[k].signature).forEach(k=>c.G().osUnlock(k));   // outfit sets are locked until their skill set is owned: the testing tools' list unlocks them
+  { const g=c.G().GEAR; g.os=Object.keys(c.G().CHAR_MODELS).filter(k=>c.G().CHAR_MODELS[k].signature); c.G().renderEditor(); }   // outfit sets are locked until bought with gems
   const chip=name=>find(c.el('#edBody'),e=>e.textContent===name);
   ok('there is no Class tab or class row in the editor, and nothing in it resets your level (class follows the weapon; a new hiker holds the sword)',!c.G().EDIT.some(t=>t.tab==='Class')&&!c.G().EDIT.some(t=>t.subs.some(u=>u.rows.some(r=>r.k==='cls'||r.type==='info')))&&c.G().clsOf()==='warrior');
   { // the signature outfits' pieces in the editor's rows (src/game/outfits, docs/areas/character-ui.md): every slot lists every outfit's item, picking one writes that slot, a whole set puts all seven on

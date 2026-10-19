@@ -131,7 +131,6 @@ function receive(pid,msg){
     case 'potion': drinkP(p,msg.k); break;
     case 'zt': setZoneTierP(p,msg.land,msg.n); break;
     case 'dev': devP(p,msg); break;
-    case 'ft': ssFreeP(p,msg); break;   // version2 testing: free skill sets for everyone (server/skillsets-free.js); remove when M3 / M4 land
     case 'register': registerP(p,msg.user,msg.pass); break;
     case 'logout': logoutP(p,msg.token); break;
     default: if(MSG[msg.t]) MSG[msg.t](p,msg); break;   // dungeons: messages added by feature files (party, dg, ...)

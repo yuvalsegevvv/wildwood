@@ -1,0 +1,5 @@
+//@ Amber (a gear-upgrade material) and gems (the premium currency, version 3.3): the cap of a purse, the price of an outfit set, the grant of the public testing tool
+/* Agent map. gear.amb (a count, saved) is amber, the material for gear upgrades (nothing spends it yet; the admin tool adds it, the inventory shows it). gear.gem (saved) is the premium currency: it buys outfit sets at GEM_SET_PRICE; gear.os (saved) lists the bought sets (cosmetic only: the skill set itself is earned in the world).
+   Used by server/amber.js (buying, the public testing grant, sanitizing), server/economy.js (devP 'amber'), game/economy/gems.js and the editor's outfit tiles.
+   Amber is NOT gear.amber: that field is the closed Amber Reach (always 0, shared/barriers.js). Test: tools/amber-smoke.js. */
+const AMB_MAX=10000000, GEM_SET_PRICE=1000, GEM_TEST_GRANT=1000;
