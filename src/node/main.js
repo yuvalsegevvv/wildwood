@@ -1,7 +1,8 @@
 //@ Node host: serves the game page (brotli or gzip, ETag) and the music files (/audio/, cached for a year) over HTTP and runs the world server over WebSocket (no npm packages needed)
 /* Usage:  node wildwood-server.js [--port 8080] [--host 0.0.0.0] [--no-dev]
    Then open http://localhost:8080 in several tabs or on several devices on your network.
-   --no-dev (or the environment variable WILDWOOD_DEV=0) turns off the testing tools (set level, free items, coins).
+   --no-dev (or the environment variable WILDWOOD_DEV=0) turns off the testing tools (set level, free items, coins) and turns the anti-cheat / anti-bot limits on.
+   --guard turns those limits on with the testing tools on (to test them automatically); --no-guard turns them off.
    Hosting (Render and similar): listens on $PORT, serves the page gzip-compressed, answers GET /healthz and
    GET /status, and pings every connection every 25 s so proxies don't close idle games.
    Saves: every player's progress is stored on the server under their account code (hashed, never stored as is),
@@ -13,6 +14,7 @@
 const http=require('http'), crypto=require('crypto'), os=require('os'), zlib=require('zlib'), fs=require('fs'), path=require('path');
 const args=process.argv.slice(2), arg=(n,d)=>{ const i=args.indexOf(n); return i>=0&&args[i+1]?args[i+1]:d; };
 const PORT=+arg('--port',process.env.PORT||8080), HOST=arg('--host','0.0.0.0'), DEV=!args.includes('--no-dev')&&!/^(0|false|no|off)$/i.test(process.env.WILDWOOD_DEV||'');
+const GUARD=args.includes('--guard')?true:args.includes('--no-guard')?false:!DEV;   // anti-cheat and anti-bot limits: on with the testing tools off; --guard turns them on with the tools on too (to test them), --no-guard off
 const SOCKETS=new Map(); let nextId=1;
 const log=(...a)=>console.log(new Date().toISOString(),...a);
 /* ---- where saves go ---- */
@@ -78,9 +80,11 @@ function frame(str){
 }
 const SEND_CAP=2<<20;   // bytes a client may leave unread in its socket's buffer (about three minutes of snapshots): a connection that stopped reading but still answers pings would otherwise grow the server's memory for ever
 function sendRaw(sock,str){ if(sock.destroyed) return; if(sock.writableLength>SEND_CAP){ sock.destroy(); return; } sock.write(frame(str)); }
+const IP_MAX=12, IPS=new Map();   // anti-bot: sockets one address may hold open (a family or a school behind one router fits; a farm of bots does not). Behind Render's proxy the address is the last X-Forwarded-For entry (the one the proxy itself added)
+const ipOf=(req,sock)=>{ const f=String(req.headers['x-forwarded-for']||'').split(',').pop().trim(); return f||sock.remoteAddress||'?'; };
 const MSG_RATE=120, MSG_BURST=240;   // messages a second one client may send, and the burst it may save up (the game sends about 10 positions and a few attacks a second)
 const world=createWorldServer({
-  dev:DEV, snapDt:0.1, store:STORE, auth:AUTH, log,
+  dev:DEV, guard:GUARD, snapDt:0.1, store:STORE, auth:AUTH, log,
   kick(pid){ const s=SOCKETS.get(pid); if(s){ SOCKETS.delete(pid); setTimeout(()=>{ try{ s.end(Buffer.from([0x88,0])); }catch(_){} },300); } },
   send(pid,msg){ const s=SOCKETS.get(pid); if(s) sendRaw(s,JSON.stringify(msg)); }
 });
@@ -134,6 +138,12 @@ const server=http.createServer((req,res)=>{
 server.on('upgrade',(req,sock)=>{
   if(!req.url.startsWith('/ws')){ sock.destroy(); return; }
   const key=req.headers['sec-websocket-key']; if(!key){ sock.destroy(); return; }
+  if(GUARD){   // (on with the testing tools off, the deployed setting, or forced with --guard)
+    const ip=ipOf(req,sock), held=IPS.get(ip)||0;
+    if(held>=IP_MAX){ sock.write('HTTP/1.1 429 Too Many Requests\r\nConnection: close\r\n\r\n'); sock.destroy(); return; }
+    IPS.set(ip,held+1);
+    sock.once('close',()=>{ const n=(IPS.get(ip)||1)-1; if(n>0) IPS.set(ip,n); else IPS.delete(ip); });
+  }
   const acc=crypto.createHash('sha1').update(key+'258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64');
   sock.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: '+acc+'\r\n\r\n');
   sock.setNoDelay(true);

@@ -3,7 +3,7 @@
 const {loadServer}=require('./load'), {memoryAccounts}=require('./headless');
 const inbox={};
 const {DB,store,auth}=memoryAccounts();   // accounts kept in memory instead of files or Postgres
-const {api:W,x}=loadServer({dev:false,store,auth,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); },broadcast(){}},['gainExpP','isGuestP','VIL2','VIL4','setZoneTierP','landAt']);
+const {api:W,x}=loadServer({dev:false,guard:false,store,auth,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); },broadcast(){}},['gainExpP','isGuestP','VIL2','VIL4','setZoneTierP','landAt']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const last=(pid,t)=>[...(inbox[pid]||[])].reverse().find(m=>m.t===t);
 const wait=()=>new Promise(r=>setTimeout(r,20));

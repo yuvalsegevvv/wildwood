@@ -2,7 +2,7 @@
 /* The world server is authoritative for monsters, the boss, combat, levels, loot, shops, quests and the clock.
    It never touches the page or three.js, so the same code runs inside a browser tab (solo, or hosting a
    shared world) and in Node (dist/wildwood-server.js). io = {send(pid,msg), dev, snapDt, [broadcast(msg), broadcastSnaps]}. */
-const S={t:0,day:0.045,ff:null,players:new Map(),dev:io.dev!==false,snapT:0,snapDt:io.snapDt||0.1,snapNo:0,fullT:0,prevDay:0.045,saveT:5};
+const S={t:0,day:0.045,ff:null,players:new Map(),dev:io.dev!==false,guard:io.guard!==undefined?!!io.guard:io.dev===false,snapT:0,snapDt:io.snapDt||0.1,snapNo:0,fullT:0,prevDay:0.045,saveT:5};
 const DAY_SECONDS=1200;
 let EVQ=[];
 const MSG=Object.create(null);   // dungeons: handlers of the messages feature files add, MSG.<type>=(p,msg)=>{...}; receive() falls back to it (no edit to the switch for a new message)
