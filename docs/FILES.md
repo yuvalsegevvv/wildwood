@@ -36,6 +36,7 @@ styles
   28-guide.css                       The Guide panel: a short in-game wiki in tabs (text, lists and key caps)
   29-theme.css                       The storybook skin: dark bark panels, a brass frame with corner studs, parchment ink and the Alegreya fonts, laid over every HUD box, panel and button (the look of the world map)
   30-raids.css                       The raids' strip near a stronghold (game/raids/hud.js): one line under the top edge, below the boss bar when both show
+  31-friends.css                     Friends and ranking panel (ui/friends.js): friend rows with an online dot, the ranking table, the friend request prompt
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -167,6 +168,7 @@ server
   weather.js                         Weather on the server: rain for 5-7 minutes every 40-60 minutes, 30% of the time a thunderstorm
   accounts.js                        Registered accounts (name + password) on the online server: log in, register a guest, log out, unique names
   party.js                           Parties on the server: up to 4 hikers with a leader, invites that last 30 s, leave / kick / hand on the lead, the roster (pty) pushed to every member about once a second; in memory only. Generic (a dungeon run starts from one)
+  friends.js                         Friends and the ranking: a mutual friend list (gear.fr, names; added by a request the other player accepts), who of them is online, and the top of the level ranking
   pvp.js                             PvP on the Proving Isle, server side: who is on the island, the fixed numbers they fight with, other players as targets of every attack, the knock-out (a shore spot and a shut gate), no rewards
   dungeons/instances.js              Dungeon runs, the instance layer: the run object in its far-away slot, local <-> world coordinates, which events and snapshot parts reach whom (S.ctx), positions, dashes and hits inside a run's walls, entering and leaving a run
   dungeons/mobs.js                   Dungeon runs, their monsters: spawning at the run's level with the party's health, removing, the walker AI (a flow field round walls, line of sight, no leash, no respawn), kills, and the loot every member gets (rewardAllS)
@@ -411,6 +413,7 @@ game
   dungeon/look.js                    A run's look and sound: the sky, sun shadow, water and weather off, the theme's fog and light (time of day cannot tint it), a torch on you and a few point lights moved to the nearest light props, the Barrow's gloom, the run's music and ambience; all given back exactly on leaving
   dungeon/collide.js                 Walking and the camera in a run: the run's walls stop you (dgSlide on the bake, like the server's setPos) and the third-person camera's arm shortens in front of a wall (first person is not touched)
   dungeon/party.js                   The party on the client: the frame under your bars (names, health, level, down, the leader's crown), the invite prompt, the party panel (invite by name, leave, kick, hand on the lead), a tap on a name tag, the party colour on the maps, the revive channel's cast bar
+  ui/friends.js                      The friends and ranking panel (comma key): add a friend by name (the other player accepts), who is online, invite to a party, remove; the level ranking with your own place
   pvp/state.js                       PvP on the Proving Isle, client side: whether you stand on it (server events pvp / pvlock), the fixed loadout your action bar and attacks use there, picking another fighter as the target, the badge and the shut-gate countdown
   dungeon/hud.js                     A run's HUD: the mission's title, lines and bar (dgHudText of the dg tuple) with the run's clock, the objectives' labels and compass arrows, the boss hall's arrow, the use / revive / relight / portal prompt and key, the leave button, the downed screen, the results panel, and the Testing tools' Dungeons row
   dungeon/minimap.js                 The maps in a run: the minimap and the full map draw the dungeon's tiles instead of the world, only the tiles you have walked into (explored), with the objectives, the portal, the boss's hall, the run's monsters and your party

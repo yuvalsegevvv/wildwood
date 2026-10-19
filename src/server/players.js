@@ -18,6 +18,7 @@ function sanitizeGear(g,cls){
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); out.cos=sanitizeCos(g); }   // cosmetics: the auras and capes made at a lodge
   out.zt=sanitizeZt(g.zt);
   ambSanitize(g,out);   // amber: the purse and the bought outfit sets (an old save has none)
+  out.fr=frSanitize(g.fr);   // friends: the friend list (names; an old save has none)
   out.rd=rdSanitizeSave(g.rd);   // raids: the raid materials of each land
   out.ss=ssSanitizeSave(g.ss);   // skillsets: the pity counts of the sources (an old save has none)
   out.dg=dgSanitizeSave(g.dg);   // dungeons: clears and best times per '<theme>:<mission>' (an old save has none)
