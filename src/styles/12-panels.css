@@ -108,6 +108,8 @@
 .gem-buy:disabled{ cursor:default; box-shadow:none; background:rgba(255,255,255,.1); color:#c8ccd2; }
 .gem-buy.poor{ color:#8fd4f2; }
 .gem-card.owned .gem-buy{ color:#f2cf5a; background:rgba(242,207,90,.12); }
+.gem-bundle{ margin-top:2px; font-size:12.5px; background:linear-gradient(180deg,#ffe58a,#e9ac2c); box-shadow:0 2px 0 #9a6a10; color:#33210a; }
+.gem-bundle:disabled{ background:rgba(242,207,90,.1); color:#d8c98a; }
 .gem-short{ text-align:center; font-size:11px; opacity:.65; }
 #gemShop .pn-gems{ margin-left:auto; }
 details.tg{ margin:6px 0; border:1px solid rgba(255,255,255,.12); border-radius:8px; padding:4px 8px; }

@@ -51,7 +51,7 @@ function gemShowTab(t){
 // one card per outfit set: a big portrait of the character, the set's name and what it is, and a buy button that says what is missing
 function gemCard(sid){
   const T=SS_SETS[sid], id=T.outfit, M=id&&CHAR_MODELS[id]; if(!M) return null;
-  const owned=osOwned(id), have=GEAR.gem||0, short=GEM_SET_PRICE-have;
+  const owned=osOwned(id), have=GEAR.gem||0, short=GEM_SET_PRICE-have, skOwned=[1,2,3].every(n=>{ const P=T.pos[n]; return !P||[...P.ids,P.passive].every(i=>GEAR.skills.owned.includes(i)); });
   const card=document.createElement('div'); card.className='gem-card'+(owned?' owned':'');
   const pic=document.createElement('div'); pic.className='gem-pic wait';
   const im=document.createElement('img'); im.alt=M.name; im.draggable=false; pic.append(im);
@@ -65,6 +65,11 @@ function gemCard(sid){
   else if(short>0){ b.textContent=GEM_SET_PRICE+' gems'; b.disabled=true; b.title='You need '+short+' more gems'; b.classList.add('poor'); }
   else { b.textContent='Buy for '+GEM_SET_PRICE+' gems'; b.addEventListener('click',()=>netSend({t:'gembuy',v:id})); }
   card.append(pic,nm,st,nt,b);
+  // the bundle: the outfit with the whole skill set (the same set the world's bosses and dungeons drop), for less than the two apart; or, for a set whose outfit you own, the skills alone
+  if(!skOwned){ const price=(owned?0:GEM_SET_PRICE)+GEM_SKILL_PRICE, c=document.createElement('button'); c.type='button'; c.className='gem-buy gem-bundle';
+    c.textContent=owned?'Add its skills: '+price+' gems':'Bundle with skills: '+price+' gems'; if(have<price){ c.disabled=true; c.classList.add('poor'); c.title='You need '+(price-have)+' more gems'; }
+    else c.addEventListener('click',()=>netSend({t:'gembuy',v:id,b:1}));
+    card.append(c); }
   if(!owned&&short>0){ const n=document.createElement('span'); n.className='gem-short'; n.textContent=short+' gems to go'; card.append(n); }
   return card;
 }
