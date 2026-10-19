@@ -100,7 +100,7 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 
 | Slider | Range | Base model |
 |---|---|---|
-| `chest` (Chest) | 0.7 .. 1.3 | 0.6 .. 1.4 |
+| `chest` (Chest) | 0.7 .. 1.3 | 0.6 .. 1.9 |
 | `waist` (Waist) | 0.88 .. 1.15 | 0.82 .. 1.15 |
 | `legs` (Leg length) | 0.92 .. 1.1 | 0.92 .. 1.14 |
 | `thighs` (Thighs) | 0.95 .. 1.25 | 0.85 .. 1.25 |

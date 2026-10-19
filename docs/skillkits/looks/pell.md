@@ -104,7 +104,7 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 | Slider | Range | Base model |
 |---|---|---|
 | `build` (Build) | 0.88 .. 1.17 | 0.88 .. 1.18 |
-| `chest` (Chest) | 0.7 .. 1.2 | 0.6 .. 1.4 |
+| `chest` (Chest) | 0.7 .. 1.2 | 0.6 .. 1.9 |
 | `hips` (Hips) | 0.88 .. 1.1 | 0.85 .. 1.2 |
 | `arms` (Arms) | 0.9 .. 1.25 | 0.82 .. 1.25 |
 | `neck` (Neck) | 0.85 .. 1.15 | 0.85 .. 1.2 |
