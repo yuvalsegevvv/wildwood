@@ -34,6 +34,7 @@ const KB_ACTIONS=[
   {id:'quests',name:'Quests',        def:['KeyL','']},   // the quest panel: main quest, board, your quests (economy/quests.js)   // the in-game guide (ui/guide.js)
   {id:'view',  name:'Camera view',   def:['KeyV','']},
   {id:'party', name:'Party',         def:['KeyP','']},   // dungeons: the party panel (dungeon/party.js)
+  {id:'friends',name:'Friends and ranking', def:['Comma','']},   // friends: the friend list and the ranking (ui/friends.js)
   {id:'accept',name:'Accept an invite', def:['KeyY','']},   // dungeons: a party invite or a run's join prompt (dungeon/party.js)
   {id:'decline',name:'Decline an invite', def:['Backspace','']}   // dungeons: the same, declined
 ];
