@@ -41,9 +41,41 @@ function guidePages(){
       <h4>Soul and elements</h4>
       <p>At level ${SOUL_LV} the shrine maiden in Hanami binds a <b>soul</b>: your skills of that element hit harder (x1.5), and the opposite element hurts less. Elements are on skills and monsters; pick skills that beat what you hunt.</p>
       <h4>Passives</h4>
-      <p>Passive skills work all the time, whatever your class. Their slots open at levels ${PASSIVE_SLOT_LV.join(', ')}.</p>
-      <h4>Skill sets</h4>
-      <p>A skill set is a signature outfit with its own skills, set bonuses (for wearing 3 or 5 pieces), a symbol and an element. Sets drop from world bosses (10% per kill) and from won dungeon runs at +1 difficulty or higher (20%), and a long dry streak ends in a sure drop. In this version you can also unlock any set from Settings to try it.</p>`},
+      <p>Passive skills work all the time, whatever your class. Their slots open at levels ${PASSIVE_SLOT_LV.join(', ')}.</p>`},
+    sets:{t:'Skill sets',h:`
+      <p>A skill set is one character's signature kit: <b>six pieces</b> (three attacks for the basic, skill and burst slots, and three passives), a symbol, usually an element, two set bonuses and a matching <b>outfit</b>. Every land has its own sets.</p>
+      <h4>How to get the pieces</h4>
+      <ul>
+        <li>The land's <b>first world boss</b> can drop the set's first attack and passive, the <b>second world boss</b> the second pair, and the land's <b>dungeon boss</b> the third pair.</li>
+        <li>A world boss kill has a <b>${Math.round(SS_CHANCE_BOSS*100)}%</b> chance; a won dungeon run has <b>${Math.round(SS_CHANCE_DUNGEON*100)}%</b>. Each land has three sets, one for each difficulty tier: a set drops only when you beat the boss or dungeon at its tier or higher (+0 gives nothing; the <b>All sets</b> tab says which tier each needs). After ${SS_PITY_DUNGEON} such dungeon clears or ${SS_PITY_BOSS} boss kills without a drop, the next one is a sure drop.</li>
+        <li>In this version every set can also be unlocked from Settings for testing.</li>
+      </ul>
+      <h4>Using a set</h4>
+      <p>Owned pieces show up in the skills window (${kl(k('skills'))}) with the set's own symbol. Drag attacks onto the three slots and passives onto the passive slots. The window's set effects card shows what you wear: <b>3 pieces</b> of one set light its first bonus and <b>5 pieces</b> its second. You can mix pieces of two sets (3 + 3) to get both first bonuses.</p>
+      <h4>Levelling a piece</h4>
+      <p>Signature pieces go from level 2 to 5 like other skills, and also cost <b>raid material</b> of the set's land. Clear that land's ruined stronghold (the raid) to earn it: the more difficult the tier you clear, the more you get (1, 2, 4, 8... for tiers 0, I, II, III...). A cleared raid rebuilds 30 minutes later.</p>
+      <h4>The outfit</h4>
+      <p>Each set has a matching outfit in the character editor's <b>Signature</b> tab. An outfit is <b>locked until you own at least one piece of that set</b>. It is only a look: it changes no stat.</p>`},
+    allsets:{t:'All sets',h:guideAllSets()},
+    equipment:{t:'Equipment',h:`
+      <h4>What you can wear</h4>
+      <ul>
+        <li><b>Armour:</b> helmet, top, bottom and shoes raise your health and defence.</li>
+        <li><b>Weapon:</b> sets your class and your damage. Pick up a bow or a staff to play archer or mage.</li>
+        <li><b>Ring and pendant:</b> from dungeons (level 30 and 40). A ring adds attack only when its element matches your soul; a pendant gives one bonus such as XP, drops, coins or crits.</li>
+        <li><b>Tools:</b> pickaxe, axe and sickle for the three professions.</li>
+      </ul>
+      <p>Open the inventory with ${kl(k('inv'))}, click an item to wear it. Gear has a level; wear what is near your own.</p>
+      <h4>How to get it</h4>
+      <ul>
+        <li><b>Shops:</b> the village smith, armourer and general store sell gear for your level. Prices rise 20% per copy until sunrise.</li>
+        <li><b>Monster drops:</b> about 2% Common, 0.5% Rare, 0.1% Epic per kill. <b>Bosses</b> drop much better: 50 / 10 / 3 / 1 / 0.1% from Common up to Legendary.</li>
+        <li><b>Crafting:</b> ore becomes weapons and logs become armour at the smiths and armourers (see Upgrades).</li>
+        <li><b>Dungeons:</b> clears pay level-30 and level-40 weapons, armour, rings and pendants, plus Tempering Stones.</li>
+        <li><b>Merging:</b> three identical items become the next rarity at the forge.</li>
+      </ul>
+      <h4>Rarity</h4>
+      <p>Common, Rare, Epic, Unique, Legendary: each multiplies the stats (x1, 1.3, 1.7, 2.2, 3). Tempering Stones then add +1, +2... on top, and level-40 pieces can be rerolled at the forge.</p>`},
     upgrades:{t:'Upgrades',h:`
       <h4>Upgrading a skill</h4>
       <p>Every bought skill goes up to level 5 (boss skills cannot be upgraded yet). Each level adds <b>+12% damage and shorter cooldown</b>. An upgrade costs <b>coins</b> (more for each level) and <b>monster drops</b>: materials that monsters leave behind (about a third of kills), of a kind that fits the skill's level. Level 5 also asks for two boss trophies. Open the skill in the skills window to see what it still needs.</p>
@@ -93,6 +125,25 @@ function guidePages(){
       </ul>
       <p>The map shows it as <i>${PVP_ISLE.name}</i>. If you cannot find it, press ${kl(k('map'))} on the home forest's map and look at the south beach.</p>`}
   };
+}
+// the catalogue of every released skill set, written from the registry (shared/skillsets.js) so it cannot drift; the look is the set's palette and symbol
+const GUIDE_SS_LAND={home:'the home forest',vale:'the Sakura Vale',hoar:'the Hoarfrost Reach',grey:'the Greyspine',sun:'the Sunscar',gloam:'the Gloamhorn'};
+const GUIDE_SS_ROLE={risk:'high-risk damage',safe:'steady damage',grind:'crowd grinder',support:'support',heal:'healer',tank:'tank'};
+function guideSrcName(id){ const b=BOSS_DEFS.find(x=>x.def.id===id); if(b) return b.short||b.def.name; const t=typeof DG_THEMES!=='undefined'&&DG_THEMES[id]; return t?t.name+' (dungeon)':id; }
+function guideHex(c){ return '#'+c.toString(16).padStart(6,'0'); }
+function guideAllSets(){
+  const R=r=>GUIDE_SS_ROLE[r]||r, el=e=>Array.isArray(e)?e.join(' + '):e==='basic'?'none (pure basic)':e;
+  const cards=SS_ORDER.map(id=>SS_SETS[id]).filter(S=>!S.dev).sort((a,b)=>Object.keys(GUIDE_SS_LAND).indexOf(a.land)-Object.keys(GUIDE_SS_LAND).indexOf(b.land)||a.tier-b.tier).map(S=>{
+    const pal=['main','accent','glow'].filter(k=>S.pal[k]!==undefined).map(k=>`<i class="gu-sw" style="background:${guideHex(S.pal[k])}"></i>`).join('');
+    const sym=S.emblem?`<svg class="gu-em" viewBox="0 0 24 24" fill="none" stroke="${guideHex(S.emblem.col)}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${S.emblem.glyph}</svg>`:'';
+    const role=R(S.role.main)+(S.role.also?' and '+R(S.role.also.role):'');
+    const pieces=[1,2,3].map(n=>{ const P=S.pos[n], a=SKILLS[P.ids[0]], ps=PASSIVES[P.passive], o=ssOddsOf(S,n);
+      return `<li><b>${a.name}</b> (${['basic','skill','burst'][n-1]}): ${a.desc} <b>${ps.name}</b> (passive): ${ps.text.replace('{}','')}<br><em>From ${guideSrcName(P.from.id)}, ${Math.round(o.chance*100)}% a clear, sure after ${o.pity}.</em></li>`; }).join('');
+    const bon=n=>`<b>${S.bonus[n].name}</b> (${n} pieces): ${S.bonus[n].text}`;
+    return `<div class="gu-set"><h4>${sym}${S.name} <small>${S.char.name}, ${GUIDE_SS_LAND[S.land]}, difficulty +${S.tier}</small></h4>
+      <p class="gu-look">${pal} <span>Look: ${S.char.theme}. A signature outfit in the editor's Signature tab.</span></p>
+      <p>Kit: ${role}. Element: ${el(S.el)}.</p><ul>${pieces}</ul><p>${bon(3)}<br>${bon(5)}</p></div>`; }).join('');
+  return `<p>Every released skill set, by land and difficulty. A set drops only from its own land's two bosses and dungeon boss, cleared at the tier shown or higher.</p>${cards}`;
 }
 // the elemental reactions page, written from the chart itself (shared/reactions-chart.js) so it cannot drift
 const GUIDE_FLAVOR={fire:'burns',water:'slows',earth:'briefly stuns',air:'spreads the aura to enemies within '+RX_SPREAD_R+' m',dark:'weakens (it deals less)',light:'exposes (it takes more damage)'};
