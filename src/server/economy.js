@@ -137,6 +137,7 @@ function bindSoulP(p,el){
 function chatP(p,text){
   text=String(text||'').replace(/[\u0000-\u001f\u007f-\u009f]/g,'').replace(INVISIBLE,'').replace(/\s+/g,' ').trim().slice(0,160); if(!text) return;
   if(/^\/invite\s/i.test(text)){ partyMsgP(p,{a:'invite',name:text.slice(8)}); return; }   // dungeons: the party's chat command /invite name
+  if(/^\/stuck\s*$/i.test(text)){ unstuckP(p); return; }   // unstuck: the chat command
   if(S.t-(p.chatT||-9)<0.7){ toastTo(p.id,'Slow down a little','bad'); return; }
   gsStatP(p,'chat');   // gems: the chat counter
   p.chatT=S.t; ev('chat',p.id,p.name,text);

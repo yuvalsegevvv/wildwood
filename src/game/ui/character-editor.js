@@ -7,7 +7,7 @@
    A row {slider:'legs'} takes its label, range and ends from BODY_SLIDERS; the character model's recommended range is drawn under the track and the row warns outside it.
    A garment can be None (top / bottom / shoes 'none': the body shows, with underwear where the clothes were: model-body.js UNDER_COL); equipped armour is shown or hidden per piece (look.armorHat / armorTop / armorBottom / armorShoes, items.js effectiveLookOf).
    Version 3.2, the general pieces (shared/cospieces.js): every grid row of a slot with crafted pieces carries slot:'<letter>'; a piece that is crafted and not yet made is drawn locked (a padlock and its recipe in the tooltip) but can still be tried on.
-   A look that wears a locked piece is a try-on: it is not saved or sent (saveLook, model.js), the bar at the top of the editor lists what is missing, and Done will not close until the piece is made or the saved look is back (edTrying, edRevert).
+   A look that wears a locked piece, or an outfit set you have not bought (osLocks), is a try-on: it is not saved or sent (saveLook, model.js), the bar at the top of the editor lists what is missing, and Done will not close until the piece is made or the saved look is back (edTrying, edRevert).
    The five outfit slots live in this browser (localStorage 'wildwood-outfits-v1'): a slot keeps the clothes, hair, cape and aura, never the body. test: tools/editor-smoke.js, start-smoke */
 let customizing=false, creating=false, edTab=0;
 const edSub=[0,0,0,0];
@@ -80,16 +80,12 @@ const ED_NAMES={tshirt:'T-shirt',twintail:'Twin tails',kasa:'Kasa hat',sneakers:
 const edCur=()=>EDIT[edTab].subs[edSub[edTab]];
 // ---- crafted pieces: locked, owned, and the try-on gate ----
 const edOwned=()=>(typeof GEAR!=='undefined'&&GEAR&&GEAR.cos)||[];
-const edLocks=()=>cosLocked(LOOK,edOwned());
+// outfit sets worn but not owned: a try-on like a crafted piece (not saved, not sent; the bar offers to buy it)
+const osLocks=()=>{ const seen=[]; for(const id of Object.values(ofPieces(LOOK))) if(!osOwned(id)&&!seen.includes(id)) seen.push(id); return seen.map(id=>({os:id,name:CHAR_MODELS[id]?CHAR_MODELS[id].name:id})); };
+const edLocks=()=>osLocks().concat(cosLocked(LOOK,edOwned()));
 // outfit sets (the eight signature characters) are cosmetic and cost 1000 gems each (GEAR.os, server/amber.js); a locked tile asks for a second tap to buy
 const OS_SHOW=12;
 function osOwned(id){ return !OUTFITS[id]||!!(typeof GEAR!=='undefined'&&GEAR&&GEAR.os&&GEAR.os.includes(id)); }
-let osArm=null;   // the outfit a first tap armed for buying
-function osTapLocked(id){
-  const name=CHAR_MODELS[id]?CHAR_MODELS[id].name:id;
-  if(osArm!==id){ osArm=id; toast(name+'\'s outfit set costs '+GEM_SET_PRICE+' gems. Tap again to buy (you have '+(GEAR.gem||0)+').','warn'); return; }
-  osArm=null; netSend({t:'gembuy',v:id});
-}
 // a grid of more than OS_SHOW tiles shows the first OS_SHOW and scrolls, so the colour rows under it stay in sight
 function osCap(box){
   if(box.children.length<=OS_SHOW) return;
@@ -98,15 +94,19 @@ function osCap(box){
 }
 // true while the look on the hiker wears a crafted piece that has not been made (saveLook: nothing is saved or sent then)
 function edTrying(){ return customizing&&edLocks().length>0; }
-function edRevert(){ LOOK=Object.assign({},LOOK_SAVED); rebuildHiker(); renderEditor(); }
+function edRevert(){ LOOK=Object.assign({},LOOK_SAVED); if(osLocks().length) setLook('model','base'); rebuildHiker(); renderEditor(); }   // (a saved look that wears a set you do not own, from before sets were sold, comes off)
 function edFlashTry(){ const el=edBody.querySelector('.ed-try'); edBody.scrollTop=0; if(el){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } UI_SFX.click(); }
 // the try-on bar: what the look is missing, how to make it, and the way back
 function edTryBar(){
   const L=edLocks(); if(!L.length) return null;
   const bar=document.createElement('div'); bar.className='ed-try'; bar.setAttribute('role','status');
   const h=document.createElement('b'); h.textContent='Trying on: not saved yet'; bar.append(h);
-  const p=document.createElement('p'); p.textContent='Only you see this look. Make every piece below at a Wayfarers\' Lodge to keep it.'; bar.append(p);
-  for(const l of L){ const r=document.createElement('div'); r.className='ed-try-row'; const n=document.createElement('span'); n.textContent=CP_SLOTS[l.slot][2]+': '+l.name; const m=document.createElement('small'); m.textContent=cosRecipeText(l.slot,l.id); r.append(n,m); bar.append(r); }
+  const p=document.createElement('p'); p.textContent=L.some(l=>!l.os)?'Only you see this look. Make every crafted piece below at a Wayfarers\' Lodge, and buy any outfit set, to keep it.':'Only you see this look. Buy the outfit set to keep it.'; bar.append(p);
+  for(const l of L){ if(l.os){ const r=document.createElement('div'); r.className='ed-try-row'; const n=document.createElement('span'); n.textContent='Outfit set: '+l.name; r.append(n);
+      const price=GEM_SET_PRICE, b1=document.createElement('button'); b1.className='chip buy'; b1.textContent='Buy for '+price+' gems'; b1.disabled=(GEAR.gem||0)<price; b1.onclick=()=>netSend({t:'gembuy',v:l.os});
+      const b2=document.createElement('button'); b2.className='chip'; b2.textContent='With skills: '+(GEM_SET_PRICE+GEM_SKILL_PRICE); b2.disabled=(GEAR.gem||0)<GEM_SET_PRICE+GEM_SKILL_PRICE; b2.onclick=()=>netSend({t:'gembuy',v:l.os,b:1});
+      const m=document.createElement('small'); m.textContent='You have '+(GEAR.gem||0)+' gems. The gem shop (bag icon in the menu) has them too.'; r.append(b1,b2,m); bar.append(r); continue; }
+    const r=document.createElement('div'); r.className='ed-try-row'; const n=document.createElement('span'); n.textContent=CP_SLOTS[l.slot][2]+': '+l.name; const m=document.createElement('small'); m.textContent=cosRecipeText(l.slot,l.id); r.append(n,m); bar.append(r); }
   const b=document.createElement('button'); b.className='chip'; b.textContent='Back to my saved look'; b.onclick=edRevert; bar.append(b);
   return bar;
 }
@@ -223,7 +223,7 @@ function renderEditor(){
         const cur=LOOK[row.k], on=cur===undefined?(v===false||v===''):cur===v;
         const D=row.slot&&!gap?cpDef(row.slot,v):null, made=!!D&&!D.free&&edOwned().includes(cpKey(row.slot,v)), locked=!!D&&!D.free&&!made, osLock=sig&&!osOwned(v);
         const title=(name?(tip?name+': '+tip:name):gap?'None':ED_NAMES[v]||String(v).replace(/^./,c=>c.toUpperCase()))+(locked?' (locked: '+cosRecipeText(row.slot,v)+'. Tap to try it on.)':made?' (made)':'');
-        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='pupil'||(D&&!D.free)?name:''}); b.onclick=()=>{ if(osLock){ osTapLocked(v); return; } setLook(row.k,v); renderEditor(); };
+        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='pupil'||(D&&!D.free)?name:''}); b.onclick=()=>{ setLook(row.k,v); renderEditor(); };
         if(osLock){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); }
         else if(locked){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); } else if(made){ b.classList.add('made'); }
         box.append(b); }
@@ -271,7 +271,7 @@ function renderEditor(){
       const box=document.createElement('div'); box.className='tiles';
       const off=cthTile(null,{title:'Take the outfit off (plain clothes)',on:false}); off.onclick=()=>{ setLook('model','base'); renderEditor(); }; box.append(off);
       for(const id of Object.keys(OUTFITS)){ const M=CHAR_MODELS[id], on=LOOK.model===id&&Object.keys(ofPieces(LOOK)).length===7, fem=!!(M.sexes&&M.sexes[0]==='female');
-        const lk=!osOwned(id), b=cthTile({kind:'outfit',id},{on,sig:true,cap:M.name,title:M.name+' ('+(fem?'female':'male')+'). '+(M.note||'')+(lk?' Locked: '+GEM_SET_PRICE+' gems.':'')}); b.onclick=()=>{ if(lk){ osTapLocked(id); return; } setLook('model',id); renderEditor(); };
+        const lk=!osOwned(id), b=cthTile({kind:'outfit',id},{on,sig:true,cap:M.name,title:M.name+' ('+(fem?'female':'male')+'). '+(M.note||'')+(lk?' Locked: tap to try it on, '+GEM_SET_PRICE+' gems to keep it.':'')}); b.onclick=()=>{ setLook('model',id); renderEditor(); };
         if(lk){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); }
         box.append(b); }
       wrap.append(box); osCap(box);

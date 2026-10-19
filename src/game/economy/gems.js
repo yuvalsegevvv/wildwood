@@ -1,6 +1,6 @@
 //@ The gem shop (the shop icon in the main menu): your gems, the free ways to earn them (daily quests, the placeholder ad, an icon grid of achievements), the public testing button (+1000 gems) and the outfit sets for sale
 /* Agent map. Markup #gemShop / #bGems in index.html; messages gemtest / gembuy (server/amber.js); the purse is GEAR.gem and the bought sets GEAR.os (shared/amber.js).
-   Free sources: shared/gem-sources.js (GS_ACH, GEM_*), server/gem-sources.js (adwatch). gemRefresh() is called from applyGear (economy/items.js). The editor's locked outfit tiles buy through the same gembuy message (ui/character-editor.js osTapLocked). Test: tools/amber-smoke.js */
+   Free sources: shared/gem-sources.js (GS_ACH, GEM_*), server/gem-sources.js (adwatch). gemRefresh() is called from applyGear (economy/items.js). The editor: a locked outfit tile tries the set on (a try-on bar, ui/character-editor.js osLocks / edTryBar) and the bar buys through the same gembuy message. Test: tools/amber-smoke.js */
 const GS_ICON={   // one 24x24 stroke icon per achievement kind (GS_ACH[].ic)
   star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
   crown:'<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/>',
@@ -42,22 +42,45 @@ function gemFreeRefresh(){
   $('#achCount').textContent=GS_ACH.filter(gsAchDone).length+' / '+GS_ACH.length;
   const s=GS_ACH.find(a=>a.id===achSel); $('#achInfo').textContent=s?s.name+(s.tier?' '+GS_ROMAN[s.tier]:'')+': '+s.text+' ('+s.gems+' gems)'+(gsAchDone(s)?' - done':''):'Tap an icon to see what it asks. Each pays gems once, by itself.';
 }
+let gemTab='sets';
+function gemShowTab(t){
+  gemTab=t; $('#gemSets').hidden=t!=='sets'; $('#gemFreeBox').hidden=t!=='free';
+  for(const b of document.querySelectorAll('#gemTabs [data-gemtab]')) b.className='chip'+(b.dataset.gemtab===t?' buy':'');
+  gemRefresh();
+}
+// one card per outfit set: a big portrait of the character, the set's name and what it is, and a buy button that says what is missing
+function gemCard(sid){
+  const T=SS_SETS[sid], id=T.outfit, M=id&&CHAR_MODELS[id]; if(!M) return null;
+  const owned=osOwned(id), have=GEAR.gem||0, short=GEM_SET_PRICE-have, skOwned=[1,2,3].every(n=>{ const P=T.pos[n]; return !P||[...P.ids,P.passive].every(i=>GEAR.skills.owned.includes(i)); });
+  const card=document.createElement('div'); card.className='gem-card'+(owned?' owned':'');
+  const pic=document.createElement('div'); pic.className='gem-pic wait';
+  const im=document.createElement('img'); im.alt=M.name; im.draggable=false; pic.append(im);
+  cthGet({kind:'outfit',id},url=>{ pic.classList.remove('wait'); if(url) im.src=url; });
+  if(owned){ const r=document.createElement('span'); r.className='gem-ribbon'; r.textContent='Owned'; pic.append(r); }
+  const nm=document.createElement('b'); nm.className='gem-name'; nm.textContent=M.name;
+  const st=document.createElement('span'); st.className='gem-set'; st.textContent=T.name+(ELEMS[T.el]&&T.el!=='basic'?' \u00b7 '+ELEMS[T.el].name:''); if(ELEMS[T.el]) st.style.setProperty('--el',ELEMS[T.el].col);
+  const nt=document.createElement('p'); nt.className='gem-note'; nt.textContent=M.note||'';
+  const b=document.createElement('button'); b.type='button'; b.className='gem-buy';
+  if(owned){ b.textContent='In your wardrobe'; b.disabled=true; }
+  else if(short>0){ b.textContent=GEM_SET_PRICE+' gems'; b.disabled=true; b.title='You need '+short+' more gems'; b.classList.add('poor'); }
+  else { b.textContent='Buy for '+GEM_SET_PRICE+' gems'; b.addEventListener('click',()=>netSend({t:'gembuy',v:id})); }
+  card.append(pic,nm,st,nt,b);
+  // the bundle: the outfit with the whole skill set (the same set the world's bosses and dungeons drop), for less than the two apart; or, for a set whose outfit you own, the skills alone
+  if(!skOwned){ const price=(owned?0:GEM_SET_PRICE)+GEM_SKILL_PRICE, c=document.createElement('button'); c.type='button'; c.className='gem-buy gem-bundle';
+    c.textContent=owned?'Add its skills: '+price+' gems':'Bundle with skills: '+price+' gems'; if(have<price){ c.disabled=true; c.classList.add('poor'); c.title='You need '+(price-have)+' more gems'; }
+    else c.addEventListener('click',()=>netSend({t:'gembuy',v:id,b:1}));
+    card.append(c); }
+  if(!owned&&short>0){ const n=document.createElement('span'); n.className='gem-short'; n.textContent=short+' gems to go'; card.append(n); }
+  return card;
+}
 function gemRefresh(){
   const bal=(GEAR.gem||0)+' gems'; $('#gemBal').textContent=bal;
   if($('#gemShop').hidden) return;
-  gemFreeRefresh();
-  $('#gemPrice').textContent=GEM_SET_PRICE+' gems each';
+  if(gemTab==='free'){ gemFreeRefresh(); return; }
   const box=$('#gemList'); box.innerHTML='';
-  for(const sid of SS_ORDER){
-    const T=SS_SETS[sid], id=T.outfit, M=id&&CHAR_MODELS[id]; if(!M) continue;
-    const row=document.createElement('div'); row.className='gem-row';
-    const nm=document.createElement('span'); nm.textContent=M.name+' - '+T.name; row.append(nm);
-    const b=document.createElement('button'); b.className='chip';
-    if(osOwned(id)){ b.textContent='Owned'; b.disabled=true; }
-    else { b.textContent='Buy for '+GEM_SET_PRICE; b.disabled=(GEAR.gem||0)<GEM_SET_PRICE; b.addEventListener('click',()=>netSend({t:'gembuy',v:id})); }
-    row.append(b); box.append(row);
-  }
+  for(const sid of SS_ORDER){ const c=gemCard(sid); if(c) box.append(c); }
 }
-$('#bGems').addEventListener('click',e=>{ e.currentTarget.blur(); if($('#gemShop').hidden){ openPanel('gemShop'); gemRefresh(); } else closePanels(); });
+for(const b of document.querySelectorAll('#gemTabs [data-gemtab]')) b.addEventListener('click',()=>gemShowTab(b.dataset.gemtab));
+$('#bGems').addEventListener('click',e=>{ e.currentTarget.blur(); if($('#gemShop').hidden){ openPanel('gemShop'); gemShowTab(gemTab); } else closePanels(); });
 $('#gemFree').addEventListener('click',()=>netSend({t:'gemtest'}));
 $('#gemAd').addEventListener('click',()=>netSend({t:'adwatch'}));   // a PLACEHOLDER: no ad service yet

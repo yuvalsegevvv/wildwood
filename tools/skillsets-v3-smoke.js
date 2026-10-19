@@ -91,10 +91,10 @@ ok('Ottoline: Pulled Strings: +10% crit only against a target carrying Strings; 
 { const hit=()=>lost(m1,()=>still(()=>x.damageMonsterS(m1,100,p,p.x,p.z,0,'dark'))); m1.mk=null; const a=hit(); x.ssMarkS(p,m1,{id:'string',n:3,dur:12,max:3}); const b=hit(); ok('Ottoline: Tangle (3 pieces): a target carrying her Strings takes 8% more from her for each (3 Strings: 24%)',near(b/a,1.24,0.02),Math.round(a)+' -> '+Math.round(b)); }
 wear('ottoline',3); reset(); put(m1,0,-3); { p.ssIcd={}; const a=x.allyP(pb,'might'); x.ssTriggerS(p,'cast3',{m:m1}); ok('Ottoline: Last Dance (5 pieces) is a bonus on casting the third slot (it exists and is a trigger row)',SET('ottoline').bonus[5].on==='cast3'&&a===0); }
 
-// ---- the free testing tools still give the dev sets ----
-{ const dev0=x.S.dev; x.S.dev=false; W.receive('b',{t:'ft',cmd:'set',v:'nephra'}); W.receive('b',{t:'ft',cmd:'set',v:'sabir'}); W.receive('b',{t:'ft',cmd:'set',v:'ogden'}); W.receive('b',{t:'ft',cmd:'set',v:'ottoline'}); tick(3);
+// ---- the admin tool (dev switch on) still gives a whole set; the public free tool 'ft' was removed in the gems change ----
+{ const dev0=x.S.dev; x.S.dev=true; for(const i of IDS) W.receive('b',{t:'dev',cmd:'set',v:i}); tick(3);
   const owns=(q,id)=>q.gear.skills.owned.includes(id)||q.gear.skills.pass.includes(id)||(q.gear.skills.passOwned||[]).includes(id);
-  ok('ft/set (the free version-2 tool, dev switch off) gives each of the four their whole set',IDS.every(i=>PIECES(i).every(id=>owns(pb,id))),IDS.map(i=>PIECES(i).filter(id=>owns(pb,id)).length).join());
-  W.receive('b',{t:'ft',cmd:'try',v:'ottoline'}); tick(3); ok('...and ft/try puts one of them on',pb.ss&&pb.ss.n&&pb.ss.n.ottoline===6,JSON.stringify(pb.ss&&pb.ss.n)); x.S.dev=dev0; }
+  ok('dev/set (the admin tool) gives each of the four their whole set',IDS.every(i=>PIECES(i).every(id=>owns(pb,id))),IDS.map(i=>PIECES(i).filter(id=>owns(pb,id)).length).join());
+  x.S.dev=dev0; }
 
 console.log(fails?fails+' check(s) failed':'all passed'); process.exit(fails?1:0);

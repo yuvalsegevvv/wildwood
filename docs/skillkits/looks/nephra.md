@@ -106,7 +106,7 @@ Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders)
 |---|---|---|
 | `height` (Height) | 0.96 .. 1.08 | 0.92 .. 1.08 |
 | `build` (Build) | 0.88 .. 1.02 | 0.88 .. 1.18 |
-| `chest` (Chest) | 0.6 .. 1.1 | 0.6 .. 1.4 |
+| `chest` (Chest) | 0.6 .. 1.1 | 0.6 .. 1.9 |
 | `waist` (Waist) | 0.82 .. 1.05 | 0.82 .. 1.15 |
 | `hips` (Hips) | 0.85 .. 1.12 | 0.85 .. 1.2 |
 | `legs` (Leg length) | 1 .. 1.14 | 0.92 .. 1.14 |
