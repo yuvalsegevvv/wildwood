@@ -47,7 +47,7 @@ function guidePages(){
       <h4>How to get the pieces</h4>
       <ul>
         <li>The land's <b>first world boss</b> can drop the set's first attack and passive, the <b>second world boss</b> the second pair, and the land's <b>dungeon boss</b> the third pair.</li>
-        <li>A world boss kill has a <b>${Math.round(SS_CHANCE_BOSS*100)}%</b> chance; a won dungeon run has <b>${Math.round(SS_CHANCE_DUNGEON*100)}%</b>. Only kills and clears at <b>difficulty +1 or higher</b> count (+0 gives nothing). After ${SS_PITY_DUNGEON} such dungeon clears or ${SS_PITY_BOSS} boss kills without a drop, the next one is a sure drop.</li>
+        <li>A world boss kill has a <b>${Math.round(SS_CHANCE_BOSS*100)}%</b> chance; a won dungeon run has <b>${Math.round(SS_CHANCE_DUNGEON*100)}%</b>. Each land has three sets, one for each difficulty tier: a set drops only when you beat the boss or dungeon at its tier or higher (+0 gives nothing; the <b>All sets</b> tab says which tier each needs). After ${SS_PITY_DUNGEON} such dungeon clears or ${SS_PITY_BOSS} boss kills without a drop, the next one is a sure drop.</li>
         <li>In this version every set can also be unlocked from Settings for testing.</li>
       </ul>
       <h4>Using a set</h4>
@@ -56,6 +56,7 @@ function guidePages(){
       <p>Signature pieces go from level 2 to 5 like other skills, and also cost <b>raid material</b> of the set's land. Clear that land's ruined stronghold (the raid) to earn it: the more difficult the tier you clear, the more you get (1, 2, 4, 8... for tiers 0, I, II, III...). A cleared raid rebuilds 30 minutes later.</p>
       <h4>The outfit</h4>
       <p>Each set has a matching outfit in the character editor's <b>Signature</b> tab. An outfit is <b>locked until you own at least one piece of that set</b>. It is only a look: it changes no stat.</p>`},
+    allsets:{t:'All sets',h:guideAllSets()},
     equipment:{t:'Equipment',h:`
       <h4>What you can wear</h4>
       <ul>
@@ -124,6 +125,25 @@ function guidePages(){
       </ul>
       <p>The map shows it as <i>${PVP_ISLE.name}</i>. If you cannot find it, press ${kl(k('map'))} on the home forest's map and look at the south beach.</p>`}
   };
+}
+// the catalogue of every released skill set, written from the registry (shared/skillsets.js) so it cannot drift; the look is the set's palette and symbol
+const GUIDE_SS_LAND={home:'the home forest',vale:'the Sakura Vale',hoar:'the Hoarfrost Reach',grey:'the Greyspine',sun:'the Sunscar',gloam:'the Gloamhorn'};
+const GUIDE_SS_ROLE={risk:'high-risk damage',safe:'steady damage',grind:'crowd grinder',support:'support',heal:'healer',tank:'tank'};
+function guideSrcName(id){ const b=BOSS_DEFS.find(x=>x.def.id===id); if(b) return b.short||b.def.name; const t=typeof DG_THEMES!=='undefined'&&DG_THEMES[id]; return t?t.name+' (dungeon)':id; }
+function guideHex(c){ return '#'+c.toString(16).padStart(6,'0'); }
+function guideAllSets(){
+  const R=r=>GUIDE_SS_ROLE[r]||r, el=e=>Array.isArray(e)?e.join(' + '):e==='basic'?'none (pure basic)':e;
+  const cards=SS_ORDER.map(id=>SS_SETS[id]).filter(S=>!S.dev).sort((a,b)=>Object.keys(GUIDE_SS_LAND).indexOf(a.land)-Object.keys(GUIDE_SS_LAND).indexOf(b.land)||a.tier-b.tier).map(S=>{
+    const pal=['main','accent','glow'].filter(k=>S.pal[k]!==undefined).map(k=>`<i class="gu-sw" style="background:${guideHex(S.pal[k])}"></i>`).join('');
+    const sym=S.emblem?`<svg class="gu-em" viewBox="0 0 24 24" fill="none" stroke="${guideHex(S.emblem.col)}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${S.emblem.glyph}</svg>`:'';
+    const role=R(S.role.main)+(S.role.also?' and '+R(S.role.also.role):'');
+    const pieces=[1,2,3].map(n=>{ const P=S.pos[n], a=SKILLS[P.ids[0]], ps=PASSIVES[P.passive], o=ssOddsOf(S,n);
+      return `<li><b>${a.name}</b> (${['basic','skill','burst'][n-1]}): ${a.desc} <b>${ps.name}</b> (passive): ${ps.text.replace('{}','')}<br><em>From ${guideSrcName(P.from.id)}, ${Math.round(o.chance*100)}% a clear, sure after ${o.pity}.</em></li>`; }).join('');
+    const bon=n=>`<b>${S.bonus[n].name}</b> (${n} pieces): ${S.bonus[n].text}`;
+    return `<div class="gu-set"><h4>${sym}${S.name} <small>${S.char.name}, ${GUIDE_SS_LAND[S.land]}, difficulty +${S.tier}</small></h4>
+      <p class="gu-look">${pal} <span>Look: ${S.char.theme}. A signature outfit in the editor's Signature tab.</span></p>
+      <p>Kit: ${role}. Element: ${el(S.el)}.</p><ul>${pieces}</ul><p>${bon(3)}<br>${bon(5)}</p></div>`; }).join('');
+  return `<p>Every released skill set, by land and difficulty. A set drops only from its own land's two bosses and dungeon boss, cleared at the tier shown or higher.</p>${cards}`;
 }
 // the elemental reactions page, written from the chart itself (shared/reactions-chart.js) so it cannot drift
 const GUIDE_FLAVOR={fire:'burns',water:'slows',earth:'briefly stuns',air:'spreads the aura to enemies within '+RX_SPREAD_R+' m',dark:'weakens (it deals less)',light:'exposes (it takes more damage)'};

@@ -9,8 +9,8 @@ const el=s=>document.querySelector(s);
 (async()=>{
   let G=c.G(); for(let i=0;i<300;i++){ await wait(100); G=c.G(); if(G.canStart()) break; }
   ok('world streams in',G.canStart());
-  { const pg=G.guidePages(), ids=Object.keys(pg);   // the Guide: nine tabs of text, opened by its panel
-    ok('the guide has its nine tabs, each with text',ids.length===9&&ids.every(i=>pg[i].h.length>200),ids.join());
+  { const pg=G.guidePages(), ids=Object.keys(pg);   // the Guide: ten tabs of text, opened by its panel
+    ok('the guide has its ten tabs, each with text',ids.length===10&&ids.every(i=>pg[i].h.length>200),ids.join());
     ok('the reactions page lists all fifteen',(pg.reactions.h.match(/<tr>/g)||[]).length===15);
     G.guestGateShow('level'); ok('the guest popup says to register',!el('#guestGate').hidden&&/Register/.test(el('#ggText').textContent)); el('#ggLater').click(); ok('and closes with Not now',el('#guestGate').hidden);
     G.openVersions(); ok('the versions panel opens with three lists',!el('#versions').hidden&&Object.keys(G.verPages()).length===3); G.closePanels();
