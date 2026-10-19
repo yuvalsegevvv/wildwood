@@ -37,6 +37,9 @@
     <button class="icon-btn" id="bGuide" aria-label="Guide (J)" title="Guide: how the game works (J)" data-kb="guide" data-kbt="Guide: how the game works ({k})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C6.5 4 9.5 4 12 5.5c2.5-1.5 5.5-1.5 8 0v13c-2.5-1.5-5.5-1.5-8 0-2.5-1.5-5.5-1.5-8 0z"/><path d="M12 5.5v13"/></svg>
     </button>
+    <button class="icon-btn" id="bFriends" aria-label="Friends and ranking" title="Friends and ranking" data-kb="friends" data-kbt="Friends and ranking ({k})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.6-.3 4.5 1.4 4.5 4"/></svg>
+    </button>
     <button class="icon-btn" id="bInv" aria-label="Inventory (I)" title="Inventory (I)" data-kb="inv" data-kbt="Inventory ({k})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
     </button>
@@ -144,6 +147,15 @@
 <div id="dgPty" class="panel" hidden role="dialog" aria-label="Party">
   <div class="pn-head"><span class="pn-t">Party</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="dgPtyBody"></div>
+</div>
+<div id="frInv" hidden role="alertdialog" aria-live="assertive" aria-label="Friend request">
+  <p id="frInvText"></p>
+  <div class="dgj-row"><button class="chip buy" id="frYes" type="button">Accept</button><button class="chip" id="frNo" type="button">No thanks</button></div>
+</div>
+<div id="friends" class="panel" hidden role="dialog" aria-label="Friends and ranking">
+  <div class="pn-head"><span class="pn-t">Friends</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="chips pn-tabs"><button class="chip" id="frTabF" type="button">Friends</button><button class="chip" id="frTabR" type="button">Ranking</button></div>
+  <div class="pn-body" id="frBody"></div>
 </div>
 <div id="lucky" aria-live="polite"></div>
 <div id="meSay" class="say" hidden></div>

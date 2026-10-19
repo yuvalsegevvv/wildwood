@@ -53,6 +53,7 @@ function leave(pid){
   PENDING.delete(pid);
   const lp=S.players.get(pid); if(lp) mqRemoveGreyP(lp);
   if(lp){ partyGoneP(lp); dgGoneP(lp); }   // dungeons: out of the party (the lead passes on); a run holds the place 5 minutes
+  if(lp) frNoteP(lp);   // friends: the ranking remembers the last level of a player who leaves
   if(lp&&lp.acct){ saveP(lp); if(ACCT.get(lp.acct)===pid) ACCT.delete(lp.acct); }
   if(!S.players.delete(pid)) return;
   ev('pleave',pid);
