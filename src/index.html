@@ -72,12 +72,13 @@
 </div>
 <div id="gemShop" class="panel" hidden role="dialog" aria-label="Gem shop">
   <div class="pn-head"><span class="pn-t">Gem shop</span><span class="pn-gems" id="gemBal"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-  <div class="pn-body"><p class="muted">Gems are the premium currency. They buy the cosmetic outfit sets (the look only: the skill sets are still earned in the world). Amber is a different thing: the material for gear upgrades.</p>
-    <div class="inv-h">Free gems</div>
+  <div class="chips pn-tabs" id="gemTabs"><button class="chip buy" data-gemtab="sets">Outfit sets</button><button class="chip" data-gemtab="free">Free gems &amp; achievements</button></div>
+  <div class="pn-body" id="gemSets"><p class="muted gem-intro">Wear a whole character: clothes, hair, face and weapon look, all in one. The look only: the skill sets are still earned in the world.</p><div id="gemList" class="gem-grid"></div></div>
+  <div class="pn-body" id="gemFreeBox" hidden>
     <p class="muted" id="gemFreeNote"></p>
     <div class="test-col"><button class="chip" id="gemAd">Watch an ad (+15 gems)</button><button class="chip" id="gemFree">Get 1000 free gems (testing)</button></div>
     <div class="inv-h">Achievements <span id="achCount"></span></div><div id="achGrid" class="ach-grid"></div><p class="muted" id="achInfo">Tap an icon to see what it asks.</p>
-    <div class="inv-h">Outfit sets <span id="gemPrice"></span></div><div id="gemList" class="gem-list"></div></div>
+  </div>
 </div>
 <div id="shop" class="panel" hidden role="dialog" aria-label="Shop">
   <div class="pn-head"><span class="pn-t" id="shopTitle">Shop</span><span class="pn-coins" id="shopCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
