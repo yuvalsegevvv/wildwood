@@ -9,7 +9,22 @@ const GS_ICON={   // one 24x24 stroke icon per achievement kind (GS_ACH[].ic)
   road:'<path d="M9 20L10.5 4M15 20L13.5 4"/><path d="M12 6v2M12 11v2M12 16v2"/>',
   bolt:'<path d="M13 3L5 13h6l-1 8 8-10h-6z"/>',
   pick:'<path d="M4 20L14 10"/><path d="M8 4c5-1 11 2 12 8-3-3-6-4-10-3z"/>',
-  hat:'<path d="M3 17h18"/><path d="M6 17c0-5 2-9 6-9s6 4 6 9"/>'};
+  hat:'<path d="M3 17h18"/><path d="M6 17c0-5 2-9 6-9s6 4 6 9"/>',
+  sword:'<path d="M20 4l-9 9"/><path d="M14 4h6v6"/><path d="M6 14l4 4M4 20l3-3"/>',
+  skull:'<path d="M5 12a7 7 0 0 1 14 0v3l-2 1v3H7v-3l-2-1z"/><circle cx="9.5" cy="12" r="1.2"/><circle cx="14.5" cy="12" r="1.2"/>',
+  flask:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M8 15h8"/>',
+  chat:'<path d="M4 5h16v11H9l-5 4z"/>',
+  heart:'<path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z"/>',
+  shirt:'<path d="M8 3l-5 4 3 3 2-1v12h8V9l2 1 3-3-5-4a4 4 0 0 1-8 0z"/>',
+  door:'<path d="M6 21V4h12v17"/><path d="M4 21h16"/><circle cx="15" cy="13" r=".8"/>',
+  coin:'<circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 10c0-1.5 5-1.5 5 0s-5 2-5 3.5 5 1.5 5 0"/>',
+  flag:'<path d="M5 21V4"/><path d="M5 5h13l-3 4 3 4H5"/>',
+  layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
+  wallet:'<path d="M4 7h15v13H4z"/><path d="M4 7l12-3v3"/><circle cx="15" cy="13" r="1"/>',
+  bag:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+  gem:'<path d="M6 4h12l3 5-9 11L3 9z"/><path d="M3 9h18M9 4l-2 5 5 11 5-11-2-5"/>',
+  ring:'<circle cx="12" cy="15" r="6"/><path d="M9 6l3-3 3 3-3 3z"/>',
+  ghost:'<path d="M5 20V10a7 7 0 0 1 14 0v10l-3-2-2 2-2-2-2 2-2-2z"/><circle cx="10" cy="11" r="1"/><circle cx="14" cy="11" r="1"/>'};
 let achSel=null;
 function gsAchDone(a){ return !!(GEAR.ach&&GEAR.ach.includes(a.id)); }
 function gemFreeRefresh(){
@@ -20,12 +35,12 @@ function gemFreeRefresh(){
   const grid=$('#achGrid'); grid.innerHTML='';
   for(const a of GS_ACH){
     const t=document.createElement('button'); t.className='ach'+(gsAchDone(a)?' done':'')+(achSel===a.id?' sel':''); t.setAttribute('aria-label',a.name);
-    t.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+GS_ICON[a.ic]+'</svg><span class="ag">'+a.gems+'</span>';
+    t.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(GS_ICON[a.ic]||GS_ICON.star)+'</svg>'+(a.tier?'<span class="at">'+GS_ROMAN[a.tier]+'</span>':'')+'<span class="ag">'+a.gems+'</span>';
     t.addEventListener('click',()=>{ achSel=a.id; gemFreeRefresh(); });
     grid.append(t);
   }
   $('#achCount').textContent=GS_ACH.filter(gsAchDone).length+' / '+GS_ACH.length;
-  const s=GS_ACH.find(a=>a.id===achSel); $('#achInfo').textContent=s?s.name+': '+s.text+' ('+s.gems+' gems)'+(gsAchDone(s)?' - done':''):'Tap an icon to see what it asks. Each pays gems once, by itself.';
+  const s=GS_ACH.find(a=>a.id===achSel); $('#achInfo').textContent=s?s.name+(s.tier?' '+GS_ROMAN[s.tier]:'')+': '+s.text+' ('+s.gems+' gems)'+(gsAchDone(s)?' - done':''):'Tap an icon to see what it asks. Each pays gems once, by itself.';
 }
 function gemRefresh(){
   const bal=(GEAR.gem||0)+' gems'; $('#gemBal').textContent=bal;

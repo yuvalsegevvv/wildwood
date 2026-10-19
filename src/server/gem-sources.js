@@ -1,9 +1,10 @@
 //@ Free gems on the server: quest steps, the daily quest set (UTC), achievements and the placeholder ad watch
 /* Agent map. State (all saved, cleaned by gsSanitize): gear.ach (claimed achievement ids), gear.dq {d: UTC day number, ids: the day's notices, got: the ones handed in}, gear.ad {d, n: ads watched today}.
-   Hooks (marked // gems:): mqCompleteP (main-quest.js), sqCompleteP (side-quests.js), turnInP and refreshOffersP (economy.js), the half-second tick (players.js: gsTickP), sanitizeGear (players.js).
+   Hooks (marked // gems:): rewardKill (kill, boss), the knock-out in hurtP (die), chatP (chat), drinkP (drink) count into gear.st via gsStatP;: mqCompleteP (main-quest.js), sqCompleteP (side-quests.js), turnInP and refreshOffersP (economy.js), the half-second tick (players.js: gsTickP), sanitizeGear (players.js).
    Message adwatch{} grants GEM_AD up to GEM_AD_DAY a day. It is a PLACEHOLDER: no ad service is linked (the game earns nothing yet), the click is the "ad". Test: tools/gem-sources-smoke.js */
 function gsGemP(p,n,why){ if(n>0){ ambGemP(p,n); toastTo(p.id,'+'+n+' gems'+(why?' ('+why+')':''),'good'); } }
 function gsSanitize(g,out){
+  out.st={}; for(const k of GS_STATS) out.st[k]=clampInt(g&&g.st&&g.st[k],0,1e9,0);   // counters (own keys only)
   out.ach=Array.isArray(g&&g.ach)?g.ach.filter((id,i,a)=>typeof id==='string'&&GS_ACH.some(x=>x.id===id)&&a.indexOf(id)===i):[];
   const d=g&&g.dq&&typeof g.dq==='object'?g.dq:{}, ok=a=>Array.isArray(a)?a.filter((id,i,s)=>typeof id==='string'&&/^g\d{1,9}$/.test(id)&&s.indexOf(id)===i).slice(0,GEM_DQ_COUNT):[];
   out.dq={d:clampInt(d.d,0,1e7,0),ids:ok(d.ids),got:ok(d.got)};
@@ -21,9 +22,12 @@ function gsTurnedInP(p,id){
   D.got.push(id); gsGemP(p,GEM_DQ_EACH,'daily quest '+D.got.length+' / '+D.ids.length);
   if(D.got.length>=D.ids.length) gsGemP(p,GEM_DQ_ALL,'all daily quests done');
 }
+function gsStatP(p,k){ const s=p.gear.st; if(s&&k in s) s[k]=Math.min(1e9,s[k]+1); }   // kill, boss, die, chat, drink (hooks marked // gems:)
 function gsTickP(p){
   gsDailyP(p);
-  for(const A of GS_ACH) if(!p.gear.ach.includes(A.id)&&A.ok({level:p.level,gear:p.gear})){ p.gear.ach.push(A.id); p.dirty=true; gsGemP(p,A.gems,'achievement: '+A.name); }
+  const got=[]; let sum=0;   // one toast for all that unlock together (an old save can unlock many at its first tick)
+  for(const A of GS_ACH) if(!p.gear.ach.includes(A.id)&&A.ok({level:p.level,gear:p.gear})){ p.gear.ach.push(A.id); sum+=A.gems; got.push(A.name+(A.tier?' '+GS_ROMAN[A.tier]:'')); }
+  if(got.length){ p.dirty=true; gsGemP(p,sum,'achievement'+(got.length>1?'s':'')+': '+got.slice(0,3).join(', ')+(got.length>3?' and '+(got.length-3)+' more':'')); }
 }
 MSG.adwatch=(p)=>{
   const A=p.gear.ad, d=gsDayOf(Date.now()); if(A.d!==d){ A.d=d; A.n=0; }

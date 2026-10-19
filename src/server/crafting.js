@@ -39,7 +39,7 @@ function drinkP(p,kind){
   const P=potionToDrink(p.gear.pot,kind); if(!P){ toastTo(p.id,'You have no '+K.name,'bad'); return; }
   p.potCd=p.potCd||{}; if((p.potCd[kind]||0)>S.t) return;
   if(kind==='heal'&&p.hp>=p.maxHp){ toastTo(p.id,'You are not hurt','bad'); return; }
-  p.gear.pot[P.id]--; if(!p.gear.pot[P.id]) delete p.gear.pot[P.id];
+  p.gear.pot[P.id]--; if(!p.gear.pot[P.id]) delete p.gear.pot[P.id]; gsStatP(p,'drink');   // gems: the potion counter
   p.potCd[kind]=S.t+K.cd;
   const dur=potDur(kind);
   if(kind==='heal') healP(p,p.maxHp*POT_HEAL[P.tier]);

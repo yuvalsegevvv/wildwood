@@ -103,3 +103,4 @@ details.tg>summary{ cursor:pointer; font-weight:600; padding:4px 0; }
 .ach.sel{ outline:2px solid #8fd4f2; }
 .ach .ag{ position:absolute; right:3px; bottom:2px; font-size:10px; font-weight:700; color:#8fd4f2; }
 .qg{ color:#8fd4f2; }
+.ach .at{ position:absolute; left:4px; top:2px; font-size:10px; font-weight:700; opacity:.8; }

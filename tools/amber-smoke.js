@@ -1,12 +1,12 @@
 // Headless test of gems and amber (server/amber.js): the public +1000 gem tool works with the dev switch off, buying an outfit set costs 1000 gems and is refused without funds / twice / for a bad id, the admin amber tool needs the dev switch, saves are sanitized.
 // Usage: node tools/amber-smoke.js
 const {loadServer}=require('./load');
-const {api:W,x}=loadServer({send(){}},['S','SS_ORDER','SS_SETS','GEM_SET_PRICE','AMB_MAX','sanitizeGear']);
+const {api:W,x}=loadServer({send(){}},['S','SS_ORDER','SS_SETS','GEM_SET_PRICE','AMB_MAX','sanitizeGear','GS_ACH']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 W.join('a',{name:'Alma',look:{cls:'warrior'},save:{level:5}}); tick(1);
 const p=W.players.get('a'), id=x.SS_SETS[x.SS_ORDER[0]].outfit;
-x.S.dev=false;
+x.S.dev=false; p.gear.ach=x.GS_ACH.map(a=>a.id); p.gear.gem=0;   // (achievements pay gems too: mark them all claimed so only the tools under test move the purse)
 ok('a new hiker has no gems, no amber and no outfit sets',p.gear.gem===0&&p.gear.amb===0&&Array.isArray(p.gear.os)&&p.gear.os.length===0);
 W.receive('a',{t:'gembuy',v:id}); tick(1);
 ok('buying without gems is refused',!p.gear.os.includes(id)&&p.gear.gem===0);

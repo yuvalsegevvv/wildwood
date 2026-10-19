@@ -73,7 +73,7 @@ function rewardKill(q,m){
   const r=dgRollDropP(q,m,K,m.def.boss?rollBossRarity():rollMonsterRarity());   // dungeons: a Tempering Stone replaces the equipment drop of normal monsters fought at level 30+
   if(r>=0) addItemP(q,randomItem(tierFor(K.lv),r),false,m.id);
   if(MATS[m.def.id]){ const n=rollDropCount(m.def,psP(q,'drop')+pendP(q,'drop')+rlP(q,'drop')+potBuffP(q,'fortune')); if(n) addMatP(q,m.def.id,n,m.id); }
-  questKillP(q,m.def.id); q.dirty=true;
+  questKillP(q,m.def.id); q.dirty=true; gsStatP(q,'kill'); if(m.def.boss) gsStatP(q,'boss');   // gems: the kill counters
   if(m.rd) return;   // raids: a raid copy of a boss pays the kill (above) but opens no tier, rolls no set, drops no boss skill and advances no quest
   if(m.def.boss){ rlBossStonesP(q,m,K); bossSkillDropP(q,m.def.id); ssBossClearP(q,m); zoneTierKillP(q,m); }   // skillsets: the set of this boss's land at the tier fought (before the kill can unlock a tier)
   mqKillP(q,m);
