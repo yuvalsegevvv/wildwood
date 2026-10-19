@@ -1,6 +1,6 @@
 //@ The gem shop (the shop icon in the main menu): your gems, the free ways to earn them (daily quests, the placeholder ad, an icon grid of achievements), the public testing button (+1000 gems) and the outfit sets for sale
 /* Agent map. Markup #gemShop / #bGems in index.html; messages gemtest / gembuy (server/amber.js); the purse is GEAR.gem and the bought sets GEAR.os (shared/amber.js).
-   Free sources: shared/gem-sources.js (GS_ACH, GEM_*), server/gem-sources.js (adwatch). gemRefresh() is called from applyGear (economy/items.js). The editor's locked outfit tiles buy through the same gembuy message (ui/character-editor.js osTapLocked). Test: tools/amber-smoke.js */
+   Free sources: shared/gem-sources.js (GS_ACH, GEM_*), server/gem-sources.js (adwatch). gemRefresh() is called from applyGear (economy/items.js). The editor: a locked outfit tile tries the set on (a try-on bar, ui/character-editor.js osLocks / edTryBar) and the bar buys through the same gembuy message. Test: tools/amber-smoke.js */
 const GS_ICON={   // one 24x24 stroke icon per achievement kind (GS_ACH[].ic)
   star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
   crown:'<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/>',
