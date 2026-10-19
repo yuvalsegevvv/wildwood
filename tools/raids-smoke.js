@@ -3,7 +3,7 @@
 // the thirty-minute rebuild and the abandon reset, signature skills levelling with raid material, saves. Randomness is pinned where a number is compared. One line per check.
 // Usage: node tools/raids-smoke.js
 const {loadServer}=require('./load');
-const {api:W,x}=loadServer({dev:true,send(){}},['MONS','BOSSES','RDS','RD_ORDER','RD_BAD','RD_STATE','RD_LAYOUT','RD_UP','RD_RESET','RD_ABANDON','RD_BASE_LV','RD_FOOT','ARENAS','SS_SOURCES','SS_SETS','SKILLS','landAt','getH','waIsSea','waCoast','vDist','VR','arenaDist','rdLevel','rdMatFor','rdUpNeeds','rdMatsOf','rdSanitizeSave','rdCapTier','upgradeNeeds','MATS',
+const {api:W,x}=loadServer({dev:true,send(){}},['MONS','BOSSES','RDS','RD_ORDER','RD_BAD','RD_STATE','RD_LAYOUT','RD_UP','RD_MOB_HP','dgKOf','RD_RESET','RD_ABANDON','RD_BASE_LV','RD_FOOT','ARENAS','SS_SOURCES','SS_SETS','SKILLS','landAt','getH','waIsSea','waCoast','vDist','VR','arenaDist','rdLevel','rdMatFor','rdUpNeeds','rdMatsOf','rdSanitizeSave','rdCapTier','upgradeNeeds','MATS',
   'damageMonsterS','monK','zoneTierOn','sanitizeGear','newGearFor','bossState','DEF_BY_ID','killMonsterS','upgradeSkillP','skillLvOf','UP_COUNT','UP_COINS','BOSS_UP','SKILL_MAX_LV','PASSIVES','dgEntranceNear','ZTIER_MAX','VIL']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
@@ -21,6 +21,7 @@ ok('the court and the yard are arenas (pads that flatten the ground and keep cam
 // ---- the world holds them ----
 ok('the world server builds all six, ready, level 40, a boss asleep (immune) in each court; BOSSES is still the twelve world fights',x.RD_STATE.length===6&&x.RD_STATE.every(s=>s.state==='ready'&&s.L===40&&s.boss&&s.boss.m.immune&&!s.bossLive&&s.garrison.length===28&&s.wards.length===3&&s.spawners.length===2)&&x.BOSSES.length===12);
 ok('their monsters carry the raid and its numbers (monK is the raid level, not the zone tier); the boss rows reach the snapshot',x.RD_STATE.every(s=>s.all.every(m=>m.rd===s&&m.dgK&&m.dgK.lv===40))&&x.bossState().length===18);
+ok('garrison health is cut to RD_MOB_HP of the ordinary numbers while the boss and the destructibles keep theirs, so a pack never outweighs the boss',x.RD_STATE.every(s=>s.garrison.every(m=>Math.abs(m.dgK.hp-x.dgKOf(m.def,s.L).hp*x.RD_MOB_HP)<1e-9)&&s.boss.m.dgK.hp===x.dgKOf(s.boss.m.def,s.L).hp&&[...s.wards,...s.spawners,...s.barricades].every(m=>m.dgK.hp===x.dgKOf(m.def,s.L).hp)&&s.garrison.reduce((a,m)=>a+m.def.hp*m.dgK.hp*(m.elite?2:1),0)<s.boss.m.def.hp*s.boss.m.dgK.hp*6));
 ok('a world monster never sits on a pad: no camp inside any raid',x.MONS.every(m=>m.rd||x.RD_ORDER.every(i=>Math.hypot(m.x-x.RDS[i].x,m.z-x.RDS[i].z)>50)));
 
 // ---- a fight ----

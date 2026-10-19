@@ -392,7 +392,8 @@ game
   ui/map-style.js                    The map's dressing, as Eldmere's map has it: a gold-lined frame with corner diamonds, a compass rose, the red pin, serif labels on a parchment halo and the land's title scroll
   ui/world-map-data.js               The world map's frame on the atlas: art pixels (half a metre each), the lands' banners, towns and fog banks, and the painted atlas (the art itself, drawn once when the map first opens)
   ui/world-map.js                    The world map of Eldmere (G): the atlas painted as a map, purple fog over what is locked or not built, a scroll banner on each open land and your pin; drag, wheel or pinch to move and zoom, click a land to open its map
-  raids/structure.js                 The six raid ruins: walls with a gate and a broken inner wall, towers, braziers and banners in each land's own stone and style; fires and banners go out when the raid is cleared
+  raids/structure.js                 The six raid ruins: coursed stone walls with buttresses, merlons and arrow slits, tapered towers, a gatehouse with a broken portcullis, a ruined keep behind the court, pillars round the court, banners and torches; each land adds its own dressing (structure-extras.js)
+  raids/structure-extras.js          The raid ruins' small props (a palisade and a broken catapult before the gate, a cart and a well in the yard) and each land's own dressing (brambles, pagoda lanterns, ice, arches, colonnades, a wreck)
   raids/hud.js                       The raids' HUD side: where each stronghold stands (server rows), the strip near one, its door sign, the map marks and tooltips, the raid materials in the bag, the level event
   net/transport.js                   Connections to the world server: solo (server in this tab), shared room (one player's tab hosts), WebSocket (node server)
   net/client.js                      Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates

@@ -10,6 +10,7 @@ $('#tSetSq').addEventListener('click',()=>netSend({t:'dev',cmd:'sq',v:$('#tSq').
 $('#tAll').addEventListener('click',()=>{ netSend({t:'dev',cmd:'giveAll'}); });
 function syncStartAll(){ $('#tStartAll').setAttribute('aria-pressed',!!GEAR.startAll); $('#tStartAll').textContent='Start with every item: '+(GEAR.startAll?'on':'off'); }
 $('#tStartAll').addEventListener('click',()=>{ GEAR.startAll=!GEAR.startAll; saveGear(); syncStartAll(); netSend({t:'dev',cmd:'startAll',v:GEAR.startAll}); });
+$('#tSkipTime').addEventListener('click',()=>netSend({t:'dev',cmd:'skip'}));   // dawn, morning, noon, dusk: the server's own fast-forward (devP 'skip')
 $('#tCoins').addEventListener('click',()=>{ netSend({t:'dev',cmd:'coins'}); });
 $('#tMats').addEventListener('click',()=>netSend({t:'dev',cmd:'mats'}));
 $('#tSkills').addEventListener('click',()=>netSend({t:'dev',cmd:'skills'}));

@@ -356,7 +356,7 @@
     "ui/map-paint.js",
     "ui/map-style.js",
     "ui/world-map-data.js",
-    "ui/world-map.js", "raids/structure.js", "raids/hud.js",
+    "ui/world-map.js", "raids/structure.js", "raids/structure-extras.js", "raids/hud.js",
     "net/transport.js",
     "net/client.js",
     "combat/boss-dungeon.js",
