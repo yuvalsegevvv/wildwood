@@ -90,6 +90,8 @@ shared
   crafting.js                        Crafting and brewing rules: weapons from ore at the weaponsmiths', armour from logs at the armourers', potions (healing, might, guard) from herbs at the healers'. Neither is a profession: they are done at NPCs, and the professions supply the materials. Pure.
   cosmetics.js                       Cosmetics (version 3): auras (a glow, a ring or drifting particles around the character) and capes, made at a Wayfarers' Lodge (the free ones need no making). Pure.
   cospieces.js                       Cosmetic pieces (version 3.2): which general parts of every slot (hat, top, bottom, shoes, gloves, cape, aura) are free and which are crafted, from professions' materials and monsters' drops; the try-on lock rules. Pure.
+  amber.js                           Amber (a gear-upgrade material) and gems (the premium currency, version 3.3): the cap of a purse, the price of an outfit set, the grant of the public testing tool
+  gem-sources.js                     Free ways to earn gems: the pay of main and side quest steps, the daily quest set (UTC), the placeholder ad watch, and the achievements list
   side-quests.js                     Side quests (SQ): six chains of linked, objective-based steps, each leading to a land's second boss (Carapax, Kyuubi, Vetrmaw, the Sand Wyrm) or through the Gloamhorn (Captain Dredge, then the Gloam Warden); rewards are resources, a little XP and a cosmetic at each chain's end. Pure.
   pvp.js                             The Proving Isle (PvP): the fighting ground, the fixed level, gear and loadout everyone fights with there, the gate on the bridge, where a knocked-out fighter wakes (a shore spot), the entry lock. Pure.
   dungeon-slots.js                   Dungeon run slots: where runs live (squares far east of the walkable world, one per run, 600 m apart), their flat floor height, and which slot a point is in. Pure; loaded by both sides
@@ -141,7 +143,8 @@ server
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
   reactions.js                       Reactions on the server: elemental auras and reactions, the flavours as shared statuses on monsters (vuln, weak, burn, slow, stun) and direct application
   skillsets.js                       Skill sets on the server: granting a set's pieces, wearing a piece for all three classes, the loadout cache p.ss (the sets worn and their bonuses)
-  skillsets-free.js                  version2 testing: every player may unlock any skill set and put it on (message ft); REMOVE this file when the real sources (M3) and the wardrobe (M4 / M5) land
+  amber.js                           Amber on the server: amber (gear.amb, a gear-upgrade material), gems (gear.gem, the premium currency), buying an outfit set for 1000 gems (gear.os), and the one public testing tool that grants gems on every server
+  gem-sources.js                     Free gems on the server: quest steps, the daily quest set (UTC), achievements and the placeholder ad watch
   boss-fx.js                         What the bosses can do, shared by every move set: telegraphed hits (circle, cone, line, donut, marks), ground zones, tidal walls, orbs, effects on players, timed casts, summons
   boss-kits-home.js                  Boss move sets of the home forest: the Rootwarden (root spikes, ground slam, the totem shield, and the four seasons of the grove) and Carapax, the Tide King (geyser trails, tidal waves with an undertow, the molt, the claw clamp, burrow strikes, the hunting whirlpool)
   boss-kits-vale.js                  Boss move sets of the Sakura Vale: Akaoni (demon leaps and fire pools, stampede hops, the toss, the torii gate, fire ripples, burning brands, the embers he feeds on) and Kyuubi (foxfire volleys that widen as her tails burn, blinking strikes through the spirits, the fox trail, spoke beams)
@@ -368,7 +371,7 @@ game
   skillsets/look-tamsin.js           Tamsin's skill look (The Rockbreaker): pebbles and grit tumble, dust motes and rope scraps drift, a ring of rivets is laid on the ground
   skillsets/look-zahra.js            Zahra's skill look (The Hour of Glass): gold glints and falling sand drift, lapis flecks and light rays fly, a gold dial is laid on the ground
   skillsets/look-hollis.js           Hollis's skill look (The Wake Lantern): lantern sparks and fog wisps drift, black crape scraps and amber glints orbit, a ring of waves is laid on the ground
-  skillsets/free.js                  version2 testing: the settings popover's "Skill sets and outfits" (unlock any set, put it on, wear its outfit) for every player; REMOVE when the real sources (M3) and the wardrobe (M4 / M5) land
+  economy/gems.js                    The gem shop (the shop icon in the main menu): your gems, the free ways to earn them (daily quests, the placeholder ad, an icon grid of achievements), the public testing button (+1000 gems) and the outfit sets for sale
   economy/quests.js                  The quest board panel (Maren) and the quest log: notices, quests in progress, hand-ins (all generated by the server)
   economy/main-quest.js              The main quest on the client: what quest villagers say (mqTalk), the marks over them, the main quest at the top of the quest log, its marker on the maps (people, places, resource nodes), where Odran is, heartleaf to pick
   economy/side-quests.js             Side quests on the client: what their givers say (sqTalk), the marks over them, the quest panel's Side quests tab, the tracked chain's row in the quest log and its map marker, a place's scene in the speech bubble
@@ -380,7 +383,7 @@ game
   ui/guide.js                        The Guide: a short in-game wiki (controls, combat, skills, upgrades, dungeons, the Proving Isle) opened by the book button or its key; text only, keys read from the current binds
   ui/versions.js                     The Versions panel (button left of the map): version 1 = everything in the released game, version 2 = what is new
   economy/tiers.js                   Zone tiers, client side: a monster's level and health as you fight it, the symbol beside your health, the tier picker on the map panel
-  ui/settings-testing.js             Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, the Greyspine, reset
+  ui/settings-testing.js             Admin testing tools (grouped, collapsible) in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, the Greyspine, reset
   economy/init.js                    Inventory key and first-time gear setup
   combat/boss.js                     The bosses, client side: telegraph visuals (circle, cone, line, donut, marks) and how each ends, root spikes, slam waves, shield bubble, roars, boss bar, a boss's look in each mode
   combat/boss-fx.js                  Boss zones and waves (fire pools, whirlpools, the whiteout, the blizzard, Amanita's spore clouds, tidal walls) and what a boss does to you: frozen, slowed, shoved, pulled into a whirlpool

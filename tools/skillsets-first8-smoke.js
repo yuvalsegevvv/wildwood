@@ -200,25 +200,4 @@ reset(); put(m1,0,-9); evs.length=0;
 { const sp=x.SKILLS.spore; x.resolveFxS(p,{fx:sp.fx,mult:sp.mult,range:sp.range,el:sp.el,aim:[0,0,-1],sid:'spore'},m1); const sn=x.SKILLS.snare; x.resolveFxS(p,{fx:sn.fx,mult:sn.mult,range:sn.range,el:sn.el,aim:[0,0,-1],sid:'snare'},null); tick(3);
   const proj=evs.find(e=>e[0]==='proj'); ok('...and a boss skill\'s events carry nothing extra (no piece): its projectile event stays at ten fields, no shield or heal note',proj&&proj.length===10&&!evs.some(e=>e[0]==='fxa'),proj&&proj.length); }
 
-// ---- version2 testing: every player may unlock a set without the server's dev switch (server/skillsets-free.js; remove this block with it) ----
-{ const dev0=x.S.dev; x.S.dev=false; const owns=(q,id)=>q.gear.skills.owned.includes(id), all=id=>PIECES(id).concat(SET(id).pos[1].passive,SET(id).pos[2].passive,SET(id).pos[3].passive);
-  W.receive('b',{t:'dev',cmd:'set',v:'tansy'}); tick(3);
-  ok('free testing tools: with the dev switch off the old testing tool refuses (nothing given) ...',!owns(pb,'tansy_2_any'));
-  W.receive('b',{t:'ft',cmd:'set',v:'tansy'}); tick(3);
-  ok('... but ft/set gives any player the whole set (three actives of every class version, and the three passives) without it',all('tansy').every(i=>owns(pb,i))&&!owns(pc,'tansy_1_mage'));
-  W.receive('b',{t:'ft',cmd:'try',v:'torgeir'}); tick(3);
-  { const E=pb.gear.skills.eq, pass=pb.gear.skills.pass.slice(0,3);
-    ok('ft/try gives the set AND puts it on: the three signature skills for each of the three classes and its three passives',all('torgeir').every(i=>owns(pb,i))&&['warrior','archer','mage'].every(c=>E[c].basic===SET('torgeir').pos[1].ids.find(i=>x.SKILLS[i].cls===c)&&E[c].skill==='torgeir_2_any'&&E[c].burst==='torgeir_3_any')&&[1,2,3].every(k=>pass[k-1]===SET('torgeir').pos[k].passive)&&pb.ss.n.torgeir===6,JSON.stringify(pass)+' '+JSON.stringify(pb.ss&&pb.ss.n)); }
-  pc.level=12; x.recalcP(pc); W.receive('c',{t:'ft',cmd:'try',v:'corvin'}); tick(3);
-  ok('...a hero too low for the pieces (level 12; Corvin\'s ask 29 to 32) owns the whole set but wears none of it, and nothing breaks',all('corvin').every(i=>owns(pc,i))&&pc.gear.skills.eq[x.clsOfP(pc)].skill!=='corvin_2_any'&&[1,2,3].every(k=>!pc.gear.skills.pass.includes(SET('corvin').pos[k].passive)),JSON.stringify(pc.gear.skills.pass.slice(0,3)));
-  W.receive('c',{t:'ft',cmd:'lv',v:'corvin'}); tick(3);
-  ok('...and the free tools never give a level (ft/lv is not a command: the level stays 12)',pc.level===12,String(pc.level));
-  pc.level=32; x.recalcP(pc);
-  W.receive('c',{t:'ft',cmd:'try',v:'corvin'}); tick(3);
-  ok('...and at the level the pieces ask for (32), ft/try puts all of it on',pc.ss.n.corvin===6&&pc.gear.skills.eq[x.clsOfP(pc)].burst==='corvin_3_any',JSON.stringify(pc.ss&&pc.ss.n));
-  pc.level=60; x.recalcP(pc);
-  W.receive('c',{t:'ft',cmd:'all'}); W.receive('c',{t:'ft',cmd:'set',v:'no such set'}); W.receive('c',{t:'ft',cmd:'try',v:{a:1}}); W.receive('c',{t:'ft',cmd:'nonsense',v:'tansy'}); tick(3);
-  ok('ft/all unlocks every set at once, and a wrong set id, an object or an unknown command change nothing and crash nothing',IDS.every(i=>all(i).every(q=>owns(pc,q)))&&x.SS_BAD.length===0);
-  x.S.dev=dev0; }
-
 console.log(fails?fails+' check(s) failed':'all passed'); process.exit(fails?1:0);

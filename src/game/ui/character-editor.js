@@ -81,16 +81,14 @@ const edCur=()=>EDIT[edTab].subs[edSub[edTab]];
 // ---- crafted pieces: locked, owned, and the try-on gate ----
 const edOwned=()=>(typeof GEAR!=='undefined'&&GEAR&&GEAR.cos)||[];
 const edLocks=()=>cosLocked(LOOK,edOwned());
-// outfit sets (the eight signature characters) are locked until their skill set is yours (any piece owned) or the testing tools unlocked them (a browser-side list, 'ww_outfits')
-const OS_KEY='ww_outfits', OS_SHOW=12;
-function osList(){ try{ const a=JSON.parse(localStorage.getItem(OS_KEY)||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
-function osUnlock(id){ try{ const a=osList(); if(!a.includes(id)){ a.push(id); localStorage.setItem(OS_KEY,JSON.stringify(a)); } }catch(e){} }
-function osOwned(id){
-  if(!OUTFITS[id]) return true;
-  if(osList().includes(id)) return true;
-  const sk=typeof GEAR!=='undefined'&&GEAR&&GEAR.skills&&GEAR.skills.owned; if(!sk) return false;
-  const sid=SS_ORDER.find(k=>SS_SETS[k].outfit===id), T=sid&&SS_SETS[sid];
-  return !!T&&[1,2,3].some(n=>T.pos[n]&&sk.includes(T.pos[n].passive));
+// outfit sets (the eight signature characters) are cosmetic and cost 1000 gems each (GEAR.os, server/amber.js); a locked tile asks for a second tap to buy
+const OS_SHOW=12;
+function osOwned(id){ return !OUTFITS[id]||!!(typeof GEAR!=='undefined'&&GEAR&&GEAR.os&&GEAR.os.includes(id)); }
+let osArm=null;   // the outfit a first tap armed for buying
+function osTapLocked(id){
+  const name=CHAR_MODELS[id]?CHAR_MODELS[id].name:id;
+  if(osArm!==id){ osArm=id; toast(name+'\'s outfit set costs '+GEM_SET_PRICE+' gems. Tap again to buy (you have '+(GEAR.gem||0)+').','warn'); return; }
+  osArm=null; netSend({t:'gembuy',v:id});
 }
 // a grid of more than OS_SHOW tiles shows the first OS_SHOW and scrolls, so the colour rows under it stay in sight
 function osCap(box){
@@ -225,7 +223,7 @@ function renderEditor(){
         const cur=LOOK[row.k], on=cur===undefined?(v===false||v===''):cur===v;
         const D=row.slot&&!gap?cpDef(row.slot,v):null, made=!!D&&!D.free&&edOwned().includes(cpKey(row.slot,v)), locked=!!D&&!D.free&&!made, osLock=sig&&!osOwned(v);
         const title=(name?(tip?name+': '+tip:name):gap?'None':ED_NAMES[v]||String(v).replace(/^./,c=>c.toUpperCase()))+(locked?' (locked: '+cosRecipeText(row.slot,v)+'. Tap to try it on.)':made?' (made)':'');
-        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='pupil'||(D&&!D.free)?name:''}); b.onclick=()=>{ if(osLock){ toast('Outfit sets unlock with their skill set','warn'); return; } setLook(row.k,v); renderEditor(); };
+        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='pupil'||(D&&!D.free)?name:''}); b.onclick=()=>{ if(osLock){ osTapLocked(v); return; } setLook(row.k,v); renderEditor(); };
         if(osLock){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); }
         else if(locked){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); } else if(made){ b.classList.add('made'); }
         box.append(b); }
@@ -273,7 +271,7 @@ function renderEditor(){
       const box=document.createElement('div'); box.className='tiles';
       const off=cthTile(null,{title:'Take the outfit off (plain clothes)',on:false}); off.onclick=()=>{ setLook('model','base'); renderEditor(); }; box.append(off);
       for(const id of Object.keys(OUTFITS)){ const M=CHAR_MODELS[id], on=LOOK.model===id&&Object.keys(ofPieces(LOOK)).length===7, fem=!!(M.sexes&&M.sexes[0]==='female');
-        const lk=!osOwned(id), b=cthTile({kind:'outfit',id},{on,sig:true,cap:M.name,title:M.name+' ('+(fem?'female':'male')+'). '+(M.note||'')+(lk?' Locked: comes with its skill set.':'')}); b.onclick=()=>{ if(lk){ toast('Outfit sets unlock with their skill set','warn'); return; } setLook('model',id); renderEditor(); };
+        const lk=!osOwned(id), b=cthTile({kind:'outfit',id},{on,sig:true,cap:M.name,title:M.name+' ('+(fem?'female':'male')+'). '+(M.note||'')+(lk?' Locked: '+GEM_SET_PRICE+' gems.':'')}); b.onclick=()=>{ if(lk){ osTapLocked(id); return; } setLook('model',id); renderEditor(); };
         if(lk){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); }
         box.append(b); }
       wrap.append(box); osCap(box);

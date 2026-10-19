@@ -27,10 +27,11 @@ function sqCompleteP(p,C){
   gainExpP(p,r.xp,null);
   sqToast(p,C.name+': '+step.title+' done. '+r.res.map(([id,n])=>n+' '+RES[id].name).join(', ')+', '+r.xp+' XP','good');
   if(step.doneLine) sqToast(p,step.doneLine);
-  ev('sq',p.id,C.id,E.s,2);
+  ev('sq',p.id,C.id,E.s,2); gsGemP(p,GEM_SQ_STEP,'side quest');   // gems
   E.s++; E.st=0; E.n=[]; p.dirty=true;
   const nx=sqStepOf(p,C);
   if(!nx){
+    gsGemP(p,GEM_SQ_CHAIN,C.name+' finished');   // gems
     if(!Array.isArray(g.cos)) g.cos=[];   // (a brand-new hiker's gear has no list yet)
     if(r.cos&&!g.cos.includes(r.cos)&&g.cos.length<COS_MAX) g.cos.push(r.cos);
     const m=/^([ac]):(.+)$/.exec(r.cos||''), D=m&&cpDef(m[1],m[2]);

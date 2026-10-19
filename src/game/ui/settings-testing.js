@@ -1,4 +1,4 @@
-//@ Testing tools in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, the Greyspine, reset
+//@ Admin testing tools (grouped, collapsible) in the settings popover (sent to the server as dev commands): set level, the main quest's step, all items, coins, weather, the Sakura Vale, the Hoarfrost Reach, the Greyspine, reset
 /* ----- settings: testing tools ----- */
 $('#tLevel').value=PL.level;
 $('#tSetLv').addEventListener('click',()=>{ const v=clamp(parseInt($('#tLevel').value,10)||1,1,PLAYER_MAX_LV); netSend({t:'dev',cmd:'level',v}); toast('Level set to '+v,'good'); });
@@ -12,6 +12,10 @@ function syncStartAll(){ $('#tStartAll').setAttribute('aria-pressed',!!GEAR.star
 $('#tStartAll').addEventListener('click',()=>{ GEAR.startAll=!GEAR.startAll; saveGear(); syncStartAll(); netSend({t:'dev',cmd:'startAll',v:GEAR.startAll}); });
 $('#tSkipTime').addEventListener('click',()=>netSend({t:'dev',cmd:'skip'}));   // dawn, morning, noon, dusk: the server's own fast-forward (devP 'skip')
 $('#tCoins').addEventListener('click',()=>{ netSend({t:'dev',cmd:'coins'}); });
+$('#tAmber').addEventListener('click',()=>netSend({t:'dev',cmd:'amber',v:1000}));   // amber: the admin tool (the public tool is the gem shop's button, gems)
+$('#tAmber10').addEventListener('click',()=>netSend({t:'dev',cmd:'amber',v:10000}));
+$('#tAmber0').addEventListener('click',()=>netSend({t:'dev',cmd:'amber',v:-AMB_MAX}));
+$('#tOutfits').addEventListener('click',()=>netSend({t:'dev',cmd:'outfits'}));
 $('#tMats').addEventListener('click',()=>netSend({t:'dev',cmd:'mats'}));
 $('#tSkills').addEventListener('click',()=>netSend({t:'dev',cmd:'skills'}));
 $('#tProf').addEventListener('click',()=>netSend({t:'dev',cmd:'prof'}));

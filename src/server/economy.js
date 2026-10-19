@@ -53,7 +53,7 @@ function newOfferP(p){
   Q.next++; return q;
 }
 function fillOffersP(p){ const Q=p.gear.q; while(Q.offers.length<QUEST_OFFERS) Q.offers.push(newOfferP(p)); p.dirty=true; }
-function refreshOffersP(p){ p.gear.q.offers=[]; fillOffersP(p); }
+function refreshOffersP(p,force){ p.gear.q.offers=force?[]:p.gear.q.offers.filter(o=>gsKeepOfferP(p,o.id)); fillOffersP(p); }   // gems: an unfinished daily notice stays through the sunrise refresh
 function questReadyP(p,q){ if(p.gear.q.ready.includes(q.id)) return; p.gear.q.ready.push(q.id); p.dirty=true; toastTo(p.id,'Quest done: '+q.title+'. Return to the quest board.','good'); ev('qdone',p.id,q.id); }
 function questKillP(p,defId){
   const Q=p.gear.q;
@@ -75,7 +75,7 @@ function turnInP(p,id){
   delete Q.active[id]; delete Q.defs[id]; Q.ready=Q.ready.filter(x=>x!==id); Q.done++;
   p.gear.coins+=r.coins; gainExpP(p,r.xp,null); toastTo(p.id,'Reward: '+r.xp+' XP and '+r.coins+' coins','good');
   const rar=rollQuestItemRarity(r.item); if(rar>=0) addItemP(p,randomItem(tierFor(q.level),rar));
-  ev('qturn',p.id,id); p.dirty=true; mqActP(p,'board');
+  ev('qturn',p.id,id); p.dirty=true; mqActP(p,'board'); gsTurnedInP(p,id);   // gems: a daily notice pays gems
 }
 /* ---- skills: bought from Aldric the trainer, equipped per class (passives: one loadout for every class), upgraded with coins and drops ---- */
 function buySkillP(p,id){
@@ -138,6 +138,7 @@ function chatP(p,text){
   text=String(text||'').replace(/[\u0000-\u001f\u007f-\u009f]/g,'').replace(INVISIBLE,'').replace(/\s+/g,' ').trim().slice(0,160); if(!text) return;
   if(/^\/invite\s/i.test(text)){ partyMsgP(p,{a:'invite',name:text.slice(8)}); return; }   // dungeons: the party's chat command /invite name
   if(S.t-(p.chatT||-9)<0.7){ toastTo(p.id,'Slow down a little','bad'); return; }
+  gsStatP(p,'chat');   // gems: the chat counter
   p.chatT=S.t; ev('chat',p.id,p.name,text);
 }
 function renameP(p,name){
@@ -164,6 +165,8 @@ function devP(p,msg){
   else if(c==='set'){ const id=String(msg.v||''); if(!SS_SETS[id]){ toastTo(p.id,'No skill set called "'+id+'" ('+(SS_ORDER.join(', ')||'none defined')+')','bad'); return; } ssGrantSetP(p,id); recalcP(p); toastTo(p.id,SS_SETS[id].char.name+'\'s set: all six pieces given','good'); }   // skillsets: give a whole set (testing)
   else if(c==='mats'){ for(const id of MAT_IDS) addMatP(p,id,20); toastTo(p.id,'20 of every monster drop added','good'); }
   else if(c==='weather'){ const k={clear:0,rain:1,storm:2}[msg.v]; if(k===0){ W.kind=0; W.t=0; W.dur=0; ev('weather',0); } else if(k) startWeatherS(k); }
+  else if(c==='amber'){ ambAddP(p,clampInt(msg.v,-AMB_MAX,AMB_MAX,1000)); toastTo(p.id,'You now have '+p.gear.amb+' amber','good'); }   // amber (the upgrade material): add (or take away) some; the public gem tool is gemtest
+  else if(c==='outfits'){ p.gear.os=ambOutfitIds(); p.dirty=true; toastTo(p.id,'Every outfit set unlocked','good'); }   // gems: unlock every outfit set (admin)
   else if(c==='coins'){ p.gear.coins+=1000; p.dirty=true; }
   else if(c==='prof'){   // every profession, and a common tool of each tier for each (the best one you have the level for is worn)
     for(const id of PROF_IDS){ if(!p.gear.prof[id]) p.gear.prof[id]={xp:0}; mqActP(p,'learn',1,{prof:id}); }

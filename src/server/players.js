@@ -17,6 +17,8 @@ function sanitizeGear(g,cls){
   out.sq=sanitizeSq(g.sq);   // sidequests: the chains' progress (an old save has none)
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); out.cos=sanitizeCos(g); }   // cosmetics: the auras and capes made at a lodge
   out.zt=sanitizeZt(g.zt);
+  gsSanitize(g,out);   // gems: claimed achievements, the daily set and today's ads
+  ambSanitize(g,out);   // amber: the purse and the bought outfit sets (an old save has none)
   out.fr=frSanitize(g.fr);   // friends: the friend list (names; an old save has none)
   out.rd=rdSanitizeSave(g.rd);   // raids: the raid materials of each land
   out.ss=ssSanitizeSave(g.ss);   // skillsets: the pity counts of the sources (an old save has none)
@@ -185,7 +187,7 @@ function hurtP(p,v,m,by){   // returns the damage taken; by: the fighter who hit
   if(p.shield&&p.shield.until>S.t&&p.shield.v>0){ const a=Math.min(v,p.shield.v); p.shield.v-=a; v-=a; if(p.shield.v<=0&&!p.shield.done){ p.shield.done=true; ssShieldBreakS(p); } if(v<=0){ p.lastHit=S.t; return 0; } }   // skillsets: a shield soaks the hit first
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){
-    p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id);
+    p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id); gsStatP(p,'die');   // gems: the knock-out counter
     for(const mm of MONS) if(mm.tgt===p.id){ mm.aggro=false; mm.tgt=null; mm.state='return'; mm.pendingHit=-1; }
     if(p.pv) pvpDownS(p,by);   // pvp: knocked out on the island
   }
@@ -234,6 +236,6 @@ function updatePlayersS(dt){
     if(S.t-p.lastHit>(p.pv?PVP_REGEN_AFTER:3) && p.hp<p.maxHp) p.hp=Math.min(p.maxHp,p.hp+p.maxHp*(p.pv?PVP_REGEN_K:0.08)*dt);   // pvp: slower on the island
     pvpTickP(p,dt);   // pvp: stepping onto / off the island, burning
     if(p.act){ const a=p.act; a.t+=dt; if(!a.done && a.t>=a.dur*a.hitAt){ a.done=true; resolveHitS(p,a); } if(a.t>=a.dur) p.act=null; }
-    p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); reachHanamiP(p); reachRimeholdP(p); reachHighmarkP(p); reachGlasswellP(p); reachWraithwickP(p); mqTickP(p); sqTickP(p); }   // sidequests: the places walked to
+    p.travelT-=dt; if(p.travelT<=0){ p.travelT=0.5; questTravelP(p); gsTickP(p); reachHanamiP(p); reachRimeholdP(p); reachHighmarkP(p); reachGlasswellP(p); reachWraithwickP(p); mqTickP(p); sqTickP(p); }   // sidequests: the places walked to
   }
 }
