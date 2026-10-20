@@ -32,7 +32,12 @@ const A1='a'.repeat(32), A2='b'.repeat(32), A3='c'.repeat(32);
   ok('same name in other case refused',!W.players.get('g2').user&&/already/.test(last('g2','authfail').text));
   W.receive('g2',{t:'name',name:'Hayru'}); await wait();
   ok('guest cannot rename to a registered name',W.players.get('g2').name!=='Hayru');
-  W.receive('g1',{t:'name',name:'Other'}); ok('registered name is fixed',g.name==='Hayru');
+  W.receive('g1',{t:'name',name:'Ab'}); await wait(); ok('a registered rename follows the registration rules (3+ characters)',g.name==='Hayru');
+  W.receive('g1',{t:'name',name:'Other'}); await wait();
+  ok('a registered player can rename: the account moves to the new name',g.name==='Other'&&g.user==='Other'&&g.acct==='user:other'&&DB.has('user:other')&&!DB.has('user:hayru')&&DB.get('user:other').auth.user==='Other'&&last('g1','auth').user==='Other');
+  W.receive('g2',{t:'name',name:'Other'}); await wait(); ok('a guest cannot take the renamed name',W.players.get('g2').name!=='Other');
+  g.renameT=-999; W.receive('g1',{t:'name',name:'Hayru'}); await wait();
+  ok('and back again (the old name was freed)',g.name==='Hayru'&&g.acct==='user:hayru'&&DB.has('user:hayru')&&!DB.has('user:other'));
   g.gear.coins=500; W.leave('g1'); await wait();
   // log in elsewhere with the password, then with the token
   { let n=0; const v=auth.verify; auth.verify=(pw,h)=>{ n++; return v(pw,h); };   // a connection that sends its login again and again while the first is being checked costs one password check, not one each

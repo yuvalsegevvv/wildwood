@@ -148,7 +148,7 @@ function updateBossUI(){
   const frac=m.hp/m.maxHp, pct=Math.max(1,Math.ceil(frac*100)); // never "0%" while it stands
   bb.hidden=false; $('#bbHp').style.width=(frac*100)+'%';
   const pt=pct+'%'; if($('#bbPct').textContent!==pt) $('#bbPct').textContent=pt;
-  if(BOSS.shown!==m){ BOSS.shown=m; $('#bbName').textContent=m.def.name; }
+  if(BOSS.shown!==m){ BOSS.shown=m; $('#bbName').textContent=m.def.name; $('#bbEl').innerHTML=elOf(m.def)!=='basic'?elChip(elOf(m.def)):''; }   // the boss's element, so you know which skills hit it x1.5
   const bbLv='Lv '+monTierK(m).lv+' boss'; if($('#bbLv').textContent!==bbLv) $('#bbLv').textContent=bbLv;
   const bd=bossInfo(m)||{}, bar=bd.bar||{};
   $('#bbPhase').textContent=BOSS.mode===3?'Shielded: break the '+(bd.totems||'totems')+' ('+BOSS.aux+' left)':BOSS.stunned?(bar.stun||'Stunned!'):bar[BOSS.mode]||(BOSS.enraged?'Enraged':'');

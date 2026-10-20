@@ -30,6 +30,7 @@ function memoryAccounts(){
   const DB=new Map();
   const store={ load:k=>DB.get(k)||null, save:(k,r)=>{ DB.set(k,JSON.parse(JSON.stringify(r))); },
     create:(k,r)=>{ if(DB.has(k)) return false; DB.set(k,JSON.parse(JSON.stringify(r))); return true; },
+    remove:k=>{ DB.delete(k); },
     users:()=>[...DB.values()].filter(r=>r.auth).map(r=>r.auth.user),
     ranks:()=>[...DB.values()].filter(r=>r.name&&r.level).map(r=>({n:r.name,l:r.level,x:r.exp,c:r.look&&r.look.cls})) };
   const sha=p=>'s:'+crypto.createHash('sha256').update(p).digest('hex');

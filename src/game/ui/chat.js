@@ -29,9 +29,9 @@ function sendChat(){
   netSend({t:'chat',text:v.slice(0,160)});
 }
 function setMyName(n){
-  if(NET.user){ toast('Your name is your account name and cannot be changed','bad'); return; }
   n=String(n||'').replace(/[\u0000-\u001f\u007f-\u009f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,16);
   if(!n){ toast('That name is empty','bad'); return; }
+  if(NET.user){ if(NET.ready) netSend({t:'name',name:n}); return; }   // a registered name is the login name: the server checks it like a registration and answers with 'auth'
   NET.name=n; try{ localStorage.setItem('wildwood-name',n); }catch(_){}
   $('#setName').value=n;
   if(NET.ready) netSend({t:'name',name:n}); else toast('Name saved','good');

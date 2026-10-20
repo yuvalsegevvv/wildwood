@@ -144,7 +144,7 @@ function chatP(p,text){
 }
 function renameP(p,name){
   const n=cleanName(name); if(n===p.name) return;
-  if(p.user){ toastTo(p.id,'Your name is your account name and cannot be changed','bad'); return; }
+  if(p.user){ renameAccountP(p,name); return; }   // accounts: a registered player's name is the account name
   if(nameTaken(n,p)){ toastTo(p.id,'Someone already has the name '+n,'bad'); return; }
   if(S.t-(p.renameT||-9)<3){ toastTo(p.id,'Wait a moment before changing your name again','bad'); return; }
   const old=p.name; p.name=n; p.renameT=S.t; p.saveDirty=true; ev('pname',p.id,n,old);

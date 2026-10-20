@@ -26,6 +26,7 @@ function fileStore(dir){
       return fs.promises.writeFile(tmp,JSON.stringify(rec)).then(()=>fs.promises.rename(tmp,f)); },
     // registration: write only if nobody has this account yet ('wx' fails when the file exists)
     create(acct,rec){ return fs.promises.writeFile(path.join(d,keyOf(acct)+'.json'),JSON.stringify(rec),{flag:'wx'}).then(()=>true,e=>{ if(e.code==='EEXIST') return false; throw e; }); },
+    remove(acct){ return fs.promises.unlink(path.join(d,keyOf(acct)+'.json')).catch(e=>{ if(e.code!=='ENOENT') throw e; }); },   // (a renamed account's old record)
     users(){ const out=[]; for(const n of fs.readdirSync(d)) if(n.endsWith('.json')) try{ const r=JSON.parse(fs.readFileSync(path.join(d,n),'utf8')); if(r&&r.auth) out.push(r.auth.user); }catch(_){} return out; },
     ranks(){ const out=[]; for(const n of fs.readdirSync(d)) if(n.endsWith('.json')) try{ const r=JSON.parse(fs.readFileSync(path.join(d,n),'utf8')); if(r&&r.name&&r.level) out.push({n:r.name,l:r.level,x:r.exp,c:r.look&&r.look.cls}); }catch(_){} return out; },
     count(){ try{ return fs.readdirSync(d).filter(n=>n.endsWith('.json')).length; }catch(_){ return 0; } } };
@@ -54,6 +55,7 @@ function pgStore(url){
     load(acct){ return table().then(()=>pool.query('SELECT data FROM wildwood_players WHERE id=$1',[keyOf(acct)])).then(r=>r.rows.length?r.rows[0].data:null); },
     save(acct,rec){ const k=keyOf(acct); return inOrder(k,()=>table().then(()=>pool.query('INSERT INTO wildwood_players (id,data,updated_at) VALUES ($1,$2,now()) ON CONFLICT (id) DO UPDATE SET data=EXCLUDED.data, updated_at=now()',[k,rec]))); },
     create(acct,rec){ const k=keyOf(acct); return inOrder(k,()=>table().then(()=>pool.query('INSERT INTO wildwood_players (id,data,updated_at) VALUES ($1,$2,now()) ON CONFLICT (id) DO NOTHING RETURNING id',[k,rec]))).then(r=>r.rows.length>0); },
+    remove(acct){ const k=keyOf(acct); return inOrder(k,()=>table().then(()=>pool.query('DELETE FROM wildwood_players WHERE id=$1',[k]))).then(()=>{}); },
     users(){ return table().then(()=>pool.query("SELECT data->'auth'->>'user' AS u FROM wildwood_players WHERE data ? 'auth'")).then(r=>r.rows.map(x=>x.u)); },
     ranks(){ return table().then(()=>pool.query("SELECT data->>'name' AS n, (data->>'level')::int AS l, (data->>'exp')::float AS x, data->'look'->>'cls' AS c FROM wildwood_players WHERE data ? 'level' AND data->>'name' IS NOT NULL ORDER BY l DESC, x DESC LIMIT 2000")).then(r=>r.rows); },
     count(){ return table().then(()=>pool.query('SELECT count(*)::int AS n FROM wildwood_players')).then(r=>r.rows[0].n); } };
