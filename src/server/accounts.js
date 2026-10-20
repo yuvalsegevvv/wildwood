@@ -1,7 +1,7 @@
 //@ Registered accounts (name + password) on the online server: log in, register a guest, log out, unique names
 /* Two kinds of player on a server that keeps saves (io.store):
    - guest: progress stored under the browser's secret account code (hello.acct), as before accounts existed.
-   - registered: progress stored under 'user:'+lowercase name; the name is the key, so it is unique and fixed.
+   - registered: progress stored under 'user:'+lowercase name; the name is the key, so it is unique (renameAccountP moves the record when it changes).
    Passwords never reach the store: the Node host hashes them (io.auth: hash, verify, token, tokenHash, all
    in node/main.js; the server bundle also runs in a browser tab, which has no accounts). After a password
    login or a registration the browser gets a session token so it can log in again without the password; the
@@ -106,6 +106,31 @@ function registerP(p,user,pass){
       giftP(p); p.dirty=true;
     });
   }).catch(e=>{ p.regBusy=false; if(io.log) io.log('register failed',e&&e.message); no('The server could not create the account. Try again in a moment.'); });
+}
+// rename{name} from a registered player: the account (its record, key and login name) moves to the new name; same rules as registering (3+ characters, letters / numbers / ._-, unique)
+function renameAccountP(p,raw){
+  const no=text=>toastTo(p.id,text,'bad');
+  if(!ACCOUNTS_ON||!p.auth||!io.store.remove) return no('Your name is your account name and cannot be changed here');
+  if(p.regBusy) return;
+  const c=checkUserName(raw); if(c.err) return no(c.err);
+  if(c.name===p.user) return;
+  if(S.t-(p.renameT||-999)<30) return no('Wait a little before changing your name again');
+  const name=c.name, key=userKey(name), oldKey=p.acct;
+  if(key!==oldKey&&nameTaken(name,p)) return no('Someone already has the name '+name);
+  p.regBusy=true; p.renameT=S.t;
+  const done=ok=>{ p.regBusy=false; if(!ok) no('Someone already has the name '+name); };
+  const fin=()=>{   // the new record exists: switch this player over, then drop the old one
+    p.regBusy=false;
+    if(key!==oldKey){ if(ACCT.get(oldKey)===p.id) ACCT.delete(oldKey); NAMES.delete(oldKey.slice(5)); NAMES.add(key.slice(5)); p.acct=key; ACCT.set(key,p.id); }
+    p.auth.user=name; p.user=name; const old=p.name; p.name=name; ev('pname',p.id,name,old); p.saveDirty=true;
+    sendTo(p.id,{t:'auth',user:name,token:issueToken(p.auth)});
+    toastTo(p.id,'Your name is now '+name+'. Log in with it from now on.','good');
+    if(key!==oldKey) Promise.resolve(io.store.remove(oldKey)).catch(e=>{ if(io.log) io.log('could not remove the old account record',e&&e.message); });
+    saveP(p);
+  };
+  if(key===oldKey){ fin(); return; }   // only the capitals changed: same record
+  Promise.resolve(io.store.create(key,Object.assign(recordOf(p),{name,auth:Object.assign({},p.auth,{user:name})}))).then(made=>{ if(!made){ NAMES.add(key.slice(5)); return done(false); } fin(); })
+    .catch(e=>{ p.regBusy=false; if(io.log) io.log('rename failed',e&&e.message); no('The server could not change your name. Try again in a moment.'); });
 }
 // logout{token}: forget this device's session (the page reloads as a guest)
 function logoutP(p,token){

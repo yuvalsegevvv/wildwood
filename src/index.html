@@ -65,7 +65,7 @@
 <div id="qlog" hidden></div>
 <div id="toasts"></div>
 <div id="rdStrip" hidden role="status"></div>
-<div id="bossbar" hidden><div class="bb-top"><b id="bbName">The Rootwarden</b><span class="bb-lv" id="bbLv">Lv 15 boss</span><span id="bbPhase"></span></div><div class="bb-bar"><i id="bbHp"></i><u class="bb-tick" style="left:60%"></u><u class="bb-tick" style="left:30%"></u><span id="bbPct">100%</span></div></div>
+<div id="bossbar" hidden><div class="bb-top"><b id="bbName">The Rootwarden</b><span class="bb-lv" id="bbLv">Lv 15 boss</span><span id="bbEl"></span><span id="bbPhase"></span></div><div class="bb-bar"><i id="bbHp"></i><u class="bb-tick" style="left:60%"></u><u class="bb-tick" style="left:30%"></u><span id="bbPct">100%</span></div></div>
 <div id="inv" class="panel" hidden role="dialog" aria-label="Inventory">
   <div class="pn-head"><span class="pn-t">Inventory</span><button class="chip pn-skills" id="invSkills" data-kb="skills" data-kbx="Skills ({k})">Skills (K)</button><span class="pn-coins" id="invCoins"></span><span class="pn-gems" id="invGems"></span><span class="pn-amber" id="invAmber"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="invBody"></div>
@@ -204,7 +204,7 @@
   <div class="snd-sub snd-sec">Account</div>
   <div id="acctUser" hidden><p class="acct-note" id="acctUserNote"></p><div class="name-row"><button class="chip" id="acctOut">Log out</button></div></div>
   <div id="acctGuest">
-  <p class="acct-note">You are playing as a guest. Register to keep your progress under a name and password and log in on any device. Your name becomes the account name.</p>
+  <p class="acct-note">You are playing as a guest. Register to keep your progress under a name and password and log in on any device. Your name becomes the account name, and you can change it later in Settings.</p>
   <div class="name-row"><input id="regUser" maxlength="16" placeholder="Account name" autocomplete="username" spellcheck="false" aria-label="Account name"><input id="regPass" type="password" maxlength="100" placeholder="Password (6+)" autocomplete="new-password" aria-label="Password"></div>
   <div class="name-row"><button class="chip" id="regGo">Register</button></div>
   <p class="acct-note">Guest progress is kept under a secret code in this browser. To move it to another device without registering, copy the code here and paste it there.</p>

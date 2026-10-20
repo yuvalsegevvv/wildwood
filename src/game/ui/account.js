@@ -24,8 +24,7 @@ function onAuthFail(msg){
 function syncAcctSec(){
   const u=NET.user;
   $('#acctUser').hidden=!u; $('#acctGuest').hidden=!!u;
-  if(u) $('#acctUserNote').textContent='Logged in as '+u+'. Your progress is saved on the server under this name.';
-  $('#setName').disabled=$('#setNameBtn').disabled=!!u;
+  if(u) $('#acctUserNote').textContent='Logged in as '+u+'. Your progress is saved on the server under this name. You can change it below (3-16 characters).';
   if(!u&&!$('#regUser').value) $('#regUser').value=NET.name||'';
 }
 $('#regGo').addEventListener('click',()=>{

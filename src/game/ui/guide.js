@@ -98,7 +98,7 @@ function guidePages(){
       <h4>Professions and crafting</h4>
       <p>Learn mining, woodcutting or gathering at a Wayfarers' Lodge, carry the matching tool, and work the nodes (a node needs a tool of the tier of its land; sometimes you get a double yield). Ore becomes weapons and logs become armour at the smiths and armourers; herbs become potions at the healers.</p>
       <h4>Zone tiers</h4>
-      <p>Beat a land's second boss and you can set that land to a harder tier (up to V) on the map in a village. Enemies there gain 10 levels per tier, and pay much more XP and coins. Each unlocked tier also gives you a symbol: +10% attack and health, everywhere.</p>`},
+      <p>Beat a land's second boss and you can set that land to a harder tier (up to V) on the map in a village. Enemies there gain 10 levels per tier, and pay much more XP and coins. Each unlocked tier also gives you a symbol: +10% attack (ATK%) and +10% health (HP%), everywhere.</p>`},
     dungeons:{t:'Dungeons',h:`
       <p>Dungeons are private runs for a party of 1 to 4. Each has its own rooms, monsters and a boss at the end. Everything is balanced for one player; more players make monsters tougher. <b>Everyone in the party gets all of the loot.</b></p>
       <h4>Getting in</h4>
