@@ -71,4 +71,7 @@ canvas.addEventListener('touchend',endTouch); canvas.addEventListener('touchcanc
 const bJump=$('#bJump');
 bJump.addEventListener('touchstart',e=>{ e.preventDefault(); jumpReq=true; },{passive:false});
 bJump.addEventListener('click',()=>{ jumpReq=true; });
+const bDash=$('#bDash');
+bDash.addEventListener('touchstart',e=>{ e.preventDefault(); dashReq=true; },{passive:false});
+bDash.addEventListener('click',()=>{ dashReq=true; });
 $('#bView').addEventListener('click',e=>{ toggleView(); e.currentTarget.blur(); });

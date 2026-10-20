@@ -16,7 +16,7 @@ const CAMPS=[];
 // how many of each monster live in its zone: 40 of the level-1 kind, down to 20 of the level-15 kind;
 // the vale's and the Hoarfrost Reach's zones hold two kinds, 12 of each; the outer ring's kinds (12-15) a quarter more, since their zones reach on
 // to the land's edge; the edge kinds say how many (count)
-const MON_COUNT_K=1.25;   // playtest: mobs felt scarce, so every zone holds a quarter more
+const MON_COUNT_K=1.5;   // playtest: mobs felt scarce, so every zone holds half as many again
 const MON_COUNT=d=>Math.round(MON_COUNT_K*(d.count||(d.level>15?12:Math.round((40-(d.level-1)*20/14)*(d.level>=12?1.25:1)))));
 function initMonstersS(){
   const rng=mulberry32(31337), rr=(a,b)=>a+(b-a)*rng();
