@@ -1,7 +1,7 @@
 //@ Registered accounts (name + password) on the online server: log in, register a guest, log out, unique names
 /* Two kinds of player on a server that keeps saves (io.store):
    - guest: progress stored under the browser's secret account code (hello.acct), as before accounts existed.
-   - registered: progress stored under 'user:'+lowercase name; the name is the key, so it is unique and fixed.
+   - registered: progress stored under 'user:'+lowercase name; the name is the key, so it is unique (renameAccountP moves the record when it changes).
    Passwords never reach the store: the Node host hashes them (io.auth: hash, verify, token, tokenHash, all
    in node/main.js; the server bundle also runs in a browser tab, which has no accounts). After a password
    login or a registration the browser gets a session token so it can log in again without the password; the
