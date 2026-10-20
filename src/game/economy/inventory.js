@@ -15,9 +15,9 @@ function tile(it,from,count){
 }
 const SIL='<svg class="doll-sil" viewBox="0 0 120 240" aria-hidden="true"><circle cx="60" cy="30" r="20"/><path d="M60 54c-20 0-34 8-37 26l-8 58c-1 6 7 8 9 2l10-50v62l-4 76c0 7 10 7 11 0l12-66h14l12 66c1 7 11 7 11 0l-4-76v-62l10 50c2 6 10 4 9-2l-8-58c-3-18-17-26-37-26z"/></svg>';
 function renderInv(){
-  $('#plCoins').textContent=GEAR.coins;
+  $('#plCoins').textContent=fmtCoins(GEAR.coins);
   if($('#inv').hidden) return;
-  $('#invCoins').textContent=GEAR.coins+' coins';
+  $('#invCoins').textContent=fmtCoins(GEAR.coins)+' coins';
   $('#invGems').textContent=(GEAR.gem||0)+' gems';
   $('#invAmber').textContent=(GEAR.amb||0)+' amber';
   const g=gearStats(), c=CLASSES[clsOf()];
