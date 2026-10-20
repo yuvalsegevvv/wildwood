@@ -16,13 +16,14 @@ const CAMPS=[];
 // how many of each monster live in its zone: 40 of the level-1 kind, down to 20 of the level-15 kind;
 // the vale's and the Hoarfrost Reach's zones hold two kinds, 12 of each; the outer ring's kinds (12-15) a quarter more, since their zones reach on
 // to the land's edge; the edge kinds say how many (count)
-const MON_COUNT=d=>d.count||(d.level>15?12:Math.round((40-(d.level-1)*20/14)*(d.level>=12?1.25:1)));
+const MON_COUNT_K=1.25;   // playtest: mobs felt scarce, so every zone holds a quarter more
+const MON_COUNT=d=>Math.round(MON_COUNT_K*(d.count||(d.level>15?12:Math.round((40-(d.level-1)*20/14)*(d.level>=12?1.25:1)))));
 function initMonstersS(){
   const rng=mulberry32(31337), rr=(a,b)=>a+(b-a)*rng();
   /* where a camp may stand (the atlas's world, shared/world-atlas.js): on dry land clear of the coast, of every river and lake, of the villages and the roads (and trails), of the boss arenas, of every anchor
      (a village, gate, boss, dungeon door, zone entrance, island spot: 22 m) and of the Proving Isle; on ground a hiker walks easily. The zone itself is asked by the caller (zoneAt), so each land's zone table decides which ground is whose.
      (The old per-land keep-outs, sunKeepOut / gloamKeepOut, are not asked: their water, the Bowl's rim and the reserved doors are the atlas's water and anchors now.) */
-  const ok=(x,z)=>x>WX0+26&&x<WX1-26&&z>WZ0+26&&z<WZ1-26&&!waIsSea(x,z)&&waCoast(x,z)>26&&getH(x,z)>1&&grad(x,z)<0.55&&waWaterDist(x,z)>8&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&waAnchorDist(x,z)>22&&!dgEntranceNear(x,z,32)&&Math.hypot(x-WA_PVP.x,z-WA_PVP.z)>WA_PVP.r+62;   // dungeons: a camp keeps 32 m off a dungeon's door; pvp: and 62 m off the Proving Isle's shore (nothing lives by the bridgehead)
+  const ok=(x,z)=>x>WX0+26&&x<WX1-26&&z>WZ0+26&&z<WZ1-26&&!waIsSea(x,z)&&waCoast(x,z)>26&&getH(x,z)>1&&grad(x,z)<0.55&&waWaterDist(x,z)>8&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&waAnchorDist(x,z)>22&&!dgEntranceNear(x,z,32)&&Math.hypot(x-WA_PVP.x,z-WA_PVP.z)>WA_PVP.r+62&&RD_ORDER.every(i=>Math.hypot(x-RDS[i].x,z-RDS[i].z)>56);   // dungeons: a camp keeps 32 m off a dungeon's door; pvp: and 62 m off the Proving Isle's shore (nothing lives by the bridgehead)
   for(const d of MON_DEFS){
     const zn=defZone(d), total=MON_COUNT(d), pack=d.per+2;
     let made=0;
