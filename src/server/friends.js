@@ -10,8 +10,13 @@
    users: server/api.js (leave), server/players.js (sanitizeGear)   test: tools/friends-smoke.js   Panel: game/ui/friends.js */
 const FR_MAX=50, FR_REQ_S=60, FR_RANK_TOP=50;
 const RANK=new Map();   // lowercase name -> {n: name, l: level, x: exp, c: class}
-if(io.store&&io.store.ranks) Promise.resolve().then(()=>io.store.ranks()).then(list=>{ for(const r of list||[]) frRankPut(r.n,r.l,r.x,r.c); })
-  .catch(e=>{ if(io.log) io.log('could not load the ranking',e&&e.message); });
+/* The ranking is read from the saves once at start. A free Postgres that is still waking (Neon suspends when idle, and a Render redeploy restarts us cold) can fail that
+   first read; with no retry the ranking then showed only whoever logged in since, as if it had reset. So a failed read is tried again, 5 s, 10 s... up to 5 min apart. */
+function frRankLoad(wait){
+  Promise.resolve().then(()=>io.store.ranks()).then(list=>{ for(const r of list||[]) frRankPut(r.n,r.l,r.x,r.c); })
+    .catch(e=>{ if(io.log) io.log('could not load the ranking, trying again in '+wait+' s',e&&e.message); const t=setTimeout(()=>frRankLoad(Math.min(300,wait*2)),wait*1000); if(t.unref) t.unref(); });
+}
+if(io.store&&io.store.ranks) frRankLoad(5);
 function frRankPut(n,l,x,c){
   n=String(n||'').slice(0,16); l=clampInt(l,1,PLAYER_MAX_LV,1); if(!n) return; x=Math.max(0,+x||0);
   const k=n.toLowerCase(), o=RANK.get(k); if(o&&(o.l>l||(o.l===l&&o.x>=x))) return;
