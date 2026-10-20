@@ -21,7 +21,7 @@ function renderInv(){
   $('#invGems').textContent=(GEAR.gem||0)+' gems';
   $('#invAmber').textContent=(GEAR.amb||0)+' amber';
   const g=gearStats(), c=CLASSES[clsOf()];
-  let h=`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Soul</span><b style="color:${ELEMS[soulNow()].col}">${ELEMS[soulNow()].name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div></div>`;
+  let h=`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Soul</span><b style="color:${ELEMS[soulNow()].col}">${ELEMS[soulNow()].name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div>${invExtraStats()}</div>`;
   h+='<div class="inv-wrap"><div class="doll" id="invDoll">'+SIL;
   for(const [s,area] of BODY_SLOTS){
     const it=ITEM[GEAR.eq[s]];
@@ -39,6 +39,12 @@ function renderInv(){
   $('#invBody').innerHTML=h;
   if(INV.sel && !(INV.sel.from==='bag'?counts[INV.sel.id]:GEAR.eq[INV.sel.from]===INV.sel.id)) INV.sel=null;
   renderInvInfo();
+}
+// every other number that shapes a fight: the passives' totals (the loadout you have open) and the necklace's line
+function invExtraStats(){
+  const ps=st=>GEAR&&GEAR.skills?passiveSum(GEAR.skills,PL.level,st,clsOf()):0, pd=GEAR&&ITEM[GEAR.eq.pendant], pn=st=>pd&&pd.kind==='pendant'&&pd.stat===st&&PL.level>=pd.lv?pd.v:0, pc=v=>pendantPct(v)+'%';
+  const rows=[['Crit chance',pc(Math.min(CRIT_CAP,CRIT_BASE+ps('crit')+pn('crit')))],['Crit damage','x'+Math.min(CRIT_MULT_CAP,CRIT_MULT+pn('critdmg')+ps('critdmg')).toFixed(2)],['Damage bonus','+'+pc(ps('dmg'))],['Health bonus','+'+pc(ps('hp'))],['Damage taken','-'+pc(ps('red'))+' (passive)'],['Cooldowns','-'+pc(ps('cd'))],['Move speed','+'+pc(ps('move'))],['Drop chance','+'+pc(ps('drop')+pn('drop'))],['XP gain','+'+pc(ps('xp')+pn('xp'))],['Coin gain','+'+pc(pn('coin'))],['Soul bonus','+'+pc(ps('soul'))]];
+  return rows.map(r=>`<div><span>${r[0]}</span><b>${r[1]}</b></div>`).join('');
 }
 function statDiff(it,cur){
   if(it.kind==='ring') return dgRingDiffHtml(it,cur);   // dungeons: a ring's difference is in attack, by your soul
