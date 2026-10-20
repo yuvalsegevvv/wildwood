@@ -4,7 +4,7 @@ function openForge(n){ openPanel('forge',n); forgeTab='merge'; $('#forge .pn-t')
 const ARROW='<svg class="fg-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>';
 function renderForge(){
   if($('#forge').hidden) return;
-  $('#forgeCoins').textContent=GEAR.coins+' coins';
+  $('#forgeCoins').textContent=fmtCoins(GEAR.coins)+' coins';
   document.querySelectorAll('[data-fgtab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.fgtab===forgeTab));   // dungeons: the tabs
   if(forgeTab==='roll'){ $('#forgeBody').innerHTML=rlUiRollHtml(); rlUiBind($('#forgeBody')); return; }   // rolls: the Roll tab (economy/rolls.js)
   if(forgeTab==='sac'){ $('#forgeBody').innerHTML=rlUiSacHtml(); rlUiBind($('#forgeBody')); return; }   // rolls: the Sacrifice tab

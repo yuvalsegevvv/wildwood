@@ -8,7 +8,7 @@ function renderShop(){
   const n=panelNPC; if(!n) return;
   const ped=n.def.role==='peddler', kind=ped?null:n.def.role==='weaponsmith'?'weapon':'armor', ofKind=i=>!kind||i.kind===kind||(kind==='armor'&&(i.kind==='ring'||i.kind==='pendant'));   // dungeons: the armourer also buys rings and pendants
   $('#shopTitle').textContent=n.def.name+(ped?"'s cart":kind==='weapon'?"'s weapons":"'s armor");
-  $('#shopCoins').textContent=GEAR.coins+' coins';
+  $('#shopCoins').textContent=fmtCoins(GEAR.coins)+' coins';
   document.querySelectorAll('[data-shoptab]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.shoptab===shopTab));
   document.querySelector('[data-shoptab="craft"]').hidden=ped;   // the smiths and armourers craft; Odran only trades
   let h='';

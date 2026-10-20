@@ -73,7 +73,7 @@ function renderSkills(){
   if($('#skills').hidden) return;
   if(SKD.src&&performance.now()-SKD.t0<8000){ SKD.pending=true; return; }   // not while a tile is being dragged (the server keeps sending updates): after the drop
   const trainer=!!(panelNPC&&panelNPC.def.role==='trainer'), S=GEAR.skills||newSkills(), cls=skTab||clsOf(), lv=PL.level, C={S,lv,trainer};
-  $('#skTitle').textContent=trainer?panelNPC.def.name+"'s lessons":'Skills'; $('#skCoins').textContent=GEAR.coins+' coins';
+  $('#skTitle').textContent=trainer?panelNPC.def.name+"'s lessons":'Skills'; $('#skCoins').textContent=fmtCoins(GEAR.coins)+' coins';
   const pass=skKind==='pass';
   let h=pass?'':`<div class="chips pn-tabs">${Object.keys(CLASSES).map(c=>`<button class="chip" data-sktab="${c}" aria-pressed="${c===cls}">${CLASSES[c].name}${c===clsOf()?' (you)':''}</button>`).join('')}</div>`;
   h+=`<div class="sk-soul">Soul: ${elChip(soulNow())} <span>${PL.level>=SOUL_LV?'Skills of this element deal more damage. Change it at the Soul Hall in Hanami.':'Bind your soul to an element at the Soul Hall in Hanami, from level '+SOUL_LV+'.'}</span></div>`;

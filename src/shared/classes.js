@@ -140,7 +140,7 @@ const SKILL_IDS=Object.keys(SKILLS);
    (PASSIVE_SLOT_LV; passiveOpen(level) counts the slots a level has). They are learned from the trainers like the
    other skills (the first, Vitality, is free) and upgraded the same way. stat = what the server reads through passiveSum(); v = [value at
    skill level 1, added per level after that]. Stats: hp (max health), dmg (all damage), crit (crit chance), red (damage taken), cd (cooldowns),
-   drop (chance of monster drops), xp (XP from kills), soul (added to the soul element's x1.5). These are a first set: swap or add rows freely,
+   drop (chance of monster drops), xp (XP from kills), soul (added to the soul element's x1.5), move (movement speed; read by the client's updatePlayer). These are a first set: swap or add rows freely,
    nothing else needs to change (name, lv, price, stat, v, text with {} for the percent). */
 const PASSIVE_LV=13, PASSIVE_SLOT_LV=[PASSIVE_LV,16,20], PASSIVE_SLOTS=PASSIVE_SLOT_LV.length;
 const passiveOpen=level=>PASSIVE_SLOT_LV.filter(l=>level>=l).length;   // how many passive slots a level can use (slot i opens at PASSIVE_SLOT_LV[i])
@@ -152,6 +152,7 @@ const PASSIVES={
   quickhands:{name:'Quickhands',lv:16,price:3000,stat:'cd',  v:[0.06,0.02], text:'{}% shorter cooldowns'},
   scavenger: {name:'Scavenger', lv:17,price:3500,stat:'drop',v:[0.15,0.05], text:'+{}% chance of monster drops'},
   scholar:   {name:'Scholar',   lv:18,price:4000,stat:'xp',  v:[0.05,0.02], text:'+{}% XP from kills'},
+  fleetfoot: {name:'Fleetfoot', lv:13,price:2000,stat:'move',v:[0.08,0.02], text:'+{}% movement speed'},
   resonance: {name:'Resonance', lv:19,price:4500,stat:'soul',v:[0.05,0.03], text:'soul element skills deal +{}% more damage'}
 };
 const PASSIVE_IDS=Object.keys(PASSIVES);

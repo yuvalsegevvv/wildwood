@@ -1,20 +1,25 @@
 //@ Player movement (with a boss's ice, shoves and whirlpools), a slope limit, collisions (the border bridge with its barred gate; the shut gates are shared/barriers.js), the shore's knee-deep rule, camera
 /* ---------- simulation ---------- */
+var dashReq=false, dashT=0, dashCd=0, dashDx=0, dashDz=0;   // the dash (input.js sets dashReq)
 function updatePlayer(dt){
   let f=0,s=0;
   if(kbHeld('fwd')) f+=1; if(kbHeld('back')) f-=1;
   if(kbHeld('right')) s+=1; if(kbHeld('left')) s-=1;
   f+=-joyY; s+=joyX;
   const len=Math.hypot(f,s); if(len>1){ f/=len; s/=len; }
-  const run=kbHeld('run')||Math.hypot(joyX,joyY)>0.92;
   const wsf=waterSurf(P.x,P.z), inWater=getH(P.x,P.z)<wsf-0.35 && bridgeDeck(P.x,P.z)<wsf;   // (the sea's level, or a tarn's or the river's in the Greyspine)
-  let speed=run?9.5:4.2; if(inWater) speed*=0.5;
+  let speed=9.5*(1+(GEAR&&GEAR.skills?passiveSum(GEAR.skills,PL.level,'move',clsOf()):0)); if(inWater) speed*=0.5;   // sprint is the default pace; the Fleetfoot passive adds to it
   if(PFX.slow>0) speed*=0.5; if(PFX.root>0) speed=0;   // a boss's ice: frozen or slowed (combat/boss-fx.js)
   if(CB.act && (CB.act.kind==='slash'||CB.act.kind==='nova'||CB.act.kind==='shoot'||CB.act.kind==='volley')) speed*=0.45;
   const sy=Math.sin(P.yaw), cy=Math.cos(P.yaw);
   const tx=(-sy*f+cy*s)*speed, tz=(-cy*f-sy*s)*speed;
   const k=1-Math.exp(-(P.ground?10:2.5)*dt);
   P.vx+=(tx-P.vx)*k; P.vz+=(tz-P.vz)*k;
+  if(dashCd>0) dashCd-=dt;
+  if(dashReq){ dashReq=false;   // the dash key: a short burst along the move direction (or where the camera looks), then a cooldown
+    if(dashCd<=0 && !PL.dead && PFX.root<=0 && !inWater){ const m=Math.hypot(tx,tz); dashDx=m>0.1?tx/m:-sy; dashDz=m>0.1?tz/m:-cy; dashT=0.2; dashCd=1.1; }
+  }
+  if(dashT>0){ dashT-=dt; P.vx=dashDx*24; P.vz=dashDz*24; }
   const ox=P.x, oz=P.z;
   P.x+=P.vx*dt; P.z+=P.vz*dt; pfxStep(dt);
   nearCols(P.x,P.z,(cx,cz,r)=>{ const dx=P.x-cx, dz=P.z-cz, d=Math.hypot(dx,dz), m=r+0.32; if(d<m && d>1e-4){ P.x=cx+dx/d*m; P.z=cz+dz/d*m; } });

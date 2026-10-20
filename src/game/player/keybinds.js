@@ -10,7 +10,7 @@ const KB_ACTIONS=[
   {id:'back',  name:'Walk backward', def:['KeyS','ArrowDown']},
   {id:'left',  name:'Walk left',     def:['KeyA','ArrowLeft']},
   {id:'right', name:'Walk right',    def:['KeyD','ArrowRight']},
-  {id:'run',   name:'Run',           def:['ShiftLeft','ShiftRight']},
+  {id:'run',   name:'Dash',          def:['ShiftLeft','ShiftRight']},
   {id:'jump',  name:'Jump',          def:['Space','']},
   {id:'basic', name:'Basic attack',  def:['KeyF','Digit1']},
   {id:'skill', name:'Skill',         def:['KeyQ','Digit2']},

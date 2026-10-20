@@ -8,6 +8,7 @@ try{ const s=JSON.parse(localStorage.getItem('wildwood-gear-v1')||'null'); if(s&
 if(!GEAR) GEAR=newGear();
 GEAR.q=Object.assign({active:{},ready:[],done:[]},GEAR.q||{});
 function saveGear(){ if(NET&&NET.user) return; try{ localStorage.setItem('wildwood-gear-v1',JSON.stringify(GEAR)); }catch(_){} }
+const fmtCoins=n=>Math.floor(n||0).toLocaleString('en-US');   // 12345 -> "12,345" (coin displays)
 function gearStats(){ return gearStatsOf(GEAR); }
 function effectiveLook(){ return effectiveLookOf(LOOK,GEAR); }
 // the server sends your gear in every "you" update; apply it and redraw whatever changed
@@ -19,7 +20,7 @@ function applyGear(g){
   if(customizing){ renderEditor(); if(!edTrying()) saveLook(); }   // (a piece made at a lodge while its try-on is open: the look can be kept now)
   else if(cosLocked(LOOK,GEAR.cos).length){ LOOK=cosCleanLook(LOOK,GEAR.cos); LOOK_SAVED=Object.assign({},LOOK); saveLookLocal(); rebuildHiker(); }   // a look saved before the pieces were crafted: what you do not own comes off
   if(JSON.stringify(GEAR.eq)!==prevEq) rebuildHiker();
-  $('#plCoins').textContent=GEAR.coins; tiersRefresh();
+  $('#plCoins').textContent=fmtCoins(GEAR.coins); tiersRefresh();
   gemRefresh(); renderInv(); if(!$('#shop').hidden) renderShop(); if(!$('#forge').hidden) renderForge(); if(!$('#skills').hidden) renderSkills(); if(!$('#soul').hidden) renderSoul(); if(!$('#lodge').hidden) renderLodge(); if(!$('#brew').hidden) renderBrew(); updatePotBar(true); if(!$('#travel').hidden) renderTravel(); if(!$('#quests').hidden) renderQuests(); renderQlog(); syncStartAll();
 }
 function equip(id){

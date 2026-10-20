@@ -56,7 +56,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
 function killMonsterS(m,p){
   m.expoDeath=rxVulnK(m)>0||rxWeakK(m)<1;   // skillsets: it was exposed when it died (the `exposed` condition of a kill row; the statuses go with it just below)
   m.burnT=0; rxClearS(m); ssClearS(m); m.dead=true; m.deadT=0;   // reactions: aura and statuses go with it; skillsets: so do the marks
-  m.respawnT=35; if(m.rd) rdKilledS(m,p); m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
+  m.respawnT=12; if(m.rd) rdKilledS(m,p); m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
   ev('kill',m.id,p?p.id:null);
   if(p) ssTriggerS(p,'kill',{m});   // skillsets: on kill rows
   if(m.inst){ dgKilledS(m,p); return; }   // dungeons: a run's kill pays every member present (rewardAllS) and tells the mission; its boss ends the run

@@ -10,7 +10,7 @@ function guidePages(){
     basics:{t:'Controls',h:`
       <p>Kill monsters for XP, coins and drops, spend them on gear and skills, and walk further out as you grow. Every key can be changed in Settings.</p>
       <dl>
-        <dt>${kl(['fwd','left','back','right'].map(k).join(' '))}</dt><dd>Walk. ${kl(k('run'))} runs, ${kl(k('jump'))} jumps. On a phone: left thumb moves, right thumb looks.</dd>
+        <dt>${kl(['fwd','left','back','right'].map(k).join(' '))}</dt><dd>Move (you always sprint). ${kl(k('run'))} dashes, ${kl(k('jump'))} jumps. On a phone: left thumb moves, right thumb looks.</dd>
         <dt>${kl(k('basic'))} / click</dt><dd>Basic attack. It picks the nearest target; ${kl(k('target'))} switches target.</dd>
         <dt>${kl(k('skill'))} / right-click</dt><dd>Skill (from level ${SKILL_SLOT_LV}). ${kl(k('burst'))} is the burst (from level ${BURST_SLOT_LV}).</dd>
         <dt>${kl(k('pot1'))} ${kl(k('pot2'))} ${kl(k('pot3'))} ${kl(k('pot4'))} ${kl(k('pot5'))} ${kl(k('pot6'))}</dt><dd>Healing, might and guard potions, then the heal-over-time, exp and loot potions.</dd>

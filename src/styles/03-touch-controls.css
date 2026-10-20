@@ -15,6 +15,7 @@
   border:1.5px solid rgba(238,240,226,.4); background:var(--glass); color:var(--ink);
   font:600 13px "Alegreya Sans", system-ui, sans-serif;
 }
+#bDash{ right:calc(106px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 50px); width:60px; height:60px; }   /* beside Jump */
 body.touch.playing .touch-btn{ display:grid; }
 .touch-btn:active{ background:var(--glass-strong); }
 
