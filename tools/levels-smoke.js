@@ -5,7 +5,7 @@
 const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},
-  ['MONS','BOSSES','gainExpP','rewardKill','monK','recalcP','expToNext25','expToNext','xpFor','xpLeadK','XP_LEAD','LV_SOFT','LV_SOFT_GROWTH','PLAYER_MAX_LV','psP']);
+  ['MONS','BOSSES','gainExpP','rewardKill','monK','recalcP','expToNext25','expToNext','xpFor','xpLeadK','XP_LEAD','LV_SOFT','PLAYER_MAX_LV','psP']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
@@ -14,26 +14,25 @@ const zt=(home,vale,hoar)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:
 const K25=x.expToNext25(25)/x.xpFor(25);   // "same-level kills per level" from level 26 on (about 2,100)
 
 // ---- the curve ----
-{ const bad=[]; for(let L=1;L<=49;L++){ const want=L<=25?x.expToNext25(L):K25*x.xpFor(L); if(!near(x.expToNext(L),want,1e-12)) bad.push(L); }
-  ok('up to level 49 the XP curve is what it always was (levels 1-25 the old formula, 26-49 about '+Math.round(K25)+' same-level kills each)',!bad.length&&x.LV_SOFT===50,bad.join()); }
-{ const g=x.LV_SOFT_GROWTH, per=L=>x.expToNext(L)/x.xpFor(L), row=[]; let mono=true, ratio=true;
-  for(let L=50;L<=80;L++){ row.push(per(L)); if(!near(per(L),K25*Math.pow(g,L-49),1e-9)) ratio=false; if(L>50&&!(x.expToNext(L)>x.expToNext(L-1))) mono=false; }
-  ok('from level 50 every level costs x'+g+' the same-level kills of the one before (level 50 -> 51: '+Math.round(per(50))+', 55 -> 56: '+Math.round(per(55))+', 60 -> 61: '+Math.round(per(60))+'), and the XP it needs only ever rises (no cliff at the cap)',
-    g===1.5&&ratio&&mono&&x.expToNext(50)>x.expToNext(49)); }
-{ const kills=L=>x.expToNext(L)/x.xpFor(Math.min(L+10,80));   // the best XP a kill can pay: a monster 10 levels above you (80 is the highest monster)
-  ok('with that best XP the last normal level (49 -> 50) is about '+Math.round(kills(49))+' kills, 50 -> 51 about '+Math.round(kills(50))+', 55 -> 56 about '+Math.round(kills(55))+' and 60 -> 61 about '+Math.round(kills(60))+': a slope that stalls, not a wall',
-    kills(49)>250&&kills(49)<350&&kills(50)>400&&kills(50)<500&&kills(55)>5000&&kills(55)<8000&&kills(60)>50000); }
+{ const bad=[]; for(let L=1;L<=40;L++){ const want=L<=25?x.expToNext25(L):K25*x.xpFor(L); if(!near(x.expToNext(L),want,1e-12)) bad.push(L); }
+  ok('up to level 40 the XP curve is what it always was (levels 1-25 the old formula, 26-40 about '+Math.round(K25)+' same-level kills each)',!bad.length&&x.LV_SOFT===50,bad.join()); }
+{ const per=L=>x.expToNext(L)/x.xpFor(L); let ramp=true, dbl=true, mono=true;
+  for(let L=41;L<=50;L++) if(!near(per(L),K25*(1+0.05*(L-40)),1e-9)) ramp=false;
+  for(let L=50;L<=120;L++){ if(!near(per(L),K25*1.5*Math.pow(2,(L-50)/5),1e-9)) dbl=false; if(!(x.expToNext(L)>x.expToNext(L-1))) mono=false; }
+  ok('kills per level rise about '+Math.round(K25*0.05)+' a level from 40 ('+Math.round(per(40))+') to 50 ('+Math.round(per(50))+', unchanged), then double every 5 levels (55: '+Math.round(per(55))+', 60: '+Math.round(per(60))+'), and the XP only ever rises',
+    ramp&&dbl&&mono&&near(per(50),K25*1.5,1e-9)&&near(per(55),2*per(50),1e-9)); }
 
 // ---- no wall: levels past 50 are gained, saved and set ----
 { const a=join('a',49); a.exp=0; const e49=x.expToNext(49), e50=x.expToNext(50), e51=x.expToNext(51); evs.length=0;
   x.gainExpP(a,e49+e50+e51+123,null); tick(3);
   ok('a hiker at level 49 given the XP for three levels is level 52 with the rest left over (there is no stop at 50)',a.level===52&&near(a.exp,123,1e-6)&&evs.some(e=>e[0]==='lvup'&&e[1]==='a'&&e[2]===52),'level '+a.level+', exp '+a.exp);
-  const b=join('b',60), c=join('c',150), d=join('d',0), e=join('e','x');
-  ok('a save at level 60 loads at 60; past the technical ceiling ('+x.PLAYER_MAX_LV+') it is clamped there; nonsense becomes level 1',b.level===60&&c.level===x.PLAYER_MAX_LV&&d.level===1&&e.level===1&&x.PLAYER_MAX_LV===99,[b.level,c.level,d.level,e.level].join(','));
-  const f=join('f',98); f.exp=0; x.gainExpP(f,x.expToNext(98)*5,null);
-  ok('only the ceiling ('+x.PLAYER_MAX_LV+') stops a hiker, however much XP comes in',f.level===x.PLAYER_MAX_LV);
-  W.receive('a',{t:'dev',cmd:'level',v:70}); tick(2); const l70=a.level; W.receive('a',{t:'dev',cmd:'level',v:999}); tick(2);
-  ok('the testing tool sets any level up to the ceiling (70 -> 70, 999 -> '+x.PLAYER_MAX_LV+')',l70===70&&a.level===x.PLAYER_MAX_LV);
+  const b=join('b',60), c=join('c',5000), d=join('d',0), e=join('e','x');
+  ok('a save at level 60 loads at 60; past the technical ceiling ('+x.PLAYER_MAX_LV+') it is clamped there; nonsense becomes level 1',b.level===60&&c.level===x.PLAYER_MAX_LV&&d.level===1&&e.level===1,[b.level,c.level,d.level,e.level].join(','));
+  const f=join('f',98); f.exp=0; x.gainExpP(f,[98,99,100,101,102].reduce((s,L)=>s+x.expToNext(L),0)+1,null);   // past 99 too: there is no stop at 99
+  
+  ok('level 99 is not a wall: a level-98 hiker given XP for five levels is level 103',f.level===103,f.level);
+  W.receive('a',{t:'dev',cmd:'level',v:70}); tick(2); const l70=a.level; W.receive('a',{t:'dev',cmd:'level',v:99999}); tick(2);
+  ok('the testing tool sets any level up to the ceiling (70 -> 70, 99999 -> '+x.PLAYER_MAX_LV+')',l70===70&&a.level===x.PLAYER_MAX_LV);
   W.leave('b'); W.leave('c'); W.leave('d'); W.leave('e'); W.leave('f'); }
 
 // ---- a kill never pays for more than 10 levels above you ----
