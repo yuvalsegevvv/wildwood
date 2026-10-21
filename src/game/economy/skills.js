@@ -63,7 +63,7 @@ function skInfoHtml(C,cls){
       else { const have=GEAR.mats||{}, cOk=GEAR.coins>=n.coins, rdHave=n.rd?rdMatHave(n.rd.land):0, rdOk=!n.rd||rdHave>=n.rd.n, all=cOk&&rdOk&&n.mats.every(m=>(have[m.id]||0)>=m.n);   // raids: a signature piece also needs its land's raid material
       const gain=pass?passiveText(s.id,L+1):Math.round((skillPower(L+1)/skillPower(L)-1)*1000)/10+'% more '+(s.buff?'bonus':'damage')+', '+Math.round((1-skillCdMult(L+1)/skillCdMult(L))*1000)/10+'% shorter cooldown';
       up=`<div class="sk-up"><b>Level ${L} &rarr; ${L+1}</b><span>${gain}</span><div class="sk-cost"><span class="${cOk?'ok':'bad'}">${n.coins} coins</span>${n.mats.map(m=>`<span class="${(have[m.id]||0)>=m.n?'ok':'bad'}" title="Dropped by ${MATS[m.id].from} (level ${MATS[m.id].lv})"><i style="background:${MATS[m.id].col}"></i>${MATS[m.id].name} ${have[m.id]||0}/${m.n}</span>`).join('')}${n.rd?`<span class="${rdOk?'ok':'bad'}" title="Won by clearing ${rdOfLand(n.rd.land).name}"><i style="background:#e8b84a"></i>${rdOfLand(n.rd.land).mat} ${rdHave}/${n.rd.n}</span>`:''}</div>`
-        +(C.trainer?`<button class="chip buy" data-upskill="${s.id}" ${all?'':'disabled'}>Upgrade</button>`:'<span class="muted">Upgrades happen at Aldric (or Master Ryu in Hanami).</span>')+'</div>'; }
+        +(C.trainer?`<button class="chip buy" data-upskill="${s.id}" ${all?'':'disabled'}>Upgrade</button>`:'<span class="muted">Upgrades happen at Aldric (or Master Ryu in Hanami).</span>')+`<button class="chip" data-sktrack="${s.id}" aria-pressed="${skTrackId===s.id}" title="Mark where the monsters that drop the missing materials live (map and minimap)">${skTrackId===s.id?'Tracking':'Track'}</button></div>`; }
     }
   }
   const lock=low?`<span class="req bad">needs level ${needLv(s)}</span>`:'';
@@ -99,6 +99,7 @@ function renderSkills(){
   on('[data-unskill]',b=>{ netSend({t:'unskill',cls,slot:b.dataset.unskill}); UI_SFX.click(); });
   on('[data-unpass]',b=>{ netSend({t:'unskill',slot:'pass',idx:+b.dataset.unpass}); UI_SFX.click(); });
   on('[data-buyskill]',b=>{ b.disabled=true; netSend({t:'buyskill',id:b.dataset.buyskill}); });
+  on('[data-sktrack]',b=>{ skTrackToggle(b.dataset.sktrack); UI_SFX.click(); renderSkills(); });
   on('[data-upskill]',b=>{ b.disabled=true; netSend({t:'upskill',id:b.dataset.upskill}); });
 }
 // put a skill you own in its slot (a passive: slot idx, or the first free one)

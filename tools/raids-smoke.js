@@ -78,8 +78,8 @@ ok('half an hour after the clear the raid is rebuilt: ready, level 40, a fresh g
 const pieces=Object.keys(x.SKILLS).filter(id=>x.SKILLS[id].set&&x.SKILLS[id].slot==='skill');
 const pc=pieces.find(id=>x.SS_SETS[x.SKILLS[id].set].land==='home'), sk=x.SKILLS[pc], P=A, S=P.gear.skills;
 const need=x.upgradeNeeds(pc,2);
-ok('a signature piece\'s level 2 costs coins, 4 of the land\'s monster material and 4 raid material; level 5 also two trophies of the land\'s second boss; 4 / 8 / 16 / 32 and 60 a piece, 360 a set',
-  need&&need.rd&&need.rd.land==='home'&&need.rd.n===4&&need.mats.length===1&&need.mats[0].n===x.UP_COUNT[2]&&x.upgradeNeeds(pc,5).mats.length===2&&x.upgradeNeeds(pc,5).mats[1].id==='carapax'&&x.upgradeNeeds(pc,5).rd.n===32&&Object.values(x.RD_UP).reduce((a,b)=>a+b,0)===60);
+ok('a signature piece\'s level 2 costs coins, 3x the usual monster material (RD_MOB_K) and one raid material; level 5 also two trophies of the land\'s second boss; 1 / 2 / 4 / 8 and 15 a piece',
+  need&&need.rd&&need.rd.land==='home'&&need.rd.n===1&&need.mats.length===1&&need.mats[0].n===x.UP_COUNT[2]*3&&x.upgradeNeeds(pc,5).mats.length===2&&x.upgradeNeeds(pc,5).mats[1].id==='carapax'&&x.upgradeNeeds(pc,5).rd.n===8&&Object.values(x.RD_UP).reduce((a,b)=>a+b,0)===15);
 S.owned.push(pc); P.gear.coins=1e6; P.gear.mats={}; x.rdMatsOf(P).home=0;
 W.setPos('a',[0,x.getH(0,0),0,0,0,0]);   // not in a village
 W.receive('a',{t:'upskill',id:pc}); ok('refused outside a village',x.skillLvOf(S,pc)===1);

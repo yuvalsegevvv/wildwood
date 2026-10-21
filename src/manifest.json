@@ -316,6 +316,7 @@
     "economy/forge.js",
     "economy/soul.js",
     "economy/skills.js",
+    "economy/skill-track.js",
     "economy/skillsets.js",
     "skillsets/looks.js",
     "skillsets/look-tansy.js",

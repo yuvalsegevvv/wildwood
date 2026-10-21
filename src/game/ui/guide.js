@@ -53,7 +53,7 @@ function guidePages(){
       <h4>Using a set</h4>
       <p>Owned pieces show up in the skills window (${kl(k('skills'))}) with the set's own symbol. Drag attacks onto the three slots and passives onto the passive slots. The window's set effects card shows what you wear: <b>3 pieces</b> of one set light its first bonus and <b>5 pieces</b> its second. You can mix pieces of two sets (3 + 3) to get both first bonuses.</p>
       <h4>Levelling a piece</h4>
-      <p>Signature pieces go from level 2 to 5 like other skills, and also cost <b>raid material</b> of the set's land. Clear that land's ruined stronghold (the raid) to earn it: the more difficult the tier you clear, the more you get (1, 2, 4, 8... for tiers 0, I, II, III...). A cleared raid rebuilds 30 minutes later.</p>
+      <p>Signature pieces go from level 2 to 5 like other skills, but ask three times the usual monster drops and also <b>raid material</b> of the set's land (a single one for level 2). Clear that land's ruined stronghold (the raid) to earn it: the more difficult the tier you clear, the more you get (1, 2, 4, 8... for tiers 0, I, II, III...). A cleared raid rebuilds 30 minutes later.</p>
       <h4>The outfit</h4>
       <p>Each set has a matching outfit in the character editor's <b>Signature</b> tab. An outfit is <b>locked until you own at least one piece of that set</b>. It is only a look: it changes no stat.</p>`},
     allsets:{t:'All sets',h:guideAllSets()},

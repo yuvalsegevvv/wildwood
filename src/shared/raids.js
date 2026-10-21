@@ -7,7 +7,8 @@
    Test: node tools/raids-smoke.js. A bad entry is left out and listed in RD_BAD (the game still boots). */
 const RD_BASE_LV=40, RD_RESET=1800, RD_ABANDON=600, RD_FOOT=62, RD_MAT_MAX=99999;   // the level at +0; seconds from a clear to the rebuild; seconds with nobody inside before an engaged raid resets; the radius that counts as inside for the clear's pay
 const RD_MOB_HP=0.3;   // a garrison monster's health against the same level's ordinary numbers: the boss stays at 22 hits at level 40 while a mob falls in about 7 x this (elites twice that again): 28 full-health mobs outweighed the boss 12 to 1
-const RD_UP={2:4,3:8,4:16,5:32};   // raid material a signature piece needs to reach level n (60 a piece, 360 a set); the one number to tune
+const RD_UP={2:1,3:2,4:4,5:8};   // raid material a signature piece needs to reach level n (one clear pays level 2); the one number to tune
+const RD_MOB_K=3;   // a signature piece asks RD_MOB_K x the usual monster drops (UP_COUNT): the grind is in the woods, the raid is the gate
 const RD_LANDS=['home','vale','hoar','grey','sun','gloam'];
 /* The layout every raid shares, in metres from the site's middle (x east, z south; the gate looks north). The court is the boss arena (kits read A.x, A.z, A.r). */
 const RD_LAYOUT={
@@ -61,7 +62,7 @@ const rdCapTier=(gear,land,raidTier)=>Math.min(raidTier|0,zoneTierMax(gear,land)
 function rdUpNeeds(s,to){
   if(!s||!s.set||!(to>=2)||to>SKILL_MAX_LV) return null;
   const set=SS_SETS[s.set], R=set&&rdOfLand(set.land); if(!R) return null;
-  const mats=[{id:R.up[to-2],n:UP_COUNT[to]}];
+  const mats=[{id:R.up[to-2],n:UP_COUNT[to]*RD_MOB_K}];
   if(to===SKILL_MAX_LV) mats.push({id:R.second,n:BOSS_UP});
   return {coins:Math.round(UP_COINS[s.slot]*Math.pow(to-1,1.7)/10)*10,mats,rd:{land:set.land,n:RD_UP[to]}};
 }
