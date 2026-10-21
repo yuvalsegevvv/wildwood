@@ -59,6 +59,7 @@ function leave(pid){
   ev('pleave',pid);
   for(const m of MONS) if(m.tgt===pid){ m.aggro=false; m.tgt=null; m.state='return'; m.pendingHit=-1; }
 }
+const MV_SPEED=20, MV_BUCKET=60;   // anti-cheat: metres per second a client may travel (running is 9.5) and the burst it may catch up after a lag spike
 const POS_Y_MIN=-60, POS_Y_MAX=600, POS_V=80;   // what a client may report for its height (m) and its speed (m/s)
 function setPos(pid,d){
   const p=S.players.get(pid); if(!p||p.dead||!Array.isArray(d)) return;
@@ -67,7 +68,14 @@ function setPos(pid,d){
   // (the numbers come from the client and go out again in every other player's snapshot, rounded by r1(): a finite but huge y, face or speed (1e308) became Infinity there, and JSON turned it
   // into null for everyone. The terrain is -10..232 m, an angle only matters modulo a turn, and nobody runs faster than a dash)
   const ox=p.x, oz=p.z;
-  p.x=clamp(v[0],WX0,WX1); p.y=clamp(v[1],POS_Y_MIN,POS_Y_MAX); p.z=clamp(v[2],WZ0,WZ1); p.face=isFinite(v[3])?v[3]%(2*Math.PI):p.face; p.vx=clamp(v[4]||0,-POS_V,POS_V); p.vz=clamp(v[5]||0,-POS_V,POS_V);
+  // anti-cheat (on when the testing tools are off, or when the host asks for it with --guard so the guard itself can be tested with the tools on: S.guard): the client owns its movement, so a hacked one could teleport or speed-hack. A token bucket of metres (refilled at MV_SPEED m/s, MV_BUCKET deep for lag bursts) is spent by every
+  // reported step; a step it cannot pay for is cut short and the client is put back where the server has it. A real hiker (9.5 m/s at most, a dash is moved by the server itself) never notices.
+  let nx=clamp(v[0],WX0,WX1), nz=clamp(v[2],WZ0,WZ1);
+  if(S.guard){ const dt=p.posT==null?0:clamp(S.t-p.posT,0,3); p.posT=S.t; p.mvB=Math.min(MV_BUCKET,(p.mvB==null?MV_BUCKET:p.mvB)+dt*MV_SPEED);
+    const d=Math.hypot(nx-ox,nz-oz);
+    if(d>p.mvB){ const k=p.mvB/d; nx=ox+(nx-ox)*k; nz=oz+(nz-oz)*k; p.mvB=0; if(S.t-(p.mvTpT||-9)>1){ p.mvTpT=S.t; sendTo(p.id,{t:'tp',x:nx,z:nz,face:p.face}); } }
+    else p.mvB-=d; }
+  p.x=nx; p.y=clamp(v[1],POS_Y_MIN,POS_Y_MAX); p.z=nz; p.face=isFinite(v[3])?v[3]%(2*Math.PI):p.face; p.vx=clamp(v[4]||0,-POS_V,POS_V); p.vz=clamp(v[5]||0,-POS_V,POS_V);
   if(isGuestP(p)){   // accounts: a guest never leaves the first three lands (the last spot inside them is where they are put back)
     if(!guestLandOk(p.x,p.z)){ p.x=p.okX==null?VIL.x:p.okX; p.z=p.okZ==null?VIL.z:p.okZ; p.y=getH(p.x,p.z); sendTo(p.id,{t:'tp',x:p.x,z:p.z,face:p.face}); guestGateP(p,'travel'); }
     else { p.okX=p.x; p.okZ=p.z; }
