@@ -163,13 +163,15 @@ const MON_DEFS=[
 const BOSS_CREEP_LV=60, BOSS_CREEP_HP=0.0125, BOSS_CREEP_DMG=0.05;
 const bossCreep=(d,L)=>d.boss&&L>BOSS_CREEP_LV?L-BOSS_CREEP_LV:0;
 const LATE_CREEP_LV=60, LATE_CREEP_BOSS=13/12, LATE_CREEP_MOB=1.065;
+// an ordinary monster has 1% less health for every level it stands at, at most 25% less from level 25 on (bosses, their adds and props keep theirs)
+const mobHpK=(d,L)=>d.boss||d.bossAdd||d.hits?1:1-Math.min(0.25,0.01*L);
 const lateCreep=(d,L)=>L>LATE_CREEP_LV&&(d.boss||!d.hits)?Math.pow(d.boss||d.bossAdd?LATE_CREEP_BOSS:LATE_CREEP_MOB,L-LATE_CREEP_LV):1;
 /* The numbers of a monster def at level L: prepDef gives it those of its own level, a zone tier (tiers.js) asks for those of a higher one.
    Health: the hits a same-level, normally geared player needs (4 + 0.45 x level), times the enemy's toughness; a boss or a prop has a fixed
    count of hits instead (d.hits). Damage: a share of a same-level, normally geared player's health, before that player's armor (a boss: 16%). */
 function defAt(d,L){
   const hits=d.hits||(4+0.45*L), k=d.hits?1:d.hpK, rd=1-expRed(L), c=bossCreep(d,L);
-  return {hp:Math.round(expDmg(L)*hits*k*highMult(L)*(1+BOSS_CREEP_HP*c)*lateCreep(d,L)),
+  return {hp:Math.round(expDmg(L)*hits*k*highMult(L)*(1+BOSS_CREEP_HP*c)*lateCreep(d,L)*mobHpK(d,L)),
     dmg:d.boss?Math.round(expHP(L)*0.16/rd*(1+BOSS_CREEP_DMG*c)):Math.max(1,Math.round(expHP(L)*d.dmgPct/rd)),
     xp:d.noXp?0:xpFor(L)*(d.boss?25:1)};
 }
