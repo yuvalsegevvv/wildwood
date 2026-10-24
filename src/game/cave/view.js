@@ -13,7 +13,7 @@
    soft layers, fewer points. */
 const CAVE_VIEW={g:null,geos:[],mats:[],texs:[],meshes:0,tris:0,cy:null,W1:0,L:null,C:null,ticks:[],lamps:[],ms:0};
 const CAVE_THEME_VIEW=Object.create(null);
-const CAVE_CH=16, CAVE_BOOST_W=2.3, CAVE_BOOST_F=2.6, CAVE_AO=[0.5,0.68,0.8,0.92,1];
+const CAVE_EMIT_K=1.15, CAVE_EMIT_R=1.1, CAVE_CH=16, CAVE_BOOST_W=2.3, CAVE_BOOST_F=2.6, CAVE_AO=[0.5,0.68,0.8,0.92,1];
 const cavevHash=(x,z)=>{ const s=Math.sin(x*127.1+z*311.7)*43758.5453; return s-Math.floor(s); };
 const _cvC=new THREE.Color(), _cvD=new THREE.Color();
 function caveCeilAt(x,z){
@@ -50,7 +50,7 @@ function caveViewBuild(R){
   caveViewClear(); const t0=performance.now();
   const B=R.B, K=R.K, F=R.F, W=B.w, H=B.h, W1=W+1, H1=H+1, N=W*H, NV=W1*H1, seed=F.seed|0, V=CAVE_VIEW, M=CAVE_CELL, low=LOW||LITE;
   const g=new THREE.Group(); g.name='cave'; g.position.set(R.ox,R.y,R.oz); scene.add(g); V.g=g; V.W1=W1; V.H1=H1;
-  const T=CAVE_THEME_VIEW[F.theme]||{}, amb=K.amb===undefined?0.36:K.amb;
+  const T=CAVE_THEME_VIEW[F.theme]||{}, amb=K.amb===undefined?0.44:K.amb;
   const C={R,B,K,F,W,H,N,seed,g,amb,low,rng:mulberry32(seed^0x3c6ef372),emit:[],fields:[],items:[],after:[],ticks:V.ticks,L:null,hAt:null,lightAt:null,lit:null,
     water:K.water!==undefined,mats:V.mats,geos:V.geos};
   V.C=C;
@@ -77,10 +77,12 @@ function caveViewBuild(R){
   C.cellOf=cellOf;
   // ---- the theme: emitters, fields and props ----
   if(T.pre) try{ T.pre(C); }catch(err){ console.error('cave theme '+F.theme+':',err); }
-  { const lift=B.lift; C.emit.push({x:lift.x,z:lift.z,col:0xffc880,i:1.0,r:15,skip:0}); }   // the lift's lamp
+  try{ caveLifeProps(C); }catch(err){ console.error('cave props:',err); }
+  { const lift=B.lift; C.emit.push({x:lift.x,z:lift.z,col:0xffc880,i:0.6,r:14,skip:0}); }   // the lift's lamp
   // ---- the light, per cell ----
   const L=new Float32Array(N*3); V.L=L;
   for(const a of C.emit){
+    a.i*=CAVE_EMIT_K; a.r*=CAVE_EMIT_R;   // (the owner's playtest: more light; lamps for look.js are copied after, so the point lights follow)
     _cvC.setHex(a.col); const gx0=Math.max(0,Math.floor((a.x-a.r)/M)), gx1=Math.min(W-1,Math.floor((a.x+a.r)/M)), gz0=Math.max(0,Math.floor((a.z-a.r)/M)), gz1=Math.min(H-1,Math.floor((a.z+a.r)/M));
     for(let gz=gz0;gz<=gz1;gz++) for(let gx=gx0;gx<=gx1;gx++){
       const i=gz*W+gx; if(!B.open[i]) continue;
@@ -90,7 +92,7 @@ function caveViewBuild(R){
   }
   if(C.fields.length){ const o=[0,0,0]; for(let gz=0;gz<H;gz++) for(let gx=0;gx<W;gx++){ const i=gz*W+gx; if(!B.open[i]) continue; o[0]=o[1]=o[2]=0; for(const f of C.fields) f(i,(gx+0.5)*M,(gz+0.5)*M,o); L[i*3]+=o[0]; L[i*3+1]+=o[1]; L[i*3+2]+=o[2]; } }
   C.L=L;
-  const lc=(i,ch)=>Math.min(1.15,L[i*3+ch]);
+  const lc=(i,ch)=>Math.min(1.0,L[i*3+ch]);
   C.lightAt=(x,z,out)=>{ const i=cellOf(x,z); out[0]=amb+lc(i,0); out[1]=amb+lc(i,1); out[2]=amb+lc(i,2); return out; };
   const _lo=[0,0,0];
   C.lit=(col,x,z,k)=>{ C.lightAt(x,z,_lo); _cvC.setHex(col); _cvC.r=Math.min(1,_cvC.r*_lo[0]*(k||1)); _cvC.g=Math.min(1,_cvC.g*_lo[1]*(k||1)); _cvC.b=Math.min(1,_cvC.b*_lo[2]*(k||1)); return _cvC.getHex(); };
@@ -134,7 +136,9 @@ function caveViewBuild(R){
         const rows=[]; for(let r=0;r<=nrow;r++){ const tt=r/nrow, sn=Math.sin(Math.PI*tt);
           rows.push([[px[a]+dxr[a]*ha*sn,fy[a]+(cy[a]-fy[a])*tt,pz[a]+dzr[a]*ha*sn],[px[b]+dxr[b]*hb*sn,fy[b]+(cy[b]-fy[b])*tt,pz[b]+dzr[b]*hb*sn],tt]); }
         const put=(p,tt,end,qk)=>{ const fade=1-0.5*tt; let k;
-          if(K.masonry){ k=qk; cw.copy(cWall).lerp(cWall2,qk.h*0.8).multiplyScalar(0.72+qk.h*0.5); k=CAVE_BOOST_W*qk.s; }
+          if(K.masonry){ k=qk; cw.copy(cWall).lerp(cWall2,qk.h*0.8).multiplyScalar(0.62+qk.h*0.75); k=CAVE_BOOST_W*qk.s;
+            const band=0.8+0.4*Math.sin(p[1]*0.55+noise2(p[0]*0.05,p[2]*0.05)*5), moss=Math.max(0,1-p[1]/2.6)*Math.max(0,noise2(p[0]*0.17+4,p[2]*0.17)+0.15);   // courses lighter and darker by height, moss low on the stone
+            cw.multiplyScalar(band); if(moss>0) cw.lerp(_cvD.setHex(0x3f6a34),Math.min(0.6,moss*0.9)); }
           else { wallCol(p[0],p[1],p[2],cw,u0+end*M); k=CAVE_BOOST_W*(0.62+0.38*(1-tt))*(0.92+0.16*cavevHash(p[0]*0.7,p[2]*0.7+p[1]*0.4)); }
           cavevVert(A.lit,p[0],p[1],p[2],-dx,0,-dz,col.setRGB(cw.r*k*(amb+la[0]*fade),cw.g*k*(amb+la[1]*fade),cw.b*k*(amb+la[2]*fade))); };
         for(let r=0;r<nrow;r++){ const [a0,b0,t0]=rows[r], [a1,b1,t1]=rows[r+1];

@@ -103,7 +103,8 @@ CAVE_THEME_VIEW.prism={shine:48,spec:0x4a4a5a,
 
 /* ============ floor 3: the Drowned Galleries ============ */
 CAVE_THEME_VIEW.drowned={shine:30,spec:0x203030,
-  floorTint(C,x,z,c,water){ const m=noise2(x*0.1+1,z*0.1+4); if(water) c.multiplyScalar(0.75).lerp(_cvD.setHex(0x1c4c48),0.3); else if(m>0.1) c.lerp(_cvD.setHex(0x3a5a2c),Math.min(0.5,(m-0.1)*1.1)); },
+  floorTint(C,x,z,c,water){ const m=noise2(x*0.1+1,z*0.1+4); c.multiplyScalar(0.8+0.5*cavevHash(Math.floor(x/2.8),Math.floor(z/2.8))+0.2*Math.sin(x*0.35)*Math.sin(z*0.35));   // (flagstones: each slab its own tone)
+    if(water) c.multiplyScalar(0.75).lerp(_cvD.setHex(0x1c4c48),0.3); else if(m>0.1) c.lerp(_cvD.setHex(0x3a5a2c),Math.min(0.5,(m-0.1)*1.1)); },
   pre(C){
     const B=C.B, K=C.K, M=CAVE_CELL, low=C.low, tc=new THREE.Color(K.light);
     C.fields.push((i,x,z,o)=>{ if(B.water[i]){ const k=0.04+0.05*Math.sin(x*0.6+z*0.4); o[0]+=tc.r*k; o[1]+=tc.g*k; o[2]+=tc.b*k; } });
