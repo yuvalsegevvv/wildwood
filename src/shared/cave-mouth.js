@@ -5,11 +5,11 @@
             CAVE_PORTAL {x, z} (the cave's doorway in the hillside)
    Why here: (184, -156) is the foot of the northern foothills 125 m from the Stone Circle and 120 m from the Hollow Roots' door, where the ground rises 10 m in the next 25 m northward and 40 m in 60 m, so the mouth
    is cut into a real slope with the Greyspine's wall behind it. The ground is not flat there (rolling, +-3 m over 10 m), so rawHeight lays a pad: the mean height of the ring, flat inside padR, blended out to padOut.
-   The pad is the only change to the terrain; the camps keep 40 m away (server/monsters.js), the plants 18 m (game/dungeon/entrances.js dgEntClear). The mouth faces a = -0.25 rad, toward the home village.
+   The pad is the only change to the terrain; the camps keep 40 m away (server/monsters.js), the plants 18 m (game/dungeon/entrances.js dgEntClear). The mouth faces a = 0.5 rad (a 43 degree turn counter-clockwise of the old -0.25, the angle on that side with the most hill behind the doorway: a pure 90 would face east along the slope), downhill to the south-east, so the doorway is cut into the rising hillside to the north-west.
    Layout (caveMouthAt): the doorway in the hill at v = -9.5, the teleport circle at (u -4.6, v 3.4), the lift beside the entrance at (u 6.4, v -1.2) with its cage 2.2 m wide. Unlike the villages' circles it joins CIRCLES
    without a village: warpP and the travel window only need V.x, V.z and V.tele. Opening rule is the home circle's (gear.east >= 2: the hiker has walked to Hanami). */
 var CAVE_MOUTH=(()=>{   // (a var: rawHeight may be asked before this file has run)
-  const x=184, z=-156, a=-0.25; let hs=0; for(let k=0;k<8;k++) hs+=baseHeight(x+Math.sin(k*0.785)*8,z+Math.cos(k*0.785)*8);
+  const x=184, z=-156, a=0.5; let hs=0; for(let k=0;k<8;k++) hs+=baseHeight(x+Math.sin(k*0.785)*8,z+Math.cos(k*0.785)*8);
   return {x,z,a,fx:Math.sin(a),fz:Math.cos(a),h:hs/8,padR:11,padOut:28};
 })();
 const caveMouthAt=(u,v)=>[CAVE_MOUTH.x+u*Math.cos(CAVE_MOUTH.a)+v*Math.sin(CAVE_MOUTH.a), CAVE_MOUTH.z-u*Math.sin(CAVE_MOUTH.a)+v*Math.cos(CAVE_MOUTH.a)];

@@ -3,7 +3,7 @@
    exports: caveMouthBuild() (generation-setup.js, once), caveMouthUpdate(dt) (zone.js caveFrame: hidden when far, the lamps flicker, the lift's ring breathes), CAVE_MOUTH_VIEW {G, flames, ring}
    users: reads CAVE_MOUTH / caveMouthAt / CAVE_LIFT_SURFACE / CAVE_MOUTH_V (shared/cave-mouth.js: the place and the pad of flat ground rawHeight lays), buildCircle (village/buildings-vale.js: the circle's stones, ring and beam),
           dgEntRock / dgEntSignTex / dgEntWood (village/buildings-dungeon.js: a craggy block, a painted sign), addCol (the colliders)
-   The group stands at the mouth turned by its `a`, so in its own frame +x is across, +z OUT of the mouth (toward the village) and the hill is at -z; caveMouthAt(u, v) is the same frame in the world. Plants keep 18 m away
+   The group stands at the mouth turned by its `a`, so in its own frame +x is across, +z OUT of the mouth (downhill, away from the slope) and the hill is at -z; caveMouthAt(u, v) is the same frame in the world. Plants keep 18 m away
    (dgEntClear, game/dungeon/entrances.js), camps 40 m (server/monsters.js). Phones: fewer blocks, no flicker. */
 const CAVE_MOUTH_VIEW={G:null,flames:[],ring:null,built:false};
 const cavemRock=hex=>(x,y,z,nx,ny,nz,c)=>{ c.set(hex).multiplyScalar(0.66+h3(Math.floor(x*2),Math.floor(y*2),Math.floor(z*2))*0.5); };
