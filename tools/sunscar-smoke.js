@@ -43,7 +43,7 @@ ok('Glasswell is a village like the others: in VILS and CIRCLES (fifth), vilAt f
 
 // ---- the monsters ----
 { const defs=x.MON_DEFS.filter(d=>d.zone&&/^s\d+$/.test(d.zone)), kinds={}; for(const m of x.MONS) if(m.def.zone&&/^s\d+$/.test(m.def.zone)&&!m.temp&&!m.rd) kinds[m.def.id]=(kinds[m.def.id]||0)+1;
-  ok('eighteen kinds, two of each level 28-36, twelve of every kind, each with a named drop material and an element',defs.length===18&&[28,29,30,31,32,33,34,35,36].every(L=>defs.filter(d=>d.level===L&&d.zone==='s'+L).length===2)&&Object.keys(kinds).length===18&&Object.values(kinds).every(n=>n===12)&&defs.every(d=>x.MATS[d.id]&&x.MATS[d.id].name&&d.el),Object.keys(kinds).length+' kinds');
+  ok('eighteen kinds, two of each level 28-36, eighteen of every kind (x1.5 spawns), each with a named drop material and an element',defs.length===18&&[28,29,30,31,32,33,34,35,36].every(L=>defs.filter(d=>d.level===L&&d.zone==='s'+L).length===2)&&Object.keys(kinds).length===18&&Object.values(kinds).every(n=>n===18)&&defs.every(d=>x.MATS[d.id]&&x.MATS[d.id].name&&d.el),Object.keys(kinds).length+' kinds');
   const mons=x.MONS.filter(m=>m.def.zone&&/^s\d+$/.test(m.def.zone)&&!m.temp&&!m.rd);
   ok('every camp is in the Sunscar, in its own zone, out of the city, the river, the pans\' water and the arenas, on ground you can stand on',mons.every(m=>x.inSun(m.camp.x,m.camp.z)&&x.zoneAt(m.camp.x,m.camp.z)===x.defZone(m.def)&&x.vDist(m.camp.x,m.camp.z)>x.VR+15&&!x.sunKeepOut(m.camp.x,m.camp.z,0)&&H(m.camp.x,m.camp.z)>1),mons.length+' monsters');
   const f=x.MON_DEFS.filter(d=>d.level>=28&&d.zone&&/^s/.test(d.zone));

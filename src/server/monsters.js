@@ -23,7 +23,7 @@ function initMonstersS(){
   /* where a camp may stand (the atlas's world, shared/world-atlas.js): on dry land clear of the coast, of every river and lake, of the villages and the roads (and trails), of the boss arenas, of every anchor
      (a village, gate, boss, dungeon door, zone entrance, island spot: 22 m) and of the Proving Isle; on ground a hiker walks easily. The zone itself is asked by the caller (zoneAt), so each land's zone table decides which ground is whose.
      (The old per-land keep-outs, sunKeepOut / gloamKeepOut, are not asked: their water, the Bowl's rim and the reserved doors are the atlas's water and anchors now.) */
-  const ok=(x,z)=>x>WX0+26&&x<WX1-26&&z>WZ0+26&&z<WZ1-26&&!waIsSea(x,z)&&waCoast(x,z)>26&&getH(x,z)>1&&grad(x,z)<0.55&&waWaterDist(x,z)>8&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&waAnchorDist(x,z)>22&&!dgEntranceNear(x,z,32)&&!caveMouthNear(x,z,40)&&Math.hypot(x-WA_PVP.x,z-WA_PVP.z)>WA_PVP.r+62&&RD_ORDER.every(i=>Math.hypot(x-RDS[i].x,z-RDS[i].z)>56);   // dungeons: a camp keeps 32 m off a dungeon's door; pvp: and 62 m off the Proving Isle's shore (nothing lives by the bridgehead)
+  const ok=(x,z)=>x>WX0+26&&x<WX1-26&&z>WZ0+26&&z<WZ1-26&&!waIsSea(x,z)&&waCoast(x,z)>26&&getH(x,z)>1&&grad(x,z)<0.55&&waWaterDist(x,z)>8&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&waAnchorDist(x,z)>22&&!dgEntranceNear(x,z,32)&&!caveMouthNear(x,z,40)&&!inGlen(x,z,0)&&Math.hypot(x-WA_PVP.x,z-WA_PVP.z)>WA_PVP.r+62&&RD_ORDER.every(i=>Math.hypot(x-RDS[i].x,z-RDS[i].z)>56);   // dungeons: a camp keeps 32 m off a dungeon's door; no camp in the Greyspine's glacier valley (a strip kept clear); pvp: and 62 m off the Proving Isle's shore (nothing lives by the bridgehead)
   for(const d of MON_DEFS){
     const zn=defZone(d), total=MON_COUNT(d), pack=d.per+2;
     let made=0;
@@ -36,6 +36,9 @@ function initMonstersS(){
       for(let k=0;k<n;k++){ const a=rr(0,TAU), r=rr(0.5,3.5+n*0.4); makeMon(d,x+Math.sin(a)*r,z+Math.cos(a)*r,camp,rr(0.92,1.08),false); }
       made+=n;
     }
+    // a crowded zone (the Sunscar's s28 by its walls) can run out of room: the rest join the kind's camps already made, so every kind keeps its MON_COUNT
+    const mine=CAMPS.filter(c=>c.def===d);
+    for(let k=0;made<total&&mine.length;k++,made++){ const c=mine[k%mine.length], a=rr(0,TAU), r=rr(0.5,4.5); makeMon(d,c.x+Math.sin(a)*r,c.z+Math.cos(a)*r,c,rr(0.92,1.08),false); }
   }
 }
 function monRoster(m){ return [m.id,m.def.id,r1(m.camp.x),r1(m.camp.z),Math.round(m.s*100)/100,r1(m.x),r1(m.z),m.dead?1:0,m.temp?1:0].concat(m.inst||m.rd?[m.dgK.lv,Math.round(m.maxHp)]:[]); }   // raids: a raid monster too   // dungeons: a run's monster adds [level, maxHp in the def's units]
