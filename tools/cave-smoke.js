@@ -64,6 +64,9 @@ ok('the client is told the charge (a cave message with the rounded value)',(inbo
   ok('with enough charge a cast spends exactly the cost (25) and starts the skill',near(p.cave.charge,35)&&p.act&&p.act.sid==='fixflare'&&p.act.cave,String(p.cave.charge));
   tick(12); const after=p.cave.charge;
   ok('the cave skill\'s own hit earns no charge',near(after,35),String(after));
+  { W.receive('a',{t:'dev',cmd:'caveFull',v:true}); tick(1); inbox.a=[]; p.cd.cave=0; p.act=null; W.receive('a',{t:'atk',k:'cave',tg:null,face:0,aim:[0,0,-1]}); tick(2);
+    const told=(inbox.a||[]).filter(m=>m.t==='cave').pop(); W.receive('a',{t:'dev',cmd:'caveFull',v:false}); p.cave.charge=after; tick(1);
+    ok('with the testing toggle on, a cast is followed by the charge again (100), so the client\'s bar refills after its own subtraction',!!told&&told.c===100,JSON.stringify(told)); }
   W.receive('a',{t:'atk',k:'cave',tg:null,face:0,aim:[0,0,-1]}); tick(1);
   ok('a second cast within the cave cooldown is refused',near(p.cave.charge,35)||p.cd.cave>0);
   p.gear.skills.cave='fixflare'; p.cave.charge=100; p.pv=1; p.cd.cave=0; p.act=null; W.receive('a',{t:'atk',k:'cave',tg:null,face:0,aim:[0,0,-1]}); tick(1); p.pv=null;

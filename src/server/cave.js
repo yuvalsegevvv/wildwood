@@ -58,7 +58,7 @@ function caveTickP(p){   // every tick, every player: end a boss fight they left
 function caveCastP(p,msg){   // atk {k:'cave'}: spend the cost and run the skill
   if(p.dead||p.act||!p.cave||p.cd.cave>0.08) return;
   const sk=caveEquippedP(p); if(!sk||p.cave.charge<sk.cost) return;
-  p.cave.charge-=sk.cost; p.cd.cave=CAVE_CAST_CD; p.cave.cur=null;   // (a new cast supersedes an unpaid one, and its own hits earn nothing)
+  p.cave.charge-=sk.cost; p.cave.sent=-1; p.cd.cave=CAVE_CAST_CD; p.cave.cur=null;   // sent=-1: the client already took the cost off, so the charge is always told again after a cast (with the testing toggle on it is back at 100 at once, the same rounded value as before)   // (a new cast supersedes an unpaid one, and its own hits earn nothing)
   const [kind,dur,hitAt]=sk.act, lvl=p.gear.cave.own[sk.id];
   if(isFinite(+msg.face)) p.face=+msg.face%(2*Math.PI);
   const tg=foeByIdS(p,msg.tg);
