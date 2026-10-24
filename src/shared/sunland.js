@@ -3,13 +3,13 @@
    (shared/terrain-height.js, one marked line) and lays the Bowl of Glasswell (gwRimH, gwCityCut, the city's frame in sunscar-shape.js / sunscar-city.js) at the Sunscar hub WA_HUBS.sun: the floor and the
    rim as the model draws them, a skirt at SUN_BASE and an apron that eases (SUN_FLAT, SUN_BLEND) into the atlas's ground, keeping off the atlas's water. The Bowl moves as one piece: never turned, never redrawn.
    Data and tests: SUN_CITY / SUN_BASE (the Bowl's centre, its floor and the skirt's level), SUN_PASS + sunPassX(z) (the River Pass: the atlas road from the Greyspine to the gate, x by z; z > 300: the Amber link's x),
-   SUN_RED (Redgate Canyon, dir 'e') and SUN_AMBER (the planned link, dir 's', never opens) pushed to GREY_GATES with the River Pass's record (greyspine.js); sunWallHold / sunCrestHold (the borders while Redgate
+   SUN_RED (Redgate Canyon, dir 'e') and SUN_AMBER (the Ashbed Gate into Amber Reach, dir 's', opened by the Sand Wyrm like Redgate: gear.amber) pushed to GREY_GATES with the River Pass's record (greyspine.js); sunWallHold / sunCrestHold (the borders while Redgate
    / the River Pass are shut, from the old frame's names: the callers are the client's worldBounds and the server's setPos), sunKeepOut (camps, nodes, plants), sunMesaH / sunDuneK / sunPanK / sunGlassK /
    sunGreenK (colour weights and plant rules read by game/world/ and professions.js), sunColorK (the Sunscar's share of a point's colour), sunWaterSurf / sunWet (the Bowl's own lake and river, the only water the
    Sunscar has: the border river is the atlas's), SUN_DG_DOOR (the Sandglass's door at WA_POIS), sunHook (an old name, a no-op). Used by glasswell.js (VIL5), sunzones.js, game/village/buildings-sunscar.js,
    terrain-color-sun.js, dungeons.js. Test: node tools/sunscar-smoke.js. Names: sun..., SUN_...
    Where it is (the atlas, shared/world-atlas.js): land id 4 'sun' south of the Greyspine and the Gloamhorn (the Glass River is the border with the Gloamhorn, no water of its own), west of the home forest's Sunwall,
-   to the south coast; land 6 'amber' is the planned link south of it (a closed gate, nothing built behind it). Glasswell stands at the hub, zone s28 around it; the River Pass comes down from the north-east, Redgate
+   to the south coast; land 6 'amber' is Amber Reach, south of it (shared/savanna.js; the Ashbed Gate on the straight border z 690). Glasswell stands at the hub, zone s28 around it; the River Pass comes down from the north-east, Redgate
    Canyon from the south-east. */
 var SUN_CITY=null, SUN_BASE=0, SUN_SKIRT=[];   // (var: sunBowlHook is called by rawHeight, which may run before this file has)
 const SUN_FLAT=300, SUN_BLEND=150;   // the Bowl's own ground to SUN_FLAT - SUN_BLEND, easing into the atlas's by SUN_FLAT (a ridge rises 40 m north of the hub: the blend is wide so it never becomes a wall)
@@ -44,7 +44,7 @@ const SUN_GATE_RIVER=waGateBetween('grey','sun'), SUN_GATE_RED=waGateBetween('ho
 // the River Pass: the atlas road from the Greyspine down to the gate, [x, z] with z rising
 const SUN_PASS=(()=>{ let best=null; for(const r of WA_ROADS) if(r.name==='The River Pass'&&(!best||r.pts.length>best.pts.length)) best=r;
   const p=best.pts.filter((q,i)=>i%6===0||i===best.pts.length-1); return {w:9,pts:p}; })();
-const SUN_AMBER={id:'amber',dir:'s',x:SUN_GATE_AMBER.x,z:0,w:10,name:'The Dry Riverbed (to Amber Reach)',boss:null,planned:true};   // the planned link south: shut for good, nothing behind it (gear.amber stays 0)
+const SUN_AMBER={id:'amber',dir:'s',x:SUN_GATE_AMBER.x,z:0,w:10,name:'The Ashbed Gate',boss:'sandwyrm'};   // the way south into Amber Reach: a thorn hedge across the dry riverbed (gear.amber: 1 once the Sand Wyrm has fallen for you; the border itself is held by barHold, barriers.js)
 function sunPassX(z){   // the x of the 's' gates' road at z: the River Pass (z < 300) or the Amber link's dry riverbed
   if(z>300) return SUN_AMBER.x;
   const P=SUN_PASS.pts; if(z<=P[0][1]) return P[0][0]; if(z>=P[P.length-1][1]) return P[P.length-1][0];
@@ -58,8 +58,8 @@ function sunEdgeX(z,x0,x1){ for(let x=x0;x>=x1;x-=2){ const l=waLandId(x,z); if(
 const SUN_RED={id:'redgate',dir:'e',x:sunEdgeX(SUN_GATE_RED.z,SUN_GATE_RED.x+60,SUN_GATE_RED.x-120)+6,z:SUN_GATE_RED.z,w:10,name:'Redgate Canyon',boss:'sandwyrm'};   // dir 'e': a plane x = const held from both sides (gateHold, shared/greyspine.js)
 SUN_AMBER.z=sunEdgeZ(SUN_AMBER.x,SUN_GATE_AMBER.z-200,SUN_GATE_AMBER.z+200,6)-6;   // (the border between land 4 and land 6; the plane is held 6 m inside the Sunscar)
 GREY_GATES.push(SUN_RED);   // the third rock fall: the same record, the same gear flag (gear.redgate), the same mesh builder (game/village/buildings-grey.js)
-GREY_GATES.push(SUN_AMBER);   // the fourth: a shut gate to a land that is not built (gear.amber is never set: gateOpen is false)
-/* While Redgate Canyon's rock fall stands (gear.redgate 0) nobody crosses the Sunscar's border with the home forest (or the Amber link's with it) except through the canyon itself, which its rock fall holds
+GREY_GATES.push(SUN_AMBER);   // the fourth: the Ashbed Gate (the same record and mesh as the rock falls; gateOpen is false until gear.amber is 1)
+/* While Redgate Canyon's rock fall stands (gear.redgate 0) nobody crosses the Sunscar's border with the home forest (or Amber Reach's, which lies behind it) except through the canyon itself, which its rock fall holds
    (gateHold): a step that changes land across that border goes back to where it started along x. o: the new position, ox: the old x. Used by the client's movement and the server's setPos. */
 /* A closed border keeps a strip of 6 m either side: a step that ends within 6 m of it (along x or z) is pushed back out of the strip, so no step, diagonal ones and the test's 4 m grid included, can jump it.
    pair(n,m): are the lands n (here) and m (there) the closed border's two sides. */

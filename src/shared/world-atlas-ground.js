@@ -2,7 +2,7 @@
 /* Agent map. waGround(x,z) is the whole shared height function before the villages' and arenas' flattening (rawHeight, terrain-height.js). Reads shared/world-atlas.js only for WHERE things are;
    the shapes are made here from noise (hillShape, erodeFbm, ridged, crest of shared/terrain.js and noise.js), so the ground is landforms guided by the atlas, never the atlas's own terraces.
    Nothing finer than 8-16 m is put in (the server samples this on a 4 m grid; fine detail is the client's ground shading).
-   - Landform per land (waForm): rolling hills (home, vale), white domes (Reach), ridged mountains (Greyspine: the most extreme), mesas and dunes (Sunscar), crags (Gloamhorn). Each fades to nothing
+   - Landform per land (waForm): rolling hills (home, vale), white domes (Reach), ridged mountains (Greyspine: the most extreme), mesas and dunes (Sunscar), crags (Gloamhorn), a long gentle swell (Amber Reach, land 6). Each fades to nothing
      over the last ~90 m before a land border, where the border's own range stands instead (waLandRidge).
    - A land border is a range of ridges with saddles (WA_SADDLE: a third of its length is low) and no range at all on a road (the roads cross through the saddles); a zone border inside a land is,
      by a slow noise along it, a low ridge with saddles, a ravine, or a band of broken ground (waZoneEdge). All of these are rises of 10-40 m over 60-150 m, not a step.
@@ -27,6 +27,7 @@ function waForm(L,x,z){
       return mesa-6+dune+erodeFbm(x*0.012,z*0.012,3,0.3)*6; }
     case 5: { const wx=x+noise2(x*0.0034+4,z*0.0034-1)*55, wz=z+noise2(x*0.0034-9,z*0.0034+6)*55;
       return (ridged(wx*0.0078+9,wz*0.0078+2,4)-0.3)*58+erodeFbm(wx*0.009+2,wz*0.009-6,3,0.2)*12; }                      // the Gloamhorn: crags
+    case 6: return (hillShape(x+613,z-287,HILL_VALE)-10)*0.32;                                                       // Amber Reach: the savanna's long gentle swell, +-4 m (its terraces and rocks are the zones' own: shared/savannazones.js)
     default: return 0;
   }
 }
