@@ -41,6 +41,7 @@ const wh=x.SKILLS.whirlwind;
   ok('a basic attack charges by its own cooldown (0.6 x 0.7)',p.cave.charge>0&&near(p.cave.charge,x.CAVE_CHARGE_K*x.SKILLS.slash.cd),String(p.cave.charge)); }
 { p.cave.charge=99; pile(p,2); cast('a','skill'); ok('the bar is capped at 100',p.cave.charge===100,String(p.cave.charge)); }
 ok('the client is told the charge (a cave message with the rounded value)',(inbox.a||[]).filter(m=>m.t==='cave').pop().c===100);
+{ W.receive('a',{t:'dev',cmd:'skills'}); ok('the testing tool "Learn every skill" also grants every cave skill (level 1, a higher level kept)',Object.keys(x.CAVE_SKILLS).length>0&&Object.keys(x.CAVE_SKILLS).every(id=>p.gear.cave.own[id]>=1)); }
 { W.receive('a',{t:'dev',cmd:'caveFull',v:true}); p.cave.charge=5; tick(1); const on=p.cave.charge===100&&p.gear.caveFull===true; W.receive('a',{t:'dev',cmd:'caveFull',v:false}); p.cave.charge=5; tick(1);
   ok('the testing toggle (dev caveFull) pins the charge at 100 while on, saved in gear; off, the charge is left alone',on&&p.cave.charge===5&&p.gear.caveFull===false,String(p.cave.charge)); }
 // ---- the set bonus (pure rule + a real cast) ----
@@ -63,6 +64,9 @@ ok('the client is told the charge (a cave message with the rounded value)',(inbo
   ok('with enough charge a cast spends exactly the cost (25) and starts the skill',near(p.cave.charge,35)&&p.act&&p.act.sid==='fixflare'&&p.act.cave,String(p.cave.charge));
   tick(12); const after=p.cave.charge;
   ok('the cave skill\'s own hit earns no charge',near(after,35),String(after));
+  { W.receive('a',{t:'dev',cmd:'caveFull',v:true}); tick(1); inbox.a=[]; p.cd.cave=0; p.act=null; W.receive('a',{t:'atk',k:'cave',tg:null,face:0,aim:[0,0,-1]}); tick(2);
+    const told=(inbox.a||[]).filter(m=>m.t==='cave').pop(); W.receive('a',{t:'dev',cmd:'caveFull',v:false}); p.cave.charge=after; tick(1);
+    ok('with the testing toggle on, a cast is followed by the charge again (100), so the client\'s bar refills after its own subtraction',!!told&&told.c===100,JSON.stringify(told)); }
   W.receive('a',{t:'atk',k:'cave',tg:null,face:0,aim:[0,0,-1]}); tick(1);
   ok('a second cast within the cave cooldown is refused',near(p.cave.charge,35)||p.cd.cave>0);
   p.gear.skills.cave='fixflare'; p.cave.charge=100; p.pv=1; p.cd.cave=0; p.act=null; W.receive('a',{t:'atk',k:'cave',tg:null,face:0,aim:[0,0,-1]}); tick(1); p.pv=null;
@@ -127,7 +131,7 @@ ok('the floors are far apart (no floor within a snapshot\'s reach of another)',F
 { const M=x.CAVE_MOUTH, land=x.landAt(M.x,M.z);
   ok('the mouth stands in the home forest, on dry land, off every road, arena and the coast',land===x.landAt(0,0)&&x.roadDist(M.x,M.z)>14&&x.arenaDist(M.x,M.z)>40&&x.coastDist(M.x,M.z)>80&&x.vDist(M.x,M.z)>60&&x.getH(M.x,M.z)>x.waterSurf(M.x,M.z)+1,
     [land,Math.round(x.roadDist(M.x,M.z)),Math.round(x.arenaDist(M.x,M.z)),Math.round(x.coastDist(M.x,M.z)),Math.round(x.vDist(M.x,M.z))].join(' '));
-  const C=x.CIRCLES.find(c=>c.id==='cavemouth'); ok('its teleport circle is in CIRCLES (the travel window lists it) and the lift stands beside it',!!C&&C.V===x.CAVE_MOUTH_V&&Math.hypot(C.V.tele.x-x.CAVE_LIFT_SURFACE.x,C.V.tele.z-x.CAVE_LIFT_SURFACE.z)<14&&Math.hypot(x.CAVE_LIFT_SURFACE.x-M.x,x.CAVE_LIFT_SURFACE.z-M.z)<12);
+  const C=x.CIRCLES.find(c=>c.id==='cavemouth'); ok('its teleport circle is in CIRCLES (the travel window lists it) and the lift stands in the grotto behind the doorway, a short walk from it, on the pad\'s floor',!!C&&C.V===x.CAVE_MOUTH_V&&Math.hypot(C.V.tele.x-x.CAVE_LIFT_SURFACE.x,C.V.tele.z-x.CAVE_LIFT_SURFACE.z)<30&&Math.hypot(x.CAVE_LIFT_SURFACE.x-M.x,x.CAVE_LIFT_SURFACE.z-M.z)<24&&((x.CAVE_LIFT_SURFACE.x-M.x)*M.fx+(x.CAVE_LIFT_SURFACE.z-M.z)*M.fz)<-12);
   ok('the ground under the circle and the lift is level (the pad)',[x.CAVE_MOUTH_V.tele,x.CAVE_LIFT_SURFACE].every(q=>Math.abs(x.getH(q.x,q.z)-M.h)<0.05)&&x.caveMouthNear(M.x+3,M.z,8)&&!x.caveMouthNear(M.x+60,M.z,8)); }
 // ---- the lift's rules ----
 { const hi={level:40,gear:{cave:{own:{}}}}, lo2={level:22,gear:{cave:{own:{}}}};

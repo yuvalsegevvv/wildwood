@@ -79,6 +79,10 @@ function caveViewBuild(R){
   if(T.pre) try{ T.pre(C); }catch(err){ console.error('cave theme '+F.theme+':',err); }
   try{ caveLifeProps(C); }catch(err){ console.error('cave props:',err); }
   { const lift=B.lift; C.emit.push({x:lift.x,z:lift.z,col:0xffc880,i:0.6,r:14,skip:0}); }   // the lift's lamp
+  C.after.push(C=>{ const lift=B.lift, y=C.hAt(lift.x,lift.z), top=caveCeilAt(lift.x,lift.z)-y-0.3;   // the lift's cage (the surface grotto's: game/cave/mouth.js caveLiftGeo), its beam under the ceiling
+    const geo=caveLiftGeo(top).translate(lift.x,y,lift.z); C.geos.push(geo); const m=new THREE.Mesh(geo,villageMat); m.name='lift'; C.g.add(m);
+    const ring=caveLiftRing(); ring.position.set(lift.x,y+0.3,lift.z); C.g.add(ring); C.geos.push(ring.geometry); C.mats.push(ring.material);
+    C.ticks.push(()=>{ ring.material.opacity=0.38+0.14*Math.sin(t*2.2); }); });
   // ---- the light, per cell ----
   const L=new Float32Array(N*3); V.L=L;
   for(const a of C.emit){

@@ -4,7 +4,9 @@
    The tile #abCave: below level 23 a lock; from 23 with no cave skill owned it says "Go to the cave"; owned but not worn "Cave"; worn: its name, ready (glow) when charge >= cost. The key is KB_ACTIONS 'cave' (4).
    Exports: caveOwnedIds, caveAbilityNow, caveFillTile, caveHudUpdate, caveBarKey, caveDoAttack (doAttack('cave') calls it), caveSlotHtml / caveGridHtml / caveInfoHtml / caveBindPanel (economy/skills.js).
    Hooks into other files are marked `// cave:` (listed in docs/CAVE.md). */
-var CAVE_UI={charge:0,sel:null};   // (var: setActionBar runs at load, before this file)
+var CAVE_UI={charge:0,sel:null};
+const caveIco=s=>{ const g=ssGlyph(s); return g?`<svg ${SS_ICON_ATTR}>${g}</svg>`:skIcon(s.name); };   // a set's cave skill draws its set's emblem (like the set's other pieces), a floor-1 skill its own icon (ICONS, ui/combat-hud.js)
+const caveSetAttr=s=>{ const t=ssTint(s); return t?';--set:'+t:''; };   // (var: setActionBar runs at load, before this file)
 NETH.cave=msg=>{ CAVE_UI.charge=Math.max(0,Math.min(CAVE_CHARGE_MAX,+msg.c||0)); };
 const caveOwnedIds=()=>{ const own=GEAR&&GEAR.cave&&GEAR.cave.own; return own?CAVE_SKILL_IDS.filter(id=>Object.prototype.hasOwnProperty.call(own,id)):[]; };
 const caveLevelOf=id=>{ const own=GEAR&&GEAR.cave&&GEAR.cave.own; return own&&Object.prototype.hasOwnProperty.call(own,id)?own[id]:0; };
@@ -16,7 +18,8 @@ function caveAbilityNow(){
 function caveFillTile(){
   const el=$('#abCave'); if(!el||!CAVE_UI||!GEAR) return;
   const locked=PL.level<CAVE_SLOT_LV, a=caveAbilityNow(), owned=caveOwnedIds().length>0;
-  el.querySelector('svg').innerHTML=(a&&ICONS[a.icon||a.name])||ICONS[locked?'lock':a||owned?'burst':'plus']||ICONS.burst;
+  el.querySelector('svg').innerHTML=(a&&(ssGlyph(a)||ICONS[a.name]))||ICONS[locked?'lock':owned?'burst':'plus']||ICONS.burst;
+  el.classList.toggle('has-set',!!(a&&ssTint(a))); el.style.setProperty('--set',a&&ssTint(a)||'transparent');
   el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+CAVE_SLOT_LV:owned?'Cave':'Go to the cave';
   el.classList.toggle('empty',!a);
   const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
@@ -55,13 +58,13 @@ function caveDoAttack(){
 /* ---- the skills panel: the cave row under the three slots, and the Cave tab ---- */
 function caveSlotHtml(C){
   const locked=C.lv<CAVE_SLOT_LV, a=GEAR&&GEAR.skills&&caveSkillDef(GEAR.skills.cave), on=a&&caveLevelOf(a.id)&&!locked, owned=caveOwnedIds().length>0;
-  const tile=on?`<button class="sk-tile${a.el&&a.el!=='basic'?' has-el':''}" style="--el:${a.el&&a.el!=='basic'?ELEMS[a.el].col:'transparent'}" aria-label="${a.name}">${skIcon(a.icon||a.name)}<i class="lv">${caveLevelOf(a.id)}</i></button>`:`<div class="sk-tile empty">${skIcon(locked?'lock':'plus')}</div>`;
+  const tile=on?`<button class="sk-tile${a.el&&a.el!=='basic'?' has-el':''}${ssTint(a)?' has-set':''}" data-cave="${a.id}" data-from="slot:cave" style="--el:${a.el&&a.el!=='basic'?ELEMS[a.el].col:'transparent'}${caveSetAttr(a)}" aria-label="${a.name}">${caveIco(a)}<i class="lv">${caveLevelOf(a.id)}</i></button>`:`<div class="sk-tile empty">${skIcon(locked?'lock':'plus')}</div>`;
   return `<div class="sk-slot cave${on?' on':''}${locked?' locked':''}" data-caveslot="1"><span class="sk-n">4 · Cave skill</span>${tile}<b>${on?a.name:locked?'Opens at level '+CAVE_SLOT_LV:owned?'Empty':'Go to the cave'}</b><small>${on?'costs '+a.cost+' charge':locked?'':owned?'Open the Cave tab':'Its skills are earned there'}</small></div>`;
 }
 function caveGridHtml(){
   if(!CAVE_SKILL_IDS.length) return '<p class="muted sk-note">No cave skills exist yet. They are earned in the Deep Cave.</p>';
   return CAVE_SKILL_IDS.map(id=>{ const s=CAVE_SKILLS[id], L=caveLevelOf(id), el=s.el||'basic';
-    return `<div class="sk-cell"><button class="sk-tile${el!=='basic'?' has-el':''}${L?'':' unowned'}${CAVE_UI.sel===id?' sel':''}" data-cave="${id}" style="--el:${el==='basic'?'transparent':ELEMS[el].col}" aria-label="${s.name}"${L?'':` title="${caveWhereText(s)}"`}>${skIcon(s.icon||s.name)}${L?`<i class="lv">${L}</i>`:''}</button><span class="nm">${s.name}</span>${L?'':`<small class="sk-where">${caveMethodDef(s.method).name}</small>`}</div>`; }).join('');
+    return `<div class="sk-cell"><button class="sk-tile${el!=='basic'?' has-el':''}${ssTint(s)?' has-set':''}${L?'':' unowned cv-lock'}${CAVE_UI.sel===id?' sel':''}" data-cave="${id}" data-from="grid" style="--el:${el==='basic'?'transparent':ELEMS[el].col}${caveSetAttr(s)}" aria-label="${s.name}${L?', level '+L:', locked'}"${L?'':` title="${caveWhereText(s)}"`}>${caveIco(s)}${L?`<i class="lv">${L}</i>`:`<svg class="cv-padlock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">${ICONS.lock}</svg>`}</button><span class="nm">${s.name}</span>${L?'':`<small class="sk-where">${caveMethodDef(s.method).name}</small>`}</div>`; }).join('');
 }
 function caveInfoHtml(){
   const s=caveSkillDef(CAVE_UI.sel);
@@ -69,11 +72,21 @@ function caveInfoHtml(){
   const L=caveLevelOf(s.id), worn=GEAR.skills.cave===s.id, low=PL.level<CAVE_SLOT_LV;
   const act=L?(worn?`<button class="chip" data-caveoff="1">Take off</button>`:`<button class="chip" data-caveon="${s.id}" ${low?'disabled':''}>${low?'Level '+CAVE_SLOT_LV:'Equip'}</button>`):`<span class="muted">${caveWhereHtml(s)}</span>`;
   const sh=(GEAR.cave&&GEAR.cave.sh)|0, up=L&&L<CAVE_LEVEL_MAX?`<div class="sk-up"><button class="chip" data-caveup="${s.id}" ${sh<CAVE_LEVEL_COST[L+1]?'disabled':''}>Level ${L+1}: ${CAVE_LEVEL_COST[L+1]} Echo Shards</button></div>`:'';   // cave: C3 levels
-  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico">${skIcon(s.icon||s.name)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags"><span class="sk-tag">Any class · Cave skill · floor ${s.floor}${s.set?' · '+SS_SETS[s.set].name+'\'s set':''}</span>${s.el?elChip(s.el):''}</div><span class="sk-meta">${L?'Level '+L+' of '+CAVE_LEVEL_MAX+' &middot; ':''}costs ${s.cost} charge</span></div><div class="sk-ii-btn">${act}</div></div><p class="sk-desc">${s.desc}</p>${L?`<p class="muted">Echo Shards: ${sh}. Each level adds ${Math.round(CAVE_LEVEL_STEP*100)}% to the effect${L>1?' (now +'+Math.round(CAVE_LEVEL_STEP*100*(L-1))+'%)':''}; the cost stays. Finish a method whose skill you own to earn more.</p>`:''}${up}</div>`;
+  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico${ssTint(s)?' has-set':''}" style="${caveSetAttr(s).slice(1)}">${caveIco(s)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags"><span class="sk-tag">Any class · Cave skill · floor ${s.floor}${s.set?' · '+SS_SETS[s.set].name+'\'s set':''}</span>${s.el?elChip(s.el):''}</div><span class="sk-meta">${L?'Level '+L+' of '+CAVE_LEVEL_MAX+' &middot; ':''}costs ${s.cost} charge</span></div><div class="sk-ii-btn">${act}</div></div><p class="sk-desc">${s.desc}</p>${L?`<p class="muted">Echo Shards: ${sh}. Each level adds ${Math.round(CAVE_LEVEL_STEP*100)}% to the effect${L>1?' (now +'+Math.round(CAVE_LEVEL_STEP*100*(L-1))+'%)':''}; the cost stays. Finish a method whose skill you own to earn more.</p>`:''}${up}</div>`;
+}
+// a cave tile dropped (economy/skills.js skDrop): from the grid onto the 4th slot wears it; off the slot onto the grid takes it off; anything refused says why
+function caveDrop(src,tg){
+  const s=caveSkillDef(src.id); if(!s||!tg) return;
+  if(src.from==='grid'){
+    if(!tg.cave){ if(tg.slot||tg.idx!==undefined){ toast(s.name+' is a cave skill: it goes in slot 4','bad'); UI_SFX.error(); } return; }
+    if(!caveLevelOf(s.id)){ toast(s.name+' is not yours yet: '+caveWhereText(s),'bad'); UI_SFX.error(); return; }
+    if(PL.level<CAVE_SLOT_LV){ toast('The cave slot opens at level '+CAVE_SLOT_LV,'bad'); UI_SFX.error(); return; }
+    netSend({t:'cavequip',id:s.id}); UI_SFX.click();
+  } else if(tg.area){ netSend({t:'cavequip',id:null}); UI_SFX.click(); }
 }
 function caveBindPanel(on){   // on(selector, fn) of renderSkills
   on('[data-caveslot]',()=>{ skKind='cave'; SK.sel=null; UI_SFX.click(); renderSkills(); });
-  on('[data-cave]',b=>{ CAVE_UI.sel=b.dataset.cave; UI_SFX.click(); renderSkills(); });
+  on('[data-cave]',b=>{ if(SKD.just) return; CAVE_UI.sel=b.dataset.cave; UI_SFX.click(); renderSkills(); });
   on('[data-caveon]',b=>{ netSend({t:'cavequip',id:b.dataset.caveon}); UI_SFX.click(); });
   on('[data-caveup]',b=>{ netSend({t:'caveup',id:b.dataset.caveup}); UI_SFX.click(); });
   on('[data-caveoff]',()=>{ netSend({t:'cavequip',id:null}); UI_SFX.click(); });
