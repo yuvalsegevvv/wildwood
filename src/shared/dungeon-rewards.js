@@ -18,6 +18,8 @@ const DG_GEAR_LV=30, DG_TIER=6;   // DG_TIER: the tier index after the six of it
 const DG_ATK=125, DG_HP={helmet:300,top:540,bottom:390,shoes:225}, DG_DEF={helmet:19,top:38,bottom:24,shoes:15};   // TIER_ATK / ARMOR_HP / ARMOR_DEF one step on (x1.25; it was x1.35-1.4 before enhancing was given more weight)
 // level-40 gear (version 3: the Sunscar dungeon pays weapons, the Gloamhorn's pays armour): one more step of x1.25 on the level-30 numbers, ids end in 8, and a piece may carry a roll (rolls.js)
 const DG40_LV=40, DG40_TIER=7, DG40_ATK=156, DG40_HP={helmet:375,top:675,bottom:488,shoes:281}, DG40_DEF={helmet:24,top:48,bottom:30,shoes:19}, DG40_PRICE=60000;
+const DG40_RING_ATK=25;   // a common +0 level-40 ring: RING_ATK x1.25 like the gear (25 / 32 / 42 / 55 / 75); it carries three rolled lines like a weapon or armour piece
+const RING40_NAMES={basic:'Plain Amber Band',fire:'Emberamber Band',water:'Tideamber Band',earth:'Rootamber Band',air:'Windamber Band',dark:'Duskamber Band',light:'Dawnamber Band'};
 const DG40_NAMES={sword:'Sunglass Scimitar',bow:'Mirage Recurve',wand:'Djinnlamp Wand',helmet:'Gloamwrought Helm',top:'Gloamwrought Cuirass',bottom:'Gloamwrought Greaves',shoes:'Gloamwrought Sabatons'};
 const DG_PRICE=30000, DG_RING_PRICE=1.2, DG_PENDANT_PRICE=1.2;   // like PRICE x SLOT_PRICE x 3^rarity in items.js (nothing sells it in a shop: this is the sell-back value)
 const DG_NAMES={sword:'Elderwood Blade',bow:'Elderwood Longbow',wand:'Elderwood Wand',helmet:'Jadeplate Helm',top:'Jadeplate Cuirass',bottom:'Jadeplate Greaves',shoes:'Jadeplate Sabatons'};
@@ -47,22 +49,23 @@ function dgRewardWeights(steps){
 }
 function dgRewardRarity(x,steps){ const W=steps>0?dgRewardWeights(steps):DG_REWARD_W; let t=x*1000; for(let r=0;r<W.length;r++){ if(t<W[r]) return r; t-=W[r]; } return W.length-1; }
 const dgSuffix=(r,n)=>(r?'-'+RAR_KEY[r]:'')+(n?'+'+n:'');
-const dgGearId=(slot,r,n)=>slot+(DG_TIER+1)+dgSuffix(r,n), dgGearId40=(slot,r,n,roll)=>slot+(DG40_TIER+1)+dgSuffix(r,n)+(roll||''), dgRingId=(el,r,n)=>'ring-'+el+dgSuffix(r,n), dgPendantId=(stat,r,n)=>'pendant-'+stat+dgSuffix(r,n);
+const dgGearId=(slot,r,n)=>slot+(DG_TIER+1)+dgSuffix(r,n), dgGearId40=(slot,r,n,roll)=>slot+(DG40_TIER+1)+dgSuffix(r,n)+(roll||''), dgRingId=(el,r,n)=>'ring-'+el+dgSuffix(r,n), dgRingId40=(el,r,n,roll)=>'ring8-'+el+dgSuffix(r,n)+(roll||''), dgPendantId=(stat,r,n)=>'pendant-'+stat+dgSuffix(r,n);
 // an id back into its parts, or null when it is not a level-30 piece (or asks for more enhancement than its rarity allows)
 function dgParse(id){
-  const m=/^(?:(sword|bow|wand|helmet|top|bottom|shoes)([78])|ring-(basic|fire|water|earth|air|dark|light)|pendant-(xp|drop|coin|crit|critdmg))(?:-([reul]))?(?:\+(\d{1,2}))?(~(?:[a-m]\d\d){3})?$/.exec(String(id));
+  const m=/^(?:(sword|bow|wand|helmet|top|bottom|shoes)([78])|ring(8)?-(basic|fire|water|earth|air|dark|light)|pendant-(xp|drop|coin|crit|critdmg))(?:-([reul]))?(?:\+(\d{1,2}))?(~(?:[a-m]\d\d){3})?$/.exec(String(id));
   if(!m) return null;
-  const rar=m[5]?RAR_KEY.indexOf(m[5]):0, n=m[6]===undefined?0:+m[6], t=m[2]?+m[2]:7, roll=m[7]||null;
-  if(m[6]!==undefined&&(n<1||String(n)!==m[6])||n>ENH_MAX[rar]) return null;
+  const rar=m[6]?RAR_KEY.indexOf(m[6]):0, n=m[7]===undefined?0:+m[7], t=m[2]?+m[2]:m[3]?8:7, roll=m[8]||null;   // ring8-... is a level-40 ring
+  if(m[7]!==undefined&&(n<1||String(n)!==m[7])||n>ENH_MAX[rar]) return null;
   if(roll&&(t!==8||!rlParseCode(roll))) return null;   // only a level-40 piece carries a roll, of three different stats
-  return {slot:m[1]||(m[4]?'pendant':'ring'),el:m[3]||null,stat:m[4]||null,rar,n,t,roll};
+  return {slot:m[1]||(m[5]?'pendant':'ring'),el:m[4]||null,stat:m[5]||null,rar,n,t,roll};
 }
 // the record the piece would have in ITEM (stats of its rarity, then x enhMult)
 function dgItem(id){
   const q=dgParse(id); if(!q) return null;
   const {slot,el,stat,rar,n}=q, k=enhMult(n), tag=n?' +'+n:'';
   const t40=q.t===8, it={id,slot,tier:t40?DG40_TIER:DG_TIER,rar,lv:t40?DG40_LV:DG_GEAR_LV,n,dg:true,t:q.t};
-  if(el){ Object.assign(it,{kind:'ring',el,name:(rar?RARITY[rar]+' ':'')+RING_NAMES[el]+tag,ratk:Math.round(RING_ATK*RAR_MULT[rar]*k),price:Math.round(DG_PRICE*DG_RING_PRICE*Math.pow(3,rar))}); }
+  if(el){ Object.assign(it,{kind:'ring',el,name:(rar?RARITY[rar]+' ':'')+(t40?RING40_NAMES:RING_NAMES)[el]+tag,ratk:Math.round((t40?DG40_RING_ATK:RING_ATK)*RAR_MULT[rar]*k),price:Math.round((t40?DG40_PRICE:DG_PRICE)*DG_RING_PRICE*Math.pow(3,rar))});
+    if(t40){ it.roll0=true; if(q.roll){ it.rcode=q.roll; it.roll=rlLinesOf(q.roll,'ring'); } } }   // rolls: a level-40 ring is unrolled until a Ring Reroll Stone rolls it
   else if(stat){ Object.assign(it,{kind:'pendant',stat,name:(rar?RARITY[rar]+' ':'')+PENDANT_NAMES[stat]+tag,v:Math.round(PENDANT_BASE[stat]*RAR_MULT[rar]*k*10000)/10000,price:Math.round(DG_PRICE*DG_PENDANT_PRICE*Math.pow(3,rar))}); }   // (v rounded to 4 places: 0.066 and not 0.06600000000000002)
   else {
     const NM=t40?DG40_NAMES:DG_NAMES, PR=t40?DG40_PRICE:DG_PRICE;
@@ -79,7 +82,7 @@ function dgItem(id){
 function dgClearReward(theme,rnd,steps){
   const R=DG_REWARDS[theme]; if(!R) return null; rnd=rnd||Math.random;
   const rar=dgRewardRarity(rnd(),steps), pick=R.pool[Math.min(R.pool.length-1,Math.floor(rnd()*R.pool.length))];
-  return R.kind==='ring'?dgRingId(pick,rar):R.kind==='pendant'?dgPendantId(pick,rar):R.t===8?dgGearId40(pick,rar,0):dgGearId(pick,rar);
+  return R.kind==='ring'?(R.t===8?dgRingId40(pick,rar,0):dgRingId(pick,rar)):R.kind==='pendant'?dgPendantId(pick,rar):R.t===8?dgGearId40(pick,rar,0):dgGearId(pick,rar);
 }
 // every id the setup can make: 19 kinds (7 pieces, 7 rings, 5 pendants) x the steps each rarity allows (3 + 5 + 7 + 9 + 11 = 35)
 function dgAllIds(){
@@ -92,10 +95,12 @@ function ringAtk(ring,soul){
   return it&&it.kind==='ring'&&it.el===(soul||'basic')?it.ratk:0;
 }
 // enhancing a piece one step: the id after, or null (not a level-30 piece, or already at its rarity's limit); the stones that step costs
-function dgEnhanceNext(id){ const q=dgParse(id); if(!q||q.n>=ENH_MAX[q.rar]) return null; return q.el?dgRingId(q.el,q.rar,q.n+1):q.stat?dgPendantId(q.stat,q.rar,q.n+1):q.t===8?dgGearId40(q.slot,q.rar,q.n+1,q.roll):dgGearId(q.slot,q.rar,q.n+1); }   // (a level-40 piece keeps its roll)
+function dgEnhanceNext(id){ const q=dgParse(id); if(!q||q.n>=ENH_MAX[q.rar]) return null; return q.el?(q.t===8?dgRingId40(q.el,q.rar,q.n+1,q.roll):dgRingId(q.el,q.rar,q.n+1)):q.stat?dgPendantId(q.stat,q.rar,q.n+1):q.t===8?dgGearId40(q.slot,q.rar,q.n+1,q.roll):dgGearId(q.slot,q.rar,q.n+1); }   // (a level-40 piece keeps its roll)
 const dgEnhanceStones=id=>{ const q=dgParse(id); return q&&q.n<ENH_MAX[q.rar]?ENH_STONES(q.n+1):0; };
 // every unrolled level-40 id: 7 pieces x the 35 (rarity, enhancement) pairs = 245 (the rolled ones are made on demand: ITEM's Proxy, rolls.js)
 function dgAllIds40(){ const out=[]; for(let r=0;r<5;r++) for(let n=0;n<=ENH_MAX[r];n++) for(const s of ALL_SLOTS) out.push(dgGearId40(s,r,n)); return out; }
+// every unrolled level-40 ring: 7 elements x the same 35 pairs = 245 (kept apart from dgAllIds40: rings are not a slot of ALL_SLOTS)
+function dgAllRingIds40(){ const out=[]; for(let r=0;r<5;r++) for(let n=0;n<=ENH_MAX[r];n++) for(const e of RING_ELS) out.push(dgRingId40(e,r,n)); return out; }
 // all the stones from +0 to a rarity's limit
 const dgEnhanceTotal=rar=>{ let s=0; for(let n=1;n<=ENH_MAX[rar];n++) s+=ENH_STONES(n); return s; };
 // what a kill drops at the level you fight it at: bosses and monsters below ENH_LV keep rolling equipment, the others the stone instead
