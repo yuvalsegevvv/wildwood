@@ -52,6 +52,7 @@ function caveTickP(p){   // every tick, every player: end a boss fight they left
   if(c.bur>S.t) caveBurrowTickS(p,c);   // Burrow: monsters lose track
   if(c.fight&&S.t-c.fightT>0.5){ if(!c.fight.m.dead) c.charge=CAVE_BOSS_LEAVE; c.fight=null; }   // the boss died: the fight ended, keep it; anything else is leaving before the end
   caveFxTickP(p);   // the set skills' timed effects (server/cave-fx.js)
+  if(p.gear&&p.gear.caveFull) c.charge=CAVE_CHARGE_MAX;   // the testing toggle (devP 'caveFull'): every cave skill can be tried at once, again and again
   const r=Math.round(c.charge); if(r!==c.sent){ c.sent=r; sendTo(p.id,{t:'cave',c:r}); }
 }
 function caveCastP(p,msg){   // atk {k:'cave'}: spend the cost and run the skill

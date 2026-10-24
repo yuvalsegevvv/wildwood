@@ -17,6 +17,8 @@ $('#tAmber10').addEventListener('click',()=>netSend({t:'dev',cmd:'amber',v:10000
 $('#tAmber0').addEventListener('click',()=>netSend({t:'dev',cmd:'amber',v:-AMB_MAX}));
 $('#tOutfits').addEventListener('click',()=>netSend({t:'dev',cmd:'outfits'}));
 $('#tMats').addEventListener('click',()=>netSend({t:'dev',cmd:'mats'}));
+function syncCaveFull(){ const on=!!(GEAR&&GEAR.caveFull); $('#tCaveFull').setAttribute('aria-pressed',on); $('#tCaveFull').textContent='Cave charge always 100: '+(on?'on':'off'); }   // cave: the 4th slot's charge pinned full (devP 'caveFull')
+$('#tCaveFull').addEventListener('click',()=>{ GEAR.caveFull=!GEAR.caveFull; syncCaveFull(); netSend({t:'dev',cmd:'caveFull',v:GEAR.caveFull}); });
 $('#tSkills').addEventListener('click',()=>netSend({t:'dev',cmd:'skills'}));
 $('#tProf').addEventListener('click',()=>netSend({t:'dev',cmd:'prof'}));
 $('#tRes').addEventListener('click',()=>netSend({t:'dev',cmd:'res'}));
@@ -60,4 +62,4 @@ $('#tReset').addEventListener('click',e=>{
   if(NET.ready) netSend({t:'dev',cmd:'reset'});
   else { const keep=GEAR.startAll; GEAR=newGear(); GEAR.startAll=keep; saveGear(); PL.level=1; PL.exp=0; saveProgress(); toast('Progress reset','good'); }
 });
-syncStartAll();
+syncStartAll(); syncCaveFull();

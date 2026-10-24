@@ -161,6 +161,7 @@ function devP(p,msg){
   const c=msg.cmd;
   if(c==='level') setLevelP(p,msg.v);
   else if(c==='giveAll'){ giveAllP(p); toastTo(p.id,'Every item added to your bag','good'); }
+  else if(c==='caveFull'){ p.gear.caveFull=!!msg.v; p.dirty=true; }   // cave: the 4th slot's charge always full (testing; caveTickP)
   else if(c==='startAll'){ p.gear.startAll=!!msg.v; if(p.gear.startAll) giveAllP(p); p.dirty=true; }
   else if(c==='skills'){ for(const id of [...SKILL_IDS,...PASSIVE_IDS]) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Every skill and passive learned','good'); }
   else if(c==='set'){ const id=String(msg.v||''); if(!SS_SETS[id]){ toastTo(p.id,'No skill set called "'+id+'" ('+(SS_ORDER.join(', ')||'none defined')+')','bad'); return; } ssGrantSetP(p,id); recalcP(p); toastTo(p.id,SS_SETS[id].char.name+'\'s set: all six pieces given','good'); }   // skillsets: give a whole set (testing)

@@ -41,6 +41,8 @@ const wh=x.SKILLS.whirlwind;
   ok('a basic attack charges by its own cooldown (0.6 x 0.7)',p.cave.charge>0&&near(p.cave.charge,x.CAVE_CHARGE_K*x.SKILLS.slash.cd),String(p.cave.charge)); }
 { p.cave.charge=99; pile(p,2); cast('a','skill'); ok('the bar is capped at 100',p.cave.charge===100,String(p.cave.charge)); }
 ok('the client is told the charge (a cave message with the rounded value)',(inbox.a||[]).filter(m=>m.t==='cave').pop().c===100);
+{ W.receive('a',{t:'dev',cmd:'caveFull',v:true}); p.cave.charge=5; tick(1); const on=p.cave.charge===100&&p.gear.caveFull===true; W.receive('a',{t:'dev',cmd:'caveFull',v:false}); p.cave.charge=5; tick(1);
+  ok('the testing toggle (dev caveFull) pins the charge at 100 while on, saved in gear; off, the charge is left alone',on&&p.cave.charge===5&&p.gear.caveFull===false,String(p.cave.charge)); }
 // ---- the set bonus (pure rule + a real cast) ----
 { const piece=Object.values(x.SKILLS).find(s=>s.set===SET&&s.slot==='skill'), other=x.SKILLS.whirlwind;
   ok('a cast of a piece of the cave skill\'s set earns double; any other cast, or a skill with no set, earns the normal amount',
