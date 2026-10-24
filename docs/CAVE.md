@@ -241,7 +241,8 @@ No open questions. Tune in play: the 0.6 charge constant, skill costs of 20-40, 
 | `server/combat.js` | C2: `resolveHitS` calls `caveGeodeHitS(p, a)` (a geode takes the attack's element); `resolveFxS` calls `caveFxS` for a cave cast; `rollDmgS` reads `caveCritP` (Overdrive) and `caveBonusK` (Grapple Line) |
 | `server/players.js` | C2: `hurtP` returns 0 while `p.cave.bur` (Burrow) |
 | `server/monsters.js` | C2: a monster with `m.cmo` (the gem mole) is handed to `caveMoleS`; a monster with `blindT` (Flare) misses |
-| `game/combat/skill-fx.js`, `boss-fx.js` | C2: `fxVisuals` draws the `vis` key (`caveVis`); `onPfx('clear')` ends slows and roots |
+| `game/combat/boss-fx.js` | C2: `onPfx('clear')` ends slows and roots |
+| `game/combat/attacks.js`, `skill-fx.js`, `game/cave/slot.js`, `game/net/remote.js` (C5) | `attackVisuals` asks `caveVisCast` first; `updateSkillFx` calls `cvv1Tick(dt)`; `onArea` calls `cvv1Area(...)`; `caveDoAttack` and `remoteAct` call `cvv1Wind(ab, p)` when a cave cast begins |
 | `game/cave/zone.js`, `lift.js`, `slot.js` | C2: the methods' enter / leave / frame steps; the board under the lift's floors; the locked tile says where the skill comes from |
 | `index.html`, `styles/09-combat-hud.css` | C2: `#cvMethod` (the HUD line) and the board's styles |
 
@@ -298,3 +299,30 @@ Rules every method follows: only a hiker of level 23+ on a floor runs them; **pr
 **Floor-1 skills' effects** (`server/cave/skills.js`, keys of `fx`; `mult` 1 is the level scale for the keys that have no damage): `echo {k}` repeats `p.cave.last` (the last skill or burst cast) at k x its power without charge (nothing to repeat: the cost comes back); `flare` blinds normal monsters (`m.blindT`: they swing and miss), bosses get the shared `weak`; `overdrive` arms `p.cave.od` (3 basic attacks: sure crit via `caveCritP`, cooldown x0.7); `ward` a shield of v of max health, allies half; `burrow` moves you forward and `p.cave.bur` makes `hurtP` return 0 for the time, monsters that hunt you drop it; `grapple` arms `p.cave.gr` (next hit x1.3, `caveBonusK`) after the ordinary `dash`; `wind` a regeneration (`ssAllyS regen`) plus `pfx clear`. Cave-in is a plain `zone` (once, stun) and Flare also a `ring`. The `vis` key is only the placeholder look.
 
 **Decisions where the plan was silent (C2):** proximity instead of a use key (no client input at all); a basic attack counts as your soul's element for the geodes so every hiker can crack one kind; the trial's pack is anybody's to fight but only the starter's feat counts; the crystal's water rule starts after a dry step; F and G sleep when nobody is on the floor; completing a method needs no free inventory; the board is the lift window (every floor, with a "rests n min" mark) and the locked skill tile.
+
+## 16. The skills' drawings (C5)
+
+Contract (`game/cave/vis.js`): `caveVisDef(id, {cast(p, ab, tgt), event(e)?, wind(p, ab)?})` fills `CAVE_VIS`. `cast` is called when the blow lands (`attackVisuals`: `p` is `P` or a `REMOTES` entry, so another hiker's cast looks the same), `event(e)` for every `cvfx` / `cvhand` event (filter on `e[0]`, `e[2]`), `wind(p, ab)` when the cast **begins** (your press in `caveDoAttack`, another hiker's `pact`), which also remembers the skill per player for 1.8 s (`cvvRecent(pid, id)`). A zone event whose owner just began a skill is claimed through `CVV_AREAS` (Cave-in's rocks, Lighthouse's lantern). A skill with no entry (or one that throws) falls back to the generic `fxVisuals`.
+
+Plumbing (`vis-floor1.js`): `cvvAdd(key, life, step, end)` makes a timed effect `F` with its own `Group` in the scene (`F.g`) and a materials list (`cvvMat`): both go when it ends or when a new effect with the same key replaces it, so nothing leaks; geometries (`CVG`) are shared. Everything goes through the particle pool and `fxdMesh`; phones get half the particles (`fxpN`). Floor 2's set skills use their set's look engine (`SSL.looks.<set>`: motes, ground patterns) so they wear the outfit's colours.
+
+| Skill | What you see (all in the cave's cyan / lantern amber, or the outfit's colours) |
+|---|---|
+| Echo | three rings step out, each smaller and paler; a see-through cyan column and three halos stand where you cast |
+| Flare | a white orb gathers over the hand, bursts into a star on the ground out to 10 m, spokes of light, a dome and a screen flash; blinded monsters sparkle for the seconds they miss (bosses longer, dimmer) |
+| Overdrive | three charged diamonds orbit you; each basic attack you swing breaks one with a bolt to the hand (counted from the swings: a miss still counts) |
+| Lantern Ward | lamp light blooms to the 8 m reach; the server's `cvfx 'ward' [pid, secs, share]` puts a hex-lattice lantern dome on each shielded hiker (full on you, small on an ally), flickering for the last second |
+| Burrow | the avatar sinks into the ground (its group is lowered after the pose code), a dirt mound travels with you leaving dust, and you burst out at the end |
+| Cave-in | the server's zone is the telegraph; rocks fall on it, each with a growing shadow, the last boulder lands as the zone ends |
+| Grapple Line | at the press a hook flies to the anchor and a taut line pulls you; after landing a gold glint on the hand and chevrons last until your next blow |
+| Second Wind | a green aura, two spirals of motes, a heal beat each second (a ring drawn to the heart, crosses lifting off) for 6 s |
+| Threshing Floor | the wheat ring closes in with chaff, a flail lands, then a twine ring tightens for the 4-second refund window |
+| Shadow Step | ink and crossed crescents where you vanish (press), an ink streak and landing, three crescents orbit you for the 2-second behind window |
+| Shield-Wall | slabs of stone rise in an arc, the ground behind the line is tinted lichen green (where allies are covered), a stone ring goes out with each taunt, the slabs sink at the end |
+| Lighthouse | a brass lantern drops where the zone is and its beam sweeps the circle; monsters flare as it crosses them (the Glare) |
+| Cut and Run | a flame cut in three arcs; on `cvfx 'retreat'` an ember streak runs back along the dash; a crimson guard ring for 3 s |
+
+Decisions where the plan was silent: remote hikers' skill levels are not known, so their Burrow / Overdrive durations use a 1.1 level scale; Overdrive's diamonds are counted from basic swings (the server counts hits); Lantern Ward's dome cannot know when the shield is used up (it lasts its 6 s); the retreat streak starts from where the cut began (`wind`). Looking at them: `cave-plan/shots/skills-fx-1.png` (this agent) was made with a page-side harness that runs `updateCombat` in 0.05 s slices and takes a PNG per moment.
+
+Test: `client-smoke` (every one of these skills has a `CAVE_VIS` entry; casting each, its press, its zone events and the cvfx events throw nothing, and everything is gone afterwards).
+
