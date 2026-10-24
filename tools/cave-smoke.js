@@ -127,7 +127,7 @@ ok('the floors are far apart (no floor within a snapshot\'s reach of another)',F
 { const M=x.CAVE_MOUTH, land=x.landAt(M.x,M.z);
   ok('the mouth stands in the home forest, on dry land, off every road, arena and the coast',land===x.landAt(0,0)&&x.roadDist(M.x,M.z)>14&&x.arenaDist(M.x,M.z)>40&&x.coastDist(M.x,M.z)>80&&x.vDist(M.x,M.z)>60&&x.getH(M.x,M.z)>x.waterSurf(M.x,M.z)+1,
     [land,Math.round(x.roadDist(M.x,M.z)),Math.round(x.arenaDist(M.x,M.z)),Math.round(x.coastDist(M.x,M.z)),Math.round(x.vDist(M.x,M.z))].join(' '));
-  const C=x.CIRCLES.find(c=>c.id==='cavemouth'); ok('its teleport circle is in CIRCLES (the travel window lists it) and the lift stands beside it',!!C&&C.V===x.CAVE_MOUTH_V&&Math.hypot(C.V.tele.x-x.CAVE_LIFT_SURFACE.x,C.V.tele.z-x.CAVE_LIFT_SURFACE.z)<14&&Math.hypot(x.CAVE_LIFT_SURFACE.x-M.x,x.CAVE_LIFT_SURFACE.z-M.z)<12);
+  const C=x.CIRCLES.find(c=>c.id==='cavemouth'); ok('its teleport circle is in CIRCLES (the travel window lists it) and the lift stands in the grotto behind the doorway, a short walk from it, on the pad\'s floor',!!C&&C.V===x.CAVE_MOUTH_V&&Math.hypot(C.V.tele.x-x.CAVE_LIFT_SURFACE.x,C.V.tele.z-x.CAVE_LIFT_SURFACE.z)<30&&Math.hypot(x.CAVE_LIFT_SURFACE.x-M.x,x.CAVE_LIFT_SURFACE.z-M.z)<24&&((x.CAVE_LIFT_SURFACE.x-M.x)*M.fx+(x.CAVE_LIFT_SURFACE.z-M.z)*M.fz)<-12);
   ok('the ground under the circle and the lift is level (the pad)',[x.CAVE_MOUTH_V.tele,x.CAVE_LIFT_SURFACE].every(q=>Math.abs(x.getH(q.x,q.z)-M.h)<0.05)&&x.caveMouthNear(M.x+3,M.z,8)&&!x.caveMouthNear(M.x+60,M.z,8)); }
 // ---- the lift's rules ----
 { const hi={level:40,gear:{cave:{own:{}}}}, lo2={level:22,gear:{cave:{own:{}}}};

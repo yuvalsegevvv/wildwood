@@ -60,7 +60,7 @@ function dgEntTint(x,z,out){
 /* ---- keeping the plants off the doors ----
    Trees, bushes and rocks stay DG_ENT_CLEAR from a door and 2.5 m from a signpost (a chunk is seeded by its own number, so this changes only the chunk it is in). */
 function dgEntClear(x,z){
-  if(caveMouthNear(x,z,18)) return true;   // cave: no plants at the Deep Cave's mouth (shared/cave-mouth.js)
+  if(caveMouthNear(x,z,32)) return true;   // cave: no plants at the Deep Cave's mouth and on its grotto (shared/cave-mouth.js)
   for(let i=0;i<dgEntList.length;i++){ const E=dgEntList[i], dx=x-E.x, dz=z-E.z;
     if(dx<DG_ENT_CLEAR&&dx>-DG_ENT_CLEAR&&dz<DG_ENT_CLEAR&&dz>-DG_ENT_CLEAR&&dx*dx+dz*dz<DG_ENT_CLEAR*DG_ENT_CLEAR) return true;
     const sx=x-E.sign.x, sz=z-E.sign.z; if(sx*sx+sz*sz<6.25) return true; }

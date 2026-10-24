@@ -7,7 +7,7 @@
 function caveLiftNear(){
   if(!started||customizing||PL.dead) return null;
   const n=caveFloorAt(P.x,P.z);
-  if(n<0&&!caveMouthNear(P.x,P.z,20)) return null;
+  if(n<0&&!caveMouthNear(P.x,P.z,32)) return null;
   const L=n>=0?caveLiftOf(n):CAVE_LIFT_SURFACE; if(!L) return null;
   return Math.hypot(P.x-L.x,P.z-L.z)<L.r+0.6?{n:Math.max(0,n),L}:null;
 }
