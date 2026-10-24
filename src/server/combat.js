@@ -64,7 +64,7 @@ function killMonsterS(m,p){
   m.respawnT=12; if(m.rd) rdKilledS(m,p); m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
   ev('kill',m.id,p?p.id:null);
   if(p) ssTriggerS(p,'kill',{m});   // skillsets: on kill rows
-  if(p) caveKillS(p,m);   // cave: kill refunds and grave hands
+  if(p){ caveKillS(p,m); caveDropS(p,m); }   // cave: kill refunds and grave hands; the floor's material (server/cave.js)
   if(m.inst){ dgKilledS(m,p); return; }   // dungeons: a run's kill pays every member present (rewardAllS) and tells the mission; its boss ends the run
   if(!m.T.noXp){
     for(const [pid,tm] of m.hitters){ const q=S.players.get(pid); if(!q||S.t-tm>30||Math.hypot(q.x-m.x,q.z-m.z)>80) continue; rewardKill(q,m); }

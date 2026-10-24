@@ -337,11 +337,11 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
 }
 // ======== C3: Echo Shards, skill levels 2-5, the floor gate ========
 { const inb={}, S4=loadServer({dev:true,send(pid,m){ (inb[pid]=inb[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-    ['CAVE_SKILLS','CAVE_SKILL_IDS','CAVE_SHARDS','CAVE_LEVEL_COST','CAVE_LEVEL_MAX','caveLvK','caveLevelK','caveMethodDoneP','caveSanitizeSave','caveFloorOpen','caveLiftRefusal','caveSkillDef','caveSkillAt']);
+    ['CAVE_SKILLS','CAVE_SKILL_IDS','CAVE_SHARDS','CAVE_LEVEL_COST','CAVE_DROPS','CAVE_DROP_COST','caveDropS','CAVE_LEVEL_MAX','caveLvK','caveLevelK','caveMethodDoneP','caveSanitizeSave','caveFloorOpen','caveLiftRefusal','caveSkillDef','caveSkillAt']);
   const W4=S4.api, X=S4.x, tk=n=>{ for(let i=0;i<n;i++){ W4.tick(0.05); for(const q of W4.players.values()){ q.hp=q.maxHp; q.dead=false; } } };
   W4.join('s1',{name:'Shardy',look:{cls:'warrior'},save:{level:30}}); tk(3); const q=W4.players.get('s1'), g=q.gear.cave;
   const f1=X.CAVE_SKILL_IDS.map(i=>X.CAVE_SKILLS[i]).filter(s=>s.floor===1), s1=f1[0], upEv=()=>(inb.s1||[]).filter(m=>m.t==='snap'&&m.ev).flatMap(m=>m.ev);
-  ok('shards per completion are 1 / 2 / 4 / 8 on floors 1-4 and the level costs 10 / 25 / 50 / 100',JSON.stringify(X.CAVE_SHARDS.slice(1))==='[1,2,4,8]'&&JSON.stringify(X.CAVE_LEVEL_COST.slice(2))==='[10,25,50,100]');
+  ok('shards per completion are 1 / 2 / 4 / 8 on floors 1-4 and the level costs 3 / 7 / 15 / 40 shards plus 3 / 6 / 10 / 20 of the floor\'s monster drop',JSON.stringify(X.CAVE_SHARDS.slice(1))==='[1,2,4,8]'&&JSON.stringify(X.CAVE_LEVEL_COST.slice(2))==='[3,7,15,40]'&&JSON.stringify(X.CAVE_DROP_COST.slice(2))==='[3,6,10,20]'&&X.CAVE_DROPS.length===5);
   // a method whose skill you own pays shards on floors 1-4; a place with no skill too
   g.own[s1.id]=1; g.sh=0; let want=0;
   for(const n of [1,2,3,4]){ const mt='ABCDEFGH'.split('').find(m=>{ const k=X.caveSkillAt(n,m); return !k; })||s1.method; if(n===1){ X.caveMethodDoneP(q,1,s1.method); } else { X.caveMethodDoneP(q,n,mt); } want+=X.CAVE_SHARDS[n]; }
@@ -350,9 +350,14 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   // levelling
   g.sh=0; q.dirty=false; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1);
   ok('level 2 with too few shards is refused and nothing changes',g.own[s1.id]===1&&g.sh===0);
-  const costs=[10,25,50,100]; let allOk=true, tot=0;
-  for(let i=0;i<4;i++){ g.sh=costs[i]-1; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); if(g.own[s1.id]!==i+1||g.sh!==costs[i]-1) allOk=false; g.sh=costs[i]+3; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); if(g.own[s1.id]!==i+2||g.sh!==3) allOk=false; }
-  ok('each level costs exactly 10 / 25 / 50 / 100 (one shard short is refused, the change stays)',allOk&&g.own[s1.id]===5);
+  const costs=[3,7,15,40], drops=[3,6,10,20], F=X.CAVE_SKILLS[s1.id].floor; let allOk=true, tot=0; g.m=[0,0,0,0,0];
+  for(let i=0;i<4;i++){ g.sh=costs[i]-1; g.m[F]=drops[i]; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); if(g.own[s1.id]!==i+1||g.sh!==costs[i]-1) allOk=false;
+    g.sh=costs[i]; g.m[F]=drops[i]-1; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); if(g.own[s1.id]!==i+1||g.m[F]!==drops[i]-1) allOk=false;
+    g.sh=costs[i]+3; g.m[F]=drops[i]+2; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); if(g.own[s1.id]!==i+2||g.sh!==3||g.m[F]!==2) allOk=false; }
+  ok('each level costs exactly 3 / 7 / 15 / 40 shards and 3 / 6 / 10 / 20 of the skill\'s floor drop (one short of either is refused, nothing changes)',allOk&&g.own[s1.id]===5);
+  { const R=Math.random; Math.random=()=>0; const before=g.m[2]|0; X.caveDropS(q,{cave:2}); X.caveDropS(q,{cave:0}); X.caveDropS(q,{cave:2,temp:true}); Math.random=()=>0.99; X.caveDropS(q,{cave:2}); Math.random=R;
+    ok('a kill on a floor drops that floor\'s material at the drop chance (not off the floors, not from a temporary monster)',g.m[2]===before+1);
+    ok('the floors\' drops survive a save, cleaned',JSON.stringify(X.caveSanitizeSave({own:{},m:[5,3,'x',-4,1e9]}).m)==='[0,3,0,0,9999]'&&JSON.stringify(X.caveSanitizeSave({}).m)==='[0,0,0,0,0]'); }
   g.sh=500; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); ok('the cap is level 5: no more is bought and no shard is spent',g.own[s1.id]===5&&g.sh===500);
   for(const bad of ['constructor','__proto__','nope',7,null,{},[]]) W4.receive('s1',{t:'caveup',id:bad}); tk(1);
   ok('bad or unowned ids in caveup change nothing',g.sh===500&&Object.keys(g.own).length===1);

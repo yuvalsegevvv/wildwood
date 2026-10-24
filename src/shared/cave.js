@@ -14,7 +14,11 @@ const CAVE_CHARGE_K=0.6;                   // charge per cast = this x the cast 
 const CAVE_CHARGE_MAX=100, CAVE_BOSS_START=50, CAVE_BOSS_LEAVE=0;   // the bar's cap; the charge on entering a boss fight; on leaving one before it ends
 const CAVE_COST_MIN=20, CAVE_COST_MAX=40;   // what a cave skill may cost
 const CAVE_LEVEL_MAX=5, CAVE_LEVEL_STEP=0.1;   // level 2-5: +10% effect each (+40% at 5), the cost stays
-const CAVE_LEVEL_COST=[0,0,10,25,50,100];   // Echo Shards to REACH level 2-5 (index = the new level), universal for any cave skill (C3)
+const CAVE_LEVEL_COST=[0,0,3,7,15,40];   // Echo Shards to REACH level 2-5 (index = the new level), universal for any cave skill (C3; the owner's 3 / 7 / 15 / 40)
+// the cave's monster drops: each floor's monsters drop that floor's material (gear.cave.m[floor]); a level of a cave skill also asks for the material of the skill's own floor
+const CAVE_DROPS=[null,'Glow Silk','Prism Splinter','Drowned Pearl','Magma Heart'];   // index = floor
+const CAVE_DROP_COST=[0,0,3,6,10,20];   // of the skill's floor's material, to REACH level 2-5
+const CAVE_DROP_CHANCE=0.35, CAVE_DROP_MAX=9999;   // a kill on a floor drops one (the same chance as a land's monster material); the count's cap
 const CAVE_REFUND_CAP=15;                   // a cast's kill refunds (fx.refund) never give back more than this much charge in all
 const CAVE_CAST_CD=0.8;                     // seconds between two cave casts (the charge is the real limit)
 const CAVE_CAST_WINDOW=3;                   // a cast may still pay its charge this long after it started (a projectile in flight)

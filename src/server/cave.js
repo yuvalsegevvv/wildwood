@@ -14,13 +14,14 @@
 function caveNewState(){ return {charge:0,sent:-1,cur:null,fight:null,fightT:0,last:null,od:null,odT:0,gr:null,bur:0,burT:0,fx:{}}; }   // fx: the set skills' windows (server/cave-fx.js); last: the last skill or burst cast (Echo); od: Overdrive; gr: Grapple Line; bur: Burrow (server/cave/skills.js)
 // gear.cave from a save: only cave skills that exist, each at a level 1-5 (an old save has none)
 function caveSanitizeSave(g){
-  const out={own:{},cd:{},done:{},sh:0}, ok=g&&typeof g==='object'&&!Array.isArray(g), O=ok&&g.own&&typeof g.own==='object'?g.own:null;
+  const out={own:{},cd:{},done:{},sh:0,m:[0,0,0,0,0]}, ok=g&&typeof g==='object'&&!Array.isArray(g), O=ok&&g.own&&typeof g.own==='object'?g.own:null;
   if(O) for(const id of Object.keys(O).slice(0,64)){ if(!caveSkillDef(id)) continue; out.own[id]=clampInt(O[id],1,CAVE_LEVEL_MAX,1); }
   const key=k=>/^[1-9][A-H]$/.test(k)&&caveMethodDef(k[1]);   // a method key is floor digit + letter: only real methods, never a bare client string
   const CD=ok&&g.cd&&typeof g.cd==='object'?g.cd:null, DN=ok&&g.done&&typeof g.done==='object'?g.done:null, now=Date.now()/1000;
   if(CD) for(const k of Object.keys(CD).slice(0,64)){ if(key(k)&&Number.isFinite(+CD[k])) out.cd[k]=Math.min(now+CAVE_METHOD_CD,Math.max(0,+CD[k])); }   // (never later than one cooldown from now: a tampered save cannot lock a method)
   if(DN) for(const k of Object.keys(DN).slice(0,64)){ if(key(k)) out.done[k]=clampInt(DN[k],0,99999,0); }
   out.sh=ok?clampInt(g.sh,0,99999,0):0;
+  if(ok&&Array.isArray(g.m)) for(let f=1;f<CAVE_DROPS.length;f++) out.m[f]=clampInt(g.m[f],0,CAVE_DROP_MAX,0);   // the floors' monster drops (an old save has none)
   return out;
 }
 // the equipped cave skill's ability if p may use it now (level, owned), else null
@@ -72,12 +73,17 @@ function caveLvK(p,id,lvl){ const o=p&&p.gear&&p.gear.cave&&p.gear.cave.own; ret
 function caveUpgradeP(p,id){
   const sk=caveSkillDef(id), g=p.gear&&p.gear.cave; if(!sk||!g||!Object.prototype.hasOwnProperty.call(g.own,id)) return;
   const lv=g.own[id]|0; if(lv>=CAVE_LEVEL_MAX){ toastTo(p.id,sk.name+' is at its top level.','bad'); return; }
-  const cost=CAVE_LEVEL_COST[lv+1]|0, have=g.sh|0;
-  if(have<cost){ toastTo(p.id,'Level '+(lv+1)+' costs '+cost+' Echo Shards; you have '+have+'.','bad'); return; }
-  g.sh=have-cost; g.own[id]=lv+1; p.dirty=true;
+  const cost=CAVE_LEVEL_COST[lv+1]|0, have=g.sh|0, f=sk.floor, need=CAVE_DROP_COST[lv+1]|0, m=g.m||(g.m=[0,0,0,0,0]), got=m[f]|0;
+  if(have<cost||got<need){ toastTo(p.id,'Level '+(lv+1)+' costs '+cost+' Echo Shards and '+need+' '+CAVE_DROPS[f]+' (from floor '+f+'\'s monsters); you have '+have+' and '+got+'.','bad'); return; }
+  g.sh=have-cost; m[f]=got-need; g.own[id]=lv+1; p.dirty=true;
   toastTo(p.id,sk.name+' is now level '+(lv+1)+' (+'+Math.round(CAVE_LEVEL_STEP*100*lv)+'% effect).','loot r3'); ev('caveup',p.id,id,lv+1);
 }
 MSG.caveup=(p,msg)=>caveUpgradeP(p,msg.id);
+// a kill on a floor (killMonsterS): the floor's material, now and then (CAVE_DROP_CHANCE), for whoever made the kill
+function caveDropS(p,m){
+  const f=m&&m.cave|0, g=p&&p.gear&&p.gear.cave; if(!g||!(f>=1&&f<CAVE_DROPS.length)||m.temp||Math.random()>=CAVE_DROP_CHANCE) return;
+  const M=g.m||(g.m=[0,0,0,0,0]); M[f]=Math.min(CAVE_DROP_MAX,(M[f]|0)+1); p.dirty=true; toastTo(p.id,'+1 '+CAVE_DROPS[f],'loot');
+}
 function caveEquipP(p,id){   // cavequip: wear an owned cave skill, or take it off (id null)
   if(id===null||id===undefined||id===''){ if(p.gear.skills.cave){ p.gear.skills.cave=null; p.dirty=true; } return; }
   const sk=caveSkillDef(id); if(!sk||!Object.prototype.hasOwnProperty.call(p.gear.cave.own,id)) return;

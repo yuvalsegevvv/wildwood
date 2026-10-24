@@ -137,7 +137,7 @@ Idea I ("awakening" a dormant skill) is dropped: skill levels do that job.
 - **Deeper pays more.** Shards from one completion: floor 1 = 1, floor 2 = 2, floor 3 = 4, floor 4 = 8.
 - **Universal.** Shards level *any* cave skill, so players repeat whichever of the eight methods they like best, on the deepest floor they have opened.
 - **Cap at level 5**, like every other skill in the game. Ways past 5 come later.
-- **Starting costs** (to tune): level 2 = 10, 3 = 25, 4 = 50, 5 = 100 shards.
+- **Costs** (`CAVE_LEVEL_COST`, `CAVE_DROP_COST`): level 2 = 3, 3 = 7, 4 = 15, 5 = 40 shards, **plus** 3 / 6 / 10 / 20 of the skill's own floor's monster drop (`CAVE_DROPS`: Glow Silk, Prism Splinter, Drowned Pearl, Magma Heart; a kill on a floor drops one at 35%, `caveDropS`; saved as `gear.cave.m[floor]`).
 - **10-minute cooldown per method**, per player, so players rotate between methods instead of farming one easy method.
 
 ## 8. Balance and kit changes to know about
