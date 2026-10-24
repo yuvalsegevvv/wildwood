@@ -152,6 +152,24 @@ shared
   cave/skill-1-cavein.js             Cave skill Cave-in (floor 1, method F, earth): rocks fall on a 6 m circle: heavy damage, normal monsters stunned for 1.5 s
   cave/skill-1-grapple.js            Cave skill Grapple Line (floor 1, method G): pull yourself up to 15 m to a target or a spot; your next hit within 2 s deals +30%
   cave/skill-1-secondwind.js         Cave skill Second Wind (floor 1, method H): heal 20% of your max health over 6 s and clear slows
+  cave/skill-2-threshing.js          Deep Cave skill Threshing Floor (floor 2, tansy's set skill, method H)
+  cave/skill-2-shadowstep.js         Deep Cave skill Shadow Step (floor 2, sazanka's set skill, method E)
+  cave/skill-2-shieldwall.js         Deep Cave skill Shield-Wall (floor 2, torgeir's set skill, method F)
+  cave/skill-2-lighthouse.js         Deep Cave skill Lighthouse (floor 2, corvin's set skill, method A)
+  cave/skill-2-cutandrun.js          Deep Cave skill Cut and Run (floor 2, sabir's set skill, method G)
+  cave/skill-2-marionette.js         Deep Cave skill Marionette (floor 2, ottoline's set skill, method C)
+  cave/skill-3-tidepool.js           Deep Cave skill Tidepool (floor 3, ambrose's set skill, method B)
+  cave/skill-3-intermission.js       Deep Cave skill Intermission (floor 3, marigold's set skill, method C)
+  cave/skill-3-soundcharge.js        Deep Cave skill Sound the Charge (floor 3, dunstan's set skill, method F)
+  cave/skill-3-eagleperch.js         Deep Cave skill Eagle's Perch (floor 3, sorrel's set skill, method A)
+  cave/skill-3-stoppedhour.js        Deep Cave skill Stopped Hour (floor 3, zahra's set skill, method D)
+  cave/skill-3-lampwindow.js         Deep Cave skill Lamp in the Window (floor 3, hollis's set skill, method E)
+  cave/skill-4-nightline.js          Deep Cave skill Night Line (floor 4, pell's set skill, method D)
+  cave/skill-4-bellecho.js           Deep Cave skill Bell Echo (floor 4, genzo's set skill, method C)
+  cave/skill-4-blackice.js           Deep Cave skill Black Ice (floor 4, brynja's set skill, method G)
+  cave/skill-4-landslide.js          Deep Cave skill Landslide (floor 4, tamsin's set skill, method H)
+  cave/skill-4-embalm.js             Deep Cave skill Embalm (floor 4, nephra's set skill, method A)
+  cave/skill-4-nightshift.js         Deep Cave skill Night Shift (floor 4, ogden's set skill, method F)
   raids.js                           Raids: one ruined stronghold per land (defineRaid registry, the common layout, level and pay by zone tier, the signature-skill upgrade price in raid material, the flat pads)
   raids/thornwall.js                 Raid: Thornwall Keep, Wildwood's border castle taken over by the goblin warband (garrison, site, material)
   raids/kurohana.js                  Raid: Kurohana Castle, the Sakura Vale's burnt hilltop castle held by oni and its last lord's undead samurai (garrison, site, material)
@@ -181,6 +199,7 @@ server
   cave/method-g.js                   Cave method G on the server, The gem mole: a rare mole spawns at a burrow, runs for a hole and digs out unless it is brought down first; slows and stuns work on it, everyone who hurt it is paid
   cave/method-h.js                   Cave method H on the server, Cave crafting: gather glow veins (a pickaxe) and cave herbs (a sickle) of the floor's tier standing still near them, then carve the tablet at the stone anvil
   cave/skills.js                     The Deep Cave's floor-1 skills on the server: the new effect keys of resolveFxS they use (echo, flare, overdrive, ward, burrow, grapple, wind), and the three small reads in the damage code
+  cave-fx.js                         The Deep Cave's 18 set skills (floors 2-4) on the server: their extra fx keys, the timed effects they leave on players and zones, and the hooks into hurt, kill, zones and set marks
   gem-sources.js                     Free gems on the server: quest steps, the daily quest set (UTC), achievements and the placeholder ad watch
   boss-fx.js                         What the bosses can do, shared by every move set: telegraphed hits (circle, cone, line, donut, marks), ground zones, tidal walls, orbs, effects on players, timed casts, summons
   boss-kits-home.js                  Boss move sets of the home forest: the Rootwarden (root spikes, ground slam, the totem shield, and the four seasons of the grove) and Carapax, the Tide King (geyser trails, tidal waves with an undertow, the molt, the claw clamp, burrow strikes, the hunting whirlpool)

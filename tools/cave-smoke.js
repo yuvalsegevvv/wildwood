@@ -189,7 +189,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     ok('invalid method rows (a duplicate, a bad letter, a prototype name, wrong dress, no numbers) are left out and listed, never thrown',bad.every(b=>x.defineCaveMethod(b)===null)&&x.CAVE_METHOD_BAD.length===n0+bad.length&&x.CAVE_METHOD_IDS.length===8); x.CAVE_METHOD_BAD.length=n0; }
   ok('floor 1 has its eight general skills, one for each method A-H, none left out',M8.every(m=>{ const s=x.caveSkillAt(1,m); return s&&s.floor===1&&s.set===null&&s.cost>=20&&s.cost<=40; })&&x.CAVE_BAD.filter(b=>!/^(Bad Id|fixflare|cost1|floor9|meth|nofx|badset|slash|\?)$/.test(b.id)).length===0,x.CAVE_BAD.map(b=>b.id).join());
   ok('the costs are the plan\'s (Echo 30, Flare 25, Overdrive 25, Lantern Ward 35, Burrow 30, Cave-in 35, Grapple Line 20, Second Wind 40)',['echo:30','flare:25','overdrive:25','lanternward:35','burrow:30','cavein:35','grapple:20','secondwind:40'].every(q=>{ const [id,c]=q.split(':'); return x.CAVE_SKILLS[id]&&x.CAVE_SKILLS[id].cost===+c; }));
-  ok('floors 2-4 have no skill yet at any place (C4-C6 add them): their eight places pay Echo Shards',[2,3,4].every(n=>M8.every(m=>!x.caveSkillAt(n,m))));
+  ok('floors 2-4 have six skills each (one per set) and two empty places that pay Echo Shards',[2,3,4].every(n=>M8.filter(m=>x.caveSkillAt(n,m)).length===6));
   ok('the board names the method, the floor and the skill ("Mural fragments, The Glowworm Grotto")',x.caveWhereText(x.CAVE_SKILLS.echo)==='Mural fragments, The Glowworm Grotto'&&x.caveBoardRows(1).length===8&&x.caveBoardRows(1)[0].skill.id==='echo');
   ok('method C\'s feat is data: floor 1 uses the general one (beat five without being hit)',x.caveFeatOf(1)===x.CAVE_FEAT_DEFAULT&&x.CAVE_FEAT_DEFAULT.kind==='pack'&&x.CAVE_FEAT_DEFAULT.noHit===true);
   { const t=x.CAVE_SKILLS; ok('a skill row may carry a feat only on method C',true); }
@@ -237,7 +237,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     for(const m of pack) x.killMonsterS(m,p1); tick(3);
     ok('beating all five without a hit teaches Overdrive',p1.gear.cave.own.overdrive===1&&p1.gear.cave.done['1C']===1&&p1.cm.C.s===0);
     // another player, a different floor's feat comes from the data
-    ok('the feat is a data field of the floor\'s method-C skill (the default for a place with none)',x.caveFeatOf(2)===x.CAVE_FEAT_DEFAULT); }
+    ok('the feat is a data field of the floor\'s method-C skill (Marionette\'s on floor 2; the default for floor 1)',x.caveFeatOf(2)===x.caveSkillAt(2,'C').feat&&x.caveFeatOf(2).kind==='holdMark'&&x.caveFeatOf(1)===x.CAVE_FEAT_DEFAULT); }
   // ---- D: carry the lantern ----
   { const A=WA(1).D; resetCd(p1); floorTp(p1,1,A.crystal); tick(2);
     ok('touching the crystal in the deepest chamber lifts it',p1.cm.D.s===1&&lastCm('m1').d.s===1);
@@ -299,7 +299,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   // ---- every floor runs every method ----
   { for(const n of FLOORS.filter(q=>q>1)){ const W2=WA(n); floorTp(pm,n); const sh0=pm.gear.cave.sh|0;
       for(let i=0;i<5;i++){ at(pm,W2.A.pieces[i]); tick(1); } at(pm,W2.A.wall); tick(2);
-      ok('floor '+n+': method A runs there too (no skill at that place yet, so it pays '+x.CAVE_SHARDS[n]+' Echo Shards)',pm.gear.cave.done[n+'A']===1&&pm.gear.cave.sh-sh0===x.CAVE_SHARDS[n]&&pm.cm.n===n);
+      { const sk=x.caveSkillAt(n,'A'); ok('floor '+n+': method A runs there too (it teaches '+(sk?sk.name:'nothing')+')',pm.gear.cave.done[n+'A']===1&&pm.cm.n===n&&(sk?pm.gear.cave.own[sk.id]===1:pm.gear.cave.sh-sh0===x.CAVE_SHARDS[n])); }
       const E=W2.E; at(pm,E.entry); tick(2); at(pm,E.shrine); tick(2); ok('floor '+n+': method E runs there (its own chamber)',pm.gear.cave.done[n+'E']===1);
       const D=W2.D; at(pm,D.crystal); tick(2); at(pm,D.altar); tick(2); ok('floor '+n+': method D runs there',pm.gear.cave.done[n+'D']===1); } }
   // ---- the cooldown is per floor and per method ----
