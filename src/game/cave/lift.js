@@ -23,7 +23,7 @@ function renderCaveLift(){
     const isHere=n===cur, off=isHere||!!why;
     h+=`<button class="tr-dest${isHere?' here':''}" data-to="${n}" ${off?'disabled':''} ${why?`title="${why.replace(/"/g,'&quot;')}"`:''}><span class="tr-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${CAVE_LIFT_ICON}</svg></span><b>${name}</b><small>${sub}</small><span class="tr-state">${isHere?'You are here':why||'Open'}</span></button>`;
   }
-  h+='</div>';
+  h+='</div><p class="tr-intro">The board beside the lift: every floor has the same eight ways to earn a skill. Finish one once for its skill; after that it pays Echo Shards.</p>'+caveBoardHtml();   // cave: where each skill comes from (game/cave/methods.js)
   $('#cvLiftBody').innerHTML=h;
   $('#cvLiftBody').querySelectorAll('[data-to]').forEach(b=>b.onclick=()=>{ netSend({t:'lift',to:+b.dataset.to}); UI_SFX.click(); closePanels(); });
 }

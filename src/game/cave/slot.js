@@ -60,13 +60,13 @@ function caveSlotHtml(C){
 function caveGridHtml(){
   if(!CAVE_SKILL_IDS.length) return '<p class="muted sk-note">No cave skills exist yet. They are earned in the Deep Cave.</p>';
   return CAVE_SKILL_IDS.map(id=>{ const s=CAVE_SKILLS[id], L=caveLevelOf(id), el=s.el||'basic';
-    return `<div class="sk-cell"><button class="sk-tile${el!=='basic'?' has-el':''}${L?'':' unowned'}${CAVE_UI.sel===id?' sel':''}" data-cave="${id}" style="--el:${el==='basic'?'transparent':ELEMS[el].col}" aria-label="${s.name}">${skIcon(s.icon||s.name)}${L?`<i class="lv">${L}</i>`:''}</button><span class="nm">${s.name}</span></div>`; }).join('');
+    return `<div class="sk-cell"><button class="sk-tile${el!=='basic'?' has-el':''}${L?'':' unowned'}${CAVE_UI.sel===id?' sel':''}" data-cave="${id}" style="--el:${el==='basic'?'transparent':ELEMS[el].col}" aria-label="${s.name}"${L?'':` title="${caveWhereText(s)}"`}>${skIcon(s.icon||s.name)}${L?`<i class="lv">${L}</i>`:''}</button><span class="nm">${s.name}</span>${L?'':`<small class="sk-where">${caveMethodDef(s.method).name}</small>`}</div>`; }).join('');
 }
 function caveInfoHtml(){
   const s=caveSkillDef(CAVE_UI.sel);
   if(!s) return `<p class="muted">${isTouch?'Tap':'Click'} a cave skill for details. The Deep Cave is under the Wildwood; its skills are earned there. A cave skill is fed by charge: every attack that hits adds some, and casting it spends ${CAVE_COST_MIN} to ${CAVE_COST_MAX}.</p>`;
   const L=caveLevelOf(s.id), worn=GEAR.skills.cave===s.id, low=PL.level<CAVE_SLOT_LV;
-  const act=L?(worn?`<button class="chip" data-caveoff="1">Take off</button>`:`<button class="chip" data-caveon="${s.id}" ${low?'disabled':''}>${low?'Level '+CAVE_SLOT_LV:'Equip'}</button>`):`<span class="muted">Floor ${s.floor}, method ${s.method}: earned in the Deep Cave</span>`;
+  const act=L?(worn?`<button class="chip" data-caveoff="1">Take off</button>`:`<button class="chip" data-caveon="${s.id}" ${low?'disabled':''}>${low?'Level '+CAVE_SLOT_LV:'Equip'}</button>`):`<span class="muted">${caveWhereHtml(s)}</span>`;
   return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico">${skIcon(s.icon||s.name)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags"><span class="sk-tag">Any class · Cave skill · floor ${s.floor}${s.set?' · '+SS_SETS[s.set].name+'\'s set':''}</span>${s.el?elChip(s.el):''}</div><span class="sk-meta">${L?'Level '+L+' of '+CAVE_LEVEL_MAX+' &middot; ':''}costs ${s.cost} charge</span></div><div class="sk-ii-btn">${act}</div></div><p class="sk-desc">${s.desc}</p></div>`;
 }
 function caveBindPanel(on){   // on(selector, fn) of renderSkills

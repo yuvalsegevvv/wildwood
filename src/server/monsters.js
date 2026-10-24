@@ -58,6 +58,7 @@ function updateMonstersS(dt){
     if(m.remove) continue;
     if(m.inst) continue;   // dungeons: a run's monsters (its boss too) move in updateInstsS
     if(m.boss){ if(m.rd) rdBossTickS(m,dt); else updateBossS(m,dt); continue; }   // raids: a raid boss sleeps until its wards are broken (rdBossTickS, server/raids.js)
+    if(m.cmo){ caveMoleS(m,dt); continue; }   // cave: the gem mole is scripted (server/cave/method-g.js)
     if(m.dead){
       m.deadT+=dt;
       if(m.deadT>1.2){ if(m.temp) removeMonS(m); else { m.respawnT-=dt; if(m.respawnT<=0 && !anyPlayerNear(m.camp.x,m.camp.z,22)) respawnMonS(m); } }
@@ -82,7 +83,7 @@ function updateMonstersS(dt){
       else if(m.T.speed===0){ m.state='idle'; }
       else { m.state='attack'; m.faceGoal=Math.atan2(-dx,-dz); m.atkT-=dt;
         if(m.atkT<=0 && !m.T.noAttack){ m.atkT=m.T.atk; m.pendingHit=0.28; ev('mact',m.id); } }
-      if(m.pendingHit>=0){ m.pendingHit-=dt; if(m.pendingHit<0 && dp<reach+0.8) hurtP(p,Math.max(1,Math.round(m.T.dmg*AR(0.85,1.15))),m); }
+      if(m.pendingHit>=0){ m.pendingHit-=dt; if(m.pendingHit<0 && dp<reach+0.8 && !(m.blindT>S.t)) hurtP(p,Math.max(1,Math.round(m.T.dmg*AR(0.85,1.15))),m); }   // cave: Flare, a blinded monster misses
     } else if(m.state==='return'){
       tx=m.camp.x; tz=m.camp.z; speed=m.T.speed*1.1;
       if(hd<2.5){ m.state='idle'; m.timer=AR(1,3); m.hp=m.maxHp; m.hitters.clear(); }

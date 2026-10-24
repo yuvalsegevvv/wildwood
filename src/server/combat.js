@@ -26,9 +26,9 @@ function elemEffS(p,el){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=
 function elemHitS(p,el,m){ el=elemEffS(p,el);
   const B=m&&m.pl?PVP.elemBoost:ELEM_BOOST;   // pvp: between fighters advantage and disadvantage are x1.15 and /1.15, and a fighter's element is their soul (the proxy's T.el)
   return soulMult(soulOfP(p),el,psP(p,'soul'),B)*(m?foeMult(el,elOf(m.T),B):1); }
-function rollDmgS(p,mult,m,el){
-  const b=p.buff, crit=Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m)+pendP(p,'crit')+rlP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
-  return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m)):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
+function rollDmgS(p,mult,m,el){   // cave: caveCritP (Overdrive: a sure crit) and caveBonusK (Grapple Line: the next hit) are read below
+  const b=p.buff, crit=caveCritP(p)||Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m)+pendP(p,'crit')+rlP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
+  return {v:Math.max(1,Math.round(p.dmg*mult*caveBonusK(p)*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m)):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
   if(m.pl) return pvpHitS(m,mult,p,fromX,fromZ,kb,el);   // pvp: m is another fighter on the island (server/pvp.js)
@@ -110,6 +110,7 @@ function nearestAhead(p,range){ let best=null,bs=1e9; for(const m of foesS(p)){ 
 function resolveHitS(p,a){
   const cls=clsOfP(p), C=CLASSES[cls], T=a.tg?foeByIdS(p,a.tg):null, tgt=T&&!T.dead&&!T.remove?T:null;
   if(tgt && a.kind!=='spin') p.face=Math.atan2(-(tgt.x-p.x),-(tgt.z-p.z));
+  caveGeodeHitS(p,a);   // cave: a geode in reach takes this attack's element (method B)
   const alive=m=>!m.dead&&!m.remove, FO=foesS(p);   // pvp: FO is the monsters, or the other fighters when p stands on the island
   if(a.fx){ resolveFxS(p,a,tgt); return; }
   if(a.kind==='slash'||a.kind==='bash'){
@@ -254,6 +255,7 @@ function resolveFxS(p,a,tgt){
       fireProjS(p,P.kind,rotY(base,off),tg,a.mult,a.el,P,f,src);
     } }
   if(f.zone){ const Z=f.zone, c=Z.self||a.at?{x:O().x,z:O().z}:aimPoint(p,tgt,a.range,10); addAreaS(p,'zone',c.x,c.z,Z.r*AK,Z.dur,a.mult,!!Z.follow,a.el,Z,f,src); }
+  if(a.cave) caveFxS(p,a,tgt,f);   // cave: the cave skills' own effect keys (server/cave/skills.js)
   ssFxUtilS(p,f,src);   // skillsets: the skill's ally buffs, party heal, shield and taunt
   if(f.pop) ssPopS(p,f.pop,inRange?tgt:null,a.mult,(m,mult)=>dmg(m,mult,p.x,p.z,0));   // skillsets: spend the player's marks
 }

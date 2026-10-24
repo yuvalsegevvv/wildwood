@@ -20,11 +20,11 @@ function caveRunEnter(n){
   const o=caveFloorOrigin(n);
   CAVE_RUN={n,F,B,K:F.look,ox:o.x,oz:o.z,y:CAVE_FLOOR_Y,seen:new Uint8Array(B.w*B.h),seenN:0,away:0,seeT:0};
   CB.target=null; hideCast(); PANELS.forEach(p=>{ $('#'+p).hidden=true; });
-  for(const step of [caveViewBuild,caveLookEnter,caveMiniEnter]) try{ step(CAVE_RUN); }catch(err){ console.error('cave view:',err); }
+  for(const step of [caveMethodsEnter,caveViewBuild,caveLookEnter,caveMiniEnter]) try{ step(CAVE_RUN); }catch(err){ console.error('cave view:',err); }
   caveSeeAround();
 }
 function caveRunLeave(){
-  for(const step of [caveMiniLeave,caveViewClear,caveLookLeave]) try{ step(); }catch(err){ console.error('cave view:',err); }
+  for(const step of [caveMethodsLeave,caveMiniLeave,caveViewClear,caveLookLeave]) try{ step(); }catch(err){ console.error('cave view:',err); }
   CAVE_RUN=null;
 }
 // cells within sight of you (12 m, a clear line) are explored for the maps
@@ -46,5 +46,5 @@ function caveFrame(dt){
   if(!R||R.n!==n){ caveOnTp({x:P.x,z:P.z}); return; }
   R.away=0;
   if((R.seeT-=dt)<=0){ R.seeT=0.3; caveSeeAround(); }
-  for(const step of [caveViewTick,caveLookTick]) try{ step(dt); }catch(err){ console.error('cave frame:',err); }
+  for(const step of [caveViewTick,caveLookTick,caveMethodsFrame]) try{ step(dt); }catch(err){ console.error('cave frame:',err); }
 }

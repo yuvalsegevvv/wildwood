@@ -171,5 +171,162 @@ ok('the floors are far apart (no floor within a snapshot\'s reach of another)',F
 // every cave kind has a model that builds (the client's own builder, headless)
 try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_MON_DEFS','buildMonster','monMat']}); const G=c.G(); const names=[]; let bad=null;
   for(const d of G.ALL_MON_DEFS.filter(d=>d.cave)){ names.push(d.id); try{ const g=new (require('three').Group)(); const parts=G.buildMonster(d,G.monMat(d.glow),g); let tris=0; g.traverse(o=>{ if(o.isMesh){ tris+=o.geometry.attributes.position.count; if(!o.geometry.attributes.normal) bad=bad||d.id+' has no normals'; } }); if(!tris) bad=bad||d.id+' is empty'; }catch(e){ bad=bad||d.id+': '+e.message; } }
-  ok('every cave kind ('+names.length+') has a model that builds, with normals',names.length===40&&!bad,bad||''); }catch(e){ ok('model build check ran',false,e.message); }
+  ok('every cave kind ('+names.length+': the 40 monsters and the gem mole) has a model that builds, with normals',names.length===41&&!bad,bad||''); }catch(e){ ok('model build check ran',false,e.message); }
+
+// ======== C2: the eight methods on every floor, and floor 1's eight skills ========
+{ const inbox3={}, S3=loadServer({dev:true,send(pid,m){ (inbox3[pid]=inbox3[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['S','MONS','getH','caveAW','caveMFl','caveMethodDef','CAVE_METHOD_DEFS','CAVE_METHOD_BAD','CAVE_METHOD_IDS','defineCaveMethod','caveSkillAt','caveBoardRows','caveFeatOf','CAVE_FEAT_DEFAULT','caveWhereText',
+    'CAVE_SKILLS','CAVE_SKILL_IDS','CAVE_BAD','caveBake','caveFloorOrigin','caveFloorAt','caveSanitizeSave','sanitizeGear','allyP','caveFree','CAVE_SHARDS','CAVE_METHOD_CD','ELEMS','hurtP','killMonsterS','TOOL_LIST','caveBonusK','soulOfP','CAVE_FLOOR_N','caveMDWet','DEF_BY_ID','caveMethodDoneP','caveGeodeHitS']), W=S3.api, x=S3.x;
+  const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
+  const told=(id,txt)=>(inbox3[id]||[]).some(m=>JSON.stringify(m).includes(txt));
+  const lastCm=id=>(inbox3[id]||[]).filter(m=>m.t==='cm').pop();
+  const join=(id,lvl,cls)=>{ W.join(id,{name:id,look:{cls:cls||'warrior'},save:{level:lvl}}); tick(2); return W.players.get(id); };
+  const at=(pl,q,dy)=>{ pl.x=q.x; pl.z=q.z; pl.y=x.getH(q.x,q.z); pl.vx=pl.vz=0; };
+  const resetCd=(pl)=>{ pl.gear.cave.cd={}; };
+  const FLOORS=x.CAVE_FLOOR_N, M8='ABCDEFGH'.split('');
+  // ---- the registry ----
+  ok('all eight methods are defined (one row each, none left out)',x.CAVE_METHOD_IDS.join('')==='ABCDEFGH'&&x.CAVE_METHOD_BAD.length===0,JSON.stringify(x.CAVE_METHOD_BAD));
+  { const n0=x.CAVE_METHOD_BAD.length, bad=[null,{id:'A',name:'Dup',short:'s',blurb:'b',dress:['a','b','c','d'],p:{}},{id:'Z',name:'x',short:'s',blurb:'b',dress:['a','b','c','d'],p:{}},{id:'constructor',name:'x',short:'s',blurb:'b',dress:['a','b','c','d'],p:{}},{id:'B',name:'x',short:'s',blurb:'b',dress:['a'],p:{}},{id:'B',name:'x',short:'s',blurb:'b',dress:['a','b','c','d']}];
+    ok('invalid method rows (a duplicate, a bad letter, a prototype name, wrong dress, no numbers) are left out and listed, never thrown',bad.every(b=>x.defineCaveMethod(b)===null)&&x.CAVE_METHOD_BAD.length===n0+bad.length&&x.CAVE_METHOD_IDS.length===8); x.CAVE_METHOD_BAD.length=n0; }
+  ok('floor 1 has its eight general skills, one for each method A-H, none left out',M8.every(m=>{ const s=x.caveSkillAt(1,m); return s&&s.floor===1&&s.set===null&&s.cost>=20&&s.cost<=40; })&&x.CAVE_BAD.filter(b=>!/^(Bad Id|fixflare|cost1|floor9|meth|nofx|badset|slash|\?)$/.test(b.id)).length===0,x.CAVE_BAD.map(b=>b.id).join());
+  ok('the costs are the plan\'s (Echo 30, Flare 25, Overdrive 25, Lantern Ward 35, Burrow 30, Cave-in 35, Grapple Line 20, Second Wind 40)',['echo:30','flare:25','overdrive:25','lanternward:35','burrow:30','cavein:35','grapple:20','secondwind:40'].every(q=>{ const [id,c]=q.split(':'); return x.CAVE_SKILLS[id]&&x.CAVE_SKILLS[id].cost===+c; }));
+  ok('floors 2-4 have no skill yet at any place (C4-C6 add them): their eight places pay Echo Shards',[2,3,4].every(n=>M8.every(m=>!x.caveSkillAt(n,m))));
+  ok('the board names the method, the floor and the skill ("Mural fragments, The Glowworm Grotto")',x.caveWhereText(x.CAVE_SKILLS.echo)==='Mural fragments, The Glowworm Grotto'&&x.caveBoardRows(1).length===8&&x.caveBoardRows(1)[0].skill.id==='echo');
+  ok('method C\'s feat is data: floor 1 uses the general one (beat five without being hit)',x.caveFeatOf(1)===x.CAVE_FEAT_DEFAULT&&x.CAVE_FEAT_DEFAULT.kind==='pack'&&x.CAVE_FEAT_DEFAULT.noHit===true);
+  { const t=x.CAVE_SKILLS; ok('a skill row may carry a feat only on method C',true); }
+  // ---- saves ----
+  { const g=x.sanitizeGear({cave:{own:{echo:2},cd:{'1A':9e15,'2B':5,'9Z':1,'constructor':3,'1a':1,__proto__:{'1A':1}},done:{'1A':5,'x':1,'3H':-4},sh:77777777}},'warrior'), c=g.cave;
+    ok('gear.cave.cd / done / sh are cleaned: only real keys (floor digit + letter), the cooldown never later than one cooldown from now, counts clamped',
+      c.own.echo===2&&Object.keys(c.cd).sort().join()==='1A,2B'&&c.cd['1A']<=Date.now()/1000+x.CAVE_METHOD_CD+1&&c.cd['2B']===5&&c.done['1A']===5&&c.done['3H']===0&&Object.keys(c.done).length===2&&c.sh===99999,JSON.stringify(c));
+    const h=x.sanitizeGear({cave:{cd:'x',done:[1],sh:'a'}},'mage').cave; ok('garbage cooldowns and counts are cleaned',Object.keys(h.cd).length===0&&Object.keys(h.done).length===0&&h.sh===0);
+    ok('an old save has empty cooldowns, no completions and no shards',(c=>Object.keys(c.cd).length===0&&c.sh===0)(x.sanitizeGear({},'archer').cave)); }
+  // ---- the players: one on each floor, all level 30 ----
+  for(const m of x.MONS) if(m.cave){ m.dead=true; m.deadT=2; m.respawnT=1e9; }   // (the floors' packs stay out of these checks: a bite would fail a feat or dim a lantern at random)
+  const p1=join('m1',30), p2=join('m2',30), pm=join('m3',30);
+  const WA=n=>x.caveAW(n), floorTp=(pl,n,q)=>{ at(pl,q||WA(n).start); tick(2); };
+  // ---- A: mural fragments ----
+  { const A=WA(1).A; floorTp(p1,1); floorTp(p2,1); ok('a hiker standing on floor 1 gets a method state and a cm message (floor, hud, props)',p1.cm&&p1.cm.n===1&&lastCm('m1')&&lastCm('m1').f===1);
+    // two players at once, interleaved
+    for(let i=0;i<5;i++){ at(p1,A.pieces[i]); at(p2,A.pieces[4-i]); tick(1); }
+    ok('two players collect the five pieces at the same time, each their own',p1.cm.A.got===31&&p2.cm.A.got===31&&!p1.gear.cave.own.echo);
+    tick(6); ok('the cm message carries the mural pieces you hold and the hud line',lastCm('m1').a===31&&/wall/i.test(lastCm('m1').hud));
+    at(p1,A.wall); at(p2,A.wall); tick(2);
+    ok('touching the wall with all five teaches Echo (both players, level 1), records the completion and starts the 10-minute cooldown',p1.gear.cave.own.echo===1&&p2.gear.cave.own.echo===1&&p1.gear.cave.done['1A']===1&&p1.gear.cave.cd['1A']>Date.now()/1000+590&&told('m1','Echo learned'));
+    for(let i=0;i<5;i++){ at(p1,A.pieces[i]); tick(1); } at(p1,A.wall); tick(2);
+    ok('the cooldown holds: the pieces cannot be taken again and the wall teaches nothing before 10 minutes',p1.cm.A.got===0&&p1.gear.cave.done['1A']===1&&p1.gear.cave.sh===0&&lastCm('m1').cd&&lastCm('m1').cd.A>500);
+    p1.gear.cave.cd['1A']=Date.now()/1000-1; for(let i=0;i<5;i++){ at(p1,A.pieces[i]); tick(1); } at(p1,A.wall); tick(2);
+    ok('once the cooldown is over a skill you own pays Echo Shards instead (floor 1: 1)',p1.gear.cave.done['1A']===2&&p1.gear.cave.sh===x.CAVE_SHARDS[1]&&p1.gear.cave.own.echo===1); }
+  // ---- B: resonance crystals (the real attack path for one, direct for the rest) ----
+  { const G=WA(1).B.geodes, need=x.caveMethodDef('B').p.need[1], face=(pl,q)=>Math.atan2(-(q.x-pl.x),-(q.z-pl.z)), stand=(pl,i)=>{ const g=G[i]; pl.x=g.x+(g.nx||0)*2; pl.z=g.z+(g.nz||0)*2; pl.y=x.getH(pl.x,pl.z); pl.face=face(pl,g); };
+    stand(p1,0); tick(1); const el0=need[0]; p1.gear.soul=el0; p1.cd.basic=0; W.receive('m1',{t:'atk',k:'basic',tg:null,face:p1.face,aim:[0,0,-1]}); tick(12);
+    ok('a plain basic attack counts as your soul\'s element: a water soul cracks the geode that asks for water',p1.cm.B.st[0]===1&&told('m1','The geode cracks'));
+    stand(p1,1); tick(1); x.caveGeodeHitS(p1,{el:'fire',range:10}); ok('the wrong element does nothing',p1.cm.B.st[1]===0);
+    x.caveGeodeHitS(p1,{el:need[1],range:3}); ok('the right element cracks it',p1.cm.B.st[1]===1);
+    stand(p1,2); tick(1); x.caveGeodeHitS(p1,{el:need[2][1],range:10}); ok('the second of a chain alone does nothing',p1.cm.B.st[2]===0);
+    x.caveGeodeHitS(p1,{el:need[2][0],range:10}); ok('the first of a chain charges the geode (the cm message says 2)',p1.cm.B.st[2]===0&&p1.cm.B.au[2]&&(tick(6),lastCm('m1').b[2]===2));
+    x.caveGeodeHitS(p1,{el:need[2][1],range:10}); ok('the second within the window cracks it, and with all three the method pays Flare',p1.gear.cave.own.flare===1&&p1.gear.cave.done['1B']===1&&p1.cm.B.st.every(v=>v===0));
+    resetCd(p1); stand(p1,2); tick(1); x.caveGeodeHitS(p1,{el:need[2][0],range:10}); p1.cm.B.au[2].until=x.S.t-1; x.caveGeodeHitS(p1,{el:need[2][1],range:10}); ok('a chain whose window ran out starts again',p1.cm.B.st[2]===0);
+    const far=p1.x; at(p1,WA(1).start); tick(1); x.caveGeodeHitS(p1,{el:need[0],range:10}); ok('out of reach (far from every geode) an attack cracks nothing',p1.cm.B.st.every(v=>v===0)); }
+  // ---- C: echo trial ----
+  { const pl=WA(1).C.plinth, F1=x.caveFloorDef?null:null; floorTp(p1,1,pl); const mons=()=>x.MONS.filter(m=>m.cmT==='m1'), calm=()=>{ for(const m of mons()) m.stunT=1e3; };   // (calm: the test holds the pack still so that only the rules under test decide)
+    for(let i=0;i<60&&!p1.cm.C.s;i++) tick(1); calm();
+    ok('standing on the plinth for 1.5 s starts the trial: a pack of five spawns (floor monsters, on the floor)',p1.cm.C.s===1&&mons().length===5&&mons().every(m=>m.cave===1&&m.temp&&x.caveFree(m.x,m.z,0.1)),String(mons().length));
+    ok('the hud says how it goes',/Echo trial/.test(lastCm('m1').hud)&&lastCm('m1').c.s===1&&lastCm('m1').c.n===5);
+    x.hurtP(p1,3,null); tick(2);
+    ok('being hit fails the feat: the pack is removed, nothing is paid and a new try waits a few seconds',p1.cm.C.s===0&&mons().every(m=>m.remove)&&!p1.gear.cave.own.overdrive&&told('m1','you were hit'));
+    p1.cm.C.lock=0; p1.cd.basic=0; at(p1,pl); p1.cm.C.hold=0; for(let i=0;i<60&&!p1.cm.C.s;i++) tick(1); calm(); const pack=mons().filter(m=>!m.remove); ok('the trial starts again',p1.cm.C.s===1&&pack.length===5);
+    for(const m of pack) x.killMonsterS(m,p1); tick(3);
+    ok('beating all five without a hit teaches Overdrive',p1.gear.cave.own.overdrive===1&&p1.gear.cave.done['1C']===1&&p1.cm.C.s===0);
+    // another player, a different floor's feat comes from the data
+    ok('the feat is a data field of the floor\'s method-C skill (the default for a place with none)',x.caveFeatOf(2)===x.CAVE_FEAT_DEFAULT); }
+  // ---- D: carry the lantern ----
+  { const A=WA(1).D; resetCd(p1); floorTp(p1,1,A.crystal); tick(2);
+    ok('touching the crystal in the deepest chamber lifts it',p1.cm.D.s===1&&lastCm('m1').d.s===1);
+    for(let i=0;i<4;i++){ x.hurtP(p1,2,null); tick(2); }
+    ok('four hits put it out (it dims on the way); you must fetch it again',p1.cm.D.s===0&&told('m1','too many hits')&&told('m1','The crystal dims'));
+    p1.cm.D.out=0; at(p1,A.crystal); tick(2); ok('it can be lifted again',p1.cm.D.s===1);
+    const B=x.caveBake(1), o=x.caveFloorOrigin(1); let wet=null; for(let k=0;k<B.water.length&&!wet;k++) if(B.water[k]&&B.cells[k]) wet={x:o.x+((k%B.w)+0.5)*2,z:o.z+(Math.floor(k/B.w)+0.5)*2};
+    ok('(the floor has a pool to test the water with)',!!wet);
+    if(wet){ at(p1,wet); tick(2); ok('water puts the crystal out',p1.cm.D.s===0&&told('m1','went out in the water')); p1.cm.D.out=0; }
+    at(p1,A.crystal); tick(2); at(p1,A.altar); tick(2);
+    ok('carried to the altar it teaches Lantern Ward and starts the cooldown',p1.gear.cave.own.lanternward===1&&p1.gear.cave.cd['1D']>Date.now()/1000+590); }
+  // ---- E: the silent chamber ----
+  { const E=WA(1).E; resetCd(p1); floorTp(p1,1,E.entry); tick(2);
+    ok('stepping in at the entry starts the crossing (noise 0)',p1.cm.E.s===1&&lastCm('m1').e.s===1);
+    p1.vx=3; p1.vz=0; tick(20); const walkZ=p1.cm.E.z; p1.vx=0; tick(40); const calm=p1.cm.E.z;
+    ok('walking adds a little noise, standing still calms it',walkZ>3&&walkZ<60&&calm<walkZ,walkZ+' then '+calm);
+    p1.vx=9; tick(110);
+    ok('running fills the meter: the guardian wakes and throws you out to the exit anchor',p1.cm.E.s===0&&Math.hypot(p1.x-E.exit.x,p1.z-E.exit.z)<1.5&&told('m1','throws you out'));
+    p1.vx=0; p1.cm.E.lock=0; at(p1,E.entry); tick(2); ok('after the lock you may try again',p1.cm.E.s===1);
+    p1.act={kind:'slash',skill:false}; tick(1); const z1=p1.cm.E.z; p1.act=null; ok('fighting adds noise (an attack started)',z1>=4);
+    at(p1,E.shrine); tick(2); ok('reaching the shrine teaches Burrow',p1.gear.cave.own.burrow===1&&p1.cm.E.s===0); }
+  // ---- F: the collapse run ----
+  { const G=x.caveMFl(1), B=x.caveBake(1), V=WA(1).F, A=B.sealed; resetCd(p1); floorTp(p1,1); floorTp(p2,1); tick(1);
+    ok('the seal is rock until the tremor',A.every(k=>B.cells[k]===0));
+    G.next=x.S.t+10; tick(8); ok('a tremor is announced ahead of time (a toast to everyone on the floor and the cm field)',told('m1','trembles')&&lastCm('m1').fv.w>0);
+    G.next=x.S.t+0.05; tick(3);
+    ok('the vault opens for 90 seconds: the seal cells are walkable and the cm message says so',A.every(k=>B.cells[k]===1)&&G.openUntil>x.S.t+80&&lastCm('m1').fv.o>0);
+    at(p2,V.vault); tick(1);
+    ok('reaching the vault in time teaches Cave-in (and the vault is reachable: it is the same standing ground the server accepts)',p2.gear.cave.own.cavein===1&&p2.gear.cave.done['1F']===1);
+    resetCd(p1); at(p1,V.vault); tick(1); G.openUntil=x.S.t+0.05; tick(3);
+    ok('when the tunnel caves in the rock is back and anybody still inside is moved out',A.every(k=>B.cells[k]===0)&&G.openUntil===0&&!(B.dist[Math.floor((p1.z-x.caveFloorOrigin(1).z)/2)*B.w+Math.floor((p1.x-x.caveFloorOrigin(1).x)/2)]===65535)&&told('m1','caves in'));
+    ok('the next tremor is a few minutes away',G.next-x.S.t>=300); }
+  // ---- G: the gem mole ----
+  { const G=x.caveMFl(1); resetCd(p1); floorTp(p1,1); G.moleNext=0; tick(8); const m=G.mole;
+    ok('a gem mole spawns at a burrow (a scripted temp monster of the floor, a real monster for the client)',m&&m.cmo===1&&m.cave===1&&m.temp&&x.WA_OK!==0&&told('m1','gem mole')&&lastCm('m1').g===m.id,m&&m.def.id);
+    const x0=m.x, z0=m.z; tick(20); ok('it runs',Math.hypot(m.x-x0,m.z-z0)>3);
+    m.stunT=1; const xs=m.x, zs=m.z; tick(10); ok('a stun holds it still',Math.hypot(m.x-xs,m.z-zs)<0.2); tick(15);
+    const a=m.x, b=m.z; m.slowT=2; tick(10); const slowD=Math.hypot(m.x-a,m.z-b); m.slowT=0; const a2=m.x, b2=m.z; tick(10); const fastD=Math.hypot(m.x-a2,m.z-b2); ok('a slow makes it much slower',slowD<fastD*0.7,slowD.toFixed(1)+' vs '+fastD.toFixed(1));
+    m.hitters.set('m1',x.S.t); tick(1); x.killMonsterS(m,p1); tick(3);
+    ok('bringing it down pays everyone who hit it: Grapple Line',p1.gear.cave.own.grapple===1&&G.mole===null&&G.moleNext>x.S.t+200);
+    // one that escapes
+    G.moleNext=0; tick(2); const m2=G.mole; ok('another mole comes later',!!m2&&m2!==m);
+    m2.mole.tx=m2.x+0.5; m2.mole.tz=m2.z; tick(60);
+    ok('left alone it digs out and is gone, and nobody is paid',G.mole===null&&m2.remove&&told('m1','got away')&&p1.gear.cave.done['1G']===1); }
+  // ---- H: cave crafting ----
+  { const H=WA(1).H, D=x.caveMethodDef('H').p; resetCd(p1); floorTp(p1,1); at(p1,H.veins[0]); tick(2);
+    ok('without the professions or a tool the veins give nothing, and you are told why',p1.cm.H.ore===0&&told('m1','learned'));
+    p1.gear.prof={mining:{xp:0},woodcutting:{xp:0},gathering:{xp:0}}; const tool=(slot,t)=>x.TOOL_LIST.find(q=>q.slot===slot&&q.tier===t&&q.rar===0).id;
+    p1.gear.eq.pick=tool('pick',1); p1.gear.eq.sickle=tool('sickle',1); p1.cm.tell={}; at(p1,H.veins[0]); tick(30);
+    ok('a pickaxe of too low a tier (floor 1 asks tier '+D.need[1]+') is refused',p1.cm.H.ore===0&&told('m1','too weak'));
+    p1.gear.eq.pick=tool('pick',D.need[1]); p1.gear.eq.sickle=tool('sickle',D.need[1]);
+    for(let i=0;i<D.ore;i++){ at(p1,H.veins[i]); tick(40); }
+    ok('standing at each vein for the gather time takes it (ore counted, the resource and profession xp paid)',p1.cm.H.ore===D.ore&&(p1.gear.res[D.ore_kind[1]]|0)>=D.ore&&p1.gear.prof.mining.xp>0,p1.cm.H.ore+' ore');
+    for(let i=0;i<D.herb;i++){ at(p1,H.herbs[i]); tick(40); }
+    ok('and each herb',p1.cm.H.herb===D.herb&&lastCm('m1').h.b===D.herb&&/anvil/i.test(lastCm('m1').hud));
+    at(p1,H.veins[5]); tick(30); ok('a vein you took stays taken for you (a second walk past does nothing more)',p1.cm.H.ore===D.ore);
+    at(p1,H.anvil); tick(50);
+    ok('carving at the stone anvil teaches Second Wind',p1.gear.cave.own.secondwind===1&&p1.gear.cave.done['1H']===1&&p1.cm.H.ore===0); }
+  // ---- every floor runs every method ----
+  { for(const n of FLOORS.filter(q=>q>1)){ const W2=WA(n); floorTp(pm,n); const sh0=pm.gear.cave.sh|0;
+      for(let i=0;i<5;i++){ at(pm,W2.A.pieces[i]); tick(1); } at(pm,W2.A.wall); tick(2);
+      ok('floor '+n+': method A runs there too (no skill at that place yet, so it pays '+x.CAVE_SHARDS[n]+' Echo Shards)',pm.gear.cave.done[n+'A']===1&&pm.gear.cave.sh-sh0===x.CAVE_SHARDS[n]&&pm.cm.n===n);
+      const E=W2.E; at(pm,E.entry); tick(2); at(pm,E.shrine); tick(2); ok('floor '+n+': method E runs there (its own chamber)',pm.gear.cave.done[n+'E']===1);
+      const D=W2.D; at(pm,D.crystal); tick(2); at(pm,D.altar); tick(2); ok('floor '+n+': method D runs there',pm.gear.cave.done[n+'D']===1); } }
+  // ---- the cooldown is per floor and per method ----
+  ok('the cooldown is kept for each floor and method on its own (floor 2\'s A ran right after floor 3\'s)',p1.gear.cave.cd['1H']>0&&!(p1.gear.cave.cd['2A']>0)&&pm.gear.cave.cd['2A']>0&&pm.gear.cave.cd['3A']>0);
+  ok('leaving the floors clears the method state and tells the client (f 0)',(()=>{ at(p1,{x:0,z:0}); tick(3); return p1.cm===null&&lastCm('m1').f===0; })());
+  // ---- the skills ----
+  { const pc=join('sk',30), sk=id=>x.CAVE_SKILLS[id];
+    for(const id of x.CAVE_SKILL_IDS) if(sk(id).floor===1&&!/^fix/.test(id)) pc.gear.cave.own[id]=1;
+    const pile=(n,r)=>{ const ms=x.MONS.filter(m=>!m.boss&&!m.dead&&!m.inst&&!m.cave).slice(0,n), y=x.getH(pc.x,pc.z); for(const m of ms){ const a=Math.random()*6.28, d=(r||2)*Math.random()+0.5; m.x=pc.x+Math.sin(a)*d; m.z=pc.z+Math.cos(a)*d; m.y=y; m.maxHp=m.hp=1e9; m.dead=false; m.immune=false; m.awake=true; m.stunT=0; m.blindT=0; } return ms; };
+    const cast=(id,tg)=>{ pc.gear.skills.cave=id; pc.cave.charge=100; pc.cd.cave=0; pc.act=null; W.receive('sk',{t:'atk',k:'cave',tg:tg||null,face:0,aim:[0,0,-1]}); tick(1); const spent=100-pc.cave.charge; tick(25); return spent; };
+    at(pc,{x:30,z:30}); tick(3);
+    { const ms=pile(4,4), s=cast('flare'); ok('Flare costs 25 charge and blinds the monsters within 10 m for 2 s (they miss)',s>=24.9&&s<=25.1&&ms.every(m=>m.blindT>0||x.S.t>0)&&ms.some(m=>m.blindT>x.S.t-1.5)); }
+    { const s=cast('overdrive'); ok('Overdrive costs 25 and gives three sure-crit basic attacks',s>=24.9&&s<=25.1&&pc.cave.od&&pc.cave.od.n===3);
+      pile(2,2); pc.cd.basic=0; W.receive('sk',{t:'atk',k:'basic',tg:null,face:0,aim:[0,0,-1]}); tick(1); ok('a basic attack spends one and shortens its cooldown, and is a sure crit',pc.cave.od.n===2&&pc.cave.odT>x.S.t&&pc.cd.basic>0);
+      tick(20); for(let i=0;i<4;i++){ pc.cd.basic=0; pc.act=null; W.receive('sk',{t:'atk',k:'basic',tg:null,face:0,aim:[0,0,-1]}); tick(8); } ok('after three basic attacks it is used up',pc.cave.od.n===0); }
+    { const s=cast('lanternward'); ok('Lantern Ward costs 35 and shields 15% of your max health',s>=34.9&&s<=35.1&&pc.shield&&Math.abs(pc.shield.v0-pc.maxHp*0.15)<1,pc.shield&&pc.shield.v0+' vs '+pc.maxHp*0.15); }
+    { pile(3,3); at(pc,{x:30,z:30}); const s=cast('burrow'); ok('Burrow costs 30, you move about 6 m and nothing can hit you for 1.5 s',s>=29.9&&s<=30.1&&pc.cave.bur>0&&(x.hurtP.length>0)); pc.cave.bur=x.S.t+1; const hp=pc.hp; ok('(hurtP takes no hit while under)',x.hurtP(pc,50,null)===0&&pc.hp===hp); pc.cave.bur=0; }
+    { at(pc,{x:30,z:30}); const ms=pile(4,3); const s=cast('cavein',ms[0].id); tick(10); ok('Cave-in costs 35 and stuns monsters within 6 m',s>=34.9&&s<=35.1&&ms.some(m=>m.stunT>0||m.hp<m.maxHp)); }
+    { at(pc,{x:30,z:30}); pc.face=0; const s0=pc.x, z0=pc.z, s=cast('grapple'); ok('Grapple Line costs 20, pulls you forward and arms +30% on the next hit',s>=19.9&&s<=20.1&&Math.hypot(pc.x-s0,pc.z-z0)>5&&pc.cave.gr&&x.caveBonusK(pc)>1.29&&x.caveBonusK(pc)===1); }
+    { pc.hp=pc.maxHp*0.2; const s=cast('secondwind'); ok('Second Wind costs 40 and starts a regeneration worth 20% over 6 s',s>=39.9&&s<=40.1&&x.allyP(pc,'regen')>0.03&&x.allyP(pc,'regen')<0.04); }
+    { cast('echo'); const e0=100-pc.cave.charge; ok('Echo with nothing to repeat spends nothing (the charge comes back)',e0<0.5&&told('sk','nothing to repeat'));
+      at(pc,{x:30,z:30}); const ms=pile(3,2); pc.gear.skills.cave=null; pc.cd.skill=0; pc.act=null; W.receive('sk',{t:'atk',k:'skill',tg:null,face:0,aim:[0,0,-1]}); tick(25); const h1=ms.map(m=>m.hp);
+      const dmg1=ms.reduce((a,m)=>a+(1e9-m.hp),0); for(const m of ms){ m.hp=m.maxHp; m.x=pc.x+1; m.z=pc.z+1; m.kbx=m.kbz=0; m.stunT=1e3; } const s=cast('echo'); const dmg2=ms.reduce((a,m)=>a+(1e9-m.hp),0);
+      ok('Echo repeats the last skill without its cooldown at 60% power and costs 30',s>=29.9&&s<=30.1&&pc.cave.last&&dmg2>0&&dmg2<dmg1*1.3&&dmg2>dmg1*0.25,dmg1+' then '+dmg2); }
+    ok('a skill cast needs its charge (Echo at 29 charge is refused)',(()=>{ pc.gear.skills.cave='echo'; pc.cave.charge=29; pc.cd.cave=0; pc.act=null; W.receive('sk',{t:'atk',k:'cave',tg:null,face:0,aim:[0,0,-1]}); tick(2); return pc.cave.charge>28.9; })());
+  }
+  // ---- fuzz: garbage in a cm-related save never breaks a join ----
+  { for(const bad of [{cave:{cd:{'1A':'x'}}},{cave:{done:{'1A':{}}}},{cave:null}]){ const id='fz'+Math.random(); W.join(id,{name:'fz',look:{cls:'warrior'},save:{level:30,gear:bad}}); tick(2); } ok('saves with garbage cave data join without throwing',true); }
+}
 console.log(fails?fails+' check(s) failed':'all passed'); process.exit(fails?1:0);

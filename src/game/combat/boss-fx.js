@@ -66,6 +66,7 @@ function endBossWall(id){
 function onPfx(kind,dur,vx,vz){
   if(kind==='root'){ PFX.root=Math.max(PFX.root,dur); toast('Frozen in ice!','bad'); spawnRing(2.2,0x9fe8ff,P.y+0.2); fxpSparks(P.x,P.y+1,P.z,0xcdf1ff,18,5,{size:0.2}); }
   else if(kind==='slow') PFX.slow=Math.max(PFX.slow,dur);
+  else if(kind==='clear'){ PFX.root=0; PFX.slow=0; }   // cave: Second Wind clears slows and roots
   else if(kind==='push'){ PFX.kx+=vx; PFX.kz+=vz; camShake=Math.max(camShake,0.3); }
 }
 // each frame while you move: timers, the shove fading out (about 3 m for 12 m/s), a whirlpool's pull, and the ice block round you

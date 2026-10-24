@@ -1,6 +1,6 @@
 //@ The Deep Cave on the server: the 4th slot's charge (earned by casts that hit, a boss fight sets it), casting the equipped cave skill, equipping, and sanitizing gear.cave
 /* Agent map. Plan and rules: docs/CAVE.md; the registry and constants are shared/cave.js; test: tools/cave-smoke.js.
-   gear.cave = {own:{<cave skill id>: level 1-5}} (saved, caveSanitizeSave); the equipped one is gear.skills.cave (saved, sanitizeSkills; cleared by sanitizeGear when it is not owned).
+   gear.cave = {own:{<cave skill id>: level 1-5}, cd:{'<floor><method>': epoch seconds the method is ready again}, done:{'<floor><method>': completions}, sh:{shards}} (saved, caveSanitizeSave; the methods are server/cave/); the equipped one is gear.skills.cave (saved, sanitizeSkills; cleared by sanitizeGear when it is not owned).
    p.cave = {charge, sent, cur, fight, fightT} is NOT saved (caveNewState, made by newPlayer): charge 0-100, kept between ordinary fights.
    CHARGE: caveCastS(p,slot,ab) starts a cast (handleAttack); the first damage that cast deals (caveHitS, called from damageMonsterS) pays 0.6 x the ability's base cooldown ONCE (never per enemy),
    doubled when the equipped cave skill has a `set` and the cast ability is a piece of that set. A cast that hits nothing pays nothing; a hit lands up to CAVE_CAST_WINDOW seconds after the cast (projectiles).
@@ -11,11 +11,16 @@
    CAST: caveCastP (handleAttack with k:'cave') needs level 23, the equipped skill owned, charge >= its cost, 0.8 s since the last cave cast; it spends the cost and runs the skill through p.act like any fx skill.
    Messages: cavequip {id|null} (MSG.cavequip), atk {k:'cave'}; server to client: {t:'cave', c: charge rounded} whenever the rounded charge changes (and once on join).
    Used by: players.js (newPlayer, sanitizeGear, updatePlayersS), combat.js (handleAttack, damageMonsterS), boss.js (updateBossS); the hooks are marked `// cave:` and listed in docs/CAVE.md. */
-function caveNewState(){ return {charge:0,sent:-1,cur:null,fight:null,fightT:0}; }
+function caveNewState(){ return {charge:0,sent:-1,cur:null,fight:null,fightT:0,last:null,od:null,odT:0,gr:null,bur:0,burT:0}; }   // last: the last skill or burst cast (Echo); od: Overdrive; gr: Grapple Line; bur: Burrow (server/cave/skills.js)
 // gear.cave from a save: only cave skills that exist, each at a level 1-5 (an old save has none)
 function caveSanitizeSave(g){
-  const out={own:{}}, O=g&&typeof g==='object'&&g.own&&typeof g.own==='object'?g.own:null;
+  const out={own:{},cd:{},done:{},sh:0}, ok=g&&typeof g==='object'&&!Array.isArray(g), O=ok&&g.own&&typeof g.own==='object'?g.own:null;
   if(O) for(const id of Object.keys(O).slice(0,64)){ if(!caveSkillDef(id)) continue; out.own[id]=clampInt(O[id],1,CAVE_LEVEL_MAX,1); }
+  const key=k=>/^[1-9][A-H]$/.test(k)&&caveMethodDef(k[1]);   // a method key is floor digit + letter: only real methods, never a bare client string
+  const CD=ok&&g.cd&&typeof g.cd==='object'?g.cd:null, DN=ok&&g.done&&typeof g.done==='object'?g.done:null, now=Date.now()/1000;
+  if(CD) for(const k of Object.keys(CD).slice(0,64)){ if(key(k)&&Number.isFinite(+CD[k])) out.cd[k]=Math.min(now+CAVE_METHOD_CD,Math.max(0,+CD[k])); }   // (never later than one cooldown from now: a tampered save cannot lock a method)
+  if(DN) for(const k of Object.keys(DN).slice(0,64)){ if(key(k)) out.done[k]=clampInt(DN[k],0,99999,0); }
+  out.sh=ok?clampInt(g.sh,0,99999,0):0;
   return out;
 }
 // the equipped cave skill's ability if p may use it now (level, owned), else null
@@ -28,6 +33,8 @@ function caveAddP(p,n){ const c=p.cave; if(c&&n>0) c.charge=Math.min(CAVE_CHARGE
 function caveCastS(p,slot,ab){   // a basic / skill / burst cast starts (handleAttack): it may pay its charge once, on its first hit
   const c=p.cave; if(!c||p.pv||p.level<CAVE_SLOT_LV) return;
   c.cur={t:S.t,gain:caveChargeGain(ab,caveEquippedP(p)),paid:false};
+  if(slot!=='basic') c.last={ab,lvl:skillLvOf(skOfP(p),ab.id)};   // Echo repeats it
+  else if(c.od&&c.od.n>0&&c.od.until>S.t){ c.od.n--; c.odT=S.t+0.7; p.cd.basic*=c.od.cd; }   // Overdrive: this basic attack is a sure crit and comes sooner
 }
 function caveHitS(p){   // damageMonsterS dealt damage for p
   const c=p.cave, cur=c&&c.cur; if(!cur||cur.paid) return;
@@ -41,6 +48,8 @@ function caveBossTickS(B,inside){   // updateBossS: B is engaged and these playe
 }
 function caveTickP(p){   // every tick, every player: end a boss fight they left, tell the client the charge
   const c=p.cave; if(!c) return;
+  caveMTickP(p);   // the methods (server/cave/methods.js): only does anything on a floor
+  if(c.bur>S.t) caveBurrowTickS(p,c);   // Burrow: monsters lose track
   if(c.fight&&S.t-c.fightT>0.5){ if(!c.fight.m.dead) c.charge=CAVE_BOSS_LEAVE; c.fight=null; }   // the boss died: the fight ended, keep it; anything else is leaving before the end
   const r=Math.round(c.charge); if(r!==c.sent){ c.sent=r; sendTo(p.id,{t:'cave',c:r}); }
 }

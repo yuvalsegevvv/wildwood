@@ -22,7 +22,7 @@ const caveLevelK=level=>1+CAVE_LEVEL_STEP*(Math.max(1,Math.min(CAVE_LEVEL_MAX,le
 /* charge one cast earns: 0.6 x the ability's base cooldown (not its upgraded one), doubled when the equipped cave skill belongs to a skill set and the cast is a piece of that same set */
 function caveChargeGain(ab,caveSk){ const dbl=!!(caveSk&&caveSk.set&&ab&&ab.set===caveSk.set); return CAVE_CHARGE_K*(ab&&ab.cd>0?ab.cd:0)*(dbl?2:1); }
 const caveSkillDef=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(CAVE_SKILLS,id)?CAVE_SKILLS[id]:null;
-/* defineCaveSkill({id, name, floor 1-4, method 'A'-'H', set: a skill set id or null, cost 20-40, desc, mult, range, fx, el?, act?, anim?, icon?}) -> the ability, or null (and a CAVE_BAD row) when it is invalid.
+/* defineCaveSkill({id, name, floor 1-4, method 'A'-'H', set: a skill set id or null, cost 20-40, desc, mult, range, fx, el?, act?, anim?, icon?, feat? (method C only)}) -> the ability, or null (and a CAVE_BAD row) when it is invalid.
    The ability looks like a SKILLS row (cls 'any', slot 'cave') so resolveFxS, the HUD and the panel read it the same way; cd is 0 (the cost is its limit). */
 function defineCaveSkill(d){
   const bad=why=>{ CAVE_BAD.push({id:d&&typeof d.id==='string'?d.id:'?',why}); if(typeof console!=='undefined') console.warn('cave skill left out:',d&&d.id,why); return null; };
@@ -39,11 +39,14 @@ function defineCaveSkill(d){
   if(!(d.range>=1&&d.range<=60)) return bad('range must be 1-60');
   if(!d.fx||typeof d.fx!=='object'||!Object.keys(d.fx).length) return bad('fx is required (the generic effects of resolveFxS)');
   if(d.el!==undefined&&(typeof d.el!=='string'||!Object.prototype.hasOwnProperty.call(ELEMS,d.el))) return bad('el must be an element id');
+  if(d.feat!==undefined&&(!d.feat||typeof d.feat!=='object'||!['pack','holdTaunt','holdMark'].includes(d.feat.kind)||!(d.feat.n>=1&&d.feat.n<=12))) return bad('feat must be {kind pack|holdTaunt|holdMark, n 1-12, ...} (docs/CAVE.md section 15)');
+  if(d.feat&&d.method!=='C') return bad('only a method C skill has a feat');
   const kind=d.act?d.act[0]:'cv_'+d.id;
   if(d.act&&(!Array.isArray(d.act)||typeof d.act[0]!=='string'||!(d.act[1]>0.2&&d.act[1]<=3)||!(d.act[2]>0&&d.act[2]<1))) return bad('act must be [kind, seconds 0.2-3, hit point 0-1]');
   if(ACT_SKILL[kind]) return bad('act kind already used');
   const ab={id:d.id,cls:'any',slot:CAVE_SLOT,cave:true,name:d.name,cd:0,price:0,lv:CAVE_SLOT_LV,range:d.range,mult:d.mult,fx:d.fx,desc:d.desc,
     act:d.act||[kind,0.6,0.45],anim:d.anim||'cast',cost:d.cost,floor:d.floor,method:d.method,set:d.set||null,icon:d.icon||null};
+  if(d.feat) ab.feat=d.feat;   // method C's feat (shared/cave-methods.js caveFeatOf; server/cave/method-c.js runs it)
   if(d.el) ab.el=d.el;
   CAVE_SKILLS[d.id]=ab; CAVE_SKILL_IDS.push(d.id);
   ACT_SKILL[kind]=ab; ANIM_OF[kind]=ab.anim;   // the client draws a cast from its attack kind (attackVisuals), the body plays the borrowed animation

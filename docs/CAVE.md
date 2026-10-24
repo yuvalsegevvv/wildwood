@@ -108,12 +108,12 @@ An echo trial (C) for a set skill uses that set's feat: Ottoline's, puppet 6 mon
 
 ## 5. How a cave skill is written (C0 registry)
 
-`defineCaveSkill({id, name, floor 1-4, method 'A'-'H', set: skill-set id | null, cost 20-40, desc, mult, range, fx, el?, act?, anim?, icon?})` in `shared/cave.js`. A skill is one data file `shared/cave/<floor>-<id>.js` added to `src/manifest.json` after the sets (`skillsets/*.js`), because `set` is checked against `SS_SETS` when it is defined. An invalid entry is left out, warned about and listed in `CAVE_BAD` (`{id, why}`); the smoke test names it.
+`defineCaveSkill({id, name, floor 1-4, method 'A'-'H', set: skill-set id | null, cost 20-40, desc, mult, range, fx, el?, act?, anim?, icon?})` in `shared/cave.js`. A skill is one data file `shared/cave/skill-<floor>-<id>.js` added to `src/manifest.json` after the sets (`skillsets/*.js`), because `set` is checked against `SS_SETS` when it is defined. An invalid entry is left out, warned about and listed in `CAVE_BAD` (`{id, why}`); the smoke test names it.
 
 - `fx` is the generic effect object of `resolveFxS` (ring, cone, beam, chain, proj, zone, dash, buff... see `docs/areas/skills-items.md`, `server/combat.js`), so most skills need no server or client code. A skill with a new kind of effect adds an entry in `resolveFxS`.
 - The ability is registered like a `SKILLS` row (`cls:'any'`, `slot:'cave'`, `cd:0`) and its attack kind (default `cv_<id>`) in `ACT_SKILL` / `ANIM_OF`, so the client draws it with `fxVisuals`. Its power is `mult x caveLevelK(level)`.
 - Ownership: `gear.cave.own = {id: level 1-5}` (saved, sanitized by `caveSanitizeSave`); the worn skill is `gear.skills.cave` (saved with the skills loadout, cleared when not owned). Charge is not saved.
-- Later steps add `defineCaveMethod` (the eight methods), `defineCaveFloor` (theme, level band, monsters) in the same style (`shared/cave/`).
+- `feat` (method C skills only) is the echo trial's feat as data (section 15). `defineCaveMethod` (the eight methods, C2) and `defineCaveFloor` (theme, level band, monsters, C1) work the same way (`shared/cave/`).
 
 ## 6. Ways to earn the skills
 
@@ -187,6 +187,10 @@ No open questions. Tune in play: the 0.6 charge constant, skill costs of 20-40, 
 | The mouth | `src/shared/cave-mouth.js` | `CAVE_MOUTH`, the pad `caveMouthPad` (rawHeight), `CAVE_MOUTH_V` (joins `CIRCLES`), `CAVE_LIFT_SURFACE`, `caveMouthNear` |
 | Server: the zone | `src/server/cave-zone.js` | camps (`caveInitS`), walls (`caveSetPosS`, `caveDashS`, `caveWallAtS`, `caveMonStepS`, `caveSteerS`), the lift (`caveLiftP`, `MSG.lift`), `caveReviveP`, `caveDevTp` |
 | Client: the zone | `src/game/cave/zone.js`, `view.js`, `view-themes.js`, `look.js`, `collide.js`, `minimap.js`, `mouth.js`, `lift.js` | `CAVE_RUN` / `caveIn()`, the floor's meshes and four themes, fog / light / sound, walls and camera, the maps, the surface mouth and lift cage, the lift window |
+| Methods (C2): registry | `src/shared/cave-methods.js`, `src/shared/cave/method-<a..h>-*.js` | `defineCaveMethod`, `CAVE_METHOD_*`, `CAVE_METHOD_CD`, `CAVE_SHARDS`, `caveSkillAt(floor, method)`, `caveWhereText`, `caveBoardRows`, `caveFeatOf` |
+| Methods (C2): engine | `src/server/cave/methods.js` (state, cooldown, completion, the cm message), `method-a.js` .. `method-h.js`, `skills.js` | `caveMTickP`, `caveMethodDoneP`, `caveShardsP`, `caveAW(n)`; `caveGeodeHitS`; `caveFxS` (the floor-1 skills' fx keys) |
+| Methods (C2): client | `src/game/cave/methods.js` (cm, HUD line, board, seal), `method-props.js` (the props) | `CAVE_M`, `caveBoardHtml`, `caveWhereHtml`, `caveMPropsBuild` |
+| Floor-1 skills | `src/shared/cave/skill-1-<id>.js` (eight) | echo, flare, overdrive, lanternward, burrow, cavein, grapple, secondwind |
 | Test | `tools/cave-smoke.js` | the slot lock, charge, cap, set double, boss 50 / 0, spend, registry validation, a bad save (the cave skills in it are fixtures defined in the test) |
 | Protocol | `docs/PROTOCOL.md` | `atk{k:'cave'}`, `cavequip{id}`, `cave{c}` |
 
@@ -205,7 +209,7 @@ No open questions. Tune in play: the 0.6 charge constant, skill costs of 20-40, 
 | `game/ui/combat-hud.js` | the key and button, `caveFillTile()` in `setActionBar`, `caveHudUpdate()` per frame, `caveBarKey()` in the redraw key |
 | `game/economy/skills.js` | `KIND_TITLE.cave`, the cave row in `skSlotsHtml`, the Cave tab, `caveBindPanel` |
 | `index.html`, `styles/09-combat-hud.css` | `#abCave`, `.ab-cave` |
-| `manifest.json` | `cave.js` (shared and server), `cave/slot.js` (client, after `net/client.js`); C1: `cave-mouth.js` (before `terrain-height.js`), `cave-gen.js`, `cave-map.js`, `cave/floor-*.js`, `server/cave-zone.js`, `game/cave/*.js` |
+| `manifest.json` | C2: `cave-methods.js`, `cave/method-*.js`, `cave/skill-1-*.js` (shared), `cave/methods.js`, `cave/method-a..h.js`, `cave/skills.js` (server), `cave/methods.js`, `cave/method-props.js` (client); before that: `cave.js` (shared and server), `cave/slot.js` (client, after `net/client.js`); C1: `cave-mouth.js` (before `terrain-height.js`), `cave-gen.js`, `cave-map.js`, `cave/floor-*.js`, `server/cave-zone.js`, `game/cave/*.js` |
 | `shared/terrain-height.js` | `rawHeight`: `caveMouthPad` lays the flat pad under the mouth |
 | `shared/tiers.js` | `monTierOf`: a cave monster has tier 0 (the cave is no land) |
 | `server/world.js` | `getH`: `caveGroundY` inside the dungeon strip |
@@ -227,12 +231,21 @@ No open questions. Tune in play: the 0.6 charge constant, skill costs of 20-40, 
 | `game/dungeon/entrances.js` | `dgEntClear`: no plants within 18 m of the mouth |
 | `game/main/loop.js` | `caveFrame(dt)` |
 | `game/ui/settings-testing.js`, `index.html` | testing buttons to the mouth and each floor |
+| `server/cave.js` | C2: `caveTickP` calls `caveMTickP(p)` (the methods) and the Burrow tick; `caveCastS` records the last skill (Echo) and spends Overdrive; `caveNewState` has the new fields; `caveSanitizeSave` cleans `cd` / `done` / `sh` |
+| `server/combat.js` | C2: `resolveHitS` calls `caveGeodeHitS(p, a)` (a geode takes the attack's element); `resolveFxS` calls `caveFxS` for a cave cast; `rollDmgS` reads `caveCritP` (Overdrive) and `caveBonusK` (Grapple Line) |
+| `server/players.js` | C2: `hurtP` returns 0 while `p.cave.bur` (Burrow) |
+| `server/monsters.js` | C2: a monster with `m.cmo` (the gem mole) is handed to `caveMoleS`; a monster with `blindT` (Flare) misses |
+| `game/combat/skill-fx.js`, `boss-fx.js` | C2: `fxVisuals` draws the `vis` key (`caveVis`); `onPfx('clear')` ends slows and roots |
+| `game/cave/zone.js`, `lift.js`, `slot.js` | C2: the methods' enter / leave / frame steps; the board under the lift's floors; the locked tile says where the skill comes from |
+| `index.html`, `styles/09-combat-hud.css` | C2: `#cvMethod` (the HUD line) and the board's styles |
 
 ## 13. Build status
 
 - **C0 (done):** the 4th slot (level 23, key 4, action-bar tile with charge bar, "Go to the cave" until a cave skill is owned, skills panel row and Cave tab), the server charge and boss rule, `defineCaveSkill` with validation and `CAVE_BAD`, `gear.cave.own` and `gear.skills.cave` saved and sanitized, protocol documented. No cave skill ships; `cave-smoke` defines fixtures. Tests: `cave-smoke`, `keys-smoke`, `client-smoke`.
 - **C1 (done):** the cave exists as a place: one shared zone (section 14), four deterministic floors with named anchors for the eight methods and monster camps, four themes, the mouth in the Wildwood with its circle and lift, walls for hikers and monsters, the maps. Floor 1 has its ten monsters (Lv 25-34, a pack at each of 32 camps, normal loot). No method or cave skill is placed yet (C2/C3 use the anchors). Tests: `cave-smoke`, `client-smoke`, `server-smoke`.
 - **C1b (done):** the monsters of floors 2-4, ten kinds each (Prism Hollows Lv 35-44: light x6, earth x2, air x2; Drowned Galleries Lv 45-54: water x4, dark x3, air x2, light x1; Magma Heart Lv 55-64: fire x5, earth x3, dark x2), each a `caveMobDef` line at the top of its floor file (a recoloured copy of an existing family: slime, beetle, wisp, treant, bat, goblin, scorpion, fox, wyrm, djinn, sandworm), stats from `defAt` (Lv 60+ already creep tougher: floor 4's top kinds reach about 60k HP and 1.8k damage, no break in the ramp), normal loot, XP and coins. Cave monsters are not in `MON_DEFS`, so the quest board, `MAX_ZONE_LV` (40, clamps quests and a quest's level in saves) and `questTop` never see levels above it. Each floor's `look.music` names an existing theme (grotto `wild2`, prism `rimehold`, drowned `gloam1`, magma `gloam2`). `tools/monster-preview.js` now loads the cave kinds (`--ids glowslime,...`). Tests: `cave-smoke` (each floor's camps, bands, kinds, 40 models build).
+
+- **C2 (done):** the eight methods run on every floor for any number of players at once (section 15): `defineCaveMethod` (one data file each), the server engine in `server/cave/`, the props and the HUD line on the client, the board in the lift window and the locked tile's "where from" text; floor 1's eight general skills (Echo, Flare, Overdrive, Lantern Ward, Burrow, Cave-in, Grapple Line, Second Wind) as data, working through `resolveFxS` (new keys in `server/cave/skills.js`) with a placeholder look (`vis`, C5 draws the real ones). Completion grants the skill; an owned skill or a place with no skill pays Echo Shards through `caveShardsP` (C3 fills in spending them, levels 2-5). Tests: `cave-smoke` (every method on floor 1, two players at once, the cooldown, every floor, each skill's effect and cost), `client-smoke`, `server-smoke`.
 
 ## 14. Where the cave lives and how its floors are made (C1)
 
@@ -255,3 +268,22 @@ No open questions. Tune in play: the 0.6 charge constant, skill costs of 20-40, 
 **Maps:** the minimap and the full map (key M) draw the explored cells of the floor (cells within 12 m and in sight), the rim of rock as an outline, water blue, lava orange, the lift, monsters you have seen and your party.
 
 **Testing:** the testing panel has buttons for the mouth and each floor's lift; `shot.js --at cave:2,x,z,deg` (floor-local metres) takes a picture there.
+
+## 15. The methods in code (C2)
+
+Rules every method follows: only a hiker of level 23+ on a floor runs them; **proximity is the interface** (nothing is sent to the server: you stand, touch or hit); progress is per player and lives in `p.cm` (not saved; reset when you change floor or leave); a finished method calls `caveMethodDoneP(p, floor, method)`: it counts the completion (`gear.cave.done['<floor><M>']`), starts the cooldown (`gear.cave.cd`, 600 s, epoch seconds), teaches the skill tied to that (floor, method) place if there is one and it is not owned, else calls `caveShardsP` (+`CAVE_SHARDS[floor]` Echo Shards in `gear.cave.sh`, the hook C3 extends). The cooldown also stops a method from taking progress (pieces, geodes, trial...) while it rests. The numbers of each method are the `p` object of its `shared/cave/method-<x>-*.js`; anchors are the floor's (section 14).
+
+| | Method | How it runs |
+|---|---|---|
+| A | Mural fragments | Touch each of the 5 `pieces` within `reach` (any order), then the `wall` within `wallReach`. The client draws a piece only within `light` (6 m) of you; the mural panel fills as you collect. |
+| B | Resonance crystals | `p.need[floor]` = 3 entries per floor: an element, or `[first, second]` (hit the first, then the second within `chain` s). `resolveHitS` calls `caveGeodeHitS(p, a)` with the landing attack: its element (`elemEffS`; a basic attack counts as your soul's), reach = the attack's range (3.6-14 m), in front of you and in sight. Floors 2-4's `need` rows are placeholders. |
+| C | Echo trial | Stand on the plinth 1.5 s: a pack spawns (ordinary temp monsters, the floor's kind number 3) and the floor's feat runs. **Feat = data**: `caveFeatOf(floor)` is the `feat` of the floor's method-C skill, else `CAVE_FEAT_DEFAULT` `{kind:'pack', n:5, time:90, noHit:true}`. Kinds: `pack {n,time,noHit}`; `holdTaunt {n,secs,time}` (keep n of the pack taunted by you at once for secs in a row); `holdMark {mark,n,secs,time,r}` (keep n stacks of your mark). C4-C6 only add `feat:` to the set skills: Ottoline (puppet 6 in a fight: a pack with `holdMark` on her String mark, n 6), Marigold (`holdMark` Applause, n 5, 20 s), Genzo (`holdTaunt`, n 4, 20 s), and for the other sets pick one in the same spirit. Fails (pack removed, 6 s lock): hit (noHit), time, leaving (45 m), a knock-out. |
+| D | Carry the lantern | Touch the crystal in the deepest chamber, reach the altar. 4 hits (`p.lastHit` changes) or water (once you have stood on dry ground since the pickup: on the flooded floor the crystal may sit in a pool) put it out; it is back for everyone at once. |
+| E | Silent chamber | Within 3.2 m of `entry` starts it; noise per second: speed over 7 m/s +28 (the default pace is 9.5), any slower move +7, standing -10, +6 per basic and +14 per skill started, x(1 + 0.12 per floor deeper). At 100 the guardian wakes: you land at `exit`, 3 s lock. Reaching `shrine` pays. Walking more than the chamber's radius + 6 m from the guardian ends it quietly. |
+| F | Collapse run | Floor-wide: the first tremor 90 s after someone arrives, then every 6-8 min, announced 20 s ahead (toast + `cm.fv.w`), the vault open 90 s (the seal cells `B.sealed` become walkable on the server and, from `cm.fv.o`, on the client). Anyone at the `vault` anchor in time is paid; at the end the rock returns and anyone inside is moved out. A floor with nobody on it sleeps. |
+| G | Gem mole | Floor-wide: the first mole 60 s after someone arrives, then 4-7 min after each ends. A scripted temp monster (`gemmole`, `m.cmo`) runs along a walk-grid path from a burrow to a hole (22-60 m, 5.2 m/s; slow x0.4, stun stops it and its digging), digs 1.4 s and is gone; its health is 0.3 of a same-level monster x (1 + 0.9 per floor deeper): tune. Everyone who hit it within 30 s of its death on the floor is paid. |
+| H | Cave crafting | Stand still near an untouched vein (`pick`) or herb (`sickle`) for the profession cast time: needs the profession learned and a tool of tier `need[floor]` (2/3/4/5); pays the resource and profession xp like a node. 3 ore + 2 herbs, then 2 s at the anvil. Veins and herbs are yours alone until you finish. |
+
+**Floor-1 skills' effects** (`server/cave/skills.js`, keys of `fx`; `mult` 1 is the level scale for the keys that have no damage): `echo {k}` repeats `p.cave.last` (the last skill or burst cast) at k x its power without charge (nothing to repeat: the cost comes back); `flare` blinds normal monsters (`m.blindT`: they swing and miss), bosses get the shared `weak`; `overdrive` arms `p.cave.od` (3 basic attacks: sure crit via `caveCritP`, cooldown x0.7); `ward` a shield of v of max health, allies half; `burrow` moves you forward and `p.cave.bur` makes `hurtP` return 0 for the time, monsters that hunt you drop it; `grapple` arms `p.cave.gr` (next hit x1.3, `caveBonusK`) after the ordinary `dash`; `wind` a regeneration (`ssAllyS regen`) plus `pfx clear`. Cave-in is a plain `zone` (once, stun) and Flare also a `ring`. The `vis` key is only the placeholder look.
+
+**Decisions where the plan was silent (C2):** proximity instead of a use key (no client input at all); a basic attack counts as your soul's element for the geodes so every hiker can crack one kind; the trial's pack is anybody's to fight but only the starter's feat counts; the crystal's water rule starts after a dry step; F and G sleep when nobody is on the floor; completing a method needs no free inventory; the board is the lift window (every floor, with a "rests n min" mark) and the locked skill tile.
