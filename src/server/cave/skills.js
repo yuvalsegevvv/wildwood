@@ -1,5 +1,5 @@
 //@ The Deep Cave's floor-1 skills on the server: the new effect keys of resolveFxS they use (echo, flare, overdrive, ward, burrow, grapple, wind), and the three small reads in the damage code
-/* Agent map. Skills: shared/cave/skill-1-*.js. Test: tools/cave-smoke.js. Plan: docs/CAVE.md section 4. Placeholder looks: the `vis` key (client, game/cave/methods.js caveVis); C5 draws the real ones.
+/* Agent map. Skills: shared/cave/skill-1-*.js. Test: tools/cave-smoke.js. Plan: docs/CAVE.md section 4. Their drawings: game/cave/vis-floor1.js and vis-floor1b.js (C5; the `vis` key is only a size hint for them; the 'ward' cvfx event is sent here).
    exports: caveFxS(p, a, tgt, f) (resolveFxS, only for a cave cast: a.cave), caveCritP(p) (rollDmgS: Overdrive's sure crit), caveBonusK(p) (rollDmgS: Grapple Line's +30% on the next hit, spent by it), caveBurrowTickS(p, c) (caveTickP).
    `a.mult` of a cave cast is the skill's `mult` x caveLevelK(level), and these skills use mult 1 as a pure level scale (x1.1 per level, +40% at 5): every number below that is a strength is multiplied by it.
    p.cave.last = {ab, lvl}: the last skill / burst cast (caveCastS), what Echo repeats; p.cave.od = {n, until, cd}: Overdrive; p.cave.gr = {k, until}: Grapple Line; p.cave.bur: Burrow lasts until then (hurtP takes no hit). */
@@ -17,8 +17,8 @@ function caveFxS(p,a,tgt,f){
   }
   if(f.overdrive){ c.od={n:f.overdrive.n,until:S.t+f.overdrive.sec*L,cd:f.overdrive.cd}; toastTo(p.id,'Overdrive: your next '+f.overdrive.n+' basic attacks are sure crits','good'); }
   if(f.ward){   // Lantern Ward: a shield of a share of max health, half for the allies near
-    const W=f.ward; ssShieldS(p,W.v*L,W.dur);
-    for(const q of ssAlliesOf(p,W.r)) if(q!==p) ssShieldS(q,W.v*L*W.ally,W.dur);
+    const W=f.ward; ssShieldS(p,W.v*L,W.dur); ev('cvfx',p.id,'ward',W.dur,1);   // (cvfx [pid, 'ward', secs, share]: the client puts a lantern dome on each shielded hiker, vis-floor1.js)
+    for(const q of ssAlliesOf(p,W.r)) if(q!==p){ ssShieldS(q,W.v*L*W.ally,W.dur); ev('cvfx',q.id,'ward',W.dur,W.ally); }
   }
   if(f.burrow){   // Burrow: untouchable, a short move forward, monsters forget you
     const B=f.burrow, dir=[-Math.sin(p.face),-Math.cos(p.face)], to={x:p.x+dir[0]*B.dist,z:p.z+dir[1]*B.dist};

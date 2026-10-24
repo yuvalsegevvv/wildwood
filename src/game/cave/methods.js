@@ -1,8 +1,7 @@
 //@ The Deep Cave's methods on the client: the server's state message (cm), the one-line HUD for the method you are in, the board (every floor's eight methods and the skill each gives, in the lift window), the tremor and the vault's seal
 /* Agent map. Rules and protocol: docs/CAVE.md section 15, docs/PROTOCOL.md (cm). The server: server/cave/. The props in the floor: method-props.js. Test: tools/client-smoke.js (the cave case), tools/cave-smoke.js.
    exports: CAVE_M = {s (the last cm message), t (when it came), seal (the vault is open here)}, NETH.cm, caveMState() -> the message or null off the floors, caveMCd(m) -> seconds left of method m on this floor,
-            caveBoardHtml(floor?) (the lift window and the skills panel), caveWhereHtml(skill) (the locked tile's text), caveMethodsEnter(R) / caveMethodsLeave() / caveMethodsFrame(dt) (zone.js, with method-props.js),
-            caveVis(a, x, y, z) (the placeholder look of a floor-1 skill: the `vis` key of its fx, called by fxVisuals).
+            caveBoardHtml(floor?) (the lift window and the skills panel), caveWhereHtml(skill) (the locked tile's text), caveMethodsEnter(R) / caveMethodsLeave() / caveMethodsFrame(dt) (zone.js, with method-props.js).
    The HUD line #cvMethod shows msg.hud (the server writes the sentence). The vault: while msg.fv.o > 0 the sealed cells are walkable here too (the same rule as the server's), and the boulders at the seal are hidden. */
 var CAVE_M={s:null,t:0,seal:false,shakeT:0};   // (var: the net handler is registered at load)
 NETH.cm=msg=>{
@@ -45,8 +44,3 @@ function caveBoardHtml(floor){
   return h+'</div>';
 }
 function caveWhereHtml(s){ const M=caveMethodDef(s.method); return M?`${M.name}, ${caveFloorDef(s.floor).name} (method ${s.method}): ${M.short.toLowerCase()}`:'earned in the Deep Cave'; }
-// ---- the floor-1 skills' placeholder look (the `vis` key of their fx; C5 replaces it) ----
-function caveVis(a,x,y,z){
-  const r=a.fx.vis.r, col=elCol(elOf(a));
-  spawnRingAt(x,getH(x,z),z,r,col); spawnRingAt(x,getH(x,z)+0.4,z,r*0.6,0xffffff);
-}

@@ -49,6 +49,7 @@ function caveDoAttack(){
   const a=aimDir();
   netSend({t:'atk',k:'cave',tg:T&&!T.dead?T.id:null,face:Math.round(P.face*1000)/1000,aim:[a.x,a.y,a.z].map(v=>Math.round(v*1000)/1000)});
   if(ab.fx&&ab.fx.dash) startCharge(T,ab.range,ab.fx.dash.ahead,ab.fx.dash.behind);
+  cvv1Wind(ab,P);   // cave: the drawing's wind-up and the press-time memory (cave/vis-floor1.js)
   cSfx.charge(true);
 }
 /* ---- the skills panel: the cave row under the three slots, and the Cave tab ---- */
