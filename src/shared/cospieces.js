@@ -1,5 +1,5 @@
 //@ Cosmetic pieces (version 3.2): which general parts of every slot (hat, top, bottom, shoes, gloves, cape, aura) are free and which are crafted, from professions' materials and monsters' drops; the try-on lock rules. Pure.
-/* The general pieces, the ones that belong to no signature set. Eight slots (the eighth, d, is three decoration fields), a letter each (the first letter of the key in gear.cos, 'c:regal'):
+/* The general pieces, the ones that belong to no signature set. Twelve slots (d is three decoration fields; w the shield; e, k, m the Kin parts of shared/kin.js), a letter each (the first letter of the key in gear.cos, 'c:regal'):
      h hat (look.hat)   t top (look.top)   b bottom (look.bottom)   s shoes (look.shoes)   g gloves (look.gloves)   c cape (look.cape)   a aura (look.aura)
    FREE: everything the game had before this update (every base hat, top, bottom, shoes and glove), the backpack (a cape, id 'pack'), two plain capes and two plain auras (CP_FREE). They are worn by anyone and nothing is stored.
    CRAFTED: a piece with a recipe (CP_RECIPE) is made at a Wayfarers' Lodge (cosmake: server/cosmetics.js) and kept in gear.cos. A recipe is {res:[[resource, n]...], mats:[[monster id, n]...], coins}:
@@ -9,8 +9,8 @@
    cosCleanLook (the server) takes them off with the slot's default (CP_NONE), and the editor will not close on one.
    owns: CP_SLOTS, CP_NONE, CP_PIECES, CP_RECIPE, CP_FREE, cpDef, cpIsFree, cpCost, cosLocked, cpSlotOf.   used by: shared/cosmetics.js, server/cosmetics.js, game/economy/cosmetics.js, ui/character-editor.js, character/model-*.js (the lists).   test: tools/cospieces-smoke.js */
 // slot letter: [look field, what a stripped slot falls back to, the name of the slot]
-const CP_SLOTS={h:['hat','none','Hat'],t:['top','tshirt','Top'],b:['bottom','trousers','Bottom'],s:['shoes','boots','Shoes'],g:['gloves','none','Gloves'],c:['cape','','Cape'],a:['aura','','Aura'],d:['deco1','','Decoration'],w:['shield','','Shield']};   // d: three look fields, CP_DECO
-const CP_LETTERS=['h','t','b','s','g','c','a','d','w'];
+const CP_SLOTS={h:['hat','none','Hat'],t:['top','tshirt','Top'],b:['bottom','trousers','Bottom'],s:['shoes','boots','Shoes'],g:['gloves','none','Gloves'],c:['cape','','Cape'],a:['aura','','Aura'],d:['deco1','','Decoration'],w:['shield','','Shield'],e:['kinEars','','Ears'],k:['kinTail','','Tail'],m:['kinMuzzle','','Muzzle']};   // d: three look fields, CP_DECO; e, k, m: the Kin parts (shared/kin.js)
+const CP_LETTERS=['h','t','b','s','g','c','a','d','w','e','k','m'];
 const CP_DECO=['deco1','deco2','deco3'];   // up to three decorations, any of them in any field
 const CP_NONE={}; for(const k of CP_LETTERS) CP_NONE[k]=CP_SLOTS[k][1];
 // the crafted pieces of the five garment slots: [slot, id, name, grade 1..6 (the land it is for), a short line]; the models are in game/character/model-*.js (their ids are listed there too)
@@ -134,6 +134,8 @@ const CP_RECIPE={
   'a:spirit':{res:[],mats:[['kodama',8],['onibi',6]],coins:500},
   'a:rune':{res:[['silver',8],['sunstone',4],['kikyo',3]],mats:[],coins:600}
 };
+// kin: the crafted Kin parts (ears, tails, muzzles, horns, mane: shared/kin.js, which loads first) join the catalog; the free ones are base parts like a base hat and are not in it
+for(const P of KIN_PARTS) if(!P.free){ CP_PIECES.push([P.slot,P.id,P.name,String(P.grade),P.text]); CP_RECIPE[P.slot+':'+P.id]=P.recipe; }
 // worn by anyone, made by nobody: the plain pieces of the two slots whose pieces used to be crafted (the backpack is a cape)
 const CP_FREE=['c:pack','c:wayfarer','c:moss','a:firefly','a:dew'];
 // earned, never made: the last step of a side quest chain gives it (shared/side-quests.js, its chain id here); no recipe, the Lodge does not list it

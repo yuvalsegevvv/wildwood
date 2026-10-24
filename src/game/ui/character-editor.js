@@ -28,6 +28,14 @@ const EDIT=[
       {k:'sex',type:'grid',kind:'sex',ids:()=>[['male'],['female']]},
       {k:'skin',label:'Skin tone',type:'color',opts:SKINS.concat(SKINS_ODD)},{slider:'undertone'}]},
     {name:'Build', rows:[{type:'setups'},{slider:'height'},{slider:'build'}]},
+    // version 3: the Kin features (shared/kin.js, drawn by character/model-kin.js): no race, just optional ears, a tail, a muzzle and fur; the plain ones are free, the others are made at a Wayfarers' Lodge (horns and a mane are in Clothes > Decor)
+    {name:'Kin', rows:[
+      {k:'kinEars',label:'Ears',type:'grid',kind:'kinEars',slot:'e',ids:()=>[['']].concat(kinList('e').map(p=>[p.id,p.name,p.text]))},
+      {k:'kinMuzzle',label:'Muzzle',type:'grid',kind:'kinMuzzle',slot:'m',ids:()=>[['']].concat(kinList('m').map(p=>[p.id,p.name,p.text]))},
+      {k:'kinTail',label:'Tail',type:'grid',kind:'kinTail',slot:'k',ids:()=>[['']].concat(kinList('k').map(p=>[p.id,p.name,p.text]))},
+      {type:'dcolor',k:'furColor',label:'Fur colour',none:'Skin tone',opts:KIN_FUR.concat(SKINS)},
+      {k:'furMark',label:'Markings',type:'seg',opts:KIN_MARKS.map(m=>m.slice())},
+      {type:'dcolor',k:'furColor2',label:'Second colour: markings, ear and tail tips',none:'As designed',opts:KIN_FUR.concat(TINTC)}]},
     {name:'Upper body', rows:['chest','shoulders','waist','hips','torso'].map(k=>({slider:k}))},
     {name:'Limbs', rows:['legs','thighs','calves','arms','neck','hands','feet'].map(k=>({slider:k}))}
   ]},
@@ -154,7 +162,7 @@ function armorRow(wrap,slot){
   wrap.append(box);
 }
 // ---- the five outfit slots ----
-const OUTFIT_KEYS=['tintTop2','tintTop3','tintTop4','tintBottom2','tintBottom3','tintBottom4','tintShoes2','tintShoes3','tintShoes4','tintHat2','tintHat3','tintHat4','tintHair2','tintHair3','tintHair4','tintGloves2','tintGloves3','tintGloves4','hairGrad','hairColor2','hairThird','hairColor3','gloves','gloveColor','tintGloves','top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','capeColor','capeTrim','auraColor','auraColor2','pupil','eyes2','armor','armorHat','armorTop','armorBottom','armorShoes'];
+const OUTFIT_KEYS=['tintTop2','tintTop3','tintTop4','tintBottom2','tintBottom3','tintBottom4','tintShoes2','tintShoes3','tintShoes4','tintHat2','tintHat3','tintHat4','tintHair2','tintHair3','tintHair4','tintGloves2','tintGloves3','tintGloves4','hairGrad','hairColor2','hairThird','hairColor3','gloves','gloveColor','tintGloves','top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','capeColor','capeTrim','auraColor','auraColor2','pupil','eyes2','armor','armorHat','armorTop','armorBottom','armorShoes','kinEars','kinTail','kinMuzzle','furColor','furColor2','furMark'];
 function outfitSlots(){ try{ const a=JSON.parse(localStorage.getItem('wildwood-outfits-v1')||'[]'); const out=[]; for(let i=0;i<5;i++) out.push(a&&typeof a[i]==='object'?a[i]:null); return out; }catch(_){ return [null,null,null,null,null]; } }
 function putOutfitSlots(a){ try{ localStorage.setItem('wildwood-outfits-v1',JSON.stringify(a)); }catch(_){} }
 function saveOutfitSlot(i){ const a=outfitSlots(), o={}; for(const k of OUTFIT_KEYS) if(LOOK[k]!==undefined) o[k]=LOOK[k]; a[i]=o; putOutfitSlots(a); renderEditor(); }
@@ -216,14 +224,14 @@ function renderEditor(){
       const ids=row.ids(), box=document.createElement('div'); box.className='tiles'+(row.kind==='sex'?' two':'');
       if(row.empty&&ids.length<2){ const p0=document.createElement('p'); p0.className='ed-info'; p0.textContent=row.empty; wrap.append(p0); }
       for(const [v,name,tip] of ids){
-        const sig=!!OUTFITS[v], gap=(v===''||v==='none')&&(row.kind==='hat'||row.kind==='gloves'||row.kind==='faceItem'||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield')||(row.kind==='pack'&&v===false);   // "nothing": a crossed circle
+        const sig=!!OUTFITS[v], gap=(v===''||v==='none')&&(row.kind==='hat'||row.kind==='gloves'||row.kind==='faceItem'||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='kinEars'||row.kind==='kinTail'||row.kind==='kinMuzzle')||(row.kind==='pack'&&v===false);   // "nothing": a crossed circle
         const spec=gap?null:{kind:row.kind,id:v};
         if(spec&&row.col&&!sig) spec.col=LOOK[row.col];
         if(spec&&row.kind==='sex') spec.sex=v;
         const cur=LOOK[row.k], on=cur===undefined?(v===false||v===''):cur===v;
         const D=row.slot&&!gap?cpDef(row.slot,v):null, made=!!D&&!D.free&&edOwned().includes(cpKey(row.slot,v)), locked=!!D&&!D.free&&!made, osLock=sig&&!osOwned(v);
         const title=(name?(tip?name+': '+tip:name):gap?'None':ED_NAMES[v]||String(v).replace(/^./,c=>c.toUpperCase()))+(locked?' (locked: '+cosRecipeText(row.slot,v)+'. Tap to try it on.)':made?' (made)':'');
-        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='pupil'||(D&&!D.free)?name:''}); b.onclick=()=>{ setLook(row.k,v); renderEditor(); };
+        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='pupil'||row.kind.startsWith('kin')||(D&&!D.free)?name:''}); b.onclick=()=>{ setLook(row.k,v); renderEditor(); };
         if(osLock){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); }
         else if(locked){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); } else if(made){ b.classList.add('made'); }
         box.append(b); }
