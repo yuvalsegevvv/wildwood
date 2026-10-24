@@ -17,7 +17,7 @@ function handleAttack(p,msg){
   if(isFinite(+msg.face)) p.face=+msg.face%(2*Math.PI);   // (modulo a turn: it goes out in the pact event and the snapshots, rounded by x100, and 1e308 became Infinity there)
   const tg=foeByIdS(p,msg.tg);   // pvp: a fighter on the island may name another fighter
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
-  p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:ab.fx,mult:ab.mult*skillPower(lvl),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim};
+  p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:ab.fx,mult:ab.mult*skillPower(lvl)*caveNextK(p,k),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim};   // cave: Intermission's bonus on the next skill
   ev('pact',p.id,kind,Math.round(p.face*100)/100);
   if(k!=='basic'&&!p.pv) mqActP(p,k);   // the main quest's 'use your skill / burst' steps (pvp: nothing is credited on the island)
 }
@@ -63,6 +63,7 @@ function killMonsterS(m,p){
   m.respawnT=12; if(m.rd) rdKilledS(m,p); m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
   ev('kill',m.id,p?p.id:null);
   if(p) ssTriggerS(p,'kill',{m});   // skillsets: on kill rows
+  if(p) caveKillS(p,m);   // cave: kill refunds and grave hands
   if(m.inst){ dgKilledS(m,p); return; }   // dungeons: a run's kill pays every member present (rewardAllS) and tells the mission; its boss ends the run
   if(!m.T.noXp){
     for(const [pid,tm] of m.hitters){ const q=S.players.get(pid); if(!q||S.t-tm>30||Math.hypot(q.x-m.x,q.z-m.z)>80) continue; rewardKill(q,m); }
@@ -256,6 +257,7 @@ function resolveFxS(p,a,tgt){
   if(f.zone){ const Z=f.zone, c=Z.self||a.at?{x:O().x,z:O().z}:aimPoint(p,tgt,a.range,10); addAreaS(p,'zone',c.x,c.z,Z.r*AK,Z.dur,a.mult,!!Z.follow,a.el,Z,f,src); }
   ssFxUtilS(p,f,src);   // skillsets: the skill's ally buffs, party heal, shield and taunt
   if(f.pop) ssPopS(p,f.pop,inRange?tgt:null,a.mult,(m,mult)=>dmg(m,mult,p.x,p.z,0));   // skillsets: spend the player's marks
+  caveFxS(p,a,tgt,src);   // cave: a set skill's own fx keys (server/cave-fx.js)
 }
 // where a generic projectile (a fx proj) lands: a hit, splash around it, a lingering zone
 function impactFxS(owner,pr,hit){
@@ -281,11 +283,13 @@ function updateAreasS(dt){
     if(A.follow&&o){ if(o.dead){ A.t=A.dur; } else { A.x=o.x; A.z=o.z; } }
     if(A.t>=A.next&&A.t<=A.dur+0.01){ A.next+=A.every;
       if(o) for(const m of foesS(o)){ if(!m.dead&&!m.remove&&Math.hypot(m.x-A.x,m.z-A.z)<A.r+m.T.rad*0.5){
-        if(A.fx){ damageMonsterS(m,A.mult*fxModK(A.mods,o,m),o,A.x,A.z,A.fx.kb!==undefined?A.fx.kb:0.5,A.el); statusS(m,A.fx,o,A.el,A.mult); }
+        if(A.fx){ if(!A.fx.noHit) damageMonsterS(m,A.mult*fxModK(A.mods,o,m),o,A.x,A.z,A.fx.kb!==undefined?A.fx.kb:0.5,A.el); statusS(m,A.fx,o,A.el,A.mult); }   // cave: noHit, a support zone only applies its statuses
         else { damageMonsterS(m,A.mult,o,A.x,A.z,A.kind==='meteor'?7:A.kind==='storm'?1.5:0.5,A.el); if(A.kind==='blizzard'&&!m.dead) m.slowT=1.5; } } }
       if(o&&A.fx) ssZoneAlliesS(o,A);   // skillsets: the allies standing in a zone that carries ally / heal / shield
+      if(o&&A.fx&&A.fx.cave) caveZoneTickS(o,A);   // cave: a cave skill's zone (marks, lane, lamp)
     }
-    if(A.t>=A.dur){ ev('aend',A.id); AREAS.splice(i,1); }
+    if(A.t>=A.dur){ if(o&&A.fx&&A.fx.cave) caveZoneEndS(o,A);   // cave: a zone's last effect
+      ev('aend',A.id); AREAS.splice(i,1); }
   }
 }
 function fireProjS(p,kind,dir,tg,mult,el,spec,mods,src){   // spec: a generic projectile's fx entry (speed, life, turn, and what happens where it lands)

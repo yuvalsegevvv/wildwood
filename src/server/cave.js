@@ -11,7 +11,7 @@
    CAST: caveCastP (handleAttack with k:'cave') needs level 23, the equipped skill owned, charge >= its cost, 0.8 s since the last cave cast; it spends the cost and runs the skill through p.act like any fx skill.
    Messages: cavequip {id|null} (MSG.cavequip), atk {k:'cave'}; server to client: {t:'cave', c: charge rounded} whenever the rounded charge changes (and once on join).
    Used by: players.js (newPlayer, sanitizeGear, updatePlayersS), combat.js (handleAttack, damageMonsterS), boss.js (updateBossS); the hooks are marked `// cave:` and listed in docs/CAVE.md. */
-function caveNewState(){ return {charge:0,sent:-1,cur:null,fight:null,fightT:0}; }
+function caveNewState(){ return {charge:0,sent:-1,cur:null,fight:null,fightT:0,fx:{}}; }
 // gear.cave from a save: only cave skills that exist, each at a level 1-5 (an old save has none)
 function caveSanitizeSave(g){
   const out={own:{}}, O=g&&typeof g==='object'&&g.own&&typeof g.own==='object'?g.own:null;
@@ -42,6 +42,7 @@ function caveBossTickS(B,inside){   // updateBossS: B is engaged and these playe
 function caveTickP(p){   // every tick, every player: end a boss fight they left, tell the client the charge
   const c=p.cave; if(!c) return;
   if(c.fight&&S.t-c.fightT>0.5){ if(!c.fight.m.dead) c.charge=CAVE_BOSS_LEAVE; c.fight=null; }   // the boss died: the fight ended, keep it; anything else is leaving before the end
+  caveFxTickP(p);   // the set skills' timed effects (server/cave-fx.js)
   const r=Math.round(c.charge); if(r!==c.sent){ c.sent=r; sendTo(p.id,{t:'cave',c:r}); }
 }
 function caveCastP(p,msg){   // atk {k:'cave'}: spend the cost and run the skill
