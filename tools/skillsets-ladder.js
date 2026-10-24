@@ -74,11 +74,11 @@ function ladder(env,opts){
       wear(cls,ids,[pass[0],pass[1]]); const five=rotation(secs);
       wear(cls,ids,pass); const six=rotation(secs);
       // slot 4 (docs/CAVE.md): the set's own cave skill at level 1 and 5 on top of all six pieces; its charge is fed by the casts, doubled for this set's pieces
-      let c1=null, c5=null; const cs=x.CAVE_SKILL_IDS.map(i=>x.CAVE_SKILLS[i]).find(q=>q.set===id);
+      let c1=null, c5=null; const cs=(x.CAVE_SKILL_IDS||[]).map(i=>x.CAVE_SKILLS[i]).find(q=>q.set===id);   // a harness without the cave names (skillsets-smoke) skips slot 4
       if(cs&&opts.cave!==false){ p.gear.cave.own[cs.id]=1; p.gear.skills.cave=cs.id; c1=rotation(secs); p.gear.cave.own[cs.id]=5; c5=rotation(secs); p.gear.skills.cave=null; delete p.gear.cave.own[cs.id]; }
       rows[cls]={base:baseline[cls],pieces,three,five,six,c1,c5};
     }
-    out.push({id,cave:(x.CAVE_SKILL_IDS.map(i=>x.CAVE_SKILLS[i]).find(q=>q.set===id)||{}).id||null,role:S.role.main,also:S.role.also?S.role.also.role:null,ranged:P.some(q=>q.ids.some(i=>{ const R=x.SKILLS[i].fx&&x.SKILLS[i].fx.rangeScale; return !!R&&R.k>1; })),rows,summary:summarize(rows,classes)});
+    out.push({id,cave:((x.CAVE_SKILL_IDS||[]).map(i=>x.CAVE_SKILLS[i]).find(q=>q.set===id)||{}).id||null,role:S.role.main,also:S.role.also?S.role.also.role:null,ranged:P.some(q=>q.ids.some(i=>{ const R=x.SKILLS[i].fx&&x.SKILLS[i].fx.rangeScale; return !!R&&R.k>1; })),rows,summary:summarize(rows,classes)});
   }
   return out;
 }
