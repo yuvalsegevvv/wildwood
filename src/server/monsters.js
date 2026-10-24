@@ -26,6 +26,7 @@ function initMonstersS(){
   const ok=(x,z)=>x>WX0+26&&x<WX1-26&&z>WZ0+26&&z<WZ1-26&&!waIsSea(x,z)&&waCoast(x,z)>26&&getH(x,z)>1&&grad(x,z)<0.55&&waWaterDist(x,z)>8&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&waAnchorDist(x,z)>22&&!dgEntranceNear(x,z,32)&&!caveMouthNear(x,z,40)&&!inGlen(x,z,0)&&Math.hypot(x-WA_PVP.x,z-WA_PVP.z)>WA_PVP.r+62&&RD_ORDER.every(i=>Math.hypot(x-RDS[i].x,z-RDS[i].z)>56);   // dungeons: a camp keeps 32 m off a dungeon's door; no camp in the Greyspine's glacier valley (a strip kept clear); pvp: and 62 m off the Proving Isle's shore (nothing lives by the bridgehead)
   for(const d of MON_DEFS){
     const zn=defZone(d), total=MON_COUNT(d), pack=d.per+2;
+    if(!zn) continue;   // amber: a kind whose zone is not defined yet (the Amber Reach's a37..a45 until shared/savannazones.js) has no camps
     let made=0;
     for(let tries=0;tries<4000&&made<total;tries++){
       const spread=tries<1200?0.8:0.94, gap=tries<1500?18:tries<2800?13:9;

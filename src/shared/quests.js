@@ -44,7 +44,7 @@ const BOSS_QUESTS=[
   {target:'gloamwarden',from:38,level:40,title:'The Gloam Warden',text:'The keeper of the old lighthouse never left it. Something wearing his coat holds the lamp at the tip of the horn, and the light it gives is black. Put him to rest.'}];
 function bossQuestFor(E){ const ok=BOSS_QUESTS.filter(b=>E>=b.from); if(!ok.length) return null; return ok.length>1&&Math.random()<0.3?ok[ok.length-2]:ok[ok.length-1]; }
 function genQuest(pl,id){
-  const E=Math.max(1,Math.min(MAX_ZONE_LV,pl)), L=questLevelFor(pl), d=qpick(MON_DEFS.filter(m=>m.level===L)), zn=defZone(d);
+  const E=Math.max(1,Math.min(MAX_ZONE_LV,pl)), L=questLevelFor(pl), d=qpick(MON_DEFS.filter(m=>m.level===L&&defZone(m))), zn=defZone(d);   // (amber: a kind with no zone yet, the Amber Reach's until savannazones.js, is never a notice)
   const big=d.model==='treant', many=d.name+'s', x=Math.random(), bq=bossQuestFor(E);
   let q;
   if(bq && x<0.12) q={kind:'boss',type:'kill',target:bq.target,count:1,level:bq.level,title:bq.title,text:bq.text};
