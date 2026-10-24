@@ -348,6 +348,9 @@ const el=s=>document.querySelector(s);
       G.NETH.cm({t:'cm',f:n,hud:'Mural pieces 2 of 5',a:5,b:[1,2,0],c:{s:1,k:1,n:5},d:{s:1,h:2},e:{s:1,z:50,w:0},fv:{o:30,w:0},g:0,h:{vm:3,hm:1,o:2,b:1,c:0},cd:{A:120}}); G=c.G();
       for(let i=0;i<3;i++) G.CAVE_MP.upd.forEach(f=>f(G.caveMState(),0.05,i));
       ok('floor '+n+': the state message shows the HUD line, opens the vault\'s seal here too, and the props follow it',el('#cvMethod').textContent==='Mural pieces 2 of 5'&&!el('#cvMethod').hidden&&G.CAVE_M.seal===true&&R.B.sealed.every(k=>R.B.cells[k]===1)&&G.CAVE_MP.carry.visible===true&&errs.length===0,errs.join('|'));
+      G.NETH.cm({t:'cm',f:n,hud:'x',a:31,b:[2,2,1],c:{s:0},d:{s:0,h:0},e:{s:1,z:80,w:1},fv:{o:0,w:12},g:9,h:{vm:255,hm:63,o:3,b:2,c:1},cd:{D:60}}); G=c.G();   // the other states: tremor warning, a mole running, the guardian awake, everything held
+      for(let i=0;i<3;i++) G.CAVE_MP.upd.forEach(f=>f(G.caveMState(),0.05,i+9));
+      ok('floor '+n+': the props follow the tremor warning, the mole, the awake guardian and a full anvil without error',errs.length===0&&G.CAVE_MP.carry.visible===false,errs.join('|'));
       G.NETH.cm({t:'cm',f:n,hud:'',fv:{o:0,w:0}}); G=c.G(); ok('floor '+n+': the seal closes again and the HUD line hides',R.B.sealed.every(k=>R.B.cells[k]===0)&&el('#cvMethod').hidden);
       G.caveRunLeave(); G=c.G();
       ok('floor '+n+': leaving disposes the props and gives the rock back',G.CAVE_MP.g===null&&G.CAVE_MP.upd.length===0&&G.CAVE_RUN()===null&&G.caveBake(n).sealed.every(k=>G.caveBake(n).cells[k]===0));
