@@ -44,7 +44,7 @@ function skInfoHtml(C,cls){
   if(pass) stats=passiveText(s.id,L);
   else stats=abilityCd(s,S,C.lv,cls,rlUiCdr()).toFixed(1)+' s cooldown'+(s.buff?'':' · '+Math.round(s.mult*skillPower(L)*100)+'% damage')
     +(s.buff?' · +'+Math.round((s.buff.dmg-1)*skillPower(L)*100)+'% damage for '+(s.buff.dur+0.5*(L-1))+' s':'');
-  const boss=s.drop?BOSS_DEFS.find(b=>b.def.id===s.drop).short:'';   // the boss that drops it (boss skills are not sold and cannot be upgraded yet)
+  const boss=s.drop?(BOSS_DEFS.find(b=>b.def.id===s.drop)||SAV_BOSS_ROWS.find(b=>b.def.id===s.drop)).short:'';   // the boss that drops it (boss skills are not sold and cannot be upgraded yet)
   const tags=`<span class="sk-tag">${pass?'Passive':(s.cls==='any'?'Any class':CLASSES[s.cls].name)+' · '+KIND_TITLE[s.slot]}${boss?' · dropped by '+boss:''}${s.set?' · '+SS_SETS[s.set].name+' ('+SS_SETS[s.set].char.name+'\'s set)':''}</span>${pass?'':elChip(el)}`;
   let acts='';
   if(own){
@@ -108,7 +108,7 @@ function renderSkills(){
 function skEquip(id,idx){
   const s=skillDef(id); if(!s) return;
   const no=text=>{ toast(text,'bad'); UI_SFX.error(); };
-  if(!(GEAR.skills||newSkills()).owned.includes(id)){ no(s.name+' is not learned yet: '+(s.set?'it is a signature skill, earned from a boss or a dungeon':s.drop?BOSS_DEFS.find(b=>b.def.id===s.drop).short+' drops it':'Aldric (or Master Ryu in Hanami) teaches it at the well')); return; }
+  if(!(GEAR.skills||newSkills()).owned.includes(id)){ no(s.name+' is not learned yet: '+(s.set?'it is a signature skill, earned from a boss or a dungeon':s.drop?(BOSS_DEFS.find(b=>b.def.id===s.drop)||SAV_BOSS_ROWS.find(b=>b.def.id===s.drop)).short+' drops it':'Aldric (or Master Ryu in Hanami) teaches it at the well')); return; }
   if(s.slot==='basic'&&!canSwap(s.cls,'basic',GEAR.skills)){ no('Only mages can change their basic attack'); return; }
   if(PL.level<needLv(s)){ no(s.name+' needs level '+needLv(s)); return; }
   if(s.slot==='passive'&&idx!==undefined&&idx>=passiveOpen(PL.level)){ no('Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx]); return; }

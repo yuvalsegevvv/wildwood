@@ -10,7 +10,7 @@
                                               only half as hard; prison: only that player)
    light   a cone drawn in gold that hurts nobody (the Gloam Warden's beam: stand in it); dmg 0
    addTeleS returns the telegraph: give it e.hit(p) (an extra effect on each player it hits) or e.done(e) (after it went off).
-   Zones ('zone' / 'zend'): ember (a fire pool), whirl (a whirlpool: the client pulls you in), whiteout (a safe circle that closes from r to b), blizzard (the
+   Zones ('zone' / 'zend'): ember (a fire pool), grassfire (Old Thunder's: a fire patch that throws another as it dies), greyfloor (Oldhorn's grey patch, lasts until its carrier falls), whirl (a whirlpool: the client pulls you in), whiteout (a safe circle that closes from r to b), blizzard (the
    arena, after a windup a: hurts anyone not next to a live warm core). Walls ('wall'): a tidal wave rolling across the arena with a gap in it. Orbs ('proj',
    'pend': the client draws them like a player's projectiles). Effects on a player ('pfx', the client applies them to itself): root, slow, push. Everything
    the boss set up is undone by clearBossFxS. B.q holds timed steps: laterS(B,seconds,fn). */
@@ -64,7 +64,7 @@ function addZoneS(B,kind,x,z,r,dur,a,b){
 }
 const whiteR=zn=>lerp(zn.r,zn.b,clamp(zn.t/(zn.dur*0.8)));   // a whiteout's safe radius now: it closes over the first 80% of its life
 const shelteredS=(B,p)=>B.adds.some(a=>a.def.id==='warmcore'&&!a.dead&&!a.remove&&Math.hypot(a.x-p.x,a.z-p.z)<6.5);
-const ZONE_HIT={ember:[0.6,0.2],whirl:[0.5,0.18],whiteout:[0.8,0.3],sandstorm:[0.8,0.3],blizzard:[0.9,0.28],gloom:[0.6,0.16]};   // seconds between hits, share of the boss's hit each does
+const ZONE_HIT={ember:[0.6,0.2],whirl:[0.5,0.18],whiteout:[0.8,0.3],sandstorm:[0.8,0.3],blizzard:[0.9,0.28],gloom:[0.6,0.16],grassfire:[0.6,0.2],greyfloor:[0.7,0.14]};   // seconds between hits, share of the boss's hit each does
 function tickZoneS(B,m,zn,dt){
   zn.tick-=dt; if(zn.tick>0) return;
   const K=ZONE_HIT[zn.kind]; zn.tick=K[0];
