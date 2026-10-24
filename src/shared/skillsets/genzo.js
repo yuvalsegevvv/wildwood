@@ -13,11 +13,7 @@ defineSkillSet({
     1:{bound:'class',
        skill:{
          warrior:{name:'Bell Mallet', desc:'Strike with the bronze mallet: a solid blow, and everything it hits turns on you for 3 seconds. Leaves a Toll on the target.', cd:1.0, range:3.4, mult:0.9, act:['genzo1w',0.55,0.4], anim:'slash',
-                  fx:{cone:{r:3.4, arc:1.0, kb:2, taunt:{dur:3}, mark:{id:'toll', n:1, dur:12, max:5}}}},
-         archer:{name:'Calling Arrow', desc:'A whistling arrow at up to 20 m that makes its target come for you for 3 seconds. Leaves a Toll.', cd:1.0, range:20, mult:0.85, act:['genzo1a',0.55,0.5], anim:'shoot',
-                 fx:{proj:{kind:'frost', speed:44, turn:9, life:0.55, taunt:{dur:3}, mark:{id:'toll', n:1, dur:12, max:5}}}},
-         mage:{name:'Chime Bolt', desc:'A ringing bolt that leaves a small ward round you (a shield of 5% of your health for 5 seconds); what it hits turns on you for 3 seconds. Leaves a Toll.', cd:1.2, range:22, mult:0.95, act:['genzo1m',0.6,0.5], anim:'cast',
-               fx:{proj:{kind:'frost', speed:30, turn:8, life:1.1, taunt:{dur:3}, mark:{id:'toll', n:1, dur:12, max:5}}, shield:{v:0.05, dur:5, r:0.1}}}},
+                  fx:{cone:{r:3.4, arc:1.0, kb:2, taunt:{dur:3}, mark:{id:'toll', n:1, dur:12, max:5}}}}},
        passive:{name:'Bronze Skin', text:'{}% less damage taken while you hold an enemy (one you taunted)', stat:'red', v:[0.10, 0.01], when:{taunting:true}}},
     2:{bound:'any',
        skill:{any:{name:'Ring the Hour', desc:'Strike the bell: a wide taunt (4 seconds, 12 m), 20% less damage taken for you and your party for 6 seconds and a shield worth 8% of your health, and 3% more for each Toll on the enemies near you. The note also mends you and your allies for 6% of maximum health. What is close is shoved back.', cd:16, range:6, mult:0.75, act:['genzo2x',0.7,0.45], anim:'nova',

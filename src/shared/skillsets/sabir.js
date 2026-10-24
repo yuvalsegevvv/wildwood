@@ -13,12 +13,8 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Scimitar Slash', desc:'A hard curved cut across the front: heavy for a basic attack. Leaves Loot.', cd:1.1, range:3.4, mult:2.1, act:['sabir1w',0.5,0.35], anim:'slash',
-                  fx:{cone:{r:3.4, arc:1.4, mark:{id:'loot', n:1, dur:12, max:5}}}},
          archer:{name:'Raider Shot', desc:'A short recurve bow loosed fast: heavy for a basic attack. Leaves Loot.', cd:1.0, range:26, mult:2.0, act:['sabir1a',0.5,0.45], anim:'shoot',
-                 fx:{proj:{kind:'ember', speed:50, turn:7, life:0.8, mark:{id:'loot', n:1, dur:12, max:5}}}},
-         mage:{name:'Lamp-Oil Flick', desc:'Flick burning oil from a lamp: heavy for a basic attack. Leaves Loot.', cd:1.1, range:22, mult:2.3, act:['sabir1m',0.55,0.5], anim:'cast',
-               fx:{proj:{kind:'ember', speed:34, turn:8, life:0.9, mark:{id:'loot', n:1, dur:12, max:5}}}}},
+                 fx:{proj:{kind:'ember', speed:50, turn:7, life:0.8, mark:{id:'loot', n:1, dur:12, max:5}}},style:'press',hold:{x:{burn:{dur:4,k:0.3}}}}},
        passive:{name:'Finish the Wounded', text:'+{}% damage against a target below 35% health', stat:'dmg', v:[0.12, 0.02], when:{tgtHp:{below:0.35}}}},
     2:{bound:'any',
        skill:{any:{name:'Smash and Grab', desc:'Dash up to 9 m to your target and hit everything round it, setting it ablaze for 4 seconds. Leaves Loot on each.', cd:8, range:9, mult:1.5, act:['sabir2x',0.5,0.3], anim:'slash',

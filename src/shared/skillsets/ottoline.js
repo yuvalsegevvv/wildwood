@@ -13,10 +13,6 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Puppet Jab', desc:'A needle-sharp jab: a hit that makes the target deal 5% less damage for 3 seconds (3% less for each String) and quickens your crits for the party. Leaves a String.', cd:0.9, range:3.4, mult:1.2, act:['ottoline1w',0.5,0.35], anim:'slash',
-                  fx:{cone:{r:3.4, arc:1.0, status:{kind:'weak', v:0.05, dur:3, perMark:{id:'string', v:0.03}}, mark:{id:'string', n:1, dur:12, max:3}}, ally:{kind:'crit', v:0.04, dur:3, r:18}}},
-         archer:{name:'Thread Shot', desc:'A bolt trailing a black thread: a hit that makes the target deal 5% less damage for 3 seconds (3% less for each String) and gives you and your allies 4% more crit chance. Leaves a String.', cd:0.9, range:28, mult:1.1, act:['ottoline1a',0.55,0.5], anim:'shoot',
-                 fx:{proj:{kind:'spirit', speed:44, turn:9, life:0.9, status:{kind:'weak', v:0.05, dur:3, perMark:{id:'string', v:0.03}}, mark:{id:'string', n:1, dur:12, max:3}}, ally:{kind:'crit', v:0.04, dur:3, r:18}}},
          mage:{name:'Cat\'s Cradle', desc:'A web of dark thread: a hit that makes the target deal 5% less damage for 3 seconds (3% less for each String) and gives you and your allies 4% more crit chance. Leaves a String.', cd:1.1, range:24, mult:1.3, act:['ottoline1m',0.6,0.5], anim:'cast',
                fx:{proj:{kind:'spirit', speed:32, turn:8, life:1.0, status:{kind:'weak', v:0.05, dur:3, perMark:{id:'string', v:0.03}}, mark:{id:'string', n:1, dur:12, max:3}}, ally:{kind:'crit', v:0.04, dur:3, r:18}}}},
        passive:{name:'Pulled Strings', text:'+{}% critical hit chance against a target carrying Strings', stat:'crit', v:[0.10, 0.01], when:{marked:'string'}}},

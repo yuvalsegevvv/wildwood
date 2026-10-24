@@ -184,7 +184,6 @@ function gainExpP(p,v,monId){
 function hurtP(p,v,m,by){   // returns the damage taken; by: the fighter who hit (pvp, no monster)
   if(p.dead||(p.cave&&p.cave.bur>S.t)) return 0;   // cave: Burrow, nothing can hit you
   const K=m?monK(m,p):null, ld=m?Math.max(0,K.lv-p.level):0;
-  if(m&&!p.pv&&!m.pl&&rlResists(rlP(p,'res'),m.T.acc)) v=Math.max(1,Math.round(v/2));   // rolls: a resisted hit does half (the monster's accuracy against your resistance)
   v=Math.max(1,Math.round(v*(K?K.dmg:1)*rxWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red')-ssCondP(p,'red',m))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))*(1-allyP(p,'guard')))));   // reactions: weak lowers what a monster deals
   v=caveHurtS(p,v,m); if(v<=0){ p.lastHit=S.t; return 0; }   // cave: Shield-Wall, Stopped Hour, Bell Echo, Embalm, Eagle's Perch
   if(p.shield&&p.shield.until>S.t&&p.shield.v>0){ const a=Math.min(v,p.shield.v); p.shield.v-=a; v-=a; if(p.shield.v<=0&&!p.shield.done){ p.shield.done=true; ssShieldBreakS(p); } if(v<=0){ p.lastHit=S.t; return 0; } }   // skillsets: a shield soaks the hit first

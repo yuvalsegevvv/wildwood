@@ -13,10 +13,6 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Rallying Strike', desc:'Swing the banner pole: a damaging hit that quickens you and your allies within 18 m (10% shorter cooldowns for 3 seconds). Leaves a Fervor.', cd:0.9, range:3.6, mult:1.35, act:['dunstan1w',0.5,0.35], anim:'slash',
-                  fx:{cone:{r:3.6, arc:1.2, mark:{id:'fervor', n:1, dur:12, max:5}}, ally:{kind:'haste', v:0.10, dur:3, r:18}}},
-         archer:{name:'Signal Arrow', desc:'An arrow with a pennant on it: a damaging hit that quickens you and your allies within 18 m (10% shorter cooldowns for 3 seconds). Leaves a Fervor.', cd:0.9, range:30, mult:1.25, act:['dunstan1a',0.55,0.5], anim:'shoot',
-                 fx:{proj:{kind:'ember', speed:44, turn:9, life:0.9, mark:{id:'fervor', n:1, dur:12, max:5}}, ally:{kind:'haste', v:0.10, dur:3, r:18}}},
          mage:{name:'Beacon Bolt', desc:'A beacon of flame: a damaging hit that quickens you and your allies within 18 m (10% shorter cooldowns for 3 seconds). Leaves a Fervor.', cd:1.1, range:24, mult:1.5, act:['dunstan1m',0.6,0.5], anim:'cast',
                fx:{proj:{kind:'ember', speed:32, turn:8, life:1.0, mark:{id:'fervor', n:1, dur:12, max:5}}, ally:{kind:'haste', v:0.10, dur:3, r:18}}}},
        passive:{name:'Loud Voice', text:'Your buffs last {}% longer', stat:'buffdur', v:[0.4, 0.05]}},

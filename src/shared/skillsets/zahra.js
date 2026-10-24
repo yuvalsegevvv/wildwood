@@ -12,10 +12,6 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Mirror Strike', desc:'Swing the polished disc: a damaging hit that shields you and your allies within 18 m for a moment (10% less damage taken for 3 seconds). Leaves a Grain.', cd:0.9, range:3.6, mult:1.55, act:['zahra1w',0.5,0.35], anim:'slash',
-                  fx:{cone:{r:3.6, arc:1.2, mark:{id:'grain', n:1, dur:12, max:5}}, ally:{kind:'guard', v:0.10, dur:3, r:18}}},
-         archer:{name:'Noon Arrow', desc:'An arrow that catches the sun: a damaging hit that shields you and your allies within 18 m for a moment (10% less damage taken for 3 seconds). Leaves a Grain.', cd:0.9, range:30, mult:1.45, act:['zahra1a',0.55,0.5], anim:'shoot',
-                 fx:{proj:{kind:'frost', speed:44, turn:9, life:0.9, mark:{id:'grain', n:1, dur:12, max:5}}, ally:{kind:'guard', v:0.10, dur:3, r:18}}},
          mage:{name:'Sunlit Bolt', desc:'A bolt of reflected light: a damaging hit that shields you and your allies within 18 m for a moment (10% less damage taken for 3 seconds). Leaves a Grain.', cd:1.1, range:24, mult:1.7, act:['zahra1m',0.6,0.5], anim:'cast',
                fx:{proj:{kind:'frost', speed:32, turn:8, life:1.0, mark:{id:'grain', n:1, dur:12, max:5}}, ally:{kind:'guard', v:0.10, dur:3, r:18}}}},
        passive:{name:'Patient Sand', text:'Your buffs last {}% longer', stat:'buffdur', v:[0.4, 0.05]}},

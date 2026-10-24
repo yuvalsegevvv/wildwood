@@ -82,6 +82,7 @@ shared
   reactions-chart.js                 The fifteen elemental reactions as data (one defineReaction row per pair of elements; the names are placeholders)
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
   skillsets.js                       Skill sets (rules, pure): the registry defineSkillSet (one file per set in shared/skillsets/), its checks, the expansion into SKILLS / PASSIVES rows, counting the worn pieces and the 3- / 5-set bonuses
+  basic-hold.js                      Skill 1 (the basic slot) as an attack-speed skill with two modes (pure): attack speed and charge gain, the press / hold split, and what a held release becomes for each class
   drops.js                           Monster drops (MATS: one material per monster kind), the skills bosses drop (BOSS_SKILLS), and what upgrading a skill costs (upgradeNeeds). Pure.
   items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, and the three profession tools (TOOL_LIST) with the same tiers and rarities (the pendants' rules are in pendants.js, the pieces in dungeon-items.js); prices, drop tables, merging, armour looks, gear helpers (the level-30 dungeon pieces join ITEM in dungeon-items.js). Pure.
   pendants.js                        Pendants, the rules: the five kinds a pendant can be (exp, drop, coin, crit rate, crit damage), their base values and names, their text, and the crit constants and caps rollDmgS uses. The pieces themselves are level-30 dungeon gear (dungeon-items.js). Pure.
@@ -184,6 +185,7 @@ server
   players.js                         Players on the server: records, stats, XP and levels, damage taken, knock-out and respawn, private state ("you")
   monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
+  basic-hold.js                      Skill 1 on the server: attack speed and charge gain of a player, the hold message and its release (how long the player really held), where a mage's held blast lands
   reactions.js                       Reactions on the server: elemental auras and reactions, the flavours as shared statuses on monsters (vuln, weak, burn, slow, stun) and direct application
   skillsets.js                       Skill sets on the server: granting a set's pieces, wearing a piece for all three classes, the loadout cache p.ss (the sets worn and their bonuses)
   amber.js                           Amber on the server: amber (gear.amb, a gear-upgrade material), gems (gear.gem, the premium currency), buying an outfit set for 1000 gems (gear.os), and the one public testing tool that grants gems on every server
@@ -216,7 +218,7 @@ server
   boss.js                            The bosses on the server: engagement, the shared melee (cleave), phases, reset; each boss's own moves are its BOSS_KITS entry (boss-kits-*.js) built on boss-fx.js
   economy.js                         Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), the Soul Hall, testing commands
   dungeon-gear.js                    Dungeon gear on the server: the ring's attack (the pendant's bonuses are read by pendP in players.js), Tempering Stones (the drop that replaces equipment at level 30+, and the `temper` message), the forge's merge rule, a clear's item, testing commands
-  rolls.js                           Rolled stats of level-40 gear on the server: the sums the rest of the game reads (rlP), the reroll stones, sacrificing a level-30+ piece, rolling and rerolling, accuracy and resistance, testing commands
+  rolls.js                           Rolled stats of level-40 gear on the server: the sums the rest of the game reads (rlP), the reroll stones, sacrificing a level-30+ piece, rolling and rerolling, testing commands
   main-quest.js                      The main quest on the server: starting, progressing and handing in steps (MQ in shared/main-quest.js) from what the server sees (talks, kills, system uses, places), rewards, the grey monsters spawned for you
   side-quests.js                     Side quests on the server: starting, progressing and handing in the steps of the side quest chains (SQ in shared/side-quests.js) from talks, kills, quest drops, lore, gathering and places walked to; their rewards (resources, a little XP, the chain's cosmetic)
   professions.js                     Professions on the server: learning at a Wayfarers' Lodge (one in each village), gathering at resource nodes with the right tool after a short cast (they respawn), profession levels, resources kept in gear.res, selling them
@@ -391,6 +393,7 @@ game
   combat/fx-decal.js                 Ground patterns for skill effects: canvas-drawn runes, flames, waves, cracks, gusts, eclipses, stars, frost, leaves and shock rings that replace the plain discs and rings
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
   combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
+  combat/basic-hold.js               Skill 1 on the client: hold the attack button to charge (press = tap), the charge shown on the button, the attack speed / charge gain mirrors, the slower walk while charging
   combat/reactions.js                Reactions on the client: the aura marker over a monster, the reaction's name popping up, the vulnerable / weakened notes
   skillsets/marks.js                 Skill-set marks on the client: pips over a monster, in the colour of the kit (only yours are drawn: marks are personal)
   skillsets/panel.js                 Skill sets in the skills panel and the action bar: each set's own symbol and colour on its pieces (never the generic star), and the set effect (the 3-piece and 5-piece bonuses, lit by how many pieces are worn)

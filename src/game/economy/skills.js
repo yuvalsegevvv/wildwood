@@ -42,7 +42,7 @@ function skInfoHtml(C,cls){
   const PS=S.pass||[], eq=pass?PS.includes(s.id):((abilityOf(s.cls==='any'?cls:s.cls,s.slot,S,C.lv)||{}).id===s.id);   // skillsets: a universal piece is looked up for the class being viewed
   let stats;
   if(pass) stats=passiveText(s.id,L);
-  else stats=abilityCd(s,S,C.lv,cls,rlUiCdr()).toFixed(1)+' s cooldown'+(s.buff?'':' · '+Math.round(s.mult*skillPower(L)*100)+'% damage')
+  else stats=(s.slot==='basic'?bhInterval(s,S,bhSpeedUi(),1,0).toFixed(2)+' s per swing · hold to charge':abilityCd(s,S,C.lv,cls,rlUiCdr()).toFixed(1)+' s cooldown')+(s.buff?'':' · '+Math.round(s.mult*skillPower(L)*100)+'% damage')
     +(s.buff?' · +'+Math.round((s.buff.dmg-1)*skillPower(L)*100)+'% damage for '+(s.buff.dur+0.5*(L-1))+' s':'');
   const boss=s.drop?BOSS_DEFS.find(b=>b.def.id===s.drop).short:'';   // the boss that drops it (boss skills are not sold and cannot be upgraded yet)
   const tags=`<span class="sk-tag">${pass?'Passive':(s.cls==='any'?'Any class':CLASSES[s.cls].name)+' · '+KIND_TITLE[s.slot]}${boss?' · dropped by '+boss:''}${s.set?' · '+SS_SETS[s.set].name+' ('+SS_SETS[s.set].char.name+'\'s set)':''}</span>${pass?'':elChip(el)}`;

@@ -14,12 +14,8 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Anchor Strike', desc:'Slam the shield into the enemy in front of you: a solid blow, and everything it hits turns on you for 3 seconds. Leaves a Fixation on the target.', cd:1.0, range:3.4, mult:0.9, act:['torgeir1w',0.55,0.4], anim:'slash',
-                  fx:{cone:{r:3.4, arc:1.0, kb:2, taunt:{dur:3}, mark:{id:'fixation', n:1, dur:12, max:5}}}},
          archer:{name:'Pinning Shot', desc:'A heavy shot at up to 20 m that pins its target in place and makes it come for you for 3 seconds. Leaves a Fixation.', cd:1.0, range:20, mult:0.85, act:['torgeir1a',0.55,0.5], anim:'shoot',
-                 fx:{proj:{kind:'thorn', speed:44, turn:9, life:0.55, taunt:{dur:3}, mark:{id:'fixation', n:1, dur:12, max:5}}}},
-         mage:{name:'Ward Bolt', desc:'A bolt of stone that leaves a small ward round you (a shield of 5% of your health for 5 seconds); what it hits turns on you for 3 seconds. Leaves a Fixation.', cd:1.2, range:22, mult:0.95, act:['torgeir1m',0.6,0.5], anim:'cast',
-               fx:{proj:{kind:'spore', speed:30, turn:8, life:1.1, taunt:{dur:3}, mark:{id:'fixation', n:1, dur:12, max:5}}, shield:{v:0.05, dur:5, r:0.1}}}},
+                 fx:{proj:{kind:'thorn', speed:44, turn:9, life:0.55, taunt:{dur:3}, mark:{id:'fixation', n:1, dur:12, max:5}}}}},
        passive:{name:'Thick Hide', text:'{}% less damage taken while you hold an enemy (one you taunted)', stat:'red', v:[0.10, 0.01], when:{taunting:true}}},
     2:{bound:'any',
        skill:{any:{name:'Brace', desc:'Plant your feet and raise the shield: a wide taunt (4 seconds, 12 m), 20% less damage taken for you and your party for 6 seconds and a shield worth 8% of your health, and 3% more for each Fixation on the enemies near you. What is close is shoved back.', cd:16, range:6, mult:0.75, act:['torgeir2x',0.7,0.45], anim:'nova',

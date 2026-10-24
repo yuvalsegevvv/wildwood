@@ -13,10 +13,6 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Lantern Swing', desc:'Swing the hooked lantern: a damaging hit that mends whichever of you and your allies within 15 m has the least health, for 2.5% of their maximum health. Weakens what it hits a little (3% less damage dealt, 4 seconds). Leaves a Vigil.', cd:1.0, range:3.2, mult:2.0, act:['hollis1w',0.55,0.4], anim:'slash',
-                  fx:{cone:{r:3.2, arc:1.0, status:{kind:'weak', v:0.03, dur:4}, mark:{id:'vigil', n:1, dur:12, max:5}}, heal:{v:0.025, r:15, lowest:true}}},
-         archer:{name:'Mourning Arrow', desc:'An arrow fletched in black crape: a damaging hit that mends you and every ally within 15 m for 2.5% of the weakest one\'s maximum health. Weakens what it hits a little (3% less damage dealt, 4 seconds). Leaves a Vigil.', cd:0.9, range:28, mult:1.75, act:['hollis1a',0.55,0.5], anim:'shoot',
-                 fx:{proj:{kind:'spore', speed:44, turn:9, life:0.9, status:{kind:'weak', v:0.03, dur:4}, mark:{id:'vigil', n:1, dur:12, max:5}}, heal:{v:0.025, r:15, lowest:true}}},
          mage:{name:'Candle Bolt', desc:'A heavy drop of dark candle-flame: a damaging hit that mends the one of you with the least health for 2.5% of their maximum. Weakens what it hits a little (3% less damage dealt, 4 seconds). Leaves a Vigil.', cd:1.1, range:24, mult:2.3, act:['hollis1m',0.6,0.5], anim:'cast',
                fx:{proj:{kind:'spore', speed:32, turn:8, life:1.0, status:{kind:'weak', v:0.03, dur:4}, mark:{id:'vigil', n:1, dur:12, max:5}}, heal:{v:0.025, r:15, lowest:true}}}},
        passive:{name:'Steady Flame', text:'Your heals and the regeneration you give are {}% stronger (still capped)', stat:'heal', v:[0.25, 0.03]}},

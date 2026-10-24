@@ -69,6 +69,7 @@ function ladder(env,opts){
     x.ssGrantSetP(p,id);
     for(const cls of classes){
       const ids=P.map(q=>q.bound==='any'?q.ids[0]:q.ids.find(i=>x.SKILLS[i].cls===cls)), pass=P.map(q=>q.passive);
+      if(!ids.every(Boolean)) continue;   // basic-hold: skill 1 belongs to one class, the other classes have no version of the set
       S.bonus=inert; wear(cls,ids,[]); const pieces=rotation(secs); S.bonus=bonus;
       wear(cls,ids,[]); const three=rotation(secs);
       wear(cls,ids,[pass[0],pass[1]]); const five=rotation(secs);
@@ -85,6 +86,7 @@ function ladder(env,opts){
 const pct=(a,b)=>b>0?Math.round(a/b*100):0;
 // the average over the classes tested of each configuration's damage as a percent of that class's baseline
 function summarize(rows,classes){
+  classes=classes.filter(c=>rows[c]);   // basic-hold: a set's skill 1 is for one class, only that class has a row
   const avg=f=>classes.reduce((a,c)=>a+f(rows[c]),0)/classes.length, S={};
   for(const k of ['pieces','three','five','six']){ S[k]=Math.round(avg(r=>pct(r[k].single,r.base.single))); S[k+'Pack']=Math.round(avg(r=>pct(r[k].pack,r.base.pack))); }
   if(classes.every(c=>rows[c].c1)){   // the slot-4 column: the gain over the full set (all 6), in percent, single target; level 1 and level 5

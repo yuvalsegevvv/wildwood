@@ -23,7 +23,7 @@ ok('only risk, safe and grind may be a hybrid; Sazanka\'s air is her first posit
 ok('Tansy is pure basic: every piece, passive and bonus element-less',PIECES('tansy').every(i=>x.SKILLS[i].el==='basic')&&[1,2,3].every(n=>x.PASSIVES[SET('tansy').pos[n].passive].el==='basic')&&[3,5].every(t=>SET('tansy').bonus[t].el==='basic'));
 ok('each set names its outfit, and that outfit exists (game/outfits/<id>.js)',IDS.every(i=>SET(i).outfit===i&&fs.existsSync(path.join(SRC,'game','outfits',i+'.js'))));
 ok('each set has a look (game/skillsets/look-<id>.js) and a palette of three colours',IDS.every(i=>fs.existsSync(path.join(SRC,'game','skillsets','look-'+i+'.js'))&&['main','accent','glow'].every(k=>Number.isInteger(SET(i).pal[k]))));
-ok('every active deals damage, position 1 has three class versions, positions 2 and 3 are universal (Sorrel\'s burst is class-bound: it needs a weapon)',IDS.every(i=>PIECES(i).every(id=>x.SKILLS[id].mult>0))&&IDS.every(i=>SET(i).pos[1].ids.length===3&&SET(i).pos[2].bound==='any'&&(i==='sorrel'?SET(i).pos[3].bound==='class':SET(i).pos[3].bound==='any')));
+ok('every active deals damage, position 1 has one class version, positions 2 and 3 are universal (Sorrel\'s burst is class-bound: it needs a weapon)',IDS.every(i=>PIECES(i).every(id=>x.SKILLS[id].mult>0))&&IDS.every(i=>SET(i).pos[1].ids.length===1&&SET(i).pos[2].bound==='any'&&(i==='sorrel'?SET(i).pos[3].bound==='class':SET(i).pos[3].bound==='any')));
 ok('each set\'s piece levels are those of its land\'s sources and its dungeon theme exists',IDS.every(i=>{ const S=SET(i); return x.SS_SOURCES[S.land]&&S.pos[1].lv>=15&&S.pos[3].lv>=30; }));
 ok('Tansy, the first grinder, is the easiest to get: friendlier odds on every position',IDS.slice(0,1).every(i=>[1,2,3].every(n=>SET(i).pos[n].from.chance>0.1&&SET(i).pos[n].from.pity>0))&&SET('tansy').pos[3].from.chance>SET('tansy').pos[1].from.chance);
 
@@ -38,17 +38,17 @@ W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); p.dead=false; p.h
 const reset=()=>{ x.AREAS.length=0; x.PROJS.length=0; stand(p,0,0); p.ally=null; p.shield=null; stand(pb,3,0); stand(pc,0,40); for(const m of [m1,m2,m3]) put(m,0,-30); };
 const still=fn=>{ const R=Math.random; Math.random=()=>0.5; try{ return fn(); } finally{ Math.random=R; } };
 const lost=(m,fn)=>{ const h=m.hp; fn(); return h-m.hp; };
-const cast=(id,tgt,o)=>{ const s=x.SKILLS[id]; x.resolveFxS(p,Object.assign({fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:id},o||{}),tgt||null); };
+const cast=(id,tgt,o)=>{ const s=x.SKILLS[id]; x.resolveFxS(p,Object.assign({fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:id},o||{}),tgt||null); if(s.fx.proj) for(let i=0;i<30;i++) W.tick(0.05); };
 ok('the stage: a and b are one party, c is not',x.partyOf(p)&&x.partyOf(p)===x.partyOf(pb)&&!x.partyOf(pc));
 
 // wearing a set: nothing worn, then its three actives and the first n passives (n 3 = all six pieces: both bonuses)
 const clear=()=>{ const K=p.gear.skills; for(const c of ['warrior','archer','mage']) K.eq[c]={basic:null,skill:null,burst:null}; K.pass=K.pass.map(()=>null); p.ssIcd={}; p.killTs=[]; p.cd={basic:0,skill:0,burst:0}; p.ally=null; p.shield=null; x.recalcP(p); };
-const wear=(id,n)=>{ clear(); x.ssGrantSetP(p,id); const S=SET(id); for(const pos of [1,2,3]){ const P=S.pos[pos], sid=P.bound==='any'?P.ids[0]:P.ids.find(i=>x.SKILLS[i].cls===x.clsOfP(p)); x.ssEquipPieceP(p,x.SKILLS[sid]); } const pass=[1,2,3].map(k=>S.pos[k].passive); p.gear.skills.pass=pass.map((pid,k)=>k<n?pid:null); x.recalcP(p); };
+const wear=(id,n)=>{ clear(); x.ssGrantSetP(p,id); const S=SET(id); for(const pos of [1,2,3]){ const P=S.pos[pos], sid=P.bound==='any'?P.ids[0]:P.ids.find(i=>x.SKILLS[i].cls===x.clsOfP(p))||P.ids[0]; x.ssEquipPieceP(p,x.SKILLS[sid]); } const pass=[1,2,3].map(k=>S.pos[k].passive); p.gear.skills.pass=pass.map((pid,k)=>k<n?pid:null); x.recalcP(p); };
 const hpOf=q=>q.hp/q.maxHp, pct=v=>Math.round(v*1000)/10;
 
 // ---- Tansy ----
 clear(); reset(); put(m1,0,-2); put(m2,0,-6.5); put(m3,0,3);
-{ const a=lost(m1,()=>still(()=>cast('tansy_1_warrior',m1))), behind=lost(m3,()=>still(()=>cast('tansy_1_warrior',m1)));
+{ const a=lost(m1,()=>still(()=>cast('tansy_1_archer',m1))), behind=lost(m3,()=>still(()=>cast('tansy_1_archer',m1)));
   ok('Tansy: Windrow Sweep (warrior) is a wide light arc: it hits what is in front, a monster beside it too, but not one behind her',a>0&&behind===0,a+' / '+behind); }
 reset(); put(m1,4,-5); put(m2,-5,-3); put(m3,0,-9);
 ok('Tansy: Gather In is a field wider than a camp\'s gap that PULLS (negative knockback) and nicks everything in it',(()=>{ const z=x.SKILLS.tansy_2_any.fx.zone; return z.kb<0&&z.r>9&&x.SKILLS.tansy_2_any.range>=16; })());
@@ -67,7 +67,7 @@ ok('Tansy: Wide Berth makes every ring, cone and field 25% wider (the area stat)
 
 // ---- Torgeir ----
 reset(); put(m1,0,-2.5); put(m2,0,-6); pb.dead=false; m1.aggro=true; m1.tgt='b';
-still(()=>cast('torgeir_1_warrior',m1));
+still(()=>cast('torgeir_1_archer',m1));
 ok('Torgeir: Anchor Strike taunts what it hits (the monster in the cone comes for him, not for the party member it was on; one outside the cone does not) and leaves a Fixation',x.ssTauntedBy(m1)===p&&!x.ssTauntedBy(m2)&&x.ssMarkN(p,m1,'fixation')===1,String(x.ssMarkN(p,m1,'fixation')));
 reset(); put(m1,0,-9); put(m2,2,-9); put(m3,0,-25);
 { cast('torgeir_1_archer',m1); tick(30); ok('Torgeir: Pinning Shot taunts what the arrow hits, from range (20 m): the target comes for him, the monster beside it does not',x.ssTauntedBy(m1)===p&&!x.ssTauntedBy(m2)&&x.ssMarkN(p,m1,'fixation')===1); x.PROJS.length=0; }
@@ -80,7 +80,7 @@ reset(); put(m1,0,-3); put(m2,0,-5);
   ok('Torgeir: Hold the Line shields the party for 14% + 3% a Fixation (counted up to 5: 29%), guards 30%, taunts for 6 s, and THEN spends every Fixation for extra damage',x.ssMarkN(p,m1,'fixation')===0&&x.ssMarkN(p,m2,'fixation')===0&&ring>r0*2.2&&near(x.allyP(pb,'guard'),0.3)&&near(pb.shield.v,pb.maxHp*0.29,1)&&x.ssTauntedBy(m1)===p,Math.round(ring)+' vs '+Math.round(r0)+', shield '+pct(pb.shield.v/pb.maxHp)); }
 wear('torgeir',3); reset(); put(m1,0,-3);
 ok('Torgeir: Thick Hide gives 10% less damage taken only while he holds an enemy (one he taunted)',x.ssCondP(p,'red',m1)===0&&(m1.taunt={by:p.id,until:x.S.t+5},near(x.ssCondP(p,'red',m1),0.10)),String(x.ssCondP(p,'red',m1)));
-{ reset(); put(m1,0,-2.5); p.shield=null; p.ssIcd={}; still(()=>cast('torgeir_1_warrior',m1)); ok('Torgeir: First Contact: the first taunt of a fight raises a shield of 10% of his health',near(p.shield&&p.shield.v,p.maxHp*0.10,1),pct(p.shield&&p.shield.v/p.maxHp)); }
+{ reset(); put(m1,0,-2.5); p.shield=null; p.ssIcd={}; still(()=>cast('torgeir_1_archer',m1)); ok('Torgeir: First Contact: the first taunt of a fight raises a shield of 10% of his health',near(p.shield&&p.shield.v,p.maxHp*0.10,1),pct(p.shield&&p.shield.v/p.maxHp)); }
 { reset(); put(m1,0,-3); p.ssIcd={}; p.shield={v:100,v0:100,until:x.S.t+8}; const h=m1.hp; x.hurtP(p,300,m1);
   ok('Torgeir: Shattering Return: when a shield of his breaks the earth answers (a ring round him hits the monster beside him)',m1.hp<h&&!p.dead,Math.round(h-m1.hp)); }
 clear();
@@ -159,7 +159,7 @@ ok('...and no heal of his is above the cap of half the maximum health a cast',ID
 
 // ---- Dunstan ----
 clear(); reset(); put(m1,0,-2);
-{ still(()=>cast('dunstan_1_warrior',m1)); ok('Dunstan: Rallying Strike quickens him and the party member (10% shorter cooldowns for 3 s), not the third player; leaves a Fervor',near(x.allyP(p,'haste'),0.1)&&near(x.allyP(pb,'haste'),0.1)&&x.allyP(pc,'haste')===0&&x.ssMarkN(p,m1,'fervor')===1); }
+{ still(()=>cast('dunstan_1_mage',m1)); ok('Dunstan: Rallying Strike quickens him and the party member (10% shorter cooldowns for 3 s), not the third player; leaves a Fervor',near(x.allyP(p,'haste'),0.1)&&near(x.allyP(pb,'haste'),0.1)&&x.allyP(pc,'haste')===0&&x.ssMarkN(p,m1,'fervor')===1); }
 reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'fervor',n:5,dur:12,max:5});
 { still(()=>cast('dunstan_2_any',null)); ok('Dunstan: Cry of Valor gives the party 10% more damage for 10 s, 2% more for each Fervor near him (five: 20%), and then spends the Fervor for damage',near(x.allyP(pb,'might'),0.20)&&x.ssMarkN(p,m1,'fervor')===0,String(x.allyP(pb,'might')));
   put(m2,0,-3); m2.st=null; const base=lost(m2,()=>still(()=>x.damageMonsterS(m2,1,pb,pb.x,pb.z,0,'basic'))); pb.ally=null; put(m2,0,-3); const plain=lost(m2,()=>still(()=>x.damageMonsterS(m2,1,pb,pb.x,pb.z,0,'basic')));

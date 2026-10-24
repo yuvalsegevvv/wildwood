@@ -13,12 +13,8 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Eel Spear', desc:'Throw a barbed spear at up to 24 m: a clean, heavy cast for a basic attack.', cd:1.1, range:24, mult:2.5, act:['pell1w',0.55,0.45], anim:'slash',
-                  fx:{proj:{kind:'thorn', speed:46, turn:6, life:0.7}, rangeScale:{from:6, to:24, k:1.4}}},
          archer:{name:'Torch Arrow', desc:'A burning arrow from far away: a precise, heavy shot for a basic attack.', cd:0.9, range:34, mult:2.4, act:['pell1a',0.55,0.5], anim:'shoot',
-                 fx:{proj:{kind:'ember', speed:54, turn:6, life:0.9}, rangeScale:{from:6, to:30, k:1.4}}},
-         mage:{name:'Spark Dart', desc:'A dart of torch fire flicked at up to 26 m: a clean, heavy cast for a basic attack.', cd:1.0, range:26, mult:2.4, act:['pell1m',0.55,0.5], anim:'cast',
-               fx:{proj:{kind:'ember', speed:44, turn:6, life:0.9}, rangeScale:{from:6, to:26, k:1.4}}}},
+                 fx:{proj:{kind:'ember', speed:54, turn:6, life:0.9}, rangeScale:{from:6, to:30, k:1.4}},style:'hold',hold:{x:{burn:{dur:4,k:0.3}}}}},
        passive:{name:'Steady Hand', text:'+{}% damage while you have stood still for 2 seconds', stat:'dmg', v:[0.16, 0.02], when:{still:2}}},
     2:{bound:'any',
        skill:{any:{name:'Dim the Lamp', desc:'Swing the lantern low and loose a spotting flare at up to 34 m: it puts a Lure on the target and spreads the flame round it, so the enemies within 6 m carry its element too and your partners\' hits react on all of them.', cd:8, range:34, mult:1.6, act:['pell2x',0.6,0.5], anim:'shoot',

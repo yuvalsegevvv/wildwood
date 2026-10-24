@@ -15,11 +15,7 @@ defineSkillSet({
     1:{bound:'class',
        skill:{
          warrior:{name:'Flash Lens', desc:'Bash with the lantern shield: a hit that flashes, and what it lit takes 5% more damage from everyone for 3 seconds, and 3% more for each Glare it carries. Leaves a Glare.', cd:1.0, range:3.2, mult:1.05, act:['corvin1w',0.55,0.4], anim:'slash',
-                  fx:{cone:{r:3.2, arc:0.9, status:{kind:'vuln', v:0.05, dur:3, perMark:{id:'glare', v:0.03}}, mark:{id:'glare', n:1, dur:10, max:3}}}},
-         archer:{name:'Glint Arrow', desc:'An arrow with a lens for a head: it flashes where it lands, and the target takes 5% more damage from everyone for 3 seconds (3% more for each Glare). Leaves a Glare.', cd:0.9, range:28, mult:1.0, act:['corvin1a',0.55,0.5], anim:'shoot',
-                 fx:{proj:{kind:'thorn', speed:46, turn:9, life:0.8, status:{kind:'vuln', v:0.05, dur:3, perMark:{id:'glare', v:0.03}}, mark:{id:'glare', n:1, dur:10, max:3}}}},
-         mage:{name:'Spark Lens', desc:'A spark focused through a lens: it flashes on the target, which takes 5% more damage from everyone for 3 seconds (3% more for each Glare). Leaves a Glare.', cd:1.1, range:24, mult:1.2, act:['corvin1m',0.6,0.5], anim:'cast',
-               fx:{proj:{kind:'spirit', speed:34, turn:8, life:0.9, status:{kind:'vuln', v:0.05, dur:3, perMark:{id:'glare', v:0.03}}, mark:{id:'glare', n:1, dur:10, max:3}}}}},
+                  fx:{cone:{r:3.2, arc:0.9, status:{kind:'vuln', v:0.05, dur:3, perMark:{id:'glare', v:0.03}}, mark:{id:'glare', n:1, dur:10, max:3}}},hold:{x:{status:{kind:'vuln',v:0.12,dur:6}}}}},
        passive:{name:'Long Wick', text:'Your debuffs last {}% longer', stat:'debuffdur', v:[0.6, 0.1]}},
     2:{bound:'any',
        skill:{any:{name:'Open the Shutter', desc:'Throw the hood of the lantern open over your target\'s area (7 m): for 1.2 seconds it burns on everything inside, which then takes 12% more damage from everyone for 6 seconds (3% more for each Glare). Leaves a Glare on each.', cd:9, range:24, mult:0.72, act:['corvin2x',0.7,0.45], anim:'nova',
