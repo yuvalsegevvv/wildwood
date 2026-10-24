@@ -41,6 +41,7 @@ const wh=x.SKILLS.whirlwind;
   ok('a basic attack charges by its own cooldown (0.6 x 0.7)',p.cave.charge>0&&near(p.cave.charge,x.CAVE_CHARGE_K*x.SKILLS.slash.cd),String(p.cave.charge)); }
 { p.cave.charge=99; pile(p,2); cast('a','skill'); ok('the bar is capped at 100',p.cave.charge===100,String(p.cave.charge)); }
 ok('the client is told the charge (a cave message with the rounded value)',(inbox.a||[]).filter(m=>m.t==='cave').pop().c===100);
+{ W.receive('a',{t:'dev',cmd:'skills'}); ok('the testing tool "Learn every skill" also grants every cave skill (level 1, a higher level kept)',Object.keys(x.CAVE_SKILLS).length>0&&Object.keys(x.CAVE_SKILLS).every(id=>p.gear.cave.own[id]>=1)); }
 { W.receive('a',{t:'dev',cmd:'caveFull',v:true}); p.cave.charge=5; tick(1); const on=p.cave.charge===100&&p.gear.caveFull===true; W.receive('a',{t:'dev',cmd:'caveFull',v:false}); p.cave.charge=5; tick(1);
   ok('the testing toggle (dev caveFull) pins the charge at 100 while on, saved in gear; off, the charge is left alone',on&&p.cave.charge===5&&p.gear.caveFull===false,String(p.cave.charge)); }
 // ---- the set bonus (pure rule + a real cast) ----

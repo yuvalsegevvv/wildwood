@@ -163,7 +163,7 @@ function devP(p,msg){
   else if(c==='giveAll'){ giveAllP(p); toastTo(p.id,'Every item added to your bag','good'); }
   else if(c==='caveFull'){ p.gear.caveFull=!!msg.v; p.dirty=true; }   // cave: the 4th slot's charge always full (testing; caveTickP)
   else if(c==='startAll'){ p.gear.startAll=!!msg.v; if(p.gear.startAll) giveAllP(p); p.dirty=true; }
-  else if(c==='skills'){ for(const id of [...SKILL_IDS,...PASSIVE_IDS]) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Every skill and passive learned','good'); }
+  else if(c==='skills'){ for(const id of [...SKILL_IDS,...PASSIVE_IDS]) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); if(p.gear.cave) for(const id of CAVE_SKILL_IDS) if(!(p.gear.cave.own[id]>0)) p.gear.cave.own[id]=1; p.dirty=true; toastTo(p.id,'Every skill, passive and cave skill learned','good'); }   // cave: the cave skills too, at level 1 (a higher level is kept)
   else if(c==='set'){ const id=String(msg.v||''); if(!SS_SETS[id]){ toastTo(p.id,'No skill set called "'+id+'" ('+(SS_ORDER.join(', ')||'none defined')+')','bad'); return; } ssGrantSetP(p,id); recalcP(p); toastTo(p.id,SS_SETS[id].char.name+'\'s set: all six pieces given','good'); }   // skillsets: give a whole set (testing)
   else if(c==='mats'){ for(const id of MAT_IDS) addMatP(p,id,20); toastTo(p.id,'20 of every monster drop added','good'); }
   else if(c==='weather'){ const k={clear:0,rain:1,storm:2}[msg.v]; if(k===0){ W.kind=0; W.t=0; W.dur=0; ev('weather',0); } else if(k) startWeatherS(k); }
