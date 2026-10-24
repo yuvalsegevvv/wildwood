@@ -144,7 +144,7 @@ function ssRawHitS(m,v,p){
 }
 // ---- triggers ----
 // the piece an action comes from, for the events a client dresses in its outfit's look (a triggered row names itself in src; a skill is a piece when it has a set)
-const ssSrc=a=>a.src||(a.sid&&SS_PIECE_OF[a.sid]?a.sid:undefined);
+const ssSrc=a=>a.src||(a.sid&&SS_PIECE_OF[a.sid]?a.sid:undefined)||(a.cave&&a.set?a.set+'_'+a.id:undefined);   // cave: a set's cave skill names itself "<set>_<skill id>": its zone wears the set's look and the client finds its drawing (game/cave/vis-floor2b.js cvbArea)
 function ssRunRowS(p,r,ctx){
   const m=ctx&&ctx.m&&!ctx.m.dead&&!ctx.m.remove?ctx.m:null;
   if(r.heal){ healP(p,p.maxHp*r.heal*(1+psP(p,'heal')+ssCondP(p,'heal',m))); ev('fxa',p.id,'heal',r.id); }

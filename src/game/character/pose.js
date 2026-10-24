@@ -36,7 +36,7 @@ function poseRig(r,dt,o){
 function animateHiker(dt){
   if(!hiker.rig) return;
   const act=weaponsReady&&!customizing?CB.act:null;
-  hiker.g.position.set(P.x,P.y,P.z); hiker.g.rotation.y=P.face+(act&&act.kind==='spin'?clamp(act.t/act.dur)*TAU*2:0);
+  hiker.g.position.set(P.x,P.y+cvbLift(NET.pid),P.z); hiker.g.rotation.y=P.face+(act&&act.kind==='spin'?clamp(act.t/act.dur)*TAU*2:0);   // cave: cvbLift(pid) is Eagle's Perch carrying the model up
   const sp=customizing?0:Math.hypot(P.vx,P.vz);
   poseRig(hiker.rig,dt,{sp,ph:P.walk,air:started&&!customizing&&!P.ground,headPitch:customizing?-0.04:0,act,hold:weaponsReady?{warrior:'sword'}[clsOf()]:null});
 }

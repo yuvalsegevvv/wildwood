@@ -22,6 +22,7 @@ function onArea(id,kind,x,z,r,dur,owner,el,flags,src){
   }
   AREA_FX.set(id,A);
   if(src) ssLookArea(A,src);   // skillsets: a zone of a piece with a look wears its outfit's ground pattern and motes
+  if(src) cvbArea(A,src);   // cave: a cave skill's zone adds its own things to the set's look (game/cave/vis-floor2b.js)
 }
 function onAreaEnd(id){
   const A=AREA_FX.get(id); if(!A) return; AREA_FX.delete(id);
@@ -137,6 +138,7 @@ function updateSkillFx(dt){
   }
   for(let i=BOLTS.length-1;i>=0;i--){ const b=BOLTS[i]; b.t+=dt; b.o.material.opacity=1-b.t/b.life; if(b.t>=b.life){ scene.remove(b.o); b.o.geometry.dispose(); b.o.material.dispose(); BOLTS.splice(i,1); } }
   updateAuras(); ssLookUpdate(dt);   // skillsets: the particles, ground patterns and auras of the looks
+  cvbFrame(dt);   // cave: the timed effects of the cave skills (game/cave/vis-floor2b.js)
   if(CB.dash){ const d=CB.dash; d.t+=dt; fxpTrail(P.x,P.y+1,P.z,0xffe0b0,0.7,0.3); fxxDust(P.x,P.y,P.z,1,0.6,0x9a8a70); const f=Math.min(1,d.t/d.dur), e=f*(2-f); P.x=d.fx+(d.tx-d.fx)*e; P.z=d.fz+(d.tz-d.fz)*e; P.y=Math.max(P.y,getH(P.x,P.z)); P.vx=P.vz=0; if(f>=1) CB.dash=null; }
 }
 // Charge: dash to the target (or 8 m ahead) right away; the server lands the blow

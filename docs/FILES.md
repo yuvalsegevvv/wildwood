@@ -489,6 +489,10 @@ game
   cave/lift.js                       The Deep Cave's lift on the client: standing on a lift (beside the mouth, or at the start of a floor) the talk key opens a small window listing the surface and every floor, the shut ones greyed with the reason; the server (server/cave-zone.js caveLiftP) does the moving
   cave/methods.js                    The Deep Cave's methods on the client: the server's state message (cm), the one-line HUD for the method you are in, the board (every floor's eight methods and the skill each gives, in the lift window), the tremor and the vault's seal
   cave/method-props.js               The Deep Cave's method props in the floor: the mural and its five pieces, the geodes with their element signs, the plinth, the glow crystal and altar, the sleeping guardian, the vault and its boulders, the mole holes, veins, herbs and the stone anvil
+  cave/vis.js                        The Deep Cave's skill drawings, the registry: CAVE_VIS by skill id (a cast and the later cvfx / cvhand events), and the routes that send them there
+  cave/vis-floor2b.js                The Deep Cave's skill drawings, the kit and floor 2's Marionette: a manager for timed effects (cvbRun), shared helpers, and the hooks for zones, the lift and the lane's speed
+  cave/vis-floor3.js                 The Deep Cave's skill drawings for floor 3 (the +2 sets): Tidepool, Intermission, Sound the Charge, Eagle's Perch, Stopped Hour and Lamp in the Window
+  cave/vis-floor4.js                 The Deep Cave's skill drawings for floor 4 (the +3 sets): Night Line, Bell Echo, Black Ice, Landslide, Embalm and Night Shift
   ui/account.js                      Accounts on the online server: session token, the server's auth answers, register / log out / guest code in settings
   ui/guest-gate.js                   The "Register to continue" popup a guest sees at the online server's limits (level 20, the first three lands, zone tiers)
   ui/chat.js                         Chat between players: the chat log, the input (Enter / chat button), speech bubbles, /name, joins and leaves
