@@ -39,7 +39,7 @@ function caveCastS(p,slot,ab){   // a basic / skill / burst cast starts (handleA
 function caveHitS(p){   // damageMonsterS dealt damage for p
   const c=p.cave, cur=c&&c.cur; if(!cur||cur.paid) return;
   if(S.t-cur.t>CAVE_CAST_WINDOW){ c.cur=null; return; }
-  cur.paid=true; caveAddP(p,cur.gain);
+  cur.paid=true; caveAddP(p,cur.gain*bhChargeP(p));   // basic-hold: charge gain (gear, passives) scales what a cast earns
 }
 function caveBossTickS(B,inside){   // updateBossS: B is engaged and these players stand in its arena
   for(const q of inside){ const c=q.cave; if(!c) continue;

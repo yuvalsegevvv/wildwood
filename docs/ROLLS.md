@@ -12,7 +12,7 @@ Level-40 weapons (the Sunscar's dungeon, `sandglass`) and armour (the Gloamhorn'
 
 **Stones**: `gear.rsw` (Weapon Reroll Stone) and `gear.rsa` (Armor Reroll Stone). Sources: world bosses (below) and **sacrifice** an unworn level-30 or level-40 weapon (weapon stones) or armour piece (armour stones) for 1 / 2 / 4 / 8 / 16 by rarity (`sac{id}`; rings and pendants cannot be sacrificed). A roll or reroll costs 1 stone of the piece's kind (`reroll{id[,worn]}`) and replaces all three lines. Rolled pieces do not merge.
 
-**Attack speed and charge gain** (they replaced accuracy and resistance, which are gone, monsters' `res` / `acc` too): attack speed makes skill 1 swing faster and every slot cast faster (not their cooldowns); charge gain fills a held skill 1 sooner. See `docs/BASIC-HOLD.md`.
+**Attack speed and charge gain** (they replaced accuracy and resistance, which are gone, monsters' `res` / `acc` too): attack speed makes skill 1 swing faster and every slot cast faster (not their cooldowns); charge gain raises the Deep Cave charge each cast earns. See `docs/BASIC-HOLD.md`.
 
 **Hooks** (`// rolls:`): `recalcP` / `hurtP` / `sanitizeGear` (players.js), `rollDmgS` / `damageMonsterS` / `statusS` / `applyBuffS` / `handleAttack` / `rewardKill` (combat.js), `rxHitS` (reactions.js), `drinkP` (crafting.js), `ssAllyS` (skillsets.js), `abilityCd` (classes.js), the Proxy in items.js.
 

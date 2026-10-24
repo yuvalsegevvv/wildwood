@@ -1,12 +1,11 @@
 //@ Skill 1 on the client: hold the attack button to charge (press = tap), the charge shown on the button, the attack speed / charge gain mirrors, the slower walk while charging
 /* Agent map (rules and numbers: shared/basic-hold.js; server: server/basic-hold.js; docs/BASIC-HOLD.md; test: tools/basic-hold-smoke.js)
    owns:    BHC (the hold in progress {t0, cls} or null), bhDown / bhUp / bhCancel (the button, key and mouse call them), bhHudTick (the button's fill, called by combat-hud.js),
-            bhSpeedUi / bhChargeUi (the multipliers of this loadout, mirrors of the server's), bhMoveK (walking speed while charging).
+            bhSpeedUi (the attack speed of this loadout, a mirror of the server's: it also sets how fast a hold fills), bhMoveK (walking speed while charging).
    used by: attacks.js (doAttack reads the speed and takes the strength), combat-hud.js (the inputs), movement.js (bhMoveK).
    The server times the hold itself: bhDown sends {t:'hold',on:1}, the release is the ordinary atk message (so a tap costs no extra delay: it is sent when the button comes up). */
 let BHC=null;
 const bhSpeedUi=()=>PVC.on?1:bhSpeedK(passiveSum(pvSkills(),pvLevel(),'aspd',clsOf()),rlUiSum('aspd'));
-const bhChargeUi=()=>PVC.on?1:bhChargeK(passiveSum(pvSkills(),pvLevel(),'chg',clsOf()),rlUiSum('chg'));
 const bhHeld=()=>BHC?Math.max(0,(performance.now()-BHC.t0)/1000):0;
 function bhClearHud(){ abBasic.classList.remove('charging','charged'); abKey=''; }
 function bhDown(){
@@ -14,7 +13,7 @@ function bhDown(){
   BHC={t0:performance.now()+Math.max(0,CB.cd.basic)*1000,cls:clsOf()};   // (the charge starts when skill 1 is ready again) netSend({t:'hold',on:1});
 }
 function bhUp(){
-  if(!BHC) return; const f=bhFrac(bhHeld(),BHC.cls,bhChargeUi()), same=BHC.cls===clsOf(); BHC=null; bhClearHud();
+  if(!BHC) return; const f=bhFrac(bhHeld(),BHC.cls,bhSpeedUi()), same=BHC.cls===clsOf(); BHC=null; bhClearHud();
   if(!doAttack('basic',same?f:0)) netSend({t:'hold',on:0});
 }
 function bhCancel(){ if(!BHC) return; BHC=null; bhClearHud(); netSend({t:'hold',on:0}); }
@@ -22,7 +21,7 @@ function bhCancel(){ if(!BHC) return; BHC=null; bhClearHud(); netSend({t:'hold',
 function bhHudTick(){
   if(!BHC) return;
   if(uiOpen()||PL.dead||BHC.cls!==clsOf()){ bhCancel(); return; }
-  const h=bhHeld(), f=Math.min(1,h*bhChargeUi()/(BH_FULL[BHC.cls]||1));
+  const h=bhHeld(), f=Math.min(1,h*bhSpeedUi()/(BH_FULL[BHC.cls]||1));
   abBasic.classList.toggle('charging',h>=BH_TAP); abBasic.classList.toggle('charged',f>=1&&h>=BH_TAP);
   if(h>=BH_TAP) abBasic.style.setProperty('--p',1-f);
 }

@@ -2,8 +2,8 @@
 
 Skill 1 (the basic slot) has no cooldown. Its pace is **attack speed**, and it has two modes. Code: `shared/basic-hold.js` (rules, pure), `server/basic-hold.js`, `game/combat/basic-hold.js` (input, charge on the button); test `node tools/basic-hold-smoke.js`.
 
-- **Attack speed** (`aspd`: rolled gear line, passive stat, capped +60%): the pause between two swings is the row's old `cd` divided by it (`bhInterval`), and the swing / cast time of **every** slot is divided by it (`bhActDur`). Cooldowns of skill 2 and burst are unchanged. Buffs' basic-cooldown x still stack as before.
-- **Charge gain** (`chg`, capped +100%): a hold fills faster (`bhFrac`).
+- **Attack speed** (`aspd`: rolled gear line, passive stat, capped +60%; it also fills a hold faster, `bhFrac`): the pause between two swings is the row's old `cd` divided by it (`bhInterval`), and the swing / cast time of **every** slot is divided by it (`bhActDur`). Cooldowns of skill 2 and burst are unchanged. Buffs' basic-cooldown x still stack as before.
+- **Charge gain** (`chg`, capped +100%): multiplies the Deep Cave charge a cast earns (`caveHitS`, server/cave.js).
 - **Press** (a tap under `BH_TAP` = 0.25 s): the skill as it is (times its set's `style`).
 - **Hold**: the server times it (`MSG.hold` then the `atk`; the charge starts when skill 1 is ready again), the attack fires on release, strength f 0.2..1 (`BH_FULL`: warrior 0.9 s, archer 1.0, mage 1.1). The release is `bhHoldAb(ab, cls, f)`, a copy of the row with new fx:
   - warrior: wider and heavier cone / ring / beam, knockback, the swing ends 35% slower, you walk at 60% while charging; **full**: stuns (not bosses).

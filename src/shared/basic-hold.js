@@ -1,12 +1,12 @@
 //@ Skill 1 (the basic slot) as an attack-speed skill with two modes (pure): attack speed and charge gain, the press / hold split, and what a held release becomes for each class
 /* Agent map (design: docs/BASIC-HOLD.md; server: server/basic-hold.js; client: game/combat/basic-hold.js; test: tools/basic-hold-smoke.js)
-   owns:    BH_TAP (seconds a press may last), BH_FULL (seconds to a full charge, by class), BH_ASPD_CAP / BH_CHG_CAP, bhSpeedK (the attack speed multiplier of a loadout), bhChargeK, bhFrac (held seconds -> 0..1, 0 = a press),
+   owns:    BH_TAP (seconds a press may last), BH_FULL (seconds to a full charge, by class), BH_ASPD_CAP / BH_CHG_CAP, bhSpeedK (the attack speed multiplier of a loadout), bhChargeK, bhFrac (held seconds x attack speed -> 0..1, 0 = a press),
             bhInterval (the seconds between two skill-1 swings: the old cooldown, now divided by the attack speed), bhActDur (the swing / cast time of any slot, divided by the attack speed),
             bhPressMult (a press's damage x), bhHoldAb (the ability a held release at strength f turns into: a copy of the row with its own mult, fx and act).
    uses:    classes.js (skillCdMult, skillLvOf, passiveSum), skillsets.js (a skill-1 entry's `style` and `hold` keys).
    used by: server/basic-hold.js (handleAttack), game/combat/basic-hold.js and attacks.js (the client predicts the same numbers), game/economy/skills.js (the texts).
    THE RULES. Skill 1 has no cooldown: after a swing the next one waits ab.cd / attack speed seconds (and every slot's cast time is divided by the attack speed; the cooldowns of skill 2 and burst are NOT).
-   Press (a tap shorter than BH_TAP): the skill as it is. Hold (longer): fires on release, stronger the longer it was held (f from about 0.3 to 1; charge gain fills it faster), and at f = 1 (full) with an extra effect:
+   Press (a tap shorter than BH_TAP): the skill as it is. Hold (longer): fires on release, stronger the longer it was held (f from about 0.3 to 1; attack speed fills it faster), and at f = 1 (full) with an extra effect:
      warrior: a wide, heavy blow (the cone / ring / beam grows, knocks back, the swing ends 35% slower; full: stuns the non-boss) -- the "side effects"
      archer:  an aimed shot (no homing, faster, far stronger; full: bursts where it lands)    mage: the bolt becomes an explosion on the target, wider the longer it was held (full: the foes take 12% more for 6 s).
    A skill-1 entry of a skill set may say style:'press' (it hits better pressed: press x1.15, hold x0.9) or style:'hold' (the opposite), and hold:{x:{...}} (keys merged into its main shape at a full charge). */

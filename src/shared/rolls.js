@@ -24,7 +24,7 @@ const RL_STATS=[
   {id:'buffdur',k:'j',name:'Buff duration',        kind:'util',lo:0.04, hi:0.10, text:'% longer buffs'},
   {id:'rxk',    k:'k',name:'Reaction strength',    kind:'off', lo:0.03, hi:0.08, text:'% stronger elemental reactions'},
   {id:'aspd',   k:'l',name:'Attack speed',         kind:'off', lo:0.03, hi:0.08, text:'% attack speed (your skill 1 swings faster, and every skill is cast faster; cooldowns stay)'},
-  {id:'chg',    k:'m',name:'Charge gain',          kind:'util',lo:0.05, hi:0.12, text:'% faster charge (a held skill 1 reaches its full strength sooner)'}];
+  {id:'chg',    k:'m',name:'Charge gain',          kind:'util',lo:0.05, hi:0.12, text:'% more Deep Cave charge from every cast'}];
 const RL_BY_ID={}, RL_BY_KEY={}; for(const s of RL_STATS){ RL_BY_ID[s.id]=s; RL_BY_KEY[s.k]=s; }
 const RL_KIND_K={weapon:{off:1.6,def:1,util:1},armor:{off:1,def:1.3,util:1}};   // the range of a stat x this, by the piece's kind: weapons roll higher offence, armour higher defence
 // totals over the whole worn set (weapon + 4 armour pieces, 5 x 3 lines): cooldown reduction from gear stops at 40% (and passives add up to the old 60% overall cap in abilityCd);
