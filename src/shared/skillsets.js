@@ -35,10 +35,11 @@ const SS_ALLY_CAP={might:0.5,guard:0.5,haste:0.4,crit:0.4,critdmg:1,regen:0.05},
 const SS_ON=['hit','crit','kill','hurt','cast1','cast2','cast3','tick','low','taunt','shield','revive'], SS_EFFECT_KEYS=['fx','heal','buff','mark','status','shield','cdr'], SS_ST_KINDS=['vuln','weak','slow','stun'];
 const SS_ON_ICD=['hit','crit','hurt','tick','low','taunt','shield'];   // these need an icd (so they cannot run away)
 // the stats a passive or a bonus row may name (read with psP on the server), and the ones that may carry a `when` (read where the target or the fight is known: ssCondP)
-const SS_STATS=['hp','dmg','crit','red','cd','drop','xp','soul','reflect','rxk','rxicd','critdmg','heal','buffpow','buffdur','debuffdur','area','regen','overflow','revive'];
+const SS_STATS=['hp','dmg','crit','red','cd','aspd','chg','drop','xp','soul','reflect','rxk','rxicd','critdmg','heal','buffpow','buffdur','debuffdur','area','regen','overflow','revive'];
 const SS_COND_STATS=['dmg','crit','critdmg','red','rxk','rxicd','heal','buffpow','buffdur','debuffdur','area','regen'];
 const SS_WHEN_KEYS=['moved','still','dist','tgtHp','hp','taunting','marked','behind','boss','crowd','allies','exposed','combat','shield'];
-const SS_ENTRY_KEYS=['name','desc','cd','range','mult','act','anim','el','fx','buff','why'];
+const SS_ENTRY_KEYS=['name','desc','cd','range','mult','act','anim','el','fx','buff','why','style','hold'];   // style, hold: skill 1 only (shared/basic-hold.js)
+const SS_HOLD_X=['status','mark','taunt','slow','stun','burn','kb','flavor','splash'];   // what a skill 1's hold.x may add to its main shape at a full charge
 const SS_SETS=Object.create(null), SS_ORDER=[], SS_BAD=[], SS_PIECE_OF=Object.create(null);
 // a set's emblem: {col: a colour, glyph: SVG shapes (path / circle / ellipse / rect / line with plain attributes, drawn as strokes in a 24 x 24 box)}; it goes into the page as markup, so only those shapes are accepted
 const SS_GLYPH_OK=/^(<(path|circle|ellipse|rect|line)( (d|cx|cy|r|rx|ry|x|y|x1|y1|x2|y2|width|height|fill|opacity|stroke-width|transform)="[^"<>&]*")*\/>)+$/;   // (only drawing attributes: no on... handler, no href, no style)
@@ -112,6 +113,8 @@ function ssSkillProblem(e,taken){
   { const p=ssFxProblem(e.fx,false); if(p) return p; if(!SS_FX_SHAPES.some(k=>e.fx[k])) return 'fx needs a shape ('+SS_FX_SHAPES.join(' ')+')'; }
   if(e.buff!==undefined&&!(e.fx&&e.fx.buff)) return 'a buff needs fx:{buff:1}';
   if(e.why!==undefined&&typeof e.why!=='string') return 'why is a sentence';
+  if(e.style!==undefined&&!BH_STYLE[e.style]) return 'style is "press" or "hold" (which mode of skill 1 hits better)';
+  if(e.hold!==undefined){ const x=e.hold&&e.hold.x; if(!x||typeof x!=='object'||Object.keys(e.hold).length!==1||!Object.keys(x).length||!Object.keys(x).every(k=>SS_HOLD_X.includes(k))) return 'hold is {x: {'+SS_HOLD_X.join(' ')+'}}: what a full charge adds to the main shape'; const q=ssFxProblem({cone:x},false); if(q) return 'hold.x: '+q; }
   return null;
 }
 // what is wrong with one passive or bonus row (null when nothing)
@@ -183,9 +186,11 @@ function defineSkillSet(D){
   for(let p=1;p<=3;p++){
     const P=D.pos[p], at='pos '+p, slot=SS_SLOT_OF[p-1]; if(!P||typeof P!=='object') return bad('pos',at+' missing');
     if(P.bound!=='class'&&P.bound!=='any') return bad('pos',at+': bound is "class" or "any"'); if(p===1&&P.bound!=='class') return bad('pos','position 1 is always bound to the class');
-    const keys=P.bound==='class'?SS_CLASSES:['any']; if(!P.skill||Object.keys(P.skill).sort().join()!==keys.slice().sort().join()) return bad('pos',at+': skill needs exactly '+keys.join(', '));
+    const keys=P.bound==='class'?SS_CLASSES:['any']; if(!P.skill||typeof P.skill!=='object') return bad('pos',at+': skill missing');
+    // (skill 1 is for ONE class -- basic-hold: each set's slot-1 skill is its own warrior, archer or mage attack; a test set may give more; skills 2 and 3 are for all three classes or for any)
+    { const have=Object.keys(P.skill), okKeys=p===1?have.length>=1&&have.every(k=>keys.includes(k)):have.slice().sort().join()===keys.slice().sort().join(); if(!okKeys) return bad('pos',at+': skill needs '+(p===1?'a warrior, archer or mage version (one is the rule)':'exactly '+keys.join(', '))); }
     let el; const variants=[];
-    for(const k of keys){
+    for(const k of Object.keys(P.skill)){
       const e=P.skill[k], pr=ssSkillProblem(e,taken); if(pr) return bad('pos',at+' '+k+': '+pr);
       taken.add(e.act[0]);
       const ee=e.el!==undefined?e.el:(hybrid?undefined:D.el); if(ee===undefined) return bad('pos',at+' '+k+': a hybrid set names the element of every piece (el)');

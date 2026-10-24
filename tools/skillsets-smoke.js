@@ -62,7 +62,7 @@ const BAD=[
   ['a licensed ip without its licence','char',d=>{ d.char.ip={kind:'licensed',work:'x'}; }],
   ['colours that are not numbers','pal',d=>{ d.pal.main='red'; }],
   ['position 1 bound to any','pos',d=>{ d.pos[1].bound='any'; d.pos[1].skill={any:d.pos[1].skill.warrior}; }],
-  ['a missing class version','pos',d=>{ delete d.pos[1].skill.mage; }],
+  ['no skill 1 at all','pos',d=>{ d.pos[1].skill={}; }],
   ['a position that is missing','pos',d=>{ delete d.pos[3]; }],
   ['an unknown fx key','pos',d=>{ d.pos[2].skill.any.fx={lasso:{r:3}}; }],
   ['a buff without fx:{buff:1}','pos',d=>{ d.pos[2].skill.any.buff={dur:5,dmg:1.2,cd:1,crit:0}; }],

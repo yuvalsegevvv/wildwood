@@ -15,11 +15,7 @@ defineSkillSet({
     1:{bound:'class',
        skill:{
          warrior:{name:'Pinprick', desc:'Two quick jabs at melee range, much stronger from behind the enemy. A hit from behind leaves a Barb.', cd:0.6, range:2.8, mult:0.4, act:['sazanka1w',0.4,0.25], anim:'slash', el:'air',
-                  fx:{cone:{r:2.8, arc:0.9, hits:2, mark:{id:'barb', n:1, dur:10, max:5, behind:true}}, behind:1.6}},
-         archer:{name:'Point-Blank Snap', desc:'A bow fired from a few metres: strong up close, stronger from behind, weak at a distance. A hit from behind leaves a Barb.', cd:0.7, range:9, mult:0.7, act:['sazanka1a',0.45,0.4], anim:'shoot', el:'air',
-                 fx:{proj:{kind:'thorn', speed:48, turn:8, life:0.25, mark:{id:'barb', n:1, dur:10, max:5, behind:true}}, behind:1.6, rangeScale:{from:2, to:9, k:0.5}}},
-         mage:{name:'Briar Slash', desc:'A short slash of cutting wind, two cuts, much stronger from behind. A hit from behind leaves a Barb.', cd:0.8, range:3.4, mult:0.5, act:['sazanka1m',0.45,0.3], anim:'slash', el:'air',
-               fx:{cone:{r:3.4, arc:1.0, hits:2, mark:{id:'barb', n:1, dur:10, max:5, behind:true}}, behind:1.6}}},
+                  fx:{cone:{r:2.8, arc:0.9, hits:2, mark:{id:'barb', n:1, dur:10, max:5, behind:true}}, behind:1.6},style:'press'}},
        passive:{name:'Light Feet', text:'+{}% damage for 2 s after you moved', stat:'dmg', v:[0.10, 0.01], when:{moved:2}}},
     2:{bound:'any',
        skill:{any:{name:'Slip Behind', desc:'Dash up to 10 m past your target and strike from behind on arrival, much stronger from behind. Leaves a Barb on everything hit.', cd:8, range:10, mult:1.1, act:['sazanka2x',0.5,0.3], anim:'slash', el:'dark',

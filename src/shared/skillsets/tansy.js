@@ -13,12 +13,8 @@ defineSkillSet({
   pos:{
     1:{bound:'class', from:{chance:0.15, pity:14},
        skill:{
-         warrior:{name:'Windrow Sweep', desc:'Swing in a wide scythe arc: everything in front of you takes a light cut. Cheap enough to use while you walk between camps.', cd:0.8, range:3.6, mult:0.7, act:['tansy1w',0.5,0.35], anim:'slash',
-                  fx:{vsBoss:0.5, cone:{r:3.8, arc:2.3}}},
          archer:{name:'Chaff Fan', desc:'Seven short arrows in a fan, each bursting a little where it lands: light on one enemy, a great deal on a crowd.', cd:0.9, range:16, mult:0.4, act:['tansy1a',0.55,0.5], anim:'shoot',
-                 fx:{vsBoss:0.5, proj:{kind:'thorn', n:7, spread:0.3, speed:40, turn:0, life:0.42, splash:{r:1.8, k:0.5}}}},
-         mage:{name:'Chaff Burst', desc:'A bolt that bursts wide on impact and scatters chaff over a whole crowd.', cd:1.1, range:22, mult:0.6, act:['tansy1m',0.6,0.5], anim:'cast',
-               fx:{vsBoss:0.5, proj:{kind:'spore', speed:30, turn:8, life:1.1, splash:{r:6, k:0.9}}}}},
+                 fx:{vsBoss:0.5, proj:{kind:'thorn', n:7, spread:0.3, speed:40, turn:0, life:0.42, splash:{r:1.8, k:0.5}}},style:'press',hold:{x:{splash:{r:3.2,k:0.6}}}}},
        passive:{name:'Steady Hands', text:'A kill in a crowd (three or more enemies within 8 m) heals you for 2% of your maximum health (at most every 2 s)', on:'kill', icd:2, heal:0.02, when:{crowd:{n:3, r:8}}}},
     2:{bound:'any', from:{chance:0.15, pity:14},
        skill:{any:{name:'Gather In', desc:'A wide field of pull at your target\'s feet: for 3 seconds everything in it is dragged to the middle and nicked. Wide enough to take in the next camp.', cd:10, range:16, mult:1, act:['tansy2x',0.7,0.5], anim:'nova',

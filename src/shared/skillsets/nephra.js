@@ -14,10 +14,6 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Binding Lash', desc:'Lash with a length of linen: a damaging hit that wraps you and the allies within 12 m in a thin shield (3% of maximum health, 4 seconds). Leaves Linen.', cd:1.0, range:3.4, mult:1.7, act:['nephra1w',0.55,0.4], anim:'slash',
-                  fx:{cone:{r:3.4, arc:1.1, mark:{id:'linen', n:1, dur:12, max:5}}, shield:{v:0.03, dur:4, r:12}}},
-         archer:{name:'Wrapped Arrow', desc:'An arrow trailing linen: a damaging hit that wraps you and the allies within 12 m in a thin shield (3% of maximum health, 4 seconds). Leaves Linen.', cd:0.9, range:28, mult:1.6, act:['nephra1a',0.55,0.5], anim:'shoot',
-                 fx:{proj:{kind:'thorn', speed:44, turn:9, life:0.9, mark:{id:'linen', n:1, dur:12, max:5}}, shield:{v:0.03, dur:4, r:12}}},
          mage:{name:'Dust Bolt', desc:'A fist of tomb-dust: a damaging hit that wraps you and the allies within 12 m in a thin shield (3% of maximum health, 4 seconds). Leaves Linen.', cd:1.1, range:24, mult:2.0, act:['nephra1m',0.6,0.5], anim:'cast',
                fx:{proj:{kind:'spore', speed:32, turn:8, life:1.0, mark:{id:'linen', n:1, dur:12, max:5}}, shield:{v:0.03, dur:4, r:12}}}},
        passive:{name:'Many Layers', text:'+{}% maximum health', stat:'hp', v:[0.06, 0.01]}},

@@ -38,7 +38,7 @@ function updateCombatUI(dt){
     tBar.style.width=(T.hp/T.maxHp*100)+'%'; tHp.textContent=Math.ceil(T.hp*K.hp)+' / '+Math.round(T.maxHp*K.hp); }
   else tframe.hidden=true;
   const L=pvSkills(), PV=pvLevel(), c=clsOf(), ba=abilityOf(c,'basic',L,PV), sk=abilityOf(c,'skill',L,PV), bu=abilityOf(c,'burst',L,PV);   // pvp: the fixed loadout on the island
-  abBasic.style.setProperty('--p',ba?CB.cd.basic/(abilityCd(ba,L,PV,c,rlUiCdr())*(CB.buff?CB.buff.cd:1)):0); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PV,c,rlUiCdr()):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PV,c,rlUiCdr()):0);   // (skillsets: the bonuses of the class in hand)
+  abBasic.style.setProperty('--p',ba?Math.min(1,CB.cd.basic/bhInterval(ba,L,bhSpeedUi(),CB.buff?CB.buff.cd:1,0)):0); bhHudTick(); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PV,c,rlUiCdr()):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PV,c,rlUiCdr()):0);   // (skillsets: the bonuses of the class in hand)
   abSkill.classList.toggle('ready',!!sk&&CB.cd.skill<=0); abBurst.classList.toggle('ready',!!bu&&CB.cd.burst<=0);
   abBasic.classList.toggle('buffed',!!CB.buff);
   caveHudUpdate();   // cave: the charge bar and the ready glow
@@ -172,10 +172,13 @@ function setActionBar(){
   caveFillTile();   // cave: the 4th tile (Go to the cave / its skill)
 }
 const press=(el,fn)=>{ el.addEventListener('touchstart',e=>{ e.preventDefault(); fn(); },{passive:false}); el.addEventListener('click',fn); };
-press(abBasic,()=>doAttack('basic')); press(abSkill,()=>doAttack('skill')); press(abBurst,burstSlot); press($('#abCave'),()=>doAttack('cave'));   // cave: the 4th slot
+abBasic.addEventListener('touchstart',e=>{ e.preventDefault(); bhDown(); },{passive:false}); abBasic.addEventListener('touchend',e=>{ e.preventDefault(); bhUp(); },{passive:false}); abBasic.addEventListener('touchcancel',bhCancel);
+abBasic.addEventListener('mousedown',e=>{ if(e.button===0) bhDown(); }); addEventListener('mouseup',e=>{ if(e.button===0) bhUp(); });   // basic-hold: skill 1 fires when the button comes up (a tap = a press, a hold = a charged attack)
+press(abSkill,()=>doAttack('skill')); press(abBurst,burstSlot); press($('#abCave'),()=>doAttack('cave'));   // cave: the 4th slot
+addEventListener('keyup',e=>{ if(kbIs(e.code,'basic')) bhUp(); });
 addEventListener('keydown',e=>{
   if(!started||uiOpen()) return;
-  if(kbIs(e.code,'basic')) doAttack('basic');
+  if(kbIs(e.code,'basic')&&!e.repeat) bhDown();
   if(kbIs(e.code,'skill')) doAttack('skill');
   if(kbIs(e.code,'burst')) burstSlot();
   if(kbIs(e.code,'cave')) doAttack('cave');   // cave: the 4th slot
@@ -189,7 +192,7 @@ canvas.addEventListener('mousedown',e=>{
   const locked=document.pointerLockElement===canvas;
   mDown={x:e.clientX,y:e.clientY,t:performance.now(),locked};
   if(!locked){ if(canvas.dataset.lockTried) canvas.dataset.lockFailed='1'; canvas.dataset.lockTried='1'; }
-  if(locked && !uiOpen()) doAttack(e.button===2?'skill':'basic');
+  if(locked && !uiOpen()){ if(e.button===2) doAttack('skill'); else bhDown(); }
 });
 addEventListener('mouseup',e=>{
   if(!mDown) return; const d=mDown; mDown=null;

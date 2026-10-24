@@ -19,7 +19,7 @@ ok('four different elements, none a hybrid: earth, fire, water, dark (the desert
 ok('four different roles that the first eight do not pair with the same element: healer, risk DPS, grinder, support (both)',(()=>{ const r=i=>SET(i).role; return r('nephra').main==='heal'&&r('sabir').main==='risk'&&r('ogden').main==='grind'&&r('ottoline').main==='support'&&r('ottoline').focus==='both'; })());
 ok('each set has an emblem of its own (shapes only, a colour of its own) that no other set uses',(()=>{ const all=x.SS_ORDER.map(i=>SET(i).emblem); return IDS.every(i=>SET(i).emblem&&Number.isInteger(SET(i).emblem.col))&&new Set(all.map(e=>e.glyph)).size===all.length&&new Set(all.map(e=>e.col)).size===all.length; })());
 ok('each set names its outfit, which exists, and has a look file and a palette of three colours',IDS.every(i=>SET(i).outfit===i&&fs.existsSync(path.join(SRC,'game','outfits',i+'.js'))&&fs.existsSync(path.join(SRC,'game','skillsets','look-'+i+'.js'))&&['main','accent','glow'].every(k=>Number.isInteger(SET(i).pal[k]))));
-ok('every active deals damage; position 1 has three class versions; positions 2 and 3 are universal',IDS.every(i=>PIECES(i).every(id=>x.SKILLS[id].mult>0)&&SET(i).pos[1].ids.length===3&&SET(i).pos[2].bound==='any'&&SET(i).pos[3].bound==='any'));
+ok('every active deals damage; position 1 has one class version; positions 2 and 3 are universal',IDS.every(i=>PIECES(i).every(id=>x.SKILLS[id].mult>0)&&SET(i).pos[1].ids.length===1&&SET(i).pos[2].bound==='any'&&SET(i).pos[3].bound==='any'));
 ok('every attack kind, piece id and name is new: nothing shared with the first eight or between the four',(()=>{ const acts=[], names=[]; for(const i of x.SS_ORDER){ for(const id of PIECES(i)){ acts.push(x.SKILLS[id].act[0]); names.push(x.SKILLS[id].name); } for(const p of [1,2,3]) names.push(x.PASSIVES[SET(i).pos[p].passive].name); }
   return new Set(acts).size===acts.length&&new Set(names).size===names.length&&new Set(x.SS_ORDER.map(i=>SET(i).char.name)).size===x.SS_ORDER.length; })());
 ok('the wording rule: no set or character text names a forbidden festival theme',IDS.every(i=>!/halloween|pumpkin/i.test(fs.readFileSync(path.join(SRC,'shared','skillsets',i+'.js'),'utf8')+fs.readFileSync(path.join(SRC,'game','outfits',i+'.js'),'utf8')+fs.readFileSync(path.join(SRC,'game','skillsets','look-'+i+'.js'),'utf8'))));
@@ -35,15 +35,15 @@ W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); p.dead=false; p.h
 const reset=()=>{ x.AREAS.length=0; x.PROJS.length=0; stand(p,0,0); p.ally=null; p.shield=null; stand(pb,3,0); for(const m of [m1,m2,m3]) put(m,0,-30); };
 const still=fn=>{ const R=Math.random; Math.random=()=>0.5; try{ return fn(); } finally{ Math.random=R; } };
 const lost=(m,fn)=>{ const h=m.hp; fn(); return h-m.hp; };
-const cast=(id,tgt,o)=>{ const s=x.SKILLS[id]; x.resolveFxS(p,Object.assign({fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:id},o||{}),tgt||null); };
+const cast=(id,tgt,o)=>{ const s=x.SKILLS[id]; x.resolveFxS(p,Object.assign({fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:id},o||{}),tgt||null); if(s.fx.proj) for(let i=0;i<30;i++) W.tick(0.05); };
 const clear=()=>{ const K=p.gear.skills; for(const c of ['warrior','archer','mage']) K.eq[c]={basic:null,skill:null,burst:null}; K.pass=K.pass.map(()=>null); p.ssIcd={}; p.killTs=[]; p.cd={basic:0,skill:0,burst:0}; p.ally=null; p.shield=null; x.recalcP(p); };
-const wear=(id,n)=>{ clear(); x.ssGrantSetP(p,id); const S=SET(id); for(const pos of [1,2,3]){ const P=S.pos[pos], sid=P.bound==='any'?P.ids[0]:P.ids.find(i=>x.SKILLS[i].cls===x.clsOfP(p)); x.ssEquipPieceP(p,x.SKILLS[sid]); } const pass=[1,2,3].map(k=>S.pos[k].passive); p.gear.skills.pass=pass.map((pid,k)=>k<n?pid:null); x.recalcP(p); };
+const wear=(id,n)=>{ clear(); x.ssGrantSetP(p,id); const S=SET(id); for(const pos of [1,2,3]){ const P=S.pos[pos], sid=P.bound==='any'?P.ids[0]:P.ids.find(i=>x.SKILLS[i].cls===x.clsOfP(p))||P.ids[0]; x.ssEquipPieceP(p,x.SKILLS[sid]); } const pass=[1,2,3].map(k=>S.pos[k].passive); p.gear.skills.pass=pass.map((pid,k)=>k<n?pid:null); x.recalcP(p); };
 const hpOf=q=>q.hp/q.maxHp;
 ok('the stage: a and b are one party',x.partyOf(p)&&x.partyOf(p)===x.partyOf(pb));
 
 // ---- Nephra ----
 clear(); reset(); put(m1,0,-2.5);
-{ still(()=>cast('nephra_1_warrior',m1)); ok('Nephra: Binding Lash hurts, leaves Linen and shields her and her party member for 3% of health',x.ssMarkN(p,m1,'linen')===1&&near(p.shield&&p.shield.v,p.maxHp*0.03,1)&&near(pb.shield&&pb.shield.v,pb.maxHp*0.03,1),String(p.shield&&p.shield.v)); }
+{ still(()=>cast('nephra_1_mage',m1)); ok('Nephra: Binding Lash hurts, leaves Linen and shields her and her party member for 3% of health',x.ssMarkN(p,m1,'linen')===1&&near(p.shield&&p.shield.v,p.maxHp*0.03,1)&&near(pb.shield&&pb.shield.v,pb.maxHp*0.03,1),String(p.shield&&p.shield.v)); }
 reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'linen',n:4,dur:12,max:5}); p.hp=p.maxHp*0.5;
 { const h0=p.hp; still(()=>cast('nephra_2_any',null)); ok('Nephra: Salve for Sand spends every Linen, mends her from the damage, shields the party (10%) and guards it (12% + 2% a Linen)',x.ssMarkN(p,m1,'linen')===0&&p.hp>h0&&near(p.shield&&p.shield.v,p.maxHp*0.10,1)&&near(x.allyP(pb,'guard'),0.20,0.002),'guard '+x.allyP(pb,'guard')); }
 reset(); put(m1,0,-3); pb.hp=pb.maxHp*0.4;
@@ -54,7 +54,7 @@ ok('Nephra: Many Layers adds 6% maximum health at level 1 of the piece; Heavy wi
 
 // ---- Sabir ----
 clear(); reset(); put(m1,0,-2.5);
-{ still(()=>cast('sabir_1_warrior',m1)); still(()=>cast('sabir_1_warrior',m1)); ok('Sabir: Scimitar Slash is heavy and leaves Loot (two slashes: 2)',x.ssMarkN(p,m1,'loot')===2); }
+{ still(()=>cast('sabir_1_archer',m1)); still(()=>cast('sabir_1_archer',m1)); ok('Sabir: Scimitar Slash is heavy and leaves Loot (two slashes: 2)',x.ssMarkN(p,m1,'loot')===2); }
 { const a=lost(m1,()=>still(()=>cast('sabir_3_any',m1))), n0=x.ssMarkN(p,m1,'loot'); ok('Sabir: Powder Keg spends every Loot',n0===0&&a>0,a+' / '+n0); }
 reset(); put(m1,0,-2.5); x.ssMarkS(p,m1,{id:'loot',n:4,dur:12,max:5});
 { const run=()=>{ const h=m1.hp; still(()=>cast('sabir_3_any',m1)); tick(40); x.PROJS.length=0; return h-m1.hp; }; const withLoot=run(); reset(); put(m1,0,-2.5); const without=run(); ok('Sabir: Powder Keg with 4 Loot hits more than twice as hard as without',withLoot>without*2&&without>0,Math.round(withLoot)+' vs '+Math.round(without)); }
@@ -81,7 +81,7 @@ ok('Ogden: Overtime (3 pieces) adds 15% experience',near(x.psP(p,'xp'),0.15,0.00
 
 // ---- Ottoline ----
 clear(); reset(); put(m1,0,-2.5);
-{ still(()=>cast('ottoline_1_warrior',m1)); ok('Ottoline: Puppet Jab weakens its target (5%: it deals 95%), ties a String and gives her party member 4% crit',near(x.rxWeakK(m1),0.95,0.001)&&x.ssMarkN(p,m1,'string')===1&&near(x.allyP(pb,'crit'),0.04,0.001),x.rxWeakK(m1)+' '+x.allyP(pb,'crit')); }
+{ still(()=>cast('ottoline_1_mage',m1)); ok('Ottoline: Puppet Jab weakens its target (5%: it deals 95%), ties a String and gives her party member 4% crit',near(x.rxWeakK(m1),0.95,0.001)&&x.ssMarkN(p,m1,'string')===1&&near(x.allyP(pb,'crit'),0.04,0.001),x.rxWeakK(m1)+' '+x.allyP(pb,'crit')); }
 reset(); put(m1,0,-6);
 { cast('ottoline_2_any',m1); tick(30); ok('Ottoline: Dance, Dolly slows and weakens what is in its zone and quickens the party (10% more damage)',m1.slowT>0&&x.rxWeakK(m1)<1&&near(x.allyP(pb,'might'),0.10,0.03)&&x.ssMarkN(p,m1,'string')>=1,x.rxWeakK(m1)+' '+x.allyP(pb,'might')); x.AREAS.length=0; }
 reset(); put(m1,0,-5); x.ssMarkS(p,m1,{id:'string',n:2,dur:12,max:3});

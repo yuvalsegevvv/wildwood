@@ -15,11 +15,7 @@ defineSkillSet({
     1:{bound:'class',
        skill:{
          warrior:{name:'Ribbon Flourish', desc:'A short arc of the blade that throws a wave of light 6 m long. Leaves Applause and lets a little regeneration drift over you and your allies.', cd:0.9, range:6, mult:1.25, act:['marigold1w',0.5,0.35], anim:'slash',
-                  fx:{cone:{r:6, arc:0.7, mark:{id:'applause', n:1, dur:12, max:5}}, ally:{kind:'regen', v:0.005, dur:3, r:18}}},
-         archer:{name:'Harp Shot', desc:'An arrow that sings: a ranged sparkle on its target. Leaves Applause and lets a little regeneration drift over you and your allies.', cd:0.85, range:32, mult:1.5, act:['marigold1a',0.55,0.5], anim:'shoot',
-                 fx:{proj:{kind:'spirit', speed:44, turn:9, life:1.0, mark:{id:'applause', n:1, dur:12, max:5}}, ally:{kind:'regen', v:0.005, dur:3, r:18}}},
-         mage:{name:'Lantern Bolt', desc:'A little paper lantern that floats to its target and bursts into light. Leaves Applause and lets a little regeneration drift over you and your allies.', cd:1.0, range:26, mult:1.9, act:['marigold1m',0.6,0.5], anim:'cast',
-               fx:{proj:{kind:'spirit', speed:30, turn:8, life:1.1, mark:{id:'applause', n:1, dur:12, max:5}}, ally:{kind:'regen', v:0.005, dur:3, r:18}}}},
+                  fx:{cone:{r:6, arc:0.7, mark:{id:'applause', n:1, dur:12, max:5}}, ally:{kind:'regen', v:0.005, dur:3, r:18}},style:'hold'}},
        passive:{name:'Crowd Pleaser', text:'With an ally within 9 m, the buffs you give are {}% stronger (still capped)', stat:'buffpow', v:[0.20, 0.03], when:{allies:{n:1, r:9}}}},
     2:{bound:'any',
        skill:{any:{name:'Center Stage', desc:'A stage of light follows you for 8 seconds: you and your allies standing in it (7 m) deal 12% more damage and regenerate 1.5% of health a second, and the light burns the enemies in it.', cd:16, range:7, mult:0.14, act:['marigold2x',0.7,0.45], anim:'nova',

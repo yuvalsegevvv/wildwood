@@ -14,11 +14,7 @@ defineSkillSet({
     1:{bound:'class', from:{chance:0.15, pity:14},
        skill:{
          warrior:{name:'Spade Sweep', desc:'Swing the spade low and wide: everything in front of you takes a light chop. Leaves Rot.', cd:0.8, range:3.8, mult:0.68, act:['ogden1w',0.5,0.35], anim:'slash',
-                  fx:{vsBoss:0.5, cone:{r:3.8, arc:2.2, mark:{id:'rot', n:1, dur:12, max:5}}}},
-         archer:{name:'Bone Spray', desc:'Six rib-bones flung in a fan, each splashing a little where it lands: light on one enemy, heavy on a crowd. Leaves Rot.', cd:0.9, range:16, mult:0.4, act:['ogden1a',0.55,0.5], anim:'shoot',
-                 fx:{vsBoss:0.5, proj:{kind:'thorn', n:6, spread:0.34, speed:38, turn:0, life:0.42, splash:{r:1.8, k:0.5}, mark:{id:'rot', n:1, dur:12, max:5}}}},
-         mage:{name:'Grave Splash', desc:'A bucket of grave-water thrown wide: it bursts over a crowd. Leaves Rot.', cd:1.1, range:20, mult:0.6, act:['ogden1m',0.6,0.5], anim:'cast',
-               fx:{vsBoss:0.5, proj:{kind:'frost', speed:28, turn:8, life:1.1, splash:{r:6, k:0.9}, mark:{id:'rot', n:1, dur:12, max:5}}}}},
+                  fx:{vsBoss:0.5, cone:{r:3.8, arc:2.2, mark:{id:'rot', n:1, dur:12, max:5}}},style:'press'}},
        passive:{name:'Hungry', text:'A kill heals you for 1.5% of your maximum health (at most every 1.5 s)', on:'kill', icd:1.5, heal:0.015}},
     2:{bound:'any', from:{chance:0.15, pity:14},
        skill:{any:{name:'Open Grave', desc:'A sinking pit at your target: for 4 seconds everything in it is dragged to the middle, slowed and nicked. Wide enough to take in the next camp. Leaves Rot.', cd:11, range:16, mult:0.9, act:['ogden2x',0.7,0.5], anim:'nova',

@@ -18,20 +18,22 @@ function cycleTarget(){
   if(!list.length){ CB.target=null; return; }
   const i=list.indexOf(CB.target); CB.target=list[(i+1)%list.length];
 }
-function doAttack(kind){
-  if(kind==='cave'){ caveDoAttack(); return; }   // cave: the 4th slot (game/cave/slot.js)
-  if(!started||!NET.ready||uiOpen()||PL.dead||CB.act||CB.cd[kind]>0) return;
-  const c=clsOf(), ab=abilityOf(c,kind,pvSkills(),pvLevel());   // pvp: on the island the fixed loadout
-  if(!ab){ // the slot is locked or empty
+function doAttack(kind,hold){   // hold: the strength 0..1 of a charged skill 1 (basic-hold.js); returns true when the attack was sent
+  if(kind==='cave'){ caveDoAttack(); return false; }   // cave: the 4th slot (game/cave/slot.js)
+  if(!started||!NET.ready||uiOpen()||PL.dead||CB.act||CB.cd[kind]>0) return false;
+  const c=clsOf(), ab0=abilityOf(c,kind,pvSkills(),pvLevel());   // pvp: on the island the fixed loadout
+  if(!ab0){ // the slot is locked or empty
     if(PL.level<slotLv(kind)){ toast('Your '+kind+' slot opens at level '+slotLv(kind),'bad'); UI_SFX.error(); }
     else openSkills(null,kind);
-    return;
+    return false;
   }
+  const spd=bhSpeedUi(), hf=kind==='basic'&&hold>0?hold:0, bcd=kind==='basic'&&CB.buff?CB.buff.cd:1;   // basic-hold: the same numbers the server uses
+  const ab=hf?bhHoldAb(ab0,c,hf):ab0;
   const tgtOK=CB.target&&!CB.target.dead&&Math.hypot(CB.target.x-P.x,CB.target.z-P.z)<=ab.range+3;
   if(!tgtOK&&!PVC.on){ const t2=pickTarget(Math.max(ab.range+2,8)); if(t2) CB.target=t2; }
-  const [k,dur,hitAt]=ab.act;
-  CB.act={kind:ANIM_OF[k]||k,sk:k,t:0,dur,hitAt,done:false,skill:kind==='skill'};
-  CB.cd[kind]=abilityCd(ab,pvSkills(),pvLevel(),c,rlUiCdr())*(kind==='basic'&&CB.buff?CB.buff.cd:1)*(1-ssHasteK());   // skillsets: the class the bonuses are read for
+  const [k,dur0,hitAt]=ab.act, dur=bhActDur(dur0,spd,1);
+  CB.act={kind:ANIM_OF[k]||k,sk:k,t:0,dur,hitAt,done:false,skill:kind==='skill',hold:hf,ab:hf?ab:null};
+  CB.cd[kind]=kind==='basic'?bhInterval(ab,pvSkills(),spd,bcd,hf):abilityCd(ab,pvSkills(),pvLevel(),c,rlUiCdr())*(1-ssHasteK());   // skillsets: the class the bonuses are read for; basic-hold: skill 1 has no cooldown, only attack speed
   const T=PVC.on?pvTarget(ab.range):CB.target;   // pvp: another fighter
   if(T && !T.dead && Math.hypot(T.x-P.x,T.z-P.z)<ab.range+6) P.face=Math.atan2(-(T.x-P.x),-(T.z-P.z));
   else P.face=P.yaw;
@@ -45,10 +47,12 @@ function doAttack(kind){
   if(k==='slash'||k==='spin'||k==='bash'||k==='charge') cSfx.swing(k!=='slash');
   if(k==='shoot'||k==='volley'||k==='pierce'||k==='rain') cSfx.draw();
   if(k==='cast'||k==='nova'||k==='chain'||k==='meteor') cSfx.charge(k==='nova'||k==='meteor');
+  return true;
 }
 // local swing visuals at the moment the blow lands (the damage itself comes from the server)
 function attackVisuals(a,who){
   const x=who?who.x:P.x, y=who?who.y:P.y, z=who?who.z:P.z, face=who?who.face:P.face, sc=who?who.scale:hiker.scale, mine=!who, k=a.sk||a.kind;
+  if(a.ab&&mine){ bhVisuals(a.ab,x,y,z,face,sc); return; }   // basic-hold: a charged release
   const gs=ACT_SKILL[k]; if(gs&&gs.cave&&caveVisCast(gs,who||P,mine?CB.target:null)) return;   // cave: a cave skill's own drawing (cave/vis.js)
   if(gs&&gs.fx){ fxVisuals(gs,x,y,z,face,sc,mine); return; }   // a skill with generic effects (the boss skills)
   if(k==='quake'){ fxxDust(x,getH(x,z),z,18,6,0x8a7a60); fxxDebris(x,getH(x,z),z,14,7,0x6a5030); fxxScorch(x,z,4,0xd8b07a); }
@@ -103,8 +107,8 @@ function onMonDmg(id,v,crit,by,fx){
   const m=MON_BY_ID.get(id); if(!m) return;
   m.flash=1; m.hp=Math.max(0,m.hp-v);
   // your own hits show whether the element helped (an arrow up) or hurt (down): your soul and the monster's element
-  const res=fx===2, mine=by===NET.pid&&fx&&!res, c=monCenter(m);   // rolls: fx 2 = the hit was resisted (half damage, no debuff)
-  popText(c.x,c.y+m.T.height*0.5*m.s,c.z,(res?'Resisted ':'')+String(v)+(mine?(fx>0?'▲':'▼'):''),(res?'resisted':crit?'crit':(by===NET.pid?'':'other'))+(mine?(fx>0?' up':' down'):''));
+  const mine=by===NET.pid&&fx, c=monCenter(m);
+  popText(c.x,c.y+m.T.height*0.5*m.s,c.z,String(v)+(mine?(fx>0?'▲':'▼'):''),(crit?'crit':(by===NET.pid?'':'other'))+(mine?(fx>0?' up':' down'):''));
   if(by===NET.pid||Math.random()<0.5||crit){ fxpSparks(c.x,c.y,c.z,crit?0xffd45a:0xffe8c0,crit?16:5,crit?7:4,{size:crit?0.26:0.16,life:0.4}); if(crit) fxpFlare(c.x,c.y,c.z,0xffd45a,2.4,0.25); }   // fx-pool: a hit spits sparks, a crit flares
   if(crit&&by===NET.pid) fxxFlash(0xffd45a,0.14);   // fx-extra
   if(by===NET.pid){ cSfx.hit(m,crit); if(!CB.target||CB.target.dead) CB.target=m; }

@@ -13,11 +13,7 @@ defineSkillSet({
     1:{bound:'class', from:{chance:0.15, pity:14},
        skill:{
          warrior:{name:'Sledge Sweep', desc:'Swing the sledge in a wide low arc: everything in front of you takes a light blow and is knocked back a little.', cd:0.9, range:3.6, mult:0.8, act:['tamsin1w',0.55,0.4], anim:'slash',
-                  fx:{vsBoss:0.5, cone:{r:3.8, arc:2.2, kb:1}}},
-         archer:{name:'Gravel Fan', desc:'Seven shards of rock in a fan, each bursting a little where it lands: light on one enemy, a great deal on a crowd.', cd:0.9, range:16, mult:0.4, act:['tamsin1a',0.55,0.5], anim:'shoot',
-                 fx:{vsBoss:0.5, proj:{kind:'thorn', n:7, spread:0.3, speed:40, turn:0, life:0.42, splash:{r:1.8, k:0.5}}}},
-         mage:{name:'Rockfall Bolt', desc:'A bolt of stone that bursts wide on impact and scatters grit over a whole crowd.', cd:1.1, range:22, mult:0.6, act:['tamsin1m',0.6,0.5], anim:'cast',
-               fx:{vsBoss:0.5, proj:{kind:'spore', speed:30, turn:8, life:1.1, splash:{r:6, k:0.9}}}}},
+                  fx:{vsBoss:0.5, cone:{r:3.8, arc:2.2, kb:1}},style:'press'}},
        passive:{name:'Loose Scree', text:'A kill in a crowd (three or more enemies within 8 m) heals you for 2% of your maximum health (at most every 2 s)', on:'kill', icd:2, heal:0.02, when:{crowd:{n:3, r:8}}}},
     2:{bound:'any', from:{chance:0.15, pity:14},
        skill:{any:{name:'Pull the Slope', desc:'A wide tremor at your target\'s feet: for 3 seconds everything in it is dragged to the middle, rattled and turns on you. Wide enough to take in the next camp.', cd:10, range:16, mult:1, act:['tamsin2x',0.7,0.5], anim:'nova',

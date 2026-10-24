@@ -22,7 +22,7 @@ ok('the other dungeons keep entry level 25 and level 30 (the `entry` field defau
 { const B=x.DG_BOSSES.khet, R=x.DG_BOSS_DEFS.khet;
   ok('Khet\'s base level is exactly 40: the design, the def makeBossS takes and the theme\'s level at +0 (his add one lower), and 40 + 10 a tier above',B.lv===40&&R.def.level===40&&R.def.boss&&R.add.level===39&&x.dgBossDefOf(T)===R&&x.dgLevel(T,0)===40&&[0,1,2,3,4,5,6,7].map(k=>x.dgLevel(T,k)).join()==='40,50,60,70,80,90,100,110'&&x.ZTIER_MAX===7);
   ok('the boss is registered with a kit that has start, tick and phase (kit `hour`), exactly one signature (High Noon) and its element, model and music exist',['start','tick','phase'].every(f=>typeof x.BOSS_KITS.hour[f]==='function')&&R.kit==='hour'&&B.moves.filter(m=>m.signature).map(m=>m.id).join()==='noon'&&B.moves.length>=5); }
-ok('every monster of the dungeon is a Sunscar kind (levels 33-36) carrying res or acc like the rest of the land, walkers fit a 4 m door',[...T.mobs.walkers,...T.mobs.guardians].every(id=>{ const d=x.MON_DEFS.find(q=>q.id===id); return d&&d.zone&&/^s\d\d$/.test(d.zone)&&d.level>=33&&d.level<=36&&(d.res>0||d.acc>0); })&&T.mobs.walkers.every(id=>x.MON_DEFS.find(q=>q.id===id).rad<=0.9));
+ok('every monster of the dungeon is a Sunscar kind (levels 33-36) walkers fit a 4 m door',[...T.mobs.walkers,...T.mobs.guardians].every(id=>{ const d=x.MON_DEFS.find(q=>q.id===id); return d&&d.zone&&/^s\d\d$/.test(d.zone)&&d.level>=33&&d.level<=36; })&&T.mobs.walkers.every(id=>x.MON_DEFS.find(q=>q.id===id).rad<=0.9));
 
 // ---- the door ----
 ok('the door is the prop the Sunscar reserved: DG_ENTRANCES.sandglass at SUN_DG_DOOR, six doors in all, found from 3 m and not from 9 m, its apron 7 m out toward the city',
@@ -50,7 +50,7 @@ ok('a level-35 hiker and one who has not been to Glasswell cannot start a run',!
   ok('all seven mission types start as the Sandglass at level 40 (Purge with its monsters at once)',started.length===7&&started.every(Boolean),started.join()); }
 W.receive('a',{t:'dev',cmd:'dg',v:'sandglass:purge:5'}); tick(3);
 const run=A.inst?x.DG_RUNS.get(A.inst):null;
-ok('a purge run: the walkers are the Sunscar\'s, fought at level 40 (dgK) with their res / acc passing through (m.T.res, m.T.acc)',!!run&&[...run.mons].length>0&&[...run.mons].every(m=>T.mobs.walkers.includes(m.def.id)||T.mobs.guardians.includes(m.def.id))&&[...run.mons].every(m=>m.dgK&&m.dgK.lv===40&&(m.T.res>0||m.T.acc>0)));
+ok('a purge run: the walkers are the Sunscar\'s, fought at level 40 (dgK)',!!run&&[...run.mons].length>0&&[...run.mons].every(m=>T.mobs.walkers.includes(m.def.id)||T.mobs.guardians.includes(m.def.id))&&[...run.mons].every(m=>m.dgK&&m.dgK.lv===40));
 W.receive('a',{t:'dg',a:'leave'}); tick(3);
 
 // ---- what a clear pays ----

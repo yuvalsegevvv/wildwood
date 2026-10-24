@@ -14,11 +14,7 @@ defineSkillSet({
     1:{bound:'class',
        skill:{
          archer:{name:'Clean Line', desc:'A precise arrow from far away: the farther the target, the harder it lands.', cd:0.9, range:36, mult:1.8, act:['sorrel1a',0.55,0.5], anim:'shoot',
-                 fx:{proj:{kind:'frost', speed:56, turn:6, life:0.9}, rangeScale:{from:6, to:30, k:1.6}}},
-         warrior:{name:'Long Throw', desc:'Throw a javelin at up to 26 m: the farther the target, the harder it lands.', cd:1.1, range:26, mult:1.9, act:['sorrel1w',0.55,0.45], anim:'slash',
-                  fx:{proj:{kind:'thorn', speed:46, turn:6, life:0.7}, rangeScale:{from:5, to:24, k:1.6}}},
-         mage:{name:'Lens Ray', desc:'A thin ray focused through a lens, 28 m long: the farther the target, the harder it lands.', cd:1.0, range:28, mult:1.7, act:['sorrel1m',0.55,0.5], anim:'cast',
-               fx:{beam:{len:28, w:0.5, hits:1}, rangeScale:{from:5, to:26, k:1.6}}}},
+                 fx:{proj:{kind:'frost', speed:56, turn:6, life:0.9}, rangeScale:{from:6, to:30, k:1.6}},hold:{x:{status:{kind:'vuln',v:0.1,dur:5}}}}},
        passive:{name:'Far Sight', text:'+{}% damage against a target 14 m or more away', stat:'dmg', v:[0.10, 0.02], when:{dist:{from:14}}}},
     2:{bound:'any',
        skill:{any:{name:'Mark the Gap', desc:'A spotting shot at up to 36 m: it puts Sight on the target and spreads the wind round it, so the enemies within 6 m carry its element too and your partners\' hits react on all of them.', cd:8, range:36, mult:1.7, act:['sorrel2x',0.6,0.5], anim:'shoot',

@@ -1,6 +1,6 @@
 //@ Rolled stats of level-40 gear (version 3): the 13 stats, three lines a roll, ranges for weapons and armour, caps, the code a roll adds to an item id, the reroll stones and what sacrificing a level-30+ piece pays. Pure.
 /* Agent map (design and numbers: docs/ROLLS.md; the pieces themselves are dungeon-rewards.js / dungeon-items.js)
-   owns:    RL_STATS (13 stats: atk hp def exp drop coin crit critdmg cdr buffdur rxk acc res), RL_LINES (3), RL_CAPS (cdr 40%, acc / res 60%), RL_SAC (stones per rarity: 1 / 2 / 4 / 8 / 16),
+   owns:    RL_STATS (13 stats: atk hp def exp drop coin crit critdmg cdr buffdur rxk aspd chg), RL_LINES (3), RL_CAPS (cdr 40%, aspd 60%, chg 100%), RL_SAC (stones per rarity: 1 / 2 / 4 / 8 / 16),
             RL_COST (stones a roll costs), RL_STONE_KIND (weapon -> 'rsw', armour -> 'rsa'), rlRoll (a fresh code), rlParseCode, rlLinesOf (the lines of a code for a slot kind), rlText,
             rlSumOf (the capped sum of one stat over a set of worn items), rlLazyItem (ITEM's Proxy asks it for ids that carry a roll).
    uses:    items.js (RAR_MULT is not needed here; ITEM is the Proxy declared there), dungeon-rewards.js (dgItem builds the record of an id with a code).
@@ -23,13 +23,13 @@ const RL_STATS=[
   {id:'cdr',    k:'i',name:'Cooldown reduction',   kind:'util',lo:0.03, hi:0.08, text:'% shorter skill cooldowns'},
   {id:'buffdur',k:'j',name:'Buff duration',        kind:'util',lo:0.04, hi:0.10, text:'% longer buffs'},
   {id:'rxk',    k:'k',name:'Reaction strength',    kind:'off', lo:0.03, hi:0.08, text:'% stronger elemental reactions'},
-  {id:'acc',    k:'l',name:'Accuracy',             kind:'off', lo:0.03, hi:0.08, text:'% accuracy (lowers the foe\'s resistance chance by this much)'},
-  {id:'res',    k:'m',name:'Resistance',           kind:'def', lo:0.03, hi:0.08, text:'% resistance (a chance to halve the damage of a hit and shrug off its debuffs)'}];
+  {id:'aspd',   k:'l',name:'Attack speed',         kind:'off', lo:0.03, hi:0.08, text:'% attack speed (your skill 1 swings faster, and every skill is cast faster; cooldowns stay)'},
+  {id:'chg',    k:'m',name:'Charge gain',          kind:'util',lo:0.05, hi:0.12, text:'% faster charge (a held skill 1 reaches its full strength sooner)'}];
 const RL_BY_ID={}, RL_BY_KEY={}; for(const s of RL_STATS){ RL_BY_ID[s.id]=s; RL_BY_KEY[s.k]=s; }
 const RL_KIND_K={weapon:{off:1.6,def:1,util:1},armor:{off:1,def:1.3,util:1}};   // the range of a stat x this, by the piece's kind: weapons roll higher offence, armour higher defence
 // totals over the whole worn set (weapon + 4 armour pieces, 5 x 3 lines): cooldown reduction from gear stops at 40% (and passives add up to the old 60% overall cap in abilityCd);
-// accuracy and resistance are chances, 60% at most
-const RL_CAPS={cdr:0.40,acc:0.60,res:0.60};
+// attack speed (x1.6 at most) and charge gain (twice as fast at most) are also capped over the whole set
+const RL_CAPS={cdr:0.40,aspd:0.60,chg:1.00};
 const RL_SAC=[1,2,4,8,16];   // reroll stones from sacrificing a level-30+ weapon / armour piece, by rarity (common..legendary)
 const RL_COST=1;             // stones one roll (the first or a reroll) costs: of the kind of the piece (weapon pieces use weapon stones)
 const RL_STONE_KIND={weapon:'rsw',armor:'rsa'}, RL_STONE_NAME={rsw:'Weapon Reroll Stone',rsa:'Armor Reroll Stone'}, RL_STONE_MAX=9999;

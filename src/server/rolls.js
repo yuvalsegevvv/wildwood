@@ -1,6 +1,6 @@
-//@ Rolled stats of level-40 gear on the server: the sums the rest of the game reads (rlP), the reroll stones, sacrificing a level-30+ piece, rolling and rerolling, accuracy and resistance, testing commands
+//@ Rolled stats of level-40 gear on the server: the sums the rest of the game reads (rlP), the reroll stones, sacrificing a level-30+ piece, rolling and rerolling, testing commands
 /* Agent map (rules, ids and numbers: shared/rolls.js, shared/dungeon-rewards.js; design: docs/ROLLS.md)
-   owns:    rlRefreshP (recalcP calls it: p.rl = the capped sums of the worn pieces' lines), rlP(p,stat), rlResists (the accuracy / resistance chance), rlAddStonesP, rlSacrificeP + MSG.sac, rlRollP + MSG.reroll,
+   owns:    rlRefreshP (recalcP calls it: p.rl = the capped sums of the worn pieces' lines), rlP(p,stat), rlAddStonesP, rlSacrificeP + MSG.sac, rlRollP + MSG.reroll,
             MSG.rldev (testing: stones, one of every level-40 piece), rlSanitizeStones (sanitizeGear).
    uses:    state.js (MSG, ev, toastTo), economy.js (gearChangedP, unwornCount), the ITEM Proxy (a rolled id is made on first use).
    gear:    gear.rsw / gear.rsa = weapon / armour reroll stones (counts, 0..RL_STONE_MAX, sanitized).
@@ -14,9 +14,6 @@ function rlRefreshP(p){
   p.rl=o;
 }
 const rlP=(p,stat)=>(!p.pv&&p.rl&&p.rl[stat])||0;   // pvp: nothing rolled counts on the island
-// a hit lands "resisted" with the chance of the target's resistance minus the attacker's accuracy (never below 0, never above the cap): it does half the damage and its debuffs do not land
-function rlResists(res,acc){ const c=Math.min(RL_CAPS.res,Math.max(0,(res||0)-(acc||0))); return c>0&&Math.random()<c; }
-let rlResM=null, rlResT=-1;   // the monster whose last hit was resisted: statusS and the reactions skip the debuffs of that hit (damageMonsterS sets it just before them)
 function rlAddStonesP(p,kind,n){
   const have=p.gear[kind]||0, add=Math.min(n,RL_STONE_MAX-have); if(!(add>0)) return 0;
   p.gear[kind]=have+add; p.dirty=true; toastTo(p.id,'Gained: '+(add>1?add+' x ':'')+RL_STONE_NAME[kind],'loot r2'); return add;

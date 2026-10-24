@@ -12,12 +12,8 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Skate Cut', desc:'A quick low cut across the front: heavy for a basic attack. Leaves Rime.', cd:1.0, range:3.4, mult:2.3, act:['brynja1w',0.5,0.35], anim:'slash', el:'water',
-                  fx:{cone:{r:3.4, arc:1.4, mark:{id:'rime', n:1, dur:12, max:5}}}},
          archer:{name:'Icicle Shot', desc:'A shard of ice loosed fast: heavy for a basic attack. Leaves Rime.', cd:1.0, range:26, mult:2.25, act:['brynja1a',0.5,0.45], anim:'shoot', el:'water',
-                 fx:{proj:{kind:'frost', speed:50, turn:7, life:0.8, mark:{id:'rime', n:1, dur:12, max:5}}}},
-         mage:{name:'Frost Flick', desc:'Flick a sliver of ice from your fingers: heavy for a basic attack. Leaves Rime.', cd:1.1, range:22, mult:2.5, act:['brynja1m',0.55,0.5], anim:'cast', el:'water',
-               fx:{proj:{kind:'frost', speed:34, turn:8, life:0.9, mark:{id:'rime', n:1, dur:12, max:5}}}}},
+                 fx:{proj:{kind:'frost', speed:50, turn:7, life:0.8, mark:{id:'rime', n:1, dur:12, max:5}}},style:'press',hold:{x:{slow:3}}}},
        passive:{name:'Momentum', text:'+{}% damage while you have been moving for a second', stat:'dmg', v:[0.12, 0.02], when:{moved:1}}},
     2:{bound:'any',
        skill:{any:{name:'Glide and Cut', desc:'Skate up to 9 m through the polar dark to your target and cut everything round it, chilling it for 4 seconds. Leaves Rime on each.', cd:8, range:9, mult:1.45, act:['brynja2x',0.5,0.3], anim:'slash', el:'dark',

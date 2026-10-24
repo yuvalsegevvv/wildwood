@@ -91,9 +91,9 @@ function guidePages(){
       <h4>Level-40 gear: rolled lines</h4>
       <ul>
         <li>A level-40 weapon or armour piece starts <b>unrolled</b>. Spend a <b>Reroll Stone</b> at the forge's <b>Roll</b> tab to give it three lines out of 13 stats; roll again to replace all three.</li>
-        <li>Weapons roll higher offence (attack, crits, reactions, accuracy), armour higher defence (health, defense, resistance). XP, drops, coins, cooldown and buff duration roll the same on both.</li>
+        <li>Weapons roll higher offence (attack, crits, reactions, attack speed), armour higher defence (health, defense). XP, drops, coins, cooldown and buff duration roll the same on both.</li>
         <li>The <b>Sacrifice</b> tab turns a spare level-30 or level-40 weapon or armour piece into stones: 1 / 2 / 4 / 8 / 16 by rarity. Weapon pieces make weapon stones, armour makes armour stones.</li>
-        <li>Cooldown reduction from gear stops at 40%. <b>Resistance</b> is the chance to halve the damage of a hit and shrug off its debuffs; <b>accuracy</b> lowers the target's resistance chance.</li>
+        <li>Cooldown reduction from gear stops at 40%. <b>Attack speed</b> makes skill 1 swing faster and every skill cast faster (cooldowns stay); <b>charge gain</b> fills a held skill 1 sooner.</li>
       </ul>
       <h4>Professions and crafting</h4>
       <p>Learn mining, woodcutting or gathering at a Wayfarers' Lodge, carry the matching tool, and work the nodes (a node needs a tool of the tier of its land; sometimes you get a double yield). Ore becomes weapons and logs become armour at the smiths and armourers; herbs become potions at the healers.</p>

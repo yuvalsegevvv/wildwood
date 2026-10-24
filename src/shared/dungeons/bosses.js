@@ -83,7 +83,7 @@ const DG_BOSSES={
   /* Abbess Morrow, the Drowned Abbess (version 3, the Gloamvault under the Gloamhorn: docs/DUNGEON-THEMES.md section 12). The second dungeon boss of base level 40 (`lv:40`): the theme is level 40 at +0 and rises 10 a tier. She carries
      the Gloamhorn's resistance and accuracy (0.35, docs/ROLLS.md). Built from primitives that already exist (the gloom pool, the cleave, the donut, the line, the pulse): her signature, the Drowning Toll, is a bell rung twice, a ring you
      must stand inside and then a burst you must stand outside; a toll that hurts nobody cracks the bell. */
-  abbess:{id:'abbess',name:'Abbess Morrow, the Drowned Abbess',short:'Abbess Morrow',dungeon:'gloamvault',kit:'toll',lv:40,el:'water',model:'goblin',scale:2.9,glow:0x06161c,atk:2.4,speed:2.2,music:'boss30',res:0.35,acc:0.35,
+  abbess:{id:'abbess',name:'Abbess Morrow, the Drowned Abbess',short:'Abbess Morrow',dungeon:'gloamvault',kit:'toll',lv:40,el:'water',model:'goblin',scale:2.9,glow:0x06161c,atk:2.4,speed:2.2,music:'boss30',
     pal:{form:'undead',skin:0x8aa8a0,eyes:0x9fffe0,top:'jacket',topColor:0x1c3a46,bottom:'trousers',bottomColor:0x12222c,hat:'none',hatColor:0x1a1a22,club:0xd0dcd8,weapon:'axe'},
     add:{id:'drownedacolyte',name:'Drowned Acolyte',scale:0.8,speed:3.1,glow:0x04141a,pal:{form:'undead',skin:0x6a8a8a,eyes:0x9fffe0,top:'jacket',topColor:0x1c2c3a,bottom:'trousers',bottomColor:0x141e28,hat:'none',hatColor:0x1a1a22,club:0x8a9094,weapon:'axe'}},
     bar:{stun:'The bell is cracked: strike now!'}, aux:'tolls of the bell', auxBar:'Tolls of the bell: {n}',
@@ -99,7 +99,6 @@ const DG_BOSSES={
 // a design as a row shaped like BOSS_DEFS (what makeBossS(bd, A) takes): the boss's def at its level, its add and its prop as monster defs
 function dgBossRow(b){
   const def=bossDef({id:b.id,name:b.name,level:b.lv,el:b.el,model:b.model,scale:b.scale,boss:true,heavy:true,glow:b.glow,atk:b.atk,speed:b.speed,aggro:0,music:b.music,dungeon:b.dungeon,pal:b.pal});
-  if(b.res) def.res=b.res; if(b.acc) def.acc=b.acc;   // (the Gloamhorn's bosses: docs/ROLLS.md)
   const add={id:b.add.id,name:b.add.name,level:b.lv-1,el:b.el,model:b.add.model||b.model,scale:b.add.scale,hpK:0.6,dmgPct:0.07,bossAdd:true,atk:1.6,speed:b.add.speed,aggro:30,glow:b.add.glow,pal:b.add.pal};
   prepDef(add);
   let prop=null;
