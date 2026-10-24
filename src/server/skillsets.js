@@ -95,11 +95,12 @@ function ssAmpK(p,m){
   let k=1; for(const a of A) k+=a.per*ssMarkN(p,m,a.id); return k;
 }
 // ---- conditions: a stat row or a trigger with a `when` (shared/skillsets.js ssWhenProblem lists them) ----
-const ssBehind=(p,m)=>{ const dx=p.x-m.x, dz=p.z-m.z, d=Math.hypot(dx,dz)||1; return (-Math.sin(m.face)*dx-Math.cos(m.face)*dz)/d<-0.5; };   // within 60 degrees of straight behind the monster
+const ssBehind=(p,m)=>{ if(p.cave&&p.cave.fx.behind>S.t) return true;   // cave: Shadow Step's window
+  const dx=p.x-m.x, dz=p.z-m.z, d=Math.hypot(dx,dz)||1; return (-Math.sin(m.face)*dx-Math.cos(m.face)*dz)/d<-0.5; };   // within 60 degrees of straight behind the monster
 function ssWhen(p,m,w){
   if(!w) return true;
-  if(w.moved!==undefined&&!(S.t-(p.lastMove||-99)<=w.moved)) return false;
-  if(w.still!==undefined&&!(S.t-(p.lastMove||-99)>=w.still)) return false;
+  if(w.moved!==undefined&&!(S.t-(p.lastMove||-99)<=w.moved||(p.cave&&p.cave.fx.moved>S.t))) return false;   // cave: Black Ice keeps Momentum on
+  if(w.still!==undefined&&!(S.t-(p.lastMove||-99)>=w.still||(p.cave&&p.cave.fx.still>S.t))) return false;   // cave: Night Line counts as standing still
   if(w.dist){ if(!m) return false; const d=Math.hypot(p.x-m.x,p.z-m.z); if((w.dist.from!==undefined&&d<w.dist.from)||(w.dist.to!==undefined&&d>w.dist.to)) return false; }
   if(w.tgtHp){ if(!m||!(m.maxHp>0)) return false; const h=m.hp/m.maxHp; if((w.tgtHp.above!==undefined&&h<w.tgtHp.above)||(w.tgtHp.below!==undefined&&h>w.tgtHp.below)) return false; }
   if(w.hp){ const h=p.hp/p.maxHp; if((w.hp.above!==undefined&&h<w.hp.above)||(w.hp.below!==undefined&&h>w.hp.below)) return false; }
@@ -127,11 +128,12 @@ function ssCdrS(p,c){
 const ssMarkSum=(p,id,r)=>{ let n=0; for(const m of MONS) if(!m.dead&&!m.remove&&(m.inst|0)===(p.inst|0)&&Math.hypot(m.x-p.x,m.z-p.z)<(r||12)+m.T.rad) n+=ssMarkN(p,m,id); return n; };
 // the multiplier of a skill's own modifiers on one hit (f: its fx): vsBoss (against a boss), behind (the attacker is within 60 degrees of straight behind the monster), rangeScale (grows with the distance)
 function fxModK(f,p,m){
-  if(!f||(!f.vsBoss&&!f.behind&&!f.rangeScale)) return 1;
-  let k=1;
+  const pk=caveSightK(p,m);   // cave: Eagle's Perch, +% per Sight on the target
+  if(!f||(!f.vsBoss&&!f.behind&&!f.rangeScale)) return pk;
+  let k=pk;
   if(f.vsBoss&&m.boss) k*=f.vsBoss;
   if(f.behind&&ssBehind(p,m)) k*=f.behind;
-  if(f.rangeScale){ const R=f.rangeScale; k*=1+(R.k-1)*Math.max(0,Math.min(1,(Math.hypot(p.x-m.x,p.z-m.z)-R.from)/(R.to-R.from))); }
+  if(f.rangeScale){ const R=f.rangeScale; k*=1+(R.k-1)*Math.max(0,Math.min(1,(Math.hypot(p.x-m.x,p.z-m.z)+caveRangeAdd(p)-R.from)/(R.to-R.from))); }
   return k;
 }
 // damage that is not a skill's (a reflect): through the same health pool (monK), no aura, no triggers
@@ -142,7 +144,7 @@ function ssRawHitS(m,v,p){
 }
 // ---- triggers ----
 // the piece an action comes from, for the events a client dresses in its outfit's look (a triggered row names itself in src; a skill is a piece when it has a set)
-const ssSrc=a=>a.src||(a.sid&&SS_PIECE_OF[a.sid]?a.sid:undefined);
+const ssSrc=a=>a.src||(a.sid&&SS_PIECE_OF[a.sid]?a.sid:undefined)||(a.cave&&a.set?a.set+'_'+a.id:undefined);   // cave: a set's cave skill names itself "<set>_<skill id>": its zone wears the set's look and the client finds its drawing (game/cave/vis-floor2b.js cvbArea)
 function ssRunRowS(p,r,ctx){
   const m=ctx&&ctx.m&&!ctx.m.dead&&!ctx.m.remove?ctx.m:null;
   if(r.heal){ healP(p,p.maxHp*r.heal*(1+psP(p,'heal')+ssCondP(p,'heal',m))); ev('fxa',p.id,'heal',r.id); }

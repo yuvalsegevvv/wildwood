@@ -56,6 +56,7 @@ function envAt(c,out){
 let todLabelT=0;
 let curZone='';
 function updateZoneLabel(){
+  if(caveIn()){ $('#zone').textContent=caveZoneText(); return; }   // cave: the floor's name (cave/look.js)
   const V=vilAt(P.x,P.z), inV=vDist(P.x,P.z)<VR+22, zn=inV?null:zoneAt(P.x,P.z), vale=inVale(P.x,P.z), hoar=inHoar(P.x,P.z), grey=inGrey(P.x,P.z), pass=!zn&&!inV&&inPass(P.x,P.z);
   const pvH=inPvp(P.x,P.z);   // pvp: the Proving Isle names itself
   const key=pvH?'pvp':zn?String(zn.key):inV?(V===VIL6?'wraithwick':V===VIL5?'glasswell':V===VIL4?'highmark':V===VIL3?'rimehold':V===VIL2?'hanami':'village'):P.inTun?'bridge':pass?'pass':hoar?'hoar':inGloam(P.x,P.z)?'gloam':grey?'grey':inSun(P.x,P.z)?'sun':vale?'vale':'wild';
@@ -80,6 +81,7 @@ function updateEnv(dt){
   if(serverDay!==null){ const d=((serverDay-dayClock+1.5)%1)-0.5; dayClock=Math.abs(d)>0.05?serverDay:(dayClock+d*Math.min(1,dt*2)+1)%1; }
   envAt(dayClock,envCur);
   weatherTint(envCur);
+  caveLookEnv(envCur);   // cave: a floor's own fog and light (cave/look.js)
   dgLookEnv(envCur);   // dungeons: a run's own fog and light, whatever the hour or weather (dungeon/look.js)
   gloamTint(envCur,dt);   // the Gloamhorn: a permanent violet dusk (world/gloam-sky.js)
   cvLightTint(envCur,dt);   // caves: darker light inside a cave (world/caves.js)

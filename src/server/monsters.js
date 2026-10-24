@@ -23,7 +23,7 @@ function initMonstersS(){
   /* where a camp may stand (the atlas's world, shared/world-atlas.js): on dry land clear of the coast, of every river and lake, of the villages and the roads (and trails), of the boss arenas, of every anchor
      (a village, gate, boss, dungeon door, zone entrance, island spot: 22 m) and of the Proving Isle; on ground a hiker walks easily. The zone itself is asked by the caller (zoneAt), so each land's zone table decides which ground is whose.
      (The old per-land keep-outs, sunKeepOut / gloamKeepOut, are not asked: their water, the Bowl's rim and the reserved doors are the atlas's water and anchors now.) */
-  const ok=(x,z)=>x>WX0+26&&x<WX1-26&&z>WZ0+26&&z<WZ1-26&&!waIsSea(x,z)&&waCoast(x,z)>26&&getH(x,z)>1&&grad(x,z)<0.55&&waWaterDist(x,z)>8&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&waAnchorDist(x,z)>22&&!dgEntranceNear(x,z,32)&&Math.hypot(x-WA_PVP.x,z-WA_PVP.z)>WA_PVP.r+62&&RD_ORDER.every(i=>Math.hypot(x-RDS[i].x,z-RDS[i].z)>56);   // dungeons: a camp keeps 32 m off a dungeon's door; pvp: and 62 m off the Proving Isle's shore (nothing lives by the bridgehead)
+  const ok=(x,z)=>x>WX0+26&&x<WX1-26&&z>WZ0+26&&z<WZ1-26&&!waIsSea(x,z)&&waCoast(x,z)>26&&getH(x,z)>1&&grad(x,z)<0.55&&waWaterDist(x,z)>8&&vDist(x,z)>VR+15&&!nearPath(x,z,8)&&arenaDist(x,z)>50&&waAnchorDist(x,z)>22&&!dgEntranceNear(x,z,32)&&!caveMouthNear(x,z,40)&&!inGlen(x,z,0)&&Math.hypot(x-WA_PVP.x,z-WA_PVP.z)>WA_PVP.r+62&&RD_ORDER.every(i=>Math.hypot(x-RDS[i].x,z-RDS[i].z)>56);   // dungeons: a camp keeps 32 m off a dungeon's door; no camp in the Greyspine's glacier valley (a strip kept clear); pvp: and 62 m off the Proving Isle's shore (nothing lives by the bridgehead)
   for(const d of MON_DEFS){
     const zn=defZone(d), total=MON_COUNT(d), pack=d.per+2;
     let made=0;
@@ -36,6 +36,9 @@ function initMonstersS(){
       for(let k=0;k<n;k++){ const a=rr(0,TAU), r=rr(0.5,3.5+n*0.4); makeMon(d,x+Math.sin(a)*r,z+Math.cos(a)*r,camp,rr(0.92,1.08),false); }
       made+=n;
     }
+    // a crowded zone (the Sunscar's s28 by its walls) can run out of room: the rest join the kind's camps already made, so every kind keeps its MON_COUNT
+    const mine=CAMPS.filter(c=>c.def===d);
+    for(let k=0;made<total&&mine.length;k++,made++){ const c=mine[k%mine.length], a=rr(0,TAU), r=rr(0.5,4.5); makeMon(d,c.x+Math.sin(a)*r,c.z+Math.cos(a)*r,c,rr(0.92,1.08),false); }
   }
 }
 function monRoster(m){ return [m.id,m.def.id,r1(m.camp.x),r1(m.camp.z),Math.round(m.s*100)/100,r1(m.x),r1(m.z),m.dead?1:0,m.temp?1:0].concat(m.inst||m.rd?[m.dgK.lv,Math.round(m.maxHp)]:[]); }   // raids: a raid monster too   // dungeons: a run's monster adds [level, maxHp in the def's units]
@@ -43,6 +46,7 @@ function spawnMonS(d,x,z,camp,temp){ const m=makeMon(d,x,z,camp,1,temp); ev('spa
 function removeMonS(m){ if(m.remove) return; m.remove=true; ev('despawn',m.id); }
 function respawnMonS(m){
   const c=m.camp; m.x=c.x+AR(-3,3); m.z=c.z+AR(-3,3); m.hp=m.maxHp; m.dead=false; m.deadT=0; m.state='idle'; m.aggro=false; m.tgt=null;
+  if(m.cave) caveFixS(m);   // cave: a spot on the floor
   m.timer=AR(1,3); m.slowT=0; m.burnT=0; m.pendingHit=-1; m.kbx=m.kbz=0; ev('respawn',m.id,r1(m.x),r1(m.z));
 }
 // inside a lake (not its frozen ice, not a river's ford): the cheap bilinear first, the water type only when well inside
@@ -57,6 +61,7 @@ function updateMonstersS(dt){
     if(m.remove) continue;
     if(m.inst) continue;   // dungeons: a run's monsters (its boss too) move in updateInstsS
     if(m.boss){ if(m.rd) rdBossTickS(m,dt); else updateBossS(m,dt); continue; }   // raids: a raid boss sleeps until its wards are broken (rdBossTickS, server/raids.js)
+    if(m.cmo){ caveMoleS(m,dt); continue; }   // cave: the gem mole is scripted (server/cave/method-g.js)
     if(m.dead){
       m.deadT+=dt;
       if(m.deadT>1.2){ if(m.temp) removeMonS(m); else { m.respawnT-=dt; if(m.respawnT<=0 && !anyPlayerNear(m.camp.x,m.camp.z,22)) respawnMonS(m); } }
@@ -64,9 +69,9 @@ function updateMonstersS(dt){
     }
     m.awake=m.aggro||anyPlayerNear(m.x,m.z,110);
     if(!m.awake) continue;
-    if(m.stunT>0){ m.stunT-=dt; m.pendingHit=-1; m.x+=m.kbx*dt; m.z+=m.kbz*dt; const kd=Math.exp(-7*dt); m.kbx*=kd; m.kbz*=kd; m.vx=m.vz=0; continue; }
+    if(m.stunT>0){ m.stunT-=dt; m.pendingHit=-1; m.x+=m.kbx*dt; m.z+=m.kbz*dt; if(m.cave) caveMonStepS(m,m.x-m.kbx*dt,m.z-m.kbz*dt); const kd=Math.exp(-7*dt); m.kbx*=kd; m.kbz*=kd; m.vx=m.vz=0; continue; }   // cave: walls hold a knocked-back monster
     const hd=Math.hypot(m.x-m.camp.x,m.z-m.camp.z);
-    if(!m.aggro && m.T.aggro){ const p=nearestFighter(m.x,m.z,m.T.aggro); if(p){ m.aggro=true; m.tgt=p.id; ev('aggro',m.id); } }
+    if(!m.aggro && m.T.aggro){ const p=nearestFighter(m.x,m.z,m.T.aggro); if(p&&(!m.cave||caveLos(m.x,m.z,p.x,p.z))){ m.aggro=true; m.tgt=p.id; ev('aggro',m.id); } }   // cave: a wall hides you
     { const tq=ssTauntedBy(m); if(tq&&!inVillage(tq)&&hd<=32){ m.tgt=tq.id; m.aggro=true; } }   // skillsets: a taunted monster comes for the taunter
     let p=m.aggro?S.players.get(m.tgt):null;
     if(m.aggro && (!p||p.dead||inVillage(p)||hd>32)){
@@ -81,7 +86,7 @@ function updateMonstersS(dt){
       else if(m.T.speed===0){ m.state='idle'; }
       else { m.state='attack'; m.faceGoal=Math.atan2(-dx,-dz); m.atkT-=dt;
         if(m.atkT<=0 && !m.T.noAttack){ m.atkT=m.T.atk; m.pendingHit=0.28; ev('mact',m.id); } }
-      if(m.pendingHit>=0){ m.pendingHit-=dt; if(m.pendingHit<0 && dp<reach+0.8) hurtP(p,Math.max(1,Math.round(m.T.dmg*AR(0.85,1.15))),m); }
+      if(m.pendingHit>=0){ m.pendingHit-=dt; if(m.pendingHit<0 && dp<reach+0.8 && !(m.blindT>S.t)) hurtP(p,Math.max(1,Math.round(m.T.dmg*AR(0.85,1.15))),m); }   // cave: Flare, a blinded monster misses
     } else if(m.state==='return'){
       tx=m.camp.x; tz=m.camp.z; speed=m.T.speed*1.1;
       if(hd<2.5){ m.state='idle'; m.timer=AR(1,3); m.hp=m.maxHp; m.hitters.clear(); }
@@ -95,12 +100,14 @@ function updateMonstersS(dt){
     }
     if(m.slowT>0){ m.slowT-=dt; speed*=0.4; }
     if(m.model==='slime'){ m.ph+=dt*(Math.hypot(m.vx,m.vz)>0.1?7:2.5); if(speed>0) speed*=Math.max(0,Math.sin(m.ph))>0.15?1.6:0.15; }
+    if(m.cave&&tx!==null){ const w=caveSteerS(m,tx,tz); tx=w[0]; tz=w[1]; }   // cave: round the corner
     if(tx!==null){ const ex=tx-m.x, ez=tz-m.z, d=Math.hypot(ex,ez); if(d>0.1){ m.vx=ex/d*speed; m.vz=ez/d*speed; m.faceGoal=Math.atan2(-ex,-ez); } }
     else { m.vx*=0.8; m.vz*=0.8; }
     const ox=m.x, oz=m.z;
     m.x+=(m.vx+m.kbx)*dt; m.z+=(m.vz+m.kbz)*dt;
     const kd=Math.exp(-7*dt); m.kbx*=kd; m.kbz*=kd;
     if(getH(m.x,m.z)<0.4 || vNear(m.x,m.z,VR+8) || monInLake(m.x,m.z)){ m.x=ox; m.z=oz; }   // (a river is a ford a monster wades; a lake is not)
+    if(m.cave) caveMonStepS(m,ox,oz);   // cave: along the walls
     if(p && dp<m.T.rad+0.35){ const e=dp||1, mm=m.T.rad+0.35; m.x=p.x-dx/e*mm; m.z=p.z-dz/e*mm; }
     m.face=angLerp(m.face,m.faceGoal,1-Math.exp(-8*dt));
   }

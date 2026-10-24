@@ -3,7 +3,7 @@
 // Usage: node tools/client-smoke.js
 const {bootClient}=require('./headless');
 const c=bootClient({expose:['RD_ORDER','RDS','RD_FOOT','RD_CL','buildRaids','GW0','WA_GATES','WA_HUBS','waLand','waGround','barStep','westBarX','northBarZ','waLandId','guidePages','openGuide','openQuests','qShowTab','openVersions','verPages','guestGateShow','LOOK','SSL','SS_ORDER','RXV','rxViewUpdate','defineSkillSet','SS_SETS','SK','renderSkills','canSwap','SSV','ssvUpdate','GXJ','borderXN','closePanels','WZ0','WZ1','WX1','wmapOpen','wmapToggle','wmapClick','wmapGo','wmapPin','wmapUpdate','wmapRegionAt','wmapArt','WMAP_AMBER','WMAP_W','WMAP_H','WM','WMAP_TOWNS','WMAP_BANNER','WMAP_BANKS','WMAP_LOCK','mapLand:()=>mapLand','VIL2','WX0','slopeBlock','SLOPE_MAX','TUN','bridgeDeck','valeOpen','borderX','borderZ','NET','mqTarget','mqLogRow','mqMark','odranHere','MQ_BY_ID','VIL4','LORE_BY_ID','updateZoneLabel','mapEdgeAlpha','GREY_HM','GREY_QUEEN','greySnowAmt','drawFullMap','drawMinimap','mapCX','landOpen','CHAM','chamoisUpdate','chamoisOK','GLEN','GREY_GATES','slotIcon','PENDANT_STATS','itemStat','HALF','GREY','updateGreyspine','startSolo','scene','beginPlay','MONS','P','PL','CB','GEAR','MAP','CHAT','WX','doAttack','equip','updateMonsters','updateCombat','updateWeather','openSkills','openSoul','PASSIVE_IDS','attackVisuals','applyEvent','SKILLS','ANIM_OF','BOSS_SKILLS','AREA_FX','BOLTS','ACT_SKILL','renderInv','sendChat','openChat','chatText','getH','canStart:()=>canStart','camera','VIL','VIL2','VIL3','PASS','NODES','NODE_VIEWS','NODE_KINDS','NODE_TAKEN','nearNode','nodePrompt','gatherNode','openLodge','openTravel','nearCircle','CIRCLES','snowfall','rain','musicThemeHere','landHere','LANDS','ZONES','northOpen','updateHoarfrost','updateNodes','updateAurora','AURORA','HOAR','terrainColor','worldBounds','HZ0','ITEM','itemIcon','craftHtml','renderBrew','openBrew','openShop','renderShop','panelNPC:()=>panelNPC','drinkPotion','onPotionEvent','updatePotBar','POT_ST','potBar','MQ','CAST','castBar','updateNodes','monTierK','zoneLvText','zoneTierOn','renderTierRow','landOfZone','landAt',
-  'DG_RUN:()=>DG_RUN','DG_VIEW','DG_THEMES','dgFree','dgIn','dgHudText','dgHudTick','dgDownText','sky','water','sun','updateCamera','updateEnv','updatePlayer','applySnap','keys','TERRAIN_BANDS','cullChunks','playerDown','playerUp','Stream','NPCs','NPC_DEFER','npcById','terrainHot','nextLazyTile']});
+  'DG_RUN:()=>DG_RUN','CAVE_RUN:()=>CAVE_RUN','CVB_FX','CVB_LIFT','CVB_LANE','cvbFrame','cvbSpeedK','cvbLift','caveRunEnter','caveRunLeave','CAVE_MP','CAVE_M','NETH','caveBoardHtml','caveWhereHtml','CAVE_SKILL_IDS','CAVE_SKILLS','CAVE_FLOOR_N','caveMState','caveBake','caveInfoHtml','caveGridHtml','CAVE_UI','openPanel','renderCaveLift','CAVE_VIS','CAVE_VIS_BAD','CVV','cvv1Wind','DG_VIEW','DG_THEMES','dgFree','dgIn','dgHudText','dgHudTick','dgDownText','sky','water','sun','updateCamera','updateEnv','updatePlayer','applySnap','keys','TERRAIN_BANDS','cullChunks','playerDown','playerUp','Stream','NPCs','NPC_DEFER','npcById','terrainHot','nextLazyTile']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const el=s=>document.querySelector(s);
 (async()=>{
@@ -42,8 +42,9 @@ const el=s=>document.querySelector(s);
     G.qShowTab('board'); ok('the board tab lists the notices, a hunt with its monster\'s picture, and no Accept away from Maren',(q().match(/class="qc /g)||[]).length===G.GEAR.q.offers.length&&(!G.GEAR.q.offers.some(o=>o.type==='kill')||/data-mp="/.test(q()))&&!/data-accept/.test(q()));
     G.qShowTab('side'); ok('the side quests tab lists the six chains, each with its land, level and cosmetic, none under way yet',(q().match(/class="sq-card/g)||[]).length===6&&/The Grey Tide/.test(q())&&/Tide King&#39;s Mantle|Tide King's Mantle/.test(q())&&/From level 15/.test(q()),q().slice(0,200));
     G.qShowTab('taken'); ok('the taken tab says when you carry nothing',/carry no notices/.test(q())); G.closePanels(); }
-  G.openSkills(); ok('skills panel renders 3 slots',(el('#skBody').innerHTML.match(/class="sk-slot/g)||[]).length===3);
-  { const h=()=>el('#skBody').innerHTML; ok('skills panel: a tab for 1, 2, 3 and Passive, and three passive slots',(h().match(/data-skkind=/g)||[]).length===4&&(h().match(/class="sk-pslot/g)||[]).length===3);
+  G.openSkills(); ok('skills panel renders 4 slots (the three class slots and the cave row)',(el('#skBody').innerHTML.match(/class="sk-slot/g)||[]).length===4);
+  ok('skills panel: the cave row says what to do (locked below level 23, or Go to the cave)',/data-caveslot/.test(el('#skBody').innerHTML)&&/(Opens at level 23|Go to the cave)/.test(el('#skBody').innerHTML));
+  { const h=()=>el('#skBody').innerHTML; ok('skills panel: a tab for 1, 2, 3, Cave and Passive, and three passive slots',(h().match(/data-skkind=/g)||[]).length===5&&(h().match(/class="sk-pslot/g)||[]).length===3);
     ok('an unowned boss skill shows as Boss in the grid and cannot be bought',/data-id="spore"[^>]*>(?:(?!<\/button>)[\s\S])*<span class="lv">Boss<\/span>/.test(h())&&!/data-buyskill="spore"/.test(h()),G.GEAR.eq.weapon);
     G.NET.send({t:'dev',cmd:'level',v:20}); G.NET.send({t:'dev',cmd:'skills'}); G.NET.send({t:'dev',cmd:'mats'}); await wait(600); G=c.G();
     G.openSkills(null,'pass'); ok('passives tab lists every passive, Vitality is in a slot',(h().match(/data-from="grid"/g)||[]).length===G.PASSIVE_IDS.length&&(h().match(/class="sk-pslot on/g)||[]).length===1,G.GEAR.skills.pass.join());
@@ -154,7 +155,7 @@ const el=s=>document.querySelector(s);
     ok('a worn pendant shows in its slot beside the chest',/data-slot="pendant" style="grid-area:neck"/.test(h)&&h.includes('data-id="pendant-xp-e+3"')); }
   ok('the tools have icons of their own',['pick1','axe1','sickle1','pick6-l'].every(id=>G.itemIcon(G.ITEM[id]).includes('<svg'))&&G.itemIcon(G.ITEM.pick1)!==G.itemIcon(G.ITEM.axe1)&&G.itemIcon(G.ITEM.axe1)!==G.itemIcon(G.ITEM.sickle1));
   G.P.x=G.VIL3.tele.x; G.P.z=G.VIL3.tele.z; G.P.y=G.getH(G.P.x,G.P.z); G.openTravel();
-  { const h=el('#trBody').innerHTML; ok('stepping on a circle opens a window with every village: this one marked, the open ones to travel to, Highmark cold until you have been there',G.nearCircle()===G.VIL3&&(h.match(/data-to=/g)||[]).length===6&&/You are here/.test(h)&&(h.match(/Travel here/g)||[]).length===2&&(h.match(/<button[^>]*disabled/g)||[]).length===4); }   // (six villages: this one, two open, Highmark, Glasswell and Wraithwick still cold)
+  { const h=el('#trBody').innerHTML; ok('stepping on a circle opens a window with every village: this one marked, the open ones to travel to, Highmark cold until you have been there',G.nearCircle()===G.VIL3&&(h.match(/data-to=/g)||[]).length===7&&/You are here/.test(h)&&(h.match(/Travel here/g)||[]).length===3&&(h.match(/<button[^>]*disabled/g)||[]).length===4); }   // (six villages and the Deep Cave's mouth: this one, three open, Highmark, Glasswell and Wraithwick still cold)
   await wait(400); G.NET.send({t:'warp',to:'hanami'}); await wait(500); G=c.G();   // (the server must have heard where you stand) ok('choosing Hanami in the window carries you there',Math.hypot(G.P.x-G.VIL2.x,G.P.z-G.VIL2.z)<G.VIL2.r);
   ok('a node is drawn for every resource node',G.NODE_VIEWS.length===G.NODES.length&&G.NODES.length>=60);
   { const first=G.NODES.find(n=>n.kind==='snowmoss'), far=n=>Math.min(...G.MONS.map(m=>Math.hypot(m.x-n.x,m.z-n.z)));   // (a snowmoss node of the same tier that is farthest from every monster: beside a camp a level-24 hiker is knocked out before the potion check below)
@@ -338,5 +339,56 @@ const el=s=>document.querySelector(s);
     ok('...wearing one piece shows that set\'s card alone (name, pieces worn, pairs owned)',/class="sk-sets"/.test(h2)&&/The Harvest/.test(h2)&&/1 of 6 pieces worn/.test(h2)&&/3 of 3 pairs owned/.test(h2)&&(h2.match(/class="sk-set[ "]/g)||[]).length===1);
     const sets=Object.keys(G.SS_SETS), syms=new Set(sets.map(id=>G.SS_SETS[id].emblem&&G.SS_SETS[id].emblem.glyph)), cols=new Set(sets.map(id=>G.SS_SETS[id].emblem&&G.SS_SETS[id].emblem.col));
     ok('every set has a symbol of its own and a colour of its own ('+sets.length+' sets)',sets.filter(id=>!G.SS_SETS[id].dev).every(id=>!!G.SS_SETS[id].emblem)&&syms.size===sets.length-(sets.includes('fxset')?1:0)+(sets.includes('fxset')?1:0)&&cols.size>=8); }
+  // the Deep Cave's methods (C2): the props of every floor build and are disposed, the state message drives them, the board and the locked tile say where each skill comes from
+  { G=c.G(); const errs=[]; const ce=console.error; console.error=(...a)=>{ errs.push(a.join(' ')); };
+    for(const n of G.CAVE_FLOOR_N){
+      try{ G.caveRunEnter(n); }catch(e){ errs.push(String(e)); }
+      G=c.G(); const MP=G.CAVE_MP, R=G.CAVE_RUN();
+      ok('floor '+n+': the method props build ('+(MP.g?MP.g.children.length:0)+' meshes, '+MP.upd.length+' updaters), no error',!!R&&!!MP.g&&MP.g.children.length>40&&MP.upd.length>=6&&errs.length===0,errs.join('|'));
+      G.NETH.cm({t:'cm',f:n,hud:'Mural pieces 2 of 5',a:5,b:[1,2,0],c:{s:1,k:1,n:5},d:{s:1,h:2},e:{s:1,z:50,w:0},fv:{o:30,w:0},g:0,h:{vm:3,hm:1,o:2,b:1,c:0},cd:{A:120}}); G=c.G();
+      for(let i=0;i<3;i++) G.CAVE_MP.upd.forEach(f=>f(G.caveMState(),0.05,i));
+      ok('floor '+n+': the state message shows the HUD line, opens the vault\'s seal here too, and the props follow it',el('#cvMethod').textContent==='Mural pieces 2 of 5'&&!el('#cvMethod').hidden&&G.CAVE_M.seal===true&&R.B.sealed.every(k=>R.B.cells[k]===1)&&G.CAVE_MP.carry.visible===true&&errs.length===0,errs.join('|'));
+      G.NETH.cm({t:'cm',f:n,hud:'',fv:{o:0,w:0}}); G=c.G(); ok('floor '+n+': the seal closes again and the HUD line hides',R.B.sealed.every(k=>R.B.cells[k]===0)&&el('#cvMethod').hidden);
+      G.caveRunLeave(); G=c.G();
+      ok('floor '+n+': leaving disposes the props and gives the rock back',G.CAVE_MP.g===null&&G.CAVE_MP.upd.length===0&&G.CAVE_RUN()===null&&G.caveBake(n).sealed.every(k=>G.caveBake(n).cells[k]===0));
+    }
+    console.error=ce;
+    const board=G.caveBoardHtml(); ok('the board lists every floor and all eight methods with the skill each gives',G.CAVE_FLOOR_N.every(n=>board.includes('Floor '+n))&&board.includes('Mural fragments')&&board.includes('Echo')&&board.includes('Second Wind')&&(board.match(/<li>/g)||[]).length===8*G.CAVE_FLOOR_N.length);
+    ok('a locked skill\'s details say which method and floor give it',/Mural fragments, The Glowworm Grotto/.test((G.CAVE_UI.sel='echo',G.caveInfoHtml())));
+    ok('every floor-1 skill exists',['echo','flare','overdrive','lanternward','burrow','cavein','grapple','secondwind'].filter(id=>G.CAVE_SKILLS[id]).length===8);
+    { const MINE=['echo','flare','overdrive','lanternward','burrow','cavein','grapple','secondwind','threshing','shadowstep','shieldwall','lighthouse','cutandrun'], bad=[], me=G.NET.pid, sc=()=>G.scene.children.filter(o=>!o.isInstancedMesh).length, n0=sc();   // C5: the drawings of floor 1 and five floor-2 set skills
+      for(const id of MINE){ const ab=G.CAVE_SKILLS[id], v=G.CAVE_VIS[id]; if(!ab||!v){ bad.push(id+': no drawing'); continue; }
+        try{ G.cvv1Wind(ab,G.P); v.cast(G.P,ab,null); G.attackVisuals({kind:ab.anim,sk:ab.act[0]},null); G.updateCombat(0.05); if(v.wind) v.wind(G.P,ab); }catch(e){ bad.push(id+': '+e.message); } }
+      for(const [id,args] of [['cavein',[900,'zone',G.P.x+3,G.P.z,6,1,me,'earth',1]],['lighthouse',[901,'zone',G.P.x,G.P.z,10,8,me,'light',0]]]){   // the zone events the drawings claim
+        try{ G.cvv1Wind(G.CAVE_SKILLS[id],G.P); G.applyEvent(['area',...args]); }catch(e){ bad.push(id+' zone: '+e.message); } }
+      try{ for(const e of [['cvfx',me,'ward',6,1],['cvfx',me,'ward',6,0.5],['cvfx',me,'retreat'],['cvfx',me,'wall',6,30],['cvfx',me,'nonsense'],['cvhand',1,1,2,me]]){ G.cvv1Wind(G.CAVE_SKILLS.cutandrun,G.P); G.applyEvent(e); } }catch(e){ bad.push('events: '+e.message); }
+      const live=G.CVV.list.length; for(let j=0;j<300;j++){ try{ G.updateCombat(0.1); }catch(e){ bad.push('tick: '+e.message); break; } if(j===10){ G.applyEvent(['aend',900]); G.applyEvent(['aend',901]); } }
+      ok('every floor-1 skill and five floor-2 set skills have a cave drawing; casting each, its press, its zones and events throw nothing',!bad.length&&!G.CAVE_VIS_BAD.length&&live>0,bad.concat(G.CAVE_VIS_BAD.map(b=>b.id+': '+b.why)).join('; '));
+      ok('...and everything they drew is gone again (timed effects, meshes in the scene)',G.CVV.list.length===0&&sc()<=n0,G.CVV.list.length+' effects left, scene '+n0+' -> '+sc()); }
+    ok('every floor-1 skill has a placeholder look (the vis key) and a method',['echo','flare','overdrive','lanternward','burrow','cavein','grapple','secondwind'].filter(id=>G.CAVE_SKILLS[id]).length===8);
+    // C5: the drawings of the 13 set skills of floors 2b-4 (vis-floor2b/3/4.js): an entry each; cast through the real client (mine and another player's), every cvfx / cvhand / area event of theirs, then run out: nothing thrown, nothing left behind
+    { const mine=['marionette','tidepool','intermission','soundcharge','eagleperch','stoppedhour','lampwindow','nightline','bellecho','blackice','landslide','embalm','nightshift'];
+      const me=G.NET.pid, mon=G.MONS.find(m=>!m.dead)||G.MONS[0], x=mon.x+5, z=mon.z, miss=mine.filter(id=>!G.CAVE_VIS[id]), quiet=[], areas=[], fake={id:991,x:x-3,y:G.P.y,z,face:1,scale:1};
+      G.P.x=x; G.P.z=z; errs.length=0;
+      const base=()=>G.CVB_FX.length+G.SSL.parts.length+G.SSL.decals.length+G.CB.fx.length+G.AREA_FX.size+G.CVB_LIFT.size;
+      mine.forEach((id,i)=>{
+        const ab=G.CAVE_SKILLS[id], k=ab.act[0], b0=base(), A=(src,r,d,el)=>['area',700+i,'zone',x,z,r,d,me,el,0,src], evs=({
+          marionette:[['cvfx',me,'puppet',mon.id,4],['cvfx',me,'weak',mon.id,4]], tidepool:[A('ambrose_tidepool',6,6,'water'),['cvfx',me,'cleanse']], intermission:[['cvfx',me,'next',0.2],['cvfx',991,'next',0]],
+          soundcharge:[], eagleperch:[['cvfx',me,'perch',5]], stoppedhour:[['cvfx',me,'hold',3],['cvfx',me,'hold-end',10]], lampwindow:[A('hollis_lampwindow',7,10,'dark'),['cvfx',me,'lamp']],
+          nightline:[A('pell_nightline',6,8,'fire')], bellecho:[['cvfx',me,'bell',3],['cvfx',me,'bell',2],['cvfx',me,'bell',0]], blackice:[A('brynja_blackice',6.5,6,'water'),['cvfx',me,'lane',1.5,0.4]],
+          landslide:[['cvfx',me,'slide',x,z,x-10,z-10]], embalm:[['cvfx',me,'embalm',5],['cvfx',991,'embalm',5],['cvfx',me,'embalm-end']], nightshift:[['cvhand',x-2,z,mon.id,me],['cvhand',x+2,z,99999,me]] })[id];
+        G.CB.act={kind:G.ANIM_OF[k]||k,sk:k,t:0,dur:ab.act[1],hitAt:ab.act[2],done:false}; G.cvbFrame(0.02); G.CB.act=null;   // (the wind-up, drawn once when the cast starts)
+        G.attackVisuals({kind:G.ANIM_OF[k]||k,sk:k},null); G.attackVisuals({kind:G.ANIM_OF[k]||k,sk:k},fake);
+        for(const e of evs){ G.applyEvent(e); if(e[0]==='area') areas.push(e[1]); }
+        let peak=base(); for(let j=0;j<10;j++){ G.updateCombat(0.05); peak=Math.max(peak,base()); } if(peak<=b0) quiet.push(id);
+      });
+      const lifted=G.cvbLift(me)>0.5, fast=(G.applyEvent(['cvfx',me,'lane',1.5,0.4]),G.cvbSpeedK()>1.3);
+      for(const a of areas) G.applyEvent(['aend',a]);
+      for(let j=0;j<700;j++) G.updateCombat(0.05);   // 35 s: past the longest effect (the bell's 20 s)
+      ok('every floor 2-4 cave skill of effects part 2 has a drawing, and casting each (yours and another player\'s) with its events throws nothing',!miss.length&&!G.CAVE_VIS_BAD.length&&errs.length===0&&!quiet.length,(miss.length?'no drawing: '+miss+'; ':'')+(quiet.length?'draws nothing: '+quiet+'; ':'')+errs.slice(0,2).join(' | '));
+      ok('...Eagle\'s Perch lifts the model and Black Ice\'s lane speeds you up, and both end',lifted&&fast&&G.cvbLift(me)===0,'lift '+lifted+', fast '+fast);
+      await wait(1200); let own=0; G.scene.traverse(o=>{ if(o.userData&&o.userData.own) own++; });
+      ok('...and they leave nothing behind (effects, particles, patterns, zones, meshes in the scene)',G.CVB_FX.length===0&&G.CVB_LIFT.size===0&&G.AREA_FX.size===0&&G.SSL.parts.length===0&&G.SSL.decals.length===0&&own===0,G.CVB_FX.length+' effects, '+G.SSL.parts.length+' particles, '+G.SSL.decals.length+' patterns, '+own+' own meshes'); }   // (the scene's own child count is not compared: the world keeps streaming in, and the first Landslide builds debris pools for good)
+    G.openPanel('cvLift'); try{ G.renderCaveLift(); }catch(e){ errs.push(String(e)); } ok('the lift window renders with the board under the floors',errs.length===0); G.closePanels(); }
   c.stop(); console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);
 })();

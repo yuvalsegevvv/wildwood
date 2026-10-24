@@ -9,7 +9,7 @@ function updatePlayer(dt){
   const len=Math.hypot(f,s); if(len>1){ f/=len; s/=len; }
   const wsf=waterSurf(P.x,P.z), inWater=getH(P.x,P.z)<wsf-0.35 && bridgeDeck(P.x,P.z)<wsf;   // (the sea's level, or a tarn's or the river's in the Greyspine)
   let speed=9.5*(1+(GEAR&&GEAR.skills?passiveSum(GEAR.skills,PL.level,'move',clsOf()):0)); if(inWater) speed*=0.5;   // sprint is the default pace; the Fleetfoot passive adds to it
-  if(PFX.slow>0) speed*=0.5; if(PFX.root>0) speed=0;   // a boss's ice: frozen or slowed (combat/boss-fx.js)
+  if(PFX.slow>0) speed*=0.5; speed*=cvbSpeedK(); if(PFX.root>0) speed=0;   // a boss's ice: frozen or slowed (combat/boss-fx.js); cave: cvbSpeedK() is Black Ice's lane (+40%)
   if(CB.act && (CB.act.kind==='slash'||CB.act.kind==='nova'||CB.act.kind==='shoot'||CB.act.kind==='volley')) speed*=0.45;
   const sy=Math.sin(P.yaw), cy=Math.cos(P.yaw);
   const tx=(-sy*f+cy*s)*speed, tz=(-cy*f-sy*s)*speed;
@@ -27,8 +27,8 @@ function updatePlayer(dt){
   for(const m of MONS){ if(m.dead||!m.g.visible) continue; const dx=P.x-m.x, dz=P.z-m.z, d=Math.hypot(dx,dz), mm=m.T.rad+0.32; if(d<mm && d>1e-4){ P.x=m.x+dx/d*mm; P.z=m.z+dz/d*mm; } }
   for(const n of NPCs){ if(n.inside) continue; const dx=P.x-n.x, dz=P.z-n.z, d=Math.hypot(dx,dz), m=0.62; if(d<m && d>1e-4){ P.x=n.x+dx/d*m; P.z=n.z+dz/d*m; } }
   worldBounds(P,ox,0.32,oz);
-  if(!dgIn()) cvResolve(P,ox,oz,0.32,SLOPE_MAX);   // caves: walls and ledges of a cave's rock (shared/caves.js)
-  if(P.ground&&!dgIn()) slopeBlock(ox,oz);   // too steep to climb: no way up (shared with the bridge's deck as ground)
+  if(!dgIn()&&!caveIn()) cvResolve(P,ox,oz,0.32,SLOPE_MAX);   // caves: walls and ledges of a cave's rock (shared/caves.js)
+  if(P.ground&&!dgIn()&&!caveIn()) slopeBlock(ox,oz);   // too steep to climb: no way up (shared with the bridge's deck as ground)
   const gnd=Math.max(getH(P.x,P.z),wsf-1.15,bridgeDeck(P.x,P.z),cvGroundAt(P.x,P.z,P.y));   // the river bridge's deck is ground too; caves: so are an arch's top and a ledge (-Infinity away from a site)
   if(jumpReq && P.ground && PFX.root<=0){ P.vy=inWater?4:6.2; P.ground=false; }
   jumpReq=false;
@@ -63,6 +63,7 @@ const valeOpen=()=>!!(GEAR&&GEAR.east>=1);
 const northOpen=()=>!!(GEAR&&GEAR.north>=1);
 const westOpen=()=>!!(GEAR&&GEAR.west>=1);
 function worldBounds(o,ox,rad,oz){
+  if(caveIn()){ caveBounds(o,ox,rad,oz); return; }   // cave: a floor's walls instead of the world's edges (cave/collide.js)
   if(dgIn()){ dgBounds(o,ox,rad,oz); return; }   // dungeons: a run's walls instead of the world's edges (dungeon/collide.js)
   const T=TUN, dz=o.z-T.z, bore=Math.abs(dz)<T.w-rad+0.2, e0=T.p0-0.6, e1=T.p1+0.6;
   if(!o.inTun && bore && ((ox<=e0 && o.x>e0 && valeOpen()) || (ox>=e1 && o.x<e1))) o.inTun=true;
@@ -83,7 +84,8 @@ function updateCamera(dt){
     const hx=P.x, hy=P.y+1.45*hiker.scale, hz=P.z;
     let cx=hx+Math.sin(P.yaw)*Math.cos(pt)*dist, cz=hz+Math.cos(P.yaw)*Math.cos(pt)*dist;
     let cyy=Math.max(hy+Math.sin(pt)*dist, Math.max(getH(cx,cz),waterSurf(cx,cz),bridgeDeck(cx,cz))+0.45);   // (above the river bridge's deck too)
-    if(dgIn()){ const b=dgCamBoom(hx,hy,hz,cx,cyy,cz); cx=b[0]; cyy=b[1]; cz=b[2]; }
+    if(caveIn()){ const b=caveCamBoom(hx,hy,hz,cx,cyy,cz); cx=b[0]; cyy=b[1]; cz=b[2]; }   // cave: the arm shortens in front of rock and stays under the ceiling (cave/collide.js)
+    else if(dgIn()){ const b=dgCamBoom(hx,hy,hz,cx,cyy,cz); cx=b[0]; cyy=b[1]; cz=b[2]; }
     else { const b=cvCamBoom(hx,hy,hz,cx,cyy,cz); cx=b[0]; cyy=b[1]; cz=b[2]; }   // caves: the camera's arm stops short of the rock   // dungeons: the camera's arm shortens in front of a run's walls (dungeon/collide.js)
     camera.position.set(cx+(Math.random()-0.5)*camShake*0.6,cyy+(Math.random()-0.5)*camShake*0.6,cz);
     camera.lookAt(hx,hy+0.2,hz);

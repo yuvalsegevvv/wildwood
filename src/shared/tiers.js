@@ -26,7 +26,7 @@ const newZt=()=>({home:{on:0,max:0},vale:{on:0,max:0},hoar:{on:0,max:0},grey:{on
 const zoneTierOn=(gear,land)=>{ const t=gear&&gear.zt&&gear.zt[land]; return t?t.on|0:0; };
 const zoneTierMax=(gear,land)=>{ const t=gear&&gear.zt&&gear.zt[land]; return t?t.max|0:0; };
 // the tier a monster's kill is played at by this player: its land is where its camp is (a boss's camp is its arena)
-const monTierOf=(gear,m)=>zoneTierOn(gear,landAt(m.camp.x,m.camp.z));
+const monTierOf=(gear,m)=>caveFloorAt(m.camp.x,m.camp.z)>=0?0:zoneTierOn(gear,landAt(m.camp.x,m.camp.z));   // cave: the Deep Cave has no zone tier (its floors lie outside every land)
 const zoneTierLv=(d,t)=>d.level+ZTIER_STEP*t;
 // how a def's numbers change at tier t: its level then, and the health / damage / XP multipliers against the def's own
 const ZT_CACHE=new Map();

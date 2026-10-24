@@ -212,6 +212,7 @@ function* genTerrain(){
   P.x=spawn.x; P.z=spawn.z; P.y=getH(P.x,P.z);
   { const ux=VIL.x-P.x, uz=VIL.z-P.z; P.yaw=Math.atan2(-ux,-uz); P.face=P.yaw; }
   buildVillage(); buildVale(); buildHoarfrost(); buildGreyspine(); buildSunscar(); buildGloamhorn(); buildTideBeach(); buildProvingIsle(); buildRaids(); buildNodes();   // pvp: the Proving Isle's gate and banners (village/buildings-pvp.js)
+  caveMouthBuild();   // cave: the Deep Cave's mouth, lift and circle (cave/mouth.js)
   dgEntBuild();   // dungeons: the three doors and their signposts
 }
 // terrain tiles farther than the fog are hidden (checked with the plant chunks, see cullChunks)

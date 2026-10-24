@@ -32,11 +32,13 @@ function interact(){
   else if(nearNode()>=0) gatherNode(nearNode());
   else if(nearHomeBench()) openLodge();   // home: the bench opens the lodge panel (make cosmetics, sell, leave home)
   else if(nearCircle()) useCircle();
+  else if(caveLiftNear()) caveLiftOpen();   // cave: the lift beside the mouth or at a floor's start (cave/lift.js)
   else if(dgEntranceNear(P.x,P.z)) dgOpenDoor(dgEntranceNear(P.x,P.z).theme);   // dungeons: the talk key at a door
   else if(dgUseNear()) dgUseKey();   // dungeons: revive, use an objective, relight a lamp or leave by the portal (dungeon/hud.js)
 }
 // the teleport circles (one in each village): E / the talk button on one sends you to the other, once attuned (GEAR.east 2)
-function nearCircle(){ const V=vilAt(P.x,P.z); return V.tele&&Math.hypot(P.x-V.tele.x,P.z-V.tele.z)<V.tele.r+0.6?V:null; }
+function nearCircle(){ const V=caveMouthNear(P.x,P.z,16)?CAVE_MOUTH_V:vilAt(P.x,P.z);   // cave: the cave mouth's circle is not in a village
+  return V.tele&&Math.hypot(P.x-V.tele.x,P.z-V.tele.z)<V.tele.r+0.6?V:null; }
 // the circle: once attuned, stepping onto it (or the talk key) opens the travel window (ui/travel.js) with every village; a cold circle just answers with what is missing
 function useCircle(){ const C=CIRCLES.find(c=>c.V===nearCircle()); if(C&&C.open(GEAR)){ openTravel(); UI_SFX.click(); } else { netSend({t:'warp'}); UI_SFX.click(); } }
 function circlePrompt(V){
@@ -74,6 +76,7 @@ function updateTalkUI(){
     promptEl.textContent=circlePrompt(circ); promptEl.hidden=false; bTalk.textContent=CIRCLES.find(c=>c.V===circ).open(GEAR)?'Travel':'Look';
     document.body.classList.add('can-talk');
   } else if(bench){ promptEl.textContent=isTouch?'':'Press '+tk+' to use your workbench'; promptEl.hidden=isTouch; bTalk.textContent='Bench'; document.body.classList.add('can-talk');
+  } else if(free&&caveLiftNear()){ caveLiftPrompt(promptEl,bTalk); document.body.classList.add('can-talk');   // cave: the lift (cave/lift.js)
   } else if(dgDoor){ dgEntPrompt(dgDoor,promptEl,bTalk); document.body.classList.add('can-talk');   // dungeons: the door's prompt
   } else if(free&&dgUseNear()){ dgUsePrompt(promptEl,bTalk); document.body.classList.add('can-talk');   // dungeons: a downed teammate, an objective, a dark lamp or the portal within reach (dungeon/hud.js)
   } else if(canTalk){

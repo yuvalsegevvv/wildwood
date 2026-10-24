@@ -72,6 +72,7 @@ shared
   caves/wrecker.js                   Cave site 'wrecker': Lantern Isle's wrecker's cave, a low narrow crawl through the isle's hump with a small den and a squeeze
   caves/mine.js                      Cave site 'mine': an old mine in the Greyspine, a square-cut straight adit with a side drift and a stope chamber (grey rock)
   caves/foothill.js                  Cave site 'foothill': a mossy walk-through tunnel with two chambers in the home forest's northern foothills
+  cave-mouth.js                      The Deep Cave's mouth in the Wildwood's northern foothills: where it stands, the flat pad under it (rawHeight), the teleport circle that joins CIRCLES, the surface lift pad, keep-outs for plants and camps. Pure; loaded before terrain-height.js
   terrain-height.js                  rawHeight: the atlas's ground (baseHeight) + the flattening round a village and a boss arena standing on it. Pure.
   balance.js                         Level formulas: fLv, gear tiers, expected gear, armour negation (soft-capped at 90%), the level debuff on damage dealt (never below x0.5), the XP curve (no level cap: kills per level rise to 3,150 at level 50, then double every 5 levels; no kill pays for more than 10 levels above you), coins (the pay doubles every 10 levels above 60). Pure.
   monster-defs.js                    Monster families (FAM), the 112 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach, 14 in the Greyspine, 18 in the Sunscar, 22 in the Gloamhorn), defAt (a def's numbers at a level; above level 60 monsters creep tougher, bosses also stronger), prepDef, the twelve bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
@@ -91,10 +92,26 @@ shared
   cosmetics.js                       Cosmetics (version 3): auras (a glow, a ring or drifting particles around the character) and capes, made at a Wayfarers' Lodge (the free ones need no making). Pure.
   cospieces.js                       Cosmetic pieces (version 3.2): which general parts of every slot (hat, top, bottom, shoes, gloves, cape, aura) are free and which are crafted, from professions' materials and monsters' drops; the try-on lock rules. Pure.
   amber.js                           Amber (a gear-upgrade material) and gems (the premium currency, version 3.3): the cap of a purse, the price of an outfit set, the grant of the public testing tool
+  cave.js                            The Deep Cave, shared rules: the 4th skill slot (opens at level 23), the charge that pays for it, the registry of cave skills (defineCaveSkill) and their validation
   gem-sources.js                     Free ways to earn gems: the pay of main and side quest steps, the daily quest set (UTC), the placeholder ad watch, and the achievements list
   side-quests.js                     Side quests (SQ): six chains of linked, objective-based steps, each leading to a land's second boss (Carapax, Kyuubi, Vetrmaw, the Sand Wyrm) or through the Gloamhorn (Captain Dredge, then the Gloam Warden); rewards are resources, a little XP and a cosmetic at each chain's end. Pure.
   pvp.js                             The Proving Isle (PvP): the fighting ground, the fixed level, gear and loadout everyone fights with there, the gate on the bridge, where a knocked-out fighter wakes (a shore spot), the entry lock. Pure.
   dungeon-slots.js                   Dungeon run slots: where runs live (squares far east of the walkable world, one per run, 600 m apart), their flat floor height, and which slot a point is in. Pure; loaded by both sides
+  cave-gen.js                        The Deep Cave's map generator: a seeded layout per floor (chambers, winding tunnels, side tunnels, dead-end pockets, a sealed vault, pools / river / lava), its walk grid, heights and the named anchors of the eight methods and the monster camps. Pure.
+  cave-map.js                        The Deep Cave's place in the world: the floor registry (defineCaveFloor), where each floor lies (fixed squares east of the dungeon run slots), the floor under a point, its baked map, walking and height queries, the lifts and the floors a hiker may take. Pure.
+  cave/floor-1-grotto.js             Cave floor 1, the Glowworm Grotto (monsters level 25-34): wet limestone, blue glowworm ceilings, still pools, stalactites; its generator options, its look for the client and its ten monsters
+  cave/floor-2-prism.js              Cave floor 2, the Prism Hollows (monsters level 35-44): giant geodes, light split into colours, echoing round chambers; its generator options, look and ten monsters
+  cave/floor-3-drowned.js            Cave floor 3, the Drowned Galleries (monsters level 45-54): flooded old halls with pillars, an underground river, waterfalls indoors; its generator options, look and ten monsters
+  cave/floor-4-magma.js              Cave floor 4, the Magma Heart (monsters level 55-64): lava tubes, obsidian, ember vents, heat shimmer; its generator options, look and ten monsters
+  cave-methods.js                    The Deep Cave's eight ways to earn a skill (methods A-H): the registry (defineCaveMethod), the 10-minute cooldown, the Echo Shard amounts, and the questions "which skill does this place give" and "where does this skill come from". Pure.
+  cave/method-a-murals.js            Cave method A, Mural fragments: five pieces of a painted skill hidden at the dead ends, seen only near your light; touch all five, then the wall teaches it
+  cave/method-b-crystals.js          Cave method B, Resonance crystals: three sealed geodes, each cracks only to a named element or to a two-element chain; hit it with the right skills
+  cave/method-c-echo.js              Cave method C, Echo trial: stand on the plinth, an echo sets a feat (win against a spawned pack without being hit on floor 1; a set's own feat on the others, from its skill's `feat` field)
+  cave/method-d-lantern.js           Cave method D, Carry the lantern: take the glow crystal from the deepest chamber to the altar by the lift; it dims when you are hit and goes out in water
+  cave/method-e-silent.js            Cave method E, The silent chamber: cross from the entry to the shrine past a sleeping guardian; running, fighting and casting add noise, and a full meter throws you out
+  cave/method-f-collapse.js          Cave method F, Collapse run: every few minutes a tremor (announced) opens a sealed vault for 90 seconds on a floor; everyone there races to it
+  cave/method-g-mole.js              Cave method G, The gem mole: a rare mole spawns at a burrow and runs for a hole; slow, stun and kill it before it digs out (everyone who hurt it is paid)
+  cave/method-h-crafting.js          Cave method H, Cave crafting: gather glow veins and cave herbs with the profession tools of the right tier, then carve the skill tablet at the stone anvil
   dungeon-hud.js                     What the dungeon HUD says: text and bars for each mission's HUD numbers (the snapshot's dg tuple after phase, seconds and waiting) and the look of each objective kind (dgo events). Pure, shared by the client and the tests.
   dungeons.js                        Dungeons, setup only (nothing calls it yet): map tiles and the theme registry (defineDungeonTheme, DG_BAD), the seeded layout generator, the baked collision grid with props, line of sight and a flow field, the mission list (every mission ends with a boss in a round hall the size of a boss arena), where the three entrances stand, the hourly offer of two mission types, who may enter, party-size scaling. Pure.
   dungeons/bosses.js                 The six dungeon bosses (Amanita the Sporemother, Gawataro the Jade Elder, Haugbui the Barrow Lord, Garrick the Seam Foreman, Khet the Hourkeeper, Abbess Morrow the Drowned Abbess): their designs as data (DG_BOSSES: moves named by primitive, signature, needs), their defs as rows shaped like BOSS_DEFS (DG_BOSS_DEFS), the hall's lamps and steam vents, and the arena of a run's boss hall. Pure.
@@ -127,6 +144,32 @@ shared
   skillsets/tamsin.js                Tamsin's skill set, The Rockbreaker (a grinder, earth): a hammer sweep, a quake that pulls a camp into a heap, and one landslide to finish it; granite, dust and rope
   skillsets/zahra.js                 Zahra's skill set, The Hour of Glass (a buff support, light): a mirror strike that quickens the line, a blessing of the long noon, and a sandglass planted for the whole fight; gold, glass and lapis
   skillsets/hollis.js                Hollis's skill set, The Wake Lantern (a healer, dark): a lantern swing that mends, a vigil that returns borrowed dusk, and a long night that carries the party through; lamp amber, mourning black and fog grey
+  cave/skill-1-echo.js               Cave skill Echo (floor 1, method A): repeats your last skill or burst at 60% power, with no cooldown
+  cave/skill-1-flare.js              Cave skill Flare (floor 1, method B, light): a 10 m burst of light; normal monsters are blinded for 2 s and miss, bosses deal 20% less for 4 s
+  cave/skill-1-overdrive.js          Cave skill Overdrive (floor 1, method C): your next 3 basic attacks are sure crits and come 30% faster
+  cave/skill-1-lanternward.js        Cave skill Lantern Ward (floor 1, method D): a shield of 15% of your max health for 6 s; allies within 8 m get half of it
+  cave/skill-1-burrow.js             Cave skill Burrow (floor 1, method E): sink into the ground for 1.5 s: nothing can hit you, you move up to 6 m, and normal monsters lose track of you
+  cave/skill-1-cavein.js             Cave skill Cave-in (floor 1, method F, earth): rocks fall on a 6 m circle: heavy damage, normal monsters stunned for 1.5 s
+  cave/skill-1-grapple.js            Cave skill Grapple Line (floor 1, method G): pull yourself up to 15 m to a target or a spot; your next hit within 2 s deals +30%
+  cave/skill-1-secondwind.js         Cave skill Second Wind (floor 1, method H): heal 20% of your max health over 6 s and clear slows
+  cave/skill-2-threshing.js          Deep Cave skill Threshing Floor (floor 2, tansy's set skill, method H)
+  cave/skill-2-shadowstep.js         Deep Cave skill Shadow Step (floor 2, sazanka's set skill, method E)
+  cave/skill-2-shieldwall.js         Deep Cave skill Shield-Wall (floor 2, torgeir's set skill, method F)
+  cave/skill-2-lighthouse.js         Deep Cave skill Lighthouse (floor 2, corvin's set skill, method A)
+  cave/skill-2-cutandrun.js          Deep Cave skill Cut and Run (floor 2, sabir's set skill, method G)
+  cave/skill-2-marionette.js         Deep Cave skill Marionette (floor 2, ottoline's set skill, method C)
+  cave/skill-3-tidepool.js           Deep Cave skill Tidepool (floor 3, ambrose's set skill, method B)
+  cave/skill-3-intermission.js       Deep Cave skill Intermission (floor 3, marigold's set skill, method C)
+  cave/skill-3-soundcharge.js        Deep Cave skill Sound the Charge (floor 3, dunstan's set skill, method F)
+  cave/skill-3-eagleperch.js         Deep Cave skill Eagle's Perch (floor 3, sorrel's set skill, method A)
+  cave/skill-3-stoppedhour.js        Deep Cave skill Stopped Hour (floor 3, zahra's set skill, method D)
+  cave/skill-3-lampwindow.js         Deep Cave skill Lamp in the Window (floor 3, hollis's set skill, method E)
+  cave/skill-4-nightline.js          Deep Cave skill Night Line (floor 4, pell's set skill, method D)
+  cave/skill-4-bellecho.js           Deep Cave skill Bell Echo (floor 4, genzo's set skill, method C)
+  cave/skill-4-blackice.js           Deep Cave skill Black Ice (floor 4, brynja's set skill, method G)
+  cave/skill-4-landslide.js          Deep Cave skill Landslide (floor 4, tamsin's set skill, method H)
+  cave/skill-4-embalm.js             Deep Cave skill Embalm (floor 4, nephra's set skill, method A)
+  cave/skill-4-nightshift.js         Deep Cave skill Night Shift (floor 4, ogden's set skill, method F)
   raids.js                           Raids: one ruined stronghold per land (defineRaid registry, the common layout, level and pay by zone tier, the signature-skill upgrade price in raid material, the flat pads)
   raids/thornwall.js                 Raid: Thornwall Keep, Wildwood's border castle taken over by the goblin warband (garrison, site, material)
   raids/kurohana.js                  Raid: Kurohana Castle, the Sakura Vale's burnt hilltop castle held by oni and its last lord's undead samurai (garrison, site, material)
@@ -144,6 +187,19 @@ server
   reactions.js                       Reactions on the server: elemental auras and reactions, the flavours as shared statuses on monsters (vuln, weak, burn, slow, stun) and direct application
   skillsets.js                       Skill sets on the server: granting a set's pieces, wearing a piece for all three classes, the loadout cache p.ss (the sets worn and their bonuses)
   amber.js                           Amber on the server: amber (gear.amb, a gear-upgrade material), gems (gear.gem, the premium currency), buying an outfit set for 1000 gems (gear.os), and the one public testing tool that grants gems on every server
+  cave.js                            The Deep Cave on the server: the 4th slot's charge (earned by casts that hit, a boss fight sets it), casting the equipped cave skill, equipping, and sanitizing gear.cave
+  cave-zone.js                       The Deep Cave's floors on the server: the camps and their monsters, walls for hikers and monsters (setPos, dashes, steering round corners, line of sight), the lift between the surface and the floors, waking on a floor after a knock-out
+  cave/methods.js                    The Deep Cave's eight methods on the server, the shared part: every player's progress on the floor they stand on, the 10-minute cooldown, a completed method paying its skill (or Echo Shards), the state message to the client, the HUD line
+  cave/method-a.js                   Cave method A on the server, Mural fragments: touch the five pieces at the dead ends (any order), then the wall; your light is always on, so only the walking matters
+  cave/method-b.js                   Cave method B on the server, Resonance crystals: three geodes crack only to the element (or two-element chain) written on them; an attack's element is checked when it lands
+  cave/method-c.js                   Cave method C on the server, Echo trial: stand on the plinth, an echo spawns a pack and sets a feat (no hit on floor 1; a set's own feat from its skill's `feat` field on the others)
+  cave/method-d.js                   Cave method D on the server, Carry the lantern: take the glow crystal from the deepest chamber to the altar by the lift; every hit dims it, water puts it out
+  cave/method-e.js                   Cave method E on the server, The silent chamber: from the entry to the shrine past a sleeping guardian; running, fighting and casting add noise, a full meter wakes it and throws you out
+  cave/method-f.js                   Cave method F on the server, Collapse run: a floor-wide tremor every few minutes (announced) opens the sealed vault for 90 seconds; whoever reaches it in time is paid, and the tunnel closes behind them
+  cave/method-g.js                   Cave method G on the server, The gem mole: a rare mole spawns at a burrow, runs for a hole and digs out unless it is brought down first; slows and stuns work on it, everyone who hurt it is paid
+  cave/method-h.js                   Cave method H on the server, Cave crafting: gather glow veins (a pickaxe) and cave herbs (a sickle) of the floor's tier standing still near them, then carve the tablet at the stone anvil
+  cave/skills.js                     The Deep Cave's floor-1 skills on the server: the new effect keys of resolveFxS they use (echo, flare, overdrive, ward, burrow, grapple, wind), and the three small reads in the damage code
+  cave-fx.js                         The Deep Cave's 18 set skills (floors 2-4) on the server: their extra fx keys, the timed effects they leave on players and zones, and the hooks into hurt, kill, zones and set marks
   gem-sources.js                     Free gems on the server: quest steps, the daily quest set (UTC), achievements and the placeholder ad watch
   boss-fx.js                         What the bosses can do, shared by every move set: telegraphed hits (circle, cone, line, donut, marks), ground zones, tidal walls, orbs, effects on players, timed casts, summons
   boss-kits-home.js                  Boss move sets of the home forest: the Rootwarden (root spikes, ground slam, the totem shield, and the four seasons of the grove) and Carapax, the Tide King (geyser trails, tidal waves with an undertow, the molt, the claw clamp, burrow strikes, the hunting whirlpool)
@@ -404,6 +460,7 @@ game
   raids/hud.js                       The raids' HUD side: where each stronghold stands (server rows), the strip near one, its door sign, the map marks and tooltips, the raid materials in the bag, the level event
   net/transport.js                   Connections to the world server: solo (server in this tab), shared room (one player's tab hosts), WebSocket (node server)
   net/client.js                      Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
+  cave/slot.js                       The Deep Cave, client side of the 4th slot: the action-bar tile and its charge bar, casting it, the skills panel's cave row and tab (equip / take off), the server's charge message
   combat/boss-dungeon.js             The dungeon bosses on the client: their defs in the roster lookup, what the boss bar's number means for each (dish, puffballs, lamps), Haugbui's lamps going dark and lit again, the relight channel's cast bar, and the gloom of his blackout
   net/remote.js                      Other players: avatars built from their look and gear, smoothed movement, attack animations, name tags
   economy/dungeon-gear.js            Level-30 dungeon gear in the UI: the ring's notes in the item details, the Tempering Stone count and drop note, the forge's Temper tab, the testing buttons, the events `stone` and `temper`
@@ -422,6 +479,24 @@ game
   pvp/state.js                       PvP on the Proving Isle, client side: whether you stand on it (server events pvp / pvlock), the fixed loadout your action bar and attacks use there, picking another fighter as the target, the badge and the shut-gate countdown
   dungeon/hud.js                     A run's HUD: the mission's title, lines and bar (dgHudText of the dg tuple) with the run's clock, the objectives' labels and compass arrows, the boss hall's arrow, the use / revive / relight / portal prompt and key, the leave button, the downed screen, the results panel, and the Testing tools' Dungeons row
   dungeon/minimap.js                 The maps in a run: the minimap and the full map draw the dungeon's tiles instead of the world, only the tiles you have walked into (explored), with the objectives, the portal, the boss's hall, the run's monsters and your party
+  cave/zone.js                       The Deep Cave on the client: which floor you are on (CAVE_RUN), entering and leaving it on the server's tp or by where you stand, the explored cells for the maps, and the cave's frame (view, light, lift panel)
+  cave/view.js                       The Deep Cave's meshes: floor, smoothed rock walls and the domed ceiling from a floor's bake (merged per chunk, light baked into the vertex colours), the water and lava, and the hooks the four themes dress it through; built at the floor's corner, disposed on leaving
+  cave/view-themes.js                The Deep Cave's four looks: the Glowworm Grotto (blue ceilings, stalactites, still pools), the Prism Hollows (geodes and split light), the Drowned Galleries (flooded halls, river, waterfalls) and the Magma Heart (lava, obsidian, embers)
+  cave/look.js                       A cave floor's look and sound: the sky, sun shadow, water and weather off, the floor's fog and flat light (time of day cannot tint it), a lantern on you and point lights moved to the nearest lamps, the floor's music and ambience; all given back exactly on leaving
+  cave/life.js                       The Deep Cave's ambient life: particles near you (drips and glow motes, sparkles, mist and fish glints, embers and heat haze) through the spark pool, and small static props (rubble, bones, mushrooms, crystals) set into each chamber
+  cave/collide.js                    Walking and the camera on a cave floor: the walls stop you (dgSlide on the floor's bake, like the server's caveSetPosS) and the third-person camera's arm shortens in front of rock and stays under the ceiling
+  cave/minimap.js                    The maps on a cave floor: the minimap and the full map draw the floor's layout instead of the world, only the cells you have been near (explored), with the lift, the floor's monsters you can see and your party
+  cave/mouth.js                      The Deep Cave's mouth on the surface: a craggy rock face with a dark doorway cut into the northern foothills, two lamps, a signboard, the teleport circle and the iron lift cage that carries hikers down; built once with the world
+  cave/lift.js                       The Deep Cave's lift on the client: standing on a lift (beside the mouth, or at the start of a floor) the talk key opens a small window listing the surface and every floor, the shut ones greyed with the reason; the server (server/cave-zone.js caveLiftP) does the moving
+  cave/methods.js                    The Deep Cave's methods on the client: the server's state message (cm), the one-line HUD for the method you are in, the board (every floor's eight methods and the skill each gives, in the lift window), the tremor and the vault's seal
+  cave/method-props.js               The Deep Cave's method props in the floor: the mural and its five pieces, the geodes with their element signs, the plinth, the glow crystal and altar, the sleeping guardian, the vault and its boulders, the mole holes, veins, herbs and the stone anvil
+  cave/vis.js                        The Deep Cave's skill drawings: the registry every cave skill's look is added to, and the routes from a cast and from the server's cvfx / cvhand events
+  cave/vis-floor1.js                 Drawings of the Deep Cave's floor-1 skills Echo, Flare, Overdrive and Lantern Ward, and the plumbing the floor 1-2 drawings share (timed effects, press-time wind-ups, area claims)
+  cave/vis-floor1b.js                Drawings of the Deep Cave's floor-1 skills Burrow, Cave-in, Grapple Line and Second Wind: a mound that carries you under the ground, a rock fall with shadows, a hook and a taut line, a green breath that heals
+  cave/vis-floor2a.js                Drawings of five Deep Cave floor-2 set skills: Tansy's Threshing Floor, Sazanka's Shadow Step, Torgeir's Shield-Wall, Corvin's Lighthouse and Sabir's Cut and Run, in their outfits' colours and motifs
+  cave/vis-floor2b.js                The Deep Cave's skill drawings, the kit and floor 2's Marionette: a manager for timed effects (cvbRun), shared helpers, and the hooks for zones, the lift and the lane's speed
+  cave/vis-floor3.js                 The Deep Cave's skill drawings for floor 3 (the +2 sets): Tidepool, Intermission, Sound the Charge, Eagle's Perch, Stopped Hour and Lamp in the Window
+  cave/vis-floor4.js                 The Deep Cave's skill drawings for floor 4 (the +3 sets): Night Line, Bell Echo, Black Ice, Landslide, Embalm and Night Shift
   ui/account.js                      Accounts on the online server: session token, the server's auth answers, register / log out / guest code in settings
   ui/guest-gate.js                   The "Register to continue" popup a guest sees at the online server's limits (level 20, the first three lands, zone tiers)
   ui/chat.js                         Chat between players: the chat log, the input (Enter / chat button), speech bubbles, /name, joins and leaves

@@ -28,7 +28,7 @@ ok('the world is the atlas\'s canvas (x -1900..1650, z -1120..1180) and Rimehold
 // ---- zones and monsters ----
 { const byZone={}; for(const m of x.MONS){ const d=m.def; if(!d.zone||d.zone[0]!=='h'||m.rd) continue; (byZone[d.zone]=byZone[d.zone]||[]).push(m); }
   const lv=[22,23,24,25,26,27,28,29,30];
-  ok('nine Hoarfrost zones, two monster kinds of the zone\'s level in each, twelve of every kind',lv.every(L=>{ const z=byZone['h'+L]||[], kinds=new Set(z.map(m=>m.def.id)); return kinds.size===2&&z.length===24&&z.every(m=>m.def.level===L); }),Object.keys(byZone).map(k=>k+':'+byZone[k].length).join(' '));
+  ok('nine Hoarfrost zones, two monster kinds of the zone\'s level in each, eighteen of every kind (x1.5 spawns)',lv.every(L=>{ const z=byZone['h'+L]||[], kinds=new Set(z.map(m=>m.def.id)); return kinds.size===2&&z.length===36&&z.every(m=>m.def.level===L); }),Object.keys(byZone).map(k=>k+':'+byZone[k].length).join(' '));
   const inZone=x.MONS.filter(m=>m.def.zone&&m.def.zone[0]==='h'&&!m.temp&&!m.rd).filter(m=>{ const zn=x.zoneAt(m.camp.x,m.camp.z); return zn&&zn.key===m.def.zone; }).length, total=x.MONS.filter(m=>m.def.zone&&m.def.zone[0]==='h'&&!m.temp&&!m.rd).length;
   ok('every camp is inside its own zone',inZone===total,inZone+' of '+total);
   ok('no monster camp on the frozen lakes, in the pass or in the village',x.MONS.filter(m=>m.def.zone&&m.def.zone[0]==='h').every(m=>x.iceDist(m.camp.x,m.camp.z)>0&&Math.hypot(m.camp.x-x.VIL3.x,m.camp.z-x.VIL3.z)>45&&Math.abs(m.camp.x-x.PASS.x)>8||m.camp.z<x.PASS.z1-40)); }

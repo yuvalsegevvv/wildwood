@@ -6,16 +6,18 @@
 const PROJS=[]; let nextProjId=1;
 function handleAttack(p,msg){
   if(p.dead||p.act) return;
+  if(msg.k==='cave'){ caveCastP(p,msg); return; }   // cave: the 4th slot (server/cave.js)
   const k=SLOTS.includes(msg.k)?msg.k:'basic'; if(p.cd[k]>0.08) return;
   const cls=clsOfP(p), SK=skOfP(p), LV=p.pv?999:p.level, ab=abilityOf(cls,k,SK,LV); if(!ab) return;   // no skill equipped, or the slot is still locked; pvp: on the island the fixed loadout, every slot open
   const [kind,dur,hitAt]=ab.act;
   const lvl=skillLvOf(SK,ab.id);
   p.cd[k]=abilityCd(ab,SK,LV,cls,rlP(p,'cdr'))*(k==='basic'&&p.buff?p.buff.cd:1)*(1-allyP(p,'haste'));   // skillsets: an ally haste buff shortens it
+  caveCastS(p,k,ab);   // cave: this cast pays its charge once, on its first hit
   ssTriggerS(p,'cast'+(1+SLOTS.indexOf(k)),{m:MON_BY_ID.get(msg.tg)});   // skillsets: on cast rows of slot 1, 2, 3
   if(isFinite(+msg.face)) p.face=+msg.face%(2*Math.PI);   // (modulo a turn: it goes out in the pact event and the snapshots, rounded by x100, and 1e308 became Infinity there)
   const tg=foeByIdS(p,msg.tg);   // pvp: a fighter on the island may name another fighter
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
-  p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:ab.fx,mult:ab.mult*skillPower(lvl),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim};
+  p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:ab.fx,mult:ab.mult*skillPower(lvl)*caveNextK(p,k),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim};   // cave: Intermission's bonus on the next skill
   ev('pact',p.id,kind,Math.round(p.face*100)/100);
   if(k!=='basic'&&!p.pv) mqActP(p,k);   // the main quest's 'use your skill / burst' steps (pvp: nothing is credited on the island)
 }
@@ -24,14 +26,15 @@ function elemEffS(p,el){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=
 function elemHitS(p,el,m){ el=elemEffS(p,el);
   const B=m&&m.pl?PVP.elemBoost:ELEM_BOOST;   // pvp: between fighters advantage and disadvantage are x1.15 and /1.15, and a fighter's element is their soul (the proxy's T.el)
   return soulMult(soulOfP(p),el,psP(p,'soul'),B)*(m?foeMult(el,elOf(m.T),B):1); }
-function rollDmgS(p,mult,m,el){
-  const b=p.buff, crit=Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m)+pendP(p,'crit')+rlP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
-  return {v:Math.max(1,Math.round(p.dmg*mult*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m)):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
+function rollDmgS(p,mult,m,el){   // cave: caveCritP (Overdrive: a sure crit) and caveBonusK (Grapple Line: the next hit) are read below
+  const b=p.buff, crit=caveCritP(p)||Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m)+pendP(p,'crit')+rlP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
+  return {v:Math.max(1,Math.round(p.dmg*mult*caveBonusK(p)*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m)):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
   if(m.pl) return pvpHitS(m,mult,p,fromX,fromZ,kb,el);   // pvp: m is another fighter on the island (server/pvp.js)
   if(m.dead||m.remove) return 0;
   if(m.rd&&!rdHitS(m,p)) return 0;   // raids: the first hit locks the raid's tier; a boss behind its wards takes none
+  if(m.cave&&!caveHitOkS(m,p,fromX,fromZ)) return 0;   // cave: a wall stops a hit
   if(m.inst&&!dgHitOkS(m,p,fromX,fromZ)) return 0;   // dungeons: a run's monster takes hits only from its run, and walls stop them
   if(m.immune){ ev('imm',m.id); return 0; }
   if(m.boss && m.B.stunT>0) mult*=1.5;
@@ -50,6 +53,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(d.fx) ev('dmg',m.id,d.v,d.crit?1:0,p.id,d.fx); else ev('dmg',m.id,d.v,d.crit?1:0,p.id);
   if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }
   else if(!(rlResM===m&&rlResT===S.t)) rxHitS(m,p,elemEffS(p,el),mult);   // reactions: a direct hit leaves an aura or reacts with the one there
+  caveHitS(p);   // cave: the cast that did this pays its charge (once per cast, not per enemy)
   if(!rxQuiet&&p.ss&&p.ss.trig){ ssTriggerS(p,'hit',{m,v:d.v}); if(d.crit) ssTriggerS(p,'crit',{m,v:d.v}); }   // skillsets: on hit / on crit rows (a burn tick, a reaction's burst and a trigger's own damage are not hits)
   return d.v;
 }
@@ -59,6 +63,7 @@ function killMonsterS(m,p){
   m.respawnT=12; if(m.rd) rdKilledS(m,p); m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
   ev('kill',m.id,p?p.id:null);
   if(p) ssTriggerS(p,'kill',{m});   // skillsets: on kill rows
+  if(p) caveKillS(p,m);   // cave: kill refunds and grave hands
   if(m.inst){ dgKilledS(m,p); return; }   // dungeons: a run's kill pays every member present (rewardAllS) and tells the mission; its boss ends the run
   if(!m.T.noXp){
     for(const [pid,tm] of m.hitters){ const q=S.players.get(pid); if(!q||S.t-tm>30||Math.hypot(q.x-m.x,q.z-m.z)>80) continue; rewardKill(q,m); }
@@ -106,6 +111,7 @@ function nearestAhead(p,range){ let best=null,bs=1e9; for(const m of foesS(p)){ 
 function resolveHitS(p,a){
   const cls=clsOfP(p), C=CLASSES[cls], T=a.tg?foeByIdS(p,a.tg):null, tgt=T&&!T.dead&&!T.remove?T:null;
   if(tgt && a.kind!=='spin') p.face=Math.atan2(-(tgt.x-p.x),-(tgt.z-p.z));
+  caveGeodeHitS(p,a);   // cave: a geode in reach takes this attack's element (method B)
   const alive=m=>!m.dead&&!m.remove, FO=foesS(p);   // pvp: FO is the monsters, or the other fighters when p stands on the island
   if(a.fx){ resolveFxS(p,a,tgt); return; }
   if(a.kind==='slash'||a.kind==='bash'){
@@ -116,7 +122,8 @@ function resolveHitS(p,a){
     for(const m of FO){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<3.3+m.T.rad) damageMonsterS(m,a.mult,p,p.x,p.z,6,a.el); }
   } else if(a.kind==='charge'){
     const L=tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=a.range+2?(()=>{ const dx=tgt.x-p.x, dz=tgt.z-p.z, d=Math.hypot(dx,dz)||1, o=tgt.T.rad+0.9; return {x:tgt.x-dx/d*o,z:tgt.z-dz/d*o}; })():{x:p.x-Math.sin(p.face)*8,z:p.z-Math.cos(p.face)*8};
-    p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z);
+    if(caveFloorAt(p.x,p.z)>=0) caveDashS(p,L);   // cave: a charge on a floor stops short of the first wall
+    else { p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z); }
     if(p.inst) dgDashS(p,L);   // dungeons: a charge inside a run stays in it, short of the first wall
     for(const m of FO){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<2.6+m.T.rad) damageMonsterS(m,a.mult,p,p.x,p.z,6,a.el); }
   } else if(a.kind==='shoot'){
@@ -219,7 +226,8 @@ function resolveFxS(p,a,tgt){
   if(f.buff){ applyBuffS(p,a); return; }
   if(f.dash){
     const L=inRange?(()=>{ const dx=tgt.x-p.x, dz=tgt.z-p.z, d=Math.hypot(dx,dz)||1, o=tgt.T.rad+0.9, sg=f.dash.behind?1:-1; return {x:tgt.x+sg*dx/d*o,z:tgt.z+sg*dz/d*o}; })():{x:p.x-Math.sin(p.face)*f.dash.ahead,z:p.z-Math.cos(p.face)*f.dash.ahead};   // dash.behind: land on the far side
-    p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z);
+    if(caveFloorAt(p.x,p.z)>=0) caveDashS(p,L);   // cave: a dash on a floor stops short of the first wall
+    else { p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z); }
     if(p.inst) dgDashS(p,L);   // dungeons: a dash inside a run stays in it, short of the first wall
   }
   if(f.ring){ const R=f.ring, o=O(); for(const m of FO){ if(!alive(m)||Math.hypot(m.x-o.x,m.z-o.z)>=R.r*AK+m.T.rad) continue; dmg(m,a.mult,o.x,o.z,R.kb||0); statusS(m,R,p,a.el,a.mult); } }
@@ -248,8 +256,10 @@ function resolveFxS(p,a,tgt){
       fireProjS(p,P.kind,rotY(base,off),tg,a.mult,a.el,P,f,src);
     } }
   if(f.zone){ const Z=f.zone, c=Z.self||a.at?{x:O().x,z:O().z}:aimPoint(p,tgt,a.range,10); addAreaS(p,'zone',c.x,c.z,Z.r*AK,Z.dur,a.mult,!!Z.follow,a.el,Z,f,src); }
+  if(a.cave) caveFxS(p,a,tgt,f);   // cave: the cave skills' own effect keys (server/cave/skills.js)
   ssFxUtilS(p,f,src);   // skillsets: the skill's ally buffs, party heal, shield and taunt
   if(f.pop) ssPopS(p,f.pop,inRange?tgt:null,a.mult,(m,mult)=>dmg(m,mult,p.x,p.z,0));   // skillsets: spend the player's marks
+  caveSetFxS(p,a,tgt,src);   // cave: a set skill's own fx keys (server/cave-fx.js)
 }
 // where a generic projectile (a fx proj) lands: a hit, splash around it, a lingering zone
 function impactFxS(owner,pr,hit){
@@ -275,11 +285,13 @@ function updateAreasS(dt){
     if(A.follow&&o){ if(o.dead){ A.t=A.dur; } else { A.x=o.x; A.z=o.z; } }
     if(A.t>=A.next&&A.t<=A.dur+0.01){ A.next+=A.every;
       if(o) for(const m of foesS(o)){ if(!m.dead&&!m.remove&&Math.hypot(m.x-A.x,m.z-A.z)<A.r+m.T.rad*0.5){
-        if(A.fx){ damageMonsterS(m,A.mult*fxModK(A.mods,o,m),o,A.x,A.z,A.fx.kb!==undefined?A.fx.kb:0.5,A.el); statusS(m,A.fx,o,A.el,A.mult); }
+        if(A.fx){ if(!A.fx.noHit) damageMonsterS(m,A.mult*fxModK(A.mods,o,m),o,A.x,A.z,A.fx.kb!==undefined?A.fx.kb:0.5,A.el); statusS(m,A.fx,o,A.el,A.mult); }   // cave: noHit, a support zone only applies its statuses
         else { damageMonsterS(m,A.mult,o,A.x,A.z,A.kind==='meteor'?7:A.kind==='storm'?1.5:0.5,A.el); if(A.kind==='blizzard'&&!m.dead) m.slowT=1.5; } } }
       if(o&&A.fx) ssZoneAlliesS(o,A);   // skillsets: the allies standing in a zone that carries ally / heal / shield
+      if(o&&A.fx&&A.fx.cave) caveZoneTickS(o,A);   // cave: a cave skill's zone (marks, lane, lamp)
     }
-    if(A.t>=A.dur){ ev('aend',A.id); AREAS.splice(i,1); }
+    if(A.t>=A.dur){ if(o&&A.fx&&A.fx.cave) caveZoneEndS(o,A);   // cave: a zone's last effect
+      ev('aend',A.id); AREAS.splice(i,1); }
   }
 }
 function fireProjS(p,kind,dir,tg,mult,el,spec,mods,src){   // spec: a generic projectile's fx entry (speed, life, turn, and what happens where it lands)
@@ -299,7 +311,7 @@ function updateProjS(dt){
     else if(pr.kind==='arrow') pr.vy-=4*dt;
     const ox=pr.x, oy=pr.y, oz=pr.z;
     pr.x+=pr.vx*dt; pr.y+=pr.vy*dt; pr.z+=pr.vz*dt;
-    if(dgWallAtS(pr.x,pr.z)) pr.life=0;   // dungeons: a wall stops a projectile (it still hits what it reached this tick)
+    if(dgWallAtS(pr.x,pr.z)||caveWallAtS(pr.x,pr.z)) pr.life=0;   // cave: and a floor's   // dungeons: a wall stops a projectile (it still hits what it reached this tick)
     // distance from a monster's centre to the stretch flown this tick (fast arrows move ~2 m per tick)
     const near=c=>{ const vx=pr.x-ox, vy=pr.y-oy, vz=pr.z-oz, l2=vx*vx+vy*vy+vz*vz||1, t=clamp(((c.x-ox)*vx+(c.y-oy)*vy+(c.z-oz)*vz)/l2); return Math.hypot(c.x-(ox+vx*t),c.y-(oy+vy*t),c.z-(oz+vz*t)); };
     if(pr.kind==='pierce'){

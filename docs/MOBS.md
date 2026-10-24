@@ -5,7 +5,7 @@ Every monster kind in the game, with the numbers the server uses and the place i
 
 Generated from the live code by `node tools/gen-docs.js` (`--check` tells you when this file is out of date). Line numbers are those of the code when it was generated.
 
-112 monster kinds in 64 zones, 12 bosses, 17 boss helpers (summons and props) and 3 grey-veined quest monsters: 147 definitions, plus 6 dungeon bosses with their helpers (section 11). 2733 monsters exist in the world at start (112 kinds in their camps + 12 bosses).
+112 monster kinds in 64 zones, 12 bosses, 17 boss helpers (summons and props) and 3 grey-veined quest monsters: 188 definitions, plus 6 dungeon bosses with their helpers (section 11). 2981 monsters exist in the world at start (112 kinds in their camps + 12 bosses).
 
 ## 1. Where it is defined
 
@@ -20,8 +20,8 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:292 |
 | How many of each kind exist, and where their camps are (a zone holds 40 of the level-1 kind down to 20 of level 15; the vale and the Reach 12 of each; `count` overrides) | `MON_COUNT` src/server/monsters.js:20, `initMonstersS` src/server/monsters.js:21 |
 | Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King's beach | `ZONES` src/shared/zones.js:12, src/shared/vale.js:56, src/shared/hoarfrost.js:88, src/shared/beach.js:6 |
-| Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:55 |
-| What a kill pays (XP, coins, an item roll, the material, quests, boss skills) | `rewardKill` src/server/combat.js:69 |
+| Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:56 |
+| What a kill pays (XP, coins, an item roll, the material, quests, boss skills) | `rewardKill` src/server/combat.js:73 |
 | Materials a kind drops (one per kind, `MAT_NAMES`) | `MATS` src/shared/drops.js:13 |
 | What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:33, `monK` src/server/tiers.js:13 |
 | Boss fights: engagement, phases, reset / one move set per boss / the move primitives | `BOSSES` src/server/boss.js:11 / `BOSS_KITS` src/server/boss-fx.js:17 / src/server/boss-fx.js |
@@ -177,7 +177,7 @@ Two kinds per level, in nine zones (`s28`-`s36`, `shared/sunzones.js`). `Res` an
 | Id | Name | Lv | El | HP | Hits | Dmg | Atk s | Spd | Aggro | XP | Coins | Count | Res | Acc | Zone | Drop | Model | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `sandslime` | Sand Slime | 28 | earth | 3369 | 15.9 | 260 | 1.6 | 2.2 | 10 m | 1396.6 | 1005 | 18 | 0.05 | — | Springhead Flats | Sand Jelly | slime ×1.8 | src/shared/monster-defs.js:109 |
-| `gildedscarab` | Gilded Scarab | 28 | fire | 4756 | 22.4 | 346 | 1.4 | 2.6 | 11 m | 1396.6 | 1005 | 18 | — | 0.05 | Springhead Flats | Gilded Wing | beetle ×1.6 | src/shared/monster-defs.js:110 |
+| `gildedscarab` | Gilded Scarab | 28 | fire | 4756 | 22.4 | 346 | 1.4 | 2.6 | 11 m | 1396.6 | 1005 | 10 | — | 0.05 | Springhead Flats | Gilded Wing | beetle ×1.6 | src/shared/monster-defs.js:110 |
 | `warthog` | Tusked Warthog | 29 | earth | 4173 | 19.2 | 485 | 2 | 3.4 | 13 m | 1682.7 | 1158 | 18 | 0.06 | 0.06 | The Weeping Pan | Warthog Tusk | boar ×1.65 | src/shared/monster-defs.js:111 |
 | `dunescorpion` | Dune Scorpion | 29 | fire | 4382 | 20.1 | 441 | 1.5 | 3 | 12 m | 1682.7 | 1158 | 22 | — | 0.06 | The Weeping Pan | Scorpion Sting | scorpion ×1.45 | src/shared/monster-defs.js:112 |
 | `raider` | Desert Raider | 30 | fire | 4393 | 19.7 | 404 | 1.3 | 3 | 14 m | 2026.4 | 1334 | 24 | 0.07 | 0.07 | Anvil Cliffs | Raider Sash | goblin ×1.05 | src/shared/monster-defs.js:113 |
@@ -428,21 +428,21 @@ A def's `model` picks a family model (`MODELS.<model>={geo,build,anim}`) and its
 
 | Model | Kinds using it | Family defaults (hpK / dmgPct / atk s / speed / rad / height / aggro / camp) | Family row | Client model |
 |---|---|---|---|---|
-| `slime` | 13 | 0.85 / 0.06 / 1.6 / 2.2 / 0.45 / 0.8 / 10 / 6 | src/shared/monster-defs.js:3 | src/game/combat/monster-blobs.js:5 |
-| `shroom` | 3 | 0.95 / 0.07 / 1.7 / 1.8 / 0.4 / 1.1 / 10 / 5 | src/shared/monster-defs.js:4 | src/game/combat/monster-blobs.js:50 |
-| `beetle` | 15 | 1.15 / 0.08 / 1.4 / 2.6 / 0.6 / 0.8 / 11 / 5 | src/shared/monster-defs.js:5 | src/game/combat/monster-bugs.js:105 |
-| `boar` | 9 | 1 / 0.11 / 2 / 3.4 / 0.6 / 1 / 13 / 4 | src/shared/monster-defs.js:6 | src/game/combat/monster-beasts.js:5 |
-| `goblin` | 31 | 1 / 0.09 / 1.3 / 3 / 0.45 / 1.8 / 14 / 5 | src/shared/monster-defs.js:7 | src/game/combat/monster-folk.js:112 |
-| `treant` | 16 | 1.35 / 0.14 / 2.4 / 1.6 / 0.85 / 3.3 / 12 / 3 | src/shared/monster-defs.js:8 | src/game/combat/monster-woods.js:13 |
-| `fox` | 13 | 1 / 0.1 / 1.5 / 3.8 / 0.55 / 1 / 14 / 4 | src/shared/monster-defs.js:9 | src/game/combat/monster-beasts.js:45 |
-| `wisp` | 15 | 0.9 / 0.1 / 1.7 / 2.6 / 0.45 / 1.6 / 13 / 5 | src/shared/monster-defs.js:10 | src/game/combat/monster-spirits.js:4 |
+| `slime` | 17 | 0.85 / 0.06 / 1.6 / 2.2 / 0.45 / 0.8 / 10 / 6 | src/shared/monster-defs.js:3 | src/game/combat/monster-blobs.js:5 |
+| `shroom` | 4 | 0.95 / 0.07 / 1.7 / 1.8 / 0.4 / 1.1 / 10 / 5 | src/shared/monster-defs.js:4 | src/game/combat/monster-blobs.js:50 |
+| `beetle` | 19 | 1.15 / 0.08 / 1.4 / 2.6 / 0.6 / 0.8 / 11 / 5 | src/shared/monster-defs.js:5 | src/game/combat/monster-bugs.js:105 |
+| `boar` | 10 | 1 / 0.11 / 2 / 3.4 / 0.6 / 1 / 13 / 4 | src/shared/monster-defs.js:6 | src/game/combat/monster-beasts.js:5 |
+| `goblin` | 36 | 1 / 0.09 / 1.3 / 3 / 0.45 / 1.8 / 14 / 5 | src/shared/monster-defs.js:7 | src/game/combat/monster-folk.js:112 |
+| `treant` | 19 | 1.35 / 0.14 / 2.4 / 1.6 / 0.85 / 3.3 / 12 / 3 | src/shared/monster-defs.js:8 | src/game/combat/monster-woods.js:13 |
+| `fox` | 17 | 1 / 0.1 / 1.5 / 3.8 / 0.55 / 1 / 14 / 4 | src/shared/monster-defs.js:9 | src/game/combat/monster-beasts.js:45 |
+| `wisp` | 19 | 0.9 / 0.1 / 1.7 / 2.6 / 0.45 / 1.6 / 13 / 5 | src/shared/monster-defs.js:10 | src/game/combat/monster-spirits.js:4 |
 | `totem` | 8 | 1 / 0 / 99 / 0 / 0.55 / 2.7 / 0 / 2 | src/shared/monster-defs.js:11 | src/game/combat/monster-woods.js:97 |
 | `keg` | 0 | 1 / 0 / 99 / 0 / 0.5 / 1.1 / 0 / 2 | src/shared/monster-defs.js:12 | src/game/combat/monster-mine.js:4 |
-| `wyrm` | 7 | 1 / 0.12 / 2.2 / 2.6 / 0.9 / 2 / 16 / 3 | src/shared/monster-defs.js:13 | src/game/combat/monster-wyrm.js:18 |
+| `wyrm` | 11 | 1 / 0.12 / 2.2 / 2.6 / 0.9 / 2 / 16 / 3 | src/shared/monster-defs.js:13 | src/game/combat/monster-wyrm.js:18 |
 | `gryphon` | 2 | 1 / 0.12 / 2.1 / 3.2 / 0.8 / 2 / 16 / 3 | src/shared/monster-defs.js:14 | src/game/combat/monster-gryphon.js:15 |
-| `scorpion` | 2 | 1.05 / 0.1 / 1.5 / 3 / 0.7 / 1 / 12 / 5 | src/shared/monster-defs.js:15 | src/game/combat/monster-desert.js:8 |
+| `scorpion` | 5 | 1.05 / 0.1 / 1.5 / 3 / 0.7 / 1 / 12 / 5 | src/shared/monster-defs.js:15 | src/game/combat/monster-desert.js:8 |
 | `cactus` | 1 | 1.35 / 0.13 / 2.3 / 1.5 / 0.8 / 3 / 10 / 3 | src/shared/monster-defs.js:16 | src/game/combat/monster-desert.js:41 |
-| `sandworm` | 6 | 1.2 / 0.12 / 2.2 / 2.4 / 0.95 / 2 / 14 / 3 | src/shared/monster-defs.js:17 | src/game/combat/monster-desert.js:69 |
-| `djinn` | 4 | 0.95 / 0.11 / 1.8 / 2.8 / 0.5 / 2.3 / 15 / 4 | src/shared/monster-defs.js:18 | src/game/combat/monster-desert.js:104 |
+| `sandworm` | 8 | 1.2 / 0.12 / 2.2 / 2.4 / 0.95 / 2 / 14 / 3 | src/shared/monster-defs.js:17 | src/game/combat/monster-desert.js:69 |
+| `djinn` | 7 | 0.95 / 0.11 / 1.8 / 2.8 / 0.5 / 2.3 / 15 / 4 | src/shared/monster-defs.js:18 | src/game/combat/monster-desert.js:104 |
 | `sentinel` | 1 | 1 / 0.12 / 2.6 / 1.9 / 1 / 3.1 / 0 / 2 | src/shared/monster-defs.js:19 | src/game/combat/monster-desert.js:137 |
-| `bat` | 1 | 0.8 / 0.09 / 1.4 / 4 / 0.45 / 1 / 16 / 6 | src/shared/monster-defs.js:20 | src/game/combat/monster-gloam.js:5 |
+| `bat` | 4 | 0.8 / 0.09 / 1.4 / 4 / 0.45 / 1 / 16 / 6 | src/shared/monster-defs.js:20 | src/game/combat/monster-gloam.js:5 |

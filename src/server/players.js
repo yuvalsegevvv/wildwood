@@ -5,7 +5,7 @@
 function sanitizeGear(g,cls){
   const base=newGearFor(cls);
   if(!g||typeof g!=='object') return base;
-  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>typeof id==='string'&&ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.min(COINS_MAX,Math.max(0,Math.floor(+g.coins||0))),q:null,startAll:!!g.startAll,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),redgate:clampInt(g.redgate,0,1,0),amber:0,wv:WORLD_VER,sun:clampInt(g.sun,0,2,0),gloam:clampInt(g.gloam,0,2,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
+  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>typeof id==='string'&&ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.min(COINS_MAX,Math.max(0,Math.floor(+g.coins||0))),q:null,startAll:!!g.startAll,caveFull:!!g.caveFull,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),redgate:clampInt(g.redgate,0,1,0),amber:0,wv:WORLD_VER,sun:clampInt(g.sun,0,2,0),gloam:clampInt(g.gloam,0,2,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
   if(g.mats&&typeof g.mats==='object') for(const id in g.mats){ const n=MATS[id]?clampInt(g.mats[id],0,MAT_MAX,0):0; if(n) out.mats[id]=n; }
   if(g.eq) for(const k in out.eq){ const id=g.eq[k], it=ITEM[id]; if(it&&out.inv.includes(id)&&(k==='weapon'?it.kind==='weapon':it.slot===k)) out.eq[k]=id; else if(k!=='weapon') out.eq[k]=null; }
   if(!ITEM[out.eq.weapon]) out.eq.weapon=base.eq.weapon;
@@ -13,6 +13,7 @@ function sanitizeGear(g,cls){
   if(g.bought&&typeof g.bought==='object') for(const id in g.bought) if(ITEM[id]&&ITEM[id].rar===0) out.bought[id]=clampInt(g.bought[id],0,999,0);
   out.q=sanitizeQuests(g.q);
   out.skills=sanitizeSkills(g.skills);
+  out.cave=caveSanitizeSave(g.cave); if(out.skills.cave&&!out.cave.own[out.skills.cave]) out.skills.cave=null;   // cave: the owned cave skills; the worn one must be owned
   out.mq=sanitizeMq(g.mq);
   out.sq=sanitizeSq(g.sq);   // sidequests: the chains' progress (an old save has none)
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); out.cos=sanitizeCos(g); }   // cosmetics: the auras and capes made at a lodge
@@ -68,6 +69,7 @@ function sanitizeSkills(g){
   // a passive keeps its slot (which slots a level can use is decided by newPlayer, which knows the level), and sits in one slot only
   if(Array.isArray(g.pass)) g.pass.slice(0,PASSIVE_SLOTS).forEach((id,i)=>{ if(PASSIVES[id]&&out.owned.includes(id)&&!out.pass.includes(id)) out.pass[i]=id; });
   out.pgiven=!!g.pgiven;   // the free passive was handed out once (so taking it off does not bring it back)
+  out.cave=caveSkillDef(g.cave)?g.cave:null;   // cave: the worn cave skill (sanitizeGear clears it when it is not owned)
   out.v=g.v===2?2:1;   // 1 = from before burst skills: they get their free burst on join
   return out;
 }
@@ -101,7 +103,7 @@ function newPlayer(pid,hello){
   const p0=oldWv<WORLD_VER?wvSpawnOf(save.pos,save.gear||{}):null, sp=p0||VIL.spawn;   // (wv: a saved position of the old world frame is moved to its land's village)
   const p={id:pid,name:cleanName(hello.name),look,x:sp.x,y:getH(sp.x,sp.z),z:sp.z,face:0,vx:0,vz:0,
     level:clampInt(save.level,1,PLAYER_MAX_LV,1),exp:Math.min(EXP_MAX,Math.max(0,+save.exp||0)),gear:sanitizeGear(save.gear,look.cls),
-    hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0},buff:null,act:null,dirty:true,travelT:0};
+    hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0,cave:0},buff:null,act:null,dirty:true,travelT:0,cave:caveNewState()};   // cave: the 4th slot's charge (not saved)
   p.look=cosCleanLook(p.look,p.gear.cos);   // cosmetics: no aura or cape that you do not own
   if(p.gear.startAll) giveAllP(p);
   if(p.gear.skills.v!==2){ autoEquipP(p,'skill'); autoEquipP(p,'burst'); p.gear.skills.v=2; }   // saves from before skills / bursts get the free ones
@@ -180,10 +182,11 @@ function gainExpP(p,v,monId){
 // the attacker's damage at your zone tier (its tiered level's damage), +5% per level the attacker is above you, then your armor (soft-capped, defRed), the Iron Will passive, a buff and a guard potion;
 // together they can never take off more than 90% (DMG_TAKEN_MIN)
 function hurtP(p,v,m,by){   // returns the damage taken; by: the fighter who hit (pvp, no monster)
-  if(p.dead) return 0;
+  if(p.dead||(p.cave&&p.cave.bur>S.t)) return 0;   // cave: Burrow, nothing can hit you
   const K=m?monK(m,p):null, ld=m?Math.max(0,K.lv-p.level):0;
   if(m&&!p.pv&&!m.pl&&rlResists(rlP(p,'res'),m.T.acc)) v=Math.max(1,Math.round(v/2));   // rolls: a resisted hit does half (the monster's accuracy against your resistance)
   v=Math.max(1,Math.round(v*(K?K.dmg:1)*rxWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red')-ssCondP(p,'red',m))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))*(1-allyP(p,'guard')))));   // reactions: weak lowers what a monster deals
+  v=caveHurtS(p,v,m); if(v<=0){ p.lastHit=S.t; return 0; }   // cave: Shield-Wall, Stopped Hour, Bell Echo, Embalm, Eagle's Perch
   if(p.shield&&p.shield.until>S.t&&p.shield.v>0){ const a=Math.min(v,p.shield.v); p.shield.v-=a; v-=a; if(p.shield.v<=0&&!p.shield.done){ p.shield.done=true; ssShieldBreakS(p); } if(v<=0){ p.lastHit=S.t; return 0; } }   // skillsets: a shield soaks the hit first
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){
@@ -223,12 +226,14 @@ function updatePlayersS(dt){
   for(const p of S.players.values()){
     S.ctx=p.inst|0;   // dungeons: what a player's tick causes belongs to his run
     for(const k in p.cd) p.cd[k]=Math.max(0,p.cd[k]-dt);
+    caveTickP(p);   // cave: end a boss fight they left; send the charge
     ssTickS(p); ssRegenS(p,dt);   // skillsets: tick rows while in a fight; a regen buff
     if(p.buff&&S.t>=p.buff.until){ p.buff=null; }
     if(p.buff&&p.buff.regen&&!p.dead) healP(p,p.maxHp*p.buff.regen*dt);
     if(p.dead&&p.inst){ dgDownTickS(p,dt); continue; }   // dungeons: downed in a run: revived, or a respawn at its entrance, never the village
     if(p.dead){
       p.deadT+=dt;
+      if(p.deadT>3&&caveFloorAt(p.x,p.z)>=0){ caveReviveP(p); continue; }   // cave: a knock-out on a floor wakes at its lift
       if(p.deadT>3&&p.pv){ pvpReviveP(p); continue; }   // pvp: a knock-out on the island wakes on the lake's shore, not in a village
       if(p.deadT>3){ const g=respawnVil(p).anchors.gate; p.x=g.x; p.z=g.z; p.y=getH(g.x,g.z); p.dead=false; p.hp=p.maxHp; p.lastHit=-99; sendTo(p.id,{t:'tp',x:g.x,z:g.z,face:g.face}); ev('up',p.id); p.dirty=true; }
       continue;

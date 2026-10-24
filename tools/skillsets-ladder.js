@@ -3,10 +3,10 @@
 // dummy (and six more around it for the pack). The numbers are a SANITY BAND, not a verdict (the owner: balanced mostly in playtests): a row outside its band is a warning. --check fails only on the owner's
 // orderings, for the damage kits: the pieces beat the best non-set loadout, the 3-set beats the pieces, the 5-set beats the 3-set.
 // A set with rangeScale (damage grows with the distance) is also run from 16 m (archer and mage). A risk set is run twice: never behind its targets (careless play, ~0.8 of the safe ladder, warnings only) and always behind (the dummies face away: the owner's 125 / 142 / 170, judged).
-// Usage: node tools/skillsets-ladder.js [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check]      (the sets are the ones registered from src/manifest.json)
+// Usage: node tools/skillsets-ladder.js [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
 // Also: require('./skillsets-ladder').ladder({W, x, pid}, opts) for a test (tools/skillsets-smoke.js runs it on a fixture); x must expose NAMES.
 const {loadServer}=require('./load');
-const NAMES=['MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','getH','VIL','S'];
+const NAMES=['MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S'];
 const WEAPON={warrior:'sword1',archer:'bow1',mage:'wand1'}, CLASSES=['warrior','archer','mage'];
 // the bands in percent of the baseline: [the pieces alone, the 3-set, the 5-set] (docs/SKILL-SETS.md 5b; a mixed set sits between a support's 90 and its main kit's ladder)
 const BANDS={safe:[110,125,150],risk:[125,142,170],riskCareless:[88,100,120],support:[90,90,90],heal:[90,90,90],tank:[90,90,90],grind:[50,50,50]};
@@ -21,7 +21,7 @@ function ladder(env,opts){
       m.face=opts.behind?Math.PI:0; m.dead=false; m.remove=false; m.hp=m.maxHp=1e12; m.slowT=m.burnT=0; m.mk=m.st=m.aura=m.rxIcd=m.taunt=null; m.immune=false; m.aggro=false; });
   };
   const pin=()=>dummies.forEach((m,i)=>{ m.x=spot[i][0]; m.z=spot[i][1]; m.kbx=m.kbz=0; m.vx=m.vz=0; m.stunT=1e9; });
-  const fresh=()=>{ arrange(); pin(); p.dead=false; p.hp=p.maxHp; p.act=null; p.cd={basic:0,skill:0,burst:0}; p.ssIcd={}; p.ally=null; p.shield=null; p.buff=null; p.lastDealt=-99; x.recalcP(p); };
+  const fresh=()=>{ arrange(); pin(); p.dead=false; p.hp=p.maxHp; p.act=null; p.cd={basic:0,skill:0,burst:0,cave:0}; p.cave.charge=0; p.ssIcd={}; p.ally=null; p.shield=null; p.buff=null; p.lastDealt=-99; x.recalcP(p); };
   const cast=k=>W.receive(env.pid,{t:'atk',k,tg:dummies[0].id,face:Math.PI,aim:[0,0,1]});
   // seconds of the rotation (burst, then skill, then basic, whichever is ready): damage a second to the dummy and to all seven
   const rotation=s=>{
@@ -31,6 +31,7 @@ function ladder(env,opts){
       // good play and careless play of a position set: the hero is always on the move (Light Feet), walks back after a dash, and the dummies keep their backs to him (opts.behind) or keep facing him
       p.lastMove=x.S.t; if(Math.hypot(p.x-home[0],p.z-home[1])>0.3){ const f=p.face; W.setPos(env.pid,[home[0],x.getH(home[0],home[1]),home[1],f,0,0]); }
       for(const m of dummies) m.face=Math.atan2(sgn*(p.x-m.x),sgn*(p.z-m.z));
+      if(!p.act&&p.gear.skills.cave&&p.cave.charge>=x.CAVE_SKILLS[p.gear.skills.cave].cost&&p.cd.cave<=0.08) cast('cave');   // slot 4 (C3): spends its charge as soon as it can
       if(!p.act) for(const k of ['burst','skill','basic']) if(p.cd[k]<=0.08&&x.abilityOf(x.clsOfP(p),k,p.gear.skills,p.level)){ cast(k); break; }
       W.tick(0.05); } } finally{ Math.random=R; }
     const lost=dummies.map((m,i)=>h0[i]-m.hp);
@@ -72,9 +73,12 @@ function ladder(env,opts){
       wear(cls,ids,[]); const three=rotation(secs);
       wear(cls,ids,[pass[0],pass[1]]); const five=rotation(secs);
       wear(cls,ids,pass); const six=rotation(secs);
-      rows[cls]={base:baseline[cls],pieces,three,five,six};
+      // slot 4 (docs/CAVE.md): the set's own cave skill at level 1 and 5 on top of all six pieces; its charge is fed by the casts, doubled for this set's pieces
+      let c1=null, c5=null; const cs=(x.CAVE_SKILL_IDS||[]).map(i=>x.CAVE_SKILLS[i]).find(q=>q.set===id);   // a harness without the cave names (skillsets-smoke) skips slot 4
+      if(cs&&opts.cave!==false){ p.gear.cave.own[cs.id]=1; p.gear.skills.cave=cs.id; c1=rotation(secs); p.gear.cave.own[cs.id]=5; c5=rotation(secs); p.gear.skills.cave=null; delete p.gear.cave.own[cs.id]; }
+      rows[cls]={base:baseline[cls],pieces,three,five,six,c1,c5};
     }
-    out.push({id,role:S.role.main,also:S.role.also?S.role.also.role:null,ranged:P.some(q=>q.ids.some(i=>{ const R=x.SKILLS[i].fx&&x.SKILLS[i].fx.rangeScale; return !!R&&R.k>1; })),rows,summary:summarize(rows,classes)});
+    out.push({id,cave:((x.CAVE_SKILL_IDS||[]).map(i=>x.CAVE_SKILLS[i]).find(q=>q.set===id)||{}).id||null,role:S.role.main,also:S.role.also?S.role.also.role:null,ranged:P.some(q=>q.ids.some(i=>{ const R=x.SKILLS[i].fx&&x.SKILLS[i].fx.rangeScale; return !!R&&R.k>1; })),rows,summary:summarize(rows,classes)});
   }
   return out;
 }
@@ -83,6 +87,9 @@ const pct=(a,b)=>b>0?Math.round(a/b*100):0;
 function summarize(rows,classes){
   const avg=f=>classes.reduce((a,c)=>a+f(rows[c]),0)/classes.length, S={};
   for(const k of ['pieces','three','five','six']){ S[k]=Math.round(avg(r=>pct(r[k].single,r.base.single))); S[k+'Pack']=Math.round(avg(r=>pct(r[k].pack,r.base.pack))); }
+  if(classes.every(c=>rows[c].c1)){   // the slot-4 column: the gain over the full set (all 6), in percent, single target; level 1 and level 5
+    S.cave1=Math.round(avg(r=>pct(r.c1.single,r.six.single))-100); S.cave5=Math.round(avg(r=>pct(r.c5.single,r.six.single))-100);
+    S.cave1Pack=Math.round(avg(r=>pct(r.c1.pack,r.six.pack))-100); S.cave5Pack=Math.round(avg(r=>pct(r.c5.pack,r.six.pack))-100); }
   return S;
 }
 // the warnings for a set (a row outside its sanity band) and the failures of the owner's orderings
@@ -90,6 +97,8 @@ function judge(set,mode){   // mode: 'behind' (a risk set always behind its targ
   const S=set.summary, careless=(set.role==='risk'&&mode!=='behind')||(set.ranged&&mode!=='range'), band=set.also||(set.ranged&&mode!=='range')?null:BANDS[careless?'riskCareless':set.role], warn=[], fail=[];
   if(band){ [['pieces',band[0]],['three',band[1]],['five',band[2]]].forEach(([k,v])=>{ if(S[k]<v*0.75||S[k]>v*1.25) warn.push(k+' '+S[k]+' is outside '+v+' +- 25%'); }); }
   else if(set.also){ if(S.three<90||S.five>170) warn.push('a mixed set sits between 90 and its main kit\'s ladder: 3-set '+S.three+', 5-set '+S.five); }
+  if(S.cave1!==undefined&&!careless&&(S.cave1>20||S.cave5>30)) warn.push('slot 4 adds '+S.cave1+'% at level 1 and '+S.cave5+'% at level 5 (target +8% / +12%)');
+  if(S.six>165&&!careless) warn.push('the full set ('+S.six+') is over about 165');
   if(set.role==='grind'&&S.fivePack<120) warn.push('the pack damage ('+S.fivePack+') is not ahead of the baseline: a grinder should farm about twice as fast');
   if(!set.also&&!careless&&(set.role==='risk'||set.role==='safe')){
     if(S.pieces<100) fail.push('the three pieces ('+S.pieces+') do not beat the best non-set loadout (100)');
@@ -100,9 +109,9 @@ function judge(set,mode){   // mode: 'behind' (a risk set always behind its targ
 }
 function print(list,mode){
   console.log((mode==='behind'?'ALWAYS BEHIND the target (good play of a risk set: the owner\'s 125 / 142 / 170), ':mode==='range'?'FROM 16 m (archer and mage only; a set whose damage grows with the distance), ':'')+'single target, in % of the baseline (the best non-set loadout = 100); the pack is the same on seven monsters\n');
-  console.log('set'.padEnd(12)+'role'.padEnd(9)+'pieces'.padStart(8)+'3-set'.padStart(8)+'5-set'.padStart(8)+'all 6'.padStart(8)+'   pack at 5-set');
+  console.log('set'.padEnd(12)+'role'.padEnd(9)+'pieces'.padStart(8)+'3-set'.padStart(8)+'5-set'.padStart(8)+'all 6'.padStart(8)+'   pack at 5-set   slot 4 (gain over all 6, target +8 / +12): L1 / L5, pack L1 / L5');
   for(const s of list){
-    const S=s.summary; console.log(s.id.padEnd(12)+(s.role+(s.also?'+'+s.also:'')).padEnd(9)+String(S.pieces).padStart(8)+String(S.three).padStart(8)+String(S.five).padStart(8)+String(S.six).padStart(8)+'   '+S.fivePack);
+    const S=s.summary; console.log(s.id.padEnd(12)+(s.role+(s.also?'+'+s.also:'')).padEnd(9)+String(S.pieces).padStart(8)+String(S.three).padStart(8)+String(S.five).padStart(8)+String(S.six).padStart(8)+'   '+String(S.fivePack).padEnd(14)+(S.cave1===undefined?'':'   '+s.cave+' '+(S.cave1>=0?'+':'')+S.cave1+' / '+(S.cave5>=0?'+':'')+S.cave5+', pack '+S.cave1Pack+' / '+S.cave5Pack));
     const j=judge(s,mode); for(const w of j.warn) console.log('   warning: '+w); for(const f of j.fail) console.log('   FAIL: '+f);
   }
 }
@@ -111,7 +120,7 @@ if(require.main===module){
   const args=process.argv.slice(2), val=(f,d)=>{ const i=args.indexOf(f); return i>=0?args[i+1]:d; };
   const {api:W,x}=loadServer({dev:true,send(){}},NAMES); W.join('l',{name:'Ladder',look:{cls:'warrior'},save:{level:60}}); for(let i=0;i<3;i++) W.tick(0.05);
   if(!x.SS_ORDER.length){ console.log('no skill set is defined (src/shared/skillsets/*.js, listed in src/manifest.json)'); process.exit(0); }
-  const cls=val('--class',null), opts={secs:+val('--secs',60),set:val('--set',null),classes:cls?[cls]:undefined}, env={W,x,pid:'l'};
+  const cls=val('--class',null), opts={secs:+val('--secs',60),set:val('--set',null),classes:cls?[cls]:undefined,cave:args.includes('--check')?args.includes('--cave'):true}, env={W,x,pid:'l'};
   const list=ladder(env,opts); print(list);
   // a risk set is also run with every dummy facing away from the hero (always behind: good play), a set with rangeScale from 16 m; those rows are the ones judged
   const risky=list.filter(s=>s.role==='risk'&&!s.also).map(s=>s.id), ranged=list.filter(s=>s.ranged).map(s=>s.id), behind=[], far=[];

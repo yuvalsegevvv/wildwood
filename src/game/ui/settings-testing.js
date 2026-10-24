@@ -17,6 +17,8 @@ $('#tAmber10').addEventListener('click',()=>netSend({t:'dev',cmd:'amber',v:10000
 $('#tAmber0').addEventListener('click',()=>netSend({t:'dev',cmd:'amber',v:-AMB_MAX}));
 $('#tOutfits').addEventListener('click',()=>netSend({t:'dev',cmd:'outfits'}));
 $('#tMats').addEventListener('click',()=>netSend({t:'dev',cmd:'mats'}));
+function syncCaveFull(){ const on=!!(GEAR&&GEAR.caveFull); $('#tCaveFull').setAttribute('aria-pressed',on); $('#tCaveFull').textContent='Cave charge always 100: '+(on?'on':'off'); }   // cave: the 4th slot's charge pinned full (devP 'caveFull')
+$('#tCaveFull').addEventListener('click',()=>{ GEAR.caveFull=!GEAR.caveFull; syncCaveFull(); netSend({t:'dev',cmd:'caveFull',v:GEAR.caveFull}); });
 $('#tSkills').addEventListener('click',()=>netSend({t:'dev',cmd:'skills'}));
 $('#tProf').addEventListener('click',()=>netSend({t:'dev',cmd:'prof'}));
 $('#tRes').addEventListener('click',()=>netSend({t:'dev',cmd:'res'}));
@@ -32,6 +34,7 @@ $('#tTunnel').addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.curr
 $('#tSeal').addEventListener('click',()=>{ netSend({t:'dev',cmd:'vale',v:0}); toast('The vale is sealed again','good'); });
 // the Hoarfrost Reach: open the ice wall (as if you had helped beat Akaoni), go to either side of it, to Rimehold or the boss halls (those open it first), seal it again
 $('#tNorth').addEventListener('click',()=>netSend({t:'dev',cmd:'north',v:1}));
+for(const id of ['tCaveMouth','tCave1','tCave2','tCave3','tCave4']) $('#'+id).addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}));   // cave: the mouth and each floor's lift (testing; server/cave-zone.js caveDevTp)
 $('#tPass').addEventListener('click',e=>netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}));
 for(const id of ['tRime','tHall','tNest']) $('#'+id).addEventListener('click',e=>{ netSend({t:'dev',cmd:'north',v:2}); netSend({t:'dev',cmd:'tunnel',v:e.currentTarget.dataset.v}); });
 // the Greyspine: open the ice fall in the glacier valley (as if you had helped beat Ymrik), go to it, to Highmark's shelf or the Gryphon Queen's peak (those open the way first), seal it again
@@ -59,4 +62,4 @@ $('#tReset').addEventListener('click',e=>{
   if(NET.ready) netSend({t:'dev',cmd:'reset'});
   else { const keep=GEAR.startAll; GEAR=newGear(); GEAR.startAll=keep; saveGear(); PL.level=1; PL.exp=0; saveProgress(); toast('Progress reset','good'); }
 });
-syncStartAll();
+syncStartAll(); syncCaveFull();

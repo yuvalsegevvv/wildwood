@@ -41,7 +41,8 @@ function updateCombatUI(dt){
   abBasic.style.setProperty('--p',ba?CB.cd.basic/(abilityCd(ba,L,PV,c,rlUiCdr())*(CB.buff?CB.buff.cd:1)):0); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PV,c,rlUiCdr()):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PV,c,rlUiCdr()):0);   // (skillsets: the bonuses of the class in hand)
   abSkill.classList.toggle('ready',!!sk&&CB.cd.skill<=0); abBurst.classList.toggle('ready',!!bu&&CB.cd.burst<=0);
   abBasic.classList.toggle('buffed',!!CB.buff);
-  const key=c+'|'+(ba?ba.id:'')+'|'+(sk?sk.id:'')+'|'+(bu?bu.id:'')+'|'+Math.min(PV,BURST_SLOT_LV); if(key!==abKey){ abKey=key; setActionBar(); }
+  caveHudUpdate();   // cave: the charge bar and the ready glow
+  const key=c+'|'+(ba?ba.id:'')+'|'+(sk?sk.id:'')+'|'+(bu?bu.id:'')+'|'+Math.min(PV,BURST_SLOT_LV)+caveBarKey(); if(key!==abKey){ abKey=key; setActionBar(); }
 }
 const ICONS={
   Slash:'<path d="M5 19L17 7l2-4-4 2L3 17z"/><path d="M8 16l-3 3M15 5l4 4"/>',
@@ -168,14 +169,16 @@ function setActionBar(){
     el.classList.toggle('empty',!a); const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
     el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Burst':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };
   fill(abBasic,'basic',kbName('basic')); fill(abSkill,'skill',kbName('skill')); fill(abBurst,'burst',kbName('burst'));
+  caveFillTile();   // cave: the 4th tile (Go to the cave / its skill)
 }
 const press=(el,fn)=>{ el.addEventListener('touchstart',e=>{ e.preventDefault(); fn(); },{passive:false}); el.addEventListener('click',fn); };
-press(abBasic,()=>doAttack('basic')); press(abSkill,()=>doAttack('skill')); press(abBurst,burstSlot);
+press(abBasic,()=>doAttack('basic')); press(abSkill,()=>doAttack('skill')); press(abBurst,burstSlot); press($('#abCave'),()=>doAttack('cave'));   // cave: the 4th slot
 addEventListener('keydown',e=>{
   if(!started||uiOpen()) return;
   if(kbIs(e.code,'basic')) doAttack('basic');
   if(kbIs(e.code,'skill')) doAttack('skill');
   if(kbIs(e.code,'burst')) burstSlot();
+  if(kbIs(e.code,'cave')) doAttack('cave');   // cave: the 4th slot
   if(kbIs(e.code,'skills') && !e.repeat) toggleSkills();
   if(kbIs(e.code,'target')){ e.preventDefault(); cycleTarget(); }
 });

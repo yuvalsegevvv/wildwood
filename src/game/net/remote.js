@@ -22,7 +22,8 @@ function remoteSnap(a){ // [id,x,y,z,face,hp,maxHp,level,dead]
   if(r.tx===null){ r.x=a[1]; r.y=a[2]; r.z=a[3]; r.face=a[4]; }
   r.tx=a[1]; r.ty=a[2]; r.tz=a[3]; r.tface=a[4]; r.hp=a[5]; r.maxHp=a[6]; r.level=a[7]; r.dead=!!a[8];
 }
-function remoteAct(id,kind,face){ const r=REMOTES.get(id); if(!r) return; const A=ACT_OF[kind]||{dur:0.5,hitAt:0.5}; r.act={kind:ANIM_OF[kind]||kind,sk:kind,t:0,dur:A.dur,hitAt:A.hitAt,done:false}; if(face!=null){ r.tface=face; r.face=face; } }
+function remoteAct(id,kind,face){ const r=REMOTES.get(id); if(!r) return; const A=ACT_OF[kind]||{dur:0.5,hitAt:0.5}; r.act={kind:ANIM_OF[kind]||kind,sk:kind,t:0,dur:A.dur,hitAt:A.hitAt,done:false}; if(face!=null){ r.tface=face; r.face=face; }
+  const cs=ACT_SKILL[kind]; if(cs&&cs.cave) cvv1Wind(cs,r); }   // cave: another hiker's cave cast begins (cave/vis-floor1.js)
 function remoteGear(id,eq){ const r=REMOTES.get(id); if(!r) return; r.eq=eq; remoteBuild(r); }
 function remoteLook(id,look){ const r=REMOTES.get(id); if(!r) return; r.look=fullLook(look); remoteBuild(r); }
 function remoteHurt(id,v){ const r=REMOTES.get(id); if(r&&r.g.visible) popText(r.x,r.y+2*r.scale,r.z,'-'+v,'other'); }
@@ -41,7 +42,7 @@ function updateRemotes(dt){
     const d=Math.hypot(r.x-P.x,r.z-P.z); r.g.visible=d<150;
     if(!r.g.visible) continue;
     if(r.act){ r.act.t+=dt; if(!r.act.done&&r.act.t>=r.act.dur*r.act.hitAt){ r.act.done=true; attackVisuals(r.act,r); } if(r.act.t>=r.act.dur) r.act=null; }
-    r.g.position.set(r.x,r.y,r.z);
+    r.g.position.set(r.x,r.y+cvbLift(r.id),r.z);   // cave: Eagle's Perch
     r.g.rotation.set(0,r.face+(r.act&&r.act.kind==='spin'?clamp(r.act.t/r.act.dur)*TAU*2:0),r.dead?1.4:0);
     poseRig(r.rig,dt,{sp,ph:r.walk,act:r.act,hold:CLASS_OF[(ITEM[r.eq.weapon]||{}).slot]==='warrior'?'sword':null});
     const talking=CHAT.bubbles.has(r.id)&&performance.now()<CHAT.bubbles.get(r.id).until;

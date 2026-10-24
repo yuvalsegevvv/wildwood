@@ -53,7 +53,7 @@ const check=(r)=>{
     if(!Array.isArray(g.inv)||g.inv.some(v=>typeof v!=='string')) bad.push(`round ${r}: inventory has a non-string`);
     if(g.skills&&Array.isArray(g.skills.owned)&&g.skills.owned.some(v=>typeof v!=='string')) bad.push(`round ${r}: the owned skills have a non-string`);
     if(g.q&&Array.isArray(g.q.ready)&&g.q.ready.some(v=>typeof v!=='string')) bad.push(`round ${r}: the ready quests have a non-string`);
-    if(p.level<1||p.level>99||!Number.isInteger(p.level)) bad.push(`round ${r}: level = ${p.level}`);
+    if(p.level<1||p.level>1000||!Number.isInteger(p.level)) bad.push(`round ${r}: level = ${p.level}`);   // PLAYER_MAX_LV (shared/balance.js): no game cap since the level cap was removed, only an overflow guard
     { const L=p.look; if(!L||typeof L!=='object'||Object.keys(L).length>80||Object.entries(L).some(([k,v])=>typeof v==='object'||(typeof v==='string'&&(v.length>24||v==='constructor'||v==='__proto__'))||(typeof v==='number'&&!isFinite(v)))) bad.push(`round ${r}: player ${id}'s look is not a flat object of short primitives: ${JSON.stringify(L).slice(0,120)}`); }   // every client in sight builds an avatar from it
     if(Object.prototype.polluted||({}).polluted) bad.push('prototype pollution: Object.prototype.polluted is set');
     { const seen=new Set(); const walk=(o,path)=>{ if(!o||typeof o!=='object'||seen.has(o)) return; seen.add(o); const pr=Object.getPrototypeOf(o); if(!Array.isArray(o)&&pr!==Object.prototype&&pr!==null) bad.push(`round ${r}: gear${path} has a foreign prototype (a '__proto__' key from a save was copied)`); for(const k of Object.keys(o)) walk(o[k],path+'.'+k); }; walk(g,''); }

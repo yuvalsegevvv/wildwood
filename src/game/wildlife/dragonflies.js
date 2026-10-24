@@ -31,7 +31,7 @@ function dflNear(f){   // a new place to hover: a few metres on, over water too 
   return false;
 }
 function updateDragonflies(dt){
-  if(!started||customizing||dgIn()) return;
+  if(!started||customizing||dgIn()||caveIn()) return;   // cave:
   const land=waLandId(camera.position.x,camera.position.z), on=envCur.night<0.45&&WX.inten<0.25&&(land===0||land===1||land===3);
   if(!DFL.list.length){
     dflGeo();

@@ -43,7 +43,7 @@ function weatherTint(s){
 function updateWeather(dt){
   if(WX.kind) WX.t+=dt;
   WX.inten+=(weatherTarget()-WX.inten)*Math.min(1,dt*0.8);
-  if(dgIn()) WX.inten=0;   // dungeons: no rain, snow or their sound under the ground (it eases back after a run)
+  if(dgIn()||caveIn()) WX.inten=0;   // cave: also on a floor   // dungeons: no rain, snow or their sound under the ground (it eases back after a run)
   { const dry=inSun(camera.position.x,camera.position.z)?1:0; WX.dry=(WX.dry||0)+(dry-(WX.dry||0))*Math.min(1,dt*1.2); WX.inten=Math.min(WX.inten,1-WX.dry); }   // the Sunscar is dry: the weather thins out over a few seconds as you cross in and comes back as you leave
   WX.flash=Math.max(0,WX.flash-dt*3.2)*((WX.dry||0)>0.5?0:1);
   // rain or snow: by where the camera is (over the vale's north crest and down onto the plateau it turns to snow over ~50 m; in the Greyspine by the

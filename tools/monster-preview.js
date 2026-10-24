@@ -16,7 +16,10 @@ const helpers=
 const model=['game/character/model-parts.js','game/character/model-face.js','game/character/model-hair.js','game/character/model-body.js','game/character/outfit-tools.js'].map(rd).join('')+rd('game/character/model.js').split('const hiker=')[0];   // the character code is several files since the character rework (model.js assembles them; the slider table is shared/character.js)
 const game=JSON.parse(fs.readFileSync(path.join(SRC,'manifest.json'),'utf8')).game;
 const monFiles=game.filter(f=>/^combat\/monster/.test(f));   // parts, the families' files, then monsters.js itself (views and animation)
-const code=['shared/math.js','shared/noise.js','shared/balance.js','shared/monster-defs.js','shared/character.js'].map(rd).join('')+helpers+
+// the Deep Cave's monsters (caveMobDef copies of the kinds above): only the caveMobDef function and the floor files' caveMobDef lines are loaded
+const cm=rd('shared/cave-map.js'), cmFrom=cm.indexOf('const CAVE_MON_DEFS'), cmTo=cm.indexOf('\n}',cm.indexOf('function caveMobDef'))+2;
+const caveDefs=cm.slice(cmFrom,cmTo)+'\n'+JSON.parse(fs.readFileSync(path.join(SRC,'manifest.json'),'utf8')).shared.filter(f=>/^cave\/floor-/.test(f)).map(f=>rd('shared/'+f).split('\n').filter(l=>l.startsWith('caveMobDef(')).join('\n')).join('\n')+'\n';
+const code=['shared/math.js','shared/noise.js','shared/balance.js','shared/monster-defs.js','shared/character.js'].map(rd).join('')+caveDefs+helpers+
   'const LITE=false,LOW=false;const localStorage={getItem(){return null},setItem(){}};const scene=new THREE.Scene();const matFlat=new THREE.MeshLambertMaterial();let t=0;const GAIT=[0,Math.PI,Math.PI,0];const getH=()=>0,BOSS={list:[]},CB={target:null};\n'+
   rd('game/world/plant-models-hi.js')+model+';\n'+rd('game/character/pose.js')+monFiles.map(f=>rd('game/'+f)).join('')+
   '\nreturn {ALL_MON_DEFS,buildMonster,monMat,AM:animateMonster};';
