@@ -132,7 +132,7 @@ ok('the floors are far apart (no floor within a snapshot\'s reach of another)',F
   ok('the lift refuses a hiker below level 23 (with the message), takes anyone of 23 to floor 1, and always takes you up',x.caveLiftRefusal(lo2,1).includes('level 23')&&x.caveLiftRefusal({level:23,gear:{cave:{own:{}}}},1)===''&&x.caveLiftRefusal(lo2,0)==='');
   ok('floor 2 stays shut until two skills of floor 1 are owned (caveFloorOpen), floor 1 is open to all',x.caveFloorOpen(hi,1)&&!x.caveFloorOpen(hi,2)&&!x.caveFloorOpen(hi,9)&&x.caveLiftRefusal(hi,2).includes('Floor 2 is still shut')&&!x.caveFloorOpen(hi,0)); }
 // ---- the lift, the walls and the monsters on a fresh server (the older checks above move every monster about) ----
-{ const inbox2={}, S2=loadServer({dev:true,send(pid,m){ (inbox2[pid]=inbox2[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','getH','caveFree','caveWallAt','caveFloorAt','caveFloorOrigin','caveArrival','CAVE_LIFT_SURFACE']), W=S2.api, x=S2.x;
+{ const inbox2={}, S2=loadServer({dev:true,send(pid,m){ (inbox2[pid]=inbox2[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','DEF_BY_ID','MON_DEFS','ALL_MON_DEFS','caveFloorDef','caveBake','getH','caveFree','caveWallAt','caveFloorAt','caveFloorOrigin','caveArrival','CAVE_LIFT_SURFACE']), W=S2.api, x=S2.x;
   const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } }, told=(id,txt)=>(inbox2[id]||[]).some(m=>JSON.stringify(m).includes(txt));
   const L0=x.CAVE_LIFT_SURFACE, join=(id,lvl,x0,z0)=>{ W.join(id,{name:id,look:{cls:'warrior'},save:{level:lvl}}); tick(2); const pl=W.players.get(id); pl.x=x0; pl.z=z0; pl.y=x.getH(x0,z0); return pl; };
   const pa=join('lf1',40,L0.x,L0.z), pb=join('lf2',22,L0.x,L0.z), pc=join('lf3',40,L0.x+30,L0.z); tick(45);
@@ -159,8 +159,17 @@ ok('the floors are far apart (no floor within a snapshot\'s reach of another)',F
   // monsters
   { const ms=x.MONS.filter(m=>m.cave===1);
     ok('floor 1 has its monsters (a pack at every camp, levels 25-34 all present), every one standing on floor',ms.length>=60&&ms.every(m=>x.caveFree(m.x,m.z,0.1))&&new Set(ms.map(m=>m.def.level)).size===10,ms.length+' monsters, '+new Set(ms.map(m=>m.def.level)).size+' levels');
-    ok('floors 2-4 have none yet (their monsters come later)',x.MONS.filter(m=>m.cave>1).length===0);
+    // every floor's camps: a pack of the kind of the camp's level, the level inside the floor's band, the kind defined for that floor in order (floor.mobs[lv - lv0]) with the floor's own element mix
+    for(const n of FL){ const F=x.caveFloorDef(n), B=x.caveBake(n), mm=x.MONS.filter(m=>m.cave===n);
+      ok('floor '+n+': ten kinds, one per level of the band ('+F.lv[0]+'-'+F.lv[1]+'), each defined as a cave monster with an element',F.mobs.length===10&&F.mobs.every((id,i)=>{ const d=x.DEF_BY_ID[id]; return d&&d.cave&&d.level===F.lv[0]+i&&d.el&&d.hp>0&&d.xp>0&&d.dmg>0; }),F.mobs.join());
+      ok('floor '+n+': every camp has its pack (levels inside the band, the kind of the camp\'s level, all ten levels present, on walkable ground)',mm.length>=B.camps.length&&mm.every(m=>m.def.level>=F.lv[0]&&m.def.level<=F.lv[1]&&m.def.id===F.mobs[m.def.level-F.lv[0]]&&x.caveFree(m.x,m.z,0.1))&&new Set(mm.map(m=>m.def.level)).size===10,mm.length+' monsters, '+B.camps.length+' camps');
+      ok('floor '+n+': kills pay (hp, damage, xp finite and rising with the band) and the floor plays its own music theme',F.mobs.every(id=>isFinite(x.DEF_BY_ID[id].xp))&&x.DEF_BY_ID[F.mobs[9]].xp>x.DEF_BY_ID[F.mobs[0]].xp&&typeof F.look.music==='string'); }
+    ok('the quest board and the zone levels ignore cave monsters (they are not in MON_DEFS)',x.MON_DEFS.every(d=>!d.cave)&&x.ALL_MON_DEFS.some(d=>d.cave));
     const pl=pa, m0=ms[0]; pl.x=m0.x+6; pl.z=m0.z; pl.y=x.getH(pl.x,pl.z); let bad=null;
     for(let i=0;i<200&&!bad;i++){ tick(1); bad=ms.find(m=>!x.caveFree(m.x,m.z,0.05)); }
     ok('200 ticks with a hiker beside a camp: every monster still on walkable ground',!bad,bad&&bad.def.id+' '+bad.x+','+bad.z); } }
+// every cave kind has a model that builds (the client's own builder, headless)
+try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_MON_DEFS','buildMonster','monMat']}); const G=c.G(); const names=[]; let bad=null;
+  for(const d of G.ALL_MON_DEFS.filter(d=>d.cave)){ names.push(d.id); try{ const g=new (require('three').Group)(); const parts=G.buildMonster(d,G.monMat(d.glow),g); let tris=0; g.traverse(o=>{ if(o.isMesh){ tris+=o.geometry.attributes.position.count; if(!o.geometry.attributes.normal) bad=bad||d.id+' has no normals'; } }); if(!tris) bad=bad||d.id+' is empty'; }catch(e){ bad=bad||d.id+': '+e.message; } }
+  ok('every cave kind ('+names.length+') has a model that builds, with normals',names.length===40&&!bad,bad||''); }catch(e){ ok('model build check ran',false,e.message); }
 console.log(fails?fails+' check(s) failed':'all passed'); process.exit(fails?1:0);
