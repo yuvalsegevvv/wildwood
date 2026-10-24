@@ -33,10 +33,10 @@ function caveMethodDoneP(p,floor,method){
     g.own[sk.id]=1; toastTo(p.id,sk.name+' learned! ('+M.name+', '+caveFloorDef(floor).name+'). Wear it in the cave slot (K, Cave tab).','loot r3'); ev('caveget',p.id,sk.id);
   } else caveShardsP(p,floor,sk);
 }
-// the Echo Shards a completion pays when the skill is owned already or the place has no skill. C3 fills this in (spending them, levels 2-5); for now they are only counted.
+// the Echo Shards a completion pays when the skill is owned already or the place has no skill. spent on levels 2-5 by caveUpgradeP (server/cave.js).
 function caveShardsP(p,floor,sk){
   const g=caveGearP(p), n=CAVE_SHARDS[floor]|0; g.sh=Math.min(99999,g.sh+n);
-  toastTo(p.id,'+'+n+' Echo Shard'+(n===1?'':'s')+(sk?' ('+sk.name+' is yours already)':' (this place has no skill yet)'),'good');
+  toastTo(p.id,'+'+n+' Echo Shard'+(n===1?'':'s')+(sk?' ('+sk.name+' is yours already)':' (this place has no skill yet)')+' · '+g.sh+' in all','good'); p.dirty=true; ev('caveshards',p.id,n,g.sh);
 }
 function caveMDoneP(p,M,m){ caveMethodDoneP(p,M.n,m); M.sent=''; M.sendT=-9; }
 // ---- floor-wide state: the tremor clock (F) and the gem mole (G) ----

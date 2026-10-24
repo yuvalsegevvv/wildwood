@@ -84,7 +84,7 @@ function cvHandS(p,m,sh){   // Night Shift: a grave hand rises where m died and 
 // ---- the entry: resolveFxS calls it after the generic keys ----
 function caveSetFxS(p,a,tgt,src){
   if(!a.cave||!p.cave) return;
-  const f=a.fx, X=p.cave.fx, K=caveLevelK(a.lvl), inRange=!!tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=a.range+2;
+  const f=a.fx, X=p.cave.fx, K=caveLvK(p,a.sid,a.lvl), inRange=!!tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=a.range+2;
   const healK=1+psP(p,'heal')+ssCondP(p,'heal',null);
   if(f.refund) X.ref={until:S.t+f.refund.secs,left:Math.min(CAVE_REFUND_CAP,f.refund.cap||CAVE_REFUND_CAP),n:f.refund.n};
   if(f.behindWin) X.behind=S.t+f.behindWin;

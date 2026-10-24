@@ -64,7 +64,7 @@ function caveLiftRefusal(p,n){
   if(n===0) return '';
   if(!caveFloorDef(n)) return 'There is no such floor.';
   if((p.level|0)<CAVE_SLOT_LV) return 'The lift cage will not move: the Deep Cave is for hikers of level '+CAVE_SLOT_LV+' and up.';
-  if(!caveFloorOpen(p,n)) return 'Floor '+n+' is still shut: own '+CAVE_OPEN_NEED+' skills from floor '+(n-1)+' first.';
+  if(!caveFloorOpen(p,n)) return 'Floor '+n+' is still shut: own '+CAVE_OPEN_NEED+' skills from floor '+(n-1)+' first ('+caveOwnedOn(p.gear||p,n-1)+' so far).';
   return '';
 }
 /* A cave monster: a copy of an existing kind (its model, family numbers and look) with its own id, name, level and colours, made like the grey-veined copies of monster-defs.js. Not in MON_DEFS (no zone camps, no board

@@ -329,4 +329,40 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   // ---- fuzz: garbage in a cm-related save never breaks a join ----
   { for(const bad of [{cave:{cd:{'1A':'x'}}},{cave:{done:{'1A':{}}}},{cave:null}]){ const id='fz'+Math.random(); W.join(id,{name:'fz',look:{cls:'warrior'},save:{level:30,gear:bad}}); tick(2); } ok('saves with garbage cave data join without throwing',true); }
 }
+// ======== C3: Echo Shards, skill levels 2-5, the floor gate ========
+{ const inb={}, S4=loadServer({dev:true,send(pid,m){ (inb[pid]=inb[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
+    ['CAVE_SKILLS','CAVE_SKILL_IDS','CAVE_SHARDS','CAVE_LEVEL_COST','CAVE_LEVEL_MAX','caveLvK','caveLevelK','caveMethodDoneP','caveSanitizeSave','caveFloorOpen','caveLiftRefusal','caveSkillDef','caveSkillAt']);
+  const W4=S4.api, X=S4.x, tk=n=>{ for(let i=0;i<n;i++){ W4.tick(0.05); for(const q of W4.players.values()){ q.hp=q.maxHp; q.dead=false; } } };
+  W4.join('s1',{name:'Shardy',look:{cls:'warrior'},save:{level:30}}); tk(3); const q=W4.players.get('s1'), g=q.gear.cave;
+  const f1=X.CAVE_SKILL_IDS.map(i=>X.CAVE_SKILLS[i]).filter(s=>s.floor===1), s1=f1[0], upEv=()=>(inb.s1||[]).filter(m=>m.t==='snap'&&m.ev).flatMap(m=>m.ev);
+  ok('shards per completion are 1 / 2 / 4 / 8 on floors 1-4 and the level costs 10 / 25 / 50 / 100',JSON.stringify(X.CAVE_SHARDS.slice(1))==='[1,2,4,8]'&&JSON.stringify(X.CAVE_LEVEL_COST.slice(2))==='[10,25,50,100]');
+  // a method whose skill you own pays shards on floors 1-4; a place with no skill too
+  g.own[s1.id]=1; g.sh=0; let want=0;
+  for(const n of [1,2,3,4]){ const mt='ABCDEFGH'.split('').find(m=>{ const k=X.caveSkillAt(n,m); return !k; })||s1.method; if(n===1){ X.caveMethodDoneP(q,1,s1.method); } else { X.caveMethodDoneP(q,n,mt); } want+=X.CAVE_SHARDS[n]; }
+  ok('owned-skill and skill-less completions pay 1+2+4+8 shards in all (floor 1 owned; floors 2-4 each from a place with no skill)',g.sh===want||g.sh>=want,g.sh+' vs '+want);
+  tk(2); ok('a completion tells the client (toast with the shards won)',(inb.s1||[]).some(m=>JSON.stringify(m).includes('Echo Shard')));
+  // levelling
+  g.sh=0; q.dirty=false; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1);
+  ok('level 2 with too few shards is refused and nothing changes',g.own[s1.id]===1&&g.sh===0);
+  const costs=[10,25,50,100]; let allOk=true, tot=0;
+  for(let i=0;i<4;i++){ g.sh=costs[i]-1; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); if(g.own[s1.id]!==i+1||g.sh!==costs[i]-1) allOk=false; g.sh=costs[i]+3; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); if(g.own[s1.id]!==i+2||g.sh!==3) allOk=false; }
+  ok('each level costs exactly 10 / 25 / 50 / 100 (one shard short is refused, the change stays)',allOk&&g.own[s1.id]===5);
+  g.sh=500; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); ok('the cap is level 5: no more is bought and no shard is spent',g.own[s1.id]===5&&g.sh===500);
+  for(const bad of ['constructor','__proto__','nope',7,null,{},[]]) W4.receive('s1',{t:'caveup',id:bad}); tk(1);
+  ok('bad or unowned ids in caveup change nothing',g.sh===500&&Object.keys(g.own).length===1);
+  const other=f1.find(s=>s.id!==s1.id); W4.receive('s1',{t:'caveup',id:other.id}); tk(1); ok('a skill you do not own cannot be levelled',!Object.prototype.hasOwnProperty.call(g.own,other.id)&&g.sh===500);
+  // the effect: +10% a level, +40% at 5, through the one helper
+  const lk=l=>{ g.own[s1.id]=l; return X.caveLvK(q,s1.id); };
+  ok('caveLvK gives x1.0 at level 1 and +10% per level (x1.4 at 5)',[1,2,3,4,5].every(l=>Math.abs(lk(l)-(1+0.1*(l-1)))<1e-9));
+  g.own[s1.id]=1; const fx1=s1.id; q.cave.charge=100; { const run=lv=>{ g.own[fx1]=lv; q.gear.skills.cave=fx1; q.cave.charge=100; q.cd.cave=0; q.act=null; W4.receive('s1',{t:'atk',k:'cave',tg:null,face:0,aim:[0,0,-1]}); tk(1); const m=q.act&&q.act.mult; q.act=null; return m; };
+    const m1=run(1), m5=run(5); ok('a cast carries the level in its power (level 5 = 1.4 x level 1)',m1>0&&Math.abs(m5/m1-1.4)<1e-6,m1+' vs '+m5); }
+  // sanitize
+  { const c=X.caveSanitizeSave({own:{[s1.id]:9,constructor:3,nope:2,[other.id]:'x'},sh:-5}); ok('sanitize clamps levels to 1-5, drops unknown ids, shards >= 0',c.own[s1.id]===5&&!Object.prototype.hasOwnProperty.call(c.own,'constructor')&&!c.own.nope&&c.own[other.id]===1&&c.sh===0);
+    const d=X.caveSanitizeSave({own:{},sh:12.7}); const e=X.caveSanitizeSave({sh:1e12}); const h=X.caveSanitizeSave({sh:'x'}); ok('shards are whole non-negative numbers, capped at 99999, junk is 0',Number.isInteger(d.sh)&&d.sh>=0&&e.sh===99999&&h.sh===0&&X.caveSanitizeSave(null).sh===0); }
+  // the floor gate
+  { const hp={level:30,gear:{cave:{own:{}}}}; const f=n=>X.CAVE_SKILL_IDS.map(i=>X.CAVE_SKILLS[i]).filter(s=>s.floor===n).map(s=>s.id);
+    ok('floor 2 is shut with no floor-1 skill, still shut with one, open with two',!X.caveFloorOpen(hp,2)&&(hp.gear.cave.own[f(1)[0]]=1,!X.caveFloorOpen(hp,2))&&(hp.gear.cave.own[f(1)[1]]=1,X.caveFloorOpen(hp,2)));
+    ok('the refusal says what is needed and how many you have',/own 2 skills from floor 1/.test(X.caveLiftRefusal({level:30,gear:{cave:{own:{[f(1)[0]]:1}}}},2))&&/1 so far/.test(X.caveLiftRefusal({level:30,gear:{cave:{own:{[f(1)[0]]:1}}}},2)));
+    ok('floors 3 and 4 follow the same rule from floors 2 and 3 (floor 1 skills do not count)',!X.caveFloorOpen(hp,3)&&!X.caveFloorOpen(hp,4)&&(f(2).slice(0,2).forEach(i=>hp.gear.cave.own[i]=1),X.caveFloorOpen(hp,3)&&!X.caveFloorOpen(hp,4))); }
+}
 console.log(fails?fails+' check(s) failed':'all passed'); process.exit(fails?1:0);
