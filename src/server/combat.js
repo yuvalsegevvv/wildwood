@@ -6,11 +6,13 @@
 const PROJS=[]; let nextProjId=1;
 function handleAttack(p,msg){
   if(p.dead||p.act) return;
+  if(msg.k==='cave'){ caveCastP(p,msg); return; }   // cave: the 4th slot (server/cave.js)
   const k=SLOTS.includes(msg.k)?msg.k:'basic'; if(p.cd[k]>0.08) return;
   const cls=clsOfP(p), SK=skOfP(p), LV=p.pv?999:p.level, ab=abilityOf(cls,k,SK,LV); if(!ab) return;   // no skill equipped, or the slot is still locked; pvp: on the island the fixed loadout, every slot open
   const [kind,dur,hitAt]=ab.act;
   const lvl=skillLvOf(SK,ab.id);
   p.cd[k]=abilityCd(ab,SK,LV,cls,rlP(p,'cdr'))*(k==='basic'&&p.buff?p.buff.cd:1)*(1-allyP(p,'haste'));   // skillsets: an ally haste buff shortens it
+  caveCastS(p,k,ab);   // cave: this cast pays its charge once, on its first hit
   ssTriggerS(p,'cast'+(1+SLOTS.indexOf(k)),{m:MON_BY_ID.get(msg.tg)});   // skillsets: on cast rows of slot 1, 2, 3
   if(isFinite(+msg.face)) p.face=+msg.face%(2*Math.PI);   // (modulo a turn: it goes out in the pact event and the snapshots, rounded by x100, and 1e308 became Infinity there)
   const tg=foeByIdS(p,msg.tg);   // pvp: a fighter on the island may name another fighter
@@ -50,6 +52,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(d.fx) ev('dmg',m.id,d.v,d.crit?1:0,p.id,d.fx); else ev('dmg',m.id,d.v,d.crit?1:0,p.id);
   if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }
   else if(!(rlResM===m&&rlResT===S.t)) rxHitS(m,p,elemEffS(p,el),mult);   // reactions: a direct hit leaves an aura or reacts with the one there
+  caveHitS(p);   // cave: the cast that did this pays its charge (once per cast, not per enemy)
   if(!rxQuiet&&p.ss&&p.ss.trig){ ssTriggerS(p,'hit',{m,v:d.v}); if(d.crit) ssTriggerS(p,'crit',{m,v:d.v}); }   // skillsets: on hit / on crit rows (a burn tick, a reaction's burst and a trigger's own damage are not hits)
   return d.v;
 }

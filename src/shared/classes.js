@@ -178,9 +178,9 @@ const ANIM_OF={}; for(const id in SKILLS){ const s=SKILLS[id]; s.id=id; ANIM_OF[
 const DEFAULT_OF={};   // DEFAULT_OF[cls][slot] = the free ability of that slot
 for(const id in SKILLS){ const s=SKILLS[id]; if(!s.price&&!s.drop){ (DEFAULT_OF[s.cls]=DEFAULT_OF[s.cls]||{})[s.slot]=id; } }
 const ACT_SKILL={}; for(const id in SKILLS){ ACT_SKILL[SKILLS[id].act[0]]=SKILLS[id]; }   // the skill behind an attack kind (every skill has its own kind): the client draws generic fx from it
-const slotLv=slot=>slot==='burst'?BURST_SLOT_LV:slot==='skill'?SKILL_SLOT_LV:1;
+const slotLv=slot=>slot==='burst'?BURST_SLOT_LV:slot==='skill'?SKILL_SLOT_LV:slot==='cave'?CAVE_SLOT_LV:1;   // cave: the 4th slot (shared/cave.js; it is not in SLOTS)
 // lv: skill / passive levels above 1 ({id:level}); pass: the passive loadout (PASSIVE_SLOTS ids or null)
-const newSkills=()=>({owned:SKILL_IDS.filter(id=>!SKILLS[id].price&&!SKILLS[id].drop&&!SKILLS[id].set),eq:{warrior:{basic:null,skill:null,burst:null},archer:{basic:null,skill:null,burst:null},mage:{basic:null,skill:null,burst:null}},lv:{},pass:new Array(PASSIVE_SLOTS).fill(null)});
+const newSkills=()=>({owned:SKILL_IDS.filter(id=>!SKILLS[id].price&&!SKILLS[id].drop&&!SKILLS[id].set),eq:{warrior:{basic:null,skill:null,burst:null},archer:{basic:null,skill:null,burst:null},mage:{basic:null,skill:null,burst:null}},lv:{},pass:new Array(PASSIVE_SLOTS).fill(null),cave:null});   // cave: the worn cave skill (the 4th slot, shared/cave.js)
 // only the mage chooses a basic attack; everyone else always has their class's
 const canSwap=(cls,slot,skills)=>slot!=='basic'||cls==='mage'||ssOwnsBasic(skills,cls);   // skillsets: a class that owns a slot-1 piece may change its basic attack too
 // the ability behind a slot for a class and a loadout (null if that slot can't be used yet or is empty)

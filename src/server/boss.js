@@ -41,6 +41,7 @@ function updateBossS(m,dt){
   const inside=playersInArena(A,6);
   if(!B.engaged && playersInArena(A,0).length){ B.engaged=true; m.aggro=true; B.k={}; B.kit.start(B,m); m.atkT=1.5; toastTo(null,B.bd.short+' awakens!','bad'); ev('roar',m.id); }
   if(B.engaged && !inside.length) resetBossS(B);
+  else if(B.engaged) caveBossTickS(B,inside);   // cave: standing in an engaged boss's arena is a boss fight (charge 50 on entering, 0 on leaving early)
   m.awake=B.engaged||anyPlayerNear(m.x,m.z,110);
   if(B.engaged){
     let p=null, dp=1e9; for(const q of inside){ const d=Math.hypot(q.x-m.x,q.z-m.z); if(d<dp){ dp=d; p=q; } }

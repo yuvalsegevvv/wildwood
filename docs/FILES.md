@@ -91,6 +91,7 @@ shared
   cosmetics.js                       Cosmetics (version 3): auras (a glow, a ring or drifting particles around the character) and capes, made at a Wayfarers' Lodge (the free ones need no making). Pure.
   cospieces.js                       Cosmetic pieces (version 3.2): which general parts of every slot (hat, top, bottom, shoes, gloves, cape, aura) are free and which are crafted, from professions' materials and monsters' drops; the try-on lock rules. Pure.
   amber.js                           Amber (a gear-upgrade material) and gems (the premium currency, version 3.3): the cap of a purse, the price of an outfit set, the grant of the public testing tool
+  cave.js                            The Deep Cave, shared rules: the 4th skill slot (opens at level 23), the charge that pays for it, the registry of cave skills (defineCaveSkill) and their validation
   gem-sources.js                     Free ways to earn gems: the pay of main and side quest steps, the daily quest set (UTC), the placeholder ad watch, and the achievements list
   side-quests.js                     Side quests (SQ): six chains of linked, objective-based steps, each leading to a land's second boss (Carapax, Kyuubi, Vetrmaw, the Sand Wyrm) or through the Gloamhorn (Captain Dredge, then the Gloam Warden); rewards are resources, a little XP and a cosmetic at each chain's end. Pure.
   pvp.js                             The Proving Isle (PvP): the fighting ground, the fixed level, gear and loadout everyone fights with there, the gate on the bridge, where a knocked-out fighter wakes (a shore spot), the entry lock. Pure.
@@ -144,6 +145,7 @@ server
   reactions.js                       Reactions on the server: elemental auras and reactions, the flavours as shared statuses on monsters (vuln, weak, burn, slow, stun) and direct application
   skillsets.js                       Skill sets on the server: granting a set's pieces, wearing a piece for all three classes, the loadout cache p.ss (the sets worn and their bonuses)
   amber.js                           Amber on the server: amber (gear.amb, a gear-upgrade material), gems (gear.gem, the premium currency), buying an outfit set for 1000 gems (gear.os), and the one public testing tool that grants gems on every server
+  cave.js                            The Deep Cave on the server: the 4th slot's charge (earned by casts that hit, a boss fight sets it), casting the equipped cave skill, equipping, and sanitizing gear.cave
   gem-sources.js                     Free gems on the server: quest steps, the daily quest set (UTC), achievements and the placeholder ad watch
   boss-fx.js                         What the bosses can do, shared by every move set: telegraphed hits (circle, cone, line, donut, marks), ground zones, tidal walls, orbs, effects on players, timed casts, summons
   boss-kits-home.js                  Boss move sets of the home forest: the Rootwarden (root spikes, ground slam, the totem shield, and the four seasons of the grove) and Carapax, the Tide King (geyser trails, tidal waves with an undertow, the molt, the claw clamp, burrow strikes, the hunting whirlpool)
@@ -404,6 +406,7 @@ game
   raids/hud.js                       The raids' HUD side: where each stronghold stands (server rows), the strip near one, its door sign, the map marks and tooltips, the raid materials in the bag, the level event
   net/transport.js                   Connections to the world server: solo (server in this tab), shared room (one player's tab hosts), WebSocket (node server)
   net/client.js                      Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
+  cave/slot.js                       The Deep Cave, client side of the 4th slot: the action-bar tile and its charge bar, casting it, the skills panel's cave row and tab (equip / take off), the server's charge message
   combat/boss-dungeon.js             The dungeon bosses on the client: their defs in the roster lookup, what the boss bar's number means for each (dish, puffballs, lamps), Haugbui's lamps going dark and lit again, the relight channel's cast bar, and the gloom of his blackout
   net/remote.js                      Other players: avatars built from their look and gear, smoothed movement, attack animations, name tags
   economy/dungeon-gear.js            Level-30 dungeon gear in the UI: the ring's notes in the item details, the Tempering Stone count and drop note, the forge's Temper tab, the testing buttons, the events `stone` and `temper`

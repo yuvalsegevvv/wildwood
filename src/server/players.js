@@ -13,6 +13,7 @@ function sanitizeGear(g,cls){
   if(g.bought&&typeof g.bought==='object') for(const id in g.bought) if(ITEM[id]&&ITEM[id].rar===0) out.bought[id]=clampInt(g.bought[id],0,999,0);
   out.q=sanitizeQuests(g.q);
   out.skills=sanitizeSkills(g.skills);
+  out.cave=caveSanitizeSave(g.cave); if(out.skills.cave&&!out.cave.own[out.skills.cave]) out.skills.cave=null;   // cave: the owned cave skills; the worn one must be owned
   out.mq=sanitizeMq(g.mq);
   out.sq=sanitizeSq(g.sq);   // sidequests: the chains' progress (an old save has none)
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); out.cos=sanitizeCos(g); }   // cosmetics: the auras and capes made at a lodge
@@ -68,6 +69,7 @@ function sanitizeSkills(g){
   // a passive keeps its slot (which slots a level can use is decided by newPlayer, which knows the level), and sits in one slot only
   if(Array.isArray(g.pass)) g.pass.slice(0,PASSIVE_SLOTS).forEach((id,i)=>{ if(PASSIVES[id]&&out.owned.includes(id)&&!out.pass.includes(id)) out.pass[i]=id; });
   out.pgiven=!!g.pgiven;   // the free passive was handed out once (so taking it off does not bring it back)
+  out.cave=caveSkillDef(g.cave)?g.cave:null;   // cave: the worn cave skill (sanitizeGear clears it when it is not owned)
   out.v=g.v===2?2:1;   // 1 = from before burst skills: they get their free burst on join
   return out;
 }
@@ -101,7 +103,7 @@ function newPlayer(pid,hello){
   const p0=oldWv<WORLD_VER?wvSpawnOf(save.pos,save.gear||{}):null, sp=p0||VIL.spawn;   // (wv: a saved position of the old world frame is moved to its land's village)
   const p={id:pid,name:cleanName(hello.name),look,x:sp.x,y:getH(sp.x,sp.z),z:sp.z,face:0,vx:0,vz:0,
     level:clampInt(save.level,1,PLAYER_MAX_LV,1),exp:Math.min(EXP_MAX,Math.max(0,+save.exp||0)),gear:sanitizeGear(save.gear,look.cls),
-    hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0},buff:null,act:null,dirty:true,travelT:0};
+    hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0,cave:0},buff:null,act:null,dirty:true,travelT:0,cave:caveNewState()};   // cave: the 4th slot's charge (not saved)
   p.look=cosCleanLook(p.look,p.gear.cos);   // cosmetics: no aura or cape that you do not own
   if(p.gear.startAll) giveAllP(p);
   if(p.gear.skills.v!==2){ autoEquipP(p,'skill'); autoEquipP(p,'burst'); p.gear.skills.v=2; }   // saves from before skills / bursts get the free ones
@@ -223,6 +225,7 @@ function updatePlayersS(dt){
   for(const p of S.players.values()){
     S.ctx=p.inst|0;   // dungeons: what a player's tick causes belongs to his run
     for(const k in p.cd) p.cd[k]=Math.max(0,p.cd[k]-dt);
+    caveTickP(p);   // cave: end a boss fight they left; send the charge
     ssTickS(p); ssRegenS(p,dt);   // skillsets: tick rows while in a fight; a regen buff
     if(p.buff&&S.t>=p.buff.until){ p.buff=null; }
     if(p.buff&&p.buff.regen&&!p.dead) healP(p,p.maxHp*p.buff.regen*dt);

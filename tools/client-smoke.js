@@ -42,8 +42,9 @@ const el=s=>document.querySelector(s);
     G.qShowTab('board'); ok('the board tab lists the notices, a hunt with its monster\'s picture, and no Accept away from Maren',(q().match(/class="qc /g)||[]).length===G.GEAR.q.offers.length&&(!G.GEAR.q.offers.some(o=>o.type==='kill')||/data-mp="/.test(q()))&&!/data-accept/.test(q()));
     G.qShowTab('side'); ok('the side quests tab lists the six chains, each with its land, level and cosmetic, none under way yet',(q().match(/class="sq-card/g)||[]).length===6&&/The Grey Tide/.test(q())&&/Tide King&#39;s Mantle|Tide King's Mantle/.test(q())&&/From level 15/.test(q()),q().slice(0,200));
     G.qShowTab('taken'); ok('the taken tab says when you carry nothing',/carry no notices/.test(q())); G.closePanels(); }
-  G.openSkills(); ok('skills panel renders 3 slots',(el('#skBody').innerHTML.match(/class="sk-slot/g)||[]).length===3);
-  { const h=()=>el('#skBody').innerHTML; ok('skills panel: a tab for 1, 2, 3 and Passive, and three passive slots',(h().match(/data-skkind=/g)||[]).length===4&&(h().match(/class="sk-pslot/g)||[]).length===3);
+  G.openSkills(); ok('skills panel renders 4 slots (the three class slots and the cave row)',(el('#skBody').innerHTML.match(/class="sk-slot/g)||[]).length===4);
+  ok('skills panel: the cave row says what to do (locked below level 23, or Go to the cave)',/data-caveslot/.test(el('#skBody').innerHTML)&&/(Opens at level 23|Go to the cave)/.test(el('#skBody').innerHTML));
+  { const h=()=>el('#skBody').innerHTML; ok('skills panel: a tab for 1, 2, 3, Cave and Passive, and three passive slots',(h().match(/data-skkind=/g)||[]).length===5&&(h().match(/class="sk-pslot/g)||[]).length===3);
     ok('an unowned boss skill shows as Boss in the grid and cannot be bought',/data-id="spore"[^>]*>(?:(?!<\/button>)[\s\S])*<span class="lv">Boss<\/span>/.test(h())&&!/data-buyskill="spore"/.test(h()),G.GEAR.eq.weapon);
     G.NET.send({t:'dev',cmd:'level',v:20}); G.NET.send({t:'dev',cmd:'skills'}); G.NET.send({t:'dev',cmd:'mats'}); await wait(600); G=c.G();
     G.openSkills(null,'pass'); ok('passives tab lists every passive, Vitality is in a slot',(h().match(/data-from="grid"/g)||[]).length===G.PASSIVE_IDS.length&&(h().match(/class="sk-pslot on/g)||[]).length===1,G.GEAR.skills.pass.join());

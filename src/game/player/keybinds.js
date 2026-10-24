@@ -15,6 +15,7 @@ const KB_ACTIONS=[
   {id:'basic', name:'Basic attack',  def:['KeyF','Digit1']},
   {id:'skill', name:'Skill',         def:['KeyQ','Digit2']},
   {id:'burst', name:'Burst skill',   def:['KeyR','Digit3']},
+  {id:'cave',  name:'Cave skill (4th slot)', def:['Digit4','']},   // cave: the 4th slot (game/cave/slot.js), opens at level 23
   {id:'pot1',  name:'Healing potion', def:['KeyZ','']},
   {id:'pot2',  name:'Potion of might', def:['KeyX','']},
   {id:'pot3',  name:'Potion of guard', def:['KeyC','']},

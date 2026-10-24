@@ -25,6 +25,11 @@ Moved from CLAUDE.md section 3 (the router keeps the shape of it and the recipe 
 
 `receive()` falls back to `MSG[msg.t]`, so a feature adds a message without editing the switch: `MSG.party=(p,msg)=>...` (`server/party.js`: `a` = invite / accept / decline / kick / leave / lead...), `MSG.dg` (`server/dungeons/lobby.js`: `a` = open / start / accept / decline / leave / revive / use), `MSG.temper{id,worn}` (`server/dungeon-gear.js`: tempering), `MSG.rwdev` (the testing tool for the rewards, `S.dev` only). Their answers are messages and snapshot fields of their own (`pty`, `dgboard`, `dgi`, `dg` in the snapshot: `server/dungeons/`, `game/dungeon/`; `docs/areas/dungeons.md`). `MSG.fr{a:'add'|'accept'|'decline'|'remove'|'list'|'rank',name}` (`server/friends.js`: the friend list and the ranking; answers are the events `frl` `[pid, rows]` your friends with online state and level, `fri` `[pid, fromName, secs]` a friend request, `rnk` `[pid, rows, myRank, total]` the top 50 by level; the list is saved as `gear.fr`; the panel is `game/ui/friends.js`, comma key). `grep -rn "MSG\." src/server` lists them all.
 
+## The Deep Cave's messages (`docs/CAVE.md`)
+
+- Client → server: `atk{k:'cave',tg,face,aim}` casts the worn cave skill (server/cave.js `caveCastP`: level 23, charge >= its cost; the cost is spent, 0.8 s between two casts; the other fields as for any `atk`); `cavequip{id}` wears an owned cave skill (`id` null takes it off; registered as `MSG.cavequip`).
+- Server → client: `cave{c}` is your charge (0-100, rounded), sent when the rounded value changes and once after joining; charge is not saved, so it is not in `you`. A cave cast plays as an ordinary `pact` event (`kind` `cv_<skill id>` unless the skill names its own). The owned skills are `gear.cave.own` ({id: level}) and the worn one `gear.skills.cave`, both in `you.gear`.
+
 ## Rules every message obeys
 
 - **Sizes.** A WebSocket message is at most 1 MB (the Node host cuts the socket); in the claude.ai room (Shared mode) at most 4 KB, so bigger ones travel as parts in both directions (`chunkSend`, `docs/areas/accounts-net.md`).

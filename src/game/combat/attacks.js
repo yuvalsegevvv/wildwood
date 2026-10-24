@@ -19,6 +19,7 @@ function cycleTarget(){
   const i=list.indexOf(CB.target); CB.target=list[(i+1)%list.length];
 }
 function doAttack(kind){
+  if(kind==='cave'){ caveDoAttack(); return; }   // cave: the 4th slot (game/cave/slot.js)
   if(!started||!NET.ready||uiOpen()||PL.dead||CB.act||CB.cd[kind]>0) return;
   const c=clsOf(), ab=abilityOf(c,kind,pvSkills(),pvLevel());   // pvp: on the island the fixed loadout
   if(!ab){ // the slot is locked or empty
