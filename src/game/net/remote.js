@@ -42,7 +42,7 @@ function updateRemotes(dt){
     const d=Math.hypot(r.x-P.x,r.z-P.z); r.g.visible=d<150;
     if(!r.g.visible) continue;
     if(r.act){ r.act.t+=dt; if(!r.act.done&&r.act.t>=r.act.dur*r.act.hitAt){ r.act.done=true; attackVisuals(r.act,r); } if(r.act.t>=r.act.dur) r.act=null; }
-    r.g.position.set(r.x,r.y,r.z);
+    r.g.position.set(r.x,r.y+cvbLift(r.id),r.z);   // cave: Eagle's Perch
     r.g.rotation.set(0,r.face+(r.act&&r.act.kind==='spin'?clamp(r.act.t/r.act.dur)*TAU*2:0),r.dead?1.4:0);
     poseRig(r.rig,dt,{sp,ph:r.walk,act:r.act,hold:CLASS_OF[(ITEM[r.eq.weapon]||{}).slot]==='warrior'?'sword':null});
     const talking=CHAT.bubbles.has(r.id)&&performance.now()<CHAT.bubbles.get(r.id).until;

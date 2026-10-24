@@ -494,6 +494,9 @@ game
   cave/vis-floor1.js                 Drawings of the Deep Cave's floor-1 skills Echo, Flare, Overdrive and Lantern Ward, and the plumbing the floor 1-2 drawings share (timed effects, press-time wind-ups, area claims)
   cave/vis-floor1b.js                Drawings of the Deep Cave's floor-1 skills Burrow, Cave-in, Grapple Line and Second Wind: a mound that carries you under the ground, a rock fall with shadows, a hook and a taut line, a green breath that heals
   cave/vis-floor2a.js                Drawings of five Deep Cave floor-2 set skills: Tansy's Threshing Floor, Sazanka's Shadow Step, Torgeir's Shield-Wall, Corvin's Lighthouse and Sabir's Cut and Run, in their outfits' colours and motifs
+  cave/vis-floor2b.js                The Deep Cave's skill drawings, the kit and floor 2's Marionette: a manager for timed effects (cvbRun), shared helpers, and the hooks for zones, the lift and the lane's speed
+  cave/vis-floor3.js                 The Deep Cave's skill drawings for floor 3 (the +2 sets): Tidepool, Intermission, Sound the Charge, Eagle's Perch, Stopped Hour and Lamp in the Window
+  cave/vis-floor4.js                 The Deep Cave's skill drawings for floor 4 (the +3 sets): Night Line, Bell Echo, Black Ice, Landslide, Embalm and Night Shift
   ui/account.js                      Accounts on the online server: session token, the server's auth answers, register / log out / guest code in settings
   ui/guest-gate.js                   The "Register to continue" popup a guest sees at the online server's limits (level 20, the first three lands, zone tiers)
   ui/chat.js                         Chat between players: the chat log, the input (Enter / chat button), speech bubbles, /name, joins and leaves

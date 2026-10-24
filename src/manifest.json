@@ -429,7 +429,7 @@
     "dungeon/board.js",
     "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/view-sand.js", "dungeon/view-gloam.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "ui/friends.js", "ui/unstuck.js", "pvp/state.js", "dungeon/hud.js", "dungeon/minimap.js",
     "cave/zone.js", "cave/view.js", "cave/view-themes.js", "cave/look.js", "cave/life.js", "cave/collide.js", "cave/minimap.js", "cave/mouth.js", "cave/lift.js", "cave/methods.js", "cave/method-props.js",
-    "cave/vis.js", "cave/vis-floor1.js", "cave/vis-floor1b.js", "cave/vis-floor2a.js",
+    "cave/vis.js", "cave/vis-floor1.js", "cave/vis-floor1b.js", "cave/vis-floor2a.js", "cave/vis-floor2b.js", "cave/vis-floor3.js", "cave/vis-floor4.js",
     "ui/account.js",
     "ui/guest-gate.js",
     "ui/chat.js",
