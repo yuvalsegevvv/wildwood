@@ -382,7 +382,7 @@
     "economy/rolls.js",
     "dungeon/board.js",
     "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/view-sand.js", "dungeon/view-gloam.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "ui/friends.js", "ui/unstuck.js", "pvp/state.js", "dungeon/hud.js", "dungeon/minimap.js",
-    "cave/zone.js", "cave/view.js", "cave/view-themes.js", "cave/look.js", "cave/collide.js", "cave/minimap.js", "cave/mouth.js", "cave/lift.js",
+    "cave/zone.js", "cave/view.js", "cave/view-themes.js", "cave/look.js", "cave/life.js", "cave/collide.js", "cave/minimap.js", "cave/mouth.js", "cave/lift.js",
     "ui/account.js",
     "ui/guest-gate.js",
     "ui/chat.js",

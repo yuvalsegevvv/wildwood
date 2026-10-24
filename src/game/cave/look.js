@@ -6,14 +6,14 @@
    Same recipe as the dungeons' (dungeon/look.js): the fog colour is the floor's (look.fog) and its far end look.far (40-52 m), the hemisphere light is white and flat (the light is in the vertex colours), the sun is off,
    the camera's far plane 140 m (the world is 3 km away: nothing of it is drawn). Point lights: the lantern on you everywhere (the colour of the floor's look.torch), two more on a desktop that move to the nearest
    lamps every quarter second; their count never changes while a floor is up (a new count recompiles every material). Shadows are off. */
-const CAVE_LOOK={on:false,save:null,torch:null,pool:[],poolT:0,far:46,near:3,fog:new THREE.Color(),hs:new THREE.Color(0xffffff),hg:new THREE.Color(0xffffff),sun:new THREE.Color(0xffffff),hi:0.9,sunI:0};
+const CAVE_LOOK={on:false,save:null,torch:null,pool:[],poolT:0,far:46,near:3,fog:new THREE.Color(),hs:new THREE.Color(0xffffff),hg:new THREE.Color(0xffffff),sun:new THREE.Color(0xffffff),hi:0.95,sunI:0};
 function caveLookEnter(R){
   const L=CAVE_LOOK, K=R.K;
   if(!L.save) L.save={far:camera.far,near:scene.fog.near,sky:sky.visible,water:water?water.visible:true,cast:sun.castShadow,motes:motes.visible};
   camera.far=140; camera.updateProjectionMatrix();
   sky.visible=false; if(water) water.visible=false; sun.castShadow=false;
-  L.fog.setHex(K.fog); L.hi=K.hi===undefined?0.9:K.hi; L.far=K.far||46; L.on=true;
-  if(!L.torch){ L.torch=new THREE.PointLight(0xffd8a8,1.1,15,2); L.torch.name='caveTorch'; }
+  L.fog.setHex(K.fog); L.hi=K.hi===undefined?0.95:K.hi; L.far=K.far||46; L.on=true;
+  if(!L.torch){ L.torch=new THREE.PointLight(0xffd8a8,1.35,20,2); L.torch.name='caveTorch'; }
   L.torch.color.setHex(K.torch===undefined?0xffd8a8:K.torch); scene.add(L.torch);
   if(!L.pool.length) for(let i=0;i<(LOW||LITE?0:2);i++){ const p=new THREE.PointLight(0xffffff,0,12,2); p.name='caveLamp'; L.pool.push(p); }
   for(const p of L.pool){ p.intensity=0; scene.add(p); }
@@ -36,7 +36,7 @@ function caveLookEnv(s){
 function caveLookTick(dt){
   const L=CAVE_LOOK, R=CAVE_RUN; if(!R||!L.on) return;
   for(const m of AURORA) m.visible=false; petals.visible=false; motes.visible=false;
-  if(L.torch){ L.torch.position.set(P.x,P.y+2.4,P.z); const hot=R.F.theme==='magma'; L.torch.intensity=(hot?0.85:1.1)*(0.94+0.06*Math.sin(t*9.1)*Math.sin(t*5.3)); }
+  if(L.torch){ L.torch.position.set(P.x,P.y+2.4,P.z); const hot=R.F.theme==='magma'; L.torch.intensity=(hot?1.05:1.35)*(0.94+0.06*Math.sin(t*9.1)*Math.sin(t*5.3)); }
   if((L.poolT-=dt)>0||!L.pool.length) return;
   L.poolT=0.25;
   const lx=P.x-R.ox, lz=P.z-R.oz, near=CAVE_VIEW.lamps.map(a=>[a,Math.hypot(a.x-lx,a.z-lz)]).filter(q=>q[1]<q[0].r*2).sort((p,q)=>p[1]-q[1]);

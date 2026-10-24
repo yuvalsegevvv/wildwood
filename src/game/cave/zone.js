@@ -46,5 +46,5 @@ function caveFrame(dt){
   if(!R||R.n!==n){ caveOnTp({x:P.x,z:P.z}); return; }
   R.away=0;
   if((R.seeT-=dt)<=0){ R.seeT=0.3; caveSeeAround(); }
-  for(const step of [caveViewTick,caveLookTick]) try{ step(dt); }catch(err){ console.error('cave frame:',err); }
+  for(const step of [caveViewTick,caveLookTick,caveLifeTick]) try{ step(dt); }catch(err){ console.error('cave frame:',err); }
 }

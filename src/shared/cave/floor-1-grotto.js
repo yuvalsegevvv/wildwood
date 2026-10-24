@@ -14,4 +14,4 @@ caveMobDef('snowleopard','palestalker','Pale Stalker',{level:34,el:'dark',scale:
 defineCaveFloor({id:'grotto',n:1,name:'The Glowworm Grotto',theme:'grotto',lv:[25,34],seed:2711,
   mobs:['glowslime','lanterncap','palebeetle','grottobat','stoneward','blindgoblin','ghostscorpion','glowwisp','limewyrm','palestalker'],
   gen:{cells:168,chambers:14,rMin:7,rMax:14,rStart:8,tw:3,wind:9,side:10,loops:3,style:'cavern',camps:32,pools:3,start:[0.11,0.5],deep:[0.89,0.55]},
-  look:{music:'wild2',wall:0x8c8a78,wall2:0x6e7a82,floor:0x4c4e4c,ceil:0x3a3e44,fog:0x040912,amb:0.34,light:0x66ccff,h0:4.2,hk:1.15,hmax:13,wobble:0.55,far:46,fx:['glowworms','stalactites','pools','strata']}});
+  look:{music:'wild2',wall:0x8c8a78,wall2:0x6e7a82,floor:0x4c4e4c,ceil:0x3a3e44,fog:0x0a1624,amb:0.4,light:0x66ccff,h0:4.2,hk:1.15,hmax:13,wobble:0.55,far:56,fx:['glowworms','stalactites','pools','strata']}});

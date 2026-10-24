@@ -13,4 +13,4 @@ caveMobDef('granitegolem','obsidiancolossus','Obsidian Colossus',{level:64,el:'e
 defineCaveFloor({id:'magma',n:4,name:'The Magma Heart',theme:'magma',lv:[55,64],seed:8219,
   mobs:['lavaslime','obsidianbeetle','emberwisp','forgeraider','lavascorpion','magmaworm','ashstalker','obsidiandrake','cinderefreet','obsidiancolossus'],
   gen:{cells:168,chambers:15,rMin:5.5,rMax:10,rStart:8,tw:2.4,wind:11,side:10,loops:3,style:'tube',camps:22,pools:0,lava:8,start:[0.5,0.89],deep:[0.5,0.11]},
-  look:{music:'gloam2',wall:0x34302e,wall2:0x24201e,floor:0x2a2624,ceil:0x1c1816,fog:0x120502,amb:0.42,light:0xff8a3a,glow:0xff6a20,lava:0xff5a1a,h0:4,hk:1.1,hmax:11,wobble:0.7,far:40,fx:['lava','vents','embers','obsidian']}});
+  look:{music:'gloam2',wall:0x34302e,wall2:0x24201e,floor:0x2a2624,ceil:0x1c1816,fog:0x1c0903,amb:0.46,light:0xff8a3a,glow:0xff6a20,lava:0xff5a1a,h0:4,hk:1.1,hmax:11,wobble:0.7,far:50,fx:['lava','vents','embers','obsidian']}});
