@@ -9,5 +9,6 @@ function rawHeight(x,z){
   for(const V of VILS){ const dx=x-V.x, dz=z-V.z, r=V.r+24; if(dx*dx+dz*dz<r*r&&!V.bowl&&waPadOk(V)){ h=lerp(h,V.h,smoothstep(r,V.r+3,Math.hypot(dx,dz))); } }   // (every village, not the point's land's: a pad must not stop at a land border; V.bowl: Glasswell's ground is the Bowl itself, sunHook)
   for(const A of ARENAS){ const dx=x-A.x, dz=z-A.z, r=A.r+22; if(dx*dx+dz*dz<r*r&&waPadOk(A)){ h=lerp(h,A.h,smoothstep(r,A.r+2,Math.hypot(dx,dz))); } }
   h=sunBowlHook(x,z,h);   // sunscar: Glasswell's Bowl is carried by the heightmap (shared/sunland.js), laid over the atlas's ground at the Sunscar hub
+  h=caveMouthPad(x,z,h);   // cave: the flat pad under the Deep Cave's mouth (shared/cave-mouth.js)
   return cvFloorCarve(x,z,h);   // caves: floor (the sites' walking floors; shared/caves.js)
 }

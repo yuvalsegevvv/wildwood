@@ -20,7 +20,7 @@ function zpfScanVillages(){   // the villages' own fires (campfires, braziers, f
 }
 function updateZoneFire(dt){
   if(ZPF.fi<flames.length) zpfScanVillages();
-  if(!ZPF.list.length||!started||customizing||dgIn()) return;
+  if(!ZPF.list.length||!started||customizing||dgIn()||caveIn()) return;   // cave:
   ZPF.t-=dt; if(ZPF.t>0) return; const T=0.1-ZPF.t; ZPF.t=0.1;   // the fires step ten times a second
   const cx=camera.position.x, cz=camera.position.z, near=[];
   for(const f of ZPF.list){ const d=Math.hypot(f.x-cx,f.z-cz); if(d<ZPF_NEAR){ f.near=d; near.push(f); } }

@@ -24,7 +24,8 @@ function wmapRegionAt(x,y){
 }
 /* ---- where you are on the art ---- */
 function wmapPin(){
-  if(dgIn()) return null;   // (a run is far from the map)
+  if(dgIn()||caveIn()) return null;   // cave:
+   // (a run is far from the map)
   return wmapArt(clamp(P.x,WX0,WX1),clamp(P.z,WZ0,WZ1));
 }
 /* ---- the fog ---- */
@@ -212,7 +213,8 @@ $('#wmapIn').addEventListener('click',()=>wmapZoom(1.5,WM.w/2,WM.h/2));
 $('#wmapOut').addEventListener('click',()=>wmapZoom(1/1.5,WM.w/2,WM.h/2));
 /* ---- opening ---- */
 function wmapOpen(){
-  if(dgIn()) return;   // (a run has its own map)
+  if(dgIn()||caveIn()) return;   // cave:
+  // (a run has its own map)
   openPanel('wmap'); wmapSize(); wmapHome(); wmapFogReset(); WM.ptr.clear(); WM.hot=null; wmapTip.hidden=true; wmapDraw();
   $('#wmapHere').textContent='You are in '+LANDS[landHere()].name.replace(/^The /,'the ');
 }

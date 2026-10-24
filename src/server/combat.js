@@ -34,6 +34,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(m.pl) return pvpHitS(m,mult,p,fromX,fromZ,kb,el);   // pvp: m is another fighter on the island (server/pvp.js)
   if(m.dead||m.remove) return 0;
   if(m.rd&&!rdHitS(m,p)) return 0;   // raids: the first hit locks the raid's tier; a boss behind its wards takes none
+  if(m.cave&&!caveHitOkS(m,p,fromX,fromZ)) return 0;   // cave: a wall stops a hit
   if(m.inst&&!dgHitOkS(m,p,fromX,fromZ)) return 0;   // dungeons: a run's monster takes hits only from its run, and walls stop them
   if(m.immune){ ev('imm',m.id); return 0; }
   if(m.boss && m.B.stunT>0) mult*=1.5;
@@ -119,7 +120,8 @@ function resolveHitS(p,a){
     for(const m of FO){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<3.3+m.T.rad) damageMonsterS(m,a.mult,p,p.x,p.z,6,a.el); }
   } else if(a.kind==='charge'){
     const L=tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=a.range+2?(()=>{ const dx=tgt.x-p.x, dz=tgt.z-p.z, d=Math.hypot(dx,dz)||1, o=tgt.T.rad+0.9; return {x:tgt.x-dx/d*o,z:tgt.z-dz/d*o}; })():{x:p.x-Math.sin(p.face)*8,z:p.z-Math.cos(p.face)*8};
-    p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z);
+    if(caveFloorAt(p.x,p.z)>=0) caveDashS(p,L);   // cave: a charge on a floor stops short of the first wall
+    else { p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z); }
     if(p.inst) dgDashS(p,L);   // dungeons: a charge inside a run stays in it, short of the first wall
     for(const m of FO){ if(alive(m)&&Math.hypot(m.x-p.x,m.z-p.z)<2.6+m.T.rad) damageMonsterS(m,a.mult,p,p.x,p.z,6,a.el); }
   } else if(a.kind==='shoot'){
@@ -222,7 +224,8 @@ function resolveFxS(p,a,tgt){
   if(f.buff){ applyBuffS(p,a); return; }
   if(f.dash){
     const L=inRange?(()=>{ const dx=tgt.x-p.x, dz=tgt.z-p.z, d=Math.hypot(dx,dz)||1, o=tgt.T.rad+0.9, sg=f.dash.behind?1:-1; return {x:tgt.x+sg*dx/d*o,z:tgt.z+sg*dz/d*o}; })():{x:p.x-Math.sin(p.face)*f.dash.ahead,z:p.z-Math.cos(p.face)*f.dash.ahead};   // dash.behind: land on the far side
-    p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z);
+    if(caveFloorAt(p.x,p.z)>=0) caveDashS(p,L);   // cave: a dash on a floor stops short of the first wall
+    else { p.x=clamp(L.x,WX0+14,WX1-14); p.z=clamp(L.z,WZ0+14,WZ1-14); p.y=getH(p.x,p.z); }
     if(p.inst) dgDashS(p,L);   // dungeons: a dash inside a run stays in it, short of the first wall
   }
   if(f.ring){ const R=f.ring, o=O(); for(const m of FO){ if(!alive(m)||Math.hypot(m.x-o.x,m.z-o.z)>=R.r*AK+m.T.rad) continue; dmg(m,a.mult,o.x,o.z,R.kb||0); statusS(m,R,p,a.el,a.mult); } }
@@ -302,7 +305,7 @@ function updateProjS(dt){
     else if(pr.kind==='arrow') pr.vy-=4*dt;
     const ox=pr.x, oy=pr.y, oz=pr.z;
     pr.x+=pr.vx*dt; pr.y+=pr.vy*dt; pr.z+=pr.vz*dt;
-    if(dgWallAtS(pr.x,pr.z)) pr.life=0;   // dungeons: a wall stops a projectile (it still hits what it reached this tick)
+    if(dgWallAtS(pr.x,pr.z)||caveWallAtS(pr.x,pr.z)) pr.life=0;   // cave: and a floor's   // dungeons: a wall stops a projectile (it still hits what it reached this tick)
     // distance from a monster's centre to the stretch flown this tick (fast arrows move ~2 m per tick)
     const near=c=>{ const vx=pr.x-ox, vy=pr.y-oy, vz=pr.z-oz, l2=vx*vx+vy*vy+vz*vz||1, t=clamp(((c.x-ox)*vx+(c.y-oy)*vy+(c.z-oz)*vz)/l2); return Math.hypot(c.x-(ox+vx*t),c.y-(oy+vy*t),c.z-(oz+vz*t)); };
     if(pr.kind==='pierce'){

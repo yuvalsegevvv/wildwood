@@ -53,6 +53,7 @@ function dot(x,cx,cy,r,fill){ x.beginPath(); x.arc(cx,cy,r,0,TAU); x.fillStyle=f
 /* ---- minimap ---- */
 const mmC=$('#mmC'), mmX=mmC.getContext('2d');
 function drawMinimap(){
+  if(caveIn()){ caveDrawMini(mmC,mmX,DPR); return; }   // cave: the floor's explored cells (cave/minimap.js)
   if(dgIn()){ dgDrawMini(mmC,mmX,DPR); return; }   // dungeons: the run's explored tiles instead of the world (dungeon/minimap.js)
   const W=mmC.width, x=mmX; x.clearRect(0,0,W,W);
   x.fillStyle='#16486c'; x.fillRect(0,0,W,W);   // (the deep sea of the world map, where the picture ends)
@@ -89,9 +90,11 @@ function sizeFullMap(){
   mapC.style.width=w+'px'; mapC.style.height=h+'px'; mapC.width=Math.round(w*DPR); mapC.height=Math.round(h*DPR); mapView.w=w; mapView.h=h;
   const here=landHere(), cur=mapLand||here, nx=nextLand(cur);
   mapLandBtn.hidden=!valeOpen()||nx===cur; mapLandBtn.textContent=nx===here?'Where I am':LANDS[nx].name;
-  $('#mapWorld').hidden=dgIn();   // world map: Eldmere's map is for the world, not a run (ui/world-map.js)
+  $('#mapWorld').hidden=dgIn()||caveIn();   // cave: also on a floor
+    // world map: Eldmere's map is for the world, not a run (ui/world-map.js)
 }
 function drawFullMap(){
+  if(caveIn()){ caveDrawFullMap(mapC,mapCX,DPR); return; }   // cave: the floor's layout (cave/minimap.js)
   if(dgIn()){ dgDrawFullMap(mapC,mapCX,DPR); return; }   // dungeons: the run's explored tiles instead of a land (dungeon/minimap.js)
   renderTierRow(mapLand||landHere());
   const L=viewLand(), W=mapC.width, H=mapC.height, x=mapCX, k=W/(L.x1-L.x0), at=(wx,wz)=>[(wx-L.x0)*k,(wz-L.z0)*k];

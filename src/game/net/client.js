@@ -20,7 +20,8 @@ function netHandle(msg){
     case 'welcome': onWelcome(msg); break;
     case 'mons': (msg.list||[]).forEach(addMonView); break;
     case 'you': applyYou(msg); break;
-    case 'tp': dgOnTp(msg); P.x=msg.x; P.z=msg.z; P.inTun=inTunnelBore(P.x,P.z); P.y=getH(P.x,P.z); P.vx=P.vz=P.vy=0; P.face=P.yaw=msg.face; playerUp(); break;   // dungeons: dgOnTp builds or tears down the run's view (msg.dg) before the floor is read (dungeon/run.js)
+    case 'tp': dgOnTp(msg); caveOnTp(msg);   // cave: builds or tears down a floor's view before the move (cave/zone.js)
+     P.x=msg.x; P.z=msg.z; P.inTun=inTunnelBore(P.x,P.z); P.y=getH(P.x,P.z); P.vx=P.vz=P.vy=0; P.face=P.yaw=msg.face; playerUp(); break;   // dungeons: dgOnTp builds or tears down the run's view (msg.dg) before the floor is read (dungeon/run.js)
     case 'snap': applySnap(msg); break;
     case 'auth': onAuth(msg); break;
     case 'authfail': onAuthFail(msg); break;

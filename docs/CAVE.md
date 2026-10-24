@@ -181,6 +181,12 @@ No open questions. Tune in play: the 0.6 charge constant, skill costs of 20-40, 
 | Client | `src/game/cave/slot.js` | `CAVE_UI`, `NETH.cave`, the action-bar tile (`caveFillTile`, `caveHudUpdate`, `caveDoAttack`), the skills panel's cave row, Cave tab and details (`caveSlotHtml`, `caveGridHtml`, `caveInfoHtml`, `caveBindPanel`) |
 | Styles | `src/styles/09-combat-hud.css` | `.ab-cave`, `.cv-bar` |
 | Markup | `src/index.html` | `#abCave` in `#actionbar` |
+| Floor registry, places, queries | `src/shared/cave-map.js` | `defineCaveFloor` (validation, `CAVE_FLOOR_BAD`), `CAVE_FLOOR_N`, where each floor lies (`caveFloorOrigin`, `caveFloorAt`), `caveBake`, `caveGroundY`, `caveFree` / `caveSlide` / `caveLos` / `caveWallAt`, `caveLiftOf`, `caveArrival`, `caveFloorOpen`, `caveLiftRefusal`, `caveMobDef` |
+| Map generator | `src/shared/cave-gen.js` | `caveGen(floorRow)` -> the bake `B` (cells, heights, water, lava, anchors, camps), `caveHash`, `caveVn` |
+| Floor rows | `src/shared/cave/floor-<n>-<id>.js` | one `defineCaveFloor` each: generator options, look (colours, light, fx), monsters (floor 1 only for now) |
+| The mouth | `src/shared/cave-mouth.js` | `CAVE_MOUTH`, the pad `caveMouthPad` (rawHeight), `CAVE_MOUTH_V` (joins `CIRCLES`), `CAVE_LIFT_SURFACE`, `caveMouthNear` |
+| Server: the zone | `src/server/cave-zone.js` | camps (`caveInitS`), walls (`caveSetPosS`, `caveDashS`, `caveWallAtS`, `caveMonStepS`, `caveSteerS`), the lift (`caveLiftP`, `MSG.lift`), `caveReviveP`, `caveDevTp` |
+| Client: the zone | `src/game/cave/zone.js`, `view.js`, `view-themes.js`, `look.js`, `collide.js`, `minimap.js`, `mouth.js`, `lift.js` | `CAVE_RUN` / `caveIn()`, the floor's meshes and four themes, fog / light / sound, walls and camera, the maps, the surface mouth and lift cage, the lift window |
 | Test | `tools/cave-smoke.js` | the slot lock, charge, cap, set double, boss 50 / 0, spend, registry validation, a bad save (the cave skills in it are fixtures defined in the test) |
 | Protocol | `docs/PROTOCOL.md` | `atk{k:'cave'}`, `cavequip{id}`, `cave{c}` |
 
@@ -199,8 +205,52 @@ No open questions. Tune in play: the 0.6 charge constant, skill costs of 20-40, 
 | `game/ui/combat-hud.js` | the key and button, `caveFillTile()` in `setActionBar`, `caveHudUpdate()` per frame, `caveBarKey()` in the redraw key |
 | `game/economy/skills.js` | `KIND_TITLE.cave`, the cave row in `skSlotsHtml`, the Cave tab, `caveBindPanel` |
 | `index.html`, `styles/09-combat-hud.css` | `#abCave`, `.ab-cave` |
-| `manifest.json` | `cave.js` (shared and server), `cave/slot.js` (client, after `net/client.js`) |
+| `manifest.json` | `cave.js` (shared and server), `cave/slot.js` (client, after `net/client.js`); C1: `cave-mouth.js` (before `terrain-height.js`), `cave-gen.js`, `cave-map.js`, `cave/floor-*.js`, `server/cave-zone.js`, `game/cave/*.js` |
+| `shared/terrain-height.js` | `rawHeight`: `caveMouthPad` lays the flat pad under the mouth |
+| `shared/tiers.js` | `monTierOf`: a cave monster has tier 0 (the cave is no land) |
+| `server/world.js` | `getH`: `caveGroundY` inside the dungeon strip |
+| `server/api.js` | `caveInitS()` at start; `setPos` goes to `caveSetPosS` on a floor |
+| `server/monsters.js` | camps keep 40 m from the mouth; a cave monster respawns on floor (`caveFixS`), needs a line of sight to aggro, steers round corners (`caveSteerS`), slides along walls (`caveMonStepS`) |
+| `server/combat.js` | a hit needs a line of sight (`caveHitOkS`); charge / dash stop at walls (`caveDashS`); projectiles stop at rock (`caveWallAtS`) |
+| `server/players.js` | a knocked-out hiker on a floor wakes at its lift (`caveReviveP`) |
+| `server/economy.js` | dev `tunnel` with `cave:...` (`caveDevTp`) |
+| `game/net/client.js` | `tp`: `caveOnTp(msg)` builds / tears down the floor's view |
+| `game/world/heightmap.js` | `getH`: `caveGroundY` in the strip |
+| `game/world/streaming.js`, `weather.js`, `caves.js`, `zone-fire.js`; `game/wildlife/fish.js`, `dragonflies.js`; `game/ui/world-map.js` | `|| caveIn()` beside every `dgIn()` that means "under the ground" |
+| `game/world/time-of-day.js` | `caveLookEnv(envCur)` and the zone label |
+| `game/ui/map.js` | the minimap and the full map draw the floor (`caveDrawMini`, `caveDrawFullMap`) |
+| `game/player/movement.js` | `caveBounds` (walls), `caveCamBoom` (camera arm), no cave slope / rock tests on a floor |
+| `game/audio/driver.js`, `music.js` | `caveAmbience`, `caveMusicTheme` |
+| `game/village/talking.js` | `nearCircle` knows the mouth's circle; the talk key and prompt for the lift |
+| `game/ui/panels.js`, `index.html`, `styles/20-professions.css` | the `#cvLift` window |
+| `game/world/generation-setup.js` | `caveMouthBuild()` |
+| `game/dungeon/entrances.js` | `dgEntClear`: no plants within 18 m of the mouth |
+| `game/main/loop.js` | `caveFrame(dt)` |
+| `game/ui/settings-testing.js`, `index.html` | testing buttons to the mouth and each floor |
 
 ## 13. Build status
 
 - **C0 (done):** the 4th slot (level 23, key 4, action-bar tile with charge bar, "Go to the cave" until a cave skill is owned, skills panel row and Cave tab), the server charge and boss rule, `defineCaveSkill` with validation and `CAVE_BAD`, `gear.cave.own` and `gear.skills.cave` saved and sanitized, protocol documented. No cave skill ships; `cave-smoke` defines fixtures. Tests: `cave-smoke`, `keys-smoke`, `client-smoke`.
+- **C1 (done):** the cave exists as a place: one shared zone (section 14), four deterministic floors with named anchors for the eight methods and monster camps, four themes, the mouth in the Wildwood with its circle and lift, walls for hikers and monsters, the maps. Floor 1 has its ten monsters (Lv 25-34, a pack at each of 32 camps, normal loot); floors 2-4 are empty until later steps. No method or cave skill is placed yet (C2/C3 use the anchors). Tests: `cave-smoke`, `client-smoke`, `server-smoke`.
+
+## 14. Where the cave lives and how its floors are made (C1)
+
+**Placement: one shared open zone, not an instanced run.** The four floors are fixed squares of the same world, east of the dungeon run slots: floor `n` starts at `x = CAVE_X0` (`DG_X0 + 4 * DG_SLOT + 300`), `z = CAVE_Z0 + (n - 1) * 600`, each `CAVE_SIZE` = 336 m. Everything that already works for a place in the world works for a floor with no new channel: monsters are ordinary `MONS` (`m.cave = floor`), snapshots are by distance (floors are 600 m apart, more than the 250 m snapshot reach, and a run slot is further still), combat, drops, chat and parties are unchanged, and the minimap and the 4 KB message limit are not a problem. The squares lie inside `dgInSlots(x)`, so the code that says "under the ground, not the forest" (no ambience of the forest, no fish, the flat-floor `getH`) keeps working; `dgSlotAt` is -1 on a floor so no run is ever put on one. A floor 5 is a new row (`defineCaveFloor`) and a file in the manifest, nothing else; up to 9 fit.
+
+**Entering.** There is no enter message. The lift (`lift{to}`) moves a hiker to the arrival point of another lift; the `tp` lands on a floor; the client sees which floor it is (`caveFloorAt`) and builds its view (`game/cave/zone.js`). Knocked out on a floor you wake at its lift. `caveFloorOpen(p, n)` is `n === 1 || owned-from-floor-above >= 2`; below level 23 the lift refuses with a message. The circle at the mouth is in `CIRCLES` (the travel window lists it; opens like the home circle, `gear.east >= 2`); anybody may stand at the mouth, only the lift checks the level.
+
+**The mouth** (`shared/cave-mouth.js`) is at (184, -156) in the home forest: the foot of the northern foothills, 125 m from the Stone Circle and 120 m from the Hollow Roots' door, off roads, arenas and the coast. `rawHeight` lays a flat pad (mean height of the ring, flat inside 11 m, blended out to 28 m) so the circle and the lift stand level; the camps keep 40 m away and plants 18 m. In its own frame (`caveMouthAt(u, v)`, +v out of the mouth): the doorway at v = -9.5, the circle at (-4.6, 3.4), the lift cage at (6.4, -1.2), a signboard at v = 7.
+
+**The grid.** A floor is 168 x 168 cells of 2 m (`CAVE_CELL`, the dungeons' cell, so `dgFree` / `dgSlide` / `dgLos` / `dgFlow` work on it unchanged). `caveGen(row)` (`shared/cave-gen.js`) is deterministic from `row.seed` and uses only integer hash noise and `+ - * /`, `sqrt`, `floor` (no trig), so client and server rebuild the same floor; a fresh bake takes about 30 ms. Pipeline: chambers spread by best-of-40 candidate (the start and the deepest fixed by fractions), a minimum spanning tree plus a few loops, tunnels bent by 1D noise, side tunnels grown into rock (they end in dead-end pockets), an edge flip and two majority smooths, only the start's region kept, then by theme pools / flooded halls with a river / lava (never cutting the cave in two), a sealed vault pocket, heights (water and lava sink the floor), anchors and camps. Style per floor: `cavern`, `geode` (big round chambers), `hall` (rectangular, pillars), `tube` (narrow, long winding).
+
+**The bake `B`:** `cells` (1 = standable), `open` (cave air, lava included), `water`, `lava`, `hgt` (corner heights), `dw` (cells to the nearest rock), `dist` (walking distance from the start, decimetres), `start`, `lift`, `chambers`, `dead`, `pillars`, `pools`, `river`, `sealed` (the rock cells that hold the vault shut), `anchors`, `camps`.
+
+**Anchors** (floor-local metres, all reachable by walking from the start; the vault once `sealed` is opened; `tools/cave-smoke.js` flood-fills them): `start`, `lift`, `deep`; method A `wall` (a wall point with `nx, nz`) and `pieces[5]` (dead ends, spread out); B `geodes[3]` (wall points); C `plinth {x, z, r}` (a mid-depth chamber with room); D `crystal` (the deepest chamber), `altar` (beside the start); E `entry`, `shrine`, `guard`, `exit` (the silent chamber, a leaf room); F `vault` (a sealed pocket) and `seal` (the middle of the rock that closes it); G `burrows[3]`, `holes[6]`; H `veins[8]` (wall points), `herbs[6]`, `anvil` (beside the start). `camps[{x, z, lv, r}]`: 20 or more per floor, spread over the cave, the level rising with the walk from the start so each level of the band gets its share; the server puts a pack of the floor's kind for that level (`floor.mobs[lv - floor.lv[0]]`) at each.
+
+**Walls on the server** (`server/cave-zone.js`): `getH` is the baked ground; `setPos` slides a hiker along the walls (`CAVE_WALK_R` = 0.45 m, the client's too) and refuses a jump of more than 14 m or a late message from another floor; charges and dashes stop at rock; projectiles stop at rock; a hit needs a line of sight; a monster slides along walls, and with no clear line to where it wants to go follows a breadth-first path from the goal (limited to 40 cells, refreshed every 0.35 s per monster) so it does not stick behind a corner.
+
+**The look** (`game/cave/view.js`, `view-themes.js`, `look.js`). The rock is the grid's contour, not its cells: rim corners are smoothed along the contour and pushed into the rock by noise, walls are strips of rows that bulge, the ceiling is a dome rising from a low lip (`look.h0`, `hk`, `hmax`). Light is baked into vertex colours from the theme's emitters (with a line of sight) and washes, so a floor is a few merged meshes per 32 m chunk; one lantern on you and (desktop) two lamp lights follow. Phones: Lambert instead of Phong, no soft layers, fewer points. Themes: Grotto (limestone strata, blue glowworm points and hanging threads, stalactites / stalagmites / columns, dark pools), Prism (geodes on chamber walls in five hues, coloured light shafts that also light the floor, sparkle), Drowned (laid-stone courses, flooded floor with ripples, the river as a scrolling ribbon, waterfalls with mist, moss), Magma (obsidian, scrolling lava, rising embers, vents with plumes, black shards). Camera far plane 140 m, fog 40-52 m, no sky, sun, weather or wildlife.
+
+**Maps:** the minimap and the full map (key M) draw the explored cells of the floor (cells within 12 m and in sight), the rim of rock as an outline, water blue, lava orange, the lift, monsters you have seen and your party.
+
+**Testing:** the testing panel has buttons for the mouth and each floor's lift; `shot.js --at cave:2,x,z,deg` (floor-local metres) takes a picture there.

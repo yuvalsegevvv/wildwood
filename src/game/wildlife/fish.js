@@ -31,7 +31,7 @@ function fishSpot(){   // deep open water within sight, not in a dungeon's far-o
   return null;
 }
 function updateFish(dt){
-  if(!started||customizing||dgIn()) return;
+  if(!started||customizing||dgIn()||caveIn()) return;   // cave:
   if(!FISH.list.length){ for(let i=0;i<FISH_N;i++){ const m=new THREE.Mesh(fishGeo(),FISH.mat); m.visible=false; scene.add(m); FISH.list.push({m,t:-1,dur:1,vx:0,vy:0,vz:0,y0:0,k:1}); } }
   FISH.wait-=dt;
   if(FISH.wait<=0){

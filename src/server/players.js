@@ -232,6 +232,7 @@ function updatePlayersS(dt){
     if(p.dead&&p.inst){ dgDownTickS(p,dt); continue; }   // dungeons: downed in a run: revived, or a respawn at its entrance, never the village
     if(p.dead){
       p.deadT+=dt;
+      if(p.deadT>3&&caveFloorAt(p.x,p.z)>=0){ caveReviveP(p); continue; }   // cave: a knock-out on a floor wakes at its lift
       if(p.deadT>3&&p.pv){ pvpReviveP(p); continue; }   // pvp: a knock-out on the island wakes on the lake's shore, not in a village
       if(p.deadT>3){ const g=respawnVil(p).anchors.gate; p.x=g.x; p.z=g.z; p.y=getH(g.x,g.z); p.dead=false; p.hp=p.maxHp; p.lastHit=-99; sendTo(p.id,{t:'tp',x:g.x,z:g.z,face:g.face}); ev('up',p.id); p.dirty=true; }
       continue;

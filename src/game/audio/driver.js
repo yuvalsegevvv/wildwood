@@ -15,6 +15,7 @@ function soundTick(dt){
     wasGround=P.ground;
   }
   sTick+=dt; if(sTick<0.1) return; const T=sTick; sTick=0;
+  if(caveIn()){ caveAmbience(T); return; }   // cave: a floor's sounds (cave/look.js)
   if(dgIn()){ dgAmbience(T); return; }   // dungeons: a run's sounds instead of the forest's (dungeon/look.js)
   // measure surroundings
   if(Math.random()<0.4){

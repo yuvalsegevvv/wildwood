@@ -34,7 +34,7 @@ srv.listen(0,'127.0.0.1',async()=>{
       await pg.evaluate(()=>document.getElementById('bSound').click()); await sleep(400);   // the settings popover holds the testing tools
       if(LEVEL>1){ await pg.evaluate(l=>{ document.getElementById('tLevel').value=l; document.getElementById('tSetLv').click(); },LEVEL); await sleep(1500); }
       if(process.argv.includes('--unlock')){ for(const id of ['tRiverFall','tNeckFall']){ await pg.evaluate(i=>document.getElementById(i).click(),id); await sleep(700); } }   // opens the Vale, the Reach, the glacier valley and the Greyspine's rock falls (the Sunscar and the Gloamhorn need them)
-      if(AT){ await pg.evaluate(v=>{ const t=document.getElementById('tPass'); t.setAttribute('data-v',v); t.click(); },AT.split(',').length<3?AT+',0':AT); await sleep(300); }
+      if(AT){ await pg.evaluate(v=>{ const t=document.getElementById('tPass'); t.setAttribute('data-v',v); t.click(); },AT.startsWith('cave:')||AT.split(',').length>=3?AT:AT+',0'); await sleep(300); }   // (cave:2,x,z,deg goes through as it is)
       else if(GO){ await pg.evaluate(i=>{ const t=document.getElementById(i); if(!t) throw new Error('no testing button #'+i); t.click(); },GO); await sleep(300); }
       if(!process.argv.includes('--settings')) await pg.evaluate(()=>document.getElementById('bSound').click());
     }

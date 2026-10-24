@@ -6,7 +6,7 @@
 const CVC={built:new Map(), group:null, mat:null, poolMat:null, sh:0, shT:0, cullT:0, cell:LITE?2.6:(LOW?1.9:1.4), range:420};
 // the next site that has no mesh yet and is within range of the player (or null); a site being built is marked at once so the scheduler never starts it twice
 function cvNeed(){
-  if(!CV_SITES.length||!Stream.terrainDone||dgIn()) return null;
+  if(!CV_SITES.length||!Stream.terrainDone||dgIn()||caveIn()) return null;   // cave: also on a floor
   for(let i=0;i<CV_SITES.length;i++){
     const S=CV_SITES[i]; if(CVC.built.has(S.id)) continue;
     if(Math.hypot(Math.max(S.bx0-P.x,0,P.x-S.bx1),Math.max(S.bz0-P.z,0,P.z-S.bz1))<CVC.range) return S;
@@ -43,7 +43,7 @@ function cvUpdate(dt){
     CVC.cullT=0.5; const far=scene.fog.far+120;
     for(const b of CVC.built.values()){ if(!b) continue; const S=b.S, v=Math.hypot(Math.max(S.bx0-camera.position.x,0,camera.position.x-S.bx1),Math.max(S.bz0-camera.position.z,0,camera.position.z-S.bz1))<far; b.mesh.visible=v; if(b.pools) b.pools.visible=v; }
   }
-  CVC.shT-=dt; if(CVC.shT<=0){ CVC.shT=0.125; const S=cvSiteAt(P.x,P.z); CVC.want=S&&!dgIn()?cvShade(P.x,P.y,P.z)*S.dark:0; }
+  CVC.shT-=dt; if(CVC.shT<=0){ CVC.shT=0.125; const S=cvSiteAt(P.x,P.z); CVC.want=S&&!dgIn()&&!caveIn()?cvShade(P.x,P.y,P.z)*S.dark:0; }
   CVC.sh+=((CVC.want||0)-CVC.sh)*Math.min(1,dt*3);
 }
 // the light inside a cave: the hemisphere light and the sun fade with how enclosed the hiker is, and the far walls fade into dark, not into the day's haze
