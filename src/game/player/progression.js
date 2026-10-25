@@ -17,6 +17,7 @@ function levelUpFx(level){
   const el=$('#lvup'); el.textContent='Level '+level; el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   spawnRing(4,0xffd34d,P.y+0.2); spawnRing(2.5,0xfff2b0,P.y+1.2);
   UI_SFX.success();
+  hvEvent('lvup');   // voice: audio/voices-hero.js
 }
 function hurtFx(v){
   popText(P.x,P.y+2.0*hiker.scale,P.z,'-'+v,'hurt');
@@ -27,6 +28,7 @@ function hurtFx(v){
 let camShake=0;
 function playerDown(){
   PL.dead=true; PL.hp=0; CB.act=null; CB.target=null;
+  hvEvent('down');   // voice: audio/voices-hero.js
   $('#down').hidden=false; $('#down span').textContent=PVC&&PVC.on?'Waking up on the lake shore. The gate opens '+PVP.lockS+' s later…':'Waking up at the village gate…';   // pvp: a knock-out on the Proving Isle wakes you on the lake's bank
   if(SND.ready){ const n=SND.ctx.currentTime; [392,330,262].forEach((f,i)=>tone({bus:'ui',type:'triangle',freq:f,dur:0.5,vol:0.06,when:n+i*0.22})); }
 }

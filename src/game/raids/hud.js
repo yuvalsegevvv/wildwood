@@ -8,6 +8,7 @@ const RD_STATE_NAME=['Ready','Engaged','Cleared'], RD_ROMAN=['+0','I','II','III'
 let rdStripT=0;
 function rdOnState(row){
   if(!Array.isArray(row)||!(row[0]>=0&&row[0]<RD_ORDER.length)) return;
+  { const was=RD_CL[row[0]]; if((row[1]|0)===2&&was&&was.st!==2&&rdNearest(250)===row[0]) hvEvent('raidclear'); }   // voice: audio/voices-hero.js (a stronghold you stand by falls)
   RD_CL[row[0]]={st:row[1]|0,tier:row[2]|0,slot:row[3]|0,wards:row[4]|0,sp:row[5]|0,gar:row[6]|0,left:+row[7]||0,live:!!row[8],at:t};
   rdStructRefresh(row[0]); rdStripT=0;
 }

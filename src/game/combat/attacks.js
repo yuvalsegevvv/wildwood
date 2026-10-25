@@ -130,7 +130,7 @@ function onMonKill(id){
   { const c=monCenter(m); fxxDust(c.x,m.y+0.2,c.z,6,0.8*m.T.scale*m.s,0x8a8070); }   // fx-extra: a puff of dust where it fell
   { const c=monCenter(m); for(let i=0,n=fxpN(6);i<n;i++) fxpRise(c.x+AR(-0.4,0.4)*m.s,c.y+AR(-0.3,0.3),c.z+AR(-0.4,0.4)*m.s,m.T.color,0.22,AR(0.8,1.4)); }   // a wisp of the monster's colour drifts up
   if(CB.target===m) CB.target=null;
-  if(m.boss){ clearBossVisuals(); }
+  if(m.boss){ clearBossVisuals(); if(!PL.dead&&Math.hypot(m.x-P.x,m.z-P.z)<90) hvEvent('bossdown'); }   // voice: audio/voices-hero.js
 }
 function onMonAct(id,dur){
   const m=MON_BY_ID.get(id); if(!m||m.dead) return;
