@@ -344,6 +344,7 @@
     "combat/monster-gryphon.js",
     "combat/monster-desert.js",
     "combat/monster-gloam.js",
+    "combat/monster-savanna.js",
     "combat/monster-mine.js",
     "combat/monster-totems.js",
     "combat/monster-woods.js",

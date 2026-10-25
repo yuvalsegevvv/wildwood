@@ -1,4 +1,4 @@
-//@ Monster families (FAM), the 112 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach, 14 in the Greyspine, 18 in the Sunscar, 22 in the Gloamhorn), defAt (a def's numbers at a level; above level 60 monsters creep tougher, bosses also stronger), prepDef, the twelve bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
+//@ Monster families (FAM), the 130 monsters (MON_DEFS: 15 home, 5 on the home forest's edges, 20 in the Sakura Vale, 18 in the Hoarfrost Reach, 14 in the Greyspine, 18 in the Sunscar, 22 in the Gloamhorn, 18 in the Amber Reach), defAt (a def's numbers at a level; above level 60 monsters creep tougher, bosses also stronger), prepDef, the twelve bosses (BOSS_DEFS) with the move set (kit) and summons of each, the main quest's grey-veined monsters (GREY_DEFS). Pure.
 const FAM={
   slime: {hpK:0.85,dmgPct:0.06,atk:1.6,speed:2.2,rad:0.45,height:0.8,aggro:10,sound:'squish',per:4},
   shroom:{hpK:0.95,dmgPct:0.07,atk:1.7,speed:1.8,rad:0.4, height:1.1,aggro:10,sound:'pip',per:3},
@@ -17,7 +17,12 @@ const FAM={
   sandworm:{hpK:1.2,dmgPct:0.12,atk:2.2,speed:2.4,rad:0.95,height:2.0,aggro:14,sound:'groan',per:1},
   djinn:  {hpK:0.95,dmgPct:0.11,atk:1.8,speed:2.8,rad:0.5,height:2.3,aggro:15,sound:'pip',per:2},
   sentinel:{hpK:1.0,dmgPct:0.12,atk:2.6,speed:1.9,rad:1.0,height:3.1,aggro:0,sound:'groan',per:0},
-  bat:    {hpK:0.8,dmgPct:0.09,atk:1.4,speed:4.0,rad:0.45,height:1.0,aggro:16,sound:'pip',per:4}   // the Gloamhorn's (game/combat/monster-gloam.js)
+  bat:    {hpK:0.8,dmgPct:0.09,atk:1.4,speed:4.0,rad:0.45,height:1.0,aggro:16,sound:'pip',per:4},   // the Gloamhorn's (game/combat/monster-gloam.js)
+  feline: {hpK:1.0,dmgPct:0.11,atk:1.6,speed:4.0,rad:0.6,height:1.0,aggro:15,sound:'yelp',per:2},   // the Amber Reach's (game/combat/monster-savanna.js)
+  swarm:  {hpK:0.9,dmgPct:0.08,atk:1.4,speed:3.4,rad:0.6,height:1.5,aggro:14,sound:'click',per:3},
+  bird:   {hpK:0.95,dmgPct:0.1,atk:1.6,speed:3.0,rad:0.5,height:1.6,aggro:14,sound:'yelp',per:2},
+  hoofed: {hpK:1.3,dmgPct:0.13,atk:2.2,speed:2.8,rad:0.9,height:1.6,aggro:12,sound:'grunt',per:2},
+  hollowed:{hpK:1.0,dmgPct:0.1,atk:1.6,speed:2.2,rad:0.45,height:1.8,aggro:12,sound:'groan',per:3}
 };
 const MON_DEFS=[
   {id:'slime',     name:'Slime',            level:1,el:'water', model:'slime', scale:1,   aggro:0, pal:{body:0x5fcf5a,top:0xc2f7a8,mouth:0x1d4a1a}},
@@ -148,7 +153,27 @@ const MON_DEFS=[
   {id:'stormgargoyle',name:'Storm Gargoyle', level:39,el:'air',  model:'wyrm',    scale:1.5, hpK:1.5, zone:'m39', pal:{stone:1,crack:0x7fe0ff,body:0x5a6a7a,belly:0x8a9aaa,ridge:0x2e3a46,horn:0xc8d4e0,eye:0x9fe8ff,wing:0x3a4a5a}},
   {id:'tidehorror', name:'Tide Horror',      level:39,el:'water',model:'sandworm',scale:1.7, hpK:1.5, zone:'m39', glow:0x041820, pal:{fin:0x1a5a6a,spots:0x9fffe0,barbels:1,body:0x1e3a4a,belly:0x5a8090,ridge:0x0c1c26,horn:0xb8d0d8,eye:0x9fffe0}},
   {id:'blackrevenant',name:'Black Revenant', level:40,el:'dark', model:'goblin',  scale:1.6, per:2, hpK:1.6, dmgPct:0.13, zone:'m40', glow:0x0a0610, pal:{form:'undead',skin:0x4a4a58,eyes:0xd8a0ff,top:'plate',topColor:0x26263a,bottom:'trousers',bottomColor:0x181824,hat:'helm',hatColor:0x22223a,club:0x9890c0,weapon:'katana'}},
-  {id:'deepsiren',  name:'Deep Siren',       level:40,el:'water',model:'djinn',   scale:1.5, hpK:1.3, zone:'m40', glow:0x041828, pal:{siren:1,fin:0x2a7a9a,body:0x12405a,skin:0x9ac0c8,gold:0xb8e0e8,turban:0x0c2038,eye:0xd8ffff}}
+  {id:'deepsiren',  name:'Deep Siren',       level:40,el:'water',model:'djinn',   scale:1.5, hpK:1.3, zone:'m40', glow:0x041828, pal:{siren:1,fin:0x2a7a9a,body:0x12405a,skin:0x9ac0c8,gold:0xb8e0e8,turban:0x0c2038,eye:0xd8ffff}},
+  /* the Amber Reach (levels 37-45, zones 'a37'..'a45' written here as plain strings: their ZONES arrive with shared/savannazones.js): two kinds per level; the feline, swarm, bird, hoofed and hollowed
+     models are new (monster-savanna.js); pal.kind picks the bird (heron / hawk / vulture) and the hoofed (buffalo / rhino / hippo / croc); the hollowed Kin are monsters, never hostile villagers */
+  {id:'dustrunner',  name:'Dustrunner',       level:37,el:'earth',model:'goblin',  scale:1.1, per:3, zone:'a37', pal:{form:'hob',garb:'sash',skin:0x8a6a48,eyes:0xffd040,top:'jacket',topColor:0x8a6a3a,bottom:'trousers',bottomColor:0x4a3a28,hat:'ranger',hatColor:0x6a5a3a,club:0xc8ced4,weapon:'scimitar',turban:0xc8b890}},
+  {id:'thornboar',   name:'Thornhide Boar',   level:37,el:'earth',model:'boar',    scale:1.6, zone:'a37', pal:{spiky:1,body:0x8a7048,ridge:0x4a3a20,head:0x7a6040,snout:0x9a8058,tusk:0xf2ead8,legs:0x4a3a24,eye:0xff8a30}},
+  {id:'grassstalker',name:'Grass Stalker',    level:38,el:'air',  model:'feline',  scale:1.4, zone:'a38', pal:{spots:1,body:0xd2a050,belly:0xf0e0b8,tip:0x3a2a1a,eye:0xffd040,legs:0xb88a40}},
+  {id:'locusts',     name:'Locust Cloud',     level:38,el:'air',  model:'swarm',   scale:1.2, zone:'a38', pal:{body:0x7a8a2a,wing:0xc8d890,eye:0xff5a30}},
+  {id:'mudcroc',     name:'Mudback Croc',     level:39,el:'water',model:'hoofed',  scale:1.6, hpK:1.5, zone:'a39', pal:{kind:'croc',body:0x5a6a3a,belly:0xc8c490,horn:0xe8e0c8,eye:0xffc040,legs:0x4a5a30}},
+  {id:'poolheron',   name:'Pool Heron',       level:39,el:'water',model:'bird',    scale:1.5, zone:'a39', pal:{kind:'heron',body:0xa8b8c8,wing:0x6a7a90,head:0xe8eef4,beak:0xe8b030,legs:0x8a7a50,eye:0xffe040}},
+  {id:'moundsoldier',name:'Mound Soldier',    level:40,el:'earth',model:'beetle',  scale:1.5, hpK:1.4, zone:'a40', pal:{kind:'iron',shell:0xa8683a,seam:0x4a2a14,sheen:0xe0a070,head:0x6a3a1c,horn:0x3a2410,eye:0xffe060,legs:0x4a2a14}},
+  {id:'resinweaver', name:'Resin Weaver',     level:40,el:'earth',model:'beetle',  scale:1.4, zone:'a40', glow:0x2a1204, pal:{shell:0xd89a30,seam:0x6a3a08,sheen:0xffd870,head:0x8a5410,horn:0xf0c860,eye:0x301800,legs:0x6a3a08}},
+  {id:'sparkwisp',   name:'Spark Wisp',       level:41,el:'air',  model:'wisp',    scale:1.3, zone:'a41', glow:0x1a2438, pal:{shards:0xfff0a0,body:0xc8d8ff,core:0xffffff,eye:0x14204a}},
+  {id:'anvilhawk',   name:'Anvil Hawk',       level:41,el:'air',  model:'bird',    scale:1.7, zone:'a41', pal:{kind:'hawk',body:0x5a4a3a,wing:0x3a3028,head:0xe8e0d0,beak:0xe0b030,legs:0xd8b030,eye:0xffd040}},
+  {id:'cinderbuffalo',name:'Cinder Buffalo',  level:42,el:'fire', model:'hoofed',  scale:1.6, hpK:1.5, zone:'a42', glow:0x2a0c04, pal:{kind:'buffalo',body:0x2a2420,belly:0x4a3a30,horn:0x8a8478,eye:0xff6a20,legs:0x1c1814}},
+  {id:'smokewraith', name:'Smoke Wraith',     level:42,el:'fire', model:'wisp',    scale:1.4, zone:'a42', glow:0x0c0a0a, pal:{body:0x5a5656,core:0xc8c0b8,eye:0xff8a40,hair:0x1c1818,ghost:1}},
+  {id:'hollowkin',   name:'Hollowed Kin',     level:43,el:'dark', model:'hollowed',scale:1.1, hpK:1.2, zone:'a43', glow:0x0a0a10, pal:{skin:0x8a8a90,vein:0x3a3a46,eye:0xd8d8f0,hair:0x3a3a42,cloth:0x6a6458,ears:'long'}},
+  {id:'baobabtreant',name:'Baobab Treant',    level:43,el:'earth',model:'treant',  scale:1.9, hpK:1.5, zone:'a43', pal:{kind:'moss',bark:0x8a7a68,c1:0x5a7a3a,c2:0x6a8a42,c3:0x4a6a30,eyes:0xffd860}},
+  {id:'deltahippo',  name:'Delta Hippo',      level:44,el:'water',model:'hoofed',  scale:1.5, hpK:1.6, zone:'a44', pal:{kind:'hippo',body:0x7a6a7a,belly:0xc8a8a8,horn:0xf4efe0,eye:0x3a1a10,legs:0x6a5a6a}},
+  {id:'reedserpent', name:'Reed Serpent',     level:44,el:'water',model:'sandworm',scale:1.5, hpK:1.4, zone:'a44', pal:{fin:0x4a8a3a,spots:0xe0d060,barbels:1,body:0x4a6a30,belly:0xc8d090,ridge:0x2a4018,horn:0xd8e0a0,eye:0xffe040}},
+  {id:'greyrhino',   name:'Greyhide Rhino',   level:45,el:'earth',model:'hoofed',  scale:1.7, hpK:1.7, dmgPct:0.14, zone:'a45', glow:0x0a0a10, pal:{kind:'rhino',grey:0x2a2a30,body:0x8a8a8a,belly:0xa8a8a8,horn:0xd8d0c0,eye:0xd8d8f0,legs:0x6a6a6a}},
+  {id:'dawnvulture', name:'Dawnless Vulture', level:45,el:'dark', model:'bird',    scale:1.7, zone:'a45', glow:0x0a0610, pal:{kind:'vulture',body:0x3a3238,wing:0x24202a,head:0x6a5a60,ruff:0xc8c0c8,beak:0xd8c8a0,legs:0x6a5a60,eye:0xd8a0ff}}
 ];
 /* What a monster's level does to its health and damage past level 60, the top of the old zone tiers (a level-30 monster at tier III). Two creeps, both applied inside defAt so zone tiers, dungeons and prepDef
    get them alike, and nothing at or below level 60 changes:

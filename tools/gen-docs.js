@@ -45,7 +45,7 @@ function monRow(d){
 }
 const monTable=defs=>rowsOf(MON_HEAD,defs.map(monRow));
 const groups={ring:[],edge:[],vale:[],hoar:[],sun:[]};
-for(const d of W.MON_DEFS) groups[landOfZone(W.defZone(d))].push(d);
+for(const d of W.MON_DEFS){ const zn=W.defZone(d); if(zn) groups[landOfZone(zn)].push(d); }   // (amber: kinds whose zone is not defined yet, the Amber Reach's, join the docs with their zones)
 
 function mobsDoc(){
   const nBoss=W.BOSS_DEFS.length, helpers=W.BOSS_DEFS.flatMap(b=>[b.add,b.totem,b.prop].filter(Boolean));
