@@ -21,3 +21,7 @@
 #kbReset{ width:100%; margin-top:8px; }
 #bSound .x{ display:none; } #bSound.muted .x{ display:inline; } #bSound.muted .w{ display:none; }
 body.editing #sound{ display:none; }
+
+/* the keyboard button shows only the keybinds, the Settings button everything else */
+#sound.kb-mode > :not(.snd-head):not(#kbSec){ display:none; }
+#sound:not(.kb-mode) #kbSec{ display:none; }
