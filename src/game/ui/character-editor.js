@@ -30,9 +30,9 @@ const EDIT=[
     {name:'Build', rows:[{type:'setups'},{slider:'height'},{slider:'build'}]},
     // version 3: the Kin features (shared/kin.js, drawn by character/model-kin.js): no race, just optional ears, a tail, a muzzle and fur; the plain ones are free, the others are made at a Wayfarers' Lodge (horns and a mane are in Clothes > Decor)
     {name:'Kin', rows:[
-      {k:'kinEars',label:'Ears',type:'grid',kind:'kinEars',slot:'e',ids:()=>[['']].concat(kinList('e').map(p=>[p.id,p.name,p.text]))},
-      {k:'kinMuzzle',label:'Muzzle',type:'grid',kind:'kinMuzzle',slot:'m',ids:()=>[['']].concat(kinList('m').map(p=>[p.id,p.name,p.text]))},
-      {k:'kinTail',label:'Tail',type:'grid',kind:'kinTail',slot:'k',ids:()=>[['']].concat(kinList('k').map(p=>[p.id,p.name,p.text]))},
+      {k:'kinEars',label:'Ears',type:'grid',kind:'kinEars',slot:'e',ids:()=>[['']].concat(kinList('e').concat(kinSetList('e')).map(p=>[p.id,p.name,p.text]))},
+      {k:'kinMuzzle',label:'Muzzle',type:'grid',kind:'kinMuzzle',slot:'m',ids:()=>[['']].concat(kinList('m').concat(kinSetList('m')).map(p=>[p.id,p.name,p.text]))},
+      {k:'kinTail',label:'Tail',type:'grid',kind:'kinTail',slot:'k',ids:()=>[['']].concat(kinList('k').concat(kinSetList('k')).map(p=>[p.id,p.name,p.text]))},
       {type:'dcolor',k:'furColor',label:'Fur colour',none:'Skin tone',opts:KIN_FUR.concat(SKINS)},
       {k:'furMark',label:'Markings',type:'seg',opts:KIN_MARKS.map(m=>m.slice())},
       {type:'dcolor',k:'furColor2',label:'Second colour: markings, ear and tail tips',none:'As designed',opts:KIN_FUR.concat(TINTC)}]},
@@ -89,7 +89,7 @@ const edCur=()=>EDIT[edTab].subs[edSub[edTab]];
 // ---- crafted pieces: locked, owned, and the try-on gate ----
 const edOwned=()=>(typeof GEAR!=='undefined'&&GEAR&&GEAR.cos)||[];
 // outfit sets worn but not owned: a try-on like a crafted piece (not saved, not sent; the bar offers to buy it)
-const osLocks=()=>{ const seen=[]; for(const id of Object.values(ofPieces(LOOK))) if(!osOwned(id)&&!seen.includes(id)) seen.push(id); return seen.map(id=>({os:id,name:CHAR_MODELS[id]?CHAR_MODELS[id].name:id})); };
+const osLocks=()=>{ const seen=[]; for(const id of Object.values(ofPieces(LOOK)).concat(kinSetsOf(LOOK))) if(!osOwned(id)&&!seen.includes(id)) seen.push(id); return seen.map(id=>({os:id,name:CHAR_MODELS[id]?CHAR_MODELS[id].name:id})); };   // kin: a Kin set's ears, tail or muzzle are the set's too (kinSetsOf)
 const edLocks=()=>osLocks().concat(cosLocked(LOOK,edOwned()));
 // outfit sets (the eight signature characters) are cosmetic and cost 1000 gems each (GEAR.os, server/amber.js); a locked tile asks for a second tap to buy
 const OS_SHOW=12;

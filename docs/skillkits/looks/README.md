@@ -33,6 +33,9 @@
 | [Tamsin](tamsin.md) | F | grind, earth | a slope coming down | a wrapped head, bare strong arms, a rope harness, knee-pad trousers | `pinnedbraids` / `grittygaze` | version 3, the Greyspine |
 | [Zahra](zahra.md) | F | support (buff), light | noon on glass | a bead-veiled circlet, a wide-sleeve robe, a split white skirt | `goldbraid` / `noongaze` | version 3, the Sunscar |
 | [Hollis](hollis.md) | M | healer, dark | a lamp in the dark | a tall crape hat, a long frock coat, a hooked lantern | `slickback` / `vigilgaze` | version 3, the Gloamhorn |
+| [Brindle](brindle.md) | M | mixed (safe DPS + support), fire | a lens catching the sun | a flat goggle cap, a vest hung with sun-glass vials, baggy patched trousers, a tool belt; hyena Kin parts | `naperidge` / `laughgaze` | version 3, the Amber Reach (Kin) |
+| [Dessa](dessa.md) | F | tank, earth | a smithy in the road | a knotted headwrap, a long leather apron, iron knee guards, a cross-peen hammer; rhino Kin parts with a nose horn | `shortbraid` / `heavygaze` | version 3, the Amber Reach (Kin) |
+| [Sefi](sefi.md) | F | risk DPS, air | a streak of gold on the grass | a sky headband with streamers, a crop top and crossed sash, a message tube, wrapped calves; cheetah Kin parts | `windtail` / `longgaze` | version 3, the Amber Reach (Kin) |
 
 The hiker is about 54,000 triangles; an outfit adds 15,000-22,000 at full detail (`charDetail('hero')`), proportionally fewer for other players and villagers (every segment count goes through `sg(n)`).
 
