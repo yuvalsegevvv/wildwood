@@ -430,6 +430,7 @@
     "world/aurora.js",
     "player/movement.js",
     "player/footfx.js",
+    "economy/main-quest-guide.js",
     "ui/map.js",
     "ui/map-paint.js",
     "ui/map-style.js",

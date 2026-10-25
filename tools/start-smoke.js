@@ -20,7 +20,7 @@ async function boot(o){ const c=bootClient(Object.assign({online:true,fast:true,
   ok('a new visitor\'s one button to press is Play now (a guest); Log in is not the primary one',c.el('#stGuest').textContent==='Play now'&&c.el('#stLogin').textContent==='Log in'&&!c.el('#stGuestNote').hidden);
   ok('the guest and submit buttons wait for the world',c.el('#stGuest').disabled===false&&c.el('#stSubmit').disabled===false);
   c.el('#stGuest').click();
-  ok('a brand-new guest makes a character first: the editor opens in creating mode, on the signature characters',await until(()=>c.G().customizing())&&c.G().creating()&&!c.G().started()&&c.G().EDIT[c.G().edTab()].tab==='Presets');
+  ok('a brand-new guest makes a character first: the editor opens in creating mode, on the Body tab (the gems-only sets are hidden)',await until(()=>c.G().customizing())&&c.G().creating()&&!c.G().started()&&c.G().EDIT[c.G().edTab()].tab==='Body');
   c.el('#edDone').click();
   ok('...and Enter the world starts the game as a guest',c.G().started()&&!c.G().NET.user&&c.G().NET.mode==='ws');
   // the server stops answering (no message for 8 s): a message that stays, with a Reconnect button, instead of a frozen game that ignores everything
@@ -52,7 +52,7 @@ async function boot(o){ const c=bootClient(Object.assign({online:true,fast:true,
   ok('a taken name is refused (any letter case) and the form stays',/already has the name/.test(c.el('#stMsg').textContent)&&!c.el('#stForm').hidden&&c.el('#stSubmit').disabled===false);
   fill(c,'Newbie','secret1','secret1');
   ok('a new account opens the character editor before the game starts',await until(()=>c.G().customizing())&&c.G().creating()&&!c.G().started()&&c.G().NET.user==='Newbie');
-  ok('the editor opens on the signature characters, titled for creating',c.G().EDIT[c.G().edTab()].tab==='Presets'&&c.el('#edTitle').textContent==='Create your hiker'&&c.el('#edDone').textContent==='Enter the world');
+  ok('the editor opens on Body, titled for creating',c.G().EDIT[c.G().edTab()].tab==='Body'&&c.el('#edTitle').textContent==='Create your hiker'&&c.el('#edDone').textContent==='Enter the world');
   { c.G().GEAR.os=[]; c.G().setLook('model','dunstan'); const L=c.G().edLocks();   // an outfit set you do not own can be tried on, like a crafted piece: it blocks Done and a revert takes it off
     ok('trying on an outfit set you do not own is a try-on (not saved, Done blocked), and going back takes it off',c.G().edTrying()&&L.some(l=>l.os==='dunstan')&&(c.G().edRevert(),!c.G().edTrying())); }
   { const g=c.G().GEAR; g.os=Object.keys(c.G().CHAR_MODELS).filter(k=>c.G().CHAR_MODELS[k].signature); c.G().renderEditor(); }   // outfit sets are locked until bought with gems
