@@ -1,10 +1,10 @@
 //@ Brindle's skill set, The Sun-Glass Belt (a mixed safe DPS + support, fire): a flung spark-pebble, a burst of focused sunlight that sharpens the party's aim, and a noon charge that spends the glints; amber, copper and laughing red
 /* Agent map. Kit: docs/skillkits/kit-mixed.md (main safe DPS, also support, mild: the sun-glass makes the party hit harder and crit more); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces fire: his hits leave the aura a partner reacts with);
-   outfit and palette: none yet (the Kin outfit is the savanna plan's K2); visuals: none yet, drawn like a generic skill. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js,
+   outfit: game/outfits/brindle.js, docs/skillkits/looks/brindle.md; visuals: none yet, drawn like a generic skill. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js,
    tools/skillsets-ladder.js --set brindle. Land: the Amber Reach (tier 1; Old Thunder, Oldhorn and the Termite Cathedral are its sources, a late-bound id until the savanna bosses and dungeon exist). Mark: Glint.
    Unlike Marigold (the other safe + support: regeneration and a stage) he lends CRITICAL strikes: Sun-Glass Burst gives the party crit chance, Noon Charge crit damage and might, and both grow with the Glints he has on the enemies near him. */
 defineSkillSet({
-  id:'brindle', name:'The Sun-Glass Belt', land:'amber', needs:{tier:1}, el:'fire', outfit:null,
+  id:'brindle', name:'The Sun-Glass Belt', land:'amber', needs:{tier:1}, el:'fire', outfit:'brindle',
   role:{main:'safe', also:{role:'support', part:'mild'}},
   char:{name:'Brindle', sex:'male', theme:'a loud-laughing hyena caravan tinker with a belt of sun-glass charges, who sells you the lens and lights the fuse himself', ip:{kind:'original', riffs:'the caravan-tinker and lens-grinder genre (a belt of glass charges, a goggled cap, a hyena-kin laugh); no existing character'}},
   pal:{main:0xd98a2b, accent:0x7a3b1c, glow:0xffd27a},

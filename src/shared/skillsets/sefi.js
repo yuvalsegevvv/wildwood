@@ -1,10 +1,10 @@
 //@ Sefi's skill set, The Long Run (a risk DPS, air): a cut as she passes, a gust-dash that lands behind the herd, and a dead heat that spends the stride; sand, spotted gold and sky
 /* Agent map. Kit: docs/skillkits/kit-risk-dps.md (the finisher that pays in damage taken); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces air);
-   outfit and palette: none yet (the Kin outfit is the savanna plan's K2); visuals: none yet, drawn like a generic skill. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js,
+   outfit: game/outfits/sefi.js, docs/skillkits/looks/sefi.md; visuals: none yet, drawn like a generic skill. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js,
    tools/skillsets-ladder.js --set sefi. Land: the Amber Reach (tier 3). Mark: Stride. The fourth risk DPS and the second courier, so she is built on a different lever from Sazanka (Barbs from behind) and Brynja (Momentum:
    damage while moving): SPEED OF KILLING (crits that shorten her cooldowns). Crits take time off her cooldowns (Crosswind), a fresh target takes her best crits (First Strike), and she pays in damage taken (Bare Run). */
 defineSkillSet({
-  id:'sefi', name:'The Long Run', land:'amber', needs:{tier:3}, el:'air', outfit:null,
+  id:'sefi', name:'The Long Run', land:'amber', needs:{tier:3}, el:'air', outfit:'sefi',
   role:{main:'risk'},
   char:{name:'Sefi', sex:'female', theme:'a cheetah-kin courier who crosses the plain faster than the message, and cuts whatever stands in the way as she passes', ip:{kind:'original', riffs:'the plains courier and runner genre (a light sash, a curved knife, spotted gold fur); no existing character'}},
   pal:{main:0xe0b040, accent:0x3a2a1a, glow:0xbfe6ff},

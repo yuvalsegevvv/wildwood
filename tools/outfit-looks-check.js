@@ -92,10 +92,10 @@ for(const f of docs){
 }
 
 for(const o of O) ok('outfit '+o.id+': persona, seven new items with builder notes, one weapon dressing, built with one reference setup, slider section current',o.problems.length===0,o.problems.slice(0,3).join(' | '));
-ok('there are eighteen outfits: the eight characters of THEMES.md, version 3\'s first four (Nephra, Sabir, Ogden, Ottoline) and its second six (Pell, Genzo, Brynja, Tamsin, Zahra, Hollis)',O.length===18&&['tansy','torgeir','sazanka','corvin','sorrel','ambrose','dunstan','marigold','nephra','sabir','ogden','ottoline','pell','genzo','brynja','tamsin','zahra','hollis'].every(n=>O.some(o=>o.id===n)),O.map(o=>o.id).join(','));
-ok('gender ratio: nine female and nine male',O.filter(o=>o.sex==='female').length===9&&O.filter(o=>o.sex==='male').length===9);
+ok('there are twenty-one outfits: the eight characters of THEMES.md, version 3\'s first four (Nephra, Sabir, Ogden, Ottoline), its second six (Pell, Genzo, Brynja, Tamsin, Zahra, Hollis) and the three Kin (Brindle, Dessa, Sefi)',O.length===21&&['tansy','torgeir','sazanka','corvin','sorrel','ambrose','dunstan','marigold','nephra','sabir','ogden','ottoline','pell','genzo','brynja','tamsin','zahra','hollis','brindle','dessa','sefi'].every(n=>O.some(o=>o.id===n)),O.map(o=>o.id).join(','));
+ok('gender ratio: eleven female and ten male (the Kin add Brindle as a man, Dessa and Sefi as women)',O.filter(o=>o.sex==='female').length===11&&O.filter(o=>o.sex==='male').length===10);
 ok('each outfit ships exactly one recommended setup, the reference, for its own sex',O.every(o=>o.model&&o.model.setups.length===1&&o.model.setups[0].def&&o.model.setups[0].sex===o.sex));
-{ const all=O.flatMap(o=>o.itemIds); ok('every item id is new and distinct: '+all.length+' ids, '+new Set(all).size+' different, none an existing model value',all.length>=126&&new Set(all).size===all.length); }
+{ const all=O.flatMap(o=>o.itemIds); ok('every item id is new and distinct: '+all.length+' ids, '+new Set(all).size+' different, none an existing model value',all.length>=147&&new Set(all).size===all.length); }
 ok('each outfit has its own hair item, none shared',new Set(O.map(o=>o.hairFinal)).size===O.length,O.map(o=>o.id+':'+o.hairFinal).join(' '));
 ok('each outfit has its own weapon dressing with its own charm (all distinct)',O.every(o=>(o.parts['Weapon']||[]).length)&&new Set(O.map(o=>(o.parts['Weapon']||[])[0])).size===O.length&&new Set(O.map(o=>o.charm)).size===O.length,O.map(o=>o.charm).join(' '));
 ok('the main colour of each palette is different (no two outfits share a first colour)',new Set(O.map(o=>o.palette[0])).size===O.length);
