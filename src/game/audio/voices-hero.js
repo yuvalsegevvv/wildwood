@@ -20,7 +20,10 @@ const HV_OUTFIT={
   nephra:{sex:'f',pitch:0.8,rate:0.84,slot:3,tone:'calm'},     ottoline:{sex:'f',pitch:1.7,rate:0.95,slot:4,tone:'bright'},
   sazanka:{sex:'f',pitch:1.15,rate:1.25,slot:5,tone:'sly'},    sorrel:{sex:'f',pitch:1.05,rate:1.1,slot:1,tone:'bold'},
   tamsin:{sex:'f',pitch:0.85,rate:0.95,slot:2,tone:'gruff'},   tansy:{sex:'f',pitch:1.28,rate:1.05,slot:3,tone:'bright'},
-  zahra:{sex:'f',pitch:0.98,rate:0.9,slot:4,tone:'calm'}};
+  zahra:{sex:'f',pitch:0.98,rate:0.9,slot:4,tone:'calm'},
+  // the Amber Reach sets: Brindle the loud-laughing hyena tinker, Dessa the rhino smith (tank), Sefi the cheetah courier (fast)
+  brindle:{sex:'m',pitch:1.1,rate:1.2,slot:6,tone:'bright'}, dessa:{sex:'f',pitch:0.72,rate:0.84,slot:6,tone:'gruff'},
+  sefi:{sex:'f',pitch:1.22,rate:1.32,slot:7,tone:'sly'}};
 // Three shouts for every skill. The original skills have their own; every other skill gets three made from its name,
 // its element and its class (or the set's tone), fixed by its id so a skill always has the same three to choose from.
 const HV_SKILL={
