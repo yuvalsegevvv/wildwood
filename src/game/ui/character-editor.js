@@ -101,6 +101,8 @@ function osCap(box){
   requestAnimationFrame(()=>{ const a=box.children[0], cols=Math.max(1,getComputedStyle(box).gridTemplateColumns.split(' ').length); if(!a||!a.offsetHeight) return;
     const gap=parseFloat(getComputedStyle(box).rowGap)||8, rows=Math.ceil(OS_SHOW/cols); box.style.maxHeight=Math.ceil(rows*a.offsetHeight+(rows-1)*gap+4)+'px'; box.classList.add('scroll'); });
 }
+// a tile that is crafted (and not made yet) or an outfit set that is not owned: hidden while creating a hiker
+function edLockedPick(row,v){ if(OUTFITS[v]) return !osOwned(v); const D=row.slot&&v!==''&&v!=='none'?cpDef(row.slot,v):null; return !!D&&!D.free&&!edOwned().includes(cpKey(row.slot,v)); }
 // true while the look on the hiker wears a crafted piece that has not been made (saveLook: nothing is saved or sent then)
 function edTrying(){ return customizing&&edLocks().length>0; }
 function edRevert(){ LOOK=Object.assign({},LOOK_SAVED); if(osLocks().length) setLook('model','base'); rebuildHiker(); renderEditor(); }   // (a saved look that wears a set you do not own, from before sets were sold, comes off)
@@ -225,6 +227,7 @@ function renderEditor(){
       const ids=row.ids(), box=document.createElement('div'); box.className='tiles'+(row.kind==='sex'?' two':'');
       if(row.empty&&ids.length<2){ const p0=document.createElement('p'); p0.className='ed-info'; p0.textContent=row.empty; wrap.append(p0); }
       for(const [v,name,tip] of ids){
+        if(creating&&edLockedPick(row,v)) continue;   // creating shows only the free parts: crafted and unbought set pieces appear in the editor later
         const sig=!!OUTFITS[v], gap=(v===''||v==='none')&&(row.kind==='hat'||row.kind==='gloves'||row.kind==='faceItem'||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='kinEars'||row.kind==='kinTail'||row.kind==='kinMuzzle')||(row.kind==='pack'&&v===false);   // "nothing": a crossed circle
         const spec=gap?null:{kind:row.kind,id:v};
         if(spec&&row.col&&!sig) spec.col=LOOK[row.col];
@@ -288,7 +291,7 @@ function renderEditor(){
       // the outfit sets (src/game/outfits): one tap sets up the whole look: the recommended gender, body sliders, all seven pieces and the colours they were designed in; everything stays editable afterwards in the Clothes and Face tabs
       const box=document.createElement('div'); box.className='tiles';
       const off=cthTile(null,{title:'Take the outfit off (plain clothes)',on:false}); off.onclick=()=>{ setLook('model','base'); renderEditor(); }; box.append(off);
-      for(const id of Object.keys(OUTFITS)){ const M=CHAR_MODELS[id], on=LOOK.model===id&&Object.keys(ofPieces(LOOK)).length===7, fem=!!(M.sexes&&M.sexes[0]==='female');
+      for(const id of Object.keys(OUTFITS)){ if(creating&&!osOwned(id)) continue; const M=CHAR_MODELS[id], on=LOOK.model===id&&Object.keys(ofPieces(LOOK)).length===7, fem=!!(M.sexes&&M.sexes[0]==='female');
         const lk=!osOwned(id), b=cthTile({kind:'outfit',id},{on,sig:true,cap:M.name,title:M.name+' ('+(fem?'female':'male')+'). '+(M.note||'')+(lk?' Locked: tap to try it on, '+GEM_SET_PRICE+' gems to keep it.':'')}); b.onclick=()=>{ setLook('model',id); renderEditor(); };
         if(lk){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); }
         box.append(b); }
@@ -320,7 +323,7 @@ function surpriseMe(){
 function openEditor(o){
   if(!Stream.terrainDone) return;
   customizing=true; creating=!!(o&&o.create);
-  if(creating){ edTab=0; edSub[0]=0; }   // creating starts on the signature characters: one tap is a finished hiker, and Body, Face and Clothes are there to change any of it
+  if(creating){ edTab=1; edSub[1]=0; }   // creating starts on Body: the signature sets are gems-only and hidden while creating (edLockedPick), so there is nothing to start from in Presets
   $('#edTitle').textContent=creating?'Create your hiker':'Your hiker'; $('#edDone').textContent=creating?'Enter the world':'Done';
   $('#edDrag').textContent=creating?'Pick a character to start from, or build your own in Body, Face and Clothes. You can change it all later.':'Drag the scene to turn around';
   releasePointer();
