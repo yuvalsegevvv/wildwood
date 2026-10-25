@@ -276,6 +276,43 @@ const VILLAGERS=[
     look:{sex:'female',height:1.0,build:0.92,face:'oval',hair:'bun',hairColor:0xb8b4bc,chest:1.0,skin:0xdccfc8,top:'jacket',topColor:0x2a3a4a,bottom:'skirt',bottomColor:0x22262e,hat:'none',shoes:'boots',shoeColor:0x1a1618},
     behavior:{type:'stationary',at:'lamp:0'}, home:'house:0', schedule:'always', voice:{rate:0.86,pitch:1.0},
     lines:['I keep the old light at the tip of the horn. Somebody has to, and I have always been good with stairs.','The beam is for ships. There have been no ships for a long time. I keep it lit all the same: a light is a promise.','Mind the fog after dark. It carries voices further than it should.'] },
+  /* ---- Tallgrass, Amber Reach's moot town (VIL7): the Kin, seven houses of animal-folk (docs/SAVANNA.md; the plan in the project files). Plain human looks for now: the Kin parts (ears, tails, muzzles) are dressed on by the integration task. late; no story steps, a trade and small talk ---- */
+  { id:'oruvi', vil:7, late:true, title:'Warden of the Dawn Seat', icon:'story', name:'Warden Oruvi', role:null,
+    look:{sex:'female',height:1.06,build:1.1,face:'angular',hair:'long',hairColor:0xb07a2a,chest:1.0,skin:0xa87c56,top:'jacket',topColor:0x8a3a1a,bottom:'skirt',bottomColor:0x5a3a1a,hat:'none',shoes:'boots',shoeColor:0x3a2410},
+    behavior:{type:'stationary',at:'well'}, home:'house:0', schedule:'always', voice:{rate:0.88,pitch:0.85},
+    lines:['The Dawn Seat is the baobab\'s hollow, and it is not a throne. Whoever sits it at first light carries the council\'s patience for the day, and goes home lighter or does not go home.','Seven houses, seven voices, one fire. I am the one who keeps it from going out.','You ended the Wyrm. The scouts spoke for you at the hedge, and I have not been asked to take it back.'] },
+  { id:'tamsa', vil:7, late:true, title:'Elder of the Long Memory', icon:'story', name:'Elder Tamsa', role:null,
+    look:{sex:'female',height:1.0,build:1.25,face:'round',hair:'bun',hairColor:0xc8c4bc,chest:1.1,skin:0x8a6a4a,top:'jacket',topColor:0x6a4a8a,bottom:'skirt',bottomColor:0x3a2a1a,hat:'none',shoes:'boots',shoeColor:0x2a1a10},
+    behavior:{type:'stationary',at:'campfire:seat1',pose:'sit'}, home:'house:4', schedule:'always', voice:{rate:0.78,pitch:0.8},
+    lines:['Hmm. Hmm-hm. Rain on the long grass, grass on the long road. Do you know the next line? Nobody does. We keep singing it so it is not lost.','My mother\'s mother sang it to herd the calves home. I sing it because it is the only thing I own that is older than I am.','Sit. The fire does not mind how long you stay.'] },
+  { id:'kesi', vil:7, late:true, title:'Herd-guide', icon:'story', name:'Kesi', role:null,
+    look:{sex:'female',height:0.96,build:0.85,face:'oval',hair:'ponytail',hairColor:0x6a4a22,chest:0.9,skin:0xb88a62,top:'tshirt',topColor:0xd8a040,bottom:'trousers',bottomColor:0x6a4a2a,hat:'none',shoes:'boots',shoeColor:0x4a3018},
+    behavior:{type:'stationary',at:'plaza0'}, home:'house:2', schedule:'always', voice:{rate:1.1,pitch:1.2},
+    lines:['I was the one who ran to tell Warden Oruvi you were at the hedge! I am the fastest. Do not tell the cheetah.','The pools by the western rocks are the best water; the burnt plain is the worst. Stay off the plain after noon.','If you get lost, walk toward the baobab. You cannot miss it, it is the only tree that is a building.'] },
+  { id:'brindle', vil:7, late:true, title:'Caravan master · general shop', icon:'peddler', name:'Brindle Hask', role:'peddler',
+    look:{sex:'male',height:1.02,build:1.1,face:'round',hair:'short',hairColor:0x3a2a1a,facial:'stubble',skin:0x9a704c,top:'flannel',topColor:0x8a5a2a,bottom:'trousers',bottomColor:0x4a3a2a,hat:'cap',hatColor:0x6a4a2a,pack:true,shoes:'boots',shoeColor:0x2a1e14},
+    behavior:{type:'stationary',at:'stall:0:behind'}, home:'house:1', schedule:'always', voice:{rate:1.1,pitch:0.9},
+    lines:['Ha! Is that what you call a price? No, no. Let me laugh a little first, then we will talk about what it is really worth.','Everything is for sale. Everything. Even the things that are not mine, if the owner is slow.','Maps, rope, rations, a spare hat. I sell the road and I buy what it left behind.'] },
+  { id:'dessa', vil:7, late:true, title:'Hornsmith · forge', icon:'forge', name:'Dessa Hornwright', role:'forge',
+    look:{sex:'female',height:1.08,build:1.4,face:'angular',hair:'bun',hairColor:0x2a2420,chest:1.15,skin:0x7a5a42,top:'tshirt',topColor:0x4a3a30,bottom:'trousers',bottomColor:0x2a2420,hat:'none',shoes:'boots',shoeColor:0x241a14},
+    behavior:{type:'stationary',at:'stall:2:behind'}, home:'house:6', schedule:'always', voice:{rate:0.85,pitch:0.78},
+    lines:['Three of the same and a hot fire, and out comes one better. Horn takes the fire slowly, so I do not hurry it.','My mother cut horn, her mother cut horn. I cut iron, and I still say I am the one who breaks with tradition.','Do not lean on the anvil. It remembers who leaned.'] },
+  { id:'ennu', vil:7, late:true, title:'Quest board · season calendar', name:'High Watch Ennu', role:'quests',
+    look:{sex:'male',height:1.14,build:0.85,face:'oval',hair:'short',hairColor:0x3a2a1a,facial:'beard',skin:0xa8784a,top:'jacket',topColor:0x6a8a3a,bottom:'trousers',bottomColor:0x4a3a22,hat:'none',shoes:'boots',shoeColor:0x3a2814},
+    behavior:{type:'stationary',at:'questboard'}, home:'house:3', schedule:'always', voice:{rate:0.88,pitch:0.85},
+    lines:['From up here the herd is a river and the board is a stone in it. Take a notice that suits you.','New notices go up at sunrise. The wet season is Greenfall and the dry is Goldfall; the board does not care which, the work does not stop.','Watch the horizon at noon. Smoke is the only weather that arrives on purpose.'] },
+  { id:'wiru', vil:7, late:true, title:'Healer · brews potions', icon:'healer', name:'Healer Wiru', role:'brew',
+    look:{sex:'female',height:1.04,build:0.8,face:'angular',hair:'long',hairColor:0x2a2420,chest:0.9,skin:0x9a704c,top:'jacket',topColor:0x6a5a4a,bottom:'skirt',bottomColor:0x8a5a3a,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2814},
+    behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.88,pitch:1.0},
+    lines:['Thornbark for the fever, pool-reed for the burns, and patience for the rest. Bring me herbs and a few coins and I will brew them.','I am looking for a herb that grows only after the grass has burned. If you see one, do not pick it. Come and get me.','Drink the healing draught when you are hurt, the others before a fight.'] },
+  { id:'sefi', vil:7, late:true, title:'Courier · keeps the circle and the pier', icon:'story', name:'Sefi', role:null,
+    look:{sex:'female',height:1.0,build:0.8,face:'oval',hair:'ponytail',hairColor:0xc89a3a,chest:0.9,skin:0xb88a62,top:'tshirt',topColor:0xd8c070,bottom:'trousers',bottomColor:0x5a4a2a,hat:'none',shoes:'sneakers',shoeColor:0xc8a050},
+    behavior:{type:'patrol',route:['gate','lamp:2','lamp:4','lamp:6','lamp:1','gate'],pause:1.5}, home:'house:7', schedule:'always', speed:1.5, voice:{rate:1.15,pitch:1.2},
+    lines:['The stones in the ring are older than the Kin. They carry you wherever you have already walked, and nowhere else. Hold still and do not think of your lunch.','I keep the circle, and the pier past the south pools: the boats there are for the Emberwake Isles, once the water is safe. It is not yet.','Run with me! No? Everyone says no.'] },
+  { id:'mudge', vil:7, late:true, title:'Ferryman of the delta', icon:'story', name:'Old Mudge', role:null,
+    look:{sex:'male',height:1.02,build:1.5,face:'round',hair:'bald',hairColor:0x8a8a82,facial:'beard',skin:0x7a5a42,top:'hoodie',topColor:0x5a6a5a,bottom:'trousers',bottomColor:0x3a4a3a,hat:'none',shoes:'boots',shoeColor:0x2a2a1e},
+    behavior:{type:'stationary',at:'landing'}, home:'house:5', schedule:'always', voice:{rate:0.76,pitch:0.65},
+    lines:['Mmm. The river comes in the wet and goes out the dry, and I go where it goes. The reed-kin do not own the water, we only know where it is.','Crocodiles are polite if you are. I have never been rude to one.','Sit on the jetty. Dangle a foot if you like. The water is not that interested.'] },
 ];
 const FILLER_COUNT=LITE?3:(LOW?4:8);
 const NAMES_M=['Anders','Henrik','Lukas','Emil','Jonas','Felix','Mattis','Arvid','Elias','Nils','Viggo','Karl'];
@@ -292,6 +329,8 @@ const SMALLTALK2=['The cherry trees never stop blooming here. Nobody remembers w
 const SMALLTALK=['Lovely day for a walk in the woods.','The deer come right up to the garden at dawn.','Mind the river, the current is quicker than it looks.','Have you tried the apples at the market?','My grandmother planted half the birches around here.','Foxes got into the hen house again last week.','When the fireflies come out, you know summer is here.','The old path still leads down to the lake, if you know where to look.','The tavern gets loud after sunset. Oskar tells the same stories every night.','Bram thinks he is guarding us from wolves. There are no wolves.'];
 
 const NAMES_M6=['Callum','Eoghan','Fergus','Ruaridh','Tavish','Murdoch','Lachlan','Donal','Ewan','Aonghas'], NAMES_F6=['Morag','Isla','Catriona','Eilidh','Mairi','Una','Ailsa','Shona','Brigid','Fenella'];
+const NAMES_M7=['Jabari','Kito','Mosi','Zuberi','Baraka','Dume','Ekon','Faraji','Husani','Tendai'], NAMES_F7=['Amani','Zuri','Imani','Neema','Subira','Tisa','Wanza','Ayana','Eshe','Nia'];
+const SMALLTALK7=['The calves are crossing the east meadow again. Do not stand in the way, and do not stand behind them either.','Greenfall smells of wet earth and Goldfall of dust. I could tell you the month with my eyes shut.','The termite spires are hot at noon. Children dare each other to touch them. Children are fools.','The drummers practise at dusk. If the drums stop, look to the horizon.','Elder Tamsa\'s song has a verse nobody knows. We hum it so the gap does not close.','The pools shrink in the dry, and everyone who drinks there gets very friendly with everyone else who drinks there.','The baobab has been hollow for a thousand years. We only found out about the roof last wet season.','Do not sleep under an acacia. The leopards do, and they were there first.'];
 const SMALLTALK6=['The tide brings things in at night. We do not look at them until morning, and then only from a distance.','Never whistle near the cairns. The wind answers, and it does not whistle the same tune back.','My husband went out for crabs. The boat came home on its own, which is more than most do.','The old light at the tip still turns. Nobody has wound it in a hundred years.','Keep the lamp trimmed. A dark window is an invitation.','The standing stones lean a little more each winter. Toward us, we think.','There is a bell under the water by the caves. On calm nights you can hear it ring the hours.','The gulls here do not cry. They watch.','Grey fog off the sea, and in it, a ship with no lights. Count to a hundred and it is gone. Mostly.','We sing the drowned home on the longest nights. It is the only time the heath is quiet.'];
 
 const NPCs=[];
@@ -358,9 +397,17 @@ function initNPCs(){
       const look={sex,hairColor:[0x2a2430,0x3a3440,0x4a4450,0x6a6470][Math.floor(r6()*4)],skin:[0xdccdc6,0xd2c4ba,0xcfc0b4][Math.floor(r6()*3)],hat:r6()<0.3?'beanie':'none',hatColor:[0x24202e,0x2e2a3e,0x3a3646][Math.floor(r6()*3)],top:r6()<0.5?'hoodie':'jacket'};
       defs.push({id:'villagerw'+i,vil:6,late:true,seed:i+61,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
     } }
+  // Tallgrass's people
+  { const r7=mulberry32(9007);
+    for(let i=0;i<FILLER_COUNT;i++){
+      const sex=r7()<0.5?'male':'female', pool=sex==='male'?NAMES_M7:NAMES_F7; let name; do{ name=pool[Math.floor(r7()*pool.length)]; }while(used.has(name)); used.add(name);
+      const lines=[]; for(let k=0;k<3;k++) lines.push(SMALLTALK7[Math.floor(r7()*SMALLTALK7.length)]);
+      const look={sex,hairColor:[0x1d1410,0x2a1a12,0x4a3018,0x8a5a22][Math.floor(r7()*4)],skin:[0xa87c56,0x9a704c,0xb88a62,0x7a5a42][Math.floor(r7()*4)],hat:r7()<0.25?'kasa':'none',hatColor:[0xc8a050,0xa86a2a,0x8a6a3a][Math.floor(r7()*3)],top:r7()<0.5?'tshirt':'jacket'};
+      defs.push({id:'villagert'+i,vil:7,late:true,seed:i+81,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
+    } }
   defs.filter(d=>!d.late).forEach(d=>spawnNPC(d,rng));
   defs.filter(d=>d.late&&(d.vil||1)<3).forEach(d=>spawnNPC(d,mulberry32(9002+(d.seed||0))));
-  NPC_DEFER.push(...defs.filter(d=>d.late&&(d.vil||1)>=3));   // Rimehold's, Highmark's and Glasswell's people: built in the background (below)
+  NPC_DEFER.push(...defs.filter(d=>d.late&&(d.vil||1)>=3));   // Rimehold's, Highmark's, Glasswell's, Wraithwick's and Tallgrass's people: built in the background (below)
 }
 /* Half of the villagers (36 of 74, ~36 ms each) live in the Hoarfrost Reach and the Greyspine, far from where the game starts. They are built after the loading screen,
    one a slice, by the stream scheduler (job 'n', streaming.js) when nothing nearer is waiting. Each has an rng of its own (mulberry32(9002+seed)), so building them

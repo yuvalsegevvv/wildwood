@@ -91,6 +91,7 @@ function applyEvent(e){
     case 'north': if(e[1]===me) onNorthStep(e[2]); break;
     case 'west': if(e[1]===me) onWestStep(e[2]); break;
     case 'gate': if(e[1]===me) onGateStep(e[2]); break;
+    case 'tall': if(e[1]===me&&e[2]>=2) UI_SFX.success(); break;   // walked into Tallgrass: its circle is attuned
     case 'gloam': if(e[1]===me&&e[2]>=2) UI_SFX.success(); break;   // walked into Wraithwick: its circle is attuned
     case 'sun': if(e[1]===me&&e[2]>=2) UI_SFX.success(); break;   // walked into Glasswell: its circle is attuned
     case 'node': onNodeEvent(e[1],e[2]); break;
