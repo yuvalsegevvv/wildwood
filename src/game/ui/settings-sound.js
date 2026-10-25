@@ -17,8 +17,17 @@ $('#hvChips').querySelectorAll('[data-hv]').forEach(b=>b.addEventListener('click
 function toggleMute(){ SND.muted=!SND.muted; if(SND.muted) stopSpeech(); applyVolumes(); saveAudio(); renderSound(); }
 $('#sMute').addEventListener('click',toggleMute);
 $('#bKeys').hidden=isTouch;   // touch screens have no keyboard (the Controls section is hidden there too)
-$('#bKeys').addEventListener('click',e=>{ audioInit(); e.currentTarget.blur(); sndEl.hidden=false; renderSound(); UI_SFX.open(); const d=$('#kbSec details'); if(d) d.open=true; $('#kbSec').scrollIntoView&&$('#kbSec').scrollIntoView({block:'start'}); });   // the top-bar shortcut to the Keybinds section of Settings
-$('#bSound').addEventListener('click',e=>{ audioInit(); e.currentTarget.blur(); sndEl.hidden=!sndEl.hidden; if(!sndEl.hidden){ renderSound(); UI_SFX.open(); } else UI_SFX.close(); });
+// one dialog, two views: the Settings button shows everything but the keybinds, the keyboard button only the keybinds (class kb-mode, 08-settings.css)
+function sndShow(kb){
+  const same=!sndEl.hidden&&sndEl.classList.contains('kb-mode')===kb;
+  if(same){ sndEl.hidden=true; UI_SFX.close(); return; }
+  sndEl.classList.toggle('kb-mode',kb); $('#sndTitle').textContent=kb?'Keybinds and gamepad':'Settings';
+  const d=$('#kbSec details'); if(kb&&d) d.open=true;
+  if(sndEl.hidden){ sndEl.hidden=false; UI_SFX.open(); }
+  renderSound();
+}
+$('#bKeys').addEventListener('click',e=>{ audioInit(); e.currentTarget.blur(); sndShow(true); });   // the top-bar shortcut to the keybinds
+$('#bSound').addEventListener('click',e=>{ audioInit(); e.currentTarget.blur(); sndShow(false); });
 $('#sClose').addEventListener('click',()=>{ sndEl.hidden=true; UI_SFX.close(); });
 addEventListener('keydown',e=>{ if(kbIs(e.code,'mute') && started) toggleMute(); if(e.code==='Escape') sndEl.hidden=true; });
 renderSound();
