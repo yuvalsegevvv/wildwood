@@ -124,7 +124,7 @@ function applyEvent(e){
     case 'toast': if(e[1]==null||e[1]===me){ toast(e[2],e[3]); if(e[1]==null&&e[3]==='good') UI_SFX.success(); } break;
     case 'qdone': if(e[1]===me) UI_SFX.notify(); break;
     case 'qturn': if(e[1]===me) UI_SFX.success(); break;
-    case 'mq': if(e[1]===me) { if(e[3]===2) UI_SFX.success(); else UI_SFX.notify(); } break;   // a main quest step started (1) or handed in (2)
+    case 'mq': if(e[1]===me) { if(e[3]===2){ UI_SFX.success(); hvEvent('quest'); } else UI_SFX.notify(); } break;   // a main quest step started (1) or handed in (2)
     case 'sq': if(e[1]===me) { if(e[4]===2) UI_SFX.success(); else UI_SFX.notify(); } break;   // sidequests: a chain's step started (1) or handed in (2)
     case 'sqsay': if(e[1]===me) sqShowScene(e[2],e[3]); break;   // sidequests: a place's scene
     case 'pact': if(e[1]!==me) remoteAct(e[1],e[2],e[3]); break;
@@ -143,6 +143,7 @@ function onLoot(pid,id,monId){
   const m=monId!=null?MON_BY_ID.get(monId):null;
   if(pid===NET.pid){
     if(it.rar>=2){ const x=m?m.x:P.x, z=m?m.z:P.z; luckyFx(x,getH(x,z),z,it.rar,true,it); }
+    if(it.rar>=1) hvEvent(it.rar>=2?'epic':'rare');   // voice: audio/voices-hero.js
     else UI_SFX.pickup();
   } else {
     const r=REMOTES.get(pid); if(!r) return;

@@ -185,10 +185,13 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <label class="snd-row"><span>Music</span><input type="range" min="0" max="1" step="0.01" data-k="music"></label>
   <label class="snd-row"><span>Nature</span><input type="range" min="0" max="1" step="0.01" data-k="ambient"></label>
-  <label class="snd-row"><span>Voices</span><input type="range" min="0" max="1" step="0.01" data-k="voice"></label>
+  <label class="snd-row"><span>Villagers</span><input type="range" min="0" max="1" step="0.01" data-k="voice"></label>
+  <label class="snd-row"><span>Your voice</span><input type="range" min="0" max="1" step="0.01" data-k="hero"></label>
   <label class="snd-row"><span>Interface</span><input type="range" min="0" max="1" step="0.01" data-k="ui"></label>
   <div class="snd-sub">How villagers talk</div>
   <div class="chips"><button class="chip" data-voice="speech">Spoken</button><button class="chip" data-voice="babble">Babble</button><button class="chip" data-voice="off">Silent</button></div>
+  <div class="snd-sub">Your voice (skill shouts)</div>
+  <div class="chips" id="hvChips"><button class="chip" data-hv="auto">Match me</button><button class="chip" data-hv="m">Male</button><button class="chip" data-hv="f">Female</button><button class="chip" data-hv="off">Silent</button></div>
   <button id="sMute" class="chip snd-mute">Sound on</button>
   <button id="sStuck" class="chip snd-mute" title="Stuck in a rock or a corner? Same as typing /stuck in chat">Stuck? Go to the nearest village</button>
   <div class="snd-sub snd-sec">Graphics</div>
