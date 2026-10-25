@@ -37,6 +37,13 @@ function hvVoiceSpec(){
   const sex=HV_PICK==='auto'?(LOOK&&LOOK.sex==='female'?'f':'m'):HV_PICK;
   return Object.assign({sex:sex,tone:null},HV_BASE[sex]);
 }
+// what the editor's Voice tab tells the player
+function hvDescribe(){
+  const m=LOOK&&LOOK.model&&Object.prototype.hasOwnProperty.call(HV_OUTFIT,LOOK.model)?LOOK.model:null;
+  if(HV_PICK==='off') return 'Your skill shouts are silent.';
+  if(m) return 'Wearing the '+(CHAR_MODELS[m]?CHAR_MODELS[m].name:m)+' set: its own '+(HV_OUTFIT[m].sex==='f'?'female':'male')+' voice shouts for you. Take the outfit off to use the voice you pick here.';
+  return 'Your shouts use the '+(hvVoiceSpec().sex==='f'?'female':'male')+' voice'+(HV_PICK==='auto'?' that matches your hiker.':'.');
+}
 function hvChoice(){ return HV_PICK; }
 function hvSet(v){ HV_PICK=v; try{ localStorage.setItem(HV_KEY,v); }catch(_){} if(v==='off'&&speech.ok){ try{ speechSynthesis.cancel(); }catch(_){} } }
 function hvLine(spec,ab,cls){
