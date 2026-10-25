@@ -8,7 +8,8 @@ const monTierK=m=>m.dgK||zoneTierK(m.T,monTierOf(GEAR,m));   // dungeons: a run 
 const zoneLvText=zn=>{ const t=zoneTierOn(GEAR,landOfZone(zn)); return t?String(zn.lvText||zn.level).replace(/\d+/g,n=>+n+ZTIER_STEP*t):(zn.lvText||zn.level); };
 const zoneLvNum=zn=>zn.level+ZTIER_STEP*zoneTierOn(GEAR,landOfZone(zn));
 const bossLvIn=(def,land)=>zoneTierLv(def,zoneTierOn(GEAR,land));
-const ZT_SHORT=land=>BOSS_DEFS.find(b=>b.def.id===ZTIER_BOSS[land]).short;
+const AMBER_BOSS_SHORT='Oldhorn';   // (her BOSS_DEFS row joins with task M2: until then the picker still has a name for her)
+const ZT_SHORT=land=>{ const b=BOSS_DEFS.find(b=>b.def.id===ZTIER_BOSS[land]); return b?b.short:AMBER_BOSS_SHORT; };
 let ztSymKey='', ztRowKey='', ztRowH=0;
 function renderSymbol(){
   const el=$('#plSym'), pts=symbolPoints(GEAR), key=JSON.stringify(GEAR&&GEAR.zt);

@@ -21,7 +21,7 @@ const LANDS=(()=>{
 let mapLand=null;   // null: the land you are in
 const landHere=()=>inGloam(P.x,P.z)?'gloam':inSun(P.x,P.z)?'sun':inHoar(P.x,P.z)?'hoar':inVale(P.x,P.z)?'vale':inGrey(P.x,P.z)?'grey':'home';
 const landOpen=id=>id==='home'||(id==='vale'&&valeOpen())||(id==='hoar'&&northOpen())||(id==='grey'&&(westOpen()||inGrey(P.x,P.z)))||(id==='sun'&&(GEAR.river>=1||GEAR.redgate>=1||GEAR.sun>=1||inSun(P.x,P.z)))||(id==='gloam'&&(GEAR.neck>=1||GEAR.gloam>=1||inGloam(P.x,P.z)));
-const landOfZone=zn=>zn.gloam?'gloam':zn.sun?'sun':zn.grey?'grey':zn.hoar?'hoar':zn.vale?'vale':'home';
+const landOfZone=zn=>zn.amber?'amber'/* savanna */:zn.gloam?'gloam':zn.sun?'sun':zn.grey?'grey':zn.hoar?'hoar':zn.vale?'vale':'home';
 const nextLand=cur=>{ const order=['home','vale','hoar','grey','sun','gloam'].filter(landOpen), i=order.indexOf(cur); return order[(i+1)%order.length]; };
 function mapInit(){
   const c=document.createElement('canvas'); c.width=MAP.w; c.height=MAP.h;

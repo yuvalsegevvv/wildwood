@@ -46,11 +46,12 @@ function greyColor(x,z,h,g,out){
   return out.multiplyScalar(0.92+n2*0.16);
 }
 const _hc=new THREE.Color(), _nb=new THREE.Color();
-/* The ground's colour is chosen by the atlas's land (waLandId): the home forest and the vale (landColor 0 / 1 below), the Reach, the Greyspine, the Gloamhorn, the Sunscar (and the closed land south of it).
+/* The ground's colour is chosen by the atlas's land (waLandId): the home forest and the vale (landColor 0 / 1 below), the Reach, the Greyspine, the Gloamhorn, the Sunscar, Amber Reach (south of it).
    Near a land border (within 20 m of the crest) the colour of the land on the other side is mixed in, half and half at the border itself, so the two meet without a line. */
 function landColor(l,x,z,h,g,out,noCut){
   if(l===2) return hoarColor(x,z,h,g,out);
   if(l===3) return greyColor(x,z,h,g,out);
+  if(l===6) return savColor(x,z,h,g,out);   // savanna: Amber Reach (world/terrain-color-savanna.js)
   if(l===5) return gloamColor(x,z,h,g,out);
   if(l>=4) return sunColor(x,z,h,g,out);
   const n1=noise2(x*0.02,z*0.02)*0.5+0.5, n2=noise2(x*0.11+5,z*0.11)*0.5+0.5;

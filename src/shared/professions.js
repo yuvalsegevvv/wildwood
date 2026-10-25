@@ -93,7 +93,7 @@ const NODES=(()=>{
   // the home forest (ring zones and the three edge zones) and the Sakura Vale: 2 ore, 2 trees and each herb of the land, by the zone's gear tier
   for(const [land,rng] of [[0,mulberry32(5151)],[1,mulberry32(5152)]])
     for(const zn of ZONES){
-      if(zn.boss||zn.arena||zn.hoar||zn.grey||zn.sun||zn.gloam||!!zn.vale!==!!land) continue;   // (the Greyspine has no nodes yet: it wants its own ore, logs and herbs)
+      if(zn.boss||zn.arena||zn.hoar||zn.grey||zn.sun||zn.gloam||zn.amber||!!zn.vale!==!!land) continue;   // (the Greyspine has no nodes yet: it wants its own ore, logs and herbs)
       const t=Math.min(tierFor(zn.level),land?4:3), ore=ORE_GRADES[t][0], log=LOG_GRADES[t][0]==='frostwood'?'frostpine':LOG_GRADES[t][0];
       const good=(x,z)=>rawHeight(x,z)>=waterSurf(x,z)+2.2;   // (well above the waterline, the sea's or a river's or lake's: the client's finer terrain must not dip a node under it)
       const n=!land&&zn.level<=14?3:2, herbA=HERB_LANDS[land][0][0], herbB=HERB_LANDS[land][1][0];   // the inner woods (copper, iron, silverstone) have only 4-5 zones each: a third vein and tree in each
@@ -112,6 +112,11 @@ const NODES=(()=>{
   // the Gloamhorn, last again: in each of its eleven zones 2 rime ore, 2 frostpines and 1 snowmoss (the top grades; docs/areas/gloamhorn.md), off the cliff's edge, the lighthouse and the reserved door
   { const rng=mulberry32(5155), good=(x,z)=>rawHeight(x,z)>=waterSurf(x,z)+2.2&&!gloamKeepOut(x,z,3);
     for(let lv=30;lv<=40;lv++){ const zn=ZONES.find(z=>z.key==='m'+lv);
+      for(const kind of ['rimeore','rimeore','frostpine','frostpine','snowmoss']) put(rng,zn,kind,good); } }
+  // savanna: Amber Reach, after the Gloamhorn so that no older node moves: in each of its nine zones 2 rime ore, 2 frostpines and 1 snowmoss (the top grades again; the savanna's own ore, wood and herbs are not made yet),
+  // on dry ground, off the village, the door, the Moot, the cape pier and the arenas (savKeepOut)
+  { const rng=mulberry32(5156), good=(x,z)=>rawHeight(x,z)>=waterSurf(x,z)+2.2&&!savKeepOut(x,z,3);
+    for(const lv of SAV_KEYS){ const zn=ZONES.find(z=>z.key==='a'+lv);
       for(const kind of ['rimeore','rimeore','frostpine','frostpine','snowmoss']) put(rng,zn,kind,good); } }
   // your home's nodes, last of all so that no older node moves: home:true nodes are taken per player (HOME_YARD above, shown only to someone at home)
   if(HOME_YARD) for(const h of homeYardPlan(HOME_YARD.x,HOME_YARD.z)) out.push({i:out.length,kind:h.kind,x:h.x,z:h.z,zone:'home',need:h.need,home:true});

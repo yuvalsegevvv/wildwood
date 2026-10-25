@@ -66,6 +66,7 @@ function edgeZoneAt(x,z){
 // the monster kind's zone: its own (edge kinds) or the zone of its level
 function defZone(d){ const k=d.zone||d.level; return ZONES.find(zn=>zn.key===k); }
 function zoneAt(x,z){
+  if(inAmber(x,z)) return savZoneAt(x,z);   // savanna: Amber Reach (shared/savannazones.js; ask it before inSun, which is true there too)
   if(inGloam(x,z)) return gloamZoneAt(x,z);   // the Gloamhorn (shared/gloamzones.js)
   if(inSun(x,z)) return sunZoneAt(x,z);   // the Sunscar (shared/sunzones.js)
   if(inGrey(x,z)) return greyZoneAt(x,z);

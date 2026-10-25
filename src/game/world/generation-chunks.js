@@ -48,6 +48,17 @@ function* genChunk(ci){
     if(Math.hypot(x-spawn.x,z-spawn.z)<7) continue;
     if(vDist(x,z)<VR+6 || nearPath(x,z,3.5) || arenaDist(x,z)<25 || inTunnelCut(x,z,2)) continue;
     const h=getH(x,z), g=grad(x,z);
+    if(inAmber(x,z)){   // savanna: Amber Reach (ask before inSun): flat-topped acacias in the open grass, baobab groves in Baobab Reach, dead snags on the Burnt Plain; none on the shore, in the water or at the keep-outs
+      if(h<1.2||g>0.5||waCoast(x,z)<34||savKeepOut(x,z,2)||vDist(x,z)<VR+8||storyClear(x,z)||dgEntClear(x,z)||waWaterDist(x,z)<6) continue;
+      const zk=waZone(x,z), key=zk?zk.key:0, cl=noise2(x*0.011+30,z*0.011-8)*0.5+0.5, burnt=key===42, grove=key===43?0.004*(0.5+cl):0;   // (a tree about every 20-30 m in clumps; the memory trees of Baobab Reach stand together; the Burnt Plain keeps a few dead snags)
+      if(rand()>(burnt?0.0012:key===45?0.0008:0.0012+0.007*cl*cl)+grove) continue;
+      const bao=!burnt&&(key===43?rand()<0.3:rand()<0.03);
+      let type=burnt?'snag':bao?'baobab':'savacacia'; const s=type==='baobab'?R(0.85,1.35):type==='snag'?R(0.8,1.2):R(0.75,1.3);
+      if(!canPlace(x,z,(type==='baobab'?7:3.4)*Math.min(s,1.1))) continue;
+      addCol(x,z,RAD[type]*s);
+      const m=mtx(x,h-0.15,z,rand()*TAU,s,s*R(0.92,1.1),s,R(-0.03,0.03),R(-0.03,0.03));
+      items[type].push({x,z,m,c:type==='snag'?tint(0x3a3430,0.1):tint(pick(PAL[type]))}); trees.push({x,z,s}); placed++; continue;
+    }
     if(inSun(x,z)){   // the Sunscar: palms and reeds by the river and the Springhead, cacti and thorn trees on the dry ground, nothing on the mesas, the pans or the glass
       if(sunKeepOut(x,z,2)||g>0.55||sunPanK(x,z)>0.2||sunGlassK(x,z)>0.2||sunMesaH(x,z)>3) continue;
       const gk=sunGreenK(x,z), pr=gk*0.5+0.014; if(rand()>pr) continue;
@@ -139,7 +150,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<30000*per && n<(Q*(LOW?2600:4200))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(8), h=getH(x,z);
-    if(h<0.8 || grad(x,z)>0.75 || forestDensity(x,z)<0.45 || vDist(x,z)<VR || arenaDist(x,z)<20 || inTunnelCut(x,z) || inHoar(x,z) || (inGrey(x,z)&&h>greyTreeline(x,z)-12) || greyWet(x,z,-1)) continue;
+    if(h<0.8 || grad(x,z)>0.75 || forestDensity(x,z)<0.45 || vDist(x,z)<VR || arenaDist(x,z)<20 || inTunnelCut(x,z) || inHoar(x,z) || inAmber(x,z) || (inGrey(x,z)&&h>greyTreeline(x,z)-12) || greyWet(x,z,-1)) continue;
     const s=R(0.6,1.3);
     fernItems.push({x,z,m:mtx(x,h-0.03,z,rand()*TAU,s,s*R(0.8,1.2),s),c:tint(pick(PAL.fern))}); n++;
   }
@@ -150,7 +161,7 @@ function* genChunk(ci){
   yield;
 
   // grass
-  const grassItems=[], gc=new THREE.Color(), fresh=new THREE.Color(0x5f8f35);
+  const grassItems=[], savItems=[], gc=new THREE.Color(), fresh=new THREE.Color(0x5f8f35);
   const GN=Math.round(56000*Q*Q*per*0.8*(VD>=2?1.5:1));   // (the desktop grows half as many again: its tufts are what you walk through)
   for(let a=0,n=0;a<GN*4 && n<GN;a++){
     if((a&511)===511) yield;
@@ -167,10 +178,16 @@ function* genChunk(ci){
     if(inGrey(x,z)&&h>greyTreeline(x,z)+14 || greyWet(x,z,-0.5)) continue;   // no tufts in the Greyspine's snowfields or in the water
     const meadow=smoothstep(0.1,0.7,noise2(x*0.025+9,z*0.025-4))*(1-fd)*smoothstep(VR-4,VR+14,vd);
     const s=R(0.75,1.2)*(0.55+0.45*smoothstep(VR-6,VR+8,vd));
+    if(inAmber(x,z)){   // savanna: the tall savanna tufts (gold or green with the season, savGrassMat), darkened to ash on the Burnt Plain; not in the village (vd) and thinner on rock
+      if(vd<VR+18||waCoast(x,z)<30||waWaterDist(x,z)<3||savKeepOut(x,z,0)) continue;
+      const ash=savBurnK(x,z); gc.setRGB(1,1,1).multiplyScalar(R(0.88,1.12)).lerp(SAV_ASH,ash*0.9);
+      savItems.push({x,z,m:mtx(x,h-0.02,z,rand()*TAU,s*R(1.0,1.5),s*R(0.8,1.3)*(1+meadow*0.6)*(1-ash*0.5),s*R(1.0,1.5)),c:gc.clone()}); n++; continue;
+    }
     if(hoar) gc.set(pick(PAL.tussock)); else { terrainColor(x,z,h,g,gc); gc.lerp(fresh,0.3).multiplyScalar(R(0.95,1.2)); }
     grassItems.push({x,z,m:mtx(x,h-0.02,z,rand()*TAU,s,s*R(0.8,1.15)*(1+meadow*0.9),s),c:gc.clone()}); n++;
   }
   if(grassItems.length) addGrass(grassItems);
+  if(savItems.length) savAddGrass(savItems);
   yield;
 
   // wildflowers
@@ -218,7 +235,7 @@ function* genChunk(ci){
   // mushrooms around this area's trees
   const mushItems=[];
   for(let a=0;a<(Q*(LOW?260:420))*per*1.5 && trees.length;a++){
-    const t=pick(trees); if(t.s<0.6||inHoar(t.x,t.z)) continue;
+    const t=pick(trees); if(t.s<0.6||inHoar(t.x,t.z)||inAmber(t.x,t.z)) continue;
     const ang=rand()*TAU, d=R(0.7,1.8)*t.s, cx=t.x+Math.cos(ang)*d, cz=t.z+Math.sin(ang)*d;
     const brown=rand()<0.45, cnt=1+Math.floor(rand()*4);
     for(let k=0;k<cnt;k++){

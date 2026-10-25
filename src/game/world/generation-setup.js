@@ -20,9 +20,11 @@ const PAL={
   // more species (plant-models-more.js): poplar, copper beech, willow, stone pine, cedar, ginkgo, larch, acacia, the gloom oak
   poplar:[0x9ec23c,0xb2d04a,0x88b035], beech:[0x7a8a2e,0x8e9a36,0xa07a2e,0x6a7c2c], willow:[0xa6c25a,0xb8d068,0x94b44e], umbrella:[0x2f5a33,0x3a6a38,0x284e2e],
   cedar:[0x1f4a3a,0x25563f,0x1c4235], ginkgo:[0xe8c23a,0xf0d04a,0xd8b030,0xc8d04a], larch:[0x9aae44,0xb8b84a,0xc9a83a,0x86a23c],
-  acacia:[0x8a9a3a,0x9aa844,0x7a8a34], gloomoak:[0x5a3f78,0x6a4a8a,0x4a3468,0x3e3a5c]
+  acacia:[0x8a9a3a,0x9aa844,0x7a8a34], gloomoak:[0x5a3f78,0x6a4a8a,0x4a3468,0x3e3a5c],
+  // Amber Reach: the flat-topped acacia (olive, a little sun-bleached) and the baobab's thin crown (plant-models-savanna.js)
+  savacacia:[0x7f9a3c,0x92a846,0x6f8a34,0xa0a64a], baobab:[0x6f9a3a,0x84a844,0x5f8a34]
 };
-const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3,sakura:0.4,maple:0.3,bamboo:0.7,frostspruce:0.32,dwarfbirch:0.2,palm:0.35,cactus:0.4,thorn:0.25,poplar:0.2,beech:0.55,willow:0.4,umbrella:0.3,cedar:0.3,ginkgo:0.3,larch:0.28,acacia:0.25,gloomoak:0.45};
+const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3,sakura:0.4,maple:0.3,bamboo:0.7,frostspruce:0.32,dwarfbirch:0.2,palm:0.35,cactus:0.4,thorn:0.25,poplar:0.2,beech:0.55,willow:0.4,umbrella:0.3,cedar:0.3,ginkgo:0.3,larch:0.28,acacia:0.25,gloomoak:0.45,savacacia:0.3,baobab:2.5};
 const moss=new THREE.Color(0x56702f);
 
 function buildGeometries(){
@@ -40,8 +42,11 @@ function buildGeometries(){
     dwarfbirch:makeBroadleaf({trunkH:2.4, tr:0.1, crownY:2.8, rMain:0.85, blobs:3, spread:0.6, sy:1.25, branches:0, birch:true}),
     palm:makePalm(),
     cactus:makeCactus(),
-    thorn:makeBroadleaf({trunkH:2.6, tr:0.13, crownY:3.4, rMain:1.9, blobs:4, spread:1.7, sy:0.3, branches:2, bark:0x5a4a38})
+    thorn:makeBroadleaf({trunkH:2.6, tr:0.13, crownY:3.4, rMain:1.9, blobs:4, spread:1.7, sy:0.3, branches:2, bark:0x5a4a38}),
+    savacacia:makeSavAcacia(),
+    baobab:makeBaobab()
   };
+  G.savGrass=buildSavGrass();   // savanna: Amber Reach's tall grass (plant-models-savanna.js)
   G.bush=[makeBush(4,0.6), makeBush(3,0.45)];
   G.fern=makeFern();
   G.grass=makeGrass(9);
@@ -144,7 +149,7 @@ function* terrainTileColors(B){
     }
     if((r&15)===15) yield;
   }
-  g.attributes.color.needsUpdate=true; B.ready=true; B.busy=false; if(B.lazy){ B.lazy=false; Stream.lazy--; }
+  g.attributes.color.needsUpdate=true; B.ready=true; B.busy=false; B.sw=SAV_SKY.wet; /* savanna: the season this tile was coloured in */ if(B.lazy){ B.lazy=false; Stream.lazy--; }
 }
 // is a tile that is not coloured yet within sight of the player (the fog ends at 230 m)?
 function terrainHot(){

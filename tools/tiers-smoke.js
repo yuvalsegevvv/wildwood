@@ -6,11 +6,11 @@ const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev.map(e=>[pid,...e])); }},
   ['MONS','BOSSES','BOSS_DEFS','MON_DEFS','DEF_BY_ID','VIL','VIL2','VIL3','S','damageMonsterS','killMonsterS','rewardKill','hurtP','monK','recalcP','sanitizeGear','newGearFor',
-   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','symbolCapped','ZTIER_SYMBOL_LANDS','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','bossSkillLvOf','ztBossLand','SKILLS','BOSS_SKILL_MAX_LV','skillLvOf','rlBossStoneChance','rlBossStoneCount','dgRewardWeights','dgRewardRarity','DG_REWARD_W','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','mobHpK','BOSS_DEFS','DG_BOSS_DEFS','LATE_CREEP_LV','LATE_CREEP_BOSS','LATE_CREEP_MOB','lvDmgK','LV_DMG_MIN']);
+   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','symbolCapped','ZTIER_SYMBOL_LANDS','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','bossSkillLvOf','ztBossLand','SAV_BOSS_ROWS','ARENA_A41','ARENA_A45','ZONES','monTierOf','SKILLS','BOSS_SKILL_MAX_LV','skillLvOf','rlBossStoneChance','rlBossStoneCount','dgRewardWeights','dgRewardRarity','DG_REWARD_W','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','mobHpK','BOSS_DEFS','DG_BOSS_DEFS','LATE_CREEP_LV','LATE_CREEP_BOSS','LATE_CREEP_MOB','lvDmgK','LV_DMG_MIN']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
-const zt=(home,vale,hoar,grey,sun,gloam)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:vale[1]},hoar:{on:hoar[0],max:hoar[1]},grey:{on:(grey||[0,0])[0],max:(grey||[0,0])[1]},sun:{on:(sun||[0,0])[0],max:(sun||[0,0])[1]},gloam:{on:(gloam||[0,0])[0],max:(gloam||[0,0])[1]}});
+const zt=(home,vale,hoar,grey,sun,gloam,amber)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:vale[1]},hoar:{on:hoar[0],max:hoar[1]},grey:{on:(grey||[0,0])[0],max:(grey||[0,0])[1]},sun:{on:(sun||[0,0])[0],max:(sun||[0,0])[1]},gloam:{on:(gloam||[0,0])[0],max:(gloam||[0,0])[1]},amber:{on:(amber||[0,0])[0],max:(amber||[0,0])[1]}});
 
 // ---- the rules ----
 { const d=x.DEF_BY_ID.direboar, k0=x.zoneTierK(d,0), k1=x.zoneTierK(d,1), a=x.defAt(d,d.level+10);
@@ -22,9 +22,15 @@ const zt=(home,vale,hoar,grey,sun,gloam)=>({home:{on:home[0],max:home[1]},vale:{
 { const d=x.DEF_BY_ID.vetrmaw, K=[0,1,2,3,4,5,6,7].map(t=>x.zoneTierK(d,t));
   ok('there are seven tiers (IV and V added, VI and VII with version 3): the numerals are I to VII, and every tier makes a monster tougher and harder-hitting than the one before',x.ZTIER_MAX===7&&x.ZTIER_ROMAN.join()==='0,I,II,III,IV,V,VI,VII'&&K.every((k,i)=>i===0||(k.hp>K[i-1].hp&&k.dmg>K[i-1].dmg&&k.lv===K[i-1].lv+x.ZTIER_STEP)),
     K.map((k,i)=>i+': lv '+k.lv+' hp x'+k.hp.toFixed(1)+' dmg x'+k.dmg.toFixed(1)).join('; ')); }
-ok('five lands, each opened by its second boss (the second of the two bosses that live there, by level)',(()=>{
-  const by={home:[],vale:[],hoar:[],grey:[],sun:[],gloam:[]}; for(const b of x.BOSS_DEFS){ const Ar=bossArena(b); by[x.landAt(Ar.x,Ar.z)].push(b); }
-  return x.ZTIER_LANDS.every(l=>by[l].length===2&&by[l].slice().sort((p,q)=>p.def.level-q.def.level)[1].def.id===x.ZTIER_BOSS[l]); })(),JSON.stringify(x.ZTIER_BOSS));
+ok('six lands, each opened by its second boss (the second of the two bosses that live there, by level)',(()=>{
+  const by={home:[],vale:[],hoar:[],grey:[],sun:[],gloam:[],amber:[]}; for(const b of x.BOSS_DEFS){ const Ar=bossArena(b); by[x.landAt(Ar.x,Ar.z)].push(b); }
+  return x.ZTIER_LANDS.filter(l=>l!=='amber').every(l=>by[l].length===2&&by[l].slice().sort((p,q)=>p.def.level-q.def.level)[1].def.id===x.ZTIER_BOSS[l]); })(),JSON.stringify(x.ZTIER_BOSS));
+// Amber Reach: a tier land opened by Oldhorn, outside the symbol; her BOSS_DEFS row (and so the check above) joins with task M2, until then the rows wait in SAV_BOSS_ROWS
+ok('Amber Reach is a tier land opened by Oldhorn, and is not in the symbol',x.ZTIER_LANDS.includes('amber')&&x.ZTIER_BOSS.amber==='oldhorn'&&!x.ZTIER_SYMBOL_LANDS.includes('amber')&&x.newGearFor('warrior').zt.amber.max===0
+  &&(x.BOSS_DEFS.some(b=>b.def.id==='oldhorn')||x.SAV_BOSS_ROWS.some(b=>b.def.id==='oldhorn')));
+ok('a point in Amber Reach is landAt \'amber\' (both arenas, the zones), and their monsters read the amber tier',x.landAt(x.ARENA_A41.x,x.ARENA_A41.z)==='amber'&&x.landAt(x.ARENA_A45.x,x.ARENA_A45.z)==='amber'&&x.ZONES.filter(z=>z.amber).every(z=>x.landAt(z.x,z.z)==='amber')
+  &&x.monTierOf({zt:{amber:{on:2,max:3}}},{camp:{x:x.ARENA_A45.x,z:x.ARENA_A45.z}})===2);
+{ const g=x.sanitizeGear({zt:{amber:{on:9,max:3}}}); ok('the amber tier is saved and clamped like the other lands\' (on <= max <= VII)',g.zt.amber.max===3&&g.zt.amber.on===3&&x.sanitizeGear({}).zt.amber.max===0); }
 function bossArena(b){ const B=x.BOSSES.find(q=>q.bd===b); return B.A; }
 ok('the symbol: every unlocked tier point of every land adds +10% (2 + 2 + 1 points = +50%, the Greyspine\'s too: +1 = +60%)',near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1])}),0.5,1e-9)&&near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1],[0,1])}),0.6,1e-9)&&x.symbolBonus({})===0&&x.symbolBonus({zt:zt([1,1],[0,0],[0,0])})===x.ZTIER_BONUS);
 ok('the symbol counts what you unlocked, not what you play at',x.symbolBonus({zt:zt([0,3],[0,0],[0,0])})===3*x.ZTIER_BONUS);
