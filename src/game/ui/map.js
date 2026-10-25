@@ -11,18 +11,17 @@ const MM_R=90, DPR=Math.min(2,devicePixelRatio||1);
 const mapX=x=>(x-WX0)*MAP.k, mapZ=z=>(z-WZ0)*MAP.k;
 // the lands as the full map shows them: each land's dry cells (the atlas, shared/world-atlas.js) and 90 m round them; the Sunscar's includes the closed land south of it
 const LANDS=(()=>{
-  const names={home:'The home forest',vale:'The Sakura Vale',hoar:'The Hoarfrost Reach',grey:'The Greyspine',sun:'The Sunscar',gloam:'The Gloamhorn'}, out={};
+  const names={home:'The home forest',vale:'The Sakura Vale',hoar:'The Hoarfrost Reach',grey:'The Greyspine',sun:'The Sunscar',gloam:'The Gloamhorn',amber:'Amber Reach'}, out={};
   for(const k in names) out[k]={x0:1e9,x1:-1e9,z0:1e9,z1:-1e9,name:names[k]};
-  // (savanna: Amber Reach, land 'amber', has no land map yet: its cells are skipped here, not counted into the Sunscar's)
   for(let z=WZ0;z<WZ1;z+=24) for(let x=WX0;x<WX1;x+=24){ const k=waLand(x,z); if(k===null||!out[k]) continue; const R=out[k]; R.x0=Math.min(R.x0,x); R.x1=Math.max(R.x1,x); R.z0=Math.min(R.z0,z); R.z1=Math.max(R.z1,z); }
   for(const k in out){ const R=out[k]; R.x0=Math.max(WX0,R.x0-90); R.x1=Math.min(WX1,R.x1+90); R.z0=Math.max(WZ0,R.z0-90); R.z1=Math.min(WZ1,R.z1+90); }
   return out;
 })();
 let mapLand=null;   // null: the land you are in
-const landHere=()=>inGloam(P.x,P.z)?'gloam':inSun(P.x,P.z)?'sun':inHoar(P.x,P.z)?'hoar':inVale(P.x,P.z)?'vale':inGrey(P.x,P.z)?'grey':'home';
-const landOpen=id=>id==='home'||(id==='vale'&&valeOpen())||(id==='hoar'&&northOpen())||(id==='grey'&&(westOpen()||inGrey(P.x,P.z)))||(id==='sun'&&(GEAR.river>=1||GEAR.redgate>=1||GEAR.sun>=1||inSun(P.x,P.z)))||(id==='gloam'&&(GEAR.neck>=1||GEAR.gloam>=1||inGloam(P.x,P.z)));
-const landOfZone=zn=>zn.amber?'amber'/* savanna */:zn.gloam?'gloam':zn.sun?'sun':zn.grey?'grey':zn.hoar?'hoar':zn.vale?'vale':'home';
-const nextLand=cur=>{ const order=['home','vale','hoar','grey','sun','gloam'].filter(landOpen), i=order.indexOf(cur); return order[(i+1)%order.length]; };
+const landHere=()=>inAmber(P.x,P.z)?'amber':inGloam(P.x,P.z)?'gloam':inSun(P.x,P.z)?'sun':inHoar(P.x,P.z)?'hoar':inVale(P.x,P.z)?'vale':inGrey(P.x,P.z)?'grey':'home';
+const landOpen=id=>id==='home'||(id==='vale'&&valeOpen())||(id==='hoar'&&northOpen())||(id==='grey'&&(westOpen()||inGrey(P.x,P.z)))||(id==='sun'&&(GEAR.river>=1||GEAR.redgate>=1||GEAR.sun>=1||inSun(P.x,P.z)))||(id==='gloam'&&(GEAR.neck>=1||GEAR.gloam>=1||inGloam(P.x,P.z)))||(id==='amber'&&(GEAR.amber>=1||GEAR.tall>=1||inAmber(P.x,P.z)));
+const landOfZone=zn=>zn.amber?'amber':zn.gloam?'gloam':zn.sun?'sun':zn.grey?'grey':zn.hoar?'hoar':zn.vale?'vale':'home';
+const nextLand=cur=>{ const order=['home','vale','hoar','grey','sun','gloam','amber'].filter(landOpen), i=order.indexOf(cur); return order[(i+1)%order.length]; };
 function mapInit(){
   const c=document.createElement('canvas'); c.width=MAP.w; c.height=MAP.h;
   MAP.canvas=c; MAP.ctx=c.getContext('2d'); MAP.img=MAP.ctx.createImageData(MAP.w,MAP.h); MAP.zone=new Uint8Array(MAP.w*MAP.h);
@@ -102,12 +101,12 @@ function drawFullMap(){
   x.fillStyle='#16486c'; x.fillRect(0,0,W,H);
   if(!MAP.done){ x.fillStyle='rgba(247,238,214,.85)'; x.font=`italic ${14*DPR}px Georgia, serif`; x.textAlign='center'; x.fillText('Still mapping the forest…',W/2,H/2); mapStFrame(x,W,H,DPR); return; }
   x.imageSmoothingEnabled=true; x.drawImage(MAP.canvas,mapX(L.x0),mapZ(L.z0),(L.x1-L.x0)*MAP.k,(L.z1-L.z0)*MAP.k,0,0,W,H);
-  const fs=Math.max(9,Math.min(13,W/DPR/48))*DPR, land=L===LANDS.gloam?'gloam':L===LANDS.sun?'sun':L===LANDS.hoar?'hoar':L===LANDS.vale?'vale':L===LANDS.grey?'grey':'home', vale=land==='vale'||land==='hoar', mine=zn=>landOfZone(zn)===land;
+  const fs=Math.max(9,Math.min(13,W/DPR/48))*DPR, land=L===LANDS.amber?'amber':L===LANDS.gloam?'gloam':L===LANDS.sun?'sun':L===LANDS.hoar?'hoar':L===LANDS.vale?'vale':L===LANDS.grey?'grey':'home', vale=land==='vale'||land==='hoar', mine=zn=>landOfZone(zn)===land;
   x.textAlign='center'; x.textBaseline='middle';
   const label=(t,cx,cy,size,col,bold)=>mapStLabel(x,t,cx,cy,size,col,bold,DPR);   // (serif, dark ink on a pale halo: ui/map-style.js)
   for(const zn of ZONES){ if(zn.boss||!mine(zn)) continue; const [cx,cy]=at(...(zn.label||zonePoint(zn,0,0.5))); label(zn.name,cx,cy-fs*0.55,fs,'#f2f0e4',true); label('Level '+zoneLvText(zn),cx,cy+fs*0.6,fs*0.85,'#ffcf8a'); }
-  for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.gloam?'gloam':A.sun?'sun':A.grey?'grey':A.hoar?'hoar':inVale(A.x,A.z)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bossLvIn(bd.def,land)+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
-  { const V=land==='gloam'?VIL6:land==='sun'?VIL5:land==='grey'?VIL4:land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='gloam'?'Wraithwick':land==='sun'?'Glasswell':land==='grey'?'Highmark':land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
+  for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.amber?'amber':A.gloam?'gloam':A.sun?'sun':A.grey?'grey':A.hoar?'hoar':inVale(A.x,A.z)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bossLvIn(bd.def,land)+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
+  { const V=land==='amber'?VIL7:land==='gloam'?VIL6:land==='sun'?VIL5:land==='grey'?VIL4:land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='amber'?'Tallgrass':land==='gloam'?'Wraithwick':land==='sun'?'Glasswell':land==='grey'?'Highmark':land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
   dgEntMapMarks(x,at,land,fs,label,DPR);   // dungeons: the three doors, the Elder greyed while sealed
   skTrackMarks(x,at,(wx,wz)=>landAt(wx,wz)===(land==='home'?'home':land),DPR,true);   // tracked skill upgrade
   rdMapMarks(x,at,land,fs,label,DPR);   // raids: the stronghold of this land and its state
@@ -135,7 +134,7 @@ function drawFullMap(){
   { const [a,b]=at(P.x,P.z); mapStPin(x,a,b,6.4*DPR,-P.face); }
   { const nm=LANDS[land].name, B=WMAP_BANNER[land]; mapStRibbon(x,DPR,W,nm,'Levels '+B.levels); mapStCompass(x,W-30*DPR,H-30*DPR,13*DPR); mapStFrame(x,W,H,DPR); }   // the land's name on the scroll, the rose, the frame
   const zn=zoneAt(P.x,P.z), V=vilAt(P.x,P.z);
-  const vn=V===VIL6?'Wraithwick':V===VIL5?'Glasswell':V===VIL4?'Highmark':V===VIL3?'Rimehold':V===VIL2?'Hanami':'the village';
+  const vn=V===VIL7?'Tallgrass':V===VIL6?'Wraithwick':V===VIL5?'Glasswell':V===VIL4?'Highmark':V===VIL3?'Rimehold':V===VIL2?'Hanami':'the village';
   $('#mapHere').textContent=vDist(P.x,P.z)<VR+12?'You are in '+vn:P.inTun?'You are on the Greyfall bridge':zn?(zn.boss?'You are near '+zn.name:'You are in '+zn.name+' (level '+zoneLvText(zn)+')'):inPass(P.x,P.z)?'You are in Frostgate Pass':inGloam(P.x,P.z)?'You are in the Gloamhorn':inSun(P.x,P.z)?'You are in the Sunscar':inGrey(P.x,P.z)?'You are in the Greyspine':'You are near '+vn;
 }
 function placeName(wx,wz){

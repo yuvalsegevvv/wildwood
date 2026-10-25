@@ -4,7 +4,7 @@
    The client is told with a 'tp' like a teleport circle's. Test: tools/unstuck-smoke.js */
 const UNSTUCK_CD=60, UNSTUCK_IDLE=5;
 function unstuckVillagesP(g){
-  return [VIL,g.east>=1&&VIL2,g.north>=1&&VIL3,g.west>=1&&VIL4,(g.river>=1||g.redgate>=1)&&VIL5,g.neck>=1&&VIL6].filter(Boolean);
+  return [VIL,g.east>=1&&VIL2,g.north>=1&&VIL3,g.west>=1&&VIL4,(g.river>=1||g.redgate>=1)&&VIL5,g.neck>=1&&VIL6,g.amber>=1&&VIL7].filter(Boolean);
 }
 function unstuckP(p){
   if(p.dead||p.inst||p.pv) { toastTo(p.id,'You cannot use /stuck here','bad'); return; }

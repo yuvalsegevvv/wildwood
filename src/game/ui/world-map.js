@@ -4,21 +4,20 @@
    locks: map.js). The Amber Reach and the sea's corners (the Emberwake Isles in the south) are not built: fog always, and nothing but "uncharted" is said about them.
    A click on an open land opens that land's full map (`wmapGo`, the same panel the N key opens); a click on fog says what bars the way. The pin: `wmapPin` (exact: the atlas is the map).
    Used by: map.js (the "World" button, `sizeFullMap` hides it in a dungeon, `updateMap` calls `wmapUpdate`), panels.js (PANELS), keybinds.js (the `world` key). Test: tools/client-smoke.js. */
-const WMAP_IDS=['home','vale','hoar','grey','sun','gloam'], WMAP_FADE=['vale','hoar','grey','sun','gloam'];
-const WMAP_TOWN_NAME={home:'the village',vale:'Hanami',hoar:'Rimehold',grey:'Highmark',sun:'Glasswell',gloam:'Wraithwick'};
+const WMAP_IDS=['home','vale','hoar','grey','sun','gloam','amber'], WMAP_FADE=['vale','hoar','grey','sun','gloam','amber'];
+const WMAP_TOWN_NAME={home:'the village',vale:'Hanami',hoar:'Rimehold',grey:'Highmark',sun:'Glasswell',gloam:'Wraithwick',amber:'Tallgrass'};
 // what stops you, by the same words the land maps use (`placeName`, map.js)
-const WMAP_LOCK={vale:'The Sakura Vale: the Greyfall bridge is barred until the Rootwarden falls',hoar:'The Hoarfrost Reach: Frostgate Pass is walled with ice until Akaoni falls',grey:'The Greyspine: the glacier valley\'s ice fall holds the way until Ymrik falls',sun:'The Sunscar: the River Pass and Redgate Canyon are shut until the Gryphon Queen falls',gloam:'The Gloamhorn: the Windswept Neck is shut until the Mountain Golem falls'};
-const WMAP_FOG_MAX={vale:.86,hoar:.86,grey:.86,sun:.86,gloam:.86};   // a locked land's fog lets its shape show a little; the unbuilt regions' fog is solid
+const WMAP_LOCK={vale:'The Sakura Vale: the Greyfall bridge is barred until the Rootwarden falls',hoar:'The Hoarfrost Reach: Frostgate Pass is walled with ice until Akaoni falls',grey:'The Greyspine: the glacier valley\'s ice fall holds the way until Ymrik falls',sun:'The Sunscar: the River Pass and Redgate Canyon are shut until the Gryphon Queen falls',gloam:'The Gloamhorn: the Windswept Neck is shut until the Mountain Golem falls',amber:'Amber Reach: the Ashbed Gate is shut until the Sand Wyrm falls'};
+const WMAP_FOG_MAX={vale:.86,hoar:.86,grey:.86,sun:.86,gloam:.86,amber:.86};   // a locked land's fog lets its shape show a little; the unbuilt regions' fog is solid
 const wmapEl=$('#wmap'), wmapC=$('#wmapC'), wmapX=wmapC.getContext('2d'), wmapTip=$('#wmapTip'), wmapBox=$('#wmapBox');
-const WM={k:.5,min:.3,max:1.5,cx:WMAP_W/2,cy:WMAP_H/2,w:300,h:300,img:null,fog:null,hot:null,ptr:new Map(),moved:0,pinch:0,t:0,acc:0,delay:0,fade:{vale:1,hoar:1,grey:1,sun:1,gloam:1},seen:null,art:null,mask:{}};
+const WM={k:.5,min:.3,max:1.5,cx:WMAP_W/2,cy:WMAP_H/2,w:300,h:300,img:null,fog:null,hot:null,ptr:new Map(),moved:0,pinch:0,t:0,acc:0,delay:0,fade:{vale:1,hoar:1,grey:1,sun:1,gloam:1,amber:1},seen:null,art:null,mask:{}};
 const wmapSx=ax=>(ax-WM.cx)*WM.k+WM.w/2, wmapSy=ay=>(ay-WM.cy)*WM.k+WM.h/2;
 const wmapAx=sx=>(sx-WM.w/2)/WM.k+WM.cx, wmapAy=sy=>(sy-WM.h/2)/WM.k+WM.cy;
 function wmapRng(s){ return ()=>{ s=s+0x6D2B79F5|0; let t=Math.imul(s^s>>>15,1|s); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
-// what is under a point of the art: a land's id ('home'...), 'unbuilt' (the Amber Reach or a fog bank that does not exist yet), or null (open sea)
+// what is under a point of the art: a land's id ('home'...), 'unbuilt' (a fog bank that does not exist yet), or null (open sea)
 function wmapRegionAt(x,y){
   const w=wmapWorld(x,y), l=waLand(w[0],w[1]);
-  if(l&&l!=='amber') return l;
-  if(l==='amber') return 'unbuilt';
+  if(l) return l;
   for(const B of WMAP_BANKS) if(((x-B[0])/B[2])**2+((y-B[1])/B[3])**2<1) return 'unbuilt';
   return null;
 }
@@ -55,8 +54,8 @@ const wmapNearLand=(l,px,py,sp)=>[[0,0],[1,0],[-1,0],[0,1],[0,-1]].some(d=>{ con
 function wmapLandBox(l){ const R=LANDS[l], a=wmapArt(R.x0,R.z0), b=wmapArt(R.x1,R.z1); return [a[0],a[1],b[0],b[1]]; }
 function wmapFogBuild(){
   if(WM.fog) return;
-  const sc=LITE?0.33:LOW?0.45:0.6, A=WMAP_AMBER;
-  WM.fog={base:[wmapFogGroup((px,py,sp)=>wmapNearLand('amber',px,py,sp),[A.x0,A.y0,A.x1,A.y1],22,12,sc),   // the unbuilt Amber Reach and the banks of the open sea: never lift
+  const sc=LITE?0.33:LOW?0.45:0.6;
+  WM.fog={base:[   // the banks of the open sea: never lift
       ...WMAP_BANKS.map((b,i)=>wmapFogGroup((px,py,sp)=>((px-b[0])/(b[2]+sp*0.4))**2+((py-b[1])/(b[3]+sp*0.4))**2<1,[b[0]-b[2],b[1]-b[3],b[0]+b[2],b[1]+b[3]],22,14+i,sc))]};
   WMAP_FADE.forEach((l,i)=>{ WM.fog[l]=wmapFogGroup((px,py,sp)=>wmapNearLand(l,px,py,sp),wmapLandBox(l),24,21+10*i,sc); });   // these lift as their lands open (a group a cluster keeps the canvases small)
 }
