@@ -139,7 +139,7 @@ for(const P of KIN_PARTS) if(!P.free){ CP_PIECES.push([P.slot,P.id,P.name,String
 // worn by anyone, made by nobody: the plain pieces of the two slots whose pieces used to be crafted (the backpack is a cape)
 const CP_FREE=['c:pack','c:wayfarer','c:moss','a:firefly','a:dew'];
 // earned, never made: the last step of a side quest chain gives it (shared/side-quests.js, its chain id here); no recipe, the Lodge does not list it
-const CP_QUEST={'c:tideking':'tide','a:foxfire':'ninetails','c:wyrmscale':'wyrm','a:sunwept':'sunwept','c:greatcoat':'drowned','a:lamplight':'keeper'};
+const CP_QUEST={'c:tideking':'tide','a:foxfire':'ninetails','c:wyrmscale':'wyrm','a:sunwept':'sunwept','c:greatcoat':'drowned','a:lamplight':'keeper','c:dawnseat':'dawnseat','a:herdsong':'drought'};
 const CP_PIECE={};
 for(const r of CP_PIECES) CP_PIECE[r[0]+':'+r[1]]={slot:r[0],id:r[1],name:r[2],grade:+r[3],text:r[4],type:r[0]};
 const cpHas=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);

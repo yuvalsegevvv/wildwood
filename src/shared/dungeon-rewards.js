@@ -33,7 +33,8 @@ const DG_REWARDS={
   bonefrostbarrow:{kind:'ring',  pool:[...RING_ELS]},
   blackseam:      {kind:'pendant',pool:[...PENDANT_STATS]},
   sandglass:      {kind:'weapon', pool:[...WEAPON_SLOTS], t:8},   // version 3: the Sunscar's dungeon pays a level-40 weapon
-  gloamvault:     {kind:'armor',  pool:[...ARMOR_SLOTS],  t:8}};   // ... the Gloamhorn's a level-40 armour piece   // the Greyspine's dungeon (shared/dungeons/themes/blackseam.js)
+  gloamvault:     {kind:'armor',  pool:[...ARMOR_SLOTS],  t:8},   // ... the Gloamhorn's a level-40 armour piece
+  termitecathedral:{kind:'ring',  pool:[...RING_ELS],     t:8}};   // the Amber Reach's pays a level-40 ring of one of the seven types (three rolled lines once a Ring Reroll Stone rolls it, docs/ROLLS.md)
 const DG_REWARD_W=[700,250,40,8,2];   // out of 1000, Common..Legendary: 70 / 25 / 4 / 0.8 / 0.2%
 const ENH_MAX=[2,4,6,8,10], ENH_STEP=0.10;   // steps by rarity, and what one step adds: 10% of the piece's own stats, so at its limit a common is x1.2, a rare x1.4, an epic x1.6, a unique x1.8 and a legendary x2.0 (it was 5%)
 const ENH_STONES=n=>n, ENH_LV=30, ENH_DROP=0.026;   // the step to +n costs n stones; the stone's chance is the equipment chance it replaces

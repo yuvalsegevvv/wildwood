@@ -408,7 +408,7 @@ function dgTrialGate(){
 let dgEntBuilt=false;
 function dgEntBuild(){
   if(dgEntBuilt) return; dgEntBuilt=true;
-  dgEntElder(DG_ENTRANCES.hollowroots); dgEntFalls(DG_ENTRANCES.jadesprings); dgEntBarrow(DG_ENTRANCES.bonefrostbarrow); dgEntAdit(DG_ENTRANCES.blackseam); dgEntSand(DG_ENTRANCES.sandglass); dgEntGloam(DG_ENTRANCES.gloamvault);
+  dgEntElder(DG_ENTRANCES.hollowroots); dgEntFalls(DG_ENTRANCES.jadesprings); dgEntBarrow(DG_ENTRANCES.bonefrostbarrow); dgEntAdit(DG_ENTRANCES.blackseam); dgEntSand(DG_ENTRANCES.sandglass); dgEntGloam(DG_ENTRANCES.gloamvault); dgEntTermite(DG_ENTRANCES.termitecathedral);
   for(const E of dgEntList) dgEntSign(E);
   dgTrialGate();
 }

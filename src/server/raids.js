@@ -53,7 +53,7 @@ function rdBuildS(st){
     for(const q of list){ const m=rdMake(st,defs,q.x,q.z,{x:q.x,z:q.z}); m.rdProp=key; st[key].push(m); st.all.push(m); }
   }
   st.bossSlot=Math.floor(Math.random()*R.bosses.length);
-  const bd=BOSS_DEFS.find(b=>b.def.id===R.bosses[st.bossSlot]), c0=rdCtx; rdCtx=st;
+  const bd=rdBossRow(R.bosses[st.bossSlot]), c0=rdCtx; rdCtx=st;
   const B=makeBossS(bd,R.court); rdCtx=c0;
   B.rd=st; B.m.rd=st; B.m.dgK=dgKOf(B.m.def,st.L); B.m.immune=true; B.m.respawnT=1e9; st.boss=B; st.all.push(B.m); ev('spawn',monRoster(B.m));
   rdSend(st);

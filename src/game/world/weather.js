@@ -25,7 +25,7 @@ const snowfall=new THREE.Points(flakeGeo,flakeMat); snowfall.frustumCulled=false
 for(let i=0;i<SNOW_N;i++){ flakeSpd[i]=AR(1.1,2.2); flakePh[i]=AR(0,TAU); flakePos.set([AR(-24,24),AR(-10,16),AR(-24,24)],i*3); }
 function applyWeather(w){
   if(!w) return; const was=WX.kind; WX.kind=w[0]; WX.t=w[1]; WX.dur=w[2];
-  if(WX.kind&&!was&&started&&!inSun(P.x,P.z)) toast(WX.snow>0.5?(WX.kind===2?'A blizzard is rolling in…':'Snow is starting to fall…'):(WX.kind===2?'A thunderstorm is rolling in…':'It is starting to rain…'),'');
+  if(WX.kind&&!was&&started&&savDryAt(P.x,P.z)<0.5) toast(WX.snow>0.5?(WX.kind===2?'A blizzard is rolling in…':'Snow is starting to fall…'):(WX.kind===2?'A thunderstorm is rolling in…':'It is starting to rain…'),'');
 }
 // how strong the weather is right now (0..1): fades in over the first 25 s and out over the last 25 s
 function weatherTarget(){ if(!WX.kind) return 0; return clamp(Math.min(WX.t/25,(WX.dur-WX.t)/25,1)); }
@@ -44,7 +44,7 @@ function updateWeather(dt){
   if(WX.kind) WX.t+=dt;
   WX.inten+=(weatherTarget()-WX.inten)*Math.min(1,dt*0.8);
   if(dgIn()||caveIn()) WX.inten=0;   // cave: also on a floor   // dungeons: no rain, snow or their sound under the ground (it eases back after a run)
-  { const dry=inSun(camera.position.x,camera.position.z)?1:0; WX.dry=(WX.dry||0)+(dry-(WX.dry||0))*Math.min(1,dt*1.2); WX.inten=Math.min(WX.inten,1-WX.dry); }   // the Sunscar is dry: the weather thins out over a few seconds as you cross in and comes back as you leave
+  { const dry=savDryAt(camera.position.x,camera.position.z); WX.dry=(WX.dry||0)+(dry-(WX.dry||0))*Math.min(1,dt*1.2); WX.inten=Math.min(WX.inten,1-WX.dry); }   // savanna: the Sunscar is dry, Amber Reach in Goldfall (savDryAt, world/savanna-sky.js): the weather thins out over a few seconds as you cross in and comes back as you leave
   WX.flash=Math.max(0,WX.flash-dt*3.2)*((WX.dry||0)>0.5?0:1);
   // rain or snow: by where the camera is (over the vale's north crest and down onto the plateau it turns to snow over ~50 m; in the Greyspine by the
   // height of the ground, rain in the valleys, sleet on the slopes, snow on the peaks: greySnowAmt, shared/greyspine.js)

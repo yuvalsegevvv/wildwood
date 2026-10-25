@@ -5,12 +5,15 @@ function renderSound(){
   sndEl.querySelectorAll('input[data-k]').forEach(i=>{ i.value=SND.vol[i.dataset.k]; });
   sndEl.querySelectorAll('[data-voice]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.voice===SND.voiceMode));
   const vs=sndEl.querySelector('[data-voice="speech"]'); if(vs) vs.disabled=!speech.ok;
+  hvRender();
   $('#sMute').setAttribute('aria-pressed',SND.muted); $('#sMute').textContent=SND.muted?'Sound off':'Sound on';
   $('#bSound').classList.toggle('muted',SND.muted);
 }
 sndEl.querySelectorAll('input[data-k]').forEach(i=>i.addEventListener('input',()=>{ SND.vol[i.dataset.k]=parseFloat(i.value); applyVolumes(); saveAudio(); }));
 sndEl.querySelectorAll('input[data-k="ui"]').forEach(i=>i.addEventListener('change',()=>UI_SFX.hover()));
 sndEl.querySelectorAll('[data-voice]').forEach(b=>b.addEventListener('click',()=>{ SND.voiceMode=b.dataset.voice; saveAudio(); renderSound(); if(b.dataset.voice==='off') stopSpeech(); }));
+function hvRender(){ $('#hvChips').querySelectorAll('[data-hv]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.hv===hvChoice())); }
+$('#hvChips').querySelectorAll('[data-hv]').forEach(b=>b.addEventListener('click',()=>{ hvSet(b.dataset.hv); hvRender(); if(b.dataset.hv!=='off') hvShout('skill',{name:'Test shout',cls:clsOf()},true); }));
 function toggleMute(){ SND.muted=!SND.muted; if(SND.muted) stopSpeech(); applyVolumes(); saveAudio(); renderSound(); }
 $('#sMute').addEventListener('click',toggleMute);
 $('#bSound').addEventListener('click',e=>{ audioInit(); e.currentTarget.blur(); sndEl.hidden=!sndEl.hidden; if(!sndEl.hidden){ renderSound(); UI_SFX.open(); } else UI_SFX.close(); });

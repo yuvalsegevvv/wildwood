@@ -46,6 +46,7 @@ function luckySound(rar,gain,pan){
 // a boss dropped one of its skills for you (server event 'skilldrop'): the beam and jingle of a unique item, with the skill's name on the banner
 function onSkillDrop(id){
   const s=SKILLS[id]; if(!s) return;
+  hvEvent('bossskill');   // voice: audio/voices-hero.js
   luckyFx(P.x,P.y,P.z,3,true,{name:s.name});
   $('#lucky').innerHTML=`<small>Boss skill!</small><b>${s.name}</b>`;
 }

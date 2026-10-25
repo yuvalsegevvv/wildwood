@@ -3,7 +3,7 @@
 // Usage: node tools/zoneprops-smoke.js        (about 20 s)
 const {bootClient}=require('./headless');
 const c=bootClient({expose:['VIL','ZP_KIND','ZP_BAD','ZP_THEME','ZP_TH_OF','ZP_BOSS','ZP_PLANS','ZP_GEO','zpGeo','zpGroundTint','terrainColorBase','ZONES','ARENAS','zonePoint','CHUNK_MESHES','CHX','CS','WX0','WZ0','genZoneProps','zpCellZone',
-  'canStart:()=>canStart','setRand:r=>{ rand=r; }','mulberry32','NCH','chunkRect','THREE','zoneAt']});
+  'canStart:()=>canStart','setRand:r=>{ rand=r; }','mulberry32','NCH','chunkRect','THREE','zoneAt','savZoneAt','SAV_ZONE_OF','SAV_HUB','ARENA_A41','ARENA_A45','savWetAt','SAV_CYCLE_S','savDryAt','savBurnK','savKeepOut','inAmber','ZPF_KIND','SAV_GATE','savTint','SAV_SKY','SAV_WET_U','envCur']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,cond,i)=>{ console.log((cond?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!cond) fails++; };
 (async()=>{
   let G=c.G(); for(let i=0;i<300;i++){ await wait(100); G=c.G(); if(G.canStart()) break; }
@@ -39,6 +39,22 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,cond,i
     const r=around(key,kinds); ok(label+' (built: '+r.built.join(',')+')',r.built.length>=1); ok('  ...and a chunk costs at most 16 more draw calls ('+r.meshes+')',r.meshes<=16); }
   for(const A of G.ARENAS.filter(a=>!a.raid)){ const kinds=G.ZP_BOSS[A.key].map(r=>r[0]); const before=new Set(Object.keys(G.ZP_GEO)); let hit=false;
     for(const ci of near(A.x,A.z,1)) run(ci); hit=kinds.some(k=>G.ZP_GEO[k]); ok('boss surroundings are placed round '+A.key+' ('+A.name+')',hit); }
+  // Amber Reach (docs/SAVANNA.md): nine zones a37..a45, two arenas, props that fit, the season
+  { const A=G.ZONES.filter(z=>z.amber&&!z.boss), pts=A.map(z=>G.zonePoint(z,0,0.5,true));
+    ok('Amber Reach has the nine zones a37..a45 (levels 37-45), each with a ground tint row, and zoneAt answers with them',A.length===9&&A.every((z,i)=>z.key==='a'+(37+i)&&z.level===37+i&&G.ZP_THEME[z.key])&&A.every((z,i)=>{ const q=G.SAV_ZONE_OF[z.level]; return q===z&&G.inAmber(z.x,z.z); }),A.map(z=>z.key).join());
+    const near=A.filter((z,i)=>{ const q=G.zoneAt(pts[i][0],pts[i][1]); return q===z; }).length;
+    ok('a point drawn inside each zone (zonePoint) is mostly in that zone ('+near+' of 9; the borders wander)',near>=6);
+    ok('the village has no zone (70 m round the hub) and the two arenas have their own (aboss41 / aboss45)',G.zoneAt(G.SAV_HUB[0],G.SAV_HUB[1])===null&&G.zoneAt(G.ARENA_A41.x,G.ARENA_A41.z)===G.ARENA_A41.zone&&G.zoneAt(G.ARENA_A45.x,G.ARENA_A45.z)===G.ARENA_A45.zone&&G.ARENA_A41.key==='aboss41'&&G.ARENA_A45.key==='aboss45'&&G.ARENAS.includes(G.ARENA_A41)&&G.ARENAS.includes(G.ARENA_A45));
+    ok('nothing is placed at random in the village, on the arenas or at the Moot (savKeepOut)',G.savKeepOut(G.SAV_HUB[0],G.SAV_HUB[1],0)&&G.savKeepOut(G.ARENA_A41.x,G.ARENA_A41.z,0)&&!G.savKeepOut(0,0,0)); }
+  for(const [key,kinds,label] of [['a40',['termitespire','termitemound'],'termite spires in the Termite Cathedrals'],['a42',['smolder','charstump'],'smouldering ash on the Burnt Plain'],['a44',['reedclump','wallow'],'reeds and wallows in the Sedge Delta'],['a43',['songpost','greystone'],'song posts and grey stones in Baobab Reach']]){
+    const r=around(key,kinds); ok(label+' (built: '+r.built.join(',')+')',r.built.length>=1); ok('  ...and a chunk costs at most 16 more draw calls ('+r.meshes+')',r.meshes<=16); }
+  { const T=G.SAV_CYCLE_S, w=f=>G.savWetAt(T*f), t0=G.savWetAt(0);
+    ok('the season is a two-hour cycle: Greenfall (wet 1) for the first half, Goldfall (0) for the second, five minutes of change at each turn',w(0.25)===1&&w(0.75)===0&&Math.abs(w(0)-0.5)<1e-9&&Math.abs(w(0.5)-0.5)<1e-9&&w(0.1)===1&&w(0.9)===0&&w(1.25)===1&&T===7200&&t0>=0&&t0<=1);
+    ok('the air is as dry as the season in Amber Reach (1 - SAV_SKY.wet), always dry in the Sunscar and not dry in the home forest (savDryAt)',(()=>{ const [x,z]=G.zonePoint(G.SAV_ZONE_OF[39],0,0.5,true); return G.inAmber(x,z)&&G.savDryAt(x,z)>=0&&G.savDryAt(x,z)<=1&&G.savDryAt(G.SAV_GATE.x,G.SAV_GATE.z)===1&&G.savDryAt(0,0)===0; })());
+    ok('the burnt plain has ash at its heart and none far away',G.savBurnK(G.SAV_ZONE_OF[42].x,G.SAV_ZONE_OF[42].z)>0&&G.savBurnK(G.SAV_ZONE_OF[38].x,G.SAV_ZONE_OF[38].z)===0);
+    { const S=G.SAV_SKY, keep=[S.force,S.wet,S.k]; S.force=1; for(let i=0;i<400;i++) G.savTint(G.envCur,0.05); const g=[S.wet,G.SAV_WET_U.value]; S.force=0; for(let i=0;i<400;i++) G.savTint(G.envCur,0.05); const d=[S.wet,G.SAV_WET_U.value]; S.force=keep[0]; S.wet=keep[1]; S.k=keep[2];
+      ok('savTint follows the season (forced Greenfall: wet 1; Goldfall: 0) and sets the grass shader\'s uniform',g[0]===1&&g[1]===1&&d[0]===0&&d[1]===0,g.join()+' / '+d.join()); }
+    ok('a smouldering heap is a fire for the zone fires (smoke and embers)',!!G.ZPF_KIND.smolder&&G.ZPF_KIND.smolder.fire===1); }
   { let ruins=0; const gz=G.ZONES.find(z=>z.key==='m33'); const [x,z]=G.zonePoint(gz,0,0.5,true); for(const ci of near(x,z,3)) run(ci);
     ruins=['ruinplan0','ruinplan1','ruinplan2','ruinplan3','ruinplan4'].filter(k=>G.ZP_GEO[k]).length; ok('ruins are scattered over the Gloamhorn ('+ruins+' kinds built)',ruins>=2); }
   c.stop();

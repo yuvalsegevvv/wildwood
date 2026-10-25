@@ -18,7 +18,7 @@ const el=s=>document.querySelector(s);
   ok('solo world up',G.NET.ready&&G.MONS.length>400);
   // ---- every prop kind of the six themes builds (several missions and seeds until each legend kind has been drawn), an unknown kind draws a rock ----
   { const T=G.THREE, miss=[], made={};
-    for(const th of ['hollowroots','jadesprings','bonefrostbarrow','blackseam','sandglass','gloamvault']){ const want=new Set(Object.values(G.DG_THEMES[th].legend).map(e=>e.prop)), seen=new Set();
+    for(const th of ['hollowroots','jadesprings','bonefrostbarrow','blackseam','sandglass','gloamvault','termitecathedral']){ const want=new Set(Object.values(G.DG_THEMES[th].legend).map(e=>e.prop)), seen=new Set();
       for(const m of Object.keys(G.DG_MISSIONS)) for(let seed=1;seed<4&&seen.size<want.size;seed++){ const lay=G.dgLayout({mission:m,seed,theme:th}); if(!lay) continue; const B=G.dgBake(lay);
         G.dgViewBuild({B,T:G.DG_THEMES[th],ox:9000,oz:0,y:10,seed,lay}); for(const k in G.DG_VIEW.kinds) seen.add(k); for(const k of Object.keys(G.DG_VIEW.kinds)) if(G.DG_PROP_KINDS[k]&&G.DG_PROP_KINDS[k].wall) seen.add(k);
         for(const pr of B.props) if(G.DG_PROP_KINDS[pr.k]&&G.DG_PROP_KINDS[pr.k].wall) seen.add(pr.k);

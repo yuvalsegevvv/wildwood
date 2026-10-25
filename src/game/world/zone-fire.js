@@ -4,7 +4,7 @@
    shared pool (fxpSmoke / fxpAdd, combat/fx-pool.js): grey smoke that rises and swells, embers, and short additive glows that make the flame flicker. The villages' own fires join the list by themselves (zpfScanVillages reads the flame cones in `flames`, buildings.js, and keeps their colour: the dungeon doors' braziers burn blue). The meshes stay the static
    ones in zone-props-models.js. Nothing here is synced or saved; phones (LITE / LOW) get fewer fires and slower smoke. Test: client-smoke (the loop runs it). */
 const ZPF_NEAR=LITE?30:(LOW?40:55), ZPF_MAX=LITE?2:(LOW?3:5);
-const ZPF_KIND={campfire:{up:0.5,fire:1},brazier:{up:1.55,fire:1},foxfire:{up:1.8,fire:0}};
+const ZPF_KIND={campfire:{up:0.5,fire:1},brazier:{up:1.55,fire:1},foxfire:{up:1.8,fire:0},smolder:{up:0.25,fire:1}};
 const ZPF={list:[],seen:new Set(),t:0,fi:0};
 function zpfAdd(kind,x,y,z,s){
   const K=ZPF_KIND[kind]; if(!K) return;

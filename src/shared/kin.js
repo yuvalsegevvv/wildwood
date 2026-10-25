@@ -5,7 +5,9 @@
    FREE or CRAFTED: a part with free:true is a base part (worn by anyone, never stored, like a base hat); the others are crafted at a Wayfarers' Lodge: kinDefine feeds them to CP_PIECES / CP_RECIPE (shared/cospieces.js, which loads after this file),
    so the slot letters e (ears), k (tail), m (muzzle) and d (decorations) own them in gear.cos as 'e:fox', 'k:bushy', 'm:tusks', 'd:mane'; the lock, try-on and server stripping rules are the other pieces' (cosLocked, cosCleanLook).
    A bad entry is left out and listed in KIN_BAD (tools/cospieces-smoke.js fails naming it). A look field is untrusted: every lookup goes through kinPart (an own-property check on a prototype-less map), never a bare key.
-   owns: KIN_SLOTS, KIN_PARTS, KIN_BAD, KIN_MARKS, KIN_FUR, KIN_LOOK, kinDefine, kinPart, kinList, kinHatMode, kinCleanLook.   used by: shared/cospieces.js, game/character/model-kin.js, model.js (the look defaults), ui/character-editor.js, ui/character-thumbs.js.   test: tools/cospieces-smoke.js, tools/character-smoke.js. Doc: docs/KIN.md */
+   SET PARTS (K2): the three Kin signature outfits (game/outfits/brindle.js, dessa.js, sefi.js) each bring their own ears, tail and muzzle through kinDefineSet: not free and not crafted (no Lodge recipe, never in CP_PIECES), they belong to the outfit set and
+   follow its gate (the id is the set's id, so the editor treats the tile like an outfit piece: a lock until the set is owned). kinList is only the free and crafted parts; kinSetList lists the set parts; kinPart finds both; kinSetsOf(look) names the sets whose Kin parts a look wears.
+   owns: KIN_SLOTS, KIN_PARTS, KIN_SET_PARTS, KIN_BAD, KIN_MARKS, KIN_FUR, KIN_LOOK, kinDefine, kinDefineSet, kinPart, kinList, kinSetList, kinSetsOf, kinHatMode, kinCleanLook.   used by: shared/cospieces.js, game/character/model-kin.js, model.js (the look defaults), ui/character-editor.js, ui/character-thumbs.js.   test: tools/cospieces-smoke.js, tools/character-smoke.js. Doc: docs/KIN.md */
 // slot letter: [look field, name of the slot]. d (decorations) is the existing slot: its rows are only listed here so their recipes sit beside the other Kin parts
 const KIN_SLOTS={e:['kinEars','Ears'],k:['kinTail','Tail'],m:['kinMuzzle','Muzzle']};
 const KIN_PARTS=[], KIN_BAD=[], KIN_BY=Object.create(null);
@@ -31,6 +33,26 @@ function kinDefine(o){
   }
   const P={slot:o.slot,id:o.id,name:o.name,text:o.text,free,grade:free?0:+o.grade,recipe:free?null:o.recipe};
   KIN_PARTS.push(P); KIN_BY[key]=P; return P;
+}
+/* kinDefineSet({slot, id, name, text, set}): a part that comes with one outfit set (set = the set's id, e = ears, k = tail, m = muzzle). Not in KIN_PARTS, so the Lodge, the free list and cospieces-smoke's counts do not see it. */
+const KIN_SET_PARTS=[];
+function kinDefineSet(o){
+  const bad=m=>{ KIN_BAD.push('set '+(o&&o.slot)+':'+(o&&o.id)+' '+m); return null; };
+  if(!o||typeof o!=='object') return bad('is not an object');
+  if(!Object.prototype.hasOwnProperty.call(KIN_SLOTS,o.slot)) return bad('has no slot');
+  if(typeof o.id!=='string'||!/^[a-z0-9]{2,16}$/.test(o.id)) return bad('has a bad id');
+  if(typeof o.set!=='string'||!/^[a-z]{2,16}$/.test(o.set)) return bad('needs the id of its outfit set');
+  const key=o.slot+':'+o.id; if(KIN_BY[key]) return bad('is defined twice');
+  if(typeof o.name!=='string'||!o.name||typeof o.text!=='string'||!o.text) return bad('needs a name and a line of text');
+  const P={slot:o.slot,id:o.id,name:o.name,text:o.text,free:false,grade:0,recipe:null,set:o.set};
+  KIN_SET_PARTS.push(P); KIN_BY[key]=P; return P;
+}
+const kinSetList=slot=>KIN_SET_PARTS.filter(p=>p.slot===slot);
+// the outfit sets whose Kin parts a look wears (the editor asks for them to be owned before the look is saved)
+function kinSetsOf(L){
+  const out=[]; if(!L||typeof L!=='object') return out;
+  for(const s of Object.keys(KIN_SLOTS)){ const p=kinPart(s,L[KIN_SLOTS[s][0]]); if(p&&p.set&&!out.includes(p.set)) out.push(p.set); }
+  return out;
 }
 // a part by slot and id, or null (an own-property check: look.kinEars comes from other players)
 function kinPart(slot,id){ return typeof id==='string'&&id?(KIN_BY[slot+':'+id]||null):null; }

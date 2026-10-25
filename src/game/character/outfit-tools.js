@@ -125,7 +125,15 @@ const ofItems=slot=>Object.keys(OUTFITS).map(id=>{ const m=CHAR_MODELS[id], it=m
 function ofWear(L,id){ const o=Object.assign({},L), d=L.sex==='female'?LOOK_F:LOOK_M, w=ofPieces(L);
   for(const s of OF_SLOTS){ const f=OF_FIELD[s]; if(id!=='base'){ if(s!=='glove'||ofHasGlove(id)) o[f]=id; } else if(w[s]) o[f]=d[f]; o[OF_TINT[s]]=-1; if(OF_TINTX[s]) for(const f of OF_TINTX[s]) o[f]=-1; }   // (a set without gloves leaves the wearer's own)   // (a whole set is worn in the colours it was designed in)
   { const g=id!=='base'&&CHAR_MODELS[id]&&CHAR_MODELS[id].hairGrad; if(g){ o.hairGrad=g.mode; o.hairColor2=g.c2; o.hairThird=g.c3!==undefined; if(g.c3!==undefined) o.hairColor3=g.c3; } else if(w.hair||id!=='base'){ o.hairGrad='none'; o.hairThird=false; } }   // a set's own hair gradient (CHAR_MODELS.<id>.hairGrad = {mode, c2, c3}); taking a set off, or a set without one, clears it
+  ofKinSwap(o,L.model,id);   // kin: a Kin set brings (and takes away) its own ears, tail, muzzle and fur
   o.model=id; return o; }
+// kin: the Kin outfits (CHAR_MODELS.<id>.kin = {ears, tail, muzzle, fur, fur2, mark}) write their parts onto the look as ordinary look fields, so the editor's Kin rows keep working on top of them. Going back to the base model, or to another set, removes only what the old set had put there.
+const OF_KIN_FIELDS=[['ears','kinEars',''],['tail','kinTail',''],['muzzle','kinMuzzle',''],['fur','furColor',-1],['fur2','furColor2',-1],['mark','furMark','']];
+function ofKinSwap(o,from,to){
+  const a=from!=='base'&&Object.prototype.hasOwnProperty.call(CHAR_MODELS,from)&&CHAR_MODELS[from].kin, b=to!=='base'&&Object.prototype.hasOwnProperty.call(CHAR_MODELS,to)&&CHAR_MODELS[to].kin;
+  if(a) for(const [k,f,d] of OF_KIN_FIELDS) if(a[k]!==undefined&&o[f]===a[k]) o[f]=d;
+  if(b) for(const [k,f] of OF_KIN_FIELDS) if(b[k]!==undefined) o[f]=b[k];
+}
 // `model` names the set whose body and ranges the editor shows: once none of its items is worn any more it is the base model again
 function ofTidy(L){ if(L.model!=='base'&&!Object.values(ofPieces(L)).includes(L.model)) L.model='base'; return L; }
 // a look saved before pieces existed wore a whole outfit through `model` alone (it has neither new field): give it that outfit's items

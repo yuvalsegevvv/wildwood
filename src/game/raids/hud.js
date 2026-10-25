@@ -8,6 +8,7 @@ const RD_STATE_NAME=['Ready','Engaged','Cleared'], RD_ROMAN=['+0','I','II','III'
 let rdStripT=0;
 function rdOnState(row){
   if(!Array.isArray(row)||!(row[0]>=0&&row[0]<RD_ORDER.length)) return;
+  { const was=RD_CL[row[0]]; if((row[1]|0)===2&&was&&was.st!==2&&rdNearest(250)===row[0]) hvEvent('raidclear'); }   // voice: audio/voices-hero.js (a stronghold you stand by falls)
   RD_CL[row[0]]={st:row[1]|0,tier:row[2]|0,slot:row[3]|0,wards:row[4]|0,sp:row[5]|0,gar:row[6]|0,left:+row[7]||0,live:!!row[8],at:t};
   rdStructRefresh(row[0]); rdStripT=0;
 }
@@ -18,7 +19,7 @@ const rdClock=sec=>Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
 function rdNearest(r){ let best=-1,bd=r*r; RD_ORDER.forEach((id,i)=>{ const R=RDS[id], dx=P.x-R.x, dz=P.z-R.z, d=dx*dx+dz*dz; if(d<bd){ bd=d; best=i; } }); return best; }
 function rdSummary(i){
   const R=RDS[RD_ORDER[i]], s=RD_CL[i]; if(!s) return R.name;
-  const boss=BOSS_DEFS.find(b=>b.def.id===R.bosses[s.slot]), lv=rdLevel(s.tier);
+  const boss=rdBossRow(R.bosses[s.slot]), lv=rdLevel(s.tier);
   if(s.st===2) return R.name+': cleared, rebuilds in '+rdClock(rdLeftNow(s));
   if(s.st===0) return R.name+': ready. '+(boss?boss.short+' waits inside. ':'')+'Level '+RD_BASE_LV+' at +0; the first hit locks the tier to its attacker\'s';
   return R.name+': tier '+RD_ROMAN[s.tier]+', level '+lv+(boss?' · '+boss.short:'')+' · stones '+s.wards+'/3 · banners '+s.sp+'/2 · garrison '+s.gar;

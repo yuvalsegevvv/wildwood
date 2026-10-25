@@ -72,6 +72,7 @@ function dgDownText(R){
 // the results: dge [pid, 1 won | 0 lost, seconds, xp, coins, [item ids], materials, why]
 function dgResultShow(e){
   const won=!!e[2], items=Array.isArray(e[6])?e[6]:[], box=$('#dgResultItems');
+  hvEvent(won?'dgwin':'dglose');   // voice: audio/voices-hero.js
   $('#dgResultTitle').textContent=won?'Cleared!':'The run is lost'; $('#dgResult').classList.toggle('lost',!won);
   $('#dgResultWhy').textContent=won?'':String(e[8]||''); $('#dgResultWhy').hidden=won||!e[8];
   $('#dgResultStats').textContent='Time '+dgClockText(+e[3]||0)+' · '+Math.round(+e[4]||0)+' XP · '+(e[5]|0)+' coins · '+(e[7]|0)+' materials';

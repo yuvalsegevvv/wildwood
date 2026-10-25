@@ -551,3 +551,32 @@ One random **level-40 armour piece** (`DG_REWARDS.gloamvault`, `t:8`): helmet, t
 
 ### 12.3 Decisions (my picks)
 20. Entry level 38 and `gear.gloam >= 2`. 21. Water, goblin-family model (Haugbui already uses the wisp). 22. The Toll's numbers are constants at the top of the kit file.
+
+## 13. The Termite Cathedral and Queen Ortha (the Amber Reach's dungeon, the seventh; version 3)
+
+**Status: built and tested** (`tools/termite-dungeon-smoke.js`, plus `dungeons-smoke`, `dungeon-client-smoke`, `entrances-client-smoke`, `dungeon-board-client-smoke`). Built like the Gloamvault (section 12): one theme file, one boss row and kit, one door, and the reward row `DG_REWARDS.termitecathedral`. Plan: task D1 of the Amber Reach plan (`savanna-plan`).
+
+**The place.** A hollow clay spire among the Termite Cathedrals (zone a40) of the Amber Reach, fungus-free so it stays clear of the Hollow Roots. Theme `src/shared/dungeons/themes/termitecathedral.js`, land `amber` (`DG_LANDS.amber`: base +0, unlock `{amber:1}` = **the Ashbed Gate open**, `gear.amber`). The Reach has no zone tiers of its own yet, so it is level **45 at +0** and rises 10 a tier once tiers exist. Music `savanna2` (until the Reach's music is written the run plays `wild3`: `dgMusicTheme`), boss track `boss30`. **Entry level 42.** `at:'Termite Cathedrals'` is a zone that arrives with `shared/savannazones.js`; until it does `DG_AT_PENDING` (`shared/dungeons.js`) lets the theme name it. Delete that list when the zone exists.
+
+**Tile kit** (the Gloamvault's nine designs redrawn, same floor plans): Royal Cell (hall, four resin masses), Brood Chamber, Resin Gallery, Guard Chamber (guardian post) (rooms), Ventilation Gallery, Cold Shaft (passes; the shafts are hazard `steam`), Amber Hall (site), Larder (cache), Spire Foot (start). Legend: `W` clay wall, `T` clay pillar, `X` amber resin mass, `N` egg cluster, `Q` clay rib, `k` banked amber, `L` resin lamp, `c` crumbled clay, `r` resin on the floor, `s` ventilation shaft, `G` guardian post. Client props: `game/dungeon/view-termite.js`.
+**Monsters** (the Reach's kinds, scaled to the run's level by `dgKOf`): walkers Mound Soldier, Resin Weaver, Locust Cloud, Hollowed Kin, Dustrunner; guardians Baobab Treant and Greyhide Rhino. Hunt quarry: the Locust Cloud.
+
+**The door: The Termite Cathedral** (`DG_ENTRANCES.termitecathedral`, kind `termite`): the atlas's amber door (`SAV_DOOR`, -1555, 599), where The Amber Door Road ends; the apron lies on the road's last metres (it faces south-east, `a` = pi/4), the signpost stands on the road 3.5 m off its line. Door model `dgEntTermite` (`game/village/buildings-dungeon-savanna.js`): a clay spire with a ribbed pointed gap, buttresses, a clay plug while sealed and amber beads. Testing tab: **Go to the Termite Cathedral Door** (dev command `ashbed` opens the gate first; `gear.amber`, NOT the amber currency `gear.amb`). `dungeons-smoke` skips the bank / zone / road rules for it like the Sandglass's and the Gloamvault's.
+
+### 13.1 Queen Ortha, the Brood Queen (`DG_BOSSES.ortha`, kit `brood`)
+**Level 45**, 70 hits, earth, beetle model at scale 5.2, `speed:0.4` (she shuffles, she does not chase); add: Broodling (level 44); prop: Brood Egg (one hit). Kit `server/dungeons/boss-kits-termite.js`, existing primitives only.
+
+| Phase | Move | What it does |
+|---|---|---|
+| 1 | **Resin Pools** (`resin`) | three rings (two under players), then resin pools stay 8 s |
+| 1 | **Burrow Strikes** (`burrow`) | a strip out of the wall through a player (two from phase 2, three enraged) |
+| 1 | **Egg Clusters** (`eggs`, signature) | 3 clutches of 3 eggs (4 enraged), clutch centres at least 6 m from her, every egg under a 9 s warning. A standing egg hatches: 1.2 hits within 3.5 m and a Broodling (at most 6 in the hall). An egg you pop cancels its hatching. **A clutch popped whole stuns her 4 s.** |
+| 2 | **Broodlings** (`broodlings`) | 3 at the mouths every 22 s |
+| 2 | **Spirefall** (`spirefall`) | eight clay lumps over 4 s |
+| 3 | **Brood Thrum** (`thrum`) | eight slowing bursts round the rim, 0.35 s apart; eggs come sooner |
+
+### 13.2 What a clear pays
+One random **level-40 ring** (`DG_REWARDS.termitecathedral`, `kind:'ring'`, `t:8`): one of the seven types (no element and the six), rarity 70 / 25 / 4 / 0.8 / 0.2%, the same ring for the whole party. Ids `ring8-<type>`, +0 and **unrolled** until a Ring Reroll Stone is spent (`docs/ROLLS.md`).
+
+### 13.3 Decisions (my picks)
+23. Entry level 42 and `gear.amber >= 1`; the Reach has no tier row yet, so `+0` is the only difficulty until it does. 24. Eggs reuse the `shroom` model (cream-and-amber pal) instead of a new model family. 25. The egg numbers are constants at the top of the kit file. 26. The door faces down The Amber Door Road, which ends at it.

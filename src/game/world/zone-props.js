@@ -84,6 +84,17 @@ zpTheme('m38',0x3a3040,0.35,0.1,[['crypt',1,0.55],['webdome',2,0.3],['web',1,0.4
 zpTheme('m39',0x44464e,0.3,0.09,[['gargoyle',2,0.4],['sirenrock',3,0.1],['menhir',1,0.4]]);
 zpTheme('m40',0x2a3a4a,0.35,0.09,[['lamppost',2,0.3],['sirenrock',2,0.2],['hullribs',1,0.5],['weepingstatue',1,0.5]]);
 zpTheme('mboss35',0x2a4a50,0.45,0,[]); zpTheme('mboss40',0x3a3a5a,0.45,0,[]);
+/* ---- Amber Reach (docs/SAVANNA.md): the dry riverbed, the meadows, the pools, the termite cathedrals, the thunderhead's rock, the ash, the memory trees, the delta, the red terraces ---- */
+zpTheme('a37',0xd4c8a8,0.35,0.07,[['thornbush',4],['raidertent',2,0.55,{with:['campfire','banner_black']}],['bonepile',1,0.3],['kopje',1,0.3]]);   // dustrunners and boars
+zpTheme('a38',0xc8b060,0.25,0.07,[['kopje',2,0.2],['ribs',1,0.5],['bonepile',1,0.4],['thornbush',2]]);                                              // grass stalkers' kills
+zpTheme('a39',0x6aa078,0.25,0.1,[['reedclump',4],['wallow',2,0.2],['driftlog',1,0.4],['mosstone',1]]);                                              // crocs and herons
+zpTheme('a40',0xb4693c,0.3,0.1,[['termitespire',3,0.1,{s:[1.3,2.1]}],['termitemound',4],['resincrystal',1,0.5]]);                                    // mound soldiers and resin weavers
+zpTheme('a41',0x6a5a58,0.35,0.08,[['charstump',3],['cinderrock',2],['lightrod',2,0.3],['anvilrock',1,0.5],['bonepile',1,0.4]]);                       // under the thunderhead
+zpTheme('a42',0x2c2622,0.5,0.1,[['smolder',3,0.2],['charstump',3],['cinderrock',2],['bonepile',1,0.5]]);                                             // the burnt plain
+zpTheme('a43',0x8a7a5a,0.25,0.08,[['songpost',2,0.3],['greystone',2,0.2],['kopje',1,0.3],['cairn',1]]);                                              // the memory trees
+zpTheme('a44',0x4a8a58,0.3,0.1,[['reedclump',4],['wallow',2,0.2],['mooringpost',1,0.5],['driftlog',2]]);                                             // the delta
+zpTheme('a45',0xb2623e,0.3,0.08,[['terracestone',3,0.1],['greystone',2,0.3],['hoodoo',1,0.3],['ribs',1,0.5]]);                                       // the red terraces
+zpTheme('aboss41',0x4a4044,0.45,0,[]); zpTheme('aboss45',0xc89a62,0.4,0,[]);
 
 /* ---- boss surroundings: [kind, count, from r+a, to r+b, {face: turn towards the arena, big: scale up}] on a ring outside each arena's own dressing (the clearing is flat to r+22) ---- */
 const ZP_BOSS={
@@ -98,6 +109,8 @@ const ZP_BOSS={
   sboss32:[['glassspire',9,6,22],['glassshard',10,5,24],['obelisk',3,8,16,{face:1}]],                                                           // the Glass Guardian
   sboss36:[['ribs',4,8,20],['hoodoo',6,7,24],['wormcrater',3,8,22],['obelisk',2,10,18,{face:1}]],                                               // the sand wyrm
   mboss35:[['hullribs',3,8,22],['anchor',4,6,20],['sunkenmast',3,8,22],['lamppost_green',6,5,20],['gravestone',6,6,22]],                        // the Drowned Captain
+  aboss41:[['anvilrock',3,8,20],['charstump',6,6,22],['lightrod',4,7,18,{face:1}],['cinderrock',6,5,24],['bonepile',4,6,22]],                          // Old Thunder
+  aboss45:[['terracestone',6,6,22],['greystone',8,5,24],['hoodoo',4,8,24],['ribs',2,10,22],['songpost',3,7,16,{face:1}]],                       // Oldhorn
   mboss40:[['lamppost',8,5,20],['gargoyle',5,7,20,{face:1}],['sirenrock',6,8,24],['weepingstatue',4,7,18,{face:1}]]};                           // the Gloam Light's keeper
 /* ---- ruins: layouts of pieces [kind, dx, dz, yaw offset] ---- */
 const ZP_PLANS=[   // r: the layout's radius (spacing and the clear-ground check); each plan is ONE merged prop kind (ruinplan0...) so a ruin costs one draw call
@@ -138,14 +151,15 @@ const zpHash=s=>{ let h=7; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|
 // not here: keep-outs of the lands (the same list the trees use, plus villages, roads, the tunnel, story spots, dungeon doors)
 function zpBlocked(x,z){
   if(vDist(x,z)<VR+8||nearPath(x,z,3)||inTunnelCut(x,z,2)||storyClear(x,z)||dgEntClear(x,z)) return true;
+  if(inAmber(x,z)) return savKeepOut(x,z,3);   // savanna: (ask before inSun, which is true there too)
   if(inSun(x,z)) return sunKeepOut(x,z,3);
   if(inGloam(x,z)) return gloamIn(x,z)<14||gloamKeepOut(x,z,3);
   if(inHoar(x,z)&&(iceDist(x,z)<4||inPass(x,z,4))) return true;
   return inGlen(x,z,3)||inGate(x,z,2)||greyWet(x,z,-1.2); }
 const zpOk=(x,z,h,g,gmax)=>h>=0.7&&g<=gmax&&arenaDist(x,z)>=22&&!zpBlocked(x,z);
 function zpAge(x,z){   // how many ruins a land has: older and darker means more
-  if(inSun(x,z)) return 0.34; if(inGloam(x,z)) return 0.5; if(inHoar(x,z)) return 0.22; if(inGrey(x,z)) return 0.3; if(inVale(x,z)) return 0.12; return 0.1; }
-function zpRuinTint(x,z){ const c=inSun(x,z)?0xe6c88a:inGloam(x,z)?0x7c7c88:inHoar(x,z)?0xe4eef8:inGrey(x,z)?0xc8c8c0:inVale(x,z)?0xd0c4c4:0xc4d4a8; return tint(c,0.08); }
+  if(inAmber(x,z)) return 0.2; /* savanna */ if(inSun(x,z)) return 0.34; if(inGloam(x,z)) return 0.5; if(inHoar(x,z)) return 0.22; if(inGrey(x,z)) return 0.3; if(inVale(x,z)) return 0.12; return 0.1; }
+function zpRuinTint(x,z){ const c=inAmber(x,z)?0xd8c08a:inSun(x,z)?0xe6c88a:inGloam(x,z)?0x7c7c88:inHoar(x,z)?0xe4eef8:inGrey(x,z)?0xc8c8c0:inVale(x,z)?0xd0c4c4:0xc4d4a8; return tint(c,0.08); }
 function zpMeshes(lists){
   const md=LOW?85:118;
   for(const kind in lists){ const K=ZP_KIND[kind], G=zpGeo(kind), items=lists[kind], o={cast:K.cast&&!LOW,receive:true,maxDist:md,hgt:K.hgt*1.5,rad:K.w*1.5+1};
@@ -157,7 +171,7 @@ function* genZoneProps(ci){
   const put=(kind,x,z,yaw,s,tc)=>{ const K=ZP_KIND[kind], r=K.w*s*0.8+0.4; if(!room(x,z,r)) return false;
     const h=getH(x,z), t=K.tilt, m=mtx(x,h-K.sink*s,z,yaw,s,s,s,t?R(-t,t):0,t?R(-t,t):0);
     (lists[kind]||(lists[kind]=[])).push({x,z,m,c:tc||tint(0xeeeeee,0.12)}); placed.push(x,z,r);
-    if(kind==='campfire'||kind==='brazier'||kind==='foxfire') zpfAdd(kind,x,h-K.sink*s,z,s);   // fire: smoke, embers and a flicker over it (zone-fire.js)
+    if(kind==='campfire'||kind==='brazier'||kind==='foxfire'||kind==='smolder') zpfAdd(kind,x,h-K.sink*s,z,s);   // fire: smoke, embers and a flicker over it (zone-fire.js)
     if(K.rad) addCol(x,z,K.rad*s);
     if(K.cols) for(const [dx,dz,cr] of K.cols) addCol(x+dx*Math.cos(yaw)*s+dz*Math.sin(yaw)*s,z-dx*Math.sin(yaw)*s+dz*Math.cos(yaw)*s,cr*s);
     return true; };

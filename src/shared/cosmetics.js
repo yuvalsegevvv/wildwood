@@ -27,7 +27,8 @@ const COS_AURAS=[
   // side quests' rewards (CP_QUEST in cospieces.js: earned, never made)
   ['foxfire','Foxfire',5,0x8ad4ff,0xffffff,'rise',true,9,'Nine pale-blue foxfire flames climb round you from a rune ring. The Nine Tails\' reward.','flame','runes'],
   ['sunwept','Where the Sun Wept',6,0xffc45a,0x3a2a4a,'orbit',true,14,'Flecks of sun-gold and black glass circle you above a crystal ring. Where the Sun Wept\'s reward.','grain','spikes'],
-  ['lamplight','Keeper\'s Lamplight',6,0xfff0b0,0xffcf6a,'orbit',true,6,'Slow motes of lamplight turn round you, under a halo. The Keeper\'s Light\'s reward.','mote','halo']
+  ['lamplight','Keeper\'s Lamplight',6,0xfff0b0,0xffcf6a,'orbit',true,6,'Slow motes of lamplight turn round you, under a halo. The Keeper\'s Light\'s reward.','mote','halo'],
+  ['herdsong','Herdsong',6,0xe8b44a,0xfff0c8,'rise',true,10,'Gold grass-seed and slow motes drift up round you from a ring of turning marks. The Drought Song\'s reward.','grain','runes']
 ];
 // [id, name, grade, cloth colour, trim colour, length (1 = to the knee), a short line, pattern, mantle (a short shoulder cape over it)]
 // patterns (game/character/cosmetics.js cosPattern): stitch, flames, stars, rays, petals, fur, ermine, moss, ash, waves, dunes, gloam
@@ -51,7 +52,8 @@ const COS_CAPES=[
   // side quests' rewards (CP_QUEST in cospieces.js: earned, never made)
   ['tideking','Tide King\'s Mantle',4,0x1d5866,0xf2a07a,1.15,'Sea-green with coral-pink waves and a short shoulder cape. The Grey Tide\'s reward.','waves',1],
   ['wyrmscale','Wyrmscale Cloak',5,0x4a6a80,0xe0f0ff,1.2,'Pale blue scales that never freeze, edged in white. The Wyrm\'s Saga\'s reward.','scales',1],
-  ['greatcoat','Captain\'s Greatcoat',5,0x1a2636,0xd8b860,1.2,'A long sea-captain\'s coat in deep navy with a gold-stitched hem. The Drowned Captain\'s reward.','stitch',1]
+  ['greatcoat','Captain\'s Greatcoat',5,0x1a2636,0xd8b860,1.2,'A long sea-captain\'s coat in deep navy with a gold-stitched hem. The Drowned Captain\'s reward.','stitch',1],
+  ['dawnseat','Dawn Seat Mantle',6,0xb8742c,0xf6d98a,1.2,'Dry-grass gold with rays of pale thread spreading from the collar and a short shoulder cape. The Dawn Seat\'s reward.','rays',1]
 ];
 const COS_AURA={}, COS_CAPE={};
 const COS_HERB=['sunpetal','ironroot','kikyo','yomogi','frostbloom','snowmoss'];   // the herbs by grade (the recipes in shared/cospieces.js use them by name)

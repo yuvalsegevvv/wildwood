@@ -68,7 +68,7 @@ reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'vigil',n:3,dur:12,max:5}); pb.hp=pb.m
 ok('the Amber Reach: Brindle +1 (fire, safe DPS + support), Dessa +2 (earth, tank), Sefi +3 (air, risk DPS); sources are the two bosses and the Termite Cathedral',
   [['brindle',1,'fire','safe'],['dessa',2,'earth','tank'],['sefi',3,'air','risk']].every(([i,t,el,role])=>SET(i)&&SET(i).land==='amber'&&SET(i).tier===t&&SET(i).el===el&&SET(i).role.main===role&&SET(i).pos[1].ids.length===1&&SET(i).pos[2].bound==='any'&&SET(i).pos[3].bound==='any')
   &&x.SS_SOURCES.amber.join()==='oldthunder,oldhorn,termitecathedral'&&SET('brindle').role.also.role==='support'&&x.ssSetFor('amber',5).id==='sefi'&&x.ssSetFor('amber',0)===null);
-ok('each of the three: an emblem and a palette of its own, a unique character name, every active deals damage, and no outfit is claimed before K2 builds one',['brindle','dessa','sefi'].every(i=>SET(i).emblem&&['main','accent','glow'].every(k=>Number.isInteger(SET(i).pal[k]))&&PIECES(i).every(id=>x.SKILLS[id].mult>0)&&SET(i).outfit===null));
+ok('each of the three: an emblem and a palette of its own, a unique character name, every active deals damage, and each claims the Kin outfit K2 built (outfit = its own id)',['brindle','dessa','sefi'].every(i=>SET(i).emblem&&['main','accent','glow'].every(k=>Number.isInteger(SET(i).pal[k]))&&PIECES(i).every(id=>x.SKILLS[id].mult>0)&&SET(i).outfit===i));
 clear(); reset(); put(m1,0,-8);
 { still(()=>cast('brindle_1_mage',m1)); ok('Brindle: Spark Pebble leaves a Glint on its target',x.ssMarkN(p,m1,'glint')===1,String(x.ssMarkN(p,m1,'glint'))); }
 reset(); put(m1,0,-6); x.ssMarkS(p,m1,{id:'glint',n:3,dur:12,max:5});
