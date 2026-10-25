@@ -14,5 +14,6 @@
 .rl-lines{ display:flex; flex-direction:column; gap:1px; } .rl-line small{ font-size:11px; }
 .rl-un{ color:#ffd24a; }
 .tile .rlm{ position:absolute; left:3px; bottom:3px; width:7px; height:7px; border-radius:2px; transform:rotate(45deg); background:#ffd24a; box-shadow:0 0 5px rgba(255,210,74,.8); pointer-events:none; }
-.rl-stones{ background:rgba(255,210,74,.08); flex-wrap:wrap; } .rl-stones i.rsw{ background:#ffb070; box-shadow:0 0 8px rgba(255,176,112,.7); } .rl-stones i.rsa{ background:#8fc4ff; box-shadow:0 0 8px rgba(143,196,255,.7); } .rl-stones b{ color:#ffd24a; margin-right:10px; }
+.rl-stones{ background:rgba(255,210,74,.08); flex-wrap:wrap; } .rl-stones i.rsw{ background:#ffb070; box-shadow:0 0 8px rgba(255,176,112,.7); } .rl-stones i.rsa{ background:#8fc4ff; box-shadow:0 0 8px rgba(143,196,255,.7); }
+.rl-stones i.rsr{ background:#e9a0ff; box-shadow:0 0 8px rgba(233,160,255,.7); } .rl-stones b{ color:#ffd24a; margin-right:10px; }
 .dmg.resisted{ color:#9aa8b8; font-size:17px; font-style:italic; }

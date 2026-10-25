@@ -8,6 +8,7 @@
             ui/item-icons.js, combat/weapons.js.
    test:    tools/rewards-smoke.js (server), tools/rewards-client-smoke.js (client). */
 for(const id of dgAllIds()) ITEM[id]=dgItem(id);
+for(const id of dgAllRingIds40()) ITEM[id]=dgItem(id);   // rolls: the 245 unrolled level-40 rings
 for(const id of dgAllIds40()) ITEM[id]=dgItem(id);   // version 3: the 245 unrolled level-40 pieces (the same shelf rules)   // ITEM only, never ITEM_LIST or TOOL_LIST (like the tools): shops, drops, "give every item" and tierFor leave them alone
 const DG_STONE_MAX=9999;
 const DG_LOOK_TIER=5;   // the Shogun's (tier 5) look, icon and weapon model stand in for level 30 until it has art of its own
@@ -15,7 +16,7 @@ const dgVisTier=it=>Math.min(it.tier,DG_LOOK_TIER);
 // the id three +0 copies merge into: the next rarity at +0 (a piece above +0 does not merge: the forge says so); null for a legendary or a tempered piece
 function dgMergedId(it){
   if(!it||!it.dg||it.n||it.rar>=4||it.roll) return null;   // (a rolled level-40 piece does not merge)
-  return it.kind==='ring'?dgRingId(it.el,it.rar+1,0):it.kind==='pendant'?dgPendantId(it.stat,it.rar+1,0):it.t===8?dgGearId40(it.slot,it.rar+1,0):dgGearId(it.slot,it.rar+1,0);
+  return it.kind==='ring'?(it.t===8?dgRingId40(it.el,it.rar+1,0):dgRingId(it.el,it.rar+1,0)):it.kind==='pendant'?dgPendantId(it.stat,it.rar+1,0):it.t===8?dgGearId40(it.slot,it.rar+1,0):dgGearId(it.slot,it.rar+1,0);
 }
 // the attack a worn ring adds to a gear for a soul ('basic' below level 15 or unbound): its own flat number, only if the elements match
 function dgRingAtkOf(gear,soul){

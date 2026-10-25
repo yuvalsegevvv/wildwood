@@ -26,13 +26,14 @@ const RL_STATS=[
   {id:'aspd',   k:'l',name:'Attack speed',         kind:'off', lo:0.03, hi:0.08, text:'% attack speed (your skill 1 swings faster, and every skill is cast faster; cooldowns stay)'},
   {id:'chg',    k:'m',name:'Charge gain',          kind:'util',lo:0.05, hi:0.12, text:'% more Deep Cave charge from every cast'}];
 const RL_BY_ID={}, RL_BY_KEY={}; for(const s of RL_STATS){ RL_BY_ID[s.id]=s; RL_BY_KEY[s.k]=s; }
-const RL_KIND_K={weapon:{off:1.6,def:1,util:1},armor:{off:1,def:1.3,util:1}};   // the range of a stat x this, by the piece's kind: weapons roll higher offence, armour higher defence
+const RL_KIND_K={weapon:{off:1.6,def:1,util:1},armor:{off:1,def:1.3,util:1},ring:{off:1.3,def:1,util:1}};   // the range of a stat x this, by the piece's kind: weapons roll higher offence, armour higher defence, a ring a little more offence than the utility stats (it is a small slot with a flat attack of its own)
 // totals over the whole worn set (weapon + 4 armour pieces, 5 x 3 lines): cooldown reduction from gear stops at 40% (and passives add up to the old 60% overall cap in abilityCd);
 // attack speed (x1.6 at most) and charge gain (twice as fast at most) are also capped over the whole set
 const RL_CAPS={cdr:0.40,aspd:0.60,chg:1.00};
-const RL_SAC=[1,2,4,8,16];   // reroll stones from sacrificing a level-30+ weapon / armour piece, by rarity (common..legendary)
+const RL_SAC=[1,2,4,8,16];   // reroll stones from sacrificing a level-30+ weapon / armour / ring, by rarity (common..legendary)
 const RL_COST=1;             // stones one roll (the first or a reroll) costs: of the kind of the piece (weapon pieces use weapon stones)
-const RL_STONE_KIND={weapon:'rsw',armor:'rsa'}, RL_STONE_NAME={rsw:'Weapon Reroll Stone',rsa:'Armor Reroll Stone'}, RL_STONE_MAX=9999;
+const RL_STONE_KIND={weapon:'rsw',armor:'rsa',ring:'rsr'}, RL_STONE_NAME={rsw:'Weapon Reroll Stone',rsa:'Armor Reroll Stone',rsr:'Ring Reroll Stone'}, RL_STONE_MAX=9999;   // rsr: the ring's own stone (gear.rsr), made by sacrificing level-30+ rings or dropped by world bosses
+const RL_STONE_ORDER=['rsw','rsa','rsr'];   // the gear.* fields of the three stone kinds (a boss drop picks one at random; the forge lists them in this order)
 const RL_CODE_RE=/^~(?:[a-m]\d\d){3}$/;
 // one roll: three different stats, each a quality 0..99 (rnd returns [0,1), Math.random on the server)
 function rlRoll(rnd){
@@ -46,7 +47,7 @@ function rlParseCode(code){
   const out=[]; for(let i=0;i<RL_LINES;i++){ const s=RL_BY_KEY[code[1+i*3]], q=+code.slice(2+i*3,4+i*3); if(!s||out.some(l=>l.s===s)) return null; out.push({s,q}); }
   return out;
 }
-// the lines of a code on a piece of kind 'weapon' | 'armor': [{stat, q, v}] with v the value as a fraction (critdmg: added to the multiplier)
+// the lines of a code on a piece of kind 'weapon' | 'armor' | 'ring': [{stat, q, v}] with v the value as a fraction (critdmg: added to the multiplier)
 function rlLinesOf(code,kind){
   const L=rlParseCode(code), K=RL_KIND_K[kind]; if(!L||!K) return null;
   return L.map(({s,q})=>({stat:s.id,q,v:Math.round((s.lo+(s.hi-s.lo)*q/99)*K[s.kind]*10000)/10000}));
