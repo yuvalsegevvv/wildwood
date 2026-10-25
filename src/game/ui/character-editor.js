@@ -21,7 +21,8 @@ const edGrid=(k,kind,ids,o)=>Object.assign({type:'grid',k,kind,ids,colKey:null},
 const EDIT=[
   {tab:'Presets', subs:[
     {name:'Outfit sets', rows:[{type:'sets'}]},
-    {name:'My outfits', rows:[{type:'slots'}]}
+    {name:'My outfits', rows:[{type:'slots'}]},
+    {name:'Voice', rows:[{type:'voice'}]}
   ]},
   {tab:'Body', subs:[
     {name:'Gender', rows:[
@@ -274,6 +275,15 @@ function renderEditor(){
         b.onclick=()=>{ setLook(key,v); renderEditor(); }; box.append(b);
       });
       wrap.append(box);
+    } else if(row.type==='voice'){
+      // the hero's skill shouts (audio/voices-hero.js): a male or a female voice, or the worn outfit set's own voice
+      const info=document.createElement('p'); info.className='ed-info'; info.textContent=hvDescribe(); wrap.append(info);
+      const box=document.createElement('div'); box.className='chips';
+      for(const [v,txt] of [['auto','Match me'],['m','Male'],['f','Female'],['off','Silent']]){
+        const b=document.createElement('button'); b.className='chip'; b.textContent=txt; b.setAttribute('aria-pressed',hvChoice()===v);
+        b.onclick=()=>{ hvSet(v); renderEditor(); if(v!=='off') hvShout('skill',{name:'Hear me',cls:LOOK.cls},true); }; box.append(b); }
+      wrap.append(box);
+      const hear=document.createElement('button'); hear.className='chip'; hear.textContent='Hear it'; hear.onclick=()=>hvShout('skill',{name:'Hear me',cls:LOOK.cls},true); wrap.append(hear);
     } else if(row.type==='sets'){
       // the outfit sets (src/game/outfits): one tap sets up the whole look: the recommended gender, body sliders, all seven pieces and the colours they were designed in; everything stays editable afterwards in the Clothes and Face tabs
       const box=document.createElement('div'); box.className='tiles';

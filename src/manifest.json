@@ -339,6 +339,7 @@
     "audio/ambience-lands.js",
     "audio/rain.js",
     "audio/voices.js",
+    "audio/voices-hero.js",
     "audio/driver.js",
     "ui/settings-sound.js",
     "combat/monster-parts.js",

@@ -39,6 +39,7 @@ function doAttack(kind,hold){   // hold: the strength 0..1 of a charged skill 1 
   else P.face=P.yaw;
   const a=aimDir();
   netSend({t:'atk',k:kind,tg:T&&!T.dead?T.id:null,face:Math.round(P.face*1000)/1000,aim:[a.x,a.y,a.z].map(v=>Math.round(v*1000)/1000)});
+  if(kind!=='basic') hvShout(kind,ab);   // voice: the hero shouts (audio/voices-hero.js)
   if(k==='charge') startCharge(T);
   else if(ACT_SKILL[k]&&ACT_SKILL[k].fx&&ACT_SKILL[k].fx.dash) startCharge(T,ACT_SKILL[k].range,ACT_SKILL[k].fx.dash.ahead,ACT_SKILL[k].fx.dash.behind);
   if(k==='quake'||k==='inferno'||k==='bladestorm'||k==='berserk') cSfx.swing(true);
@@ -129,7 +130,7 @@ function onMonKill(id){
   { const c=monCenter(m); fxxDust(c.x,m.y+0.2,c.z,6,0.8*m.T.scale*m.s,0x8a8070); }   // fx-extra: a puff of dust where it fell
   { const c=monCenter(m); for(let i=0,n=fxpN(6);i<n;i++) fxpRise(c.x+AR(-0.4,0.4)*m.s,c.y+AR(-0.3,0.3),c.z+AR(-0.4,0.4)*m.s,m.T.color,0.22,AR(0.8,1.4)); }   // a wisp of the monster's colour drifts up
   if(CB.target===m) CB.target=null;
-  if(m.boss){ clearBossVisuals(); }
+  if(m.boss){ clearBossVisuals(); if(!PL.dead&&Math.hypot(m.x-P.x,m.z-P.z)<90) hvEvent('bossdown'); }   // voice: audio/voices-hero.js
 }
 function onMonAct(id,dur){
   const m=MON_BY_ID.get(id); if(!m||m.dead) return;
