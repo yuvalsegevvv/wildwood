@@ -51,3 +51,7 @@ the map marker (ui/map.js), the events (net/client.js), the testing tools (ui/se
 
 Append a row to `SQ` (people in `SQ_NPC_VIL` and `SQ_NAMES`, new places in `SQ_PLACES`), add its cosmetic to `COS_CAPES` or `COS_AURAS` and
 `CP_QUEST`, and run `node tools/sidequests-smoke.js`: it checks that every person, monster, boss, lore spot, place, node and cosmetic exists.
+
+## The Amber Reach chains
+
+`dawnseat` (The Dawn Seat, level 37, Warden Oruvi, to Old Thunder, pays the Dawn Seat Mantle) and `drought` (The Drought Song, level 41 after the first, Kesi and Elder Tamsa, to Oldhorn, pays the Herdsong aura). Their people are `oruvi`, `hask`, `wiru`, `ennu`, `kesi`, `tamsa` (village 7, Tallgrass): the villagers must use these ids. The bosses are checked through `rdBossRow` until they are in `BOSS_DEFS`; places come from the atlas (`SAV_*`).

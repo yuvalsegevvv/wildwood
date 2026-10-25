@@ -43,7 +43,7 @@ const sqReadyN=()=>{ const q=sqG(); if(!q) return 0; let k=0; for(const id in q.
 function sqMapTarget(){ const C=sqTracked(), T=C&&sqTarget(C); return T?{x:T.x,z:T.z,label:C.name+' (side quest)',side:true}:null; }
 /* The Side quests tab of the quest panel: one card per chain, in level order. A running chain shows its step like the main quest tab (the giver's words, each part with a monster's
    picture and a bar, where to go), its pay and the cosmetic at its end; the others show how to start them, or that they are finished. Text only from shared data. */
-const SQ_LAND_NAMES={home:'The home forest',vale:'The Sakura Vale',hoar:'The Hoarfrost Reach',sun:'The Sunscar',gloam:'The Gloamhorn'};
+const SQ_LAND_NAMES={home:'The home forest',vale:'The Sakura Vale',hoar:'The Hoarfrost Reach',sun:'The Sunscar',gloam:'The Gloamhorn',amber:'The Amber Reach'};
 function sqCosName(key){ const m=/^([ac]):(.+)$/.exec(key||''), D=m&&cpDef(m[1],m[2]); return D?D.name+' ('+CP_SLOTS[m[1]][2].toLowerCase()+')':''; }
 function sqResText(r){ return r.res.map(([id,n])=>n+' '+RES[id].name).join(', ')+' and '+numC(r.xp)+' XP'; }
 function sqCardHtml(C){

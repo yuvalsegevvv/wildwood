@@ -169,7 +169,8 @@
     "raids/jarnhall.js",
     "raids/stonewatch.js",
     "raids/sunken.js",
-    "raids/wrackmoor.js"
+    "raids/wrackmoor.js",
+    "raids/moot.js"
   ],
   "server": [
     "state.js",
