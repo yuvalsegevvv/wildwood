@@ -25,8 +25,8 @@ ok('the other dungeons keep entry level 25 and level 30 (the `entry` field defau
 ok('every monster of the dungeon is a Sunscar kind (levels 33-36) walkers fit a 4 m door',[...T.mobs.walkers,...T.mobs.guardians].every(id=>{ const d=x.MON_DEFS.find(q=>q.id===id); return d&&d.zone&&/^s\d\d$/.test(d.zone)&&d.level>=33&&d.level<=36; })&&T.mobs.walkers.every(id=>x.MON_DEFS.find(q=>q.id===id).rad<=0.9));
 
 // ---- the door ----
-ok('the door is the prop the Sunscar reserved: DG_ENTRANCES.sandglass at SUN_DG_DOOR, six doors in all, found from 3 m and not from 9 m, its apron 7 m out toward the city',
-  !!E&&E.x===D.x&&E.z===D.z&&E.theme==='sandglass'&&Object.keys(x.DG_ENTRANCES).length===6&&x.dgEntranceNear(D.x+3,D.z)===E&&x.dgEntranceNear(D.x+9,D.z)===null&&Math.abs(Math.hypot(x.dgApron(E).x-D.x,x.dgApron(E).z-D.z)-7)<1e-9&&x.dgApron(E).z<D.z);
+ok('the door is the prop the Sunscar reserved: DG_ENTRANCES.sandglass at SUN_DG_DOOR, seven doors in all, found from 3 m and not from 9 m, its apron 7 m out toward the city',
+  !!E&&E.x===D.x&&E.z===D.z&&E.theme==='sandglass'&&Object.keys(x.DG_ENTRANCES).length===7&&x.dgEntranceNear(D.x+3,D.z)===E&&x.dgEntranceNear(D.x+9,D.z)===null&&Math.abs(Math.hypot(x.dgApron(E).x-D.x,x.dgApron(E).z-D.z)-7)<1e-9&&x.dgApron(E).z<D.z);
 
 // ---- who may enter: Glasswell walked into (gear.sun 2) and level 36, at every difficulty ----
 { const un=(g,lv,tier)=>x.dgUnlocked(g,lv,T,tier);
