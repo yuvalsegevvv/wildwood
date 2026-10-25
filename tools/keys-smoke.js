@@ -3,7 +3,7 @@
 // Usage: node tools/keys-smoke.js
 const {bootClient}=require('./headless');
 const EXPOSE=['KB','KB_ACTIONS','kbIs','kbHeld','kbSet','kbLabel','kbName','kbHints','kbChanged','keys','P','updatePlayer','setStarted:v=>{started=v}','started:()=>started',
-  'altHeld:()=>altHeld','dragging:()=>dragging','mDown:()=>mDown','thirdPerson:()=>thirdPerson','keysEl','NET','NODES'];
+  'altHeld:()=>altHeld','dragging:()=>dragging','mDown:()=>mDown','thirdPerson:()=>thirdPerson','keysEl','NET','NODES','gpApply','GP','joyX:()=>joyX','joyY:()=>joyY','jumpReq:()=>jumpReq'];
 const c=bootClient({expose:EXPOSE});
 let fails=0; const ok=(n,x,i)=>{ console.log((x?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!x) fails++; };
 const key=(code,o)=>c.fireWin('keydown',Object.assign({code},o)), up=code=>c.fireWin('keyup',{code});
@@ -80,5 +80,17 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
     // not locked to begin with (a panel was open): Alt does not grab the mouse
     k('keydown','AltLeft'); k('keyup','AltLeft'); ok('Alt while the pointer was free does not lock it',D.pointerLockElement===null&&locks===1);
     c4.stop(); }
+  // gamepad (src/game/player/gamepad.js): sticks drive joyX / joyY, buttons press the bound key
+  { global.KeyboardEvent=function(t,o){ Object.assign(this,o,{type:t}); }; global.dispatchEvent=e=>c5.fireWin(e.type,e);
+    const pad=(b,ax)=>({buttons:Array.from({length:16},(_,i)=>({pressed:b.includes(i)})),axes:ax||[0,0,0,0]});
+    const c5=bootClient({expose:EXPOSE}), G5=()=>c5.G(); G5().setStarted(true);   // its own client: __G is global, the last one booted wins
+    G5().gpApply(pad([],[1,-1,0,0]),0.016); ok('left stick sets the walk input',G5().joyX()===1&&G5().joyY()===-1,G5().joyX()+','+G5().joyY());
+    G5().gpApply(pad([],[0.1,0.1,0,0]),0.016); ok('inside the dead zone the walk input is zero',G5().joyX()===0&&G5().joyY()===0);
+    G5().gpApply(pad([0]),0.016); ok('A presses the jump key',G5().keys.Space===true&&G5().jumpReq());
+    G5().gpApply(pad([]),0.016); ok('letting go of A releases it',!G5().keys.Space);
+    G5().kbSet('jump',0,'KeyB'); G5().gpApply(pad([0]),0.016); ok('a rebound jump key is the one pressed',G5().keys.KeyB===true); G5().gpApply(pad([]),0.016);
+    const y0=G5().P.yaw; G5().gpApply(pad([],[0,0,1,0]),0.1); ok('right stick turns the view',G5().P.yaw!==y0);
+    G5().gpApply(pad([2],[1,0,0,0]),0.016); G5().setStarted(false); G5().gpApply(pad([2],[1,0,0,0]),0.016);
+    ok('before the game starts everything is released',!G5().keys.KeyF&&G5().joyX()===0); G5().setStarted(true); c5.stop(); }
   console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);
 })();

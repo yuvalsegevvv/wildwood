@@ -318,6 +318,7 @@
     "world/savanna-sky.js",
     "world/time-of-day.js",
     "player/input.js",
+    "player/gamepad.js",
     "ui/character-thumbs.js",
     "ui/character-editor.js",
     "village/buildings.js",

@@ -355,6 +355,7 @@ game
   world/savanna-sky.js               Amber Reach's seasons: Greenfall (wet, green grass, cool sky) and Goldfall (dry, gold grass, heat haze, no rain) in a two-hour cycle; savTint pulls the sky toward the season, savDryAt thins the rain, the terrain is painted again when the season moves
   world/time-of-day.js               20-minute day/night cycle, sky keyframes, clock, zone label
   player/input.js                    Keyboard, hold Alt to free the mouse, mouse look, touch joystick, HUD buttons
+  player/gamepad.js                  Gamepad support: sticks walk and look, buttons press the keys their actions are bound to (keybinds.js)
   ui/character-thumbs.js             Pictures for the character editor: every hair style, hat, garment, set, cape and aura drawn once on a small off-screen target and cached as an image
   ui/character-editor.js             Character editor panel and camera: four tabs (Presets, Body, Face, Clothes) with sub-tabs, picture tiles for every part, five outfit slots, per-piece armour visibility, opened from the HUD or in creating mode after registering
   village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)

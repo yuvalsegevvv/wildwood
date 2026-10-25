@@ -183,6 +183,14 @@
 <div id="sound" hidden role="dialog" aria-label="Sound settings">
   <div class="snd-head"><span>Settings</span><button id="sClose" class="snd-x" aria-label="Close sound settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div id="kbSec">
+  <details class="kb-how" open><summary>Keybinds and gamepad</summary>
+    <p class="acct-note">Click a key box, then press the key you want (Backspace clears, Esc cancels). Hold Alt any time to free the mouse and click menus; let go to look around again.</p>
+    <p class="acct-note">Gamepad: left stick walks, right stick looks; A jump, B dash, X attack, Y skill, RB burst, LB talk, LT target, RT gather, D-pad up / down / left the three potions and right the cave skill, Select map, Start inventory, L3 camera, R3 skills. A button presses the key its action is set to above.</p>
+    <div id="kbList"></div>
+    <button class="chip" id="kbReset">Reset keys</button>
+  </details>
+  </div>
   <label class="snd-row"><span>Music</span><input type="range" min="0" max="1" step="0.01" data-k="music"></label>
   <label class="snd-row"><span>Nature</span><input type="range" min="0" max="1" step="0.01" data-k="ambient"></label>
   <label class="snd-row"><span>Villagers</span><input type="range" min="0" max="1" step="0.01" data-k="voice"></label>
@@ -200,13 +208,6 @@
   <div class="snd-sub snd-sec">Child-safe</div>
   <div class="chips" id="modestChips"><button class="chip" data-modest="">Off</button><button class="chip" data-modest="1">On</button></div>
   <p class="acct-note">On: everyone you see, other players too, is drawn modestly (bare tops and bottoms become plain ones). Only changes how your screen draws people. The page reloads to apply it.</p>
-  <div id="kbSec">
-  <details class="kb-how"><summary>Controls</summary>
-    <p class="acct-note">Click a key box, then press the key you want (Backspace clears, Esc cancels). Hold Alt any time to free the mouse and click menus; let go to look around again.</p>
-    <div id="kbList"></div>
-    <button class="chip" id="kbReset">Reset keys</button>
-  </details>
-  </div>
   <div id="acctSec" hidden>
   <div class="snd-sub snd-sec">Account</div>
   <div id="acctUser" hidden><p class="acct-note" id="acctUserNote"></p><div class="name-row"><button class="chip" id="acctOut">Log out</button></div></div>
