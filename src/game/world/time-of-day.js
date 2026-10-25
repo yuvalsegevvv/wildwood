@@ -83,6 +83,7 @@ function updateEnv(dt){
   weatherTint(envCur);
   caveLookEnv(envCur);   // cave: a floor's own fog and light (cave/look.js)
   dgLookEnv(envCur);   // dungeons: a run's own fog and light, whatever the hour or weather (dungeon/look.js)
+  savTint(envCur,dt);   // savanna: Greenfall and Goldfall (world/savanna-sky.js)
   gloamTint(envCur,dt);   // the Gloamhorn: a permanent violet dusk (world/gloam-sky.js)
   cvLightTint(envCur,dt);   // caves: darker light inside a cave (world/caves.js)
   dgGloomTint(envCur,dt);   // dungeons: the Barrow Lord's blackout darkens his hall (combat/boss-dungeon.js)
