@@ -7,6 +7,7 @@
 //          [--sliders]          the base model with each slider at its minimum and maximum (front views)
 //          [--outfit a,b]       the signature outfits a and b worn on their reference setup (front, side and back views each; --front for the front only)
 //          (a cape or an aura: --looks '[{"cape":"regal","aura":"stellar"}]', ids in shared/cosmetics.js; their motion is run for 2 s first)
+//          [--kin ears|tails|muzzles|decos|marks|all]  the Kin parts (shared/kin.js) on the default male body, one look each: ears and muzzles in head close-ups (front), tails from behind, the rest whole body (--front for one view each)
 //          [--weapon warrior|archer|mage]  put that class's weapon in the hands (an outfit's weapon dressing restyles it)
 //   e.g. node tools/model-preview.js /tmp/p.png --head --looks '[{"sex":"female","hat":"beanie"},{"facial":"beard"}]'
 // Each look override is merged onto the default male look, or the female one when it has "sex":"female".
@@ -25,6 +26,13 @@ if(has('--setups')){
 } else if(has('--sliders')){
   looks=[{}]; for(const s of C.BODY_SLIDERS){ for(const v of [s.min,s.max]) looks.push({[s.k]:v}); } looks=looks.map(o=>Object.assign({},C.LOOK_M,o));
   views='front'; size=head?['130','130','1.7']:['110','250'];
+} else if(arg('--kin')){
+  const what=arg('--kin'), all=what==='all'||what.startsWith('--'), want=k=>all||what===k, ls=[], fur={furColor:0xc9954a,furColor2:-1};
+  const add=(f,list)=>{ for(const id of list) ls.push(Object.assign({},C.LOOK_M,{top:'tshirt',bottom:'shorts',hat:'none',hair:'short'},fur,{[f]:id})); };
+  if(want('ears')) add('kinEars',C.kinList('e').map(p=>p.id)); if(want('muzzles')) add('kinMuzzle',C.kinList('m').map(p=>p.id)); if(want('tails')) add('kinTail',C.kinList('k').map(p=>p.id));
+  if(want('decos')) add('deco1',['lyrehorns','rhinohorn','mane']); if(want('marks')) add('furMark',C.KIN_MARKS.map(m=>m[0]).filter(Boolean));
+  looks=ls; views=what==='tails'?'three':'front'; size=what==='ears'||what==='muzzles'||what==='decos'?['150','150','1.72']:['150','290'];
+  if(all){ views='front'; size=['120','240']; }
 } else if(arg('--outfit')){
   looks=[]; for(const id of arg('--outfit').split(',')){ const m=C.CHAR_MODELS[id]; if(!m){ console.error('no outfit',id); process.exit(1); } const sex=(m.sexes||['male'])[0], st=C.setupsOf(m,sex)[0];
     looks.push(C.ofWear(C.applySetup(Object.assign({},sex==='female'?C.LOOK_F:C.LOOK_M),st),id)); }

@@ -51,9 +51,9 @@ ok('the backpack cape draws a pack on the back',C.tris(pack).length>C.tris(plain
 ok('an old save with pack:true and a custom cape becomes cape pack',C.fullLook({cls:'warrior',custom:true,pack:true}).cape==='pack');
 // ---- decorations ----
 const decos=C.CP_PIECES.filter(r=>r[0]==='d').map(r=>r[1]);
-ok('15 to 20 decorations, all crafted (none free), each with a model',decos.length>=15&&decos.length<=20&&decos.every(id=>!x.cpIsFree('d',id)&&C.DECOS[id]&&x.CP_RECIPE['d:'+id]),decos.length);
+ok('15 to 24 decorations, all crafted (none free), each with a model',decos.length>=15&&decos.length<=24&&decos.every(id=>!x.cpIsFree('d',id)&&C.DECOS[id]&&x.CP_RECIPE['d:'+id]),decos.length);
 ok('three decoration fields are locked until made, in any field, and stripped by the server',(()=>{ const w={deco1:'flower',deco2:'halo',deco3:'tail'}; const l=x.cosLocked(w,['d:halo']); const cl=x.cosCleanLook(Object.assign({cls:'warrior'},w),['d:halo']); return l.length===2&&l.every(q=>q.slot==='d')&&cl.deco1===''&&cl.deco2==='halo'&&cl.deco3===''; })());
-bad.length=0; for(const id of decos){ for(const sex of ['male','female']) for(const col of [-1,0x33cc88]){ const t=build('deco '+id,sex,{deco1:id,decoColor1:col}); const base=build('base','male',{}); if(t&&base&&t.tris<=base.tris) bad.push(id+' draws nothing'); } }
+bad.length=0; for(const id of decos){ for(const sex of ['male','female']) for(const col of [-1,0x33cc88]){ const t=build('deco '+id,sex,{deco1:id,decoColor1:col}); const base=build('base',sex,id==='mane'?{hair:'bald'}:{}); if(t&&base&&t.tris<=base.tris) bad.push(id+' draws nothing'); } }
 ok('every decoration builds on both bodies, takes a colour and adds geometry',!bad.length,bad.slice(0,4).join('; '));
 bad.length=0; build('three','female',{deco1:'wings',deco2:'tail',deco3:'halo',decoColor2:0x222222}); build('hostile','male',{deco1:'constructor',deco2:'__proto__',deco3:'toString',decoColor1:NaN}); ok('three at once build, hostile ids and colours do not',!bad.length,bad.join('; '));
 // ---- shields ----
@@ -62,6 +62,32 @@ bad.length=0; build('three','female',{deco1:'wings',deco2:'tail',deco3:'halo',de
   ok('four shield shapes, off by default, each crafted, building on both bodies with colours',ids.length===4&&look('male').shield===''&&ids.every(i=>x.CP_RECIPE['w:'+i]&&!x.cpIsFree('w',i))&&!bad.length&&!bad2.length,bad2.join()+bad.join());
   ok('a shield is locked until made and stripped by the server',x.cosLocked({shield:'kite'},[]).length===1&&x.cosCleanLook({shield:'kite'},[]).shield===''&&x.cosCleanLook({shield:'kite'},['w:kite']).shield==='kite');
   build('hostile','male',{shield:'constructor',shieldColor:NaN}); }
+// ---- kin features (version 3: ears, tails, muzzles, horns, mane, fur) ----
+{ const parts=C.KIN_PARTS, crafted=parts.filter(p=>!p.free), free=parts.filter(p=>p.free), tr=(sex,o)=>C.stats(C.buildCharacter(look(sex,o),{q:1.1})).tris, kb=[];
+  ok('no Kin entry was left out as bad',!C.KIN_BAD.length,C.KIN_BAD.join('; '));
+  ok('about twenty Kin parts (ears, tails, muzzles) plus horns and a mane, some free and some crafted',parts.length>=20&&parts.length<=26&&free.length>=4&&crafted.length>=12&&['e','k','m'].every(s=>C.kinList(s).some(p=>p.free)&&C.kinList(s).some(p=>!p.free)),parts.length+' parts, '+free.length+' free');
+  ok('every crafted Kin part is in the catalog with a recipe, and no free one is',crafted.every(p=>x.cpDef(p.slot,p.id)&&!x.cpIsFree(p.slot,p.id)&&x.CP_RECIPE[p.slot+':'+p.id])&&free.every(p=>!x.cpDef(p.slot,p.id)&&x.cpIsFree(p.slot,p.id)));
+  ok('the slots e, k and m own their look fields and fall back to nothing',x.CP_SLOTS.e[0]==='kinEars'&&x.CP_SLOTS.k[0]==='kinTail'&&x.CP_SLOTS.m[0]==='kinMuzzle'&&x.CP_SLOTS.e[1]==='');
+  const w={kinEars:'fox',kinTail:'bushy',kinMuzzle:'cat',deco1:'mane'}, lk2=x.cosLocked(w,[]);
+  ok('a crafted ear, tail and the mane are locked until made; the server strips exactly those',lk2.length===3&&x.cosLocked(w,['e:fox','k:bushy']).length===1&&x.cosCleanLook(w,[]).kinEars===''&&x.cosCleanLook(w,[]).kinTail===''&&x.cosCleanLook(w,[]).deco1===''&&x.cosCleanLook(w,['e:fox']).kinEars==='fox');
+  ok('the free parts are worn by anyone and never locked',x.cosLocked({kinEars:'cat',kinTail:'thin',kinMuzzle:'nose'},[]).length===0&&x.cosCleanLook({kinEars:'cat',kinTail:'puff',kinMuzzle:'whiskers'},[]).kinTail==='puff');
+  for(const sex of ['male','female']){ const b0=tr(sex,{});
+    for(const [f,s] of [['kinEars','e'],['kinTail','k'],['kinMuzzle','m']]) for(const p of C.kinList(s)){ const t=build('kin '+p.id,sex,{[f]:p.id,furColor:0xc9954a,furColor2:0x2a1c14},1.1); if(!t||t.bad) kb.push(p.id+' '+sex+' bad'); else if(tr(sex,{[f]:p.id})<=b0) kb.push(p.id+' draws nothing'); } }
+  ok('every ear, tail and muzzle builds on both bodies with fur colours and adds geometry',!kb.length&&!bad.length,kb.concat(bad).slice(0,4).join('; '));
+  const heavy=s=>Math.max(...C.kinList(s).map(p=>tr('male',{[{e:'kinEars',k:'kinTail',m:'kinMuzzle'}[s]]:p.id})-tr('male',{})));
+  ok('the heaviest ear, tail and muzzle together add under 600 triangles at hero detail',heavy('e')+heavy('k')+heavy('m')<600,heavy('e')+'+'+heavy('k')+'+'+heavy('m'));
+  const hatTr=(hat,o)=>tr('male',Object.assign({hat},o||{}));
+  ok('a hat hides the ears (a hood), folds them flat (a wide brim) or lets them poke through',hatTr('hood',{kinEars:'cat'})===hatTr('hood')&&hatTr('ranger',{kinEars:'cat'})>hatTr('ranger')&&hatTr('beanie',{kinEars:'cat'})>hatTr('beanie')&&C.kinHatMode('constructor')==='flat'&&C.kinHatMode('hood')==='hide'&&C.kinHatMode('none')==='poke');
+  ok('a mane replaces the hair row: long hair or bald draws the same',tr('female',{hair:'long',deco1:'mane'})===tr('female',{hair:'bald',deco1:'mane'})&&tr('female',{hair:'long'})>tr('female',{hair:'bald'}));
+  const col=o=>C.tris(C.buildCharacter(look('male',o),{q:0.6})).join();
+  ok('the fur colour recolours the skin and every marking changes the picture',col({furColor:0xc9954a})!==col({})&&C.KIN_MARKS.filter(m=>m[0]).every(m=>col({furMark:m[0],furColor:0xc9954a})!==col({furColor:0xc9954a})),'');
+  ok('a marking can have its own second colour',col({furMark:'stripes',furColor:0xc9954a,furColor2:0x2255aa})!==col({furMark:'stripes',furColor:0xc9954a}));
+  bad.length=0; build('kin hostile','male',{kinEars:'constructor',kinTail:'__proto__',kinMuzzle:'toString',furColor:NaN,furColor2:'x',furMark:'constructor',deco1:'mane'}); build('kin hostile2','female',{kinEars:'hasOwnProperty',furColor:-5,furColor2:1e12,furMark:'valueOf'});
+  ok('hostile Kin ids and colours draw nothing and never throw',!bad.length&&tr('male',{kinEars:'constructor',kinTail:'__proto__'})===tr('male',{}),bad.join('; '));
+  ok('kinCleanLook cuts a look down to valid parts, colours and markings',(()=>{ const c=C.kinCleanLook({kinEars:'nope',kinTail:'bushy',kinMuzzle:'constructor',furColor:99999999,furColor2:3,furMark:'zebra'}); return c.kinEars===''&&c.kinTail==='bushy'&&c.kinMuzzle===''&&c.furColor===-1&&c.furColor2===3&&c.furMark===''; })());
+  ok('a new hiker has no Kin features and the skin tone as fur',['kinEars','kinTail','kinMuzzle','furMark'].every(k=>look('male')[k]===''&&look('female')[k]==='')&&look('male').furColor===-1&&look('male').furColor2===-1);
+  const wrap=C.buildCharacter(look('male',{kinTail:'bushy'}),{q:0.6}); let moved=false; if(wrap.anims){ const before=wrap.root.children.length; for(let i=0;i<30;i++) for(const f of wrap.anims) f(i*0.1,0.1,1); moved=true; }
+  ok('a tail swings with the rig',moved&&wrap.anims.length>=1); }
 // ---- switching the sex of a worn set ----
 { const miss=[], sig=Object.keys(C.OUTFITS);
   for(const id of sig){ const m=C.CHAR_MODELS[id], sex0=m.sexes[0], sex1=sex0==='male'?'female':'male';

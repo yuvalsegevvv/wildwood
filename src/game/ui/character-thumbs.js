@@ -34,6 +34,9 @@ function cthLookFor(sp){
     case 'aura': L.aura=id; view='body'; break;
     case 'shield': L.shield=id; view='body'; spin=-Math.PI/2+0.35; break;
     case 'deco': { L.deco1=id; if(sp.col!==undefined&&sp.col>=0) L.decoColor1=sp.col; const an=DECOS[id]?DECOS[id].anchor:'headTop'; view=an==='headTop'||an==='face'?'head':an==='neck'||an==='chest'||an==='shoulderR'?'chest':an==='back'?'back':an==='waist'?'legs':an==='wristL'?'hands':an==='ankleL'?'feet':'body'; if(view==='back'||id==='tail') spin=Math.PI-0.35; break; }
+    case 'kinEars': L.kinEars=id; L.hair='short'; L.furColor=LOOK.furColor; L.furColor2=LOOK.furColor2; view='head'; break;   // (kin: the part in your own fur colours)
+    case 'kinMuzzle': L.kinMuzzle=id; L.furColor=LOOK.furColor; L.furColor2=LOOK.furColor2; view='head'; break;
+    case 'kinTail': L.kinTail=id; L.furColor=LOOK.furColor; L.furColor2=LOOK.furColor2; view='hips'; spin=Math.PI-0.35; break;
     case 'sex': L.hair=sex==='female'?'ponytail':'short'; L.top='tshirt'; view='body'; break;
     case 'weapon': L.weaponItem=id; L.top='jacket'; view='body'; break;
     case 'outfit': { const M=CHAR_MODELS[id]; const sx=(M.sexes&&M.sexes[0])||sex; const B=cthBase(sx,skin); Object.assign(L,ofWear(B,id)); L.sex=sx; const st=setupsOf(M,sx)[0]; if(st) Object.assign(L,applySetup(L,st)); L.armor='hide'; view='body'; break; }
@@ -49,6 +52,7 @@ function cthKey(sp){
   if(k==='pupil') cx.push(LOOK.eyes,LOOK.eyes2,LOOK.face);
   if(k==='hair'||k==='facial'||k==='hat') cx.push(LOOK.hairColor);
   if(k==='hat') cx.push(LOOK.hair);
+  if(k.startsWith('kin')) cx.push(LOOK.furColor,LOOK.furColor2);   // kin: the fur colours show on the tile
   if(k==='weapon') cx.push(GEAR&&GEAR.eq&&GEAR.eq.weapon);
   if(k==='slot') cx.push(JSON.stringify(sp.look));
   return [k,sp.id,sp.sex||LOOK.sex,sp.skin!==undefined?sp.skin:LOOK.skin,sp.col].concat(cx).join('|');
@@ -74,7 +78,7 @@ function cthRender(sp){
   if(sp.kind==='weapon'&&typeof weaponsOn==='function'){ try{ weaponsOn(rig,GEAR&&GEAR.eq&&GEAR.eq.weapon||'sword1',L.build); }catch(_){} }
   const H=rig.hipY, D=rig.dims;
   // [centre height, half the height shown, distance factor]
-  const F={head:[H+D.headY,0.17*D.hs+0.03,1],chest:[H+0.25*D.TK,0.34,1],legs:[H*0.62,0.5,1],feet:[0.1,0.2,1],body:[H+0.33,0.98,1],hands:[H-0.15,0.3,1],eyes:[H+D.headY+0.004,0.052*D.hs+0.012,1],back:[H+0.3,0.62,1]}[view];
+  const F={head:[H+D.headY,0.17*D.hs+0.03,1],chest:[H+0.25*D.TK,0.34,1],legs:[H*0.62,0.5,1],feet:[0.1,0.2,1],body:[H+0.33,0.98,1],hands:[H-0.15,0.3,1],eyes:[H+D.headY+0.004,0.052*D.hs+0.012,1],back:[H+0.3,0.62,1],hips:[H+0.02,0.42,1]}[view];
   const half=F[1], dist=half/Math.tan(cthCam.fov*Math.PI/360)*1.0;
   cthCam.position.set(0,F[0],-dist); cthCam.lookAt(0,F[0],0); cthCam.updateMatrixWorld();
   const old=renderer.getRenderTarget(), oc=new THREE.Color(), oa=renderer.getClearAlpha(), ot=renderer.shadowMap.enabled;

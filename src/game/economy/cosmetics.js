@@ -20,9 +20,9 @@ function cosCraftedOf(type){
 }
 function cosLodgeHtml(g){
   const own=g.cos||[], res=g.res||{}, mats=g.mats||{}, coins=g.coins||0;
-  let h=`<div class="inv-h">Cosmetics <span>hats, clothes, capes and auras made from ore, logs, herbs and monsters' drops: try them on in the character editor first</span></div>`;
-  for(const type of ['h','t','b','s','g','c','a','d','w']){
-    h+=`<p class="lo-intro"><b>${CP_SLOTS[type][2]}s</b> <span class="muted">${type==='c'?'(the backpack, Wayfarer\'s and Mossback are free)':type==='a'?'(Firefly Veil and Dewfall are free)':type==='w'?'(optional, for looks only: nothing is worn unless you pick one; all are made)':type==='d'?'(wear up to three at once, any of them anywhere; all are made, none are free)':'(the plain ones are free)'}</span></p>`;
+  let h=`<div class="inv-h">Cosmetics <span>hats, clothes, capes, auras and Kin ears, tails and muzzles made from ore, logs, herbs and monsters' drops: try them on in the character editor first</span></div>`;
+  for(const type of ['h','t','b','s','g','c','a','d','w','e','k','m']){   // (e, k, m: the Kin parts, shared/kin.js)
+    h+=`<p class="lo-intro"><b>${CP_SLOTS[type][2]}${/s$/.test(CP_SLOTS[type][2])?'':'s'}</b> <span class="muted">${type==='c'?'(the backpack, Wayfarer\'s and Mossback are free)':type==='a'?'(Firefly Veil and Dewfall are free)':type==='w'?'(optional, for looks only: nothing is worn unless you pick one; all are made)':type==='d'?'(wear up to three at once, any of them anywhere; all are made, none are free)':'(the plain ones are free)'}</span></p>`;
     for(const [id,name,text] of cosCraftedOf(type)){
       const cost=cosCost(type,id), has=own.includes(cosKey(type,id)), can=cost.res.every(([r,n])=>(res[r]||0)>=n)&&cost.mats.every(([m,n])=>(mats[m]||0)>=n)&&coins>=cost.coins;
       h+=`<div class="lo-sell"><span class="mat"><b>${name}</b></span><span class="muted">${text}</span><small>${cosCostHtml(cost,res,mats)}</small>`
