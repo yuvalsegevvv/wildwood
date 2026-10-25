@@ -180,6 +180,7 @@ function devP(p,msg){
   else if(c==='vale'){ const v=clampInt(msg.v,0,2,1); if(v>=1) openValeP(p); if(v>=2){ p.gear.east=2; ev('vale',p.id,2); } if(v===0) p.gear.east=0; p.dirty=true; }
   else if(c==='west'){ const v=clampInt(msg.v,0,2,1); if(v>=1&&p.gear.west<1){ p.gear.west=1; ev('west',p.id,1); } if(v>=2){ p.gear.west=2; ev('west',p.id,2); } if(v===0) p.gear.west=0; p.dirty=true; }
   else if(c==='sun'){ p.gear.sun=clampInt(msg.v,0,2,2); if(p.gear.sun>=2&&p.gear.river<1&&p.gear.redgate<1) p.gear.river=1; p.dirty=true; if(p.gear.sun>=2) ev('sun',p.id,2); }   // v: 0 .. 2 (2: walked into Glasswell, its circle is attuned)
+  else if(c==='ashbed'){ p.gear.amber=clampInt(msg.v,0,1,1); p.dirty=true; }   // v: 0 / 1 (1: the Ashbed Gate into the Amber Reach is open; gear.amber, NOT the amber currency gear.amb)
   else if(c==='gloam'){ p.gear.gloam=clampInt(msg.v,0,2,2); if(p.gear.gloam>=2&&p.gear.neck<1) p.gear.neck=1; p.dirty=true; if(p.gear.gloam>=2) ev('gloam',p.id,2); }   // v: 0 .. 2 (2: walked into Wraithwick, its circle is attuned)
   else if(c==='gate'){ const G=GREY_GATES.find(g=>g.id===msg.v); if(!G) return; p.gear[G.id]=msg.n===0?0:1; if(msg.n!==0) ev('gate',p.id,G.id); p.dirty=true; }   // v: 'river' / 'neck', n: 0 shut, 1 open
   else if(c==='north'){ const v=clampInt(msg.v,0,2,1); if(v>=1&&p.gear.north<1){ p.gear.north=1; ev('north',p.id,1); } if(v>=2){ p.gear.north=2; ev('north',p.id,2); } if(v===0) p.gear.north=0; p.dirty=true; }

@@ -1,4 +1,4 @@
-//@ The six dungeon bosses (Amanita the Sporemother, Gawataro the Jade Elder, Haugbui the Barrow Lord, Garrick the Seam Foreman, Khet the Hourkeeper, Abbess Morrow the Drowned Abbess): their designs as data (DG_BOSSES: moves named by primitive, signature, needs), their defs as rows shaped like BOSS_DEFS (DG_BOSS_DEFS), the hall's lamps and steam vents, and the arena of a run's boss hall. Pure.
+//@ The seven dungeon bosses (Amanita the Sporemother, Gawataro the Jade Elder, Haugbui the Barrow Lord, Garrick the Seam Foreman, Khet the Hourkeeper, Abbess Morrow the Drowned Abbess, Queen Ortha the Brood Queen): their designs as data (DG_BOSSES: moves named by primitive, signature, needs), their defs as rows shaped like BOSS_DEFS (DG_BOSS_DEFS), the hall's lamps and steam vents, and the arena of a run's boss hall. Pure.
 /* Agent map: exports DG_BOSSES, DG_BOSS_DEFS (keyed by boss id = its def's id: {def, kit, add, prop, short, bar, auxBar, gloom, dungeon}), DG_HALL_LAMPS, DG_VENT_R, dgVentAt,
    dgHallArena. Used by: server/dungeons/boss-kits.js (BOSS_KITS.spore / dish / barrow read B.bd = a row), the run's boss finale (makeBossS(DG_BOSS_DEFS[theme.boss],
    dgHallArena(bake, ox, oz))), game/combat/boss-dungeon.js (the client's def lookup, bar texts, gloom), defineDungeonTheme (a theme's `boss` must be a key here).
@@ -94,7 +94,23 @@ const DG_BOSSES={
       {id:'acolytes', name:'Drowned Acolytes', phase:2,does:['adds']},
       {id:'quake',    name:'Crypt Quake',      phase:2,does:['tele:rockfall'],x:1.0},
       {id:'requiem',  name:'Requiem',          phase:3,does:['tele:pulse','pfx:slow'],x:1.4}],
-    needs:['new:tele-safe']}};
+    needs:['new:tele-safe']},
+  /* Queen Ortha, the Brood Queen (version 3, the Termite Cathedral under the Amber Reach: docs/DUNGEON-THEMES.md section 13). The first dungeon boss above level 40 (`lv:45`): the theme is level 45 at +0 and rises 10 a tier.
+     She is enormous and nearly still (speed 0.4: she shuffles, she does not chase). Built from primitives that already exist (the gloom pool, the line, the puff telegraph a kill cancels, the rock fall): her signature, the Egg Clusters,
+     is the Puffballs' idea turned round, clutches of eggs that hatch unless the party pops every egg of the clutch in time, and a clutch wholly lost stuns her. Her "burrow strikes" are lines that start in the wall. */
+  ortha:{id:'ortha',name:'Queen Ortha, the Brood Queen',short:'Queen Ortha',dungeon:'termitecathedral',kit:'brood',lv:45,el:'earth',model:'beetle',scale:5.2,glow:0x3a1a04,atk:2.6,speed:0.4,music:'boss30',
+    pal:{shell:0xc88a2c,seam:0x5a3206,sheen:0xffe08a,head:0x7a4a10,horn:0xf8d878,eye:0x301800,legs:0x5a3206},
+    add:{id:'broodling',name:'Broodling',scale:0.7,speed:3.0,glow:0x2a1204,pal:{shell:0xd89a30,seam:0x6a3a08,sheen:0xffd870,head:0x8a5410,horn:0xf0c860,eye:0x301800,legs:0x6a3a08}},
+    prop:{id:'broodegg',name:'Brood Egg',model:'shroom',scale:0.9,hits:1,glow:0x2a1204,pal:{cap:0xe8b858,spot:0xfff0c0,stem:0xd8a848,gill:0xb88838,feet:0xc89838}},
+    bar:{stun:'Her clutch is lost: strike now!'}, aux:'eggs about to hatch', auxBar:'Eggs about to hatch: {n}',
+    moves:[
+      {id:'resin',    name:'Resin Pools',      phase:1,does:['tele:icefall','zone:gloom'],x:0.9},
+      {id:'burrow',   name:'Burrow Strikes',   phase:1,does:['tele:line'],x:1.1},
+      {id:'eggs',     name:'Egg Clusters',     phase:1,does:['props','tele:puff','new:tele-cancel'],x:1.5,signature:true},
+      {id:'broodlings',name:'Broodlings',      phase:2,does:['adds']},
+      {id:'spirefall',name:'Spirefall',        phase:2,does:['tele:rockfall'],x:0.9},
+      {id:'thrum',    name:'Brood Thrum',      phase:3,does:['tele:icefall','pfx:slow'],x:1.2}],
+    needs:['new:tele-cancel']}};
 
 // a design as a row shaped like BOSS_DEFS (what makeBossS(bd, A) takes): the boss's def at its level, its add and its prop as monster defs
 function dgBossRow(b){
@@ -105,7 +121,7 @@ function dgBossRow(b){
   if(b.prop){ prop={id:b.prop.id,name:b.prop.name,level:b.lv,el:b.el,model:b.prop.model||b.model,scale:b.prop.scale,hits:b.prop.hits,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:b.prop.glow,pal:b.prop.pal}; prepDef(prop); }
   return {def,kit:b.kit,add,prop,short:b.short,bar:b.bar,aux:b.aux,auxBar:b.auxBar,gloom:b.gloom,dungeon:b.dungeon};
 }
-const DG_BOSS_DEFS=Object.assign(Object.create(null),{amanita:dgBossRow(DG_BOSSES.amanita),gawataro:dgBossRow(DG_BOSSES.gawataro),haugbui:dgBossRow(DG_BOSSES.haugbui),garrick:dgBossRow(DG_BOSSES.garrick),khet:dgBossRow(DG_BOSSES.khet),abbess:dgBossRow(DG_BOSSES.abbess)});   // (no prototype: a lookup by any def id is safe)
+const DG_BOSS_DEFS=Object.assign(Object.create(null),{amanita:dgBossRow(DG_BOSSES.amanita),gawataro:dgBossRow(DG_BOSSES.gawataro),haugbui:dgBossRow(DG_BOSSES.haugbui),garrick:dgBossRow(DG_BOSSES.garrick),khet:dgBossRow(DG_BOSSES.khet),abbess:dgBossRow(DG_BOSSES.abbess),ortha:dgBossRow(DG_BOSSES.ortha)});   // (no prototype: a lookup by any def id is safe)
 
 /* Where the kits put things in the hall, in metres from its middle (the hall's pillars and mouths are DG_HALL_PILLARS / DG_HALL_MOUTHS in shared/dungeons.js):
    Haugbui's four lamps stand at the inner corner of each pillar, 9.6 m from the middle (8 m round a lit lamp shelters you from the wail, which leaves the middle open);

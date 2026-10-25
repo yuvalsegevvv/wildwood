@@ -50,7 +50,7 @@ function dgLookTick(dt){
   L.pool.forEach((p,i)=>{ const q=near[i]; if(!q){ p.intensity=0; return; } const a=q[0]; p.position.set(a.x+R.ox,R.y+a.y,a.z+R.oz); p.color.setHex(a.col); p.distance=a.r+2; p.intensity=0.9*a.i+0.3; });
 }
 const dgLookReach=a=>a.r*2.2;   // (a light is worth a point light while you are within twice its reach)
-function dgMusicTheme(){ return DG_RUN&&DG_RUN.T&&DG_RUN.T.music||'wild3'; }
+function dgMusicTheme(){ const m=DG_RUN&&DG_RUN.T&&DG_RUN.T.music; return m&&THEMES[m]?m:'wild3'; }   // (a theme whose music is not written yet, the Amber Reach's savanna2, plays wild3)
 // every 0.1 s instead of the forest's beds: a low wind in the passages, water in the grottoes, drips under the roots, the Barrow's hum; nothing else of the world
 function dgAmbience(T){
   if(!SND.ready||!DG_RUN) return;
