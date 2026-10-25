@@ -15,12 +15,12 @@ function buildTallgrass(){
   const inF=F=>({A:(g,fn)=>out.push(pc(g,fn).applyMatrix4(F)), N:(g,fn)=>out.push(paint(g,fn).applyMatrix4(F)), W:(g,col)=>win.push(pc(g,c=>c.set(col||0xffc060)).applyMatrix4(F))});
   const dark=woodC(0x3a2414), timber=woodC(0x6a4a2a), iron=c=>c.set(0x3a3630);
   for(const H of V.houses){   // a round hut: brick drum, a coloured band, a thatch cone with a smoke hole, a door and two slit windows
-    const {A,N,W}=inF(frameM(H.x,Y,H.z,H.rot)), R=Math.min(H.w,H.d)/2+0.1, wh=H.wh, band=TGB_BANDS[H.i%7], tav=!!H.tavern, rr=tav?R*1.12:R;
+    const {A,W}=inF(frameM(H.x,Y,H.z,H.rot)), R=Math.min(H.w,H.d)/2+0.1, wh=H.wh, band=TGB_BANDS[H.i%7], tav=!!H.tavern, rr=tav?R*1.12:R;
     A(new THREE.CylinderGeometry(rr+0.25,rr+0.35,0.6,10).translate(0,0.3,0),stoneC);
     A(new THREE.CylinderGeometry(rr,rr,wh,10,2).translate(0,0.5+wh/2,0),tgbBrick(0xb07a4a));
     A(new THREE.CylinderGeometry(rr+0.04,rr+0.04,0.32,10).translate(0,0.5+wh*0.72,0),c=>c.set(band));
     const ch=Math.max(2.2,rr*0.95)+(tav?0.8:0);
-    N(new THREE.ConeGeometry(rr+0.9,ch,10).translate(0,0.5+wh+ch/2-0.1,0),tgbThatch(tav?0xb89a48:0xc8a458));
+    A(new THREE.ConeGeometry(rr+0.9,ch,10).translate(0,0.5+wh+ch/2-0.1,0),tgbThatch(tav?0xb89a48:0xc8a458));
     A(new THREE.CylinderGeometry(0.28,0.34,0.4,6).translate(0,0.5+wh+ch-0.2,0),dark);
     A(vbox(1.2,2.0,0.14,0,0.5+1.0,-rr+0.02),dark); A(vbox(1.5,0.2,0.2,0,0.5+2.1,-rr),timber);
     for(const sd of [-1,1]){ const a=sd*1.25, wx=Math.sin(a)*rr, wz=-Math.cos(a)*rr; W(vbox(0.34,0.7,0.06).rotateY(-a).translate(wx,0.5+wh*0.62,wz)); }
@@ -30,15 +30,15 @@ function buildTallgrass(){
     else if(H.i%3===1) for(let k=0;k<3;k++) A(cyl(0.05,0.05,1.1,5).translate(rr+0.7+k*0.35,0.55,0.2),woodC(0x6a4a2a));   // grain drying on poles
   }
   { // the Moot Baobab: the trunk bulges toward the base, a root flare, a hollow doorway toward the road
-    const B=TG_BAOBAB, ent=V.ent, {A,N}=inF(frameM(B.x,Y,B.z,ent));
+    const B=TG_BAOBAB, ent=V.ent, {A,W}=inF(frameM(B.x,Y,B.z,ent));
     const trunk=new THREE.CylinderGeometry(2.7,3.3,9,18,5); { const p=trunk.attributes.position; for(let i=0;i<p.count;i++){ const y=p.getY(i), bulge=1+0.16*Math.sin((y+4.5)/9*Math.PI), a=Math.atan2(p.getZ(i),p.getX(i)); const k=bulge*(1+0.05*Math.sin(a*5+y*0.4)); p.setX(i,p.getX(i)*k); p.setZ(i,p.getZ(i)*k); } trunk.computeVertexNormals(); }
-    N(trunk.translate(0,4.5,0),tgbBark);
-    N(new THREE.CylinderGeometry(3.5,5.0,1.6,18,1).translate(0,0.8,0),tgbBark);
+    A(trunk.translate(0,4.5,0),tgbBark);
+    A(new THREE.CylinderGeometry(3.5,5.0,1.6,18,1).translate(0,0.8,0),tgbBark);
     A(vbox(0.5,3.4,0.5,-1.0,1.7,-3.3),c=>c.set(0x1c1008)); A(vbox(0.5,3.4,0.5,1.0,1.7,-3.3),c=>c.set(0x1c1008)); A(vbox(2.5,0.6,0.5,0,3.5,-3.3),c=>c.set(0x1c1008)); A(vbox(1.7,3.2,0.4,0,1.6,-3.0),c=>c.set(0x0c0604));   // the hollow doorway (local -z faces the road)
     const crowns=[];
     for(let k=0;k<6;k++){   // branches climbing out of the top, a flat crown on each
       const a=k/6*TAU+0.3, lean=0.75+0.12*h3(k,1,1), L=6.4+h3(k,2,2)*1.8, bx=Math.sin(a)*(L*0.5*Math.sin(lean)), bz=Math.cos(a)*(L*0.5*Math.sin(lean));
-      const br=new THREE.CylinderGeometry(0.36,0.62,L,7).translate(0,L/2,0).rotateZ(-lean).rotateY(a-Math.PI/2).translate(0,8.6,0); N(br,tgbBark);
+      const br=new THREE.CylinderGeometry(0.36,0.62,L,7).translate(0,L/2,0).rotateZ(-lean).rotateY(a-Math.PI/2).translate(0,8.6,0); A(br,tgbBark);
       const ex=Math.sin(a)*L*Math.sin(lean), ez=Math.cos(a)*L*Math.sin(lean), ey=8.6+L*Math.cos(lean); crowns.push([ex,ey,ez]);
       A(new THREE.IcosahedronGeometry(3.4+h3(k,3,3)*0.8,1).scale(1,0.42,1).translate(ex,ey+0.4,ez),(x,y,z,c)=>{ c.set(0x6e8c3a).multiplyScalar(0.7+h3(Math.floor(x*2),Math.floor(y*3),Math.floor(z*2))*0.5); });
     }
