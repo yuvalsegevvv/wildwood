@@ -7,7 +7,7 @@
               plus pickup(), success(), error(), notify() kept ready for later game events
      ambient  wind, leaves, water, birds, crickets, owls, frogs, campfire, footsteps, animals
      voice    villager dialogue: the browser's text-to-speech, or a synthesised babble */
-const SND={ctx:null,ready:false,muted:false,voiceMode:'speech',vol:{master:0.9,music:0.5,ui:0.6,ambient:0.8,voice:0.9},bus:{},loops:{},duck:1};
+const SND={ctx:null,ready:false,muted:false,voiceMode:'speech',vol:{master:0.9,music:0.5,ui:0.6,ambient:0.8,voice:0.9,hero:0.9},bus:{},loops:{},duck:1};
 try{ const s=JSON.parse(localStorage.getItem('wildwood-audio-v1')||'null'); if(s){ Object.assign(SND.vol,s.vol||{}); SND.muted=!!s.muted; if(s.voiceMode) SND.voiceMode=s.voiceMode; } }catch(_){}
 function saveAudio(){ try{ localStorage.setItem('wildwood-audio-v1',JSON.stringify({vol:SND.vol,muted:SND.muted,voiceMode:SND.voiceMode})); }catch(_){} }
 const speech={ok:typeof window.speechSynthesis!=='undefined' && typeof window.SpeechSynthesisUtterance!=='undefined', voices:[]};

@@ -39,6 +39,7 @@ function doAttack(kind,hold){   // hold: the strength 0..1 of a charged skill 1 
   else P.face=P.yaw;
   const a=aimDir();
   netSend({t:'atk',k:kind,tg:T&&!T.dead?T.id:null,face:Math.round(P.face*1000)/1000,aim:[a.x,a.y,a.z].map(v=>Math.round(v*1000)/1000)});
+  if(kind!=='basic') hvShout(kind,ab);   // voice: the hero shouts (audio/voices-hero.js)
   if(k==='charge') startCharge(T);
   else if(ACT_SKILL[k]&&ACT_SKILL[k].fx&&ACT_SKILL[k].fx.dash) startCharge(T,ACT_SKILL[k].range,ACT_SKILL[k].fx.dash.ahead,ACT_SKILL[k].fx.dash.behind);
   if(k==='quake'||k==='inferno'||k==='bladestorm'||k==='berserk') cSfx.swing(true);

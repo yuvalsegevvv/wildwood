@@ -364,6 +364,7 @@ game
   audio/ambience-lands.js            Per-land ambience: wind chimes and a temple bell in the Vale, eagles and far rock falls on the Greyspine, cicadas and a hawk over the Sunscar, whispers and a tolling bell in the Gloamhorn
   audio/rain.js                      Rain sound (rainSoundTick): a soft low wash, a slowly swelling patter, scattered droplets, a storm rumble; in the snow (WX.snow) a low wind and a blizzard's howl instead (a steady sea gale in the Gloamhorn)
   audio/voices.js                    Villager voices: text-to-speech voice picking and babble
+  audio/voices-hero.js               Your own voice: battle shouts for skills, a male / female voice to pick, and one voice per signature outfit set
   audio/driver.js                    Per-frame sound driver (soundTick): beds, random events, NPC steps
   ui/settings-sound.js               Sound part of the settings popover
   combat/monster-parts.js            Shared helpers for the monster models (monster-*.js): the MODELS registry, lofted bodies, tapered bones, curved tubes, horns, lumpy blobs, scale plates
