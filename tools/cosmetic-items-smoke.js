@@ -14,7 +14,7 @@ ok('a glove changes the picture (the colour of the hand differs from bare)',gl.e
 ok('a hostile glove id (constructor, __proto__) is bare hands',(()=>{ try{ return ['constructor','__proto__','toString'].every(g=>C.buildCharacter(look('male',{gloves:g}),{q:0.4})&&stat({gloves:g}).tris===base.tris); }catch(e){ return false; } })());
 ok('a hostile glove colour (NaN, a string) still builds',(()=>{ try{ for(const v of [NaN,'red',null,-5]) C.buildCharacter(look('male',{gloves:'leather',gloveColor:v}),{q:0.4}); return true; }catch(e){ return false; } })());
 const withGloves=Object.keys(C.OUTFITS).filter(id=>C.CHAR_MODELS[id].items.glove);
-ok('six sets have a glove item (Hollis, Corvin, Sazanka, Genzo, Brynja, Tamsin)',withGloves.length===6,withGloves.join(','));
+ok('nine sets have a glove item (Hollis, Corvin, Sazanka, Genzo, Brynja, Tamsin, and the Reach\'s Brindle, Dessa, Sefi)',withGloves.length===9,withGloves.join(','));
 bad=null; for(const id of withGloves){ const m=C.CHAR_MODELS[id], sex=m.sexes[0], W=C.ofWear(C.applySetup(look(sex),C.setupsOf(m,sex)[0]),id);
   try{ const r=C.buildCharacter(W,{q:0.8}); if(!r.kit.sl.glove||typeof r.kit.sl.glove.glove!=='function'||typeof r.kit.sl.glove.handPaint!=='function') bad=bad||id+' has no glove hooks';
     const t=C.stats(r); if(t.bad) bad=bad||id+' NaN';

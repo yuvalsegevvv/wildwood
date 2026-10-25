@@ -60,6 +60,7 @@ shared
   glasswell.js                       Glasswell placed in the world: VIL5, the Sunscar's village (a village-shaped record built from GLASSWELL: 80 homes, 26 places, the gates, anchors, colliders, the teleport circle); joins VILS and CIRCLES. Pure.
   barriers.js                        Barriers: the one place that says what holds a hiker (the gates of the locked lands) and what no longer does once a land is open (client movement and server setPos both call barStep). Pure.
   wraithwick.js                      Wraithwick, the Gloamhorn's village (VIL6): a fisher-and-wrecker hamlet of stone cottages, cairns and crooked lamps on the heath where the neck pass comes out; its teleport circle; joins VILS and CIRCLES. Pure.
+  tallgrass.js                       Tallgrass, Amber Reach's village (VIL7): the Kin's moot town round the Moot Baobab, on the savanna hub of the atlas (SAV_HUB); its teleport circle (gear.tall) and the reed landing on the water; joins VILS and CIRCLES. Pure.
   sunzones.js                        The Sunscar's zones s28-s36 (the atlas's zones of land 'sun', one per level) and its two boss arenas at the atlas's bosses (the Glass Guardian's court, the sand wyrm's pit). Pure.
   gloamzones.js                      The Gloamhorn's zones m30-m40 (the atlas's zones of land 'gloam', one per level) and its two boss arenas (the Drowned Captain's hold, the lighthouse's forecourt). Pure.
   savannazones.js                    Amber Reach's zones a37-a45 (the atlas's zones of land 'amber', one per level) and its two boss arenas at the atlas's bosses (Old Thunder's roost on Anvil Rock, the slab at the top of the Sunstair). Pure.
@@ -375,6 +376,7 @@ game
   village/buildings-sun.js           Glasswell's model: the whole city (the Bowl and its gates, the ruin and its statue, 80 homes, the halls, shops and inns, water, palms) as one group, built from GLASSWELL (shared/sunscar.js)
   village/buildings-sunscar.js       The Sunscar placed in the game: Glasswell's model on the Bowl the heightmap carries, its colliders (no water outside the Bowl)
   village/buildings-gloam.js         The Gloamhorn's buildings and dressing: Wraithwick (dark stone cottages, crooked lamps, cairns, a chapel), the Gloam Light, wrecks, sea-cave mouths, the Captain's hold, and standing stones (the Gloamvault's door is game/village/buildings-dungeon-gloam.js)
+  village/buildings-savanna.js       Amber Reach's buildings: Tallgrass (round mud-brick huts under thatch, reed-awned stalls, torch posts, drums), the Moot Baobab at its heart (a hollow tree wide as a hall, a platform and rope bridges in its crown), the gate posts and the reed landing
   village/villagers.js               VILLAGERS (hard-coded NPCs of the three villages), random villagers, NPC behaviour (updateNPCs)
   village/smalltalk-savanna.js       Small talk of Tallgrass (SMALLTALK7): what the Kin say when you pass, hints with two readings and no names from anywhere else
   village/smith.js                   Villager life: the forge keepers at work (a hammer, three blows then a pause, sparks and a clang when you are near) and a wave for a player who walks up

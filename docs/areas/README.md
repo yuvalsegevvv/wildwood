@@ -10,6 +10,7 @@
 | `tiers.md` | zone tiers (per-player difficulty per land) |
 | `regions.md` | the Sakura Vale, the Hoarfrost Reach, teleport circles, snow, adding a region |
 | `gloamhorn.md` | the Gloamhorn (the sixth land, levels 30-40, a permanent dusk) and Wraithwick: ground, gate, zones, 22 monsters, two bosses, the dusk, the reserved Gloamvault door |
+| `savanna.md` | the Amber Reach (the seventh land, levels 37-45) and Tallgrass: ground, gate, zones, monsters, bosses, seasons, dungeon, raid, Kin, the three sets (design: `docs/SAVANNA.md`) |
 | `sunscar.md` | the Sunscar (the fifth land, levels 28-36) and Glasswell: ground, gates, zones, monsters with accuracy / resistance, two bosses, plants, weather, the reserved dungeon door |
 | `greyspine.md` | the Greyspine: ground, the way in, Highmark, zones, bosses, water, the two rock falls (its dungeon, the Blackseam: `docs/DUNGEON-THEMES.md` section 9; the pendants it pays: `docs/PENDANTS.md`) |
 | `world-map.md` | the world map of Eldmere (G): the docs map's art with fog, banners and a pin, and the way to each land's map (baking the art, the fog, the pin) |
