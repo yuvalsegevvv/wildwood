@@ -66,12 +66,13 @@ function borderZ(x){
 }
 const borderXat=(x,z)=>z<borderZ(x)?borderXN(z):borderX(z);   // the wall on the west side of this point's land: the Vale Wall (south of the north wall), the Greyspine | Reach wall (north of it)
 /* The land tests answer from the atlas (shared/world-atlas.js: waLandId is total, the sea and the islands take the nearest land). Their old meanings stay: inVale is the vale AND the Reach, inGrey the Greyspine AND the Gloamhorn
-   (ask inGloam first), inSun the Sunscar (and the closed land link south of it, Amber Reach). */
+   (ask inGloam first), inSun the Sunscar (and Amber Reach, the seventh land south of it: ask inAmber BEFORE inSun, as inGloam before inGrey). */
 const inVale=(x,z)=>{ const l=waLandId(x,z); return l===1||l===2; };   // the Sakura Vale and the Hoarfrost Reach
 const inHoar=(x,z)=>waLandId(x,z)===2;   // the Hoarfrost Reach
 const inGrey=(x,z)=>{ const l=waLandId(x,z); return l===3||l===5; };   // the Greyspine and the Gloamhorn
 const inGloam=(x,z)=>waLandId(x,z)===5;   // the Gloamhorn, the sixth land (check it BEFORE inGrey, which is true there too)
-const inSun=(x,z)=>{ const l=waLandId(x,z); return l===4||l===6; };   // the Sunscar, the fifth land
+const inSun=(x,z)=>{ const l=waLandId(x,z); return l===4||l===6; };   // the Sunscar, the fifth land (and Amber Reach until the code of the Reach asks inAmber first)
+const inAmber=(x,z)=>waLandId(x,z)===6;   // savanna: Amber Reach, the seventh land (shared/savanna.js; check it BEFORE inSun, which is true there too)
 function baseHeight(x,z){ return pvpIsleCut(x,z,waGround(x,z)); }   // (pvp: the Proving Isle's moat and island over the atlas's ground)   // the atlas's ground (shared/world-atlas-ground.js); baseHeightRaw below is the old frame's ground, kept for the content modules that still read it (the Greyfall's fall profile)
 // lakes of the home forest and the vale: the atlas's (WA_LAKES; the Reach's frozen lakes are FROST_LAKES): Mistmere in the home forest's west (zone 10), the vale's Mirror Pond (zone 20, south) and Crane Lake (zone 22, east)
 const LAKE_NAMES={10:'Mistmere',20:'Mirror Pond',22:'Crane Lake'};

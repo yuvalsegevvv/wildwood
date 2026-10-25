@@ -18,8 +18,8 @@ const ZTIER_NAMES={home:'the home forest',vale:'the Sakura Vale',hoar:'the Hoarf
 const ZTIER_ROMAN=['0','I','II','III','IV','V','VI','VII'];
 // the second boss of each land (BOSS_DEFS lists a land's two bosses in the order of their levels): Carapax on the beach, Kyuubi, Vetrmaw, the Mountain Golem
 const ZTIER_BOSS={home:'carapax',vale:'kyuubi',hoar:'vetrmaw',grey:'mountaingolem',sun:'sandwyrm',gloam:'gloamwarden'};
-const WA_LAND_OF_ID=['home','vale','hoar','grey','sun','gloam','sun'];
-const landAt=(x,z)=>WA_LAND_OF_ID[waLandId(x,z)];   // from the atlas (Amber Reach, the closed land link, counts as the Sunscar)
+const WA_LAND_OF_ID=['home','vale','hoar','grey','sun','gloam','amber'];
+const landAt=(x,z)=>WA_LAND_OF_ID[waLandId(x,z)];   // from the atlas ('amber': the seventh land, shared/savanna.js)
 // where a tier can be changed: in a village, its whole area (as far as the zone label says "The village": the gate where you spawn counts)
 const zoneTierVillage=(x,z)=>vDist(x,z)<VR+22;
 const newZt=()=>({home:{on:0,max:0},vale:{on:0,max:0},hoar:{on:0,max:0},grey:{on:0,max:0},sun:{on:0,max:0},gloam:{on:0,max:0}});

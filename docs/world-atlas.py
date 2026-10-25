@@ -1,5 +1,5 @@
 """The atlas of Eldmere (v5, approved 17 Oct): continent, six equal lands, level zones, lakes, rivers from the high ground merging to
-the sea, islands, the Proving Isle, the land link south to Amber Reach, roads. Deterministic. x east, z south (the game's frame). Metres.
+the sea, islands, the Proving Isle, Amber Reach (the seventh land, south of the Sunscar), roads. Deterministic. x east, z south (the game's frame). Metres.
 
 This is the plan, not the terrain: its one-height-per-zone terraces are only a way to draw the map. The game takes from it WHERE things are
 (land, zone, water, coast, roads, anchors) and a heavily smoothed target height; the ground itself is made of landforms in
@@ -100,7 +100,7 @@ OUTLINE = [
     (1250, -470), (1330, -290), (1300, -70), (1370, 150), (1290, 370), (1180, 560),
     # the Crownsea: the vale's cape, the bay under Wildwood
     (980, 680), (760, 630), (560, 710), (380, 630), (180, 690), (-20, 650), (-220, 690), (-420, 640),
-    # the land link south to Amber Reach (planned): an isthmus running off the map's south edge
+    # the land link south to Amber Reach: an isthmus running off the map's south edge (AMBER_EXT below widens it into the land)
     (-500, 660), (-400, 820), (-330, 1100), (-1260, 1100), (-1200, 860), (-1090, 720),
     # the Sunscar's fog coast
     (-1020, 620), (-1180, 470), (-1290, 270), (-1230, 70), (-1310, -70),
@@ -113,8 +113,16 @@ base = poly_mask(OUTLINE)
 sd = chamfer(~base) - chamfer(base)
 cn = fbm(GX * 0.0035, GZ * 0.0035, 11, 5) * 95 + fbm(GX * 0.012, GZ * 0.012, 12, 3) * 32
 # islets: a few authored offshore (plus whatever the coast noise throws off)
+MAIN0 = flood((sd + cn) > 0, cell(40, 200))   # the mainland of the six built lands (v5): their partition below is made on THIS, so nothing of the six moves when Amber Reach grows
+AMBER0 = MAIN0 & (GZ > 690) & (GX > -1320) & (GX < -300)       # the old link south (the Sunscar's border with it is the straight line z = 690, where the Ashbed Gate stands)
+# Amber Reach (docs/SAVANNA.md): the link widened into a land of its own, as big as the others (0.70 km2). The extension is added to the outline (a union, so the six lands' coasts stay as they were):
+# west into the sea (the lobe in the north-west is cut off from the Sunscar's fog coast by a bay), the south coast out to z 1130, and the east coast out into the Crownsea (kept 300 m from Wildwood's)
+AMBER_EXT = [(-1250, 700), (-1330, 610), (-1420, 520), (-1580, 520), (-1720, 600), (-1800, 760), (-1810, 940), (-1700, 1100), (-1560, 1118), (-1260, 1120), (-1000, 1125), (-700, 1132), (-420, 1125),
+             (-300, 1128), (-200, 1080), (-170, 1010), (-190, 910), (-300, 840), (-400, 820), (-500, 780), (-1100, 790), (-1150, 760)]
+base = base | poly_mask(AMBER_EXT)
+sd = chamfer(~base) - chamfer(base)
 MAIN = flood((sd + cn) > 0, cell(40, 200))   # the mainland only: the coast noise's stray specks are dropped
-AMBER = MAIN & (GZ > 690) & (GX > -1320) & (GX < -300)          # the link south to Amber Reach (not a land yet)
+assert not (MAIN0 & ~MAIN).any(), 'the extension must not eat the old coast'
 # ---------- 1b. islands, by the kind of coast (real coasts do not scatter dots: islands come in groups shaped by what made them) ----------
 #   skerries   the Greyspine's fjord coast (Norway, the Stockholm archipelago): many small rocky islets in a belt 30-220 m out, lined up with the coast
 #   outer isles off the Gloamhorn and the Reach (the Hebrides, Svalbard): a few large islands across a sound, long side parallel to the coast
@@ -169,17 +177,20 @@ ISLE_KIND = np.where(ISLES, KIND, 0)
 LANDM = MAIN | ISLES
 
 
-# ---------- 2. six equal lands: a weighted walking-distance partition, read through a domain warp ----------
+# ---------- 2. six equal lands: a weighted walking-distance partition, read through a domain warp (Amber Reach, the seventh, is not part of it: it is what the partition leaves) ----------
 LANDS = [('gloam', 'Gloamhorn', (-1200, -600), 30, 40), ('grey', 'Greyspine', (-280, -720), 26, 32), ('hoar', 'Hoarfrost Reach', (800, -620), 22, 30),
-         ('sun', 'Sunscar', (-860, 220), 28, 36), ('home', 'Wildwood', (40, 220), 1, 20), ('vale', 'Sakura Vale', (870, 230), 16, 25)]
+         ('sun', 'Sunscar', (-860, 220), 28, 36), ('home', 'Wildwood', (40, 220), 1, 20), ('vale', 'Sakura Vale', (870, 230), 16, 25),
+         ('amber', 'Amber Reach', (-760, 900), 37, 45)]
+NP = 6   # the lands of the partition (the first six); Amber Reach is the land the partition leaves
 LID = {l[0]: i for i, l in enumerate(LANDS)}
-PART = MAIN & ~AMBER
+PART = MAIN0 & ~AMBER0
+AMBER = MAIN & ~PART
 COST = 1 + 0.9 * (fbm(GX * 0.006 + 3, GZ * 0.006 - 7, 23, 4) * 0.5 + 0.5)
-GD = np.stack([dijkstra(PART, [cell(sx, sz)], COST)[0] for _, _, (sx, sz), _, _ in LANDS])
-w = np.zeros(len(LANDS)); target = PART.sum() / len(LANDS)
+GD = np.stack([dijkstra(PART, [cell(sx, sz)], COST)[0] for _, _, (sx, sz), _, _ in LANDS[:NP]])
+w = np.zeros(NP); target = PART.sum() / NP
 for it in range(3000):
     lab = np.where(PART, (GD - w[:, None, None]).argmin(0), -1)
-    cnt = np.array([(lab == i).sum() for i in range(len(LANDS))])
+    cnt = np.array([(lab == i).sum() for i in range(NP)])
     err = (target - cnt) / target
     if np.abs(err).max() < 0.012: break
     w += err * 30
@@ -187,14 +198,14 @@ wx = fbm(GX * 0.004 + 9, GZ * 0.004, 31, 4) * 80 + fbm(GX * 0.014, GZ * 0.014 + 
 wz = fbm(GX * 0.004 - 4, GZ * 0.004 + 7, 33, 4) * 80 + fbm(GX * 0.014 + 2, GZ * 0.014, 34, 3) * 26
 jz = np.clip(((GZ + wz - Z0) / ST).astype(int), 0, NZ - 1); jx = np.clip(((GX + wx - X0) / ST).astype(int), 0, NX - 1)
 lw = lab[jz, jx]; lab = np.where(PART & (lw >= 0), lw, lab)
-for i in range(len(LANDS)):   # pieces cut off by the warp join the land round them
+for i in range(NP):   # pieces cut off by the warp join the land round them
     m = lab == i; core = flood(m, tuple(np.argwhere(m)[np.argmin(GD[i][m])])); stray = m & ~core
     for _ in range(60):
         if not stray.any(): break
         for dz, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             nb = shift(lab, dz, dx, -1); fix = stray & (nb != i) & (nb >= 0); lab[fix] = nb[fix]; stray &= ~fix
 LL = lab.copy(); LL[AMBER] = 6
-LAND_AREA = {LANDS[i][0]: int((LL == i).sum() * ST * ST) for i in range(6)}
+LAND_AREA = {LANDS[i][0]: int((LL == i).sum() * ST * ST) for i in range(len(LANDS))}
 
 # ---------- 3. gates ----------
 def border(a, b):
@@ -204,17 +215,24 @@ def border(a, b):
 GATES = []
 for a, b, name, kind in [('home', ['vale'], 'The Greyfall Bridge', 'bridge'), ('vale', ['hoar'], 'Frostgate Pass', 'pass'), ('hoar', ['grey'], 'The Glacier Valley', 'valley'),
                          ('grey', ['gloam'], 'The Windswept Neck', 'pass'), ('grey', ['sun'], 'The River Pass', 'pass'), ('home', ['sun'], 'Redgate Canyon', 'canyon'),
-                         ('sun', 6, 'The Dry Riverbed (to Amber Reach, planned)', 'planned')]:
-    c = border(a, b); mid = c.mean(0); k = np.argmin(((c - mid) ** 2).sum(1)); x, z = pos(c[k])
+                         ('sun', 6, 'The Ashbed Gate', 'gate')]:
+    c = border(a, b)
+    if b == 6: c = c[c[:, 0] >= cell(0, 684)[0]]   # the Ashbed Gate stands on the Sunscar's straight southern border (z 690), where the dry riverbed is, not on the bay's shore beside the lobe
+    mid = c.mean(0); k = np.argmin(((c - mid) ** 2).sum(1)); x, z = pos(c[k])
     GATES.append({'a': a, 'b': b if isinstance(b, int) else b[0], 'name': name, 'kind': kind, 'x': x, 'z': z})
+GATES[-1]['b'] = 'amber'   # (the gate's far side is a land of the atlas now: the roads below run on both sides of it)
 
 # ---------- 4. zones: organic cells of equal area, levels rising with the walk from the way in ----------
 ZONE_KEYS = {'home': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 'shore', 'sunfoot', 'foothills'],
              'vale': [16, 17, 18, 19, 20, 21, 22, 23, 24, 25], 'hoar': [22, 23, 24, 25, 26, 27, 28, 29, 30],
              'grey': [26, 27, 28, 29, 30, 31, 32], 'sun': [28, 29, 30, 31, 32, 33, 34, 35, 36],
-             'gloam': [30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]}
+             'gloam': [30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40], 'amber': [37, 38, 39, 40, 41, 42, 43, 44, 45]}
 LEVELS = {'shore': '16-17', 'sunfoot': '18', 'foothills': '19-20'}
-ENTRY = {'vale': 'The Greyfall Bridge', 'hoar': 'Frostgate Pass', 'grey': 'The Glacier Valley', 'sun': 'The River Pass', 'gloam': 'The Windswept Neck'}
+ENTRY = {'vale': 'The Greyfall Bridge', 'hoar': 'Frostgate Pass', 'grey': 'The Glacier Valley', 'sun': 'The River Pass', 'gloam': 'The Windswept Neck', 'amber': 'The Ashbed Gate'}
+# Amber Reach's nine zones are laid out by hand (the loop of docs/SAVANNA.md): the gate zone 37 in the north-centre, the village's meadows 38 beside it, west through the pools (39) and the termite
+# cathedrals (40, the north-western lobe) to Anvil Rock (41), back east along the south coast through the burnt plain (42) and the baobabs (43) to the delta (44), and the cape's Sunstair (45) in the east.
+# The seeds of the cells (the weights then make them equal in area); the Sunstair (45) touches only the delta (44), so the end of the land is never next to its first zones.
+AMBER_SEEDS = {37: (-720, 790), 38: (-1020, 830), 39: (-1300, 800), 40: (-1540, 700), 41: (-1650, 980), 42: (-1360, 1040), 43: (-1050, 1040), 44: (-560, 960), 45: (-300, 980)}
 # a stronger, two-scale warp for the zones (cells with wandering, lobed borders instead of polygons)
 ZWX = GX + fbm(GX * 0.0045, GZ * 0.0045, 41, 4) * 85 + fbm(GX * 0.016, GZ * 0.016, 42, 3) * 24
 ZWZ = GZ + fbm(GX * 0.0045 + 50, GZ * 0.0045 - 30, 43, 4) * 85 + fbm(GX * 0.016 + 8, GZ * 0.016, 44, 3) * 24
@@ -230,18 +248,19 @@ for li, (lid, lname, _, lo, hi) in enumerate(LANDS):
     HUBS[lid] = pos(hub)
     PW = np.stack([ZWX[M], ZWZ[M]], 1); r = np.random.default_rng(100 + li)
     S = PW[r.choice(len(PW), n, replace=False)].copy(); wts = np.zeros(n); sub = PW[::3]
+    if lid == 'amber': S = np.array([[ZWX[cell(*AMBER_SEEDS[kk])], ZWZ[cell(*AMBER_SEEDS[kk])]] for kk in keys])   # (the hand-placed seeds, in key order: seed k is zone keys[k])
     asg = lambda P: (((P[:, None, :] - S[None]) ** 2).sum(2) - wts[None]).argmin(1)
-    for it in range(8):   # a few Lloyd steps only: enough to spread the seeds, not enough to make honeycombs
+    for it in range(8 if lid != 'amber' else 2):   # a few Lloyd steps only: enough to spread the seeds, not enough to make honeycombs (two for Amber Reach: its seeds are the design)
         lb = asg(sub)
         for k in range(n):
-            if (lb == k).any(): S[k] = sub[lb == k].mean(0)
+            if (lb == k).any(): S[k] = sub[lb == k].mean(0) if lid != 'amber' else S[k] * 0.5 + sub[lb == k].mean(0) * 0.5
     for it in range(1000):
         lb = asg(sub); c_ = np.bincount(lb, minlength=n).astype(float)
         if np.abs(c_ - c_.mean()).max() < c_.mean() * 0.06: break
         wts += (c_.mean() - c_) / c_.mean() * 700
         if it % 30 == 29:
             for k in range(n):
-                if (lb == k).any(): S[k] = S[k] * 0.6 + sub[lb == k].mean(0) * 0.4
+                if (lb == k).any(): S[k] = S[k] * 0.6 + sub[lb == k].mean(0) * 0.4 if lid != 'amber' else S[k] * 0.8 + sub[lb == k].mean(0) * 0.2
     lb = asg(PW)
     # keep each zone in one piece
     for k in range(n):
@@ -261,16 +280,27 @@ for li, (lid, lname, _, lo, hi) in enumerate(LANDS):
     free = [k for k in np.argsort(dist) if k not in taken.values()]; order = {}
     for kk, k in zip([kk for kk in keys if kk not in pins], free): order[kk] = k
     order.update(taken)
+    if lid == 'amber': order = {kk: i for i, kk in enumerate(keys)}   # (seed i is zone keys[i])
     for kk in keys:
         k = order[kk]; m = lb == k; idx = len(ZONES); ZL[cells[m, 0], cells[m, 1]] = idx
         ZONES.append({'land': lid, 'key': kk, 'level': LEVELS.get(kk, str(kk)), 'area': int(m.sum() * ST * ST),
                       'x': pos(cen[k])[0], 'z': pos(cen[k])[1], 'dist': float(dist[k])})
 NZN = len(ZONES)
+# Amber Reach's village stands in the meadows (zone 38), where the gate's road first reaches open ground: the interior point (108 m by the 6 m grid's distance, about 100 m true, from every zone border and the sea) nearest the Ashbed Gate
+_zb = np.zeros(LL.shape, bool)
+for dz, dx in ((0, 1), (1, 0), (0, -1), (-1, 0)): _zb |= (shift(ZL, dz, dx, -1) != ZL)
+_zin = chamfer(_zb | ~MAIN)
+_g = next(G for G in GATES if G['name'] == ENTRY['amber']); _z38 = next(i for i, z in enumerate(ZONES) if z['land'] == 'amber' and z['key'] == 38)
+_m = (ZL == _z38) & (_zin > 108)
+HUBS['amber'] = pos(tuple(np.argwhere(_m)[np.argmin(np.hypot(GX[_m] - _g['x'], GZ[_m] - _g['z']))]))
+assert next(z for z in ZONES if z['land'] == 'amber' and z['key'] == 37)['area'] > 0 and ZL[cell(_g['x'], _g['z'] + 20)] == next(i for i, z in enumerate(ZONES) if z['land'] == 'amber' and z['key'] == 37), 'the Ashbed Gate must stand in zone 37'
 
 # ---------- 5. elevation: one level per zone, cliffs between zones ----------
 # land: (lowest zone, highest zone, least step between neighbours, relief inside a zone (m), border ridge height)
 ELEV = {'home': (3, 30, 5, 1.6, 26), 'vale': (6, 42, 6, 2.0, 28), 'sun': (26, 58, 6, 1.8, 0), 'hoar': (48, 84, 7, 2.2, 30),
-        'grey': (45, 175, 16, 4.5, 0), 'gloam': (14, 70, 8, 2.4, 22)}
+        'grey': (45, 175, 16, 4.5, 0), 'gloam': (14, 70, 8, 2.4, 22), 'amber': (3, 42, 4, 1.5, 0)}
+# Amber Reach's zones stand where the land's design puts them (the savanna slopes from the Sunscar's foot at the gate down to the delta; the Anvil and the Sunstair stand up out of it), not by the walk from the coast
+AMBER_ELEV = {37: 34, 38: 28, 39: 20, 40: 24, 41: 36, 42: 22, 43: 24, 44: 9, 45: 42}
 coast_d = chamfer(~MAIN)
 adj = [set() for _ in range(NZN)]
 for dz, dx in ((0, 1), (1, 0)):
@@ -280,6 +310,9 @@ grey_d = chamfer(LL == LID['grey'])
 E = np.zeros(NZN); GDIST = np.zeros(NZN, int)
 for li, (lid, *_ ) in enumerate(LANDS):
     lo, hi, step, rel, rr = ELEV[lid]; ids = [i for i, z in enumerate(ZONES) if z['land'] == lid]; idset = set(ids)
+    if lid == 'amber':
+        for i in ids: E[i] = AMBER_ELEV[ZONES[i]['key']]
+        continue
     # every zone drains: walk the zone graph from the zones on the coast; a zone stands at least a step above the zone it drains into
     coastal = [i for i in ids if (coast_d[ZL == i] < 14).mean() > 0.04]
     g = {i: 0 for i in coastal}; q = collections.deque(coastal)
@@ -304,7 +337,6 @@ H0 = np.where(ZL >= 0, E[np.maximum(ZL, 0)], 0.0)
 isl_in = chamfer(~ISLES)
 for k, (base_, slope_, cap_) in {6: (2.2, 0.08, 4.5), 1: (2.5, 0.35, 14), 2: (3, 0.22, 45), 3: (1.4, 0.10, 3.5), 4: (3, 0.28, 38), 5: (4, 0.6, 20)}.items():
     m = ISLES & (ISLE_KIND == k); H0[m] = np.minimum(base_ + isl_in[m] * slope_, cap_)
-H0[AMBER] = 30
 H0[~LANDM] = -8
 for i, z in enumerate(ZONES): z['elev'] = round(float(E[i]), 1)
 
@@ -341,8 +373,9 @@ for g in GATES:
 # ---------- 7. spots (subzones' places), bosses and doors ----------
 BOSSES = {('home', 15): 'The Stone Circle', ('home', 'shore'): "Carapax's Beach (20)", ('vale', 20): 'Demon Gate', ('vale', 25): 'Foxfire Hollow',
           ('hoar', 26): "The Rimeking's Hall", ('hoar', 30): "The Wyrm's Nest", ('grey', 29): "The Gryphon Queen's Peak", ('grey', 32): "The Golem's Cavern",
-          ('sun', 32): "The Guardian's Court", ('sun', 36): "The Wyrm's Pit", ('gloam', 35): 'The Sea Caves', ('gloam', 40): 'The Gloam Light'}
-DOORS = {'home': 6, 'vale': 22, 'hoar': 29, 'grey': 28, 'sun': 34, 'gloam': 38}
+          ('sun', 32): "The Guardian's Court", ('sun', 36): "The Wyrm's Pit", ('gloam', 35): 'The Sea Caves', ('gloam', 40): 'The Gloam Light',
+          ('amber', 41): 'Anvil Rock', ('amber', 45): 'The Sunstair'}
+DOORS = {'home': 6, 'vale': 22, 'hoar': 29, 'grey': 28, 'sun': 34, 'gloam': 38, 'amber': 40}
 POIS = []; SPOTS = []
 ZB = np.zeros(LL.shape, bool)
 for dz, dx in ((0, 1), (1, 0), (0, -1), (-1, 0)): ZB |= (shift(ZL, dz, dx, -1) != ZL)
@@ -351,10 +384,12 @@ for i, z in enumerate(ZONES):
     m = ZL == i; cells = np.argwhere(m); idd = ZIN[m]; hx, hz = HUBS[z['land']]
     far = np.hypot(*(cells - np.array(cell(hx, hz))).T) * ST
     if (z['land'], z['key']) in BOSSES:
-        sc = np.where(idd > 34, far, -1e9) if (idd > 34).any() else idd
+        bi = 90 if z['land'] == 'amber' else 34   # (Amber Reach's arenas stand well inland: the savanna's coast is a long beach ramp)
+        sc = np.where(idd > bi, far, -1e9) if (idd > bi).any() else idd
         x, zz = pos(cells[np.argmax(sc)]); POIS.append({'kind': 'boss', 'name': BOSSES[(z['land'], z['key'])], 'land': z['land'], 'zone': z['key'], 'x': x, 'z': zz})
     if DOORS[z['land']] == z['key']:
-        sc = np.where(idd > 26, -np.abs(idd - 40), -1e9); x, zz = pos(cells[np.argmax(sc)])
+        di = 80 if z['land'] == 'amber' else 40
+        sc = np.where(idd > 26, -np.abs(idd - di), -1e9); x, zz = pos(cells[np.argmax(sc)])
         POIS.append({'kind': 'door', 'name': z['land'] + ' door', 'land': z['land'], 'zone': z['key'], 'x': x, 'z': zz})
     k = 2 if z['land'] == 'home' else 3; inner = cells[idd > 20] if (idd > 20).sum() > 10 else cells
     pick = [inner[np.argmax(ZIN[tuple(inner.T)])]]
@@ -362,6 +397,15 @@ for i, z in enumerate(ZONES):
         dmin = np.min([np.hypot(*(inner - p).T) for p in pick], 0); pick.append(inner[np.argmax(dmin)])
     for j, c in enumerate(pick):
         x, zz = pos(c); SPOTS.append({'land': z['land'], 'zone': z['key'], 'n': j, 'x': x, 'z': zz, 'heart': j == 0})
+# Amber Reach's two other places that stand on the atlas: the Broken Moot (the ruined council hall, the seventh stronghold of the raids) in the baobab groves, at the deepest point of zone 43,
+# and the cape pier (the sealed landing for the boats to the Emberwake Isles) on the south coast of the Sunstair, 36-46 m inland of the water, the southernmost such point 120 m or more from the boss's arena
+_zi = {z['key']: i for i, z in enumerate(ZONES) if z['land'] == 'amber'}
+_m = ZL == _zi[43]; _x, _zz = pos(np.unravel_index(np.argmax(np.where(_m, ZIN, -1)), ZIN.shape))
+POIS.append({'kind': 'raid', 'name': 'The Broken Moot', 'land': 'amber', 'zone': 43, 'x': _x, 'z': _zz})
+_b = next(q for q in POIS if q['land'] == 'amber' and q['kind'] == 'boss' and q['zone'] == 45)
+_m = (ZL == _zi[45]) & (coast_d > 36) & (coast_d < 46) & (np.hypot(GX - _b['x'], GZ - _b['z']) > 120)
+_c = np.unravel_index(np.argmax(np.where(_m, GZ + GX * 1e-3, -1e9)), GZ.shape); _x, _zz = pos(_c)
+POIS.append({'kind': 'pier', 'name': 'The Cape Pier', 'land': 'amber', 'zone': 45, 'x': _x, 'z': _zz})
 for lid in HUBS:
     allowed = (LL == LID[lid]) | GATEOK
     for p in POIS:
@@ -422,6 +466,11 @@ for i, z in enumerate(ZONES):
 # the home village stays dry: no lake within 160 m of it, and the river keeps 120 m off (cost below)
 hx_, hz_ = HUBS['home']
 LAKES[:] = [L for L in LAKES if np.hypot(L['x'] - hx_, L['z'] - hz_) > 160 + L['r']]
+# Amber Reach's Seven Pools (zone 39): waterholes of 22-34 m, as far from each other as the zone allows (the first at its deepest point), each 55 m or more from the zone's border and 110 m from the sea
+_cand = np.argwhere((ZL == _zi[39]) & (ZIN > 55) & (coast_d > 110)); _pts = [_cand[np.argmax(ZIN[tuple(_cand.T)])]]
+while len(_pts) < 7: _pts.append(_cand[np.argmax(np.min([np.hypot(*(_cand - p_).T) for p_ in _pts], 0))])
+for p_, r_ in zip(_pts, (30, 24, 34, 26, 28, 22, 32)):
+    x_, z_ = pos(p_); LAKES.append({'x': x_, 'z': z_, 'r': r_, 'zone': 39, 'land': 'amber'})
 def lake_d(L):
     """distance-like field for a lake: stretched along a seeded direction, warped twice, lobed (no circles)"""
     r_ = np.random.default_rng(int(abs(L['x'] * 7 + L['z'])))
@@ -451,9 +500,11 @@ for c in border('gloam', ['sun']): sg[tuple(c)] = True
 sgd = chamfer(sg); sgc = np.argwhere(sg)
 jn = sgc[np.argmin(np.hypot(*(sgc - np.array(cell(*[np.mean([g['x'] for g in GATES if g['name'] in ('The River Pass', 'The Windswept Neck')]), np.mean([g['z'] for g in GATES if g['name'] in ('The River Pass', 'The Windswept Neck')])]))).T))]
 fg = gate_cell('Frostgate Pass')
+_asrc = cell(-690, 850)   # the seasonal river: the Ashbed above this spring is a dry riverbed (the gate's gravel, no water), from here it runs through the gate zone's south end and the delta to the south coast
 MAINR = [('The Glass River (the Sunscar | Gloamhorn border)', high_near('grey', tuple(jn), 200), ['grey', 'sun', 'gloam'], {}),
          ('The Jade River (from the Reach\'s meltwater springs)', tuple(np.argwhere(LL == LID['vale'])[np.argmin(np.hypot(*(np.argwhere(LL == LID['vale']) - np.array(fg)).T))]), ['vale'], {'east': True}),
-         ('The Wildwood River (from the Rootdeep springs, around the village to the sea)', cell(fz['x'], fz['z']), ['home'], {})]
+         ('The Wildwood River (from the Rootdeep springs, around the village to the sea)', cell(fz['x'], fz['z']), ['home'], {}),
+         ('The Wet River (the seasonal river of Amber Reach, from the Ashbed to the Sedge Delta)', _asrc, ['amber'], {'via': [(-610, 990)], 'mouth': (-600, 1130)})]
 RIVMAIN = np.zeros(LL.shape, bool); RIVERS = []
 coastal_cell = LANDM & (coast_d < 9)
 ZBD = chamfer(ZB8)   # rivers keep to the zones' borders (water runs at the foot of the cliffs between zones: a border you cannot just walk over)
@@ -470,7 +521,7 @@ for name, src, lands, opt in MAINR:
     D, P = dijkstra(allowed, [legs[-1]], rc)
     ok = coastal_cell & allowed & np.isfinite(D)
     # the mouth: the far coast in the river's own direction (east for the Vale's), else the one across the land
-    score = (GX - pos(legs[-1])[0]) * 3 - D * 0.15 if opt.get('east') else np.hypot(GX - pos(legs[0])[0], GZ - pos(legs[0])[1]) - D * 0.25
+    score = -np.hypot(GX - opt['mouth'][0], GZ - opt['mouth'][1]) if 'mouth' in opt else (GX - pos(legs[-1])[0]) * 3 - D * 0.15 if opt.get('east') else np.hypot(GX - pos(legs[0])[0], GZ - pos(legs[0])[1]) - D * 0.25
     t = np.unravel_index(np.argmax(np.where(ok, score, -1e9)), H.shape)
     seg_ = [tuple(t)]
     while seg_[-1] in P: seg_.append(P[seg_[-1]])

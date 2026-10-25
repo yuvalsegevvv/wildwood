@@ -4,34 +4,35 @@
 // Usage: node tools/atlas-smoke.js [--verbose]
 const fs=require('fs');
 const {loadShared,SRC}=require('./load');
-const X=loadShared(['rawHeight','baseHeight','landAt','inVale','inHoar','inGrey','inSun','inGloam','vilAt','coastDist','waterSurf','WX0','WX1','WZ0','WZ1','WA_META','WA_ANCHORS','WA_HUBS','WA_GATES','WA_ZONES','WA_POIS',
+const X=loadShared(['rawHeight','baseHeight','landAt','inVale','inHoar','inGrey','inSun','inGloam','inAmber','vilAt','coastDist','waterSurf','WX0','WX1','WZ0','WZ1','WA_META','WA_ANCHORS','WA_HUBS','WA_GATES','WA_ZONES','WA_POIS',
   'WA_ENTRANCES','WA_SPOTS','WA_ISLANDS','WA_PVP','WA_LAKES','WA_RIVERS','WA_ROADS','waLandId','waLand','waZone','waZoneId','waTarget','waWater','waWaterDist','waWaterSurf','waRoadDist','waBorderDist','waLandBorderDist',
-  'waCoast','waIsSea','cvNear','SUN_CITY','VIL','VIL2','VIL3','VIL4','VIL5','VIL6','WATER','smoothstep']);
+  'waCoast','waIsSea','cvNear','SUN_CITY','VIL','VIL2','VIL3','VIL4','VIL5','VIL6','WATER','smoothstep','barStep','barLandOpen','BAR_NONE','MAX_ZONE_LV','SAV_KEYS','SAV_ZONE','SAV_HUB','SAV_GATE','SAV_DOOR','SAV_BOSS_POI','SAV_MOOT','SAV_PIER','SAV_POOLS','SAV_RIVER','SUN_AMBER','GREY_GATES']);
 let fails=0; const ok=(n,c,d)=>{ if(!c) fails++; console.log((c?'PASS ':'FAIL ')+n+(d?'  ('+d+')':'')); };
 const verbose=process.argv.includes('--verbose');
 const H=X.rawHeight, SLOPE_MAX=1.2;   // (movement.js: a step climbing more than 1.2 m a metre is turned or dropped)
-const LANDS=['home','vale','hoar','grey','sun','gloam'];
+const LANDS=['home','vale','hoar','grey','sun','gloam','amber'];
 
 // ---- the frame and the baked data
 ok('the world frame is the atlas canvas (x -1900..1650, z -1120..1180)',X.WX0===-1900&&X.WX1===1650&&X.WZ0===-1120&&X.WZ1===1180);
 { const sz=fs.statSync(SRC+'/shared/world-atlas-data.js').size; ok('the baked file stays under 600 KB',sz<600*1024,Math.round(sz/1024)+' KB'); }
-ok('six lands, seven gates, six hubs, 64 zones',X.WA_ANCHORS.lands.length===7&&X.WA_GATES.length===7&&Object.keys(X.WA_HUBS).length===6&&X.WA_ZONES.length===64);
+ok('seven lands, seven gates, seven hubs, 73 zones (Amber Reach, the seventh land, has nine: 37..45)',X.WA_ANCHORS.lands.length===7&&X.WA_GATES.length===7&&Object.keys(X.WA_HUBS).length===7&&X.WA_ZONES.length===73);
 // ---- the land tests are total and keep their meanings
 { let bad=[], n=0; const cnt={};
   for(let z=X.WZ0;z<=X.WZ1;z+=25) for(let x=X.WX0;x<=X.WX1;x+=25){ n++;
     const l=X.landAt(x,z); cnt[l]=(cnt[l]||0)+1;
-    const flags=[X.inVale(x,z),X.inHoar(x,z),X.inGrey(x,z),X.inGloam(x,z),X.inSun(x,z)];
+    const flags=[X.inVale(x,z),X.inHoar(x,z),X.inGrey(x,z),X.inGloam(x,z),X.inSun(x,z)&&!X.inAmber(x,z),X.inAmber(x,z)];   // (inSun is true in Amber Reach too: ask inAmber first)
     if(X.inHoar(x,z)&&!X.inVale(x,z)) bad.push('hoar not vale '+x+','+z);
     if(X.inGloam(x,z)&&!X.inGrey(x,z)) bad.push('gloam not grey '+x+','+z);
+    if(X.inAmber(x,z)&&!X.inSun(x,z)) bad.push('amber not sun '+x+','+z);
     if(flags.filter(Boolean).length>(X.inHoar(x,z)||X.inGloam(x,z)?2:1)) bad.push('two lands '+x+','+z);
-    const exp=X.inGloam(x,z)?'gloam':X.inHoar(x,z)?'hoar':X.inVale(x,z)?'vale':X.inGrey(x,z)?'grey':X.inSun(x,z)?'sun':'home';
+    const exp=X.inGloam(x,z)?'gloam':X.inAmber(x,z)?'amber':X.inHoar(x,z)?'hoar':X.inVale(x,z)?'vale':X.inGrey(x,z)?'grey':X.inSun(x,z)?'sun':'home';
     if(exp!==l) bad.push('landAt '+l+' vs '+exp+' at '+x+','+z);
-    const v=X.vilAt(x,z), want={home:X.VIL,vale:X.VIL2,hoar:X.VIL3,grey:X.VIL4,sun:X.VIL5,gloam:X.VIL6}[l];
+    const v=X.vilAt(x,z), want={home:X.VIL,vale:X.VIL2,hoar:X.VIL3,grey:X.VIL4,sun:X.VIL5,gloam:X.VIL6,amber:X.VIL5}[l];   // (amber: no village of its own yet, Tallgrass is task W3's: vilAt says Glasswell's)
     if(v!==want) bad.push('vilAt '+l+' '+x+','+z);
     const w=X.waLand(x,z); if(w!==null&&w!=='amber'&&w!==l) bad.push('waLand '+w+' vs landAt '+l);
   }
   ok('landAt / inVale / inHoar / inGrey / inGloam / inSun / vilAt agree at every point of the rectangle and keep their old meanings (hoar is inside vale, gloam inside grey)',bad.length===0,bad.slice(0,3).join('; '));
-  ok('all six lands exist, each over 0.5% of the rectangle',LANDS.every(k=>(cnt[k]||0)/n>0.005),JSON.stringify(cnt));
+  ok('all seven lands exist, each over 0.5% of the rectangle',LANDS.every(k=>(cnt[k]||0)/n>0.005),JSON.stringify(cnt));
 }
 { let bad=0,n=0; for(let z=X.WZ0+50;z<X.WZ1;z+=40) for(let x=X.WX0+50;x<X.WX1;x+=40){ n++; const sea=X.waIsSea(x,z), c=X.waCoast(x,z); if(sea!==(c<=1.5)&&Math.abs(c)>16) bad++; }
   ok('the sea flag and the coast distance agree (sea is where the coast distance is negative)',bad===0,bad+' of '+n); }
@@ -60,7 +61,29 @@ const gradAt=(x,z)=>Math.max(Math.abs(H(x+4,z)-H(x-4,z)),Math.abs(H(x,z+4)-H(x,z
     else if(w===4?!(Math.abs(X.waWaterSurf(L.x,L.z)-X.rawHeight(L.x,L.z))<0.5&&X.waterSurf(L.x,L.z)===X.WATER):!(X.waterSurf(L.x,L.z)>X.rawHeight(L.x,L.z)+0.3)) bad.push('lake not deep (or ice not flat) '+L.zone); }
   ok('every lake is water at its centre (frozen only in the Reach), with its surface above its bed',bad.length===0,bad.join('; ')); }
 { const bad=[]; for(const R of X.WA_RIVERS){ const p=R.pts, a=p[0], b=p[p.length-1]; if(!(X.waCoast(b[0],b[1])<60)) bad.push(R.name+' does not reach the sea ('+X.waCoast(b[0],b[1]).toFixed(0)+' m inland)'); let wet=0; for(const q of p) if(X.waWaterDist(q[0],q[1])<12) wet++; if(wet<p.length*0.8) bad.push(R.name+' is dry along '+(p.length-wet)+' of '+p.length+' points'); }
-  ok('the three main rivers run to the sea and are water along their line',bad.length===0,bad.join('; ')); }
+  ok('the four main rivers (the Wet River of Amber Reach among them) run to the sea and are water along their line',bad.length===0,bad.join('; ')); }
+// ---- Amber Reach, the seventh land (shared/savanna.js): as big as the others, the Ashbed Gate on the Sunscar's straight border, the hub in the meadows, nine zones of equal area, its places and its gate
+{ const area={}; for(let z=X.WZ0;z<X.WZ1;z+=8) for(let x=X.WX0;x<X.WX1;x+=8){ if(X.waIsSea(x,z)) continue; const l=X.waLand(x,z); area[l]=(area[l]||0)+64; }
+  const km=l=>(area[l]||0)/1e6, others=LANDS.filter(l=>l!=='amber').map(km), lo=Math.min(...others), hi=Math.max(...others);
+  ok("Amber Reach is as big as the other six lands (within 5% of their range "+lo.toFixed(3)+".."+hi.toFixed(3)+" km2)",km('amber')>=lo*0.95&&km('amber')<=hi*1.05,km('amber').toFixed(3)+' km2');
+  const g=X.SAV_GATE, zg=X.waZone(g.x,g.z+20), zh=X.waZone(X.SAV_HUB[0],X.SAV_HUB[1]);
+  ok("the Ashbed Gate stands on the Sunscar's side of the straight border (z 690), 20 m on is zone 37, and the rock-fall record (SUN_AMBER) is at it",X.waLand(g.x,g.z)==='sun'&&X.waLand(g.x,g.z+8)==='amber'&&zg&&zg.key===37&&Math.abs(X.SUN_AMBER.x-g.x)<1&&X.GREY_GATES.includes(X.SUN_AMBER),JSON.stringify(g));
+  ok("the hub (Tallgrass's place) is in zone 38, about 100 m (95+) from every zone border, and landAt / inAmber say amber there",!!zh&&zh.key===38&&zh.land==='amber'&&X.waBorderDist(X.SAV_HUB[0],X.SAV_HUB[1])>=95&&X.landAt(X.SAV_HUB[0],X.SAV_HUB[1])==='amber'&&X.inAmber(X.SAV_HUB[0],X.SAV_HUB[1])&&X.inSun(X.SAV_HUB[0],X.SAV_HUB[1]));
+  const Z=X.WA_ZONES.filter(z=>z.land==='amber'), areas=Z.map(z=>z.area), mean=areas.reduce((a,b)=>a+b,0)/areas.length;
+  ok('Amber Reach has the nine zones 37..45, level = key, equal in area (within 10%), each with SAV_ZONE and a way in',Z.length===9&&X.SAV_KEYS.every(k=>X.SAV_ZONE[k]&&X.SAV_ZONE[k].key===k&&X.SAV_ZONE[k].land==='amber'&&+X.SAV_ZONE[k].level===k)&&areas.every(a=>Math.abs(a-mean)<mean*0.1)&&Z.every(z=>z.entrance),areas.join(' '));
+  const inZ=(p,k)=>p&&X.waZone(p.x,p.z)&&X.waZone(p.x,p.z).key===k&&X.waLand(p.x,p.z)==='amber', inland=p=>X.waBorderDist(p.x,p.z)>=60&&X.waCoast(p.x,p.z)>=60;
+  ok('the dungeon door is in zone 40, the two boss sites in 41 (Anvil Rock) and 45 (the Sunstair), the raid site in 43 (the Broken Moot), all 60 m or more inland and from a zone border; the cape pier is in 45 within 60 m of the water',
+    inZ(X.SAV_DOOR,40)&&inZ(X.SAV_BOSS_POI[41],41)&&inZ(X.SAV_BOSS_POI[45],45)&&inZ(X.SAV_MOOT,43)&&[X.SAV_DOOR,X.SAV_BOSS_POI[41],X.SAV_BOSS_POI[45],X.SAV_MOOT].every(inland)&&inZ(X.SAV_PIER,45)&&X.waCoast(X.SAV_PIER.x,X.SAV_PIER.z)<60,
+    [X.SAV_DOOR,X.SAV_BOSS_POI[41],X.SAV_BOSS_POI[45],X.SAV_MOOT,X.SAV_PIER].map(p=>p&&p.name).join(', '));
+  ok('the Seven Pools: seven lakes in zone 39, and the Wet River starts in zone 37 and ends in zone 44 on the south coast',X.SAV_POOLS.length===7&&X.SAV_POOLS.every(L=>X.waZone(L.x,L.z)&&X.waZone(L.x,L.z).key===39)&&!!X.SAV_RIVER&&X.waZone(X.SAV_RIVER.pts[0][0],X.SAV_RIVER.pts[0][1]).key===37&&X.waZone(...X.SAV_RIVER.pts.at(-1)).key===44);
+  // the gate: the whole Sunscar | Amber Reach border holds until gear.amber is 1 (barStep: a step across it is dropped), then lets a hiker through; a teleport only goes there with the flag
+  const open=Object.assign({},X.BAR_NONE,{east:1,north:1,west:1,river:1,neck:1,redgate:1}), shut=Object.assign({},open,{amber:0}), on=Object.assign({},open,{amber:1}); let pairs=0, leaks=0, stuck=0;
+  for(let z=X.WZ0+16;z<X.WZ1-16;z+=8) for(let x=X.WX0+16;x<X.WX1-16;x+=8) for(const [dx,dz] of [[8,0],[0,8],[-8,0],[0,-8]]){
+    const a=X.waLandId(x,z), b=X.waLandId(x+dx,z+dz); if(!((a===4&&b===6)||(a===6&&b===4))) continue; pairs++;
+    const o1={x:x+dx,z:z+dz}; X.barStep(o1,x,z,shut); if(X.waLandId(o1.x,o1.z)===b) leaks++;
+    const o2={x:x+dx,z:z+dz}; X.barStep(o2,x,z,on); if(o2.x!==x+dx||o2.z!==z+dz) stuck++; }
+  ok('barStep holds every step across the Sunscar | Amber Reach border while gear.amber is 0, and lets it through once it is 1 ('+pairs+' steps)',pairs>200&&leaks===0&&stuck===0,leaks+' leaks, '+stuck+' stuck');
+  ok('a teleport into Amber Reach needs gear.amber (barLandOpen), and the quest board reaches level 45 (MAX_ZONE_LV)',!X.barLandOpen(6,shut)&&X.barLandOpen(6,on)&&X.MAX_ZONE_LV===45); }
 // ---- the ground: a 4 m grid, the slope limit, walkability inside the zones, the borders
 const STEP=4, NXG=Math.floor((X.WX1-X.WX0)/STEP)+1, NZG=Math.floor((X.WZ1-X.WZ0)/STEP)+1;
 const HG=new Float32Array(NXG*NZG), SURF=new Float32Array(NXG*NZG);
@@ -105,7 +128,7 @@ function flood(sx,sz){
     if(!fl[idx(z.x,z.y===undefined?z.z:z.z)]&&!cells.some(k=>fl[k])) bad.push(z.land+' '+z.key+' unreachable'); else if(share<0.85) bad.push(z.land+' '+z.key+' only '+Math.round(share*100)+'% reachable'); }
   // the villages reach each other (the gates are open)
   for(const l of LANDS) for(const m of LANDS) if(!reach[l][idx(X.WA_HUBS[m][0],X.WA_HUBS[m][1])]) bad.push(l+' village cannot walk to '+m);
-  ok('every one of the 64 zones is reachable on foot from its village (85%+ of its ground), and every village from every other, with the gates open',bad.length===0,bad.slice(0,5).join('; ')+(bad.length>5?' ... '+bad.length:'')); }
+  ok('every one of the 73 zones is reachable on foot from its village (85%+ of its ground), and every village from every other, with the gates open',bad.length===0,bad.slice(0,5).join('; ')+(bad.length>5?' ... '+bad.length:'')); }
 // speed (a budget, not a benchmark: the old ground cost about 4 us a call)
 { let s=0, t=process.hrtime.bigint(); const N=200000; let n=0;
   for(let i=0;i<N;i++){ const x=X.WX0+((i*7919)%3550), z=X.WZ0+((i*104729)%2300); s+=H(x,z); n++; }

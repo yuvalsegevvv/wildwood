@@ -13,7 +13,8 @@ const mapX=x=>(x-WX0)*MAP.k, mapZ=z=>(z-WZ0)*MAP.k;
 const LANDS=(()=>{
   const names={home:'The home forest',vale:'The Sakura Vale',hoar:'The Hoarfrost Reach',grey:'The Greyspine',sun:'The Sunscar',gloam:'The Gloamhorn'}, out={};
   for(const k in names) out[k]={x0:1e9,x1:-1e9,z0:1e9,z1:-1e9,name:names[k]};
-  for(let z=WZ0;z<WZ1;z+=24) for(let x=WX0;x<WX1;x+=24){ const l=waLand(x,z), k=l==='amber'?'sun':l; if(k===null||!out[k]) continue; const R=out[k]; R.x0=Math.min(R.x0,x); R.x1=Math.max(R.x1,x); R.z0=Math.min(R.z0,z); R.z1=Math.max(R.z1,z); }
+  // (savanna: Amber Reach, land 'amber', has no land map yet: its cells are skipped here, not counted into the Sunscar's)
+  for(let z=WZ0;z<WZ1;z+=24) for(let x=WX0;x<WX1;x+=24){ const k=waLand(x,z); if(k===null||!out[k]) continue; const R=out[k]; R.x0=Math.min(R.x0,x); R.x1=Math.max(R.x1,x); R.z0=Math.min(R.z0,z); R.z1=Math.max(R.z1,z); }
   for(const k in out){ const R=out[k]; R.x0=Math.max(WX0,R.x0-90); R.x1=Math.min(WX1,R.x1+90); R.z0=Math.max(WZ0,R.z0-90); R.z1=Math.min(WZ1,R.z1+90); }
   return out;
 })();

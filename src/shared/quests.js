@@ -15,7 +15,7 @@ const QUEST_OFFERS=4, QUEST_MAX_ACTIVE=5, QUEST_MAX_COUNT=120;
 function huntCount(L){ const f=Math.min(1,(L-1)/14), lo=10+20*f, hi=20+30*f; return Math.round(lo+Math.random()*(hi-lo)); }
 const coinAvg=L=>fLv(L)*2*Math.pow(1.1,Math.max(0,L-5))*highMult(L);
 const qpick=a=>a[Math.floor(Math.random()*a.length)];
-const questTop=()=>MON_DEFS.reduce((a,m)=>Math.max(a,m.level),1);   // the highest level a monster exists at (MAX_ZONE_LV is 40, the Gloamhorn's monsters reach it)
+const questTop=()=>MON_DEFS.reduce((a,m)=>Math.max(a,m.level),1);   // the highest level a monster exists at (MAX_ZONE_LV is 45, the Amber Reach's; the Gloamhorn's monsters reach 40)
 function questLevelFor(pl){
   const T=Math.min(MAX_ZONE_LV,questTop()), E=Math.max(1,Math.min(T,pl)), lo=Math.max(1,E-4), hi=Math.min(T,E+2), w=[];
   let sum=0; for(let L=lo;L<=hi;L++){ const x=Math.exp(-0.9*Math.abs(L-E))*(L>E?0.55:1); w.push([L,x]); sum+=x; }
