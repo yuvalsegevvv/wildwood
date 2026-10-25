@@ -329,7 +329,7 @@
     "village/buildings-sunscar.js",
     "village/buildings-gloam.js",
     "village/buildings-savanna.js",
-    "village/villagers.js",
+    "village/villagers.js", "village/smalltalk-savanna.js",
     "village/smith.js",
     "village/talking.js",
     "village/npc-labels.js",
