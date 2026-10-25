@@ -125,7 +125,7 @@ function kinDress(rig,X){
   const fs=rig.dims.faceScale, sec=kinOk(L.furColor2)?new THREE.Color(Math.floor(L.furColor2)):null, fur=X.skin.clone();
   const K={sg:v=>Math.min(v,X.sg(v)),fs,fur,light:fur.clone().lerp(_kinW,0.55),sec};
   if(ear){
-    const mode=kinHatMode(L.hat);
+    const mode=kinHatMode(L.hat==='outfit'?X.hatOf:L.hat);   // (an outfit's hat: the set's own entry of KIN_HAT_EARS, set in its file)
     if(mode!=='hide'){ const E=KIN_EARS[ear.id], flat=mode==='flat', parts=[];
       for(const sd of [-1,1]){
         const a=flat?1.12:E.a, base=[sd*Math.sin(a)*0.103*fs[0],Math.cos(a)*0.103*fs[1],-0.004];

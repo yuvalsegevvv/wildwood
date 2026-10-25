@@ -84,7 +84,7 @@ function buildCharacter(L,opt){
   if(worn){ const o={}; if(PC.top){ o.top='outfit'; o.pack=false; if(L.cape==='pack') o.cape=''; } if(PC.bottom){ o.bottom='outfit'; o.bottomStyle=''; } if(PC.shoes) o.shoes='outfit'; if(PC.hat) o.hat='outfit'; if(PC.glove) o.gloves='outfit'; if(PC.hair){ o.hair='bald'; o.ahoge=false; } if(PC.face) o.facial='none'; L=Object.assign({},L,o); }
   const q=(opt&&opt.q)||1, sg=n=>Math.max(5,Math.round(n*q)), S=lookSliders(L), fem=L.sex==='female';
   const skin=new THREE.Color(L.skin).lerp(new THREE.Color(S.undertone>0?0xe39a5c:0xb8a0c8),0.16*Math.abs(S.undertone)), skinPaint=c=>c.copy(X.skin), hairCol=new THREE.Color(L.hairColor), {topPaint,botPaint}=clothPaints(L);
-  const D=charDims(L,S,fem,faceShape(L)), X={L,S,fem,sg,q,skin,skinPaint,hairCol,topPaint,botPaint,D,kit:null,glove:null};
+  const D=charDims(L,S,fem,faceShape(L)), X={L,S,fem,sg,q,skin,skinPaint,hairCol,topPaint,botPaint,D,kit:null,glove:null,hatOf:PC.hat||''};   // hatOf: the outfit id of the worn hat piece (L.hat is only 'outfit' by now; model-kin.js asks it how the ears sit)
   if(worn){ X.kit=ofBuild(X,D,PC); const kh=X.kit.sl.hair, th=ofTintOf(L,'hair'); if(kh&&th>=0) X.hairCol=new THREE.Color(th); else if(kh&&kh.hairColor!==undefined) X.hairCol=new THREE.Color(kh.hairColor); 
     const kfs=X.kit.sl.face; if(kfs&&kfs.skin!==undefined) X.skin=new THREE.Color(kfs.skin).lerp(new THREE.Color(S.undertone>0?0xe39a5c:0xb8a0c8),0.16*Math.abs(S.undertone)); }   // a face item with its own skin tone (Ogden's drowned green-grey) overrides the wearer's
   kinFur(X);   // kin: the fur colour is the skin tone of the whole body (model-kin.js)
