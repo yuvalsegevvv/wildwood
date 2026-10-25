@@ -6,7 +6,7 @@
    The spire is hollow and fungus-free, so nothing here is the Hollow Roots'. Queen Ortha's own props (her eggs) are drawn by the boss view. The monsters are the Amber Reach's (zones a40-a45), scaled to the dungeon's level (45 at +0) by dgKOf.
    The tile art is the Gloamvault's skeleton redrawn (same door shapes and floor plan, so every tile passes dgTileProblems and the set covers every door mask). */
 defineDungeonTheme({
-  id:'termitecathedral', name:'The Termite Cathedral', land:'amber', at:'Termite Cathedrals', lv:45, entry:42,
+  id:'termitecathedral', name:'The Termite Cathedral', land:'amber', at:'The Termite Cathedrals', lv:45, entry:42,
   mobs:{walkers:['moundsoldier','resinweaver','locusts','hollowkin','dustrunner'], guardians:['baobabtreant','greyrhino']},   // the Reach's level 37-45 kinds that fit a 4 m door (the Diggers' termites, the swarm, the Hollowed Kin who wandered in)
   boss:'ortha', music:'savanna2',
   pal:{wall:0x8a5a3a, floor:0x4e3626, fog:0x140a04, light:0xffb85a},

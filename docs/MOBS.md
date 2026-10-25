@@ -5,30 +5,30 @@ Every monster kind in the game, with the numbers the server uses and the place i
 
 Generated from the live code by `node tools/gen-docs.js` (`--check` tells you when this file is out of date). Line numbers are those of the code when it was generated.
 
-112 monster kinds in 64 zones, 12 bosses, 17 boss helpers (summons and props) and 3 grey-veined quest monsters: 188 definitions, plus 6 dungeon bosses with their helpers (section 11). 2989 monsters exist in the world at start (112 kinds in their camps + 12 bosses).
+130 monster kinds in 73 zones, 14 bosses, 19 boss helpers (summons and props) and 3 grey-veined quest monsters: 210 definitions, plus 7 dungeon bosses with their helpers (section 11). 3353 monsters exist in the world at start (130 kinds in their camps + 14 bosses).
 
 ## 1. Where it is defined
 
 | What | Where |
 |---|---|
-| Every monster kind (one row each: id, name, level, element, model, scale, look flags `pal`, tuning `hpK` / `dmgPct` / `count` / `zone`) | `MON_DEFS` src/shared/monster-defs.js:22 |
+| Every monster kind (one row each: id, name, level, element, model, scale, look flags `pal`, tuning `hpK` / `dmgPct` / `count` / `zone`) | `MON_DEFS` src/shared/monster-defs.js:27 |
 | Family defaults a row inherits (health toughness `hpK`, damage share `dmgPct`, attack interval `atk`, `speed`, `rad`, `height`, `aggro`, `per`: camp size - 2) | `FAM` src/shared/monster-defs.js:2 |
-| How HP, damage and XP are made from the level (also used by zone tiers and by anything that wants a monster at another level) | `defAt` src/shared/monster-defs.js:172, `prepDef` src/shared/monster-defs.js:178 |
+| How HP, damage and XP are made from the level (also used by zone tiers and by anything that wants a monster at another level) | `defAt` src/shared/monster-defs.js:197, `prepDef` src/shared/monster-defs.js:203 |
 | The level formulas (expected player damage / health, armour cut, XP, coins) | `expDmg` / `expHP` / `xpFor` / `coinsFor` src/shared/balance.js:38-62 |
-| The six bosses, their move set (`kit`), arena, summons (`add`), props, boss-bar texts | `BOSS_DEFS` src/shared/monster-defs.js:257 |
-| The grey-veined monsters of the main quest | `GREY_DEFS` src/shared/monster-defs.js:278 |
-| Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:288 |
+| The six bosses, their move set (`kit`), arena, summons (`add`), props, boss-bar texts | `BOSS_DEFS` src/shared/monster-defs.js:282 |
+| The grey-veined monsters of the main quest | `GREY_DEFS` src/shared/monster-defs.js:303 |
+| Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:313 |
 | How many of each kind exist, and where their camps are (a zone holds 40 of the level-1 kind down to 20 of level 15; the vale and the Reach 12 of each; `count` overrides) | `MON_COUNT` src/server/monsters.js:20, `initMonstersS` src/server/monsters.js:21 |
 | Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King's beach | `ZONES` src/shared/zones.js:12, src/shared/vale.js:56, src/shared/hoarfrost.js:88, src/shared/beach.js:6 |
-| Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:59 |
+| Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:60 |
 | What a kill pays (XP, coins, an item roll, the material, quests, boss skills) | `rewardKill` src/server/combat.js:75 |
 | Materials a kind drops (one per kind, `MAT_NAMES`) | `MATS` src/shared/drops.js:13 |
-| What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:33, `monK` src/server/tiers.js:13 |
+| What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:34, `monK` src/server/tiers.js:13 |
 | Boss fights: engagement, phases, reset / one move set per boss / the move primitives | `BOSSES` src/server/boss.js:11 / `BOSS_KITS` src/server/boss-fx.js:17 / src/server/boss-fx.js |
 | The boss notices on the quest board | `BOSS_QUESTS` src/shared/quests.js:32 |
 | The dungeon bosses and their helpers (made on demand in a run's round hall, not in `BOSS_DEFS`) | `DG_BOSSES` src/shared/dungeons/bosses.js:17, `DG_BOSS_DEFS` (same file), move sets src/server/dungeons/boss-kits.js:43 |
-| Which kinds a dungeon uses (`mobs.walkers`, `mobs.guardians`: ids of `MON_DEFS`), its land, entrance zone, boss and level | `defineDungeonTheme` src/shared/dungeons.js:129, one file per theme in src/shared/dungeons/themes/ |
-| How a run spawns a monster at its level with the party's health (elites, no respawn) | `dgSpawnS` src/server/dungeons/mobs.js:34, `dgKOf` src/server/dungeons/mobs.js:15, `dgParty` src/shared/dungeons.js:365 |
+| Which kinds a dungeon uses (`mobs.walkers`, `mobs.guardians`: ids of `MON_DEFS`), its land, entrance zone, boss and level | `defineDungeonTheme` src/shared/dungeons.js:130, one file per theme in src/shared/dungeons/themes/ |
+| How a run spawns a monster at its level with the party's health (elites, no respawn) | `dgSpawnS` src/server/dungeons/mobs.js:34, `dgKOf` src/server/dungeons/mobs.js:15, `dgParty` src/shared/dungeons.js:368 |
 | How each model looks (client) | see section 13 |
 
 ## 2. How the numbers are made
@@ -54,21 +54,21 @@ Zones are named by level; ring 0 = levels 1-6, ring 1 = 7-11, ring 2 = 12-15 aro
 
 | Id | Name | Lv | El | HP | Hits | Dmg | Atk s | Spd | Aggro | XP | Coins | Count | Res | Acc | Zone | Drop | Model | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `slime` | Slime | 1 | water | 38 | 3.7 | 5 | 1.6 | 2.2 | passive | 2.1 | 4 | 60 | — | — | Slime Meadow | Slime Goo | slime ×1 | src/shared/monster-defs.js:23 |
-| `shroom` | Shroomling | 2 | air | 62 | 4.6 | 8 | 1.7 | 1.8 | passive | 3.2 | 6 | 59 | — | — | Mushroom Hollow | Spore Cap | shroom ×1 | src/shared/monster-defs.js:24 |
-| `beetle` | Horned Beetle | 3 | — | 100 | 5.9 | 11 | 1.4 | 2.6 | 11 m | 4.3 | 9 | 56 | — | — | Beetle Thicket | Beetle Shell | beetle ×1 | src/shared/monster-defs.js:25 |
-| `boar` | Wild Boar | 4 | — | 112 | 5.6 | 17 | 2 | 3.4 | 13 m | 5.4 | 11 | 54 | — | — | Boar Run | Boar Tusk | boar ×1 | src/shared/monster-defs.js:26 |
-| `goblin` | Goblin | 5 | — | 187 | 5.9 | 27 | 1.3 | 3 | 14 m | 6.5 | 13 | 57 | — | — | Goblin Woods | Goblin Fang | goblin ×0.72 | src/shared/monster-defs.js:27 |
-| `treant` | Treant | 6 | earth | 296 | 8.5 | 46 | 2.4 | 1.6 | 12 m | 8.8 | 17 | 50 | — | — | Treant Grove | Living Bark | treant ×1 | src/shared/monster-defs.js:28 |
-| `bogslime` | Bog Slime | 7 | water | 216 | 5.6 | 22 | 1.6 | 2.2 | 10 m | 11.6 | 21 | 47 | — | — | The Bog | Bog Ooze | slime ×1.35 | src/shared/monster-defs.js:29 |
-| `deathcap` | Deathcap | 8 | dark | 277 | 6.6 | 27 | 1.7 | 1.8 | 10 m | 15.1 | 26 | 45 | — | — | Deathcap Dell | Deathcap Venom | shroom ×1.3 | src/shared/monster-defs.js:30 |
-| `ironshell` | Ironshell Beetle | 9 | earth | 430 | 9.5 | 33 | 1.4 | 2.6 | 11 m | 19.3 | 32 | 44 | — | — | Ironshell Ridge | Iron Plate | beetle ×1.3 | src/shared/monster-defs.js:31 |
-| `direboar` | Dire Boar | 10 | dark | 719 | 11.5 | 79 | 2 | 3.4 | 13 m | 36.9 | 59 | 45 | — | — | Dire Wallows | Dire Tusk | boar ×1.35 | src/shared/monster-defs.js:32 |
-| `hobgoblin` | Hobgoblin | 11 | fire | 791 | 11.9 | 68 | 1.3 | 3 | 14 m | 46.5 | 71 | 47 | — | — | Hobgoblin Warrens | Rusty Buckle | goblin ×0.9 | src/shared/monster-defs.js:33 |
-| `rotwood` | Rotwood Treant | 12 | fire | 1170 | 16.8 | 111 | 2.4 | 1.6 | 12 m | 58.3 | 85 | 49 | — | — | Rotwood | Rotwood Ember | treant ×1.25 | src/shared/monster-defs.js:34 |
-| `magmaslime` | Magma Slime | 13 | fire | 803 | 10.9 | 66 | 1.6 | 2.2 | 10 m | 72.6 | 102 | 44 | — | — | Ember Flats | Magma Core | slime ×1.5 | src/shared/monster-defs.js:35 |
-| `chieftain` | Goblin Chieftain | 14 | dark | 1333 | 17.3 | 94 | 1.3 | 3 | 14 m | 90.1 | 121 | 47 | — | — | Chieftain's Hold | Chieftain's Totem | goblin ×1 | src/shared/monster-defs.js:36 |
-| `ancient` | Ancient Treant | 15 | light | 2192 | 21.9 | 199 | 2.4 | 1.6 | 12 m | 111.2 | 143 | 38 | — | — | Ancient Grove | Ancient Sap | treant ×1.5 | src/shared/monster-defs.js:37 |
+| `slime` | Slime | 1 | water | 38 | 3.7 | 5 | 1.6 | 2.2 | passive | 2.1 | 4 | 60 | — | — | Slime Meadow | Slime Goo | slime ×1 | src/shared/monster-defs.js:28 |
+| `shroom` | Shroomling | 2 | air | 62 | 4.6 | 8 | 1.7 | 1.8 | passive | 3.2 | 6 | 59 | — | — | Mushroom Hollow | Spore Cap | shroom ×1 | src/shared/monster-defs.js:29 |
+| `beetle` | Horned Beetle | 3 | — | 100 | 5.9 | 11 | 1.4 | 2.6 | 11 m | 4.3 | 9 | 56 | — | — | Beetle Thicket | Beetle Shell | beetle ×1 | src/shared/monster-defs.js:30 |
+| `boar` | Wild Boar | 4 | — | 112 | 5.6 | 17 | 2 | 3.4 | 13 m | 5.4 | 11 | 54 | — | — | Boar Run | Boar Tusk | boar ×1 | src/shared/monster-defs.js:31 |
+| `goblin` | Goblin | 5 | — | 187 | 5.9 | 27 | 1.3 | 3 | 14 m | 6.5 | 13 | 57 | — | — | Goblin Woods | Goblin Fang | goblin ×0.72 | src/shared/monster-defs.js:32 |
+| `treant` | Treant | 6 | earth | 296 | 8.5 | 46 | 2.4 | 1.6 | 12 m | 8.8 | 17 | 50 | — | — | Treant Grove | Living Bark | treant ×1 | src/shared/monster-defs.js:33 |
+| `bogslime` | Bog Slime | 7 | water | 216 | 5.6 | 22 | 1.6 | 2.2 | 10 m | 11.6 | 21 | 47 | — | — | The Bog | Bog Ooze | slime ×1.35 | src/shared/monster-defs.js:34 |
+| `deathcap` | Deathcap | 8 | dark | 277 | 6.6 | 27 | 1.7 | 1.8 | 10 m | 15.1 | 26 | 45 | — | — | Deathcap Dell | Deathcap Venom | shroom ×1.3 | src/shared/monster-defs.js:35 |
+| `ironshell` | Ironshell Beetle | 9 | earth | 430 | 9.5 | 33 | 1.4 | 2.6 | 11 m | 19.3 | 32 | 44 | — | — | Ironshell Ridge | Iron Plate | beetle ×1.3 | src/shared/monster-defs.js:36 |
+| `direboar` | Dire Boar | 10 | dark | 719 | 11.5 | 79 | 2 | 3.4 | 13 m | 36.9 | 59 | 45 | — | — | Dire Wallows | Dire Tusk | boar ×1.35 | src/shared/monster-defs.js:37 |
+| `hobgoblin` | Hobgoblin | 11 | fire | 791 | 11.9 | 68 | 1.3 | 3 | 14 m | 46.5 | 71 | 47 | — | — | Hobgoblin Warrens | Rusty Buckle | goblin ×0.9 | src/shared/monster-defs.js:38 |
+| `rotwood` | Rotwood Treant | 12 | fire | 1170 | 16.8 | 111 | 2.4 | 1.6 | 12 m | 58.3 | 85 | 49 | — | — | Rotwood | Rotwood Ember | treant ×1.25 | src/shared/monster-defs.js:39 |
+| `magmaslime` | Magma Slime | 13 | fire | 803 | 10.9 | 66 | 1.6 | 2.2 | 10 m | 72.6 | 102 | 44 | — | — | Ember Flats | Magma Core | slime ×1.5 | src/shared/monster-defs.js:40 |
+| `chieftain` | Goblin Chieftain | 14 | dark | 1333 | 17.3 | 94 | 1.3 | 3 | 14 m | 90.1 | 121 | 47 | — | — | Chieftain's Hold | Chieftain's Totem | goblin ×1 | src/shared/monster-defs.js:41 |
+| `ancient` | Ancient Treant | 15 | light | 2192 | 21.9 | 199 | 2.4 | 1.6 | 12 m | 111.2 | 143 | 38 | — | — | Ancient Grove | Ancient Sap | treant ×1.5 | src/shared/monster-defs.js:42 |
 
 ## 5. Home forest: the edges (levels 16-20)
 
@@ -76,11 +76,11 @@ Side content with its own `zone` and `count` (the shore, the Sunwall's foot, the
 
 | Id | Name | Lv | El | HP | Hits | Dmg | Atk s | Spd | Aggro | XP | Coins | Count | Res | Acc | Zone | Drop | Model | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `crab` | Shore Crab | 16 | water | 1758 | 16.9 | 117 | 1.4 | 2.6 | 11 m | 136.8 | 168 | 27 | — | — | The Crownsea Shore | Crab Claw | beetle ×1.15 | src/shared/monster-defs.js:40 |
-| `tideslime` | Tide Slime | 17 | water | 1328 | 12.3 | 90 | 1.6 | 2.2 | 10 m | 167.7 | 197 | 24 | — | — | The Crownsea Shore | Sea Glass | slime ×1.4 | src/shared/monster-defs.js:41 |
-| `scarab` | Sun Scarab | 18 | fire | 1911 | 17.1 | 124 | 1.4 | 2.6 | 11 m | 205.1 | 230 | 30 | — | — | The Sunwall's Foot | Scarab Wing | beetle ×1.3 | src/shared/monster-defs.js:42 |
-| `ramboar` | Ram-horned Boar | 19 | earth | 1765 | 15.3 | 175 | 2 | 3.4 | 13 m | 250.2 | 269 | 27 | — | — | The Northern Foothills | Ram Horn | boar ×1.4 | src/shared/monster-defs.js:43 |
-| `cragwarden` | Crag Warden | 20 | earth | 3164 | 21.8 | 346 | 2.4 | 1.6 | 12 m | 304.6 | 313 | 15 | — | — | The Northern Foothills | Crag Moss | treant ×1.45 | src/shared/monster-defs.js:44 |
+| `crab` | Shore Crab | 16 | water | 1758 | 16.9 | 117 | 1.4 | 2.6 | 11 m | 136.8 | 168 | 27 | — | — | The Crownsea Shore | Crab Claw | beetle ×1.15 | src/shared/monster-defs.js:45 |
+| `tideslime` | Tide Slime | 17 | water | 1328 | 12.3 | 90 | 1.6 | 2.2 | 10 m | 167.7 | 197 | 24 | — | — | The Crownsea Shore | Sea Glass | slime ×1.4 | src/shared/monster-defs.js:46 |
+| `scarab` | Sun Scarab | 18 | fire | 1911 | 17.1 | 124 | 1.4 | 2.6 | 11 m | 205.1 | 230 | 30 | — | — | The Sunwall's Foot | Scarab Wing | beetle ×1.3 | src/shared/monster-defs.js:47 |
+| `ramboar` | Ram-horned Boar | 19 | earth | 1765 | 15.3 | 175 | 2 | 3.4 | 13 m | 250.2 | 269 | 27 | — | — | The Northern Foothills | Ram Horn | boar ×1.4 | src/shared/monster-defs.js:48 |
+| `cragwarden` | Crag Warden | 20 | earth | 3164 | 21.8 | 346 | 2.4 | 1.6 | 12 m | 304.6 | 313 | 15 | — | — | The Northern Foothills | Crag Moss | treant ×1.45 | src/shared/monster-defs.js:49 |
 
 ## 6. Sakura Vale (levels 16-25)
 
@@ -88,62 +88,80 @@ Two kinds per level, 12 of each, in ten zones.
 
 | Id | Name | Lv | El | HP | Hits | Dmg | Atk s | Spd | Aggro | XP | Coins | Count | Res | Acc | Zone | Drop | Model | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `sakuraslime` | Sakura Slime | 16 | air | 1245 | 12.0 | 88 | 1.6 | 2.2 | 10 m | 136.8 | 168 | 18 | — | — | Petal Meadow | Blossom Jelly | slime ×1.4 | src/shared/monster-defs.js:48 |
-| `kappa` | Kappa | 16 | water | 1465 | 14.1 | 132 | 1.3 | 3 | 14 m | 136.8 | 168 | 18 | — | — | Petal Meadow | Kappa Dish | goblin ×0.78 | src/shared/monster-defs.js:49 |
-| `kodama` | Kodama | 17 | light | 1484 | 13.8 | 105 | 1.7 | 1.8 | 10 m | 167.7 | 197 | 18 | — | — | Kodama Wood | Spirit Bell | shroom ×1.25 | src/shared/monster-defs.js:50 |
-| `kabuto` | Kabuto Beetle | 17 | fire | 1953 | 18.1 | 120 | 1.4 | 2.6 | 11 m | 167.7 | 197 | 18 | — | — | Kodama Wood | Kabuto Horn | beetle ×1.45 | src/shared/monster-defs.js:51 |
-| `kitsune` | Kitsune | 18 | fire | 1662 | 14.9 | 155 | 1.5 | 3.8 | 14 m | 205.1 | 230 | 18 | — | — | Fox Hills | Foxfire Ash | fox ×1 | src/shared/monster-defs.js:52 |
-| `yamaboar` | Mountain Boar | 18 | earth | 1662 | 14.9 | 170 | 2 | 3.4 | 13 m | 205.1 | 230 | 18 | — | — | Fox Hills | Mountain Hide | boar ×1.45 | src/shared/monster-defs.js:53 |
-| `ashigaru` | Goblin Ashigaru | 19 | — | 1765 | 15.3 | 143 | 1.3 | 3 | 14 m | 250.2 | 269 | 22 | — | — | Bamboo Sea | Lacquered Plate | goblin ×0.95 | src/shared/monster-defs.js:54 |
-| `bamboo` | Bamboo Treant | 19 | earth | 2382 | 20.6 | 223 | 2.4 | 1.6 | 12 m | 250.2 | 269 | 18 | — | — | Bamboo Sea | Singing Bamboo | treant ×1.2 | src/shared/monster-defs.js:55 |
-| `onibi` | Onibi | 20 | fire | 2034 | 14.0 | 247 | 1.7 | 2.6 | 13 m | 304.6 | 313 | 18 | — | — | Ghostlight Marsh | Blue Flame | wisp ×1 | src/shared/monster-defs.js:56 |
-| `jorogumo` | Jorogumo | 20 | dark | 2599 | 17.9 | 198 | 1.4 | 2.6 | 11 m | 304.6 | 313 | 18 | — | — | Ghostlight Marsh | Spider Silk | beetle ×1.5 | src/shared/monster-defs.js:57 |
-| `oni` | Red Oni | 21 | fire | 2852 | 19.1 | 227 | 1.3 | 3 | 14 m | 370.1 | 364 | 22 | — | — | Oni Crags | Oni Fang | goblin ×1.25 | src/shared/monster-defs.js:58 |
-| `yurei` | Yurei | 21 | dark | 2139 | 14.3 | 253 | 1.7 | 2.6 | 13 m | 370.1 | 364 | 22 | — | — | Oni Crags | Yurei Shroud | wisp ×1.1 | src/shared/monster-defs.js:59 |
-| `shadowfox` | Shadow Kitsune | 22 | dark | 2496 | 16.3 | 258 | 1.5 | 3.8 | 14 m | 449.0 | 422 | 18 | — | — | Jade Falls | Night Fur | fox ×1.15 | src/shared/monster-defs.js:60 |
-| `jadeslime` | Jade Slime | 22 | water | 2121 | 13.8 | 155 | 1.6 | 2.2 | 10 m | 449.0 | 422 | 18 | — | — | Jade Falls | Jade Shard | slime ×1.7 | src/shared/monster-defs.js:61 |
-| `blueoni` | Blue Oni | 23 | water | 3272 | 20.7 | 238 | 1.3 | 3 | 14 m | 544.0 | 489 | 20 | — | — | Tengu Peaks | Storm Horn | goblin ×1.35 | src/shared/monster-defs.js:62 |
-| `tengu` | Karasu Tengu | 23 | air | 2617 | 16.6 | 238 | 1.3 | 3 | 14 m | 544.0 | 489 | 22 | — | — | Tengu Peaks | Tengu Feather | goblin ×0.95 | src/shared/monster-defs.js:63 |
-| `samurai` | Undead Samurai | 24 | dark | 3564 | 21.9 | 297 | 1.3 | 3 | 14 m | 658.1 | 566 | 28 | — | — | Warlord Ruins | Samurai Crest | goblin ×1.05 | src/shared/monster-defs.js:64 |
-| `goldkabuto` | Golden Kabuto | 24 | light | 3701 | 22.8 | 216 | 1.4 | 2.6 | 11 m | 658.1 | 566 | 18 | — | — | Warlord Ruins | Gold Shell | beetle ×1.7 | src/shared/monster-defs.js:65 |
-| `sakuratreant` | Elder Sakura | 25 | light | 5075 | 25.7 | 574 | 2.4 | 1.6 | 12 m | 795.3 | 654 | 18 | — | — | Thunder Grove | Elder Blossom | treant ×1.6 | src/shared/monster-defs.js:66 |
-| `raiju` | Raiju | 25 | air | 3383 | 17.2 | 410 | 1.5 | 3.8 | 14 m | 795.3 | 654 | 18 | — | — | Thunder Grove | Raiju Spark | fox ×1.3 | src/shared/monster-defs.js:67 |
-| `granitslime` | Granite Slime | 26 | earth | 3033 | 15.0 | 250 | 1.6 | 2.2 | 10 m | 960.3 | 755 | 18 | — | — | Highmark Pastures | Granite Dust | slime ×1.7 | src/shared/monster-defs.js:92 |
-| `cliffboar` | Cliff Boar | 26 | earth | 3569 | 17.7 | 459 | 2 | 3.4 | 13 m | 960.3 | 755 | 18 | — | — | Highmark Pastures | Cliff Tusk | boar ×1.5 | src/shared/monster-defs.js:93 |
-| `crystalbeetle` | Crystal Beetle | 27 | earth | 4702 | 22.7 | 340 | 1.4 | 2.6 | 11 m | 1158.5 | 871 | 18 | — | — | The Ledgeway | Crystal Shard | beetle ×1.5 | src/shared/monster-defs.js:94 |
-| `stonetreant` | Stone Treant | 27 | earth | 5643 | 27.3 | 595 | 2.4 | 1.6 | 12 m | 1158.5 | 871 | 18 | — | — | The Ledgeway | Stone Heart | treant ×1.75 | src/shared/monster-defs.js:95 |
-| `minegoblin` | Mountain Goblin | 28 | earth | 3963 | 18.7 | 389 | 1.3 | 3 | 14 m | 1396.6 | 1005 | 24 | — | — | Miners' Scree | Miner's Lamp | goblin ×1.1 | src/shared/monster-defs.js:96 |
-| `snowleopard` | Snow Leopard | 28 | air | 3963 | 18.7 | 433 | 1.5 | 3.8 | 14 m | 1396.6 | 1005 | 18 | — | — | Miners' Scree | Leopard Pelt | fox ×1.45 | src/shared/monster-defs.js:97 |
-| `cragwyvern` | Crag Wyvern | 29 | air | 4173 | 19.2 | 529 | 2.2 | 2.6 | 16 m | 1682.7 | 1158 | 22 | — | — | Gryphon Cirque | Wyvern Scale | wyrm ×0.85 | src/shared/monster-defs.js:98 |
-| `mistwraith` | Mist Wraith | 29 | air | 3756 | 17.3 | 441 | 1.7 | 2.6 | 13 m | 1682.7 | 1158 | 18 | — | — | Gryphon Cirque | Mist Essence | wisp ×1.25 | src/shared/monster-defs.js:99 |
-| `quartzslime` | Quartz Slime | 30 | earth | 3734 | 16.7 | 269 | 1.6 | 2.2 | 10 m | 2026.4 | 1334 | 18 | — | — | Stone Meadow | Quartz Core | slime ×1.9 | src/shared/monster-defs.js:100 |
-| `ibex` | Ibex Ram | 30 | air | 4393 | 19.7 | 494 | 2 | 3.4 | 13 m | 2026.4 | 1334 | 18 | — | — | Stone Meadow | Ibex Horn | boar ×1.55 | src/shared/monster-defs.js:101 |
-| `rocktroll` | Rock Troll | 31 | earth | 6933 | 30.3 | 549 | 1.3 | 3 | 14 m | 2439.3 | 1536 | 22 | — | — | The Windswept Neck | Troll Hide | goblin ×1.9 | src/shared/monster-defs.js:102 |
-| `slatecrawler` | Slate Crawler | 31 | earth | 6008 | 26.3 | 366 | 1.4 | 2.6 | 11 m | 2439.3 | 1536 | 22 | — | — | The Windswept Neck | Slate Plate | beetle ×1.75 | src/shared/monster-defs.js:103 |
-| `galedrake` | Gale Drake | 32 | air | 6320 | 26.9 | 560 | 2.2 | 2.6 | 16 m | 2935.6 | 1768 | 18 | — | — | The Sink | Drake Scale | wyrm ×1.3 | src/shared/monster-defs.js:104 |
-| `granitegolem` | Granite Golem | 32 | earth | 7779 | 33.1 | 653 | 2.4 | 1.6 | 12 m | 2935.6 | 1768 | 28 | — | — | The Sink | Golem Rune | treant ×2 | src/shared/monster-defs.js:105 |
-| `brineslime` | Brine Slime | 30 | water | 3734 | 16.7 | 269 | 1.6 | 2.2 | 10 m | 2026.4 | 1334 | 18 | — | — | Wraithwick Heath | Brine Jelly | slime ×1.9 | src/shared/monster-defs.js:130 |
-| `gloomcrab` | Gloom Crab | 30 | water | 5710 | 25.6 | 359 | 1.4 | 2.6 | 11 m | 2026.4 | 1334 | 18 | — | — | Wraithwick Heath | Crab Plate | beetle ×1.7 | src/shared/monster-defs.js:131 |
-| `seaboar` | Sea Boar | 31 | water | 4622 | 20.2 | 503 | 2 | 3.4 | 13 m | 2439.3 | 1536 | 18 | — | — | Wreckers' Reach | Walrus Tusk | boar ×1.7 | src/shared/monster-defs.js:132 |
-| `wrecker` | Wrecker Goblin | 31 | dark | 4622 | 20.2 | 412 | 1.3 | 3 | 14 m | 2439.3 | 1536 | 22 | — | — | Wreckers' Reach | Wrecker's Lantern | goblin ×1.1 | src/shared/monster-defs.js:133 |
-| `driftwood` | Driftwood Treant | 32 | water | 7292 | 31.0 | 653 | 2.4 | 1.6 | 12 m | 2935.6 | 1768 | 18 | — | — | The Cairn Fields | Bleached Bough | treant ×1.5 | src/shared/monster-defs.js:134 |
-| `drownedsailor` | Drowned Sailor | 32 | water | 5834 | 24.8 | 420 | 1.3 | 3 | 14 m | 2935.6 | 1768 | 22 | — | — | The Cairn Fields | Sodden Rope | goblin ×1.15 | src/shared/monster-defs.js:135 |
-| `siren` | Siren | 33 | air | 4857 | 20.1 | 524 | 1.8 | 2.8 | 15 m | 3532.1 | 2035 | 18 | — | — | Drowned Meadow | Siren Pearl | djinn ×1.1 | src/shared/monster-defs.js:136 |
-| `gloombat` | Gloom Bat | 33 | air | 4090 | 17.0 | 429 | 1.4 | 4 | 16 m | 3532.1 | 2035 | 18 | — | — | Drowned Meadow | Bat Wing | bat ×1.5 | src/shared/monster-defs.js:137 |
-| `lanternwisp` | Lantern Wisp | 34 | light | 4839 | 19.5 | 486 | 1.7 | 2.6 | 13 m | 4249.3 | 2342 | 18 | — | — | Siren Cliffs | Wisp Glass | wisp ×1.3 | src/shared/monster-defs.js:138 |
-| `banshee` | Banshee | 34 | dark | 4839 | 19.5 | 486 | 1.7 | 2.6 | 13 m | 4249.3 | 2342 | 22 | — | — | Siren Cliffs | Banshee Hair | wisp ×1.25 | src/shared/monster-defs.js:139 |
-| `ghoul` | Ghoul | 35 | dark | 7914 | 31.1 | 596 | 1.3 | 3 | 14 m | 5111.8 | 2694 | 22 | — | — | Gallows Down | Ghoul Claw | goblin ×1.35 | src/shared/monster-defs.js:140 |
-| `gloomserpent` | Gloom Serpent | 35 | water | 7914 | 31.1 | 596 | 2.2 | 2.4 | 14 m | 5111.8 | 2694 | 18 | — | — | Gallows Down | Serpent Scale | sandworm ×1.4 | src/shared/monster-defs.js:141 |
-| `gargoyle` | Gargoyle | 36 | dark | 8915 | 34.1 | 608 | 2.2 | 2.6 | 16 m | 6149.5 | 3100 | 22 | — | — | The Mourning Stones | Gargoyle Horn | wyrm ×1.3 | src/shared/monster-defs.js:142 |
-| `wraith` | Wraith | 36 | dark | 5349 | 20.5 | 507 | 1.7 | 2.6 | 13 m | 6149.5 | 3100 | 18 | — | — | The Mourning Stones | Wraith Cloth | wisp ×1.3 | src/shared/monster-defs.js:143 |
-| `gravehound` | Grave Hound | 37 | dark | 7499 | 27.9 | 518 | 1.5 | 3.8 | 14 m | 7398.6 | 3568 | 18 | — | — | Banshee Tor | Hound Fang | fox ×1.5 | src/shared/monster-defs.js:144 |
-| `candlewisp` | Candle Wisp | 37 | light | 5624 | 20.9 | 518 | 1.7 | 2.6 | 13 m | 7398.6 | 3568 | 18 | — | — | Banshee Tor | Candle Wax | wisp ×1.4 | src/shared/monster-defs.js:145 |
-| `hollowknight` | Hollow Knight | 38 | dark | 9856 | 35.6 | 689 | 1.3 | 3 | 14 m | 8902.8 | 4107 | 26 | — | — | Vault Heath | Hollow Plate | goblin ×1.4 | src/shared/monster-defs.js:146 |
-| `weepingwidow` | Weeping Widow | 38 | dark | 5914 | 21.4 | 530 | 1.7 | 2.6 | 13 m | 8902.8 | 4107 | 18 | — | — | Vault Heath | Widow Veil | wisp ×1.4 | src/shared/monster-defs.js:147 |
-| `stormgargoyle` | Storm Gargoyle | 39 | air | 10366 | 36.4 | 651 | 2.2 | 2.6 | 16 m | 10715.0 | 4728 | 18 | — | — | Gargoyle Crag | Storm Shard | wyrm ×1.5 | src/shared/monster-defs.js:148 |
-| `tidehorror` | Tide Horror | 39 | water | 10366 | 36.4 | 651 | 2.2 | 2.4 | 14 m | 10715.0 | 4728 | 18 | — | — | Gargoyle Crag | Horror Ink | sandworm ×1.7 | src/shared/monster-defs.js:149 |
-| `blackrevenant` | Black Revenant | 40 | dark | 11631 | 39.6 | 722 | 1.3 | 3 | 14 m | 12899.6 | 5444 | 18 | — | — | Lanternfall | Revenant Shard | goblin ×1.6 | src/shared/monster-defs.js:150 |
-| `deepsiren` | Deep Siren | 40 | water | 9451 | 32.2 | 611 | 1.8 | 2.8 | 15 m | 12899.6 | 5444 | 18 | — | — | Lanternfall | Deep Pearl | djinn ×1.5 | src/shared/monster-defs.js:151 |
+| `sakuraslime` | Sakura Slime | 16 | air | 1245 | 12.0 | 88 | 1.6 | 2.2 | 10 m | 136.8 | 168 | 18 | — | — | Petal Meadow | Blossom Jelly | slime ×1.4 | src/shared/monster-defs.js:53 |
+| `kappa` | Kappa | 16 | water | 1465 | 14.1 | 132 | 1.3 | 3 | 14 m | 136.8 | 168 | 18 | — | — | Petal Meadow | Kappa Dish | goblin ×0.78 | src/shared/monster-defs.js:54 |
+| `kodama` | Kodama | 17 | light | 1484 | 13.8 | 105 | 1.7 | 1.8 | 10 m | 167.7 | 197 | 18 | — | — | Kodama Wood | Spirit Bell | shroom ×1.25 | src/shared/monster-defs.js:55 |
+| `kabuto` | Kabuto Beetle | 17 | fire | 1953 | 18.1 | 120 | 1.4 | 2.6 | 11 m | 167.7 | 197 | 18 | — | — | Kodama Wood | Kabuto Horn | beetle ×1.45 | src/shared/monster-defs.js:56 |
+| `kitsune` | Kitsune | 18 | fire | 1662 | 14.9 | 155 | 1.5 | 3.8 | 14 m | 205.1 | 230 | 18 | — | — | Fox Hills | Foxfire Ash | fox ×1 | src/shared/monster-defs.js:57 |
+| `yamaboar` | Mountain Boar | 18 | earth | 1662 | 14.9 | 170 | 2 | 3.4 | 13 m | 205.1 | 230 | 18 | — | — | Fox Hills | Mountain Hide | boar ×1.45 | src/shared/monster-defs.js:58 |
+| `ashigaru` | Goblin Ashigaru | 19 | — | 1765 | 15.3 | 143 | 1.3 | 3 | 14 m | 250.2 | 269 | 22 | — | — | Bamboo Sea | Lacquered Plate | goblin ×0.95 | src/shared/monster-defs.js:59 |
+| `bamboo` | Bamboo Treant | 19 | earth | 2382 | 20.6 | 223 | 2.4 | 1.6 | 12 m | 250.2 | 269 | 18 | — | — | Bamboo Sea | Singing Bamboo | treant ×1.2 | src/shared/monster-defs.js:60 |
+| `onibi` | Onibi | 20 | fire | 2034 | 14.0 | 247 | 1.7 | 2.6 | 13 m | 304.6 | 313 | 18 | — | — | Ghostlight Marsh | Blue Flame | wisp ×1 | src/shared/monster-defs.js:61 |
+| `jorogumo` | Jorogumo | 20 | dark | 2599 | 17.9 | 198 | 1.4 | 2.6 | 11 m | 304.6 | 313 | 18 | — | — | Ghostlight Marsh | Spider Silk | beetle ×1.5 | src/shared/monster-defs.js:62 |
+| `oni` | Red Oni | 21 | fire | 2852 | 19.1 | 227 | 1.3 | 3 | 14 m | 370.1 | 364 | 22 | — | — | Oni Crags | Oni Fang | goblin ×1.25 | src/shared/monster-defs.js:63 |
+| `yurei` | Yurei | 21 | dark | 2139 | 14.3 | 253 | 1.7 | 2.6 | 13 m | 370.1 | 364 | 22 | — | — | Oni Crags | Yurei Shroud | wisp ×1.1 | src/shared/monster-defs.js:64 |
+| `shadowfox` | Shadow Kitsune | 22 | dark | 2496 | 16.3 | 258 | 1.5 | 3.8 | 14 m | 449.0 | 422 | 18 | — | — | Jade Falls | Night Fur | fox ×1.15 | src/shared/monster-defs.js:65 |
+| `jadeslime` | Jade Slime | 22 | water | 2121 | 13.8 | 155 | 1.6 | 2.2 | 10 m | 449.0 | 422 | 18 | — | — | Jade Falls | Jade Shard | slime ×1.7 | src/shared/monster-defs.js:66 |
+| `blueoni` | Blue Oni | 23 | water | 3272 | 20.7 | 238 | 1.3 | 3 | 14 m | 544.0 | 489 | 20 | — | — | Tengu Peaks | Storm Horn | goblin ×1.35 | src/shared/monster-defs.js:67 |
+| `tengu` | Karasu Tengu | 23 | air | 2617 | 16.6 | 238 | 1.3 | 3 | 14 m | 544.0 | 489 | 22 | — | — | Tengu Peaks | Tengu Feather | goblin ×0.95 | src/shared/monster-defs.js:68 |
+| `samurai` | Undead Samurai | 24 | dark | 3564 | 21.9 | 297 | 1.3 | 3 | 14 m | 658.1 | 566 | 28 | — | — | Warlord Ruins | Samurai Crest | goblin ×1.05 | src/shared/monster-defs.js:69 |
+| `goldkabuto` | Golden Kabuto | 24 | light | 3701 | 22.8 | 216 | 1.4 | 2.6 | 11 m | 658.1 | 566 | 18 | — | — | Warlord Ruins | Gold Shell | beetle ×1.7 | src/shared/monster-defs.js:70 |
+| `sakuratreant` | Elder Sakura | 25 | light | 5075 | 25.7 | 574 | 2.4 | 1.6 | 12 m | 795.3 | 654 | 18 | — | — | Thunder Grove | Elder Blossom | treant ×1.6 | src/shared/monster-defs.js:71 |
+| `raiju` | Raiju | 25 | air | 3383 | 17.2 | 410 | 1.5 | 3.8 | 14 m | 795.3 | 654 | 18 | — | — | Thunder Grove | Raiju Spark | fox ×1.3 | src/shared/monster-defs.js:72 |
+| `granitslime` | Granite Slime | 26 | earth | 3033 | 15.0 | 250 | 1.6 | 2.2 | 10 m | 960.3 | 755 | 18 | — | — | Highmark Pastures | Granite Dust | slime ×1.7 | src/shared/monster-defs.js:97 |
+| `cliffboar` | Cliff Boar | 26 | earth | 3569 | 17.7 | 459 | 2 | 3.4 | 13 m | 960.3 | 755 | 18 | — | — | Highmark Pastures | Cliff Tusk | boar ×1.5 | src/shared/monster-defs.js:98 |
+| `crystalbeetle` | Crystal Beetle | 27 | earth | 4702 | 22.7 | 340 | 1.4 | 2.6 | 11 m | 1158.5 | 871 | 18 | — | — | The Ledgeway | Crystal Shard | beetle ×1.5 | src/shared/monster-defs.js:99 |
+| `stonetreant` | Stone Treant | 27 | earth | 5643 | 27.3 | 595 | 2.4 | 1.6 | 12 m | 1158.5 | 871 | 18 | — | — | The Ledgeway | Stone Heart | treant ×1.75 | src/shared/monster-defs.js:100 |
+| `minegoblin` | Mountain Goblin | 28 | earth | 3963 | 18.7 | 389 | 1.3 | 3 | 14 m | 1396.6 | 1005 | 24 | — | — | Miners' Scree | Miner's Lamp | goblin ×1.1 | src/shared/monster-defs.js:101 |
+| `snowleopard` | Snow Leopard | 28 | air | 3963 | 18.7 | 433 | 1.5 | 3.8 | 14 m | 1396.6 | 1005 | 18 | — | — | Miners' Scree | Leopard Pelt | fox ×1.45 | src/shared/monster-defs.js:102 |
+| `cragwyvern` | Crag Wyvern | 29 | air | 4173 | 19.2 | 529 | 2.2 | 2.6 | 16 m | 1682.7 | 1158 | 22 | — | — | Gryphon Cirque | Wyvern Scale | wyrm ×0.85 | src/shared/monster-defs.js:103 |
+| `mistwraith` | Mist Wraith | 29 | air | 3756 | 17.3 | 441 | 1.7 | 2.6 | 13 m | 1682.7 | 1158 | 18 | — | — | Gryphon Cirque | Mist Essence | wisp ×1.25 | src/shared/monster-defs.js:104 |
+| `quartzslime` | Quartz Slime | 30 | earth | 3734 | 16.7 | 269 | 1.6 | 2.2 | 10 m | 2026.4 | 1334 | 18 | — | — | Stone Meadow | Quartz Core | slime ×1.9 | src/shared/monster-defs.js:105 |
+| `ibex` | Ibex Ram | 30 | air | 4393 | 19.7 | 494 | 2 | 3.4 | 13 m | 2026.4 | 1334 | 18 | — | — | Stone Meadow | Ibex Horn | boar ×1.55 | src/shared/monster-defs.js:106 |
+| `rocktroll` | Rock Troll | 31 | earth | 6933 | 30.3 | 549 | 1.3 | 3 | 14 m | 2439.3 | 1536 | 22 | — | — | The Windswept Neck | Troll Hide | goblin ×1.9 | src/shared/monster-defs.js:107 |
+| `slatecrawler` | Slate Crawler | 31 | earth | 6008 | 26.3 | 366 | 1.4 | 2.6 | 11 m | 2439.3 | 1536 | 22 | — | — | The Windswept Neck | Slate Plate | beetle ×1.75 | src/shared/monster-defs.js:108 |
+| `galedrake` | Gale Drake | 32 | air | 6320 | 26.9 | 560 | 2.2 | 2.6 | 16 m | 2935.6 | 1768 | 18 | — | — | The Sink | Drake Scale | wyrm ×1.3 | src/shared/monster-defs.js:109 |
+| `granitegolem` | Granite Golem | 32 | earth | 7779 | 33.1 | 653 | 2.4 | 1.6 | 12 m | 2935.6 | 1768 | 28 | — | — | The Sink | Golem Rune | treant ×2 | src/shared/monster-defs.js:110 |
+| `brineslime` | Brine Slime | 30 | water | 3734 | 16.7 | 269 | 1.6 | 2.2 | 10 m | 2026.4 | 1334 | 18 | — | — | Wraithwick Heath | Brine Jelly | slime ×1.9 | src/shared/monster-defs.js:135 |
+| `gloomcrab` | Gloom Crab | 30 | water | 5710 | 25.6 | 359 | 1.4 | 2.6 | 11 m | 2026.4 | 1334 | 18 | — | — | Wraithwick Heath | Crab Plate | beetle ×1.7 | src/shared/monster-defs.js:136 |
+| `seaboar` | Sea Boar | 31 | water | 4622 | 20.2 | 503 | 2 | 3.4 | 13 m | 2439.3 | 1536 | 18 | — | — | Wreckers' Reach | Walrus Tusk | boar ×1.7 | src/shared/monster-defs.js:137 |
+| `wrecker` | Wrecker Goblin | 31 | dark | 4622 | 20.2 | 412 | 1.3 | 3 | 14 m | 2439.3 | 1536 | 22 | — | — | Wreckers' Reach | Wrecker's Lantern | goblin ×1.1 | src/shared/monster-defs.js:138 |
+| `driftwood` | Driftwood Treant | 32 | water | 7292 | 31.0 | 653 | 2.4 | 1.6 | 12 m | 2935.6 | 1768 | 18 | — | — | The Cairn Fields | Bleached Bough | treant ×1.5 | src/shared/monster-defs.js:139 |
+| `drownedsailor` | Drowned Sailor | 32 | water | 5834 | 24.8 | 420 | 1.3 | 3 | 14 m | 2935.6 | 1768 | 22 | — | — | The Cairn Fields | Sodden Rope | goblin ×1.15 | src/shared/monster-defs.js:140 |
+| `siren` | Siren | 33 | air | 4857 | 20.1 | 524 | 1.8 | 2.8 | 15 m | 3532.1 | 2035 | 18 | — | — | Drowned Meadow | Siren Pearl | djinn ×1.1 | src/shared/monster-defs.js:141 |
+| `gloombat` | Gloom Bat | 33 | air | 4090 | 17.0 | 429 | 1.4 | 4 | 16 m | 3532.1 | 2035 | 18 | — | — | Drowned Meadow | Bat Wing | bat ×1.5 | src/shared/monster-defs.js:142 |
+| `lanternwisp` | Lantern Wisp | 34 | light | 4839 | 19.5 | 486 | 1.7 | 2.6 | 13 m | 4249.3 | 2342 | 18 | — | — | Siren Cliffs | Wisp Glass | wisp ×1.3 | src/shared/monster-defs.js:143 |
+| `banshee` | Banshee | 34 | dark | 4839 | 19.5 | 486 | 1.7 | 2.6 | 13 m | 4249.3 | 2342 | 22 | — | — | Siren Cliffs | Banshee Hair | wisp ×1.25 | src/shared/monster-defs.js:144 |
+| `ghoul` | Ghoul | 35 | dark | 7914 | 31.1 | 596 | 1.3 | 3 | 14 m | 5111.8 | 2694 | 22 | — | — | Gallows Down | Ghoul Claw | goblin ×1.35 | src/shared/monster-defs.js:145 |
+| `gloomserpent` | Gloom Serpent | 35 | water | 7914 | 31.1 | 596 | 2.2 | 2.4 | 14 m | 5111.8 | 2694 | 18 | — | — | Gallows Down | Serpent Scale | sandworm ×1.4 | src/shared/monster-defs.js:146 |
+| `gargoyle` | Gargoyle | 36 | dark | 8915 | 34.1 | 608 | 2.2 | 2.6 | 16 m | 6149.5 | 3100 | 22 | — | — | The Mourning Stones | Gargoyle Horn | wyrm ×1.3 | src/shared/monster-defs.js:147 |
+| `wraith` | Wraith | 36 | dark | 5349 | 20.5 | 507 | 1.7 | 2.6 | 13 m | 6149.5 | 3100 | 18 | — | — | The Mourning Stones | Wraith Cloth | wisp ×1.3 | src/shared/monster-defs.js:148 |
+| `gravehound` | Grave Hound | 37 | dark | 7499 | 27.9 | 518 | 1.5 | 3.8 | 14 m | 7398.6 | 3568 | 18 | — | — | Banshee Tor | Hound Fang | fox ×1.5 | src/shared/monster-defs.js:149 |
+| `candlewisp` | Candle Wisp | 37 | light | 5624 | 20.9 | 518 | 1.7 | 2.6 | 13 m | 7398.6 | 3568 | 18 | — | — | Banshee Tor | Candle Wax | wisp ×1.4 | src/shared/monster-defs.js:150 |
+| `hollowknight` | Hollow Knight | 38 | dark | 9856 | 35.6 | 689 | 1.3 | 3 | 14 m | 8902.8 | 4107 | 26 | — | — | Vault Heath | Hollow Plate | goblin ×1.4 | src/shared/monster-defs.js:151 |
+| `weepingwidow` | Weeping Widow | 38 | dark | 5914 | 21.4 | 530 | 1.7 | 2.6 | 13 m | 8902.8 | 4107 | 18 | — | — | Vault Heath | Widow Veil | wisp ×1.4 | src/shared/monster-defs.js:152 |
+| `stormgargoyle` | Storm Gargoyle | 39 | air | 10366 | 36.4 | 651 | 2.2 | 2.6 | 16 m | 10715.0 | 4728 | 18 | — | — | Gargoyle Crag | Storm Shard | wyrm ×1.5 | src/shared/monster-defs.js:153 |
+| `tidehorror` | Tide Horror | 39 | water | 10366 | 36.4 | 651 | 2.2 | 2.4 | 14 m | 10715.0 | 4728 | 18 | — | — | Gargoyle Crag | Horror Ink | sandworm ×1.7 | src/shared/monster-defs.js:154 |
+| `blackrevenant` | Black Revenant | 40 | dark | 11631 | 39.6 | 722 | 1.3 | 3 | 14 m | 12899.6 | 5444 | 18 | — | — | Lanternfall | Revenant Shard | goblin ×1.6 | src/shared/monster-defs.js:155 |
+| `deepsiren` | Deep Siren | 40 | water | 9451 | 32.2 | 611 | 1.8 | 2.8 | 15 m | 12899.6 | 5444 | 18 | — | — | Lanternfall | Deep Pearl | djinn ×1.5 | src/shared/monster-defs.js:156 |
+| `dustrunner` | Dustrunner | 37 | earth | 6249 | 23.2 | 466 | 1.3 | 3 | 14 m | 7398.6 | 3568 | 22 | — | — | The Ashbed | Dustrunner Sash | goblin ×1.1 | src/shared/monster-defs.js:159 |
+| `thornboar` | Thornhide Boar | 37 | earth | 6249 | 23.2 | 570 | 2 | 3.4 | 13 m | 7398.6 | 3568 | 18 | — | — | The Ashbed | Thorn Tusk | boar ×1.6 | src/shared/monster-defs.js:160 |
+| `grassstalker` | Grass Stalker | 38 | air | 6571 | 23.7 | 583 | 1.6 | 4 | 15 m | 8902.8 | 4107 | 22 | — | — | Tallgrass Meadows | Stalker Pelt | feline ×1.4 | src/shared/monster-defs.js:161 |
+| `locusts` | Locust Cloud | 38 | air | 5914 | 21.4 | 424 | 1.4 | 3.4 | 14 m | 8902.8 | 4107 | 18 | — | — | Tallgrass Meadows | Locust Wing | swarm ×1.2 | src/shared/monster-defs.js:162 |
+| `mudcroc` | Mudback Croc | 39 | water | 10366 | 36.4 | 705 | 2.2 | 2.8 | 12 m | 10715.0 | 4728 | 18 | — | — | The Seven Pools | Croc Scute | hoofed ×1.6 | src/shared/monster-defs.js:163 |
+| `poolheron` | Pool Heron | 39 | water | 6565 | 23.0 | 543 | 1.6 | 3 | 14 m | 10715.0 | 4728 | 18 | — | — | The Seven Pools | Heron Plume | bird ×1.5 | src/shared/monster-defs.js:164 |
+| `moundsoldier` | Mound Soldier | 40 | earth | 10178 | 34.7 | 445 | 1.4 | 2.6 | 11 m | 12899.6 | 5444 | 18 | — | — | The Termite Cathedrals | Mound Mandible | beetle ×1.5 | src/shared/monster-defs.js:165 |
+| `resinweaver` | Resin Weaver | 40 | earth | 8360 | 28.5 | 445 | 1.4 | 2.6 | 11 m | 12899.6 | 5444 | 18 | — | — | The Termite Cathedrals | Weaver Silk | beetle ×1.4 | src/shared/monster-defs.js:166 |
+| `sparkwisp` | Spark Wisp | 41 | air | 6884 | 22.7 | 569 | 1.7 | 2.6 | 13 m | 15534.7 | 6271 | 18 | — | — | Anvil Rock | Spark Glass | wisp ×1.3 | src/shared/monster-defs.js:167 |
+| `anvilhawk` | Anvil Hawk | 41 | air | 7267 | 24.0 | 569 | 1.6 | 3 | 14 m | 15534.7 | 6271 | 18 | — | — | Anvil Rock | Hawk Talon | bird ×1.7 | src/shared/monster-defs.js:168 |
+| `cinderbuffalo` | Cinder Buffalo | 42 | fire | 12077 | 38.6 | 759 | 2.2 | 2.8 | 12 m | 18715.2 | 7227 | 20 | — | — | The Burnt Plain | Cinder Horn | hoofed ×1.6 | src/shared/monster-defs.js:169 |
+| `smokewraith` | Smoke Wraith | 42 | fire | 7246 | 23.2 | 584 | 1.7 | 2.6 | 13 m | 18715.2 | 7227 | 22 | — | — | The Burnt Plain | Smoke Wisp | wisp ×1.4 | src/shared/monster-defs.js:170 |
+| `hollowkin` | Hollowed Kin | 43 | dark | 10173 | 31.5 | 600 | 1.6 | 2.2 | 12 m | 22556.5 | 8331 | 22 | — | — | Baobab Reach | Hollow Beads | hollowed ×1.1 | src/shared/monster-defs.js:171 |
+| `baobabtreant` | Baobab Treant | 43 | earth | 12717 | 39.4 | 839 | 2.4 | 1.6 | 12 m | 22556.5 | 8331 | 22 | — | — | Baobab Reach | Baobab Bark | treant ×1.9 | src/shared/monster-defs.js:172 |
+| `deltahippo` | Delta Hippo | 44 | water | 14289 | 42.8 | 801 | 2.2 | 2.8 | 12 m | 27199.1 | 9609 | 18 | — | — | The Sedge Delta | Hippo Tusk | hoofed ×1.5 | src/shared/monster-defs.js:173 |
+| `reedserpent` | Reed Serpent | 44 | water | 12503 | 37.5 | 739 | 2.2 | 2.4 | 14 m | 27199.1 | 9609 | 18 | — | — | The Sedge Delta | Reed Scale | sandworm ×1.5 | src/shared/monster-defs.js:174 |
+| `greyrhino` | Greyhide Rhino | 45 | earth | 16001 | 46.4 | 886 | 2.2 | 2.8 | 12 m | 32814.1 | 11089 | 24 | — | — | The Sunstair | Grey Horn | hoofed ×1.7 | src/shared/monster-defs.js:175 |
+| `dawnvulture` | Dawnless Vulture | 45 | dark | 8942 | 25.9 | 633 | 1.6 | 3 | 14 m | 32814.1 | 11089 | 18 | — | — | The Sunstair | Dawnless Feather | bird ×1.7 | src/shared/monster-defs.js:176 |
 
 ## 7. Hoarfrost Reach (levels 22-30)
 
@@ -151,24 +169,24 @@ Two kinds per level, 12 of each, in nine zones.
 
 | Id | Name | Lv | El | HP | Hits | Dmg | Atk s | Spd | Aggro | XP | Coins | Count | Res | Acc | Zone | Drop | Model | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `frostslime` | Frost Slime | 22 | water | 2121 | 13.8 | 155 | 1.6 | 2.2 | 10 m | 449.0 | 422 | 18 | — | — | Rimewood Edge | Frost Jelly | slime ×1.6 | src/shared/monster-defs.js:71 |
-| `snowboar` | Snow Boar | 22 | water | 2496 | 16.3 | 284 | 2 | 3.4 | 13 m | 449.0 | 422 | 18 | — | — | Rimewood Edge | Snow Tusk | boar ×1.5 | src/shared/monster-defs.js:72 |
-| `icebeetle` | Ice Beetle | 23 | water | 3272 | 20.7 | 211 | 1.4 | 2.6 | 11 m | 544.0 | 489 | 18 | — | — | Whitebirch Flats | Ice Shell | beetle ×1.5 | src/shared/monster-defs.js:73 |
-| `wolf` | Winter Wolf | 23 | air | 2617 | 16.6 | 264 | 1.5 | 3.8 | 14 m | 544.0 | 489 | 18 | — | — | Whitebirch Flats | Winter Pelt | fox ×1.35 | src/shared/monster-defs.js:74 |
-| `reaver` | Frost Reaver | 24 | dark | 3290 | 20.2 | 243 | 1.3 | 3 | 14 m | 658.1 | 566 | 22 | — | — | Frostmere Shore | Reaver Rune | goblin ×1.05 | src/shared/monster-defs.js:75 |
-| `rimewisp` | Rime Wisp | 24 | air | 2467 | 15.2 | 270 | 1.7 | 2.6 | 13 m | 658.1 | 566 | 18 | — | — | Frostmere Shore | Rime Spark | wisp ×1.1 | src/shared/monster-defs.js:76 |
-| `rimetreant` | Rimebark Treant | 25 | water | 5075 | 25.7 | 574 | 2.4 | 1.6 | 12 m | 795.3 | 654 | 18 | — | — | Hunters' Wold | Rimebark | treant ×1.7 | src/shared/monster-defs.js:77 |
-| `yeti` | Yeti | 25 | water | 4736 | 24.0 | 451 | 1.3 | 3 | 14 m | 795.3 | 654 | 18 | — | — | Hunters' Wold | Yeti Fur | goblin ×1.6 | src/shared/monster-defs.js:78 |
-| `draugr` | Draugr | 26 | dark | 4639 | 23.0 | 459 | 1.3 | 3 | 14 m | 960.3 | 755 | 22 | — | — | The Rimeking's Hall | Draugr Rune | goblin ×1.1 | src/shared/monster-defs.js:79 |
-| `icewraith` | Ice Wraith | 26 | dark | 3212 | 15.9 | 417 | 1.7 | 2.6 | 13 m | 960.3 | 755 | 18 | — | — | The Rimeking's Hall | Wraith Shroud | wisp ×1.2 | src/shared/monster-defs.js:80 |
-| `lynx` | Snow Lynx | 27 | air | 3762 | 18.2 | 425 | 1.5 | 3.8 | 14 m | 1158.5 | 871 | 18 | — | — | Glacier Tongue | Lynx Claw | fox ×1.4 | src/shared/monster-defs.js:81 |
-| `crawler` | Glacier Crawler | 27 | water | 4890 | 23.6 | 340 | 1.4 | 2.6 | 11 m | 1158.5 | 871 | 18 | — | — | Glacier Tongue | Glacier Shard | beetle ×1.7 | src/shared/monster-defs.js:82 |
-| `frosttroll` | Frost Troll | 28 | water | 5945 | 28.0 | 519 | 1.3 | 3 | 14 m | 1396.6 | 1005 | 28 | — | — | Blizzard Steppe | Troll Tooth | goblin ×1.85 | src/shared/monster-defs.js:83 |
-| `blizzhound` | Blizzard Hound | 28 | air | 3963 | 18.7 | 433 | 1.5 | 3.8 | 14 m | 1396.6 | 1005 | 18 | — | — | Blizzard Steppe | Hound Fang | fox ×1.5 | src/shared/monster-defs.js:84 |
-| `revenant` | Rime Revenant | 29 | dark | 5634 | 25.9 | 529 | 1.3 | 3 | 14 m | 1682.7 | 1158 | 22 | — | — | Bonefrost Barrow | Revenant Plate | goblin ×1.2 | src/shared/monster-defs.js:85 |
-| `barrowwight` | Barrow Wight | 29 | dark | 3756 | 17.3 | 441 | 1.7 | 2.6 | 13 m | 1682.7 | 1158 | 22 | — | — | Bonefrost Barrow | Barrow Ash | wisp ×1.3 | src/shared/monster-defs.js:86 |
-| `alphawolf` | Frostfang Alpha | 30 | air | 5710 | 25.6 | 449 | 1.5 | 3.8 | 14 m | 2026.4 | 1334 | 20 | — | — | The Wyrm's Glacier | Alpha Fang | fox ×1.75 | src/shared/monster-defs.js:87 |
-| `glaciergolem` | Glacier Golem | 30 | water | 7028 | 31.5 | 629 | 2.4 | 1.6 | 12 m | 2026.4 | 1334 | 18 | — | — | The Wyrm's Glacier | Golem Core | treant ×1.95 | src/shared/monster-defs.js:88 |
+| `frostslime` | Frost Slime | 22 | water | 2121 | 13.8 | 155 | 1.6 | 2.2 | 10 m | 449.0 | 422 | 18 | — | — | Rimewood Edge | Frost Jelly | slime ×1.6 | src/shared/monster-defs.js:76 |
+| `snowboar` | Snow Boar | 22 | water | 2496 | 16.3 | 284 | 2 | 3.4 | 13 m | 449.0 | 422 | 18 | — | — | Rimewood Edge | Snow Tusk | boar ×1.5 | src/shared/monster-defs.js:77 |
+| `icebeetle` | Ice Beetle | 23 | water | 3272 | 20.7 | 211 | 1.4 | 2.6 | 11 m | 544.0 | 489 | 18 | — | — | Whitebirch Flats | Ice Shell | beetle ×1.5 | src/shared/monster-defs.js:78 |
+| `wolf` | Winter Wolf | 23 | air | 2617 | 16.6 | 264 | 1.5 | 3.8 | 14 m | 544.0 | 489 | 18 | — | — | Whitebirch Flats | Winter Pelt | fox ×1.35 | src/shared/monster-defs.js:79 |
+| `reaver` | Frost Reaver | 24 | dark | 3290 | 20.2 | 243 | 1.3 | 3 | 14 m | 658.1 | 566 | 22 | — | — | Frostmere Shore | Reaver Rune | goblin ×1.05 | src/shared/monster-defs.js:80 |
+| `rimewisp` | Rime Wisp | 24 | air | 2467 | 15.2 | 270 | 1.7 | 2.6 | 13 m | 658.1 | 566 | 18 | — | — | Frostmere Shore | Rime Spark | wisp ×1.1 | src/shared/monster-defs.js:81 |
+| `rimetreant` | Rimebark Treant | 25 | water | 5075 | 25.7 | 574 | 2.4 | 1.6 | 12 m | 795.3 | 654 | 18 | — | — | Hunters' Wold | Rimebark | treant ×1.7 | src/shared/monster-defs.js:82 |
+| `yeti` | Yeti | 25 | water | 4736 | 24.0 | 451 | 1.3 | 3 | 14 m | 795.3 | 654 | 18 | — | — | Hunters' Wold | Yeti Fur | goblin ×1.6 | src/shared/monster-defs.js:83 |
+| `draugr` | Draugr | 26 | dark | 4639 | 23.0 | 459 | 1.3 | 3 | 14 m | 960.3 | 755 | 22 | — | — | The Rimeking's Hall | Draugr Rune | goblin ×1.1 | src/shared/monster-defs.js:84 |
+| `icewraith` | Ice Wraith | 26 | dark | 3212 | 15.9 | 417 | 1.7 | 2.6 | 13 m | 960.3 | 755 | 18 | — | — | The Rimeking's Hall | Wraith Shroud | wisp ×1.2 | src/shared/monster-defs.js:85 |
+| `lynx` | Snow Lynx | 27 | air | 3762 | 18.2 | 425 | 1.5 | 3.8 | 14 m | 1158.5 | 871 | 18 | — | — | Glacier Tongue | Lynx Claw | fox ×1.4 | src/shared/monster-defs.js:86 |
+| `crawler` | Glacier Crawler | 27 | water | 4890 | 23.6 | 340 | 1.4 | 2.6 | 11 m | 1158.5 | 871 | 18 | — | — | Glacier Tongue | Glacier Shard | beetle ×1.7 | src/shared/monster-defs.js:87 |
+| `frosttroll` | Frost Troll | 28 | water | 5945 | 28.0 | 519 | 1.3 | 3 | 14 m | 1396.6 | 1005 | 28 | — | — | Blizzard Steppe | Troll Tooth | goblin ×1.85 | src/shared/monster-defs.js:88 |
+| `blizzhound` | Blizzard Hound | 28 | air | 3963 | 18.7 | 433 | 1.5 | 3.8 | 14 m | 1396.6 | 1005 | 18 | — | — | Blizzard Steppe | Hound Fang | fox ×1.5 | src/shared/monster-defs.js:89 |
+| `revenant` | Rime Revenant | 29 | dark | 5634 | 25.9 | 529 | 1.3 | 3 | 14 m | 1682.7 | 1158 | 22 | — | — | Bonefrost Barrow | Revenant Plate | goblin ×1.2 | src/shared/monster-defs.js:90 |
+| `barrowwight` | Barrow Wight | 29 | dark | 3756 | 17.3 | 441 | 1.7 | 2.6 | 13 m | 1682.7 | 1158 | 22 | — | — | Bonefrost Barrow | Barrow Ash | wisp ×1.3 | src/shared/monster-defs.js:91 |
+| `alphawolf` | Frostfang Alpha | 30 | air | 5710 | 25.6 | 449 | 1.5 | 3.8 | 14 m | 2026.4 | 1334 | 20 | — | — | The Wyrm's Glacier | Alpha Fang | fox ×1.75 | src/shared/monster-defs.js:92 |
+| `glaciergolem` | Glacier Golem | 30 | water | 7028 | 31.5 | 629 | 2.4 | 1.6 | 12 m | 2026.4 | 1334 | 18 | — | — | The Wyrm's Glacier | Golem Core | treant ×1.95 | src/shared/monster-defs.js:93 |
 
 ## 7b. The Sunscar (levels 28-36)
 
@@ -176,49 +194,51 @@ Two kinds per level, in nine zones (`s28`-`s36`, `shared/sunzones.js`). `Res` an
 
 | Id | Name | Lv | El | HP | Hits | Dmg | Atk s | Spd | Aggro | XP | Coins | Count | Res | Acc | Zone | Drop | Model | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `sandslime` | Sand Slime | 28 | earth | 3369 | 15.9 | 260 | 1.6 | 2.2 | 10 m | 1396.6 | 1005 | 18 | — | — | Springhead Flats | Sand Jelly | slime ×1.8 | src/shared/monster-defs.js:109 |
-| `gildedscarab` | Gilded Scarab | 28 | fire | 4756 | 22.4 | 346 | 1.4 | 2.6 | 11 m | 1396.6 | 1005 | 18 | — | — | Springhead Flats | Gilded Wing | beetle ×1.6 | src/shared/monster-defs.js:110 |
-| `warthog` | Tusked Warthog | 29 | earth | 4173 | 19.2 | 485 | 2 | 3.4 | 13 m | 1682.7 | 1158 | 18 | — | — | The Weeping Pan | Warthog Tusk | boar ×1.65 | src/shared/monster-defs.js:111 |
-| `dunescorpion` | Dune Scorpion | 29 | fire | 4382 | 20.1 | 441 | 1.5 | 3 | 12 m | 1682.7 | 1158 | 22 | — | — | The Weeping Pan | Scorpion Sting | scorpion ×1.45 | src/shared/monster-defs.js:112 |
-| `raider` | Desert Raider | 30 | fire | 4393 | 19.7 | 404 | 1.3 | 3 | 14 m | 2026.4 | 1334 | 24 | — | — | Anvil Cliffs | Raider Sash | goblin ×1.05 | src/shared/monster-defs.js:113 |
-| `cactustreant` | Cactus Treant | 30 | earth | 6150 | 27.6 | 584 | 2.3 | 1.5 | 10 m | 2026.4 | 1334 | 18 | — | — | Anvil Cliffs | Cactus Bloom | cactus ×1.4 | src/shared/monster-defs.js:114 |
-| `sandworm` | Sand Worm | 31 | earth | 6008 | 26.3 | 549 | 2.2 | 2.4 | 14 m | 2439.3 | 1536 | 18 | — | — | Lantern Wash | Worm Tooth | sandworm ×1.1 | src/shared/monster-defs.js:115 |
-| `mummy` | Dune Mummy | 31 | light | 6008 | 26.3 | 503 | 1.3 | 3 | 14 m | 2439.3 | 1536 | 22 | — | — | Lantern Wash | Linen Wrap | goblin ×1.1 | src/shared/monster-defs.js:116 |
-| `glasswisp` | Glass Wisp | 32 | light | 4375 | 18.6 | 467 | 1.7 | 2.6 | 13 m | 2935.6 | 1768 | 18 | — | — | The Glass Fields | Glass Spark | wisp ×1.3 | src/shared/monster-defs.js:117 |
-| `glassscorpion` | Glass Scorpion | 32 | earth | 5834 | 24.8 | 467 | 1.5 | 3 | 12 m | 2935.6 | 1768 | 18 | — | — | The Glass Fields | Glass Sting | scorpion ×1.7 | src/shared/monster-defs.js:118 |
-| `dustdjinn` | Dust Djinn | 33 | fire | 4857 | 20.1 | 524 | 1.8 | 2.8 | 15 m | 3532.1 | 2035 | 18 | — | — | Twin Buttes | Djinn Smoke | djinn ×1.1 | src/shared/monster-defs.js:119 |
-| `duneprowler` | Dune Prowler | 33 | earth | 5113 | 21.2 | 476 | 1.5 | 3.8 | 14 m | 3532.1 | 2035 | 18 | — | — | Twin Buttes | Prowler Pelt | fox ×1.4 | src/shared/monster-defs.js:120 |
-| `tombguard` | Tomb Guardian | 34 | light | 7527 | 30.4 | 583 | 1.3 | 3 | 14 m | 4249.3 | 2342 | 22 | — | — | The Whitefloor | Tomb Seal | goblin ×1.3 | src/shared/monster-defs.js:121 |
-| `sandgolem` | Sandstone Golem | 34 | earth | 8602 | 34.7 | 680 | 2.4 | 1.6 | 12 m | 4249.3 | 2342 | 24 | — | — | The Whitefloor | Sandstone Core | treant ×1.95 | src/shared/monster-defs.js:122 |
-| `dunedrake` | Dune Drake | 35 | fire | 7348 | 28.9 | 596 | 2.2 | 2.6 | 16 m | 5111.8 | 2694 | 18 | — | — | Bellrock | Drake Hide | wyrm ×1.3 | src/shared/monster-defs.js:123 |
-| `sunpriest` | Sun Priest | 35 | light | 6783 | 26.7 | 447 | 1.3 | 3 | 14 m | 5111.8 | 2694 | 22 | — | — | Bellrock | Sun Disc | goblin ×1.15 | src/shared/monster-defs.js:124 |
-| `elderworm` | Elder Sand Worm | 36 | earth | 8915 | 34.1 | 608 | 2.2 | 2.4 | 14 m | 6149.5 | 3100 | 18 | — | — | The Singing Dunes | Elder Fang | sandworm ×1.6 | src/shared/monster-defs.js:125 |
-| `efreet` | Efreet | 36 | fire | 7726 | 29.5 | 558 | 1.8 | 2.8 | 15 m | 6149.5 | 3100 | 18 | — | — | The Singing Dunes | Efreet Ember | djinn ×1.5 | src/shared/monster-defs.js:126 |
+| `sandslime` | Sand Slime | 28 | earth | 3369 | 15.9 | 260 | 1.6 | 2.2 | 10 m | 1396.6 | 1005 | 18 | — | — | Springhead Flats | Sand Jelly | slime ×1.8 | src/shared/monster-defs.js:114 |
+| `gildedscarab` | Gilded Scarab | 28 | fire | 4756 | 22.4 | 346 | 1.4 | 2.6 | 11 m | 1396.6 | 1005 | 18 | — | — | Springhead Flats | Gilded Wing | beetle ×1.6 | src/shared/monster-defs.js:115 |
+| `warthog` | Tusked Warthog | 29 | earth | 4173 | 19.2 | 485 | 2 | 3.4 | 13 m | 1682.7 | 1158 | 18 | — | — | The Weeping Pan | Warthog Tusk | boar ×1.65 | src/shared/monster-defs.js:116 |
+| `dunescorpion` | Dune Scorpion | 29 | fire | 4382 | 20.1 | 441 | 1.5 | 3 | 12 m | 1682.7 | 1158 | 22 | — | — | The Weeping Pan | Scorpion Sting | scorpion ×1.45 | src/shared/monster-defs.js:117 |
+| `raider` | Desert Raider | 30 | fire | 4393 | 19.7 | 404 | 1.3 | 3 | 14 m | 2026.4 | 1334 | 24 | — | — | Anvil Cliffs | Raider Sash | goblin ×1.05 | src/shared/monster-defs.js:118 |
+| `cactustreant` | Cactus Treant | 30 | earth | 6150 | 27.6 | 584 | 2.3 | 1.5 | 10 m | 2026.4 | 1334 | 18 | — | — | Anvil Cliffs | Cactus Bloom | cactus ×1.4 | src/shared/monster-defs.js:119 |
+| `sandworm` | Sand Worm | 31 | earth | 6008 | 26.3 | 549 | 2.2 | 2.4 | 14 m | 2439.3 | 1536 | 18 | — | — | Lantern Wash | Worm Tooth | sandworm ×1.1 | src/shared/monster-defs.js:120 |
+| `mummy` | Dune Mummy | 31 | light | 6008 | 26.3 | 503 | 1.3 | 3 | 14 m | 2439.3 | 1536 | 22 | — | — | Lantern Wash | Linen Wrap | goblin ×1.1 | src/shared/monster-defs.js:121 |
+| `glasswisp` | Glass Wisp | 32 | light | 4375 | 18.6 | 467 | 1.7 | 2.6 | 13 m | 2935.6 | 1768 | 18 | — | — | The Glass Fields | Glass Spark | wisp ×1.3 | src/shared/monster-defs.js:122 |
+| `glassscorpion` | Glass Scorpion | 32 | earth | 5834 | 24.8 | 467 | 1.5 | 3 | 12 m | 2935.6 | 1768 | 18 | — | — | The Glass Fields | Glass Sting | scorpion ×1.7 | src/shared/monster-defs.js:123 |
+| `dustdjinn` | Dust Djinn | 33 | fire | 4857 | 20.1 | 524 | 1.8 | 2.8 | 15 m | 3532.1 | 2035 | 18 | — | — | Twin Buttes | Djinn Smoke | djinn ×1.1 | src/shared/monster-defs.js:124 |
+| `duneprowler` | Dune Prowler | 33 | earth | 5113 | 21.2 | 476 | 1.5 | 3.8 | 14 m | 3532.1 | 2035 | 18 | — | — | Twin Buttes | Prowler Pelt | fox ×1.4 | src/shared/monster-defs.js:125 |
+| `tombguard` | Tomb Guardian | 34 | light | 7527 | 30.4 | 583 | 1.3 | 3 | 14 m | 4249.3 | 2342 | 22 | — | — | The Whitefloor | Tomb Seal | goblin ×1.3 | src/shared/monster-defs.js:126 |
+| `sandgolem` | Sandstone Golem | 34 | earth | 8602 | 34.7 | 680 | 2.4 | 1.6 | 12 m | 4249.3 | 2342 | 24 | — | — | The Whitefloor | Sandstone Core | treant ×1.95 | src/shared/monster-defs.js:127 |
+| `dunedrake` | Dune Drake | 35 | fire | 7348 | 28.9 | 596 | 2.2 | 2.6 | 16 m | 5111.8 | 2694 | 18 | — | — | Bellrock | Drake Hide | wyrm ×1.3 | src/shared/monster-defs.js:128 |
+| `sunpriest` | Sun Priest | 35 | light | 6783 | 26.7 | 447 | 1.3 | 3 | 14 m | 5111.8 | 2694 | 22 | — | — | Bellrock | Sun Disc | goblin ×1.15 | src/shared/monster-defs.js:129 |
+| `elderworm` | Elder Sand Worm | 36 | earth | 8915 | 34.1 | 608 | 2.2 | 2.4 | 14 m | 6149.5 | 3100 | 18 | — | — | The Singing Dunes | Elder Fang | sandworm ×1.6 | src/shared/monster-defs.js:130 |
+| `efreet` | Efreet | 36 | fire | 7726 | 29.5 | 558 | 1.8 | 2.8 | 15 m | 6149.5 | 3100 | 18 | — | — | The Singing Dunes | Efreet Ember | djinn ×1.5 | src/shared/monster-defs.js:131 |
 
-## 8. Bosses (12)
+## 8. Bosses (14)
 
 Health is 70 hits of a same-level player (×1.5 from level 10); a hit is 16% of that player's health. Above level 60 (zone tiers IV and V, dungeons +IV and +V) a boss creeps on top of the late creep of every monster: +1.25% health and +5% damage for every level over 60 (`BOSS_CREEP_*`, `defAt`). Each boss has its own move set on top of the shared melee and the phases at 60% and 30% (`server/boss.js`).
 
 | Id | Name | Lv | El | HP | Dmg | Atk s | Spd | XP | Coins | Material | Arena | Summons | Prop | Music | Move set | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `boss` | The Rootwarden | 15 | dark | 10497 | 227 | 2.6 | 1.9 | 2779.6 | 2860 | Rootwarden Heart | The Stone Circle | Thornling | Heartwood Totem | boss15 | `roots` src/server/boss-kits-home.js:33 | src/shared/monster-defs.js:189 |
-| `carapax` | Carapax, the Tide King | 20 | water | 15212 | 396 | 2.5 | 2 | 7615.5 | 6260 | Tide King's Claw | The Tide King's Beach | Tide Hatchling | — | boss15 | `tide` src/server/boss-kits-home.js:101 | src/shared/monster-defs.js:196 |
-| `akaoni` | Akaoni, the Gate Demon | 20 | fire | 15212 | 396 | 2.4 | 2.1 | 7615.5 | 6260 | Gate Demon Horn | Demon Gate | Oni Imp | — | boss20 | `oni` src/server/boss-kits-vale.js:65 | src/shared/monster-defs.js:201 |
-| `kyuubi` | Kyuubi, the Nine-Tailed | 25 | light | 20705 | 656 | 2.2 | 2.6 | 19883.5 | 13080 | Kyuubi Tail | Foxfire Hollow | Fox Spirit | — | boss25 | `kitsune` src/server/boss-kits-vale.js:134 | src/shared/monster-defs.js:206 |
-| `ymrik` | Ymrik, the Rimeking | 26 | water | 21214 | 667 | 2.4 | 2.1 | 24006.9 | 15100 | Rimeking's Crown | The Rimeking's Hall | Frost Thrall | — | boss26 | `rime` src/server/boss-kits-north.js:51 | src/shared/monster-defs.js:212 |
-| `vetrmaw` | Vetrmaw, the Frost Wyrm | 30 | water | 23427 | 718 | 2.2 | 2.5 | 50658.9 | 26680 | Wyrm Scale | The Wyrm's Nest | Wyrmling | Warm Core | boss30 | `wyrm` src/server/boss-kits-north.js:139 | src/shared/monster-defs.js:217 |
-| `gryphonqueen` | The Gryphon Queen | 29 | air | 22844 | 705 | 2.2 | 3 | 42066.4 | 23160 | Queen's Plume | The Gryphon Queen's Peak | Gryphon Eaglet | — | boss29 | `gryphon` src/server/boss-kits-grey.js:77 | src/shared/monster-defs.js:224 |
-| `mountaingolem` | The Mountain Golem | 32 | earth | 24660 | 747 | 2.7 | 1.8 | 73389.9 | 35360 | Black Stone | The Golem's Cavern | Rubble Imp | Iron Joint | boss32 | `golem` src/server/boss-kits-grey.js:134 | src/shared/monster-defs.js:229 |
-| `glassguardian` | The Glass Guardian | 32 | light | 24660 | 747 | 2.6 | 1.9 | 73389.9 | 35360 | Guardian's Prism | The Guardian's Court | Glass Shard | Black Mirror | boss32 | `glass` src/server/boss-kits-sun.js:49 | src/shared/monster-defs.js:236 |
-| `sandwyrm` | The Sand Wyrm | 36 | earth | 27460 | 811 | 2.3 | 2.6 | 153738.6 | 62000 | Wyrm Heartsand | The Wyrm's Pit | Sand Whelp | — | boss36 | `sandwyrm` src/server/boss-kits-sun.js:132 | src/shared/monster-defs.js:240 |
-| `drownedcaptain` | Captain Dredge, the Drowned | 35 | water | 26713 | 794 | 2.5 | 2.1 | 127795.1 | 53880 | Captain's Compass | The Sea Caves | Drowned Deckhand | — | boss35 | `captain` src/server/boss-kits-gloam.js:86 | src/shared/monster-defs.js:245 |
-| `gloamwarden` | The Gloam Warden | 40 | dark | 30841 | 889 | 2.4 | 2.2 | 322490.2 | 108880 | Warden's Lamp | The Gloam Light | Gloam Specter | Soul Lantern | boss40 | `gloamwarden` src/server/boss-kits-gloam.js:163 | src/shared/monster-defs.js:249 |
+| `boss` | The Rootwarden | 15 | dark | 10497 | 227 | 2.6 | 1.9 | 2779.6 | 2860 | Rootwarden Heart | The Stone Circle | Thornling | Heartwood Totem | boss15 | `roots` src/server/boss-kits-home.js:33 | src/shared/monster-defs.js:214 |
+| `carapax` | Carapax, the Tide King | 20 | water | 15212 | 396 | 2.5 | 2 | 7615.5 | 6260 | Tide King's Claw | The Tide King's Beach | Tide Hatchling | — | boss15 | `tide` src/server/boss-kits-home.js:101 | src/shared/monster-defs.js:221 |
+| `akaoni` | Akaoni, the Gate Demon | 20 | fire | 15212 | 396 | 2.4 | 2.1 | 7615.5 | 6260 | Gate Demon Horn | Demon Gate | Oni Imp | — | boss20 | `oni` src/server/boss-kits-vale.js:65 | src/shared/monster-defs.js:226 |
+| `kyuubi` | Kyuubi, the Nine-Tailed | 25 | light | 20705 | 656 | 2.2 | 2.6 | 19883.5 | 13080 | Kyuubi Tail | Foxfire Hollow | Fox Spirit | — | boss25 | `kitsune` src/server/boss-kits-vale.js:134 | src/shared/monster-defs.js:231 |
+| `ymrik` | Ymrik, the Rimeking | 26 | water | 21214 | 667 | 2.4 | 2.1 | 24006.9 | 15100 | Rimeking's Crown | The Rimeking's Hall | Frost Thrall | — | boss26 | `rime` src/server/boss-kits-north.js:51 | src/shared/monster-defs.js:237 |
+| `vetrmaw` | Vetrmaw, the Frost Wyrm | 30 | water | 23427 | 718 | 2.2 | 2.5 | 50658.9 | 26680 | Wyrm Scale | The Wyrm's Nest | Wyrmling | Warm Core | boss30 | `wyrm` src/server/boss-kits-north.js:139 | src/shared/monster-defs.js:242 |
+| `gryphonqueen` | The Gryphon Queen | 29 | air | 22844 | 705 | 2.2 | 3 | 42066.4 | 23160 | Queen's Plume | The Gryphon Queen's Peak | Gryphon Eaglet | — | boss29 | `gryphon` src/server/boss-kits-grey.js:77 | src/shared/monster-defs.js:249 |
+| `mountaingolem` | The Mountain Golem | 32 | earth | 24660 | 747 | 2.7 | 1.8 | 73389.9 | 35360 | Black Stone | The Golem's Cavern | Rubble Imp | Iron Joint | boss32 | `golem` src/server/boss-kits-grey.js:134 | src/shared/monster-defs.js:254 |
+| `glassguardian` | The Glass Guardian | 32 | light | 24660 | 747 | 2.6 | 1.9 | 73389.9 | 35360 | Guardian's Prism | The Guardian's Court | Glass Shard | Black Mirror | boss32 | `glass` src/server/boss-kits-sun.js:49 | src/shared/monster-defs.js:261 |
+| `sandwyrm` | The Sand Wyrm | 36 | earth | 27460 | 811 | 2.3 | 2.6 | 153738.6 | 62000 | Wyrm Heartsand | The Wyrm's Pit | Sand Whelp | — | boss36 | `sandwyrm` src/server/boss-kits-sun.js:132 | src/shared/monster-defs.js:265 |
+| `drownedcaptain` | Captain Dredge, the Drowned | 35 | water | 26713 | 794 | 2.5 | 2.1 | 127795.1 | 53880 | Captain's Compass | The Sea Caves | Drowned Deckhand | — | boss35 | `captain` src/server/boss-kits-gloam.js:86 | src/shared/monster-defs.js:270 |
+| `gloamwarden` | The Gloam Warden | 40 | dark | 30841 | 889 | 2.4 | 2.2 | 322490.2 | 108880 | Warden's Lamp | The Gloam Light | Gloam Specter | Soul Lantern | boss40 | `gloamwarden` src/server/boss-kits-gloam.js:163 | src/shared/monster-defs.js:274 |
+| `oldthunder` | Old Thunder, the Anvilwing | 41 | air | 31801 | 911 | 2.3 | 3 | 388368.3 | 125420 | Thunder's Anvil | Old Thunder's Roost | Spark Wisp | — | boss41 | `thunder` src/server/boss-kits-savanna.js:47 | src/shared/savanna-bosses.js:7 |
+| `oldhorn` | Oldhorn, the Herd-Mother | 45 | earth | 36226 | 1013 | 2.6 | 2.4 | 820351.9 | 221780 | Herd-Mother's Horn | The Dawn Slab | Hollowed Carrier | — | boss45 | `herdmother` src/server/boss-kits-savanna.js:103 | src/shared/savanna-bosses.js:12 |
 
 Boss quest notices (`BOSS_QUESTS`, src/shared/quests.js:32): The Rootwarden from level 13; Carapax, the Tide King from level 17; Akaoni, the Gate Demon from level 18; Kyuubi, the Nine-Tailed from level 23; Ymrik, the Rimeking from level 25; The Gryphon Queen from level 28; Vetrmaw, the Frost Wyrm from level 29; The Mountain Golem from level 31; The Glass Guardian from level 31; The Sand Wyrm from level 34; Captain Dredge from level 34; The Gloam Warden from level 38.
 
 ### Boss skills (36: a skill and a burst for each class, each with a 10% drop chance per kill)
 
-Rows `drop:'<boss id>'` at the end of `SKILLS` (src/shared/classes.js:22 ...), listed by `BOSS_SKILLS` (src/shared/drops.js:36).
+Rows `drop:'<boss id>'` at the end of `SKILLS` (src/shared/classes.js:22 ...), listed by `BOSS_SKILLS` (src/shared/drops.js:39).
 
 | Boss | Id | Skill | Class | Slot | El | Lv | Cooldown | Defined |
 |---|---|---|---|---|---|---|---|---|
@@ -294,6 +314,18 @@ Rows `drop:'<boss id>'` at the end of `SKILLS` (src/shared/classes.js:22 ...), l
 | The Gloam Warden | `wraithvolley` | Wraith Volley | Archer | burst | dark | 40 | 40 s | src/shared/classes.js:133 |
 | The Gloam Warden | `soulsiphon` | Soul Siphon | Mage | skill | dark | 40 | 7 s | src/shared/classes.js:134 |
 | The Gloam Warden | `nightfall` | Nightfall | Mage | burst | dark | 40 | 40 s | src/shared/classes.js:135 |
+| Old Thunder | `thunderclap` | Thunderclap | Warrior | skill | air | 41 | 7 s | src/shared/classes.js:137 |
+| Old Thunder | `anvilstrike` | Anvil Strike | Warrior | burst | air | 41 | 38 s | src/shared/classes.js:138 |
+| Old Thunder | `boltarrow` | Bolt Arrow | Archer | skill | air | 41 | 7 s | src/shared/classes.js:139 |
+| Old Thunder | `skyfall` | Skyfall Volley | Archer | burst | air | 41 | 40 s | src/shared/classes.js:140 |
+| Old Thunder | `chainlightning` | Chain Lightning | Mage | skill | air | 41 | 6 s | src/shared/classes.js:141 |
+| Old Thunder | `thunderhead` | Thunderhead | Mage | burst | air | 41 | 40 s | src/shared/classes.js:142 |
+| Oldhorn | `horngore` | Horn Gore | Warrior | skill | earth | 45 | 7 s | src/shared/classes.js:143 |
+| Oldhorn | `herdcharge` | Herd Charge | Warrior | burst | earth | 45 | 36 s | src/shared/classes.js:144 |
+| Oldhorn | `hollowpoint` | Hollow Point | Archer | skill | earth | 45 | 7 s | src/shared/classes.js:145 |
+| Oldhorn | `herdrain` | Rain of Stones | Archer | burst | earth | 45 | 40 s | src/shared/classes.js:146 |
+| Oldhorn | `tuskspike` | Tusk Spike | Mage | skill | earth | 45 | 7 s | src/shared/classes.js:147 |
+| Oldhorn | `greyquake` | Greyquake | Mage | burst | earth | 45 | 38 s | src/shared/classes.js:148 |
 
 ## 9. Boss helpers: summons and props
 
@@ -301,23 +333,25 @@ Summoned by a boss kit or placed by it; not in `MON_DEFS`, so no camps, no quest
 
 | Id | Name | Lv | El | HP | Dmg | Atk s | Spd | Aggro | XP | Role | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `thornling` | Thornling | 14 | dark | 615 | 60 | 1.8 | 2.4 | 30 m | 90.1 | summoned by The Rootwarden | src/shared/monster-defs.js:192 |
-| `totem` | Heartwood Totem | 15 | dark | 1350 | — | — | — | — | — | shield-phase totem of The Rootwarden | src/shared/monster-defs.js:191 |
-| `crabhatch` | Tide Hatchling | 19 | water | 1059 | 112 | 1.5 | 3.2 | 30 m | 250.2 | summoned by Carapax | src/shared/monster-defs.js:198 |
-| `oniimp` | Oni Imp | 19 | fire | 1059 | 112 | 1.5 | 3.2 | 30 m | 250.2 | summoned by Akaoni | src/shared/monster-defs.js:203 |
-| `foxkit` | Fox Spirit | 24 | light | 1645 | 189 | 1.4 | 4 | 30 m | 658.1 | summoned by Kyuubi | src/shared/monster-defs.js:208 |
-| `frostthrall` | Frost Thrall | 25 | water | 2030 | 287 | 1.5 | 3.2 | 30 m | 795.3 | summoned by Ymrik | src/shared/monster-defs.js:214 |
-| `wyrmling` | Wyrmling | 29 | water | 2504 | 308 | 1.6 | 3.6 | 30 m | 1682.7 | summoned by Vetrmaw | src/shared/monster-defs.js:220 |
-| `warmcore` | Warm Core | 30 | water | 3012 | — | — | — | — | — | shelter prop of Vetrmaw | src/shared/monster-defs.js:219 |
-| `eaglet` | Gryphon Eaglet | 28 | air | 2378 | 303 | 1.5 | 3.8 | 30 m | 1396.6 | summoned by The Gryphon Queen | src/shared/monster-defs.js:226 |
-| `rubble` | Rubble Imp | 31 | earth | 2773 | 320 | 1.8 | 2.6 | 30 m | 2439.3 | summoned by The Mountain Golem | src/shared/monster-defs.js:231 |
-| `ironjoint` | Iron Joint | 32 | earth | 3171 | — | — | — | — | — | shield-phase totem of The Mountain Golem | src/shared/monster-defs.js:234 |
-| `glassshard` | Glass Shard | 31 | light | 2773 | 320 | 1.6 | 3.6 | 30 m | 2439.3 | summoned by The Glass Guardian | src/shared/monster-defs.js:237 |
-| `blackmirror` | Black Mirror | 32 | light | 3171 | — | — | — | — | — | shield-phase totem of The Glass Guardian | src/shared/monster-defs.js:239 |
-| `sandwhelp` | Sand Whelp | 35 | earth | 3392 | 347 | 1.6 | 3.4 | 30 m | 5111.8 | summoned by The Sand Wyrm | src/shared/monster-defs.js:241 |
-| `drownedhand` | Drowned Deckhand | 34 | water | 3226 | 340 | 1.5 | 3.2 | 30 m | 4249.3 | summoned by Captain Dredge | src/shared/monster-defs.js:246 |
-| `gloamspecter` | Gloam Specter | 39 | dark | 4146 | 380 | 1.6 | 3.4 | 30 m | 10715.0 | summoned by The Gloam Warden | src/shared/monster-defs.js:250 |
-| `soullantern` | Soul Lantern | 40 | light | 3965 | — | — | — | — | — | shield-phase totem of The Gloam Warden | src/shared/monster-defs.js:253 |
+| `thornling` | Thornling | 14 | dark | 615 | 60 | 1.8 | 2.4 | 30 m | 90.1 | summoned by The Rootwarden | src/shared/monster-defs.js:217 |
+| `totem` | Heartwood Totem | 15 | dark | 1350 | — | — | — | — | — | shield-phase totem of The Rootwarden | src/shared/monster-defs.js:216 |
+| `crabhatch` | Tide Hatchling | 19 | water | 1059 | 112 | 1.5 | 3.2 | 30 m | 250.2 | summoned by Carapax | src/shared/monster-defs.js:223 |
+| `oniimp` | Oni Imp | 19 | fire | 1059 | 112 | 1.5 | 3.2 | 30 m | 250.2 | summoned by Akaoni | src/shared/monster-defs.js:228 |
+| `foxkit` | Fox Spirit | 24 | light | 1645 | 189 | 1.4 | 4 | 30 m | 658.1 | summoned by Kyuubi | src/shared/monster-defs.js:233 |
+| `frostthrall` | Frost Thrall | 25 | water | 2030 | 287 | 1.5 | 3.2 | 30 m | 795.3 | summoned by Ymrik | src/shared/monster-defs.js:239 |
+| `wyrmling` | Wyrmling | 29 | water | 2504 | 308 | 1.6 | 3.6 | 30 m | 1682.7 | summoned by Vetrmaw | src/shared/monster-defs.js:245 |
+| `warmcore` | Warm Core | 30 | water | 3012 | — | — | — | — | — | shelter prop of Vetrmaw | src/shared/monster-defs.js:244 |
+| `eaglet` | Gryphon Eaglet | 28 | air | 2378 | 303 | 1.5 | 3.8 | 30 m | 1396.6 | summoned by The Gryphon Queen | src/shared/monster-defs.js:251 |
+| `rubble` | Rubble Imp | 31 | earth | 2773 | 320 | 1.8 | 2.6 | 30 m | 2439.3 | summoned by The Mountain Golem | src/shared/monster-defs.js:256 |
+| `ironjoint` | Iron Joint | 32 | earth | 3171 | — | — | — | — | — | shield-phase totem of The Mountain Golem | src/shared/monster-defs.js:259 |
+| `glassshard` | Glass Shard | 31 | light | 2773 | 320 | 1.6 | 3.6 | 30 m | 2439.3 | summoned by The Glass Guardian | src/shared/monster-defs.js:262 |
+| `blackmirror` | Black Mirror | 32 | light | 3171 | — | — | — | — | — | shield-phase totem of The Glass Guardian | src/shared/monster-defs.js:264 |
+| `sandwhelp` | Sand Whelp | 35 | earth | 3392 | 347 | 1.6 | 3.4 | 30 m | 5111.8 | summoned by The Sand Wyrm | src/shared/monster-defs.js:266 |
+| `drownedhand` | Drowned Deckhand | 34 | water | 3226 | 340 | 1.5 | 3.2 | 30 m | 4249.3 | summoned by Captain Dredge | src/shared/monster-defs.js:271 |
+| `gloamspecter` | Gloam Specter | 39 | dark | 4146 | 380 | 1.6 | 3.4 | 30 m | 10715.0 | summoned by The Gloam Warden | src/shared/monster-defs.js:275 |
+| `soullantern` | Soul Lantern | 40 | light | 3965 | — | — | — | — | — | shield-phase totem of The Gloam Warden | src/shared/monster-defs.js:278 |
+| `thunderwisp` | Spark Wisp | 40 | air | 4362 | 389 | 1.5 | 3.6 | 30 m | 12899.6 | summoned by Old Thunder | src/shared/savanna-bosses.js:9 |
+| `greycarrier` | Hollowed Carrier | 44 | earth | 5358 | 431 | 1.8 | 2.6 | 30 m | 27199.1 | summoned by Oldhorn | src/shared/savanna-bosses.js:14 |
 
 ## 10. Grey-veined monsters (main quest)
 
@@ -325,15 +359,15 @@ Tougher copies of a zone's kind (`greyDef`, tripled XP). Not in `MON_DEFS`: the 
 
 | Id | Name | Lv | El | HP | Hits | Dmg | Atk s | Spd | Aggro | XP | Coins | Count | Res | Acc | Zone | Drop | Model | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `greybog` | Grey-veined Bog Slime | 7 | water | 661 | 17.3 | 22 | 1.6 | 2.2 | 18 m | 35 | 21 | on demand | — | — | The Bog | — | slime ×1.9 | src/shared/monster-defs.js:279 |
-| `greyfox` | Grey Kitsune | 18 | fire | 3656 | 32.7 | 155 | 1.5 | 3.8 | 18 m | 615 | 230 | on demand | — | — | Fox Hills | — | fox ×1.15 | src/shared/monster-defs.js:280 |
-| `greystone` | Grey-veined Granite Slime | 29 | earth | 10016 | 46.0 | 264 | 1.6 | 2.2 | 18 m | 5048 | 1158 | on demand | — | — | — | — | slime ×2.1 | src/shared/monster-defs.js:282 |
+| `greybog` | Grey-veined Bog Slime | 7 | water | 661 | 17.3 | 22 | 1.6 | 2.2 | 18 m | 35 | 21 | on demand | — | — | The Bog | — | slime ×1.9 | src/shared/monster-defs.js:304 |
+| `greyfox` | Grey Kitsune | 18 | fire | 3656 | 32.7 | 155 | 1.5 | 3.8 | 18 m | 615 | 230 | on demand | — | — | Fox Hills | — | fox ×1.15 | src/shared/monster-defs.js:305 |
+| `greystone` | Grey-veined Granite Slime | 29 | earth | 10016 | 46.0 | 264 | 1.6 | 2.2 | 18 m | 5048 | 1158 | on demand | — | — | — | — | slime ×2.1 | src/shared/monster-defs.js:307 |
 
 ## 11. Dungeons: bosses, their helpers and the mob pools
 
-A dungeon (`src/shared/dungeons/themes/<id>.js`) is built from the world's own monster kinds (its `mobs.walkers` and `mobs.guardians`, the rows of sections 4-7: base stats there) spawned at the run's level (**30** at the base difficulty; the Sandglass and the Gloamvault: **40**) with the party's health factor; an elite has ×2.5 health and is a quarter bigger; nothing respawns. Its boss is one of the 6 below, made on demand in a round hall. All numbers are base stats (`hits` 70, level 30, like a world boss); how a run scales them is in docs/DUNGEONS.md.
+A dungeon (`src/shared/dungeons/themes/<id>.js`) is built from the world's own monster kinds (its `mobs.walkers` and `mobs.guardians`, the rows of sections 4-7: base stats there) spawned at the run's level (**30** at the base difficulty; the Sandglass and the Gloamvault: **40**) with the party's health factor; an elite has ×2.5 health and is a quarter bigger; nothing respawns. Its boss is one of the 7 below, made on demand in a round hall. All numbers are base stats (`hits` 70, level 30, like a world boss); how a run scales them is in docs/DUNGEONS.md.
 
-### 11.1 Dungeon bosses (6)
+### 11.1 Dungeon bosses (7)
 
 | Id | Name | Lv | El | HP | Dmg | Atk s | Spd | XP | Coins | Dungeon | Clear pays | Summons | Prop | Music | Move set | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -343,6 +377,7 @@ A dungeon (`src/shared/dungeons/themes/<id>.js`) is built from the world's own m
 | `garrick` | Garrick, the Seam Foreman | 30 | fire | 23427 | 718 | 2.2 | 2.2 | 50658.9 | 26680 | The Blackseam | a level-30 pendant | Slagling | Powder Keg | boss30 | `blast` src/server/dungeons/boss-kits-mine.js:45 | src/shared/dungeons/bosses.js:57 |
 | `khet` | Khet, the Hourkeeper | 40 | light | 30841 | 889 | 2.3 | 2.3 | 322490.2 | 108880 | The Sandglass | a level-40 weapon | Sand Imp | — | boss30 | `hour` src/server/dungeons/boss-kits-sandglass.js:8 | src/shared/dungeons/bosses.js:71 |
 | `abbess` | Abbess Morrow, the Drowned Abbess | 40 | water | 30841 | 889 | 2.4 | 2.2 | 322490.2 | 108880 | The Gloamvault | a level-40 armour piece | Drowned Acolyte | — | boss30 | `toll` src/server/dungeons/boss-kits-gloamvault.js:9 | src/shared/dungeons/bosses.js:86 |
+| `ortha` | Queen Ortha, the Brood Queen | 45 | earth | 36226 | 1013 | 2.6 | 0.4 | 820351.9 | 221780 | The Termite Cathedral | a level-40 ring | Broodling | Brood Egg | boss30 | `brood` src/server/dungeons/boss-kits-termite.js:30 | src/shared/dungeons/bosses.js:101 |
 
 ### 11.2 Dungeon boss helpers (summons and props)
 
@@ -359,6 +394,8 @@ Not in `MON_DEFS`: made by the boss kit.
 | `powderkeg` | Powder Keg | 30 | fire | 335 | — | — | — | — | prop of Garrick | src/shared/dungeons/bosses.js:60 |
 | `sandimp` | Sand Imp | 39 | light | 5529 | 380 | 1.6 | 3 | 10715.0 | summoned by Khet | src/shared/dungeons/bosses.js:73 |
 | `drownedacolyte` | Drowned Acolyte | 39 | water | 5529 | 380 | 1.6 | 3.1 | 10715.0 | summoned by Abbess Morrow | src/shared/dungeons/bosses.js:88 |
+| `broodling` | Broodling | 44 | earth | 7145 | 431 | 1.6 | 3 | 27199.1 | summoned by Queen Ortha | src/shared/dungeons/bosses.js:103 |
+| `broodegg` | Brood Egg | 45 | earth | 518 | — | — | — | — | prop of Queen Ortha | src/shared/dungeons/bosses.js:104 |
 
 ### 11.3 Mob pools of each dungeon
 
@@ -372,6 +409,7 @@ Not in `MON_DEFS`: made by the boss kit.
 | The Blackseam | `blackseam` | The Greyspine | Miners' Scree | 30 | Mountain Goblin (28), Crystal Beetle (27), Granite Slime (26), Quartz Slime (30), Cliff Boar (26), Rock Troll (31), Mist Wraith (29) | Granite Golem (32) | Garrick, the Seam Foreman | hoar1 | src/shared/dungeons/themes/blackseam.js:9 |
 | The Sandglass | `sandglass` | The Sunscar | The Whitefloor | 40 | Dust Djinn (33), Dune Prowler (33), Tomb Guardian (34), Sun Priest (35), Efreet (36) | Sandstone Golem (34), Dune Drake (35) | Khet, the Hourkeeper | sun2 | src/shared/dungeons/themes/sandglass.js:9 |
 | The Gloamvault | `gloamvault` | The Gloamhorn | Vault Heath | 40 | Hollow Knight (38), Weeping Widow (38), Black Revenant (40), Drowned Sailor (32), Deep Siren (40), Grave Hound (37) | Gargoyle (36), Storm Gargoyle (39) | Abbess Morrow, the Drowned Abbess | gloam2 | src/shared/dungeons/themes/gloamvault.js:9 |
+| The Termite Cathedral | `termitecathedral` | The Amber Reach | The Termite Cathedrals | 45 | Mound Soldier (40), Resin Weaver (40), Locust Cloud (38), Hollowed Kin (43), Dustrunner (37) | Baobab Treant (43), Greyhide Rhino (45) | Queen Ortha, the Brood Queen | savanna2 | src/shared/dungeons/themes/termitecathedral.js:10 |
 
 ## 12. Level table
 
@@ -419,6 +457,11 @@ The expected numbers at each level (a same-level player in the gear of their tie
 | 38 | 58.9 | 277 | 2339 | 56% | T6 | 8761 | 530 | 8902.8 | 18698665 | 2100 | 4107 |
 | 39 | 61.7 | 285 | 2394 | 56% | T6 | 9214 | 543 | 10715.0 | 22504930 | 2100 | 4728 |
 | 40 | 64.6 | 294 | 2451 | 56% | T6 | 9693 | 556 | 12899.6 | 27093365 | 2100 | 5444 |
+| 41 | 67.6 | 303 | 2512 | 56% | T6 | 10199 | 569 | 15534.7 | 34259376 | 2205 | 6271 |
+| 42 | 70.8 | 313 | 2577 | 56% | T6 | 10735 | 584 | 18715.2 | 43238872 | 2310 | 7227 |
+| 43 | 74.2 | 323 | 2645 | 56% | T6 | 11304 | 600 | 22556.5 | 54482426 | 2415 | 8331 |
+| 44 | 77.8 | 334 | 2717 | 56% | T6 | 11908 | 616 | 27199.1 | 68552292 | 2520 | 9609 |
+| 45 | 81.7 | 345 | 2793 | 56% | T6 | 12550 | 633 | 32814.1 | 86150259 | 2625 | 11089 |
 
 Formulas: `fLv` src/shared/balance.js:11, `tierFor` src/shared/balance.js:17, `expToNext` src/shared/balance.js:61 (from level 25 a level costs as many same-level kills as 25 → 26 does).
 
@@ -430,19 +473,24 @@ A def's `model` picks a family model (`MODELS.<model>={geo,build,anim}`) and its
 |---|---|---|---|---|
 | `slime` | 17 | 0.85 / 0.06 / 1.6 / 2.2 / 0.45 / 0.8 / 10 / 6 | src/shared/monster-defs.js:3 | src/game/combat/monster-blobs.js:5 |
 | `shroom` | 4 | 0.95 / 0.07 / 1.7 / 1.8 / 0.4 / 1.1 / 10 / 5 | src/shared/monster-defs.js:4 | src/game/combat/monster-blobs.js:50 |
-| `beetle` | 19 | 1.15 / 0.08 / 1.4 / 2.6 / 0.6 / 0.8 / 11 / 5 | src/shared/monster-defs.js:5 | src/game/combat/monster-bugs.js:105 |
-| `boar` | 10 | 1 / 0.11 / 2 / 3.4 / 0.6 / 1 / 13 / 4 | src/shared/monster-defs.js:6 | src/game/combat/monster-beasts.js:5 |
-| `goblin` | 36 | 1 / 0.09 / 1.3 / 3 / 0.45 / 1.8 / 14 / 5 | src/shared/monster-defs.js:7 | src/game/combat/monster-folk.js:112 |
-| `treant` | 19 | 1.35 / 0.14 / 2.4 / 1.6 / 0.85 / 3.3 / 12 / 3 | src/shared/monster-defs.js:8 | src/game/combat/monster-woods.js:13 |
+| `beetle` | 21 | 1.15 / 0.08 / 1.4 / 2.6 / 0.6 / 0.8 / 11 / 5 | src/shared/monster-defs.js:5 | src/game/combat/monster-bugs.js:105 |
+| `boar` | 12 | 1 / 0.11 / 2 / 3.4 / 0.6 / 1 / 13 / 4 | src/shared/monster-defs.js:6 | src/game/combat/monster-beasts.js:5 |
+| `goblin` | 37 | 1 / 0.09 / 1.3 / 3 / 0.45 / 1.8 / 14 / 5 | src/shared/monster-defs.js:7 | src/game/combat/monster-folk.js:112 |
+| `treant` | 21 | 1.35 / 0.14 / 2.4 / 1.6 / 0.85 / 3.3 / 12 / 3 | src/shared/monster-defs.js:8 | src/game/combat/monster-woods.js:13 |
 | `fox` | 17 | 1 / 0.1 / 1.5 / 3.8 / 0.55 / 1 / 14 / 4 | src/shared/monster-defs.js:9 | src/game/combat/monster-beasts.js:45 |
-| `wisp` | 19 | 0.9 / 0.1 / 1.7 / 2.6 / 0.45 / 1.6 / 13 / 5 | src/shared/monster-defs.js:10 | src/game/combat/monster-spirits.js:4 |
+| `wisp` | 22 | 0.9 / 0.1 / 1.7 / 2.6 / 0.45 / 1.6 / 13 / 5 | src/shared/monster-defs.js:10 | src/game/combat/monster-spirits.js:4 |
 | `totem` | 8 | 1 / 0 / 99 / 0 / 0.55 / 2.7 / 0 / 2 | src/shared/monster-defs.js:11 | src/game/combat/monster-woods.js:97 |
 | `keg` | 0 | 1 / 0 / 99 / 0 / 0.5 / 1.1 / 0 / 2 | src/shared/monster-defs.js:12 | src/game/combat/monster-mine.js:4 |
 | `wyrm` | 11 | 1 / 0.12 / 2.2 / 2.6 / 0.9 / 2 / 16 / 3 | src/shared/monster-defs.js:13 | src/game/combat/monster-wyrm.js:18 |
-| `gryphon` | 2 | 1 / 0.12 / 2.1 / 3.2 / 0.8 / 2 / 16 / 3 | src/shared/monster-defs.js:14 | src/game/combat/monster-gryphon.js:15 |
+| `gryphon` | 3 | 1 / 0.12 / 2.1 / 3.2 / 0.8 / 2 / 16 / 3 | src/shared/monster-defs.js:14 | src/game/combat/monster-gryphon.js:15 |
 | `scorpion` | 5 | 1.05 / 0.1 / 1.5 / 3 / 0.7 / 1 / 12 / 5 | src/shared/monster-defs.js:15 | src/game/combat/monster-desert.js:8 |
 | `cactus` | 1 | 1.35 / 0.13 / 2.3 / 1.5 / 0.8 / 3 / 10 / 3 | src/shared/monster-defs.js:16 | src/game/combat/monster-desert.js:41 |
-| `sandworm` | 8 | 1.2 / 0.12 / 2.2 / 2.4 / 0.95 / 2 / 14 / 3 | src/shared/monster-defs.js:17 | src/game/combat/monster-desert.js:69 |
+| `sandworm` | 9 | 1.2 / 0.12 / 2.2 / 2.4 / 0.95 / 2 / 14 / 3 | src/shared/monster-defs.js:17 | src/game/combat/monster-desert.js:69 |
 | `djinn` | 7 | 0.95 / 0.11 / 1.8 / 2.8 / 0.5 / 2.3 / 15 / 4 | src/shared/monster-defs.js:18 | src/game/combat/monster-desert.js:104 |
 | `sentinel` | 1 | 1 / 0.12 / 2.6 / 1.9 / 1 / 3.1 / 0 / 2 | src/shared/monster-defs.js:19 | src/game/combat/monster-desert.js:137 |
 | `bat` | 4 | 0.8 / 0.09 / 1.4 / 4 / 0.45 / 1 / 16 / 6 | src/shared/monster-defs.js:20 | src/game/combat/monster-gloam.js:5 |
+| `feline` | 1 | 1 / 0.11 / 1.6 / 4 / 0.6 / 1 / 15 / 4 | src/shared/monster-defs.js:21 | src/game/combat/monster-savanna.js:13 |
+| `swarm` | 1 | 0.9 / 0.08 / 1.4 / 3.4 / 0.6 / 1.5 / 14 / 5 | src/shared/monster-defs.js:22 | src/game/combat/monster-savanna.js:46 |
+| `bird` | 3 | 0.95 / 0.1 / 1.6 / 3 / 0.5 / 1.6 / 14 / 4 | src/shared/monster-defs.js:23 | src/game/combat/monster-savanna.js:64 |
+| `hoofed` | 4 | 1.3 / 0.13 / 2.2 / 2.8 / 0.9 / 1.6 / 12 / 4 | src/shared/monster-defs.js:24 | src/game/combat/monster-savanna.js:102 |
+| `hollowed` | 1 | 1 / 0.1 / 1.6 / 2.2 / 0.45 / 1.8 / 12 / 5 | src/shared/monster-defs.js:25 | src/game/combat/monster-savanna.js:143 |

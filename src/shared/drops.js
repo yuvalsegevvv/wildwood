@@ -31,7 +31,7 @@ const MAT_NAMES={slime:'Slime Goo',shroom:'Spore Cap',beetle:'Beetle Shell',boar
   drownedcaptain:"Captain's Compass",gloamwarden:"Warden's Lamp",
   dustrunner:'Dustrunner Sash',thornboar:'Thorn Tusk',grassstalker:'Stalker Pelt',locusts:'Locust Wing',mudcroc:'Croc Scute',poolheron:'Heron Plume',moundsoldier:'Mound Mandible',resinweaver:'Weaver Silk',
   sparkwisp:'Spark Glass',anvilhawk:'Hawk Talon',cinderbuffalo:'Cinder Horn',smokewraith:'Smoke Wisp',hollowkin:'Hollow Beads',baobabtreant:'Baobab Bark',deltahippo:'Hippo Tusk',reedserpent:'Reed Scale',
-  greyrhino:'Grey Horn',dawnvulture:'Dawnless Feather'};
+  greyrhino:'Grey Horn',dawnvulture:'Dawnless Feather',oldthunder:"Thunder's Anvil",oldhorn:"Herd-Mother's Horn"};
 const DROP_CHANCE=0.35, BOSS_DROPS=3, MAT_MAX=999, BOSS_UP=2;
 const MATS={}, MAT_IDS=[];
 const lighten=c=>'#'+[16,8,0].map(sh=>{ const v=(c>>sh)&255; return Math.round(v+(255-v)*0.35).toString(16).padStart(2,'0'); }).join('');

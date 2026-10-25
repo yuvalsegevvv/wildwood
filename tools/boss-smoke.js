@@ -9,7 +9,7 @@ let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+nam
 const tick=(n)=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.maxHp=1e7; p.hp=1e7; p.dead=false; } } };   // (a player who dies would reset the fight)
 W.join('a',{name:'Tanker',look:{cls:'warrior'},save:{level:30}}); W.join('b',{name:'Runner',look:{cls:'archer'},save:{level:30}});
 W.receive('a',{t:'dev',cmd:'vale',v:2}); W.receive('a',{t:'dev',cmd:'north',v:2}); for(const id of ['a','b']) for(const g of ['river','neck','redgate']) W.receive(id,{t:'dev',cmd:'gate',v:g,n:1}); W.receive('b',{t:'dev',cmd:'vale',v:2}); W.receive('b',{t:'dev',cmd:'north',v:2}); tick(2);
-ok('twelve bosses, each with its own kit',x.BOSSES.length===12&&new Set(x.BOSS_DEFS.map(b=>b.kit)).size===12&&x.BOSSES.every(B=>B.kit&&typeof B.kit.tick==='function'),x.BOSS_DEFS.map(b=>b.kit).join(' '));
+ok('fourteen bosses, each with its own kit',x.BOSSES.length===14&&new Set(x.BOSS_DEFS.map(b=>b.kit)).size===14&&x.BOSSES.every(B=>B.kit&&typeof B.kit.tick==='function'),x.BOSS_DEFS.map(b=>b.kit).join(' '));
 const A=x.ARENA_TIDE, tide=x.BOSSES.find(B=>B.bd.kit==='tide');
 ok('the Tide King lives on the beach: level 20, in the shore zone, in the sea-side south of the forest, on dry land',tide.bd.def.level===20&&A.z>560&&A.z<700&&x.getH(A.x,A.z)>1.5&&x.zoneAt(A.x,A.z)===A.zone&&x.edgeZoneAt(A.x+30,A.z-10)===A.zone,'arena at '+Math.round(A.x)+','+Math.round(A.z)+' h '+x.getH(A.x,A.z).toFixed(1));
 ok('it plays the Rootwarden\'s music for now (theme boss15)',tide.bd.def.music==='boss15'&&!x.BOSS_DEFS.filter(b=>b!==tide.bd&&b.def.music).length);
@@ -40,16 +40,18 @@ function fight(B){
 }
 const KEY={ // what each boss must do (its signature), and what no other boss does
   roots:{must:['tele:root','tele:slam','mode:3','summon:totem','summon:thornling','mode:6','mode:7','mode:8','mode:9','zone:ember','tele:icefall'],only:['tele:root','summon:totem']},
-  tide:{must:['wall','tele:geyser','mode:2','mode:6','tele:prison','pfx:root','summon:crabhatch','zone:whirl','pfx:push','tele:rockfall'],only:['tele:geyser','summon:crabhatch']},
+  tide:{must:['wall','tele:geyser','mode:2','mode:6','tele:prison','pfx:root','summon:crabhatch','zone:whirl','pfx:push','tele:rockfall'],only:['summon:crabhatch']},
   oni:{must:['tele:slam','mode:1','zone:ember','tele:donut','tele:mark','summon:oniimp'],only:['tele:mark','summon:oniimp']},
   kitsune:{must:['orb:foxfire','mode:2','tele:line','summon:foxkit'],only:['orb:foxfire','summon:foxkit']},
-  rime:{must:['tele:icefall','tele:prison','pfx:root','zone:whiteout','mode:4','stun','tele:donut','summon:frostthrall'],only:['zone:whiteout','summon:frostthrall']},
+  rime:{must:['tele:icefall','tele:prison','pfx:root','zone:whiteout','mode:4','stun','tele:donut','summon:frostthrall'],only:['summon:frostthrall']},
   gryphon:{must:['tele:rake','tele:swoop','mode:1','stun','tele:line','tele:icefall','summon:eaglet'],only:['tele:swoop','summon:eaglet']},
-  golem:{must:['tele:rockfall','tele:quake','summon:rubble','stun','tele:line'],only:['tele:quake','summon:rubble']},
+  golem:{must:['tele:rockfall','tele:quake','summon:rubble','stun','tele:line'],only:['summon:rubble']},
   glass:{must:['tele:rockfall','tele:line','tele:donut','mode:6','stun','summon:glassshard','summon:blackmirror'],only:['summon:glassshard','summon:blackmirror']},
   sandwyrm:{must:['tele:rake','tele:slam','mode:2','mode:7','wall','zone:sandstorm','mode:4','summon:sandwhelp'],only:['zone:sandstorm','summon:sandwhelp']},
-  wyrm:{must:['tele:gust','pfx:push','tele:breath','mode:1','tele:line','stun','zone:blizzard','mode:5','summon:warmcore','summon:wyrmling'],only:['tele:gust','zone:blizzard','summon:warmcore','summon:wyrmling']},
+  wyrm:{must:['tele:gust','pfx:push','tele:breath','mode:1','tele:line','stun','zone:blizzard','mode:5','summon:warmcore','summon:wyrmling'],only:['zone:blizzard','summon:warmcore','summon:wyrmling']},
   captain:{must:['tele:rockfall','tele:rake','tele:line','wall','zone:whirl','summon:drownedhand'],only:['summon:drownedhand']},
+  thunder:{must:['tele:line','zone:grassfire','tele:geyser','tele:gust','pfx:push','tele:slam','mode:1','zone:whiteout','mode:4','summon:thunderwisp'],only:['zone:grassfire','summon:thunderwisp']},
+  herdmother:{must:['tele:line','tele:rake','tele:quake','tele:donut','zone:greyfloor','mode:6','summon:greycarrier'],only:['zone:greyfloor','summon:greycarrier']},
   gloamwarden:{must:['tele:line','tele:donut','tele:slam','tele:light','zone:gloom','mode:6','summon:soullantern','summon:gloamspecter'],only:['zone:gloom','summon:soullantern','summon:gloamspecter']}};
 for(const B of x.BOSSES){
   const kit=B.bd.kit, r=fight(B); sigs[kit]=r.seen;
