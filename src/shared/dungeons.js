@@ -127,14 +127,13 @@ function dgCoverProblems(tiles){
   for(const tag of DG_TAGS){ const masks=tag==='start'||tag==='cache'?[1,2,4,8]:Array.from({length:15},(_,i)=>i+1), miss=masks.filter(m=>!has(tag,m)); if(miss.length) out.push(tag+' has no tile for door masks '+miss.join(',')); }
   return out;
 }
-const DG_AT_PENDING=['Termite Cathedrals'];   // zone names that arrive with a land's zones (the Amber Reach's, shared/savannazones.js): a theme may name them before their ZONES rows exist
 function defineDungeonTheme(T){
   const id=T&&typeof T.id==='string'?T.id:'?', bad=(field,why)=>{ DG_BAD.push({id,field,why}); if(typeof console!=='undefined') console.warn('dungeon theme '+id+' left out: '+field+': '+why); return null; };
   if(!T||!/^[a-z][a-z0-9]*$/.test(id)) return bad('id','missing or not a lowercase word');
   if(DG_THEMES[id]) return bad('id','defined twice');
   if(typeof T.name!=='string'||!T.name) return bad('name','missing');
   if(!DG_LANDS[T.land]) return bad('land','"'+T.land+'" is not one of '+Object.keys(DG_LANDS).join(' '));
-  if(!ZONES.some(z=>z.name===T.at)&&!DG_AT_PENDING.includes(T.at)) return bad('at','"'+T.at+'" is not the name of a zone');
+  if(!ZONES.some(z=>z.name===T.at)) return bad('at','"'+T.at+'" is not the name of a zone');
   const lv=T.lv===undefined?DG_LV:T.lv; if(!Number.isInteger(lv)||lv<1||lv>99) return bad('lv',String(T.lv));
   const mobs=T.mobs||{}, defOf=mid=>ALL_MON_DEFS.find(d=>d.id===mid);
   if(!Array.isArray(mobs.walkers)||mobs.walkers.length<4) return bad('mobs','at least 4 kinds of walker');

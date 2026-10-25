@@ -12,7 +12,7 @@ for(const id of ['oldthunder','oldhorn']){
 }
 W.join('a',{name:'Tanker',look:{cls:'warrior'},save:{level:45}}); W.join('b',{name:'Runner',look:{cls:'archer'},save:{level:45}});
 const T=x.ARENA_TIDE;
-const KEY={thunder:['tele:line','zone:grassfire','tele:geyser','tele:gust','pfx:push','tele:slam','mode:1','zone:whiteout','mode:4','summon:sparkwisp'],
+const KEY={thunder:['tele:line','zone:grassfire','tele:geyser','tele:gust','pfx:push','tele:slam','mode:1','zone:whiteout','mode:4','summon:thunderwisp'],
   herdmother:['tele:line','tele:rake','tele:quake','tele:donut','zone:greyfloor','mode:6','summon:greycarrier']};
 for(const row of x.SAV_BOSS_ROWS){
   const A={x:T.x+120+(row.kit==='thunder'?0:300),z:T.z,r:24,key:row.arena}; A.h=x.getH(A.x,A.z); x.ARENAS.push(A);

@@ -80,7 +80,7 @@ function turnInP(p,id){
 /* ---- skills: bought from Aldric the trainer, equipped per class (passives: one loadout for every class), upgraded with coins and drops ---- */
 function buySkillP(p,id){
   const s=skillDef(id); if(!s||p.gear.skills.owned.includes(id)) return;
-  if(s.drop){ toastTo(p.id,s.name+' is not for sale: '+(BOSS_DEFS.find(b=>b.def.id===s.drop)||SAV_BOSS_ROWS.find(b=>b.def.id===s.drop)).short+' drops it','bad'); return; }
+  if(s.drop){ toastTo(p.id,s.name+' is not for sale: '+(BOSS_DEFS.find(b=>b.def.id===s.drop)).short+' drops it','bad'); return; }
   if(s.set){ toastTo(p.id,s.name+' is not for sale: it is a signature skill, earned from a boss or a dungeon','bad'); return; }   // skillsets: a piece is never bought
   if(p.level<s.lv){ toastTo(p.id,s.name+' needs level '+s.lv,'bad'); return; }
   if(p.gear.coins<s.price){ toastTo(p.id,'Not enough coins','bad'); return; }

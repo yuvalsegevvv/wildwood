@@ -18,7 +18,7 @@ const T=x.DG_THEMES.termitecathedral, E=x.DG_ENTRANCES.termitecathedral, D=x.SAV
 
 // ---- the theme, the boss and the levels ----
 ok('the Termite Cathedral is registered (no bad theme): the Amber Reach\'s dungeon under the Termite Cathedrals, level 45, entry level 42, boss Queen Ortha, five Reach walkers and two guardians',
-  !!T&&x.DG_BAD.length===0&&T.land==='amber'&&T.at==='Termite Cathedrals'&&T.lv===45&&T.entry===42&&T.boss==='ortha'&&T.mobs.walkers.length>=5&&T.mobs.guardians.join()==='baobabtreant,greyrhino'&&!!x.DG_LANDS.amber&&x.DG_ENTRY_LV===25);
+  !!T&&x.DG_BAD.length===0&&T.land==='amber'&&T.at==='The Termite Cathedrals'&&T.lv===45&&T.entry===42&&T.boss==='ortha'&&T.mobs.walkers.length>=5&&T.mobs.guardians.join()==='baobabtreant,greyrhino'&&!!x.DG_LANDS.amber&&x.DG_ENTRY_LV===25);
 { const B=x.DG_BOSSES.ortha, R=x.DG_BOSS_DEFS.ortha;
   ok('Ortha\'s base level is exactly 45: the design, the def makeBossS takes and the theme\'s level at +0 (her add one lower), and 45 + 10 a tier above',B.lv===45&&R.def.level===45&&R.def.boss&&R.add.level===44&&x.dgBossDefOf(T)===R&&x.dgLevel(T,0)===45&&x.dgLevel(T,2)===65);
   ok('the boss is registered with a kit that has start, tick and phase (kit `brood`), exactly one signature (the Egg Clusters), at least five moves, one-hit eggs for a prop, and she barely moves',['start','tick','phase'].every(f=>typeof x.BOSS_KITS.brood[f]==='function')&&R.kit==='brood'&&B.moves.length>=5&&B.moves.filter(m=>m.signature).length===1&&B.moves.find(m=>m.signature).id==='eggs'&&R.prop.hits===1&&R.prop.noAttack&&R.prop.speed===0&&R.def.speed<1); }

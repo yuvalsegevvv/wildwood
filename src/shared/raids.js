@@ -2,7 +2,7 @@
 /* Agent map. Design and numbers: docs/RAIDS.md. A raid is a ruin in an empty part of its land: 28 garrison monsters of the land's own kinds, destructibles (wards seal the inner court, spawners call
    reinforcements, barricades are cover), and a boss picked at random from the land's two world bosses when the raid (re)builds. Stem `raids`, prefix `rd` / `RD_`.
    Exports: RD_BASE_LV, RD_RESET, RD_ABANDON, RD_UP, RD_FOOT, RD_LAYOUT, defineRaid(D), RDS (by id), RD_ORDER, RD_BAD, rdLevel(tier), rdMatFor(tier), rdOfLand(land), rdCourtAt(x,z), rdNear(x,z,r),
-   rdBossRow(id) (a raid boss's BOSS_DEFS row, or its SAV_BOSS_ROWS row until the Amber Reach's bosses are wired in), rdUpNeeds(skill,to) (a signature piece's price to level `to`: coins, the land's monster material, and `rd`: the raid material), rdCapTier(gear,land,raidTier).
+   rdBossRow(id) (a raid boss's BOSS_DEFS row), rdUpNeeds(skill,to) (a signature piece's price to level `to`: coins, the land's monster material, and `rd`: the raid material), rdCapTier(gear,land,raidTier).
    Used by: server/raids.js (the fight), server/economy.js + shared/drops.js (upgrades), game/raids/* (the ruins, the HUD), game/combat/boss.js (arenaOf). The data: shared/raids/<id>.js (one per land).
    Test: node tools/raids-smoke.js. A bad entry is left out and listed in RD_BAD (the game still boots). */
 const RD_BASE_LV=40, RD_RESET=1800, RD_ABANDON=600, RD_FOOT=62, RD_MAT_MAX=99999;   // the level at +0; seconds from a clear to the rebuild; seconds with nobody inside before an engaged raid resets; the radius that counts as inside for the clear's pay
@@ -49,8 +49,7 @@ function defineRaid(D){
   for(const A of [R.court,R.yard]){ A.h=baseHeight(A.x,A.z); A.raid=id; ARENAS.push(A); }   // the pads flatten the ground, arenaDist() keeps camps, plants and nodes off (key not in any BOSS_DEFS row: no world boss lives here)
   RDS[id]=R; RD_ORDER.push(id); return R;
 }
-// the Amber Reach's two bosses live in SAV_BOSS_ROWS until the wire-up pushes them into BOSS_DEFS; a raid needs only the row, not an arena
-const rdBossRow=id=>BOSS_DEFS.find(b=>b.def.id===id)||SAV_BOSS_ROWS.find(b=>b.def.id===id)||null;
+const rdBossRow=id=>BOSS_DEFS.find(b=>b.def.id===id)||null;
 let RD_DEF_CACHE=null;
 const rdDefOk=id=>{ if(!RD_DEF_CACHE) RD_DEF_CACHE=new Set(ALL_MON_DEFS.map(d=>d.id)); return typeof id==='string'&&RD_DEF_CACHE.has(id); };
 const rdLevel=tier=>RD_BASE_LV+ZTIER_STEP*tier, rdMatFor=tier=>Math.pow(2,tier);   // level 40 / 50 ... 110; 1 / 2 / 4 ... 128 raid material
