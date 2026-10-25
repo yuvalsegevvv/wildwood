@@ -96,6 +96,7 @@ function hvLine(spec,ab){
 }
 // say a line in the hero's voice (the chosen one, or the worn outfit set's)
 function hvSpeak(text,spec){
+  if(speakingNPC) return;   // a villager is mid-sentence: speechSynthesis.cancel() below would cut the whole line off (the shout is a treat, the story line is not)
   const pool=voicePool(spec.sex), v=pool.length?pool[spec.slot%pool.length]:pickVoice(spec.sex==='f'?'female':'male',0.37).voice;
   const u=new SpeechSynthesisUtterance(text);
   if(v){ u.voice=v; u.lang=v.lang; }

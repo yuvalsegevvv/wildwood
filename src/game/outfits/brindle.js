@@ -9,8 +9,8 @@ kinDefineSet({slot:'m',id:'brindle',name:'Hyena Muzzle',text:'A broad blunt snou
 KIN_HAT_EARS.brindle='poke';   // (his cap has holes for them)
 kinEar('brindle',0.68,0.38,0.1,K=>{ const dk=kinAcc(K,0x3a2414), cx=0.04, cy=0.05;
   return [pc(csph(1,K.sg(7),K.sg(5)).scale(cx,cy,0.012).translate(0,0.044,0),(x,y,z,c)=>{ c.copy(K.fur); if(y>0.08||Math.hypot(x/cx,(y-0.044)/cy)>0.86) c.copy(dk); }),kinS(csph(1,K.sg(6),K.sg(4)).scale(0.025,0.034,0.006).translate(0,0.04,-0.008),K.light)]; });
-KIN_TAILS.brindle=K=>{ const dk=kinAcc(K,0x3a2414); return [kinTube(K,[[0,0,0],[0,-0.03,0.08],[0,-0.09,0.15],[0,-0.15,0.19]],[0.022,0.034,0.038,0.03],(c,s,x,y,z)=>{ if(z>0.13) c.copy(dk); else if(z>0.1) c.lerp(dk,smoothstep(0.1,0.13,z)); }),
-  kinS(sweepTube([[0,-0.14,0.185],[0,-0.17,0.205],[0,-0.2,0.215]],[0.03,0.022,0.004],Math.max(5,K.sg(6)),{cap:'point',rings:Math.max(4,K.sg(5))}),dk)]; };
+KIN_TAILS.brindle=K=>{ const dk=kinAcc(K,0x3a2414);   // (a short bushy brush that arcs up and back, widest in the middle and ending in a pointed dark tip; a tail that droops and ends in a rounded dark blob reads as the wrong thing)
+  return [kinTube(K,[[0,0,0],[0,-0.01,0.09],[0,0.03,0.19],[0,0.1,0.26],[0,0.19,0.29]],[0.017,0.028,0.037,0.032,0.004],(c,s,x,y,z)=>{ if(s>0.3) c.copy(dk); else if(s>0.22) c.lerp(dk,smoothstep(0.22,0.3,s)); })]; };
 KIN_MUZZLES.brindle=K=>{ const z=kinFace(K,0,-0.048), dk=new THREE.Color(0x2a1c14), n=K.sg(7);
   return [pc(csph(1,n,K.sg(5)).scale(0.04,0.032,0.05).translate(0,-0.048,z-0.02),(x,y,z2,c)=>{ c.copy(K.fur); if(z2<z-0.045) c.copy(dk); else if(y<-0.066) c.copy(K.light); }),
     kinS(csph(1,K.sg(6),K.sg(4)).scale(0.017,0.012,0.012).translate(0,-0.034,z-0.07),new THREE.Color(0x15100c)),
