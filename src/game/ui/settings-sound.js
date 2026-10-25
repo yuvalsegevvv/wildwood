@@ -16,6 +16,8 @@ function hvRender(){ $('#hvChips').querySelectorAll('[data-hv]').forEach(b=>b.se
 $('#hvChips').querySelectorAll('[data-hv]').forEach(b=>b.addEventListener('click',()=>{ hvSet(b.dataset.hv); hvRender(); if(b.dataset.hv!=='off') hvShout('skill',{name:'Test shout',cls:clsOf()},true); }));
 function toggleMute(){ SND.muted=!SND.muted; if(SND.muted) stopSpeech(); applyVolumes(); saveAudio(); renderSound(); }
 $('#sMute').addEventListener('click',toggleMute);
+$('#bKeys').hidden=isTouch;   // touch screens have no keyboard (the Controls section is hidden there too)
+$('#bKeys').addEventListener('click',e=>{ audioInit(); e.currentTarget.blur(); sndEl.hidden=false; renderSound(); UI_SFX.open(); const d=$('#kbSec details'); if(d) d.open=true; $('#kbSec').scrollIntoView&&$('#kbSec').scrollIntoView({block:'start'}); });   // the top-bar shortcut to the Keybinds section of Settings
 $('#bSound').addEventListener('click',e=>{ audioInit(); e.currentTarget.blur(); sndEl.hidden=!sndEl.hidden; if(!sndEl.hidden){ renderSound(); UI_SFX.open(); } else UI_SFX.close(); });
 $('#sClose').addEventListener('click',()=>{ sndEl.hidden=true; UI_SFX.close(); });
 addEventListener('keydown',e=>{ if(kbIs(e.code,'mute') && started) toggleMute(); if(e.code==='Escape') sndEl.hidden=true; });
