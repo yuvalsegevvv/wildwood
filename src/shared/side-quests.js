@@ -9,10 +9,10 @@
    used by: server/side-quests.js (progress, rewards), game/economy/side-quests.js (lines, marks, the quest panel's tab, the quest log row, the map marker), cospieces.js (CP_QUEST).
    test: tools/sidequests-smoke.js. doc: docs/SIDE-QUESTS.md. Story rules: docs/STORY.md section 0 (hints only, every hint has two readings). */
 // the villages of the people who give or take a step (VILS index + 1); a talk only counts in (or at the gate of) their village
-const SQ_NPC_VIL={oskar:1,bram:1,linnea:1,chiyo:2,ryu:2,kaede:2,sigrun:3,hallvard:3,ylva:3,omar:5,zahra:5,amal:5,maeve:6,brannoch:6,nuala:6,maelis:6,warden_ross:6};
+const SQ_NPC_VIL={oskar:1,bram:1,linnea:1,chiyo:2,ryu:2,kaede:2,sigrun:3,hallvard:3,ylva:3,omar:5,zahra:5,amal:5,maeve:6,brannoch:6,nuala:6,maelis:6,warden_ross:6,oruvi:7,hask:7,wiru:7,ennu:7,kesi:7,tamsa:7};
 const SQ_NAMES={oskar:'Oskar',bram:'Bram',linnea:'Healer Linnea',chiyo:'Grandmother Chiyo',ryu:'Master Ryu',kaede:'Soul-reader Kaede',sigrun:'Old Sigrun',hallvard:'Hallvard',ylva:'Alchemist Ylva',
-  omar:'Captain Omar',zahra:'Marshal Zahra',amal:'Healer Amal',maeve:'Reeve Maeve',brannoch:'Brannoch',nuala:'Healer Nuala',maelis:'Keeper Maelis',warden_ross:'Warden Ross'};
-const SQ_VIL_NAMES=['Wildwood','Hanami','Rimehold','Highmark','Glasswell','Wraithwick'];
+  omar:'Captain Omar',zahra:'Marshal Zahra',amal:'Healer Amal',maeve:'Reeve Maeve',brannoch:'Brannoch',nuala:'Healer Nuala',maelis:'Keeper Maelis',warden_ross:'Warden Ross',oruvi:'Warden Oruvi',hask:'Brindle Hask',wiru:'Healer Wiru',ennu:'High Watch Ennu',kesi:'Kesi',tamsa:'Elder Tamsa'};
+const SQ_VIL_NAMES=['Wildwood','Hanami','Rimehold','Highmark','Glasswell','Wraithwick','Tallgrass'];
 // the places a visit part walks you to: {x, z, r (how close counts), name}
 const sqZone=key=>ZONES.find(z=>z.key===key);
 const sqZoneSpot=(key,fa,fr,r)=>{ const zn=sqZone(key), [x,z]=mqSpot(zn,fa,fr); return {x,z,r,name:zn.name}; };
@@ -28,7 +28,13 @@ const SQ_PLACES=(()=>{
     bellrock:sqZoneSpot('s35',0,0.3,26),
     wreck:{x:wk[0],z:wk[1],r:72,name:'The iron wreck below the cliffs'},
     cairns:sqZoneSpot('m32',0.2,0.4,24),
-    light:{x:GLOAM_LIGHT.x,z:GLOAM_LIGHT.z,r:42,name:GLOAM_LIGHT.name}
+    light:{x:GLOAM_LIGHT.x,z:GLOAM_LIGHT.z,r:42,name:GLOAM_LIGHT.name},
+    // the Amber Reach: the atlas's places (the zones themselves come with shared/savannazones.js)
+    moot:{x:SAV_MOOT.x,z:SAV_MOOT.z,r:46,name:'The Broken Moot'},
+    pools:{x:SAV_POOLS[0].x,z:SAV_POOLS[0].z,r:SAV_POOLS[0].r+30,name:'The Seven Pools'},
+    anvil:{x:SAV_BOSS_POI[41].x,z:SAV_BOSS_POI[41].z,r:60,name:'Anvil Rock'},
+    memory:{x:SAV_ZONE[43].x,z:SAV_ZONE[43].z,r:60,name:'The memory trees of Baobab Reach'},
+    delta:{x:SAV_ZONE[44].x,z:SAV_ZONE[44].z,r:60,name:'The Sedge Delta'}
   };
 })();
 const SQ=[
@@ -182,6 +188,56 @@ const SQ=[
      bossLine:'The Gloam Warden sinks back into the black water. Above you the beam of the Gloam Light swings round, bright and steady, and somewhere in the tower something hums one low, contented note.',
      parts:[{boss:'gloamwarden',text:'Defeat the Gloam Warden at the Gloam Light'}],
      done:['You did well. The beam is steady; I watched it from the gallery.','You want to ask me about the door. Everyone does, sooner or later. ...Some doors are for keepers. One day it may open for you too. Not today.','Take this: a little of the lamp\'s light to carry with you. Wraithwick owes you more, but it is what a keeper has to give.']}
+  ]},
+  /* ---------------- The Amber Reach, part one: the Ashbed, Tallgrass Meadows, the Seven Pools, Anvil Rock (levels 37-41), to Old Thunder ---------------- */
+  {id:'dawnseat',name:'The Dawn Seat',land:'amber',lv:37,res:['rimeore','frostwood','snowmoss'],cos:'c:dawnseat',steps:[
+    {id:'ds1',title:'The seat nobody wants',from:'oruvi',to:'oruvi',
+     offer:['Sit, traveller. You are the one who ended the Wyrm, so the Moot will listen to you, which is more than it does for me.','The Dawn Seat speaks first and carries the burden of the year. It should have passed on at Greenfall. Nobody would take it, so I hold it a third turn, and the Dustrunners know a tired warden when they see one.','Thin them out on the Ashbed, and the boars they drive in front of them.'],
+     parts:[{kill:'dustrunner',n:6,text:'Drive off the Dustrunners of the Ashbed'},{kill:'thornboar',n:4,text:'Defeat the thornhide boars'}],
+     done:['Good. The paths are quieter already. The Moot will notice, and not say so.','Brindle Hask hears everything the caravans hear. Go and ask what is being said about the weather. Do not mind the laughing.']},
+    {id:'ds2',title:'What the caravans say',from:'hask',to:'hask',
+     offer:['Ha! The warden sends me a hero. No, no, I like it. Heroes pay full price.','Here is what the road says: the storms over Anvil Rock make a great noise and bring no rain. Eleven days now. The grass-cutters in the Meadows are praying for a drop.','Prove you can do something useful first. The grass stalkers and the locust clouds are eating my customers.'],
+     parts:[{kill:'grassstalker',n:5,text:'Defeat grass stalkers in Tallgrass Meadows'},{kill:'locusts',n:5,text:'Scatter the locust clouds'}],
+     done:['My customers thank you, and so do my accounts.','Dry thunder over a hungry plain. If you want to know what that means ask the healer. She reads the sky and the dead, and says it all with a straight face.']},
+    {id:'ds3',title:'The Seven Pools',from:'wiru',to:'wiru',
+     offer:['The thunder without rain is bad for the pools. They are shrinking and the herds crowd the last of the water. The sick come to me with grey in their eyes.','Gather me four herbs, and clear the crocs from the shallows so the herds can drink. Then walk down and look at the pools yourself.'],
+     parts:[{gather:'gathering',n:4,text:'Gather 4 herbs'},{kill:'mudcroc',n:4,text:'Defeat mudback crocs'},{kill:'poolheron',n:4,text:'Defeat pool herons'},
+            {visit:'pools',after:true,text:'Walk down to the Seven Pools',say:['(Seven pools in the reeds, and every one a hand lower than the reed-line says it should be.)','(Far to the west the thunderhead stands on its rock, flickering, and no rain comes out of it.)']}],
+     done:['You saw it. The water leaves, and the thunderhead stays.','High Watch Ennu counts the sky for the Moot. Ask whether the storm has ever stood still this long.']},
+    {id:'ds4',title:'The calendar breaks',from:'ennu',to:'ennu',
+     offer:['Seventy-one seasons I have kept the calendar of the Wide. Greenfall follows Goldfall as dusk follows noon. This year the Goldfall will not end.','Climb to Anvil Rock after dark and see what stands under the cloud. I will not say what I think until you have seen. Bring back the sparks the wisps leave.'],
+     parts:[{kill:'sparkwisp',n:5,text:'Defeat spark wisps at Anvil Rock'},{kill:'anvilhawk',n:4,text:'Defeat anvil hawks'},
+            {visit:'anvil',night:true,after:true,text:'Watch the thunderhead after dark',say:['(The cloud over Anvil Rock never moves. Inside it something very large turns over, and settles, and the lightning runs along its wings.)','(It is not storming. It is sleepless.)']}],
+     done:['A bird, then. I had hoped it was only a very old storm.','The song says the sky keeps the rain for those who ask. Nobody has asked this one anything in a long time. Go back and tell the warden the thunder has a name.']},
+    {id:'ds5',title:'Old Thunder',from:null,to:'oruvi',
+     bossLine:'Old Thunder folds its great wings and sinks onto Anvil Rock. The cloud above it thins, and far to the east a single honest raindrop falls on the grass.',
+     parts:[{boss:'oldthunder',text:'Defeat Old Thunder on Anvil Rock'}],
+     done:['It rained. Not much. Enough that the children ran out to stand in it.','The Moot asked who ended the thunder, and I said: someone who was not afraid of the seat. ...They looked at me oddly. Perhaps it is time the Dawn Seat passed on.','Take this for the road. The Wide is a long way from finished with you, or with us.']}
+  ]},
+  /* ---------------- The Amber Reach, part two: the Burnt Plain, Baobab Reach, the Sedge Delta, the Sunstair (levels 41-45), to Oldhorn ---------------- */
+  {id:'drought',name:'The Drought Song',land:'amber',lv:41,after:'dawnseat',res:['rimeore','frostwood','snowmoss'],cos:'a:herdsong',steps:[
+    {id:'dr1',title:'Burnt ground',from:'kesi',to:'kesi',
+     offer:['You came back! Everyone says the thunder is gone. I only believe it when I see it, and I see the Burnt Plain from my window, and it is still burning.','The grass fires are not grass fires. The cinder buffalo run into them on purpose, and the smoke wraiths come up out of the ash. Please, before the herds I help drive come this way.'],
+     parts:[{kill:'cinderbuffalo',n:6,text:'Defeat cinder buffalo on the Burnt Plain'},{kill:'smokewraith',n:5,text:'Disperse the smoke wraiths'}],
+     done:['The air smells less of smoke. Thank you.','Elder Tamsa hums a song when she thinks nobody is listening. It is about burnt ground. She says it is nonsense. Ask her again.']},
+    {id:'dr2',title:'The memory trees',from:'tamsa',to:'tamsa',
+     offer:['Nonsense, child, a lullaby my mother sang. "The herd walks west, the herd walks grey, the Mother leads them where the water was."','Yes. I know what it sounds like. The Long Memory carve our songs into the baobabs of Baobab Reach so they outlast the singers. Go and read what is carved there, and tell me whether I am a foolish old woman.'],
+     parts:[{kill:'hollowkin',n:6,text:'Defeat the Hollowed Kin wandering Baobab Reach'},{kill:'baobabtreant',n:4,text:'Defeat baobab treants'},
+            {visit:'memory',after:true,text:'Read the memory trees',say:['(The bark is cut with rings of small marks. Whole lines of them are gone, scraped away by something that did not know how to read.)','(What is left says, over and over: "We were given a second shape, and we kept the song, and we forgot what it was for.")']}],
+     done:['"Forgot what it was for." Yes. That is the line I could never remember.','The Hollowed walk past the trees every night and do not look up. They were Kin once. Remember that when you meet them, though do not hesitate either.','The song goes on into the delta. Kesi can take you.']},
+    {id:'dr3',title:'The delta ferry',from:'kesi',to:'kesi',
+     offer:['The ferrymen of the Sedge Delta answer to no house, but they know the old song. I can only take you as far as the reeds, because the hippos have gone strange.'],
+     parts:[{kill:'deltahippo',n:5,text:'Defeat delta hippos'},{kill:'reedserpent',n:5,text:'Defeat reed serpents'},{gather:'gathering',n:4,text:'Gather 4 herbs'},
+            {visit:'delta',after:true,text:'Cross the Sedge Delta to the ferry',say:['(The ferryman poles in silence. Halfway across he sings, very softly, the same tune as Tamsa.)','"The Mother leads them where the water was." He stops. "That is where it ends, for most of us. We have never asked why."']}],
+     done:['He sang it too. So it is not only Elder Tamsa.','The herds follow a leader on the Sunstair, the great one they call Oldhorn. Wiru says the grey sickness is in her too. The healer wants to see you.']},
+    {id:'dr4',title:'The relapse herb',from:'wiru',to:'wiru',
+     offer:['Grey in the veins, grey in the eyes, and at night they walk toward the Sunstair. I have seen it in Kin, in cattle, in the vultures that used to come to me for company.','I can make a draught to slow it, if you bring me what the sick animals carry: horns from the Greyhide rhinos, feathers from the Dawnless vultures. Take care. They are not angry. They are very, very tired.'],
+     parts:[{kill:'greyrhino',n:5,text:'Defeat Greyhide rhinos on the Sunstair'},{kill:'dawnvulture',n:5,text:'Defeat Dawnless vultures'}],
+     done:['That will hold the worst of it. I could not heal them. I could only stop them from getting worse.','Go up to the top, to Oldhorn. Tamsa told me the last line of her song this morning. She cried. It goes: "...and the Mother lies down at the top of the stair, and the herd lies down with her."']},
+    {id:'dr5',title:'Oldhorn',from:null,to:'tamsa',
+     bossLine:'Oldhorn lowers her great head to the stone. The grey drains from her flanks like dust blown off a drum, and the calves below the terraces raise their heads, all together, and listen.',
+     parts:[{boss:'oldhorn',text:'Defeat Oldhorn, the Herd-Mother, on the Sunstair'}],
+     done:['They stopped. All the herds, in one moment, from the delta to the pools. Kesi says they turned east to face the sunrise as if they had heard their name.','My song ends there. I never knew. I am an old woman who sang a lullaby and did not ask what it was for.','...The Crown gave us a second shape, they say. I wonder now what it took in return. Not today. Today the herds are home.']}
   ]}
 ];
 const SQ_BY_ID={}; SQ.forEach(C=>{ SQ_BY_ID[C.id]=C; C.steps.forEach((s,i)=>{ s.i=i; s.chain=C.id; }); });

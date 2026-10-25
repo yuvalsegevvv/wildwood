@@ -1,6 +1,6 @@
 //@ The raid ruins' small props (a palisade and a broken catapult before the gate, a cart and a well in the yard) and each land's own dressing (brambles, pagoda lanterns, ice, arches, colonnades, a wreck)
 /* Agent map. rdProps(C) and rdExtras(C,extra) are called by rdBuildOne (raids/structure.js) with its builder context C: the lists stone / wood / cloth / fire, the colour painters sc / tc / cc / fc / dk / wd,
-   gh(lx,lz), bx(list,w,h,d,lx,y,lz,fn,ry,rz), R (the raid), ox / oz (the site). `extra` is RD_LOOKS[look].extra: spikes (thorn), torii (kuro), icicles (jarn), rubble (stone), dune (sand), wreck (wrack).
+   gh(lx,lz), bx(list,w,h,d,lx,y,lz,fn,ry,rz), R (the raid), ox / oz (the site). `extra` is RD_LOOKS[look].extra: spikes (thorn), torii (kuro), icicles (jarn), rubble (stone), dune (sand), wreck (wrack), seats (moot).
    Everything is added to the lists and merged by the caller; `LOW` thins the counts. Test: tools/raids-smoke.js (client part). */
 function rdProps(C){
   const {stone,wood,gh,bx,sc,tc,wd,dk,ox,oz}=C;
@@ -56,5 +56,14 @@ function rdExtras(C,ex){
     for(let k=0;k<(LOW?8:26);k++){ const a=h3(k,1,45)*TAU, lx=Math.sin(a)*(30+h3(k,2,45)*8), lz=2+Math.cos(a)*(38+h3(k,3,45)*5), s=0.22+h3(k,4,45)*0.3; stone.push(paint(new THREE.SphereGeometry(s,5,4).translate(ox+lx,gh(lx,lz)+s+h3(k,5,45)*3,oz+lz),col(0x6a9a8a))); }
     for(let k=0;k<(LOW?5:12);k++){ const lx=-34+k*6, y=gh(lx,-39), L2=2.5+h3(k,6,45)*3; wood.push(paint(new THREE.BoxGeometry(0.08,L2,0.5).translate(ox+lx,y+5.5-L2/2,oz-38.9),col(0x2a5a3a))); }
     for(let k=0;k<(LOW?3:6);k++){ const lx=-26+k*9, lz=-20+h3(k,7,45)*30; bx(wood,0.3,0.3,4+h3(k,8,45)*3,lx,gh(lx,lz)+0.2,lz,wd,h3(k,9,45)*3,0.1); }
+  }
+  if(ex==='seats'){   // moot: seven seats toppled in a ring round the court's middle (no colliders: the boss fight is in there), a fallen roof beam across the keep, thorn hedges and a bleached baobab trunk in the yard
+    for(let k=0;k<7;k++){ const a=k/7*TAU+0.3, lx=Math.sin(a)*12, lz=22+Math.cos(a)*12, tip=h3(k,1,61)*0.7;
+      bx(stone,2.4,0.7,1.6,lx,gh(lx,lz)+0.4,lz,tc,a,tip*0.3); bx(stone,2.4,2.2,0.5,lx+Math.sin(a)*0.9,gh(lx,lz)+0.9,lz+Math.cos(a)*0.9,sc,a+1.4,1.1+tip*0.3); }   // the seat and its fallen back
+    bx(wood,0.9,0.9,30,-4,gh(-4,30)+5.5,30,wd,0.35,0.22); bx(wood,0.8,0.8,24,6,gh(6,26)+3.5,26,wd,-0.5,0.3);
+    for(let k=0;k<(LOW?8:20);k++){ const s2=k%2?1:-1, lx=s2*(14+Math.floor(k/2)*1.8), lz=-24+h3(k,2,61)*2, h=1.2+h3(k,3,61)*1.2;   // thorn hedges in the yard's mouth, a gap kept for the road
+      stone.push(paint(new THREE.ConeGeometry(0.5,h,5).translate(ox+lx,gh(lx,lz)+h/2,oz+lz),col(0x6a5a30))); if(!LOW) stone.push(paint(new THREE.ConeGeometry(0.35,h*0.8,5).translate(ox+lx+0.6,gh(lx+0.6,lz+0.4)+h*0.4,oz+lz+0.4),col(0x7a6a38))); }
+    stone.push(paint(new THREE.CylinderGeometry(2.6,3.4,3.2,10).translate(ox-26,gh(-26,-6)+1.4,oz-6),col(0x9a8a74)));   // a baobab trunk, hollow and bleached
+    bx(wood,5,3.4,0.4,-26,gh(-26,-6)+1.7,-3.2,dk);
   }
 }

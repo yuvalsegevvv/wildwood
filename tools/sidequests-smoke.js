@@ -6,7 +6,7 @@
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['MONS','getH','S','SQ','SQ_BY_ID','SQ_PLACES','SQ_NPC_VIL','SQ_NAMES','VILS','LORE_BY_ID','NODE_KINDS','PROFS','DEF_BY_ID','BOSS_DEFS','cpDef','sanitizeSq','sqReward','sqTalk','expToNext','MQ_BY_ID','mqReward','rewardKill','sqOf','cosMakeP','RES','ZONES','sqGatherP']);
+  ['MONS','getH','S','SQ','SQ_BY_ID','SQ_PLACES','SQ_NPC_VIL','SQ_NAMES','VILS','LORE_BY_ID','NODE_KINDS','PROFS','DEF_BY_ID','BOSS_DEFS','rdBossRow','cpDef','sanitizeSq','sqReward','sqTalk','expToNext','MQ_BY_ID','mqReward','rewardKill','sqOf','cosMakeP','RES','ZONES','sqGatherP']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const at=(xx,zz)=>W.setPos('a',[xx,x.getH(xx,zz),zz,0,0,0]);
@@ -28,8 +28,8 @@ for(const C of x.SQ){
     for(const pt of s.parts){
       if(!pt.text) bad.push(s.id+': a part with no text');
       if(pt.talk&&!x.SQ_NPC_VIL[pt.talk]) bad.push(s.id+': talk '+pt.talk);
-      for(const id of [pt.kill,pt.boss,...(pt.collect?pt.from:[])]) if(id&&!x.DEF_BY_ID[id]) bad.push(s.id+': monster '+id);
-      if(pt.boss&&!x.BOSS_DEFS.some(b=>b.def.id===pt.boss)) bad.push(s.id+': boss '+pt.boss);
+      for(const id of [pt.kill,pt.boss,...(pt.collect?pt.from:[])]) if(id&&!x.DEF_BY_ID[id]&&!x.rdBossRow(id)) bad.push(s.id+': monster '+id);
+      if(pt.boss&&!x.rdBossRow(pt.boss)) bad.push(s.id+': boss '+pt.boss);
       if(pt.read&&!x.LORE_BY_ID[pt.read]) bad.push(s.id+': lore '+pt.read);
       if(pt.visit&&!x.SQ_PLACES[pt.visit]) bad.push(s.id+': place '+pt.visit);
       if(pt.gather&&!x.NODE_KINDS[pt.gather]&&!['mining','woodcutting','gathering'].includes(pt.gather)) bad.push(s.id+': gather '+pt.gather);
@@ -37,7 +37,7 @@ for(const C of x.SQ){
   }
 }
 ok('every chain points at people, monsters, bosses, lore, places, nodes and a quest-only cosmetic that exist',!bad.length,bad.join('; '));
-ok('six chains, each ending at a boss: Carapax, Kyuubi, Vetrmaw, the Sand Wyrm, Captain Dredge, the Gloam Warden',x.SQ.map(C=>C.steps[C.steps.length-1].parts[0].boss).join()==='carapax,kyuubi,vetrmaw,sandwyrm,drownedcaptain,gloamwarden');
+ok('eight chains, each ending at a boss: Carapax, Kyuubi, Vetrmaw, the Sand Wyrm, Captain Dredge, the Gloam Warden, Old Thunder, Oldhorn',x.SQ.map(C=>C.steps[C.steps.length-1].parts[0].boss).join()==='carapax,kyuubi,vetrmaw,sandwyrm,drownedcaptain,gloamwarden,oldthunder,oldhorn');
 ok('every place is on land you can stand on',Object.values(x.SQ_PLACES).every(P=>isFinite(P.x)&&isFinite(P.z)&&P.r>0));
 { const C=x.SQ_BY_ID.tide, r=x.sqReward(C,0), mq=x.mqReward(x.MQ_BY_ID.V5);
   ok('a side step pays resources and a little XP: under a fifth of a main quest step\'s at that level',r.res.length===3&&r.res.every(([,n])=>n>0)&&r.xp>0&&r.xp<mq.xp/5,'side '+r.xp+' main '+mq.xp); }
@@ -76,6 +76,9 @@ ok('crag moss and the boars: Oskar sends you to the beach, the next step starts 
 // ---- the Gloamhorn's second chain waits for the first; tracking; saves ----
 p.level=36; { const T=x.sqTalk(p.gear.sq,'maelis',36,false); ok('The Keeper\'s Light waits for The Drowned Captain',!T.acts.some(a=>a.c==='keeper')); }
 p.gear.sq.c.drowned={s:5,st:0,n:[]}; { const T=x.sqTalk(p.gear.sq,'maelis',36,false); ok('...and opens once it is finished',T.acts.some(a=>a.c==='keeper'&&a.start)); }
+{ const sq={c:{},t:''}, a=(npc,lv,q)=>x.sqTalk(q||sq,npc,lv,false).acts;   // the Amber Reach's chains (pure talk rules: Tallgrass itself arrives with the village)
+  ok('Warden Oruvi starts The Dawn Seat from level 37, not below',!a('oruvi',36).length&&a('oruvi',37).some(t=>t.c==='dawnseat'&&t.start));
+  ok('The Drought Song waits for The Dawn Seat, then Kesi opens it from level 41',!a('kesi',45).length&&a('kesi',41,{c:{dawnseat:{s:5,st:0,n:[]}},t:''}).some(t=>t.c==='drought'&&t.start)); }
 p.gear.sq.c.ninetails={s:1,st:1,n:[0,0]}; W.receive('a',{t:'sq',a:'track',c:'ninetails'}); tick(1); ok('tracking a running chain',p.gear.sq.t==='ninetails');
 W.receive('a',{t:'sq',a:'track',c:'nosuch'}); tick(1); ok('a made-up chain id tracks nothing',p.gear.sq.t==='');
 { const s=x.sanitizeSq({c:{tide:{s:99,st:7,n:[9e9]},constructor:{s:1},ninetails:{s:2,st:2,n:[1,0,0]}},t:'__proto__'});

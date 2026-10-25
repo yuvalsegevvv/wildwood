@@ -1,10 +1,10 @@
-# Raids: six ruined strongholds
+# Raids: seven ruined strongholds
 
 Built (version 3). One stronghold per land, each a ruin in an empty part of its land: 28 garrison monsters of the land's own kinds, destructibles, and one of the land's two **existing** world bosses (no new boss), rolled at random each time the raid is rebuilt. A clear pays a land-specific raid material that signature (skill set) skills need to level up. A cleared raid rebuilds 30 minutes later. The plan this was built from (with the reasoning and the open questions) is `raids-plan/PLAN.md` in the project files.
 
 Stem `raids`, prefix `rd` / `RD_`. Test: `node tools/raids-smoke.js`.
 
-## 1. The six
+## 1. The seven
 
 | Land | Raid | Site (x, z) | Boss pool | Material |
 |---|---|---|---|---|
@@ -14,6 +14,9 @@ Stem `raids`, prefix `rd` / `RD_`. Test: `node tools/raids-smoke.js`.
 | grey | Stonewatch | -160, -360 | Gryphon Queen, Mountain Golem | Stonewatch Ingot |
 | sun | The Sunken Citadel | -780, 440 | Glass Guardian, Sand Wyrm | Citadel Sunstone |
 | gloam | Wrackmoor Fort | -740, -240 | Captain Dredge, Gloam Warden | Wrack Glass |
+| amber | The Broken Moot | -1027, 1025 (`SAV_MOOT`) | Old Thunder, Oldhorn | Moot Bead |
+
+The Broken Moot (`shared/raids/moot.js`, look `moot`: seven toppled seats ring the court) is built before its bosses are wired in: `rdBossRow(id)` finds a raid boss in `BOSS_DEFS` or, until the wire-up task pushes them, in `SAV_BOSS_ROWS`. Zone tier II+ of the Reach does not exist yet, so it pays at tier 0 until then.
 
 The boss pool is `SS_SOURCES[land].slice(0,2)`. Sites were found by scanning each land for flat dry ground away from every anchor, door, village and arena; the data is `shared/raids/<id>.js`, one `defineRaid({...})` each (a bad entry is left out and listed in `RD_BAD`).
 

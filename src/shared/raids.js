@@ -1,15 +1,15 @@
-//@ Raids: one ruined stronghold per land (defineRaid registry, the common layout, level and pay by zone tier, the signature-skill upgrade price in raid material, the flat pads)
+//@ Raids: one ruined stronghold per land (seven) (defineRaid registry, the common layout, level and pay by zone tier, the signature-skill upgrade price in raid material, the flat pads)
 /* Agent map. Design and numbers: docs/RAIDS.md. A raid is a ruin in an empty part of its land: 28 garrison monsters of the land's own kinds, destructibles (wards seal the inner court, spawners call
    reinforcements, barricades are cover), and a boss picked at random from the land's two world bosses when the raid (re)builds. Stem `raids`, prefix `rd` / `RD_`.
    Exports: RD_BASE_LV, RD_RESET, RD_ABANDON, RD_UP, RD_FOOT, RD_LAYOUT, defineRaid(D), RDS (by id), RD_ORDER, RD_BAD, rdLevel(tier), rdMatFor(tier), rdOfLand(land), rdCourtAt(x,z), rdNear(x,z,r),
-   rdUpNeeds(skill,to) (a signature piece's price to level `to`: coins, the land's monster material, and `rd`: the raid material), rdCapTier(gear,land,raidTier).
+   rdBossRow(id) (a raid boss's BOSS_DEFS row, or its SAV_BOSS_ROWS row until the Amber Reach's bosses are wired in), rdUpNeeds(skill,to) (a signature piece's price to level `to`: coins, the land's monster material, and `rd`: the raid material), rdCapTier(gear,land,raidTier).
    Used by: server/raids.js (the fight), server/economy.js + shared/drops.js (upgrades), game/raids/* (the ruins, the HUD), game/combat/boss.js (arenaOf). The data: shared/raids/<id>.js (one per land).
    Test: node tools/raids-smoke.js. A bad entry is left out and listed in RD_BAD (the game still boots). */
 const RD_BASE_LV=40, RD_RESET=1800, RD_ABANDON=600, RD_FOOT=62, RD_MAT_MAX=99999;   // the level at +0; seconds from a clear to the rebuild; seconds with nobody inside before an engaged raid resets; the radius that counts as inside for the clear's pay
 const RD_MOB_HP=0.3;   // a garrison monster's health against the same level's ordinary numbers: the boss stays at 22 hits at level 40 while a mob falls in about 7 x this (elites twice that again): 28 full-health mobs outweighed the boss 12 to 1
 const RD_UP={2:1,3:2,4:4,5:8};   // raid material a signature piece needs to reach level n (one clear pays level 2); the one number to tune
 const RD_MOB_K=3;   // a signature piece asks RD_MOB_K x the usual monster drops (UP_COUNT): the grind is in the woods, the raid is the gate
-const RD_LANDS=['home','vale','hoar','grey','sun','gloam'];
+const RD_LANDS=['home','vale','hoar','grey','sun','gloam','amber'];
 /* The layout every raid shares, in metres from the site's middle (x east, z south; the gate looks north). The court is the boss arena (kits read A.x, A.z, A.r). */
 const RD_LAYOUT={
   court:{x:0,z:22,r:20}, yard:{x:0,z:-14,r:24},
@@ -39,7 +39,7 @@ function defineRaid(D){
   if(!rdDefOk(g.elite)) return bad('garrison','elite: no monster "'+g.elite+'"');
   if(!Array.isArray(D.up)||D.up.length!==4||!D.up.every(rdDefOk)) return bad('up','four monster kinds, for the levels 2, 3, 4 and 5');
   const src=SS_SOURCES[D.land]; if(!src) return bad('land','no world bosses known for '+D.land);
-  const bosses=src.slice(0,2); if(!bosses.every(b=>BOSS_DEFS.some(x=>x.def.id===b))) return bad('bosses','the land\'s two world bosses are not in BOSS_DEFS');
+  const bosses=src.slice(0,2); if(!bosses.every(b=>rdBossRow(b))) return bad('bosses','the land\'s two world bosses are not in BOSS_DEFS');
   const L=RD_LAYOUT, at=(p)=>({x:D.x+p[0],z:D.z+p[1]});
   const R=Object.assign({},D,{bosses,second:bosses[1],
     court:Object.assign({key:'rd_'+id+'_court',name:D.name+': the inner court'},at([L.court.x,L.court.z]),{r:L.court.r}),
@@ -49,6 +49,8 @@ function defineRaid(D){
   for(const A of [R.court,R.yard]){ A.h=baseHeight(A.x,A.z); A.raid=id; ARENAS.push(A); }   // the pads flatten the ground, arenaDist() keeps camps, plants and nodes off (key not in any BOSS_DEFS row: no world boss lives here)
   RDS[id]=R; RD_ORDER.push(id); return R;
 }
+// the Amber Reach's two bosses live in SAV_BOSS_ROWS until the wire-up pushes them into BOSS_DEFS; a raid needs only the row, not an arena
+const rdBossRow=id=>BOSS_DEFS.find(b=>b.def.id===id)||SAV_BOSS_ROWS.find(b=>b.def.id===id)||null;
 let RD_DEF_CACHE=null;
 const rdDefOk=id=>{ if(!RD_DEF_CACHE) RD_DEF_CACHE=new Set(ALL_MON_DEFS.map(d=>d.id)); return typeof id==='string'&&RD_DEF_CACHE.has(id); };
 const rdLevel=tier=>RD_BASE_LV+ZTIER_STEP*tier, rdMatFor=tier=>Math.pow(2,tier);   // level 40 / 50 ... 110; 1 / 2 / 4 ... 128 raid material

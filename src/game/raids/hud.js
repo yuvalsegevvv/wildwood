@@ -19,7 +19,7 @@ const rdClock=sec=>Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
 function rdNearest(r){ let best=-1,bd=r*r; RD_ORDER.forEach((id,i)=>{ const R=RDS[id], dx=P.x-R.x, dz=P.z-R.z, d=dx*dx+dz*dz; if(d<bd){ bd=d; best=i; } }); return best; }
 function rdSummary(i){
   const R=RDS[RD_ORDER[i]], s=RD_CL[i]; if(!s) return R.name;
-  const boss=BOSS_DEFS.find(b=>b.def.id===R.bosses[s.slot]), lv=rdLevel(s.tier);
+  const boss=rdBossRow(R.bosses[s.slot]), lv=rdLevel(s.tier);
   if(s.st===2) return R.name+': cleared, rebuilds in '+rdClock(rdLeftNow(s));
   if(s.st===0) return R.name+': ready. '+(boss?boss.short+' waits inside. ':'')+'Level '+RD_BASE_LV+' at +0; the first hit locks the tier to its attacker\'s';
   return R.name+': tier '+RD_ROMAN[s.tier]+', level '+lv+(boss?' · '+boss.short:'')+' · stones '+s.wards+'/3 · banners '+s.sp+'/2 · garrison '+s.gar;
