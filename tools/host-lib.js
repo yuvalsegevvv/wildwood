@@ -10,9 +10,9 @@ const get=(port,url,headers={},method='GET')=>new Promise((res,rej)=>{ const q=h
 const frame=(op,payload,fin=true)=>{ const d=Buffer.isBuffer(payload)?payload:Buffer.from(payload), n=d.length, mk=crypto.randomBytes(4);
   const head=n<126?Buffer.from([(fin?0x80:0)|op,0x80|n]):n<65536?Buffer.from([(fin?0x80:0)|op,0x80|126,n>>8,n&255]):null; if(!head) throw new Error('frame too long for the test');
   const body=Buffer.from(d); for(let i=0;i<n;i++) body[i]^=mk[i&3]; return Buffer.concat([head,mk,body]); };
-function wsOpen(port){ return new Promise((res,rej)=>{
+function wsOpen(port,wsPath='/ws'){ return new Promise((res,rej)=>{
   const key=crypto.randomBytes(16).toString('base64'), s=net.connect(port,'127.0.0.1'); const c={s,frames:[],closed:false,head:''}; let buf=Buffer.alloc(0), upgraded=false;
-  s.on('connect',()=>s.write('GET /ws HTTP/1.1\r\nHost: x\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: '+key+'\r\nSec-WebSocket-Version: 13\r\n\r\n'));
+  s.on('connect',()=>s.write('GET '+wsPath+' HTTP/1.1\r\nHost: x\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: '+key+'\r\nSec-WebSocket-Version: 13\r\n\r\n'));
   s.on('data',d=>{ buf=Buffer.concat([buf,d]);
     if(!upgraded){ const i=buf.indexOf('\r\n\r\n'); if(i<0) return; c.head=buf.slice(0,i).toString(); buf=buf.slice(i+4); upgraded=true;
       c.accept=crypto.createHash('sha1').update(key+'258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64'); res(c); }

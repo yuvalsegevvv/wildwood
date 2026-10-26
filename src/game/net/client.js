@@ -11,7 +11,8 @@ function accountCode(){
   return a;
 }
 function netHello(){
-  NET.send&&NET.send(Object.assign({t:'hello',acct:accountCode(),name:NET.name||'Hiker',look:lookForNet(LOOK),save:{level:PL.level,exp:PL.exp,gear:GEAR}},NET.login||{}));
+  if(NET.test){ NET.sawTest=true; NET.send&&NET.send({t:'hello',name:NET.name||'Hiker',look:lookForNet(LOOK)}); return; }   // the test world keeps no save: nothing goes up, and its kit stays out of this browser
+  NET.send&&NET.send(Object.assign({t:'hello',acct:accountCode(),name:NET.name||'Hiker',look:lookForNet(LOOK),save:NET.sawTest?undefined:{level:PL.level,exp:PL.exp,gear:GEAR}},NET.login||{}));   // (after a test session the page holds the test kit, not this browser's progress)
 }
 // one bad entry of a message (a monster model that throws, an event for a panel that is not there) must not drop the rest of it: the events after it are loot, toasts and quest updates. Logged 20 times, then every 1000th.
 let netErrN=0;

@@ -264,6 +264,7 @@ server
   dungeons/runs.js                   Dungeon runs, the lifecycle: launching a run, the start prompt and joining in progress, the per-tick update (members, downs, respawns, the kit, the monsters), revives, won / lost and the results, closing, places held for 5 minutes, the save (gear.dg)
   dungeons/lobby.js                  Dungeon runs, the messages: the Delve board at a door (open), starting a run (checked against the door, the gate, the hourly offer and each member's level and tier), accepting / declining, leaving, reviving, using an objective; the testing tool's start
   raids.js                           Raids on the server: build and rebuild each land's stronghold, lock its tier on the first hit, wards wake the boss, spawners call reinforcements, the clear pays raid material, a clear rebuilds half an hour later
+  testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 
 node

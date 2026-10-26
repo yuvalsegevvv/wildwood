@@ -11,6 +11,8 @@
 const ONLINE=!!window.WILDWOOD_WS, IN_CLAUDE=!!(window.claude&&typeof window.claude.use==='function');
 const hint=$('#hint'), barEl=$('#barFill'), growEl=$('#grow');
 const stHome=$('#stHome'), stForm=$('#stForm'), stMsg=$('#stMsg'), stNote=$('#stNote'), stUser=$('#stUser'), stPass=$('#stPass'), stPass2=$('#stPass2');
+/* The page at /test (the Node host serves the same page there) is the throwaway test world (src/server/testworld.js): one button, no account, nothing kept in this browser. */
+const TESTPAGE=ONLINE&&/^\/test\/?$/.test(location.pathname);
 const GUEST_FALLBACK='Hiker '+Math.floor(100+Math.random()*900);
 let canStart=false, startView='home', starting=false, pendingReg=null;   // pendingReg: {user,pass} while a registration waits for the server
 const guestName=()=>playerName()||GUEST_FALLBACK;
@@ -53,6 +55,7 @@ function syncStart(){
   gu.textContent=ses?'Play as guest':'Play now'; $('#stGuestNote').hidden=!ONLINE||!!ses;
   lg.textContent=ses?'Continue as '+ses.user:'Log in';
   $('#stLogin').disabled=!!ses&&wait; $('#stGuest').disabled=$('#stSolo').disabled=$('#stRoom').disabled=$('#stSubmit').disabled=wait;
+  if(TESTPAGE){ $('#stAcct').hidden=$('#stLogin').hidden=true; gu.textContent='Enter the test world'; gu.classList.add('primary'); $('#stGuestNote').hidden=false; $('#stGuestNote').textContent='A separate world to try things: level 60 with a full kit, no XP, no saves, no ranking. Nothing here touches your real hiker.'; stNote.hidden=true; return; }
   stNote.hidden=!ses; stNote.textContent='';
   if(ses){ stNote.append('Logged in as '+ses.user+' on this device.'); const b=document.createElement('button'); b.className='linkbtn'; b.type='button'; b.textContent='Use another account';
     b.addEventListener('click',()=>{ saveSession(null); syncStart(); }); stNote.append(b); }
@@ -74,12 +77,13 @@ async function enterWorld(o){
   startMsg(''); audioInit(); starting=true; syncStart();
   if(o.register&&NET.ready&&NET.mode==='ws'&&!NET.user){ pendingReg=o.register; netSend({t:'register',user:o.register.user,pass:o.register.pass}); return; }   // still connected from a refused registration
   if(NET.ready) netReset();
+  NET.test=!!o.test;
   NET.name=o.name; NET.login=o.login||null; pendingReg=o.register||null;
-  if(!o.login&&!o.register) try{ localStorage.setItem('wildwood-name',NET.name); }catch(_){}
+  if(!o.login&&!o.register&&!o.test) try{ localStorage.setItem('wildwood-name',NET.name); }catch(_){}
   NET.onReady=()=>{ if(pendingReg) netSend({t:'register',user:pendingReg.user,pass:pendingReg.pass}); else { starting=false; if(LOOK_KEPT) beginPlay(); else { statusEl.textContent=''; openEditor({create:true}); } } };   // a brand-new hiker (no look in this browser or on the server) makes a character first
   try{
     if(o.mode==='room') await startRoom(NET.name);
-    else if(o.mode==='ws'){ statusEl.textContent='Connecting to the world server…'; await startWS(); }
+    else if(o.mode==='ws'){ statusEl.textContent='Connecting to the world server…'; await startWS(o.test); }
     else startSolo();
   }catch(e){ startFail(e.message); }
 }
@@ -99,7 +103,7 @@ function startAuthed(){
 }
 $('#stLogin').addEventListener('click',()=>{ const ses=loadSession(); if(ses) enterWorld({mode:'ws',name:ses.user,login:{user:ses.user,token:ses.token}}); else showStart('login'); });
 $('#stRegister').addEventListener('click',()=>showStart('register'));
-$('#stGuest').addEventListener('click',()=>enterWorld({mode:'ws',name:guestName()}));
+$('#stGuest').addEventListener('click',()=>enterWorld({mode:'ws',name:guestName(),test:TESTPAGE}));
 $('#stSolo').addEventListener('click',()=>enterWorld({mode:'solo',name:guestName()}));
 $('#stRoom').addEventListener('click',()=>enterWorld({mode:'room',name:guestName()}));
 $('#stBack').addEventListener('click',()=>{ if(!starting) showStart('home'); });

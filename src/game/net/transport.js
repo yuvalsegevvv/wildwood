@@ -32,10 +32,10 @@ function startSolo(){
   netHello();
 }
 /* ---- node server over WebSocket ---- */
-function startWS(){
-  NET.mode='ws';
+function startWS(test){
+  NET.mode='ws'; NET.test=!!test;   // test: the throwaway test world (/ws-test): nothing of it is kept in this browser
   return new Promise((resolve,reject)=>{
-    const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws');
+    const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+(test?'/ws-test':'/ws'));
     NET.ws=ws;
     ws.onopen=()=>{ NET.send=msg=>{ if(ws.readyState===1) ws.send(JSON.stringify(msg)); else if(NET.ready) netDown(NET_LOST); }; netHello(); resolve(); };   // (a message to a closed socket used to vanish without a word)
     ws.onmessage=e=>{ NET.lastMsg=performance.now(); try{ netHandle(JSON.parse(e.data)); }catch(err){ console.error(err); } };

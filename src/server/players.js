@@ -176,7 +176,7 @@ function reachRimeholdP(p){ if(p.gear.north!==1||Math.hypot(p.x-VIL3.x,p.z-VIL3.
 // where you wake after being knocked out: the village of the land you are in, once you have been there
 const respawnVil=p=>inAmber(p.x,p.z)?(p.gear.tall>=2?VIL7:VIL):inGloam(p.x,p.z)?(p.gear.gloam>=2?VIL6:p.gear.west>=2?VIL4:VIL):inVale(p.x,p.z)?(inHoar(p.x,p.z)?(p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):(p.gear.east>=2?VIL2:VIL)):(inGrey(p.x,p.z)?(p.gear.west>=2?VIL4:p.gear.north>=2?VIL3:p.gear.east>=2?VIL2:VIL):(inSun(p.x,p.z)&&p.gear.sun>=2?VIL5:VIL));
 function gainExpP(p,v,monId){
-  if(!(v>0)) return;
+  if(!(v>0)||io.test) return;   // testworld: no XP
   p.exp+=v; ev('xp',p.id,r1(v),monId==null?null:monId);
   let up=false; const was=p.level;
   const cap=isGuestP(p)?GUEST_MAX_LV:PLAYER_MAX_LV;   // accounts: a guest stops at level 20

@@ -40,4 +40,5 @@ function ambBundleP(p,id){
   toastTo(p.id,'Bundle bought: the outfit set'+(hasS?'':' and all three skills of it')+'. Wear the outfit in the character editor, equip the skills in the skills panel.','loot r3');
 }
 MSG.gembuy=(p,msg)=>{ if(msg.b) ambBundleP(p,msg.v); else ambBuyP(p,msg.v); };
-MSG.gemtest=(p)=>{ ambGemP(p,GEM_TEST_GRANT); toastTo(p.id,GEM_TEST_GRANT+' gems added (testing)','good'); };
+MSG.gemtest=(p)=>{ if(io.test) return;   // testworld: no testing tools
+  ambGemP(p,GEM_TEST_GRANT); toastTo(p.id,GEM_TEST_GRANT+' gems added (testing)','good'); };

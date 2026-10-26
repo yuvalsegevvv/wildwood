@@ -37,6 +37,7 @@ function frSendP(p){
   ev('frl',p.id,rows).to=p.id;
 }
 function frRankP(p){
+  if(io.test){ ev('rnk',p.id,[],0,0).to=p.id; return; }   // testworld: no ranking
   const all=new Map(RANK);
   for(const q of S.players.values()){ const k=q.name.toLowerCase(), o=all.get(k); if(!o||o.l<=q.level) all.set(k,{n:q.name,l:q.level,x:q.exp,c:(q.look&&q.look.cls)||''}); }
   const list=[...all.values()].sort((a,b)=>b.l-a.l||b.x-a.x||a.n.localeCompare(b.n));
