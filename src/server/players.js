@@ -104,7 +104,7 @@ function newPlayer(pid,hello){
   const p={id:pid,name:cleanName(hello.name),look,x:sp.x,y:getH(sp.x,sp.z),z:sp.z,face:0,vx:0,vz:0,
     level:clampInt(save.level,1,PLAYER_MAX_LV,1),exp:Math.min(EXP_MAX,Math.max(0,+save.exp||0)),gear:sanitizeGear(save.gear,look.cls),
     hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0,cave:0},buff:null,act:null,dirty:true,travelT:0,cave:caveNewState()};   // cave: the 4th slot's charge (not saved)
-  p.look=cosCleanLook(p.look,p.gear.cos);   // cosmetics: no aura or cape that you do not own
+  p.look=ambCleanLook(cosCleanLook(p.look,p.gear.cos),p.gear.os);   // cosmetics: no aura or cape that you do not own, gems: no outfit set that you have not bought
   if(p.gear.startAll) giveAllP(p);
   if(p.gear.skills.v!==2){ autoEquipP(p,'skill'); autoEquipP(p,'burst'); p.gear.skills.v=2; }   // saves from before skills / bursts get the free ones
   p.gear.skills.pass.forEach((id,i)=>{ if(id&&i>=passiveOpen(p.level)) p.gear.skills.pass[i]=null; });   // a passive in a slot this level has not opened goes back to the bag

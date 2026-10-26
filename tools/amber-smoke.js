@@ -1,7 +1,7 @@
 // Headless test of gems and amber (server/amber.js): the public +1000 gem tool works with the dev switch off, buying an outfit set costs 1000 gems and is refused without funds / twice / for a bad id, the admin amber tool needs the dev switch, saves are sanitized.
 // Usage: node tools/amber-smoke.js
 const {loadServer}=require('./load');
-const {api:W,x}=loadServer({send(){}},['S','SS_ORDER','SS_SETS','GEM_SET_PRICE','AMB_MAX','sanitizeGear','GS_ACH','GEM_SKILL_PRICE','ssPieceIdsOf']);
+const {api:W,x}=loadServer({send(){}},['S','SS_ORDER','SS_SETS','GEM_SET_PRICE','AMB_MAX','sanitizeGear','GS_ACH','GEM_SKILL_PRICE','ssPieceIdsOf','ambCleanLook']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 W.join('a',{name:'Alma',look:{cls:'warrior'},save:{level:5}}); tick(1);
@@ -35,6 +35,15 @@ ok('...and takes it all away without going negative',p.gear.amb===0);
   const sid2=x.SS_ORDER[2], oid2=x.SS_SETS[sid2].outfit; p.gear.os.push(oid2); p.gear.gem=600; W.receive('a',{t:'gembuy',v:oid2,b:1}); tick(1);
   ok('with the outfit already owned the skills cost 600',p.gear.gem===0&&[1,2,3].every(n=>x.ssPieceIdsOf(sid2,n).every(i=>p.gear.skills.owned.includes(i))));
   p.gear.gem=1000; }
+// a look wears an outfit set only when the set is owned (a hacked client could send any id)
+{ const oid=x.SS_SETS[x.SS_ORDER[3]].outfit, own=[x.SS_SETS[x.SS_ORDER[4]].outfit];
+  const L=x.ambCleanLook({model:oid,top:oid,hat:own[0],hair:'short',cls:'mage',weaponItem:oid,gloves:oid},own);
+  ok('an outfit set that is not owned goes back to a base piece in every field',L.model==='base'&&L.top==='tshirt'&&L.weaponItem===''&&L.gloves==='none');
+  ok('an owned outfit piece and a base piece stay; other fields are untouched',L.hat===own[0]&&L.hair==='short'&&L.cls==='mage');
+  p.gear.os=[]; W.receive('a',{t:'look',look:{cls:'mage',model:oid,top:oid}}); tick(1);
+  ok('the look message cuts an unowned outfit set',p.look.model==='base'&&p.look.top==='tshirt'&&p.look.cls==='mage',JSON.stringify(p.look.model));
+  p.gear.os=[oid]; W.receive('a',{t:'look',look:{cls:'mage',model:oid,top:oid}}); tick(1);
+  ok('...and keeps it once the set is bought',p.look.model===oid&&p.look.top===oid); }
 const g=x.sanitizeGear({amb:1e99,gem:1e99,os:[id,id,'x','__proto__',5]},'warrior');
 ok('a save is cleaned: purses capped, outfit ids known and unique',g.amb===x.AMB_MAX&&g.gem===x.AMB_MAX&&g.os.length===1&&g.os[0]===id);
 console.log(fails?fails+' check(s) failed':'all passed'); process.exit(fails?1:0);

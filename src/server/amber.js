@@ -8,6 +8,16 @@ function ambSanitize(g,out){   // an old save has neither field
   out.amb=Math.min(AMB_MAX,Math.max(0,Math.floor(+(g&&g.amb)||0)));   // (not parseInt: it reads 1e99 as 1)
   const ids=ambOutfitIds(); out.os=Array.isArray(g&&g.os)?g.os.filter((id,i,a)=>typeof id==='string'&&ids.includes(id)&&a.indexOf(id)===i):[];
 }
+/* A look wears an outfit set (look.model, or a piece of it in the fields below, or a Kin part that comes with a set) only when the set is in gear.os; what is not owned goes back to a base piece.
+   The editor already refuses to close on a locked set, so this only stops a hacked client (a copy; the look is already flat primitives: cleanLookS). */
+const AMB_BASE_PIECE={model:'base',top:'tshirt',bottom:'trousers',shoes:'boots',hat:'none',hair:'short',faceItem:'',weaponItem:'',gloves:'none'};
+function ambCleanLook(look,owned){
+  if(!look||typeof look!=='object') return look;
+  const ids=ambOutfitIds(), has=id=>Array.isArray(owned)&&owned.includes(id), o=Object.assign({},look);
+  for(const f of Object.keys(AMB_BASE_PIECE)){ const v=o[f]; if(typeof v==='string'&&ids.includes(v)&&!has(v)) o[f]=AMB_BASE_PIECE[f]; }
+  for(const s of Object.keys(KIN_SLOTS)){ const part=kinPart(s,o[KIN_SLOTS[s][0]]); if(part&&part.set&&!has(part.set)) o[KIN_SLOTS[s][0]]=''; }
+  return o;
+}
 function ambAddP(p,n){ p.gear.amb=clampInt((p.gear.amb||0)+n,0,AMB_MAX,0); p.dirty=true; }
 function ambGemP(p,n){ p.gear.gem=Math.min(AMB_MAX,Math.max(0,(p.gear.gem||0)+n)); p.dirty=true; }
 function ambBuyP(p,id){

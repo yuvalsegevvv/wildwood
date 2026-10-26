@@ -2,7 +2,7 @@
 // Usage: node tools/server-smoke.js
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
-const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['sanitizeGear','waLandId','WX0','WX1','WZ0','WZ1','VIL','VIL2','VIL3','VIL5','MONS','getH','W','BOSSES','COINS_MAX','EXP_MAX','rewardKill']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['inVillage','sanitizeGear','waLandId','WX0','WX1','WZ0','WZ1','VIL','VIL2','VIL3','VIL5','MONS','getH','W','BOSSES','COINS_MAX','EXP_MAX','rewardKill']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ for(let i=0;i<n;i++){ W.tick(0.05); if(keepAlive) for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
@@ -13,14 +13,21 @@ const p=W.players.get('a'), off=p.gear.q.offers;
 ok('quest board has 4 notices',off.length===4,off.map(q=>q.kind+' L'+q.level+' x'+(q.count||'-')).join(', '));
 // kill slimes with a slime hunt accepted
 p.gear.q.offers[0]=Object.assign({},off[0],{id:'g999',kind:'hunt',type:'kill',target:'slime',count:3,level:1,title:'Test hunt'});
+W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); tick(1);   // (the spawn point is outside the village's radius; the board is inside)
 W.receive('a',{t:'accept',id:'g999'});
 let kills=0; for(const s of x.MONS.filter(m=>m.def.id==='slime').slice(0,4)){ for(let i=0;i<400&&!s.dead;i++){ W.setPos('a',[s.x+1.5,x.getH(s.x,s.z),s.z,Math.PI/2,0,0]); W.receive('a',{t:'atk',k:'basic',tg:s.id,face:Math.PI/2}); tick(1,true); } if(s.dead) kills++; }
 tick(2); const y1=you('a');
 ok('combat: kills give XP and coins',kills===4&&y1.exp>0&&y1.gear.coins>0,kills+' kills, '+y1.exp.toFixed(1)+' xp, '+y1.gear.coins+' coins');
 ok('quest progress and ready',y1.gear.q.ready.includes('g999'));
+W.receive('a',{t:'turnin',id:'g999'}); tick(1); ok('quest hand-in is refused out in the field (the board is in the village)',you('a').gear.q.done===0);
+W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); tick(1);
 W.receive('a',{t:'turnin',id:'g999'}); tick(1); ok('quest hand-in',you('a').gear.q.done===1);
 W.receive('a',{t:'dev',cmd:'coins'}); W.receive('a',{t:'buy',id:'helmet1'}); W.receive('a',{t:'buy',id:'helmet1'}); W.receive('a',{t:'equip',id:'helmet1'}); tick(1);
 const y2=you('a'); ok('shop, rising price, equip',y2.gear.eq.helmet==='helmet1'&&y2.gear.bought.helmet1===2);
+{ const c0=p.gear.coins, b0=p.gear.bought.helmet1, n0=p.gear.inv.length; W.setPos('a',[x.VIL.x+150,x.getH(x.VIL.x+150,x.VIL.z),x.VIL.z,0,0,0]); tick(1);
+  W.receive('a',{t:'buy',id:'helmet1'}); W.receive('a',{t:'sell',id:'helmet1'}); W.receive('a',{t:'merge',id:'helmet1'}); tick(1);
+  ok('shop, forge and board messages from the field change nothing',p.gear.coins===c0&&p.gear.bought.helmet1===b0&&p.gear.inv.length===n0&&!x.inVillage(p));
+  W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); tick(1); }
 for(const id of ['constructor','__proto__','toString','hasOwnProperty']) W.receive('a',{t:'buy',id});   // Object.prototype's names used to pass `if(!ITEM[id])` and charge NaN coins
 tick(1); ok('a prototype name is never an item id (coins stay a number, nothing is added)',Number.isInteger(p.gear.coins)&&p.gear.coins>=0&&!p.gear.inv.some(id=>typeof id!=='string'||id==='constructor'||id==='toString'),'coins '+p.gear.coins);
 W.receive('a',{t:'dev',cmd:'three'}); tick(1); const three=you('a').gear.inv.find(id=>you('a').gear.inv.filter(v=>v===id).length-(Object.values(you('a').gear.eq).includes(id)?1:0)>=3&&!id.includes('-'));   // (a worn copy does not count: the shop check above left three Leather Caps in the bag, one worn, and picking those made this flaky)

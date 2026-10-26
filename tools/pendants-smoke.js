@@ -7,7 +7,7 @@ const {loadServer}=require('./load');
 const {api:W,x}=loadServer({dev:true,send(){}},
   ['ITEM','ITEM_LIST','TOOL_LIST','PENDANT_STATS','PENDANT_BASE','PENDANT_NAMES','CRIT_BASE','CRIT_MULT','CRIT_CAP','CRIT_MULT_CAP','RAR_MULT','ENH_MAX','ENH_STEP','DG_REWARDS','DG_REWARD_W','RING_ELS',
    'dgAllIds','dgPendantId','dgRingId','dgGearId','dgItem','dgParse','dgMergedId','dgEnhanceNext','dgClearReward','dgGrantItemP','pendantText','mergedId','sellPrice','newGearFor','sanitizeGear',
-   'pendP','recalcP','rollDmgS','rewardKill','monK','MONS','DROP_CHANCE','BAG_MAX','soulOfP']);
+   'pendP','recalcP','rollDmgS','rewardKill','monK','MONS','DROP_CHANCE','BAG_MAX','soulOfP','VIL','getH']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1e-9,Math.abs(b));
@@ -49,6 +49,7 @@ ok('a pendant cannot sit in the ring slot, nor a ring in the pendant slot',x.san
 
 // ---- the server: equip, take off, buy, sell, merge, temper ----
 W.join('a',{name:'Hiker',look:{cls:'warrior'},save:{level:20}}); W.join('b',{name:'Other',look:{cls:'warrior'},save:{level:45}}); tick(2);
+for(const id of ['a','b']) W.setPos(id,[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); tick(1);   // (the forge and the shops are inside the village; the spawn point is outside it)
 const A=W.players.get('a'), B=W.players.get('b');
 A.gear.inv.push('pendant-xp','pendant-xp-r','ring-basic'); W.receive('a',{t:'equip',id:'pendant-xp'}); tick(1);
 ok('a level-20 hiker cannot wear a level-30 pendant',A.gear.eq.pendant===null);

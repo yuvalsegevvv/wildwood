@@ -91,6 +91,12 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
     G5().kbSet('jump',0,'KeyB'); G5().gpApply(pad([0]),0.016); ok('a rebound jump key is the one pressed',G5().keys.KeyB===true); G5().gpApply(pad([]),0.016);
     const y0=G5().P.yaw; G5().gpApply(pad([],[0,0,1,0]),0.1); ok('right stick turns the view',G5().P.yaw!==y0);
     G5().gpApply(pad([2],[1,0,0,0]),0.016); G5().setStarted(false); G5().gpApply(pad([2],[1,0,0,0]),0.016);
-    ok('before the game starts everything is released',!G5().keys.KeyF&&G5().joyX()===0); G5().setStarted(true); c5.stop(); }
+    ok('before the game starts everything is released',!G5().keys.KeyF&&G5().joyX()===0); G5().setStarted(true);
+    G5().gpApply(pad([]),0.016); G5().setStarted(false); G5().gpApply(pad([0]),0.016); G5().setStarted(true); G5().gpApply(pad([0]),0.016);
+    ok('a button held while the pad was ignored does not press when the game reopens',!G5().keys.KeyB);
+    G5().gpApply(pad([]),0.016); G5().gpApply(pad([0]),0.016); ok('...and presses again after it was let go',G5().keys.KeyB===true); G5().gpApply(pad([]),0.016);
+    { const seen=[], d0=global.dispatchEvent; global.dispatchEvent=e=>{ seen.push(e); d0(e); }; G5().gpApply(pad([1]),0.016); G5().gpApply(pad([]),0.016); global.dispatchEvent=d0;
+      ok('the dash button sends Shift with its shiftKey flag set, and lets go without it',seen.length===2&&seen[0].shiftKey===true&&seen[1].shiftKey===false,JSON.stringify(seen.map(e=>[e.type,e.code,e.shiftKey]))); }
+    c5.stop(); }
   console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);
 })();
