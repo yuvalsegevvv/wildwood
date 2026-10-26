@@ -20,7 +20,7 @@ Playable since version 3. The design (what the land should be, the city's distri
 | Map | `LANDS.sun` in `game/ui/map.js` (the painter is the shared one: no snowy peaks on mesas); no art on the world map of Eldmere (no pin there) |
 | Weather, music | no rain, snow or lightning in the Sunscar (`WX.dry`, `game/world/weather.js`); procedural songs `sun1` (28-32 and Glasswell) and `sun2` (33-36), `game/audio/music.js` |
 | Nodes | `NODES` (`shared/professions.js`), last: 5 per zone (2 rime ore, 2 frostpines, 1 snowmoss) |
-| Zone tiers | `ZTIER_LANDS` has `sun` (opened by the Sand Wyrm), not in `ZTIER_SYMBOL_LANDS` (the symbol cap is a balance placeholder) |
+| Zone tiers | `ZTIER_LANDS` has `sun` (opened by the Sand Wyrm), in `ZTIER_SYMBOL_LANDS` since version 3 (the symbol cap is a balance placeholder) |
 | Test | `tools/sunscar-smoke.js` |
 
 ## Numbers

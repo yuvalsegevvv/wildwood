@@ -1,7 +1,7 @@
 //@ Zone tiers, client side: a monster's level and health as you fight it, the symbol beside your health, the tier picker on the map panel
 /* The numbers are the server's (server/tiers.js, rules in shared/tiers.js). Here: the level a monster or zone shows at your tier for its land, and a
    monster's health in your own units (the snapshot sends it in the def's own units, the same for everyone: your tier's health multiplier turns it
-   into what a hit of yours is measured against). The symbol (four badges and the bonus) sits under your XP bar; the picker is a row under the
+   into what a hit of yours is measured against). The symbol (a badge per land, seven, and the bonus) sits under your XP bar; the picker is a row under the
    map, for the land the map shows, and works in a village only (the server checks it as well). */
 const monTierK=m=>m.dgK||zoneTierK(m.T,monTierOf(GEAR,m));   // dungeons: a run monster's numbers are its run's level (m.dgK), like the server's monK
 // a zone's level text at your tier for its land ('12', or '16-17' for a zone with two levels)

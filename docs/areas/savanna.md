@@ -14,7 +14,7 @@ Design and decisions: `docs/SAVANNA.md`. The land's file stem is `savanna` (not 
 | 18 monsters (two a level), `FAM` lines, drops | `shared/monster-defs.js`; models `game/combat/monster-savanna.js` (feline, swarm, bird, hoofed, hollowed) |
 | Bosses Old Thunder and Oldhorn (defs, adds, `SAV_BOSS_ROWS` appended to `BOSS_DEFS`), kits `thunder` / `herdmother`, the `grassfire` and `greyfloor` ground zones | `shared/savanna-bosses.js`, `server/boss-kits-savanna.js` |
 | 12 boss skills (`drop:'oldthunder'` / `'oldhorn'`), materials | `shared/classes.js`, `shared/drops.js` (`MAT_NAMES`) |
-| Zone tier `amber`, opened by `oldhorn`, not in the symbol | `shared/tiers.js` |
+| Zone tier `amber`, opened by `oldhorn`, the symbol's seventh badge (`.zs.amber`, `22-tiers.css`; cap still +420%) | `shared/tiers.js` |
 | Seasons (Greenfall / Goldfall), `savTint`, `savDryAt`; rain thinned in Goldfall | `game/world/savanna-sky.js` (hooks in `time-of-day.js`, `weather.js`) |
 | Ground colours, acacia, baobab, tall grass, zone dressing | `game/world/terrain-color-savanna.js`, `plant-models-savanna.js`, `zone-props-models-savanna.js`, hooks in `generation-chunks.js`, `zone-props.js` (`zpTheme` rows) |
 | Resource nodes (5 a zone, after the Gloamhorn's so no older node moves) | `shared/professions.js` |
