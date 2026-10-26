@@ -13,7 +13,7 @@
 const http=require('http'), crypto=require('crypto'), os=require('os'), zlib=require('zlib'), fs=require('fs'), path=require('path');
 const args=process.argv.slice(2), arg=(n,d)=>{ const i=args.indexOf(n); return i>=0&&args[i+1]?args[i+1]:d; };
 const PORT=+arg('--port',process.env.PORT||8080), HOST=arg('--host','0.0.0.0'), DEV=!args.includes('--no-dev')&&!/^(0|false|no|off)$/i.test(process.env.WILDWOOD_DEV||'');
-const SOCKETS=new Map(); let nextId=1;
+let nextId=1;
 const log=(...a)=>console.log(new Date().toISOString(),...a);
 /* ---- where saves go ---- */
 const keyOf=acct=>crypto.createHash('sha256').update('wildwood:'+acct).digest('hex').slice(0,40);
@@ -81,11 +81,20 @@ function frame(str){
 const SEND_CAP=2<<20;   // bytes a client may leave unread in its socket's buffer (about three minutes of snapshots): a connection that stopped reading but still answers pings would otherwise grow the server's memory for ever
 function sendRaw(sock,str){ if(sock.destroyed) return; if(sock.writableLength>SEND_CAP){ sock.destroy(); return; } sock.write(frame(str)); }
 const MSG_RATE=120, MSG_BURST=240;   // messages a second one client may send, and the burst it may save up (the game sends about 10 positions and a few attacks a second)
-const world=createWorldServer({
-  dev:DEV, snapDt:0.1, store:STORE, auth:AUTH, log,
-  kick(pid){ const s=SOCKETS.get(pid); if(s){ SOCKETS.delete(pid); setTimeout(()=>{ try{ s.end(Buffer.from([0x88,0])); }catch(_){} },300); } },
-  send(pid,msg){ const s=SOCKETS.get(pid); if(s) sendRaw(s,JSON.stringify(msg)); }
-});
+/* Two worlds run here. The main one (path /ws) is made at the start. The test world (path /ws-test, src/server/testworld.js) is a throwaway second instance: no store, no accounts, no
+   testing tools, made when the first hiker walks in and dropped when the last one leaves, so it shares no monsters, hikers or saves with the main world and costs nothing while empty.
+   A host is {world, SOCKETS (pid -> socket), last (time of its previous tick), fails (ticks that threw in a row)}. */
+const TEST_MAX=40;   // hikers in the test world at once
+function makeWorld(h,extra){
+  h.SOCKETS=new Map(); h.last=Date.now(); h.fails=0;
+  h.world=createWorldServer(Object.assign({snapDt:0.1,log,
+    kick(pid){ const s=h.SOCKETS.get(pid); if(s){ h.SOCKETS.delete(pid); setTimeout(()=>{ try{ s.end(Buffer.from([0x88,0])); }catch(_){} },300); } },
+    send(pid,msg){ const s=h.SOCKETS.get(pid); if(s) sendRaw(s,JSON.stringify(msg)); }},extra));
+  return h;
+}
+const MAIN=makeWorld({},{dev:DEV,store:STORE,auth:AUTH}), TEST={world:null,SOCKETS:new Map()};
+const world=MAIN.world;
+function testHost(){ if(!TEST.world){ const t0=Date.now(); makeWorld(TEST,{dev:false,test:true}); log('test world made in',Date.now()-t0,'ms'); } return TEST; }
 /* One exception must not take the world (and every player's unsaved progress) down: a throw in tick() or in a message handler is logged (the first time
    and then every 1000th, so a broken state cannot flood the log) and the server carries on. A tick that fails 100 times in a row (5 s) is a world that is stuck
    in a broken state: save everyone and exit so the host restarts it. Promise rejections and stray exceptions (a dropped database connection...) are logged too;
@@ -96,8 +105,11 @@ function logErr(where,e){ if(ERRS.size>500) ERRS.clear(); const k=where+': '+Str
 let listening=false;   // (set when the server is up: before that an error, say a port already in use, must end the process with its message, not leave it running with nothing listening)
 process.on('unhandledRejection',e=>logErr('unhandled rejection',e));
 process.on('uncaughtException',e=>{ if(!listening){ console.error(e); process.exit(1); } logErr('uncaught exception',e); });
-let last=Date.now(), tickFails=0;
-setInterval(()=>{ const now=Date.now(); try{ world.tick((now-last)/1000); tickFails=0; }catch(e){ logErr('tick',e); if(++tickFails>=100) shutdown('tick failed 100 times in a row'); } last=now; },50);
+setInterval(()=>{
+  const now=Date.now(); try{ MAIN.world.tick((now-MAIN.last)/1000); MAIN.fails=0; }catch(e){ logErr('tick',e); if(++MAIN.fails>=100) shutdown('tick failed 100 times in a row'); } MAIN.last=now;
+  if(TEST.world){ try{ TEST.world.tick((now-TEST.last)/1000); TEST.fails=0; }catch(e){ logErr('test tick',e); if(++TEST.fails>=100) dropTest('tick failed 100 times in a row'); } TEST.last=now; }   // (a broken test world is dropped, never the main one's problem)
+},50);
+function dropTest(why){ if(!TEST.world) return; log('test world dropped:',why); for(const [pid,s] of TEST.SOCKETS){ try{ s.destroy(); }catch(_){} } TEST.SOCKETS=new Map(); TEST.world=null; }
 /* The page: its WILDWOOD_WS flag is put in by build.py (WS_FLAG). Its compressed copies are made at build time too (tools/compress-page.js: dist/page-<hash>.gz and .br beside this file, <hash> = the sha1 of the page):
    read here, so the start does no compression (0.7 s of CPU, seconds on a small instance). A missing file (a copy of this file alone, a build without node) is made here: gzip at once, brotli in the background (gzip goes out until it is ready). Brotli is another ~10% smaller than gzip (870 KB against 970 KB) and browsers ask for it over HTTPS (Render). */
 const page=PAGE, pageHash=crypto.createHash('sha1').update(page).digest('hex').slice(0,20), pageTag='"'+pageHash+'"';
@@ -122,7 +134,7 @@ let savesAt=0, savesN=null;
 function countSaves(){ if(Date.now()-savesAt<30000) return Promise.resolve(savesN); savesAt=Date.now();
   return Promise.resolve().then(()=>STORE.count()).then(n=>(savesN=n),()=>(savesN=null)); }
 const server=http.createServer((req,res)=>{
-  if(req.url==='/'||req.url.startsWith('/?')||req.url==='/index.html'){
+  if(req.url==='/'||req.url.startsWith('/?')||req.url==='/index.html'||req.url==='/test'||req.url==='/test/'||req.url.startsWith('/test?')){   // (/test is the same page: it enters the test world, start-screen.js)
     // no-cache + ETag: the browser asks every visit but gets a bodiless 304 unless the game was updated
     // (includes: a proxy may send the tag weakened, W/"...")
     if((req.headers['if-none-match']||'').includes(pageTag)){ res.writeHead(304,{'etag':pageTag,'cache-control':'no-cache'}); res.end(); return; }
@@ -131,18 +143,20 @@ const server=http.createServer((req,res)=>{
     res.end(br?pageBr:gz?pageGz:page); return; }
   if(req.url.startsWith('/audio/')&&(req.method==='GET'||req.method==='HEAD')){ serveAudio(req,res); return; }
   if(req.url==='/healthz'){ res.writeHead(200,{'content-type':'text/plain'}); res.end('ok'); return; }
-  if(req.url==='/status'){ countSaves().then(n=>{ res.writeHead(200,{'content-type':'application/json'}); res.end(JSON.stringify({players:world.players.size,monsters:world.monsters.length,day:world.state.day,saves:STORE.kind,accounts:n})); }); return; }
+  if(req.url==='/status'){ countSaves().then(n=>{ res.writeHead(200,{'content-type':'application/json'}); res.end(JSON.stringify({testPlayers:TEST.world?TEST.world.players.size:0,players:world.players.size,monsters:world.monsters.length,day:world.state.day,saves:STORE.kind,accounts:n})); }); return; }
   res.writeHead(404); res.end('not found');
 });
 server.on('upgrade',(req,sock)=>{
-  if(!req.url.startsWith('/ws')){ sock.destroy(); return; }
+  const isTest=req.url==='/ws-test'||req.url.startsWith('/ws-test?');
+  if(!isTest&&!req.url.startsWith('/ws')){ sock.destroy(); return; }
+  if(isTest&&TEST.SOCKETS.size>=TEST_MAX){ sock.destroy(); return; }   // (the test world is full)
   const key=req.headers['sec-websocket-key']; if(!key){ sock.destroy(); return; }
   const acc=crypto.createHash('sha1').update(key+'258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64');
   sock.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: '+acc+'\r\n\r\n');
   sock.setNoDelay(true);
-  const pid='p'+(nextId++); SOCKETS.set(pid,sock);
+  const H=isTest?testHost():MAIN, SOCKETS=H.SOCKETS, world=H.world, pid='p'+(nextId++); SOCKETS.set(pid,sock);
   let buf=Buffer.alloc(0), frag=[], fragLen=0, tokens=MSG_BURST, tokenT=Date.now(), dropped=0; sock.lastSeen=Date.now();
-  const close=()=>{ if(SOCKETS.delete(pid)){ world.leave(pid); console.log(new Date().toISOString(),pid,'left, players:',world.players.size); } };
+  const close=()=>{ if(SOCKETS.delete(pid)){ world.leave(pid); console.log(new Date().toISOString(),pid,(isTest?'left the test world':'left')+', players:',world.players.size); if(isTest&&H===TEST&&TEST.world===world&&world.players.size===0&&SOCKETS.size===0) dropTest('empty'); } };
   sock.on('data',chunk=>{
     sock.lastSeen=Date.now();
     buf=Buffer.concat([buf,chunk]);
@@ -171,7 +185,7 @@ server.on('upgrade',(req,sock)=>{
   console.log(new Date().toISOString(),pid,'joined');
 });
 // keep connections alive through hosting proxies, and drop sockets that stopped answering
-setInterval(()=>{ for(const [pid,s] of SOCKETS){ if(s.destroyed){ SOCKETS.delete(pid); world.leave(pid); continue; } if(Date.now()-(s.lastSeen||0)>70000){ s.destroy(); continue; } s.write(Buffer.from([0x89,0])); } },25000);
+setInterval(()=>{ for(const H of [MAIN,TEST]){ if(!H.world) continue; for(const [pid,s] of H.SOCKETS){ if(s.destroyed){ H.SOCKETS.delete(pid); H.world.leave(pid); continue; } if(Date.now()-(s.lastSeen||0)>70000){ s.destroy(); continue; } s.write(Buffer.from([0x89,0])); } } },25000);
 // Render (and most hosts) stop the server with SIGTERM on deploys: write everyone's progress first
 let stopping=false;
 function shutdown(sig){ if(stopping) return; stopping=true; log(sig+': saving',world.players.size,'players'); let flush; try{ flush=world.flushAll(); }catch(e){ logErr('flush',e); flush=Promise.resolve(); }   // (a broken world must still get to exit)

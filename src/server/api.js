@@ -15,6 +15,7 @@ const recordOf=p=>Object.assign({v:1,name:p.name,look:p.look,level:p.level,exp:p
 function saveP(p){ if(!io.store||!p.acct) return Promise.resolve(); p.saveDirty=false; return Promise.resolve().then(()=>io.store.save(p.acct,recordOf(p))).catch(e=>{ p.saveDirty=true; if(io.log) io.log('save failed',e&&e.message); }); }
 function flushAll(){ return Promise.all([...S.players.values()].filter(p=>p.acct).map(saveP)); }
 function beginJoin(pid,hello){
+  if(io.test){ join(pid,Object.assign({},hello,{save:null,user:null,acct:null})); return; }   // testworld: a throwaway world: whatever the browser sends (a save, an account code, a login) is ignored
   if(typeof hello.user==='string'&&hello.user){ loginJoin(pid,hello); return; }
   const acct=typeof hello.acct==='string'&&/^[a-f0-9]{32}$/.test(hello.acct)?hello.acct:null;
   if(!io.store||!acct){ join(pid,hello); return; }
@@ -34,6 +35,7 @@ function beginJoin(pid,hello){
 }
 function join(pid,hello,auth){
   const p=newPlayer(pid,hello); S.players.set(pid,p);
+  if(io.test) testKitP(p);   // testworld: level 60 and the whole kit, before the first 'you'
   if(auth){ p.auth=auth; p.user=auth.user; }
   else { const n=freeName(p.name,p); if(n!==p.name){ toastTo(pid,'Someone already has the name '+p.name+', so you are '+n+'. Change it in Settings.',''); p.name=n; } }
   sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth?p.look:undefined});
