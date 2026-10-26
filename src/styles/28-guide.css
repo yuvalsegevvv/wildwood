@@ -1,5 +1,6 @@
 /*@ The Guide panel: a short in-game wiki in tabs (text, lists and key caps) */
 #guide, #versions{ width:min(640px,calc(100vw - 24px)); }
+@media (max-width:719px){ #guide, #versions{ width:auto; } }   /* (a bottom sheet on a phone: the full width, like the other panels) */
 #guBody, #vrBody{ max-height:min(60vh,520px); overflow-y:auto; font-size:13px; line-height:1.55; color:var(--ink-dim); }
 #guBody h4, #vrBody h4{ margin:14px 0 4px; font-size:13px; color:var(--ink); letter-spacing:.02em; }
 #guBody h4:first-child, #vrBody h4:first-child{ margin-top:0; }

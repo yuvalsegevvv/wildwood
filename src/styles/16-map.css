@@ -28,7 +28,7 @@ body.touch #minimap{ width:104px; height:104px; border-radius:8px; }
 .lg.pl{ background:#6fb8ff; } .lg.mo{ background:#ff4a3a; } .lg.boss{ background:#c86bff; }
 .lg.q, .lg.qr{ border-radius:1px; transform:rotate(45deg); width:9px; height:9px; background:#f2cf5a; } .lg.qr{ background:#9fe08a; }
 @media (max-width:719px){
-  #map, #wmap{ height:88dvh; }
+  #map, #wmap{ width:auto; height:88dvh; }
   body.touch #qlog{ top:calc(env(safe-area-inset-top,0px) + 182px) !important; bottom:auto; }   /* under the 104 px minimap: its old spot above Dash and Jump lay behind the column of skill buttons */
   body:not(.touch) #qlog{ top:calc(env(safe-area-inset-top,0px) + 232px) !important; }
 }
