@@ -32,7 +32,7 @@ function skSlotsHtml(C,cls){
     return `<div class="sk-pslot${P?' on':''}${usable?'':' locked'}" data-idx="${i}"><span class="sk-n">Passive ${i+1}</span>${P?skTile(P,C,'pslot:'+i):`<div class="sk-tile empty">${skIcon(usable?'plus':'lock')}</div>`}<b>${P?P.name:usable?'Empty':'Level '+PASSIVE_SLOT_LV[i]}</b><small>${P?passiveText(id,skillLvOf(C.S,id)):usable?'Drag one here':''}</small></div>`;
   }).join('');
   const later=PASSIVE_SLOT_LV.map((l,i)=>C.lv<l?'slot '+(i+1)+' at level '+l:'').filter(Boolean).join(', ');
-  return `<div class="sk-load-h">Active skills</div><div class="sk-load">${act}${caveH}${ultSlotHtml(C)}</div><div class="sk-load-h">Passive skills <span>${open?'the same for every class'+(later?' · '+later:''):'open at level '+PASSIVE_LV}</span></div><div class="sk-load pas">${pas}</div>`;
+  return `<div class="sk-lcol"><div class="sk-load-h">Active skills</div><div class="sk-load">${act}${caveH}${ultSlotHtml(C)}</div></div><div class="sk-lcol"><div class="sk-load-h">Passive skills <span>${open?'the same for every class'+(later?' · '+later:''):'open at level '+PASSIVE_LV}</span></div><div class="sk-load pas">${pas}</div></div>`;   // two columns: active | passive (18-skills.css)
 }
 // details of the selected skill: what it does at its level, how to equip it, and what its next level costs
 function skInfoHtml(C,cls){
@@ -92,7 +92,9 @@ function renderSkills(){
   h+=`<div class="sk-grid">${skKind==='cave'?caveGridHtml():skKind==='ult'?ultGridHtml():ids.map(id=>{ const s=skillDef(id); return `<div class="sk-cell">${skTile(s,C,'grid')}<span class="nm">${s.name}</span></div>`; }).join('')}</div></div></div>${setH}`;
   h+=`<div class="sk-info" id="skInfo">${skKind==='cave'?caveInfoHtml():skKind==='ult'?ultInfoHtml():skInfoHtml(C,cls)}</div>`;   // cave: the Cave tab's details
   if(cls!==clsOf()&&!pass) h+=`<p class="muted">You fight as a ${CLASSES[clsOf()].name} right now (your weapon decides). This ${CLASSES[cls].name} loadout is used whenever you hold a ${WEAPON_OF[cls]}.</p>`;
+  const oldGrid=$('#skBody').querySelector('.sk-grid'), keepTop=oldGrid&&skGridKind===skKind+'|'+cls?oldGrid.scrollTop:0; skGridKind=skKind+'|'+cls;   // the list scrolls inside: keep its place across redraws of the same tab
   $('#skBody').innerHTML=h;
+  { const g=$('#skBody').querySelector('.sk-grid'); if(g) g.scrollTop=keepTop; }
   const on=(sel,fn)=>$('#skBody').querySelectorAll(sel).forEach(b=>b.onclick=()=>fn(b));
   on('[data-sktab]',b=>{ skTab=b.dataset.sktab; SK.sel=null; UI_SFX.click(); renderSkills(); });
   on('[data-skkind]',b=>{ skKind=b.dataset.skkind; SK.sel=null; UI_SFX.click(); renderSkills(); });
@@ -116,6 +118,7 @@ function skEquip(id,idx){
   netSend(idx===undefined?{t:'eqskill',id}:{t:'eqskill',id,idx}); UI_SFX.pickup();
 }
 /* ---- drag and drop (pointer events, so it works with a finger too) ---- */
+var skGridKind='';   // (var: renderSkills can run before this line at load)
 const SKD={src:null,on:false,ghost:null,x0:0,y0:0,pid:null,just:false,t0:0,pending:false};   // pending: a redraw that had to wait for the drag to end
 function skTarget(x,y){
   const el=document.elementFromPoint(x,y); if(!el) return null;
