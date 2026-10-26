@@ -22,7 +22,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | What gear adds to a player (health, attack, defense) | `gearStatsOf` src/shared/items.js:65, `recalcP` src/server/players.js:114 |
 | How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:187 |
 | Wearing an item (level check, slot) | `equipP` src/server/economy.js:25 |
-| Shops: common items only, +20% per copy bought | `buyP` src/server/economy.js:38, `shopPrice` src/shared/items.js:49, shop panel src/game/economy/shops.js:20 |
+| Shops: common items only, +20% per copy bought | `buyP` src/server/economy.js:40, `shopPrice` src/shared/items.js:49, shop panel src/game/economy/shops.js:20 |
 | Monster and boss drops (the item roll and its tier) | `rollMonsterRarity` / `rollBossRarity` src/shared/items.js:53, used in `rewardKill` src/server/combat.js:75 |
 | Quest board rewards (item rarity) | `rollQuestItemRarity` src/shared/quests.js:69 |
 | Merging three identical items into the next rarity (Greta's forge) | `mergeP` src/server/economy.js:15, `mergedId` src/shared/items.js:50 |

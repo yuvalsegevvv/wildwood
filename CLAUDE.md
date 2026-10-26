@@ -212,6 +212,7 @@ node tools/run-tests.js server-smoke party-smoke      # by name           --for 
 
 npm run lint                     # tools/lint-bundles.js: undefined names and impossible code across each bundle's ONE shared scope (needs eslint: npm i --no-save eslint)
 npm run fuzz                     # tools/server-fuzz.js: garbage messages and mutated saves at every handler; `-- --nodev` is the deployed setting
+node tools/world-soak.js        # a dozen hikers fight, die, warp and wander for 90 s of play: no throw, nothing non-finite, hp and coins in range, no heap growth (`--secs 600 --players 16` is the long run; run it after touching the tick, combat, monsters or bosses)
 node tools/economy-fuzz.js       # random shop / forge / lodge / trainer / gem shop messages: coins or gems never go down without goods arriving, nothing arrives free (run it after touching a handler that charges)
 node tools/net-client-smoke.js     # the deployed path for real: the built server as its own process + the built page over a real WebSocket (also host-smoke, host-accounts-smoke; helpers tools/host-lib.js; docs/DEPLOY.md)
 npm run bench                    # tools/server-bench.js: N players walking and fighting; ms per tick, bytes per snapshot (`-- --players 40 --secs 60`; profiling: docs/TESTING.md)
