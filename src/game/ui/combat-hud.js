@@ -42,7 +42,8 @@ function updateCombatUI(dt){
   abSkill.classList.toggle('ready',!!sk&&CB.cd.skill<=0); abBurst.classList.toggle('ready',!!bu&&CB.cd.burst<=0);
   abBasic.classList.toggle('buffed',!!CB.buff);
   caveHudUpdate();   // cave: the charge bar and the ready glow
-  const key=c+'|'+(ba?ba.id:'')+'|'+(sk?sk.id:'')+'|'+(bu?bu.id:'')+'|'+Math.min(PV,BURST_SLOT_LV)+caveBarKey(); if(key!==abKey){ abKey=key; setActionBar(); }
+  ultHudUpdate();   // ult: the 5th tile's cooldown and boost glow
+  const key=c+'|'+(ba?ba.id:'')+'|'+(sk?sk.id:'')+'|'+(bu?bu.id:'')+'|'+Math.min(PV,BURST_SLOT_LV)+caveBarKey()+ultBarKey(); if(key!==abKey){ abKey=key; setActionBar(); }
 }
 const ICONS={
   Slash:'<path d="M5 19L17 7l2-4-4 2L3 17z"/><path d="M8 16l-3 3M15 5l4 4"/>',
@@ -174,16 +175,17 @@ function setActionBar(){
   const fill=(el,slot,key)=>{ const a=abilityOf(c,slot,L,pvLevel()), locked=pvLevel()<slotLv(slot);
     el.querySelector('svg').innerHTML=(a&&ssGlyph(a))||ICONS[a?a.name:locked?'lock':'plus']||ICONS.burst;   // skillsets: a set piece draws its set's own symbol, in the set's colour
     el.classList.toggle('has-set',!!(a&&ssTint(a))); el.style.setProperty('--set',a&&ssTint(a)||'transparent');
-    el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+slotLv(slot):(slot==='burst'?'Burst':'Skill');
+    el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+slotLv(slot):(slot==='burst'?'Power':'Skill');
     el.classList.toggle('empty',!a); const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
-    el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Burst':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };
+    el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Power':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };
   fill(abBasic,'basic',kbName('basic')); fill(abSkill,'skill',kbName('skill')); fill(abBurst,'burst',kbName('burst'));
   caveFillTile();   // cave: the 4th tile (Go to the cave / its skill)
+  ultFillTile();   // ult: the 5th tile (the set burst)
 }
 const press=(el,fn)=>{ el.addEventListener('touchstart',e=>{ e.preventDefault(); fn(); },{passive:false}); el.addEventListener('click',fn); };
 abBasic.addEventListener('touchstart',e=>{ e.preventDefault(); bhDown(); },{passive:false}); abBasic.addEventListener('touchend',e=>{ e.preventDefault(); bhUp(); },{passive:false}); abBasic.addEventListener('touchcancel',bhCancel);
 abBasic.addEventListener('mousedown',e=>{ if(e.button===0) bhDown(); }); addEventListener('mouseup',e=>{ if(e.button===0) bhUp(); });   // basic-hold: skill 1 fires when the button comes up (a tap = a press, a hold = a charged attack)
-press(abSkill,()=>doAttack('skill')); press(abBurst,burstSlot); press($('#abCave'),()=>doAttack('cave'));   // cave: the 4th slot
+press(abSkill,()=>doAttack('skill')); press(abBurst,burstSlot); press($('#abCave'),()=>doAttack('cave')); press($('#abUlt'),()=>doAttack('ult'));   // cave: the 4th slot; ult: the 5th
 addEventListener('keyup',e=>{ if(kbIs(e.code,'basic')) bhUp(); });
 addEventListener('keydown',e=>{
   if(!started||uiOpen()) return;
@@ -191,6 +193,7 @@ addEventListener('keydown',e=>{
   if(kbIs(e.code,'skill')) doAttack('skill');
   if(kbIs(e.code,'burst')) burstSlot();
   if(kbIs(e.code,'cave')) doAttack('cave');   // cave: the 4th slot
+  if(kbIs(e.code,'ult')) doAttack('ult');   // ult: the 5th slot
   if(kbIs(e.code,'skills') && !e.repeat) toggleSkills();
   if(kbIs(e.code,'target')){ e.preventDefault(); cycleTarget(); }
 });

@@ -1,0 +1,21 @@
+/*@ The set burst (5th slot): its action-bar tile, the cast popup card and the skills panel row (game/ult/slot.js, popup.js) */
+.ab-ult{ --ul:#e8c15a; }
+.ab-ult.ready{ border-color:var(--set,var(--ul)); box-shadow:0 0 8px var(--set,var(--ul)); }
+.ab-ult.empty{ opacity:.8; }
+.ab.ultb{ animation:ultPulse 1s ease-in-out infinite; border-color:var(--set,var(--ul)); }
+@keyframes ultPulse{ 0%,100%{ box-shadow:0 0 4px var(--set,var(--ul)); } 50%{ box-shadow:0 0 14px 2px var(--set,var(--ul)); } }
+#ultPopup{ position:fixed; left:50%; top:12%; transform:translateX(-50%); z-index:30; pointer-events:none; --main:#e8c15a; --accent:#b5532f; --glow:#fff4c8; }
+#ultPopup[hidden]{ display:none; }
+.ult-card{ position:relative; width:min(78vw,300px); height:132px; border-radius:14px; overflow:hidden; background:linear-gradient(110deg,rgba(10,14,12,.86),color-mix(in srgb,var(--main) 38%,rgba(10,14,12,.9)));
+  border:1px solid var(--main); box-shadow:0 0 22px color-mix(in srgb,var(--glow) 55%,transparent); animation:ultIn 1.15s ease-out both; }
+.ult-emblem{ position:absolute; right:-8px; top:-10px; width:150px; height:150px; opacity:.32; }
+.ult-emblem svg{ width:100%; height:100%; }
+.ult-pic{ position:absolute; right:6px; bottom:0; height:128px; width:auto; filter:drop-shadow(0 0 8px var(--glow)); }
+.ult-name{ position:absolute; left:14px; top:34px; max-width:62%; font-size:20px; line-height:1.1; color:var(--glow); text-shadow:0 0 10px var(--main); }
+.ult-who{ position:absolute; left:14px; top:12px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); filter:brightness(1.6); }
+.ult-sweep{ position:absolute; top:0; bottom:0; width:40%; left:-50%; background:linear-gradient(100deg,transparent,color-mix(in srgb,var(--glow) 70%,transparent),transparent); animation:ultSweep .7s .1s ease-out both; }
+@keyframes ultIn{ 0%{ opacity:0; transform:translateY(-14px) scale(.96); } 15%{ opacity:1; transform:none; } 80%{ opacity:1; } 100%{ opacity:0; transform:translateY(-6px); } }
+@keyframes ultSweep{ to{ left:120%; } }
+@media (prefers-reduced-motion:reduce){ .ult-card{ animation:ultFade 1.15s linear both; } .ult-sweep{ display:none; } .ab.ultb{ animation:none; } @keyframes ultFade{ 0%{ opacity:0; } 15%,80%{ opacity:1; } 100%{ opacity:0; } } }
+.sk-slot.ult .sk-tile.has-set{ color:var(--set); }
+.sk-boost{ margin:2px 0 6px; padding-left:18px; font-size:12px; }

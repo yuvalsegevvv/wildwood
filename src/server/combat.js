@@ -23,7 +23,7 @@ function handleAttack(p,msg){
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
   p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:ab.fx,mult:ab.mult*skillPower(lvl)*caveNextK(p,k),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,holdAt:!!ab.holdAt};   // cave: Intermission's bonus on the next skill; basic-hold: holdAt = a mage's held blast, centred on the target
   ultBoostActS(p,p.act,ab.id);   // ult: a boosted piece's cast (mult, n, size, util)
-  ev('pact',p.id,kind,Math.round(p.face*100)/100);
+  ev('pact',p.id,kind,Math.round(p.face*100)/100,...(p.act.ub?[1]:[]));   // (the 5th field: a boosted cast, drawn stronger)
   if(k!=='basic'&&!p.pv) mqActP(p,k);   // the main quest's 'use your skill / burst' steps (pvp: nothing is credited on the island)
 }
 // the element multiplier of an attack of element el (a skill's, 'basic' if none) from p on monster m: their soul and the monster's own element

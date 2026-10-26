@@ -22,7 +22,8 @@ function remoteSnap(a){ // [id,x,y,z,face,hp,maxHp,level,dead]
   if(r.tx===null){ r.x=a[1]; r.y=a[2]; r.z=a[3]; r.face=a[4]; }
   r.tx=a[1]; r.ty=a[2]; r.tz=a[3]; r.tface=a[4]; r.hp=a[5]; r.maxHp=a[6]; r.level=a[7]; r.dead=!!a[8];
 }
-function remoteAct(id,kind,face){ const r=REMOTES.get(id); if(!r) return; const A=ACT_OF[kind]||{dur:0.5,hitAt:0.5}; r.act={kind:ANIM_OF[kind]||kind,sk:kind,t:0,dur:A.dur,hitAt:A.hitAt,done:false}; if(face!=null){ r.tface=face; r.face=face; }
+function remoteAct(id,kind,face,ub){ const r=REMOTES.get(id); if(!r) return; const A=ACT_OF[kind]||{dur:0.5,hitAt:0.5}; r.act={kind:ANIM_OF[kind]||kind,sk:kind,t:0,dur:A.dur,hitAt:A.hitAt,done:false,ub:!!ub};   // ult: ub = a boosted cast, drawn stronger
+  if(face!=null){ r.tface=face; r.face=face; }
   const cs=ACT_SKILL[kind]; if(cs&&cs.cave) cvv1Wind(cs,r); }   // cave: another hiker's cave cast begins (cave/vis-floor1.js)
 function remoteGear(id,eq){ const r=REMOTES.get(id); if(!r) return; r.eq=eq; remoteBuild(r); }
 function remoteLook(id,look){ const r=REMOTES.get(id); if(!r) return; r.look=fullLook(look); remoteBuild(r); }

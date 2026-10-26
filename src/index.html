@@ -189,7 +189,7 @@
   <div id="kbSec">
   <details class="kb-how" open><summary>Keybinds and gamepad</summary>
     <p class="acct-note">Click a key box, then press the key you want (Backspace clears, Esc cancels). Hold Alt any time to free the mouse and click menus; let go to look around again.</p>
-    <p class="acct-note">Gamepad: left stick walks, right stick looks; A jump, B dash, X attack, Y skill, RB burst, LB talk, LT target, RT gather, D-pad up / down / left the three potions and right the cave skill, Select map, Start inventory, L3 camera, R3 skills. A button presses the key its action is set to above.</p>
+    <p class="acct-note">Gamepad: left stick walks, right stick looks; A jump, B dash, X attack, Y skill, RB Power skill, LB talk, LT target, RT gather, D-pad up / down / left the three potions and right the cave skill, Select map, Start inventory, L3 camera, R3 skills. A button presses the key its action is set to above.</p>
     <div id="kbList"></div>
     <button class="chip" id="kbReset">Reset keys</button>
   </details>
@@ -365,7 +365,9 @@
   <button class="ab" id="abSkill" data-silent="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></svg><span class="nm"></span><span class="key">Q</span></button>
   <button class="ab ab-burst" id="abBurst" data-silent="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></svg><span class="nm"></span><span class="key">R</span></button>
   <button class="ab ab-cave" id="abCave" data-silent="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></svg><span class="nm"></span><span class="key">4</span><i class="cv-bar"><b></b></i></button>
+  <button class="ab ab-ult" id="abUlt" data-silent="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></svg><span class="nm"></span><span class="key">5</span></button>
 </div>
+<div id="ultPopup" hidden aria-hidden="true"></div>
 <div id="bubble" hidden><b id="bName"></b><span id="bText"></span></div>
 <div id="prompt" hidden></div>
 <div id="castbar" hidden><span id="cbName"></span><div class="cb-bar"><i id="cbFill"></i></div></div>
