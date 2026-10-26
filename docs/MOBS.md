@@ -19,7 +19,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | The grey-veined monsters of the main quest | `GREY_DEFS` src/shared/monster-defs.js:303 |
 | Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:313 |
 | How many of each kind exist, and where their camps are (a zone holds 40 of the level-1 kind down to 20 of level 15; the vale and the Reach 12 of each; `count` overrides) | `MON_COUNT` src/server/monsters.js:20, `initMonstersS` src/server/monsters.js:21 |
-| Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King's beach | `ZONES` src/shared/zones.js:12, src/shared/vale.js:56, src/shared/hoarfrost.js:88, src/shared/beach.js:6 |
+| Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King's beach | `ZONES` src/shared/zones.js:11, src/shared/vale.js:42, src/shared/hoarfrost.js:88, src/shared/beach.js:6 |
 | Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:60 |
 | What a kill pays (XP, coins, an item roll, the material, quests, boss skills) | `rewardKill` src/server/combat.js:75 |
 | Materials a kind drops (one per kind, `MAT_NAMES`) | `MATS` src/shared/drops.js:13 |
