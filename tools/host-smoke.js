@@ -1,5 +1,5 @@
 // Test of the deployed server for real: starts dist/wildwood-server.js as its own process (files in a temp folder, testing tools off, a free port) and talks to it over HTTP and raw WebSocket frames.
-// HTTP: /healthz, /status, the page (brotli, gzip or plain, the same bytes; an ETag and a 304; the lean page: no world server inside), the music route (found, HEAD, unknown names, a path that tries to leave the folder), a 404.
+// HTTP: /healthz, /status, the page (brotli, gzip or plain, the same bytes, compressed by the build so the first request already gets brotli; an ETag and a 304; the lean page: no world server inside), the music route (found, HEAD, unknown names, a path that tries to leave the folder), a 404.
 // WebSocket: the handshake, hello -> welcome and snapshots, a ping answered with a pong, a message in two fragments, garbage that must not end the connection, a control frame too long, a flood of messages that ends the
 // connection and leaves the server up, the player gone from /status after a disconnect. Then SIGTERM: the process saves the player's progress to the folder and exits by itself.
 // Build first (python3 build.py).   Usage: node tools/host-smoke.js
@@ -15,7 +15,9 @@ let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')
     let r=await get(port,'/healthz'); ok('/healthz answers ok',r.status===200&&r.body.toString()==='ok');
     r=await get(port,'/status'); let st={}; try{ st=JSON.parse(r.body.toString()); }catch(e){}
     ok('/status: nobody online, the monsters are there, saves go to files',r.status===200&&st.players===0&&st.monsters>1000&&/^files/.test(st.saves),JSON.stringify(st));
-    await until(async()=>(await get(port,'/',{'accept-encoding':'br'})).headers['content-encoding']==='br',40000);   // (brotli at the best setting is made in the background after the start: gzip is sent until it is ready)
+    { const first=await get(port,'/',{'accept-encoding':'br'}), firstGz=await get(port,'/',{'accept-encoding':'gzip'});   // the build compressed the page (tools/compress-page.js): brotli and gzip are there from the first request, nothing is made at the start
+      ok('the first request is already brotli, and gzip is ready too (the build made them: dist/page-<hash>.br / .gz)',first.headers['content-encoding']==='br'&&firstGz.headers['content-encoding']==='gzip'&&fs.readdirSync(dist).filter(f=>/^page-[0-9a-f]{20}\.(br|gz)$/.test(f)).length===2); }
+    await until(async()=>(await get(port,'/',{'accept-encoding':'br'})).headers['content-encoding']==='br',40000);
     const br=await get(port,'/',{'accept-encoding':'gzip, br'}), gz=await get(port,'/',{'accept-encoding':'gzip'}), plain=await get(port,'/',{});
     ok('the page is sent brotli to a browser that takes it, gzip to one that takes gzip, plain to the rest',br.headers['content-encoding']==='br'&&gz.headers['content-encoding']==='gzip'&&!plain.headers['content-encoding']&&br.status===200&&/html/.test(br.headers['content-type']||''),[br,gz,plain].map(x=>x.headers['content-encoding']||'plain').join('/'));
     let page=null, same=false; try{ page=zlib.brotliDecompressSync(br.body); same=page.equals(zlib.gunzipSync(gz.body))&&page.equals(plain.body); }catch(e){}

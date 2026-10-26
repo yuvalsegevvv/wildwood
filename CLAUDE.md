@@ -212,6 +212,7 @@ node tools/run-tests.js server-smoke party-smoke      # by name           --for 
 
 npm run lint                     # tools/lint-bundles.js: undefined names and impossible code across each bundle's ONE shared scope (needs eslint: npm i --no-save eslint)
 npm run fuzz                     # tools/server-fuzz.js: garbage messages and mutated saves at every handler; `-- --nodev` is the deployed setting
+node tools/economy-fuzz.js       # random shop / forge / lodge / trainer / gem shop messages: coins or gems never go down without goods arriving, nothing arrives free (run it after touching a handler that charges)
 node tools/net-client-smoke.js     # the deployed path for real: the built server as its own process + the built page over a real WebSocket (also host-smoke, host-accounts-smoke; helpers tools/host-lib.js; docs/DEPLOY.md)
 npm run bench                    # tools/server-bench.js: N players walking and fighting; ms per tick, bytes per snapshot (`-- --players 40 --secs 60`; profiling: docs/TESTING.md)
 python3 tools/unused.py          # dead-code candidates (names nothing uses, CSS nobody mentions)
@@ -230,7 +231,7 @@ What each test checks: `node tools/run-tests.js --list` (one line each) and the 
 
 ## 7. Deploy (Render)
 
-`render.yaml`: build `npm install --omit=dev ... && python3 build.py` (which also bakes the server's height grid, packed to 730 KB, into `dist/wildwood-server.js` and the page with node, halving the server's start and the solo game's: `src/server/world.js` `hbLoad`, `tools/bake-heights.js`, cached in `dist/heightbake.json`, `--no-bake` skips it; test `heightbake-smoke`), start `node dist/wildwood-server.js --no-dev` (testing tools off for players), health check `/healthz`.
+`render.yaml`: build `npm install --omit=dev ... && python3 build.py` (which also bakes the server's height grid, packed to 730 KB, into `dist/wildwood-server.js` and the page with node, halving the server's start and the solo game's: `src/server/world.js` `hbLoad`, `tools/bake-heights.js`, cached in `dist/heightbake.json`, `--no-bake` skips it; test `heightbake-smoke`) and compresses the Node host's page once (`tools/compress-page.js` → `dist/page-<hash>.gz` / `.br`, read at the server's start; test `host-smoke`), start `node dist/wildwood-server.js --no-dev` (testing tools off for players), health check `/healthz`.
 The Node host (`src/node/main.js`) outlives bad input and bad code paths: a throw in `tick()` or in a message handler is logged by `logErr` (the first time and every 1000th) and the server goes on; 100 failing ticks in a row (5 s) save everyone and exit so Render restarts it; unhandled rejections and stray exceptions are logged, not fatal. One socket may send `MSG_RATE` = 120 messages a second (a burst of `MSG_BURST` = 240; the rest are dropped, 3000 dropped in a row end the connection), a message in fragments at most 1 MB.
 Live at https://wildwood-wib9.onrender.com (free plan: sleeps after 15 min idle, ~30-50 s to wake). `dist/` is not committed; `GET /status` shows players, monsters, the storage kind and the saved accounts.
 Saves: a free Neon Postgres through Render's `DATABASE_URL` (the secret lives only in Render and Neon, never in the repo or chat); without it, JSON files in `DATA_DIR`, which Render wipes on every deploy.

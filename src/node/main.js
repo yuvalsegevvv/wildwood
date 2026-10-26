@@ -98,11 +98,12 @@ process.on('unhandledRejection',e=>logErr('unhandled rejection',e));
 process.on('uncaughtException',e=>{ if(!listening){ console.error(e); process.exit(1); } logErr('uncaught exception',e); });
 let last=Date.now(), tickFails=0;
 setInterval(()=>{ const now=Date.now(); try{ world.tick((now-last)/1000); tickFails=0; }catch(e){ logErr('tick',e); if(++tickFails>=100) shutdown('tick failed 100 times in a row'); } last=now; },50);
-const page=PAGE.replace('</head>','<script>window.WILDWOOD_WS=true;</script>\n</head>'), pageGz=zlib.gzipSync(page,{level:9});
-// brotli is another ~10% smaller than gzip (870 KB against 970 KB) and browsers ask for it over HTTPS (Render): compressed once, off the main thread (quality 9 takes ~0.5 s; 11 takes 7 s and
-// would hold a cold start back on a small instance), and until it is ready everyone gets gzip
-let pageBr=null; zlib.brotliCompress(page,{params:{[zlib.constants.BROTLI_PARAM_QUALITY]:9,[zlib.constants.BROTLI_PARAM_SIZE_HINT]:page.length,[zlib.constants.BROTLI_PARAM_LGWIN]:24}},(e,buf)=>{ if(!e) pageBr=buf; });
-const pageTag='"'+crypto.createHash('sha1').update(page).digest('hex').slice(0,20)+'"';
+/* The page: its WILDWOOD_WS flag is put in by build.py (WS_FLAG). Its compressed copies are made at build time too (tools/compress-page.js: dist/page-<hash>.gz and .br beside this file, <hash> = the sha1 of the page):
+   read here, so the start does no compression (0.7 s of CPU, seconds on a small instance). A missing file (a copy of this file alone, a build without node) is made here: gzip at once, brotli in the background (gzip goes out until it is ready). Brotli is another ~10% smaller than gzip (870 KB against 970 KB) and browsers ask for it over HTTPS (Render). */
+const page=PAGE, pageHash=crypto.createHash('sha1').update(page).digest('hex').slice(0,20), pageTag='"'+pageHash+'"';
+const readPage=ext=>{ try{ return fs.readFileSync(path.join(__dirname,'page-'+pageHash+ext)); }catch(_){ return null; } };
+let pageGz=readPage('.gz')||zlib.gzipSync(page,{level:9}), pageBr=readPage('.br');   // (gzip at once when there is no file: nobody gets the plain page)
+if(!pageBr) zlib.brotliCompress(page,{params:{[zlib.constants.BROTLI_PARAM_QUALITY]:9,[zlib.constants.BROTLI_PARAM_SIZE_HINT]:page.length,[zlib.constants.BROTLI_PARAM_LGWIN]:24}},(e,buf)=>{ if(!e) pageBr=buf; });   // (quality 9 takes ~0.5 s; 11 takes 7 s)
 /* Music files (dist/audio/, made by build.py; the page fetches them from /audio/ when a theme first plays). Their names hold a hash of
    their content, so a file never changes under its name: browsers may keep it for a year and never ask again (one download per client).
    Only names found in the folder at start are served, so no path can leave it. Already compressed audio: no gzip. */
@@ -125,7 +126,7 @@ const server=http.createServer((req,res)=>{
     // no-cache + ETag: the browser asks every visit but gets a bodiless 304 unless the game was updated
     // (includes: a proxy may send the tag weakened, W/"...")
     if((req.headers['if-none-match']||'').includes(pageTag)){ res.writeHead(304,{'etag':pageTag,'cache-control':'no-cache'}); res.end(); return; }
-    const ae=req.headers['accept-encoding']||'', br=pageBr&&/\bbr\b/.test(ae), gz=!br&&/\bgzip\b/.test(ae);
+    const ae=req.headers['accept-encoding']||'', br=pageBr&&/\bbr\b/.test(ae), gz=!br&&pageGz&&/\bgzip\b/.test(ae);
     res.writeHead(200,Object.assign({'content-type':'text/html; charset=utf-8','cache-control':'no-cache','etag':pageTag,'vary':'accept-encoding'},br?{'content-encoding':'br'}:gz?{'content-encoding':'gzip'}:{}));
     res.end(br?pageBr:gz?pageGz:page); return; }
   if(req.url.startsWith('/audio/')&&(req.method==='GET'||req.method==='HEAD')){ serveAudio(req,res); return; }

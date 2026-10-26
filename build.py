@@ -153,6 +153,29 @@ def image_block():
 LEAN_PAGE = ''   # the page the Node host serves (build() fills it): dist/wildwood.html without the in-page world server
 
 
+WS_FLAG = '<script>window.WILDWOOD_WS=true;</script>\n</head>'   # what the Node host's page has before </head>: the start card then offers Log in / Register (start-screen.js)
+PAGE_TAG_LEN = 20   # characters of the page's sha1 in the name of its compressed copies (dist/page-<tag>.gz / .br); src/node/main.js asks for the same name
+
+
+def precompress(served):
+    """dist/page-<tag>.gz and .br: the Node host's page compressed once, here, so the server does not do it at every start (0.2 s of gzip and 0.5 s of brotli; seconds on a small
+    instance). The tag is a hash of the page, so a file that exists is the right one (main.js builds the same tag from the page it serves, and compresses itself when a file is missing).
+    tools/compress-page.js does the work (node has brotli, Python's standard library has not); without node the host compresses at its start as it always did."""
+    tag = hashlib.sha1(served.encode('utf-8')).hexdigest()[:PAGE_TAG_LEN]
+    prefix = os.path.join(ROOT, 'dist', 'page-' + tag)
+    for f in os.listdir(os.path.join(ROOT, 'dist')):   # (the pages of older builds)
+        if f.startswith('page-') and not f.startswith('page-' + tag + '.'):
+            os.unlink(os.path.join(ROOT, 'dist', f))
+    if '--no-bake' in sys.argv or not shutil.which('node') or (os.path.exists(prefix + '.gz') and os.path.exists(prefix + '.br')):
+        return
+    r = subprocess.run(['node', os.path.join(ROOT, 'tools', 'compress-page.js'), prefix], input=served.encode('utf-8'), capture_output=True, cwd=ROOT)
+    if r.returncode:
+        print('page compression failed, the server will compress the page itself:\n' + r.stderr.decode('utf-8', 'replace')[-400:])
+        for ext in ('.gz', '.br'):
+            if os.path.exists(prefix + ext):
+                os.unlink(prefix + ext)
+
+
 HB_PLACEHOLDER = 'var HB_BAKE=null;'   # in src/server/world.js
 HB_CACHE = os.path.join(ROOT, 'dist', 'heightbake.json')
 
@@ -218,10 +241,12 @@ def build(inline_audio=False):
     with open(OUT, 'w', encoding='utf-8') as f:
         f.write(page)
     node = ''.join(strip_header(read(os.path.join(SRC, 'node', f))) for f in manifest['node'])
+    served = lean.replace('</head>', WS_FLAG, 1)
     with open(SERVER_OUT, 'w', encoding='utf-8') as f:
         f.write('#!/usr/bin/env node\n/* Wildwood world server. Run: node wildwood-server.js [--port 8080] [--no-dev] */\n\'use strict\';\n'
-                'const PAGE=' + json.dumps(lean) + ';\n'
+                'const PAGE=' + json.dumps(served) + ';\n'
                 'function createWorldServer(io){\n' + server + '}\n' + node)
+    precompress(served)
     print('built %s (%.0f KB)' % (os.path.relpath(SERVER_OUT, ROOT), os.path.getsize(SERVER_OUT) / 1024))
     size = os.path.getsize(OUT)
     print('built %s (%.0f KB, %d game files, %d stylesheets)' % (os.path.relpath(OUT, ROOT), size / 1024, len(manifest['game']), len(manifest['styles'])))
