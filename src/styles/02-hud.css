@@ -21,6 +21,8 @@ body.playing .hud-top{ opacity:1; }
 .icon-btn:hover{ background:var(--glass-strong); }
 .icon-btn:focus-visible, .touch-btn:focus-visible{ outline:2px solid var(--lichen); outline-offset:2px; }
 .icon-btn svg{ width:22px; height:22px; }
+/* a portrait phone: nine 44 px buttons in a row are 460 px wide, wider than the screen (the camera button and most of the minimap fell off its right edge), so they sit as a 3x3 block beside the brand box */
+@media (max-width:520px){ .btns{ display:grid; grid-template-columns:repeat(3,42px); gap:6px; } .btns .icon-btn{ width:42px; height:42px; } }
 
 #hint{
   position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom,0px) + 22px); transform:translateX(-50%);
