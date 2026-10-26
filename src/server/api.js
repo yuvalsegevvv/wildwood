@@ -115,7 +115,7 @@ function receive(pid,msg){
     case 'accept': if(marketP(p)) acceptP(p,msg.id); break;
     case 'turnin': if(marketP(p)) turnInP(p,msg.id); break;
     case 'abandon': abandonP(p,msg.id); break;
-    case 'buyskill': buySkillP(p,msg.id); break;
+    case 'buyskill': if(marketP(p)) buySkillP(p,msg.id); break;
     case 'chat': chatP(p,msg.text); break;
     case 'name': renameP(p,msg.name); break;
     case 'eqskill': equipSkillP(p,msg.id,msg.idx); break;

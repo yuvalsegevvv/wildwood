@@ -138,7 +138,7 @@ ok('a position in another element than its single-element set needs a why',(()=>
   ok('which set a clear rewards: none at +0, the land\'s highest released set at or below the tier, never a dev set',s0===null&&s1.id==='real1'&&s4.id==='real1'&&v1.id==='grinder'&&x.ssSetFor('grey',3)===null); }
 
 // ---- a player: granting, wearing, counting ----
-inbox.a=[]; W.join('a',{name:'Tester',look:{cls:'mage'},save:{level:30}}); tick(1);
+inbox.a=[]; W.join('a',{name:'Tester',look:{cls:'mage'},save:{level:30}}); tick(1); W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); tick(1);   // (the trainer is in the village; the spawn point is outside it)
 const p=W.players.get('a'), own=id=>p.gear.skills.owned.includes(id);
 const send=m=>{ W.receive('a',m); tick(3); };
 const toasts=()=>evs.filter(e=>e[0]==='toast').map(e=>e[2]);

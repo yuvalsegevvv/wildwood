@@ -13,12 +13,15 @@ function accountCode(){
 function netHello(){
   NET.send&&NET.send(Object.assign({t:'hello',acct:accountCode(),name:NET.name||'Hiker',look:lookForNet(LOOK),save:{level:PL.level,exp:PL.exp,gear:GEAR}},NET.login||{}));
 }
+// one bad entry of a message (a monster model that throws, an event for a panel that is not there) must not drop the rest of it: the events after it are loot, toasts and quest updates. Logged 20 times, then every 1000th.
+let netErrN=0;
+function netEach(list,fn){ for(let i=0;i<list.length;i++){ try{ fn(list[i]); }catch(err){ if(++netErrN<=20||netErrN%1000===0) console.error(err); } } }
 const NETH=Object.create(null), EVH=Object.create(null), SNAPH=Object.create(null);   // dungeons: handler tables feature files fill: NETH.<message>=msg=>.., EVH.<event>=e=>.., SNAPH.<snapshot field>=value=>..
 function netHandle(msg){
   if(!msg||typeof msg!=='object') return;
   switch(msg.t){
     case 'welcome': onWelcome(msg); break;
-    case 'mons': (msg.list||[]).forEach(addMonView); break;
+    case 'mons': netEach(msg.list||[],addMonView); break;
     case 'you': applyYou(msg); break;
     case 'tp': dgOnTp(msg); caveOnTp(msg);   // cave: builds or tears down a floor's view before the move (cave/zone.js)
      P.x=msg.x; P.z=msg.z; P.inTun=inTunnelBore(P.x,P.z); P.y=getH(P.x,P.z); P.vx=P.vz=P.vy=0; P.face=P.yaw=msg.face; playerUp(); break;   // dungeons: dgOnTp builds or tears down the run's view (msg.dg) before the floor is read (dungeon/run.js)
@@ -41,11 +44,11 @@ function onWelcome(msg){
 function applySnap(msg){
   if(msg.day!=null) serverDay=msg.day;
   if(msg.pl) applyPlayers(msg.pl,msg.n);
-  if(msg.mo) msg.mo.forEach(applyMonSnap);
+  if(msg.mo) netEach(msg.mo,applyMonSnap);
   if(msg.b) applyBossState(msg.b); else pickBoss();   // (b is sent when it changes, not in every snapshot: the nearest boss still follows you at every one)
   if(msg.w) applyWeather(msg.w);
   for(const k in SNAPH) if(msg[k]!==undefined) SNAPH[k](msg[k]);   // dungeons: snapshot fields added by feature files (dg, ...)
-  if(msg.ev) msg.ev.forEach(applyEvent);
+  if(msg.ev) netEach(msg.ev,applyEvent);
 }
 function applyPlayers(pl,n){
   for(const a of pl){
