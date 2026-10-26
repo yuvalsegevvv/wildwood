@@ -16,7 +16,7 @@ function renderSymbol(){
   if(key===ztSymKey) return; ztSymKey=key;
   el.hidden=!pts; if(!pts) return;
   el.innerHTML=ZTIER_SYMBOL_LANDS.map(l=>`<i class="zs ${l}${zoneTierMax(GEAR,l)?'':' off'}">${ZTIER_ROMAN[zoneTierMax(GEAR,l)]}</i>`).join('')+`<span>+${Math.round(symbolBonus(GEAR)*100)}% ATK/HP</span>`;
-  el.title='Zone tier symbol: +'+Math.round(symbolBonus(GEAR)*100)+'% attack and health'+(symbolCapped(GEAR)?' (the most it gives for now)':'')+' ('+ZTIER_SYMBOL_LANDS.map(l=>ZTIER_NAMES[l]+' '+ZTIER_ROMAN[zoneTierMax(GEAR,l)]).join(', ')+')';
+  el.title='Zone tier symbol: +'+Math.round(symbolBonus(GEAR)*100)+'% attack and health'+' ('+ZTIER_SYMBOL_LANDS.map(l=>ZTIER_NAMES[l]+' '+ZTIER_ROMAN[zoneTierMax(GEAR,l)]).join(', ')+')';
 }
 // the row's height (it wraps on a phone) takes room from the map: when it changes the map is fitted again
 function fitTierRow(row){ const h=row.offsetHeight||0; if(h!==ztRowH){ ztRowH=h; sizeFullMap(); } }

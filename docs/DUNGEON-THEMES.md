@@ -375,7 +375,7 @@ this is it, in the framework the three others use (one theme file, one boss row 
 
 **The place.** An abandoned coal mine under **Highmark Pastures** (the Greyspine's zone 26): timbered drifts, ore carts, scalding slag vents and the lamps the foreman left burning. Theme `src/shared/dungeons/themes/blackseam.js`, land `grey`
 (`DG_LANDS.grey`: base +0, **needs the Greyspine walked into**: `gear.west` 2, which the ice fall opens when Ymrik falls, hint "Walk into Highmark..."). The land has **zone tiers** now (`ZTIER_LANDS`), so its dungeon rises +10 levels a tier like the Vale's and the Reach's: +0 ... +5 = 30 ... 80.
-The Greyspine's tier points count toward the zone-tier *symbol* (`ZTIER_SYMBOL_LANDS`, a fourth badge), but the symbol stops at +150% (`ZTIER_SYMBOL_CAP`, a placeholder: `docs/NOT-BUILT.md` section 3b), which keeps version 2's balance calibration (`boss-duel`) as it was.
+The Greyspine's tier points count toward the zone-tier *symbol* (`ZTIER_SYMBOL_LANDS`, a fourth badge), but the symbol stopped at +150% then (a cap, removed in version 3: `docs/areas/tiers.md`), which keeps version 2's balance calibration (`boss-duel`) as it was.
 
 **Tile kit** (nine designs; legend: `W` coal seam wall, `T` pit prop, `X` buttress (the hall's four), `K` ore cart, `D` keg stack, `L` mine lamp (a warm light), `c` coal heap, `r` rails, `s` slag vent (hazard `steam`, the Jade Springs' geyser warning),
 `G` guardian post):
