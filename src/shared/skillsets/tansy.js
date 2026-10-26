@@ -24,6 +24,9 @@ defineSkillSet({
        skill:{any:{name:'Bumper Crop', desc:'The widest ring of any skill goes out around you, then a swathe lingers for 2.5 seconds: it finishes what you gathered.', cd:36, range:11, mult:1.8, act:['tansy3x',0.9,0.6], anim:'nova',
                    fx:{vsBoss:0.5, ring:{r:11, kb:3}, zone:{r:8, dur:2.5, every:0.5, self:true}}}},
        passive:{name:'Second Basket', text:'A multi-kill (four enemies within 2 s) takes 4 s off Gather In\'s cooldown (at most every 6 s)', on:'kill', icd:6, streak:{n:4, secs:2}, cdr:{skill:4}}}},
+  ult:{name:'Harvest Moon', desc:'A full turn of the scythe under a rising moon: a 12 m ring drags every enemy to her and a sheaf of straw binds them.', range:12, mult:2.7, act:['tansyult',1.1,0.6], anim:'nova',
+       fx:{ring:{r:12, kb:-4}},
+       boost:[{piece:'a2', secs:14, mod:{size:1.4, cd:0.5}}, {piece:'p2', secs:14, mod:{v:2}}]},   // placeholder until the content batch (docs/ULT.md)
   bonus:{
     3:{name:'Windrow', text:'A kill takes 1 s off every cooldown (at most every 2 s)', on:'kill', icd:2, cdr:{all:1}},
     5:{name:'Full Basket', text:'While three or more enemies are within 8 m, every 4 s a shockwave rolls out 8 m for 80% damage', on:'tick', icd:4, when:{crowd:{n:3, r:8}}, mult:1.6, range:8, fx:{vsBoss:0.5, ring:{r:8, kb:2}}}},

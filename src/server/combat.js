@@ -7,6 +7,7 @@ const PROJS=[]; let nextProjId=1;
 function handleAttack(p,msg){
   if(p.dead||p.act) return;
   if(msg.k==='cave'){ caveCastP(p,msg); return; }   // cave: the 4th slot (server/cave.js)
+  if(msg.k==='ult'){ ultCastP(p,msg); return; }   // ult: the 5th slot, the set burst (server/ult.js)
   const k=SLOTS.includes(msg.k)?msg.k:'basic'; if(p.cd[k]>0.08) return;
   const cls=clsOfP(p), SK=skOfP(p), LV=p.pv?999:p.level, ab0=abilityOf(cls,k,SK,LV); if(!ab0) return;   // no skill equipped, or the slot is still locked; pvp: on the island the fixed loadout, every slot open
   const spd=bhSpeedP(p), hold=k==='basic'?bhReleaseP(p,cls):0, bcd=k==='basic'&&p.buff?p.buff.cd:1;   // basic-hold: skill 1 has no cooldown, its attack speed sets the pace; a hold releases a charged attack
@@ -191,6 +192,7 @@ function applyBuffS(p,a){
 function statusS(m,s,p,el,mult){
   if(m.pl){ pvpStatusS(m,s,p,el,mult); return; }   // pvp: a fighter's stun / slow / burn (server/pvp.js)
   if(m.dead||m.remove) return;
+  if(s.ult) ultStunS(m);   // ult: the burst's 5 s stun, bosses and heavy enemies included, once per enemy per 50 s (server/ult.js)
   if(s.stun&&!m.T.heavy&&!m.boss) m.stunT=Math.max(m.stunT||0,s.stun);
   if(s.slow) m.slowT=Math.max(m.slowT||0,s.slow);
   if(s.burn){ m.burnT=s.burn.dur; m.burnMult=mult*s.burn.k; m.burnBy=p.id; m.burnEl=el; m.burnTick=1; }

@@ -229,7 +229,9 @@ function defineSkillSet(D){
     set.pos[m.p]={slot:m.slot,bound:m.P.bound,from:{kind:m.p<3?'boss':'dungeon',id:src[m.p-1],chance:m.P.from&&m.P.from.chance,pity:m.P.from&&m.P.from.pity},ids,passive:pid,lv,el:m.el};
   }
   for(const t of [3,5]) set.bonus[t]=ssRow(bn[t],id+'_b'+t,{set:id,tier:t,slot:'bonus'},{el:hybrid?D.el[0]:D.el});
-  SS_SETS[id]=set; SS_ORDER.push(id); return set;
+  SS_SETS[id]=set; SS_ORDER.push(id);
+  if(D.ult!==undefined) ultDefine(id,D.ult,set.pos[3].el);   // ult: the set's burst skill (shared/ult.js); a bad one leaves only the burst out
+  return set;
 }
 // the worn pieces of each set for a class and a level: the three actives (as abilityOf resolves them) and the passives in the slots the level has opened
 function ssCount(skills,cls,level){

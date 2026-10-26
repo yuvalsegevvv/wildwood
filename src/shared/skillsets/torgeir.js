@@ -25,6 +25,9 @@ defineSkillSet({
        skill:{any:{name:'Hold the Line', desc:'Stamp the ground and hold: a taunt for 6 seconds (a boss\'s melee for half of that), 30% less damage taken and a shield worth 14% of health (and 3% more for each Fixation nearby) for you and your party for 8 seconds. Then it spends every Fixation nearby for extra damage, and a share of it heals you.', cd:40, range:8, mult:1.25, act:['torgeir3x',0.9,0.6], anim:'nova',
                    fx:{ring:{r:8, kb:6}, taunt:{dur:6, r:16}, ally:{kind:'guard', v:0.3, dur:8, r:20}, shield:{v:0.14, dur:8, r:20, perMark:{id:'fixation', v:0.03, r:10}}, pop:{id:'fixation', k:0.6, r:8, heal:0.4}}}},
        passive:{name:'Heavy Plate', text:'+{}% maximum health; you deal 10% less damage', stat:'hp', v:[0.10, 0.02], cost:{stat:'dmg', v:-0.10}}}},
+  ult:{name:'Unbroken Line', desc:'A ghost row of shields slams down in an 8 m cone in front of him and holds everything it stuns.', range:10, mult:1.9, act:['torgeirult',1.0,0.55], anim:'nova',
+       fx:{cone:{r:8, arc:0.8, kb:5}},
+       boost:[{piece:'a2', secs:12, mod:{util:2}}, {piece:'p2', secs:16, mod:{v:2.5}}]},   // placeholder until the content batch (docs/ULT.md)
   bonus:{
     3:{name:'First Contact', text:'The first taunt of a fight raises a shield worth 10% of your maximum health for 6 s (at most every 12 s)', on:'taunt', icd:12, shield:{v:0.10, dur:6}},
     5:{name:'Shattering Return', text:'When a shield of yours breaks or runs out, the earth answers: a burst 6 m round you that throws enemies back (at most every 5 s)', on:'shield', icd:5, mult:0.9, range:6, fx:{ring:{r:6, kb:8}}}},

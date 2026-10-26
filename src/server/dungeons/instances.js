@@ -55,7 +55,7 @@ function dgSnapS(p,msg){
   if(!DG_RUNS.size) return msg;
   const me=p.inst|0; msg.pl=msg.pl.filter(r=>{ const q=S.players.get(r[0]); return (q?q.inst|0:0)===me; });
   const run=dgRunOf(p); if(!run) return msg;
-  const B=run.boss; msg.b=B?[[B.m.id,B.engaged?1:0,B.phase,B.m.immune?1:0,B.enraged?1:0,B.stunT>0?1:0,B.aux,B.mode]]:[];   // the same row as bossState(), for the run's boss only
+  const B=run.boss; msg.b=B?[[B.m.id,B.engaged?1:0,B.phase,B.m.immune?1:0,B.enraged?1:0,B.stunT>0||B.ultStunT>0?1:0,B.aux,B.mode]]:[];   // the same row as bossState(), for the run's boss only
   msg.dg=dgHudS(run); return msg;
 }
 const DG_PHASE_CODE={objectives:0,boss:1,won:2,lost:3};

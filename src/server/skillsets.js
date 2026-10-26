@@ -21,7 +21,7 @@ function ssPieceIdsOf(setId,pos){ const S=SS_SETS[setId], P=S&&S.pos[pos]; retur
 function ssGrantP(p,setId,pos,quiet){
   const own=p.gear.skills.owned; let n=0;
   for(const id of ssPieceIdsOf(setId,pos)) if(!own.includes(id)){ own.push(id); n++; }
-  if(n){ p.dirty=true; if(!quiet) ev('ssget',p.id,setId,pos); }
+  if(n){ p.dirty=true; if(!quiet) ev('ssget',p.id,setId,pos); ultCheckP(p); }   // ult: three of the set's seven pieces grant its burst
   return n;
 }
 /* ---- where a set comes from (M3, docs/SKILL-SETS.md section 7): the rolls ---- */
