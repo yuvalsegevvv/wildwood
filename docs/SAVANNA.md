@@ -13,7 +13,7 @@ The seventh land: a golden savanna of wide skies, waterholes and herds south of 
 | Zones | `a37`..`a45`, one level each: Ashbed, Tallgrass Meadows, Seven Pools, Termite Cathedrals, Anvil Rock (boss), Burnt Plain, Baobab Reach, Sedge Delta, Sunstair (boss). Two monsters a level, 18 in all. |
 | Seasons | **Greenfall** (wet, green grass, storms) and **Goldfall** (dry, gold grass, heat haze, smoke) alternate every three game days (a two-hour cycle) from the day counter every client already has; only the look and the rain change, never stats or drops. |
 | Bosses | **Old Thunder, the Anvilwing** (41; lightning lines, grass fires, gusts, the dive, spark wisps, the eye of calm) and **Oldhorn, the Herd-Mother** (45; calf stampede lanes, tusk sweeps, rings, grey floor patches cleansed by killing the carriers). 12 boss skills (2 per class per boss). Oldhorn's fall opens the zone tier. |
-| Zone tier | `amber` joins `ZTIER_LANDS`, opened by Oldhorn; not in the symbol (as the Sunscar and Gloamhorn). |
+| Zone tier | `amber` joins `ZTIER_LANDS`, opened by Oldhorn; in the symbol as its seventh badge (`ZTIER_SYMBOL_LANDS`, `.zs.amber`); the cap is still +420%. |
 | Dungeon | **The Termite Cathedral** (boss Queen Ortha, level 45 at +0, enter from 42, pays level-40 rings with three rolled lines). |
 | Raid | **The Broken Moot** (seventh stronghold, material the Moot Bead). |
 | Kin | Ears, tails, muzzles, horns, a mane, fur colours and markings are optional features **every player** can pick from the first minute (no races). Some are free, some crafted at a Wayfarers' Lodge, some belong to an outfit set. |

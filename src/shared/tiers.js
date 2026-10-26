@@ -10,11 +10,11 @@
    and the cap is a PLACEHOLDER (docs/NOT-BUILT.md section 3b): the level-60 hero of tools/boss-duel.js (docs/areas/tiers.md) was tuned with three lands' fifteen points (+150%), and with the
    Greyspine's five on top (+200%) that hero beats the tier V bosses standing still, so the symbol stopped at +150%. Version 3: six lands x seven tiers = 42 points = +420% (the owner's "x4.2 from symbols, for now"), ZTIER_SYMBOL_CAP is that whole sum and the one number to change. "Tier" alone means the gear tiers 0-5 elsewhere
    in the code (tierFor, TIER_ATK): these are zone tiers, hence the zoneTier / ZTIER_ names. */
-// Amber Reach (the seventh land) is a tier land too, opened by Oldhorn, but is NOT in ZTIER_SYMBOL_LANDS (the symbol stays at the six lands' 42 points, as the Sunscar's and the Gloamhorn's did when they came)
+// Amber Reach (the seventh land) is a tier land too, opened by Oldhorn, and its badge is the symbol's seventh (ZTIER_SYMBOL_LANDS): seven lands x seven tiers are 49 points, but ZTIER_SYMBOL_CAP stays the owner's +420% until he sets it (symbolCapped says when a hero is past it)
 // tiers VI and VII (version 3) came with the level-40 gear and the Sunscar's and the Gloamhorn's symbols; their tiers count toward the symbol like the others
 // tiers IV and V were added for the power the level-30 dungeon gear and its enhancements bring; what a kill pays is damped above level 60 (PAY_LV in balance.js)
-const ZTIER_STEP=10, ZTIER_MAX=7, ZTIER_BONUS=0.10, ZTIER_SYMBOL_CAP=4.2;   // (version 3: seven tiers in six lands = 42 points = +420%, the symbol's "x4.2"; the cap is the whole of it and is the number to tune, a placeholder)
-const ZTIER_LANDS=['home','vale','hoar','grey','sun','gloam','amber'], ZTIER_SYMBOL_LANDS=['home','vale','hoar','grey','sun','gloam'];   // (the lands whose unlocked tiers count toward the symbol: a land left out of this list keeps its tiers but adds nothing)
+const ZTIER_STEP=10, ZTIER_MAX=7, ZTIER_BONUS=0.10, ZTIER_SYMBOL_CAP=4.2;   // (version 3: seven tiers in six lands were 42 points = +420%, the symbol's "x4.2"; with the Amber Reach's badge the points reach 49 and the cap, still 4.2, is the number to tune: 4.9 would be the whole sum; a placeholder)
+const ZTIER_LANDS=['home','vale','hoar','grey','sun','gloam','amber'], ZTIER_SYMBOL_LANDS=['home','vale','hoar','grey','sun','gloam','amber'];   // (the lands whose unlocked tiers count toward the symbol: a land left out of this list keeps its tiers but adds nothing)
 const ZTIER_NAMES={home:'the home forest',vale:'the Sakura Vale',hoar:'the Hoarfrost Reach',grey:'the Greyspine',sun:'the Sunscar',gloam:'the Gloamhorn',amber:'Amber Reach'};
 const ZTIER_ROMAN=['0','I','II','III','IV','V','VI','VII'];
 // the second boss of each land (BOSS_DEFS lists a land's two bosses in the order of their levels): Carapax on the beach, Kyuubi, Vetrmaw, the Mountain Golem
