@@ -335,17 +335,19 @@ const SMALLTALK6=['The tide brings things in at night. We do not look at them un
 const NPCs=[];
 let talkNPC=null, nearNPC=null;
 function npcById(id){ return NPCs.find(n=>n.def.id===id); }
-const vilOf=n=>VILS[(n.def.vil||1)-1];
+const vilOf=n=>n.V||(n.def.site?wildSiteOf(n.def.site):VILS[(n.def.vil||1)-1]);
 function anchorOf(name,V){ V=V||VIL; return V.anchors[name]||V.anchors.plaza0; }
 function randomPOI(n){ const V=vilOf(n); let p; for(let i=0;i<6;i++){ p=V.pois[Math.floor(Math.random()*V.pois.length)]; if(Math.hypot(p.x-n.x,p.z-n.z)>3) break; } return {x:p.x+AR(-0.6,0.6),z:p.z+AR(-0.6,0.6),face:p.face}; }
 function spawnNPC(def,rng){
-  const look=randomLook(rng||Math.random,{villager:true,base:def.look});
+  let look=randomLook(rng||Math.random,{villager:true,base:def.look});
+  const outfit=def.outfit||VILLAGERS_OUTFIT_WEAR[def.id];   // a signature set worn whole (village/villagers-outfits.js); light mode keeps plain clothes
+  if(outfit&&!LITE) look=npcOutfitLook(look,outfit);
   if(def.kin){ look.sex=LOOK.sex; look.hairColor=LOOK.hairColor; look.skin=new THREE.Color(LOOK.skin||0xe0b894).lerp(new THREE.Color(0x9a9a98),0.35).getHex(); }   // your family, greyed by the sickness
   const rig=buildCharacter(look,{q:charDetail('npc')}), s=lookScale(look);
   rig.root.scale.setScalar(s);
   const g=new THREE.Group(); g.add(rig.root); scene.add(g);
   const B=def.behavior||{type:'wander'}; def.behavior=B;
-  const V=VILS[(def.vil||1)-1];
+  const V=def.site?wildSiteOf(def.site):VILS[(def.vil||1)-1];
   const start=B.at?anchorOf(B.at,V):(B.route?anchorOf(B.route[0],V):randomPOI({def,x:V.x+99,z:V.z}));
   const n={def,V,look,rig,g,scale:s,x:start.x,z:start.z,y:V.h,face:start.face||0,faceGoal:start.face,vx:0,vz:0,walk:0,state:'idle',timer:AR(0.5,4),
     route:[],inside:false,headYaw:0,line:0,pi:0,stuckT:0,sx:start.x,sz:start.z,partner:null,seed:Math.random()*10};
@@ -354,7 +356,7 @@ function spawnNPC(def,rng){
 }
 function initNPCs(){
   const rng=mulberry32(9001);
-  const defs=VILLAGERS.filter(v=>!LITE||v.role);   // light mode keeps everyone with a job
+  const defs=VILLAGERS.concat(VILLAGERS_OUTFIT).filter(v=>!LITE||v.role);   // light mode keeps everyone with a job
   const used=new Set();
   for(const vil of [1,2]) for(let i=0;i<FILLER_COUNT;i++){
     const sex=rng()<0.5?'male':'female', pool=vil===2?(sex==='male'?NAMES_M2:NAMES_F2):(sex==='male'?NAMES_M:NAMES_F), talk=vil===2?SMALLTALK2:SMALLTALK;
@@ -407,8 +409,8 @@ function initNPCs(){
       defs.push({id:'villagert'+i,vil:7,late:true,seed:i+81,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
     } }
   defs.filter(d=>!d.late).forEach(d=>spawnNPC(d,rng));
-  defs.filter(d=>d.late&&(d.vil||1)<3).forEach(d=>spawnNPC(d,mulberry32(9002+(d.seed||0))));
-  NPC_DEFER.push(...defs.filter(d=>d.late&&(d.vil||1)>=3));   // Rimehold's, Highmark's, Glasswell's, Wraithwick's and Tallgrass's people: built in the background (below)
+  defs.filter(d=>d.late&&(d.vil||1)<3&&!d.outfit).forEach(d=>spawnNPC(d,mulberry32(9002+(d.seed||0))));
+  NPC_DEFER.push(...defs.filter(d=>d.late&&((d.vil||1)>=3||d.outfit)));   // Rimehold's, Highmark's, Glasswell's, Wraithwick's and Tallgrass's people: built in the background (below)
 }
 /* Half of the villagers (36 of 74, ~36 ms each) live in the Hoarfrost Reach and the Greyspine, far from where the game starts. They are built after the loading screen,
    one a slice, by the stream scheduler (job 'n', streaming.js) when nothing nearer is waiting. Each has an rng of its own (mulberry32(9002+seed)), so building them

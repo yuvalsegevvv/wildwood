@@ -386,6 +386,7 @@ game
   village/buildings-gloam.js         The Gloamhorn's buildings and dressing: Wraithwick (dark stone cottages, crooked lamps, cairns, a chapel), the Gloam Light, wrecks, sea-cave mouths, the Captain's hold, and standing stones (the Gloamvault's door is game/village/buildings-dungeon-gloam.js)
   village/buildings-savanna.js       Amber Reach's buildings: Tallgrass (round mud-brick huts under thatch, reed-awned stalls, torch posts, drums), the Moot Baobab at its heart (a hollow tree wide as a hall, a platform and rope bridges in its crown), the gate posts and the reed landing
   village/villagers.js               VILLAGERS (hard-coded NPCs of the three villages), random villagers, NPC behaviour (updateNPCs)
+  village/villagers-outfits.js       The signature outfit characters in the world (VILLAGERS_OUTFIT, WILD_SITES, npcOutfitLook): each set's wearer stands in the village or the wild spot that fits their theme
   village/smalltalk-savanna.js       Small talk of Tallgrass (SMALLTALK7): what the Kin say when you pass, hints with two readings and no names from anywhere else
   village/smith.js                   Villager life: the forge keepers at work (a hammer, three blows then a pause, sparks and a clang when you are near) and a wave for a player who walks up
   village/talking.js                 Talking to villagers: bubble, prompt, talk key (E), the main quest's lines first, opening shop/quest panels; reading lore spots, picking heartleaf; stepping on a teleport circle
