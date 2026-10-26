@@ -109,11 +109,11 @@ function receive(pid,msg){
     case 'equip': equipP(p,msg.id); break;
     case 'unequip': unequipP(p,msg.slot); break;
     case 'cls': equipClassP(p,msg.cls); break;
-    case 'buy': buyP(p,msg.id); break;
-    case 'sell': sellP(p,msg.id); break;
-    case 'merge': mergeP(p,msg.id); break;
-    case 'accept': acceptP(p,msg.id); break;
-    case 'turnin': turnInP(p,msg.id); break;
+    case 'buy': if(marketP(p)) buyP(p,msg.id); break;
+    case 'sell': if(marketP(p)) sellP(p,msg.id); break;
+    case 'merge': if(marketP(p)) mergeP(p,msg.id); break;
+    case 'accept': if(marketP(p)) acceptP(p,msg.id); break;
+    case 'turnin': if(marketP(p)) turnInP(p,msg.id); break;
     case 'abandon': abandonP(p,msg.id); break;
     case 'buyskill': buySkillP(p,msg.id); break;
     case 'chat': chatP(p,msg.text); break;
@@ -122,7 +122,7 @@ function receive(pid,msg){
     case 'unskill': unequipSkillP(p,msg.cls,msg.slot||'skill',msg.idx); break;
     case 'upskill': upgradeSkillP(p,msg.id); break;
     case 'soul': bindSoulP(p,msg.el); break;
-    case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<LOOK_MAX){ const L=cleanLookS(msg.look); if(Object.keys(L).length){ p.look=cosCleanLook(L,p.gear.cos); p.saveDirty=true; ev('plook',p.id,p.look); } } break;
+    case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<LOOK_MAX){ const L=cleanLookS(msg.look); if(Object.keys(L).length){ p.look=ambCleanLook(cosCleanLook(L,p.gear.cos),p.gear.os); p.saveDirty=true; ev('plook',p.id,p.look); } } break;
     case 'warp': warpP(p,typeof msg.to==='string'?msg.to:undefined); break;
     case 'mq': mqMsgP(p,msg); break;
     case 'learn': learnProfP(p,msg.id); break;

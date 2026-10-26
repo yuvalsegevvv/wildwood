@@ -12,9 +12,9 @@ const VIL7=(()=>{
 VIL7.name='Tallgrass';
 VILS.push(VIL7);
 CIRCLES.push({id:'tallgrass',name:'Tallgrass',land:'Amber Reach',lv:'37-45',V:VIL7,open:g=>g.tall>=2,hint:'Walk into Tallgrass through the Ashbed Gate first'});
-const TG_BAOBAB={x:VIL7.x,z:VIL7.z,r:3.2};   // the Moot Baobab's trunk, at the village's heart where the home village has its well: the well's collider grows to the trunk and its two anchors step out to the roots
+const TG_BAOBAB={x:VIL7.x,z:VIL7.z,r:4.2};   // the Moot Baobab's trunk, at the village's heart where the home village has its well: the well's collider grows to the trunk and its two anchors step out to the roots. The model's belly reaches 3.7 m and its root flare 5 m at the ground, so 4.2 keeps a hiker out of both (the anchors stay 5.4 m out)
 { const c=VIL7.circles.find(q=>q[0]===VIL7.x&&q[1]===VIL7.z); if(c) c[2]=TG_BAOBAB.r;
-  for(const k of ['well','well:far']){ const A=VIL7.anchors[k], a=Math.atan2(A.x-VIL7.x,A.z-VIL7.z); A.x=VIL7.x+Math.sin(a)*(TG_BAOBAB.r+2.2); A.z=VIL7.z+Math.cos(a)*(TG_BAOBAB.r+2.2); } }
+  for(const k of ['well','well:far']){ const A=VIL7.anchors[k], a=Math.atan2(A.x-VIL7.x,A.z-VIL7.z); A.x=VIL7.x+Math.sin(a)*5.4; A.z=VIL7.z+Math.cos(a)*5.4; } }
 const TG_LANDING=(()=>{   // the nearest water edge to the village within 120 m: the foot of the jetty (on the shore) and its heading out over the water
   const wet=(x,z)=>waCoast(x,z)<0||baseHeight(x,z)<1.2;
   let best=null;

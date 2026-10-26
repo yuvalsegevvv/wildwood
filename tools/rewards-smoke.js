@@ -4,13 +4,13 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const io={dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }};
-const NAMES=['MONS','ITEM','ITEM_LIST','TOOL_LIST','dgAllIds','dgItem','dgGearId','dgRingId','sanitizeGear','soulOfP','monK','rewardKill','dgGrantItemP','dgTemperP','VIL2','ENH_LV','ENH_DROP','ENH_NAME','ENH_MAX','DG_STONE_MAX','BAG_MAX','sellPrice','mergedId','effectiveLookOf','ARMOR_LOOK','clsOfP','gearStatsOf','recalcP','symbolBonus','RING_ELS','ALL_SLOTS','ELEM_LIST','newGearFor','fLv','defRed','RED_KNEE','RED_CAP','DEF_KNEE','DMG_TAKEN_MIN','setDef','expRed','tierFor','hurtP','DG_ATK','TIER_ATK','ENH_STEP','ARMOR_SLOTS','SKILLS','POT_BUFF','S','psP','recalcP'];
+const NAMES=['MONS','ITEM','ITEM_LIST','TOOL_LIST','dgAllIds','dgItem','dgGearId','dgRingId','sanitizeGear','soulOfP','monK','rewardKill','dgGrantItemP','dgTemperP','VIL','getH','VIL2','ENH_LV','ENH_DROP','ENH_NAME','ENH_MAX','DG_STONE_MAX','BAG_MAX','sellPrice','mergedId','effectiveLookOf','ARMOR_LOOK','clsOfP','gearStatsOf','recalcP','symbolBonus','RING_ELS','ALL_SLOTS','ELEM_LIST','newGearFor','fLv','defRed','RED_KNEE','RED_CAP','DEF_KNEE','DMG_TAKEN_MIN','setDef','expRed','tierFor','hurtP','DG_ATK','TIER_ATK','ENH_STEP','ARMOR_SLOTS','SKILLS','POT_BUFF','S','psP','recalcP'];
 const {api:W,x}=loadServer(io,NAMES);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const toastsOf=(pid,from)=>evs.slice(from||0).filter(e=>e[0]==='toast'&&e[1]===pid).map(e=>e[2]);
-const join=(pid,level,cls)=>{ inbox[pid]=[]; W.join(pid,{name:'T'+pid,look:{cls:cls||'warrior'},save:{level}}); tick(1); return W.players.get(pid); };
+const join=(pid,level,cls)=>{ inbox[pid]=[]; W.join(pid,{name:'T'+pid,look:{cls:cls||'warrior'},save:{level}}); W.setPos(pid,[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); tick(1); return W.players.get(pid); };   // (in the village: the shops and the forge refuse a hiker in the field)
 const give=(p,...ids)=>{ for(const id of ids) p.gear.inv.push(id); };
 const send=(pid,msg)=>{ const n=evs.length; W.receive(pid,msg); tick(3); return n; };   // returns where this message's events start in evs
 const near=(a,b,e)=>Math.abs(a-b)<=(e||0.01);
