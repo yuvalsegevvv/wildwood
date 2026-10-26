@@ -119,23 +119,25 @@ function skEquip(id,idx){
 const SKD={src:null,on:false,ghost:null,x0:0,y0:0,pid:null,just:false,t0:0,pending:false};   // pending: a redraw that had to wait for the drag to end
 function skTarget(x,y){
   const el=document.elementFromPoint(x,y); if(!el) return null;
-  const sl=el.closest('.sk-slot'); if(sl) return sl.dataset.caveslot?{cave:true,el:sl}:{slot:sl.dataset.slot,el:sl};   // cave: the 4th slot's row
+  const sl=el.closest('.sk-slot'); if(sl) return sl.dataset.caveslot?{cave:true,el:sl}:sl.dataset.ultslot?{ult:true,el:sl}:{slot:sl.dataset.slot,el:sl};   // cave, ult: the 4th and 5th slots' rows
   const ps=el.closest('.sk-pslot'); if(ps) return {idx:+ps.dataset.idx,el:ps};
   const area=el.closest('.sk-area'); if(area) return {area:true,el:area};
   return null;
 }
 // a tile out of the grid goes onto its own slot; a tile out of a slot goes back to the grid
-const skDragDef=src=>src.cave?caveSkillDef(src.id):skillDef(src.id);   // cave: a cave tile (data-cave) drags its cave skill
+const skDragDef=src=>src.cave?caveSkillDef(src.id):src.ult?ultDef(src.id):skillDef(src.id);   // ult: a burst tile (data-ult)
+   // cave: a cave tile (data-cave) drags its cave skill
 function skCanDrop(src,tg){
   if(!tg) return false; const s=skDragDef(src);
+  if(src.ult) return src.from==='grid'?!!tg.ult:!!tg.area;   // ult: a burst goes on the 5th slot, and back to the grid off it
   if(src.cave) return src.from==='grid'?!!tg.cave:!!tg.area;   // cave: a cave skill goes on the 4th slot, and back to the grid off it
   if(src.from==='grid') return s.slot==='passive'?tg.idx!==undefined&&tg.idx<passiveOpen(PL.level):tg.slot===s.slot;
   return !!tg.area;
 }
 function skDown(e){
-  const t=e.target.closest('.sk-tile[data-id],.sk-tile[data-cave][data-from]'); if(!t||e.button>0) return;   // cave: a cave tile too
+  const t=e.target.closest('.sk-tile[data-id],.sk-tile[data-cave][data-from],.sk-tile[data-ult][data-from]'); if(!t||e.button>0) return;   // cave: a cave tile too
   if(SKD.src) skCancel();   // a drag that never ended (a missed pointerup)
-  SKD.src=t.dataset.cave?{id:t.dataset.cave,from:t.dataset.from,cave:true}:{id:t.dataset.id,from:t.dataset.from}; SKD.on=false; SKD.x0=e.clientX; SKD.y0=e.clientY; SKD.pid=e.pointerId; SKD.t0=performance.now(); SKD.pending=false;
+  SKD.src=t.dataset.ult?{id:t.dataset.ult,from:t.dataset.from,ult:true}:t.dataset.cave?{id:t.dataset.cave,from:t.dataset.from,cave:true}:{id:t.dataset.id,from:t.dataset.from}; SKD.on=false; SKD.x0=e.clientX; SKD.y0=e.clientY; SKD.pid=e.pointerId; SKD.t0=performance.now(); SKD.pending=false;
   try{ t.setPointerCapture(e.pointerId); }catch(_){}   // the pointerup arrives even if the pointer ends up outside the window
   addEventListener('pointermove',skMove,{passive:false}); addEventListener('pointerup',skUp); addEventListener('pointercancel',skCancel); addEventListener('blur',skCancel);
 }
@@ -144,12 +146,13 @@ function skMove(e){
   if(!SKD.on){
     if(Math.hypot(e.clientX-SKD.x0,e.clientY-SKD.y0)<7) return;
     SKD.on=true; const s=skDragDef(SKD.src);
-    SKD.ghost=document.createElement('div'); SKD.ghost.className='drag-ghost sk-ghost'; SKD.ghost.style.borderColor=elOf(s)==='basic'?'':ELEMS[elOf(s)].col; SKD.ghost.innerHTML=skIconOf(s); if(ssTint(s)){ SKD.ghost.classList.add('has-set'); SKD.ghost.style.setProperty('--set',ssTint(s)); } document.body.append(SKD.ghost);
+    SKD.ghost=document.createElement('div'); SKD.ghost.className='drag-ghost sk-ghost'; SKD.ghost.style.borderColor=elOf(s)==='basic'?'':ELEMS[elOf(s)].col; SKD.ghost.innerHTML=SKD.src.ult?`<svg ${SS_ICON_ATTR}>${ssGlyph(s)||''}</svg>`:skIconOf(s); if(ssTint(s)){ SKD.ghost.classList.add('has-set'); SKD.ghost.style.setProperty('--set',ssTint(s)); } document.body.append(SKD.ghost);
     document.body.classList.add('dragging');
-    if(SKD.src.cave&&SKD.src.from==='grid'){ const c=document.querySelector('#skills .sk-slot.cave'); if(c) c.classList.add('can'); }   // cave: the 4th slot
+    if(SKD.src.ult&&SKD.src.from==='grid'){ const c=document.querySelector('#skills .sk-slot.ult'); if(c) c.classList.add('can'); }   // ult: the 5th slot
+    else if(SKD.src.cave&&SKD.src.from==='grid'){ const c=document.querySelector('#skills .sk-slot.cave'); if(c) c.classList.add('can'); }   // cave: the 4th slot
     else if(SKD.src.from==='grid'){ document.querySelectorAll(s.slot==='passive'?'#skills .sk-pslot:not(.locked)':`#skills .sk-slot[data-slot="${s.slot}"]`).forEach(x=>x.classList.add('can')); }
     else { const a=document.querySelector('#skills .sk-area'); if(a) a.classList.add('can'); }
-    const lifted=document.querySelector(`#skills .sk-tile[${SKD.src.cave?'data-cave':'data-id'}="${SKD.src.id}"][data-from="${SKD.src.from}"]`); if(lifted) lifted.classList.add('lifted');
+    const lifted=document.querySelector(`#skills .sk-tile[${SKD.src.ult?'data-ult':SKD.src.cave?'data-cave':'data-id'}="${SKD.src.id}"][data-from="${SKD.src.from}"]`); if(lifted) lifted.classList.add('lifted');
     UI_SFX.click();
   }
   e.preventDefault();
@@ -175,6 +178,7 @@ function skUp(e){
 }
 // what dropping a tile there does; anything refused says why
 function skDrop(src,tg){
+  if(src.ult){ ultDrop(src,tg); return; }   // ult: game/ult/slot.js
   if(src.cave){ caveDrop(src,tg); return; }   // cave: game/cave/slot.js
   const s=skillDef(src.id); if(!tg) return;
   if(src.from==='grid'){
