@@ -1,7 +1,7 @@
 //@ The Deep Cave's place in the world: the floor registry (defineCaveFloor), where each floor lies (fixed squares east of the dungeon run slots), the floor under a point, its baked map, walking and height queries, the lifts and the floors a hiker may take. Pure.
 /* Agent map. Doc: docs/CAVE.md section 14. Test: tools/cave-smoke.js. Floor rows: shared/cave/floor-<n>-<id>.js. The map itself is made by shared/cave-gen.js.
    exports: CAVE_FLOOR_DEFS (n -> row), CAVE_FLOOR_N (the floor numbers in order), CAVE_FLOOR_BAD ({id, why}), defineCaveFloor(def), caveFloorDef(n), CAVE_X0, CAVE_Z0, CAVE_SPACING, CAVE_SIZE, caveFloorOrigin(n) -> {x,z},
-            caveFloorAt(x,z) -> floor n or -1, caveBake(n) -> B (cached), caveGroundY(x,z), caveLocal(n,x,z), caveWorld(n,x,z), caveFree(x,z,r), caveSlide(ox,oz,nx,nz,r), caveLos(x0,z0,x1,z1), caveWallAt(x,z),
+            caveFloorAt(x,z) -> floor n or -1, caveBake(n) -> B (cached), caveGroundY(x,z), caveFree(x,z,r), caveSlide(ox,oz,nx,nz,r), caveLos(x0,z0,x1,z1), caveWallAt(x,z),
             caveLiftOf(n) -> {x,z,r} (n = 0: the mouth's), caveArrival(n) -> {x,z,face}, caveFloorOpen(p,n), caveLiftRefusal(p,n) -> a refusal text or '', CAVE_FLOOR_Y (a floor's base height).
    users: server/world.js getH, server/cave-zone.js (setPos, the lift, camps), game/cave/*.js, game/world/heightmap.js getH, tools/cave-smoke.js.
    WHERE THE FLOORS LIVE (decided in C1): in the same world, as FIXED squares east of the dungeon run slots (x from CAVE_X0), one per floor, CAVE_SPACING apart in z. Not an instanced run: nobody is
@@ -37,8 +37,6 @@ function caveFloorAt(x,z){
 }
 const CAVE_BAKES=Object.create(null);
 function caveBake(n){ if(CAVE_BAKES[n]===undefined){ const F=caveFloorDef(n); CAVE_BAKES[n]=F?caveGen(F):null; } return CAVE_BAKES[n]; }
-const caveLocal=(n,x,z)=>{ const o=caveFloorOrigin(n); return [x-o.x,z-o.z]; };
-const caveWorld=(n,x,z)=>{ const o=caveFloorOrigin(n); return [o.x+x,o.z+z]; };
 // the floor's height under a point: the base plus the baked corner heights (bilinear); outside a floor (or while no floor is defined) the dungeons' flat 10 m
 function caveGroundY(x,z){
   const n=caveFloorAt(x,z); if(n<0) return DG_FLOOR_Y;

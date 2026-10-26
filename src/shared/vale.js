@@ -36,20 +36,6 @@ for(let k=16;k<=25;k++) zoneOfAtlas(WA_ZONES.find(A=>A.land==='vale'&&A.key===k)
 function valeZoneAt(x,z){ return atlasZoneAt(x,z); }   // (the vale's zones and the home forest's are read the same way: zones.js)
 
 /* ---- boss arenas: flat clearings like the stone circle, each at the atlas's poi: ARENA the Stone Circle (home zone 15), ARENA20 the Demon Gate (Akaoni, in zone 20), ARENA25 the Foxfire Hollow (Kyuubi, in zone 25) ---- */
-// the flattest spot within span of (cx, cz), on dry land clear of the coast, a land border, a river or a lake (for the lands that have not placed their arenas on the atlas's pois yet)
-function flatSpot(cx,cz,span){
-  let best=null;
-  for(let dx=-span;dx<=span;dx+=10) for(let dz=-span;dz<=span;dz+=10){
-    const x=cx+dx, z=cz+dz;
-    if(waCoast(x,z)<60||waLandBorderDist(x,z)<50||waWaterDist(x,z)<28) continue;
-    let mn=1e9,mx=-1e9,sum=0,c=0;
-    for(let rr=0;rr<=22;rr+=11) for(let j=0;j<8;j++){ const b=j/8*TAU, h=baseHeight(x+Math.sin(b)*rr,z+Math.cos(b)*rr); mn=Math.min(mn,h); mx=Math.max(mx,h); sum+=h; c++; }
-    const mean=sum/c; if(mean<1.2) continue;
-    const score=mx-mn+Math.hypot(dx,dz)*0.05;
-    if(!best||score<best.score) best={x,z,h:mean,score};
-  }
-  return best||{x:cx,z:cz,h:Math.max(4,baseHeight(cx,cz))};
-}
 const ARENA20=Object.assign(arenaAtPoi(poiNamed('Demon Gate')),{r:20,key:'boss20',name:'Demon Gate'});
 const ARENA25=Object.assign(arenaAtPoi(poiNamed('Foxfire Hollow')),{r:20,key:'boss25',name:'Foxfire Hollow'});
 ARENA.name='The Stone Circle';

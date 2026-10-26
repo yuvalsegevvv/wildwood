@@ -14,10 +14,8 @@ const edSub=[0,0,0,0];
 const edEl=$('#editor'), edTabs=$('#edTabs'), edSubs=$('#edSubs'), edBody=$('#edBody');
 const cam={d:3,h:1.2,l:0.95};
 const ED_PAL_NAMES=['Main colour','Second colour','Third colour','Fourth colour'];
-const EDSIZE=k=>({k,label:'',type:'color',opts:TINTC});
 // one grid row: a picture tile per choice (v = the value, spec = what to draw, null = a crossed circle, cap = an optional tiny caption)
 const edHair=()=>[['bald'],['buzz'],['short'],['messy'],['spiky'],['curly'],['bob'],['long'],['ponytail'],['twintail'],['braid'],['bun']].concat(ofItems('hair'));
-const edGrid=(k,kind,ids,o)=>Object.assign({type:'grid',k,kind,ids,colKey:null},o||{});
 const EDIT=[
   {tab:'Presets', subs:[
     {name:'Outfit sets', rows:[{type:'sets'}]},
@@ -189,7 +187,6 @@ function sliderRow(wrap,row){
   inp.onchange=releaseLook;
   box.append(a,track,b); wrap.append(box,warn);
 }
-function edCaption(txt){ const lb=document.createElement('div'); lb.className='ed-label'; lb.textContent=txt; return lb; }
 function renderEditor(){
   const keepKey=edTab+':'+edSub[edTab], keepTop=edBody.scrollTop, same=edBody.dataset.at===keepKey;
   edTabs.innerHTML=''; edSubs.innerHTML='';

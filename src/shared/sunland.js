@@ -5,7 +5,7 @@
    Data and tests: SUN_CITY / SUN_BASE (the Bowl's centre, its floor and the skirt's level), SUN_PASS + sunPassX(z) (the River Pass: the atlas road from the Greyspine to the gate, x by z; z > 300: the Amber link's x),
    SUN_RED (Redgate Canyon, dir 'e') and SUN_AMBER (the Ashbed Gate into Amber Reach, dir 's', opened by the Sand Wyrm like Redgate: gear.amber) pushed to GREY_GATES with the River Pass's record (greyspine.js); sunWallHold / sunCrestHold (the borders while Redgate
    / the River Pass are shut, from the old frame's names: the callers are the client's worldBounds and the server's setPos), sunKeepOut (camps, nodes, plants), sunMesaH / sunDuneK / sunPanK / sunGlassK /
-   sunGreenK (colour weights and plant rules read by game/world/ and professions.js), sunColorK (the Sunscar's share of a point's colour), sunWaterSurf / sunWet (the Bowl's own lake and river, the only water the
+   sunGreenK (colour weights and plant rules read by game/world/ and professions.js), sunWaterSurf (the Bowl's own lake and river, the only water the
    Sunscar has: the border river is the atlas's), SUN_DG_DOOR (the Sandglass's door at WA_POIS), sunHook (an old name, a no-op). Used by glasswell.js (VIL5), sunzones.js, game/village/buildings-sunscar.js,
    terrain-color-sun.js, dungeons.js. Test: node tools/sunscar-smoke.js. Names: sun..., SUN_...
    Where it is (the atlas, shared/world-atlas.js): land id 4 'sun' south of the Greyspine and the Gloamhorn (the Glass River is the border with the Gloamhorn, no water of its own), west of the home forest's Sunwall,
@@ -128,17 +128,14 @@ function sunGlassK(x,z){
   for(const G of SUN_GLASS){ const dx=x-G.x; if(dx>G.r+24||dx<-G.r-24) continue; const dz=z-G.z; if(dz>G.r+24||dz<-G.r-24) continue; k=Math.max(k,smoothstep(G.r+8,G.r-14,Math.hypot(dx,dz)+noise2(x*0.02+G.x,z*0.02)*14)); }
   return k;
 }
-function sunRockK(x,z,g){ return Math.max(smoothstep(0.35,0.9,g),0)*0.9; }
 function sunGreenK(x,z){   // scrub and palms on the banks of the border river (the one water the land has)
   const wd=waWaterDist(x,z); return wd<40&&wd>-1?smoothstep(40,2,wd)*0.9:0;
 }
 // the Sunscar's share of a point's colour and look: 1 inside the land (land 4, and 6 behind the closed gate), easing out over the last 40 m of the border (game/world/terrain-color.js blends sunColor with it)
-function sunColorK(x,z){ const l=waLandId(x,z), k=smoothstep(0,40,waLandBorderDist(x,z)); return (l===4||l===6)?0.5+0.5*k:0.5*(1-k); }
 // the water under (x, z): only the Bowl's own lake and river (the model's, gwCityWaterAt); null on dry ground (waterSurf, greyspine.js, asks the atlas's water first and falls back to the sea's level)
 function sunWaterSurf(x,z){
   const dc=Math.hypot(x-SUN_CITY.x,z-SUN_CITY.z);
   if(dc<176){ const w=gwCityWaterAt(x-SUN_CITY.x,z-SUN_CITY.z); return w===null?null:SUN_CITY.h+w; }
   return null;
 }
-const sunWet=(x,z,m)=>{ if(!inSun(x,z)) return false; const w=sunWaterSurf(x,z); return w!==null&&getH(x,z)<w-(m===undefined?-0.2:m); };
 const SUN_SPRING={x:SUN_GATE_RIVER.x,z:GREY_GATES[0].z+40,r:13};   // (no spring now: the testing tools' "spring" teleport (server/economy.js devP) lands here, just inside the River Pass's mouth)

@@ -5,9 +5,8 @@
    shared/world-atlas-ground.js), so there are no ridges of our own (zoneRidge answers 0 here). Levels run 1-15 across the forest from the village outward; the edge zones keep their creatures
    (shore crabs and tide slimes 16-17, sun scarabs in the Sunwall's foot 18, ram-horned boars and crag wardens in the foothills 19-20: docs/WORLD.md; their monsters name their zone, zone:'shore'... in MON_DEFS).
    Agent map. Exports: ZONES (every zone of every land, as the land files push them), ZONE_OF_ID (atlas zone id -> home / vale record), zoneOfAtlas(A,extra) (makes a record: x, z the pole, R, rays), atlasZoneAt(x,z),
-   zonePoint(zn,fa,fr), zoneAt, edgeZoneAt, defZone, zoneRidge, poiNamed(name) (an atlas poi), arenaAtPoi(poi,o) (an arena's record), ARENA (the Stone Circle). Used by vale.js, beach.js, server/monsters.js,
+   zonePoint(zn,fa,fr), zoneAt, defZone, poiNamed(name) (an atlas poi), arenaAtPoi(poi,o) (an arena's record), ARENA (the Stone Circle). Used by vale.js, beach.js, server/monsters.js,
    professions.js, quests.js, the map. Test: tools/atlas-smoke.js, tools/server-smoke.js. */
-const RIDGE_H=7;   // (the Reach's ridges, shared/hoarfrost.js, still use it)
 const ZONE_NAMES={1:'Slime Meadow',2:'Mushroom Hollow',3:'Beetle Thicket',4:'Boar Run',5:'Goblin Woods',6:'Treant Grove',7:'The Bog',8:'Deathcap Dell',9:'Ironshell Ridge',10:'Dire Wallows',11:'Hobgoblin Warrens',12:'Rotwood',13:'Ember Flats',14:"Chieftain's Hold",15:'Ancient Grove',boss:'The Stone Circle'};
 const ZONES=[], ZONE_OF_ID=[], ZONE_RAYS=64;   // ZONE_OF_ID[atlas zone id] -> its record
 /* The pole of each home and vale zone (the dry cell farthest from its borders, the coast and the water, clear of the villages) and its radius along ZONE_RAYS rays (to the first cell that is another zone):
@@ -57,12 +56,6 @@ function atlasZoneAt(x,z){
   for(const A of ARENAS){ if(!A.zone||A.hoar||A.grey) continue; const dx=x-A.x, dz=z-A.z, r=A.r+26; if(dx*dx+dz*dz<r*r) return A.zone; }   // (an arena's ground is its own zone)
   return zn;
 }
-// undefined: not in an edge zone; null: the sea; else the edge zone (or the Tide King's beach)
-function edgeZoneAt(x,z){
-  if(waLandId(x,z)!==0) return undefined;
-  const zn=atlasZoneAt(x,z); if(zn===null) return waIsSea(x,z)?null:undefined;
-  return zn.edge||zn.beach?zn:undefined;
-}
 // the monster kind's zone: its own (edge kinds) or the zone of its level
 function defZone(d){ const k=d.zone||d.level; return ZONES.find(zn=>zn.key===k); }
 function zoneAt(x,z){
@@ -82,11 +75,6 @@ function zonePoint(zn,fa,fr,full){
     return [zn.x+Math.sin(a)*r,zn.z+Math.cos(a)*r];
   }
   const r=Math.abs(fr-0.5)*2*zn.R; return [zn.x+Math.sin(a)*r,zn.z+Math.cos(a)*r];
-}
-// (the zones' borders are the ground's own now; only the Reach still raises ridges of its own)
-function zoneRidge(x,z){
-  if(inGrey(x,z)||inSun(x,z)) return 0;   // (inGrey is true on the Gloamhorn too)
-  return inVale(x,z)&&inHoar(x,z)?hoarRidge(x,z):0;
 }
 // the Stone Circle: the boss arena of the home forest, a flat clearing ringed by standing stones at the atlas's poi (in zone 15)
 const ARENA=Object.assign(arenaAtPoi(poiNamed('The Stone Circle')),{r:20,key:'boss'});

@@ -1,6 +1,6 @@
 //@ The Deep Cave's methods on the client: the server's state message (cm), the one-line HUD for the method you are in, the board (every floor's eight methods and the skill each gives, in the lift window), the tremor and the vault's seal
 /* Agent map. Rules and protocol: docs/CAVE.md section 15, docs/PROTOCOL.md (cm). The server: server/cave/. The props in the floor: method-props.js. Test: tools/client-smoke.js (the cave case), tools/cave-smoke.js.
-   exports: CAVE_M = {s (the last cm message), t (when it came), seal (the vault is open here)}, NETH.cm, caveMState() -> the message or null off the floors, caveMCd(m) -> seconds left of method m on this floor,
+   exports: CAVE_M = {s (the last cm message), t (when it came), seal (the vault is open here)}, NETH.cm, caveMState() -> the message or null off the floors,
             caveBoardHtml(floor?) (the lift window and the skills panel), caveWhereHtml(skill) (the locked tile's text), caveMethodsEnter(R) / caveMethodsLeave() / caveMethodsFrame(dt) (zone.js, with method-props.js).
    The HUD line #cvMethod shows msg.hud (the server writes the sentence). The vault: while msg.fv.o > 0 the sealed cells are walkable here too (the same rule as the server's), and the boulders at the seal are hidden. */
 var CAVE_M={s:null,t:0,seal:false,shakeT:0};   // (var: the net handler is registered at load)
@@ -10,7 +10,6 @@ NETH.cm=msg=>{
   caveMSeal(!!(msg&&msg.fv&&msg.fv.o>0));
 };
 const caveMState=()=>CAVE_RUN&&CAVE_M.s&&CAVE_M.s.f===CAVE_RUN.n?CAVE_M.s:null;
-function caveMCd(m){ const s=caveMState(), v=s&&s.cd&&s.cd[m]; return v?Math.max(0,v-(performance.now()-CAVE_M.t)/1000):0; }
 // the vault's seal: walkable on the server while it is open; mirror it so the walls let you through
 function caveMSeal(open){
   const R=CAVE_RUN; if(!R||CAVE_M.seal===open) return;

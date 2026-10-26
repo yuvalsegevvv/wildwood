@@ -26,7 +26,7 @@ Boss mechanics / visuals (all six bosses: `BOSS_DEFS` in `shared/monster-defs.js
 
 ### Carapax, the Tide King (level 20, the south beach)
 
-Carapax, the Tide King (level 20, the beach): arena `ARENA_TIDE` (`shared/beach.js`, found by `beachSpot`; its zone is picked by `edgeZoneAt`), crab model (`pal.crab` on the beetle model, `game/combat/monster-bugs.js`), the beach dressing `game/village/buildings-beach.js`, def `CARAPAX_DEF` (`music:'boss15'`, the Rootwarden's theme, as a placeholder), six skills `drop:'carapax'` in `classes.js`, quest in `BOSS_QUESTS`
+Carapax, the Tide King (level 20, the beach): arena `ARENA_TIDE` (`shared/beach.js`, found by `beachSpot`; its zone is the `beach` zone `atlasZoneAt` finds), crab model (`pal.crab` on the beetle model, `game/combat/monster-bugs.js`), the beach dressing `game/village/buildings-beach.js`, def `CARAPAX_DEF` (`music:'boss15'`, the Rootwarden's theme, as a placeholder), six skills `drop:'carapax'` in `classes.js`, quest in `BOSS_QUESTS`
 
 ## Elements of new monsters (a guideline)
 

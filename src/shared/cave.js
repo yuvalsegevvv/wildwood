@@ -4,7 +4,7 @@
    one universal skill (works for every class) in gear.skills.cave, owned in gear.cave.own ({id: level 1-5}); its tile is the action bar's fourth button, key 'cave' (KB_ACTIONS).
    Charge (CAVE_*) is per player, server-side, never saved: server/cave.js.
    Exports: CAVE_SLOT_LV, CAVE_SLOT, CAVE_CHARGE_K, CAVE_CHARGE_MAX, CAVE_BOSS_START, CAVE_BOSS_LEAVE, CAVE_COST_MIN/MAX, CAVE_REFUND_CAP, CAVE_LEVEL_MAX, CAVE_LEVEL_STEP, CAVE_CAST_CD, CAVE_CAST_WINDOW, CAVE_FLOORS, CAVE_METHODS,
-   CAVE_SKILLS (id -> ability), CAVE_SKILL_IDS, CAVE_BAD (rejected entries {id, why}), defineCaveSkill(def), caveSkillDef(id), caveLevelK(level), caveChargeGain(ab, cave, set), caveUnlocked(level).
+   CAVE_SKILLS (id -> ability), CAVE_SKILL_IDS, CAVE_BAD (rejected entries {id, why}), defineCaveSkill(def), caveSkillDef(id), caveLevelK(level), caveChargeGain(ab, cave, set).
    Used by: classes.js (slotLv), server/cave.js, server/players.js (sanitize), server/combat.js (hooks), game/cave/*.js, game/ui/combat-hud.js, game/economy/skills.js.
    SET SKILLS (floors 2-4, C4): shared/cave/skill-<floor>-<id>.js, one per skill set, `set` = its set id; they READ the set's mark (count it) and never spend it. Their extra fx keys (cvstrike, cvzone, wall, hold, ...) are run by server/cave-fx.js.
    `feat` (echo-trial skills, method C): {kind, n, secs?, id?} what the player must do once to earn the skill; the method engine reads it (validated loosely here).
@@ -25,7 +25,6 @@ const CAVE_CAST_WINDOW=3;                   // a cast may still pay its charge t
 const CAVE_FLOORS=4;                        // floors with skills today (more floors are data rows later)
 const CAVE_METHODS='ABCDEFGH';              // the eight ways to earn a skill (docs/CAVE.md section 6)
 const CAVE_SKILLS=Object.create(null), CAVE_SKILL_IDS=[], CAVE_BAD=[];
-const caveUnlocked=level=>level>=CAVE_SLOT_LV;
 const caveLevelK=level=>1+CAVE_LEVEL_STEP*(Math.max(1,Math.min(CAVE_LEVEL_MAX,level|0||1))-1);
 /* charge one cast earns: 0.6 x the ability's base cooldown (not its upgraded one), doubled when the equipped cave skill belongs to a skill set and the cast is a piece of that same set */
 function caveChargeGain(ab,caveSk){ const dbl=!!(caveSk&&caveSk.set&&ab&&ab.set===caveSk.set); return CAVE_CHARGE_K*(ab&&ab.cd>0?ab.cd:0)*(dbl?2:1); }

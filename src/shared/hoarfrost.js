@@ -5,8 +5,8 @@
    flat ice, no flowing water) and the passes are the atlas's too (world-atlas-ground.js); this file keeps no terrain, no carve and no ridge.
    While the Reach is locked an ice wall (a mesh, game/village/buildings-hoar.js) stands in the pass at PASS.ice, and northBarZ(x) is the z a hiker without the Reach's key (gear.north) must stay south of;
    it is drawn from the atlas's own border, so it follows the land (the clamps that read it: player/movement.js and server/api.js). gear.north: 0 sealed, 1 wall open, 2 walked into Rimehold (the circles are attuned).
-   Agent map: PASS {x, w, z0, z1, ice}, northBarZ, inPass, findHoarVillage, VIL3, VILS, CIRCLES, HOAR_ZONE_NAMES, hoarZoneAt, hoarRidge (0: retired), ARENA26 / ARENA30, northHubH(x,z,R) (the mean ground under a disc: a village's or an arena's pad height; also used by highmark.js and greyzones.js).
-   Used by: zones.js (hoarZoneAt, hoarRidge), roads.js, main-quest.js, professions.js, the server (economy.js, api.js), the client (movement, map, buildings-hoar). Tests: tools/hoarfrost-smoke.js, atlas-smoke.js. */
+   Agent map: PASS {x, w, z0, z1, ice}, northBarZ, inPass, findHoarVillage, VIL3, VILS, CIRCLES, HOAR_ZONE_NAMES, hoarZoneAt, ARENA26 / ARENA30, northHubH(x,z,R) (the mean ground under a disc: a village's or an arena's pad height; also used by highmark.js and greyzones.js).
+   Used by: zones.js (hoarZoneAt), roads.js, main-quest.js, professions.js, the server (economy.js, api.js), the client (movement, map, buildings-hoar). Tests: tools/hoarfrost-smoke.js, atlas-smoke.js. */
 
 /* ---- Frostgate Pass: the atlas's vale | Reach gate. The wall of ice stands across the road at PASS.ice (11 m south of the border, on the vale's side); z0 / z1 are where the pass's keep-out strip (trees, rocks, camps) starts in
    the vale (south) and ends on the plateau. w: half the wall's width (the keep-out strip is a little wider). The ground is the atlas's saddle, not a carved canyon. */
@@ -59,7 +59,6 @@ function hoarZoneAt(x,z){
   for(const A of ARENAS) if(A.hoar&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;
   return HOAR_ZN.get(waZoneId(x,z))||null;
 }
-const hoarRidge=()=>0;   // (retired: a zone border is the atlas ground's own low ridge, ravine or broken band, world-atlas-ground.js; zones.js still asks)
 
 /* ---- boss arenas: flat clearings at the atlas's bosses (northArena also builds the Greyspine's two, greyzones.js). ARENA26 (Ymrik the Rimeking, in the ice hall), ARENA30 (Vetrmaw the frost wyrm, at the wreck).
    The atlas's ground at a boss anchor is rugged, and rawHeight flattens a pad (radius 20, blended out to 42 m, terrain-height.js) to the arena's height: so the pad is laid within 22 m of the anchor (the anchor stays

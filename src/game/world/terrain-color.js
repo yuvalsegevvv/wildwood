@@ -45,7 +45,7 @@ function greyColor(x,z,h,g,out){
   { const c=coastDist(x,z); if(c<50) out.lerp(COL.shingle,smoothstep(46,32,c)*(1-smoothstep(3.2,5.5,h))*0.9); }   // (the northern sea's beaches)
   return out.multiplyScalar(0.92+n2*0.16);
 }
-const _hc=new THREE.Color(), _nb=new THREE.Color();
+const _nb=new THREE.Color();
 /* The ground's colour is chosen by the atlas's land (waLandId): the home forest and the vale (landColor 0 / 1 below), the Reach, the Greyspine, the Gloamhorn, the Sunscar, Amber Reach (south of it).
    Near a land border (within 20 m of the crest) the colour of the land on the other side is mixed in, half and half at the border itself, so the two meet without a line. */
 function landColor(l,x,z,h,g,out,noCut){

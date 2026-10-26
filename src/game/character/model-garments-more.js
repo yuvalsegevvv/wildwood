@@ -4,10 +4,10 @@
    The body's own paint comes from clothPaints / buildLeg (model-body.js, which read gmxOpenTop and gmxBareBottom here): a top that leaves the midriff or the shoulders bare paints skin there (and the woman's band top under a harness),
    a bottom that leaves the hips open (loincloth, wrap skirt) leaves the body's briefs showing (UNDER_COL), so nothing is ever left undressed.
    Every piece is meant for any body: the lists are unisex and the shapes follow the sliders (torsoSize).
-   owns: GMX_TOPS, GMX_BOTTOMS, GMX_SHOES, gmxTop, gmxCuff, gmxHips, gmxThigh, gmxShin, gmxSkirtKind, gmxBareTop, gmxBareBottom, gmxSleeveless.   used by: model-garments.js, model-body.js, ui/character-editor.js.   test: tools/cospieces-smoke.js */
+   owns: GMX_TOPS, GMX_BOTTOMS, GMX_SHOES, gmxTop, gmxCuff, gmxHips, gmxThigh, gmxShin, gmxSkirtKind, gmxBareBottom, gmxSleeveless.   used by: model-garments.js, model-body.js, ui/character-editor.js.   test: tools/cospieces-smoke.js */
 const GMX_TOPS=CP_PIECES.filter(r=>r[0]==='t').map(r=>[r[1],r[2],r[4]]), GMX_BOTTOMS=CP_PIECES.filter(r=>r[0]==='b').map(r=>[r[1],r[2],r[4]]), GMX_SHOES=CP_PIECES.filter(r=>r[0]==='s').map(r=>[r[1],r[2],r[4]]);
 // the body shows where the garment is open: the bare top ids and the bottoms whose hips stay open over the briefs
-const gmxBareTop=t=>t==='crop'||t==='halter'||t==='harness', gmxSleeveless=t=>t==='halter'||t==='harness', gmxBareBottom=b=>b==='loincloth'||b==='wrapskirt', gmxSkirtKind=b=>b==='hakama'||b==='wrapskirt';
+const gmxSleeveless=t=>t==='halter'||t==='harness', gmxBareBottom=b=>b==='loincloth'||b==='wrapskirt', gmxSkirtKind=b=>b==='hakama'||b==='wrapskirt';
 const GMX_STEEL=0xb9bdc2, GMX_LEATHER=0x5a3a22, GMX_BRASS=0xc9a13a;
 const gmxMul=(hex,m)=>new THREE.Color(hex).multiplyScalar(m).getHex();
 // the colours of a crafted top or bottom (the same four slots as a set's piece: tintTop2..4 / tintBottom2..4): [main, second, third, fourth], each default derived from the main colour

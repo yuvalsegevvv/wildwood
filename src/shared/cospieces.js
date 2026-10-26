@@ -7,7 +7,7 @@
      Some pieces want only professions' resources, some only drops and some both, so every kind of player has something to make.
    TRY-ON: the editor lets anyone put any piece on to see it (the client's look), but a look that wears a crafted piece you have not made is not saved or sent: cosLocked(look, owned) lists those parts,
    cosCleanLook (the server) takes them off with the slot's default (CP_NONE), and the editor will not close on one.
-   owns: CP_SLOTS, CP_NONE, CP_PIECES, CP_RECIPE, CP_FREE, cpDef, cpIsFree, cpCost, cosLocked, cpSlotOf.   used by: shared/cosmetics.js, server/cosmetics.js, game/economy/cosmetics.js, ui/character-editor.js, character/model-*.js (the lists).   test: tools/cospieces-smoke.js */
+   owns: CP_SLOTS, CP_NONE, CP_PIECES, CP_RECIPE, CP_FREE, cpDef, cpIsFree, cpCost, cosLocked.   used by: shared/cosmetics.js, server/cosmetics.js, game/economy/cosmetics.js, ui/character-editor.js, character/model-*.js (the lists).   test: tools/cospieces-smoke.js */
 // slot letter: [look field, what a stripped slot falls back to, the name of the slot]
 const CP_SLOTS={h:['hat','none','Hat'],t:['top','tshirt','Top'],b:['bottom','trousers','Bottom'],s:['shoes','boots','Shoes'],g:['gloves','none','Gloves'],c:['cape','','Cape'],a:['aura','','Aura'],d:['deco1','','Decoration'],w:['shield','','Shield'],e:['kinEars','','Ears'],k:['kinTail','','Tail'],m:['kinMuzzle','','Muzzle']};   // d: three look fields, CP_DECO; e, k, m: the Kin parts (shared/kin.js)
 const CP_LETTERS=['h','t','b','s','g','c','a','d','w','e','k','m'];
@@ -161,8 +161,6 @@ function cpCost(type,id){
   if(cpHas(CP_RECIPE,k)){ const r=CP_RECIPE[k]; return {res:r.res.map(a=>a.slice()),mats:r.mats.map(a=>a.slice()),coins:r.coins}; }
   return null;
 }
-// the slot letter of a look field
-const cpSlotOf=field=>{ for(const k of CP_LETTERS) if(CP_SLOTS[k][0]===field) return k; return null; };
 // the crafted pieces a look wears that you have not made: [{slot, id, name}]; `owned` is gear.cos
 function cosLocked(look,owned){
   const out=[]; if(!look||typeof look!=='object') return out;

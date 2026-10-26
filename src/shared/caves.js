@@ -134,8 +134,6 @@ function cvInside(S,x,z){ if(x<S.bx0||x>S.bx1||z<S.bz0||z>S.bz1) return false; c
 function cvSiteAt(x,z){ for(let i=0;i<CV_SITES.length;i++){ if(cvInside(CV_SITES[i],x,z)) return CV_SITES[i]; } return null; }
 // the field over every site whose box holds the point (two sites' boxes may overlap where one is turned; the rock of either is rock): what collision, the camera and the light ask
 function cvSdfW(x,y,z){ let d=8; for(let i=0;i<CV_SITES.length;i++){ const S=CV_SITES[i]; if(cvInside(S,x,z)){ const e=cvSdf(S,x,y,z); if(e<d) d=e; } } return d; }
-// the rock field at a world point over every site (negative inside rock anywhere)
-function cvSdfAt(x,y,z){ const S=cvSiteAt(x,z); return S?cvSdf(S,x,y,z):8; }
 /* ---------- the floor: rawHeight is carved to it ---------- */
 const cvSS=(a,b,t)=>{ t=(t-a)/(b-a); t=t<0?0:t>1?1:t; return t*t*(3-2*t); };
 function cvSegD(u,v,au,av,bu,bv){ const du=bu-au, dv=bv-av, l2=du*du+dv*dv; let t=l2>0?((u-au)*du+(v-av)*dv)/l2:0; t=t<0?0:t>1?1:t; cvSegD.t=t; return Math.hypot(u-au-du*t,v-av-dv*t); }

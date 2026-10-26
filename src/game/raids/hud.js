@@ -4,7 +4,7 @@
    Used by: net/client.js (events), world/generation-setup.js (buildRaids is structure.js), ui/map.js (rdMapMarks, rdPlaceName), economy/skills.js (rdMatHave), economy/inventory.js (rdMatRows),
    main/loop.js (rdFrame). Data: shared/raids.js. Test: tools/raids-smoke.js. */
 const RD_CL=[];
-const RD_STATE_NAME=['Ready','Engaged','Cleared'], RD_ROMAN=['+0','I','II','III','IV','V','VI','VII'];
+const RD_ROMAN=['+0','I','II','III','IV','V','VI','VII'];
 let rdStripT=0;
 function rdOnState(row){
   if(!Array.isArray(row)||!(row[0]>=0&&row[0]<RD_ORDER.length)) return;

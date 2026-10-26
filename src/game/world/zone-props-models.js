@@ -17,7 +17,6 @@ const zpCyl=(rt,rb,h,seg,x,y,z,hex,o)=>paint(zpAt(cyl(rt,rb,h,seg).translate(0,h
 const zpBlob=(r,sx,sy,sz,x,y,z,hex,o)=>paint(zpAt(new THREE.IcosahedronGeometry(r,o&&o.d!==undefined?o.d:1).scale(sx,sy,sz),x,y,z,o),zpShade(hex,o&&o.top,o&&o.k));
 const zpDome=(r,sy,seg,x,y,z,hex,o)=>paint(zpAt(new THREE.SphereGeometry(r,seg,Math.ceil(seg/2),0,TAU,0,Math.PI/2).scale(1,sy,1),x,y,z,o),zpShade(hex,o&&o.top,o&&o.k));
 // a triangular prism lying along x (a tent, a roof ridge): r = circumradius, the apex up, its lowest edge at y
-const zpPrism=(r,len,x,y,z,hex,o)=>paint(zpAt(cyl(r,r,len,3).rotateZ(Math.PI/2).rotateX(-Math.PI/2).translate(0,r/2,0),x,y,z,o),zpShade(hex,o&&o.top,o&&o.k));
 // a thin straight strand from a to b (a web thread, a rope): an open three-sided tube
 function zpStrand(a,b,t,hex){ const d=new THREE.Vector3(b[0]-a[0],b[1]-a[1],b[2]-a[2]), L=d.length()||0.01; d.normalize();
   const g=new THREE.CylinderGeometry(t,t,L,3,1,true).applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(ZP_UP,d))).translate((a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2);

@@ -26,7 +26,6 @@ function waGridOf(b64,nx,nz,Type){
   for(let i=nx;i<nx*nz;i++) d[i]+=d[i-nx];
   return d;
 }
-const WA_N8=WA_META.nx*WA_META.nz, WA_N16=WA_META.nx16*WA_META.nz16;
 const WA_OWN=waGridOf(WA_LAYERS.own,WA_META.nx,WA_META.nz,Uint8Array), WA_FLAGS=waGridOf(WA_LAYERS.flags,WA_META.nx,WA_META.nz,Uint8Array),
   WA_ZONE=waGridOf(WA_LAYERS.zone,WA_META.nx,WA_META.nz,Uint8Array), WA_WDIST=waGridOf(WA_LAYERS.wdist,WA_META.nx,WA_META.nz,Int16Array),
   WA_CDIST=waGridOf(WA_LAYERS.cdist,WA_META.nx16,WA_META.nz16,Int16Array), WA_BDIST=waGridOf(WA_LAYERS.bdist,WA_META.nx16,WA_META.nz16,Int16Array),
