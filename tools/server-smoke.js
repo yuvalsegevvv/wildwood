@@ -10,6 +10,7 @@ ok('world starts',W.monsters.length>400,W.monsters.length+' monsters');
 inbox.a=[]; W.join('a',{name:'Tester',look:{cls:'warrior'},save:{level:1}}); tick(1);
 ok('join sends welcome, roster, you',['welcome','mons','you'].every(t=>inbox.a.some(m=>m.t===t)));
 const p=W.players.get('a'), off=p.gear.q.offers;
+ok('a hiker with no saved gear gets every field of a clean save (cos, fr, sq, rd) and the free skills',Array.isArray(p.gear.cos)&&Array.isArray(p.gear.fr)&&!!p.gear.sq&&!!p.gear.rd&&p.gear.skills.v===2&&JSON.stringify(Object.keys(p.gear).sort())===JSON.stringify(Object.keys(x.sanitizeGear({},'warrior')).sort()));
 ok('quest board has 4 notices',off.length===4,off.map(q=>q.kind+' L'+q.level+' x'+(q.count||'-')).join(', '));
 // kill slimes with a slime hunt accepted
 p.gear.q.offers[0]=Object.assign({},off[0],{id:'g999',kind:'hunt',type:'kill',target:'slime',count:3,level:1,title:'Test hunt'});
