@@ -29,4 +29,6 @@ Rules (Yuval's decisions, 2026-10-26). The full plan with the client and the buf
 | `server/skillsets.js`, `server/cave/methods.js` | `ultCheckP` after a piece or a cave skill is earned |
 | `server/economy.js` | `devP 'ult'`, `ultCheckP` after the "learn every skill" tool |
 
-Built in steps (PLAN.md section 5): U1 the slot and the cast (done), U2 the buff, U3 the client, U4 the content of the 21 sets.
+Client (U3): `game/ult/slot.js` (the 5th tile, `#abUlt`, key `ult` = Digit5, cooldown ring, boost glow `ultb` on the boosted pieces' tiles, the skills panel's Burst row and tab: equip / take off with buttons, no drag), `game/ult/popup.js` + `styles/32-ult.css` (the cast card: the set's emblem behind the gem-shop portrait, `#ultPopup`), buffed looks (`SSL.ub` in `game/skillsets/looks.js`: a third more motes, glowing, bigger; own casts read `ULT_UI.boost`, other players' swings the 5th field of the `pact` event). Events handled through `EVH.ult` / `EVH.ubo` / `EVH.ultget`, message `ubo {ids}` when a boost ends. Slot 3 is shown as "Power" (labels only).
+
+Built in steps (PLAN.md section 5): U1 the slot and the cast, U2 the buff, U3 the client (done), U4 the content of the 21 sets.

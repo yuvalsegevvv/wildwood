@@ -12,7 +12,7 @@ function guidePages(){
       <dl>
         <dt>${kl(['fwd','left','back','right'].map(k).join(' '))}</dt><dd>Move (you always sprint). ${kl(k('run'))} dashes, ${kl(k('jump'))} jumps. On a phone: left thumb moves, right thumb looks.</dd>
         <dt>${kl(k('basic'))} / click</dt><dd>Basic attack. It picks the nearest target; ${kl(k('target'))} switches target.</dd>
-        <dt>${kl(k('skill'))} / right-click</dt><dd>Skill (from level ${SKILL_SLOT_LV}). ${kl(k('burst'))} is the burst (from level ${BURST_SLOT_LV}).</dd>
+        <dt>${kl(k('skill'))} / right-click</dt><dd>Skill (from level ${SKILL_SLOT_LV}). ${kl(k('burst'))} is the Power skill (from level ${BURST_SLOT_LV}).</dd>
         <dt>${kl(k('pot1'))} ${kl(k('pot2'))} ${kl(k('pot3'))} ${kl(k('pot4'))} ${kl(k('pot5'))} ${kl(k('pot6'))}</dt><dd>Healing, might and guard potions, then the heal-over-time, exp and loot potions.</dd>
         <dt>${kl(k('talk'))}</dt><dd>Talk to villagers, open shops, the quest board and teleport circles. ${kl(k('gather'))} mines, chops or picks what you stand beside.</dd>
         <dt>${kl(k('inv'))} ${kl(k('skills'))} ${kl(k('map'))} ${kl(k('world'))}</dt><dd>Inventory, skills, the land's map, the world map.</dd>
@@ -35,7 +35,7 @@ function guidePages(){
       <p>Drink potions (brewed at the healers from herbs), dodge the warning shapes, and fight monsters near your own level. In a dungeon, a party member can revive you.</p>`},
     skills:{t:'Skills',h:`
       <h4>Slots</h4>
-      <p>Each class has three attack slots: the basic attack, a <b>skill</b> (level ${SKILL_SLOT_LV}) and a <b>burst</b> (level ${BURST_SLOT_LV}). Buy skills in the skills window (${kl(k('skills'))}) and drag them onto a slot. Cooldowns belong to the slot, so swapping skills does not reset them.</p>
+      <p>Each class has three attack slots: the basic attack, a <b>skill</b> (level ${SKILL_SLOT_LV}) and a <b>Power skill</b> (level ${BURST_SLOT_LV}). Buy skills in the skills window (${kl(k('skills'))}) and drag them onto a slot. Cooldowns belong to the slot, so swapping skills does not reset them.</p>
       <h4>Boss skills</h4>
       <p>Every boss has six skills it can drop, about a 10% chance per skill per kill for each player who helped. They cannot be bought.</p>
       <h4>Soul and elements</h4>
@@ -43,7 +43,7 @@ function guidePages(){
       <h4>Passives</h4>
       <p>Passive skills work all the time, whatever your class. Their slots open at levels ${PASSIVE_SLOT_LV.join(', ')}.</p>`},
     sets:{t:'Skill sets',h:`
-      <p>A skill set is one character's signature kit: <b>six pieces</b> (three attacks for the basic, skill and burst slots, and three passives), a symbol, usually an element, two set bonuses and a matching <b>outfit</b>. Every land has its own sets.</p>
+      <p>A skill set is one character's signature kit: <b>six pieces</b> (three attacks for the basic, skill and Power slots, and three passives), a symbol, usually an element, two set bonuses and a matching <b>outfit</b>. Every land has its own sets.</p>
       <h4>How to get the pieces</h4>
       <ul>
         <li>The land's <b>first world boss</b> can drop the set's first attack and passive, the <b>second world boss</b> the second pair, and the land's <b>dungeon boss</b> the third pair.</li>

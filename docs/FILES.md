@@ -37,6 +37,7 @@ styles
   29-theme.css                       The storybook skin: dark bark panels, a brass frame with corner studs, parchment ink and the Alegreya fonts, laid over every HUD box, panel and button (the look of the world map)
   30-raids.css                       The raids' strip near a stronghold (game/raids/hud.js): one line under the top edge, below the boss bar when both show
   31-friends.css                     Friends and ranking panel (ui/friends.js): friend rows with an online dot, the ranking table, the friend request prompt
+  32-ult.css                         The set burst (5th slot): its action-bar tile, the cast popup card and the skills panel row (game/ult/slot.js, popup.js)
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -500,6 +501,8 @@ game
   net/transport.js                   Connections to the world server: solo (server in this tab), shared room (one player's tab hosts), WebSocket (node server)
   net/client.js                      Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
   cave/slot.js                       The Deep Cave, client side of the 4th slot: the action-bar tile and its charge bar, casting it, the skills panel's cave row and tab (equip / take off), the server's charge message
+  ult/slot.js                        The set burst, client side of the 5th slot: the action-bar tile and its cooldown, casting it, the boost glow, the skills panel's Burst row and tab (equip / take off), the server's ult, ubo and ultget messages
+  ult/popup.js                       The set burst's popup: a short card over the centre-top while it is cast, the set's emblem large behind the character's gem-shop picture, in the set's colours
   combat/boss-dungeon.js             The dungeon bosses on the client: their defs in the roster lookup, what the boss bar's number means for each (dish, puffballs, lamps), Haugbui's lamps going dark and lit again, the relight channel's cast bar, and the gloom of his blackout
   net/remote.js                      Other players: avatars built from their look and gear, smoothed movement, attack animations, name tags
   economy/dungeon-gear.js            Level-30 dungeon gear in the UI: the ring's notes in the item details, the Tempering Stone count and drop note, the forge's Temper tab, the testing buttons, the events `stone` and `temper`

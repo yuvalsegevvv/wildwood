@@ -20,6 +20,7 @@ function cycleTarget(){
 }
 function doAttack(kind,hold){   // hold: the strength 0..1 of a charged skill 1 (basic-hold.js); returns true when the attack was sent
   if(kind==='cave'){ caveDoAttack(); return false; }   // cave: the 4th slot (game/cave/slot.js)
+  if(kind==='ult'){ ultDoAttack(); return false; }   // ult: the 5th slot, the set burst (game/ult/slot.js)
   if(!started||!NET.ready||uiOpen()||PL.dead||CB.act||CB.cd[kind]>0) return false;
   const c=clsOf(), ab0=abilityOf(c,kind,pvSkills(),pvLevel());   // pvp: on the island the fixed loadout
   if(!ab0){ // the slot is locked or empty
@@ -55,7 +56,7 @@ function attackVisuals(a,who){
   const x=who?who.x:P.x, y=who?who.y:P.y, z=who?who.z:P.z, face=who?who.face:P.face, sc=who?who.scale:hiker.scale, mine=!who, k=a.sk||a.kind;
   if(a.ab&&mine){ bhVisuals(a.ab,x,y,z,face,sc); return; }   // basic-hold: a charged release
   const gs=ACT_SKILL[k]; if(gs&&gs.cave&&caveVisCast(gs,who||P,mine?CB.target:null)) return;   // cave: a cave skill's own drawing (cave/vis.js)
-  if(gs&&gs.fx){ fxVisuals(gs,x,y,z,face,sc,mine); return; }   // a skill with generic effects (the boss skills)
+  if(gs&&gs.fx){ SSL.ub=mine?ssUbOwn(gs.id):!!a.ub; try{ fxVisuals(gs,x,y,z,face,sc,mine); } finally{ SSL.ub=false; } return; }   // a skill with generic effects (the boss skills)   // ult: a boosted cast is drawn stronger (SSL.ub, skillsets/looks.js)
   if(k==='quake'){ fxxDust(x,getH(x,z),z,18,6,0x8a7a60); fxxDebris(x,getH(x,z),z,14,7,0x6a5030); fxxScorch(x,z,4,0xd8b07a); }
   else if(k==='inferno'){ fxxDome(x,y,z,7,0xff7a2a); fxxScorch(x,z,5,0xff7a2a); fxxDust(x,y,z,10,5,0x4a3a30); }
   else if(k==='charge'||k==='bash') fxxDust(x,getH(x,z),z,8,3,0x9a8a70);

@@ -30,7 +30,8 @@
     "28-guide.css",
     "29-theme.css",
     "30-raids.css",
-    "31-friends.css"
+    "31-friends.css",
+    "32-ult.css"
   ],
   "shared": [
     "math.js",
@@ -457,6 +458,8 @@
     "net/transport.js",
     "net/client.js",
     "cave/slot.js",
+    "ult/slot.js",
+    "ult/popup.js",
     "combat/boss-dungeon.js",
     "net/remote.js",
     "economy/dungeon-gear.js",

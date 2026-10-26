@@ -66,7 +66,7 @@ function caveCastP(p,msg){   // atk {k:'cave'}: spend the cost and run the skill
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
   p.act={kind,t:0,dur,hitAt,done:false,skill:true,sid:sk.id,lvl,el:elOf(sk),fx:sk.fx,mult:sk.mult*caveLvK(p,sk.id),range:sk.range,tg:tg&&!tg.dead?tg.id:null,aim,cave:true};
   ultBoostActS(p,p.act,sk.id);   // ult: a boosted cave skill's cast
-  ev('pact',p.id,kind,Math.round(p.face*100)/100);
+  ev('pact',p.id,kind,Math.round(p.face*100)/100,...(p.act.ub?[1]:[]));
 }
 // the level scale of an owned cave skill (1 + 0.1 per level above 1): THE one place the level reaches the effect; caveCastP puts it in a.mult (server/cave/skills.js caveFxS) and caveSetFxS reads the same level (server/cave-fx.js)
 function caveLvK(p,id,lvl){ const o=p&&p.gear&&p.gear.cave&&p.gear.cave.own; return caveLevelK(o&&Object.prototype.hasOwnProperty.call(o,id)?o[id]:lvl||1); }   // lvl: the cast's own level when id is not an owned cave skill

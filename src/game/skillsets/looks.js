@@ -7,9 +7,10 @@
      swing(c) cone(c) ring(c) dash(c) muzzle(c) util(c) impact(L,pos,p,hit) fxa(L,o,kind,src) ally(L,o,kind,dur) zoneStart(L,A) zoneTick(L,A,dt,k) zoneEnd(L,A); c = {L,s,f,x,y,z,face,sc,mine,gy,fx,fz,hx,hy,hz}.
    Particles share geometries and materials (they fade by shrinking, never by opacity), at most SSL_MAX alive. Hooks: ssLookFor, ssLookSwing, ssLookArea / ssLookZoneTick / ssLookAreaEnd, ssLookProj / ssLookTrail / ssLookImpact,
    ssLookLine, ssOnFxa, ssLookAlly, ssLookUpdate (from updateSkillFx). Test: client-smoke (every look draws every skill of its set without errors). */
-const SSL={looks:Object.create(null), bad:[], parts:[], decals:[], geo:Object.create(null), mats:new Map(), tex:Object.create(null), auras:new Map(), flat:null};
+const SSL={ub:false, looks:Object.create(null), bad:[], parts:[], decals:[], geo:Object.create(null), mats:new Map(), tex:Object.create(null), auras:new Map(), flat:null};
 const SSL_MAX=LOW?150:380, SSL_Q=LOW?0.5:1;
-const sslR=(a,b)=>a+Math.random()*(b-a), sslN=n=>Math.max(1,Math.round(n*SSL_Q));
+const sslR=(a,b)=>a+Math.random()*(b-a), sslN=n=>Math.max(1,Math.round(n*SSL_Q*(SSL.ub?1.3:1)));   // ult: a boosted cast draws a third more motes
+const ssUbOwn=id=>!!id&&typeof ULT_UI!=='undefined'&&ULT_UI.boost[id]>performance.now();   // ult: is this piece of yours boosted by a burst right now
 function sslFan(pts,hub){   // a flat shape in the XY plane (its length along Y): triangles from a hub inside it to each edge
   hub=hub||[0,0]; const v=[]; for(let i=0;i<pts.length;i++){ const a=pts[i], b=pts[(i+1)%pts.length]; v.push(hub[0],hub[1],0,a[0],a[1],0,b[0],b[1],0); }
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(v,3)); return g;
@@ -55,6 +56,7 @@ const sslCol=(L,c)=>typeof c==='number'&&c<L.cols.length&&c<8?L.cols[c]:c;
 // ---- particles ----
 function ssPart(shape,col,x,y,z,o){   // o: v [vx,vy,vz], g (an acceleration along y: negative falls), drag, life, s (or s0 -> s1), spin, add, op, sway, face (look along the velocity), floor (stop on the ground), rot [x,y,z,order] (the starting rotation), fin / fout (the shares of life spent growing / shrinking)
   if(SSL.parts.length>=SSL_MAX) return null;
+  if(SSL.ub){ o=Object.assign({},o,{add:1}); if(o.s!==undefined) o.s*=1.25; if(o.s0!==undefined) o.s0*=1.25; if(o.s1!==undefined) o.s1*=1.25; }   // ult: a boosted cast glows and its motes are bigger
   const m=new THREE.Mesh(ssGeo(shape),sslMat(col,o.op===undefined?0.95:o.op,!!o.add)); m.position.set(x,y,z); m.rotation.set(Math.random()*TAU,Math.random()*TAU,Math.random()*TAU); if(o.rot){ m.rotation.order=o.rot[3]||'XYZ'; m.rotation.set(o.rot[0],o.rot[1],o.rot[2]); }
   m.scale.setScalar(0.01); scene.add(m);
   const v=o.v||[0,0,0], life=o.life||0.8;
@@ -164,6 +166,9 @@ function sslUtil(c){   // the utility keys of a signature skill: a taunt's shout
 }
 // a zone (area event, kind 'zone') of a piece with a look: the ground pattern, the look's own motes and extras instead of the generic ones
 function ssLookArea(A,src){
+  A.ub=A.owner===NET.pid&&ssUbOwn(src); SSL.ub=A.ub; try{ sslAreaIn(A,src); } finally{ SSL.ub=false; }   // ult: a boosted zone starts and ticks stronger
+}
+function sslAreaIn(A,src){
   const L=ssLookFor(src); if(!L||A.kind!=='zone') return;
   A.look=L; A.skill=SKILLS[src]||null; A.zf=A.skill&&A.skill.fx&&A.skill.fx.zone||{};
   const D=sslDecal(L,A.x,A.z,A.r,{life:A.dur,op:0.8,r0:0.05,keep:true,spin:A.zf.kb<0?-0.6:0.5,follow:A.follow?(()=>A):null,inward:false}); D.zoneOf=A; A.deco=D;
@@ -172,6 +177,9 @@ function ssLookArea(A,src){
   if(L.zoneStart) L.zoneStart(L,A);
 }
 function ssLookZoneTick(A,dt,k){
+  SSL.ub=!!A.ub; try{ sslZoneTickIn(A,dt,k); } finally{ SSL.ub=false; }
+}
+function sslZoneTickIn(A,dt,k){
   const L=A.look; if(!L) return;
   if(A.follow){ const o=A.owner===NET.pid?P:REMOTES.get(A.owner); if(o){ A.x=o.x; A.z=o.z; } }
   if(A.deco){ const m=A.deco.m; m.position.set(A.x,getH(A.x,A.z)+0.1,A.z); m.scale.setScalar(Math.max(0.1,A.r*Math.min(1,0.05+k*6))); }
@@ -192,7 +200,7 @@ function ssLookProj(L,kind,src){
   const spec=Object.assign({sh:'ear',c:0,s:0.5,len:1,glow:2},L.proj||{}), g=new THREE.Group();
   const body=new THREE.Mesh(ssGeo(spec.sh),sslMat(sslCol(L,spec.c),0.98,false)); if(!SSL_Z[spec.sh]) body.rotation.x=Math.PI/2; body.scale.set(spec.s*0.6,spec.s*spec.len,spec.s*0.6); g.add(body);
   const gl=new THREE.Mesh(coreGeo,sslMat(sslCol(L,spec.glow),0.6,true)); gl.scale.set(1.6,1.6,spec.len>1?spec.len*2.4:2.4); g.add(gl);
-  g.scale.setScalar(L.proj&&L.proj.scale||1); return g;
+  g.scale.setScalar((L.proj&&L.proj.scale||1)*(ssUbOwn(src)?1.3:1)); if(ssUbOwn(src)) gl.scale.multiplyScalar(1.4); return g;   // ult: a boosted piece's shot is bigger and glows
 }
 function ssLookTrail(L,p,dt){
   p.tr=(p.tr||0)-dt; if(p.tr>0) return; p.tr=0.035;
@@ -209,6 +217,9 @@ function ssLookLine(L,pts){   // a chain (points [x,y,z]) or a beam (two points)
 // a heal or a shield reached a player (event fxa), and a buff on a player (event ast)
 const sslWho=pid=>pid===NET.pid?P:REMOTES.get(pid);
 function ssOnFxa(pid,kind,src){
+  SSL.ub=pid===NET.pid&&ssUbOwn(src); try{ sslFxaIn(pid,kind,src); } finally{ SSL.ub=false; }   // ult: a boosted passive's proc glows
+}
+function sslFxaIn(pid,kind,src){
   const L=ssLookFor(src), o=L&&sslWho(pid); if(!L||!o) return;
   if(L.fxa){ L.fxa(L,o,kind,src); return; }
   const y=o.y||getH(o.x,o.z);
