@@ -10,7 +10,7 @@ function toggleSkills(){ if(!started||customizing) return; if($('#skills').hidde
 const skIcon=name=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||ICONS.burst||''}</svg>`;   // (skillsets: a signature skill without a glyph of its own gets the generic burst one, as the action bar does)
 // a skill's icon: a set piece draws its own set's symbol (skillsets/panel.js), any other its glyph by name (a piece of no set without one gets the generic burst)
 const skIconOf=s=>{ const g=ssGlyph(s); return g?`<svg ${SS_ICON_ATTR}>${g}</svg>`:skIcon(s.name); };
-const SLOT_TITLE={basic:'1 · Basic attack',skill:'2 · Skill',burst:'3 · Power'}, KIND_TITLE={basic:'1 · Basic',skill:'2 · Skill',burst:'3 · Power',cave:'4 · Cave',ult:'5 · Burst',pass:'Passive'};
+const SLOT_TITLE={basic:'1 · Basic attack',skill:'2 · Skill',burst:'3 · Power'}, KIND_TITLE={basic:'1 · Basic',skill:'2 · Skill',burst:'3 · Power',cave:'4 · Charge',ult:'5 · Burst',pass:'Passive'};
 const needLv=s=>s.slot==='passive'?Math.max(PASSIVE_LV,s.lv):Math.max(slotLv(s.slot),s.lv);
 const SLOT_NO={basic:1,skill:2,burst:3};
 // one skill as a tile: its icon, element dot, and its level (or price / required level when you do not own it yet)
@@ -98,6 +98,7 @@ function renderSkills(){
   const on=(sel,fn)=>$('#skBody').querySelectorAll(sel).forEach(b=>b.onclick=()=>fn(b));
   on('[data-sktab]',b=>{ skTab=b.dataset.sktab; SK.sel=null; UI_SFX.click(); renderSkills(); });
   on('[data-skkind]',b=>{ skKind=b.dataset.skkind; SK.sel=null; UI_SFX.click(); renderSkills(); });
+  on('[data-ssall]',b=>{ netSend({t:'ssall',set:b.dataset.ssall}); UI_SFX.click(); });   // skillsets: wear every owned piece of the set
   caveBindPanel(on);   // cave: the cave row, tab and buttons
   ultBindPanel(on);   // ult: the burst row, tab and buttons
   on('[data-eqskill]',b=>{ skEquip(b.dataset.eqskill); });

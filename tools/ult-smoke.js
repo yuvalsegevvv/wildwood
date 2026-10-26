@@ -4,7 +4,7 @@
 const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...JSON.parse(JSON.stringify(m.ev))); }},
-  ['S','ULT_SKILLS','ULT_BAD','ULT_CD','ULT_CD_GRIND','ULT_LV','ULT_STUN','ULT_STUN_LOCK','ultDef','ultDefine','ultOwned','ultPieceCount','ultCdOf','ultStunS','ultCheckP','ssGrantP','ssCount','ssCdrS','SS_SETS','SS_ORDER','CAVE_SKILLS','BOSSES','resetBossS','MONS','getH','SKILLS','slotLv','sanitizeGear','SS_BAD','psP','ultWornP','ultRowK','ultIcdK','ultOnP','ultTickP']);
+  ['S','PASSIVES','ULT_SKILLS','ULT_BAD','ULT_CD','ULT_CD_GRIND','ULT_LV','ULT_STUN','ULT_STUN_LOCK','ultDef','ultDefine','ultOwned','ultPieceCount','ultCdOf','ultStunS','ultCheckP','ssGrantP','ssCount','ssCdrS','SS_SETS','SS_ORDER','CAVE_SKILLS','BOSSES','resetBossS','MONS','getH','SKILLS','slotLv','sanitizeGear','SS_BAD','psP','ultWornP','ultRowK','ultIcdK','ultOnP','ultTickP']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 // ---- the registry ----
@@ -36,6 +36,8 @@ ok('two drops are 4 of 7: owned, and the player is told once (event ultget)',x.u
 W.receive('a',{t:'ultequip',id:'constructor'}); W.receive('a',{t:'ultequip',id:'tansy'}); W.receive('a',{t:'ultequip',id:7}); tick(1);
 ok('a bad id, a burst that is not owned and a non-string change nothing',p.gear.skills.ult===null);
 W.receive('a',{t:'ultequip',id:T}); tick(1); ok('an owned burst can be worn at level 40',p.gear.skills.ult===T);
+{ p.gear.skills.ult=null; p.gear.skills.pass=[null,null,null]; W.receive('a',{t:'ssall',set:'constructor'}); W.receive('a',{t:'ssall',set:T}); tick(1);
+  ok('"Equip the whole set" (ssall) wears the owned actives, passives and the burst; a bad set name changes nothing',p.gear.skills.ult===T&&p.gear.skills.pass.some(i=>i&&x.PASSIVES[i].set===T),JSON.stringify(p.gear.skills.pass)+' '+p.gear.skills.ult); }
 { own(lo,T,1); own(lo,T,2); lo.level=34; W.receive('lo',{t:'ultequip',id:T}); tick(1); ok('below level 35 it cannot be worn',lo.gear.skills.ult===null); }
 { const g=JSON.parse(JSON.stringify(p.gear)); g.skills.ult='tansy'; ok('a save wearing a burst it does not own is cleaned',x.sanitizeGear(g,'warrior').skills.ult===null);
   g.skills.ult='constructor'; ok('a prototype name in a save is cleaned',x.sanitizeGear(g,'warrior').skills.ult===null);

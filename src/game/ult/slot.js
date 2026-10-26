@@ -53,7 +53,7 @@ EVH.ultget=e=>{ if(e[1]!==NET.pid) return; ultWarm(); UI_SFX.click(); };   // (t
 /* ---- the skills panel: the Burst row under the slots and the Burst tab ---- */
 function ultPieceName(setId,piece){
   const S=SS_SETS[setId]; if(!S) return piece;
-  if(piece==='cave'){ const c=CAVE_SKILL_IDS.map(i=>CAVE_SKILLS[i]).find(q=>q.set===setId); return c?c.name:'Cave skill'; }
+  if(piece==='cave'){ const c=CAVE_SKILL_IDS.map(i=>CAVE_SKILLS[i]).find(q=>q.set===setId); return c?c.name:'Charge skill'; }
   const n=+piece[1], P=S.pos[n]; return piece[0]==='a'?SKILLS[P.ids[0]].name:PASSIVES[P.passive].name;
 }
 const ULT_MOD_TXT={mult:v=>'damage x'+v,util:v=>'heals, shields and buffs x'+v,cd:v=>'cooldown x'+v,n:v=>'+'+v+' shots or hits',size:v=>'areas x'+v,v:v=>'value x'+v,eff:v=>'effect x'+v,icd:v=>'triggers '+Math.round(1/v*10)/10+'x as often'};
@@ -85,7 +85,7 @@ function ultGridHtml(){
 }
 function ultInfoHtml(){
   const s=ultDef(ULT_UI.sel);
-  if(!s) return `<p class="muted">${isTouch?'Tap':'Click'} a burst for details. Each skill set has one: it is yours when you own ${ULT_OWN_N} of the set's 7 pieces (its 6 skills and passives, and its cave skill). It deals damage, stuns everything it hits for ${ULT_STUN} s (bosses too, once per enemy every ${ULT_STUN_LOCK} s) and strengthens two of the set's pieces while you wear them.</p>`;
+  if(!s) return `<p class="muted">${isTouch?'Tap':'Click'} a burst for details. Each skill set has one: it is yours when you own ${ULT_OWN_N} of the set's 7 pieces (its 6 skills and passives, and its charge skill). It deals damage, stuns everything it hits for ${ULT_STUN} s (bosses too, once per enemy every ${ULT_STUN_LOCK} s) and strengthens two of the set's pieces while you wear them.</p>`;
   const S=SS_SETS[s.set], own=ultOwned(GEAR.skills,GEAR.cave,s.set), worn=GEAR.skills.ult===s.set, low=PL.level<ULT_LV, n=ultPieceCount(GEAR.skills,GEAR.cave,s.set);
   const act=own?(worn?`<button class="chip" data-ultoff="1">Take off</button>`:`<button class="chip" data-ulton="${s.set}" ${low?'disabled':''}>${low?'Level '+ULT_LV:'Equip'}</button>`):`<span class="muted">Own ${ULT_OWN_N} of ${S.char.name}'s 7 pieces (${n} now)</span>`;
   const cd=S.role.main==='grind'?ULT_CD_GRIND+' s ('+ULT_CD+' s in a boss fight)':ULT_CD+' s';

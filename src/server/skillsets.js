@@ -59,6 +59,20 @@ function ssEquipPieceP(p,s){
   if(worn){ recalcP(p); p.dirty=true; }
   return worn;
 }
+// ssall {set}: wear every piece of the set the player owns: its three skills, its passives (first open passive slots), its cave skill and its burst; what cannot be worn yet (level, not owned) is left and said once
+function ssEquipAllP(p,setId){
+  const T=typeof setId==='string'&&Object.prototype.hasOwnProperty.call(SS_SETS,setId)?SS_SETS[setId]:null; if(!T) return;
+  const S=p.gear.skills; let n=0, passIdx=0;
+  for(let q=1;q<=3;q++){
+    const P=T.pos[q], id=P.ids.find(i=>S.owned.includes(i)); if(id&&ssEquipPieceP(p,SKILLS[id])) n++;
+    if(S.owned.includes(P.passive)&&passIdx<passiveOpen(p.level)&&p.level>=Math.max(PASSIVE_LV,PASSIVES[P.passive].lv)){ equipPassiveP(p,P.passive,passIdx++); n++; }
+  }
+  const cid=CAVE_SKILL_IDS.find(i=>CAVE_SKILLS[i].set===setId&&Object.prototype.hasOwnProperty.call(p.gear.cave.own,i));
+  if(cid&&p.level>=CAVE_SLOT_LV){ caveEquipP(p,cid); n++; }
+  if(ultOwned(S,p.gear.cave,setId)&&p.level>=ULT_LV){ ultEquipP(p,setId); n++; }
+  toastTo(p.id,n?'Wearing '+n+' pieces of '+T.name:'Nothing of '+T.name+' can be worn yet',n?'good':'bad'); recalcP(p); p.dirty=true;
+}
+MSG.ssall=(p,msg)=>ssEquipAllP(p,msg.set);
 // the sets worn by the class in hand: how many pieces of each, the bonus rows in force, and the triggered rows and amplifiers of the worn passives and those bonuses (read at run time)
 function ssRefreshP(p){
   const sk=p.gear.skills, cls=clsOfP(p), bonus=ssBonuses(sk,cls,p.level), trig={}, amp=[];
