@@ -1,7 +1,7 @@
 //@ Raids: one ruined stronghold per land (seven) (defineRaid registry, the common layout, level and pay by zone tier, the signature-skill upgrade price in raid material, the flat pads)
 /* Agent map. Design and numbers: docs/RAIDS.md. A raid is a ruin in an empty part of its land: 28 garrison monsters of the land's own kinds, destructibles (wards seal the inner court, spawners call
    reinforcements, barricades are cover), and a boss picked at random from the land's two world bosses when the raid (re)builds. Stem `raids`, prefix `rd` / `RD_`.
-   Exports: RD_BASE_LV, RD_RESET, RD_ABANDON, RD_UP, RD_FOOT, RD_LAYOUT, defineRaid(D), RDS (by id), RD_ORDER, RD_BAD, rdLevel(tier), rdMatFor(tier), rdOfLand(land), rdCourtAt(x,z), rdNear(x,z,r),
+   Exports: RD_BASE_LV, RD_RESET, RD_ABANDON, RD_UP, RD_FOOT, RD_LAYOUT, defineRaid(D), RDS (by id), RD_ORDER, RD_BAD, rdLevel(tier), rdMatFor(tier), rdOfLand(land), rdCourtAt(x,z),
    rdBossRow(id) (a raid boss's BOSS_DEFS row), rdUpNeeds(skill,to) (a signature piece's price to level `to`: coins, the land's monster material, and `rd`: the raid material), rdCapTier(gear,land,raidTier).
    Used by: server/raids.js (the fight), server/economy.js + shared/drops.js (upgrades), game/raids/* (the ruins, the HUD), game/combat/boss.js (arenaOf). The data: shared/raids/<id>.js (one per land).
    Test: node tools/raids-smoke.js. A bad entry is left out and listed in RD_BAD (the game still boots). */
@@ -56,7 +56,6 @@ const rdLevel=tier=>RD_BASE_LV+ZTIER_STEP*tier, rdMatFor=tier=>Math.pow(2,tier);
 const rdOfLand=land=>RD_ORDER.map(i=>RDS[i]).find(r=>r.land===land)||null;
 // the raid whose inner court has its middle at (x, z): a raid boss's camp (the client's arenaOf)
 const rdCourtAt=(x,z)=>{ for(const i of RD_ORDER){ const A=RDS[i].court; if(Math.abs(A.x-x)<1&&Math.abs(A.z-z)<1) return A; } return null; };
-const rdNear=(x,z,r)=>RD_ORDER.some(i=>Math.hypot(RDS[i].x-x,RDS[i].z-z)<=r);
 // the tier a player is credited at: the raid's, but never above their own highest unlocked tier in that land
 const rdCapTier=(gear,land,raidTier)=>Math.min(raidTier|0,zoneTierMax(gear,land));
 /* A signature piece's price to level `to` (2..SKILL_MAX_LV): the usual coins and the land's monster material, and the raid material of the set's land (RD_UP). Level 5 also asks the land's second world boss' trophies. */

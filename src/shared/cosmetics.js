@@ -56,7 +56,6 @@ const COS_CAPES=[
   ['dawnseat','Dawn Seat Mantle',6,0xb8742c,0xf6d98a,1.2,'Dry-grass gold with rays of pale thread spreading from the collar and a short shoulder cape. The Dawn Seat\'s reward.','rays',1]
 ];
 const COS_AURA={}, COS_CAPE={};
-const COS_HERB=['sunpetal','ironroot','kikyo','yomogi','frostbloom','snowmoss'];   // the herbs by grade (the recipes in shared/cospieces.js use them by name)
 for(const a of COS_AURAS) COS_AURA[a[0]]={id:a[0],name:a[1],grade:a[2],col:a[3],col2:a[4],style:a[5],ring:a[6],n:a[7],text:a[8],shape:a[9],deco:a[10],type:'a'};
 for(const c of COS_CAPES) COS_CAPE[c[0]]={id:c[0],name:c[1],grade:c[2],col:c[3],trim:c[4],len:c[5],text:c[6],pat:c[7],mantle:c[8],type:'c'};
 const cosKey=(type,id)=>type+':'+id;

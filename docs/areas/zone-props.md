@@ -15,7 +15,7 @@ Goblin Woods / Hobgoblin Warrens / Chieftain's Hold: hide huts, war huts, fires,
 
 ## Adding a prop or a theme
 
-1. `zpDef('id',{gen,glow?,mat?,w,hgt,sink,rad,cast,tilt})` in a models file: `gen()` returns ONE painted geometry (`merge([...])` of `zpBox` / `zpCyl` / `zpBlob` / `zpDome` / `zpPrism` / `zpSpire` / `zpRibs` / `zpLathe` / `zpStrand`), base at y=0, about 1 unit = 1 m. `glow()` is a second geometry drawn unlit (lantern panes, embers, rune lines). Keep it under ~800 triangles (the smoke test fails above 1,500). Draw from `h3` / the part index, never the global `rand`.
+1. `zpDef('id',{gen,glow?,mat?,w,hgt,sink,rad,cast,tilt})` in a models file: `gen()` returns ONE painted geometry (`merge([...])` of `zpBox` / `zpCyl` / `zpBlob` / `zpDome` / `zpSpire` / `zpRibs` / `zpLathe` / `zpStrand`), base at y=0, about 1 unit = 1 m. `glow()` is a second geometry drawn unlit (lantern panes, embers, rune lines). Keep it under ~800 triangles (the smoke test fails above 1,500). Draw from `h3` / the part index, never the global `rand`.
 2. Add it to a `zpTheme` row (or `ZP_BOSS`). A row naming a missing kind lands in `ZP_BAD` and the smoke test fails.
 3. A new zone needs a `zpTheme` row, even one with no props (`dens` 0): the smoke test fails for a zone without one.
 

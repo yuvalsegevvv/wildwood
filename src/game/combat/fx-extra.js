@@ -12,7 +12,7 @@
 const FXX={scorch:[],bolts:[],runes:[],domes:[],slashes:[],debris:null,flashEl:null,flashA:0};
 const FXX_DEB=LOW?24:64, FXX_SCORCH=LOW?3:8, FXX_BOLTS=LOW?4:10;
 const fxxDiscGeo=new THREE.CircleGeometry(1,28).rotateX(-Math.PI/2), fxxCrackGeo=new THREE.RingGeometry(0.72,1,28).rotateX(-Math.PI/2);
-const fxxTriGeo=new THREE.RingGeometry(0.9,1,3).rotateX(-Math.PI/2), fxxHexGeo=new THREE.RingGeometry(0.93,1,6).rotateX(-Math.PI/2), fxxRingGeo=new THREE.RingGeometry(0.97,1,40).rotateX(-Math.PI/2);
+const fxxTriGeo=new THREE.RingGeometry(0.9,1,3).rotateX(-Math.PI/2), fxxHexGeo=new THREE.RingGeometry(0.93,1,6).rotateX(-Math.PI/2);
 const fxxCrescentGeo=new THREE.RingGeometry(1.5,2.3,20,1,-Math.PI*0.42,Math.PI*0.84).rotateX(-Math.PI/2), fxxDomeGeo=new THREE.SphereGeometry(1,16,10,0,TAU,0,Math.PI/2);
 const fxxDebGeo=new THREE.BoxGeometry(0.28,0.2,0.24), fxxDebMat=new THREE.MeshBasicMaterial({color:0xffffff});
 const fxxDebDummy=new THREE.Object3D(), fxxDebCol=new THREE.Color();

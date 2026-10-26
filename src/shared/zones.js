@@ -7,7 +7,6 @@
    Agent map. Exports: ZONES (every zone of every land, as the land files push them), ZONE_OF_ID (atlas zone id -> home / vale record), zoneOfAtlas(A,extra) (makes a record: x, z the pole, R, rays), atlasZoneAt(x,z),
    zonePoint(zn,fa,fr), zoneAt, edgeZoneAt, defZone, zoneRidge, poiNamed(name) (an atlas poi), arenaAtPoi(poi,o) (an arena's record), ARENA (the Stone Circle). Used by vale.js, beach.js, server/monsters.js,
    professions.js, quests.js, the map. Test: tools/atlas-smoke.js, tools/server-smoke.js. */
-const RIDGE_H=7;   // (the Reach's ridges, shared/hoarfrost.js, still use it)
 const ZONE_NAMES={1:'Slime Meadow',2:'Mushroom Hollow',3:'Beetle Thicket',4:'Boar Run',5:'Goblin Woods',6:'Treant Grove',7:'The Bog',8:'Deathcap Dell',9:'Ironshell Ridge',10:'Dire Wallows',11:'Hobgoblin Warrens',12:'Rotwood',13:'Ember Flats',14:"Chieftain's Hold",15:'Ancient Grove',boss:'The Stone Circle'};
 const ZONES=[], ZONE_OF_ID=[], ZONE_RAYS=64;   // ZONE_OF_ID[atlas zone id] -> its record
 /* The pole of each home and vale zone (the dry cell farthest from its borders, the coast and the water, clear of the villages) and its radius along ZONE_RAYS rays (to the first cell that is another zone):

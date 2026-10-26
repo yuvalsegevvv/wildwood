@@ -72,8 +72,9 @@ function caveGen(F){
   const dead=[];
   function rockClear(x,z,r,m){ const x0=Math.max(1,Math.floor(x-r-m)), x1=Math.min(W-2,Math.ceil(x+r+m)), z0=Math.max(1,Math.floor(z-r-m)), z1=Math.min(H-2,Math.ceil(z+r+m)), R=r+m;
     for(let zz=z0;zz<=z1;zz++) for(let xx=x0;xx<=x1;xx++){ const dx=xx+0.5-x, dz=zz+0.5-z; if(dx*dx+dz*dz<=R*R&&open[at(xx,zz)]) return false; } return inb(Math.floor(x),Math.floor(z),5); }
+  let dwStale=true;   // dw is the distance field of `open` as it was when distToRock last ran: sideTunnel tries up to 600 times and open changes only when one is stamped, so it recomputes only after a change
   function sideTunnel(len,rad,free,apply,rock){   // tries once; returns {pts,ex,ez} or null. free: the first steps may touch the open air
-    distToRock();
+    if(dwStale){ distToRock(); dwStale=false; }
     let sx=0,sz=0,found=false; for(let k=0;k<60&&!found;k++){ const x=ri(6,W-7), z=ri(6,H-7), i=at(x,z); if(open[i]&&dw[i]>=1.4&&dw[i]<=2.6){ sx=x; sz=z; found=true; } }
     if(!found) return null;
     let gx=dw[at(sx+1,sz)]-dw[at(sx-1,sz)], gz=dw[at(sx,sz+1)]-dw[at(sx,sz-1)], gl=Math.sqrt(gx*gx+gz*gz);
@@ -90,12 +91,12 @@ function caveGen(F){
   const wantSide=G.side;
   for(let tries=0;tries<500&&dead.length<wantSide;tries++){
     const len=ri(16,30), t=sideTunnel(len,1.55,7,false,2.2); if(!t) continue;
-    for(const p of t.pts) stamp(p[0],p[1],1.55); const e=t.pts[t.pts.length-1]; stamp(e[0],e[1],2.7); dead.push({x:e[0],z:e[1],len,sx:t.sx,sz:t.sz});
+    for(const p of t.pts) stamp(p[0],p[1],1.55); const e=t.pts[t.pts.length-1]; stamp(e[0],e[1],2.7); dead.push({x:e[0],z:e[1],len,sx:t.sx,sz:t.sz}); dwStale=true;
   }
   // ---- rough, then smooth the edges, keep the start's region ----
   { const flip=new Uint8Array(N); for(let z=2;z<H-2;z++) for(let x=2;x<W-2;x++){ const i=at(x,z), s=open[i-1]+open[i+1]+open[i-W]+open[i+W]; if(s>0&&s<4&&caveHash(x,z,SEED+5)<0.5) flip[i]=1; }
     for(let i=0;i<N;i++) if(flip[i]) open[i]=1-open[i]; }
-  for(let pass=0;pass<2;pass++){ const nx=new Uint8Array(N); for(let z=2;z<H-2;z++) for(let x=2;x<W-2;x++){ let c=0; for(let dz=-1;dz<=1;dz++) for(let dx=-1;dx<=1;dx++) c+=open[at(x+dx,z+dz)]; nx[at(x,z)]=c>=5?1:0; } open.set(nx); }
+  for(let pass=0;pass<2;pass++){ const nx=new Uint8Array(N); for(let z=2;z<H-2;z++) for(let x=2;x<W-2;x++){ const i=at(x,z), c=open[i-W-1]+open[i-W]+open[i-W+1]+open[i-1]+open[i]+open[i+1]+open[i+W-1]+open[i+W]+open[i+W+1]; nx[i]=c>=5?1:0; } open.set(nx); }   // (the 3x3 count)
   const c0=ch[0], sc=at(Math.floor(c0.x),Math.floor(c0.z));
   { const keep=new Uint8Array(N), q=[sc]; keep[sc]=1; open[sc]=1; for(let h=0;h<q.length;h++){ const c=q[h], cx=c%W, cz=(c-cx)/W; for(const [dx,dz] of CAVE_NB4){ const nx=cx+dx, nz=cz+dz, ni=at(nx,nz); if(inb(nx,nz,1)&&open[ni]&&!keep[ni]){ keep[ni]=1; q.push(ni); } } }
     for(let i=0;i<N;i++) open[i]=keep[i]; }
@@ -128,7 +129,7 @@ function caveGen(F){
       if(bad||total<50){ lava.set(bak); continue; } n++; }
   }
   // ---- the vault: a pocket in solid rock, shut by a short stretch of rock (the seal) ----
-  let vault=null;
+  let vault=null; dwStale=true;   // (the smoothing, the lava and the pillars changed open since the last tunnel)
   for(let tries=0;tries<120&&!vault;tries++){
     const t=sideTunnel(ri(17,21),1.55,7,true,2.4); if(!t) continue;
     const seal=[], tmp=[]; t.pts.forEach((p,i)=>{ const r=1.55; const x0=Math.floor(p[0]-r), x1=Math.ceil(p[0]+r), z0=Math.floor(p[1]-r), z1=Math.ceil(p[1]+r);
@@ -148,11 +149,11 @@ function caveGen(F){
     river.reverse();   // from the start's side toward the deep end: the way it flows
   }
   // ---- heights at the cell corners ----
-  const hgt=new Float32Array((W+1)*(H+1)), amp=F.gen&&F.gen.relief!==undefined?F.gen.relief:0.5;
+  const hgt=new Float32Array((W+1)*(H+1)), amp=F.gen&&F.gen.relief!==undefined?F.gen.relief:0.5, waterDepth=F.gen&&F.gen.waterDepth!==undefined?F.gen.waterDepth:0.45;
   for(let j=0;j<=H;j++) for(let i=0;i<=W;i++){
-    let wa=0, la=0; for(const [dx,dz] of [[-1,-1],[0,-1],[-1,0],[0,0]]){ const x=i+dx, z=j+dz; if(x>=0&&z>=0&&x<W&&z<H){ wa+=water[at(x,z)]; la+=lava[at(x,z)]; } }
+    let wa=0, la=0; for(let z=j-1;z<=j;z++) for(let x=i-1;x<=i;x++) if(x>=0&&z>=0&&x<W&&z<H){ const k=z*W+x; wa+=water[k]; la+=lava[k]; }   // (the four cells round the corner)
     let h=(noise2(i*2*0.035,j*2*0.035)*0.6+noise2(i*2*0.11+7,j*2*0.11-3)*0.25)*amp;
-    h-=wa/4*(F.gen&&F.gen.waterDepth!==undefined?F.gen.waterDepth:0.45); h-=la/4*1.1;
+    h-=wa/4*waterDepth; h-=la/4*1.1;
     hgt[j*(W+1)+i]=h;
   }
   const flat=(cx,cz,r,y)=>{ for(let j=Math.floor(cz-r-2);j<=Math.ceil(cz+r+2);j++) for(let i=Math.floor(cx-r-2);i<=Math.ceil(cx+r+2);i++){ if(i<0||j<0||i>W||j>H) continue; const d=Math.sqrt((i-cx)*(i-cx)+(j-cz)*(j-cz)); if(d>r+2) continue; const k=j*(W+1)+i, t=d<=r?1:1-(d-r)/2; hgt[k]+=(y-hgt[k])*t; } };

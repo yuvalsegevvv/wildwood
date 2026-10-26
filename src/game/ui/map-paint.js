@@ -11,7 +11,7 @@ const MPC={   // the docs map's colours (docs/world-map.py COL and its symbols),
   snow:[.94,.96,.98], frost:[.80,.88,.94], tundra:[.68,.66,.55], iceRock:[.58,.63,.68], ice:[.66,.83,.94], needle:[.27,.44,.40],
   alpine:[.46,.61,.35], scree:[.64,.62,.57], rock:[.60,.56,.50], rockHi:[.72,.69,.64], coast:[.17,.14,.09], heath:[.44,.47,.45]
 };
-const _mpc=[0,0,0], _mph=[0,0,0];
+const _mpc=[0,0,0];
 const mapPaintSet=(o,c)=>{ o[0]=c[0]; o[1]=c[1]; o[2]=c[2]; };
 const mapPaintMix=(o,c,t)=>{ if(t<=0) return; if(t>1) t=1; o[0]+=(c[0]-o[0])*t; o[1]+=(c[1]-o[1])*t; o[2]+=(c[2]-o[2])*t; };
 // the sea: turquoise shallows, then blue, then deep, by how far from the coast (c: the waterline is about 21), with a pale line of foam along the shore

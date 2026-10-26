@@ -194,7 +194,7 @@ shared
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
-  world.js                           Server heightmap over the whole world (coarser than the client's): SEG, HS, getH, grad
+  world.js                           Server heightmap over the whole world (coarser than the client's): SEG, HS, getH, grad; the grid is baked into dist/wildwood-server.js by the build (heightbake)
   players.js                         Players on the server: records, stats, XP and levels, damage taken, knock-out and respawn, private state ("you")
   monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops

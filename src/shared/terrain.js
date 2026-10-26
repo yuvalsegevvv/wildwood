@@ -64,7 +64,6 @@ function borderZ(x){
     r=HZ0+(-35+80*w)*k; }
   _bZx=x; return _bZv=r;
 }
-const borderXat=(x,z)=>z<borderZ(x)?borderXN(z):borderX(z);   // the wall on the west side of this point's land: the Vale Wall (south of the north wall), the Greyspine | Reach wall (north of it)
 /* The land tests answer from the atlas (shared/world-atlas.js: waLandId is total, the sea and the islands take the nearest land). Their old meanings stay: inVale is the vale AND the Reach, inGrey the Greyspine AND the Gloamhorn
    (ask inGloam first), inSun the Sunscar (and Amber Reach, the seventh land south of it: ask inAmber BEFORE inSun, as inGloam before inGrey). */
 const inVale=(x,z)=>{ const l=waLandId(x,z); return l===1||l===2; };   // the Sakura Vale and the Hoarfrost Reach

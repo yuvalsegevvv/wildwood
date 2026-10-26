@@ -230,7 +230,7 @@ What each test checks: `node tools/run-tests.js --list` (one line each) and the 
 
 ## 7. Deploy (Render)
 
-`render.yaml`: build `npm install --omit=dev ... && python3 build.py`, start `node dist/wildwood-server.js --no-dev` (testing tools off for players), health check `/healthz`.
+`render.yaml`: build `npm install --omit=dev ... && python3 build.py` (which also bakes the server's height grid into `dist/wildwood-server.js` with node, halving the start: `src/server/world.js` `hbLoad`, `tools/bake-heights.js`, cached in `dist/heightbake.json`, `--no-bake` skips it; test `heightbake-smoke`), start `node dist/wildwood-server.js --no-dev` (testing tools off for players), health check `/healthz`.
 The Node host (`src/node/main.js`) outlives bad input and bad code paths: a throw in `tick()` or in a message handler is logged by `logErr` (the first time and every 1000th) and the server goes on; 100 failing ticks in a row (5 s) save everyone and exit so Render restarts it; unhandled rejections and stray exceptions are logged, not fatal. One socket may send `MSG_RATE` = 120 messages a second (a burst of `MSG_BURST` = 240; the rest are dropped, 3000 dropped in a row end the connection), a message in fragments at most 1 MB.
 Live at https://wildwood-wib9.onrender.com (free plan: sleeps after 15 min idle, ~30-50 s to wake). `dist/` is not committed; `GET /status` shows players, monsters, the storage kind and the saved accounts.
 Saves: a free Neon Postgres through Render's `DATABASE_URL` (the secret lives only in Render and Neon, never in the repo or chat); without it, JSON files in `DATA_DIR`, which Render wipes on every deploy.
