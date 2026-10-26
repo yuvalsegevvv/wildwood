@@ -1,5 +1,6 @@
 /*@ Skills panel (slots, tabs, tiles, details, upgrades), the Soul Hall, element chips, monster drops, the burst button, the skill slot's states */
 #skills, #soul{ width:min(680px,calc(100vw - 24px)); }
+#skills{ width:min(920px,calc(100vw - 24px)); }   /* room for the loadout (active | passive) beside the skill list */
 /* ---- elements: a chip, the colour dot on tiles, the ring on the action bar ---- */
 .el-chip{ display:inline-flex; align-items:center; gap:4px; padding:1px 9px 1px 6px; border-radius:999px; font-size:11.5px; font-weight:600; line-height:1.5; color:var(--el); border:1px solid var(--el); background:rgba(238,240,226,.06); white-space:nowrap; }
 .el-chip svg{ width:13px; height:13px; flex:none; }
@@ -39,7 +40,7 @@
 .sk-tile.has-el{ border-color:var(--el); }
 .sk-ghost{ color:var(--lichen); } .sk-ghost svg{ width:34px; height:34px; }
 /* ---- the loadout (left) beside the skill list (right), like the equipment on the body beside the bag ---- */
-.sk-main{ display:grid; grid-template-columns:minmax(0,1fr); gap:10px; align-items:start; margin-top:4px; }
+.sk-main{ display:grid; grid-template-columns:minmax(0,440px) minmax(0,1fr); gap:10px; align-items:start; margin-top:4px; }
 .sk-left{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; align-items:start; }   /* active skills | passive skills */
 .sk-lcol .sk-load-h{ margin-top:2px; }
 .sk-main .sk-load{ grid-template-columns:1fr; gap:6px; }
@@ -107,6 +108,7 @@ body.touch .ab-burst{ width:56px; height:56px; align-self:center; }
 .ab.buffed{ box-shadow:0 0 0 2px rgba(255,120,90,.8), 0 0 14px rgba(255,120,90,.5); }
 .ab-burst{ opacity:1; }
 .ab-burst.empty{ opacity:.7; }
+@media (max-width:960px){ .sk-main{ grid-template-columns:minmax(0,215px) minmax(0,1fr); } .sk-left{ grid-template-columns:1fr; } }   /* narrower window: the loadout stacks again, beside the list */
 @media (max-width:719px){
   #skills, #soul{ width:auto; }
   .sk-slot b, .sk-pslot b{ font-size:12px; }
@@ -115,4 +117,4 @@ body.touch .ab-burst{ width:56px; height:56px; align-self:center; }
   .sk-tile{ width:52px; height:52px; }
   .sk-main{ grid-template-columns:1fr; }
 }
-@media (max-width:520px){ .sk-left{ grid-template-columns:1fr; } }
+@media (max-width:719px) and (min-width:521px){ .sk-left{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
