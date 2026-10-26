@@ -4,7 +4,7 @@
 const CLASSES={
   warrior:{name:'Warrior',basic:{name:'Slash',cd:0.7,range:3,mult:1},
            desc:'Sword and shield. Slash hits everything in a wide arc in front of you. Skills: Whirlwind, Shield Bash, Charge.'},
-  archer: {name:'Archer', basic:{name:'Shoot',cd:0.8,range:32,mult:0.9},
+  archer: {name:'Archer', basic:{name:'Shoot',cd:0.75,range:32,mult:1.2},
            desc:'Longbow and quiver. Shoot fires a homing arrow at your target from far away. Skills: Volley, Piercing Shot, Arrow Rain.'},
   mage:   {name:'Mage',   basic:{name:'Firebolt',cd:1.1,range:26,mult:1.3},
            desc:'Staff and spells. Firebolt hurls a ball of fire that bursts on impact and singes nearby foes. Skills: Frost Nova, Chain Lightning, Meteor.'}
@@ -22,7 +22,7 @@ const SKILL_SLOT_LV=3, BURST_SLOT_LV=10, SLOTS=['basic','skill','burst'];
 const SKILLS={
   // ---- basic attacks ----
   slash:{cls:'warrior',slot:'basic',name:'Slash',cd:0.7,range:3,mult:1,price:0,lv:1,act:['slash',0.5,0.45],desc:'Hit everything in a wide arc in front of you.'},
-  shoot:{cls:'archer',slot:'basic',name:'Shoot',cd:0.8,range:32,mult:0.9,price:0,lv:1,act:['shoot',0.55,0.6],desc:'A homing arrow at your target, from far away.'},
+  shoot:{cls:'archer',slot:'basic',name:'Shoot',cd:0.75,range:32,mult:1.2,price:0,lv:1,act:['shoot',0.55,0.6],desc:'A homing arrow at your target, from far away.'},
   firebolt:{cls:'mage',slot:'basic',el:'fire',name:'Firebolt',cd:1.1,range:26,mult:1.3,price:0,lv:1,act:['cast',0.6,0.5],desc:'A ball of fire that bursts on impact and singes nearby foes.'},
   iceshard:{cls:'mage',slot:'basic',el:'water',name:'Ice Shard',cd:0.7,range:28,mult:0.8,price:250,lv:4,act:['shard',0.42,0.5],anim:'cast',desc:'A fast shard of ice. Quicker than Firebolt, no splash, and it slows what it hits.'},
   missiles:{cls:'mage',slot:'basic',el:'dark',name:'Arcane Missiles',cd:1.5,range:26,mult:0.6,price:900,lv:8,act:['missiles',0.65,0.5],anim:'cast',desc:'Three homing missiles that spread over the enemies around your target.'},
