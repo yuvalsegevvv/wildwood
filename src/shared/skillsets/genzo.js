@@ -23,6 +23,9 @@ defineSkillSet({
        skill:{any:{name:'Hold the Hour', desc:'Stand in the gate and let the great bell sound: a taunt for 6 seconds (a boss\'s melee for half of that), 30% less damage taken and a shield worth 14% of health (and 3% more for each Toll nearby) for you and your party for 8 seconds. The great note mends you and your allies for 18% of maximum health, then it spends every Toll nearby for extra damage, and a share of it heals you.', cd:40, range:8, mult:1.25, act:['genzo3x',0.9,0.6], anim:'nova',
                    fx:{ring:{r:8, kb:6}, taunt:{dur:6, r:16}, ally:{kind:'guard', v:0.3, dur:8, r:20}, shield:{v:0.14, dur:8, r:20, perMark:{id:'toll', v:0.03, r:10}}, pop:{id:'toll', k:0.6, r:8, heal:0.4}, heal:{v:0.18, r:20}}}},
        passive:{name:'Temple Robes', text:'+{}% maximum health; you deal 10% less damage', stat:'hp', v:[0.10, 0.02], cost:{stat:'dmg', v:-0.10}}}},
+  ult:{name:'Thousand Tolls', desc:'The great bell drops over him and rings three times, a 9 m gust each; the stunned are dazed by the sound.', range:9, mult:0.69, act:['genzoult',1.2,0.5], anim:'nova',
+       fx:{zone:{r:9, dur:1.2, first:0.2, every:0.5, self:true, kb:3}},
+       boost:[{piece:'cave', secs:12, mod:{mult:2}}, {piece:'p2', secs:16, mod:{v:2.5}}]},
   bonus:{
     3:{name:'First Toll', text:'The first taunt of a fight raises a shield worth 10% of your maximum health for 6 s (at most every 12 s)', on:'taunt', icd:12, shield:{v:0.10, dur:6}},
     5:{name:'The Bell Answers', text:'When a shield of yours breaks or runs out, the bell answers: a gust 6 m round you that throws enemies back (at most every 5 s)', on:'shield', icd:5, mult:0.9, range:6, fx:{ring:{r:6, kb:8}}}},

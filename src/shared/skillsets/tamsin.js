@@ -23,6 +23,9 @@ defineSkillSet({
        skill:{any:{name:'The Mountain Moves', desc:'The widest ring of any skill goes out around you, then a slide of rubble lingers for 2.5 seconds: it finishes what you gathered, and you stand in it behind a shield worth 12% of your health with 15% less damage taken.', cd:36, range:11, mult:1.8, act:['tamsin3x',0.9,0.6], anim:'nova',
                    fx:{vsBoss:0.5, ring:{r:11, kb:3}, zone:{r:8, dur:2.5, every:0.5, self:true}, shield:{v:0.12, dur:6, r:11}, ally:{kind:'guard', v:0.15, dur:6, r:11}}}},
        passive:{name:'Second Load', text:'A multi-kill (four enemies within 2 s) takes 4 s off Pull the Slope\'s cooldown (at most every 6 s)', on:'kill', icd:6, streak:{n:4, secs:2}, cdr:{skill:4}}}},
+  ult:{name:'Fault Line', desc:'One hammer blow splits the ground: a 20 m crack runs ahead, then the whole line heaves up and pins what it catches in rubble.', range:20, mult:2.7, act:['tamsinult',1.0,0.6], anim:'slash',
+       fx:{cone:{r:20, arc:0.3, kb:4}},
+       boost:[{piece:'a1', secs:12, mod:{mult:2, size:1.3}}, {piece:'p3', secs:16, mod:{icd:0.25, eff:2}}]},
   bonus:{
     3:{name:'Cleared Ground', text:'A kill takes 1 s off every cooldown (at most every 2 s)', on:'kill', icd:2, cdr:{all:1}},
     5:{name:'Aftershock', text:'While three or more enemies are within 8 m, every 4 s a tremor rolls out 8 m for 80% damage', on:'tick', icd:4, when:{crowd:{n:3, r:8}}, mult:1.6, range:8, fx:{vsBoss:0.5, ring:{r:8, kb:2}}}},

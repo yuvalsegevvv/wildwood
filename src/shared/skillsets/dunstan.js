@@ -24,6 +24,9 @@ defineSkillSet({
        skill:{any:{name:'Banner Down', desc:'Plant the banner at your feet for 8 seconds: you and your allies standing within 9 m get 20% more critical hit chance, 40% more critical damage and 2% health back a second, and the flame at its foot burns the enemies there.', cd:45, range:9, mult:0.5, act:['dunstan3x',0.9,0.6], anim:'nova',
                    fx:{zone:{r:9, dur:8, every:1, self:true, ally:[{kind:'crit', v:0.20, dur:2.5}, {kind:'critdmg', v:0.40, dur:2.5}, {kind:'regen', v:0.02, dur:2.5}]}}}},
        passive:{name:'Hoarse', text:'+{}% damage with every attack; your cooldowns are 8% longer', stat:'dmg', v:[0.06, 0.01], cost:{stat:'cd', v:-0.08}}}},
+  ult:{name:'Last Stand Banner', desc:'A burning war banner crashes down on the target (8 m) and sets the ground alight; the stunned cower before it.', range:24, mult:1.5, act:['dunstanult',1.0,0.55], anim:'nova',
+       fx:{zone:{r:8, dur:4, first:0.3, every:1}},
+       boost:[{piece:'a2', secs:12, mod:{mult:2, util:1.25}}, {piece:'p3', secs:16, mod:{v:2.5}}]},
   bonus:{
     3:{name:'Rousing', text:'The buffs you give are {}% stronger (still capped)', stat:'buffpow', v:0.20},
     5:{name:'Blaze of Glory', text:'Banner Down also quickens you and your allies within 25 m: 20% shorter cooldowns for 8 s', on:'cast3', buff:{kind:'haste', v:0.20, dur:8, r:25}}},

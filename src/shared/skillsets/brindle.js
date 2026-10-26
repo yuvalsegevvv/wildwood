@@ -24,6 +24,9 @@ defineSkillSet({
        skill:{any:{name:'Noon Charge', desc:'Throw the whole belt: a charge of sun-glass bursts over a 6 m circle and sets it ablaze. It spends every Glint on the target and everything within 6 m of it for extra damage, and you and your party within 20 m deal 15% more damage and hit harder on a critical for 8 seconds.', cd:34, range:22, mult:2.4, act:['brindle3x',0.8,0.55], anim:'cast',
                    fx:{proj:{kind:'ember', speed:26, turn:6, life:1.1, splash:{r:6, k:1.0}, burn:{dur:4, k:0.3}}, pop:{id:'glint', k:0.7, r:6}, ally:[{kind:'might', v:0.15, dur:8, r:20}, {kind:'critdmg', v:0.25, dur:8, r:20}]}}},
        passive:{name:'Every Coin Counts', text:'+{}% damage with every attack; your cooldowns are 8% longer', stat:'dmg', v:[0.06, 0.01], cost:{stat:'cd', v:-0.08}}}},
+  ult:{name:'High Noon', desc:'He holds up a huge lens: a sunbeam burns a 30 m line and leaves a Glint on everything it crosses.', range:30, mult:3.96, act:['brindleult',1.1,0.6], anim:'cast',
+       fx:{cone:{r:30, arc:0.3, mark:{id:'glint', n:2, dur:12, max:5}}},
+       boost:[{piece:'a1', secs:14, mod:{mult:2, n:2}}, {piece:'p2', secs:14, mod:{v:2.5}}]},
   bonus:{
     3:{name:'Warm Lenses', text:'While you fight, you and your allies within 20 m deal 4% more damage (refreshed every 3 s)', on:'tick', icd:3, buff:{kind:'might', v:0.04, dur:4, r:20}},
     5:{name:'Fuse Lit', text:'A critical hit on a target carrying a Glint sets the enemies within 5 m of it ablaze with a burst for 90% damage (at most every 3 s)', on:'crit', when:{marked:'glint'}, at:'target', icd:3, mult:0.9, range:5, fx:{ring:{r:5, burn:{dur:3, k:0.3}}}}},

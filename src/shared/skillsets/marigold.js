@@ -25,6 +25,9 @@ defineSkillSet({
        skill:{any:{name:'Curtain Call', desc:'The transformation: a pulse of light 9 m round you hurts the enemies there (and spends your Applause for extra damage), while you and your allies within 25 m take 20% less damage and are 20% quicker (shorter cooldowns) for 8 seconds, and a second longer for each Applause. You change for as long as it lasts: a halo of lanterns and ribbon wings.', cd:42, range:9, mult:1.2, act:['marigold3x',0.9,0.6], anim:'nova',
                    fx:{ring:{r:9, kb:3}, ally:[{kind:'guard', v:0.20, dur:8, r:25, perMark:{id:'applause', dur:1, r:9}}, {kind:'haste', v:0.20, dur:8, r:25, perMark:{id:'applause', dur:1, r:9}}], pop:{id:'applause', k:0.5, r:9}}}},
        passive:{name:'Stage Fright', text:'+{}% damage with every attack; you have 8% less maximum health', stat:'dmg', v:[0.07, 0.01], cost:{stat:'hp', v:-0.08}}}},
+  ult:{name:'Standing Ovation', desc:'A spotlight lands on the target, then fireworks (7 m) fill its Applause to 5; the stunned freeze in the light.', range:24, mult:1.8, act:['marigoldult',1.0,0.6], anim:'nova',
+       fx:{zone:{r:7, dur:0.5, once:true, mark:{id:'applause', n:5, dur:12, max:5}}},
+       boost:[{piece:'a1', secs:14, mod:{mult:2, n:2}}, {piece:'a3', secs:10, mod:{mult:2, cd:0.5}}]},
   bonus:{
     3:{name:'Warm-Up', text:'While you fight, you and your allies within 20 m regenerate 1.2% of maximum health a second (refreshed every 3 s)', on:'tick', icd:3, buff:{kind:'regen', v:0.012, dur:4, r:20}},
     5:{name:'Grand Finale', text:'Curtain Call also lets you and your allies within 25 m regenerate 3% of maximum health a second for 10 s', on:'cast3', buff:{kind:'regen', v:0.03, dur:10, r:25}}},

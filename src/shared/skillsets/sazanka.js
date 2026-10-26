@@ -25,6 +25,9 @@ defineSkillSet({
        skill:{any:{name:'Dusk Flurry', desc:'Spend every Barb at once on the target and everything within 4 m of it, then fight in a three-second flurry round you that follows you. Stronger from behind.', cd:32, range:6, mult:0.3, act:['sazanka3x',0.7,0.4], anim:'spin', el:'dark',
                    fx:{zone:{r:3.4, dur:2.5, every:0.25, self:true, follow:true}, pop:{id:'barb', k:1.0, r:4}, behind:1.6}}},
        passive:{name:'Quick Study', text:'+{}% critical hit chance against a target carrying Barbs', stat:'crit', v:[0.12, 0.01], when:{marked:'barb'}}}},
+  ult:{name:'New Moon', desc:'She vanishes, comes back behind the target and lands a six-cut flurry; the stunned lose sight of her.', range:4, mult:0.75, act:['sazankault',0.9,0.4], anim:'spin',
+       fx:{cone:{r:4, arc:1.2, hits:6}, behind:1.6},
+       boost:[{piece:'a2', secs:10, mod:{cd:0.4}}, {piece:'p3', secs:12, mod:{v:2.5}}]},
   bonus:{
     3:{name:'First Cut', text:'The first hit on a target from behind (every 2 s) adds a second Barb and cuts again for 90% damage', on:'hit', when:{behind:true}, icd:2, mark:{id:'barb', n:1, dur:10, max:5}, mult:0.9, range:3.4, fx:{cone:{r:3.4, arc:1.2}, behind:1.6}},
     5:{name:'Open Season', text:'A kill or a critical hit takes 2.5 s off Dusk Flurry\'s cooldown (at most every 1.5 s)', on:['kill', 'crit'], icd:1.5, cdr:{burst:2.5}}},

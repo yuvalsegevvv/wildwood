@@ -29,6 +29,9 @@ defineSkillSet({
          mage:{name:'Flare of the Pool', desc:'Gather the torch fire and loose one flare: up to 2.2 times as hard at 34 m. Spends every Lure on the target.', cd:28, range:34, mult:6.0, act:['pell3m',1.3,1.1], anim:'cast',
                fx:{proj:{kind:'ember', speed:62, turn:12, life:0.9}, rangeScale:{from:5, to:34, k:2.2}, pop:{id:'lure', k:0.8}}}},
        passive:{name:'Far Bank', text:'+{}% damage with every attack; you deal 20% less to a target within 6 m', stat:'dmg', v:[0.12, 0.02], cost:{stat:'dmg', v:-0.20, when:{dist:{to:6}}}}}},
+  ult:{name:'Lantern Flood', desc:'The spear is thrown into the ground and a pool of fire spreads (8 m), with 3 Lures on everything in it.', range:30, mult:1.5, act:['pellult',1.1,0.9], anim:'slash',
+       fx:{zone:{r:8, dur:3, first:0.3, every:0.5, mark:{id:'lure', n:3, dur:12, max:3}}},
+       boost:[{piece:'a3', secs:12, mod:{mult:2, cd:0.5}}, {piece:'p2', secs:14, mod:{v:2.5}}]},
   bonus:{
     3:{name:'Eel-Light', text:'a target carrying your Lure takes 10% more from you for each Lure', amp:{id:'lure', per:0.10}},
     5:{name:'The Pool Burns', text:'Your third-slot attack sets everything in a 6 m circle round the target ablaze for 120% damage', on:'cast3', at:'target', mult:1.2, range:6, fx:{ring:{r:6, burn:{dur:4, k:0.3}}}}},

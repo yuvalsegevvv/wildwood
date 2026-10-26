@@ -24,6 +24,9 @@ defineSkillSet({
        skill:{any:{name:'Final Curtsy', desc:'Bow and the strings go taut: every enemy within 12 m deals 20% less damage for 8 seconds (2% less for each String; the cap is 30%), and you and your allies within 25 m take 15% less damage and get 15% more crit damage for 8 seconds.', cd:42, range:12, mult:1.6, act:['ottoline3x',0.9,0.6], anim:'nova',
                    fx:{ring:{r:12, status:{kind:'weak', v:0.20, dur:8, perMark:{id:'string', v:0.02}}, mark:{id:'string', n:1, dur:12, max:3}}, ally:[{kind:'guard', v:0.15, dur:8, r:25}, {kind:'critdmg', v:0.15, dur:8, r:25}]}}},
        passive:{name:'Glass Eyes', text:'+{}% damage with every attack; your cooldowns are 8% longer', stat:'dmg', v:[0.06, 0.01], cost:{stat:'cd', v:-0.08}}}},
+  ult:{name:'Danse Macabre', desc:'Porcelain dolls waltz out in a 9 m ring and tie 3 Strings to all they pass; the stunned hang like puppets.', range:9, mult:2.4, act:['ottolineult',1.0,0.6], anim:'nova',
+       fx:{ring:{r:9, mark:{id:'string', n:3, dur:12, max:3}}},
+       boost:[{piece:'a3', secs:10, mod:{mult:2, util:1.25}}, {piece:'p3', secs:14, mod:{v:2.5}}]},
   bonus:{
     3:{name:'Tangle', text:'a target carrying your String takes {}% more from you for each String', amp:{id:'string', per:0.08}},
     5:{name:'Last Dance', text:'Your third-slot attack also gives you and your allies within 25 m 15% more damage for 10 seconds and puts a weakening wave over the enemies within 12 m', on:'cast3', buff:{kind:'might', v:0.15, dur:10, r:25}, mult:0.4, range:12, fx:{ring:{r:12, status:{kind:'weak', v:0.12, dur:6}}}}},
