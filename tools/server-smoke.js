@@ -2,7 +2,7 @@
 // Usage: node tools/server-smoke.js
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
-const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['inVillage','sanitizeGear','waLandId','WX0','WX1','WZ0','WZ1','VIL','VIL2','VIL3','VIL5','MONS','getH','W','BOSSES','COINS_MAX','EXP_MAX','rewardKill']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['inVillage','BAG_MAX','sanitizeGear','waLandId','WX0','WX1','WZ0','WZ1','VIL','VIL2','VIL3','VIL5','MONS','getH','W','BOSSES','COINS_MAX','EXP_MAX','rewardKill']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ for(let i=0;i<n;i++){ W.tick(0.05); if(keepAlive) for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
@@ -28,6 +28,10 @@ const y2=you('a'); ok('shop, rising price, equip',y2.gear.eq.helmet==='helmet1'&
   W.receive('a',{t:'buy',id:'helmet1'}); W.receive('a',{t:'sell',id:'helmet1'}); W.receive('a',{t:'merge',id:'helmet1'}); tick(1);
   ok('shop, forge and board messages from the field change nothing',p.gear.coins===c0&&p.gear.bought.helmet1===b0&&p.gear.inv.length===n0&&!x.inVillage(p));
   W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); tick(1); }
+{ const keep=p.gear.inv.slice(), c0=p.gear.coins, b0=p.gear.bought.sword1||0; while(p.gear.inv.length<x.BAG_MAX) p.gear.inv.push('helmet1');
+  W.receive('a',{t:'buy',id:'sword1'}); tick(1);
+  ok('a full bag does not take the price of a purchase',p.gear.coins===c0&&(p.gear.bought.sword1||0)===b0&&p.gear.inv.length===x.BAG_MAX);
+  p.gear.inv=keep; }
 for(const id of ['constructor','__proto__','toString','hasOwnProperty']) W.receive('a',{t:'buy',id});   // Object.prototype's names used to pass `if(!ITEM[id])` and charge NaN coins
 tick(1); ok('a prototype name is never an item id (coins stay a number, nothing is added)',Number.isInteger(p.gear.coins)&&p.gear.coins>=0&&!p.gear.inv.some(id=>typeof id!=='string'||id==='constructor'||id==='toString'),'coins '+p.gear.coins);
 W.receive('a',{t:'dev',cmd:'three'}); tick(1); const three=you('a').gear.inv.find(id=>you('a').gear.inv.filter(v=>v===id).length-(Object.values(you('a').gear.eq).includes(id)?1:0)>=3&&!id.includes('-'));   // (a worn copy does not count: the shop check above left three Leather Caps in the bag, one worn, and picking those made this flaky)
