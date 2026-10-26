@@ -6,7 +6,7 @@
 // Usage: node tools/skillsets-ladder.js [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
 // Also: require('./skillsets-ladder').ladder({W, x, pid}, opts) for a test (tools/skillsets-smoke.js runs it on a fixture); x must expose NAMES.
 const {loadServer}=require('./load');
-const NAMES=['MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S'];
+const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S'];
 const WEAPON={warrior:'sword1',archer:'bow1',mage:'wand1'}, CLASSES=['warrior','archer','mage'];
 // the bands in percent of the baseline: [the pieces alone, the 3-set, the 5-set] (docs/SKILL-SETS.md 5b; a mixed set sits between a support's 90 and its main kit's ladder)
 // the same tree measured 93 to 99 for one set's pieces and 128 vs 131 for another's 5- and 3-set between runs (also before the Amber Reach), so the orderings carry this much slack
@@ -23,7 +23,7 @@ function ladder(env,opts){
       m.face=opts.behind?Math.PI:0; m.dead=false; m.remove=false; m.hp=m.maxHp=1e12; m.slowT=m.burnT=0; m.mk=m.st=m.aura=m.rxIcd=m.taunt=null; m.immune=false; m.aggro=false; });
   };
   const pin=()=>dummies.forEach((m,i)=>{ m.x=spot[i][0]; m.z=spot[i][1]; m.kbx=m.kbz=0; m.vx=m.vz=0; m.stunT=1e9; });
-  const fresh=()=>{ arrange(); pin(); p.dead=false; p.hp=p.maxHp; p.act=null; p.cd={basic:0,skill:0,burst:0,cave:0}; p.cave.charge=0; p.ssIcd={}; p.ally=null; p.shield=null; p.buff=null; p.lastDealt=-99; x.recalcP(p); };
+  const fresh=()=>{ arrange(); pin(); p.dead=false; p.hp=p.maxHp; p.act=null; p.cd={basic:0,skill:0,burst:0,cave:0,ult:0}; p.ultB=null; p.ultV=null; p.cave.charge=0; p.ssIcd={}; p.ally=null; p.shield=null; p.buff=null; p.lastDealt=-99; x.recalcP(p); };
   const cast=k=>W.receive(env.pid,{t:'atk',k,tg:dummies[0].id,face:Math.PI,aim:[0,0,1]});
   // seconds of the rotation (burst, then skill, then basic, whichever is ready): damage a second to the dummy and to all seven
   const rotation=s=>{
@@ -34,6 +34,7 @@ function ladder(env,opts){
       p.lastMove=x.S.t; if(Math.hypot(p.x-home[0],p.z-home[1])>0.3){ const f=p.face; W.setPos(env.pid,[home[0],x.getH(home[0],home[1]),home[1],f,0,0]); }
       for(const m of dummies) m.face=Math.atan2(sgn*(p.x-m.x),sgn*(p.z-m.z));
       if(!p.act&&p.gear.skills.cave&&p.cave.charge>=x.CAVE_SKILLS[p.gear.skills.cave].cost&&p.cd.cave<=0.08) cast('cave');   // slot 4 (C3): spends its charge as soon as it can
+      if(!p.act&&opts.ultOn&&p.gear.skills.ult&&p.cd.ult<=0.08) cast('ult');   // slot 5 (docs/ULT.md): the burst as soon as it is ready
       if(!p.act) for(const k of ['burst','skill','basic']) if(p.cd[k]<=0.08&&x.abilityOf(x.clsOfP(p),k,p.gear.skills,p.level)){ cast(k); break; }
       W.tick(0.05); } } finally{ Math.random=R; }
     const lost=dummies.map((m,i)=>h0[i]-m.hp);
@@ -79,7 +80,11 @@ function ladder(env,opts){
       // slot 4 (docs/CAVE.md): the set's own cave skill at level 1 and 5 on top of all six pieces; its charge is fed by the casts, doubled for this set's pieces
       let c1=null, c5=null; const cs=(x.CAVE_SKILL_IDS||[]).map(i=>x.CAVE_SKILLS[i]).find(q=>q.set===id);   // a harness without the cave names (skillsets-smoke) skips slot 4
       if(cs&&opts.cave!==false){ p.gear.cave.own[cs.id]=1; p.gear.skills.cave=cs.id; c1=rotation(secs); p.gear.cave.own[cs.id]=5; c5=rotation(secs); p.gear.skills.cave=null; delete p.gear.cave.own[cs.id]; }
-      rows[cls]={base:baseline[cls],pieces,three,five,six,c1,c5};
+      // slot 5 (docs/ULT.md): one 60 s rotation with the burst and no boost, with only its active boost, only its passive boost, both: each gain over the same rotation without the burst
+      let ult=null; const U=opts.ult&&x.ULT_SKILLS?x.ULT_SKILLS[id]:null;   // (a harness without the ult names skips slot 5)
+      if(opts.ult&&U){ const all=U.boost, isAct=b=>x.ULT_ACTIVE_PIECES.includes(b.piece); p.gear.skills.ult=id; opts.ultOn=true; ult={};
+        try{ for(const [k,keep] of [['none',()=>false],['active',isAct],['passive',b=>!isAct(b)],['both',()=>true]]){ U.boost=all.filter(keep); ult[k]=rotation(secs); } } finally{ U.boost=all; opts.ultOn=false; p.gear.skills.ult=null; } }
+      rows[cls]={base:baseline[cls],pieces,three,five,six,c1,c5,ult};
     }
     out.push({id,cave:((x.CAVE_SKILL_IDS||[]).map(i=>x.CAVE_SKILLS[i]).find(q=>q.set===id)||{}).id||null,role:S.role.main,also:S.role.also?S.role.also.role:null,ranged:P.some(q=>q.ids.some(i=>{ const R=x.SKILLS[i].fx&&x.SKILLS[i].fx.rangeScale; return !!R&&R.k>1; })),rows,summary:summarize(rows,classes)});
   }
@@ -119,12 +124,24 @@ function print(list,mode){
     const j=judge(s,mode); for(const w of j.warn) console.log('   warning: '+w); for(const f of j.fail) console.log('   FAIL: '+f);
   }
 }
-module.exports={ladder,judge,summarize,print,BANDS,NAMES};
+// the burst's gain, in percent over the same rotation without it, single target and pack, averaged over the classes: [no boost, active boost only, passive boost only, both]. The passive boost should land within +-25% of the active one
+function ultRow(set,classes){
+  const cs=classes.filter(c=>set.rows[c]&&set.rows[c].ult); if(!cs.length) return null;
+  const g=(k,f)=>Math.round(cs.reduce((a,c)=>{ const r=set.rows[c]; return a+(r.ult[k][f]/Math.max(1,r.six[f])-1)*100; },0)/cs.length);
+  return ['none','active','passive','both'].map(k=>[g(k,'single'),g(k,'pack')]);
+}
+module.exports={ultRow,ladder,judge,summarize,print,BANDS,NAMES};
 if(require.main===module){
   const args=process.argv.slice(2), val=(f,d)=>{ const i=args.indexOf(f); return i>=0?args[i+1]:d; };
   const {api:W,x}=loadServer({dev:true,send(){}},NAMES); W.join('l',{name:'Ladder',look:{cls:'warrior'},save:{level:60}}); for(let i=0;i<3;i++) W.tick(0.05);
   if(!x.SS_ORDER.length){ console.log('no skill set is defined (src/shared/skillsets/*.js, listed in src/manifest.json)'); process.exit(0); }
   const cls=val('--class',null), opts={secs:+val('--secs',60),set:val('--set',null),classes:cls?[cls]:undefined,cave:args.includes('--check')?args.includes('--cave'):true}, env={W,x,pid:'l'};
+  if(args.includes('--ult')){   // slot 5: what each set's burst and its two boosts add to a 60 s rotation (gain over the rotation without it, %: single / pack)
+    const list=ladder(env,Object.assign({},opts,{ult:true,cave:false}));
+    console.log('set'.padEnd(12)+'no boost'.padStart(12)+'active only'.padStart(14)+'passive only'.padStart(14)+'both'.padStart(12)+'   (% over the same rotation without the burst, single / pack)');
+    for(const s of list){ const u=ultRow(s,opts.classes||CLASSES); if(!u){ console.log(s.id.padEnd(12)+'(no burst)'); continue; }
+      const A=u[1][0]-u[0][0], Pa=u[2][0]-u[0][0]; console.log(s.id.padEnd(12)+u.map(v=>(v[0]+'/'+v[1]).padStart(12)).join('  ')+(A>0&&(Pa<A*0.75||Pa>A*1.25)?'   warning: the passive boost adds '+Pa+' against the active\'s '+A+' (target within 25%)':'')); }
+    process.exit(0); }
   const list=ladder(env,opts); print(list);
   // a risk set is also run with every dummy facing away from the hero (always behind: good play), a set with rangeScale from 16 m; those rows are the ones judged
   const risky=list.filter(s=>s.role==='risk'&&!s.also).map(s=>s.id), ranged=list.filter(s=>s.ranged).map(s=>s.id), behind=[], far=[];

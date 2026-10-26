@@ -4,7 +4,7 @@
 const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...JSON.parse(JSON.stringify(m.ev))); }},
-  ['S','ULT_SKILLS','ULT_BAD','ULT_CD','ULT_CD_GRIND','ULT_LV','ULT_STUN','ULT_STUN_LOCK','ultDef','ultDefine','ultOwned','ultPieceCount','ultCdOf','ultStunS','ultCheckP','ssGrantP','ssCount','ssCdrS','SS_SETS','SS_ORDER','CAVE_SKILLS','BOSSES','resetBossS','MONS','getH','SKILLS','slotLv','sanitizeGear','SS_BAD']);
+  ['S','ULT_SKILLS','ULT_BAD','ULT_CD','ULT_CD_GRIND','ULT_LV','ULT_STUN','ULT_STUN_LOCK','ultDef','ultDefine','ultOwned','ultPieceCount','ultCdOf','ultStunS','ultCheckP','ssGrantP','ssCount','ssCdrS','SS_SETS','SS_ORDER','CAVE_SKILLS','BOSSES','resetBossS','MONS','getH','SKILLS','slotLv','sanitizeGear','SS_BAD','psP','ultWornP','ultRowK','ultIcdK','ultOnP','ultTickP']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 // ---- the registry ----
@@ -83,4 +83,26 @@ const FIGHT=()=>{ p.cave.fightT=x.S.t+5; return {m:{dead:true}}; };   // (a boss
   ok('a non-grind set always gets 60 s',x.ultCdOf(T,false)===60&&x.ultCdOf(T,true)===60&&x.ultCdOf('tansy',false)===30&&x.ultCdOf('tansy',true)===60); }
 // ---- not a set piece ----
 { const sk=p.gear.skills, cls='warrior', lv=40; sk.ult=null; const n0=JSON.stringify(x.ssCount(sk,cls,lv)); sk.ult=T; ok('the burst does not count toward a set (the count is the same with it worn)',JSON.stringify(x.ssCount(sk,cls,lv))===n0,n0); }
+// ---- the buff (U2) ----
+{ const g='tansy', sk=p.gear.skills; sk.eq.warrior.skill='tansy_2_any'; sk.pass[0]='tansy_p2'; sk.ult=g; p.ultB=null; p.cd.ult=0; p.cd.skill=0;
+  const base=x.psP(p,'area'); const W_=x.ultWornP(p,g);
+  ok('the worn pieces of the set are found (an active in the loadout, a passive in an open slot)',W_.a2==='tansy_2_any'&&W_.p2==='tansy_p2'&&!W_.a1&&!W_.cave,JSON.stringify(W_));
+  for(const m of x.MONS) if(!m.boss){ m.x=p.x+400; m.z=p.z+400; }
+  evs.length=0; cast('a'); tick(4);
+  ok('a cast boosts the two worn pieces and tells the client (event ubo)',p.ultB&&p.ultB.tansy_2_any&&p.ultB.tansy_p2&&evs.some(e=>e[0]==='ubo'&&e[2].length===2),JSON.stringify(p.ultB&&Object.keys(p.ultB)));
+  ok('a passive boost doubles its value (Wide Berth v x2) and nothing else',Math.abs(x.psP(p,'area')-2*base)<1e-9,x.psP(p,'area')+' vs '+base);
+  p.cd.skill=0; p.cd.basic=p.cd.burst=0; W.receive('a',{t:'atk',k:'skill',face:0,aim:[0,0,-1]}); tick(1);
+  ok('the boosted active casts with a wider area (size x1.4) and half its cooldown (cd x0.5)',p.act&&p.act.sizeK===1.4&&p.act.ub===1&&p.cd.skill<=x.SKILLS.tansy_2_any.cd*0.5+0.01,String(p.cd.skill)); tick(20);
+  p.cd.ult=0; p.cd.skill=0; p.ultB=null; p.ultV=null; sk.pass[0]=null; sk.eq.warrior.skill=null; cast('a');
+  ok('a piece that is not worn gets nothing (the burst still works)',!p.ultB||(!p.ultB.tansy_p2&&!p.ultB.tansy_2_any)); }
+{ const id='tansy_2_any', sk=p.gear.skills; sk.eq.warrior.skill=id; p.ultB={}; p.ultB[id]={piece:'a2',mod:{mult:2,n:2,size:1.3,util:2},until:x.S.t+30};
+  p.cd.skill=0; p.cd.basic=p.cd.burst=0; W.receive('a',{t:'atk',k:'skill',face:0,aim:[0,0,-1]});
+  ok('a boosted active: damage x2, extra hits, size, util, and the look flag',p.act&&Math.abs(p.act.mult-2*x.SKILLS[id].mult)<1e-9&&p.act.sizeK===1.3&&p.act.utilK===2&&p.act.ub===1,JSON.stringify(p.act&&[p.act.mult,p.act.sizeK,p.act.utilK]));
+  p.ultB[id].until=x.S.t+0.2; tick(30); ok('a boost ends on time',!p.ultB&&!p.ultV);
+  p.ultB={}; p.ultB[id]={piece:'a2',mod:{mult:2},until:x.S.t+30}; sk.eq.warrior.skill=null; tick(2); ok('a piece taken off ends its boost',!p.ultB);
+  sk.eq.warrior.skill=id; p.ultB={}; p.ultB[id]={piece:'a2',mod:{mult:2},until:x.S.t+30}; p.dead=true; x.ultTickP(p); p.dead=false; ok('death ends the boosts',!p.ultB); }
+{ const pid='tansy_p2', row={id:pid,heal:0.02,mult:1,shield:{v:0.1,dur:5},buff:{kind:'might',v:0.1}}; p.ultB={}; p.ultB[pid]={piece:'p2',mod:{eff:2,icd:0.5},until:x.S.t+30};
+  const r2=x.ultRowK(p,row); ok('eff x2 doubles a trigger row\'s heal, damage, shield and buff; icd x0.5 halves its wait',r2.heal===0.04&&r2.mult===2&&Math.abs(r2.shield.v-0.2)<1e-9&&Math.abs(r2.buff.v-0.2)<1e-9&&x.ultIcdK(p,pid)===0.5&&row.heal===0.02);
+  p.ultB=null; }
+{ p.cd.skill=20; p.cd.burst=20; p.cd.ult=45; p.ultB=null; p.cd.ult=45; const u=p.cd.ult; x.ssCdrS(p,{skill:8,burst:8}); ok('a cdr boost takes seconds off skill and burst, never the burst slot\'s timer',p.cd.skill===12&&p.cd.burst===12&&p.cd.ult===u); }
 console.log(fails?'\n'+fails+' FAILED':'\nall passed'); process.exit(fails?1:0);

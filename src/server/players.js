@@ -125,7 +125,7 @@ function recalcP(p){
   bsRefreshP(p);   // tiers: boss skills follow the zone tiers defeated
 }
 const clsOfP=p=>classOfGear(p.gear);
-const psP=(p,stat)=>passiveSum(skOfP(p),pvLvP(p),stat,p.pv?undefined:clsOfP(p));   // a passive stat (Vitality's hp, Ferocity's dmg...); pvp: on the island the fixed loadout at the fixed level, and no set bonuses
+const psP=(p,stat)=>passiveSum(skOfP(p),pvLvP(p),stat,p.pv?undefined:clsOfP(p),p.ultV);   // ult: p.ultV, a burst's boost of a passive's value   // a passive stat (Vitality's hp, Ferocity's dmg...); pvp: on the island the fixed loadout at the fixed level, and no set bonuses
 // the bonus of the worn pendant for one stat (pendants.js): read from the item id in the save, never from a number the client sent, and only while you are high enough for it (pvp: none on the island)
 function pendP(p,stat){ if(p.pv) return 0; const it=ITEM[p.gear.eq.pendant]; return it&&it.kind==='pendant'&&it.stat===stat&&p.level>=it.lv?it.v:0; }   // pvp: no pendant on the island
 const soulOfP=p=>p.level>=SOUL_LV?p.gear.soul:'basic';
@@ -231,6 +231,7 @@ function updatePlayersS(dt){
   for(const p of S.players.values()){
     S.ctx=p.inst|0;   // dungeons: what a player's tick causes belongs to his run
     for(const k in p.cd) p.cd[k]=Math.max(0,p.cd[k]-dt);
+    ultTickP(p);   // ult: boosts end on time, at death, on the island, when the piece is taken off
     caveTickP(p);   // cave: end a boss fight they left; send the charge
     ssTickS(p); ssRegenS(p,dt);   // skillsets: tick rows while in a fight; a regen buff
     if(p.buff&&S.t>=p.buff.until){ p.buff=null; }

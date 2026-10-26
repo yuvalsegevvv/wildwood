@@ -181,10 +181,10 @@ const passiveValue=(id,L)=>PASSIVES[id].v[0]+PASSIVES[id].v[1]*(L-1);
 const pctText=v=>+(v*100).toFixed(1);
 const passiveText=(id,L)=>PASSIVES[id].text.replace('{}',pctText(passiveValue(id,L)));
 // the total of one passive stat from a loadout (0 before level PASSIVE_LV; a slot the level has not opened yet does nothing); cls: the class whose loadout counts the set bonuses (none: no bonuses)
-function passiveSum(skills,level,stat,cls){
+function passiveSum(skills,level,stat,cls,boost){   // boost: {passive id: x} a burst's v boost (ult), on the benefit only
   let t=ssBonusSum(skills,level,stat,cls);   // skillsets: the 3- / 5-set bonuses in force (a set's three actives count before level PASSIVE_LV)
   if(level<PASSIVE_LV||!skills||!Array.isArray(skills.pass)) return t;
-  for(const id of skills.pass.slice(0,passiveOpen(level))){ const P=PASSIVES[id]; if(!P||!skills.owned.includes(id)||level<P.lv) continue; if(P.stat===stat&&!P.when) t+=passiveValue(id,skillLvOf(skills,id)); if(P.cost&&P.cost.stat===stat&&!P.cost.when) t+=P.cost.v; }   // skillsets: a row may pay a cost; a row with a `when` is read by ssCondP (server/skillsets.js)
+  for(const id of skills.pass.slice(0,passiveOpen(level))){ const P=PASSIVES[id]; if(!P||!skills.owned.includes(id)||level<P.lv) continue; if(P.stat===stat&&!P.when) t+=passiveValue(id,skillLvOf(skills,id))*(boost&&boost[id]||1); if(P.cost&&P.cost.stat===stat&&!P.cost.when) t+=P.cost.v; }   // skillsets: a row may pay a cost; a row with a `when` is read by ssCondP (server/skillsets.js)
   return t;
 }
 const ANIM_OF={}; for(const id in SKILLS){ const s=SKILLS[id]; s.id=id; ANIM_OF[s.act[0]]=s.anim||s.act[0]; }
