@@ -29,6 +29,9 @@ defineSkillSet({
          mage:{name:'Prism Gale', desc:'Gather the light and loose one ray that lands harder the farther it goes: up to 2.4 times at 36 m. Spends every Sight on the target.', cd:28, range:36, mult:5.4, act:['sorrel3m',1.3,1.1], anim:'cast',
                fx:{proj:{kind:'frost', speed:64, turn:12, life:0.9}, rangeScale:{from:5, to:36, k:2.4}, pop:{id:'sight', k:0.8}}}},
        passive:{name:'Dead Zone', text:'+{}% damage with every attack; you deal 20% less to a target within 6 m', stat:'dmg', v:[0.12, 0.02], cost:{stat:'dmg', v:-0.20, when:{dist:{to:6}}}}}},
+  ult:{name:'Eye of the Storm', desc:'A downdraft falls from the sky on a far target (7 m), harder the further it is from her.', range:45, mult:9.2, act:['sorrelult',1.3,1.1], anim:'shoot',
+       fx:{proj:{kind:'snipe', speed:70, turn:12, life:1, splash:{r:7, k:1}}, rangeScale:{from:5, to:40, k:2.4}},
+       boost:[{piece:'a1', secs:14, mod:{mult:2, n:1}}, {piece:'p1', secs:14, mod:{v:2.5}}]},
   bonus:{
     3:{name:'Steady Breath', text:'a target carrying your Sight takes 10% more from you for each Sight', amp:{id:'sight', per:0.10}},
     5:{name:'Through the Gale', text:'Your third-slot attack sends a gale through everything in a 40 m line for 150% damage', on:'cast3', mult:1.5, range:40, fx:{beam:{len:40, w:1.2, hits:1}}}},

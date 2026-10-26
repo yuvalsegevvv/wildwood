@@ -24,6 +24,9 @@ defineSkillSet({
        skill:{any:{name:'Feeding Frenzy', desc:'A wave of grave-water goes out round you, spends every Rot within 10 m for extra damage and mends you for half of it; then a lingering swell follows you for 5 seconds and keeps mending you.', cd:38, range:10, mult:1.8, act:['ogden3x',0.9,0.6], anim:'nova',
                    fx:{vsBoss:0.5, ring:{r:10, kb:2}, pop:{id:'rot', k:0.5, r:10, heal:0.5}, zone:{r:5, dur:5, every:0.5, self:true, follow:true, heal:{v:0.01, r:6}}}}},
        passive:{name:'Shambling', text:'You always regenerate {}% of your maximum health a second; your cooldowns are 10% longer', stat:'regen', v:[0.004, 0.0006], cost:{stat:'cd', v:-0.10}}}},
+  ult:{name:'Exhumation', desc:'The ground opens in a 10 m ring and grave-water geysers burst up; hands reach out of the mud and hold what they catch.', range:10, mult:2.95, act:['ogdenult',1.0,0.6], anim:'nova',
+       fx:{ring:{r:10, kb:3}},
+       boost:[{piece:'a3', secs:10, mod:{mult:2, util:2}}, {piece:'p1', secs:16, mod:{eff:3, icd:0.5}}]},
   bonus:{
     3:{name:'Overtime', text:'You gain {}% more experience from kills', stat:'xp', v:0.15},
     5:{name:'Dead Weight', text:'A kill makes the ground heave where it fell: the enemies within 5 m take 60% damage, are thrown back and are left with Rot (at most every 1.5 s)', on:'kill', at:'target', icd:1.5, mult:1.2, range:5, fx:{vsBoss:0.5, ring:{r:5, kb:2, mark:{id:'rot', n:1, dur:12, max:5}}}}},

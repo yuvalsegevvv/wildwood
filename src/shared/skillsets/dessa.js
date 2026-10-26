@@ -24,6 +24,9 @@ defineSkillSet({
        skill:{any:{name:'Break the Herd', desc:'Stand in the road and let the stampede break: a taunt for 6 seconds (a boss\'s melee for half of that), 30% less damage taken and a shield worth 12% of health for you and your party for 8 seconds, then the ground heaves, spending every Temper nearby for extra damage, and a share of it heals you.', cd:40, range:8, mult:1.2, act:['dessa3x',0.9,0.6], anim:'nova',
                    fx:{ring:{r:8, kb:6, stun:1}, taunt:{dur:6, r:16}, ally:{kind:'guard', v:0.3, dur:8, r:20}, shield:{v:0.12, dur:8, r:20, perMark:{id:'temper', v:0.03, r:10}}, pop:{id:'temper', k:0.6, r:8, heal:0.4}}}},
        passive:{name:'Slow and Heavy', text:'+{}% maximum health; your cooldowns are 8% longer', stat:'hp', v:[0.10, 0.02], cost:{stat:'cd', v:-0.08}}}},
+  ult:{name:'Strike While Hot', desc:'A glowing anvil falls on the target (7 m) and leaves 5 Temper on everything it hits; the stunned stand ringing.', range:7, mult:1.8, act:['dessault',1.0,0.6], anim:'nova',
+       fx:{ring:{r:7, kb:2, mark:{id:'temper', n:5, dur:12, max:5}}},
+       boost:[{piece:'a3', secs:10, mod:{mult:2, util:2}}, {piece:'p1', secs:14, mod:{v:2}}]},
   bonus:{
     3:{name:'Hot Iron', text:'When you are hit, sparks leap 4 m round you for 50% damage and leave Temper (at most every 4 s)', on:'hurt', icd:4, mult:0.5, range:4, fx:{ring:{r:4, mark:{id:'temper', n:1, dur:12, max:5}}}},
     5:{name:'The Anvil Holds', text:'When you drop below 35% health, the anvil rings: you heal 15% and you and your allies within 20 m take 20% less damage and carry a shield worth 10% of health for 8 s (at most every 25 s)', on:'low', below:0.35, icd:25, heal:0.15, shield:{v:0.10, dur:8}, buff:{kind:'guard', v:0.2, dur:8, r:20}}},

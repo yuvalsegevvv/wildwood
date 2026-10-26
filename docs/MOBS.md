@@ -21,9 +21,9 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | How many of each kind exist, and where their camps are (a zone holds 40 of the level-1 kind down to 20 of level 15; the vale and the Reach 12 of each; `count` overrides) | `MON_COUNT` src/server/monsters.js:20, `initMonstersS` src/server/monsters.js:21 |
 | Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King's beach | `ZONES` src/shared/zones.js:11, src/shared/vale.js:42, src/shared/hoarfrost.js:88, src/shared/beach.js:6 |
 | Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:60 |
-| What a kill pays (XP, coins, an item roll, the material, quests, boss skills) | `rewardKill` src/server/combat.js:75 |
+| What a kill pays (XP, coins, an item roll, the material, quests, boss skills) | `rewardKill` src/server/combat.js:78 |
 | Materials a kind drops (one per kind, `MAT_NAMES`) | `MATS` src/shared/drops.js:13 |
-| What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:34, `monK` src/server/tiers.js:13 |
+| What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:33, `monK` src/server/tiers.js:13 |
 | Boss fights: engagement, phases, reset / one move set per boss / the move primitives | `BOSSES` src/server/boss.js:11 / `BOSS_KITS` src/server/boss-fx.js:17 / src/server/boss-fx.js |
 | The boss notices on the quest board | `BOSS_QUESTS` src/shared/quests.js:32 |
 | The dungeon bosses and their helpers (made on demand in a run's round hall, not in `BOSS_DEFS`) | `DG_BOSSES` src/shared/dungeons/bosses.js:17, `DG_BOSS_DEFS` (same file), move sets src/server/dungeons/boss-kits.js:43 |

@@ -24,6 +24,9 @@ defineSkillSet({
        skill:{any:{name:'The Long Night', desc:'The lanterns are lit all at once: you and your allies within 20 m are healed for 30% of maximum health, regenerate 3% a second and are shielded for 15% for 8 seconds. A wave of dusk round you hurts the enemies near, weakens their blows and leaves them 8% easier to hurt for 6 seconds.', cd:45, range:9, mult:2.8, act:['hollis3x',0.9,0.6], anim:'nova',
                    fx:{ring:{r:9, kb:4, slow:1.5, status:{kind:'vuln', v:0.08, dur:6}}, heal:{v:0.30, r:20}, ally:{kind:'regen', v:0.03, dur:8, r:20}, shield:{v:0.15, dur:8, r:20}}}},
        passive:{name:'Crape Band', text:'{}% less damage taken; you deal 10% less damage', stat:'red', v:[0.08, 0.01], cost:{stat:'dmg', v:-0.10}}}},
+  ult:{name:'All Souls\' Night', desc:'A ring of lanterns rises around him (10 m) and night falls inside it: it hurts and stuns the enemy, then the lanterns give the party a small heal (4%).', range:10, mult:4.2, act:['hollisult',1.0,0.55], anim:'nova',
+       fx:{ring:{r:10, kb:3}, heal:{v:0.04, r:20}},
+       boost:[{piece:'a1', secs:14, mod:{mult:2}}, {piece:'a3', secs:10, mod:{mult:2, util:1.25}}]},
   bonus:{
     3:{name:'Spill', text:'{}% of the healing you give that would overheal becomes a shield (6 s) on the one healed', stat:'overflow', v:0.6},
     5:{name:'Last Light', text:'When you drop below 35% health, or bring a downed party member back in a dungeon, the lanterns flare and heal you for 25% and shield and guard you and your allies (25% of health, 20% less damage taken, 8 s; at most every 20 s)', on:['low', 'revive'], below:0.35, icd:20, heal:0.25, shield:{v:0.25, dur:8}, buff:{kind:'guard', v:0.2, dur:8, r:25}}},

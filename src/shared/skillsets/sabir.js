@@ -24,6 +24,9 @@ defineSkillSet({
        skill:{any:{name:'Powder Keg', desc:'Hurl a keg of black powder at your target: it bursts over a 6 m circle and sets it ablaze. Spends every Loot on the target and everything within 6 m of it for extra damage.', cd:30, range:24, mult:3.2, act:['sabir3x',0.8,0.6], anim:'cast',
                    fx:{proj:{kind:'ember', speed:24, turn:6, life:1.2, splash:{r:6, k:1.0}, burn:{dur:5, k:0.35}}, pop:{id:'loot', k:0.8, r:6}}}},
        passive:{name:'Burning Bridges', text:'+{}% damage with every attack; you have 12% less maximum health', stat:'dmg', v:[0.10, 0.015], cost:{stat:'hp', v:-0.12}}}},
+  ult:{name:'The Whole Caravan', desc:'He dashes through the pack dropping a row of five powder kegs that go off one after another.', range:20, mult:1, act:['sabirult',0.9,0.6], anim:'cast',
+       fx:{proj:{kind:'ember', n:5, spread:0.12, speed:24, turn:0, life:0.9, splash:{r:4, k:0.6}, burn:{dur:3, k:0.3}}},
+       boost:[{piece:'a3', secs:10, mod:{mult:2}}, {piece:'p2', secs:12, mod:{v:2.5}}]},
   bonus:{
     3:{name:'Quick Fingers', text:'A hit on a target carrying Loot (at most every 2 s) cuts again for 130% damage', on:'hit', when:{marked:'loot'}, icd:2, mult:1.3, range:3.4, fx:{cone:{r:3.4, arc:1.2}}},
     5:{name:'Fence the Goods', text:'A kill or a critical hit hits the enemies within 6 m for 120% damage, leaves Loot on them and heals you for 3% of maximum health (at most every 2 s)', on:['kill', 'crit'], at:'target', icd:2, heal:0.03, mult:1.2, range:6, fx:{ring:{r:6, mark:{id:'loot', n:1, dur:12, max:5}}}}},

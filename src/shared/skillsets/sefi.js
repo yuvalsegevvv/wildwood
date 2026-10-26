@@ -24,6 +24,9 @@ defineSkillSet({
        skill:{any:{name:'Dead Heat', desc:'Run the whole length of the plain in a breath: dash up to 12 m through your target and cut everything within 6 m of where you land, spending every Stride on it for extra damage. What is cut is left weakened for 4 seconds.', cd:30, range:12, mult:2.4, act:['sefi3x',0.8,0.5], anim:'slash',
                    fx:{dash:{ahead:4}, ring:{r:6, status:{kind:'weak', v:0.1, dur:4}}, pop:{id:'stride', k:0.8, r:6}}}},
        passive:{name:'Bare Run', text:'+{}% critical hit damage; you take 10% more damage', stat:'critdmg', v:[0.24, 0.035], cost:{stat:'red', v:-0.10}}}},
+  ult:{name:'Photo Finish', desc:'Three dashes back and forth through the target in a line, each one faster; the stunned are spun round by the wind.', range:8, mult:1.32, act:['sefiult',1.0,0.4], anim:'slash',
+       fx:{zone:{r:7, dur:1.2, first:0.2, every:0.5, self:true}},
+       boost:[{piece:'a2', secs:10, mod:{cd:0.4, mult:1.5}}, {piece:'p3', secs:12, mod:{v:2.5}}]},
   bonus:{
     3:{name:'Cold Edge', text:'A hit on a target carrying a Stride (at most every 2 s) cuts again for 120% damage', on:'hit', when:{marked:'stride'}, icd:2, mult:1.2, range:3.4, fx:{cone:{r:3.4, arc:1.2}}},
     5:{name:'Crosswind', text:'A critical hit cuts the enemies within 5 m of the target for 110% damage, leaves a Stride on them, takes 1 s off your skill cooldowns and quickens you by 15% for 4 s (at most every 3 s)', on:'crit', at:'target', icd:3, mult:1.1, range:5, fx:{ring:{r:5, mark:{id:'stride', n:1, dur:12, max:5}}}, cdr:{skill:1}, buff:{kind:'haste', v:0.15, dur:4, r:1}}},

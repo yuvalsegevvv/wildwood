@@ -23,6 +23,9 @@ defineSkillSet({
        skill:{any:{name:'The Sandglass', desc:'Plant the sandglass at your feet for 8 seconds: you and your allies standing within 9 m take 15% less damage, hit 15% more often critically and heal 2% of health a second, and the light at its foot burns the enemies there.', cd:45, range:9, mult:0.7, act:['zahra3x',0.9,0.6], anim:'nova',
                    fx:{zone:{r:9, dur:8, every:1, self:true, ally:[{kind:'guard', v:0.15, dur:2.5}, {kind:'crit', v:0.15, dur:2.5}, {kind:'regen', v:0.02, dur:2.5}]}}}},
        passive:{name:'Running Late', text:'+{}% damage with every attack; your cooldowns are 8% longer', stat:'dmg', v:[0.06, 0.01], cost:{stat:'cd', v:-0.08}}}},
+  ult:{name:'Shattered Hour', desc:'A giant sandglass breaks over the target and rains glass (9 m); time stops for what it hits.', range:24, mult:1.4, act:['zahrault',1.0,0.55], anim:'nova',
+       fx:{zone:{r:9, dur:3, first:0.3, every:0.5}},
+       boost:[{piece:'a2', secs:12, mod:{mult:2, util:1.25}}, {piece:'p3', secs:16, mod:{v:2.5}}]},
   bonus:{
     3:{name:'Polished Glass', text:'The buffs you give are {}% stronger (still capped)', stat:'buffpow', v:0.20},
     5:{name:'Turn the Hour', text:'The Sandglass also quickens you and your allies within 25 m: 20% shorter cooldowns for 8 s', on:'cast3', buff:{kind:'haste', v:0.20, dur:8, r:25}}},
