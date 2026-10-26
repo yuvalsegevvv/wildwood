@@ -6,7 +6,7 @@
 const errs=[]; const realErr=console.error; console.error=(...a)=>{ errs.push(a.map(String).join(' ')); };
 const {bootClient}=require('./headless');
 const c=bootClient({expose:['NET','startSolo','beginPlay','canStart:()=>canStart','Stream','P','PL','GEAR','VIL','DG_ENTRANCES','DG_THEMES','DG_MISSIONS','DG_BOARD','DG_JOIN','dgBoardOpen','dgBoardTick','dgBoardRender',
-  'dgBoardSwap:f=>{ const o=dgBoardOpen; dgBoardOpen=f; return o; }','dgOpenDoor','netHandle','applyEvent','EVH','NETH','PANELS','uiOpen','closePanels','updateTalkUI','dgJoinShow','dgJoinTick','dgOffer','dgEntranceNear','DG_TRIAL_GATE','DG_DOORS']});
+  'dgBoardSwap:f=>{ const o=dgBoardOpen; dgBoardOpen=f; return o; }','dgOpenDoor','netHandle','applyEvent','EVH','NETH','PANELS','uiOpen','closePanels','updateTalkUI','dgJoinShow','dgJoinTick','dgOffer','dgEntranceNear','DG_DOORS']});
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const tx=e=>[e.textContent||'',...(e._kids||[]).map(tx)].join(' ').replace(/\s+/g,' ').trim();   // all the text under an element (the board is built with createElement + textContent)
 const secs=t=>{ const m=/(\d+):(\d\d)/.exec(t); return m?+m[1]*60+ +m[2]:-1; };
@@ -72,15 +72,6 @@ const find=(e,cls)=>{ const out=[]; walk(e,k=>{ if(typeof k.className==='string'
     G.DG_BOARD.want=Date.now()-2500; G.dgBoardTick(); const resent=mine().length===1&&last().a==='open'; G.dgBoardTick(); const once=mine().length===1;
     G.DG_BOARD.want=Date.now()-5500; G.dgBoardTick();
     ok('a board nobody answers: it asks once more after 2 s (once), and after 5 s says the board does not answer',resent&&once&&/does not answer/.test(tx(body())),tx(body()).slice(-120)); G.closePanels(); }
-  // ---- the trial dungeon: its gate in the village, every mission always open ----
-  { const Gt=G.DG_TRIAL_GATE, all=Object.keys(G.DG_MISSIONS); place(Gt.x+3,Gt.z); swallow=true; sent.length=0; G.updateTalkUI(); const prompt=c.el('#prompt').textContent;
-    ok('the Trial Gate is found like a door and its prompt says what it is (level 5, no rewards); the arch is built, and it is not one of the seven doors',G.dgEntranceNear(Gt.x+3,Gt.z)===Gt&&/The Trial Gate \(level 5, no rewards\)/.test(prompt)&&!!G.DG_DOORS.trial&&!G.DG_DOORS.doors.trial&&Object.keys(G.DG_ENTRANCES).length===7,prompt);
-    G.dgOpenDoor(G.dgEntranceNear(Gt.x+3,Gt.z).theme);
-    ok('the talk key at the gate asks the server for the trial\'s board and opens the panel',mine().length===1&&last().a==='open'&&!hidden()&&/Trial Roots/.test(tx(body())),tx(body()));
-    deliver(MSG({th:'trial',name:'The Trial Roots',door:'The Trial Gate',offer:all,pool:all,L:5,tier:0,left:1800}));
-    const t=tx(body()), cards=find(body(),'dgb-card'), btns=find(body(),'dgb-start');
-    ok('the trial\'s board: level 5, "Any level" and "No rewards" (no +N, no entry level), a card and a Start for each of the seven mission types, and a clock that says they are always open',/The Trial Roots/.test(t)&&/Level 5/.test(t)&&/Any level/.test(t)&&/No rewards/.test(t)&&!/Enter from level/.test(t)&&!/\+0/.test(t)&&cards.length===7&&btns.length===7&&/all the time/.test(tx(c.el('#dgClock')))&&/Level 5/.test(t),tx(c.el('#dgClock')));
-    sent.length=0; btns[3].click(); ok('Start on any of them sends dg{a:"start"} with the trial and that mission',mine().length===1&&last().a==='start'&&last().dungeon==='trial'&&last().type===all[3],JSON.stringify(last())); G.closePanels(); }
   // ---- the join prompt ----
   { const e=['dgi',G.NET.pid,7,0,'hollowroots','purge',40,15,'Ana'];
     ok('dgi: a prompt names the leader, the dungeon, the mission and the level, with the seconds left',(G.EVH.dgi===G.dgJoinShow?(G.applyEvent(e),true):(G.dgJoinShow(e),true))&&!c.el('#dgJoin').hidden&&/Ana is going into The Hollow Roots: Purge, level 40/.test(tx(c.el('#dgJoinText')))&&tx(c.el('#dgJoinLeft'))==='15s'&&c.el('#dgJoinBar').style.width==='100%',tx(c.el('#dgJoinText')));

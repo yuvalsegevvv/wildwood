@@ -76,7 +76,7 @@ function dgDevP(p,v){
   if(!T||!dgMissionOk(mission)){ toastTo(p.id,'dg needs <theme>:<mission>[:seed], e.g. bare:purge or hollowroots:purge:7 (themes: '+Object.keys(DG_THEMES).join(', ')+').','bad'); return; }
   if(!DG_KITS[mission]){ toastTo(p.id,DG_MISSIONS[mission].name+' has no mission kit yet (built: '+dgPoolS().join(', ')+').','bad'); return; }
   const pa=partyOf(p); if(pa&&pa.lead!==p.id){ toastTo(p.id,'Only the party leader can start a run.','bad'); return; }
-  const tier=T.trial?0:T.land?Math.max(dgTierOf(p.gear,T.land),DG_LANDS[T.land].base):0, seed=parts[2]!==undefined&&parts[2]!==''&&isFinite(+parts[2])?parseInt(parts[2],10):undefined;
+  const tier=T.land?Math.max(dgTierOf(p.gear,T.land),DG_LANDS[T.land].base):0, seed=parts[2]!==undefined&&parts[2]!==''&&isFinite(+parts[2])?parseInt(parts[2],10):undefined;
   const run=dgLaunchS(p,T,mission,{tier,L:T.land?dgLevel(T,tier):DG_LV,back:{x:p.x,z:p.z},dev:true,seed});
   if(run) toastTo(p.id,'Testing run: '+(T.name||T.id)+', '+DG_MISSIONS[mission].name+', seed '+run.seed+', level '+run.L+'.','good');
 }

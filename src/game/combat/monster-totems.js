@@ -98,6 +98,17 @@ function moTotemBarricade(gl,band){   // a barricade: sharpened stakes leaning o
   out.push(pc(vbox(0.1,0.5,0.04,0,2.0,0),c=>c.set(band)));
   return out;
 }
+function moTotemScarecrow(gl,band){   // the test room's scarecrow: a post with a crossbar, a stuffed burlap shirt and head with a stitched face, a battered hat, straw sticking out of the cuffs, a red target patch on the chest
+  const out=[], wood=(x,y,z,c)=>{ c.set(0x6a5238).multiplyScalar(0.62+0.7*vn3(x*14,y*1.6,z*14)); }, sack=(x,y,z,c)=>{ c.set(0xc4a572).multiplyScalar(0.8+0.35*moNoise(x,y,z,9)); }, straw=(x,y,z,c)=>{ c.set(0xe0c258).multiplyScalar(0.8+0.3*moNoise(x,y,z,12)); };
+  out.push(pc(vbox(0.9,0.14,0.9,0,0.07,0),moStone),moBone([0,0.1,0],[0,2.5,0],0.1,0.08,wood,6),moBone([-1.05,1.85,0],[1.05,1.85,0],0.07,0.07,wood,6));
+  out.push(moEll(0.42,0.6,0.28,0,1.6,0,sack,null,9),moEll(0.3,0.3,0.28,0,2.3,0,sack,null,9));
+  out.push(moEll(0.09,0.09,0.04,-0.1,2.34,0.26,0x1a1208,null,5),moEll(0.09,0.09,0.04,0.1,2.34,0.26,0x1a1208,null,5),pc(vbox(0.26,0.035,0.03,0,2.17,0.27),c=>c.set(0x1a1208)));
+  out.push(moEll(0.2,0.2,0.04,0,1.7,0.28,(x,y,z,c)=>{ c.set(band).multiplyScalar(0.8+0.3*moNoise(x,y,z,6)); },null,10),moEll(0.1,0.1,0.045,0,1.7,0.285,0xf2eadc,null,8),moEll(0.04,0.04,0.05,0,1.7,0.29,gl,null,6));
+  for(const sd of [-1,1]){ out.push(moBone([sd*0.35,1.85,0],[sd*0.95,1.85,0],0.11,0.09,sack,6),moEll(0.12,0.12,0.12,sd*1.08,1.85,0,straw,null,6),moEll(0.06,0.2,0.05,sd*1.1,1.68,0,straw,[0,0,sd*0.3],5),moEll(0.06,0.2,0.05,sd*1.05,1.7,0.07,straw,[0.3,0,sd*0.2],5)); }
+  for(let i=0;i<5;i++){ const a=i/5*TAU; out.push(moEll(0.05,0.18,0.05,Math.cos(a)*0.2,1.05,Math.sin(a)*0.15,straw,[Math.sin(a)*0.3,0,-Math.cos(a)*0.3],5)); }
+  out.push(moEll(0.5,0.06,0.5,0,2.52,0,0x5a4a32,[0.08,0,0.05],10),moEll(0.26,0.2,0.26,0,2.68,0,0x5a4a32,[0.08,0,0.05],9),pc(vbox(0.28,0.05,0.28,0,2.58,0),c=>c.set(band)));
+  return out;
+}
 function moTotemBody(style,gl,band){
   if(style==='heart') return moTotemHeart(gl,band);
   if(style==='core') return moTotemCore(gl,band);
@@ -107,5 +118,6 @@ function moTotemBody(style,gl,band){
   if(style==='ward') return moTotemWard(gl,band);
   if(style==='banner') return moTotemBanner(gl,band);
   if(style==='barricade') return moTotemBarricade(gl,band);
+  if(style==='scarecrow') return moTotemScarecrow(gl,band);
   return null;
 }

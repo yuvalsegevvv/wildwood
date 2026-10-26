@@ -232,7 +232,7 @@ function updatePlayersS(dt){
     S.ctx=p.inst|0;   // dungeons: what a player's tick causes belongs to his run
     for(const k in p.cd) p.cd[k]=Math.max(0,p.cd[k]-dt);
     ultTickP(p);   // ult: boosts end on time, at death, on the island, when the piece is taken off
-    caveTickP(p);   // cave: end a boss fight they left; send the charge
+    caveTickP(p); troomTickP(p);   // testroom: the damage counter   // cave: end a boss fight they left; send the charge
     ssTickS(p); ssRegenS(p,dt);   // skillsets: tick rows while in a fight; a regen buff
     if(p.buff&&S.t>=p.buff.until){ p.buff=null; }
     if(p.buff&&p.buff.regen&&!p.dead) healP(p,p.maxHp*p.buff.regen*dt);

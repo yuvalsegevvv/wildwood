@@ -48,7 +48,8 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(p.ss&&p.ss.amp.length) d.v=Math.max(1,Math.round(d.v*ssAmpK(p,m)));   // skillsets: the owner's marks make a marked target take more from them
   p.lastDealt=S.t;   // skillsets: in a fight (tick triggers run only then)
   if(m.T.heavy) kb=0;
-  m.hp-=d.v/monK(m,p).hp; m.hitters.set(p.id,S.t);   // (the health pool is in the def's own units: a hit at a higher zone tier takes off less of it)
+  m.hp-=d.v/monK(m,p).hp; m.hitters.set(p.id,S.t); if(m.tr) troomHitS(m,p,d.v);   // testroom: the scarecrow takes nothing, the counter does
+    // (the health pool is in the def's own units: a hit at a higher zone tier takes off less of it)
   if(m.boss&&m.B.kit.hit) m.B.kit.hit(m.B,m,p,d.v);   // dungeons: a boss kit's hit hook (Gawataro's dish spills from behind)
   if(p.buff&&p.buff.steal) healP(p,d.v*p.buff.steal);
   const ex=m.x-fromX, ez=m.z-fromZ, e=Math.hypot(ex,ez)||1, k=kb===0?0:(kb||3);

@@ -139,7 +139,7 @@ function fxModK(f,p,m){
 // damage that is not a skill's (a reflect): through the same health pool (monK), no aura, no triggers
 function ssRawHitS(m,v,p){
   if(m.dead||m.remove||m.immune||!(v>0)) return;
-  m.hp-=v/monK(m,p).hp; m.hitters.set(p.id,S.t); ev('dmg',m.id,Math.round(v),0,p.id);
+  m.hp-=v/monK(m,p).hp; m.hitters.set(p.id,S.t); if(m.tr) troomHitS(m,p,v); ev('dmg',m.id,Math.round(v),0,p.id);
   if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }
 }
 // ---- triggers ----

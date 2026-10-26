@@ -15,7 +15,6 @@ const DG_BOARD_INFO={
   hollowroots:{color:'#8fd06a',text:'A hollow under the Ancient Grove where the roots of the Heartwood go down: warm dark, sap and fungus for light, and root spikes in the floor.'},
   jadesprings:{color:'#5fd4a8',text:'Warm caves behind Jade Falls where the hot springs rise: jade pools, drifting steam, bamboo roots through the ceiling.'},
   bonefrostbarrow:{color:'#8fd0f0',text:'The long grave of a vanished clan at Bonefrost Barrow: stone passages, cairns and bone-white rime, lightless but for the braziers.'},
-  trial:{color:'#b8e08a',text:'The Hollow Roots with its level turned right down: the same tiles, hazards, monsters, missions and boss, at level 5, open to anyone, and nothing in it pays. A place to learn a dungeon or try a skill.'},
   blackseam:{color:'#e8a050',text:'An abandoned coal mine under Highmark Pastures, worked until the foreman sold the seam to the powder: timbered drifts, ore carts, scalding slag vents and the lamps he left burning.'},
   sandglass:{color:'#e8c060',text:'A sun-temple and glassworks buried under the Whitefloor south of Glasswell: sandstone halls, cold kilns, braziers still burning, glass spikes in the floor and a keeper who turns the hour.'},
   gloamvault:{color:'#a890e0',text:'A drowned chapel-crypt and wreckers\' vault under the cliffs of Vault Heath on the Gloamhorn: black limestone, flooded aisles, tombs, salvage stacked in the dark, brine grates in the floor and an abbess who still rings her bell.'},
@@ -29,7 +28,6 @@ const DG_BOARD_OBJ={
   sandglass:{defense:'the sun altar',survival:'a temple brazier',sabotage:'the glass kilns',siege:'the sun mirrors',hunt:'a Glass Wisp flitting through the halls',escort:'a lost glassblower'},
   gloamvault:{defense:'the drowned font',survival:'a votive candle',sabotage:'the sunken bells',siege:'the saints\' shrines',hunt:'a Grave Hound slipping between the tombs',escort:'a stranded lighthouse keeper'},
   termitecathedral:{defense:'the royal cell\'s font',survival:'a resin lamp',sabotage:'the amber seals',siege:'the egg clusters',hunt:'a Locust slipping through the galleries',escort:'a lost Digger'}};
-DG_BOARD_OBJ.trial=DG_BOARD_OBJ.hollowroots;   // (the trial dungeon is the Hollow Roots)
 // one line for each of the seven missions (docs/DUNGEONS.md section 4); {o} is the dungeon's name for the objective
 const DG_BOARD_TEXT={
   purge:'Clear the rooms of everything that lives there, then face the boss in the round hall.',
@@ -75,7 +73,7 @@ const dgBoardClock=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
 
 function dgBoardRender(){
   if($('#dgBoard').hidden) return;
-  const m=DG_BOARD.msg, th=m?m.th:DG_BOARD.th, T=DG_THEMES[th], E=DG_ENTRANCES[th]||(th===DG_TRIAL_GATE.theme?DG_TRIAL_GATE:null), info=DG_BOARD_INFO[th]||{}, land=T&&DG_LANDS[T.land], body=$('#dgBody');
+  const m=DG_BOARD.msg, th=m?m.th:DG_BOARD.th, T=DG_THEMES[th], E=DG_ENTRANCES[th], info=DG_BOARD_INFO[th]||{}, land=T&&DG_LANDS[T.land], body=$('#dgBody');
   body.innerHTML='';
   const hero=dgBoardEl('div','dgb-hero'); hero.style.setProperty('--dgc',info.color||'#cdd98f');
   dgBoardAdd(hero,dgBoardEl('h3','dgb-name',(m&&m.name)||(T&&T.name)||(E&&E.name)||'Dungeon'),
@@ -87,8 +85,7 @@ function dgBoardRender(){
     $('#dgClock').textContent=''; $('#dgParty').textContent=''; return;
   }
   const facts=dgBoardEl('div','dgb-facts');
-  if(T&&T.trial) dgBoardAdd(facts,dgBoardEl('span','dgb-fact lv','Level '+m.L),dgBoardEl('span','dgb-fact','Any level'),dgBoardEl('span','dgb-fact','No rewards'));   // (the trial dungeon: no difficulty, no entry level, no pay)
-  else dgBoardAdd(facts,dgBoardEl('span','dgb-fact lv','Level '+m.L),dgBoardEl('span','dgb-fact',(land?land.name+' ':'')+'+'+m.tier),dgBoardEl('span','dgb-fact','Enter from level '+DG_ENTRY_LV));
+  dgBoardAdd(facts,dgBoardEl('span','dgb-fact lv','Level '+m.L),dgBoardEl('span','dgb-fact',(land?land.name+' ':'')+'+'+m.tier),dgBoardEl('span','dgb-fact','Enter from level '+DG_ENTRY_LV));
   hero.appendChild(facts); body.appendChild(hero);
   body.appendChild(dgBoardEl('p','dgb-state '+(m.ok?'ok':'no'),m.ok?'The way is open for you.':(m.gate?'':'Sealed. ')+(m.why||'You cannot enter yet.')));
   const offer=m.offer||[], pool=m.pool||offer, cards=dgBoardEl('div','dgb-cards');
@@ -108,7 +105,7 @@ function dgBoardRender(){
   $('#dgParty').textContent=dgBoardPartyText(m); dgBoardClockSet(Date.now());
 }
 const dgBoardLeft=now=>Math.max(0,Math.ceil((DG_BOARD.until-now)/1000));
-function dgBoardClockSet(now){ const m=DG_BOARD.msg, T=m&&DG_THEMES[m.th]; $('#dgClock').textContent=T&&T.trial?'Every mission type is open here, all the time':'The offer changes in '+dgBoardClock(dgBoardLeft(now)); }
+function dgBoardClockSet(now){ const m=DG_BOARD.msg, T=m&&DG_THEMES[m.th]; $('#dgClock').textContent='The offer changes in '+dgBoardClock(dgBoardLeft(now)); }
 // the leader's Start: the panel closes at once (the run's view takes over); a refusal that sends a fresh board ("the offer changed") opens it again
 function dgBoardStart(id){
   const m=DG_BOARD.msg; if(!m||!m.ok||!m.lead||!(m.offer||[]).includes(id)) return;

@@ -1,12 +1,12 @@
 // Draws a preview of a dungeon's map: the baked layout of a theme and missions (shared/dungeons.js: dgLayout, dgBake), cell by cell, with the tiles' roles, monster mouths, objectives, caches,
 // the entrance and the round boss hall. The cells are dumped as JSON and drawn by tools/dungeon-map.py (numpy + pillow, like model-preview.js). The same {mission, seed, theme} rebuilds the same
 // dungeon in the game, so a preview here is the dungeon a run of that mission and seed plays on.
-// Usage: node tools/dungeon-map.js out.png [--theme trial] [--missions purge,defense,escort] [--seed 5]
+// Usage: node tools/dungeon-map.js out.png [--theme hollowroots] [--missions purge,defense,escort] [--seed 5]
 const fs=require('fs'), os=require('os'), path=require('path'), {spawnSync}=require('child_process');
 const {loadShared}=require('./load');
 const X=loadShared(['DG_THEMES','dgLayout','dgBake','DG_TC','DG_CELL','DG_BOSS_R','DG_MISSIONS','dgLevel']);
 const arg=(k,d)=>{ const i=process.argv.indexOf('--'+k); return i>0&&process.argv[i+1]?process.argv[i+1]:d; };
-const out=process.argv[2]&&!process.argv[2].startsWith('--')?process.argv[2]:'dungeon-map.png', themeId=arg('theme','trial'), seed=parseInt(arg('seed','5'),10), missions=arg('missions','purge,defense,escort').split(',');
+const out=process.argv[2]&&!process.argv[2].startsWith('--')?process.argv[2]:'dungeon-map.png', themeId=arg('theme','hollowroots'), seed=parseInt(arg('seed','5'),10), missions=arg('missions','purge,defense,escort').split(',');
 const T=X.DG_THEMES[themeId]; if(!T){ console.error('no theme '+themeId+' (have '+Object.keys(X.DG_THEMES).join(', ')+')'); process.exit(1); }
 const panels=missions.map(m=>{
   let L=null, s=seed; for(let i=0;i<40&&!L;i++){ L=X.dgLayout({mission:m,seed:s+i,theme:T}); if(L) s+=i; }   // (a run takes the first seed that works, like server/dungeons/instances.js)

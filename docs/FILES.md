@@ -37,6 +37,7 @@ styles
   29-theme.css                       The storybook skin: dark bark panels, a brass frame with corner studs, parchment ink and the Alegreya fonts, laid over every HUD box, panel and button (the look of the world map)
   30-raids.css                       The raids' strip near a stronghold (game/raids/hud.js): one line under the top edge, below the boss bar when both show
   31-friends.css                     Friends and ranking panel (ui/friends.js): friend rows with an online dot, the ranking table, the friend request prompt
+  32-testroom.css                    The test room (ui/testroom.js): the panel with the counter and its buttons, and the counter on the screen while you stand on the pad
   32-ult.css                         The set burst (5th slot): its action-bar tile, the cast popup card and the skills panel row (game/ult/slot.js, popup.js)
 
 shared
@@ -124,7 +125,6 @@ shared
   dungeons.js                        Dungeons, setup only (nothing calls it yet): map tiles and the theme registry (defineDungeonTheme, DG_BAD), the seeded layout generator, the baked collision grid with props, line of sight and a flow field, the mission list (every mission ends with a boss in a round hall the size of a boss arena), where the three entrances stand, the hourly offer of two mission types, who may enter, party-size scaling. Pure.
   dungeons/bosses.js                 The seven dungeon bosses (Amanita the Sporemother, Gawataro the Jade Elder, Haugbui the Barrow Lord, Garrick the Seam Foreman, Khet the Hourkeeper, Abbess Morrow the Drowned Abbess, Queen Ortha the Brood Queen): their designs as data (DG_BOSSES: moves named by primitive, signature, needs), their defs as rows shaped like BOSS_DEFS (DG_BOSS_DEFS), the hall's lamps and steam vents, and the arena of a run's boss hall. Pure.
   dungeons/themes/hollowroots.js     Dungeon theme: the Hollow Roots (Wildwood, under the Ancient Grove; boss Amanita, the Sporemother): its roster, palette and tile kit (Root Cathedral, Sap Cellar, Fungus Alcove, Crawlway, Root Bend, Heartwood Knot, Seed Nook, Burrow Mouth)
-  dungeons/themes/trial.js           Dungeon theme: the Trial Roots (the Hollow Roots at level 5, open to everyone, paying nothing; entered through the Trial Gate in the home village)
   dungeons/themes/jadesprings.js     Dungeon theme: the Jade Spring Grottoes (the Sakura Vale, behind Jade Falls; boss Gawataro, the Jade Elder): its roster, palette and tile kit (Great Basin, Bath Hall, Bamboo Cellar, Steam Corridor, Pooled Bend, Spring Head, Offering Basin, Waterfall Door)
   dungeons/themes/bonefrostbarrow.js Dungeon theme: Bonefrost Barrow (the Hoarfrost Reach, the burial mound; boss Haugbui, the Barrow Lord): its roster, palette and tile kit (Great Burial Chamber, Cairn Room, Urn Hall, Passage Grave, Grave Bend, Rune Pillar Cell, Grave Goods, Barrow Door)
   dungeons/themes/blackseam.js       Dungeon theme: The Blackseam (the Greyspine, an old coal mine under Highmark Pastures; boss Garrick, the Seam Foreman): its roster, palette and tile kit (Foreman's Floor, Stope, Cart Yard, Powder Store, Drift, Sump, Winding House, Tally Room, Adit)
@@ -193,6 +193,7 @@ shared
   raids/sunken.js                    Raid: the Sunken Citadel, the Sunscar's sandstone citadel half buried by a dune (garrison, site, material)
   raids/wrackmoor.js                 Raid: Wrackmoor Fort, the Gloamhorn's drowned sea fort with a wreck through its wall (garrison, site, material)
   raids/moot.js                      Raid: The Broken Moot, the Amber Reach's ruined council hall in Baobab Reach, seven toppled seats in a ring (garrison, site, material)
+  testroom.js                        The test room: a pad outside the home village's gate with a Training Scarecrow nobody can kill, a damage counter, and the tools for checking a build (reset cooldowns, refill the cave charge, swap soul and skills). Pure.
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -264,6 +265,7 @@ server
   dungeons/runs.js                   Dungeon runs, the lifecycle: launching a run, the start prompt and joining in progress, the per-tick update (members, downs, respawns, the kit, the monsters), revives, won / lost and the results, closing, places held for 5 minutes, the save (gear.dg)
   dungeons/lobby.js                  Dungeon runs, the messages: the Delve board at a door (open), starting a run (checked against the door, the gate, the hourly offer and each member's level and tier), accepting / declining, leaving, reviving, using an objective; the testing tool's start
   raids.js                           Raids on the server: build and rebuild each land's stronghold, lock its tier on the first hit, wards wake the boss, spawners call reinforcements, the clear pays raid material, a clear rebuilds half an hour later
+  testroom.js                        The test room on the server: an immortal Training Scarecrow, each hiker's damage counter, and the messages that reset the counter and the cooldowns, refill the cave charge
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 
@@ -370,6 +372,7 @@ game
   village/buildings-beach.js         The Tide King's beach (ARENA_TIDE): a ring of whale ribs on the landward side, driftwood, big shells and shallow tide pools
   village/buildings-pvp.js           The Proving Isle's dressing: a gate of two posts and a lintel with a banner on the bridge where the island begins, and red banner poles round the rim
   village/buildings-dungeon.js       The dungeon doors (the Gloamvault's is buildings-dungeon-gloam.js) and their signposts: the Hollowed Elder (a half-dead giant tree with a root-arch door), the Falls Door (a cascade over three ledges, the door behind the water), the Barrow Door (a snow-covered mound with a trilithon) and the Old Adit (a timbered mine mouth in a crag, a head frame above) and the Sandglass Door (a sandstone gateway in the Sunscar's desert, a black-glass pane sealing it)
+  village/buildings-testroom.js      The test room's dressing: a ring of stones round the pad, four torch posts and a signboard at the edge toward the village (the scarecrow itself is a monster: combat/monster-totems.js)
   village/buildings-dungeon-gloam.js The Gloamvault's door (the Gloamhorn's dungeon): a drowned chapel's front set into the cliff of Vault Heath, a pointed arch under a rose window between two buttresses, iron-bound doors that seal it, a wreck's anchor leaning on a pier
   village/buildings-dungeon-savanna.js The Termite Cathedral's door (the Amber Reach's dungeon): the foot of a clay spire on open grass, a ribbed pointed gap between two buttresses, a clay plug that seals it, amber resin beads that light the way and a heap of crumbled clay
   village/sun-rim.js                 Glasswell's Bowl, drawn: the red-rock rim with its gate cracks, the floor with its roads and paving, the Mirror Lake and the river with their curbs, bridges, the gate towers and the Weir
@@ -519,6 +522,7 @@ game
   dungeon/collide.js                 Walking and the camera in a run: the run's walls stop you (dgSlide on the bake, like the server's setPos) and the third-person camera's arm shortens in front of a wall (first person is not touched)
   dungeon/party.js                   The party on the client: the frame under your bars (names, health, level, down, the leader's crown), the invite prompt, the party panel (invite by name, leave, kick, hand on the lead), a tap on a name tag, the party colour on the maps, the revive channel's cast bar
   ui/friends.js                      The friends and ranking panel (comma key): add a friend by name (the other player accepts), who is online, invite to a party, remove; the level ranking with your own place
+  ui/testroom.js                     The test room on the client: the damage counter on the screen, the panel (counter, reset, cooldowns, cave charge, soul and skills), the talk key on the pad
   ui/unstuck.js                      The Stuck button in the settings panel: asks the server to send you to the nearest village (the same as typing /stuck in chat)
   pvp/state.js                       PvP on the Proving Isle, client side: whether you stand on it (server events pvp / pvlock), the fixed loadout your action bar and attacks use there, picking another fighter as the target, the badge and the shut-gate countdown
   dungeon/hud.js                     A run's HUD: the mission's title, lines and bar (dgHudText of the dg tuple) with the run's clock, the objectives' labels and compass arrows, the boss hall's arrow, the use / revive / relight / portal prompt and key, the leave button, the downed screen, the results panel, and the Testing tools' Dungeons row

@@ -9,7 +9,7 @@
                  cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{to: 'home'|'hanami'|'rimehold'}  dev{cmd,v}  ft{cmd,v} (version2 testing: free skill sets)
                  buyskill{id}  eqskill{id[,idx: passive slot]}  unskill{cls,slot[,idx]}  upskill{id}  soul{el}  mq{a:'talk'|'pick'|'read',id|i}  learn{id: a profession}  gather{i: a resource node}
    Messages out: welcome{pid,day,dev,players[,look: a logged-in account's own look]}  mons{list}  you  tp  snap{day,n,pl,mo,b:[per boss: id,engaged,phase,immune,enraged,stunned,aux,mode],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
-initMonstersS(); initBossS(); initRaidsS(); caveInitS();   // raids: after the world's monsters and bosses   // cave: a pack at every camp of the Deep Cave's floors
+initMonstersS(); initBossS(); initRaidsS(); caveInitS(); troomInitS();   // testroom: the scarecrow   // raids: after the world's monsters and bosses   // cave: a pack at every camp of the Deep Cave's floors
 const ACCT=new Map(), PENDING=new Set();   // account -> pid online; pids whose save is still loading
 const recordOf=p=>Object.assign({v:1,name:p.name,look:p.look,level:p.level,exp:p.exp,gear:p.gear,updated:Date.now()},p.auth?{auth:p.auth}:{});
 function saveP(p){ if(!io.store||!p.acct) return Promise.resolve(); p.saveDirty=false; return Promise.resolve().then(()=>io.store.save(p.acct,recordOf(p))).catch(e=>{ p.saveDirty=true; if(io.log) io.log('save failed',e&&e.message); }); }

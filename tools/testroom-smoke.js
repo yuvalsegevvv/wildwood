@@ -1,0 +1,47 @@
+// The test room (shared/testroom.js, server/testroom.js), straight from src/, no build: the pad is flat ground outside the village, the Training Scarecrow stands on it and cannot be hurt, a hit goes to the hiker's own counter
+// (and only theirs), the counter resets, the reset-cooldowns and cave-charge buttons work on the pad and not off it, the soul can be changed on the pad (not elsewhere), the scarecrow's numbers do not depend on the hiker's zone tier.
+// Usage: node tools/testroom-smoke.js
+const {loadServer}=require('./load');
+const sent=[];
+const {api:W,x}=loadServer({dev:false,send(to,m){ sent.push([to,m]); }},['TROOM','troomIn','MONS','VIL','VR','getH','damageMonsterS','monK','SCARECROW_DEF','CAVE_CHARGE_MAX','SOUL_LV','ALL_MON_DEFS']);
+let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
+const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
+const msgs=(to,t)=>sent.filter(s=>s[0]===to&&s[1].t===t).map(s=>s[1]);
+const T=x.TROOM, sc=x.MONS.find(m=>m.tr);
+ok('the pad is 37 m out from the village centre, 9 m wide, on gently sloping ground',Math.abs(Math.hypot(T.x-x.VIL.x,T.z-x.VIL.z)-37)<0.01&&T.r===9&&[0,1,2,3,4,5,6,7].every(i=>Math.abs(x.getH(T.x+Math.sin(i*0.785)*T.r,T.z+Math.cos(i*0.785)*T.r)-x.getH(T.x,T.z))<2.5));
+ok('exactly one Training Scarecrow stands in its middle, a prop with no attack and no XP',x.MONS.filter(m=>m.tr).length===1&&sc.def.id==='scarecrow'&&Math.hypot(sc.x-T.x,sc.z-T.z)<0.01&&sc.T.noAttack&&sc.T.noXp&&x.ALL_MON_DEFS.includes(x.SCARECROW_DEF));
+W.join('a',{name:'Alice',look:{cls:'warrior'},save:{level:40}}); W.join('b',{name:'Bob',look:{cls:'warrior'},save:{level:40}}); tick(2);
+const A=W.players.get('a'), B=W.players.get('b');
+const put=(p,px,pz)=>{ p.x=px; p.z=pz; p.y=x.getH(px,pz); };
+put(A,T.x+2,T.z); put(B,T.x-2,T.z);
+const k0=x.monK(sc,A);
+A.gear.zt.home.max=4; A.gear.zt.home.on=4;
+ok('the scarecrow\'s numbers are the plain tier-0 ones whatever tier the hiker plays at',x.monK(sc,A)===k0&&k0.lv===1);
+const hp0=sc.hp; let dealt=0; for(let i=0;i<40;i++) dealt+=x.damageMonsterS(sc,3,A,A.x,A.z,0)||0;
+ok('forty hits of Alice leave the scarecrow at full health and alive',sc.hp===hp0&&!sc.dead&&dealt>0);
+tick(5);
+let c=msgs('a','troomc').pop();
+ok('Alice\'s counter holds exactly what she dealt, 40 hits, a damage per second and her biggest hit',!!c&&c.tot===Math.round(dealt)&&c.hits===40&&c.dps>0&&c.max>0,JSON.stringify(c));
+ok('Bob\'s counter is untouched',msgs('b','troomc').length===0&&!B.trc);
+for(let i=0;i<3;i++) x.damageMonsterS(sc,3,B,B.x,B.z,0); tick(5);
+ok('Bob\'s own hits count for Bob only',msgs('b','troomc').pop().hits===3&&msgs('a','troomc').pop().hits===40);
+W.receive('a',{t:'troom',a:'reset'}); c=msgs('a','troomc').pop();
+ok('reset sets the counter to zero (and the next hit starts it again)',c.tot===0&&c.hits===0&&!A.trc);
+x.damageMonsterS(sc,3,A,A.x,A.z,0); tick(5);
+ok('...a new count from one hit',msgs('a','troomc').pop().hits===1);
+A.cd.basic=A.cd.skill=A.cd.burst=A.cd.ult=9; sc.ultLock=99; sent.length=0;
+W.receive('a',{t:'troom',a:'cd'});
+ok('reset cooldowns zeroes basic, skill, burst, cave and ult, the scarecrow\'s burst lock, and tells the client',A.cd.basic===0&&A.cd.skill===0&&A.cd.burst===0&&A.cd.ult===0&&sc.ultLock===0&&msgs('a','troomcd').length===1);
+A.level=40; A.cave.charge=3; W.receive('a',{t:'troom',a:'charge'});
+ok('refill sets the cave charge to 100',A.cave.charge===x.CAVE_CHARGE_MAX);
+put(A,x.VIL.x,x.VIL.z); A.cd.skill=9; A.cave.charge=3; sent.length=0;
+W.receive('a',{t:'troom',a:'cd'}); W.receive('a',{t:'troom',a:'charge'});
+ok('off the pad neither button works',A.cd.skill===9&&A.cave.charge===3&&msgs('a','troomcd').length===0);
+A.level=40; A.gear.soul='basic'; W.receive('a',{t:'soul',el:'fire'});
+ok('a soul cannot be bound off the pad and away from Hanami',A.gear.soul==='basic');
+A.level=10; put(A,T.x+1,T.z+1); W.receive('a',{t:'soul',el:'fire'}); const lowLv=A.gear.soul;
+A.level=40; W.receive('a',{t:'soul',el:'fire'}); const fire=A.gear.soul; W.receive('a',{t:'soul',el:'water'});
+ok('on the pad the soul changes freely (from level '+x.SOUL_LV+')',lowLv==='basic'&&fire==='fire'&&A.gear.soul==='water',lowLv+' '+fire+' '+A.gear.soul+' '+JSON.stringify(sent.filter(s=>s[1].t==='toast').slice(-2)));
+const kills=sc.dead; for(let i=0;i<200;i++) x.damageMonsterS(sc,50,A,A.x,A.z,0); tick(3);
+ok('a huge pile of damage still cannot kill it',!sc.dead&&!kills&&sc.hp===sc.maxHp);
+console.log(fails?fails+' failed':'all passed'); process.exit(fails?1:0);

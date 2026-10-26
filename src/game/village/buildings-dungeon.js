@@ -380,37 +380,12 @@ function dgEntSign(E){
   DG_DOORS.signs[E.theme]={E,G,x,z,y,rot,dist,text:[E.name,line]};
 }
 
-/* ================= the Trial Gate (temporary) =================
-   DG_TRIAL_GATE (shared/dungeons.js) in the home village: two root pillars and an arch of root with a soft green light between them and a wooden sign on both faces, in the
-   forest's own stuff (bark brown, moss, the flame cones of the village's braziers). Not one of the four doors: it is not in DG_DOORS.doors (the door tests loop over those), its state is
-   DG_DOORS.trial. The group stands at the gate turned by its `a`, so +z is toward its apron (the village), as with the doors. Colliders: the two pillars only. */
-function dgTrialGate(){
-  const E=DG_TRIAL_GATE, y=getH(E.x,E.z), G=new THREE.Group(), bark=dgEntWood(0x4a3524), moss=(x,yy,z,nx,ny,nz,c)=>{ c.set(0x4f7a3a).multiplyScalar(0.8+h3(x,yy,z)*0.35); };
-  G.position.set(E.x,y,E.z); G.rotation.y=E.a; G.name='dg-trial-gate';
-  const parts=[];
-  for(const s of [-1,1]){
-    parts.push(paint(cyl(0.36,0.58,3.9,7).translate(s*1.7,1.95,0),bark), paint(cyl(0.5,0.75,0.5,7).translate(s*1.7,0.25,0),moss));   // a pillar of root on a mossy foot
-    for(const k of [-1,1]) parts.push(paint(new THREE.ConeGeometry(0.2,1.3,5).rotateZ(k*0.9).translate(s*1.7+k*0.55,0.35,0.15*k),bark));   // roots running out over the ground
-    addCol(E.x+Math.cos(E.a)*s*1.7,E.z-Math.sin(E.a)*s*1.7,0.7);
-  }
-  parts.push(dgEntTube([[-1.7,3.7,0],[-1.15,4.55,0],[0,5.0,0],[1.15,4.55,0],[1.7,3.7,0]],0.36,0.36,16,6,bark));   // the arch: one root bent over
-  parts.push(paint(new THREE.IcosahedronGeometry(0.45,0).translate(0,5.0,0),moss));
-  const m=new THREE.Mesh(merge(parts),villageMat); m.castShadow=true; m.receiveShadow=true; G.add(m);
-  const glowMat=new THREE.MeshBasicMaterial({color:0x8ff0a0,transparent:true,opacity:0.4,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending});
-  const glow=new THREE.Mesh(new THREE.PlaneGeometry(2.5,3.9),glowMat); glow.position.set(0,2.0,0); G.add(glow);
-  const sMat=new THREE.MeshLambertMaterial({map:dgEntSignTex(E.name.toUpperCase(),'Level 5 · no rewards'),emissive:0x2a2418});
-  for(const side of [1,-1]){ const sg=new THREE.Mesh(new THREE.PlaneGeometry(2.3,0.58),sMat); sg.position.set(0,3.35,side*0.42); if(side<0) sg.rotation.y=Math.PI; G.add(sg); }
-  const braziers=[]; for(const s of [-1,1]){ const f=new THREE.Mesh(new THREE.ConeGeometry(0.2,0.5,7),flameMats[1]); f.position.set(s*1.7,4.15,0); G.add(f); flames.push(f); braziers.push(f); }
-  scene.add(G); DG_DOORS.trial={E,G,glowMat,braziers};
-}
-
 /* ================= build and run ================= */
 let dgEntBuilt=false;
 function dgEntBuild(){
   if(dgEntBuilt) return; dgEntBuilt=true;
   dgEntElder(DG_ENTRANCES.hollowroots); dgEntFalls(DG_ENTRANCES.jadesprings); dgEntBarrow(DG_ENTRANCES.bonefrostbarrow); dgEntAdit(DG_ENTRANCES.blackseam); dgEntSand(DG_ENTRANCES.sandglass); dgEntGloam(DG_ENTRANCES.gloamvault); dgEntTermite(DG_ENTRANCES.termitecathedral);
   for(const E of dgEntList) dgEntSign(E);
-  dgTrialGate();
 }
 /* every frame: each door takes its sealed or open look from your gear (dgGateOpen, so +1 at Wildwood opens the Elder, Hanami / Rimehold the others; checked for all three wherever you are,
    it is three lookups) and eases its light up or down; a door hides when far, and its animation runs only when it shows and only on the desktop */
@@ -420,5 +395,4 @@ function dgEntUpdate(dt){
     const target=sealed?0.22:1; D.lit=D.lit===null||!vis?target:D.lit+(target-D.lit)*Math.min(1,dt*2.5);
     D.G.visible=vis; if(vis) D.tick(dt,D.lit,d); }
   for(const id in DG_DOORS.signs){ const S=DG_DOORS.signs[id]; S.G.visible=Math.hypot(P.x-S.x,P.z-S.z)<260; }
-  { const T=DG_DOORS.trial; if(T){ const vis=Math.hypot(P.x-T.E.x,P.z-T.E.z)<DG_ENT_VIS; T.G.visible=vis; if(vis&&dgEntDet) T.glowMat.opacity=0.34+0.12*Math.sin(t*2.2)+0.04*Math.sin(t*5.3); } }   // the Trial Gate's light breathes
 }

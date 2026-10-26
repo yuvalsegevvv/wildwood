@@ -63,6 +63,7 @@ function dgEntTint(x,z,out){
 /* ---- keeping the plants off the doors ----
    Trees, bushes and rocks stay DG_ENT_CLEAR from a door and 2.5 m from a signpost (a chunk is seeded by its own number, so this changes only the chunk it is in). */
 function dgEntClear(x,z){
+  if(troomIn(x,z,2)) return true;   // testroom: no plants on the pad (shared/testroom.js)
   if(caveMouthNear(x,z,32)) return true;   // cave: no plants at the Deep Cave's mouth and on its grotto (shared/cave-mouth.js)
   for(let i=0;i<dgEntList.length;i++){ const E=dgEntList[i], dx=x-E.x, dz=z-E.z;
     if(dx<DG_ENT_CLEAR&&dx>-DG_ENT_CLEAR&&dz<DG_ENT_CLEAR&&dz>-DG_ENT_CLEAR&&dx*dx+dz*dz<DG_ENT_CLEAR*DG_ENT_CLEAR) return true;
@@ -73,11 +74,11 @@ function dgEntClear(x,z){
 /* ---- the talk key ---- */
 function dgEntPrompt(E,el,btn){
   const sealed=dgEntSealed(E);
-  el.textContent=(isTouch?'Tap '+(sealed?'Look':'Enter'):(kbName('talk')||'the talk key'))+': '+E.name+(sealed?' (sealed)':E.temp?' (level '+dgEntTheme(E).lv+', no rewards)':'');
+  el.textContent=(isTouch?'Tap '+(sealed?'Look':'Enter'):(kbName('talk')||'the talk key'))+': '+E.name+(sealed?' (sealed)':'');
   el.hidden=false; btn.textContent=sealed?'Look':'Enter';
 }
 function dgOpenDoor(id){
-  const E=typeof id==='string'?DG_ENTRANCES[id]||(id===DG_TRIAL_GATE.theme?DG_TRIAL_GATE:null):id; if(!E) return;   // (the Trial Gate is not one of the four doors)
+  const E=typeof id==='string'?DG_ENTRANCES[id]:id; if(!E) return;
   const T=dgEntTheme(E);
   if(!dgGateOpen(GEAR,T)){ const u=dgUnlocked(GEAR,PL.level,T); toast(E.name+' is sealed. '+(u.ok?DG_LANDS[T.land].hint:u.why),'bad'); UI_SFX.click(); return; }
   if(typeof dgBoardOpen==='function') dgBoardOpen(E.theme); else toast('The way is not ready yet','');   // (the Delve board is another file's: it defines dgBoardOpen)

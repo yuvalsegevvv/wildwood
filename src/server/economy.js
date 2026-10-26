@@ -130,7 +130,8 @@ function upgradeSkillP(p,id){
 function bindSoulP(p,el){
   if(!ELEMS[el]||p.dead) return;
   if(p.level<SOUL_LV){ toastTo(p.id,'The hall answers only hikers of level '+SOUL_LV+' and above','bad'); return; }
-  if(Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14){ toastTo(p.id,'The Soul Hall is in Hanami, beyond the eastern mountains','bad'); return; }
+  if(!troomIn(p.x,p.z,2)&&Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14){   // testroom: the pad too
+     toastTo(p.id,'The Soul Hall is in Hanami, beyond the eastern mountains','bad'); return; }
   if(p.gear.soul===el) return;
   p.gear.soul=el; p.dirty=true; if(el!=='basic') mqActP(p,'soul'); toastTo(p.id,el==='basic'?'Your soul is unbound':'Your soul is bound to '+ELEMS[el].name,'good'); ev('soul',p.id,el);
   recalcP(p);   // dungeons: the ring's attack depends on the soul (it used to touch no stats)
