@@ -62,7 +62,7 @@ function leave(pid){
 const POS_Y_MIN=-60, POS_Y_MAX=600, POS_V=80;   // what a client may report for its height (m) and its speed (m/s)
 function setPos(pid,d){
   const p=S.players.get(pid); if(!p||p.dead||!Array.isArray(d)) return;
-  const v=d.map(Number); if(!v.slice(0,3).every(isFinite)) return;
+  const v=d.slice(0,6).map(Number); if(!v.slice(0,3).every(isFinite)||v.length<3) return;   // (six numbers at most: a megabyte of them was mapped each time)
   { const cf=caveFloorAt(p.x,p.z), cv=caveFloorAt(v[0],v[2]); if(cf>=0||cv>=0){ caveSetPosS(p,v,cf,cv); return; } }   // cave: on a floor of the Deep Cave (its walk grid holds you; a position from the world or another floor is a late message)
   if(p.inst||dgInSlots(v[0])){ dgSetPosS(p,v); return; }   // dungeons: inside a run (its grid, never into a wall); slot coordinates from a hiker in no run are a late message: ignored
   // (the numbers come from the client and go out again in every other player's snapshot, rounded by r1(): a finite but huge y, face or speed (1e308) became Infinity there, and JSON turned it
