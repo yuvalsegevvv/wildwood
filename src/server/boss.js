@@ -11,7 +11,7 @@
 const BOSSES=[];
 // one boss fight's state for a def and an arena circle A = {x,z,r}: the six of the world are made through it at start, and a dungeon makes its boss on demand (dungeons: makeBossS)
 function makeBossS(bd,A){
-  const B={bd,A,kit:BOSS_KITS[bd.kit],m:null,phase:1,tele:[],zones:[],walls:[],orbs:[],q:[],k:{},mode:0,aux:0,busy:0,mv:null,engaged:false,totems:[],adds:[],enraged:false,stunT:0};
+  const B={bd,A,kit:BOSS_KITS[bd.kit],m:null,phase:1,tele:[],zones:[],walls:[],orbs:[],q:[],k:{},mode:0,aux:0,busy:0,mv:null,engaged:false,totems:[],adds:[],enraged:false,stunT:0,ultStunT:0,ultStunQ:0};
   B.m=makeMon(bd.def,A.x,A.z,{x:A.x,z:A.z},1,false); B.m.boss=true; B.m.B=B;
   return B;
 }
@@ -19,9 +19,10 @@ function initBossS(){
   for(const bd of BOSS_DEFS) BOSSES.push(makeBossS(bd,ARENAS.find(a=>a.key===bd.arena)));
 }
 // snapshot: one entry per boss [monster id, engaged, phase, immune, enraged, stunned, aux, mode]
-function bossState(){ return BOSSES.concat(rdBossesS()).map(B=>[B.m.id,B.engaged?1:0,B.phase,B.m.immune?1:0,B.enraged?1:0,B.stunT>0?1:0,B.aux,B.mode]); }
+function bossState(){ return BOSSES.concat(rdBossesS()).map(B=>[B.m.id,B.engaged?1:0,B.phase,B.m.immune?1:0,B.enraged?1:0,B.stunT>0||B.ultStunT>0?1:0,B.aux,B.mode]); }   // ult: the burst's freeze shows as stunned too
 function resetBossS(B){
-  const m=B.m; B.engaged=false; B.phase=1; B.enraged=false; B.stunT=0; m.immune=false; m.aggro=false; m.tgt=null; m.hp=m.maxHp; m.act=null; m.pendingHit=-1; m.hitters.clear();
+  const m=B.m; B.engaged=false; B.phase=1; B.enraged=false; B.stunT=0; B.ultStunT=B.ultStunQ=0; m.ultLock=0;   // ult: a boss reset is the only thing that clears the burst's stun lock
+  m.immune=false; m.aggro=false; m.tgt=null; m.hp=m.maxHp; m.act=null; m.pendingHit=-1; m.hitters.clear();
   clearBossFxS(B); [...B.totems,...B.adds].forEach(removeMonS); B.totems=[]; B.adds=[];
 }
 function bossDefeatedS(m){
@@ -54,7 +55,8 @@ function updateBossS(m,dt){
     if(m.act){ m.act.t+=dt; if(m.act.t>=m.act.dur) m.act=null; }
     if(B.busy>0) B.busy-=dt;
     if(B.mv){ const v=B.mv; v.t+=dt; const k=Math.min(1,v.t/v.dur); m.x=v.x0+(v.x1-v.x0)*k; m.z=v.z0+(v.z1-v.z0)*k; m.vx=m.vz=0; if(k>=1) B.mv=null; }
-    if(B.stunT>0){ B.stunT-=dt; m.vx*=0.8; m.vz*=0.8; }
+    if(B.stunT>0){ B.stunT-=dt; m.vx*=0.8; m.vz*=0.8; if(B.stunT<=0&&B.ultStunQ>0){ B.ultStunT=B.ultStunQ; B.ultStunQ=0; } }   // ult: a burst stun queued behind a kit's own stun starts when that one ends
+    else if(B.ultStunT>0){ B.ultStunT-=dt; m.vx*=0.8; m.vz*=0.8; }   // ult: frozen like a stun, but B.stunT is untouched: no x1.5, no kit 'strike now' window
     else {
       if(!(m.act&&m.act.cleave) && B.busy<=0 && !B.mv){
         m.faceGoal=Math.atan2(-dx,-dz);

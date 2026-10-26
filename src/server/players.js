@@ -13,7 +13,8 @@ function sanitizeGear(g,cls){
   if(g.bought&&typeof g.bought==='object') for(const id in g.bought) if(ITEM[id]&&ITEM[id].rar===0) out.bought[id]=clampInt(g.bought[id],0,999,0);
   out.q=sanitizeQuests(g.q);
   out.skills=sanitizeSkills(g.skills);
-  out.cave=caveSanitizeSave(g.cave); if(out.skills.cave&&!out.cave.own[out.skills.cave]) out.skills.cave=null;   // cave: the owned cave skills; the worn one must be owned
+  out.cave=caveSanitizeSave(g.cave); if(out.skills.cave&&!out.cave.own[out.skills.cave]) out.skills.cave=null;
+  if(out.skills.ult&&!ultOwned(out.skills,out.cave,out.skills.ult)) out.skills.ult=null;   // ult: the worn burst must be earned   // cave: the owned cave skills; the worn one must be owned
   out.mq=sanitizeMq(g.mq);
   out.sq=sanitizeSq(g.sq);   // sidequests: the chains' progress (an old save has none)
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); out.cos=sanitizeCos(g); }   // cosmetics: the auras and capes made at a lodge
@@ -69,6 +70,7 @@ function sanitizeSkills(g){
   // a passive keeps its slot (which slots a level can use is decided by newPlayer, which knows the level), and sits in one slot only
   if(Array.isArray(g.pass)) g.pass.slice(0,PASSIVE_SLOTS).forEach((id,i)=>{ if(PASSIVES[id]&&out.owned.includes(id)&&!out.pass.includes(id)) out.pass[i]=id; });
   out.pgiven=!!g.pgiven;   // the free passive was handed out once (so taking it off does not bring it back)
+  out.ult=ultDef(g.ult)?g.ult:null;   // ult: the worn burst's set id (sanitizeGear clears it when it is not owned)
   out.cave=caveSkillDef(g.cave)?g.cave:null;   // cave: the worn cave skill (sanitizeGear clears it when it is not owned)
   out.v=g.v===2?2:1;   // 1 = from before burst skills: they get their free burst on join
   return out;
@@ -103,9 +105,10 @@ function newPlayer(pid,hello){
   const p0=oldWv<WORLD_VER?wvSpawnOf(save.pos,save.gear||{}):null, sp=p0||VIL.spawn;   // (wv: a saved position of the old world frame is moved to its land's village)
   const p={id:pid,name:cleanName(hello.name),look,x:sp.x,y:getH(sp.x,sp.z),z:sp.z,face:0,vx:0,vz:0,
     level:clampInt(save.level,1,PLAYER_MAX_LV,1),exp:Math.min(EXP_MAX,Math.max(0,+save.exp||0)),gear:sanitizeGear(save.gear,look.cls),
-    hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0,cave:0},buff:null,act:null,dirty:true,travelT:0,cave:caveNewState()};   // cave: the 4th slot's charge (not saved)
+    hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0,cave:0,ult:0},buff:null,act:null,dirty:true,travelT:0,cave:caveNewState()};   // cave: the 4th slot's charge (not saved)
   p.look=ambCleanLook(cosCleanLook(p.look,p.gear.cos),p.gear.os);   // cosmetics: no aura or cape that you do not own, gems: no outfit set that you have not bought
   if(p.gear.startAll) giveAllP(p);
+  ultInitP(p);   // ult: which bursts are already owned (only a later one is announced)
   if(p.gear.skills.v!==2){ autoEquipP(p,'skill'); autoEquipP(p,'burst'); p.gear.skills.v=2; }   // saves from before skills / bursts get the free ones
   p.gear.skills.pass.forEach((id,i)=>{ if(id&&i>=passiveOpen(p.level)) p.gear.skills.pass[i]=null; });   // a passive in a slot this level has not opened goes back to the bag
   autoEquipPassiveP(p);   // ... and from before passives
