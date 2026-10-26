@@ -40,6 +40,7 @@ function marketP(p){ if(inVillage(p)) return true; toastTo(p.id,'Shops, the forg
 function buyP(p,id){ const it=ITEM[id]; if(!it||it.rar>0) return;   // shops only sell common items, as many as you like
   if(it.dg) return;   // dungeons: level-30 gear is only ever paid by a clear, never sold
   if(it.kind==='tool'&&!inVillage(p)){ toastTo(p.id,'Tools are sold at a Wayfarers\' Lodge, in a village','bad'); return; }
+  if(p.gear.inv.length>=BAG_MAX){ toastTo(p.id,'Your bag is full','bad'); return; }   // (checked before the coins go: addItemP refuses a full bag but the price had been paid)
   const n=p.gear.bought[id]||0, price=shopPrice(it,n);
   if(p.gear.coins<price){ toastTo(p.id,'Not enough coins','bad'); return; } p.gear.coins-=price; p.gear.bought[id]=n+1; addItemP(p,id,true); toastTo(p.id,'Bought '+it.name+' for '+price+' coins','loot r0'); ev('loot',p.id,id); if(it.kind!=='tool') mqActP(p,'buy'); }
 function sellP(p,id){
