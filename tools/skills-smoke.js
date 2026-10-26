@@ -142,6 +142,11 @@ W.receive('a',{t:'buyskill',id:'kanabo'}); W.receive('a',{t:'dev',cmd:'reset'});
 { const q=W.players.get('a'); q.gear.skills.owned.push('snare'); q.gear.coins=99999; W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); q.gear.mats={}; for(const id of x.MATS?Object.keys(x.MATS):[]) q.gear.mats[id]=99; evs.length=0;
   W.receive('a',{t:'buyskill',id:'kanabo'}); W.receive('a',{t:'upskill',id:'snare'}); tick(3);
   ok('a boss skill cannot be bought or upgraded yet',!q.gear.skills.owned.includes('kanabo')&&!q.gear.skills.lv.snare&&toasts().some(t=>/not for sale/.test(t))&&toasts().some(t=>/cannot be upgraded/.test(t))); }
+{ const q=W.players.get('a'); q.level=40; q.gear.coins=99999; const sk=Object.values(x.SKILLS).find(s=>!s.drop&&!s.set&&s.price>0&&s.lv<=40&&!q.gear.skills.owned.includes(s.id)&&s.slot!=='passive');
+  W.setPos('a',[x.VIL.x+150,x.getH(x.VIL.x+150,x.VIL.z),x.VIL.z,0,0,0]); tick(1); W.receive('a',{t:'buyskill',id:sk.id}); tick(2);
+  ok('a skill cannot be bought out in the field (the trainer is in a village)',!q.gear.skills.owned.includes(sk.id)&&q.gear.coins===99999,sk.id);
+  W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); tick(1); W.receive('a',{t:'buyskill',id:sk.id}); tick(2);
+  ok('...and can be bought at the trainer',q.gear.skills.owned.includes(sk.id)&&q.gear.coins===99999-sk.price,sk.id); }
 const sg=x.sanitizeGear({skills:{owned:['snare','lifesap'],lv:{snare:5,lifesap:3},eq:{warrior:{skill:'snare',burst:'lifesap'}}}},'warrior');
 ok('a save keeps the boss skills you own, equipped, but not any upgrade level',sg.skills.owned.includes('snare')&&sg.skills.eq.warrior.skill==='snare'&&sg.skills.eq.warrior.burst==='lifesap'&&!sg.skills.lv.snare&&!sg.skills.lv.lifesap);
 

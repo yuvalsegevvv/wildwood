@@ -1,6 +1,6 @@
 # Wildwood: guide for agents
 
-Read this file first. It is a router: it lets you work on the game **without reading the whole codebase** (about 24,000 lines of JavaScript in 245 files). Open only the files your task touches, and the one area guide it points to (`docs/areas/`).
+Read this file first. It is a router: it lets you work on the game **without reading the whole codebase** (about 41,000 lines of JavaScript in 500 files). Open only the files your task touches, and the one area guide it points to (`docs/areas/`).
 
 Wildwood is a multiplayer 3D forest RPG in the browser: three.js r128 client, an authoritative world server that runs in the browser tab (solo / shared room) or in Node (the deployed MMO), and a procedural world of seven lands (the home forest, the Sakura Vale east of the mountains, the Hoarfrost Reach north of it, the Greyspine north-west of the forest, the Sunscar, the Gloamhorn and the Amber Reach) with seven villages, about 3,300 monsters, a dozen world bosses, a main quest (acts I-IV, levels 1-32; the lands go on to level 45), three professions, crafting and brewing, zone tiers, 3 classes with equippable skills and elements, items in 5 rarities, chat, accounts and server-side saves (Postgres on Neon). The full overview is in `docs/areas/README.md`.
 
@@ -245,7 +245,7 @@ The universal ones are here. An area's own pitfalls are in its guide (`docs/area
   `NET` is `var` on purpose.
 - A second login of the same account must take the live in-memory state, not the (older) saved record.
 - three r128 has no `BufferGeometry.applyQuaternion` (use `applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(q))`). An exception while a monster
-  model is built inside the `mons` message aborts the rest of the roster (monsters silently missing): run `client-smoke` after touching model builders.
+  model is built inside the `mons` message is caught per monster (`netEach`, `net/client.js`; so are the entries of a snapshot's `mo` and `ev`) and logged: that one monster is missing: run `client-smoke` after touching model builders.
   `paint(geo,fn)` calls `fn(x,y,z,nx,ny,nz,c)`, `pc(geo,fn)` calls `fn(x,y,z,c)` (or `fn(c)`): a `pc`-style function given to `paint` throws "c.set is not a function".
 - **A point's land needs both coordinates.** The borders between the lands wander (`borderX(z)`, `borderZ(x)`, `shared/terrain.js`): never write `x > HALF` or `z < HZ0` to mean "the vale" or "the north", ask `inVale(x,z)` / `inHoar(x,z)` / `inGrey(x,z)` / `landAt(x,z)`; a gate on a border needs a pin there first (`docs/areas/regions.md`).
 - **Every instanced mesh must have `instanceColor`.** r128 picks a material's shader program once, from whichever instanced mesh draws first, so a material shared by meshes with and without colours crashes the render loop ("Cannot read properties of null (reading 'isInterleavedBufferAttribute')") in some runs. `addInstanced` and `animMesh` add colours; a new `InstancedMesh` made any other way must too (`client-smoke` checks). Full story: `docs/areas/render.md`.

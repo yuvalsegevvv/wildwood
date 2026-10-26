@@ -35,8 +35,8 @@ function equipClassP(p,cls){
   if(!owned.length){ p.gear.inv.push(slot+'1'); owned=[slot+'1']; }
   const was=clsOfP(p); p.gear.eq.weapon=owned[0]; gearChangedP(p); if(clsOfP(p)!==was) mqActP(p,'class');
 }
-// shops, the forge and the quest board stand in the villages and their panels open only beside their people: a message from the field (a hacked client) is refused
-function marketP(p){ if(inVillage(p)) return true; toastTo(p.id,'Shops, the forge and the quest board are in the villages','bad'); return false; }
+// shops, the forge, the trainer and the quest board stand in the villages and their panels open only beside their people: a message from the field (a hacked client) is refused
+function marketP(p){ if(inVillage(p)) return true; toastTo(p.id,'Shops, the forge, the trainer and the quest board are in the villages','bad'); return false; }
 function buyP(p,id){ const it=ITEM[id]; if(!it||it.rar>0) return;   // shops only sell common items, as many as you like
   if(it.dg) return;   // dungeons: level-30 gear is only ever paid by a clear, never sold
   if(it.kind==='tool'&&!inVillage(p)){ toastTo(p.id,'Tools are sold at a Wayfarers\' Lodge, in a village','bad'); return; }
