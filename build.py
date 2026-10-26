@@ -5,6 +5,7 @@
     python3 build.py --check    build, then syntax-check every script with node (if installed), look for duplicate top-level names and check the
                                 layout rules: a header on every file, every source file in the manifest, docs/FILES.md up to date
     python3 build.py --inline-audio   also embed the music in the page (one ~14 MB file that works offline / from file://)
+    python3 build.py --no-bake  leave the server's height grid out of dist/wildwood-server.js (the server works it out at start; see height_bake)
     python3 build.py --index    print what each source file contains (from its //@ header)
     python3 build.py --write-index   rewrite docs/FILES.md from those headers (run it after adding, renaming or re-describing a file)
 
@@ -152,6 +153,33 @@ def image_block():
 LEAN_PAGE = ''   # the page the Node host serves (build() fills it): dist/wildwood.html without the in-page world server
 
 
+HB_PLACEHOLDER = 'var HB_BAKE=null;'   # in src/server/world.js
+HB_CACHE = os.path.join(ROOT, 'dist', 'heightbake.json')
+
+
+def height_bake(server):
+    """The server's height grid (about 0.8 s of its 1.7 s start) as base64, worked out once by tools/bake-heights.js and kept in dist/heightbake.json
+    under a hash of the server sources, so only a build after a source change pays the 2 s. None (the server then works the grid out itself) when
+    node is missing, --no-bake is given or the tool fails."""
+    if '--no-bake' in sys.argv or not shutil.which('node'):
+        return None
+    key = hashlib.sha1(server.encode('utf-8')).hexdigest()
+    try:
+        with open(HB_CACHE, encoding='utf-8') as f:
+            c = json.load(f)
+        if c.get('key') == key and c.get('b64'):
+            return c['b64']
+    except (OSError, ValueError):
+        pass
+    r = subprocess.run(['node', os.path.join(ROOT, 'tools', 'bake-heights.js')], capture_output=True, text=True, cwd=ROOT)
+    if r.returncode or not r.stdout:
+        print('height bake failed, the server will work the grid out itself:\n' + r.stderr[-400:])
+        return None
+    with open(HB_CACHE, 'w', encoding='utf-8') as f:
+        json.dump({'key': key, 'b64': r.stdout}, f)
+    return r.stdout
+
+
 def build(inline_audio=False):
     manifest = json.loads(read(os.path.join(SRC, 'manifest.json')))
     styles = ''.join(strip_header(read(os.path.join(SRC, 'styles', f))) for f in manifest['styles'])
@@ -184,10 +212,14 @@ def build(inline_audio=False):
     with open(OUT, 'w', encoding='utf-8') as f:
         f.write(page)
     node = ''.join(strip_header(read(os.path.join(SRC, 'node', f))) for f in manifest['node'])
+    if HB_PLACEHOLDER not in server:
+        sys.exit('src/server/world.js has no `' + HB_PLACEHOLDER + '` for the height bake')
+    bake = height_bake(server)
+    server_js = server.replace(HB_PLACEHOLDER, 'var HB_BAKE="' + bake + '";', 1) if bake else server   # (dist/wildwood.html keeps the null: the page's own server works the grid out)
     with open(SERVER_OUT, 'w', encoding='utf-8') as f:
         f.write('#!/usr/bin/env node\n/* Wildwood world server. Run: node wildwood-server.js [--port 8080] [--no-dev] */\n\'use strict\';\n'
                 'const PAGE=' + json.dumps(lean) + ';\n'
-                'function createWorldServer(io){\n' + server + '}\n' + node)
+                'function createWorldServer(io){\n' + server_js + '}\n' + node)
     print('built %s (%.0f KB)' % (os.path.relpath(SERVER_OUT, ROOT), os.path.getsize(SERVER_OUT) / 1024))
     size = os.path.getsize(OUT)
     print('built %s (%.0f KB, %d game files, %d stylesheets)' % (os.path.relpath(OUT, ROOT), size / 1024, len(manifest['game']), len(manifest['styles'])))
