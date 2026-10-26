@@ -13,7 +13,7 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         archer:{name:'Torch Arrow', desc:'A burning arrow from far away: a precise, heavy shot for a basic attack.', cd:0.9, range:34, mult:2.4, act:['pell1a',0.55,0.5], anim:'shoot',
+         archer:{name:'Torch Arrow', desc:'A burning arrow from far away: a precise, heavy shot for a basic attack.', cd:0.9, range:34, mult:3.3, act:['pell1a',0.55,0.5], anim:'shoot',
                  fx:{proj:{kind:'ember', speed:54, turn:6, life:0.9}, rangeScale:{from:6, to:30, k:1.4}},style:'hold',hold:{x:{burn:{dur:4,k:0.3}}}}},
        passive:{name:'Steady Hand', text:'+{}% damage while you have stood still for 2 seconds', stat:'dmg', v:[0.16, 0.02], when:{still:2}}},
     2:{bound:'any',

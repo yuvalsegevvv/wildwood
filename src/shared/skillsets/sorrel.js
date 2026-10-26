@@ -13,7 +13,7 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         archer:{name:'Clean Line', desc:'A precise arrow from far away: the farther the target, the harder it lands.', cd:0.9, range:36, mult:1.8, act:['sorrel1a',0.55,0.5], anim:'shoot',
+         archer:{name:'Clean Line', desc:'A precise arrow from far away: the farther the target, the harder it lands.', cd:0.9, range:36, mult:2.1, act:['sorrel1a',0.55,0.5], anim:'shoot',
                  fx:{proj:{kind:'frost', speed:56, turn:6, life:0.9}, rangeScale:{from:6, to:30, k:1.6}},hold:{x:{status:{kind:'vuln',v:0.1,dur:5}}}}},
        passive:{name:'Far Sight', text:'+{}% damage against a target 14 m or more away', stat:'dmg', v:[0.10, 0.02], when:{dist:{from:14}}}},
     2:{bound:'any',
