@@ -3,10 +3,11 @@
    agent map: hvShout(kind,ab) is called by doAttack (game/combat/attacks.js) when a skill (not a basic attack) is used;
    hvSet / hvChoice / hvRender are used by the sound settings (ui/settings-sound.js, markup `#hvChips` in index.html).
    Voices come from the browser's text-to-speech (voices.js picks the best installed ones); no service, no key.
-   The choice is stored in localStorage `wildwood-hero-voice`: 'auto' (follow the hiker's sex), 'm', 'f' or 'off'.
+   The choice is stored in localStorage `wildwood-hero-voice`: 'auto' (the worn set's voice when owned, else the hiker's sex), 'm', 'f', 'off' or a set id.
+   Any set's voice can be picked whatever is worn; owning the set (osOwned, ui/character-editor.js) is what unlocks it (hvUnlocked).
    A signature outfit set (look.model) speaks with its own character: sex, pitch, rate, which of the good voices and a catch phrase. */
 const HV_KEY='wildwood-hero-voice';
-let HV_PICK='auto'; try{ const s=localStorage.getItem(HV_KEY); if(s==='m'||s==='f'||s==='off'||s==='auto') HV_PICK=s; }catch(_){}
+let HV_PICK='auto';
 // the two default voices
 const HV_BASE={m:{pitch:0.92,rate:1.05,slot:0},f:{pitch:1.12,rate:1.08,slot:0}};
 // one voice per outfit set: slot = which of the good voices of its sex (so neighbours differ), tone = which shouts it uses
@@ -73,22 +74,26 @@ function hvLines3(ab,spec){
   return [l1,l2,l3];
 }
 let hvLast=0, hvPrev='';
+try{ const s=localStorage.getItem(HV_KEY); if(s==='m'||s==='f'||s==='off'||s==='auto'||Object.prototype.hasOwnProperty.call(HV_OUTFIT,s)) HV_PICK=s; }catch(_){}
+function hvUnlocked(id){ return Object.prototype.hasOwnProperty.call(HV_OUTFIT,id)&&osOwned(id); }
 function hvVoiceSpec(){
   if(HV_PICK==='off') return null;
-  const m=(LOOK&&LOOK.model)&&Object.prototype.hasOwnProperty.call(HV_OUTFIT,LOOK.model)?HV_OUTFIT[LOOK.model]:null;
+  if(hvUnlocked(HV_PICK)) return HV_OUTFIT[HV_PICK];
+  const m=HV_PICK==='auto'&&LOOK&&LOOK.model&&hvUnlocked(LOOK.model)?HV_OUTFIT[LOOK.model]:null;
   if(m) return m;
-  const sex=HV_PICK==='auto'?(LOOK&&LOOK.sex==='female'?'f':'m'):HV_PICK;
+  const sex=HV_PICK==='m'||HV_PICK==='f'?HV_PICK:(LOOK&&LOOK.sex==='female'?'f':'m');
   return Object.assign({sex:sex,tone:null},HV_BASE[sex]);
 }
 // what the editor's Voice tab tells the player
 function hvDescribe(){
-  const m=LOOK&&LOOK.model&&Object.prototype.hasOwnProperty.call(HV_OUTFIT,LOOK.model)?LOOK.model:null;
   if(HV_PICK==='off') return 'Your skill shouts are silent.';
-  if(m) return 'Wearing the '+(CHAR_MODELS[m]?CHAR_MODELS[m].name:m)+' set: its own '+(HV_OUTFIT[m].sex==='f'?'female':'male')+' voice shouts for you. Take the outfit off to use the voice you pick here.';
-  return 'Your shouts use the '+(hvVoiceSpec().sex==='f'?'female':'male')+' voice'+(HV_PICK==='auto'?' that matches your hiker.':'.');
+  if(hvUnlocked(HV_PICK)) return 'Shouting with the '+(CHAR_MODELS[HV_PICK]?CHAR_MODELS[HV_PICK].name:HV_PICK)+' voice, whatever you wear.';
+  const sp=hvVoiceSpec();
+  if(HV_PICK==='auto'&&LOOK&&LOOK.model&&hvUnlocked(LOOK.model)) return 'Matching the '+(CHAR_MODELS[LOOK.model]?CHAR_MODELS[LOOK.model].name:LOOK.model)+' set you wear. Pick any voice below, whatever you wear; owning a set unlocks its voice.';
+  return 'Your shouts use the '+(sp.sex==='f'?'female':'male')+' voice'+(HV_PICK==='auto'?' that matches your hiker.':'.')+' Owning a set unlocks its voice.';
 }
 function hvChoice(){ return HV_PICK; }
-function hvSet(v){ HV_PICK=v; try{ localStorage.setItem(HV_KEY,v); }catch(_){} if(v==='off'&&speech.ok){ try{ speechSynthesis.cancel(); }catch(_){} } }
+function hvSet(v){ if(v!=='m'&&v!=='f'&&v!=='off'&&v!=='auto'&&!hvUnlocked(v)) return; HV_PICK=v; try{ localStorage.setItem(HV_KEY,v); }catch(_){} if(v==='off'&&speech.ok){ try{ speechSynthesis.cancel(); }catch(_){} } }
 // one of the three at random, never the one just shouted
 function hvLine(spec,ab){
   const L=hvLines3(ab,spec).filter(x=>x!==hvPrev), pick=L[Math.floor(Math.random()*L.length)]||'Hyaah!';

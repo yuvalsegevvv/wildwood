@@ -283,6 +283,12 @@ function renderEditor(){
         const b=document.createElement('button'); b.className='chip'; b.textContent=txt; b.setAttribute('aria-pressed',hvChoice()===v);
         b.onclick=()=>{ hvSet(v); renderEditor(); if(v!=='off') hvShout('skill',{name:'Hear me',cls:LOOK.cls},true); }; box.append(b); }
       wrap.append(box);
+      // every set's voice: owning the set unlocks it, wearing it is not needed
+      const vb=document.createElement('div'); vb.className='chips';
+      for(const id of Object.keys(OUTFITS)){ if(!HV_OUTFIT[id]) continue; const ok=osOwned(id), nm=CHAR_MODELS[id]?CHAR_MODELS[id].name:id;
+        const b=document.createElement('button'); b.className='chip'+(ok?'':' locked'); b.textContent=(ok?'':'\u{1F512} ')+nm; b.setAttribute('aria-pressed',hvChoice()===id); b.disabled=!ok; b.title=ok?nm+' voice':'Locked: own the '+nm+' set to unlock this voice';
+        b.onclick=()=>{ hvSet(id); renderEditor(); hvShout('skill',{name:'Hear me',cls:LOOK.cls},true); }; vb.append(b); }
+      wrap.append(vb);
       const hear=document.createElement('button'); hear.className='chip'; hear.textContent='Hear it'; hear.onclick=()=>hvShout('skill',{name:'Hear me',cls:LOOK.cls},true); wrap.append(hear);
     } else if(row.type==='sets'){
       // the outfit sets (src/game/outfits): one tap sets up the whole look: the recommended gender, body sliders, all seven pieces and the colours they were designed in; everything stays editable afterwards in the Clothes and Face tabs

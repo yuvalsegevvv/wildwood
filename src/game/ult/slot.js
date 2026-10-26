@@ -58,15 +58,30 @@ function ultPieceName(setId,piece){
 }
 const ULT_MOD_TXT={mult:v=>'damage x'+v,util:v=>'heals, shields and buffs x'+v,cd:v=>'cooldown x'+v,n:v=>'+'+v+' shots or hits',size:v=>'areas x'+v,v:v=>'value x'+v,eff:v=>'effect x'+v,icd:v=>'triggers '+Math.round(1/v*10)/10+'x as often'};
 const ultModText=m=>Object.keys(m).map(k=>k==='cdr'?'takes '+Object.keys(m.cdr).map(s=>m.cdr[s]+' s off '+(s==='burst'?'Power':'skill')+' cooldown').join(' and '):ULT_MOD_TXT[k](m[k])).join(', ');
+// a burst tile built like skTile (economy/skills.js): the element's border and dot, the set's emblem, a "5" corner mark; data-ult + data-from make it draggable (skDown)
+function ultTile(a,from,cls,lbl){
+  const el=a.el&&a.el!=='basic'&&ELEMS[a.el]?a.el:'basic', t=ssTint(a);
+  return `<button class="sk-tile${el!=='basic'?' has-el':''}${t?' has-set':''}${cls}" data-ult="${a.set}" data-from="${from}" style="--el:${el==='basic'?'transparent':ELEMS[el].col}${t?';--set:'+t:''}" aria-label="${a.name}"><svg ${SS_ICON_ATTR}>${ssGlyph(a)||''}</svg>${el!=='basic'?'<i class="el-dot"></i>':''}<span class="lv">${lbl}</span></button>`;
+}
+// a burst tile dropped (economy/skills.js skDrop): grid -> the 5th slot wears it; slot -> off it takes it off; anything refused says why
+function ultDrop(src,tg){
+  const s=ultDef(src.id); if(!s||!tg) return;
+  if(src.from==='grid'){
+    if(!tg.ult){ if(tg.slot||tg.idx!==undefined||tg.cave){ toast(s.name+' is a burst: it goes in slot 5','bad'); UI_SFX.error(); } return; }
+    if(!GEAR||!GEAR.skills||!ultOwned(GEAR.skills,GEAR.cave,s.set)){ toast(s.name+' is not yours yet: own '+ULT_OWN_N+' of its set\'s 7 pieces','bad'); UI_SFX.error(); return; }
+    if(PL.level<ULT_LV){ toast('The burst slot opens at level '+ULT_LV,'bad'); UI_SFX.error(); return; }
+    netSend({t:'ultequip',id:s.set}); UI_SFX.click();
+  } else if(tg.area){ netSend({t:'ultequip',id:null}); UI_SFX.click(); }
+}
 function ultSlotHtml(C){
   const locked=C.lv<ULT_LV, a=GEAR&&GEAR.skills&&ultDef(GEAR.skills.ult), on=a&&ultOwned(GEAR.skills,GEAR.cave,a.set)&&!locked, owned=ultOwnedIds().length>0;
-  const tile=on?`<button class="sk-tile${ssTint(a)?' has-set':''}" data-ult="${a.set}" style="${ssTint(a)?'--set:'+ssTint(a):''}" aria-label="${a.name}"><svg ${SS_ICON_ATTR}>${ssGlyph(a)||''}</svg></button>`:`<div class="sk-tile empty">${skIcon(locked?'lock':'plus')}</div>`;
+  const tile=on?ultTile(a,'slot:ult','','Burst'):`<div class="sk-tile empty">${skIcon(locked?'lock':'plus')}</div>`;
   return `<div class="sk-slot ult${on?' on':''}${locked?' locked':''}" data-ultslot="1"><span class="sk-n">5 · Burst</span>${tile}<b>${on?a.name:locked?'Opens at level '+ULT_LV:owned?'Empty':'Earn one'}</b><small>${on?(SS_SETS[a.set].role.main==='grind'?'30 s (60 s in a boss fight)':'60 s'):''}</small></div>`;
 }
 function ultGridHtml(){
   const ids=Object.keys(ULT_SKILLS); if(!ids.length) return '<p class="muted sk-note">No bursts exist yet.</p>';
   return ids.map(id=>{ const s=ULT_SKILLS[id], own=GEAR&&GEAR.skills&&ultOwned(GEAR.skills,GEAR.cave,id), n=GEAR&&GEAR.skills?ultPieceCount(GEAR.skills,GEAR.cave,id):0;
-    return `<div class="sk-cell"><button class="sk-tile${ssTint(s)?' has-set':''}${own?'':' unowned'}${ULT_UI.sel===id?' sel':''}" data-ult="${id}" style="${ssTint(s)?'--set:'+ssTint(s):''}" aria-label="${s.name}"><svg ${SS_ICON_ATTR}>${ssGlyph(s)||''}</svg></button><span class="nm">${s.name}</span>${own?'':`<small class="muted">${n}/${ULT_OWN_N}</small>`}</div>`; }).join('');
+    return `<div class="sk-cell">${ultTile(s,'grid',(own?'':' unowned')+(ULT_UI.sel===id?' sel':''),own?'Burst':n+'/'+ULT_OWN_N)}<span class="nm">${s.name}</span></div>`; }).join('');
 }
 function ultInfoHtml(){
   const s=ultDef(ULT_UI.sel);
@@ -81,7 +96,7 @@ function ultInfoHtml(){
 }
 function ultBindPanel(on){   // on(selector, fn) of renderSkills
   on('[data-ultslot]',()=>{ skKind='ult'; SK.sel=null; UI_SFX.click(); renderSkills(); });
-  on('[data-ult]',b=>{ ULT_UI.sel=b.dataset.ult; UI_SFX.click(); skKind='ult'; renderSkills(); });
+  on('[data-ult]',b=>{ if(SKD.just) return; ULT_UI.sel=b.dataset.ult; UI_SFX.click(); skKind='ult'; renderSkills(); });
   on('[data-ulton]',b=>{ netSend({t:'ultequip',id:b.dataset.ulton}); UI_SFX.click(); });
   on('[data-ultoff]',()=>{ netSend({t:'ultequip',id:null}); UI_SFX.click(); });
 }
