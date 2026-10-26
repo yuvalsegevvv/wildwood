@@ -64,7 +64,7 @@ function ssRefreshP(p){
   const sk=p.gear.skills, cls=clsOfP(p), bonus=ssBonuses(sk,cls,p.level), trig={}, amp=[];
   const cond=[];   // the stat rows (and costs) with a `when`: ssCondP adds them where the fight is known
   const add=(r,lv)=>{ if(r.on) for(const o of [].concat(r.on)) (trig[o]||(trig[o]=[])).push(r); if(r.amp) amp.push(r.amp);
-    if(r.stat&&r.when) cond.push({stat:r.stat,v:lv?passiveValue(r.id,lv):r.v[0],when:r.when}); if(r.cost&&r.cost.when) cond.push({stat:r.cost.stat,v:r.cost.v,when:r.cost.when}); };
+    if(r.stat&&r.when) cond.push({stat:r.stat,v:lv?passiveValue(r.id,lv):r.v[0],when:r.when,pid:lv?r.id:null}); if(r.cost&&r.cost.when) cond.push({stat:r.cost.stat,v:r.cost.v,when:r.cost.when}); };
   if(SS_ORDER.length){
     if(Array.isArray(sk.pass)) for(const id of sk.pass.slice(0,passiveOpen(p.level))){ const P=PASSIVES[id]; if(P&&P.set&&sk.owned.includes(id)&&p.level>=Math.max(PASSIVE_LV,P.lv)) add(P,skillLvOf(sk,id)); }
     for(const b of bonus) add(b.row,0);
@@ -118,7 +118,7 @@ function ssWhen(p,m,w){
 // the conditional part of a passive stat for this target (m may be null where the stat has no target): added to psP's plain sum where it is read (rollDmgS, hurtP, reactions, heals, buffs)
 function ssCondP(p,stat,m){
   const L=p.ss&&p.ss.cond; if(!L||!L.length) return 0;
-  let t=0; for(const c of L) if(c.stat===stat&&ssWhen(p,m||null,c.when)) t+=c.v; return t;
+  let t=0; for(const c of L) if(c.stat===stat&&ssWhen(p,m||null,c.when)) t+=c.pid&&c.v>0?c.v*ultVK(p,c.pid):c.v; return t;   // ult: a boosted passive's benefit (not its cost)
 }
 // a cooldown refund (the cdr effect): seconds taken off the slots' running cooldowns; the client is told (event cdr) because it counts its own bar
 function ssCdrS(p,c){
@@ -167,8 +167,8 @@ function ssTriggerS(p,kind,ctx){
     if(r.streak&&kind==='kill'){ let n=0; for(const t of p.killTs) if(S.t-t<=r.streak.secs) n++; if(n<r.streak.n) continue; }   // n kills within secs
     if(r.when&&!ssWhen(p,ctx&&ctx.m||null,r.when)) continue;
     if(r.chance!==undefined&&Math.random()>=r.chance) continue;
-    if(r.icd) icd[r.id]=S.t+r.icd;
-    ssDepth++; try{ ssRunRowS(p,r,ctx); } finally{ ssDepth--; }
+    if(r.icd) icd[r.id]=S.t+r.icd*ultIcdK(p,r.id);   // ult: a boosted passive waits less
+    ssDepth++; try{ ssRunRowS(p,p.ultB?ultRowK(p,r):r,ctx); } finally{ ssDepth--; }
   }
 }
 // tick rows run every icd seconds while the player is in a fight (dealt damage in the last 6 s)
@@ -214,11 +214,12 @@ function ssHealAllS(p,v,r,src,lowest){
   for(const q of L){ const amt=q.maxHp*Math.min(SS_HEAL_CAP,v*k), over=Math.max(0,q.hp+amt-q.maxHp); healP(q,amt); if(ov>0&&over>0) ssShieldS(q,Math.min(0.5,over*Math.min(1,ov)/q.maxHp),6,src); if(src) ev('fxa',q.id,'heal',src); }
 }
 // the utility keys of a skill's fx (ally, heal, shield, taunt), once, when the skill lands
-function ssFxUtilS(p,f,src){
+function ssFxUtilS(p,f,src,uk){   // uk: a boosted cast's util factor (ult)
+  uk=uk||1;
   const pm=(e,key)=>e.perMark?(e.perMark[key]||0)*Math.min(e.perMark.max||5,ssMarkSum(p,e.perMark.id,e.perMark.r)):0;   // perMark: a share (v) or seconds (dur) for each stack of your mark on the enemies near you (counted up to max, default 5, over all of them together)
-  if(f.ally) for(const a of Array.isArray(f.ally)?f.ally:[f.ally]){ const v=a.v+pm(a,'v'), dur=a.dur+pm(a,'dur'); for(const q of ssAlliesOf(p,a.r)) ssAllyS(q,a.kind,v,dur,p.id,src); }
-  if(f.heal) ssHealAllS(p,f.heal.v+pm(f.heal,'v'),f.heal.r,src,f.heal.lowest);
-  if(f.shield){ const v=Math.min(1,f.shield.v+pm(f.shield,'v')), dur=f.shield.dur+pm(f.shield,'dur'); for(const q of ssAlliesOf(p,f.shield.r)) ssShieldS(q,v,dur,src); }
+  if(f.ally) for(const a of Array.isArray(f.ally)?f.ally:[f.ally]){ const v=(a.v+pm(a,'v'))*uk, dur=a.dur+pm(a,'dur'); for(const q of ssAlliesOf(p,a.r)) ssAllyS(q,a.kind,v,dur,p.id,src); }
+  if(f.heal) ssHealAllS(p,(f.heal.v+pm(f.heal,'v'))*uk,f.heal.r,src,f.heal.lowest);
+  if(f.shield){ const v=Math.min(1,(f.shield.v+pm(f.shield,'v'))*uk), dur=f.shield.dur+pm(f.shield,'dur'); for(const q of ssAlliesOf(p,f.shield.r)) ssShieldS(q,v,dur,src); }
   if(f.taunt) for(const m of MONS) if(!m.dead&&!m.remove&&(m.inst|0)===(p.inst|0)&&Math.hypot(m.x-p.x,m.z-p.z)<f.taunt.r+m.T.rad) ssTauntS(p,m,f.taunt.dur);
 }
 // a zone's utility, each tick: the allies standing inside it (the owner included)

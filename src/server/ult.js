@@ -21,6 +21,7 @@ function ultCastP(p,msg){   // atk {k:'ult'}
   p.act={kind,t:0,dur,hitAt,done:false,skill:true,sid:ab.id,lvl:1,el:elOf(ab),fx:ab.fxU,mult:ab.mult,range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,ult:true};
   ev('pact',p.id,kind,Math.round(p.face*100)/100);
   ev('ult',p.id,ab.set,p.cd.ult);
+  ultCastBuffsS(p,ab);   // the two boosts, for the worn pieces only
 }
 function ultEquipP(p,id){   // ultequip: wear an owned burst, or take it off (id null)
   if(id===null||id===undefined||id===''){ if(p.gear.skills.ult){ p.gear.skills.ult=null; p.dirty=true; } return; }
@@ -45,3 +46,53 @@ function ultStunS(m){
   else m.stunT=Math.max(m.stunT||0,ULT_STUN);
   m.act=null; m.pendingHit=-1;
 }
+/* ---- the buff (U2): on a cast, the two boosted pieces the player WEARS get a modifier for 8-20 s (p.ultB, not saved; shared/ult.js ULT_MODS) ----
+   p.ultB = {<worn piece id>: {piece, mod, until}}; p.ultV = {<passive id>: v multiplier} (what passiveSum reads); each mod key is read in ONE place:
+   mult / n / size / util -> ultBoostActS (the cast's act, from handleAttack and caveCastP), cd -> ultCdK (handleAttack), v -> passiveSum + ssCondP, eff / icd -> ssTriggerS (ultRowK), cdr -> once at the cast. */
+// the ids of the set's pieces the player wears now: {a1..a3, cave, p1..p3: the id}
+function ultWornP(p,setId){
+  const out={}, sk=p.gear.skills, S_=SS_SETS[setId]; if(!S_) return out;
+  const eq=sk.eq[clsOfP(p)]||{};
+  for(let pos=1;pos<=3;pos++){ const id=eq[SS_SLOT_OF[pos-1]], pc=id&&SS_PIECE_OF[id]; if(pc&&pc.set===setId&&pc.pos===pos&&sk.owned.includes(id)) out['a'+pos]=id; }
+  const cv=caveEquippedP(p); if(cv&&cv.set===setId) out.cave=cv.id;
+  if(p.level>=PASSIVE_LV) for(const id of sk.pass.slice(0,passiveOpen(p.level))){ const pc=id&&SS_PIECE_OF[id]; if(pc&&pc.set===setId&&pc.kind==='passive'&&sk.owned.includes(id)) out['p'+pc.pos]=id; }
+  return out;
+}
+function ultRebuildP(p){   // p.ultV from p.ultB, and the stats a boosted passive may move (hp) are recomputed
+  let V=null; for(const id in p.ultB){ const b=p.ultB[id]; if(b.mod.v>1&&PASSIVES[id]){ (V||(V={}))[id]=b.mod.v; } }
+  const had=!!p.ultV; p.ultV=V; if(had||V) recalcP(p);
+}
+const ultOnP=(p,id)=>{ const b=p.ultB&&p.ultB[id]; return b&&b.until>S.t?b:null; };   // the live boost of a worn piece id, or null
+function ultCastBuffsS(p,ab){   // ultCastP: apply the two boosts to what is worn
+  const W_=ultWornP(p,ab.set), ids=[], secs=[]; p.ultB=p.ultB||{};
+  for(const b of ab.boost){ const id=W_[b.piece]; if(!id) continue;
+    p.ultB[id]={piece:b.piece,mod:b.mod,until:S.t+b.secs}; ids.push(id); secs.push(b.secs);
+    if(b.mod.cdr) ssCdrS(p,b.mod.cdr);   // seconds off the skill / burst cooldowns, once, now (never the burst slot)
+  }
+  if(ids.length){ ultRebuildP(p); ev('ubo',p.id,ids,secs); }
+}
+function ultTickP(p){   // updatePlayersS: expire boosts; a boost ends with death, the island, a piece taken off
+  if(!p.ultB) return;
+  let changed=false;
+  for(const id in p.ultB){ const b=p.ultB[id];
+    if(b.until<=S.t||p.dead||p.pv||!Object.values(ultWornP(p,SS_PIECE_OF[id].set)).includes(id)){ delete p.ultB[id]; changed=true; } }
+  if(changed){ if(!Object.keys(p.ultB).length) p.ultB=null; ultRebuildP(p); sendTo(p.id,{t:'ubo',ids:p.ultB?Object.keys(p.ultB):[]}); }
+}
+// a cast's act gets the boost of the piece it comes from: mult, extra projectiles / hits (n), wider areas (size), bigger heals / shields / ally buffs (util), and the look flag ub
+function ultBoostActS(p,a,id){
+  const b=ultOnP(p,id); if(!b) return; const M=b.mod;
+  if(M.mult) a.mult*=M.mult;
+  if(M.n&&a.fx){ const f=JSON.parse(JSON.stringify(a.fx)); if(f.proj) f.proj.n=(f.proj.n||1)+M.n; if(f.cone) f.cone.hits=(f.cone.hits||1)+M.n; a.fx=f; }
+  if(M.size) a.sizeK=M.size;
+  if(M.util) a.utilK=M.util;
+  a.ub=1;
+}
+const ultCdK=(p,id)=>{ const b=ultOnP(p,id); return b&&b.mod.cd?b.mod.cd:1; };   // handleAttack: the boosted active's own cooldown x
+// a trigger row of a boosted passive: eff scales what it gives, icd how long it waits (ssTriggerS)
+const ultIcdK=(p,id)=>{ const b=ultOnP(p,id); return b&&b.mod.icd?b.mod.icd:1; };
+function ultRowK(p,r){
+  const b=ultOnP(p,r.id), k=b&&b.mod.eff; if(!k) return r;
+  const c=Object.assign({},r); if(c.heal) c.heal*=k; if(c.mult) c.mult*=k; if(c.shield) c.shield=Object.assign({},c.shield,{v:Math.min(1,c.shield.v*k)}); if(c.buff) c.buff=Object.assign({},c.buff,{v:c.buff.v*k});
+  return c;
+}
+const ultVK=(p,pid)=>{ const k=p.ultV&&p.ultV[pid]; return k?k:1; };   // a passive's value x while boosted (ssCondP)

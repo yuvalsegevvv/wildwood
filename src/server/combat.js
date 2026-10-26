@@ -15,12 +15,14 @@ function handleAttack(p,msg){
   const [kind,dur0,hitAt0]=ab.act, dur=bhActDur(dur0,spd,1), hitAt=hitAt0;   // (a buff's basic-cooldown x paces the swings, not how long one swing takes)
   const lvl=skillLvOf(SK,ab.id);
   p.cd[k]=k==='basic'?bhInterval(ab,SK,spd,bcd,hold):abilityCd(ab,SK,LV,cls,rlP(p,'cdr'))*(1-allyP(p,'haste'));   // skillsets: an ally haste buff shortens the cooldowns of skill 2 and burst
+  if(k!=='basic') p.cd[k]*=ultCdK(p,ab.id);   // ult: a boosted active's own cooldown x
   caveCastS(p,k,ab);   // cave: this cast pays its charge once, on its first hit
   ssTriggerS(p,'cast'+(1+SLOTS.indexOf(k)),{m:MON_BY_ID.get(msg.tg)});   // skillsets: on cast rows of slot 1, 2, 3
   if(isFinite(+msg.face)) p.face=+msg.face%(2*Math.PI);   // (modulo a turn: it goes out in the pact event and the snapshots, rounded by x100, and 1e308 became Infinity there)
   const tg=foeByIdS(p,msg.tg);   // pvp: a fighter on the island may name another fighter
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
   p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:ab.fx,mult:ab.mult*skillPower(lvl)*caveNextK(p,k),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,holdAt:!!ab.holdAt};   // cave: Intermission's bonus on the next skill; basic-hold: holdAt = a mage's held blast, centred on the target
+  ultBoostActS(p,p.act,ab.id);   // ult: a boosted piece's cast (mult, n, size, util)
   ev('pact',p.id,kind,Math.round(p.face*100)/100);
   if(k!=='basic'&&!p.pv) mqActP(p,k);   // the main quest's 'use your skill / burst' steps (pvp: nothing is credited on the island)
 }
@@ -223,7 +225,7 @@ function updateBurnS(dt){
 function resolveFxS(p,a,tgt){
   const src=ssSrc(a);   // skillsets: the piece (or the passive / bonus row) this comes from, sent with the events so the client can dress them in its outfit's look
   const f=a.fx, FO=foesS(p), alive=m=>!m.dead&&!m.remove, dist=m=>Math.hypot(m.x-p.x,m.z-p.z), inRange=tgt&&dist(tgt)<=a.range+2;
-  const O=()=>a.at||p, AK=1+psP(p,'area')+ssCondP(p,'area',tgt);   // skillsets: a trigger's effect may be centred on its monster (a.at); the area stat widens every ring, cone and zone
+  const O=()=>a.at||p, AK=(1+psP(p,'area')+ssCondP(p,'area',tgt))*(a.sizeK||1);   // skillsets: a trigger's effect may be centred on its monster (a.at); the area stat widens every ring, cone and zone
   const dmg=(m,mult,x,z,kb)=>damageMonsterS(m,mult*fxModK(f,p,m),p,x,z,kb,a.el)||0;   // skillsets: the skill's vsBoss / behind / rangeScale on each hit
   if(f.buff){ applyBuffS(p,a); return; }
   if(f.dash){
@@ -259,7 +261,7 @@ function resolveFxS(p,a,tgt){
     } }
   if(f.zone){ const Z=f.zone, c=Z.self||a.at?{x:O().x,z:O().z}:aimPoint(p,tgt,a.range,10); addAreaS(p,'zone',c.x,c.z,Z.r*AK,Z.dur,a.mult,!!Z.follow,a.el,Z,f,src); }
   if(a.cave) caveFxS(p,a,tgt,f);   // cave: the cave skills' own effect keys (server/cave/skills.js)
-  ssFxUtilS(p,f,src);   // skillsets: the skill's ally buffs, party heal, shield and taunt
+  ssFxUtilS(p,f,src,a.utilK);   // skillsets: the skill's ally buffs, party heal, shield and taunt
   if(f.pop) ssPopS(p,f.pop,inRange?tgt:null,a.mult,(m,mult)=>dmg(m,mult,p.x,p.z,0));   // skillsets: spend the player's marks
   caveSetFxS(p,a,tgt,src);   // cave: a set skill's own fx keys (server/cave-fx.js)
 }
