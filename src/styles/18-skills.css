@@ -39,7 +39,9 @@
 .sk-tile.has-el{ border-color:var(--el); }
 .sk-ghost{ color:var(--lichen); } .sk-ghost svg{ width:34px; height:34px; }
 /* ---- the loadout (left) beside the skill list (right), like the equipment on the body beside the bag ---- */
-.sk-main{ display:grid; grid-template-columns:minmax(0,215px) minmax(0,1fr); gap:10px; align-items:start; margin-top:4px; }
+.sk-main{ display:grid; grid-template-columns:minmax(0,1fr); gap:10px; align-items:start; margin-top:4px; }
+.sk-left{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; align-items:start; }   /* active skills | passive skills */
+.sk-lcol .sk-load-h{ margin-top:2px; }
 .sk-main .sk-load{ grid-template-columns:1fr; gap:6px; }
 .sk-main .sk-slot, .sk-main .sk-pslot{ display:grid; grid-template-columns:56px 1fr; grid-template-rows:auto auto auto; column-gap:8px; justify-items:start; text-align:left; padding:6px 8px; }
 .sk-main .sk-n{ grid-column:2; grid-row:1; } .sk-main .sk-slot b, .sk-main .sk-pslot b{ grid-column:2; grid-row:2; } .sk-main .sk-slot small, .sk-main .sk-pslot small{ grid-column:2; grid-row:3; min-height:0; }
@@ -50,7 +52,7 @@
 .sk-area.can{ outline:2px dashed var(--lichen); outline-offset:-2px; } .sk-area.over{ background:rgba(111,207,106,.14); }
 .sk-kinds{ margin-bottom:8px; }
 .sk-note{ margin:0 2px 8px; font-size:12px; }
-.sk-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr)); gap:8px 6px; min-height:84px; }
+.sk-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr)); gap:8px 6px; min-height:84px; max-height:392px; overflow-y:auto; overscroll-behavior:contain; padding:2px 4px 2px 0; }   /* four rows (tile 56 + name 26 + gap), the rest scrolls inside, like the outfit list */
 .sk-cell{ display:flex; flex-direction:column; align-items:center; gap:3px; }
 .sk-cell .nm{ font-size:11px; line-height:1.2; text-align:center; color:var(--ink-dim); }
 /* ---- details and upgrade of the selected skill ---- */
@@ -113,3 +115,4 @@ body.touch .ab-burst{ width:56px; height:56px; align-self:center; }
   .sk-tile{ width:52px; height:52px; }
   .sk-main{ grid-template-columns:1fr; }
 }
+@media (max-width:520px){ .sk-left{ grid-template-columns:1fr; } }
