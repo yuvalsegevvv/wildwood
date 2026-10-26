@@ -30,7 +30,7 @@ function caveMethodDoneP(p,floor,method){
   const g=caveGearP(p), key=floor+method, sk=caveSkillAt(floor,method), M=caveMethodDef(method);
   g.done[key]=Math.min(99999,(g.done[key]|0)+1); g.cd[key]=caveNow()+CAVE_METHOD_CD; p.dirty=true;
   if(sk&&!Object.prototype.hasOwnProperty.call(g.own,sk.id)){
-    g.own[sk.id]=1; toastTo(p.id,sk.name+' learned! ('+M.name+', '+caveFloorDef(floor).name+'). Wear it in the cave slot (K, Cave tab).','loot r3'); ev('caveget',p.id,sk.id); ultCheckP(p);   // ult: the cave skill is one of a set's seven pieces
+    g.own[sk.id]=1; toastTo(p.id,sk.name+' learned! ('+M.name+', '+caveFloorDef(floor).name+'). Wear it in the charge slot (K, Charge tab).','loot r3'); ev('caveget',p.id,sk.id); ultCheckP(p);   // ult: the cave skill is one of a set's seven pieces
 
   } else caveShardsP(p,floor,sk);
 }
