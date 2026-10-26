@@ -1,5 +1,6 @@
 /*@ Professions and travel: the Wayfarers' Lodge panel (mining, woodcutting, gathering, tools, resources) and the teleport circle's travel window */
 #lodge, #travel, #cvLift{ width:min(640px,calc(100vw - 24px)); }
+@media (max-width:719px){ #lodge, #travel, #cvLift{ width:auto; } }   /* (a bottom sheet on a phone: the full width, like the other panels) */
 .lo-intro, .tr-intro{ margin:0 0 10px; font-size:13px; line-height:1.5; color:var(--ink-dim); }
 .lo-list{ display:flex; flex-direction:column; gap:8px; }
 .lo-row{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:6px; border:1px solid var(--line); background:rgba(0,0,0,.22); }

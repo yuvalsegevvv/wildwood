@@ -5,6 +5,7 @@
 .dmg.coin{ color:#f2cf5a; font-size:13px; }
 #tLv.bad{ color:#ff7a6a; }
 #sound{ max-height:calc(100dvh - 90px); overflow-y:auto; }
+@media (max-width:520px){ #sound{ max-height:calc(100dvh - 176px); } }   /* (it opens 160 px down on a phone: 08-settings.css) */
 .snd-sec{ border-top:1px solid var(--line); padding-top:12px; margin-top:16px; }
 .test-row{ display:flex; gap:8px; align-items:center; font-size:13.5px; }
 .test-row select{ flex:1; min-width:0; height:36px; border-radius:10px; border:1px solid var(--line); background:rgba(0,0,0,.25); color:var(--ink); padding:0 6px; font:500 13px "Alegreya Sans", system-ui, sans-serif; }

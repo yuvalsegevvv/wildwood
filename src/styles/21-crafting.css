@@ -1,5 +1,6 @@
 /*@ Crafting, brewing and potions: the Craft tab, the brewing panel, the lodge's tool shop and resource list, the potion belt above the action bar */
 #brew{ width:min(640px,calc(100vw - 24px)); }
+@media (max-width:719px){ #brew{ width:auto; } }   /* (a bottom sheet on a phone: the full width, like the other panels) */
 .cr-tiers, .cr-rar{ margin:0 0 8px; }
 .lo-tiers{ margin:0 0 6px; }
 .cr-short{ color:#e6806e; }
