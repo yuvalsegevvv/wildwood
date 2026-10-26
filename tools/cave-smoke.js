@@ -25,9 +25,9 @@ const lo=W.players.get('lo'), p=W.players.get('a');
 ok('the slot opens at level 23',x.CAVE_SLOT_LV===23&&x.slotLv('cave')===23);
 lo.gear.cave.own.fixflare=1; W.receive('lo',{t:'cavequip',id:'fixflare'}); tick(1);
 ok('below level 23 a cave skill cannot be worn',lo.gear.skills.cave===null);
-const pile=(pl,n)=>{ // n awake monsters standing on the player
+const pile=(pl,n)=>{ // n awake monsters standing just in front of the player (face 0 looks towards -z: a basic attack's arc is a cone, and monsters placed at random behind the player made it miss about 1 run in 25)
   const ms=x.MONS.filter(m=>!m.boss&&!m.dead&&!m.inst).slice(0,n); const y=x.getH(pl.x,pl.z);
-  for(const m of ms){ m.x=pl.x+(Math.random()-0.5); m.z=pl.z+(Math.random()-0.5); m.y=y; m.maxHp=m.hp=1e9; m.dead=false; m.immune=false; m.awake=true; }
+  for(const m of ms){ m.x=pl.x+(Math.random()-0.5)*0.4; m.z=pl.z-0.6-Math.random()*0.3; m.y=y; m.maxHp=m.hp=1e9; m.dead=false; m.immune=false; m.awake=true; }
   return ms; };
 const cast=(id,k,tg)=>{ const pl=W.players.get(id); pl.cd.basic=pl.cd.skill=pl.cd.burst=pl.cd.cave=0; W.receive(id,{t:'atk',k:k||'skill',tg:tg||null,face:0,aim:[0,0,-1]}); tick(30); };
 { const near3=pile(lo,3); lo.cave.charge=0; cast('lo','skill'); ok('below level 23 nothing is charged',lo.cave.charge===0&&near3.length===3); }
