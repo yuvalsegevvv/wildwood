@@ -171,7 +171,7 @@ function dgCloseS(run){
 const dgClock=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
 /* the save: gear.dg = {clear: {'<theme>:<mission>': times cleared}, best: {'<theme>:<mission>': the fastest clear in seconds}}; unknown keys dropped, counts clamped,
    an old save gets {} of each (sanitizeGear). A brand-new player's gear may not have it until the first clear (dgSaveOf makes it). */
-const dgSaveKeyOk=k=>{ const s=String(k), i=s.indexOf(':'), T=i>0?dgThemeOf(s.slice(0,i)):null; return !!T&&!T.dev&&!T.trial&&dgMissionOk(s.slice(i+1)); };   // (no clear record for the trial dungeon)
+const dgSaveKeyOk=k=>{ const s=String(k), i=s.indexOf(':'), T=i>0?dgThemeOf(s.slice(0,i)):null; return !!T&&!T.dev&&dgMissionOk(s.slice(i+1)); };
 function dgSanCounts(s,lo){ const out={}; if(s&&typeof s==='object') for(const k of Object.keys(s)) if(dgSaveKeyOk(k)){ const n=clampInt(s[k],lo,DG_SAVE_MAX,0); if(n) out[k]=n; } return out; }
 function dgSanitizeSave(g){ return g&&typeof g==='object'?{clear:dgSanCounts(g.clear,0),best:dgSanCounts(g.best,1)}:{clear:{},best:{}}; }
 const dgSaveOf=p=>p.gear.dg||(p.gear.dg={clear:{},best:{}});

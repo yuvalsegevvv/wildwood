@@ -264,18 +264,9 @@ the trees in far chunks (`InstancedMesh.count` set in `cullChunks` from the dist
 triangles), a low-poly variant of each tree for chunks beyond ~120 m, and rendering the sun's shadow map every few frames (character
 shadows would stutter). Also: events (`ev`) still go to everyone, and could be filtered by distance like monsters are.
 
-## 8. The Trial Roots (version 2) and the boss bar's percentage
+## 8. The Trial Roots (retired)
 
-**Built** (`shared/dungeons/themes/trial.js`, `DG_TRIAL_GATE` in `shared/dungeons.js`, `docs/DUNGEON-THEMES.md` section 10, test `tools/trial-dungeon-smoke.js`): the Hollow Roots with its level turned down to 5 and nothing else changed (the same
-tiles, hazards, walkers and guardians, boss Amanita, seven missions, board and parties), **all seven mission types on offer at all times** (no hourly pair), open to any hiker at any level and any zone tier, and **nothing in it pays out**
-(no XP, coins, items, materials, chests, clear piece, clear record or skill set). Its way in is a temporary arch, the Trial Gate, beside the home village's road. What is left, with comments:
-- **The entrance is a placeholder.** `DG_TRIAL_GATE` is a root arch mirrored from the teleport circle across the road in. When the real way in is designed, replace it (the server only needs `dgEntranceNear` to find it and `dgApron` for where a run ends).
-- **Never looked at in a real browser** (like the four dungeons): the arch, its sign and light, and the board with seven cards are reasoned guesses and were only tested headless. The map does not mark the gate (only the four doors).
-- **The level is a single number** (`lv:5` in the theme file). "Tuned down a lot" is level 5 for monsters and boss; a level-1 hiker will find the boss hard, a level-10 one trivial. A per-player scaling, or a level 5 / 10 / 15 choice on the board, would be a small change in `dgLevel`.
-- **Nothing is recorded** (`gear.dg` has no trial entry), so there are no best times and no "cleared" marks; the skill-set rolls ignore it on purpose (it is no source in `SS_SOURCES`).
-
-**The boss bar** (`#bossbar`) shows the health left as a percentage over the bar, with ticks at 60% and 30% where the phases change (`server/boss.js`); dungeon bosses use the same bar. It never reads 0% while the boss stands, and the
-percentage is the same for everyone at any zone tier (the target frame of an ordinary monster still shows hit points in your own units).
+Replaced by the test room (`docs/TESTROOM.md`). The boss bar's percentage is not built either way.
 
 ## 9. Held models: a signature outfit's weapon as any object in the hand (designed, not built)
 

@@ -156,8 +156,7 @@ function defineDungeonTheme(T){
   const th={id,name:T.name,land:T.land,at:T.at,lv,entry:T.entry||DG_ENTRY_LV,mobs:{walkers:mobs.walkers.slice(),guardians:(mobs.guardians||[]).slice()},boss:T.boss,music:T.music,pal:Object.assign({},T.pal),legend:lg,tiles,art:true};
   DG_THEMES[id]=th; return th;
 }
-/* A VARIANT of a registered theme: the same tiles, legend, roster, boss, music and palette (so the same gameplay), with fields changed (id and name are required). The trial dungeon is the Hollow
-   Roots with `lv:5, trial:true`: a theme with `trial` is open to everyone at every difficulty (dgUnlocked, dgGateOpen, dgTierFor), is always its own level (dgLevel) and pays nothing (server/dungeons/). */
+/* A VARIANT of a registered theme: the same tiles, legend, roster, boss, music and palette (so the same gameplay), with fields changed (id and name are required). */
 function defineDungeonVariant(baseId,over){
   const id=over&&typeof over.id==='string'?over.id:'?', B=DG_THEMES[baseId], bad=(field,why)=>{ DG_BAD.push({id,field,why}); if(typeof console!=='undefined') console.warn('dungeon theme '+id+' left out: '+field+': '+why); return null; };
   if(!B) return bad('base','"'+baseId+'" is not a registered theme');
@@ -182,17 +181,8 @@ const DG_ENTRANCES={
   sandglass:      {theme:'sandglass',      name:'The Sandglass Door', kind:'sand',  x:SUN_DG_DOOR.x,z:SUN_DG_DOOR.z, a:SUN_DG_DOOR.rot, sign:{x:SUN_DG_DOOR.x+15,z:SUN_DG_DOOR.z-2,road:null}},   // version 3: the Sunscar's door (shared/sunland.js SUN_DG_DOOR): flat desert, no road and no bank, so its signpost stands on the sand by the apron
   gloamvault:     {theme:'gloamvault',     name:'The Gloamvault',     kind:'gloam', x:GLOAM_DG_DOOR.x,z:GLOAM_DG_DOOR.z, a:GLOAM_DG_DOOR.rot, sign:{x:GLOAM_DG_DOOR.x+Math.round(Math.sin(GLOAM_DG_DOOR.rot)*15),z:GLOAM_DG_DOOR.z+Math.round(Math.cos(GLOAM_DG_DOOR.rot)*15),road:null}},   // version 3: the Gloamhorn's door (shared/gloamhorn.js GLOAM_DG_DOOR): a chapel front in the cliff of Vault Heath, no road on the horn, so its signpost stands on the heath by the apron
   termitecathedral:{theme:'termitecathedral',name:'The Termite Cathedral',kind:'termite',x:SAV_DOOR.x,z:SAV_DOOR.z,a:Math.PI/4,sign:{x:SAV_DOOR.x+14.5,z:SAV_DOOR.z+9.5,road:'The Amber Door Road'}}};   // the Amber Reach's door (the atlas's amber door POI, shared/savanna.js SAV_DOOR, zone 40, where The Amber Door Road ends): a gap in the foot of a clay spire on open grass, its apron on the road's last metres (it faces back down the road, south-east), the signpost on the road 3.5 m off its line
-/* THE TRIAL GATE (version 2, temporary): the way into the Trial Roots, a copy of the Hollow Roots at level 5 that pays nothing (shared/dungeons/themes/trial.js). It is NOT one of the four doors (DG_ENTRANCES stays four,
-   each dug into a bank far from any village): a free-standing arch in the home village, mirrored across the road in from the teleport circle (ent - 0.5, 31 m), so anyone can find it on their first day. It
-   works like a door otherwise (dgEntranceNear finds it, the talk key opens the same Delve board, a run ends on its apron). `apron` is explicit: the village's houses stand just inside the gate. Move
-   it, or replace it with a real entrance, when the way in is designed; nothing else refers to its place. */
-const DG_TRIAL_GATE=(()=>{
-  const g=VIL.ent+0.5, x=VIL.x+Math.sin(g)*31, z=VIL.z+Math.cos(g)*31, p=VIL.ent+0.28, ax=VIL.x+Math.sin(p)*31.5, az=VIL.z+Math.cos(p)*31.5;
-  return {theme:'trial',name:'The Trial Gate',kind:'trial',temp:true,x,z,a:Math.atan2(ax-x,az-z),apron:{x:ax,z:az}};
-})();
 const dgApron=E=>E.apron||({x:E.x+Math.sin(E.a)*DG_APRON,z:E.z+Math.cos(E.a)*DG_APRON});
 const dgEntranceNear=(x,z,r)=>{ let best=null,bd=r===undefined?DG_ENT_TALK:r; for(const k in DG_ENTRANCES){ const E=DG_ENTRANCES[k], d=Math.hypot(E.x-x,E.z-z); if(d<=bd){ bd=d; best=E; } }
-  { const d=Math.hypot(DG_TRIAL_GATE.x-x,DG_TRIAL_GATE.z-z); if(d<=bd) best=DG_TRIAL_GATE; }
   return best; };
 
 /* WHICH TWO MISSION TYPES A DUNGEON OFFERS: every dungeon offers two different types at a time, and they change at the top of every hour (UTC), for everyone at once: the hiker
@@ -209,7 +199,6 @@ function dgShuffle(id,cycle,pool){
 }
 function dgOffer(id,nowMs,pool){
   pool=pool||Object.keys(DG_MISSIONS);
-  if(DG_THEMES[id]&&DG_THEMES[id].trial) return pool.slice();   // the trial dungeon offers every mission type, all the time (no hourly pair)
   if(pool.length<3) return pool.slice(0,2);
   const h=Math.floor(nowMs/DG_OFFER_HOUR), P=pool.length*(pool.length-1)/2, c=Math.floor(h/P), a=dgShuffle(id,c,pool);
   if(c>0){ const last=dgShuffle(id,c-1,pool)[P-1]; if(last[0]===a[0][0]&&last[1]===a[0][1]){ const t=a[0]; a[0]=a[1]; a[1]=t; } }
@@ -217,12 +206,11 @@ function dgOffer(id,nowMs,pool){
 }
 const dgOfferLeft=nowMs=>Math.ceil((DG_OFFER_HOUR-((nowMs%DG_OFFER_HOUR)+DG_OFFER_HOUR)%DG_OFFER_HOUR)/1000);   // seconds until the offer changes
 const dgTierOf=(gear,land)=>{ const z=gear&&gear.zt&&gear.zt[land]; return z?z.on|0:0; };   // the +N you play the land at
-const dgLevel=(T,tier)=>T.trial?T.lv:(T.lv||DG_LV)+ZTIER_STEP*Math.max(0,(tier|0)-DG_LANDS[T.land].base);   // a dungeon's level at +tier (the trial dungeon is level 5 at any tier)
-const dgTierFor=(gear,T)=>T.trial?0:dgTierOf(gear,T.land);   // the +N a dungeon is played at: the land's, but never for the trial dungeon
+const dgLevel=(T,tier)=>(T.lv||DG_LV)+ZTIER_STEP*Math.max(0,(tier|0)-DG_LANDS[T.land].base);   // a dungeon's level at +tier
+const dgTierFor=(gear,T)=>dgTierOf(gear,T.land);   // the +N a dungeon is played at: the land's
 /* can this hiker (gear as the server keeps it, level) enter the theme at +tier (default: the land's tier they play at)? {ok, why, tier, level}. A party plays at its leader's
    tier, so a member is checked at that tier: they need it unlocked (gear.zt[land].max) and level DG_ENTRY_LV, whatever tier they play at themselves. A theme may carry its own `unlock`. */
 function dgUnlocked(gear,level,T,tier){
-  if(T.trial) return {ok:true,why:'',tier:0,level:T.lv};   // the trial dungeon: any hiker, at any level and any difficulty
   const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}, z=g.zt&&g.zt[T.land], t=tier===undefined?dgTierOf(g,T.land):tier|0;
   if(t<L.base) return {ok:false,why:L.hint};
   if(t>((z?z.max:0)|0)) return {ok:false,why:'You have not unlocked +'+t+' in '+L.name+' yet.'};
@@ -236,7 +224,7 @@ function dgUnlocked(gear,level,T,tier){
   return {ok:true,why:'',tier:t,level:lv};
 }
 // the door's look and what pressing the talk key says: open at the tier you play (Wildwood's roots are knotted shut at +0) and the land's progress; the level is not part of it
-const dgGateOpen=(gear,T)=>{ if(T.trial) return true; const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}; return dgTierOf(g,T.land)>=L.base&&(U.east===undefined||(g.east|0)>=U.east)&&(U.north===undefined||(g.north|0)>=U.north)&&(U.west===undefined||(g.west|0)>=U.west)&&(U.sun===undefined||(g.sun|0)>=U.sun)&&(U.gloam===undefined||(g.gloam|0)>=U.gloam)&&(U.amber===undefined||(g.amber|0)>=U.amber); };
+const dgGateOpen=(gear,T)=>{ const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}; return dgTierOf(g,T.land)>=L.base&&(U.east===undefined||(g.east|0)>=U.east)&&(U.north===undefined||(g.north|0)>=U.north)&&(U.west===undefined||(g.west|0)>=U.west)&&(U.sun===undefined||(g.sun|0)>=U.sun)&&(U.gloam===undefined||(g.gloam|0)>=U.gloam)&&(U.amber===undefined||(g.amber|0)>=U.amber); };
 // every tile in every quarter turn (turns that come out the same are kept once)
 function dgVariants(set){
   const out=[], seen=new Set();

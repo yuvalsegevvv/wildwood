@@ -91,7 +91,7 @@ function dgMonTickS(run,m,dt){
 function dgKilledS(m,p){
   m.hitters.clear(); const run=DG_RUNS.get(m.inst); if(!run) return;
   const c0=S.ctx; S.ctx=run.id;
-  if(!m.T.noXp&&!run.endT&&!run.theme.trial) rewardAllS(run,m);   // (the trial dungeon pays nothing)
+  if(!m.T.noXp&&!run.endT) rewardAllS(run,m);
   if(m.boss) bossDefeatedS(m);
   const kit=DG_KITS[run.mission];
   if(!run.endT&&kit&&kit.onKill) kit.onKill(run,m);

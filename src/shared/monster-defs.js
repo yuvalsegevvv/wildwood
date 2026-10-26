@@ -310,4 +310,6 @@ function rdPropDef(d,hits){ d.hits=hits; prepDef(d); return d; }
 const RD_WARD_DEF=rdPropDef({id:'rdward',name:'Warding Stone',level:40,el:'light',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x241a0a,pal:{style:'ward',crystal:0xffd870,band:0xe8b84a}},11);
 const RD_SPAWNER_DEF=rdPropDef({id:'rdspawner',name:'War Banner',level:40,el:'fire',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x240a0a,pal:{style:'banner',crystal:0xff7a3a,band:0xb02a2a}},8);
 const RD_BARRICADE_DEF=rdPropDef({id:'rdbarricade',name:'Barricade',level:40,el:'earth',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x120e08,pal:{style:'barricade',crystal:0x8a6a3a,band:0x8a6a3a}},5);
-const ALL_MON_DEFS=[...MON_DEFS,...GREY_DEFS,RD_WARD_DEF,RD_SPAWNER_DEF,RD_BARRICADE_DEF,...BOSS_DEFS.flatMap(b=>[b.def,b.totem,b.add,b.prop].filter(Boolean))];
+// the test room's scarecrow (shared/testroom.js, server/testroom.js): a prop nobody can kill; level 1 so no level difference ever cuts a hit
+const SCARECROW_DEF=totemDef({id:'scarecrow',name:'Training Scarecrow',level:1,el:'basic',model:'totem',scale:1,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:0x3a2a08,pal:{style:'scarecrow',crystal:0xd8c8a0,band:0xb02a2a}});
+const ALL_MON_DEFS=[...MON_DEFS,...GREY_DEFS,SCARECROW_DEF,RD_WARD_DEF,RD_SPAWNER_DEF,RD_BARRICADE_DEF,...BOSS_DEFS.flatMap(b=>[b.def,b.totem,b.add,b.prop].filter(Boolean))];

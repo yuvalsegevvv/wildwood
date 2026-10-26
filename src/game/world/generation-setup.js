@@ -219,6 +219,7 @@ function* genTerrain(){
   buildVillage(); buildVale(); buildHoarfrost(); buildGreyspine(); buildSunscar(); buildGloamhorn(); buildTallgrass(); buildTideBeach(); buildProvingIsle(); buildRaids(); buildNodes();   // pvp: the Proving Isle's gate and banners (village/buildings-pvp.js)
   caveMouthBuild();   // cave: the Deep Cave's mouth, lift and circle (cave/mouth.js)
   dgEntBuild();   // dungeons: the three doors and their signposts
+  troomBuild();   // testroom: the pad's ring, torches and signboard
 }
 // terrain tiles farther than the fog are hidden (checked with the plant chunks, see cullChunks)
 function cullTerrain(){ const cx=camera.position.x, cz=camera.position.z, far=scene.fog.far+60; for(const b of TERRAIN_BANDS) b.mesh.visible=b.ready&&Math.hypot(Math.max(b.x0-cx,0,cx-b.x1),Math.max(b.z0-cz,0,cz-b.z1))<far; }

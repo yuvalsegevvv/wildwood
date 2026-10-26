@@ -44,7 +44,7 @@ function verPages(){ return {
     </ul>
     <h4>Dungeons</h4>
     <ul>
-      <li>Runs alone or in a party of 4, seven mission types, four dungeons with bosses, the Delve board, and the free <b>Trial Roots</b> practice dungeon.</li>
+      <li>Runs alone or in a party of 4, seven mission types, four dungeons with bosses, the Delve board.</li>
       <li>Level-30 rings and pendants (a new necklace slot), and Tempering Stones.</li>
     </ul>
     <h4>PvP</h4>
