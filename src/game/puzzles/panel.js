@@ -76,7 +76,7 @@ function pzDone(m){
   const k=$('#tPzKind'); if(!k) return;
   k.innerHTML=PZ_KIND_IDS.map(id=>`<option value="${id}">${PZ_KINDS[id].name} (${PZ_KINDS[id].land})</option>`).join('');
   $('#tPzDiff').innerHTML=PZ_DIFF.slice(1).map((d,i)=>`<option value="${i+1}">${i+1} ${d.name}</option>`).join('');
-  const send=v=>netSend({t:'dev',cmd:'pz',v});
+  const send=v=>netSend(NET.test?{t:'pztest',v}:{t:'dev',cmd:'pz',v});   // the /test world has the public copy: pztest
   $('#tPzOpen').addEventListener('click',()=>send({kind:k.value,diff:+$('#tPzDiff').value,seed:$('#tPzSeed').value.trim()}));
   $('#tPzChest').addEventListener('click',()=>send({chest:+$('#tPzDiff').value,first:true}));
   $('#tPzSig').addEventListener('click',()=>send({sig:50}));

@@ -35,3 +35,5 @@ Rootlines: d1-2 about 1 ms, d3 about 10 ms, d4 about 100-300 ms, d5 3-7 s. Ice s
 3D chests in the world (the chest is drawn in the panel for now), dungeon / raid / cave hooks and party sharing, the 40 track cosmetics (`PZ_TRACK_COS` is empty), the 328 stones, dungeon / raid / cave kind assignment.
 
 New kinds: sudoku d5 about 140 ms; akari d5 about 1 s (max 4 s); slither d4 about 260 ms, **d5 15x15 about 11 s average, 35 s max (stop-flag item)**; bridges, mirrors, nonogram all fast; sokoban d3 about 0.7 s, d4-5 about 0.2 s. `tools/puzzles-smoke.js` checks junk answers for every kind.
+
+The public copy of the admin Puzzles section: message `pztest` (`server/puzzles.js`), honoured only in the /test world (`io.test`); the Settings panel shows only the Puzzles tools there (`onWelcome`, `net/client.js`). Checked in `tools/testworld-smoke.js`.
