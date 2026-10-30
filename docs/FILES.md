@@ -198,6 +198,13 @@ shared
   puzzles.js                         Puzzles (version 4): the registry of puzzle kinds (definePuzzleKind), the five difficulties, what a first solve and a chest pay, the Sigil track, seeds. Pure; the kinds are shared/puzzles/<kind>.js
   puzzles/rootlines.js               Rootlines (the Flow Free kind, the home forest's): join same-coloured seeds with roots that fill the board; a seeded generator that keeps only boards with ONE solution, and the checker
   puzzles/ice.js                     Ice slide (the Hoarfrost Reach's kind): a stone slides until it hits rock; stop it on the rune. Switches to light, twin stones and cracking tiles at the higher difficulties; a seeded generator and the move-replay checker
+  puzzles/sudoku.js                  Shrine tiles (the Sakura Vale's Sudoku kind): fill the grid with blossom glyphs so none repeats in a row, column or box; a seeded generator that keeps one answer, and the checker
+  puzzles/akari.js                   Glowstones (the Deep Cave's Akari kind): place glow crystals so every floor tile is lit and no two crystals see each other; numbered rocks say how many crystals touch them. Seeded generator, one answer, checker
+  puzzles/slither.js                 Coastlines (Slitherlink, the Emberwake Isles' kind; testing tools only until the isles exist): draw one closed shoreline round the grid so each number has that many of its four sides on it. Seeded generator, one answer, checker
+  puzzles/bridges.js                 Rope bridges (the Greyspine's Hashiwokakero kind): join the peaks with straight bridges so each peak's number is how many it carries, bridges never cross, and every peak is reachable. Seeded generator, one answer, checker
+  puzzles/mirrors.js                 Sun mirrors (the Sunscar's kind): turn the glass mirrors so the beam reaches every target; prisms split a beam, coloured beams light only their own targets. Seeded generator (the beam is laid first, the mirrors turned afterwards) and the checker
+  puzzles/nonogram.js                Shrouds (the Gloamhorn's Nonogram kind): fill the grid from the row and column clues to reveal a picture, a memory of the Crown War; a library of pictures drawn in code, a seeded picker that keeps only pictures the clues pin down, and the checker
+  puzzles/sokoban.js                 Herding (the Amber Reach's Sokoban kind): push the calves into the kraal; the rooms are generated, the calves are pulled backwards out of the kraal so every board can be solved, and a push solver rejects dull ones
   puzzle-sites.js                    The puzzle stones of the world: id, kind, difficulty, place. Thread 1 has only the tutorial stone in the home village; the 328 others are the content thread's data rows
 
 server
@@ -534,6 +541,14 @@ game
   puzzles/panel.js                   The puzzle panel: opens a board the server announced (kind, difficulty, seed), builds it from the shared generator, keeps the clock and an unfinished board on the device, sends the answer, shows the chest
   puzzles/rootlines.js               Rootlines on the client: a canvas board where you drag roots from a seed to its partner until every cell is filled
   puzzles/ice.js                     Ice slide on the client: arrow keys, WASD, a swipe or the pad slide the stone (or the twin stones) over the ice; undo and reset
+  puzzles/common.js                  Shared helpers of the puzzle views: a square canvas sized to the panel, and a pointer position in cells
+  puzzles/sudoku.js                  Shrine tiles on the client: a grid of buttons and a pad of blossom glyphs; pick a cell, pick a glyph
+  puzzles/akari.js                   Glowstones on the client: tap a floor tile to set or lift a crystal; lit tiles glow, crystals that see each other turn red
+  puzzles/slither.js                 Coastlines on the client: tap beside a cell side to draw or lift a shoreline segment; one closed loop, every number met
+  puzzles/bridges.js                 Rope bridges on the client: tap a peak, then a peak in line with it, to add a bridge; again for a second, again to remove
+  puzzles/mirrors.js                 Sun mirrors on the client: tap a mirror to turn it; the beams are redrawn at once, targets glow when their colour reaches them
+  puzzles/nonogram.js                Shrouds on the client: drag over the grid to fill cells (or mark them empty), with the clues on the top and left
+  puzzles/sokoban.js                 Herding on the client: arrow keys, WASD, a swipe or the pad walk the herder and push the calves into the kraal; undo and start over
   puzzles/scrolls.js                 Puzzle rewards in the menus: Greta's forge tab for upgrade scrolls, and the gem shop's Sigil track
   ui/unstuck.js                      The Stuck button in the settings panel: asks the server to send you to the nearest village (the same as typing /stuck in chat)
   pvp/state.js                       PvP on the Proving Isle, client side: whether you stand on it (server events pvp / pvlock), the fixed loadout your action bar and attacks use there, picking another fighter as the target, the badge and the shut-gate countdown

@@ -16,7 +16,7 @@ const el=s=>document.querySelector(s);
     G.openVersions(); ok('the versions panel opens with three lists',!el('#versions').hidden&&Object.keys(G.verPages()).length===3); G.closePanels();
     G.openGuide(); ok('the guide opens as a panel',!el('#guide').hidden); G.closePanels(); ok('and closes with the others',el('#guide').hidden); }
   // puzzles: the panel builds a board from the server's seed, mounts its view, and the chest window shows the loot
-  { for(const [kind,diff] of [['rootlines',2],['iceslide',3]]){ G.NETH.pz({t:'pz',a:'open',site:'dev',kind,diff,seed:12345,lv:5,first:false,src:'dev'}); await wait(250); G=c.G();
+  { for(const [kind,diff] of [['rootlines',2],['iceslide',3],['sudoku',2],['akari',2],['slither',2],['bridges',2],['mirrors',2],['nonogram',2],['sokoban',2]]){ G.NETH.pz({t:'pz',a:'open',site:'dev',kind,diff,seed:12345,lv:5,first:false,src:'dev'}); await wait(250); G=c.G();
       ok('puzzles: a '+kind+' board opens in the panel',!el('#puzzle').hidden&&G.PZ_CUR()&&G.PZ_CUR().m.kind===kind&&el('#pzHost')._kids&&el('#pzHost')._kids.length>0,kind); }
     G.NETH.pz({t:'pz',a:'done',ok:1,diff:5,first:true,gems:20,chest:{coins:1000,pot:{heal3:2},mats:[['slime',3]],stones:0,amber:0,scroll:1,gear:null,lucky:false}}); G=c.G();
     ok('puzzles: the chest window lists the loot',/1,000 coins/.test(JSON.stringify(el('#pzHost')._kids||el('#pzHost').innerHTML||'')+(el('#pzHost').innerHTML||''))||G.pzChestSvg(5,true).length>200); G.closePanels(); }
