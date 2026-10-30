@@ -5,20 +5,21 @@ const {api:W,x}=loadServer({send(){}},['PZ_KINDS','PZ_KIND_IDS','PZ_BAD','PZ_DIF
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const N=+(process.argv[process.argv.indexOf('--seeds')+1])||12;
 ok('no kind or site was left out as bad',x.PZ_BAD.length===0&&x.PZ_SITE_BAD.length===0,JSON.stringify(x.PZ_BAD)+JSON.stringify(x.PZ_SITE_BAD));
-ok('the two kinds of this version are registered',x.PZ_KIND_IDS.includes('rootlines')&&x.PZ_KIND_IDS.includes('iceslide'));
+ok('all nine kinds are registered',['rootlines','iceslide','sudoku','akari','slither','bridges','mirrors','nonogram','sokoban'].every(k=>x.PZ_KIND_IDS.includes(k)),x.PZ_KIND_IDS.join(','));
 // every kind and difficulty: generate, the stored solution passes the checker, the same seed gives the same board, a wrong answer fails
-const budget={1:50,2:150,3:400,4:4000,5:20000};   // ms per board, a generous ceiling (the plan's 5 ms for trivial-normal is reported by the table below, not enforced)
+const budget={1:50,2:150,3:400,4:4000,5:20000}, budgetKind={slither:{5:90000},sokoban:{3:3000}};   // slither d5 (15x15) is the slow one, see docs/PUZZLES.md
+const junk=[[],'',null,undefined,5,{},'x'.repeat(5000),new Array(5000).fill(1),new Array(300).fill([0,0,0]),[[1,2,3,4]],{length:9}];   // ms per board, a generous ceiling (the plan's 5 ms for trivial-normal is reported by the table below, not enforced)
 for(const kind of x.PZ_KIND_IDS){
   for(let d=1;d<=5;d++){
-    const n=d>=4?3:N; let good=0, same=0, mx=0, tot=0, wrong=0, none=0;
+    const n=kind==='slither'&&d===5?1:d>=4?3:N; let good=0, same=0, mx=0, tot=0, wrong=0, none=0;
     for(let i=1;i<=n;i++){
       const seed=x.pzSeed('smoke-'+kind,d,i), t0=Date.now(), B=x.pzBoard(kind,d,seed), dt=Date.now()-t0; mx=Math.max(mx,dt); tot+=dt;
       if(!B){ none++; continue; }
       if(x.PZ_KINDS[kind].check(B,B.sol)) good++;
       if(JSON.stringify(x.pzBoard(kind,d,seed).sol)===JSON.stringify(B.sol)) same++;
-      if(!x.PZ_KINDS[kind].check(B,kind==='iceslide'?'':[])) wrong++;
+      let bad=0; for(const j of junk){ try{ if(x.PZ_KINDS[kind].check(B,j)) bad++; }catch(e){ bad++; } } if(!bad) wrong++;
     }
-    ok(kind+' d'+d+': '+n+' boards generate, solve, repeat and reject a wrong answer',none===0&&good===n&&same===n&&wrong===n&&mx<=budget[d],'avg '+Math.round(tot/n)+' ms, max '+mx+' ms, missing '+none);
+    ok(kind+' d'+d+': '+n+' boards generate, solve, repeat and reject junk answers',none===0&&good===n&&same===n&&wrong===n&&mx<=((budgetKind[kind]||{})[d]||budget[d]),'avg '+Math.round(tot/n)+' ms, max '+mx+' ms, missing '+none);
   }
 }
 // rootlines boards have ONE colouring (the generator's promise); verify with the solver

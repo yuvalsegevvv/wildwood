@@ -6,7 +6,7 @@ const {SRC,manifest,strip}=require('./load');
 const m=manifest(), pick=f=>strip(fs.readFileSync(path.join(SRC,f),'utf8'));
 const noise=pick('shared/noise.js').match(/function mulberry32[^\n]*/)[0];
 const shared=['puzzles.js',...m.shared.filter(f=>/^puzzles\//.test(f))].map(f=>pick('shared/'+f)).join('\n');
-const views=['rootlines.js','ice.js'].map(f=>pick('game/puzzles/'+f)).join('\n');
+const views=['common.js','rootlines.js','ice.js','sudoku.js','akari.js','slither.js','bridges.js','mirrors.js','nonogram.js','sokoban.js'].map(f=>pick('game/puzzles/'+f)).join('\n');
 const html=`<title>Puzzle Lab</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
@@ -24,6 +24,11 @@ button:focus-visible,select:focus-visible,input:focus-visible{ outline:2px solid
 #stage{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; display:grid; gap:10px; justify-items:center; min-height:200px; }
 #bar{ display:flex; gap:12px; justify-content:space-between; width:100%; font-variant-numeric:tabular-nums; } #bar b{ font-weight:600; }
 #host{ display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; }
+.pz-su{ display:grid; width:min(100%,380px); aspect-ratio:1; border:2px solid var(--line); border-radius:8px; overflow:hidden; background:var(--line); gap:1px; }
+.pz-su-c{ border:0; border-radius:0; background:#18212a; color:#e8eef4; font-size:clamp(12px,3.4vw,17px); padding:0; min-width:0; cursor:pointer; line-height:1.05; }
+.pz-su-c.rb{ margin-right:2px; } .pz-su-c.bb{ margin-bottom:2px; } .pz-su-c.given{ background:#222d37; color:#9fb0bf; font-weight:700; }
+.pz-su-c.peer{ background:#1d2c38; } .pz-su-c.sel{ background:#1f5a68; } .pz-su-c.bad{ color:#ff6b5e; }
+.pz-su-pad{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
 .pz-canvas{ display:block; max-width:100%; border-radius:8px; background:var(--board); touch-action:none; }
 .pz-pad{ display:grid; grid-template-columns:repeat(3,52px); gap:6px; } .pz-pad button{ padding:0; height:46px; }
 .pz-pad [data-d=U]{ grid-column:2; grid-row:1; } .pz-pad [data-d=L]{ grid-column:1; grid-row:2; } .pz-pad [data-d=D]{ grid-column:2; grid-row:2; } .pz-pad [data-d=R]{ grid-column:3; grid-row:2; }
