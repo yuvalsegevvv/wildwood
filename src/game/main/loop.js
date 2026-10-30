@@ -22,7 +22,7 @@ function frame(){
     chamoisUpdate(dt);   // chamois: the Greyspine's harmless mountain goats (wildlife/chamois.js)
     updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateGreyspine(dt); updateGloamhorn(dt); updateNodes(dt); updateLoreProps();
     updateNPCs(dt);
-    troomUpdate(dt);   // testroom: the counter on the screen
+    troomUpdate(dt); pzUpdate(dt);   // puzzles: the stones' glow   // testroom: the counter on the screen
     dgEntUpdate(dt);   // dungeons: the doors' sealed look and animation
     updateNpcLabels();
     updateRemotes(dt);

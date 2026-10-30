@@ -38,6 +38,7 @@ styles
   30-raids.css                       The raids' strip near a stronghold (game/raids/hud.js): one line under the top edge, below the boss bar when both show
   31-friends.css                     Friends and ranking panel (ui/friends.js): friend rows with an online dot, the ranking table, the friend request prompt
   32-testroom.css                    The test room (ui/testroom.js): the panel with the counter and its buttons, and the counter on the screen while you stand on the pad
+  33-puzzles.css                     Puzzles (puzzles/panel.js, rootlines.js, ice.js, scrolls.js): the board panel, the pad, the chest window, the Sigil track
   32-ult.css                         The set burst (5th slot): its action-bar tile, the cast popup card and the skills panel row (game/ult/slot.js, popup.js)
 
 shared
@@ -194,6 +195,10 @@ shared
   raids/wrackmoor.js                 Raid: Wrackmoor Fort, the Gloamhorn's drowned sea fort with a wreck through its wall (garrison, site, material)
   raids/moot.js                      Raid: The Broken Moot, the Amber Reach's ruined council hall in Baobab Reach, seven toppled seats in a ring (garrison, site, material)
   testroom.js                        The test room: a pad outside the home village's gate with a Training Scarecrow nobody can kill, a damage counter, and the tools for checking a build (reset cooldowns, refill the cave charge, swap soul and skills). Pure.
+  puzzles.js                         Puzzles (version 4): the registry of puzzle kinds (definePuzzleKind), the five difficulties, what a first solve and a chest pay, the Sigil track, seeds. Pure; the kinds are shared/puzzles/<kind>.js
+  puzzles/rootlines.js               Rootlines (the Flow Free kind, the home forest's): join same-coloured seeds with roots that fill the board; a seeded generator that keeps only boards with ONE solution, and the checker
+  puzzles/ice.js                     Ice slide (the Hoarfrost Reach's kind): a stone slides until it hits rock; stop it on the rune. Switches to light, twin stones and cracking tiles at the higher difficulties; a seeded generator and the move-replay checker
+  puzzle-sites.js                    The puzzle stones of the world: id, kind, difficulty, place. Thread 1 has only the tutorial stone in the home village; the 328 others are the content thread's data rows
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -266,6 +271,7 @@ server
   dungeons/lobby.js                  Dungeon runs, the messages: the Delve board at a door (open), starting a run (checked against the door, the gate, the hourly offer and each member's level and tier), accepting / declining, leaving, reviving, using an objective; the testing tool's start
   raids.js                           Raids on the server: build and rebuild each land's stronghold, lock its tier on the first hit, wards wake the boss, spawners call reinforcements, the clear pays raid material, a clear rebuilds half an hour later
   testroom.js                        The test room on the server: an immortal Training Scarecrow, each hiker's damage counter, and the messages that reset the counter and the cooldowns, refill the cave charge
+  puzzles.js                         Puzzles on the server: opening a stone, checking an answer, the 2-hour renewals, the chest, first-solve gems and Sigils, the Sigil track, upgrade scrolls, and the admin Puzzles tool
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 
@@ -373,6 +379,7 @@ game
   village/buildings-pvp.js           The Proving Isle's dressing: a gate of two posts and a lintel with a banner on the bridge where the island begins, and red banner poles round the rim
   village/buildings-dungeon.js       The dungeon doors (the Gloamvault's is buildings-dungeon-gloam.js) and their signposts: the Hollowed Elder (a half-dead giant tree with a root-arch door), the Falls Door (a cascade over three ledges, the door behind the water), the Barrow Door (a snow-covered mound with a trilithon) and the Old Adit (a timbered mine mouth in a crag, a head frame above) and the Sandglass Door (a sandstone gateway in the Sunscar's desert, a black-glass pane sealing it)
   village/buildings-testroom.js      The test room's dressing: a ring of stones round the pad, four torch posts and a signboard at the edge toward the village (the scarecrow itself is a monster: combat/monster-totems.js)
+  village/buildings-puzzle.js        The puzzle stones in the world: a standing stone with a glowing rune that dims for two hours after a solve; the talk key opens its board (the stones exist only while PZ_ON)
   village/buildings-dungeon-gloam.js The Gloamvault's door (the Gloamhorn's dungeon): a drowned chapel's front set into the cliff of Vault Heath, a pointed arch under a rose window between two buttresses, iron-bound doors that seal it, a wreck's anchor leaning on a pier
   village/buildings-dungeon-savanna.js The Termite Cathedral's door (the Amber Reach's dungeon): the foot of a clay spire on open grass, a ribbed pointed gap between two buttresses, a clay plug that seals it, amber resin beads that light the way and a heap of crumbled clay
   village/sun-rim.js                 Glasswell's Bowl, drawn: the red-rock rim with its gate cracks, the floor with its roads and paving, the Mirror Lake and the river with their curbs, bridges, the gate towers and the Weir
@@ -524,6 +531,10 @@ game
   dungeon/party.js                   The party on the client: the frame under your bars (names, health, level, down, the leader's crown), the invite prompt, the party panel (invite by name, leave, kick, hand on the lead), a tap on a name tag, the party colour on the maps, the revive channel's cast bar
   ui/friends.js                      The friends and ranking panel (comma key): add a friend by name (the other player accepts), who is online, invite to a party, remove; the level ranking with your own place
   ui/testroom.js                     The test room on the client: the damage counter on the screen, the panel (counter, reset, cooldowns, cave charge, soul and skills), the talk key on the pad
+  puzzles/panel.js                   The puzzle panel: opens a board the server announced (kind, difficulty, seed), builds it from the shared generator, keeps the clock and an unfinished board on the device, sends the answer, shows the chest
+  puzzles/rootlines.js               Rootlines on the client: a canvas board where you drag roots from a seed to its partner until every cell is filled
+  puzzles/ice.js                     Ice slide on the client: arrow keys, WASD, a swipe or the pad slide the stone (or the twin stones) over the ice; undo and reset
+  puzzles/scrolls.js                 Puzzle rewards in the menus: Greta's forge tab for upgrade scrolls, and the gem shop's Sigil track
   ui/unstuck.js                      The Stuck button in the settings panel: asks the server to send you to the nearest village (the same as typing /stuck in chat)
   pvp/state.js                       PvP on the Proving Isle, client side: whether you stand on it (server events pvp / pvlock), the fixed loadout your action bar and attacks use there, picking another fighter as the target, the badge and the shut-gate countdown
   dungeon/hud.js                     A run's HUD: the mission's title, lines and bar (dgHudText of the dg tuple) with the run's clock, the objectives' labels and compass arrows, the boss hall's arrow, the use / revive / relight / portal prompt and key, the leave button, the downed screen, the results panel, and the Testing tools' Dungeons row

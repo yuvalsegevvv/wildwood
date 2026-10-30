@@ -44,3 +44,7 @@ Moved from CLAUDE.md section 3 (the router keeps the shape of it and the recipe 
 - **Looks are cut down** to flat primitives on arrival (`cleanLookS`, `server/players.js`), saves go through `sanitizeGear`, numbers are clamped (`clampInt`).
 - **A handler that throws** is logged by the host and does not stop the world; `S.ctx` (the dungeon run a message belongs to) is reset in a `finally`.
 - **Test.** `server-smoke` (a check per feature), `npm run fuzz` (garbage at every handler, mutated saves), `room-smoke` (parts).
+
+
+## Puzzles (docs/PUZZLES.md)
+In: `pz{a:'open',site}`, `pz{a:'solve',ans}`, `pz{a:'close'}`, `scroll{id,to}`, `dev{cmd:'pz',v}`. Out: `pz{a:'open'|'no'|'done',...}` (fields in docs/PUZZLES.md).

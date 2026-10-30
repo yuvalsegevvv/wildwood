@@ -33,6 +33,7 @@ function interact(){
   else if(nearHomeBench()) openLodge();   // home: the bench opens the lodge panel (make cosmetics, sell, leave home)
   else if(nearCircle()) useCircle();
   else if(caveLiftNear()) caveLiftOpen();   // cave: the lift beside the mouth or at a floor's start (cave/lift.js)
+  else if(pzNear()) pzOpenNear();   // puzzles: the stone
   else if(troomNear()) troomOpen();   // testroom: the scarecrow's pad
   else if(dgEntranceNear(P.x,P.z)) dgOpenDoor(dgEntranceNear(P.x,P.z).theme);   // dungeons: the talk key at a door
   else if(dgUseNear()) dgUseKey();   // dungeons: revive, use an objective, relight a lamp or leave by the portal (dungeon/hud.js)
@@ -78,6 +79,7 @@ function updateTalkUI(){
     document.body.classList.add('can-talk');
   } else if(bench){ promptEl.textContent=isTouch?'':'Press '+tk+' to use your workbench'; promptEl.hidden=isTouch; bTalk.textContent='Bench'; document.body.classList.add('can-talk');
   } else if(free&&caveLiftNear()){ caveLiftPrompt(promptEl,bTalk); document.body.classList.add('can-talk');   // cave: the lift (cave/lift.js)
+  } else if(free&&pzNear()){ promptEl.textContent=isTouch?'':pzPrompt(tk); promptEl.hidden=isTouch; bTalk.textContent='Puzzle'; document.body.classList.add('can-talk');   // puzzles
   } else if(free&&troomNear()){ promptEl.textContent=isTouch?'':'Press '+tk+': the Test Room (scarecrow, counter, resets)'; promptEl.hidden=isTouch; bTalk.textContent='Test room'; document.body.classList.add('can-talk');   // testroom
   } else if(dgDoor){ dgEntPrompt(dgDoor,promptEl,bTalk); document.body.classList.add('can-talk');   // dungeons: the door's prompt
   } else if(free&&dgUseNear()){ dgUsePrompt(promptEl,bTalk); document.body.classList.add('can-talk');   // dungeons: a downed teammate, an objective, a dark lamp or the portal within reach (dungeon/hud.js)
