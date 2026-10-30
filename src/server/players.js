@@ -20,6 +20,7 @@ function sanitizeGear(g,cls){
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); out.cos=sanitizeCos(g); }   // cosmetics: the auras and capes made at a lodge
   out.zt=sanitizeZt(g.zt);
   gsSanitize(g,out);   // gems: claimed achievements, the daily set and today's ads
+  pzSanitize(g,out);   // puzzles: solved stones and their clocks, Sigils, upgrade scrolls
   ambSanitize(g,out);   // amber: the purse and the bought outfit sets (an old save has none)
   out.fr=frSanitize(g.fr);   // friends: the friend list (names; an old save has none)
   out.rd=rdSanitizeSave(g.rd);   // raids: the raid materials of each land

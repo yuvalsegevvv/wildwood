@@ -173,6 +173,7 @@ function devP(p,msg){
   else if(c==='mats'){ for(const id of MAT_IDS) addMatP(p,id,20); toastTo(p.id,'20 of every monster drop added','good'); }
   else if(c==='weather'){ const k={clear:0,rain:1,storm:2}[msg.v]; if(k===0){ W.kind=0; W.t=0; W.dur=0; ev('weather',0); } else if(k) startWeatherS(k); }
   else if(c==='amber'){ ambAddP(p,clampInt(msg.v,-AMB_MAX,AMB_MAX,1000)); toastTo(p.id,'You now have '+p.gear.amb+' amber','good'); }   // amber (the upgrade material): add (or take away) some; the public gem tool is gemtest
+  else if(c==='pz') pzDevP(p,msg.v);   // puzzles: open any kind / difficulty / seed, pay a chest, add Sigils, light every stone
   else if(c==='outfits'){ p.gear.os=ambOutfitIds(); p.dirty=true; toastTo(p.id,'Every outfit set unlocked','good'); }   // gems: unlock every outfit set (admin)
   else if(c==='coins'){ p.gear.coins+=1000; p.dirty=true; }
   else if(c==='prof'){   // every profession, and a common tool of each tier for each (the best one you have the level for is worn)

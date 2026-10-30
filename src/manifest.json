@@ -32,6 +32,7 @@
     "30-raids.css",
     "31-friends.css",
     "32-testroom.css",
+    "33-puzzles.css",
     "32-ult.css"
   ],
   "shared": [
@@ -175,7 +176,8 @@
     "raids/stonewatch.js",
     "raids/sunken.js",
     "raids/wrackmoor.js",
-    "raids/moot.js", "testroom.js"
+    "raids/moot.js", "testroom.js",
+    "puzzles.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzle-sites.js"
   ],
   "server": [
     "state.js",
@@ -229,6 +231,7 @@
     "dungeons/instances.js", "dungeons/mobs.js", "dungeons/fx.js", "dungeons/hazards.js", "dungeons/kits.js", "dungeons/kits/purge.js", "dungeons/kits/defense.js", "dungeons/kits/survival.js", "dungeons/kits/sabotage.js", "dungeons/kits/siege.js", "dungeons/kits/hunt.js", "dungeons/kits/escort.js", "dungeons/runs.js", "dungeons/lobby.js",
     "raids.js",
     "testroom.js",
+    "puzzles.js",
     "testworld.js",
     "api.js"
   ],
@@ -334,7 +337,7 @@
     "village/buildings-grey.js",
     "village/buildings-beach.js",
     "village/buildings-pvp.js",
-    "village/buildings-dungeon.js", "village/buildings-testroom.js", "village/buildings-dungeon-gloam.js", "village/buildings-dungeon-savanna.js",
+    "village/buildings-dungeon.js", "village/buildings-testroom.js", "village/buildings-puzzle.js", "village/buildings-dungeon-gloam.js", "village/buildings-dungeon-savanna.js",
     "village/sun-rim.js",
     "village/sun-ruin.js",
     "village/sun-houses.js",
@@ -468,7 +471,7 @@
     "economy/dungeon-gear.js",
     "economy/rolls.js",
     "dungeon/board.js",
-    "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/view-sand.js", "dungeon/view-gloam.js", "dungeon/view-termite.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "ui/friends.js", "ui/testroom.js", "ui/unstuck.js", "pvp/state.js", "dungeon/hud.js", "dungeon/minimap.js",
+    "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/view-sand.js", "dungeon/view-gloam.js", "dungeon/view-termite.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "ui/friends.js", "ui/testroom.js", "puzzles/panel.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/scrolls.js", "ui/unstuck.js", "pvp/state.js", "dungeon/hud.js", "dungeon/minimap.js",
     "cave/zone.js", "cave/view.js", "cave/view-themes.js", "cave/look.js", "cave/life.js", "cave/collide.js", "cave/minimap.js", "cave/mouth.js", "cave/lift.js", "cave/methods.js", "cave/method-props.js", "cave/method-props-ab.js", "cave/method-props-cd.js", "cave/method-props-ef.js", "cave/method-props-gh.js",
     "cave/vis.js", "cave/vis-floor1.js", "cave/vis-floor1b.js", "cave/vis-floor2a.js", "cave/vis-floor2b.js", "cave/vis-floor3.js", "cave/vis-floor4.js",
     "ui/account.js",

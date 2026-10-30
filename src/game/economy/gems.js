@@ -44,7 +44,7 @@ function gemFreeRefresh(){
 }
 let gemTab='sets';
 function gemShowTab(t){
-  gemTab=t; $('#gemSets').hidden=t!=='sets'; $('#gemFreeBox').hidden=t!=='free';
+  gemTab=t; $('#gemSets').hidden=t!=='sets'; $('#gemFreeBox').hidden=t!=='free'; $('#gemTrackBox').hidden=t!=='track';
   for(const b of document.querySelectorAll('#gemTabs [data-gemtab]')) b.className='chip'+(b.dataset.gemtab===t?' buy':'');
   gemRefresh();
 }
@@ -77,6 +77,7 @@ function gemRefresh(){
   const bal=(GEAR.gem||0)+' gems'; $('#gemBal').textContent=bal;
   if($('#gemShop').hidden) return;
   if(gemTab==='free'){ gemFreeRefresh(); return; }
+  if(gemTab==='track'){ pzTrackRender($('#gemTrackBox')); return; }   // puzzles: the Sigil track (puzzles/scrolls.js)
   const box=$('#gemList'); box.innerHTML='';
   for(const sid of SS_ORDER){ const c=gemCard(sid); if(c) box.append(c); }
 }

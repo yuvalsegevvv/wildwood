@@ -219,6 +219,7 @@ function* genTerrain(){
   buildVillage(); buildVale(); buildHoarfrost(); buildGreyspine(); buildSunscar(); buildGloamhorn(); buildTallgrass(); buildTideBeach(); buildProvingIsle(); buildRaids(); buildNodes();   // pvp: the Proving Isle's gate and banners (village/buildings-pvp.js)
   caveMouthBuild();   // cave: the Deep Cave's mouth, lift and circle (cave/mouth.js)
   dgEntBuild();   // dungeons: the three doors and their signposts
+  pzBuild();   // puzzles: the stones (PZ_ON)
   troomBuild();   // testroom: the pad's ring, torches and signboard
 }
 // terrain tiles farther than the fog are hidden (checked with the plant chunks, see cullChunks)

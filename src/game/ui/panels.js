@@ -1,6 +1,6 @@
 //@ Panel open/close helpers (openPanel, closePanels, uiOpen, releasePointer)
 /* ----- panels ----- */
-const PANELS=['inv','shop','quests','map','forge','skills','soul','lodge','brew','travel','guide','versions','dgBoard','wmap','friends','gemShop','cvLift','troom'];   // cave: the lift window (cave/lift.js)   // dungeons: the Delve board panel (dungeon/board.js)
+const PANELS=['inv','shop','quests','map','forge','skills','soul','lodge','brew','travel','guide','versions','dgBoard','wmap','friends','gemShop','cvLift','troom','puzzle'];   // cave: the lift window (cave/lift.js)   // dungeons: the Delve board panel (dungeon/board.js)
 let panelNPC=null;
 // the mouse look is locked while playing; panels, chat and the editor need the pointer back
 function releasePointer(){ if(document.pointerLockElement) try{ document.exitPointerLock(); }catch(_){} }

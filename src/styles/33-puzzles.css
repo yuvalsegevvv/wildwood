@@ -1,0 +1,17 @@
+/*@ Puzzles (puzzles/panel.js, rootlines.js, ice.js, scrolls.js): the board panel, the pad, the chest window, the Sigil track */
+#puzzle{ width:min(480px,calc(100vw - 24px)); }
+@media (max-width:719px){ #puzzle{ width:auto; } }
+#pzHost{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+.pz-canvas{ display:block; max-width:100%; border-radius:10px; border:1px solid var(--line); background:#10161c; cursor:pointer; }
+.pz-wait{ padding:40px 0; }
+.pz-pad{ display:grid; grid-template-columns:repeat(3,52px); grid-template-areas:". u ." "l . r" ". d ."; gap:6px; }
+.pz-pad button{ height:48px; border-radius:10px; border:1px solid var(--line); background:rgba(0,0,0,.28); color:var(--ink); font-size:18px; }
+.pz-pad [data-d=U]{ grid-area:u; } .pz-pad [data-d=L]{ grid-area:l; } .pz-pad [data-d=R]{ grid-area:r; } .pz-pad [data-d=D]{ grid-area:d; }
+#pzBar{ justify-content:center; margin-top:10px; }
+.pz-reveal{ display:flex; justify-content:center; } .pz-chest{ width:200px; max-width:60%; }
+.pz-lucky{ text-align:center; color:#ffd35a; font-weight:600; margin:4px 0; }
+.pz-loot{ list-style:none; margin:8px 0 12px; padding:0; display:grid; gap:4px; text-align:center; } .pz-loot .pz-bonus{ color:#ffd35a; font-weight:600; }
+.pz-track-sum{ margin:6px 0 10px; }
+.pz-lamps{ display:grid; grid-template-columns:repeat(10,1fr); gap:6px; }
+.pz-lamp{ aspect-ratio:1; border-radius:50%; background:rgba(0,0,0,.35); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--ink-dim); }
+.pz-lamp.big{ border-color:#c9a64a; } .pz-lamp.lit{ background:#ffd35a; color:#2a1d05; box-shadow:0 0 8px #ffd35a88; }
