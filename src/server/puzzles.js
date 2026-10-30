@@ -107,4 +107,5 @@ MSG.scroll=(p,msg)=>{
   p.gear.inv.splice(p.gear.inv.indexOf(id),1,nid); if(!spare&&worn) p.gear.eq[worn]=nid;
   gearChangedP(p); toastTo(p.id,'The scroll burns away: '+ITEM[nid].name,'loot r'+ITEM[nid].rar); ev('merge',p.id,nid);
 };
+MSG.pztest=(p,msg)=>{ if(!io.test) return; pzDevP(p,msg.v); };   // testworld: the one public puzzle tool, honoured only in the /test world (nothing there is saved); the admin Puzzles section is the same thing behind the dev switch
 function pzSwitch(on){ PZ_ON=!!on; }   // test hook (tools/puzzles-smoke.js)

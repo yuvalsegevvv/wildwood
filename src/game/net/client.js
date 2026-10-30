@@ -39,7 +39,8 @@ function onWelcome(msg){
   clearMonViews(); clearRemotes(); clearBossVisuals(); CB.projs.forEach(p=>scene.remove(p.mesh)); CB.projs.length=0; CB.target=null;
   (msg.players||[]).forEach(remoteAdd);
   serverDay=msg.day; dayClock=msg.day;
-  $('#tSec').hidden=!msg.dev; $('#acctSec').hidden=NET.mode!=='ws'; syncAcctSec();
+  $('#tSec').hidden=!msg.dev&&!NET.test; if(NET.test&&!msg.dev) $('#tSec').querySelectorAll('details.tg').forEach(d=>{ d.hidden=d.id!=='tPzSec'; if(d.id==='tPzSec') d.open=true; });   // the test world shows only the Puzzles tools (the rest need the dev switch)
+  $('#acctSec').hidden=NET.mode!=='ws'; syncAcctSec();
   if(NET.onReady){ const f=NET.onReady; NET.onReady=null; f(); }
 }
 function applySnap(msg){

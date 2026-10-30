@@ -11,6 +11,8 @@ const you=c=>msgs(c).filter(m=>m.t==='you').pop(), hello=(c,extra)=>send(c,Objec
     ok('the main world ignores the test world: level 1 hiker has the saved level 3',you(M).level===3);
     const T=await wsOpen(H.port,'/ws-test'); hello(T,{acct:crypto.randomBytes(16).toString('hex')}); ok('the test world answers',!!await until(()=>you(T),30000));
     const y=you(T), g=y.gear||{};
+    send(M,{t:'pztest',v:{kind:'sudoku',diff:2,seed:5}}); send(T,{t:'pztest',v:{kind:'sudoku',diff:2,seed:5}});
+    ok('the public puzzle tool works in the test world and not in the main one',!!await until(()=>msgs(T).find(m=>m.t==='pz'&&m.a==='open'&&m.kind==='sudoku'),5000)&&!msgs(M).find(m=>m.t==='pz'));
     ok('level 60, 10M coins, 1000 reroll stones of each kind',y.level===60&&g.coins===10000000&&g.rsw===1000&&g.rsa===1000&&g.rsr===1000,y.level+' '+g.coins);
     ok('the browser\'s save was ignored',g.coins!==7);
     const inv=g.inv||[];
