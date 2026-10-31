@@ -59,6 +59,17 @@ function* genChunk(ci){
       const m=mtx(x,h-0.15,z,rand()*TAU,s,s*R(0.92,1.1),s,R(-0.03,0.03),R(-0.03,0.03));
       items[type].push({x,z,m,c:type==='snag'?tint(0x3a3430,0.1):tint(pick(PAL[type]))}); trees.push({x,z,s}); placed++; continue;
     }
+    if(inIsles(x,z)){   // emberwake: the Emberwake Isles: palms leaning over the beaches, a dense jungle of broadleaf trees, palms and bamboo on the second island, a few thorn trees and umbrella pines on the Highland; none at the keep-outs, in the shallows or on the arenas
+      const cd=coastDist(x,z); if(h<1.4||g>0.55||cd<12||ewKeepOut(x,z,3)||vDist(x,z)<VR+8||storyClear(x,z)||dgEntClear(x,z)||waWaterDist(x,z)<5) continue;
+      const part=ewIslePart(x,z), cl=noise2(x*0.013+40,z*0.013-12)*0.5+0.5;
+      const beach=cd<46, pr=part===1?0.05+0.1*cl:part===2?0.004+0.006*cl:0.012+0.02*cl+(beach?0.02:0);   // (the jungle's canopy closes in clumps; the Highland is nearly bare; Coralhaven's island has palm groves)
+      if(rand()>pr) continue;
+      let type=beach?'palm':part===1?(rand()<0.4?'palm':rand()<0.2?'bamboo':rand()<0.5?'oakA':'oakB'):part===2?(rand()<0.6?'thorn':'umbrella'):(rand()<0.7?'palm':'oakB'); const s=type==='bamboo'?R(0.9,1.4):R(0.75,1.35);
+      if(!canPlace(x,z,(type==='oakA'||type==='oakB'?3.2:2.6)*Math.min(s,1.1))) continue;
+      addCol(x,z,RAD[type]*s);
+      const m=mtx(x,h-0.15,z,rand()*TAU,s,s*R(0.92,1.1),s,R(-0.05,0.05),R(-0.05,0.05));
+      items[type].push({x,z,m,c:tint(type==='oakA'||type==='oakB'?pick(ISLE_LEAF):type==='thorn'?pick(PAL.thorn):type==='umbrella'?pick(PAL.umbrella):pick(PAL.palm))}); trees.push({x,z,s}); placed++; continue;
+    }
     if(inSun(x,z)){   // the Sunscar: palms and reeds by the river and the Springhead, cacti and thorn trees on the dry ground, nothing on the mesas, the pans or the glass
       if(sunKeepOut(x,z,2)||g>0.55||sunPanK(x,z)>0.2||sunGlassK(x,z)>0.2||sunMesaH(x,z)>3) continue;
       const gk=sunGreenK(x,z), pr=gk*0.5+0.014; if(rand()>pr) continue;
@@ -150,7 +161,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<30000*per && n<(Q*(LOW?2600:4200))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(8), h=getH(x,z);
-    if(h<0.8 || grad(x,z)>0.75 || forestDensity(x,z)<0.45 || vDist(x,z)<VR || arenaDist(x,z)<20 || inTunnelCut(x,z) || inHoar(x,z) || inAmber(x,z) || (inGrey(x,z)&&h>greyTreeline(x,z)-12) || greyWet(x,z,-1)) continue;
+    if(h<0.8 || grad(x,z)>0.75 || forestDensity(x,z)<0.45 || vDist(x,z)<VR || arenaDist(x,z)<20 || inTunnelCut(x,z) || inHoar(x,z) || inAmber(x,z) || (inIsles(x,z)&&(ewKeepOut(x,z,2)||coastDist(x,z)<30)) || (inGrey(x,z)&&h>greyTreeline(x,z)-12) || greyWet(x,z,-1)) continue;
     const s=R(0.6,1.3);
     fernItems.push({x,z,m:mtx(x,h-0.03,z,rand()*TAU,s,s*R(0.8,1.2),s),c:tint(pick(PAL.fern))}); n++;
   }
@@ -178,6 +189,7 @@ function* genChunk(ci){
     if(inGrey(x,z)&&h>greyTreeline(x,z)+14 || greyWet(x,z,-0.5)) continue;   // no tufts in the Greyspine's snowfields or in the water
     const meadow=smoothstep(0.1,0.7,noise2(x*0.025+9,z*0.025-4))*(1-fd)*smoothstep(VR-4,VR+14,vd);
     const s=R(0.75,1.2)*(0.55+0.45*smoothstep(VR-6,VR+8,vd));
+    if(inIsles(x,z)&&(ewKeepOut(x,z,0)||coastDist(x,z)<26)) continue;   // emberwake: no tufts on the beaches, at the keep-outs
     if(inAmber(x,z)){   // savanna: the tall savanna tufts (gold or green with the season, savGrassMat), darkened to ash on the Burnt Plain; not in the village (vd) and thinner on rock
       if(vd<VR+18||waCoast(x,z)<30||waWaterDist(x,z)<3||savKeepOut(x,z,0)) continue;
       const ash=savBurnK(x,z); gc.setRGB(1,1,1).multiplyScalar(R(0.88,1.12)).lerp(SAV_ASH,ash*0.9);
@@ -195,7 +207,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<60000*per && n<(Q*(LOW?2600:4600))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(6), h=getH(x,z);
-    if(h<0.8 || grad(x,z)>0.6 || forestDensity(x,z)>0.5 || vDist(x,z)<VR+1 || inTunnelCut(x,z) || bareGround(x,z) || inHoar(x,z) || (inGrey(x,z)&&h>greyTreeline(x,z)-6) || greyWet(x,z,-0.5)) continue;
+    if(h<0.8 || grad(x,z)>0.6 || forestDensity(x,z)>0.5 || vDist(x,z)<VR+1 || inTunnelCut(x,z) || bareGround(x,z) || inHoar(x,z) || (inIsles(x,z)&&ewKeepOut(x,z,2)) || (inGrey(x,z)&&h>greyTreeline(x,z)-6) || greyWet(x,z,-0.5)) continue;
     if(noise2(x*0.04+11,z*0.04-3)<0.15) continue;
     const FL=inVale(x,z)?PAL.valeFlowers:PAL.flowers;
     const idx=rand()<0.8?Math.floor((noise2(x*0.02-50,z*0.02+50)*0.5+0.5)*FL.length)%FL.length:Math.floor(rand()*FL.length);

@@ -66,4 +66,13 @@ function rdExtras(C,ex){
     stone.push(paint(new THREE.CylinderGeometry(2.6,3.4,3.2,10).translate(ox-26,gh(-26,-6)+1.4,oz-6),col(0x9a8a74)));   // a baobab trunk, hollow and bleached
     bx(wood,5,3.4,0.4,-26,gh(-26,-6)+1.7,-3.2,dk);
   }
+  if(ex==='gates'){   // sevengates: seven fitted-stone gate frames in a row across the yard, each one a little more finished than the last (the seventh has no lintel), stepped terrace walls and a jade-blue pennant on the first
+    for(let k=0;k<7;k++){ const lx=-27+k*9, lz=-8+Math.sin(k*0.9)*2, last=k===6;
+      bx(stone,1.6,6.5,1.8,lx-2.4,gh(lx-2.4,lz)+3.2,lz,sc); bx(stone,1.6,6.5,1.8,lx+2.4,gh(lx+2.4,lz)+3.2,lz,sc);
+      if(!last) bx(stone,7.2,1.1,2,lx,gh(lx,lz)+6.9,lz,tc); else bx(stone,2.2,1.1,2,lx-2.4,gh(lx-2.4,lz)+6.9,lz,tc);   // the lintel (the seventh stops at one post's cap)
+      for(let r=0;r<k;r++) bx(stone,0.5,0.28,0.5,lx-0.9+r*0.36,gh(lx,lz)+0.2,lz+1.6,tc); }   // one tally mark on the step for each gate before it
+    for(let k=0;k<(LOW?3:7);k++){ const lz=-38+k*3.2, hw=34-k*2; bx(stone,hw*2,0.8,1.4,0,gh(0,lz)+0.4+k*0.01,lz,sc); }   // stepped terrace walls behind the gate row
+    bx(wood,0.2,9,0.2,-27,gh(-27,-8)+4.5,-8,wd); bx(cloth,0.1,3,1.6,-26.4,gh(-27,-8)+7.2,-8,cc);
+    for(let k=0;k<(LOW?6:14);k++){ const lx=-30+k*4.6, lz=-22+h3(k,1,71)*4, s2=0.3+h3(k,2,71)*0.4; stone.push(paint(new THREE.SphereGeometry(s2,5,4).translate(ox+lx,gh(lx,lz)+s2,oz+lz),col(0x7a756a))); }   // fallen blocks
+  }
 }

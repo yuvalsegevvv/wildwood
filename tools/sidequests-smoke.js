@@ -37,7 +37,7 @@ for(const C of x.SQ){
   }
 }
 ok('every chain points at people, monsters, bosses, lore, places, nodes and a quest-only cosmetic that exist',!bad.length,bad.join('; '));
-ok('eight chains, each ending at a boss: Carapax, Kyuubi, Vetrmaw, the Sand Wyrm, Captain Dredge, the Gloam Warden, Old Thunder, Oldhorn',x.SQ.map(C=>C.steps[C.steps.length-1].parts[0].boss).join()==='carapax,kyuubi,vetrmaw,sandwyrm,drownedcaptain,gloamwarden,oldthunder,oldhorn');
+ok('eleven chains, ten ending at a boss: Carapax, Kyuubi, Vetrmaw, the Sand Wyrm, Captain Dredge, the Gloam Warden, Old Thunder, Oldhorn, Ocelo, Tuila (the Terrace Road ends with a talk: it leads to the Seven Gates)',x.SQ.map(C=>{ const p=C.steps[C.steps.length-1].parts[0]; return p.boss||'-'; }).join()==='carapax,kyuubi,vetrmaw,sandwyrm,drownedcaptain,gloamwarden,oldthunder,oldhorn,ocelo,tuila,-');
 ok('every place is on land you can stand on',Object.values(x.SQ_PLACES).every(P=>isFinite(P.x)&&isFinite(P.z)&&P.r>0));
 { const C=x.SQ_BY_ID.tide, r=x.sqReward(C,0), mq=x.mqReward(x.MQ_BY_ID.V5);
   ok('a side step pays resources and a little XP: under a fifth of a main quest step\'s at that level',r.res.length===3&&r.res.every(([,n])=>n>0)&&r.xp>0&&r.xp<mq.xp/5,'side '+r.xp+' main '+mq.xp); }

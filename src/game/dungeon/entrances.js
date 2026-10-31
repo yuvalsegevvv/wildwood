@@ -25,6 +25,7 @@ const dgEntPal={
   wet:new THREE.Color(0x4a5a58), jade:new THREE.Color(0x4f7d6c), flag:new THREE.Color(0x6a7873),
   tramp:new THREE.Color(0xc4cace), bone:new THREE.Color(0xb3b0a2), rime:new THREE.Color(0xe4edf2),
   slate:new THREE.Color(0x3c3d44), coal:new THREE.Color(0x1a1b20), spoil:new THREE.Color(0x4a3c2e), sand:new THREE.Color(0x8f7142), chip:new THREE.Color(0x3a2e50), flagd:new THREE.Color(0x4a4e60), salt:new THREE.Color(0x8a9a98), brine:new THREE.Color(0x1e3a44), clay:new THREE.Color(0x6e3f26), claydry:new THREE.Color(0xb08a50), crumb:new THREE.Color(0x5a3a22)};
+dgEntPal.limestone=new THREE.Color(0x8a948a); dgEntPal.mossy=new THREE.Color(0x4a6a3a); dgEntPal.shallow=new THREE.Color(0x3a6a72);   // the Cenote's
 const dgEntTmp=new THREE.Color();
 function dgEntTint(x,z,out){
   if(DG_DOORS.noTint) return out;
@@ -50,6 +51,9 @@ function dgEntTint(x,z,out){
     } else if(E.kind==='termite'){   // the Termite Cathedral: red-brown clay trodden bare round the door, dry gold grass-litter at the edge, crumbled clay by the foot
       const footK=smoothstep(10,2,d);
       out.lerp(dgEntTmp.copy(dgEntPal.clay).lerp(dgEntPal.claydry,smoothstep(0.5,0.9,n)*0.3),w*0.9).lerp(dgEntPal.crumb,w*footK*smoothstep(0.55,0.9,n2)*0.2);
+    } else if(E.kind==='cenote'){   // the Cenote: grey limestone flags trodden bare round the door, moss and wet stone at the edge, shallow water by the foot
+      const footK=smoothstep(10,2,d);
+      out.lerp(dgEntTmp.copy(dgEntPal.limestone).lerp(dgEntPal.mossy,smoothstep(0.5,0.9,n)*0.5),w*0.9).lerp(dgEntPal.shallow,w*footK*smoothstep(0.55,0.9,n2)*0.35);
     } else if(E.kind==='gloam'){   // the Gloamvault: wet dark flagstones with a white crust of salt, standing brine in the hollows
       const wetK=smoothstep(10,2,d);
       out.lerp(dgEntTmp.copy(dgEntPal.flagd).lerp(dgEntPal.salt,smoothstep(0.6,0.92,n)*0.35),w*0.8).lerp(dgEntPal.brine,w*wetK*smoothstep(0.5,0.85,n2)*0.5);
@@ -138,4 +142,5 @@ function dgEntSounds(r,spatial){
   $('#tDoorMine').addEventListener('click',()=>go('blackseam',true,true,true));
   $('#tDoorSand').addEventListener('click',()=>{ netSend({t:'dev',cmd:'sun',v:2}); go('sandglass',false,false,false); });
   $('#tDoorGloam').addEventListener('click',()=>{ netSend({t:'dev',cmd:'gloam',v:2}); go('gloamvault',false,false,false); });
-  $('#tDoorTermite').addEventListener('click',()=>{ netSend({t:'dev',cmd:'ashbed',v:1}); go('termitecathedral',false,false,false); }); }
+  $('#tDoorTermite').addEventListener('click',()=>{ netSend({t:'dev',cmd:'ashbed',v:1}); go('termitecathedral',false,false,false); });
+  $('#tDoorCenote').addEventListener('click',()=>{ netSend({t:'dev',cmd:'isles',v:2}); go('cenote',false,false,false); }); }

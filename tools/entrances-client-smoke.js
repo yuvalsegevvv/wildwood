@@ -13,7 +13,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>
   let G=c.G(); for(let i=0;i<400;i++){ await wait(100); G=c.G(); if(G.canStart()) break; }
   ok('the world streams in with the doors built, and nothing from them threw (no stream failure, no console error)',G.canStart()&&!G.Stream.failed&&errs.length===0,errs.slice(0,2).join(' | '));
   const T=G.THREE, IDS=Object.keys(G.DG_ENTRANCES), faceV=E=>[Math.sin(E.a),Math.cos(E.a)];
-  const setGear=(home,east,north,west,sun,gloam)=>{ const g=c.G().GEAR; g.zt={home:{on:home,max:home},vale:{on:0,max:0},hoar:{on:0,max:0},grey:{on:0,max:0},sun:{on:0,max:0},gloam:{on:0,max:0}}; g.gloam=gloam||0; g.amber=(gloam||0)>=2?1:0; g.east=east; g.north=north; g.west=west===undefined?north:west; g.sun=sun||0; };   // (west follows north unless given: 2 opens the Greyspine)
+  const setGear=(home,east,north,west,sun,gloam)=>{ const g=c.G().GEAR; g.zt={home:{on:home,max:home},vale:{on:0,max:0},hoar:{on:0,max:0},grey:{on:0,max:0},sun:{on:0,max:0},gloam:{on:0,max:0}}; g.gloam=gloam||0; g.amber=(gloam||0)>=2?1:0; g.isles=(gloam||0)>=2?2:0; g.east=east; g.north=north; g.west=west===undefined?north:west; g.sun=sun||0; };   // (west follows north unless given: 2 opens the Greyspine)
   const frame=(n,dt)=>{ for(let i=0;i<(n||1);i++) c.G().dgEntUpdate(dt||0.1); };
   const place=(x,z)=>{ const g=c.G(); g.P.x=x; g.P.z=z; g.P.y=g.getH(x,z); };
   // (the villagers' "near" state, which the talk prompt reads, is updated by the next frame: a short wait after moving, then the checks run at once, before the next one)
@@ -21,7 +21,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>
   // ---- the meshes ----
   { const bad=[]; for(const id of IDS){ const D=G.DG_DOORS.doors[id], E=G.DG_ENTRANCES[id]; if(!D){ bad.push(id+' missing'); continue; }
       if(Math.hypot(D.G.position.x-E.x,D.G.position.z-E.z)>0.01||Math.abs(D.G.position.y-G.getH(E.x,E.z))>0.01||Math.abs(D.G.rotation.y-E.a)>1e-6) bad.push(id+' misplaced'); }
-    ok('each door stands at its DG_ENTRANCES coordinates, on the ground there, turned to face the way it faces',IDS.length===7&&!bad.length,bad.join(', ')); }
+    ok('each door stands at its DG_ENTRANCES coordinates, on the ground there, turned to face the way it faces',IDS.length===8&&!bad.length,bad.join(', ')); }
   { const need={hollowroots:26,jadesprings:6,bonefrostbarrow:7,blackseam:8,sandglass:8,gloamvault:9,termitecathedral:10}, bad=[], dims=[];
     for(const id of IDS){ const D=G.DG_DOORS.doors[id], E=D.E; D.G.updateMatrixWorld(true); const box=new T.Box3();
       D.G.traverse(o=>{ if(o.isMesh&&(o.material===G.villageMat||o.material===G.dgEntMat2)) box.expandByObject(o); });   // the solid parts (not the mist or the column of light)
@@ -68,7 +68,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>
   G.NET.send({t:'zt',land:'home',n:0}); await wait(400); G=c.G(); frame(50); ok('and +0 seals it again (the knots return, the light eases down)',G.DG_DOORS.doors.hollowroots.sealed===true&&G.DG_DOORS.doors.hollowroots.sealMesh.visible&&G.DG_DOORS.doors.hollowroots.lit<0.3);
   { const bad=[]; const rows=[[0,0,0,0,[true,true,true,true,true,true]],[1,0,0,0,[false,true,true,true,true,true]],[0,2,0,0,[true,false,true,true,true,true]],[0,0,2,0,[true,true,false,true,true,true]],[0,0,0,2,[true,true,true,false,true,true]],[0,0,0,0,[true,true,true,true,false,true],2],[0,0,0,0,[true,true,true,true,true,false],0,2],[1,2,2,2,[false,false,false,false,true,true]],[0,2,2,2,[true,false,false,false,true,true]],[1,2,2,2,[false,false,false,false,false,true],2],[1,2,2,2,[false,false,false,false,false,false],2,2]];
     for(const [home,east,north,west,want,sun,gloam] of rows){ setGear(home,east,north,west,sun,gloam); frame(60); IDS.forEach((id,i)=>{ const D=c.G().DG_DOORS.doors[id]; if(D.sealed!==want[Math.min(i,5)]||D.sealMesh.visible!==want[Math.min(i,5)]||(want[Math.min(i,5)]?D.lit>0.3:D.lit<0.95)) bad.push('home +'+home+' east '+east+' north '+north+' west '+west+': '+id+' sealed '+D.sealed+' lit '+D.lit.toFixed(2)); }); }
-    ok('the look follows the gear for all six doors (Wildwood: played at +1; the Falls: Hanami walked into; the Barrow: Rimehold; the Adit: Highmark; the Sandglass: Glasswell, gear.sun 2; the Gloamvault: Wraithwick, gear.gloam 2) in every combination tried',!bad.length,bad.slice(0,3).join('; ')); }
+    ok('the look follows the gear for all six doors (Wildwood: played at +1; the Falls: Hanami walked into; the Barrow: Rimehold; the Adit: Highmark; the Sandglass: Glasswell, gear.sun 2; the Gloamvault: Wraithwick, gear.gloam 2; the Termite Cathedral and the Cenote ride on the same row, opened by gear.amber / gear.isles) in every combination tried',!bad.length,bad.slice(0,3).join('; ')); }
   { const E1=G.DG_ENTRANCES.bonefrostbarrow, E2=G.DG_ENTRANCES.jadesprings; setGear(1,2,2,undefined,2,2); place(E1.x,E1.z+8); frame(60); const D1=c.G().DG_DOORS.doors.bonefrostbarrow, col0=D1.column.material.opacity;
     const f0=D1.flames.map(q=>q.f.scale.y); await wait(160); frame(1,0.05); const flick=D1.flames.some((q,i)=>Math.abs(q.f.scale.y-f0[i])>1e-4);
     place(E2.x,E2.z+8); frame(5); const D2=c.G().DG_DOORS.doors.jadesprings, tex=D2.tex.offset.y; frame(10,0.05);

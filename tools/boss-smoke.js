@@ -9,7 +9,7 @@ let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+nam
 const tick=(n)=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.maxHp=1e7; p.hp=1e7; p.dead=false; } } };   // (a player who dies would reset the fight)
 W.join('a',{name:'Tanker',look:{cls:'warrior'},save:{level:30}}); W.join('b',{name:'Runner',look:{cls:'archer'},save:{level:30}});
 W.receive('a',{t:'dev',cmd:'vale',v:2}); W.receive('a',{t:'dev',cmd:'north',v:2}); for(const id of ['a','b']) for(const g of ['river','neck','redgate']) W.receive(id,{t:'dev',cmd:'gate',v:g,n:1}); W.receive('b',{t:'dev',cmd:'vale',v:2}); W.receive('b',{t:'dev',cmd:'north',v:2}); tick(2);
-ok('fourteen bosses, each with its own kit',x.BOSSES.length===14&&new Set(x.BOSS_DEFS.map(b=>b.kit)).size===14&&x.BOSSES.every(B=>B.kit&&typeof B.kit.tick==='function'),x.BOSS_DEFS.map(b=>b.kit).join(' '));
+ok('sixteen bosses, each with its own kit',x.BOSSES.length===16&&new Set(x.BOSS_DEFS.map(b=>b.kit)).size===16&&x.BOSSES.every(B=>B.kit&&typeof B.kit.tick==='function'),x.BOSS_DEFS.map(b=>b.kit).join(' '));
 const A=x.ARENA_TIDE, tide=x.BOSSES.find(B=>B.bd.kit==='tide');
 ok('the Tide King lives on the beach: level 20, in the shore zone, in the sea-side south of the forest, on dry land',tide.bd.def.level===20&&A.z>560&&A.z<700&&x.getH(A.x,A.z)>1.5&&x.zoneAt(A.x,A.z)===A.zone&&x.edgeZoneAt(A.x+30,A.z-10)===A.zone,'arena at '+Math.round(A.x)+','+Math.round(A.z)+' h '+x.getH(A.x,A.z).toFixed(1));
 ok('it plays the Rootwarden\'s music for now (theme boss15)',tide.bd.def.music==='boss15'&&!x.BOSS_DEFS.filter(b=>b!==tide.bd&&b.def.music).length);
@@ -52,6 +52,8 @@ const KEY={ // what each boss must do (its signature), and what no other boss do
   captain:{must:['tele:rockfall','tele:rake','tele:line','wall','zone:whirl','summon:drownedhand'],only:['summon:drownedhand']},
   thunder:{must:['tele:line','zone:grassfire','tele:geyser','tele:gust','pfx:push','tele:slam','mode:1','zone:whiteout','mode:4','summon:thunderwisp'],only:['zone:grassfire','summon:thunderwisp']},
   herdmother:{must:['tele:line','tele:rake','tele:quake','tele:donut','zone:greyfloor','mode:6','summon:greycarrier'],only:['zone:greyfloor','summon:greycarrier']},
+  jaguar:{must:['tele:slam','tele:rake','zone:ember','tele:line','mode:2','summon:jaguaracolyte'],only:['summon:jaguaracolyte']},
+  tidecaller:{must:['wall','zone:whirl','tele:quake','mode:6','summon:tidespirit'],only:['summon:tidespirit']},
   gloamwarden:{must:['tele:line','tele:donut','tele:slam','tele:light','zone:gloom','mode:6','summon:soullantern','summon:gloamspecter'],only:['zone:gloom','summon:soullantern','summon:gloamspecter']}};
 for(const B of x.BOSSES){
   const kit=B.bd.kit, r=fight(B); sigs[kit]=r.seen;

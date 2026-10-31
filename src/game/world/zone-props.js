@@ -99,6 +99,7 @@ zpTheme('e43',0xd8c898,0.25,0.08,[['shell',3],['crabpot',2,0.3],['driftlog',2],[
 zpTheme('e44',0x3a6a38,0.35,0.1,[['rootarch',2,0.3],['hollowstump',2],['mosstone',2],['runestone',1,0.4]]);                                          // the jungle edge
 zpTheme('e45',0x6a7a62,0.3,0.08,[['ruinblock',3],['ruincol',2,0.3],['menhir',2,0.3],['mosstone',2],['ruinslab',1,0.5]]);                             // the overgrown plaza
 zpTheme('e46',0x5a8a8a,0.3,0.08,[['shell',2],['driftlog',2],['mooringpost',1,0.5],['sunkenmast',1,0.4],['runestone_dusk',1,0.5]]);                    // the cenote rim and the drowned strait
+zpTheme('eboss45',0x6a7a62,0.4,0,[]); zpTheme('eboss46',0x5a8a8a,0.4,0,[]);
 zpTheme('e47',0x8a8a5a,0.3,0.08,[['terracestone',3,0.1],['drystone',2,0.3],['haystack',1,0.3],['windpole',1,0.4]]);                                  // the terrace slopes
 zpTheme('e48',0x7a7a72,0.3,0.08,[['drystone',2,0.3],['menhir',2,0.3],['windpole',2,0.3],['cairn',1],['ruinwall',1,0.5]]);                             // condor heights
 zpTheme('aboss41',0x4a4044,0.45,0,[]); zpTheme('aboss45',0xc89a62,0.4,0,[]);
@@ -118,6 +119,8 @@ const ZP_BOSS={
   mboss35:[['hullribs',3,8,22],['anchor',4,6,20],['sunkenmast',3,8,22],['lamppost_green',6,5,20],['gravestone',6,6,22]],                        // the Drowned Captain
   aboss41:[['anvilrock',3,8,20],['charstump',6,6,22],['lightrod',4,7,18,{face:1}],['cinderrock',6,5,24],['bonepile',4,6,22]],                          // Old Thunder
   aboss45:[['terracestone',6,6,22],['greystone',8,5,24],['hoodoo',4,8,24],['ribs',2,10,22],['songpost',3,7,16,{face:1}]],                       // Oldhorn
+  eboss45:[['ruinblock',8,8,22],['ruincol',6,7,22],['menhir',4,6,24],['mosstone',6,5,24],['runestone',3,9,18,{face:1}]],                                  // Ocelo: the ball court's walls and standing stones
+  eboss46:[['shell',8,6,22],['driftlog',5,6,22],['mooringpost',4,7,18,{face:1}],['sunkenmast',3,8,24],['runestone_dusk',2,10,20]],                            // Tuila: shells and drift on the strait's shore
   mboss40:[['lamppost',8,5,20],['gargoyle',5,7,20,{face:1}],['sirenrock',6,8,24],['weepingstatue',4,7,18,{face:1}]]};                           // the Gloam Light's keeper
 /* ---- ruins: layouts of pieces [kind, dx, dz, yaw offset] ---- */
 const ZP_PLANS=[   // r: the layout's radius (spacing and the clear-ground check); each plan is ONE merged prop kind (ruinplan0...) so a ruin costs one draw call
@@ -158,7 +161,7 @@ const zpHash=s=>{ let h=7; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|
 // not here: keep-outs of the lands (the same list the trees use, plus villages, roads, the tunnel, story spots, dungeon doors)
 function zpBlocked(x,z){
   if(vDist(x,z)<VR+8||nearPath(x,z,3)||inTunnelCut(x,z,2)||storyClear(x,z)||dgEntClear(x,z)) return true;
-  if(inIsles(x,z)) return Math.hypot(x-EW_HUB.x,z-EW_HUB.z)<EW_HUB_R+2;   // emberwake: Coralhaven's ground
+  if(inIsles(x,z)) return ewKeepOut(x,z,3);   // emberwake: Coralhaven's ground, the waystations, the door, the raid and the arenas
   if(inAmber(x,z)) return savKeepOut(x,z,3);   // savanna: (ask before inSun, which is true there too)
   if(inSun(x,z)) return sunKeepOut(x,z,3);
   if(inGloam(x,z)) return gloamIn(x,z)<14||gloamKeepOut(x,z,3);

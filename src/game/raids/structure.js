@@ -1,7 +1,7 @@
-//@ The seven raid ruins: coursed stone walls with buttresses, merlons and arrow slits, tapered towers, a gatehouse with a broken portcullis, a ruined keep behind the court, pillars round the court, banners and torches; each land adds its own dressing (structure-extras.js)
+//@ The eight raid ruins: coursed stone walls with buttresses, merlons and arrow slits, tapered towers, a gatehouse with a broken portcullis, a ruined keep behind the court, pillars round the court, banners and torches; each land adds its own dressing (structure-extras.js)
 /* Agent map. Data: RDS / RD_LAYOUT (shared/raids.js); the site, the court and the yard are those pads (flattened by terrain-height.js through ARENAS). buildRaids() is called by genTerrain
    (world/generation-setup.js, next to buildProvingIsle); rdStructRefresh(i) by hud.js when a raid's state changes (fires, lanterns and banners are lit while it is not cleared). RD_LOOKS: one palette
-   and one extra per raid.look (thorn, kuro, jarn, stone, sand, wrack, moot). Each raid is 3 merged meshes (stone, wood, cloth) and 1 small one (fire): a handful of draw calls, hidden beyond 450 m.
+   and one extra per raid.look (thorn, kuro, jarn, stone, sand, wrack, moot, gates). Each raid is 3 merged meshes (stone, wood, cloth) and 1 small one (fire): a handful of draw calls, hidden beyond 450 m.
    Colliders: a circle per standing wall segment, tower, pillar and keep block (addCol), none in the gates. The per-land dressing and the small props are in structure-extras.js (rdExtras, rdProps).
    Builder context `C` (shared with structure-extras.js): the lists stone / wood / cloth / fire, the colour painters sc / tc / cc / fc / dk / wd, gh(lx,lz) the ground, bx(list,w,h,d,lx,y,lz,fn,ry,rz) a box
    placed in site coordinates (y absolute). Test: tools/raids-smoke.js (client part). */
@@ -12,7 +12,8 @@ const RD_LOOKS={
   stone:{wall:0x6a6a70,trim:0x45454c,cloth:0x8a6a3a,flame:0xffb050,moss:0x55703a,extra:'rubble',roof:'cone'},
   sand:{wall:0xc4a56a,trim:0x9a7e4a,cloth:0xb8862a,flame:0xffd070,moss:0,extra:'dune',roof:'none'},
   wrack:{wall:0x3a4650,trim:0x24303a,cloth:0x2a6a6a,flame:0x70e0d0,moss:0x2f6a58,extra:'wreck',roof:'none'},
-  moot:{wall:0xa68a5e,trim:0x6e5836,cloth:0x9a4a2a,flame:0xffb040,moss:0x7a8a3a,extra:'seats',roof:'none'}
+  moot:{wall:0xa68a5e,trim:0x6e5836,cloth:0x9a4a2a,flame:0xffb040,moss:0x7a8a3a,extra:'seats',roof:'none'},
+  gates:{wall:0x8e887a,trim:0x5c564a,cloth:0x2a8a8a,flame:0x7ae0cc,moss:0x4a7a48,extra:'gates',roof:'none'}
 };
 const RDV=[];   // per raid: {R, fire, cloth, group}
 const RD_WALL_T=2.4, RD_SEG=3;

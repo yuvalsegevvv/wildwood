@@ -25,8 +25,8 @@ ok('the Termite Cathedral is registered (no bad theme): the Amber Reach\'s dunge
 ok('every monster of the dungeon is an Amber Reach kind (zones a37-a45); walkers fit a 4 m door',[...T.mobs.walkers,...T.mobs.guardians].every(id=>{ const d=x.MON_DEFS.find(q=>q.id===id); return d&&/^a(3[7-9]|4[0-5])$/.test(d.zone)&&d.level>=37; })&&T.mobs.walkers.every(id=>x.MON_DEFS.find(q=>q.id===id).rad<=0.9));
 
 // ---- the door ----
-ok('the door is the atlas\'s amber door: DG_ENTRANCES.termitecathedral at SAV_DOOR where The Amber Door Road ends, its signpost on that road, seven doors in all, found from 3 m and not from 9 m, its apron 7 m out',
-  !!E&&E.x===D.x&&E.z===D.z&&E.theme==='termitecathedral'&&E.sign.road==='The Amber Door Road'&&x.ROADS.some(r=>r.name===E.sign.road)&&Object.keys(x.DG_ENTRANCES).length===7&&x.dgEntranceNear(D.x+Math.sin(E.a)*3,D.z+Math.cos(E.a)*3)===E&&x.dgEntranceNear(D.x+Math.sin(E.a)*9,D.z+Math.cos(E.a)*9)===null&&Math.abs(Math.hypot(x.dgApron(E).x-D.x,x.dgApron(E).z-D.z)-7)<1e-9);
+ok('the door is the atlas\'s amber door: DG_ENTRANCES.termitecathedral at SAV_DOOR where The Amber Door Road ends, its signpost on that road, eight doors in all, found from 3 m and not from 9 m, its apron 7 m out',
+  !!E&&E.x===D.x&&E.z===D.z&&E.theme==='termitecathedral'&&E.sign.road==='The Amber Door Road'&&x.ROADS.some(r=>r.name===E.sign.road)&&Object.keys(x.DG_ENTRANCES).length===8&&x.dgEntranceNear(D.x+Math.sin(E.a)*3,D.z+Math.cos(E.a)*3)===E&&x.dgEntranceNear(D.x+Math.sin(E.a)*9,D.z+Math.cos(E.a)*9)===null&&Math.abs(Math.hypot(x.dgApron(E).x-D.x,x.dgApron(E).z-D.z)-7)<1e-9);
 
 // ---- who may enter: the Ashbed Gate open (gear.amber 1) and level 42, at every difficulty ----
 { const un=(g,lv,tier)=>x.dgUnlocked(g,lv,T,tier);

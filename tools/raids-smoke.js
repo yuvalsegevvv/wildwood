@@ -1,4 +1,4 @@
-// Headless test of the raids (shared/raids.js + the seven data files, server/raids.js and its hooks), straight from src/, no build: the registry and the sites, level 40..110 and 2^tier pay,
+// Headless test of the raids (shared/raids.js + the eight data files, server/raids.js and its hooks), straight from src/, no build: the registry and the sites, level 40..110 and 2^tier pay,
 // the garrison and the structures, the boss pool, the tier lock on the first hit (a +0 friend cannot carry a tier VII player), wards waking the boss, spawners, the clear and its pay,
 // the thirty-minute rebuild and the abandon reset, signature skills levelling with raid material, saves. Randomness is pinned where a number is compared. One line per check.
 // Usage: node tools/raids-smoke.js
@@ -8,10 +8,10 @@ const {api:W,x}=loadServer({dev:true,send(){}},['MONS','BOSSES','RDS','RD_ORDER'
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const zt=(home,vale)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:vale[1]},hoar:{on:0,max:0},grey:{on:0,max:0},sun:{on:0,max:0},gloam:{on:0,max:0}});
-const LANDS=['home','vale','hoar','grey','sun','gloam','amber'];
+const LANDS=['home','vale','hoar','grey','sun','gloam','amber','isles'];
 
 // ---- the registry ----
-ok('seven raids, one a land, none left out',x.RD_ORDER.length===7&&x.RD_BAD.length===0&&LANDS.every(l=>x.RD_ORDER.filter(i=>x.RDS[i].land===l).length===1),JSON.stringify(x.RD_BAD));
+ok('eight raids, one a land, none left out',x.RD_ORDER.length===8&&x.RD_BAD.length===0&&LANDS.every(l=>x.RD_ORDER.filter(i=>x.RDS[i].land===l).length===1),JSON.stringify(x.RD_BAD));
 ok('each raid\'s boss pool is its land\'s two world bosses (the sets\' first two sources), no new boss',x.RD_ORDER.every(i=>{ const R=x.RDS[i]; return R.bosses.join()===x.SS_SOURCES[R.land].slice(0,2).join(); }));
 ok('level 40 at +0 and ten more for each tier up to level 110 at tier VII; 1, 2, 4 ... 128 raid material',[0,1,2,3,4,5,6,7].map(x.rdLevel).join()==='40,50,60,70,80,90,100,110'&&[0,1,2,3,4,5,6,7].map(x.rdMatFor).join()==='1,2,4,8,16,32,64,128');
 ok('every raid has 28 garrison monsters in 6 packs and 6 elites, 3 wards, 2 spawners, 4 barricades',x.RD_ORDER.every(i=>{ const R=x.RDS[i], n=R.packs.reduce((a,p)=>a+p.n,0); return R.packs.length===6&&n===22&&R.elites.length===6&&R.wards.length===3&&R.spawners.length===2&&R.barricades.length===4; }));
@@ -19,8 +19,8 @@ ok('the sites are dry land of their land, off the coast, clear of every village,
 ok('the court and the yard are arenas (pads that flatten the ground and keep camps, plants and nodes away), the court the size of a boss arena',x.RD_ORDER.every(i=>{ const R=x.RDS[i]; return x.ARENAS.includes(R.court)&&x.ARENAS.includes(R.yard)&&R.court.r===20&&Number.isFinite(R.court.h); }));
 
 // ---- the world holds them ----
-ok('the world server builds all seven, ready, level 40, a boss asleep (immune) in each court; BOSSES is still the fourteen world fights',x.RD_STATE.length===7&&x.RD_STATE.every(s=>s.state==='ready'&&s.L===40&&s.boss&&s.boss.m.immune&&!s.bossLive&&s.garrison.length===28&&s.wards.length===3&&s.spawners.length===2)&&x.BOSSES.length===14);
-ok('their monsters carry the raid and its numbers (monK is the raid level, not the zone tier); the boss rows reach the snapshot',x.RD_STATE.every(s=>s.all.every(m=>m.rd===s&&m.dgK&&m.dgK.lv===40))&&x.bossState().length===21);
+ok('the world server builds all eight, ready, level 40, a boss asleep (immune) in each court; BOSSES is still the sixteen world fights',x.RD_STATE.length===8&&x.RD_STATE.every(s=>s.state==='ready'&&s.L===40&&s.boss&&s.boss.m.immune&&!s.bossLive&&s.garrison.length===28&&s.wards.length===3&&s.spawners.length===2)&&x.BOSSES.length===16);
+ok('their monsters carry the raid and its numbers (monK is the raid level, not the zone tier); the boss rows reach the snapshot',x.RD_STATE.every(s=>s.all.every(m=>m.rd===s&&m.dgK&&m.dgK.lv===40))&&x.bossState().length===24);
 ok('garrison health is cut to RD_MOB_HP of the ordinary numbers while the boss and the destructibles keep theirs, so a pack never outweighs the boss',x.RD_STATE.every(s=>s.garrison.every(m=>Math.abs(m.dgK.hp-x.dgKOf(m.def,s.L).hp*x.RD_MOB_HP)<1e-9)&&s.boss.m.dgK.hp===x.dgKOf(s.boss.m.def,s.L).hp&&[...s.wards,...s.spawners,...s.barricades].every(m=>m.dgK.hp===x.dgKOf(m.def,s.L).hp)&&s.garrison.reduce((a,m)=>a+m.def.hp*m.dgK.hp*(m.elite?2:1),0)<s.boss.m.def.hp*s.boss.m.dgK.hp*6));
 ok('a world monster never sits on a pad: no camp inside any raid',x.MONS.every(m=>m.rd||x.RD_ORDER.every(i=>Math.hypot(m.x-x.RDS[i].x,m.z-x.RDS[i].z)>50)));
 

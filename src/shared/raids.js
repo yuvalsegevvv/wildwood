@@ -1,4 +1,4 @@
-//@ Raids: one ruined stronghold per land (seven) (defineRaid registry, the common layout, level and pay by zone tier, the signature-skill upgrade price in raid material, the flat pads)
+//@ Raids: one ruined stronghold per land (eight) (defineRaid registry, the common layout, level and pay by zone tier, the signature-skill upgrade price in raid material, the flat pads)
 /* Agent map. Design and numbers: docs/RAIDS.md. A raid is a ruin in an empty part of its land: 28 garrison monsters of the land's own kinds, destructibles (wards seal the inner court, spawners call
    reinforcements, barricades are cover), and a boss picked at random from the land's two world bosses when the raid (re)builds. Stem `raids`, prefix `rd` / `RD_`.
    Exports: RD_BASE_LV, RD_RESET, RD_ABANDON, RD_UP, RD_FOOT, RD_LAYOUT, defineRaid(D), RDS (by id), RD_ORDER, RD_BAD, rdLevel(tier), rdMatFor(tier), rdOfLand(land), rdCourtAt(x,z),
@@ -9,7 +9,7 @@ const RD_BASE_LV=40, RD_RESET=1800, RD_ABANDON=600, RD_FOOT=62, RD_MAT_MAX=99999
 const RD_MOB_HP=0.3;   // a garrison monster's health against the same level's ordinary numbers: the boss stays at 22 hits at level 40 while a mob falls in about 7 x this (elites twice that again): 28 full-health mobs outweighed the boss 12 to 1
 const RD_UP={2:1,3:2,4:4,5:8};   // raid material a signature piece needs to reach level n (one clear pays level 2); the one number to tune
 const RD_MOB_K=3;   // a signature piece asks RD_MOB_K x the usual monster drops (UP_COUNT): the grind is in the woods, the raid is the gate
-const RD_LANDS=['home','vale','hoar','grey','sun','gloam','amber'];
+const RD_LANDS=['home','vale','hoar','grey','sun','gloam','amber','isles'];
 /* The layout every raid shares, in metres from the site's middle (x east, z south; the gate looks north). The court is the boss arena (kits read A.x, A.z, A.r). */
 const RD_LAYOUT={
   court:{x:0,z:22,r:20}, yard:{x:0,z:-14,r:24},

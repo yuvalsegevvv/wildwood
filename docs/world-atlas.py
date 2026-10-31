@@ -852,6 +852,12 @@ for k, (key, isl, sx, sz, el) in enumerate(ISL_ZONE_SEEDS):
 for z in ISL_ZONES: z['entrance'] = [z['x'], z['z']]
 ISL_ENTR = [{'land': 'isles', 'zone': z['key'], 'x': z['x'], 'z': z['z']} for z in ISL_ZONES]
 assert all(z['area'] > 20000 for z in ISL_ZONES), [z['area'] for z in ISL_ZONES]
+# the Isles' places (W3): the two world bosses' arenas (Ocelo in the Overgrown Plaza, Tuila on the Drowned Strait's shore), the Cenote's dungeon door in the Jungle Edge and the Seven Gates stronghold on Condor Heights.
+# Pinned by hand: each is the flattest ground (a 46 m ring varies under 6 m) at least 70 m from the shore in its zone, and the four stand 120 m or more apart (checked by tools/emberwake-smoke.js).
+POIS += [{'kind': 'boss', 'name': "Ocelo's Plaza", 'land': 'isles', 'zone': 45, 'x': -564.0, 'z': 1570.0},
+         {'kind': 'boss', 'name': "The Drowned Strait", 'land': 'isles', 'zone': 46, 'x': -516.0, 'z': 1690.0},
+         {'kind': 'door', 'name': 'isles door', 'land': 'isles', 'zone': 44, 'x': -648.0, 'z': 1702.0},
+         {'kind': 'raid', 'name': 'The Seven Gates', 'land': 'isles', 'zone': 48, 'x': 48.0, 'z': 1642.0}]
 def _strip(arr8, old, step):
     """the old rows (kept as they are) + the strip's rows, sampled every `step` m from the 8 m field"""
     s_ = step // 8; new = arr8[::s_, ::s_]; nr = (ISL_ROWS8 - 1) // s_ + 1; new = new[:nr]

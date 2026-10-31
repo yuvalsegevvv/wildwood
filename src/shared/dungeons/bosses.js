@@ -1,4 +1,4 @@
-//@ The seven dungeon bosses (Amanita the Sporemother, Gawataro the Jade Elder, Haugbui the Barrow Lord, Garrick the Seam Foreman, Khet the Hourkeeper, Abbess Morrow the Drowned Abbess, Queen Ortha the Brood Queen): their designs as data (DG_BOSSES: moves named by primitive, signature, needs), their defs as rows shaped like BOSS_DEFS (DG_BOSS_DEFS), the hall's lamps and steam vents, and the arena of a run's boss hall. Pure.
+//@ The eight dungeon bosses (Amanita the Sporemother, Gawataro the Jade Elder, Haugbui the Barrow Lord, Garrick the Seam Foreman, Khet the Hourkeeper, Abbess Morrow the Drowned Abbess, Queen Ortha the Brood Queen, Ahmetl the Star-Masked): their designs as data (DG_BOSSES: moves named by primitive, signature, needs), their defs as rows shaped like BOSS_DEFS (DG_BOSS_DEFS), the hall's lamps and steam vents, and the arena of a run's boss hall. Pure.
 /* Agent map: exports DG_BOSSES, DG_BOSS_DEFS (keyed by boss id = its def's id: {def, kit, add, prop, short, bar, auxBar, gloom, dungeon}), DG_HALL_LAMPS, DG_VENT_R, dgVentAt,
    dgHallArena. Used by: server/dungeons/boss-kits.js (BOSS_KITS.spore / dish / barrow read B.bd = a row), the run's boss finale (makeBossS(DG_BOSS_DEFS[theme.boss],
    dgHallArena(bake, ox, oz))), game/combat/boss-dungeon.js (the client's def lookup, bar texts, gloom), defineDungeonTheme (a theme's `boss` must be a key here).
@@ -110,7 +110,22 @@ const DG_BOSSES={
       {id:'broodlings',name:'Broodlings',      phase:2,does:['adds']},
       {id:'spirefall',name:'Spirefall',        phase:2,does:['tele:rockfall'],x:0.9},
       {id:'thrum',    name:'Brood Thrum',      phase:3,does:['tele:icefall','pfx:slow'],x:1.2}],
-    needs:['new:tele-cancel']}};
+    needs:['new:tele-cancel']},
+  /* Ahmetl, the Star-Masked (version 3, the Cenote of Hollow Stars under the Emberwake Isles: docs/DUNGEON-THEMES.md section 14). The last normal boss of the game: `lv:48`, the theme is level 48 at +0 and rises 10 a tier.
+     Built from primitives that already exist (the cleave, the ice fall, the pulse with an exemption, the line, the donut): his signature, Hollow Stars, is a hall-wide pulse that only a lit star's circle spares; a pulse that
+     hurts nobody cracks the mask. */
+  ahmetl:{id:'ahmetl',name:'Ahmetl, the Star-Masked',short:'Ahmetl',dungeon:'cenote',kit:'stars',lv:48,el:'dark',model:'goblin',scale:3.0,glow:0x06202a,atk:2.4,speed:2.3,music:'boss30',
+    pal:{form:'tengu',skin:0x4a8a78,eyes:0xcff6ff,top:'jacket',topColor:0x1a3a4a,bottom:'trousers',bottomColor:0x10242c,hat:'none',hatColor:0x1a1a22,club:0xd8e6e0,weapon:'axe'},
+    add:{id:'starshade',name:'Star Shade',scale:0.8,speed:3.1,glow:0x04141a,pal:{form:'undead',skin:0x3a6a66,eyes:0xcff6ff,top:'jacket',topColor:0x12303a,bottom:'trousers',bottomColor:0x0c1c24,hat:'none',hatColor:0x1a1a22,club:0xb8d0cc,weapon:'axe'}},
+    bar:{stun:'The mask is cracked: strike now!'}, aux:'stars that fell', auxBar:'Stars that fell: {n}',
+    moves:[
+      {id:'blade',    name:'Obsidian Blade', phase:1,does:['tele:cleave','pfx:push','cast'],x:1.2},
+      {id:'fall',     name:'Falling Stars',  phase:1,does:['tele:icefall'],x:0.9},
+      {id:'hollow',   name:'Hollow Stars',   phase:1,does:['tele:pulse','new:tele-safe'],x:1.6,signature:true},
+      {id:'shades',   name:'Star Shades',    phase:2,does:['adds']},
+      {id:'moonlance',name:'Moon Lance',     phase:2,does:['tele:line','pfx:slow'],x:1.1},
+      {id:'eclipse',  name:'Eclipse Ring',   phase:3,does:['tele:donut'],x:1.9}],
+    needs:['new:tele-safe']}};
 
 // a design as a row shaped like BOSS_DEFS (what makeBossS(bd, A) takes): the boss's def at its level, its add and its prop as monster defs
 function dgBossRow(b){
@@ -121,7 +136,7 @@ function dgBossRow(b){
   if(b.prop){ prop={id:b.prop.id,name:b.prop.name,level:b.lv,el:b.el,model:b.prop.model||b.model,scale:b.prop.scale,hits:b.prop.hits,heavy:true,noAttack:true,noXp:true,speed:0,aggro:0,glow:b.prop.glow,pal:b.prop.pal}; prepDef(prop); }
   return {def,kit:b.kit,add,prop,short:b.short,bar:b.bar,aux:b.aux,auxBar:b.auxBar,gloom:b.gloom,dungeon:b.dungeon};
 }
-const DG_BOSS_DEFS=Object.assign(Object.create(null),{amanita:dgBossRow(DG_BOSSES.amanita),gawataro:dgBossRow(DG_BOSSES.gawataro),haugbui:dgBossRow(DG_BOSSES.haugbui),garrick:dgBossRow(DG_BOSSES.garrick),khet:dgBossRow(DG_BOSSES.khet),abbess:dgBossRow(DG_BOSSES.abbess),ortha:dgBossRow(DG_BOSSES.ortha)});   // (no prototype: a lookup by any def id is safe)
+const DG_BOSS_DEFS=Object.assign(Object.create(null),{amanita:dgBossRow(DG_BOSSES.amanita),gawataro:dgBossRow(DG_BOSSES.gawataro),haugbui:dgBossRow(DG_BOSSES.haugbui),garrick:dgBossRow(DG_BOSSES.garrick),khet:dgBossRow(DG_BOSSES.khet),abbess:dgBossRow(DG_BOSSES.abbess),ortha:dgBossRow(DG_BOSSES.ortha),ahmetl:dgBossRow(DG_BOSSES.ahmetl)});   // (no prototype: a lookup by any def id is safe)
 
 /* Where the kits put things in the hall, in metres from its middle (the hall's pillars and mouths are DG_HALL_PILLARS / DG_HALL_MOUTHS in shared/dungeons.js):
    Haugbui's four lamps stand at the inner corner of each pillar, 9.6 m from the middle (8 m round a lit lamp shelters you from the wail, which leaves the middle open);

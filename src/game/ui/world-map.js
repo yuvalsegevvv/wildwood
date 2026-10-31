@@ -1,30 +1,31 @@
-//@ The world map of Eldmere (G): the atlas painted as a map, purple fog over what is locked or not built, a scroll banner on each open land and your pin; drag, wheel or pinch to move and zoom, click a land to open its map
+//@ The world map of Eldmere (G): the atlas painted as a map, purple fog over what is locked (none at all once every land is open), a scroll banner on each open land and your pin; drag, wheel or pinch to move and zoom, click a land to open its map
 /* Agent map. What it owns: the #wmap panel (a canvas that fills it), the fog, the banners, the pin and the pointer handling.
-   Art: the atlas itself, painted once by wmapPaint (world-map-data.js, which also holds the art's frame: 1 art pixel = 2 m, wmapArt / wmapWorld). All six lands are built; each sits under fog until `landOpen` says so (that map's own
-   locks: map.js). The Amber Reach and the sea's corners (the Emberwake Isles in the south) are not built: fog always, and nothing but "uncharted" is said about them.
+   Art: the atlas itself, painted once by wmapPaint (world-map-data.js, which also holds the art's frame: 1 art pixel = 2 m, wmapArt / wmapWorld). Each land sits under fog until `landOpen` says so (that map's own
+   locks: map.js). All eight lands are built; the sea's corner banks stay until every land is open, then they lift too (`wmapAllOpen`): a fully unlocked map has no clouds.
    A click on an open land opens that land's full map (`wmapGo`, the same panel the N key opens); a click on fog says what bars the way. The pin: `wmapPin` (exact: the atlas is the map).
    Used by: map.js (the "World" button, `sizeFullMap` hides it in a dungeon, `updateMap` calls `wmapUpdate`), panels.js (PANELS), keybinds.js (the `world` key). Test: tools/client-smoke.js. */
-const WMAP_IDS=['home','vale','hoar','grey','sun','gloam','amber'], WMAP_FADE=['vale','hoar','grey','sun','gloam','amber'];
-const WMAP_TOWN_NAME={home:'the village',vale:'Hanami',hoar:'Rimehold',grey:'Highmark',sun:'Glasswell',gloam:'Wraithwick',amber:'Tallgrass'};
+const WMAP_IDS=['home','vale','hoar','grey','sun','gloam','amber','isles'], WMAP_FADE=['vale','hoar','grey','sun','gloam','amber','isles'];
+const WMAP_TOWN_NAME={home:'the village',vale:'Hanami',hoar:'Rimehold',grey:'Highmark',sun:'Glasswell',gloam:'Wraithwick',amber:'Tallgrass',isles:'Coralhaven'};
 // what stops you, by the same words the land maps use (`placeName`, map.js)
-const WMAP_LOCK={vale:'The Sakura Vale: the Greyfall bridge is barred until the Rootwarden falls',hoar:'The Hoarfrost Reach: Frostgate Pass is walled with ice until Akaoni falls',grey:'The Greyspine: the glacier valley\'s ice fall holds the way until Ymrik falls',sun:'The Sunscar: the River Pass and Redgate Canyon are shut until the Gryphon Queen falls',gloam:'The Gloamhorn: the Windswept Neck is shut until the Mountain Golem falls',amber:'Amber Reach: the Ashbed Gate is shut until the Sand Wyrm falls'};
-const WMAP_FOG_MAX={vale:.86,hoar:.86,grey:.86,sun:.86,gloam:.86,amber:.86};   // a locked land's fog lets its shape show a little; the unbuilt regions' fog is solid
+const WMAP_LOCK={vale:'The Sakura Vale: the Greyfall bridge is barred until the Rootwarden falls',hoar:'The Hoarfrost Reach: Frostgate Pass is walled with ice until Akaoni falls',grey:'The Greyspine: the glacier valley\'s ice fall holds the way until Ymrik falls',sun:'The Sunscar: the River Pass and Redgate Canyon are shut until the Gryphon Queen falls',gloam:'The Gloamhorn: the Windswept Neck is shut until the Mountain Golem falls',amber:'Amber Reach: the Ashbed Gate is shut until the Sand Wyrm falls',isles:'The Emberwake Isles: the harbour-master sails once Oldhorn, the Herd-Mother, has fallen'};
+const WMAP_FOG_MAX={vale:.86,hoar:.86,grey:.86,sun:.86,gloam:.86,amber:.86,isles:.86};   // a locked land's fog lets its shape show a little; the unbuilt regions' fog is solid
 const wmapEl=$('#wmap'), wmapC=$('#wmapC'), wmapX=wmapC.getContext('2d'), wmapTip=$('#wmapTip'), wmapBox=$('#wmapBox');
-const WM={k:.5,min:.3,max:1.5,cx:WMAP_W/2,cy:WMAP_H/2,w:300,h:300,img:null,fog:null,hot:null,ptr:new Map(),moved:0,pinch:0,t:0,acc:0,delay:0,fade:{vale:1,hoar:1,grey:1,sun:1,gloam:1,amber:1},seen:null,art:null,mask:{}};
+const WM={k:.5,min:.3,max:1.5,cx:WMAP_W/2,cy:WMAP_H/2,w:300,h:300,img:null,fog:null,hot:null,ptr:new Map(),moved:0,pinch:0,t:0,acc:0,delay:0,fade:{vale:1,hoar:1,grey:1,sun:1,gloam:1,amber:1,isles:1,sea:1},seen:null,art:null,mask:{}};
 const wmapSx=ax=>(ax-WM.cx)*WM.k+WM.w/2, wmapSy=ay=>(ay-WM.cy)*WM.k+WM.h/2;
 const wmapAx=sx=>(sx-WM.w/2)/WM.k+WM.cx, wmapAy=sy=>(sy-WM.h/2)/WM.k+WM.cy;
 function wmapRng(s){ return ()=>{ s=s+0x6D2B79F5|0; let t=Math.imul(s^s>>>15,1|s); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 // what is under a point of the art: a land's id ('home'...), 'unbuilt' (a fog bank that does not exist yet), or null (open sea)
+const wmapAllOpen=()=>WMAP_IDS.every(landOpen);   // the banks of the open sea lift once every land is open: a full map has no clouds
 function wmapRegionAt(x,y){
   const w=wmapWorld(x,y), l=waLand(w[0],w[1]);
   if(l) return l;
+  if(wmapAllOpen()) return null;   // (every land is open: the sea's banks are gone, nothing is left uncharted)
   for(const B of WMAP_BANKS) if(((x-B[0])/B[2])**2+((y-B[1])/B[3])**2<1) return 'unbuilt';
   return null;
 }
 /* ---- where you are on the art ---- */
 function wmapPin(){
   if(dgIn()||caveIn()) return null;   // cave:
-  if(inIsles(P.x,P.z)) return null;   // emberwake: the Isles are south of the map's art (a later step paints them): no pin there yet
    // (a run is far from the map)
   return wmapArt(clamp(P.x,WX0,WX1),clamp(P.z,WZ0,WZ1));
 }
@@ -56,7 +57,7 @@ function wmapLandBox(l){ const R=LANDS[l], a=wmapArt(R.x0,R.z0), b=wmapArt(R.x1,
 function wmapFogBuild(){
   if(WM.fog) return;
   const sc=LITE?0.33:LOW?0.45:0.6;
-  WM.fog={base:[   // the banks of the open sea: never lift
+  WM.fog={base:[   // the banks of the open sea: they lift when every land is open (WM.fade.sea)
       ...WMAP_BANKS.map((b,i)=>wmapFogGroup((px,py,sp)=>((px-b[0])/(b[2]+sp*0.4))**2+((py-b[1])/(b[3]+sp*0.4))**2<1,[b[0]-b[2],b[1]-b[3],b[0]+b[2],b[1]+b[3]],22,14+i,sc))]};
   WMAP_FADE.forEach((l,i)=>{ WM.fog[l]=wmapFogGroup((px,py,sp)=>wmapNearLand(l,px,py,sp),wmapLandBox(l),24,21+10*i,sc); });   // these lift as their lands open (a group a cluster keeps the canvases small)
 }
@@ -64,6 +65,7 @@ function wmapFogBuild(){
 function wmapSeen(){ if(!WM.seen){ try{ WM.seen=JSON.parse(localStorage.getItem('wildwood-wmap'))||[]; }catch(_){ WM.seen=[]; } if(!Array.isArray(WM.seen)) WM.seen=[]; } return WM.seen; }
 function wmapSeenAdd(id){ const s=wmapSeen(); if(!s.includes(id)){ s.push(id); try{ localStorage.setItem('wildwood-wmap',JSON.stringify(s)); }catch(_){} } }
 function wmapFogReset(){
+  WM.fade.sea=wmapAllOpen()&&wmapSeen().includes('sea')?0:1;
   for(const id of WMAP_FADE) WM.fade[id]=landOpen(id)&&wmapSeen().includes(id)?0:1;   // an open land you have not seen open yet starts under fog and the fog lifts when the map opens
   WM.delay=0.5;
 }
@@ -125,7 +127,7 @@ function wmapDraw(){
   if(!WM.art) WM.art=wmapPaint(LITE||LOW?12:6);
   { const a=wmapArt(WX0,WZ0), s=WM.k*WM.art.res/2; x.imageSmoothingEnabled=true; x.imageSmoothingQuality='high'; x.drawImage(WM.art.cv,wmapSx(a[0]),wmapSy(a[1]),WM.art.cv.width*s,WM.art.cv.height*s); }
   wmapFogBuild();
-  WM.fog.base.forEach((g,i)=>wmapFogDraw(x,g,1,Math.sin(t*0.7+i)*3));
+  WM.fog.base.forEach((g,i)=>wmapFogDraw(x,g,WM.fade.sea,Math.sin(t*0.7+i)*3));
   for(const id of WMAP_FADE) wmapFogDraw(x,WM.fog[id],WM.fade[id]*WMAP_FOG_MAX[id],Math.sin(t*0.7+id.length+id.charCodeAt(0))*3);
   if(WM.hot&&WM.hot!=='unbuilt'&&landOpen(WM.hot)){   // the land under the pointer glows (over the fog: its neighbours' clouds cover its edge)
     const M=wmapMask(WM.hot), R=LANDS[WM.hot], a=wmapArt(R.x0,R.z0), s=WM.k*M.res/2;
@@ -148,6 +150,8 @@ function wmapUpdate(dt){
   if(wmapEl.hidden) return;
   WM.acc+=dt; if(WM.acc<(LOW?0.05:0.033)) return; dt=WM.acc; WM.acc=0;   // (30 frames a second are plenty for a map; 20 on a weak phone)
   WM.t+=dt; WM.delay-=dt;
+  { const want=wmapAllOpen()?0:1;   // the sea's banks
+    if(!(want===0&&WM.fade.sea>0&&WM.delay>0)){ WM.fade.sea=clamp(WM.fade.sea+(want?1:-1)*Math.min(dt,0.1)/1.4); if(want===0&&WM.fade.sea<=0) wmapSeenAdd('sea'); } }
   for(const id of WMAP_FADE){
     const want=landOpen(id)?0:1;
     if(want===0&&WM.fade[id]>0&&WM.delay>0) continue;   // (a short beat before the fog lifts)

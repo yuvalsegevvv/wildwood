@@ -18,7 +18,8 @@ const DG_BOARD_INFO={
   blackseam:{color:'#e8a050',text:'An abandoned coal mine under Highmark Pastures, worked until the foreman sold the seam to the powder: timbered drifts, ore carts, scalding slag vents and the lamps he left burning.'},
   sandglass:{color:'#e8c060',text:'A sun-temple and glassworks buried under the Whitefloor south of Glasswell: sandstone halls, cold kilns, braziers still burning, glass spikes in the floor and a keeper who turns the hour.'},
   gloamvault:{color:'#a890e0',text:'A drowned chapel-crypt and wreckers\' vault under the cliffs of Vault Heath on the Gloamhorn: black limestone, flooded aisles, tombs, salvage stacked in the dark, brine grates in the floor and an abbess who still rings her bell.'},
-  termitecathedral:{color:'#e8a050',text:'A hollow clay spire among the Termite Cathedrals of the Amber Reach: ribbed galleries, vents that blow cold air, chambers of amber-lit resin with insects caught in it, and a Queen who has stopped moving and never stops laying.'}};
+  termitecathedral:{color:'#e8a050',text:'A hollow clay spire among the Termite Cathedrals of the Amber Reach: ribbed galleries, vents that blow cold air, chambers of amber-lit resin with insects caught in it, and a Queen who has stopped moving and never stops laying.'},
+  cenote:{color:'#7fe8ff',text:'A flooded sinkhole temple under the Emberwake Isles\' jungle: wet limestone stairs, star basins that hold a sky no one can see, jade offerings, geyser vents in the floor, and a masked priest who still counts the stars.'}};
 // what each mission calls its objective in each dungeon (docs/DUNGEON-THEMES.md section 3, "What every mission calls its objectives")
 const DG_BOARD_OBJ={
   hollowroots:{defense:'the Heartwood Knot',survival:'a sap-lamp',sabotage:'heartroots',siege:'seed shrines',hunt:'a runaway Shroomling',escort:'a hunter in a root cocoon'},
@@ -27,7 +28,8 @@ const DG_BOARD_OBJ={
   blackseam:{defense:'the winch house',survival:'a miner\'s lamp',sabotage:'the timber props',siege:'the winding gear',hunt:'a Mountain Goblin bolting through the drifts',escort:'a trapped surveyor'},
   sandglass:{defense:'the sun altar',survival:'a temple brazier',sabotage:'the glass kilns',siege:'the sun mirrors',hunt:'a Glass Wisp flitting through the halls',escort:'a lost glassblower'},
   gloamvault:{defense:'the drowned font',survival:'a votive candle',sabotage:'the sunken bells',siege:'the saints\' shrines',hunt:'a Grave Hound slipping between the tombs',escort:'a stranded lighthouse keeper'},
-  termitecathedral:{defense:'the royal cell\'s font',survival:'a resin lamp',sabotage:'the amber seals',siege:'the egg clusters',hunt:'a Locust slipping through the galleries',escort:'a lost Digger'}};
+  termitecathedral:{defense:'the royal cell\'s font',survival:'a resin lamp',sabotage:'the amber seals',siege:'the egg clusters',hunt:'a Locust slipping through the galleries',escort:'a lost Digger'},
+  cenote:{defense:'the star font',survival:'a star lamp',sabotage:'the jade seals',siege:'the star stones',hunt:'a Cenote Eel slipping through the flooded halls',escort:'a stranded diver'}};
 // one line for each of the seven missions (docs/DUNGEONS.md section 4); {o} is the dungeon's name for the objective
 const DG_BOARD_TEXT={
   purge:'Clear the rooms of everything that lives there, then face the boss in the round hall.',

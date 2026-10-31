@@ -9,7 +9,7 @@
    greyspine.js) and the Greyspine's borders with the forest and the Reach; river / redgate = the Sunscar's rock falls (gateHold, sunWallHold, sunCrestHold); neck = the Gloamhorn's borders (gateHold, gloamNeckHold,
    and the Glass River's); amber = the Ashbed Gate into Amber Reach (shared/savanna.js; opened by the Sand Wyrm, saved in gear.amber; it holds the whole border). Used by: game/player/movement.js (worldBounds), server/api.js (setPos), server/economy.js (barLandOpen for the testing teleport).
    Test: client-smoke (the hiker crosses the wadeable border river once the vale is open, and is held while it is locked), greyspine-smoke, sunscar-smoke, gloamhorn-smoke. Names: bar..., BAR_... */
-const BAR_NONE={east:0,north:0,west:0,river:0,neck:0,redgate:0,amber:0};
+const BAR_NONE={east:0,north:0,west:0,river:0,neck:0,redgate:0,amber:0,isles:0};
 // the border between lands a and b (atlas ids: home 0, vale 1, hoar 2, grey 3, sun 4, gloam 5, amber 6) is shut for this gear. The rock falls of the Sunscar and the neck pass are held by gateHold / sunWallHold / sunCrestHold /
 // gloamNeckHold (their own functions, barStep calls them); this table adds the borders they do not know.
 function barLocked(a,b,g){
@@ -30,6 +30,7 @@ function barLandOpen(l,g){
   if(l===4) return g.redgate>=1||g.river>=1;
   if(l===5) return g.neck>=1;
   if(l===6) return g.amber>=1;
+  if(l===7) return g.isles>=1;   // emberwake: the Isles are reached by the circles once Oldhorn has fallen
   return true;
 }
 // a step across a shut border is dropped; the part of it along the border is kept when that stays in the land you came from

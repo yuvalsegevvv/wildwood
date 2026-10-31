@@ -4,11 +4,11 @@
    wmapPaint() paints the atlas into a canvas (a land's colour, the shallows, lakes, borders) and returns it with its scale. Used by world-map.js. Test: client-smoke. */
 const WMAP_M=40, WMAP_W=Math.ceil((WX1-WX0)/2)+2*WMAP_M, WMAP_H=Math.ceil((WZ1-WZ0)/2)+2*WMAP_M;
 const wmapArt=(x,z)=>[(x-WX0)/2+WMAP_M,(z-WZ0)/2+WMAP_M], wmapWorld=(ax,ay)=>[(ax-WMAP_M)*2+WX0,(ay-WMAP_M)*2+WZ0];
-const WMAP_LAND_COL={home:[104,150,72],vale:[206,142,160],hoar:[196,214,226],grey:[132,134,128],sun:[214,182,112],gloam:[92,78,120],amber:[196,120,64]};
-const WMAP_LEVELS={home:'1–15',vale:'16–25',hoar:'22–30',grey:'26–32',sun:'28–36',gloam:'30–40',amber:'37–45'}, WMAP_NAMES={home:'Wildwood',vale:'Sakura Vale',hoar:'Hoarfrost Reach',grey:'The Greyspine',sun:'The Sunscar',gloam:'The Gloamhorn',amber:'Amber Reach'};
+const WMAP_LAND_COL={home:[104,150,72],vale:[206,142,160],hoar:[196,214,226],grey:[132,134,128],sun:[214,182,112],gloam:[92,78,120],amber:[196,120,64],isles:[78,150,126]};
+const WMAP_LEVELS={home:'1–15',vale:'16–25',hoar:'22–30',grey:'26–32',sun:'28–36',gloam:'30–40',amber:'37–45',isles:'42–50'}, WMAP_NAMES={home:'Wildwood',vale:'Sakura Vale',hoar:'Hoarfrost Reach',grey:'The Greyspine',sun:'The Sunscar',gloam:'The Gloamhorn',amber:'Amber Reach',isles:'Emberwake Isles'};
 const WMAP_BANNER=(()=>{ const out={}; for(const l in WMAP_NAMES){ const h=WA_HUBS[l], a=wmapArt(h[0],h[1]); out[l]={name:WMAP_NAMES[l],x:a[0],y:a[1]-34,levels:WMAP_LEVELS[l]}; } return out; })();
-const WMAP_TOWNS={home:VIL,vale:VIL2,hoar:VIL3,grey:VIL4,sun:VIL5,gloam:VIL6,amber:VIL7};
-const WMAP_BANKS=[[1480,-980,330,190],[-30,1215,760,120],[-1720,1000,250,260]].map(b=>{ const a=wmapArt(b[0],b[1]); return [a[0],a[1],b[2]/2,b[3]/2]; });   // fog on the open sea: [x, y, rx, ry] in art pixels (the corners of the known world, and the Emberwake Isles in the south)
+const WMAP_TOWNS={home:VIL,vale:VIL2,hoar:VIL3,grey:VIL4,sun:VIL5,gloam:VIL6,amber:VIL7,isles:VIL8};
+const WMAP_BANKS=[[1480,-980,330,190],[-30,1215,760,120],[-1720,1000,250,260]].map(b=>{ const a=wmapArt(b[0],b[1]); return [a[0],a[1],b[2]/2,b[3]/2]; });   // fog on the open sea: [x, y, rx, ry] in art pixels (the corners of the known world, and the sea south of the known lands)
 // the atlas as a picture: one canvas pixel is `res` metres (6 m, 12 m on a weak phone); returns {cv, res}
 function wmapPaint(res){
   const w=Math.ceil((WX1-WX0)/res), h=Math.ceil((WZ1-WZ0)/res), cv=document.createElement('canvas'); cv.width=w; cv.height=h;
