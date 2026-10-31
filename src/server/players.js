@@ -138,7 +138,7 @@ function inVillage(p){ return vNear(p.x,p.z,VR+12); }
 function warpP(p,to){
   if(p.dead||S.t-(p.warpT||-9)<2) return;
   const from=CIRCLES.find(C=>Math.hypot(p.x-C.V.tele.x,p.z-C.V.tele.z)<C.V.tele.r+1.5); if(!from) return;
-  if(!from.open(p.gear)){ toastTo(p.id,p.gear.east<1?'The circle is cold. Whatever it answers to lies beyond the eastern mountains.':from.id==='tallgrass'?'The circle hums but will not wake. Walk into Tallgrass through the Ashbed Gate first.':from.id==='coralhaven'||from.id==='zotchul'||from.id==='urkuwara'?'The circle hums but will not wake. The harbour-master sails once the Herd-Mother, Oldhorn, has fallen.':from.id==='wraithwick'?'The circle hums but will not wake. Walk into Wraithwick through the neck pass first.':from.id==='highmark'?'The circle hums but will not wake. Walk into Highmark through the glacier valley first.':from.id==='rimehold'?'The circle hums but will not wake. Walk into Rimehold through Frostgate Pass first.':'The circle hums but will not wake. Walk to Hanami on the far side of the bridge first.','bad'); return; }
+  if(!from.open(p.gear)){ toastTo(p.id,p.gear.east<1?'The circle is cold. Whatever it answers to lies beyond the eastern mountains.':from.id==='tallgrass'?'The circle hums but will not wake. Walk into Tallgrass through the Ashbed Gate first.':from.id==='coralhaven'?'The circle hums but will not wake. Cross the Tide Bridge (it opens when the Herd-Mother, Oldhorn, has fallen) and walk into Coralhaven first.':from.id==='wraithwick'?'The circle hums but will not wake. Walk into Wraithwick through the neck pass first.':from.id==='highmark'?'The circle hums but will not wake. Walk into Highmark through the glacier valley first.':from.id==='rimehold'?'The circle hums but will not wake. Walk into Rimehold through Frostgate Pass first.':'The circle hums but will not wake. Walk to Hanami on the far side of the bridge first.','bad'); return; }
   const dest=CIRCLES.find(C=>C.id===to)||(from.id==='home'?CIRCLES[1]:CIRCLES[0]);   // no destination given: home <-> Hanami
   if(dest===from) return;
   if(isGuestP(p)&&!guestLandOk(dest.V.x,dest.V.z)){ guestGateP(p,'travel'); return; }   // accounts: guests stay in the first three lands
@@ -172,11 +172,11 @@ function reachWraithwickP(p){ if(p.gear.gloam>=2||p.gear.neck<1||Math.hypot(p.x-
 // Amber Reach: the Ashbed Gate (gear.amber, opened by the Sand Wyrm) lets you in; walking into Tallgrass attunes its circle (gear.tall 2)
 function reachTallgrassP(p){ if(p.gear.tall>=2||p.gear.amber<1||Math.hypot(p.x-VIL7.x,p.z-VIL7.z)>VIL7.r+14) return; p.gear.tall=2; p.dirty=true; ev('tall',p.id,2);
   toastTo(p.id,'Welcome to Tallgrass! Its teleport circle is attuned to you now: the circles will take you between all seven villages.','good'); }
-// the Emberwake Isles: Oldhorn's fall (gear.isles 1) opens Coralhaven's circle to the other circles; walking into Coralhaven attunes it (gear.isles 2) and wakes the two waystations
+// the Emberwake Isles: Oldhorn's fall (gear.isles 1) opens the Tide Bridge on the Amber Reach's south cape; walking into Coralhaven attunes its circle (gear.isles 2), the isles' only one
 function openIslesP(p){ if(p.gear.isles>=1) return; p.gear.isles=1; p.dirty=true; ev('isles',p.id,1);
-  toastTo(p.id,'Far to the south a horn sounds across the water: the harbour-master of Coralhaven has seen the Herd-Mother fall and is sailing for you. The Emberwake Isles are open through the circles.','good'); }
+  toastTo(p.id,'Far to the south a horn sounds across the water: the barrier on the Tide Bridge, at the south cape of the Amber Reach, has been lifted. The Emberwake Isles lie beyond it.','good'); }
 function reachCoralhavenP(p){ if(p.gear.isles>=2||p.gear.isles<1||Math.hypot(p.x-VIL8.x,p.z-VIL8.z)>VIL8.r+14) return; p.gear.isles=2; p.dirty=true; ev('isles',p.id,2);
-  toastTo(p.id,'Welcome to Coralhaven! Its teleport circle is attuned to you now, and so are the waystations Zotchul and Urkuwara on the road east: the circles will take you between all eight villages.','good'); }
+  toastTo(p.id,'Welcome to Coralhaven! Its teleport circle is attuned to you now: the circles will take you between all eight villages.','good'); }
 function reachRimeholdP(p){ if(p.gear.north!==1||Math.hypot(p.x-VIL3.x,p.z-VIL3.z)>VIL3.r+14) return; p.gear.north=2; p.dirty=true; ev('north',p.id,2); mqActP(p,'rimehold');
   toastTo(p.id,'Welcome to Rimehold! Its teleport circle is attuned to you now: the circles will take you between all three villages.','good'); }
 // where you wake after being knocked out: the village of the land you are in, once you have been there

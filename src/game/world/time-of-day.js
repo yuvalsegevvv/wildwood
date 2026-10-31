@@ -27,7 +27,7 @@ function applyEnv(s){
     skySun.set(Math.cos(se)*Math.sin(sa), Math.sin(se), Math.cos(se)*Math.cos(sa)); skyMoon.set(Math.cos(me)*Math.sin(ma), Math.sin(me), Math.cos(me)*Math.cos(ma)); }
   sun.color.copy(s.sun); sun.intensity=s.sunI*(s.lk===undefined?1:s.lk);
   hemi.color.copy(s.hs); hemi.groundColor.copy(s.hg); hemi.intensity=s.hi;
-  scene.fog.color.copy(s.fog); scene.fog.far=s.far; renderer.setClearColor(s.fog);
+  scene.fog.color.copy(s.fog); scene.fog.far=s.dg?s.far:s.far*VIEW_K; renderer.setClearColor(s.fog);   // (VIEW_K: core/setup.js; a dungeon's sight is its own: its theme sets s.far)
   skyU.uTop.value.copy(s.sky); skyU.uFog.value.copy(s.fog); skyU.uHor.value.copy(s.hor);
   skyU.uBot.value.copy(s.hg); skyU.uSunCol.value.copy(s.sun); skyU.uCloud.value.copy(s.cloud); skyU.uNight.value=s.night;
   if(waterMat) waterMat.color.copy(wDay).lerp(wNight,s.night);

@@ -39,14 +39,14 @@ function interact(){
   else if(dgUseNear()) dgUseKey();   // dungeons: revive, use an objective, relight a lamp or leave by the portal (dungeon/hud.js)
 }
 // the teleport circles (one in each village): E / the talk button on one sends you to the other, once attuned (GEAR.east 2)
-function nearCircle(){ const V=caveMouthNear(P.x,P.z,16)?CAVE_MOUTH_V:ewWayNear(P.x,P.z,4)||vilAt(P.x,P.z);   // cave: the cave mouth's circle is not in a village; emberwake: nor are the waystations'
+function nearCircle(){ const V=caveMouthNear(P.x,P.z,16)?CAVE_MOUTH_V:vilAt(P.x,P.z);   // cave: the cave mouth's circle is not in a village
   return V.tele&&Math.hypot(P.x-V.tele.x,P.z-V.tele.z)<V.tele.r+0.6?V:null; }
 // the circle: once attuned, stepping onto it (or the talk key) opens the travel window (ui/travel.js) with every village; a cold circle just answers with what is missing
 function useCircle(){ const C=CIRCLES.find(c=>c.V===nearCircle()); if(C&&C.open(GEAR)){ openTravel(); UI_SFX.click(); } else { netSend({t:'warp'}); UI_SFX.click(); } }
 function circlePrompt(V){
   const C=CIRCLES.find(c=>c.V===V);
   if(C&&C.open(GEAR)) return (isTouch?'Tap Travel to choose where to go':'Press '+(kbName('talk')||'the talk key')+' to choose where to travel');
-  return V===VIL8||V.tele&&V.land==='Emberwake Isles'?(GEAR.isles>=1?'The circle hums, but it is not attuned: walk into Coralhaven first':'The circle hums, but it is not attuned: the harbour opens when Oldhorn falls'):V===VIL7?'The circle hums, but it is not attuned: walk into Tallgrass first':V===VIL6?'The circle hums, but it is not attuned: walk into Wraithwick first':V===VIL5?'The circle hums, but it is not attuned: walk into Glasswell first':V===VIL4?'The circle hums, but it is not attuned: walk into Highmark first':V===VIL3?'The circle hums, but it is not attuned: walk into Rimehold first':GEAR.east>=1?'The circle hums, but it is not attuned: walk to Hanami first':'An old teleport circle. It is cold';
+  return V===VIL8?(GEAR.isles>=1?'The circle hums, but it is not attuned: walk into Coralhaven first':'The circle hums, but it is not attuned: the Tide Bridge opens when Oldhorn falls'):V===VIL7?'The circle hums, but it is not attuned: walk into Tallgrass first':V===VIL6?'The circle hums, but it is not attuned: walk into Wraithwick first':V===VIL5?'The circle hums, but it is not attuned: walk into Glasswell first':V===VIL4?'The circle hums, but it is not attuned: walk into Highmark first':V===VIL3?'The circle hums, but it is not attuned: walk into Rimehold first':GEAR.east>=1?'The circle hums, but it is not attuned: walk to Hanami first':'An old teleport circle. It is cold';
 }
 // stepping onto an attuned circle opens the travel window by itself (once per visit: step off and on again, or press the talk key, to open it again)
 let circleWas=null;

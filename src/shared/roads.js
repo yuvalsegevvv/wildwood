@@ -58,7 +58,7 @@ function rdWet(x,z){
   const t=waWater(x,z); return t===WA_RIVER?1:t===WA_LAKE?2:0;
 }
 // the known causeways, by road (the first on that road gets the name)
-const CAUSEWAY_NAMES={'The Redgate Road':'The Drowned Road','The Proving Road':'The Proving Bridge'};
+const CAUSEWAY_NAMES={'The Redgate Road':'The Drowned Road','The Proving Road':'The Proving Bridge','The Tide Road':'The Tide Bridge','The Reef Road':'The Reef Bridge','The Strait Road':'The Strait Bridge','The Ember Road':'The Ember Bridge'};   // (the last four: the Emberwake Isles' bridges, shared/emberwake.js EW_BRIDGE_ROADS)
 { const named=new Set();
   for(const rd of ROADS){
     // the road as points 2 m apart: x, z, the metres from its start, what is wet there

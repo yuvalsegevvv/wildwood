@@ -66,6 +66,12 @@ if(!only){
       const colour=L=>{ const r=C.buildCharacter(L,{q:0.4}); C.weaponsOn(r,'warrior',1); const t=C.tris(r); let h=0; for(let i=0;i<t.length;i++) h=(h+t[i]*((i%83)+1))%1e9; return Math.round(h*1000); };
       if(colour(W)===colour(Object.assign({},W,{tintWeapon:0x8a2f2f}))) bad=bad||(id+' weapon tint changes nothing'); }
     ok('every slot of every outfit can be recoloured (body slots, the hair and the eyes, the weapon), also one piece alone on plain clothes',!bad,bad||'');
+    // bare skin stays the wearer's skin when the top or the bottom is recoloured (the tint is for the piece, never for the body showing through it: ofPaint skips the colour skinPaint wrote)
+    { let bad2=null; const skinCount=L=>{ const r=C.buildCharacter(L,{q:0.7}), S=r.sliders, sk=new THREE.Color(L.skin).lerp(new THREE.Color(S.undertone>0?0xe39a5c:0xb8a0c8),0.16*Math.abs(S.undertone)); let n=0;
+        r.root.traverse(o=>{ if(!o.isMesh||!o.geometry.attributes.color) return; const a=o.geometry.attributes.color; for(let i=0;i<a.count;i++) if(Math.abs(a.getX(i)-sk.r)+Math.abs(a.getY(i)-sk.g)+Math.abs(a.getZ(i)-sk.b)<0.004) n++; }); return n; };
+      for(const id of ids){ const sex=C.CHAR_MODELS[id].sexes[0], W=Object.assign(C.ofWear(look(sex),id),{skin:0xc08060}), n0=skinCount(W);
+        for(const sl of ['top','bottom']){ const n1=skinCount(Object.assign({},W,{[TINT[sl]]:0x8a2f9f})); if(n1<n0*0.98) bad2=bad2||(id+' '+sl+' tint turns bare skin: '+n0+' -> '+n1+' skin vertices'); } }
+      ok('recolouring an outfit top or bottom leaves bare skin the wearer\'s skin colour (no outfit)',!bad2,bad2||''); }
     const W=C.ofWear(look('female'),'marigold'), base=sum(W);
     ok('a tint of -1, a missing one and nonsense ("x", NaN, -5, 1e9) are the designed colours',sum(Object.assign({},W,{tintTop:-1}))===base&&sum(Object.assign({},W,{tintTop:'x',tintBottom:NaN,tintShoes:-5,tintHat:1e9}))===base);
     ok('a tint on a slot that wears no outfit piece changes nothing (the base garments use topColor and the others)',sum(look('male',{tintTop:0x8a2f2f,tintHat:0x2f4a6b,tintWeapon:0x8a2f2f}))===sum(look('male')));

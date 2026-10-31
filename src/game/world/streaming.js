@@ -2,7 +2,7 @@
 /* the streaming scheduler: does a little work each frame, nearest areas first */
 const Stream={ job:null, terrainDone:false, pending:[], done:0, needed:null, failed:false, lazy:0 };   // lazy: terrain tiles still waiting for their colours (generation-setup.js)
 for(let i=0;i<NCH;i++) Stream.pending.push(i);
-const NEAR_R=55, FAR_R=320;
+const NEAR_R=55, FAR_R=Math.round(320*VIEW_K);   // (the chunks grown ahead of the player follow the view distance, core/setup.js VIEW_K)
 function streamPump(budgetMs){
   if(Stream.failed) return;
   if(dgIn()||caveIn()) return;   // cave: (a floor too)   // dungeons: no chunks grow while you are in a run (dungeon/run.js)

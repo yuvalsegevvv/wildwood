@@ -32,7 +32,7 @@ function dgLookLeave(){
 function dgLookEnv(s){
   const L=DG_LOOK; if(!DG_RUN||!L.on) return;
   s.fog.copy(L.fog); s.sky.copy(L.fog); s.hor.copy(L.fog); s.cloud.copy(L.fog); s.hs.copy(L.hs); s.hg.copy(L.hg); s.sun.copy(L.sun);
-  s.hi=L.hi; s.sunI=L.sunI; s.night=0; s.elev=78; s.azim=40; s.sE=78; s.sA=40; s.mE=-90; s.lk=1; s.far=L.farNow;
+  s.hi=L.hi; s.sunI=L.sunI; s.night=0; s.elev=78; s.azim=40; s.sE=78; s.sA=40; s.mE=-90; s.lk=1; s.far=L.farNow; s.dg=true;   // dg: time-of-day.js applyEnv keeps this sight (no VIEW_K)
   scene.fog.near=L.near;
 }
 function dgLookTick(dt){

@@ -113,7 +113,8 @@ function ofTintGeos(X,slot,geos){ const f=X.kit.tr[slot]; if(f) for(const g of g
 // the same for the geometries a hook pushed onto a list (the hair and hat items add to the head's own list)
 function ofTintFrom(X,slot,list,from){ const f=X.kit.tr[slot]; if(f) for(let i=from;i<list.length;i++) ofTintGeo(list[i],f); }
 // a kit's body paint for a slot, tinted
-function ofPaint(X,slot,part,c,x,y,z,sd){ X.kit.sl[slot].paint(part,c,x,y,z,sd); const f=X.kit.tr[slot]; if(f) f(c); }
+// (bare skin the kit painted with skinPaint stays the wearer's own colour: the tint recolours the piece, never the body showing through it)
+function ofPaint(X,slot,part,c,x,y,z,sd){ X.kit.sl[slot].paint(part,c,x,y,z,sd); const f=X.kit.tr[slot]; if(f&&Math.abs(c.r-X.skin.r)+Math.abs(c.g-X.skin.g)+Math.abs(c.b-X.skin.b)>2e-3) f(c); }
 // the weapon dressing of a look: the kit's, with the tint for weaponsOn to lay over the weapon's meshes (and the mage's orb colour, which is not a vertex colour)
 function ofDress(X){ const k=X.kit.sl.weapon; if(!k||!k.dress) return null; const f=X.kit.tr.weapon; if(!f) return k.dress;
   const o=Object.assign({},k.dress,{tint:f}); if(typeof o.glow==='number'){ const c=new THREE.Color(o.glow); f(c); o.glow=c.getHex(); } return o; }

@@ -93,7 +93,10 @@ const msGrid=Date.now()-t0;
 for(let j=0;j<NZG;j++) for(let i=0;i<NXG;i++){ const x=X.WX0+i*STEP, z=X.WZ0+j*STEP; SURF[j*NXG+i]=(!X.waIsSea(x,z)&&X.waWaterDist(x,z)<0)?X.waWaterSurf(x,z):0; }
 ok('the ground is finite everywhere and the sea floor is flat at the edge of the world',HG.every(Number.isFinite)&&H(X.WX0+4,X.WZ0+4)===H(X.WX1-4,X.WZ1-4),(HG.length/1000|0)+'k samples in '+msGrid+' ms');
 const idx=(x,z)=>Math.round((z-X.WZ0)/STEP)*NXG+Math.round((x-X.WX0)/STEP);
-const walkable=k=>HG[k]>X.WATER-1.0&&SURF[k]-HG[k]<1.3;   // (wading to the knees on the coast, and no deeper than the knees in a river)
+// the four bridge roads of the Emberwake Isles (shared/roads.js lays a deck over the sea on them): the cells along them count as walkable and joined
+const BRIDGE_ROADS=['Tide','Reef','Strait','Ember'], BR=new Uint8Array(NXG*NZG);
+for(const R of X.WA_ROADS) if(BRIDGE_ROADS.includes(R.name)) for(let q=1;q<R.pts.length;q++){ const a=R.pts[q-1], b=R.pts[q], L=Math.hypot(b[0]-a[0],b[1]-a[1]), m=Math.max(1,Math.ceil(L/2)); for(let s=0;s<=m;s++){ const x=a[0]+(b[0]-a[0])*s/m, z=a[1]+(b[1]-a[1])*s/m; BR[idx(x,z)]=1; } }
+const walkable=k=>BR[k]||(HG[k]>X.WATER-1.0&&SURF[k]-HG[k]<1.3);   // (wading to the knees on the coast, and no deeper than the knees in a river)
 // zone interiors: how much of the ground is under the slope limit, by land
 { const tot={},ok_={}; let nz=0;
   for(let j=2;j<NZG-2;j+=2) for(let i=2;i<NXG-2;i+=2){ const x=X.WX0+i*STEP, z=X.WZ0+j*STEP, zid=X.waZoneId(x,z); if(zid<0) continue; if(X.waBorderDist(x,z)<30||X.waCoast(x,z)<40||X.waWaterDist(x,z)<20||X.waLandBorderDist(x,z)<90) continue;
@@ -110,8 +113,8 @@ const walkable=k=>HG[k]>X.WATER-1.0&&SURF[k]-HG[k]<1.3;   // (wading to the knee
 // the roads. Not counted: a road inside a cave site (the caves carve their own floor; that task owns them and their roads) and inside Glasswell's rim (the Bowl's three gates stand at the plan's bearings, docs/glasswell-plan.py; an atlas road reaches the city by its gate, whose crack is the only way through the rim)
 const skipRoad=(x,z)=>X.cvNear(x,z,12)||Math.hypot(x-X.SUN_CITY.x,z-X.SUN_CITY.z)<X.SUN_CITY.r+75;
 { let worst=0, n=0, steep=0, wet=0, wn=0, at=null;
-  for(const R of X.WA_ROADS){ let prev=null; for(let q=1;q<R.pts.length;q++){ const a=R.pts[q-1], b=R.pts[q], L=Math.hypot(b[0]-a[0],b[1]-a[1]), m=Math.max(1,Math.ceil(L/STEP)); for(let s=0;s<=m;s++){ const x=a[0]+(b[0]-a[0])*s/m, z=a[1]+(b[1]-a[1])*s/m, h=H(x,z), sw=(!X.waIsSea(x,z)&&X.waWaterDist(x,z)<0)?X.waWaterSurf(x,z):0;
-        if(prev!==null&&!skipRoad(x,z)){ const sl=Math.abs(h-prev)/(L/m); n++; if(sl>worst){ worst=sl; at=R.name; } if(sl>SLOPE_MAX) steep++; } prev=h; wn++; if(sw-h>1.3||h<X.WATER-1.0) wet++; } prev=null; } }
+  for(const R of X.WA_ROADS){ const deck=BRIDGE_ROADS.includes(R.name); let prev=null; for(let q=1;q<R.pts.length;q++){ const a=R.pts[q-1], b=R.pts[q], L=Math.hypot(b[0]-a[0],b[1]-a[1]), m=Math.max(1,Math.ceil(L/STEP)); for(let s=0;s<=m;s++){ const x=a[0]+(b[0]-a[0])*s/m, z=a[1]+(b[1]-a[1])*s/m, h=H(x,z), sw=(!X.waIsSea(x,z)&&X.waWaterDist(x,z)<0)?X.waWaterSurf(x,z):0;
+        if(prev!==null&&!skipRoad(x,z)&&!deck){ const sl=Math.abs(h-prev)/(L/m); n++; if(sl>worst){ worst=sl; at=R.name; } if(sl>SLOPE_MAX) steep++; } prev=h; wn++; if(!deck&&(sw-h>1.3||h<X.WATER-1.0)) wet++; } prev=null; } }   // (a deck over the sea has no ground to climb and no water to wade)
   ok('every road is walkable end to end: no step of a road climbs more than the slope limit',steep===0,'steepest '+worst.toFixed(2)+' on '+at+', '+n+' steps');
   ok('no road runs through deep water (a river is a ford; the sea and the lakes are not crossed)',wet<=wn*0.002,wet+' of '+wn+' points'); }
 // reachability: from each village, over the whole map (the gates are open), climbing no more than the slope limit; wading to the knees
@@ -119,7 +122,7 @@ function flood(sx,sz){
   const seen=new Uint8Array(NXG*NZG), q=new Int32Array(NXG*NZG); let h=0,t=0; const s0=idx(sx,sz); seen[s0]=1; q[t++]=s0;
   while(h<t){ const k=q[h++], i=k%NXG, j=(k-i)/NXG;
     for(let dj=-1;dj<=1;dj++) for(let di=-1;di<=1;di++){ if(!di&&!dj) continue; const ii=i+di, jj=j+dj; if(ii<0||jj<0||ii>=NXG||jj>=NZG) continue; const n=jj*NXG+ii; if(seen[n]||!walkable(n)) continue;
-      const d=(di&&dj)?STEP*1.414:STEP; if((HG[n]-HG[k])/d>SLOPE_MAX) continue; seen[n]=1; q[t++]=n; } }
+      const d=(di&&dj)?STEP*1.414:STEP; if(!(BR[n]&&BR[k])&&(HG[n]-HG[k])/d>SLOPE_MAX) continue; seen[n]=1; q[t++]=n; } }   // (a deck is level: its ends meet the shore)
   return seen;
 }
 { const bad=[], cover={}; const reach={}; for(const l of ALL_LANDS) reach[l]=flood(X.WA_HUBS[l][0],X.WA_HUBS[l][1]);

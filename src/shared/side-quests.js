@@ -249,7 +249,7 @@ const SQ=[
     {id:'sw1',title:'Fouled nets',from:'lani',to:'lani',
      offer:['The nets come up full of black sand and nothing else. The crab-brutes have moved into the shallows, and the raiders are taking whatever the crabs leave.','Clear the Black Sand Landing for us, please. Then speak to Eleaka: she has been counting stars again and does not like her answer.'],
      parts:[{kill:'crabbrute',n:6,text:'Defeat crab-brutes at the Black Sand Landing'},{kill:'reefraider',n:5,text:'Drive off the reef raiders'}],
-     done:['Thank you. The beach is quiet, and quiet is a start.','Eleaka is on the jetty. She is always on the jetty.']},
+     done:['Thank you. The beach is quiet, and quiet is a start.','Eleaka is at the village gate. She is always at the gate.']},
     {id:'sw2',title:'The stars that went out',from:'eleaka',to:'eleaka',
      offer:['Every night I mark the stars above the eastern edge of the sea. Every night there are fewer. A navigator who says so aloud is called a poor navigator.','Go to the Lagoon Shallows after dark and look east. Clear the rays and the shell-beetles first, or you will look at the sea from underneath it.'],
      parts:[{kill:'lagoonray',n:5,text:'Defeat lagoon rays'},{kill:'coralbeetle',n:5,text:'Defeat coral beetles'},
@@ -278,7 +278,7 @@ const SQ=[
     {id:'st3',title:'Tuila',from:null,to:'kekoa',
      bossLine:'Tuila sinks into her own tidepool, and the strait lets go of a breath it has been holding for three days. Far out, the posts of the old causeway stand dry to the knee.',
      parts:[{boss:'tuila',text:'Defeat Tuila, the Tide-Caller, at her tidepool'}],
-     done:['The tide turned! I felt it in my feet before I saw it. The whole jetty groaned.','She counted divers, he said, back then. Not to drown them, I think. To keep them. There is a difference, and I will not say which side I would have been on.']}
+     done:['The tide turned! I felt it in my feet before I saw it. The whole bridge groaned.','She counted divers, he said, back then. Not to drown them, I think. To keep them. There is a difference, and I will not say which side I would have been on.']}
   ]},
   {id:'terraces',name:'The Terrace Road',land:'isles',lv:46,after:'strait',res:['rimeore','frostwood','snowmoss'],cos:'a:condorwind',steps:[
     {id:'tr1',title:'The road east',from:'makoa',to:'makoa',
