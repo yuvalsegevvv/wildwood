@@ -15,7 +15,7 @@ const grab=()=>{ for(const m of (inbox.a||[])) if(m.t==='snap'&&m.ev) evs.push(.
 const dev=(cmd,v)=>{ W.receive('a',{t:'dev',cmd,v}); tick(1); };
 
 // ---- the land ----
-ok('the world is the atlas\'s canvas (x -1900..1650, z -1120..1180) and Rimehold stands on the Reach\'s hub, Frostgate Pass at the vale | Reach gate',x.WZ0===-1120&&x.WZ1===1180&&x.WX1===1650&&Math.hypot(x.VIL3.x-x.WA_HUBS.hoar[0],x.VIL3.z-x.WA_HUBS.hoar[1])<0.5&&x.PASS.x===x.WA_GATES.find(g=>g.b==='hoar'&&g.a==='vale').x&&x.waLand(x.PASS.x,x.PASS.ice)!==null);
+ok('the world is the atlas\'s canvas (x -1900..1650, z -1120..2100) and Rimehold stands on the Reach\'s hub, Frostgate Pass at the vale | Reach gate',x.WZ0===-1120&&x.WZ1===2100&&x.WX1===1650&&Math.hypot(x.VIL3.x-x.WA_HUBS.hoar[0],x.VIL3.z-x.WA_HUBS.hoar[1])<0.5&&x.PASS.x===x.WA_GATES.find(g=>g.b==='hoar'&&g.a==='vale').x&&x.waLand(x.PASS.x,x.PASS.ice)!==null);
 { const V=x.VIL3, hs=[]; for(let a=0;a<8;a++) hs.push(x.rawHeight(V.x+Math.sin(a)*20,V.z+Math.cos(a)*20));
   ok('Rimehold stands on the plateau (about 55 m up), flat',V.h>45&&Math.max(...hs)-Math.min(...hs)<2,'h '+V.h.toFixed(1)+', spread '+(Math.max(...hs)-Math.min(...hs)).toFixed(2)); }
 { const P=x.PASS; let worst=0, prev=x.rawHeight(P.x,P.z0); for(let z=P.z0-6;z>=P.z1;z-=6){ const h=x.rawHeight(P.x,z); worst=Math.max(worst,Math.abs(h-prev)/6); prev=h; }

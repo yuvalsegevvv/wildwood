@@ -28,7 +28,7 @@ VIL2.name='Hanami'; VIL.name='the village';
 // on (or m metres from) any village's teleport circle
 function nearTele(x,z,m){ const V=vilAt(x,z); return Math.hypot(x-V.tele.x,z-V.tele.z)<V.tele.r+m; }
 // the village whose land a point is in (every "near the village" test uses this one): the home forest, the vale, the Hoarfrost Reach
-function vilAt(x,z){ const l=waLandId(x,z); return l===0?VIL:l===1?VIL2:l===2?VIL3:l===3?VIL4:l===5?VIL6:l===6?VIL7:VIL5; }   // the village of the point's land (the atlas): VIL5, Glasswell, is in shared/glasswell.js
+function vilAt(x,z){ const l=waLandId(x,z); return l===0?VIL:l===1?VIL2:l===2?VIL3:l===3?VIL4:l===5?VIL6:l===6?VIL7:l===7?VIL:VIL5; }   // (emberwake: the isles have no village of their own yet, Coralhaven is VIL8 in a later step: the home village stands in)   // the village of the point's land (the atlas): VIL5, Glasswell, is in shared/glasswell.js
 
 /* ---- zones 16-25: the atlas's cells of the vale (zones.js: zoneOfAtlas). Zone 16 is Hanami's own (Petal Meadow round the village). */
 const VALE_ZONE_NAMES={16:'Petal Meadow',17:'Kodama Wood',18:'Fox Hills',19:'Bamboo Sea',20:'Ghostlight Marsh',21:'Oni Crags',22:'Jade Falls',23:'Tengu Peaks',24:'Warlord Ruins',25:'Thunder Grove',boss25:'Foxfire Hollow'};

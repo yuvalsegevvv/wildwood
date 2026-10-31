@@ -10,12 +10,12 @@ const X=loadShared(['rawHeight','baseHeight','landAt','inVale','inHoar','inGrey'
 let fails=0; const ok=(n,c,d)=>{ if(!c) fails++; console.log((c?'PASS ':'FAIL ')+n+(d?'  ('+d+')':'')); };
 const verbose=process.argv.includes('--verbose');
 const H=X.rawHeight, SLOPE_MAX=1.2;   // (movement.js: a step climbing more than 1.2 m a metre is turned or dropped)
-const LANDS=['home','vale','hoar','grey','sun','gloam','amber'];
+const LANDS=['home','vale','hoar','grey','sun','gloam','amber'], ALL_LANDS=LANDS.concat('isles');   // (the seven lands of the mainland; the Emberwake Isles are the eighth, on the sea strip south of it: no way on foot from the mainland, the boats come later)
 
 // ---- the frame and the baked data
-ok('the world frame is the atlas canvas (x -1900..1650, z -1120..1180)',X.WX0===-1900&&X.WX1===1650&&X.WZ0===-1120&&X.WZ1===1180);
+ok('the world frame is the atlas canvas (x -1900..1650, z -1120..2100: the old canvas and the Emberwake Isles strip)',X.WX0===-1900&&X.WX1===1650&&X.WZ0===-1120&&X.WZ1===2100);
 { const sz=fs.statSync(SRC+'/shared/world-atlas-data.js').size; ok('the baked file stays under 600 KB',sz<600*1024,Math.round(sz/1024)+' KB'); }
-ok('seven lands, seven gates, seven hubs, 73 zones (Amber Reach, the seventh land, has nine: 37..45)',X.WA_ANCHORS.lands.length===7&&X.WA_GATES.length===7&&Object.keys(X.WA_HUBS).length===7&&X.WA_ZONES.length===73);
+ok('eight lands, seven gates, eight hubs, 80 zones (Amber Reach has nine: 37..45; the Emberwake Isles seven: 42..48)',X.WA_ANCHORS.lands.length===8&&X.WA_GATES.length===7&&Object.keys(X.WA_HUBS).length===8&&X.WA_ZONES.length===80);
 // ---- the land tests are total and keep their meanings
 { let bad=[], n=0; const cnt={};
   for(let z=X.WZ0;z<=X.WZ1;z+=25) for(let x=X.WX0;x<=X.WX1;x+=25){ n++;
@@ -25,14 +25,14 @@ ok('seven lands, seven gates, seven hubs, 73 zones (Amber Reach, the seventh lan
     if(X.inGloam(x,z)&&!X.inGrey(x,z)) bad.push('gloam not grey '+x+','+z);
     if(X.inAmber(x,z)&&!X.inSun(x,z)) bad.push('amber not sun '+x+','+z);
     if(flags.filter(Boolean).length>(X.inHoar(x,z)||X.inGloam(x,z)?2:1)) bad.push('two lands '+x+','+z);
-    const exp=X.inGloam(x,z)?'gloam':X.inAmber(x,z)?'amber':X.inHoar(x,z)?'hoar':X.inVale(x,z)?'vale':X.inGrey(x,z)?'grey':X.inSun(x,z)?'sun':'home';
+    const exp=X.waLandId(x,z)===7?'isles':X.inGloam(x,z)?'gloam':X.inAmber(x,z)?'amber':X.inHoar(x,z)?'hoar':X.inVale(x,z)?'vale':X.inGrey(x,z)?'grey':X.inSun(x,z)?'sun':'home';
     if(exp!==l) bad.push('landAt '+l+' vs '+exp+' at '+x+','+z);
-    const v=X.vilAt(x,z), want={home:X.VIL,vale:X.VIL2,hoar:X.VIL3,grey:X.VIL4,sun:X.VIL5,gloam:X.VIL6,amber:X.VIL7}[l];   // (amber: Tallgrass)
+    const v=X.vilAt(x,z), want={home:X.VIL,vale:X.VIL2,hoar:X.VIL3,grey:X.VIL4,sun:X.VIL5,gloam:X.VIL6,amber:X.VIL7,isles:X.VIL}[l];   // (amber: Tallgrass)
     if(v!==want) bad.push('vilAt '+l+' '+x+','+z);
-    const w=X.waLand(x,z); if(w!==null&&w!=='amber'&&w!==l) bad.push('waLand '+w+' vs landAt '+l);
+    const w=X.waLand(x,z); if(w!==null&&w!=='amber'&&w!=='isles'&&w!==l) bad.push('waLand '+w+' vs landAt '+l);
   }
   ok('landAt / inVale / inHoar / inGrey / inGloam / inSun / vilAt agree at every point of the rectangle and keep their old meanings (hoar is inside vale, gloam inside grey)',bad.length===0,bad.slice(0,3).join('; '));
-  ok('all seven lands exist, each over 0.5% of the rectangle',LANDS.every(k=>(cnt[k]||0)/n>0.005),JSON.stringify(cnt));
+  ok('all eight lands exist, each over 0.5% of the rectangle',ALL_LANDS.every(k=>(cnt[k]||0)/n>0.005),JSON.stringify(cnt));
 }
 { let bad=0,n=0; for(let z=X.WZ0+50;z<X.WZ1;z+=40) for(let x=X.WX0+50;x<X.WX1;x+=40){ n++; const sea=X.waIsSea(x,z), c=X.waCoast(x,z); if(sea!==(c<=1.5)&&Math.abs(c)>16) bad++; }
   ok('the sea flag and the coast distance agree (sea is where the coast distance is negative)',bad===0,bad+' of '+n); }
@@ -98,8 +98,8 @@ const walkable=k=>HG[k]>X.WATER-1.0&&SURF[k]-HG[k]<1.3;   // (wading to the knee
 { const tot={},ok_={}; let nz=0;
   for(let j=2;j<NZG-2;j+=2) for(let i=2;i<NXG-2;i+=2){ const x=X.WX0+i*STEP, z=X.WZ0+j*STEP, zid=X.waZoneId(x,z); if(zid<0) continue; if(X.waBorderDist(x,z)<30||X.waCoast(x,z)<40||X.waWaterDist(x,z)<20||X.waLandBorderDist(x,z)<90) continue;
     const k=j*NXG+i, s=Math.max(Math.abs(HG[k+1]-HG[k-1]),Math.abs(HG[k+NXG]-HG[k-NXG]))/(2*STEP); const l=X.waLand(x,z); tot[l]=(tot[l]||0)+1; if(s<=SLOPE_MAX) ok_[l]=(ok_[l]||0)+1; }
-  const share=Object.fromEntries(LANDS.map(l=>[l,Math.round(1000*(ok_[l]||0)/(tot[l]||1))/10]));
-  ok('inside the zones the ground stays grind-friendly: 85%+ of every land under the slope limit',LANDS.every(l=>share[l]>=85),JSON.stringify(share)); }
+  const share=Object.fromEntries(ALL_LANDS.map(l=>[l,Math.round(1000*(ok_[l]||0)/(tot[l]||1))/10]));
+  ok('inside the zones the ground stays grind-friendly: 85%+ of every land under the slope limit',ALL_LANDS.every(l=>share[l]>=85),JSON.stringify(share)); }
 // borders: no cliff lines
 { const cnt={zone:[0,0],land:[0,0]}; let straight=0;
   for(let j=2;j<NZG-2;j++) for(let i=2;i<NXG-2;i++){ const x=X.WX0+i*STEP, z=X.WZ0+j*STEP; const bd=X.waBorderDist(x,z), ld=X.waLandBorderDist(x,z); if(bd>5&&ld>5) continue; if(X.waCoast(x,z)<30||X.waWaterDist(x,z)<10) continue;
@@ -122,13 +122,13 @@ function flood(sx,sz){
       const d=(di&&dj)?STEP*1.414:STEP; if((HG[n]-HG[k])/d>SLOPE_MAX) continue; seen[n]=1; q[t++]=n; } }
   return seen;
 }
-{ const bad=[], cover={}; const reach={}; for(const l of LANDS) reach[l]=flood(X.WA_HUBS[l][0],X.WA_HUBS[l][1]);
+{ const bad=[], cover={}; const reach={}; for(const l of ALL_LANDS) reach[l]=flood(X.WA_HUBS[l][0],X.WA_HUBS[l][1]);
   for(const z of X.WA_ZONES){ const fl=reach[z.land]; const cells=[]; for(let j=0;j<NZG;j+=2) for(let i=0;i<NXG;i+=2){ const x=X.WX0+i*STEP, y=X.WZ0+j*STEP; if(X.waZoneId(x,y)===z.id&&X.waCoast(x,y)>25&&X.waWaterDist(x,y)>8) cells.push(j*NXG+i); }
     if(!cells.length){ bad.push(z.land+' '+z.key+' has no ground'); continue; } let got=0; for(const k of cells) if(fl[k]) got++; const share=got/cells.length; cover[z.land+z.key]=share;
     if(!fl[idx(z.x,z.y===undefined?z.z:z.z)]&&!cells.some(k=>fl[k])) bad.push(z.land+' '+z.key+' unreachable'); else if(share<0.85) bad.push(z.land+' '+z.key+' only '+Math.round(share*100)+'% reachable'); }
   // the villages reach each other (the gates are open)
   for(const l of LANDS) for(const m of LANDS) if(!reach[l][idx(X.WA_HUBS[m][0],X.WA_HUBS[m][1])]) bad.push(l+' village cannot walk to '+m);
-  ok('every one of the 73 zones is reachable on foot from its village (85%+ of its ground), and every village from every other, with the gates open',bad.length===0,bad.slice(0,5).join('; ')+(bad.length>5?' ... '+bad.length:'')); }
+  ok('every one of the 80 zones is reachable on foot from its village (85%+ of its ground), and every village from every other, with the gates open',bad.length===0,bad.slice(0,5).join('; ')+(bad.length>5?' ... '+bad.length:'')); }
 // speed (a budget, not a benchmark: the old ground cost about 4 us a call)
 { let s=0, t=process.hrtime.bigint(); const N=200000; let n=0;
   for(let i=0;i<N;i++){ const x=X.WX0+((i*7919)%3550), z=X.WZ0+((i*104729)%2300); s+=H(x,z); n++; }

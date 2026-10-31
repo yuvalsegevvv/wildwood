@@ -13,7 +13,7 @@ const HZ0=-HALF;
    between that wall and Frostgate Pass. The world's rectangle grew west to hold the Greyspine's far end (WX0); the forest's own west edge, the Sunwall, stays at HX0, and beyond it, south
    of the Greyspine, lies the unbuilt Sunscar's plateau (the Sunwall's top goes on: homeHeight). The Reach's north-east corner (it ran 330 m east of the vale) is sea now. */
 const GDX=-580;   // (the old frame: the Greyspine was moved this far west)
-/* THE WORLD FRAME is the atlas's canvas (shared/world-atlas.js, docs/world-atlas.py): x -1900..1650, z -1120..1180. Every constant above and below this line that is not WX0..WZ1 is the OLD frame,
+/* THE WORLD FRAME is the atlas's canvas (shared/world-atlas.js, docs/world-atlas.py): x -1900..1650, z -1120..2100. Every constant above and below this line that is not WX0..WZ1 is the OLD frame,
    kept (HALF, HZ0, GDX, RDX, GLX, EAST_W, HX0, GW0, GXJ, VALE_E, GREY_N, borderX / borderXN / borderZ ...) only because the lands' content modules (villages, zones, arenas, doors, gates) are still placed in it
    until they are re-pointed to the atlas's anchors; the lands, the coast and the ground are the atlas's (landAt, inVale..., coastDist, baseHeight below). */
 const HX0=-HALF, GW0=HX0+GDX, WX0=WA_META.x0, WX1=WA_META.x1, WZ0=WA_META.z0, WZ1=WA_META.z1, WW=WX1-WX0, WD=WZ1-WZ0;
@@ -71,6 +71,7 @@ const inHoar=(x,z)=>waLandId(x,z)===2;   // the Hoarfrost Reach
 const inGrey=(x,z)=>{ const l=waLandId(x,z); return l===3||l===5; };   // the Greyspine and the Gloamhorn
 const inGloam=(x,z)=>waLandId(x,z)===5;   // the Gloamhorn, the sixth land (check it BEFORE inGrey, which is true there too)
 const inSun=(x,z)=>{ const l=waLandId(x,z); return l===4||l===6; };   // the Sunscar, the fifth land (and Amber Reach until the code of the Reach asks inAmber first)
+const inIsles=(x,z)=>waLandId(x,z)===7;   // emberwake: the Emberwake Isles, the eighth land (shared/emberwake.js): the strip of sea and islands south of the old canvas
 const inAmber=(x,z)=>waLandId(x,z)===6;   // savanna: Amber Reach, the seventh land (shared/savanna.js; check it BEFORE inSun, which is true there too)
 function baseHeight(x,z){ return pvpIsleCut(x,z,waGround(x,z)); }   // (pvp: the Proving Isle's moat and island over the atlas's ground)   // the atlas's ground (shared/world-atlas-ground.js); baseHeightRaw below is the old frame's ground, kept for the content modules that still read it (the Greyfall's fall profile)
 // lakes of the home forest and the vale: the atlas's (WA_LAKES; the Reach's frozen lakes are FROST_LAKES): Mistmere in the home forest's west (zone 10), the vale's Mirror Pond (zone 20, south) and Crane Lake (zone 22, east)

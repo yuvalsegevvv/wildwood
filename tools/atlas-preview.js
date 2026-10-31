@@ -19,7 +19,7 @@ for(let j=0;j<H;j++) for(let i=0;i<W;i++){ const x=rx0+(i+0.5)*step, z=rz0+(j+0.
   land[k]=S.waLandId(x,z); zone[k]=S.waZoneId(x,z); sea[k]=S.waIsSea(x,z)?1:0; wat[k]=sea[k]?0:S.waWater(x,z); }
 const stops=[[-30,.10,.22,.40],[-0.01,.20,.42,.62],[0,.80,.76,.58],[4,.50,.66,.36],[25,.42,.58,.30],[50,.62,.62,.40],[90,.62,.52,.38],[140,.55,.48,.44],[190,.80,.78,.78],[240,.97,.97,.98]];
 const tint=h=>{ if(h<=stops[0][0]) return stops[0].slice(1); for(let i=1;i<stops.length;i++) if(h<=stops[i][0]){ const a=stops[i-1], b=stops[i], t=(h-a[0])/(b[0]-a[0]); return [a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t,a[3]+(b[3]-a[3])*t]; } return stops[stops.length-1].slice(1); };
-const HUE=[[.25,.55,.30],[.95,.60,.75],[.60,.75,.95],[.75,.70,.80],[.95,.78,.45],[.55,.45,.70],[.9,.6,.3]];   // home, vale, hoar, grey, sun, gloam, amber
+const HUE=[[.25,.55,.30],[.95,.60,.75],[.60,.75,.95],[.75,.70,.80],[.95,.78,.45],[.55,.45,.70],[.9,.6,.3],[.25,.75,.7]];   // home, vale, hoar, grey, sun, gloam, amber, isles
 const buf=Buffer.alloc(W*H*3);
 for(let j=0;j<H;j++) for(let i=0;i<W;i++){
   const k=j*W+i, hk=(j+1)*(W+2)+i+1, h=hs[hk];

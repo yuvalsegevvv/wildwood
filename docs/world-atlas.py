@@ -629,7 +629,7 @@ if ARGS.out:
 # ---------- 12. the bake: what the game reads (src/shared/world-atlas.js) ----------
 # A grid of nodes every 8 m over the canvas (the game interpolates between nodes); the smooth fields (target height, water level) every 16 m.
 # Layers are delta-coded against the cell above, zig-zag varints, zero-runs: see wa_enc and decodeLayer in src/shared/world-atlas.js.
-LAND_IDS = ['home', 'vale', 'hoar', 'grey', 'sun', 'gloam', 'amber']
+LAND_IDS = ['home', 'vale', 'hoar', 'grey', 'sun', 'gloam', 'amber', 'isles']
 PROTO_TO_ID = {LID[k]: LAND_IDS.index(k) for k in LID}; PROTO_TO_ID[6] = 6
 def edt(src, cap=500.0):
     """exact Euclidean distance (m) from every cell centre to the nearest True cell of src, capped (the layout's chamfer is octagonal: its isolines show as straight diagonals in the ground)"""
@@ -754,29 +754,132 @@ def wa_enc(a):
         else: put(zz(v)); i += 1
     return base64.b64encode(bytes(out)).decode()
 X8, Z8 = nodes(8); X16, Z16 = nodes(16)
-LAYERS = {
-    'own':   (X8.shape, wa_enc(near(LIDG, X8, Z8))),
-    'flags': (X8.shape, wa_enc((~near(LANDM, X8, Z8)).astype(int) + 2 * near(ISLE_KIND, X8, Z8) + 16 * near(WTYPE6, X8, Z8))),
-    'zone':  (X8.shape, wa_enc(near(ZL, X8, Z8) + 1)),
-    'cdist': (X16.shape, wa_enc(np.round(bilin(CD6, X16, Z16) * 2))),
-    'bdist': (X16.shape, wa_enc(np.round(np.minimum(bilin(BD6, X16, Z16), 500) / 2))),
-    'ldist': (X16.shape, wa_enc(np.round(np.minimum(bilin(LD6, X16, Z16), 500) / 2))),
-    'adist': (X16.shape, wa_enc(np.round(np.minimum(bilin(AD6, X16, Z16), 500) / 2))),
-    'rdist': (X16.shape, wa_enc(np.round(np.minimum(bilin(RD6, X16, Z16), 500) / 2))),
-    'wdist': (X8.shape, wa_enc(np.round(bilin(WD6, X8, Z8) * 2))),
-    'target': (X16.shape, wa_enc(np.round(bilin(T6, X16, Z16) * 16))),
-    'wsurf': (X16.shape, wa_enc(np.round(bilin(WS6, X16, Z16) * 16))),
+RAW = {   # (the grid's step, the integer array): encoded after the Emberwake Isles' strip is appended (section 13)
+    'own':   (8, near(LIDG, X8, Z8)),
+    'flags': (8, (~near(LANDM, X8, Z8)).astype(int) + 2 * near(ISLE_KIND, X8, Z8) + 16 * near(WTYPE6, X8, Z8)),
+    'zone':  (8, near(ZL, X8, Z8) + 1),
+    'cdist': (16, np.round(bilin(CD6, X16, Z16) * 2)),
+    'bdist': (16, np.round(np.minimum(bilin(BD6, X16, Z16), 500) / 2)),
+    'ldist': (16, np.round(np.minimum(bilin(LD6, X16, Z16), 500) / 2)),
+    'adist': (16, np.round(np.minimum(bilin(AD6, X16, Z16), 500) / 2)),
+    'rdist': (16, np.round(np.minimum(bilin(RD6, X16, Z16), 500) / 2)),
+    'wdist': (8, np.round(bilin(WD6, X8, Z8) * 2)),
+    'target': (16, np.round(bilin(T6, X16, Z16) * 16)),
+    'wsurf': (16, np.round(bilin(WS6, X16, Z16) * 16)),
 }
+OLD_LANDM8 = near(LANDM, X8, Z8)   # (the old canvas's land at the 8 m nodes: the strip's distances see the Amber Reach's south coast)
+
+# ---------- 13. the Emberwake Isles (docs/EMBERWAKE.md; the eighth land): a strip of sea and islands APPENDED south of the old canvas ----------
+# The six lands' layout above is untouched (the canvas Z1 stays 1180 for it); the bake adds rows below it, so every old node keeps its value and the strip is new data only.
+ISL_Z1 = 2100.0                      # the world's new south edge (WZ1)
+ISL_ROWS8 = 405                      # 8 m node rows (z up to Z0 + 404 * 8 = 2112); 203 rows every 16 m
+ISL_ID = 7
+ISL_ISLANDS = [   # name, centre x, z, radii, turn (rad): west to east, by the boats from the Amber Reach's southern cape
+    ('coralhaven', -1100, 1590, 215, 190, 0.3), ('jungle', -560, 1650, 235, 200, -0.2), ('highland', -20, 1620, 225, 205, 0.1),
+    ('volcano', 650, 1700, 255, 245, 0.0)]   # the volcano isle is a separate island with no way on foot yet (the boats, a later pass); its interior is reserved
+ISL_BARS = [((-905, 1600), (-790, 1640)), ((-335, 1650), (-235, 1630))]   # the reef causeway Coralhaven | Jungle and the isthmus Jungle | Highland (40 m wide, walkable)
+ISL_ZONE_SEEDS = [(42, 'coralhaven', -1140, 1625, 3.0), (43, 'coralhaven', -1010, 1655, 4.0), (44, 'jungle', -670, 1670, 12.0), (45, 'jungle', -560, 1560, 18.0),
+                  (46, 'jungle', -430, 1715, 9.0), (47, 'highland', -70, 1650, 34.0), (48, 'highland', 70, 1590, 50.0)]   # key, island, x, z, elevation (m)
+ISL_HUB = (-1105.0, 1530.0)          # Coralhaven, on the northern shore of the first island (the boats land here)
+def _ex_edt(src, step, cap):
+    """exact Euclidean distance (m) to the nearest True cell, on a grid of `step` m (edt() above, for any shape)"""
+    R = int(cap / step) + 1; big = float(R + 2); g = np.where(src, 0.0, big)
+    for i in range(1, g.shape[0]): g[i] = np.minimum(g[i], g[i - 1] + 1)
+    for i in range(g.shape[0] - 2, -1, -1): g[i] = np.minimum(g[i], g[i + 1] + 1)
+    g2 = np.minimum(g, big) ** 2; d2 = g2.copy()
+    for dx in range(1, R + 1):
+        sh = np.full_like(g2, big * big); sh[:, dx:] = g2[:, :-dx]; d2 = np.minimum(d2, sh + dx * dx)
+        sh = np.full_like(g2, big * big); sh[:, :-dx] = g2[:, dx:]; d2 = np.minimum(d2, sh + dx * dx)
+    return np.minimum(np.sqrt(d2) * step, cap)
+NX8N, NZ8N = X8.shape[1], ISL_ROWS8
+XN8, ZN8 = np.meshgrid(X0 + np.arange(NX8N) * 8.0, Z0 + np.arange(NZ8N) * 8.0)
+OLDR = X8.shape[0]                   # the old canvas's rows
+def _isl_field(i):
+    nm, cx, cz, rx, rz, th = ISL_ISLANDS[i]; c, s_ = math.cos(th), math.sin(th)
+    u = ((XN8 - cx) * c + (ZN8 - cz) * s_) / rx; v = (-(XN8 - cx) * s_ + (ZN8 - cz) * c) / rz
+    return 1 - np.hypot(u, v) + fbm(XN8 * 0.015 + i * 7, ZN8 * 0.015 - i * 3, 70 + i, 4) * 0.36 + fbm(XN8 * 0.045, ZN8 * 0.045 + i, 80 + i, 2) * 0.06
+ISL_F = [_isl_field(i) for i in range(len(ISL_ISLANDS))]
+ISL_OWN = np.full(XN8.shape, -1, int)
+for i, f in enumerate(ISL_F): ISL_OWN = np.where((f > 0) & (ISL_OWN < 0), i, ISL_OWN)
+ISL_LAND = ISL_OWN >= 0
+def _capsule(a, b, hw):
+    ax, az = a; bx, bz = b; dx, dz = bx - ax, bz - az; L2 = dx * dx + dz * dz
+    t = np.clip(((XN8 - ax) * dx + (ZN8 - az) * dz) / L2, 0, 1); d = np.hypot(XN8 - (ax + t * dx), ZN8 - (az + t * dz))
+    return d - (hw + fbm(XN8 * 0.05, ZN8 * 0.05, 90, 2) * 3)
+ISL_BAR = np.zeros(XN8.shape, bool)
+for a_, b_ in ISL_BARS: ISL_BAR |= _capsule(a_, b_, 20.0) < 0
+ISL_LAND = ISL_LAND | ISL_BAR
+ISL_LAND[:OLDR + 2] = False          # (nothing of the strip within 16 m of the old canvas: the seam is sea)
+FULL_LAND = np.concatenate([OLD_LANDM8, np.zeros((NZ8N - OLDR, NX8N), bool)], 0) | ISL_LAND   # the whole canvas: the old land and the isles
+# the zones: the nearest seed on the same island (the bars belong to the nearer island's zone)
+ISL_ZL = np.full(XN8.shape, -1, int)
+_WX = XN8 + fbm(XN8 * 0.011 + 50, ZN8 * 0.011 - 30, 143, 3) * 42 + fbm(XN8 * 0.03, ZN8 * 0.03 + 8, 144, 2) * 14   # (the zone borders wander, as the other lands' do)
+_WZ = ZN8 + fbm(XN8 * 0.011 - 20, ZN8 * 0.011 + 60, 145, 3) * 42 + fbm(XN8 * 0.03 + 5, ZN8 * 0.03, 146, 2) * 14
+_dd = np.stack([np.hypot(_WX - sx, _WZ - sz) for _, _, sx, sz, _ in ISL_ZONE_SEEDS], 0)
+_isl_of = np.array([[n[0] for n in ISL_ISLANDS].index(isl) for _, isl, _, _, _ in ISL_ZONE_SEEDS])
+_cand = np.where(ISL_OWN[None] == _isl_of[:, None, None], _dd, 1e9)
+_zk = np.argmin(_cand, 0); _ok = np.min(_cand, 0) < 1e8
+_bar_only = ISL_BAR & ~(ISL_OWN >= 0); _zk_bar = np.argmin(_dd, 0)
+ISL_ZL = np.where(_ok, _zk, np.where(_bar_only, _zk_bar, -1))
+ISL_ZL = np.where(ISL_LAND, ISL_ZL, -1)
+ISL_ELEV = np.array([z[4] for z in ISL_ZONE_SEEDS])
+_vol = ISL_OWN == [n[0] for n in ISL_ISLANDS].index('volcano')
+# the target height: each zone's elevation blurred over the land only; the volcano isle a low placeholder dome (reserved)
+_E = np.where(ISL_ZL >= 0, ISL_ELEV[np.maximum(ISL_ZL, 0)], np.nan)
+_E = np.where(_vol, 30.0, _E)
+_Em = np.where(ISL_LAND & ~np.isnan(_E), _E, 0.0)
+_num = blur(_Em, 8); _den = blur((ISL_LAND & ~np.isnan(_E)).astype(float), 8)
+ISL_T = np.where(_den > 0.02, _num / np.maximum(_den, 1e-6), 0.0)
+ISL_T = np.where(ISL_LAND, ISL_T, 0.0)
+_cd8 = blur(np.where(FULL_LAND, _ex_edt(~FULL_LAND, 8.0, 400) - 4.0, -(_ex_edt(FULL_LAND, 8.0, 400) - 4.0)), 1)
+# anchors: Coralhaven's hub, each zone's entrance (towards the hub / the previous zone), the boats' landing
+ISL_ANCH = [ISL_HUB]
+def _ix(x, z): return int(round((z - Z0) / 8.0)), int(round((x - X0) / 8.0))
+_amask = np.zeros(XN8.shape, bool)
+for _p in ISL_ANCH + [(z[2], z[3]) for z in ISL_ZONE_SEEDS]: _amask[_ix(*_p)] = True
+_ad8 = _ex_edt(_amask, 8.0, 300)
+_zb8 = np.zeros(XN8.shape, bool)
+for dz, dx in ((0, 1), (1, 0), (0, -1), (-1, 0)):
+    _nb = np.full(XN8.shape, -2); _nb[max(dz, 0):XN8.shape[0] + min(dz, 0), max(dx, 0):XN8.shape[1] + min(dx, 0)] = ISL_ZL[max(-dz, 0):XN8.shape[0] + min(-dz, 0), max(-dx, 0):XN8.shape[1] + min(-dx, 0)]
+    _zb8 |= (_nb != ISL_ZL) & (_nb >= 0) & (ISL_ZL >= 0)
+_bd8 = _ex_edt(_zb8, 8.0, 500)
+ISL_ZONES = []
+for k, (key, isl, sx, sz, el) in enumerate(ISL_ZONE_SEEDS):
+    m = ISL_ZL == k; cells = np.argwhere(m)
+    zi, xi = cells.mean(0); cx_, cz_ = X0 + xi * 8.0, Z0 + zi * 8.0
+    j = np.argmin(((cells - np.array([zi, xi])) ** 2).sum(1)); cz_, cx_ = Z0 + cells[j][0] * 8.0, X0 + cells[j][1] * 8.0   # (a centre that is inside the zone)
+    ISL_ZONES.append({'land': 'isles', 'key': key, 'level': str(key), 'area': int(m.sum() * 64), 'x': float(cx_), 'z': float(cz_), 'elev': float(el), 'entrance': None})
+for z in ISL_ZONES: z['entrance'] = [z['x'], z['z']]
+ISL_ENTR = [{'land': 'isles', 'zone': z['key'], 'x': z['x'], 'z': z['z']} for z in ISL_ZONES]
+assert all(z['area'] > 20000 for z in ISL_ZONES), [z['area'] for z in ISL_ZONES]
+def _strip(arr8, old, step):
+    """the old rows (kept as they are) + the strip's rows, sampled every `step` m from the 8 m field"""
+    s_ = step // 8; new = arr8[::s_, ::s_]; nr = (ISL_ROWS8 - 1) // s_ + 1; new = new[:nr]
+    return np.concatenate([old, new[old.shape[0]:]], 0)
+RAW['own'] = (8, np.concatenate([RAW['own'][1], np.full((NZ8N - OLDR, NX8N), ISL_ID)], 0))
+RAW['flags'] = (8, np.concatenate([RAW['flags'][1], (~ISL_LAND[OLDR:]).astype(int)], 0))
+RAW['zone'] = (8, np.concatenate([RAW['zone'][1], np.where(ISL_ZL[OLDR:] >= 0, ISL_ZL[OLDR:] + NZN + 1, 0)], 0))
+RAW['wdist'] = (8, np.concatenate([RAW['wdist'][1], np.full((NZ8N - OLDR, NX8N), 800)], 0))
+RAW['cdist'] = (16, _strip(np.round(_cd8 * 2), RAW['cdist'][1], 16))
+RAW['bdist'] = (16, _strip(np.round(np.minimum(_bd8, 500) / 2), RAW['bdist'][1], 16))
+RAW['ldist'] = (16, _strip(np.full(XN8.shape, 250.0), RAW['ldist'][1], 16))
+RAW['adist'] = (16, _strip(np.round(np.minimum(_ad8, 500) / 2), RAW['adist'][1], 16))
+RAW['rdist'] = (16, _strip(np.full(XN8.shape, 250.0), RAW['rdist'][1], 16))
+RAW['target'] = (16, _strip(np.round(ISL_T * 16), RAW['target'][1], 16))
+RAW['wsurf'] = (16, _strip(np.zeros(XN8.shape), RAW['wsurf'][1], 16))
+ZONES_ALL = ZONES + ISL_ZONES
+print('isles:', {z['key']: z['area'] // 10000 for z in ISL_ZONES}, 'ha;', 'land', int(ISL_LAND.sum() * 64 / 10000), 'ha')
+LAYERS = {k: (v[1].shape, wa_enc(v[1])) for k, v in RAW.items()}
 R1 = lambda v: round(float(v), 1)
 ANCH = {
     'lands': LAND_IDS,
-    'lis': {k: LAND_IDS.index(k) for k in LID},
-    'hubs': {k: [R1(v[0]), R1(v[1])] for k, v in HUBS.items()},
+    'lis': {k: LAND_IDS.index(k) for k in list(LID) + ['isles']},
+    'hubs': {k: [R1(v[0]), R1(v[1])] for k, v in {**HUBS, 'isles': ISL_HUB}.items()},
     'gates': [{'a': g['a'], 'b': g['b'] if isinstance(g['b'], str) else 'amber', 'name': g['name'], 'kind': g['kind'], 'x': R1(g['x']), 'z': R1(g['z'])} for g in GATES],
     'zones': [{'id': i, 'land': z['land'], 'key': z['key'], 'level': z['level'], 'x': R1(z['x']), 'z': R1(z['z']), 'elev': z['elev'], 'area': z['area'],
-               'entrance': z.get('entrance') if not isinstance(z.get('entrance'), list) else [R1(z['entrance'][0]), R1(z['entrance'][1])]} for i, z in enumerate(ZONES)],
+               'entrance': z.get('entrance') if not isinstance(z.get('entrance'), list) else [R1(z['entrance'][0]), R1(z['entrance'][1])]} for i, z in enumerate(ZONES_ALL)],
     'pois': [{'kind': p['kind'], 'name': p['name'], 'land': p['land'], 'zone': p['zone'], 'x': R1(p['x']), 'z': R1(p['z'])} for p in POIS],
-    'entrances': [{'land': e['land'], 'zone': e['zone'], 'x': R1(e['x']), 'z': R1(e['z'])} for e in ENTR],
+    'entrances': [{'land': e['land'], 'zone': e['zone'], 'x': R1(e['x']), 'z': R1(e['z'])} for e in ENTR + ISL_ENTR],
     'spots': [{'land': s['land'], 'zone': s['zone'], 'n': s['n'], 'x': R1(s['x']), 'z': R1(s['z']), 'heart': bool(s['heart'])} for s in SPOTS],
     'islands': [{'name': s['name'], 'what': s['what'], 'kind': s['kind'], 'x': R1(s['x']), 'z': R1(s['z']), 'area': int(s['area'])} for s in ISLAND_SPOTS],
     'pvp': PVP,
@@ -785,7 +888,7 @@ ANCH = {
     'roads': [{'kind': r['kind'], 'name': r['name'], 'pts': [[round(a), round(b)] for a, b in r['pts']]} for r in ROADS],
 }
 if ARGS.js:
-    meta = {'x0': X0, 'x1': X1, 'z0': Z0, 'z1': Z1, 'step': BS, 'nx': int(X8.shape[1]), 'nz': int(X8.shape[0]), 'nx16': int(X16.shape[1]), 'nz16': int(X16.shape[0])}
+    meta = {'x0': X0, 'x1': X1, 'z0': Z0, 'z1': ISL_Z1, 'step': BS, 'nx': int(X8.shape[1]), 'nz': NZ8N, 'nx16': int(X16.shape[1]), 'nz16': (NZ8N - 1) // 2 + 1}
     L_ = {k: v[1] for k, v in LAYERS.items()}
     body = 'const WA_META=' + json.dumps(meta) + ';\nconst WA_ANCHORS=' + json.dumps(ANCH, separators=(',', ':')) + ';\nconst WA_LAYERS=' + json.dumps(L_, separators=(',', ':')) + ';\n'
     open(ARGS.js, 'w').write('//@ Baked atlas of Eldmere (generated by docs/world-atlas.py --js: do not edit): the 8 m grid of land, zone, coast, borders, roads, water and target height, and the anchors.\n' + body)
