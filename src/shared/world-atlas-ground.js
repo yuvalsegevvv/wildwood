@@ -11,7 +11,7 @@
    - Coast: the atlas's signed distance (waCoast, metres inland) wobbled by noise; a beach 0.35 m at the waterline rising 2.4 m over 60 m, the land's own ground from 100 m inland (75 m in the Greyspine and the Gloamhorn:
      cliffs and fjords); the sea floor goes down to -5.5 m over 50 m.
    Tuning knobs are the WA_* constants below. Used by: baseHeight (terrain.js). Test: tools/atlas-smoke.js; see it: node tools/atlas-preview.js out.png. Names: wa..., WA_... */
-const WA_SEA_FLOOR=-5.5, WA_BEACH_W=100, WA_CLIFF_W=75;
+const WA_SEA_FLOOR=-5.5, WA_BEACH_W=100, WA_CLIFF_W=75, WA_ISLE_W=55;   // (WA_ISLE_W: the Emberwake Isles are small, 400-500 m across: the beach hands over to the island's ground within 55 m)
 const waSmax=(a,b,k)=>{ const h=clamp(0.5+0.5*(a-b)/k); return lerp(b,a,h)+k*h*(1-h); };   // smooth max (k: how many metres round the corner)
 const waSmin=(a,b,k)=>-waSmax(-a,-b,k);
 // each land's own landform, about zero on average (the target height is the average): metres above or below the target
@@ -28,10 +28,11 @@ function waForm(L,x,z){
     case 5: { const wx=x+noise2(x*0.0034+4,z*0.0034-1)*55, wz=z+noise2(x*0.0034-9,z*0.0034+6)*55;
       return (ridged(wx*0.0078+9,wz*0.0078+2,4)-0.3)*58+erodeFbm(wx*0.009+2,wz*0.009-6,3,0.2)*12; }                      // the Gloamhorn: crags
     case 6: return (hillShape(x+613,z-287,HILL_VALE)-10)*0.32;                                                       // Amber Reach: the savanna's long gentle swell, +-4 m (its terraces and rocks are the zones' own: shared/savannazones.js)
+    case 7: return erodeFbm(x*0.011+5.3,z*0.011-2.2,4,0.2)*5+noise2(x*0.03+3,z*0.03-1)*1.2;                            // the Emberwake Isles: low rolling island ground +-5 m (each zone's target height does the rest)
     default: return 0;
   }
 }
-const WA_ZONE_EDGE_LAND=[0.55,0.6,0.8,1.2,0.7,1.0,0.6];   // how much a zone border shows, by land (the Greyspine most)
+const WA_ZONE_EDGE_LAND=[0.55,0.6,0.8,1.2,0.7,1.0,0.6,0.5];   // how much a zone border shows, by land (the Greyspine most)
 // the range along a border between two lands: ridges with saddles, none on a road, none where a river is the border. d: metres from the border, T: the target height there
 function waLandRidge(x,z,d,T,rd,wd,cr){
   if(d>130) return 0;
@@ -64,7 +65,7 @@ function waGround(x,z){
   const L=waLandId(x,z), T=waTarget(x,z), dl=waLandBorderDist(x,z), dz=waBorderDist(x,z), rd=waRoadDist(x,z), wd=waWaterDist(x,z);
   const cr=(dl<130||dz<110)?crest(x,z):0;
   // the shore: a beach, then the land's own ground (cliffs where the land is high). The target is shaped by it first (waterlines of rivers and lakes are levelled against the shaped target: docs/world-atlas.py TC6), the landform and the borders fade with it
-  const W=((L===3||L===5)?WA_CLIFF_W:WA_BEACH_W)+1.1*Math.max(T-25,0), bh=0.35+2.4*smoothstep(0,60,c), k=smoothstep(0,W,c), Tc=lerp(bh,T,k);
+  const W=((L===3||L===5)?WA_CLIFF_W:L===7?WA_ISLE_W:WA_BEACH_W)+1.1*Math.max(T-25,0), bh=0.35+2.4*smoothstep(0,60,c), k=smoothstep(0,W,c), Tc=lerp(bh,T,k);
   // a river's valley: the target height sinks towards the river's surface (a river falls to the sea faster than the land does), over ~140 m (200 in the Greyspine), so no river is cut through high ground
   let T0=Tc, S=0;
   if(wd<200){ S=waWaterSurf(x,z); const gap=Tc-(S+2.5); if(gap>0) T0=Tc-gap*(1-smoothstep(0,L===3?200:140,wd)); }

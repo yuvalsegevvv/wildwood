@@ -10,7 +10,7 @@ const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.string
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
-const zt=(home,vale,hoar,grey,sun,gloam,amber)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:vale[1]},hoar:{on:hoar[0],max:hoar[1]},grey:{on:(grey||[0,0])[0],max:(grey||[0,0])[1]},sun:{on:(sun||[0,0])[0],max:(sun||[0,0])[1]},gloam:{on:(gloam||[0,0])[0],max:(gloam||[0,0])[1]},amber:{on:(amber||[0,0])[0],max:(amber||[0,0])[1]}});
+const zt=(home,vale,hoar,grey,sun,gloam,amber,isles)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:vale[1]},hoar:{on:hoar[0],max:hoar[1]},grey:{on:(grey||[0,0])[0],max:(grey||[0,0])[1]},sun:{on:(sun||[0,0])[0],max:(sun||[0,0])[1]},gloam:{on:(gloam||[0,0])[0],max:(gloam||[0,0])[1]},amber:{on:(amber||[0,0])[0],max:(amber||[0,0])[1]},isles:{on:(isles||[0,0])[0],max:(isles||[0,0])[1]}});
 
 // ---- the rules ----
 { const d=x.DEF_BY_ID.direboar, k0=x.zoneTierK(d,0), k1=x.zoneTierK(d,1), a=x.defAt(d,d.level+10);
@@ -23,8 +23,8 @@ const zt=(home,vale,hoar,grey,sun,gloam,amber)=>({home:{on:home[0],max:home[1]},
   ok('there are seven tiers (IV and V added, VI and VII with version 3): the numerals are I to VII, and every tier makes a monster tougher and harder-hitting than the one before',x.ZTIER_MAX===7&&x.ZTIER_ROMAN.join()==='0,I,II,III,IV,V,VI,VII'&&K.every((k,i)=>i===0||(k.hp>K[i-1].hp&&k.dmg>K[i-1].dmg&&k.lv===K[i-1].lv+x.ZTIER_STEP)),
     K.map((k,i)=>i+': lv '+k.lv+' hp x'+k.hp.toFixed(1)+' dmg x'+k.dmg.toFixed(1)).join('; ')); }
 ok('six lands, each opened by its second boss (the second of the two bosses that live there, by level)',(()=>{
-  const by={home:[],vale:[],hoar:[],grey:[],sun:[],gloam:[],amber:[]}; for(const b of x.BOSS_DEFS){ const Ar=bossArena(b); by[x.landAt(Ar.x,Ar.z)].push(b); }
-  return x.ZTIER_LANDS.filter(l=>l!=='amber').every(l=>by[l].length===2&&by[l].slice().sort((p,q)=>p.def.level-q.def.level)[1].def.id===x.ZTIER_BOSS[l]); })(),JSON.stringify(x.ZTIER_BOSS));
+  const by={home:[],vale:[],hoar:[],grey:[],sun:[],gloam:[],amber:[],isles:[]}; for(const b of x.BOSS_DEFS){ const Ar=bossArena(b); by[x.landAt(Ar.x,Ar.z)].push(b); }
+  return x.ZTIER_LANDS.filter(l=>l!=='amber'&&l!=='isles').every(l=>by[l].length===2&&by[l].slice().sort((p,q)=>p.def.level-q.def.level)[1].def.id===x.ZTIER_BOSS[l]); })(),JSON.stringify(x.ZTIER_BOSS));
 // Amber Reach: a tier land opened by Oldhorn, with a badge in the symbol; her BOSS_DEFS row (and so the check above) joins with task M2, until then the rows wait in SAV_BOSS_ROWS
 ok('Amber Reach is a tier land opened by Oldhorn, and its badge is the symbol\'s seventh',x.ZTIER_LANDS.includes('amber')&&x.ZTIER_BOSS.amber==='oldhorn'&&x.ZTIER_SYMBOL_LANDS.includes('amber')&&x.newGearFor('warrior').zt.amber.max===0
   &&(x.BOSS_DEFS.some(b=>b.def.id==='oldhorn')||x.SAV_BOSS_ROWS.some(b=>b.def.id==='oldhorn')));
@@ -34,9 +34,10 @@ ok('a point in Amber Reach is landAt \'amber\' (both arenas, the zones), and the
 function bossArena(b){ const B=x.BOSSES.find(q=>q.bd===b); return B.A; }
 ok('the symbol: every unlocked tier point of every land adds +10% (2 + 2 + 1 points = +50%, the Greyspine\'s too: +1 = +60%)',near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1])}),0.5,1e-9)&&near(x.symbolBonus({zt:zt([0,2],[0,2],[0,1],[0,1])}),0.6,1e-9)&&x.symbolBonus({})===0&&x.symbolBonus({zt:zt([1,1],[0,0],[0,0])})===x.ZTIER_BONUS);
 ok('the symbol counts what you unlocked, not what you play at',x.symbolBonus({zt:zt([0,3],[0,0],[0,0])})===3*x.ZTIER_BONUS);
-ok('with six lands at tier VII (forty-two points) the symbol is +420% (the owner\'s "x4.2 for now" before the Amber Reach\'s badge); the Amber Reach\'s badge is the seventh',near(x.symbolBonus({zt:zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,7])}),4.2,1e-9)&&near(x.symbolPoints({zt:zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,7])}),42,1e-9)&&near(x.symbolBonus({zt:zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,3])}),3.8,1e-9)&&x.ZTIER_SYMBOL_LANDS.join()==='home,vale,hoar,grey,sun,gloam,amber');
+ok('with six lands at tier VII (forty-two points) the symbol is +420% (the owner\'s "x4.2 for now" before the Amber Reach\'s badge); the Amber Reach\'s badge is the seventh',near(x.symbolBonus({zt:zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,7])}),4.2,1e-9)&&near(x.symbolPoints({zt:zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,7])}),42,1e-9)&&near(x.symbolBonus({zt:zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,3])}),3.8,1e-9)&&x.ZTIER_SYMBOL_LANDS.join()==='home,vale,hoar,grey,sun,gloam,amber,isles');   // (isles: the Emberwake Isles' badge is the eighth, in the symbol from its first build)
 { const all=zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,7],[0,7]), six=zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,7]);
-  ok('the Amber Reach\'s tier points count: one tier there is +10%, and a hero with every tier of all seven lands (49 points) has +490%',
+  ok('the Emberwake Isles are in the symbol (the eighth badge), opened by Tuila; with every tier of all eight lands a hero has 56 points = +560%',x.ZTIER_SYMBOL_LANDS.includes('isles')&&x.ZTIER_LANDS.includes('isles')&&x.ZTIER_BOSS.isles==='tuila'&&near(x.symbolPoints({zt:zt([0,7],[0,7],[0,7],[0,7],[0,7],[0,7],[0,7],[0,7])}),56,1e-9)&&near(x.symbolBonus({zt:zt([0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,1])}),x.ZTIER_BONUS,1e-9)&&x.landAt(-1100,1590)==='isles');
+  ok('the Amber Reach\'s tier points count: one tier there is +10%, and a hero with every tier of the seven mainland lands (49 points) has +490%',
     near(x.symbolBonus({zt:zt([0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,1])}),x.ZTIER_BONUS,1e-9)&&near(x.symbolPoints({zt:all}),49,1e-9)&&near(x.symbolBonus({zt:all}),4.9,1e-9)&&near(x.symbolBonus({zt:six}),4.2,1e-9));
   ok('there is no cap: the symbol is exactly +10% per point for every mix of tiers, up to the most there is',
     [[1,0,0,0,0,0,0],[3,2,5,1,7,0,4],[7,7,7,7,7,7,6],[7,7,7,7,7,7,7]].every(t=>{ const g={zt:zt(...t.map(m=>[0,m]))}; return near(x.symbolBonus(g),x.ZTIER_BONUS*t.reduce((a,b)=>a+b,0),1e-9); })

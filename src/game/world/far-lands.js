@@ -4,8 +4,9 @@
    (player/movement.js) keeps you inside the rectangle. Vertices on the rectangle's edge take the real ground's height (getH) so the two meet; cells inside it or under the sea are left out. */
 const FAR_CELL=27.5/1.5;
 // the Emberwake Isles: the young volcano in the west (Coralhaven's island), older and lower going east, a sand bar last
-const FAR_ISLES=[{x:-560,z:1250,r:115,volcano:true},{x:-330,z:930,r:55},{x:-60,z:1010,r:62},{x:-250,z:1250,r:66},
-  {x:230,z:1180,r:72},{x:560,z:1270,r:30,sx:2.6,bar:true}];
+// (the isles themselves are playable now, on the atlas: shared/emberwake.js; what is left here is a few islets on the horizon beyond the new south edge, and the smoke over the volcano)
+const FAR_ISLES=[{x:-720,z:2330,r:48},{x:-120,z:2420,r:62},{x:330,z:2380,r:40},{x:880,z:2300,r:30,sx:2.6,bar:true}];
+const FAR_SMOKE={x:650,z:1700};   // (the volcano isle's centre, EW_ISLANDS in the atlas)
 const FAR_C={grass:0x5d7446,rock:0x857d70,snow:0xf1f4f6,spruce:0x3e5b4c,ice:0xc4d8e6,frost:0xe9f0f5,sand:0xd6ae6c,mesa:0xb5623e,
   beach:0xdcc796,savanna:0xc4b25a,savanna2:0xa8a44c,heather:0x7f9072,heather2:0x8a7a92,jungle:0x4a9444,ash:0x4a3c34,lava:0xd8561e,smoke:0xb8b4ae};
 
@@ -46,7 +47,7 @@ function farMaterial(){
   return m;
 }
 function buildFarLands(){
-  const C=FAR_CELL, X0=-760, Z0=WZ1-4*C, NX=Math.ceil(1460/C), NZ=Math.ceil((1450-Z0)/C), W=NX+1;   // (a strip along the world's south edge, a row of cells inside it so the edge vertices meet the real ground: the Emberwake Isles lie beyond it)
+  const C=FAR_CELL, X0=WX0-100, Z0=WZ1-4*C, NX=Math.ceil((WX1-WX0+200)/C), NZ=Math.ceil((2560-Z0)/C), W=NX+1;   // (a strip along the world's south edge, a row of cells inside it so the edge vertices meet the real ground: the Emberwake Isles lie beyond it)
   const onRect=(x,z)=>x>=WX0-0.01&&x<=WX1+0.01&&z>=WZ0-0.01&&z<=WZ1+0.01;
   const H=new Float32Array(W*(NZ+1)), pos=new Float32Array(W*(NZ+1)*3), col=new Float32Array(W*(NZ+1)*3), cc=new THREE.Color();
   for(let iz=0;iz<=NZ;iz++) for(let ix=0;ix<=NX;ix++){
@@ -69,7 +70,7 @@ function buildFarLands(){
   const mesh=new THREE.Mesh(g,farMaterial()); mesh.matrixAutoUpdate=false;
   scene.add(mesh);
   // smoke over the volcano: a few low-poly puffs, high enough to show through the haze
-  const V=FAR_ISLES.find(q=>q.volcano), sp=[], sc=[];
+  const V=FAR_SMOKE, sp=[], sc=[];
   [[0,150,16],[8,182,22],[-4,215,27],[14,252,32]].forEach(([dx,y,r],i)=>{
     const sg=new THREE.IcosahedronGeometry(r,0), p=sg.attributes.position;
     for(let k=0;k<p.count;k++){ sp.push(V.x+dx+p.getX(k),y+p.getY(k),V.z-i*6+p.getZ(k)); cc.set(FAR_C.smoke).multiplyScalar(0.9+0.1*i/3); sc.push(cc.r,cc.g,cc.b); }

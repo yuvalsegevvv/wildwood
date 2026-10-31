@@ -24,6 +24,7 @@ function wmapRegionAt(x,y){
 /* ---- where you are on the art ---- */
 function wmapPin(){
   if(dgIn()||caveIn()) return null;   // cave:
+  if(inIsles(P.x,P.z)) return null;   // emberwake: the Isles are south of the map's art (a later step paints them): no pin there yet
    // (a run is far from the map)
   return wmapArt(clamp(P.x,WX0,WX1),clamp(P.z,WZ0,WZ1));
 }

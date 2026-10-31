@@ -231,7 +231,7 @@ const el=s=>document.querySelector(s);
     G.P.x=sv.x; G.P.y=sv.y; G.P.z=sv.z; }
   // zone tiers: unlock through the testing tool, the symbol shows, the picker works in the village, a monster's level and health follow your tier
   G.NET.send({t:'dev',cmd:'zt',v:1}); await wait(500); G=c.G();
-  ok('zone tiers: every land unlocked at tier I shows the symbol (seven points, +70%, a badge for each land, the Amber Reach\'s too)',G.GEAR.zt.home.max===1&&G.GEAR.zt.grey.max===1&&G.GEAR.zt.amber.max===1&&!c.el('#plSym').hidden&&/\+70%/.test(c.el('#plSym').title||'')&&/Greyspine I/.test(c.el('#plSym').title||'')&&/Amber Reach I/.test(c.el('#plSym').title||'')&&/class="zs amber">I</.test(c.el('#plSym').innerHTML),c.el('#plSym').title);
+  ok('zone tiers: every land unlocked at tier I shows the symbol (eight points, +80%, a badge for each land, the Amber Reach\'s and the Emberwake Isles\' too)',G.GEAR.zt.home.max===1&&G.GEAR.zt.grey.max===1&&G.GEAR.zt.amber.max===1&&!c.el('#plSym').hidden&&G.GEAR.zt.isles.max===1&&/\+80%/.test(c.el('#plSym').title||'')&&/Emberwake Isles I/.test(c.el('#plSym').title||'')&&/class="zs isles">I</.test(c.el('#plSym').innerHTML)&&/Greyspine I/.test(c.el('#plSym').title||'')&&/Amber Reach I/.test(c.el('#plSym').title||'')&&/class="zs amber">I</.test(c.el('#plSym').innerHTML),c.el('#plSym').title);
   G.P.x=G.VIL.x; G.P.z=G.VIL.z; G.P.y=G.getH(G.P.x,G.P.z); G.NET.send({t:'pos',p:[G.P.x,G.P.y,G.P.z,0,0,0]}); await wait(300);
   G.NET.send({t:'zt',land:'home',n:1}); await wait(400); G=c.G();
   { const m=G.MONS.find(q=>!q.boss&&G.landAt(q.camp.x,q.camp.z)==='home'&&q.T.level<15), v=G.MONS.find(q=>!q.boss&&G.landAt(q.camp.x,q.camp.z)==='vale'), zn=G.ZONES.find(z=>!z.boss&&!z.vale&&!z.hoar&&z.level===m.T.level);
@@ -288,7 +288,7 @@ const el=s=>document.querySelector(s);
     // the pin: exact everywhere (the atlas is the map), and none in a dungeon
     { const p0={x:G.P.x,z:G.P.z}; let bad=[], n=0;
       for(const l of ids){ G.P.x=T[l].x; G.P.z=T[l].z; const p=G.wmapPin(), t=G.wmapArt(T[l].x,T[l].z); if(!p||Math.hypot(p[0]-t[0],p[1]-t[1])>0.01||G.wmapRegionAt(p[0],p[1])!==l) bad.push(l+' village'); }
-      for(let z=G.WZ0;z<=G.WZ1;z+=40) for(let x=G.WX0;x<=G.WX1;x+=40){ if(G.getH(x,z)<0.5||!G.waLand(x,z)) continue; G.P.x=x; G.P.z=z; const l=G.landHere(), p=G.wmapPin(); n++; if(!p||G.wmapRegionAt(p[0],p[1])!==l) bad.push(l+' '+x+','+z); }
+      for(let z=G.WZ0;z<=G.WZ1;z+=40) for(let x=G.WX0;x<=G.WX1;x+=40){ if(G.getH(x,z)<0.5||!G.waLand(x,z)||G.waLandId(x,z)===7) continue; G.P.x=x; G.P.z=z; const l=G.landHere(), p=G.wmapPin(); n++; if(!p||G.wmapRegionAt(p[0],p[1])!==l) bad.push(l+' '+x+','+z); }
       G.P.x=p0.x; G.P.z=p0.z;
       ok('your pin is exact at every village and sits on your own land\'s region at every dry point of the world',bad.length===0&&n>1000,n+' points'+(bad.length?'; off: '+bad.slice(0,6).join(' | '):'')); }
     // opening: the panel, the fog of the locked lands, the groups of puffs

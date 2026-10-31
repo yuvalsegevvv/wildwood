@@ -13,16 +13,16 @@
 // tiers VI and VII (version 3) came with the level-40 gear and the Sunscar's and the Gloamhorn's symbols; their tiers count toward the symbol like the others
 // tiers IV and V were added for the power the level-30 dungeon gear and its enhancements bring; what a kill pays is damped above level 60 (PAY_LV in balance.js)
 const ZTIER_STEP=10, ZTIER_MAX=7, ZTIER_BONUS=0.10;   // (the symbol: +10% attack and health per unlocked tier point of every land in ZTIER_SYMBOL_LANDS, uncapped: seven lands x seven tiers = 49 points = +490%)
-const ZTIER_LANDS=['home','vale','hoar','grey','sun','gloam','amber'], ZTIER_SYMBOL_LANDS=['home','vale','hoar','grey','sun','gloam','amber'];   // (the lands whose unlocked tiers count toward the symbol: a land left out of this list keeps its tiers but adds nothing)
-const ZTIER_NAMES={home:'the home forest',vale:'the Sakura Vale',hoar:'the Hoarfrost Reach',grey:'the Greyspine',sun:'the Sunscar',gloam:'the Gloamhorn',amber:'Amber Reach'};
+const ZTIER_LANDS=['home','vale','hoar','grey','sun','gloam','amber','isles'], ZTIER_SYMBOL_LANDS=['home','vale','hoar','grey','sun','gloam','amber','isles'];   // (isles: the Emberwake Isles, the eighth land, opened by Tuila, in the symbol from the start: eight lands x seven tiers = 56 points = +560%; tools/tiers-smoke.js checks it)   // (the lands whose unlocked tiers count toward the symbol: a land left out of this list keeps its tiers but adds nothing)
+const ZTIER_NAMES={home:'the home forest',vale:'the Sakura Vale',hoar:'the Hoarfrost Reach',grey:'the Greyspine',sun:'the Sunscar',gloam:'the Gloamhorn',amber:'Amber Reach',isles:'the Emberwake Isles'};
 const ZTIER_ROMAN=['0','I','II','III','IV','V','VI','VII'];
 // the second boss of each land (BOSS_DEFS lists a land's two bosses in the order of their levels): Carapax on the beach, Kyuubi, Vetrmaw, the Mountain Golem
-const ZTIER_BOSS={home:'carapax',vale:'kyuubi',hoar:'vetrmaw',grey:'mountaingolem',sun:'sandwyrm',gloam:'gloamwarden',amber:'oldhorn'};   // (amber: Oldhorn, the Herd-Mother)
-const WA_LAND_OF_ID=['home','vale','hoar','grey','sun','gloam','amber'];
+const ZTIER_BOSS={home:'carapax',vale:'kyuubi',hoar:'vetrmaw',grey:'mountaingolem',sun:'sandwyrm',gloam:'gloamwarden',amber:'oldhorn',isles:'tuila'};   // (amber: Oldhorn, the Herd-Mother)
+const WA_LAND_OF_ID=['home','vale','hoar','grey','sun','gloam','amber','isles'];
 const landAt=(x,z)=>WA_LAND_OF_ID[waLandId(x,z)];   // from the atlas ('amber': the seventh land, shared/savanna.js)
 // where a tier can be changed: in a village, its whole area (as far as the zone label says "The village": the gate where you spawn counts)
 const zoneTierVillage=(x,z)=>vDist(x,z)<VR+22;
-const newZt=()=>({home:{on:0,max:0},vale:{on:0,max:0},hoar:{on:0,max:0},grey:{on:0,max:0},sun:{on:0,max:0},gloam:{on:0,max:0},amber:{on:0,max:0}});
+const newZt=()=>({home:{on:0,max:0},vale:{on:0,max:0},hoar:{on:0,max:0},grey:{on:0,max:0},sun:{on:0,max:0},gloam:{on:0,max:0},amber:{on:0,max:0},isles:{on:0,max:0}});
 const zoneTierOn=(gear,land)=>{ const t=gear&&gear.zt&&gear.zt[land]; return t?t.on|0:0; };
 const zoneTierMax=(gear,land)=>{ const t=gear&&gear.zt&&gear.zt[land]; return t?t.max|0:0; };
 // the tier a monster's kill is played at by this player: its land is where its camp is (a boss's camp is its arena)
