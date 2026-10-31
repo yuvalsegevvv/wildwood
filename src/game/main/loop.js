@@ -20,7 +20,8 @@ function frame(){
     updateAnimals(dt); updateFish(dt); updateDragonflies(dt);
     cvUpdate(dt);   // caves: sites out of sight are hidden, the cave's darkness is sampled (world/caves.js)
     chamoisUpdate(dt);   // chamois: the Greyspine's harmless mountain goats (wildlife/chamois.js)
-    updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateGreyspine(dt); updateGloamhorn(dt); updateNodes(dt); updateLoreProps();
+    updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateGreyspine(dt); updateGloamhorn(dt); ewGateUpdate();   // emberwake: the Tide Bridge gate lifts when Oldhorn has fallen
+    updateNodes(dt); updateLoreProps();
     updateNPCs(dt);
     troomUpdate(dt); pzUpdate(dt);   // puzzles: the stones' glow   // testroom: the counter on the screen
     dgEntUpdate(dt);   // dungeons: the doors' sealed look and animation

@@ -22,10 +22,12 @@ const PAL={
   cedar:[0x1f4a3a,0x25563f,0x1c4235], ginkgo:[0xe8c23a,0xf0d04a,0xd8b030,0xc8d04a], larch:[0x9aae44,0xb8b84a,0xc9a83a,0x86a23c],
   acacia:[0x8a9a3a,0x9aa844,0x7a8a34], gloomoak:[0x5a3f78,0x6a4a8a,0x4a3468,0x3e3a5c],
   // Amber Reach: the flat-topped acacia (olive, a little sun-bleached) and the baobab's thin crown (plant-models-savanna.js)
-  savacacia:[0x7f9a3c,0x92a846,0x6f8a34,0xa0a64a], baobab:[0x6f9a3a,0x84a844,0x5f8a34]
+  savacacia:[0x7f9a3c,0x92a846,0x6f8a34,0xa0a64a], baobab:[0x6f9a3a,0x84a844,0x5f8a34],
+  // the Emberwake Isles' jungle (plant-models-isles.js): a ceiba's pale crown, the deep canopy, coconut palms, bananas and tree ferns
+  ceiba:[0x4a9a3e,0x58a846,0x3e8a38], jtree:[0x2f7a34,0x3d8a3a,0x286a30,0x4a9a40,0x56a844], tpalm:[0x6fa83a,0x80b844,0x62983a,0x74b040], banana:[0x78b83a,0x8ac846,0x6aa832], treefern:[0x4a9a4a,0x5aaa52,0x3e8a40]
 };
 const ISLE_LEAF=[0x2f7a34,0x3d8a3a,0x286a30,0x4a9a40];   // emberwake: the jungle's broadleaf crowns, deeper and wetter than the home forest's
-const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3,sakura:0.4,maple:0.3,bamboo:0.7,frostspruce:0.32,dwarfbirch:0.2,palm:0.35,cactus:0.4,thorn:0.25,poplar:0.2,beech:0.55,willow:0.4,umbrella:0.3,cedar:0.3,ginkgo:0.3,larch:0.28,acacia:0.25,gloomoak:0.45,savacacia:0.3,baobab:2.5};
+const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3,sakura:0.4,maple:0.3,bamboo:0.7,frostspruce:0.32,dwarfbirch:0.2,palm:0.35,cactus:0.4,thorn:0.25,poplar:0.2,beech:0.55,willow:0.4,umbrella:0.3,cedar:0.3,ginkgo:0.3,larch:0.28,acacia:0.25,gloomoak:0.45,savacacia:0.3,baobab:2.5,ceiba:1.7,jtree:0.45,jtree2:0.45,tpalm:0.3,tpalm2:0.3,banana:0.25,treefern:0.25};
 const moss=new THREE.Color(0x56702f);
 
 function buildGeometries(){
@@ -45,7 +47,14 @@ function buildGeometries(){
     cactus:makeCactus(),
     thorn:makeBroadleaf({trunkH:2.6, tr:0.13, crownY:3.4, rMain:1.9, blobs:4, spread:1.7, sy:0.3, branches:2, bark:0x5a4a38}),
     savacacia:makeSavAcacia(),
-    baobab:makeBaobab()
+    baobab:makeBaobab(),
+    ceiba:makeCeiba(),   // the Emberwake Isles' jungle (plant-models-isles.js)
+    jtree:makeJungleTree(8402,{H:13,crown:3.2,flat:0.7}),
+    jtree2:makeJungleTree(8405,{H:17,crown:2.5,flat:1.0,lean:-0.01}),
+    tpalm:makeTallPalm(8406,{H:12,bend:1.6}),
+    tpalm2:makeTallPalm(8407,{H:13.5,bend:-2.2,fronds:12}),
+    banana:makeBananaPlant(),
+    treefern:makeTreeFern()
   };
   G.savGrass=buildSavGrass();   // savanna: Amber Reach's tall grass (plant-models-savanna.js)
   G.bush=[makeBush(4,0.6), makeBush(3,0.45)];
@@ -136,7 +145,7 @@ function groundShade(c,cv){
 /* The terrain is one grid (HS) over the whole world, drawn as tiles of TBAND x TTILE cells (strips east to west, cut into tiles north to south)
    so that tiles beyond the fog (most of the other lands) are skipped; normals come from the heightmap so tiles meet seamlessly. */
 const TBAND=LITE?48:64, TTILE=LITE?96:128, TERRAIN_BANDS=[];
-const TCOLOR_NEAR=450, TCOLOR_R=700;   // metres: tiles this close to the spawn are coloured at boot; others are coloured when the player is this close (the fog ends at 230 m)
+const TCOLOR_NEAR=450, TCOLOR_R=Math.round(700*VIEW_K);   // metres: tiles this close to the spawn are coloured at boot; others are coloured when the player is this close (the fog ends at 230 m x VIEW_K)
 // the colours of one terrain tile, a few rows at a time (yields every 16 rows like the rest of the generation); a tile is drawn once ready
 function* terrainTileColors(B){
   const {g,tc,c0,b0,nx,nz}=B, tp=g.attributes.position, cc=new THREE.Color(), hq=(ix,iz)=>HS[clamp(iz,0,SEGZ)*NVX+clamp(ix,0,SEGX)];
@@ -152,10 +161,10 @@ function* terrainTileColors(B){
   }
   g.attributes.color.needsUpdate=true; B.ready=true; B.busy=false; B.sw=SAV_SKY.wet; /* savanna: the season this tile was coloured in */ if(B.lazy){ B.lazy=false; Stream.lazy--; }
 }
-// is a tile that is not coloured yet within sight of the player (the fog ends at 230 m)?
+// is a tile that is not coloured yet within sight of the player (the fog ends at 230 m x VIEW_K)?
 function terrainHot(){
   if(Stream.lazy<=0) return false;
-  for(const B of TERRAIN_BANDS) if(!B.ready&&Math.hypot(Math.max(B.x0-P.x,0,P.x-B.x1),Math.max(B.z0-P.z,0,P.z-B.z1))<300) return true;
+  for(const B of TERRAIN_BANDS) if(!B.ready&&Math.hypot(Math.max(B.x0-P.x,0,P.x-B.x1),Math.max(B.z0-P.z,0,P.z-B.z1))<300*VIEW_K) return true;
   return false;
 }
 // the nearest tile still waiting for its colours, within TCOLOR_R of the player
@@ -217,7 +226,7 @@ function* genTerrain(){
   spawn.x=VIL.spawn.x; spawn.z=VIL.spawn.z;
   P.x=spawn.x; P.z=spawn.z; P.y=getH(P.x,P.z);
   { const ux=VIL.x-P.x, uz=VIL.z-P.z; P.yaw=Math.atan2(-ux,-uz); P.face=P.yaw; }
-  buildVillage(); buildVale(); buildHoarfrost(); buildGreyspine(); buildSunscar(); buildGloamhorn(); buildTallgrass(); buildCoralhaven(); buildWaystations(); buildTideBeach(); buildProvingIsle(); buildRaids(); buildNodes();   // pvp: the Proving Isle's gate and banners (village/buildings-pvp.js)
+  buildVillage(); buildVale(); buildHoarfrost(); buildGreyspine(); buildSunscar(); buildGloamhorn(); buildTallgrass(); buildCoralhaven(); buildWaystations(); buildTideGate(); buildTideBeach(); buildProvingIsle(); buildRaids(); buildNodes();   // pvp: the Proving Isle's gate and banners (village/buildings-pvp.js)
   caveMouthBuild();   // cave: the Deep Cave's mouth, lift and circle (cave/mouth.js)
   dgEntBuild();   // dungeons: the three doors and their signposts
   pzBuild();   // puzzles: the stones (PZ_ON)

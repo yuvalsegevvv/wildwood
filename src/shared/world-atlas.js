@@ -6,13 +6,13 @@
      waTarget(x,z) the smoothed target height (zone levels blurred over ~100 m; bilinear), waCoast(x,z) metres inland of the coast (negative at sea),
      waBorderDist / waLandBorderDist / waRoadDist / waAnchorDist(x,z) metres to the nearest zone border / land border / road / anchor (cap 500),
      waWaterDist(x,z) signed metres to the nearest lake or river bank (negative inside), waWaterSurf(x,z) its surface height, waWater(x,z) WA_SEA | WA_LAKE | WA_RIVER | WA_ICE | 0.
-   Anchors (plain data, as baked): WA_HUBS {land:[x,z]}, WA_GATES, WA_ZONES, WA_POIS, WA_ENTRANCES, WA_SPOTS, WA_ISLANDS, WA_PVP, WA_LAKES, WA_RIVERS, WA_ROADS.
+   Anchors (plain data, as baked): WA_HUBS {land:[x,z]}, WA_GATES, WA_ZONES, WA_POIS, WA_ENTRANCES, WA_SPOTS, WA_ISLANDS, WA_PVP, WA_LAKES, WA_RIVERS, WA_ROADS, WA_ISLES.
    Used by: shared/terrain.js (frame, landAt / inVale / inHoar / inGrey / inSun / inGloam / vilAt / coastDist), shared/world-atlas-ground.js (the ground), tools/atlas-*.js.
    Test: tools/atlas-smoke.js. See it: node tools/atlas-preview.js out.png. Names: wa..., WA_... */
 const WA_SEA=1, WA_LAKE=2, WA_RIVER=3, WA_ICE=4;
 const WA_LAND_NAMES=WA_ANCHORS.lands;   // ['home','vale','hoar','grey','sun','gloam','amber']
 const WA_HUBS=WA_ANCHORS.hubs, WA_GATES=WA_ANCHORS.gates, WA_ZONES=WA_ANCHORS.zones, WA_POIS=WA_ANCHORS.pois, WA_ENTRANCES=WA_ANCHORS.entrances, WA_SPOTS=WA_ANCHORS.spots,
-  WA_ISLANDS=WA_ANCHORS.islands, WA_PVP=WA_ANCHORS.pvp, WA_LAKES=WA_ANCHORS.lakes, WA_RIVERS=WA_ANCHORS.rivers, WA_ROADS=WA_ANCHORS.roads;
+  WA_ISLANDS=WA_ANCHORS.islands, WA_PVP=WA_ANCHORS.pvp, WA_LAKES=WA_ANCHORS.lakes, WA_RIVERS=WA_ANCHORS.rivers, WA_ROADS=WA_ANCHORS.roads, WA_ISLES=WA_ANCHORS.isleislands;   // WA_ISLES: the Emberwake Isles' four islands {id, x, z, rx, rz, zones}
 // a layer is delta-coded against the cell above (the first row: against the cell on its left), zig-zag varints, a zero run is 0 + its length
 function waDecode(b64,n,Type){
   const s=atob(b64), out=new Type(n); let p=0, i=0;

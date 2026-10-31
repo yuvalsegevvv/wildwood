@@ -23,7 +23,10 @@ ok('the three echo-trial skills carry a feat (Ottoline 6 puppets, Marigold 5 App
   &&IDS.filter(id=>PLAN[id][3]==='C').length===3&&IDS.filter(id=>x.CAVE_SKILLS[id].feat).length===3);
 ok('the Amber Reach\'s three fill one empty place each on floors 2-4 (Burning Glass: B, Seam-Splitter: G, Tailwind: E), each reading its own set\'s mark and none spending it',
   [['burningglass',2,'brindle',30,'B','glint'],['seamsplitter',3,'dessa',35,'G','temper'],['tailwind',4,'sefi',30,'E','stride']].every(([id,f,set,c,m,mk])=>{ const s=x.CAVE_SKILLS[id]; return s&&s.floor===f&&s.set===set&&s.cost===c&&s.method===m&&s.el&&JSON.stringify(s.fx).includes('"id":"'+mk+'"')&&!/pop/.test(JSON.stringify(s.fx)); })
-  &&[2,3,4].every(f=>'ABCDEFGH'.split('').filter(m=>Object.values(x.CAVE_SKILLS).some(s=>s.floor===f&&s.method===m)).length===7));
+  &&[2,3,4].every(f=>'ABCDEFGH'.split('').filter(m=>Object.values(x.CAVE_SKILLS).some(s=>s.floor===f&&s.method===m)).length===7||Object.values(x.CAVE_SKILLS).filter(s=>s.floor===f&&s.set).length===8));
+ok('the Emberwake Isles\' three take the last empty place on floors 2-4 (Slack Water: D, Ember Count: H, Cord Snare: B), each reading its own set\'s mark and none spending it: all eight methods now have a set skill on every floor',
+  [['slackwater',2,'meleni',30,'D','swell'],['embercount',3,'tzaya',35,'H','tally'],['cordsnare',4,'atuqa',35,'B','knot']].every(([id,f,set,c,m,mk])=>{ const s=x.CAVE_SKILLS[id]; return s&&s.floor===f&&s.set===set&&s.cost===c&&s.method===m&&s.el&&s.desc&&JSON.stringify(s.fx).includes('"id":"'+mk+'"')&&!/pop/.test(JSON.stringify(s.fx)); })
+  &&[2,3,4].every(f=>'ABCDEFGH'.split('').every(m=>Object.values(x.CAVE_SKILLS).some(s=>s.floor===f&&s.method===m&&s.set))));
 { const base={id:'zzprobe',name:'Probe',floor:2,method:'C',set:'tansy',cost:30,desc:'d',mult:1,range:5,fx:{ring:{r:3}}}, n0=x.CAVE_BAD.length;
   const bad=[{feat:{kind:'x'}},{feat:'no'},{fx:{ring:{r:3},refund:{n:3,secs:4,cap:16}}},{fx:{ring:{r:3},refund:{n:0,secs:4}}}].map((o,i)=>x.defineCaveSkill(Object.assign({},base,{id:'zzprobe'+i},o)));
   ok('a bad feat or a refund above the cap (15) is left out and listed',bad.every(v=>v===null)&&x.CAVE_BAD.length===n0+4); x.CAVE_BAD.length=n0; }

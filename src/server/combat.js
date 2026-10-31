@@ -93,7 +93,7 @@ function rewardKill(q,m){
   if(m.def.id==='ymrik') openWestP(q);
   if(m.def.id==='gryphonqueen') openGateP(q,'river');
   if(m.def.id==='mountaingolem') openGateP(q,'neck');
-  if(m.def.id==='oldhorn') openIslesP(q);   // emberwake: the herd-mother's fall opens the harbour (the circles take you to Coralhaven)
+  if(m.def.id==='oldhorn') openIslesP(q);   // emberwake: the herd-mother's fall opens the Tide Bridge (the barrier at the Amber Reach's south cape)
   if(m.def.id==='sandwyrm'){ openGateP(q,'redgate'); openGateP(q,'amber'); }   // (savanna: the same fall opens the way south into Amber Reach)
 }
 // a boss kill: each of that boss's skills you do not own yet drops with BOSS_SKILL_CHANCE (drops.js); you choose when to equip it

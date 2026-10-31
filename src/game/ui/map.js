@@ -107,7 +107,7 @@ function drawFullMap(){
   for(const zn of ZONES){ if(zn.boss||!mine(zn)) continue; const [cx,cy]=at(...(zn.label||zonePoint(zn,0,0.5))); label(zn.name,cx,cy-fs*0.55,fs,'#f2f0e4',true); label('Level '+zoneLvText(zn),cx,cy+fs*0.6,fs*0.85,'#ffcf8a'); }
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.isles?'isles':A.amber?'amber':A.gloam?'gloam':A.sun?'sun':A.grey?'grey':A.hoar?'hoar':inVale(A.x,A.z)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bossLvIn(bd.def,land)+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
   { const V=land==='isles'?VIL8:land==='amber'?VIL7:land==='gloam'?VIL6:land==='sun'?VIL5:land==='grey'?VIL4:land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='isles'?'Coralhaven':land==='amber'?'Tallgrass':land==='gloam'?'Wraithwick':land==='sun'?'Glasswell':land==='grey'?'Highmark':land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
-  if(land==='isles') for(const w of EW_WAYS){ const [cx,cy]=at(w.x,w.z); dot(x,cx,cy,3.5*DPR,GEAR.isles>=2?'#9fe0ff':'#8a8078'); label(w.name,cx,cy-fs*1.1,fs*0.85,GEAR.isles>=2?'#e8e0d0':'#b4aea4'); }   // emberwake: the two waystations (a grey dot until Coralhaven has been walked into)
+  if(land==='isles') for(const w of EW_WAYS){ const [cx,cy]=at(w.x,w.z); dot(x,cx,cy,3.5*DPR,'#d8c898'); label(w.name,cx,cy-fs*1.1,fs*0.85,'#e8e0d0'); }   // emberwake: the two camps (no circle)
   dgEntMapMarks(x,at,land,fs,label,DPR);   // dungeons: the three doors, the Elder greyed while sealed
   skTrackMarks(x,at,(wx,wz)=>landAt(wx,wz)===(land==='home'?'home':land),DPR,true);   // tracked skill upgrade
   rdMapMarks(x,at,land,fs,label,DPR);   // raids: the stronghold of this land and its state
@@ -124,7 +124,7 @@ function drawFullMap(){
   }
   for(const Lk of LAKES){ if(!!Lk.vale!==(land==='vale')||land==='hoar'||land==='grey'||land==='sun'||land==='gloam'||land==='isles') continue; const [cx,cy]=at(Lk.x,Lk.z); label(Lk.name,cx,cy,fs*0.85,'#cfe8f6'); }
   if(land==='home'){ const [cx,cy]=at(PVP.x,PVP.z); label(PVP_ISLE.name,cx,cy,fs*0.85,'#ffd9a0'); }   // pvp: the island
-  for(const B of BRIDGES){ if(B.kind!=='causeway'||B.name[0]!=='T'||inVale(B.x,B.z)!==vale||land==='hoar'||land==='grey'||land==='sun'||land==='gloam') continue; const [cx,cy]=at(B.x,B.z); label(B.name,cx,cy+fs*1.1,fs*0.8,'#cfe8f6'); }   // the named causeways
+  for(const B of BRIDGES){ if(B.kind!=='causeway'||B.name[0]!=='T'||(land==='isles')!==EW_BRIDGE_ROADS.includes(B.road)||inVale(B.x,B.z)!==vale||land==='hoar'||land==='grey'||land==='sun'||land==='gloam') continue; const [cx,cy]=at(B.x,B.z); label(B.name,cx,cy+fs*1.1,fs*0.8,'#cfe8f6'); }   // the named causeways
   // quests
   for(const q of questTargets()){
     if(q.ring){ x.save(); x.setLineDash([5*DPR,5*DPR]); x.strokeStyle='rgba(242,207,90,.8)'; x.lineWidth=1.5*DPR; x.beginPath(); const [cx,cy]=at(VIL.x,VIL.z); x.arc(cx,cy,q.ring*k,0,TAU); x.stroke(); x.restore(); continue; }

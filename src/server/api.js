@@ -168,7 +168,7 @@ function sunrise(){
    - day, bosses (b), weather (w) and events (ev) are the same for everyone.
    The claude.ai room host sets io.broadcastSnaps: its channel is one shared, size-limited topic, so it keeps a single message for everyone
    (all awake monsters that changed, all players) instead of one per player. */
-const SNAP_NEAR=40, SNAP_MON=110, SNAP_BOSS=190, SNAP_PLAYERS=250;
+const SNAP_NEAR=40, SNAP_MON=110, SNAP_BOSS=190, SNAP_PLAYERS=420;
 function broadcastSnap(){
   const no=++S.snapNo, full=(S.fullT-=S.snapDt)<=0; if(full) S.fullT=3;
   const rows=[];   // every awake monster once: [monster, entry, state key]

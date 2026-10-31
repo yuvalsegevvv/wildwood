@@ -1,8 +1,8 @@
-//@ The Emberwake Isles' buildings: Coralhaven (stilt houses under palm-thatch hip roofs, a coral-stone basin with a carved totem, outrigger canoes and a harbour jetty) and the waystations Zotchul (a stepped altar) and Urkuwara (a trapezoid stone gate)
+//@ The Emberwake Isles' buildings: Coralhaven (stilt houses under palm-thatch hip roofs, a coral-stone basin with a carved totem, a gate of carved totems on the bridge side) and the camps Zotchul (a stepped altar) and Urkuwara (a trapezoid stone gate)
 /* Agent map: buildCoralhaven() is called by generation-setup.js after buildTallgrass (once). Coralhaven follows the home village's plan (VIL8 from shared/coralhaven.js: the same houses, stalls, anchors and colliders): every
    house stands on posts a step above the sand, in timber banded in the seven houses' colours (ISB_BANDS), under a four-sided palm-thatch roof; the moot-house (tavern) is longer with a carved ridge. At the heart (where the home village's
-   well would be) a coral-stone basin and a carved totem; the gate is two totem posts with a shell lintel; CH_LANDING (null when no water is near) a plank jetty with two outrigger canoes drawn up beside its foot.
-   buildWaystations() draws the stone dressing round each waystation's circle (the circle itself is buildCircle's, buildings-vale.js): Zotchul's low stepped altar with a stair and braziers, Urkuwara's trapezoid door in a dry-stone wall
+   well would be) a coral-stone basin and a carved totem; the gate is two totem posts with a shell lintel; the village's circle is buildCircle's (buildings-vale.js: VIL8.tele).
+   buildWaystations() draws the stone dressing of each camp (EW_WAYS: no circle, a worn floor with a cold hearth): Zotchul's low stepped altar with a stair and braziers, Urkuwara's trapezoid door in a dry-stone wall
    with rope-bound lintel and banners. Budget: a few thousand triangles, no per-leaf detail (a phone draws it). Tests: tools/client-smoke.js builds it; look at it with tools/shot.js --at <VIL8.x>,<VIL8.z>,0. Names: ISB, isb... */
 const ISB={built:false};
 const isbThatch=base=>(x,y,z,c)=>{ c.set(base).multiplyScalar(0.78+h3(Math.floor(x*4),Math.floor(y*3),Math.floor(z*4))*0.4); };
@@ -80,22 +80,10 @@ function buildCoralhaven(){
       A(new THREE.ConeGeometry(0.5,0.9,6).translate(sx*2.8,5.65,0),c=>c.set(0xe0583a)); const c=Math.cos(e), s=Math.sin(e); V.circles.push([p[0]+sx*2.8*c,p[1]-sx*2.8*s,0.7]); }
     A(vbox(6.4,0.4,0.4,0,4.7,0),dark); for(let k=0;k<7;k++) A(new THREE.SphereGeometry(0.2,6,5).scale(1,1.2,1).translate(-2.4+k*0.8,4.1-Math.sin(k/6*Math.PI)*-0.15,0),shell); }
   { const S=V.sign, {A}=inF(frameM(S.x,Y,S.z,S.rot)); A(vbox(0.16,2.3,0.16,0,1.15,0),dark); A(vbox(0.55,1.3,0.08,0,1.55,0.08),woodC(0x8a6a3a)); }
-  if(CH_LANDING){   // the harbour: a plank jetty out over the water on posts with a mooring pole, and two outrigger canoes on the sand beside its foot
-    const L=CH_LANDING, {A}=inF(frameM(L.x,Y,L.z,L.rot)), wy=Math.max(getH(L.x,L.z),0.4)+0.5;
-    for(let k=0;k<14;k++) A(vbox(2.4,0.1,0.55,0,wy-Y,1.0+k*0.58),woodC(0x7a5a34));
-    for(let k=0;k<6;k++) for(const sx of [-1,1]) A(vbox(0.18,2.4,0.18,sx*1.2,wy-Y-1.1,1.2+k*1.5),dark);
-    A(cyl(0.12,0.12,1.8,6).translate(1.1,wy-Y+0.9,9.0),dark); addCol(L.x+Math.sin(L.rot)*9.4,L.z+Math.cos(L.rot)*9.4,0.3);
-    for(const sd of [-1,1]){   // an outrigger canoe: a long hull, two curved ends and a float on two booms
-      const cx=L.x+Math.cos(L.rot)*sd*5.5-Math.sin(L.rot)*(-1.0), cz=L.z-Math.sin(L.rot)*sd*5.5-Math.cos(L.rot)*(-1.0), {A:C}=inF(frameM(cx,getH(cx,cz),cz,L.rot+(sd>0?0.15:-0.1)));
-      C(new THREE.SphereGeometry(0.5,8,6).scale(0.8,0.5,4.2).translate(0,0.45,0),c=>c.set(sd>0?0x8a5a34:0xb0743a));
-      for(const e of [-1,1]) C(new THREE.ConeGeometry(0.22,0.9,5).rotateX(e*1.2).translate(0,0.9,e*2.0),c=>c.set(0xe0583a));
-      C(new THREE.SphereGeometry(0.22,6,5).scale(1,0.7,5).translate(1.8,0.38,0),c=>c.set(0xd8c8a0)); for(const e of [-0.9,0.9]) C(cyl(0.04,0.04,1.4,4).rotateZ(Math.PI/2).translate(0.9,0.55,e),dark);
-      addCol(cx,cz,1.6); }
-  }
   addVillageMeshes(out,win);
   for(const c of V.circles) addCol(c[0],c[1],c[2]);
 }
-// the waystations' stone dressing: the circle is buildCircle's; each gets its own landmark beside it and a fire
+// the camps' stone dressing: each gets its own landmark, braziers and a hearth stone
 function buildWaystations(){
   const out=[], win=[];
   const inF=F=>({A:(g,fn)=>out.push(pc(g,fn).applyMatrix4(F))});
@@ -115,6 +103,23 @@ function buildWaystations(){
     for(const sx of [-3.2,3.2]){ A(cyl(0.45,0.55,0.7,8).translate(sx,0.35,2.6),isbStone(0x8a8478)); const fx=w.x+Math.cos(w.face)*sx+Math.sin(w.face)*2.6, fz=w.z-Math.sin(w.face)*sx+Math.cos(w.face)*2.6;
       const m=new THREE.Mesh(new THREE.ConeGeometry(0.3,0.8,7),flameMats[0]); m.position.set(fx,w.h+1.0,fz); scene.add(m); flames.push(m); }   // two braziers flank the keeper's side
     A(vbox(1.6,0.7,0.5,0,0.35,4.6),timber); A(vbox(1.6,0.08,0.7,0,0.74,4.6),woodC(0x8a6a3a));   // a plank bench for the keeper
+    A(cyl(2.2,2.4,0.22,12).translate(0,0.11,0),isbStone(0x9a9488)); A(cyl(1.0,1.2,0.3,10).translate(0,0.3,0),isbStone(0x6a6258));   // a worn stone floor with a cold hearth in the middle of the camp (there is no circle: the way here is on foot)
   }
   addVillageMeshes(out,[]);
 }
+
+// the Tide Bridge's gate (EW_TIDEGATE, shared/emberwake.js): two carved totem posts with a shell lintel across the plank causeway, and while gear.isles is 0 (Oldhorn stands) a barrier of woven reed mats and rope between them that
+// lifts away when he falls (ewGateUpdate, once a frame from game/main/loop.js; barLocked in shared/barriers.js does the holding)
+function buildTideGate(){
+  const T=EW_TIDEGATE; if(!T||ISB.gate) return;
+  const Y=bridgeDeck(T.x,T.z), y0=Y>-1e8?Y:Math.max(getH(T.x,T.z),0.5), F=frameM(T.x,y0,T.z,T.rot), posts=[], bar=[], dark=woodC(0x3a2414), shell=c=>c.set(0xf0e8d8);
+  const A=(g,fn)=>posts.push(pc(g,fn).applyMatrix4(F)), B=(g,fn)=>bar.push(pc(g,fn).applyMatrix4(F));
+  for(const sx of [-1,1]){ for(let k=0;k<4;k++) A(vbox(0.7,1.2,0.7,sx*2.7,0.6+k*1.2,0),c=>c.set([0x8a5a34,0xe0583a,0x2fb6a8,0xf0c040][(k+(sx>0?1:0))%4]));
+    A(new THREE.ConeGeometry(0.46,0.9,6).translate(sx*2.7,5.25,0),c=>c.set(0xe0583a)); }
+  A(vbox(6.0,0.36,0.4,0,4.4,0),dark); for(let k=0;k<7;k++) A(new THREE.SphereGeometry(0.2,6,5).scale(1,1.2,1).translate(-2.4+k*0.8,3.85,0),shell);
+  for(let k=0;k<5;k++) B(vbox(4.8,0.7,0.14,0,0.45+k*0.74,0),isbPlank([0x2fb6a8,0xe0583a,0xf0c040,0x2a6ab0,0xf0e8d0][k]));   // woven mats in the seven houses' colours
+  for(const sd of [-1,1]) B(cyl(0.05,0.05,5.2,5).rotateZ(Math.PI/2).translate(0,1.2+sd*0.9,0.12),c=>c.set(0xc8b078));   // two ropes across them
+  const gm=new THREE.Mesh(merge(posts),villageMat), bm=new THREE.Mesh(merge(bar),villageMat); gm.castShadow=bm.castShadow=true; scene.add(gm,bm);
+  ISB.gate={bar:bm,posts:gm};
+}
+function ewGateUpdate(){ const g=ISB.gate; if(!g) return; const shut=!(GEAR&&GEAR.isles>=1); if(g.bar.visible!==shut) g.bar.visible=shut; }

@@ -6,7 +6,7 @@ const FAR_CELL=27.5/1.5;
 // the Emberwake Isles: the young volcano in the west (Coralhaven's island), older and lower going east, a sand bar last
 // (the isles themselves are playable now, on the atlas: shared/emberwake.js; what is left here is a few islets on the horizon beyond the new south edge, and the smoke over the volcano)
 const FAR_ISLES=[{x:-720,z:2330,r:48},{x:-120,z:2420,r:62},{x:330,z:2380,r:40},{x:880,z:2300,r:30,sx:2.6,bar:true}];
-const FAR_SMOKE={x:650,z:1700};   // (the volcano isle's centre, EW_ISLANDS in the atlas)
+const FAR_SMOKE={x:EW_VOLC.x,z:EW_VOLC.z};   // (the volcano isle's centre, EW_VOLC in shared/emberwake.js)
 const FAR_C={grass:0x5d7446,rock:0x857d70,snow:0xf1f4f6,spruce:0x3e5b4c,ice:0xc4d8e6,frost:0xe9f0f5,sand:0xd6ae6c,mesa:0xb5623e,
   beach:0xdcc796,savanna:0xc4b25a,savanna2:0xa8a44c,heather:0x7f9072,heather2:0x8a7a92,jungle:0x4a9444,ash:0x4a3c34,lava:0xd8561e,smoke:0xb8b4ae};
 

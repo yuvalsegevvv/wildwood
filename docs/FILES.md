@@ -54,7 +54,7 @@ shared
   sunscar-city.js                    Glasswell's own water and ground in the city's frame: the splines of the lake and the river, the channel's cut into the Bowl's floor (gwCityCut), where water stands (gwCityWaterAt). Pure.
   sunland.js                         The Sunscar, the fifth land (levels 28-36, docs/areas/sunscar.md) on the atlas: Glasswell's Bowl at the Sunscar hub (carried by the heightmap), the River Pass, Redgate Canyon and the closed Amber link as gates on the atlas's gates, the borders held while a gate is shut, the arenas' and the door's places, keep-outs, colour patches. Pure.
   savanna.js                         Amber Reach, the seventh land (levels 37-45) on the atlas: its hub, the Ashbed Gate, the nine zone records a37..a45 and the places the atlas puts there (dungeon door, boss sites, raid site, cape pier, the Seven Pools, the seasonal river). Pure.
-  emberwake.js                       The Emberwake Isles, the eighth land (levels 42-50): its four islands on the atlas's southern strip, the land test's constants and the places the volcano pass plugs into. Pure.
+  emberwake.js                       The Emberwake Isles, the eighth land (levels 42-50): its four islands on the atlas's southern strip, joined only by plank bridges, the land test's constants and the places the volcano pass plugs into. Pure.
   gloamhorn.js                       The Gloamhorn, the sixth land (levels 30-40, docs/areas/gloamhorn.md) on the atlas: its anchors (Wraithwick's hub, the Windswept Neck, the bosses' places, the door), the sea around it (wrecks, cave mouths, the lighthouse), keep-outs. Pure.
   village-layout.js                  Village placement and layout (VIL): houses, stalls, anchors, paths, colliders. Pure.
   zones.js                           Monster zones of the home forest as the atlas lays them out (ZONES, zoneAt, zonePoint, defZone, zoneOfAtlas): zones 1-15 and the edge zones shore / sunfoot / foothills, the Stone Circle's arena (ARENA); the vale's are in vale.js. Pure.
@@ -65,7 +65,7 @@ shared
   barriers.js                        Barriers: the one place that says what holds a hiker (the gates of the locked lands) and what no longer does once a land is open (client movement and server setPos both call barStep). Pure.
   wraithwick.js                      Wraithwick, the Gloamhorn's village (VIL6): a fisher-and-wrecker hamlet of stone cottages, cairns and crooked lamps on the heath where the neck pass comes out; its teleport circle; joins VILS and CIRCLES. Pure.
   tallgrass.js                       Tallgrass, Amber Reach's village (VIL7): the Kin's moot town round the Moot Baobab, on the savanna hub of the atlas (SAV_HUB); its teleport circle (gear.tall) and the reed landing on the water; joins VILS and CIRCLES. Pure.
-  coralhaven.js                      Coralhaven, the Emberwake Isles' village (VIL8): the sea folk's stilt town on the first island's north shore, its teleport circle (gear.isles) and harbour landing, and the two waystations Zotchul and Urkuwara (a circle and a few people, no shops). Pure.
+  coralhaven.js                      Coralhaven, the Emberwake Isles' village (VIL8): the sea folk's stilt town on the second island, the isles' one teleport circle (gear.isles), and the two camps Zotchul and Urkuwara (a flat pad, a landmark and a few people, no circle, no shops). Pure.
   sunzones.js                        The Sunscar's zones s28-s36 (the atlas's zones of land 'sun', one per level) and its two boss arenas at the atlas's bosses (the Glass Guardian's court, the sand wyrm's pit). Pure.
   gloamzones.js                      The Gloamhorn's zones m30-m40 (the atlas's zones of land 'gloam', one per level) and its two boss arenas (the Drowned Captain's hold, the lighthouse's forecourt). Pure.
   savannazones.js                    Amber Reach's zones a37-a45 (the atlas's zones of land 'amber', one per level) and its two boss arenas at the atlas's bosses (Old Thunder's roost on Anvil Rock, the slab at the top of the Sunstair). Pure.
@@ -194,6 +194,9 @@ shared
   cave/skill-2-burningglass.js       Deep Cave skill Burning Glass (floor 2, brindle's set skill, method B)
   cave/skill-3-seamsplitter.js       Deep Cave skill Seam-Splitter (floor 3, dessa's set skill, method G)
   cave/skill-4-tailwind.js           Deep Cave skill Tailwind (floor 4, sefi's set skill, method E)
+  cave/skill-2-slackwater.js         Deep Cave skill Slack Water (floor 2, meleni's set skill, method D)
+  cave/skill-3-embercount.js         Deep Cave skill Ember Count (floor 3, tzaya's set skill, method H)
+  cave/skill-4-cordsnare.js          Deep Cave skill Cord Snare (floor 4, atuqa's set skill, method B)
   raids.js                           Raids: one ruined stronghold per land (eight) (defineRaid registry, the common layout, level and pay by zone tier, the signature-skill upgrade price in raid material, the flat pads)
   raids/thornwall.js                 Raid: Thornwall Keep, Wildwood's border castle taken over by the goblin warband (garrison, site, material)
   raids/kurohana.js                  Raid: Kurohana Castle, the Sakura Vale's burnt hilltop castle held by oni and its last lord's undead samurai (garrison, site, material)
@@ -315,6 +318,7 @@ game
   world/plant-models-hi.js           Detailed plant models for the desktop (the *Hi builders): conifers with drooping boughs, broadleaf crowns of leaf fans on forked limbs, leafy bushes, pinnate ferns, faceted rocks, fallen logs, reeds
   world/plant-models-sun.js          The Sunscar's plants: the date palm, the saguaro-like cactus and the flat-crowned thorn tree (G.trees.palm / cactus / thorn); the rest of the planting is the sun branch of genChunk (generation-chunks.js)
   world/plant-models-savanna.js      Amber Reach's plants: the flat-topped acacia (G.trees.savacacia), the giant baobab (G.trees.baobab) and the tall savanna grass (G.savGrass, a material that turns gold or green with the season)
+  world/plant-models-isles.js        The Emberwake Isles' tropical plants: the ceiba (a 30 m emergent with buttress roots and an umbrella crown hung with lianas), two canopy trees, two tall coconut palms, the banana plant and the tree fern (G.trees.ceiba / jtree / jtree2 / tpalm / tpalm2 / banana / treefern)
   world/plant-models-more.js         More tree species for variety: poplar, beech, willow, stone pine, cedar, ginkgo, larch, acacia and the gloom oak (G.trees / G.treesHi, a low-poly and a detailed model each)
   world/grass-models.js              Grass tufts in three levels of detail (curved, tapering blades with a dark root and a bright tip) and flowers with petals
   world/instancing.js                Chunked instanced meshes (frustum culled, with per-instance levels of detail), distance culling, tree collision grid (addCol, nearCols)
@@ -415,7 +419,7 @@ game
   village/buildings-sunscar.js       The Sunscar placed in the game: Glasswell's model on the Bowl the heightmap carries, its colliders (no water outside the Bowl)
   village/buildings-gloam.js         The Gloamhorn's buildings and dressing: Wraithwick (dark stone cottages, crooked lamps, cairns, a chapel), the Gloam Light, wrecks, sea-cave mouths, the Captain's hold, and standing stones (the Gloamvault's door is game/village/buildings-dungeon-gloam.js)
   village/buildings-savanna.js       Amber Reach's buildings: Tallgrass (round mud-brick huts under thatch, reed-awned stalls, torch posts, drums), the Moot Baobab at its heart (a hollow tree wide as a hall, a platform and rope bridges in its crown), the gate posts and the reed landing
-  village/buildings-isles.js         The Emberwake Isles' buildings: Coralhaven (stilt houses under palm-thatch hip roofs, a coral-stone basin with a carved totem, outrigger canoes and a harbour jetty) and the waystations Zotchul (a stepped altar) and Urkuwara (a trapezoid stone gate)
+  village/buildings-isles.js         The Emberwake Isles' buildings: Coralhaven (stilt houses under palm-thatch hip roofs, a coral-stone basin with a carved totem, a gate of carved totems on the bridge side) and the camps Zotchul (a stepped altar) and Urkuwara (a trapezoid stone gate)
   village/villagers.js               VILLAGERS (hard-coded NPCs of the three villages), random villagers, NPC behaviour (updateNPCs)
   village/villagers-outfits.js       The signature outfit characters in the world (VILLAGERS_OUTFIT, WILD_SITES, npcOutfitLook): each set's wearer stands in the village or the wild spot that fits their theme
   village/smalltalk-savanna.js       Small talk of Tallgrass (SMALLTALK7): what the Kin say when you pass, hints with two readings and no names from anywhere else

@@ -774,13 +774,12 @@ OLD_LANDM8 = near(LANDM, X8, Z8)   # (the old canvas's land at the 8 m nodes: th
 ISL_Z1 = 2100.0                      # the world's new south edge (WZ1)
 ISL_ROWS8 = 405                      # 8 m node rows (z up to Z0 + 404 * 8 = 2112); 203 rows every 16 m
 ISL_ID = 7
-ISL_ISLANDS = [   # name, centre x, z, radii, turn (rad): west to east, by the boats from the Amber Reach's southern cape
-    ('coralhaven', -1100, 1590, 215, 190, 0.3), ('jungle', -560, 1650, 235, 200, -0.2), ('highland', -20, 1620, 225, 205, 0.1),
-    ('volcano', 650, 1700, 255, 245, 0.0)]   # the volcano isle is a separate island with no way on foot yet (the boats, a later pass); its interior is reserved
-ISL_BARS = [((-905, 1600), (-790, 1640)), ((-335, 1650), (-235, 1630))]   # the reef causeway Coralhaven | Jungle and the isthmus Jungle | Highland (40 m wide, walkable)
-ISL_ZONE_SEEDS = [(42, 'coralhaven', -1140, 1625, 3.0), (43, 'coralhaven', -1010, 1655, 4.0), (44, 'jungle', -670, 1670, 12.0), (45, 'jungle', -560, 1560, 18.0),
-                  (46, 'jungle', -430, 1715, 9.0), (47, 'highland', -70, 1650, 34.0), (48, 'highland', 70, 1590, 50.0)]   # key, island, x, z, elevation (m)
-ISL_HUB = (-1105.0, 1530.0)          # Coralhaven, on the northern shore of the first island (the boats land here)
+ISL_ISLANDS = [   # name, centre x, z, radii, turn (rad): west to east. Each is a separate island: the Amber Reach's south cape | landing | Coralhaven's isle | the east isle | the volcano's, joined by plank bridges only
+    ('landing', -430, 1400, 205, 170, 0.1), ('coralhaven', 260, 1430, 260, 205, -0.1), ('eastisle', 1010, 1400, 320, 205, 0.05),
+    ('volcano', 1030, 1905, 235, 135, 0.0)]   # the volcano isle is reached by the last bridge; its interior is reserved (a later pass)
+ISL_ZONE_SEEDS = [(42, 'landing', -480, 1350, 3.0), (43, 'landing', -370, 1450, 4.0), (44, 'coralhaven', 200, 1510, 12.0), (45, 'coralhaven', 380, 1370, 18.0),
+                  (46, 'eastisle', 830, 1420, 9.0), (47, 'eastisle', 1030, 1450, 34.0), (48, 'eastisle', 1190, 1380, 50.0)]   # key, island, x, z, elevation (m)
+ISL_HUB = (150.0, 1430.0)             # Coralhaven, on the west of the second island (the bridge from the landing comes in at its gate)
 def _ex_edt(src, step, cap):
     """exact Euclidean distance (m) to the nearest True cell, on a grid of `step` m (edt() above, for any shape)"""
     R = int(cap / step) + 1; big = float(R + 2); g = np.where(src, 0.0, big)
@@ -806,12 +805,9 @@ def _capsule(a, b, hw):
     ax, az = a; bx, bz = b; dx, dz = bx - ax, bz - az; L2 = dx * dx + dz * dz
     t = np.clip(((XN8 - ax) * dx + (ZN8 - az) * dz) / L2, 0, 1); d = np.hypot(XN8 - (ax + t * dx), ZN8 - (az + t * dz))
     return d - (hw + fbm(XN8 * 0.05, ZN8 * 0.05, 90, 2) * 3)
-ISL_BAR = np.zeros(XN8.shape, bool)
-for a_, b_ in ISL_BARS: ISL_BAR |= _capsule(a_, b_, 20.0) < 0
-ISL_LAND = ISL_LAND | ISL_BAR
 ISL_LAND[:OLDR + 2] = False          # (nothing of the strip within 16 m of the old canvas: the seam is sea)
 FULL_LAND = np.concatenate([OLD_LANDM8, np.zeros((NZ8N - OLDR, NX8N), bool)], 0) | ISL_LAND   # the whole canvas: the old land and the isles
-# the zones: the nearest seed on the same island (the bars belong to the nearer island's zone)
+# the zones: the nearest seed on the same island
 ISL_ZL = np.full(XN8.shape, -1, int)
 _WX = XN8 + fbm(XN8 * 0.011 + 50, ZN8 * 0.011 - 30, 143, 3) * 42 + fbm(XN8 * 0.03, ZN8 * 0.03 + 8, 144, 2) * 14   # (the zone borders wander, as the other lands' do)
 _WZ = ZN8 + fbm(XN8 * 0.011 - 20, ZN8 * 0.011 + 60, 145, 3) * 42 + fbm(XN8 * 0.03 + 5, ZN8 * 0.03, 146, 2) * 14
@@ -819,8 +815,7 @@ _dd = np.stack([np.hypot(_WX - sx, _WZ - sz) for _, _, sx, sz, _ in ISL_ZONE_SEE
 _isl_of = np.array([[n[0] for n in ISL_ISLANDS].index(isl) for _, isl, _, _, _ in ISL_ZONE_SEEDS])
 _cand = np.where(ISL_OWN[None] == _isl_of[:, None, None], _dd, 1e9)
 _zk = np.argmin(_cand, 0); _ok = np.min(_cand, 0) < 1e8
-_bar_only = ISL_BAR & ~(ISL_OWN >= 0); _zk_bar = np.argmin(_dd, 0)
-ISL_ZL = np.where(_ok, _zk, np.where(_bar_only, _zk_bar, -1))
+ISL_ZL = np.where(_ok, _zk, -1)
 ISL_ZL = np.where(ISL_LAND, ISL_ZL, -1)
 ISL_ELEV = np.array([z[4] for z in ISL_ZONE_SEEDS])
 _vol = ISL_OWN == [n[0] for n in ISL_ISLANDS].index('volcano')
@@ -852,12 +847,48 @@ for k, (key, isl, sx, sz, el) in enumerate(ISL_ZONE_SEEDS):
 for z in ISL_ZONES: z['entrance'] = [z['x'], z['z']]
 ISL_ENTR = [{'land': 'isles', 'zone': z['key'], 'x': z['x'], 'z': z['z']} for z in ISL_ZONES]
 assert all(z['area'] > 20000 for z in ISL_ZONES), [z['area'] for z in ISL_ZONES]
+# ---- the plank bridges: every island stands alone in the sea; the only ways between them are four roads that each cross one strait (roads.js turns the wet stretch into a causeway) ----
+def _cells(m): return np.argwhere(m)
+def _xy(c): return np.array([X0 + c[:, 1] * 8.0, Z0 + c[:, 0] * 8.0]).T
+def _closest(A, B):
+    """the closest pair of cells (a in A, b in B), as (x, z) points"""
+    pa, pb = _xy(A), _xy(B); d = ((pa[:, None, :] - pb[None, :, :]) ** 2).sum(2); i, j = np.unravel_index(np.argmin(d), d.shape)
+    return pa[i], pb[j], float(np.sqrt(d[i, j]))
+_ISL_IX = {n[0]: i for i, n in enumerate(ISL_ISLANDS)}
+def _own(n): return _cells(ISL_OWN == _ISL_IX[n])
+# every island is its own piece: the field's wobble must not join two (the gaps are checked below, every pair 60 m or more apart)
+_AMB = _cells(OLD_LANDM8 & (XN8[:OLDR] > -600) & (XN8[:OLDR] < -320) & (ZN8[:OLDR] > 1060) & (ZN8[:OLDR] < 1128))
+_STRAITS = {}
+_STRAITS['amber'] = _closest(np.concatenate([_AMB, np.zeros((0, 2), int)]), _own('landing'))
+for _a, _b in (('landing', 'coralhaven'), ('coralhaven', 'eastisle'), ('eastisle', 'volcano')): _STRAITS[_b] = _closest(_own(_a), _own(_b))
+for _k, (_pa, _pb, _d) in _STRAITS.items(): print('strait', _k, [round(float(v)) for v in _pa], '->', [round(float(v)) for v in _pb], round(_d), 'm')
+assert all(60 <= v[2] <= 260 for v in _STRAITS.values()), {k: v[2] for k, v in _STRAITS.items()}
+for _a in _ISL_IX:
+    for _b in _ISL_IX:
+        if _a < _b: assert _closest(_own(_a), _own(_b))[2] >= 60, (_a, _b)
+def _line(pts, step=3.0):
+    out = [tuple(pts[0])]
+    for a_, b_ in zip(pts, pts[1:]):
+        L_ = math.hypot(b_[0] - a_[0], b_[1] - a_[1]); n_ = max(1, int(L_ / step))
+        out += [(a_[0] + (b_[0] - a_[0]) * k / n_, a_[1] + (b_[1] - a_[1]) * k / n_) for k in range(1, n_ + 1)]
+    return out
+def _inland(pa, pb, m):
+    """the point m metres behind pa, away from pb (the road's way onto the island)"""
+    d = np.array(pb) - np.array(pa); d = d / (np.linalg.norm(d) or 1); return tuple(np.array(pa) - d * m)
+def _cross(k, m=36.0):
+    pa, pb, _ = _STRAITS[k]; return _inland(pa, pb, m), _inland(pb, pa, m)
+def _ctr(n): i = _ISL_IX[n]; return (ISL_ISLANDS[i][1], ISL_ISLANDS[i][2])
+_t0, _t1 = _cross('amber'); _r0, _r1 = _cross('coralhaven'); _s0, _s1 = _cross('eastisle'); _e0, _e1 = _cross('volcano')
+_hubw = (ISL_HUB[0] - 50.0, ISL_HUB[1]); _hube = (ISL_HUB[0] + 50.0, ISL_HUB[1])
+ISL_ROADS = [('Tide', [_t0, _t1, _ctr('landing')]), ('Reef', [_ctr('landing'), _r0, _r1, _hubw]), ('Strait', [_hube, _s0, _s1, _ctr('eastisle')]),
+             ('Ember', [_ctr('eastisle'), _e0, _e1, _ctr('volcano')])]
+for _nm, _w in ISL_ROADS: ROADS.append({'kind': 'road', 'name': _nm, 'pts': [[round(float(p[0]), 1), round(float(p[1]), 1)] for p in _line(_w)]})
 # the Isles' places (W3): the two world bosses' arenas (Ocelo in the Overgrown Plaza, Tuila on the Drowned Strait's shore), the Cenote's dungeon door in the Jungle Edge and the Seven Gates stronghold on Condor Heights.
-# Pinned by hand: each is the flattest ground (a 46 m ring varies under 6 m) at least 70 m from the shore in its zone, and the four stand 120 m or more apart (checked by tools/emberwake-smoke.js).
-POIS += [{'kind': 'boss', 'name': "Ocelo's Plaza", 'land': 'isles', 'zone': 45, 'x': -564.0, 'z': 1570.0},
-         {'kind': 'boss', 'name': "The Drowned Strait", 'land': 'isles', 'zone': 46, 'x': -516.0, 'z': 1690.0},
-         {'kind': 'door', 'name': 'isles door', 'land': 'isles', 'zone': 44, 'x': -648.0, 'z': 1702.0},
-         {'kind': 'raid', 'name': 'The Seven Gates', 'land': 'isles', 'zone': 48, 'x': 48.0, 'z': 1642.0}]
+# Pinned by a search over the built ground (each the flattest ground: a 46 m ring varies under 6 m, 70 m or more from the shore in its zone; the four stand 120 m or more apart: checked by tools/emberwake-smoke.js).
+POIS += [{'kind': 'boss', 'name': "Ocelo's Plaza", 'land': 'isles', 'zone': 45, 'x': 332.0, 'z': 1368.0},
+         {'kind': 'boss', 'name': "The Drowned Strait", 'land': 'isles', 'zone': 46, 'x': 840.0, 'z': 1328.0},
+         {'kind': 'door', 'name': 'isles door', 'land': 'isles', 'zone': 44, 'x': 304.0, 'z': 1544.0},
+         {'kind': 'raid', 'name': 'The Seven Gates', 'land': 'isles', 'zone': 48, 'x': 1182.0, 'z': 1398.0}]
 def _strip(arr8, old, step):
     """the old rows (kept as they are) + the strip's rows, sampled every `step` m from the 8 m field"""
     s_ = step // 8; new = arr8[::s_, ::s_]; nr = (ISL_ROWS8 - 1) // s_ + 1; new = new[:nr]
@@ -888,6 +919,7 @@ ANCH = {
     'entrances': [{'land': e['land'], 'zone': e['zone'], 'x': R1(e['x']), 'z': R1(e['z'])} for e in ENTR + ISL_ENTR],
     'spots': [{'land': s['land'], 'zone': s['zone'], 'n': s['n'], 'x': R1(s['x']), 'z': R1(s['z']), 'heart': bool(s['heart'])} for s in SPOTS],
     'islands': [{'name': s['name'], 'what': s['what'], 'kind': s['kind'], 'x': R1(s['x']), 'z': R1(s['z']), 'area': int(s['area'])} for s in ISLAND_SPOTS],
+    'isleislands': [{'id': n[0], 'x': n[1], 'z': n[2], 'rx': n[3], 'rz': n[4], 'zones': [z[0] for z in ISL_ZONE_SEEDS if z[1] == n[0]]} for n in ISL_ISLANDS],
     'pvp': PVP,
     'lakes': [{'x': L['x'], 'z': L['z'], 'r': L['r'], 'land': L['land'], 'zone': L['zone'], 'level': L['level'], 'frozen': bool(L['frozen'])} for L in LAKES],
     'rivers': [{'name': r['name'], 'len': r['len'], 'pts': [[round(a), round(b)] for a, b in r['pts']]} for r in RIVERS],

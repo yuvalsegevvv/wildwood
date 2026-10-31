@@ -195,7 +195,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     ok('invalid method rows (a duplicate, a bad letter, a prototype name, wrong dress, no numbers) are left out and listed, never thrown',bad.every(b=>x.defineCaveMethod(b)===null)&&x.CAVE_METHOD_BAD.length===n0+bad.length&&x.CAVE_METHOD_IDS.length===8); x.CAVE_METHOD_BAD.length=n0; }
   ok('floor 1 has its eight general skills, one for each method A-H, none left out',M8.every(m=>{ const s=x.caveSkillAt(1,m); return s&&s.floor===1&&s.set===null&&s.cost>=20&&s.cost<=40; })&&x.CAVE_BAD.filter(b=>!/^(Bad Id|fixflare|cost1|floor9|meth|nofx|badset|slash|\?)$/.test(b.id)).length===0,x.CAVE_BAD.map(b=>b.id).join());
   ok('the costs are the plan\'s (Echo 30, Flare 25, Overdrive 25, Lantern Ward 35, Burrow 30, Cave-in 35, Grapple Line 20, Second Wind 40)',['echo:30','flare:25','overdrive:25','lanternward:35','burrow:30','cavein:35','grapple:20','secondwind:40'].every(q=>{ const [id,c]=q.split(':'); return x.CAVE_SKILLS[id]&&x.CAVE_SKILLS[id].cost===+c; }));
-  ok('floors 2-4 have seven skills each (one per set; the Amber Reach\'s three filled one empty place on each) and one empty place that pays Echo Shards',[2,3,4].every(n=>M8.filter(m=>x.caveSkillAt(n,m)).length===7));
+  ok('floors 2-4 have eight skills each, one for every method (one per set: the Amber Reach\'s three and the Emberwake Isles\' three filled the empty places)',[2,3,4].every(n=>M8.filter(m=>x.caveSkillAt(n,m)).length===8));
   ok('the board names the method, the floor and the skill ("Mural fragments, The Glowworm Grotto")',x.caveWhereText(x.CAVE_SKILLS.echo)==='Mural fragments, The Glowworm Grotto'&&x.caveBoardRows(1).length===8&&x.caveBoardRows(1)[0].skill.id==='echo');
   ok('method C\'s feat is data: floor 1 uses the general one (beat five without being hit)',x.caveFeatOf(1)===x.CAVE_FEAT_DEFAULT&&x.CAVE_FEAT_DEFAULT.kind==='pack'&&x.CAVE_FEAT_DEFAULT.noHit===true);
   { const t=x.CAVE_SKILLS; ok('a skill row may carry a feat only on method C',true); }
@@ -344,8 +344,9 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   ok('shards per completion are 1 / 2 / 4 / 8 on floors 1-4 and the level costs 3 / 7 / 15 / 40 shards plus 3 / 6 / 10 / 20 of the floor\'s monster drop',JSON.stringify(X.CAVE_SHARDS.slice(1))==='[1,2,4,8]'&&JSON.stringify(X.CAVE_LEVEL_COST.slice(2))==='[3,7,15,40]'&&JSON.stringify(X.CAVE_DROP_COST.slice(2))==='[3,6,10,20]'&&X.CAVE_DROPS.length===5);
   // a method whose skill you own pays shards on floors 1-4; a place with no skill too
   g.own[s1.id]=1; g.sh=0; let want=0;
-  for(const n of [1,2,3,4]){ const mt='ABCDEFGH'.split('').find(m=>{ const k=X.caveSkillAt(n,m); return !k; })||s1.method; if(n===1){ X.caveMethodDoneP(q,1,s1.method); } else { X.caveMethodDoneP(q,n,mt); } want+=X.CAVE_SHARDS[n]; }
-  ok('owned-skill and skill-less completions pay 1+2+4+8 shards in all (floor 1 owned; floors 2-4 each from a place with no skill)',g.sh===want||g.sh>=want,g.sh+' vs '+want);
+  for(const n of [1,2,3,4]){ if(n===1){ X.caveMethodDoneP(q,1,s1.method); } else { const k=X.caveSkillAt(n,'A'); g.own[k.id]=1; X.caveMethodDoneP(q,n,'A'); } want+=X.CAVE_SHARDS[n]; }   // (every place has a skill now: floors 2-4 are completed from a place whose skill is owned)
+  const ownN=Object.keys(g.own).length;
+  ok('owned-skill completions pay 1+2+4+8 shards in all (floors 1-4)',g.sh===want||g.sh>=want,g.sh+' vs '+want);
   tk(2); ok('a completion tells the client (toast with the shards won)',(inb.s1||[]).some(m=>JSON.stringify(m).includes('Echo Shard')));
   // levelling
   g.sh=0; q.dirty=false; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1);
@@ -360,7 +361,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     ok('the floors\' drops survive a save, cleaned',JSON.stringify(X.caveSanitizeSave({own:{},m:[5,3,'x',-4,1e9]}).m)==='[0,3,0,0,9999]'&&JSON.stringify(X.caveSanitizeSave({}).m)==='[0,0,0,0,0]'); }
   g.sh=500; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); ok('the cap is level 5: no more is bought and no shard is spent',g.own[s1.id]===5&&g.sh===500);
   for(const bad of ['constructor','__proto__','nope',7,null,{},[]]) W4.receive('s1',{t:'caveup',id:bad}); tk(1);
-  ok('bad or unowned ids in caveup change nothing',g.sh===500&&Object.keys(g.own).length===1);
+  ok('bad or unowned ids in caveup change nothing',g.sh===500&&Object.keys(g.own).length===ownN);
   const other=f1.find(s=>s.id!==s1.id); W4.receive('s1',{t:'caveup',id:other.id}); tk(1); ok('a skill you do not own cannot be levelled',!Object.prototype.hasOwnProperty.call(g.own,other.id)&&g.sh===500);
   // the effect: +10% a level, +40% at 5, through the one helper
   const lk=l=>{ g.own[s1.id]=l; return X.caveLvK(q,s1.id); };

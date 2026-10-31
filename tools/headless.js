@@ -76,7 +76,7 @@ function bootClient(o){
     cut('function mapBuildStep(rows){','function mapBuildStep(rows){ if(1) return;');
     cut('terrainColor(x,z,h,grad(x,z),cc);','cc.setRGB(0.4,0.5,0.3);');
     cut('initMotes(); initAnimals(); initNPCs(); renderQlog();','initMotes(); initAnimals(); renderQlog();');
-    cut('const NEAR_R=55, FAR_R=320;','const NEAR_R=1, FAR_R=0;');   // no plants are grown (the start card is ready as soon as the ground is)
+    cut('const NEAR_R=55, FAR_R=Math.round(320*VIEW_K);','const NEAR_R=1, FAR_R=0;');   // no plants are grown (the start card is ready as soon as the ground is)
   }
   main=main.replace(/new THREE\.WebGLRenderer\([^)]*\)/,'({setPixelRatio(){},setSize(){},shadowMap:{},setClearColor(){},render(){}})')
     .replace('function frame(){','global.__G=()=>({'+(o.expose||[]).join(',')+'});\nfunction frame(){');

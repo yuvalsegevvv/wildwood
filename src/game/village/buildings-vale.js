@@ -146,7 +146,6 @@ function buildVale(){
   addVillageMeshes(out,win);
   for(const c of V.circles) addCol(c[0],c[1],c[2]);
   for(const VV of VILS) buildCircle(VV);
-  for(const W of EW_WAYS) buildCircle(W);   // emberwake: the waystations' circles
 }
 /* ---- the border bridge (it was the tunnel): a stone deck over the Greyfall River with parapets and piers, a gatehouse across its west end (two towers, a lintel, the rune-carved door
    that sinks when the Rootwarden has fallen), stone lanterns along the parapets and a timber gate at the east end ---- */

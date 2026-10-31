@@ -41,8 +41,9 @@ function* genChunk(ci){
   // trees
   const items={}; for(const k in G.trees) items[k]=[];
   const trees=[];
-  const MAXT=Math.round(2400*Q*per); let placed=0;
-  for(let a=0;a<70000*per && placed<MAXT;a++){
+  const isl=chunkRect(ci,0), ISK=inIsles((isl[0]+isl[1])/2,(isl[2]+isl[3])/2)?1.9:1;   // emberwake: the isles' jungle is twice as dense
+  const MAXT=Math.round(2400*Q*per*ISK); let placed=0;
+  for(let a=0;a<70000*per*ISK && placed<MAXT;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(10);
     if(Math.hypot(x-spawn.x,z-spawn.z)<7) continue;
@@ -59,16 +60,21 @@ function* genChunk(ci){
       const m=mtx(x,h-0.15,z,rand()*TAU,s,s*R(0.92,1.1),s,R(-0.03,0.03),R(-0.03,0.03));
       items[type].push({x,z,m,c:type==='snag'?tint(0x3a3430,0.1):tint(pick(PAL[type]))}); trees.push({x,z,s}); placed++; continue;
     }
-    if(inIsles(x,z)){   // emberwake: the Emberwake Isles: palms leaning over the beaches, a dense jungle of broadleaf trees, palms and bamboo on the second island, a few thorn trees and umbrella pines on the Highland; none at the keep-outs, in the shallows or on the arenas
-      const cd=coastDist(x,z); if(h<1.4||g>0.55||cd<12||ewKeepOut(x,z,3)||vDist(x,z)<VR+8||storyClear(x,z)||dgEntClear(x,z)||waWaterDist(x,z)<5) continue;
-      const part=ewIslePart(x,z), cl=noise2(x*0.013+40,z*0.013-12)*0.5+0.5;
-      const beach=cd<46, pr=part===1?0.05+0.1*cl:part===2?0.004+0.006*cl:0.012+0.02*cl+(beach?0.02:0);   // (the jungle's canopy closes in clumps; the Highland is nearly bare; Coralhaven's island has palm groves)
+    if(inIsles(x,z)){   // emberwake: the Emberwake Isles: a tall, dense jungle (ceibas towering over broadleaf trees, coconut palms, bananas, tree ferns and bamboo) on the jungle isles, palm groves on the Landing's island and the beaches, a few thorn trees and umbrella pines on the Highland, a sparse fringe on the volcano; none at the keep-outs, in the shallows or on the arenas
+      const cd=coastDist(x,z); if(h<1.4||g>0.6||cd<12||ewKeepOut(x,z,3)||vDist(x,z)<VR+8||storyClear(x,z)||dgEntClear(x,z)||waWaterDist(x,z)<5) continue;
+      const part=ewIslePart(x,z), cl=noise2(x*0.013+40,z*0.013-12)*0.5+0.5, beach=cd<46;
+      const pr=part===1?0.09+0.16*cl:part===2?0.006+0.01*cl:part===3?0.012+0.015*cl:0.03+0.05*cl+(beach?0.04:0);   // (the canopy closes in clumps; the Highland is nearly bare; the volcano keeps a fringe; the Landing's island has palm groves)
       if(rand()>pr) continue;
-      let type=beach?'palm':part===1?(rand()<0.4?'palm':rand()<0.2?'bamboo':rand()<0.5?'oakA':'oakB'):part===2?(rand()<0.6?'thorn':'umbrella'):(rand()<0.7?'palm':'oakB'); const s=type==='bamboo'?R(0.9,1.4):R(0.75,1.35);
-      if(!canPlace(x,z,(type==='oakA'||type==='oakB'?3.2:2.6)*Math.min(s,1.1))) continue;
+      const q=rand();
+      let type=beach||part===0?(q<0.45?'tpalm':q<0.8?'tpalm2':q<0.88?'palm':'jtree'):
+        part===1?(q<0.05?'ceiba':q<0.27?'jtree':q<0.46?'jtree2':q<0.62?'tpalm':q<0.7?'tpalm2':q<0.8?'banana':q<0.9?'treefern':q<0.95?'bamboo':rand()<0.5?'oakA':'oakB'):
+        part===2?(q<0.45?'thorn':q<0.85?'umbrella':'jtree2'):(q<0.5?'treefern':q<0.8?'tpalm':'jtree');
+      let s=type==='ceiba'?R(0.85,1.25):type==='bamboo'?R(0.9,1.4):type==='banana'||type==='treefern'?R(0.8,1.3):type==='jtree'||type==='jtree2'?R(0.8,1.4):type==='tpalm'||type==='tpalm2'?R(0.85,1.4):R(0.75,1.35);
+      if(!canPlace(x,z,(type==='ceiba'?11:type==='jtree'||type==='jtree2'?3.6:type==='oakA'||type==='oakB'?3.2:2.4)*Math.min(s,1.1))) continue;
       addCol(x,z,RAD[type]*s);
       const m=mtx(x,h-0.15,z,rand()*TAU,s,s*R(0.92,1.1),s,R(-0.05,0.05),R(-0.05,0.05));
-      items[type].push({x,z,m,c:tint(type==='oakA'||type==='oakB'?pick(ISLE_LEAF):type==='thorn'?pick(PAL.thorn):type==='umbrella'?pick(PAL.umbrella):pick(PAL.palm))}); trees.push({x,z,s}); placed++; continue;
+      const pal=type==='oakA'||type==='oakB'?ISLE_LEAF:PAL[type==='jtree2'?'jtree':type==='tpalm2'?'tpalm':type];
+      items[type].push({x,z,m,c:tint(pick(pal))}); trees.push({x,z,s}); placed++; continue;
     }
     if(inSun(x,z)){   // the Sunscar: palms and reeds by the river and the Springhead, cacti and thorn trees on the dry ground, nothing on the mesas, the pans or the glass
       if(sunKeepOut(x,z,2)||g>0.55||sunPanK(x,z)>0.2||sunGlassK(x,z)>0.2||sunMesaH(x,z)>3) continue;

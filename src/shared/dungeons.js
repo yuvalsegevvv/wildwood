@@ -58,7 +58,7 @@ const DG_LANDS={
   sun: {name:'The Sunscar',   base:0,unlock:{sun:2},    hint:'Walk into Glasswell, the desert city, first (the River Pass or Redgate Canyon leads there).'},   // (version 3: the Sandglass, level 40 at +0, enter from level 36: theme field `entry`)
   gloam:{name:'The Gloamhorn', base:0,unlock:{gloam:2}, hint:'Walk into Wraithwick, the village on the Gloamhorn, first (the neck past the Greyspine leads there).'},   // (version 3: the Gloamvault, level 40 at +0, enter from level 38)
   amber:{name:'The Amber Reach', base:0,unlock:{amber:1}, hint:'Open the Ashbed Gate first (the Sand Wyrm\'s fall opens the way south from the Sunscar), then walk into the Reach.'},
-  isles:{name:'The Emberwake Isles', base:0,unlock:{isles:2}, hint:'Oldhorn\'s fall opens the harbour: sail to Coralhaven and walk into the village first.'}};   // (the Termite Cathedral, level 45 at +0, enter from level 42; gear.amber is 1 once the gate is open)
+  isles:{name:'The Emberwake Isles', base:0,unlock:{isles:2}, hint:'Oldhorn\'s fall opens the Tide Bridge: cross to Coralhaven and walk into the village first.'}};   // (the Termite Cathedral, level 45 at +0, enter from level 42; gear.amber is 1 once the gate is open)
 /* THE THEME REGISTRY. A dungeon theme is one file, shared/dungeons/themes/<id>.js, holding a single defineDungeonTheme({...}) call and no top-level names, plus its line in
    src/manifest.json (after shared/dungeons/bosses.js). defineDungeonTheme checks the theme; a bad one is LEFT OUT (the game still boots), warned about (console.warn) and listed in
    DG_BAD as {id, field, why}: tools/dungeons-smoke.js fails naming them. Fields:
