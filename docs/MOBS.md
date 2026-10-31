@@ -442,7 +442,7 @@ Not in `MON_DEFS`: made by the boss kit.
 | The Sandglass | `sandglass` | The Sunscar | The Whitefloor | 40 | Dust Djinn (33), Dune Prowler (33), Tomb Guardian (34), Sun Priest (35), Efreet (36) | Sandstone Golem (34), Dune Drake (35) | Khet, the Hourkeeper | sun2 | src/shared/dungeons/themes/sandglass.js:9 |
 | The Gloamvault | `gloamvault` | The Gloamhorn | Vault Heath | 40 | Hollow Knight (38), Weeping Widow (38), Black Revenant (40), Drowned Sailor (32), Deep Siren (40), Grave Hound (37) | Gargoyle (36), Storm Gargoyle (39) | Abbess Morrow, the Drowned Abbess | gloam2 | src/shared/dungeons/themes/gloamvault.js:9 |
 | The Termite Cathedral | `termitecathedral` | The Amber Reach | The Termite Cathedrals | 45 | Mound Soldier (40), Resin Weaver (40), Locust Cloud (38), Hollowed Kin (43), Dustrunner (37) | Baobab Treant (43), Greyhide Rhino (45) | Queen Ortha, the Brood Queen | savanna2 | src/shared/dungeons/themes/termitecathedral.js:10 |
-| The Cenote of Hollow Stars | `cenote` | The Emberwake Isles | The Jungle Edge | 48 | Hollowed Faithful (45), Strait Raider (46), Reef Raider (42), Stone Jaguar (45), Lagoon Ray (43), Coral Beetle (43) | Terrace Mason (47), Road Sentinel (48) | Ahmetl, the Star-Masked | boss30 | src/shared/dungeons/themes/cenote.js:10 |
+| The Cenote of Hollow Stars | `cenote` | The Emberwake Isles | The Jungle Edge | 48 | Hollowed Faithful (45), Strait Raider (46), Reef Raider (42), Stone Jaguar (45), Lagoon Ray (43), Coral Beetle (43) | Terrace Mason (47), Road Sentinel (48) | Ahmetl, the Star-Masked | isles2 | src/shared/dungeons/themes/cenote.js:10 |
 
 ## 12. Level table
 

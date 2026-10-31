@@ -17,7 +17,10 @@ The last land: four islands in a line south of the old map, mostly human with a 
 | `shared/terrain-height.js` | `ewWayPad`: the flat pads under the two waystations' circles |
 | `shared/emberwakezones.js` | `ewZoneAt` leaves the village and a 30 m ring round each waystation without a zone (no camps) |
 | `server/combat.js` | `rewardKill`: Oldhorn's fall calls `openIslesP` (gear.isles 1) |
-| `game/ui/world-map.js` | `wmapPin` returns null in the isles until the world map paints them (W8) |
+| `game/ui/world-map.js`, `world-map-data.js` | the isles are a land of the world map (banner, fog, pin); the sea banks lift when every land is open (`wmapAllOpen`) |
+| `game/ui/map.js` | `LANDS.isles`, `landHere`, `landOpen` (`gear.isles`), the land map's Coralhaven and waystation labels |
+| `game/audio/music.js` | `isles1` (levels 42-45, Coralhaven) and `isles2` (46-50, the Cenote) |
+| `shared/raids.js` | `'isles'` in `RD_LANDS` |
 
 ## Coralhaven and the waystations (W2)
 - **The way in is the circles.** Oldhorn's fall sets `gear.isles` 1 (`openIslesP`, `server/players.js`) and the harbour-master sails: Coralhaven's circle (`CIRCLES` id `coralhaven`, `open: g.isles>=1`) is a destination from every attuned circle. Walking into Coralhaven sets `gear.isles` 2 (`reachCoralhavenP`) which wakes the two waystation circles `zotchul` and `urkuwara` (`open: g.isles>=2`). Saved as `gear.isles` (0..2, sanitized); the admin tool has a `isles` command (`devP`).
@@ -39,8 +42,11 @@ Three chains (`saltwatch`, `strait`, `terraces`) in `shared/side-quests.js`, all
 ## The Cenote of Hollow Stars (W6)
 The isles' dungeon (zone e44's door `EW_DOOR`, boss Ahmetl at level 48, pays only level-40 pendants): `docs/DUNGEON-THEMES.md` section 14. Files: `shared/dungeons/themes/cenote.js`, `server/dungeons/boss-kits-cenote.js`, `game/dungeon/view-cenote.js`, `game/village/buildings-dungeon-isles.js`; the level-40 pendant family in `shared/dungeon-rewards.js` / `pendants.js`; test `node tools/cenote-dungeon-smoke.js`.
 
+## The Seven Gates raid (W7)
+`shared/raids/sevengates.js` at `EW_GATES` (zone 48): boss pool Ocelo and Tuila, material Gate Tally, look `gates` (`game/raids/structure.js`, `structure-extras.js`). `docs/RAIDS.md` section 1.
+
 ## Left for later steps
-W5 Kin parts / skill sets / cosmetics / professions, W6 the Cenote dungeon (pays only level-40 pendants), W7 the Seven Gates raid, W8 docs, the land map and the world map (`landHere`, `LANDS`, `WMAP_*`, `landOpen` have no isles entry yet), balance, soak.
+Three outfits for the new skill sets (the sets ship without `outfit:`), the volcano pass below, the boats to the volcano isle, a final balance pass on the ladder of Meleni, Tzaya and Atuqa (their `node tools/skillsets-ladder.js` rows warn: Meleni is above and the other two below their roles' bands).
 
 ## Reserved for the volcano (not built, Yuval's later pass)
 The volcano isle (`EW_ISLANDS[3]`, `EW_VOLC`) is a separate island with no way on foot (the boats come later); its interior is a low placeholder dome. Zones `e49`, `e50`, village slot `VIL9`, the boss `sinkwarden` (level 50, a long multi-phase fight), a high-polygon volcano model with a phone fallback, `WX.ash`, `EW_VOLC_DOOR`, main-quest steps E3 (the destination) and E6-E10.

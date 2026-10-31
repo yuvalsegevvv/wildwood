@@ -8,7 +8,7 @@
 defineDungeonTheme({
   id:'cenote', name:'The Cenote of Hollow Stars', land:'isles', at:'The Jungle Edge', lv:48, entry:45,
   mobs:{walkers:['hollowfaithful','straitraider','reefraider','stonejaguar','lagoonray','coralbeetle'], guardians:['terracemason','roadsentinel']},   // the isles' level 43-48 kinds that fit a 4 m door (the Hollowed who still pray here, the eels of the flooded halls, the raiders camped on the rim)
-  boss:'ahmetl', music:'boss30',
+  boss:'ahmetl', music:'isles2',
   pal:{wall:0x4f6a5a, floor:0x2c3d3a, fog:0x041416, light:0x7fe8ff},
   legend:{
     W:{solid:true, prop:'cenotewall'}, T:{solid:true, prop:'carvedpillar'}, X:{solid:true, prop:'starbasin', light:0x7fe8ff}, N:{solid:true, prop:'jadeoffering'}, Q:{solid:true, prop:'fallenstair'}, k:{solid:true, prop:'skullrack'}, L:{solid:true, prop:'starlamp', light:0x7fe8ff},
