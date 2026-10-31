@@ -21,7 +21,7 @@ function pzSanitize(g,out){
 }
 const pzRoll=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 // a chest of difficulty d at level lv for player p: pays everything and returns what it held (for the client's chest window). first: the overworld first solve (adds the gear roll)
-function pzChestP(p,d,lv,first){
+function pzChestP(p,d,lv,first,cave){
   const C=PZ_CHEST[d], got={coins:0,pot:{},mats:[],stones:0,amber:0,scroll:0,gear:null,lucky:false};
   got.coins=Math.round(coinsFor(lv)*C.coins); p.gear.coins=Math.min(COINS_MAX,p.gear.coins+got.coins);
   let np=Math.random()<C.potP?pzRoll(C.pot[0],C.pot[1]):0; if(Math.random()<PZ_LUCKY&&np>0){ np*=2; got.lucky=true; }
@@ -29,7 +29,8 @@ function pzChestP(p,d,lv,first){
   for(let i=0;i<np;i++){ let r=Math.random(), kind=PZ_POTION_ODDS[PZ_POTION_ODDS.length-1][0]; for(const [k,pr] of PZ_POTION_ODDS){ if(r<pr){ kind=k; break; } r-=pr; }
     const id=kind+tier; if(POTS[id]){ p.gear.pot[id]=Math.min(POT_MAX,(p.gear.pot[id]||0)+1); got.pot[id]=(got.pot[id]||0)+1; } }
   const pool=MAT_IDS.filter(id=>{ const m=MATS[id]; return !m.boss&&Math.abs(m.lv-lv)<=2; }), pool2=pool.length?pool:MAT_IDS.filter(id=>!MATS[id].boss);
-  for(let i=0;i<C.drops;i++){ const id=pool2[Math.floor(Math.random()*pool2.length)]; addMatP(p,id,1); const e=got.mats.find(x=>x[0]===id); if(e) e[1]++; else got.mats.push([id,1]); }
+  if(cave>=1&&cave<CAVE_DROPS.length&&p.gear.cave){ const M=p.gear.cave.m||(p.gear.cave.m=[0,0,0,0,0]); M[cave]=Math.min(CAVE_DROP_MAX,(M[cave]|0)+C.drops); got.mats.push([CAVE_DROPS[cave],C.drops]); }   // puzzles: the Deep Cave pays the floor's material
+  else for(let i=0;i<C.drops;i++){ const id=pool2[Math.floor(Math.random()*pool2.length)]; addMatP(p,id,1); const e=got.mats.find(x=>x[0]===id); if(e) e[1]++; else got.mats.push([id,1]); }
   if(C.stones&&lv>=PZ_STONE_LV){ got.stones=C.stones; dgAddStonesP(p,C.stones); }
   if(C.amber){ got.amber=C.amber; ambAddP(p,C.amber); }
   if(C.scroll&&Math.random()<C.scroll){ got.scroll=1; p.gear.scr.e=Math.min(999,p.gear.scr.e+1); }
@@ -61,6 +62,7 @@ function pzOpenSiteP(p,id){
   if(Math.hypot(p.x-S.x,p.z-S.z)>PZ_REACH+2){ pzNo(p,'Step closer to the stone'); return; }
   const R=p.gear.pz[S.id]||{n:0,t:0}, now=Date.now();
   if(R.t>now){ pzNo(p,'The stone is dim. It lights again in '+Math.ceil((R.t-now)/60000)+' min'); return; }
+  if(S.raid){ pzRaidOpenP(p,S); return; }   // puzzles: a raid's stone (puzzles-group.js)
   const first=R.n===0, seed=first&&S.seed0?S.seed0:pzSeed(S.id,S.diff,R.n);
   pzOpenS(p,S.id,S.kind,S.diff,seed,S.lv,first,'site');
 }
@@ -70,6 +72,7 @@ function pzSolveP(p,ans){
   const secs=(Date.now()-O.t0)/1000;
   if(!PZ_KINDS[O.kind].check(B,ans)){ pzNo(p,'That is not a solution'); p.pz=O; return; }
   if(O.src==='site'&&secs<pzFloorSecs(O.diff)){ pzNo(p,'Too quick: the stone does not believe it. Look again.'); p.pz=O; return; }
+  if(O.src==='dg'||O.src==='raid'){ pzGrpPayP(p,O); return; }   // puzzles: a group board
   pzPayP(p,O,secs);
 }
 // pays a won board (a solve, or a Puzzle solver's skip): the stone's clock, the first-solve gems and Sigils, the chest
@@ -78,7 +81,7 @@ function pzPayP(p,O,secs){
   if(O.src==='site'){
     const R=p.gear.pz[O.site]||(p.gear.pz[O.site]={n:0,t:0}); R.n++; R.t=Date.now()+PZ_RENEW_MS;
     if(O.first){ const D=PZ_DIFF[O.diff]; out.gems=D.gems; gsGemP(p,D.gems,'puzzle'); if(D.sigils){ out.sig=D.sigils; p.gear.sig+=D.sigils; toastTo(p.id,'+'+D.sigils+' Sigils','good'); out.track=pzTrackP(p); } }
-    out.chest=pzChestP(p,O.diff,O.lv,O.first);
+    { const S0=pzSiteOf(O.site); out.chest=pzChestP(p,O.diff,O.lv,O.first,S0&&S0.cave); }
   } else if(O.src==='dev'){ out.chest=null; }
   p.dirty=true; sendTo(p.id,out);
 }
@@ -127,4 +130,4 @@ MSG.scroll=(p,msg)=>{
   gearChangedP(p); toastTo(p.id,'The scroll burns away: '+ITEM[nid].name,'loot r'+ITEM[nid].rar); ev('merge',p.id,nid);
 };
 MSG.pztest=(p,msg)=>{ if(!io.test) return; pzDevP(p,msg.v); };   // testworld: the one public puzzle tool, honoured only in the /test world (nothing there is saved); the admin Puzzles section is the same thing behind the dev switch
-function pzSwitch(on){ PZ_ON=!!on; if(PZ_ON) pzPlaceAll(); }   // test hook (tools/puzzles-smoke.js)
+function pzSwitch(on){ PZ_ON=!!on; if(PZ_ON){ pzPlaceAll(); pzGroupPlaceAll(); } }   // test hook (tools/puzzles-smoke.js)

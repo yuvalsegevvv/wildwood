@@ -188,7 +188,7 @@
     "raids/wrackmoor.js",
     "raids/moot.js",
     "raids/sevengates.js", "testroom.js",
-    "puzzles.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/sudoku.js", "puzzles/akari.js", "puzzles/slither.js", "puzzles/bridges.js", "puzzles/mirrors.js", "puzzles/nonogram.js", "puzzles/sokoban.js", "puzzle-sites.js", "puzzle-place.js", "puzzle-track.js"
+    "puzzles.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/sudoku.js", "puzzles/akari.js", "puzzles/slither.js", "puzzles/bridges.js", "puzzles/mirrors.js", "puzzles/nonogram.js", "puzzles/sokoban.js", "puzzle-sites.js", "puzzle-place.js", "puzzle-group.js", "puzzle-track.js"
   ],
   "server": [
     "state.js",
@@ -243,7 +243,7 @@
     "dungeons/instances.js", "dungeons/mobs.js", "dungeons/fx.js", "dungeons/hazards.js", "dungeons/kits.js", "dungeons/kits/purge.js", "dungeons/kits/defense.js", "dungeons/kits/survival.js", "dungeons/kits/sabotage.js", "dungeons/kits/siege.js", "dungeons/kits/hunt.js", "dungeons/kits/escort.js", "dungeons/runs.js", "dungeons/lobby.js",
     "raids.js",
     "testroom.js",
-    "puzzles.js",
+    "puzzles.js", "puzzles-group.js",
     "testworld.js",
     "api.js"
   ],

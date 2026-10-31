@@ -53,7 +53,8 @@ function dgUseP(p,id){
   const run=dgRunOf(p); if(!run||p.dead||!run.ready||run.endT) return;
   const c0=S.ctx; S.ctx=run.id;
   const ob=id?run.objs.find(o=>o.id===id):null, kit=DG_KITS[run.mission], B=run.boss;
-  if(ob){ if(Math.hypot(ob.x-p.x,ob.z-p.z)<=ob.r+1.5&&kit&&kit.onUse) kit.onUse(run,p,ob); }
+  if(ob&&ob.kind==='pzstone'){ if(Math.hypot(ob.x-p.x,ob.z-p.z)<=ob.r+1.5) pzDgUseP(run,p,ob); }   // puzzles: a run's stone
+  else if(ob){ if(Math.hypot(ob.x-p.x,ob.z-p.z)<=ob.r+1.5&&kit&&kit.onUse) kit.onUse(run,p,ob); }
   else if(!id&&B&&!B.m.dead&&B.kit.use) B.kit.use(B,B.m,p);
   S.ctx=c0;
 }

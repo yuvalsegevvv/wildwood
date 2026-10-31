@@ -219,6 +219,7 @@ shared
   puzzles/sokoban.js                 Herding (the Amber Reach's Sokoban kind): push the calves into the kraal; the rooms are generated, the calves are pulled backwards out of the kraal so every board can be solved, and a push solver rejects dull ones
   puzzle-sites.js                    The puzzle stones of the world: id, kind, difficulty, place. Thread 1 has only the tutorial stone in the home village; the 328 others are the content thread's data rows
   puzzle-place.js                    Places the overworld puzzle stones by rules: 15 trivial, 12 easy, 8 normal, 4 hard and 2 extreme in each of the seven lands that have a puzzle kind (287; the Deep Cave's come with its own files)
+  puzzle-group.js                    Places the puzzle stones of the raids (2 trivial + 1 easy inside each stronghold's walls) and of the Deep Cave (41 over its four floors); both only while PZ_ON
   puzzle-track.js                    The Sigil track's 40 rewards, in order: 32 small pieces (decorations, gloves, hats, shoes, lowest grade first) and every 5th level a land's cape or aura, level 40 the Lampcrown
 
 server
@@ -295,6 +296,7 @@ server
   raids.js                           Raids on the server: build and rebuild each land's stronghold, lock its tier on the first hit, wards wake the boss, spawners call reinforcements, the clear pays raid material, a clear rebuilds half an hour later
   testroom.js                        The test room on the server: an immortal Training Scarecrow, each hiker's damage counter, and the messages that reset the counter and the cooldowns, refill the cave charge
   puzzles.js                         Puzzles on the server: opening a stone, checking an answer, the 2-hour renewals, the chest, first-solve gems and Sigils, the Sigil track, upgrade scrolls, and the admin Puzzles tool
+  puzzles-group.js                   Puzzle stones for groups: a dungeon run's three side stones, the raids' stones inside the walls and the Deep Cave's chest in cave material (all behind PZ_ON)
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 

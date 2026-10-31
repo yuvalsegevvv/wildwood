@@ -56,6 +56,7 @@ function rdBuildS(st){
   const bd=rdBossRow(R.bosses[st.bossSlot]), c0=rdCtx; rdCtx=st;
   const B=makeBossS(bd,R.court); rdCtx=c0;
   B.rd=st; B.m.rd=st; B.m.dgK=dgKOf(B.m.def,st.L); B.m.immune=true; B.m.respawnT=1e9; st.boss=B; st.all.push(B.m); ev('spawn',monRoster(B.m));
+  pzRaidRebuiltS(R.land);   // puzzles: new boards for the raid's stones
   rdSend(st);
 }
 function initRaidsS(){ RD_STATE.length=0; for(const id of RD_ORDER){ const st={R:RDS[id],all:[],garrison:[],wards:[],spawners:[],barricades:[],boss:null,state:'ready',tier:0,L:RD_BASE_LV,bossSlot:0,bossLive:false,bossDead:false,hit:new Map(),emptyT:0,clearT:0,reinfT:[]}; RD_STATE.push(st); rdBuildS(st); } }
