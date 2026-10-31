@@ -7,13 +7,16 @@ PZV.nonogram={mount(host,B,api,saved){
   const bF=document.createElement('button'), bM=document.createElement('button'); bF.className=bM.className='chip'; bF.textContent='Fill'; bM.textContent='Mark empty'; bar.append(bF,bM);
   const setMode=m=>{ mode=m; bF.classList.toggle('buy',m===1); bM.classList.toggle('buy',m===2); }; bF.onclick=()=>setMode(1); bM.onclick=()=>setMode(2); setMode(1);
   const ox=maxR*cs, oz=maxC*cs;
-  function draw(){
-    g.clearRect(0,0,px,py); g.font='bold '+Math.floor(cs*0.5)+'px system-ui'; g.textAlign='center'; g.textBaseline='middle';
+  function draw(){   // the Gloamhorn's dusk: violet gloom, clues in pale mist, a filled cell is a grey shroud with a fold, a marked one a faint wisp
+    g.clearRect(0,0,px,py); g.fillStyle='#1b1626'; g.fillRect(0,0,px,py); g.font='bold '+Math.floor(cs*0.5)+'px system-ui'; g.textAlign='center'; g.textBaseline='middle';
     const line=(r)=>{ const row=[]; for(let c=0;c<n;c++) row.push(st[r*n+c]===1?1:0); return ngClue(row); }, colL=(c)=>{ const col=[]; for(let r=0;r<n;r++) col.push(st[r*n+c]===1?1:0); return ngClue(col); };
-    for(let r=0;r<n;r++){ const done=JSON.stringify(line(r))===JSON.stringify(B.rows[r]); g.fillStyle=done?'#6a7782':'#e8eef4'; B.rows[r].slice().reverse().forEach((k,i)=>g.fillText(String(k),ox-(i+0.5)*cs,oz+(r+0.5)*cs)); }
-    for(let c=0;c<n;c++){ const done=JSON.stringify(colL(c))===JSON.stringify(B.cols[c]); g.fillStyle=done?'#6a7782':'#e8eef4'; B.cols[c].slice().reverse().forEach((k,i)=>g.fillText(String(k),ox+(c+0.5)*cs,oz-(i+0.5)*cs)); }
-    for(let r=0;r<n;r++) for(let c=0;c<n;c++){ const x=ox+c*cs, z=oz+r*cs, v=st[r*n+c]; g.fillStyle=v===1?'#5cc3d6':'#18212a'; g.fillRect(x+1,z+1,cs-2,cs-2); if(v===2){ g.strokeStyle='#6a7782'; g.lineWidth=2; g.beginPath(); g.moveTo(x+cs*0.3,z+cs*0.3); g.lineTo(x+cs*0.7,z+cs*0.7); g.moveTo(x+cs*0.7,z+cs*0.3); g.lineTo(x+cs*0.3,z+cs*0.7); g.stroke(); } }
-    g.strokeStyle='#33424e'; g.lineWidth=2; for(let k=5;k<n;k+=5){ g.beginPath(); g.moveTo(ox+k*cs,oz); g.lineTo(ox+k*cs,py); g.moveTo(ox,oz+k*cs); g.lineTo(px,oz+k*cs); g.stroke(); }
+    for(let r=0;r<n;r++){ const done=JSON.stringify(line(r))===JSON.stringify(B.rows[r]); g.fillStyle=done?'#6f6486':'#e3dcf2'; B.rows[r].slice().reverse().forEach((k,i)=>g.fillText(String(k),ox-(i+0.5)*cs,oz+(r+0.5)*cs)); }
+    for(let c=0;c<n;c++){ const done=JSON.stringify(colL(c))===JSON.stringify(B.cols[c]); g.fillStyle=done?'#6f6486':'#e3dcf2'; B.cols[c].slice().reverse().forEach((k,i)=>g.fillText(String(k),ox+(c+0.5)*cs,oz-(i+0.5)*cs)); }
+    for(let r=0;r<n;r++) for(let c=0;c<n;c++){ const x=ox+c*cs, z=oz+r*cs, v=st[r*n+c];
+      g.fillStyle='#272037'; g.fillRect(x+1,z+1,cs-2,cs-2); pzSpeckle(g,x,z,cs,'#322946',3,r*n+c+1);
+      if(v===1){ g.fillStyle='#a9a4b8'; pzRound(g,x+1.5,z+1.5,cs-3,cs-3,cs*0.2); g.fill(); g.fillStyle='#8a849d'; g.beginPath(); g.moveTo(x+cs*0.2,z+cs*0.25); g.quadraticCurveTo(x+cs*0.5,z+cs*0.5,x+cs*0.8,z+cs*0.3); g.lineTo(x+cs*0.8,z+cs*0.42); g.quadraticCurveTo(x+cs*0.5,z+cs*0.65,x+cs*0.2,z+cs*0.4); g.fill(); g.fillStyle='#d9d4e8'; g.fillRect(x+cs*0.18,z+cs*0.12,cs*0.3,2); }
+      else if(v===2){ g.strokeStyle='#8f7fc0'; g.lineWidth=1.5; g.beginPath(); g.moveTo(x+cs*0.3,z+cs*0.7); g.bezierCurveTo(x+cs*0.2,z+cs*0.4,x+cs*0.8,z+cs*0.5,x+cs*0.65,z+cs*0.25); g.stroke(); } }
+    g.strokeStyle='#4a3f66'; g.lineWidth=2; for(let k=5;k<n;k+=5){ g.beginPath(); g.moveTo(ox+k*cs,oz); g.lineTo(ox+k*cs,py); g.moveTo(ox,oz+k*cs); g.lineTo(px,oz+k*cs); g.stroke(); }
   }
   const at=e=>{ const r=cv.getBoundingClientRect(), x=Math.floor((e.clientX-r.left)/r.width*gw)-maxR, z=Math.floor((e.clientY-r.top)/r.height*gh)-maxC; return x<0||z<0||x>=n||z>=n?-1:z*n+x; };
   const apply=e=>{ const c=at(e); if(c<0||won||st[c]===paint) return; st[c]=paint; draw(); };
