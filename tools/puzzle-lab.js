@@ -5,7 +5,7 @@ const fs=require('fs'), path=require('path');
 const {SRC,manifest,strip}=require('./load');
 const m=manifest(), pick=f=>strip(fs.readFileSync(path.join(SRC,f),'utf8'));
 const noise=pick('shared/noise.js').match(/function mulberry32[^\n]*/)[0];
-const shared=['puzzles.js',...m.shared.filter(f=>/^puzzles\//.test(f))].map(f=>pick('shared/'+f)).join('\n');
+const shared=['puzzles.js',...m.shared.filter(f=>/^puzzles\//.test(f))].map(f=>pick('shared/'+f)).join('\n')+'\n'+strip(fs.readFileSync(path.join(__dirname,'puzzle-lab-diffs.js'),'utf8'));   // + the lab-only difficulties 6-10
 const views=['common.js','rootlines.js','ice.js','sudoku.js','akari.js','slither.js','bridges.js','mirrors.js','nonogram.js','sokoban.js'].map(f=>pick('game/puzzles/'+f)).join('\n');
 const html=`<title>Puzzle Lab</title>
 <meta name="claude:viewport-fit-sides" content="cover">

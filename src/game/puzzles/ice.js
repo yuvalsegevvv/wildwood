@@ -27,13 +27,14 @@ PZV.iceslide={mount(host,B,api,saved){
   // a dead end (a cracked tile walled the way off, a stone slid past its rune for good): search every state reachable from here; if none wins, say so
   const note=document.createElement('p'); note.className='muted'; host.append(note);
   const stuck=s0=>{ const seen=new Set([icKey(B,s0)]), q=[s0]; for(let i=0;i<q.length;i++){ if(icWon(B,q[i])) return false; if(q.length>40000) return false; for(const d of ['U','D','L','R']){ const n=icStep(B,P,q[i],d), k=icKey(B,n); if(!seen.has(k)){ seen.add(k); q.push(n); } } } return true; };
-  const finish=()=>{ const cur=hist[hist.length-1]; if(!won&&icWon(B,cur)){ won=true; draw(); api.solved(moves); } note.textContent=!won&&stuck(cur)?'No way to the runes from here. Undo a move or start over.':''; };
+  const refresh=()=>{ note.textContent=!won&&stuck(hist[hist.length-1])?'No way to the runes from here. Undo a move or start over.':''; };
+  const finish=()=>{ if(!won&&icWon(B,hist[hist.length-1])){ won=true; draw(); api.solved(moves); } refresh(); };
   const go=d=>{ if(won) return; const n=icStep(B,P,hist[hist.length-1],d); if(icKey(B,n)===icKey(B,hist[hist.length-1])) return; hist.push(n); moves+=d; draw(); api.save({st:{moves},secs:0}); finish(); };
   const keys={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R',KeyW:'U',KeyS:'D',KeyA:'L',KeyD:'R'};
   IC_KEY.go=go; IC_KEY.keys=keys;   // the one key listener below drives whichever board is open
   pad.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.d)));
   let sx=0, sz=0; cv.addEventListener('pointerdown',e=>{ sx=e.clientX; sz=e.clientY; });
   cv.addEventListener('pointerup',e=>{ const dx=e.clientX-sx, dz=e.clientY-sz; if(Math.max(Math.abs(dx),Math.abs(dz))<cs*0.4) return; go(Math.abs(dx)>Math.abs(dz)?(dx>0?'R':'L'):(dz>0?'D':'U')); });
-  draw();
-  return { undo(){ if(hist.length>1&&!won){ hist.pop(); moves=moves.slice(0,-1); draw(); api.save({st:{moves},secs:0}); } }, reset(){ if(won) return; hist=[start()]; moves=''; draw(); api.save({st:{moves},secs:0}); }, state(){ return {moves}; } };
+  draw(); refresh();
+  return { undo(){ if(hist.length>1&&!won){ hist.pop(); moves=moves.slice(0,-1); draw(); api.save({st:{moves},secs:0}); refresh(); } }, reset(){ if(won) return; hist=[start()]; moves=''; draw(); api.save({st:{moves},secs:0}); refresh(); }, state(){ return {moves}; } };
 }};
