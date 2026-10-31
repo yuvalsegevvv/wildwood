@@ -220,7 +220,7 @@ shared
   puzzle-sites.js                    The puzzle stones of the world: id, kind, difficulty, place. Thread 1 has only the tutorial stone in the home village; the 328 others are the content thread's data rows
   puzzle-place.js                    Places the overworld puzzle stones by rules: 15 trivial, 12 easy, 8 normal, 4 hard and 2 extreme in each of the seven lands that have a puzzle kind (287; the Deep Cave's come with its own files)
   puzzle-group.js                    Places the puzzle stones of the raids (2 trivial + 1 easy inside each stronghold's walls) and of the Deep Cave (41 over its four floors); both only while PZ_ON
-  puzzle-track.js                    The Sigil track's 40 rewards, in order: 32 small pieces (decorations, gloves, hats, shoes, lowest grade first) and every 5th level a land's cape or aura, level 40 the Lampcrown
+  puzzle-track.js                    The Sigil track's 40 rewards, in order: 32 small pieces (hair styles, decorations, gloves, hats, tops, bottoms, shoes: every part) and every 5th level a land's cape or aura, level 40 the Lampcrown
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers

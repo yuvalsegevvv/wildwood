@@ -15,7 +15,7 @@ const edEl=$('#editor'), edTabs=$('#edTabs'), edSubs=$('#edSubs'), edBody=$('#ed
 const cam={d:3,h:1.2,l:0.95};
 const ED_PAL_NAMES=['Main colour','Second colour','Third colour','Fourth colour'];
 // one grid row: a picture tile per choice (v = the value, spec = what to draw, null = a crossed circle, cap = an optional tiny caption)
-const edHair=()=>[['bald'],['buzz'],['short'],['messy'],['spiky'],['curly'],['bob'],['long'],['ponytail'],['twintail'],['braid'],['bun']].concat(ofItems('hair'));
+const edHair=()=>[['bald'],['buzz'],['short'],['messy'],['spiky'],['curly'],['bob'],['long'],['ponytail'],['twintail'],['braid'],['bun']].concat(CP_PIECES.filter(r=>r[0]==='r').map(r=>[r[1],r[2],r[4]]),ofItems('hair'));
 const EDIT=[
   {tab:'Presets', subs:[
     {name:'Outfit sets', rows:[{type:'sets'}]},
@@ -40,7 +40,7 @@ const EDIT=[
   ]},
   {tab:'Face', close:true, subs:[
     {name:'Hair', rows:[
-      {k:'hair',type:'grid',kind:'hair',ids:edHair},
+      {k:'hair',type:'grid',kind:'hair',slot:'r',ids:edHair},
       {k:'hairColor',label:'',type:'color',opts:HAIRC,base:'hair'},{type:'palette',slot:'hair'},
       {k:'hairGrad',label:'Gradient',type:'seg',base:'hair',opts:HG_MODES.map(m=>m.slice())},
       {k:'hairColor2',label:'',type:'color',opts:HAIRC,base:'hair'},

@@ -9,12 +9,16 @@
    cosCleanLook (the server) takes them off with the slot's default (CP_NONE), and the editor will not close on one.
    owns: CP_SLOTS, CP_NONE, CP_PIECES, CP_RECIPE, CP_FREE, cpDef, cpIsFree, cpCost, cosLocked.   used by: shared/cosmetics.js, server/cosmetics.js, game/economy/cosmetics.js, ui/character-editor.js, character/model-*.js (the lists).   test: tools/cospieces-smoke.js */
 // slot letter: [look field, what a stripped slot falls back to, the name of the slot]
-const CP_SLOTS={h:['hat','none','Hat'],t:['top','tshirt','Top'],b:['bottom','trousers','Bottom'],s:['shoes','boots','Shoes'],g:['gloves','none','Gloves'],c:['cape','','Cape'],a:['aura','','Aura'],d:['deco1','','Decoration'],w:['shield','','Shield'],e:['kinEars','','Ears'],k:['kinTail','','Tail'],m:['kinMuzzle','','Muzzle']};   // d: three look fields, CP_DECO; e, k, m: the Kin parts (shared/kin.js)
-const CP_LETTERS=['h','t','b','s','g','c','a','d','w','e','k','m'];
+const CP_SLOTS={r:['hair','short','Hair'],h:['hat','none','Hat'],t:['top','tshirt','Top'],b:['bottom','trousers','Bottom'],s:['shoes','boots','Shoes'],g:['gloves','none','Gloves'],c:['cape','','Cape'],a:['aura','','Aura'],d:['deco1','','Decoration'],w:['shield','','Shield'],e:['kinEars','','Ears'],k:['kinTail','','Tail'],m:['kinMuzzle','','Muzzle']};   // d: three look fields, CP_DECO; e, k, m: the Kin parts (shared/kin.js)
+const CP_LETTERS=['r','h','t','b','s','g','c','a','d','w','e','k','m'];
 const CP_DECO=['deco1','deco2','deco3'];   // up to three decorations, any of them in any field
 const CP_NONE={}; for(const k of CP_LETTERS) CP_NONE[k]=CP_SLOTS[k][1];
 // the crafted pieces of the five garment slots: [slot, id, name, grade 1..6 (the land it is for), a short line]; the models are in game/character/model-*.js (their ids are listed there too)
 const CP_PIECES=[
+  ['r','buns2','Twin Buns','2','Two round buns high on the head, tied with red ribbons. Earned on the Sigil track.'],
+  ['r','sidebraid','Side Braid','3','A thick braid brought over one shoulder. Earned on the Sigil track.'],
+  ['r','highpony','High Ponytail','4','A long ponytail tied right at the crown. Earned on the Sigil track.'],
+  ['r','waves','Long Waves','5','Long hair falling in loose waves. Earned on the Sigil track.'],
   ['h','viking','Horned Cap','1','A hammered iron cap with a nose guard and two curved horns.'],
   ['h','laurel','Laurel Wreath','2','A ring of gathered leaves and small berries.'],
   ['h','catphones','Cat-ear Headphones','4','Padded headphones on a headband with two pointed cat ears, a glowing ring on each cup.'],
@@ -151,7 +155,7 @@ function cpDef(type,id){
   const k=cpKey(type,id);
   if(type==='c'||type==='a'){ const D=cosDef(type,id); if(!D) return null; const free=CP_FREE.includes(k); return {slot:type,id,name:D.name,grade:D.grade,text:D.text,free,recipe:free?null:cpCost(type,id),quest:cpHas(CP_QUEST,k)?CP_QUEST[k]:null,track:cpHas(CP_TRACK,k)?CP_TRACK[k]:0}; }
   if(!cpHas(CP_PIECE,k)) return null;
-  const P=CP_PIECE[k]; return {slot:type,id,name:P.name,grade:P.grade,text:P.text,free:false,recipe:cpCost(type,id)};
+  const P=CP_PIECE[k]; return {slot:type,id,name:P.name,grade:P.grade,text:P.text,free:false,recipe:cpCost(type,id),track:cpHas(CP_TRACK,k)?CP_TRACK[k]:0};
 }
 const cpIsFree=(type,id)=>{ const D=cpDef(type,id); return !D||D.free; };   // not in the catalog = free (a base garment)
 // what making one costs {res, mats, coins}, or null for a free piece or an unknown one
