@@ -64,18 +64,25 @@ function buildHair(X,F){
     add(fit(shell(r*0.95,0.4*Math.PI,0.22*Math.PI,1.9,0,sg(30),sg(8))));
     if(!hat){ const rng=mulberry32(31); for(let i=0;i<16;i++){ const th=(i/16)*TAU+rng()*0.2, ph=(0.46+rng()*0.1)*Math.PI; const q=sp(th,ph,r*0.98); add(csph(0.032+rng()*0.01,sg(10),sg(8)).translate(q[0],q[1]-0.01,q[2]).scale(fs[0],1,1)); } }
     fringe(5,0.85,0.1); }
-  if(H==='bob'||H==='long'||H==='twintail'||H==='braid'||H==='ponytail'||H==='bun') crown(H==='bob'||H==='long'?0.116:0.113,0.5,H==='ponytail'||H==='bun'?0.24:0.3);
+  if(H==='bob'||H==='long'||H==='waves'||H==='buns2'||H==='sidebraid'||H==='highpony'||H==='twintail'||H==='braid'||H==='ponytail'||H==='bun') crown(H==='bob'||H==='long'?0.116:0.113,0.5,H==='ponytail'||H==='bun'||H==='buns2'||H==='highpony'?0.24:0.3);
   if(H==='bob'){ add(fit(shell(0.118*hv,0.34*Math.PI,0.2*Math.PI,1.55,0,sg(36),sg(10)))); fringe(8,1.05,0.12); sideLocks(0.1*hl); backLocks(sg(20),0.09*hl,51); }
-  if(H==='long'){ fringe(8,1.1,0.1); sideLocks(0.2*hl);
+  if(H==='long'||H==='waves'){ fringe(8,1.1,0.1); sideLocks(0.2*hl);
     const rings=[]; const n=sg(18), len=0.5*hl;
     for(let i=0;i<=n;i++){ const t=i/n, e=t*t*(3-2*t); rings.push({y:0.04-len*t,rx:lerp(0.108,0.128,Math.sin(t*Math.PI*0.7))*(1-0.82*Math.pow(t,3))*hv,rz:lerp(0.05,0.06,Math.sin(t*Math.PI*0.6))*(1-0.85*Math.pow(t,3)),zc:0.062+0.045*Math.sin(Math.min(1,t*1.8)*Math.PI*0.5)-0.02*t}); }
-    const cg=loftRings(rings,sg(32)), cp=cg.attributes.position; for(let i=0;i<cp.count;i++){ const x=cp.getX(i), z=cp.getZ(i); if(z>0.04) cp.setZ(i,z+0.0035*Math.sin(x*150)); } smoothN(cg); add(hang(cg));
+    const cg=loftRings(rings,sg(32)), cp=cg.attributes.position; for(let i=0;i<cp.count;i++){ const x=cp.getX(i), z=cp.getZ(i); if(z>0.04) cp.setZ(i,z+0.0035*Math.sin(x*150)); if(H==='waves') cp.setX(i,x+0.012*Math.sin(cp.getY(i)*62)*Math.min(1,Math.abs(cp.getY(i)-0.04)*9)); } smoothN(cg); add(hang(cg));
     for(let i=0;i<5;i++){ const f=i/4*2-1, y0=0.04-len*0.9, P=[[f*0.05,y0,0.105],[f*0.058,y0-0.05*hl,0.1],[f*0.06+0.012*Math.sin(i*2),y0-0.1*hl-0.02*i%2,0.092]]; add(hang(sweepTube(P,[0.02,0.017,0.002],sg(7),{cap:'point',rings:sg(8)}))); }
     for(const sd of [-1,1]){ const P=[[sd*0.1,0.0,-0.01],[sd*0.114,-0.1*hl,-0.02],[sd*0.124,-0.22*hl,-0.025],[sd*0.12,-0.34*hl,-0.02]]; add(hang(sweepTube(P,[0.02,0.026,0.022,0.003],sg(8),{cap:'point',rings:sg(14)}))); } }
   if(H==='ponytail'){ fringe(8,1.0,0.12); sideLocks(0.05); tie(0,0.072,0.092,0.02);
     const P=[[0,0.078,0.09],[0,0.05,0.16],[0,-0.03,0.2],[0,-0.14*hl,0.185],[0.012,-0.26*hl,0.15]];
     add(hang(sweepTube(P,[0.026,0.036,0.04,0.03,0.003],sg(10),{cap:'point',rings:sg(18)})));
     for(const sd of [-1,1]) add(hang(sweepTube([[sd*0.012,0.075,0.092],[sd*0.03,0.04,0.17],[sd*0.042,-0.04,0.2],[sd*0.04,-0.15*hl,0.18],[sd*0.03,-0.24*hl,0.15]],[0.012,0.02,0.022,0.016,0.002],sg(8),{cap:'point',rings:sg(14)}))); }
+  if(H==='buns2'){ fringe(8,1.0,0.12); sideLocks(0.05); backLocks(sg(10),-0.02,43); if(!hat) for(const sd of [-1,1]){ add(hang(csph(0.05,sg(16),sg(12)).translate(sd*0.082,0.088,0.056))); tie(sd*0.075,0.06,0.066,0.036); } }
+  if(H==='highpony'){ fringe(8,1.0,0.12); sideLocks(0.05); tie(0,0.108,0.07,0.024);
+    add(hang(sweepTube([[0,0.112,0.07],[0,0.15,0.13],[0,0.09,0.205],[0,-0.06*hl,0.24],[0.01,-0.22*hl,0.215],[0.014,-0.32*hl,0.18]],[0.026,0.036,0.04,0.034,0.024,0.003],sg(10),{cap:'point',rings:sg(20)}))); }
+  if(H==='sidebraid'){ fringe(8,1.0,0.12); sideLocks(0.06); backLocks(sg(12),0.0,61);
+    const len=0.42*hl; for(let s=0;s<3;s++){ const ph=s*TAU/3, P=[]; for(let i=0;i<=10;i++){ const t=i/10; P.push([0.1+0.02*Math.sin(t*16+ph)*(0.4+0.6*t)-0.012*t,0.0-len*t,0.075+0.04*Math.sin(t*2.6)+0.014*Math.cos(t*16+ph)]); }
+      add(hang(sweepTube(P,[0.02,0.026,0.026,0.024,0.014,0.003],sg(8),{cap:'point',rings:sg(30)}))); }
+    tie(0.088,0.0,0.08,0.02); tie(0.088,-len*0.97,0.1,0.017); }
   if(H==='twintail'){ fringe(8,1.0,0.1); sideLocks(0.05);
     for(const sd of [-1,1]){ tie(sd*0.088,0.07,0.04,0.018);
       add(hang(sweepTube([[sd*0.088,0.07,0.04],[sd*0.15,0.045,0.07],[sd*0.19,-0.06,0.1],[sd*0.2,-0.2*hl,0.09],[sd*0.17,-0.34*hl,0.05]],[0.02,0.03,0.032,0.024,0.003],sg(10),{cap:'point',rings:sg(18)}))); } }

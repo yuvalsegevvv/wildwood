@@ -74,6 +74,10 @@ function pzLootLines(c){
   return L;
 }
 function pzDone(m){
+  if((m.src==='site'||m.src==='raid')&&m.chest&&pzChestDrop(m)){ clearInterval(PZ_TIMER); try{ if(PZ_CUR) localStorage.removeItem(pzKey(PZ_CUR.m)); }catch(_){} PZ_CUR=null; closePanels(); UI_SFX.success(); return; }   // the chest stands beside the stone: walk up and open it (pzOpenNear)
+  pzSheet(m);
+}
+function pzSheet(m){
   clearInterval(PZ_TIMER); try{ if(PZ_CUR) localStorage.removeItem(pzKey(PZ_CUR.m)); }catch(_){} PZ_CUR=null;
   openPanel('puzzle'); const host=$('#pzHost'); $('#pzBar').hidden=true; $('#pzClock').textContent=''; $('#pzTitle').textContent='Solved · '+PZ_DIFF[m.diff].name;
   const c=m.chest, lines=c?pzLootLines(c):[], extra=[]; if(m.gems) extra.push('+'+m.gems+' gems'); if(m.sig) extra.push('+'+m.sig+' Sigils'); if(m.track&&m.track.length) extra.push('Sigil track level '+m.track.join(', '));

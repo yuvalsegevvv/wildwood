@@ -7,7 +7,7 @@ let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i!==undefine
 // ---- the catalog ----
 const keys=Object.keys(x.CP_RECIPE);
 ok('every recipe names real resources and real monster drops and has a fee',keys.every(k=>{ const r=x.CP_RECIPE[k]; return r.coins>0&&(r.res||[]).every(([i,n])=>x.RES[i]&&n>0)&&(r.mats||[]).every(([i,n])=>x.MATS[i]&&n>0)&&(r.res||[]).length+(r.mats||[]).length>0; }),keys.length+' recipes');
-ok('every catalog piece is free or has a recipe, and every recipe belongs to a piece',x.CP_PIECES.every(r=>x.cpIsFree(r[0],r[1])||x.CP_RECIPE[r[0]+':'+r[1]])&&keys.every(k=>{ const [t,id]=k.split(':'); return x.cpDef(t,id)||x.COS_CAPES.some(c=>t==='c'&&c[0]===id)||x.COS_AURAS.some(a=>t==='a'&&a[0]===id); }));
+ok('every catalog piece is free or has a recipe, and every recipe belongs to a piece',x.CP_PIECES.every(r=>x.cpIsFree(r[0],r[1])||(x.cpDef(r[0],r[1])||{}).track||x.CP_RECIPE[r[0]+':'+r[1]])&&keys.every(k=>{ const [t,id]=k.split(':'); return x.cpDef(t,id)||x.COS_CAPES.some(c=>t==='c'&&c[0]===id)||x.COS_AURAS.some(a=>t==='a'&&a[0]===id); }));
 ok('each slot has crafted pieces and the free ones are the base garments',['h','t','b','s','g','c','a'].every(s=>keys.some(k=>k[0]===s))&&x.cpIsFree('c','pack')&&x.cpIsFree('a','firefly')&&!x.cpIsFree('c','regal'));
 ok('some recipes use drops only, some resources only, some both',keys.some(k=>!(x.CP_RECIPE[k].res||[]).length)&&keys.some(k=>!(x.CP_RECIPE[k].mats||[]).length)&&keys.some(k=>(x.CP_RECIPE[k].res||[]).length&&(x.CP_RECIPE[k].mats||[]).length));
 ok('hostile ids are nothing',!x.cpDef('c','constructor')&&x.cosCost('h','__proto__')===null);
