@@ -55,3 +55,11 @@ Append a row to `SQ` (people in `SQ_NPC_VIL` and `SQ_NAMES`, new places in `SQ_P
 ## The Amber Reach chains
 
 `dawnseat` (The Dawn Seat, level 37, Warden Oruvi, to Old Thunder, pays the Dawn Seat Mantle) and `drought` (The Drought Song, level 41 after the first, Kesi and Elder Tamsa, to Oldhorn, pays the Herdsong aura). Their people are `oruvi`, `hask`, `wiru`, `ennu`, `kesi`, `tamsa` (village 7, Tallgrass): the villagers must use these ids. The bosses are checked through `rdBossRow` until they are in `BOSS_DEFS`; places come from the atlas (`SAV_*`).
+
+## The Emberwake Isles chains (W4)
+
+Three chains, all given and taken in Coralhaven (village 8; the waystations have no quest givers). Base settings only: Yuval writes the isles' story zone by zone, the lines here are placeholders for that pass (`docs/EMBERWAKE.md`).
+- `saltwatch` (The Salt Watch, level 42, Lani / Eleaka / Elder Hina, to Ocelo; Salt Light aura): the shrinking stars seen from the Lagoon Shallows at night, the verse of the Jaguar-Lord, the Overgrown Plaza.
+- `strait` (The Drowned Strait, level 44 after the first, Eleaka / Healer Nalu / Kekoa, to Tuila; Tidecaller's Cape): the tide that stays in, salt in the herbs, the drowned causeway.
+- `terraces` (The Terrace Road, level 46 after the second, Makoa / Mele / Hina; Condor Wind aura): the road east, the notice "WE ARE STILL COUNTING", the seven gates. It ends with a talk, not a boss: it leads to the Seven Gates raid (W7).
+New places in `SQ_PLACES`: `lagoon`, `plaza`, `strait`, `terraces`. Their cosmetics are in `COS_AURAS` / `COS_CAPES` and `CP_QUEST`.

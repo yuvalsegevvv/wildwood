@@ -4,7 +4,7 @@
 // Usage: node tools/atlas-smoke.js [--verbose]
 const fs=require('fs');
 const {loadShared,SRC}=require('./load');
-const X=loadShared(['rawHeight','baseHeight','landAt','inVale','inHoar','inGrey','inSun','inGloam','inAmber','vilAt','VIL7','coastDist','waterSurf','WX0','WX1','WZ0','WZ1','WA_META','WA_ANCHORS','WA_HUBS','WA_GATES','WA_ZONES','WA_POIS',
+const X=loadShared(['rawHeight','baseHeight','landAt','inVale','inHoar','inGrey','inSun','inGloam','inAmber','vilAt','VIL7','VIL8','coastDist','waterSurf','WX0','WX1','WZ0','WZ1','WA_META','WA_ANCHORS','WA_HUBS','WA_GATES','WA_ZONES','WA_POIS',
   'WA_ENTRANCES','WA_SPOTS','WA_ISLANDS','WA_PVP','WA_LAKES','WA_RIVERS','WA_ROADS','waLandId','waLand','waZone','waZoneId','waTarget','waWater','waWaterDist','waWaterSurf','waRoadDist','waBorderDist','waLandBorderDist',
   'waCoast','waIsSea','cvNear','SUN_CITY','VIL','VIL2','VIL3','VIL4','VIL5','VIL6','WATER','smoothstep','barStep','barLandOpen','BAR_NONE','MAX_ZONE_LV','SAV_KEYS','SAV_ZONE','SAV_HUB','SAV_GATE','SAV_DOOR','SAV_BOSS_POI','SAV_MOOT','SAV_PIER','SAV_POOLS','SAV_RIVER','SUN_AMBER','GREY_GATES']);
 let fails=0; const ok=(n,c,d)=>{ if(!c) fails++; console.log((c?'PASS ':'FAIL ')+n+(d?'  ('+d+')':'')); };
@@ -27,7 +27,7 @@ ok('eight lands, seven gates, eight hubs, 80 zones (Amber Reach has nine: 37..45
     if(flags.filter(Boolean).length>(X.inHoar(x,z)||X.inGloam(x,z)?2:1)) bad.push('two lands '+x+','+z);
     const exp=X.waLandId(x,z)===7?'isles':X.inGloam(x,z)?'gloam':X.inAmber(x,z)?'amber':X.inHoar(x,z)?'hoar':X.inVale(x,z)?'vale':X.inGrey(x,z)?'grey':X.inSun(x,z)?'sun':'home';
     if(exp!==l) bad.push('landAt '+l+' vs '+exp+' at '+x+','+z);
-    const v=X.vilAt(x,z), want={home:X.VIL,vale:X.VIL2,hoar:X.VIL3,grey:X.VIL4,sun:X.VIL5,gloam:X.VIL6,amber:X.VIL7,isles:X.VIL}[l];   // (amber: Tallgrass)
+    const v=X.vilAt(x,z), want={home:X.VIL,vale:X.VIL2,hoar:X.VIL3,grey:X.VIL4,sun:X.VIL5,gloam:X.VIL6,amber:X.VIL7,isles:X.VIL8}[l];   // (amber: Tallgrass)
     if(v!==want) bad.push('vilAt '+l+' '+x+','+z);
     const w=X.waLand(x,z); if(w!==null&&w!=='amber'&&w!=='isles'&&w!==l) bad.push('waLand '+w+' vs landAt '+l);
   }
@@ -83,7 +83,7 @@ const gradAt=(x,z)=>Math.max(Math.abs(H(x+4,z)-H(x-4,z)),Math.abs(H(x,z+4)-H(x,z
     const o1={x:x+dx,z:z+dz}; X.barStep(o1,x,z,shut); if(X.waLandId(o1.x,o1.z)===b) leaks++;
     const o2={x:x+dx,z:z+dz}; X.barStep(o2,x,z,on); if(o2.x!==x+dx||o2.z!==z+dz) stuck++; }
   ok('barStep holds every step across the Sunscar | Amber Reach border while gear.amber is 0, and lets it through once it is 1 ('+pairs+' steps)',pairs>200&&leaks===0&&stuck===0,leaks+' leaks, '+stuck+' stuck');
-  ok('a teleport into Amber Reach needs gear.amber (barLandOpen), and the quest board reaches level 45 (MAX_ZONE_LV)',!X.barLandOpen(6,shut)&&X.barLandOpen(6,on)&&X.MAX_ZONE_LV===45); }
+  ok('a teleport into Amber Reach needs gear.amber (barLandOpen), and the quest board reaches level 50 (MAX_ZONE_LV, the top zone)',!X.barLandOpen(6,shut)&&X.barLandOpen(6,on)&&X.MAX_ZONE_LV===50); }
 // ---- the ground: a 4 m grid, the slope limit, walkability inside the zones, the borders
 const STEP=4, NXG=Math.floor((X.WX1-X.WX0)/STEP)+1, NZG=Math.floor((X.WZ1-X.WZ0)/STEP)+1;
 const HG=new Float32Array(NXG*NZG), SURF=new Float32Array(NXG*NZG);

@@ -72,6 +72,14 @@ const THEMES={
   savanna2:{beat:0.34,chordBars:2,chords:[[43,50,55,59],[41,48,53,57],[48,55,60,64],[43,50,55,59]],scale:[67,69,71,72,74,76,79,81],
     pad:{type:'sawtooth',vol:0.012,ff:850,attack:2.5},drone:31,bass:'x.x.x...',bassType:'sawtooth',arp:{pat:'x.xx.x.x',inst:'pluck',vol:0.016,from:'scale'},lead:{inst:'flute',p:0.1},
     drums:{kick:'x...x...',taiko:'o.o.o.o.',wood:'.o..o...'}},
+  // the Emberwake Isles levels 42-45 (and Coralhaven): D major pentatonic, a slit drum and a soft pluck like a ukulele, a flute over the surf; the pad is warm and slow
+  isles1:{beat:0.5,chordBars:2,chords:[[38,45,50,54],[43,50,55,59],[45,52,57,61],[38,45,50,54]],scale:[62,64,66,69,71,74,76],
+    pad:{type:'triangle',vol:0.026,ff:1100,attack:3},drone:26,bass:'x...x...',arp:{pat:'x.x.x..x',inst:'pluck',vol:0.018,from:'scale'},lead:{inst:'flute',p:0.12},
+    drums:{wood:'..o..o..',taiko:'o.......'}},
+  // levels 46-50: the jungle and the highland, A minor pentatonic, hand drums and a panpipe-like flute, the pad thinner as the stone gets older
+  isles2:{beat:0.4,chordBars:2,chords:[[33,40,45,48],[41,48,53,57],[36,43,48,52],[33,40,45,48]],scale:[57,60,62,64,67,69,72,74],
+    pad:{type:'sawtooth',vol:0.011,ff:850,attack:2.8},drone:21,bass:'x.x.x...',bassType:'sawtooth',arp:{pat:'x..x.x..',inst:'pluck',vol:0.016,from:'scale'},lead:{inst:'flute',p:0.16},
+    drums:{taiko:'o...o.o.',wood:'.o..o...'}},
   // the Gloamhorn levels 30-35 (and Wraithwick): C# aeolian, a slow heartbeat drum, a low drone and tolling bells, a breathy flute for the wind
   gloam1:{beat:0.56,chordBars:2,chords:[[37,44,49,52],[33,40,45,49],[35,42,47,51],[32,39,44,47]],scale:[61,63,64,66,68,69,71,73],
     pad:{type:'sine',vol:0.026,ff:700,attack:4},drone:25,bass:'x.......',arp:{pat:'x...x...',inst:'bell',vol:0.014,from:'scale',echo:true},lead:{inst:'flute',p:0.09},
@@ -110,9 +118,10 @@ function musicThemeHere(){
   const m=BOSS.m; if(m&&BOSS.engaged&&!m.dead){ const A=arenaOf(m); if(Math.hypot(P.x-A.x,P.z-A.z)<A.r+30){ const bd=bossInfo(m); return (bd&&bd.def.music)||(m.def.level>=30?'boss30':m.def.level>=26?'boss26':m.def.level>=25?'boss25':m.def.level>=20?'boss20':'boss15'); } }
   if(caveIn()) return caveMusicTheme();   // cave: a floor's own music (cave/look.js)
   if(dgIn()) return dgMusicTheme();   // dungeons: a run's own music (a boss in its hall plays its theme: the line above) (dungeon/look.js)
-  const V=vilAt(P.x,P.z); if(vDist(P.x,P.z)<VR+22) return V===VIL7?'savanna1':V===VIL6?'gloam1':V===VIL5?'sun1':V===VIL4||V===VIL3?'rimehold':V===VIL2?'hanami':'village';   // (Highmark has no song of its own yet: Rimehold's)
+  const V=vilAt(P.x,P.z); if(vDist(P.x,P.z)<VR+22) return V===VIL8?'isles1':V===VIL7?'savanna1':V===VIL6?'gloam1':V===VIL5?'sun1':V===VIL4||V===VIL3?'rimehold':V===VIL2?'hanami':'village';   // (Highmark has no song of its own yet: Rimehold's)
   if(P.inTun) return MUSIC.theme||'wild3';
   const zn=zoneAt(P.x,P.z), L=zn?zn.level:0;
+  if(inIsles(P.x,P.z)) return L>=46?'isles2':'isles1';   // (the Emberwake Isles' own songs)
   if(inAmber(P.x,P.z)) return L>=42?'savanna2':'savanna1';   // (Amber Reach's own songs)
   if(inGloam(P.x,P.z)) return L>=36?'gloam2':'gloam1';   // (the Gloamhorn's own songs)
   if(inHoar(P.x,P.z)||inGrey(P.x,P.z)) return L>=27?'hoar2':'hoar1';   // (the Greyspine has no song of its own yet: the Reach's)

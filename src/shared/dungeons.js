@@ -57,7 +57,8 @@ const DG_LANDS={
   grey:{name:'The Greyspine',base:0,unlock:{west:2},   hint:'Walk into Highmark, through the glacier valley west of the Reach, first (its ice fall opens when Ymrik falls).'},
   sun: {name:'The Sunscar',   base:0,unlock:{sun:2},    hint:'Walk into Glasswell, the desert city, first (the River Pass or Redgate Canyon leads there).'},   // (version 3: the Sandglass, level 40 at +0, enter from level 36: theme field `entry`)
   gloam:{name:'The Gloamhorn', base:0,unlock:{gloam:2}, hint:'Walk into Wraithwick, the village on the Gloamhorn, first (the neck past the Greyspine leads there).'},   // (version 3: the Gloamvault, level 40 at +0, enter from level 38)
-  amber:{name:'The Amber Reach', base:0,unlock:{amber:1}, hint:'Open the Ashbed Gate first (the Sand Wyrm\'s fall opens the way south from the Sunscar), then walk into the Reach.'}};   // (the Termite Cathedral, level 45 at +0, enter from level 42; gear.amber is 1 once the gate is open)
+  amber:{name:'The Amber Reach', base:0,unlock:{amber:1}, hint:'Open the Ashbed Gate first (the Sand Wyrm\'s fall opens the way south from the Sunscar), then walk into the Reach.'},
+  isles:{name:'The Emberwake Isles', base:0,unlock:{isles:2}, hint:'Oldhorn\'s fall opens the harbour: sail to Coralhaven and walk into the village first.'}};   // (the Termite Cathedral, level 45 at +0, enter from level 42; gear.amber is 1 once the gate is open)
 /* THE THEME REGISTRY. A dungeon theme is one file, shared/dungeons/themes/<id>.js, holding a single defineDungeonTheme({...}) call and no top-level names, plus its line in
    src/manifest.json (after shared/dungeons/bosses.js). defineDungeonTheme checks the theme; a bad one is LEFT OUT (the game still boots), warned about (console.warn) and listed in
    DG_BAD as {id, field, why}: tools/dungeons-smoke.js fails naming them. Fields:
@@ -180,7 +181,8 @@ const DG_ENTRANCES={
   blackseam:      {theme:'blackseam',      name:'The Old Adit',       kind:'mine',  x:-65,z:-553, a:1.309,        sign:{x:-81.5,z:-553,road:'A footpath'}},   // (the atlas's grey door (WA_POIS, -61, -601), moved 50 m to the nearest bank with a flat apron and 14 m off every road)
   sandglass:      {theme:'sandglass',      name:'The Sandglass Door', kind:'sand',  x:SUN_DG_DOOR.x,z:SUN_DG_DOOR.z, a:SUN_DG_DOOR.rot, sign:{x:SUN_DG_DOOR.x+15,z:SUN_DG_DOOR.z-2,road:null}},   // version 3: the Sunscar's door (shared/sunland.js SUN_DG_DOOR): flat desert, no road and no bank, so its signpost stands on the sand by the apron
   gloamvault:     {theme:'gloamvault',     name:'The Gloamvault',     kind:'gloam', x:GLOAM_DG_DOOR.x,z:GLOAM_DG_DOOR.z, a:GLOAM_DG_DOOR.rot, sign:{x:GLOAM_DG_DOOR.x+Math.round(Math.sin(GLOAM_DG_DOOR.rot)*15),z:GLOAM_DG_DOOR.z+Math.round(Math.cos(GLOAM_DG_DOOR.rot)*15),road:null}},   // version 3: the Gloamhorn's door (shared/gloamhorn.js GLOAM_DG_DOOR): a chapel front in the cliff of Vault Heath, no road on the horn, so its signpost stands on the heath by the apron
-  termitecathedral:{theme:'termitecathedral',name:'The Termite Cathedral',kind:'termite',x:SAV_DOOR.x,z:SAV_DOOR.z,a:Math.PI/4,sign:{x:SAV_DOOR.x+14.5,z:SAV_DOOR.z+9.5,road:'The Amber Door Road'}}};   // the Amber Reach's door (the atlas's amber door POI, shared/savanna.js SAV_DOOR, zone 40, where The Amber Door Road ends): a gap in the foot of a clay spire on open grass, its apron on the road's last metres (it faces back down the road, south-east), the signpost on the road 3.5 m off its line
+  termitecathedral:{theme:'termitecathedral',name:'The Termite Cathedral',kind:'termite',x:SAV_DOOR.x,z:SAV_DOOR.z,a:Math.PI/4,sign:{x:SAV_DOOR.x+14.5,z:SAV_DOOR.z+9.5,road:'The Amber Door Road'}},
+  cenote:         {theme:'cenote',         name:'The Cenote of Hollow Stars', kind:'cenote', x:EW_DOOR.x,z:EW_DOOR.z, a:-2.98, sign:{x:Math.round(EW_DOOR.x+Math.sin(-2.98)*15),z:Math.round(EW_DOOR.z+Math.cos(-2.98)*15),road:null}}};   // the Emberwake Isles' door (the atlas's isles door POI, shared/emberwakezones.js EW_DOOR, zone 44): a stone ring round the mouth of a sinkhole stair on flat jungle ground, facing Zotchul's way (north), no road, the signpost on the apron's line   // the Amber Reach's door (the atlas's amber door POI, shared/savanna.js SAV_DOOR, zone 40, where The Amber Door Road ends): a gap in the foot of a clay spire on open grass, its apron on the road's last metres (it faces back down the road, south-east), the signpost on the road 3.5 m off its line
 const dgApron=E=>E.apron||({x:E.x+Math.sin(E.a)*DG_APRON,z:E.z+Math.cos(E.a)*DG_APRON});
 const dgEntranceNear=(x,z,r)=>{ let best=null,bd=r===undefined?DG_ENT_TALK:r; for(const k in DG_ENTRANCES){ const E=DG_ENTRANCES[k], d=Math.hypot(E.x-x,E.z-z); if(d<=bd){ bd=d; best=E; } }
   return best; };
@@ -220,11 +222,12 @@ function dgUnlocked(gear,level,T,tier){
   if(U.sun!==undefined&&(g.sun|0)<U.sun) return {ok:false,why:L.hint};
   if(U.gloam!==undefined&&(g.gloam|0)<U.gloam) return {ok:false,why:L.hint};
   if(U.amber!==undefined&&(g.amber|0)<U.amber) return {ok:false,why:L.hint};
+  if(U.isles!==undefined&&(g.isles|0)<U.isles) return {ok:false,why:L.hint};
   const need=T.entry||DG_ENTRY_LV, lv=dgLevel(T,t); if((level|0)<need) return {ok:false,why:'Reach level '+need+' first.'};   // (the same at every tier: a level-60 dungeon used to ask for 55, which nobody can have)
   return {ok:true,why:'',tier:t,level:lv};
 }
 // the door's look and what pressing the talk key says: open at the tier you play (Wildwood's roots are knotted shut at +0) and the land's progress; the level is not part of it
-const dgGateOpen=(gear,T)=>{ const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}; return dgTierOf(g,T.land)>=L.base&&(U.east===undefined||(g.east|0)>=U.east)&&(U.north===undefined||(g.north|0)>=U.north)&&(U.west===undefined||(g.west|0)>=U.west)&&(U.sun===undefined||(g.sun|0)>=U.sun)&&(U.gloam===undefined||(g.gloam|0)>=U.gloam)&&(U.amber===undefined||(g.amber|0)>=U.amber); };
+const dgGateOpen=(gear,T)=>{ const L=DG_LANDS[T.land], U=T.unlock||L.unlock, g=gear||{}; return dgTierOf(g,T.land)>=L.base&&(U.east===undefined||(g.east|0)>=U.east)&&(U.north===undefined||(g.north|0)>=U.north)&&(U.west===undefined||(g.west|0)>=U.west)&&(U.sun===undefined||(g.sun|0)>=U.sun)&&(U.gloam===undefined||(g.gloam|0)>=U.gloam)&&(U.amber===undefined||(g.amber|0)>=U.amber)&&(U.isles===undefined||(g.isles|0)>=U.isles); };
 // every tile in every quarter turn (turns that come out the same are kept once)
 function dgVariants(set){
   const out=[], seen=new Set();

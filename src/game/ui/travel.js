@@ -8,7 +8,10 @@ const TR_ICON={
   highmark:'<path d="M2 20l7-12 4 6 3-4 6 10z"/><path d="M7.5 12.5l1.5 1.5 1.5-1.5"/>',
   glasswell:'<circle cx="12" cy="9" r="4"/><path d="M12 1v2M3 9h2M19 9h2M5.6 2.6L7 4M18.4 2.6L17 4"/><path d="M2 20c3-3 6-3 10 0s7 3 10 0"/>',
   wraithwick:'<path d="M12 2l3 6h-6z"/><path d="M9 8l-1 14h8L15 8"/><path d="M3 20c3-2 6-2 9 0s6 2 9 0"/>',
-  tallgrass:'<path d="M12 21V11"/><path d="M4 11c2-4 6-5 8-5s6 1 8 5c-3-1-5-1-8-1s-5 0-8 1z"/><path d="M8 21l2-5M16 21l-2-5"/>'
+  tallgrass:'<path d="M12 21V11"/><path d="M4 11c2-4 6-5 8-5s6 1 8 5c-3-1-5-1-8-1s-5 0-8 1z"/><path d="M8 21l2-5M16 21l-2-5"/>',
+  coralhaven:'<path d="M3 15c3 3 6 3 9 0s6-3 9 0"/><path d="M12 14V4l6 7z"/><path d="M12 4L7 11h5"/>',
+  zotchul:'<path d="M12 3l8 5v2H4V8z"/><path d="M6 10v9M12 10v9M18 10v9"/><path d="M4 19h16"/>',
+  urkuwara:'<path d="M2 20l6-8 4 5 4-9 6 12z"/><path d="M14 8l2 3"/>'
 };
 function openTravel(){ openPanel('travel'); renderTravel(); }
 function renderTravel(){

@@ -9,10 +9,10 @@
    used by: server/side-quests.js (progress, rewards), game/economy/side-quests.js (lines, marks, the quest panel's tab, the quest log row, the map marker), cospieces.js (CP_QUEST).
    test: tools/sidequests-smoke.js. doc: docs/SIDE-QUESTS.md. Story rules: docs/STORY.md section 0 (hints only, every hint has two readings). */
 // the villages of the people who give or take a step (VILS index + 1); a talk only counts in (or at the gate of) their village
-const SQ_NPC_VIL={oskar:1,bram:1,linnea:1,chiyo:2,ryu:2,kaede:2,sigrun:3,hallvard:3,ylva:3,omar:5,zahra:5,amal:5,maeve:6,brannoch:6,nuala:6,maelis:6,warden_ross:6,oruvi:7,hask:7,wiru:7,ennu:7,kesi:7,tamsa:7};
+const SQ_NPC_VIL={oskar:1,bram:1,linnea:1,chiyo:2,ryu:2,kaede:2,sigrun:3,hallvard:3,ylva:3,omar:5,zahra:5,amal:5,maeve:6,brannoch:6,nuala:6,maelis:6,warden_ross:6,oruvi:7,hask:7,wiru:7,ennu:7,kesi:7,tamsa:7,makoa:8,lani:8,eleaka:8,hina:8,mele:8,nalu:8,kekoa:8};
 const SQ_NAMES={oskar:'Oskar',bram:'Bram',linnea:'Healer Linnea',chiyo:'Grandmother Chiyo',ryu:'Master Ryu',kaede:'Soul-reader Kaede',sigrun:'Old Sigrun',hallvard:'Hallvard',ylva:'Alchemist Ylva',
-  omar:'Captain Omar',zahra:'Marshal Zahra',amal:'Healer Amal',maeve:'Reeve Maeve',brannoch:'Brannoch',nuala:'Healer Nuala',maelis:'Keeper Maelis',warden_ross:'Warden Ross',oruvi:'Warden Oruvi',hask:'Brindle Hask',wiru:'Healer Wiru',ennu:'High Watch Ennu',kesi:'Kesi',tamsa:'Elder Tamsa'};
-const SQ_VIL_NAMES=['Wildwood','Hanami','Rimehold','Highmark','Glasswell','Wraithwick','Tallgrass'];
+  omar:'Captain Omar',zahra:'Marshal Zahra',amal:'Healer Amal',maeve:'Reeve Maeve',brannoch:'Brannoch',nuala:'Healer Nuala',maelis:'Keeper Maelis',warden_ross:'Warden Ross',oruvi:'Warden Oruvi',hask:'Brindle Hask',wiru:'Healer Wiru',ennu:'High Watch Ennu',kesi:'Kesi',tamsa:'Elder Tamsa',makoa:'Chief Makoa',lani:'Lani',eleaka:'Eleaka',hina:'Elder Hina',mele:'Mele',nalu:'Healer Nalu',kekoa:'Kekoa'};
+const SQ_VIL_NAMES=['Wildwood','Hanami','Rimehold','Highmark','Glasswell','Wraithwick','Tallgrass','Coralhaven'];
 // the places a visit part walks you to: {x, z, r (how close counts), name}
 const sqZone=key=>ZONES.find(z=>z.key===key);
 const sqZoneSpot=(key,fa,fr,r)=>{ const zn=sqZone(key), [x,z]=mqSpot(zn,fa,fr); return {x,z,r,name:zn.name}; };
@@ -34,7 +34,12 @@ const SQ_PLACES=(()=>{
     pools:{x:SAV_POOLS[0].x,z:SAV_POOLS[0].z,r:SAV_POOLS[0].r+30,name:'The Seven Pools'},
     anvil:{x:SAV_BOSS_POI[41].x,z:SAV_BOSS_POI[41].z,r:60,name:'Anvil Rock'},
     memory:{x:SAV_ZONE[43].x,z:SAV_ZONE[43].z,r:60,name:'The memory trees of Baobab Reach'},
-    delta:{x:SAV_ZONE[44].x,z:SAV_ZONE[44].z,r:60,name:'The Sedge Delta'}
+    delta:{x:SAV_ZONE[44].x,z:SAV_ZONE[44].z,r:60,name:'The Sedge Delta'},
+    // the Emberwake Isles: the lagoon, the Jaguar Court's plaza, the Drowned Strait and the terraces (the zones come with shared/emberwakezones.js)
+    lagoon:sqZoneSpot('e43',0.3,0.4,34),
+    plaza:{x:ARENA_E45.x,z:ARENA_E45.z,r:ARENA_E45.r+26,name:'The Overgrown Plaza'},
+    strait:{x:ARENA_E46.x,z:ARENA_E46.z,r:ARENA_E46.r+40,name:'The Drowned Strait'},
+    terraces:sqZoneSpot('e47',0,0.4,30)
   };
 })();
 const SQ=[
@@ -238,6 +243,57 @@ const SQ=[
      bossLine:'Oldhorn lowers her great head to the stone. The grey drains from her flanks like dust blown off a drum, and the calves below the terraces raise their heads, all together, and listen.',
      parts:[{boss:'oldhorn',text:'Defeat Oldhorn, the Herd-Mother, on the Sunstair'}],
      done:['They stopped. All the herds, in one moment, from the delta to the pools. Kesi says they turned east to face the sunrise as if they had heard their name.','My song ends there. I never knew. I am an old woman who sang a lullaby and did not ask what it was for.','...The Crown gave us a second shape, they say. I wonder now what it took in return. Not today. Today the herds are home.']}
+  ]},
+  /* ---------------- The Emberwake Isles (levels 42-48), three chains: the Salt Watch (to Ocelo), the Drowned Strait (to Tuila) and the Terrace Road (up to the Seven Gates). BASE SETTINGS ONLY: Yuval co-writes the story zone by zone (docs/EMBERWAKE.md) ---------------- */
+  {id:'saltwatch',name:'The Salt Watch',land:'isles',lv:42,res:['rimeore','frostwood','snowmoss'],cos:'a:saltlight',steps:[
+    {id:'sw1',title:'Fouled nets',from:'lani',to:'lani',
+     offer:['The nets come up full of black sand and nothing else. The crab-brutes have moved into the shallows, and the raiders are taking whatever the crabs leave.','Clear the Black Sand Landing for us, please. Then speak to Eleaka: she has been counting stars again and does not like her answer.'],
+     parts:[{kill:'crabbrute',n:6,text:'Defeat crab-brutes at the Black Sand Landing'},{kill:'reefraider',n:5,text:'Drive off the reef raiders'}],
+     done:['Thank you. The beach is quiet, and quiet is a start.','Eleaka is on the jetty. She is always on the jetty.']},
+    {id:'sw2',title:'The stars that went out',from:'eleaka',to:'eleaka',
+     offer:['Every night I mark the stars above the eastern edge of the sea. Every night there are fewer. A navigator who says so aloud is called a poor navigator.','Go to the Lagoon Shallows after dark and look east. Clear the rays and the shell-beetles first, or you will look at the sea from underneath it.'],
+     parts:[{kill:'lagoonray',n:5,text:'Defeat lagoon rays'},{kill:'coralbeetle',n:5,text:'Defeat coral beetles'},
+            {visit:'lagoon',night:true,after:true,text:'Watch the eastern sky from the Lagoon Shallows',say:['(East of the lagoon the sky is a hand wider and darker than the sky around it. Nothing moves in it. Nothing is lit in it.)','(It might be cloud. It might be the shape of something that drinks light.)']}],
+     done:['So it is not my eyes. Thank you.','The old stories say the jungle city kept a lord who ate the sun at night and gave it back at dawn. Elder Hina tells it better. Ask her.']},
+    {id:'sw3',title:'The lord of the court',from:'hina',to:'hina',
+     offer:['Sit. There are many verses and only one of them matters tonight: "the Jaguar-Lord held the sun in his mouth, and the sun was glad of it."','Glad, mind you. Not trapped. I have sung it for sixty years and never once asked who was glad.','Go to the plaza in the jungle. Do not take the verse as an order, or as a warning. Take it as a question.'],
+     parts:[{kill:'junglehog',n:5,text:'Defeat jungle hogs on the Jungle Edge'},{kill:'stonejaguar',n:4,text:'Break the stone jaguars of the plaza'},
+            {visit:'plaza',after:true,text:'Walk to the Overgrown Plaza',say:['(A court of long stone walls, grass to the knee, and in the middle a ring of old gold that does not tarnish.)','(Something large is asleep under the ring. It breathes in time with the surf.)']}],
+     done:['You have seen it. Then you know why the verse is a question.','Go and ask it, Hina says, and I say it as well, because I cannot say it a second time.']},
+    {id:'sw4',title:'Ocelo',from:null,to:'makoa',
+     bossLine:'Ocelo lowers his great head onto the gold. The shadow that lay over the eastern sky thins, and one star, then two, come back above the lagoon.',
+     parts:[{boss:'ocelo',text:'Defeat Ocelo, the Sun-Jaguar, in the Jaguar Court'}],
+     done:['The stars came back. Eleaka counted them twice and wept both times, and denies it.','The verse has a second half, Hina says, that she was never taught. Perhaps the jaguar was the one who knew it.','Take this for the road. The Strait is next, and it is not as patient as the sun.']}
+  ]},
+  {id:'strait',name:'The Drowned Strait',land:'isles',lv:44,after:'saltwatch',res:['rimeore','frostwood','snowmoss'],cos:'c:tidecape',steps:[
+    {id:'st1',title:'The tide that does not turn',from:'eleaka',to:'eleaka',
+     offer:['The tide used to come in and go out. For three days it has come in and stayed in, and the strait east of the jungle is a hand higher every morning.','Raiders have taken the cenote rim for a camp: they say the water has opened a way. Clear them out, and tell me what the water is doing.'],
+     parts:[{kill:'cenoteeel',n:5,text:'Defeat cenote eels at Cenote Rim'},{kill:'straitraider',n:5,text:'Drive off the strait raiders'}],
+     done:['They said the water had opened a way. Where to, they did not say?','Healer Nalu has been treating raiders who came back from the rim. She wants to see you.']},
+    {id:'st2',title:'Salt in the herbs',from:'nalu',to:'nalu',
+     offer:['The ones who came back have salt in their lungs and cannot say why. They talk about a woman in the water who counts them.','I need herbs that grow above the tideline, and I need to know whether the tideline is where it was. Gather, and then look at the strait.'],
+     parts:[{gather:'gathering',n:4,text:'Gather 4 herbs'},{kill:'hollowfaithful',n:5,text:'Defeat the Hollowed Faithful'},
+            {visit:'strait',after:true,text:'Look at the Drowned Strait',say:['(The strait is flat as a plate and the colour of a held breath. The posts of a causeway stand in it, up to their necks.)','(A long way out, something rises and sinks. It could be a swell. It could be a head.)']}],
+     done:['The water is where the causeway used to be, then. I had hoped the raiders were exaggerating.','Kekoa dives these waters. Ask him what lives at the bottom of the strait, and whether it has been counting.']},
+    {id:'st3',title:'Tuila',from:null,to:'kekoa',
+     bossLine:'Tuila sinks into her own tidepool, and the strait lets go of a breath it has been holding for three days. Far out, the posts of the old causeway stand dry to the knee.',
+     parts:[{boss:'tuila',text:'Defeat Tuila, the Tide-Caller, at her tidepool'}],
+     done:['The tide turned! I felt it in my feet before I saw it. The whole jetty groaned.','She counted divers, he said, back then. Not to drown them, I think. To keep them. There is a difference, and I will not say which side I would have been on.']}
+  ]},
+  {id:'terraces',name:'The Terrace Road',land:'isles',lv:46,after:'strait',res:['rimeore','frostwood','snowmoss'],cos:'a:condorwind',steps:[
+    {id:'tr1',title:'The road east',from:'makoa',to:'makoa',
+     offer:['With the strait low again the isthmus is dry, and the Highland stands in the sunrise like a held breath. Nobody in Coralhaven has been up the Terrace Road in my lifetime.','Go and see who keeps it. I have a guess, and I would rather you did not tell me which part of it is wrong.'],
+     parts:[{kill:'ropespinner',n:5,text:'Defeat rope-spinners on the Terrace Slopes'},{kill:'terracemason',n:5,text:'Defeat the terrace masons'}],
+     done:['The road is not empty, then. Somebody has been mending it for a very long time.','Mele keeps the notices. She says there is a name on one that nobody in Coralhaven put there.']},
+    {id:'tr2',title:'A notice nobody wrote',from:'mele',to:'mele',
+     offer:['It is in a hand I do not know, on a board that did not exist yesterday: "WE ARE STILL COUNTING." Below it is a tally. Seven columns.','Seven columns, and one is not finished. Take a look at the Terrace Road and tell me what is being counted up there.'],
+     parts:[{kill:'highlandcondor',n:5,text:'Defeat highland condors on Condor Heights'},{kill:'roadsentinel',n:5,text:'Break road sentinels'},
+            {visit:'terraces',after:true,text:'Climb the Terrace Slopes',say:['(Terraces cut into the slope like a stair for something larger than people. Every seventh wall has a niche, and every niche is empty.)','(At the top a gate stands in a wall with no building behind it. It is not locked. It does not need to be.)']}],
+     done:['Seven gates, then, and I did not know how many there were.','What goes through them, and which way, is a question for somebody older than I am. Old Hina has not slept, and I do not think she will.']},
+    {id:'tr3',title:'What the gates count',from:'hina',to:'hina',
+     offer:['Every verse I know ends before the seventh gate. I thought that was because the singers forgot. I think now that they stopped.','Tell Chief Makoa what you saw, all of it. A chief ought to know what is in his own sunrise.'],
+     parts:[{talk:'makoa',after:true,text:'Tell Chief Makoa what you saw on the Terrace Road',say:['Seven gates. The sun, the sea, the road, and four more I cannot name.','We will keep the road. Go back to Hina, she will want to hear that it was kept.']}],
+     done:['Kept. Then it is a verse with an ending, at last, and I will sing it badly for the rest of my life.','The isles have a long way yet to go before they are finished with you, or you with them. Take this.']}
   ]}
 ];
 const SQ_BY_ID={}; SQ.forEach(C=>{ SQ_BY_ID[C.id]=C; C.steps.forEach((s,i)=>{ s.i=i; s.chain=C.id; }); });

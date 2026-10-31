@@ -36,6 +36,9 @@
 | [Brindle](brindle.md) | M | mixed (safe DPS + support), fire | a lens catching the sun | a flat goggle cap, a vest hung with sun-glass vials, baggy patched trousers, a tool belt; hyena Kin parts | `naperidge` / `laughgaze` | version 3, the Amber Reach (Kin) |
 | [Dessa](dessa.md) | F | tank, earth | a smithy in the road | a knotted headwrap, a long leather apron, iron knee guards, a cross-peen hammer; rhino Kin parts with a nose horn | `shortbraid` / `heavygaze` | version 3, the Amber Reach (Kin) |
 | [Sefi](sefi.md) | F | risk DPS, air | a streak of gold on the grass | a sky headband with streamers, a crop top and crossed sash, a message tube, wrapped calves; cheetah Kin parts | `windtail` / `longgaze` | version 3, the Amber Reach (Kin) |
+| [Meleni](meleni.md) | F | support (buff), water | a wake of turquoise on open water | a shell-and-hibiscus leaf crown, loose hair with a shell-tied braid, a tapa bandeau and two shell leis, a wave-line pareu, shell anklets | `tidebraid` / `farsight` | version 3, the Emberwake Isles |
+| [Tzaya](tzaya.md) | M | grinder, fire | a thread of copal smoke | a gold crown with a jade disc and a feather fan, a bare chest with a red sash, a jade collar, a flap wrap, jade sandals | `priestcrop` / `emberstare` | version 3, the Emberwake Isles |
+| [Atuqa](atuqa.md) | M | tank, light | a stone terrace in the sun | a chullo with ear flaps, twin braids, a woven tunic with a flap skirt and a quipu belt, indigo leggings, wrapped sandals | `twinbraids` / `steadygaze` | version 3, the Emberwake Isles |
 
 The hiker is about 54,000 triangles; an outfit adds 15,000-22,000 at full detail (`charDetail('hero')`), proportionally fewer for other players and villagers (every segment count goes through `sg(n)`).
 

@@ -24,7 +24,10 @@ const HV_OUTFIT={
   zahra:{sex:'f',pitch:0.98,rate:0.9,slot:4,tone:'calm'},
   // the Amber Reach sets: Brindle the loud-laughing hyena tinker, Dessa the rhino smith (tank), Sefi the cheetah courier (fast)
   brindle:{sex:'m',pitch:1.1,rate:1.2,slot:6,tone:'bright'}, dessa:{sex:'f',pitch:0.72,rate:0.84,slot:6,tone:'gruff'},
-  sefi:{sex:'f',pitch:1.22,rate:1.32,slot:7,tone:'sly'}};
+  sefi:{sex:'f',pitch:1.22,rate:1.32,slot:7,tone:'sly'},
+  // the Emberwake Isles sets: Meleni the wayfinder-singer, Tzaya the calendar-priest, Atuqa the terrace-keeper
+  meleni:{sex:'f',pitch:1.08,rate:1.0,slot:8,tone:'calm'}, tzaya:{sex:'m',pitch:0.92,rate:0.98,slot:8,tone:'bold'},
+  atuqa:{sex:'m',pitch:0.78,rate:0.86,slot:9,tone:'gruff'}};
 // Three shouts for every skill. The original skills have their own; every other skill gets three made from its name,
 // its element and its class (or the set's tone), fixed by its id so a skill always has the same three to choose from.
 const HV_SKILL={

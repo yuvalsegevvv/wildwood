@@ -24,6 +24,7 @@ const PAL={
   // Amber Reach: the flat-topped acacia (olive, a little sun-bleached) and the baobab's thin crown (plant-models-savanna.js)
   savacacia:[0x7f9a3c,0x92a846,0x6f8a34,0xa0a64a], baobab:[0x6f9a3a,0x84a844,0x5f8a34]
 };
+const ISLE_LEAF=[0x2f7a34,0x3d8a3a,0x286a30,0x4a9a40];   // emberwake: the jungle's broadleaf crowns, deeper and wetter than the home forest's
 const RAD={pine:0.35,spruce:0.3,oakA:0.55,oakB:0.5,birch:0.22,snag:0.3,sakura:0.4,maple:0.3,bamboo:0.7,frostspruce:0.32,dwarfbirch:0.2,palm:0.35,cactus:0.4,thorn:0.25,poplar:0.2,beech:0.55,willow:0.4,umbrella:0.3,cedar:0.3,ginkgo:0.3,larch:0.28,acacia:0.25,gloomoak:0.45,savacacia:0.3,baobab:2.5};
 const moss=new THREE.Color(0x56702f);
 
@@ -216,7 +217,7 @@ function* genTerrain(){
   spawn.x=VIL.spawn.x; spawn.z=VIL.spawn.z;
   P.x=spawn.x; P.z=spawn.z; P.y=getH(P.x,P.z);
   { const ux=VIL.x-P.x, uz=VIL.z-P.z; P.yaw=Math.atan2(-ux,-uz); P.face=P.yaw; }
-  buildVillage(); buildVale(); buildHoarfrost(); buildGreyspine(); buildSunscar(); buildGloamhorn(); buildTallgrass(); buildTideBeach(); buildProvingIsle(); buildRaids(); buildNodes();   // pvp: the Proving Isle's gate and banners (village/buildings-pvp.js)
+  buildVillage(); buildVale(); buildHoarfrost(); buildGreyspine(); buildSunscar(); buildGloamhorn(); buildTallgrass(); buildCoralhaven(); buildWaystations(); buildTideBeach(); buildProvingIsle(); buildRaids(); buildNodes();   // pvp: the Proving Isle's gate and banners (village/buildings-pvp.js)
   caveMouthBuild();   // cave: the Deep Cave's mouth, lift and circle (cave/mouth.js)
   dgEntBuild();   // dungeons: the three doors and their signposts
   pzBuild();   // puzzles: the stones (PZ_ON)

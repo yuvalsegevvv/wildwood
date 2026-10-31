@@ -567,3 +567,31 @@ One random **level-40 ring** (`DG_REWARDS.termitecathedral`, `kind:'ring'`, `t:8
 
 ### 13.3 Decisions (my picks)
 23. Entry level 42 and `gear.amber >= 1`; the Reach has no tier row yet, so `+0` is the only difficulty until it does. 24. Eggs reuse the `shroom` model (cream-and-amber pal) instead of a new model family. 25. The egg numbers are constants at the top of the kit file. 26. The door faces down The Amber Door Road, which ends at it.
+
+## 14. The Cenote of Hollow Stars and Ahmetl, the Star-Masked (the Emberwake Isles' dungeon, the eighth; version 3)
+
+**Status: built and tested** (`tools/cenote-dungeon-smoke.js`, plus `dungeons-smoke`, `dungeon-client-smoke`, `entrances-client-smoke`, `rewards-smoke`, `pendants-smoke`). Built like the Termite Cathedral (section 13): one theme file, one boss row and kit, one door, the reward row `DG_REWARDS.cenote` and, new, a **level-40 pendant family**.
+
+**The place.** A flooded sinkhole temple under the jungle (zone e44, the Jungle Edge). Theme `src/shared/dungeons/themes/cenote.js`, land `isles` (`DG_LANDS.isles`: base +0, unlock `{isles:2}` = **Coralhaven reached**, `gear.isles`). Level **48 at +0**, rising 10 a tier (the isles are in the zone-tier symbol). Music `boss30` for the boss, the run plays the theme's `boss30` too until the isles have a track. **Entry level 45.** Tile kit (the Termite Cathedral's nine designs redrawn on the same floor plans): Mask Hall (hall, four star basins), Offering Chamber, Flooded Gallery (rooms), Guard Chamber (guardian post), Stair Gallery, Geyser Shaft (passes; the vents are hazard `steam`), Star Hall (site), Treasury (cache), Cenote Rim (start). Legend: `W` cenote wall, `T` carved pillar, `X` star basin, `N` jade offering, `Q` fallen stair, `k` skull rack, `L` star lamp, `c` mossy rubble, `r` shallow water, `s` geyser vent, `G` guardian post. Client props: `game/dungeon/view-cenote.js`.
+**Monsters** (the isles' kinds, scaled by `dgKOf`): walkers Hollowed Faithful, Strait Raider, Reef Raider, Stone Jaguar, Lagoon Ray, Coral Beetle; guardians Terrace Mason and Road Sentinel. Hunt quarry: the Cenote Eel.
+
+**The door: The Cenote of Hollow Stars** (`DG_ENTRANCES.cenote`, kind `cenote`): the atlas's isles door (`EW_DOOR`, -648, 1702), flat jungle ground (no bank, no road, like the Sandglass: `dungeons-smoke` skips those rules for it), facing north toward Zotchul (`a` = -2.98). Door model `dgEntCenote` (`game/village/buildings-dungeon-isles.js`): a mossy mound with a corbelled stone arch, a carved star, a stone plug while sealed and star-fire bowls. Testing tab: **Go to the Cenote of Hollow Stars Door** (dev command `isles` opens Coralhaven first).
+
+### 14.1 Ahmetl, the Star-Masked (`DG_BOSSES.ahmetl`, kit `stars`)
+**Level 48** (the last normal boss), 70 hits, dark, goblin model (undead form) at scale 3.0; add: Star Shade (level 47). Kit `server/dungeons/boss-kits-cenote.js`, existing primitives only.
+
+| Phase | Move | What it does |
+|---|---|---|
+| 1 | **Obsidian Blade** (`blade`) | a 120 degree cleave that shoves 14 m/s |
+| 1 | **Falling Stars** (`fall`) | three rings (two under players), 1.5 s |
+| 1 | **Hollow Stars** (`hollow`, signature) | three stars light on the floor (four enraged), harmless ice-blue rings of 3.2 m; 3 s later a pulse over the whole hall (1.6 hits) spares only whoever stands in a star. **If nobody is hurt the mask cracks: stunned 3 s.** |
+| 2 | **Star Shades** (`shades`) | 3 at the mouths every 22 s |
+| 2 | **Moon Lance** (`lance`) | a line through one player, slows |
+| 3 | **Eclipse Ring** (`eclipse`) | a donut: only the middle, next to him, is safe |
+
+### 14.2 What a clear pays: a level-40 pendant
+One random **level-40 pendant** (`DG_REWARDS.cenote`, `kind:'pendant'`, `t:8`): one of the five kinds (XP, drop, coin, crit, crit damage), rarity 70 / 25 / 4 / 0.8 / 0.2%, the same pendant for the whole party. Ids `pendant8-<kind>[-<rarity>][+n]` (`dgPendantId40`), names "Hollowstar Pendant of ...", values the level-30 ones x1.25 (`PENDANT40_BASE`: 7.5% XP, 12.5% drop, 12.5% coins, 2.5% crit, +0.125 crit multiplier), worn from level 40, tempered and merged like the others, **never rolled** (`rlParseCode` is refused for them). 175 ids registered (`dgAllPendantIds40`).
+
+### 14.3 Decisions (my picks)
+27. Entry level 45 and `gear.isles >= 2`. 28. The door faces Zotchul, flat ground, signpost on the apron's line. 29. The lit stars are drawn as harmless `icefall` rings (no new tele kind); the pulse is `new:tele-safe`'s. 30. Boss model `goblin` (undead form) with the isles' jade and sea-blue palette until a mask model exists.
+

@@ -25,8 +25,8 @@ ok('the older dungeons keep entry level 25 and level 30 (the `entry` field defau
 ok('every monster of the dungeon is a Gloamhorn kind (zones m32-m40) walkers fit a 4 m door',[...T.mobs.walkers,...T.mobs.guardians].every(id=>{ const d=x.MON_DEFS.find(q=>q.id===id); return d&&/^m\d\d$/.test(d.zone)&&d.level>=32&&d.level<=40; })&&T.mobs.walkers.every(id=>x.MON_DEFS.find(q=>q.id===id).rad<=0.9));
 
 // ---- the door ----
-ok('the door is the prop the Gloamhorn reserved: DG_ENTRANCES.gloamvault at GLOAM_DG_DOOR (facing its rot), seven doors in all, found from 3 m and not from 9 m, its apron 7 m out',
-  !!E&&E.x===D.x&&E.z===D.z&&E.a===D.rot&&E.theme==='gloamvault'&&Object.keys(x.DG_ENTRANCES).length===7&&x.dgEntranceNear(D.x+Math.sin(E.a)*3,D.z+Math.cos(E.a)*3)===E&&x.dgEntranceNear(D.x+Math.sin(E.a)*9,D.z+Math.cos(E.a)*9)===null&&Math.abs(Math.hypot(x.dgApron(E).x-D.x,x.dgApron(E).z-D.z)-7)<1e-9);
+ok('the door is the prop the Gloamhorn reserved: DG_ENTRANCES.gloamvault at GLOAM_DG_DOOR (facing its rot), eight doors in all, found from 3 m and not from 9 m, its apron 7 m out',
+  !!E&&E.x===D.x&&E.z===D.z&&E.a===D.rot&&E.theme==='gloamvault'&&Object.keys(x.DG_ENTRANCES).length===8&&x.dgEntranceNear(D.x+Math.sin(E.a)*3,D.z+Math.cos(E.a)*3)===E&&x.dgEntranceNear(D.x+Math.sin(E.a)*9,D.z+Math.cos(E.a)*9)===null&&Math.abs(Math.hypot(x.dgApron(E).x-D.x,x.dgApron(E).z-D.z)-7)<1e-9);
 
 // ---- who may enter: Wraithwick walked into (gear.gloam 2) and level 38, at every difficulty ----
 { const un=(g,lv,tier)=>x.dgUnlocked(g,lv,T,tier);

@@ -1,7 +1,7 @@
 //@ The signature outfit characters in the world (VILLAGERS_OUTFIT, WILD_SITES, npcOutfitLook): each set's wearer stands in the village or the wild spot that fits their theme
 /* Agent map. VILLAGERS_OUTFIT: villager defs (same fields as VILLAGERS in villagers.js) with `outfit:'<id>'`, which spawnNPC turns into the whole set worn on its reference body (npcOutfitLook);
    initNPCs adds them after the hand-written villagers, all `late` with their own rng seeds (101+). A def with `site:'<name>'` stands in the wild at WILD_SITES[name] instead of a village's anchors (wildSiteOf builds the village-shaped record: x, z, h, anchors, pois).
-   Tamsin (the Lodge, home village) and Marshal Zahra (Glasswell) are older villagers who now wear their namesake sets (VILLAGERS_OUTFIT_WEAR). Hask, Dessa and Sefi (Tallgrass) already wear theirs as Kin.
+   Tamsin (the Lodge, home village) and Marshal Zahra (Glasswell) are older villagers who now wear their namesake sets (VILLAGERS_OUTFIT_WEAR). Hask, Dessa and Sefi (Tallgrass) already wear theirs as Kin. Meleni, Tzaya and Atuqa stand in Coralhaven (vil 8).
    Not built in light mode (a set is 15-22k triangles at full detail). Tests: client-smoke. Designs: docs/skillkits/looks/. */
 const WILD_SITES={
   pell:    {x:-154,z:266,face:2.356,note:'the east shore of Mistmere, the home forest\'s lake'},
@@ -79,5 +79,15 @@ const VILLAGERS_OUTFIT=[
     lines:['Do not look so worried. If I were raiding you, you would have noticed by now. You would also have fewer coins.','The caravans pay a toll, one way or another. I only collect it quicker than the Wardens do.','Sit by the fire if you like. The sand is cold at night and the wyrm is somebody else\'s problem.'] },
   { id:'ogden', vil:6, site:'ogden', late:true, seed:116, outfit:'ogden', title:'Gravedigger', name:'Ogden', role:null,
     behavior:{type:'stationary',at:'camp'}, schedule:'always', voice:{rate:0.72,pitch:0.6},
-    lines:['Mm. Drowned a while back. Did not take. I have been digging ever since, so it is not all bad.','The rusted bell on my spade rings when something is ready to be put down. It rings often.','Do not mind the weed on my cap. It has been there longer than my last customer.'] }
+    lines:['Mm. Drowned a while back. Did not take. I have been digging ever since, so it is not all bad.','The rusted bell on my spade rings when something is ready to be put down. It rings often.','Do not mind the weed on my cap. It has been there longer than my last customer.'] },
+  /* ---- Coralhaven (the Emberwake Isles' three sets, seeds 154-156) ---- */
+  { id:'meleni', vil:8, late:true, seed:154, outfit:'meleni', title:'Wayfinder-singer', name:'Meleni', role:null,
+    behavior:{type:'stationary',at:'plaza1'}, home:'house:5', schedule:'day', voice:{rate:1.0,pitch:1.1},
+    lines:['A crew sings so the paddles keep one time. Sing out of time and the canoe goes in circles, and so do the sailors.','The sea has a pulse, and the chant is only how we agree with it.','Hold the paddle, not the worry. The worry floats on its own.'] },
+  { id:'tzaya', vil:8, late:true, seed:155, outfit:'tzaya', title:'Calendar-priest', name:'Tzaya', role:null,
+    behavior:{type:'stationary',at:'plaza3'}, home:'house:6', schedule:'day', voice:{rate:0.98,pitch:0.9},
+    lines:['I keep the count by what I burn. Copal for the days, cedar for the years, and nothing at all for the days that do not belong to us.','Every day has a face. Today\'s is calm, and I do not trust it.','The count has never been wrong. It has only been misread.'] },
+  { id:'atuqa', vil:8, late:true, seed:156, outfit:'atuqa', title:'Terrace-keeper', name:'Atuqa', role:null,
+    behavior:{type:'stationary',at:'plaza5'}, home:'house:7', schedule:'day', voice:{rate:0.86,pitch:0.78},
+    lines:['A wall holds because every stone leans on the next. Take one out and ask the rest what they think.','The cords remember what people forget. Fourteen knots for the harvest, one for the debt.','Stand on the terrace long enough and the mountain stops being a mountain. It becomes a staircase someone meant.'] }
 ];

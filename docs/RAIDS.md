@@ -1,10 +1,10 @@
-# Raids: seven ruined strongholds
+# Raids: eight ruined strongholds
 
 Built (version 3). One stronghold per land, each a ruin in an empty part of its land: 28 garrison monsters of the land's own kinds, destructibles, and one of the land's two **existing** world bosses (no new boss), rolled at random each time the raid is rebuilt. A clear pays a land-specific raid material that signature (skill set) skills need to level up. A cleared raid rebuilds 30 minutes later. The plan this was built from (with the reasoning and the open questions) is `raids-plan/PLAN.md` in the project files.
 
 Stem `raids`, prefix `rd` / `RD_`. Test: `node tools/raids-smoke.js`.
 
-## 1. The seven
+## 1. The eight
 
 | Land | Raid | Site (x, z) | Boss pool | Material |
 |---|---|---|---|---|
@@ -15,6 +15,9 @@ Stem `raids`, prefix `rd` / `RD_`. Test: `node tools/raids-smoke.js`.
 | sun | The Sunken Citadel | -780, 440 | Glass Guardian, Sand Wyrm | Citadel Sunstone |
 | gloam | Wrackmoor Fort | -740, -240 | Captain Dredge, Gloam Warden | Wrack Glass |
 | amber | The Broken Moot | -1027, 1025 (`SAV_MOOT`) | Old Thunder, Oldhorn | Moot Bead |
+| isles | The Seven Gates | `EW_GATES` (zone 48, the Terrace Slopes) | Ocelo, Tuila | Gate Tally |
+
+The Seven Gates (`shared/raids/sevengates.js`, look `gates`: seven fitted-stone gate frames in a row, each more finished than the last, the seventh without a lintel; the isles' level 47-48 kinds as garrison) is the eighth. The volcano's long boss is a later raid and not part of this one.
 
 The Broken Moot (`shared/raids/moot.js`, look `moot`: seven toppled seats ring the court) is built before its bosses are wired in: `rdBossRow(id)` finds a raid boss in `BOSS_DEFS` or, until the wire-up task pushes them, in `SAV_BOSS_ROWS`. Zone tier II+ of the Reach does not exist yet, so it pays at tier 0 until then.
 

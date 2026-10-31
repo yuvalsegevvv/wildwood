@@ -384,7 +384,7 @@ function dgEntSign(E){
 let dgEntBuilt=false;
 function dgEntBuild(){
   if(dgEntBuilt) return; dgEntBuilt=true;
-  dgEntElder(DG_ENTRANCES.hollowroots); dgEntFalls(DG_ENTRANCES.jadesprings); dgEntBarrow(DG_ENTRANCES.bonefrostbarrow); dgEntAdit(DG_ENTRANCES.blackseam); dgEntSand(DG_ENTRANCES.sandglass); dgEntGloam(DG_ENTRANCES.gloamvault); dgEntTermite(DG_ENTRANCES.termitecathedral);
+  dgEntElder(DG_ENTRANCES.hollowroots); dgEntFalls(DG_ENTRANCES.jadesprings); dgEntBarrow(DG_ENTRANCES.bonefrostbarrow); dgEntAdit(DG_ENTRANCES.blackseam); dgEntSand(DG_ENTRANCES.sandglass); dgEntGloam(DG_ENTRANCES.gloamvault); dgEntTermite(DG_ENTRANCES.termitecathedral); dgEntCenote(DG_ENTRANCES.cenote);
   for(const E of dgEntList) dgEntSign(E);
 }
 /* every frame: each door takes its sealed or open look from your gear (dgGateOpen, so +1 at Wildwood opens the Elder, Hanami / Rimehold the others; checked for all three wherever you are,

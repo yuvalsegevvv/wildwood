@@ -51,6 +51,7 @@ const _nb=new THREE.Color();
 function landColor(l,x,z,h,g,out,noCut){
   if(l===2) return hoarColor(x,z,h,g,out);
   if(l===3) return greyColor(x,z,h,g,out);
+  if(l===7) return ewColor(x,z,h,g,out);   // the Emberwake Isles (world/terrain-color-isles.js)
   if(l===6) return savColor(x,z,h,g,out);   // savanna: Amber Reach (world/terrain-color-savanna.js)
   if(l===5) return gloamColor(x,z,h,g,out);
   if(l>=4) return sunColor(x,z,h,g,out);
