@@ -37,3 +37,5 @@ Rootlines: d1-2 about 1 ms, d3 about 10 ms, d4 about 100-300 ms, d5 3-7 s. Ice s
 New kinds: sudoku d5 about 140 ms; akari d5 about 1 s (max 4 s); slither d4 about 260 ms, **d5 15x15 about 11 s average, 35 s max (stop-flag item)**; bridges, mirrors, nonogram all fast; sokoban d3 about 0.7 s, d4-5 about 0.2 s. `tools/puzzles-smoke.js` checks junk answers for every kind.
 
 The public copy of the admin Puzzles section: message `pztest` (`server/puzzles.js`), honoured only in the /test world (`io.test`); the Settings panel shows only the Puzzles tools there (`onWelcome`, `net/client.js`). Checked in `tools/testworld-smoke.js`.
+
+Round 3: the lab is public at /puzzle (`dist/puzzle.html`, built by build.py from tools/puzzle-lab.js, served by src/node/main.js) and no longer shows a target time. Rootlines d5 now generates in about 0.1-2 s (cheap solver cap while cutting, a merge budget). Sokoban d5 is 12x11 with 8 calves that must start far from their kraal cells (about 700-900 moves vs 200 at d4). Ice slide boards are always solvable (checked on thousands of seeds); the view now says when a move has left no way to the runes.

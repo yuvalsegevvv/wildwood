@@ -247,6 +247,8 @@ def build(inline_audio=False):
                 'const PAGE=' + json.dumps(served) + ';\n'
                 'function createWorldServer(io){\n' + server + '}\n' + node)
     precompress(served)
+    if shutil.which('node'):   # the puzzle lab, public at /puzzle (src/node/main.js)
+        subprocess.run(['node', os.path.join(ROOT, 'tools', 'puzzle-lab.js'), os.path.join(ROOT, 'dist', 'puzzle.html')], cwd=ROOT, capture_output=True)
     print('built %s (%.0f KB)' % (os.path.relpath(SERVER_OUT, ROOT), os.path.getsize(SERVER_OUT) / 1024))
     size = os.path.getsize(OUT)
     print('built %s (%.0f KB, %d game files, %d stylesheets)' % (os.path.relpath(OUT, ROOT), size / 1024, len(manifest['game']), len(manifest['styles'])))

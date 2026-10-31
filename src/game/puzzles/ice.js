@@ -24,7 +24,10 @@ PZV.iceslide={mount(host,B,api,saved){
     B.goal.forEach((c,i)=>{ const x=(c%w+0.5)*cs, z=(Math.floor(c/w)+0.5)*cs; g.strokeStyle=COL[i]; g.lineWidth=3; g.beginPath(); g.moveTo(x,z-cs*0.34); g.lineTo(x+cs*0.3,z); g.lineTo(x,z+cs*0.34); g.lineTo(x-cs*0.3,z); g.closePath(); g.stroke(); });
     s.pos.forEach((c,i)=>{ const x=(c%w+0.5)*cs, z=(Math.floor(c/w)+0.5)*cs; g.fillStyle=COL[i]; g.strokeStyle='#0b1218'; g.lineWidth=2; g.beginPath(); g.arc(x,z,cs*0.3,0,6.283); g.fill(); g.stroke(); });
   }
-  const finish=()=>{ if(!won&&icWon(B,hist[hist.length-1])){ won=true; draw(); api.solved(moves); } };
+  // a dead end (a cracked tile walled the way off, a stone slid past its rune for good): search every state reachable from here; if none wins, say so
+  const note=document.createElement('p'); note.className='muted'; host.append(note);
+  const stuck=s0=>{ const seen=new Set([icKey(B,s0)]), q=[s0]; for(let i=0;i<q.length;i++){ if(icWon(B,q[i])) return false; if(q.length>40000) return false; for(const d of ['U','D','L','R']){ const n=icStep(B,P,q[i],d), k=icKey(B,n); if(!seen.has(k)){ seen.add(k); q.push(n); } } } return true; };
+  const finish=()=>{ const cur=hist[hist.length-1]; if(!won&&icWon(B,cur)){ won=true; draw(); api.solved(moves); } note.textContent=!won&&stuck(cur)?'No way to the runes from here. Undo a move or start over.':''; };
   const go=d=>{ if(won) return; const n=icStep(B,P,hist[hist.length-1],d); if(icKey(B,n)===icKey(B,hist[hist.length-1])) return; hist.push(n); moves+=d; draw(); api.save({st:{moves},secs:0}); finish(); };
   const keys={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R',KeyW:'U',KeyS:'D',KeyA:'L',KeyD:'R'};
   IC_KEY.go=go; IC_KEY.keys=keys;   // the one key listener below drives whichever board is open

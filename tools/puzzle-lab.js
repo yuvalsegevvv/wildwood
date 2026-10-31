@@ -46,7 +46,7 @@ table{ width:100%; border-collapse:collapse; font-size:13px; font-variant-numeri
   <button class="main" id="go">New board</button>
 </div>
 <section id="stage" aria-live="polite">
-  <div id="bar"><span id="what">-</span><span>Time <b id="clock">0:00</b> / target <b id="tgt">-</b></span></div>
+  <div id="bar"><span id="what">-</span><span>Time <b id="clock">0:00</b></span></div>
   <div id="host"></div>
   <div class="row" id="tools" hidden><button id="undo">Undo</button><button id="reset">Start over</button></div>
   <div id="rate" hidden></div>
@@ -65,7 +65,7 @@ ${views}
   const LS='wwpzlab'; let log=[]; try{ log=JSON.parse(localStorage.getItem(LS)||'[]'); }catch(_){}
   const kindEl=$('#kind'), diffEl=$('#diff'), fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
   kindEl.innerHTML=PZ_KIND_IDS.map(id=>'<option value="'+id+'">'+PZ_KINDS[id].name+' ('+PZ_KINDS[id].land+')</option>').join('');
-  diffEl.innerHTML=PZ_DIFF.slice(1).map((d,i)=>'<option value="'+(i+1)+'">'+(i+1)+' '+d.name+' (~'+fmt(d.target)+')</option>').join('');
+  diffEl.innerHTML=PZ_DIFF.slice(1).map((d,i)=>'<option value="'+(i+1)+'">'+(i+1)+' '+d.name+'</option>').join('');
   let cur=null, timer=0;
   const save=()=>{ try{ localStorage.setItem(LS,JSON.stringify(log.slice(-300))); }catch(_){} };
   const verdictName={easy:'too easy',ok:'just right',hard:'too hard',dull:'dull'};
@@ -75,7 +75,7 @@ ${views}
   function start(){
     clearInterval(timer); $('#rate').hidden=true; const kind=kindEl.value, diff=+diffEl.value, typed=$('#seed').value.trim();
     const seed=typed?(parseInt(typed,10)>>>0):Math.floor(Math.random()*4294967296); $('#seed').value='';
-    $('#host').innerHTML='<p class="dim">Weaving the board…</p>'; $('#what').textContent=PZ_KINDS[kind].name+' · '+PZ_DIFF[diff].name+' · seed '+seed; $('#tgt').textContent=fmt(PZ_DIFF[diff].target); $('#clock').textContent='0:00'; $('#tools').hidden=true;
+    $('#host').innerHTML='<p class="dim">Weaving the board…</p>'; $('#what').textContent=PZ_KINDS[kind].name+' · '+PZ_DIFF[diff].name+' · seed '+seed; $('#clock').textContent='0:00'; $('#tools').hidden=true;
     setTimeout(()=>{
       const t0=performance.now(), B=pzBoard(kind,diff,seed), gen=Math.round(performance.now()-t0);
       if(!B){ $('#host').innerHTML='<p class="v-hard">This kind could not make a board at this difficulty (seed '+seed+'). Please report it.</p>'; return; }
@@ -86,8 +86,8 @@ ${views}
     },30);
   }
   function askRate(secs){
-    const c=cur, tgt=PZ_DIFF[c.diff].target; $('#tools').hidden=true;
-    $('#rate').hidden=false; $('#rate').innerHTML='<p><b>Solved in '+fmt(secs)+'</b> (target '+fmt(tgt)+'). How was it?</p><div class="row"><button data-v="easy">Too easy</button><button data-v="ok">Just right</button><button data-v="hard">Too hard</button><button data-v="dull">Dull or alike</button></div>';
+    const c=cur; $('#tools').hidden=true;
+    $('#rate').hidden=false; $('#rate').innerHTML='<p><b>Solved in '+fmt(secs)+'</b> . How was it?</p><div class="row"><button data-v="easy">Too easy</button><button data-v="ok">Just right</button><button data-v="hard">Too hard</button><button data-v="dull">Dull or alike</button></div>';
     $('#rate').querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{ log.push({kind:c.kind,diff:c.diff,seed:c.seed,secs,gen:c.gen,v:b.dataset.v}); save(); renderLog(); start(); });
   }
   $('#go').onclick=start; $('#undo').onclick=()=>cur&&cur.view.undo&&cur.view.undo(); $('#reset').onclick=()=>cur&&cur.view.reset&&cur.view.reset();
