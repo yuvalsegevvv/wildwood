@@ -3,7 +3,7 @@
    A crystal lights its row and column up to the next rock. Rules (akCheck): every non-rock cell lit, no crystal lit by another, each numbered rock has exactly that many crystals on its 4 neighbours.
    Generation: scatter rocks, find a lighting with a randomised search (akSolve), number every rock from it, then drop numbers while the answer stays unique (akSolve counts to 2). Sizes AK_D: 5, 6, 8, 10, 14.
    Test: tools/puzzles-smoke.js */
-const AK_D=[null,{w:5,h:5,rock:0.16},{w:6,h:6,rock:0.17},{w:8,h:8,rock:0.18},{w:10,h:10,rock:0.18},{w:14,h:14,rock:0.18}];
+const AK_D=[null,{w:5,h:5,rock:0.16},{w:6,h:6,rock:0.17},{w:7,h:7,rock:0.18},{w:9,h:9,rock:0.18},{w:12,h:12,rock:0.18}];
 // solve: count solutions up to limit; rng makes the first one random; cap = nodes
 function akSolve(w,h,black,num,limit,cap,rng){
   const N=w*h, lit=new Int16Array(N), bulb=new Uint8Array(N), isB=new Uint8Array(N), ban=new Uint8Array(N); for(const c of black) isB[c]=1;

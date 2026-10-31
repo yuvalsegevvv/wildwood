@@ -3,7 +3,7 @@
    Generation: a random full grid (backtracking over shuffled digits), then clues are taken out in a random order while the solver (suCount) still finds exactly one answer. Difficulty SU_D: grid size and how many
    clues are taken out; the expert board must also NOT fall to naked / hidden singles alone (suSingles), so it needs real deduction; the hard one must fall to them.
    Test: tools/puzzles-smoke.js; the lab: tools/puzzle-lab.js. */
-const SU_D=[null,{n:4,bh:2,bw:2,blank:3,singles:1},{n:4,bh:2,bw:2,blank:8,singles:1},{n:6,bh:2,bw:3,blank:18,singles:1},{n:9,bh:3,bw:3,blank:46,singles:1},{n:9,bh:3,bw:3,blank:58,singles:0}];
+const SU_D=[null,{n:4,bh:2,bw:2,blank:3,singles:1},{n:4,bh:2,bw:2,blank:8,singles:1},{n:6,bh:2,bw:3,blank:16,singles:1},{n:9,bh:3,bw:3,blank:38,singles:1},{n:9,bh:3,bw:3,blank:48,singles:0}];
 function suPeers(n,bh,bw){
   const P=[]; for(let r=0;r<n;r++) for(let c=0;c<n;c++){ const s=new Set(); for(let k=0;k<n;k++){ s.add(r*n+k); s.add(k*n+c); } const r0=r-r%bh, c0=c-c%bw; for(let i=0;i<bh;i++) for(let j=0;j<bw;j++) s.add((r0+i)*n+c0+j); s.delete(r*n+c); P.push([...s]); }
   return P;

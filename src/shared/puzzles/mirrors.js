@@ -5,8 +5,8 @@
    Generation: lay the beam from a source, dropping mirrors and prisms as it goes (MR_D), choose targets on the beam after its first turn, add decoy mirrors off the beam, then turn every mirror at random until the board is not already solved.
    Not unique by design (any turning that lights every target is a win). Test: tools/puzzles-smoke.js */
 const MR_D=[null,
-  {w:6,h:6,mir:1,pr:0,tgt:1,src:1,decoy:0},{w:7,h:7,mir:2,pr:0,tgt:2,src:1,decoy:0},{w:8,h:8,mir:4,pr:0,tgt:3,src:2,decoy:0},
-  {w:9,h:9,mir:5,pr:2,tgt:4,src:1,decoy:1},{w:10,h:10,mir:7,pr:2,tgt:5,src:2,decoy:3}];
+  {w:6,h:6,mir:2,pr:0,tgt:1,src:1,decoy:0},{w:7,h:7,mir:3,pr:0,tgt:2,src:1,decoy:1},{w:9,h:9,mir:6,pr:1,tgt:3,src:2,decoy:2},
+  {w:10,h:10,mir:8,pr:3,tgt:5,src:2,decoy:4},{w:12,h:12,mir:11,pr:4,tgt:6,src:3,decoy:6}];
 const MR_DX=[1,0,-1,0], MR_DZ=[0,1,0,-1];
 const mrBounce=(d,o)=>o===0?[3,2,1,0][d]:[1,0,3,2][d];   // '/' sends right->up, down->left, left->down, up->right; '\' sends right->down, down->right, left->up, up->left
 function mrTrace(B,orient){

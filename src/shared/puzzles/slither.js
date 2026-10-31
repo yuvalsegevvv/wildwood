@@ -3,7 +3,7 @@
    Answer: the list of edge ids of the loop. Rules (slCheck): every corner has 0 or 2 edges, the edges form one single loop, every clue matches.
    Generation: grow a random region of cells with no holes and no pinched corners; its outline is the loop; number every cell, then take numbers out while slSolve (edge propagation + search) still finds one loop. Sizes SL_D: 5, 6, 8, 10, 15.
    Test: tools/puzzles-smoke.js */
-const SL_D=[null,{w:5,h:5,fill:0.55,keep:0.5},{w:6,h:6,fill:0.55,keep:0.45},{w:8,h:8,fill:0.55,keep:0.4},{w:10,h:10,fill:0.55,keep:0.4},{w:15,h:15,fill:0.5,keep:0.4}];
+const SL_D=[null,{w:5,h:5,fill:0.55,keep:0.55},{w:6,h:6,fill:0.55,keep:0.5},{w:7,h:7,fill:0.55,keep:0.5},{w:9,h:9,fill:0.55,keep:0.5},{w:12,h:12,fill:0.5,keep:0.5}];
 function slGeom(w,h){
   const hN=(h+1)*w, E=hN+h*(w+1), vert=[], cellE=[];
   for(let r=0;r<=h;r++) for(let c=0;c<=w;c++){ const a=[]; if(c>0)a.push(r*w+c-1); if(c<w)a.push(r*w+c); if(r>0)a.push(hN+(r-1)*(w+1)+c); if(r<h)a.push(hN+r*(w+1)+c); vert.push(a); }

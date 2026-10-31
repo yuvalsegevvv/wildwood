@@ -13,6 +13,7 @@ const PZ_DIFF=[null,
   {name:'Normal',target:60,gems:5,sigils:2},
   {name:'Hard',target:180,gems:10,sigils:4},
   {name:'Extreme',target:600,gems:20,sigils:9}];
+var PZ_MAX_DIFF=5;   // the game has five difficulties; only the puzzle lab (tools/puzzle-lab-diffs.js) raises this to 10, just for fun
 const PZ_RENEW_MS=2*3600*1000, PZ_FLOOR_K=0.3, PZ_REACH=7;   // PZ_REACH: how close (m) you must stand to a stone
 // a chest by difficulty: coins x coinsFor(level), potions [min,max], drops (skill-upgrade materials of the level), stones (Tempering, from level 30), amber, scroll (epic scroll chance), gear (first solve: [chance, min rarity])
 const PZ_CHEST=[null,
@@ -41,6 +42,6 @@ function pzSeed(site,diff,cycle){ let h=2166136261; const s=String(site)+'|'+(di
 // the board of a kind at a difficulty and seed, or null when the kind or the difficulty does not exist (own-property test: a client's string is never a key)
 function pzBoard(kind,diff,seed){
   if(typeof kind!=='string'||!Object.prototype.hasOwnProperty.call(PZ_KINDS,kind)) return null;
-  diff=diff|0; if(diff<1||diff>5) return null;
+  diff=diff|0; if(diff<1||diff>PZ_MAX_DIFF) return null;
   return PZ_KINDS[kind].gen(seed>>>0,diff);
 }
