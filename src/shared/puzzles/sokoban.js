@@ -5,7 +5,7 @@
    skSolve (breadth-first over calf positions with the player's reachable area folded in) measures the fewest pushes when it can finish, and the board must need at least SK_D.lo of them. Test: tools/puzzles-smoke.js */
 const SK_D=[null,
   {w:7,h:6,box:1,pulls:6,lo:3,rects:2,rocks:1},{w:8,h:7,box:2,pulls:12,lo:5,rects:3,rocks:2},{w:9,h:8,box:3,pulls:22,lo:10,rects:3,rocks:3},
-  {w:10,h:9,box:5,pulls:34,lo:20,rects:4,rocks:4},{w:11,h:10,box:7,pulls:52,lo:30,rects:4,rocks:5}];
+  {w:10,h:9,box:5,pulls:34,lo:20,rects:4,rocks:4},{w:12,h:11,box:8,pulls:110,lo:30,rects:4,rocks:9,far:24}];
 const SK_DX={U:0,D:0,L:-1,R:1}, SK_DZ={U:-1,D:1,L:0,R:0}, SK_DIRS=['U','D','L','R'], SK_BACK={U:'D',D:'U',L:'R',R:'L'};
 function skRoom(D,rng){
   const w=D.w, h=D.h, ri=n=>Math.floor(rng()*n), floor=new Uint8Array(w*h);
@@ -52,7 +52,7 @@ function skSolve(B,cap){
 }
 function skGen(seed,diff){
   const D=SK_D[diff], w=D.w, h=D.h, rng=mulberry32(seed|0), ri=n=>Math.floor(rng()*n);
-  for(let tries=0;tries<300;tries++){
+  for(let tries=0;tries<800;tries++){
     const floor=skRoom(D,rng); if(!floor) continue;
     const cells=[]; floor.forEach((v,i)=>{ if(v) cells.push(i); });
     const wall=[]; for(let i=0;i<w*h;i++) if(!floor[i]) wall.push(i);
@@ -74,6 +74,7 @@ function skGen(seed,diff){
     if(done<D.pulls) continue;
     // every calf must have left its kraal cell, and not all of them by one step
     if(box.some((b,i)=>goal.includes(b))) continue;
+    if(D.far){ let far=0; box.forEach((b,i)=>{ far+=Math.abs(b%w-goal[i]%w)+Math.abs(((b/w)|0)-((goal[i]/w)|0)); }); if(far<D.far) continue; }   // the calves must start far from their kraal cells (a calf pulled back and forth ends near home and is easy)
     const sol=rev.slice().reverse().map(([m])=>SK_BACK[m]).join('');
     const B={w,h,wall,goal,box,player:P,sol,best:null};
     if(!skCheck(B,sol)) continue;

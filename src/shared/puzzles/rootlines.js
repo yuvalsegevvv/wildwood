@@ -3,7 +3,7 @@
    Generation: cut the board into k paths by randomly joining the ends of one-cell paths (rlPartition), then count solutions with rlSolve (a depth-first search that always extends the colour with the fewest moves,
    pruned by dead cells and by a head that can no longer reach its seed); a board is kept when it has exactly one. Only integer maths and mulberry32: the client and the server build the same board.
    Difficulty table RL_D: [w,h,k, min path length]. Test: tools/puzzles-smoke.js; the lab: tools/puzzle-lab.js. */
-const RL_D=[null,{w:4,h:4,k:2,min:2,kmax:4,cap:3000},{w:5,h:5,k:3,min:2,kmax:6,cap:5000},{w:7,h:7,k:4,min:3,kmax:9,cap:20000},{w:9,h:9,k:5,min:3,kmax:24,cap:30000},{w:12,h:12,k:7,min:3,kmax:36,cap:30000}];
+const RL_D=[null,{w:4,h:4,k:2,min:2,kmax:4,cap:3000,merge:200,round:20000},{w:5,h:5,k:3,min:2,kmax:6,cap:5000,merge:200,round:20000},{w:7,h:7,k:4,min:3,kmax:9,cap:20000,merge:200,round:20000},{w:9,h:9,k:5,min:3,kmax:24,cap:30000,merge:30,round:2500},{w:12,h:12,k:7,min:3,kmax:36,cap:30000,merge:14,round:2500}];
 function rlNb(w,h){ const nb=[]; for(let z=0;z<h;z++) for(let x=0;x<w;x++){ const a=[]; if(x>0)a.push(z*w+x-1); if(x<w-1)a.push(z*w+x+1); if(z>0)a.push((z-1)*w+x); if(z<h-1)a.push((z+1)*w+x); nb.push(a); } return nb; }
 // k paths that tile the board: a random Hamiltonian path (the "backbite" walk: snake first, then reversing a stretch whenever an end touches another cell of the path), cut into k pieces of at least minLen cells
 function rlPartition(w,h,k,rng,nb,minLen){
@@ -75,14 +75,15 @@ function rlSolve(w,h,ends,limit,cap,nb){
   return {sols,nodes,aborted,first,second};
 }
 // fewer seeds, longer roots: join two paths whose ends touch whenever the board still has exactly one answer (the old answer stays valid, so only a second one can appear)
-function rlMinimise(parts,w,h,nb,rng,cap){
-  for(let again=true;again;){
+function rlMinimise(parts,w,h,nb,rng,cap,budget){   // budget: at most this many solver runs (the big boards would take seconds otherwise)
+  for(let again=true;again&&budget>0;){
     again=false; const cand=[];
     for(let i=0;i<parts.length;i++) for(let j=i+1;j<parts.length;j++) for(const ei of [0,1]) for(const ej of [0,1]){
       const a=parts[i], b=parts[j], u=ei?a[a.length-1]:a[0], v=ej?b[b.length-1]:b[0]; if(nb[u].includes(v)) cand.push([i,j,ei,ej]);
     }
     for(let t=cand.length-1;t>0;t--){ const q=Math.floor(rng()*(t+1)), x=cand[t]; cand[t]=cand[q]; cand[q]=x; }
     for(const [i,j,ei,ej] of cand){
+      if(--budget<0) break;
       const a=ei?parts[i].slice():parts[i].slice().reverse(), b=ej?parts[j].slice().reverse():parts[j].slice(), m=a.concat(b);
       const next=parts.filter((_,x)=>x!==i&&x!==j).concat([m]), r=rlSolve(w,h,next.map(p=>[p[0],p[p.length-1]]),2,cap,nb);
       if(!r.aborted&&r.sols===1){ parts=next; again=true; break; }
@@ -96,8 +97,8 @@ function rlGen(seed,diff){
   for(let tries=1;tries<=40;tries++){
     let parts=rlPartition(w,h,D.k,rng,nb,D.min); if(!parts) continue;
     for(let round=0;round<60&&parts.length<=D.kmax;round++){
-      const ends=parts.map(p=>[p[0],p[p.length-1]]), r=rlSolve(w,h,ends,2,cap,nb);
-      if(!r.aborted&&r.sols===1){ parts=rlMinimise(parts,w,h,nb,rng,cap); const e2=parts.map(p=>[p[0],p[p.length-1]]); return {w,h,k:parts.length,ends:e2,sol:parts,nodes:rlSolve(w,h,e2,2,cap,nb).nodes,tries,rounds:round}; }
+      const ends=parts.map(p=>[p[0],p[p.length-1]]), r=rlSolve(w,h,ends,2,Math.min(cap,D.round),nb);   // (a cheap cap while the board still has many answers: an aborted round just cuts again)
+      if(!r.aborted&&r.sols===1){ parts=rlMinimise(parts,w,h,nb,rng,cap,D.merge); const e2=parts.map(p=>[p[0],p[p.length-1]]); return {w,h,k:parts.length,ends:e2,sol:parts,nodes:rlSolve(w,h,e2,2,cap,nb).nodes,tries,rounds:round}; }
       const diffCell=new Set(); if(r.second) for(let c=0;c<w*h;c++) if(r.first[c]!==r.second[c]) diffCell.add(c);
       const opts=[]; parts.forEach((p,pi)=>{ for(let t=D.min-1;t<=p.length-D.min;t++) if(!diffCell.size||diffCell.has(p[t])||diffCell.has(p[t-1])) opts.push([pi,t]); });
       const any=opts.length?opts:(()=>{ const o=[]; parts.forEach((p,pi)=>{ for(let t=D.min-1;t<=p.length-D.min;t++) o.push([pi,t]); }); return o; })();

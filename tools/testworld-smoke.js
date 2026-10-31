@@ -7,6 +7,7 @@ const you=c=>msgs(c).filter(m=>m.t==='you').pop(), hello=(c,extra)=>send(c,Objec
   try{
     const page=await get(H.port,'/test'), root=await get(H.port,'/');
     ok('/test serves the game page',page.status===200&&page.body.length===root.body.length);
+    const lab=await get(H.port,'/puzzle'); ok('/puzzle serves the puzzle lab',lab.status===200&&/Puzzle Lab/.test(lab.body));
     const M=await wsOpen(H.port); hello(M,{acct:crypto.randomBytes(16).toString('hex')}); await until(()=>you(M),20000);
     ok('the main world ignores the test world: level 1 hiker has the saved level 3',you(M).level===3);
     const T=await wsOpen(H.port,'/ws-test'); hello(T,{acct:crypto.randomBytes(16).toString('hex')}); ok('the test world answers',!!await until(()=>you(T),30000));
