@@ -140,6 +140,7 @@ for(const P of KIN_PARTS) if(!P.free){ CP_PIECES.push([P.slot,P.id,P.name,String
 const CP_FREE=['c:pack','c:wayfarer','c:moss','a:firefly','a:dew'];
 // earned, never made: the last step of a side quest chain gives it (shared/side-quests.js, its chain id here); no recipe, the Lodge does not list it
 const CP_QUEST={'c:tideking':'tide','a:foxfire':'ninetails','c:wyrmscale':'wyrm','a:sunwept':'sunwept','c:greatcoat':'drowned','a:lamplight':'keeper','c:dawnseat':'dawnseat','a:herdsong':'drought','a:saltlight':'saltwatch','c:tidecape':'strait','a:condorwind':'terraces'};
+var CP_TRACK={};   // 'c:rootcloak' -> the Sigil track level that gives it (filled by shared/puzzle-track.js): earned, never made, like CP_QUEST
 const CP_PIECE={};
 for(const r of CP_PIECES) CP_PIECE[r[0]+':'+r[1]]={slot:r[0],id:r[1],name:r[2],grade:+r[3],text:r[4],type:r[0]};
 const cpHas=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
@@ -148,7 +149,7 @@ const cpKey=(type,id)=>type+':'+id;
 function cpDef(type,id){
   if(typeof id!=='string'||typeof type!=='string') return null;
   const k=cpKey(type,id);
-  if(type==='c'||type==='a'){ const D=cosDef(type,id); if(!D) return null; const free=CP_FREE.includes(k); return {slot:type,id,name:D.name,grade:D.grade,text:D.text,free,recipe:free?null:cpCost(type,id),quest:cpHas(CP_QUEST,k)?CP_QUEST[k]:null}; }
+  if(type==='c'||type==='a'){ const D=cosDef(type,id); if(!D) return null; const free=CP_FREE.includes(k); return {slot:type,id,name:D.name,grade:D.grade,text:D.text,free,recipe:free?null:cpCost(type,id),quest:cpHas(CP_QUEST,k)?CP_QUEST[k]:null,track:cpHas(CP_TRACK,k)?CP_TRACK[k]:0}; }
   if(!cpHas(CP_PIECE,k)) return null;
   const P=CP_PIECE[k]; return {slot:type,id,name:P.name,grade:P.grade,text:P.text,free:false,recipe:cpCost(type,id)};
 }

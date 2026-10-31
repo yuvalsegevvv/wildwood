@@ -1,7 +1,7 @@
 // Headless test of the puzzle engine (shared/puzzles*.js, server/puzzles.js): every kind and difficulty generates, solves, is unique where it claims, fits its time budget; the server flow (open, solve, floor, renewal, chest, Sigils, track, scrolls, save cleaning).
 // Usage: node tools/puzzles-smoke.js [--seeds N]   (N boards per kind and difficulty for the three smallest sizes; the big ones always get 3)
 const {loadServer}=require('./load');
-const {api:W,x}=loadServer({send(){}},['PZ_KINDS','PZ_KIND_IDS','PZ_BAD','PZ_DIFF','PZ_CHEST','PZ_SITES','PZ_SITE_BAD','PZ_PLACED','PZ_KIND_OF','PZ_MIN_GAP','landAt','pzBoard','pzSeed','pzSwitch','pzChestP','pzTrackP','pzSanitize','pzTrackLevel','sanitizeGear','rlSolve','rlNb','pzFloorSecs','PZ_RENEW_MS','PZ_TRACK_LEVELS','PZ_SIG_LEVEL','S']);
+const {api:W,x}=loadServer({send(){}},['PZ_KINDS','PZ_KIND_IDS','PZ_BAD','PZ_DIFF','PZ_CHEST','PZ_SITES','PZ_SITE_BAD','PZ_PLACED','PZ_TRACK_COS','cpDef','PZ_KIND_OF','PZ_MIN_GAP','landAt','pzBoard','pzSeed','pzSwitch','pzChestP','pzTrackP','pzSanitize','pzTrackLevel','sanitizeGear','rlSolve','rlNb','pzFloorSecs','PZ_RENEW_MS','PZ_TRACK_LEVELS','PZ_SIG_LEVEL','S']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const N=+(process.argv[process.argv.indexOf('--seeds')+1])||12;
 ok('no kind or site was left out as bad',x.PZ_BAD.length===0&&x.PZ_SITE_BAD.length===0,JSON.stringify(x.PZ_BAD)+JSON.stringify(x.PZ_SITE_BAD));
@@ -57,6 +57,8 @@ ok('a renewal pays no gems',q.gear.gem===g1);
 out.length=0; q.x+=500; W2.receive('a',{t:'pz',a:'open',site:site.id}); ok('too far from the stone: refused',out[0]&&out[0].a==='no');
 out.length=0; W2.receive('a',{t:'pz',a:'open',site:'constructor'}); ok('a string from a client is never a stone',out.length===0);
 X2.pzSwitch(false); out.length=0; q.x=site.x; W2.receive('a',{t:'pz',a:'open',site:site.id}); ok('with PZ_ON off no stone opens',out[0]&&out[0].a==='no');
+// the Sigil track: 40 different cosmetics, every one a real piece or cape or aura
+{ const L=x.PZ_TRACK_COS.slice(1); ok('the Sigil track names 40 different cosmetics',L.length===40&&new Set(L).size===40&&L.every(k=>typeof k==='string'&&!!x.cpDef(k[0],k.slice(2))),L.filter(k=>!k||!x.cpDef(k[0],k.slice(2))).join(',')); }
 // the Puzzle solver: 50 gems each, skips only a stone's first solve
 X2.pzSwitch(true); q.gear.gem=500; q.gear.psv=0; out.length=0; W2.receive('a',{t:'pz',a:'buy',n:2});
 ok('two solvers cost 100 gems',q.gear.psv===2&&q.gear.gem===400);

@@ -188,7 +188,7 @@
     "raids/wrackmoor.js",
     "raids/moot.js",
     "raids/sevengates.js", "testroom.js",
-    "puzzles.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/sudoku.js", "puzzles/akari.js", "puzzles/slither.js", "puzzles/bridges.js", "puzzles/mirrors.js", "puzzles/nonogram.js", "puzzles/sokoban.js", "puzzle-sites.js", "puzzle-place.js"
+    "puzzles.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/sudoku.js", "puzzles/akari.js", "puzzles/slither.js", "puzzles/bridges.js", "puzzles/mirrors.js", "puzzles/nonogram.js", "puzzles/sokoban.js", "puzzle-sites.js", "puzzle-place.js", "puzzle-track.js"
   ],
   "server": [
     "state.js",

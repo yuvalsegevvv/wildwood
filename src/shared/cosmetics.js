@@ -25,6 +25,11 @@ const COS_AURAS=[
   ['rune','Rune Circle',5,0x9ab8ff,0xe8f0ff,'orbit',true,10,'A ring of turning runes with four-point stars circling above it.','star','runes'],
   ['stellar','Stellar Crown',6,0xffd860,0xffffff,'orbit',true,14,'A golden ring, a halo over your head and a ring of stars.','star','halo'],
   // side quests' rewards (CP_QUEST in cospieces.js: earned, never made)
+  // the Sigil track's big rewards (levels 10, 20, 30, 40: shared/puzzle-track.js; earned, never made)
+  ['sakuraoffer','Sakura Offering',4,0xffa8c8,0xffffff,'fall',true,16,'Blossoms fall round you over a rune ring. The Sigil track\'s reward.','petal','runes'],
+  ['peakwind','Peakwind',4,0xcfe0ee,0x8fb0c8,'orbit',true,10,'Cold streaks of mountain wind wheel round you. The Sigil track\'s reward.','wisp','double'],
+  ['shroudveil','Shroudveil',6,0xb7a7d8,0xffffff,'rise',true,10,'Violet wisps climb in a halo of gloom. The Sigil track\'s reward.','wisp','halo'],
+  ['lampcrown','Lampcrown',6,0xffe9a0,0xffffff,'orbit',true,16,'A golden ring, a halo and a crown of lamplight stars: the track\'s showpiece.','star','halo'],
   ['foxfire','Foxfire',5,0x8ad4ff,0xffffff,'rise',true,9,'Nine pale-blue foxfire flames climb round you from a rune ring. The Nine Tails\' reward.','flame','runes'],
   ['sunwept','Where the Sun Wept',6,0xffc45a,0x3a2a4a,'orbit',true,14,'Flecks of sun-gold and black glass circle you above a crystal ring. Where the Sun Wept\'s reward.','grain','spikes'],
   ['lamplight','Keeper\'s Lamplight',6,0xfff0b0,0xffcf6a,'orbit',true,6,'Slow motes of lamplight turn round you, under a halo. The Keeper\'s Light\'s reward.','mote','halo'],
@@ -52,6 +57,11 @@ const COS_CAPES=[
   ['gloam','Duskweave Cape',6,0x3a2a5a,0xc8a0ff,1.2,'Dusk violet with glimmering threads and a moon clasp.','gloam',0],
   ['regal','Highmark Regalia',6,0x2a3a8a,0xe8c860,1.3,'A deep blue train with ermine trim, gold crests and a shoulder cape.','ermine',1],
   // side quests' rewards (CP_QUEST in cospieces.js: earned, never made)
+  // the Sigil track's big rewards (levels 5, 15, 25, 35: shared/puzzle-track.js; earned, never made)
+  ['rootcloak','Rootbound Cloak',2,0x4a6a2e,0x9a7a46,1.1,'Moss green with a hem of knotted roots. The Sigil track\'s reward.','moss',0],
+  ['frostmantle','Lamp-in-Snow Mantle',4,0xcfe6f2,0x6fa6c8,1.15,'Pale wool lined with blue fur, a lamp stitched at the clasp. The Sigil track\'s reward.','fur',1],
+  ['sunmirror','Mirrorbright Cape',5,0xe6b84a,0xfff0c0,1.15,'Gold silk with rays that catch the light. The Sigil track\'s reward.','rays',0],
+  ['savannaweave','Grasswoven Mantle',5,0xc89a42,0x6a8a3a,1.15,'Woven savanna grass over a hide shoulder cape. The Sigil track\'s reward.','hide',1],
   ['tideking','Tide King\'s Mantle',4,0x1d5866,0xf2a07a,1.15,'Sea-green with coral-pink waves and a short shoulder cape. The Grey Tide\'s reward.','waves',1],
   ['wyrmscale','Wyrmscale Cloak',5,0x4a6a80,0xe0f0ff,1.2,'Pale blue scales that never freeze, edged in white. The Wyrm\'s Saga\'s reward.','scales',1],
   ['greatcoat','Captain\'s Greatcoat',5,0x1a2636,0xd8b860,1.2,'A long sea-captain\'s coat in deep navy with a gold-stitched hem. The Drowned Captain\'s reward.','stitch',1],

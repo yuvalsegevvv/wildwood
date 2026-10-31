@@ -3,7 +3,8 @@
    character editor's Cosmetics tab (ui/character-editor.js). test: client-smoke, tools/revamp-smoke.js */
 // one line for a recipe: "6 Iron Ore, 10 Boar Tusk (dropped by Boar), 150 coins" (the editor's tooltips and try-on bar use it too)
 function cosRecipeText(type,id){
-  const D=cpDef(type,id); if(D&&D.quest) return 'earned at the end of the side quest '+SQ_BY_ID[D.quest].name;   // sidequests: a quest piece is earned, never made
+  const D=cpDef(type,id); if(D&&D.track) return 'earned on the Sigil track, level '+D.track;   // puzzles: the track's big rewards are earned, never made
+  if(D&&D.quest) return 'earned at the end of the side quest '+SQ_BY_ID[D.quest].name;   // sidequests: a quest piece is earned, never made
   if(!D||!D.recipe) return 'free';
   const C=D.recipe, parts=C.res.map(([r,n])=>n+' '+RES[r].name).concat(C.mats.map(([m,n])=>n+' '+MATS[m].name+' (dropped by '+MATS[m].from+')'));
   return 'make it at a Wayfarers\' Lodge: '+parts.join(', ')+', '+C.coins+' coins';
@@ -14,8 +15,8 @@ function cosCostHtml(cost,res,mats){
 }
 // every crafted piece of one slot: [id, name, text]
 function cosCraftedOf(type){
-  if(type==='a') return COS_AURAS.filter(d=>!cpIsFree('a',d[0])&&!cpDef('a',d[0]).quest).map(d=>[d[0],d[1],d[8]]);
-  if(type==='c') return COS_CAPES.filter(d=>!cpIsFree('c',d[0])&&!cpDef('c',d[0]).quest).map(d=>[d[0],d[1],d[6]]);
+  if(type==='a') return COS_AURAS.filter(d=>!cpIsFree('a',d[0])&&!cpDef('a',d[0]).quest&&!cpDef('a',d[0]).track).map(d=>[d[0],d[1],d[8]]);
+  if(type==='c') return COS_CAPES.filter(d=>!cpIsFree('c',d[0])&&!cpDef('c',d[0]).quest&&!cpDef('c',d[0]).track).map(d=>[d[0],d[1],d[6]]);
   return CP_PIECES.filter(r=>r[0]===type).map(r=>[r[1],r[2],r[4]]);
 }
 function cosLodgeHtml(g){
