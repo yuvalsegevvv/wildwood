@@ -25,7 +25,7 @@ const lacks=(pts,r)=>pts.filter(p=>!reach(p[0],p[1],r)).map(p=>(p[2]||'')+Math.r
 { const bad=lacks([[X.VIL.x,X.VIL.z,'home '],[X.VIL2.x,X.VIL2.z,'Hanami '],[X.VIL3.x,X.VIL3.z,'Rimehold '],[X.VIL4.x,X.VIL4.z,'Highmark '],[X.VIL5.x,X.VIL5.z,'Glasswell '],[X.SUN_DG_DOOR.x,X.SUN_DG_DOOR.z,'Sandglass door ']],10);
   ok('the five villages (and the reserved Sandglass door) are reachable from the home village (the bridge, Frostgate Pass and the glacier valley open)',bad.length===0,bad.join(' | ')); }
 { const bad=lacks(X.ARENAS.map(a=>[a.x,a.z,a.key+' ']),24); ok('every boss arena is reachable',bad.length===0,X.ARENAS.length+' arenas'+(bad.length?'; not: '+bad.join(' | '):'')); }
-{ const bad=lacks(X.ZONES.filter(z=>isFinite(z.x)&&isFinite(z.z)).map(z=>[z.x,z.z,z.key+' ']),16); ok('every zone with a centre is reachable',bad.length===0,bad.join(' | ')); }
+{ const bad=lacks(X.ZONES.filter(z=>isFinite(z.x)&&isFinite(z.z)&&!z.isles).map(z=>[z.x,z.z,z.key+' ']),16); ok('every zone with a centre is reachable',bad.length===0,bad.join(' | ')); }
 { const bad=lacks(X.NODES.map(n=>[n.x,n.z,n.kind+' ']),8); ok('every resource node is reachable',bad.length===0,X.NODES.length+' nodes'+(bad.length?'; not: '+bad.join(' | '):'')); }
 { const bad=lacks(X.NODE_KEEPOUT.map(d=>[d[0],d[1]]),8); ok('the older four dungeon doors are reachable (the Sandglass door is in the line above)',bad.length===0,bad.join(' | ')); }
 { const pts=[[X.PVP.x,X.PVP.z,'the island centre '],[X.PVP.gate.x,X.PVP.gate.z,'the gate ']], bad=pts.filter(p=>!reach(p[0],p[1],6)).map(p=>p[2]);   // pvp

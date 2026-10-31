@@ -68,6 +68,7 @@ shared
   sunzones.js                        The Sunscar's zones s28-s36 (the atlas's zones of land 'sun', one per level) and its two boss arenas at the atlas's bosses (the Glass Guardian's court, the sand wyrm's pit). Pure.
   gloamzones.js                      The Gloamhorn's zones m30-m40 (the atlas's zones of land 'gloam', one per level) and its two boss arenas (the Drowned Captain's hold, the lighthouse's forecourt). Pure.
   savannazones.js                    Amber Reach's zones a37-a45 (the atlas's zones of land 'amber', one per level) and its two boss arenas at the atlas's bosses (Old Thunder's roost on Anvil Rock, the slab at the top of the Sunstair). Pure.
+  emberwakezones.js                  The Emberwake Isles' zones e42-e48 (the atlas's zones of land 'isles', one per level) and the zone test ewZoneAt; the volcano's e49-e50 are a later pass. Pure.
   greyzones.js                       The Greyspine's zones 26-32 (the atlas's zones of the Greyspine) and its two boss arenas (the Gryphon Queen's peak, the golem's cavern). Pure.
   village-helpers.js                 vDist, nearPath, pathAmt, plazaAmt, inBox, pushOutBoxes: each works on the village on that side of the mountains (vilAt). Pure.
   roads.js                           Roads (ROADS: the atlas's main roads, boss and door roads and zone trails, with the names the game uses), the bridges and plank causeways where a road meets water (BRIDGES): roadDist, roadAmt, nearRoad, roadAt, bridgeDeck, bridgeAt. Pure.

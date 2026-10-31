@@ -94,6 +94,13 @@ zpTheme('a42',0x2c2622,0.5,0.1,[['smolder',3,0.2],['charstump',3],['cinderrock',
 zpTheme('a43',0x8a7a5a,0.25,0.08,[['songpost',2,0.3],['greystone',2,0.2],['kopje',1,0.3],['cairn',1]]);                                              // the memory trees
 zpTheme('a44',0x4a8a58,0.3,0.1,[['reedclump',4],['wallow',2,0.2],['mooringpost',1,0.5],['driftlog',2]]);                                             // the delta
 zpTheme('a45',0xb2623e,0.3,0.08,[['terracestone',3,0.1],['greystone',2,0.3],['hoodoo',1,0.3],['ribs',1,0.5]]);                                       // the red terraces
+zpTheme('e42',0x3a3a40,0.35,0.08,[['shell',3],['driftlog',2],['crabpot',2,0.3],['mooringpost',1,0.5],['bonepile',1,0.4]]);                              // black sand, crab brutes and reef raiders
+zpTheme('e43',0xd8c898,0.25,0.08,[['shell',3],['crabpot',2,0.3],['driftlog',2],['mosstone',1,0.3]]);                                                 // the lagoon shallows
+zpTheme('e44',0x3a6a38,0.35,0.1,[['rootarch',2,0.3],['hollowstump',2],['mosstone',2],['runestone',1,0.4]]);                                          // the jungle edge
+zpTheme('e45',0x6a7a62,0.3,0.08,[['ruinblock',3],['ruincol',2,0.3],['menhir',2,0.3],['mosstone',2],['ruinslab',1,0.5]]);                             // the overgrown plaza
+zpTheme('e46',0x5a8a8a,0.3,0.08,[['shell',2],['driftlog',2],['mooringpost',1,0.5],['sunkenmast',1,0.4],['runestone_dusk',1,0.5]]);                    // the cenote rim and the drowned strait
+zpTheme('e47',0x8a8a5a,0.3,0.08,[['terracestone',3,0.1],['drystone',2,0.3],['haystack',1,0.3],['windpole',1,0.4]]);                                  // the terrace slopes
+zpTheme('e48',0x7a7a72,0.3,0.08,[['drystone',2,0.3],['menhir',2,0.3],['windpole',2,0.3],['cairn',1],['ruinwall',1,0.5]]);                             // condor heights
 zpTheme('aboss41',0x4a4044,0.45,0,[]); zpTheme('aboss45',0xc89a62,0.4,0,[]);
 
 /* ---- boss surroundings: [kind, count, from r+a, to r+b, {face: turn towards the arena, big: scale up}] on a ring outside each arena's own dressing (the clearing is flat to r+22) ---- */
@@ -151,6 +158,7 @@ const zpHash=s=>{ let h=7; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|
 // not here: keep-outs of the lands (the same list the trees use, plus villages, roads, the tunnel, story spots, dungeon doors)
 function zpBlocked(x,z){
   if(vDist(x,z)<VR+8||nearPath(x,z,3)||inTunnelCut(x,z,2)||storyClear(x,z)||dgEntClear(x,z)) return true;
+  if(inIsles(x,z)) return Math.hypot(x-EW_HUB.x,z-EW_HUB.z)<EW_HUB_R+2;   // emberwake: Coralhaven's ground
   if(inAmber(x,z)) return savKeepOut(x,z,3);   // savanna: (ask before inSun, which is true there too)
   if(inSun(x,z)) return sunKeepOut(x,z,3);
   if(inGloam(x,z)) return gloamIn(x,z)<14||gloamKeepOut(x,z,3);
@@ -158,8 +166,8 @@ function zpBlocked(x,z){
   return inGlen(x,z,3)||inGate(x,z,2)||greyWet(x,z,-1.2); }
 const zpOk=(x,z,h,g,gmax)=>h>=0.7&&g<=gmax&&arenaDist(x,z)>=22&&!zpBlocked(x,z);
 function zpAge(x,z){   // how many ruins a land has: older and darker means more
-  if(inAmber(x,z)) return 0.2; /* savanna */ if(inSun(x,z)) return 0.34; if(inGloam(x,z)) return 0.5; if(inHoar(x,z)) return 0.22; if(inGrey(x,z)) return 0.3; if(inVale(x,z)) return 0.12; return 0.1; }
-function zpRuinTint(x,z){ const c=inAmber(x,z)?0xd8c08a:inSun(x,z)?0xe6c88a:inGloam(x,z)?0x7c7c88:inHoar(x,z)?0xe4eef8:inGrey(x,z)?0xc8c8c0:inVale(x,z)?0xd0c4c4:0xc4d4a8; return tint(c,0.08); }
+  if(inIsles(x,z)) return 0.28; /* emberwake */ if(inAmber(x,z)) return 0.2; /* savanna */ if(inSun(x,z)) return 0.34; if(inGloam(x,z)) return 0.5; if(inHoar(x,z)) return 0.22; if(inGrey(x,z)) return 0.3; if(inVale(x,z)) return 0.12; return 0.1; }
+function zpRuinTint(x,z){ const c=inIsles(x,z)?0xc8c8b0:inAmber(x,z)?0xd8c08a:inSun(x,z)?0xe6c88a:inGloam(x,z)?0x7c7c88:inHoar(x,z)?0xe4eef8:inGrey(x,z)?0xc8c8c0:inVale(x,z)?0xd0c4c4:0xc4d4a8; return tint(c,0.08); }
 function zpMeshes(lists){
   const md=LOW?85:118;
   for(const kind in lists){ const K=ZP_KIND[kind], G=zpGeo(kind), items=lists[kind], o={cast:K.cast&&!LOW,receive:true,maxDist:md,hgt:K.hgt*1.5,rad:K.w*1.5+1};

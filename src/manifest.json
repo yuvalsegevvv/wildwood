@@ -62,6 +62,7 @@
     "sunzones.js",
     "gloamzones.js",
     "savannazones.js",
+    "emberwakezones.js",
     "greyzones.js",
     "village-helpers.js",
     "roads.js",
