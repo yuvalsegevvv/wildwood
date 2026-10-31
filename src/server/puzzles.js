@@ -17,7 +17,7 @@ function pzSanitize(g,out){
     out.pz[id]={n:clampInt(r.n,0,1e6,0),t:clampInt(r.t,0,9e15,0)}; }
   out.sig=clampInt(g&&g.sig,0,PZ_TRACK_LEVELS*PZ_SIG_LEVEL+5000,0);
   out.sigPaid=Math.min(clampInt(g&&g.sigPaid,0,PZ_TRACK_LEVELS,0),pzTrackLevel(out.sig));
-  const s=g&&g.scr&&typeof g.scr==='object'?g.scr:{}; out.scr={e:clampInt(s.e,0,999,0),u:clampInt(s.u,0,999,0)};
+  const s=g&&g.scr&&typeof g.scr==='object'?g.scr:{}; out.scr={e:clampInt(s.e,0,999,0),u:clampInt(s.u,0,999,0)}; out.psv=clampInt(g&&g.psv,0,999,0);   // psv: Puzzle solvers owned
 }
 const pzRoll=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 // a chest of difficulty d at level lv for player p: pays everything and returns what it held (for the client's chest window). first: the overworld first solve (adds the gear roll)
@@ -70,6 +70,10 @@ function pzSolveP(p,ans){
   const secs=(Date.now()-O.t0)/1000;
   if(!PZ_KINDS[O.kind].check(B,ans)){ pzNo(p,'That is not a solution'); p.pz=O; return; }
   if(O.src==='site'&&secs<pzFloorSecs(O.diff)){ pzNo(p,'Too quick: the stone does not believe it. Look again.'); p.pz=O; return; }
+  pzPayP(p,O,secs);
+}
+// pays a won board (a solve, or a Puzzle solver's skip): the stone's clock, the first-solve gems and Sigils, the chest
+function pzPayP(p,O,secs){
   const out={t:'pz',a:'done',ok:1,diff:O.diff,site:O.site,first:O.first,src:O.src,secs:Math.round(secs)};
   if(O.src==='site'){
     const R=p.gear.pz[O.site]||(p.gear.pz[O.site]={n:0,t:0}); R.n++; R.t=Date.now()+PZ_RENEW_MS;
@@ -78,10 +82,25 @@ function pzSolveP(p,ans){
   } else if(O.src==='dev'){ out.chest=null; }
   p.dirty=true; sendTo(p.id,out);
 }
+// a Puzzle solver: buy (50 gems each) in the gem shop; skip the open board when it is an overworld stone's FIRST solve (renewals, dungeons and raids never)
+function pzSolverBuyP(p,n){
+  n=clampInt(n,1,20,1); if(!PZ_ON){ pzNo(p,'Puzzles are not open yet'); return; }
+  if((p.gear.gem||0)<n*PZ_SOLVER_PRICE){ toastTo(p.id,'A Puzzle solver costs '+PZ_SOLVER_PRICE+' gems','bad'); return; }
+  if(p.gear.psv+n>999){ toastTo(p.id,'You carry enough solvers','bad'); return; }
+  p.gear.gem-=n*PZ_SOLVER_PRICE; p.gear.psv+=n; p.dirty=true; toastTo(p.id,'+'+n+' Puzzle solver'+(n>1?'s':''),'loot r3');
+}
+function pzSolverSkipP(p){
+  const O=p.pz; if(!O) return;
+  if(O.src!=='site'||!O.first){ pzNo(p,'A Puzzle solver works only on the first solve of a stone'); return; }
+  const need=PZ_SOLVER_NEED[O.diff]||1; if(p.gear.psv<need){ pzNo(p,'You need '+need+' Puzzle solver'+(need>1?'s':'')); return; }
+  p.gear.psv-=need; p.pz=null; pzPayP(p,O,0);
+}
 MSG.pz=(p,msg)=>{
   const a=String(msg.a||'');
   if(a==='open') pzOpenSiteP(p,msg.site);
   else if(a==='solve') pzSolveP(p,msg.ans);
+  else if(a==='buy') pzSolverBuyP(p,msg.n);
+  else if(a==='skip') pzSolverSkipP(p);
   else if(a==='close') p.pz=null;
 };
 // admin: devP cmd 'pz' {v: {kind, diff, seed} | {chest: diff, first, lv} | {sig: n} | {reset: 1}}; the kind is checked against the registry (a string from a client is never a key)
@@ -108,4 +127,4 @@ MSG.scroll=(p,msg)=>{
   gearChangedP(p); toastTo(p.id,'The scroll burns away: '+ITEM[nid].name,'loot r'+ITEM[nid].rar); ev('merge',p.id,nid);
 };
 MSG.pztest=(p,msg)=>{ if(!io.test) return; pzDevP(p,msg.v); };   // testworld: the one public puzzle tool, honoured only in the /test world (nothing there is saved); the admin Puzzles section is the same thing behind the dev switch
-function pzSwitch(on){ PZ_ON=!!on; }   // test hook (tools/puzzles-smoke.js)
+function pzSwitch(on){ PZ_ON=!!on; if(PZ_ON) pzPlaceAll(); }   // test hook (tools/puzzles-smoke.js)

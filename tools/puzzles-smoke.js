@@ -1,7 +1,7 @@
 // Headless test of the puzzle engine (shared/puzzles*.js, server/puzzles.js): every kind and difficulty generates, solves, is unique where it claims, fits its time budget; the server flow (open, solve, floor, renewal, chest, Sigils, track, scrolls, save cleaning).
 // Usage: node tools/puzzles-smoke.js [--seeds N]   (N boards per kind and difficulty for the three smallest sizes; the big ones always get 3)
 const {loadServer}=require('./load');
-const {api:W,x}=loadServer({send(){}},['PZ_KINDS','PZ_KIND_IDS','PZ_BAD','PZ_DIFF','PZ_CHEST','PZ_SITES','PZ_SITE_BAD','pzBoard','pzSeed','pzSwitch','pzChestP','pzTrackP','pzSanitize','pzTrackLevel','sanitizeGear','rlSolve','rlNb','pzFloorSecs','PZ_RENEW_MS','PZ_TRACK_LEVELS','PZ_SIG_LEVEL','S']);
+const {api:W,x}=loadServer({send(){}},['PZ_KINDS','PZ_KIND_IDS','PZ_BAD','PZ_DIFF','PZ_CHEST','PZ_SITES','PZ_SITE_BAD','PZ_PLACED','PZ_KIND_OF','PZ_MIN_GAP','landAt','pzBoard','pzSeed','pzSwitch','pzChestP','pzTrackP','pzSanitize','pzTrackLevel','sanitizeGear','rlSolve','rlNb','pzFloorSecs','PZ_RENEW_MS','PZ_TRACK_LEVELS','PZ_SIG_LEVEL','S']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const N=+(process.argv[process.argv.indexOf('--seeds')+1])||12;
 ok('no kind or site was left out as bad',x.PZ_BAD.length===0&&x.PZ_SITE_BAD.length===0,JSON.stringify(x.PZ_BAD)+JSON.stringify(x.PZ_SITE_BAD));
@@ -27,6 +27,13 @@ for(let d=1;d<=3;d++){ let uniq=0; for(let i=1;i<=6;i++){ const B=x.pzBoard('roo
 ok('a string from a client is never a kind',x.pzBoard('constructor',1,1)===null&&x.pzBoard('__proto__',1,1)===null&&x.pzBoard('rootlines',9,1)===null);
 // server flow
 x.pzSwitch(true);
+// the placed stones: 41 in each of the seven lands (15 / 12 / 8 / 4 / 2), in their own land, spaced, each generating a board
+{ const by={}; for(const s of x.PZ_SITES) if(s.id!=='tutorial'){ const land=s.id.split('-')[0]; (by[land]=by[land]||[]).push(s); }
+  for(const land in x.PZ_KIND_OF){ const L=by[land]||[], cnt=d=>L.filter(s=>s.diff===d).length;
+    ok(land+': 41 stones (15 trivial, 12 easy, 8 normal, 4 hard, 2 extreme)',cnt(1)===15&&cnt(2)===12&&cnt(3)===8&&cnt(4)===4&&cnt(5)===2,[1,2,3,4,5].map(cnt).join('/'));
+    ok(land+': every stone is in its land, of its kind, and its board generates',L.every(s=>x.landAt(s.x,s.z)===land&&s.kind===x.PZ_KIND_OF[land]&&!!x.pzBoard(s.kind,s.diff,x.pzSeed(s.id,s.diff,1))));
+    let close=0; for(let i=0;i<L.length;i++) for(let j=i+1;j<L.length;j++) if(Math.hypot(L[i].x-L[j].x,L[i].z-L[j].z)<20) close++;
+    ok(land+': no two stones within 20 m',close===0,close+' pairs'); } }
 W.join('a',{name:'Pia',look:{cls:'warrior'},save:{level:12}}); for(let i=0;i<4;i++) W.tick(0.5);
 const p=W.players.get('a'), G=p.gear, out=[]; 
 const io2={send(pid,m){ if(m.t==='pz') out.push(m); }}; 
@@ -50,6 +57,14 @@ ok('a renewal pays no gems',q.gear.gem===g1);
 out.length=0; q.x+=500; W2.receive('a',{t:'pz',a:'open',site:site.id}); ok('too far from the stone: refused',out[0]&&out[0].a==='no');
 out.length=0; W2.receive('a',{t:'pz',a:'open',site:'constructor'}); ok('a string from a client is never a stone',out.length===0);
 X2.pzSwitch(false); out.length=0; q.x=site.x; W2.receive('a',{t:'pz',a:'open',site:site.id}); ok('with PZ_ON off no stone opens',out[0]&&out[0].a==='no');
+// the Puzzle solver: 50 gems each, skips only a stone's first solve
+X2.pzSwitch(true); q.gear.gem=500; q.gear.psv=0; out.length=0; W2.receive('a',{t:'pz',a:'buy',n:2});
+ok('two solvers cost 100 gems',q.gear.psv===2&&q.gear.gem===400);
+q.gear.pz={}; q.x=site.x; q.z=site.z; out.length=0; W2.receive('a',{t:'pz',a:'open',site:site.id}); W2.receive('a',{t:'pz',a:'skip'});
+const sk=out.find(m=>m.a==='done'); ok('a solver skips a first solve and pays its gem and chest',sk&&sk.first&&sk.gems===1&&q.gear.psv===1&&q.gear.pz[site.id].n===1);
+q.gear.pz[site.id].t=0; out.length=0; W2.receive('a',{t:'pz',a:'open',site:site.id}); W2.receive('a',{t:'pz',a:'skip'});
+ok('...but not a renewal',!out.find(m=>m.a==='done')&&out.some(m=>m.a==='no')&&q.gear.psv===1);
+q.gear.gem=10; W2.receive('a',{t:'pz',a:'buy',n:1}); ok('too few gems buys nothing',q.gear.psv===1&&q.gear.gem===10);
 // chests: five tiers pay more as they climb; the track pays gems per 10 Sigils and a unique scroll every 50
 let prev=0; for(let d=1;d<=5;d++){ const c0b=G.coins; x.pzChestP(p,d,20,d>=4); const dc=G.coins-c0b; ok('chest '+d+' pays '+x.PZ_CHEST[d].coins+'x coins',dc>prev,dc+' coins'); prev=dc; }
 G.sig=0; G.sigPaid=0; const gm=G.gem; G.sig=100; const paid=x.pzTrackP(p);

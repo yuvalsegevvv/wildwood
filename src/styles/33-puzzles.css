@@ -20,3 +20,4 @@
 .pz-su-c.rb{ margin-right:2px; } .pz-su-c.bb{ margin-bottom:2px; } .pz-su-c.given{ background:#3b2836; color:#f2a9c2; font-weight:700; }
 .pz-su-c.peer{ background:#38263a; } .pz-su-c.sel{ background:#7a3a58; } .pz-su-c.bad{ color:#ff6b5e; }
 .pz-su-pad{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
+.pz-solver{ margin:12px 0; padding:10px; border:1px solid var(--line); border-radius:8px; }

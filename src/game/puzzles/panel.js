@@ -23,6 +23,7 @@ function pzStart(m){
       save:st=>{ try{ localStorage.setItem(pzKey(m),JSON.stringify({st:st.st,secs:Math.round((Date.now()-PZ_CUR.t0)/1000)})); }catch(_){} } };
     host.innerHTML=''; PZ_CUR={m,B,api,view:null,t0:Date.now()-((saved&&saved.secs)||0)*1000,done:0};
     PZ_CUR.view=V.mount(host,B,api,saved&&saved.st||null);
+    { const sk=$('#pzSkip'), need=PZ_SOLVER_NEED[m.diff]||1; sk.hidden=!(m.first&&m.src==='site'); sk.textContent='Use Puzzle solver (needs '+need+', you have '+((GEAR&&GEAR.psv)||0)+')'; }   // first solves of stones only
     $('#pzUndo').hidden=!PZ_CUR.view.undo; $('#pzBar').hidden=false;
     PZ_TIMER=setInterval(pzTick,500); pzTick();
   },30);
@@ -82,3 +83,4 @@ function pzDone(m){
   $('#tPzSig').addEventListener('click',()=>send({sig:50}));
   $('#tPzReset').addEventListener('click',()=>send({reset:1}));
 })();
+$('#pzSkip').addEventListener('click',()=>{ if(PZ_CUR&&!PZ_CUR.done) netSend({t:'pz',a:'skip'}); });

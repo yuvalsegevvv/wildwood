@@ -66,6 +66,7 @@ function drawMinimap(){
   if(GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||nodeBlock(GEAR,n)||!inside(n.x,n.z)) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.4*DPR,RES[NODE_KINDS[n.kind].res].col); }   // the nodes of the professions you know
   skTrackMarks(x,at,inside,DPR,false);   // tracked skill upgrade: the camps that drop what it needs
   dgEntMiniMarks(x,at,inside,DPR);   // dungeons: a door in range
+  pzMapMarks(x,at,inside,DPR,false);   // puzzles: the stones in range
   for(const q of questTargets()){
     if(q.ring) continue;
     const col=q.main?'#c89bff':q.side?'#5fd6c8':q.ready?'#9fe08a':'#f2cf5a';
@@ -109,6 +110,7 @@ function drawFullMap(){
   { const V=land==='isles'?VIL8:land==='amber'?VIL7:land==='gloam'?VIL6:land==='sun'?VIL5:land==='grey'?VIL4:land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='isles'?'Coralhaven':land==='amber'?'Tallgrass':land==='gloam'?'Wraithwick':land==='sun'?'Glasswell':land==='grey'?'Highmark':land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
   if(land==='isles') for(const w of EW_WAYS){ const [cx,cy]=at(w.x,w.z); dot(x,cx,cy,3.5*DPR,'#d8c898'); label(w.name,cx,cy-fs*1.1,fs*0.85,'#e8e0d0'); }   // emberwake: the two camps (no circle)
   dgEntMapMarks(x,at,land,fs,label,DPR);   // dungeons: the three doors, the Elder greyed while sealed
+  pzMapMarks(x,at,(wx,wz)=>landAt(wx,wz)===land,DPR,true);   // puzzles: the land's stones
   skTrackMarks(x,at,(wx,wz)=>landAt(wx,wz)===(land==='home'?'home':land),DPR,true);   // tracked skill upgrade
   rdMapMarks(x,at,land,fs,label,DPR);   // raids: the stronghold of this land and its state
   if(land!=='hoar'&&land!=='grey'&&land!=='sun'&&land!=='gloam'&&land!=='isles'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Bridge':'Bridge (barred)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }

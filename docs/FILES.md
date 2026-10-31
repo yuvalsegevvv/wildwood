@@ -218,6 +218,7 @@ shared
   puzzles/nonogram.js                Shrouds (the Gloamhorn's Nonogram kind): fill the grid from the row and column clues to reveal a picture, a memory of the Crown War; a library of pictures drawn in code, a seeded picker that keeps only pictures the clues pin down, and the checker
   puzzles/sokoban.js                 Herding (the Amber Reach's Sokoban kind): push the calves into the kraal; the rooms are generated, the calves are pulled backwards out of the kraal so every board can be solved, and a push solver rejects dull ones
   puzzle-sites.js                    The puzzle stones of the world: id, kind, difficulty, place. Thread 1 has only the tutorial stone in the home village; the 328 others are the content thread's data rows
+  puzzle-place.js                    Places the overworld puzzle stones by rules: 15 trivial, 12 easy, 8 normal, 4 hard and 2 extreme in each of the seven lands that have a puzzle kind (287; the Deep Cave's come with its own files)
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -566,6 +567,7 @@ game
   ui/friends.js                      The friends and ranking panel (comma key): add a friend by name (the other player accepts), who is online, invite to a party, remove; the level ranking with your own place
   ui/testroom.js                     The test room on the client: the damage counter on the screen, the panel (counter, reset, cooldowns, cave charge, soul and skills), the talk key on the pad
   puzzles/panel.js                   The puzzle panel: opens a board the server announced (kind, difficulty, seed), builds it from the shared generator, keeps the clock and an unfinished board on the device, sends the answer, shows the chest
+  puzzles/map.js                     The puzzle stones on the maps: a small rune on the minimap and the land map (lit while the stone is ready, grey while it renews), a dot on the world map; nothing while PZ_ON is off
   puzzles/rootlines.js               Rootlines on the client: a canvas board where you drag roots from a seed to its partner until every cell is filled
   puzzles/ice.js                     Ice slide on the client: arrow keys, WASD, a swipe or the pad slide the stone (or the twin stones) over the ice; undo and reset
   puzzles/common.js                  Shared helpers of the puzzle views: a square canvas sized to the panel, and a pointer position in cells
