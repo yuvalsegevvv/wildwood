@@ -2,7 +2,7 @@
 // Straight from src/, no build. One line per check; exits 1 on failure. Usage: node tools/emberwake-smoke.js
 const {loadShared}=require('./load');
 const X=loadShared(['rawHeight','landAt','inIsles','inAmber','inSun','waLandId','waLand','waZone','waCoast','waIsSea','WA_ZONES','WA_HUBS','WA_ANCHORS','WA_ENTRANCES','WZ1','WZ0','WX0','EW_ISLANDS','EW_HUB','EW_VOLC','EW_ZONE_KEYS',
-  'ZTIER_LANDS','ZTIER_SYMBOL_LANDS','ZTIER_BOSS','symbolPoints','vilAt','VIL','WATER']);
+  'ZTIER_LANDS','ZTIER_SYMBOL_LANDS','ZTIER_BOSS','symbolPoints','vilAt','VIL','WATER','VIL8','VILS','CIRCLES','EW_WAYS','CH_LANDING','ewZoneAt','vNear']);
 let fails=0; const ok=(n,c,d)=>{ if(!c) fails++; console.log((c?'PASS ':'FAIL ')+n+(d?'  ('+d+')':'')); };
 const H=X.rawHeight, STEP=8;
 ok('the world grew south to z 2100 and the Isles are land 7 ("isles")',X.WZ1===2100&&X.WA_ANCHORS.lands[7]==='isles'&&X.landAt(-1100,1590)==='isles'&&X.inIsles(-1100,1590)&&!X.inIsles(0,0)&&!X.inIsles(-1500,1000));
@@ -24,4 +24,27 @@ ok('Coralhaven\'s place (the hub) is dry, flat enough, and on the first island',
   let steep=0,n=0; for(let j=1;j<NZ-1;j++) for(let i=1;i<NX-1;i++){ const k=j*NX+i; if(!seen[k]) continue; n++; const s=Math.max(Math.abs(HG[k+1]-HG[k-1]),Math.abs(HG[k+NX]-HG[k-NX]))/(2*STEP); if(s>1.2) steep++; }
   ok('the walkable Isles ground is mostly gentle (under 4% of it steeper than the slope limit)',steep<n*0.04,(100*steep/n).toFixed(1)+'% of '+n); }
 ok('the old frame is untouched: the hubs of the seven lands and the mainland\'s land tests keep their answers',['home','vale','hoar','grey','sun','gloam','amber'].every(l=>X.waLand(X.WA_HUBS[l][0],X.WA_HUBS[l][1])===l)&&X.inAmber(-1000,830)&&X.inSun(-1000,830));
+// Coralhaven (VIL8) and the two waystations (W2)
+{ const V=X.VIL8, H0=X.EW_HUB;
+  ok('Coralhaven is VIL8 on the hub: the Isles\' village, in VILS, with the circle that wakes with gear.isles 1',X.vilAt(H0.x,H0.z)===V&&X.vilAt(-600,1650)===V&&X.VILS.includes(V)&&V.name==='Coralhaven'&&(()=>{ const C=X.CIRCLES.find(c=>c.id==='coralhaven'); return C&&C.V===V&&C.open({isles:1})&&!C.open({isles:0}); })());
+  ok('vNear sees Coralhaven (the cheap village test)',X.vNear(V.x,V.z,10)===true&&X.vNear(V.x+400,V.z,10)===false);
+  ok('the harbour jetty has a landing on the water to the north and Eleaka\'s anchor',!!X.CH_LANDING&&X.CH_LANDING.z<V.z&&!!V.anchors.landing);
+  const ways=X.EW_WAYS, slope=(x,z)=>Math.max(Math.abs(H(x+6,z)-H(x-6,z)),Math.abs(H(x,z+6)-H(x,z-6)))/12;
+  ok('two waystations (Zotchul on the Jungle Isle, Urkuwara on the Highland) stand on a flat pad on dry ground, each with a circle that wakes at gear.isles 2 and no monster camp round it',ways.length===2&&ways.every(w=>X.waCoast(w.x,w.z)>60&&Math.abs(H(w.x,w.z)-w.h)<0.01&&slope(w.x+8,w.z)<0.12&&X.ewZoneAt(w.x+20,w.z)===null&&X.ewZoneAt(w.x+90,w.z)!==null&&(()=>{ const C=X.CIRCLES.find(c=>c.id===w.id); return C&&C.V===w&&C.open({isles:2})&&!C.open({isles:1}); })())&&X.landAt(ways[0].x,ways[0].z)==='isles'&&X.landAt(ways[1].x,ways[1].z)==='isles');
+}
+{ const {loadServer}=require('./load');
+  const inbox={}, evs=[];
+  const {api:W,x:S}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['VIL7','VIL8','EW_WAYS','sanitizeGear','openIslesP','getH','newGearFor']);
+  const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
+  inbox.a=[]; W.join('a',{name:'Tester',look:{cls:'warrior'},save:{level:50}}); tick(1);
+  const p=W.players.get('a'), at=V=>{ W.setPos('a',[V.tele.x,S.getH(V.tele.x,V.tele.z),V.tele.z,0,0,0]); p.warpT=-9; tick(1); };
+  ok('a new save has gear.isles 0, and the sanitizer holds it to 0..2 with 0 for garbage',p.gear.isles===0&&S.sanitizeGear({isles:9}).isles===2&&S.sanitizeGear({isles:'x'}).isles===0&&S.sanitizeGear({isles:-3}).isles===0);
+  p.gear.tall=2; at(S.VIL7); W.receive('a',{t:'warp',to:'coralhaven'}); tick(1);
+  ok('the harbour is shut until Oldhorn has fallen: the circle will not carry you to Coralhaven',Math.hypot(p.x-S.VIL7.tele.x,p.z-S.VIL7.tele.z)<1&&p.gear.isles===0);
+  S.openIslesP(p); tick(6); ok('Oldhorn\'s fall opens it (gear.isles 1, an event, a toast)',p.gear.isles===1&&evs.some(e=>e[0]==='isles'&&e[2]===1));
+  at(S.VIL7); W.receive('a',{t:'warp',to:'coralhaven'}); tick(12);
+  ok('the circle then carries you to Coralhaven, and walking in attunes it (gear.isles 2)',Math.hypot(p.x-S.VIL8.x,p.z-S.VIL8.z)<S.VIL8.r+14&&p.gear.isles===2);
+  p.warpT=-9; at(S.VIL8); W.receive('a',{t:'warp',to:'zotchul'}); tick(1);
+  ok('from Coralhaven the waystations are open: Zotchul, then Urkuwara',Math.hypot(p.x-S.EW_WAYS[0].x,p.z-S.EW_WAYS[0].z)<8&&(()=>{ at(S.EW_WAYS[0]); W.receive('a',{t:'warp',to:'urkuwara'}); tick(1); return Math.hypot(p.x-S.EW_WAYS[1].x,p.z-S.EW_WAYS[1].z)<8; })());
+}
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

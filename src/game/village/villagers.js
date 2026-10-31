@@ -356,7 +356,7 @@ function spawnNPC(def,rng){
 }
 function initNPCs(){
   const rng=mulberry32(9001);
-  const defs=VILLAGERS.concat(VILLAGERS_OUTFIT).filter(v=>!LITE||v.role);   // light mode keeps everyone with a job
+  const defs=VILLAGERS.concat(VILLAGERS_OUTFIT,VILLAGERS_ISLES).filter(v=>!LITE||v.role);   // light mode keeps everyone with a job
   const used=new Set();
   for(const vil of [1,2]) for(let i=0;i<FILLER_COUNT;i++){
     const sex=rng()<0.5?'male':'female', pool=vil===2?(sex==='male'?NAMES_M2:NAMES_F2):(sex==='male'?NAMES_M:NAMES_F), talk=vil===2?SMALLTALK2:SMALLTALK;
@@ -407,6 +407,15 @@ function initNPCs(){
         kinEars:['cat','round','antelope','rhino','hare'][Math.floor(r7()*5)],kinTail:['thin','puff','tufted','spotted','bushy'][Math.floor(r7()*5)],kinMuzzle:['nose','whiskers','snout'][Math.floor(r7()*3)],
         furColor:KIN_FUR[Math.floor(r7()*KIN_FUR.length)],furColor2:KIN_FUR[Math.floor(r7()*KIN_FUR.length)],furMark:KIN_MARKS[Math.floor(r7()*KIN_MARKS.length)][0],deco1:r7()<0.2?'lyrehorns':''};
       defs.push({id:'villagert'+i,vil:7,late:true,seed:i+81,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
+    } }
+  // Coralhaven's people: mostly human, about one in seven Tidekin (otter-kin)
+  { const r8=mulberry32(9008);
+    for(let i=0;i<FILLER_COUNT;i++){
+      const sex=r8()<0.5?'male':'female', pool=sex==='male'?ISLES_NAMES_M:ISLES_NAMES_F; let name; do{ name=pool[Math.floor(r8()*pool.length)]; }while(used.has(name)); used.add(name);
+      const lines=[]; for(let k=0;k<3;k++) lines.push(ISLES_TALK[Math.floor(r8()*ISLES_TALK.length)]);
+      const look={sex,hairColor:[0x1d1410,0x2a1a12,0x3a2418,0x5a3a22][Math.floor(r8()*4)],skin:[0xa07250,0x946848,0xb08060,0xa87c56][Math.floor(r8()*4)],hat:r8()<0.2?'kasa':'none',hatColor:[0xd8c8a0,0xb8883a][Math.floor(r8()*2)],top:r8()<0.6?'tshirt':'jacket',topColor:[0xe0583a,0x2fb6a8,0xf0c040,0x2a6ab0,0xf0e8d0][Math.floor(r8()*5)]};
+      if(r8()<0.15) Object.assign(look,{kinEars:'round',kinTail:'thin',kinMuzzle:'whiskers',furColor:ISLES_KIN_FUR[Math.floor(r8()*ISLES_KIN_FUR.length)],furColor2:0xf1e6cf,furMark:'belly'});
+      defs.push({id:'villagere'+i,vil:8,late:true,seed:i+161,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
     } }
   defs.filter(d=>!d.late).forEach(d=>spawnNPC(d,rng));
   defs.filter(d=>d.late&&(d.vil||1)<3&&!d.outfit).forEach(d=>spawnNPC(d,mulberry32(9002+(d.seed||0))));

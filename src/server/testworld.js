@@ -14,7 +14,7 @@ function testKitP(p){
   for(const t of PENDANT_STATS) put(dgPendantId(t,TEST_RAR,TEST_ENH));
   g.coins=TEST_COINS; g.rsw=g.rsa=g.rsr=TEST_STONES;
   // the world: every circle attuned, every gate open (the same values the testing tools set), every land's zone tier unlocked up to TEST_TIER (the symbol)
-  g.east=2; g.north=2; g.west=2; g.sun=2; g.gloam=2; g.tall=2; g.river=1; g.neck=1; g.redgate=1; g.amber=1;
+  g.east=2; g.north=2; g.west=2; g.sun=2; g.gloam=2; g.tall=2; g.isles=2; g.river=1; g.neck=1; g.redgate=1; g.amber=1;
   for(const l of ZTIER_LANDS) g.zt[l].max=TEST_TIER;
   g.os=ambOutfitIds();   // every outfit set
   setLevelP(p,TEST_LV);

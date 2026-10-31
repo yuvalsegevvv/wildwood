@@ -110,7 +110,7 @@ function musicThemeHere(){
   const m=BOSS.m; if(m&&BOSS.engaged&&!m.dead){ const A=arenaOf(m); if(Math.hypot(P.x-A.x,P.z-A.z)<A.r+30){ const bd=bossInfo(m); return (bd&&bd.def.music)||(m.def.level>=30?'boss30':m.def.level>=26?'boss26':m.def.level>=25?'boss25':m.def.level>=20?'boss20':'boss15'); } }
   if(caveIn()) return caveMusicTheme();   // cave: a floor's own music (cave/look.js)
   if(dgIn()) return dgMusicTheme();   // dungeons: a run's own music (a boss in its hall plays its theme: the line above) (dungeon/look.js)
-  const V=vilAt(P.x,P.z); if(vDist(P.x,P.z)<VR+22) return V===VIL7?'savanna1':V===VIL6?'gloam1':V===VIL5?'sun1':V===VIL4||V===VIL3?'rimehold':V===VIL2?'hanami':'village';   // (Highmark has no song of its own yet: Rimehold's)
+  const V=vilAt(P.x,P.z); if(vDist(P.x,P.z)<VR+22) return V===VIL8?'village':V===VIL7?'savanna1':V===VIL6?'gloam1':V===VIL5?'sun1':V===VIL4||V===VIL3?'rimehold':V===VIL2?'hanami':'village';   // (Highmark has no song of its own yet: Rimehold's)
   if(P.inTun) return MUSIC.theme||'wild3';
   const zn=zoneAt(P.x,P.z), L=zn?zn.level:0;
   if(inAmber(P.x,P.z)) return L>=42?'savanna2':'savanna1';   // (Amber Reach's own songs)

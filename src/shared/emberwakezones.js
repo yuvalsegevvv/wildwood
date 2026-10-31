@@ -10,6 +10,6 @@ for(const k of EW_ZONE_KEYS){ const A=waZoneOfKey('isles',k), zn={key:'e'+k,ring
   ZONES.push(zn); EW_ZONE_OF[k]=zn; }
 const EW_HUB_R=70;   // the village's own ground has no camps and no zone
 function ewZoneAt(x,z){
-  if(waCoast(x,z)<20||Math.hypot(x-EW_HUB.x,z-EW_HUB.z)<EW_HUB_R) return null;   // the shore, the sea, and the village
+  if(waCoast(x,z)<20||Math.hypot(x-EW_HUB.x,z-EW_HUB.z)<EW_HUB_R||ewWayNear(x,z,30)) return null;   // the shore, the sea, the village and the waystations
   const Z=waZone(x,z); return Z&&Z.land==='isles'?EW_ZONE_OF[Z.key]||null:null;
 }
