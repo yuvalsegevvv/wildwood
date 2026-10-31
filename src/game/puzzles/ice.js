@@ -15,9 +15,9 @@ PZV.iceslide={mount(host,B,api,saved){
   function draw(){
     const s=hist[hist.length-1]; g.clearRect(0,0,px,px);
     for(let c=0;c<w*h;c++){ const x=(c%w)*cs, z=Math.floor(c/w)*cs;
-      if(P.rock[c]){ g.fillStyle='#4a5058'; g.fillRect(x,z,cs,cs); g.fillStyle='#6a7078'; g.beginPath(); g.arc(x+cs*0.5,z+cs*0.5,cs*0.36,0,6.283); g.fill(); continue; }
+      if(P.rock[c]){ g.fillStyle='#2f3d4a'; g.fillRect(x,z,cs,cs); g.fillStyle='#5b6a78'; g.beginPath(); g.arc(x+cs*0.5,z+cs*0.55,cs*0.38,0,6.283); g.fill(); g.fillStyle='#eef7fc'; g.beginPath(); g.ellipse(x+cs*0.5,z+cs*0.3,cs*0.3,cs*0.15,0,0,6.283); g.fill(); continue; }   // a boulder under a snow cap
       const broken=P.cr[c]>=0&&(s.brk>>P.cr[c]&1);
-      g.fillStyle=broken?'#232a33':'#cfeaf7'; g.fillRect(x+1,z+1,cs-2,cs-2);
+      g.fillStyle=broken?'#232a33':'#cfeaf7'; g.fillRect(x+1,z+1,cs-2,cs-2); if(!broken){ pzSpeckle(g,x,z,cs,'#ffffffb0',3,c+5); g.strokeStyle='#ffffff90'; g.lineWidth=1; g.beginPath(); g.moveTo(x+cs*0.12,z+cs*0.2); g.lineTo(x+cs*0.38,z+cs*0.12); g.stroke(); }
       if(P.cr[c]>=0&&!broken){ g.strokeStyle='#6d8fa5'; g.lineWidth=2; g.beginPath(); g.moveTo(x+cs*0.2,z+cs*0.3); g.lineTo(x+cs*0.5,z+cs*0.55); g.lineTo(x+cs*0.4,z+cs*0.85); g.moveTo(x+cs*0.5,z+cs*0.55); g.lineTo(x+cs*0.85,z+cs*0.4); g.stroke(); }
       if(P.sw[c]>=0){ const on=s.lit>>P.sw[c]&1; g.fillStyle=on?'#ffe27a':'#7a8a99'; g.beginPath(); g.arc(x+cs/2,z+cs/2,cs*0.2,0,6.283); g.fill(); }
     }
