@@ -188,7 +188,7 @@
     "raids/wrackmoor.js",
     "raids/moot.js",
     "raids/sevengates.js", "testroom.js",
-    "puzzles.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/sudoku.js", "puzzles/akari.js", "puzzles/slither.js", "puzzles/bridges.js", "puzzles/mirrors.js", "puzzles/nonogram.js", "puzzles/sokoban.js", "puzzle-sites.js"
+    "puzzles.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/sudoku.js", "puzzles/akari.js", "puzzles/slither.js", "puzzles/bridges.js", "puzzles/mirrors.js", "puzzles/nonogram.js", "puzzles/sokoban.js", "puzzle-sites.js", "puzzle-place.js", "puzzle-group.js", "puzzle-track.js"
   ],
   "server": [
     "state.js",
@@ -243,7 +243,7 @@
     "dungeons/instances.js", "dungeons/mobs.js", "dungeons/fx.js", "dungeons/hazards.js", "dungeons/kits.js", "dungeons/kits/purge.js", "dungeons/kits/defense.js", "dungeons/kits/survival.js", "dungeons/kits/sabotage.js", "dungeons/kits/siege.js", "dungeons/kits/hunt.js", "dungeons/kits/escort.js", "dungeons/runs.js", "dungeons/lobby.js",
     "raids.js",
     "testroom.js",
-    "puzzles.js",
+    "puzzles.js", "puzzles-group.js",
     "testworld.js",
     "api.js"
   ],
@@ -493,7 +493,7 @@
     "economy/dungeon-gear.js",
     "economy/rolls.js",
     "dungeon/board.js",
-    "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/view-sand.js", "dungeon/view-gloam.js", "dungeon/view-termite.js", "dungeon/view-cenote.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "ui/friends.js", "ui/testroom.js", "puzzles/panel.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/common.js", "puzzles/sudoku.js", "puzzles/akari.js", "puzzles/slither.js", "puzzles/bridges.js", "puzzles/mirrors.js", "puzzles/nonogram.js", "puzzles/sokoban.js", "puzzles/scrolls.js", "ui/unstuck.js", "pvp/state.js", "dungeon/hud.js", "dungeon/minimap.js",
+    "dungeon/run.js", "dungeon/view.js", "dungeon/view-mine.js", "dungeon/view-sand.js", "dungeon/view-gloam.js", "dungeon/view-termite.js", "dungeon/view-cenote.js", "dungeon/look.js", "dungeon/collide.js", "dungeon/party.js", "ui/friends.js", "ui/testroom.js", "puzzles/panel.js", "puzzles/map.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/common.js", "puzzles/sudoku.js", "puzzles/akari.js", "puzzles/slither.js", "puzzles/bridges.js", "puzzles/mirrors.js", "puzzles/nonogram.js", "puzzles/sokoban.js", "puzzles/scrolls.js", "ui/unstuck.js", "pvp/state.js", "dungeon/hud.js", "dungeon/minimap.js",
     "cave/zone.js", "cave/view.js", "cave/view-themes.js", "cave/look.js", "cave/life.js", "cave/collide.js", "cave/minimap.js", "cave/mouth.js", "cave/lift.js", "cave/methods.js", "cave/method-props.js", "cave/method-props-ab.js", "cave/method-props-cd.js", "cave/method-props-ef.js", "cave/method-props-gh.js",
     "cave/vis.js", "cave/vis-floor1.js", "cave/vis-floor1b.js", "cave/vis-floor2a.js", "cave/vis-floor2b.js", "cave/vis-floor3.js", "cave/vis-floor4.js",
     "ui/account.js",

@@ -5,7 +5,10 @@ const PZ_SITES=[], PZ_SITE_BAD=[];
 function pzSiteAdd(r){
   const ok=r&&typeof r.id==='string'&&/^[a-z0-9_-]{1,24}$/.test(r.id)&&typeof r.kind==='string'&&r.diff>=1&&r.diff<=5&&isFinite(r.x)&&isFinite(r.z)&&r.lv>=1&&!PZ_SITES.some(s=>s.id===r.id);
   if(!ok){ PZ_SITE_BAD.push(String(r&&r.id)); return false; }
-  PZ_SITES.push({id:r.id,kind:r.kind,diff:r.diff|0,x:+r.x,z:+r.z,lv:r.lv|0,seed0:r.seed0>>>0}); return true;
+  const row={id:r.id,kind:r.kind,diff:r.diff|0,x:+r.x,z:+r.z,lv:r.lv|0,seed0:r.seed0>>>0};
+  if(r.raid) row.raid=String(r.raid);   // a stone inside a raid's walls (shared/puzzle-group.js): one solver, the chest pays the members inside, new board at each rebuild
+  if(r.cave) row.cave=r.cave|0;         // a stone on a Deep Cave floor: pays that floor's cave material instead of ordinary drops
+  PZ_SITES.push(row); return true;
 }
 const pzSiteOf=id=>PZ_SITES.find(s=>s.id===id);
 // the tutorial stone: a trivial Rootlines board in the plaza of the home village, 6 m east of its centre (7 m clear of every building and prop) (Linnea's lesson points at it)

@@ -142,6 +142,7 @@ function wmapDraw(){
     const B=WMAP_BANNER[id]; wmapBanner(x,wmapSx(B.x),wmapSy(B.y),B.name,'Levels '+B.levels,WM.hot===id,clamp(WM.w/760,0.72,1));   // (smaller scrolls on a phone)
     x.globalAlpha=1;
   }
+  pzWorldMarks(x);   // puzzles: a dot for each stone of an open land
   { const p=wmapPin(); if(p) wmapPinDraw(x,wmapSx(p[0]),wmapSy(p[1]),t); }
   x.font='600 12px "Alegreya Sans", system-ui, sans-serif'; x.textAlign='right'; x.textBaseline='alphabetic'; x.shadowColor='rgba(0,0,0,.9)'; x.shadowBlur=4; x.fillStyle='#fff';
   x.fillText(isTouch?'Tap a land · drag to pan · pinch to zoom':'Click a land · drag to pan · scroll to zoom',W-14,H-12); x.shadowColor='transparent'; x.shadowBlur=0;

@@ -16,5 +16,6 @@ function pzTrackRender(box){
   let h=`<p class="muted gem-intro">Solve puzzles for the first time to collect Sigils. Every ${PZ_SIG_LEVEL} Sigils is a level of the track: ${PZ_LEVEL_GEMS} gems and the next cosmetic, and a Unique upgrade scroll every ${PZ_SCROLL_EVERY} levels.</p>
     <div class="pz-track-sum"><b>${sig}</b> Sigils &middot; level <b>${lv}</b> / ${PZ_TRACK_LEVELS}${lv<PZ_TRACK_LEVELS?` &middot; ${PZ_SIG_LEVEL-into} to the next`:' &middot; complete'}</div><div class="pz-lamps">`;
   for(let L=1;L<=PZ_TRACK_LEVELS;L++) h+=`<span class="pz-lamp${L<=lv?' lit':''}${L%PZ_SCROLL_EVERY===0?' big':''}" title="Level ${L}${PZ_TRACK_COS[L]?'':''}">${L%PZ_SCROLL_EVERY===0?L:''}</span>`;
-  box.innerHTML=h+'</div>'+(PZ_ON?'':'<p class="muted">Puzzles open with the next big update.</p>');
+  h+='</div>'+(PZ_ON?`<div class="pz-solver"><b>Puzzle solver</b>: skips the first solve of a puzzle stone (1 for trivial, easy and normal; 2 for hard; 3 for extreme). Not for renewed stones, dungeons or raids. You have <b>${GEAR.psv||0}</b>. <button class="chip" id="pzBuySolver">Buy one: ${PZ_SOLVER_PRICE} gems</button></div>`:'<p class="muted">Puzzles open with the next big update.</p>');
+  box.innerHTML=h; const bs=$('#pzBuySolver'); if(bs) bs.addEventListener('click',()=>netSend({t:'pz',a:'buy',n:1}));
 }

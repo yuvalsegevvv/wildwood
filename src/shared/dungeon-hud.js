@@ -23,6 +23,7 @@
 const DG_PHASE_TEXT=['Clear the dungeon','The boss has appeared!','Cleared!','Failed'];
 const DG_OBJ_KINDS={
   stone:{name:'Ward stone',col:'#7fd0ff',r:2.5,th:{hollowroots:'the Heartwood Knot',jadesprings:'the jade basin',bonefrostbarrow:'the warding rune stone',blackseam:'the winch house',sandglass:'the sun altar',gloamvault:'the drowned font',termitecathedral:'the royal cell\'s font',cenote:'the star font'}},
+  pzstone:{name:'Puzzle stone',col:'#8fe3c0',r:2,use:'solve'},
   chest:{name:'Reward chest',col:'#ffcf4a',r:1.5},
   lantern:{name:'Lantern',col:'#ffd36b',r:2,th:{hollowroots:'the sap-lamp',jadesprings:'the stone lantern',bonefrostbarrow:'the grave lamp',blackseam:'a miner\'s lamp',sandglass:'a temple brazier',gloamvault:'a votive candle',termitecathedral:'a resin lamp',cenote:'a star lamp'}},
   flask:{name:'Oil flask',col:'#ffa94d',r:1.2,th:{hollowroots:'a flask of sap',jadesprings:'a flask of lamp oil',bonefrostbarrow:'a flask of tallow',blackseam:'a flask of lamp oil',sandglass:'a flask of palm oil',gloamvault:'a flask of whale oil',termitecathedral:'a flask of resin oil',cenote:'a flask of palm oil'}},

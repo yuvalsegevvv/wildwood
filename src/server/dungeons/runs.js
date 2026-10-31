@@ -36,7 +36,7 @@ function dgAskS(run,q,kind){
 const dgJoinableS=run=>!run.endT&&!run.boss&&run.phase==='objectives'&&dgPresentS(run).length<DG_MAX_PARTY;
 function dgSetupS(run){
   if(run.ready||run.endT) return; run.ready=true; run.t=0;
-  const kit=DG_KITS[run.mission], c0=S.ctx; S.ctx=run.id; if(kit) kit.setup(run); S.ctx=c0;
+  const kit=DG_KITS[run.mission], c0=S.ctx; S.ctx=run.id; if(kit) kit.setup(run); pzDgSetupS(run); S.ctx=c0;   // puzzles: the run's three stones
 }
 function updateInstsS(dt){
   dgSecT-=dt; const sec=dgSecT<=0; if(sec) dgSecT=1;

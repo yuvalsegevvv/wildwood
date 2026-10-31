@@ -13,6 +13,7 @@ const PZ_DIFF=[null,
   {name:'Normal',target:60,gems:5,sigils:2},
   {name:'Hard',target:180,gems:10,sigils:4},
   {name:'Extreme',target:600,gems:20,sigils:9}];
+const PZ_SOLVER_PRICE=50, PZ_SOLVER_NEED=[null,1,1,1,2,3];   // the Puzzle solver (gem shop, 50 gems): skips a stone's FIRST solve; 1 for trivial / easy / normal, 2 for hard, 3 for extreme; never a renewal, dungeon or raid stone (anti pay-to-win)
 var PZ_MAX_DIFF=5;   // the game has five difficulties; only the puzzle lab (tools/puzzle-lab-diffs.js) raises this to 10, just for fun
 const PZ_RENEW_MS=2*3600*1000, PZ_FLOOR_K=0.3, PZ_REACH=7;   // PZ_REACH: how close (m) you must stand to a stone
 // a chest by difficulty: coins x coinsFor(level), potions [min,max], drops (skill-upgrade materials of the level), stones (Tempering, from level 30), amber, scroll (epic scroll chance), gear (first solve: [chance, min rarity])
