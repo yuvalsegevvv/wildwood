@@ -1,9 +1,9 @@
 //@ Atuqa's skill set, The Terrace Wall (a tank, light): a sling stone that pins its target, a terrace raised under the party, and a wall of sun that holds the line; woven red, gold thread and terrace stone
-/* Agent map. Kit: docs/skillkits/kit-tank.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces light: Torgeir's kit in another voice); outfit: none yet (a later pass);
+/* Agent map. Kit: docs/skillkits/kit-tank.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces light: Torgeir's kit in another voice); outfit: game/outfits/atuqa.js, docs/skillkits/looks/atuqa.md;
    visuals: game/skillsets/look-atuqa.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-isles-smoke.js, tools/skillsets-ladder.js --set atuqa.
    Land: the Emberwake Isles (tier 3). Mark: Knot, spent by Hold the Wall (a quipu: every knot is a promise she keeps). Numbers are Torgeir's on purpose (the ladder holds for them); only the words, the element and the look are his. */
 defineSkillSet({
-  id:'atuqa', name:'The Terrace Wall', land:'isles', needs:{tier:3}, el:'light',
+  id:'atuqa', name:'The Terrace Wall', land:'isles', needs:{tier:3}, el:'light', outfit:'atuqa',
   role:{main:'tank'},
   char:{name:'Atuqa', sex:'male', theme:'a highland keeper of knotted cords who holds a terrace wall for the ones behind it', ip:{kind:'original', riffs:'the Andean terrace-keeper and quipu-reader genre (a woven poncho, a knotted cord, a sling); no existing character'}},
   pal:{main:0xb83a2a, accent:0xe8c860, glow:0xfff0b0},

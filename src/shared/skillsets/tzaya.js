@@ -1,9 +1,9 @@
 //@ Tzaya's skill set, The Long Count (a grinder, fire): an obsidian sweep, a fire pit that drags a camp together, and a reckoning that pays the whole count back; jade, gold and cinder red
 /* Agent map. Kit: docs/skillkits/kit-grind.md (the grinder whose big move spends a mark: like Ogden's Rot in another voice); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces fire);
-   outfit: none yet (a later pass); visuals: game/skillsets/look-tzaya.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-isles-smoke.js,
+   outfit: game/outfits/tzaya.js, docs/skillkits/looks/tzaya.md; visuals: game/skillsets/look-tzaya.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-isles-smoke.js,
    tools/skillsets-ladder.js --set tzaya. Land: the Emberwake Isles (tier 2). Mark: Tally. Numbers are Ogden's on purpose (the ladder holds for them); only the words, the element and the look are his. */
 defineSkillSet({
-  id:'tzaya', name:'The Long Count', land:'isles', needs:{tier:2}, el:'fire',
+  id:'tzaya', name:'The Long Count', land:'isles', needs:{tier:2}, el:'fire', outfit:'tzaya',
   role:{main:'grind'},
   char:{name:'Tzaya', sex:'male', theme:'a calendar-priest who keeps the count by what he burns, and feeds on the crowds that gather to be counted', ip:{kind:'original', riffs:'the Mesoamerican calendar-priest genre (a feathered headdress, a jade collar, an obsidian blade); no existing character'}},
   pal:{main:0x2f8a5a, accent:0xd8b040, glow:0xff7a3a},
