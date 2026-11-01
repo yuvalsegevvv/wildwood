@@ -24,6 +24,8 @@ function htxBuild(X,F,parts,id,hc){
       const lf=csph(1,sg(8),sg(6)).scale(0.016,0.0045,0.034).rotateZ(side*0.5).rotateY(-a+Math.PI/2+side*0.35).translate(sa*R*fs[0]*1.005,y0+side*0.006,-ca*R*0.99);
       parts.push(pc(lf,(x,y,z,c)=>{ tone(c,0.82+0.28*h3(i,0,1)); if(Math.abs(x-sa*R)<0.002) tone(c,0.7); })); }
     for(let i=0;i<6;i++){ const a=(0.18+i*0.32)*Math.PI*(i%2?1:-1)*0.5+Math.PI*(i%2?0.35:-0.35); parts.push(solid(csph(0.0058,sg(6),sg(5)).translate(Math.sin(a)*R*fs[0],y0-0.012,-Math.cos(a)*R),0xc23a3a)); }
+    for(let i=0;i<n;i+=2){ const a=i/n*TAU; if(Math.abs(a-Math.PI)<0.3) continue; const ca=Math.cos(a), sa=Math.sin(a); parts.push(pc(csph(1,sg(7),sg(5)).scale(0.012,0.0035,0.026).rotateY(-a+Math.PI/2-0.5).translate(sa*R*fs[0]*1.03,y0+0.013,-ca*R*1.02),(x,y,z,c)=>{ tone(c,0.95+0.2*h3(i,1,2)); })); }   // a second, upper row of leaves offset from the first, so the wreath is full
+    for(const sd of [-1,1]) parts.push(pc(ofRibbon([[sd*0.012,y0,R*0.98],[sd*0.03,y0-0.05,R*1.02],[sd*0.035,y0-0.11,R*0.98]],0.014,{up:[0,0,1],seg:sg(6),th:0.003}),c=>c.set(0xe8d9b0)));   // two cream ribbon tails at the back knot
     parts.push(solid(sweepTube([[0.01,y0,0.12],[0.022,y0-0.04,0.125],[0.012,y0-0.09,0.12]],[0.004,0.003,0.0015],4,{cap:'round',rings:6}),0x5a4a2a));   // the loose end
   } else if(id==='catphones'){
     // a padded band over the head from cup to cup, a cup with a glowing ring over each ear, and a pointed cat ear on each side of the crown

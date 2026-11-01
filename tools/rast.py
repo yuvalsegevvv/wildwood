@@ -28,6 +28,6 @@ def render(tris,view):
         sh=np.clip(np.abs(nn@light),0.15,1)*0.85+0.15
         sub[upd]=z[upd]; img[y0:y1+1,x0:x1+1][upd]=(w@C[i])*sh[:,None]
     return img
-VIEWS=os.environ.get('RAST_VIEWS','both')   # 'front' draws one view per character (for a sheet of many)
-rows=[np.concatenate([render(t,'front')]+([render(t,'side')] if VIEWS in ('both','three') else [])+([render(t,'left')] if VIEWS=='leftboth' else [])+([render(t,'back')] if VIEWS=='three' else []),1) for t in chars]
+VIEWS=os.environ.get('RAST_VIEWS','both')   # 'front' draws one view per character (for a sheet of many), 'back' one back view each
+rows=[np.concatenate([render(t,'back' if VIEWS=='back' else 'front')]+([render(t,'side')] if VIEWS in ('both','three') else [])+([render(t,'left')] if VIEWS=='leftboth' else [])+([render(t,'back')] if VIEWS=='three' else []),1) for t in chars]
 Image.fromarray((np.clip(np.concatenate(rows,1),0,1)*255).astype(np.uint8)).save(sys.argv[2])
