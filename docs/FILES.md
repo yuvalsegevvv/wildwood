@@ -108,6 +108,7 @@ shared
   colours.js                         Premium colours (version 3.3): 48 extra colours for everything but the skin, 500 gems each, bought once for the whole account; the favourites list; what a look may wear. Pure.
   cave.js                            The Deep Cave, shared rules: the 4th skill slot (opens at level 23), the charge that pays for it, the registry of cave skills (defineCaveSkill) and their validation
   ult.js                             The 5th skill slot, the set burst ("Burst"): its constants, the registry ULT_SKILLS filled by each skill set's `ult` entry, its validation, the 3-of-7 ownership rule and the fixed cooldown
+  presets.js                         Loadout presets: ten saved setups of the eight skills, the soul and the equipment (each optionally linked to one of ten outfit slots), and the outfit slot count
   gem-sources.js                     Free ways to earn gems: the pay of main and side quest steps, the daily quest set (UTC), the placeholder ad watch, and the achievements list
   side-quests.js                     Side quests (SQ): six chains of linked, objective-based steps, each leading to a land's second boss (Carapax, Kyuubi, Vetrmaw, the Sand Wyrm) or through the Gloamhorn (Captain Dredge, then the Gloam Warden); rewards are resources, a little XP and a cosmetic at each chain's end. Pure.
   pvp.js                             The Proving Isle (PvP): the fighting ground, the fixed level, gear and loadout everyone fights with there, the gate on the bridge, where a knocked-out fighter wakes (a shore spot), the entry lock. Pure.
@@ -236,6 +237,7 @@ server
   colours.js                         Premium colours on the server: buying one for PREM_PRICE gems (gear.pc, for every piece of the account) and saving the favourites list (gear.fav)
   cave.js                            The Deep Cave on the server: the 4th slot's charge (earned by casts that hit, a boss fight sets it), casting the equipped cave skill, equipping, and sanitizing gear.cave
   ult.js                             The 5th skill slot on the server (the set burst): owning it, wearing it, the cast with its fixed cooldown, and the 5 s stun with its 50 s per-enemy lock
+  presets.js                         Loadout presets (server): save the eight skills, the soul and the equipment of the worn class into one of ten slots, wear one instantly anywhere outside a boss fight, raid, the Proving Isle or a dungeon
   cave-zone.js                       The Deep Cave's floors on the server: the camps and their monsters, walls for hikers and monsters (setPos, dashes, steering round corners, line of sight), the lift between the surface and the floors, waking on a floor after a knock-out
   cave/methods.js                    The Deep Cave's eight methods on the server, the shared part: every player's progress on the floor they stand on, the 10-minute cooldown, a completed method paying its skill (or Echo Shards), the state message to the client, the HUD line
   cave/method-a.js                   Cave method A on the server, Mural fragments: touch the five pieces at the dead ends (any order), then the wall; your light is always on, so only the walking matters
@@ -407,7 +409,7 @@ game
   player/gamepad.js                  Gamepad support: sticks walk and look, buttons press the keys their actions are bound to (keybinds.js)
   ui/character-thumbs.js             Pictures for the character editor: every hair style, hat, garment, set, cape and aura drawn once on a small off-screen target and cached as an image
   ui/colour-picker.js                The colour picker of the character editor (version 3.3): one block per colour ("Colour 1", "Colour 2"...), each with a Designed button, your 16 favourites and all colours (the row's free ones and the 48 premium)
-  ui/character-editor.js             Character editor panel and camera: four tabs (Presets, Body, Face, Clothes) with sub-tabs, picture tiles for every part, five outfit slots, per-piece armour visibility, opened from the HUD or in creating mode after registering
+  ui/character-editor.js             Character editor panel and camera: four tabs (Presets, Body, Face, Clothes) with sub-tabs, picture tiles for every part, ten outfit slots, per-piece armour visibility, opened from the HUD or in creating mode after registering
   village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)
   village/village-smoke.js           Chimney smoke for the villages after the home one (Rimehold, Highmark, Wraithwick): vsmAdd(point) from a house's chimney, updateVillageSmoke(dt) each frame
   village/buildings-vale.js          The Sakura Vale's buildings: Hanami (tiled roofs, shoji, timber gates, stone lanterns), the border bridge (deck, piers, gatehouse, sealed door), teleport circles, the dressing of the two boss arenas
@@ -499,6 +501,7 @@ game
   economy/forge.js                   Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
   economy/soul.js                    Element helpers for the interface (icons, chips) and the Soul Hall panel in Hanami, where you bind your soul to an element
   economy/skills.js                  Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, upgrade with coins and monster drops, learn from the trainers
+  economy/presets.js                 Presets row of the skills panel: ten saved setups (skills, soul, equipment, an optional linked outfit slot) to save, wear, rename and clear
   economy/skill-track.js             Tracking a skill upgrade: mark one skill and the maps show the camps of the monsters whose drops its next level still needs
   economy/skillsets.js               Skill sets on the client: the toast when a piece is earned (the pieces themselves live in the skills panel's grids, economy/skills.js) and the ally buffs that change what you do (haste)
   skillsets/looks.js                 Skill-set looks on the client: every signature skill is drawn in the colours and motifs of its outfit (particles, ground patterns, projectiles, auras), through hooks in skill-fx.js, attacks.js and net/client.js

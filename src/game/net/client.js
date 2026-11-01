@@ -115,6 +115,7 @@ function applyEvent(e){
     case 'chain': onChain(e[1],e[2],e[3]); break;
     case 'beam': onBeam(e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8],e[9]); break;
     case 'skilldrop': if(e[1]===me) onSkillDrop(e[2]); break;
+    case 'prwear': if(e[1]===me){ UI_SFX.success(); prWearOutfit(e[2],e[3]); } break;   // presets: wear the linked outfit slot
     case 'skillslot': if(e[1]===me){ UI_SFX.success(); if(e[2]!=='passive') flashSkillSlot(e[2]); } break;
     case 'skillbuy': case 'skillup': if(e[1]===me) UI_SFX.success(); break;
     case 'soul': if(e[1]===me){ UI_SFX.success(); spawnRing(2.2,parseInt(ELEMS[e[2]].col.slice(1),16),P.y+0.2); } break;

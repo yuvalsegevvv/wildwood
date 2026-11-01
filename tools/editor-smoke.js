@@ -1,5 +1,5 @@
 // Headless test of the character editor's version 3 revamp, straight from src/: a garment taken off (None) leaves the body with underwear where the clothes were,
-// equipped armour is shown or hidden per piece, and the editor's tab tree is complete (4 tabs, sub-tabs, the five outfit slots, every grid row lists real values).
+// equipped armour is shown or hidden per piece, and the editor's tab tree is complete (4 tabs, sub-tabs, the ten outfit slots, every grid row lists real values).
 // Usage: node tools/editor-smoke.js
 const fs=require('fs'), path=require('path'), {loadServer,SRC}=require('./load');
 const C=require('./char-load')();
@@ -41,7 +41,7 @@ if(have){
 const ed=fs.readFileSync(path.join(SRC,'game/ui/character-editor.js'),'utf8');
 const tabs=[...ed.matchAll(/^  \{tab:'(\w+)'/gm)].map(m=>m[1]);
 ok('four main tabs: Presets, Body, Face, Clothes',tabs.join()==='Presets,Body,Face,Clothes',tabs.join());
-ok('the Presets tab has the signature sets and five outfit slots',/type:'sets'/.test(ed)&&/type:'slots'/.test(ed)&&/i<5;i\+\+/.test(ed));
+ok('the Presets tab has the signature sets and ten outfit slots',/type:'sets'/.test(ed)&&/type:'slots'/.test(ed)&&/i<PR_OUTFITS;i\+\+/.test(ed));
 ok('every clothes piece has a None tile, armour rows and a colour row',['hat','top','bottom','shoes'].every(k=>new RegExp("k:'"+k+"',type:'grid'[^\\n]*(\\['none'\\]|HT_HATS|GM_TOPS|GM_BOTTOMS|GM_SHOES)").test(ed))&&(ed.match(/type:'armor',slot:/g)||[]).length>=8);
 const cs=fs.readFileSync(path.join(SRC,'game/ui/character-thumbs.js'),'utf8');
 ok('every grid kind the editor uses has a thumbnail view',[...new Set([...ed.matchAll(/kind:'(\w+)'/g)].map(m=>m[1]))].every(k=>new RegExp("case '"+k+"'").test(cs)||k==='outfit'||k==='slot'));

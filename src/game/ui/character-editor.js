@@ -1,14 +1,14 @@
-//@ Character editor panel and camera: four tabs (Presets, Body, Face, Clothes) with sub-tabs, picture tiles for every part, five outfit slots, per-piece armour visibility, opened from the HUD or in creating mode after registering
+//@ Character editor panel and camera: four tabs (Presets, Body, Face, Clothes) with sub-tabs, picture tiles for every part, ten outfit slots, per-piece armour visibility, opened from the HUD or in creating mode after registering
 /* ---------- character editor ----------
    Two ways in: the HUD button (Done just closes it) and creating mode, right after Register on the start card (it opens on the Body tab and its Enter button starts the game).
    There is no class row: the class is the weapon you hold, not a cosmetic choice. A tab or sub-tab with close:true frames the head (face, hair, hats) instead of the whole body.
    EDIT = four tabs, each {tab, subs:[{name, rows}]}; edSub[tab] is the open sub-tab. Row types: slider (from BODY_SLIDERS), grid (picture tiles, see ui/character-thumbs.js),
-   color (swatches), seg (text chips: only the few things a picture cannot show), setups, sets, slots (the five saved outfits), armor (show / hide one equipped armour piece).
+   color (swatches), seg (text chips: only the few things a picture cannot show), setups, sets, slots (the ten saved outfits), armor (show / hide one equipped armour piece).
    A row {slider:'legs'} takes its label, range and ends from BODY_SLIDERS; the character model's recommended range is drawn under the track and the row warns outside it.
    A garment can be None (top / bottom / shoes 'none': the body shows, with underwear where the clothes were: model-body.js UNDER_COL); equipped armour is shown or hidden per piece (look.armorHat / armorTop / armorBottom / armorShoes, items.js effectiveLookOf).
    Version 3.2, the general pieces (shared/cospieces.js): every grid row of a slot with crafted pieces carries slot:'<letter>'; a piece that is crafted and not yet made is drawn locked (a padlock and its recipe in the tooltip) but can still be tried on.
    A look that wears a locked piece, or an outfit set you have not bought (osLocks), is a try-on: it is not saved or sent (saveLook, model.js), the bar at the top of the editor lists what is missing, and Done will not close until the piece is made or the saved look is back (edTrying, edRevert).
-   The five outfit slots live in this browser (localStorage 'wildwood-outfits-v1'): a slot keeps the clothes, hair, cape and aura, never the body. test: tools/editor-smoke.js, start-smoke */
+   The ten outfit slots live in this browser (localStorage 'wildwood-outfits-v1'): a slot keeps the clothes, hair, cape and aura, never the body. test: tools/editor-smoke.js, start-smoke */
 let customizing=false, creating=false, edTab=0;
 const edSub=[0,0,0,0];
 const edEl=$('#editor'), edTabs=$('#edTabs'), edSubs=$('#edSubs'), edBody=$('#edBody');
@@ -171,9 +171,9 @@ function armorRow(wrap,slot){
     const pic=document.createElement('span'); pic.className='ctile-pic icon'; pic.innerHTML=svg; b.append(pic); b.onclick=()=>setArmor(slot,show); box.append(b); }
   wrap.append(box);
 }
-// ---- the five outfit slots ----
+// ---- the ten outfit slots ----
 const OUTFIT_KEYS=['tintTop2','tintTop3','tintTop4','tintBottom2','tintBottom3','tintBottom4','tintShoes2','tintShoes3','tintShoes4','tintHat2','tintHat3','tintHat4','tintHair2','tintHair3','tintHair4','tintGloves2','tintGloves3','tintGloves4','hairGrad','hairColor2','hairThird','hairColor3','gloves','gloveColor','tintGloves','top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','capeColor','capeTrim','auraColor','auraColor2','auraGlow','pupil','eyes2','armor','armorHat','armorTop','armorBottom','armorShoes','kinEars','kinTail','kinMuzzle','furColor','furColor2','furMark'];
-function outfitSlots(){ try{ const a=JSON.parse(localStorage.getItem('wildwood-outfits-v1')||'[]'); const out=[]; for(let i=0;i<5;i++) out.push(a&&typeof a[i]==='object'?a[i]:null); return out; }catch(_){ return [null,null,null,null,null]; } }
+function outfitSlots(){ try{ const a=JSON.parse(localStorage.getItem('wildwood-outfits-v1')||'[]'); const out=[]; for(let i=0;i<PR_OUTFITS;i++) out.push(a&&typeof a[i]==='object'?a[i]:null); return out; }catch(_){ return Array(PR_OUTFITS).fill(null); } }
 function putOutfitSlots(a){ try{ localStorage.setItem('wildwood-outfits-v1',JSON.stringify(a)); }catch(_){} }
 function saveOutfitSlot(i){ const a=outfitSlots(), o={}; for(const k of OUTFIT_KEYS) if(LOOK[k]!==undefined) o[k]=LOOK[k]; a[i]=o; putOutfitSlots(a); renderEditor(); }
 function clearOutfitSlot(i){ const a=outfitSlots(); a[i]=null; putOutfitSlots(a); renderEditor(); }
@@ -300,7 +300,7 @@ function renderEditor(){
       wrap.append(box); osCap(box);
     } else if(row.type==='slots'){
       const a=outfitSlots(), box=document.createElement('div'); box.className='tiles slots';
-      for(let i=0;i<5;i++){
+      for(let i=0;i<PR_OUTFITS;i++){
         const o=a[i], card=document.createElement('div'); card.className='slot-card';
         let t;
         if(o){ t=cthTile({kind:'slot',id:'slot'+i,look:outfitSlotLook(o)},{on:sameSlot(o),title:'Wear outfit '+(i+1)}); t.onclick=()=>wearOutfitSlot(i); }
