@@ -14,6 +14,26 @@ function htBrim(sg,rIn,rOut,y0,o,fn,fnUnder){
   return [pc(mk(true),fn),pc(mk(false),fnUnder||((x,y,z,c)=>{ fn(x,y,z,c); c.multiplyScalar(0.72); }))];
 }
 const htRing=(sg,y,r,t,hex,tilt)=>solid(gmRingAt([0,y,0],[0,1,tilt||0],r,t,sg(6)),hex);
+// hair never shows through a hat: every hair vertex above the brow whose ray from the head's centre meets the hat's outer surface closer than the vertex is pulled back under that surface
+// (the hat's triangles are bucketed by direction, so a build costs a few ray tests per vertex); hair that hangs out below or behind the hat (y < 0.02) is left alone
+function htFit(parts,n0){
+  const hat=parts.slice(n0), A=24, B=12, bk=new Map(), key=(a,b)=>((a+A)%A)*B+Math.max(0,Math.min(B-1,b));
+  const bin=(x,y,z)=>[Math.floor((Math.atan2(x,z)/(2*Math.PI)+0.5)*A)%A, Math.floor(Math.acos(Math.max(-1,Math.min(1,y/(Math.hypot(x,y,z)||1))))/Math.PI*B)];
+  const T=[]; for(const g0 of hat){ const g=g0.index?g0.toNonIndexed():g0, p=g.attributes.position; if(!p) continue;
+    for(let i=0;i+2<p.count;i+=3){ const t=[p.getX(i),p.getY(i),p.getZ(i),p.getX(i+1),p.getY(i+1),p.getZ(i+1),p.getX(i+2),p.getY(i+2),p.getZ(i+2)];
+      let a0=1e9,a1=-1e9,b0=1e9,b1=-1e9; for(let k=0;k<9;k+=3){ const [a,b]=bin(t[k],t[k+1],t[k+2]); a0=Math.min(a0,a); a1=Math.max(a1,a); b0=Math.min(b0,b); b1=Math.max(b1,b); }
+      if(a1-a0>A/2){ a0=0; a1=A-1; }   // a triangle across the seam of the azimuth: in every column
+      T.push(t); for(let a=a0;a<=a1;a++) for(let b=b0;b<=b1;b++){ const kk=key(a,b); (bk.get(kk)||bk.set(kk,[]).get(kk)).push(t); } } }
+  if(!T.length) return;
+  for(let j=0;j<n0;j++){ const p=parts[j].attributes.position; if(!p) continue;
+    for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), l=Math.hypot(x,y,z); if(y<0.02||l<0.1) continue;
+      const [a,b]=bin(x,y,z), list=bk.get(key(a,b)); if(!list) continue; const dx=x/l, dy=y/l, dz=z/l; let mx=0;
+      for(const t of list){ const e1x=t[3]-t[0],e1y=t[4]-t[1],e1z=t[5]-t[2],e2x=t[6]-t[0],e2y=t[7]-t[1],e2z=t[8]-t[2];
+        const px=dy*e2z-dz*e2y,py=dz*e2x-dx*e2z,pz=dx*e2y-dy*e2x,det=e1x*px+e1y*py+e1z*pz; if(Math.abs(det)<1e-12) continue; const iv=1/det;
+        const u=(-t[0]*px-t[1]*py-t[2]*pz)*iv; if(u<0||u>1) continue; const qx=-t[1]*e1z+t[2]*e1y,qy=-t[2]*e1x+t[0]*e1z,qz=-t[0]*e1y+t[1]*e1x;
+        const v=(dx*qx+dy*qy+dz*qz)*iv; if(v<0||u+v>1) continue; const tt=(e2x*qx+e2y*qy+e2z*qz)*iv; if(tt>mx) mx=tt; }
+      if(mx>0&&l>mx-0.003){ const k=(mx-0.003)/l; p.setXYZ(i,x*k,y*k,z*k); } }
+    p.needsUpdate=true; if(parts[j].computeBoundingSphere) parts[j].boundingSphere=null; } }
 function htBase(X,F,parts){
   const {L,sg}=X, {sculpt,fs}=F, hc=new THREE.Color(L.hatColor), scl=g=>g.scale(fs[0],fs[1],1), top=0.105*fs[1], fr=x=>x-Math.floor(x);
   const col=(m)=>c=>c.copy(hc).multiplyScalar(m), id=L.hat;
