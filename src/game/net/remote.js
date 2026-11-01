@@ -28,7 +28,7 @@ function remoteAct(id,kind,face,ub){ const r=REMOTES.get(id); if(!r) return; con
 function remoteGear(id,eq){ const r=REMOTES.get(id); if(!r) return; r.eq=eq; remoteBuild(r); }
 function remoteLook(id,look){ const r=REMOTES.get(id); if(!r) return; r.look=fullLook(look); remoteBuild(r); }
 function remoteHurt(id,v){ const r=REMOTES.get(id); if(r&&r.g.visible) popText(r.x,r.y+2*r.scale,r.z,'-'+v,'other'); }
-function remoteDown(id,down){ const r=REMOTES.get(id); if(r) r.dead=down; }
+function remoteDown(id,down){ const r=REMOTES.get(id); if(r){ if(down&&!r.dead&&r.g.visible) gorePlayerDown(r.x,r.y,r.z); r.dead=down; } }
 function remoteLevelUp(id,lv){ const r=REMOTES.get(id); if(!r) return; r.level=lv; if(r.g.visible){ spawnRingAt(r.x,r.y,r.z,3,0xffd34d); popText(r.x,r.y+2.3*r.scale,r.z,'Level '+lv,'xp'); } }
 function updateRemotes(dt){
   let ti=0;
