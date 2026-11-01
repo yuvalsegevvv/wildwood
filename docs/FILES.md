@@ -481,6 +481,7 @@ game
   combat/weapon-shapes-isles.js      Weapon shapes of the three Emberwake Isles signature outfits (Meleni, Tzaya, Atuqa): a paddle-bladed sword, a wave bow and a paddle staff; an obsidian-toothed club, a reed bow and a copal-brazier staff; a half-moon tumi knife, a tasselled bow and a quipu staff
   combat/fx-pool.js                  The spark pool: one THREE.Points draw call for the glows, sparks, trails and shockwave debris that every skill, monster attack and boss move adds to its effect
   combat/fx-extra.js                 The effects beyond light: scorch marks, dust and smoke, flying debris, jagged lightning, rotating rune circles, slash crescents, shock domes and the screen flash
+  combat/gore.js                     Blood and death effects (version 3.3): the hiker bleeds below 20% hp and bursts when downed, and every monster dies in a way that fits what it is (blood, ichor, goo, sap and leaves, stone chips, spores); all of it off in child-safe mode
   combat/fx-decal.js                 Ground patterns for skill effects: canvas-drawn runes, flames, waves, cracks, gusts, eclipses, stars, frost, leaves and shock rings that replace the plain discs and rings
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
   combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
