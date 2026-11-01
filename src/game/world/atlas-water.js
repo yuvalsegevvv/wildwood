@@ -26,6 +26,7 @@ function awBuildWater(){
     let ice=false, any=false;
     for(const [n,w,q,r] of [[a,wa,i,j],[b,wb,i+1,j],[c,wc,i,j+1],[d,wd,i+1,j+1]]) if(w<=0.25){ any=true; if(waWater(x0+q*8,z0+r*8)===WA_ICE) ice=true; }
     if(!any) continue;
+    if(SUN_CITY!==null&&Math.hypot(x0+i*8+4-SUN_CITY.x,z0+j*8+4-SUN_CITY.z)<SUN_CITY.r+45) continue;   // Glasswell's Bowl lies over the atlas's stray stream through the hub: the city has its own water (the flat patches round the Archive)
     if(Math.max(waWaterSurf(x0+i*8,z0+j*8),waWaterSurf(x0+i*8+8,z0+j*8),waWaterSurf(x0+i*8,z0+j*8+8),waWaterSurf(x0+i*8+8,z0+j*8+8))<AW_SEA_MIN) continue;
     const M=ice?I:W, v0=vert(M,i,j,ice), v1=vert(M,i+1,j,ice), v2=vert(M,i,j+1,ice), v3=vert(M,i+1,j+1,ice);
     M.idx.push(v0,v2,v1,v1,v2,v3); M.tris+=2;   // (counter-clockwise seen from above)
