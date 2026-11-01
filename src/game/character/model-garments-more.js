@@ -27,12 +27,14 @@ const GMX_ALIAS={
 };
 function gmxAliasLook(L){
   let o=null; for(const slot of ['top','bottom','shoes']){ const id=L[slot]; if(typeof id!=='string'||!Object.prototype.hasOwnProperty.call(GMX_ALIAS,id)) continue; const A=GMX_ALIAS[id]; if(A.slot!==slot) continue;
-    o=o||Object.assign({},L); o[slot]=A.base; if(slot==='top') o.topColor=A.col; else if(slot==='bottom') o.bottomColor=A.col; else o.shoeColor=A.col;
+    o=o||Object.assign({},L); o[slot]=A.base; const tc=ofTintOf(L,slot)>=0?ofTintOf(L,slot):A.col; if(slot==='top') o.topColor=tc; else if(slot==='bottom') o.bottomColor=tc; else o.shoeColor=tc;   // the slot's tint (tintTop...: the editor's colour row while a set piece is worn) recolours the main colour, -1 = as designed
     (A.pal||[]).forEach((c,i)=>{ const k=OF_TINTX[slot][i]; if(!(typeof L[k]==='number'&&L[k]>=0)) o[k]=c; }); }
   return o||L;
 }
-function gmxPalDef(L,slot){ const t=GMX_PAL[slot], id=L[slot]; return t&&typeof id==='string'&&Object.prototype.hasOwnProperty.call(t,id)?t[id](slot==='top'?L.topColor:L.bottomColor):[]; }
-function gmxPalAt(L,slot){ return gmxPalDef(L,slot).map((c,i)=>{ if(!i) return c; const v=L[OF_TINTX[slot][i-1]]; return typeof v==='number'&&v>=0&&v<=0xffffff?Math.floor(v):c; }); }
+// a Sigil piece is worn in the editor (L.top = 'mpcrop'): its colour row writes the slot's tint
+const gmxAliased=(L,slot)=>typeof L[slot]==='string'&&Object.prototype.hasOwnProperty.call(GMX_ALIAS,L[slot])&&GMX_ALIAS[L[slot]].slot===slot;
+function gmxPalDef(L,slot){ L=gmxAliasLook(L); const t=GMX_PAL[slot], id=L[slot]; return t&&typeof id==='string'&&Object.prototype.hasOwnProperty.call(t,id)?t[id](slot==='top'?L.topColor:L.bottomColor):[]; }
+function gmxPalAt(L,slot){ L=gmxAliasLook(L); return gmxPalDef(L,slot).map((c,i)=>{ if(!i) return c; const v=L[OF_TINTX[slot][i-1]]; return typeof v==='number'&&v>=0&&v<=0xffffff?Math.floor(v):c; }); }
 // a strap that follows the body's front (or back) from design height y0 to y1 and from x0 to x1: pts along it, lifted a little off the cloth
 function gmxStrap(X,D,y0,y1,x0,x1,back,n){
   const pts=[]; for(let i=0;i<=(n||6);i++){ const t=i/(n||6), yd=y0+(y1-y0)*t, ts=torsoSize(X,D,yd); pts.push([x0+(x1-x0)*t,yd*D.TK,back?(ts.rzBack+0.007):-(ts.rz+0.007)]); }

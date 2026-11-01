@@ -33,7 +33,7 @@ function cthLookFor(sp){
     case 'cape': L.cape=id; view='back'; spin=Math.PI-0.35; break;
     case 'aura': L.aura=id; view='body'; break;
     case 'shield': L.shield=id; view='body'; spin=-Math.PI/2+0.35; break;
-    case 'deco': { L.deco1=id; if(sp.col!==undefined&&sp.col>=0) L.decoColor1=sp.col; const an=DECOS[id]?DECOS[id].anchor:'headTop'; view=an==='headTop'||an==='face'?'head':an==='neck'||an==='chest'||an==='shoulderR'?'chest':an==='back'?'back':an==='waist'?'legs':an==='wristL'?'hands':an==='ankleL'?'feet':'body'; if(view==='back'||id==='tail') spin=Math.PI-0.35; break; }
+    case 'deco': { L.deco1=id; if(sp.col!==undefined&&sp.col>=0) L.decoColor1=sp.col; const an=DECOS[id]?DECOS[id].anchor:'headTop'; view=an==='headTop'||an==='face'?'head':an==='neck'||an==='chest'||an==='shoulderR'?'chest':an==='back'?'back':an==='waist'||an==='hipL'||an==='hipR'?'hips':an==='wristL'||an==='wristR'?'hands':an==='ankleL'||an==='ankleR'?'feet':'body'; if(view==='back'||id==='tail') spin=Math.PI-0.35; break; }
     case 'kinEars': L.kinEars=id; L.hair='short'; L.furColor=LOOK.furColor; L.furColor2=LOOK.furColor2; view='head'; break;   // (kin: the part in your own fur colours)
     case 'kinMuzzle': L.kinMuzzle=id; L.furColor=LOOK.furColor; L.furColor2=LOOK.furColor2; view='head'; break;
     case 'kinTail': L.kinTail=id; L.furColor=LOOK.furColor; L.furColor2=LOOK.furColor2; view='hips'; spin=Math.PI-0.35; break;
@@ -74,12 +74,13 @@ function cthInit(){
 function cthRender(sp){
   if(!cthInit()) return '';
   const {L,view,spin}=cthLookFor(sp), rig=buildCharacter(L,{q:view==='head'?0.8:0.5});
+  if((sp.kind==='aura'||sp.kind==='deco')&&rig.anims) for(let i=0;i<40;i++) for(const f of rig.anims){ try{ f(1+i*0.05,0.05,0); }catch(_){} }   // run the motion first: an aura's particles rest out of sight until its first frame
   const root=rig.root; root.rotation.y=spin; cthScene.add(root);
   if(sp.kind==='weapon'&&typeof weaponsOn==='function'){ try{ weaponsOn(rig,GEAR&&GEAR.eq&&GEAR.eq.weapon||'sword1',L.build); }catch(_){} }
   const H=rig.hipY, D=rig.dims;
   // [centre height, half the height shown, distance factor]
   const F={head:[H+D.headY,0.17*D.hs+0.03,1],chest:[H+0.25*D.TK,0.34,1],legs:[H*0.62,0.5,1],feet:[0.1,0.2,1],body:[H+0.33,0.98,1],hands:[H-0.15,0.3,1],eyes:[H+D.headY+0.004,0.052*D.hs+0.012,1],back:[H+0.3,0.62,1],hips:[H+0.02,0.42,1]}[view];
-  const half=F[1], dist=half/Math.tan(cthCam.fov*Math.PI/360)*1.0;
+  const half=F[1]*(sp.kind==='deco'?0.62:1), dist=half/Math.tan(cthCam.fov*Math.PI/360)*1.0;
   cthCam.position.set(0,F[0],-dist); cthCam.lookAt(0,F[0],0); cthCam.updateMatrixWorld();
   const old=renderer.getRenderTarget(), oc=new THREE.Color(), oa=renderer.getClearAlpha(), ot=renderer.shadowMap.enabled;
   renderer.getClearColor(oc); renderer.shadowMap.enabled=false;

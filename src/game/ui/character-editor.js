@@ -69,7 +69,8 @@ const EDIT=[
       {type:'dcolor',k:'capeColor',label:'Cloth colour',need:'cape',opts:TINTC},{type:'dcolor',k:'capeTrim',label:'Trim colour',need:'cape',opts:TINTC}]},
     {name:'Aura', rows:[
       {k:'aura',type:'grid',kind:'aura',slot:'a',ids:()=>[['']].concat(COS_AURAS.map(d=>[d[0],d[1],d[8]]))},
-      {type:'dcolor',k:'auraColor',label:'Main colour',need:'aura',opts:TINTC},{type:'dcolor',k:'auraColor2',label:'Second colour',need:'aura',opts:TINTC}]},
+      {type:'dcolor',k:'auraColor',label:'Main colour',need:'aura',opts:TINTC},{type:'dcolor',k:'auraColor2',label:'Second colour',need:'aura',opts:TINTC},
+      {type:'seg',k:'auraGlow',label:'Glow',need:'aura',opts:[[true,'Glow on','Halos round the particles, the body outline and the pillar of light'],[false,'Glow off','Only the particles and the ground pattern']]}]},
     // version 3.2: an optional shield (off by default), four shapes, crafted like the rest
     {name:'Shield', rows:[{k:'shield',type:'grid',kind:'shield',slot:'w',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='w').map(r=>[r[1],r[2],r[4]]))},
       {type:'dcolor',k:'shieldColor',label:'Field colour',need:'shield',opts:TINTC},{type:'dcolor',k:'shieldTrim',label:'Trim colour',need:'shield',opts:TINTC}]},
@@ -163,7 +164,7 @@ function armorRow(wrap,slot){
   wrap.append(box);
 }
 // ---- the five outfit slots ----
-const OUTFIT_KEYS=['tintTop2','tintTop3','tintTop4','tintBottom2','tintBottom3','tintBottom4','tintShoes2','tintShoes3','tintShoes4','tintHat2','tintHat3','tintHat4','tintHair2','tintHair3','tintHair4','tintGloves2','tintGloves3','tintGloves4','hairGrad','hairColor2','hairThird','hairColor3','gloves','gloveColor','tintGloves','top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','capeColor','capeTrim','auraColor','auraColor2','pupil','eyes2','armor','armorHat','armorTop','armorBottom','armorShoes','kinEars','kinTail','kinMuzzle','furColor','furColor2','furMark'];
+const OUTFIT_KEYS=['tintTop2','tintTop3','tintTop4','tintBottom2','tintBottom3','tintBottom4','tintShoes2','tintShoes3','tintShoes4','tintHat2','tintHat3','tintHat4','tintHair2','tintHair3','tintHair4','tintGloves2','tintGloves3','tintGloves4','hairGrad','hairColor2','hairThird','hairColor3','gloves','gloveColor','tintGloves','top','topColor','bottom','bottomColor','shoes','shoeColor','hat','hatColor','pack','weaponItem','tintTop','tintBottom','tintShoes','tintHat','tintHair','tintFace','tintWeapon','hair','hairColor','ahoge','faceItem','facial','model','cape','aura','capeColor','capeTrim','auraColor','auraColor2','auraGlow','pupil','eyes2','armor','armorHat','armorTop','armorBottom','armorShoes','kinEars','kinTail','kinMuzzle','furColor','furColor2','furMark'];
 function outfitSlots(){ try{ const a=JSON.parse(localStorage.getItem('wildwood-outfits-v1')||'[]'); const out=[]; for(let i=0;i<5;i++) out.push(a&&typeof a[i]==='object'?a[i]:null); return out; }catch(_){ return [null,null,null,null,null]; } }
 function putOutfitSlots(a){ try{ localStorage.setItem('wildwood-outfits-v1',JSON.stringify(a)); }catch(_){} }
 function saveOutfitSlot(i){ const a=outfitSlots(), o={}; for(const k of OUTFIT_KEYS) if(LOOK[k]!==undefined) o[k]=LOOK[k]; a[i]=o; putOutfitSlots(a); renderEditor(); }
@@ -266,7 +267,7 @@ function renderEditor(){
       }
       wrap.append(box);
     } else if(row.type==='color'){
-      const tinted=row.base&&ofPieces(LOOK)[row.base], key=tinted?OF_TINT[row.base]:row.k;   // a worn outfit piece is recoloured (-1 = the colours it was designed in)
+      const tinted=row.base&&(ofPieces(LOOK)[row.base]||gmxAliased(LOOK,row.base)), key=tinted?OF_TINT[row.base]:row.k;   // a worn outfit piece is recoloured (-1 = the colours it was designed in)
       if(tinted){ const d=document.createElement('button'); d.className='chip'; d.textContent='Designed colours'; d.setAttribute('aria-pressed',!(LOOK[key]>=0)); d.onclick=()=>{ setLook(key,-1); renderEditor(); }; const dw=document.createElement('div'); dw.className='chips'; dw.append(d); wrap.append(dw); }
       const box=document.createElement('div'); box.className='swatches';
       row.opts.forEach((v,i)=>{

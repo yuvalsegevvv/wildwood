@@ -72,13 +72,13 @@ const ofHasGlove=id=>{ const m=CHAR_MODELS[id]; return !!(m&&m.items&&m.items.gl
 function ofBuild(X,D,pieces){ const built={}, sl={}, tr={}; for(const s of OF_SLOTS) sl[s]=null; for(const s in pieces){ const id=pieces[s]; sl[s]=built[id]||(built[id]=OUTFITS[id](X,D)); }
   // recolouring: a slot with a tint gets a transform (see ofTinter) from the piece's main colour to the player's colour
   for(const s of OF_SLOTS){ const k=sl[s], T=ofTintOf(X.L,s); if(!k||T<0||s==='face') continue;
-    const M=s==='hair'?k.hairColor:s==='weapon'?(k.dress&&k.dress.accent):(k.main&&k.main[s]); if(M!==undefined) tr[s]=ofTinter(M,T); }
+    const M=s==='hair'?k.hairColor:s==='weapon'?(k.dress&&k.dress.accent):(k.main&&k.main[s]); if(M!==undefined) tr[s]=s==='hair'?ofHairTinter(M,T):ofTinter(M,T); }
   // the other colours of a piece: a vertex colour near one of the piece's palette colours follows that colour's tint (a colour with none follows the main one, as before)
   for(const s of ['top','bottom','shoes','hat','hair','glove']){ const k=sl[s]; if(!k) continue; const id=pieces[s], P=ofPalOf(id,s), Ts=[ofTintOf(X.L,s)]; let any=false;
     for(let i=1;i<P.length;i++){ Ts.push(ofTintX(X.L,s,i)); if(Ts[i]>=0) any=true; }
     if(!any) continue;
     const M0=s==='hair'?k.hairColor:k.main&&k.main[s]; if(M0!==undefined) P[0]=M0; if(!P.length) continue;
-    const tin=P.map((m,i)=>Ts[i]>=0?ofTinter(m,Ts[i]):null), pc=P.map(ofHsl), h={h:0,s:0,l:0};
+    const tin=P.map((m,i)=>Ts[i]>=0?(s==='hair'?ofHairTinter(m,Ts[i]):ofTinter(m,Ts[i])):null), pc=P.map(ofHsl), h={h:0,s:0,l:0};
     tr[s]=c=>{ c.getHSL(h); let bi=-1, bd=0.34; for(let i=0;i<pc.length;i++){ const d=ofHsd(h,pc[i]); if(d<bd){ bd=d; bi=i; } }
       const f=bi>=0&&tin[bi]?tin[bi]:tin[0]; if(f) f(c); }; }
   return {sl,kits:Object.values(built),tr,eye:ofTintOf(X.L,'face')}; }
@@ -104,11 +104,16 @@ const ofTintOf=(L,slot)=>{ const v=L[OF_TINT[slot]]; return typeof v==='number'&
 function ofTinter(M,T){ const m={h:0,s:0,l:0}, t={h:0,s:0,l:0}; new THREE.Color(M).getHSL(m); new THREE.Color(T).getHSL(t);
   const neutral=m.s<0.12, dh=neutral?0:t.h-m.h, gs=neutral?1:clamp((t.s+0.05)/(m.s+0.05),0.3,2.5), gl=Math.pow(clamp((t.l+0.05)/(m.l+0.05),0.45,1.9),0.85), ns=Math.min(0.5,t.s*0.45), h={h:0,s:0,l:0}, a=new THREE.Color(), b=new THREE.Color();
   return c=>{ c.getHSL(h); const w=smoothstep(0.04,0.22,h.s), l=clamp(h.l*gl); a.setHSL(((h.h+dh)%1+1)%1,clamp(h.s*gs),l); b.setHSL(t.h,ns,l); c.copy(b).lerp(a,w); }; }
+// a dyed set hairstyle takes the dye's own hue and saturation, not the design's turned by the same angle (that kept the design's colours showing through): every vertex becomes the dye, lit by how much lighter or darker it was than the design's main colour (the strands and the sheen stay)
+function ofHairTinter(M,T){ const t={h:0,s:0,l:0}, h={h:0,s:0,l:0}, q={h:0,s:0,l:0}; let ref=0.3; new THREE.Color(T).getHSL(t);   // (M is the design's main colour; the lightness reference is the mean of each geometry, set by prep, because the strands' colours are lit well away from it)
+  const f=c=>{ c.getHSL(h); c.setHSL(t.h,t.s,clamp(t.l*clamp((h.l+0.04)/(ref+0.04),0.35,1.6),0,1)); };
+  f.prep=g=>{ const a=g.attributes.color; if(!a||!a.count) return; const c=new THREE.Color(); let sum=0; for(let i=0;i<a.count;i++){ c.setRGB(a.getX(i),a.getY(i),a.getZ(i)); c.getHSL(q); sum+=q.l; } ref=sum/a.count; };
+  return f; }
 const ofHsl=m=>{ const o={h:0,s:0,l:0}; new THREE.Color(m).getHSL(o); return o; };
 // how far a colour is from a palette colour (hue counts with the colour's saturation; the lightness counts less, as the vertex colours carry shading)
 const ofHsd=(a,b)=>{ let dh=Math.abs(a.h-b.h); dh=Math.min(dh,1-dh); return dh*2*Math.min(a.s,b.s)+Math.abs(a.s-b.s)*0.7+Math.abs(a.l-b.l)*0.5; };
 // every vertex colour of one painted geometry through a transform
-function ofTintGeo(g,f){ const a=g.attributes.color; if(!a) return g; const c=new THREE.Color(); for(let i=0;i<a.count;i++){ c.setRGB(a.getX(i),a.getY(i),a.getZ(i)); f(c); a.setXYZ(i,c.r,c.g,c.b); } a.needsUpdate=true; return g; }
+function ofTintGeo(g,f){ const a=g.attributes.color; if(!a) return g; if(f.prep) f.prep(g); const c=new THREE.Color(); for(let i=0;i<a.count;i++){ c.setRGB(a.getX(i),a.getY(i),a.getZ(i)); f(c); a.setXYZ(i,c.r,c.g,c.b); } a.needsUpdate=true; return g; }
 function ofTintGeos(X,slot,geos){ const f=X.kit.tr[slot]; if(f) for(const g of geos) ofTintGeo(g,f); return geos; }
 // the same for the geometries a hook pushed onto a list (the hair and hat items add to the head's own list)
 function ofTintFrom(X,slot,list,from){ const f=X.kit.tr[slot]; if(f) for(let i=from;i<list.length;i++) ofTintGeo(list[i],f); }

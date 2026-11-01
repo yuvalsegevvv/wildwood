@@ -1,7 +1,7 @@
 //@ Weapon shapes of the signature outfits: each set carries its own sword, bow and staff models (a katana, a crossbow, a lantern crook...) that replace the three plain weapons while its weapon style is worn
 /* ---------- weapon shapes (version 3) ----------
    An outfit's `dress` may carry `shape:{sword:'katana', bow:'yumi', staff:'tassel'}`; weaponsOn (combat/weapons.js) then builds the named model instead of the plain sword, bow or wand
-   (the shield stays and takes the dressing's colours). The class still picks WHICH of the three is held; the outfit picks what it looks like. A shape builder gets K = {c:{blade,guard,grip,wood,accent,glow}, tr, TR(col,u,part)}
+   (the warrior carries no shield of its own: a shield is the cosmetic look.shield). The class still picks WHICH of the three is held; the outfit picks what it looks like. A shape builder gets K = {c:{blade,guard,grip,wood,accent,glow}, tr, TR(col,u,part)}
    (the dressing's palette over the tier's colours, and its trim) and returns painted geometries; the three frames are the plain weapons':
    - sword: the pommel is the origin, the grip runs down -y to the guard at about y = -0.2 and the blade continues down (-y is "forward" when the arm is raised)
    - bow: the grip is the origin, the limbs span z (tips at +-z), the string lies at y > 0 (toward the archer) and the belly bulges to -y (forward)
@@ -26,7 +26,7 @@ const wshBar=(K,w,y,th)=>wshP(vbox(w,th||0.025,0.03,0,y,0),K.c.guard,null,K);
 const wshShaft=(K,L,r,part)=>wshP(cyl(r||0.016,(r||0.016)*1.3,L,7).translate(0,-L/2,0),K.c.wood,part||'shaft',K);
 const wshRing=(K,R,tube,col,pos,rotY)=>{ const g=new THREE.TorusGeometry(R,tube,6,16); g.rotateY(rotY===undefined?Math.PI/2:rotY); g.translate(pos[0],pos[1],pos[2]); return wshP(g,col,null,K); };
 
-/* ---- swords (the warrior's weapon; the shield is kept) ---- */
+/* ---- swords (the warrior's weapon) ---- */
 WPN_SHAPES.sword.katana=K=>[wshBlade(K,wshLine(0.78,0.1,-0.22),t=>0.046*(1-0.3*t)),wshDisc(K,0.042,-0.21),wshGrip(K,-0.02,-0.2,0.019),wshPommel(K,0.022,0)];
 WPN_SHAPES.sword.rapier=K=>[wshBlade(K,wshLine(0.88,0,-0.24),t=>0.016*(1-0.6*t),{thick:0.3}),wshP(csph(0.06,10,6).scale(1,0.45,1).translate(0,-0.21,0),K.c.guard,null,K),wshBar(K,0.2,-0.22,0.012),wshGrip(K,-0.02,-0.19,0.014),wshPommel(K,0.024,0)];
 WPN_SHAPES.sword.cleaver=K=>[wshP(vbox(0.016,0.46,0.13,0,-0.46,0.02),K.c.blade,'blade',K),wshP(vbox(0.03,0.46,0.022,0,-0.46,0.075),K.c.blade,null,K,0.8),wshP(new THREE.ConeGeometry(0.04,0.06,4).rotateX(Math.PI).translate(0,-0.72,0.0),K.c.blade,null,K),wshGrip(K,-0.02,-0.22,0.02),wshPommel(K,0.026,0)];
