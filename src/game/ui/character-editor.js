@@ -72,12 +72,10 @@ const EDIT=[
       {type:'dcolor',k:'auraColor',num:1,hint:'Main',need:'aura',opts:TINTC},{type:'dcolor',k:'auraColor2',num:2,hint:'Second',need:'aura',opts:TINTC},
       {type:'seg',k:'auraGlow',label:'Glow',need:'aura',opts:[[true,'Glow on','Halos round the particles, the body outline and the pillar of light'],[false,'Glow off','Only the particles and the ground pattern']]}]},
     // version 3.2: an optional shield (off by default), four shapes, crafted like the rest
-    {name:'Shield', rows:[{k:'shield',type:'grid',kind:'shield',slot:'w',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='w').map(r=>[r[1],r[2],r[4]]))},
-      {type:'dcolor',k:'shieldColor',num:1,hint:'Field',need:'shield',opts:TINTC},{type:'dcolor',k:'shieldTrim',num:2,hint:'Trim',need:'shield',opts:TINTC}]},
-    // version 3.3: silly things for the hands, crafted (shared/cospieces.js slots v and u): the strong hand replaces your weapon, the weak hand your shield; looks only
-    {name:'Strong hand', rows:[{k:'strongItem',type:'grid',kind:'strongItem',slot:'v',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='v').map(r=>[r[1],r[2],r[4]]))},
-      {type:'dcolor',k:'strongColor',num:1,hint:'Main',need:'strongItem',opts:TINTC},{type:'dcolor',k:'strongTrim',num:2,hint:'Second',need:'strongItem',opts:TINTC}]},
-    {name:'Weak hand', rows:[{k:'weakItem',type:'grid',kind:'weakItem',slot:'u',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='u').map(r=>[r[1],r[2],r[4]]))},
+    {name:'Shield', rows:[{k:'shield',label:'Shield',type:'grid',kind:'shield',slot:'w',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='w').map(r=>[r[1],r[2],r[4]]))},
+      {type:'dcolor',k:'shieldColor',num:1,hint:'Field',need:'shield',opts:TINTC},{type:'dcolor',k:'shieldTrim',num:2,hint:'Trim',need:'shield',opts:TINTC},
+      // version 3.3: silly things for the weak hand (shared/cospieces.js slot u) sit in the shield's tab: they take the shield's place on the left forearm, looks only
+      {k:'weakItem',label:'Weak hand: replaces the shield',type:'grid',kind:'weakItem',slot:'u',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='u').map(r=>[r[1],r[2],r[4]]))},
       {type:'dcolor',k:'weakColor',num:1,hint:'Main',need:'weakItem',opts:TINTC},{type:'dcolor',k:'weakTrim',num:2,hint:'Second',need:'weakItem',opts:TINTC}]},
     // version 3.2: up to three decorations, all crafted, any in any field, each with its own colour
     {name:'Decor', rows:[1,2,3].flatMap(n=>[{k:'deco'+n,label:'Decoration '+n,type:'grid',kind:'deco',slot:'d',col:'decoColor'+n,ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='d').map(r=>[r[1],r[2],r[4]]))},
@@ -85,7 +83,10 @@ const EDIT=[
     // an outfit's weapon dressing restyles whatever weapon you hold, whatever your class
     // version 3.1: gloves, the eighth piece: six plain ones and the glove of every set that has one (model-gloves.js)
     {name:'Gloves', rows:[{k:'gloves',type:'grid',kind:'gloves',slot:'g',col:'gloveColor',ids:()=>[['none']].concat(Object.keys(GL_BASE).map(id=>[id,GL_BASE[id].name,GL_BASE[id].text]),ofItems('glove'))},{k:'gloveColor',label:'',type:'color',base:'glove',opts:TINTC},{type:'palette',slot:'glove'}]},
-    {name:'Weapon', rows:[{k:'weaponItem',type:'grid',kind:'weapon',ids:()=>[['']].concat(ofItems('weapon'))},{k:'tintWeapon',label:'',type:'color',base:'weapon',only:true,opts:TINTC}]},
+    {name:'Weapon', rows:[{k:'weaponItem',label:'Outfit weapon look',type:'grid',kind:'weapon',ids:()=>[['']].concat(ofItems('weapon'))},{k:'tintWeapon',label:'',type:'color',base:'weapon',only:true,opts:TINTC},
+      // the strong hand (slot v) sits in the weapon's tab: a silly item takes the weapon's place in the right hand, looks only
+      {k:'strongItem',label:'Strong hand: replaces the weapon',type:'grid',kind:'strongItem',slot:'v',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='v').map(r=>[r[1],r[2],r[4]]))},
+      {type:'dcolor',k:'strongColor',num:1,hint:'Main',need:'strongItem',opts:TINTC},{type:'dcolor',k:'strongTrim',num:2,hint:'Second',need:'strongItem',opts:TINTC}]},
     {name:'Armor', rows:[{type:'armor',slot:'all'},{type:'armor',slot:'helmet'},{type:'armor',slot:'top'},{type:'armor',slot:'bottom'},{type:'armor',slot:'shoes'}]}
   ]}
 ];
@@ -210,13 +211,14 @@ function renderEditor(){
   });
   edBody.innerHTML=''; edBody.dataset.at=edTab+':'+edSub[edTab];
   { const tb=edTryBar(); if(tb) edBody.append(tb); $('#edDone').classList.toggle('blocked',!!tb); $('#edDone').title=tb?'Make the pieces you are trying on, or go back to your saved look':''; }
-  edBlockN=0;
+  edBlockN=0; edColTargets=[];   // (the colour blocks of this page: ui/colour-picker.js)
   for(const row of edCur().rows){
     if(row.fem && LOOK.sex!=='female') continue;
     if(row.base && ofPieces(LOOK)[row.base] && row.type!=='color') continue;   // an outfit's piece in that slot has its own look: these rows (facial hair, antenna hair, backpack) do nothing while it is worn
     if(row.only && !ofPieces(LOOK)[row.base]) continue;
     if(row.need&&!LOOK[row.need]) continue;   // a colour row of a cape or an aura that is not worn   // a recolour row of a piece that is not worn
     const wrap=document.createElement('div'); wrap.className='ed-row'+(row.label||row.slider||row.type==='setups'?'':' ed-sub');
+    if(row.type==='grid'&&row.kind!=='sex') wrap.classList.add('ed-items');   // the item lists go in the left column of the wide panel (06-character-editor.css), everything else in the right one
     if(row.label&&row.type!=='dcolor'&&row.type!=='color'){ const lb=document.createElement('div'); lb.className='ed-label'; lb.textContent=row.label; wrap.append(lb); }
     if(row.slider){ sliderRow(wrap,row); }
     else if(row.type==='setups'){
@@ -316,6 +318,8 @@ function renderEditor(){
     }
     edBody.append(wrap);
   }
+  edColourPanel();   // the one shared palette and favourites panel, at the end of the page
+  { const two=!!edBody.querySelector('.ed-items'); edBody.classList.toggle('cols2',two); edEl.classList.toggle('wide',two); }   // two columns on a wide screen when this page has an item list
   if(same) edBody.scrollTop=keepTop;
 }
 function surpriseMe(){

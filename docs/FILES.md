@@ -409,7 +409,7 @@ game
   player/input.js                    Keyboard, hold Alt to free the mouse, mouse look, touch joystick, HUD buttons
   player/gamepad.js                  Gamepad support: sticks walk and look, buttons press the keys their actions are bound to (keybinds.js)
   ui/character-thumbs.js             Pictures for the character editor: every hair style, hat, garment, set, cape and aura drawn once on a small off-screen target and cached as an image
-  ui/colour-picker.js                The colour picker of the character editor (version 3.3): one block per colour ("Colour 1", "Colour 2"...), each with a Designed button, your 16 favourites and all colours (the row's free ones and the 48 premium)
+  ui/colour-picker.js                The colour picker of the character editor (version 3.3, laid out like Warframe's): a block per colour channel ("Colour 1", "Colour 2"...) to select, then one shared palette and a 64-slot favourites grid that apply to the selected channel
   ui/character-editor.js             Character editor panel and camera: four tabs (Presets, Body, Face, Clothes) with sub-tabs, picture tiles for every part, ten outfit slots, per-piece armour visibility, opened from the HUD or in creating mode after registering
   village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)
   village/village-smoke.js           Chimney smoke for the villages after the home one (Rimehold, Highmark, Wraithwick): vsmAdd(point) from a house's chimney, updateVillageSmoke(dt) each frame
