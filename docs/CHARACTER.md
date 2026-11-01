@@ -36,7 +36,7 @@ A look field that is not a slider (hair style, colours, face shape) still follow
 |---|---|---|---|---|---|---|
 | `height` | Body | Height | 0.9 .. 1.1 | 1 | 0.92 .. 1.08 | Shorter / Taller |
 | `build` | Body | Build | 0.84 .. 1.24 | 1 | 0.88 .. 1.18 | Slim / Sturdy |
-| `chest` | Body | Chest | 0.5 .. 1.6 | 1 | 0.6 .. 1.4 | Smaller / Larger |
+| `chest` | Body | Chest | 0.5 .. 3 | 1 | 0.6 .. 1.4 | Smaller / Larger |
 | `shoulders` | Shape | Shoulders | 0.8 .. 1.25 | 1 | 0.88 .. 1.18 | Narrow / Broad |
 | `waist` | Shape | Waist | 0.75 .. 1.3 | 1 | 0.82 .. 1.15 | Cinched / Full |
 | `hips` | Shape | Hips | 0.8 .. 1.3 | 1 | 0.85 .. 1.2 | Narrow / Wide |
@@ -65,7 +65,7 @@ A look field that is not a slider (hair style, colours, face shape) still follow
 | `hairLength` | Hair | Hair length | 0.6 .. 1.5 | 1 | 0.7 .. 1.35 | Shorter / Longer |
 | `hairVolume` | Hair | Hair volume | 0.85 .. 1.35 | 1 | 0.9 .. 1.25 | Sleek / Fluffy |
 | `bangs` | Hair | Fringe length | 0 .. 1.5 | 1 | 0.3 .. 1.4 | None / Long |
-| `chestShape` | Shape | Chest shape | -1 .. 1 | 0 | whole range | Broad & flat / Round & full |
+| `chestShape` | Shape | Chest shape | -0.7 .. 0.2 | 0 | whole range | Broad & flat / Round & full |
 | `hipCurve` | Shape | Hip curve | 0.4 .. 1.8 | 1 | whole range | Flat / Round |
 | `hatSize` | Outfit | Hat size | 0.8 .. 1.35 | 1 | whole range | Smaller / Larger |
 | `hatTilt` | Outfit | Hat tilt | -1 .. 1 | 0 | whole range | Left / Right |

@@ -77,7 +77,7 @@ function buildTorso(X,D){
       }
     } else {
       z+=0.012*B*G(y,0.37,0.07)*G(ax,0.075*B,0.045);                    // shoulder blades
-      z+=(fem?0.034:0.022)*B*S.hipCurve*G(y,0.0,0.055)*G(ax,0.066*B,0.05);         // glutes (the hip curve slider scales them)
+      z+=(fem?0.034:0.022)*B*hipAmp(S.hipCurve)*G(y,0.0,0.055*hipWide(S.hipCurve))*G(ax,0.066*B,0.05*hipWide(S.hipCurve));         // glutes (the hip curve slider scales them)
       z-=0.008*G(ax,0,0.018)*G(y,0.2,0.18);                             // the groove of the spine
     }
     z-=sN*(y-0.5)*0.1; p.setXYZ(i,x,y*TK,z);

@@ -63,8 +63,8 @@ On a desktop screen (1000 px and up) a page with an item list (`row.type==='grid
 
 ## Chest shape, hip curve, hat and cape sliders, coloured underwear
 
-- **Chest shape** (`chestShape`, -1 .. 1) is the chest's second dimension: `chest` is the size, this spreads the same volume broad and flat (lobes wide apart and shallow, a man's chest a flat plane) or round and full (narrower, closer, deeper; a man gets rounder pecs). `buildTorso` (model-body.js) and `torsoSize` (outfit-tools.js) read it together so cloth keeps clearing the body.
-- **Hip curve** (`hipCurve`, 0.4 .. 1.8) scales the back of the hips; `torsoSize` clears at least the default so cloth never sinks into a flatter body.
+- **Chest shape** (`chestShape`, -0.7 .. 0.2) is the chest's second dimension: `chest` is the size, this spreads the same volume broad and flat (lobes wide apart and shallow, a man's chest a flat plane) or round and full (narrower, closer, deeper; a man gets rounder pecs). `buildTorso` (model-body.js) and `torsoSize` (outfit-tools.js) read it together so cloth keeps clearing the body.
+- **Hip curve** (`hipCurve`, 0.4 .. 1.8) scales the back of the hips (`hipAmp` / `hipWide` in shared/character.js: past 1 the bump grows slower and gets wider, so the full end is a round seat, not a point); `torsoSize` clears at least the default so cloth never sinks into a flatter body.
 - **Hat size / Hat tilt** scale and tilt a base hat about its seat (`hatShape`, model-hats.js); an outfit's own hat is untouched. **Cape length** scales the hanging panels (`cosBuildCape`). Their rows show only while a hat or cape is worn.
 - **Underwear** (the Underwear tab of the Clothes page): `look.underColor` (cloth) and `look.underColor2` (waistband and strap), -1 = the cream default; a chosen cloth alone gets a darker band of itself. Read by `underCol` / `underBand` (model-body.js) wherever a garment leaves the body bare.
 
