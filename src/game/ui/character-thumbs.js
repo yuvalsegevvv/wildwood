@@ -33,6 +33,8 @@ function cthLookFor(sp){
     case 'cape': L.cape=id; view='back'; spin=Math.PI-0.35; break;
     case 'aura': L.aura=id; view='body'; break;
     case 'shield': L.shield=id; view='body'; spin=-Math.PI/2+0.35; break;
+    case 'strongItem': L.strongItem=id; view='body'; spin=0.5; break;   // (the silly hand items: model-silly.js; the shield's view for the weak hand)
+    case 'weakItem': L.weakItem=id; view='body'; spin=-Math.PI/2+0.35; break;
     case 'deco': { L.deco1=id; if(sp.col!==undefined&&sp.col>=0) L.decoColor1=sp.col; const an=DECOS[id]?DECOS[id].anchor:'headTop'; view=an==='headTop'||an==='face'?'head':an==='neck'||an==='chest'||an==='shoulderR'?'chest':an==='back'?'back':an==='waist'||an==='hipL'||an==='hipR'?'hips':an==='wristL'||an==='wristR'?'hands':an==='ankleL'||an==='ankleR'?'feet':'body'; if(view==='back'||id==='tail') spin=Math.PI-0.35; break; }
     case 'kinEars': L.kinEars=id; L.hair='short'; L.furColor=LOOK.furColor; L.furColor2=LOOK.furColor2; view='head'; break;   // (kin: the part in your own fur colours)
     case 'kinMuzzle': L.kinMuzzle=id; L.furColor=LOOK.furColor; L.furColor2=LOOK.furColor2; view='head'; break;

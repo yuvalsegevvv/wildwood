@@ -152,4 +152,15 @@ const headsTall=r=>{ const d=r.dims, skullTop=d.hipY+d.headY+0.105*d.faceScale[1
   ok('charModelOf falls back to the base model for those names',names.every(m=>C.charModelOf({model:m})===C.CHAR_MODELS.base)&&C.charModelOf({model:'tansy'})===C.CHAR_MODELS.tansy&&C.charModelOf(null)===C.CHAR_MODELS.base);
 }
 
+/* ---- skirts follow the legs (character/cloth.js) ---- */
+{ const r=C.buildCharacter(Object.assign(look('female'),{bottom:'skirt'}),{q:0.5}), sk=r.hips.children.find(m=>m.isMesh&&m.material&&m.frustumCulled===false);
+  ok('a skirt gets a sway deformer', !!sk&&r.anims&&r.anims.length>0);
+  if(sk){ const p=sk.geometry.attributes.position, before=Float32Array.from(p.array); r.hipL.rotation.x=0.6; r.hipR.rotation.x=-0.6;
+    for(const f of r.anims) f(1.3,0.016,0.9);
+    let moved=0, waist=0, bad=0, hemMove=0; for(let i=0;i<p.count;i++){ const d=Math.hypot(p.getX(i)-before[i*3],p.getY(i)-before[i*3+1],p.getZ(i)-before[i*3+2]); if(!isFinite(d)) bad++; if(d>0.002) moved++; if(before[i*3+1]>=0&&d>0) waist++; hemMove=Math.max(hemMove,d); }
+    ok('walking moves the hem, leaves the waist alone and never makes NaN', moved>0&&waist===0&&bad===0&&hemMove<0.4, moved+' moved, hem '+hemMove.toFixed(3));
+    r.hipL.rotation.x=0; r.hipR.rotation.x=0; for(const f of r.anims) f(2,0.016,0); for(const f of r.anims) f(2.1,0.016,0);
+    let rest=true; for(let i=0;i<p.count;i++) if(Math.abs(p.getZ(i)-before[i*3+2])>1e-5) rest=false;
+    ok('standing still puts the skirt back', rest); } }
+
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

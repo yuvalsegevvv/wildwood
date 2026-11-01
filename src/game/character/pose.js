@@ -1,14 +1,20 @@
 //@ poseRig (walk, run, sit, talk, attacks) and animateHiker
 function poseRig(r,dt,o){
   const sp=o.sp||0, mv=Math.min(sp/4.2,1), run=clamp((sp-5)/4.5), air=!!o.air;
-  const ph=o.ph||0, sw=Math.sin(ph), cw=Math.cos(ph), amp=0.55*mv+0.32*run;
-  let tL=sw*amp, tR=-sw*amp, kL=-Math.max(0,cw)*amp*1.5-0.05*mv, kR=-Math.max(0,-cw)*amp*1.5-0.05*mv;
-  let hipsY=r.hipY+(Math.abs(cw)*0.035-0.03)*mv;
-  const breathe=Math.sin(t*1.7+(o.seed||0))*0.025*(1-mv);
-  let aL=-sw*amp*0.9+breathe, aR=sw*amp*0.9+breathe, eL=0.12+mv*0.35+run*0.85, eR=eL, lean=-(0.04*mv+0.17*run)+breathe*0.3;
+  const ph=o.ph||0, sw=Math.sin(ph), cw=Math.cos(ph), amp=0.55*mv+0.32*run, seed=o.seed||0;
+  /* The gait (a walk is a cycle of two legs half a turn apart, ph is the left leg's phase; sw > 0 = the left leg is forward):
+     the thigh swings, the knee bends twice (a small give when the heel lands, a big fold when the leg swings through: gaitKnee), the pelvis turns, rolls and
+     slides over the standing leg, the shoulders turn against it, the elbows fold as the arm comes forward, the head stays level, and a standing hiker shifts weight and breathes. */
+  const gaitKnee=p=>Math.pow(Math.max(0,Math.cos(p+0.45)),1.7)*1.25+Math.pow(Math.max(0,Math.cos(p-Math.PI/2-0.5)),3)*0.2;
+  let tL=sw*amp*1.02, tR=-sw*amp*1.02, kL=-gaitKnee(ph)*amp*1.2-0.05*mv, kR=-gaitKnee(ph+Math.PI)*amp*1.2-0.05*mv;
+  let hipsY=r.hipY+(Math.abs(cw)*0.04-0.034)*mv;
+  const breathe=Math.sin(t*1.7+seed)*0.025*(1-mv), idle=Math.sin(t*0.45+seed*1.7)*(1-mv);
+  let aL=-sw*amp*0.9+breathe, aR=sw*amp*0.9+breathe, eL=0.12+mv*(0.16+0.3*Math.max(0,-sw))+run*0.85, eR=0.12+mv*(0.16+0.3*Math.max(0,sw))+run*0.85, lean=-(0.04*mv+0.17*run)+breathe*0.3;
   if(air){ tL=0.75; tR=-0.1; kL=-1.2; kR=-0.5; aL-=0.7; aR-=0.7; }
   if(o.sit){ tL=tR=1.5; kL=kR=-1.45; hipsY=o.sitH||0.5; aL=aR=-0.45; eL=eR=0.8; lean=0.12; }
-  if(o.talk){ aR=-0.5+Math.sin(t*2.6+(o.seed||0))*0.28; eR=1.15+Math.sin(t*3.3)*0.25; if(!o.sit) aL=-0.15+Math.sin(t*2.1)*0.1; }
+  if(o.talk){ aR=-0.5+Math.sin(t*2.6+seed)*0.28; eR=1.15+Math.sin(t*3.3)*0.25; if(!o.sit) aL=-0.15+Math.sin(t*2.1)*0.1; }
+  const lf=!!(o.left||r.left);   // a left-handed hiker: the whole upper body acts mirrored (the arms, the twist, the hold), so the strong arm below is always "R" and the two swap back at the end
+  if(lf){ let x=aL; aL=aR; aR=x; x=eL; eL=eR; eR=x; }
   let twist=null;
   if(o.hold==='staff' && !o.act){ eR=Math.max(eR,1.25); aR+=0.12; }
   if(o.hold==='sword' && !o.act){ eR=Math.max(eR,0.35); }
@@ -24,12 +30,16 @@ function poseRig(r,dt,o){
       case 'nova': if(p<0.45){ aL=aR=2.9; eL=eR=0.2; } else { aL=aR=0.5; eL=eR=0.2; tL=tR=0.45; kL=kR=-0.9; hipsY-=0.12; } break;
     }
   }
+  if(lf){ let x=aL; aL=aR; aR=x; x=eL; eL=eR; eR=x; if(twist!==null) twist=-twist; }
   const k=Math.min(1,dt*(o.act?26:14)), L=(ob,v)=>{ ob.rotation.x+=(v-ob.rotation.x)*k; };
   L(r.hipL,tL); L(r.hipR,tR); L(r.kneeL,kL); L(r.kneeR,kR);
   L(r.shL,aL); L(r.shR,aR); L(r.elL,eL); L(r.elR,eR); L(r.spine,lean);
-  r.spine.rotation.y+=((twist!==null?twist:-sw*0.1*mv)-r.spine.rotation.y)*k; r.hips.rotation.y=sw*0.07*mv;
+  const walkTurn=(1-0.6*run)*mv;   // pelvis and shoulders turn against each other (the shoulders with the arm that is back)
+  r.spine.rotation.y+=((twist!==null?twist:sw*0.17*walkTurn)-r.spine.rotation.y)*k; r.hips.rotation.y=-sw*0.08*walkTurn;
+  r.hips.rotation.z=cw*0.045*mv+idle*0.02; r.spine.rotation.z=-cw*0.03*mv-idle*0.012; r.hips.position.x=cw*0.014*mv+idle*0.006;   // the hip drops on the swinging side, the trunk leans back over it, the weight slides over the standing leg
   r.hips.position.y+=(hipsY-r.hips.position.y)*(o.sit?k*0.5:1);
-  r.head.rotation.y+=((o.headYaw||0)-r.head.rotation.y)*k;
+  r.head.rotation.y+=(((o.headYaw||0)-(o.act||o.sit?0:(r.spine.rotation.y+r.hips.rotation.y)*0.7))-r.head.rotation.y)*k;   // the head keeps looking ahead while the shoulders turn
+  r.head.rotation.z=-(r.hips.rotation.z+r.spine.rotation.z)*0.9;
   r.head.rotation.x=0.05*mv+(o.talk?Math.sin(t*4.2)*0.05:0)+(o.headPitch||0);
   if(r.anims) for(const f of r.anims) f(t,dt,mv);   // an outfit's own motion (a swinging charm, a turning ring of lanterns)
 }

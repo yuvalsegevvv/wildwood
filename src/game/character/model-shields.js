@@ -1,4 +1,4 @@
-//@ Shields (version 3.2): an optional cosmetic worn on the left forearm, four shapes (round buckler, heater, kite, tower), off by default, with a main and a trim colour
+//@ Shields (version 3.2): an optional cosmetic worn on the weak hand's forearm (the left, or the right when look.left), four shapes (round buckler, heater, kite, tower), off by default, with a main and a trim colour
 /* look.shield holds an id of SHIELDS ('' = none), look.shieldColor the field colour and look.shieldTrim the rim / boss / emblem colour (-1 = as designed). The shield is one merged mesh fixed to the left elbow's frame
    (y runs down the forearm, the outside of the arm is -x), so it follows the arm through every pose. A cosmetic only: it changes no number and no weapon. Crafted at a lodge ('w:<id>' in shared/cospieces.js).
    owns: SHIELDS, shieldDress.   used by: model.js (end of buildCharacter), ui/character-editor.js, ui/character-thumbs.js.   test: tools/cospieces-smoke.js */
@@ -18,7 +18,7 @@ function shieldOutline(id,r){
   return sh;
 }
 function shieldDress(rig,X){
-  const L=X.L, id=L.shield; if(typeof id!=='string'||!id||!Object.prototype.hasOwnProperty.call(SHIELDS,id)) return;
+  const L=X.L, id=L.shield; if(typeof id!=='string'||!id||!Object.prototype.hasOwnProperty.call(SHIELDS,id)||rig.sillyW) return;   // (a silly weak-hand item replaces it: model-silly.js)
   const S=SHIELDS[id], sg=X.sg, fc=v=>typeof v==='number'&&v>=0&&v<=0xffffff?Math.floor(v):null, col=fc(L.shieldColor), trim=fc(L.shieldTrim), C=col===null?S.col:col, T=trim===null?S.trim:trim;
   const Cd=gmxMul(C,0.72), Tl=new THREE.Color(T).lerp(new THREE.Color(0xffffff),0.3).getHex(), curve=Math.max(6,sg(10));
   const ext=(sh,depth)=>new THREE.ExtrudeGeometry(sh,{depth,bevelEnabled:false,curveSegments:curve});
@@ -37,6 +37,6 @@ function shieldDress(rig,X){
   if(id==='tower') for(const y of [-0.17,-0.1,0.1,0.17]) parts.push(solid(csph(0.008,sg(6),sg(5)).translate(0,y,0.021),Tl));
   if(id==='kite') parts.push(solid(csph(0.02,sg(10),sg(8)).scale(1,1,0.5).translate(0,0.04,0.022),T));
   // faces outward (-x), a hand's width down the forearm, tilted back a little so it clears the hip
-  const g=merge(parts).rotateY(-Math.PI/2).translate(-0.056,-0.12,0);
-  const m=new THREE.Mesh(g,cosCapeMat); m.castShadow=false; rig.elL.add(m);
+  const lf=!!rig.left, g=merge(parts).rotateY(lf?Math.PI/2:-Math.PI/2).translate(lf?0.056:-0.056,-0.12,0);   // (left-handed: the weak hand is the right one)
+  const m=new THREE.Mesh(g,cosCapeMat); m.castShadow=false; (lf?rig.elR:rig.elL).add(m);
 }

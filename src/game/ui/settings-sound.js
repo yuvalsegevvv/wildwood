@@ -21,6 +21,7 @@ $('#bKeys').hidden=isTouch;   // touch screens have no keyboard (the Controls se
 function sndShow(kb){
   const same=!sndEl.hidden&&sndEl.classList.contains('kb-mode')===kb;
   if(same){ sndEl.hidden=true; UI_SFX.close(); return; }
+  if(typeof renderHand==='function') renderHand();
   sndEl.classList.toggle('kb-mode',kb); $('#sndTitle').textContent=kb?'Keybinds and gamepad':'Settings';
   const d=$('#kbSec details'); if(kb&&d) d.open=true;
   if(sndEl.hidden){ sndEl.hidden=false; UI_SFX.open(); }
@@ -39,6 +40,13 @@ $('#gfxChips').querySelectorAll('[data-gfx]').forEach(b=>b.addEventListener('cli
   location.reload();
 }));
 renderGfx();
+/* handedness: look.left (saved with the look, so everyone sees it): the weapon and shield swap hands and the attack arm is mirrored (character/pose.js, combat/weapons.js) */
+function renderHand(){ $('#handChips').querySelectorAll('[data-hand]').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.hand==='1')===!!LOOK.left)); }
+$('#handChips').querySelectorAll('[data-hand]').forEach(b=>b.addEventListener('click',()=>{
+  const v=b.dataset.hand==='1'; if(v===!!LOOK.left) return;
+  LOOK.left=v; saveLook(); rebuildHiker(); renderHand(); UI_SFX.click();
+}));
+renderHand();
 /* child-safe drawing (character/modest.js): stored, then the page reloads so every character is built again */
 function renderModest(){ $('#modestChips').querySelectorAll('[data-modest]').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.modest==='1')===MODEST)); }
 $('#modestChips').querySelectorAll('[data-modest]').forEach(b=>b.addEventListener('click',()=>{

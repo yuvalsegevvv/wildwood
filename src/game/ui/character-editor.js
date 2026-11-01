@@ -74,6 +74,11 @@ const EDIT=[
     // version 3.2: an optional shield (off by default), four shapes, crafted like the rest
     {name:'Shield', rows:[{k:'shield',type:'grid',kind:'shield',slot:'w',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='w').map(r=>[r[1],r[2],r[4]]))},
       {type:'dcolor',k:'shieldColor',label:'Field colour',need:'shield',opts:TINTC},{type:'dcolor',k:'shieldTrim',label:'Trim colour',need:'shield',opts:TINTC}]},
+    // version 3.3: silly things for the hands, crafted (shared/cospieces.js slots v and u): the strong hand replaces your weapon, the weak hand your shield; looks only
+    {name:'Strong hand', rows:[{k:'strongItem',type:'grid',kind:'strongItem',slot:'v',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='v').map(r=>[r[1],r[2],r[4]]))},
+      {type:'dcolor',k:'strongColor',label:'Main colour',need:'strongItem',opts:TINTC},{type:'dcolor',k:'strongTrim',label:'Second colour',need:'strongItem',opts:TINTC}]},
+    {name:'Weak hand', rows:[{k:'weakItem',type:'grid',kind:'weakItem',slot:'u',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='u').map(r=>[r[1],r[2],r[4]]))},
+      {type:'dcolor',k:'weakColor',label:'Main colour',need:'weakItem',opts:TINTC},{type:'dcolor',k:'weakTrim',label:'Second colour',need:'weakItem',opts:TINTC}]},
     // version 3.2: up to three decorations, all crafted, any in any field, each with its own colour
     {name:'Decor', rows:[1,2,3].flatMap(n=>[{k:'deco'+n,label:'Decoration '+n,type:'grid',kind:'deco',slot:'d',col:'decoColor'+n,ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='d').map(r=>[r[1],r[2],r[4]]))},
       {type:'dcolor',k:'decoColor'+n,label:'Colour',need:'deco'+n,opts:TINTC}])},
@@ -122,7 +127,7 @@ function edTryBar(){
 }
 const hex=n=>'#'+n.toString(16).padStart(6,'0');
 function setLook(k,v){
-  if(k==='sex' && !LOOK.custom){ const keep={skin:LOOK.skin,cls:LOOK.cls}; for(const s of SLIDER_KEYS) keep[s]=LOOK[s]; LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,keep); }   // the sliders and skin carry over
+  if(k==='sex' && !LOOK.custom){ const keep={skin:LOOK.skin,cls:LOOK.cls,left:LOOK.left}; for(const s of SLIDER_KEYS) keep[s]=LOOK[s]; LOOK=Object.assign({},v==='female'?LOOK_F:LOOK_M,keep); }   // the sliders and skin carry over
   else if(k==='model'){ const M=v!=='base'&&CHAR_MODELS[v]; if(M&&M.sexes&&M.sexes.length&&M.sexes[0]!==LOOK.sex) LOOK.sex=M.sexes[0];   // the set-up: the character's recommended gender,
     LOOK=ofWear(LOOK,v); LOOK.custom=true; }   // all seven pieces in their designed colours (and, below, the recommended sliders); every row can then change one piece or colour
   else if(k==='sex'&&v!==LOOK.sex&&charModelOf(LOOK).id!=='base'){ LOOK=charSexFit(LOOK,v); LOOK.custom=true; ofTidy(LOOK); }   // a worn signature set: the body follows the new sex so the outfit still fits (charSexFit, shared/character.js)
@@ -226,14 +231,14 @@ function renderEditor(){
       if(row.empty&&ids.length<2){ const p0=document.createElement('p'); p0.className='ed-info'; p0.textContent=row.empty; wrap.append(p0); }
       for(const [v,name,tip] of ids){
         if(creating&&edLockedPick(row,v)) continue;   // creating shows only the free parts: crafted and unbought set pieces appear in the editor later
-        const sig=!!OUTFITS[v], gap=(v===''||v==='none')&&(row.kind==='hat'||row.kind==='gloves'||row.kind==='faceItem'||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='kinEars'||row.kind==='kinTail'||row.kind==='kinMuzzle')||(row.kind==='pack'&&v===false);   // "nothing": a crossed circle
+        const sig=!!OUTFITS[v], gap=(v===''||v==='none')&&(row.kind==='hat'||row.kind==='gloves'||row.kind==='faceItem'||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='strongItem'||row.kind==='weakItem'||row.kind==='kinEars'||row.kind==='kinTail'||row.kind==='kinMuzzle')||(row.kind==='pack'&&v===false);   // "nothing": a crossed circle
         const spec=gap?null:{kind:row.kind,id:v};
         if(spec&&row.col&&!sig) spec.col=LOOK[row.col];
         if(spec&&row.kind==='sex') spec.sex=v;
         const cur=LOOK[row.k], on=cur===undefined?(v===false||v===''):cur===v;
         const D=row.slot&&!gap?cpDef(row.slot,v):null, made=!!D&&!D.free&&edOwned().includes(cpKey(row.slot,v)), locked=!!D&&!D.free&&!made, osLock=sig&&!osOwned(v);
         const title=(name?(tip?name+': '+tip:name):gap?'None':ED_NAMES[v]||String(v).replace(/^./,c=>c.toUpperCase()))+(locked?' (locked: '+cosRecipeText(row.slot,v)+'. Tap to try it on.)':made?' (made)':'');
-        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='pupil'||row.kind.startsWith('kin')||(D&&!D.free)?name:''}); b.onclick=()=>{ setLook(row.k,v); renderEditor(); };
+        const b=cthTile(spec,{on,sig,title,cap:sig||row.kind==='cape'||row.kind==='aura'||row.kind==='deco'||row.kind==='shield'||row.kind==='strongItem'||row.kind==='weakItem'||row.kind==='pupil'||row.kind.startsWith('kin')||(D&&!D.free)?name:''}); b.onclick=()=>{ setLook(row.k,v); renderEditor(); };
         if(osLock){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); }
         else if(locked){ b.classList.add('locked'); const k=document.createElement('span'); k.className='ctile-lock'; k.textContent='\u{1F512}'; b.append(k); } else if(made){ b.classList.add('made'); }
         box.append(b); }
