@@ -322,7 +322,10 @@ function renderEditor(){
     edBody.append(wrap);
   }
   edColourPanel();   // the one shared palette and favourites panel, at the end of the page
-  { const two=!!edBody.querySelector('.ed-items'); edBody.classList.toggle('cols2',two); edEl.classList.toggle('wide',two); }   // two columns on a wide screen when this page has an item list
+  { const items=[...edBody.children].filter(e=>e.classList.contains('ed-items')), two=items.length>0;   // two columns on a wide screen: every item list (a tab may have two: the weapon outfits and the hand items) goes into ONE left column, everything else into the right one
+    edBody.classList.toggle('cols2',two); edBody.classList.toggle('flow2',!two);
+    if(two){ const L=document.createElement('div'), R=document.createElement('div'); L.className='ed-left'; R.className='ed-right';
+      [...edBody.children].forEach(e=>(items.includes(e)?L:R).append(e)); edBody.append(L,R); } }
   if(same) edBody.scrollTop=keepTop;
 }
 function surpriseMe(){

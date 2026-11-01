@@ -111,14 +111,14 @@ body.editing .hud-top{ display:none; }
 .sw.prem{ position:relative; }
 .sw.prem-lock::after{ content:'\1F512'; position:absolute; right:-4px; bottom:-5px; font-size:11px; line-height:1; filter:drop-shadow(0 0 2px #000); }
 .sw{ position:relative; }
-/* the wide panel (a desktop screen, 1000 px and up): the item list on the left, the colours and everything else on the right */
+/* the wide panel (a desktop screen, 1000 px and up): always the same width, so the panel never jumps between tabs; a page with an item list has it on the left (.ed-left) and the colours and everything else on the right (.ed-right), a page without one flows its rows into two columns */
 @media (min-width:1000px){
-  #editor.wide{ width:min(800px,62vw); }
-  #edBody.cols2{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:18px; grid-auto-rows:min-content; align-content:start; }
-  #edBody.cols2>*{ grid-column:2; }
-  #edBody.cols2>.ed-items{ grid-column:1; grid-row:1 / span 40; margin-top:0; }
-  #edBody.cols2>.ed-row:first-of-type{ margin-top:0; }
-  #edBody.cols2 .tiles{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+  #editor{ width:min(1080px,78vw); }
+  #edBody.cols2{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:22px; align-items:start; }
+  #edBody.cols2>.ed-left>.ed-row:first-child, #edBody.cols2>.ed-right>.ed-row:first-child{ margin-top:0; }
+  #edBody.cols2 .tiles{ grid-template-columns:repeat(4,minmax(0,1fr)); }
+  #edBody.flow2{ column-count:2; column-gap:22px; }
+  #edBody.flow2>*{ break-inside:avoid; }
 }
 .cp-cur{ margin-left:auto; width:24px; height:24px; border-radius:50%; border:2px solid rgba(238,240,226,.45); background:#333; }
 .cp-cur.none{ background:repeating-linear-gradient(45deg,#555 0 4px,#333 4px 8px); }
