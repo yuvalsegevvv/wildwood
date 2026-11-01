@@ -42,8 +42,10 @@ function glPlan(X){
     if(id==='opera'&&d<st+0.045) c.copy(light);
     else if(d<st+0.04) c.copy(dark);   // the cuff band
     if(id==='fingerless'&&d>0.255&&d<0.275) c.copy(dark);   // the knuckle strap
-    if(id==='leather'&&d>0.255&&d<0.268) c.copy(dark);
-    if(id==='mitten'&&d>0.265){ const k=((z*60)%1+1)%1; if(k<0.12) c.copy(dark); } };
+    if(id==='leather'){ if(d>0.255&&d<0.268) c.copy(dark); if(d>0.245&&d<0.3&&x*sd>0&&Math.abs(((z*110)%1+1)%1-0.5)<0.06) c.multiplyScalar(0.78); if(x*sd<0&&d>0.24) c.multiplyScalar(0.86); }   // three stitched lines down the back of the hand, a darker palm
+    if(id==='fingerless'&&d>0.24&&d<0.255&&x*sd>0) c.multiplyScalar(((Math.floor(z*150)+Math.floor(d*150))&1)?0.8:1.05);   // perforations over the back of the hand
+    if(id==='mitten'){ if(d>0.2&&d<0.25){ const k=((Math.atan2(x,z)/TAU*14)%1+1)%1; c.copy(col).multiplyScalar(0.86+0.16*(k<0.5?1:0)); if(Math.abs(d-0.226)<0.008) c.set(0xf2efe8); if(Math.abs(d-0.226)<0.004&&((Math.atan2(x,z)/TAU*10)%1+1)%1<0.5) c.copy(dark); }   // a knit band with a two-colour pattern row
+      else if(d>0.25){ c.copy(col).multiplyScalar(0.9+0.12*Math.sin(d*420)*Math.sin(z*300)); if(x*sd<0&&d>0.265) c.copy(dark); } } };   // a moss-stitch knit, a darker palm
   const finger=(c,x,y,z,sd)=>{ if(b.fingers==='tips'&&y<GL_SKIN_Y) c.copy(X.skin); else if(b.fingers==='bare'&&y<-0.262) c.copy(X.skin); else paint(c,x,y,z,sd); };
   return {kit:null,base:id,start:st,fingers:b.fingers,paint,finger};
 }
@@ -56,16 +58,22 @@ function glBaseGeos(X,D,sd,gp){
   const dk=col.clone().multiplyScalar(0.78).getHex(), lt=col.clone().lerp(new THREE.Color(0xffffff),0.35).getHex();
   if(id==='leather'){
     const s=gp.start; out.push(tube(s,s+0.05,0.009,(x,y,z,c)=>{ c.copy(col).multiplyScalar(y<-s-0.043?0.7:0.88); }),band(s+0.05,0.0035,dk),band(s+0.012,0.0025,lt));
+    out.push(solid(csph(0.0045,5,4).scale(1,1,0.6).translate(-sd*0.004,-s-0.03,-(glRadius(D,s+0.03)+0.012)),0xb9bdc2));   // a press stud on the cuff
   } else if(id==='fingerless'){
     const s=gp.start; out.push(tube(s,s+0.035,0.004,(x,y,z,c)=>c.copy(col).multiplyScalar(0.8)),band(s+0.035,0.003,lt));
+    out.push(pc(vbox(0.03,0.012,0.006,sd*(glRadius(D,s+0.02)+0.006),-s-0.02,0).rotateY(0),c=>c.copy(col).multiplyScalar(0.6)));   // the wrist strap's tab
+    for(const z of [-0.014,0,0.014]) out.push(pc(csph(0.0065,5,4).scale(0.8,0.8,1.1).translate(sd*(0.0125*hh+0.005),-0.268,z*hh),c=>c.copy(col).multiplyScalar(0.72)));   // padded knuckles
   } else if(id==='gauntlet'){
     const s=gp.start; out.push(tube(s,0.235,0.022,(x,y,z,c)=>{ const k=((-y*20)%1+1)%1; if(k<0.2) c.set(GL_STEEL); else c.copy(col).multiplyScalar(0.92); },6),band(s,0.0045,GL_STEEL),band(0.235,0.005,GL_STEEL),band(s+0.07,0.0035,GL_STEEL));
     for(const z of [-0.016,0,0.016]) out.push(solid(csph(0.004,5,4).translate(sd*(glRadius(D,s+0.035)+0.016),-s-0.035,z*aw),0xd8dce0));
     out.push(pc(vbox(0.006,0.034,0.05*hh,sd*(0.0125*hh+0.003),-0.272,-0.002),(x,y,z,c)=>c.set(GL_STEEL).multiplyScalar(0.9+0.2*Math.abs(z)*8)));   // the knuckle plate on the back of the hand
   } else if(id==='mitten'){
-    const s=gp.start; out.push(tube(s,s+0.05,0.01,(x,y,z,c)=>c.copy(col).multiplyScalar(y<-s-0.043?0.7:0.85)),band(s+0.05,0.004,lt));
+    const s=gp.start; out.push(tube(s,s+0.05,0.012,(x,y,z,c)=>{ const k=((Math.atan2(x,z)/TAU*24)%1+1)%1; c.copy(col).multiplyScalar((y<-s-0.043?0.72:0.86)*(k<0.5?1:0.84)); },5),band(s+0.05,0.004,lt));   // a ribbed cuff, folded
+    out.push(solid(sweepTube([[sd*(glRadius(D,s)+0.012),-s,0],[sd*(glRadius(D,s)+0.03),-s+0.03,0.02],[sd*(glRadius(D,s)+0.02),-s+0.07,0.04]],[0.0022,0.0022,0.0022],4,{cap:'round',rings:5}),lt),solid(csph(0.011,6,5).translate(sd*(glRadius(D,s)+0.02),-s+0.075,0.04),0xf2efe8));   // the string that keeps them together, with a pompom
   } else if(id==='opera'){
-    const s=gp.start; out.push(tube(s,0.235,0.0,(x,y,z,c)=>{ c.copy(col); if(-y<s+0.05) c.lerp(new THREE.Color(0xffffff),0.35); },8));
+    const s=gp.start; out.push(tube(s,0.235,0.0,(x,y,z,c)=>{ const a=Math.atan2(x,z); c.copy(col).multiplyScalar(0.86+0.24*Math.pow(Math.max(0,Math.cos(a+sd*0.6)),3)); if(-y<s+0.05) c.lerp(new THREE.Color(0xffffff),0.35); if(-y>s+0.07&&-y<0.2&&Math.abs(((-y*45)%1)-0.5)<0.08&&Math.abs(Math.cos(a))>0.8) c.multiplyScalar(0.8); },8));   // satin: a bright sheen down one side and soft gathers ruched along the forearm
+    for(let i=0;i<4;i++){ const d=0.2+i*0.009; out.push(solid(csph(0.0028,5,4).translate(-sd*(glRadius(D,d)+0.004)*0.3,-d,glRadius(D,d)+0.003),lt)); }   // a row of pearl buttons at the inside of the wrist
+    out.push(solid(csph(0.008,6,5).scale(1.4,0.8,0.6).translate(sd*(glRadius(D,s+0.01)+0.01),-s-0.01,0),dk));   // and a bow at the top
     for(let i=0;i<8;i++){ const a=i/8*TAU; out.push(solid(csph(0.0065,5,4).translate(Math.sin(a)*(glRadius(D,s)+0.012),-s+0.003,Math.cos(a)*(glRadius(D,s)+0.012)),lt)); }   // the frill: a ring of beads at the top
     out.push(band(s,0.0035,lt),band(0.235,0.003,dk));
   } else if(id==='lace'){

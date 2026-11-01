@@ -57,3 +57,10 @@ Six crafted dresses are tops (slot `t`: sundress, peasant, tiered, mermaid, ball
 ### Hair that moves (version 3.3)
 `buildHair` (model-hair.js) marks every lock made through `swing` (tails, braids, long and wavy hair, long side locks, loose strands, the ahoge) with `hairHang`; `buildCharacter` merges those into a second mesh on the head and `hwSway` (`character/hair-sway.js`) swings it: a spring per axis, trailing back with speed, bouncing with the stride and lagging a turn, the root fixed and the tip moving most (`hwReach`). Spikes, buns, the cap and a buzz cut stay stiff. The kit's hair tools (`T.swing`, `T.wisps`) let a signature outfit's hair opt in. `wisps` frays a tail's end into thin strands of different lengths (not on phones). The head mesh is no longer the only mesh under `rig.head`: count `head.children`, not `children[0]`. Test: `node tools/hair-smoke.js`.
 
+
+### The quality passes (version 3.3)
+Three ranking passes upgraded the weakest pieces of every category. The list and the suggestions for the next round are in the project files (outfit-ranking).
+- **Capes:** the cape grid is denser (`NC` 40 columns, 9 rows per panel; 10 and 2 on cheap quality) so patterns stay sharp. New patterns: `mirror`, `grassrays`, `grassweave`, `roots`.
+- **Auras:** new shapes `lamp`, `spore`, `feather`, a new deco `lamps` and a new style `blink` (shared/cosmetics.js header).
+- **Emblems on coarse faces:** emblems on the heater and kite shields are raised bars, not paint, because a coarse face smears paint.
+- **Set pieces:** a set piece is an alias of a base piece (`GMX_ALIAS`), so it improved with its base and keeps the set's palette.

@@ -1,34 +1,34 @@
 //@ Cosmetics (version 3): auras (a glow, a ring or drifting particles around the character) and capes, made at a Wayfarers' Lodge (the free ones need no making). Pure.
 /* The professions no longer give gear (that comes from the dungeons), so their main reward is looks. Two new parts of the character's look (look.aura, look.cape: a short id, '' = none):
-   - an AURA: COS_AURAS, drawn by game/character/cosmetics.js as additive particles (styles orbit, rise, fall, spiral, swirl, burst, drift; fx: ground patterns, a pillar, a body outline: game/character/cosmetics-aura.js) and/or a glowing ring on
+   - an AURA: COS_AURAS, drawn by game/character/cosmetics.js as additive particles (styles orbit, rise, fall, spiral, swirl, burst, drift, blink; fx: ground patterns, a pillar, a body outline: game/character/cosmetics-aura.js) and/or a glowing ring on
      the ground (ring: true);
    - a CAPE: COS_CAPES, a cloth on the back with a trim and a hem, swaying with the walk.
    Two plain auras and three plain capes (the backpack among them) are free; the rest are made at a Lodge (cosCost, recipes in shared/cospieces.js: professions' resources, monsters' drops, coins). What you own is gear.cos, a list like ['a:firefly','c:wayfarer'];
    the server throws out any aura or cape of a look that you do not own (cosCleanLook), so a hacked client cannot wear another's. Ids are keys of plain objects: always check own properties.
    owns: COS_AURAS, COS_CAPES, COS_AURA, COS_CAPE, cosCost, cosKey, cosOwns, sanitizeCos, cosCleanLook.   used by: server/cosmetics.js, game/character/cosmetics.js, game/economy/cosmetics.js, the editor.   test: tools/revamp-smoke.js, tools/cospieces-smoke.js */
 // [id, name, grade 1..6, colour, second colour, style, ring, how many particles, a short line, shape of a particle, the ring's decoration]
-// shapes (game/character/cosmetics.js): mote (a spark with a halo), flame (a tongue of fire), leaf, petal (five petals), flake (a six-armed snowflake), wisp (a head and a fading tail), star (a four-point star), drop (a falling bead), grain (a spinning fleck)
-// ring decorations: runes (ticks round the ring), spikes (crystals standing on it), halo (a second ring turning over the head), double (a second, wider ring), none
+// shapes (game/character/cosmetics.js): mote (a spark with a halo), flame (a tongue of fire), leaf, petal (five petals), flake (a six-armed snowflake), wisp (a head and a fading tail), star (a four-point star), drop (a falling bead), grain (a spinning fleck), lamp (a little lantern), spore (a puffball), feather (a long quill feather)
+// ring decorations: runes (ticks round the ring), spikes (crystals standing on it), lamps (small lamps standing on it), halo (a second ring turning over the head), double (a second, wider ring), none
 const COS_AURAS=[
-  ['firefly','Firefly Veil',1,0xffe27a,0xfff6c0,'drift',false,10,'Warm motes circle you, slowly.','mote','none',''],
-  ['dew','Dewfall',1,0x8ad0ff,0xe6f6ff,'fall',false,12,'Bright beads of dew fall past you.','drop','none','g:ripple'],
+  ['firefly','Firefly Veil',1,0xffe27a,0xfff6c0,'blink',false,14,'Fireflies wander round you, each lighting up and going dark on its own beat.','mote','none',''],
+  ['dew','Dewfall',1,0x8ad0ff,0xe6f6ff,'fall',false,18,'Bright, glowing beads of dew fall past you and ring the ground with ripples.','drop','none','g:ripple'],
   ['ember','Emberdrift',2,0xff7a2a,0xffd070,'rise',false,14,'Tongues of flame climb off your shoulders.','flame','none','outline'],
-  ['verdant','Verdant Halo',3,0x7aff9a,0xd0ffd8,'spiral',true,8,'A green rune ring glows at your feet and leaves float up.','leaf','runes','g:lotus'],
+  ['verdant','Verdant Halo',3,0x7aff9a,0xd0ffd8,'spiral',true,14,'A green rune ring glows at your feet, a lotus opens under it and leaves float up round your glowing outline.','leaf','runes','g:lotus outline'],
   ['blossom','Blossom Fall',4,0xffa8c8,0xffe0ec,'fall',false,16,'Five-petal blossoms drift down around you.','petal','none','g:lotus'],
   ['gale','Gale Ring',4,0xdff4ff,0x9ad8e8,'swirl',true,10,'Streaks of wind wheel round you inside a pale ring.','wisp','double','pillar'],
   ['frost','Frostglint',5,0x9ae0ff,0xffffff,'burst',true,12,'An ice-crystal ring and turning snowflakes.','flake','spikes','outline'],
   ['dune','Sunscar Heat',5,0xffb43a,0xff5a2a,'swirl',true,12,'Glowing sand circles you above a rune ring.','grain','runes','g:rays'],
-  ['wisp','Gloamwisps',6,0xb07aff,0xe0c8ff,'spiral',false,8,'Violet wisps with long tails circle you.','wisp','none','outline'],
+  ['wisp','Gloamwisps',6,0xb07aff,0xe0c8ff,'spiral',true,12,'Violet wisps with long tails climb round you from a dusk ring under a turning halo.','wisp','halo','outline g:pent'],
   ['lovelight','Lovelight',3,0xff5a8a,0xffc0d6,'spiral',false,12,'Pink hearts spiral up round you over a glowing heart on the ground, and a soft outline hugs your body.','heart','none','g:heart outline'],
-  ['spore','Sporeglow',2,0xd8f060,0xfff8c0,'burst',false,12,'Pale spores drift up around you, glowing faintly.','grain','none','g:ripple'],
-  ['bubble','Tidebubbles',3,0x9ae8ff,0xffffff,'rise',false,10,'Round bubbles float up from your feet and shimmer.','bubble','none',''],
-  ['spirit','Spirit Lanterns',4,0x7ad8ff,0xe0f6ff,'drift',false,8,'Pale blue lanterns of spirit-fire circle you.','wisp','none','g:pent'],
+  ['spore','Sporeglow',2,0xd8f060,0xfff8c0,'rise',false,18,'Glowing puffball spores drift up around you from rings that spread on the ground.','spore','none','g:ripple'],
+  ['bubble','Tidebubbles',3,0x9ae8ff,0xffffff,'rise',false,16,'Round bubbles float up from your feet and shimmer over spreading ripples.','bubble','none','g:ripple'],
+  ['spirit','Spirit Lanterns',4,0x7ad8ff,0xe0f6ff,'drift',true,12,'Pale blue lanterns of spirit-fire circle you over a ring of turning marks.','lamp','runes','g:pent'],
   ['rune','Rune Circle',5,0x9ab8ff,0xe8f0ff,'orbit',true,10,'A ring of turning runes with four-point stars circling above it.','star','runes','g:pent'],
   ['stellar','Stellar Crown',6,0xffd860,0xffffff,'orbit',true,14,'A golden ring, a halo over your head and a ring of stars.','star','halo','pillar'],
   // side quests' rewards (CP_QUEST in cospieces.js: earned, never made)
   // the Sigil track's big rewards (levels 10, 20, 30, 40: shared/puzzle-track.js; earned, never made)
   ['sakuraoffer','Sakura Offering',4,0xffa8c8,0xffffff,'fall',true,16,'Blossoms fall round you over a rune ring. The Sigil track\'s reward.','petal','runes','g:lotus'],
-  ['peakwind','Peakwind',4,0xcfe0ee,0x8fb0c8,'swirl',true,10,'Cold streaks of mountain wind wheel round you. The Sigil track\'s reward.','wisp','double','outline'],
+  ['peakwind','Peakwind',4,0xcfe0ee,0x8fb0c8,'swirl',true,14,'Cold streaks of mountain wind wheel round you over spreading frost rings. The Sigil track\'s reward.','wisp','double','outline g:ripple'],
   ['shroudveil','Shroudveil',6,0xb7a7d8,0xffffff,'spiral',true,10,'Violet wisps climb in a halo of gloom. The Sigil track\'s reward.','wisp','halo','outline pillar'],
   ['lampcrown','Lampcrown',6,0xffe9a0,0xffffff,'orbit',true,16,'A golden ring, a halo and a crown of lamplight stars: the track\'s showpiece.','star','halo','pillar g:rays'],
   ['heartbloom','Heartbloom',4,0xff6fa0,0xffd0e0,'spiral',true,12,'Pink hearts float up from a glowing rune ring. Earned on the Sigil track.','heart','runes','g:heart outline'],
@@ -36,13 +36,13 @@ const COS_AURAS=[
   ['bubblepop','Bubblepop',3,0x9ad8ff,0xffffff,'rise',false,14,'Soap bubbles drift up and pop. Earned on the Sigil track.','bubble','none','g:ripple'],
   ['foxfire','Foxfire',5,0x8ad4ff,0xffffff,'rise',true,9,'Nine pale-blue foxfire flames climb round you from a rune ring. The Nine Tails\' reward.','flame','runes','outline'],
   ['sunwept','Where the Sun Wept',6,0xffc45a,0x3a2a4a,'swirl',true,14,'Flecks of sun-gold and black glass circle you above a crystal ring. Where the Sun Wept\'s reward.','grain','spikes','g:rays'],
-  ['lamplight','Keeper\'s Lamplight',6,0xfff0b0,0xffcf6a,'orbit',true,6,'Slow motes of lamplight turn round you, under a halo. The Keeper\'s Light\'s reward.','mote','halo',''],
-  ['herdsong','Herdsong',6,0xe8b44a,0xfff0c8,'burst',true,10,'Gold grass-seed and slow motes drift up round you from a ring of turning marks. The Drought Song\'s reward.','grain','runes','g:rays'],
-  ['saltlight','Salt Light',6,0xbfeee6,0xfff4cf,'drift',true,8,'Pale salt-white motes circle you above a ring of small lamps. The Salt Watch\'s reward.','mote','halo','g:ripple'],
-  ['condorwind','Condor Wind',6,0xd8c7a0,0xffffff,'spiral',true,10,'Pale feathers lift round you from a ring of terrace marks. The Terrace Road\'s reward.','leaf','runes','pillar']
+  ['lamplight','Keeper\'s Lamplight',6,0xfff0b0,0xffcf6a,'orbit',true,12,'Little lanterns of lamplight turn round you under a halo, over a ring of light rays. The Keeper\'s Light\'s reward.','lamp','halo','g:rays outline'],
+  ['herdsong','Herdsong',6,0xe8b44a,0xfff0c8,'rise',true,16,'Gold grass-seed and slow motes drift up round you from a ring of turning marks. The Drought Song\'s reward.','grain','runes','g:rays'],
+  ['saltlight','Salt Light',6,0xbfeee6,0xfff4cf,'drift',true,12,'Pale salt-white motes circle you above a ring of small lamps. The Salt Watch\'s reward.','mote','lamps','g:ripple pillar'],
+  ['condorwind','Condor Wind',6,0xd8c7a0,0xffffff,'spiral',true,14,'Long pale feathers lift round you from a ring of terrace marks. The Terrace Road\'s reward.','feather','runes','pillar outline']
 ];
 // [id, name, grade, cloth colour, trim colour, length (1 = to the knee), a short line, pattern, mantle (a short shoulder cape over it)]
-// patterns (game/character/cosmetics.js cosPattern): stitch, flames, stars, rays, petals, fur, ermine, moss, ash, waves, dunes, gloam
+// patterns (game/character/cosmetics.js cosPattern): stitch, flames, stars, rays, mirror, grassrays, grassweave, roots, petals, fur, ermine, moss, ash, waves, dunes, gloam
 const COS_CAPES=[
   ['pack','Backpack',1,0x566437,0x8a3b2c,0,'A canvas pack with a bedroll, a flap pocket and two shoulder straps. Free.','pack',0],
   ['wayfarer','Wayfarer\'s Cloak',1,0x4a6a3a,0xc9a86a,1.0,'Green wool with a stitched leather hem and a bone clasp.','stitch',0],
@@ -71,14 +71,14 @@ const COS_CAPES=[
   ['lovebird','Lovebird Cape',3,0xe87aa0,0xfff0f4,1.0,'Rose pink with a hem of pressed petals. Earned on the Sigil track.','petals',0],
   ['dawnray','Dawnray Mantle',5,0xf0b050,0xfff4d0,1.15,'Warm gold with rays of light fanning from the collar. Earned on the Sigil track.','rays',1],
   ['emberwing','Emberwing Cape',4,0x7a2a2a,0xff8a3a,1.1,'Deep red with a hem of licking flames. Earned on the Sigil track.','flames',0],
-  ['rootcloak','Rootbound Cloak',2,0x4a6a2e,0x9a7a46,1.1,'Moss green with a hem of knotted roots. The Sigil track\'s reward.','moss',0],
+  ['rootcloak','Rootbound Cloak',2,0x4a6a2e,0x9a7a46,1.1,'Moss green with a hem of knotted roots. The Sigil track\'s reward.','roots',0],
   ['frostmantle','Lamp-in-Snow Mantle',4,0xcfe6f2,0x6fa6c8,1.15,'Pale wool lined with blue fur, a lamp stitched at the clasp. The Sigil track\'s reward.','fur',1],
-  ['sunmirror','Mirrorbright Cape',5,0xe6b84a,0xfff0c0,1.15,'Gold silk with rays that catch the light. The Sigil track\'s reward.','rays',0],
-  ['savannaweave','Grasswoven Mantle',5,0xc89a42,0x6a8a3a,1.15,'Woven savanna grass over a hide shoulder cape. The Sigil track\'s reward.','hide',1],
+  ['sunmirror','Mirrorbright Cape',5,0xe6b84a,0xfff0c0,1.15,'Gold silk with rays and rows of small mirror tiles that catch the light. The Sigil track\'s reward.','mirror',0],
+  ['savannaweave','Grasswoven Mantle',5,0xc89a42,0x6a8a3a,1.15,'Woven savanna grass over a hide shoulder cape. The Sigil track\'s reward.','grassweave',1],
   ['tideking','Tide King\'s Mantle',4,0x1d5866,0xf2a07a,1.15,'Sea-green with coral-pink waves and a short shoulder cape. The Grey Tide\'s reward.','waves',1],
   ['wyrmscale','Wyrmscale Cloak',5,0x4a6a80,0xe0f0ff,1.2,'Pale blue scales that never freeze, edged in white. The Wyrm\'s Saga\'s reward.','scales',1],
   ['greatcoat','Captain\'s Greatcoat',5,0x1a2636,0xd8b860,1.2,'A long sea-captain\'s coat in deep navy with a gold-stitched hem. The Drowned Captain\'s reward.','stitch',1],
-  ['dawnseat','Dawn Seat Mantle',6,0xb8742c,0xf6d98a,1.2,'Dry-grass gold with rays of pale thread spreading from the collar and a short shoulder cape. The Dawn Seat\'s reward.','rays',1],
+  ['dawnseat','Dawn Seat Mantle',6,0xb8742c,0xf6d98a,1.2,'Dry-grass gold with rays of pale thread spreading from the collar and a short shoulder cape. The Dawn Seat\'s reward.','grassrays',1],
   ['tidecape','Tidecaller\'s Cape',6,0x1f7a86,0xf4e8c0,1.2,'Deep lagoon green with pale foam lines and a short shoulder cape. The Drowned Strait\'s reward.','waves',1]
 ];
 const COS_AURA={}, COS_CAPE={};
