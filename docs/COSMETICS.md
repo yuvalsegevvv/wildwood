@@ -67,3 +67,8 @@ On a desktop screen (1000 px and up) a page with an item list (`row.type==='grid
 - **Hip curve** (`hipCurve`, 0.4 .. 1.8) scales the back of the hips; `torsoSize` clears at least the default so cloth never sinks into a flatter body.
 - **Hat size / Hat tilt** scale and tilt a base hat about its seat (`hatShape`, model-hats.js); an outfit's own hat is untouched. **Cape length** scales the hanging panels (`cosBuildCape`). Their rows show only while a hat or cape is worn.
 - **Underwear** (the Underwear tab of the Clothes page): `look.underColor` (cloth) and `look.underColor2` (waistband and strap), -1 = the cream default; a chosen cloth alone gets a darker band of itself. Read by `underCol` / `underBand` (model-body.js) wherever a garment leaves the body bare.
+
+## Child-safe mode coverage
+
+`modestLook` (character/modest.js) swaps every bare piece for a plain one when the setting is on: the empty top becomes a t-shirt, bare crafted tops and every dress the tunic; the empty bottom, loincloth, short shorts and wrap skirt become trousers, shorts breeches, the pleated skirt a skirt, and skirts are lengthened to the knee (`MODEST_SKIRT_LEN`, scaled by leg length). A few signature pieces that still bare skin (`MODEST_SET_TOP`, `MODEST_SET_BOTTOM`) are swapped too; the other sets ask `modestOn()` in their own paint.
+`node tools/modest-smoke.js` proves it: it paints the skin magenta, builds every top, bottom, dress and signature set (pieces and whole sets, both bodies, shortest skirt, long legs) and ray-casts every magenta vertex of the belly, back, shoulders and thighs above the knee outward; it fails on any that cloth does not cover. When it names a look, add that piece to the lists. `--where "female set sorrel"` prints the uncovered points of one look.
