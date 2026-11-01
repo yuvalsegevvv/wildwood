@@ -10,7 +10,7 @@ function premBuyP(p,i){
 }
 function premFavP(p,list){
   if(!Array.isArray(list)) return;
-  const t={}; premSanitize({fav:list.slice(0,64)},t); p.gear.fav=t.fav; p.dirty=true;
+  const t={}; premSanitize({fav:list.slice(0,PREM_FAV_MAX)},t); p.gear.fav=t.fav; p.dirty=true;
 }
 MSG.colbuy=(p,msg)=>premBuyP(p,msg.i);
 MSG.colfav=(p,msg)=>premFavP(p,msg.l);
