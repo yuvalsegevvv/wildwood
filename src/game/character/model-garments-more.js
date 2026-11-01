@@ -7,7 +7,7 @@
    owns: GMX_TOPS, GMX_BOTTOMS, GMX_SHOES, gmxTop, gmxCuff, gmxHips, gmxThigh, gmxShin, gmxSkirtKind, gmxBareBottom, gmxSleeveless.   used by: model-garments.js, model-body.js, ui/character-editor.js.   test: tools/cospieces-smoke.js */
 const GMX_TOPS=CP_PIECES.filter(r=>r[0]==='t').map(r=>[r[1],r[2],r[4]]), GMX_BOTTOMS=CP_PIECES.filter(r=>r[0]==='b').map(r=>[r[1],r[2],r[4]]), GMX_SHOES=CP_PIECES.filter(r=>r[0]==='s').map(r=>[r[1],r[2],r[4]]);
 // the body shows where the garment is open: the bare top ids and the bottoms whose hips stay open over the briefs
-const gmxSleeveless=t=>t==='halter'||t==='harness', gmxBareBottom=b=>b==='loincloth'||b==='wrapskirt', gmxSkirtKind=b=>b==='hakama'||b==='wrapskirt';
+const gmxSleeveless=t=>t==='halter'||t==='harness'||gmdIs(t), gmxBareBottom=b=>b==='loincloth'||b==='wrapskirt', gmxSkirtKind=b=>b==='hakama'||b==='wrapskirt';
 const GMX_STEEL=0xb9bdc2, GMX_LEATHER=0x5a3a22, GMX_BRASS=0xc9a13a;
 const gmxMul=(hex,m)=>new THREE.Color(hex).multiplyScalar(m).getHex();
 // the colours of a crafted top or bottom (the same four slots as a set's piece: tintTop2..4 / tintBottom2..4): [main, second, third, fourth], each default derived from the main colour
@@ -26,7 +26,8 @@ const GMX_ALIAS={
   swrobe:{slot:'top',base:'robe',col:0x2b2f6a,pal:[0xf0d060,0x8a8fe0]}, swhakama:{slot:'bottom',base:'hakama',col:0x2b2f6a,pal:[0xf0d060,0x1f2250,0xf0d060]}, swboots:{slot:'shoes',base:'tallboots',col:0x1f2250}
 };
 function gmxAliasLook(L){
-  let o=null; for(const slot of ['top','bottom','shoes']){ const id=L[slot]; if(typeof id!=='string'||!Object.prototype.hasOwnProperty.call(GMX_ALIAS,id)) continue; const A=GMX_ALIAS[id]; if(A.slot!==slot) continue;
+  let o=null; if(gmdIs(L.top)&&L.bottom!=='none'){ o=Object.assign({},L); o.bottom='none'; L=o; }   // a dress is worn without a bottom: its skirt is the bottom
+  for(const slot of ['top','bottom','shoes']){ const id=L[slot]; if(typeof id!=='string'||!Object.prototype.hasOwnProperty.call(GMX_ALIAS,id)) continue; const A=GMX_ALIAS[id]; if(A.slot!==slot) continue;
     o=o||Object.assign({},L); o[slot]=A.base; const tc=ofTintOf(L,slot)>=0?ofTintOf(L,slot):A.col; if(slot==='top') o.topColor=tc; else if(slot==='bottom') o.bottomColor=tc; else o.shoeColor=tc;   // the slot's tint (tintTop...: the editor's colour row while a set piece is worn) recolours the main colour, -1 = as designed
     (A.pal||[]).forEach((c,i)=>{ const k=OF_TINTX[slot][i]; if(!(typeof L[k]==='number'&&L[k]>=0)) o[k]=c; }); }
   return o||L;
@@ -42,6 +43,7 @@ function gmxStrap(X,D,y0,y1,x0,x1,back,n){
 }
 // ---- tops, in the spine's frame ----
 function gmxTop(X,D){
+  if(gmdIs(X.L.top)) return gmdTop(X,D);   // dresses: model-dresses.js
   const {L,sg}=X, TK=D.TK, nr=D.neckR, top=L.top, out=[], tc=L.topColor, PL=gmxPalAt(L,'top'), dk=gmxMul(tc,0.7), lt=new THREE.Color(tc).lerp(new THREE.Color(0xffffff),0.35).getHex(), fz=yd=>-(torsoSize(X,D,yd).rz+0.004), bz=yd=>torsoSize(X,D,yd).rzBack+0.004;
   if(top==='crop'){
     out.push(gmBand(X,D,0.3,0.275,(x,y,z,c)=>c.set(PL[1]),0.004));   // the ribbed hem, high on the ribs

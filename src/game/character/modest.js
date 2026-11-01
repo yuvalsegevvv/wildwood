@@ -6,7 +6,7 @@
 var MODEST=false;
 try{ MODEST=localStorage.getItem('wildwood-modest')==='1'; }catch(_){}
 function modestOn(){ return MODEST; }
-const MODEST_TOP={crop:'tunic',halter:'tunic',harness:'tunic'}, MODEST_BOTTOM={loincloth:'trousers',shortshorts:'trousers',wrapskirt:'trousers'};
+const MODEST_TOP={crop:'tunic',halter:'tunic',harness:'tunic',mermaid:'tunic',ballgown:'tunic'}, MODEST_BOTTOM={loincloth:'trousers',shortshorts:'trousers',wrapskirt:'trousers'};
 // the look with its bare pieces swapped (a copy; the original is left alone)
 function modestLook(L){
   if(!MODEST||!L) return L;

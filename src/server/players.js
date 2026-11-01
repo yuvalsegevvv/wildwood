@@ -17,7 +17,7 @@ function sanitizeGear(g,cls){
   if(out.skills.ult&&!ultOwned(out.skills,out.cave,out.skills.ult)) out.skills.ult=null;   // ult: the worn burst must be earned   // cave: the owned cave skills; the worn one must be owned
   out.mq=sanitizeMq(g.mq);
   out.sq=sanitizeSq(g.sq);   // sidequests: the chains' progress (an old save has none)
-  { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); out.cos=sanitizeCos(g); }   // cosmetics: the auras and capes made at a lodge
+  { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); out.cos=sanitizeCos(g); premSanitize(g,out); }   // cosmetics: the auras and capes made at a lodge
   out.zt=sanitizeZt(g.zt);
   gsSanitize(g,out);   // gems: claimed achievements, the daily set and today's ads
   pzSanitize(g,out);   // puzzles: solved stones and their clocks, Sigils, upgrade scrolls
@@ -107,7 +107,7 @@ function newPlayer(pid,hello){
   const p={id:pid,name:cleanName(hello.name),look,x:sp.x,y:getH(sp.x,sp.z),z:sp.z,face:0,vx:0,vz:0,
     level:clampInt(save.level,1,PLAYER_MAX_LV,1),exp:Math.min(EXP_MAX,Math.max(0,+save.exp||0)),gear:sanitizeGear(save.gear,look.cls),
     hp:1,maxHp:1,dmg:1,def:0,red:0,lastHit:-99,dead:false,deadT:0,cd:{basic:0,skill:0,burst:0,cave:0,ult:0},buff:null,act:null,dirty:true,travelT:0,cave:caveNewState()};   // cave: the 4th slot's charge (not saved)
-  p.look=ambCleanLook(cosCleanLook(p.look,p.gear.cos),p.gear.os);   // cosmetics: no aura or cape that you do not own, gems: no outfit set that you have not bought
+  p.look=premCleanLook(ambCleanLook(cosCleanLook(p.look,p.gear.cos),p.gear.os),p.gear.pc);   // cosmetics: no aura or cape that you do not own, gems: no outfit set that you have not bought
   if(p.gear.startAll) giveAllP(p);
   ultInitP(p);   // ult: which bursts are already owned (only a later one is announced)
   if(p.gear.skills.v!==2){ autoEquipP(p,'skill'); autoEquipP(p,'burst'); p.gear.skills.v=2; }   // saves from before skills / bursts get the free ones

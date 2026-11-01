@@ -71,10 +71,12 @@ function gmCuff(X,D,sd){
 }
 // ---- the skirt family: a lathe from the waist, a number of sharp pleats or a smooth flare; hem and waistband are painted ----
 function gmSkirt(X,D,kind){
-  const {L,S,sg}=X, prof=[], rows=sg(10), legs=S.legs, top=Math.max(0.165*D.B,D.hx+0.085), kilt=kind==='kilt', hk=kind==='hakama', wr=kind==='wrapskirt', pl=kind==='pleated'||hk, len=kilt?0.46:hk?0.8:pl?0.3:wr?0.25:0.4, hem=top*(kilt?1.22:hk?1.4:pl?1.55:wr?1.25:1.4);
-  for(let i=0;i<=rows;i++){ const t=i/rows; prof.push(new THREE.Vector2(top+(hem-top)*Math.pow(t,kilt?1.1:1.35),(0.04-len*t)*legs)); }
+  const {L,S,sg}=X, prof=[], rows=sg(16), legs=S.legs, top=Math.max(0.165*D.B,D.hx+0.085), kilt=kind==='kilt', hk=kind==='hakama', wr=kind==='wrapskirt', pl=kind==='pleated'||hk, len=kilt?0.46:hk?0.8:pl?0.3:wr?0.25:0.4, hem=top*(kilt?1.22:hk?1.4:pl?1.55:wr?1.25:1.4);
+  for(let i=0;i<=rows;i++){ const t=i/rows; prof.push(new THREE.Vector2(top+(hem-top)*Math.pow(t,kilt?1.1:1.35)+top*0.05*Math.sin(Math.PI*Math.min(1,t/0.4)),(0.04-len*t)*legs)); }   // (a hip swell first, then the flare: a curve, not a cone)
   const g=(wr?new THREE.LatheGeometry(prof,sg(40),Math.PI*1.5+0.65,TAU-1.3):new THREE.LatheGeometry(prof,sg(pl?48:40))).scale(1,1,0.8), p=g.attributes.position;
   if(pl) for(let i=0;i<p.count;i++){ const x=p.getX(i), z=p.getZ(i), a=Math.atan2(x,z), k=(Math.floor(((a/TAU)*36+36)%1*0)+0)+0.045*Math.sin(a*18)*(1-(p.getY(i)>-0.01?1:0)*0.9); const r=Math.hypot(x,z); p.setX(i,x*(1+k*0.5)); p.setZ(i,z*(1+k*0.5)); }
+  if(!pl) for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), t=Math.min(1,Math.max(0,(0.04*legs-y)/(len*legs))), a=Math.atan2(x,z), f=(kilt?0.02:0.045)*Math.pow(t,1.25)*(Math.sin(a*9)*0.7+Math.sin(a*20.7+1.3)*0.3);   // soft folds that deepen to the hem, and a hem that rises and falls
+    p.setX(i,x*(1+f)); p.setZ(i,z*(1+f)); p.setY(i,y+(kilt?0.004:0.012)*Math.pow(t,2.5)*Math.sin(a*3+1)); }
   smoothN(g);
   return pc(g,(x,y,z,c)=>{ const t=Math.min(1,Math.max(0,(0.04*legs-y)/(len*legs)));
     if(kilt) plaid(c,L.bottomColor,x*6,y*6); else c.set(L.bottomColor);
@@ -83,6 +85,7 @@ function gmSkirt(X,D,kind){
 }
 // ---- the hips' frame ----
 function gmHips(X,D){
+  if(gmdIs(X.L.top)&&!X.kit) return gmdHips(X,D);   // a dress carries its own skirt (model-dresses.js)
   const {L,sg}=X, TK=D.TK, out=[], b=L.bottom, tc=L.bottomColor, dk=new THREE.Color(tc).multiplyScalar(0.55).getHex(), s0=torsoSize(X,D,0.03), rz=Math.max(s0.rz,s0.rzBack)+0.012;
   const kB=X.kit&&X.kit.sl.bottom, kT=X.kit&&X.kit.sl.top;
   if(b==='none'||b==='outfit') return out;
@@ -101,7 +104,7 @@ function gmHips(X,D){
     if(b==='pleated'){ out.push(pc(ofRibbon([[0.02,0.05*TK,-rz-0.01],[0.06,0.02*TK,-rz-0.03],[0.09,-0.05,-rz-0.03],[0.07,-0.1,-rz-0.02]],0.03,{up:[0,0,-1],seg:sg(8),th:0.003}),c=>c.set(0xc0344a))); }   // a ribbon belt's bow
   }
   if(!kT&&L.top==='tunic'&&b!=='skirt'&&b!=='kilt'&&b!=='pleated'){   // the tunic's flare over the thighs
-    const rows=[{y:0.0,rx:s0.rx+0.014,rz},{y:-0.07,rx:s0.rx+0.045,rz:rz+0.03},{y:-0.18,rx:s0.rx+0.075,rz:rz+0.052}];
+    const rows=[{y:0.0,rx:s0.rx+0.014,rz},{y:-0.035,rx:s0.rx+0.03,rz:rz+0.016},{y:-0.07,rx:s0.rx+0.048,rz:rz+0.03},{y:-0.125,rx:s0.rx+0.066,rz:rz+0.044},{y:-0.18,rx:s0.rx+0.08,rz:rz+0.054}];   // five rings: a curve that eases out
     out.push(pc(ofLoft(rows,sg(36),0,TAU),(x,y,z,c)=>{ c.set(L.topColor); if(y<-0.16) c.set(0xe8d9b0); else if(y<-0.15) c.multiplyScalar(0.7); }));
   }
   out.push(...gmxHips(X,D));   // the crafted bottoms' belts, flaps and sashes (model-garments-more.js)

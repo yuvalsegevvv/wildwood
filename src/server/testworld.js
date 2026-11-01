@@ -17,6 +17,7 @@ function testKitP(p){
   g.east=2; g.north=2; g.west=2; g.sun=2; g.gloam=2; g.tall=2; g.isles=2; g.river=1; g.neck=1; g.redgate=1; g.amber=1;
   for(const l of ZTIER_LANDS) g.zt[l].max=TEST_TIER;
   g.os=ambOutfitIds();   // every outfit set
+  g.pc=PREM_COLOURS.map((c,i)=>i);   // every premium colour (shared/colours.js)
   g.cos=cosAllKeys();   // every crafted piece, cape and aura, the Sigil track's included
   setLevelP(p,TEST_LV);
   // skills: every class skill, passive and boss skill, every signature set, the burst, every cave skill; each at level TEST_SKILL_LV

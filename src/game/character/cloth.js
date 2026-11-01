@@ -3,7 +3,7 @@
    It copies the mesh's vertices once and, each frame the hiker moves (and once more to settle), moves them from those copies: the further a vertex is below the waist the more it
    follows (depth 0 at the waist, 1 at the hem), the front is pushed forward by a forward leg and the back backward by a back leg, the hem trails behind with speed and ripples.
    Tested by tools/character-smoke.js (the sway moves a skirt and leaves the waist alone). Garments in other frames (the torso's coat tails, capes) do not use this. */
-function clSway(rig,mesh){
+function clSway(rig,mesh,loose){
   const pos=mesh&&mesh.geometry&&mesh.geometry.attributes.position; if(!pos) return;
   rig.anims=rig.anims||[];
   const n=pos.count, base=Float32Array.from(pos.array), dep=new Float32Array(n), hw=Math.max(0.05,(rig.dims&&rig.dims.hx)||0.1);   // the hip joints' distance from the middle
@@ -21,7 +21,12 @@ function clSway(rig,mesh){
       const o=i*3, x=base[o], y=base[o+1], z=base[o+2], d=dep[i];
       if(d===0){ a[o]=x; a[o+1]=y; a[o+2]=z; continue; }
       let px=x+Math.sin(t*4.1+z*15)*d*d*rip*0.6, pz=z+trail*d+Math.sin(t*5.5+x*18+y*7)*d*d*rip, lift=0;   // the hem trails behind with speed and ripples ...
-      const rad=0.098-0.026*d, rad2=rad*1.5;   // ... then each leg, a circle on the ground plane that swings forward and back with its angle, pushes the cloth out of its way: the cloth inside the wider circle is squeezed into the ring outside the leg (smooth: no tears)
+      const rad=0.098-0.026*d, rad2=rad*1.5;
+      if(loose){ for(let k=0;k<2;k++){   // a dress: a wide skirt does not squeeze round a leg, it is pushed ahead of a forward leg and behind a back one, a smooth bump (no slit for the leg to poke through)
+        const cx=k?hw:-hw, zc=-(k?sr:sl)*-y*1.04, wx=Math.max(0,1-Math.pow((px-cx)/(rad*2.4),2)), wx2=wx*wx;
+        if(z<0){ const tz=zc-rad*1.3-0.07*d, wz=Math.min(1,-z/0.05); if(pz>tz) pz+=(tz-pz)*wx2*wz; }
+        else { const tz=zc+rad*1.3+0.05*d, wz=Math.min(1,z/0.05); if(pz<tz) pz+=(tz-pz)*wx2*wz; } }
+        a[o]=x+(px-x)*w; a[o+1]=y; a[o+2]=z+(pz-z)*w; continue; }   // ... then each leg, a circle on the ground plane that swings forward and back with its angle, pushes the cloth out of its way: the cloth inside the wider circle is squeezed into the ring outside the leg (smooth: no tears)
       for(let k=0;k<2;k++){
         const cx=k?hw:-hw, zc=-(k?sr:sl)*-y*1.04, dx=px-cx, dz=pz-zc, dd=dx*dx+dz*dz;
         if(dd<rad2*rad2){ const q=Math.sqrt(dd)||1e-6, nq=rad+(q/rad2)*(rad2-rad); px=cx+dx*nq/q; pz=zc+dz*nq/q; lift+=(1-q/rad2)*0.05*d; }

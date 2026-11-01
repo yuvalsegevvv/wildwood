@@ -102,3 +102,17 @@ body.editing .hud-top{ display:none; }
 #edDone.blocked{ opacity:.55; }
 
 .tiles.scroll{ overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; padding-right:4px; }
+/* the colour picker (ui/colour-picker.js): one block per colour, a favourites row and all colours */
+.cp-block{ margin:0 0 14px; padding:8px 10px 10px; border:1px solid rgba(238,240,226,.14); border-radius:10px; background:rgba(0,0,0,.14); }
+.cp-head{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:6px; }
+.cp-head .muted{ font-size:12px; }
+.cp-head .chip{ margin-left:auto; }
+.cp-head .cp-edit{ margin-left:0; }
+.cp-sub{ font-size:11px; letter-spacing:.04em; text-transform:uppercase; opacity:.7; margin:8px 0 5px; }
+.cp-all{ margin-top:8px; }
+.cp-all summary{ cursor:pointer; font-size:12px; opacity:.85; margin-bottom:6px; }
+.sw.prem{ position:relative; }
+.sw.prem-lock::after{ content:'\1F512'; position:absolute; right:-4px; bottom:-5px; font-size:11px; line-height:1; filter:drop-shadow(0 0 2px #000); }
+.sw.sel{ outline:3px dashed var(--lichen); outline-offset:2px; }
+.sw.fav::before{ content:'\2605'; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-size:15px; color:#fff; text-shadow:0 0 3px #000; }
+.sw{ position:relative; }

@@ -118,7 +118,7 @@ function buildCharacter(L,opt){
       if(f) rig.root.traverse(o=>{ if(o.isMesh&&!before.has(o)) ofTintGeo(o.geometry,f); }); }
     if(!rig.anims.length) rig.anims=null; }
   if(X.kit&&!X.L.aura) for(const k of X.kit.kits) if(k.aura&&X.kit.sl.top===k) cosBuildAura(rig,X,k.aura);   // a set's own aura (kit.aura, same fields as COS_AURAS), unless the wearer chose one
-  for(const m of sway) clSway(rig,m);   // skirts, flares and hems follow the legs (character/cloth.js)
+  for(const m of sway) clSway(rig,m,gmdIs(L.top));   // skirts, flares and hems follow the legs (character/cloth.js)
   kinDress(rig,X);   // kin: the fur markings, then the ears, muzzle and tail of look.kinEars / kinMuzzle / kinTail (character/model-kin.js)
   rig.left=!!L.left; rig.sillyS=sillyId(L,'strong'); rig.sillyW=sillyId(L,'weak');   // handedness (Settings > Left-handed: the weapon and shield swap hands, pose.js mirrors the arms) and the silly hand items that replace the weapon / the shield (model-silly.js)
   shieldDress(rig,X);   // the optional shield of look.shield on the left forearm (character/model-shields.js)
