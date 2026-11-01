@@ -118,3 +118,5 @@ body.touch .ab-burst{ width:56px; height:56px; align-self:center; }
   .sk-main{ grid-template-columns:1fr; }
 }
 @media (max-width:719px) and (min-width:521px){ .sk-left{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+.sk-presets{ margin:6px 0; } .sk-presets summary{ cursor:pointer; font-weight:600; }
+.sk-pr-row{ display:flex; gap:6px; flex-wrap:wrap; margin:6px 0; } .sk-pr-row input,.sk-pr-row select{ flex:1; min-width:110px; }

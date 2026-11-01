@@ -24,6 +24,7 @@ function sanitizeGear(g,cls){
   ambSanitize(g,out);   // amber: the purse and the bought outfit sets (an old save has none)
   out.fr=frSanitize(g.fr);   // friends: the friend list (names; an old save has none)
   out.rd=rdSanitizeSave(g.rd);   // raids: the raid materials of each land
+  out.pre=prSanitize(g.pre);   // presets: the ten saved loadouts (an old save has none)
   out.ss=ssSanitizeSave(g.ss);   // skillsets: the pity counts of the sources (an old save has none)
   out.dg=dgSanitizeSave(g.dg);   // dungeons: clears and best times per '<theme>:<mission>' (an old save has none)
   rlSanitizeStones(g,out);   // rolls: the weapon / armour reroll stones (an old save has none)
