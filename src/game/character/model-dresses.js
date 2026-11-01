@@ -17,10 +17,11 @@ const GMD_EDGES={sundress:[0.9],peasant:[0.93],tiered:[1/3,1/3+0.04,2/3,2/3+0.04
 for(const id of Object.keys(GMD)) GMX_PAL.top[id]=GMD[id].pal;
 const gmdIs=t=>typeof t==='string'&&Object.prototype.hasOwnProperty.call(GMD,t);
 // the dress paints the torso: skin above the bodice's top edge (v is the share of the torso, 0 at the waist), the main colour below; a back-hung wrap shows a little cleavage line in the front colour
-const gmdPaint=(L,c,u,v)=>{ if(v>GMD[L.top].top) c.set(L.skin); else c.set(L.topColor); };
+const gmdTopAt=(L,id)=>Math.min(0.62,GMD[id].top*sliderVal(L,'neckline'));   // the bodice's top edge, moved by the Neckline slider
+const gmdPaint=(L,c,u,v)=>{ if(v>gmdTopAt(L,L.top)) c.set(L.skin); else c.set(L.topColor); };
 // the bodice: a snug shell over the torso from the waist to its top edge, straps, sleeves, ties and trim, in the spine's frame
 function gmdTop(X,D){
-  const {L,sg}=X, id=L.top, G=GMD[id], TK=D.TK, nr=D.neckR, PL=gmxPalAt(L,'top'), tc=L.topColor, out=[], fz=yd=>-(torsoSize(X,D,yd).rz+0.004), bz=yd=>torsoSize(X,D,yd).rzBack+0.004;
+  const {L,sg}=X, id=L.top, G=Object.assign({},GMD[id],{top:gmdTopAt(L,id)}), TK=D.TK, nr=D.neckR, PL=gmxPalAt(L,'top'), tc=L.topColor, out=[], fz=yd=>-(torsoSize(X,D,yd).rz+0.004), bz=yd=>torsoSize(X,D,yd).rzBack+0.004;
   const ys=[]; for(let i=0;i<=6;i++) ys.push(0.02+(G.top-0.045)*i/6); ys.push(G.top-0.027,G.top-0.024,G.top);   // (two rows a hair apart at the trim's lower edge: a crisp line, not a gradient)
   const rows=ys.map(yd=>{ const t=torsoSize(X,D,yd), m=0.009; return {y:yd*TK,rx:t.rx+m,rz:Math.max(t.rz,t.rzBack)+m}; });
   out.push(pc(ofLoft(rows,sg(40),0,TAU),(x,y,z,c)=>{ c.set(tc); const t=y/TK; if(t>G.top-0.025) c.set(PL[1]); else if(t<0.045) c.multiplyScalar(0.8); c.multiplyScalar(0.96+0.04*Math.sin(Math.atan2(x,z)*6)); }));   // (the first row sits at the waist: the skirt's rim covers its lower edge)
@@ -59,11 +60,11 @@ function gmdTop(X,D){
 // the skirt, in the hips' frame: rings from the waist to the hem, radius = the waist's + (the hem's - the waist's) * the silhouette curve, a hip swell first, folds that deepen towards the hem, a waved hem
 function gmdHips(X,D){
   const {L,sg}=X, id=L.top, G=GMD[id], PL=gmxPalAt(L,'top'), tc=L.topColor, s0=torsoSize(X,D,0.03), rz0=Math.max(s0.rz,s0.rzBack)+0.012, rx0=Math.max(s0.rx+0.014,D.hx+0.09);
-  const len=Math.min(G.len*D.hipY,D.hipY-0.05), rows=sg(22), seg=sg(48), geo=[], R=[], TS=[];
+  const len=Math.min(G.len*X.S.skirtLen*D.hipY,D.hipY-0.05), rows=sg(22), seg=sg(48), geo=[], R=[], TS=[];
   for(let i=0;i<=rows;i++) TS.push(i/rows);
   for(const b of GMD_EDGES[id]){ TS.push(Math.min(1,b)); if(b>0.004) TS.push(b-0.004); }   // a colour edge gets two rows a hair apart: a crisp line, not a gradient across a whole row
   TS.sort((a,b)=>a-b);
-  for(const t of TS){ const sw=G.bulge*Math.sin(Math.PI*Math.min(1,t/0.35)), k=G.curve(t)*(G.hem-1)+1+sw, tier=G.tiers?Math.pow(((t*G.tiers)%1+1)%1,1.6)*0.16*(G.hem-1)*0.5:0;
+  for(const t of TS){ const sw=G.bulge*Math.sin(Math.PI*Math.min(1,t/0.35)), k=G.curve(t)*(G.hem*X.S.skirtFlare-1)+1+sw, tier=G.tiers?Math.pow(((t*G.tiers)%1+1)%1,1.6)*0.16*(G.hem-1)*0.5:0;
     R.push({y:0.03-len*t,rx:rx0*(k+tier),rz:rz0*(k+tier)*0.92}); }
   const g=ofLoft(R,seg,0,TAU), p=g.attributes.position, n=p.count, TW=(t,a)=>G.wave*Math.pow(t,2.5)*Math.sin(a*3+1);
   for(let i=0;i<n;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), t=Math.min(1,Math.max(0,(0.03-y)/len)), a=Math.atan2(x,z), f=G.folds.amp*Math.pow(t,1.25)*(Math.sin(G.folds.n*a)*0.7+Math.sin(G.folds.n*a*2.3+1.3)*0.3), w=TW(t,a);

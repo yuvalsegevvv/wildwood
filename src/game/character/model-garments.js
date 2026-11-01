@@ -71,7 +71,7 @@ function gmCuff(X,D,sd){
 }
 // ---- the skirt family: a lathe from the waist, a number of sharp pleats or a smooth flare; hem and waistband are painted ----
 function gmSkirt(X,D,kind){
-  const {L,S,sg}=X, prof=[], rows=sg(16), legs=S.legs, top=Math.max(0.165*D.B,D.hx+0.085), kilt=kind==='kilt', hk=kind==='hakama', wr=kind==='wrapskirt', pl=kind==='pleated'||hk, len=kilt?0.46:hk?0.8:pl?0.3:wr?0.25:0.4, hem=top*(kilt?1.22:hk?1.4:pl?1.55:wr?1.25:1.4);
+  const {L,S,sg}=X, prof=[], rows=sg(16), legs=S.legs, top=Math.max(0.165*D.B,D.hx+0.085), kilt=kind==='kilt', hk=kind==='hakama', wr=kind==='wrapskirt', pl=kind==='pleated'||hk, len=(kilt?0.46:hk?0.8:pl?0.3:wr?0.25:0.4)*S.skirtLen, hem=top*(1+((kilt?1.22:hk?1.4:pl?1.55:wr?1.25:1.4)-1)*S.skirtFlare);   // (the skirt length and flare sliders scale the cut)
   for(let i=0;i<=rows;i++){ const t=i/rows; prof.push(new THREE.Vector2(top+(hem-top)*Math.pow(t,kilt?1.1:1.35)+top*0.05*Math.sin(Math.PI*Math.min(1,t/0.4)),(0.04-len*t)*legs)); }   // (a hip swell first, then the flare: a curve, not a cone)
   const g=(wr?new THREE.LatheGeometry(prof,sg(40),Math.PI*1.5+0.65,TAU-1.3):new THREE.LatheGeometry(prof,sg(pl?48:40))).scale(1,1,0.8), p=g.attributes.position;
   if(pl) for(let i=0;i<p.count;i++){ const x=p.getX(i), z=p.getZ(i), a=Math.atan2(x,z), k=(Math.floor(((a/TAU)*36+36)%1*0)+0)+0.045*Math.sin(a*18)*(1-(p.getY(i)>-0.01?1:0)*0.9); const r=Math.hypot(x,z); p.setX(i,x*(1+k*0.5)); p.setZ(i,z*(1+k*0.5)); }

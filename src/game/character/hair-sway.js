@@ -12,16 +12,17 @@ function hwReach(parts){
     for(let i=0;i<p.count;i++) out.push(Math.pow(Math.min(1,Math.max(0,(top-p.getY(i))/E)),1.25)*E*sc); }
   return Float32Array.from(out);
 }
-function hwSway(rig,mesh,reach){
+function hwSway(rig,mesh,reach,amt){
   const pos=mesh&&mesh.geometry&&mesh.geometry.attributes.position; if(!pos||reach.length!==pos.count||!rig.head||!rig.root) return;
   rig.anims=rig.anims||[];
   const n=pos.count, base=Float32Array.from(pos.array); mesh.frustumCulled=false;
+  amt=typeof amt==='number'&&isFinite(amt)?Math.max(0,Math.min(2,amt)):1;   // the Hair swing slider (0 = still)
   let ax=0, az=0, vx=0, vz=0, yaw0=null, rest=true;
   rig.anims.push((t,dt,mv)=>{
     dt=Math.min(0.05,Math.max(0.001,dt||0.016));
     const yaw=rig.root.rotation.y+rig.head.rotation.y; let dy=0; if(yaw0!==null){ dy=yaw-yaw0; dy-=Math.round(dy/6.283185307)*6.283185307; } yaw0=yaw;
     const turn=Math.max(-6,Math.min(6,dy/dt)), gait=Math.abs(rig.hipL.rotation.x-rig.hipR.rotation.x);
-    const tx=0.16*mv+0.1*gait, tz=-0.03*turn;   // trail back with speed and bounce with the stride; lag a turn
+    const tx=(0.16*mv+0.1*gait)*amt, tz=-0.03*turn*amt;   // trail back with speed and bounce with the stride; lag a turn
     for(let s=0;s<2;s++){ const h=dt/2;   // two substeps: stiff enough to be crisp, stable at 20 fps
       vx+=(-55*(ax-tx)-5.5*vx)*h; vz+=(-55*(az-tz)-5.5*vz)*h; ax+=vx*h; az+=vz*h; }
     ax=Math.max(-0.7,Math.min(0.7,ax)); az=Math.max(-0.7,Math.min(0.7,az));
@@ -29,7 +30,7 @@ function hwSway(rig,mesh,reach){
     if(quiet&&rest) return;
     if(quiet){ pos.array.set(base); pos.needsUpdate=true; rest=true; ax=az=vx=vz=0; return; }
     rest=false;
-    const a=pos.array, lift=-0.5*(ax*ax+az*az), fl=0.004*mv;
+    const a=pos.array, lift=-0.5*(ax*ax+az*az), fl=0.004*mv*amt;
     for(let i=0;i<n;i++){ const r=reach[i], o=i*3; if(r<1e-5) continue;
       const f=Math.sin(t*6.5+base[o+1]*40+base[o]*25)*fl*Math.min(1,r*8);   // a small flutter along the strands
       a[o]=base[o]+az*r+f; a[o+1]=base[o+1]+lift*r; a[o+2]=base[o+2]+ax*r; }

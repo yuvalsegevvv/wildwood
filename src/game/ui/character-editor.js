@@ -46,7 +46,7 @@ const EDIT=[
       {k:'hairColor2',num:2,hint:'Gradient end',type:'color',opts:HAIRC,base:'hair'},
       {k:'hairThird',label:'Third colour',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]},
       {k:'hairColor3',num:3,hint:'Third',type:'color',opts:HAIRC,base:'hair'}
-    ].concat(['hairLength','hairVolume','bangs'].map(k=>({slider:k}))).concat([
+    ].concat(['hairLength','hairVolume','bangs','hairSwing'].map(k=>({slider:k}))).concat([
       {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]}])},
     {name:'Face', rows:[{k:'face',type:'grid',kind:'face',ids:()=>[['round'],['oval'],['angular']]}].concat(['head','jaw','chin','cheeks'].map(k=>({slider:k})))},
     {name:'Eyes', rows:[{k:'eyes',num:1,hint:'Eyes',type:'color',opts:EYEC.concat(EYEC_MORE),base:'face'},{k:'eyes2',num:2,hint:'Second eye',type:'dcolor',opts:EYEC.concat(EYEC_MORE),none:'Same'},{k:'pupil',type:'grid',kind:'pupil',ids:()=>FACE_PUPILS.map(p=>p.slice())}].concat(['eyeSize','eyeGap','eyeHeight','eyeTilt','brow'].map(k=>({slider:k})))},
@@ -60,8 +60,8 @@ const EDIT=[
     // the signature outfits (src/game/outfits): every piece has its own sub-tab, so the pieces of different sets mix. A colour row marked base:'<slot>' paints the base garment, or, while that slot wears an outfit's piece,
     // recolours the piece (look.tint<Slot>; 'Designed colours' puts the original back).
     {name:'Hat', close:true, rows:[{k:'hat',type:'grid',kind:'hat',slot:'h',col:'hatColor',ids:()=>HT_HATS.map(h=>h.slice()).concat(HTX_HATS.map(h=>h.slice()),ofItems('hat'))},{k:'hatColor',label:'',type:'color',base:'hat',opts:TINTC},{type:'palette',slot:'hat'},{type:'armor',slot:'helmet'}]},
-    {name:'Top', rows:[{k:'top',type:'grid',kind:'top',slot:'t',col:'topColor',ids:()=>GM_TOPS.map(h=>h.slice()).concat(GMX_TOPS.map(h=>h.slice()),ofItems('top'))},{k:'topColor',label:'',type:'color',base:'top',opts:TINTC},{type:'palette',slot:'top'},{type:'armor',slot:'top'}]},
-    {name:'Bottom', rows:[{k:'bottom',type:'grid',kind:'bottom',slot:'b',col:'bottomColor',ids:()=>GM_BOTTOMS.map(h=>h.slice()).concat(GMX_BOTTOMS.map(h=>h.slice()),ofItems('bottom'))},{k:'bottomColor',label:'',type:'color',base:'bottom',opts:TINTC},{type:'palette',slot:'bottom'},{type:'armor',slot:'bottom'}]},
+    {name:'Top', rows:[{k:'top',type:'grid',kind:'top',slot:'t',col:'topColor',ids:()=>GM_TOPS.map(h=>h.slice()).concat(GMX_TOPS.map(h=>h.slice()),ofItems('top'))},{k:'topColor',label:'',type:'color',base:'top',opts:TINTC},{type:'palette',slot:'top'},{slider:'neckline',when:()=>gmdIs(LOOK.top)},{slider:'skirtLen',when:()=>gmdIs(LOOK.top)},{slider:'skirtFlare',when:()=>gmdIs(LOOK.top)},{type:'armor',slot:'top'}]},
+    {name:'Bottom', rows:[{k:'bottom',type:'grid',kind:'bottom',slot:'b',col:'bottomColor',ids:()=>GM_BOTTOMS.map(h=>h.slice()).concat(GMX_BOTTOMS.map(h=>h.slice()),ofItems('bottom'))},{k:'bottomColor',label:'',type:'color',base:'bottom',opts:TINTC},{type:'palette',slot:'bottom'},{slider:'skirtLen',when:()=>edSkirtWorn()},{slider:'skirtFlare',when:()=>edSkirtWorn()},{type:'armor',slot:'bottom'}]},
     {name:'Shoes', rows:[{k:'shoes',type:'grid',kind:'shoes',slot:'s',col:'shoeColor',ids:()=>GM_SHOES.map(h=>h.slice()).concat(GMX_SHOES.map(h=>h.slice()),ofItems('shoes'))},{k:'shoeColor',label:'',type:'color',base:'shoes',opts:TINTC},{type:'palette',slot:'shoes'},{type:'armor',slot:'shoes'}]},
     // version 3.2: the cape (the backpack is the free one) and the aura, each with its own colours; crafted ones are made at a Wayfarers' Lodge (shared/cospieces.js), and every one can be tried on
     {name:'Cape', rows:[
@@ -181,6 +181,8 @@ function clearOutfitSlot(i){ const a=outfitSlots(); a[i]=null; putOutfitSlots(a)
 function wearOutfitSlot(i){ const o=outfitSlots()[i]; if(!o) return; const mdl=o.model; LOOK=Object.assign({},LOOK,o); LOOK.custom=true; if(!(mdl in CHAR_MODELS)&&mdl!=='base') LOOK.model='base'; ofTidy(LOOK); saveLook(); rebuildHiker(); renderEditor(); }
 const outfitSlotLook=o=>{ const l=Object.assign({},o); delete l.armor; delete l.armorHat; delete l.armorTop; delete l.armorBottom; delete l.armorShoes; return l; };
 const sameSlot=o=>OUTFIT_KEYS.every(k=>o[k]===undefined||o[k]===LOOK[k]);
+// a skirt of any kind is worn (a dress counts: it carries its own skirt): the skirt sliders show
+const edSkirtWorn=()=>gmdIs(LOOK.top)||LOOK.bottom==='skirt'||LOOK.bottom==='kilt'||LOOK.bottom==='pleated'||gmxSkirtKind(LOOK.bottom);
 function sliderRow(wrap,row){
   const s=SLIDER_BY_KEY[row.slider], mdl=charModelOf(LOOK), rec=sliderRange(mdl,s.k), cur=sliderVal(LOOK,s.k);
   const lb=document.createElement('div'); lb.className='ed-label ed-slabel'; const nm=document.createElement('span'); nm.textContent=s.label; const val=document.createElement('span'); val.className='ed-val'; lb.append(nm,val); wrap.append(lb);
@@ -214,6 +216,7 @@ function renderEditor(){
   edBlockN=0; edColTargets=[];   // (the colour blocks of this page: ui/colour-picker.js)
   for(const row of edCur().rows){
     if(row.fem && LOOK.sex!=='female') continue;
+    if(row.when&&!row.when()) continue;   // a slider that only matters for what is worn (the skirt sliders)
     if(row.base && ofPieces(LOOK)[row.base] && row.type!=='color') continue;   // an outfit's piece in that slot has its own look: these rows (facial hair, antenna hair, backpack) do nothing while it is worn
     if(row.only && !ofPieces(LOOK)[row.base]) continue;
     if(row.need&&!LOOK[row.need]) continue;   // a colour row of a cape or an aura that is not worn   // a recolour row of a piece that is not worn

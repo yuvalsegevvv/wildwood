@@ -50,7 +50,12 @@ const BODY_SLIDERS=[
   // Hair
   {k:'hairLength',g:'Hair',    label:'Hair length',   min:0.6,  max:1.5,  def:1, ends:['Shorter','Longer']},
   {k:'hairVolume',g:'Hair',    label:'Hair volume',   min:0.85, max:1.35, def:1, ends:['Sleek','Fluffy']},
-  {k:'bangs',    g:'Hair',     label:'Fringe length', min:0,    max:1.5,  def:1, ends:['None','Long']}
+  {k:'bangs',    g:'Hair',     label:'Fringe length', min:0,    max:1.5,  def:1, ends:['None','Long']},
+  {k:'hairSwing',g:'Hair',     label:'Hair swing',    min:0,    max:1.6,  def:1, ends:['Still','Bouncy']},   // how far the hanging locks swing with the walk and a turn (character/hair-sway.js)
+  // Outfit (skirts, dresses and necklines: character/model-garments.js, model-dresses.js)
+  {k:'skirtLen', g:'Outfit',   label:'Skirt length',  min:0.6,  max:1.5,  def:1, ends:['Shorter','Longer']},
+  {k:'skirtFlare',g:'Outfit',  label:'Skirt flare',   min:0.7,  max:1.5,  def:1, ends:['Narrow','Full']},
+  {k:'neckline', g:'Outfit',   label:'Neckline',      min:0.85,  max:1.2,  def:1, ends:['Lower','Higher']}
 ];
 // the chest as the body uses it: past 1.6 it grows at four fifths of the slider, and a larger chest also broadens the ribcage (chestRibs), so the very large end still reads as one body (model-body.js buildTorso, outfit-tools.js torsoSize)
 const chestEff=ch=>ch<=1.6?ch:1.6+(ch-1.6)*0.8, chestRibs=ch=>0.05*Math.min(Math.max(ch-1,0),1.2);

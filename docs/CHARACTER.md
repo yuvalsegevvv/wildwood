@@ -65,6 +65,10 @@ A look field that is not a slider (hair style, colours, face shape) still follow
 | `hairLength` | Hair | Hair length | 0.6 .. 1.5 | 1 | 0.7 .. 1.35 | Shorter / Longer |
 | `hairVolume` | Hair | Hair volume | 0.85 .. 1.35 | 1 | 0.9 .. 1.25 | Sleek / Fluffy |
 | `bangs` | Hair | Fringe length | 0 .. 1.5 | 1 | 0.3 .. 1.4 | None / Long |
+| `hairSwing` | Hair | Hair swing | 0 .. 1.6 | 1 | whole range | Still / Bouncy |
+| `skirtLen` | Outfit | Skirt length | 0.6 .. 1.5 | 1 | whole range | Shorter / Longer |
+| `skirtFlare` | Outfit | Skirt flare | 0.7 .. 1.5 | 1 | whole range | Narrow / Full |
+| `neckline` | Outfit | Neckline | 0.85 .. 1.2 | 1 | whole range | Lower / Higher |
 
 **Adding a slider:** a row in `BODY_SLIDERS`; read `S.<key>` (the clamped value) in `model-body.js` / `model-face.js` / `model-hair.js`; add its recommended range to every character model's `ranges`
 (a missing one means "the whole range", which an outfit will not like); add a row `{slider:'<key>'}` to a tab in `EDIT` (ui/character-editor.js); add it to the "sliders really change the body"
