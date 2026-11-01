@@ -3,6 +3,7 @@
    pzStatueTier(GEAR.sigOff) steps. Everything is client-only and per player: each hiker sees their own statue grow. The statue itself is sun-ruin.js (gwStatue, 8 m tall on a plinth of radius 5.6).
    Steps: 1 eight rune stones round the plinth, 2 four braziers, 3 a halo, 4 a head of light, 5 four banners, 6 a sun disc behind it, 7 six orbiting shards, 8 a beam to the sky. Test: client-smoke (loads), docs/PUZZLES.md round 9. */
 let SGS=null;
+const SGS_NAMES=['Rune stones','Braziers','A halo','A head of light','Banners','A sun disc','Orbiting shards','A beam to the sky'];   // what each step adds (the offering panel lists them)
 function sgsBuild(){
   const T=GW_PLACE.statue; if(!T) return;
   const G=new THREE.Group(); G.position.set(T.x,getH(T.x,T.z),T.z); G.visible=false; scene.add(G);

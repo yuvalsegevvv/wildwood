@@ -27,9 +27,9 @@ function pzBuild(){
 }
 const pzNearest=()=>{ if(!started||PL.dead) return null; const T=GW_PLACE.statue; if(T&&Math.hypot(P.x-T.x,P.z-T.z)<PZ_STATUE_REACH) return {statue:true,S:{id:'statue'}}; let b=null,bd=PZ_REACH; for(const s of PZ_STONES){ const d=Math.hypot(P.x-s.S.x,P.z-s.S.z); if(d<bd){ bd=d; b=s; } } return b; };
 const pzNear=()=>!!pzNearest();
-function pzPrompt(tk){ const s=pzNearest(); if(s.statue){ const n=(GEAR.sig||0)-(GEAR.sigOff||0); return n>0?'Press '+tk+': offer '+n+' Sigils to the statue':'The statue wants Sigils: solve puzzle stones for the first time'; } if(s.pend) return 'Press '+tk+': open the chest'; const  R=GEAR&&GEAR.pz&&GEAR.pz[s.S.id], left=R&&R.t>Date.now()?Math.ceil((R.t-Date.now())/60000):0;
+function pzPrompt(tk){ const s=pzNearest(); if(s.statue){ const n=(GEAR.sig||0)-(GEAR.sigOff||0); return 'Press '+tk+(n>0?': offer '+n+' Sigils to the statue':': see the Sigil rewards'); } if(s.pend) return 'Press '+tk+': open the chest'; const  R=GEAR&&GEAR.pz&&GEAR.pz[s.S.id], left=R&&R.t>Date.now()?Math.ceil((R.t-Date.now())/60000):0;
   return left?'The stone is dim: it lights again in '+left+' min':'Press '+tk+': solve the puzzle ('+PZ_DIFF[s.S.diff].name+')'; }
-function pzOpenNear(){ const s=pzNearest(); if(s&&s.statue){ netSend({t:'pz',a:'offer'}); return; } if(s&&s.pend){ const m=s.pend; s.pend=null; pzSheet(m); return; } if(s) netSend({t:'pz',a:'open',site:s.S.id}); }
+function pzOpenNear(){ const s=pzNearest(); if(s&&s.statue){ pzOfferOpen(); return; } if(s&&s.pend){ const m=s.pend; s.pend=null; pzSheet(m); return; } if(s) netSend({t:'pz',a:'open',site:s.S.id}); }
 // a won stone's chest (panel.js pzDone): false when there is no such stone here (the sheet shows at once instead)
 function pzChestDrop(m){ const s=PZ_STONES.find(z=>z.S.id===m.site); if(!s) return false; s.pend=m; s.open=0; s.until=Date.now()+PZ_RENEW_MS; toast('A chest appeared beside the stone'); return true; }
 let pzLastT=0;
