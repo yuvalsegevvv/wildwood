@@ -59,7 +59,7 @@ function gmdTop(X,D){
 }
 // the skirt, in the hips' frame: rings from the waist to the hem, radius = the waist's + (the hem's - the waist's) * the silhouette curve, a hip swell first, folds that deepen towards the hem, a waved hem
 function gmdHips(X,D){
-  const {L,sg}=X, id=L.top, G=GMD[id], PL=gmxPalAt(L,'top'), tc=L.topColor, s0=torsoSize(X,D,0.03), rz0=Math.max(s0.rz,s0.rzBack)+0.012, rx0=Math.max(s0.rx+0.014,D.hx+0.09);
+  const {L,sg}=X, id=L.top, G=GMD[id], PL=gmxPalAt(L,'top'), tc=L.topColor, s0=torsoSize(X,D,0.03), rz0=Math.max(s0.rz,s0.rzBack)+0.012, rx0=Math.max(s0.rx+0.014,D.hx+0.082*D.tw+0.005);
   const len=Math.min(G.len*X.S.skirtLen*D.hipY,D.hipY-0.05), rows=sg(22), seg=sg(48), geo=[], R=[], TS=[];
   for(let i=0;i<=rows;i++) TS.push(i/rows);
   for(const b of GMD_EDGES[id]){ TS.push(Math.min(1,b)); if(b>0.004) TS.push(b-0.004); }   // a colour edge gets two rows a hair apart: a crisp line, not a gradient across a whole row
