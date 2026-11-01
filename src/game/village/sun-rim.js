@@ -62,7 +62,7 @@ function gwFloor(C){
   C.land.push(mkGeo(P,Nn,Co));
 }
 // ---- water: the lake and the river under the floor's holes, curbs of dressed stone round them; outside the rim the river runs on the cracks' floors ----
-function gwWaterY(x,z,weir){ const G=GLASSWELL; if(Math.hypot(x,z)<gwRimR(Math.atan2(x,z),'foot')) return -0.35; const k=smoothstep(G.r,G.foot,Math.hypot(x,z)); return (weir?-6*k:G.skirtH*k)+0.07; }
+function gwWaterY(x,z,weir){ const G=GLASSWELL; if(Math.hypot(x,z)<gwRimR(Math.atan2(x,z),'foot')) return -0.35; const k=smoothstep(G.r,G.foot,Math.hypot(x,z)); return (weir?-6*k:G.skirtH*k)-0.35; }   // (same as gwWaterRel, shared/sunscar-city.js)
 function gwWater(C){
   const G=GLASSWELL, lk=G.lake, R=gwRiver(), P=[],Nn=[],Co=[], deep=new THREE.Color(0x16707f), shallow=new THREE.Color(0x3a9fa6);
   const q=(x,y,z,t)=>{ P.push(x,y,z); Nn.push(0,1,0); _gwC.copy(deep).lerp(shallow,t); Co.push(_gwC.r,_gwC.g,_gwC.b); };

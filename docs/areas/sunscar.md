@@ -38,6 +38,7 @@ Playable since version 3. The design (what the land should be, the city's distri
 - `sunKeepOut` is the one question for camps, nodes and plants (water, the Springhead, the city's plateau, the reserved door).
 - `bareGround(x,z)` is true everywhere in the Sunscar (the old Sunwall rule), so the common planting loops skip it; the Sunscar has its own branch.
 - A tool's headless canvas has no `measureText` width: `gwSign` guards it.
+- Colliders must follow the model: `node tools/city-footprint.js out/` draws the model's walls at head height next to `VIL5`'s boxes and circles (bright green = a wall you can walk through, red = an invisible block). A court (the inns, the Physician's) is wall segments, not one box; a place's door is local -z, so its NPC anchor stands at `-toward(rot,...)`. The river's water in the cracks lies 0.35 under the floor (`gwWaterRel` / `gwWaterY`), inside the channel's cut, or it floats over the banks as flat patches.
 
 ## Left out (also in `docs/NOT-BUILT.md`)
 

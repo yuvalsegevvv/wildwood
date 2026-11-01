@@ -28,4 +28,4 @@ function gwCityWaterAt(cx,cz){
   return null;
 }
 // the river's surface above the floor: level in the Bowl, climbing the River Gate's crack (and falling in the Weir's) with the crack's floor
-function gwWaterRel(x,z,weir){ const G=GLASSWELL; if(Math.hypot(x,z)<gwRimR(Math.atan2(x,z),'foot')) return -0.35; const k=smoothstep(G.r,G.foot,Math.hypot(x,z)); return (weir?-6*k:G.skirtH*k)+0.07; }
+function gwWaterRel(x,z,weir){ const G=GLASSWELL; if(Math.hypot(x,z)<gwRimR(Math.atan2(x,z),'foot')) return -0.35; const k=smoothstep(G.r,G.foot,Math.hypot(x,z)); return (weir?-6*k:G.skirtH*k)-0.35; }   // (0.35 under the crack's floor, as in the Bowl: the channel's cut is 1.25 deep, so the water lies in it and never above its banks)
