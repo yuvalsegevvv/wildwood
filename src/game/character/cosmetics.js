@@ -149,16 +149,22 @@ function cosBuildAura(rig,X,def){
   }
   const rings=def.ring?cosRings(def).map(r=>{ const m=new THREE.Mesh(r.geo,cosMat(def.col)); m.position.y=r.y; m.frustumCulled=false; g.add(m); return Object.assign({m},r); }):[];
   let halo2=null; if(def.ring&&def.deco==='halo'){ halo2=new THREE.Mesh(COS_GEO.halo||(COS_GEO.halo=new THREE.RingGeometry(0.2,0.25,32).rotateX(-Math.PI/2)),cosMat(def.col2)); halo2.position.y=D.hipY+D.headY+0.2; halo2.frustumCulled=false; g.add(halo2); }
+  const fxf=def.fx?cosAuraFx(rig,X,def,g,cheap):null;   // ground patterns, pillar, outline (cosmetics-aura.js)
   rig.anims=rig.anims||[];
   rig.anims.push((t,dt,mv)=>{
+    if(fxf) fxf(t);
     for(const p of ps){
-      const u=(t*0.18*p.sp+p.ph)%1, a=p.off+t*(def.style==='orbit'?0.9:0.35)*p.sp;
-      let y, r=p.r;
-      if(def.style==='orbit'){ y=hgt*(0.12+0.78*((p.ph+0.3*Math.sin(t*0.6+p.off)+1)%1)); r=0.5+0.1*Math.sin(t*1.3+p.off); }
-      else if(def.style==='rise'){ y=u*hgt*1.1; r=p.r*(1-0.4*u); }
+      const st=def.style, u=(t*0.18*p.sp+p.ph)%1, a0=p.off+t*(st==='orbit'?0.9:0.35)*p.sp;
+      let a=a0, y, r=p.r, fade=null;
+      if(st==='orbit'){ y=hgt*(0.12+0.78*((p.ph+0.3*Math.sin(t*0.6+p.off)+1)%1)); r=0.5+0.1*Math.sin(t*1.3+p.off); }
+      else if(st==='rise'){ y=u*hgt*1.1; r=p.r*(1-0.4*u); }
+      else if(st==='spiral'){ const w=(t*0.16+p.ph)%1; a=w*TAU*3+(p.off>3?Math.PI:0)+t*0.7; y=w*hgt*1.1; r=0.34+0.04*Math.sin(w*20); fade=Math.sin(w*Math.PI); }   // a helix climbing the body
+      else if(st==='swirl'){ const w=(t*0.2*p.sp+p.ph)%1; a=p.off+t*2.4*p.sp; r=0.3+0.75*w; y=0.07+0.16*Math.sin(t*3+p.off)+0.3*w*w; fade=Math.sin(w*Math.PI); }   // a flat vortex round the feet
+      else if(st==='burst'){ const w=(t*0.42*p.sp+p.ph)%1; a=p.off; r=0.12+1.0*w; y=hgt*0.55+0.3*Math.sin(p.off*3)*w+0.2*Math.sin(p.off*5)*w*w; fade=1-w*w; }   // sparks flung outward from the chest
+      else if(st==='drift'){ a=p.off+t*0.22*p.sp; r=0.45+0.22*Math.sin(t*0.7+p.off*2); y=hgt*(0.45+0.4*Math.sin(t*0.45*p.sp+p.off*1.7)); fade=0.7+0.3*Math.sin(t*2+p.off); }   // hovering, no travel up or down
       else { y=hgt*1.15*(1-u); r=p.r+0.1*Math.sin(t*1.5+p.off); }   // fall
       p.m.position.set(Math.sin(a)*r,y,Math.cos(a)*r);
-      const fade=def.style==='orbit'?1:Math.sin(Math.min(1,u)*Math.PI), sc=0.4+1.1*fade; p.m.scale.setScalar(sc);
+      if(fade===null) fade=st==='orbit'?1:Math.sin(Math.min(1,u)*Math.PI); const sc=0.4+1.1*fade; p.m.scale.setScalar(sc*(shape==='heart'?1.6:1));
       if(shape==='wisp') p.m.rotation.set(0,a+Math.PI,0);
       else if(upright) p.m.rotation.set(0,a,0);
       else if(spinny) p.m.rotation.set(t*(shape==='grain'?4:1.6)+p.off,t*1.3+p.off,shape==='flake'?t*0.8:0);

@@ -151,6 +151,7 @@ const CP_RECIPE={
   'd:moth':{res:[],mats:[['glasswisp',3],['rimewisp',3]],coins:450},
   'd:bracelet':{res:[['iron',2]],mats:[['beetle',3]],coins:100},
   'd:anklet':{res:[['silver',1]],mats:[['crab',3]],coins:100},
+  'a:lovelight':{res:[['sunpetal',5],['yomogi',4]],mats:[],coins:300},
   'a:spore':{res:[],mats:[['shroom',10],['deathcap',6]],coins:150},
   'a:bubble':{res:[],mats:[['tideslime',8],['crab',6]],coins:250},
   'a:spirit':{res:[],mats:[['kodama',8],['onibi',6]],coins:500},

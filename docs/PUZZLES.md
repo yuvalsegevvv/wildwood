@@ -75,3 +75,7 @@ Files: `shared/puzzle-group.js` (placement), `server/puzzles-group.js` (the rule
 ## Round 11: the offering panel
 
 Standing at the statue, the talk key opens "Offering to the statue" (`pzOfferOpen`, `game/puzzles/scrolls.js`): Sigils carried / offered, a bar to the next level, the statue's step, the **whole 40-level list from the start** (each level's cosmetic, the 10 gems, the Unique scroll every 5th, the matching set at 10 / 20 / 30 / 40; done levels are ticked and the next is outlined) and the Offer button when Sigils are carried. The gem shop's Sigil track tab shows the same list without the button. Test: `client-smoke`.
+
+## Round 12: auras and outfit pictures
+- Auras: 7 motion styles (orbit, rise, fall, spiral, swirl, burst, drift) and an `fx` field (12th element of a `COS_AURAS` row): ground patterns `g:heart|pent|lotus|ripple|rays`, `pillar`, `outline` (body hull). Code: `game/character/cosmetics-aura.js`, the loop in `cosmetics.js`. New crafted heart aura `lovelight` (the Sigil track's hearts are earned at levels ~26/37).
+- Lodge crafting list and the Sigil offering list now show a thumbnail of each piece (`cosPicHtml` / `cosPicFill`, `economy/cosmetics.js`, using `cthGet`).

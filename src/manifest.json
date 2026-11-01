@@ -302,7 +302,7 @@
     "character/outfit-extras.js",
     "character/outfit-shapes.js",
     "character/outfit-faces.js",
-    "character/cosmetics.js", "character/cosmetics-back.js",
+    "character/cosmetics.js", "character/cosmetics-aura.js", "character/cosmetics-back.js",
     "character/modest.js",
     "character/model-decos.js",
     "character/model-shields.js",
