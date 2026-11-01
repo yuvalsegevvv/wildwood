@@ -173,6 +173,7 @@ function cosBuildAura(rig,X,def){
 function cosDress(rig,X){
   const L=X.L;
   const cape=cosTint(cosDef('c',L.cape),L,'cape'), aura=cosTint(cosDef('a',L.aura),L,'aura');
-  if(cape&&cape.pat!=='pack') cosBuildCape(rig,X,cape);   // (the backpack is drawn on the torso: model-body.js buildTorso)
+  if(cape&&cape.pat.indexOf('back:')===0) cosBuildBack(rig,X,cape);   // wings, tails, a fan (cosmetics-back.js)
+  else if(cape&&cape.pat!=='pack') cosBuildCape(rig,X,cape);   // (the backpack is drawn on the torso: model-body.js buildTorso)
   if(aura) cosBuildAura(rig,X,aura);
 }

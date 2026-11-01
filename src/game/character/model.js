@@ -79,7 +79,7 @@ const anchorAt=(parent,name,x,y,z)=>{ const a=new THREE.Object3D(); a.name='a:'+
    rig.dims (the measurements: shoulder / hip joint offsets, limb lengths, head scale...), rig.sliders (the clamped slider values) and rig.anchors (named empty
    nodes on the bones: head top, face, neck, chest, back, waist, hips, shoulders, wrists, ankles). q is the detail factor (see charDetail). */
 function buildCharacter(L,opt){
-  L=kinLook(modestLook(L));   // kin: a mane replaces the hair (model-kin.js)   // the child-safe setting: bare crafted pieces become plain ones (character/modest.js)
+  L=kinLook(modestLook(gmxAliasLook(L)));   // kin: a mane replaces the hair (model-kin.js)   // the child-safe setting: bare crafted pieces become plain ones (character/modest.js)
   const PC=ofPieces(L), worn=Object.keys(PC).length>0;   // the slots that wear an item of a signature outfit (outfit-tools.js "mixing the pieces"): each one replaces the base item of that slot
   if(worn){ const o={}; if(PC.top){ o.top='outfit'; o.pack=false; if(L.cape==='pack') o.cape=''; } if(PC.bottom){ o.bottom='outfit'; o.bottomStyle=''; } if(PC.shoes) o.shoes='outfit'; if(PC.hat) o.hat='outfit'; if(PC.glove) o.gloves='outfit'; if(PC.hair){ o.hair='bald'; o.ahoge=false; } if(PC.face) o.facial='none'; L=Object.assign({},L,o); }
   const q=(opt&&opt.q)||1, sg=n=>Math.max(5,Math.round(n*q)), S=lookSliders(L), fem=L.sex==='female';

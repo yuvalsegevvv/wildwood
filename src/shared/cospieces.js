@@ -15,6 +15,18 @@ const CP_DECO=['deco1','deco2','deco3'];   // up to three decorations, any of th
 const CP_NONE={}; for(const k of CP_LETTERS) CP_NONE[k]=CP_SLOTS[k][1];
 // the crafted pieces of the five garment slots: [slot, id, name, grade 1..6 (the land it is for), a short line]; the models are in game/character/model-*.js (their ids are listed there too)
 const CP_PIECES=[
+  ['t','mpcrop','Moonpetal Top','1','A short pink top with a pale trim: the Moonpetal set, offered at 100 Sigils. Earned on the Sigil track.'],
+  ['b','mpskirt','Moonpetal Skirt','1','A pink wrap skirt to match the top. Earned on the Sigil track.'],
+  ['s','mpgeta','Moonpetal Geta','1','Pale rose clogs. Earned on the Sigil track.'],
+  ['t','fwponcho','Frostwarden Poncho','2','A heavy ice-blue poncho with a white edge: the Frostwarden set, offered at 200 Sigils. Earned on the Sigil track.'],
+  ['b','fwbreeches','Frostwarden Breeches','2','Slate-blue breeches with pale bands. Earned on the Sigil track.'],
+  ['s','fwboots','Frostwarden Boots','2','Frost-white fur-lined boots. Earned on the Sigil track.'],
+  ['t','egjerkin','Emberguard Jerkin','3','A deep red jerkin with brass studs: the Emberguard set, offered at 300 Sigils. Earned on the Sigil track.'],
+  ['b','eggreaves','Emberguard Leggings','3','Dark leggings with brass-edged plates. Earned on the Sigil track.'],
+  ['s','egsabatons','Emberguard Sabatons','3','Soot-dark steel boots. Earned on the Sigil track.'],
+  ['t','swrobe','Starweaver Robe','4','A midnight-blue robe sewn with gold: the Starweaver set, offered at 400 Sigils. Earned on the Sigil track.'],
+  ['b','swhakama','Starweaver Hakama','4','Midnight pleats with gold ties. Earned on the Sigil track.'],
+  ['s','swboots','Starweaver Boots','4','Tall midnight boots. Earned on the Sigil track.'],
   ['d','heartclip','Heart Clip','2','A little heart-shaped hair clip. Earned on the Sigil track.'],
   ['d','catears','Cat-ear Band','3','A headband with two pointed ears. Earned on the Sigil track.'],
   ['d','bunnyears','Bunny Ears','3','Two tall floppy ears. Earned on the Sigil track.'],

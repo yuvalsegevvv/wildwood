@@ -17,6 +17,20 @@ const GMX_PAL={
   bottom:{breeches:tc=>[tc,0x4a3626,GMX_BRASS,gmxMul(tc,0.72)],shortshorts:tc=>[tc,gmxMul(tc,0.6),0xe8e4dc,GMX_STEEL],wrapskirt:tc=>[tc,gmxMul(tc,0.5),gmxMul(tc,0.5)],
     hakama:tc=>[tc,0xe8e4dc,gmxMul(tc,0.75),0xe8e4dc],loincloth:tc=>[tc,0x4a3626,GMX_BRASS,0xe8d9b0],greaves:tc=>[tc,0x4a3626,GMX_BRASS,GMX_STEEL]}
 };
+// the Sigil track's four sets (shared/puzzle-track.js PZ_TRACK_SETS): each piece is an existing silhouette (base) in the set's own colours (col, pal = the other three tint slots), so a set's top, bottom and shoes belong together.
+// buildCharacter runs the look through gmxAliasLook first: the piece becomes its base with the designed colours (the main colour is the design's; the further tints are still the player's).
+const GMX_ALIAS={
+  mpcrop:{slot:'top',base:'crop',col:0xf2a8c4,pal:[0xfff4f4,0xc8708f]}, mpskirt:{slot:'bottom',base:'wrapskirt',col:0xf2a8c4,pal:[0xd88aa6,0xc8708f]}, mpgeta:{slot:'shoes',base:'geta',col:0xf6dfe6},
+  fwponcho:{slot:'top',base:'poncho',col:0xb8d4ea,pal:[0xffffff,0x7a98b8]}, fwbreeches:{slot:'bottom',base:'breeches',col:0x5a7898,pal:[0xdfe9f2,0xe8f0f8,0x4a6684]}, fwboots:{slot:'shoes',base:'furboots',col:0xdfe9f2},
+  egjerkin:{slot:'top',base:'jerkin',col:0x9a2f2a,pal:[0xe0b050,0xc9a13a,0x3a2a1c]}, eggreaves:{slot:'bottom',base:'greaves',col:0x3a2626,pal:[0x5a3a22,0xc9a13a,0x8a8f96]}, egsabatons:{slot:'shoes',base:'sabatons',col:0x6a5a56},
+  swrobe:{slot:'top',base:'robe',col:0x2b2f6a,pal:[0xf0d060,0x8a8fe0]}, swhakama:{slot:'bottom',base:'hakama',col:0x2b2f6a,pal:[0xf0d060,0x1f2250,0xf0d060]}, swboots:{slot:'shoes',base:'tallboots',col:0x1f2250}
+};
+function gmxAliasLook(L){
+  let o=null; for(const slot of ['top','bottom','shoes']){ const id=L[slot]; if(typeof id!=='string'||!Object.prototype.hasOwnProperty.call(GMX_ALIAS,id)) continue; const A=GMX_ALIAS[id]; if(A.slot!==slot) continue;
+    o=o||Object.assign({},L); o[slot]=A.base; if(slot==='top') o.topColor=A.col; else if(slot==='bottom') o.bottomColor=A.col; else o.shoeColor=A.col;
+    (A.pal||[]).forEach((c,i)=>{ const k=OF_TINTX[slot][i]; if(!(typeof L[k]==='number'&&L[k]>=0)) o[k]=c; }); }
+  return o||L;
+}
 function gmxPalDef(L,slot){ const t=GMX_PAL[slot], id=L[slot]; return t&&typeof id==='string'&&Object.prototype.hasOwnProperty.call(t,id)?t[id](slot==='top'?L.topColor:L.bottomColor):[]; }
 function gmxPalAt(L,slot){ return gmxPalDef(L,slot).map((c,i)=>{ if(!i) return c; const v=L[OF_TINTX[slot][i-1]]; return typeof v==='number'&&v>=0&&v<=0xffffff?Math.floor(v):c; }); }
 // a strap that follows the body's front (or back) from design height y0 to y1 and from x0 to x1: pts along it, lifted a little off the cloth

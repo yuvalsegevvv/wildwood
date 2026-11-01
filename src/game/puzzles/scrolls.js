@@ -12,7 +12,7 @@ function pzScrollHtml(){
 }
 function pzScrollBind(root){ root.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>{ b.disabled=true; netSend({t:'scroll',id:b.dataset.scroll,to:b.dataset.to}); }); }
 // the cosmetic a track level gives (its name), '' when none
-function pzTrackName(L){ const k=PZ_TRACK_COS[L], D=typeof k==='string'&&cpDef(k[0],k.slice(2)); return D?D.name+' ('+CP_SLOTS[k[0]][2].toLowerCase()+')':'a cosmetic'; }
+function pzTrackName(L){ const k=PZ_TRACK_COS[L], D=typeof k==='string'&&cpDef(k[0],k.slice(2)); let t=D?D.name+' ('+CP_SLOTS[k[0]][2].toLowerCase()+')':'a cosmetic'; const st=PZ_TRACK_SETS[L]; if(st) t+=' + a matching set: '+st.map(x=>cpDef(x[0],x.slice(2)).name).join(', '); return t; }
 function pzTrackRender(box){
   const sig=GEAR.sigOff||0, carry=(GEAR.sig||0)-sig, lv=pzTrackLevel(sig), into=sig%PZ_SIG_LEVEL;
   let h=`<p class="muted gem-intro">Solve puzzles for the first time to collect Sigils, then offer them to the broken statue in the middle of Glasswell (the Sunscar's city): it grows every ${PZ_STATUE_STEP} Sigils. Every ${PZ_SIG_LEVEL} Sigils offered is a level of the track: ${PZ_LEVEL_GEMS} gems and the next cosmetic, and a Unique upgrade scroll every ${PZ_SCROLL_EVERY} levels.</p>
