@@ -26,3 +26,7 @@ body.playing #potbar:not([hidden]){ display:flex; }
 body.touch #potbar{ left:auto; transform:none; right:calc(104px + 72px + 22px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 26px); flex-direction:column-reverse; }
 body.touch .pb .pk{ display:none; }
 body.editing #potbar{ display:none !important; }
+.cos-pic{ position:relative; flex:none; width:56px; height:56px; border-radius:6px; border:1px solid rgba(238,240,226,.18); background:radial-gradient(circle at 50% 40%,rgba(238,240,226,.16),rgba(238,240,226,.03) 70%); overflow:hidden; }
+.cos-pic img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; pointer-events:none; }
+.cos-pic.wait{ animation:ctPulse 1.1s ease-in-out infinite; }
+.pz-off-pics{ display:flex; gap:4px; } .pz-off-pics .cos-pic{ width:46px; height:46px; }

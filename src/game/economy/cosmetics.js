@@ -19,6 +19,13 @@ function cosCraftedOf(type){
   if(type==='c') return COS_CAPES.filter(d=>!cpIsFree('c',d[0])&&!cpDef('c',d[0]).quest&&!cpDef('c',d[0]).track).map(d=>[d[0],d[1],d[6]]);
   return CP_PIECES.filter(r=>r[0]===type&&cpCost(type,r[1])).map(r=>[r[1],r[2],r[4]]);   // (a piece with no recipe is earned on the Sigil track)
 }
+// a small picture of one piece (the editor's thumbnails, ui/character-thumbs.js): the markup is a placeholder, cosPicFill draws every placeholder under a root
+function cosPicHtml(type,id){ return `<span class="cos-pic wait" data-cpic="${type}:${id}"></span>`; }
+function cosPicFill(root){
+  if(typeof cthGet!=='function') return;
+  root.querySelectorAll('[data-cpic]').forEach(el=>{ const [type,id]=el.dataset.cpic.split(':'); el.removeAttribute('data-cpic');
+    cthGet({kind:CP_SLOTS[type][0],id},url=>{ el.classList.remove('wait'); if(!url) return; const im=document.createElement('img'); im.alt=''; im.draggable=false; im.src=url; el.append(im); }); });
+}
 function cosLodgeHtml(g){
   const own=g.cos||[], res=g.res||{}, mats=g.mats||{}, coins=g.coins||0;
   let h=`<div class="inv-h">Cosmetics <span>hats, clothes, capes, auras and Kin ears, tails and muzzles made from ore, logs, herbs and monsters' drops: try them on in the character editor first</span></div>`;
@@ -26,7 +33,7 @@ function cosLodgeHtml(g){
     h+=`<p class="lo-intro"><b>${CP_SLOTS[type][2]}${/s$/.test(CP_SLOTS[type][2])?'':'s'}</b> <span class="muted">${type==='c'?'(the backpack, Wayfarer\'s and Mossback are free)':type==='a'?'(Firefly Veil and Dewfall are free)':type==='w'?'(optional, for looks only: nothing is worn unless you pick one; all are made)':type==='d'?'(wear up to three at once, any of them anywhere; all are made, none are free)':'(the plain ones are free)'}</span></p>`;
     for(const [id,name,text] of cosCraftedOf(type)){
       const cost=cosCost(type,id), has=own.includes(cosKey(type,id)), can=cost.res.every(([r,n])=>(res[r]||0)>=n)&&cost.mats.every(([m,n])=>(mats[m]||0)>=n)&&coins>=cost.coins;
-      h+=`<div class="lo-sell"><span class="mat"><b>${name}</b></span><span class="muted">${text}</span><small>${cosCostHtml(cost,res,mats)}</small>`
+      h+=`<div class="lo-sell">${cosPicHtml(type,id)}<span class="mat"><b>${name}</b></span><span class="muted">${text}</span><small>${cosCostHtml(cost,res,mats)}</small>`
         +(has?`<span class="lo-state ok">Made</span>`:`<button class="chip" data-cosmake="${cosKey(type,id)}" ${can?'':'disabled'}>Make</button>`)+`</div>`;
     }
   }
@@ -44,6 +51,7 @@ function cosHomeHtml(){
   return `<div class="inv-h">Your home <span>a private plot: nobody else sees it</span></div><div class="lo-sell"><span class="muted">${atHome()?'Your nodes grow every grade of ore, tree and herb here, and they grow back for you alone.':'Walk in from any lodge. Your ore, trees and herbs grow there for you alone.'}</span><button class="chip" data-home="${atHome()?'leave':'enter'}">${atHome()?'Leave home':'Go home'}</button></div>`;
 }
 function cosLodgeBind(B){
+  cosPicFill(B);
   B.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>{ netSend({t:'home',a:b.dataset.home}); closePanels(); UI_SFX.click(); });
   B.querySelectorAll('[data-cosmake]').forEach(b=>b.onclick=()=>{ const [type,id]=b.dataset.cosmake.split(':'); netSend({t:'cosmake',type,id}); UI_SFX.pickup(); });
 }

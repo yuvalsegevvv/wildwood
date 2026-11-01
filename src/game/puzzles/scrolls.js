@@ -25,16 +25,17 @@ function pzOfferHtml(offer){
   for(let L=1;L<=PZ_TRACK_LEVELS;L++){
     const k=PZ_TRACK_COS[L], D=typeof k==='string'&&cpDef(k[0],k.slice(2)), st=PZ_TRACK_SETS[L], big=L%PZ_SCROLL_EVERY===0, cls=L<=lv?'done':L===lv+1?'next':'';
     const rew=[`${PZ_LEVEL_GEMS} gems`]; if(big) rew.push('Unique upgrade scroll');
-    h+=`<div class="pz-off-row ${cls}${big?' big':''}"><span class="pz-off-n">${L}</span><span class="pz-off-main"><b>${D?D.name:'A cosmetic'}</b> <small>${D?CP_SLOTS[k[0]][2].toLowerCase():''}</small>${st?`<span class="pz-off-set">+ matching set: ${st.map(x=>cpDef(x[0],x.slice(2)).name).join(', ')}</span>`:''}</span><span class="pz-off-rew">${rew.join(' · ')}</span><span class="pz-off-mark">${L<=lv?'&#10003;':''}</span></div>`;
+    h+=`<div class="pz-off-row ${cls}${big?' big':''}"><span class="pz-off-n">${L}</span><span class="pz-off-pics">${typeof cosPicHtml==='function'&&D?cosPicHtml(k[0],k.slice(2))+(st?st.map(x=>cosPicHtml(x[0],x.slice(2))).join(''):''):''}</span><span class="pz-off-main"><b>${D?D.name:'A cosmetic'}</b> <small>${D?CP_SLOTS[k[0]][2].toLowerCase():''}</small>${st?`<span class="pz-off-set">+ matching set: ${st.map(x=>cpDef(x[0],x.slice(2)).name).join(', ')}</span>`:''}</span><span class="pz-off-rew">${rew.join(' · ')}</span><span class="pz-off-mark">${L<=lv?'&#10003;':''}</span></div>`;
   }
   return h+'</div>';
 }
 function pzOfferOpen(){
   openPanel('puzzle'); $('#pzBar').hidden=true; $('#pzClock').textContent=''; $('#pzTitle').textContent='Offering to the statue';
-  const host=$('#pzHost'); host.innerHTML=pzOfferHtml(true); const go=$('#pzOfferGo'); if(go) go.addEventListener('click',()=>{ go.disabled=true; netSend({t:'pz',a:'offer'}); });
+  const host=$('#pzHost'); host.innerHTML=pzOfferHtml(true); cosPicFill(host); const go=$('#pzOfferGo'); if(go) go.addEventListener('click',()=>{ go.disabled=true; netSend({t:'pz',a:'offer'}); });
 }
 function pzOfferRefresh(){ const go=$('#pzOfferGo'), t=$('#pzTitle'); if(t&&t.textContent==='Offering to the statue'&&!$('#puzzle').hidden) pzOfferOpen(); }
 function pzTrackRender(box){
   box.innerHTML='<p class="muted gem-intro">Solve puzzles for the first time to collect Sigils, then offer them at the broken statue in the middle of Glasswell (the Sunscar\'s city).</p>'+pzOfferHtml(false)+`<div class="pz-solver"><b>Puzzle solver</b>: skips the first solve of a puzzle stone (1 for trivial, easy and normal; 2 for hard; 3 for extreme). Not for renewed stones, dungeons or raids. You have <b>${GEAR.psv||0}</b>. <button class="chip" id="pzBuySolver">Buy one: ${PZ_SOLVER_PRICE} gems</button></div>`;
+  cosPicFill(box);
   const bs=$('#pzBuySolver'); if(bs) bs.addEventListener('click',()=>netSend({t:'pz',a:'buy',n:1}));
 }
