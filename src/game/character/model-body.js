@@ -6,22 +6,16 @@
 // what shows where a garment is taken off (the editor's None tile): a man's chest is bare, a woman wears a band top; both wear briefs (cream, a darker waistband)
 const UNDER_COL=0xe9e3d6, UNDER_BAND=0xb8b2a4;
 function clothPaints(L){
-  const _cT=new THREE.Color();
-  const topPaint=(c,u,v,zf)=>{
+  const topPaint=(c,u,v)=>{
     if(L.top==='none'){ if(L.sex==='female'&&v>0.265&&v<0.375) c.set(v>0.36||v<0.28?UNDER_BAND:UNDER_COL); else c.set(L.skin); }
     else if(L.top==='flannel') plaid(c,L.topColor,u,v);
     else if(L.top==='vest'||L.top==='jerkin') c.set(0xe8e4dc);   // (the waistcoat and the leather jerkin are geometry over a cream shirt: model-garments.js, model-garments-more.js)
-    else if(L.top==='crop'){ if(v<0.3) c.set(L.skin); else if(v>0.47&&Math.abs(u)<(v-0.47)*0.9) c.set(L.skin); else c.set(L.topColor).multiplyScalar(0.93+0.07*Math.sin(u*260)); }   // the midriff is bare; a fine rib knit and a small sweetheart dip at the neck
+    else if(L.top==='crop'){ if(v<0.3) c.set(L.skin); else c.set(L.topColor); }   // the midriff is bare
+    else if(L.top==='halter'){ if(v>0.26&&v<0.435) c.set(L.topColor); else c.set(L.skin); }   // a wrap round the chest, bare shoulders, back and belly
     else if(L.top==='harness'){ if(L.sex==='female'&&v>0.265&&v<0.375) c.set(v>0.36||v<0.28?UNDER_BAND:UNDER_COL); else c.set(L.skin); }   // straps over a bare chest (a woman keeps her band top)   // (the waistcoat is geometry over a cream shirt: model-garments.js)
     else if(gmdIs(L.top)) gmdPaint(L,c,u,v);   // dresses: skin above the bodice (model-dresses.js)
     else if(L.top==='mail'){ c.set(L.topColor).multiplyScalar(0.72+0.38*((Math.floor(u*70)+Math.floor(v*70))&1)); }
     else if(L.top==='plate'){ c.set(L.topColor).multiplyScalar(0.82+0.3*(Math.floor(v*13)&1)); }
-    else if(L.top==='tshirt'){ c.set(L.topColor); if(Math.abs(Math.abs(u)-0.115)<0.003) c.multiplyScalar(0.84);   // side seams
-      if(zf<0){ const x=u+0.0, y=v-0.36; if(y>-0.05&&y<0.06&&Math.abs(x)<(0.06-y)*0.42&&Math.abs(x)<0.03){ c.lerp(_cT.set(0xffffff),0.6); if(((y+0.05)*90)%3<0.6) c.multiplyScalar(0.85); } else if(Math.abs(Math.hypot(x,y)-0.065)<0.004) c.lerp(_cT.set(0xffffff),0.5); } }   // a printed pine in a ring on the chest
-    else if(L.top==='halter'){ if(v>0.26&&v<0.435){ c.set(L.topColor).multiplyScalar(0.9+0.12*Math.abs(Math.sin(u*170+(v-0.34)*30))); } else c.set(L.skin); }   // the wrap gathered in soft ruches
-    else if(L.top==='tunic'){ c.set(L.topColor); if(zf<0&&Math.abs(u)<0.018&&v>0.3) c.lerp(_cT.set(0xe8d9b0),0.6); if(zf<0&&Math.abs(u)<0.022&&v>0.3&&Math.abs(((v*60)%1)-0.5)<0.12) c.set(0x8a3a2a); }   // an embroidered band down from the laced neck
-    else if(L.top==='jacket'){ c.set(L.topColor); if(v>0.47) c.multiplyScalar(0.86); else if(v>0.46) c.multiplyScalar(0.62); else if(Math.abs(u)>0.1) c.multiplyScalar(0.9); }   // a darker yoke over the shoulders, a seam under it, side panels
-    else if(L.top==='hoodie'){ c.set(L.topColor); const au=Math.abs(u); if(v>0.42&&Math.abs(au-(0.035+(0.58-v)*0.75))<0.004) c.multiplyScalar(0.7); else if(zf<0&&Math.hypot(u+0.045,v-0.37)<0.022){ c.lerp(_cT.set(0xffffff),0.55); if(Math.hypot(u+0.045,v-0.37)<0.011) c.multiplyScalar(0.8); } }   // raglan seams from the neck, a small round crest on the chest
     else c.set(L.topColor);
   };
   const botPaint=(c,u,v)=>{
@@ -89,7 +83,7 @@ function buildTorso(X,D){
   const skinY=kT&&kT.skinFrom!==undefined?kT.skinFrom:0.555;   // an outfit top with a high collar paints the neck itself (skinFrom)
   const tp=(x,y,z,c)=>{ const yd=y/TK;   // one paint for every piece of the torso: neck skin, top, belt line, bottoms (each of the top and the bottoms is a base garment or an outfit's item)
     if(yd>skinY+0.02*sm(-0.04,0.04,z)) skinPaint(c);   // the neckline: lower in front, higher behind, blended
-    else if(yd>hem){ if(kT) ofPaint(X,'top','torso',c,x,yd,z,0); else topPaint(c,x,yd,z); }
+    else if(yd>hem){ if(kT) ofPaint(X,'top','torso',c,x,yd,z,0); else topPaint(c,x,yd); }
     else if(kB) ofPaint(X,'bottom','torso',c,x,yd,z,0);
     else if(yd>hem-0.035 && L.bottom!=='skirt' && L.bottom!=='kilt' && L.bottom!=='pleated' && L.bottom!=='none' && !gmxSkirtKind(L.bottom) && !gmxBareBottom(L.bottom) && hem>0) c.set(0x3a2a1c);
     else botPaint(c,x,yd);
@@ -113,19 +107,9 @@ function buildTorso(X,D){
   if(X.kit) parts.push(...ofRun(X,'torso'));   // an outfit's extra pieces on the torso (collars, tabards, belts, sashes), in the spine's frame
   if(L.pack||L.cape==='pack'){   // the backpack: look.pack (the old switch, villagers) or the free cape 'pack'; its colours are look.capeColor (canvas) and look.capeTrim (the bedroll)
     const bz=0.1*B+0.08, cv=cosQ(L.capeColor), tr=cosQ(L.capeTrim), canvas=cv>=0?cv:0x566437, roll=tr>=0?tr:0x8a3b2c, cc=new THREE.Color(canvas), flap=cc.clone().multiplyScalar(0.88).getHex(), strap=cc.clone().multiplyScalar(0.7).getHex();
-    // a soft canvas sack: a box rounded towards a superellipsoid (padded corners), seams down the edges, a front pocket with a flap and two buckled straps, side pockets, a top handle, the bedroll strapped on top and a tin cup on a cord
-    const sack=(w,h,d,x,y,z,hex,seam)=>{ const g=new THREE.BoxGeometry(w,h,d,6,8,4), q=g.attributes.position;
-      for(let i=0;i<q.count;i++){ const ax=q.getX(i)/(w/2), ay=q.getY(i)/(h/2), az=q.getZ(i)/(d/2), k=Math.pow(Math.pow(Math.abs(ax),4)+Math.pow(Math.abs(ay),4)+Math.pow(Math.abs(az),4),0.25)||1, b=0.35;
-        q.setXYZ(i,q.getX(i)*(1-b+b/k),q.getY(i)*(1-b+b/k),q.getZ(i)*(1-b+b/k)); }
-      g.computeVertexNormals(); g.translate(x,y,z); return pc(g,(px,py,pz,c)=>{ c.set(hex).multiplyScalar(0.95+0.05*Math.sin(px*300)*Math.sin(py*260)); if(seam&&(Math.abs(Math.abs(px-x)-w*0.44)<0.006||Math.abs(py-y-h*0.44)<0.006)) c.multiplyScalar(0.78); }); };
-    parts.push(sack(0.3,0.42,0.15,0,0.28*TK,bz,canvas,true));
-    parts.push(sack(0.22,0.15,0.06,0,0.15*TK,bz+0.085,flap,true), pc(new THREE.BoxGeometry(0.225,0.06,0.018).translate(0,0.15*TK+0.06,bz+0.112),c=>c.set(flap).multiplyScalar(0.9)));   // the front pocket and its flap
-    for(const sd of [-1,1]){ parts.push(pc(new THREE.BoxGeometry(0.022,0.1,0.006).translate(sd*0.06,0.15*TK+0.03,bz+0.122),c=>c.set(strap)),pc(new THREE.BoxGeometry(0.026,0.018,0.008).translate(sd*0.06,0.15*TK+0.0,bz+0.124),c=>c.set(0xc9a13a)));   // the flap's straps and buckles
-      parts.push(sack(0.05,0.16,0.09,sd*0.17,0.2*TK,bz+0.01,flap,false)); }   // the side pockets
-    parts.push(solid(new THREE.TorusGeometry(0.03,0.007,5,10,Math.PI).translate(0,0.28*TK+0.21,bz+0.02),strap));   // the top handle
-    parts.push(pc(new THREE.CylinderGeometry(0.065,0.065,0.36,14).rotateZ(Math.PI/2).translate(0,0.5*TK,bz),(x,y,z,c)=>{ c.set(roll); if(Math.abs(Math.abs(x)-0.17)<0.006) c.multiplyScalar(0.7); if(((Math.atan2(y-0.5*TK,z-bz)/TAU*6)%1+1)%1<0.08) c.multiplyScalar(0.86); }));   // the bedroll, rolled
-    for(const sd of [-1,1]) parts.push(solid(gmRingAt([sd*0.11,0.5*TK,bz],[1,0,0],0.068,0.006,8),strap));   // its two straps
-    parts.push(solid(new THREE.CylinderGeometry(0.03,0.026,0.045,10,1,true).translate(-0.17,0.2*TK-0.115,bz+0.02),0xb9bdc2),solid(new THREE.TorusGeometry(0.014,0.004,4,8,Math.PI).rotateY(Math.PI/2).translate(-0.2,0.2*TK-0.115,bz+0.02),0xb9bdc2));   // a tin cup hung on the side
+    parts.push(pc(new THREE.BoxGeometry(0.3,0.42,0.15).translate(0,0.28*TK,bz),c=>c.set(canvas)));
+    parts.push(pc(new THREE.BoxGeometry(0.22,0.14,0.05).translate(0,0.17*TK,bz+0.095),c=>c.set(flap)));
+    parts.push(pc(new THREE.CylinderGeometry(0.065,0.065,0.36,12).rotateZ(Math.PI/2).translate(0,0.5*TK,bz),c=>c.set(roll)));
     for(const sd of [-1,1]) parts.push(pc(new THREE.BoxGeometry(0.035,0.34,0.012).translate(sd*0.085*B,0.33*TK,-profR(base,0.33)*(fem?0.66:0.62)*B-0.004-(fem?0.012:0)),c=>c.set(strap)));
   }
   return parts;
@@ -175,12 +159,6 @@ function buildFoot(X,D,sd,boot){
   const white=L.shoes!=='boots'&&L.shoes!=='tallboots'&&L.shoes!=='furboots'&&L.shoes!=='sabatons';
   if(kit) return pc(g,(x,y,z,c)=>ofPaint(X,'shoes','foot',c,x,y,z,sd),-D.thigh-D.shin);
   if(L.shoes==='none'||L.shoes==='sandals'||L.shoes==='geta') return pc(g,skinPaint,-D.thigh-D.shin);   // barefoot (the editor's None tile)
-  if(L.shoes==='sneakers'){ const sc=new THREE.Color(L.shoeColor), acc=sc.clone().lerp(new THREE.Color(0xffffff),0.75);   // a white rubber midsole with a coloured stripe and a grippy dark tread, a rubber toe cap, a pale arc on each side, a padded collar
-    return pc(g,(x,y,z,c)=>{ const h=y+A; c.copy(sc); if(h<0.004) c.set(0x3a3a40); else if(h<0.019){ c.set(0xf2efe8); if(Math.abs(h-0.012)<0.0022) c.copy(sc).multiplyScalar(0.8); }
-      else if(z<-0.105&&h<0.032) c.set(0xf2efe8).multiplyScalar(0.96); else if(Math.abs(x)>0.02&&Math.abs((h-0.019)-(z+0.02)*-0.28-0.012)<0.0045&&z>-0.1&&z<0.04) c.copy(acc);
-      else c.multiplyScalar(0.95+0.05*Math.sin(z*400)); },-D.thigh-D.shin); }
-  if(L.shoes==='boots') return pc(g,(x,y,z,c)=>{ const h=y+A; c.set(L.shoeColor); if(h<0.011) c.set(0x221a14); else if(h<0.016){ c.set(L.shoeColor).multiplyScalar(0.62); if(((z*160)%1+1)%1<0.4) c.multiplyScalar(1.3); }   // a welt stitched round above the sole
-    else if(z<-0.1) c.multiplyScalar(0.86+0.1*Math.sin(x*300)); else if(z>0.035) c.multiplyScalar(0.9); else c.multiplyScalar(0.96+0.06*h3(Math.round(x*200),Math.round(y*200),Math.round(z*200))); },-D.thigh-D.shin);   // a toe cap, a heel counter, grained leather
   return pc(g,(x,y,z,c)=>{ c.set(L.shoeColor); if(y<-A+0.011) c.set(white?0xf2efe8:0x221a14); else if(white&&z<-0.1) c.multiplyScalar(1.12); },-D.thigh-D.shin);
 }
 function buildLeg(X,D,sd){

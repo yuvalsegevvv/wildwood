@@ -72,29 +72,22 @@ function kinEarCone(K,w,len,th,tipAt,tipCol){
 // [angle from the crown, tilt out, tilt back, builder(K) → geometries pointing up from the base]
 function kinEar(id,a,out,back,fn){ KIN_EARS[id]={a,out,back,fn}; }
 kinEar('cat',0.62,0.22,0.1,K=>kinEarCone(K,0.032,0.062,0.012));
-kinEar('round',0.78,0.5,0.05,K=>{ const g=csph(1,K.sg(7),K.sg(5)), p=g.attributes.position;   // a bear's ear: a thick round cup, hollow in front (the pale inside), the rim rolled and a little fur tuft at its foot
-  for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), r2=x*x+y*y; p.setXYZ(i,x*0.034,y*0.034+0.03,(z<0?z*0.35+0.8*(1-r2)*0.6:z)*0.012); }
-  smoothN(g); return [pc(g,(x,y,z,c)=>{ const r=Math.hypot(x/0.034,(y-0.03)/0.034); c.copy(K.fur); if(z>-0.002&&r<0.72) c.copy(K.light).lerp(K.fur,smoothstep(0.5,0.72,r)); else if(r>0.85) c.multiplyScalar(0.88); }),kinS(csph(1,4,3).scale(0.012,0.008,0.006).translate(0,0.004,-0.004),K.light)]; });
+kinEar('round',0.78,0.5,0.05,K=>[pc(csph(1,K.sg(6),K.sg(4)).scale(0.034,0.034,0.011).translate(0,0.028,0),(x,y,z,c)=>{ c.copy(K.fur); if(Math.hypot(x/0.034,(y-0.028)/0.034)>0.8) c.multiplyScalar(0.86); }),kinS(csph(1,K.sg(5),K.sg(4)).scale(0.021,0.021,0.006).translate(0,0.028,-0.007),K.light)]);
 kinEar('fox',0.6,0.18,0.12,K=>kinEarCone(K,0.03,0.092,0.012,0.6,kinAcc(K,0x2a2420)));
 kinEar('hare',0.5,0.28,0.25,K=>[kinS(csph(1,K.sg(5),K.sg(4)).scale(0.02,0.105,0.008).translate(0,0.09,0),K.fur),kinS(csph(1,K.sg(5),K.sg(4)).scale(0.011,0.085,0.005).translate(0,0.092,-0.006),new THREE.Color(0xe9a0a8).lerp(K.light,0.3))]);
 kinEar('antelope',1.05,1.25,0.08,K=>{ const tip=kinAcc(K,0x2a2420);
   return [pc(csph(1,K.sg(5),K.sg(4)).scale(0.02,0.06,0.007).translate(0,0.05,0),(x,y,z,c)=>{ c.copy(K.fur); if(y>0.085) c.copy(tip); }),kinS(csph(1,K.sg(5),K.sg(4)).scale(0.012,0.044,0.004).translate(0,0.05,-0.005),K.light)]; });
 kinEar('rhino',0.85,0.55,0.08,K=>{ const rim=kinAcc(K,0x3a2c24);
   return [pc(csph(1,K.sg(5),K.sg(4)).scale(0.027,0.036,0.014).translate(0,0.03,0),(x,y,z,c)=>{ c.copy(K.fur); if(Math.hypot(x/0.027,(y-0.03)/0.036)>0.82) c.copy(rim); }),kinS(csph(1,K.sg(5),K.sg(4)).scale(0.015,0.022,0.006).translate(0,0.028,-0.011),K.light)]; });
-kinEar('crest',0.42,0,0,K=>{ const tip=kinAcc(K,0xf2e8d0), band=K.fur.clone().multiplyScalar(0.55), out=[];   // a fan of three layered feathers per side, swept back, the middle ones longest: each a flat vane with a quill, a dark band and a pale tip
-  for(let j=0;j<3;j++){ const i=j*2, s=(i-2)/2, L=0.06+0.03*(1-Math.abs(s));
-    const P=[[0,0,0],[s*0.012,0.025,0.01+0.008*i],[s*0.02,0.025+L*0.55,0.03+0.012*i],[s*0.024,0.02+L,0.06+0.014*i]];
-    out.push(pc(sweepTube(P,[0.005,0.011,0.009,0.0012],3,{cap:'point',rings:4}).scale(1,1,1).applyMatrix4(new THREE.Matrix4().makeScale(0.55,1,1)),(x,y,z,c)=>{ const t=Math.hypot(y,z)/(L+0.03); c.copy(K.fur); if(Math.abs(t-0.62)<0.06) c.copy(band); else if(t>0.72) c.lerp(tip,smoothstep(0.72,0.92,t)); if(Math.abs(x)<0.0012) c.multiplyScalar(0.8); })); }
+kinEar('crest',0.42,0,0,K=>{ const tip=kinAcc(K,0xf2e8d0), out=[];   // three swept feathers per side, the middle one longest
+  for(let i=0;i<3;i++){ const L=0.05+0.018*(1-Math.abs(i-1)), s=(i-1);
+    out.push(pc(sweepTube([[0,0,0],[s*0.007,0.03+0.01*i,0.012+0.01*i],[s*0.012,0.05+L*0.4,0.04+0.02*i]],[0.006,0.008,0.0012],4,{cap:'point',rings:4}),(x,y,z,c)=>{ c.copy(K.fur); if(y>0.04) c.lerp(tip,smoothstep(0.04,0.075,y)); })); }
   return out; });
 // ---------- tails ----------
 // a curve from the root (0,0,0) to the tip, behind (+z) and up (+y); radii along it; paint(s,c): s is the distance back plus the rise, a stand-in for the way along
 const kinTube=(K,pts,rad,fn)=>pc(sweepTube(pts,rad,Math.max(5,K.sg(6)),{cap:'point',rings:Math.max(6,K.sg(9))}),(x,y,z,c)=>{ c.copy(K.fur); if(fn) fn(c,z+Math.max(0,y),x,y,z); });
-KIN_TAILS.thin=K=>{ const dk=kinAcc(K,0x2a1c14);   // a long, lithe cat's tail: out and down, then a lazy S that lifts at the end, tapering, a few faint rings and a dark tip
-  return [kinTube(K,[[0,0,0],[0,-0.04,0.08],[0.02,-0.1,0.17],[0.03,-0.12,0.27],[0.0,-0.08,0.36],[-0.03,0.0,0.42],[-0.02,0.08,0.45],[0.01,0.13,0.44]],[0.019,0.017,0.015,0.014,0.013,0.011,0.009,0.005],(c,s)=>{ if(s>0.5) c.lerp(dk,smoothstep(0.5,0.56,s)); else if(s>0.2&&Math.floor(s*30)%3===0) c.multiplyScalar(0.88); })]; };
-KIN_TAILS.puff=K=>{ const out=[];   // a cotton tail: a clump of soft lumps, pale at the tips and the fur colour at the root, flicked up a little
-  const L=[[0,0.008,0.05,0.036],[0.02,0.022,0.05,0.024],[-0.02,0.02,0.052,0.024],[0,0.0,0.074,0.026]];
-  for(const [x,y,z,r] of L) out.push(pc(csph(1,5,4).scale(r,r,r).translate(x,y,z),(px,py,pz,c)=>{ c.copy(K.fur).lerp(K.light,smoothstep(0.03,0.07,pz+py*0.3)); c.multiplyScalar(0.93+0.07*h3(Math.floor(px*500),Math.floor(py*500),Math.floor(pz*500))); }));
-  return out; };
+KIN_TAILS.thin=K=>[kinTube(K,[[0,0,0],[0,-0.03,0.09],[0,-0.02,0.2],[0,0.04,0.28],[0,0.1,0.3]],[0.016,0.013,0.01,0.008,0.004])];
+KIN_TAILS.puff=K=>[kinS(csph(1,K.sg(7),K.sg(5)).scale(0.042,0.042,0.042).translate(0,0.005,0.05),K.light),kinS(csph(1,K.sg(5),K.sg(4)).scale(0.02,0.02,0.02).translate(0,0,0.012),K.fur)];
 KIN_TAILS.bushy=K=>{ const tip=K.light; return [kinTube(K,[[0,0,0],[0,-0.05,0.1],[0,-0.07,0.22],[0,-0.03,0.34],[0,0.03,0.42]],[0.025,0.045,0.058,0.05,0.008],(c,s)=>{ if(s>0.3) c.lerp(tip,smoothstep(0.3,0.42,s)); })]; };
 KIN_TAILS.tufted=K=>{ const tuft=kinAcc(K,0x4a2c18), pts=[[0,0,0],[0,-0.03,0.1],[0,-0.02,0.21],[0,0.03,0.3],[0,0.07,0.34]];
   return [kinTube(K,pts,[0.014,0.011,0.009,0.009,0.009]),kinS(sweepTube([[0,0.065,0.33],[0,0.1,0.37],[0,0.15,0.4],[0,0.2,0.41]],[0.012,0.03,0.026,0.002],Math.max(5,K.sg(6)),{cap:'point',rings:Math.max(5,K.sg(7))}),tuft)]; };
@@ -108,12 +101,8 @@ KIN_TAILS.plume=K=>{ const tip=kinAcc(K,0xf2e8d0), out=[];   // five feathers fa
 // ---------- muzzles ----------
 // the face's front surface (z) at a point of the head, approximated by the skull's ellipsoid
 const kinFace=(K,x,y)=>-0.105*Math.sqrt(Math.max(0.08,1-Math.pow(x/(0.105*K.fs[0]),2)-Math.pow(y/(0.105*K.fs[1]),2)));
-KIN_MUZZLES.nose=K=>{ const z=kinFace(K,0,-0.024), dk=new THREE.Color(0x2a2024), out=[];   // a nose leather (two lobes over a point, nostrils, a wet highlight), the philtrum and a little 'w' mouth
-  out.push(pc(csph(1,K.sg(6),K.sg(5)).scale(0.014,0.009,0.009).translate(0,-0.022,z-0.002),(x,y,zz,c)=>{ c.copy(dk); if(y>-0.019&&zz<z-0.006) c.lerp(new THREE.Color(0x8a7a80),0.5); else if(y<-0.024&&Math.abs(Math.abs(x)-0.0065)<0.003) c.multiplyScalar(0.4); }));
-  out.push(kinS(new THREE.ConeGeometry(0.009,0.012,5).rotateX(Math.PI).scale(1,1,0.8).translate(0,-0.03,z-0.001),dk));
-  out.push(kinS(sweepTube([[0,-0.035,z],[0,-0.05,z+0.001]],[0.0012,0.0012],3,{cap:'round',rings:3}),dk));
-  for(const sd of [-1,1]) out.push(kinS(sweepTube([[0,-0.05,z+0.001],[sd*0.008,-0.056,z+0.002],[sd*0.016,-0.053,z+0.003]],[0.0012,0.0012,0.0009],3,{cap:'round',rings:4}),dk));
-  return out; };
+KIN_MUZZLES.nose=K=>{ const z=kinFace(K,0,-0.024), dk=0x2a2024;
+  return [kinS(csph(1,K.sg(7),K.sg(5)).scale(0.013,0.0095,0.009).translate(0,-0.024,z-0.002),new THREE.Color(dk)),kinS(sweepTube([[0,-0.032,z],[0,-0.05,z],[0,-0.06,z+0.002]],[0.0012,0.0012,0.0012],3,{cap:'round',rings:3}),new THREE.Color(dk))]; };
 KIN_MUZZLES.whiskers=K=>{ const out=[], z=kinFace(K,0.02,-0.042), col=K.sec?K.sec.clone():new THREE.Color(0xeee8dc);
   for(const sd of [-1,1]){ out.push(kinS(csph(1,K.sg(5),K.sg(4)).scale(0.014,0.011,0.007).translate(sd*0.02,-0.042,z-0.002),K.light));
     for(let i=0;i<3;i++){ const dy=(i-1)*0.014; out.push(kinS(sweepTube([[sd*0.022,-0.042+dy*0.3,z-0.003],[sd*0.06,-0.042+dy*0.9,z+0.002],[sd*0.1,-0.042+dy*1.5,z+0.03]],[0.0016,0.0012,0.0004],3,{cap:'point',rings:3}),col)); } }
@@ -125,13 +114,9 @@ KIN_MUZZLES.snout=K=>{ const z=kinFace(K,0,-0.045);
 KIN_MUZZLES.tusks=K=>{ const out=[], z=kinFace(K,0.024,-0.07), ivory=K.sec?K.sec.clone():new THREE.Color(0xf0e8d0);
   for(const sd of [-1,1]) out.push(kinS(sweepTube([[sd*0.025,-0.072,z+0.004],[sd*0.042,-0.082,z-0.012],[sd*0.056,-0.07,z-0.034],[sd*0.054,-0.044,z-0.048]],[0.0085,0.0075,0.005,0.0012],Math.max(5,K.sg(5)),{cap:'point',rings:Math.max(5,K.sg(6))}),ivory));
   return out; };
-KIN_MUZZLES.beak=K=>{ const z=kinFace(K,0,-0.03), col=kinAcc(K,0xe0b030), dk=col.clone().multiplyScalar(0.62), cere=col.clone().lerp(new THREE.Color(0xf4ead0),0.45), n=Math.max(5,K.sg(5));
-  // a bird's beak, narrow across: a soft cere band at the base with two nostrils, an upper bill that arches down to a small hook over a shorter lower bill, a dark line where they meet
-  const up=sweepTube([[0,-0.022,z+0.012],[0,-0.024,z-0.012],[0,-0.032,z-0.038],[0,-0.05,z-0.058],[0,-0.064,z-0.062]],[0.022,0.019,0.013,0.006,0.0015],n,{cap:'point',rings:Math.max(5,K.sg(6))}).scale(0.72,0.85,1);
-  const lo=sweepTube([[0,-0.052,z+0.008],[0,-0.056,z-0.016],[0,-0.058,z-0.038],[0,-0.057,z-0.048]],[0.016,0.012,0.007,0.0015],n,{cap:'point',rings:4}).scale(0.66,0.6,1);
-  return [pc(up,(x,y,zz,c)=>{ c.copy(col); c.multiplyScalar(0.92+0.12*smoothstep(z-0.02,z-0.05,zz)); if(zz<z-0.055) c.copy(dk); if(y<-0.046&&zz>z-0.04) c.multiplyScalar(0.75); }),pc(lo,(x,y,zz,c)=>{ c.copy(col).multiplyScalar(0.82); }),
-    kinS(gmRingAt([0,-0.024,z-0.004],[0,0.05,1],0.017,0.0045,5).scale(0.85,0.9,1),cere),
-    kinS(csph(0.0028,4,3).translate(-0.007,-0.02,z-0.018),new THREE.Color(0x2a2024)),kinS(csph(0.0028,4,3).translate(0.007,-0.02,z-0.018),new THREE.Color(0x2a2024))]; };
+KIN_MUZZLES.beak=K=>{ const z=kinFace(K,0,-0.03), col=kinAcc(K,0xe0b030), dk=col.clone().multiplyScalar(0.7), n=Math.max(5,K.sg(5));
+  return [pc(sweepTube([[0,-0.024,z+0.01],[0,-0.03,z-0.034],[0,-0.048,z-0.066]],[0.026,0.017,0.0025],n,{cap:'point',rings:Math.max(5,K.sg(6))}).scale(1,0.78,1),(x,y,zz,c)=>{ c.copy(col); if(zz<z-0.05) c.copy(dk); }),
+    kinS(sweepTube([[0,-0.064,z+0.006],[0,-0.068,z-0.028],[0,-0.063,z-0.046]],[0.014,0.01,0.0025],n,{cap:'point',rings:Math.max(4,K.sg(5))}).scale(1,0.7,1),dk)]; };
 // ---------- the drawing ----------
 function kinDress(rig,X){
   const L=X.L, ear=kinPartOf('e',L.kinEars), tail=kinPartOf('k',L.kinTail), muz=kinPartOf('m',L.kinMuzzle);

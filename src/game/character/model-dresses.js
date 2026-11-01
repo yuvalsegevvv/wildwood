@@ -32,12 +32,7 @@ function gmdTop(X,D){
     for(const sd of [-1,1]) out.push(solid(csph(0.0075,5,4).translate(sd*0.06,0.5*TK,fz(0.5)-0.007),PL[2]));   // a button on each strap
   } else if(id==='peasant'){
     edge(G.top,PL[1]);
-    for(const sd of [-1,1]){ const cx=sd*(D.shX+0.006), cy=D.shY-0.01, R=0.05*D.aw+0.012;   // gathered puff sleeves round the shoulder ball (wider than the arm's own ball, so they show), pleated, with a band at the bottom
-      out.push(pc(csph(R,sg(16),sg(10)).scale(1,0.95,1.05).translate(cx,cy,0),(x,y,z,c)=>{ c.set(PL[1]).multiplyScalar(0.86+0.14*Math.abs(Math.sin(Math.atan2(x-cx,z)*7))); if(y<cy-R*0.62) c.set(PL[2]); }));
-      out.push(solid(gmRingAt([cx,cy-R*0.7,0],[sd*0.15,1,0],R*0.72,0.004,sg(8)),PL[2])); }
-    for(let i=0;i<sg(16);i++){ const a=(i/sg(16)-0.5)*2.6, t=torsoSize(X,D,G.top+0.012); out.push(solid(csph(0.011,5,4).scale(1.2,0.8,0.7).translate(Math.sin(a)*(t.rx+0.012),(G.top+0.012)*TK,-Math.cos(a)*(t.rz+0.01)),PL[1])); }   // the chemise's frill along the neckline
-    out.push(solid(csph(0.008,sg(6),sg(5)).scale(1.5,1,0.7).translate(0,(G.top-0.01)*TK,fz(G.top)-0.012),PL[2]));
-    for(const sd of [-1,1]) out.push(solid(sweepTube([[0,(G.top-0.01)*TK,fz(G.top)-0.013],[sd*0.008,(G.top-0.045)*TK,fz(G.top-0.04)-0.013],[sd*0.004,(G.top-0.08)*TK,fz(G.top-0.08)-0.012]],[0.0022,0.0022,0.0018],4,{cap:'round',rings:5}),PL[2]));   // the drawstring's two ends
+    for(const sd of [-1,1]) out.push(pc(ofLoft([{y:0.5*TK,rx:0.021*D.aw+0.004,rz:0.021*D.aw+0.004},{y:0.5*TK-0.03,rx:0.027*D.aw+0.008,rz:0.027*D.aw+0.008},{y:0.5*TK-0.07,rx:0.03*D.aw+0.006,rz:0.03*D.aw+0.006}],sg(14),0,TAU).translate(sd*(D.shX-0.01),0,0),(x,y,z,c)=>c.set(PL[1]).multiplyScalar(y<0.5*TK-0.06?0.85:1)));   // gathered puff sleeves hanging from the shoulders
     for(let i=0;i<5;i++){ const yd=0.4-i*0.07; out.push(solid(ofRibbon([[-0.026,yd*TK,fz(yd)-0.008],[0,(yd-0.028)*TK,fz(yd)-0.01],[0.026,yd*TK,fz(yd)-0.008]],0.006,{up:[0,0,-1],seg:4,th:0.003}),PL[2])); }   // a laced front
   } else if(id==='tiered'){
     for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.07,G.top*TK,fz(G.top)-0.005],[sd*0.05,0.5*TK,fz(0.5)-0.004],[sd*nr*1.15,0.565*TK,-nr*0.55],[sd*nr*0.5,0.585*TK,nr*1.25]],0.016,{up:[0,1,-0.3],seg:sg(10),th:0.003}),PL[2]));   // halter straps to a knot behind the neck

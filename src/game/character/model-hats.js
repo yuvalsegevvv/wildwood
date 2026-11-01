@@ -47,10 +47,9 @@ function htBase(X,F,parts){
     parts.push(pc(vbox(0.03,0.026,0.008,0,0.097,-0.121),c=>c.set(0xc9a13a)),pc(vbox(0.017,0.014,0.01,0,0.097,-0.1235),c=>c.set(0x2a2a2a)));   // the buckle
     parts.push(pc(ofRibbon([[0.1,0.1,-0.06],[0.13,0.14,-0.04],[0.15,0.2,0.0],[0.12,0.27,0.07]],u=>0.034*(1-0.6*u),{up:[0,1,0.2],seg:sg(10),th:0.003}),(x,y,z,c)=>{ c.set(0x8aa05a); if(fr(y*30)<0.14) c.set(0xe9dfc4); }));   // a feather
   } else if(id==='beanie'){
-    parts.push(pc(scl(sculpt(shell(0.123,0,0.46*Math.PI,0,0.415,sg(40),sg(20)),false)),(x,y,z,c)=>{ const u=Math.atan2(x,z)/TAU*20; tone(c,0.94+0.1*(fr(u)<0.5?1:0)); const cb=fr(u/2.5); if(Math.abs(cb-0.5-0.16*Math.sin(y*110))<0.12) tone(c,1.08); }));   // the knit, in ribs, with cables twisting up between them (pass 3)
+    parts.push(pc(scl(sculpt(shell(0.123,0,0.46*Math.PI,0,0.415,sg(34),sg(16)),false)),(x,y,z,c)=>{ tone(c,0.94+0.1*(fr(Math.atan2(x,z)/TAU*20)<0.5?1:0)); }));   // the knit, in ribs
     parts.push(pc(scl(sculpt(shell(0.129,0.355*Math.PI,0.11*Math.PI,0,0.415,sg(34),sg(7)),false)),(x,y,z,c)=>{ tone(c,0.78+0.12*(fr(Math.atan2(x,z)/TAU*26)<0.5?1:0)); }));   // the folded cuff, with finer ribs
     parts.push(pc(csph(0.03,sg(12),sg(10)).translate(0,0.126*fs[1]+0.012,0.052),c=>c.set(0xf2eee4)));
-    parts.push(pc(vbox(0.034,0.02,0.004,0,0.034*fs[1],-0.133),(x,y,z,c)=>{ c.set(0x6a4a2c); if(Math.abs(x)>0.013||Math.abs(y-0.034*fs[1])>0.006) c.set(0x4a3020); }));   // a leather label stitched on the cuff
     const rg=mulberry32(5); for(let i=0;i<14;i++){ const a=rg()*TAU, b=rg()*Math.PI; parts.push(solid(csph(0.011,sg(6),sg(5)).translate(Math.sin(a)*Math.sin(b)*0.036,0.126*fs[1]+0.012+Math.cos(b)*0.036,0.052+Math.cos(a)*Math.sin(b)*0.036),i%3?0xf7f4ec:0xdcd6c8)); }   // the fluff of the pompom
   } else if(id==='helm'){
     parts.push(pc(scl(sculpt(shell(0.128,0,0.475*Math.PI,0,0.4,sg(34),sg(16)),false)),(x,y,z,c)=>tone(c,0.88+0.18*clamp(y*6))));
@@ -64,40 +63,27 @@ function htBase(X,F,parts){
     parts.push(pc(smoothN(g),(x,y,z,c)=>{ tone(c,0.86+0.2*h3(Math.round(Math.atan2(z,x)*10),0,5)); const r=Math.hypot(x,z); if(fr(r*42)<0.14) tone(c,0.68); }));   // woven rings and radial strands
     parts.push(pc(new THREE.CylinderGeometry(0.103,0.112,0.05,sg(22)).translate(0,0.088*fs[1],0),(x,y,z,c)=>tone(c,0.55+0.1*fr(y*40))),pc(csph(0.016,sg(8),sg(6)).translate(0,0.22*fs[1],0),c=>c.set(0x2a1f18)),htRing(sg,0.075*fs[1]+0.025,0.108,0.0035,0x2a1f18));   // the head-ring inside, a lacquered knob and a band
     for(const sd of [-1,1]) parts.push(solid(sweepTube([[sd*0.125,0.09,-0.02],[sd*0.115,-0.03,-0.04],[sd*0.06,-0.13,-0.085],[0,-0.138,-0.1]],[0.0028,0.0028,0.0028,0.0028],4,{cap:'round',rings:8}),0x7a1f1f));   // the chin cord
-    { const rim=new THREE.TorusGeometry(0.306,0.006,4,sg(40)).rotateX(Math.PI/2).translate(0,0.14*fs[1]-0.08-0.012,0); parts.push(pc(rim,(x,y,z,c)=>{ tone(c,0.5); if(fr(Math.atan2(z,x)/TAU*48)<0.3) tone(c,0.38); })); }   // the rim, bound with a wrapped cane
-    for(let i=0;i<16;i++){ const a=i/16*TAU, ca=Math.cos(a), sa=Math.sin(a); const ky=r=>0.14*fs[1]+0.08-0.16*r/0.31-0.012*Math.pow(r/0.31,2)+0.0035; parts.push(solid(sweepTube([0.045,0.17,0.3].map(r=>[sa*r,ky(r),ca*r]),[0.0028,0.0028,0.0028],3,{cap:'round',rings:6}),gmxMul(L.hatColor,0.6))); }   // sixteen split-bamboo ribs over the weave
-    parts.push(pc(new THREE.CylinderGeometry(0.043,0.091,0.025,sg(20),1,true).translate(0,0.14*fs[1]+0.0475,0),(x,y,z,c)=>{ c.set(0x8a1f1f); if(Math.abs(y-(0.14*fs[1]+0.0475))<0.003) c.set(0xd8b84a); }));   // a red lacquer collar under the knob with a gold line
-    for(const sd of [-1,1]) parts.push(solid(sweepTube([[sd*0.0,-0.138,-0.1],[sd*0.012,-0.17,-0.104],[sd*0.018,-0.2,-0.1]],[0.0028,0.0024,0.002],4,{cap:'round',rings:5}),0x7a1f1f),solid(csph(0.008,5,4).scale(1,1.6,1).translate(sd*0.018,-0.21,-0.1),0xd8b84a));   // the knot's two tails with tassels
   } else if(id==='cap'){
     parts.push(pc(scl(sculpt(shell(0.119,0,0.435*Math.PI,0,0.33,sg(34),sg(16)),false)),(x,y,z,c)=>{ tone(c,1); const a=((Math.atan2(x,z)/TAU*6)%1+1)%1; if(a<0.035||a>0.965) tone(c,0.72); }));   // six panels with seams
     parts.push(pc(csph(0.011,sg(8),sg(6)).translate(0,0.1195*fs[1]-0.004,0.0),c=>tone(c,0.8)));   // the button
     { const mk=up=>{ const g=new THREE.RingGeometry(0.0001,0.105,sg(24),4,0,Math.PI).rotateX(up?-Math.PI/2:Math.PI/2), p=g.attributes.position;
-        for(let k=0;k<p.count;k++){ const x=p.getX(k), r=Math.hypot(x,p.getZ(k))/0.105; p.setY(k,0.062*fs[1]-0.018*r*r-0.026*Math.pow(x/0.105,2)+(up?0:-0.005)); } g.translate(0,0,-0.072); return smoothN(g); };   // a bill that curves down at the sides (the classic bent bill) and only a little at the front, so it sits above the brows
-      parts.push(pc(mk(true),(x,y,z,c)=>{ tone(c,0.85); const r=Math.hypot(x,z+0.072); if(r>0.098) tone(c,0.62); else if(Math.abs(r-0.088)<0.0018||Math.abs(r-0.078)<0.0018) tone(c,1.08); }),pc(mk(false),(x,y,z,c)=>{ c.set(0x3a4a3a).multiplyScalar(0.8); })); }   // the curved bill: a dark rim, two rows of stitching, a dark-green underside
-    parts.push(pc(vbox(0.05,0.03,0.004,0,0.085*fs[1],-0.104).rotateX(-0.42),(x,y,z,c)=>{ c.set(0xf2efe8); if(Math.abs(x)>0.02||Math.abs(y-0.085*fs[1])>0.011) c.copy(hc).multiplyScalar(0.55); }));   // a patch on the front panel
-    for(let i=0;i<6;i++){ const a=(i+0.5)/6*TAU; parts.push(solid(gmRingAt([Math.sin(a)*0.09*fs[0],0.095*fs[1],Math.cos(a)*0.09],[Math.sin(a),0.8,Math.cos(a)],0.0035,0.0012,4),gmxMul(L.hatColor,0.6))); }   // an air eyelet on each panel
-    parts.push(solid(new THREE.TorusGeometry(0.03,0.004,4,10,Math.PI).translate(0,0.05*fs[1],0.117),gmxMul(L.hatColor,0.7)));   // the back opening's arch
+        for(let k=0;k<p.count;k++){ const r=Math.hypot(p.getX(k),p.getZ(k))/0.105; p.setY(k,0.056*fs[1]-0.05*r*r+(up?0:-0.004)); } g.translate(0,0,-0.075); return smoothN(g); };
+      parts.push(pc(mk(true),(x,y,z,c)=>{ tone(c,0.85); if(z<-0.172) c.set(0xf0ede4).multiplyScalar(0.9); }),pc(mk(false),c=>tone(c,0.6))); }   // the curved bill, with a light stitched edge
     parts.push(pc(vbox(0.03,0.013,0.008,0,0.05*fs[1],0.118),c=>c.set(0xd8d4c8)),pc(vbox(0.02,0.005,0.009,0,0.05*fs[1],0.1185),c=>c.set(0x2a2a2a)));   // the back strap's adjuster
   } else if(id==='bandana'){
-    parts.push(pc(scl(sculpt(shell(0.119,0,0.43*Math.PI,0,0.3,sg(34),sg(12)),false)),(x,y,z,c)=>{ tone(c,1); const u=Math.atan2(x,z)*7, v=y*55, cu=Math.round(u), cv=Math.round(v+(cu%2)*0.5), r=Math.hypot(u-cu,(v+(cu%2)*0.5-cv)*1.2); if(r<0.13||Math.abs(r-0.36)<0.06) lerpHex(c,0xf6f0e0,0.9); else if(r<0.24) tone(c,0.82); }));   // a printed pattern of rings round dots (pass 3)
-    parts.push(pc(scl(sculpt(shell(0.123,0.36*Math.PI,0.07*Math.PI,0,0.3,sg(34),sg(5)),false)),(x,y,z,c)=>{ tone(c,0.78); if(fr(Math.atan2(x,z)/TAU*40)<0.3) lerpHex(c,0xf6f0e0,0.5); }));   // the folded edge, a dashed border printed on it
+    parts.push(pc(scl(sculpt(shell(0.119,0,0.43*Math.PI,0,0.3,sg(34),sg(12)),false)),(x,y,z,c)=>{ tone(c,1); const d=h3(Math.round(x*70),Math.round(y*70),Math.round(z*70)); if(d>0.84) lerpHex(c,0xf6f0e0,0.9); }));   // printed dots
+    parts.push(pc(scl(sculpt(shell(0.123,0.36*Math.PI,0.07*Math.PI,0,0.3,sg(34),sg(5)),false)),c=>tone(c,0.78)));   // the folded edge
     parts.push(solid(csph(0.02,sg(8),sg(6)).translate(0,0.015,0.122),hc.getHex()),...[-1,1].map(sd=>pc(ofRibbon([[sd*0.01,0.01,0.125],[sd*0.04,-0.05,0.14],[sd*0.06,-0.12,0.14],[sd*0.08,-0.17,0.12]],u=>0.034*(1+0.4*u),{up:[0,0.2,1],seg:sg(10),th:0.003}),(x,y,z,c)=>{ tone(c,0.95); if(fr(y*22)<0.14) lerpHex(c,0xf6f0e0,0.8); })));   // the knot and two tails
   } else if(id==='hood'){
     parts.push(pc(scl(sculpt(shell(0.14,0,0.585*Math.PI,0,0.55,sg(36),sg(18)),false)),(x,y,z,c)=>{ tone(c,0.9+0.1*clamp(y*6)); }));
     parts.push(pc(scl(sculpt(shell(0.144,0.5*Math.PI,0.085*Math.PI,0,0.55,sg(36),sg(7)),false)),c=>tone(c,0.65)));   // the piped edge round the face
     const rings=[{y:0.0,rx:0.125,rz:0.13,zc:0.04},{y:-0.07,rx:0.12,rz:0.12,zc:0.06},{y:-0.15,rx:0.085,rz:0.07,zc:0.08},{y:-0.24,rx:0.03,rz:0.025,zc:0.09}];
     parts.push(pc(ofLoft(rings,sg(26),-1.9,1.9),(x,y,z,c)=>tone(c,0.82+0.2*(1+y*4))));   // the point that falls down the back
-    for(let i=0;i<7;i++){ const a=(i/6-0.5)*0.6; parts.push(solid(sweepTube([[0,-0.25,0.09],[Math.sin(a)*0.012,-0.29,0.093+Math.cos(a)*0.004],[Math.sin(a)*0.018,-0.325,0.095]],[0.0035,0.003,0.0015],4,{cap:'round',rings:4}),0xc9a86a)); }
-    parts.push(solid(gmRingAt([0,-0.25,0.091],[0,1,0.2],0.012,0.006,sg(6)),0x7a5a3a));   // a tassel of loose threads under a knot
-    parts.push(pc(scl(sculpt(shell(0.137,0.53*Math.PI,0.05*Math.PI,0,0.55,sg(36),sg(4)),false)),c=>{ c.copy(hc).lerp(ofCol(0xe8dcc0),0.55); }));   // a pale lining showing inside the face opening
-    for(const sd of [-1,1]) parts.push(solid(sweepTube([[sd*0.07,-0.07,-0.1],[sd*0.06,-0.12,-0.11],[sd*0.052,-0.17,-0.108]],[0.0028,0.0028,0.0028],4,{cap:'round',rings:5}),0xe8e4dc),solid(cyl(0.004,0.004,0.016,5).translate(sd*0.052,-0.18,-0.108),0xc9a13a));   // drawstrings with metal tips at the throat
+    parts.push(solid(gmRingAt([0,-0.255,0.092],[0,1,0.2],0.016,0.007,sg(6)),0x7a5a3a));   // a tassel
   } else if(id==='circlet'){
     parts.push(solid(gmRingAt([0,0.045*fs[1],-0.006],[0,1,0.18],0.114,0.0055,sg(8)),0xd8b84a),solid(gmRingAt([0,0.052*fs[1],-0.006],[0,1,0.18],0.113,0.0022,sg(6)),0xfff0b0));
     parts.push(solid(new THREE.OctahedronGeometry(0.016,0).scale(0.8,1.3,0.7).translate(0,0.062*fs[1],-0.117),L.hatColor===0xe8e4dc?0xd23a4a:0x2f9a7a),solid(new THREE.ConeGeometry(0.012,0.034,4).translate(0,0.086*fs[1],-0.113),0xd8b84a));
-    for(const sd of [-1,1]) for(let i=0;i<3;i++){ const t=i/2, x0=sd*(0.03+0.045*t), z0=-0.115+0.03*t*t, y0=(0.052+0.008*t)*fs[1];   // a spray of three gold leaves either side, each with a midrib, tilted up and back
-      parts.push(pc(ofRibbon([[x0,y0,z0],[x0+sd*0.014,y0+0.012,z0+0.006],[x0+sd*0.024,y0+0.028,z0+0.016]],u=>0.013*Math.sin(Math.PI*Math.min(1,u*1.1+0.08)),{up:[0,0.4,-1],seg:sg(6),th:0.003}),(x,y,z,c)=>{ c.set(0xd8b84a).multiplyScalar(0.85+0.3*Math.min(1,(y-y0)*40)); })); }
-    for(const sd of [-1,1]) parts.push(solid(csph(0.0055,sg(6),sg(5)).translate(sd*0.02,0.05*fs[1],-0.118),0xfff0b0),solid(csph(0.004,5,4).translate(sd*0.07,0.05*fs[1],-0.098),L.hatColor===0xe8e4dc?0xd23a4a:0x2f9a7a));   // pearls by the gem and two small stones further round
-    parts.push(solid(gmRingAt([0,0.062*fs[1],-0.117],[0,0.2,1],0.016,0.0025,sg(8)),0xd8b84a));   // a gold frame round the gem
+    for(const sd of [-1,1]) parts.push(pc(ofRibbon([[sd*0.04,0.054*fs[1],-0.113],[sd*0.075,0.062*fs[1],-0.1],[sd*0.1,0.078*fs[1],-0.07]],u=>0.016*(1-0.5*u),{up:[0,1,0],seg:sg(6),th:0.003}),(x,y,z,c)=>c.set(0xd8b84a)));   // two small leaves
   } else if(id==='wizard'){
     parts.push(...htBrim(sg,0.1,0.2,0.07,{side:0.03,dip:-0.01,rim:0.02},(x,y,z,c)=>{ tone(c,0.95); if(Math.hypot(x,z)>0.19) tone(c,0.75); }));
     const cone=sweepTube([[0,0.065,0],[0,0.15,0.0],[0,0.25,0.012],[0,0.34,0.05],[0,0.38,0.115]],[0.118,0.093,0.06,0.03,0.006],sg(24),{cap:'point',rings:sg(16)});
@@ -107,8 +93,6 @@ function htBase(X,F,parts){
     const w=(x,y,z,c)=>{ tone(c,0.92); const r=Math.hypot(x,z); if(fr(r*38)<0.2) tone(c,0.74); if(fr(Math.atan2(z,x)/TAU*16)<0.1) tone(c,0.82); };
     parts.push(...htBrim(sg,0.105,0.23,0.072,{side:0.026,dip:0.01,rim:0.01},(x,y,z,c)=>{ tone(c,0.92); const r=Math.hypot(x,z); if(fr(r*38)<0.2) tone(c,0.74); if(r>0.222) tone(c,0.62); }));
     parts.push(pc(scl(sculpt(shell(0.116,0,0.43*Math.PI,0,0.05,sg(34),sg(14)),false)).translate(0,0.056*fs[1],0),w));
-    for(let i=0;i<sg(28);i++){ const a=i/sg(28)*TAU, r=0.232; parts.push(solid(sweepTube([[Math.sin(a)*r,0.072+0.026*Math.pow(Math.sin(a),2)*0.5+0.002,Math.cos(a)*r],[Math.sin(a+0.05)*(r+0.012),0.068+0.013*Math.pow(Math.sin(a),2),Math.cos(a+0.05)*(r+0.012)]],[0.0022,0.0012],3,{cap:'round',rings:3}),gmxMul(L.hatColor,0.78))); }   // straw ends frayed out of the brim's edge
-    parts.push(pc(new THREE.ConeGeometry(0.012,0.02,4).rotateZ(-1.2).translate(0.124,0.09,0.02),c=>c.set(0xf4e6c0)),solid(csph(0.012,sg(8),sg(6)).translate(0.124,0.092,-0.01),0xf2f0e8),solid(csph(0.006,6,5).translate(0.13,0.094,-0.01),0xf2c040));   // a daisy tucked in the band
     parts.push(pc(new THREE.CylinderGeometry(0.1215,0.1215,0.024,sg(30),1,true).translate(0,0.09,0),c=>c.set(0xb8452e)),pc(ofRibbon([[0.1,0.09,0.07],[0.14,0.05,0.095],[0.17,-0.02,0.09],[0.18,-0.09,0.07]],u=>0.032*(1+0.3*u),{up:[0,1,0.3],seg:sg(10),th:0.003}),(x,y,z,c)=>c.set(0xb8452e)));
   } else htxBuild(X,F,parts,id,hc);   // the crafted hats (model-hats-more.js)
 }
