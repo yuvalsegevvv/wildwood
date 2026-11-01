@@ -5,21 +5,24 @@
    bending shows a round joint and never a step; (3) the hand is the end of the forearm (the palm flattens out of the wrist) and the shin runs into a lofted foot. */
 // what shows where a garment is taken off (the editor's None tile): a man's chest is bare, a woman wears a band top; both wear briefs (cream, a darker waistband)
 const UNDER_COL=0xe9e3d6, UNDER_BAND=0xb8b2a4;
+// the underwear's colours: look.underColor (the cloth) and look.underColor2 (the band); -1 keeps the cream; a chosen cloth with no band colour gets a darker band of itself
+const underCol=L=>{ const a=cosQ(L.underColor); return a>=0?a:UNDER_COL; };
+const underBand=L=>{ const b=cosQ(L.underColor2); if(b>=0) return b; const a=cosQ(L.underColor); return a>=0?(((a>>16&255)*0.78)<<16)|(((a>>8&255)*0.78)<<8)|((a&255)*0.78):UNDER_BAND; };
 function clothPaints(L){
   const topPaint=(c,u,v)=>{
-    if(L.top==='none'){ if(L.sex==='female'&&v>0.265&&v<0.375) c.set(v>0.36||v<0.28?UNDER_BAND:UNDER_COL); else c.set(L.skin); }
+    if(L.top==='none'){ if(L.sex==='female'&&v>0.265&&v<0.375) c.set(v>0.36||v<0.28?underBand(L):underCol(L)); else c.set(L.skin); }
     else if(L.top==='flannel') plaid(c,L.topColor,u,v);
     else if(L.top==='vest'||L.top==='jerkin') c.set(0xe8e4dc);   // (the waistcoat and the leather jerkin are geometry over a cream shirt: model-garments.js, model-garments-more.js)
     else if(L.top==='crop'){ if(v<0.3) c.set(L.skin); else c.set(L.topColor); }   // the midriff is bare
     else if(L.top==='halter'){ if(v>0.26&&v<0.435) c.set(L.topColor); else c.set(L.skin); }   // a wrap round the chest, bare shoulders, back and belly
-    else if(L.top==='harness'){ if(L.sex==='female'&&v>0.265&&v<0.375) c.set(v>0.36||v<0.28?UNDER_BAND:UNDER_COL); else c.set(L.skin); }   // straps over a bare chest (a woman keeps her band top)   // (the waistcoat is geometry over a cream shirt: model-garments.js)
+    else if(L.top==='harness'){ if(L.sex==='female'&&v>0.265&&v<0.375) c.set(v>0.36||v<0.28?underBand(L):underCol(L)); else c.set(L.skin); }   // straps over a bare chest (a woman keeps her band top)   // (the waistcoat is geometry over a cream shirt: model-garments.js)
     else if(gmdIs(L.top)) gmdPaint(L,c,u,v);   // dresses: skin above the bodice (model-dresses.js)
     else if(L.top==='mail'){ c.set(L.topColor).multiplyScalar(0.72+0.38*((Math.floor(u*70)+Math.floor(v*70))&1)); }
     else if(L.top==='plate'){ c.set(L.topColor).multiplyScalar(0.82+0.3*(Math.floor(v*13)&1)); }
     else c.set(L.topColor);
   };
   const botPaint=(c,u,v)=>{
-    if(L.bottom==='none'||gmxBareBottom(L.bottom)){ if(v<0.045) c.set(v>0.025?UNDER_BAND:UNDER_COL); else c.set(L.skin); return; }
+    if(L.bottom==='none'||gmxBareBottom(L.bottom)){ if(v<0.045) c.set(v>0.025?underBand(L):underCol(L)); else c.set(L.skin); return; }
     c.set(L.bottomColor);
     if(L.bottomStyle==='mail') c.multiplyScalar(0.72+0.38*((Math.floor((u||0)*70)+Math.floor((v||0)*70))&1));
     else if(L.bottomStyle==='plate') c.multiplyScalar(0.82+0.3*(Math.floor((v||0)*11)&1));
@@ -62,19 +65,19 @@ function buildTorso(X,D){
     z*=1+(S.waist-1)*0.7*gw+(S.hips-1)*0.5*gh+(S.shoulders-1)*0.2*up;
     const ax=Math.abs(x);
     if(front){
-      if(!fem) z+=0.012*B*G(y,0.33,0.1)*(1-0.4*G(ax,0,0.12))-0.003*B*(0.5+0.5*ch)*G(y,0.37,0.05)*G(ax,0.07*B,0.07);   // a man's chest: a flat, broad plane (the ribcage flattened by 1.2 cm) with only a hint of pec; a rounded bump read as a bust
+      if(!fem) z+=0.012*B*G(y,0.33,0.1)*(1-0.4*G(ax,0,0.12))*(1-0.4*Math.min(S.chestShape,0))-0.003*B*(0.5+0.5*ch)*G(y,0.37,0.05)*G(ax,0.07*B,0.07)-0.007*B*Math.max(S.chestShape,0)*G(y,0.34,0.05)*G(ax,0.06*B,0.045);   // a man's chest: a flat, broad plane (the ribcage flattened by 1.2 cm) with only a hint of pec; a rounded bump read as a bust
       if(!fem&&ch>1) z-=0.012*B*Math.min(ch-1,1.2)*G(y,0.34,0.07)*(1-0.4*G(ax,0,0.03));   // a man's chest grows as bulk of the pecs and ribs, not as a bust
       z-=0.008*G(y,0.1,0.08)*(1-G(ax,0,0.04))*(fem?0.5:1);              // stomach, a little rounded
       if(fem){
         // bust: part of the torso surface, not two balls. Each side slopes gently down from the collarbone, is fullest low and tucks in underneath;
         // the two join softly in the middle. A larger chest (ch) is deeper, a little wider and sits a little lower.
-        const ce=chestEff(ch), cy=0.315-0.012*(ce-1), wx=0.05*(0.86+0.14*ce), wl=0.036*(0.8+0.2*ce);
-        const lobe=sd=>{ const dx=x-sd*0.056*B, dy=y-cy; return Math.exp(-Math.pow(dx/wx,2))*Math.exp(-Math.pow(dy/(dy>0?0.075:wl),2)); };
-        const a=lobe(-1), b=lobe(1); z-=0.034*lr*ce*(1-(1-a)*(1-b));
+        const ce=chestEff(ch), cs=S.chestShape, cy=0.315-0.012*(ce-1)-0.006*cs, wx=0.05*(0.86+0.14*ce)*(1-0.4*cs), wl=0.036*(0.8+0.2*ce);   // cs, the chest shape: broad and flat (-1) spreads the lobes wide apart and shallow, round and full (+1) gathers them narrower, closer and deeper
+        const lobe=sd=>{ const dx=x-sd*0.056*B*(1-0.3*cs), dy=y-cy; return Math.exp(-Math.pow(dx/wx,2))*Math.exp(-Math.pow(dy/(dy>0?0.075:wl),2)); };
+        const a=lobe(-1), b=lobe(1); z-=0.034*lr*ce*(1+0.4*cs)*(1-(1-a)*(1-b));
       }
     } else {
       z+=0.012*B*G(y,0.37,0.07)*G(ax,0.075*B,0.045);                    // shoulder blades
-      z+=(fem?0.034:0.022)*B*G(y,0.0,0.055)*G(ax,0.066*B,0.05);         // glutes
+      z+=(fem?0.034:0.022)*B*S.hipCurve*G(y,0.0,0.055)*G(ax,0.066*B,0.05);         // glutes (the hip curve slider scales them)
       z-=0.008*G(ax,0,0.018)*G(y,0.2,0.18);                             // the groove of the spine
     }
     z-=sN*(y-0.5)*0.1; p.setXYZ(i,x,y*TK,z);
@@ -166,7 +169,7 @@ function buildLeg(X,D,sd){
   const hp=new THREE.Group(); hp.name=sd<0?'hipL':'hipR'; hp.position.set(sd*hx,0,0);
   // thigh: the hip ball, full quads in front, tapering to the knee (radius KR, shared with the shin below)
   const th=pc(limb([[0,0.088*tw,0.092*tw],[0.14,0.09*tw,0.094*tw],[0.42,0.077*tw,0.081*tw,-0.004],[0.76,Math.max(KR*1.1,0.057*tw),Math.max(KR*1.12,0.06*tw),-0.002],[1,KR,KR*1.04]],thigh,sg(24),sg(28),{cuts:[0.53,0.53-0.03/thigh].concat(L.bottom==='shortshorts'?[0.2,0.2-0.025/thigh]:[]).concat((kB&&kB.cuts&&kB.cuts.thigh)||[])}),kB?(x,y,z,c)=>ofPaint(X,'bottom','thigh',c,x,y,z,sd):(x,y,z,c)=>{
-    if(L.bottom==='trousers'||L.bottom==='greaves'||L.bottom==='breeches'||L.bottom==='hakama'||(L.bottom==='shorts'&&y>-thigh*0.53)||(L.bottom==='shortshorts'&&y>-thigh*0.2)) botPaint(c,x,y); else if((L.bottom==='none'||gmxBareBottom(L.bottom))&&y>-thigh*0.16) c.set(y>-thigh*0.03?UNDER_BAND:UNDER_COL); else skinPaint(c);
+    if(L.bottom==='trousers'||L.bottom==='greaves'||L.bottom==='breeches'||L.bottom==='hakama'||(L.bottom==='shorts'&&y>-thigh*0.53)||(L.bottom==='shortshorts'&&y>-thigh*0.2)) botPaint(c,x,y); else if((L.bottom==='none'||gmxBareBottom(L.bottom))&&y>-thigh*0.16) c.set(y>-thigh*0.03?underBand(L):underCol(L)); else skinPaint(c);
     if(L.bottom==='shorts'&&y>-thigh*0.53&&y<-thigh*0.53+0.03) c.multiplyScalar(0.85); if(L.bottom==='shortshorts'&&y>-thigh*0.2&&y<-thigh*0.2+0.025) c.multiplyScalar(0.8); });
   const m1=new THREE.Mesh(th,matChar); m1.castShadow=true; hp.add(m1);
   if(!kB){ const ex=gmxThigh(X,D,sd); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; hp.add(m); } }   // the plated leggings' thigh plates (model-garments-more.js)

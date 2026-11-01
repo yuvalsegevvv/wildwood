@@ -92,7 +92,7 @@ function cosTint(def,L,kind){
 // the cape on a rig: hinges at the back of the shoulders, four panels down to a hem near the knees, a collar, a clasp and, for some, a shoulder cape
 function cosBuildCape(rig,X,def){
   const D=X.D, sg=X.sg, cheap=(typeof LITE!=='undefined'&&LITE)||(typeof LOW!=='undefined'&&LOW);
-  const H=Math.min((D.shY+0.3)*def.len,D.hipY+D.shY-0.1), w0=2*D.shX+0.06, w1=w0*1.55, z0=0.11*D.B+0.025, top=D.shY+0.02, A=0.95, NS=4, NC=cheap?9:16;
+  const H=Math.min((D.shY+0.3)*def.len*X.S.capeLen,D.hipY+D.shY-0.1), w0=2*D.shX+0.06, w1=w0*1.55, z0=0.11*D.B+0.025, top=D.shY+0.02, A=0.95, NS=4, NC=cheap?9:16;
   const w=y=>w0+(w1-w0)*y/H, cut=[0,0.25,0.5,0.75,1].map(f=>f*H);
   // one panel: the rows ya..yb (distance below the hinge line), curved round the back and rippled; drawn in its own frame (its top at y = 0)
   const panel=(ya,yb)=>{

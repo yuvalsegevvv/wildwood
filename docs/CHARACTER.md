@@ -65,6 +65,11 @@ A look field that is not a slider (hair style, colours, face shape) still follow
 | `hairLength` | Hair | Hair length | 0.6 .. 1.5 | 1 | 0.7 .. 1.35 | Shorter / Longer |
 | `hairVolume` | Hair | Hair volume | 0.85 .. 1.35 | 1 | 0.9 .. 1.25 | Sleek / Fluffy |
 | `bangs` | Hair | Fringe length | 0 .. 1.5 | 1 | 0.3 .. 1.4 | None / Long |
+| `chestShape` | Shape | Chest shape | -1 .. 1 | 0 | whole range | Broad & flat / Round & full |
+| `hipCurve` | Shape | Hip curve | 0.4 .. 1.8 | 1 | whole range | Flat / Round |
+| `hatSize` | Outfit | Hat size | 0.8 .. 1.35 | 1 | whole range | Smaller / Larger |
+| `hatTilt` | Outfit | Hat tilt | -1 .. 1 | 0 | whole range | Left / Right |
+| `capeLen` | Outfit | Cape length | 0.7 .. 1.4 | 1 | whole range | Shorter / Longer |
 | `hairSwing` | Hair | Hair swing | 0 .. 1.6 | 1 | whole range | Still / Bouncy |
 | `skirtLen` | Outfit | Skirt length | 0.6 .. 1.5 | 1 | whole range | Shorter / Longer |
 | `skirtFlare` | Outfit | Skirt flare | 0.7 .. 1.5 | 1 | whole range | Narrow / Full |

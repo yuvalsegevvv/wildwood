@@ -2,7 +2,7 @@
 /* Called by buildHair (model-hair.js) after the hair: htBase(X, F, parts) pushes the painted geometries of the look's base hat (look.hat) in the head's frame (origin at the head's centre, the skull's radius is
    0.105 and its top 0.105 * F.fs[1], the face looks along -z). A hat is its own shape, a band, a trim and at least two colours; look.hatColor is the main cloth, the trim colours are the hat's own.
    An outfit's hat item (kit.head) is built by buildHair after this and replaces it (look.hat is then 'outfit'). Ids: HT_HATS (the editor's Hat row lists them, with the names).
-   owns: HT_HATS, htBase, htBrim.   used by: model-hair.js, ui/character-editor.js.   test: tools/character-smoke.js, tools/cosmetic-items-smoke.js */
+   owns: HT_HATS, htBase, htBrim, hatShape.   used by: model-hair.js, ui/character-editor.js.   test: tools/character-smoke.js, tools/cosmetic-items-smoke.js */
 const HT_HATS=[['none','No hat'],['ranger','Ranger hat','A wide felt brim, a dented crown, a band with a buckle and a feather.'],['beanie','Beanie','Ribbed knit with a folded cuff and a fluffy pompom.'],['cap','Cap','Six panels, a button, a curved bill and a back strap.'],
   ['kasa','Kasa hat','A woven conical straw hat with a lacquered knob and a chin cord.'],['bandana','Bandana','A knotted cloth with a printed pattern and two tails.'],['hood','Hood','A deep cowl with a piped edge that falls to a point down the back.'],
   ['circlet','Circlet','A slim gold band with a gem and two small leaves.'],['wizard','Wizard hat','A tall bent cone with a wide brim, a buckled band and stars.'],['straw','Straw hat','A round woven hat with a wide brim and a ribbon.']];
@@ -95,4 +95,10 @@ function htBase(X,F,parts){
     parts.push(pc(scl(sculpt(shell(0.116,0,0.43*Math.PI,0,0.05,sg(34),sg(14)),false)).translate(0,0.056*fs[1],0),w));
     parts.push(pc(new THREE.CylinderGeometry(0.1215,0.1215,0.024,sg(30),1,true).translate(0,0.09,0),c=>c.set(0xb8452e)),pc(ofRibbon([[0.1,0.09,0.07],[0.14,0.05,0.095],[0.17,-0.02,0.09],[0.18,-0.09,0.07]],u=>0.032*(1+0.3*u),{up:[0,1,0.3],seg:sg(10),th:0.003}),(x,y,z,c)=>c.set(0xb8452e)));
   } else htxBuild(X,F,parts,id,hc);   // the crafted hats (model-hats-more.js)
+}
+// the hat size and tilt sliders: a base hat (parts[from..]) is scaled about its seat on the skull (wider and a little taller), then tilted about the head's centre; nothing happens at the defaults
+function hatShape(X,parts,from){
+  const k=X.S.hatSize, tilt=X.S.hatTilt; if(Math.abs(k-1)<0.001&&Math.abs(tilt)<0.001) return;
+  const seat=0.09, m=new THREE.Matrix4().makeRotationZ(-tilt*0.3).multiply(new THREE.Matrix4().makeTranslation(0,seat,0)).multiply(new THREE.Matrix4().makeScale(k,1+(k-1)*0.6,k)).multiply(new THREE.Matrix4().makeTranslation(0,-seat,0));
+  for(let i=from;i<parts.length;i++) if(parts[i].attributes&&parts[i].attributes.position){ parts[i].applyMatrix4(m); if(parts[i].boundingSphere) parts[i].boundingSphere=null; }
 }
