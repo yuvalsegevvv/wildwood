@@ -1,12 +1,11 @@
 //@ Puzzles (version 4): the registry of puzzle kinds (definePuzzleKind), the five difficulties, what a first solve and a chest pay, the Sigil track, seeds. Pure; the kinds are shared/puzzles/<kind>.js
-/* Agent map (docs/PUZZLES.md; plan in the project files puzzles-plan/PLAN.md). Behind PZ_ON: while it is false no stone in the world works and no panel shows the track; the admin Puzzles section (devP 'pz') and the puzzle lab work anyway.
-   owns:    PZ_ON, PZ_DIFF (name, target seconds, first-solve gems and Sigils), PZ_RENEW_MS (2 h), PZ_FLOOR_K (anti-farming floor), PZ_CHEST (what a chest of each difficulty holds), PZ_POTION_ODDS, PZ_LUCKY,
+/* Agent map (docs/PUZZLES.md; plan in the project files puzzles-plan/PLAN.md). Always on (the PZ_ON switch was removed); the admin Puzzles section (devP 'pz') and the puzzle lab work anyway.
+   owns:    PZ_DIFF (name, target seconds, first-solve gems and Sigils), PZ_RENEW_MS (2 h), PZ_FLOOR_K (anti-farming floor), PZ_CHEST (what a chest of each difficulty holds), PZ_POTION_ODDS, PZ_LUCKY,
             PZ_SIG_LEVEL / PZ_LEVEL_GEMS / PZ_SCROLL_EVERY (the Sigil track), PZ_TRACK_COS (the cosmetic of each track level: filled by the content thread), PZ_SCROLL_DROP (epic scroll odds),
             PZ_KINDS / PZ_KIND_IDS / PZ_BAD / definePuzzleKind(d), pzSeed(site,diff,cycle), pzBoard(kind,diff,seed) (checked generation), pzTrackLevel(sig), pzFloorSecs(diff).
    a kind:  definePuzzleKind({id, name, land, gen(seed,diff) -> board (plain JSON data, may hold its own solution under `sol`), check(board,ans) -> bool, rate(board) -> {..metrics}}). A bad kind is left out and listed in PZ_BAD.
    Seeds:   the client builds the board itself from the seed (integer maths and mulberry32 only: the same on both sides); the server sends {site,kind,diff,seed} and regenerates the board only to check an answer.
    used by: server/puzzles.js, game/puzzles/*, game/economy/gems.js (the track tab), tools/puzzles-smoke.js, tools/puzzle-lab.js.  Test: tools/puzzles-smoke.js */
-var PZ_ON=false;   // the master switch (var: the smoke test turns it on); the story revamp's release sets it true
 const PZ_DIFF=[null,
   {name:'Trivial',target:5,gems:1,sigils:0},
   {name:'Easy',target:15,gems:2,sigils:0},
@@ -26,6 +25,8 @@ const PZ_CHEST=[null,
 const PZ_POTION_ODDS=[['heal',0.55],['might',0.25],['guard',0.20]], PZ_LUCKY=0.10, PZ_STONE_LV=30;
 const PZ_SIG_LEVEL=10, PZ_LEVEL_GEMS=10, PZ_SCROLL_EVERY=5, PZ_TRACK_LEVELS=40;
 const PZ_TRACK_COS=new Array(PZ_TRACK_LEVELS+1).fill(null);   // [level] = a cosmetic key ('c:regal'); the content thread fills it (section 4 of the plan)
+const PZ_STATUE_REACH=10, PZ_STATUE_STEP=50;   // metres from the statue's middle you may offer; the statue's model grows every 50 Sigils offered (one step per scroll level)
+const pzStatueTier=off=>Math.min(PZ_TRACK_LEVELS*PZ_SIG_LEVEL/PZ_STATUE_STEP,Math.floor(Math.max(0,off)/PZ_STATUE_STEP));
 const pzTrackLevel=sig=>Math.min(PZ_TRACK_LEVELS,Math.floor(Math.max(0,sig)/PZ_SIG_LEVEL));
 const pzFloorSecs=diff=>diff>=3?Math.round(PZ_DIFF[diff].target*PZ_FLOOR_K):0;
 const PZ_KINDS={}, PZ_KIND_IDS=[], PZ_BAD=[];

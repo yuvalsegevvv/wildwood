@@ -30,6 +30,9 @@ const COS_AURAS=[
   ['peakwind','Peakwind',4,0xcfe0ee,0x8fb0c8,'orbit',true,10,'Cold streaks of mountain wind wheel round you. The Sigil track\'s reward.','wisp','double'],
   ['shroudveil','Shroudveil',6,0xb7a7d8,0xffffff,'rise',true,10,'Violet wisps climb in a halo of gloom. The Sigil track\'s reward.','wisp','halo'],
   ['lampcrown','Lampcrown',6,0xffe9a0,0xffffff,'orbit',true,16,'A golden ring, a halo and a crown of lamplight stars: the track\'s showpiece.','star','halo'],
+  ['heartbloom','Heartbloom',4,0xff6fa0,0xffd0e0,'rise',true,12,'Pink hearts float up from a glowing rune ring. Earned on the Sigil track.','heart','runes'],
+  ['sweetheart','Sweetheart',5,0xff5a8a,0xffffff,'orbit',true,10,'A ring of hearts circles you under a small halo. Earned on the Sigil track.','heart','halo'],
+  ['bubblepop','Bubblepop',3,0x9ad8ff,0xffffff,'rise',false,14,'Soap bubbles drift up and pop. Earned on the Sigil track.','bubble','none'],
   ['foxfire','Foxfire',5,0x8ad4ff,0xffffff,'rise',true,9,'Nine pale-blue foxfire flames climb round you from a rune ring. The Nine Tails\' reward.','flame','runes'],
   ['sunwept','Where the Sun Wept',6,0xffc45a,0x3a2a4a,'orbit',true,14,'Flecks of sun-gold and black glass circle you above a crystal ring. Where the Sun Wept\'s reward.','grain','spikes'],
   ['lamplight','Keeper\'s Lamplight',6,0xfff0b0,0xffcf6a,'orbit',true,6,'Slow motes of lamplight turn round you, under a halo. The Keeper\'s Light\'s reward.','mote','halo'],
@@ -58,6 +61,9 @@ const COS_CAPES=[
   ['regal','Highmark Regalia',6,0x2a3a8a,0xe8c860,1.3,'A deep blue train with ermine trim, gold crests and a shoulder cape.','ermine',1],
   // side quests' rewards (CP_QUEST in cospieces.js: earned, never made)
   // the Sigil track's big rewards (levels 5, 15, 25, 35: shared/puzzle-track.js; earned, never made)
+  ['lovebird','Lovebird Cape',3,0xe87aa0,0xfff0f4,1.0,'Rose pink with a hem of pressed petals. Earned on the Sigil track.','petals',0],
+  ['dawnray','Dawnray Mantle',5,0xf0b050,0xfff4d0,1.15,'Warm gold with rays of light fanning from the collar. Earned on the Sigil track.','rays',1],
+  ['emberwing','Emberwing Cape',4,0x7a2a2a,0xff8a3a,1.1,'Deep red with a hem of licking flames. Earned on the Sigil track.','flames',0],
   ['rootcloak','Rootbound Cloak',2,0x4a6a2e,0x9a7a46,1.1,'Moss green with a hem of knotted roots. The Sigil track\'s reward.','moss',0],
   ['frostmantle','Lamp-in-Snow Mantle',4,0xcfe6f2,0x6fa6c8,1.15,'Pale wool lined with blue fur, a lamp stitched at the clasp. The Sigil track\'s reward.','fur',1],
   ['sunmirror','Mirrorbright Cape',5,0xe6b84a,0xfff0c0,1.15,'Gold silk with rays that catch the light. The Sigil track\'s reward.','rays',0],
@@ -73,7 +79,9 @@ for(const a of COS_AURAS) COS_AURA[a[0]]={id:a[0],name:a[1],grade:a[2],col:a[3],
 for(const c of COS_CAPES) COS_CAPE[c[0]]={id:c[0],name:c[1],grade:c[2],col:c[3],trim:c[4],len:c[5],text:c[6],pat:c[7],mantle:c[8],type:'c'};
 const cosKey=(type,id)=>type+':'+id;
 const cosDef=(type,id)=>typeof id!=='string'?null:type==='a'?(Object.prototype.hasOwnProperty.call(COS_AURA,id)?COS_AURA[id]:null):type==='c'?(Object.prototype.hasOwnProperty.call(COS_CAPE,id)?COS_CAPE[id]:null):null;
-const COS_MAX=120;
+const COS_MAX=400;
+// every key a hiker can own (the test world gives them all): the crafted pieces and every cape and aura that is not free
+function cosAllKeys(){ const out=[]; for(const r of CP_PIECES){ const k=r[0]+':'+r[1]; if(!cpIsFree(r[0],r[1])) out.push(k); } for(const d of COS_CAPES) if(!CP_FREE.includes('c:'+d[0])) out.push('c:'+d[0]); for(const d of COS_AURAS) if(!CP_FREE.includes('a:'+d[0])) out.push('a:'+d[0]); return out; }
 const cosCost=(type,id)=>cpCost(type,id);   // {res, mats, coins} of a crafted piece (shared/cospieces.js), null for a free one
 // do you wear / own it? a free piece is everybody's; a crafted one is in your gear.cos (and only the catalog's crafted pieces are ever in it)
 const cosOwns=(owned,type,id)=>{ const D=cpDef(type,id); return !!D&&(D.free||(Array.isArray(owned)&&owned.includes(cosKey(type,id)))); };

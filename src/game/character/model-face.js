@@ -48,7 +48,7 @@ function frontSurface(g){
 }
 /* the pupil: look.pupil is one of FACE_PUPILS (an unknown id is the round one). k = the eye's size factor (E * the iris size); the shapes face -z, centred on the iris, in the pupil's dark colour.
    Round, dot, slit and wide are ellipsoids, the rest flat cut-outs just in front of the iris. */
-const FACE_PUPILS=[['round','Round'],['dot','Dot'],['slit','Slit'],['wide','Wide'],['diamond','Diamond'],['star','Star'],['heart','Heart'],['sparkle','Sparkle']];
+const FACE_PUPILS=[['round','Round'],['dot','Dot'],['slit','Slit'],['wide','Wide'],['diamond','Diamond'],['star','Star'],['heart','Heart'],['sparkle','Sparkle'],['moon','Crescent'],['ring','Ring']];
 function facePupil(shape,k,sg){
   const cy=-0.0008*k, ell=(rx,ry,rz,z)=>csph(1,sg(12),sg(9)).scale(rx*k,ry*k,rz*k).translate(0,cy,z);
   const flat=(sh,r)=>new THREE.ShapeGeometry(sh,6).scale(r*k,r*k,1).rotateY(Math.PI).translate(0,cy,-0.0112);
@@ -60,6 +60,8 @@ function facePupil(shape,k,sg){
     for(let i=0;i<2*n;i++){ const a=i/(2*n)*TAU+(shape==='star'?0:0), r=(i%2?r0:r1)*(shape==='diamond'&&i%4===2?0.8:1), x=Math.sin(a)*(shape==='diamond'?0.6:1)*r, y=Math.cos(a)*r; if(i) sh.lineTo(x,y); else sh.moveTo(x,y); }
     return flat(sh,1);
   }
+  if(shape==='moon'){ const sh=new THREE.Shape(); sh.moveTo(0,0.0165); sh.absarc(0,0,0.0165,Math.PI/2,Math.PI*1.5,false); sh.bezierCurveTo(-0.0075,-0.008,-0.0075,0.008,0,0.0165); return flat(sh,1); }
+  if(shape==='ring') return new THREE.RingGeometry(0.0078,0.0155,16).scale(k,k,1).rotateY(Math.PI).translate(0,cy,-0.0112);
   if(shape==='heart'){ const sh=new THREE.Shape(); sh.moveTo(0,-0.0145); sh.bezierCurveTo(-0.0235,0.0015,-0.0135,0.0185,0,0.0085); sh.bezierCurveTo(0.0135,0.0185,0.0235,0.0015,0,-0.0145); return flat(sh,1); }
   return ell(0.0088,0.0138,0.0042,-0.0074);
 }

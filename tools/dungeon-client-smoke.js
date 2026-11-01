@@ -63,14 +63,14 @@ const el=s=>document.querySelector(s);
   { const tx=G.dgHudText(R.m,G.DG_RUN().dg); ok('the HUD shows the mission\'s text from the dg snapshot (shared/dungeon-hud.js)',el('#dgHudTitle').textContent===tx.title&&!el('#dgHud').hidden&&/Monsters slain: 0 \//.test(JSON.stringify(tx.lines)),tx.title+' | '+tx.lines.join(' / '));
     G.applySnap({dg:[0,95,0,4,12]}); G.dgHudTick(0.016); ok('a new dg tuple redraws it, and the clock follows the server\'s seconds',el('#dgHudLines')._kids.some(k=>k.textContent==='Monsters slain: 4 / 12')&&/^1:3[45]$/.test(el('#dgHudTime').textContent),el('#dgHudTime').textContent); }
   // ---- objectives ----
-  { const me=G.NET.pid, x=G.P.x+1, z=G.P.z;
+  { const me=G.NET.pid, x=G.P.x+1, z=G.P.z, base=G.DG_VIEW.objs;   // (base: the run's own puzzle stones, 3, are already drawn)
     G.applyEvent(['dgo',901,'chest',x,z,1,2]); G.applyEvent(['dgo',902,'stone',x+30,z,1,40]); const o=G.DG_RUN().objs.get(901);
-    const st=G.DG_RUN().objs.get(902); ok('objectives (dgo) get a marker and a label in the dungeon\'s own words; a share (the stone\'s health) shows as a bar, a chest\'s number does not',!!o&&!!o.view&&!!o.lbl&&G.DG_VIEW.objs===2&&o.lbl.dgName.textContent==='Reward chest'&&o.lbl.dgBar.hidden&&st.lbl.dgName.textContent==='the Heartwood Knot'&&!st.lbl.dgBar.hidden,st.lbl.dgName.textContent);
+    const st=G.DG_RUN().objs.get(902); ok('objectives (dgo) get a marker and a label in the dungeon\'s own words; a share (the stone\'s health) shows as a bar, a chest\'s number does not',!!o&&!!o.view&&!!o.lbl&&G.DG_VIEW.objs===base+2&&o.lbl.dgName.textContent==='Reward chest'&&o.lbl.dgBar.hidden&&st.lbl.dgName.textContent==='the Heartwood Knot'&&!st.lbl.dgBar.hidden,st.lbl.dgName.textContent);
     const u=G.dgUseNear(); G.updateTalkUI(); ok('standing at it, the talk key would open it and the prompt says so',u&&u.k==='obj'&&u.id===901&&/to open Reward chest/.test(G.promptEl.textContent),G.promptEl.textContent);
     G.applyEvent(['dgo',901,'chest',x,z,2,0]); ok('done: green, no beam, no longer offered',!o.view.userData.beam.visible&&(!G.dgUseNear()||G.dgUseNear().k!=='obj'));
-    G.applyEvent(['dgo',901,'chest',x,z,0,0]); G.applyEvent(['dgo',902,'stone',x+30,z,0,0]); ok('removed: marker and label gone',G.DG_VIEW.objs===0&&!G.DG_RUN().objs.has(901)&&!o.view&&!o.lbl);
+    G.applyEvent(['dgo',901,'chest',x,z,0,0]); G.applyEvent(['dgo',902,'stone',x+30,z,0,0]); ok('removed: marker and label gone',G.DG_VIEW.objs===base&&!G.DG_RUN().objs.has(901)&&!o.view&&!o.lbl);
     G.applyEvent(['dgo',904,'ping',x+5,z,1,1]); G.applyEvent(['dgo',904,'ping',x+9,z+2,1,2]); const pg=G.DG_RUN().objs.get(904);
-    ok('a moving objective (the quarry\'s ping, the captive) is moved, not doubled',G.DG_VIEW.objs===1&&Math.abs(pg.view.position.x-(x+9-R.ox))<1e-6&&pg.v===2); G.applyEvent(['dgo',904,'ping',x+9,z+2,0,0]);
+    ok('a moving objective (the quarry\'s ping, the captive) is moved, not doubled',G.DG_VIEW.objs===base+1&&Math.abs(pg.view.position.x-(x+9-R.ox))<1e-6&&pg.v===2); G.applyEvent(['dgo',904,'ping',x+9,z+2,0,0]);
     { let threw=null; try{ G.applyEvent(['tele',950,'root',x,z,2,1.2,0,0]); G.applyEvent(['tele',951,'prison',x,z,1.8,3,0,me]); for(let i=0;i<5;i++) G.updateMonsters(0.05); }catch(e){ threw=e.message; }
       const pr=G.BOSS.tele.get(951); ok('the hazards\' telegraphs (root spikes, a prison that follows you) draw on the run\'s floor',!threw&&G.BOSS.tele.has(950)&&pr&&Math.abs(pr.x-G.P.x)<1e-6&&Math.abs(pr.fill.position.y-(R.y+0.08))<1e-6,threw||'');
       G.applyEvent(['tend',950,1,x,z]); G.applyEvent(['tend',951,0,x,z]); ok('and end',!G.BOSS.tele.has(950)&&!G.BOSS.tele.has(951)); }

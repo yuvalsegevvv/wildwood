@@ -3,9 +3,14 @@
    four small pieces then a big one. The small pieces are the existing crafted decorations, gloves, hats and shoes sorted by grade (a stable order), so a later level is a finer piece; a track piece can still be made at the Lodge by anyone who has not reached its level.
    The big ones (new capes and auras in shared/cosmetics.js) are earned only here (CP_TRACK). pzTrackP (server/puzzles.js) hands each over with the level's gems. Test: tools/puzzles-smoke.js, tools/cospieces-smoke.js */
 const PZ_TRACK_BIG={5:'c:rootcloak',10:'a:sakuraoffer',15:'c:frostmantle',20:'a:peakwind',25:'c:sunmirror',30:'a:shroudveil',35:'c:savannaweave',40:'a:lampcrown'};
-{ // every part: hair styles, decorations, gloves, hats, tops, bottoms and shoes. The 4 hair styles are placed on purpose (small pieces 3, 11, 19, 27); the other 28 are drawn evenly across all the other pieces by grade,
-  // and inside a grade the slots take turns so the track never runs on one kind
-  const order='dghtbs', rows=CP_PIECES.filter(r=>order.indexOf(r[0])>=0), cnt={}, all=rows.map(r=>{ const n=cnt[r[0]]=(cnt[r[0]]|0)+1; return [+r[3],n,order.indexOf(r[0]),r[0]+':'+r[1]]; }).sort((a,b)=>a[0]-b[0]||a[1]-b[1]||a[2]-b[2]).map(r=>r[3]);
-  const hair=CP_PIECES.filter(r=>r[0]==='r').sort((a,b)=>+a[3]-+b[3]).map(r=>'r:'+r[1]), pick=[]; for(let i=0;i<28;i++) pick.push(all[Math.floor(i*all.length/28)]);
-  const small=[]; { let hi=0, pi=0; for(let i=0;i<32;i++) small.push(i%8===2&&hi<hair.length?hair[hi++]:pick[pi++]); }
-  let n=0; for(let L=1;L<=PZ_TRACK_LEVELS;L++){ const k=PZ_TRACK_BIG[L]||small[n++]; PZ_TRACK_COS[L]=k||null; if(PZ_TRACK_BIG[L]||(k&&k[0]==='r')) CP_TRACK[k]=L; } }
+{ // every part. EXCLUSIVES are earned only here (no recipe; their text ends 'Earned on the Sigil track.'): the hair styles, new decorations, capes and auras (16 in all) take every second small slot;
+  // the other 16 small slots are drawn evenly across the craftable pieces by grade (inside a grade the slots take turns), so the track never runs on one kind
+  const done=/Sigil track\./, order='dghtbs', ex=[];
+  for(const r of CP_PIECES) if(done.test(r[4])) ex.push([+r[3],r[0]+':'+r[1]]);
+  for(const r of COS_CAPES) if(done.test(r[6])) ex.push([+r[2],'c:'+r[0]]);
+  for(const r of COS_AURAS) if(done.test(r[8])) ex.push([+r[2],'a:'+r[0]]);
+  ex.sort((a,b)=>a[0]-b[0]); const exKeys=ex.map(e=>e[1]), exSet=new Set(exKeys);
+  const rows=CP_PIECES.filter(r=>order.indexOf(r[0])>=0&&!exSet.has(r[0]+':'+r[1])), cnt={}, all=rows.map(r=>{ const n=cnt[r[0]]=(cnt[r[0]]|0)+1; return [+r[3],n,order.indexOf(r[0]),r[0]+':'+r[1]]; }).sort((a,b)=>a[0]-b[0]||a[1]-b[1]||a[2]-b[2]).map(r=>r[3]);
+  const pick=[]; for(let i=0;i<16;i++) pick.push(all[Math.floor(i*all.length/16)]);
+  const small=[]; { let ei=0, pi=0; for(let i=0;i<32;i++) small.push(i%2===0&&ei<exKeys.length?exKeys[ei++]:pick[pi++]||exKeys[ei++]); }
+  let n=0; for(let L=1;L<=PZ_TRACK_LEVELS;L++){ const k=PZ_TRACK_BIG[L]||small[n++]; PZ_TRACK_COS[L]=k||null; if(PZ_TRACK_BIG[L]||exSet.has(k)) CP_TRACK[k]=L; } }

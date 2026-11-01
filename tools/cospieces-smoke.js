@@ -51,7 +51,7 @@ ok('the backpack cape draws a pack on the back',C.tris(pack).length>C.tris(plain
 ok('an old save with pack:true and a custom cape becomes cape pack',C.fullLook({cls:'warrior',custom:true,pack:true}).cape==='pack');
 // ---- decorations ----
 const decos=C.CP_PIECES.filter(r=>r[0]==='d').map(r=>r[1]);
-ok('15 to 24 decorations, all crafted (none free), each with a model',decos.length>=15&&decos.length<=24&&decos.every(id=>!x.cpIsFree('d',id)&&C.DECOS[id]&&x.CP_RECIPE['d:'+id]),decos.length);
+ok('15 to 40 decorations, all crafted (none free), each with a model',decos.length>=15&&decos.length<=40&&decos.every(id=>!x.cpIsFree('d',id)&&C.DECOS[id]&&(x.CP_RECIPE['d:'+id]||(x.cpDef('d',id)||{}).track)),decos.length);
 ok('three decoration fields are locked until made, in any field, and stripped by the server',(()=>{ const w={deco1:'flower',deco2:'halo',deco3:'tail'}; const l=x.cosLocked(w,['d:halo']); const cl=x.cosCleanLook(Object.assign({cls:'warrior'},w),['d:halo']); return l.length===2&&l.every(q=>q.slot==='d')&&cl.deco1===''&&cl.deco2==='halo'&&cl.deco3===''; })());
 bad.length=0; for(const id of decos){ for(const sex of ['male','female']) for(const col of [-1,0x33cc88]){ const t=build('deco '+id,sex,{deco1:id,decoColor1:col}); const base=build('base',sex,id==='mane'?{hair:'bald'}:{}); if(t&&base&&t.tris<=base.tris) bad.push(id+' draws nothing'); } }
 ok('every decoration builds on both bodies, takes a colour and adds geometry',!bad.length,bad.slice(0,4).join('; '));

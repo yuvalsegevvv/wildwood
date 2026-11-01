@@ -1,7 +1,7 @@
 // Headless test of the puzzle engine (shared/puzzles*.js, server/puzzles.js): every kind and difficulty generates, solves, is unique where it claims, fits its time budget; the server flow (open, solve, floor, renewal, chest, Sigils, track, scrolls, save cleaning).
 // Usage: node tools/puzzles-smoke.js [--seeds N]   (N boards per kind and difficulty for the three smallest sizes; the big ones always get 3)
 const {loadServer}=require('./load');
-const {api:W,x}=loadServer({send(){}},['PZ_KINDS','PZ_KIND_IDS','PZ_BAD','PZ_DIFF','PZ_CHEST','PZ_SITES','PZ_SITE_BAD','PZ_PLACED','PZ_TRACK_COS','cpDef','PZ_KIND_OF','PZ_MIN_GAP','landAt','pzBoard','pzSeed','pzSwitch','pzChestP','pzTrackP','pzSanitize','pzTrackLevel','sanitizeGear','rlSolve','rlNb','pzFloorSecs','PZ_RENEW_MS','PZ_TRACK_LEVELS','PZ_SIG_LEVEL','S']);
+const {api:W,x}=loadServer({send(){}},['PZ_KINDS','PZ_KIND_IDS','PZ_BAD','PZ_DIFF','PZ_CHEST','PZ_SITES','PZ_SITE_BAD','PZ_PLACED','PZ_TRACK_COS','cpDef','PZ_KIND_OF','PZ_MIN_GAP','landAt','pzBoard','pzSeed','GW_PLACE','pzStatueTier','pzChestP','pzTrackP','pzSanitize','pzTrackLevel','sanitizeGear','rlSolve','rlNb','pzFloorSecs','PZ_RENEW_MS','PZ_TRACK_LEVELS','PZ_SIG_LEVEL','S']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const N=+(process.argv[process.argv.indexOf('--seeds')+1])||12;
 ok('no kind or site was left out as bad',x.PZ_BAD.length===0&&x.PZ_SITE_BAD.length===0,JSON.stringify(x.PZ_BAD)+JSON.stringify(x.PZ_SITE_BAD));
@@ -26,7 +26,6 @@ for(const kind of x.PZ_KIND_IDS){
 for(let d=1;d<=3;d++){ let uniq=0; for(let i=1;i<=6;i++){ const B=x.pzBoard('rootlines',d,x.pzSeed('uniq',d,i)); const r=x.rlSolve(B.w,B.h,B.ends,2,200000,x.rlNb(B.w,B.h)); if(!r.aborted&&r.sols===1) uniq++; } ok('rootlines d'+d+' boards are unique',uniq===6,uniq+'/6'); }
 ok('a string from a client is never a kind',x.pzBoard('constructor',1,1)===null&&x.pzBoard('__proto__',1,1)===null&&x.pzBoard('rootlines',9,1)===null);
 // server flow
-x.pzSwitch(true);
 // the placed stones: 41 in each of the seven lands (15 / 12 / 8 / 4 / 2), in their own land, spaced, each generating a board
 { const by={}; for(const s of x.PZ_SITES) if(s.id!=='tutorial'){ const land=s.id.split('-')[0]; (by[land]=by[land]||[]).push(s); }
   for(const land in x.PZ_KIND_OF){ const L=by[land]||[], cnt=d=>L.filter(s=>s.diff===d).length;
@@ -37,7 +36,7 @@ x.pzSwitch(true);
 W.join('a',{name:'Pia',look:{cls:'warrior'},save:{level:12}}); for(let i=0;i<4;i++) W.tick(0.5);
 const p=W.players.get('a'), G=p.gear, out=[]; 
 const io2={send(pid,m){ if(m.t==='pz') out.push(m); }}; 
-const {api:W2,x:X2}=loadServer(io2,['PZ_SITES','pzBoard','PZ_KINDS','pzSwitch','pzFloorSecs','pzRaidRebuiltS','rdMatsOf','RD_ORDER','CAVE_DROPS']); X2.pzSwitch(true);
+const {api:W2,x:X2}=loadServer(io2,['PZ_SITES','pzBoard','PZ_KINDS','pzFloorSecs','pzRaidRebuiltS','rdMatsOf','RD_ORDER','CAVE_DROPS','GW_PLACE','pzStatueTier']);
 W2.join('a',{name:'Pia',look:{cls:'warrior'},save:{level:12}}); for(let i=0;i<4;i++) W2.tick(0.5);
 const q=W2.players.get('a'), site=X2.PZ_SITES[0];
 q.x=site.x; q.z=site.z; W2.receive('a',{t:'pz',a:'open',site:site.id});
@@ -56,11 +55,10 @@ const g1=q.gear.gem; const B2=X2.pzBoard(op2.kind,op2.diff,op2.seed); q.pz.t0=0;
 ok('a renewal pays no gems',q.gear.gem===g1);
 out.length=0; q.x+=500; W2.receive('a',{t:'pz',a:'open',site:site.id}); ok('too far from the stone: refused',out[0]&&out[0].a==='no');
 out.length=0; W2.receive('a',{t:'pz',a:'open',site:'constructor'}); ok('a string from a client is never a stone',out.length===0);
-X2.pzSwitch(false); out.length=0; q.x=site.x; W2.receive('a',{t:'pz',a:'open',site:site.id}); ok('with PZ_ON off no stone opens',out[0]&&out[0].a==='no');
 // the Sigil track: 40 different cosmetics, every one a real piece or cape or aura
 { const L=x.PZ_TRACK_COS.slice(1); ok('the Sigil track names 40 different cosmetics',L.length===40&&new Set(L).size===40&&L.every(k=>typeof k==='string'&&!!x.cpDef(k[0],k.slice(2))),L.filter(k=>!k||!x.cpDef(k[0],k.slice(2))).join(',')); }
 // the Puzzle solver: 50 gems each, skips only a stone's first solve
-X2.pzSwitch(true); q.gear.gem=500; q.gear.psv=0; out.length=0; W2.receive('a',{t:'pz',a:'buy',n:2});
+q.gear.gem=500; q.gear.psv=0; out.length=0; W2.receive('a',{t:'pz',a:'buy',n:2});
 ok('two solvers cost 100 gems',q.gear.psv===2&&q.gear.gem===400);
 q.gear.pz={}; q.x=site.x; q.z=site.z; out.length=0; W2.receive('a',{t:'pz',a:'open',site:site.id}); W2.receive('a',{t:'pz',a:'skip'});
 const sk=out.find(m=>m.a==='done'); ok('a solver skips a first solve and pays its gem and chest',sk&&sk.first&&sk.gems===1&&q.gear.psv===1&&q.gear.pz[site.id].n===1);
@@ -90,7 +88,7 @@ q.gear.gem=10; W2.receive('a',{t:'pz',a:'buy',n:1}); ok('too few gems buys nothi
 
 // dungeon stones: three per run (2 trivial + 1 easy), one solver, the chest pays every member present (no gems, no Sigils)
 { const dm={}, io3={dev:true,log(){},send(pid,m){ if(m.t==='pz') (dm[pid]=dm[pid]||[]).push(m); }};
-  const {api:W3,x:X3}=loadServer(io3,['pzSwitch','pzBoard','DG_RUNS','dgPresentS','PZ_KINDS']); X3.pzSwitch(true);
+  const {api:W3,x:X3}=loadServer(io3,['pzBoard','DG_RUNS','dgPresentS','PZ_KINDS']);
   for(const [id,nm] of [['a','Ash'],['b','Bree']]) W3.join(id,{name:nm,look:{cls:'warrior'},save:{level:30}}); for(let i=0;i<4;i++) W3.tick(0.5);
   const A=W3.players.get('a'), Bq=W3.players.get('b'); A.hp=A.maxHp=Bq.hp=Bq.maxHp=1e6;
   W3.receive('a',{t:'dev',cmd:'dg',v:'bare:purge:7'}); for(let i=0;i<60;i++) W3.tick(0.05);
@@ -108,11 +106,19 @@ q.gear.gem=10; W2.receive('a',{t:'pz',a:'buy',n:1}); ok('too few gems buys nothi
     ok('the stone is done',ob.st===2);
   }
 }
+
+// the Sigil statue in Glasswell: Sigils are carried until offered there; the track and the statue's model follow what is offered
+{ const T=X2.GW_PLACE.statue; ok('the broken statue has a place',!!T&&isFinite(T.x));
+  q.gear.sig=120; q.gear.sigOff=0; q.gear.sigPaid=0; q.gear.gem=0; q.x=T.x+400; q.z=T.z; out.length=0; W2.receive('a',{t:'pz',a:'offer'}); ok('far from the statue an offer is refused',out[0]&&out[0].a==='no'&&q.gear.sigOff===0);
+  q.x=T.x+3; q.z=T.z; out.length=0; W2.receive('a',{t:'pz',a:'offer'}); const of=out.find(m=>m.a==='offer');
+  ok('offering 120 Sigils at the statue: 12 levels paid, its model at step 2',of&&of.n===120&&q.gear.sigOff===120&&q.gear.sigPaid===12&&q.gear.gem===120&&of.tier===2&&X2.pzStatueTier(120)===2);
+  out.length=0; W2.receive('a',{t:'pz',a:'offer'}); ok('nothing left to offer',out[0]&&out[0].a==='no'&&q.gear.sigPaid===12);
+  ok('the statue grows every 50 Sigils to step 8',X2.pzStatueTier(49)===0&&X2.pzStatueTier(50)===1&&X2.pzStatueTier(400)===8&&X2.pzStatueTier(9999)===8); }
 // chests: five tiers pay more as they climb; the track pays gems per 10 Sigils and a unique scroll every 50
 let prev=0; for(let d=1;d<=5;d++){ const c0b=G.coins; x.pzChestP(p,d,20,d>=4); const dc=G.coins-c0b; ok('chest '+d+' pays '+x.PZ_CHEST[d].coins+'x coins',dc>prev,dc+' coins'); prev=dc; }
-G.sig=0; G.sigPaid=0; const gm=G.gem; G.sig=100; const paid=x.pzTrackP(p);
+G.sig=0; G.sigOff=0; G.sigPaid=0; const gm=G.gem; G.sig=100; G.sigOff=100; const paid=x.pzTrackP(p);
 ok('100 Sigils are 10 levels: 100 gems and two unique scrolls, paid once',paid.length===10&&G.gem-gm===100&&G.scr.u===2&&x.pzTrackP(p).length===0);
-G.sig=99999; G.sigPaid=0; x.pzTrackP(p); ok('the track ends at its last level',G.sigPaid===x.PZ_TRACK_LEVELS);
+G.sig=99999; G.sigOff=99999; G.sigPaid=0; x.pzTrackP(p); ok('the track ends at its last level',G.sigPaid===x.PZ_TRACK_LEVELS);
 // scrolls
 G.inv.push('sword2'); G.scr.e=1; G.scr.u=0; W.receive('a',{t:'scroll',id:'sword2',to:'e'});
 ok('an epic scroll turns a common sword into an epic one',G.inv.includes('sword2-e')&&G.scr.e===0);

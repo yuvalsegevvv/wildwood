@@ -10,6 +10,7 @@ NETH.pz=m=>{
   if(m.a==='open') pzStart(m);
   else if(m.a==='no') toast(String(m.why||'Not now'),'bad');
   else if(m.a==='done') pzDone(m);
+  else if(m.a==='offer'){ UI_SFX.success(); toast('The statue glows'+(m.paid&&m.paid.length?': Sigil track level '+m.paid[m.paid.length-1]:'')); }
 };
 function pzStart(m){
   openPanel('puzzle'); const host=$('#pzHost'); host.innerHTML='<p class="muted pz-wait">Weaving the board…</p>'; $('#pzMsg').textContent='';

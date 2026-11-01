@@ -219,7 +219,7 @@ shared
   puzzles/sokoban.js                 Herding (the Amber Reach's Sokoban kind): push the calves into the kraal; the rooms are generated, the calves are pulled backwards out of the kraal so every board can be solved, and a push solver rejects dull ones
   puzzle-sites.js                    The puzzle stones of the world: id, kind, difficulty, place. Thread 1 has only the tutorial stone in the home village; the 328 others are the content thread's data rows
   puzzle-place.js                    Places the overworld puzzle stones by rules: 15 trivial, 12 easy, 8 normal, 4 hard and 2 extreme in each of the seven lands that have a puzzle kind (287; the Deep Cave's come with its own files)
-  puzzle-group.js                    Places the puzzle stones of the raids (2 trivial + 1 easy inside each stronghold's walls) and of the Deep Cave (41 over its four floors); both only while PZ_ON
+  puzzle-group.js                    Places the puzzle stones of the raids (2 trivial + 1 easy inside each stronghold's walls) and of the Deep Cave (41 over its four floors)
   puzzle-track.js                    The Sigil track's 40 rewards, in order: 32 small pieces (hair styles, decorations, gloves, hats, tops, bottoms, shoes: every part) and every 5th level a land's cape or aura, level 40 the Lampcrown
 
 server
@@ -296,7 +296,7 @@ server
   raids.js                           Raids on the server: build and rebuild each land's stronghold, lock its tier on the first hit, wards wake the boss, spawners call reinforcements, the clear pays raid material, a clear rebuilds half an hour later
   testroom.js                        The test room on the server: an immortal Training Scarecrow, each hiker's damage counter, and the messages that reset the counter and the cooldowns, refill the cave charge
   puzzles.js                         Puzzles on the server: opening a stone, checking an answer, the 2-hour renewals, the chest, first-solve gems and Sigils, the Sigil track, upgrade scrolls, and the admin Puzzles tool
-  puzzles-group.js                   Puzzle stones for groups: a dungeon run's three side stones, the raids' stones inside the walls and the Deep Cave's chest in cave material (all behind PZ_ON)
+  puzzles-group.js                   Puzzle stones for groups: a dungeon run's three side stones, the raids' stones inside the walls and the Deep Cave's chest in cave material
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 
@@ -409,7 +409,8 @@ game
   village/buildings-pvp.js           The Proving Isle's dressing: a gate of two posts and a lintel with a banner on the bridge where the island begins, and red banner poles round the rim
   village/buildings-dungeon.js       The dungeon doors (the Gloamvault's is buildings-dungeon-gloam.js) and their signposts: the Hollowed Elder (a half-dead giant tree with a root-arch door), the Falls Door (a cascade over three ledges, the door behind the water), the Barrow Door (a snow-covered mound with a trilithon) and the Old Adit (a timbered mine mouth in a crag, a head frame above) and the Sandglass Door (a sandstone gateway in the Sunscar's desert, a black-glass pane sealing it)
   village/buildings-testroom.js      The test room's dressing: a ring of stones round the pad, four torch posts and a signboard at the edge toward the village (the scarecrow itself is a monster: combat/monster-totems.js)
-  village/buildings-puzzle.js        The puzzle stones in the world: a standing stone with a glowing rune that dims for two hours after a solve; the talk key opens its board (the stones exist only while PZ_ON)
+  village/buildings-puzzle.js        The puzzle stones in the world: a standing stone with a glowing rune that dims for two hours after a solve; the talk key opens its board
+  village/sigil-statue.js            The Sigil statue's growing glow: Glasswell's broken statue gains props for every 50 Sigils you have offered to it (runes, braziers, a halo, a floating head of light, banners, a sun disc, orbiting shards, a beam)
   village/buildings-dungeon-gloam.js The Gloamvault's door (the Gloamhorn's dungeon): a drowned chapel's front set into the cliff of Vault Heath, a pointed arch under a rose window between two buttresses, iron-bound doors that seal it, a wreck's anchor leaning on a pier
   village/buildings-dungeon-savanna.js The Termite Cathedral's door (the Amber Reach's dungeon): the foot of a clay spire on open grass, a ribbed pointed gap between two buttresses, a clay plug that seals it, amber resin beads that light the way and a heap of crumbled clay
   village/buildings-dungeon-isles.js The Cenote of Hollow Stars' door (the Emberwake Isles' dungeon): a low mossy mound with a stepped stone arch, a carved star over the lintel, a stone plug that seals it, pale blue star-fire that lights the way
@@ -570,7 +571,7 @@ game
   ui/friends.js                      The friends and ranking panel (comma key): add a friend by name (the other player accepts), who is online, invite to a party, remove; the level ranking with your own place
   ui/testroom.js                     The test room on the client: the damage counter on the screen, the panel (counter, reset, cooldowns, cave charge, soul and skills), the talk key on the pad
   puzzles/panel.js                   The puzzle panel: opens a board the server announced (kind, difficulty, seed), builds it from the shared generator, keeps the clock and an unfinished board on the device, sends the answer, shows the chest
-  puzzles/map.js                     The puzzle stones on the maps: a small rune on the minimap and the land map (lit while the stone is ready, grey while it renews), a dot on the world map; nothing while PZ_ON is off
+  puzzles/map.js                     The puzzle stones on the maps: a small rune on the minimap and the land map (lit while the stone is ready, grey while it renews), a dot on the world map
   puzzles/rootlines.js               Rootlines on the client: a canvas board where you drag roots from a seed to its partner until every cell is filled
   puzzles/ice.js                     Ice slide on the client: arrow keys, WASD, a swipe or the pad slide the stone (or the twin stones) over the ice; undo and reset
   puzzles/common.js                  Shared helpers of the puzzle views: a square canvas sized to the panel, and a pointer position in cells
