@@ -13,8 +13,8 @@ const BODY_SLIDERS=[
   // Body
   {k:'height',   g:'Body',     label:'Height',        min:0.9,  max:1.1,  def:1, ends:['Shorter','Taller']},
   {k:'build',    g:'Body',     label:'Build',         min:0.84, max:1.24, def:1, ends:['Slim','Sturdy']},
-  {k:'chest',    g:'Shape',    label:'Chest',         min:0.5,  max:2.2,  def:1, ends:['Smaller','Larger']},
-  {k:'chestShape',g:'Shape', label:'Chest shape',  min:-1,   max:1,    def:0, ends:['Broad & flat','Round & full']},   // the second chest dimension: the same volume spread wide and flat, or gathered round and forward (model-body.js buildTorso, outfit-tools.js torsoSize)
+  {k:'chest',    g:'Shape',    label:'Chest',         min:0.5,  max:3,    def:1, ends:['Smaller','Larger']},
+  {k:'chestShape',g:'Shape', label:'Chest shape',  min:-0.7, max:0.2,  def:0, ends:['Broad & flat','Round & full']},   // the second chest dimension: the same volume spread wide and flat, or gathered round and forward (model-body.js buildTorso, outfit-tools.js torsoSize)
   {k:'undertone',g:'Body',     label:'Skin undertone',min:-1,   max:1,    def:0, ends:['Cool','Warm']},
   // Shape (the proportions between the body's parts)
   {k:'shoulders',g:'Shape',    label:'Shoulders',     min:0.8,  max:1.25, def:1, ends:['Narrow','Broad']},
@@ -63,6 +63,8 @@ const BODY_SLIDERS=[
   {k:'capeLen',  g:'Outfit',   label:'Cape length',   min:0.7,   max:1.4,  def:1, ends:['Shorter','Longer']}   // the hanging cape panels (cosmetics.js cosBuildCape)
 ];
 // the chest as the body uses it: past 1.6 it grows at four fifths of the slider, and a larger chest also broadens the ribcage (chestRibs), so the very large end still reads as one body (model-body.js buildTorso, outfit-tools.js torsoSize)
+// the hips' back curve: the bump grows at 0.7 of the slider past 1 and also gets wider (and so rounder), so the full end is a round seat and not a point (model-body.js buildTorso, outfit-tools.js torsoSize)
+const hipAmp=h=>h<=1?h:1+(h-1)*0.7, hipWide=h=>1+Math.max(h-1,0)*0.8;
 const chestEff=ch=>ch<=1.6?ch:1.6+(ch-1.6)*0.8, chestRibs=ch=>0.05*Math.min(Math.max(ch-1,0),1.2);
 const SLIDER_KEYS=BODY_SLIDERS.map(s=>s.k), SLIDER_BY_KEY={}, SLIDER_DEFS={};
 BODY_SLIDERS.forEach(s=>{ SLIDER_BY_KEY[s.k]=s; SLIDER_DEFS[s.k]=s.def; });
