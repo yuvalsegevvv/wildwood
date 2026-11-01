@@ -13,6 +13,7 @@ function clothPaints(L){
     else if(L.top==='crop'){ if(v<0.3) c.set(L.skin); else c.set(L.topColor); }   // the midriff is bare
     else if(L.top==='halter'){ if(v>0.26&&v<0.435) c.set(L.topColor); else c.set(L.skin); }   // a wrap round the chest, bare shoulders, back and belly
     else if(L.top==='harness'){ if(L.sex==='female'&&v>0.265&&v<0.375) c.set(v>0.36||v<0.28?UNDER_BAND:UNDER_COL); else c.set(L.skin); }   // straps over a bare chest (a woman keeps her band top)   // (the waistcoat is geometry over a cream shirt: model-garments.js)
+    else if(gmdIs(L.top)) gmdPaint(L,c,u,v);   // dresses: skin above the bodice (model-dresses.js)
     else if(L.top==='mail'){ c.set(L.topColor).multiplyScalar(0.72+0.38*((Math.floor(u*70)+Math.floor(v*70))&1)); }
     else if(L.top==='plate'){ c.set(L.topColor).multiplyScalar(0.82+0.3*(Math.floor(v*13)&1)); }
     else c.set(L.topColor);

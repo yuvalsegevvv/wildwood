@@ -105,6 +105,7 @@ shared
   kin.js                             Kin features (version 3 racial features, open to every player from the first minute): the registry of ears, tails, muzzles, horns and mane, the fur colours and markings, the hats' ear rule. Pure data
   cospieces.js                       Cosmetic pieces (version 3.2): which general parts of every slot (hat, top, bottom, shoes, gloves, cape, aura) are free and which are crafted, from professions' materials and monsters' drops; the try-on lock rules. Pure.
   amber.js                           Amber (a gear-upgrade material) and gems (the premium currency, version 3.3): the cap of a purse, the price of an outfit set, the grant of the public testing tool
+  colours.js                         Premium colours (version 3.3): 48 extra colours for everything but the skin, 500 gems each, bought once for the whole account; the favourites list; what a look may wear. Pure.
   cave.js                            The Deep Cave, shared rules: the 4th skill slot (opens at level 23), the charge that pays for it, the registry of cave skills (defineCaveSkill) and their validation
   ult.js                             The 5th skill slot, the set burst ("Burst"): its constants, the registry ULT_SKILLS filled by each skill set's `ult` entry, its validation, the 3-of-7 ownership rule and the fixed cooldown
   presets.js                         Loadout presets: ten saved setups of the eight skills, the soul and the equipment (each optionally linked to one of ten outfit slots), and the outfit slot count
@@ -233,6 +234,7 @@ server
   reactions.js                       Reactions on the server: elemental auras and reactions, the flavours as shared statuses on monsters (vuln, weak, burn, slow, stun) and direct application
   skillsets.js                       Skill sets on the server: granting a set's pieces, wearing a piece for all three classes, the loadout cache p.ss (the sets worn and their bonuses)
   amber.js                           Amber on the server: amber (gear.amb, a gear-upgrade material), gems (gear.gem, the premium currency), buying an outfit set for 1000 gems (gear.os), and the one public testing tool that grants gems on every server
+  colours.js                         Premium colours on the server: buying one for PREM_PRICE gems (gear.pc, for every piece of the account) and saving the favourites list (gear.fav)
   cave.js                            The Deep Cave on the server: the 4th slot's charge (earned by casts that hit, a boss fight sets it), casting the equipped cave skill, equipping, and sanitizing gear.cave
   ult.js                             The 5th skill slot on the server (the set burst): owning it, wearing it, the cast with its fixed cooldown, and the 5 s stun with its 50 s per-enemy lock
   presets.js                         Loadout presets (server): save the eight skills, the soul and the equipment of the worn class into one of ten slots, wear one instantly anywhere outside a boss fight, raid, the Proving Isle or a dungeon
@@ -354,6 +356,7 @@ game
   character/model-hats-more.js       The crafted hats (version 3.2): the horned cap, the laurel wreath and the captain's tricorn, drawn for htBase (model-hats.js) in the head's frame
   character/model-garments-more.js   The crafted tops, bottoms and shoes (version 3.2): robe, poncho, jerkin, crop top, halter wrap and harness; breeches, hakama, plated leggings, loincloth, short shorts and a slit wrap skirt; geta, fur-lined boots and sabatons
   character/cloth.js                 clSway: skirts, tunic flares and hems in the hips' frame follow the legs, trail behind a walking hiker and ripple (one deformer per mesh, run through rig.anims)
+  character/model-dresses.js         Dresses (version 3.3): six crafted tops that carry their own skirt, naturally shaped (a hip curve, folds that deepen to the hem, a waved hem), the skirt swaying with the legs
   character/model-silly.js           Silly hand items (version 3.3): cosmetic things held in the strong hand (look.strongItem: a frying pan, a rubber chicken) and the weak hand (look.weakItem: a pot lid, a rubber duck), crafted at a Lodge
   character/outfit-tools.js          Helpers for the signature outfits (game/outfits/*.js): the torso's size at a height, flat ribbons, lofts over an arc, rings round a path; and the mixing of their pieces (slots, which kit owns a hook)
   character/outfit-extras.js         Reusable extra pieces for the signature sets (scarf, apron, sash tails, rope coil, shoulder plate, hip lantern) and oxPlus, which adds them to a set's kit without editing its hooks
@@ -405,6 +408,7 @@ game
   player/input.js                    Keyboard, hold Alt to free the mouse, mouse look, touch joystick, HUD buttons
   player/gamepad.js                  Gamepad support: sticks walk and look, buttons press the keys their actions are bound to (keybinds.js)
   ui/character-thumbs.js             Pictures for the character editor: every hair style, hat, garment, set, cape and aura drawn once on a small off-screen target and cached as an image
+  ui/colour-picker.js                The colour picker of the character editor (version 3.3): one block per colour ("Colour 1", "Colour 2"...), each with a Designed button, your 16 favourites and all colours (the row's free ones and the 48 premium)
   ui/character-editor.js             Character editor panel and camera: four tabs (Presets, Body, Face, Clothes) with sub-tabs, picture tiles for every part, ten outfit slots, per-piece armour visibility, opened from the HUD or in creating mode after registering
   village/buildings.js               Houses, stalls, well, campfire, lamps, garden, arena stones, chimney smoke; helpers both villages use (trisGeo, addVillageMeshes, questSign)
   village/village-smoke.js           Chimney smoke for the villages after the home one (Rimehold, Highmark, Wraithwick): vsmAdd(point) from a house's chimney, updateVillageSmoke(dt) each frame

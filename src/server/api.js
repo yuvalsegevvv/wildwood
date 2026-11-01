@@ -124,7 +124,7 @@ function receive(pid,msg){
     case 'unskill': unequipSkillP(p,msg.cls,msg.slot||'skill',msg.idx); break;
     case 'upskill': upgradeSkillP(p,msg.id); break;
     case 'soul': bindSoulP(p,msg.el); break;
-    case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<LOOK_MAX){ const L=cleanLookS(msg.look); if(Object.keys(L).length){ p.look=ambCleanLook(cosCleanLook(L,p.gear.cos),p.gear.os); p.saveDirty=true; ev('plook',p.id,p.look); } } break;
+    case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<LOOK_MAX){ const L=cleanLookS(msg.look); if(Object.keys(L).length){ p.look=premCleanLook(ambCleanLook(cosCleanLook(L,p.gear.cos),p.gear.os),p.gear.pc); p.saveDirty=true; ev('plook',p.id,p.look); } } break;
     case 'warp': warpP(p,typeof msg.to==='string'?msg.to:undefined); break;
     case 'mq': mqMsgP(p,msg); break;
     case 'learn': learnProfP(p,msg.id); break;

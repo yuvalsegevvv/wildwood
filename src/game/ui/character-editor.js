@@ -25,32 +25,32 @@ const EDIT=[
   {tab:'Body', subs:[
     {name:'Gender', rows:[
       {k:'sex',type:'grid',kind:'sex',ids:()=>[['male'],['female']]},
-      {k:'skin',label:'Skin tone',type:'color',opts:SKINS.concat(SKINS_ODD)},{slider:'undertone'}]},
+      {k:'skin',skin:true,type:'color',premium:false,opts:SKINS.concat(SKINS_ODD)},{slider:'undertone'}]},
     {name:'Build', rows:[{type:'setups'},{slider:'height'},{slider:'build'}]},
     // version 3: the Kin features (shared/kin.js, drawn by character/model-kin.js): no race, just optional ears, a tail, a muzzle and fur; the plain ones are free, the others are made at a Wayfarers' Lodge (horns and a mane are in Clothes > Decor)
     {name:'Kin', rows:[
       {k:'kinEars',label:'Ears',type:'grid',kind:'kinEars',slot:'e',ids:()=>[['']].concat(kinList('e').concat(kinSetList('e')).map(p=>[p.id,p.name,p.text]))},
       {k:'kinMuzzle',label:'Muzzle',type:'grid',kind:'kinMuzzle',slot:'m',ids:()=>[['']].concat(kinList('m').concat(kinSetList('m')).map(p=>[p.id,p.name,p.text]))},
       {k:'kinTail',label:'Tail',type:'grid',kind:'kinTail',slot:'k',ids:()=>[['']].concat(kinList('k').concat(kinSetList('k')).map(p=>[p.id,p.name,p.text]))},
-      {type:'dcolor',k:'furColor',label:'Fur colour',none:'Skin tone',opts:KIN_FUR.concat(SKINS)},
+      {type:'dcolor',k:'furColor',num:1,hint:'Fur',premium:false,none:'Skin tone',opts:KIN_FUR.concat(SKINS)},
       {k:'furMark',label:'Markings',type:'seg',opts:KIN_MARKS.map(m=>m.slice())},
-      {type:'dcolor',k:'furColor2',label:'Second colour: markings, ear and tail tips',none:'As designed',opts:KIN_FUR.concat(TINTC)}]},
+      {type:'dcolor',k:'furColor2',num:2,hint:'Markings, ear and tail tips',premium:false,none:'As designed',opts:KIN_FUR.concat(TINTC)}]},
     {name:'Upper body', rows:['chest','shoulders','waist','hips','torso'].map(k=>({slider:k}))},
     {name:'Limbs', rows:['legs','thighs','calves','arms','neck','hands','feet'].map(k=>({slider:k}))}
   ]},
   {tab:'Face', close:true, subs:[
     {name:'Hair', rows:[
       {k:'hair',type:'grid',kind:'hair',slot:'r',ids:edHair},
-      {k:'hairColor',label:'',type:'color',opts:HAIRC,base:'hair'},{type:'palette',slot:'hair'},
+      {k:'hairColor',num:1,hint:'Hair',type:'color',opts:HAIRC,base:'hair'},{type:'palette',slot:'hair'},
       {k:'hairGrad',label:'Gradient',type:'seg',base:'hair',opts:HG_MODES.map(m=>m.slice())},
-      {k:'hairColor2',label:'',type:'color',opts:HAIRC,base:'hair'},
+      {k:'hairColor2',num:2,hint:'Gradient end',type:'color',opts:HAIRC,base:'hair'},
       {k:'hairThird',label:'Third colour',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]},
-      {k:'hairColor3',label:'',type:'color',opts:HAIRC,base:'hair'}
+      {k:'hairColor3',num:3,hint:'Third',type:'color',opts:HAIRC,base:'hair'}
     ].concat(['hairLength','hairVolume','bangs'].map(k=>({slider:k}))).concat([
       {k:'ahoge',label:'Antenna hair (ahoge)',type:'seg',base:'hair',opts:[[true,'On'],[false,'Off']]}])},
     {name:'Face', rows:[{k:'face',type:'grid',kind:'face',ids:()=>[['round'],['oval'],['angular']]}].concat(['head','jaw','chin','cheeks'].map(k=>({slider:k})))},
-    {name:'Eyes', rows:[{k:'eyes',label:'',type:'color',opts:EYEC.concat(EYEC_MORE),base:'face'},{k:'eyes2',label:'Second eye colour',type:'dcolor',opts:EYEC.concat(EYEC_MORE),none:'Same'},{k:'pupil',type:'grid',kind:'pupil',ids:()=>FACE_PUPILS.map(p=>p.slice())}].concat(['eyeSize','eyeGap','eyeHeight','eyeTilt','brow'].map(k=>({slider:k})))},
-    {name:'Nose & mouth', rows:['noseSize','mouthSize','mouthHeight','lips','blush','smile','earSize','earPoint'].map(k=>({slider:k})).concat([{k:'lipColor',label:'Lip colour',type:'color',opts:[0xb04a52,0xd26a78,0x8a3040,0xc98a7a,0x5a2a4a,0x2a2a36,0xe8b0b8,0xa83a2a],base:'face'}])},
+    {name:'Eyes', rows:[{k:'eyes',num:1,hint:'Eyes',type:'color',opts:EYEC.concat(EYEC_MORE),base:'face'},{k:'eyes2',num:2,hint:'Second eye',type:'dcolor',opts:EYEC.concat(EYEC_MORE),none:'Same'},{k:'pupil',type:'grid',kind:'pupil',ids:()=>FACE_PUPILS.map(p=>p.slice())}].concat(['eyeSize','eyeGap','eyeHeight','eyeTilt','brow'].map(k=>({slider:k})))},
+    {name:'Nose & mouth', rows:['noseSize','mouthSize','mouthHeight','lips','blush','smile','earSize','earPoint'].map(k=>({slider:k})).concat([{k:'lipColor',num:1,hint:'Lips',type:'color',opts:[0xb04a52,0xd26a78,0x8a3040,0xc98a7a,0x5a2a4a,0x2a2a36,0xe8b0b8,0xa83a2a],base:'face'}])},
     {name:'Beard & marks', rows:[
       {k:'facial',type:'grid',kind:'facial',ids:()=>[['none'],['stubble'],['mustache'],['beard']],base:'face'},
       // an outfit's face item: its marks, eye style and eye colour, and its facial hair or glasses (src/game/outfits)
@@ -66,22 +66,22 @@ const EDIT=[
     // version 3.2: the cape (the backpack is the free one) and the aura, each with its own colours; crafted ones are made at a Wayfarers' Lodge (shared/cospieces.js), and every one can be tried on
     {name:'Cape', rows:[
       {k:'cape',type:'grid',kind:'cape',slot:'c',ids:()=>[['']].concat(COS_CAPES.map(d=>[d[0],d[1],d[6]]))},
-      {type:'dcolor',k:'capeColor',label:'Cloth colour',need:'cape',opts:TINTC},{type:'dcolor',k:'capeTrim',label:'Trim colour',need:'cape',opts:TINTC}]},
+      {type:'dcolor',k:'capeColor',num:1,hint:'Cloth',need:'cape',opts:TINTC},{type:'dcolor',k:'capeTrim',num:2,hint:'Trim',need:'cape',opts:TINTC}]},
     {name:'Aura', rows:[
       {k:'aura',type:'grid',kind:'aura',slot:'a',ids:()=>[['']].concat(COS_AURAS.map(d=>[d[0],d[1],d[8]]))},
-      {type:'dcolor',k:'auraColor',label:'Main colour',need:'aura',opts:TINTC},{type:'dcolor',k:'auraColor2',label:'Second colour',need:'aura',opts:TINTC},
+      {type:'dcolor',k:'auraColor',num:1,hint:'Main',need:'aura',opts:TINTC},{type:'dcolor',k:'auraColor2',num:2,hint:'Second',need:'aura',opts:TINTC},
       {type:'seg',k:'auraGlow',label:'Glow',need:'aura',opts:[[true,'Glow on','Halos round the particles, the body outline and the pillar of light'],[false,'Glow off','Only the particles and the ground pattern']]}]},
     // version 3.2: an optional shield (off by default), four shapes, crafted like the rest
     {name:'Shield', rows:[{k:'shield',type:'grid',kind:'shield',slot:'w',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='w').map(r=>[r[1],r[2],r[4]]))},
-      {type:'dcolor',k:'shieldColor',label:'Field colour',need:'shield',opts:TINTC},{type:'dcolor',k:'shieldTrim',label:'Trim colour',need:'shield',opts:TINTC}]},
+      {type:'dcolor',k:'shieldColor',num:1,hint:'Field',need:'shield',opts:TINTC},{type:'dcolor',k:'shieldTrim',num:2,hint:'Trim',need:'shield',opts:TINTC}]},
     // version 3.3: silly things for the hands, crafted (shared/cospieces.js slots v and u): the strong hand replaces your weapon, the weak hand your shield; looks only
     {name:'Strong hand', rows:[{k:'strongItem',type:'grid',kind:'strongItem',slot:'v',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='v').map(r=>[r[1],r[2],r[4]]))},
-      {type:'dcolor',k:'strongColor',label:'Main colour',need:'strongItem',opts:TINTC},{type:'dcolor',k:'strongTrim',label:'Second colour',need:'strongItem',opts:TINTC}]},
+      {type:'dcolor',k:'strongColor',num:1,hint:'Main',need:'strongItem',opts:TINTC},{type:'dcolor',k:'strongTrim',num:2,hint:'Second',need:'strongItem',opts:TINTC}]},
     {name:'Weak hand', rows:[{k:'weakItem',type:'grid',kind:'weakItem',slot:'u',ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='u').map(r=>[r[1],r[2],r[4]]))},
-      {type:'dcolor',k:'weakColor',label:'Main colour',need:'weakItem',opts:TINTC},{type:'dcolor',k:'weakTrim',label:'Second colour',need:'weakItem',opts:TINTC}]},
+      {type:'dcolor',k:'weakColor',num:1,hint:'Main',need:'weakItem',opts:TINTC},{type:'dcolor',k:'weakTrim',num:2,hint:'Second',need:'weakItem',opts:TINTC}]},
     // version 3.2: up to three decorations, all crafted, any in any field, each with its own colour
     {name:'Decor', rows:[1,2,3].flatMap(n=>[{k:'deco'+n,label:'Decoration '+n,type:'grid',kind:'deco',slot:'d',col:'decoColor'+n,ids:()=>[['']].concat(CP_PIECES.filter(r=>r[0]==='d').map(r=>[r[1],r[2],r[4]]))},
-      {type:'dcolor',k:'decoColor'+n,label:'Colour',need:'deco'+n,opts:TINTC}])},
+      {type:'dcolor',k:'decoColor'+n,num:1,hint:'Decoration '+n,need:'deco'+n,opts:TINTC}])},
     // an outfit's weapon dressing restyles whatever weapon you hold, whatever your class
     // version 3.1: gloves, the eighth piece: six plain ones and the glove of every set that has one (model-gloves.js)
     {name:'Gloves', rows:[{k:'gloves',type:'grid',kind:'gloves',slot:'g',col:'gloveColor',ids:()=>[['none']].concat(Object.keys(GL_BASE).map(id=>[id,GL_BASE[id].name,GL_BASE[id].text]),ofItems('glove'))},{k:'gloveColor',label:'',type:'color',base:'glove',opts:TINTC},{type:'palette',slot:'glove'}]},
@@ -95,7 +95,7 @@ const edCur=()=>EDIT[edTab].subs[edSub[edTab]];
 const edOwned=()=>(typeof GEAR!=='undefined'&&GEAR&&GEAR.cos)||[];
 // outfit sets worn but not owned: a try-on like a crafted piece (not saved, not sent; the bar offers to buy it)
 const osLocks=()=>{ const seen=[]; for(const id of Object.values(ofPieces(LOOK)).concat(kinSetsOf(LOOK))) if(!osOwned(id)&&!seen.includes(id)) seen.push(id); return seen.map(id=>({os:id,name:CHAR_MODELS[id]?CHAR_MODELS[id].name:id})); };   // kin: a Kin set's ears, tail or muzzle are the set's too (kinSetsOf)
-const edLocks=()=>osLocks().concat(cosLocked(LOOK,edOwned()));
+const edLocks=()=>osLocks().concat(cosLocked(LOOK,edOwned()),premLocked(LOOK,(typeof GEAR!=='undefined'&&GEAR&&GEAR.pc)||[]).map(l=>({prem:l.i,name:l.name,hex:l.hex})));   // (colours: a premium colour you have not bought is a try-on too, shared/colours.js)
 // outfit sets (the eight signature characters) are cosmetic and cost 1000 gems each (GEAR.os, server/amber.js); a locked tile asks for a second tap to buy
 const OS_SHOW=12;
 function osOwned(id){ return !OUTFITS[id]||!!(typeof GEAR!=='undefined'&&GEAR&&GEAR.os&&GEAR.os.includes(id)); }
@@ -116,8 +116,11 @@ function edTryBar(){
   const L=edLocks(); if(!L.length) return null;
   const bar=document.createElement('div'); bar.className='ed-try'; bar.setAttribute('role','status');
   const h=document.createElement('b'); h.textContent='Trying on: not saved yet'; bar.append(h);
-  const p=document.createElement('p'); p.textContent=L.some(l=>!l.os)?'Only you see this look. Make every crafted piece below at a Wayfarers\' Lodge, and buy any outfit set, to keep it.':'Only you see this look. Buy the outfit set to keep it.'; bar.append(p);
-  for(const l of L){ if(l.os){ const r=document.createElement('div'); r.className='ed-try-row'; const n=document.createElement('span'); n.textContent='Outfit set: '+l.name; r.append(n);
+  const p=document.createElement('p'); p.textContent=L.some(l=>l.prem===undefined&&!l.os)?'Only you see this look. Make every crafted piece below at a Wayfarers\' Lodge, and buy any premium colour or outfit set, to keep it.':'Only you see this look. Buy what is listed below to keep it.'; bar.append(p);
+  for(const l of L){ if(l.prem!==undefined){ const r=document.createElement('div'); r.className='ed-try-row'; const n=document.createElement('span'); n.textContent='Premium colour: '+l.name; n.style.borderLeft='10px solid '+hex6(l.hex); n.style.paddingLeft='6px'; r.append(n);
+      const b1=document.createElement('button'); b1.className='chip buy'; b1.textContent='Buy for '+PREM_PRICE+' gems (every piece, for good)'; b1.disabled=(GEAR.gem||0)<PREM_PRICE; b1.onclick=()=>netSend({t:'colbuy',i:l.prem});
+      const m=document.createElement('small'); m.textContent='You have '+(GEAR.gem||0)+' gems. The gem shop (bag icon in the menu) has them too.'; r.append(b1,m); bar.append(r); continue; }
+    if(l.os){ const r=document.createElement('div'); r.className='ed-try-row'; const n=document.createElement('span'); n.textContent='Outfit set: '+l.name; r.append(n);
       const price=GEM_SET_PRICE, b1=document.createElement('button'); b1.className='chip buy'; b1.textContent='Buy for '+price+' gems'; b1.disabled=(GEAR.gem||0)<price; b1.onclick=()=>netSend({t:'gembuy',v:l.os});
       const b2=document.createElement('button'); b2.className='chip'; b2.textContent='With skills: '+(GEM_SET_PRICE+GEM_SKILL_PRICE); b2.disabled=(GEAR.gem||0)<GEM_SET_PRICE+GEM_SKILL_PRICE; b2.onclick=()=>netSend({t:'gembuy',v:l.os,b:1});
       const m=document.createElement('small'); m.textContent='You have '+(GEAR.gem||0)+' gems. The gem shop (bag icon in the menu) has them too.'; r.append(b1,b2,m); bar.append(r); continue; }
@@ -207,13 +210,14 @@ function renderEditor(){
   });
   edBody.innerHTML=''; edBody.dataset.at=edTab+':'+edSub[edTab];
   { const tb=edTryBar(); if(tb) edBody.append(tb); $('#edDone').classList.toggle('blocked',!!tb); $('#edDone').title=tb?'Make the pieces you are trying on, or go back to your saved look':''; }
+  edBlockN=0;
   for(const row of edCur().rows){
     if(row.fem && LOOK.sex!=='female') continue;
     if(row.base && ofPieces(LOOK)[row.base] && row.type!=='color') continue;   // an outfit's piece in that slot has its own look: these rows (facial hair, antenna hair, backpack) do nothing while it is worn
     if(row.only && !ofPieces(LOOK)[row.base]) continue;
     if(row.need&&!LOOK[row.need]) continue;   // a colour row of a cape or an aura that is not worn   // a recolour row of a piece that is not worn
     const wrap=document.createElement('div'); wrap.className='ed-row'+(row.label||row.slider||row.type==='setups'?'':' ed-sub');
-    if(row.label){ const lb=document.createElement('div'); lb.className='ed-label'; lb.textContent=row.label; wrap.append(lb); }
+    if(row.label&&row.type!=='dcolor'&&row.type!=='color'){ const lb=document.createElement('div'); lb.className='ed-label'; lb.textContent=row.label; wrap.append(lb); }
     if(row.slider){ sliderRow(wrap,row); }
     else if(row.type==='setups'){
       const mdl=charModelOf(LOOK), list=setupsOf(mdl,LOOK.sex);
@@ -246,22 +250,16 @@ function renderEditor(){
     }
     else if(row.type==='dcolor'){
       // a colour that may be left as designed (-1): the cape's cloth and trim, the aura's two colours, the second eye
-      const key=row.k, dw=document.createElement('div'); dw.className='chips'; const d=document.createElement('button'); d.className='chip'; d.textContent=row.none||'As designed'; d.setAttribute('aria-pressed',!(LOOK[key]>=0)); d.onclick=()=>{ setLook(key,-1); renderEditor(); }; dw.append(d); wrap.append(dw);
-      const box=document.createElement('div'); box.className='swatches';
-      row.opts.forEach((v,i)=>{ const b=document.createElement('button'); b.className='sw'; b.style.background=hex(v); b.setAttribute('aria-label',row.label+' '+(i+1)); b.setAttribute('aria-pressed',LOOK[key]===v); b.onclick=()=>{ setLook(key,v); renderEditor(); }; box.append(b); });
-      wrap.append(box);
+      edColourBlock(wrap,{title:'Colour '+(row.num||1),hint:row.hint||row.label||'',get:()=>LOOK[row.k],set:v=>setLook(row.k,v),opts:row.opts,premium:row.premium,
+        designed:{label:row.none||'As designed',on:!(LOOK[row.k]>=0),click:()=>setLook(row.k,-1)}});
     }
     else if(row.type==='palette'){
-      // more colours of a worn outfit piece (OF_PAL): one picker for each further colour the piece is drawn in; 'Designed' puts that colour back
+      // more colours of a worn outfit piece (OF_PAL): one block for each further colour the piece is drawn in; 'Designed' puts that colour back
       const id=ofPieces(LOOK)[row.slot], P=id?ofPalOf(id,row.slot):gmxPalDef(LOOK,row.slot);   // (a crafted top or bottom has its own further colours too: GMX_PAL)
       if(P.length<2){ continue; }
       for(let i=1;i<P.length;i++){
-        const key=OF_TINTX[row.slot][i-1], cap=document.createElement('div'); cap.className='ed-info'; cap.textContent=ED_PAL_NAMES[i]; wrap.append(cap);
-        const d=document.createElement('button'); d.className='chip'; d.textContent='Designed'; d.style.borderLeft='10px solid '+hex(P[i]); d.setAttribute('aria-pressed',!(LOOK[key]>=0)); d.onclick=()=>{ setLook(key,-1); renderEditor(); };
-        const dw=document.createElement('div'); dw.className='chips'; dw.append(d); wrap.append(dw);
-        const box=document.createElement('div'); box.className='swatches';
-        TINTC.forEach((v,j)=>{ const b=document.createElement('button'); b.className='sw'; b.style.background=hex(v); b.setAttribute('aria-label',ED_PAL_NAMES[i]+' color '+(j+1)); b.setAttribute('aria-pressed',LOOK[key]===v); b.onclick=()=>{ setLook(key,v); renderEditor(); }; box.append(b); });
-        wrap.append(box); }
+        const key=OF_TINTX[row.slot][i-1];
+        edColourBlock(wrap,{title:'Colour '+(i+1),get:()=>LOOK[key],set:v=>setLook(key,v),opts:TINTC,designed:{label:'Designed',hex:P[i],on:!(LOOK[key]>=0),click:()=>setLook(key,-1)}}); }
     }
     else if(row.type==='armor'){ armorRow(wrap,row.slot); }
     else if(row.type==='seg'){
@@ -273,14 +271,9 @@ function renderEditor(){
       wrap.append(box);
     } else if(row.type==='color'){
       const tinted=row.base&&(ofPieces(LOOK)[row.base]||gmxAliased(LOOK,row.base)), key=tinted?OF_TINT[row.base]:row.k;   // a worn outfit piece is recoloured (-1 = the colours it was designed in)
-      if(tinted){ const d=document.createElement('button'); d.className='chip'; d.textContent='Designed colours'; d.setAttribute('aria-pressed',!(LOOK[key]>=0)); d.onclick=()=>{ setLook(key,-1); renderEditor(); }; const dw=document.createElement('div'); dw.className='chips'; dw.append(d); wrap.append(dw); }
-      const box=document.createElement('div'); box.className='swatches';
-      row.opts.forEach((v,i)=>{
-        const b=document.createElement('button'); b.className='sw'; b.style.background=hex(v);
-        b.setAttribute('aria-label',(row.label||row.k.replace('Color',''))+' color '+(i+1)); b.setAttribute('aria-pressed',LOOK[key]===v);
-        b.onclick=()=>{ setLook(key,v); renderEditor(); }; box.append(b);
-      });
-      wrap.append(box);
+      if(tinted&&row.num>1) continue;   // (the second and third hair colour belong to the base hair: a worn set has its own colour blocks)
+      edColourBlock(wrap,{title:row.skin?'Skin tone':'Colour '+(row.num||1),hint:row.hint||row.label||'',get:()=>LOOK[key],set:v=>setLook(key,v),opts:row.opts,premium:row.premium,
+        designed:tinted?{label:'Designed colours',on:!(LOOK[key]>=0),click:()=>setLook(key,-1)}:null});
     } else if(row.type==='voice'){
       // the hero's skill shouts (audio/voices-hero.js): a male or a female voice, or the worn outfit set's own voice
       const info=document.createElement('p'); info.className='ed-info'; info.textContent=hvDescribe(); wrap.append(info);
