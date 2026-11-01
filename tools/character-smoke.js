@@ -11,7 +11,7 @@ const bare=(L,o)=>Object.assign({},L,{hat:'none',hair:'bald',facial:'none'},o||{
 const look=(sex,o)=>Object.assign({},sex==='female'?C.LOOK_F:C.LOOK_M,o||{});
 
 /* ---- the slider table ---- */
-{ const keys=C.BODY_SLIDERS.map(s=>s.k), groups=new Set(['Body','Shape','Face','Eyes','Features','Hair']);
+{ const keys=C.BODY_SLIDERS.map(s=>s.k), groups=new Set(['Body','Shape','Face','Eyes','Features','Hair','Outfit']);
   ok('the slider table has 30 or more sliders ('+keys.length+')',keys.length>=30);
   ok('slider keys are unique',new Set(keys).size===keys.length);
   ok('every slider has a range, a default inside it, a label, two ends and a known group',C.BODY_SLIDERS.every(s=>s.min<s.max&&s.def>=s.min&&s.def<=s.max&&s.label&&s.ends.length===2&&s.ends.every(e=>typeof e==='string')&&groups.has(s.g)));
