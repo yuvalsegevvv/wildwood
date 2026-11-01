@@ -417,6 +417,7 @@
     "combat/weapon-shapes-isles.js",
     "combat/fx-pool.js",
     "combat/fx-extra.js",
+    "combat/gore.js",
     "combat/fx-decal.js",
     "combat/weapons.js",
     "combat/attacks.js",
