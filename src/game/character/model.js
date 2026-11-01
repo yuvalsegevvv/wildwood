@@ -99,7 +99,9 @@ function buildCharacter(L,opt){
   /* head: the anime proportions come from its scale (about 5.9 heads tall: the skull is HEAD_TALL = 10% taller than a ball) */
   const head=new THREE.Group(); head.name='head'; head.position.y=D.headY; spine.add(head);
   const face=buildFace(X), hairParts=buildHair(X,face);
-  const headMesh=new THREE.Mesh(merge(face.parts.concat(hairParts)),matChar); headMesh.castShadow=true; head.add(headMesh);
+  const hairDyn=hairParts.filter(g=>g.hairHang), hairStill=hairParts.filter(g=>!g.hairHang);   // the hanging locks are their own mesh: hair-sway.js moves it
+  const headMesh=new THREE.Mesh(merge(face.parts.concat(hairStill)),matChar); headMesh.castShadow=true; head.add(headMesh);
+  let hairMesh=null; if(hairDyn.length){ hairMesh=new THREE.Mesh(merge(hairDyn),matChar); hairMesh.castShadow=true; head.add(hairMesh); }
   head.scale.setScalar(D.hs);
   /* arms and legs */
   const [shL,elL]=buildArm(X,D,-1), [shR,elR]=buildArm(X,D,1); spine.add(shL,shR);
@@ -118,7 +120,8 @@ function buildCharacter(L,opt){
       if(f) rig.root.traverse(o=>{ if(o.isMesh&&!before.has(o)) ofTintGeo(o.geometry,f); }); }
     if(!rig.anims.length) rig.anims=null; }
   if(X.kit&&!X.L.aura) for(const k of X.kit.kits) if(k.aura&&X.kit.sl.top===k) cosBuildAura(rig,X,k.aura);   // a set's own aura (kit.aura, same fields as COS_AURAS), unless the wearer chose one
-  for(const m of sway) clSway(rig,m,gmdIs(L.top));   // skirts, flares and hems follow the legs (character/cloth.js)
+  for(const m of sway) clSway(rig,m,gmdIs(L.top));
+  if(hairMesh) hwSway(rig,hairMesh,hwReach(hairDyn));   // the hanging hair swings with the head and the walk (character/hair-sway.js)   // skirts, flares and hems follow the legs (character/cloth.js)
   kinDress(rig,X);   // kin: the fur markings, then the ears, muzzle and tail of look.kinEars / kinMuzzle / kinTail (character/model-kin.js)
   rig.left=!!L.left; rig.sillyS=sillyId(L,'strong'); rig.sillyW=sillyId(L,'weak');   // handedness (Settings > Left-handed: the weapon and shield swap hands, pose.js mirrors the arms) and the silly hand items that replace the weapon / the shield (model-silly.js)
   shieldDress(rig,X);   // the optional shield of look.shield on the left forearm (character/model-shields.js)
