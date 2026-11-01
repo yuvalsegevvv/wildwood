@@ -35,7 +35,7 @@ const EDIT=[
       {type:'dcolor',k:'furColor',num:1,hint:'Fur',premium:false,none:'Skin tone',opts:KIN_FUR.concat(SKINS)},
       {k:'furMark',label:'Markings',type:'seg',opts:KIN_MARKS.map(m=>m.slice())},
       {type:'dcolor',k:'furColor2',num:2,hint:'Markings, ear and tail tips',premium:false,none:'As designed',opts:KIN_FUR.concat(TINTC)}]},
-    {name:'Upper body', rows:['chest','shoulders','waist','hips','torso'].map(k=>({slider:k}))},
+    {name:'Upper body', rows:['chest','chestShape','shoulders','waist','hips','hipCurve','torso'].map(k=>({slider:k}))},
     {name:'Limbs', rows:['legs','thighs','calves','arms','neck','hands','feet'].map(k=>({slider:k}))}
   ]},
   {tab:'Face', close:true, subs:[
@@ -59,14 +59,15 @@ const EDIT=[
   {tab:'Clothes', subs:[
     // the signature outfits (src/game/outfits): every piece has its own sub-tab, so the pieces of different sets mix. A colour row marked base:'<slot>' paints the base garment, or, while that slot wears an outfit's piece,
     // recolours the piece (look.tint<Slot>; 'Designed colours' puts the original back).
-    {name:'Hat', close:true, rows:[{k:'hat',type:'grid',kind:'hat',slot:'h',col:'hatColor',ids:()=>HT_HATS.map(h=>h.slice()).concat(HTX_HATS.map(h=>h.slice()),ofItems('hat'))},{k:'hatColor',label:'',type:'color',base:'hat',opts:TINTC},{type:'palette',slot:'hat'},{type:'armor',slot:'helmet'}]},
+    {name:'Hat', close:true, rows:[{k:'hat',type:'grid',kind:'hat',slot:'h',col:'hatColor',ids:()=>HT_HATS.map(h=>h.slice()).concat(HTX_HATS.map(h=>h.slice()),ofItems('hat'))},{k:'hatColor',label:'',type:'color',base:'hat',opts:TINTC},{type:'palette',slot:'hat'},{slider:'hatSize',when:()=>LOOK.hat&&LOOK.hat!=='none'&&LOOK.hat!=='outfit'},{slider:'hatTilt',when:()=>LOOK.hat&&LOOK.hat!=='none'&&LOOK.hat!=='outfit'},{type:'armor',slot:'helmet'}]},
     {name:'Top', rows:[{k:'top',type:'grid',kind:'top',slot:'t',col:'topColor',ids:()=>GM_TOPS.map(h=>h.slice()).concat(GMX_TOPS.map(h=>h.slice()),ofItems('top'))},{k:'topColor',label:'',type:'color',base:'top',opts:TINTC},{type:'palette',slot:'top'},{slider:'neckline',when:()=>gmdIs(LOOK.top)},{slider:'skirtLen',when:()=>gmdIs(LOOK.top)},{slider:'skirtFlare',when:()=>gmdIs(LOOK.top)},{type:'armor',slot:'top'}]},
     {name:'Bottom', rows:[{k:'bottom',type:'grid',kind:'bottom',slot:'b',col:'bottomColor',ids:()=>GM_BOTTOMS.map(h=>h.slice()).concat(GMX_BOTTOMS.map(h=>h.slice()),ofItems('bottom'))},{k:'bottomColor',label:'',type:'color',base:'bottom',opts:TINTC},{type:'palette',slot:'bottom'},{slider:'skirtLen',when:()=>edSkirtWorn()},{slider:'skirtFlare',when:()=>edSkirtWorn()},{type:'armor',slot:'bottom'}]},
+    {name:'Underwear', rows:[{type:'dcolor',k:'underColor',num:1,hint:'Cloth',none:'Cream',opts:TINTC},{type:'dcolor',k:'underColor2',num:2,hint:'Waistband and strap',none:'Darker cloth',opts:TINTC}]},   // what shows where a garment is taken off (model-body.js underCol / underBand)
     {name:'Shoes', rows:[{k:'shoes',type:'grid',kind:'shoes',slot:'s',col:'shoeColor',ids:()=>GM_SHOES.map(h=>h.slice()).concat(GMX_SHOES.map(h=>h.slice()),ofItems('shoes'))},{k:'shoeColor',label:'',type:'color',base:'shoes',opts:TINTC},{type:'palette',slot:'shoes'},{type:'armor',slot:'shoes'}]},
     // version 3.2: the cape (the backpack is the free one) and the aura, each with its own colours; crafted ones are made at a Wayfarers' Lodge (shared/cospieces.js), and every one can be tried on
     {name:'Cape', rows:[
       {k:'cape',type:'grid',kind:'cape',slot:'c',ids:()=>[['']].concat(COS_CAPES.map(d=>[d[0],d[1],d[6]]))},
-      {type:'dcolor',k:'capeColor',num:1,hint:'Cloth',need:'cape',opts:TINTC},{type:'dcolor',k:'capeTrim',num:2,hint:'Trim',need:'cape',opts:TINTC}]},
+      {type:'dcolor',k:'capeColor',num:1,hint:'Cloth',need:'cape',opts:TINTC},{type:'dcolor',k:'capeTrim',num:2,hint:'Trim',need:'cape',opts:TINTC},{slider:'capeLen',when:()=>!!LOOK.cape&&LOOK.cape!=='pack'}]},
     {name:'Aura', rows:[
       {k:'aura',type:'grid',kind:'aura',slot:'a',ids:()=>[['']].concat(COS_AURAS.map(d=>[d[0],d[1],d[8]]))},
       {type:'dcolor',k:'auraColor',num:1,hint:'Main',need:'aura',opts:TINTC},{type:'dcolor',k:'auraColor2',num:2,hint:'Second',need:'aura',opts:TINTC},
