@@ -154,6 +154,8 @@ function sillyDress(rig,X){
     const col=fc(L[kind+'Color']), trim=fc(L[kind+'Trim']), parts=D.build(col===null?D.col:col,trim===null?D.trim:trim,X.sg);
     const strongEl=left?rig.elL:rig.elR, weakEl=left?rig.elR:rig.elL;
     if(kind==='strong'){ const m=new THREE.Mesh(merge(parts),matChar); m.castShadow=true; m.position.set(0,-0.3,0); m.rotation.x=0.35; strongEl.add(m); }
-    else { const g=merge(parts).rotateY(left?Math.PI/2:-Math.PI/2).translate(left?0.056:-0.056,-0.12,0), m=new THREE.Mesh(g,matChar); m.castShadow=true; weakEl.add(m); }
+    else { const sd=left?1:-1, g=merge(parts).rotateY(left?Math.PI/2:-Math.PI/2).translate(sd*0.036,-0.17,0), m=new THREE.Mesh(g,matChar); m.castShadow=true; weakEl.add(m);
+      // a grip: the hand closes on a short bar between the forearm and the item, so the item is held, not floating beside the arm
+      const gm=new THREE.Mesh(merge([pc(new THREE.BoxGeometry(0.07,0.034,0.03).translate(sd*0.02,-0.255,0),c=>c.set(0x2a2622)),pc(new THREE.BoxGeometry(0.014,0.05,0.036).translate(sd*0.052,-0.23,0),c=>c.set(0x2a2622))]),matChar); gm.castShadow=true; weakEl.add(gm); }
   }
 }

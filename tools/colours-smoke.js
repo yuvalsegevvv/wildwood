@@ -7,7 +7,7 @@ let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+nam
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const C=require('./char-load')(), FREE=new Set([].concat(C.TINTC||[]));
 ok('48 premium colours, unique hexes and names, all real colours',x.PREM_COLOURS.length===48&&new Set(x.PREM_COLOURS.map(c=>c[0])).size===48&&new Set(x.PREM_COLOURS.map(c=>c[1])).size===48&&x.PREM_COLOURS.every(c=>Number.isInteger(c[0])&&c[0]>=0&&c[0]<=0xffffff&&typeof c[1]==='string'));
-ok('the price is 500 and the favourites hold 16',x.PREM_PRICE===500&&x.PREM_FAV_MAX===16);
+ok('the price is 500 and the favourites hold 64 slots',x.PREM_PRICE===500&&x.PREM_FAV_MAX===64);
 { const src=require('fs').readFileSync(__dirname+'/../src/game/character/model.js','utf8'), nums=new Set((src.match(/0x[0-9a-fA-F]{6}/g)||[]).map(Number));
   const clash=x.PREM_COLOURS.filter(c=>nums.has(c[0])).map(c=>c[1]); ok('no premium colour is also in a free palette of model.js',!clash.length,clash.join(',')); }
 W.join('a',{name:'Alma',look:{cls:'warrior'},save:{level:5}}); tick(1);
@@ -19,8 +19,9 @@ W.receive('a',{t:'colbuy',i:3}); tick(1); ok('buying it twice is refused (no sec
 for(const bad of [-1,48,1.5,'3',null,'constructor',NaN]) W.receive('a',{t:'colbuy',i:bad}); tick(1);
 ok('bad indices change nothing',p.gear.gem===700&&p.gear.pc.length===1);
 W.receive('a',{t:'colfav',l:[0x5c5c63,x.PREM_COLOURS[3][0],0x5c5c63,-5,1.5,'x',0x1000000,...Array(40).fill(0).map((_,i)=>i*1000+7)]}); tick(1);
-ok('the favourites are cleaned: numbers only, no repeats, at most 16, in order',p.gear.fav.length===16&&p.gear.fav[0]===0x5c5c63&&p.gear.fav[1]===x.PREM_COLOURS[3][0]&&new Set(p.gear.fav).size===16&&p.gear.fav.every(v=>Number.isInteger(v)&&v>=0&&v<=0xffffff));
-W.receive('a',{t:'colfav',l:'nope'}); W.receive('a',{t:'colfav'}); tick(1); ok('a non-list leaves them alone',p.gear.fav.length===16);
+ok('the favourites are cleaned: 64 slots at most, a slot is a colour or -1, no repeated colour, positions kept, trailing empties cut',p.gear.fav.length===47&&p.gear.fav[0]===0x5c5c63&&p.gear.fav[1]===x.PREM_COLOURS[3][0]&&p.gear.fav[2]===-1&&p.gear.fav[3]===-1&&p.gear.fav.every(v=>Number.isInteger(v)&&v>=-1&&v<=0xffffff)&&new Set(p.gear.fav.filter(v=>v>=0)).size===p.gear.fav.filter(v=>v>=0).length);
+W.receive('a',{t:'colfav',l:'nope'}); W.receive('a',{t:'colfav'}); tick(1); ok('a non-list leaves them alone',p.gear.fav.length===47);
+W.receive('a',{t:'colfav',l:[-1,0x112233,-1,-1]}); tick(1); ok('an empty slot keeps its place and trailing empties are cut',JSON.stringify(p.gear.fav)==='[-1,1122867]',JSON.stringify(p.gear.fav));
 { const L={hairColor:x.PREM_COLOURS[0][0],topColor:x.PREM_COLOURS[3][0],capeTrim:x.PREM_COLOURS[5][0],tintTop2:x.PREM_COLOURS[0][0],eyes:0x4a2e1c,height:1.2,skin:0xe6b894}, owned=[3];
   const lk=x.premLocked(L,owned), cl=x.premCleanLook(L,owned);
   ok('locked lists each unowned premium colour once',lk.length===2&&lk.some(l=>l.i===0)&&lk.some(l=>l.i===5));
@@ -29,5 +30,5 @@ W.receive('a',{t:'colfav',l:'nope'}); W.receive('a',{t:'colfav'}); tick(1); ok('
 // the server cleans the look on the look message
 W.receive('a',{t:'look',look:{cls:'warrior',hairColor:x.PREM_COLOURS[0][0],topColor:x.PREM_COLOURS[3][0],capeTrim:x.PREM_COLOURS[9][0]}}); tick(1);
 ok('the look message keeps the owned colour and drops the rest',p.look.topColor===x.PREM_COLOURS[3][0]&&p.look.hairColor!==x.PREM_COLOURS[0][0]&&p.look.capeTrim===-1);
-{ const g=x.sanitizeGear({pc:[1,1,2,99,-1,'a',2.5],fav:[1,1,0x123456,-4]},'warrior'); ok('a save is sanitized',JSON.stringify(g.pc)==='[1,2]'&&JSON.stringify(g.fav)==='[1,1193046]'); }
+{ const g=x.sanitizeGear({pc:[1,1,2,99,-1,'a',2.5],fav:[1,1,0x123456,-4]},'warrior'); ok('a save is sanitized',JSON.stringify(g.pc)==='[1,2]'&&JSON.stringify(g.fav)==='[1,-1,1193046]',JSON.stringify(g.fav)); }
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

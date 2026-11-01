@@ -1,10 +1,10 @@
 //@ Premium colours (version 3.3): 48 extra colours for everything but the skin, 500 gems each, bought once for the whole account; the favourites list; what a look may wear. Pure.
-/* A premium colour is an index 0..47 into PREM_COLOURS ([hex, name]); gear.pc lists the owned ones (indices), gear.fav the player's up to PREM_FAV_MAX favourite colours (plain hex numbers, free or premium,
-   shown first in every colour picker; empty = the 16 free colours of TINTC). The editor lets anyone try every premium colour on: a look that wears one you do not own (premLocked) is not saved or sent and the
+/* A premium colour is an index 0..47 into PREM_COLOURS ([hex, name]); gear.pc lists the owned ones (indices), gear.fav the player's PREM_FAV_MAX (64) favourite slots (plain hex numbers, free or premium, or -1 for an empty slot,
+   shown in the favourites grid of the colour picker; an empty list = the 16 free colours of TINTC). The editor lets anyone try every premium colour on: a look that wears one you do not own (premLocked) is not saved or sent and the
    editor will not close on it (the same try-on rule as a crafted piece, ui/character-editor.js), and the server (premCleanLook, called where cosCleanLook is) puts such a field back to a free value.
    The public test world owns them all (server/testworld.js). Every hex here is unique and not one of the free palettes' (hair, eyes, cloth...), so a hex tells you the colour is premium.
    owns: PREM_COLOURS, PREM_PRICE, PREM_FAV_MAX, premIndexOf, premLocked, premCleanLook, premSanitize.   used by: server/colours.js, server/players.js, server/api.js, server/testworld.js, ui/colour-picker.js, ui/character-editor.js.   test: tools/colours-smoke.js */
-const PREM_PRICE=500, PREM_FAV_MAX=16;
+const PREM_PRICE=500, PREM_FAV_MAX=64;
 const PREM_COLOURS=[
   [0xd4af37,'Gold'],[0xb76e79,'Rose Gold'],[0xc0c0c8,'Silver'],[0xb87333,'Copper'],[0xcd7f32,'Bronze'],[0xe5e4e2,'Platinum'],[0x15151e,'Obsidian'],[0xfffff0,'Ivory'],
   [0xe0115f,'Ruby'],[0x7b1e2b,'Garnet'],[0xff2e63,'Cherry'],[0xff6f61,'Coral'],[0xfa8072,'Salmon'],[0xf4b6c2,'Blush'],[0xff66a1,'Rose'],[0xd6249f,'Magenta'],
@@ -34,5 +34,6 @@ function premCleanLook(look,owned){
 // a save's gear.pc (owned indices, no repeats) and gear.fav (up to PREM_FAV_MAX colours as plain numbers)
 function premSanitize(g,out){
   out.pc=Array.isArray(g&&g.pc)?g.pc.filter((v,i,a)=>Number.isInteger(v)&&v>=0&&v<PREM_COLOURS.length&&a.indexOf(v)===i):[];
-  out.fav=Array.isArray(g&&g.fav)?g.fav.filter((v,i,a)=>Number.isInteger(v)&&v>=0&&v<=0xffffff&&a.indexOf(v)===i).slice(0,PREM_FAV_MAX):[];
+  const seen=new Set(), f=Array.isArray(g&&g.fav)?g.fav.slice(0,PREM_FAV_MAX).map(v=>{ if(Number.isInteger(v)&&v>=0&&v<=0xffffff&&!seen.has(v)){ seen.add(v); return v; } return -1; }):[];   // a slot is a colour or -1 (empty); positions are kept, repeats and junk become empty slots
+  while(f.length&&f[f.length-1]===-1) f.pop(); out.fav=f;
 }
