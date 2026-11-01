@@ -1,9 +1,9 @@
-//@ The puzzle stones in the world: a standing stone with a glowing rune that dims for two hours after a solve; the talk key opens its board (the stones exist only while PZ_ON)
+//@ The puzzle stones in the world: a standing stone with a glowing rune that dims for two hours after a solve; the talk key opens its board 
 /* Agent map. pzBuild() is called once by generation-setup.js beside troomBuild(); pzNear() / pzPrompt(key) / pzOpenNear() are used by village/talking.js; pzUpdate(dt) runs every frame from main/loop.js and
    lights or dims each rune from GEAR.pz[site].t. Sites: shared/puzzle-sites.js (PZ_SITES). The server checks the distance and the clock again (server/puzzles.js). Test: client-smoke (loads). */
 const PZ_STONES=[];
 function pzBuild(){
-  if(!PZ_ON) return;
+  sgsBuild();   // the Sigil statue's props (sigil-statue.js)
   for(const S of PZ_SITES){
     const y=getH(S.x,S.z), G=new THREE.Group(); G.position.set(S.x,y,S.z); G.name='puzzle-stone-'+S.id;
     const rock=(x,yy,z,nx,ny,nz,c)=>{ c.set(0x8c8a84).multiplyScalar(0.7+0.5*h3(x*4,yy*3,z*4)); };
@@ -20,23 +20,28 @@ function pzBuild(){
     const lid=new THREE.Group(); lid.position.set(0,0.5,-0.31); CH.add(lid);
     bx(1.02,0.16,0.64,0,0.08,0.31,wood,lid); bx(1.06,0.05,0.68,0,0.18,0.31,trim,lid); bx(0.1,0.2,0.68,-0.36,0.09,0.31,gm,lid); bx(0.1,0.2,0.68,0.36,0.09,0.31,gm,lid); bx(0.14,0.14,0.04,0,0.0,0.64,gm,lid);
     const glint=new THREE.Mesh(new THREE.OctahedronGeometry(0.12,0),new THREE.MeshBasicMaterial({color:gold})); glint.position.set(0,1.0,0); CH.add(glint);
-    PZ_STONES.push({S,G,mat,rune,back,CH,lid,glint,pend:null,open:0,until:0});
+    const ringM=new THREE.MeshBasicMaterial({color:0x8fe3ff,transparent:true,opacity:0.8,side:THREE.DoubleSide,depthWrite:false}), ring=new THREE.Mesh(new THREE.RingGeometry(1.15,1.3,48,1,0,0.01),ringM);
+    ring.rotation.x=-Math.PI/2; ring.position.y=0.06; ring.visible=false; ring.rotation.z=Math.PI/2; G.add(ring);   // fills clockwise while the stone is dim (pzUpdate)
+    PZ_STONES.push({S,G,mat,rune,back,CH,lid,glint,pend:null,open:0,until:0,ring,ringN:-1});
   }
 }
-const pzNearest=()=>{ if(!PZ_ON||!started||PL.dead) return null; let b=null,bd=PZ_REACH; for(const s of PZ_STONES){ const d=Math.hypot(P.x-s.S.x,P.z-s.S.z); if(d<bd){ bd=d; b=s; } } return b; };
+const pzNearest=()=>{ if(!started||PL.dead) return null; const T=GW_PLACE.statue; if(T&&Math.hypot(P.x-T.x,P.z-T.z)<PZ_STATUE_REACH) return {statue:true,S:{id:'statue'}}; let b=null,bd=PZ_REACH; for(const s of PZ_STONES){ const d=Math.hypot(P.x-s.S.x,P.z-s.S.z); if(d<bd){ bd=d; b=s; } } return b; };
 const pzNear=()=>!!pzNearest();
-function pzPrompt(tk){ const s=pzNearest(); if(s.pend) return 'Press '+tk+': open the chest'; const  R=GEAR&&GEAR.pz&&GEAR.pz[s.S.id], left=R&&R.t>Date.now()?Math.ceil((R.t-Date.now())/60000):0;
+function pzPrompt(tk){ const s=pzNearest(); if(s.statue){ const n=(GEAR.sig||0)-(GEAR.sigOff||0); return n>0?'Press '+tk+': offer '+n+' Sigils to the statue':'The statue wants Sigils: solve puzzle stones for the first time'; } if(s.pend) return 'Press '+tk+': open the chest'; const  R=GEAR&&GEAR.pz&&GEAR.pz[s.S.id], left=R&&R.t>Date.now()?Math.ceil((R.t-Date.now())/60000):0;
   return left?'The stone is dim: it lights again in '+left+' min':'Press '+tk+': solve the puzzle ('+PZ_DIFF[s.S.diff].name+')'; }
-function pzOpenNear(){ const s=pzNearest(); if(s&&s.pend){ const m=s.pend; s.pend=null; pzSheet(m); return; } if(s) netSend({t:'pz',a:'open',site:s.S.id}); }
+function pzOpenNear(){ const s=pzNearest(); if(s&&s.statue){ netSend({t:'pz',a:'offer'}); return; } if(s&&s.pend){ const m=s.pend; s.pend=null; pzSheet(m); return; } if(s) netSend({t:'pz',a:'open',site:s.S.id}); }
 // a won stone's chest (panel.js pzDone): false when there is no such stone here (the sheet shows at once instead)
 function pzChestDrop(m){ const s=PZ_STONES.find(z=>z.S.id===m.site); if(!s) return false; s.pend=m; s.open=0; s.until=Date.now()+PZ_RENEW_MS; toast('A chest appeared beside the stone'); return true; }
 let pzLastT=0;
 function pzUpdate(dt){
+  sgsUpdate(dt);
   if(!PZ_STONES.length||!GEAR) return; pzLastT+=dt; const now=Date.now();
   for(const s of PZ_STONES){
     const R=GEAR.pz&&GEAR.pz[s.S.id], dim=!!(R&&R.t>now);
     s.mat.color.setHex(dim?0x4a5560:0x7fe8ff); s.rune.rotation.y=s.back.rotation.y=pzLastT*(dim?0.1:0.9);
     s.rune.position.y=s.back.position.y=1.35+(dim?0:Math.sin(pzLastT*2)*0.06);
+    { const f=dim?Math.max(0,Math.min(1,1-(R.t-now)/PZ_RENEW_MS)):0, n=Math.round(f*96); s.ring.visible=dim;
+      if(dim&&n!==s.ringN){ s.ringN=n; s.ring.geometry.dispose(); s.ring.geometry=new THREE.RingGeometry(1.15,1.3,48,1,0,Math.max(0.02,f*Math.PI*2)); } }
     s.CH.visible=!!s.pend||dim||now<s.until; const tg=s.pend?0:1; s.open+=(tg-s.open)*Math.min(1,dt*5); s.lid.rotation.x=-s.open*1.9; s.glint.visible=!!s.pend; if(s.pend){ s.glint.rotation.y=pzLastT*2.5; s.glint.position.y=1.0+Math.sin(pzLastT*3)*0.08; }
   }
 }

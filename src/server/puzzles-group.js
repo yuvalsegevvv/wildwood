@@ -1,4 +1,4 @@
-//@ Puzzle stones for groups: a dungeon run's three side stones, the raids' stones inside the walls and the Deep Cave's chest in cave material (all behind PZ_ON)
+//@ Puzzle stones for groups: a dungeon run's three side stones, the raids' stones inside the walls and the Deep Cave's chest in cave material
 /* Agent map. Doc: docs/PUZZLES.md (round 7). Test: node tools/puzzles-smoke.js. Placement of raid / cave stones: shared/puzzle-group.js.
    DUNGEON: at the run's setup (dgSetupS hook) 2 trivial + 1 easy stones (objective kind 'pzstone') stand beside three monster mouths of the side rooms, boards seeded by the run's seed; a member uses one
    (dg{a:'use'}) and solves it alone while it is open; the chest (the renewable design, no gems, no Sigils, no gear roll) pays every member present. RAID: a stone with S.raid; the board is new at every rebuild
@@ -18,7 +18,7 @@ function pzRaidOpenP(p,ST){
 }
 // dungeons: three stones per run at the mouths of rooms that are not the entrance or the boss hall, drawn by the run's seed
 function pzDgSetupS(run){
-  if(!PZ_ON||run.endT||run.pzs) return; run.pzs=1;
+  if(run.endT||run.pzs) return; run.pzs=1;
   const rng=mulberry32((run.seed|0)^0x9e57), mouths=run.B.marks.S.filter(s=>s.role!=='start'&&s.role!=='boss');
   for(let i=mouths.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [mouths[i],mouths[j]]=[mouths[j],mouths[i]]; }
   const kinds=Object.keys(PZ_KINDS);
@@ -29,7 +29,7 @@ function pzDgSetupS(run){
   });
 }
 function pzDgUseP(run,p,ob){
-  if(!PZ_ON||ob.st!==1||!ob.pz||p.pz) return;
+  if(ob.st!==1||!ob.pz||p.pz) return;
   if(ob.by&&ob.by!==p.id&&pzHeldBy(S.players.get(ob.by),ob.id)){ pzNo(p,'Someone is already working this stone'); return; }
   ob.by=p.id; pzOpenS(p,ob.id,ob.pz.kind,ob.pz.diff,ob.pz.seed,run.L,false,'dg'); p.pz.run=run; p.pz.ob=ob;
 }

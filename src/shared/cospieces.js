@@ -15,6 +15,12 @@ const CP_DECO=['deco1','deco2','deco3'];   // up to three decorations, any of th
 const CP_NONE={}; for(const k of CP_LETTERS) CP_NONE[k]=CP_SLOTS[k][1];
 // the crafted pieces of the five garment slots: [slot, id, name, grade 1..6 (the land it is for), a short line]; the models are in game/character/model-*.js (their ids are listed there too)
 const CP_PIECES=[
+  ['d','heartclip','Heart Clip','2','A little heart-shaped hair clip. Earned on the Sigil track.'],
+  ['d','catears','Cat-ear Band','3','A headband with two pointed ears. Earned on the Sigil track.'],
+  ['d','bunnyears','Bunny Ears','3','Two tall floppy ears. Earned on the Sigil track.'],
+  ['d','choker','Heart Choker','4','A velvet ribbon with a heart charm. Earned on the Sigil track.'],
+  ['d','crownlet','Little Crown','5','A small gold crown set with a ruby. Earned on the Sigil track.'],
+  ['d','starbadge','Star Badge','2','A gold star badge pinned to the chest. Earned on the Sigil track.'],
   ['r','buns2','Twin Buns','2','Two round buns high on the head, tied with red ribbons. Earned on the Sigil track.'],
   ['r','sidebraid','Side Braid','3','A thick braid brought over one shoulder. Earned on the Sigil track.'],
   ['r','highpony','High Ponytail','4','A long ponytail tied right at the crown. Earned on the Sigil track.'],

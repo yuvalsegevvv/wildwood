@@ -1,4 +1,4 @@
-//@ Places the puzzle stones of the raids (2 trivial + 1 easy inside each stronghold's walls) and of the Deep Cave (41 over its four floors); both only while PZ_ON
+//@ Places the puzzle stones of the raids (2 trivial + 1 easy inside each stronghold's walls) and of the Deep Cave (41 over its four floors)
 /* Agent map. Data only; the rules (one solver, who is paid, new boards at a rebuild, cave material) are server/puzzles-group.js. Raid stones stand in the yard at fixed offsets from the site (RD_LAYOUT's
    gate-yard, clear of wards, packs and barricades); their kind is the land's (PZ_KIND_OF, 'rootlines' for the isles). Cave stones: floor n (1-4) gets PZ_CAVE_PLAN[n-1] stones (letters t/e/n/h/x = difficulty
    1-5), kinds by floor (PZ_CAVE_KIND), spots drawn from a seeded rng among free floor cells (caveFree, 1.6 m) at least 12 m from the lift, 8 m from a camp and 16 m from another stone. Ids: rd-<land>-1..3,
@@ -27,4 +27,4 @@ function pzGroupPlaceAll(){
     }
   });
 }
-if(PZ_ON) pzGroupPlaceAll();
+pzGroupPlaceAll();

@@ -1,5 +1,5 @@
 //@ Places the overworld puzzle stones by rules: 15 trivial, 12 easy, 8 normal, 4 hard and 2 extreme in each of the seven lands that have a puzzle kind (287; the Deep Cave's come with its own files)
-/* Agent map. Runs once at load while PZ_ON (pzPlaceAll), after shared/puzzle-sites.js (pzSiteAdd) and the atlas, roads and dungeon doors it reads. Deterministic (mulberry32 seeded by the land, the atlas's own data only: no heights from getH, so the server and every client agree).
+/* Agent map. Runs once at load (pzPlaceAll), after shared/puzzle-sites.js (pzSiteAdd) and the atlas, roads and dungeon doors it reads. Deterministic (mulberry32 seeded by the land, the atlas's own data only: no heights from getH, so the server and every client agree).
    Rules: PZ_KIND_OF says each land's kind. Trivial stones stand beside the roads 60-300 m from the village, easy ones beside roads farther out, normal ones at the atlas's camps (WA_SPOTS), hard ones on a ring round a boss arena or a door (WA_POIS),
    the first extreme one on a ring round the land's top boss (the future lamp shrine of the story plan, B4), the second hidden far from any road in the land's highest zone (B5's letter). Every stone is on flat dry ground, 5 m off a road, clear of villages,
    arenas, doors, the dungeon doors and other stones. The stone's level is its zone's level. The chosen first-time seeds (seed0) are 0 until the rater picks them. Used by: server/puzzles.js, game/village/buildings-puzzle.js, the three maps. Test: tools/puzzles-smoke.js */
@@ -42,6 +42,6 @@ function pzPlaceLand(land){
   for(const [letter,diff,count] of PZ_PLAN){ for(const gap of [28,20]) fromList(letter,diff,count,nearRoad(55,2000),gap); fromList(letter,diff,count,shuffle([].concat(...zones.map(z=>around(z,10,90)))),20); }
   return got.length;
 }
-const PZ_PLACED={};   // land -> stones placed; filled by pzPlaceAll (about 0.2 s: only run while PZ_ON, and by the smoke test through pzSwitch)
+const PZ_PLACED={};   // land -> stones placed; filled by pzPlaceAll (about 0.2 s: runs once at load)
 function pzPlaceAll(){ if(PZ_PLACED.home) return; for(const land in PZ_KIND_OF) PZ_PLACED[land]=pzPlaceLand(land); }
-if(PZ_ON) pzPlaceAll();
+pzPlaceAll();

@@ -17,7 +17,7 @@ function cosCostHtml(cost,res,mats){
 function cosCraftedOf(type){
   if(type==='a') return COS_AURAS.filter(d=>!cpIsFree('a',d[0])&&!cpDef('a',d[0]).quest&&!cpDef('a',d[0]).track).map(d=>[d[0],d[1],d[8]]);
   if(type==='c') return COS_CAPES.filter(d=>!cpIsFree('c',d[0])&&!cpDef('c',d[0]).quest&&!cpDef('c',d[0]).track).map(d=>[d[0],d[1],d[6]]);
-  return CP_PIECES.filter(r=>r[0]===type).map(r=>[r[1],r[2],r[4]]);
+  return CP_PIECES.filter(r=>r[0]===type&&cpCost(type,r[1])).map(r=>[r[1],r[2],r[4]]);   // (a piece with no recipe is earned on the Sigil track)
 }
 function cosLodgeHtml(g){
   const own=g.cos||[], res=g.res||{}, mats=g.mats||{}, coins=g.coins||0;

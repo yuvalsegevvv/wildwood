@@ -11,11 +11,13 @@ function pzScrollHtml(){
   return sect('e','Epic')+sect('u','Unique');
 }
 function pzScrollBind(root){ root.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>{ b.disabled=true; netSend({t:'scroll',id:b.dataset.scroll,to:b.dataset.to}); }); }
+// the cosmetic a track level gives (its name), '' when none
+function pzTrackName(L){ const k=PZ_TRACK_COS[L], D=typeof k==='string'&&cpDef(k[0],k.slice(2)); return D?D.name+' ('+CP_SLOTS[k[0]][2].toLowerCase()+')':'a cosmetic'; }
 function pzTrackRender(box){
-  const sig=GEAR.sig||0, lv=pzTrackLevel(sig), into=sig%PZ_SIG_LEVEL;
-  let h=`<p class="muted gem-intro">Solve puzzles for the first time to collect Sigils. Every ${PZ_SIG_LEVEL} Sigils is a level of the track: ${PZ_LEVEL_GEMS} gems and the next cosmetic, and a Unique upgrade scroll every ${PZ_SCROLL_EVERY} levels.</p>
-    <div class="pz-track-sum"><b>${sig}</b> Sigils &middot; level <b>${lv}</b> / ${PZ_TRACK_LEVELS}${lv<PZ_TRACK_LEVELS?` &middot; ${PZ_SIG_LEVEL-into} to the next`:' &middot; complete'}</div><div class="pz-lamps">`;
-  for(let L=1;L<=PZ_TRACK_LEVELS;L++) h+=`<span class="pz-lamp${L<=lv?' lit':''}${L%PZ_SCROLL_EVERY===0?' big':''}" title="Level ${L}${PZ_TRACK_COS[L]?'':''}">${L%PZ_SCROLL_EVERY===0?L:''}</span>`;
-  h+='</div>'+(PZ_ON?`<div class="pz-solver"><b>Puzzle solver</b>: skips the first solve of a puzzle stone (1 for trivial, easy and normal; 2 for hard; 3 for extreme). Not for renewed stones, dungeons or raids. You have <b>${GEAR.psv||0}</b>. <button class="chip" id="pzBuySolver">Buy one: ${PZ_SOLVER_PRICE} gems</button></div>`:'<p class="muted">Puzzles open with the next big update.</p>');
+  const sig=GEAR.sigOff||0, carry=(GEAR.sig||0)-sig, lv=pzTrackLevel(sig), into=sig%PZ_SIG_LEVEL;
+  let h=`<p class="muted gem-intro">Solve puzzles for the first time to collect Sigils, then offer them to the broken statue in the middle of Glasswell (the Sunscar's city): it grows every ${PZ_STATUE_STEP} Sigils. Every ${PZ_SIG_LEVEL} Sigils offered is a level of the track: ${PZ_LEVEL_GEMS} gems and the next cosmetic, and a Unique upgrade scroll every ${PZ_SCROLL_EVERY} levels.</p>
+    <div class="pz-track-sum"><b>${sig}</b> offered${carry>0?` (<b>${carry}</b> carried: offer them at the statue)`:''} &middot; level <b>${lv}</b> / ${PZ_TRACK_LEVELS}${lv<PZ_TRACK_LEVELS?` &middot; ${PZ_SIG_LEVEL-into} to the next`:' &middot; complete'}</div><div class="pz-lamps">`;
+  for(let L=1;L<=PZ_TRACK_LEVELS;L++) h+=`<span class="pz-lamp${L<=lv?' lit':''}${L%PZ_SCROLL_EVERY===0?' big':''}" title="Level ${L}: ${pzTrackName(L)}${L%PZ_SCROLL_EVERY===0?' + a Unique upgrade scroll':''}">${L%PZ_SCROLL_EVERY===0?L:''}</span>`;
+  h+='</div>'+(`<div class="pz-solver"><b>Puzzle solver</b>: skips the first solve of a puzzle stone (1 for trivial, easy and normal; 2 for hard; 3 for extreme). Not for renewed stones, dungeons or raids. You have <b>${GEAR.psv||0}</b>. <button class="chip" id="pzBuySolver">Buy one: ${PZ_SOLVER_PRICE} gems</button></div>`);
   box.innerHTML=h; const bs=$('#pzBuySolver'); if(bs) bs.addEventListener('click',()=>netSend({t:'pz',a:'buy',n:1}));
 }

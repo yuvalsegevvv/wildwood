@@ -30,6 +30,7 @@ function cosShape(name){
   else if(name==='leaf') g=new THREE.CircleGeometry(0.035,8).scale(0.6,1.6,1);
   else if(name==='petal') g=cosStar(5,0.02,0.045);
   else if(name==='flake') g=cosJoin([cosStar(6,0.012,0.055), new THREE.RingGeometry(0.02,0.026,6)]);
+  else if(name==='heart'){ const sh=new THREE.Shape(); sh.moveTo(0,-0.04); sh.bezierCurveTo(-0.06,0.0,-0.035,0.05,0,0.022); sh.bezierCurveTo(0.035,0.05,0.06,0.0,0,-0.04); g=new THREE.ShapeGeometry(sh,5).toNonIndexed(); }
   else if(name==='star') g=cosJoin([cosStar(4,0.011,0.06), cosStar(4,0.02,0.032).rotateZ(Math.PI/4)]);
   else if(name==='wisp') g=cosJoin([new THREE.OctahedronGeometry(0.022,1), new THREE.ConeGeometry(0.02,0.17,6).rotateZ(-Math.PI/2).translate(0.085,0,0)]);
   else if(name==='bubble') g=cosJoin([new THREE.RingGeometry(0.026,0.036,12), new THREE.CircleGeometry(0.012,6).translate(-0.01,0.012,0)]);
@@ -139,7 +140,7 @@ function cosBuildCape(rig,X,def){
 function cosBuildAura(rig,X,def){
   const D=X.D, hgt=D.hipY+D.shY+0.2, cheap=(typeof LITE!=='undefined'&&LITE)||(typeof LOW!=='undefined'&&LOW);
   const n=Math.max(3,Math.round(def.n*(cheap?0.5:1))), g=new THREE.Group(); rig.root.add(g);
-  const geo=cosShape(def.shape||'mote'), shape=def.shape||'mote', halo=shape==='mote'||shape==='star'||shape==='wisp', upright=shape==='flame'||shape==='drop', spinny=shape==='petal'||shape==='flake'||shape==='star'||shape==='leaf'||shape==='grain';
+  const geo=cosShape(def.shape||'mote'), shape=def.shape||'mote', halo=shape==='mote'||shape==='star'||shape==='heart'||shape==='wisp', upright=shape==='flame'||shape==='drop', spinny=shape==='petal'||shape==='heart'||shape==='flake'||shape==='star'||shape==='leaf'||shape==='grain';
   const ps=[];
   for(let i=0;i<n;i++){
     const col=i%3===0?def.col2:def.col, m=new THREE.Mesh(geo,cosMat(col)); m.frustumCulled=false; m.position.set(0,hgt*0.5,0.5); g.add(m);   // (a resting place until the first frame: never under the ground)

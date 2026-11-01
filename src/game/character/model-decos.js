@@ -60,8 +60,23 @@ decoReg('bracelet','wristL',F=>{ const {c,sg}=F;   // a bangle and a charm on th
   return {parts:[solid(gmRingAt([0,0.02,0],[0,1,0],0.036,0.0045,sg(12)),c),solid(gmRingAt([0,0.034,0],[0,1,0],0.0355,0.0025,sg(12)),F.l),solid(csph(0.0065,sg(6),sg(5)).translate(0.0,0.002,-0.037),F.l)]}; });
 decoReg('anklet','ankleL',F=>{ const {c,sg}=F;   // a chain with a bell round the left ankle
   return {parts:[solid(gmRingAt([0,0.05,0],[0,1,0],0.05,0.0026,sg(12)),F.l),solid(csph(0.0095,sg(8),sg(6)).translate(0,0.036,-0.05),c)]}; });
+decoReg('heartclip','headTop',F=>{ const {c,sg}=F;   // a heart-shaped hair clip above the left ear
+  const x0=0.088, p=[]; for(const s of [-1,1]) p.push(solid(csph(0.0095,sg(8),sg(6)).scale(1,1,0.5).translate(x0+s*0.009,0.05,-0.082),c));
+  p.push(solid(new THREE.ConeGeometry(0.0125,0.02,5).rotateZ(Math.PI).scale(1,1,0.5).translate(x0,0.037,-0.082),c)); p.push(solid(csph(0.004,sg(6),sg(5)).translate(x0,0.052,-0.088),F.l)); return {parts:p}; });
+decoReg('catears','headTop',F=>{ const {c,sg}=F;   // a headband with two pointed cat ears
+  const p=[solid(gmRingAt([0,0.052,0.0],[0,1,0],0.108,0.0055,sg(24)),F.k)]; for(const s of [-1,1]){ p.push(solid(new THREE.ConeGeometry(0.036,0.08,4).rotateY(Math.PI/4).scale(1,1,0.45).translate(s*0.058,0.12,-0.012).rotateZ(-s*0.12),c),solid(new THREE.ConeGeometry(0.02,0.045,4).rotateY(Math.PI/4).scale(1,1,0.4).translate(s*0.058,0.115,-0.024).rotateZ(-s*0.12),F.l)); } return {parts:p}; });
+decoReg('bunnyears','headTop',F=>{ const {c,sg}=F;   // two tall floppy bunny ears
+  const p=[]; for(const s of [-1,1]){ p.push(solid(csph(0.026,sg(10),sg(8)).scale(0.55,2.6,0.3).translate(s*0.04,0.15,0.0).rotateZ(-s*0.18),c),solid(csph(0.016,sg(8),sg(6)).scale(0.5,2.3,0.25).translate(s*0.04,0.15,-0.01).rotateZ(-s*0.18),F.l)); } return {parts:p}; });
+decoReg('choker','neck',F=>{ const {c,sg}=F;   // a ribbon choker with a heart charm
+  return {parts:[solid(gmRingAt([0,0.0,0],[0,1,0],0.05,0.005,sg(14)),c),solid(csph(0.0085,sg(8),sg(6)).scale(1,1.1,0.5).translate(0,-0.012,-0.052),F.l)]}; });
+decoReg('crownlet','headTop',F=>{ const {c,sg}=F;   // a small gold crown set with a gem
+  const p=[solid(gmRingAt([0,0.056,0],[0,1,0],0.108,0.006,sg(24)),c)]; for(let i=0;i<5;i++){ const a=i/5*TAU; p.push(solid(new THREE.ConeGeometry(0.011,0.04,4).translate(Math.sin(a)*0.108,0.082,Math.cos(a)*0.108),c)); }
+  p.push(solid(csph(0.0085,sg(8),sg(6)).translate(0,0.062,-0.112),0xe0406a)); return {parts:p}; });
+decoReg('starbadge','chest',F=>{ const {c,sg}=F;   // a gold star badge on the chest
+  const sh=new THREE.Shape(); for(let i=0;i<10;i++){ const a=i/10*TAU, r=i%2?0.011:0.026; if(i) sh.lineTo(Math.sin(a)*r,Math.cos(a)*r); else sh.moveTo(0,r); }
+  return {parts:[solid(new THREE.ExtrudeGeometry(sh,{depth:0.006,bevelEnabled:false}).translate(0.05,0.04,-0.07),c),solid(csph(0.005,sg(6),sg(5)).translate(0.05,0.04,-0.074),F.l)]}; });
 // the colour a decoration has: the look's own choice (decoColor<n>, -1 = as designed) or the design's
-const DECO_COL={flower:0xf08ab0,feather:0xd8d0b0,bell:0xe6c240,scarf:0xc83a3a,glasses:0x3a3a40,eyepatch:0x22222a,kitsunemask:0xf2eee6,earrings:0xe6c240,horns:0xd9d2c0,halo:0xffe27a,brooch:0x3a8ae0,pouch:0x8a5a34,lantern:0xffb040,tail:0xd9812a,wings:0xf4f0e6,bow:0xe0508a,moth:0x9ad8ff,bracelet:0xc0c8d0,anklet:0xe6c240};
+const DECO_COL={heartclip:0xe84a7a,catears:0x3a3a48,bunnyears:0xf6eef0,choker:0x7a2a4a,crownlet:0xe6c240,starbadge:0xf0c040,flower:0xf08ab0,feather:0xd8d0b0,bell:0xe6c240,scarf:0xc83a3a,glasses:0x3a3a40,eyepatch:0x22222a,kitsunemask:0xf2eee6,earrings:0xe6c240,horns:0xd9d2c0,halo:0xffe27a,brooch:0x3a8ae0,pouch:0x8a5a34,lantern:0xffb040,tail:0xd9812a,wings:0xf4f0e6,bow:0xe0508a,moth:0x9ad8ff,bracelet:0xc0c8d0,anklet:0xe6c240};
 function decoTint(L,i){ const v=L['decoColor'+(i+1)]; return typeof v==='number'&&v>=0&&v<=0xffffff?v:null; }
 function decoDress(rig,X){
   const L=X.L; for(let i=0;i<3;i++){ const id=L[DECO_FIELDS[i]]; if(typeof id!=='string'||!id||!Object.prototype.hasOwnProperty.call(DECOS,id)) continue;
