@@ -70,4 +70,17 @@ function gwGuard(C,p){
   A(cyl(0.07,0.07,3.2,5).translate(w/2-0.8,H+1.6,0),c=>c.set(0x3a2616)); A(vbox(0.05,1.3,1.5,w/2-0.8,H+2.6,0.8),c=>c.set(0x2d3f78)); A(vbox(0.06,0.25,1.5,w/2-0.8,H+2.6,0.8),c=>c.set(0xd9a032));
   gwSign(C,F,'GATE WATCH',0,H-1.4,-d/2-0.12,3.4,0.6,{bg:'#3a2a1a'});
 }
-function gwHomes(C){ GLASSWELL.homes.forEach((h,i)=>gwHome(C,h,i)); for(const p of GLASSWELL.places){ if(p.cat==='inn'&&p.id.startsWith('inn')) gwInn(C,p); else if(p.id.startsWith('stables')) gwStables(C,p); else if(p.id.startsWith('guard')) gwGuard(C,p); } }
+// ---- the Caravan-master's house (Tahir): a big home with a striped awning over the door and a hitching rail; the plot's collider is its own footprint ----
+function gwCaravanHouse(C,p){
+  const F=gwFrame(p), {A,W,R}=gwF(C,F), w=p.w, d=p.d, wh=3.6, y0=0.5, ry=y0+wh, P=gwPlaster(0xd9c08c), dk=woodC(0x3a2616), trim=gwPlaster(0xcfb184);
+  A(vbox(w+0.3,y0,d+0.3,0,y0/2,0),gwStone(0xb09878,0.2)); A(vbox(w,wh,d,0,y0+wh/2,0),P); A(vbox(w-0.2,0.1,d-0.2,0,ry+0.04,0),c=>c.set(0xa88a5c)); gwParapet(A,w,d,ry,trim);
+  for(let k=0;k*1.05<w-0.8;k++){ const bx=-w/2+0.6+k*1.05; for(const sz of [-1,1]) A(vbox(0.13,0.13,0.55,bx,ry-0.35,sz*(d/2+0.18)),dk); }
+  A(vbox(1.5,2.4,0.14,0,y0+1.2,-d/2-0.05),dk); A(vbox(2.0,0.26,0.4,0,y0+2.6,-d/2-0.1),gwStone(0xb09878,0.2));
+  for(const sx of [-1,1]){ W(vbox(0.5,0.7,0.07,sx*3.2,y0+2.1,-d/2-0.04)); W(vbox(0.5,0.7,0.07,sx*3.2,y0+2.1,d/2+0.04)); W(vbox(0.07,0.7,0.5,sx*(w/2+0.04),y0+2.1,0)); }
+  A(vbox(2.4,2.2,2.4,w*0.28,ry+1.1,d*0.22),P); gwParapet(A,2.4,2.4,ry+2.2,trim,w*0.28,d*0.22);   // a rooftop room
+  for(const sx of [-1,1]) A(cyl(0.1,0.12,3.0,6).translate(sx*2.4,1.5,-d/2-1.7),dk);
+  R(gwCloth(5.4,0.08,2.2,0xb8623a,0xeee4cc,8).rotateX(0.12).translate(0,3.1,-d/2-0.9));   // the awning over the door
+  A(vbox(4.6,0.12,0.12,0,0.95,-d/2-3.0),dk); for(const sx of [-1,1]) A(vbox(0.14,1.1,0.14,sx*2.3,0.55,-d/2-3.0),dk);   // the hitching rail
+  gwSign(C,F,"CARAVAN-MASTER",0,ry-0.7,-d/2-0.12,3.8,0.7,{bg:'#4a2a16'});
+}
+function gwHomes(C){ GLASSWELL.homes.forEach((h,i)=>gwHome(C,h,i)); for(const p of GLASSWELL.places){ if(p.cat==='inn'&&p.id.startsWith('inn')) gwInn(C,p); else if(p.id.startsWith('stables')) gwStables(C,p); else if(p.id.startsWith('guard')) gwGuard(C,p); else if(p.id==='caravan') gwCaravanHouse(C,p); } }

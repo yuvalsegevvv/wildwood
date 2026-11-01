@@ -16,12 +16,25 @@ const VIL5=(()=>{
     const [x,z,w,d,rot]=h, p=at(x,z);
     V.houses.push({i,a:rot,x:p[0],z:p[1],rot,w,d,wh:3.2,rh:1.2,tavern:false,plaster:plasters[i%5],roof:roofs[(i*3)%5],accent:accents[(i*2)%5],chimney:false,woodpile:false,flowers:i%3===0});
     V.boxes.push({x:p[0],z:p[1],rot,hw:w/2+0.2,hd:d/2+0.2});
-    const f=toward(rot,d/2+1.3); anchor('house:'+i,x+f[0],z+f[1],rot+Math.PI,false);
+    const f=toward(rot,-(d/2+1.3)); anchor('house:'+i,x+f[0],z+f[1],rot,false);   // in front of the door (local -z), facing the house
   });
   // the places: a collider for each building (the reserved plots too: their doors are chained), an anchor in front of the door facing the street
   for(const pl of G.places){
     const p=at(pl.x,pl.z); GW_PLACE[pl.id]={id:pl.id,n:pl.n,cat:pl.cat,name:pl.name,x:p[0],z:p[1],w:pl.w,d:pl.d,rot:pl.rot};
-    if(pl.w>0){ V.boxes.push({x:p[0],z:p[1],rot:pl.rot,hw:pl.w/2+0.2,hd:pl.d/2+0.2}); const f=toward(pl.rot,pl.d/2+1.7); anchor('place:'+pl.id,pl.x+f[0],pl.z+f[1],pl.rot+Math.PI,pl.cat==='shop'||pl.cat==='story'); }
+    if(pl.w>0){
+      // a box in the place's own frame (local -z is the door, +x the right; the model's frameM): c = centre, h = half sizes, margin 0.2 m like the homes
+      const lb=(lx,lz,hw,hd)=>V.boxes.push({x:p[0]+lx*Math.cos(pl.rot)+lz*Math.sin(pl.rot),z:p[1]-lx*Math.sin(pl.rot)+lz*Math.cos(pl.rot),rot:pl.rot,hw:hw+0.2,hd:hd+0.2}), w=pl.w, d=pl.d;
+      let dep=d;   // the depth the door's anchor is measured from
+      if(pl.id==='sandring'){ V.circles.push([p[0],p[1],10.0]); dep=19.6; }   // a round yard: the wall's ring is 9.2 m out and 1.2 thick, wider than its 16 m plot
+      else if(pl.cat==='inn'&&pl.id.startsWith('inn')){   // a caravanserai (gwInn): walls 1 m thick round a court, the gate 4.4 m wide in the front wall, corner towers, rooms down both sides and across the back, a fountain
+        const T=1, G=2.2, hx=(w/2-G)/2; for(const sx of [-1,1]) lb(sx*(G+hx),-d/2+T/2,hx,T/2);
+        lb(0,d/2-T/2,w/2,T/2); for(const sx of [-1,1]){ lb(sx*(w/2-T/2),0,T/2,d/2); lb(sx*(w/2-T-1.9),1.4,1.9,(d-2*T-5.6)/2); for(const sz of [-1,1]) lb(sx*(w/2-1.1),sz*(d/2-1.1),1.4,1.4); }
+        lb(0,d/2-T-1.6,(w-2*T-8)/2,1.6); lb(0,0,1.0,1.0); }
+      else if(pl.id==='physician'){   // a walled court (gwPhysician): 0.7 m walls, a gate 2.4 m wide, the study inside
+        const T=0.7, G=1.2, hx=(w/2-G)/2; for(const sx of [-1,1]) lb(sx*(G+hx),-d/2+T/2,hx,T/2);
+        lb(0,d/2-T/2,w/2,T/2); for(const sx of [-1,1]) lb(sx*(w/2-T/2),0,T/2,d/2); lb(0,1.0,3.0,2.3); }
+      else lb(0,0,w/2,d/2);
+      const f=toward(pl.rot,-(dep/2+1.7)); anchor('place:'+pl.id,pl.x+f[0],pl.z+f[1],pl.rot,pl.cat==='shop'||pl.cat==='story'); }   // (the door is at local -z: the anchor stands in front of it, facing the building)
   }
   // the Old Citadel: round towers and the standing stretches of its ring wall, as small colliders (the breaches stay open); the statue; the Great Well
   { const R=18.5, arcs=[[0.1,0.9],[2.15,2.7],[3.1,4.0],[4.5,5.0],[5.35,6.1]];
