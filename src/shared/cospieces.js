@@ -1,5 +1,5 @@
 //@ Cosmetic pieces (version 3.2): which general parts of every slot (hat, top, bottom, shoes, gloves, cape, aura) are free and which are crafted, from professions' materials and monsters' drops; the try-on lock rules. Pure.
-/* The general pieces, the ones that belong to no signature set. Twelve slots (d is three decoration fields; w the shield; e, k, m the Kin parts of shared/kin.js), a letter each (the first letter of the key in gear.cos, 'c:regal'):
+/* The general pieces, the ones that belong to no signature set. Fourteen slots (d is three decoration fields; w the shield; e, k, m the Kin parts of shared/kin.js; v and u the silly strong- and weak-hand items), a letter each (the first letter of the key in gear.cos, 'c:regal'):
      h hat (look.hat)   t top (look.top)   b bottom (look.bottom)   s shoes (look.shoes)   g gloves (look.gloves)   c cape (look.cape)   a aura (look.aura)
    FREE: everything the game had before this update (every base hat, top, bottom, shoes and glove), the backpack (a cape, id 'pack'), two plain capes and two plain auras (CP_FREE). They are worn by anyone and nothing is stored.
    CRAFTED: a piece with a recipe (CP_RECIPE) is made at a Wayfarers' Lodge (cosmake: server/cosmetics.js) and kept in gear.cos. A recipe is {res:[[resource, n]...], mats:[[monster id, n]...], coins}:
@@ -9,8 +9,8 @@
    cosCleanLook (the server) takes them off with the slot's default (CP_NONE), and the editor will not close on one.
    owns: CP_SLOTS, CP_NONE, CP_PIECES, CP_RECIPE, CP_FREE, cpDef, cpIsFree, cpCost, cosLocked.   used by: shared/cosmetics.js, server/cosmetics.js, game/economy/cosmetics.js, ui/character-editor.js, character/model-*.js (the lists).   test: tools/cospieces-smoke.js */
 // slot letter: [look field, what a stripped slot falls back to, the name of the slot]
-const CP_SLOTS={r:['hair','short','Hair'],h:['hat','none','Hat'],t:['top','tshirt','Top'],b:['bottom','trousers','Bottom'],s:['shoes','boots','Shoes'],g:['gloves','none','Gloves'],c:['cape','','Cape'],a:['aura','','Aura'],d:['deco1','','Decoration'],w:['shield','','Shield'],e:['kinEars','','Ears'],k:['kinTail','','Tail'],m:['kinMuzzle','','Muzzle']};   // d: three look fields, CP_DECO; e, k, m: the Kin parts (shared/kin.js)
-const CP_LETTERS=['r','h','t','b','s','g','c','a','d','w','e','k','m'];
+const CP_SLOTS={r:['hair','short','Hair'],h:['hat','none','Hat'],t:['top','tshirt','Top'],b:['bottom','trousers','Bottom'],s:['shoes','boots','Shoes'],g:['gloves','none','Gloves'],c:['cape','','Cape'],a:['aura','','Aura'],d:['deco1','','Decoration'],w:['shield','','Shield'],e:['kinEars','','Ears'],k:['kinTail','','Tail'],m:['kinMuzzle','','Muzzle'],v:['strongItem','','Strong hand'],u:['weakItem','','Weak hand']};   // v, u: the silly hand items (game/character/model-silly.js)   // d: three look fields, CP_DECO; e, k, m: the Kin parts (shared/kin.js)
+const CP_LETTERS=['r','h','t','b','s','g','c','a','d','w','e','k','m','v','u'];
 const CP_DECO=['deco1','deco2','deco3'];   // up to three decorations, any of them in any field
 const CP_NONE={}; for(const k of CP_LETTERS) CP_NONE[k]=CP_SLOTS[k][1];
 // the crafted pieces of the five garment slots: [slot, id, name, grade 1..6 (the land it is for), a short line]; the models are in game/character/model-*.js (their ids are listed there too)
@@ -81,6 +81,24 @@ const CP_PIECES=[
   ['d','moth','Glow Moth','4','A small glowing moth resting on the shoulder.'],
   ['d','bracelet','Charm Bangle','1','A bangle with a charm on the left wrist.'],
   ['d','anklet','Bell Anklet','1','A chain with a bell round the left ankle.'],
+  ['v','pan','Frying Pan','1','A cast-iron pan with a wooden handle, held in the strong hand instead of your weapon. For looks only.'],
+  ['v','chicken','Rubber Chicken','1','A floppy yellow chicken held by its feet.'],
+  ['v','fish','Giant Trout','2','A very large, very fresh trout, swung by the tail.'],
+  ['v','baguette','Baguette','1','A long crusty loaf.'],
+  ['v','mallet','Squeaky Mallet','2','A huge toy hammer in red and yellow.'],
+  ['v','carrot','Giant Carrot','1','A carrot the size of a sword.'],
+  ['v','lollipop','Giant Lollipop','3','A spiral lollipop as wide as a shield.'],
+  ['v','umbrella','Umbrella','3','A closed umbrella with a hooked handle.'],
+  ['v','rollingpin','Rolling Pin','1','A wooden rolling pin from the bakery.'],
+  ['v','swatter','Fly Swatter','2','A plastic swatter in red and yellow.'],
+  ['u','potlid','Pot Lid','1','A steel pot lid with a black knob, held in the weak hand instead of a shield. For looks only.'],
+  ['u','tray','Dinner Tray','2','A silver serving tray with a domed cover.'],
+  ['u','duck','Rubber Duck','2','A squeaky yellow duck, held out like a shield.'],
+  ['u','pillow','Pillow','2','A big soft pillow with tassels.'],
+  ['u','teddy','Teddy Bear','4','A brown teddy bear with a button nose.'],
+  ['u','pizza','Whole Pizza','2','A whole pizza, extra pepperoni.'],
+  ['u','cookie','Giant Cookie','3','A cookie as big as a shield, with chocolate chips.'],
+  ['u','icecream','Ice-cream Cone','4','Two scoops on a waffle cone with a cherry on top.'],
   ['g','studded','Studded Gloves','2','Black leather with brass studs along the knuckles.']
 ];
 // [key, recipe]: every crafted piece, themed to what it is (metal from ore, wood from logs, cloth and flowers from herbs, and the drops of the monsters it looks like).
@@ -132,6 +150,24 @@ const CP_RECIPE={
   'w:heater':{res:[['iron',6]],mats:[['hobgoblin',5]],coins:300},
   'w:kite':{res:[['silver',5]],mats:[['kabuto',4],['ashigaru',4]],coins:600},
   'w:tower':{res:[['hagane',8]],mats:[['ironshell',8],['rocktroll',3]],coins:1100},
+  'v:pan':{res:[['iron',4],['oak',2]],mats:[['goblin',4]],coins:150},
+  'v:chicken':{res:[['yomogi',3]],mats:[['slime',8]],coins:120},
+  'v:fish':{res:[],mats:[['crab',6],['tideslime',6]],coins:200},
+  'v:baguette':{res:[['sunpetal',4]],mats:[['boar',4]],coins:100},
+  'v:mallet':{res:[['pine',4],['iron',3]],mats:[['hobgoblin',4]],coins:250},
+  'v:carrot':{res:[['ironroot',5],['sunpetal',3]],mats:[],coins:150},
+  'v:lollipop':{res:[['sunpetal',4],['cherry',3]],mats:[['sakuraslime',6]],coins:300},
+  'v:umbrella':{res:[['cherry',4],['kikyo',3]],mats:[['kodama',4]],coins:350},
+  'v:rollingpin':{res:[['oak',5]],mats:[['boar',4]],coins:120},
+  'v:swatter':{res:[['pine',3],['yomogi',2]],mats:[['beetle',6],['crystalbeetle',2]],coins:200},
+  'u:potlid':{res:[['iron',5]],mats:[['goblin',4]],coins:150},
+  'u:tray':{res:[['silver',4]],mats:[['hobgoblin',4]],coins:300},
+  'u:duck':{res:[['yomogi',3]],mats:[['tideslime',8],['slime',4]],coins:200},
+  'u:pillow':{res:[['yomogi',5],['kikyo',3]],mats:[['wolf',4]],coins:250},
+  'u:teddy':{res:[['yomogi',6],['kikyo',4]],mats:[['yeti',4],['wolf',4]],coins:500},
+  'u:pizza':{res:[['sunpetal',4],['yomogi',3]],mats:[['boar',6],['shroom',4]],coins:250},
+  'u:cookie':{res:[['sunwood',4]],mats:[['sakuraslime',6]],coins:300},
+  'u:icecream':{res:[['frostbloom',4]],mats:[['frostslime',6],['yeti',3]],coins:450},
   'd:flower':{res:[['sunpetal',3],['kikyo',2]],mats:[],coins:80},
   'd:feather':{res:[],mats:[['tengu',3],['gryphonqueen',1]],coins:300},
   'd:bell':{res:[['silver',1]],mats:[['wolf',3]],coins:120},

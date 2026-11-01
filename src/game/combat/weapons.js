@@ -8,6 +8,8 @@ function attachWeapons(){
 // builds the weapon models for a weapon item on a character rig; used for your hiker and for other players
 function weaponsOn(r,weaponId,build){
   const objs=[], res={objs};
+  if(r.sillyS) return res;   // a silly strong-hand item replaces the weapon (character/model-silly.js)
+  const lf=!!r.left, strongEl=lf?r.elL:r.elR, weakEl=lf?r.elR:r.elL;   // left-handed: the weapon is in the left hand, the bow's hand and the quiver swap sides
   const add=(parent,obj)=>{ parent.add(obj); objs.push(obj); obj.traverse(q=>{ if(q.isMesh) q.castShadow=true; }); return obj; };
   const w=ITEM[weaponId], c=w?CLASS_OF[w.slot]:'warrior', tr=w?dgVisTier(w):0;   // dungeons: a level-30 weapon is drawn as the top tier's
   // a signature outfit's weapon dressing (docs/CHARACTER.md section 9) restyles whatever weapon the class carries: its palette replaces the tier's colours, its trim paints a pattern
@@ -26,7 +28,7 @@ function weaponsOn(r,weaponId,build){
       pc(csph(0.03,6,5),col=>col.set(guard))];
     if(!wshHas('sword',shp)&&(tr===3||tr===5)) parts.push(pc(vbox(0.012,L*0.8,0.016,0,-0.22-L*0.45,0),col=>col.set(tr===5?0x9fd8ff:0xffb040)));
     const sw=new THREE.Mesh(merge(parts),matChar);
-    sw.position.set(0,-0.3,0); sw.rotation.x=0.35; add(r.elR,sw); charm(sw,0,0.015,0);
+    sw.position.set(0,-0.3,0); sw.rotation.x=0.35; add(strongEl,sw); charm(sw,0,0.015,0);
     // no shield with the sword: a shield is the cosmetic look.shield (character/model-shields.js), worn or not by choice
   } else if(c==='archer'){
     const wood=DC('wood',[0x7a5236,0x6a4428,0x2e2622,0xe8e0c8,0x8a2a26,0x1e1c22][tr]), tip=DC('accent',[0x7a5236,0x8a8f94,0xa8b4c0,0xd4a83a,0xe8c060,0x9fd8ff][tr]);
@@ -37,9 +39,9 @@ function weaponsOn(r,weaponId,build){
     const ends=[-1,1].map(sd=>pc(csph(0.03,6,5).translate(0,sy,sd*half).rotateY(0),col=>col.set(tip)));
     const shb=dr&&dr.shape&&dr.shape.bow, BK={c:{blade:0xc8ccd0,guard:tip,grip:DC('grip',0x4a3020),wood,accent:tip,glow:DC('glow',0xffd070)},tr,TR};
     const bow=new THREE.Mesh(wshHas('bow',shb)?merge(WPN_SHAPES.bow[shb](BK)):merge([pc(bowG,(x,y,z,col)=>{ col.set(Math.abs(z)>half*0.85?tip:wood); TR(col,z,'limb'); }),pc(strG,col=>col.set(tr===3?0xffe9a0:tr===5?0xcfe8ff:0xe8e4dc)),pc(cyl(0.028,0.028,0.12,6).rotateX(Math.PI/2),(x,y,z,col)=>{ col.set(DC('grip',0x3a2a1c)); TR(col,z,'grip'); }),...ends]),matChar);
-    bow.position.set(0,-0.32,0); add(r.elL,bow); charm(bow,0,-0.05,0);
+    bow.position.set(0,-0.32,0); if(!r.sillyW) add(weakEl,bow); charm(bow,0,-0.05,0);
     const quiver=new THREE.Mesh(merge([pc(cyl(0.07,0.06,0.55,10),(x,y,z,col)=>{ col.set(DC('grip',[0x6b3a22,0x5a3a2a,0x2e2a36,0x8a2f2f,0x2a2830,0x6a2a26][tr])); TR(col,y,'quiver'); }),...[-0.03,0,0.03].map((x,i)=>pc(vbox(0.012,0.12,0.04,x,0.32,(i-1)*0.02),col=>col.set(0xe8e4dc)))]),matChar);
-    quiver.position.set(0.12,0.34,0.24*(build||1)); quiver.rotation.z=-0.35; add(r.spine,quiver);
+    quiver.position.set(lf?-0.12:0.12,0.34,0.24*(build||1)); quiver.rotation.z=lf?0.35:-0.35; add(r.spine,quiver);
   } else {
     const wood=DC('wood',[0x7a5236,0xcfd8e6,0x3a2a4a,0x2a1e14,0xf2c6d6,0x2a1e14][tr]), glow=DC('glow',[0xc8f07a,0x9fd8ff,0xc59bff,0xffb040,0xff9ad5,0x6ab8ff][tr]), L=[0.3,0.34,0.38,0.42,0.45,0.48][tr];
     const wand=new THREE.Group(), shs=dr&&dr.shape&&dr.shape.staff, SK={c:{blade:0xc8ccd0,guard:DC('metal',tr>=2?0xd4a83a:0x8a7a4a),grip:DC('grip',0x4a3020),wood,accent:glow,glow},tr,TR}, sres=wshHas('staff',shs)?WPN_SHAPES.staff[shs](SK):null;
@@ -51,7 +53,7 @@ function weaponsOn(r,weaponId,build){
     orb.position.set(0,-L-0.06,0); wand.add(orb);
     const halo=new THREE.Mesh(new THREE.SphereGeometry(0.09+tr*0.015,10,8),fxMat(glow,0.35)); halo.position.copy(orb.position); wand.add(halo);
     }
-    wand.position.set(0,-0.3,0); wand.rotation.x=0.3; add(r.elR,wand); charm(wand,0,0.02,0);
+    wand.position.set(0,-0.3,0); wand.rotation.x=0.3; add(strongEl,wand); charm(wand,0,0.02,0);
   }
   if(dr&&dr.tint) for(const o of objs) o.traverse(q=>{ if(q.isMesh) ofTintGeo(q.geometry,dr.tint); });   // a recoloured dressing (the owner's colour for the weapon): every vertex colour of the weapon and its charm
   return res;

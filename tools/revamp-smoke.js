@@ -85,9 +85,9 @@ ok('the server keeps the cape you own and throws out the aura you do not',pa.loo
 // ---- the character model ----
 { const C=require('./char-load')(); const look=(o)=>Object.assign({},C.LOOK_M,o);
   const plain=C.buildCharacter(look({}),{q:1}), cape=C.buildCharacter(look({cape:'regal'}),{q:1}), aura=C.buildCharacter(look({aura:'stellar'}),{q:1}), both=C.buildCharacter(look({cape:'ember',aura:'blossom'}),{q:1});
-  ok('no cape and no aura adds nothing; a cape or an aura adds loose parts moved by rig.anims',!plain.anims&&cape.anims&&cape.anims.length===1&&aura.anims&&both.anims.length===2);
+  ok('no cape and no aura adds nothing; a cape or an aura adds loose parts moved by rig.anims',(()=>{ const n=(plain.anims||[]).length; return cape.anims&&cape.anims.length===n+1&&aura.anims&&both.anims.length===n+2; })());
   for(const [id,rig] of [['cape',cape],['aura',aura],['both',both]]){ for(let i=0;i<60;i++) for(const f of rig.anims) f(i*0.05,0.05,i%2?0.8:0); const s=C.stats(rig); ok('the '+id+' animates without NaN and stays near the body',s.bad===0&&s.maxR<2.2,s.maxR.toFixed(2)); }
-  ok('a hostile look (aura \'constructor\', cape \'__proto__\') builds the plain character',(()=>{ try{ const r=C.buildCharacter(look({aura:'constructor',cape:'__proto__'}),{q:1}); return !r.anims; }catch(e){ return false; } })());
+  ok('a hostile look (aura \'constructor\', cape \'__proto__\') builds the plain character',(()=>{ try{ const r=C.buildCharacter(look({aura:'constructor',cape:'__proto__'}),{q:1}); return (r.anims||[]).length===(plain.anims||[]).length; }catch(e){ return false; } })());
   ok('every cape and aura builds',C.COS_CAPES.every(d=>d[0]==='pack'||!!C.buildCharacter(look({cape:d[0]}),{q:0.6}).anims)&&C.COS_AURAS.every(d=>!!C.buildCharacter(look({aura:d[0]}),{q:0.6}).anims));
   const fem=C.buildCharacter(Object.assign({},C.LOOK_F,{cape:'regal'}),{q:1}); ok('the female body wears a cape too',!!fem.anims); }
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

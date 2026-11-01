@@ -11,7 +11,7 @@
 //          [--weapon warrior|archer|mage]  put that class's weapon in the hands (an outfit's weapon dressing restyles it)
 //   e.g. node tools/model-preview.js /tmp/p.png --head --looks '[{"sex":"female","hat":"beanie"},{"facial":"beard"}]'
 // Each look override is merged onto the default male look, or the female one when it has "sex":"female".
-// --bent poses the arms and legs (look at the joints); --q is the detail factor (hero 1.1, other players 0.8, villagers 0.6, phones less).
+// --hold bends both elbows so what the hands carry shows (the silly items: --looks '[{"strongItem":"pan","weakItem":"potlid"}]'); --walk freezes a mid-stride (and runs the skirts' sway at walking speed); --bent poses the arms and legs (look at the joints); --q is the detail factor (hero 1.1, other players 0.8, villagers 0.6, phones less).
 // Needs: npm install (three), python3 with numpy + pillow. Then open the PNG (in Claude: the view tool).
 const fs=require('fs'), path=require('path'), os=require('os'), {execFileSync}=require('child_process');
 const C=require('./char-load')();
@@ -43,7 +43,8 @@ if(has('--views')) views=arg('--views');
 const zoom=arg('--at')||(head?'1.7':null);
 if(arg('--size')) size=[arg('--size'),process.argv[process.argv.indexOf('--size')+2]].concat(zoom?[zoom]:[]); else if(arg('--at')) size=['260','300',arg('--at')];
 let tri=[];
-const chars=looks.map(L=>{ const rig=C.buildCharacter(L,{q}); if(arg('--weapon')) C.weaponsOn(rig,arg('--weapon'),1); if(has('--bent')) C.bend(rig,{out:0.3}); if((L.cape||L.aura)&&rig.anims) for(let i=0;i<40;i++) for(const f of rig.anims) f(1+i*0.05,0.05,0); rig.root.scale.setScalar(C.lookScale(L)); const t=C.tris(rig); tri.push(t.length/27); return t; });
+const chars=looks.map(L=>{ const rig=C.buildCharacter(L,{q}); if(arg('--weapon')) C.weaponsOn(rig,arg('--weapon'),1); if(has('--bent')) C.bend(rig,{out:0.3}); if(has('--hold')){ rig.shR.rotation.x=0.9; rig.elR.rotation.x=1.35; rig.shL.rotation.x=0.9; rig.elL.rotation.x=1.35; rig.shR.rotation.z=0.1; rig.shL.rotation.z=-0.1; }
+  if(has('--walk')){ rig.hipL.rotation.x=0.55; rig.kneeL.rotation.x=-0.1; rig.hipR.rotation.x=-0.5; rig.kneeR.rotation.x=-0.7; rig.shL.rotation.x=-0.5; rig.shR.rotation.x=0.5; rig.elL.rotation.x=0.3; rig.elR.rotation.x=0.6; if(rig.anims) for(let i=0;i<5;i++) for(const f of rig.anims) f(1+i*0.05,0.05,0.9); } if((L.cape||L.aura)&&rig.anims) for(let i=0;i<40;i++) for(const f of rig.anims) f(1+i*0.05,0.05,0); rig.root.scale.setScalar(C.lookScale(L)); const t=C.tris(rig); tri.push(t.length/27); return t; });
 const tmp=path.join(os.tmpdir(),'model-preview-'+process.pid+'.json'); fs.writeFileSync(tmp,JSON.stringify(chars));   // one file per run: several previews may run at once
 execFileSync('python3',[path.join(__dirname,'rast.py'),tmp,out].concat(size),{stdio:'inherit',env:Object.assign({},process.env,{RAST_VIEWS:views})});
 console.log('wrote',out,'('+chars.length+' characters, '+tri.join('/')+' triangles; geometry in '+tmp+')');

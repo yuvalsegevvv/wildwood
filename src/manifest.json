@@ -298,6 +298,8 @@
     "character/model-garments.js",
     "character/model-hats-more.js",
     "character/model-garments-more.js",
+    "character/cloth.js",
+    "character/model-silly.js",
     "character/outfit-tools.js",
     "character/outfit-extras.js",
     "character/outfit-shapes.js",
