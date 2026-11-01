@@ -356,6 +356,7 @@ game
   character/model-hats-more.js       The crafted hats (version 3.2): the horned cap, the laurel wreath and the captain's tricorn, drawn for htBase (model-hats.js) in the head's frame
   character/model-garments-more.js   The crafted tops, bottoms and shoes (version 3.2): robe, poncho, jerkin, crop top, halter wrap and harness; breeches, hakama, plated leggings, loincloth, short shorts and a slit wrap skirt; geta, fur-lined boots and sabatons
   character/cloth.js                 clSway: skirts, tunic flares and hems in the hips' frame follow the legs, trail behind a walking hiker and ripple (one deformer per mesh, run through rig.anims)
+  character/hair-sway.js             Hair sway: the hanging locks (tails, braids, long hair, side locks, strands) lag behind a turn, trail back and bounce with the stride, as one spring per head and one deformer per hair mesh
   character/model-dresses.js         Dresses (version 3.3): six crafted tops that carry their own skirt, naturally shaped (a hip curve, folds that deepen to the hem, a waved hem), the skirt swaying with the legs
   character/model-silly.js           Silly hand items (version 3.3): cosmetic things held in the strong hand (look.strongItem: a frying pan, a rubber chicken) and the weak hand (look.weakItem: a pot lid, a rubber duck), crafted at a Lodge
   character/outfit-tools.js          Helpers for the signature outfits (game/outfits/*.js): the torso's size at a height, flat ribbons, lofts over an arc, rings round a path; and the mixing of their pieces (slots, which kit owns a hook)
