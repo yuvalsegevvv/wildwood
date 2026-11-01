@@ -100,7 +100,7 @@ function mobsDoc(){
   s+=rowsOf(['Id','Name','Lv','El','HP','Dmg','Atk s','Spd','XP','Coins','Material','Arena','Summons','Prop','Music','Move set','Defined'],W.BOSS_DEFS.map(b=>{
     const d=b.def, L=d.level;
     return [code(d.id),d.name,L,d.el,d.hp,d.dmg,d.atk,d.speed,num(d.xp),coinsAvg(d,L),W.MATS[d.id].name,zoneOf(d,b.arena),b.add?b.add.name:'—',b.prop?b.prop.name:b.totem?b.totem.name:'—',d.music||'boss'+L,
-      code(b.kit)+' '+loc(SV+'boss-kits-'+(['roots','tide'].includes(b.kit)?'home':['oni','kitsune'].includes(b.kit)?'vale':['gryphon','golem'].includes(b.kit)?'grey':['glass','sandwyrm'].includes(b.kit)?'sun':['captain','gloamwarden'].includes(b.kit)?'gloam':['thunder','herdmother'].includes(b.kit)?'savanna':['jaguar','tidecaller'].includes(b.kit)?'isles':'north')+'.js',new RegExp('^BOSS_KITS\\.'+b.kit+'=')),defRef(d)];
+      code(b.kit)+' '+loc(SV+'boss-kits-'+(['roots','tide'].includes(b.kit)?'home':['oni','kitsune'].includes(b.kit)?'vale':['gryphon','golem'].includes(b.kit)?'grey':['glass','sandwyrm'].includes(b.kit)?'sun':['captain','gloamwarden'].includes(b.kit)?'gloam':['thunder','herdmother'].includes(b.kit)?'savanna':['jaguar','tidecaller'].includes(b.kit)?'isles':b.kit==='sinkwarden'?'volcano':'north')+'.js',new RegExp('^BOSS_KITS\\.'+b.kit+'=')),defRef(d)];
   }))+'\n\n';
   s+='Boss quest notices (`BOSS_QUESTS`, '+loc(SH+'quests.js',/^const BOSS_QUESTS=/)+'): '+W.BOSS_QUESTS.map(q=>`${q.title} from level ${q.from}`).join('; ')+'.\n\n';
   s+='### Boss skills (36: a skill and a burst for each class, each with a 10% drop chance per kill)\n\nRows `drop:\'<boss id>\'` at the end of `SKILLS` ('+loc(SH+'classes.js',/^const SKILLS=\{/)+' ...), listed by `BOSS_SKILLS` ('+loc(SH+'drops.js',/^const BOSS_SKILL_CHANCE/)+').\n\n';

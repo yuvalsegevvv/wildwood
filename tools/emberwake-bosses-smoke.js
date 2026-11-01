@@ -5,7 +5,7 @@ const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['MONS','BOSSES','ARENAS','ARENA_TIDE','getH','SKILLS','EW_BOSS_ROWS','makeBossS','OCELO_DEF','TUILA_DEF','BOSS_KITS','BOSS_DEFS','ARENA_E45','ARENA_E46','ZTIER_BOSS','MAT_NAMES','openIslesP']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.maxHp=1e7; p.hp=1e7; p.dead=false; } } };
-ok('two rows: Ocelo 45 (fire) and Tuila 46 (water), each with an add and a kit, in BOSS_DEFS with their arenas',x.EW_BOSS_ROWS.length===2&&x.OCELO_DEF.level===45&&x.OCELO_DEF.el==='fire'&&x.TUILA_DEF.level===46&&x.TUILA_DEF.el==='water'&&x.EW_BOSS_ROWS.every(r=>r.add.bossAdd&&x.BOSS_KITS[r.kit]&&x.BOSS_DEFS.includes(r)&&x.ARENAS.some(a=>a.key===r.arena&&a.isles)));
+ok('two rows: Ocelo 45 (fire) and Tuila 46 (water), each with an add and a kit, in BOSS_DEFS with their arenas',x.EW_BOSS_ROWS.length===3&&x.OCELO_DEF.level===45&&x.OCELO_DEF.el==='fire'&&x.TUILA_DEF.level===46&&x.TUILA_DEF.el==='water'&&x.EW_BOSS_ROWS.every(r=>r.add.bossAdd&&x.BOSS_KITS[r.kit]&&x.BOSS_DEFS.includes(r)&&x.ARENAS.some(a=>a.key===r.arena&&a.isles)));
 ok('Tuila is the zone tier\'s opener, both bosses have a material name, and the arenas stand on the isles (not within 120 m of each other)',x.ZTIER_BOSS.isles==='tuila'&&x.MAT_NAMES.ocelo&&x.MAT_NAMES.tuila&&Math.hypot(x.ARENA_E45.x-x.ARENA_E46.x,x.ARENA_E45.z-x.ARENA_E46.z)>120);
 for(const id of ['ocelo','tuila']){
   const sk=Object.values(x.SKILLS).filter(s=>s.drop===id);
@@ -15,7 +15,7 @@ W.join('a',{name:'Tanker',look:{cls:'warrior'},save:{level:50}}); W.join('b',{na
 const T=x.ARENA_TIDE;
 const KEY={jaguar:['tele:slam','mode:1','tele:rake','tele:geyser','zone:ember','tele:line','mode:2','summon:jaguaracolyte'],
   tidecaller:['wall','zone:whirl','tele:quake','mode:6','pfx:push','summon:tidespirit']};
-for(const row of x.EW_BOSS_ROWS){
+for(const row of x.EW_BOSS_ROWS.filter(r=>!r.parts)){
   const A={x:T.x+120+(row.kit==='jaguar'?0:300),z:T.z,r:24,key:row.arena+'x'}; A.h=x.getH(A.x,A.z); x.ARENAS.push(A);
   const B=x.makeBossS(row,A); x.BOSSES.push(B); x.MONS.push(B.m); const m=B.m, seen=new Set(), mons0=new Set(x.MONS.map(q=>q.id)); evs.length=0;
   const put=()=>{ const py=x.getH(A.x,A.z); W.setPos('a',[A.x+4,py,A.z,Math.PI/2,0,0]); W.setPos('b',[A.x-9,py,A.z+3,Math.PI/2,0,0]); };

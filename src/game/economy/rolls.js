@@ -25,12 +25,12 @@ function rlUiInfoHtml(it){
   if(!it.roll) return `<span class="rl-un">Unrolled: use a Reroll Stone at the forge</span>`;
   return `<span class="rl-lines">${rlUiLinesHtml(it)}</span>`;
 }
-const RL_STONE_WORD={rsw:'weapons',rsa:'armour',rsr:'rings'}, RL_STONE_COL={rsw:'#ffb070',rsa:'#8fc4ff',rsr:'#e9a0ff'};
+const RL_STONE_WORD={rsw:'weapons',rsa:'armour',rsr:'accessories'}, RL_STONE_COL={rsw:'#ffb070',rsa:'#8fc4ff',rsr:'#e9a0ff'};
 function rlUiStoneChipHtml(){
   return RL_STONE_ORDER.map(k=>{ const w=RL_STONE_WORD[k]; const n=rlUiStones(k); return n>0?`<span class="mat" title="Made by sacrificing level-30 and level-40 ${w} at the forge. Rolls and rerolls the lines of level-40 ${w}."><i style="background:${RL_STONE_COL[k]}"></i>${RL_STONE_NAME[k]} <b>${n}</b></span>`:''; }).join('');
 }
 function rlUiStoneBarHtml(){
-  return `<div class="fg-stones rl-stones"><i class="rsw"></i>Weapon stones <b id="rlStW">${rlUiStones('rsw')}</b><i class="rsa"></i>Armor stones <b id="rlStA">${rlUiStones('rsa')}</b><i class="rsr"></i>Ring stones <b id="rlStR">${rlUiStones('rsr')}</b></div>`;
+  return `<div class="fg-stones rl-stones"><i class="rsw"></i>Weapon stones <b id="rlStW">${rlUiStones('rsw')}</b><i class="rsa"></i>Armor stones <b id="rlStA">${rlUiStones('rsa')}</b><i class="rsr"></i>Accessory stones <b id="rlStR">${rlUiStones('rsr')}</b></div>`;
 }
 // every piece you own, worn first (the same rows as the Temper tab): pred picks which
 function rlUiRows(pred){
@@ -39,7 +39,7 @@ function rlUiRows(pred){
   for(const s in GEAR.eq){ const id=GEAR.eq[s], it=id?ITEM[id]:null; if(it&&pred(it)&&worn.has(id)) rows.push({id,worn:true,n:1}); }
   return rows.sort((a,b)=>b.worn-a.worn||ITEM[b.id].rar-ITEM[a.id].rar||ITEM[b.id].name.localeCompare(ITEM[a.id].name)||a.id.localeCompare(b.id));
 }
-const rlUiKindOk=it=>(it.kind==='weapon'||it.kind==='armor'||it.kind==='ring')&&it.dg;   // a ring has its own stone (gear.rsr)
+const rlUiKindOk=it=>(it.kind==='weapon'||it.kind==='armor'||it.kind==='ring'||it.kind==='pendant'||it.kind==='talisman')&&it.dg;   // a ring has its own stone (gear.rsr)
 function rlUiRollHtml(){
   const rows=rlUiRows(it=>rlUiKindOk(it)&&it.roll0);
   let h=`<p class="fg-intro">Level-40 gear and rings carry three rolled lines out of 13 stats. A roll costs ${RL_COST} Reroll Stone of the piece's kind (weapon, armour or ring) and replaces all three lines. Weapons roll higher offence, armour higher defence. Make stones in the other tab.</p>`+rlUiStoneBarHtml();

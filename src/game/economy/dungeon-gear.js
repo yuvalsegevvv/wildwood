@@ -13,6 +13,7 @@ function dgStatChange(it,next){
   const up=(a,b,u)=>`<span class="up">(+${Math.round((b-a)*10)/10}${u||''})</span>`;
   if(it.kind==='weapon') return `+${next.atk} attack ${up(it.atk,next.atk)}`;
   if(it.kind==='armor') return `+${next.hp} health, +${next.def} defense ${up(it.hp,next.hp)}`;
+  if(it.kind==='talisman') return `${talText(next)} <span class="up">(+${it.stat==='atk'?Math.round(next.v-it.v):dgPct(next.v-it.v)+'%'})</span>`;
   if(it.kind==='pendant') return `${pendantText(next)} <span class="up">(+${it.stat==='critdmg'?Math.round((next.v-it.v)*100)/100:dgPct(next.v-it.v)+'%'})</span>`;
   const a=dgRingShare(it,soulNow()).atk, b=dgRingShare(next,soulNow()).atk;
   return `+${next.ratk} attack ${up(it.ratk,next.ratk)}${b>a?` <span class="muted">(+${b} attack with your soul, now +${a})</span>`:''}`;
