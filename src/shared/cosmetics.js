@@ -61,6 +61,12 @@ const COS_CAPES=[
   ['regal','Highmark Regalia',6,0x2a3a8a,0xe8c860,1.3,'A deep blue train with ermine trim, gold crests and a shoulder cape.','ermine',1],
   // side quests' rewards (CP_QUEST in cospieces.js: earned, never made)
   // the Sigil track's big rewards (levels 5, 15, 25, 35: shared/puzzle-track.js; earned, never made)
+  ['angelwings','Angel Wings',6,0xf6f2ea,0xffe08a,1,'A pair of large white feathered wings with golden tips. Earned on the Sigil track.','back:angel',0],
+  ['demonwings','Demon Wings',5,0x8a1f2a,0xd94a3a,1,'Leathery bat wings, deep red fading to ember. Earned on the Sigil track.','back:demon',0],
+  ['devtail','Devil Tail',3,0xb02a3a,0xe0404a,1,'A long red tail with a spade tip. Earned on the Sigil track.','back:devtail',0],
+  ['butterfly','Butterfly Wings',4,0xf08ad0,0x7ad0f0,1,'Four soft wings, pink fading to sky blue, with pale eye rings. Earned on the Sigil track.','back:butterfly',0],
+  ['foxtails','Three Foxtails',5,0xe08a3a,0xfff2e0,1,'Three bushy fox tails with white tips. Earned on the Sigil track.','back:foxtails',0],
+  ['peacock','Peacock Fan',4,0x2a9a7a,0xe0c040,1,'A fan of long green feathers with golden eyes. Earned on the Sigil track.','back:peacock',0],
   ['lovebird','Lovebird Cape',3,0xe87aa0,0xfff0f4,1.0,'Rose pink with a hem of pressed petals. Earned on the Sigil track.','petals',0],
   ['dawnray','Dawnray Mantle',5,0xf0b050,0xfff4d0,1.15,'Warm gold with rays of light fanning from the collar. Earned on the Sigil track.','rays',1],
   ['emberwing','Emberwing Cape',4,0x7a2a2a,0xff8a3a,1.1,'Deep red with a hem of licking flames. Earned on the Sigil track.','flames',0],

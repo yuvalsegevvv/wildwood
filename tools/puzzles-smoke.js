@@ -1,7 +1,7 @@
 // Headless test of the puzzle engine (shared/puzzles*.js, server/puzzles.js): every kind and difficulty generates, solves, is unique where it claims, fits its time budget; the server flow (open, solve, floor, renewal, chest, Sigils, track, scrolls, save cleaning).
 // Usage: node tools/puzzles-smoke.js [--seeds N]   (N boards per kind and difficulty for the three smallest sizes; the big ones always get 3)
 const {loadServer}=require('./load');
-const {api:W,x}=loadServer({send(){}},['PZ_KINDS','PZ_KIND_IDS','PZ_BAD','PZ_DIFF','PZ_CHEST','PZ_SITES','PZ_SITE_BAD','PZ_PLACED','PZ_TRACK_COS','cpDef','PZ_KIND_OF','PZ_MIN_GAP','landAt','pzBoard','pzSeed','GW_PLACE','pzStatueTier','pzChestP','pzTrackP','pzSanitize','pzTrackLevel','sanitizeGear','rlSolve','rlNb','pzFloorSecs','PZ_RENEW_MS','PZ_TRACK_LEVELS','PZ_SIG_LEVEL','S']);
+const {api:W,x}=loadServer({send(){}},['PZ_KINDS','PZ_KIND_IDS','PZ_BAD','PZ_DIFF','PZ_CHEST','PZ_SITES','PZ_SITE_BAD','PZ_PLACED','PZ_TRACK_COS','cpDef','PZ_KIND_OF','PZ_MIN_GAP','landAt','pzBoard','pzSeed','GW_PLACE','pzStatueTier','PZ_TRACK_SETS','pzChestP','pzTrackP','pzSanitize','pzTrackLevel','sanitizeGear','rlSolve','rlNb','pzFloorSecs','PZ_RENEW_MS','PZ_TRACK_LEVELS','PZ_SIG_LEVEL','S']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const N=+(process.argv[process.argv.indexOf('--seeds')+1])||12;
 ok('no kind or site was left out as bad',x.PZ_BAD.length===0&&x.PZ_SITE_BAD.length===0,JSON.stringify(x.PZ_BAD)+JSON.stringify(x.PZ_SITE_BAD));
@@ -118,6 +118,8 @@ q.gear.gem=10; W2.receive('a',{t:'pz',a:'buy',n:1}); ok('too few gems buys nothi
 let prev=0; for(let d=1;d<=5;d++){ const c0b=G.coins; x.pzChestP(p,d,20,d>=4); const dc=G.coins-c0b; ok('chest '+d+' pays '+x.PZ_CHEST[d].coins+'x coins',dc>prev,dc+' coins'); prev=dc; }
 G.sig=0; G.sigOff=0; G.sigPaid=0; const gm=G.gem; G.sig=100; G.sigOff=100; const paid=x.pzTrackP(p);
 ok('100 Sigils are 10 levels: 100 gems and two unique scrolls, paid once',paid.length===10&&G.gem-gm===100&&G.scr.u===2&&x.pzTrackP(p).length===0);
+{ G.cos=[]; G.sig=G.sigOff=100; G.sigPaid=0; x.pzTrackP(p); const st=['t:mpcrop','b:mpskirt','s:mpgeta'];
+  ok('100 Sigils offered also give the Moonpetal top, skirt and shoes (a matching set)',st.every(k=>G.cos.includes(k))&&st.every(k=>x.cpDef(k[0],k.slice(2)).track===10)); G.cos=[]; }
 G.sig=99999; G.sigOff=99999; G.sigPaid=0; x.pzTrackP(p); ok('the track ends at its last level',G.sigPaid===x.PZ_TRACK_LEVELS);
 // scrolls
 G.inv.push('sword2'); G.scr.e=1; G.scr.u=0; W.receive('a',{t:'scroll',id:'sword2',to:'e'});

@@ -49,6 +49,7 @@ function pzTrackP(p){
   while(p.gear.sigPaid<lv){
     const L=++p.gear.sigPaid; paid.push(L); gsGemP(p,PZ_LEVEL_GEMS,'Sigil track level '+L);
     const cos=PZ_TRACK_COS[L]; if(typeof cos==='string'&&!p.gear.cos.includes(cos)&&p.gear.cos.length<COS_MAX){ p.gear.cos.push(cos); toastTo(p.id,'Sigil track reward: a new cosmetic','loot r3'); }
+    if(PZ_TRACK_SETS[L]){ let got=0; for(const k of PZ_TRACK_SETS[L]) if(!p.gear.cos.includes(k)&&p.gear.cos.length<COS_MAX){ p.gear.cos.push(k); got++; } if(got) toastTo(p.id,'Sigil track reward: a matching top, bottom and shoes','loot r3'); }
     if(L%PZ_SCROLL_EVERY===0){ p.gear.scr.u=Math.min(999,p.gear.scr.u+1); toastTo(p.id,'Sigil track reward: a Unique upgrade scroll','loot r3'); }
   }
   if(paid.length) p.dirty=true; return paid;
