@@ -16,7 +16,7 @@ OUTFITS.tzaya=(function(){
     /* ---- the paint: a bare chest, a red sash band at the belly with a gold edge, a red hip band on each thigh, bare shins, sandals' dark cords on the foot ---- */
     const paint=(part,c,x,y,z,sd)=>{
       switch(part){
-        case 'torso': { if(y<0.03){ c.set(COTTON); return; } skinPaint(c); if(y<0.1){ c.set(CINDER); if(y>0.085) c.set(GOLD); } return; }
+        case 'torso': { if(y<0.03){ c.set(COTTON); return; } skinPaint(c); if(X.fem&&y>0.295&&y<0.455){ c.set(COTTON); if(y>0.44||y<0.31) c.set(GOLD); return; }  /* a woman in the bare-chested set: a cotton wrap round the bust, edged in gold */ if(y<0.1){ c.set(CINDER); if(y>0.085) c.set(GOLD); } return; }
         case 'upperArm': skinPaint(c); return;
         case 'foreArm': { skinPaint(c); const t=-y/D.fore; if(t>0.78&&t<0.9){ c.set(COTTON); if(t>0.83&&t<0.85) c.set(CINDER); } return; }
         case 'thigh': { const t=-y/D.thigh; if(t<0.09){ c.set(CINDER); if(t>0.07) c.set(GOLD); } else skinPaint(c); return; }

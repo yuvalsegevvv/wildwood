@@ -141,15 +141,15 @@ function cosBuildAura(rig,X,def){
   const D=X.D, hgt=D.hipY+D.shY+0.2, cheap=(typeof LITE!=='undefined'&&LITE)||(typeof LOW!=='undefined'&&LOW);
   const n=Math.max(3,Math.round(def.n*(cheap?0.5:1))), g=new THREE.Group(); rig.root.add(g);
   const geo=cosShape(def.shape||'mote'), shape=def.shape||'mote', halo=shape==='mote'||shape==='star'||shape==='heart'||shape==='wisp', upright=shape==='flame'||shape==='drop', spinny=shape==='petal'||shape==='heart'||shape==='flake'||shape==='star'||shape==='leaf'||shape==='grain';
-  const ps=[];
+  const ps=[], glow=X.L.auraGlow!==false;   // the editor's Glow toggle: the halos round the particles, the body outline and the pillar
   for(let i=0;i<n;i++){
     const col=i%3===0?def.col2:def.col, m=new THREE.Mesh(geo,cosMat(col)); m.frustumCulled=false; m.position.set(0,hgt*0.5,0.5); g.add(m);   // (a resting place until the first frame: never under the ground)
-    let h=null; if(halo&&!cheap){ h=new THREE.Mesh(geo,cosHaloMat(col)); h.frustumCulled=false; h.position.set(0,hgt*0.5,0.5); g.add(h); }
+    let h=null; if(halo&&!cheap&&glow){ h=new THREE.Mesh(geo,cosHaloMat(col)); h.frustumCulled=false; h.position.set(0,hgt*0.5,0.5); g.add(h); }
     ps.push({m,h,ph:i/n,r:0.38+0.14*((i*7)%5)/4,sp:0.5+0.35*((i*3)%4)/3,off:(i*2.399)%TAU});   // (fixed pseudo-random spread: the same every build)
   }
   const rings=def.ring?cosRings(def).map(r=>{ const m=new THREE.Mesh(r.geo,cosMat(def.col)); m.position.y=r.y; m.frustumCulled=false; g.add(m); return Object.assign({m},r); }):[];
   let halo2=null; if(def.ring&&def.deco==='halo'){ halo2=new THREE.Mesh(COS_GEO.halo||(COS_GEO.halo=new THREE.RingGeometry(0.2,0.25,32).rotateX(-Math.PI/2)),cosMat(def.col2)); halo2.position.y=D.hipY+D.headY+0.2; halo2.frustumCulled=false; g.add(halo2); }
-  const fxf=def.fx?cosAuraFx(rig,X,def,g,cheap):null;   // ground patterns, pillar, outline (cosmetics-aura.js)
+  const fx2=glow?def.fx:(def.fx||'').split(' ').filter(f=>f!=='outline'&&f!=='pillar').join(' '), fxf=fx2?cosAuraFx(rig,X,Object.assign({},def,{fx:fx2}),g,cheap):null;   // ground patterns, pillar, outline (cosmetics-aura.js)
   rig.anims=rig.anims||[];
   rig.anims.push((t,dt,mv)=>{
     if(fxf) fxf(t);

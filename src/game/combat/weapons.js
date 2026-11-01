@@ -27,12 +27,7 @@ function weaponsOn(r,weaponId,build){
     if(!wshHas('sword',shp)&&(tr===3||tr===5)) parts.push(pc(vbox(0.012,L*0.8,0.016,0,-0.22-L*0.45,0),col=>col.set(tr===5?0x9fd8ff:0xffb040)));
     const sw=new THREE.Mesh(merge(parts),matChar);
     sw.position.set(0,-0.3,0); sw.rotation.x=0.35; add(r.elR,sw); charm(sw,0,0.015,0);
-    const face=DC('wood',[0x7a4a2c,0x6a6e74,0x8a9aa8,0xd4a83a,0x8a2a26,0x24222a][tr]), rim=DC('accent',[0x8a8f94,0x3a3c40,0x5a6a7a,0xf2eee4,0xd4a83a,0xf0cd45][tr]);
-    const sh=new THREE.Mesh(merge([
-      pc(cyl(0.21+tr*0.015,0.21+tr*0.015,0.035,18).rotateZ(Math.PI/2),(x,y,z,col)=>{ col.set(Math.hypot(y,z)>0.18+tr*0.012?rim:face); TR(col,Math.atan2(z,y)*0.2,Math.hypot(y,z)>0.18+tr*0.012?'rim':'face'); }),
-      pc(csph(0.05,8,6).scale(0.6,1,1).translate(-0.02,0,0),col=>col.set(rim))
-    ]),matChar);
-    sh.position.set(-0.07,-0.16,0); add(r.elL,sh);
+    // no shield with the sword: a shield is the cosmetic look.shield (character/model-shields.js), worn or not by choice
   } else if(c==='archer'){
     const wood=DC('wood',[0x7a5236,0x6a4428,0x2e2622,0xe8e0c8,0x8a2a26,0x1e1c22][tr]), tip=DC('accent',[0x7a5236,0x8a8f94,0xa8b4c0,0xd4a83a,0xe8c060,0x9fd8ff][tr]);
     const R=[0.5,0.55,0.58,0.62,0.7,0.74][tr], arc=Math.PI*0.62;
