@@ -5,7 +5,7 @@ Every monster kind in the game, with the numbers the server uses and the place i
 
 Generated from the live code by `node tools/gen-docs.js` (`--check` tells you when this file is out of date). Line numbers are those of the code when it was generated.
 
-144 monster kinds in 80 zones, 16 bosses, 21 boss helpers (summons and props) and 3 grey-veined quest monsters: 229 definitions, plus 8 dungeon bosses with their helpers (section 11). 3646 monsters exist in the world at start (144 kinds in their camps + 16 bosses).
+148 monster kinds in 82 zones, 17 bosses, 22 boss helpers (summons and props) and 3 grey-veined quest monsters: 235 definitions, plus 8 dungeon bosses with their helpers (section 11). 3719 monsters exist in the world at start (148 kinds in their camps + 17 bosses).
 
 ## 1. Where it is defined
 
@@ -13,15 +13,15 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 |---|---|
 | Every monster kind (one row each: id, name, level, element, model, scale, look flags `pal`, tuning `hpK` / `dmgPct` / `count` / `zone`) | `MON_DEFS` src/shared/monster-defs.js:27 |
 | Family defaults a row inherits (health toughness `hpK`, damage share `dmgPct`, attack interval `atk`, `speed`, `rad`, `height`, `aggro`, `per`: camp size - 2) | `FAM` src/shared/monster-defs.js:2 |
-| How HP, damage and XP are made from the level (also used by zone tiers and by anything that wants a monster at another level) | `defAt` src/shared/monster-defs.js:213, `prepDef` src/shared/monster-defs.js:219 |
+| How HP, damage and XP are made from the level (also used by zone tiers and by anything that wants a monster at another level) | `defAt` src/shared/monster-defs.js:218, `prepDef` src/shared/monster-defs.js:224 |
 | The level formulas (expected player damage / health, armour cut, XP, coins) | `expDmg` / `expHP` / `xpFor` / `coinsFor` src/shared/balance.js:38-62 |
-| The six bosses, their move set (`kit`), arena, summons (`add`), props, boss-bar texts | `BOSS_DEFS` src/shared/monster-defs.js:298 |
-| The grey-veined monsters of the main quest | `GREY_DEFS` src/shared/monster-defs.js:319 |
-| Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:331 |
+| The six bosses, their move set (`kit`), arena, summons (`add`), props, boss-bar texts | `BOSS_DEFS` src/shared/monster-defs.js:303 |
+| The grey-veined monsters of the main quest | `GREY_DEFS` src/shared/monster-defs.js:324 |
+| Every definition in one list (what `DEF_BY_ID` on the server indexes) | `ALL_MON_DEFS` src/shared/monster-defs.js:336 |
 | How many of each kind exist, and where their camps are (a zone holds 40 of the level-1 kind down to 20 of level 15; the vale and the Reach 12 of each; `count` overrides) | `MON_COUNT` src/server/monsters.js:20, `initMonstersS` src/server/monsters.js:21 |
 | Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King's beach | `ZONES` src/shared/zones.js:11, src/shared/vale.js:42, src/shared/hoarfrost.js:88, src/shared/beach.js:6 |
 | Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:60 |
-| What a kill pays (XP, coins, an item roll, the material, quests, boss skills) | `rewardKill` src/server/combat.js:79 |
+| What a kill pays (XP, coins, an item roll, the material, quests, boss skills) | `rewardKill` src/server/combat.js:80 |
 | Materials a kind drops (one per kind, `MAT_NAMES`) | `MATS` src/shared/drops.js:13 |
 | What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:33, `monK` src/server/tiers.js:13 |
 | Boss fights: engagement, phases, reset / one move set per boss / the move primitives | `BOSSES` src/server/boss.js:11 / `BOSS_KITS` src/server/boss-fx.js:17 / src/server/boss-fx.js |
@@ -93,8 +93,12 @@ Side content with its own `zone` and `count` (the shore, the Sunwall's foot, the
 | `straitraider` | Strait Raider | 46 | water | 11910 | 33.3 | 586 | 1.3 | 3 | 14 m | 39610.2 | 12803 | 18 | — | — | Cenote Rim and the Drowned Strait | Strait Cutlass | goblin ×1.25 | src/shared/monster-defs.js:188 |
 | `ropespinner` | Rope Spinner | 47 | air | 13613 | 36.8 | 537 | 1.4 | 2.6 | 11 m | 47842.1 | 14792 | 22 | — | — | The Terrace Slopes | Spun Rope | beetle ×1.7 | src/shared/monster-defs.js:189 |
 | `terracemason` | Terrace Mason | 47 | earth | 15707 | 42.4 | 940 | 2.4 | 1.6 | 12 m | 47842.1 | 14792 | 22 | — | — | The Terrace Slopes | Mason's Chisel | treant ×1.6 | src/shared/monster-defs.js:190 |
-| `highlandcondor` | Highland Condor | 48 | air | 13266 | 34.6 | 692 | 1.6 | 3 | 14 m | 57821.0 | 17100 | 22 | — | — | Condor Heights | Condor Quill | bird ×1.8 | src/shared/monster-defs.js:191 |
-| `roadsentinel` | Road Sentinel | 48 | light | 17688 | 46.1 | 969 | 2.4 | 1.6 | 12 m | 57821.0 | 17100 | 24 | — | — | Condor Heights | Sentinel Stone | treant ×1.7 | src/shared/monster-defs.js:192 |
+| `ashcrawler` | Ash Crawler | 49 | fire | 15183 | 38.1 | 571 | 1.4 | 2.6 | 11 m | 69927.1 | 19781 | 18 | — | — | The Ashfall Slopes | Ash Carapace | beetle ×1.6 | src/shared/monster-defs.js:192 |
+| `cinderwisp` | Cinder Wisp | 49 | fire | 11679 | 29.3 | 714 | 1.7 | 2.6 | 13 m | 69927.1 | 19781 | 18 | — | — | The Ashfall Slopes | Cinder Heart | wisp ×1 | src/shared/monster-defs.js:193 |
+| `magmahusk` | Magma Husk | 50 | fire | 19755 | 47.7 | 1033 | 2.4 | 1.6 | 12 m | 84625.7 | 22898 | 18 | — | — | The Caldera Rim | Magma Core | treant ×1.8 | src/shared/monster-defs.js:194 |
+| `calderacondor` | Caldera Condor | 50 | fire | 14816 | 35.8 | 738 | 1.6 | 3 | 14 m | 84625.7 | 22898 | 18 | — | — | The Caldera Rim | Caldera Plume | bird ×1.9 | src/shared/monster-defs.js:195 |
+| `highlandcondor` | Highland Condor | 48 | air | 13266 | 34.6 | 692 | 1.6 | 3 | 14 m | 57821.0 | 17100 | 22 | — | — | Condor Heights | Condor Quill | bird ×1.8 | src/shared/monster-defs.js:196 |
+| `roadsentinel` | Road Sentinel | 48 | light | 17688 | 46.1 | 969 | 2.4 | 1.6 | 12 m | 57821.0 | 17100 | 24 | — | — | Condor Heights | Sentinel Stone | treant ×1.7 | src/shared/monster-defs.js:197 |
 
 ## 6. Sakura Vale (levels 16-25)
 
@@ -227,27 +231,28 @@ Two kinds per level, in nine zones (`s28`-`s36`, `shared/sunzones.js`). `Res` an
 | `elderworm` | Elder Sand Worm | 36 | earth | 8915 | 34.1 | 608 | 2.2 | 2.4 | 14 m | 6149.5 | 3100 | 18 | — | — | The Singing Dunes | Elder Fang | sandworm ×1.6 | src/shared/monster-defs.js:130 |
 | `efreet` | Efreet | 36 | fire | 7726 | 29.5 | 558 | 1.8 | 2.8 | 15 m | 6149.5 | 3100 | 18 | — | — | The Singing Dunes | Efreet Ember | djinn ×1.5 | src/shared/monster-defs.js:131 |
 
-## 8. Bosses (16)
+## 8. Bosses (17)
 
 Health is 70 hits of a same-level player (×1.5 from level 10); a hit is 16% of that player's health. Above level 60 (zone tiers IV and V, dungeons +IV and +V) a boss creeps on top of the late creep of every monster: +1.25% health and +5% damage for every level over 60 (`BOSS_CREEP_*`, `defAt`). Each boss has its own move set on top of the shared melee and the phases at 60% and 30% (`server/boss.js`).
 
 | Id | Name | Lv | El | HP | Dmg | Atk s | Spd | XP | Coins | Material | Arena | Summons | Prop | Music | Move set | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `boss` | The Rootwarden | 15 | dark | 10497 | 227 | 2.6 | 1.9 | 2779.6 | 2860 | Rootwarden Heart | The Stone Circle | Thornling | Heartwood Totem | boss15 | `roots` src/server/boss-kits-home.js:33 | src/shared/monster-defs.js:230 |
-| `carapax` | Carapax, the Tide King | 20 | water | 15212 | 396 | 2.5 | 2 | 7615.5 | 6260 | Tide King's Claw | The Tide King's Beach | Tide Hatchling | — | boss15 | `tide` src/server/boss-kits-home.js:101 | src/shared/monster-defs.js:237 |
-| `akaoni` | Akaoni, the Gate Demon | 20 | fire | 15212 | 396 | 2.4 | 2.1 | 7615.5 | 6260 | Gate Demon Horn | Demon Gate | Oni Imp | — | boss20 | `oni` src/server/boss-kits-vale.js:65 | src/shared/monster-defs.js:242 |
-| `kyuubi` | Kyuubi, the Nine-Tailed | 25 | light | 20705 | 656 | 2.2 | 2.6 | 19883.5 | 13080 | Kyuubi Tail | Foxfire Hollow | Fox Spirit | — | boss25 | `kitsune` src/server/boss-kits-vale.js:134 | src/shared/monster-defs.js:247 |
-| `ymrik` | Ymrik, the Rimeking | 26 | water | 21214 | 667 | 2.4 | 2.1 | 24006.9 | 15100 | Rimeking's Crown | The Rimeking's Hall | Frost Thrall | — | boss26 | `rime` src/server/boss-kits-north.js:51 | src/shared/monster-defs.js:253 |
-| `vetrmaw` | Vetrmaw, the Frost Wyrm | 30 | water | 23427 | 718 | 2.2 | 2.5 | 50658.9 | 26680 | Wyrm Scale | The Wyrm's Nest | Wyrmling | Warm Core | boss30 | `wyrm` src/server/boss-kits-north.js:139 | src/shared/monster-defs.js:258 |
-| `gryphonqueen` | The Gryphon Queen | 29 | air | 22844 | 705 | 2.2 | 3 | 42066.4 | 23160 | Queen's Plume | The Gryphon Queen's Peak | Gryphon Eaglet | — | boss29 | `gryphon` src/server/boss-kits-grey.js:77 | src/shared/monster-defs.js:265 |
-| `mountaingolem` | The Mountain Golem | 32 | earth | 24660 | 747 | 2.7 | 1.8 | 73389.9 | 35360 | Black Stone | The Golem's Cavern | Rubble Imp | Iron Joint | boss32 | `golem` src/server/boss-kits-grey.js:134 | src/shared/monster-defs.js:270 |
-| `glassguardian` | The Glass Guardian | 32 | light | 24660 | 747 | 2.6 | 1.9 | 73389.9 | 35360 | Guardian's Prism | The Guardian's Court | Glass Shard | Black Mirror | boss32 | `glass` src/server/boss-kits-sun.js:49 | src/shared/monster-defs.js:277 |
-| `sandwyrm` | The Sand Wyrm | 36 | earth | 27460 | 811 | 2.3 | 2.6 | 153738.6 | 62000 | Wyrm Heartsand | The Wyrm's Pit | Sand Whelp | — | boss36 | `sandwyrm` src/server/boss-kits-sun.js:132 | src/shared/monster-defs.js:281 |
-| `drownedcaptain` | Captain Dredge, the Drowned | 35 | water | 26713 | 794 | 2.5 | 2.1 | 127795.1 | 53880 | Captain's Compass | The Sea Caves | Drowned Deckhand | — | boss35 | `captain` src/server/boss-kits-gloam.js:86 | src/shared/monster-defs.js:286 |
-| `gloamwarden` | The Gloam Warden | 40 | dark | 30841 | 889 | 2.4 | 2.2 | 322490.2 | 108880 | Warden's Lamp | The Gloam Light | Gloam Specter | Soul Lantern | boss40 | `gloamwarden` src/server/boss-kits-gloam.js:163 | src/shared/monster-defs.js:290 |
+| `boss` | The Rootwarden | 15 | dark | 10497 | 227 | 2.6 | 1.9 | 2779.6 | 2860 | Rootwarden Heart | The Stone Circle | Thornling | Heartwood Totem | boss15 | `roots` src/server/boss-kits-home.js:33 | src/shared/monster-defs.js:235 |
+| `carapax` | Carapax, the Tide King | 20 | water | 15212 | 396 | 2.5 | 2 | 7615.5 | 6260 | Tide King's Claw | The Tide King's Beach | Tide Hatchling | — | boss15 | `tide` src/server/boss-kits-home.js:101 | src/shared/monster-defs.js:242 |
+| `akaoni` | Akaoni, the Gate Demon | 20 | fire | 15212 | 396 | 2.4 | 2.1 | 7615.5 | 6260 | Gate Demon Horn | Demon Gate | Oni Imp | — | boss20 | `oni` src/server/boss-kits-vale.js:65 | src/shared/monster-defs.js:247 |
+| `kyuubi` | Kyuubi, the Nine-Tailed | 25 | light | 20705 | 656 | 2.2 | 2.6 | 19883.5 | 13080 | Kyuubi Tail | Foxfire Hollow | Fox Spirit | — | boss25 | `kitsune` src/server/boss-kits-vale.js:134 | src/shared/monster-defs.js:252 |
+| `ymrik` | Ymrik, the Rimeking | 26 | water | 21214 | 667 | 2.4 | 2.1 | 24006.9 | 15100 | Rimeking's Crown | The Rimeking's Hall | Frost Thrall | — | boss26 | `rime` src/server/boss-kits-north.js:51 | src/shared/monster-defs.js:258 |
+| `vetrmaw` | Vetrmaw, the Frost Wyrm | 30 | water | 23427 | 718 | 2.2 | 2.5 | 50658.9 | 26680 | Wyrm Scale | The Wyrm's Nest | Wyrmling | Warm Core | boss30 | `wyrm` src/server/boss-kits-north.js:139 | src/shared/monster-defs.js:263 |
+| `gryphonqueen` | The Gryphon Queen | 29 | air | 22844 | 705 | 2.2 | 3 | 42066.4 | 23160 | Queen's Plume | The Gryphon Queen's Peak | Gryphon Eaglet | — | boss29 | `gryphon` src/server/boss-kits-grey.js:77 | src/shared/monster-defs.js:270 |
+| `mountaingolem` | The Mountain Golem | 32 | earth | 24660 | 747 | 2.7 | 1.8 | 73389.9 | 35360 | Black Stone | The Golem's Cavern | Rubble Imp | Iron Joint | boss32 | `golem` src/server/boss-kits-grey.js:134 | src/shared/monster-defs.js:275 |
+| `glassguardian` | The Glass Guardian | 32 | light | 24660 | 747 | 2.6 | 1.9 | 73389.9 | 35360 | Guardian's Prism | The Guardian's Court | Glass Shard | Black Mirror | boss32 | `glass` src/server/boss-kits-sun.js:49 | src/shared/monster-defs.js:282 |
+| `sandwyrm` | The Sand Wyrm | 36 | earth | 27460 | 811 | 2.3 | 2.6 | 153738.6 | 62000 | Wyrm Heartsand | The Wyrm's Pit | Sand Whelp | — | boss36 | `sandwyrm` src/server/boss-kits-sun.js:132 | src/shared/monster-defs.js:286 |
+| `drownedcaptain` | Captain Dredge, the Drowned | 35 | water | 26713 | 794 | 2.5 | 2.1 | 127795.1 | 53880 | Captain's Compass | The Sea Caves | Drowned Deckhand | — | boss35 | `captain` src/server/boss-kits-gloam.js:86 | src/shared/monster-defs.js:291 |
+| `gloamwarden` | The Gloam Warden | 40 | dark | 30841 | 889 | 2.4 | 2.2 | 322490.2 | 108880 | Warden's Lamp | The Gloam Light | Gloam Specter | Soul Lantern | boss40 | `gloamwarden` src/server/boss-kits-gloam.js:163 | src/shared/monster-defs.js:295 |
 | `oldthunder` | Old Thunder, the Anvilwing | 41 | air | 31801 | 911 | 2.3 | 3 | 388368.3 | 125420 | Thunder's Anvil | Old Thunder's Roost | Spark Wisp | — | boss41 | `thunder` src/server/boss-kits-savanna.js:47 | src/shared/savanna-bosses.js:7 |
 | `oldhorn` | Oldhorn, the Herd-Mother | 45 | earth | 36226 | 1013 | 2.6 | 2.4 | 820351.9 | 221780 | Herd-Mother's Horn | The Dawn Slab | Hollowed Carrier | — | boss45 | `herdmother` src/server/boss-kits-savanna.js:103 | src/shared/savanna-bosses.js:12 |
 | `ocelo` | Ocelo, the Sun-Jaguar | 45 | fire | 36226 | 1013 | 2.2 | 3.2 | 820351.9 | 221780 | Jaguar's Sunstone | The Jaguar Court | Jaguar Acolyte | — | boss45 | `jaguar` src/server/boss-kits-isles.js:43 | src/shared/emberwake-bosses.js:5 |
+| `sinkwarden` | Pyrrhax, the Sinkwarden | 50 | fire | 43485 | 1180 | 2.2 | 2.6 | 2115643.1 | 457960 | Pyrrhax's Heart | The Sinkwarden's Crater | Ember Spawn | — | boss50 | `sinkwarden` src/server/boss-kits-volcano.js:77 | src/shared/emberwake-bosses.js:16 |
 | `tuila` | Tuila, the Tide-Caller | 46 | water | 37503 | 1042 | 2.4 | 2.6 | 990254.8 | 256060 | Tide-Queen's Pearl | Tuila's Tidepool | Tide Spirit | — | boss46 | `tidecaller` src/server/boss-kits-isles.js:84 | src/shared/emberwake-bosses.js:10 |
 
 Boss quest notices (`BOSS_QUESTS`, src/shared/quests.js:32): The Rootwarden from level 13; Carapax, the Tide King from level 17; Akaoni, the Gate Demon from level 18; Kyuubi, the Nine-Tailed from level 23; Ymrik, the Rimeking from level 25; The Gryphon Queen from level 28; Vetrmaw, the Frost Wyrm from level 29; The Mountain Golem from level 31; The Glass Guardian from level 31; The Sand Wyrm from level 34; Captain Dredge from level 34; The Gloam Warden from level 38.
@@ -361,26 +366,27 @@ Summoned by a boss kit or placed by it; not in `MON_DEFS`, so no camps, no quest
 
 | Id | Name | Lv | El | HP | Dmg | Atk s | Spd | Aggro | XP | Role | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `thornling` | Thornling | 14 | dark | 615 | 60 | 1.8 | 2.4 | 30 m | 90.1 | summoned by The Rootwarden | src/shared/monster-defs.js:233 |
-| `totem` | Heartwood Totem | 15 | dark | 1350 | — | — | — | — | — | shield-phase totem of The Rootwarden | src/shared/monster-defs.js:232 |
-| `crabhatch` | Tide Hatchling | 19 | water | 1059 | 112 | 1.5 | 3.2 | 30 m | 250.2 | summoned by Carapax | src/shared/monster-defs.js:239 |
-| `oniimp` | Oni Imp | 19 | fire | 1059 | 112 | 1.5 | 3.2 | 30 m | 250.2 | summoned by Akaoni | src/shared/monster-defs.js:244 |
-| `foxkit` | Fox Spirit | 24 | light | 1645 | 189 | 1.4 | 4 | 30 m | 658.1 | summoned by Kyuubi | src/shared/monster-defs.js:249 |
-| `frostthrall` | Frost Thrall | 25 | water | 2030 | 287 | 1.5 | 3.2 | 30 m | 795.3 | summoned by Ymrik | src/shared/monster-defs.js:255 |
-| `wyrmling` | Wyrmling | 29 | water | 2504 | 308 | 1.6 | 3.6 | 30 m | 1682.7 | summoned by Vetrmaw | src/shared/monster-defs.js:261 |
-| `warmcore` | Warm Core | 30 | water | 3012 | — | — | — | — | — | shelter prop of Vetrmaw | src/shared/monster-defs.js:260 |
-| `eaglet` | Gryphon Eaglet | 28 | air | 2378 | 303 | 1.5 | 3.8 | 30 m | 1396.6 | summoned by The Gryphon Queen | src/shared/monster-defs.js:267 |
-| `rubble` | Rubble Imp | 31 | earth | 2773 | 320 | 1.8 | 2.6 | 30 m | 2439.3 | summoned by The Mountain Golem | src/shared/monster-defs.js:272 |
-| `ironjoint` | Iron Joint | 32 | earth | 3171 | — | — | — | — | — | shield-phase totem of The Mountain Golem | src/shared/monster-defs.js:275 |
-| `glassshard` | Glass Shard | 31 | light | 2773 | 320 | 1.6 | 3.6 | 30 m | 2439.3 | summoned by The Glass Guardian | src/shared/monster-defs.js:278 |
-| `blackmirror` | Black Mirror | 32 | light | 3171 | — | — | — | — | — | shield-phase totem of The Glass Guardian | src/shared/monster-defs.js:280 |
-| `sandwhelp` | Sand Whelp | 35 | earth | 3392 | 347 | 1.6 | 3.4 | 30 m | 5111.8 | summoned by The Sand Wyrm | src/shared/monster-defs.js:282 |
-| `drownedhand` | Drowned Deckhand | 34 | water | 3226 | 340 | 1.5 | 3.2 | 30 m | 4249.3 | summoned by Captain Dredge | src/shared/monster-defs.js:287 |
-| `gloamspecter` | Gloam Specter | 39 | dark | 4146 | 380 | 1.6 | 3.4 | 30 m | 10715.0 | summoned by The Gloam Warden | src/shared/monster-defs.js:291 |
-| `soullantern` | Soul Lantern | 40 | light | 3965 | — | — | — | — | — | shield-phase totem of The Gloam Warden | src/shared/monster-defs.js:294 |
+| `thornling` | Thornling | 14 | dark | 615 | 60 | 1.8 | 2.4 | 30 m | 90.1 | summoned by The Rootwarden | src/shared/monster-defs.js:238 |
+| `totem` | Heartwood Totem | 15 | dark | 1350 | — | — | — | — | — | shield-phase totem of The Rootwarden | src/shared/monster-defs.js:237 |
+| `crabhatch` | Tide Hatchling | 19 | water | 1059 | 112 | 1.5 | 3.2 | 30 m | 250.2 | summoned by Carapax | src/shared/monster-defs.js:244 |
+| `oniimp` | Oni Imp | 19 | fire | 1059 | 112 | 1.5 | 3.2 | 30 m | 250.2 | summoned by Akaoni | src/shared/monster-defs.js:249 |
+| `foxkit` | Fox Spirit | 24 | light | 1645 | 189 | 1.4 | 4 | 30 m | 658.1 | summoned by Kyuubi | src/shared/monster-defs.js:254 |
+| `frostthrall` | Frost Thrall | 25 | water | 2030 | 287 | 1.5 | 3.2 | 30 m | 795.3 | summoned by Ymrik | src/shared/monster-defs.js:260 |
+| `wyrmling` | Wyrmling | 29 | water | 2504 | 308 | 1.6 | 3.6 | 30 m | 1682.7 | summoned by Vetrmaw | src/shared/monster-defs.js:266 |
+| `warmcore` | Warm Core | 30 | water | 3012 | — | — | — | — | — | shelter prop of Vetrmaw | src/shared/monster-defs.js:265 |
+| `eaglet` | Gryphon Eaglet | 28 | air | 2378 | 303 | 1.5 | 3.8 | 30 m | 1396.6 | summoned by The Gryphon Queen | src/shared/monster-defs.js:272 |
+| `rubble` | Rubble Imp | 31 | earth | 2773 | 320 | 1.8 | 2.6 | 30 m | 2439.3 | summoned by The Mountain Golem | src/shared/monster-defs.js:277 |
+| `ironjoint` | Iron Joint | 32 | earth | 3171 | — | — | — | — | — | shield-phase totem of The Mountain Golem | src/shared/monster-defs.js:280 |
+| `glassshard` | Glass Shard | 31 | light | 2773 | 320 | 1.6 | 3.6 | 30 m | 2439.3 | summoned by The Glass Guardian | src/shared/monster-defs.js:283 |
+| `blackmirror` | Black Mirror | 32 | light | 3171 | — | — | — | — | — | shield-phase totem of The Glass Guardian | src/shared/monster-defs.js:285 |
+| `sandwhelp` | Sand Whelp | 35 | earth | 3392 | 347 | 1.6 | 3.4 | 30 m | 5111.8 | summoned by The Sand Wyrm | src/shared/monster-defs.js:287 |
+| `drownedhand` | Drowned Deckhand | 34 | water | 3226 | 340 | 1.5 | 3.2 | 30 m | 4249.3 | summoned by Captain Dredge | src/shared/monster-defs.js:292 |
+| `gloamspecter` | Gloam Specter | 39 | dark | 4146 | 380 | 1.6 | 3.4 | 30 m | 10715.0 | summoned by The Gloam Warden | src/shared/monster-defs.js:296 |
+| `soullantern` | Soul Lantern | 40 | light | 3965 | — | — | — | — | — | shield-phase totem of The Gloam Warden | src/shared/monster-defs.js:299 |
 | `thunderwisp` | Spark Wisp | 40 | air | 4362 | 389 | 1.5 | 3.6 | 30 m | 12899.6 | summoned by Old Thunder | src/shared/savanna-bosses.js:9 |
 | `greycarrier` | Hollowed Carrier | 44 | earth | 5358 | 431 | 1.8 | 2.6 | 30 m | 27199.1 | summoned by Oldhorn | src/shared/savanna-bosses.js:14 |
 | `jaguaracolyte` | Jaguar Acolyte | 44 | fire | 5358 | 431 | 1.8 | 3 | 30 m | 27199.1 | summoned by Ocelo | src/shared/emberwake-bosses.js:7 |
+| `sinkember` | Ember Spawn | 50 | fire | 7408 | 516 | 1.6 | 3.4 | 30 m | 84625.7 | summoned by Pyrrhax | src/shared/emberwake-bosses.js:22 |
 | `tidespirit` | Tide Spirit | 45 | water | 5647 | 443 | 1.6 | 3.2 | 30 m | 32814.1 | summoned by Tuila | src/shared/emberwake-bosses.js:12 |
 
 ## 10. Grey-veined monsters (main quest)
@@ -389,9 +395,9 @@ Tougher copies of a zone's kind (`greyDef`, tripled XP). Not in `MON_DEFS`: the 
 
 | Id | Name | Lv | El | HP | Hits | Dmg | Atk s | Spd | Aggro | XP | Coins | Count | Res | Acc | Zone | Drop | Model | Defined |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `greybog` | Grey-veined Bog Slime | 7 | water | 661 | 17.3 | 22 | 1.6 | 2.2 | 18 m | 35 | 21 | on demand | — | — | The Bog | — | slime ×1.9 | src/shared/monster-defs.js:320 |
-| `greyfox` | Grey Kitsune | 18 | fire | 3656 | 32.7 | 155 | 1.5 | 3.8 | 18 m | 615 | 230 | on demand | — | — | Fox Hills | — | fox ×1.15 | src/shared/monster-defs.js:321 |
-| `greystone` | Grey-veined Granite Slime | 29 | earth | 10016 | 46.0 | 264 | 1.6 | 2.2 | 18 m | 5048 | 1158 | on demand | — | — | — | — | slime ×2.1 | src/shared/monster-defs.js:323 |
+| `greybog` | Grey-veined Bog Slime | 7 | water | 661 | 17.3 | 22 | 1.6 | 2.2 | 18 m | 35 | 21 | on demand | — | — | The Bog | — | slime ×1.9 | src/shared/monster-defs.js:325 |
+| `greyfox` | Grey Kitsune | 18 | fire | 3656 | 32.7 | 155 | 1.5 | 3.8 | 18 m | 615 | 230 | on demand | — | — | Fox Hills | — | fox ×1.15 | src/shared/monster-defs.js:326 |
+| `greystone` | Grey-veined Granite Slime | 29 | earth | 10016 | 46.0 | 264 | 1.6 | 2.2 | 18 m | 5048 | 1158 | on demand | — | — | — | — | slime ×2.1 | src/shared/monster-defs.js:328 |
 
 ## 11. Dungeons: bosses, their helpers and the mob pools
 
@@ -511,15 +517,15 @@ A def's `model` picks a family model (`MODELS.<model>={geo,build,anim}`) and its
 |---|---|---|---|---|
 | `slime` | 17 | 0.85 / 0.06 / 1.6 / 2.2 / 0.45 / 0.8 / 10 / 6 | src/shared/monster-defs.js:3 | src/game/combat/monster-blobs.js:5 |
 | `shroom` | 4 | 0.95 / 0.07 / 1.7 / 1.8 / 0.4 / 1.1 / 10 / 5 | src/shared/monster-defs.js:4 | src/game/combat/monster-blobs.js:50 |
-| `beetle` | 24 | 1.15 / 0.08 / 1.4 / 2.6 / 0.6 / 0.8 / 11 / 5 | src/shared/monster-defs.js:5 | src/game/combat/monster-bugs.js:105 |
+| `beetle` | 25 | 1.15 / 0.08 / 1.4 / 2.6 / 0.6 / 0.8 / 11 / 5 | src/shared/monster-defs.js:5 | src/game/combat/monster-bugs.js:105 |
 | `boar` | 13 | 1 / 0.11 / 2 / 3.4 / 0.6 / 1 / 13 / 4 | src/shared/monster-defs.js:6 | src/game/combat/monster-beasts.js:5 |
 | `goblin` | 40 | 1 / 0.09 / 1.3 / 3 / 0.45 / 1.8 / 14 / 5 | src/shared/monster-defs.js:7 | src/game/combat/monster-folk.js:112 |
-| `treant` | 24 | 1.35 / 0.14 / 2.4 / 1.6 / 0.85 / 3.3 / 12 / 3 | src/shared/monster-defs.js:8 | src/game/combat/monster-woods.js:13 |
+| `treant` | 25 | 1.35 / 0.14 / 2.4 / 1.6 / 0.85 / 3.3 / 12 / 3 | src/shared/monster-defs.js:8 | src/game/combat/monster-woods.js:13 |
 | `fox` | 17 | 1 / 0.1 / 1.5 / 3.8 / 0.55 / 1 / 14 / 4 | src/shared/monster-defs.js:9 | src/game/combat/monster-beasts.js:45 |
-| `wisp` | 23 | 0.9 / 0.1 / 1.7 / 2.6 / 0.45 / 1.6 / 13 / 5 | src/shared/monster-defs.js:10 | src/game/combat/monster-spirits.js:4 |
+| `wisp` | 25 | 0.9 / 0.1 / 1.7 / 2.6 / 0.45 / 1.6 / 13 / 5 | src/shared/monster-defs.js:10 | src/game/combat/monster-spirits.js:4 |
 | `totem` | 9 | 1 / 0 / 99 / 0 / 0.55 / 2.7 / 0 / 2 | src/shared/monster-defs.js:11 | src/game/combat/monster-woods.js:97 |
 | `keg` | 0 | 1 / 0 / 99 / 0 / 0.5 / 1.1 / 0 / 2 | src/shared/monster-defs.js:12 | src/game/combat/monster-mine.js:4 |
-| `wyrm` | 11 | 1 / 0.12 / 2.2 / 2.6 / 0.9 / 2 / 16 / 3 | src/shared/monster-defs.js:13 | src/game/combat/monster-wyrm.js:18 |
+| `wyrm` | 12 | 1 / 0.12 / 2.2 / 2.6 / 0.9 / 2 / 16 / 3 | src/shared/monster-defs.js:13 | src/game/combat/monster-wyrm.js:18 |
 | `gryphon` | 3 | 1 / 0.12 / 2.1 / 3.2 / 0.8 / 2 / 16 / 3 | src/shared/monster-defs.js:14 | src/game/combat/monster-gryphon.js:15 |
 | `scorpion` | 5 | 1.05 / 0.1 / 1.5 / 3 / 0.7 / 1 / 12 / 5 | src/shared/monster-defs.js:15 | src/game/combat/monster-desert.js:8 |
 | `cactus` | 1 | 1.35 / 0.13 / 2.3 / 1.5 / 0.8 / 3 / 10 / 3 | src/shared/monster-defs.js:16 | src/game/combat/monster-desert.js:41 |
@@ -529,6 +535,6 @@ A def's `model` picks a family model (`MODELS.<model>={geo,build,anim}`) and its
 | `bat` | 5 | 0.8 / 0.09 / 1.4 / 4 / 0.45 / 1 / 16 / 6 | src/shared/monster-defs.js:20 | src/game/combat/monster-gloam.js:5 |
 | `feline` | 3 | 1 / 0.11 / 1.6 / 4 / 0.6 / 1 / 15 / 4 | src/shared/monster-defs.js:21 | src/game/combat/monster-savanna.js:13 |
 | `swarm` | 1 | 0.9 / 0.08 / 1.4 / 3.4 / 0.6 / 1.5 / 14 / 5 | src/shared/monster-defs.js:22 | src/game/combat/monster-savanna.js:46 |
-| `bird` | 4 | 0.95 / 0.1 / 1.6 / 3 / 0.5 / 1.6 / 14 / 4 | src/shared/monster-defs.js:23 | src/game/combat/monster-savanna.js:64 |
+| `bird` | 5 | 0.95 / 0.1 / 1.6 / 3 / 0.5 / 1.6 / 14 / 4 | src/shared/monster-defs.js:23 | src/game/combat/monster-savanna.js:64 |
 | `hoofed` | 4 | 1.3 / 0.13 / 2.2 / 2.8 / 0.9 / 1.6 / 12 / 4 | src/shared/monster-defs.js:24 | src/game/combat/monster-savanna.js:102 |
 | `hollowed` | 2 | 1 / 0.1 / 1.6 / 2.2 / 0.45 / 1.8 / 12 / 5 | src/shared/monster-defs.js:25 | src/game/combat/monster-savanna.js:143 |

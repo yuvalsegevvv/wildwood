@@ -7,11 +7,12 @@
 const TEST_LV=60, TEST_COINS=10000000, TEST_STONES=1000, TEST_SKILL_LV=4, TEST_ENH=8, TEST_TIER=4, TEST_RAR=3;   // TEST_RAR 3 = Unique (its limit is +8: ENH_MAX); the stones: weapon / armour / ring reroll stones
 function testKitP(p){
   const g=p.gear, put=id=>{ if(ITEM[id]&&!g.inv.includes(id)&&g.inv.length<BAG_MAX) g.inv.push(id); };
-  // gear: every level-40 piece at Unique +8 (the three weapons, four armour pieces, seven rings), every level-30 pendant kind
+  // gear: every level-40 piece at Unique +8 (the three weapons, four armour pieces, seven rings), every level-40 pendant kind and every talisman kind
   for(const s of WEAPON_SLOTS) put(dgGearId40(s,TEST_RAR,TEST_ENH));
   for(const s of ARMOR_SLOTS) put(dgGearId40(s,TEST_RAR,TEST_ENH));
   for(const e of RING_ELS) put(dgRingId40(e,TEST_RAR,TEST_ENH));
-  for(const t of PENDANT_STATS) put(dgPendantId(t,TEST_RAR,TEST_ENH));
+  for(const t of PENDANT_STATS) put(dgPendantId40(t,TEST_RAR,TEST_ENH));
+  for(const t of TAL_STATS) put(dgTalismanId(t,TEST_RAR,TEST_ENH));   // volcano: the Sinkwarden's talismans
   g.coins=TEST_COINS; g.rsw=g.rsa=g.rsr=TEST_STONES;
   // the world: every circle attuned, every gate open (the same values the testing tools set), every land's zone tier unlocked up to TEST_TIER (the symbol)
   g.east=2; g.north=2; g.west=2; g.sun=2; g.gloam=2; g.tall=2; g.isles=2; g.river=1; g.neck=1; g.redgate=1; g.amber=1;
@@ -26,9 +27,9 @@ function testKitP(p){
   for(const id of CAVE_SKILL_IDS) g.cave.own[id]=CAVE_LEVEL_MAX;
   for(const id of g.skills.owned){ const d=SKILLS[id]; if(d&&!d.drop) g.skills.lv[id]=TEST_SKILL_LV; }
   ultCheckP(p);
-  // wear the best of it: the first weapon, every armour piece, a plain ring (the soul is unbound), a crit-damage pendant
+  // wear the best of it: the first weapon, every armour piece, a plain ring (the soul is unbound), a crit-damage pendant, an attack talisman
   equipP(p,dgGearId40('sword',TEST_RAR,TEST_ENH));
   for(const s of ARMOR_SLOTS) equipP(p,dgGearId40(s,TEST_RAR,TEST_ENH));
-  equipP(p,dgRingId40('basic',TEST_RAR,TEST_ENH)); equipP(p,dgPendantId('critdmg',TEST_RAR,TEST_ENH));
+  equipP(p,dgRingId40('basic',TEST_RAR,TEST_ENH)); equipP(p,dgPendantId40('critdmg',TEST_RAR,TEST_ENH)); equipP(p,dgTalismanId('atk',TEST_RAR,TEST_ENH));
   recalcP(p); p.hp=p.maxHp; p.dirty=true;
 }

@@ -13,6 +13,7 @@ const BOSSES=[];
 function makeBossS(bd,A){
   const B={bd,A,kit:BOSS_KITS[bd.kit],m:null,phase:1,tele:[],zones:[],walls:[],orbs:[],q:[],k:{},mode:0,aux:0,busy:0,mv:null,engaged:false,totems:[],adds:[],enraged:false,stunT:0,ultStunT:0,ultStunQ:0};
   B.m=makeMon(bd.def,A.x,A.z,{x:A.x,z:A.z},1,false); B.m.boss=true; B.m.B=B;
+  if(B.kit.init) B.kit.init(B,B.m);   // volcano: a parts boss' pool is not the def's
   return B;
 }
 function initBossS(){
@@ -22,13 +23,13 @@ function initBossS(){
 function bossState(){ return BOSSES.concat(rdBossesS()).map(B=>[B.m.id,B.engaged?1:0,B.phase,B.m.immune?1:0,B.enraged?1:0,B.stunT>0||B.ultStunT>0?1:0,B.aux,B.mode]); }   // ult: the burst's freeze shows as stunned too
 function resetBossS(B){
   const m=B.m; B.engaged=false; B.phase=1; B.enraged=false; B.stunT=0; B.ultStunT=B.ultStunQ=0; m.ultLock=0;   // ult: a boss reset is the only thing that clears the burst's stun lock
-  m.immune=false; m.aggro=false; m.tgt=null; m.hp=m.maxHp; m.act=null; m.pendingHit=-1; m.hitters.clear();
+  m.immune=false; B.mode=0; B.busy=0; B.mv=null; m.aggro=false; m.tgt=null; m.hp=m.maxHp; m.act=null; m.pendingHit=-1; m.hitters.clear();
   clearBossFxS(B); [...B.totems,...B.adds].forEach(removeMonS); B.totems=[]; B.adds=[];
 }
 function bossDefeatedS(m){
   if(m.rd){ rdBossDownS(m); return; }   // raids: its own end (server/raids.js)
   const B=m.B; m.respawnT=120; clearBossFxS(B); [...B.totems,...B.adds].forEach(x=>{ if(!x.dead) removeMonS(x); }); B.totems=[]; B.adds=[];
-  B.engaged=false; m.immune=false; toastTo(null,B.bd.short+' has fallen!','good');
+  B.engaged=false; m.immune=false; B.mode=0; toastTo(null,B.bd.short+' has fallen!','good');
 }
 function updateBossS(m,dt){
   const B=m.B, A=B.A;
@@ -41,15 +42,16 @@ function updateBossS(m,dt){
   updateBossFxS(B,m,dt);
   const inside=playersInArena(A,6);
   if(!B.engaged && playersInArena(A,0).length){ B.engaged=true; m.aggro=true; B.k={}; B.kit.start(B,m); m.atkT=1.5; toastTo(null,B.bd.short+' awakens!','bad'); ev('roar',m.id); }
-  if(B.engaged && !inside.length) resetBossS(B);
+  if(B.engaged && !inside.length){ if(B.bd.parts&&vbWaitingS(B)){ m.vx=m.vz=0; } else resetBossS(B); }   // volcano: a knocked-out hiker the arena will revive keeps the fight alive
   else if(B.engaged) caveBossTickS(B,inside);   // cave: standing in an engaged boss's arena is a boss fight (charge 50 on entering, 0 on leaving early)
   m.awake=B.engaged||anyPlayerNear(m.x,m.z,110);
-  if(B.engaged){
+  if(B.engaged&&inside.length){
     let p=null, dp=1e9; for(const q of inside){ const d=Math.hypot(q.x-m.x,q.z-m.z); if(d<dp){ dp=d; p=q; } }
     { const tq=ssTauntedBy(m); if(tq&&inside.includes(tq)){ p=tq; dp=Math.hypot(tq.x-m.x,tq.z-m.z); } }   // skillsets: its melee turns on the taunter (its telegraphed moves choose by their own rules)
     const dx=p.x-m.x, dz=p.z-m.z; m.tgt=p.id;
     const f=m.hp/m.maxHp;
-    if(B.phase===1 && f<0.6){ B.phase=2; B.kit.phase(B,m,2); }
+    if(B.bd.parts){}   // volcano: a parts boss runs its own parts (boss-kits-volcano.js)
+    else if(B.phase===1 && f<0.6){ B.phase=2; B.kit.phase(B,m,2); }
     else if(B.phase===2 && !m.immune && f<0.3){ B.phase=3; B.enraged=true; toastTo(null,B.bd.short+' is enraged!','bad'); ev('roar',m.id); B.kit.phase(B,m,3); }
     const reach=m.T.rad+2.2;
     if(m.act){ m.act.t+=dt; if(m.act.t>=m.act.dur) m.act=null; }
@@ -67,7 +69,7 @@ function updateBossS(m,dt){
       } else { m.vx*=0.8; m.vz*=0.8; }
       B.kit.tick(B,m,dt,{p,inside,dp});
     }
-  } else {
+  } else if(!B.engaged){
     const ex=A.x-m.x, ez=A.z-m.z, d=Math.hypot(ex,ez);
     if(d>1.5){ m.vx=ex/d*m.T.speed; m.vz=ez/d*m.T.speed; m.faceGoal=Math.atan2(-ex,-ez); } else { m.vx*=0.8; m.vz*=0.8; m.faceGoal+=dt*0.1; }
     if(m.hp<m.maxHp) m.hp=m.maxHp;

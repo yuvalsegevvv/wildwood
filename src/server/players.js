@@ -119,7 +119,7 @@ function newPlayer(pid,hello){
 function recalcP(p){
   if(p.pv){ pvpRecalcP(p); return; }   // pvp: on the Proving Isle everyone has the same numbers (server/pvp.js)
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
-  g.atk+=dgRingAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else (only for a matching soul)
+  g.atk+=dgRingAtkP(p)+talAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else (only for a matching soul)
   rlRefreshP(p);   // rolls: the lines of the worn level-40 pieces (p.rl)
   p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)*(1+rlP(p,'hp'))*(1+toolBonusStat(p.gear,'hp'))); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym)*(1+rlP(p,'atk'))*(1+toolBonusStat(p.gear,'atk')); p.def=Math.round(g.def*(1+rlP(p,'def'))*(1+toolBonusStat(p.gear,'def'))); p.red=defRed(p.def);   // rolls: hp, atk and def lines   // professions: the worn tools' small bonus (shared/professions.js)
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));
@@ -195,7 +195,7 @@ function gainExpP(p,v,monId){
 // the attacker's damage at your zone tier (its tiered level's damage), +5% per level the attacker is above you, then your armor (soft-capped, defRed), the Iron Will passive, a buff and a guard potion;
 // together they can never take off more than 90% (DMG_TAKEN_MIN)
 function hurtP(p,v,m,by){   // returns the damage taken; by: the fighter who hit (pvp, no monster)
-  if(p.dead||(p.cave&&p.cave.bur>S.t)) return 0;   // cave: Burrow, nothing can hit you
+  if(p.dead||(p.cave&&p.cave.bur>S.t)||(p.vbGrace>S.t)) return 0;   // volcano: a moment's grace after waking on the spot   // cave: Burrow, nothing can hit you
   const K=m?monK(m,p):null, ld=m?Math.max(0,K.lv-p.level):0;
   v=Math.max(1,Math.round(v*(K?K.dmg:1)*rxWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red')-ssCondP(p,'red',m))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))*(1-allyP(p,'guard')))));   // reactions: weak lowers what a monster deals
   v=caveHurtS(p,v,m); if(v<=0){ p.lastHit=S.t; return 0; }   // cave: Shield-Wall, Stopped Hour, Bell Echo, Embalm, Eagle's Perch
@@ -246,6 +246,7 @@ function updatePlayersS(dt){
     if(p.dead&&p.inst){ dgDownTickS(p,dt); continue; }   // dungeons: downed in a run: revived, or a respawn at its entrance, never the village
     if(p.dead){
       p.deadT+=dt;
+      if(p.deadT>3&&vbReviveP(p)) continue;   // volcano: three lives on the spot in the Sinkwarden's crater
       if(p.deadT>3&&caveFloorAt(p.x,p.z)>=0){ caveReviveP(p); continue; }   // cave: a knock-out on a floor wakes at its lift
       if(p.deadT>3&&p.pv){ pvpReviveP(p); continue; }   // pvp: a knock-out on the island wakes on the lake's shore, not in a village
       if(p.deadT>3){ const g=respawnVil(p).anchors.gate; p.x=g.x; p.z=g.z; p.y=getH(g.x,g.z); p.dead=false; p.hp=p.maxHp; p.lastHit=-99; sendTo(p.id,{t:'tp',x:g.x,z:g.z,face:g.face}); ev('up',p.id); p.dirty=true; }

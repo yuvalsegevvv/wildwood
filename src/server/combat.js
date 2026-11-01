@@ -56,7 +56,8 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   m.kbx+=ex/e*k; m.kbz+=ez/e*k;
   if(!m.aggro||!S.players.get(m.tgt)){ m.aggro=true; m.tgt=p.id; }
   if(d.fx) ev('dmg',m.id,d.v,d.crit?1:0,p.id,d.fx); else ev('dmg',m.id,d.v,d.crit?1:0,p.id);
-  if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }
+  if(m.hp<=0&&m.boss&&vbPartDownS(m)){}   // volcano: a part ended, not the boss
+  else if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }
   else rxHitS(m,p,elemEffS(p,el),mult);   // reactions: a direct hit leaves an aura or reacts with the one there
   caveHitS(p);   // cave: the cast that did this pays its charge (once per cast, not per enemy)
   if(!rxQuiet&&p.ss&&p.ss.trig){ ssTriggerS(p,'hit',{m,v:d.v}); if(d.crit) ssTriggerS(p,'crit',{m,v:d.v}); }   // skillsets: on hit / on crit rows (a burn tick, a reaction's burst and a trigger's own damage are not hits)
@@ -93,6 +94,7 @@ function rewardKill(q,m){
   if(m.def.id==='ymrik') openWestP(q);
   if(m.def.id==='gryphonqueen') openGateP(q,'river');
   if(m.def.id==='mountaingolem') openGateP(q,'neck');
+  if(m.def.id==='sinkwarden') vbRewardP(q,m);   // volcano: the talisman and the ending
   if(m.def.id==='oldhorn') openIslesP(q);   // emberwake: the herd-mother's fall opens the Tide Bridge (the barrier at the Amber Reach's south cape)
   if(m.def.id==='sandwyrm'){ openGateP(q,'redgate'); openGateP(q,'amber'); }   // (savanna: the same fall opens the way south into Amber Reach)
 }

@@ -99,6 +99,7 @@ zpTheme('e43',0xd8c898,0.25,0.08,[['shell',3],['crabpot',2,0.3],['driftlog',2],[
 zpTheme('e44',0x3a6a38,0.35,0.1,[['rootarch',2,0.3],['hollowstump',2],['mosstone',2],['runestone',1,0.4]]);                                          // the jungle edge
 zpTheme('e45',0x6a7a62,0.3,0.08,[['ruinblock',3],['ruincol',2,0.3],['menhir',2,0.3],['mosstone',2],['ruinslab',1,0.5]]);                             // the overgrown plaza
 zpTheme('e46',0x5a8a8a,0.3,0.08,[['shell',2],['driftlog',2],['mooringpost',1,0.5],['sunkenmast',1,0.4],['runestone_dusk',1,0.5]]);                    // the cenote rim and the drowned strait
+zpTheme('e49',0x4a423a,0.5,0.06,[['cinderrock',3,0.4],['charstump',2,0.4],['smolder',1]]); zpTheme('e50',0x3a322c,0.5,0.05,[['cinderrock',3,0.4],['anvilrock',1,0.5],['smolder',2]]); zpTheme('eboss50',0x2e2824,0.5,0,[]);   // volcano isle
 zpTheme('eboss45',0x6a7a62,0.4,0,[]); zpTheme('eboss46',0x5a8a8a,0.4,0,[]);
 zpTheme('e47',0x8a8a5a,0.3,0.08,[['terracestone',3,0.1],['drystone',2,0.3],['haystack',1,0.3],['windpole',1,0.4]]);                                  // the terrace slopes
 zpTheme('e48',0x7a7a72,0.3,0.08,[['drystone',2,0.3],['menhir',2,0.3],['windpole',2,0.3],['cairn',1],['ruinwall',1,0.5]]);                             // condor heights
@@ -117,6 +118,7 @@ const ZP_BOSS={
   sboss32:[['glassspire',9,6,22],['glassshard',10,5,24],['obelisk',3,8,16,{face:1}]],                                                           // the Glass Guardian
   sboss36:[['ribs',4,8,20],['hoodoo',6,7,24],['wormcrater',3,8,22],['obelisk',2,10,18,{face:1}]],                                               // the sand wyrm
   mboss35:[['hullribs',3,8,22],['anchor',4,6,20],['sunkenmast',3,8,22],['lamppost_green',6,5,20],['gravestone',6,6,22]],                        // the Drowned Captain
+  eboss50:[['anvilrock',6,8,28],['cinderrock',8,6,30],['charstump',5,7,28],['smolder',8,2,22]],                                                          // Pyrrhax: the crater's rim
   aboss41:[['anvilrock',3,8,20],['charstump',6,6,22],['lightrod',4,7,18,{face:1}],['cinderrock',6,5,24],['bonepile',4,6,22]],                          // Old Thunder
   aboss45:[['terracestone',6,6,22],['greystone',8,5,24],['hoodoo',4,8,24],['ribs',2,10,22],['songpost',3,7,16,{face:1}]],                       // Oldhorn
   eboss45:[['ruinblock',8,8,22],['ruincol',6,7,22],['menhir',4,6,24],['mosstone',6,5,24],['runestone',3,9,18,{face:1}]],                                  // Ocelo: the ball court's walls and standing stones

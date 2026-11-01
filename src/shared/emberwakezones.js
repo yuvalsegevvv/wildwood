@@ -4,14 +4,19 @@
    46 Cenote Rim and the Drowned Strait (boss Tuila, W3) on the causeway side, 47 the Terrace Slopes and 48 Condor Heights on the Highland Isle. No zone on the shore (20 m) or within 70 m of Coralhaven's hub.
    Exports: EW_ZONE_NAMES, EW_ZONE_OF[42..48] (the ZONES records: key 'e42', flag isles), ewZoneAt(x,z). Used by: zones.js (zoneAt asks inIsles), professions.js, game/world/zone-props.js (zpTheme e42..e48).
    Test: tools/emberwake-smoke.js, tools/zoneprops-smoke.js. Names: ew..., EW_... */
-const EW_ZONE_NAMES={42:'Black Sand Landing',43:'The Lagoon Shallows',44:'The Jungle Edge',45:'The Overgrown Plaza',46:'Cenote Rim and the Drowned Strait',47:'The Terrace Slopes',48:'Condor Heights',eboss45:"The Jaguar Court",eboss46:"Tuila's Tidepool"};
+const EW_ZONE_NAMES={42:'Black Sand Landing',43:'The Lagoon Shallows',44:'The Jungle Edge',45:'The Overgrown Plaza',46:'Cenote Rim and the Drowned Strait',47:'The Terrace Slopes',48:'Condor Heights',eboss45:"The Jaguar Court",eboss46:"Tuila's Tidepool",49:'The Ashfall Slopes',50:'The Caldera Rim',eboss50:'The Sinkwarden\'s Crater'};
 const EW_ZONE_OF={};   // 42..48 -> its ZONES record
 for(const k of EW_ZONE_KEYS){ const A=waZoneOfKey('isles',k), zn={key:'e'+k,ring:3,isles:true,x:Math.round(A.x),z:Math.round(A.z),R:Math.round(Math.sqrt(A.area/Math.PI)),name:EW_ZONE_NAMES[k],level:k};
   ZONES.push(zn); EW_ZONE_OF[k]=zn; }
 const EW_HUB_R=70;   // the village's own ground has no camps and no zone
+// the volcano isle (docs/VOLCANO.md): the atlas has no zones there, so e49 (the slopes) and e50 (the rim round the crater) are drawn here, a circle each, and the crater is the boss arena eboss50 at the isle's centre
+const EW_VOLC_ZONES={}, EW_VOLC_RIM=110;   // the rim's radius round the centre; beyond it, to the shore, the slopes
+for(const k of [49,50]){ const zn={key:'e'+k,ring:3,isles:true,x:EW_VOLC.x,z:EW_VOLC.z,R:k===50?EW_VOLC_RIM:200,name:EW_ZONE_NAMES[k],level:k}; ZONES.push(zn); EW_VOLC_ZONES[k]=zn; }
+const inVolcIsle=(x,z)=>{ const I=EW_ISLANDS[3], u=(x-I.x)/I.rx, v=(z-I.z)/I.rz; return u*u+v*v<1; };
 function ewZoneAt(x,z){
   if(waCoast(x,z)<20||Math.hypot(x-EW_HUB.x,z-EW_HUB.z)<EW_HUB_R||ewWayNear(x,z,30)) return null;   // the shore, the sea, the village and the waystations
   for(const A of ARENAS) if(A.isles&&Math.hypot(x-A.x,z-A.z)<A.r+26) return A.zone;   // a boss arena and the ring round it
+  if(inVolcIsle(x,z)) return Math.hypot(x-EW_VOLC.x,z-EW_VOLC.z)<EW_VOLC_RIM?EW_VOLC_ZONES[50]:EW_VOLC_ZONES[49];   // the volcano isle
   const Z=waZone(x,z); return Z&&Z.land==='isles'?EW_ZONE_OF[Z.key]||null:null;
 }
 
@@ -21,7 +26,9 @@ const EW_POI=k=>WA_POIS.find(q=>q.land==='isles'&&q.kind===k[0]&&q.zone===k[1]);
 const EW_BOSS_POI={45:EW_POI(['boss',45]),46:EW_POI(['boss',46])}, EW_DOOR=EW_POI(['door',44]), EW_GATES=EW_POI(['raid',48]);
 const ARENA_E45={x:EW_BOSS_POI[45].x,z:EW_BOSS_POI[45].z,h:baseHeight(EW_BOSS_POI[45].x,EW_BOSS_POI[45].z),r:24,key:'eboss45',name:EW_ZONE_NAMES.eboss45,isles:true};
 const ARENA_E46={x:EW_BOSS_POI[46].x,z:EW_BOSS_POI[46].z,h:baseHeight(EW_BOSS_POI[46].x,EW_BOSS_POI[46].z),r:24,key:'eboss46',name:EW_ZONE_NAMES.eboss46,isles:true};
-for(const A of [ARENA_E45,ARENA_E46]){ A.zone={key:A.key,ring:3,isles:true,x:A.x,z:A.z,R:A.r,name:A.name,level:A===ARENA_E45?45:46,boss:true}; ZONES.push(A.zone); ARENAS.push(A); }
+// the Sinkwarden's crater: a flat clearing on the volcano isle's centre (the placeholder dome's top)
+const ARENA_E50={x:EW_VOLC.x,z:EW_VOLC.z,h:baseHeight(EW_VOLC.x,EW_VOLC.z),r:34,key:'eboss50',name:EW_ZONE_NAMES.eboss50,isles:true};
+for(const A of [ARENA_E45,ARENA_E46,ARENA_E50]){ A.zone={key:A.key,ring:3,isles:true,x:A.x,z:A.z,R:A.r,name:A.name,level:A===ARENA_E45?45:A===ARENA_E46?46:50,boss:true}; ZONES.push(A.zone); ARENAS.push(A); }
 // where nothing is placed at random (camps, resource nodes, plants, props): the village, the waystations, the dungeon's door, the raid and the arenas, with m metres of margin
 const EW_KEEP=[[EW_HUB.x,EW_HUB.z,64],[EW_DOOR.x,EW_DOOR.z,24],[EW_GATES.x,EW_GATES.z,46]];
 function ewKeepOut(x,z,m){

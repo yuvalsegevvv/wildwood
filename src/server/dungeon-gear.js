@@ -7,6 +7,7 @@
    gear:    gear.temper = the count of stones (0..DG_STONE_MAX, sanitized in sanitizeGear), gear.eq.ring = the worn ring.
    hooks:   the lines marked `// dungeons:` in players.js (recalcP, sanitizeGear), economy.js (mergeP, buyP, bindSoulP) and combat.js (rewardKill); listed in docs/DUNGEON-THEMES.md section 7.
    test:    tools/rewards-smoke.js */
+const talAtkP=p=>{ if(p.pv) return 0; const it=ITEM[p.gear.eq.talisman]; return it&&it.kind==='talisman'&&it.stat==='atk'&&p.level>=it.lv?it.v:0; };   // volcano: the worn talisman's flat attack (the other kinds are rolled-sum lines, rolls.js)
 const dgRingAtkP=p=>dgRingAtkOf(p.gear,soulOfP(p));   // what the worn ring adds to p's attack right now (0 without a ring, with another soul)
 // stones: a count in the save, not items in the bag
 function dgAddStonesP(p,n,monId){

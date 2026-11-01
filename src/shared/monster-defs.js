@@ -188,6 +188,11 @@ const MON_DEFS=[
   {id:'straitraider',name:'Strait Raider',    level:46,el:'water',model:'goblin',  scale:1.25,per:3, hpK:1.2, zone:'e46', pal:{form:'hob',garb:'sash',skin:0x8a6040,eyes:0xffe070,top:'jacket',topColor:0x2a3a5a,bottom:'trousers',bottomColor:0x3a2a20,hat:'helm',hatColor:0x6a6a72,club:0xc8ced4,weapon:'axe',turban:0x2a3a5a}},
   {id:'ropespinner', name:'Rope Spinner',     level:47,el:'air',  model:'beetle',  scale:1.7, hpK:1.3, zone:'e47', pal:{spider:1,shell:0x6a5a3a,seam:0xd8b868,sheen:0xe8d8a0,head:0x4a3a28,horn:0x6a5a3a,eye:0xff4a3a,legs:0x4a3a28}},
   {id:'terracemason',name:'Terrace Mason',    level:47,el:'earth',model:'treant',  scale:1.6, hpK:1.5, zone:'e47', pal:{kind:'rock',style:'crack',crack:0xffc860,bark:0x7a7466,c1:0x9a9488,c2:0xaaa498,c3:0x84806e,eyes:0xffc860}},
+  /* the volcano isle (levels 49-50, zones 'e49' the Ashfall Slopes and 'e50' the Caldera Rim; docs/VOLCANO.md): two kinds each, existing models in ember palettes */
+  {id:'ashcrawler',  name:'Ash Crawler',      level:49,el:'fire', model:'beetle',  scale:1.6, hpK:1.3, zone:'e49', glow:0x2a0c04, pal:{shell:0x3a3430,seam:0xff6a20,sheen:0x8a7a6a,head:0x2a2420,horn:0x5a4a3a,eye:0xffa030,legs:0x2a2420}},
+  {id:'cinderwisp',  name:'Cinder Wisp',      level:49,el:'fire', model:'wisp',    scale:1.0, hpK:1.0, zone:'e49', glow:0x4a1400, pal:{body:0xff7a20,core:0xfff0b0,eye:0x3a0a00}},
+  {id:'magmahusk',   name:'Magma Husk',       level:50,el:'fire', model:'treant',  scale:1.8, hpK:1.6, zone:'e50', glow:0x3a1000, pal:{kind:'rock',style:'crack',crack:0xff7a20,bark:0x2e2824,c1:0x3e3630,c2:0x4a423a,c3:0x2a241f,eyes:0xffd060}},
+  {id:'calderacondor',name:'Caldera Condor',  level:50,el:'fire', model:'bird',    scale:1.9, hpK:1.2, zone:'e50', glow:0x2a0c04, pal:{kind:'vulture',body:0x2a1e1a,wing:0x1e1412,head:0xd8b898,ruff:0xff8a40,beak:0xf0d890,legs:0x5a4a40,eye:0xff6a20}},
   {id:'highlandcondor',name:'Highland Condor',level:48,el:'air',  model:'bird',    scale:1.8, hpK:1.2, zone:'e48', pal:{kind:'vulture',body:0x2a2a30,wing:0x1e1e24,head:0xc8b8a0,ruff:0xf0f0f0,beak:0xe8d8a0,legs:0x6a6a60,eye:0xffd040}},
   {id:'roadsentinel',name:'Road Sentinel',    level:48,el:'light',model:'treant',  scale:1.7, hpK:1.6, zone:'e48', pal:{kind:'rock',style:'crack',crack:0x9fe8ff,bark:0x6a7480,c1:0x8a96a4,c2:0x9aa6b4,c3:0x76828e,eyes:0x9fe8ff}},
 ];

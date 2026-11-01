@@ -48,7 +48,7 @@ The isles' dungeon (zone e44's door `EW_DOOR`, boss Ahmetl at level 48, pays onl
 ## Left for later steps
 The sets' signature outfits are built (`game/outfits/meleni.js`, `tzaya.js`, `atuqa.js`, their weapon models `game/combat/weapon-shapes-isles.js`, designs `docs/skillkits/looks/`; villagers wearing them are not done). Left: the volcano pass below, the boats to the volcano isle, a final balance pass on the ladder of Meleni, Tzaya and Atuqa (their `node tools/skillsets-ladder.js` rows warn: Meleni is above and the other two below their roles' bands).
 
-## Reserved for the volcano (not built, Yuval's later pass)
+## Reserved for the volcano (the boss and its zones e49 / e50 are built: docs/VOLCANO.md; the rest below is not)
 The volcano isle (`EW_ISLANDS[3]`, `EW_VOLC`) is reached on foot over the Ember Bridge from the east isle (its fringe has a few trees and nothing else yet); its interior is a low placeholder dome. Zones `e49`, `e50`, village slot `VIL9`, the boss `sinkwarden` (level 50, a long multi-phase fight), a high-polygon volcano model with a phone fallback, `WX.ash`, `EW_VOLC_DOOR`, main-quest steps E3 (the destination) and E6-E10.
 
 ## View distance and the jungle (the isles review)
