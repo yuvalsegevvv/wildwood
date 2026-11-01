@@ -98,7 +98,7 @@ function buildHair(X,F){
       add(hang(sweepTube([a,[a[0]+d[0]*k*0.5,a[1]+d[1]*k*0.5+0.012,a[2]+d[2]*k*0.5],[a[0]+d[0]*k+0.012*(rng()-0.5),a[1]+d[1]*k+0.02,a[2]+d[2]*k+0.012*(rng()-0.5)]],[0.0016,0.0013,0.0004],4,{cap:'point',rings:6}))); } }
   hgApply(X,parts,0,parts.length);   // hair colour gradient (model-hairgrad.js), before any hat is added
   /* hats: the base hats are in model-hats.js */
-  htBase(X,F,parts);
+  const nHair=parts.length; htBase(X,F,parts); if(hat&&!(kHat&&kHat.head)) htFit(parts,nHair);   // hair never shows through a base hat
   if(kHat&&kHat.head){ const n0=parts.length; parts.push(...kHat.head(F,T)); ofTintFrom(X,'hat',parts,n0); }
   return parts;
 }
