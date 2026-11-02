@@ -134,3 +134,4 @@ body.editing .hud-top{ display:none; }
 .cp-slot.empty{ background:transparent; border:2px dashed rgba(238,240,226,.28); color:rgba(238,240,226,.4); font-size:15px; line-height:1; }
 .cp-slot.empty:hover{ border-color:var(--lichen); color:var(--lichen); }
 
+.ed-story{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px 0 4px; font-size:13.5px; } .ed-story[hidden]{ display:none; } .ed-story b{ font-family:Alegreya,Georgia,serif; font-size:15px; } .ed-story span{ opacity:.65; font-size:12.5px; flex-basis:100%; }

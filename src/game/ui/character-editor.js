@@ -347,6 +347,7 @@ function openEditor(o){
   if(!Stream.terrainDone) return;
   hikerFinish(); customizing=true; creating=!!(o&&o.create);
   if(creating){ edTab=1; edSub[1]=0; }   // creating starts on Body: the signature sets are gems-only and hidden while creating (edLockedPick), so there is nothing to start from in Presets
+  $('#edStory').hidden=!creating;   // the story choice is asked once, here (story-mode.js)
   $('#edTitle').textContent=creating?'Create your hiker':'Your hiker'; $('#edDone').textContent=creating?'Enter the world':'Done';
   $('#edDrag').textContent=creating?'Build your hiker in Body, Face and Clothes. You can change it all later.':'Drag the scene to turn around';
   releasePointer();

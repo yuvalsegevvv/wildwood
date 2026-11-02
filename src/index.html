@@ -228,6 +228,9 @@
   <div class="snd-sub snd-sec">Graphics</div>
   <div class="chips" id="gfxChips"><button class="chip" data-gfx="light">Light</button><button class="chip" data-gfx="medium">Medium</button><button class="chip" data-gfx="">Standard</button><button class="chip" data-gfx="high">High</button></div>
   <p class="acct-note" id="gfxNote">Standard is the usual look. Light and Medium use less vegetation and a smaller picture for slow devices; High adds more plants and a sharper picture on a computer. The page reloads to apply it.</p>
+  <div class="snd-sub snd-sec">Story</div>
+  <div class="chips" id="storyChips"><button class="chip" data-story="play">Play the story</button><button class="chip" data-story="skip">Just objectives</button></div>
+  <p class="acct-note">Play the story: conversations and scenes are read aloud, one line at a time, and key moments hold the screen. Just objectives: no voices, no waiting, no frozen scenes, one short line per talk, and the quest log tells you what to do. Change it any time.</p>
   <div class="snd-sub snd-sec">Handedness</div>
   <div class="chips" id="handChips"><button class="chip" data-hand="">Right-handed</button><button class="chip" data-hand="1">Left-handed</button></div>
   <p class="acct-note">Left-handed: your weapon is in your left hand and your shield (or silly weak-hand item) in your right, and attacks swing from the left. Everyone sees it.</p>
@@ -387,6 +390,7 @@
   <div id="edSubs" class="ed-subs"></div>
   <div id="edBody" class="ed-body"></div>
   <div class="ed-view" id="edView"><button data-v="l" aria-label="Turn left">◀</button><button data-v="0">Front</button><button data-v="1">Side</button><button data-v="2">Back</button><button data-v="r" aria-label="Turn right">▶</button><button data-v="light" id="edLight" aria-pressed="false">Light</button></div>
+  <div class="ed-story" id="edStory" hidden><b>Story</b><div class="chips" id="edStoryChips"><button class="chip" data-story="play">Play the story</button><button class="chip" data-story="skip">Just objectives</button></div><span>You can change this later in Settings.</span></div>
   <div class="ed-foot"><button id="edRandom" class="ghost">Surprise me</button><button id="edDone" class="primary">Done</button></div>
 </div>
 <div id="joy"><div id="knob"></div></div>

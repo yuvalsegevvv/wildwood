@@ -473,6 +473,7 @@ game
   audio/voices-hero.js               Your own voice: battle shouts for skills, a male / female voice to pick, and one voice per signature outfit set
   audio/driver.js                    Per-frame sound driver (soundTick): beds, random events, NPC steps
   ui/settings-sound.js               Sound part of the settings popover
+  ui/story-mode.js                   The story choice: play the story (voiced, paced, key scenes) or skip it and keep just the objectives; asked when a hiker is created, changeable in Settings, stored on this device
   combat/monster-parts.js            Shared helpers for the monster models (monster-*.js): the MODELS registry, lofted bodies, tapered bones, curved tubes, horns, lumpy blobs, scale plates
   combat/monster-folk.js             The goblin family's bodies (model 'goblin': goblins, oni, kappa, tengu, undead, yeti, trolls, reavers, Akaoni, Ymrik): one rig, a body plan for each form (pal.form)
   combat/monster-heads.js            Heads of the goblin family (monster-folk.js), one builder per body plan: goblin, oni, kappa, tengu, undead skull, yeti, troll, viking
