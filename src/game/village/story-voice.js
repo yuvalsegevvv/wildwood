@@ -18,6 +18,7 @@ function svVoiceFor(who,n){
   return svVoices[who];
 }
 function svSpeakLine(who,text,n,quest){
+  if(storySkip()){ svTalking=false; svEnd=svStart=performance.now(); return; }   // (just objectives: nothing is read, nothing waits)
   const narr=text[0]==='('&&text.indexOf(')')===text.length-1, said=narr?text.slice(1,-1).trim():mqSpoken(text);
   svStart=performance.now(); svEnd=null; svLen=said.length; svTalking=!!quest;
   if(!said){ svEnd=svStart; return; }
@@ -43,6 +44,7 @@ function svTick(){
 // a fight's shouted lines arrive as toasts: Name: "line" (a speaker may have a place after the name: Pip, from the Hem: "...")
 const SV_SHOUT=/^((?:The )?[A-Z][a-z]+)(?:, [^:"]+)?: ["“](.+?)["”](?:\s.*)?$/;
 function svToast(text,kind){
+  if(storySkip()) return;
   if(kind!=='mq'&&kind!=='boss'&&kind!=='good') return;
   const m=SV_SHOUT.exec(String(text)); if(!m) return;
   if(svToastQ.length<4) svToastQ.push([m[1],m[2]]);
@@ -59,7 +61,7 @@ function svCineBuild(){
   document.body.appendChild(d); return d;
 }
 function svCineStart(title){
-  if(typeof document==='undefined') return;
+  if(typeof document==='undefined'||storySkip()) return;
   if(!svCineEl) svCineEl=svCineBuild();
   const card=svCineEl.querySelector('.cn-card'), t=svCineEl.querySelector('b'); t.textContent=String(title||'').slice(0,60);
   if(!cineOn){ cineOn=true; svCineT=performance.now(); svCineHp=PL.hp; svCineEl.hidden=false; document.body.classList.add('cine'); P.vx=0; P.vz=0; }

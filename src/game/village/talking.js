@@ -4,7 +4,7 @@ const bubble=$('#bubble'), bName=$('#bName'), bText=$('#bText'), promptEl=$('#pr
 const _bv=new THREE.Vector3();
 /* A quest villager (the main quest, game/economy/main-quest.js) says their quest lines first, one per talk key press, and the server
    is told once (it applies the same talk: starts, progresses or hands in the step); their shop or panel opens after the last one */
-function startTalk(n){ loreOpen=null; talkNPC=n; n.line=0; UI_SFX.talk(); const T=mqLinesFor(n), Q=sqLinesFor(n), L=(T?T.lines:[]).concat(Q?Q.lines:[]); n.mq=L.length?L:null; if(T) netSend({t:'mq',a:'talk',id:n.def.id});
+function startTalk(n){ loreOpen=null; talkNPC=n; n.line=0; UI_SFX.talk(); const T=mqLinesFor(n), Q=sqLinesFor(n), L=(T?T.lines:[]).concat(Q?Q.lines:[]); n.mq=L.length?storyCut(L):null; if(T) netSend({t:'mq',a:'talk',id:n.def.id});
   if(Q) netSend({t:'sq',a:'talk',id:n.def.id});   // sidequests: their lines follow the main quest's
   sayLine(n); if(!mqBusy(n)) openRolePanel(n); }
 const mqBusy=n=>!!(n.mq&&n.mq.length);

@@ -77,6 +77,7 @@ function sqJournalHtml(){
 // a place's scene (a visit part's say lines): in the speech bubble in the middle of the screen, one line per talk key press; walking away closes it
 let sqScene=null;
 function sqShowScene(name,lines){
+  if(storySkip()) return;   // just objectives: a place's scene is not shown
   if(talkNPC) endTalk(); if(!Array.isArray(lines)||!lines.length) return;
   sqScene={x:P.x,z:P.z,scene:true,lines:mqSplitLines(lines.map(String))}; loreOpen=sqScene;
   sqSceneShow(String(name),sqScene.lines.shift()); bubble.classList.remove('mq'); bubble.classList.add('lore'); UI_SFX.talk();

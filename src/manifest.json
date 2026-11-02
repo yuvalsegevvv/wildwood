@@ -406,6 +406,7 @@
     "audio/voices-hero.js",
     "audio/driver.js",
     "ui/settings-sound.js",
+    "ui/story-mode.js",
     "combat/monster-parts.js",
     "combat/monster-folk.js",
     "combat/monster-heads.js",
