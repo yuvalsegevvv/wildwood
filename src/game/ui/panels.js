@@ -11,7 +11,7 @@ function openPanel(id,npc){
   if(!was) UI_SFX.open();
 }
 function closePanels(){ let was=false; PANELS.forEach(p=>{ const e=$('#'+p); if(!e.hidden){ e.hidden=true; was=true; } }); panelNPC=null; if(was) UI_SFX.close(); }
-function uiOpen(){ return customizing||PANELS.some(p=>!$('#'+p).hidden); }
+function uiOpen(){ return customizing||cineOn||PANELS.some(p=>!$('#'+p).hidden); }
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closePanels));
 const row=(it,right,note)=>`<div class="it"><span class="it-ico r${it.rar}">${itemIcon(it)}</span><div class="it-main"><b style="color:${RAR_COL[it.rar]}">${it.name}</b><span>${itemStat(it)}</span><span class="${PL.level<it.lv?'req bad':'req'}">Level ${it.lv}${note?' &nbsp; '+note:''}</span></div>${right}</div>`;
 

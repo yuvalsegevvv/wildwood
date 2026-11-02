@@ -7,6 +7,7 @@ function updatePlayer(dt){
   if(kbHeld('fwd')) f+=1; if(kbHeld('back')) f-=1;
   if(kbHeld('right')) s+=1; if(kbHeld('left')) s-=1;
   f+=-joyY; s+=joyX;
+  if(cineOn){ f=0; s=0; dashReq=false; jumpReq=false; }   // a key scene (story-voice.js) holds the hiker still
   const len=Math.hypot(f,s); if(len>1){ f/=len; s/=len; }
   const wsf=waterSurf(P.x,P.z), inWater=getH(P.x,P.z)<wsf-0.35 && bridgeDeck(P.x,P.z)<wsf;   // (the sea's level, or a tarn's or the river's in the Greyspine)
   let speed=9.5*(1+(GEAR&&GEAR.skills?passiveSum(GEAR.skills,PL.level,'move',clsOf()):0)); if(inWater) speed*=0.5;   // sprint is the default pace; the Fleetfoot passive adds to it

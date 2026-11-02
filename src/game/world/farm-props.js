@@ -1,4 +1,4 @@
-//@ The story's places: Tansy's farm (barn with a loft, Old Hob the scarecrow, barley rows, hay, a fence), the fallen log and the hedge on the road to it, Morrow's hut and grey stump, Pip's hollow, the grave in Deathcap Dell, the Ribbon Row, the Whisper Stump
+//@ The story's places: the fallen log and the hedge on the road to Tansy's farm, Morrow's grey stump (the farm and the hut themselves are story-houses.js), Pip's hollow, the grave in Deathcap Dell, the Ribbon Row, the Whisper Stump
 /* Agent map. buildFarmProps() (called from generation-setup.js beside buildLoreProps) merges everything into one static mesh. Places come from shared/main-quest.js
    (MQ_FARM, MQ_PLACES). Client only, no colliders (the barn is a backdrop; Tansy's loft is a visit point, not a climb). Test: client-smoke. */
 function buildFarmProps(){
@@ -6,39 +6,13 @@ function buildFarmProps(){
   const put=(g,col,x,y,z,yaw,pitch,roll)=>{ const p=paint(g,(px,py,pz,nx,ny,nz,c)=>c.set(col).multiplyScalar(0.86+h3(x+px*3,y+py*3,z+pz*3)*0.26));
     e.set(pitch||0,yaw||0,roll||0); q.setFromEuler(e); m.compose(v.set(x,y,z),q,one); p.applyMatrix4(m); out.push(p); };
   const F=MQ_FARM, gy=(x,z)=>getH(x,z), wood=0x7a5836, dark=0x4e3622, straw=0xd8b45a, barn=0x8a3a2a, roof=0x5a4636;
-  /* the barn: red boards, a pitched roof, a door facing the road (east), a loft hatch above it */
-  { const bx=F.x-10, bz=F.z-4, y=gy(bx,bz);
-    put(new THREE.BoxGeometry(7,4.4,5),barn,bx,y+2.2,bz,0);
-    put(new THREE.BoxGeometry(0.15,3,2.2),dark,bx+3.55,y+1.5,bz,0);            // the door
-    put(new THREE.BoxGeometry(0.15,1.0,1.2),dark,bx+3.55,y+3.5,bz,0);          // the loft hatch
-    for(const s of [-1,1]) put(new THREE.BoxGeometry(7.4,0.2,3.3),roof,bx,y+5.4,bz+s*1.35,0,s*0.0,s*0.62);   // two roof slopes
-    put(new THREE.BoxGeometry(0.1,3.4,0.1),dark,bx+3.9,y+1.7,bz+2.4,0); put(new THREE.BoxGeometry(0.1,0.1,1.2),dark,bx+3.9,y+2.6,bz+2.4,0);   // a ladder post
-    // the rack by the door: a bow, a wand and a sword leaning on a rail
-    { const rx=bx+4.3, rz=bz+2.6; put(new THREE.BoxGeometry(0.1,1.2,1.0),dark,rx,y+0.6,rz,0);
-      put(new THREE.BoxGeometry(0.05,1.0,0.05),0x6a4a2a,rx+0.1,y+0.95,rz-0.3,0,0,0.1); put(new THREE.BoxGeometry(0.04,0.9,0.04),0xc0b0d0,rx+0.1,y+0.9,rz,0,0,-0.1); put(new THREE.BoxGeometry(0.05,1.0,0.05),0x9a9aa4,rx+0.1,y+0.95,rz+0.3,0,0,0.05); }
-  }
-  /* Old Hob: a post, a crosspole, a sack head and a battered hat, in the yard */
-  { const hx=F.x+4, hz=F.z+6, y=gy(hx,hz);
-    put(new THREE.BoxGeometry(0.12,2.2,0.12),dark,hx,y+1.1,hz,0); put(new THREE.BoxGeometry(1.6,0.1,0.1),dark,hx,y+1.6,hz,0,0,0.05);
-    put(new THREE.SphereGeometry(0.3,8,6),0xc8b890,hx,y+2.3,hz,0); put(new THREE.CylinderGeometry(0.34,0.34,0.05,10),0x4a3a2a,hx,y+2.55,hz,0); put(new THREE.CylinderGeometry(0.2,0.24,0.28,10),0x4a3a2a,hx,y+2.7,hz,0);
-    put(new THREE.BoxGeometry(0.5,0.7,0.3),0xa8884a,hx,y+1.3,hz,0); }
-  /* barley rows (the south corner thin and grey-yellow), hay bales, a fence on the road side */
-  for(let r=0;r<5;r++) for(let k=0;k<7;k++){ const x=F.x-6+k*1.5, z=F.z+3+r*1.4, y=gy(x,z), poor=r>=3;
-    put(new THREE.BoxGeometry(0.14,poor?0.5:0.95,0.14),poor?0xb8a468:0xd8b45a,x,y+(poor?0.25:0.47),z,r*0.3+k,0,0.06); }
-  for(const [dx,dz,s] of [[-3,1.5,1],[-1.6,2.3,0.9],[1.2,-3.2,1.1]]){ const x=F.x+dx, z=F.z+dz, y=gy(x,z); put(new THREE.BoxGeometry(1.2*s,0.8*s,0.8*s),straw,x,y+0.4*s,z,dx); }
-  for(let k=-4;k<=4;k++){ const x=F.x+8, z=F.z+k*1.6, y=gy(x,z); put(new THREE.BoxGeometry(0.12,1.1,0.12),wood,x,y+0.55,z,0); if(k<4) put(new THREE.BoxGeometry(0.08,0.1,1.6),wood,x,y+0.85,z+0.8,0); }
+  buildStoryHouses();   // the barn, the coop, the field, Old Hob, the fence and Morrow's hut with its garden: story-houses.js
   /* the fallen log across the path (road2) and the hedge (road3) */
   { const L=MQ_PLACES.road2, y=gy(L.x,L.z); put(new THREE.CylinderGeometry(0.38,0.42,5.2,9),0x6a4e32,L.x,y+0.35,L.z,0,0,Math.PI/2); }
   { const H=MQ_PLACES.road3; for(let k=-5;k<=5;k++){ if(Math.abs(k)<=1) continue; const x=H.x+k*0.9, z=H.z+4, y=gy(x,z);   // a gap for the path
       put(new THREE.SphereGeometry(0.7+((k*7)&1)*0.15,7,5),0x3f6a34,x,y+0.6,z,k); } }
-  /* Morrow's hut: low and crooked, thatched, herbs drying under the eaves, a garden with grey tips, a grey stump by the door (the Power skill's target) */
-  { const H=MQ_PLACES.hut, hx=H.x+5, hz=H.z, y=gy(hx,hz);
-    put(new THREE.BoxGeometry(4.6,2.2,3.6),0x6a5a46,hx,y+1.1,hz,0); for(const s of [-1,1]) put(new THREE.BoxGeometry(5.2,0.18,2.2),0xa89458,hx,y+2.6,hz+s*0.9,0,s*0.1,s*0.5);
-    put(new THREE.BoxGeometry(0.12,1.7,1.0),dark,hx-2.3,y+0.9,hz,0);   // the door, facing the path
-    for(let k=0;k<4;k++) put(new THREE.BoxGeometry(0.1,0.5,0.1),k%2?0x6a8a4a:0xa0a060,hx-2.4,y+1.9-((k%2)*0.1),hz-1.2+k*0.8,0);   // drying bundles
-    for(let r=0;r<3;r++) for(let k=0;k<5;k++){ const x=H.x+1+k*0.9, z=H.z-5+r*1.2, yy=gy(x,z); put(new THREE.BoxGeometry(0.4,0.3,0.4),((r+k)&1)?0x7a9a5a:0x8a9484,x,yy+0.15,z,k+r); }   // garden, grey at the tips
-    { const sx=H.x-0.5, sz=H.z+3, sy=gy(sx,sz); put(new THREE.CylinderGeometry(0.6,0.75,0.9,9),0x8a8a8e,sx,sy+0.45,sz,0); put(new THREE.CylinderGeometry(0.15,0.4,0.5,7),0x6a6a70,sx+0.2,sy+1.1,sz,0,0,0.3); }   // the grey stump
-  }
+  /* the grey stump by Morrow's door (the Power skill's target) */
+  { const H=MQ_PLACES.hut, sx=H.x-0.5, sz=H.z+3, sy=gy(sx,sz); put(new THREE.CylinderGeometry(0.6,0.75,0.9,9),0x8a8a8e,sx,sy+0.45,sz,0); put(new THREE.CylinderGeometry(0.15,0.4,0.5,7),0x6a6a70,sx+0.2,sy+1.1,sz,0,0,0.3); }
   /* Pip's hollow: a ring of green in a grey place, a fallen trunk to sit on, a few ferns */
   { const P=MQ_PLACES.pip, y=gy(P.x,P.z); put(new THREE.CylinderGeometry(0.4,0.45,3.4,8),0x5a4a38,P.x-2.2,y+0.4,P.z+1,0.6,0,Math.PI/2);
     for(let k=0;k<9;k++){ const a=k/9*TAU, x=P.x+Math.sin(a)*2.6, z=P.z+Math.cos(a)*2.6, yy=gy(x,z); put(new THREE.BoxGeometry(0.1,0.7,0.5),0x5ab04a,x,yy+0.35,z,a,0,0.3); put(new THREE.BoxGeometry(0.1,0.6,0.4),0x4a9a3e,x+0.2,yy+0.3,z,a+1,0,-0.3); } }

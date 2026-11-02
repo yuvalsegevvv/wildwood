@@ -15,6 +15,7 @@ function mqStartP(p){
   const M=mqOf(p), step=mqStep(p); if(!step) return;
   M.st=1; M.n=step.parts.map(()=>0); M.h=0; p.dirty=true;
   if(step.gift==='three'){ const id=itemId(ARMOR_SLOTS[Math.floor(Math.random()*ARMOR_SLOTS.length)],tierFor(p.level),0); for(let k=0;k<MERGE_COUNT;k++) addItemP(p,id,true); }   // (armour: every class wears it; a random weapon was a bow for a warrior)
+  if(step.gift==='herbs'){ const g=p.gear; g.res.sunpetal=Math.max(g.res.sunpetal||0,3); g.coins=Math.max(g.coins,POT_FEE[0]); }   // (the brewing step: three sunpetal and the fee are always in your pockets, whatever became of the ones you cut)
   mqToast(p,'Main quest: '+step.title+(step.tip?mqDot(step.title)+step.tip:''));
   if(step.hard&&p.level<step.hard){ p.mqHintAt=Date.now(); mqToast(p,mqHardText(step),'bad'); }
   ev('mq',p.id,step.id,1);

@@ -3,7 +3,7 @@
 // Usage: node tools/mainquest-smoke.js
 const {loadServer}=require('./load');
 const inbox={};
-const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','getH','MQ','MQ_BY_ID','MQ_VER','MQ_END','HERBS','LORE_BY_ID','VIL','VIL2','VIL3','VIL4','ZONES','S','mqGreySpot','sanitizeMq','TUN','NODES','rewardKill','PASS','ITEM','mqGate','MQ_PLACES','MQ_FARM','mqStoryAt','mqWrenSick','MQ_V2_IDS','BURST_SLOT_LV']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','getH','MQ','MQ_BY_ID','MQ_VER','MQ_END','HERBS','LORE_BY_ID','VIL','VIL2','VIL3','VIL4','ZONES','S','mqGreySpot','sanitizeMq','TUN','NODES','rewardKill','PASS','ITEM','mqGate','MQ_PLACES','MQ_FARM','mqStoryAt','mqWrenSick','MQ_V2_IDS','BURST_SLOT_LV','rawHeight','waterSurf','MQ_MORE','POT_FEE','mqStartP']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const at=(xx,zz)=>W.setPos('a',[xx,x.getH(xx,zz),zz,0,0,0]);
@@ -213,4 +213,11 @@ ok('a broken save is cleaned',bad.s===x.MQ.length&&bad.st===0&&Array.isArray(bad
 { const old=(id,st)=>{ const o=x.sanitizeMq({s:OLD_INDEX[id],st:st||1,n:[0,0,0,0]}); return x.MQ[o.s].id; }, OLD_INDEX={W6:5,W7:6,W11:10,W12:11,V7:22,V8:23,F4:30};
   ok('saves from before the profession steps keep their place (the step index moves up by the steps inserted before it)',old('W6')==='W6'&&old('W7')==='W7'&&old('W12')==='W12'&&old('V8')==='V8'&&old('F4')==='F4');
   ok('a save that already has a version is not moved',x.sanitizeMq({s:x.MQ_BY_ID.V8.i,st:1,n:[0],ver:x.MQ_VER}).s===x.MQ_BY_ID.V8.i&&x.sanitizeMq({s:36,st:0,ver:1}).s===x.MQ_BY_ID.G1.i); }
+// the Act I revamp's fixes: the farm stands on dry ground, the lore pass is spliced in, key scenes are marked, the brewing step hands out the herbs it asks for
+{ let wet=0; for(let dx=-16;dx<=18;dx+=2) for(let dz=-12;dz<=20;dz+=2){ const gx=x.MQ_FARM.x+dx, gz=x.MQ_FARM.z+dz; if(x.rawHeight(gx,gz)<x.waterSurf(gx,gz)+0.15) wet++; }
+  ok('Tansy\'s farm (barn, field, coop, fence) is on dry ground, not in the river',wet===0,wet+' wet cells'); }
+ok('the lore pass is spliced into the steps (more lines than the base script, in the right places)',Object.keys(x.MQ_MORE).length>=30&&x.MQ_BY_ID.P1.parts.some(pt=>pt.say&&pt.say.some(l=>/goat is essential/.test(l))));
+ok('key scenes carry a @cine marker (the grey reaching Wren, the Warden waking)',['P6','W17'].every(i=>x.MQ_BY_ID[i].parts.some(pt=>pt.say&&pt.say.some(l=>/^@cine /.test(l)))));
+{ const q=W.players.get('a'); q.gear.mq={s:x.MQ_BY_ID.W7b.i,st:0,n:x.MQ_BY_ID.W7b.parts.map(()=>0),h:0,ver:x.MQ_VER}; q.gear.res.sunpetal=0; q.gear.coins=0; x.mqStartP(q);
+  ok('W7b (the brewing step) hands out the herbs and the fee it asks for, so the potion can be brewed',q.gear.res.sunpetal>=3&&q.gear.coins>=x.POT_FEE[0],'sunpetal '+q.gear.res.sunpetal+', coins '+q.gear.coins); }
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

@@ -80,31 +80,32 @@ function speakPhrases(P0,text,vol,hooks){
   };
   next(0);
 }
-function speakLine(n,text){
-  stopSpeech();
-  if(SND.muted||SND.voiceMode==='off'||SND.vol.voice<=0.01) return;
+function speakLine(n,text,opts){   // opts: {onEnd: called once when the line has been said (or, with the voice off, after a reading time), quiet: softer (narration)}
+  opts=opts||{}; stopSpeech();
+  const done=()=>{ const f=opts.onEnd; opts.onEnd=null; if(f) f(); };
+  if(SND.muted||SND.voiceMode==='off'||SND.vol.voice<=0.01){ if(opts.onEnd) setTimeout(done,Math.min(9000,text.length*60)); return; }
   if(SND.voiceMode==='speech' && speech.ok){
     if(!speech.voices.length) loadVoices();
     if(speech.voices.length){
       try{
         if(!n.vpick || n.vpickN!==speech.voices.length){ n.vpick=pickVoice(n.look.sex,n.seed,n.def.voice); n.vpickN=speech.voices.length; }
-        speakPhrases(n.vpick,text,clamp(SND.vol.master*SND.vol.voice),{
+        speakPhrases(n.vpick,text,clamp(SND.vol.master*SND.vol.voice*(opts.quiet?0.8:1)),{
           start:()=>{ n.speaking=true; speakingNPC=n; duckMusic(true); },
-          end:()=>{ n.speaking=false; if(speakingNPC===n) speakingNPC=null; duckMusic(false); }});
+          end:()=>{ n.speaking=false; if(speakingNPC===n) speakingNPC=null; duckMusic(false); done(); }});
         return;
       }catch(_){}
     }
   }
-  babble(n,text,1);
+  babble(n,text,1,done);
 }
 // Made-up syllables with vowel formants, like villagers in a cosy game
 const VOWELS=[[800,1200],[500,1900],[300,2300],[500,900],[350,800],[650,1700]];
-function babble(n,text,loud){
+function babble(n,text,loud,onEnd){
   audioInit();
-  if(!SND.ready) return;
+  if(!SND.ready){ if(onEnd) setTimeout(onEnd,Math.min(9000,text.length*60)); return; }
   const c=SND.ctx, fem=n.look.sex==='female', base=(fem?225:118)*(0.9+((n.seed*5)%1)*0.25);
   const syl=Math.min(36,Math.max(3,Math.round(text.length/4)));
-  const s=spatial(n.x,n.z,8,45); if(!s) return;
+  const s=spatial(n.x,n.z,8,45); if(!s){ if(onEnd) setTimeout(onEnd,Math.min(9000,text.length*60)); return; }
   const g=loud>0.5?Math.max(0.75,s.gain):s.gain;
   const out=c.createGain(); out.gain.value=loud*g; out.connect(panNode(s.pan,SND.bus.voice));
   let t0=c.currentTime+0.03;
@@ -127,6 +128,6 @@ function babble(n,text,loud){
     t0+=d+AR(0.015,0.045)+(Math.random()<0.1?0.14:0);
   }
   n.speaking=true; speakingNPC=n; if(loud>0.5) duckMusic(true);
-  setTimeout(()=>{ n.speaking=false; if(speakingNPC===n){ speakingNPC=null; duckMusic(false); } },(t0-c.currentTime)*1000+50);
+  setTimeout(()=>{ n.speaking=false; if(speakingNPC===n){ speakingNPC=null; duckMusic(false); } if(onEnd) onEnd(); },(t0-c.currentTime)*1000+50);
 }
 
