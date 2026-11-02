@@ -13,6 +13,7 @@ function frame(){
     if(!Stream.terrainDone && Stream.tp!==undefined){ barEl.style.width=(35*Stream.tp).toFixed(0)+'%'; }
   }
   if(Stream.terrainDone){
+    sitUpdate();   // sitting: stand up when you move, fight or fall
     if(started && !customizing && !PL.dead){ updatePlayer(dt); updateFootFx(dt); goreUpdate(dt); }
     else if(!started && !customizing) P.yaw+=dt*0.04;
     animateHiker(dt);
@@ -26,7 +27,7 @@ function frame(){
     troomUpdate(dt); pzUpdate(dt);   // puzzles: the stones' glow   // testroom: the counter on the screen
     dgEntUpdate(dt);   // dungeons: the doors' sealed look and animation
     updateNpcLabels();
-    updateRemotes(dt);
+    updateRemotes(dt); pshStallTick();   // pshop: stalls of open player shops
     updateMonsters(dt);
     updateCombat(dt); updatePotBar();
     netTick(dt);

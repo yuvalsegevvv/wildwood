@@ -126,7 +126,7 @@ function applyEvent(e){
     case 'merge': if(e[1]===me){ const it=ITEM[e[2]]; if(it) forgeFx(it); } else { const r=REMOTES.get(e[1]), it=ITEM[e[2]]; if(r&&it&&it.rar>=3) toast(r.name+' forged '+it.name+'!','loot r'+it.rar); } break;
     case 'guest': if(e[1]===me) guestGateShow(e[2]); break;   // accounts: a guest hit a limit (level 20, the first three lands, zone tiers)
     case 'lvup': if(e[1]===me) levelUpFx(e[2]); else remoteLevelUp(e[1],e[2]); break;
-    case 'hurt': if(e[1]===me) hurtFx(e[2]); else remoteHurt(e[1],e[2]); break;
+    case 'hurt': if(e[1]===me){ sitSet(0); hurtFx(e[2]); } else remoteHurt(e[1],e[2]); break;
     case 'down': if(e[1]===me){ if(!PL.dead) playerDown(); } else remoteDown(e[1],true); break;
     case 'up': if(e[1]===me) playerUp(); else remoteDown(e[1],false); break;
     case 'toast': if(e[1]==null||e[1]===me){ toast(e[2],e[3]); if(e[1]==null&&e[3]==='good') UI_SFX.success(); } break;

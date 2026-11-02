@@ -12,6 +12,7 @@ function poseRig(r,dt,o){
   let aL=-sw*amp*0.9+breathe, aR=sw*amp*0.9+breathe, eL=0.12+mv*(0.16+0.3*Math.max(0,-sw))+run*0.85, eR=0.12+mv*(0.16+0.3*Math.max(0,sw))+run*0.85, lean=-(0.04*mv+0.17*run)+breathe*0.3;
   if(air){ tL=0.75; tR=-0.1; kL=-1.2; kR=-0.5; aL-=0.7; aR-=0.7; }
   if(o.sit){ tL=tR=1.5; kL=kR=-1.45; hipsY=o.sitH||0.5; aL=aR=-0.45; eL=eR=0.8; lean=0.12; }
+  if(o.sit===1){ tL=tR=1.4; kL=kR=-0.22; aL=aR=-0.25; eL=eR=0.35; hipsY=o.sitH||0.14; }   // sitting on the ground (sit 1), legs out in front; 2 / true = on a seat
   if(o.talk){ aR=-0.5+Math.sin(t*2.6+seed)*0.28; eR=1.15+Math.sin(t*3.3)*0.25; if(!o.sit) aL=-0.15+Math.sin(t*2.1)*0.1; }
   const lf=!!(o.left||r.left);   // a left-handed hiker: the whole upper body acts mirrored (the arms, the twist, the hold), so the strong arm below is always "R" and the two swap back at the end
   if(lf){ let x=aL; aL=aR; aR=x; x=eL; eL=eR; eR=x; }
@@ -48,7 +49,7 @@ function animateHiker(dt){
   const act=weaponsReady&&!customizing?CB.act:null;
   hiker.g.position.set(P.x,P.y+cvbLift(NET.pid),P.z); hiker.g.rotation.y=P.face+(act&&act.kind==='spin'?clamp(act.t/act.dur)*TAU*2:0);   // cave: cvbLift(pid) is Eagle's Perch carrying the model up
   const sp=customizing?0:Math.hypot(P.vx,P.vz);
-  poseRig(hiker.rig,dt,{sp,ph:P.walk,air:started&&!customizing&&!P.ground,headPitch:customizing?-0.04:0,act,hold:weaponsReady?{warrior:'sword'}[clsOf()]:null});
+  poseRig(hiker.rig,dt,{sp,ph:P.walk,air:started&&!customizing&&!P.ground,headPitch:customizing?-0.04:0,act,hold:weaponsReady?{warrior:'sword'}[clsOf()]:null,sit:SIT.on,sitH:(SIT.on===2?0.58:0.14)/(hiker.rig.root.scale.y||1)});
 }
 
 

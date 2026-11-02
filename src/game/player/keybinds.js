@@ -36,6 +36,7 @@ const KB_ACTIONS=[
   {id:'guide', name:'Guide',         def:['KeyJ','']},
   {id:'quests',name:'Quests',        def:['KeyL','']},   // the quest panel: main quest, board, your quests (economy/quests.js)   // the in-game guide (ui/guide.js)
   {id:'view',  name:'Camera view',   def:['KeyV','']},
+  {id:'sit',   name:'Sit / stand',   def:['Period','']},   // sitting: on a bench or the ground, looks only (world/sitting.js)
   {id:'party', name:'Party',         def:['KeyP','']},   // dungeons: the party panel (dungeon/party.js)
   {id:'friends',name:'Friends and ranking', def:['Comma','']},   // friends: the friend list and the ranking (ui/friends.js)
   {id:'accept',name:'Accept an invite', def:['KeyY','']},   // dungeons: a party invite or a run's join prompt (dungeon/party.js)
