@@ -20,7 +20,7 @@ function clearRemotes(){ [...REMOTES.keys()].forEach(remoteRemove); }
 function remoteSnap(a){ // [id,x,y,z,face,hp,maxHp,level,dead]
   const r=REMOTES.get(a[0]); if(!r) return;
   if(r.tx===null){ r.x=a[1]; r.y=a[2]; r.z=a[3]; r.face=a[4]; }
-  r.tx=a[1]; r.ty=a[2]; r.tz=a[3]; r.tface=a[4]; r.hp=a[5]; r.maxHp=a[6]; r.level=a[7]; r.dead=!!a[8];
+  r.tx=a[1]; r.ty=a[2]; r.tz=a[3]; r.tface=a[4]; r.hp=a[5]; r.maxHp=a[6]; r.level=a[7]; r.dead=!!a[8]; r.shop=!!a[9];   // pshop: an open player shop
 }
 function remoteAct(id,kind,face,ub){ const r=REMOTES.get(id); if(!r) return; const A=ACT_OF[kind]||{dur:0.5,hitAt:0.5}; r.act={kind:ANIM_OF[kind]||kind,sk:kind,t:0,dur:A.dur,hitAt:A.hitAt,done:false,ub:!!ub};   // ult: ub = a boosted cast, drawn stronger
   if(face!=null){ r.tface=face; r.face=face; }

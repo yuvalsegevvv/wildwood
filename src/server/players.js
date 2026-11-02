@@ -22,6 +22,7 @@ function sanitizeGear(g,cls){
   gsSanitize(g,out);   // gems: claimed achievements, the daily set and today's ads
   pzSanitize(g,out);   // puzzles: solved stones and their clocks, Sigils, upgrade scrolls
   ambSanitize(g,out);   // amber: the purse and the bought outfit sets (an old save has none)
+  out.psh=pshopSanitize(g.psh);   // pshop: items listed in the player shop (escrow; an old save has none)
   out.fr=frSanitize(g.fr);   // friends: the friend list (names; an old save has none)
   out.rd=rdSanitizeSave(g.rd);   // raids: the raid materials of each land
   out.pre=prSanitize(g.pre);   // presets: the ten saved loadouts (an old save has none)

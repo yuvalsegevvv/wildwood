@@ -12,3 +12,8 @@
 #frInv{ position:fixed; z-index:12; left:50%; top:calc(env(safe-area-inset-top,0px) + 210px); transform:translateX(-50%); width:min(400px,calc(100vw - 32px)); padding:12px 14px 13px; border-radius:6px; border:1px solid var(--line); background:var(--glass-strong); }
 #frInv[hidden]{ display:none; }
 #frInv p{ margin:0 0 9px; font-size:13.5px; line-height:1.45; }
+/* player shops (economy/pshop.js): the panel wears the stall's striped awning and a wooden sign, as the stall in the overworld */
+#pshop .pn-head{ background:repeating-linear-gradient(90deg,#b4552f 0 22px,#eae3d2 22px 44px); border-bottom:4px solid #5a3e28; }
+#pshop .pn-t{ background:#5a3e28; color:#f3e3b0; border:2px solid #d9b45a; border-radius:4px; padding:2px 10px; font-family:Georgia,serif; }
+#pshop .fr-row{ border-bottom-color:rgba(217,180,90,.25); }
+#pshop .ii-ico{ width:34px; height:34px; flex:none; }
