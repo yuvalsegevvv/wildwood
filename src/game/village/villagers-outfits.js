@@ -10,6 +10,9 @@ const WILD_SITES={
   sabir:   {x:-555,z:61,face:-0.785,note:'a raiders\' camp outside the Bowl, the Sunscar'},
   ogden:   {x:-720,z:-535,face:-1.5708,note:'the hill west of Wraithwick, the Gloamhorn'}
 };
+// the main quest's people of the wild (shared/main-quest.js MQ_SITE_NPC): the witch's hut and Pip's hollow
+WILD_SITES.morrow={x:MQ_PLACES.hut.x,z:MQ_PLACES.hut.z,face:Math.PI*1.5,note:'the witch\'s hut, east of the Mushroom Hollow'};
+WILD_SITES.pip={x:MQ_PLACES.pip.x,z:MQ_PLACES.pip.z,face:Math.PI*0.3,note:'a hollow beside the Ancient Grove'};
 const WILD_CACHE={};
 function wildSiteOf(name){
   if(WILD_CACHE[name]) return WILD_CACHE[name];
@@ -30,8 +33,21 @@ const VILLAGERS_OUTFIT=[
     behavior:{type:'stationary',at:'plaza5'}, atFn:()=>mqStoryAt('tansy',mqG()), speed:4.2, home:'house:2', schedule:'always', voice:{rate:1.1,pitch:1.15},
     lines:['I can bring in a whole field before breakfast, if the weather holds. Ask anyone. Ask the weather.','Wheat for bread, oats for porridge, and a sprig behind the ear for luck.','The apples at the market are mine. Do not tell Linnea, she thinks they are hers.'] },
   { id:'dunstan', late:true, seed:102, outfit:'dunstan', title:'Standard-bearer', name:'Dunstan', role:null,
-    behavior:{type:'stationary',at:'plaza6'}, home:'house:7', schedule:'always', voice:{rate:1.0,pitch:0.85},
+    behavior:{type:'stationary',at:'plaza6'}, atFn:()=>mqStoryAt('dunstan',mqG()), speed:3, home:'house:7', schedule:'always', voice:{rate:1.0,pitch:0.85},
     lines:['A flag is only cloth until someone follows it. Then it is a promise with a drum behind it.','Hear that? That is the beat for marching. This one is for waiting. Try to tell them apart.','Whatever is out there, you do not face it alone. Keep your head up and your step on the beat.'] },
+  /* ---- the main quest's own people (docs/WILDWOOD-STORY.md): Torgeir at the home gate, Ambrose at the kettle, Morrow in her hut, Pip in his hollow ---- */
+  { id:'torgeir0', late:true, seed:117, outfit:'torgeir', title:'Shield-wall veteran', name:'Torgeir', role:null,
+    behavior:{type:'stationary',at:'gate'}, atFn:()=>mqStoryAt('torgeir0',mqG()), speed:5, schedule:'always', home:'house:4', voice:{rate:0.78,pitch:0.6},
+    lines:['The road north is quiet. Too quiet, I say, but nobody asks.','A shield is a wall you can carry. Learn to hold it and you can carry the village.','If I say stop, you stop.'] },
+  { id:'ambrose0', late:true, seed:118, outfit:'ambrose', show:()=>{ const s=mqCur(); return !!s&&s.id==='W7b'; }, title:'Marsh herbalist', name:'Ambrose', role:null,
+    behavior:{type:'stationary',at:'garden'}, schedule:'always', home:'house:8', voice:{rate:0.88,pitch:0.9},
+    lines:['Mint for a fever, reed-root for the lungs. Gently, gently.','Drink one when you are half gone, not when you are nearly dead. There now.'] },
+  { id:'morrow', vil:1, site:'morrow', late:true, seed:119, outfit:'morrow', title:'The witch', name:'Morrow', role:null,
+    behavior:{type:'stationary',at:'camp'}, schedule:'always', voice:{rate:0.82,pitch:0.95},
+    lines:['Don\'t touch anything. If the kettle whistles, don\'t run.','I was the village\'s healer once. Ask Linnea. Or don\'t.','The grey is the cold with nowhere left to go.'] },
+  { id:'pip', vil:1, site:'pip', late:true, seed:120, outfit:'pip', title:'The lost one', name:'Pip', role:null,
+    behavior:{type:'stationary',at:'camp'}, schedule:'always', voice:{rate:1.0,pitch:1.4},
+    lines:['It\'s tired. I think it wants to stop.','Everything else dies near me, or goes away. The ferns come back.','Are you going to take me away?'] },
   /* ---- Hanami ---- */
   { id:'genzo', vil:2, late:true, seed:103, outfit:'genzo', title:'Gate-keeper', name:'Genzo', role:null,
     behavior:{type:'stationary',at:'gate'}, home:'house:0', schedule:'always', voice:{rate:0.8,pitch:0.7},
@@ -66,7 +82,7 @@ const VILLAGERS_OUTFIT=[
     lines:['I do not blink very often. It is not rudeness. It is only that I would miss something.','Tea? I keep a cup for guests, though nobody has ever finished one.','Someone wound me up once. Nobody has done it since, and yet here I am. Curious.'] },
   /* ---- in the wild: a spot of their own ---- */
   { id:'pell', vil:1, site:'pell', late:true, seed:112, outfit:'pell', title:'Night-fisher', name:'Pell', role:null,
-    behavior:{type:'stationary',at:'camp'}, schedule:'always', voice:{rate:0.85,pitch:0.8},
+    behavior:{type:'stationary',at:'camp'}, atFn:()=>mqStoryAt('pell',mqG()), schedule:'always', voice:{rate:0.85,pitch:0.8},
     lines:['Mistmere gives up her best fish after dark, when the torch draws them up. Hold still and she is generous.','Squint at the water long enough and you learn what is a ripple and what is not. Some nights, not.','Keep to the shore, friend. The middle is deeper than it looks.'] },
   { id:'ambrose', vil:2, site:'ambrose', late:true, seed:113, outfit:'ambrose', title:'Marsh herbalist', name:'Ambrose', role:null,
     behavior:{type:'stationary',at:'camp'}, schedule:'always', voice:{rate:0.88,pitch:0.9},

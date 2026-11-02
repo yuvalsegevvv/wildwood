@@ -3,7 +3,7 @@
 // Usage: node tools/mainquest-smoke.js
 const {loadServer}=require('./load');
 const inbox={};
-const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','getH','MQ','MQ_BY_ID','MQ_VER','MQ_END','HERBS','LORE_BY_ID','VIL','VIL2','VIL3','VIL4','ZONES','S','mqGreySpot','sanitizeMq','TUN','NODES','rewardKill','PASS','ITEM','mqGate','MQ_PLACES','MQ_FARM','mqStoryAt','mqWrenSick']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','getH','MQ','MQ_BY_ID','MQ_VER','MQ_END','HERBS','LORE_BY_ID','VIL','VIL2','VIL3','VIL4','ZONES','S','mqGreySpot','sanitizeMq','TUN','NODES','rewardKill','PASS','ITEM','mqGate','MQ_PLACES','MQ_FARM','mqStoryAt','mqWrenSick','MQ_V2_IDS','BURST_SLOT_LV']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const at=(xx,zz)=>W.setPos('a',[xx,x.getH(xx,zz),zz,0,0,0]);
@@ -30,7 +30,7 @@ at(x.MQ_PLACES.meadow.x,x.MQ_PLACES.meadow.z); tick(30);
 { const mine=x.MONS.filter(m=>m.owner==='a'&&m.def.id==='slime'&&!m.dead);
   ok('three slimes are spawned for you at the meadow',mine.length===3,'got '+mine.length);
   inbox.a=[]; let kk=0; for(const m of mine) if(kill(m)) kk++; tick(2);
-  ok('killing them finishes P3 and sends the ripple',kk===3&&M().st===2&&inbox.a.some(m=>m.ev&&JSON.stringify(m.ev).includes('mqfx')||JSON.stringify(m).includes('"mqfx"'))); }
+  tick(8); ok('killing them finishes P3 and sends the ripple',kk===3&&M().st===2&&inbox.a.some(m=>m.ev&&JSON.stringify(m.ev).includes('mqfx')||JSON.stringify(m).includes('"mqfx"'))); }
 withTansy(); talk('tansy'); ok('P3 handed in; P4 starts',id()==='P4'&&M().st===1);
 { const farm=x.mqStoryAt('tansy',M()); ok('Tansy is at her farm',near(farm,x.MQ_FARM,8)); }
 at(x.MQ_PLACES.loft.x,x.MQ_PLACES.loft.z); tick(12); ok('the crown is taken from the loft',M().n[0]===1);
@@ -43,9 +43,9 @@ at(x.MQ_PLACES.clearing.x,x.MQ_PLACES.clearing.z); tick(30);
   W.setPos('a',[mine[0].x+1.5,x.getH(mine[0].x,mine[0].z),mine[0].z,Math.PI/2,0,0]); W.receive('a',{t:'atk',k:'skill',tg:mine[0].id,face:Math.PI/2}); tick(1);
   ok('using the skill counts',M().n[0]===1,'n '+M().n);
   inbox.a=[]; let kk=0; for(const m of mine) if(kill(m)) kk++; tick(2);
-  ok('killing them finishes P5 and sends the ash',kk===3&&M().st===2&&JSON.stringify(inbox.a).includes('"mqfx"')); }
+  tick(8); ok('killing them finishes P5 and sends the ash',kk===3&&M().st===2&&JSON.stringify(inbox.a).includes('"mqfx"')); }
 withTansy(); talk('tansy'); ok('P5 handed in; P6 starts, Wren is sick',id()==='P6'&&x.mqWrenSick(M()));
-at(x.MQ_PLACES.home.x,x.MQ_PLACES.home.z); tick(12); ok('P6: reaching the bed shows the scene and is ready',M().st===2&&JSON.stringify(inbox.a).includes('"sqsay"'));
+at(x.MQ_PLACES.home.x,x.MQ_PLACES.home.z); tick(12); tick(8); ok('P6: reaching the bed shows the scene and is ready',M().st===2&&JSON.stringify(inbox.a).includes('"sqsay"'));
 withTansy(); talk('tansy'); ok('P6 handed in; W1 starts',id()==='W1'&&M().st===1);
 // ---- W1: Linnea, then Dunstan, then armour ----
 home(); talk('dunstan'); ok('a part that waits for another does not move',M().n[1]===0&&M().st===1);
@@ -53,53 +53,56 @@ talk('linnea'); talk('dunstan'); ok('Linnea, then Dunstan',M().n[0]===1&&M().n[1
 p.gear.coins=500; W.receive('a',{t:'buy',id:'helmet1'}); tick(1);
 for(const sl of ['helmet','top','bottom','shoes']){ const it=p.gear.inv.find(i=>x.ITEM[i]&&x.ITEM[i].slot===sl); if(it) { W.receive('a',{t:'equip',id:it}); tick(1); break; } }
 if(M().st!==2){ W.receive('a',{t:'buy',id:'top1'}); tick(1); W.receive('a',{t:'equip',id:'top1'}); tick(1); }
-ok('buying and wearing armour finishes W1',M().st===2,'n '+M().n); talk('dunstan'); ok('W1 handed in to Dunstan; W2 waits for Linnea',id()==='W2'&&M().st===0);
-home(); talk('linnea'); ok('Linnea offers Heartleaf (W2)',id()==='W2'&&M().st===1);
-for(let i=0;i<x.HERBS.length;i++){ W.receive('a',{t:'mq',a:'pick',i}); } tick(1);
-ok('herbs far away cannot be picked',M().n[0]===0);
-x.HERBS.forEach(([hx,hz],i)=>{ at(hx,hz); W.receive('a',{t:'mq',a:'pick',i}); W.receive('a',{t:'mq',a:'pick',i}); }); tick(1);
-ok('five heartleaf picked, each once',M().n[0]===5&&M().h===31);
-let k=0; for(const m of x.MONS.filter(m=>m.def.id==='slime'&&!m.dead).slice(0,5)) if(kill(m)) k++; tick(2);
-ok('five slimes: W2 is ready to hand in',k===5&&M().st===2);
-home(); talk('linnea'); ok('W2 handed in; W3 waits for Aldric',id()==='W3'&&M().st===0);
-dev('level',1); talk('aldric'); ok('W3 is offered at level 1: a step asks its act\'s level (act I: 1), not its own',M().st===1);
+ok('buying and wearing armour finishes W1',M().st===2,'n '+M().n); talk('dunstan'); ok('W1 handed in to Dunstan; the witch\'s door (W2) starts by itself',id()==='W2'&&M().st===1);
 ok('the level asked rises only between acts: 1, 15, 20, 26',['W17','V3','V11','F1','F9','G1','G9'].map(k=>x.mqGate(x.MQ_BY_ID[k])).join()==='1,15,15,20,20,26,26',['W17','V3','V11','F1','F9','G1','G9'].map(k=>x.mqGate(x.MQ_BY_ID[k])).join());
-dev('level',2); talk('aldric'); W.receive('a',{t:'cls',cls:'mage'}); tick(1);
-ok('changing class counts',M().st===2); talk('aldric'); ok('W3 done',id()==='W4');
+// ---- the witch (W2-W2c) ----
+const beside=npc=>{ const A=x.mqStoryAt(npc,M())||x.VIL.anchors.plaza6; at(A.x+1,A.z+1); };
+at(x.VIL.x+150,x.VIL.z+150); talk('morrow'); ok('the witch cannot be reached from the village',id()==='W2'&&M().st===1);
+at(x.MQ_PLACES.hut.x,x.MQ_PLACES.hut.z); talk('morrow'); ok('W2: knocking twice; Morrow\'s three small things (W2b) start in the same talk',id()==='W2b'&&M().st===1);
+{ const caps=()=>M().n[0]; let tries=0; while(caps()<5&&tries++<40){ const m=x.MONS.find(m=>m.def.id==='shroom'&&!m.dead&&!m.remove); if(!m) break; kill(m); } tick(2);
+  ok('five spore caps taken from shroomlings',caps()===5&&M().st===2,'n '+M().n); }
+at(x.MQ_PLACES.hut.x,x.MQ_PLACES.hut.z); talk('morrow'); ok('W2b handed in; the Lodge (W6a) waits for Hollen',id()==='W6a'&&M().st===0);
 // W6a, W7b, W11b: the Wayfarers' Lodge, the healer's kettle, crafting (professions, tools, herbs, ore, potions)
 const gather=(kinds,n,slot,tool)=>{ let got=0; for(let r=0;r<12&&got<n;r++){ for(const nd of x.NODES.filter(nd=>kinds.includes(nd.kind)&&nd.need<=tool)){ if(got>=n) break; at(nd.x,nd.z); W.receive('a',{t:'gather',i:nd.i}); tick(30); got+=1; } x.S.t+=200; tick(25); } };
-dev('mq','W6a'); dev('level',4); p.gear.coins=1000; talk('tamsin'); ok('W6a is offered at level 4 (act I)',M().st===1); dev('level',5); talk('tamsin'); ok('W6a: Tamsin offers Working hands',id()==='W6a'&&M().st===1);
+p.gear.coins=1000; home(); talk('tamsin'); ok('W6a: Hollen (the Lodge keeper) offers Working hands',id()==='W6a'&&M().st===1);
 at(x.VIL.x+150,x.VIL.z+150); W.receive('a',{t:'learn',id:'gathering'}); tick(1); ok('the lodge only teaches in a village',!p.gear.prof.gathering);
 home(); W.receive('a',{t:'learn',id:'gathering'}); tick(1); ok('learning Gathering (60 coins) counts for W6a',p.gear.prof.gathering&&p.gear.coins===940&&M().n[0]===1);
 { const nd=x.NODES.find(n=>n.kind==='sunpetal'&&n.need===0); at(nd.x,nd.z); W.receive('a',{t:'gather',i:nd.i}); tick(1); ok('a herb cannot be cut without a sickle',!p.gear.res.sunpetal);
   home(); W.receive('a',{t:'buy',id:'sickle1'}); tick(1); W.receive('a',{t:'equip',id:'sickle1'}); tick(1); ok('buying a sickle does not count as a purchase; wearing it counts for W6a',p.gear.eq.sickle==='sickle1'&&M().n[1]===1); }
-gather(['sunpetal','ironroot'],3,'sickle',0); ok('cutting three herbs finishes W6a',M().st===2,'n '+M().n); home(); talk('tamsin'); ok('W6a handed in',id()==='W7'&&M().st===0);
-dev('mq','W7b'); dev('level',6); talk('linnea'); ok('W7b: Linnea offers the kettle',id()==='W7b'&&M().st===1);
-gather(['sunpetal'],3,'sickle',0); ok('three sunpetal gathered',M().n[0]===3&&p.gear.res.sunpetal>=3);
-home(); W.receive('a',{t:'brew',id:'heal1',n:1}); tick(1); ok('brewing a healing potion (3 sunpetal and a few coins) counts',p.gear.pot.heal1===1&&M().n[1]===1);
-p.hp=1; W.receive('a',{t:'potion',k:'heal'}); ok('drinking it heals and counts',p.hp>p.maxHp*0.3&&!p.gear.pot.heal1&&M().n[2]===1&&M().st===2); tick(1); home(); talk('linnea'); ok('W7b handed in',id()==='W8');
-dev('mq','W11b'); dev('level',9); talk('tomas'); ok('W11b: Tomas offers Made by hand',id()==='W11b'&&M().st===1);
-home(); W.receive('a',{t:'learn',id:'mining'}); W.receive('a',{t:'buy',id:'pick1'}); tick(1); W.receive('a',{t:'equip',id:'pick1'}); tick(1); ok('mining learned and a pickaxe worn (W11b)',M().n[0]===1&&M().n[1]===1);
-gather(['copper'],10,'pick',0); ok('ten ore mined',M().n[2]===10&&p.gear.res.copper>=10,'copper '+p.gear.res.copper);
-home(); W.receive('a',{t:'craft',slot:'sword',tier:0,rar:0}); tick(1); ok('crafting a copper sword at the weaponsmith\'s finishes W11b',p.gear.inv.includes('sword1')&&M().st===2); home(); talk('tomas'); ok('W11b handed in',id()==='W12');
-// the grey monsters of W9
-dev('mq','W9'); dev('level',9); talk('bram'); ok('W9 accepted',id()==='W9'&&M().st===1);
-const [gx,gz]=x.mqGreySpot(7); at(gx,gz); tick(12);
-let grey=x.MONS.filter(m=>m.owner==='a'&&!m.dead&&!m.remove);
-ok('grey slimes spawn for you at the Bog',grey.length===3&&grey.every(m=>m.def.id==='greybog'),grey.length+' spawned');
-for(const m of grey){ m.hp=Math.min(m.hp,20); kill(m); } tick(2);   // (weakened: this checks the quest, not the fight) ok('three grey slimes: W9 ready',M().st===2);
-home(); tick(2); talk('bram'); ok('W9 handed in',id()==='W10');
-// the night and a lore spot (W13)
-dev('mq','W13'); dev('level',11); x.S.day=0.3; talk('oskar'); talk('oskar');
-ok('Oskar\'s tale waits for the night',M().st===1&&M().n[0]===0);
-x.S.day=0.7; talk('oskar'); ok('after dark it counts',M().n[0]===1);
-const L=x.LORE_BY_ID.carvings; W.receive('a',{t:'mq',a:'read',id:'carvings'}); tick(1); ok('the carvings must be read in person',M().n[1]===0);
-at(L.x,L.z); W.receive('a',{t:'mq',a:'read',id:'carvings'}); tick(1); ok('reading the carvings',M().st===2);
-home(); talk('oskar'); ok('W13 handed in',id()==='W14');
+gather(['sunpetal','ironroot'],3,'sickle',0); ok('cutting three herbs finishes W6a',M().st===2,'n '+M().n); home(); talk('tamsin'); ok('W6a handed in; W7b waits for Linnea',id()==='W7b'&&M().st===0);
+talk('linnea'); ok('W7b: Linnea offers the kettle',id()==='W7b'&&M().st===1);
+gather(['sunpetal'],3,'sickle',0); ok('sunpetal for the kettle',p.gear.res.sunpetal>=3);
+home(); W.receive('a',{t:'brew',id:'heal1',n:1}); tick(1); ok('brewing a healing potion (3 sunpetal and a few coins) counts',p.gear.pot.heal1===1&&M().n[0]===1);
+p.hp=1; W.receive('a',{t:'potion',k:'heal'}); ok('drinking it heals and counts',p.hp>p.maxHp*0.3&&!p.gear.pot.heal1&&M().n[1]===1&&M().st===2); tick(1); home(); talk('linnea'); ok('W7b handed in; the board (W6) waits for Maren',id()==='W6'&&M().st===0);
+dev('mq','W2c'); at(x.MQ_PLACES.hut.x,x.MQ_PLACES.hut.z); inbox.a=[]; talk('morrow'); tick(8); ok('W2c: the grey reaches Morrow (the ripple is sent) and the next step, Torgeir (W7), starts by itself',id()==='W7'&&JSON.stringify(inbox.a).includes('"mqfx"'));
+// ---- the north (W7-W9d) ----
+at(x.VIL.x+150,x.VIL.z+150); talk('torgeir0'); ok('Torgeir cannot be asked from far away',id()==='W7'&&M().st===1);
+home(); beside('torgeir0'); talk('torgeir0'); ok('W7: Torgeir will walk with you; Odran\'s cart (W8) waits',id()==='W8'&&M().st===0);
+dev('mq','W9'); ok('Torgeir waits at the river crossing first',near(x.mqStoryAt('torgeir0',M()),x.MQ_PLACES.pellsite,6));
+beside('pell'); talk('pell'); ok('W9: Pell, at the river crossing',M().n[0]===1&&near(x.mqStoryAt('torgeir0',M()),x.MQ_PLACES.thicket,6),'n '+M().n);
+M().n[1]=3; M().n[2]=3; tick(12); beside('torgeir0'); talk('torgeir0'); ok('W9 handed in to Torgeir; the lost one (W9a) starts',id()==='W9a'&&M().st===1);
+beside('pip'); talk('pip'); ok('W9a: Pip in his hollow',id()==='W9b'&&M().st===1);
+dev('level',6); beside('morrow'); talk('morrow'); ok('W9b waits for level 8 (the Power skill slot)',M().n[0]===0&&M().n[1]===0&&x.BURST_SLOT_LV===8);
+dev('level',8); tick(12); ok('level 8 opens the part',M().n[0]===1); beside('morrow'); talk('morrow'); ok('Morrow brews the cure',M().n[1]===1);
+{ const m=x.MONS.find(m=>!m.dead&&!m.remove&&m.def.id==='slime'); W.setPos('a',[m.x+1.5,x.getH(m.x,m.z),m.z,Math.PI/2,0,0]); W.receive('a',{t:'atk',k:'burst',tg:m.id,face:Math.PI/2}); tick(1); ok('the new Power skill counts',M().n[2]===1&&M().st===2); }
+beside('morrow'); talk('morrow'); ok('W9b handed in; the road home (W9c) starts',id()==='W9c'&&M().st===1);
+home(); inbox.a=[]; talk('wren'); tick(8); ok('W9c: the cure at Wren\'s bed (the green wash is sent); Morrow offers the Warden\'s lesson (W9d)',id()==='W9d'&&M().st===0&&JSON.stringify(inbox.a).includes('"mqfx"'));
+beside('morrow'); talk('morrow'); ok('W9d started',id()==='W9d'&&M().st===1);
+at(x.MQ_PLACES.tansyfield.x,x.MQ_PLACES.tansyfield.z); tick(30);
+{ let ks=0, rounds=0; while(M().n[0]<6&&rounds++<8){ const mine=x.MONS.filter(m=>m.owner==='a'&&m.def.id==='thornlet'&&!m.dead&&!m.remove); if(!mine.length){ tick(30); continue; } for(const m of mine){ m.hp=Math.min(m.hp,10); if(kill(m)) ks++; } tick(30); }
+  ok('thornlings sprout in Tansy\'s field and six of them finish W9d',M().st===2&&ks>=6,'killed '+ks+', n '+M().n); }
+beside('tansy'); talk('tansy'); ok('W9d handed in to Tansy; Sharper (W10) waits for Aldric',id()==='W10'&&M().st===0);
+// the training arc
+dev('mq','W13'); dev('level',11); beside('dunstan'); talk('dunstan'); ok('W13: Dunstan offers the beat',id()==='W13'&&M().st===1);
+at(x.MQ_PLACES.rotwood.x,x.MQ_PLACES.rotwood.z); tick(12); ok('listening at the edge of Rotwood',M().st===2); beside('dunstan'); talk('dunstan'); ok('W13 handed in',id()==='W14');
 // an old save that already beat the Rootwarden
-dev('mq','W17'); dev('level',15); p.gear.east=1; talk('bram'); tick(12);
-ok('W17 finishes at once for a character who already opened the tunnel',M().st===2); talk('bram'); tick(12);
+dev('mq','W17'); dev('level',15); p.gear.east=1; at(x.MQ_PLACES.circle.x,x.MQ_PLACES.circle.z); tick(12); home(); talk('bram'); tick(12);
+ok('W17 finishes at once for a character who already opened the tunnel',M().st===2||id()==='W18'); if(id()!=='W18'){ talk('bram'); tick(12); }
 ok('W18 starts by itself after W17',id()==='W18'&&M().st===1);
+// an old save is moved by step id: a version 2 save at the Heartwood sap (W7) lands on the new W7; one on Act II keeps its counts
+{ const s2=x.sanitizeMq({s:x.MQ_V2_IDS.indexOf('W7'),st:1,n:[2],h:0,ver:2}); ok('a version 2 save at the Heartwood sap (W7) lands on the new W7',x.MQ[s2.s].id==='W7'&&s2.n[0]===0);
+  const s3=x.sanitizeMq({s:x.MQ_V2_IDS.indexOf('V5'),st:1,n:[1],h:0,ver:2}); ok('a version 2 save in Act II keeps its step and its counts',x.MQ[s3.s].id==='V5'&&s3.st===1);
+  const s4=x.sanitizeMq({s:2,st:1,n:[0],h:0,ver:2}); ok('a removed step (W3) moves a save to the next one that exists (W6, the board)',x.MQ[s4.s].id==='W6'); }
 // V7b: woodcutting in the vale, and armour from its logs
 dev('mq','V7b'); dev('level',18); p.gear.east=2; p.gear.coins=20000; hanami(); talk('haruka'); ok('V7b: Haruka offers Lacquer and cherrywood',id()==='V7b'&&M().st===1);
 W.receive('a',{t:'learn',id:'woodcutting'}); W.receive('a',{t:'buy',id:'axe2'}); tick(1); W.receive('a',{t:'equip',id:'axe2'}); tick(1); ok('woodcutting learned; an iron axe (tier 2) is not enough for the part that asks for level 15',M().n[0]===1&&M().n[1]===0);

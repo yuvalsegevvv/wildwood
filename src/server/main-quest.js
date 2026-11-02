@@ -114,7 +114,7 @@ function mqTickP(p){
   if(d>160||(pt.night&&!mqNight(S.day))){ for(const m of mine) if(!m.aggro) removeMonS(m); return; }   // (a night part: nothing comes by day)
   if(d>80||S.t<(p.mqSpawnT||0)) return;
   const want=Math.min(3,mqNeed(pt)-M.n[i])-mine.length; if(want<=0) return;
-  const def=pt.spawn?MON_DEFS.find(x=>x.id===pt.kill):GREY_DEFS.find(x=>x.id===pt.grey);
+  const def=pt.grey?GREY_DEFS.find(x=>x.id===pt.grey):MON_DEFS.find(x=>x.id===pt.kill);
   for(let k=0;k<want;k++){
     for(let t=0;t<12;t++){ const a=AR(0,TAU), r=AR(4,pt.spawn?9:16), x=gx+Math.sin(a)*r, z=gz+Math.cos(a)*r; if(getH(x,z)<0.8) continue;
       const m=spawnMonS(def,x,z,{x:gx,z:gz},true); m.owner=p.id; break; }

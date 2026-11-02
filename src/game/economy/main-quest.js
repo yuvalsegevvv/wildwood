@@ -62,7 +62,7 @@ function mqLogRow(){
     return got>=need?'<i class="ql-done">&#10003; '+pt.text+'</i>':pt.text+(need>1?' ('+got+' / '+need+')':''); }).filter(Boolean).join('<br>');
   const T=mqTarget(), where=T&&!(M.st===0&&PL.level<mqGate(s))?(Math.hypot(T.x-P.x,T.z-P.z)<12?'':' &middot; '+Math.round(Math.hypot(T.x-P.x,T.z-P.z))+' m '+dirWord(T.x-P.x,T.z-P.z)):'';
   // the first steps keep their how-to under the objective while they run (the toast that brought it fades, and a new player reads it when they need it)
-  const tip=M.st===1&&s.tip&&M.s<=MQ_BY_ID.W5.i?`<small class="ql-tip">${s.tip}</small>`:'';
+  const tip=M.st===1&&s.tip&&M.s<=MQ_BY_ID.W18.i?`<small class="ql-tip">${s.tip}</small>`:'';
   return `<div class="ql mq${M.st===2?' ok':''}"><b>${s.title}</b><span>${what}${where}</span>${tip}</div>`;
 }
 /* The main quest tab of the quest panel (economy/quests.js): the step, what its giver asked, every part with a picture of the monster it names (ui/mon-pics.js),

@@ -99,7 +99,7 @@ const VILLAGERS=[
   { id:'linnea', late:true, title:'Healer · brews potions', icon:'healer', name:'Healer Linnea', role:'brew',
     look:{sex:'female',height:0.97,build:0.9,face:'oval',hair:'long',hairColor:0x8a6a4a,chest:1.0,top:'jacket',topColor:0x5a7a4a,bottom:'skirt',bottomColor:0x4a3a2a,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2a1e,facial:'none'},
     behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.9,pitch:1.05},
-    lines:['Heartleaf for fever, willow bark for pain, and rest for everything else.','Bring me herbs and a few coins and I will brew them: a healing potion, a draught of might, an ironbark tonic. Tamsin at the Lodge will teach you to cut the herbs.','Wren is no worse today. I will take that.','If you find anything strange out there, bring it to me. Strange is what I need.'] },
+    lines:['Heartleaf for fever, willow bark for pain, and rest for everything else.','Bring me herbs and a few coins and I will brew them: a healing potion, a draught of might, an ironbark tonic. Hollen at the Lodge will teach you to cut the herbs.','Wren is no worse today. I will take that.','If you find anything strange out there, bring it to me. Strange is what I need.'] },
   // Odran the peddler (a watcher: docs/STORY.md; never say so): his cart by the gate from W8, by Hanami's gate from V8
   { id:'odran', late:true, title:'Peddler', icon:'peddler', name:'Odran', role:'peddler', show:()=>odranHere(1),
     look:{sex:'male',height:1.02,build:1.05,face:'oval',hair:'short',hairColor:0x3a2a20,facial:'stubble',top:'jacket',topColor:0x5a4a6a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'ranger',hatColor:0x3a3230,pack:true,shoes:'boots',shoeColor:0x2a1e14},
@@ -149,14 +149,14 @@ const VILLAGERS=[
     behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.92,pitch:1.05},
     lines:['The Lodge teaches the three ways of taking what the north gives: mining, woodcutting, and gathering. Sixty coins each, and a little patience. Bring the right tool: the ore and pines of the Reach want a Hagane edge or better.','Rime ore in the rock, frostpines on the wold, frostbloom under the snow. Take only what you can carry home.','Potions? Ylva has taken her mother\'s chair, over by the fire. She wants frostbloom and snowmoss.'] },
   /* ---- the Wayfarers' Lodge keepers and the healers who brew (docs/MAIN-QUEST.md, professions). late, so the random villagers keep their looks ---- */
-  { id:'tamsin', late:true, title:'Wayfarers\' Lodge · professions', icon:'lodge', name:'Tamsin', role:'lodge',
+  { id:'tamsin', late:true, title:'Wayfarers\' Lodge · professions', icon:'lodge', name:'Hollen', role:'lodge',
     look:{sex:'female',height:1.0,build:1.0,face:'oval',hair:'ponytail',hairColor:0x8a5a2a,chest:1.0,top:'jacket',topColor:0x5a6a4a,bottom:'trousers',bottomColor:0x4a3a2a,hat:'ranger',hatColor:0x5a4a3a,pack:true,shoes:'boots',shoeColor:0x3a2a1e,facial:'none'},
     behavior:{type:'stationary',at:'plaza2'}, home:'house:8', schedule:'always', voice:{rate:0.95,pitch:1.05},
     lines:['The Wayfarers keep a lodge in every village: mining, woodcutting and gathering. Sixty coins for the teaching, and you buy your own tools.','A sickle for herbs, a pickaxe for ore, an axe for trees. The deeper into the woods you go, the better the edge you need.','Ore goes to the weaponsmith, logs to the armourer, herbs to Linnea\'s kettle. Nothing you cut is wasted.'] },
   { id:'isamu', vil:2, late:true, title:'Wayfarers\' Lodge · professions', icon:'lodge', name:'Isamu', role:'lodge',
     look:{sex:'male',height:1.02,build:1.0,face:'angular',hair:'short',hairColor:0x1d1714,facial:'stubble',skin:0xd8b08a,top:'jacket',topColor:0x3a5a4a,bottom:'trousers',bottomColor:0x3a3a42,hat:'kasa',hatColor:0xc8a868,pack:true,shoes:'boots',shoeColor:0x2a1e14},
     behavior:{type:'stationary',at:'plaza1'}, home:'house:8', schedule:'always', voice:{rate:0.9,pitch:0.85},
-    lines:['I keep Hanami\'s lodge: the same teaching as Tamsin\'s in the west, mining, woodcutting and gathering. The vale grows sunwood and cherry, hagane in the crags, kikyo in the meadows.','A sunwood tree wants a Sunstone edge at least. Bring the right axe, or the tree will laugh at you.','I sell tools and I buy what you cut. Everything is worth something.'] },
+    lines:['I keep Hanami\'s lodge: the same teaching as Hollen\'s in the west, mining, woodcutting and gathering. The vale grows sunwood and cherry, hagane in the crags, kikyo in the meadows.','A sunwood tree wants a Sunstone edge at least. Bring the right axe, or the tree will laugh at you.','I sell tools and I buy what you cut. Everything is worth something.'] },
   { id:'hinata', vil:2, late:true, title:'Herbalist · brews potions', icon:'healer', name:'Herbalist Hinata', role:'brew',
     look:{sex:'female',height:0.96,build:0.92,face:'oval',hair:'long',hairColor:0x2a1a14,chest:1.0,skin:0xecc8a4,top:'jacket',topColor:0x4a7a5a,bottom:'skirt',bottomColor:0x2a2830,hat:'none',pack:false,shoes:'boots',shoeColor:0x2a1e14,facial:'none'},
     behavior:{type:'stationary',at:'plaza4'}, home:'house:8', schedule:'always', voice:{rate:0.9,pitch:1.15},
@@ -451,7 +451,11 @@ function updateNPCs(dt){
   for(const n of NPCs){
     const B=n.def.behavior, D=n.def, V=n.V;
     const dxp=P.x-n.x, dzp=P.z-n.z, dp=Math.hypot(dxp,dzp);
-    if(Math.hypot(cx-V.x,cz-V.z)>260){ n.g.visible=false; continue; }   // the other village sleeps while you are far away
+    if(D.atFn){   // a story-led person (mqStoryAt): out of sight they simply stand where the story says, in sight they walk there
+      const A=anchorOf(D.atFn()||B.at,V);
+      if(Math.hypot(A.x-n.x,A.z-n.z)>40&&Math.hypot(cx-n.x,cz-n.z)>60&&Math.hypot(cx-A.x,cz-A.z)>20){ n.x=A.x; n.z=A.z; n.route=[]; n.state='idle'; n.vx=n.vz=0; }
+      if(Math.hypot(cx-n.x,cz-n.z)>260){ n.g.visible=false; continue; }
+    } else if(Math.hypot(cx-V.x,cz-V.z)>260){ n.g.visible=false; continue; }   // the other village sleeps while you are far away
     const wantHome=D.schedule!=='always' && night>0.6;
     if(wantHome && !n.inside && n.state!=='home'){ if(talkNPC===n) endTalk(); if(n.partner){ n.partner.state='idle'; n.partner.partner=null; n.partner=null; } routeTo(n,anchorOf(D.home||'house:0',V),'home'); }
     if(!wantHome && n.inside){ const h=anchorOf(D.home||'house:0',V); n.inside=false; n.x=h.x; n.z=h.z; n.face=h.face; n.state='idle'; n.timer=AR(0,3); n.route=[]; }

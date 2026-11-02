@@ -30,23 +30,44 @@ function rootsSeasonS(B,m,C,dt){
      for(let i=0;i<5;i++){ const q=i===0?C.p:null, [x,z]=q?[q.x,q.z]:arenaPtS(B.A,B.A.r-2); addTeleS(B,x,z,2.4,1.4+i*0.1,'icefall',Math.round(D*0.7)); } }
   else { k.sT=4; for(const q of C.inside) pfxS(q,'slow',1.5); }
 }
+// the story's voices in the Rootwarden fight (main quest W17, docs/WILDWOOD-STORY.md scenes 31-35): each friend calls a move out the first time it comes, the Warden speaks at 80%, a vision shows when the shield breaks,
+// and late in the fight the grey touches everyone in the arena and is cured. All text; nothing here changes the fight's numbers except the thornlings Pip slows for a while
+function rootsBarkS(B,key,line,kind){ const k=B.k; if(k.barks[key]) return; k.barks[key]=1; toastTo(null,line,kind||'mq'); }
+const ROOTS_VISION=['(The Circle is whole and new: tall carved stones, ships with no sails in the stone, a ring of people with their hands raised, singing. At the centre, a seedling of light.)','The Rootwarden: "They planted me here. The first, and the last. I was to hold the cold, so the roots would never have to. I raised wards to pin it."','The Rootwarden: "Then the sky went quiet. And the song went with it. And what came up from below turned my wards around. Now they hide me, and the dark runs free."'];
+function rootsStoryTickS(B,m){
+  const k=B.k;
+  if(!k.barks['eighty']&&m.hp<m.maxHp*0.8){ k.barks.eighty=1; toastTo(null,'The Rootwarden: "The dark... rises faster than I can hold it. Forgive me."','boss'); toastTo(null,'Pip, from the Hem: "It doesn\'t want to hurt you. It\'s afraid."','mq'); }
+  if(!k.barks['grey']&&m.hp<m.maxHp*0.25){ k.barks.grey=1;   // the grey touch: a burst of spores, then Torgeir pours the witch's last flask over everyone
+    for(const q of playersInArena(B.A,0)){ ev('mqfx',q.id,'grey'); toastTo(q.id,'The grey is in you.','bad'); }
+    toastTo(null,'Tansy: "No! Not you too!"','mq');
+    laterS(B,5,()=>{ for(const q of playersInArena(B.A,0)){ q.hp=Math.min(q.maxHp,q.hp+q.maxHp*0.3); q.dirty=true; ev('mqfx',q.id,'green'); toastTo(q.id,'Torgeir: "Drink. All of it. Don\'t waste a drop." The grey draws back.','good'); }
+      toastTo(null,'Morrow: "Caught early. It always works if you catch it early."','mq'); toastTo(null,'Dunstan: "Back on your feet. It\'s nearly done."','mq'); });
+  }
+}
 BOSS_KITS.roots={
-  start(B){ B.k={rootT:4,slamT:10,season:0,seasonT:ROOTS_SEASON,sT:3,gale:0,bloom:null}; },
+  start(B){ B.k={rootT:4,slamT:10,season:0,seasonT:ROOTS_SEASON,sT:3,gale:0,bloom:null,barks:{}}; },
   hit(B,m,p,v){ if(B.k.season===3&&!m.immune&&B.mode===9) m.hp+=v*0.33/monK(m,p).hp; },
-  phase(B,m,n){ if(n===2) startShieldS(B); else spawnAddsS(B,2); },
+  phase(B,m,n){
+    if(n===2){ startShieldS(B); rootsBarkS(B,'ring','Pell: "Ring of three. Stand off. Take them one by one!"'); }
+    else{ spawnAddsS(B,2); rootsBarkS(B,'adds','Tansy: "Crowd! Gather them!"');
+      toastTo(null,'Pip steps out from the Hem and hums the Warden\'s song: the thornlings slow.','good'); for(const a of B.adds) if(!a.dead) a.slowT=Math.max(a.slowT||0,8); }
+  },
   tick(B,m,dt,C){
     const {p,inside,dp}=C, k=B.k;
     if(m.immune){
       B.totems=B.totems.filter(x=>!x.dead&&!x.remove); B.aux=B.totems.length;
-      if(!B.totems.length){ m.immune=false; B.mode=0; B.stunT=5; m.act=null; clearTeleS(B); toastTo(null,'The shield shatters! '+B.bd.short+' is stunned.','good'); return; }
+      if(!B.totems.length){ m.immune=false; B.mode=0; B.stunT=5; m.act=null; clearTeleS(B); toastTo(null,'The shield shatters! '+B.bd.short+' is stunned.','good');
+        for(const q of playersInArena(B.A,0)){ ev('mqfx',q.id,'amber'); ev('sqsay',q.id,'The Rootwarden',ROOTS_VISION); }   // the vision of the Circle as it was
+        return; }
       m.hp=Math.min(m.maxHp*0.6,m.hp+m.maxHp*0.004*dt);
     }
     rootsSeasonS(B,m,C,dt);
+    rootsStoryTickS(B,m);
     k.rootT-=dt;
-    if(k.rootT<=0){ k.rootT=B.enraged?4.5:(B.phase===2?6:7.5); const n=B.enraged?5:3;
+    if(k.rootT<=0){ rootsBarkS(B,'root','Torgeir: "Out of the circles! Keep moving!"'); k.rootT=B.enraged?4.5:(B.phase===2?6:7.5); const n=B.enraged?5:3;
       for(let i=0;i<n;i++){ const q=i===0?p:inside[Math.floor(Math.random()*inside.length)], a=AR(0,TAU), r=i===0?0:AR(3,6.5); addTeleS(B,q.x+Math.sin(a)*r,q.z+Math.cos(a)*r,2.4,1.6,'root',Math.round(m.T.dmg*1.5)); } }
     k.slamT-=dt;
-    if(k.slamT<=0 && dp<15 && B.busy<=0 && !m.immune){ k.slamT=B.enraged?9:12.5; castS(B,m,2.3,2.3); addTeleS(B,m.x,m.z,9,2.2,'slam',Math.round(m.T.dmg*2.2)); ev('roar',m.id); }
+    if(k.slamT<=0 && dp<15 && B.busy<=0 && !m.immune){ rootsBarkS(B,'slam','Dunstan: "Tenth beat! Get out of the ring!"'); k.slamT=B.enraged?9:12.5; castS(B,m,2.3,2.3); addTeleS(B,m.x,m.z,9,2.2,'slam',Math.round(m.T.dmg*2.2)); ev('roar',m.id); }
   }
 };
 
