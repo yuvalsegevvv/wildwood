@@ -265,6 +265,7 @@
     "core/setup.js",
     "@shared",
     "world/heightmap.js",
+    "world/height-workers.js",
     "world/terrain-color.js",
     "world/terrain-color-sun.js",
     "world/terrain-color-gloam.js",

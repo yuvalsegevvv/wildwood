@@ -318,6 +318,7 @@ game
   core/setup.js                      Page helpers ($), device flags (isTouch, LOW, LITE, Q), TAU/DEG
   @shared                            (the shared files above are inserted here)
   world/heightmap.js                 Client heightmap over the whole world (WX0..WX1 x WZ0..WZ1): SEG (by device), HS, getH, grad. The server keeps its own coarser copy.
+  world/height-workers.js            Fills the client's height grid HS on web workers while the page boots (hwStart, hwTake): the same rawHeight, spread over the spare cores; the main thread falls back to doing it alone
   world/terrain-color.js             Terrain colours (COL, terrainColor; hoarColor for the Hoarfrost Reach's snow, tundra, ice and needle floor; greyColor for the Greyspine's alpine meadows, scree, rock and snowfields)
   world/terrain-color-sun.js         The Sunscar's ground colours (sunColor): red-rock mesas and walls, sand, dune sand, white salt pans, black glass fields, green scrub on the river's banks, the Bowl's rim strata and Glasswell's own floor
   world/terrain-color-gloam.js       The Gloamhorn's ground colours (gloamColor): dark heath with violet heather, black peat, grey rock on the sea cliffs, wet shingle at the water, trodden earth and cobbles in Wraithwick

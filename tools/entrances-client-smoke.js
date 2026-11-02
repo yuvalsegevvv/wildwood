@@ -5,7 +5,7 @@
 // that none of it threw while the world was made. Usage: node tools/entrances-client-smoke.js
 const errs=[]; const realErr=console.error; console.error=(...a)=>{ errs.push(a.map(String).join(' ')); };
 const {bootClient}=require('./headless');
-const c=bootClient({expose:['scene','THREE','getH','P','PL','GEAR','NET','startSolo','beginPlay','canStart:()=>canStart','Stream','distToChunk','colGrid','TERRAIN_BANDS','DG_DOORS','DG_ENTRANCES','DG_THEMES',
+const c=bootClient({expose:['scene','THREE','getH','P','PL','GEAR','NET','startSolo','beginPlay','canStart:()=>canStart','Stream','distToChunk','colGrid','TERRAIN_BANDS','terrainTileGeom','DG_DOORS','DG_ENTRANCES','DG_THEMES',
   'DG_ENT_CLEAR','DG_ENT_TALK','dgApron','dgEntranceNear','dgEntUpdate','dgEntSealed','dgOpenDoor','dgEntTint','dgEntClear','dgEntWater','dgEntSounds','dgEntMapMarks','dgEntMiniMarks','placeName',
   'drawFullMap','mapCX','drawMinimap','mmX','updateTalkUI','promptEl','bTalk','terrainColor','landHere','MAP','villageMat','dgEntMat2','nearRoad','VIL','landAt','dirWord','dgEntList','dgBoardSwap:f=>{ const o=dgBoardOpen; dgBoardOpen=f; return o; }']});   // (dgBoardSwap: game/dungeon/board.js declares dgBoardOpen inside the game, so a test cannot shadow it with a global: it swaps the binding)
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
@@ -32,6 +32,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)); let fails=0; const ok=(n,c,i)=>
   { const bad=[]; let n=0; const ray=new T.Raycaster(), down=new T.Vector3(0,-1,0);
     for(const id of IDS){ const D=G.DG_DOORS.doors[id]; if(D.feet.length<6) bad.push(id+' has only '+D.feet.length+' props that stand on the ground');
       for(const [x,y,z] of D.feet){ const b=G.TERRAIN_BANDS.find(q=>x>=q.x0&&x<=q.x1&&z>=q.z0&&z<=q.z1); if(!b){ bad.push(id+' a prop is off the terrain'); continue; }
+        if(!b.mesh) for(const _ of G.terrainTileGeom(b)){}   /* (a far tile's mesh is made when the player nears it) */
         ray.set(new T.Vector3(x,y+60,z),down); const hit=ray.intersectObject(b.mesh)[0]; n++; if(!hit||Math.abs(hit.point.y-y)>0.8) bad.push(id+' prop at '+x.toFixed(1)+','+z.toFixed(1)+' is '+(hit?(y-hit.point.y).toFixed(2):'?')+' m off the terrain mesh'); } }
     ok('every prop that stands on the ground (mushrooms, lanterns, boulders, braziers, standing stones, arch roots) rests on the terrain mesh, found by a ray down onto it',!bad.length&&n>=40,n+' props; '+bad.slice(0,3).join('; ')); }
   { const bad=[], cost=[]; let total=0;

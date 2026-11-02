@@ -339,7 +339,7 @@ const vilOf=n=>n.V||(n.def.site?wildSiteOf(n.def.site):VILS[(n.def.vil||1)-1]);
 function anchorOf(name,V){ V=V||VIL; return V.anchors[name]||V.anchors.plaza0; }
 function randomPOI(n){ const V=vilOf(n); let p; for(let i=0;i<6;i++){ p=V.pois[Math.floor(Math.random()*V.pois.length)]; if(Math.hypot(p.x-n.x,p.z-n.z)>3) break; } return {x:p.x+AR(-0.6,0.6),z:p.z+AR(-0.6,0.6),face:p.face}; }
 function spawnNPC(def,rng){
-  let look=randomLook(rng||Math.random,{villager:true,base:def.look});
+  let look=def.rolled||randomLook(rng||Math.random,{villager:true,base:def.look}); delete def.rolled;   // (rolled: the look was drawn at boot from the shared rng, the body is built later)
   const outfit=def.outfit||VILLAGERS_OUTFIT_WEAR[def.id];   // a signature set worn whole (village/villagers-outfits.js); light mode keeps plain clothes
   if(outfit&&!LITE) look=npcOutfitLook(look,outfit);
   if(def.kin){ look.sex=LOOK.sex; look.hairColor=LOOK.hairColor; look.skin=new THREE.Color(LOOK.skin||0xe0b894).lerp(new THREE.Color(0x9a9a98),0.35).getHex(); }   // your family, greyed by the sickness
@@ -417,15 +417,20 @@ function initNPCs(){
       if(r8()<0.15) Object.assign(look,{kinEars:'round',kinTail:'thin',kinMuzzle:'whiskers',furColor:ISLES_KIN_FUR[Math.floor(r8()*ISLES_KIN_FUR.length)],furColor2:0xf1e6cf,furMark:'belly'});
       defs.push({id:'villagere'+i,vil:8,late:true,seed:i+161,name,role:null,look,behavior:{type:'wander'},home:'house:'+(i%9),schedule:'day',lines:[...new Set(lines)]});
     } }
-  defs.filter(d=>!d.late).forEach(d=>spawnNPC(d,rng));
-  defs.filter(d=>d.late&&(d.vil||1)<3&&!d.outfit).forEach(d=>spawnNPC(d,mulberry32(9002+(d.seed||0))));
-  NPC_DEFER.push(...defs.filter(d=>d.late&&((d.vil||1)>=3||d.outfit)));   // Rimehold's, Highmark's, Glasswell's, Wraithwick's and Tallgrass's people: built in the background (below)
+  // Nobody is built before the loading screen ends (about 40 ms each, 1.8 s of the start): their looks are still drawn here, in the old order from the shared rng, so every person looks as
+  // before; the bodies are built right after Ready by the stream scheduler (job 'n'), the home village's first, then the Vale's, then the far lands'.
+  const home=defs.filter(d=>!d.late), lateNear=defs.filter(d=>d.late&&(d.vil||1)<3&&!d.outfit), far=defs.filter(d=>d.late&&((d.vil||1)>=3||d.outfit));
+  for(const d of home) d.rolled=randomLook(rng,{villager:true,base:d.look});
+  const first=d=>(d.vil||1)===1?0:1;   // (the shared rng's order is fixed above; this only orders the building)
+  NPC_DEFER.push(...home.slice().sort((a,b)=>first(a)-first(b)));
+  NPC_DEFER.push(...lateNear);
+  NPC_DEFER.push(...far);   // Rimehold's, Highmark's, Glasswell's, Wraithwick's and Tallgrass's people: built in the background (below)
 }
 /* Half of the villagers (36 of 74, ~36 ms each) live in the Hoarfrost Reach and the Greyspine, far from where the game starts. They are built after the loading screen,
    one a slice, by the stream scheduler (job 'n', streaming.js) when nothing nearer is waiting. Each has an rng of its own (mulberry32(9002+seed)), so building them
    later changes nobody's look; everything that looks an NPC up (npcById, the label loop, the maps) does it when it needs one. */
 const NPC_DEFER=[];
-function* spawnDeferredNPCs(){ while(NPC_DEFER.length){ const d=NPC_DEFER.shift(); spawnNPC(d,mulberry32(9002+(d.seed||0))); yield; } }
+function* spawnDeferredNPCs(){ while(NPC_DEFER.length){ const d=NPC_DEFER.shift(); spawnNPC(d,mulberry32(9002+(d.seed||0))); yield; } }   // (a def with `rolled` already has its look: the rng passed is not used)
 function routeTo(n,pt,state){ n.route=[pt]; n.state=state||'walk'; n.stuckT=0; n.sx=n.x; n.sz=n.z; }
 function tryChat(n){
   for(const m of NPCs){
