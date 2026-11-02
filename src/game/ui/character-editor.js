@@ -333,9 +333,19 @@ function surpriseMe(){
   LOOK=randomLook(Math.random,{base:{custom:true,cls:LOOK.cls}}); if(LOOK.pack){ LOOK.pack=false; LOOK.cape='pack'; }   // (the backpack is the free cape 'pack')
   saveLook(); rebuildHiker(); renderEditor();
 }
+// The editor's first screens (Body > Build and Gender, Face > Hair, Presets > Outfit sets) are drawn once the forest is ready and the start card is up, a few at a time at the lowest priority, so
+// they are already made when the editor opens (the tiles are cached by cthKey). Their buttons are thrown away at once: only the pictures stay.
+let edWarmed=false;
+function edWarm(){
+  if(edWarmed||customizing||started||!cthInit()) return; edWarmed=true;
+  const t=edTab, s0=edSub.slice(); cthWarm=true;
+  try{ for(const [tb,sb] of [[1,1],[1,0],[2,0],[0,0]]){ edTab=tb; edSub[tb]=sb; renderEditor(); } }catch(e){}
+  cthWarm=false; edTab=t; for(let i=0;i<s0.length;i++) edSub[i]=s0[i];
+  edBody.innerHTML=''; edBody.dataset.at='';
+}
 function openEditor(o){
   if(!Stream.terrainDone) return;
-  customizing=true; creating=!!(o&&o.create);
+  hikerFinish(); customizing=true; creating=!!(o&&o.create);
   if(creating){ edTab=1; edSub[1]=0; }   // creating starts on Body: the signature sets are gems-only and hidden while creating (edLockedPick), so there is nothing to start from in Presets
   $('#edTitle').textContent=creating?'Create your hiker':'Your hiker'; $('#edDone').textContent=creating?'Enter the world':'Done';
   $('#edDrag').textContent=creating?'Build your hiker in Body, Face and Clothes. You can change it all later.':'Drag the scene to turn around';

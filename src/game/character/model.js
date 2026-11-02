@@ -134,7 +134,10 @@ function buildCharacter(L,opt){
 const hiker={g:new THREE.Group(),rig:null,scale:1};
 let weaponsReady=false;
 scene.add(hiker.g);
+var hikerDraft=false;   // the hiker was built at draft detail for a quick start (hikerFinish builds the real one once the forest is ready)
+function hikerFinish(){ if(hikerDraft) rebuildHiker(); }
 function rebuildHiker(q){   // q: a detail override (the editor drags at low detail)
+  if(!q) hikerDraft=false;
   if(hiker.rig){ hiker.g.remove(hiker.rig.root); hiker.rig.root.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
   hiker.rig=buildCharacter(GEAR?effectiveLook():LOOK,{q:q||charDetail('hero')});
   hiker.scale=lookScale(LOOK);
@@ -142,5 +145,5 @@ function rebuildHiker(q){   // q: a detail override (the editor drags at low det
   hiker.g.add(hiker.rig.root);
   if(weaponsReady) attachWeapons();
 }
-rebuildHiker();
+rebuildHiker(0.3);   // (draft detail: the real build waits for Ready, hikerFinish)
 
