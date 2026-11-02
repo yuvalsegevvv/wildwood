@@ -71,7 +71,7 @@ function buildFarLands(){
   scene.add(mesh);
   // smoke over the volcano: a few low-poly puffs, high enough to show through the haze
   const V=FAR_SMOKE, sp=[], sc=[];
-  [[0,150,16],[8,182,22],[-4,215,27],[14,252,32]].forEach(([dx,y,r],i)=>{
+  [[0,74,12],[8,100,17],[-4,130,22],[14,165,28]].forEach(([dx,y,r],i)=>{
     const sg=new THREE.IcosahedronGeometry(r,0), p=sg.attributes.position;
     for(let k=0;k<p.count;k++){ sp.push(V.x+dx+p.getX(k),y+p.getY(k),V.z-i*6+p.getZ(k)); cc.set(FAR_C.smoke).multiplyScalar(0.9+0.1*i/3); sc.push(cc.r,cc.g,cc.b); }
   });

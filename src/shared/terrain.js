@@ -73,7 +73,7 @@ const inGloam=(x,z)=>waLandId(x,z)===5;   // the Gloamhorn, the sixth land (chec
 const inSun=(x,z)=>{ const l=waLandId(x,z); return l===4||l===6; };   // the Sunscar, the fifth land (and Amber Reach until the code of the Reach asks inAmber first)
 const inIsles=(x,z)=>waLandId(x,z)===7;   // emberwake: the Emberwake Isles, the eighth land (shared/emberwake.js): the strip of sea and islands south of the old canvas
 const inAmber=(x,z)=>waLandId(x,z)===6;   // savanna: Amber Reach, the seventh land (shared/savanna.js; check it BEFORE inSun, which is true there too)
-function baseHeight(x,z){ return pvpIsleCut(x,z,waGround(x,z)); }   // (pvp: the Proving Isle's moat and island over the atlas's ground)   // the atlas's ground (shared/world-atlas-ground.js); baseHeightRaw below is the old frame's ground, kept for the content modules that still read it (the Greyfall's fall profile)
+function baseHeight(x,z){ return pvpIsleCut(x,z,volcanoCut(x,z,waGround(x,z))); }   // (pvp: the Proving Isle's moat and island over the atlas's ground)   // the atlas's ground (shared/world-atlas-ground.js); baseHeightRaw below is the old frame's ground, kept for the content modules that still read it (the Greyfall's fall profile)
 // lakes of the home forest and the vale: the atlas's (WA_LAKES; the Reach's frozen lakes are FROST_LAKES): Mistmere in the home forest's west (zone 10), the vale's Mirror Pond (zone 20, south) and Crane Lake (zone 22, east)
 const LAKE_NAMES={10:'Mistmere',20:'Mirror Pond',22:'Crane Lake'};
 const LAKES=WA_LAKES.filter(L=>L.land==='home'||L.land==='vale').map(L=>({x:L.x,z:L.z,r:L.r,name:LAKE_NAMES[L.zone]||'The lake',vale:L.land==='vale'}));
