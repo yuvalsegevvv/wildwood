@@ -13,13 +13,14 @@ function sayLine(n){
   const L=n.def.lines&&n.def.lines.length?n.def.lines:['Hello there.'];
   const quest=mqBusy(n), line=quest?n.mq.shift():L[n.line++%L.length];
   const q=mqLineOf(line), sp=q.who&&q.who!=='You'?NPCs.find(m=>m.def.name===q.who||m.def.name.endsWith(' '+q.who)):null;   // (a screenplay line "Wren: ..." is Wren's, whoever you clicked)
-  bName.textContent=q.who==='You'?(NET.name||'You'):(q.who||n.def.name); bText.textContent=q.text; bubble.classList.toggle('mq',quest); bubble.classList.remove('lore');
+  bName.textContent=q.who==='You'?(NET.name||'You'):(q.who||(q.text[0]==='('?'':n.def.name)); bText.textContent=q.text;   // (narration in brackets is nobody's line) bubble.classList.toggle('mq',quest); bubble.classList.remove('lore');
   const said=mqSpoken(q.text); if(said&&q.who!=='You') speakLine(sp||n,said);   // (what is in brackets is seen, not said; the hiker's own words are not voiced)
   if(typeof n.def.onTalk==='function'){ try{ n.def.onTalk(n); }catch(e){ console.error(e); } }
 }
 /* lore spots (LORE in shared/main-quest.js): the talk key shows the text in the bubble, over the spot; the server hears of it
    (a main quest step may want it read). Heartleaf: the talk key picks it */
 let loreOpen=null;
+const SCENE_STAY=32;   // metres a place's scene stays open as you walk away from where it began
 function readLore(L){ if(talkNPC) endTalk(); loreOpen=L; bName.textContent=L.name; bText.textContent=(L.textOpen&&northOpen())?L.textOpen:L.text; bubble.classList.remove('mq'); bubble.classList.add('lore'); UI_SFX.talk(); netSend({t:'mq',a:'read',id:L.id}); }
 function pickHerb(i){ netSend({t:'mq',a:'pick',i}); UI_SFX.pickup(); }
 function endTalk(){ if(panelNPC && panelNPC===talkNPC) closePanels(); talkNPC=null; stopSpeech(); }
@@ -56,7 +57,7 @@ function updateTalkUI(){
     if(cn&&cn!==circleWas){ const C=CIRCLES.find(c=>c.V===cn); if(C&&C.open(GEAR)&&!uiOpen()){ openTravel(); UI_SFX.click(); } }
     circleWas=cn; }
   const canTalk=started && !customizing && (nearNPC||talkNPC);
-  if(loreOpen&&(talkNPC||Math.hypot(P.x-loreOpen.x,P.z-loreOpen.z)>LORE_R+2)) loreOpen=null;
+  if(loreOpen&&(talkNPC||Math.hypot(P.x-loreOpen.x,P.z-loreOpen.z)>(loreOpen.scene?SCENE_STAY:LORE_R+2))) loreOpen=null;   // (a place's scene stays open while you walk on: it is story, and the road goes on past it)
   if(loreOpen){ bubble.style.left=innerWidth/2+'px'; bubble.style.top=Math.round(innerHeight*0.42)+'px'; bubble.hidden=false; }   // a lore spot's text: long, so in the middle of the screen
   else if(talkNPC){
     _bv.set(talkNPC.x,talkNPC.y+2.05*talkNPC.scale,talkNPC.z).project(camera);

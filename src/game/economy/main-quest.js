@@ -8,7 +8,7 @@ function odranHere(vil){ const M=mqG(); if(!M) return false; return vil===1?M.s>
 // what a quest villager has to say about the main quest right now (null: nothing, their usual lines)
 /* The script writes a scene as a screenplay ("Wren: ...", "(She nods.) Tansy: ..."). One bubble holds one speaker: a line is cut at every "Name: " into
    its own line, and the bubble then wears that name (sayLine, village/talking.js). Narration in brackets stays a line of its own. */
-const MQ_SPEAKER_NAMES='Tansy|Wren|Dunstan|Torgeir|Pip|Morrow|Linnea|Pell|Aldric|Maren|Greta|Bram|Oskar|Hollen|Ambrose|Odran|Tomas|Daisuke|Kaede|You';
+const MQ_SPEAKER_NAMES='Tansy|Wren|Dunstan|Torgeir|Pip|Morrow|Linnea|Pell|Aldric|Maren|Greta|Bram|Oskar|Hollen|Ambrose|Odran|Tomas|Daisuke|Kaede|The Rootwarden|You';
 const MQ_SPEAKER_CUT=new RegExp('\\s+(?=(?:'+MQ_SPEAKER_NAMES+'): )'), MQ_SPEAKER_DIR=new RegExp('^\\((?:'+MQ_SPEAKER_NAMES+'),[^)]*\\)\\s*([^(].*)$'), MQ_SPEAKER_OF=new RegExp('^('+MQ_SPEAKER_NAMES+'): ([\\s\\S]*)$');
 function mqSplitLines(list){ const out=[]; for(const line of list||[]){ let s=String(line); const d=s.match(/^\((\w+),/); if(d&&MQ_SPEAKER_DIR.test(s)) s=d[1]+': '+s.match(MQ_SPEAKER_DIR)[1]; for(const part of s.split(MQ_SPEAKER_CUT)) if(part) out.push(part); } return out; }
 // a line's speaker and what is said, and what the speaking voice reads (stage directions in brackets are seen, not said)

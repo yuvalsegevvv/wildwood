@@ -9,14 +9,14 @@ const mqStep=p=>MQ[mqOf(p).s]||null;
 function mqToast(p,text,kind){ toastTo(p.id,text,kind||'mq'); }
 const mqDot=t=>/[.?!…]$/.test(t)?' ':'. ';   // (a title that ends in a question mark needs no full stop after it)
 // a step with a `hard` level (shared/main-quest.js) is meant to be met by a hiker who went and grew on their own: say so, once at the start and after a knock-out
-const MQ_HARD_TEXT='Hard for your level yet: explore, hunt and take notices from the board to grow stronger, then come back to it.';
-function mqHardHintP(p){ const step=mqStep(p), M=mqOf(p); if(!step||M.st!==1||!step.hard||p.level>=step.hard) return; const now=Date.now(); if(p.mqHintAt&&now-p.mqHintAt<45000) return; p.mqHintAt=now; mqToast(p,step.title+': '+MQ_HARD_TEXT,'bad'); }
+const mqHardText=step=>'Wise at level '+step.hard+': hard for your level yet. Explore, hunt and take notices from the board to grow stronger, then come back to it.';
+function mqHardHintP(p){ const step=mqStep(p), M=mqOf(p); if(!step||M.st!==1||!step.hard||p.level>=step.hard) return; const now=Date.now(); if(p.mqHintAt&&now-p.mqHintAt<45000) return; p.mqHintAt=now; mqToast(p,step.title+': '+mqHardText(step),'bad'); }
 function mqStartP(p){
   const M=mqOf(p), step=mqStep(p); if(!step) return;
   M.st=1; M.n=step.parts.map(()=>0); M.h=0; p.dirty=true;
-  if(step.gift==='three'){ const id=randomItem(tierFor(p.level),0); for(let k=0;k<MERGE_COUNT;k++) addItemP(p,id,true); }
+  if(step.gift==='three'){ const id=itemId(ARMOR_SLOTS[Math.floor(Math.random()*ARMOR_SLOTS.length)],tierFor(p.level),0); for(let k=0;k<MERGE_COUNT;k++) addItemP(p,id,true); }   // (armour: every class wears it; a random weapon was a bow for a warrior)
   mqToast(p,'Main quest: '+step.title+(step.tip?mqDot(step.title)+step.tip:''));
-  if(step.hard&&p.level<step.hard){ p.mqHintAt=Date.now(); mqToast(p,MQ_HARD_TEXT,'bad'); }
+  if(step.hard&&p.level<step.hard){ p.mqHintAt=Date.now(); mqToast(p,mqHardText(step),'bad'); }
   ev('mq',p.id,step.id,1);
   mqAutoP(p);
 }

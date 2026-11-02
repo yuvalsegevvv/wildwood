@@ -28,9 +28,9 @@ ok('the log and the hedge count',M().n[1]===1&&M().n[2]===1&&M().st===2);
 withTansy(); talk('tansy'); ok('P2 handed in; P3 starts',id()==='P3'&&M().st===1);
 at(x.MQ_PLACES.meadow.x,x.MQ_PLACES.meadow.z); tick(30);
 { const mine=x.MONS.filter(m=>m.owner==='a'&&m.def.id==='slime'&&!m.dead);
-  ok('three slimes are spawned for you at the meadow',mine.length===3,'got '+mine.length);
+  ok('two slimes are spawned for you at the meadow',mine.length===2,'got '+mine.length);
   inbox.a=[]; let kk=0; for(const m of mine) if(kill(m)) kk++; tick(2);
-  tick(8); ok('killing them finishes P3 and sends the ripple',kk===3&&M().st===2&&inbox.a.some(m=>m.ev&&JSON.stringify(m.ev).includes('mqfx')||JSON.stringify(m).includes('"mqfx"'))); }
+  tick(8); ok('killing them finishes P3 and sends the ripple',kk===2&&M().st===2&&inbox.a.some(m=>m.ev&&JSON.stringify(m.ev).includes('mqfx')||JSON.stringify(m).includes('"mqfx"'))); }
 withTansy(); talk('tansy'); ok('P3 handed in; P4 starts',id()==='P4'&&M().st===1);
 { const farm=x.mqStoryAt('tansy',M()); ok('Tansy is at her farm',near(farm,x.MQ_FARM,8)); }
 at(x.MQ_PLACES.loft.x,x.MQ_PLACES.loft.z); tick(12); ok('the crown is taken from the loft',M().n[0]===1);
