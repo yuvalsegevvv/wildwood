@@ -19,7 +19,7 @@ One fixed bonus, one of five: attack speed, buff duration, charge gain, cooldown
 **One stone for all accessories**: rings, level-40 pendants and talismans roll with `gear.rsr`, now the **Accessory Reroll Stone**; sacrificing a level-30+ ring, pendant or talisman pays it (1/2/4/8/16). Level-40 pendants can now be rolled (they were never rolled before).
 
 ## The volcano's common monsters
-Zones `e49` The Ashfall Slopes (Ash Crawler, Cinder Wisp, level 49) and `e50` The Caldera Rim (Magma Husk, Caldera Condor, level 50), existing models in ember palettes. The isle's ground is still the atlas's placeholder dome (the arena is flat at its top); a high-polygon volcano model is not built.
+Zones `e49` The Ashfall Slopes (Ash Crawler, Cinder Wisp, level 49) and `e50` The Caldera Rim (Magma Husk, Caldera Condor, level 50), existing models in ember palettes. The isle's ground is now a real volcano (`shared/volcano-ground.js`, `volcanoCut` laid over the atlas's low dome by `baseHeight`): a crater floor at 36 m (the arena), an inner wall rising to a ragged 55 m rim, gullied flanks running down to the atlas's own ground, faded out towards the shore so the coast and the Ember Bridge landing stay where they were. Nothing grows on it (`vgBare`). `terrain-color-isles.js` paints black ash and basalt, scorched near the rim, glowing lava cracks thickest inside the crater; `game/world/volcano-fx.js` adds the smoke plume, rising embers and lava glow, and while Pyrrhax is in part 3 a heavier plume with ash and burning rock falling; `far-lands.js` draws the plume over the cone from afar.
 
 ## Test server
 The `/test` kit now holds every level-40 pendant kind and every talisman kind at Unique +8 (an attack talisman is worn).

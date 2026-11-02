@@ -6,6 +6,7 @@
 //   --skip n       press the testing tools' "Skip to the next time of day" n times (a new world starts at night, and a slow render lets the day run on: --skip 4 stops at the first daytime hour)
 //   --go <id>      press one of the testing tools' teleport buttons instead (tPass, tRime, tHall, tNest, tGlen, tGrey, tQueen, tCavern, ...: the ids in src/index.html, #tSec)
 //   --unlock       first open every land the way the testing tools' rock-fall buttons do (the Vale, the Reach, the Greyspine, the Sunscar, the Gloamhorn), so --at can go there
+//   --also a,b     press those testing buttons first (e.g. tCoralhaven opens the Emberwake Isles' gates) so --at can go there
 //   --frames N     rendered frames to wait after the jump (default 25: the world streams in a slice per frame, a far land colours its ground on arrival, and software GL draws about one frame a second)
 //   --settings     leave the settings panel open in the picture (it is closed by default)
 // Prints the page's console errors (none is the good answer). The shots of a session are in the path you give; look at them with the Read tool.
@@ -34,6 +35,7 @@ srv.listen(0,'127.0.0.1',async()=>{
       await pg.evaluate(()=>document.getElementById('bSound').click()); await sleep(400);   // the settings popover holds the testing tools
       if(LEVEL>1){ await pg.evaluate(l=>{ document.getElementById('tLevel').value=l; document.getElementById('tSetLv').click(); },LEVEL); await sleep(1500); }
       if(process.argv.includes('--unlock')){ for(const id of ['tRiverFall','tNeckFall']){ await pg.evaluate(i=>document.getElementById(i).click(),id); await sleep(700); } }   // opens the Vale, the Reach, the glacier valley and the Greyspine's rock falls (the Sunscar and the Gloamhorn need them)
+      for(const id of arg('--also','').split(',').filter(Boolean)){ await pg.evaluate(i=>{ const t=document.getElementById(i); if(!t) throw new Error('no testing button #'+i); t.click(); },id); await sleep(8000); }   // --also tCoralhaven,...: testing buttons pressed first (opening a land's gates) before --at
       if(AT){ await pg.evaluate(v=>{ const t=document.getElementById('tPass'); t.setAttribute('data-v',v); t.click(); },AT.startsWith('cave:')||AT.split(',').length>=3?AT:AT+',0'); await sleep(300); }   // (cave:2,x,z,deg goes through as it is)
       else if(GO){ await pg.evaluate(i=>{ const t=document.getElementById(i); if(!t) throw new Error('no testing button #'+i); t.click(); },GO); await sleep(300); }
       if(!process.argv.includes('--settings')) await pg.evaluate(()=>document.getElementById('bSound').click());

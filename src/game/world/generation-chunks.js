@@ -61,7 +61,7 @@ function* genChunk(ci){
       items[type].push({x,z,m,c:type==='snag'?tint(0x3a3430,0.1):tint(pick(PAL[type]))}); trees.push({x,z,s}); placed++; continue;
     }
     if(inIsles(x,z)){   // emberwake: the Emberwake Isles: a tall, dense jungle (ceibas towering over broadleaf trees, coconut palms, bananas, tree ferns and bamboo) on the jungle isles, palm groves on the Landing's island and the beaches, a few thorn trees and umbrella pines on the Highland, a sparse fringe on the volcano; none at the keep-outs, in the shallows or on the arenas
-      const cd=coastDist(x,z); if(h<1.4||g>0.6||cd<12||ewKeepOut(x,z,3)||vDist(x,z)<VR+8||storyClear(x,z)||dgEntClear(x,z)||waWaterDist(x,z)<5) continue;
+      const cd=coastDist(x,z); if(h<1.4||g>0.6||cd<12||ewKeepOut(x,z,3)||vgBare(x,z)||vDist(x,z)<VR+8||storyClear(x,z)||dgEntClear(x,z)||waWaterDist(x,z)<5) continue;
       const part=ewIslePart(x,z), cl=noise2(x*0.013+40,z*0.013-12)*0.5+0.5, beach=cd<46;
       const pr=part===1?0.09+0.16*cl:part===2?0.006+0.01*cl:part===3?0.012+0.015*cl:0.03+0.05*cl+(beach?0.04:0);   // (the canopy closes in clumps; the Highland is nearly bare; the volcano keeps a fringe; the Landing's island has palm groves)
       if(rand()>pr) continue;
@@ -167,7 +167,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<30000*per && n<(Q*(LOW?2600:4200))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(8), h=getH(x,z);
-    if(h<0.8 || grad(x,z)>0.75 || forestDensity(x,z)<0.45 || vDist(x,z)<VR || arenaDist(x,z)<20 || inTunnelCut(x,z) || inHoar(x,z) || inAmber(x,z) || (inIsles(x,z)&&(ewKeepOut(x,z,2)||coastDist(x,z)<30)) || (inGrey(x,z)&&h>greyTreeline(x,z)-12) || greyWet(x,z,-1)) continue;
+    if(h<0.8 || grad(x,z)>0.75 || forestDensity(x,z)<0.45 || vDist(x,z)<VR || arenaDist(x,z)<20 || inTunnelCut(x,z) || inHoar(x,z) || inAmber(x,z) || (inIsles(x,z)&&(vgBare(x,z)||ewKeepOut(x,z,2)||coastDist(x,z)<30)) || (inGrey(x,z)&&h>greyTreeline(x,z)-12) || greyWet(x,z,-1)) continue;
     const s=R(0.6,1.3);
     fernItems.push({x,z,m:mtx(x,h-0.03,z,rand()*TAU,s,s*R(0.8,1.2),s),c:tint(pick(PAL.fern))}); n++;
   }
@@ -195,7 +195,7 @@ function* genChunk(ci){
     if(inGrey(x,z)&&h>greyTreeline(x,z)+14 || greyWet(x,z,-0.5)) continue;   // no tufts in the Greyspine's snowfields or in the water
     const meadow=smoothstep(0.1,0.7,noise2(x*0.025+9,z*0.025-4))*(1-fd)*smoothstep(VR-4,VR+14,vd);
     const s=R(0.75,1.2)*(0.55+0.45*smoothstep(VR-6,VR+8,vd));
-    if(inIsles(x,z)&&(ewKeepOut(x,z,0)||coastDist(x,z)<26)) continue;   // emberwake: no tufts on the beaches, at the keep-outs
+    if(inIsles(x,z)&&(vgBare(x,z)||ewKeepOut(x,z,0)||coastDist(x,z)<26)) continue;   // emberwake: no tufts on the beaches, at the keep-outs
     if(inAmber(x,z)){   // savanna: the tall savanna tufts (gold or green with the season, savGrassMat), darkened to ash on the Burnt Plain; not in the village (vd) and thinner on rock
       if(vd<VR+18||waCoast(x,z)<30||waWaterDist(x,z)<3||savKeepOut(x,z,0)) continue;
       const ash=savBurnK(x,z); gc.setRGB(1,1,1).multiplyScalar(R(0.88,1.12)).lerp(SAV_ASH,ash*0.9);
@@ -213,7 +213,7 @@ function* genChunk(ci){
   for(let a=0,n=0;a<60000*per && n<(Q*(LOW?2600:4600))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(6), h=getH(x,z);
-    if(h<0.8 || grad(x,z)>0.6 || forestDensity(x,z)>0.5 || vDist(x,z)<VR+1 || inTunnelCut(x,z) || bareGround(x,z) || inHoar(x,z) || (inIsles(x,z)&&ewKeepOut(x,z,2)) || (inGrey(x,z)&&h>greyTreeline(x,z)-6) || greyWet(x,z,-0.5)) continue;
+    if(h<0.8 || grad(x,z)>0.6 || forestDensity(x,z)>0.5 || vDist(x,z)<VR+1 || inTunnelCut(x,z) || bareGround(x,z) || inHoar(x,z) || (inIsles(x,z)&&(vgBare(x,z)||ewKeepOut(x,z,2))) || (inGrey(x,z)&&h>greyTreeline(x,z)-6) || greyWet(x,z,-0.5)) continue;
     if(noise2(x*0.04+11,z*0.04-3)<0.15) continue;
     const FL=inVale(x,z)?PAL.valeFlowers:PAL.flowers;
     const idx=rand()<0.8?Math.floor((noise2(x*0.02-50,z*0.02+50)*0.5+0.5)*FL.length)%FL.length:Math.floor(rand()*FL.length);
