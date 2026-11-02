@@ -3,7 +3,7 @@
 // Usage: node tools/mainquest-smoke.js
 const {loadServer}=require('./load');
 const inbox={};
-const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','getH','MQ','MQ_BY_ID','MQ_VER','MQ_END','HERBS','LORE_BY_ID','VIL','VIL2','VIL3','VIL4','ZONES','S','mqGreySpot','sanitizeMq','TUN','NODES','rewardKill','PASS','ITEM','mqGate']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','getH','MQ','MQ_BY_ID','MQ_VER','MQ_END','HERBS','LORE_BY_ID','VIL','VIL2','VIL3','VIL4','ZONES','S','mqGreySpot','sanitizeMq','TUN','NODES','rewardKill','PASS','ITEM','mqGate','MQ_PLACES','MQ_FARM','mqStoryAt','mqWrenSick']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const at=(xx,zz)=>W.setPos('a',[xx,x.getH(xx,zz),zz,0,0,0]);
@@ -13,11 +13,48 @@ const kill=m=>{ for(let i=0;i<600&&!m.dead;i++){ W.setPos('a',[m.x+1.5,x.getH(m.
 const dev=(cmd,v)=>{ W.receive('a',{t:'dev',cmd,v}); tick(1); };
 W.join('a',{name:'Quester',look:{cls:'warrior'},save:{level:1}}); tick(1);
 const p=W.players.get('a'), M=()=>p.gear.mq, id=()=>x.MQ[M().s]&&x.MQ[M().s].id;
-ok('a new character starts at W1, already under way',id()==='W1'&&M().st===1);
-talk('linnea'); ok('a part that waits for another does not move',M().n[1]===0&&M().st===1);
-at(900,0); talk('wren'); ok('talking from outside the village does nothing',M().n[0]===0);
-home(); talk('wren'); talk('linnea');
-ok('W1 hands in to Linnea, and her next step (W2) starts in the same talk',id()==='W2'&&M().st===1&&p.exp>0,'exp '+p.exp);
+ok('a new character starts at P1 (the prologue), already under way',id()==='P1'&&M().st===1);
+// ---- the prologue: Tansy leads (P1-P6) ----
+const near=(A,B,d)=>Math.hypot(A.x-B.x,A.z-B.z)<(d||1);
+const withTansy=()=>{ const A=x.mqStoryAt('tansy',M()); at(A.x+1,A.z+1); };
+ok('Tansy starts at the well and Wren is well',near(x.mqStoryAt('tansy',M()),x.VIL.anchors.well)&&!x.mqWrenSick(M()));
+at(900,0); talk('tansy'); ok('talking from far away does nothing',id()==='P1'&&M().n[0]===0);
+withTansy(); talk('tansy'); ok('P1: the morning at the well; P2 starts by itself',id()==='P2'&&M().st===1);
+ok('Tansy waits at the gate marker',near(x.mqStoryAt('tansy',M()),x.MQ_PLACES.road1,6));
+at(x.MQ_PLACES.road2.x,x.MQ_PLACES.road2.z); tick(12); ok('a marker out of order does not count',M().n[1]===0);
+at(x.MQ_PLACES.road1.x,x.MQ_PLACES.road1.z); tick(12); ok('the gate marker counts, Tansy runs on to the log',M().n[0]===1&&near(x.mqStoryAt('tansy',M()),x.MQ_PLACES.road2,6));
+at(x.MQ_PLACES.road2.x,x.MQ_PLACES.road2.z); tick(12); at(x.MQ_PLACES.road3.x,x.MQ_PLACES.road3.z); tick(12);
+ok('the log and the hedge count',M().n[1]===1&&M().n[2]===1&&M().st===2);
+withTansy(); talk('tansy'); ok('P2 handed in; P3 starts',id()==='P3'&&M().st===1);
+at(x.MQ_PLACES.meadow.x,x.MQ_PLACES.meadow.z); tick(30);
+{ const mine=x.MONS.filter(m=>m.owner==='a'&&m.def.id==='slime'&&!m.dead);
+  ok('three slimes are spawned for you at the meadow',mine.length===3,'got '+mine.length);
+  inbox.a=[]; let kk=0; for(const m of mine) if(kill(m)) kk++; tick(2);
+  ok('killing them finishes P3 and sends the ripple',kk===3&&M().st===2&&inbox.a.some(m=>m.ev&&JSON.stringify(m.ev).includes('mqfx')||JSON.stringify(m).includes('"mqfx"'))); }
+withTansy(); talk('tansy'); ok('P3 handed in; P4 starts',id()==='P4'&&M().st===1);
+{ const farm=x.mqStoryAt('tansy',M()); ok('Tansy is at her farm',near(farm,x.MQ_FARM,8)); }
+at(x.MQ_PLACES.loft.x,x.MQ_PLACES.loft.z); tick(12); ok('the crown is taken from the loft',M().n[0]===1);
+W.receive('a',{t:'cls',cls:'archer'}); tick(1); ok('trying another weapon counts, P4 is ready',M().n[1]===1&&M().st===2);
+withTansy(); talk('tansy'); ok('P4 handed in; the XP made level 2; P5 starts',id()==='P5'&&p.level>=2,'level '+p.level);
+ok('the second skill slot is open at level 2',x.SKILL_SLOT_LV===2||p.level>=2);
+at(x.MQ_PLACES.clearing.x,x.MQ_PLACES.clearing.z); tick(30);
+{ const mine=x.MONS.filter(m=>m.owner==='a'&&m.def.id==='shroom'&&!m.dead);
+  ok('three shroomlings are spawned for you in the clearing',mine.length===3,'got '+mine.length);
+  W.setPos('a',[mine[0].x+1.5,x.getH(mine[0].x,mine[0].z),mine[0].z,Math.PI/2,0,0]); W.receive('a',{t:'atk',k:'skill',tg:mine[0].id,face:Math.PI/2}); tick(1);
+  ok('using the skill counts',M().n[0]===1,'n '+M().n);
+  inbox.a=[]; let kk=0; for(const m of mine) if(kill(m)) kk++; tick(2);
+  ok('killing them finishes P5 and sends the ash',kk===3&&M().st===2&&JSON.stringify(inbox.a).includes('"mqfx"')); }
+withTansy(); talk('tansy'); ok('P5 handed in; P6 starts, Wren is sick',id()==='P6'&&x.mqWrenSick(M()));
+at(x.MQ_PLACES.home.x,x.MQ_PLACES.home.z); tick(12); ok('P6: reaching the bed shows the scene and is ready',M().st===2&&JSON.stringify(inbox.a).includes('"sqsay"'));
+withTansy(); talk('tansy'); ok('P6 handed in; W1 starts',id()==='W1'&&M().st===1);
+// ---- W1: Linnea, then Dunstan, then armour ----
+home(); talk('dunstan'); ok('a part that waits for another does not move',M().n[1]===0&&M().st===1);
+talk('linnea'); talk('dunstan'); ok('Linnea, then Dunstan',M().n[0]===1&&M().n[1]===1);
+p.gear.coins=500; W.receive('a',{t:'buy',id:'helmet1'}); tick(1);
+for(const sl of ['helmet','top','bottom','shoes']){ const it=p.gear.inv.find(i=>x.ITEM[i]&&x.ITEM[i].slot===sl); if(it) { W.receive('a',{t:'equip',id:it}); tick(1); break; } }
+if(M().st!==2){ W.receive('a',{t:'buy',id:'top1'}); tick(1); W.receive('a',{t:'equip',id:'top1'}); tick(1); }
+ok('buying and wearing armour finishes W1',M().st===2,'n '+M().n); talk('dunstan'); ok('W1 handed in to Dunstan; W2 waits for Linnea',id()==='W2'&&M().st===0);
+home(); talk('linnea'); ok('Linnea offers Heartleaf (W2)',id()==='W2'&&M().st===1);
 for(let i=0;i<x.HERBS.length;i++){ W.receive('a',{t:'mq',a:'pick',i}); } tick(1);
 ok('herbs far away cannot be picked',M().n[0]===0);
 x.HERBS.forEach(([hx,hz],i)=>{ at(hx,hz); W.receive('a',{t:'mq',a:'pick',i}); W.receive('a',{t:'mq',a:'pick',i}); }); tick(1);
@@ -27,7 +64,7 @@ ok('five slimes: W2 is ready to hand in',k===5&&M().st===2);
 home(); talk('linnea'); ok('W2 handed in; W3 waits for Aldric',id()==='W3'&&M().st===0);
 dev('level',1); talk('aldric'); ok('W3 is offered at level 1: a step asks its act\'s level (act I: 1), not its own',M().st===1);
 ok('the level asked rises only between acts: 1, 15, 20, 26',['W17','V3','V11','F1','F9','G1','G9'].map(k=>x.mqGate(x.MQ_BY_ID[k])).join()==='1,15,15,20,20,26,26',['W17','V3','V11','F1','F9','G1','G9'].map(k=>x.mqGate(x.MQ_BY_ID[k])).join());
-dev('level',2); talk('aldric'); W.receive('a',{t:'cls',cls:'archer'}); tick(1);
+dev('level',2); talk('aldric'); W.receive('a',{t:'cls',cls:'mage'}); tick(1);
 ok('changing class counts',M().st===2); talk('aldric'); ok('W3 done',id()==='W4');
 // W6a, W7b, W11b: the Wayfarers' Lodge, the healer's kettle, crafting (professions, tools, herbs, ore, potions)
 const gather=(kinds,n,slot,tool)=>{ let got=0; for(let r=0;r<12&&got<n;r++){ for(const nd of x.NODES.filter(nd=>kinds.includes(nd.kind)&&nd.need<=tool)){ if(got>=n) break; at(nd.x,nd.z); W.receive('a',{t:'gather',i:nd.i}); tick(30); got+=1; } x.S.t+=200; tick(25); } };

@@ -87,10 +87,15 @@ const VILLAGERS=[
   /* ---- the main quest's people (docs/MAIN-QUEST.md, docs/STORY.md). late, so the random villagers keep their looks ---- */
   // Wren, your younger sibling, in the sickbed under the awning of your house by the gate: asleep (lying) unless a quest step
   // wants them awake (wrenAwake), then sitting up
-  { id:'wren', late:true, kin:true, title:'Your sibling', icon:'kin', name:'Wren', role:null,
+  { id:'wren', late:true, kin:true, show:()=>mqWrenSick(mqG()), title:'Your sibling', icon:'kin', name:'Wren', role:null,
     look:{height:0.82,build:0.85,face:'round',hair:'short',top:'tshirt',topColor:0xd8d0c0,bottom:'trousers',bottomColor:0x6a6e74,hat:'none',pack:false,shoes:'none',facial:'none',chest:0.6},
     behavior:{type:'stationary',at:'bed',pose:'bed'}, home:'house:0', schedule:'always', voice:{rate:1.05,pitch:1.35},
     lines:['(Wren is asleep. The grey lines on their arms have not changed.)','(Wren murmurs something about grey water, and sleeps on.)'] },
+  // the healthy Wren of the prologue (P1-P5): the same sibling before the grey came; hidden once the sick one lies in the bed (mqWrenSick). Moves with the story (mqStoryAt)
+  { id:'wren0', late:true, kin:true, healthy:true, show:()=>!!mqG()&&!mqWrenSick(mqG()), title:'Your sibling', icon:'kin', name:'Wren', role:null,
+    look:{height:0.82,build:0.85,face:'round',hair:'short',top:'tshirt',topColor:0x6a8ac8,bottom:'trousers',bottomColor:0x6a6e74,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2a1e,facial:'none',chest:0.6},
+    behavior:{type:'stationary',at:'well'}, atFn:()=>mqStoryAt('wren0',mqG()), home:'house:0', schedule:'always', voice:{rate:1.05,pitch:1.35},
+    lines:['The hens first, or they sulk. Then the Sheaf-Crown game, and nobody cheats.','Bring back the crown. And don\'t let Tansy cheat.','Blue ribbon, blue ribbon. The roots know our names, you know.'] },
   { id:'linnea', late:true, title:'Healer · brews potions', icon:'healer', name:'Healer Linnea', role:'brew',
     look:{sex:'female',height:0.97,build:0.9,face:'oval',hair:'long',hairColor:0x8a6a4a,chest:1.0,top:'jacket',topColor:0x5a7a4a,bottom:'skirt',bottomColor:0x4a3a2a,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2a1e,facial:'none'},
     behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.9,pitch:1.05},
@@ -336,13 +341,13 @@ const NPCs=[];
 let talkNPC=null, nearNPC=null;
 function npcById(id){ return NPCs.find(n=>n.def.id===id); }
 const vilOf=n=>n.V||(n.def.site?wildSiteOf(n.def.site):VILS[(n.def.vil||1)-1]);
-function anchorOf(name,V){ V=V||VIL; return V.anchors[name]||V.anchors.plaza0; }
+function anchorOf(name,V){ V=V||VIL; if(name&&typeof name==='object') return name; return V.anchors[name]||V.anchors.plaza0; }   // (a spot {x,z,face} is its own anchor: mqStoryAt)
 function randomPOI(n){ const V=vilOf(n); let p; for(let i=0;i<6;i++){ p=V.pois[Math.floor(Math.random()*V.pois.length)]; if(Math.hypot(p.x-n.x,p.z-n.z)>3) break; } return {x:p.x+AR(-0.6,0.6),z:p.z+AR(-0.6,0.6),face:p.face}; }
 function spawnNPC(def,rng){
   let look=def.rolled||randomLook(rng||Math.random,{villager:true,base:def.look}); delete def.rolled;   // (rolled: the look was drawn at boot from the shared rng, the body is built later)
   const outfit=def.outfit||VILLAGERS_OUTFIT_WEAR[def.id];   // a signature set worn whole (village/villagers-outfits.js); light mode keeps plain clothes
   if(outfit&&!LITE) look=npcOutfitLook(look,outfit);
-  if(def.kin){ look.sex=LOOK.sex; look.hairColor=LOOK.hairColor; look.skin=new THREE.Color(LOOK.skin||0xe0b894).lerp(new THREE.Color(0x9a9a98),0.35).getHex(); }   // your family, greyed by the sickness
+  if(def.kin){ look.sex=LOOK.sex; look.hairColor=LOOK.hairColor; look.skin=def.healthy?(LOOK.skin||0xe0b894):new THREE.Color(LOOK.skin||0xe0b894).lerp(new THREE.Color(0x9a9a98),0.35).getHex(); }   // your family, greyed by the sickness
   const rig=buildCharacter(look,{q:charDetail('npc')}), s=lookScale(look);
   rig.root.scale.setScalar(s);
   const g=new THREE.Group(); g.add(rig.root); scene.add(g);
@@ -455,7 +460,7 @@ function updateNPCs(dt){
     if(talking && dp>4.5) endTalk();
     if(!talking && n.state!=='home'){
       if(B.type==='stationary'){
-        const A=anchorOf(B.at,V);
+        const A=anchorOf((D.atFn&&D.atFn())||B.at,V);   // atFn: a story villager who moves with the main quest (Tansy, Wren before the sickness)
         if(n.state!=='walk' && Math.hypot(A.x-n.x,A.z-n.z)>0.6) routeTo(n,A);
         else if(n.state!=='walk'){ n.state='idle'; n.faceGoal=A.face!==undefined?A.face:Math.atan2(-(V.x-n.x),-(V.z-n.z)); }
       } else if(B.type==='patrol'){

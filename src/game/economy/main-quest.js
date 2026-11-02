@@ -24,6 +24,7 @@ const MQ_GREY_C={};
 function mqGatherTarget(pt){ let best=null,bd=1e9; for(const n of NODES) if((n.kind===pt.gather||NODE_KINDS[n.kind].prof===pt.gather)&&!nodeBlock(GEAR,n)){ const d=Math.hypot(n.x-P.x,n.z-P.z); if(d<bd&&!nodeTaken(n.i)){ bd=d; best=n; } } return best?{x:best.x,z:best.z,name:NODE_KINDS[best.kind].name}:null; }
 function mqPartTarget(s,pt){
   if(pt.talk) return npcSpot(pt.talk);
+  if(pt.visit||pt.spawn){ const P=MQ_PLACES[pt.visit||pt.spawn]; return {x:P.x,z:P.z,name:P.name}; }   // the prologue's places (shared/main-quest.js)
   if(pt.gather&&pt.collect){ const T=mqGatherTarget(pt); if(T) return T; }   // (dig it or take it from the monsters: the veins first, else the monsters' zone)
   if(pt.kill||pt.collect){ const d=MON_DEFS.find(m=>m.id===(pt.kill||pt.from[0])), zn=d&&defZone(d); if(!zn) return null; const [x,z]=zonePoint(zn,0,0.5); return {x,z,name:zn.name}; }
   if(pt.grey){ const g=MQ_GREY_C[pt.zone]||(MQ_GREY_C[pt.zone]=mqGreySpot(pt.zone)); return {x:g[0],z:g[1],name:ZONES.find(z=>z.key===pt.zone).name}; }
@@ -66,7 +67,7 @@ function mqLogRow(){
 }
 /* The main quest tab of the quest panel (economy/quests.js): the step, what its giver asked, every part with a picture of the monster it names (ui/mon-pics.js),
    a bar and where to go, then the reward and the how-to. Text only from shared data, never from a player. */
-const MQ_ACTS=[['W','Act I: The Grey Rain'],['V','Act II: The Blossom and the Blight'],['F','Act III: The Frost Flower'],['G','Act IV: The Black Stone']];
+const MQ_ACTS=[['P','Prologue: The Sheaf-Crown'],['W','Act I: The Grey Rain'],['V','Act II: The Blossom and the Blight'],['F','Act III: The Frost Flower'],['G','Act IV: The Black Stone']];
 const mqPartMon=pt=>pt.kill||pt.boss||pt.grey||(pt.collect&&pt.from&&pt.from[0])||'';
 function mqWhere(T){ if(!T) return ''; const d=Math.hypot(T.x-P.x,T.z-P.z); return d<12?'You are here':T.name+', '+Math.round(d)+' m '+dirWord(T.x-P.x,T.z-P.z); }
 function mqJournalHtml(){

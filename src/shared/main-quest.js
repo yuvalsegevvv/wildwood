@@ -9,16 +9,86 @@
      collect:'<what>', from:[monster ids], n, chance (a quest drop; with gather:'<NODE_KINDS id>' too, either counts: dig it or take it from the monsters) · gather:'<NODE_KINDS id or profession id>', n (a resource node gathered) · read:'<LORE id>' (walk up
      and read it) · act:'<system>', n (class, buy, armor, skill, burst, board, sell, upskill, merge, soul, warp, hanami, rimehold, highmark, learn (prof:'<profession>'), tool (tool:'pick|axe|sickle', tier: a tool
      of at least that tier is worn), craft (kind:'weapon|armor'), brew (kind:'heal|might|guard', minTier 0-2), potion (kind): see server/main-quest.js) · level · tier
-     (a weapon of that item tier, 0-based) · boss:'<boss monster id>' (bossLine: toasted when it falls).
+     (a weapon of that item tier, 0-based) · boss:'<boss monster id>' (bossLine: toasted when it falls) · visit:'<MQ_PLACES key>' (walk there; say: lines shown in the speech bubble on arrival).
+   A kill part may carry spawn:'<MQ_PLACES key>' (a few of that monster are spawned for you there, like the grey ones) and fx:'ripple|ash|grey' (a dark moment shown on the client when the part finishes). A step may carry intro: lines the
+   previous step's last talk says after its own (a step with from:null has no giver to open with). The prologue P1-P6 is docs/WILDWOOD-STORY.md.
    Progress is gear.mq = {s: step index, st: 0 offered / 1 in progress / 2 ready to hand in, n: [per part]}; the server
    (server/main-quest.js) moves it on, the client (game/economy/main-quest.js) draws it. */
 const MQ=[
   /* ---------------- Act I: The Grey Rain (Wildwood, levels 1-15) ---------------- */
-  {id:'W1',title:'The grey rain',gate:1,from:null,to:'linnea',r:0.6,
+  /* ---------------- Prologue: The Sheaf-Crown (the home village, levels 1-2; docs/WILDWOOD-STORY.md, scenes 1-6) ---------------- */
+  // Tansy leads: her spot moves with the step (mqStoryAt). Wren is well until P6 (the healthy Wren 'wren0'), then the sick one in the bed.
+  {id:'P1',title:'A morning in the village',gate:1,from:null,to:'tansy',r:0.08,
    tip:'Move with W A S D (or the joystick) and look around with the mouse. Walk up to someone and press the talk key (E) to talk.',
-   parts:[{talk:'wren',text:'See to Wren, under the awning of your house by the gate',say:['(Wren lies still under the awning. Their breathing is slow, and thin grey lines run under the skin of their arms, like frost on a window.)','(You say their name. They do not wake.)']},
-          {talk:'linnea',after:true,text:'Fetch Healer Linnea from the herb garden'}],
-   done:['Grey lines under the skin, and a sleep that will not break... I have never seen this in Wildwood. Not once in forty years.','It started with the grey rain, did it not? Three days of it, and Wren out in it gathering kindling.','I can keep them comfortable. To do more, I need heartleaf.']},
+   parts:[{talk:'tansy',text:'Talk to Tansy by the well',say:[
+     'Tansy: There you are, sleepyhead! Half the village has been up since the roosters.',
+     'Wren: Don\'t listen to her. She\'s been awake since last night. She says she can\'t sleep until the barley is counted.',
+     'Tansy: The barley is very important, love.',
+     'Wren: Tell her it isn\'t. You\'re the only one she listens to.',
+     'Tansy: I listen to nobody. It\'s called leadership.',
+     'Wren: Anyway! Guess what Tansy found.',
+     'Tansy: I did not find it. I remembered it. The Sheaf-Crown, pet. The old one. It\'s still in my barn.',
+     'Wren: You remember the game, right? Whoever wears the crown at sunset is harvest queen, and everyone else tries to snatch it.',
+     'Tansy: And whoever snatched it was a thief, and had to hide under the cart till bedtime.',
+     'Wren: You always hid behind the scarecrow. You said it was "terrain."',
+     'Tansy: It was terrain. Strategically placed straw.',
+     'Wren: I fell in the hay once and took the whole row of kids down like dominoes. You had hay in your hair for a week.',
+     'Tansy: A month. Mother still finds it in the wash.',
+     '(Wren, quieter) I haven\'t played it since... you know. Since it\'s just the two of us. I thought it\'d be nice. One more time, before it gets cold.',
+     'Tansy: Then one more time it is. Bread, honey, the whole row of kids if we can shake them out of bed.',
+     'Wren: I have to feed the hens first, or they\'ll sulk. You two go ahead. I\'ll stay and save us a spot at the well.',
+     'Tansy: Back before the bread\'s cold. Promise.',
+     'Wren: Promise. (to you) Bring back the crown. And don\'t let her cheat.',
+     '(Wren waves and goes to feed the hens.)']}],
+   done:['Tansy: Right. Out to the farm and back. You\'ll see the crown is every bit as ridiculous as I say. Come on, pet. I\'ll run ahead. Keep up if you can!']},
+  {id:'P2',title:'The road to the farm',gate:1,from:null,to:'tansy',r:0.06,
+   tip:'Hold Shift to run, and press Space to jump. The minimap (and the map, N) shows where to go: follow the violet marker.',
+   parts:[{visit:'road1',text:'Follow Tansy out of the gate',say:['Tansy: Mouse turns the camera. Hold Shift and you run. Try it, I\'ll wait.','Tansy: There. See the little map in the corner? The gold dot\'s me. Don\'t lose me. I\'m easy to lose.','Tansy: Do you smell that? That\'s mint. Ambrose says it keeps the marsh-flies off. Ambrose says a lot of things.']},
+          {visit:'road2',after:true,text:'Jump the fallen log (Space)',say:['Tansy: Over the log! Space bar. There you go. Look at you, not even out of breath.','Tansy: Funny, isn\'t it? Every child in the village grows up on this path. We all tied our ribbons on the Row the first autumn, and the elders said the roots knew our names after that.','Tansy: Silly, probably. Roots don\'t know anything. But I\'d never say that to the old folks.','Tansy: Wren\'s ribbon is blue. So is yours. You did it the same autumn, remember? You held Wren\'s hand so tight they couldn\'t open it.']},
+          {visit:'road3',after:true,text:'Walk on to the hedge',say:['Tansy: Past that hedge the fields start. My fields. Well. Mine and the barley\'s.','Tansy: Mind the meadow, it\'s wet this week. It\'s been wet a lot lately.','Tansy: The elders say the forest was never this damp when they were young. They say the years before were quiet. Dry, and quiet, whatever that means.','Tansy: Come on.']}],
+   done:['Tansy: Slime. Three of them, in the meadow. They won\'t hurt much, but they bite, and they bite wet.']},
+  {id:'P3',title:'Slimes on the path',gate:1,from:null,to:'tansy',r:0.3,
+   tip:'Press Tab to pick a target, then F (or 1) to attack. The bar over a monster shows its health and level.',
+   intro:['Tansy: Press Tab to pick one. Then F to swing. That\'s the whole art, honestly.','Tansy: See the bar over its head? Green is its health. The number is its level. Yours is one, same as theirs, so it\'s fair.','Tansy: I\'ll take the little one. You take the others. Watch my feet: never stand where it\'s about to bounce.'],
+   parts:[{kill:'slime',n:3,spawn:'meadow',fx:'ripple',text:'Defeat the slimes on the path'}],
+   done:['(The last slime goes grey from the edges inward, and lies still. The birds have stopped.)','Tansy: ...That was odd. They don\'t usually go that colour.','Tansy: Rot in the soil, most likely. Happens after a wet week.','Tansy: Don\'t look like that. It\'s a slime. They get things. I had a whole field go grey once and it came back.','Tansy: Come on. The crown\'s waiting.']},
+  {id:'P4',title:'The farm',gate:1,from:null,to:'tansy',r:1.2,
+   tip:'The weapon you hold is your class: sword (Warrior), bow (Archer) or wand (Mage). Open the inventory (I) and put a different weapon in your hand. Change whenever you like.',
+   intro:['Tansy: Here we are. Home. It\'s smaller than I remember saying it was.','Tansy: This is the barley. Well, this was the barley. The south corner\'s been poor this year. Don\'t look at that bit. Look at the good bit.','Tansy: That\'s the barn, and that\'s Old Hob in the yard. The scarecrow. He\'s been standing there since before I could walk. He takes a beating well.','Tansy: The crown\'s up in the loft, left of the beam. Mind the ladder: the fourth rung is more of a rumour.'],
+   parts:[{visit:'loft',text:'Fetch the Sheaf-Crown from the barn loft',say:['(You climb the ladder and find the Sheaf-Crown on its nail.)','Tansy: There she is. Look at that. The moths have been at her, but she\'s still the finest crown in the village.','Tansy: My mother braided that. She said a crown is just a promise tied up in straw. Someone has to wear it, so everybody else has something to run after.']},
+          {act:'class',after:true,text:'Try another weapon on Old Hob (inventory, I)',say:['(A rack by the door: a bow, a wand, a sword.)']}],
+   done:['Tansy: Right, while we\'re here. The weapon you hold is your class. Sword in your hand, you fight like a warrior. Bow, you hang back and pick them off. Wand, and the sky does what you ask.','Tansy: Hah! Look at you. You\'ve got the hang of it faster than I did.','Tansy: Keep whichever feels like yours. You can change any time. There\'s no wrong answer, just a different kind of tired.','Tansy: Right. Crown, check. Weapon, check. Back to the village before Wren starts without us.','Tansy: ...You know, I\'ve never had anyone to show the farm to. It\'s nice. Don\'t tell anyone I said so.']},
+  {id:'P5',title:'The road back',gate:2,from:null,to:'tansy',r:0.4,
+   tip:'Your skill sits in slot 2 (key Q or 2). It dims while it recovers: wait for the ring to fill, then use it again. K opens the skills panel.',
+   intro:['Tansy: Shrooms. Three of them. The spores make you cough, so keep your distance if you can.','Tansy: You\'ve got more than a swing in you, you know. Everybody does. It just wakes up when it\'s needed.','Tansy: Press Q. Or 2. Go on, I\'ll cover you.'],
+   parts:[{act:'skill',text:'Use your new skill (Q or 2)'},{kill:'shroom',n:3,spawn:'clearing',fx:'ash',text:'Defeat the shroomlings in the clearing'}],
+   done:['Tansy: Did you feel that? That\'s yours. Aldric at the well teaches the proper ones. But that one\'s yours for free.','Tansy: Skills are big and slow, swings are small and quick. Use both.','(Grey spores drift. The sky over the village has turned the colour of ash.)','Tansy: ...That\'s the second one today. The slime, the shroom, and the sky.','Tansy: I don\'t like it. Come on. I want to see Wren.','(She says it lightly, but her humming has stopped.)']},
+  {id:'P6',title:'Wren',gate:2,from:null,to:'tansy',r:0.3,
+   parts:[{visit:'home',fx:'grey',text:'Hurry home to Wren',say:[
+     '(The village is silent. No birds. A grey light, at noon. Wren lies on the bed under the awning. Grey lines run under the skin of both arms. The blue ribbon in their hair has gone grey.)',
+     'Tansy: Wren? Wren!',
+     'Tansy: Don\'t talk, love. Don\'t. We\'ve got you.',
+     '(Wren\'s eyes follow you, but no sound comes. Their fingers close, slightly, around your sleeve, then relax.)',
+     'Tansy: It\'s the same grey. It\'s the same grey as the slime.',
+     'Tansy: Their arms are cold. Why are their arms cold?']}],
+   done:['(Tansy sets the Sheaf-Crown gently on the pillow beside Wren\'s head.)','Tansy: I\'m not good at this. I\'m good at barley and I\'m good at shouting. I\'m not good at... this.','Tansy: Someone must know it. Linnea knows every herb in the forest and half of those outside it. And Dunstan has been all over: the road north, the passes, even the sea.','Tansy: I\'ll walk to the end of the world if I have to. You with me?','Tansy: Hold on, little one. We\'re coming back.']},
+  {id:'W1',title:'Who knows a cure?',gate:1,from:null,to:'dunstan',r:0.9,
+   tip:'Coins come from monsters and quests. Buy at the stalls, then wear it: the inventory (I) shows what you wear and what you carry.',
+   parts:[{talk:'linnea',text:'Ask Healer Linnea about the grey',say:['Linnea: I\'ve tried willow, mint and sap. I don\'t know this grey. I can keep Wren comfortable, nothing more.','Linnea: Ask Dunstan. He has walked further than anyone in this village.']},
+          {talk:'dunstan',after:true,text:'Ask Dunstan, under his banner',say:[
+     '(Dunstan is drumming a slow beat under a banner. He stops when he sees your face.)',
+     'Dunstan: Your face says it before you do. It\'s Wren.',
+     'Dunstan: Grey under the skin. A sleep that doesn\'t break. I\'ve seen it once. A fisherman\'s boy, on the northern coast. Seven winters ago.',
+     'Tansy: What happened to him?',
+     'Dunstan: ...A woman came. Not a healer. She lived in the hills and nobody liked her. She did something with moss and ash, and the boy sat up. For a day.',
+     'Dunstan: She couldn\'t cure it. But she held it. Long enough for his father to carry him south, to people who knew more.',
+     'Tansy: And the woman? Where is she now?',
+     'Dunstan: Here, I think. A witch lives in the east of this forest. Past the Mushroom Hollow, where the paths stop. Everyone in the village has a story about her, and none of the stories agree.',
+     'Dunstan: Go. But don\'t go proud. She doesn\'t care who you are or why you\'ve come. And if she says no, don\'t shout. Wait. She says no to everyone, once.',
+     'Dunstan: And get something between you and the woods first. Ilse\'s stall. Armour, a belt, anything.',
+     '(Dunstan lifts his drum and plays three beats, slow and level.)','Dunstan: That\'s for luck. Go on.']},
+          {act:'buy',after:true,text:'Buy something at Tomas\'s or Ilse\'s stall'},{act:'armor',after:true,text:'Wear a piece of armour (inventory)'}],
+   done:['Dunstan: It suits you. Whatever the witch says, keep your head up and your step on the beat.']},
   {id:'W2',title:'Heartleaf',gate:1,from:'linnea',to:'linnea',r:1.2,
    tip:'Pick heartleaf with the talk key. To fight, face a monster and attack (key 1 or F; Tab switches target). The bar over a monster shows its level.',
    offer:['Heartleaf grows at the edge of the Slime Meadow, just outside the gate. Five sprigs should do.','Mind the slimes. Clear a few while you are there: Bram says they have been bolder since the rain.'],
@@ -284,11 +354,11 @@ const MQ=[
 const MQ_BY_ID={}; MQ.forEach((s,i)=>{ s.i=i; MQ_BY_ID[s.id]=s; });
 const MQ_END='Act IV is over. The mountain is quiet, the black stone sleeps, and a road leads on: Glasswell, in the Sunscar, where a physician is said to cure what nobody else can. The story goes on there, once it is told.';
 // which village each quest villager lives in (the server checks you are there when you talk to them); odran2 is Odran's cart in Hanami, odran3 his cart at Rimehold, odran4 at Highmark
-const MQ_NPC_VIL={tamsin:1,isamu:2,hinata:2,ylva:3,wren:1,linnea:1,odran:1,bram:1,aldric:1,tomas:1,ilse:1,maren:1,greta:1,oskar:1,
+const MQ_NPC_VIL={tansy:1,dunstan:1,wren0:1,tamsin:1,isamu:2,hinata:2,ylva:3,wren:1,linnea:1,odran:1,bram:1,aldric:1,tomas:1,ilse:1,maren:1,greta:1,oskar:1,
   odran2:2,daisuke:2,sayuri:2,kenji:2,haruka:2,tetsuo:2,ryu:2,chiyo:2,kaede:2,
   odran3:3,hallvard:3,ragna:3,bjorn:3,ulfhild:3,thorvald:3,sigrun:3,gudrun:3,
   odran4:4,brenna:4,ansgar:4,gerhard:4,matthias:4};
-const MQ_NAMES={tamsin:'Tamsin',isamu:'Isamu',hinata:'Herbalist Hinata',ylva:'Alchemist Ylva',wren:'Wren',linnea:'Healer Linnea',odran:'Odran',odran2:'Odran',bram:'Bram',aldric:'Aldric',tomas:'Tomas',ilse:'Ilse',maren:'Maren',greta:'Greta',oskar:'Oskar',
+const MQ_NAMES={tansy:'Tansy',dunstan:'Dunstan',wren0:'Wren',tamsin:'Tamsin',isamu:'Isamu',hinata:'Herbalist Hinata',ylva:'Alchemist Ylva',wren:'Wren',linnea:'Healer Linnea',odran:'Odran',odran2:'Odran',bram:'Bram',aldric:'Aldric',tomas:'Tomas',ilse:'Ilse',maren:'Maren',greta:'Greta',oskar:'Oskar',
   daisuke:'Daisuke',sayuri:'Sayuri',kenji:'Kenji',haruka:'Haruka',tetsuo:'Tetsuo',ryu:'Master Ryu',chiyo:'Grandmother Chiyo',kaede:'Soul-reader Kaede',
   odran3:'Odran',hallvard:'Hallvard',ragna:'Ragna',bjorn:'Bjorn',ulfhild:'Ulfhild',thorvald:'Thorvald',sigrun:'Old Sigrun',gudrun:'Gudrun',
   odran4:'Odran',brenna:'Foreman Brenna',ansgar:'Abbot Ansgar',gerhard:'Gerhard',matthias:'Brother Matthias'};
@@ -305,13 +375,14 @@ const mqNight=day=>day>0.53||day<0.005;   // the day clock (0 = 06:00, 0.5 = 18:
 
 // a new character's progress (W1 starts by itself), and a save's, checked
 // MQ_VER 2: W6a, W7b, W11b and V7b were inserted after W6 (old index 5), W7 (6), W11 (10) and V7 (22): an older save's step index moves up by the ones before it
-const MQ_VER=2, MQ_INSERTED=[[5,1],[6,1],[10,1],[22,1]];
-const mqMigrate=s=>s+MQ_INSERTED.reduce((a,[after,n])=>a+(s>after?n:0),0);
+// MQ_VER 3: the prologue P1-P6 was inserted before W1 (index -1: every older step moves up by 6). An entry is [after, n, the version that inserted it]: a save is moved by the entries newer than its own version.
+const MQ_VER=3, MQ_INSERTED=[[5,1,2],[6,1,2],[10,1,2],[22,1,2],[-1,6,3]];
+const mqMigrate=(s,ver)=>s+MQ_INSERTED.reduce((a,[after,n,v])=>a+(v>(ver||1)&&s>after?n:0),0);
 function newMq(){ return {s:0,st:1,n:MQ[0].parts.map(()=>0),h:0,ver:MQ_VER}; }
 const mqInt=(v,a,b,d)=>{ v=parseInt(v,10); return isFinite(v)?Math.max(a,Math.min(b,v)):d; };
 function sanitizeMq(m){
   if(!m||typeof m!=='object') return newMq();
-  const s=mqInt(m.ver===MQ_VER?m.s:mqMigrate(mqInt(m.s,0,MQ.length,0)),0,MQ.length,0), st=s>=MQ.length?0:mqInt(m.st,0,2,0), step=MQ[s];
+  const s=mqInt(m.ver===MQ_VER?m.s:mqMigrate(mqInt(m.s,0,MQ.length,0),m.ver),0,MQ.length,0), st=s>=MQ.length?0:mqInt(m.st,0,2,0), step=MQ[s];
   const n=step?step.parts.map((pt,i)=>mqInt(Array.isArray(m.n)?m.n[i]:0,0,mqNeed(pt),0)):[];
   const out={s,st,n,h:mqInt(m.h,0,31,0),ver:MQ_VER};
   if(step&&st===0&&step.from===null) out.st=1;
@@ -338,6 +409,7 @@ function mqTalk(mq,npc,level,night){
   if(st===2&&step.to===npc){
     out.complete=true; out.lines.push(...(step.done||[]));
     const nx=MQ[mq.s+1]; if(nx&&nx.from===npc&&level>=mqGate(nx)){ out.next=true; out.lines.push(...(nx.offer||[])); }
+    else if(nx&&nx.from===null&&nx.intro) out.lines.push(...nx.intro);   // (the next step starts by itself: its first lines follow in the same talk)
   }
   return out;
 }
@@ -365,6 +437,35 @@ const mqGreySpot=key=>mqSpot(ZONES.find(z=>z.key===key),0,0.5);
   VIL.anchors.bed={x:VIL.bed.x-tx*0.95,z:VIL.bed.z-tz*0.95,face:H.a+Math.PI/2};   // the foot of the bed (Wren lies head toward +tangent)
   VIL.anchors.bedside={x:VIL.bed.x+Math.sin(H.a)*-1.1,z:VIL.bed.z+Math.cos(H.a)*-1.1,face:H.a};
 }
+/* ---- the prologue's places (docs/WILDWOOD-STORY.md): Tansy's farm west of the gate, the three markers of the road to it, the meadow of the first fight, the clearing of the second ---- */
+const MQ_FARM={x:-59,z:219};
+const MQ_PLACES={
+  road1:{x:VIL.anchors.gate.x,z:VIL.anchors.gate.z,r:9,name:'The village gate'},
+  road2:{x:-4,z:238,r:8,name:'The fallen log'},
+  road3:{x:-36,z:228,r:8,name:'The hedge'},
+  meadow:{x:-24,z:246,r:20,name:'The Slime Meadow\'s edge'},
+  loft:{x:MQ_FARM.x-5,z:MQ_FARM.z-4,r:5,name:'Tansy\'s barn'},
+  clearing:{x:10,z:242,r:14,name:'The clearing'},
+  home:{x:VIL.bed.x,z:VIL.bed.z,r:7,name:'Your house'}
+};
+/* Where a story villager stands now (null: their usual place). Tansy leads the prologue: the well, the three markers (she waits at each until you have been there), the meadow, her farm, the clearing, the bed.
+   Used by the client (village/villagers.js moves her; economy/main-quest.js marks her) and the server (server/main-quest.js: a talk away from the village counts when you are beside her). mq: gear.mq */
+function mqStoryAt(npc,mq){
+  if(!mq) return null; const s=MQ[mq.s]; if(!s) return null;
+  const at=(p,dx,dz,face)=>({x:p.x+(dx||0),z:p.z+(dz||0),face});
+  if(npc==='tansy'){
+    if(s.id==='P1') return VIL.anchors.well;
+    if(s.id==='P2') return at(MQ_PLACES[(mq.n[0]||0)<1?'road1':(mq.n[1]||0)<1?'road2':'road3'],3,3);
+    if(s.id==='P3') return at(MQ_PLACES.meadow,6,0);
+    if(s.id==='P4') return at(MQ_FARM,3,1);
+    if(s.id==='P5') return at(MQ_PLACES.clearing,5,0);
+    if(s.id==='P6') return VIL.anchors.bedside;
+  }
+  if(npc==='wren0') return s.id==='P1'?VIL.anchors.well:VIL.anchors.bedside;
+  return null;
+}
+// Wren is well until the prologue's P6 (the healthy Wren, 'wren0'); from P6 on the sick one lies in the bed
+const mqWrenSick=mq=>!!mq&&mq.s>=MQ_BY_ID.P6.i;
 for(const V of VILS){
   if(V.cart) continue;   // (Glasswell's cart stands where its plan puts it, shared/glasswell.js)
   const a=V.ent-0.28, cx=V.x+Math.sin(a)*(VR+9), cz=V.z+Math.cos(a)*(VR+9);
@@ -417,5 +518,5 @@ const LORE_BY_ID={}; LORE.forEach(L=>{ LORE_BY_ID[L.id]=L; });
 const LORE_R=4.5;   // how close you must be to read one
 function loreNear(x,z){ let best=null,bd=LORE_R; for(const L of LORE){ const d=Math.hypot(x-L.x,z-L.z); if(d<bd){ bd=d; best=L; } } return best; }
 // trees and bushes keep clear of the story's spots (the heartleaf, the lore props, Odran's carts) so you can see and reach them
-const STORY_SPOTS=[...HERBS.map(([x,z])=>[x,z,5]),...LORE.filter(L=>L.kind!=='ice').map(L=>[L.x,L.z,L.kind==='wreck'?7:5]),...VILS.map(V=>[V.cart.x,V.cart.z,5])];
+const STORY_SPOTS=[[MQ_FARM.x,MQ_FARM.z,16],...['road2','road3','clearing','meadow'].map(k=>[MQ_PLACES[k].x,MQ_PLACES[k].z,k==='road2'||k==='road3'?6:10]),...HERBS.map(([x,z])=>[x,z,5]),...LORE.filter(L=>L.kind!=='ice').map(L=>[L.x,L.z,L.kind==='wreck'?7:5]),...VILS.map(V=>[V.cart.x,V.cart.z,5])];
 function storyClear(x,z){ for(const [sx,sz,r] of STORY_SPOTS) if(Math.abs(x-sx)<r&&Math.abs(z-sz)<r&&Math.hypot(x-sx,z-sz)<r) return true; return false; }

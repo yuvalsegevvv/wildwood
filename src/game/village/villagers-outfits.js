@@ -27,10 +27,10 @@ const VILLAGERS_OUTFIT_WEAR={tamsin:'tamsin', zahra:'zahra'};
 const VILLAGERS_OUTFIT=[
   /* ---- the home village ---- */
   { id:'tansy', late:true, seed:101, outfit:'tansy', title:'Farm-hand', name:'Tansy', role:null, look:{skin:0xd9a47c},
-    behavior:{type:'stationary',at:'plaza5'}, home:'house:2', schedule:'day', voice:{rate:1.1,pitch:1.15},
+    behavior:{type:'stationary',at:'plaza5'}, atFn:()=>mqStoryAt('tansy',mqG()), speed:4.2, home:'house:2', schedule:'always', voice:{rate:1.1,pitch:1.15},
     lines:['I can bring in a whole field before breakfast, if the weather holds. Ask anyone. Ask the weather.','Wheat for bread, oats for porridge, and a sprig behind the ear for luck.','The apples at the market are mine. Do not tell Linnea, she thinks they are hers.'] },
   { id:'dunstan', late:true, seed:102, outfit:'dunstan', title:'Standard-bearer', name:'Dunstan', role:null,
-    behavior:{type:'stationary',at:'plaza6'}, home:'house:7', schedule:'day', voice:{rate:1.0,pitch:0.85},
+    behavior:{type:'stationary',at:'plaza6'}, home:'house:7', schedule:'always', voice:{rate:1.0,pitch:0.85},
     lines:['A flag is only cloth until someone follows it. Then it is a promise with a drum behind it.','Hear that? That is the beat for marching. This one is for waiting. Try to tell them apart.','Whatever is out there, you do not face it alone. Keep your head up and your step on the beat.'] },
   /* ---- Hanami ---- */
   { id:'genzo', vil:2, late:true, seed:103, outfit:'genzo', title:'Gate-keeper', name:'Genzo', role:null,

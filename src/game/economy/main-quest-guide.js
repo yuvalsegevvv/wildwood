@@ -7,7 +7,7 @@ const QG_GAP=3, QG_REACH=36, QG_COL=0xffd25a, QG={t:0};
 function updateQuestGuide(dt){
   if(!started||customizing||PL.dead||dgIn()||caveIn()) return;   // cave:
   QG.t-=dt; if(QG.t>0) return; QG.t=0.5;
-  const M=mqG(); if(!M||M.s!==0) return;
+  const M=mqG(); if(!M||M.s>MQ_BY_ID.W1.i) return;   // (the prologue P1-P6 and W1)
   const T=mqTarget(); if(!T) return;
   const dx=T.x-P.x, dz=T.z-P.z, d=Math.hypot(dx,dz); if(d<2.5) return;
   const ux=dx/d, uz=dz/d, far=Math.min(d-1.5,QG_REACH);

@@ -24,7 +24,7 @@ function mqProgressP(p,i,add,quiet){
   const M=mqOf(p), step=mqStep(p); if(!step||M.st!==1||!mqOpen(step,M.n,i)) return false;
   const pt=step.parts[i], need=mqNeed(pt); M.n[i]=Math.min(need,(M.n[i]||0)+(add||1)); p.dirty=true;
   if(!quiet&&need>1&&pt.collect) mqToast(p,pt.collect+': '+M.n[i]+' / '+need);   // a quest drop is news; kill and pick counts are already live in the quest log (economy/main-quest.js), a toast each was noise
-  if(M.n[i]>=need){ mqAutoP(p); mqReadyP(p); }
+  if(M.n[i]>=need){ if(pt.fx) ev('mqfx',p.id,pt.fx); mqAutoP(p); mqReadyP(p); }   // fx: a dark moment on the client (prologue)
   return true;
 }
 function mqCompleteP(p,chained){   // chained: the next step starts in the same talk (its own toast says so)
@@ -41,7 +41,8 @@ function mqCompleteP(p,chained){   // chained: the next step starts in the same 
 }
 function mqTalkP(p,npc){
   const vil=MQ_NPC_VIL[npc]; if(!vil||p.dead) return;
-  const V=VILS[vil-1]; if(Math.hypot(p.x-V.x,p.z-V.z)>VR+22) return;   // quest villagers stay in (or at the gate of) their village
+  const V=VILS[vil-1];
+  if(Math.hypot(p.x-V.x,p.z-V.z)>VR+22){ const A=mqStoryAt(npc,mqOf(p)); if(!A||Math.hypot(p.x-A.x,p.z-A.z)>14) return; }   // quest villagers stay in (or at the gate of) their village; a story villager who has led you out stands where mqStoryAt says
   const M=mqOf(p), T=mqTalk(M,npc,p.level,mqNight(S.day));
   if(T.start) mqStartP(p);
   mqHush=T.complete; for(const i of T.parts) mqProgressP(p,i,mqNeed(mqStep(p).parts[i]),true); mqHush=false;
@@ -105,18 +106,30 @@ function mqTickP(p){
   if(step&&M.st===0&&step.from===null) mqStartP(p);
   if(!step||M.st!==1){ return; }
   mqAutoP(p);
-  const i=step.parts.findIndex((pt,k)=>pt.grey&&mqOpen(step,M.n,k)), mine=MONS.filter(m=>m.owner===p.id&&!m.remove&&!m.dead);
+  mqVisitP(p,step,M);
+  // a part that spawns monsters for you: the grey ones (grey + zone) or an ordinary one (kill + spawn, a place of MQ_PLACES)
+  const i=step.parts.findIndex((pt,k)=>(pt.grey||pt.spawn)&&mqOpen(step,M.n,k)), mine=MONS.filter(m=>m.owner===p.id&&!m.remove&&!m.dead);
   if(i<0){ if(mine.length) mqRemoveGreyP(p); return; }
-  const pt=step.parts[i], [gx,gz]=mqGreyAt(pt.zone), d=Math.hypot(p.x-gx,p.z-gz);
+  const pt=step.parts[i], [gx,gz]=pt.spawn?[MQ_PLACES[pt.spawn].x,MQ_PLACES[pt.spawn].z]:mqGreyAt(pt.zone), d=Math.hypot(p.x-gx,p.z-gz);
   if(d>160||(pt.night&&!mqNight(S.day))){ for(const m of mine) if(!m.aggro) removeMonS(m); return; }   // (a night part: nothing comes by day)
   if(d>80||S.t<(p.mqSpawnT||0)) return;
   const want=Math.min(3,mqNeed(pt)-M.n[i])-mine.length; if(want<=0) return;
-  const def=GREY_DEFS.find(x=>x.id===pt.grey);
+  const def=pt.spawn?MON_DEFS.find(x=>x.id===pt.kill):GREY_DEFS.find(x=>x.id===pt.grey);
   for(let k=0;k<want;k++){
-    for(let t=0;t<12;t++){ const a=AR(0,TAU), r=AR(4,16), x=gx+Math.sin(a)*r, z=gz+Math.cos(a)*r; if(getH(x,z)<0.8) continue;
+    for(let t=0;t<12;t++){ const a=AR(0,TAU), r=AR(4,pt.spawn?9:16), x=gx+Math.sin(a)*r, z=gz+Math.cos(a)*r; if(getH(x,z)<0.8) continue;
       const m=spawnMonS(def,x,z,{x:gx,z:gz},true); m.owner=p.id; break; }
   }
   p.mqSpawnT=S.t+6;
+}
+// a visit part counts when you stand within the place's radius; its scene goes to the speech bubble (the same event as the side quests' places)
+function mqVisitP(p,step,M){
+  if(p.dead||p.inst) return;
+  step.parts.forEach((pt,i)=>{
+    if(!pt.visit||!mqOpen(step,M.n,i)) return; const P=MQ_PLACES[pt.visit];
+    if(Math.hypot(p.x-P.x,p.z-P.z)>P.r) return;
+    if(pt.say) ev('sqsay',p.id,step.title,pt.say);
+    mqProgressP(p,i,1,true);
+  });
 }
 function mqMsgP(p,msg){
   if(msg.a==='talk'&&typeof msg.id==='string') mqTalkP(p,msg.id);
