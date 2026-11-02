@@ -208,7 +208,7 @@ def build(inline_audio=False):
     styles = ''.join(strip_header(read(os.path.join(SRC, 'styles', f))) for f in manifest['styles'])
     shared = ''.join(strip_header(read(os.path.join(SRC, 'shared', f))) for f in manifest['shared'])
     server = shared + ''.join(strip_header(read(os.path.join(SRC, 'server', f))) for f in manifest['server'])
-    game = ''.join(shared if f == '@shared' else strip_header(read(os.path.join(SRC, 'game', f))) for f in manifest['game'])
+    game = ''.join('/*@@shared*/' + shared + '/*@@/shared*/' if f == '@shared' else strip_header(read(os.path.join(SRC, 'game', f))) for f in manifest['game'])
     slots = {
         '{{STYLES}}': styles,
         '{{EARLY}}': read(os.path.join(SRC, 'boot', 'early.js')),

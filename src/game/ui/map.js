@@ -184,7 +184,7 @@ addEventListener('keydown',e=>{ if(kbIs(e.code,'map') && started && !customizing
 addEventListener('resize',()=>{ if(!$('#map').hidden){ sizeFullMap(); drawFullMap(); } });
 { const sz=Math.round((isTouch?98:144)*DPR); mmC.width=mmC.height=sz; }   // (the frame's border takes 3 px each side)
 function updateMap(dt){
-  if(Stream.terrainDone && !MAP.done) mapBuildStep(started?(LOW?4:8):(LOW?16:40));
+  if(Stream.terrainDone && !MAP.done && (started||canStart)) mapBuildStep(started?(LOW?4:8):(LOW?16:40));
   if(!started) return;
   MAP.mmT-=dt; if(MAP.mmT<=0){ MAP.mmT=0.1; drawMinimap(); }
   if(!$('#map').hidden){ MAP.fullT-=dt; if(MAP.fullT<=0){ MAP.fullT=0.15; drawFullMap(); } }

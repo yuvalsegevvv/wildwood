@@ -40,7 +40,7 @@ const el=s=>document.querySelector(s);
     ok('the dungeon\'s meshes are in the scene at the slot: 3-5 meshes (floor, walls and props, glow, soft), under 120k triangles',!!g&&g.position.x===R.ox&&g.position.z===R.oz&&G.DG_VIEW.meshes>=3&&G.DG_VIEW.meshes<=5&&G.DG_VIEW.tris<120000,G.DG_VIEW.meshes+' meshes, '+Math.round(G.DG_VIEW.tris)+' triangles');
     let bare=0; g.traverse(o=>{ if(o.isMesh&&o.geometry.attributes.position&&!o.geometry.attributes.normal) bare++; if(o.isInstancedMesh) bare++; }); ok('every mesh has normals and none is instanced',bare===0); }
   for(let i=0;i<3;i++){ G.updateEnv(0.05); G.cullChunks(0.05); G.updateWeather(0.05); }
-  { let terrain=0; for(const b of G.TERRAIN_BANDS) if(b.mesh.visible) terrain++;
+  { let terrain=0; for(const b of G.TERRAIN_BANDS) if(b.mesh&&b.mesh.visible) terrain++;
     ok('the forest is off: no sky dome, water, sun shadow or terrain tiles; the far plane is short; the fog is the theme\'s; no rain; motes hidden',!G.sky.visible&&!G.water.visible&&!G.sun.castShadow&&terrain===0&&G.camera.far===140&&G.scene.fog.color.getHex()===G.DG_THEMES.hollowroots.pal.fog&&G.scene.fog.far<=45&&G.WX.inten===0&&!G.motes.visible,'terrain tiles shown '+terrain+', fog '+G.scene.fog.far);
     const j=G.Stream.job, n=G.Stream.pending.length; G.streamPump(50); ok('no chunks are grown in a run',G.Stream.job===j&&G.Stream.pending.length===n); }
   { let pl=0; G.scene.traverse(o=>{ if(o.isPointLight&&o.parent===G.scene) pl++; }); ok('a torch and two lamps (a desktop) light the run',pl===lights0+3&&G.DG_LOOK.torch.parent===G.scene,pl+' point lights'); }

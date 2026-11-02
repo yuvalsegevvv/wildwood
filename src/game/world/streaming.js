@@ -34,7 +34,7 @@ function streamPump(budgetMs){
         } else if(Stream.job.kind==='c'){ Stream.done++; if(Stream.needed) Stream.needed.delete(Stream.job.ci); }
         Stream.job=null;
         onStreamProgress();
-      }
+      } else if(Stream.idle){ Stream.idle=false; break; }   // a generator that only waits (for the height workers) must not spin the frame's budget
     }
   }catch(err){
     Stream.failed=true; console.error(err);

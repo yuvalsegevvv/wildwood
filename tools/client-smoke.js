@@ -25,7 +25,7 @@ const el=s=>document.querySelector(s);
     G.GEAR.sig=30; G.pzOfferOpen(); ok('...and an offer button once Sigils are carried',/Offer 30 Sigils/.test(el('#pzHost').innerHTML||'')); G.closePanels(); }
   // the first-load diet: the ground of far lands is coloured when you come near, and the far villages' people are built after the loading screen
   { const bands=G.TERRAIN_BANDS, wait0=bands.filter(b=>!b.ready), ready0=bands.filter(b=>b.ready), npc0=G.NPCs.length;
-    ok('terrain: at boot only the tiles by the spawn are coloured; the rest wait for you and are not drawn',ready0.length>0&&wait0.length>ready0.length&&wait0.every(b=>b.lazy&&!b.mesh.visible)&&G.Stream.lazy===wait0.length,ready0.length+' coloured, '+wait0.length+' waiting');
+    ok('terrain: at boot only the tiles by the spawn are coloured; the rest wait for you and are not drawn',ready0.length>0&&wait0.length>ready0.length&&wait0.every(b=>b.lazy&&!(b.mesh&&b.mesh.visible))&&G.Stream.lazy===wait0.length,ready0.length+' coloured, '+wait0.length+' waiting');
     ok('terrain: a tile coloured at boot has real colours (the ground is not black)',ready0.some(b=>{ let nz=0; for(let i=0;i<b.tc.length;i++) if(b.tc[i]>0) nz++; return nz>b.tc.length*0.9; }));
     const far=wait0.sort((a,b)=>Math.hypot(b.x0-G.P.x,b.z0-G.P.z)-Math.hypot(a.x0-G.P.x,a.z0-G.P.z))[0], home={x:G.P.x,z:G.P.z,y:G.P.y};
     G.P.x=(far.x0+far.x1)/2; G.P.z=(far.z0+far.z1)/2;   // walk (jump) there: the scheduler colours the tile you stand on first
@@ -253,7 +253,7 @@ const el=s=>document.querySelector(s);
     const R=G.DG_RUN(), sp=()=>G.NET.server.players.get('you'); let grp=null; G.scene.traverse(o=>{ if(o.name==='dungeon') grp=o; });
     ok('dungeon: a purge run from the testing tool builds the dungeon\'s meshes at the run\'s slot, where the server has you',!!R&&!!grp&&grp.position.x===R.ox&&grp.position.z===R.oz&&G.DG_VIEW.meshes>=3&&sp().inst===R.id&&Math.abs(G.P.x-sp().x)<0.01,R&&G.DG_VIEW.meshes+' meshes, '+Math.round(G.DG_VIEW.tris)+' triangles');
     for(let i=0;i<3;i++){ G.updateEnv(0.05); G.cullChunks(0.05); }
-    ok('dungeon: the forest is off (sky, water, sun shadow, terrain tiles) and the fog is the theme\'s',!G.sky.visible&&!G.water.visible&&!G.sun.castShadow&&!G.TERRAIN_BANDS.some(b=>b.mesh.visible)&&G.scene.fog.color.getHex()===G.DG_THEMES.hollowroots.pal.fog&&G.camera.far<200);
+    ok('dungeon: the forest is off (sky, water, sun shadow, terrain tiles) and the fog is the theme\'s',!G.sky.visible&&!G.water.visible&&!G.sun.castShadow&&!G.TERRAIN_BANDS.some(b=>b.mesh&&b.mesh.visible)&&G.scene.fog.color.getHex()===G.DG_THEMES.hollowroots.pal.fog&&G.camera.far<200);
     const B=R.B, lx=()=>G.P.x-R.ox, lz=()=>G.P.z-R.oz; let dir=null;
     for(let a=0;a<8&&!dir;a++){ const dx=Math.sin(a/4*Math.PI), dz=Math.cos(a/4*Math.PI); for(let d=1;d<12;d+=0.25) if(!G.dgFree(B,lx()+dx*d,lz()+dz*d,0.32)){ dir={dx,dz,d}; break; } }
     { const x0=lx(), z0=lz(); G.P.yaw=Math.atan2(-dir.dx,-dir.dz); G.keys.KeyW=true; for(let i=0;i<90;i++) G.updatePlayer(0.05); await wait(500); G.keys.KeyW=false; G=c.G();
