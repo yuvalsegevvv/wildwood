@@ -41,9 +41,10 @@ function updateCombatUI(dt){
   abBasic.style.setProperty('--p',ba?Math.min(1,CB.cd.basic/bhInterval(ba,L,bhSpeedUi(),CB.buff?CB.buff.cd:1,0)):0); bhHudTick(); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PV,c,rlUiCdr()):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PV,c,rlUiCdr()):0);   // (skillsets: the bonuses of the class in hand)
   abSkill.classList.toggle('ready',!!sk&&CB.cd.skill<=0); abBurst.classList.toggle('ready',!!bu&&CB.cd.burst<=0);
   abBasic.classList.toggle('buffed',!!CB.buff);
+  mvHudUpdate();   // movement: the movement button's cooldown
   caveHudUpdate();   // cave: the charge bar and the ready glow
   ultHudUpdate();   // ult: the 5th tile's cooldown and boost glow
-  const key=c+'|'+(ba?ba.id:'')+'|'+(sk?sk.id:'')+'|'+(bu?bu.id:'')+'|'+Math.min(PV,BURST_SLOT_LV)+caveBarKey()+ultBarKey(); if(key!==abKey){ abKey=key; setActionBar(); }
+  const key=c+'|'+(ba?ba.id:'')+'|'+(sk?sk.id:'')+'|'+(bu?bu.id:'')+'|'+Math.min(PV,BURST_SLOT_LV)+caveBarKey()+ultBarKey()+mvBarKey(); if(key!==abKey){ abKey=key; setActionBar(); }
 }
 const ICONS={
   Slash:'<path d="M5 19L17 7l2-4-4 2L3 17z"/><path d="M8 16l-3 3M15 5l4 4"/>',
@@ -179,13 +180,14 @@ function setActionBar(){
     el.classList.toggle('empty',!a); const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
     el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Power':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };
   fill(abBasic,'basic',kbName('basic')); fill(abSkill,'skill',kbName('skill')); fill(abBurst,'burst',kbName('burst'));
+  mvFillTile();   // movement: the movement skill's tile
   caveFillTile();   // cave: the 4th tile (Go to the cave / its skill)
   ultFillTile();   // ult: the 5th tile (the set burst)
 }
 const press=(el,fn)=>{ el.addEventListener('touchstart',e=>{ e.preventDefault(); fn(); },{passive:false}); el.addEventListener('click',fn); };
 abBasic.addEventListener('touchstart',e=>{ e.preventDefault(); bhDown(); },{passive:false}); abBasic.addEventListener('touchend',e=>{ e.preventDefault(); bhUp(); },{passive:false}); abBasic.addEventListener('touchcancel',bhCancel);
 abBasic.addEventListener('mousedown',e=>{ if(e.button===0) bhDown(); }); addEventListener('mouseup',e=>{ if(e.button===0) bhUp(); });   // basic-hold: skill 1 fires when the button comes up (a tap = a press, a hold = a charged attack)
-press(abSkill,()=>doAttack('skill')); press(abBurst,burstSlot); press($('#abCave'),()=>doAttack('cave')); press($('#abUlt'),()=>doAttack('ult'));   // cave: the 4th slot; ult: the 5th
+press(abSkill,()=>doAttack('skill')); press(abBurst,burstSlot); press($('#abMov'),mvPress); press($('#abCave'),()=>doAttack('cave')); press($('#abUlt'),()=>doAttack('ult'));   // cave: the 4th slot; ult: the 5th
 addEventListener('keyup',e=>{ if(kbIs(e.code,'basic')) bhUp(); });
 addEventListener('keydown',e=>{
   if(!started||uiOpen()) return;

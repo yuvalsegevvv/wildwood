@@ -74,6 +74,7 @@ function sanitizeSkills(g){
   out.pgiven=!!g.pgiven;   // the free passive was handed out once (so taking it off does not bring it back)
   out.ult=ultDef(g.ult)?g.ult:null;   // ult: the worn burst's set id (sanitizeGear clears it when it is not owned)
   out.cave=caveSkillDef(g.cave)?g.cave:null;   // cave: the worn cave skill (sanitizeGear clears it when it is not owned)
+  out.mov=mvDef(g.mov)?g.mov:null;   // movement: the worn movement skill (every one is free)
   out.v=g.v===2?2:1;   // 1 = from before burst skills: they get their free burst on join
   return out;
 }

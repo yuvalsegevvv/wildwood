@@ -17,6 +17,7 @@ const KB_ACTIONS=[
   {id:'burst', name:'Power skill',   def:['KeyR','Digit3']},
   {id:'cave',  name:'Charge skill (4th slot)', def:['Digit4','']},   // cave: the 4th slot (game/cave/slot.js), opens at level 23
   {id:'ult',   name:'Burst (5th slot)', def:['Digit5','']},   // ult: the set burst (game/ult/slot.js), opens at level 35
+  {id:'mov',   name:'Movement skill (button)', def:['Digit6','']},   // movement: the movement slot's own button (game/movement/slot.js), opens at level 5
   {id:'pot1',  name:'Healing potion', def:['KeyZ','']},
   {id:'pot2',  name:'Potion of might', def:['KeyX','']},
   {id:'pot3',  name:'Potion of guard', def:['KeyC','']},

@@ -2,6 +2,7 @@
 /* ---------- simulation ---------- */
 var dashReq=false, dashT=0, dashCd=0, dashDx=0, dashDz=0;   // the dash (input.js sets dashReq)
 function updatePlayer(dt){
+  mvTick(dt);   // movement: cooldown, sprint time (game/movement/slot.js)
   let f=0,s=0;
   if(kbHeld('fwd')) f+=1; if(kbHeld('back')) f-=1;
   if(kbHeld('right')) s+=1; if(kbHeld('left')) s-=1;
@@ -10,6 +11,7 @@ function updatePlayer(dt){
   const wsf=waterSurf(P.x,P.z), inWater=getH(P.x,P.z)<wsf-0.35 && bridgeDeck(P.x,P.z)<wsf;   // (the sea's level, or a tarn's or the river's in the Greyspine)
   let speed=9.5*(1+(GEAR&&GEAR.skills?passiveSum(GEAR.skills,PL.level,'move',clsOf()):0)); if(inWater) speed*=0.5;   // sprint is the default pace; the Fleetfoot passive adds to it
   if(PFX.slow>0) speed*=0.5; speed*=cvbSpeedK(); if(PFX.root>0) speed=0;   // a boss's ice: frozen or slowed (combat/boss-fx.js); cave: cvbSpeedK() is Black Ice's lane (+40%)
+  speed*=mvSpeedK();   // movement: Sprint
   speed*=bhMoveK();   // basic-hold: charging skill 1 slows you
   if(CB.act && (CB.act.kind==='slash'||CB.act.kind==='nova'||CB.act.kind==='shoot'||CB.act.kind==='volley')) speed*=0.45;
   const sy=Math.sin(P.yaw), cy=Math.cos(P.yaw);
@@ -18,9 +20,10 @@ function updatePlayer(dt){
   P.vx+=(tx-P.vx)*k; P.vz+=(tz-P.vz)*k;
   if(dashCd>0) dashCd-=dt;
   if(dashReq){ dashReq=false;   // the dash key: a short burst along the move direction (or where the camera looks), then a cooldown
-    if(dashCd<=0 && !PL.dead && PFX.root<=0 && !inWater){ const m=Math.hypot(tx,tz); dashDx=m>0.1?tx/m:-sy; dashDz=m>0.1?tz/m:-cy; dashT=0.2; dashCd=1.1; }
+    if(dashCd<=0 && !PL.dead && PFX.root<=0 && !inWater){ const m=Math.hypot(tx,tz); dashDx=m>0.1?tx/m:-sy; dashDz=m>0.1?tz/m:-cy; dashT=mvDashT(0.2); dashCd=mvDashCd(1.1); }   // movement: Swift Dash
+
   }
-  if(dashT>0){ dashT-=dt; P.vx=dashDx*24; P.vz=dashDz*24; }
+  if(dashT>0){ dashT-=dt; P.vx=dashDx*mvDashV(24); P.vz=dashDz*mvDashV(24); }
   const ox=P.x, oz=P.z;
   P.x+=P.vx*dt; P.z+=P.vz*dt; pfxStep(dt);
   nearCols(P.x,P.z,(cx,cz,r)=>{ const dx=P.x-cx, dz=P.z-cz, d=Math.hypot(dx,dz), m=r+0.32; if(d<m && d>1e-4){ P.x=cx+dx/d*m; P.z=cz+dz/d*m; } });
@@ -31,9 +34,11 @@ function updatePlayer(dt){
   if(!dgIn()&&!caveIn()) cvResolve(P,ox,oz,0.32,SLOPE_MAX);   // caves: walls and ledges of a cave's rock (shared/caves.js)
   if(P.ground&&!dgIn()&&!caveIn()) slopeBlock(ox,oz);   // too steep to climb: no way up (shared with the bridge's deck as ground)
   const gnd=Math.max(getH(P.x,P.z),wsf-1.15,bridgeDeck(P.x,P.z),cvGroundAt(P.x,P.z,P.y));   // the river bridge's deck is ground too; caves: so are an arch's top and a ledge (-Infinity away from a site)
+  mvAirJump(inWater);   // movement: Double Jump
   if(jumpReq && P.ground && PFX.root<=0){ P.vy=inWater?4:6.2; P.ground=false; }
   jumpReq=false;
-  P.vy-=19*dt; P.y+=P.vy*dt;
+  P.vy-=19*dt; P.vy=mvFall(P.vy,inWater); P.y+=P.vy*dt;   // movement: Glide
+
   if(P.y<=gnd){ P.y=gnd; P.vy=0; P.ground=true; }
   else if(P.ground && P.y-gnd<0.7 && P.vy<=0){ P.y=gnd; P.vy=0; }
   else P.ground=false;

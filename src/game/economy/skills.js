@@ -10,7 +10,7 @@ function toggleSkills(){ if(!started||customizing) return; if($('#skills').hidde
 const skIcon=name=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||ICONS.burst||''}</svg>`;   // (skillsets: a signature skill without a glyph of its own gets the generic burst one, as the action bar does)
 // a skill's icon: a set piece draws its own set's symbol (skillsets/panel.js), any other its glyph by name (a piece of no set without one gets the generic burst)
 const skIconOf=s=>{ const g=ssGlyph(s); return g?`<svg ${SS_ICON_ATTR}>${g}</svg>`:skIcon(s.name); };
-const SLOT_TITLE={basic:'1 · Basic attack',skill:'2 · Skill',burst:'3 · Power'}, KIND_TITLE={basic:'1 · Basic',skill:'2 · Skill',burst:'3 · Power',cave:'4 · Charge',ult:'5 · Burst',pass:'Passive'};
+const SLOT_TITLE={basic:'1 · Basic attack',skill:'2 · Skill',burst:'3 · Power'}, KIND_TITLE={basic:'1 · Basic',skill:'2 · Skill',burst:'3 · Power',cave:'4 · Charge',ult:'5 · Burst',pass:'Passive',mov:'Movement'};
 const needLv=s=>s.slot==='passive'?Math.max(PASSIVE_LV,s.lv):Math.max(slotLv(s.slot),s.lv);
 const SLOT_NO={basic:1,skill:2,burst:3};
 // one skill as a tile: its icon, element dot, and its level (or price / required level when you do not own it yet)
@@ -32,7 +32,7 @@ function skSlotsHtml(C,cls){
     return `<div class="sk-pslot${P?' on':''}${usable?'':' locked'}" data-idx="${i}"><span class="sk-n">Passive ${i+1}</span>${P?skTile(P,C,'pslot:'+i):`<div class="sk-tile empty">${skIcon(usable?'plus':'lock')}</div>`}<b>${P?P.name:usable?'Empty':'Level '+PASSIVE_SLOT_LV[i]}</b><small>${P?passiveText(id,skillLvOf(C.S,id)):usable?'Drag one here':''}</small></div>`;
   }).join('');
   const later=PASSIVE_SLOT_LV.map((l,i)=>C.lv<l?'slot '+(i+1)+' at level '+l:'').filter(Boolean).join(', ');
-  return `<div class="sk-lcol"><div class="sk-load-h">Active skills</div><div class="sk-load">${act}${caveH}${ultSlotHtml(C)}</div></div><div class="sk-lcol"><div class="sk-load-h">Passive skills <span>${open?'the same for every class'+(later?' · '+later:''):'open at level '+PASSIVE_LV}</span></div><div class="sk-load pas">${pas}</div></div>`;   // two columns: active | passive (18-skills.css)
+  return `<div class="sk-lcol"><div class="sk-load-h">Active skills</div><div class="sk-load">${act}${caveH}${ultSlotHtml(C)}</div></div><div class="sk-lcol"><div class="sk-load-h">Passive skills <span>${open?'the same for every class'+(later?' · '+later:''):'open at level '+PASSIVE_LV}</span></div><div class="sk-load pas">${pas}</div><div class="sk-load-h">Movement skill <span>free, from level ${MV_SLOT_LV}</span></div><div class="sk-load pas">${mvSlotHtml(C)}</div></div>`;   // movement: the slot below the passives   // two columns: active | passive (18-skills.css)
 }
 // details of the selected skill: what it does at its level, how to equip it, and what its next level costs
 function skInfoHtml(C,cls){
@@ -80,7 +80,7 @@ function renderSkills(){
   h+=`<div class="sk-soul">Soul: ${elChip(soulNow())} <span>${PL.level>=SOUL_LV?'Skills of this element deal more damage. Change it at the Soul Hall in Hanami.':'Bind your soul to an element at the Soul Hall in Hanami, from level '+SOUL_LV+'.'}</span></div>`;
   h+=`<div class="sk-main"><div class="sk-left">${skSlotsHtml(C,cls)}</div>`;   // loadout on the left, the skill list on the right
   const setH=ssSummaryHtml(C,cls);   // skillsets: the set effects
-  h+=`<div class="sk-area"><div class="chips sk-kinds">${['basic','skill','burst','cave','ult','pass'].map(k=>`<button class="chip" data-skkind="${k}" aria-pressed="${k===skKind}">${KIND_TITLE[k]}</button>`).join('')}</div>`;
+  h+=`<div class="sk-area"><div class="chips sk-kinds">${['basic','skill','burst','cave','ult','mov','pass'].map(k=>`<button class="chip" data-skkind="${k}" aria-pressed="${k===skKind}">${KIND_TITLE[k]}</button>`).join('')}</div>`;
   let ids;
   if(pass){ ids=PASSIVE_IDS.filter(id=>!PASSIVES[id].set||S.owned.includes(id)); if(lv<PASSIVE_LV)   // skillsets: a signature passive shows once it is yours
     h+=`<p class="muted sk-note">Passive skills open at level ${PASSIVE_LV}. They work for every class.</p>`; }
@@ -89,8 +89,8 @@ function renderSkills(){
     if(skKind!=='basic'&&lv<slotLv(skKind)) h+=`<p class="muted sk-note">This slot opens at level ${slotLv(skKind)}.</p>`;
     if(skKind==='basic'&&!canSwap(cls,'basic',S)) h+=`<p class="muted sk-note">Only mages can change their basic attack.</p>`;
   }
-  h+=`<div class="sk-grid">${skKind==='cave'?caveGridHtml():skKind==='ult'?ultGridHtml():ids.map(id=>{ const s=skillDef(id); return `<div class="sk-cell">${skTile(s,C,'grid')}<span class="nm">${s.name}</span></div>`; }).join('')}</div></div></div>${setH}`;
-  h+=`<div class="sk-info" id="skInfo">${skKind==='cave'?caveInfoHtml():skKind==='ult'?ultInfoHtml():skInfoHtml(C,cls)}</div>`;   // cave: the Cave tab's details
+  h+=`<div class="sk-grid">${skKind==='cave'?caveGridHtml():skKind==='ult'?ultGridHtml():skKind==='mov'?mvGridHtml():ids.map(id=>{ const s=skillDef(id); return `<div class="sk-cell">${skTile(s,C,'grid')}<span class="nm">${s.name}</span></div>`; }).join('')}</div></div></div>${setH}`;
+  h+=`<div class="sk-info" id="skInfo">${skKind==='cave'?caveInfoHtml():skKind==='ult'?ultInfoHtml():skKind==='mov'?mvInfoHtml():skInfoHtml(C,cls)}</div>`;   // cave: the Cave tab's details
   if(cls!==clsOf()&&!pass) h+=`<p class="muted">You fight as a ${CLASSES[clsOf()].name} right now (your weapon decides). This ${CLASSES[cls].name} loadout is used whenever you hold a ${WEAPON_OF[cls]}.</p>`;
   const oldGrid=$('#skBody').querySelector('.sk-grid'), keepTop=oldGrid&&skGridKind===skKind+'|'+cls?oldGrid.scrollTop:0; skGridKind=skKind+'|'+cls;   // the list scrolls inside: keep its place across redraws of the same tab
   $('#skBody').innerHTML=h;
@@ -101,6 +101,7 @@ function renderSkills(){
   on('[data-ssall]',b=>{ netSend({t:'ssall',set:b.dataset.ssall}); UI_SFX.click(); });   // skillsets: wear every owned piece of the set
   caveBindPanel(on);   // cave: the cave row, tab and buttons
   ultBindPanel(on);   // ult: the burst row, tab and buttons
+  mvBindPanel(on);   // movement: the slot, tab and buttons
   on('[data-eqskill]',b=>{ skEquip(b.dataset.eqskill); });
   on('[data-unskill]',b=>{ netSend({t:'unskill',cls,slot:b.dataset.unskill}); UI_SFX.click(); });
   on('[data-unpass]',b=>{ netSend({t:'unskill',slot:'pass',idx:+b.dataset.unpass}); UI_SFX.click(); });

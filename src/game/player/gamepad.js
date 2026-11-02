@@ -4,7 +4,7 @@
    joystick's inputs, movement.js), right stick = look(). A button does not call a handler: it sends a keydown / keyup with the
    action's current key (kbKey), so every handler, the held-key attack and a rebound key keep working. The button -> action table
    (GP_BTN) is fixed, standard layout (Xbox: A B X Y). Test: tools/keys-smoke.js. */
-const GP_BTN={0:'jump',1:'run',2:'basic',3:'skill',4:'talk',5:'burst',6:'target',7:'gather',8:'map',9:'inv',10:'view',11:'skills',12:'pot1',13:'pot2',14:'pot3',15:'cave'};
+const GP_BTN={0:'jump',1:'run',2:'basic',3:'skill',4:'talk',5:'burst',6:'target',7:'gather',8:'map',9:'inv',10:'mov',11:'skills',12:'pot1',13:'pot2',14:'pot3',15:'cave',16:'view'};
 const GP_DEAD=0.18, GP_LOOK=900;   // dead zone of a stick; look speed in "mouse pixels" a second at full tilt
 const GP={held:{},sent:{},down:{},stick:false,t:0};   // held: button -> action pressed; sent: action -> the code we pressed; down: button -> physically pressed (kept while the pad is ignored); stick: the pad owns joyX / joyY
 const gpKeyOf=act=>{ const m=KB.map[act]; return m&&(m[0]||m[1])||''; };

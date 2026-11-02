@@ -1,0 +1,6 @@
+/*@ Movement slot: the movement slot's tile (#abMov) and its tab in the skills panel (game/movement/slot.js) */
+.ab-mov{ --mv:#7fd0ff; }
+.ab-mov.ready{ border-color:var(--mv); box-shadow:0 0 8px var(--mv); }
+.ab-mov.buffed{ animation:ultPulse 1s ease-in-out infinite; border-color:var(--mv); }
+.sk-tile.worn{ outline:2px solid rgba(159,224,138,.7); outline-offset:1px; }
+@media (prefers-reduced-motion:reduce){ .ab-mov.buffed{ animation:none; } }
