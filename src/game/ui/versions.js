@@ -1,5 +1,5 @@
 //@ The Versions panel (button left of the map): version 1 = everything in the released game, version 2 = what is new
-/* Agent map: owns #versions (#vrTabs, #vrBody), the #bVer button. Text only, written by hand: keep it in step with PATCHNOTES.md (the same lists, shorter).
+/* Agent map: owns #versions (#vrTabs, #vrBody), the Versions chip in Settings (#sVer). Text only, written by hand: keep it in step with PATCHNOTES.md (the same lists, shorter).
    Users: panels.js (the id is in PANELS). Test: client-smoke (opens it, two tabs). */
 const VER_TAB_KEY='wildwood-versions-tab';
 let verTab='v2';
@@ -91,4 +91,4 @@ function verRender(){
   $('#vrTabs').querySelectorAll('[data-vt]').forEach(b=>b.onclick=()=>{ verTab=b.dataset.vt; try{ localStorage.setItem(VER_TAB_KEY,verTab); }catch(_){} UI_SFX.click(); verRender(); });
 }
 function openVersions(){ try{ const s=localStorage.getItem(VER_TAB_KEY); if(s&&verPages()[s]) verTab=s; }catch(_){} openPanel('versions'); verRender(); }
-$('#bVer').addEventListener('click',e=>{ if(!$('#versions').hidden) closePanels(); else openVersions(); e.currentTarget.blur(); });
+$('#sVer').addEventListener('click',e=>{ openVersions(); e.currentTarget.blur(); });   // (the Versions button of the HUD became the Presets button: Versions now opens from Settings)

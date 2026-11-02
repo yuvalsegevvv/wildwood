@@ -39,6 +39,7 @@ styles
   31-friends.css                     Friends and ranking panel (ui/friends.js): friend rows with an online dot, the ranking table, the friend request prompt
   32-testroom.css                    The test room (ui/testroom.js): the panel with the counter and its buttons, and the counter on the screen while you stand on the pad
   33-puzzles.css                     Puzzles (puzzles/panel.js, rootlines.js, ice.js, scrolls.js): the board panel, the pad, the chest window, the Sigil track
+  34-presets.css                     Presets panel (economy/presets.js): ten cards in a grid, the worn one highlighted, an empty one dimmed
   32-ult.css                         The set burst (5th slot): its action-bar tile, the cast popup card and the skills panel row (game/ult/slot.js, popup.js)
 
 shared
@@ -507,7 +508,7 @@ game
   economy/forge.js                   Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
   economy/soul.js                    Element helpers for the interface (icons, chips) and the Soul Hall panel in Hanami, where you bind your soul to an element
   economy/skills.js                  Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, upgrade with coins and monster drops, learn from the trainers
-  economy/presets.js                 Presets row of the skills panel: ten saved setups (skills, soul, equipment, an optional linked outfit slot) to save, wear, rename and clear
+  economy/presets.js                 Presets panel (the HUD's layers button): ten cards, each a saved setup of skills, soul and equipment with an optional linked outfit slot; wear, save, rename, clear
   economy/skill-track.js             Tracking a skill upgrade: mark one skill and the maps show the camps of the monsters whose drops its next level still needs
   economy/skillsets.js               Skill sets on the client: the toast when a piece is earned (the pieces themselves live in the skills panel's grids, economy/skills.js) and the ally buffs that change what you do (haste)
   skillsets/looks.js                 Skill-set looks on the client: every signature skill is drawn in the colours and motifs of its outfit (particles, ground patterns, projectiles, auras), through hooks in skill-fx.js, attacks.js and net/client.js
