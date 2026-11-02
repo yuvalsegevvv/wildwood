@@ -5,7 +5,7 @@ Every monster kind in the game, with the numbers the server uses and the place i
 
 Generated from the live code by `node tools/gen-docs.js` (`--check` tells you when this file is out of date). Line numbers are those of the code when it was generated.
 
-148 monster kinds in 82 zones, 17 bosses, 22 boss helpers (summons and props) and 3 grey-veined quest monsters: 235 definitions, plus 8 dungeon bosses with their helpers (section 11). 3719 monsters exist in the world at start (148 kinds in their camps + 17 bosses).
+148 monster kinds in 82 zones, 17 bosses, 22 boss helpers (summons and props) and 3 grey-veined quest monsters: 236 definitions, plus 8 dungeon bosses with their helpers (section 11). 3719 monsters exist in the world at start (148 kinds in their camps + 17 bosses).
 
 ## 1. Where it is defined
 
@@ -252,7 +252,7 @@ Health is 70 hits of a same-level player (×1.5 from level 10); a hit is 16% of 
 | `oldthunder` | Old Thunder, the Anvilwing | 41 | air | 31801 | 911 | 2.3 | 3 | 388368.3 | 125420 | Thunder's Anvil | Old Thunder's Roost | Spark Wisp | — | boss41 | `thunder` src/server/boss-kits-savanna.js:47 | src/shared/savanna-bosses.js:7 |
 | `oldhorn` | Oldhorn, the Herd-Mother | 45 | earth | 36226 | 1013 | 2.6 | 2.4 | 820351.9 | 221780 | Herd-Mother's Horn | The Dawn Slab | Hollowed Carrier | — | boss45 | `herdmother` src/server/boss-kits-savanna.js:103 | src/shared/savanna-bosses.js:12 |
 | `ocelo` | Ocelo, the Sun-Jaguar | 45 | fire | 36226 | 1013 | 2.2 | 3.2 | 820351.9 | 221780 | Jaguar's Sunstone | The Jaguar Court | Jaguar Acolyte | — | boss45 | `jaguar` src/server/boss-kits-isles.js:43 | src/shared/emberwake-bosses.js:5 |
-| `sinkwarden` | Pyrrhax, the Sinkwarden | 50 | fire | 43485 | 1180 | 2.2 | 2.6 | 2115643.1 | 457960 | Pyrrhax's Heart | The Sinkwarden's Crater | Ember Spawn | — | boss50 | `sinkwarden` src/server/boss-kits-volcano.js:77 | src/shared/emberwake-bosses.js:16 |
+| `sinkwarden` | Pyrrhax, the Sinkwarden | 50 | fire | 43485 | 1180 | 2.2 | 2.6 | 2115643.1 | 457960 | Pyrrhax's Heart | The Sinkwarden's Crater | Ember Spawn | — | boss50 | `sinkwarden` src/server/boss-kits-volcano.js:78 | src/shared/emberwake-bosses.js:16 |
 | `tuila` | Tuila, the Tide-Caller | 46 | water | 37503 | 1042 | 2.4 | 2.6 | 990254.8 | 256060 | Tide-Queen's Pearl | Tuila's Tidepool | Tide Spirit | — | boss46 | `tidecaller` src/server/boss-kits-isles.js:84 | src/shared/emberwake-bosses.js:10 |
 
 Boss quest notices (`BOSS_QUESTS`, src/shared/quests.js:32): The Rootwarden from level 13; Carapax, the Tide King from level 17; Akaoni, the Gate Demon from level 18; Kyuubi, the Nine-Tailed from level 23; Ymrik, the Rimeking from level 25; The Gryphon Queen from level 28; Vetrmaw, the Frost Wyrm from level 29; The Mountain Golem from level 31; The Glass Guardian from level 31; The Sand Wyrm from level 34; Captain Dredge from level 34; The Gloam Warden from level 38.
@@ -520,7 +520,7 @@ A def's `model` picks a family model (`MODELS.<model>={geo,build,anim}`) and its
 | `beetle` | 25 | 1.15 / 0.08 / 1.4 / 2.6 / 0.6 / 0.8 / 11 / 5 | src/shared/monster-defs.js:5 | src/game/combat/monster-bugs.js:105 |
 | `boar` | 13 | 1 / 0.11 / 2 / 3.4 / 0.6 / 1 / 13 / 4 | src/shared/monster-defs.js:6 | src/game/combat/monster-beasts.js:5 |
 | `goblin` | 40 | 1 / 0.09 / 1.3 / 3 / 0.45 / 1.8 / 14 / 5 | src/shared/monster-defs.js:7 | src/game/combat/monster-folk.js:112 |
-| `treant` | 25 | 1.35 / 0.14 / 2.4 / 1.6 / 0.85 / 3.3 / 12 / 3 | src/shared/monster-defs.js:8 | src/game/combat/monster-woods.js:13 |
+| `treant` | 26 | 1.35 / 0.14 / 2.4 / 1.6 / 0.85 / 3.3 / 12 / 3 | src/shared/monster-defs.js:8 | src/game/combat/monster-woods.js:13 |
 | `fox` | 17 | 1 / 0.1 / 1.5 / 3.8 / 0.55 / 1 / 14 / 4 | src/shared/monster-defs.js:9 | src/game/combat/monster-beasts.js:45 |
 | `wisp` | 25 | 0.9 / 0.1 / 1.7 / 2.6 / 0.45 / 1.6 / 13 / 5 | src/shared/monster-defs.js:10 | src/game/combat/monster-spirits.js:4 |
 | `totem` | 9 | 1 / 0 / 99 / 0 / 0.55 / 2.7 / 0 / 2 | src/shared/monster-defs.js:11 | src/game/combat/monster-woods.js:97 |

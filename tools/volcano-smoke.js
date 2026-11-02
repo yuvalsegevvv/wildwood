@@ -7,7 +7,7 @@ let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+nam
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const B=x.BOSSES.find(b=>b.bd.def.id==='sinkwarden'), m=B.m, A=B.A, H=x.SINK_DEF.hp;
 ok('the boss is level 50, in the volcano isle\'s crater arena, one fight of three parts',x.SINK_DEF.level===50&&B.bd.parts===3&&A.key==='eboss50'&&x.zoneAt(A.x+80,A.z).key==='e50');
-ok('each part\'s pool is twice a full boss: the sleeping bar, and the four wardens together',m.maxHp===2*H&&Math.abs(x.SINK_GUARD_DEF.hp*4-2*H)<=4,m.maxHp+' vs '+H);
+ok('each part\'s pool is twice a full boss: the sleeping bar, and the four wardens together',m.maxHp===H&&m.hpDiv===2&&Math.abs(x.SINK_GUARD_DEF.hp*4-2*H)<=4,m.maxHp+' vs '+H);
 ok('the volcano has common monsters in e49 and e50',['e49','e50'].every(z=>x.MON_DEFS.filter(d=>d.zone===z).length>=2)&&x.MONS.some(q=>q.def.zone==='e49')&&x.MONS.some(q=>q.def.zone==='e50'));
 // the talisman: five kinds, 175 ids, a fixed bonus + a rolled line set, one stone shared with rings and pendants
 { const ids=x.dgAllTalismanIds(), it=x.ITEM[x.dgTalismanId('cdr',2,3)], r=x.ITEM[x.dgTalismanId('cdr',2,3)+'~a10b20c30'];
@@ -30,7 +30,7 @@ for(const w of wardens()) w.hp=0.5, w.hp=0.5;
 // kill them through the real path
 for(const w of wardens()){ w.hp=0; W.receive('a',{t:'atk',k:'basic',tg:w.id,face:0}); const mm=w; mm.hp=0; x.MONS.includes(mm)&&(mm.dead=true); }
 run(2);
-ok('part 2: with the wardens down the boss rises with a full pool and can be hit',B.part===2&&!m.immune&&B.mode===0&&m.hp===m.maxHp&&m.maxHp===2*H,'part '+B.part+' mode '+B.mode+' hp '+m.hp);
+ok('part 2: with the wardens down the boss rises with a full pool and can be hit',B.part===2&&!m.immune&&B.mode===0&&m.hp===m.maxHp&&m.maxHp===H&&m.hpDiv===2,'part '+B.part+' mode '+B.mode+' hp '+m.hp);
 // part 2 ends in the eruption, not a death
 { m.hp=1; W.receive('a',{t:'atk',k:'basic',tg:m.id,face:0}); keep(); for(let i=0;i<10&&B.part===2;i++){ put(); P.x=m.x+m.T.rad+1; W.receive('a',{t:'atk',k:'basic',tg:m.id,face:0}); tick(1); keep(); if(B.part===3) break; m.hp=Math.min(m.hp,1); }
   ok('part 2 ending is the eruption: part 3, berserk, a fresh pool, the boss not dead',B.part===3&&B.enraged&&!m.dead&&m.hp>=m.maxHp*0.9,'part '+B.part+' hp '+m.hp); }

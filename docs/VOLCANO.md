@@ -23,3 +23,9 @@ Zones `e49` The Ashfall Slopes (Ash Crawler, Cinder Wisp, level 49) and `e50` Th
 
 ## Test server
 The `/test` kit now holds every level-40 pendant kind and every talisman kind at Unique +8 (an attack talisman is worn).
+
+## Fixes after the first playtest
+
+- The HP bar shows 100% per part: a part's pool is `SINK_PART_K` times the def's hp, and `m.hpDiv` divides every hit so `hp/maxHp` stays the bar (`damageMonsterS`).
+- The four wardens (`SINK_GUARD_DEF`) are in `ALL_MON_DEFS`, so the client draws and can target them; they have `m.leash=1e4` (the 32 m leash used to make them drop aggro and heal), are clamped inside the pit and re-aggro the nearest hiker.
+- The cone reaches further (direction-dependent `outR` in `volcanoCut`) and the far-lands ash plume is 34 smooth puffs (`IcosahedronGeometry(1,3)`).

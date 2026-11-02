@@ -26,4 +26,4 @@ const EW_BOSS_ROWS=[
   {def:SINK_DEF,arena:'eboss50',kit:'sinkwarden',add:EMBER_DEF,short:'Pyrrhax',parts:SINK_PARTS,partText:['Part 1: break the Guarding Wardens ({n} left)','Part 2: strike Pyrrhax in the crater','Part 3: the eruption! Pyrrhax flies: hit him when he lands'],bar:{1:'Airborne: dodge the firestorm, he lands soon!',stun:'Landed: hit him now!'}},
   {def:TUILA_DEF,arena:'eboss46',kit:'tidecaller',add:TIDESPIRIT_DEF,short:'Tuila',bar:{6:'Ebb: the undertow drags you in, run from the middle!',stun:'The tide is spent: hit her now!'}}];
 EW_BOSS_ROWS.forEach(b=>{ b.add.bossAdd=true; });   // (the adds of a boss grow like the boss: LATE_CREEP_BOSS)
-BOSS_DEFS.push(...EW_BOSS_ROWS); ALL_MON_DEFS.push(...EW_BOSS_ROWS.flatMap(b=>[b.def,b.add]));
+BOSS_DEFS.push(...EW_BOSS_ROWS); ALL_MON_DEFS.push(...EW_BOSS_ROWS.flatMap(b=>[b.def,b.add]),SINK_GUARD_DEF);   // (the wardens too: a def the client does not know cannot be drawn, so it cannot be seen or hit)
