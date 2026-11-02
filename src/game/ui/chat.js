@@ -25,6 +25,7 @@ function sendChat(){
   const v=chatText.value.trim(); closeChat(); if(!v) return;
   const m=/^\/name\s+(.+)$/i.exec(v);
   if(m){ setMyName(m[1]); return; }
+  if(/^\/sit$/i.test(v)){ sitToggle(); return; }   // sitting: the same as the sit key
   if(/^\/(help|\?)$/i.test(v)){ chatLine('sys',null,'Type to talk to everyone in this world. /name New Name changes your name.'); return; }
   netSend({t:'chat',text:v.slice(0,160)});
 }

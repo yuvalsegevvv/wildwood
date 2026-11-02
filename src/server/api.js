@@ -77,6 +77,7 @@ function setPos(pid,d){
     if(!guestLandOk(p.x,p.z)){ p.x=p.okX==null?VIL.x:p.okX; p.z=p.okZ==null?VIL.z:p.okZ; p.y=getH(p.x,p.z); sendTo(p.id,{t:'tp',x:p.x,z:p.z,face:p.face}); guestGateP(p,'travel'); }
     else { p.okX=p.x; p.okZ=p.z; }
   }
+  sitStandMoveP(p);   // sitting: a hiker who walked off the spot stands up
   barStep(p,ox,oz,p.gear);   // the gates that are still shut for this player (shared/barriers.js); an open land holds nobody
 }
 // ITEM[id], SKILLS[id], ... are plain objects: an id of 'constructor' or '__proto__' finds a member of Object.prototype, passes `if(!it)` and made buyP charge NaN coins
@@ -179,7 +180,7 @@ function broadcastSnap(){
     const a=[m.id,r1(m.x),r1(m.z),Math.round(m.face*100)/100,Math.ceil(m.hp),(m.aggro?1:0)|(m.slowT>0?4:0)|(m.immune?8:0)|(m.stunT>0?16:0)|(m.burnT>0?32:0)];
     rows.push([m,a,a.join()]);
   }
-  const all=[...S.players.values()], prow=all.map(p=>[p.id,r1(p.x),r1(p.y),r1(p.z),Math.round(p.face*100)/100,Math.round(p.hp),p.maxHp,p.pv?PVP.level:p.level,p.dead?1:0,pshopLive(p)?1:0]);   // pshop: 1 = an open player shop (the client sets a stall down)
+  const all=[...S.players.values()], prow=all.map(p=>[p.id,r1(p.x),r1(p.y),r1(p.z),Math.round(p.face*100)/100,Math.round(p.hp),p.maxHp,p.pv?PVP.level:p.level,p.dead?1:0,pshopLive(p)?1:0,p.sit&&!p.dead?p.sit:0]);   // pshop: 1 = an open player shop; sitting: the 11th field, 0 standing / 1 ground / 2 bench (the client sets a stall down)
      // pvp: on the island everyone shows the one level they fight at
   const day=Math.round(S.day*1e5)/1e5, b=bossState(), w=weatherState(), ev=EVQ, bj=JSON.stringify(b); EVQ=[];
   if(io.broadcastSnaps){
