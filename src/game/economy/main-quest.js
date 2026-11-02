@@ -10,9 +10,10 @@ function odranHere(vil){ const M=mqG(); if(!M) return false; return vil===1?M.s>
    its own line, and the bubble then wears that name (sayLine, village/talking.js). Narration in brackets stays a line of its own. */
 const MQ_SPEAKER_NAMES='Tansy|Wren|Dunstan|Torgeir|Pip|Morrow|Linnea|Pell|Aldric|Maren|Greta|Bram|Oskar|Hollen|Ambrose|Odran|Tomas|Daisuke|Kaede|The Rootwarden|You';
 const MQ_SPEAKER_CUT=new RegExp('\\s+(?=(?:'+MQ_SPEAKER_NAMES+'): )'), MQ_SPEAKER_DIR=new RegExp('^\\((?:'+MQ_SPEAKER_NAMES+'),[^)]*\\)\\s*([^(].*)$'), MQ_SPEAKER_OF=new RegExp('^('+MQ_SPEAKER_NAMES+'): ([\\s\\S]*)$');
-function mqSplitLines(list){ const out=[]; for(const line of list||[]){ let s=String(line); const d=s.match(/^\((\w+),/); if(d&&MQ_SPEAKER_DIR.test(s)) s=d[1]+': '+s.match(MQ_SPEAKER_DIR)[1]; for(const part of s.split(MQ_SPEAKER_CUT)) if(part) out.push(part); } return out; }
+function mqSplitLines(list){ const out=[]; let cine=''; for(const line of list||[]){ let s=String(line); if(s.startsWith('@cine ')){ cine=s+'\n'; continue; }   // (a key scene's marker rides in front of the next line: story-voice.js)
+    const d=s.match(/^\((\w+),/); if(d&&MQ_SPEAKER_DIR.test(s)) s=d[1]+': '+s.match(MQ_SPEAKER_DIR)[1]; for(const part of s.split(MQ_SPEAKER_CUT)) if(part){ out.push(cine+part); cine=''; } } return out; }
 // a line's speaker and what is said, and what the speaking voice reads (stage directions in brackets are seen, not said)
-function mqLineOf(line){ const m=MQ_SPEAKER_OF.exec(line); return m?{who:m[1],text:m[2]}:{who:null,text:line}; }
+function mqLineOf(line){ if(line.startsWith('@cine ')){ const i=line.indexOf('\n'); try{ svCineStart(line.slice(6,i<0?undefined:i)); }catch(_){} line=i<0?'':line.slice(i+1); } const m=MQ_SPEAKER_OF.exec(line); return m?{who:m[1],text:m[2]}:{who:null,text:line}; }
 const mqSpoken=text=>text[0]==='('&&text.indexOf(')')===text.length-1?'':text.replace(/\([^)]*\)\s*/g,'').trim();
 function mqLinesFor(n){ const M=mqG(); if(!M||!MQ_NPC_VIL[n.def.id]) return null; const T=mqTalk(M,n.def.id,PL.level,mqNight(dayClock)); return T.lines.length?Object.assign({},T,{lines:mqSplitLines(T.lines)}):null; }
 // the mark over a villager: ! a step to take (or a part to do with them), ? a step to hand in

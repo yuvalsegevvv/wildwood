@@ -461,7 +461,7 @@ function updateNPCs(dt){
     if(!wantHome && n.inside){ const h=anchorOf(D.home||'house:0',V); n.inside=false; n.x=h.x; n.z=h.z; n.face=h.face; n.state='idle'; n.timer=AR(0,3); n.route=[]; }
     if(n.inside||(D.show&&!D.show())){ n.g.visible=false; if(talkNPC===n) endTalk(); continue; }
     const talking=talkNPC===n;
-    if(talking && dp>4.5) endTalk();
+    if(talking && dp>4.5 && !svHolds(n)) endTalk();   // (a story conversation still being played goes on while you walk: story-voice.js)
     if(!talking && n.state!=='home'){
       if(B.type==='stationary'){
         const A=anchorOf((D.atFn&&D.atFn())||B.at,V);   // atFn: a story villager who moves with the main quest (Tansy, Wren before the sickness)

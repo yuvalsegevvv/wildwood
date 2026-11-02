@@ -99,7 +99,7 @@ const MQ=[
    done:[]},
   {id:'W2b',title:'Three small things',gate:2,from:'morrow',to:'morrow',r:0.6,
    tip:'Defeated monsters can drop materials: check your bag (I). A quest drop shows in the quest log.',
-   offer:['Morrow: Three small things. Not to impress me. To show you can walk through a forest without breaking it.','Morrow: One. Spore caps from the Hollow. Five. Whole, not bruised.','Morrow: Two. Sunpetal, three stems, cut clean, not torn. The Wayfarers\' Lodge teaches how, if you haven\'t learned. Don\'t tell them I sent you.','Morrow: Three. A healing draught of your own making. Not bought. Made, and drunk, so I know it works. I\'ll know the taste of it on you.','Morrow: Bring them. Or don\'t.'],
+   offer:['Morrow: Three small things. Not to impress me. To show you can walk through a forest without breaking it.','Morrow: One. Spore caps from the Hollow. Five. Whole, not bruised.','Morrow: Two. Sunpetal, three stems, cut clean, not torn. Keep them: the third task needs them. The Wayfarers\' Lodge teaches how, if you haven\'t learned. Don\'t tell them I sent you.','Morrow: Three. A healing draught of your own making. Not bought. Made, and drunk, so I know it works. I\'ll know the taste of it on you.','Morrow: Bring them. Or don\'t.'],
    at:{tansy:['@well']},
    parts:[{collect:'Spore cap',from:['shroom'],n:5,chance:0.7,text:'Take five whole spore caps from the shroomlings of the Mushroom Hollow'}],
    done:['Tansy: Don\'t squeeze them. Whole, she said.','(In the garden the herbs are grey at the tips. Crows circle and leave.)','Morrow: ...Thank you. Fresh. Whole. Hm.','(She glances at the grey garden, frowns, and says nothing.)','Morrow: Two more.']},
@@ -108,8 +108,8 @@ const MQ=[
    offer:['Hollen: Welcome to the Wayfarers\' Lodge. The woods give back, if you know how to ask.','Tansy: She wants sunpetal. Cut clean.','Hollen: ...Morrow sent you.','Hollen: I won\'t ask how you know. Everyone\'s been to her door, once. She used to live in the village, you know. She was our healer, before Linnea. Everybody loved her.','Hollen: Then a winter came when she couldn\'t save a child, and a rumour went round that she\'d done it on purpose. She walked out the next morning and never came back.','Tansy: That\'s... that\'s horrible.','Hollen: It was. We were wrong. Nobody ever told her so.','Hollen: Gathering is sixty coins to learn, thirty for a sickle. Wear it, stand by the herb, press the gather key. Gently. Don\'t pull.'],
    parts:[{act:'learn',prof:'gathering',text:"Learn Gathering at the Wayfarers' Lodge (Hollen)"},{act:'tool',tool:'sickle',text:'Buy a sickle from Hollen and wear it (inventory)'},{gather:'gathering',n:3,text:'Gather 3 sunpetal in the woods (it grows in every zone)'}],
    done:['Tansy: Funny. All these years I thought she was a monster in a hut.','Hollen: Most of us did. Take her this. Tell her... tell her someone remembers.']},
-  {id:'W7b',title:"Linnea's kettle",gate:5,from:'linnea',to:'linnea',r:0.5,
-   tip:'Brewing is done at a healer\'s, with herbs and a few coins. Drink a potion with Z (healing), X (might) or C (guard): the strongest one you have is used. A healing potion needs you to be hurt.',
+  {id:'W7b',title:"Linnea's kettle",gate:5,from:'linnea',to:'linnea',r:0.5,gift:'herbs',
+   tip:'Brewing is done at a healer\'s: three sunpetal and a few coins make one Healing Potion. Keep your sunpetal, do not sell it (Linnea will make sure you have enough). Brew it, then drink it. Drink a potion with Z (healing), X (might) or C (guard): the strongest one you have is used. A healing potion needs you to be hurt.',
    offer:['(Ambrose, a marsh herbalist with a reed hat slung on his back and a mint sprig in his knot, is helping at the kettle.)','Linnea: A draught of your own making? For Morrow? ...Sit. Watch.','Ambrose: There now. Sunpetal and a splash of spring water. Gently, gently.','Linnea: So she\'s asking for a test. She did that to me once. Twenty years ago.','Tansy: She taught you?','Linnea: Everything. The willow, the mint, the patience. And then I stayed when she left, and she never forgave me, and I never found a way to say sorry.','(Linnea hands you a small bundle of dried willow.) Linnea: Take this to her, too.','Ambrose: Drink one yourself when you\'re half gone, not when you\'re nearly dead. There now.'],
    parts:[{act:'brew',kind:'heal',text:"Brew a Healing Potion at Linnea's (herbs and a few coins)"},{act:'potion',kind:'heal',text:'Drink a Healing Potion when you are hurt (Z)'}],
    done:['Linnea: Bitter, isn\'t it? It\'s meant to be. Anything sweet is lying to you.','Linnea: Might and guard draughts want other herbs. Herbs are the same everywhere: the north grows the strongest.']},
@@ -506,7 +506,7 @@ const mqGreySpot=key=>mqSpot(ZONES.find(z=>z.key===key),0,0.5);
   VIL.anchors.bedside={x:VIL.bed.x+Math.sin(H.a)*-1.1,z:VIL.bed.z+Math.cos(H.a)*-1.1,face:H.a};
 }
 /* ---- the story's places (docs/WILDWOOD-STORY.md): Tansy's farm west of the gate and the road to it, the witch's hut, Pip's hollow, the training places, the Circle ---- */
-const MQ_FARM={x:-59,z:219};
+const MQ_FARM={x:-24,z:200};   // (dry ground east of the river, 94 m from the village: the first spot at (-59,219) was in the river)
 const MQ_PLACES={
   road1:{x:VIL.anchors.gate.x,z:VIL.anchors.gate.z,r:9,name:'The village gate'},
   road2:{x:-4,z:238,r:8,name:'The fallen log'},
@@ -605,5 +605,5 @@ const LORE_BY_ID={}; LORE.forEach(L=>{ LORE_BY_ID[L.id]=L; });
 const LORE_R=4.5;   // how close you must be to read one
 function loreNear(x,z){ let best=null,bd=LORE_R; for(const L of LORE){ const d=Math.hypot(x-L.x,z-L.z); if(d<bd){ bd=d; best=L; } } return best; }
 // trees and bushes keep clear of the story's spots (the heartleaf, the lore props, Odran's carts) so you can see and reach them
-const STORY_SPOTS=[[MQ_FARM.x,MQ_FARM.z,16],...['road2','road3','clearing','meadow','hut','pip','grave','stump','ribbonrow'].map(k=>[MQ_PLACES[k].x,MQ_PLACES[k].z,k==='road2'||k==='road3'?6:10]),...HERBS.map(([x,z])=>[x,z,5]),...LORE.filter(L=>L.kind!=='ice').map(L=>[L.x,L.z,L.kind==='wreck'?7:5]),...VILS.map(V=>[V.cart.x,V.cart.z,5])];
+const STORY_SPOTS=[[MQ_FARM.x,MQ_FARM.z,22],...['road2','road3','clearing','meadow','hut','pip','grave','stump','ribbonrow'].map(k=>[MQ_PLACES[k].x,MQ_PLACES[k].z,k==='road2'||k==='road3'?6:k==='hut'?14:10]),...HERBS.map(([x,z])=>[x,z,5]),...LORE.filter(L=>L.kind!=='ice').map(L=>[L.x,L.z,L.kind==='wreck'?7:5]),...VILS.map(V=>[V.cart.x,V.cart.z,5])];
 function storyClear(x,z){ for(const [sx,sz,r] of STORY_SPOTS) if(Math.abs(x-sx)<r&&Math.abs(z-sz)<r&&Math.hypot(x-sx,z-sz)<r) return true; return false; }

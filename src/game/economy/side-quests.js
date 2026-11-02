@@ -87,5 +87,5 @@ function sqSceneNext(){
   sqSceneShow(sqScene.name,sqScene.lines.shift()); UI_SFX.talk(); return true;
 }
 // one line of a scene: its speaker's name on the bubble (the place's name for narration)
-function sqSceneShow(place,line){ if(sqScene) sqScene.name=place; const q=mqLineOf(line); bName.textContent=q.who==='You'?(NET.name||'You'):(q.who||(q.text[0]==='('?'':place)); bText.textContent=q.text; }
+function sqSceneShow(place,line){ if(sqScene) sqScene.name=place; const q=mqLineOf(line); bName.textContent=q.who==='You'?(NET.name||'You'):(q.who||(q.text[0]==='('?'':place)); bText.textContent=q.text; svSpeakLine(q.who,q.text,null,true); }   // (voiced and played on by story-voice.js)
 const sqSceneOn=()=>!!sqScene&&loreOpen===sqScene;

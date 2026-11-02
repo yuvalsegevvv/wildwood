@@ -14,3 +14,14 @@ body.touch.playing.can-talk #bTalk{ display:grid; }
   }
 #prompt[hidden]{ display:none; }
 body.editing #bubble, body.editing #prompt{ display:none; }
+/* key scenes (game/village/story-voice.js): letterbox bars, a title card, the bubble hangs above the lower bar */
+#cine{ position:fixed; inset:0; z-index:7; pointer-events:none; } #cine[hidden]{ display:none; }
+#cine .cn-bar{ position:absolute; left:0; right:0; height:12vh; background:#000; transition:transform .8s cubic-bezier(.3,.7,.2,1); }
+#cine .cn-top{ top:0; transform:translateY(-100%); } #cine .cn-bot{ bottom:0; transform:translateY(100%); }
+#cine.on .cn-bar{ transform:none; }
+#cine .cn-card{ position:absolute; left:0; right:0; top:34%; text-align:center; opacity:0; font-family:Alegreya,Georgia,serif; color:#f1ecd8; text-shadow:0 2px 14px #000; }
+#cine .cn-card span{ display:block; font-size:12px; letter-spacing:.35em; text-transform:uppercase; opacity:.7; margin-bottom:6px; }
+#cine .cn-card b{ font-size:clamp(24px,5vw,44px); font-weight:600; }
+#cine .cn-card.show{ animation:cnCard 4.4s ease-in-out both; }
+@keyframes cnCard{ 0%{opacity:0;transform:translateY(8px)} 18%{opacity:1;transform:none} 78%{opacity:1} 100%{opacity:0} }
+body.cine #bubble{ z-index:8; }
