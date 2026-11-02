@@ -7,11 +7,16 @@ const mqOf=p=>p.gear.mq;
 let mqHush=false;   // set while a talk that also hands the step in is applied
 const mqStep=p=>MQ[mqOf(p).s]||null;
 function mqToast(p,text,kind){ toastTo(p.id,text,kind||'mq'); }
+const mqDot=t=>/[.?!…]$/.test(t)?' ':'. ';   // (a title that ends in a question mark needs no full stop after it)
+// a step with a `hard` level (shared/main-quest.js) is meant to be met by a hiker who went and grew on their own: say so, once at the start and after a knock-out
+const mqHardText=step=>'Wise at level '+step.hard+': hard for your level yet. Explore, hunt and take notices from the board to grow stronger, then come back to it.';
+function mqHardHintP(p){ const step=mqStep(p), M=mqOf(p); if(!step||M.st!==1||!step.hard||p.level>=step.hard) return; const now=Date.now(); if(p.mqHintAt&&now-p.mqHintAt<45000) return; p.mqHintAt=now; mqToast(p,step.title+': '+mqHardText(step),'bad'); }
 function mqStartP(p){
   const M=mqOf(p), step=mqStep(p); if(!step) return;
   M.st=1; M.n=step.parts.map(()=>0); M.h=0; p.dirty=true;
-  if(step.gift==='three'){ const id=randomItem(tierFor(p.level),0); for(let k=0;k<MERGE_COUNT;k++) addItemP(p,id,true); }
-  mqToast(p,'Main quest: '+step.title+(step.tip?'. '+step.tip:''));
+  if(step.gift==='three'){ const id=itemId(ARMOR_SLOTS[Math.floor(Math.random()*ARMOR_SLOTS.length)],tierFor(p.level),0); for(let k=0;k<MERGE_COUNT;k++) addItemP(p,id,true); }   // (armour: every class wears it; a random weapon was a bow for a warrior)
+  mqToast(p,'Main quest: '+step.title+(step.tip?mqDot(step.title)+step.tip:''));
+  if(step.hard&&p.level<step.hard){ p.mqHintAt=Date.now(); mqToast(p,mqHardText(step),'bad'); }
   ev('mq',p.id,step.id,1);
   mqAutoP(p);
 }
@@ -24,13 +29,13 @@ function mqProgressP(p,i,add,quiet){
   const M=mqOf(p), step=mqStep(p); if(!step||M.st!==1||!mqOpen(step,M.n,i)) return false;
   const pt=step.parts[i], need=mqNeed(pt); M.n[i]=Math.min(need,(M.n[i]||0)+(add||1)); p.dirty=true;
   if(!quiet&&need>1&&pt.collect) mqToast(p,pt.collect+': '+M.n[i]+' / '+need);   // a quest drop is news; kill and pick counts are already live in the quest log (economy/main-quest.js), a toast each was noise
-  if(M.n[i]>=need){ mqAutoP(p); mqReadyP(p); }
+  if(M.n[i]>=need){ if(pt.fx) ev('mqfx',p.id,pt.fx); mqAutoP(p); mqReadyP(p); }   // fx: a dark moment on the client (prologue)
   return true;
 }
 function mqCompleteP(p,chained){   // chained: the next step starts in the same talk (its own toast says so)
   const M=mqOf(p), step=mqStep(p); if(!step||M.st!==2) return;
   const r=mqReward(step); p.gear.coins+=r.coins; gainExpP(p,r.xp,null);
-  mqToast(p,'Main quest done: '+step.title+'. '+r.xp+' XP and '+r.coins+' coins','good'); ev('mq',p.id,step.id,2); gsGemP(p,GEM_MQ_STEP,'main quest');   // gems
+  mqToast(p,'Main quest done: '+step.title+mqDot(step.title)+r.xp+' XP and '+r.coins+' coins','good'); ev('mq',p.id,step.id,2); gsGemP(p,GEM_MQ_STEP,'main quest');   // gems
   mqRemoveGreyP(p);
   M.s++; M.st=0; M.n=[]; M.h=0; p.dirty=true;
   const nx=mqStep(p);
@@ -41,7 +46,8 @@ function mqCompleteP(p,chained){   // chained: the next step starts in the same 
 }
 function mqTalkP(p,npc){
   const vil=MQ_NPC_VIL[npc]; if(!vil||p.dead) return;
-  const V=VILS[vil-1]; if(Math.hypot(p.x-V.x,p.z-V.z)>VR+22) return;   // quest villagers stay in (or at the gate of) their village
+  const V=VILS[vil-1];
+  if(Math.hypot(p.x-V.x,p.z-V.z)>VR+22){ const A=mqStoryAt(npc,mqOf(p)); if(!A||Math.hypot(p.x-A.x,p.z-A.z)>14) return; }   // quest villagers stay in (or at the gate of) their village; a story villager who has led you out stands where mqStoryAt says
   const M=mqOf(p), T=mqTalk(M,npc,p.level,mqNight(S.day));
   if(T.start) mqStartP(p);
   mqHush=T.complete; for(const i of T.parts) mqProgressP(p,i,mqNeed(mqStep(p).parts[i]),true); mqHush=false;
@@ -105,18 +111,30 @@ function mqTickP(p){
   if(step&&M.st===0&&step.from===null) mqStartP(p);
   if(!step||M.st!==1){ return; }
   mqAutoP(p);
-  const i=step.parts.findIndex((pt,k)=>pt.grey&&mqOpen(step,M.n,k)), mine=MONS.filter(m=>m.owner===p.id&&!m.remove&&!m.dead);
+  mqVisitP(p,step,M);
+  // a part that spawns monsters for you: the grey ones (grey + zone) or an ordinary one (kill + spawn, a place of MQ_PLACES)
+  const i=step.parts.findIndex((pt,k)=>(pt.grey||pt.spawn)&&mqOpen(step,M.n,k)), mine=MONS.filter(m=>m.owner===p.id&&!m.remove&&!m.dead);
   if(i<0){ if(mine.length) mqRemoveGreyP(p); return; }
-  const pt=step.parts[i], [gx,gz]=mqGreyAt(pt.zone), d=Math.hypot(p.x-gx,p.z-gz);
+  const pt=step.parts[i], [gx,gz]=pt.spawn?[MQ_PLACES[pt.spawn].x,MQ_PLACES[pt.spawn].z]:mqGreyAt(pt.zone), d=Math.hypot(p.x-gx,p.z-gz);
   if(d>160||(pt.night&&!mqNight(S.day))){ for(const m of mine) if(!m.aggro) removeMonS(m); return; }   // (a night part: nothing comes by day)
   if(d>80||S.t<(p.mqSpawnT||0)) return;
   const want=Math.min(3,mqNeed(pt)-M.n[i])-mine.length; if(want<=0) return;
-  const def=GREY_DEFS.find(x=>x.id===pt.grey);
+  const def=pt.grey?GREY_DEFS.find(x=>x.id===pt.grey):MON_DEFS.find(x=>x.id===pt.kill);
   for(let k=0;k<want;k++){
-    for(let t=0;t<12;t++){ const a=AR(0,TAU), r=AR(4,16), x=gx+Math.sin(a)*r, z=gz+Math.cos(a)*r; if(getH(x,z)<0.8) continue;
+    for(let t=0;t<12;t++){ const a=AR(0,TAU), r=AR(4,pt.spawn?9:16), x=gx+Math.sin(a)*r, z=gz+Math.cos(a)*r; if(getH(x,z)<0.8) continue;
       const m=spawnMonS(def,x,z,{x:gx,z:gz},true); m.owner=p.id; break; }
   }
   p.mqSpawnT=S.t+6;
+}
+// a visit part counts when you stand within the place's radius; its scene goes to the speech bubble (the same event as the side quests' places)
+function mqVisitP(p,step,M){
+  if(p.dead||p.inst) return;
+  step.parts.forEach((pt,i)=>{
+    if(!pt.visit||!mqOpen(step,M.n,i)) return; const P=MQ_PLACES[pt.visit];
+    if(Math.hypot(p.x-P.x,p.z-P.z)>P.r) return;
+    if(pt.say) ev('sqsay',p.id,step.title,pt.say);
+    mqProgressP(p,i,1,true);
+  });
 }
 function mqMsgP(p,msg){
   if(msg.a==='talk'&&typeof msg.id==='string') mqTalkP(p,msg.id);

@@ -78,12 +78,14 @@ function sqJournalHtml(){
 let sqScene=null;
 function sqShowScene(name,lines){
   if(talkNPC) endTalk(); if(!Array.isArray(lines)||!lines.length) return;
-  sqScene={x:P.x,z:P.z,lines:lines.map(String)}; loreOpen=sqScene;
-  bName.textContent=String(name); bText.textContent=sqScene.lines.shift(); bubble.classList.remove('mq'); bubble.classList.add('lore'); UI_SFX.talk();
+  sqScene={x:P.x,z:P.z,scene:true,lines:mqSplitLines(lines.map(String))}; loreOpen=sqScene;
+  sqSceneShow(String(name),sqScene.lines.shift()); bubble.classList.remove('mq'); bubble.classList.add('lore'); UI_SFX.talk();
 }
 function sqSceneNext(){
   if(!sqScene||loreOpen!==sqScene){ sqScene=null; return false; }
   if(!sqScene.lines.length){ loreOpen=null; sqScene=null; return true; }
-  bText.textContent=sqScene.lines.shift(); UI_SFX.talk(); return true;
+  sqSceneShow(sqScene.name,sqScene.lines.shift()); UI_SFX.talk(); return true;
 }
+// one line of a scene: its speaker's name on the bubble (the place's name for narration)
+function sqSceneShow(place,line){ if(sqScene) sqScene.name=place; const q=mqLineOf(line); bName.textContent=q.who==='You'?(NET.name||'You'):(q.who||(q.text[0]==='('?'':place)); bText.textContent=q.text; }
 const sqSceneOn=()=>!!sqScene&&loreOpen===sqScene;

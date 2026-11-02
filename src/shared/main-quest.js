@@ -9,121 +9,251 @@
      collect:'<what>', from:[monster ids], n, chance (a quest drop; with gather:'<NODE_KINDS id>' too, either counts: dig it or take it from the monsters) · gather:'<NODE_KINDS id or profession id>', n (a resource node gathered) · read:'<LORE id>' (walk up
      and read it) · act:'<system>', n (class, buy, armor, skill, burst, board, sell, upskill, merge, soul, warp, hanami, rimehold, highmark, learn (prof:'<profession>'), tool (tool:'pick|axe|sickle', tier: a tool
      of at least that tier is worn), craft (kind:'weapon|armor'), brew (kind:'heal|might|guard', minTier 0-2), potion (kind): see server/main-quest.js) · level · tier
-     (a weapon of that item tier, 0-based) · boss:'<boss monster id>' (bossLine: toasted when it falls).
+     (a weapon of that item tier, 0-based) · boss:'<boss monster id>' (bossLine: toasted when it falls) · visit:'<MQ_PLACES key>' (walk there; say: lines shown in the speech bubble on arrival).
+   A kill or grey part may carry spawn:'<MQ_PLACES key>' (a few of that monster are spawned for you there, like the grey ones); a step may carry at:{npc:[places]} (mqStoryAt) and fx:'ripple|ash|grey' (a dark moment shown on the client when the part finishes). A step may carry intro: lines the
+   previous step's last talk says after its own (a step with from:null has no giver to open with). The prologue P1-P6 is docs/WILDWOOD-STORY.md.
    Progress is gear.mq = {s: step index, st: 0 offered / 1 in progress / 2 ready to hand in, n: [per part]}; the server
    (server/main-quest.js) moves it on, the client (game/economy/main-quest.js) draws it. */
 const MQ=[
   /* ---------------- Act I: The Grey Rain (Wildwood, levels 1-15) ---------------- */
-  {id:'W1',title:'The grey rain',gate:1,from:null,to:'linnea',r:0.6,
+  /* ---------------- Prologue: The Sheaf-Crown (the home village, levels 1-2; docs/WILDWOOD-STORY.md, scenes 1-6) ---------------- */
+  // Tansy leads: her spot moves with the step (mqStoryAt). Wren is well until P6 (the healthy Wren 'wren0'), then the sick one in the bed.
+  {id:'P1',title:'A morning in the village',gate:1,from:null,to:'tansy',r:0.08,at:{tansy:['@well']},
    tip:'Move with W A S D (or the joystick) and look around with the mouse. Walk up to someone and press the talk key (E) to talk.',
-   parts:[{talk:'wren',text:'See to Wren, under the awning of your house by the gate',say:['(Wren lies still under the awning. Their breathing is slow, and thin grey lines run under the skin of their arms, like frost on a window.)','(You say their name. They do not wake.)']},
-          {talk:'linnea',after:true,text:'Fetch Healer Linnea from the herb garden'}],
-   done:['Grey lines under the skin, and a sleep that will not break... I have never seen this in Wildwood. Not once in forty years.','It started with the grey rain, did it not? Three days of it, and Wren out in it gathering kindling.','I can keep them comfortable. To do more, I need heartleaf.']},
-  {id:'W2',title:'Heartleaf',gate:1,from:'linnea',to:'linnea',r:1.2,
-   tip:'Pick heartleaf with the talk key. To fight, face a monster and attack (key 1 or F; Tab switches target). The bar over a monster shows its level.',
-   offer:['Heartleaf grows at the edge of the Slime Meadow, just outside the gate. Five sprigs should do.','Mind the slimes. Clear a few while you are there: Bram says they have been bolder since the rain.'],
-   parts:[{pick:'herb',n:5,text:'Pick heartleaf in the Slime Meadow'},{kill:'slime',n:5,text:'Defeat slimes'}],
-   done:['Good. This will ease the fever.','It will not wake them, though. Nothing I have will.']},
-  {id:'W3',title:'A weapon of your own',gate:2,from:'aldric',to:'aldric',r:1.2,
-   tip:'The weapon you carry is your class: sword (Warrior), bow (Archer) or wand (Mage). Switch in the character editor or by equipping a weapon in the inventory (I).',
-   offer:['So you are Wren\'s elder. I heard. The whole village has.','If you mean to walk the far woods for them, you need a weapon that suits your hands. Sword, bow or wand: try them.','Your class is only the weapon you carry. Change it whenever you like.'],
-   parts:[{act:'class',text:'Try another weapon (character editor or inventory)'}],
-   done:['Good grip. Your sibling needs someone who can walk the far woods. Start with the near ones.']},
-  {id:'W4',title:'Dressed for the woods',gate:3,from:'ilse',to:'ilse',r:1.1,
+   parts:[{talk:'tansy',text:'Talk to Tansy by the well',say:[
+     'Tansy: There you are, sleepyhead! Half the village has been up since the roosters.',
+     'Wren: Don\'t listen to her. She\'s been awake since last night. She says she can\'t sleep until the barley is counted.',
+     'Tansy: The barley is very important, love.',
+     'Wren: Anyway! Guess what Tansy found.',
+     'Tansy: I did not find it. I remembered it. The Sheaf-Crown, pet. The old one. It\'s still in my barn.',
+     'Wren: Whoever wears the crown at sunset is harvest queen, and everyone else tries to snatch it. You always hid behind the scarecrow. You said it was "terrain."',
+     'Tansy: It was terrain. Strategically placed straw.',
+     '(Wren, quieter) I haven\'t played it since... you know. Since it\'s just the two of us. I thought it\'d be nice. One more time, before it gets cold.',
+     'Tansy: Then one more time it is. Out to the farm for the crown, and back before the bread\'s cold. Promise.',
+     'Wren: I have to feed the hens first, or they\'ll sulk. You two go ahead. I\'ll save us a spot at the well.',
+     'Wren: Promise. (to you) Bring back the crown. And don\'t let her cheat.',
+     '(Wren waves and goes to feed the hens.)']}],
+   done:['Tansy: Right. Out to the farm and back. You\'ll see the crown is every bit as ridiculous as I say. Come on, pet. I\'ll run ahead. Keep up if you can!']},
+  {id:'P2',title:'The road to the farm',gate:1,from:null,to:'tansy',r:0.06,at:{tansy:['road1','road2','road3']},
+   tip:'Your hiker always runs; Shift is a quick dash, and Space jumps. L opens your quest log. The minimap (and the map, N) shows where to go: follow the violet marker.',
+   parts:[{visit:'road1',text:'Follow Tansy out of the gate',say:['Tansy: Mouse turns the camera. Shift is a dash, for when something is chasing you. Try it, I\'ll wait.','Tansy: There. See the little map in the corner? The violet diamond is where we\'re going. Don\'t lose me. I\'m easy to lose.','Tansy: Do you smell that? That\'s mint. Ambrose says it keeps the marsh-flies off. Ambrose says a lot of things.']},
+          {visit:'road2',after:true,text:'Jump the fallen log (Space)',say:['Tansy: Over the log! Space bar. There you go. Look at you, not even out of breath.','Tansy: Funny, isn\'t it? Every child in the village grows up on this path. We all tied our ribbons on the Row the first autumn, and the elders said the roots knew our names after that.','Tansy: Silly, probably. Roots don\'t know anything. But I\'d never say that to the old folks.','Tansy: Wren\'s ribbon is blue. So is yours. You did it the same autumn, remember? You held Wren\'s hand so tight they couldn\'t open it.']},
+          {visit:'road3',after:true,text:'Walk on to the hedge',say:['Tansy: Past that hedge the fields start. My fields. Well. Mine and the barley\'s.','Tansy: Mind the meadow, it\'s wet this week. It\'s been wet a lot lately.','Tansy: The elders say the forest was never this damp when they were young. They say the years before were quiet. Dry, and quiet, whatever that means.','Tansy: Come on.']}],
+   done:['Tansy: Slime. Three of them, in the meadow. They won\'t hurt much, but they bite, and they bite wet.']},
+  {id:'P3',title:'Slimes on the path',gate:1,from:null,to:'tansy',r:0.3,at:{tansy:['meadow']},
+   tip:'Press Tab to pick a target, then F (or 1) to attack. The bar over a monster shows its health and level.',
+   intro:['Tansy: Press Tab to pick one. Then F to swing. That\'s the whole art, honestly.','Tansy: See the bar over its head? Green is its health. The number is its level. Yours is one, same as theirs, so it\'s fair.','Tansy: I\'ll take the little one. You take the others. Watch my feet: never stand where it\'s about to bounce.'],
+   parts:[{kill:'slime',n:2,spawn:'meadow',fx:'ripple',text:'Defeat the slimes on the path'}],
+   done:['(The last slime goes grey from the edges inward, and lies still. The birds have stopped.)','Tansy: ...That was odd. They don\'t usually go that colour.','Tansy: Rot in the soil, most likely. Happens after a wet week.','Tansy: Don\'t look like that. It\'s a slime. They get things. I had a whole field go grey once and it came back.','Tansy: Come on. The crown\'s waiting.']},
+  {id:'P4',title:'The farm',gate:1,from:null,to:'tansy',r:1.2,at:{tansy:['farm']},
+   tip:'The weapon you hold is your class: sword (Warrior), bow (Archer) or wand (Mage). Open the inventory (I) and put a different weapon in your hand. Change whenever you like.',
+   intro:['Tansy: Nearly there. That\'s my farm ahead. It\'s smaller than I remember saying it was.','Tansy: That\'s the barley. Well, that was the barley. The south corner\'s been poor this year. Don\'t look at that bit. Look at the good bit.','Tansy: That\'s the barn, and that\'s Old Hob in the yard. The scarecrow. He\'s been standing there since before I could walk. He takes a beating well.','Tansy: The crown\'s up in the loft, left of the beam. Mind the ladder: the fourth rung is more of a rumour.'],
+   parts:[{visit:'loft',text:'Fetch the Sheaf-Crown from the barn loft',say:['(You climb the ladder and find the Sheaf-Crown on its nail.)','Tansy: There she is. Look at that. The moths have been at her, but she\'s still the finest crown in the village.','Tansy: My mother braided that. She said a crown is just a promise tied up in straw. Someone has to wear it, so everybody else has something to run after.']},
+          {act:'class',after:true,text:'Try another weapon on Old Hob (inventory, I)',say:['(A rack by the door: a bow, a wand, a sword.)']}],
+   done:['Tansy: Right, while we\'re here. The weapon you hold is your class. Sword in your hand, you fight like a warrior. Bow, you hang back and pick them off. Wand, and the sky does what you ask.','Tansy: Hah! Look at you. You\'ve got the hang of it faster than I did.','Tansy: Keep whichever feels like yours. You can change any time. There\'s no wrong answer, just a different kind of tired.','Tansy: Right. Crown, check. Weapon, check. Back to the village before Wren starts without us.','Tansy: ...You know, I\'ve never had anyone to show the farm to. It\'s nice. Don\'t tell anyone I said so.']},
+  {id:'P5',title:'The road back',gate:2,from:null,to:'tansy',r:0.4,at:{tansy:['clearing']},
+   tip:'Your skill sits in slot 2 (key Q or 2). It dims while it recovers: wait for the ring to fill, then use it again. K opens the skills panel.',
+   intro:['Tansy: Shrooms. Three of them. The spores make you cough, so keep your distance if you can.','Tansy: You\'ve got more than a swing in you, you know. Everybody does. It just wakes up when it\'s needed.','Tansy: Press Q. Or 2. Go on, I\'ll cover you.'],
+   parts:[{act:'skill',text:'Use your new skill (Q or 2)'},{kill:'shroom',n:3,spawn:'clearing',fx:'ash',text:'Defeat the shroomlings in the clearing'}],
+   done:['Tansy: Did you feel that? That\'s yours. Aldric at the well teaches the proper ones. But that one\'s yours for free.','Tansy: Skills are big and slow, swings are small and quick. Use both.','(Grey spores drift. The sky over the village has turned the colour of ash.)','Tansy: ...That\'s three strange things today. The slime, the shroom, and the sky.','Tansy: I don\'t like it. Come on. I want to see Wren.','(She says it lightly, but her humming has stopped.)']},
+  {id:'P6',title:'Wren',gate:2,from:null,to:'tansy',r:0.3,at:{tansy:['@bedside']},
+   parts:[{visit:'home',fx:'grey',text:'Hurry home to Wren',say:[
+     '(The village is silent. No birds. A grey light, at noon. Wren lies on the bed under the awning. Grey lines run under the skin of both arms. The blue ribbon in their hair has gone grey.)',
+     'Tansy: Wren? Wren!',
+     'Tansy: Don\'t talk, love. Don\'t. We\'ve got you.',
+     '(Wren\'s eyes follow you, but no sound comes. Their fingers close, slightly, around your sleeve, then relax.)',
+     'Tansy: It\'s the same grey. It\'s the same grey as the slime.',
+     'Tansy: Their arms are cold. Why are their arms cold?']}],
+   done:['(Tansy sets the Sheaf-Crown gently on the pillow beside Wren\'s head.)','Tansy: I\'m not good at this. I\'m good at barley and I\'m good at shouting. I\'m not good at... this.','Tansy: Someone must know it. Linnea knows every herb in the forest and half of those outside it. And Dunstan has been all over: the road north, the passes, even the sea.','Tansy: I\'ll walk to the end of the world if I have to. You with me?','Tansy: Hold on, little one. We\'re coming back.']},
+  {id:'W1',title:'Who knows a cure?',gate:1,from:null,to:'dunstan',r:0.9,
    tip:'Coins come from monsters and quests. Buy at the stalls, then wear it: the inventory (I) shows what you wear and what you carry.',
-   offer:['Beetle horns go through a shirt like it is paper. Let us get something between you and them.','Buy a piece from me, or a blade from Tomas, then put it on.'],
-   parts:[{act:'buy',text:'Buy something at Tomas\'s or Ilse\'s stall'},{act:'armor',text:'Wear a piece of armour (inventory)'}],
-   done:['It suits you. Tomas says the next one is cheaper, "for Wren". Do not tell him I told you.']},
-  {id:'W5',title:'The first trick',gate:3,from:'aldric',to:'aldric',r:0.9,
-   tip:'Your skill sits in slot 2 (key Q or 2). It dims while it recovers. The skills panel (K) shows what Aldric can teach.',
-   offer:['Every fighter learns one trick early. You have yours now: it sits in your second slot.','Try it on the beetles of the Beetle Thicket. Mind the cooldown.','When you have coins to spare, I teach better tricks.'],
-   parts:[{act:'skill',text:'Use your skill (Q or 2)'},{kill:'beetle',n:5,text:'Defeat horned beetles in the Beetle Thicket'}],
-   done:['Some of those beetles had grey in their shells, like cracks of ash. Did you see?','...No matter. Well done.']},
-  {id:'W6',title:'The board',gate:4,from:'maren',to:'maren',r:0.9,
-   tip:'The quest board is how you grow between main quest steps: the main quest alone will not make you strong enough.',
-   offer:['Linnea\'s herbs cost coin, and the woods pay those who work. Take a notice from the board behind me.','Hunts, bounties, places to scout. Finish one and hand it in to me.'],
-   parts:[{act:'board',text:'Finish a notice from the quest board and hand it in'}],
-   done:['There. The board is always here between the bigger things.','The forest remembers everything. Some of it is waking up.']},
-  {id:'W6a',title:'Working hands',gate:5,from:'tamsin',to:'tamsin',r:0.5,
-   tip:'The Wayfarers\' Lodge teaches three professions, each with its own tool: mining (pickaxe), woodcutting (axe) and gathering (sickle). Wear the tool (inventory, I), walk up to a herb, a vein or a tree and press the gather key (G). What you take is used by the smiths, the armourers and the healers.',
-   offer:['You are Wren\'s elder, the one who walks the far woods? I am Tamsin. The Wayfarers keep a lodge in every village, for people like you.','You bring home a great many monster parts and not one plant. Let us mend that. Gathering first: sixty coins for the teaching, thirty for a sickle, and the woods start giving back.'],
-   parts:[{act:'learn',prof:'gathering',text:'Learn Gathering at the Wayfarers\' Lodge (Tamsin)'},{act:'tool',tool:'sickle',text:'Buy a sickle from Tamsin and wear it (inventory)'},{gather:'gathering',n:3,text:'Gather 3 herbs in the woods (sunpetal grows in every zone)'}],
-   done:['A sickle looks good on you. Sunpetal is the herb every healer starts with, and there is a knack to cutting it. You have it.','Linnea will want some. She has been asking who in the village still knows a plant from a weed.']},
-  {id:'W7',title:'Sap of the Heartwood',gate:5,from:'linnea',to:'wren',r:0.8,
-   tip:'The map (N) and the minimap mark where the main quest wants you, with a violet marker.',
-   offer:['The trees of the Treant Grove are old, older than the village. Their sap is the strongest medicine I know.','Bring me three measures. The map shows you the way.'],
-   parts:[{collect:'Heartwood sap',from:['treant'],n:3,chance:0.5,text:'Take heartwood sap from the treants of the Treant Grove'},
-          {talk:'linnea',after:true,text:'Bring the sap to Linnea',say:['Treant sap. The old trees keep something of the Heartwood in them.','Let me warm it... There. Give it to Wren, a drop on the lips.']}],
-   done:['(Wren\'s eyes open. For a moment they know you.)','...You are here. I dreamed of grey water. It was so quiet.','(Their eyes close again. The grey lines are a little paler.)']},
-  {id:'W7b',title:'Linnea\'s kettle',gate:6,from:'linnea',to:'linnea',r:0.5,
+   parts:[{talk:'linnea',text:'Ask Healer Linnea about the grey',say:['Linnea: I\'ve tried willow, mint and sap. I don\'t know this grey. I can keep Wren comfortable, nothing more.','Linnea: Ask Dunstan. He has walked further than anyone in this village.']},
+          {talk:'dunstan',after:true,text:'Ask Dunstan, under his banner',say:[
+     '(Dunstan is drumming a slow beat under a banner. He stops when he sees your face.)',
+     'Dunstan: Your face says it before you do. It\'s Wren.',
+     'Dunstan: Grey under the skin. A sleep that doesn\'t break. I\'ve seen it once. A fisherman\'s boy, on the northern coast. Seven winters ago.',
+     'Tansy: What happened to him?',
+     'Dunstan: ...A woman came down off the hills, in a grey cloak, with moss and ash on her hands. She did something, and the boy sat up. For a day.',
+     'Dunstan: She couldn\'t cure it. But she held it. Long enough for his father to carry him south, to people who knew more.',
+     'Tansy: And the woman? Where is she now?',
+     'Dunstan: Here, I think. A witch lives in the east of this forest. Past the Mushroom Hollow, where the paths stop. Everyone in the village has a story about her, and none of the stories agree.',
+     'Dunstan: Go. But don\'t go proud. She doesn\'t care who you are or why you\'ve come. And if she says no, don\'t shout. Wait. She says no to everyone, once.',
+     'Dunstan: And get something between you and the woods first. Ilse\'s stall. Boots, a cap, anything.',
+     '(Dunstan lifts his drum and plays three beats, slow and level.)','Dunstan: That\'s for luck. Go on.']},
+          {act:'buy',after:true,text:'Buy a piece of armour at Ilse\'s stall (boots, a cap, anything)'},{act:'armor',after:true,text:'Wear a piece of armour (inventory)'}],
+   done:['Dunstan: It suits you. Whatever the witch says, keep your head up and your step on the beat.']},
+  /* ---------------- Act I, the cure and the Warden's dark (levels 2-15; docs/WILDWOOD-STORY.md, scenes 8-38) ---------------- */
+  // The witch, Morrow, lives east of the Mushroom Hollow; Torgeir (torgeir0, at the gate) walks north with you; Pip lives in a hollow by the Ancient Grove.
+  // A step's `at:{npc:[place per open part]}` moves a story villager to that place of MQ_PLACES ('@name' = an anchor of the home village) while the step is under way.
+  {id:'W2',title:"The witch's door",gate:2,from:null,to:'morrow',r:0.5,
+   tip:'L opens your quest log. The map (N) and the minimap mark where the main quest wants you with a violet marker.',
+   parts:[{talk:'morrow',text:'Find the witch east of the Mushroom Hollow, and knock twice',say:[
+     '(The hut is small, low and crooked, thatched, with bundles of herbs drying under the eaves. The door opens a crack.)',
+     'Morrow: Go away.','Tansy: We\'ve come a long way, and--','Morrow: I know how far. Everyone has come a long way. Go away.',
+     '(The door closes. Tansy turns, furious.) Tansy: Of all the--',
+     '(You remember Dunstan\'s words, and knock again. The door opens a hand\'s breadth.)',
+     'Morrow: You again. You\'re the first to knock twice. ...Who\'s sick?',
+     'Tansy: Their sibling. Wren. Grey in the arms. The healer can\'t--',
+     'Morrow: I know what it is. I won\'t help. I\'ve seen what comes of helping.',
+     'Morrow: But I\'ll tell you why. I don\'t help people who ask for the cure and leave the rest. I help people who\'ll do the work.']}],
+   done:[]},
+  {id:'W2b',title:'Three small things',gate:2,from:'morrow',to:'morrow',r:0.6,
+   tip:'Defeated monsters can drop materials: check your bag (I). A quest drop shows in the quest log.',
+   offer:['Morrow: Three small things. Not to impress me. To show you can walk through a forest without breaking it.','Morrow: One. Spore caps from the Hollow. Five. Whole, not bruised.','Morrow: Two. Sunpetal, three stems, cut clean, not torn. The Wayfarers\' Lodge teaches how, if you haven\'t learned. Don\'t tell them I sent you.','Morrow: Three. A healing draught of your own making. Not bought. Made, and drunk, so I know it works. I\'ll know the taste of it on you.','Morrow: Bring them. Or don\'t.'],
+   at:{tansy:['@well']},
+   parts:[{collect:'Spore cap',from:['shroom'],n:5,chance:0.7,text:'Take five whole spore caps from the shroomlings of the Mushroom Hollow'}],
+   done:['Tansy: Don\'t squeeze them. Whole, she said.','(In the garden the herbs are grey at the tips. Crows circle and leave.)','Morrow: ...Thank you. Fresh. Whole. Hm.','(She glances at the grey garden, frowns, and says nothing.)','Morrow: Two more.']},
+  {id:'W6a',title:'Working hands',gate:4,from:'tamsin',to:'tamsin',r:0.5,
+   tip:"The Wayfarers' Lodge teaches three professions, each with its own tool: mining (pickaxe), woodcutting (axe) and gathering (sickle). Wear the tool (inventory, I), walk up to a herb, a vein or a tree and press the gather key (H, or the talk key E). What you take is used by the smiths, the armourers and the healers.",
+   offer:['Hollen: Welcome to the Wayfarers\' Lodge. The woods give back, if you know how to ask.','Tansy: She wants sunpetal. Cut clean.','Hollen: ...Morrow sent you.','Hollen: I won\'t ask how you know. Everyone\'s been to her door, once. She used to live in the village, you know. She was our healer, before Linnea. Everybody loved her.','Hollen: Then a winter came when she couldn\'t save a child, and a rumour went round that she\'d done it on purpose. She walked out the next morning and never came back.','Tansy: That\'s... that\'s horrible.','Hollen: It was. We were wrong. Nobody ever told her so.','Hollen: Gathering is sixty coins to learn, thirty for a sickle. Wear it, stand by the herb, press the gather key. Gently. Don\'t pull.'],
+   parts:[{act:'learn',prof:'gathering',text:"Learn Gathering at the Wayfarers' Lodge (Hollen)"},{act:'tool',tool:'sickle',text:'Buy a sickle from Hollen and wear it (inventory)'},{gather:'gathering',n:3,text:'Gather 3 sunpetal in the woods (it grows in every zone)'}],
+   done:['Tansy: Funny. All these years I thought she was a monster in a hut.','Hollen: Most of us did. Take her this. Tell her... tell her someone remembers.']},
+  {id:'W7b',title:"Linnea's kettle",gate:5,from:'linnea',to:'linnea',r:0.5,
    tip:'Brewing is done at a healer\'s, with herbs and a few coins. Drink a potion with Z (healing), X (might) or C (guard): the strongest one you have is used. A healing potion needs you to be hurt.',
-   offer:['Tamsin says you can cut herbs now. Good: the sap will not last, and a fever wants a draught.','Bring me three sunpetal and I will show you the kettle. Then drink one yourself when you are next hurt: a healer who has not tasted her own work is a liar.'],
-   parts:[{gather:'sunpetal',n:3,text:'Gather 3 sunpetal'},{act:'brew',kind:'heal',text:'Brew a Healing Potion at Linnea\'s (herbs and a few coins)'},{act:'potion',kind:'heal',text:'Drink a Healing Potion when you are hurt (Z)'}],
-   done:['Bitter, is it not? It is meant to be. Anything sweet is lying to you.','Might and guard draughts want other herbs. Herbs are the same everywhere: the north grows the strongest.']},
+   offer:['(Ambrose, a marsh herbalist with a reed hat slung on his back and a mint sprig in his knot, is helping at the kettle.)','Linnea: A draught of your own making? For Morrow? ...Sit. Watch.','Ambrose: There now. Sunpetal and a splash of spring water. Gently, gently.','Linnea: So she\'s asking for a test. She did that to me once. Twenty years ago.','Tansy: She taught you?','Linnea: Everything. The willow, the mint, the patience. And then I stayed when she left, and she never forgave me, and I never found a way to say sorry.','(Linnea hands you a small bundle of dried willow.) Linnea: Take this to her, too.','Ambrose: Drink one yourself when you\'re half gone, not when you\'re nearly dead. There now.'],
+   parts:[{act:'brew',kind:'heal',text:"Brew a Healing Potion at Linnea's (herbs and a few coins)"},{act:'potion',kind:'heal',text:'Drink a Healing Potion when you are hurt (Z)'}],
+   done:['Linnea: Bitter, isn\'t it? It\'s meant to be. Anything sweet is lying to you.','Linnea: Might and guard draughts want other herbs. Herbs are the same everywhere: the north grows the strongest.']},
+  {id:'W6',title:'The board',gate:5,from:'maren',to:'maren',r:0.9,
+   tip:'The quest board is how you grow between main quest steps: the main quest alone will not make you strong enough. The north will not wait for a hiker who cannot fight.',
+   offer:['Maren: Linnea\'s herbs cost coin, and the woods pay those who work. Take a notice from the board behind me.','Maren: Hunts, bounties, places to scout. Finish one and hand it in to me. You will want a few levels before the north.'],
+   parts:[{act:'board',text:'Finish a notice from the quest board and hand it in'}],
+   done:['Maren: There. The board is always here between the bigger things.','Maren: The forest remembers everything. Some of it is waking up.']},
+  {id:'W2c',title:'The grey reaches her',gate:5,from:null,to:'morrow',r:0.6,
+   parts:[{talk:'morrow',fx:'ripple',text:"Bring Morrow Linnea's willow and Hollen's message",say:[
+     '(You hand Morrow Linnea\'s willow and the Lodge\'s message.)',
+     'Morrow: Willow. ...That girl never could leave well alone. ...Someone remembers, does someone.',
+     '(She takes your hand, smells the sunpetal and spring water on your fingers, and nods once... and a grey ripple crosses the clearing from the north. Her hands tremble. Grey veins creep along her wrist, then fade.)',
+     'Morrow: ...That wasn\'t there this morning.','Tansy: It\'s the same! It\'s the same as Wren\'s!','Morrow: (very quietly) It\'s coming from the north. From the Circle. I\'d hoped I was wrong.',
+     '(She looks at you for the first time.) Morrow: Come inside. I\'ll help. Not for you. For this forest. ...All right, a little for you.',
+     'Morrow: The cure needs two things from the north: ghostcap from the old trees\' bark, and silverleaf from the cold side of the Thicket. The rest I have.',
+     'Morrow: It\'s the north, past the Beetle Thicket and the Treant Grove, where the wild things live. They\'ve been quieter lately. I don\'t think that\'s a good sign.',
+     'Tansy: Then I\'m coming.','Morrow: You\'re not. You\'re a farmer. You\'ll get yourself killed in an afternoon. Take a shield. Someone with a real one. The big man at your gate, the one who looks at the road all day.']}],
+   done:[]},
+  {id:'W7',title:'Torgeir at the gate',gate:6,from:null,to:'torgeir0',r:0.3,
+   tip:'Torgeir walks the road north with you and waits at each place along it. The north is not the meadow: take board notices and hunt on the way, and come back when a place is too strong for you.',
+   parts:[{talk:'torgeir0',text:'Ask the big man at the village gate to walk north with you',say:[
+     '(Torgeir leans on a tall shield, watching the road north.)',
+     'Torgeir: Heard. All of it. The whole village has.','Torgeir: I don\'t talk much. I\'ll walk the road ahead of you and wait at every bend. You do the fighting. The road is mine.',
+     'Tansy: He means yes.','Torgeir: I mean yes.','Torgeir: One rule. If I say stop, you stop. If I say run, you run. The north\'s not the meadow.']}],
+   done:[]},
   {id:'W8',title:'The peddler',gate:6,from:'odran',to:'odran',r:0.6,
-   tip:'Sell what you do not need, at any stall or to Odran.',
-   offer:['Well met! Odran, trader in useful things and useless ones. Came up the south road the week the rain started. Lucky me.','Got anything to sell? I pay fair. Fairer than Tomas, anyway.'],
+   tip:'Sell spare items to a peddler: walk up to his cart, press the talk key (E) and use the shop panel to sell. Sell what you do not need.',
+   offer:['(A cart rolls up the road, hung with curiosities: Odran, the peddler.)','Odran: Welcome, welcome, one and all! Curiosities, trinkets, a button from the other side of the sea! I buy too: spare shells, odd stones, whatever\'s in your bag.','Odran: Fair price, I think. If it\'s not, tell me and I\'ll tell you a better lie.'],
    parts:[{act:'sell',n:2,at:'cart',text:'Sell Odran two things at his cart'}],
-   done:['A pleasure. Tell me, who here was born in Wildwood? Everyone? And their parents too?','...Just curious. I collect stories as well as spoons.']},
-  {id:'W9',title:'Grey in the bog',gate:7,from:'bram',to:'bram',r:0.55,
-   tip:'Monsters drop materials (see the inventory): Aldric uses them to upgrade skills. Grey-veined monsters are tougher, and worth more.',
-   offer:['Something is wrong in the Bog. Slimes the size of a cart, grey all through, like Wren\'s arms.','Put three of them down before they wander closer.'],
-   parts:[{grey:'greybog',n:3,zone:7,text:'Defeat the grey-veined slimes in the Bog'}],
-   done:['Grey, all of them. Twenty years I have walked the edge of these woods. The grey starts far out, where the land meets the sea and the mountains, and it creeps inward.','Wildwood has always been the last place anything bad reaches. I would like to know why.']},
-  {id:'W10',title:'Sharper',gate:8,from:'aldric',to:'aldric',r:0.5,
+   done:['Odran: A pleasure. Say... forgive me. Which of you was born in the village? Not came. Born.','Tansy: Why?','Odran: Curiosity. It\'s what I trade in. (He smiles. His eyes do not.)','Torgeir: (low, to you) Don\'t sell him anything you\'ll miss.']},
+  {id:'W9',title:'The north road',gate:6,hard:8,from:null,to:'torgeir0',r:0.8,
+   at:{torgeir0:['pellsite','thicket','grove']},
+   tip:'The number over a monster is its level. Red means it is stronger than you.',
+   parts:[{talk:'pell',text:'Pass Pell at the river crossing',say:['(At the water\'s edge Pell squats with a lantern, a spear across his knees.)','Pell: Mind the reeds, they bite. You\'re going north.','Pell: Look at the water on the way. Everyone looks at the woods.','(He turns back to the river. You go on.)']},
+          {collect:'Silverleaf',from:['beetle'],n:3,chance:0.5,after:true,text:'Pick silverleaf on the cold side of the Beetle Thicket'},
+          {collect:'Ghostcap',from:['treant'],n:3,chance:0.5,after:true,fx:'ripple',text:'Take ghostcap from the bark of the Treant Grove'}],
+   done:['Torgeir: I watched you at the Thicket. They bite at the knees; the silverleaf\'s on the cold side of the trunks. Good eyes.','Torgeir: And the Grove. A big one. Never stand in a treant\'s shadow. ...Good. That\'s how you did it.','(The ripple crosses the forest. Grass greys in a circle, the treants twist, a beetle goes still.)','Torgeir: That\'s not the first I\'ve seen. I fought in the north, once. A long time ago. There were grey things there too.','Torgeir: I\'ll tell you about it some other time.']},
+  {id:'W9a',title:'The lost one',gate:7,hard:10,from:null,to:'pip',r:0.4,
+   at:{torgeir0:['pip']},
+   parts:[{talk:'pip',text:'Find the child in the hollow beside the Ancient Grove (the old treants nearby are strong)',say:[
+     '(A small boy sits barefoot in the grass. All around him the plants are grey, but a circle of green surrounds him, untouched. His left wrist is bare. He looks up at you and does not speak.)',
+     'Torgeir: That\'s the lost one. No ribbon, no family. The village calls him that and doesn\'t come this far north.','Pip: (very quiet) Nobody.','Torgeir: Who\'s looking after you, lad?',
+     '(Pip touches a grey fern. It turns green under his fingers. He flinches and pulls his hand back.)',
+     'Pip: It does that. I don\'t know why. I don\'t like it.','Pip: Everything else dies near me, or goes away. This is the only thing that comes back.','Torgeir: (low) Tell no one. Not yet.',
+     '(You offer him bread. He takes it carefully, as if nobody has before.)','Pip: Are you going to take me away?','You: Not yet. But I\'ll come back.','Pip: ...I\'ll be here.']}],
+   done:[]},
+  {id:'W9b',title:'The cure',gate:8,from:null,to:'morrow',r:0.8,
+   tip:'Your Power skill is in slot 3 (R or 3). It has a long cooldown: save it for the big moment.',
+   parts:[{level:8,text:'Reach level 8 (the board and the woods will do it)'},
+          {talk:'morrow',after:true,text:'Take the ghostcap and silverleaf to Morrow',say:[
+     'Morrow: Ghostcap. Silverleaf. Good, no bruises. You can listen after all.','Morrow: Sit. Don\'t touch anything. If the kettle whistles, don\'t run.',
+     '(She brews. Steam rises, green then silver. The grey in her wrist glows faintly, then quiets.)',
+     'Morrow: There. It won\'t cure. Remember that. It will ease. It will hold the grey for a time. Weeks, perhaps. Not more.','Morrow: Take it to the child in the bed. A drop on the tongue, a drop on each wrist. Don\'t spill.',
+     'Morrow: One more thing. Hold out your hand. The grey brushed you in the Grove. It left something behind. Not the sickness. The door it came through.',
+     'Morrow: Most people have three knacks in them: a trick, a swing, and a thing under the ribs they only find in a corner. Yours is awake early. Don\'t thank me. It\'s the grey\'s doing.',
+     '(A flash. The third slot on your bar answers to her: your Power skill.) Morrow: Hit the stump by the door. Not gently. The grey one.']},
+          {act:'burst',after:true,text:'Use your Power skill on the grey stump by Morrow\'s door (R or 3)'}],
+   done:['(The stump crumbles, and moss grows over the ground where it stood.)','Morrow: Hm. Good. Now you can see what you\'re up against.','Morrow: And tell your friend with the shield what I said about the Circle. The Warden. The grey comes from there. Somebody will have to deal with it.','Torgeir: (nodding) Somebody will.']},
+  {id:'W9c',title:'Where the drops fell',gate:8,from:null,to:'wren',r:0.7,
+   at:{tansy:['@bedside']},
+   parts:[{talk:'wren',fx:'green',text:'Take the cure home to Wren',say:[
+     '(A drop of the cure falls from the flask as you run. Where it lands on grey grass, green spreads in a ring and holds. Another drop. Another ring. A line of green marks the road home.)',
+     'Tansy: ...Did you see that?','Torgeir: I saw. The cure undoes the grey. Not only in people. In the ground.',
+     '(At the bed Wren is awake, propped on a pillow. The grey lines are paler. A hand reaches for yours.)','Wren: ...You came back.','Wren: Tansy... you\'ve got hay in your hair again.','Tansy: (laughing and crying) A month, love. A month.','Wren: Did you get the crown?',
+     '(The Sheaf-Crown still lies on the pillow. Wren touches the straw, and smiles, tired.) Wren: Take it with you when you go. Bring it back, and I\'ll play when I\'m better.',
+     'Dunstan: I heard about the road. The green, the rings of it. It\'s the cure. It undoes the grey. If we could take it to the source...',
+     'Morrow: (arriving behind you) The source is the Circle. The Warden. It needs to be stopped, or freed. Probably both.','Tansy: Then we do it. All of us.','Dunstan: Not yet. We\'ll need to be stronger.','Morrow: I\'ll explain tomorrow.']}],
+   done:[]},
+  {id:'W9d',title:'Thornlings',gate:8,hard:10,from:'morrow',to:'tansy',r:0.7,
+   at:{tansy:['farm']},
+   tip:'Tab switches target. Clear the small ones first: a crowd is only dangerous if you let it gather.',
+   offer:['Morrow: I couldn\'t sleep. I kept seeing those rings on the road.','Morrow: The Warden isn\'t a monster. It\'s a keeper. For longer than the village has stood, it has held the cold that comes up through the Circle. It takes the cold into itself, so the roots never have to.','Torgeir: The grey.','Morrow: The grey is the cold with nowhere left to go. That\'s why the Warden is dark: it carries the dark for all of us. And it\'s full.','(In the distance, a low sound like a very long breath. A pulse of grey runs along the ground.)','Dunstan: What was that?',
+          'Morrow: The dark pushing up through its roots. When it\'s hurt, it throws up spikes of root and slams the ground around it.','Morrow: And when it\'s frightened, it calls up thornlings and hides behind three totems. They were its wards, once. The dark has turned them around.','Dunstan: The Rootwarden? It never harmed anyone.','Morrow: It\'s not harming anyone now. It\'s overflowing. So you must learn to fight what it throws: thornlings, spikes, the beat, the totems.','Tansy: Thornlings first, then. They\'re little thorny saplings that wake when the dark\'s about. In my fields, they\'re weeds. Same advice: pull the small ones before they seed.'],
+   parts:[{grey:'thornlet',n:6,spawn:'tansyfield',text:"Clear the thornlings that sprout in Tansy's field"}],
+   done:['(After two rounds, her humming stops. She is looking at the south corner of the field. The barley there is grey.)','Tansy: ...Don\'t look at that. It\'s nothing. Rot. ...It\'s been coming for weeks. I buried it. I didn\'t want anyone to worry.','Tansy: I wanted to burn it. All of it. Cut a firebreak and burn the lot.','Morrow: (arriving) You\'ll do nothing of the kind. Fire kills the fine roots. And the fine roots are what holds the cold down.','Tansy: ...Then what do I do?','Morrow: You plant. And you wait. And you let the grey come to you and find barley.']},
+  {id:'W10',title:'Sharper',gate:9,from:'aldric',to:'aldric',r:0.5,
    tip:'In the skills panel (K), a skill you own can be upgraded at a trainer with coins and monster drops.',
-   offer:['Your hands have learned the basics. Now make a trick sharper: coins and the right monster parts, and I will show you.','Open the skills panel and look for Upgrade.'],
+   offer:['Aldric: You want to kill sprouts faster? Then your knack needs sharpening.','Aldric: Every kill leaves something behind. Goo, shells, tusks. Feed it to a knack and the knack grows. Open the skills panel and look for Upgrade.'],
    parts:[{act:'upskill',text:'Upgrade a skill at Aldric (coins and monster drops)'}],
-   done:['Better. You know, there is an old tale of a "grey sleep". My mother told it.','I cannot remember where she heard it. I cannot remember how it ends, either. Odd.']},
-  {id:'W11',title:'Three of a kind',gate:9,from:'greta',to:'greta',r:0.45,gift:'three',
+   done:['Aldric: There. Feel the weight in it now?','Aldric: Funny thing: nobody taught me knacks. My grandfather said they come up through the roots, the way water does. He said the Heartwood gives them. That\'s why a child born here finds one early.','Aldric: And that\'s why the Warden matters, I suppose. If the roots fail, the knacks go with them.']},
+  {id:'W12',title:'Root spikes',gate:10,hard:11,from:'torgeir0',to:'torgeir0',r:0.5,
+   at:{torgeir0:['wallows']},
+   tip:'A boss shows a red circle on the ground where a big hit will land: step out of it (Shift to dash). Dire boars do not warn you, but they charge in a straight line: sidestep.',
+   offer:['Torgeir: The Warden throws spikes of root up under your feet. You\'ll see a circle on the ground first. That\'s the warning.','Torgeir: Every big hit shows its circle first. The circle is a promise: leave it, and the promise is broken.','Torgeir: The dire boars of the Wallows charge in straight lines: learn to sidestep and the circles will be easy. Shift to dash.'],
+   parts:[{kill:'direboar',n:3,text:'Defeat dire boars in the Dire Wallows (they charge: sidestep, Shift to dash)'}],
+   done:['Torgeir: Good. Shift. Again. ...Good.','Torgeir: I never learned to dodge. I learned to hold. I had twelve men in the company, in the north, and I told them to hold. We held until there was nothing to hold.','Torgeir: It was grey. Same as Wren\'s. It came out of the ground in the night, and in the morning it was in the men.','Torgeir: ...I\'m telling you because you ought to know why I\'m still here. I\'m not brave. I\'m owed a second chance.']},
+  {id:'W11',title:'Steel that sings',gate:10,from:'greta',to:'greta',r:0.45,gift:'three',
    tip:'Three identical items (not worn) become one of the next rarity at the forge: common, rare, epic, unique, legendary.',
-   offer:['Here: three of the same, fresh off my bench. Now watch what the forge does with three.','Put them in, and out comes one better.'],
-   parts:[{act:'merge',text:'Merge three identical items at Greta\'s forge'}],
-   done:['Hear it sing? Folded steel always sings.','My father said the old smiths\' steel sang a whole song. Nobody knows how they made it.']},
-  {id:'W11b',title:'Made by hand',gate:9,from:'tomas',to:'tomas',r:0.45,
+   offer:['Greta: Three of the same, one hammer, one better. Only matching. Don\'t waste your breath arguing.','Greta: Here: three of the same, fresh off my bench. Put them in, and out comes one better.'],
+   parts:[{act:'merge',text:"Merge three identical items at Greta's forge"}],
+   done:['Greta: Hear it sing? Folded steel always sings. The old smiths didn\'t use a hammer for it. Or if they did, they never wrote it down. The Silent Years took more than the songs.','Torgeir: What years?','Greta: The ones nobody can count. My grandmother said there\'s a gap in the village ledger, sixty pages cut clean out. Mice, she said. Neat mice.']},
+  {id:'W11b',title:'Under the Ridge',gate:11,from:'tomas',to:'tomas',r:0.45,
    tip:'Crafting: weapons are made from ore at the weaponsmith\'s (the Craft tab), armour from logs at the armourer\'s. Ore of each grade lies in the zones of its gear tier: copper in the inner woods, iron further out. A tool of too low a tier cannot work a node.',
-   offer:['You keep paying me coin for what a good vein of iron would give you for free. Tamsin at the Lodge teaches mining and sells the pickaxe.','Bring me the ore and I will show you how the hammer takes it. Copper from the inner woods will do for a first blade.'],
-   parts:[{act:'learn',prof:'mining',text:'Learn Mining at the Wayfarers\' Lodge (Tamsin)'},{act:'tool',tool:'pick',text:'Buy a pickaxe and wear it (inventory)'},{gather:'mining',n:10,text:'Mine 10 ore (copper in the inner woods)'},{act:'craft',kind:'weapon',after:true,text:'Craft a weapon at Tomas\'s (the Craft tab)'}],
-   done:['Ha! Rough as a badger, and it will cut. Now you know what my prices pay for.','A rare blade wants more ore than a common one, and an epic one a great deal more. But it is all ore, and ore is free to anyone with a pick.']},
-  {id:'W12',title:'Everything at once',gate:10,from:'aldric',to:'aldric',r:0.4,
-   tip:'Your Power skill sits in slot 3 (key R or 3): it hits hard and takes long to come back.',
-   offer:['Your third slot is open: a Power skill.','Try it on the dire boars of the Dire Wallows. Save it for the worst moment.'],
-   parts:[{act:'burst',text:'Use your Power skill (R or 3)'},{kill:'direboar',n:3,text:'Defeat dire boars in the Dire Wallows'}],
-   done:['You will want that when the worst moment comes. And it will.']},
-  {id:'W13',title:'The storyteller',gate:11,from:'oskar',to:'oskar',r:0.35,
-   tip:'A day lasts 20 minutes, half of it night. Some things only happen after dark.',
-   offer:['Linnea asked me about the grey sleep. I will tell it properly, after dark, the way it should be told.','Come back when the sun is down. I will be here. I am always here.'],
-   parts:[{talk:'oskar',night:true,text:'Sit with Oskar at the campfire after dark',wait:['Not yet. Stories need the dark. Come back when the fire is the only light.'],
-           say:['My grandfather told it like this. Long ago, beyond the mountains, a grey sleep took whole villages. The sleepers dreamed of grey water, and never woke.','He said the circle of stones by the East Road once carried him over the mountains in a blink.','And he said the stones have pictures on them. Ships, he said. Ships with no sails.','Go and look, if you like. But do not wake the thing that sleeps inside the circle.']},
-          {read:'carvings',after:true,text:'Read the carvings at the Stone Circle (do not wake the guardian)'}],
-   done:['Ships with no sails. So he was not lying. Or he was not the only one who dreamed it.','And the guardian, half grey, you say? Then the grey has reached even the Rootwarden.']},
-  {id:'W14',title:'Shiny things',gate:12,from:'bram',to:'bram',r:0.3,
-   tip:'Harder places go faster together: everyone who hits a monster shares its reward. The chat (Enter) is how you find company.',
-   offer:['The goblins of Chieftain\'s Hold have been raiding the south fields, and their chieftains keep a hoard.','Bring it back. Bring friends if you can.'],
-   parts:[{collect:'The goblins\' hoard',from:['chieftain'],n:1,chance:0.35,text:'Take the goblins\' hoard from a Goblin Chieftain in Chieftain\'s Hold'}],
-   done:['Coins, buckles, a spoon... and this. A glass ball, smooth as an egg, with a thread of metal inside. Like a lamp with no flame.','Odran saw it over my shoulder and offered thirty coins for it on the spot. Thirty! For a glass egg. I sold it. Should I have?']},
-  {id:'W15',title:'Beyond the mountains',gate:13,from:'linnea',to:'bram',r:0.25,
-   tip:'Every main quest step has a level. Between steps, hunt and take notices: the quest log says where.',
-   offer:['The sap no longer helps. Wren sleeps deeper each day.','Across the eastern mountains there is a village called Hanami. Their soul-reader is said to know every sickness of the soul.','But nobody has crossed since the bridge gate was sealed. Ask Bram: he knows the way east.'],
-   parts:[{talk:'bram',text:'Ask Bram about the way east',say:['The bridge east? Barred, since the guardian woke. The Rootwarden sits in the Stone Circle, and the gatehouse door will not open while it lives.','Nobody has crossed in my lifetime. If you want to try, you need to be a great deal stronger.']}],
-   done:['Level 15, and a weapon worth the name. Then we talk about the Rootwarden.']},
-  {id:'W16',title:'Ready',gate:14,from:'bram',to:'bram',r:0.22,
-   tip:'A boss needs preparation: your best gear, upgraded skills, and friends if you have them.',
-   offer:['Take notices from Maren, hunt the outer woods, see Tomas or Greta for steel.','Come back when you are ready. I will walk you to the circle myself. Well, to the edge of it.'],
-   parts:[{level:15,text:'Reach level 15'},{tier:2,text:'Carry a weapon of level 10 or better'}],
-   done:['You look ready. As ready as anyone has been.']},
-  {id:'W17',title:'The Rootwarden',gate:15,from:'bram',to:'bram',r:0.2,
-   tip:'A boss shows where its big attacks will land: step out of the marked ground. Break its shield by destroying the totems. Everyone who helps shares the reward, and it may drop a skill.',
-   offer:['It sleeps in the Stone Circle, north-east along the East Road. Wake it, and do not stop until it falls.'],
-   parts:[{boss:'boss',text:'Defeat the Rootwarden at the Stone Circle'}],
-   bossLine:'The Rootwarden, as it falls: "The roots... cannot hold... for long."',
-   done:['It is over? The guardian is down?','...Listen. The river is humming. The bridge gate has opened.','Go and see Wren before you leave.']},
-  {id:'W18',title:'Goodbye for now',gate:15,from:null,to:'daisuke',r:0.06,
-   tip:'The East Road leads over the Greyfall bridge to the Sakura Vale. Walking to Hanami attunes the teleport circles.',
-   parts:[{talk:'wren',text:'Say goodbye to Wren',say:['(Wren is awake, sitting up, pale but smiling.)','You are going over the mountains? Nobody goes over the mountains.','...Bring me back something pretty. And come back.']},
-          {talk:'linnea',text:'See Linnea before you go',say:['Take this charm: heartleaf and treant sap, sewn in linen. It will not stop a blade, but it will remind you what you walk for.','Hanami\'s soul-reader will know more than I do. Go.']},
-          {act:'hanami',after:true,text:'Walk over the bridge to Hanami'}],
-   done:['You came over the bridge? Then the Rootwarden is dead. Good riddance.','Welcome to Hanami, traveller from beyond the mountains. A sickness, you say? Then you want the Soul Hall. But first, find your feet here.']},
+   offer:['Tomas: Copper first. Gather beside the vein. Elbows in. Hollen at the Lodge teaches mining and sells the pickaxe.','Tomas: Bring me the ore and I will show you how the hammer takes it. Copper from the inner woods will do for a first blade.'],
+   parts:[{act:'learn',prof:'mining',text:"Learn Mining at the Wayfarers' Lodge (Hollen)"},{act:'tool',tool:'pick',text:'Buy a pickaxe and wear it (inventory)'},{gather:'mining',n:10,text:'Mine 10 ore (copper in the inner woods)'},{visit:'ridge',after:true,text:'Look into the mine at Ironshell Ridge',say:['(Behind a seam of ore, a floor of stone slabs, so close-fitted a knife would not go between.)','Tansy: Who laid a floor in a mine?','Tomas\'s voice, remembered: "Nobody lays floors in mines. ...Nobody now."']},{act:'craft',kind:'weapon',after:true,text:"Craft a weapon at Tomas's (the Craft tab)"}],
+   done:['Tomas: Good edge. Rough as a badger, and it will cut. Now you know what my prices pay for.','Tomas: The same paving\'s under the Drowned Road, Oskar says. Under the bridge. Under the well, maybe. Whoever built that floor could have done better, mind. But we haven\'t the faintest idea how.']},
+  {id:'W13',title:'The beat',gate:11,hard:12,from:'dunstan',to:'dunstan',r:0.45,
+   at:{dunstan:['rotwood']},
+   tip:'A boss hits on a rhythm: spikes every few breaths, then a great slam. Watch the ground and move out of the ring.',
+   offer:['Dunstan: Here\'s what I noticed. The Warden\'s blows don\'t come at random. Spikes every few breaths, then a great slam. Like a heartbeat, with a hard beat at the end.','Dunstan: Come and listen, at the edge of Rotwood.'],
+   parts:[{visit:'rotwood',text:'Listen to the beat at the edge of Rotwood',say:['(A deep drumbeat. In the ground, circles appear in time with it. The big ring comes last.)','Dunstan: Count with me. One, two, step. One, two, step. And when the big ring comes, get out of it.']}],
+   done:['Dunstan: ...You know, I never knew where I got this beat. I\'ve drummed it since I was a boy. My master said it was just a march.','(A faint hum in the trees answers it, on the same beat.)','Tansy: That\'s the Warden.','Dunstan: ...It\'s the Warden. It\'s been humming my march. Or I\'ve been drumming its song.']},
+  {id:'W14',title:'Not alone',gate:12,hard:14,from:'tansy',to:'torgeir0',r:0.5,
+   tip:'Chieftains come in packs: pull one at a time, or bring a friend. Harder places go faster together: everyone who hits a monster shares its reward. P opens the party panel, or type /invite name; the chat (Enter) is how you find company.',
+   offer:['(Villagers tie ribbons to posts along the Ribbon Row, one by one. One post stays bare.)','Tansy: The elders say: when the Warden was last angry, the village tied its ribbons around the Circle. The roots knew them, and settled. I think we should do that again.','Dunstan: I\'d like to see someone try it with the dark coming up through the floor.','Torgeir: They can stand at the edge. I\'ll stand in front. Open the party panel and invite whoever you like: the north is easier together.'],
+   parts:[{visit:'ribbonrow',text:'Walk the Ribbon Row',say:['(Nine posts, nine ribbons: yellow, red, green. The tenth post is bare and white, with a hook for one more.)']},
+          {collect:'A ribbon from the goblins\' hoard',from:['chieftain'],n:1,chance:0.6,text:"Take the ribbon a goblin raider wears from a Goblin Chieftain (level 14) in Chieftain's Hold"}],
+   done:['Torgeir: (turning the ribbon over) Where did a goblin get a ribbon?','Tansy: ...I don\'t know. Don\'t touch it.','(Nobody explains it. The ribbon goes into your bag.)']},
+  {id:'W15',title:'The big moment',gate:13,from:'morrow',to:'morrow',r:0.5,
+   tip:'X is might (more damage). C is guard (less damage taken). Save your Power skill for the stagger. The Rootwarden is level 15: explore, take board notices and hunt until you are ready. Nothing here will run away.',
+   offer:['Morrow: The Warden fights with the dark, so you\'ll feel it in your bones. Don\'t waste your best move on the first thing you see.','Morrow: When it hides behind the totems and you break them, it staggers. That is your window. Burst it then, not before.'],
+   parts:[{visit:'grave',text:'Walk with Morrow to the grave in Deathcap Dell',say:['Morrow: There\'s a grave here. A boy. A boy of this village, the winter I left. Hollen told you the half of it. I held the grey back from him for a day, as I did for the fisherman\'s boy after. It wasn\'t enough here.','Morrow: I swore I\'d never help again. And then a stranger knocked twice.','(You leave a sprig of silverleaf on the grave.)']}],
+   done:['Morrow: ...There. Good.']},
+  {id:'W16',title:'The song',gate:13,from:null,to:'pip',r:0.5,
+   tip:'Passive skills work all the time. Slots open at levels 13, 16 and 20. Aldric and the other trainers teach them.',
+   parts:[{talk:'pip',text:'Listen to Pip in the hollow by the Ancient Grove',say:[
+     'Pip: It\'s going to throw one up. There. Behind the oak.','(Two seconds later, a spike of root bursts up behind the oak.)','Pip: I hear it. In the roots. It\'s tired. I think it wants to stop.','Pip: Where I stand the spikes never come. I don\'t know why.',
+     'Aldric: (arriving with a basket) A passive is the quietest knack. It doesn\'t ask. It helps. Open the skills panel: the passives tab.',
+     'Pip: ...Will you hurt it?','You: I\'ll try not to.','Pip: It doesn\'t know it\'s hurting people. It just doesn\'t want to die.','(Pip pulls a grass ribbon from his pocket and presses it into your hand.) Pip: For Wren. It\'s green. It stays green.']}],
+   done:[]},
+  {id:'W16a',title:'Three totems',gate:14,from:null,to:'pell',r:0.5,
+   at:{pell:['stump']},
+   tip:'Stand off and pick targets with Tab: the totems are broken one by one.',
+   parts:[{visit:'stump',text:'Meet Pell at the Whisper Stump in the Bog',say:['Pell: When it\'s hurt enough it hides. Three totems in a ring. Break them and it\'s stunned. That\'s your window.','Pell: Don\'t run in. Stand off. Take one, then the next. Look at me. I never get within arm\'s length of anything.','Pell: Listen. (The Whisper Stump hums. Low. Familiar.)','Pell: That\'s the same note. I noticed it last month. The stump, the Warden, the casks on the water. They hum alike.']}],
+   done:['Pell: There\'s a boat with no lights. It drops black casks below the stump at night. There\'s a sun in a ring on the lid. Nobody believes me.','Pell: I\'m only a fisherman.']},
+  {id:'W16b',title:'Ready',gate:14,hard:15,from:null,to:'morrow',r:0.6,
+   tip:'A boss needs preparation: your best gear, upgraded skills, potions, and friends if you have them. Check before you go.',
+   parts:[{visit:'hem',text:'Join the dress rehearsal at the practice grove on the Hem',say:['(Linnea arrives with a basket of draughts. Morrow sees her. A long silence.)','Linnea: You taught me the willow. I never thanked you.','Morrow: You never asked.','Linnea: I\'m asking now.','(Morrow takes the basket. A small nod. It is enough.)','Morrow: A compressed Warden. Thornlings, spikes, the slam, the totems. All of it, once.','Dunstan: Count the tenth! Torgeir: Out of the circles! Tansy: Pull the small ones first! Pell: Stand off the totems!','Morrow: Now. Thornlings first, small ones before they seed.']},
+          {grey:'thornlet',n:4,spawn:'hem',after:true,text:'Fight the thornlings that sprout around the practice grove'},{level:15,text:'Reach level 15 (the board and the woods will do it)'},{tier:2,text:'Carry a weapon of level 10 or better'}],
+   done:['Morrow: Hold still. Drink. ...There. That is the cure. You know what to do if it comes.','Tansy: They\'re cold again. (Later, at Wren\'s bed, you tie Pip\'s grass ribbon round Wren\'s wrist. It stays green.)','Dunstan: To the Circle, then.','Torgeir: To the Circle.','Pip: (quietly) I\'ll come as far as the Hem.']},
+  {id:'W17',title:'The Rootwarden',gate:15,hard:16,from:null,to:'bram',r:0.9,
+   tip:'A boss shows where its big attacks will land: step out of the marked ground. Break its shield by destroying the totems. If you fall it heals to full and you wake at the village: come back with your best gear, potions and friends. Everyone who helps shares the reward, and it may drop a skill.',
+   parts:[{visit:'circle',text:'Walk to the Stone Circle, north along the Circle Path past the Treant Grove',say:['(Behind you the village called its goodbyes: Maren\'s "Go on, hiker", Greta\'s "I\'ll mend what breaks. Bring it back.")','(Old Bram, the woodsman who keeps the north path, walks with you to the Circle\'s edge.)','Bram: I walked this wood a thousand times. I\'ve never been afraid. Today I am. ...Go.','(The Stone Circle. The air is heavy, the leaves turning gold and green in turn. The Warden stands in the centre, enormous, half bark, half grey.)','Dunstan: There it is. Torgeir: It\'s bigger than I thought. Tansy: It\'s tired. Look at its arms.','(Morrow pours a thin line of green cure around the Circle\'s rim. Pip stands at the Hem\'s edge, hands over his ears, then lowers them.)','Pip: It\'s singing. It\'s the same song. It wants us to stop it.','Morrow: Then we\'ll stop it kindly.','(Oskar, the old rhymer, sits on a fallen stone at the Circle\'s edge.)','Oskar: "Down went the crown, up came the sea, one seed fell where the roots could be." The roots will know them. Whatever happens in there.']},
+          {boss:'boss',after:true,text:'Defeat the Rootwarden at the Stone Circle'}],
+   bossLine:'The Rootwarden, as it falls: "The roots... cannot hold... for long." The grey drains out of the Grove like water from a bowl.',
+   done:['Bram: It is over? The guardian is down?','Bram: ...Listen. The river is humming. The old tunnel gate has opened.','Bram: Go and see Wren before you leave.']},
+  {id:'W18',title:'Goodbye for now',gate:15,from:null,to:'daisuke',r:0.4,
+   tip:'The East Road leads to the old tunnel and over the Greyfall bridge to the Sakura Vale. Walking to Hanami attunes the teleport circles.',
+   parts:[{talk:'linnea',text:"See Linnea at Wren's bed",say:['(Wren sleeps, a green ribbon on their wrist. Their hand is warm.)','(After a quiet minute, three grey ripples rise from far horizons: east, west and north-west. The east one is the strongest.)','Dunstan: ...Do you see that? Torgeir: It isn\'t gone. It\'s moved. Tansy: Moved where?','Morrow: (arriving, breathless) Everywhere else. The roots held it here for as long as they could. Now they can\'t, and it\'s spreading to the places that never had roots to hold it.','(Far south-east, at the end of the East Road, the old tunnel, sealed for a generation, is open.)','Linnea: It\'s not a cure. But the roots are quiet now. Wren is resting. The worst is over, for now.','Morrow: The worst here. Not the worst.','Linnea: There\'s a soul-reader in Hanami, across the tunnel. Kaede. Her mother taught mine about the grey sleep, a long time ago. I never knew what it meant.','Linnea: Take this charm of Wren\'s hair and heartleaf. It will keep the way open.','Morrow: What I brewed would buy you time on a small infection, but I\'m too old to cross mountains. And someone must stay with your sibling.']},
+          {talk:'tansy',text:'Say goodbye to Tansy',say:['Tansy: I\'m staying with Wren. Someone has to. And I have a field to replant.','Tansy: Come back soon. Bring a cure, bring a story, bring bread, I don\'t care. (She hands you the Sheaf-Crown.) Hold this. Wren wants it back when they wake.','Pip: I want to come. Morrow: You can\'t. Your place is here. Pip: I know. But I made this. (He gives you another grass ribbon, green and alive. You tie it to your wrist.) Pip: It won\'t let it touch you. Not much.']},
+          {talk:'dunstan',text:'See Dunstan and Torgeir off',say:['Dunstan: We\'ll go north. There\'s something up there. I\'ve drummed a march since I was a boy, and I think I know where it came from.','Torgeir: And I have men to bury. Properly this time.','(Dunstan lifts his drum and plays three beats. Torgeir raises a hand. The two walk away along the old road north.)']},
+          {act:'hanami',after:true,text:'Follow the East Road through the old tunnel and over the Greyfall bridge to Hanami'}],
+   done:['(The sealed tunnel, now open: old paving stones, fitted close, a carved ring-and-sun on the keystone. At the far end, light and pink petals.)','Daisuke: Halt. Name and business. ...You look like you\'ve walked through a storm.','Daisuke: The grey sleep? Here? ...Two of my guard fell to it last week. We thought it was a fever.','Daisuke: The soul-reader, Kaede, is at the Soul Hall. She\'ll see you. She\'s been waiting. She said someone would come.']},
   /* ---------------- Act II: The Blossom and the Blight (the Sakura Vale, levels 15-20; it ends at Akaoni) ---------------- */
   {id:'V3',title:'Hanami',gate:15,from:'daisuke',to:'daisuke',r:0.05,
    tip:'Hanami has the same jobs as your village: a quest board, stalls, a forge, a trainer.',
@@ -284,11 +414,11 @@ const MQ=[
 const MQ_BY_ID={}; MQ.forEach((s,i)=>{ s.i=i; MQ_BY_ID[s.id]=s; });
 const MQ_END='Act IV is over. The mountain is quiet, the black stone sleeps, and a road leads on: Glasswell, in the Sunscar, where a physician is said to cure what nobody else can. The story goes on there, once it is told.';
 // which village each quest villager lives in (the server checks you are there when you talk to them); odran2 is Odran's cart in Hanami, odran3 his cart at Rimehold, odran4 at Highmark
-const MQ_NPC_VIL={tamsin:1,isamu:2,hinata:2,ylva:3,wren:1,linnea:1,odran:1,bram:1,aldric:1,tomas:1,ilse:1,maren:1,greta:1,oskar:1,
+const MQ_NPC_VIL={tansy:1,dunstan:1,wren0:1,torgeir0:1,morrow:1,pip:1,pell:1,tamsin:1,isamu:2,hinata:2,ylva:3,wren:1,linnea:1,odran:1,bram:1,aldric:1,tomas:1,ilse:1,maren:1,greta:1,oskar:1,
   odran2:2,daisuke:2,sayuri:2,kenji:2,haruka:2,tetsuo:2,ryu:2,chiyo:2,kaede:2,
   odran3:3,hallvard:3,ragna:3,bjorn:3,ulfhild:3,thorvald:3,sigrun:3,gudrun:3,
   odran4:4,brenna:4,ansgar:4,gerhard:4,matthias:4};
-const MQ_NAMES={tamsin:'Tamsin',isamu:'Isamu',hinata:'Herbalist Hinata',ylva:'Alchemist Ylva',wren:'Wren',linnea:'Healer Linnea',odran:'Odran',odran2:'Odran',bram:'Bram',aldric:'Aldric',tomas:'Tomas',ilse:'Ilse',maren:'Maren',greta:'Greta',oskar:'Oskar',
+const MQ_NAMES={tansy:'Tansy',dunstan:'Dunstan',wren0:'Wren',torgeir0:'Torgeir',morrow:'Morrow',pip:'Pip',pell:'Pell',tamsin:'Hollen',isamu:'Isamu',hinata:'Herbalist Hinata',ylva:'Alchemist Ylva',wren:'Wren',linnea:'Healer Linnea',odran:'Odran',odran2:'Odran',bram:'Bram',aldric:'Aldric',tomas:'Tomas',ilse:'Ilse',maren:'Maren',greta:'Greta',oskar:'Oskar',
   daisuke:'Daisuke',sayuri:'Sayuri',kenji:'Kenji',haruka:'Haruka',tetsuo:'Tetsuo',ryu:'Master Ryu',chiyo:'Grandmother Chiyo',kaede:'Soul-reader Kaede',
   odran3:'Odran',hallvard:'Hallvard',ragna:'Ragna',bjorn:'Bjorn',ulfhild:'Ulfhild',thorvald:'Thorvald',sigrun:'Old Sigrun',gudrun:'Gudrun',
   odran4:'Odran',brenna:'Foreman Brenna',ansgar:'Abbot Ansgar',gerhard:'Gerhard',matthias:'Brother Matthias'};
@@ -304,16 +434,25 @@ function mqReward(step){ return {xp:Math.round(step.r*expToNext(step.gate)), coi
 const mqNight=day=>day>0.53||day<0.005;   // the day clock (0 = 06:00, 0.5 = 18:00): dusk to dawn
 
 // a new character's progress (W1 starts by itself), and a save's, checked
-// MQ_VER 2: W6a, W7b, W11b and V7b were inserted after W6 (old index 5), W7 (6), W11 (10) and V7 (22): an older save's step index moves up by the ones before it
-const MQ_VER=2, MQ_INSERTED=[[5,1],[6,1],[10,1],[22,1]];
-const mqMigrate=s=>s+MQ_INSERTED.reduce((a,[after,n])=>a+(s>after?n:0),0);
+// MQ_VER 2: W6a, W7b, W11b and V7b were inserted after W6 (old index 5), W7 (6), W11 (10) and V7 (22): an older save's step index moves up by the ones before it.
+// MQ_VER 3: the prologue P1-P6 came first and Act I was rewritten around the witch (docs/WILDWOOD-STORY.md): a save older than 3 is moved by step id (MQ_V2_IDS is the list as it was at version 2); a step that no longer exists moves it to the next one that does, and its part counts start again.
+const MQ_VER=3, MQ_INSERTED=[[5,1,2],[6,1,2],[10,1,2],[22,1,2]];
+const MQ_V2_IDS=['W1','W2','W3','W4','W5','W6','W6a','W7','W7b','W8','W9','W10','W11','W11b','W12','W13','W14','W15','W16','W17','W18','V3','V4','V5','V6','V7','V7b','V8','V9','V10','V11','F1','F2','F3','F4','F5','F6','F7','F8','F9','G1','G2','G3','G4','G5','G6','G7','G8','G9'];
+const mqV2Index=(s,ver)=>(ver||1)<2?s+MQ_INSERTED.reduce((a,[after,n])=>a+(s>after?n:0),0):s;   // (a version 1 save's index in the version 2 list)
+function mqMigrate(s,ver){
+  if((ver||1)>=3) return s; s=mqV2Index(s,ver);
+  if(s>=MQ_V2_IDS.length) return MQ.length;
+  for(let k=s;k<MQ_V2_IDS.length;k++){ const st=MQ_BY_ID[MQ_V2_IDS[k]]; if(st) return st.i; }
+  return MQ.length;
+}
 function newMq(){ return {s:0,st:1,n:MQ[0].parts.map(()=>0),h:0,ver:MQ_VER}; }
 const mqInt=(v,a,b,d)=>{ v=parseInt(v,10); return isFinite(v)?Math.max(a,Math.min(b,v)):d; };
 function sanitizeMq(m){
   if(!m||typeof m!=='object') return newMq();
-  const s=mqInt(m.ver===MQ_VER?m.s:mqMigrate(mqInt(m.s,0,MQ.length,0)),0,MQ.length,0), st=s>=MQ.length?0:mqInt(m.st,0,2,0), step=MQ[s];
-  const n=step?step.parts.map((pt,i)=>mqInt(Array.isArray(m.n)?m.n[i]:0,0,mqNeed(pt),0)):[];
-  const out={s,st,n,h:mqInt(m.h,0,31,0),ver:MQ_VER};
+  const moved=m.ver!==MQ_VER, s=mqInt(moved?mqMigrate(mqInt(m.s,0,MQ.length,0),m.ver):m.s,0,MQ.length,0), st=s>=MQ.length?0:mqInt(m.st,0,2,0), step=MQ[s];
+  const keep=!moved||(step&&step.id[0]!=='W'&&MQ_V2_IDS[mqV2Index(mqInt(m.s,0,99,0),m.ver)]===step.id);   // (a save moved from before version 3 keeps its part counts only in the acts that were not rewritten)
+  const n=step?step.parts.map((pt,i)=>keep?mqInt(Array.isArray(m.n)?m.n[i]:0,0,mqNeed(pt),0):0):[];
+  const out={s,st:keep||st===0?st:1,n,h:mqInt(m.h,0,31,0),ver:MQ_VER};
   if(step&&st===0&&step.from===null) out.st=1;
   if(step&&out.st===2&&!mqAllDone(step,n)) out.st=1;
   return out;
@@ -338,6 +477,7 @@ function mqTalk(mq,npc,level,night){
   if(st===2&&step.to===npc){
     out.complete=true; out.lines.push(...(step.done||[]));
     const nx=MQ[mq.s+1]; if(nx&&nx.from===npc&&level>=mqGate(nx)){ out.next=true; out.lines.push(...(nx.offer||[])); }
+    else if(nx&&nx.from===null&&nx.intro) out.lines.push(...nx.intro);   // (the next step starts by itself: its first lines follow in the same talk)
   }
   return out;
 }
@@ -365,6 +505,54 @@ const mqGreySpot=key=>mqSpot(ZONES.find(z=>z.key===key),0,0.5);
   VIL.anchors.bed={x:VIL.bed.x-tx*0.95,z:VIL.bed.z-tz*0.95,face:H.a+Math.PI/2};   // the foot of the bed (Wren lies head toward +tangent)
   VIL.anchors.bedside={x:VIL.bed.x+Math.sin(H.a)*-1.1,z:VIL.bed.z+Math.cos(H.a)*-1.1,face:H.a};
 }
+/* ---- the story's places (docs/WILDWOOD-STORY.md): Tansy's farm west of the gate and the road to it, the witch's hut, Pip's hollow, the training places, the Circle ---- */
+const MQ_FARM={x:-59,z:219};
+const MQ_PLACES={
+  road1:{x:VIL.anchors.gate.x,z:VIL.anchors.gate.z,r:9,name:'The village gate'},
+  road2:{x:-4,z:238,r:8,name:'The fallen log'},
+  road3:{x:-36,z:228,r:8,name:'The hedge'},
+  meadow:{x:-24,z:246,r:20,name:'The Slime Meadow\'s edge'},
+  farm:{x:MQ_FARM.x,z:MQ_FARM.z,r:16,name:'Tansy\'s farm'},
+  loft:{x:MQ_FARM.x-5,z:MQ_FARM.z-4,r:5,name:'Tansy\'s barn'},
+  tansyfield:{x:MQ_FARM.x+2,z:MQ_FARM.z+9,r:14,name:'Tansy\'s field'},
+  clearing:{x:10,z:242,r:14,name:'The clearing'},
+  home:{x:VIL.bed.x,z:VIL.bed.z,r:7,name:'Your house'},
+  hut:{x:310,z:300,r:8,name:'Morrow\'s hut'},
+  pellsite:{x:-154,z:266,r:10,name:'The river crossing'},
+  thicket:{x:12,z:34,r:14,name:'The Beetle Thicket'},
+  grove:{x:224,z:-8,r:16,name:'The Treant Grove'},
+  pip:{x:226,z:-180,r:8,name:'Pip\'s hollow'},
+  wallows:{x:-244,z:404,r:14,name:'The Dire Wallows'},
+  ridge:{x:358,z:434,r:14,name:'Ironshell Ridge'},
+  rotwood:{x:-100,z:-40,r:12,name:'The edge of Rotwood'},
+  ribbonrow:{x:VIL.anchors.gate.x+16,z:VIL.anchors.gate.z+12,r:9,name:'The Ribbon Row'},
+  grave:{x:386,z:168,r:8,name:'The grave in Deathcap Dell'},
+  stump:{x:-78,z:440,r:10,name:'The Whisper Stump'},
+  hem:{x:262,z:-200,r:14,name:'The Hem'},
+  circle:{x:257,z:-259,r:26,name:'The Stone Circle'}
+};
+// the people who live out in the wild stand at a fixed place (the talk counts there, the client builds them at the same spot: WILD_SITES in village/villagers-outfits.js)
+const MQ_SITE_NPC={morrow:MQ_PLACES.hut,pip:MQ_PLACES.pip,pell:MQ_PLACES.pellsite};
+/* Where a story villager stands now (null: their usual place). A step's `at:{npc:[place per open part]}` moves them while the step is under way ('@name' is an anchor of the home village; a place of
+   MQ_PLACES is stood beside, not on). The people of the wild stand at MQ_SITE_NPC unless a step moves them. Used by the client (village/villagers.js moves them, economy/main-quest.js marks them) and the server
+   (server/main-quest.js: a talk away from the village counts when you are beside them). mq: gear.mq */
+function mqStoryAt(npc,mq){
+  if(!mq) return null; const s=MQ[mq.s];
+  if(s&&mq.st>=1){
+    if(npc==='wren0') return s.id==='P1'?VIL.anchors.well:VIL.anchors.bedside;
+    const list=s.at&&s.at[npc];
+    if(list){
+      let i=s.parts.findIndex((pt,k)=>(mq.n[k]||0)<mqNeed(pt)); if(i<0) i=s.parts.length-1;
+      const key=list[Math.min(i,list.length-1)];
+      if(key[0]==='@') return VIL.anchors[key.slice(1)];
+      const P=MQ_PLACES[key]; return {x:P.x+3,z:P.z+3};
+    }
+  }
+  if(npc==='wren0') return VIL.anchors.bedside;
+  return MQ_SITE_NPC[npc]||null;
+}
+// Wren is well until the prologue's P6 (the healthy Wren, 'wren0'); from P6 on the sick one lies in the bed
+const mqWrenSick=mq=>!!mq&&mq.s>=MQ_BY_ID.P6.i;
 for(const V of VILS){
   if(V.cart) continue;   // (Glasswell's cart stands where its plan puts it, shared/glasswell.js)
   const a=V.ent-0.28, cx=V.x+Math.sin(a)*(VR+9), cz=V.z+Math.cos(a)*(VR+9);
@@ -417,5 +605,5 @@ const LORE_BY_ID={}; LORE.forEach(L=>{ LORE_BY_ID[L.id]=L; });
 const LORE_R=4.5;   // how close you must be to read one
 function loreNear(x,z){ let best=null,bd=LORE_R; for(const L of LORE){ const d=Math.hypot(x-L.x,z-L.z); if(d<bd){ bd=d; best=L; } } return best; }
 // trees and bushes keep clear of the story's spots (the heartleaf, the lore props, Odran's carts) so you can see and reach them
-const STORY_SPOTS=[...HERBS.map(([x,z])=>[x,z,5]),...LORE.filter(L=>L.kind!=='ice').map(L=>[L.x,L.z,L.kind==='wreck'?7:5]),...VILS.map(V=>[V.cart.x,V.cart.z,5])];
+const STORY_SPOTS=[[MQ_FARM.x,MQ_FARM.z,16],...['road2','road3','clearing','meadow','hut','pip','grave','stump','ribbonrow'].map(k=>[MQ_PLACES[k].x,MQ_PLACES[k].z,k==='road2'||k==='road3'?6:10]),...HERBS.map(([x,z])=>[x,z,5]),...LORE.filter(L=>L.kind!=='ice').map(L=>[L.x,L.z,L.kind==='wreck'?7:5]),...VILS.map(V=>[V.cart.x,V.cart.z,5])];
 function storyClear(x,z){ for(const [sx,sz,r] of STORY_SPOTS) if(Math.abs(x-sx)<r&&Math.abs(z-sz)<r&&Math.hypot(x-sx,z-sz)<r) return true; return false; }

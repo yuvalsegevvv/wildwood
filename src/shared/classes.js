@@ -18,7 +18,7 @@ const ACTS={warrior:{basic:['slash',0.5,0.45]},archer:{basic:['shoot',0.55,0.6]}
    buff = a timed boost instead of a hit: {dur, dmg (damage x), cd (basic cooldown x), crit (+chance), red (damage taken less), steal (heals this share of the damage you deal), regen (health per second, share of max), el}.
    el = the element of the skill (see elements.js; none = 'basic'). A buff's el turns your element-less attacks into that element while it lasts.
    drop = the id of the boss that drops it (not sold; see the boss skills at the end of the table). fx = what a skill with generic effects does. */
-const SKILL_SLOT_LV=3, BURST_SLOT_LV=10, SLOTS=['basic','skill','burst'];
+const SKILL_SLOT_LV=2, BURST_SLOT_LV=8, SLOTS=['basic','skill','burst'];
 const SKILLS={
   // ---- basic attacks ----
   slash:{cls:'warrior',slot:'basic',name:'Slash',cd:0.7,range:3,mult:1,price:0,lv:1,act:['slash',0.5,0.45],desc:'Hit everything in a wide arc in front of you.'},
@@ -27,23 +27,23 @@ const SKILLS={
   iceshard:{cls:'mage',slot:'basic',el:'water',name:'Ice Shard',cd:0.7,range:28,mult:0.8,price:250,lv:4,act:['shard',0.42,0.5],anim:'cast',desc:'A fast shard of ice. Quicker than Firebolt, no splash, and it slows what it hits.'},
   missiles:{cls:'mage',slot:'basic',el:'dark',name:'Arcane Missiles',cd:1.5,range:26,mult:0.6,price:900,lv:8,act:['missiles',0.65,0.5],anim:'cast',desc:'Three homing missiles that spread over the enemies around your target.'},
   // ---- skills (level 3) ----
-  whirlwind:{cls:'warrior',slot:'skill',el:'air',name:'Whirlwind',cd:6,range:3.4,mult:0.9,price:0,lv:3,act:['spin',0.7,0.45],desc:'Spin and strike every enemy around you.'},
+  whirlwind:{cls:'warrior',slot:'skill',el:'air',name:'Whirlwind',cd:6,range:3.4,mult:0.9,price:0,lv:2,act:['spin',0.7,0.45],desc:'Spin and strike every enemy around you.'},
   bash:{cls:'warrior',slot:'skill',el:'light',name:'Shield Bash',cd:7,range:3.2,mult:1.6,price:180,lv:3,act:['bash',0.55,0.5],anim:'slash',desc:'Slam your shield into the enemies in front of you: heavy damage, and they are stunned for 2 seconds.'},
   charge:{cls:'warrior',slot:'skill',el:'fire',name:'Charge',cd:9,range:14,mult:1.4,price:650,lv:6,act:['charge',0.6,0.45],anim:'slash',desc:'Dash up to 14 m to your target and crash down, hitting and knocking back everything where you land.'},
-  volley:{cls:'archer',slot:'skill',el:'air',name:'Volley',cd:5,range:32,mult:0.6,price:0,lv:3,act:['volley',0.7,0.6],desc:'Loose three homing arrows in a fan.'},
+  volley:{cls:'archer',slot:'skill',el:'air',name:'Volley',cd:5,range:32,mult:0.6,price:0,lv:2,act:['volley',0.7,0.6],desc:'Loose three homing arrows in a fan.'},
   pierce:{cls:'archer',slot:'skill',el:'earth',name:'Piercing Shot',cd:6,range:34,mult:1.8,price:180,lv:3,act:['pierce',0.75,0.7],anim:'shoot',desc:'A heavy arrow that flies straight through every enemy in its path.'},
   rain:{cls:'archer',slot:'skill',el:'water',name:'Arrow Rain',cd:11,range:30,mult:0.45,price:650,lv:6,act:['rain',0.7,0.6],anim:'volley',desc:'A storm of arrows on your target\'s area: 5 waves over 2.5 seconds hit everything inside.'},
-  frostnova:{cls:'mage',slot:'skill',el:'water',name:'Frost Nova',cd:7,range:5.5,mult:0.8,price:0,lv:3,act:['nova',0.7,0.5],desc:'Blast everything around you with ice and slow it down.'},
+  frostnova:{cls:'mage',slot:'skill',el:'water',name:'Frost Nova',cd:7,range:5.5,mult:0.8,price:0,lv:2,act:['nova',0.7,0.5],desc:'Blast everything around you with ice and slow it down.'},
   chain:{cls:'mage',slot:'skill',el:'air',name:'Chain Lightning',cd:6,range:26,mult:1.2,price:180,lv:3,act:['chain',0.6,0.5],anim:'cast',desc:'Lightning strikes your target and jumps to 4 more enemies nearby, a little weaker each jump.'},
   meteor:{cls:'mage',slot:'skill',el:'earth',name:'Meteor',cd:12,range:28,mult:2.4,price:650,lv:6,act:['meteor',0.8,0.55],anim:'nova',desc:'Call a meteor down on your target\'s area. It lands 1.2 seconds later, crushing and knocking back everything there.'},
   // ---- bursts (level 10) ----
-  quake:{cls:'warrior',slot:'burst',el:'earth',name:'Earthshatter',cd:35,range:7,mult:3,price:0,lv:10,act:['quake',0.9,0.6],anim:'nova',desc:'Smash the ground: huge damage to everything within 7 m, knocked back and stunned for 1.5 seconds.'},
+  quake:{cls:'warrior',slot:'burst',el:'earth',name:'Earthshatter',cd:35,range:7,mult:3,price:0,lv:8,act:['quake',0.9,0.6],anim:'nova',desc:'Smash the ground: huge damage to everything within 7 m, knocked back and stunned for 1.5 seconds.'},
   bladestorm:{cls:'warrior',slot:'burst',el:'dark',name:'Blade Storm',cd:38,range:3.8,mult:0.7,price:2000,lv:12,act:['bladestorm',0.4,0.3],anim:'spin',desc:'Become a whirl of steel for 4 seconds: every enemy near you is hit 10 times, and you can keep moving.'},
   berserk:{cls:'warrior',slot:'burst',name:'Berserk',cd:40,range:0,mult:0,price:4000,lv:14,act:['berserk',0.5,0.4],anim:'nova',buff:{dur:10,dmg:1.5,cd:0.6,crit:0},desc:'For 10 seconds: 50% more damage, and your basic attack is 40% faster.'},
-  hail:{cls:'archer',slot:'burst',el:'dark',name:'Hail of Arrows',cd:38,range:32,mult:0.5,price:0,lv:10,act:['hail',0.8,0.6],anim:'volley',desc:'A huge storm of arrows on your target\'s area: 8 waves over 4 seconds on everything within 7 m.'},
+  hail:{cls:'archer',slot:'burst',el:'dark',name:'Hail of Arrows',cd:38,range:32,mult:0.5,price:0,lv:8,act:['hail',0.8,0.6],anim:'volley',desc:'A huge storm of arrows on your target\'s area: 8 waves over 4 seconds on everything within 7 m.'},
   snipe:{cls:'archer',slot:'burst',el:'light',name:'Sniper Shot',cd:30,range:45,mult:6.5,price:2000,lv:12,act:['snipe',1.3,0.8],anim:'shoot',desc:'Take careful aim, then one devastating arrow at your target from up to 45 m.'},
   focus:{cls:'archer',slot:'burst',name:"Hunter's Focus",cd:40,range:0,mult:0,price:4000,lv:14,act:['focus',0.5,0.4],anim:'shoot',buff:{dur:10,dmg:1.15,cd:0.5,crit:0.35},desc:'For 10 seconds: shoot twice as fast, 35% more critical hits and 15% more damage.'},
-  blizzard:{cls:'mage',slot:'burst',el:'water',name:'Blizzard',cd:40,range:30,mult:0.42,price:0,lv:10,act:['blizzard',0.8,0.6],anim:'nova',desc:'A blizzard on your target\'s area for 5 seconds: 10 waves of ice on everything within 8 m, and it slows them.'},
+  blizzard:{cls:'mage',slot:'burst',el:'water',name:'Blizzard',cd:40,range:30,mult:0.42,price:0,lv:8,act:['blizzard',0.8,0.6],anim:'nova',desc:'A blizzard on your target\'s area for 5 seconds: 10 waves of ice on everything within 8 m, and it slows them.'},
   inferno:{cls:'mage',slot:'burst',el:'fire',name:'Inferno',cd:35,range:7,mult:3.4,price:2000,lv:12,act:['inferno',0.9,0.6],anim:'nova',desc:'Explode in a ring of fire: huge damage to everything within 7 m of you, knocked back.'},
   surge:{cls:'mage',slot:'burst',name:'Arcane Surge',cd:45,range:0,mult:0,price:4000,lv:14,act:['surge',0.5,0.4],anim:'cast',buff:{dur:10,dmg:1.4,cd:0.7,crit:0,reset:true},desc:'Your skill is ready again at once, and for 10 seconds you deal 40% more damage and cast 30% faster.'},
   // ---- boss skills: not sold, each has a drop chance from its boss (drop = the boss's id, BOSS_SKILL_CHANCE in drops.js) and cannot be upgraded yet.

@@ -27,7 +27,9 @@ const HV_OUTFIT={
   sefi:{sex:'f',pitch:1.22,rate:1.32,slot:7,tone:'sly'},
   // the Emberwake Isles sets: Meleni the wayfinder-singer, Tzaya the calendar-priest, Atuqa the terrace-keeper
   meleni:{sex:'f',pitch:1.08,rate:1.0,slot:8,tone:'calm'}, tzaya:{sex:'m',pitch:0.92,rate:0.98,slot:8,tone:'bold'},
-  atuqa:{sex:'m',pitch:0.78,rate:0.86,slot:9,tone:'gruff'}};
+  atuqa:{sex:'m',pitch:0.78,rate:0.86,slot:9,tone:'gruff'},
+  // the Wildwood story's two: Morrow the hedge-witch, Pip the lost child
+  morrow:{sex:'f',pitch:0.82,rate:0.88,slot:3,tone:'sly'}, pip:{sex:'m',pitch:1.45,rate:1.1,slot:5,tone:'bright'}};
 // Three shouts for every skill. The original skills have their own; every other skill gets three made from its name,
 // its element and its class (or the set's tone), fixed by its id so a skill always has the same three to choose from.
 const HV_SKILL={
