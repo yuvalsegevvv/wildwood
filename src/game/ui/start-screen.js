@@ -31,6 +31,8 @@ function onStreamProgress(){
       barEl.style.width='100%'; $('#bar').classList.add('done');
       statusEl.textContent=growLeft()?'Ready. The rest of the forest keeps growing while you walk.':'The forest is ready.';
       syncStart();
+      setTimeout(hikerFinish,150);   // the real hiker model (the draft was built to start sooner)
+      setTimeout(edWarm,1500);   // the editor's first pictures, ahead of time (ui/character-editor.js)
     }
   }
   const left=growLeft();
@@ -120,7 +122,7 @@ stForm.addEventListener('submit',e=>{
   enterWorld({mode:'ws',name:user,register:{user,pass}});
 });
 function beginPlay(){
-  started=true;
+  hikerFinish(); started=true;
   $('#start').classList.add('hide');
   document.body.classList.add('playing');
   renderQlog();

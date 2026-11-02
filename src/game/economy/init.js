@@ -7,4 +7,4 @@ addEventListener('keydown',e=>{
 });
 if(!ITEM[GEAR.eq.weapon]) GEAR.eq.weapon=WEAPON_OF[CLASSES[LOOK.cls]?LOOK.cls:'warrior']+'1';
 LOOK.cls=clsOf();
-rebuildHiker(); setActionBar(); renderInv();
+rebuildHiker(0.3); hikerDraft=true; setActionBar(); renderInv();   // (draft detail now, the real hiker after Ready: a second of the start)

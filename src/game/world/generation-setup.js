@@ -193,29 +193,43 @@ function nextLazyTile(){
   for(const B of TERRAIN_BANDS){ if(B.ready||B.busy) continue; const d=Math.hypot(Math.max(B.x0-P.x,0,P.x-B.x1),Math.max(B.z0-P.z,0,P.z-B.z1)); if(d<bd){ bd=d; best=B; } }
   return best;
 }
-function* genTerrain(){
-  // the height grid: web workers have been filling it since the page began (world/height-workers.js); wait for them (the main thread stays free, `Stream.idle`), then work out
-  // on this thread any row that did not arrive. Without workers this is the plain loop it always was.
-  if(HW.on){ const t0=performance.now(); while(!HW.failed&&HW.left>0&&performance.now()-t0<30000){ Stream.tp=(NVZ-HW.left)/NVZ*0.6; Stream.idle=true; yield; } hwCheck(); }
-  for(let iz=0;iz<NVZ;iz++){
-    if(hwTake(iz)) continue;
+const HS_OWN=new Uint8Array(NVZ);   // rows worked out on this thread
+// rows a..b of HS are in: waited for from the workers (up to 30 s), the rest worked out here. The first time, the workers' rows are spot-checked against this thread's rawHeight (hwCheck).
+function* hsEnsure(a,b){
+  a=Math.max(0,a); b=Math.min(NVZ-1,b);
+  if(HW.on&&!HW.failed){
+    const t0=performance.now();
+    while(!HW.failed&&!hwHave(a,b)&&performance.now()-t0<30000){ Stream.tp=(NVZ-HW.left)/NVZ*0.6; Stream.idle=true; yield; }
+    if(!HW.checked){ HW.checked=true; hwCheck(); }
+  }
+  for(let iz=a;iz<=b;iz++){
+    if(HS_OWN[iz]||hwTake(iz)) continue;
     const z=WZ0+iz*CELL;
     for(let ix=0;ix<NVX;ix++) HS[iz*NVX+ix]=rawHeight(WX0+ix*CELL,z);
-    Stream.tp=iz/NVZ*0.6;
+    HS_OWN[iz]=1; Stream.tp=iz/NVZ*0.6;
     if((iz&7)===7) yield;
   }
+}
+function* genTerrain(){
+  // The height grid (HS): web workers have been filling it since the page began, rows nearest the spawn first (world/height-workers.js). The tiles by the spawn are made as soon as THEIR rows are in,
+  // while the rest arrive; every other row is waited for (the main thread stays free: `Stream.idle`) or, if a worker failed, worked out here. Without workers this is the plain loop it always was.
   TMAT=terrainMaterial();
-  const tiles=Math.ceil(SEGX/TBAND)*Math.ceil(SEGZ/TTILE); let done=0;
+  const plan=[];
   for(let b0=0;b0<SEGX;b0+=TBAND) for(let c0=0;c0<SEGZ;c0+=TTILE){
     const nx=Math.min(TBAND,SEGX-b0), nz=Math.min(TTILE,SEGZ-c0), w=nx*CELL, d=nz*CELL, x0=WX0+b0*CELL, z0=WZ0+c0*CELL;
     const B={mesh:null,x0,x1:x0+w,z0,z1:z0+d,g:null,tc:null,b0,c0,nx,nz,ready:false,busy:false};
-    TERRAIN_BANDS.push(B);
-    // The ground's colours cost ~3.7 us a vertex (about 4 s for the whole world, 1.5 M vertices) and four lands are mostly never seen in a session: only the tiles by the
-    // spawn are made and coloured now, the others (their mesh too, terrainTileGeom: a second of the start) when the player comes within TCOLOR_R of them (streamPump, job 'k'); until then they are not drawn (cullTerrain).
-    if(Math.hypot(Math.max(B.x0-VIL.spawn.x,0,VIL.spawn.x-B.x1),Math.max(B.z0-VIL.spawn.z,0,VIL.spawn.z-B.z1))<TCOLOR_NEAR){ yield* terrainTileGeom(B); yield* terrainTileColors(B); }
-    else { B.lazy=true; Stream.lazy++; }
-    Stream.tp=0.6+(++done)/tiles*0.4;
+    B.near=Math.hypot(Math.max(B.x0-VIL.spawn.x,0,VIL.spawn.x-B.x1),Math.max(B.z0-VIL.spawn.z,0,VIL.spawn.z-B.z1))<TCOLOR_NEAR;
+    TERRAIN_BANDS.push(B); plan.push(B);
   }
+  // The ground's colours cost ~3.7 us a vertex (about 4 s for the whole world, 1.5 M vertices) and four lands are mostly never seen in a session: only the tiles by the
+  // spawn are made and coloured now, the others (their mesh too, terrainTileGeom: a second of the start) when the player comes within TCOLOR_R of them (streamPump, job 'k'); until then they are not drawn (cullTerrain).
+  const nNear=plan.filter(B=>B.near).length; let nMade=0;
+  const makeNear=function*(){ for(const B of plan) if(B.near&&!B.g){ yield* hsEnsure(B.c0-1,B.c0+B.nz+1); yield* terrainTileGeom(B); yield* terrainTileColors(B); Stream.tp=0.6+0.4*(++nMade)/nNear; } };
+  if(HW.on) yield* makeNear();
+  yield* hsEnsure(0,NVZ-1);
+  if(HW.on) hwCheck();
+  yield* makeNear();   // (no workers: now that the whole grid is in)
+  for(const B of plan) if(!B.near){ B.lazy=true; Stream.lazy++; }
   waterMat=new THREE.MeshPhongMaterial({color:0x2c5560, transparent:true, opacity:0.84, shininess:140, specular:0x8fa4b4});
   waterMat.onBeforeCompile=sh=>{
     sh.uniforms.uTime=timeU;

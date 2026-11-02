@@ -6,7 +6,7 @@
    per (kind, item, colour, sex, skin) and kept for the session. spec = {kind, id, ...}; kinds and what each shows are in cthLookFor.
    used by: ui/character-editor.js. test: tools/editor-smoke.js (the headless build has no GL: tiles stay empty there and the editor still works). */
 const CTH_W=168, CTH_H=168, CTH_COLS=2, CTH_CACHE={}, CTH_PENDING={}, CTH_QUEUE=[];
-let cthRT=null, cthScene=null, cthCam=null, cthTimer=0, cthBuf=null, cthCv=null;
+let cthWarm=false, cthRT=null, cthScene=null, cthCam=null, cthTimer=0, cthBuf=null, cthCv=null;
 // neutral clothes under the item being shown, so only the item varies: a plain grey tee and brown trousers (the item itself is never neutral)
 const CTH_TEE=0x8c9096, CTH_TROUSERS=0x5a4a3c;
 function cthBase(sex,skin){
@@ -143,6 +143,8 @@ function cthGet(sp,cb,pic){
   CTH_PENDING[key]=[cb]; CTH_QUEUE.push({key,sp}); if(!cthTimer) cthTimer=setTimeout(cthPump,0);
 }
 // a tile's visibility, kept by one observer (it accounts for scrolling and clipping); without the API every tile counts as seen
+// the editor's first screens are drawn ahead of time (edWarm, ui/character-editor.js): their tiles ask with this stand-in, which is alive but never seen, so a tile the viewer can see always goes first
+const CTH_WARM_PIC={isConnected:true,_vis:false};
 const cthSeen=typeof IntersectionObserver==='function'?new IntersectionObserver(es=>{ for(const e of es){ e.target._vis=e.isIntersecting; if(!e.target.isConnected) cthSeen.unobserve(e.target); } }):null;
 // a tile has a picture (drawn here) or, for a "nothing" choice, a crossed circle; the caption is optional and small
 function cthTile(sp,o){
@@ -152,8 +154,8 @@ function cthTile(sp,o){
   const pic=document.createElement('span'); pic.className='ctile-pic';
   if(sp===null){ pic.classList.add('none'); }
   else { pic.classList.add('wait'); const im=document.createElement('img'); im.alt=''; im.draggable=false; pic.append(im);
-    if(cthSeen){ pic._vis=false; cthSeen.observe(pic); }
-    cthGet(sp,url=>{ if(url){ im.src=url; pic.classList.remove('wait'); } else { pic.classList.remove('wait'); pic.classList.add('nopic'); } },pic); }
+    if(cthSeen&&!cthWarm){ pic._vis=false; cthSeen.observe(pic); }
+    cthGet(sp,url=>{ if(url){ im.src=url; pic.classList.remove('wait'); } else { pic.classList.remove('wait'); pic.classList.add('nopic'); } },cthWarm?CTH_WARM_PIC:pic); }
   b.append(pic);
   if(o.cap){ const c=document.createElement('span'); c.className='ctile-cap'; c.textContent=o.cap; b.append(c); }
   return b;
