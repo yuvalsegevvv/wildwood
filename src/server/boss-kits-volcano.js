@@ -3,7 +3,7 @@
    owns:    BOSS_KITS.sinkwarden (init / start / tick / phase), vbPartDownS (damageMonsterS asks it when the boss' pool reaches 0: part 2 ends in the eruption), vbReviveP (the player tick: a knock-out inside the arena
             wakes on the spot while the hiker has lives left), vbRewardP (rewardKill: the talisman), VB_LIVES.
    parts:   B.part 1 = the four Guarding Wardens (the boss is hidden and immune; its bar mirrors the wardens' health), 2 = the crater (the boss itself), 3 = the eruption (berserk: it flies, immune, bombards; it lands for a
-            window of VB_WINDOW seconds in which it is stunned and takes x1.5, then fights on the ground a while and takes off again). Each part's pool is SINK_PART_K x a full boss's health (m.maxHp).
+            window of VB_WINDOW seconds in which it is stunned and takes x1.5, then fights on the ground a while and takes off again). Each part's pool is SINK_PART_K x a full boss's health (m.hpDiv halves every hit, so the bar reads 100% a part; m.maxHp).
    hooks:   boss.js (parts bosses skip the shared 60% / 30% phases; a fight is not reset while a knocked-out hiker waits to revive), combat.js (damageMonsterS, rewardKill), players.js (hurtP grace, the dead tick).
    test:    tools/volcano-smoke.js */
 const VB_LIVES=3, VB_REVIVE_AFTER=3, VB_GRACE=2.5, VB_WINDOW=7, VB_AIR=15, VB_GROUND=6;
@@ -13,11 +13,12 @@ const vbDmg=(B,m,k)=>Math.round(m.T.dmg*k*(B.part===3?1.25:1));   // berserk: pa
 // the boss' health bar mirrors the wardens' in part 1: their combined health as a share of the pool
 function vbMirrorS(B,m){ const w=B.adds.filter(a=>a.def.id==='sinkguard'); let hp=0, mx=0; for(const a of w){ mx+=a.maxHp; hp+=a.dead||a.remove?0:Math.max(0,a.hp); } m.hp=mx>0?m.maxHp*hp/mx:m.maxHp; }
 function vbSetPartS(B,m,n){
-  B.part=n; B.phase=n; m.maxHp=m.hp=m.T.hp*SINK_PART_K; B.aux=n===1?SINK_WARDENS:0;
+  B.part=n; B.phase=n; m.maxHp=m.hp=m.T.hp; m.hpDiv=SINK_PART_K;   // (the bar is 100% a part: the pool is twice a boss because every hit counts 1 / SINK_PART_K, damageMonsterS)
+  B.aux=n===1?SINK_WARDENS:0;
 }
 function vbWardensS(B,m){
   const A=B.A, T=SINK_WARDENS;
-  for(let i=0;i<T;i++){ const a=i/T*TAU+0.4, x=A.x+Math.sin(a)*(A.r*0.55), z=A.z+Math.cos(a)*(A.r*0.55), w=spawnMonS(SINK_GUARD_DEF,x,z,{x:A.x,z:A.z},true); w.aggro=true; const p=nearestFighter(x,z,80); w.tgt=p?p.id:null; B.adds.push(w); }
+  for(let i=0;i<T;i++){ const a=i/T*TAU+0.4, x=A.x+Math.sin(a)*(A.r*0.55), z=A.z+Math.cos(a)*(A.r*0.55), w=spawnMonS(SINK_GUARD_DEF,x,z,{x:A.x,z:A.z},true); w.aggro=true; w.leash=1e4; const p=nearestFighter(x,z,80); w.tgt=p?p.id:null; B.adds.push(w); }
 }
 // part 2: the boss comes up out of the crater
 function vbCraterS(B,m){
@@ -75,7 +76,7 @@ function vbAirTickS(B,m,dt,C){
   if(k.airT<=0&&!k.diving) vbLandS(B,m,C);
 }
 BOSS_KITS.sinkwarden={
-  init(B,m){ m.maxHp=m.hp=m.T.hp*SINK_PART_K; },   // (the bar of the sleeping boss is part 1's pool)
+  init(B,m){ m.maxHp=m.hp=m.T.hp; m.hpDiv=SINK_PART_K; },   // (the bar of the sleeping boss is part 1's pool)
   start(B,m){
     B.k={}; B.lives=new Map(); B.enraged=false; vbSetPartS(B,m,1); m.immune=true; B.mode=2; B.busy=1e3; B.k.lavaT=6; B.k.pulseT=14;
     vbWardensS(B,m); toastTo(null,'Three lives each: you wake on the spot until they are spent.','good');
@@ -85,6 +86,8 @@ BOSS_KITS.sinkwarden={
     const k=B.k;
     if(B.part===1){
       vbMirrorS(B,m); const w=vbWardens(B); B.aux=w.length;
+      for(const a of w){ const d=Math.hypot(a.x-B.A.x,a.z-B.A.z), lim=B.A.r-4; if(d>lim){ a.x=B.A.x+(a.x-B.A.x)/d*lim; a.z=B.A.z+(a.z-B.A.z)/d*lim; }   // the wardens never leave the pit
+        if(!a.aggro||!S.players.get(a.tgt)||S.players.get(a.tgt).dead){ a.aggro=true; a.tgt=C.p.id; a.state='chase'; } }
       k.lavaT-=dt; k.pulseT-=dt;
       if(k.lavaT<=0&&C.inside.length){ k.lavaT=9; for(let i=0;i<2;i++){ const q=i===0?C.p:randPlayerS(C.inside)||C.p; addTeleS(B,q.x,q.z,3.4,1.3,'geyser',vbDmg(B,m,1.0)); } }
       if(k.pulseT<=0&&w.length){ k.pulseT=16; addTeleS(B,B.A.x,B.A.z,B.A.r,2.0,'donut',vbDmg(B,m,1.3),0,6); }   // the crater's heat: the middle is safe

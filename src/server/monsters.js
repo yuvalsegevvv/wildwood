@@ -75,8 +75,8 @@ function updateMonstersS(dt){
     if(!m.aggro && m.T.aggro){ const p=nearestFighter(m.x,m.z,m.T.aggro); if(p&&(!m.cave||caveLos(m.x,m.z,p.x,p.z))){ m.aggro=true; m.tgt=p.id; ev('aggro',m.id); } }   // cave: a wall hides you
     { const tq=ssTauntedBy(m); if(tq&&!inVillage(tq)&&hd<=32){ m.tgt=tq.id; m.aggro=true; } }   // skillsets: a taunted monster comes for the taunter
     let p=m.aggro?S.players.get(m.tgt):null;
-    if(m.aggro && (!p||p.dead||inVillage(p)||hd>32)){
-      const alt=hd<=32?nearestFighter(m.x,m.z,14):null;
+    if(m.aggro && (!p||p.dead||inVillage(p)||hd>(m.leash||32))){
+      const alt=hd<=(m.leash||32)?nearestFighter(m.x,m.z,14):null;
       if(alt){ m.tgt=alt.id; p=alt; } else { m.aggro=false; m.tgt=null; m.state='return'; m.pendingHit=-1; p=null; }
     }
     let tx=null,tz=null,speed=0,dx=0,dz=0,dp=1e9;

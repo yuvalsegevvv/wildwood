@@ -49,7 +49,7 @@ function farMaterial(){
 function buildFarLands(){
   const C=FAR_CELL, X0=WX0-100, Z0=WZ1-4*C, NX=Math.ceil((WX1-WX0+200)/C), NZ=Math.ceil((2560-Z0)/C), W=NX+1;   // (a strip along the world's south edge, a row of cells inside it so the edge vertices meet the real ground: the Emberwake Isles lie beyond it)
   const onRect=(x,z)=>x>=WX0-0.01&&x<=WX1+0.01&&z>=WZ0-0.01&&z<=WZ1+0.01;
-  const H=new Float32Array(W*(NZ+1)), pos=new Float32Array(W*(NZ+1)*3), col=new Float32Array(W*(NZ+1)*3), cc=new THREE.Color();
+  const H=new Float32Array(W*(NZ+1)), pos=new Float32Array(W*(NZ+1)*3), col=new Float32Array(W*(NZ+1)*3), cc=new THREE.Color(), cc2=new THREE.Color();
   for(let iz=0;iz<=NZ;iz++) for(let ix=0;ix<=NX;ix++){
     const x=X0+ix*C, z=Z0+iz*C, k=iz*W+ix, h=onRect(x,z)?getH(clamp(x,WX0,WX1),clamp(z,WZ0,WZ1)):farHeight(x,z);
     H[k]=h; pos[k*3]=x; pos[k*3+1]=h; pos[k*3+2]=z;
@@ -69,15 +69,20 @@ function buildFarLands(){
   g.setIndex(idx); g.computeVertexNormals(); g.computeBoundingSphere();
   const mesh=new THREE.Mesh(g,farMaterial()); mesh.matrixAutoUpdate=false;
   scene.add(mesh);
-  // smoke over the volcano: a few low-poly puffs, high enough to show through the haze
-  const V=FAR_SMOKE, sp=[], sc=[];
-  [[0,74,12],[8,100,17],[-4,130,22],[14,165,28]].forEach(([dx,y,r],i)=>{
-    const sg=new THREE.IcosahedronGeometry(r,0), p=sg.attributes.position;
-    for(let k=0;k<p.count;k++){ sp.push(V.x+dx+p.getX(k),y+p.getY(k),V.z-i*6+p.getZ(k)); cc.set(FAR_C.smoke).multiplyScalar(0.9+0.1*i/3); sc.push(cc.r,cc.g,cc.b); }
-  });
+  // the volcano's ash plume seen from afar: a column of soft, round puffs (high-detail spheres with smooth normals, each pushed about by noise) that widens, lightens and leans with the wind as it climbs
+  const V=FAR_SMOKE, sp=[], sc=[], sn=[], rim=VG.rim+6, N=34;
+  for(let i=0;i<N;i++){
+    const k=i/(N-1), y=rim+k*k*190+k*30, lean=Math.pow(k,1.6)*140, r=10+k*34+noise2(i*3.1,7)*4, cx=V.x+lean*0.8+noise2(i*1.7,3)*8*(0.4+k), cz=V.z-lean*0.35+noise2(i*2.3,9)*8*(0.4+k);
+    const sg=new THREE.IcosahedronGeometry(1,3), p=sg.attributes.position;
+    for(let q=0;q<p.count;q++){
+      const ux=p.getX(q), uy=p.getY(q), uz=p.getZ(q), wob=1+noise2(ux*1.7+i*5.3,uy*1.7+uz*1.9)*0.28, l=Math.hypot(ux,uy,uz)||1;
+      sp.push(cx+ux*r*wob,y+uy*r*wob*0.82,cz+uz*r*wob); sn.push(ux/l,uy/l,uz/l);
+      const sh=0.5+0.5*uy; cc.set(FAR_C.smoke).lerp(cc2.set(0xf2dcc0),Math.min(1,k*0.9)*0.5).multiplyScalar((0.62+0.38*k)*(0.86+0.14*sh)); if(k<0.18) cc.lerp(cc2.set(0xff7a28),(0.18-k)/0.18*0.35*(1-sh)); sc.push(cc.r,cc.g,cc.b);
+    }
+  }
   const sg=new THREE.BufferGeometry();
-  sg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3)); sg.setAttribute('color',new THREE.Float32BufferAttribute(sc,3));
-  sg.computeVertexNormals(); sg.computeBoundingSphere();
+  sg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3)); sg.setAttribute('normal',new THREE.Float32BufferAttribute(sn,3)); sg.setAttribute('color',new THREE.Float32BufferAttribute(sc,3));
+  sg.computeBoundingSphere();
   const smoke=new THREE.Mesh(sg,farMaterial()); smoke.matrixAutoUpdate=false; scene.add(smoke);
   return mesh;
 }
