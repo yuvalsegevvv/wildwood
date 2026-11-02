@@ -28,17 +28,19 @@ function beginJoin(pid,hello){
     if(old!==undefined&&old!==pid&&S.players.has(old)){ sendTo(old,{t:'kicked',text:'You opened this account somewhere else, so this window was disconnected.'}); leave(old); if(io.kick) io.kick(old); }
     // moved to a registered account: this guest starts over (the browser's copy belongs to the account now)
     const moved=!!(rec&&rec.movedTo), migrate=!rec, h=moved?Object.assign({},hello,{save:null}):migrate?hello:Object.assign({},hello,{save:{level:rec.level,exp:rec.exp,gear:rec.gear}});
-    const p=join(pid,h); p.acct=acct; ACCT.set(acct,pid);
+    const fromRec=!moved&&!migrate&&!!rec.look&&typeof rec.look==='object';   // the saved account's own look wins over this browser's copy (stale or edited localStorage); the test world never gets here
+    if(fromRec) h.look=rec.look;
+    const p=join(pid,h,null,fromRec); p.acct=acct; ACCT.set(acct,pid);
     if(moved){ saveP(p); toastTo(pid,'The progress in this browser belongs to the account '+rec.movedTo+' now. Log in as '+rec.movedTo+' to play it.',''); }
     if(migrate){ saveP(p); if(hello.save&&(hello.save.level>1||(hello.save.gear&&hello.save.gear.coins))) toastTo(pid,'Your progress has been moved to the server. It is safe even if you clear this browser, as long as you keep your account code (settings).','good'); }
   }).catch(e=>{ PENDING.delete(pid); if(io.log) io.log('load failed',e&&e.message); sendTo(pid,{t:'kicked',text:'The server could not load your progress. Please try again in a moment.'}); if(io.kick) io.kick(pid); });
 }
-function join(pid,hello,auth){
+function join(pid,hello,auth,srvLook){
   const p=newPlayer(pid,hello); S.players.set(pid,p);
   if(io.test) testKitP(p);   // testworld: level 60 and the whole kit, before the first 'you'
   if(auth){ p.auth=auth; p.user=auth.user; }
   else { const n=freeName(p.name,p); if(n!==p.name){ toastTo(pid,'Someone already has the name '+p.name+', so you are '+n+'. Change it in Settings.',''); p.name=n; } }
-  sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth?p.look:undefined});
+  sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth||srvLook?p.look:undefined});
   const ros=MONS.filter(m=>!m.remove&&!m.inst).map(monRoster);   // dungeons: the world's monsters only (a run's reach its members on entry)
   for(let i=0;i<ros.length;i+=40) sendTo(pid,{t:'mons',list:ros.slice(i,i+40)});
   for(const B of BOSSES.concat(rdBossesS())){   // what a boss has set up right now, for someone who arrives in the middle of the fight
