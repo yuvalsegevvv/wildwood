@@ -26,7 +26,7 @@ function frame(){
     troomUpdate(dt); pzUpdate(dt);   // puzzles: the stones' glow   // testroom: the counter on the screen
     dgEntUpdate(dt);   // dungeons: the doors' sealed look and animation
     updateNpcLabels();
-    updateRemotes(dt);
+    updateRemotes(dt); pshStallTick();   // pshop: stalls of open player shops
     updateMonsters(dt);
     updateCombat(dt); updatePotBar();
     netTick(dt);
