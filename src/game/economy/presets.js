@@ -1,24 +1,64 @@
-//@ Presets row of the skills panel: ten saved setups (skills, soul, equipment, an optional linked outfit slot) to save, wear, rename and clear
-/* Server rules in server/presets.js. Agent map: prPanelHtml() / prBindPanel(on) (economy/skills.js renderSkills), prWearOutfit(i,of) (net/client.js 'prwear' event).
-   The outfit slots live in the browser (character-editor.js wearOutfitSlot); a preset only stores the slot number, -1 = leave the outfit alone. test: tools/presets-smoke.js */
-const PRS={sel:0};
-function prPanelHtml(){
-  const L=(GEAR&&GEAR.pre)||[], i=PRS.sel, e=L[i]||null;
-  let h=`<details class="sk-presets"${PRS.open?' open':''}><summary>Presets</summary><div class="chips">`;
-  for(let k=0;k<PR_COUNT;k++) h+=`<button class="chip" data-prsel="${k}" aria-pressed="${k===i}" title="${L[k]?'':'Empty'}">${k+1}${L[k]?' ●':''}</button>`;
-  h+=`</div><div class="sk-pr-row"><input id="prName" maxlength="${PR_NAME_MAX}" placeholder="Preset ${i+1}" aria-label="Preset name">`;
-  h+=`<select id="prOutfit" aria-label="Linked outfit"><option value="-1">Outfit: unchanged</option>`;
-  for(let k=0;k<PR_OUTFITS;k++) h+=`<option value="${k}"${e&&e.of===k?' selected':''}>Outfit ${k+1}</option>`;
-  h+=`</select></div><div class="sk-pr-row"><button class="btn" data-prwear${e?'':' disabled'}>Wear</button><button class="btn" data-prsave>Save current here</button><button class="btn" data-prclear${e?'':' disabled'}>Clear</button></div>`;
-  h+=`<p class="muted sk-note">Saves the 8 skills, your soul and your equipment. Not usable in boss fights, raids, dungeons or on the Proving Isle.</p></details>`;
-  return h;
+//@ Presets panel (the HUD's layers button): ten cards, each a saved setup of skills, soul and equipment with an optional linked outfit slot; wear, save, rename, clear
+/* Server rules in server/presets.js. Agent map: renderPresets() (items.js calls it on every `you` update while the panel is open), prWearOutfit(i,of) (net/client.js 'prwear' event).
+   The outfit slots live in the browser (character-editor.js wearOutfitSlot); a preset only stores the slot number, -1 = leave the outfit alone. test: tools/presets-smoke.js, client-smoke */
+const PRS={name:{}};   // names typed but not yet saved, per card
+function prSkillNames(e){
+  const out=[]; for(const sl of ['basic','skill','burst']) if(e.sk[sl]&&SKILLS[e.sk[sl]]) out.push(SKILLS[e.sk[sl]].name);
+  if(e.cave&&typeof caveSkillDef==='function'&&caveSkillDef(e.cave)) out.push(caveSkillDef(e.cave).name);
+  if(e.ult&&typeof ultDef==='function'&&ultDef(e.ult)) out.push(ultDef(e.ult).name);
+  const np=(e.pass||[]).filter(Boolean).length; if(np) out.push(np+(np>1?' passives':' passive'));
+  return out;
 }
-function prBindPanel(on){
-  { const e=((GEAR&&GEAR.pre)||[])[PRS.sel]; const nm=$('#prName'); if(nm&&e) nm.value=e.n; const w=$('#skBody').querySelector('[data-prwear]'); if(w&&e) w.textContent='Wear '+e.n; }   // (names go in as text, never as markup)
-  const d=$('#skBody').querySelector('.sk-presets'); if(d) d.ontoggle=()=>{ PRS.open=d.open; };
-  on('[data-prsel]',b=>{ PRS.sel=+b.dataset.prsel; PRS.open=true; UI_SFX.click(); renderSkills(); });
-  on('[data-prwear]',()=>{ netSend({t:'prwear',i:PRS.sel}); UI_SFX.click(); });
-  on('[data-prsave]',()=>{ const n=$('#prName').value, of=+$('#prOutfit').value; netSend({t:'prsave',i:PRS.sel,n,of}); UI_SFX.click(); });
-  on('[data-prclear]',()=>{ netSend({t:'prclear',i:PRS.sel}); UI_SFX.click(); });
+// is this card what you are wearing right now?
+function prIsNow(e){
+  const g=GEAR; if(!g||!e) return false;
+  for(const k in g.eq) if((g.eq[k]||null)!==(e.eq[k]||null)) return false;
+  if((g.soul||'basic')!==(e.soul||'basic')) return false;
+  const S=g.skills||{}, E=(S.eq&&S.eq[e.cls])||{};
+  for(const sl of ['basic','skill','burst']) if((E[sl]||null)!==(e.sk[sl]||null)) return false;
+  for(let j=0;j<3;j++) if(((S.pass||[])[j]||null)!==((e.pass||[])[j]||null)) return false;
+  return (S.ult||null)===(e.ult||null)&&(S.cave||null)===(e.cave||null);
 }
+function prCard(i,e){
+  const card=document.createElement('div'); card.className='pr-card'+(e?'':' empty')+(e&&prIsNow(e)?' now':'');
+  const top=document.createElement('div'); top.className='pr-top';
+  const no=document.createElement('span'); no.className='pr-no'; no.textContent=String(i+1);
+  const nm=document.createElement('input'); nm.className='pr-name'; nm.maxLength=PR_NAME_MAX; nm.placeholder='Preset '+(i+1); nm.setAttribute('aria-label','Name of preset '+(i+1));
+  nm.value=PRS.name[i]!==undefined?PRS.name[i]:(e?e.n:''); nm.oninput=()=>{ PRS.name[i]=nm.value; };
+  top.append(no,nm); if(e&&prIsNow(e)){ const b=document.createElement('span'); b.className='pr-badge'; b.textContent='Worn'; top.append(b); }
+  card.append(top);
+  const sum=document.createElement('div'); sum.className='pr-sum';
+  if(e){
+    const w=ITEM[e.eq.weapon], gear=Object.keys(e.eq).filter(k=>k!=='weapon'&&e.eq[k]).length;
+    const line1=document.createElement('div'); line1.className='pr-l1'; line1.textContent=(w?w.name:'No weapon')+(gear?' · '+gear+' gear piece'+(gear>1?'s':''):'');
+    const soul=document.createElement('span'); soul.innerHTML=ELEMS[e.soul]?elChip(e.soul):''; line1.append(' ',soul);
+    const line2=document.createElement('div'); line2.className='pr-l2'; line2.textContent=prSkillNames(e).join(' · ')||'No skills set';
+    sum.append(line1,line2);
+  } else sum.textContent='Empty: set up your skills, soul and gear, then save here.';
+  card.append(sum);
+  const ctl=document.createElement('div'); ctl.className='pr-ctl';
+  const sel=document.createElement('select'); sel.className='pr-of'; sel.setAttribute('aria-label','Linked outfit for preset '+(i+1)); sel.title='Optional: wear an outfit slot together with this preset';
+  const none=document.createElement('option'); none.value='-1'; none.textContent='Outfit: keep current'; sel.append(none);
+  const slots=typeof outfitSlots==='function'?outfitSlots():[];
+  for(let k=0;k<PR_OUTFITS;k++){ const o=document.createElement('option'); o.value=String(k); o.textContent='Outfit '+(k+1)+(slots[k]?'':' (empty)'); if(e&&e.of===k) o.selected=true; sel.append(o); }
+  ctl.append(sel);
+  const wear=document.createElement('button'); wear.className='pr-btn pr-wear'; wear.textContent='Wear'; wear.disabled=!e; wear.onclick=()=>{ netSend({t:'prwear',i}); UI_SFX.click(); };
+  const save=document.createElement('button'); save.className='pr-btn'; save.textContent=e?'Overwrite':'Save here';
+  save.onclick=()=>{ netSend({t:'prsave',i,n:nm.value,of:+sel.value}); delete PRS.name[i]; UI_SFX.click(); };
+  const clr=document.createElement('button'); clr.className='pr-btn pr-clr'; clr.textContent='✕'; clr.title='Clear preset '+(i+1); clr.setAttribute('aria-label',clr.title); clr.disabled=!e;
+  clr.onclick=()=>{ netSend({t:'prclear',i}); delete PRS.name[i]; UI_SFX.click(); };
+  ctl.append(wear,save,clr); card.append(ctl);
+  return card;
+}
+function renderPresets(){
+  const body=$('#prBody'); if(!body||$('#presets').hidden) return;
+  if(body.contains(document.activeElement)&&document.activeElement.tagName==='INPUT') return;   // not while a name is being typed
+  const keep=body.scrollTop, L=(GEAR&&GEAR.pre)||[];
+  const note=document.createElement('p'); note.className='pr-note'; note.textContent='Each preset keeps your 8 skills, soul and equipment. Wear one anywhere, except in a boss fight, raid, dungeon or on the Proving Isle. An outfit link is optional: with none, your outfit stays as it is.';
+  const grid=document.createElement('div'); grid.className='pr-grid';
+  for(let i=0;i<PR_COUNT;i++) grid.append(prCard(i,L[i]||null));
+  body.replaceChildren(note,grid); body.scrollTop=keep;
+}
+function openPresets(){ if(!started||customizing) return; if(!$('#presets').hidden){ closePanels(); return; } openPanel('presets'); renderPresets(); }
+$('#bPre').addEventListener('click',e=>{ openPresets(); e.currentTarget.blur(); });
 function prWearOutfit(i,of){ if(of>=0&&typeof outfitSlots==='function'&&outfitSlots()[of]) wearOutfitSlot(of); }

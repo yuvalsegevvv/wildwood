@@ -1,0 +1,17 @@
+/*@ Presets panel (economy/presets.js): ten cards in a grid, the worn one highlighted, an empty one dimmed */
+.pr-note{ margin:0 0 10px; font-size:13px; line-height:1.45; color:var(--ink-dim); }
+.pr-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px; }
+.pr-card{ display:flex; flex-direction:column; gap:7px; padding:10px; border-radius:10px; border:1px solid var(--line); background:rgba(0,0,0,.22); }
+.pr-card.empty{ opacity:.7; } .pr-card.now{ border-color:#ffd678; box-shadow:0 0 0 1px rgba(255,214,120,.45) inset; background:rgba(255,214,120,.08); }
+.pr-top{ display:flex; align-items:center; gap:8px; }
+.pr-no{ flex:none; width:24px; height:24px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:13px; background:rgba(238,240,226,.14); }
+.pr-name{ flex:1; min-width:0; height:30px; border-radius:7px; border:1px solid transparent; background:transparent; color:var(--ink); font:600 15px "Alegreya Sans",system-ui,sans-serif; padding:0 6px; }
+.pr-name:hover,.pr-name:focus{ border-color:var(--line); background:rgba(0,0,0,.25); outline:none; }
+.pr-badge{ flex:none; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:#ffd678; }
+.pr-sum{ font-size:13px; line-height:1.4; color:var(--ink-dim); min-height:38px; } .pr-l1{ color:var(--ink); } .pr-l2{ margin-top:2px; }
+.pr-ctl{ display:flex; flex-wrap:wrap; gap:6px; }
+.pr-of{ flex:1 1 100%; height:32px; border-radius:7px; border:1px solid var(--line); background:rgba(0,0,0,.25); color:var(--ink); padding:0 6px; }
+.pr-btn{ flex:1; height:34px; border-radius:8px; border:1px solid var(--line); background:rgba(238,240,226,.1); color:var(--ink); font-weight:600; cursor:pointer; }
+.pr-btn:hover:not(:disabled){ background:rgba(238,240,226,.2); } .pr-btn:disabled{ opacity:.4; cursor:default; }
+.pr-wear{ background:rgba(126,240,160,.2); border-color:rgba(126,240,160,.5); } .pr-clr{ flex:none; width:34px; }
+@media (max-width:719px){ #presets{ width:auto; } .pr-grid{ grid-template-columns:1fr; } }

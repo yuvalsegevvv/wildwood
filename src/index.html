@@ -28,7 +28,7 @@
   </div>
   <div class="hud-r">
   <div class="btns">
-    <button class="icon-btn" id="bVer" aria-label="Versions" title="Versions: what is in version 1 and what version 2 adds" data-kba="Versions">
+    <button class="icon-btn" id="bPre" aria-label="Presets" title="Presets: ten saved skill, soul and gear setups">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5-8 4.5-8-4.5z"/><path d="M4 12l8 4.5 8-4.5"/><path d="M4 16.5L12 21l8-4.5"/></svg>
     </button>
     <button class="icon-btn" id="bMap" aria-label="Map (N)" title="Map (N)" data-kb="map" data-kbt="Map ({k})">
@@ -152,6 +152,10 @@
   <div class="gg-box"><h3>Register to continue</h3><p id="ggText"></p>
     <div class="chips"><button class="chip" id="ggReg">Register</button><button class="chip" id="ggLater">Not now</button></div></div>
 </div>
+<div id="presets" class="panel" hidden role="dialog" aria-label="Presets">
+  <div class="pn-head"><span class="pn-t">Presets</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="prBody"></div>
+</div>
 <div id="versions" class="panel" hidden role="dialog" aria-label="Versions">
   <div class="pn-head"><span class="pn-t">Versions</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="chips pn-tabs" id="vrTabs"></div>
@@ -214,6 +218,7 @@
   <div class="snd-sub">Your voice (skill shouts)</div>
   <div class="chips" id="hvChips"><button class="chip" data-hv="auto">Match me</button><button class="chip" data-hv="m">Male</button><button class="chip" data-hv="f">Female</button><button class="chip" data-hv="off">Silent</button></div>
   <button id="sMute" class="chip snd-mute">Sound on</button>
+  <button id="sVer" class="chip snd-mute" title="What is in each version of the game">Versions: what is new</button>
   <button id="sStuck" class="chip snd-mute" title="Stuck in a rock or a corner? Same as typing /stuck in chat">Stuck? Go to the nearest village</button>
   <div class="snd-sub snd-sec">Graphics</div>
   <div class="chips" id="gfxChips"><button class="chip" data-gfx="light">Light</button><button class="chip" data-gfx="medium">Medium</button><button class="chip" data-gfx="">Standard</button><button class="chip" data-gfx="high">High</button></div>
