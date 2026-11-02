@@ -34,7 +34,8 @@
     "32-testroom.css",
     "33-puzzles.css",
     "34-presets.css",
-    "32-ult.css"
+    "32-ult.css",
+    "35-movement.css"
   ],
   "shared": [
     "math.js",
@@ -105,6 +106,7 @@
     "colours.js",
     "cave.js",
     "ult.js",
+    "movement.js",
     "presets.js",
     "gem-sources.js",
     "side-quests.js",
@@ -208,6 +210,7 @@
     "colours.js",
     "cave.js",
     "ult.js",
+    "movement.js",
     "presets.js",
     "cave-zone.js",
     "cave/methods.js",
@@ -503,6 +506,7 @@
     "net/client.js",
     "cave/slot.js",
     "ult/slot.js",
+    "movement/slot.js",
     "ult/popup.js",
     "combat/boss-dungeon.js",
     "net/remote.js",

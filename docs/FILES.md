@@ -41,6 +41,7 @@ styles
   33-puzzles.css                     Puzzles (puzzles/panel.js, rootlines.js, ice.js, scrolls.js): the board panel, the pad, the chest window, the Sigil track
   34-presets.css                     Presets panel (economy/presets.js): ten cards in a grid, the worn one highlighted, an empty one dimmed
   32-ult.css                         The set burst (5th slot): its action-bar tile, the cast popup card and the skills panel row (game/ult/slot.js, popup.js)
+  34-movement.css                    Movement slot: the movement slot's tile (#abMov) and its tab in the skills panel (game/movement/slot.js)
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -111,6 +112,7 @@ shared
   colours.js                         Premium colours (version 3.3): 48 extra colours for everything but the skin, 500 gems each, bought once for the whole account; the favourites list; what a look may wear. Pure.
   cave.js                            The Deep Cave, shared rules: the 4th skill slot (opens at level 23), the charge that pays for it, the registry of cave skills (defineCaveSkill) and their validation
   ult.js                             The 5th skill slot, the set burst ("Burst"): its constants, the registry ULT_SKILLS filled by each skill set's `ult` entry, its validation, the 3-of-7 ownership rule and the fixed cooldown
+  movement.js                        Movement skills (the movement slot below the passives): common skills, free, in no skill set: a registry of six, the slot's level, the tuning numbers
   presets.js                         Loadout presets: ten saved setups of the eight skills, the soul and the equipment (each optionally linked to one of ten outfit slots), and the outfit slot count
   gem-sources.js                     Free ways to earn gems: the pay of main and side quest steps, the daily quest set (UTC), the placeholder ad watch, and the achievements list
   side-quests.js                     Side quests (SQ): six chains of linked, objective-based steps, each leading to a land's second boss (Carapax, Kyuubi, Vetrmaw, the Sand Wyrm) or through the Gloamhorn (Captain Dredge, then the Gloam Warden); rewards are resources, a little XP and a cosmetic at each chain's end. Pure.
@@ -240,6 +242,7 @@ server
   colours.js                         Premium colours on the server: buying one for PREM_PRICE gems (gear.pc, for every piece of the account) and saving the favourites list (gear.fav)
   cave.js                            The Deep Cave on the server: the 4th slot's charge (earned by casts that hit, a boss fight sets it), casting the equipped cave skill, equipping, and sanitizing gear.cave
   ult.js                             The 5th skill slot on the server (the set burst): owning it, wearing it, the cast with its fixed cooldown, and the 5 s stun with its 50 s per-enemy lock
+  movement.js                        Movement slot (server): wear or take off a movement skill (the choice is saved in the loadout; the movement itself is the client's)
   presets.js                         Loadout presets (server): save the eight skills, the soul and the equipment of the worn class into one of ten slots, wear one instantly anywhere outside a boss fight, raid, the Proving Isle or a dungeon
   cave-zone.js                       The Deep Cave's floors on the server: the camps and their monsters, walls for hikers and monsters (setPos, dashes, steering round corners, line of sight), the lift between the surface and the floors, waking on a floor after a knock-out
   cave/methods.js                    The Deep Cave's eight methods on the server, the shared part: every player's progress on the floor they stand on, the 10-minute cooldown, a completed method paying its skill (or Echo Shards), the state message to the client, the HUD line
@@ -570,6 +573,7 @@ game
   net/client.js                      Client side of the protocol: hello, welcome, snapshots, events -> views, effects and UI; position updates
   cave/slot.js                       The Deep Cave, client side of the 4th slot: the action-bar tile and its charge bar, casting it, the skills panel's cave row and tab (equip / take off), the server's charge message
   ult/slot.js                        The set burst, client side of the 5th slot: the action-bar tile and its cooldown, casting it, the boost glow, the skills panel's Burst row and tab (equip / take off), the server's ult, ubo and ultget messages
+  movement/slot.js                   Movement slot, client side: the six movement skills at work (double jump, glide, swift dash, sprint, leap, backflip), the action-bar tile #abMov, the skills panel's slot below the passives and its tab
   ult/popup.js                       The set burst's popup: a short card over the centre-top while it is cast, the set's emblem large behind the character's gem-shop picture, in the set's colours
   combat/boss-dungeon.js             The dungeon bosses on the client: their defs in the roster lookup, what the boss bar's number means for each (dish, puffballs, lamps), Haugbui's lamps going dark and lit again, the relight channel's cast bar, and the gloom of his blackout
   net/remote.js                      Other players: avatars built from their look and gear, smoothed movement, attack animations, name tags

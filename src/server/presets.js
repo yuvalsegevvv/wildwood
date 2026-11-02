@@ -8,7 +8,7 @@ function prSanitize(g){
     const cls=CLASSES[e.cls]?e.cls:'warrior', sk={}; for(const sl of SLOTS) if(e.sk&&typeof e.sk[sl]==='string'&&SKILLS[e.sk[sl]]) sk[sl]=e.sk[sl];
     const pass=[null,null,null]; if(Array.isArray(e.pass)) for(let j=0;j<PASSIVE_SLOTS;j++) if(typeof e.pass[j]==='string'&&PASSIVES[e.pass[j]]) pass[j]=e.pass[j];
     out.push({n:cleanName(e.n).slice(0,PR_NAME_MAX),cls,eq,sk,pass,ult:typeof e.ult==='string'&&ultDef(e.ult)?e.ult:null,cave:typeof e.cave==='string'&&caveSkillDef(e.cave)?e.cave:null,
-      soul:ELEMS[e.soul]?e.soul:'basic',of:clampInt(e.of,-1,PR_OUTFITS-1,-1)});
+      mov:typeof e.mov==='string'&&mvDef(e.mov)?e.mov:null,soul:ELEMS[e.soul]?e.soul:'basic',of:clampInt(e.of,-1,PR_OUTFITS-1,-1)});
   }
   return out;
 }
@@ -24,7 +24,7 @@ function prSaveP(p,i,name,of){
   if(!Number.isInteger(i)||i<0||i>=PR_COUNT) return;
   const g=p.gear, S=g.skills, cls=clsOfP(p), L=prListP(p), old=L[i], eq={};
   for(const k in g.eq) if(g.eq[k]) eq[k]=g.eq[k];
-  L[i]={n:cleanName(name||(old&&old.n)||'Preset '+(i+1)).slice(0,PR_NAME_MAX),cls,eq,sk:Object.assign({},S.eq[cls]),pass:S.pass.slice(0,PASSIVE_SLOTS),ult:S.ult||null,cave:S.cave||null,soul:g.soul,of:clampInt(of,-1,PR_OUTFITS-1,-1)};
+  L[i]={n:cleanName(name||(old&&old.n)||'Preset '+(i+1)).slice(0,PR_NAME_MAX),cls,eq,sk:Object.assign({},S.eq[cls]),pass:S.pass.slice(0,PASSIVE_SLOTS),ult:S.ult||null,cave:S.cave||null,mov:S.mov||null,soul:g.soul,of:clampInt(of,-1,PR_OUTFITS-1,-1)};
   p.dirty=true; toastTo(p.id,'Saved preset '+(i+1),'good');
 }
 function prWearP(p,i){
@@ -45,6 +45,7 @@ function prWearP(p,i){
   for(let j=0;j<PASSIVE_SLOTS;j++) S.pass[j]=np[j];
   S.ult=e.ult&&ultOwned(S,g.cave,e.ult)&&p.level>=ULT_LV?e.ult:null; if(e.ult&&!S.ult) skipped++;
   S.cave=e.cave&&Object.prototype.hasOwnProperty.call(g.cave.own,e.cave)&&p.level>=CAVE_SLOT_LV?e.cave:null; if(e.cave&&!S.cave) skipped++;
+  S.mov=e.mov&&mvDef(e.mov)&&p.level>=MV_SLOT_LV?e.mov:null; if(e.mov&&!S.mov) skipped++;   // movement: the movement slot
   if(p.level>=SOUL_LV&&e.soul!==g.soul&&ELEMS[e.soul]) g.soul=e.soul;
   recalcP(p); p.dirty=true; ev('pgear',p.id,g.eq); ev('prwear',p.id,i,e.of);
   toastTo(p.id,'Wearing '+e.n+(skipped?' ('+skipped+' item'+(skipped>1?'s':'')+' no longer available)':''),skipped?'':'good');
