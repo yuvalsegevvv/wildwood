@@ -12,8 +12,9 @@ function openRolePanel(n){ const r=n.def.role; if(r==='weaponsmith'||r==='armore
 function sayLine(n){
   const L=n.def.lines&&n.def.lines.length?n.def.lines:['Hello there.'];
   const quest=mqBusy(n), line=quest?n.mq.shift():L[n.line++%L.length];
-  bName.textContent=n.def.name; bText.textContent=line; bubble.classList.toggle('mq',quest); bubble.classList.remove('lore');
-  if(line[0]!=='(') speakLine(n,line);   // (lines in brackets are what you see, not what they say)
+  const q=mqLineOf(line), sp=q.who&&q.who!=='You'?NPCs.find(m=>m.def.name===q.who||m.def.name.endsWith(' '+q.who)):null;   // (a screenplay line "Wren: ..." is Wren's, whoever you clicked)
+  bName.textContent=q.who==='You'?(NET.name||'You'):(q.who||n.def.name); bText.textContent=q.text; bubble.classList.toggle('mq',quest); bubble.classList.remove('lore');
+  const said=mqSpoken(q.text); if(said&&q.who!=='You') speakLine(sp||n,said);   // (what is in brackets is seen, not said; the hiker's own words are not voiced)
   if(typeof n.def.onTalk==='function'){ try{ n.def.onTalk(n); }catch(e){ console.error(e); } }
 }
 /* lore spots (LORE in shared/main-quest.js): the talk key shows the text in the bubble, over the spot; the server hears of it

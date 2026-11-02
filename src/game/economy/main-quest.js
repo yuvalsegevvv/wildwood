@@ -6,7 +6,15 @@ const mqCur=()=>{ const M=mqG(); return M?MQ[M.s]||null:null; };
 // Odran's cart stands by the village gate from W8 (when he arrives) until V8 (he moves to Hanami's gate), by Rimehold's from F7 until G4, and by Highmark's from G4
 function odranHere(vil){ const M=mqG(); if(!M) return false; return vil===1?M.s>=MQ_BY_ID.W8.i&&M.s<MQ_BY_ID.V8.i:vil===2?M.s>=MQ_BY_ID.V8.i&&M.s<MQ_BY_ID.F7.i:vil===3?M.s>=MQ_BY_ID.F7.i&&M.s<MQ_BY_ID.G4.i:vil===4?M.s>=MQ_BY_ID.G4.i:false; }
 // what a quest villager has to say about the main quest right now (null: nothing, their usual lines)
-function mqLinesFor(n){ const M=mqG(); if(!M||!MQ_NPC_VIL[n.def.id]) return null; const T=mqTalk(M,n.def.id,PL.level,mqNight(dayClock)); return T.lines.length?T:null; }
+/* The script writes a scene as a screenplay ("Wren: ...", "(She nods.) Tansy: ..."). One bubble holds one speaker: a line is cut at every "Name: " into
+   its own line, and the bubble then wears that name (sayLine, village/talking.js). Narration in brackets stays a line of its own. */
+const MQ_SPEAKER_NAMES='Tansy|Wren|Dunstan|Torgeir|Pip|Morrow|Linnea|Pell|Aldric|Maren|Greta|Bram|Oskar|Hollen|Ambrose|Odran|Tomas|Daisuke|Kaede|You';
+const MQ_SPEAKER_CUT=new RegExp('\\s+(?=(?:'+MQ_SPEAKER_NAMES+'): )'), MQ_SPEAKER_DIR=new RegExp('^\\((?:'+MQ_SPEAKER_NAMES+'),[^)]*\\)\\s*([^(].*)$'), MQ_SPEAKER_OF=new RegExp('^('+MQ_SPEAKER_NAMES+'): ([\\s\\S]*)$');
+function mqSplitLines(list){ const out=[]; for(const line of list||[]){ let s=String(line); const d=s.match(/^\((\w+),/); if(d&&MQ_SPEAKER_DIR.test(s)) s=d[1]+': '+s.match(MQ_SPEAKER_DIR)[1]; for(const part of s.split(MQ_SPEAKER_CUT)) if(part) out.push(part); } return out; }
+// a line's speaker and what is said, and what the speaking voice reads (stage directions in brackets are seen, not said)
+function mqLineOf(line){ const m=MQ_SPEAKER_OF.exec(line); return m?{who:m[1],text:m[2]}:{who:null,text:line}; }
+const mqSpoken=text=>text[0]==='('&&text.indexOf(')')===text.length-1?'':text.replace(/\([^)]*\)\s*/g,'').trim();
+function mqLinesFor(n){ const M=mqG(); if(!M||!MQ_NPC_VIL[n.def.id]) return null; const T=mqTalk(M,n.def.id,PL.level,mqNight(dayClock)); return T.lines.length?Object.assign({},T,{lines:mqSplitLines(T.lines)}):null; }
 // the mark over a villager: ! a step to take (or a part to do with them), ? a step to hand in
 function mqMark(id){
   const M=mqG(), s=mqCur(); if(!s) return '';
@@ -63,7 +71,8 @@ function mqLogRow(){
   const T=mqTarget(), where=T&&!(M.st===0&&PL.level<mqGate(s))?(Math.hypot(T.x-P.x,T.z-P.z)<12?'':' &middot; '+Math.round(Math.hypot(T.x-P.x,T.z-P.z))+' m '+dirWord(T.x-P.x,T.z-P.z)):'';
   // the first steps keep their how-to under the objective while they run (the toast that brought it fades, and a new player reads it when they need it)
   const tip=M.st===1&&s.tip&&M.s<=MQ_BY_ID.W18.i?`<small class="ql-tip">${s.tip}</small>`:'';
-  return `<div class="ql mq${M.st===2?' ok':''}"><b>${s.title}</b><span>${what}${where}</span>${tip}</div>`;
+  const hard=M.st===1&&s.hard&&PL.level<s.hard?`<small class="ql-tip">Wise at level ${s.hard}. Too hard right now? Explore, hunt and take board notices to grow stronger first.</small>`:'';   // (a step meant to be met by a hiker who grew on their own)
+  return `<div class="ql mq${M.st===2?' ok':''}"><b>${s.title}</b><span>${what}${where}</span>${tip}${hard}</div>`;
 }
 /* The main quest tab of the quest panel (economy/quests.js): the step, what its giver asked, every part with a picture of the monster it names (ui/mon-pics.js),
    a bar and where to go, then the reward and the how-to. Text only from shared data, never from a player. */

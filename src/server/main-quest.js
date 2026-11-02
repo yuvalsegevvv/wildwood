@@ -7,11 +7,16 @@ const mqOf=p=>p.gear.mq;
 let mqHush=false;   // set while a talk that also hands the step in is applied
 const mqStep=p=>MQ[mqOf(p).s]||null;
 function mqToast(p,text,kind){ toastTo(p.id,text,kind||'mq'); }
+const mqDot=t=>/[.?!…]$/.test(t)?' ':'. ';   // (a title that ends in a question mark needs no full stop after it)
+// a step with a `hard` level (shared/main-quest.js) is meant to be met by a hiker who went and grew on their own: say so, once at the start and after a knock-out
+const MQ_HARD_TEXT='Hard for your level yet: explore, hunt and take notices from the board to grow stronger, then come back to it.';
+function mqHardHintP(p){ const step=mqStep(p), M=mqOf(p); if(!step||M.st!==1||!step.hard||p.level>=step.hard) return; const now=Date.now(); if(p.mqHintAt&&now-p.mqHintAt<45000) return; p.mqHintAt=now; mqToast(p,step.title+': '+MQ_HARD_TEXT,'bad'); }
 function mqStartP(p){
   const M=mqOf(p), step=mqStep(p); if(!step) return;
   M.st=1; M.n=step.parts.map(()=>0); M.h=0; p.dirty=true;
   if(step.gift==='three'){ const id=randomItem(tierFor(p.level),0); for(let k=0;k<MERGE_COUNT;k++) addItemP(p,id,true); }
-  mqToast(p,'Main quest: '+step.title+(step.tip?'. '+step.tip:''));
+  mqToast(p,'Main quest: '+step.title+(step.tip?mqDot(step.title)+step.tip:''));
+  if(step.hard&&p.level<step.hard){ p.mqHintAt=Date.now(); mqToast(p,MQ_HARD_TEXT,'bad'); }
   ev('mq',p.id,step.id,1);
   mqAutoP(p);
 }
@@ -30,7 +35,7 @@ function mqProgressP(p,i,add,quiet){
 function mqCompleteP(p,chained){   // chained: the next step starts in the same talk (its own toast says so)
   const M=mqOf(p), step=mqStep(p); if(!step||M.st!==2) return;
   const r=mqReward(step); p.gear.coins+=r.coins; gainExpP(p,r.xp,null);
-  mqToast(p,'Main quest done: '+step.title+'. '+r.xp+' XP and '+r.coins+' coins','good'); ev('mq',p.id,step.id,2); gsGemP(p,GEM_MQ_STEP,'main quest');   // gems
+  mqToast(p,'Main quest done: '+step.title+mqDot(step.title)+r.xp+' XP and '+r.coins+' coins','good'); ev('mq',p.id,step.id,2); gsGemP(p,GEM_MQ_STEP,'main quest');   // gems
   mqRemoveGreyP(p);
   M.s++; M.st=0; M.n=[]; M.h=0; p.dirty=true;
   const nx=mqStep(p);

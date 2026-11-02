@@ -203,7 +203,7 @@ function hurtP(p,v,m,by){   // returns the damage taken; by: the fighter who hit
   if(p.shield&&p.shield.until>S.t&&p.shield.v>0){ const a=Math.min(v,p.shield.v); p.shield.v-=a; v-=a; if(p.shield.v<=0&&!p.shield.done){ p.shield.done=true; ssShieldBreakS(p); } if(v<=0){ p.lastHit=S.t; return 0; } }   // skillsets: a shield soaks the hit first
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){
-    p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id); gsStatP(p,'die');   // gems: the knock-out counter
+    p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id); gsStatP(p,'die'); mqHardHintP(p);   // gems: the knock-out counter; main quest: a step that is hard for your level says to explore first
     for(const mm of MONS) if(mm.tgt===p.id){ mm.aggro=false; mm.tgt=null; mm.state='return'; mm.pendingHit=-1; }
     if(p.pv) pvpDownS(p,by);   // pvp: knocked out on the island
   }
@@ -219,7 +219,7 @@ function autoEquipP(p,slot){
 function unlockSkillsP(p,slot){
   autoEquipP(p,slot);
   const s=SKILLS[p.gear.skills.eq[clsOfP(p)][slot]];
-  toastTo(p.id,(slot==='burst'?'Burst slot unlocked! ':'Skill slot unlocked! ')+(s?s.name:'Your new ability')+' is ready ('+(slot==='burst'?'R':'Q')+'). Aldric, the trainer at the well, teaches more.','good');
+  toastTo(p.id,(slot==='burst'?'Power slot unlocked! ':'Skill slot unlocked! ')+(s?s.name:'Your new ability')+' is ready ('+(slot==='burst'?'R':'Q')+'). Aldric, the trainer at the well, teaches more.','good');
   ev('skillslot',p.id,slot);
 }
 // level 13 (PASSIVE_LV): the passives open, with Vitality (free) in the first slot
