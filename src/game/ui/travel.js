@@ -9,6 +9,7 @@ const TR_ICON={
   glasswell:'<circle cx="12" cy="9" r="4"/><path d="M12 1v2M3 9h2M19 9h2M5.6 2.6L7 4M18.4 2.6L17 4"/><path d="M2 20c3-3 6-3 10 0s7 3 10 0"/>',
   wraithwick:'<path d="M12 2l3 6h-6z"/><path d="M9 8l-1 14h8L15 8"/><path d="M3 20c3-2 6-2 9 0s6 2 9 0"/>',
   tallgrass:'<path d="M12 21V11"/><path d="M4 11c2-4 6-5 8-5s6 1 8 5c-3-1-5-1-8-1s-5 0-8 1z"/><path d="M8 21l2-5M16 21l-2-5"/>',
+  cavemouth:'<path d="M3 21V12a9 9 0 0118 0v9"/><path d="M7 21v-6a5 5 0 0110 0v6"/><path d="M10 10.5v1.5M14 10.5v1.5M12 9v2"/>',
   coralhaven:'<path d="M3 15c3 3 6 3 9 0s6-3 9 0"/><path d="M12 14V4l6 7z"/><path d="M12 4L7 11h5"/>'
 };
 let TR_ANY=false;   // opened from the map: travel from where you stand
@@ -19,7 +20,7 @@ function renderTravel(){
   let h=TR_ANY?'<p class="tr-intro">Call on the circles from where you stand. Choose a village you have walked to.</p><div class="tr-grid">':'<p class="tr-intro">The old stones hum under your feet. Choose where they carry you.</p><div class="tr-grid">';
   for(const C of CIRCLES){
     const cur=here===C.V, open=C.open(g);
-    h+=`<button class="tr-dest${cur?' here':''}" data-to="${C.id}" ${cur||!open?'disabled':''}><span class="tr-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${TR_ICON[C.id]}</svg></span><b>${C.name}</b><small>${C.land} · levels ${C.lv}</small><span class="tr-state">${cur?'You are here':open?'Travel here':C.hint}</span></button>`;
+    h+=`<button class="tr-dest${cur?' here':''}" data-to="${C.id}" ${cur||!open?'disabled':''}><span class="tr-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${TR_ICON[C.id]||'<circle cx="12" cy="12" r="8"/>'}</svg></span><b>${C.name}</b><small>${C.land} · levels ${C.lv}</small><span class="tr-state">${cur?'You are here':open?'Travel here':C.hint}</span></button>`;
   }
   h+='</div>';
   $('#trBody').innerHTML=h;

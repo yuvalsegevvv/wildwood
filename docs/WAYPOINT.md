@@ -13,6 +13,7 @@ Added after a blind playtest (11/2026): a new player could not find the first vi
 
 - `cvwPick()`: a method in progress points at its next spot (the altar while carrying the glow crystal, the shrine in the silent chamber, the open vault, a running gem mole, the nearest missing mural piece or the wall, an uncracked geode, a vein / herb / the anvil for crafting). Otherwise the nearest method place that is not resting and still teaches a skill you do not own (a place that only pays Echo Shards counts three times as far). G (the mole) has no fixed place.
 - The HUD line `#cvMethod`: the server's sentence (`caveMHudP`) if it has one, else "Next: <method> (teaches <skill>). <how>"; either way followed by the distance and direction (`cvwHud`, refreshed twice a second by `cvwFrame`).
+- **Track** (a button on each method row of the board, in the lift window and the skills panel's Cave tab): that method on its floor is the one the guide and the marker point at while it is not resting (`CVW.track`, `cvwSetTrack`, kept in this browser as `wildwood-cavetrack`); press it again to stop.
 - The cave maps: a letter on each method's place (gold: teaches a skill you do not own, with its name on the full map; grey: Echo Shards only), a ring round the guide's pick (`cvwMapMarks`).
 
 ## Travel from anywhere

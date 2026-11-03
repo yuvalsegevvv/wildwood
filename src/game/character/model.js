@@ -63,7 +63,8 @@ function adoptLook(l){
   if(!l||typeof l!=='object'||(l.sex!=='male'&&l.sex!=='female')) return;
   LOOK=fullLook(l); LOOK_SAVED=Object.assign({},LOOK); LOOK_KEPT=true; rebuildHiker();
 }
-function saveLookLocal(){ LOOK_KEPT=true; try{ localStorage.setItem('wildwood-look-v1',JSON.stringify(LOOK)); }catch(_){} }
+function saveLookLocal(){ if(typeof NET!=='undefined'&&NET&&NET.test) return; LOOK_KEPT=true; try{   // testworld: nothing of the test world is kept in this browser
+  localStorage.setItem('wildwood-look-v1',JSON.stringify(LOOK)); }catch(_){} }
 /* Saving a look. While the editor shows a look that wears a crafted piece you have not made (a try-on, cosLocked in shared/cospieces.js) nothing is saved or sent: LOOK_SAVED stays the
    last complete look, the one the world sees, and the editor reverts to it on request (ui/character-editor.js edRevert). */
 function saveLook(){ if(typeof edTrying==='function'&&edTrying()) return; LOOK_SAVED=Object.assign({},LOOK); saveLookLocal(); if(typeof netLookChanged==='function') netLookChanged(); }

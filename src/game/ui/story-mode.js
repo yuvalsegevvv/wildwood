@@ -16,7 +16,7 @@ function storyCut(lines){
 function storyRender(){ document.querySelectorAll('[data-story]').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.story==='skip')===STORY_SKIP)); }
 function storySet(skip){
   STORY_SKIP=!!skip;
-  try{ if(STORY_SKIP) localStorage.setItem('wildwood-story','skip'); else localStorage.removeItem('wildwood-story'); }catch(_){}
+  if(!(typeof NET!=='undefined'&&NET&&NET.test)) try{ if(STORY_SKIP) localStorage.setItem('wildwood-story','skip'); else localStorage.removeItem('wildwood-story'); }catch(_){}
   if(STORY_SKIP){ try{ stopSpeech(); svCineEnd(); }catch(_){} }
   storyRender();
 }
