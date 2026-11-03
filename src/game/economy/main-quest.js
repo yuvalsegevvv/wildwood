@@ -15,11 +15,11 @@ function mqSplitLines(list){ const out=[]; let cine=''; for(const line of list||
     const d=s.match(/^\((\w+),/); if(d&&MQ_SPEAKER_DIR.test(s)) s=d[1]+': '+s.match(MQ_SPEAKER_DIR)[1]; for(const part of s.split(MQ_SPEAKER_CUT)) if(part){ out.push(cine+part); cine=''; } } return out; }
 // a line's speaker and what is said, and what the speaking voice reads (stage directions in brackets are seen, not said)
 function mqLineOf(line){ if(line.startsWith('@cine ')){ const i=line.indexOf('\n'); try{ svCineStart(line.slice(6,i<0?undefined:i)); }catch(_){} line=i<0?'':line.slice(i+1); } const m=MQ_SPEAKER_OF.exec(line); return m?{who:m[1],text:mqSubst(m[2])}:{who:null,text:mqSubst(line)}; }
-/* how people address you: {lad} {boy} {brother} {sir} follow the gender you picked in the editor; {name} is your account's name when you have registered and is left out, with its comma, when you have not ("Well done, {name}." -> "Well done.") */
+/* how people address you: {lad} {boy} {brother} {sir} follow the gender you picked in the editor; {name} is your in-game name (a guest has their default name; it is left out, with its comma, only when there is none) ("Well done, {name}." -> "Well done.") */
 const MQ_GENDERED={lad:['lad','lass'],boy:['boy','girl'],brother:['brother','sister'],sir:['sir','miss']};
 function mqSubst(t){
   t=String(t); if(t.indexOf('{')<0) return t;
-  const g=LOOK&&LOOK.sex==='female'?1:0, name=(typeof NET!=='undefined'&&NET&&NET.user)||'';
+  const g=LOOK&&LOOK.sex==='female'?1:0, name=(typeof NET!=='undefined'&&NET&&NET.name)||'';
   t=t.replace(/\{(lad|boy|brother|sir)\}/g,(m,k)=>MQ_GENDERED[k][g]);
   if(name) return t.replace(/\{name\}/g,name);
   return t.replace(/^\{name\},? ?(\S)/,(m,c)=>c.toUpperCase()).replace(/,? \{name\}/g,'').replace(/\{name\}/g,'');

@@ -445,11 +445,11 @@ const el=s=>document.querySelector(s);
       ok('a dialogue choice stops the scene and waits for the pick',!!G.svPickOn()&&G.svPickOn().opts.length===3&&resumed===0&&q.length===1);
       G.svChoicePick(0); ok('...the pick is spoken as YOU, answered, and the scene goes on',!G.svPickOn()&&resumed===1&&q[0]==='You: Say A'&&q[1]==='Wren: reply'&&q[2]==='Wren: after');
       G.svChoiceOpen('@pick (Say nothing) >> (a look)',q,()=>resumed++); G.svChoicePick(0); ok('...a gesture option is narrated, not said',q[0]==='(Say nothing)'&&q[1]==='(a look)');
-      const was=G.LOOK.sex, user=G.NET.user; G.LOOK.sex='female'; G.NET.user='';
+      const was=G.LOOK.sex, user=G.NET.name; G.LOOK.sex='female'; G.NET.name='';
       ok('gendered words follow the gender you picked',G.mqSubst('Good, {lad}. Yes, {brother}.')==='Good, lass. Yes, sister.');
-      ok('your name is left out, with its comma, when you have not registered',G.mqSubst('Well done, {name}.')==='Well done.'&&G.mqSubst('{name}, listen.')==='Listen.'&&G.mqSubst('Ah, {name}. Hm.')==='Ah. Hm.');
-      G.NET.user='Ana'; ok('...and said when you have',G.mqSubst('Well done, {name}.')==='Well done, Ana.');
-      G.LOOK.sex=was; G.NET.user=user; G.storySet(true); G.svChoiceOpen('@pick A | B',[],()=>resumed++); ok('objectives only: a choice is skipped',!G.svPickOn()&&G.storyCut(['@pick A | B','Tansy: x']).length===1); G.storySet(false);
+      ok('with no name at all it is left out, with its comma',G.mqSubst('Well done, {name}.')==='Well done.'&&G.mqSubst('{name}, listen.')==='Listen.'&&G.mqSubst('Ah, {name}. Hm.')==='Ah. Hm.');
+      G.NET.name='Ana'; ok('...and said when you have one (a guest has their default name)',G.mqSubst('Well done, {name}.')==='Well done, Ana.');
+      G.LOOK.sex=was; G.NET.name=user; G.storySet(true); G.svChoiceOpen('@pick A | B',[],()=>resumed++); ok('objectives only: a choice is skipped',!G.svPickOn()&&G.storyCut(['@pick A | B','Tansy: x']).length===1); G.storySet(false);
     }catch(e){ errs.push(String(e&&e.stack||e)); G.storySet(false); }
     ok('dialogue choices and names work without throwing',errs.length===0,errs[0]); }
   c.stop(); console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

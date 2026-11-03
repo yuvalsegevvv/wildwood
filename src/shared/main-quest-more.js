@@ -250,9 +250,38 @@ const MQ_MORE_D={
   W16a:{done:{post:["Pell: Morrow wants everyone at the Hem for the dress rehearsal. The practice grove. She was very clear. She doesn't ask twice."]}}
 };
 
+/* The fifth pass: the hiker speaks more (reactions, jokes and questions at the edges of the scenes; "{name}" is the player's in-game name, "{lad}" their gender's word: see mqSubst in game/economy/main-quest.js). Applied after the bridges. */
+const MQ_MORE_E={
+  P3:{intro:{post:["You: Mine's for hiding behind scarecrows. Is that a knack?","Tansy: Terrain, {name}. It's called terrain."]}},
+  P4:{say:[
+    {pre:["(Tucked into the braid of the old crown are two ribbons, faded almost to nothing: one red, one blue.)","You: Tansy. Your ribbon. And mine.","Tansy: (from below) ...So they are. Nine years old, the pair of us, and Wren giving orders from the haystack."]},
+    {post:["You: (to the scarecrow) Hob, I'm sorry. This is going to hurt me more than it hurts you.","Tansy: He's straw, {name}. He's had worse from the crows."]}]},
+  W1:{say:[{pre:["You: Linnea. Please. Tell me what it is.","Linnea: ...Sit. Your hands are shaking."]},{}]},
+  W6:{offer:{post:["You: Hunts. I've never hunted anything bigger than a rat in the barley.","Maren: Then you'll start with rats. Everyone does."]}},
+  W7b:{offer:{post:["You: Is it hard, brewing?","Ambrose: Hard? It's cooking with consequences. There now."]}},
+  W8:{offer:{post:["You: What's the oddest thing you've ever bought?","Odran: A button from the other side of the sea. Which I sold for a very fair price and a very odd look."]}},
+  W9a:{say:[{post:["You: (quietly, to the boy) I'm {name}. I won't hurt you.","(He does not answer. But he does not run.)"]}]},
+  W9c:{say:[{post:["You: Wren? Wren, can you hear me?","(A breath. Then the faintest pressure of fingers around yours.)","You: ...There you are."]}]},
+  W9d:{offer:{post:["You: Thornlings in Tansy's field. Fine. Weeds are the one enemy I've studied."]}},
+  W10:{done:{pre:["You: I felt it. A pull, like barley bending in the wind.","Aldric: That's it, {name}. That's the roots answering. Tell nobody, and do it again tomorrow."]}},
+  W11b:{offer:{post:["You: A farmer who mines. Tansy, I'm going to need a bigger bag."]}},
+  W13:{offer:{post:["You: Count with you? I'm a barley farmer. I count sacks.","Dunstan: Then count beats like sacks. Four to a row."]}},
+  W14:{offer:{post:["You: Whose ribbon was it, before it was a goblin's?","Dunstan: That's the question. Isn't it."]}},
+  W15:{offer:{post:["You: Why the grave first? Why not the Circle?","Morrow: Because you ought to see what the grey costs before you walk into it. It's cheaper to be shown than told."]}},
+  W16:{say:[{post:["You: What does it say? The Warden, in the roots?","Pip: Stop. It says stop. Over and over, like a baby crying. Nobody listens to the words."]}]},
+  W16a:{say:[{post:["You: Pell. Why do you keep telling people about the boat?","Pell: Because somebody ought to know it's there. Even if nobody believes me."]}]},
+  W16b:{say:[{pre:["You: Is everyone ready? Is anyone?","Dunstan: I've been ready since Tuesday.","Torgeir: He's been terrified since Tuesday."]}]},
+  P5:{intro:{post:["You: Mushrooms that pop. Of course they do."]}},
+  W2:{done:{post:["You: I don't think anything is nothing right now."]}},
+  W11:{offer:{post:["You: Three of the same, one better. That's the best deal I've heard since the market.","Greta: It's not a deal. It's arithmetic with fire."]}},
+  W12:{offer:{post:["You: Circles. Right. And if I'm standing in one?","Torgeir: Then you've stopped listening to me."]}},
+  W16b:{done:{post:["You: Pip. You don't have to come.","Pip: I know. It's calling anyway."]}},
+  W18:{say:[{},{},{post:["You: Dunstan. Torgeir. Don't die before I find you.","Torgeir: We're old and ugly, {name}. We outlast most things."]}]}
+};
+
 function mqApplyMore(){
   const add=(arr,o)=>{ if(!o) return arr||[]; arr=arr||[]; const pre=Array.isArray(o)?[]:o.pre||[], post=Array.isArray(o)?o:o.post||[]; return pre.concat(arr,post); };
-  for(const step of MQ) for(const MM of [MQ_MORE,MQ_MORE_B,MQ_MORE_C,MQ_MORE_D]){
+  for(const step of MQ) for(const MM of [MQ_MORE,MQ_MORE_B,MQ_MORE_C,MQ_MORE_D,MQ_MORE_E]){
     const M=MM[step.id]; if(!M) continue;
     for(const k of ['intro','offer','done']) if(M[k]) step[k]=add(step[k],M[k]);
     if(M.say){ let i=0; for(const part of step.parts||[]){ if(!part.say) continue; const m=M.say[i++]; if(m&&(m.pre||m.post)) part.say=add(part.say,m); } }
