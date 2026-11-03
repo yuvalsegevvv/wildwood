@@ -27,6 +27,7 @@ function updatePlayer(dt){
   if(dashT>0){ dashT-=dt; P.vx=dashDx*mvDashV(24); P.vz=dashDz*mvDashV(24); }
   const ox=P.x, oz=P.z;
   P.x+=P.vx*dt; P.z+=P.vz*dt; pfxStep(dt);
+  skmMove(dt);   // skillvis: a skill's lunge, recoil or hop
   nearCols(P.x,P.z,(cx,cz,r)=>{ const dx=P.x-cx, dz=P.z-cz, d=Math.hypot(dx,dz), m=r+0.32; if(d<m && d>1e-4){ P.x=cx+dx/d*m; P.z=cz+dz/d*m; } });
   pushOutBoxes(P,0.32);
   for(const m of MONS){ if(m.dead||!m.g.visible) continue; const dx=P.x-m.x, dz=P.z-m.z, d=Math.hypot(dx,dz), mm=m.T.rad+0.32; if(d<mm && d>1e-4){ P.x=m.x+dx/d*mm; P.z=m.z+dz/d*mm; } }

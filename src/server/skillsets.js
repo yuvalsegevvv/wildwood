@@ -183,6 +183,7 @@ function ssTriggerS(p,kind,ctx){
     if(r.chance!==undefined&&Math.random()>=r.chance) continue;
     if(r.icd) icd[r.id]=S.t+r.icd*ultIcdK(p,r.id);   // ult: a boosted passive waits less
     ssDepth++; try{ ssRunRowS(p,p.ultB?ultRowK(p,r):r,ctx); } finally{ ssDepth--; }
+    if(r.icd||r.chance!==undefined||r.streak||kind==='low'||kind==='shield') ev('proc',p.id,r.id,ctx&&ctx.m?ctx.m.id:0);   // procs: the client shows which bonus fired (a row that fires on every hit is not a proc)
   }
 }
 // tick rows run every icd seconds while the player is in a fight (dealt damage in the last 6 s)

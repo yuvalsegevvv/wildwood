@@ -19,7 +19,7 @@ defineSkillSet({
     2:{bound:'any',
        skill:{any:{name:'Landfall Chant', desc:'A chant that carries over the water: you and your allies within 25 m deal 10% more damage for 10 seconds, and 2% more for each Swell on the enemies near you. A surge of water round you then spends every Swell nearby for extra damage.', cd:14, range:6, mult:1.1, act:['meleni2x',0.7,0.45], anim:'nova',
                    fx:{ring:{r:6, kb:2}, ally:{kind:'might', v:0.10, dur:10, r:25, perMark:{id:'swell', v:0.02, r:8}}, pop:{id:'swell', k:0.5, r:6}}}},
-       passive:{name:'Warm Lagoon', text:'While you fight, you and your allies within 20 m regenerate 1% of maximum health a second (refreshed every 3 s)', on:'tick', icd:3, buff:{kind:'regen', v:0.01, dur:4, r:20}}},
+       passive:{name:'Rising Swell', text:'A kill lifts you and your allies within 15 m: 10% more damage for 5 seconds (at most every 4 s)', on:'kill', icd:4, buff:{kind:'might', v:0.1, dur:5, r:15}}},
     3:{bound:'any',
        skill:{any:{name:'Call the Tide', desc:'Call the tide up round your feet for 8 seconds: you and your allies standing within 9 m get 20% more critical hit chance, 40% more critical damage and 2% health back a second, and the water at its edge batters the enemies there.', cd:45, range:9, mult:0.5, act:['meleni3x',0.9,0.6], anim:'nova',
                    fx:{zone:{r:9, dur:8, every:1, self:true, ally:[{kind:'crit', v:0.20, dur:2.5}, {kind:'critdmg', v:0.40, dur:2.5}, {kind:'regen', v:0.02, dur:2.5}]}}}},

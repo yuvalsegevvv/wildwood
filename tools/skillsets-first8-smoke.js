@@ -62,7 +62,7 @@ ok('Tansy: Wide Berth makes every ring, cone and field 25% wider (the area stat)
 { p.hp=p.maxHp*0.5; x.ssTriggerS(p,'kill',{m:m1}); const crowd=hpOf(p); put(m2,0,-30); put(m3,0,-31); p.ssIcd={}; p.hp=p.maxHp*0.5; x.ssTriggerS(p,'kill',{m:m1}); const alone=hpOf(p);
   ok('Tansy: Steady Hands heals a kill in a crowd (three enemies within 8 m: +2%) and not a kill with nothing near',near(crowd,0.52,0.002)&&near(alone,0.5,0.002),pct(crowd)+' / '+pct(alone)); }
 { put(m1,0,-2); put(m2,3,-3); put(m3,-3,-4); p.ssIcd={}; p.killTs=[]; p.cd={basic:0,skill:10,burst:10}; for(let i=0;i<4;i++) x.ssTriggerS(p,'kill',{m:m1}); tick(3);
-  ok('Tansy: a kill takes 1 s off every cooldown (Windrow), and four kills within 2 s take 4 s more off Gather In (Second Basket); the client is told (cdr)',near(p.cd.skill,5,0.2)&&near(p.cd.burst,9,0.2)&&evs.some(e=>e[0]==='cdr'&&e[1]==='a'&&e[2]==='skill'),p.cd.skill.toFixed(1)+' / '+p.cd.burst.toFixed(1)); }
+  ok('Tansy: a kill takes 1 s off every cooldown (Windrow), and four kills within 2 s take 4 s more off Gather In (Second Basket); the client is told (cdr)',near(p.cd.skill,5,0.2)&&near(p.cd.burst,9,0.2)&&evs.some(e=>e[0]==='cdr'&&e[1]==='a'&&e[2]==='skill')&&evs.some(e=>e[0]==='proc'&&e[1]==='a'&&e[2]==='tansy_b5'),p.cd.skill.toFixed(1)+' / '+p.cd.burst.toFixed(1)+' '+JSON.stringify(evs.filter(e=>e[0]==='proc')[0])); }   // (and the streak row says it fired: proc [pid,rowId,monId])
 { p.hp=p.maxHp; reset(); put(m1,0,-2); put(m2,3,-3); put(m3,-3,-4); x.AREAS.length=0; clear(); }
 
 // ---- Torgeir ----

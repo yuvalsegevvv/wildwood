@@ -49,6 +49,7 @@ function ssDefineLook(id,spec){
   for(const m of spec.mote) if(!SSL_SHAPES[m.sh]) return bad('unknown shape "'+m.sh+'" (known: '+Object.keys(SSL_SHAPES).join(' ')+')');
   if(spec.proj&&spec.proj.sh&&!SSL_SHAPES[spec.proj.sh]) return bad('unknown projectile shape "'+spec.proj.sh+'"');
   const L=Object.assign({id,cols:[S.pal.main,S.pal.accent,S.pal.glow],hot:S.pal.glow,hot2:S.pal.accent,pal:S.pal,decal:'dial',zone:{}},spec); L.tw=spec.mote.reduce((a,m)=>a+(m.w||1),0);
+  skvCheckVis(L);   // skillvis: a recipe with an unknown verb or prop is dropped and listed (SKV.bad)
   return (SSL.looks[id]=L);
 }
 function ssLookFor(src){ return typeof src==='string'&&src?SSL.looks[src.split('_')[0]]||null:null; }
@@ -143,17 +144,20 @@ function ssLookSwing(L,s,x,y,z,face,sc,mine){   // a signature skill's swing: it
   if(f.dash) (L.dash||sslDash)(c);
   if(f.proj||f.zone||f.beam||f.chain) (L.muzzle||sslMuzzle)(c);
   (L.util||sslUtil)(c);
+  c.s=s; skvRunRecipe(L,s,'cast',c);   // skillvis: the look's recipe for this skill (waves, props, extra swings)
 }
 function sslCone(c){
   const {L,f,x,y,z,face,sc}=c, C=f.cone, n=C.hits||1;
-  for(let h=0;h<n;h++) spawnArcAt(x,y+(0.8+0.22*h)*sc,z,face+(h-(n-1)/2)*0.28,L.arcCol!==undefined?L.arcCol:L.hot,C.r/2.6);
-  sslSector(L,x,y+0.4*sc,z,face,C.arc,C.r,8+C.r*3*n);
+  const sp=skvPlan(c.s)||{gap:0.12}; skvSwings({n,gap:sp.gap,x,y,z,face,r:C.r,col:L.arcCol!==undefined?L.arcCol:L.hot,sc,mine:c.mine,sparkCol:L.hot2,follow:c.mine?()=>({x:P.x,y:P.y,z:P.z,face:P.face}):null});   // skillvis: one swing after the other
+  for(let h=0;h<n;h++) fxpLater(h*sp.gap,()=>sslSector(L,c.mine?P.x:x,y+0.4*sc,c.mine?P.z:z,c.mine?P.face:face,C.arc,C.r,8+C.r*3));
+  if(C.kb>=5) skvWave(x,z,{shape:'arc',arc:Math.min(1.1,C.arc||0.8),face,r:C.r,h:0.9,life:0.5,col:L.hot,style:'light'});
 }
 function sslRing(c){
   const {L,f,x,z}=c, R=f.ring, pull=R.kb<0;
   sslDecal(L,x,z,R.r,{life:0.6,spin:0.8,inward:pull});
   spawnRingAt(x,c.gy,z,R.r*0.8,L.hot,pull); spawnRingAt(x,c.gy,z,R.r*0.55,L.hot2,pull);
   sslRingMotes(L,x,z,R.r,R.r*3,null,pull);
+  if(R.kb) skvWave(x,z,{shape:'ring',r:R.r,h:Math.min(1.6,0.5+R.r*0.1),life:0.45+R.r*0.03,inward:pull,col:L.hot,style:SKV_EL_STYLE[elOf(c.s)]||'light'});   // skillvis: a ring that shoves or drags is a wave front that travels
 }
 function sslDash(c){
   const {L,x,z,fx,fz,hy}=c;
@@ -175,6 +179,7 @@ function sslAreaIn(A,src){
   A.fill.material.color.setHex(L.hot); A.edge.material.color.setHex(L.hot2); A.fill.material.opacity=0.12;
   A.col=L.hot;
   if(L.zoneStart) L.zoneStart(L,A);
+  { const o=sslWho(A.owner); skvRunRecipe(L,A.skill,'zone',{x:A.x,y:getH(A.x,A.z),z:A.z,face:o?o.face:0,sc:1,mine:A.owner===NET.pid,r:A.r,dur:A.dur}); }   // skillvis
 }
 function ssLookZoneTick(A,dt,k){
   SSL.ub=!!A.ub; try{ sslZoneTickIn(A,dt,k); } finally{ SSL.ub=false; }
@@ -194,11 +199,13 @@ function sslZoneTickIn(A,dt,k){
   }
   if(L.zoneTick) L.zoneTick(L,A,dt,k);
 }
-function ssLookAreaEnd(A){ const L=A.look; if(!L) return; if(A.deco){ A.deco.life=0; } if(L.zoneEnd) L.zoneEnd(L,A); }
+function ssLookAreaEnd(A){ const L=A.look; if(!L) return; if(A.deco){ A.deco.life=0; } if(L.zoneEnd) L.zoneEnd(L,A);
+  { const o=sslWho(A.owner); skvRunRecipe(L,A.skill,'end',{x:A.x,y:getH(A.x,A.z),z:A.z,face:o?o.face:0,sc:1,mine:A.owner===NET.pid,r:A.r}); } }   // skillvis
 // a projectile of a piece: its own body (a shape and a glow, along the flight), a trail, and what happens where it lands
 function ssLookProj(L,kind,src){
   const spec=Object.assign({sh:'ear',c:0,s:0.5,len:1,glow:2},L.proj||{}), g=new THREE.Group();
   const body=new THREE.Mesh(ssGeo(spec.sh),sslMat(sslCol(L,spec.c),0.98,false)); if(!SSL_Z[spec.sh]) body.rotation.x=Math.PI/2; body.scale.set(spec.s*0.6,spec.s*spec.len,spec.s*0.6); g.add(body);
+  if(spec.prop&&SKP_BUILD[spec.prop]){ body.visible=false; const pr=SKP_BUILD[spec.prop](spec.cols&&spec.cols.length?spec.cols.map(q=>sslCol(L,q)):SKP_DEFAULT_COLS); pr.scale.setScalar(spec.s||0.8); pr.rotation.x=Math.PI/2; g.add(pr); }   // skillvis: a shot that is a thing (a powder keg, a spear)
   const gl=new THREE.Mesh(coreGeo,sslMat(sslCol(L,spec.glow),0.6,true)); gl.scale.set(1.6,1.6,spec.len>1?spec.len*2.4:2.4); g.add(gl);
   g.scale.setScalar((L.proj&&L.proj.scale||1)*(ssUbOwn(src)?1.3:1)); if(ssUbOwn(src)) gl.scale.multiplyScalar(1.4); return g;   // ult: a boosted piece's shot is bigger and glows
 }
@@ -208,6 +215,7 @@ function ssLookTrail(L,p,dt){
   if(T) ssPart(T.sh,sslCol(L,T.c),p.pos.x,p.pos.y,p.pos.z,Object.assign({s:T.s||0.18,add:T.add,g:T.g||0,sway:T.sway||0},o)); else ssEmit(L,p.pos.x,p.pos.y,p.pos.z,o);
 }
 function ssLookImpact(L,pos,p,hit){
+  skvRunRecipe(L,SKILLS[p.src]||null,'hit',{x:pos.x,y:pos.y,z:pos.z,face:0,sc:1,mine:false});   // skillvis: what the piece's shot does where it lands
   if(L.impact){ L.impact(L,pos,p,hit); return; }
   sslBurst(L,pos.x,pos.y,pos.z,12,3.2); sslDecal(L,pos.x,pos.z,2.2,{life:0.45,r0:0.4}); spawnRingAt(pos.x,pos.y,pos.z,1.6,L.hot);
 }

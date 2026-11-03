@@ -19,7 +19,7 @@ defineSkillSet({
     2:{bound:'any',
        skill:{any:{name:'Dusk Lent', desc:'Call back every Vigil within 10 m: the dusk rolls over the enemies for damage for each Vigil, and a share of it mends you. The wave also heals you and your allies for 10% of maximum health and shields them for a moment.', cd:12, range:10, mult:1.5, act:['hollis2x',0.7,0.45], anim:'nova',
                    fx:{ring:{r:10}, pop:{id:'vigil', k:0.6, r:10, heal:0.5}, heal:{v:0.10, r:20}, shield:{v:0.08, dur:6, r:20}}}},
-       passive:{name:'Quiet Vigil', text:'You always regenerate {}% of your maximum health a second', stat:'regen', v:[0.008, 0.001]}},
+       passive:{name:'Lantern Leans In', text:'When you are hurt, the lantern leans in: you and your allies within 15 m regenerate 2% of maximum health a second for 5 seconds (at most every 10 s)', on:'hurt', icd:10, buff:{kind:'regen', v:0.02, dur:5, r:15}}},
     3:{bound:'any',
        skill:{any:{name:'The Long Night', desc:'The lanterns are lit all at once: you and your allies within 20 m are healed for 30% of maximum health, regenerate 3% a second and are shielded for 15% for 8 seconds. A wave of dusk round you hurts the enemies near, weakens their blows and leaves them 8% easier to hurt for 6 seconds.', cd:45, range:9, mult:2.8, act:['hollis3x',0.9,0.6], anim:'nova',
                    fx:{ring:{r:9, kb:4, slow:1.5, status:{kind:'vuln', v:0.08, dur:6}}, heal:{v:0.30, r:20}, ally:{kind:'regen', v:0.03, dur:8, r:20}, shield:{v:0.15, dur:8, r:20}}}},

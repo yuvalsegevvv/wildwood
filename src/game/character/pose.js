@@ -22,7 +22,9 @@ function poseRig(r,dt,o){
   if(o.act){
     const a=o.act, p=clamp(a.t/a.dur);
     switch(a.kind){
-      case 'slash': if(p<0.4){ aR=2.7; eR=0.45; twist=-0.35; } else { aR=0.15; eR=0.15; twist=0.45; lean=-0.18; } break;
+      case 'slash': if(a.sw){ const q=(a.t-a.sw.start)/a.sw.gap+0.35, i=Math.floor(q), fl=(i%2)?-1:1;   // skillvis: a multi-hit skill swings again and again, each blow from the other side
+          if(q<0||(q<a.sw.n&&q-i<0.35)){ aR=2.7; eR=0.45; twist=-0.35*fl; } else if(q<a.sw.n){ aR=0.15; eR=0.15; twist=0.45*fl; lean=-0.18; } else { aR=0.15; eR=0.15; twist=0.2; lean=-0.12; } break; }
+        if(p<0.4){ aR=2.7; eR=0.45; twist=-0.35; } else { aR=0.15; eR=0.15; twist=0.45; lean=-0.18; } break;
       case 'spin': aR=1.5; eR=0.1; aL=1.2; eL=0.2; break;
       case 'shoot': case 'volley': aL=1.5; eL=0.05; aR=1.45; eR=p<(a.hitAt||0.6)?2.1:0.7; twist=-0.3; break;
       case 'cast': aR=p<0.45?0.9:1.7; eR=p<0.45?1.4:0.3; aL=0.5; break;

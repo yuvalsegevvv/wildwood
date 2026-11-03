@@ -23,6 +23,7 @@ function onArea(id,kind,x,z,r,dur,owner,el,flags,src){
   AREA_FX.set(id,A);
   cvv1Area(id,kind,x,z,r,dur,owner,flags);   // cave: a zone that belongs to the cave skill its owner just began (cave/vis-floor1.js)
   if(src) ssLookArea(A,src);   // skillsets: a zone of a piece with a look wears its outfit's ground pattern and motes
+  if(!src&&zone) skgZone(A);   // skillvis: a generic zone's waves, pulses and props
   if(src) cvbArea(A,src);   // cave: a cave skill's zone adds its own things to the set's look (game/cave/vis-floor2b.js)
 }
 function onAreaEnd(id){
@@ -85,10 +86,14 @@ function fxVisuals(s,x,y,z,face,sc,mine){
   if(L) ssLookSwing(L,s,x,y,z,face,sc,mine);
   if(f.dash){ if(!L){ spawnRingAt(x,g,z,f.ring?f.ring.r*0.7:3.2,col); spawnBurst(new THREE.Vector3(x,y+0.3,z),col,1.4); } if(mine){ cSfx.boom({x,z}); camShake=Math.max(camShake,0.35); } }
   if(f.ring){ const R=f.ring, pull=R.kb<0; if(!L) for(let i=0;i<3;i++) spawnRingAt(x,g,z,R.r*(0.5+i*0.25),i?col:0xffffff,pull);
+    if(!L&&R.kb) skvWaveAt(elOf(s),x,z,{shape:'ring',r:R.r,h:Math.min(1.6,0.5+R.r*0.1),life:0.45+R.r*0.03,inward:pull,col});   // skillvis: a ring that shoves or drags is a wave front that travels
     if(mine||Math.hypot(P.x-x,P.z-z)<25) cSfx.nova(); }
-  if(f.cone){ const C=f.cone, n=C.hits||1; if(!L) for(let h=0;h<n;h++) spawnArcAt(x,y+(0.8+0.22*h)*sc,z,face+(h-(n-1)/2)*0.28,col,C.r/2.6);
+  if(f.cone){ const C=f.cone, n=C.hits||1; if(!L){ const sp=skvPlan(s)||{gap:0.12}; skvSwings({n,gap:sp.gap,x,y,z,face,r:C.r,col,sc,mine,follow:mine?()=>({x:P.x,y:P.y,z:P.z,face:P.face}):null});   // skillvis: one swing after the other
+      if(C.kb>=5) skvWaveAt(elOf(s),x,z,{shape:'arc',arc:Math.min(1.1,C.arc||0.8),face,r:C.r,h:0.9,life:0.5,col}); }
     if(mine) (C.r>6?cSfx.whoosh:cSfx.swing)(false); }
   if(!L&&!f.buff&&(f.zone||f.beam||f.chain||f.proj)) fxxRune(x,g,z,2.3,col,0.8,fxdKindOfEl(elOf(s)));   // fx-extra: a glyph circle at the caster's feet, in its element's pattern
+  if(!L&&!f.buff) skfCast(s,x,y,z,face,sc,mine);   // skillvis: the class's own flair
+  if(!L) skgCast(s,x,y,z,face,sc,mine);   // skillvis: what the text says (gate, cloud, waves, repeated beam hits)
   if(!L&&!f.buff) fxpFlare(x-Math.sin(face)*0.6,y+1.1*sc,z-Math.cos(face)*0.6,col,2,0.3);   // fx-pool: the flash of the cast
   if(f.proj||f.zone||f.beam||f.chain){ if(!L) spawnRingAt(x-Math.sin(face)*0.6,y+1.1*sc,z-Math.cos(face)*0.6,1.3,col); if(mine) (f.proj&&f.proj.kind!=='spirit'?cSfx.draw:cSfx.charge)(true); }
 }
@@ -119,8 +124,8 @@ function updateSkillFx(dt){
     }
     if(A.kind==='blizzard'){ // snow and ice falling, drifting sideways
       if(Math.random()<dt*20*FXP_K){ const a=AR(0,TAU), r=Math.sqrt(Math.random())*A.r; fxpRise(A.x+Math.sin(a)*r,A.y+AR(0.3,3),A.z+Math.cos(a)*r,0xcfeaff,0.16,AR(0.6,1.1)); }   // fx-pool: ice glints
-      A.spawn-=dt;
-      while(A.spawn<=0&&A.t<A.dur-0.3){ A.spawn+=0.012; const a=AR(0,TAU), r=Math.sqrt(Math.random())*A.r, ax=A.x+Math.sin(a)*r, az=A.z+Math.cos(a)*r;
+      A.spawn-=dt; const wvOn=skgWaveGate(A); if(!wvOn) A.spawn=Math.max(A.spawn,0);   // skillvis: ten waves of ice
+      if(wvOn) while(A.spawn<=0&&A.t<A.dur-0.3){ A.spawn+=0.007; const a=AR(0,TAU), r=Math.sqrt(Math.random())*A.r, ax=A.x+Math.sin(a)*r, az=A.z+Math.cos(a)*r;
         const m=new THREE.Mesh(snowGeo,fxMat(0xeef8ff,0.9)); m.position.set(ax,getH(ax,az)+AR(6,10),az); m.userData.g=getH(ax,az)+0.1; m.userData.v=AR(7,11); scene.add(m); A.objs.push(m); }
       for(let i=A.objs.length-1;i>=0;i--){ const m=A.objs[i]; m.position.y-=m.userData.v*dt; m.position.x+=dt*2.5; m.rotation.x+=dt*4; if(m.position.y<=m.userData.g){ scene.remove(m); m.material.dispose(); A.objs.splice(i,1); } }
       if(SND.ready&&Math.random()<dt*6){ const s=spatial(A.x,A.z,12,70); if(s) noiseHit({bus:'ui',filter:'bandpass',ff:900,dur:0.5,vol:0.05*s.gain,pan:s.pan}); }
@@ -129,8 +134,8 @@ function updateSkillFx(dt){
     if(A.kind==='meteor'){ A.fill.scale.setScalar(Math.max(0.01,k*A.r)); const h=26*(1-k*k); A.meteor.position.set(A.x-6*(1-k*k),A.y+h,A.z-6*(1-k*k)); A.meteor.rotation.x+=dt*3;
       A.spawn-=dt; if(A.spawn<=0){ A.spawn=0.03; const e=new THREE.Mesh(emberGeo,emberMat); e.position.copy(A.meteor.position); e.scale.setScalar(3); scene.add(e); CB.fx.push({mesh:e,life:0.5,max:0.5,shrink:true}); const q=A.meteor.position; fxpTrail(q.x,q.y,q.z,0xff7a2a,1.6,0.5); fxpAdd(q.x,q.y,q.z,AR(-1.5,1.5),AR(0,2),AR(-1.5,1.5),0xffc060,0.3,0.6,{g:4,drag:1,white:0.4,grow:0.1}); } }
     else { // arrow rain: arrows keep falling inside the circle
-      A.spawn-=dt;
-      while(A.spawn<=0 && A.t<A.dur-0.3){ A.spawn+=A.kind==='hail'?0.018:0.045; const a=AR(0,TAU), r=Math.sqrt(Math.random())*A.r, ax=A.x+Math.sin(a)*r, az=A.z+Math.cos(a)*r;
+      A.spawn-=dt; const wvOn=skgWaveGate(A); if(!wvOn) A.spawn=Math.max(A.spawn,0);   // skillvis: 5 waves of arrows (rain), 8 (hail)
+      if(wvOn) while(A.spawn<=0 && A.t<A.dur-0.3){ A.spawn+=A.kind==='hail'?0.01:0.025; const a=AR(0,TAU), r=Math.sqrt(Math.random())*A.r, ax=A.x+Math.sin(a)*r, az=A.z+Math.cos(a)*r;
         const m=new THREE.Mesh(fallArrowGeo,matChar); m.position.set(ax,getH(ax,az)+12,az); m.userData.g=getH(ax,az)+0.35; m.userData.v=AR(26,32); scene.add(m); A.objs.push(m); }
       for(let i=A.objs.length-1;i>=0;i--){ const m=A.objs[i]; if(m.userData.stuck!==undefined){ m.userData.stuck-=dt; if(m.userData.stuck<=0){ scene.remove(m); A.objs.splice(i,1); } continue; }
         m.position.y-=m.userData.v*dt; if(m.position.y<=m.userData.g){ m.position.y=m.userData.g; m.userData.stuck=0.6; if(Math.random()<FXP_K) fxpSparks(m.position.x,m.position.y,m.position.z,A.col,2,2.5,{size:0.12,life:0.3}); } }
@@ -139,6 +144,7 @@ function updateSkillFx(dt){
   }
   for(let i=BOLTS.length-1;i>=0;i--){ const b=BOLTS[i]; b.t+=dt; b.o.material.opacity=1-b.t/b.life; if(b.t>=b.life){ scene.remove(b.o); b.o.geometry.dispose(); b.o.material.dispose(); BOLTS.splice(i,1); } }
   cvv1Tick(dt);   // cave: the cave skills' timed effects (cave/vis-floor1.js)
+  skvTick(dt);   // skillvis: travelling waves and props (combat/skill-vis.js)
   updateAuras(); ssLookUpdate(dt);   // skillsets: the particles, ground patterns and auras of the looks
   cvbFrame(dt);   // cave: the timed effects of the cave skills (game/cave/vis-floor2b.js)
   if(CB.dash){ const d=CB.dash; d.t+=dt; fxpTrail(P.x,P.y+1,P.z,0xffe0b0,0.7,0.3); fxxDust(P.x,P.y,P.z,1,0.6,0x9a8a70); const f=Math.min(1,d.t/d.dur), e=f*(2-f); P.x=d.fx+(d.tx-d.fx)*e; P.z=d.fz+(d.tz-d.fz)*e; P.y=Math.max(P.y,getH(P.x,P.z)); P.vx=P.vz=0; if(f>=1) CB.dash=null; }

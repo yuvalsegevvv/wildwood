@@ -3,6 +3,11 @@
    Center Stage is a stage: the scalloped ring with eight paper lanterns turning round its edge and ribbons rising; Curtain Call throws a fountain of lanterns and ribbons from a big ring. The curtain-call look swap (M5) is not built. */
 ssDefineLook('marigold',{
   cols:[0xe59a2b,0x5a2a4a,0xffd36b,0xfff2d6,0xf2dca0], hot:0xffd36b, hot2:0xf2dca0, decal:'scallop', arcCol:0xffd36b,
+  vis:{   // the text: Ribbon Flourish throws a wave of light 6 m long; Curtain Call is a pulse of light; Standing Ovation drops a spotlight, then fireworks
+    '1':{cast:[{wave:{shape:'arc',arc:0.45,r:6,style:'light',col:2,h:0.8,life:0.6}}]},
+    '3':{cast:[{wave:{r:9,style:'light',col:2,h:1,life:0.8}}]},
+    ult:{cast:[{prop:{kind:'spotlight',where:'target',anim:'drop',fall:10,size:1.6,life:2.8,cols:[2]}},{burst:{where:'target',y:4,n:22,spd:6,at:0.7}},{burst:{where:'target',y:5.5,n:22,spd:6,at:1.0}},{burst:{where:'target',y:3.5,n:22,spd:6,at:1.3}},{ring:{where:'target',r:7,at:0.7,col:2}}]}
+  },
   mote:[{sh:'lantern',c:2,s:0.2,w:2.5,add:1,g:0.8,sway:1.2,spin:1},{sh:'spark',c:2,s:0.22,w:4,add:1},{sh:'ribbon',c:1,s:0.7,w:2,g:-0.4,sway:2},{sh:'ribbon',c:0,s:0.6,w:2,g:-0.4,sway:2},{sh:'chaff',c:3,s:0.2,w:2,g:-1.5,sway:2}],
   proj:{sh:'lantern',c:2,s:0.5,len:1,glow:0,trail:{sh:'spark',c:2,s:0.14,add:1}},
   zone:{mode:'orbit',rate:22},

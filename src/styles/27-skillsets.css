@@ -18,3 +18,22 @@
 .sk-set-b b{ color:var(--set); } .sk-set-b em{ font-style:normal; color:var(--ink-dim); }
 .sk-set-wrap{ margin-top:8px; } .sk-set-wrap .sk-set{ margin-top:4px; }
 .sk-set-all{ margin-top:8px; }
+
+/* your stacks on the target (marks.js ssvChip): the kit's name and a dot for each stack, full stacks glow in the kit's colour (--c) */
+#tStacks{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:5px; }
+#tStacks[hidden]{ display:none; }
+.tf-st{ display:inline-flex; align-items:center; gap:3px; padding:1px 7px 1px 6px; border-radius:10px; border:1px solid color-mix(in srgb,var(--c) 55%,transparent); background:rgba(0,0,0,.35); font-size:10.5px; }
+.tf-st b{ color:var(--c); font-weight:700; margin-right:3px; letter-spacing:.03em; }
+.tf-st i{ width:7px; height:7px; border-radius:50%; border:1px solid color-mix(in srgb,var(--c) 70%,transparent); }
+.tf-st i.on{ background:var(--c); box-shadow:0 0 5px var(--c); }
+.tf-st.full{ box-shadow:0 0 10px color-mix(in srgb,var(--c) 70%,transparent); animation:tfStFull 1s ease-in-out infinite; }
+@keyframes tfStFull{ 50%{ box-shadow:0 0 3px color-mix(in srgb,var(--c) 40%,transparent); } }
+
+/* procs (procs.js): the name of the bonus that fired, rising over the action bar in its set's colour (--c); a refunded cooldown flashes its slot */
+#sspBox{ position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom,0px) + 150px); transform:translateX(-50%); z-index:7; display:flex; flex-direction:column-reverse; align-items:center; gap:4px; pointer-events:none; }
+.ssp-b{ display:flex; align-items:center; gap:7px; padding:3px 12px 3px 8px; border-radius:14px; border:1px solid var(--c); background:rgba(10,14,10,.72); color:var(--ink); font-size:12.5px; box-shadow:0 0 14px color-mix(in srgb,var(--c) 55%,transparent); animation:sspRise 1.5s ease-out forwards; }
+.ssp-b i{ width:9px; height:9px; border-radius:50%; background:var(--c); box-shadow:0 0 8px var(--c); }
+.ssp-b b{ color:var(--c); letter-spacing:.03em; }
+@keyframes sspRise{ 0%{ opacity:0; transform:translateY(10px) scale(.8); } 15%{ opacity:1; transform:translateY(0) scale(1.06); } 25%{ transform:scale(1); } 80%{ opacity:1; } 100%{ opacity:0; transform:translateY(-26px); } }
+.ab.proc-flash{ animation:sspFlash .6s ease-out; }
+@keyframes sspFlash{ 0%{ box-shadow:0 0 0 0 rgba(255,255,255,.9); filter:brightness(2); } 100%{ box-shadow:0 0 0 14px rgba(255,255,255,0); filter:none; } }

@@ -508,11 +508,17 @@ game
   combat/fx-extra.js                 The effects beyond light: scorch marks, dust and smoke, flying debris, jagged lightning, rotating rune circles, slash crescents, shock domes and the screen flash
   combat/gore.js                     Blood and death effects (version 3.3): the hiker bleeds below 20% hp and bursts when downed, and every monster dies in a way that fits what it is (blood, ichor, goo, sap and leaves, stone chips, spores); all of it off in child-safe mode
   combat/fx-decal.js                 Ground patterns for skill effects: canvas-drawn runes, flames, waves, cracks, gusts, eclipses, stars, frost, leaves and shock rings that replace the plain discs and rings
+  combat/skill-props.js              Props a skill puts into the world when its text says so: a doll, a bell, an anvil, a sandglass, a powder keg, a lantern, a spear, a hand out of the ground... small low-poly models that drop, rise, plant, hover or waltz
+  combat/skill-vis.js                Skill visuals that follow the skill's text: every blow of a multi-hit skill is a swing of its own, waves that travel, props that appear (dolls, anvils, bells...), run from a look's `vis` recipes
+  combat/skill-flair.js              Class flair for the generic skills (the shop's and the bosses'): steel and dust for the warrior, wind lines and feathers for the archer, an arcane spiral for the mage, on top of the skill's own effects
+  combat/skill-vis-gen.js            The visuals that follow the text, for the generic skills (the shop's and the bosses'): waves of arrows in the number the text says, pulls and shoves as travelling waves, a gate, a thundercloud, beams that hit twice
+  combat/skill-move.js               The body moves with the skill: a step into every blow, a recoil after every shot, a hop into a stomp or a spin (your own hiker; real movement, so walls, slopes and monsters still stop it)
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
   combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
   combat/basic-hold.js               Skill 1 on the client: hold the attack button to charge (press = tap), the charge shown on the button, the attack speed / charge gain mirrors, the slower walk while charging
   combat/reactions.js                Reactions on the client: the aura marker over a monster, the reaction's name popping up, the vulnerable / weakened notes
-  skillsets/marks.js                 Skill-set marks on the client: pips over a monster, in the colour of the kit (only yours are drawn: marks are personal)
+  skillsets/marks.js                 Skill-set marks on the client: a kit's stacks as shaped, glowing pips over the monster (only yours), a full-stack halo, a burst when they are spent, and a stack chip on the target frame
+  skillsets/procs.js                 Skill-set procs on the client: a set bonus that fires shows its name as a badge, a rune ring at the wearer and a streak of motes to its target; a refunded cooldown flashes its slot
   skillsets/panel.js                 Skill sets in the skills panel and the action bar: each set's own symbol and colour on its pieces (never the generic star), and the set effect (the 3-piece and 5-piece bonuses, lit by how many pieces are worn)
   combat/lucky.js                    Lucky drops and forging: light beam, sparkles, banner and a bright jingle for epic, unique and legendary items
   combat/sounds.js                   Combat sounds (cSfx) and monster voices (monSound)
