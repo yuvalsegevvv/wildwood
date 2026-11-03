@@ -69,7 +69,7 @@ function updateTalkUI(){
       bubble.style.left=x+'px'; bubble.style.top=y+'px'; bubble.hidden=false;
     } else bubble.hidden=true;
   } else bubble.hidden=true;
-  if(!$('#travel').hidden&&!nearCircle()) closePanels();   // stepped off the circle
+  if(!$('#travel').hidden&&!nearCircle()&&!TR_ANY) closePanels();   // stepped off the circle (opened from the map: stays)
   const free=started && !customizing && !canTalk && !PL.dead, herb=free?nearHerb():-1, lore=free&&herb<0?loreNear(P.x,P.z):null, node=free&&herb<0&&!lore?nearNode():-1, circ=free&&herb<0&&!lore&&node<0?nearCircle():null;
   const bench=free&&herb<0&&!lore&&node<0&&!circ&&nearHomeBench(), dgDoor=free&&herb<0&&!lore&&node<0&&!circ&&!bench?dgEntranceNear(P.x,P.z):null;   // dungeons: a door within reach
   const tk=kbName('talk')||'the talk key';

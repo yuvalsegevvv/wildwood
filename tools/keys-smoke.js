@@ -14,14 +14,15 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
   ok('defaults: W and the arrow walk, F and 1 attack, Enter and the numpad Enter chat',G.kbIs('KeyW','fwd')&&G.kbIs('ArrowUp','fwd')&&G.kbIs('KeyF','basic')&&G.kbIs('Digit1','basic')&&G.kbIs('Enter','chat')&&G.kbIs('NumpadEnter','chat'));
   ok('defaults: H gathers (a key of its own next to the talk key E; G stays the world map)',G.kbIs('KeyH','gather')&&G.kbIs('KeyG','world')&&!G.kbIs('KeyG','gather')&&G.kbIs('KeyE','talk')&&G.kbName('gather')==='H');
   ok('defaults: no key is used twice',unique(G));
+  ok('defaults (11/2026): M opens the map, N mutes, the version 3 potions on 7 8 9, O the friends',G.kbIs('KeyM','map')&&G.kbIs('KeyN','mute')&&G.kbIs('Digit7','pot4')&&G.kbIs('Digit8','pot5')&&G.kbIs('Digit9','pot6')&&G.kbIs('KeyO','friends')&&G.kbIs('Comma','friends'));
   ok('labels: letters, arrows, shift, numpad',G.kbName('inv')==='I'&&G.kbLabel('ArrowUp')==='↑'&&G.kbLabel('ShiftLeft')==='L Shift'&&G.kbLabel('Numpad5')==='Num 5'&&G.kbLabel('Digit3')==='3');
   // rebinding, swapping, clearing
   ok('rebind: Inventory to B',G.kbSet('inv',0,'KeyB')===''&&G.kbIs('KeyB','inv')&&!G.kbIs('KeyI','inv'));
   const note=G.kbSet('map',0,'KeyB');
-  ok('binding a used key swaps: Map takes B, Inventory takes N',G.kbIs('KeyB','map')&&G.kbIs('KeyN','inv')&&/Inventory now uses N/.test(note),note);
+  ok('binding a used key swaps: Map takes B, Inventory takes M',G.kbIs('KeyB','map')&&G.kbIs('KeyM','inv')&&/Inventory now uses M/.test(note),note);
   ok('still no key used twice',unique(G));
   ok('clearing the last key says so',/Mute sound has no key now/.test(G.kbSet('mute',0,''))&&G.kbName('mute')==='');
-  G.kbSet('mute',0,'KeyM');
+  G.kbSet('mute',0,'KeyN');
   // movement reads the binds (movement.js)
   G.kbSet('fwd',0,'KeyJ'); G.keys.KeyW=true; ok('the old key no longer walks',!G.kbHeld('fwd')); G.keys.KeyW=false;
   G.keys.KeyJ=true; ok('the new key walks',G.kbHeld('fwd'));
@@ -34,7 +35,7 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
     G.kbSet('map',0,'KeyB'); document.querySelectorAll=qs; }
   // the start card's legend is redrawn from the keys
   G.kbChanged(); { const t=G.keysEl._kids.slice(-36).map(x=>x.textContent);
-    ok('the legend lists the current keys, Gather and Hold Alt',t.length===36&&t.includes('Hold Alt')&&t[t.indexOf('Gather: mine, chop or pick what you stand beside')-1]==='H'&&t[t.indexOf('Map of the land you are in')-1]==='B'&&t[t.indexOf('World map of Eldmere')-1]==='G'&&t[t.indexOf('Inventory (drag items onto your body)')-1]==='N',t.join('|')); }
+    ok('the legend lists the current keys, Gather and Hold Alt',t.length===36&&t.includes('Hold Alt')&&t[t.indexOf('Gather: mine, chop or pick what you stand beside')-1]==='H'&&t[t.indexOf('Map of the land you are in')-1]==='B'&&t[t.indexOf('World map of Eldmere')-1]==='G'&&t[t.indexOf('Inventory (drag items onto your body)')-1]==='M',t.join('|')); }
   // a key event reaches the right handler
   G.setStarted(true); G=c.G();
   { const v0=G.thirdPerson(); key('KeyV'); ok('V toggles the camera view',c.G().thirdPerson()!==v0); G.kbSet('view',0,'KeyX'); key('KeyV'); ok('after rebinding, V does nothing',c.G().thirdPerson()!==v0);
@@ -59,7 +60,7 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
   { const c2=bootClient({ls:c.ls,expose:['KB','kbIs']}); const H=c2.G(); ok('a new page load has the same keys',JSON.stringify(H.KB.map)===snap); c2.stop(); }
   { const ls=new Map([['wildwood-keys',JSON.stringify({fwd:['Escape','KeyB'],inv:['KeyB',''],map:[5],zzz:['KeyQ'],view:['AltLeft','KeyC']})]]);
     const c3=bootClient({ls,expose:['KB','kbIs']}); const H=c3.G(), all=Object.values(H.KB.map).flat().filter(Boolean);
-    ok('a damaged save: reserved keys dropped, no duplicates, a broken row falls back to the default',new Set(all).size===all.length&&!all.includes('Escape')&&!all.includes('AltLeft')&&H.kbIs('KeyB','fwd')&&H.kbIs('KeyN','map')&&H.kbIs('KeyC','view'),JSON.stringify(H.KB.map));
+    ok('a damaged save: reserved keys dropped, no duplicates, a broken row falls back to the default',new Set(all).size===all.length&&!all.includes('Escape')&&!all.includes('AltLeft')&&H.kbIs('KeyB','fwd')&&H.kbIs('KeyM','map')&&H.kbIs('KeyC','view'),JSON.stringify(H.KB.map));
     c3.stop(); }
   // hold Alt: the pointer comes back, and returns when Alt is let go
   { const c4=bootClient({expose:['KB','setStarted:v=>{started=v}','altHeld:()=>altHeld','dragging:()=>dragging','mDown:()=>mDown']});

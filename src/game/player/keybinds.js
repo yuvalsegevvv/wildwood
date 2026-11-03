@@ -21,24 +21,24 @@ const KB_ACTIONS=[
   {id:'pot1',  name:'Healing potion', def:['KeyZ','']},
   {id:'pot2',  name:'Potion of might', def:['KeyX','']},
   {id:'pot3',  name:'Potion of guard', def:['KeyC','']},
-  {id:'pot4',  name:'Mossblood draught (heal over time)', def:['KeyT','']},   // version 3 potions (shared/crafting.js POT_KINDS)
-  {id:'pot5',  name:'Scholar\'s brew (exp)', def:['KeyU','']},
-  {id:'pot6',  name:'Fortune tea (coins and drops)', def:['KeyO','']},
+  {id:'pot4',  name:'Mossblood draught (heal over time)', def:['Digit7','']},   // version 3 potions (shared/crafting.js POT_KINDS): 7 8 9 beside the skill keys 1-6 (T / U / O before 11/2026)
+  {id:'pot5',  name:'Scholar\'s brew (exp)', def:['Digit8','']},
+  {id:'pot6',  name:'Fortune tea (coins and drops)', def:['Digit9','']},
   {id:'target',name:'Switch target', def:['Tab','']},
   {id:'talk',  name:'Talk / travel', def:['KeyE','']},
   {id:'gather',name:'Gather (mine, chop, pick herbs)', def:['KeyH','']},   // H: G is the world map's (a default key must not collide)
   {id:'inv',   name:'Inventory',     def:['KeyI','']},
   {id:'skills',name:'Skills',        def:['KeyK','']},
-  {id:'map',   name:'Map',           def:['KeyN','']},
+  {id:'map',   name:'Map',           def:['KeyM','']},   // M: the map key most games use (N before 11/2026; saved keys keep theirs)
   {id:'world', name:'World map',     def:['KeyG','']},   // world map: the Eldmere panel (ui/world-map.js)
   {id:'chat',  name:'Chat',          def:['Enter','NumpadEnter']},
-  {id:'mute',  name:'Mute sound',    def:['KeyM','']},
+  {id:'mute',  name:'Mute sound',    def:['KeyN','']},
   {id:'guide', name:'Guide',         def:['KeyJ','']},
   {id:'quests',name:'Quests',        def:['KeyL','']},   // the quest panel: main quest, board, your quests (economy/quests.js)   // the in-game guide (ui/guide.js)
   {id:'view',  name:'Camera view',   def:['KeyV','']},
   {id:'sit',   name:'Sit / stand',   def:['Period','']},   // sitting: on a bench or the ground, looks only (world/sitting.js)
   {id:'party', name:'Party',         def:['KeyP','']},   // dungeons: the party panel (dungeon/party.js)
-  {id:'friends',name:'Friends and ranking', def:['Comma','']},   // friends: the friend list and the ranking (ui/friends.js)
+  {id:'friends',name:'Friends and ranking', def:['KeyO','Comma']},   // friends: the friend list and the ranking (ui/friends.js)
   {id:'accept',name:'Accept an invite', def:['KeyY','']},   // dungeons: a party invite or a run's join prompt (dungeon/party.js)
   {id:'decline',name:'Decline an invite', def:['Backspace','']}   // dungeons: the same, declined
 ];

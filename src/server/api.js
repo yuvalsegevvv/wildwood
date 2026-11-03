@@ -6,7 +6,7 @@
    io.store (solo, or a shared world hosted in a tab) the browser's own save is used, as before.
    Registered accounts (name + password, Node server only) are in accounts.js.
    Messages in:  hello{acct,name,look,save[,user,pass|token]}  register{user,pass}  logout{token}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
-                 cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{to: 'home'|'hanami'|'rimehold'}  dev{cmd,v}  ft{cmd,v} (version2 testing: free skill sets)
+                 cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{to: 'home'|'hanami'|'rimehold'..., any: 1 = from anywhere (the map's Travel)}  dev{cmd,v}  ft{cmd,v} (version2 testing: free skill sets)
                  buyskill{id}  eqskill{id[,idx: passive slot]}  unskill{cls,slot[,idx]}  upskill{id}  soul{el}  mq{a:'talk'|'pick'|'read',id|i}  learn{id: a profession}  gather{i: a resource node}
    Messages out: welcome{pid,day,dev,players[,look: a logged-in account's own look]}  mons{list}  you  tp  snap{day,n,pl,mo,b:[per boss: id,engaged,phase,immune,enraged,stunned,aux,mode],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
 initMonstersS(); initBossS(); initRaidsS(); caveInitS(); troomInitS();   // testroom: the scarecrow   // raids: after the world's monsters and bosses   // cave: a pack at every camp of the Deep Cave's floors
@@ -128,7 +128,7 @@ function receive(pid,msg){
     case 'upskill': upgradeSkillP(p,msg.id); break;
     case 'soul': bindSoulP(p,msg.el); break;
     case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<LOOK_MAX){ const L=cleanLookS(msg.look); if(Object.keys(L).length){ p.look=premCleanLook(ambCleanLook(cosCleanLook(L,p.gear.cos),p.gear.os),p.gear.pc); p.saveDirty=true; ev('plook',p.id,p.look); } } break;
-    case 'warp': warpP(p,typeof msg.to==='string'?msg.to:undefined); break;
+    case 'warp': warpP(p,typeof msg.to==='string'?msg.to:undefined,msg.any===1); break;
     case 'mq': mqMsgP(p,msg); break;
     case 'learn': learnProfP(p,msg.id); break;
     case 'gather': gatherP(p,clampInt(msg.i,0,NODES.length-1,-1)); break;

@@ -32,6 +32,7 @@ function caveMiniFlush(){ const M=CAVE_MINI; if(!M.dirty||!M.seen) return; const
 function caveMapMarks(x,at,inside,s,dpr,labels){
   const R=CAVE_RUN, B=R.B, seenAt=(wx,wz)=>{ const gx=Math.floor((wx-R.ox)/CAVE_CELL), gz=Math.floor((wz-R.oz)/CAVE_CELL); return gx>=0&&gz>=0&&gx<B.w&&gz<B.h&&!!R.seen[gz*B.w+gx]; };
   { const wx=R.ox+B.lift.x, wz=R.oz+B.lift.z; if(inside(wx,wz)){ const [a,b]=at(wx,wz); x.beginPath(); x.arc(a,b,Math.max(3.4*dpr,2.2*s),0,TAU); x.strokeStyle='#ffd27a'; x.lineWidth=2*dpr; x.stroke(); x.fillStyle='#ffd27a'; x.fillRect(a-1.2*dpr,b-1.2*dpr,2.4*dpr,2.4*dpr); if(labels) labels('Lift',a,b-9*dpr,'#fff0c8'); } }
+  cvwMapMarks(x,at,inside,dpr,labels);   // caveguide: the method places and the guide's next one (cave/waypoint.js)
   for(const m of MONS){ if(m.dead||!inside(m.x,m.z)||!seenAt(m.x,m.z)) continue; const [a,b]=at(m.x,m.z); dot(x,a,b,(m.boss?4.5:m.aggro?2.8:2.1)*dpr,m.boss?'#c86bff':m.aggro?'#ff4a3a':'#e8904a'); }
   for(const r of REMOTES.values()){ if(r.tx===null||!inside(r.x,r.z)) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,3.4*dpr,dgPartyCol(r.id)||'#6fb8ff'); if(labels) labels(r.name,a,b-10*dpr,'#cfe6ff'); }
 }
