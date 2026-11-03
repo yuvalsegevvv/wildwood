@@ -23,8 +23,8 @@ withTansy(); talk('tansy'); ok('P1: the morning at the well; P2 starts by itself
 ok('Tansy waits at the gate marker',near(x.mqStoryAt('tansy',M()),x.MQ_PLACES.road1,6));
 at(x.MQ_PLACES.road2.x,x.MQ_PLACES.road2.z); tick(12); ok('a marker out of order does not count',M().n[1]===0);
 at(x.MQ_PLACES.road1.x,x.MQ_PLACES.road1.z); tick(12); ok('the gate marker counts, Tansy runs on to the log',M().n[0]===1&&near(x.mqStoryAt('tansy',M()),x.MQ_PLACES.road2,6));
-at(x.MQ_PLACES.road2.x,x.MQ_PLACES.road2.z); tick(12); at(x.MQ_PLACES.road3.x,x.MQ_PLACES.road3.z); tick(12);
-ok('the log and the hedge count',M().n[1]===1&&M().n[2]===1&&M().st===2);
+at(x.MQ_PLACES.road2.x,x.MQ_PLACES.road2.z); tick(12);
+ok('the gate and the log count',M().n[0]===1&&M().n[1]===1&&M().st===2);
 withTansy(); talk('tansy'); ok('P2 handed in; P3 starts',id()==='P3'&&M().st===1);
 at(x.MQ_PLACES.meadow.x,x.MQ_PLACES.meadow.z); tick(30);
 { const mine=x.MONS.filter(m=>m.owner==='a'&&m.def.id==='slime'&&!m.dead);
@@ -32,9 +32,10 @@ at(x.MQ_PLACES.meadow.x,x.MQ_PLACES.meadow.z); tick(30);
   inbox.a=[]; let kk=0; for(const m of mine) if(kill(m)) kk++; tick(2);
   tick(8); ok('killing them finishes P3 and sends the ripple',kk===2&&M().st===2&&inbox.a.some(m=>m.ev&&JSON.stringify(m.ev).includes('mqfx')||JSON.stringify(m).includes('"mqfx"'))); }
 withTansy(); talk('tansy'); ok('P3 handed in; P4 starts',id()==='P4'&&M().st===1);
-{ const farm=x.mqStoryAt('tansy',M()); ok('Tansy is at her farm',near(farm,x.MQ_FARM,8)); }
-at(x.MQ_PLACES.loft.x,x.MQ_PLACES.loft.z); tick(12); ok('the crown is taken from the loft',M().n[0]===1);
-W.receive('a',{t:'cls',cls:'archer'}); tick(1); ok('trying another weapon counts, P4 is ready',M().n[1]===1&&M().st===2);
+{ const hedge=x.mqStoryAt('tansy',M()); ok('the slimes are mid path: Tansy waits at the hedge, short of her farm, until you reach it',near(hedge,x.MQ_PLACES.road3,6)&&!near(hedge,x.MQ_FARM,8)); }
+at(x.MQ_PLACES.road3.x,x.MQ_PLACES.road3.z); tick(12); ok('the hedge counts and Tansy goes on to her farm',M().n[0]===1&&near(x.mqStoryAt('tansy',M()),x.MQ_FARM,8));
+at(x.MQ_PLACES.loft.x,x.MQ_PLACES.loft.z); tick(12); ok('the crown is taken from the loft',M().n[1]===1);
+W.receive('a',{t:'cls',cls:'archer'}); tick(1); ok('trying another weapon counts, P4 is ready',M().n[2]===1&&M().st===2);
 withTansy(); talk('tansy'); ok('P4 handed in; the XP made level 2; P5 starts',id()==='P5'&&p.level>=2,'level '+p.level);
 ok('the second skill slot is open at level 2',x.SKILL_SLOT_LV===2||p.level>=2);
 at(x.MQ_PLACES.clearing.x,x.MQ_PLACES.clearing.z); tick(30);
