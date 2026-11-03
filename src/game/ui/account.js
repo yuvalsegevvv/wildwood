@@ -11,7 +11,7 @@ function saveSession(s){ try{ if(s) localStorage.setItem('wildwood-session',JSON
 /* ---- server answers (the start card's part is in ui/start-screen.js) ---- */
 function onAuth(msg){
   if(msg.token) saveSession({user:msg.user,token:msg.token});
-  NET.user=msg.user; NET.name=msg.user; NET.login=null;
+  NET.user=msg.user; NET.name=msg.user; NET.login=null; NET.fresh=false; NET.freshCode=null;   // (registered: a reconnect logs in with the session, not as the throwaway guest)
   $('#regPass').value=''; $('#setName').value=msg.user;
   syncAcctSec();
   if(!started) startAuthed();
