@@ -23,6 +23,8 @@ const MQ=[
    parts:[{talk:'tansy',text:'Talk to Tansy by the well',say:[
      '@cine A morning in Wildwood',
      '(Dawn, the week of the harvest moon. Mist lies in the village like milk in a bowl. Greta\'s hammer is already ringing, the bell on the well-post swings for no one, and over the roofs the Heartwood stands up out of the forest: one dark tree, as big as a hill, and very still.)',
+     'You: Something about this morning feels borrowed. I know every crack in this village, and I can\'t remember learning a single one.',
+     'You: It\'s like I came a very long way to stand here, and someone swept the road behind me. ...Odd. Never mind.',
      'Tansy: There you are, {name}, sleepyhead! Half the village has been up since the roosters.',
      'You: Half the village didn\'t sit up till midnight carving a goat.',
      'Tansy: That goat was a masterpiece. Ask anyone.',
@@ -135,7 +137,7 @@ const MQ=[
    parts:[{talk:'morrow',fx:'ripple',text:"Bring Morrow Linnea's willow and Hollen's message",say:[
      '(You hand Morrow Linnea\'s willow and the Lodge\'s message.)',
      'Morrow: Willow. ...That girl never could leave well alone. ...Someone remembers, does someone.',
-     '(She takes your hand, smells the sunpetal and spring water on your fingers, and nods once... and a grey ripple crosses the clearing from the north. Her hands tremble. Grey veins creep along her wrist, then fade.)',
+     '(She takes your hand, smells the sunpetal and spring water on your fingers, and nods once. Her thumb rests on your wrist a moment longer than it should, and a small frown crosses her face, as if the hand hummed a chord she does not know... and a grey ripple crosses the clearing from the north. Her hands tremble. Grey veins creep along her wrist, then fade.)',
      'Morrow: ...That wasn\'t there this morning.','Tansy: It\'s the same! It\'s the same as Wren\'s!','Morrow: (very quietly) It\'s coming from the north. From the Circle. I\'d hoped I was wrong.',
      '(She looks at you for the first time.) Morrow: Come inside. I\'ll help. Not for you. For this forest. ...All right, a little for you.',
      'Morrow: The cure needs two things from the north: ghostcap from the old trees\' bark, and silverleaf from the cold side of the Thicket. The rest I have.',
@@ -179,6 +181,8 @@ const MQ=[
      'Morrow: There. It won\'t cure. Remember that. It will ease. It will hold the grey for a time. Weeks, perhaps. Not more.','Morrow: Take it to the child in the bed. A drop on the tongue, a drop on each wrist. Don\'t spill.',
      'Morrow: One more thing. Hold out your hand. The grey brushed you in the Grove. It left something behind. Not the sickness. The door it came through.',
      'Morrow: Most people have three knacks in them: a trick, a swing, and a thing under the ribs they only find in a corner. Yours is awake early. Don\'t thank me. It\'s the grey\'s doing.',
+     'Morrow: ...No. Wait. That isn\'t the grey\'s doing. Hold still.','(She closes her eyes. Her fingers hover above your chest, and the air between them hums with fire, then water, then earth, then air, then dark, then light. Each note in turn, and all six held at once.)',
+     'Morrow: One soul carries one element. A rare soul carries two, and sings for years about it. Yours is... not choosing. It carries all six, and none of them is loud.','Morrow: I have not felt that in all my years. I do not know what you are. Keep it to yourself until I do.','You: Is that bad?','Morrow: I don\'t know. Ask me again when the Warden is quiet.',
      '(A flash. The third slot on your bar answers to her: your Power skill.) Morrow: Hit the stump by the door. Not gently. The grey one.']},
           {act:'burst',after:true,text:'Use your Power skill on the grey stump by Morrow\'s door (R or 3)'}],
    done:['(The stump crumbles, and moss grows over the ground where it stood.)','Morrow: Hm. Good. Now you can see what you\'re up against.','Morrow: And tell your friend with the shield what I said about the Circle. The Warden. The grey comes from there. Somebody will have to deal with it.','Torgeir: (nodding) Somebody will.']},
