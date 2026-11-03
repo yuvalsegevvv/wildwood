@@ -43,6 +43,8 @@ The hero's soul carries all six elements: fire, water, earth, air, dark, light (
 
 ## Deviations from the script, and what is not built
 
+- Continuity facts the lines now keep (from a blind read): the grey is new to the village (the child Morrow lost was called a wasting fever; only she knew it was the grey); Morrow left twenty years ago and helped once more, for the fisherman's boy seven winters ago; the Rootwarden is named in W2c before anyone uses it, and "the north" is not named before Morrow does; the draught is "a holding draught" that the village calls the cure; the march is four beats (one, two, three, step), the great slam on the fourth bar; the player works Tansy's rows; the ring-and-sun is planted on a road stone in P2 and in Tomas's lines before W11b; the P5 reflective talk and its choice moved to P6 at Wren's bed; Pell names the boat before he is asked about it.
+
 - The road to the farm runs gate, log, **slimes at the meadow (mid path)**, then the hedge, then the farm: the hedge part moved from P2 to the start of P4, so Tansy waits at the hedge, not at her farm, while you fight. Villagers who walk the story now steer round trees, props and houses (`npcSteer`, `village/villagers.js`). The speech bubble hangs over whoever speaks (the hero's own lines over the hero).
 - Healthy Wren is a second villager (`wren0`) so the sick one (`wren`) keeps its id; `wren0` is shown until `mqWrenSick`.
 - P6 puts the visit at the bed: the sick Wren is already in the bed when you arrive (the script carries them there).

@@ -6,7 +6,10 @@ const out=process.argv[2]||'story-script.md', ALL=process.argv.includes('--all')
 const SPEAKER=/^(Tansy|Wren|Dunstan|Torgeir|Pip|Morrow|Linnea|Pell|Aldric|Maren|Greta|Bram|Oskar|Hollen|Ambrose|Odran|Tomas|Daisuke|Kaede|The Rootwarden|You): ([\s\S]*)$/;
 const fmt=l=>{ l=String(l); if(l.startsWith('@pick ')) return '> **CHOICE** (the player picks one; their pick is spoken as YOU)\n'+l.slice(6).split(' | ').map((o,i)=>{ const j=o.indexOf(' >> '); return '> '+(i+1)+'. '+(j<0?o:o.slice(0,j))+(j<0?'':'  \u2192  '+o.slice(j+4)); }).join('\n'); const m=SPEAKER.exec(l); if(m) return '**'+m[1].toUpperCase()+'**  '+m[2]; return l[0]==='('?'*'+l+'*':l; };
 const lines=[]; let n=0;
-const sect=(h,a)=>{ if(!a||!a.length) return; lines.push('\n### '+h+'\n'); for(const l of a){ if(String(l).startsWith('@cine ')) lines.push('\n> **KEY SCENE: '+String(l).slice(6)+'**  (letterbox bars, title card, controls frozen)\n'); else lines.push(fmt(l)+'\n'); } };
+// the game cuts a screenplay line at every "Name: " (game/economy/main-quest.js, mqSplitLines): do the same here, so each bubble is one speaker's
+const NAMES='Tansy|Wren|Dunstan|Torgeir|Pip|Morrow|Linnea|Pell|Aldric|Maren|Greta|Bram|Oskar|Hollen|Ambrose|Odran|Tomas|Daisuke|Kaede|The Rootwarden|You', CUT=new RegExp('\\s+(?=(?:'+NAMES+'): )');
+const cutLines=a=>{ const o=[]; for(const l of a){ const t=String(l); if(t.startsWith('@')) o.push(t); else for(const part of t.split(CUT)) if(part) o.push(part); } return o; };
+const sect=(h,a)=>{ if(!a||!a.length) return; a=cutLines(a); lines.push('\n### '+h+'\n'); for(const l of a){ if(String(l).startsWith('@cine ')) lines.push('\n> **KEY SCENE: '+String(l).slice(6)+'**  (letterbox bars, title card, controls frozen)\n'); else lines.push(fmt(l)+'\n'); } };
 for(const s of x.MQ){ if(!ALL&&!/^(P|W)/.test(s.id)) continue; n++;
   lines.push('\n---\n\n## '+s.id+'  '+s.title+'\n');
   if(s.tip) lines.push('*Objective hint shown to the player:* '+s.tip+'\n');
