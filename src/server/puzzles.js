@@ -24,7 +24,7 @@ function pzSanitize(g,out){
 const pzRoll=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 // a chest of difficulty d at level lv for player p: pays everything and returns what it held (for the client's chest window). first: the overworld first solve (adds the gear roll)
 function pzChestP(p,d,lv,first,cave){
-  const C=PZ_CHEST[d], got={coins:0,pot:{},mats:[],stones:0,amber:0,scroll:0,gear:null,lucky:false};
+  const C=PZ_CHEST[d], got={xp:0,coins:0,pot:{},mats:[],stones:0,amber:0,scroll:0,gear:null,lucky:false};
   got.coins=Math.round(coinsFor(lv)*C.coins); p.gear.coins=Math.min(COINS_MAX,p.gear.coins+got.coins);
   let np=Math.random()<C.potP?pzRoll(C.pot[0],C.pot[1]):0; if(Math.random()<PZ_LUCKY&&np>0){ np*=2; got.lucky=true; }
   const tier=lv>=30?3:lv>=15?2:1;
@@ -41,6 +41,7 @@ function pzChestP(p,d,lv,first,cave){
     const r=Math.min(4,C.gear[1]+(Math.random()<0.2?1:0)), id=itemId(ALL_SLOTS[Math.floor(Math.random()*ALL_SLOTS.length)],t,r);
     if(ITEM[id]){ p.gear.inv.push(id); got.gear=id; }
   }
+  got.xp=Math.round(xpFor(lv)*PZ_XP_KILLS[d]*(first?PZ_XP_FIRST:1)); gainExpP(p,got.xp);   // XP scaled with the level, more on the stone's first solve
   p.dirty=true; return got;
 }
 // the Sigil track: pay every level reached and not yet paid (10 gems each, a cosmetic when the content thread named one, a unique scroll every 5th level); returns the levels paid

@@ -38,7 +38,7 @@ $('#pzUndo').addEventListener('click',()=>{ if(PZ_CUR&&PZ_CUR.view.undo) PZ_CUR.
 $('#pzReset').addEventListener('click',()=>{ if(PZ_CUR&&PZ_CUR.view.reset) PZ_CUR.view.reset(); UI_SFX.click(); });
 // ---- the chest ----
 // tier 1-5; first = the first-time design (plan section 3d). tint: the land's trim colour (PZ_LAND_TINT); the lid is its own group so the reveal can lift it (.pz-reveal .pz-lid, 33-puzzles.css).
-const PZ_LAND_TINT={home:'#5fae4a',vale:'#e68fb0',hoar:'#7fc8ef',grey:'#9aa6b2',sun:'#e0a24a',gloam:'#9a7fd0',amber:'#d8a038',cave:'#58d6c8'};
+const PZ_LAND_TINT={home:'#5fae4a',vale:'#e68fb0',hoar:'#7fc8ef',grey:'#9aa6b2',sun:'#e0a24a',gloam:'#9a7fd0',amber:'#d8a038',isles:'#3fc0b8',cave:'#58d6c8'};
 function pzChestSvg(d,first,land){
   const T=PZ_LAND_TINT[land]||'#c9b27a', K='#241a10', G=first?'#ffd35a':'#c9b27a';
   const W=[null,['#8a5a2e','#6d4522'],['#7a5a3a','#5f4429'],['#6b3f24','#512d18'],['#8c9097','#6c7075'],['#e3d29a','#c4ad6a']][d], [body,shade]=W;
@@ -67,7 +67,7 @@ function pzChestSvg(d,first,land){
   return s+'</svg>';
 }
 function pzLootLines(c){
-  const L=[]; if(c.coins) L.push(c.coins.toLocaleString('en-US')+' coins');
+  const L=[]; if(c.xp) L.push(c.xp.toLocaleString('en-US')+' XP'); if(c.coins) L.push(c.coins.toLocaleString('en-US')+' coins');
   for(const id in (c.pot||{})) L.push(c.pot[id]+' × '+(POTS[id]?POTS[id].name:id));
   for(const [id,n] of (c.mats||[])) L.push(n+' × '+(MATS[id]?MATS[id].name:id));
   if(c.stones) L.push(c.stones+' × Tempering Stone'); if(c.amber) L.push(c.amber+' amber');
