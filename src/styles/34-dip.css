@@ -1,0 +1,8 @@
+/*@ The Dark Infection Pipe panel (game/dip/dip.js) */
+#dip{ width:min(440px,calc(100vw - 24px)); }
+@media (max-width:719px){ #dip{ width:auto; } }
+.dp-line{ margin:0 0 6px; }
+.dp-sub{ margin:0 0 10px; font-size:13px; color:var(--ink-dim); line-height:1.4; }
+.dp-needs{ display:grid; gap:4px; margin:6px 0 10px; font-variant-numeric:tabular-nums; }
+.dp-needs .ok{ color:#9fe39a; } .dp-needs .no{ color:#e79a8a; }
+#dip .chip[disabled]{ opacity:.45; pointer-events:none; }

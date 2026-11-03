@@ -24,7 +24,7 @@ function frame(){
     updateVillage(dt); updateVale(dt); updateHoarfrost(dt); updateGreyspine(dt); updateGloamhorn(dt); ewGateUpdate();   // emberwake: the Tide Bridge gate lifts when Oldhorn has fallen
     updateNodes(dt); updateLoreProps();
     updateNPCs(dt);
-    troomUpdate(dt); pzUpdate(dt);   // puzzles: the stones' glow   // testroom: the counter on the screen
+    troomUpdate(dt); pzUpdate(dt); dipUpdate(dt);   // puzzles: the stones' glow   // testroom: the counter on the screen
     dgEntUpdate(dt);   // dungeons: the doors' sealed look and animation
     updateNpcLabels();
     updateRemotes(dt); pshStallTick();   // pshop: stalls of open player shops
