@@ -2,6 +2,10 @@
 
 The approved dialogue script lives with the owner (38 scenes). This file is the code map of what is built. **Built: the prologue P1-P6, then Act I as a guided tutorial: W1 to W18 (the witch, the road north, Pip and the cure, the training arc, the Rootwarden) and the playable signature looks of Morrow and Pip.** The story's names: the village is Ribbonside, the witch Morrow, the lost child Pip, the Lodge keeper Hollen (renamed from Tamsin, who is now only the quarry-hand outfit).
 
+## Hidden background (the hero's secret; revealed from Act II on)
+
+The hero's soul carries every element (others carry one, rarely two). They came from the past: the war between two factions crossed Eldmere and mostly destroyed it. To make peace the hero wiped their own memory, planted false memories of a life in Wildwood on themself and the residents (one reason the population is small), and travelled forward; the first login is the arrival. The hero does not know. Seeds so far: two "You:" lines at the start of P1 (a borrowed morning, a swept road), Morrow's frown at the hand in W6a, and Morrow sensing all elements in the burst scene before W9 (she keeps it quiet; Act II reveals it).
+
 ## The flow in one screen
 | Part | Steps | What happens |
 |---|---|---|
