@@ -3,10 +3,11 @@
    glowing (lantern glass and the hut's window). Places come from shared/main-quest.js (MQ_FARM, MQ_PLACES.hut). Client only, no colliders. Test: client-smoke.
    Style: the village's own (buildings.js): a stone plinth sunk below the slope, board and plaster walls, banded roof rows, timber trim; woodC / stoneC / prism / vbox / cyl / csph / pc / h3 are the village's helpers.
    Names start with sb (story buildings). A building is drawn in its own frame (x across, z toward the door, y up from the floor) and moved to the ground by sbFrame. */
-function sbFrame(cx,cz,rot,hw,hd){
-  const y=getH(cx,cz); let lo=y;
+function sbFrame(cx,cz,rot,hw,hd,low){
+  let y=getH(cx,cz), lo=y;
   for(const sx of [-1,0,1]) for(const sz of [-1,0,1]){ const lx=sx*hw, lz=sz*hd, h=getH(cx+lx*Math.cos(rot)+lz*Math.sin(rot),cz-lx*Math.sin(rot)+lz*Math.cos(rot)); if(h<lo) lo=h; }
-  return {F:frameM(cx,y,cz,rot),y,drop:y-lo+0.35};
+  const y0=y; if(low) y=lo-0.04;   // low: stand on the footprint's lowest point (the high side sinks a little) so a prop on a slope never floats
+  return {F:frameM(cx,y,cz,rot),y,drop:y0-lo+0.35};
 }
 // a box with a tilt (rz about the length, ry yaw, rx pitch), moved to (x,y,z)
 function sbBox(w,h,d,x,y,z,rz,ry,rx){
@@ -123,16 +124,16 @@ function sbBarley(A,rows,cols,x0,z0,dx,dz,poorFrom){   // furrows with barley, t
 }
 function buildStoryFarm(out,glow){
   const F0=MQ_FARM;
-  const put=(cx,cz,rot,hw,hd,fn)=>{ const fr=sbFrame(cx,cz,rot,hw,hd), A=(g,c)=>out.push(pc(g,c).applyMatrix4(fr.F)); fn(A,fr); };
+  const put=(cx,cz,rot,hw,hd,fn,plinth)=>{ const fr=sbFrame(cx,cz,rot,hw,hd,!plinth), A=(g,c)=>out.push(pc(g,c).applyMatrix4(fr.F)); fn(A,fr); };
   // the barn: its door faces the yard (east, toward the village)
-  put(F0.x-10,F0.z-5,Math.PI/2,4,5.5,(A,fr)=>{ A(vbox(8.6,fr.drop+0.5,11.6,0,-fr.drop/2+0.25,0),stoneC); const G=[]; sbBarn(A,G); G.forEach(g=>glow.push(g.applyMatrix4(fr.F))); });
+  put(F0.x-10,F0.z-5,Math.PI/2,4,5.5,(A,fr)=>{ A(vbox(8.6,fr.drop+0.5,11.6,0,-fr.drop/2+0.25,0),stoneC); const G=[]; sbBarn(A,G); G.forEach(g=>glow.push(g.applyMatrix4(fr.F))); },true);
   // the hen house and its hens (the Sheaf-Crown game starts with "the hens first")
   put(F0.x+3,F0.z-9,0,1.8,1.5,(A)=>{ sbCoop(A); });
   const hens=[[F0.x+2,F0.z-6.5,0.4,0xf0e8d8,0xc02020],[F0.x+4.4,F0.z-6.9,2.2,0xa8602a,0xc02020],[F0.x+3.4,F0.z-5.6,-1,0x30302e,0xc02020],[F0.x+5.8,F0.z-8,4,0xd8b070,0xd04040]];
   for(const [hx,hz,hr,col,comb] of hens) put(hx,hz,hr,0.3,0.3,(A)=>sbHen(A,col,comb));
   // haystacks, a hay cart and barrels in the yard
   put(F0.x+9,F0.z-9,0,1.6,1.6,(A)=>sbHay(A,1.6,2.6,3)); put(F0.x+11.5,F0.z-6,0,1.1,1.1,(A)=>sbHay(A,1.1,1.8,8));
-  put(F0.x+5,F0.z+0.5,0.5,1.4,2.0,(A)=>{   // a hay cart: a bed of boards, two spoked wheels, shafts, a heap of hay
+  put(F0.x+5,F0.z+0.5,0.5,3.0,2.0,(A)=>{   // a hay cart: a bed of boards, two spoked wheels, shafts, a heap of hay
     A(vbox(2.4,0.12,1.3,0,0.85,0),sbFlat(0x7a5836)); for(const s of [-1,1]) A(vbox(2.4,0.35,0.08,0,1.05,s*0.65),sbFlat(0x6a4a30)); for(const s of [-1,1]) A(vbox(0.08,0.35,1.3,s*1.2,1.05,0),sbFlat(0x6a4a30));
     for(const s of [-1,1]){ A(cyl(0.5,0.5,0.1,14).rotateX(Math.PI/2).translate(0,0.5,s*0.78),sbFlat(0x5a4028)); A(cyl(0.38,0.38,0.12,12).rotateX(Math.PI/2).translate(0,0.5,s*0.78),sbFlat(0x2a1e14)); for(let i=0;i<4;i++) A(sbBox(0.9,0.06,0.08,0,0.5,s*0.84,i*Math.PI/4),sbFlat(0x6a4a30)); }
     for(const s of [-1,1]) A(sbBox(1.8,0.08,0.08,-2.0,0.75,s*0.45,s*-0.03,0,0.0),sbFlat(0x6a4a30)); A(csph(0.9,10,6).scale(1.2,0.55,0.7).translate(0,1.25,0),sbCol(0xd8b45a,11,0)); });

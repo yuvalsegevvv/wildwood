@@ -29,6 +29,7 @@ function caveMMovePTo(p,x,z){ p.x=x; p.z=z; p.y=getH(x,z); p.vx=p.vz=0; p.act=nu
 function caveMethodDoneP(p,floor,method){
   const g=caveGearP(p), key=floor+method, sk=caveSkillAt(floor,method), M=caveMethodDef(method);
   g.done[key]=Math.min(99999,(g.done[key]|0)+1); g.cd[key]=caveNow()+CAVE_METHOD_CD; p.dirty=true;
+  { const xp=Math.round(xpFor(p.level)*CAVE_XP_KILLS[floor]); if(xp>0){ gainExpP(p,xp); toastTo(p.id,'+'+xp+' XP: '+M.name+' complete','good'); } }   // every completion pays XP that grows with your level, on top of the skill or shards
   if(sk&&!Object.prototype.hasOwnProperty.call(g.own,sk.id)){
     g.own[sk.id]=1; toastTo(p.id,sk.name+' learned! ('+M.name+', '+caveFloorDef(floor).name+'). Wear it in the charge slot (K, Charge tab).','loot r3'); ev('caveget',p.id,sk.id); ultCheckP(p);   // ult: the cave skill is one of a set's seven pieces
 

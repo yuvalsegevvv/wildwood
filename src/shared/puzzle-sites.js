@@ -11,5 +11,5 @@ function pzSiteAdd(r){
   PZ_SITES.push(row); return true;
 }
 const pzSiteOf=id=>PZ_SITES.find(s=>s.id===id);
-// the tutorial stone: a trivial Rootlines board in the plaza of the home village, 6 m east of its centre (7 m clear of every building and prop) (Linnea's lesson points at it)
-pzSiteAdd({id:'tutorial',kind:'rootlines',diff:1,x:VIL.x+6,z:VIL.z,lv:2,seed0:0});
+// the tutorial stone: a trivial Rootlines board outside the home village, 40 m east of its centre beside the road (stones never stand inside a village) (Linnea's lesson points at it)
+pzSiteAdd({id:'tutorial',kind:'rootlines',diff:1,x:98,z:210,lv:2,seed0:0});

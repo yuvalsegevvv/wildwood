@@ -1,9 +1,9 @@
-//@ Places the overworld puzzle stones by rules: 15 trivial, 12 easy, 8 normal, 4 hard and 2 extreme in each of the seven lands that have a puzzle kind (287; the Deep Cave's come with its own files)
+//@ Places the overworld puzzle stones by rules: 15 trivial, 12 easy, 8 normal, 4 hard and 2 extreme in each of the eight lands that have a puzzle kind (328; the Deep Cave's come with its own files)
 /* Agent map. Runs once at load (pzPlaceAll), after shared/puzzle-sites.js (pzSiteAdd) and the atlas, roads and dungeon doors it reads. Deterministic (mulberry32 seeded by the land, the atlas's own data only: no heights from getH, so the server and every client agree).
    Rules: PZ_KIND_OF says each land's kind. Trivial stones stand beside the roads 60-300 m from the village, easy ones beside roads farther out, normal ones at the atlas's camps (WA_SPOTS), hard ones on a ring round a boss arena or a door (WA_POIS),
    the first extreme one on a ring round the land's top boss (the future lamp shrine of the story plan, B4), the second hidden far from any road in the land's highest zone (B5's letter). Every stone is on flat dry ground, 5 m off a road, clear of villages,
    arenas, doors, the dungeon doors and other stones. The stone's level is its zone's level. The chosen first-time seeds (seed0) are 0 until the rater picks them. Used by: server/puzzles.js, game/village/buildings-puzzle.js, the three maps. Test: tools/puzzles-smoke.js */
-const PZ_KIND_OF={home:'rootlines',vale:'sudoku',hoar:'iceslide',grey:'bridges',sun:'mirrors',gloam:'nonogram',amber:'sokoban'};
+const PZ_KIND_OF={home:'rootlines',vale:'sudoku',hoar:'iceslide',grey:'bridges',sun:'mirrors',gloam:'nonogram',amber:'sokoban',isles:'rootlines'};
 const PZ_PLAN=[['t',1,15],['e',2,12],['n',3,8],['h',4,4],['x',5,2]];   // letter in the id, difficulty, count per land
 const PZ_MIN_GAP=38;   // metres between two stones
 function pzFlat(x,z){ const h=waGround(x,z); return Math.max(Math.abs(waGround(x+3,z)-h),Math.abs(waGround(x-3,z)-h),Math.abs(waGround(x,z+3)-h),Math.abs(waGround(x,z-3)-h))<=0.9; }
@@ -11,9 +11,10 @@ function pzPlaceLand(land){
   const kind=PZ_KIND_OF[land], hub=WA_HUBS[land], rng=mulberry32(0x5a17+land.split('').reduce((a,c)=>a*31+c.charCodeAt(0)|0,7)), got=[];
   const pois=WA_POIS.filter(p=>p.land===land&&p.kind!=='pier'), bosses=pois.filter(p=>p.kind==='boss'), spots=WA_SPOTS.filter(s=>s.land===land);
   const shuffle=a=>{ for(let i=a.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  const vilOf=[VIL,VIL2,VIL3,VIL4,VIL5,VIL6,VIL7,VIL8].find(V=>Math.hypot(V.x-hub[0],V.z-hub[1])<40)||VIL;   // a stone never stands inside its land's village (Glasswell's wall is 80 m)
   const hubD=(x,z)=>Math.hypot(x-hub[0],z-hub[1]);
   const clear=(x,z,gap,ring)=>{
-    if(landAt(x,z)!==land||waWaterDist(x,z)<8||waCoast(x,z)<30||hubD(x,z)<55||roadDist(x,z)<3.5||!pzFlat(x,z)) return false;
+    if(landAt(x,z)!==land||waWaterDist(x,z)<8||waCoast(x,z)<30||hubD(x,z)<Math.max(55,(vilOf.r||VR)+28)||roadDist(x,z)<3.5||!pzFlat(x,z)) return false;
     for(const p of WA_POIS) if(Math.hypot(p.x-x,p.z-z)<(ring&&p===ring?20:46)) return false;
     for(const k in DG_ENTRANCES) if(Math.hypot(DG_ENTRANCES[k].x-x,DG_ENTRANCES[k].z-z)<30) return false;
     for(const s of PZ_SITES) if(Math.hypot(s.x-x,s.z-z)<(gap||PZ_MIN_GAP)) return false;

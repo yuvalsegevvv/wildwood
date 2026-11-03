@@ -79,3 +79,8 @@ Standing at the statue, the talk key opens "Offering to the statue" (`pzOfferOpe
 ## Round 12: auras and outfit pictures
 - Auras: 7 motion styles (orbit, rise, fall, spiral, swirl, burst, drift) and an `fx` field (12th element of a `COS_AURAS` row): ground patterns `g:heart|pent|lotus|ripple|rays`, `pillar`, `outline` (body hull). Code: `game/character/cosmetics-aura.js`, the loop in `cosmetics.js`. New crafted heart aura `lovelight` (the Sigil track's hearts are earned at levels ~26/37).
 - Lodge crafting list and the Sigil offering list now show a thumbnail of each piece (`cosPicHtml` / `cosPicFill`, `economy/cosmetics.js`, using `cthGet`).
+
+## Round 13: chests at the stations, the isles, chest XP
+- Each station shows a **chest** (not a stone) under a floating rune: closed while it waits, glinting when it holds loot, open and empty while it renews (`buildings-puzzle.js`).
+- The Emberwake Isles have 41 stations (kind Rootlines, `PZ_KIND_OF.isles`). No station stands inside a village (the rule uses the village's own radius; the tutorial station moved to (98, 210), outside the home village).
+- A chest pays **XP**: `xpFor(lv) * PZ_XP_KILLS[diff]` (6/12/25/50/100 kills), times `PZ_XP_FIRST` (3) on a stone's first solve (`pzChestP`). Deep Cave method completions pay `xpFor(level) * CAVE_XP_KILLS[floor]` (`caveMethodDoneP`).
