@@ -7,11 +7,12 @@ const _bv=new THREE.Vector3();
 function startTalk(n){ loreOpen=null; talkNPC=n; n.line=0; UI_SFX.talk(); const T=mqLinesFor(n), Q=sqLinesFor(n), L=(T?T.lines:[]).concat(Q?Q.lines:[]); n.mq=L.length?storyCut(L):null; if(T) netSend({t:'mq',a:'talk',id:n.def.id});
   if(Q) netSend({t:'sq',a:'talk',id:n.def.id});   // sidequests: their lines follow the main quest's
   sayLine(n); if(!mqBusy(n)) openRolePanel(n); }
-const mqBusy=n=>!!(n.mq&&n.mq.length);
+const mqBusy=n=>!!(n.mq&&n.mq.length)||!!svPickOn;
 function openRolePanel(n){ const r=n.def.role; if(r==='weaponsmith'||r==='armorer'||r==='peddler') openShop(n); else if(r==='quests') openQuests(n); else if(r==='forge') openForge(n); else if(r==='trainer') openSkills(n); else if(r==='soul') openSoul(n); else if(r==='lodge') openLodge(n); else if(r==='brew') openBrew(n); }
 function sayLine(n){
   const L=n.def.lines&&n.def.lines.length?n.def.lines:['Hello there.'];
   const quest=mqBusy(n), line=quest?n.mq.shift():L[n.line++%L.length];
+  if(quest&&String(line).startsWith('@pick ')){ svChoiceOpen(line,n.mq,()=>sayLine(n)); return; }   // (a choice: the conversation waits for your pick)
   const q=mqLineOf(line), sp=q.who&&q.who!=='You'?NPCs.find(m=>m.def.name===q.who||m.def.name.endsWith(' '+q.who)):null;   // (a screenplay line "Wren: ..." is Wren's, whoever you clicked)
   bName.textContent=q.who==='You'?(NET.name||'You'):(q.who||(q.text[0]==='('?'':n.def.name)); bText.textContent=q.text;   // (narration in brackets is nobody's line) bubble.classList.toggle('mq',quest); bubble.classList.remove('lore');
   svSpeakLine(q.who,q.text,sp||n,quest);   // every line is voiced (story-voice.js): the speaker's own voice, the hiker's in the hero voice, narration quietly; a story conversation plays itself on
@@ -23,9 +24,9 @@ let loreOpen=null;
 const SCENE_STAY=32;   // metres a place's scene stays open as you walk away from where it began
 function readLore(L){ if(talkNPC) endTalk(); loreOpen=L; bName.textContent=L.name; bText.textContent=(L.textOpen&&northOpen())?L.textOpen:L.text; bubble.classList.remove('mq'); bubble.classList.add('lore'); UI_SFX.talk(); netSend({t:'mq',a:'read',id:L.id}); }
 function pickHerb(i){ netSend({t:'mq',a:'pick',i}); UI_SFX.pickup(); }
-function endTalk(){ if(panelNPC && panelNPC===talkNPC) closePanels(); talkNPC=null; svTalking=false; svCineEnd(); stopSpeech(); }
+function endTalk(){ if(panelNPC && panelNPC===talkNPC) closePanels(); talkNPC=null; svTalking=false; svChoiceHide(); svCineEnd(); stopSpeech(); }
 function interact(){
-  if(!started||customizing||PL.dead) return;
+  if(!started||customizing||PL.dead||svPickOn) return;   // (a dialogue choice waits for 1-3)
   if(sqSceneOn()&&sqSceneNext()) return;   // sidequests: the talk key steps through a place's scene
   if(talkNPC && (nearNPC===talkNPC || Math.hypot(P.x-talkNPC.x,P.z-talkNPC.z)<4.5)){ sayLine(talkNPC); if(!panelNPC&&!mqBusy(talkNPC)) openRolePanel(talkNPC); }
   else if(nearNPC) startTalk(nearNPC);

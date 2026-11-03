@@ -25,3 +25,9 @@ body.editing #bubble, body.editing #prompt{ display:none; }
 #cine .cn-card.show{ animation:cnCard 4.4s ease-in-out both; }
 @keyframes cnCard{ 0%{opacity:0;transform:translateY(8px)} 18%{opacity:1;transform:none} 78%{opacity:1} 100%{opacity:0} }
 body.cine #bubble{ z-index:8; }
+/* dialogue choices (game/village/story-choice.js) */
+#choice{ position:fixed; z-index:9; left:50%; bottom:15vh; transform:translateX(-50%); width:min(520px,92vw); display:flex; flex-direction:column; gap:7px; } #choice[hidden]{ display:none; }
+#choice .ch-head{ text-align:center; font:600 12px "Alegreya Sans",system-ui,sans-serif; letter-spacing:.3em; text-transform:uppercase; color:#f1ecd8; opacity:.75; text-shadow:0 1px 8px #000; }
+#choice .ch-opt{ display:flex; align-items:center; gap:11px; text-align:left; padding:11px 15px; border-radius:8px; border:1px solid rgba(200,155,255,.55); background:rgba(14,16,20,.88); color:#f1ecd8; font:500 16px "Alegreya",Georgia,serif; cursor:pointer; }
+#choice .ch-opt:hover, #choice .ch-opt:focus-visible{ background:rgba(60,44,86,.92); outline:none; }
+#choice .ch-opt i{ flex:none; width:24px; height:24px; border-radius:50%; background:rgba(200,155,255,.25); border:1px solid rgba(200,155,255,.7); font:600 13px "Alegreya Sans",system-ui,sans-serif; font-style:normal; display:grid; place-items:center; }
