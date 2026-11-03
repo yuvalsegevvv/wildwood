@@ -4,7 +4,7 @@ The approved dialogue script lives with the owner (38 scenes). This file is the 
 
 ## Hidden background (the hero's secret; revealed from Act II on)
 
-The hero's soul carries every element (others carry one, rarely two). They came from the past: the war between two factions crossed Eldmere and mostly destroyed it. To make peace the hero wiped their own memory, planted false memories of a life in Wildwood on themself and the residents (one reason the population is small), and travelled forward; the first login is the arrival. The hero does not know. Seeds so far: two "You:" lines at the start of P1 (a borrowed morning, a swept road), Morrow's frown at the hand in W6a, and Morrow sensing all elements in the burst scene before W9 (she keeps it quiet; Act II reveals it).
+The hero's soul carries all six elements: fire, water, earth, air, dark, light (others carry one, rarely two). They came from the past: the war between two factions crossed Eldmere and mostly destroyed it. To make peace the hero wiped their own memory, planted false memories of a life in Wildwood on themself and the residents (one reason the population is small), and travelled forward; the first login is the arrival. The hero does not know. Seeds so far: two "You:" lines at the start of P1 (a borrowed morning, a swept road), Morrow's frown at the hand in W6a, and Morrow sensing all six elements in the burst scene before W9 (she keeps it quiet; Act II reveals it).
 
 ## The flow in one screen
 | Part | Steps | What happens |
