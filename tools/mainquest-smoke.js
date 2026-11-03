@@ -220,4 +220,9 @@ ok('the lore pass is spliced into the steps (more lines than the base script, in
 ok('key scenes carry a @cine marker (the grey reaching Wren, the Warden waking)',['P6','W17'].every(i=>x.MQ_BY_ID[i].parts.some(pt=>pt.say&&pt.say.some(l=>/^@cine /.test(l)))));
 { const q=W.players.get('a'); q.gear.mq={s:x.MQ_BY_ID.W7b.i,st:0,n:x.MQ_BY_ID.W7b.parts.map(()=>0),h:0,ver:x.MQ_VER}; q.gear.res.sunpetal=0; q.gear.coins=0; x.mqStartP(q);
   ok('W7b (the brewing step) hands out the herbs and the fee it asks for, so the potion can be brewed',q.gear.res.sunpetal>=3&&q.gear.coins>=x.POT_FEE[0],'sunpetal '+q.gear.res.sunpetal+', coins '+q.gear.coins); }
+// W14 (Not alone) can be won alone: one Goblin Chieftain is spawned for you at its Hold and killing it finishes the part
+{ const q=W.players.get('a'); q.gear.mq={s:x.MQ_BY_ID.W14.i,st:1,n:[1,0],h:0,ver:x.MQ_VER}; at(x.MQ_PLACES.hold.x,x.MQ_PLACES.hold.z); tick(40);
+  const ch=x.MONS.find(m=>m.owner==='a'&&m.def.id==='chieftain'&&!m.dead);
+  ok('W14: one Goblin Chieftain is stirred up for you at the Hold (a solo player needs no pack to pull)',!!ch&&x.MONS.filter(m=>m.owner==='a'&&!m.dead).length===1);
+  if(ch){ kill(ch); tick(2); ok('...and killing it completes the ribbon part',q.gear.mq.n[1]>=1||q.gear.mq.st===2); } }
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

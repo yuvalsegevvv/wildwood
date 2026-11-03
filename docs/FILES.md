@@ -461,6 +461,7 @@ game
   village/smith.js                   Villager life: the forge keepers at work (a hammer, three blows then a pause, sparks and a clang when you are near) and a wave for a player who walks up
   village/talking.js                 Talking to villagers: bubble, prompt, talk key (E), the main quest's lines first, opening shop/quest panels; reading lore spots, picking heartleaf; stepping on a teleport circle
   village/story-voice.js             Voiced story: every line of a story conversation or place scene is read aloud in its speaker's voice (a villager's own, the hiker's in the hero voice, narration quietly), one after the other with a pause, and carries on while you walk; the boss fight's shouted lines are read too
+  village/story-choice.js            Dialogue choices: a "@pick what you say >> the reply | another thing >> its reply" line in a story scene stops it and lets you say one of two or three things; your pick is spoken in your voice and answered
   village/npc-labels.js              Name and profession labels above the special villagers, with ! / ? quest markers over quest givers
   audio/engine.js                    Web Audio setup (SND, buses, reverb, echo, noise), tone(), noiseHit(), spatial()
   audio/samples.js                   Sound files from assets/audio: small ones embedded in the page (window.WILDWOOD_AUDIO), music fetched once from audio/ (window.WILDWOOD_AUDIO_URL): loadSamples, playSample, musicBuffer (lazy)

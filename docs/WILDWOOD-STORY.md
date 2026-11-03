@@ -25,6 +25,8 @@ The approved dialogue script lives with the owner (38 scenes). This file is the 
 | Script as a document | `node tools/story-script.js out.md [--all]` writes the dialogue of the prologue and Act I (or every step) in play order; copies in `/mnt/project-files/story-plan/` |
 | Voiced story | `game/village/story-voice.js`: every line (villager, hero, narration, boss shouts) is read aloud; the next line plays once the voice has ended and 5 s have passed since the line began (+ 2.2 s of quiet), and the story goes on while you walk (`svBusy`, `svFar`) |
 | Story choice | `game/ui/story-mode.js` (`storySkip`, `storyCut`, `storySet`; `localStorage` `wildwood-story`): asked on the creation screen (`#edStory`), changeable in Settings (`#storyChips`). "Just objectives": nothing is read aloud or paced, no freeze, a story conversation is cut to its last spoken line, a place's scene is not shown, boss shouts are not read; the quest log, tips and dark moments stay. Stored per device, not per account |
+| Choices | `game/village/story-choice.js`: a line `@pick A >> reply | B >> reply | (gesture) >> reply` (2-3 options) in any offer / say / done list stops the scene; keys 1-3 or a tap pick; the pick is spoken as `You:` and answered. Skipped in "Just objectives". About ten in Act I (P1, P2, P5, W2, W2b, W7, W12, W15, W17, W18) |
+| Names and gender | `mqSubst` (`economy/main-quest.js`, applied by `mqLineOf`): `{lad}` `{boy}` `{brother}` `{sir}` follow the editor's gender; `{name}` is the account name, and is left out with its comma when you are not registered (`NET.user`) |
 | Key scenes | a first line `@cine Title` in a `say` / `offer` / `done` list (rides in front of the next line, `mqSplitLines` / `mqLineOf`): letterbox bars, a title card, the hiker frozen (`cineOn`, `uiOpen`, `updatePlayer`); it ends with the scene, on damage, death, Escape or after 150 s. Marked: P6, W2c, W15 (grave), W17 |
 | Farm and hut buildings | `game/world/story-houses.js` (`buildStoryHouses`: barn, coop, haystacks, field, fence, scarecrow; Morrow's hut with garden); the farm stands at `MQ_FARM` (-24, 200), on dry ground (mainquest-smoke checks it) |
 | The grey monster | `thornlet` (`shared/monster-defs.js`) |
@@ -41,6 +43,8 @@ The approved dialogue script lives with the owner (38 scenes). This file is the 
 - Tansy does not come on the north trip (Torgeir and Pell take her roles there).
 - The Rootwarden still has its season mechanics in code; the story overlay only adds barks and the vision.
 - Not built: the Greenwash item, the Strike / Release choice, the goblin side story (script appendix A), practice-grove dummies.
+- W14 (Not alone) spawns one Goblin Chieftain for you at its Hold (`MQ_PLACES.hold`), so it can be won alone; friends still share the kill.
+- W17's hand-in is a scene: the Warden's grey turns on Pip, Morrow steps into it, Pip finishes the four-note song and the grey ebbs (her hair goes white). W9d / W10 and every later step end by saying who to see next and why (`MQ_MORE_D`).
 - The brewing step W7b hands out three sunpetal and the fee when it starts (`gift:'herbs'`, `mqStartP`), so the potion can always be brewed.
 - Not checked in a real browser: the story is covered by `node tools/mainquest-smoke.js`, `boss-smoke` and `client-smoke`, not by eye.
 

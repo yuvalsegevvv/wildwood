@@ -7,7 +7,9 @@ var STORY_SKIP=false;
 try{ STORY_SKIP=localStorage.getItem('wildwood-story')==='skip'; }catch(_){}
 const storySkip=()=>STORY_SKIP;
 function storyCut(lines){
-  if(!STORY_SKIP||!lines||lines.length<2) return lines;
+  if(!STORY_SKIP||!lines) return lines;
+  lines=lines.filter(l=>!String(l).startsWith('@pick '));   // (no choices in the objectives-only mode)
+  if(lines.length<2) return lines;
   for(let i=lines.length-1;i>=0;i--) if(lines[i][0]!=='('&&!/^@cine /.test(lines[i])) return [lines[i]];
   return [lines[lines.length-1]];
 }

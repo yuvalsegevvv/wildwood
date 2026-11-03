@@ -394,6 +394,7 @@
     "village/smith.js",
     "village/talking.js",
     "village/story-voice.js",
+    "village/story-choice.js",
     "village/npc-labels.js",
     "audio/engine.js",
     "audio/samples.js",

@@ -44,7 +44,7 @@ function svBusy(){ const now=performance.now(); return svTalking&&(svEnd===null|
 const svHolds=n=>svTalking&&n===talkNPC&&svBusy();
 const svFar=n=>!!n&&svTalking&&Math.hypot(P.x-n.x,P.z-n.z)>SV_FAR;
 function svTick(){
-  const now=performance.now(); svCineTick(now);
+  const now=performance.now(); svCineTick(now); svChoiceTick(now); if(svPickOn) return;   // (a choice waits for you)
   if(svTalking&&svEnd===null&&now-svStart>Math.max(14000,svLen*170)) svEnd=now;   // (a voice that never reports an end, a browser that wants a tap first: do not stall the scene)
   if(svTalking&&svEnd!==null&&now>=Math.max(svStart+SV_MIN_MS,svEnd+SV_AFTER_MS)){
     if(sqSceneOn()){ if(sqScene.lines.length) sqSceneNext(); else if(now>=svEnd+SV_CLOSE_MS){ sqSceneNext(); svTalking=false; } }

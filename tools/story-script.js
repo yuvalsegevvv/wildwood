@@ -4,7 +4,7 @@ const {loadServer}=require('./load');
 const {x}=loadServer({send(){}},['MQ','MQ_BY_ID']);
 const out=process.argv[2]||'story-script.md', ALL=process.argv.includes('--all');
 const SPEAKER=/^(Tansy|Wren|Dunstan|Torgeir|Pip|Morrow|Linnea|Pell|Aldric|Maren|Greta|Bram|Oskar|Hollen|Ambrose|Odran|Tomas|Daisuke|Kaede|The Rootwarden|You): ([\s\S]*)$/;
-const fmt=l=>{ l=String(l); const m=SPEAKER.exec(l); if(m) return '**'+m[1].toUpperCase()+'**  '+m[2]; return l[0]==='('?'*'+l+'*':l; };
+const fmt=l=>{ l=String(l); if(l.startsWith('@pick ')) return '> **CHOICE** (the player picks one; their pick is spoken as YOU)\n'+l.slice(6).split(' | ').map((o,i)=>{ const j=o.indexOf(' >> '); return '> '+(i+1)+'. '+(j<0?o:o.slice(0,j))+(j<0?'':'  \u2192  '+o.slice(j+4)); }).join('\n'); const m=SPEAKER.exec(l); if(m) return '**'+m[1].toUpperCase()+'**  '+m[2]; return l[0]==='('?'*'+l+'*':l; };
 const lines=[]; let n=0;
 const sect=(h,a)=>{ if(!a||!a.length) return; lines.push('\n### '+h+'\n'); for(const l of a){ if(String(l).startsWith('@cine ')) lines.push('\n> **KEY SCENE: '+String(l).slice(6)+'**  (letterbox bars, title card, controls frozen)\n'); else lines.push(fmt(l)+'\n'); } };
 for(const s of x.MQ){ if(!ALL&&!/^(P|W)/.test(s.id)) continue; n++;
