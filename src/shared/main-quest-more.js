@@ -5,7 +5,7 @@
    Spoiler rule (docs/STORY.md section 0): hints only, every one with an innocent reading; no one says continent, machine or the Concord. Test: tools/mainquest-smoke.js. */
 const MQ_MORE={
   P2:{say:[{post:[
-    "Tansy: The Ribbon Row's just up there on the left, see? Every child in the village ties a ribbon on the first autumn.",
+    "Tansy: The Ribbon Row's just up there on the left, see? Every child in the village ties a ribbon the autumn they turn nine.",
     "Tansy: Mine's red. It was yellow once. The sun took it.",
     "Tansy: The elders say a ribbon is how the roots learn your name. Old Bram says it's how the roots learn to put up with you.",
     "(Along the road the grass is thick and wet. A heron lifts out of the reeds and flaps off, complaining.)"]},
@@ -55,7 +55,7 @@ const MQ_MORE={
     "Morrow: Listen to me. The grey doesn't come from outside. It comes through the roots, from deep under the forest, and the keeper that holds it down is failing.",
     "Tansy: The Circle. You said the Circle.",
     "Morrow: I said I hoped I was wrong. I'm rarely that lucky.",
-    "Morrow: Torgeir will walk with you. He's good with a shield, and he doesn't ask questions. And you'll need both."]}]},
+    "Morrow: He will walk with you. He's good with a shield, and he doesn't ask questions. And you'll need both."]}]},
   W7:{say:[{post:[
     "Torgeir: (to you, quietly) You don't have to like it. I don't. But the road's easier with someone who's walked it.",
     "(He shoulders his shield. It is old and dented and has seen a great deal.)",
@@ -87,7 +87,7 @@ const MQ_MORE={
   W10:{offer:{post:["Aldric: I trained under someone once, in a place I'd rather not name.","Aldric: What I learned is that a knack isn't a weapon. It's a conversation. You ask, and the roots answer."]}},
   W12:{offer:{post:["Torgeir: I won't tell you not to be afraid. I'll tell you to be afraid and move anyway. That's all courage is."]},
     done:{post:["Torgeir: Drink something. Sit. Nobody's watching, and nobody's counting."]}},
-  W11:{offer:{post:["Greta: I'm the second smith in this village. My mother was the first. Her mother, before her, was something older. Nobody wrote it down."]}},
+  W11:{offer:{post:["Greta: I'm the second smith in this village. My mother was the first. Her mother, before her, was something older."]}},
   W11b:{offer:{post:["Tomas: The ridge was a quarry once, or a mine. The old people never agreed. Nobody mines it now but me and the badgers."]}},
   W13:{offer:{post:["Dunstan: I'm no fighter. But I can count. And everything that wants to kill you has a rhythm. Learn the rhythm and you've learned half the fight."]},
     say:[{post:["Dunstan: Again. And one, and two, and three, and step. Good. You're the first to get it on the second try. Tansy needed an hour."]}]},
@@ -154,7 +154,7 @@ const MQ_MORE_B={
     "Tansy: There's a pattern in the floor. Look. A ring, and a line through it.",
     "Tomas's voice, remembered: \"The old people called that a sun. Seems a funny thing to carve where there isn't any.\""]}]},
   W12:{done:{post:[
-    "Torgeir: Here. Take the sidestep, not the roll. The roll costs you your feet. The step costs you nothing.",
+    "Torgeir: Here. Take the sidestep. Running costs you your feet. The step costs you nothing.",
     "Torgeir: Remember it. The next time something is coming, don't ask whether you can stop it. Ask where it won't be, and stand there."]}},
   W13:{offer:{post:[
     "Dunstan: Every village drummer learns a march. Mine was handed down. The man who taught me said it came from before the Silent Years, when armies walked the road. I thought he was joking. Now I think he wasn't.",
@@ -168,7 +168,7 @@ const MQ_MORE_B={
     "Torgeir: That's all a company is, too. Just a lot of threads that decided not to be thin."]},
     done:{post:[
     "Tansy: I was nine when I tied mine. I asked the roots for a husband, a goat and a bigger barn. I got the goat.",
-    "Dunstan: The ribbon in the goblin's hoard. It's yellow, like the ones from the first autumn. Someone gave it up.",
+    "Dunstan: The ribbon in the goblin's hoard. It's yellow, like the oldest ones on the Row. Someone gave it up.",
     "Torgeir: Or had it taken."]}},
   W16:{say:[{post:[
     "Pip: Wren came out to the Hem once, when nobody was looking, and taught me to whistle with a blade of grass. It only works if you hold it just right. Wren says the grass has to like you.",
@@ -230,7 +230,7 @@ const MQ_MORE_D={
   W7:{say:[{post:["Torgeir: One thing before we go. The north eats supplies, and a full pack slows you. Odran's cart is at the gate this week, buying and selling. Go and lighten your load. I'll wait."]}]},
   W8:{done:{post:["Torgeir: Enough. North. Pell keeps the river crossing, and he'll know what the water has been saying."]}},
   W9a:{done:{post:["Torgeir: He can't stay out here alone. But he'll eat tonight.","Torgeir: We have the silverleaf and the ghostcap. Morrow will know what to do with a boy who hears the roots, and she's the only one who can make the cure. Back to the hut."]}},
-  W9c:{done:{post:["Tansy: ...They're breathing easier. Look. Their hand is warm.","Tansy: Morrow's gone ahead to the well to wait with Dunstan and Torgeir. She says the cure holds, but not for ever, and she wants to talk about what's in the north."]}},
+  W9c:{done:{post:["Tansy: ...They're breathing easier. Look. Their hand is warm.","Tansy: Morrow's gone ahead to the well to wait with Dunstan. She says the cure holds, but not for ever, and she wants to talk about what's in the north."]}},
   W9d:{done:{post:["You: Rest. With the Warden's thorns in my head.","Morrow: Then spend the night usefully. A bare knack won't answer spikes and slams and totems. Aldric teaches the knacks and sharpens the ones you have. That's the first.","Morrow: Torgeir will teach you to stand where the blow won't. Greta's forge makes steel sing, and Tomas can show you what's under the ridge. Dunstan has been counting the Warden's beat. You will want every one of them before the Circle.","Morrow: Nobody beats the Warden alone, field-hand. Not even the stubborn ones. Go and be taught, {name}."]}},
   W10:{done:{post:["Aldric: A knack is only half of it. The Warden throws roots up under your feet, and no knack answers that: feet do. Torgeir has been drilling the dodge at the gate all week. Go and see him."]}},
   W12:{done:{post:["Torgeir: You'll want better steel for the first day. Greta can fold three of a kind into one better, and she'll grumble the whole time. Tell her I sent you. That will make her grumble more."]}},
@@ -264,7 +264,7 @@ const MQ_MORE_E={
   W15:{offer:{post:["You: Why the grave first? Why not the Circle?","Morrow: Because you ought to see what the grey costs before you walk into it. It's cheaper to be shown than told."]}},
   W16:{say:[{post:["You: What does it say? The Warden, in the roots?","Pip: Stop. It says stop. Over and over. Nobody listens to the words."]}]},
 
-  W16b:{say:[{pre:["You: Is everyone ready? Is anyone?","Dunstan: I've been ready since Tuesday.","Torgeir: He's been terrified since Tuesday."]}],done:{post:["You: Pip. You don't have to come.","Pip: I know. It's calling anyway."]}},
+  W16b:{say:[{pre:["You: Is everyone ready? Is anyone?","Dunstan: I've been ready since sunrise.","Torgeir: He's been terrified since sunrise."]}],done:{post:["You: Pip. You don't have to come.","Pip: I know. It's calling anyway."]}},
   P5:{intro:{post:["You: Mushrooms that pop. Of course they do."]}},
   W2:{done:{post:["You: I don't think anything is nothing right now."]}},
   W11:{offer:{post:["You: Three of the same, one better. That's the best deal I've heard since the market.","Greta: It's not a deal. It's arithmetic with fire."]}},
