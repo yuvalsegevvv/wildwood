@@ -270,12 +270,11 @@ const MQ_MORE_E={
   W15:{offer:{post:["You: Why the grave first? Why not the Circle?","Morrow: Because you ought to see what the grey costs before you walk into it. It's cheaper to be shown than told."]}},
   W16:{say:[{post:["You: What does it say? The Warden, in the roots?","Pip: Stop. It says stop. Over and over, like a baby crying. Nobody listens to the words."]}]},
   W16a:{say:[{post:["You: Pell. Why do you keep telling people about the boat?","Pell: Because somebody ought to know it's there. Even if nobody believes me."]}]},
-  W16b:{say:[{pre:["You: Is everyone ready? Is anyone?","Dunstan: I've been ready since Tuesday.","Torgeir: He's been terrified since Tuesday."]}]},
+  W16b:{say:[{pre:["You: Is everyone ready? Is anyone?","Dunstan: I've been ready since Tuesday.","Torgeir: He's been terrified since Tuesday."]}],done:{post:["You: Pip. You don't have to come.","Pip: I know. It's calling anyway."]}},
   P5:{intro:{post:["You: Mushrooms that pop. Of course they do."]}},
   W2:{done:{post:["You: I don't think anything is nothing right now."]}},
   W11:{offer:{post:["You: Three of the same, one better. That's the best deal I've heard since the market.","Greta: It's not a deal. It's arithmetic with fire."]}},
   W12:{offer:{post:["You: Circles. Right. And if I'm standing in one?","Torgeir: Then you've stopped listening to me."]}},
-  W16b:{done:{post:["You: Pip. You don't have to come.","Pip: I know. It's calling anyway."]}},
   W18:{say:[{},{},{post:["You: Dunstan. Torgeir. Don't die before I find you.","Torgeir: We're old and ugly, {name}. We outlast most things."]}]}
 };
 
