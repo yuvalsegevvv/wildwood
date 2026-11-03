@@ -49,4 +49,10 @@ tick(40); const lst=msgs('a','dipa').pop(); ok('the hiker is told which pipes ar
 st.until=0; tick(2);   // (ten minutes of play, jumped to)
 ok('after ten minutes it ends and its monsters are gone',!x.DIP_ACT.has(S0.id)&&st.mons.every(m=>m.dead||m.remove));
 tick(80); ok('the list goes empty once none is active',msgs('a','dipa').pop().a.length===0);
+// a lower level can be released, cheaper, even when the pipe is upgraded; a higher one than yours cannot
+put(A,S0); A.dead=false; A.hp=A.maxHp; A.gear.dip[S0.id]=3; A.gear.coins=1e9; W.receive('a',{t:'dip',a:'go',id:S0.id,lv:1});
+const st2=x.DIP_ACT.get(S0.id); tick(2);
+ok('releasing at level 1 with a level-3 pipe pays the level-1 price and fills to the level-1 count',!!st2&&st2.L===1&&A.gear.coins===1e9-x.dipCost(S0,1)&&st2.mons.filter(m=>!m.dead&&!m.remove).length===x.DIP_COUNT[1]);
+st2.until=0; tick(2); A.gear.dip[S0.id]=1; W.receive('a',{t:'dip',a:'go',id:S0.id,lv:5});
+ok('asking for more than your own level gives your own',x.DIP_ACT.get(S0.id)&&x.DIP_ACT.get(S0.id).L===1);
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);
