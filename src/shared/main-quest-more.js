@@ -6,7 +6,7 @@
 const MQ_MORE={
   P2:{say:[{post:[
     "Tansy: The Ribbon Row's just up there on the left, see? Every child in the village ties a ribbon the autumn they turn nine.",
-    "Tansy: Mine's red. It was yellow once. The sun took it.",
+    "Tansy: Mine's red. It's gone a bit pink. The sun took it.",
     "Tansy: The elders say a ribbon is how the roots learn your name. Old Bram says it's how the roots learn to put up with you.",
     "(Along the road the grass is thick and wet. A heron lifts out of the reeds and flaps off, complaining.)"]},
     {post:[
@@ -19,7 +19,7 @@ const MQ_MORE={
   P4:{intro:{post:["Tansy: My father built that barn with his own hands, in one summer, and told everyone it took him a year so they'd be impressed.","Tansy: When he died I thought, well, that's that. I'll sell it. Then I walked in and it smelled of hay and him, and I couldn't.","Tansy: You've weeded these rows with me since you were twelve and never once asked for a wage. I still owe you eight years. Remind me after the crown."]},
     say:[{post:[
     "Tansy: Smell that? Wet earth and something sweeter. That's the barley. It's early this year. Everything's early this year.",
-    "Tansy: Funny. My gran said that when the wheat comes early, somebody's about to go away. She said it every year. It never meant anything. Someone always goes away."]},
+    "Tansy: Funny. My gran said that when the barley comes early, somebody's about to go away. She said it every year. It never meant anything. Someone always goes away."]},
       {post:["Tansy: I used to hide up here when I was small, and read. Don't tell anyone I can read. It'll ruin my reputation.","(Through the hatch you see the whole farm: the yard, the coop, the long rows of barley, and past the fence the road you came by, and, beyond it, the dark crest of the forest. Something about the light is wrong. The trees look further away than they should.)","Tansy: Come down when you're ready. Mind the fourth rung."]},
       {post:["Tansy: Go on, try the bow, try the wand. Nobody's watching but Old Hob, and he's seen worse."]}],
     done:{post:["(Behind you the weathervane on the barn swings round against the wind, once, and sticks, pointing north.)","Tansy: Funny. That's never stuck before."]}},
@@ -30,7 +30,7 @@ const MQ_MORE={
     "(Somewhere a door opens a crack. A face peers out, a neighbour you have known all your life. It looks at you, then at the bed, and closes again.)",
     "Tansy: ...They're frightened. Of course they are. I would be.",
     "(Wren's breathing is shallow and even. Under the skin of their arm the grey lines move, slowly, like roots finding their way through soil.)",
-    "Tansy: Don't look at it. Look at their face. Their face is the same.","Tansy: You've gone quiet. That's the thing about the first hard day. Everything's the same as it was and nothing is.","Tansy: When Dad died I ate a whole loaf standing at the window, just for something to do with my hands. There is nothing to do with your hands now. So hold theirs. That's all.","@pick What if it's nothing? What if it passes? >> Tansy: Then you'll have been frightened for nothing, and I'll buy you a pie. | I'm not leaving them. >> Tansy: Good. Neither am I. | (Say nothing. Squeeze her hand.) >> Tansy: ...Yes. Me too.",
+    "Tansy: Don't look at it. Look at their face. Their face is the same.","Tansy: You've gone quiet. That's the thing about the first hard day. Everything's the same as it was and nothing is.","Tansy: When Dad died I ate a whole loaf standing at the window, just for something to do with my hands. There is nothing to do with your hands now. So hold theirs. That's all.","@pick What if it's nothing? What if it passes? >> Tansy: (quietly) Then you'll have been frightened for nothing. I would give a year of barley for that. | I'm not leaving them. >> Tansy: Good. Neither am I. | (Say nothing. Squeeze her hand.) >> Tansy: ...Yes. Me too.",
     "(You take Wren's hand. It is as cold as stone.)"]}],
     done:{post:["(The village bell stops. In the silence you can hear the whole forest holding its breath.)","Tansy: Come on. Come on, then. Linnea first, then Dunstan. Whoever we have to ask."]}},
   W1:{say:[{post:["Linnea: And take this. It's willow bark, dried. It won't cure anything. It will make Wren comfortable, and it will make me feel less useless.","Linnea: I used to know someone who could have helped. We... don't speak. It's a very old quarrel. I'll tell you about it one day."]},
@@ -42,7 +42,7 @@ const MQ_MORE={
     "Morrow: I won't tell you what I know. I'll tell you what I'll need.",
     "Tansy: A needle in a haystack. Is that what you're going to say? Because I've got a haystack and I'm prepared to use it.",
     "Morrow: (a short dry laugh, almost a cough) Sit down, the pair of you. You'll do. For now."]}],
-    done:{post:["(Morrow pulls a stool out with her foot and does not look at any of you.)","Morrow: Three small things. Don't think they are nothing."]}},
+    done:{post:["(Morrow pulls a stool out with her foot and does not look at either of you.)","Morrow: Three small things. Don't think they are nothing."]}},
   W2b:{offer:{pre:["Morrow: I don't help strangers for free. Not because I'm cruel. Because help without a price is a favour, and a favour is a debt the other way round."]},
     done:{post:["Morrow: Don't dawdle over the other two. The grey doesn't."]}},
   W6a:{offer:{post:["Hollen: Go gently with the sunpetal. It grows where the ground is least certain of itself.","Hollen: The old healers said the roots feed on whatever the sky forgets. Sunpetal drinks the sun, that's all. It holds what the sun lets go."]},
@@ -52,8 +52,8 @@ const MQ_MORE={
   W6:{offer:{post:["Maren: Take a notice and do a good job. The village talks, and what it says about you is what the board will give you."]},
     done:{post:["Maren: Well done, {name}. Careful, mind: the board is a ladder, and every rung is a little further from home."]}},
   W2c:{say:[{pre:["@cine The grey at the hut","(At the hut's door a thin line of smoke rises from the chimney. Inside the kettle is bubbling with no fire beneath it.)","(Morrow takes the flask you made. She sniffs it, sips, and her face does something complicated.)","Morrow: Bitter. Strong. A little too much willow. ...It'll do."],post:[
-    "Morrow: Listen to me. The grey doesn't come from outside. It comes through the roots, from deep under the forest, and the keeper that holds it down is failing.",
-    "Tansy: The Circle. You said the Circle.",
+    "Morrow: Listen to me. The grey doesn't come from outside. It comes up through the roots, from deep under the forest.",
+    "Tansy: Then it's the Circle. You said the keeper was in the Circle.",
     "Morrow: I said I hoped I was wrong. I'm rarely that lucky.",
     "Morrow: He will walk with you. He's good with a shield, and he doesn't ask questions. And you'll need both."]}]},
   W7:{say:[{post:[
@@ -61,7 +61,7 @@ const MQ_MORE={
     "(He shoulders his shield. It is old and dented and has seen a great deal.)",
     "Tansy: I'll walk with you as far as I can. Linnea has Wren by day and I take the nights. Don't argue."]}]},
   W8:{offer:{post:["Odran: I've a cart full of things that fell off other carts. You'd be amazed what the road brings."]},
-    done:{post:["Odran: Lovely. Truly lovely. The things people carry and don't understand. That's my favourite part of the trade.","Odran: A lamp, you say? A lantern, perhaps, that burns without a flame? No, no. I'm only thinking aloud. Forget I spoke."]}},
+    done:{post:["Odran: Lovely. Truly lovely. The things people carry and don't understand. That's my favourite part of the trade.","Odran: A lamp, perhaps? A lantern, that burns without a flame? No, no. I'm only thinking aloud. Forget I spoke."]}},
   W9:{say:[{post:["Pell: One more thing. The fish have gone quiet. A fisherman knows when the water stops talking. It's been a week.","Pell: I'm only a fisherman. But something's wrong with the river. It runs the wrong way at night."]}],
     done:{post:["Torgeir: Come. The Hollow's close. There's something there I want you to see."]}},
   W9a:{say:[{post:[
@@ -90,7 +90,7 @@ const MQ_MORE={
   W11:{offer:{post:["Greta: I'm the second smith in this village. My mother was the first. Her mother, before her, was something older."]}},
   W11b:{offer:{post:["Tomas: The ridge was a quarry once, or a mine. The old people never agreed. Nobody mines it now but me and the badgers."]}},
   W13:{offer:{post:["Dunstan: I'm no fighter. But I can count. And everything that wants to kill you has a rhythm. Learn the rhythm and you've learned half the fight."]},
-    say:[{post:["Dunstan: Again. And one, and two, and three, and step. Good. You're the first to get it on the second try. Tansy needed an hour."]}]},
+    say:[{post:["Dunstan: Again. And one, and two, and three, and step. Good. You're the first to get it on the second try. The last village I drilled needed an hour."]}]},
   W14:{offer:{post:["Dunstan: A ribbon on a post, it's only a ribbon. A ribbon on a post at the Circle, with a village behind it, that's a promise."]},
     done:{post:["Dunstan: (quietly) Goblins don't wear ribbons. Goblins don't even know what they are. Somebody gave it to them. Somebody taught them.","Torgeir: Or something taught somebody to teach them."]}},
   W15:{offer:{post:["Morrow: It's said a Warden is chosen, not made. The village forgot. The forest didn't."]},
@@ -192,10 +192,10 @@ const MQ_MORE_C={
   W1:{say:[
     {post:["You: Who? Who did you quarrel with?","Linnea: Ask Dunstan first. He's seen something like it. I'll tell you the rest when I can say it without my hands shaking."]},
     {post:["You: So the forest knows something we don't.","Dunstan: The forest knows everything. It just won't tell anyone who doesn't ask politely."]}]},
-  W2:{say:[{post:["@pick We'll do whatever you ask. >> Morrow: Careful. People say that, and then they hear what I ask. | Please. It's my sibling. They're sick. >> Morrow: Then you came to the right door, and a century too late. | (Bow your head, and wait.) >> Morrow: ...Manners. Rare.","You: The grey. It's in their arms, and it won't stop climbing.","Morrow: I know what it is. Sit. Talk when you've caught your breath."]}]},
+  W2:{say:[{post:["@pick We'll do whatever you ask. >> Morrow: Careful. People say that, and then they hear what I ask. | Please. It's my sibling. They're sick. >> Morrow: Then you came to the right door, and a long time after anyone else thought to. | (Bow your head, and wait.) >> Morrow: ...Manners. Rare.","You: The grey. It's in their arms, and it won't stop climbing.","Morrow: I know what it is. Sit. Talk when you've caught your breath."]}]},
   W2b:{offer:{post:["@pick I'll bring them. >> Morrow: Everyone says that. Do it. | Why help me at all? >> Morrow: Because the grey is in my garden too, and I'm tired of watching it. Bring them. | Three small things? It's a test. >> Morrow: Everything is. Bring them."]}},
   W6a:{offer:{post:["You: Why sunpetal? Why not any herb?","Hollen: Because it grows where the sun lingers longest, in the open, on thin soil, and it is the only thing in the wood that doesn't mind the grey at its roots. Ask Morrow why she wants it. I would only be guessing."]}},
-  W7b:{done:{post:["You: I made a potion. Me. Ambrose would faint.","Linnea: Ambrose faints at a stubbed toe. Well done."]}},
+  W7b:{done:{post:["You: I made a potion. Me. Ambrose, please don't faint.","Linnea: He faints at a stubbed toe. Well done."]}},
   W2c:{say:[{post:["You: Will it work? The cure?","Morrow: It will hold. Holding is all I promise. The rest is up to the thing under the roots, and to you."]}]},
   W7:{say:[{post:["@pick Tansy. Look after them. >> Tansy: Wren has been looked after by me since they could walk. You come back with a cure and your pride intact. In either order. | I'll be back before the leaves turn. Don't cry yet. >> Tansy: I'm not crying. It's the barley dust. | (Hug her.) >> Tansy: (muffled) Oh, stop it. Go."]}]},
   W8:{done:{post:["You: He asked about a lantern. Why would he ask about a lantern?","Torgeir: Because he wasn't asking. (He watches the cart roll away.) Keep walking."]}},
@@ -208,13 +208,13 @@ const MQ_MORE_C={
   W12:{done:{post:["@pick Torgeir. Thank you for telling me. >> (He doesn't answer. He passes you the waterskin.) | You held. That's all anyone can do. >> Torgeir: ...Hm. Drink. | (Sit beside him in silence.) >> (After a while he nods, once. It is more than he has said to anyone in years.)"]}},
   W11:{done:{post:["You: A forge facing a door that isn't there. I like that.","Greta: Out, the pair of you. (She is almost smiling.)"]}},
   W11b:{say:[{post:["You: The same ring and sun as on the old road stones. It's the same builder.","Tansy: Don't say that. Don't say anything. Let's go and make something sharp."]}]},
-  W13:{say:[{post:["You: Taught by whom?","Dunstan: If I knew, I'd shake their hand. Or their collar. Shield up, again."]}]},
+  W13:{say:[{post:["You: Taught by whom?","Dunstan: If I knew, I'd shake their hand. Or their collar. Again."]}]},
   W14:{done:{post:["You: Whoever tied it, it belongs on a post. We'll take it to the tenth.","Tansy: ...The bare one. Yes. All right.","(Later, on the Ribbon Row, you hang the yellow ribbon on the tenth post. It stirs, though there is no wind.)"]}},
   W15:{say:[{post:["@pick Did he have a name? >> Morrow: He did. I carved it. The moss has had it since. | I'm sorry. >> Morrow: Everyone is. It's the one thing the village has always been good at. | (Kneel, and clear the moss from the stone.) >> Morrow: ...Leave it. Leave it. (She does not stop you.)"]}]},
   W16b:{say:[{post:["You: And if it goes right?","Torgeir: Then we eat. Dunstan's buying.","Dunstan: I am not."]}]},
   W17:{say:[{post:["You: (quietly, thinking of the green ribbon on Wren's wrist) Right. For Wren."]}]},
   W18:{say:[
-    {post:["(You lean close, so that only Wren can hear.)","@pick I'll find something that works. I'll be back before the first snow. >> (Wren's fingers twitch around the ribbon.) | Keep the ribbon green. I'll bring the cure. >> (The green on their wrist seems, for a moment, a little brighter.) | (Say nothing. Take your blue ribbon from the crown's braid and tie it beside theirs.) >> (Two ribbons, side by side, in the lamplight.)"]},
+    {post:["(You lean close, so that only Wren can hear.)","@pick I'll find something that works. I'll be back before the first snow. >> (Wren's fingers twitch around the ribbon.) | Keep the ribbon green. I'll bring the cure. >> (The green on their wrist seems, for a moment, a little brighter.) | (Say nothing. Take your scrap of blue ribbon from the crown's braid and tie it beside theirs.) >> (Two ribbons, side by side, in the lamplight.)"]},
     {post:["Tansy: And we never played, did we? The crown, the sunset, everyone snatching. We hauled that stupid thing all the way home for nothing.","You: Not for nothing. Keep the game. When Wren wakes up we play, all three of us, at the well, properly.","Tansy: ...You'd better not hide behind the scarecrow.","You: Terrain, Tansy. It was terrain.","Tansy: (laughing, and wiping her eyes with a floury hand) Go. Before I cry into the well."]}],
     done:{post:["You: She said someone would come? How could she possibly know that?","Daisuke: She says that about the weather, too. Go and ask her."]}}
 };
@@ -223,7 +223,7 @@ const MQ_MORE_C={
    so a step never ends with the player wondering what to do or why. Applied last, so these are the final lines of each hand-in (or scene, where the step has no hand-in). */
 const MQ_MORE_D={
   W1:{done:{post:["Dunstan: Linnea won't say her name. Everyone else in the village says it in a whisper. Morrow. The witch past the Mushroom Hollow.","Dunstan: If anyone knows what the grey is, it's her. And she's the one who walked out of this village. Be careful what you ask for."]}},
-  W2b:{done:{post:["You: Sunpetal. I've never cut a sunpetal in my life. I grow barley.","Tansy: Then Hollen at the Wayfarers' Lodge is your woman. She teaches gathering, and she knows which stems to cut and which to leave. Morrow said not to say who sent us. Hollen will know anyway.","Tansy: She charges, mind. Sixty coins to learn, thirty for a sickle. If we're short, Maren's board pays honest coin for honest work."]}},
+  W2b:{done:{post:["You: Sunpetal. I've never cut a sunpetal in my life. I weed barley.","Tansy: Then Hollen at the Wayfarers' Lodge is your woman. She teaches gathering, and she knows which stems to cut and which to leave. Morrow said not to say who sent us. Hollen will know anyway.","Tansy: She charges, mind. Sixty coins to learn, thirty for a sickle. If we're short, Maren's board pays honest coin for honest work."]}},
   W6a:{done:{post:["You: That's two of three. The third is a draught. Made, not bought.","Tansy: Then it's Linnea's kettle. She'll let you watch if you bring the sunpetal and don't mention Morrow's name before the second cup."]}},
   W7b:{done:{post:["Tansy: Linnea's herbs cost coin, and the sickle and the lessons have eaten ours. Maren's board is the quickest honest money in the village.","You: And whatever Morrow asks next, I can't meet it with a draught and a sickle. A few notices, then. A few levels.","Tansy: Maren will be glad of the help. She's been wanting someone to take the boar notice for a month."]}},
   W6:{done:{post:["Tansy: Right. Everything's in the bag: the spore caps, the sunpetal, your draught, Linnea's willow, Hollen's message.","You: Then we've kept a witch waiting long enough.","Tansy: She'll say she wasn't waiting. Come on."]}},
@@ -248,7 +248,7 @@ const MQ_MORE_E={
   P3:{intro:{post:["You: Mine's for hiding behind scarecrows. Is that a knack?","Tansy: Terrain, {name}. It's called terrain."]}},
   P4:{say:[
     {post:["You: Everything's early. Everything's wet. And the birds have gone quiet.","Tansy: ...Have they?","(She listens. The meadow listens back. You are both suddenly very interested in the hedge.)","Tansy: Barley first. Worrying after."]},
-    {pre:["(Tucked into the braid of the old crown are two ribbons, faded almost to nothing: one red, one blue.)","You: Tansy. Your ribbon. And mine.","Tansy: (from below) ...So they are. Nine years old, the pair of us, and Wren giving orders from the haystack."]},
+    {pre:["(You climb the ladder. The Sheaf-Crown hangs on its nail, and tucked into its braid are two scraps of ribbon, faded almost to nothing: one red, one blue.)","You: Tansy. A scrap of yours. And of mine.","Tansy: (from below) ...So they are. Offcuts from the day we tied ours. Nine years old, the pair of us, and Wren barely walking, giving orders from the haystack."]},
     {post:["You: (to the scarecrow) Hob, I'm sorry. This is going to hurt me more than it hurts you.","Tansy: He's straw, {name}. He's had worse from the crows."]}]},
   W1:{say:[{pre:["You: Linnea. Please. Tell me what it is.","Linnea: ...Sit. Your hands are shaking."]},{}]},
   W6:{offer:{post:["You: Hunts. I've never hunted anything bigger than a rat in the barley.","Maren: Then you'll start with rats. Everyone does."]}},
@@ -258,8 +258,8 @@ const MQ_MORE_E={
   W9c:{say:[{post:["You: Wren? Wren, can you hear me?","(A breath. Then the faintest pressure of fingers around yours.)","You: ...There you are."]}]},
   W9d:{offer:{post:["You: Thornlings in Tansy's field. Fine. Weeds are the one enemy I've studied."]}},
   W10:{done:{pre:["You: I felt it. A pull, like barley bending in the wind.","Aldric: That's it, {name}. That's the roots answering. Do it again tomorrow."]}},
-  W11b:{offer:{post:["You: A farmer who mines. Tansy, I'm going to need a bigger bag."]}},
-  W13:{offer:{post:["You: Count with you? I'm a barley farmer. I count sacks.","Dunstan: Then count beats like sacks. Four to a row."]}},
+  W11b:{offer:{post:["You: A field-hand who mines. Tansy, I'm going to need a bigger bag."]}},
+  W13:{offer:{post:["You: Count with you? I'm a field-hand. I count sacks.","Dunstan: Then count beats like sacks. Four to a row."]}},
 
   W15:{offer:{post:["You: Why the grave first? Why not the Circle?","Morrow: Because you ought to see what the grey costs before you walk into it. It's cheaper to be shown than told."]}},
   W16:{say:[{post:["You: What does it say? The Warden, in the roots?","Pip: Stop. It says stop. Over and over. Nobody listens to the words."]}]},
