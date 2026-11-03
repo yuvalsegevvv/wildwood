@@ -149,7 +149,7 @@ function tick(dt){
   else S.day=(S.day+dt/DAY_SECONDS)%1;
   if(S.day<S.prevDay) sunrise();
   S.prevDay=S.day;
-  updatePlayersS(dt); S.ctx=0; updateMonstersS(dt); updateProjS(dt); updateAreasS(dt); updateBurnS(dt); rdTickS(dt); S.ctx=0; updateWeatherS(dt); updateNodesS(dt); updatePotionsS(dt); updateCastsS(); updatePartiesS(dt); updateInstsS(dt); S.ctx=0;   // dungeons: the per-entity loops set S.ctx (the run an event belongs to), so it goes back to the world after them; parties and runs tick here
+  updatePlayersS(dt); S.ctx=0; updateMonstersS(dt); dipTickS(dt); /*dip:*/ updateProjS(dt); updateAreasS(dt); updateBurnS(dt); rdTickS(dt); S.ctx=0; updateWeatherS(dt); updateNodesS(dt); updatePotionsS(dt); updateCastsS(); updatePartiesS(dt); updateInstsS(dt); S.ctx=0;   // dungeons: the per-entity loops set S.ctx (the run an event belongs to), so it goes back to the world after them; parties and runs tick here
   for(const p of S.players.values()) if(p.dirty){ p.dirty=false; p.saveDirty=true; sendTo(p.id,youMsg(p)); }
   S.saveT-=dt; if(S.saveT<=0){ S.saveT=5; for(const p of S.players.values()) if(p.saveDirty&&p.acct) saveP(p); }
   S.snapT-=dt; if(S.snapT<=0){ S.snapT=S.snapDt; broadcastSnap(); }

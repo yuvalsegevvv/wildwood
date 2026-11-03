@@ -20,6 +20,7 @@ function sanitizeGear(g,cls){
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); out.cos=sanitizeCos(g); premSanitize(g,out); }   // cosmetics: the auras and capes made at a lodge
   out.zt=sanitizeZt(g.zt);
   gsSanitize(g,out);   // gems: claimed achievements, the daily set and today's ads
+  dipSanitize(g,out);   // dip: the pipes' levels
   pzSanitize(g,out);   // puzzles: solved stones and their clocks, Sigils, upgrade scrolls
   ambSanitize(g,out);   // amber: the purse and the bought outfit sets (an old save has none)
   out.psh=pshopSanitize(g.psh);   // pshop: items listed in the player shop (escrow; an old save has none)
@@ -241,7 +242,8 @@ function updatePlayersS(dt){
     S.ctx=p.inst|0;   // dungeons: what a player's tick causes belongs to his run
     for(const k in p.cd) p.cd[k]=Math.max(0,p.cd[k]-dt);
     ultTickP(p);   // ult: boosts end on time, at death, on the island, when the piece is taken off
-    caveTickP(p); troomTickP(p);   // testroom: the damage counter   // cave: end a boss fight they left; send the charge
+    dipTickP(p); caveTickP(p); troomTickP(p);   // dip: the active pipes' list
+      // testroom: the damage counter   // cave: end a boss fight they left; send the charge
     ssTickS(p); ssRegenS(p,dt);   // skillsets: tick rows while in a fight; a regen buff
     if(p.buff&&S.t>=p.buff.until){ p.buff=null; }
     if(p.buff&&p.buff.regen&&!p.dead) healP(p,p.maxHp*p.buff.regen*dt);

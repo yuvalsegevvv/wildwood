@@ -39,6 +39,7 @@ styles
   31-friends.css                     Friends and ranking panel (ui/friends.js): friend rows with an online dot, the ranking table, the friend request prompt
   32-testroom.css                    The test room (ui/testroom.js): the panel with the counter and its buttons, and the counter on the screen while you stand on the pad
   33-puzzles.css                     Puzzles (puzzles/panel.js, rootlines.js, ice.js, scrolls.js): the board panel, the pad, the chest window, the Sigil track
+  34-dip.css                         The Dark Infection Pipe panel (game/dip/dip.js)
   34-presets.css                     Presets panel (economy/presets.js): ten cards in a grid, the worn one highlighted, an empty one dimmed
   32-ult.css                         The set burst (5th slot): its action-bar tile, the cast popup card and the skills panel row (game/ult/slot.js, popup.js)
   35-movement.css                    Movement slot: the movement slot's tile (#abMov) and its tab in the skills panel (game/movement/slot.js)
@@ -229,6 +230,7 @@ shared
   puzzle-place.js                    Places the overworld puzzle stones by rules: 15 trivial, 12 easy, 8 normal, 4 hard and 2 extreme in each of the eight lands that have a puzzle kind (328; the Deep Cave's come with its own files)
   puzzle-group.js                    Places the puzzle stones of the raids (2 trivial + 1 easy inside each stronghold's walls) and of the Deep Cave (41 over its four floors)
   puzzle-track.js                    The Sigil track's 40 rewards, in order: 32 small pieces (hair styles, decorations, gloves, hats, tops, bottoms, shoes: every part) and every 5th level a land's cape or aura, level 40 the Lampcrown
+  dip.js                             The Dark Infection Pipes: one grind spot in each of the eight lands (a flat, tree-free 20 x 20 square), its levels, spawn counts and rates, upgrade materials and activation cost. Pure
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -311,6 +313,7 @@ server
   testroom.js                        The test room on the server: an immortal Training Scarecrow, each hiker's damage counter, and the messages that reset the counter and the cooldowns, refill the cave charge
   puzzles.js                         Puzzles on the server: opening a stone, checking an answer, the 2-hour renewals, the chest, first-solve gems and Sigils, the Sigil track, upgrade scrolls, and the admin Puzzles tool
   puzzles-group.js                   Puzzle stones for groups: a dungeon run's three side stones, the raids' stones inside the walls and the Deep Cave's chest in cave material
+  dip.js                             Dark Infection Pipes on the server: upgrading a pipe with the zone's materials, releasing dark energy (coins, 10 minutes), the refill ticks that spawn the zone's monsters, the active list sent to hikers
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 
@@ -607,6 +610,7 @@ game
   ui/friends.js                      The friends and ranking panel (comma key): add a friend by name (the other player accepts), who is online, invite to a party, remove; the level ranking with your own place
   economy/pshop.js                   Player shops on the client: the Shops panel (a button in the inventory's header) with three tabs, Browse (open stalls, buy), My shop (list equipment from the bag with a price, open / close)
   ui/testroom.js                     The test room on the client: the damage counter on the screen, the panel (counter, reset, cooldowns, cave charge, soul and skills), the talk key on the pad
+  dip/dip.js                         Dark Infection Pipes on the client: the pipe and its dark 20 x 20 square in each land, the glow while it releases dark energy, the talk key and the panel (level, cost, upgrade, release)
   puzzles/panel.js                   The puzzle panel: opens a board the server announced (kind, difficulty, seed), builds it from the shared generator, keeps the clock and an unfinished board on the device, sends the answer, shows the chest
   puzzles/map.js                     The puzzle stones on the maps: a small rune on the minimap and the land map (lit while the stone is ready, grey while it renews), a dot on the world map
   puzzles/rootlines.js               Rootlines on the client: a canvas board where you drag roots from a seed to its partner until every cell is filled
