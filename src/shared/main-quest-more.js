@@ -12,15 +12,15 @@ const MQ_MORE={
     {post:[
     "Tansy: There's a tale about this path. They say it's older than the village. Whoever cut it laid the stones so close you can't get a knife between them.",
     "Tansy: And you can only see it where the moss has worn off. Most people don't look down. That's their loss.",
-    "(You look down. Under a skin of moss, a flat grey stone, fitted tight to the next, runs on toward the hedge.)"]},
-    {post:[
-    "Tansy: Smell that? Wet earth and something sweeter. That's the barley. It's early this year. Everything's early this year.",
-    "Tansy: Funny. My gran said that when the wheat comes early, somebody's about to go away. She said it every year. It never meant anything. Someone always goes away."]}],
+    "(You look down. Under a skin of moss, a flat grey stone, fitted tight to the next, runs on toward the hedge.)"]}],
     done:{post:["Tansy: Right. I'm going to be calm and professional about this. Slimes are slimes."]}},
   P3:{intro:{post:["Tansy: Oh, and don't mind the noise they make. It's not a growl. It's a sort of wet cough. Like Ambrose in the mornings."]},
     done:{pre:["Tansy: Well. That's that. See? Nothing to it. You've got a good eye, pet. You'll go far, or at least as far as my barn."]}},
   P4:{intro:{post:["Tansy: My father built that barn with his own hands, in one summer, and told everyone it took him a year so they'd be impressed.","Tansy: When he died I thought, well, that's that. I'll sell it. Then I walked in and it smelled of hay and him, and I couldn't."]},
-    say:[{post:["Tansy: I used to hide up here when I was small, and read. Don't tell anyone I can read. It'll ruin my reputation.","(Through the hatch you see the whole farm: the yard, the coop, the long rows of barley, and past the fence the road you came by, and, beyond it, the dark crest of the forest. Something about the light is wrong. The trees look further away than they should.)","Tansy: Come down when you're ready. Mind the fourth rung."]},
+    say:[{post:[
+    "Tansy: Smell that? Wet earth and something sweeter. That's the barley. It's early this year. Everything's early this year.",
+    "Tansy: Funny. My gran said that when the wheat comes early, somebody's about to go away. She said it every year. It never meant anything. Someone always goes away."]},
+      {post:["Tansy: I used to hide up here when I was small, and read. Don't tell anyone I can read. It'll ruin my reputation.","(Through the hatch you see the whole farm: the yard, the coop, the long rows of barley, and past the fence the road you came by, and, beyond it, the dark crest of the forest. Something about the light is wrong. The trees look further away than they should.)","Tansy: Come down when you're ready. Mind the fourth rung."]},
       {post:["Tansy: Go on, try the bow, try the wand. Nobody's watching but Old Hob, and he's seen worse."]}],
     done:{post:["(Behind you the weathervane on the barn swings round against the wind, once, and sticks, pointing north.)","Tansy: Funny. That's never stuck before."]}},
   P5:{intro:{post:["Tansy: Mind the caps. The fat ones with the grey underneath, they pop. And the thin ones, well, they don't pop, they just sulk."]},
@@ -191,8 +191,7 @@ const MQ_MORE_B={
 const MQ_MORE_C={
   P2:{say:[
     {post:["@pick Do you ever stop talking? >> Tansy: Rarely. Wren says it's the only thing that keeps the quiet out. | Tell me the goat story. >> Tansy: Oh, you'll regret that. It has three acts and a funeral. | (Just smile at her.) >> Tansy: ...What? Don't look at me like that. I'll start again in a second.","You: Wren said that, about the quiet?","Tansy: Wren says all sorts when you're not in the room. Don't tell them I told you."]},
-    {post:["You: Wren's hand was shaking that day at the Row. I remember it was cold.","Tansy: Pet, you were the one shaking. Wren just held on until you stopped."]},
-    {post:["You: Everything's early. Everything's wet. And the birds have gone quiet.","Tansy: ...Have they?","(She listens. The meadow listens back. You are both suddenly very interested in the hedge.)","Tansy: Barley first. Worrying after."]}]},
+    {post:["You: Wren's hand was shaking that day at the Row. I remember it was cold.","Tansy: Pet, you were the one shaking. Wren just held on until you stopped."]}]},
   P3:{done:{post:["You: Tansy. Look at the grass.","Tansy: I'm looking at the crown. That's what I'm looking at. The crown.","(She isn't. She walks on a little faster than before.)"]}},
   P4:{intro:{post:["You: He'd have hated you selling it.","Tansy: He'd have hated me selling it, and then complained about the price. (She laughs, and it is very nearly a real one.)"]}},
   P5:{done:{post:["@pick Tansy. What if it's nothing? >> Tansy: Then you'll have looked at nothing, and I'll buy you a pie. Go. | I'm going. Now. >> Tansy: Go. I'll be right behind you. I'm always right behind you. | (Say nothing. Squeeze her hand.) >> Tansy: ...Yes. Me too. Go."]}},
@@ -254,6 +253,7 @@ const MQ_MORE_D={
 const MQ_MORE_E={
   P3:{intro:{post:["You: Mine's for hiding behind scarecrows. Is that a knack?","Tansy: Terrain, {name}. It's called terrain."]}},
   P4:{say:[
+    {post:["You: Everything's early. Everything's wet. And the birds have gone quiet.","Tansy: ...Have they?","(She listens. The meadow listens back. You are both suddenly very interested in the hedge.)","Tansy: Barley first. Worrying after."]},
     {pre:["(Tucked into the braid of the old crown are two ribbons, faded almost to nothing: one red, one blue.)","You: Tansy. Your ribbon. And mine.","Tansy: (from below) ...So they are. Nine years old, the pair of us, and Wren giving orders from the haystack."]},
     {post:["You: (to the scarecrow) Hob, I'm sorry. This is going to hurt me more than it hurts you.","Tansy: He's straw, {name}. He's had worse from the crows."]}]},
   W1:{say:[{pre:["You: Linnea. Please. Tell me what it is.","Linnea: ...Sit. Your hands are shaking."]},{}]},

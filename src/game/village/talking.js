@@ -1,5 +1,6 @@
 //@ Talking to villagers: bubble, prompt, talk key (E), the main quest's lines first, opening shop/quest panels; reading lore spots, picking heartleaf; stepping on a teleport circle
 /* talking */
+let bubbleSrc=null;   // who the bubble hangs over: the speaker of the line (an NPC), 'you' for the hero's own lines, null = the one you clicked
 const bubble=$('#bubble'), bName=$('#bName'), bText=$('#bText'), promptEl=$('#prompt'), bTalk=$('#bTalk');
 const _bv=new THREE.Vector3();
 /* A quest villager (the main quest, game/economy/main-quest.js) says their quest lines first, one per talk key press, and the server
@@ -14,6 +15,7 @@ function sayLine(n){
   const quest=mqBusy(n), line=quest?n.mq.shift():L[n.line++%L.length];
   if(quest&&String(line).startsWith('@pick ')){ svChoiceOpen(line,n.mq,()=>sayLine(n)); return; }   // (a choice: the conversation waits for your pick)
   const q=mqLineOf(line), sp=q.who&&q.who!=='You'?NPCs.find(m=>m.def.name===q.who||m.def.name.endsWith(' '+q.who)):null;   // (a screenplay line "Wren: ..." is Wren's, whoever you clicked)
+  bubbleSrc=q.who==='You'?'you':(sp||null);
   bName.textContent=q.who==='You'?(NET.name||'You'):(q.who||(q.text[0]==='('?'':n.def.name)); bText.textContent=q.text;   // (narration in brackets is nobody's line) bubble.classList.toggle('mq',quest); bubble.classList.remove('lore');
   svSpeakLine(q.who,q.text,sp||n,quest);   // every line is voiced (story-voice.js): the speaker's own voice, the hiker's in the hero voice, narration quietly; a story conversation plays itself on
   if(typeof n.def.onTalk==='function'){ try{ n.def.onTalk(n); }catch(e){ console.error(e); } }
@@ -61,13 +63,14 @@ function updateTalkUI(){
   const canTalk=started && !customizing && (nearNPC||talkNPC);
   svTick();   // the voiced story: the next line, the end of a scene
   if(loreOpen&&(talkNPC||(loreOpen.scene?Math.hypot(P.x-loreOpen.x,P.z-loreOpen.z)>SCENE_STAY&&!svBusy():Math.hypot(P.x-loreOpen.x,P.z-loreOpen.z)>LORE_R+2))) loreOpen=null;   // (a place's scene stays open while you walk on: it is story, and the road goes on past it)
-  if(loreOpen||cineOn||svFar(talkNPC)){ bubble.style.left=innerWidth/2+'px'; bubble.style.top=Math.round(innerHeight*(cineOn?0.76:0.42))+'px'; bubble.hidden=false; }   // (a conversation that goes on while you walk away hangs in the middle too)   // a lore spot's text: long, so in the middle of the screen
-  else if(talkNPC){
-    _bv.set(talkNPC.x,talkNPC.y+2.05*talkNPC.scale,talkNPC.z).project(camera);
+  if(loreOpen||cineOn){ bubble.style.left=innerWidth/2+'px'; bubble.style.top=Math.round(innerHeight*(cineOn?0.76:0.42))+'px'; bubble.hidden=false; }   // a lore spot's text (long) and a key scene hang in the middle
+  else if(talkNPC){   // over whoever is speaking: the NPC of the line, or the hero for their own lines (even while the conversation walks on)
+    const sp=bubbleSrc==='you'?{x:P.x,y:P.y,z:P.z,scale:1}:(bubbleSrc&&bubbleSrc.g&&bubbleSrc.g.visible?bubbleSrc:talkNPC);
+    _bv.set(sp.x,sp.y+2.05*sp.scale,sp.z).project(camera);
     if(_bv.z<1){
-      const x=clamp((_bv.x*0.5+0.5)*innerWidth,130,innerWidth-130), y=Math.max(70,(-_bv.y*0.5+0.5)*innerHeight);
+      const x=clamp((_bv.x*0.5+0.5)*innerWidth,130,innerWidth-130), y=clamp((-_bv.y*0.5+0.5)*innerHeight,70,innerHeight-120);
       bubble.style.left=x+'px'; bubble.style.top=y+'px'; bubble.hidden=false;
-    } else bubble.hidden=true;
+    } else { bubble.style.left=innerWidth/2+'px'; bubble.style.top=Math.round(innerHeight*0.42)+'px'; bubble.hidden=false; }   // (the speaker is behind the camera: hang it in the middle)
   } else bubble.hidden=true;
   if(!$('#travel').hidden&&!nearCircle()&&!TR_ANY) closePanels();   // stepped off the circle (opened from the map: stays)
   const free=started && !customizing && !canTalk && !PL.dead, herb=free?nearHerb():-1, lore=free&&herb<0?loreNear(P.x,P.z):null, node=free&&herb<0&&!lore?nearNode():-1, circ=free&&herb<0&&!lore&&node<0?nearCircle():null;

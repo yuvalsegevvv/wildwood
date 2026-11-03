@@ -42,6 +42,8 @@ The hero's soul carries all six elements: fire, water, earth, air, dark, light (
 `mqfx [pid, 'ripple'|'ash'|'grey'|'green'|'amber']` (server -> client). Visit scenes reuse `sqsay [pid, title, lines]`.
 
 ## Deviations from the script, and what is not built
+
+- The road to the farm runs gate, log, **slimes at the meadow (mid path)**, then the hedge, then the farm: the hedge part moved from P2 to the start of P4, so Tansy waits at the hedge, not at her farm, while you fight. Villagers who walk the story now steer round trees, props and houses (`npcSteer`, `village/villagers.js`). The speech bubble hangs over whoever speaks (the hero's own lines over the hero).
 - Healthy Wren is a second villager (`wren0`) so the sick one (`wren`) keeps its id; `wren0` is shown until `mqWrenSick`.
 - P6 puts the visit at the bed: the sick Wren is already in the bed when you arrive (the script carries them there).
 - Tansy does not come on the north trip (Torgeir and Pell take her roles there).

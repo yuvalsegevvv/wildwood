@@ -436,6 +436,17 @@ function initNPCs(){
    later changes nobody's look; everything that looks an NPC up (npcById, the label loop, the maps) does it when it needs one. */
 const NPC_DEFER=[];
 function* spawnDeferredNPCs(){ while(NPC_DEFER.length){ const d=NPC_DEFER.shift(); spawnNPC(d,mulberry32(9002+(d.seed||0))); yield; } }   // (a def with `rolled` already has its look: the rng passed is not used)
+// steering for a walker: the straight line to the next point is tried first; when a house, tree or prop stands in it the walker turns to the nearer free side
+// and keeps that side for half a second (without this a villager led along the road pressed into a tree and shuffled left and right instead of passing it)
+function npcFree(x,z){ if(inBox(x,z,0.45)) return false; let ok=true; nearCols(x,z,(qx,qz,r)=>{ if(ok&&Math.hypot(qx-x,qz-z)<r+0.55) ok=false; }); return ok; }
+function npcSteer(n,a,dt){
+  const clear=h=>npcFree(n.x+Math.sin(h)*0.8,n.z+Math.cos(h)*0.8)&&npcFree(n.x+Math.sin(h)*1.6,n.z+Math.cos(h)*1.6);
+  if(n.steerT>0){ n.steerT-=dt; if(clear(a+n.steerD)) return a+n.steerD; n.steerT=0; }
+  if(clear(a)){ n.steerD=0; return a; }
+  const s=n.steerS||1;
+  for(const k of [0.5,1,1.5,2.1]) for(const sg of [s,-s]) if(clear(a+sg*k)){ n.steerD=sg*k; n.steerS=sg; n.steerT=0.5; return a+sg*k; }
+  return a;
+}
 function routeTo(n,pt,state){ n.route=[pt]; n.state=state||'walk'; n.stuckT=0; n.sx=n.x; n.sz=n.z; }
 function tryChat(n){
   for(const m of NPCs){
@@ -490,7 +501,7 @@ function updateNPCs(dt){
         }
       } else {
         const blocked=dp<1.3 && (dxp*dx+dzp*dz)>0;
-        if(!blocked){ const sp=D.speed||1.35; n.vx=dx/d*sp; n.vz=dz/d*sp; moving=true; n.faceGoal=Math.atan2(-dx,-dz); }
+        if(!blocked){ const sp=D.speed||1.35, h=npcSteer(n,Math.atan2(dx,dz),dt); n.vx=Math.sin(h)*sp; n.vz=Math.cos(h)*sp; moving=true; n.faceGoal=Math.atan2(-n.vx,-n.vz); }
       }
     }
     if(!moving){ n.vx*=0.7; n.vz*=0.7; }
