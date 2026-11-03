@@ -3,6 +3,12 @@
    Flash Lens fans rays; Open the Shutter lays the dial and sweeps parallel light bars with plumb lines dropping; Noon raises the column and a ring of rays. */
 ssDefineLook('corvin',{
   cols:[0xc9a13a,0x5f8f7f,0xfff1c9,0x2b2b2e,0xffffff], hot:0xfff1c9, hot2:0xe6c86a, decal:'dial', arcCol:0xfff1c9,
+  vis:{   // the text: a lantern shield flashes; the shutter opens over the area; Noon is a full flash; Midnight Sun opens a sun overhead
+    '1':{cast:[{prop:{kind:'lantern',where:'front',d:1.4,anim:'hover',h:1.0,size:1.7,life:0.5,cols:['hot',3,0]}},{flash:{a:0.18}}]},
+    '2':{zone:[{prop:{kind:'lantern',anim:'hover',h:5.5,size:4,life:1.3,cols:['hot',3,0]}},{shaft:{h:9}}]},
+    '3':{cast:[{prop:{kind:'sun',anim:'hover',h:7,size:1.3,life:1.3,cols:['hot','hot2']}},{wave:{r:14,style:'light',col:2,h:0.7,life:0.8}},{flash:{a:0.35}}]},
+    ult:{cast:[{prop:{kind:'sun',where:'target',anim:'hover',h:9,size:3,life:3.2,cols:['hot','hot2']}},{wave:{where:'target',r:12,style:'light',col:2,h:0.6,at:0.4,life:1}},{flash:{a:0.3}}]}
+  },
   mote:[{sh:'spark',c:2,s:0.25,w:4,add:1,g:0.3},{sh:'glint',c:4,s:0.2,w:1.5,add:1},{sh:'ember',c:0,s:0.1,w:3,add:1,g:0.8,sway:0.6},{sh:'tick',c:0,s:0.28,w:1.5,g:-2}],
   proj:{sh:'ray',c:0,s:0.9,len:1.1,glow:2,trail:{sh:'ember',c:2,s:0.1,g:0.5,add:1}},
   zone:{rate:20},

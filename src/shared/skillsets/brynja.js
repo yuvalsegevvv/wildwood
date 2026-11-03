@@ -14,7 +14,7 @@ defineSkillSet({
        skill:{
          archer:{name:'Icicle Shot', desc:'A shard of ice loosed fast: heavy for a basic attack. Leaves Rime.', cd:1.0, range:26, mult:2.25, act:['brynja1a',0.5,0.45], anim:'shoot', el:'water',
                  fx:{proj:{kind:'frost', speed:50, turn:7, life:0.8, mark:{id:'rime', n:1, dur:12, max:5}}},style:'press',hold:{x:{slow:3}}}},
-       passive:{name:'Momentum', text:'+{}% damage while you have been moving for a second', stat:'dmg', v:[0.12, 0.02], when:{moved:1}}},
+       passive:{name:'Skate Mark', text:'Casting Glide and Cut leaves a patch of black ice where you set off: for 4 seconds it chills and hurts what stands in it (at most every 6 s)', on:'cast2', icd:6, mult:0.5, range:3.5, fx:{zone:{r:3.5, dur:4, every:0.5, slow:2}}}},
     2:{bound:'any',
        skill:{any:{name:'Glide and Cut', desc:'Skate up to 9 m through the polar dark to your target and cut everything round it, chilling it for 4 seconds. Leaves Rime on each.', cd:8, range:9, mult:1.45, act:['brynja2x',0.5,0.3], anim:'slash', el:'dark',
                    fx:{dash:{ahead:2}, ring:{r:3.4, slow:1.5, mark:{id:'rime', n:1, dur:12, max:5}}}}},

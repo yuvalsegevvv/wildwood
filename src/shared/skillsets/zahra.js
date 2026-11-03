@@ -18,7 +18,7 @@ defineSkillSet({
     2:{bound:'any',
        skill:{any:{name:'Long Noon', desc:'Turn the mirror on your friends: you and your allies within 25 m deal 30% more critical damage for 10 seconds, and 3% more for each Grain on the enemies near you. A flash round you then spends every Grain nearby for extra damage.', cd:14, range:6, mult:1.3, act:['zahra2x',0.7,0.45], anim:'nova',
                    fx:{ring:{r:6, kb:2}, ally:{kind:'critdmg', v:0.30, dur:10, r:25, perMark:{id:'grain', v:0.03, r:8}}, pop:{id:'grain', k:0.5, r:6}}}},
-       passive:{name:'Cool Shade', text:'While you fight, you and your allies within 20 m regenerate 1% of maximum health a second (refreshed every 3 s)', on:'tick', icd:3, buff:{kind:'regen', v:0.01, dur:4, r:20}}},
+       passive:{name:'Heat Haze', text:'When something hits you, the glare dazzles it: it deals 15% less for 4 seconds (at most every 6 s)', on:'hurt', icd:6, status:{kind:'weak', v:0.15, dur:4}}},
     3:{bound:'any',
        skill:{any:{name:'The Sandglass', desc:'Plant the sandglass at your feet for 8 seconds: you and your allies standing within 9 m take 15% less damage, hit 15% more often critically and heal 2% of health a second, and the light at its foot burns the enemies there.', cd:45, range:9, mult:0.7, act:['zahra3x',0.9,0.6], anim:'nova',
                    fx:{zone:{r:9, dur:8, every:1, self:true, ally:[{kind:'guard', v:0.15, dur:2.5}, {kind:'crit', v:0.15, dur:2.5}, {kind:'regen', v:0.02, dur:2.5}]}}}},

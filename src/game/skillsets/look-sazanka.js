@@ -3,6 +3,9 @@
    Engine: game/skillsets/looks.js. The motes are dark and drawn with normal blending (additive would hide ink); the arcs and rings are additive in the violet and the white-blue. Dusk Flurry whirls crescents round her. */
 ssDefineLook('sazanka',{
   cols:[0x2f3f6b,0xc23b2a,0x1b1f2a,0xc9ccd6,0x5a4cc0,0xdfe8ff], hot:0x7a6cf0, hot2:0xdfe8ff, decal:'cords', arcCol:0xdfe8ff,
+  vis:{   // the text: New Moon vanishes, returns behind the target and lands six cuts under a dark moon
+    ult:{cast:[{burst:{n:14,spd:4}},{prop:{kind:'moon',where:'target',anim:'hover',h:7,size:1.4,life:2,cols:[4,5]}},{swing:{n:6,gap:0.08,r:3,where:'target',at:0.35,turn:6.28,col:5}},{burst:{where:'target',n:16,spd:5,at:0.35}}]}
+  },
   mote:[{sh:'wisp',c:2,s:0.34,w:4,g:0.4,sway:1.0,op:0.85},{sh:'spark',c:3,s:0.2,w:2,add:1},{sh:'streak',c:1,s:0.55,w:2.5,face:true,spin:0},{sh:'wisp',c:5,s:0.22,w:2,add:1,g:0.8,sway:1.2}],
   proj:{sh:'ray',c:3,s:0.9,len:1.2,glow:4,trail:{sh:'wisp',c:2,s:0.2,g:0.3,sway:0.8}},
   zone:{mode:'orbit',rate:44},

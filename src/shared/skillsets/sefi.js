@@ -19,7 +19,7 @@ defineSkillSet({
     2:{bound:'any',
        skill:{any:{name:'Gust Dash', desc:'Burst up to 10 m past your target on a gust and cut everything round where you land. Leaves a Stride on each.', cd:7, range:10, mult:1.2, act:['sefi2x',0.5,0.3], anim:'slash',
                    fx:{dash:{behind:true, ahead:2}, ring:{r:3.4, mark:{id:'stride', n:1, dur:12, max:5}}}}},
-       passive:{name:'Lean Frame', text:'+{}% damage with every attack; you have 10% less maximum health', stat:'dmg', v:[0.06, 0.01], cost:{stat:'hp', v:-0.10}}},
+       passive:{name:'Bolt', text:'When you fall below 40% health you bolt: 30% shorter cooldowns for 6 seconds and a shield worth 10% of your health for 3 seconds (at most every 45 s)', on:'low', below:0.4, icd:45, buff:{kind:'haste', v:0.3, dur:6, r:1}, shield:{v:0.1, dur:3}}},
     3:{bound:'any',
        skill:{any:{name:'Dead Heat', desc:'Run the whole length of the plain in a breath: dash up to 12 m through your target and cut everything within 6 m of where you land, spending every Stride on it for extra damage. What is cut is left weakened for 4 seconds.', cd:30, range:12, mult:2.4, act:['sefi3x',0.8,0.5], anim:'slash',
                    fx:{dash:{ahead:4}, ring:{r:6, status:{kind:'weak', v:0.1, dur:4}}, pop:{id:'stride', k:0.8, r:6}}}},

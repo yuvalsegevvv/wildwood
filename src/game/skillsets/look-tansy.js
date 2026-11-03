@@ -3,6 +3,11 @@
    Gather In (a pull) spirals the chaff in, Bumper Crop throws it out and up; the sweep is a wide wheat-gold arc strewing ears. */
 ssDefineLook('tansy',{
   cols:[0xe0b95a,0xb5532f,0x7a9a3c,0xece3c8,0xa8803a], hot:0xf2d98a, hot2:0xd9754a, decal:'wheat', arcCol:0xf2d98a,
+  vis:{   // the text: Gather In pulls a field in and ties a sheaf; Bumper Crop is a swathe; Harvest Moon is a full turn of the scythe under a moon, ending in sheaves
+    '2':{zone:[{wave:{shape:'ring',style:'dust',col:0,h:0.7,inward:true,life:0.9}}], end:[{prop:{kind:'sheaf',anim:'rise',size:1.5,life:1.8,cols:[0,1]}}]},
+    '3':{cast:[{wave:{r:11,style:'dust',col:0,h:1.1,life:0.9}},{dust:{n:10,r:5,col:4}}]},
+    ult:{cast:[{prop:{kind:'moon',anim:'hover',h:12,size:2.2,life:2.6,cols:[3,0]}},{swing:{n:9,gap:0.06,r:6,turn:6.28,col:'hot'}},{wave:{r:12,style:'dust',col:0,h:1,inward:true,life:0.9,at:0.3}},{prop:{kind:'sheaf',n:6,arr:'ring',r:2.6,anim:'rise',stagger:0.06,at:0.6,size:1.2,life:2.4,cols:[0,1]}}]}
+  },
   mote:[{sh:'ear',c:0,s:0.3,w:3,g:-3.5,sway:1.2},{sh:'chaff',c:4,s:0.22,w:4,g:-3,sway:1.5},{sh:'chaff',c:3,s:0.2,w:3,g:-2.4,sway:1.4},{sh:'chaff',c:1,s:0.18,w:1.5,g:-3},{sh:'chaff',c:2,s:0.17,w:1,g:-3}],
   proj:{sh:'ear',c:0,s:0.8,len:1.1,glow:3,trail:{sh:'chaff',c:4,s:0.16,g:-2.2,sway:1.2}},
   zone:{rate:30},

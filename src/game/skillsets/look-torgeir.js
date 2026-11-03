@@ -3,6 +3,12 @@
    Anchor Strike shows the shield; every taunt raises the slabs (a ring of stone no more than 7 m away); a shield on a player is a slate-and-lichen bubble. */
 ssDefineLook('torgeir',{
   cols:[0x5d6168,0xe3dccb,0x7d8c5a,0x3f5668,0xb59a4a], hot:0xcdbf8a, hot2:0x9fb06a, decal:'rivets', arcCol:0xcdbf8a,
+  vis:{   // the text: Pinning Shot pins (a peg of stone); Brace raises the shield; Hold the Line stamps and holds a row of shields; Unbroken Line slams a ghost row down
+    '1':{hit:[{prop:{kind:'spear',anim:'plant',size:0.5,tilt:0.15,life:1.6,cols:[0,1,1]}}]},
+    '2':{cast:[{prop:{kind:'shield',where:'front',d:1.7,anim:'rise',size:2.2,life:1.5,cols:[3,1]}}]},
+    '3':{cast:[{prop:{kind:'shield',n:7,arr:'arc',arc:1.5,r:2.9,anim:'rise',stagger:0.05,size:1.9,life:2.6,cols:[3,1]}},{shake:0.4},{dust:{n:10,r:3,col:0}}]},
+    ult:{cast:[{prop:{kind:'shield',n:9,arr:'arc',arc:0.9,r:5.6,anim:'drop',fall:6,size:2.5,stagger:0.04,life:3,cols:[0,1]}},{shake:0.55},{wave:{shape:'arc',arc:0.9,r:8,style:'dust',col:0,h:1,at:0.3}}]}
+  },
   mote:[{sh:'pebble',c:0x8a8f94,s:0.2,w:3,g:-9,spin:6},{sh:'shard',c:1,s:0.3,w:2,g:-8,spin:5},{sh:'pebble',c:2,s:0.15,w:2,g:-7,spin:6},{sh:'spark',c:4,s:0.18,w:0.7,add:1}],
   proj:{sh:'shard',c:1,s:0.65,len:1.4,glow:4,trail:{sh:'pebble',c:0x8a8f94,s:0.1,g:-6}},
   cone:c=>{ const {L,x,y,z,face,sc}=c, C=c.f.cone;   // the strike: a shield flashes in front, the chips fly

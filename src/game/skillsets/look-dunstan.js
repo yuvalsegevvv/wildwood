@@ -3,6 +3,10 @@
    A ring is a drum beat (three rings in step); Banner Down plants a pole with a pennant for the whole zone and beats a ring every second; an ally buff lifts a few pennants off the buffed player. */
 ssDefineLook('dunstan',{
   cols:[0xb8432a,0xd4a83a,0xff7a3a,0xeee2c0,0x2e2a2a,0xc47a45], hot:0xff9a4a, hot2:0xffd36b, decal:'flames', arcCol:0xffd36b,
+  vis:{   // the text: the cry carries a shock of flame; Last Stand Banner crashes a burning banner down and sets the ground alight
+    '2':{cast:[{wave:{r:8,style:'fire',col:2,h:0.8,life:0.7}}]},
+    ult:{cast:[{prop:{kind:'banner',where:'target',anim:'plant',fall:13,size:1.7,tilt:0.25,life:3.4,cols:[0,1]}},{wave:{where:'target',r:8,style:'fire',col:2,h:1.2,at:0.3}},{shake:0.5},{rise:{where:'target',n:16,r:5,at:0.4}}]}
+  },
   mote:[{sh:'ember',c:2,s:0.12,w:5,add:1,g:2.5,sway:0.6},{sh:'flame',c:1,s:0.3,w:2.5,add:1,g:1.5,sway:0.8},{sh:'pennant',c:0,s:0.4,w:1.5,g:-1,sway:1.6},{sh:'pennant',c:1,s:0.34,w:1.2,g:-1,sway:1.6},{sh:'spark',c:3,s:0.16,w:1,add:1}],
   proj:{sh:'ember',c:2,s:0.55,len:1.5,glow:1,trail:{sh:'flame',c:1,s:0.2,g:1.5,add:1}},
   zone:{mode:'rise',rate:26},

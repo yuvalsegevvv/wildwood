@@ -33,7 +33,7 @@ function doAttack(kind,hold){   // hold: the strength 0..1 of a charged skill 1 
   const tgtOK=CB.target&&!CB.target.dead&&Math.hypot(CB.target.x-P.x,CB.target.z-P.z)<=ab.range+3;
   if(!tgtOK&&!PVC.on){ const t2=pickTarget(Math.max(ab.range+2,8)); if(t2) CB.target=t2; }
   const [k,dur0,hitAt]=ab.act, dur=bhActDur(dur0,spd,1);
-  CB.act={kind:ANIM_OF[k]||k,sk:k,t:0,dur,hitAt,done:false,skill:kind==='skill',hold:hf,ab:hf?ab:null};
+  CB.act={kind:ANIM_OF[k]||k,sk:k,t:0,dur,hitAt,done:false,skill:kind==='skill',hold:hf,ab:hf?ab:null}; skvActInit(CB.act,k);   // skillvis: a multi-hit skill swings once per hit
   CB.cd[kind]=kind==='basic'?bhInterval(ab,pvSkills(),spd,bcd,hf):abilityCd(ab,pvSkills(),pvLevel(),c,rlUiCdr())*(1-ssHasteK());   // skillsets: the class the bonuses are read for; basic-hold: skill 1 has no cooldown, only attack speed
   const T=PVC.on?pvTarget(ab.range):CB.target;   // pvp: another fighter
   if(T && !T.dead && Math.hypot(T.x-P.x,T.z-P.z)<ab.range+6) P.face=Math.atan2(-(T.x-P.x),-(T.z-P.z));
@@ -57,6 +57,7 @@ function attackVisuals(a,who){
   if(a.ab&&mine){ bhVisuals(a.ab,x,y,z,face,sc); return; }   // basic-hold: a charged release
   const gs=ACT_SKILL[k]; if(gs&&gs.cave&&caveVisCast(gs,who||P,mine?CB.target:null)) return;   // cave: a cave skill's own drawing (cave/vis.js)
   if(gs&&gs.fx){ SSL.ub=mine?ssUbOwn(gs.id):!!a.ub; try{ fxVisuals(gs,x,y,z,face,sc,mine); } finally{ SSL.ub=false; } return; }   // a skill with generic effects (the boss skills)   // ult: a boosted cast is drawn stronger (SSL.ub, skillsets/looks.js)
+  if(gs&&!gs.fx) skfCast(gs,x,y,z,face,sc,mine);   // skillvis: the shop skills wear their class's flair (steel, wind, arcane)
   if(k==='quake'){ fxxDust(x,getH(x,z),z,18,6,0x8a7a60); fxxDebris(x,getH(x,z),z,14,7,0x6a5030); fxxScorch(x,z,4,0xd8b07a); }
   else if(k==='inferno'){ fxxDome(x,y,z,7,0xff7a2a); fxxScorch(x,z,5,0xff7a2a); fxxDust(x,y,z,10,5,0x4a3a30); }
   else if(k==='charge'||k==='bash') fxxDust(x,getH(x,z),z,8,3,0x9a8a70);
@@ -106,6 +107,10 @@ function spawnArcAt(x,y,z,face,col,size){   // col, size (x the normal reach): f
 }
 /* ---- server combat events ---- */
 function onMonDmg(id,v,crit,by,fx){
+  if(by===NET.pid){ const dl=skvDmgDelay(id); if(dl>0){ fxpLater(dl,()=>onMonDmgNow(id,v,crit,by,fx)); return; } }   // skillvis: the numbers of a flurry come with its swings
+  onMonDmgNow(id,v,crit,by,fx);
+}
+function onMonDmgNow(id,v,crit,by,fx){
   const m=MON_BY_ID.get(id); if(!m) return;
   m.flash=1; m.hp=Math.max(0,m.hp-v);
   // your own hits show whether the element helped (an arrow up) or hurt (down): your soul and the monster's element

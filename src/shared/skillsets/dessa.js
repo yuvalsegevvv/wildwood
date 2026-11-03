@@ -19,7 +19,7 @@ defineSkillSet({
     2:{bound:'any',
        skill:{any:{name:'Anvil Down', desc:'Set the anvil in the road for 8 seconds: a 6 m circle that holds the enemies in it (slowed, and they come for you), while you and your allies standing in it take 25% less damage and carry a shield worth 6% of health, refreshed every second. What is close is shoved back.', cd:18, range:6, mult:0.6, act:['dessa2x',0.7,0.45], anim:'nova',
                    fx:{ring:{r:6, kb:3, mark:{id:'temper', n:1, dur:12, max:5}}, taunt:{dur:4, r:12}, zone:{r:6, dur:8, every:1, self:true, slow:0.4, ally:{kind:'guard', v:0.25, dur:2}, shield:{v:0.06, dur:3}}}}},
-       passive:{name:'Shrug It Off', text:'{}% of the damage you take is thrown back at the attacker', stat:'reflect', v:[0.15, 0.02]}},
+       passive:{name:'Shrug It Off', text:'A fifth of the blows that land on you shake your skill loose: 1.5 s off its cooldown (at most every 3 s)', on:'hurt', chance:0.2, icd:3, cdr:{skill:1.5}}},
     3:{bound:'any',
        skill:{any:{name:'Break the Herd', desc:'Stand in the road and let the stampede break: a taunt for 6 seconds (a boss\'s melee for half of that), 30% less damage taken and a shield worth 12% of health for you and your party for 8 seconds, then the ground heaves, spending every Temper nearby for extra damage, and a share of it heals you.', cd:40, range:8, mult:1.2, act:['dessa3x',0.9,0.6], anim:'nova',
                    fx:{ring:{r:8, kb:6, stun:1}, taunt:{dur:6, r:16}, ally:{kind:'guard', v:0.3, dur:8, r:20}, shield:{v:0.12, dur:8, r:20, perMark:{id:'temper', v:0.03, r:10}}, pop:{id:'temper', k:0.6, r:8, heal:0.4}}}},

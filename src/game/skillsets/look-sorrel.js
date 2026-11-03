@@ -3,6 +3,11 @@
    Her shots are long streaks with a feather tail; Mark the Gap lays a lens and a dashed ring of spreading wind where it lands; Long Gale (the charged one) winds a spiral of streaks round the shooter. */
 ssDefineLook('sorrel',{
   cols:[0x8fb8d8,0xf1ead8,0x4a5560,0xf4f6f8,0xbfe3ff], hot:0xbfe3ff, hot2:0xffffff, decal:'lens', arcCol:0xbfe3ff,
+  vis:{   // the text: the spotting shot spreads the wind where it lands; the Gale is a gust along a line; Eye of the Storm is a downdraft from the sky
+    '2':{hit:[{wave:{r:6,style:'wind',col:'hot2',h:0.5,life:0.7}}]},
+    '3':{hit:[{wave:{r:4,style:'wind',col:'hot2',h:0.6,life:0.6}},{burst:{n:12,spd:5}}]},
+    ult:{cast:[{shaft:{where:'target',h:15,col:'hot'}},{wave:{where:'target',r:7,style:'wind',col:'hot2',h:1.2,at:0.5}},{shake:0.35}]}
+  },
   mote:[{sh:'feather',c:3,s:0.3,w:4,g:-1.2,sway:2.2},{sh:'feather',c:1,s:0.26,w:2,g:-1,sway:2},{sh:'streak',c:0,s:0.8,w:3,add:1,face:true,spin:0,op:0.7},{sh:'glint',c:4,s:0.2,w:1.5,add:1}],
   proj:{sh:'streak',c:3,s:0.9,len:1.6,glow:4,trail:{sh:'feather',c:3,s:0.2,g:-1,sway:1.5}},
   zone:{mode:'fall',rate:12},

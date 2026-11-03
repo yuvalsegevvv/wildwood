@@ -3,6 +3,11 @@
    Ebb and Flow sends a ripple out and one in at the same time; High Water is a tide: a thick wave of drops and bubbles from the middle with a column of bubbles rising. A heal lifts bubbles off the ally; a shield is an aqua bubble. */
 ssDefineLook('ambrose',{
   cols:[0x4f7a6a,0xe6ecea,0x7fd0d8,0xcdbd8a,0x2f5a52], hot:0x9fe8ee, hot2:0x7fd0d8, decal:'waves', arcCol:0x9fe8ee,
+  vis:{   // the text: Ebb and Flow is a wave out and a wave back; High Water is a rising tide; Spring Flood rolls a wave out in a cone
+    '2':{cast:[{wave:{r:10,style:'water',col:2,h:0.9,life:0.8}},{wave:{r:10,style:'water',col:2,h:0.6,inward:true,at:0.5,life:0.8}}]},
+    '3':{cast:[{wave:{r:13,style:'water',col:2,h:1.4,life:1}},{wave:{r:9,style:'water',col:1,h:1,at:0.3,life:1}}]},
+    ult:{cast:[{wave:{shape:'arc',arc:0.7,r:14,h:1.7,style:'water',col:2,life:1.1}},{wave:{shape:'arc',arc:0.55,r:12,h:1.2,style:'water',col:1,at:0.2,life:1}}]}
+  },
   mote:[{sh:'drop',c:2,s:0.22,w:5,g:-9,op:0.85,spin:2},{sh:'bubble',c:1,s:0.2,w:3,g:1.2,sway:0.8,op:0.45,add:1,spin:0},{sh:'reed',c:0,s:0.4,w:2,g:-3,sway:1.5},{sh:'reed',c:3,s:0.34,w:1.5,g:-3,sway:1.5}],
   proj:{sh:'drop',c:2,s:0.55,len:1,glow:1,trail:{sh:'drop',c:2,s:0.12,g:-6}},
   zone:{mode:'rise',rate:24},

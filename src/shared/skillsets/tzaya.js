@@ -22,7 +22,7 @@ defineSkillSet({
     3:{bound:'any',
        skill:{any:{name:'The Reckoning', desc:'A wave of fire goes out round you, spends every Tally within 10 m for extra damage and mends you for half of it; then a lingering heat follows you for 5 seconds and keeps mending you.', cd:38, range:10, mult:1.8, act:['tzaya3x',0.9,0.6], anim:'nova',
                    fx:{vsBoss:0.5, ring:{r:10, kb:2}, pop:{id:'tally', k:0.5, r:10, heal:0.5}, zone:{r:5, dur:5, every:0.5, self:true, follow:true, heal:{v:0.01, r:6}}}}},
-       passive:{name:'Slow Flame', text:'You always regenerate {}% of your maximum health a second; your cooldowns are 10% longer', stat:'regen', v:[0.004, 0.0006], cost:{stat:'cd', v:-0.10}}}},
+       passive:{name:'Cinder Count', text:'A critical hit adds a Tally to what it hit (at most every 2 s)', on:'crit', icd:2, mark:{id:'tally', n:1, dur:12, max:5}}}},
   ult:{name:'The Fifth Sun', desc:'The ground opens in a 10 m ring and fire geysers burst up; hands of ash reach out of the ground and hold what they catch.', range:10, mult:2.95, act:['tzayault',1.0,0.6], anim:'nova',
        fx:{ring:{r:10, kb:3}},
        boost:[{piece:'a3', secs:10, mod:{mult:2, util:2}}, {piece:'p1', secs:16, mod:{eff:3, icd:0.5}}]},
