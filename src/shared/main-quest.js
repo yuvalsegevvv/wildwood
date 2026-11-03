@@ -473,7 +473,9 @@ const MQ_VER=3, MQ_INSERTED=[[5,1,2],[6,1,2],[10,1,2],[22,1,2]];
 const MQ_V2_IDS=['W1','W2','W3','W4','W5','W6','W6a','W7','W7b','W8','W9','W10','W11','W11b','W12','W13','W14','W15','W16','W17','W18','V3','V4','V5','V6','V7','V7b','V8','V9','V10','V11','F1','F2','F3','F4','F5','F6','F7','F8','F9','G1','G2','G3','G4','G5','G6','G7','G8','G9'];
 const mqV2Index=(s,ver)=>(ver||1)<2?s+MQ_INSERTED.reduce((a,[after,n])=>a+(s>after?n:0),0):s;   // (a version 1 save's index in the version 2 list)
 function mqMigrate(s,ver){
-  if((ver||1)>=3) return s; s=mqV2Index(s,ver);
+  if((ver||1)>=3) return s;
+  if(!s) return 0;   // (an old save still at its first step has finished nothing: it starts the story from the prologue, not at W1)
+  s=mqV2Index(s,ver);
   if(s>=MQ_V2_IDS.length) return MQ.length;
   for(let k=s;k<MQ_V2_IDS.length;k++){ const st=MQ_BY_ID[MQ_V2_IDS[k]]; if(st) return st.i; }
   return MQ.length;
