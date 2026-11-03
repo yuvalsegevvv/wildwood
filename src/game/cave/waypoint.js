@@ -1,12 +1,17 @@
 //@ The Deep Cave's objective guide: which method place to go to next on a floor (the one in progress first, else the nearest that still teaches a skill), the HUD line with its distance and direction, and the method letters on the cave maps
 /* Agent map. Doc: docs/WAYPOINT.md (the cave section), docs/CAVE.md section 6 (the methods). Client only: reads the server's cm message (CAVE_M.s, cave/methods.js), the floor's anchors (CAVE_RUN.B.anchors,
    floor-local metres + R.ox / R.oz) and GEAR.cave.own; nothing is sent or saved.
-   exports: cvwPick() -> {T:{x,z,name}, m (method letter), line} or null (off the floors), cvwTarget() (ui/waypoint.js: the marker), cvwHud() (writes #cvMethod: the server's line, else "Next: ..."; plus the distance),
+   exports: CVW.track / cvwSetTrack('n:M') (the board's Track buttons: that method is the one the guide points at on its floor), cvwPick() -> {T:{x,z,name}, m (method letter), line} or null (off the floors), cvwTarget() (ui/waypoint.js: the marker), cvwHud() (writes #cvMethod: the server's line, else "Next: ..."; plus the distance),
             cvwFrame(dt) (cave/methods.js caveMethodsFrame: the line again twice a second, as you walk), cvwMapMarks(x, at, inside, dpr, labels) (cave/minimap.js caveMapMarks: a letter on each method's place).
-   The order: a method you are in the middle of (lantern carried, silent chamber, open vault, mole running, mural pieces, geodes, crafting) points at its next spot; otherwise the nearest method that is not
+   The order: a method you are in the middle of (any in progress first), then the tracked one, (lantern carried, silent chamber, open vault, mole running, mural pieces, geodes, crafting) points at its next spot; otherwise the nearest method that is not
    resting and teaches a skill you do not own (one that pays only Echo Shards counts three times as far). The gem mole (G) has no fixed place: it shows only while a mole runs.
    Test: tools/client-smoke.js (the cave case). */
-const CVW={t:0,last:null};
+const CVW={t:0,last:null,track:null};   // track: 'n:M' (floor and method letter) the hiker chose on the board, kept in this browser
+try{ const v=localStorage.getItem('wildwood-cavetrack'); if(/^[1-9]:[A-H]$/.test(v||'')) CVW.track=v; }catch(_){}
+function cvwSetTrack(v){ CVW.track=CVW.track===v?null:v; try{ if(CVW.track) localStorage.setItem('wildwood-cavetrack',CVW.track); else localStorage.removeItem('wildwood-cavetrack'); }catch(_){}
+  document.querySelectorAll('[data-cvtrack]').forEach(b=>{ const on=b.dataset.cvtrack===CVW.track; b.classList.toggle('on',on); b.textContent=on?'Tracked':'Track'; }); cvwHud(); }
+// the board's Track buttons (cave/methods.js caveBoardHtml draws them in the lift window and the skills panel): one listener for every board
+document.addEventListener('click',e=>{ const b=e.target&&e.target.closest&&e.target.closest('[data-cvtrack]'); if(!b) return; e.preventDefault(); cvwSetTrack(b.dataset.cvtrack); if(typeof UI_SFX!=='undefined') UI_SFX.click(); });
 const cvwBit=(v,i)=>((v||0)>>i)&1;
 function cvwNear(list,skip){ let best=null,bd=1e9; (list||[]).forEach((a,i)=>{ if(!a||(skip&&skip(i))) return; const d=Math.hypot(a.wx-P.x,a.wz-P.z); if(d<bd){ bd=d; best=a; } }); return best; }
 function cvwPick(){
@@ -25,6 +30,9 @@ function cvwPick(){
     if(S.h.o>=HP.ore&&S.h.b>=HP.herb) return go('H',W(A.H&&A.H.anvil,'The stone anvil'),null);
     const p=S.h.o<HP.ore?cvwNear(L(A.H&&A.H.veins),i=>cvwBit(S.h.vm,i)):cvwNear(L(A.H&&A.H.herbs),i=>cvwBit(S.h.hm,i)); if(p) return go('H',{x:p.wx,z:p.wz,name:S.h.o<HP.ore?'A glow vein':'A cave herb'},null);
   }
+  // the method you chose to track on the board, while it is not resting (its in-progress spot above wins only for that method; the others wait)
+  const tm=CVW.track&&+CVW.track[0]===R.n?CVW.track[2]:null;
+  if(tm&&!rest(tm)){ const pl=cvwPlace(A,tm,L,W), M=caveMethodDef(tm), sk=caveSkillAt(R.n,tm); if(pl) return {T:pl,m:tm,line:'Tracked: '+(M?M.name:tm)+(sk?' ('+sk.name+')':'')+'. '+(M?M.short:''),tracked:true}; }
   // nothing under way: the nearest place that still teaches something
   let best=null, bs=1e9;
   for(const m of 'ABCDEFH'){

@@ -39,7 +39,8 @@ function caveBoardHtml(floor){
     h+=`<h4>Floor ${n} · ${F.name}</h4><ul>`;
     for(const r of caveBoardRows(n)){
       const left=Math.max(0,(cd[n+r.m]||0)-now), pay=r.skill?(Object.prototype.hasOwnProperty.call(own,r.skill.id)?`${r.skill.name} <i>(yours: pays Echo Shards)</i>`:`<b>${r.skill.name}</b>`):'Echo Shards';
-      h+=`<li><span class="m">${r.m}</span> <span class="n">${r.name}</span> <span class="s">${pay}${left>0?` · rests ${Math.ceil(left/60)} min`:''}</span><small>${r.short}</small></li>`; }
+      const tk=n+':'+r.m, on=CVW.track===tk;   // caveguide: Track points the cave guide and the marker at this method (cave/waypoint.js)
+      h+=`<li><span class="m">${r.m}</span> <span class="n">${r.name} <button class="chip cv-track${on?' on':''}" data-cvtrack="${tk}">${on?'Tracked':'Track'}</button></span> <span class="s">${pay}${left>0?` · rests ${Math.ceil(left/60)} min`:''}</span><small>${r.short}</small></li>`; }
     h+='</ul>'; }
   return h+'</div>';
 }

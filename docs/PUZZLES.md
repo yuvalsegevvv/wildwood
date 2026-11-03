@@ -52,7 +52,7 @@ Files: `shared/puzzle-group.js` (placement), `server/puzzles-group.js` (the rule
 
 - **Dungeon**: 2 trivial + 1 easy `pzstone` objectives per run, beside three side-room mouths, kinds and seeds drawn from the run seed. One member solves at a time (the others are told it is taken); the chest (renewable design, no gems, no Sigils, no gear roll) pays every member present. A Puzzle solver never skips it.
 - **Raid**: `rd-<land>-1..3` at fixed offsets in the yard (`PZ_RAID_SPOTS`). New board at each rebuild (`RD_PZ[land].gen`); a solved stone is dim until the rebuild; one solver at a time; the chest pays every player within `RD_FOOT` of the site, the easy stone adds 1 raid material of the land.
-- **Cave**: 41 stones, `cv<floor>-<nn>`, 15 / 12 / 8 / 4 / 2 over the four floors (extremes on floor 4). They are ordinary stones (first solve gems and Sigils, 2 h renewals, solvers) except the chest pays that floor's cave material (`gear.cave.m`) in place of ordinary drops. They are left off the land maps.
+- **Cave**: 41 stones, `cv<floor>-<nn>`, all Glowstones (`akari`, `PZ_CAVE_KIND`; they once borrowed four other lands' kinds), 15 / 12 / 8 / 4 / 2 over the four floors (extremes on floor 4). They are ordinary stones (first solve gems and Sigils, 2 h renewals, solvers) except the chest pays that floor's cave material (`gear.cave.m`) in place of ordinary drops. They are left off the land maps.
 
 ## Round 8: overworld chests and every part on the Sigil track
 
