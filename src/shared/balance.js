@@ -59,4 +59,8 @@ const expToNext25=L=>10*(L*L+Math.pow(7/6,L))*Math.pow(K15,Math.max(0,L-5)/10);
 const KILLS25=expToNext25(25)/xpFor(25);
 const killsK=L=>L<=LV_RAMP?1:L<=LV_SOFT?1+LV_RAMP_STEP*(L-LV_RAMP):(1+LV_RAMP_STEP*(LV_SOFT-LV_RAMP))*Math.pow(2,(L-LV_SOFT)/LV_DOUBLE);   // x KILLS25 same-level kills
 const expToNext=L=>L<=25?expToNext25(L):KILLS25*xpFor(L)*killsK(L);
-const coinsFor=L=>{ const P=Math.min(L,PAY_LV); return Math.max(1,Math.round(fLv(P)*AR(1.5,2.5)*Math.pow(1.1,Math.max(0,P-5))*highMult(L)*payMult(L))); };
+/* Coins are soft-capped from level 30 (the old curve made a level-60 kill pay ~76x a level-30 one and level 120 ~4,900x): the level-30 rate stays, then the pay grows x6 by level 60 and x4 more by level 120
+   (COIN_K30 / COIN_K60 per COIN_SPAN levels, a smooth geometric ramp; kills below level 30 are unchanged). XP is not capped here (xpFor). */
+const COIN_CAP_LV=30, COIN_K30=6, COIN_K60=4;   // x6 from 30 to 60, x4 from 60 to 120
+const coinCapK=L=>L<=COIN_CAP_LV?1:L<=60?Math.pow(COIN_K30,(L-30)/30):COIN_K30*Math.pow(COIN_K60,(L-60)/60);
+const coinsFor=L=>{ const P=Math.min(L,COIN_CAP_LV); return Math.max(1,Math.round(fLv(P)*AR(1.5,2.5)*Math.pow(1.1,Math.max(0,P-5))*highMult(L)*coinCapK(L))); };

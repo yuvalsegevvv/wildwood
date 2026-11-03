@@ -47,10 +47,11 @@ ok('with six lands at tier VII (forty-two points) the symbol is +420% (the owner
 { const oldXp=L=>x.fLv(L)*Math.pow(1.15,Math.max(0,L-5))*(L>=10?1.5:1), oldCoins=L=>Math.max(1,Math.round(x.fLv(L)*2*Math.pow(1.1,Math.max(0,L-5))*(L>=10?1.5:1)));
   const real=Math.random; Math.random=()=>0.5;   // the middle of the coin spread (AR(1.5, 2.5) = 2)
   try{
-    const same=[]; for(let L=1;L<=x.PAY_LV;L++) if(!near(x.xpFor(L),oldXp(L),1e-9)||x.coinsFor(L)!==oldCoins(L)) same.push(L);
-    ok('up to level '+x.PAY_LV+' (every monster at tiers 0 to III, and the level curve of the hikers) the pay is exactly what it was',!same.length&&near(x.expToNext(40),x.xpFor(40)*x.expToNext(26)/x.xpFor(26),1e-9),same.join());
-    ok('above it the pay keeps its level-'+x.PAY_LV+' rate and doubles with every 10 levels: 70 pays 2x and 80 pays 4x of 60 (XP and coins)',
-      near(x.xpFor(70),2*x.xpFor(60),1e-9)&&near(x.xpFor(80),4*x.xpFor(60),1e-9)&&near(x.xpFor(65),Math.pow(2,0.5)*x.xpFor(60),1e-9)&&near(x.coinsFor(70),2*x.coinsFor(60),0.01)&&near(x.coinsFor(80),4*x.coinsFor(60),0.01));
+    const same=[]; for(let L=1;L<=x.PAY_LV;L++) if(!near(x.xpFor(L),oldXp(L),1e-9)||(L<=30&&x.coinsFor(L)!==oldCoins(L))) same.push(L);
+    ok('up to level '+x.PAY_LV+' (every monster at tiers 0 to III, and the level curve of the hikers) the XP pay is exactly what it was (and the coins up to level 30: above it they are soft-capped)',!same.length&&near(x.expToNext(40),x.xpFor(40)*x.expToNext(26)/x.xpFor(26),1e-9),same.join());
+    ok('above it the pay keeps its level-'+x.PAY_LV+' rate and doubles with every 10 levels: 70 pays 2x and 80 pays 4x of 60 (XP; coins are soft-capped, see below)',
+      near(x.xpFor(70),2*x.xpFor(60),1e-9)&&near(x.xpFor(80),4*x.xpFor(60),1e-9)&&near(x.xpFor(65),Math.pow(2,0.5)*x.xpFor(60),1e-9));
+    ok('coins are soft-capped from level 30: level 60 pays x6 of level 30, level 120 pays x4 of level 60, rising smoothly',near(x.coinsFor(60),6*x.coinsFor(30),0.01)&&near(x.coinsFor(120),4*x.coinsFor(60),0.01)&&x.coinsFor(31)>x.coinsFor(30)&&x.coinsFor(31)<1.1*x.coinsFor(30)*1.3&&x.coinsFor(90)>x.coinsFor(60)&&x.coinsFor(90)<x.coinsFor(120));
     const d=x.DEF_BY_ID.vetrmaw, a=x.defAt(d,80), b=x.defAt(d,60), k=x.zoneTierK(d,5), k3=x.zoneTierK(d,3);
     ok('a tier V Vetrmaw (level 80) pays '+Math.round(a.xp/1e6)+' million XP, not the 915 million the old curve gave, and its tier multiplier is 4x tier III\'s',near(a.xp,4*b.xp,1e-9)&&a.xp<1e8&&near(k.xp,4*k3.xp,1e-6),'x'+k.xp.toFixed(0)+' vs x'+k3.xp.toFixed(0));
     ok('the pay still rises with every tier (V > IV > III > II > I > 0), for a boss and for a level-1 slime',[x.DEF_BY_ID.vetrmaw,x.DEF_BY_ID.slime].every(m=>[0,1,2,3,4,5].map(t=>x.zoneTierK(m,t).xp).every((v,i,r)=>i===0||v>r[i-1])));
