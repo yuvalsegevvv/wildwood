@@ -4,18 +4,6 @@
    MQ_SPEAKER_NAMES in game/economy/main-quest.js), "(stage direction)" or plain text. A first line "@cine Title" makes the scene a still one: the screen is held, the controls are locked and a title card shows (story-voice.js, svCine).
    Spoiler rule (docs/STORY.md section 0): hints only, every one with an innocent reading; no one says continent, machine or the Concord. Test: tools/mainquest-smoke.js. */
 const MQ_MORE={
-  P1:{say:[{post:[
-    "Tansy: And before you ask, no, I didn't bring bread. I brought something better. Which is a story about bread.",
-    "Wren: She's been rehearsing it since sunrise. There's a part with a goat.",
-    "Tansy: The goat is essential.",
-    "(Behind them the village is waking. Smoke from every chimney, Greta's hammer starting up, a rooster arguing with the bell. Over the roofs the great tree at the forest's heart stands dark and quiet against a pale sky.)",
-    "Wren: Do you ever think about it? The Heartwood. Everyone says the roots run under the whole village. Under the well, under our house.",
-    "Tansy: Under my barley, if the elders are right. Which explains the barley.",
-    "Wren: Mum used to say you could put your ear to the ground by the well on a still night and hear it breathing.",
-    "(Wren says it lightly. Nobody says anything for a moment. Then Tansy bumps their shoulder with hers.)",
-    "Tansy: She also said I'd be a great lady one day, and look at me. Mud to the knees and happy as a hen.",
-    "Wren: You are a great lady. Of mud.",
-    "Tansy: Of mud. Right. A crown, then. A proper one. Let's go and fetch it before I get sentimental and start crying into the well."]}]},
   P2:{say:[{post:[
     "Tansy: The Ribbon Row's just up there on the left, see? Every child in the village ties a ribbon on the first autumn.",
     "Tansy: Mine's red. It was yellow once. The sun took it.",
@@ -198,9 +186,49 @@ const MQ_MORE_B={
     "(Far out in the bog a single light moves, slowly, and goes out.)"]}]}
 };
 
+/* The third pass: the hiker speaks. "You: ..." lines (read in the hiker's own voice, the one of the voice setting) answer the people around them: short exchanges at the edges of the scenes, in the same shape and applied last.
+   The hiker is Wren's sibling and grew up in the village (the ribbon, the barn, the well): dry, loyal, a little afraid for Wren and not saying so. */
+const MQ_MORE_C={
+  P2:{say:[
+    {post:["You: Do you ever stop talking?","Tansy: Rarely. Wren says it's the only thing that keeps the quiet out.","You: Wren said that?","Tansy: Wren says all sorts when you're not in the room. Don't tell them I told you."]},
+    {post:["You: Wren's hand was shaking that day at the Row. I remember it was cold.","Tansy: Pet, you were the one shaking. Wren just held on until you stopped."]},
+    {post:["You: Everything's early. Everything's wet. And the birds have gone quiet.","Tansy: ...Have they?","(She listens. The meadow listens back. You are both suddenly very interested in the hedge.)","Tansy: Barley first. Worrying after."]}]},
+  P3:{done:{post:["You: Tansy. Look at the grass.","Tansy: I'm looking at the crown. That's what I'm looking at. The crown.","(She isn't. She walks on a little faster than before.)"]}},
+  P4:{intro:{post:["You: He'd have hated you selling it.","Tansy: He'd have hated me selling it, and then complained about the price. (She laughs, and it is very nearly a real one.)"]}},
+  P5:{done:{post:["You: Tansy. What if it's nothing?","Tansy: Then you'll have looked at nothing, and I'll buy you a pie. Go."]}},
+  W1:{say:[
+    {post:["You: Who? Who did you quarrel with?","Linnea: Ask Dunstan first. He's seen something like it. I'll tell you the rest when I can say it without my hands shaking."]},
+    {post:["You: So the forest knows something we don't.","Dunstan: The forest knows everything. It just won't tell anyone who doesn't ask politely."]}]},
+  W2:{say:[{post:["You: I'm not a farmer.","Morrow: You've mud to the knees and you called me ma'am at the door. Farmer.","You: It's my sibling. They're sick. The grey, it's in their arms, it's...","Morrow: I know what it is. Sit. Talk when you've caught your breath."]}]},
+  W2b:{offer:{post:["You: I'll bring them.","Morrow: Everyone says that. Do it."]}},
+  W6a:{offer:{post:["You: So the sunpetal remembers.","Hollen: Remembers is a strong word. Keeps. The way you keep a ribbon."]}},
+  W7b:{done:{post:["You: I made a potion. Me. Ambrose would faint.","Linnea: Ambrose faints at a stubbed toe. Well done."]}},
+  W2c:{say:[{post:["You: Will it work? The cure?","Morrow: It will hold. Holding is all I promise. The rest is up to the thing under the roots, and to you."]}]},
+  W7:{say:[{post:["You: Tansy. Look after them.","Tansy: Wren has been looked after by me since they could walk. You come back with a cure and your pride intact. In either order."]}]},
+  W8:{done:{post:["You: He asked about a lantern. Why would he ask about a lantern?","Torgeir: Because he wasn't asking. (He watches the cart roll away.) Keep walking."]}},
+  W9:{say:[{post:["You: A country is when a lot of villages agree on the same posts.","Pell: Sounds like a lot of work. Mind the reeds."]}]},
+  W9a:{say:[{post:["You: He hears it, doesn't he? The roots.","Torgeir: Aye. And it's far too loud for a boy his size."]}]},
+  W9b:{say:[{post:["You: And if I can't make it stop? What I feel when it breaks?","Morrow: Then you'll know what it costs. Most don't. Go."]}],
+    done:{post:["You: Thank you. For all of it.","Morrow: Don't. Thank me when they sit up and complain about the soup."]}},
+  W9d:{done:{post:["You: You keep saying there's something you never learned. What did you learn?","Morrow: To leave before I'm asked. Go and rest."]}},
+  W10:{offer:{post:["You: And what do the roots say back?","Aldric: Mostly \"a little to the left.\" Sharpen it, and see."]}},
+  W12:{done:{post:["You: Torgeir. Thank you for telling me.","(He doesn't answer. He passes you the waterskin.)"]}},
+  W11:{done:{post:["You: A forge facing a door that isn't there. I like that. Don't tell her I said so.","Greta: I have ears. Out, the pair of you. (She is almost smiling.)"]}},
+  W11b:{say:[{post:["You: The same ring and sun as on the old road stones. It's the same builder.","Tansy: Don't say that. Don't say anything. Let's go and make something sharp."]}]},
+  W13:{say:[{post:["You: Taught by whom?","Dunstan: If I knew, I'd shake their hand. Or their collar. Shield up, again."]}]},
+  W14:{done:{post:["You: Whoever tied it, it belongs on a post. We'll take it to the tenth.","Tansy: ...The bare one. Yes. All right."]}},
+  W15:{say:[{post:["You: Did he have a name?","Morrow: He did. I carved it. The moss has had it since."]}]},
+  W16b:{say:[{post:["You: And if it goes right?","Torgeir: Then we eat. Dunstan's buying.","Dunstan: I am not."]}]},
+  W17:{say:[{post:["You: (quietly, touching the green ribbon on your wrist) Right. For Wren."]}]},
+  W18:{say:[
+    {post:["(You lean close, so that only Wren can hear.)","You: I'll find something that works. I'll be back before the first snow. Keep the ribbon green."]},
+    {post:["You: I'll bring you a story from the other side, Tansy. No goat in it.","Tansy: Then I won't listen. Go."]}],
+    done:{post:["You: She said someone would come? How could she possibly know that?","Daisuke: She says that about the weather, too. Go and ask her."]}}
+};
+
 function mqApplyMore(){
   const add=(arr,o)=>{ if(!o) return arr||[]; arr=arr||[]; const pre=Array.isArray(o)?[]:o.pre||[], post=Array.isArray(o)?o:o.post||[]; return pre.concat(arr,post); };
-  for(const step of MQ) for(const MM of [MQ_MORE,MQ_MORE_B]){
+  for(const step of MQ) for(const MM of [MQ_MORE,MQ_MORE_B,MQ_MORE_C]){
     const M=MM[step.id]; if(!M) continue;
     for(const k of ['intro','offer','done']) if(M[k]) step[k]=add(step[k],M[k]);
     if(M.say){ let i=0; for(const part of step.parts||[]){ if(!part.say) continue; const m=M.say[i++]; if(m&&(m.pre||m.post)) part.say=add(part.say,m); } }

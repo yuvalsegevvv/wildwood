@@ -8,13 +8,26 @@ const SV_MIN_MS=5000, SV_AFTER_MS=2200, SV_CLOSE_MS=2500;   // a line gets at le
 const SV_FEMALE=/^(Tansy|Linnea|Maren|Greta|Hollen|Morrow|Kaede|Sayuri|Haruka|Chiyo|Hinata|Ylva)$/, SV_FAR=7;   // (a name that is not a villager in the world is given a voice by its sex here; beyond SV_FAR metres the bubble leaves the speaker's head and hangs in the middle of the screen)
 let svStart=0, svEnd=null, svLen=0, svTalking=false, svVoices={}, svToastQ=[], svToastT=0;
 function svNarrator(){ return svVoices.__narr||(svVoices.__narr={look:{sex:'male'},seed:0.91,def:{voice:{rate:0.84,pitch:0.78}},x:0,z:0,speaking:false,synth:true}); }
+// one voice per speaker, always the same: a playable character (a signature set: Tansy, Torgeir, Dunstan, Pell, Ambrose, Morrow, Pip...) and the hiker speak with the voice of their voice setting (HV_OUTFIT, voices-hero.js: the same
+// system voice, pitch and rate as their battle shouts); everyone else with a voice picked from their name (not from which villager object is nearest: Odran keeps a cart in every village)
+const svHash=name=>{ let h=7; for(const c of String(name)) h=(h*31+c.charCodeAt(0))%9973; return (h%997)/997; };
+const svOutfit=name=>{ const k=String(name||'').toLowerCase(); return Object.prototype.hasOwnProperty.call(HV_OUTFIT,k)?HV_OUTFIT[k]:null; };
+function svHeroSpec(){ const sp=typeof hvVoiceSpec==='function'?hvVoiceSpec():null; if(sp) return sp; const sex=LOOK&&LOOK.sex==='female'?'f':'m'; return Object.assign({sex,tone:null},HV_BASE[sex]); }
+function svPick(v,who){   // sets v.vpick (what speakLine uses) for this speaker
+  if(!speech.voices.length) return;
+  const spec=who==='You'?svHeroSpec():svOutfit(who);
+  if(spec){ const pool=voicePool(spec.sex); if(pool.length){ v.vpick={voice:pool[spec.slot%pool.length],pitch:spec.pitch,rate:spec.rate*1.05}; v.vpickN=speech.voices.length; return; } }
+  const key=who+'|'+speech.voices.length, c=svVoices.__pick||(svVoices.__pick={});
+  if(!c[key]) c[key]=pickVoice(v.look.sex,svHash(who),v.def&&v.def.voice);
+  v.vpick=c[key]; v.vpickN=speech.voices.length;
+}
 function svVoiceFor(who,n){
-  if(who==='You'){ const sp=typeof hvVoiceSpec==='function'?hvVoiceSpec():null, sex=sp?(sp.sex==='f'?'female':'male'):(LOOK&&LOOK.sex==='female'?'female':'male');
-    return svVoices.__you&&svVoices.__you.look.sex===sex?svVoices.__you:(svVoices.__you={look:{sex},seed:0.37,def:{voice:sp?{pitch:sp.pitch,rate:sp.rate}:{}},x:0,z:0,speaking:false,synth:true}); }
+  if(who==='You'){ const sp=svHeroSpec(), sex=sp.sex==='f'?'female':'male';
+    return svVoices.__you&&svVoices.__you.look.sex===sex?svVoices.__you:(svVoices.__you={look:{sex},seed:0.37,def:{voice:{}},x:0,z:0,speaking:false,synth:true}); }
   if(!who) return n;
-  let m=null, md=1e9; for(const v of NPCs) if(v.def.name===who||v.def.name.endsWith(' '+who)){ const d=Math.hypot(P.x-v.x,P.z-v.z); if(d<md){ md=d; m=v; } }   // (the nearest of that name: Odran keeps a cart in every village)
+  let m=null, md=1e9; for(const v of NPCs) if(v.def.name===who||v.def.name.endsWith(' '+who)){ const d=Math.hypot(P.x-v.x,P.z-v.z); if(d<md){ md=d; m=v; } }   // (the nearest of that name, for the mouth and where the voice comes from)
   if(m) return m;
-  if(!svVoices[who]){ const root=who==='The Rootwarden', fem=SV_FEMALE.test(who); svVoices[who]={look:{sex:fem?'female':'male'},seed:(who.length*0.137)%1,def:{voice:root?{pitch:0.45,rate:0.72}:{}},x:0,z:0,speaking:false,synth:true}; }
+  if(!svVoices[who]){ const root=who==='The Rootwarden', fem=SV_FEMALE.test(who), sp=svOutfit(who); svVoices[who]={look:{sex:sp?(sp.sex==='f'?'female':'male'):fem?'female':'male'},seed:svHash(who),def:{voice:root?{pitch:0.45,rate:0.72}:{}},x:0,z:0,speaking:false,synth:true}; }
   return svVoices[who];
 }
 function svSpeakLine(who,text,n,quest){
@@ -22,7 +35,8 @@ function svSpeakLine(who,text,n,quest){
   const narr=text[0]==='('&&text.indexOf(')')===text.length-1, said=narr?text.slice(1,-1).trim():mqSpoken(text);
   svStart=performance.now(); svEnd=null; svLen=said.length; svTalking=!!quest;
   if(!said){ svEnd=svStart; return; }
-  const v=narr?svNarrator():(svVoiceFor(who,n)||svNarrator()); if(v.synth){ v.x=P.x; v.z=P.z; }   // (a voice with no body speaks from where you stand)
+  const v=narr?svNarrator():(svVoiceFor(who,n)||svNarrator()); if(v.synth){ v.x=P.x; v.z=P.z; }
+  { const w=who||(v.def&&v.def.name); if(!narr&&w){ try{ svPick(v,w); }catch(_){} } }   // (a voice with no body speaks from where you stand)
   speakLine(v,said,{onEnd:()=>{ svEnd=performance.now(); },quiet:narr});
 }
 // is a played conversation or scene still going (lines to come, or the last one still being said)? Then walking away does not end it
@@ -38,7 +52,7 @@ function svTick(){
     else if(talkNPC&&svFar(talkNPC)&&now>=svEnd+SV_CLOSE_MS){ svTalking=false; endTalk(); }   // the last line is said and the hiker is away: the conversation is over
     else if(!sqSceneOn()&&!(talkNPC&&mqBusy(talkNPC))) svTalking=false;
   }
-  if(!svTalking&&svToastQ.length&&now>=svToastT&&(svEnd===null||now>=svEnd+400)){ const [who,text]=svToastQ.shift(); const v=svVoiceFor(who,null)||svNarrator(); if(v.synth){ v.x=P.x; v.z=P.z; }
+  if(!svTalking&&svToastQ.length&&now>=svToastT&&(svEnd===null||now>=svEnd+400)){ const [who,text]=svToastQ.shift(); const v=svVoiceFor(who,null)||svNarrator(); if(v.synth){ v.x=P.x; v.z=P.z; } try{ svPick(v,who); }catch(_){}
     svStart=now; svEnd=null; svLen=text.length; speakLine(v,text,{onEnd:()=>{ svEnd=performance.now(); svToastT=svEnd+900; }}); }
 }
 // a fight's shouted lines arrive as toasts: Name: "line" (a speaker may have a place after the name: Pip, from the Hem: "...")

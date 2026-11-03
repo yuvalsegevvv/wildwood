@@ -428,7 +428,7 @@ const el=s=>document.querySelector(s);
       const q=G.mqLineOf(L[0]); ok('reading it gives the line itself and holds the screen: the controls are locked',q.who==='Tansy'&&/^Wren\?/.test(q.text)&&G.cineOn()&&G.uiOpen());
       G.svCineEnd(); ok('...and the end of the scene frees the hiker again',!G.cineOn()&&!G.uiOpen());
       for(const k of ['ripple','ash','grey','green','amber']) G.mqDarkFx(k);
-      G.svSpeakLine('Tansy','Tansy: hello',null,true); G.svSpeakLine('You','hi',null,false); G.svSpeakLine(null,'(Rain begins.)',null,true);
+      G.svSpeakLine('Tansy','Tansy: hello',null,true); G.svSpeakLine('Morrow','Morrow: hm',null,true); G.svSpeakLine('Odran','Odran: curious',null,true); G.svSpeakLine('You','hi',null,false); G.svSpeakLine(null,'(Rain begins.)',null,true);
     }catch(e){ errs.push(String(e&&e.stack||e)); }
     ok('voiced lines (villager, hero, narration) and every dark-moment effect run without throwing',errs.length===0,errs[0]); }
   { G=c.G(); const errs=[]; try{
