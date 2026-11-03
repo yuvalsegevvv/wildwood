@@ -10,8 +10,11 @@ function accountCode(){
   if(!/^[a-f0-9]{32}$/.test(a)){ const b=new Uint8Array(16); crypto.getRandomValues(b); a=[...b].map(x=>x.toString(16).padStart(2,'0')).join(''); try{ localStorage.setItem('wildwood-account',a); }catch(_){} }
   return a;
 }
+// a register from the start card is a fresh hiker: it joins under a throwaway guest code and sends no local save, so this browser's old guest progress is neither loaded nor moved into the new account (only a guest who registers inside the game brings their progress)
+function netFreshCode(){ const b=new Uint8Array(16); crypto.getRandomValues(b); return [...b].map(x=>x.toString(16).padStart(2,'0')).join(''); }
 function netHello(){
   if(NET.test){ NET.sawTest=true; NET.send&&NET.send({t:'hello',name:NET.name||'Hiker',look:lookForNet(LOOK)}); return; }   // the test world keeps no save: nothing goes up, and its kit stays out of this browser
+  if(NET.fresh){ if(!NET.freshCode) NET.freshCode=netFreshCode(); NET.send&&NET.send({t:'hello',acct:NET.freshCode,name:NET.name||'Hiker',look:lookForNet(LOOK)}); return; }
   NET.send&&NET.send(Object.assign({t:'hello',acct:accountCode(),name:NET.name||'Hiker',look:lookForNet(LOOK),save:NET.sawTest?undefined:{level:PL.level,exp:PL.exp,gear:GEAR}},NET.login||{}));   // (after a test session the page holds the test kit, not this browser's progress)
 }
 // one bad entry of a message (a monster model that throws, an event for a panel that is not there) must not drop the rest of it: the events after it are loot, toasts and quest updates. Logged 20 times, then every 1000th.

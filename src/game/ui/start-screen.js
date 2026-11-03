@@ -81,6 +81,7 @@ async function enterWorld(o){
   if(NET.ready) netReset();
   NET.test=!!o.test;
   NET.name=o.name; NET.login=o.login||null; pendingReg=o.register||null;
+  NET.fresh=!!o.register; NET.freshCode=null;   // registering from this card starts a fresh hiker (see netHello)
   if(!o.login&&!o.register&&!o.test) try{ localStorage.setItem('wildwood-name',NET.name); }catch(_){}
   NET.onReady=()=>{ if(pendingReg) netSend({t:'register',user:pendingReg.user,pass:pendingReg.pass}); else { starting=false; if(LOOK_KEPT) beginPlay(); else { statusEl.textContent=''; openEditor({create:true}); } } };   // a brand-new hiker (no look in this browser or on the server) makes a character first
   try{

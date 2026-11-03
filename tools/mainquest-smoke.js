@@ -102,6 +102,7 @@ ok('W18 starts by itself after W17',id()==='W18'&&M().st===1);
 // an old save is moved by step id: a version 2 save at the Heartwood sap (W7) lands on the new W7; one on Act II keeps its counts
 { const s2=x.sanitizeMq({s:x.MQ_V2_IDS.indexOf('W7'),st:1,n:[2],h:0,ver:2}); ok('a version 2 save at the Heartwood sap (W7) lands on the new W7',x.MQ[s2.s].id==='W7'&&s2.n[0]===0);
   const s3=x.sanitizeMq({s:x.MQ_V2_IDS.indexOf('V5'),st:1,n:[1],h:0,ver:2}); ok('a version 2 save in Act II keeps its step and its counts',x.MQ[s3.s].id==='V5'&&s3.st===1);
+  const s0=x.sanitizeMq({s:0,st:1,n:[0],h:0,ver:2}), s0b=x.sanitizeMq({s:0,st:1,n:[0]}); ok('an old save still at its first step starts at the prologue (P1), not at W1',x.MQ[s0.s].id==='P1'&&x.MQ[s0b.s].id==='P1'&&s0.st===1&&s0.ver===x.MQ_VER);
   const s4=x.sanitizeMq({s:2,st:1,n:[0],h:0,ver:2}); ok('a removed step (W3) moves a save to the next one that exists (W6, the board)',x.MQ[s4.s].id==='W6'); }
 // V7b: woodcutting in the vale, and armour from its logs
 dev('mq','V7b'); dev('level',18); p.gear.east=2; p.gear.coins=20000; hanami(); talk('haruka'); ok('V7b: Haruka offers Lacquer and cherrywood',id()==='V7b'&&M().st===1);
