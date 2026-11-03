@@ -2,11 +2,11 @@
 /* Agent map. Rules and protocol: docs/CAVE.md section 15, docs/PROTOCOL.md (cm). The server: server/cave/. The props in the floor: method-props.js. Test: tools/client-smoke.js (the cave case), tools/cave-smoke.js.
    exports: CAVE_M = {s (the last cm message), t (when it came), seal (the vault is open here)}, NETH.cm, caveMState() -> the message or null off the floors,
             caveBoardHtml(floor?) (the lift window and the skills panel), caveWhereHtml(skill) (the locked tile's text), caveMethodsEnter(R) / caveMethodsLeave() / caveMethodsFrame(dt) (zone.js, with method-props.js).
-   The HUD line #cvMethod shows msg.hud (the server writes the sentence). The vault: while msg.fv.o > 0 the sealed cells are walkable here too (the same rule as the server's), and the boulders at the seal are hidden. */
+   The HUD line #cvMethod shows msg.hud (the server writes the sentence), or the guide's next place, with its distance (cvwHud, cave/waypoint.js). The vault: while msg.fv.o > 0 the sealed cells are walkable here too (the same rule as the server's), and the boulders at the seal are hidden. */
 var CAVE_M={s:null,t:0,seal:false,shakeT:0};   // (var: the net handler is registered at load)
 NETH.cm=msg=>{
   CAVE_M.s=msg&&msg.f>0?msg:null; CAVE_M.t=performance.now();
-  const el=$('#cvMethod'); if(el){ const txt=msg&&msg.f>0&&msg.hud||''; el.textContent=txt; el.hidden=!txt; }
+  cvwHud();   // caveguide: the line under the top bar, the server's or the guide's next place, with its distance (cave/waypoint.js)
   caveMSeal(!!(msg&&msg.fv&&msg.fv.o>0));
 };
 const caveMState=()=>CAVE_RUN&&CAVE_M.s&&CAVE_M.s.f===CAVE_RUN.n?CAVE_M.s:null;
@@ -29,6 +29,7 @@ function caveMethodsFrame(dt){
   if(s&&s.fv){ if(s.fv.w>0&&s.fv.w<=8&&typeof camShake!=='undefined') camShake=Math.max(camShake,0.12+0.03*(8-s.fv.w)); }   // the tremor rumbles before the vault opens
   if(CAVE_M.shakeT>0) CAVE_M.shakeT-=dt;
   caveMPropsFrame(dt,s);
+  cvwFrame(dt);   // caveguide: the HUD line follows you as you walk (cave/waypoint.js)
 }
 // ---- the board ----
 function caveBoardHtml(floor){

@@ -48,3 +48,11 @@ body.editing #aiNote{ display:none; }
 @media (max-width:719px){ body:has(.panel:not([hidden])) #aiNote{ display:none; } }   /* the panels are bottom sheets on a phone */
 
 body.playing #grow{ display:none !important; }   /* "growing distant areas" is loading talk: the start card shows it, the HUD does not */
+
+/* the objective marker (ui/waypoint.js): a gold diamond over the spot with its name and distance; on the screen's edge an arrow points the way */
+#wpMark{ position:fixed; left:0; top:0; z-index:20; pointer-events:none; display:flex; flex-direction:column; align-items:center; width:0; height:0; will-change:transform; }
+#wpMark[hidden]{ display:none; }
+#wpMark .wp-pin{ position:absolute; left:-8px; top:-8px; width:16px; height:16px; transform:rotate(45deg); background:#ffd25a; border:2px solid #fff4d0; box-shadow:0 0 10px rgba(255,200,80,.85),0 1px 3px rgba(0,0,0,.6); }
+#wpMark .wp-arr{ display:none; position:absolute; left:-7px; top:-7px; width:0; height:0; border-left:14px solid #ffd25a; border-top:7px solid transparent; border-bottom:7px solid transparent; transform:rotate(var(--wpa,0rad)) translateX(16px); transform-origin:7px 7px; filter:drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
+#wpMark.off .wp-arr{ display:block; }
+#wpMark b{ position:absolute; top:13px; transform:translateX(-50%); left:0; white-space:nowrap; font:600 12px/1.2 "Alegreya Sans",system-ui,sans-serif; color:#fff4d0; text-shadow:0 1px 3px #000,0 0 6px rgba(0,0,0,.8); padding:1px 6px; border-radius:8px; background:rgba(20,16,8,.45); }

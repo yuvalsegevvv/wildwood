@@ -17,7 +17,7 @@ function frame(){
     if(started && !customizing && !PL.dead){ updatePlayer(dt); updateFootFx(dt); goreUpdate(dt); }
     else if(!started && !customizing) P.yaw+=dt*0.04;
     animateHiker(dt);
-    updateMotes(dt,t); updatePetals(dt,t); updateAmbient(dt,t); updateVillageSmoke(dt); updateZoneFire(dt); updateVolcanoFx(dt); updateQuestGuide(dt);
+    updateMotes(dt,t); updatePetals(dt,t); updateAmbient(dt,t); updateVillageSmoke(dt); updateZoneFire(dt); updateVolcanoFx(dt); updateQuestGuide(dt); updateWaypoint(dt);   // waypoint: the objective marker (ui/waypoint.js)
     updateAnimals(dt); updateFish(dt); updateDragonflies(dt);
     cvUpdate(dt);   // caves: sites out of sight are hidden, the cave's darkness is sampled (world/caves.js)
     chamoisUpdate(dt);   // chamois: the Greyspine's harmless mountain goats (wildlife/chamois.js)

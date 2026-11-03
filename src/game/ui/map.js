@@ -92,6 +92,7 @@ function sizeFullMap(){
   const here=landHere(), cur=mapLand||here, nx=nextLand(cur);
   mapLandBtn.hidden=!valeOpen()||nx===cur; mapLandBtn.textContent=nx===here?'Where I am':LANDS[nx].name;
   $('#mapWorld').hidden=dgIn()||caveIn();   // cave: also on a floor
+  $('#mapTravel').hidden=dgIn()||caveIn()||!CIRCLES.some(C=>C.V!==VIL&&C.open(GEAR||{}));   // waypoint: travel from anywhere, once a second circle is awake (ui/travel.js)
     // world map: Eldmere's map is for the world, not a run (ui/world-map.js)
 }
 function drawFullMap(){

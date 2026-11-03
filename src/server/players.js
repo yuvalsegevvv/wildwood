@@ -139,12 +139,18 @@ function pubInfo(p){ return {id:p.id,name:p.name,look:p.look,eq:p.gear.eq,level:
 function inVillage(p){ return vNear(p.x,p.z,VR+12); }
 // the teleport circles (one in each village): standing on one and choosing a destination (the client's travel window, warp{to}) takes you
 // there (CIRCLES in shared/hoarfrost.js: a land's circles wake when you have walked into its village).
-function warpP(p,to){
+const WARP_IDLE=5;   // travel from anywhere (the map's Travel button): seconds since your last hit
+function warpP(p,to,any){
   if(p.dead||S.t-(p.warpT||-9)<2) return;
-  const from=CIRCLES.find(C=>Math.hypot(p.x-C.V.tele.x,p.z-C.V.tele.z)<C.V.tele.r+1.5); if(!from) return;
-  if(!from.open(p.gear)){ toastTo(p.id,p.gear.east<1?'The circle is cold. Whatever it answers to lies beyond the eastern mountains.':from.id==='tallgrass'?'The circle hums but will not wake. Walk into Tallgrass through the Ashbed Gate first.':from.id==='coralhaven'?'The circle hums but will not wake. Cross the Tide Bridge (it opens when the Herd-Mother, Oldhorn, has fallen) and walk into Coralhaven first.':from.id==='wraithwick'?'The circle hums but will not wake. Walk into Wraithwick through the neck pass first.':from.id==='highmark'?'The circle hums but will not wake. Walk into Highmark through the glacier valley first.':from.id==='rimehold'?'The circle hums but will not wake. Walk into Rimehold through Frostgate Pass first.':'The circle hums but will not wake. Walk to Hanami on the far side of the bridge first.','bad'); return; }
-  const dest=CIRCLES.find(C=>C.id===to)||(from.id==='home'?CIRCLES[1]:CIRCLES[0]);   // no destination given: home <-> Hanami
-  if(dest===from) return;
+  const from=CIRCLES.find(C=>Math.hypot(p.x-C.V.tele.x,p.z-C.V.tele.z)<C.V.tele.r+1.5);
+  if(!from){   // travel from anywhere to an attuned circle: not from a run, the Proving Isle or a cave floor, and not in a fight
+    if(!any||typeof to!=='string') return;
+    if(p.inst||p.pv||caveFloorAt(p.x,p.z)>=0){ toastTo(p.id,'You cannot travel from here','bad'); return; }
+    if(S.t-p.lastHit<WARP_IDLE){ toastTo(p.id,'Wait '+WARP_IDLE+' seconds out of combat to travel','bad'); return; }
+  }
+  else if(!from.open(p.gear)){ toastTo(p.id,p.gear.east<1?'The circle is cold. Whatever it answers to lies beyond the eastern mountains.':from.id==='tallgrass'?'The circle hums but will not wake. Walk into Tallgrass through the Ashbed Gate first.':from.id==='coralhaven'?'The circle hums but will not wake. Cross the Tide Bridge (it opens when the Herd-Mother, Oldhorn, has fallen) and walk into Coralhaven first.':from.id==='wraithwick'?'The circle hums but will not wake. Walk into Wraithwick through the neck pass first.':from.id==='highmark'?'The circle hums but will not wake. Walk into Highmark through the glacier valley first.':from.id==='rimehold'?'The circle hums but will not wake. Walk into Rimehold through Frostgate Pass first.':'The circle hums but will not wake. Walk to Hanami on the far side of the bridge first.','bad'); return; }
+  const dest=CIRCLES.find(C=>C.id===to)||(from?(from.id==='home'?CIRCLES[1]:CIRCLES[0]):null);   // no destination given: home <-> Hanami
+  if(!dest||dest===from) return;
   if(isGuestP(p)&&!guestLandOk(dest.V.x,dest.V.z)){ guestGateP(p,'travel'); return; }   // accounts: guests stay in the first three lands
   if(!dest.open(p.gear)){ toastTo(p.id,dest.hint,'bad'); return; }
   const V=dest.V, T=V.tele, a=Math.atan2(V.x-T.x,V.z-T.z), x=T.x+Math.sin(a)*3.2, z=T.z+Math.cos(a)*3.2;
