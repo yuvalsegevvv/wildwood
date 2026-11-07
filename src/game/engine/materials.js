@@ -81,8 +81,10 @@ function grassMat(lod){
       // colour: the meadow's patches, the tip's freshness, straw, the sheen of the bent blades, the far fade into the ground
       vec3 gpatch=mix(mix(vec3(1.0),vec3(0.84,0.98,1.12),gcool),vec3(1.14,1.05,0.72),gdry)*(0.86+0.28*gn2)*vec3(1.0+(ghh-0.5)*0.12,1.0,1.0-(ghh-0.5)*0.14);
       vColor*=mix(vec3(1.0),gpatch,0.3+0.7*gt);
+      vec3 gtint=vec3(0.76,0.93,0.64);   // the tuft's colour is the ground's (genChunk), so tufts melted into it and the meadow looked bare: stand them out, darker and greener than the ground they stand on (the far fade below returns to the ground's colour)
+      vColor*=gtint;
       vColor=mix(vColor,vColor*vec3(1.22,1.06,0.6),gdry*gt*gt*0.55);
-      if(gkind>0.5){ vec3 straw=mix(vec3(0.6,0.56,0.33),vec3(0.74,0.64,0.38),gdry)*(0.9+0.2*gn2); if(gkind>1.5) straw*=vec3(0.86,0.8,0.8); vColor=color*mix(gic*0.9,straw,0.35+0.6*gt); }
+      if(gkind>0.5){ vec3 straw=mix(vec3(0.6,0.56,0.33),vec3(0.74,0.64,0.38),gdry)*(0.9+0.2*gn2); if(gkind>1.5) straw*=vec3(0.86,0.8,0.8); vColor=color*mix(gic*0.9,straw,0.35+0.6*gt)*gtint; }
       vColor*=1.0+0.3*(gpush-0.45)*gt;
       float gfar=smoothstep(55.0,97.0,gd);
       vColor=mix(vColor,gic,gfar);
