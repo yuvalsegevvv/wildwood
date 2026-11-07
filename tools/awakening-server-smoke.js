@@ -5,7 +5,7 @@
 const {loadServer}=require('./load');
 const {api:W,x}=loadServer({dev:true,send(){}},
   ['S','SS_SETS','SS_ORDER','SKILLS','MATS','MAT_IDS','CAVE_SKILLS','CAVE_SKILL_IDS','AWK_TIERS','awkShapeOf','awkNode','awkNodeCost','awkTierCost','awkStatOf','awkDropKinds','awkBranchLv','awkUltLvP',
-   'awkLevelP','awkStatP','awkTierP','awkMigrateG','awkGrantP','awkSyncG','sanitizeGear','skillLvOf','caveLvOf','ssGrantP','ssGrantSetP','ultEquippedP','psP','rdMatsOf','SMIG_VER','getH']);
+   'awkLevelP','awkStatP','awkTierP','awkMigrateG','awkGrantP','awkSyncG','sanitizeGear','skillLvOf','caveLvOf','ssGrantP','ssGrantSetP','ultEquippedP','psP','rdMatsOf','SMIG_VER','getH','MONS','rewardKill','monTierOf','landAt','BOSS_TROPHY','BT_ORDER','BT_BAD','BT_MAX','btOf','awkTrophyP','SS_SOURCES','BOSS_DEFS']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const K='tansy', T=x.SS_SETS[K];   // a pine tree (the basic attack is the trunk): its first limb needs no trophy
@@ -51,8 +51,29 @@ send({a:'tier',set:K}); send({a:'tier',set:K});
   const c4=x.awkTierCost(K,4), s0=snap(), why=x.awkTierP(p,K);
   ok('A4 asks Prime Essence, which cannot be earned yet: refused with a reason, nothing taken, no throw',!!c4.mats.ess_prime&&typeof why==='string'&&/cannot be earned yet/.test(why)&&snap()===s0&&g.awk[K].t===3,why); }
 { const sh=x.awkShapeOf('pell'), po=x.awkNodeCost('pell','po2'); x.ssGrantSetP(p,'pell',true); fund(); x.awkStatP(p,'pell','spo2');
-  const s0=snap(), why=x.awkLevelP(p,'pell','po2');
-  ok('a power level asks the boss trophy (step 10): refused cleanly, nothing taken',sh.id==='oak'&&Object.keys(po.mats).some(m=>m.startsWith('trophy_'))&&typeof why==='string'&&snap()===s0&&!g.awk.pell.n.po2,why); }
+  const tid=Object.keys(po.mats).find(m=>m.startsWith('trophy_')), s0=snap(), why=x.awkLevelP(p,'pell','po2');
+  ok('a power level asks the boss trophy: refused with a reason while none is held, nothing taken',sh.id==='oak'&&!!tid&&typeof why==='string'&&/trophy|Trophy/.test(why)&&snap()===s0&&!g.awk.pell.n.po2,why);
+  g.awm[tid]=po.mats[tid]; const r=x.awkLevelP(p,'pell','po2');
+  ok('with the trophies held, po2 is bought once and the trophies are taken',r===null&&g.awk.pell.n.po2===1&&!(tid in g.awm),String(r)); }
+// ---- boss trophies (step 10a) ----
+{ ok('every land boss has a trophy row, none is bad, ids are trophy_<boss>',x.BT_BAD.length===0&&Object.values(x.SS_SOURCES).every(l=>[l[0],l[1]].every(b=>x.btOf('trophy_'+b)&&x.btOf('trophy_'+b).boss===b))&&x.BT_ORDER.length===16);
+  ok('every trophy boss is a real world boss',x.BT_ORDER.every(id=>x.BOSS_DEFS.some(b=>b.def.id===x.BOSS_TROPHY[id].boss)));
+  ok('btOf is an own-property lookup',x.btOf('constructor')===null&&x.btOf('__proto__')===null&&x.btOf('trophy_nope')===null);
+  W.join('b',{name:'Bo',look:{cls:'warrior'},save:{level:45}}); tick(2);
+  const q=W.players.get('b'); q.gear.awm={}; g.awm={};
+  const boss=x.MONS.find(m=>m.def.id==='boss'), land=x.landAt(boss.camp.x,boss.camp.z);
+  const kill=tier=>{ for(const pl of [p,q]){ pl.gear.zt=pl.gear.zt||{}; pl.gear.zt[land]={on:tier,max:tier}; pl.x=boss.x; pl.z=boss.z; } boss.hitters=new Map();
+    boss.hitters.set(p.id,x.S.t); boss.hitters.set(q.id,x.S.t); x.rewardKill(p,boss); x.rewardKill(q,boss); };
+  kill(0); ok('a world boss kill at tier 0 pays 1 trophy to each helper',g.awm.trophy_boss===1&&q.gear.awm.trophy_boss===1,g.awm.trophy_boss+' '+q.gear.awm.trophy_boss);
+  kill(3); ok('a kill at tier 3 pays 8 more to each helper',g.awm.trophy_boss===9&&q.gear.awm.trophy_boss===9,g.awm.trophy_boss+' '+q.gear.awm.trophy_boss);
+  g.awm.trophy_boss=x.BT_MAX-2; kill(3); ok('the pile is clamped to the maximum',g.awm.trophy_boss===x.BT_MAX);
+  const before=JSON.stringify(g.awm);
+  boss.hitters=new Map([[p.id,x.S.t]]); const hold=boss.inst; boss.inst={}; x.rewardKill(p,boss); boss.inst=hold;
+  ok('a monster inside a dungeon run pays no world trophy',JSON.stringify(g.awm)===before);
+  x.awkTrophyP(p,'amanita',0); x.awkTrophyP(p,'__proto__',0);
+  ok('a dungeon or junk boss id pays nothing',JSON.stringify(g.awm)===before);
+  const clean=x.sanitizeGear({awm:{trophy_boss:5,trophy_carapax:-3,trophy_nope:9,constructor:4,__proto__:{trophy_akaoni:7},trophy_kyuubi:99999999,echo:3}},'warrior');
+  ok('junk trophy ids in a save are dropped, counts clamped, others kept',clean.awm.trophy_boss===5&&clean.awm.echo===3&&clean.awm.trophy_kyuubi===x.BT_MAX&&!('trophy_carapax' in clean.awm)&&!('trophy_nope' in clean.awm)&&!Object.prototype.hasOwnProperty.call(clean.awm,'constructor')&&!('trophy_akaoni' in clean.awm),JSON.stringify(clean.awm)); }
 // ---- junk ----
 { const s0=snap(); let threw=false;
   try{ for(const set of ['__proto__','constructor','toString',7,{},[],null,'nope']) for(const id of ['__proto__','constructor','hasOwnProperty',5,{},[],'sba2x',null]) for(const a of ['tier','up','stat','x',null]) W.receive('a',{t:'awk',a,set,id});

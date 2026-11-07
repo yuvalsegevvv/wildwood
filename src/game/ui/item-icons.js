@@ -113,6 +113,12 @@ function matIconArt(col,kind){
   if(kind==='gathering') return `<path d="M16 28V13" stroke="#15120e" stroke-width="3.4" stroke-linecap="round"/><path d="M16 28V13" stroke="#5a8a3a" stroke-width="1.6" stroke-linecap="round"/><path d="M16 15Q8 14 7 6Q15 6 16 15Z" fill="${col}" ${OUT}/><path d="M16 19Q24 18 25 10Q17 10 16 19Z" fill="${col}" ${OUT}/><path d="M16 24Q10 24 8 18Q14 17 16 24Z" fill="${l}" ${OUT}/>`;
   return `<path d="M16 3L26 12L16 29L6 12Z" fill="${col}" ${OUT}/><path d="M6 12H26M16 3L12 12L16 29L20 12Z" fill="none" stroke="${d}" stroke-width=".9"/><path d="M9 11L14 5.5" stroke="${l}" stroke-width="1.3"/>`;
 }
+// a boss trophy (shared/boss-trophy.js): a cup on a stem with two handles, tinted by the row's col
+function btIconArt(col){
+  const d=icoShade(col,0.62), l=icoShade(col,1.3);
+  return `<path d="M9 7Q2 7 4 13Q6 18 11 18M23 7Q30 7 28 13Q26 18 21 18" fill="none" stroke="#15120e" stroke-width="3"/><path d="M9 7Q2 7 4 13Q6 18 11 18M23 7Q30 7 28 13Q26 18 21 18" fill="none" stroke="${d}" stroke-width="1.5"/><path d="M8 4H24V12Q24 20 16 21Q8 20 8 12Z" fill="${col}" ${OUT}/><path d="M11 6V12Q11 17 14 19" fill="none" stroke="${l}" stroke-width="1.3"/><path d="M14 21H18V25H14Z" fill="${d}" ${OUT}/><path d="M9 25H23V29H9Z" fill="${col}" ${OUT}/>`;
+}
+const btIcon=col=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${btIconArt(col)}</g></svg>`;
 // id + name given for a monster drop: its own picture (ui/drop-icons.js); a resource passes its profession as `kind`
 const matIcon=(col,kind,id,name)=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${kind==='drop'&&id?dropIconArt(id,col,name):matIconArt(col,kind)}</g></svg>`;
 // faint outline for an empty equipment slot

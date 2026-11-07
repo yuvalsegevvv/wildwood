@@ -93,6 +93,7 @@
     "awakening-cost.js",
     "classes.js",
     "skillsets.js",
+    "boss-trophy.js",
     "basic-hold.js",
     "drops.js",
     "items.js",

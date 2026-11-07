@@ -86,7 +86,7 @@ function rewardKill(q,m){
   if(MATS[m.def.id]&&(!m.dip||Math.random()<DIP_MAT_K)){ const n=rollDropCount(m.def,psP(q,'drop')+pendP(q,'drop')+rlP(q,'drop')+potBuffP(q,'fortune')); if(n) addMatP(q,m.def.id,n,m.id); }   // dip: a pipe's monsters drop DIP_MAT_K of the materials
   questKillP(q,m.def.id); q.dirty=true; gsStatP(q,'kill'); if(m.def.boss) gsStatP(q,'boss');   // gems: the kill counters
   if(m.rd) return;   // raids: a raid copy of a boss pays the kill (above) but opens no tier, rolls no set and advances no quest
-  if(m.def.boss){ rlBossStonesP(q,m,K); ssBossClearP(q,m); zoneTierKillP(q,m); }   // skillsets: the set of this boss's land at the tier fought (before the kill can unlock a tier)
+  if(m.def.boss){ if(!m.inst) awkTrophyP(q,m.def.id,monTierOf(q.gear,m)); rlBossStonesP(q,m,K); ssBossClearP(q,m); zoneTierKillP(q,m); }   // skillsets: the set of this boss's land at the tier fought (before the kill can unlock a tier)
   mqKillP(q,m);
   sqKillP(q,m);   // sidequests: kills, quest drops and bosses count for every running chain
   if(m.def.id==='boss') openValeP(q);

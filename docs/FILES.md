@@ -99,6 +99,7 @@ shared
   awakening-cost.js                  Awakening prices and stats: R (the coin yardstick), the level / stat-node / unlock / star / tier cost tables, stats by kit, awkNodeCost, awkTierCost, awkTreeCost, awkStatOf
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
   skillsets.js                       Skill sets (rules, pure): the registry defineSkillSet (one file per set in shared/skillsets/), its checks, the expansion into SKILLS / PASSIVES rows, counting the worn pieces and the 3- / 5-set bonuses
+  boss-trophy.js                     Boss trophies: BOSS_TROPHY, the named trophy each world boss drops (2^tier a kill to every helper), the registry defineBossTrophy and its checks
   basic-hold.js                      Skill 1 (the basic slot) as an attack-speed skill with two modes (pure): attack speed and charge gain, the press / hold split, and what a held release becomes for each class
   drops.js                           Monster drops (MATS: one material per monster kind) and what upgrading a skill costs (upgradeNeeds, upNeedsBase). Pure.
   items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, and the three profession tools (TOOL_LIST) with the same tiers and rarities (the pendants' rules are in pendants.js, the pieces in dungeon-items.js); prices, drop tables, merging, armour looks, gear helpers (the level-30 dungeon pieces join ITEM in dungeon-items.js). Pure.
