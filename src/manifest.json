@@ -89,6 +89,8 @@
     "tiers.js",
     "elements.js",
     "awakening.js",
+    "awakening-tree.js",
+    "awakening-cost.js",
     "classes.js",
     "skillsets.js",
     "basic-hold.js",

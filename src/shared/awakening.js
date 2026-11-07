@@ -1,7 +1,8 @@
-//@ Awakening: how a skill's level scales each of its numbers (AWK_SCALE curves, awkCurve, the field map AWK_FIELD, awkFx / awkRow scaled copies)
-/* Agent map (skills revamp step 7; step 8 adds the rest of Awakening here).
+//@ Awakening: the tiers A0-A5 (hiker level, skill level cap, what each opens) and how a skill's level scales each of its numbers (AWK_SCALE curves, awkCurve, awkFx / awkRow scaled copies)
+/* Agent map (skills revamp steps 7 and 8; step 8's tree shapes are in awakening-tree.js and the prices in awakening-cost.js; design: PLAN section 4).
    exports: AWK_LV_CAP, AWK_SCALE (kind -> {per, how, cap}), awkCurve(kind, L), AWK_FIELD (field name -> kind), AWK_CTX (object key -> the kind its v takes),
-            awkFx(fx, L) (a level-L copy of a skill's fx, memoised; level 1 returns fx itself), awkRow(row, L) (a passive's trigger row at level L).
+            awkFx(fx, L) (a level-L copy of a skill's fx, memoised; level 1 returns fx itself), awkRow(row, L) (a passive's trigger row at level L),
+            AWK_TIERS (A0-A5: hiker level, skill level cap, what it opens), awkTierForLevel(L) (the lowest tier whose cap allows skill level L).
    uses:    nothing (pure data). Read by: shared/classes.js (skillPower, skillCdMult, passiveValue), shared/cave.js (caveLevelK), server/combat.js
             (handleAttack, applyBuffS), server/cave.js + cave/skills.js + cave-fx.js (charge skills), server/skillsets.js (ssRefreshP: leveled trigger rows),
             game/economy/skills.js (the panel's numbers). Test: tools/skills-smoke.js (the curve block).
@@ -59,3 +60,16 @@ function awkRow(r,L){
   if(r.fx) out.fx=awkFx(r.fx,L);
   return out;
 }
+
+/* The tiers (PLAN 4a). A tier is bought per character (its price: awakening-cost.js, awkTierCost). `lv` is the hiker level it needs, `cap` the highest
+   skill level it allows, `opens` what it makes buyable: A1 the passive, A2 the charge skill, A3 the burst (damage and stun), A4 the burst's first buff
+   (special node star1), A5 its second buff (star2). The level-1 skills (basic, skill, power) are open from A0. */
+const AWK_TIERS=[
+  {t:0, lv:0,  cap:4,  opens:'basic skill power'},
+  {t:1, lv:10, cap:5,  opens:'passive'},
+  {t:2, lv:20, cap:6,  opens:'charge'},
+  {t:3, lv:28, cap:7,  opens:'burst'},
+  {t:4, lv:35, cap:8,  opens:'star1'},
+  {t:5, lv:45, cap:10, opens:'star2'}
+];
+function awkTierForLevel(L){ L=Math.floor(+L)||1; for(const T of AWK_TIERS) if(T.cap>=L) return T.t; return AWK_TIERS.length-1; }
