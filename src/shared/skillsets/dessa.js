@@ -27,7 +27,10 @@ defineSkillSet({
   ult:{name:'Strike While Hot', desc:'A glowing anvil falls on the target (7 m) and leaves 5 Temper on everything it hits; the stunned stand ringing.', range:7, mult:1.8, act:['dessault',1.0,0.6], anim:'nova',
        fx:{ring:{r:7, kb:2, mark:{id:'temper', n:5, dur:12, max:5}}},
        boost:[{piece:'a3', secs:10, mod:{mult:2, util:2}}, {piece:'p1', secs:14, mod:{v:2}}]},
-  bonus:{
-    3:{name:'Hot Iron', text:'When you are hit, sparks leap 4 m round you for 50% damage and leave Temper (at most every 4 s)', on:'hurt', icd:4, mult:0.5, range:4, fx:{ring:{r:4, mark:{id:'temper', n:1, dur:12, max:5}}}},
-    5:{name:'The Anvil Holds', text:'When you drop below 35% health, the anvil rings: you heal 15% and you and your allies within 20 m take 20% less damage and carry a shield worth 10% of health for 8 s (at most every 25 s)', on:'low', below:0.35, icd:25, heal:0.15, shield:{v:0.10, dur:8}, buff:{kind:'guard', v:0.2, dur:8, r:20}}},
+  tree:'pine', stone:'Anvil Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'dessa_p2',
+    2:{name:'Hot Iron', text:'When you are hit, sparks leap 4 m round you for 50% damage and leave Temper (at most every 4 s)', on:'hurt', icd:4, mult:0.5, range:4, fx:{ring:{r:4, mark:{id:'temper', n:1, dur:12, max:5}}}},
+    4:'dessa_p3',
+    6:{name:'The Anvil Holds', text:'When you drop below 35% health, the anvil rings: you heal 15% and you and your allies within 20 m take 20% less damage and carry a shield worth 10% of health for 8 s (at most every 25 s)', on:'low', below:0.35, icd:25, heal:0.15, shield:{v:0.10, dur:8}, buff:{kind:'guard', v:0.2, dur:8, r:20}}},
 });

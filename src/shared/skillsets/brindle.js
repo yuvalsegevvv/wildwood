@@ -27,7 +27,10 @@ defineSkillSet({
   ult:{name:'High Noon', desc:'He holds up a huge lens: a sunbeam burns a 30 m line and leaves a Glint on everything it crosses.', range:30, mult:3.96, act:['brindleult',1.1,0.6], anim:'cast',
        fx:{cone:{r:30, arc:0.3, mark:{id:'glint', n:2, dur:12, max:5}}},
        boost:[{piece:'a1', secs:14, mod:{mult:2, n:2}}, {piece:'p2', secs:14, mod:{v:2.5}}]},
-  bonus:{
-    3:{name:'Warm Lenses', text:'While you fight, you and your allies within 20 m deal 4% more damage (refreshed every 3 s)', on:'tick', icd:3, buff:{kind:'might', v:0.04, dur:4, r:20}},
-    5:{name:'Fuse Lit', text:'A critical hit on a target carrying a Glint sets the enemies within 5 m of it ablaze with a burst for 90% damage (at most every 3 s)', on:'crit', when:{marked:'glint'}, at:'target', icd:3, mult:0.9, range:5, fx:{ring:{r:5, burn:{dur:3, k:0.3}}}}},
+  tree:'banyan', stone:'Sunglass Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'brindle_p1',
+    2:{name:'Warm Lenses', text:'While you fight, you and your allies within 20 m deal 4% more damage (refreshed every 3 s)', on:'tick', icd:3, buff:{kind:'might', v:0.04, dur:4, r:20}},
+    4:'brindle_p3',
+    6:{name:'Fuse Lit', text:'A critical hit on a target carrying a Glint sets the enemies within 5 m of it ablaze with a burst for 90% damage (at most every 3 s)', on:'crit', when:{marked:'glint'}, at:'target', icd:3, mult:0.9, range:5, fx:{ring:{r:5, burn:{dur:3, k:0.3}}}}},
 });

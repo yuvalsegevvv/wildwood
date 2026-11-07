@@ -26,7 +26,10 @@ defineSkillSet({
   ult:{name:'Avalanche Run', desc:'She skates a full circle around the target (8 m), leaving a wall of frost that then shatters inward.', range:24, mult:5.6, act:['brynjault',1.0,0.7], anim:'cast',
        fx:{zone:{r:8, dur:0.8, once:true, slow:2}},
        boost:[{piece:'a3', secs:10, mod:{mult:2}}, {piece:'cave', secs:12, mod:{mult:2, size:1.3}}]},
-  bonus:{
-    3:{name:'Cold Edge', text:'A hit on a target carrying Rime (at most every 2 s) cuts again for 130% damage', on:'hit', when:{marked:'rime'}, icd:2, mult:1.3, range:3.4, fx:{cone:{r:3.4, arc:1.2}}},
-    5:{name:'Frozen Wake', text:'A kill or a critical hit sends a frost ring 6 m round the target for 120% damage, leaves Rime on what it hits and heals you for 3% of maximum health (at most every 2 s)', on:['kill', 'crit'], at:'target', icd:2, heal:0.03, mult:1.2, range:6, fx:{ring:{r:6, mark:{id:'rime', n:1, dur:12, max:5}}}}},
+  tree:'willow', stone:'Frost Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'brynja_p2',
+    2:{name:'Cold Edge', text:'A hit on a target carrying Rime (at most every 2 s) cuts again for 130% damage', on:'hit', when:{marked:'rime'}, icd:2, mult:1.3, range:3.4, fx:{cone:{r:3.4, arc:1.2}}},
+    4:'brynja_p3',
+    6:{name:'Frozen Wake', text:'A kill or a critical hit sends a frost ring 6 m round the target for 120% damage, leaves Rime on what it hits and heals you for 3% of maximum health (at most every 2 s)', on:['kill', 'crit'], at:'target', icd:2, heal:0.03, mult:1.2, range:6, fx:{ring:{r:6, mark:{id:'rime', n:1, dur:12, max:5}}}}},
 });

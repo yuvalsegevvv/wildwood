@@ -27,7 +27,10 @@ defineSkillSet({
   ult:{name:'All Souls\' Night', desc:'A ring of lanterns rises around him (10 m) and night falls inside it: it hurts and stuns the enemy, then the lanterns give the party a small heal (4%).', range:10, mult:4.2, act:['hollisult',1.0,0.55], anim:'nova',
        fx:{ring:{r:10, kb:3}, heal:{v:0.04, r:20}},
        boost:[{piece:'a1', secs:14, mod:{mult:2}}, {piece:'a3', secs:10, mod:{mult:2, util:1.25}}]},
-  bonus:{
-    3:{name:'Spill', text:'{}% of the healing you give that would overheal becomes a shield (6 s) on the one healed', stat:'overflow', v:0.6},
-    5:{name:'Last Light', text:'When you drop below 35% health, or bring a downed party member back in a dungeon, the lanterns flare and heal you for 25% and shield and guard you and your allies (25% of health, 20% less damage taken, 8 s; at most every 20 s)', on:['low', 'revive'], below:0.35, icd:20, heal:0.25, shield:{v:0.25, dur:8}, buff:{kind:'guard', v:0.2, dur:8, r:25}}},
+  tree:'pine', stone:'Vigil Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'hollis_p2',
+    2:{name:'Spill', text:'{}% of the healing you give that would overheal becomes a shield (6 s) on the one healed', stat:'overflow', v:0.6},
+    4:'hollis_p3',
+    6:{name:'Last Light', text:'When you drop below 35% health, or bring a downed party member back in a dungeon, the lanterns flare and heal you for 25% and shield and guard you and your allies (25% of health, 20% less damage taken, 8 s; at most every 20 s)', on:['low', 'revive'], below:0.35, icd:20, heal:0.25, shield:{v:0.25, dur:8}, buff:{kind:'guard', v:0.2, dur:8, r:25}}},
 });

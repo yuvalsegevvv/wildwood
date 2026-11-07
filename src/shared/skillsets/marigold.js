@@ -28,7 +28,10 @@ defineSkillSet({
   ult:{name:'Standing Ovation', desc:'A spotlight lands on the target, then fireworks (7 m) fill its Applause to 5; the stunned freeze in the light.', range:24, mult:1.8, act:['marigoldult',1.0,0.6], anim:'nova',
        fx:{zone:{r:7, dur:0.5, once:true, mark:{id:'applause', n:5, dur:12, max:5}}},
        boost:[{piece:'a1', secs:14, mod:{mult:2, n:2}}, {piece:'a3', secs:10, mod:{mult:2, cd:0.5}}]},
-  bonus:{
-    3:{name:'Warm-Up', text:'While you fight, you and your allies within 20 m regenerate 1.2% of maximum health a second (refreshed every 3 s)', on:'tick', icd:3, buff:{kind:'regen', v:0.012, dur:4, r:20}},
-    5:{name:'Grand Finale', text:'Curtain Call also lets you and your allies within 25 m regenerate 3% of maximum health a second for 10 s', on:'cast3', buff:{kind:'regen', v:0.03, dur:10, r:25}}},
+  tree:'banyan', stone:'Spotlight Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'marigold_p2',
+    2:{name:'Warm-Up', text:'While you fight, you and your allies within 20 m regenerate 1.2% of maximum health a second (refreshed every 3 s)', on:'tick', icd:3, buff:{kind:'regen', v:0.012, dur:4, r:20}},
+    4:'marigold_p3',
+    6:{name:'Grand Finale', text:'Curtain Call also lets you and your allies within 25 m regenerate 3% of maximum health a second for 10 s', on:'cast3', buff:{kind:'regen', v:0.03, dur:10, r:25}}},
 });

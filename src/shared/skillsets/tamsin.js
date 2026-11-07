@@ -26,7 +26,10 @@ defineSkillSet({
   ult:{name:'Fault Line', desc:'One hammer blow splits the ground: a 20 m crack runs ahead, then the whole line heaves up and pins what it catches in rubble.', range:20, mult:2.7, act:['tamsinult',1.0,0.6], anim:'slash',
        fx:{cone:{r:20, arc:0.3, kb:4}},
        boost:[{piece:'a1', secs:12, mod:{mult:2, size:1.3}}, {piece:'p3', secs:16, mod:{icd:0.25, eff:2}}]},
-  bonus:{
-    3:{name:'Cleared Ground', text:'A kill takes 1 s off every cooldown (at most every 2 s)', on:'kill', icd:2, cdr:{all:1}},
-    5:{name:'Aftershock', text:'While three or more enemies are within 8 m, every 4 s a tremor rolls out 8 m for 80% damage', on:'tick', icd:4, when:{crowd:{n:3, r:8}}, mult:1.6, range:8, fx:{vsBoss:0.5, ring:{r:8, kb:2}}}},
+  tree:'banyan', stone:'Quarry Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'tamsin_p1',
+    2:{name:'Cleared Ground', text:'A kill takes 1 s off every cooldown (at most every 2 s)', on:'kill', icd:2, cdr:{all:1}},
+    4:'tamsin_p2',
+    6:{name:'Aftershock', text:'While three or more enemies are within 8 m, every 4 s a tremor rolls out 8 m for 80% damage', on:'tick', icd:4, when:{crowd:{n:3, r:8}}, mult:1.6, range:8, fx:{vsBoss:0.5, ring:{r:8, kb:2}}}},
 });

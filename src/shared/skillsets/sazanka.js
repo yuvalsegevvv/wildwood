@@ -28,7 +28,10 @@ defineSkillSet({
   ult:{name:'New Moon', desc:'She vanishes, comes back behind the target and lands a six-cut flurry; the stunned lose sight of her.', range:4, mult:0.75, act:['sazankault',0.9,0.4], anim:'spin',
        fx:{cone:{r:4, arc:1.2, hits:6}, behind:1.6},
        boost:[{piece:'a2', secs:10, mod:{cd:0.4}}, {piece:'p3', secs:12, mod:{v:2.5}}]},
-  bonus:{
-    3:{name:'First Cut', text:'The first hit on a target from behind (every 2 s) adds a second Barb and cuts again for 90% damage', on:'hit', when:{behind:true}, icd:2, mark:{id:'barb', n:1, dur:10, max:5}, mult:0.9, range:3.4, fx:{cone:{r:3.4, arc:1.2}, behind:1.6}},
-    5:{name:'Open Season', text:'A kill or a critical hit takes 2.5 s off Dusk Flurry\'s cooldown (at most every 1.5 s)', on:['kill', 'crit'], icd:1.5, cdr:{burst:2.5}}},
+  tree:'willow', stone:'Camellia Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'sazanka_p1',
+    2:{name:'First Cut', text:'The first hit on a target from behind (every 2 s) adds a second Barb and cuts again for 90% damage', on:'hit', when:{behind:true}, icd:2, mark:{id:'barb', n:1, dur:10, max:5}, mult:0.9, range:3.4, fx:{cone:{r:3.4, arc:1.2}, behind:1.6}},
+    4:'sazanka_p2',
+    6:{name:'Open Season', text:'A kill or a critical hit takes 2.5 s off Dusk Flurry\'s cooldown (at most every 1.5 s)', on:['kill', 'crit'], icd:1.5, cdr:{burst:2.5}}},
 });

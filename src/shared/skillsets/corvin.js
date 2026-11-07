@@ -28,7 +28,10 @@ defineSkillSet({
   ult:{name:'Midnight Sun', desc:'A small sun opens overhead (12 m): it burns, blinds and leaves 3 Glare on everything.', range:12, mult:2.85, act:['corvinult',1.0,0.6], anim:'nova',
        fx:{ring:{r:12, mark:{id:'glare', n:3, dur:10, max:3}}},
        boost:[{piece:'cave', secs:12, mod:{mult:2, size:1.2}}, {piece:'a1', secs:14, mod:{mult:2, n:1}}]},
-  bonus:{
-    3:{name:'Second Look', text:'+{}% damage against a target you exposed', stat:'dmg', v:0.10, when:{exposed:true}},
-    5:{name:'Afterglow', text:'When a target you exposed dies, everything within 6 m of where it fell is exposed: 15% more damage taken for 5 s (at most every 3 s)', on:'kill', at:'target', when:{exposed:true}, icd:3, mult:0.3, range:6, fx:{ring:{r:6, status:{kind:'vuln', v:0.15, dur:5}}}}},
+  tree:'oak', stone:'Survey Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'corvin_p2',
+    2:{name:'Second Look', text:'+{}% damage against a target you exposed', stat:'dmg', v:0.10, when:{exposed:true}},
+    4:'corvin_p3',
+    6:{name:'Afterglow', text:'When a target you exposed dies, everything within 6 m of where it fell is exposed: 15% more damage taken for 5 s (at most every 3 s)', on:'kill', at:'target', when:{exposed:true}, icd:3, mult:0.3, range:6, fx:{ring:{r:6, status:{kind:'vuln', v:0.15, dur:5}}}}},
 });

@@ -26,7 +26,10 @@ defineSkillSet({
   ult:{name:'Shattered Hour', desc:'A giant sandglass breaks over the target and rains glass (9 m); time stops for what it hits.', range:24, mult:1.4, act:['zahrault',1.0,0.55], anim:'nova',
        fx:{zone:{r:9, dur:3, first:0.3, every:0.5}},
        boost:[{piece:'a2', secs:12, mod:{mult:2, util:1.25}}, {piece:'p3', secs:16, mod:{v:2.5}}]},
-  bonus:{
-    3:{name:'Polished Glass', text:'The buffs you give are {}% stronger (still capped)', stat:'buffpow', v:0.20},
-    5:{name:'Turn the Hour', text:'The Sandglass also quickens you and your allies within 25 m: 20% shorter cooldowns for 8 s', on:'cast3', buff:{kind:'haste', v:0.20, dur:8, r:25}}},
+  tree:'oak', stone:'Glass Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'zahra_p1',
+    2:{name:'Polished Glass', text:'The buffs you give are {}% stronger (still capped)', stat:'buffpow', v:0.20},
+    4:'zahra_p2',
+    6:{name:'Turn the Hour', text:'The Sandglass also quickens you and your allies within 25 m: 20% shorter cooldowns for 8 s', on:'cast3', buff:{kind:'haste', v:0.20, dur:8, r:25}}},
 });

@@ -32,7 +32,10 @@ defineSkillSet({
   ult:{name:'Eye of the Storm', desc:'A downdraft falls from the sky on a far target (7 m), harder the further it is from her.', range:45, mult:9.2, act:['sorrelult',1.3,1.1], anim:'shoot',
        fx:{proj:{kind:'snipe', speed:70, turn:12, life:1, splash:{r:7, k:1}}, rangeScale:{from:5, to:40, k:2.4}},
        boost:[{piece:'a1', secs:14, mod:{mult:2, n:1}}, {piece:'p1', secs:14, mod:{v:2.5}}]},
-  bonus:{
-    3:{name:'Steady Breath', text:'a target carrying your Sight takes 10% more from you for each Sight', amp:{id:'sight', per:0.10}},
-    5:{name:'Through the Gale', text:'Your third-slot attack sends a gale through everything in a 40 m line for 150% damage', on:'cast3', mult:1.5, range:40, fx:{beam:{len:40, w:1.2, hits:1}}}},
+  tree:'pine', stone:'Ridge Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'sorrel_p2',
+    2:{name:'Steady Breath', text:'a target carrying your Sight takes 10% more from you for each Sight', amp:{id:'sight', per:0.10}},
+    4:'sorrel_p3',
+    6:{name:'Through the Gale', text:'Your third-slot attack sends a gale through everything in a 40 m line for 150% damage', on:'cast3', mult:1.5, range:40, fx:{beam:{len:40, w:1.2, hits:1}}}},
 });

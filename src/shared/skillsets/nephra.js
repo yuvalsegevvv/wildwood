@@ -28,7 +28,10 @@ defineSkillSet({
   ult:{name:'Sealed Tomb', desc:'A sarcophagus of sand slams shut around the target (6 m), and the party gets a thin linen shield (5% of maximum health).', range:20, mult:3.6, act:['nephrault',1.0,0.6], anim:'nova',
        fx:{zone:{r:6, dur:0.4, once:true}, shield:{v:0.05, dur:8, r:20}},
        boost:[{piece:'a1', secs:14, mod:{mult:2, n:1}}, {piece:'a2', secs:12, mod:{mult:2, util:1.25}}]},
-  bonus:{
-    3:{name:'Bound to Return', text:'A party member you bring back in a dungeon stands up with {}% of their health', stat:'revive', v:0.4},
-    5:{name:'The Curse Bites', text:'When a shield of yours breaks or runs out, a curse of dust goes out 8 m: 120% damage and the enemies in it take 12% more damage from everyone for 5 seconds (at most every 6 s)', on:'shield', icd:6, mult:1.2, range:8, fx:{ring:{r:8, status:{kind:'vuln', v:0.12, dur:5}}}}},
+  tree:'willow', stone:'Tomb Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'nephra_p2',
+    2:{name:'Bound to Return', text:'A party member you bring back in a dungeon stands up with {}% of their health', stat:'revive', v:0.4},
+    4:'nephra_p3',
+    6:{name:'The Curse Bites', text:'When a shield of yours breaks or runs out, a curse of dust goes out 8 m: 120% damage and the enemies in it take 12% more damage from everyone for 5 seconds (at most every 6 s)', on:'shield', icd:6, mult:1.2, range:8, fx:{ring:{r:8, status:{kind:'vuln', v:0.12, dur:5}}}}},
 });
