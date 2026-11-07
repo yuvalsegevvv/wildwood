@@ -18,7 +18,7 @@ function skTile(s,C,from){
   const own=C.S.owned.includes(s.id), low=C.lv<needLv(s), L=skillLvOf(C.S,s.id), el=elOf(s);
   const drag=true;   // every tile can be dragged, so a drop that is refused always says why (not learned yet, level, the basic slot, a locked slot)
   const tint=ssTint(s);
-  return `<button class="sk-tile${el!=='basic'?' has-el':''}${tint?' has-set':''}${SK.sel===s.id?' sel':''}${own?'':' unowned'}${low?' locked':''}${drag?' drag':''}${s.slot==='burst'?' burst':''}" data-id="${s.id}" data-from="${from}" data-drag="${drag?1:0}" style="--el:${el==='basic'?'transparent':ELEMS[el].col}${tint?';--set:'+tint:''}" aria-label="${s.name}${s.set?' ('+SS_SETS[s.set].name+' set)':''}${own?', level '+L:''}">${skIconOf(s)}${el!=='basic'?'<i class="el-dot"></i>':''}<span class="lv">${own?'Lv '+L:s.drop?'Boss':low?'Lv '+needLv(s):s.price?s.price+'c':'Free'}</span></button>`;
+  return `<button class="sk-tile${el!=='basic'?' has-el':''}${tint?' has-set':''}${SK.sel===s.id?' sel':''}${own?'':' unowned'}${low?' locked':''}${drag?' drag':''}${s.slot==='burst'?' burst':''}" data-id="${s.id}" data-from="${from}" data-drag="${drag?1:0}" style="--el:${el==='basic'?'transparent':ELEMS[el].col}${tint?';--set:'+tint:''}" aria-label="${s.name}${s.set?' ('+SS_SETS[s.set].name+' set)':''}${own?', level '+L:''}">${skIconOf(s)}${el!=='basic'?'<i class="el-dot"></i>':''}<span class="lv">${own?'Lv '+L:low?'Lv '+needLv(s):s.price?s.price+'c':'Free'}</span></button>`;
 }
 function skSlotsHtml(C,cls){
   const act=SLOTS.map(slot=>{
@@ -44,21 +44,18 @@ function skInfoHtml(C,cls){
   if(pass) stats=passiveText(s.id,L);
   else stats=(s.slot==='basic'?bhInterval(s,S,bhSpeedUi(),1,0).toFixed(2)+' s per swing · hold to charge':abilityCd(s,S,C.lv,cls,rlUiCdr()).toFixed(1)+' s cooldown')+(s.buff?'':' · '+Math.round(s.mult*skillPower(L)*100)+'% damage')
     +(s.buff?' · +'+Math.round((s.buff.dmg-1)*skillPower(L)*100)+'% damage for '+(s.buff.dur+0.5*(L-1))+' s':'');
-  const boss=s.drop?(BOSS_DEFS.find(b=>b.def.id===s.drop)).short:'';   // the boss that drops it (boss skills are not sold and cannot be upgraded yet)
-  const tags=`<span class="sk-tag">${pass?'Passive':(s.cls==='any'?'Any class':CLASSES[s.cls].name)+' · '+KIND_TITLE[s.slot]}${boss?' · dropped by '+boss:''}${s.set?' · '+SS_SETS[s.set].name+' ('+SS_SETS[s.set].char.name+'\'s set)':''}</span>${pass?'':elChip(el)}`;
+  const tags=`<span class="sk-tag">${pass?'Passive':(s.cls==='any'?'Any class':CLASSES[s.cls].name)+' · '+KIND_TITLE[s.slot]}${s.set?' · '+SS_SETS[s.set].name+' ('+SS_SETS[s.set].char.name+'\'s set)':''}</span>${pass?'':elChip(el)}`;
   let acts='';
   if(own){
     if(eq&&!pass&&s.slot!=='basic') acts+=`<button class="chip" data-unskill="${s.slot}">Take off</button>`;
     else if(eq&&pass) acts+=`<button class="chip" data-unpass="${PS.indexOf(s.id)}">Take off</button>`;
     else if(!eq&&!(s.slot==='basic'&&!canSwap(s.cls,'basic',S))) acts+=`<button class="chip" data-eqskill="${s.id}" ${low?'disabled':''}>${low?'Level '+needLv(s):'Equip'}</button>`;
-  } else if(s.drop) acts+=`<span class="muted">Dropped by ${boss}: ${Math.round(BOSS_SKILL_CHANCE*100)}% per kill</span>`;
-  else if(s.set) acts+=`<span class="muted">A signature skill: earned from a boss or a dungeon</span>`;   // skillsets: never taught
+  } else if(s.set) acts+=`<span class="muted">A signature skill: earned from a boss or a dungeon</span>`;   // skillsets: never taught
   else if(C.trainer) acts+=`<button class="chip buy" data-buyskill="${s.id}" ${GEAR.coins<s.price||C.lv<needLv(s)?'disabled':''}>${C.lv<needLv(s)?'Level '+needLv(s):'Learn: '+s.price+' coins'}</button>`;
   else acts+=`<span class="muted">Aldric (or Master Ryu in Hanami) teaches it at the well: ${s.price} coins</span>`;
   let up='';
   if(own){
-    if(s.drop) up=`<div class="sk-up"><b>Boss skill &middot; level ${L}</b><span class="muted">It gains a level for every zone tier you defeat in its boss's land (now ${L-1} of ${ZTIER_MAX}), not with coins.</span></div>`;
-    else if(L>=SKILL_MAX_LV) up=`<div class="sk-up"><b>Highest level</b><span class="muted">${s.name} cannot be upgraded any further.</span></div>`;
+    if(L>=SKILL_MAX_LV) up=`<div class="sk-up"><b>Highest level</b><span class="muted">${s.name} cannot be upgraded any further.</span></div>`;
     else {
       const n=upgradeNeeds(s.id,L+1); if(!n) up=`<div class="sk-up"><b>Signature skill</b><span class="muted">It cannot be upgraded yet.</span></div>`;   // (a set whose land has no raid)
       else { const have=GEAR.mats||{}, cOk=GEAR.coins>=n.coins, rdHave=n.rd?rdMatHave(n.rd.land):0, rdOk=!n.rd||rdHave>=n.rd.n, all=cOk&&rdOk&&n.mats.every(m=>(have[m.id]||0)>=m.n);   // raids: a signature piece also needs its land's raid material
@@ -112,7 +109,7 @@ function renderSkills(){
 function skEquip(id,idx){
   const s=skillDef(id); if(!s) return;
   const no=text=>{ toast(text,'bad'); UI_SFX.error(); };
-  if(!(GEAR.skills||newSkills()).owned.includes(id)){ no(s.name+' is not learned yet: '+(s.set?'it is a signature skill, earned from a boss or a dungeon':s.drop?(BOSS_DEFS.find(b=>b.def.id===s.drop)).short+' drops it':'Aldric (or Master Ryu in Hanami) teaches it at the well')); return; }
+  if(!(GEAR.skills||newSkills()).owned.includes(id)){ no(s.name+' is not learned yet: '+(s.set?'it is a signature skill, earned from a boss or a dungeon':'Aldric (or Master Ryu in Hanami) teaches it at the well')); return; }
   if(s.slot==='basic'&&!canSwap(s.cls,'basic',GEAR.skills)){ no('Only mages can change their basic attack'); return; }
   if(PL.level<needLv(s)){ no(s.name+' needs level '+needLv(s)); return; }
   if(s.slot==='passive'&&idx!==undefined&&idx>=passiveOpen(PL.level)){ no('Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx]); return; }

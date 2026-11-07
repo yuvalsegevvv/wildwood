@@ -7,10 +7,6 @@ let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+nam
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.maxHp=1e7; p.hp=1e7; p.dead=false; } } };
 ok('two rows: Ocelo 45 (fire) and Tuila 46 (water), each with an add and a kit, in BOSS_DEFS with their arenas',x.EW_BOSS_ROWS.length===3&&x.OCELO_DEF.level===45&&x.OCELO_DEF.el==='fire'&&x.TUILA_DEF.level===46&&x.TUILA_DEF.el==='water'&&x.EW_BOSS_ROWS.every(r=>r.add.bossAdd&&x.BOSS_KITS[r.kit]&&x.BOSS_DEFS.includes(r)&&x.ARENAS.some(a=>a.key===r.arena&&a.isles)));
 ok('Tuila is the zone tier\'s opener, both bosses have a material name, and the arenas stand on the isles (not within 120 m of each other)',x.ZTIER_BOSS.isles==='tuila'&&x.MAT_NAMES.ocelo&&x.MAT_NAMES.tuila&&Math.hypot(x.ARENA_E45.x-x.ARENA_E46.x,x.ARENA_E45.z-x.ARENA_E46.z)>120);
-for(const id of ['ocelo','tuila']){
-  const sk=Object.values(x.SKILLS).filter(s=>s.drop===id);
-  ok(id+': drops 6 skills, a skill and a burst for each class, at the boss\'s level',sk.length===6&&['warrior','archer','mage'].every(c=>['skill','burst'].every(sl=>sk.some(s=>s.cls===c&&s.slot===sl)))&&sk.every(s=>s.lv===(id==='ocelo'?45:46)&&s.el===(id==='ocelo'?'fire':'water')));
-}
 W.join('a',{name:'Tanker',look:{cls:'warrior'},save:{level:50}}); W.join('b',{name:'Runner',look:{cls:'archer'},save:{level:50}});
 const T=x.ARENA_TIDE;
 const KEY={jaguar:['tele:slam','mode:1','tele:rake','tele:geyser','zone:ember','tele:line','mode:2','summon:jaguaracolyte'],

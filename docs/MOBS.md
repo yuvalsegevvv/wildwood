@@ -21,8 +21,8 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | How many of each kind exist, and where their camps are (a zone holds 40 of the level-1 kind down to 20 of level 15; the vale and the Reach 12 of each; `count` overrides) | `MON_COUNT` src/server/monsters.js:20, `initMonstersS` src/server/monsters.js:21 |
 | Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King's beach | `ZONES` src/shared/zones.js:11, src/shared/vale.js:42, src/shared/hoarfrost.js:88, src/shared/beach.js:6 |
 | Monster behaviour (aggro, chase, attack, leash, wander, respawn) | `updateMonstersS` src/server/monsters.js:60 |
-| What a kill pays (XP, coins, an item roll, the material, quests, boss skills) | `rewardKill` src/server/combat.js:80 |
-| Materials a kind drops (one per kind, `MAT_NAMES`) | `MATS` src/shared/drops.js:13 |
+| What a kill pays (XP, coins, an item roll, the material, quests) | `rewardKill` src/server/combat.js:80 |
+| Materials a kind drops (one per kind, `MAT_NAMES`) | `MATS` src/shared/drops.js:12 |
 | What a zone tier does to a monster (+10 levels per tier) | `zoneTierK` src/shared/tiers.js:33, `monK` src/server/tiers.js:13 |
 | Boss fights: engagement, phases, reset / one move set per boss / the move primitives | `BOSSES` src/server/boss.js:11 / `BOSS_KITS` src/server/boss-fx.js:17 / src/server/boss-fx.js |
 | The boss notices on the quest board | `BOSS_QUESTS` src/shared/quests.js:32 |
@@ -42,7 +42,7 @@ Let L be the monster's level and `f(L) = L + (13/12)^L`.
 - **Hits** in the tables is HP / expDmg(L): how many hits of a same-level, normally geared player it takes.
 - **Behaviour**: attack every `Atk s` seconds with a 0.28 s wind-up; moves at `Spd` m/s; a monster with `Aggro 0` ("passive") leaves you alone until hit; it gives up when 32 m from its camp; it only thinks while a player is within 110 m; a dead one respawns after 35 s if nobody is within 22 m of its camp. Bosses engage when a player steps inside their arena and reset when nobody is left inside.
 - **Level debuff**: −5% damage you deal per level the monster is above you, never below ×0.5 (from 10 levels up, `lvDmgK`); +5% damage you take per level above you. **Zone tiers** add 10 levels per tier to every monster of a land, and to a dungeon played at that land's tier (see `zoneTierK`); the tables show base values only.
-- **Drops**: every kind drops its material with 35% (one, sometimes two); a boss always drops 3. An item roll on every kill (monster: 2% common, 0.5% rare, 0.1% epic; boss: 50 / 10 / 3 / 1 / 0.1% common to legendary) of the gear tier of the monster's level (`tierFor`, see docs/EQUIPMENT.md). Each boss skill drops from its boss with 10% per kill and helper.
+- **Drops**: every kind drops its material with 35% (one, sometimes two); a boss always drops 3. An item roll on every kill (monster: 2% common, 0.5% rare, 0.1% epic; boss: 50 / 10 / 3 / 1 / 0.1% common to legendary) of the gear tier of the monster's level (`tierFor`, see docs/EQUIPMENT.md).
 
 ## 3. Reading the tables
 
@@ -257,108 +257,7 @@ Health is 70 hits of a same-level player (×1.5 from level 10); a hit is 16% of 
 
 Boss quest notices (`BOSS_QUESTS`, src/shared/quests.js:32): The Rootwarden from level 13; Carapax, the Tide King from level 17; Akaoni, the Gate Demon from level 18; Kyuubi, the Nine-Tailed from level 23; Ymrik, the Rimeking from level 25; The Gryphon Queen from level 28; Vetrmaw, the Frost Wyrm from level 29; The Mountain Golem from level 31; The Glass Guardian from level 31; The Sand Wyrm from level 34; Captain Dredge from level 34; The Gloam Warden from level 38.
 
-### Boss skills (36: a skill and a burst for each class, each with a 10% drop chance per kill)
-
-Rows `drop:'<boss id>'` at the end of `SKILLS` (src/shared/classes.js:22 ...), listed by `BOSS_SKILLS` (src/shared/drops.js:39).
-
-| Boss | Id | Skill | Class | Slot | El | Lv | Cooldown | Defined |
-|---|---|---|---|---|---|---|---|---|
-| The Rootwarden | `snare` | Bramble Snare | Warrior | skill | earth | 15 | 9 s | src/shared/classes.js:53 |
-| The Rootwarden | `lifesap` | Lifesap Frenzy | Warrior | burst | water | 15 | 40 s | src/shared/classes.js:54 |
-| The Rootwarden | `spore` | Spore Arrow | Archer | skill | air | 15 | 7 s | src/shared/classes.js:55 |
-| The Rootwarden | `bloom` | Black Bloom | Archer | burst | dark | 15 | 38 s | src/shared/classes.js:56 |
-| The Rootwarden | `thorns` | Thorn Shards | Mage | skill | earth | 15 | 6 s | src/shared/classes.js:57 |
-| The Rootwarden | `drain` | Heartwood Drain | Mage | burst | dark | 15 | 40 s | src/shared/classes.js:58 |
-| Carapax | `clawcrush` | Claw Crush | Warrior | skill | earth | 20 | 7 s | src/shared/classes.js:60 |
-| Carapax | `tidalguard` | Tidal Guard | Warrior | burst | water | 20 | 40 s | src/shared/classes.js:61 |
-| Carapax | `riptide` | Riptide Arrow | Archer | skill | water | 20 | 7 s | src/shared/classes.js:62 |
-| Carapax | `barnacles` | Barnacle Barrage | Archer | burst | earth | 20 | 38 s | src/shared/classes.js:63 |
-| Carapax | `tidalsurge` | Tidal Surge | Mage | skill | water | 20 | 7 s | src/shared/classes.js:64 |
-| Carapax | `maelstrom` | Maelstrom | Mage | burst | water | 20 | 40 s | src/shared/classes.js:65 |
-| Akaoni | `cleave` | Oni Cleave | Warrior | skill | fire | 20 | 7 s | src/shared/classes.js:67 |
-| Akaoni | `kanabo` | Kanabo Slam | Warrior | burst | earth | 20 | 36 s | src/shared/classes.js:68 |
-| Akaoni | `ember` | Ember Shot | Archer | skill | fire | 20 | 6 s | src/shared/classes.js:69 |
-| Akaoni | `pyre` | Inferno Volley | Archer | burst | fire | 20 | 36 s | src/shared/classes.js:70 |
-| Akaoni | `gale` | Oni Gale | Mage | skill | air | 20 | 6 s | src/shared/classes.js:71 |
-| Akaoni | `gate` | Demon Gate | Mage | burst | dark | 20 | 40 s | src/shared/classes.js:72 |
-| Kyuubi | `riposte` | Foxfire Riposte | Warrior | skill | light | 25 | 6 s | src/shared/classes.js:74 |
-| Kyuubi | `dawn` | Dawn Guard | Warrior | burst | light | 25 | 42 s | src/shared/classes.js:75 |
-| Kyuubi | `lance` | Radiant Lance | Archer | skill | light | 25 | 7 s | src/shared/classes.js:76 |
-| Kyuubi | `spirits` | Fox Spirit Barrage | Archer | burst | light | 25 | 40 s | src/shared/classes.js:77 |
-| Kyuubi | `spiritchain` | Spirit Chain | Mage | skill | light | 25 | 6 s | src/shared/classes.js:78 |
-| Kyuubi | `tempest` | Tempest | Mage | burst | air | 25 | 38 s | src/shared/classes.js:79 |
-| Ymrik | `rimecleave` | Rime Cleave | Warrior | skill | water | 26 | 7 s | src/shared/classes.js:81 |
-| Ymrik | `glacierslam` | Glacier Slam | Warrior | burst | dark | 26 | 36 s | src/shared/classes.js:82 |
-| Ymrik | `frostshot` | Frost Shot | Archer | skill | water | 26 | 7 s | src/shared/classes.js:83 |
-| Ymrik | `shardhail` | Hail of Shards | Archer | burst | air | 26 | 36 s | src/shared/classes.js:84 |
-| Ymrik | `icelance` | Ice Lance | Mage | skill | water | 26 | 7 s | src/shared/classes.js:85 |
-| Ymrik | `whiteout` | Whiteout | Mage | burst | air | 26 | 40 s | src/shared/classes.js:86 |
-| Vetrmaw | `wyrmfang` | Wyrmfang | Warrior | skill | dark | 30 | 7 s | src/shared/classes.js:88 |
-| Vetrmaw | `wyrmhide` | Wyrm's Hide | Warrior | burst | water | 30 | 42 s | src/shared/classes.js:89 |
-| Vetrmaw | `frostbite` | Frostbite Arrow | Archer | skill | water | 30 | 7 s | src/shared/classes.js:90 |
-| Vetrmaw | `blizzardvolley` | Blizzard Volley | Archer | burst | air | 30 | 40 s | src/shared/classes.js:91 |
-| Vetrmaw | `frostchain` | Frost Chain | Mage | skill | dark | 30 | 6 s | src/shared/classes.js:92 |
-| Vetrmaw | `wyrmstorm` | Wyrmstorm | Mage | burst | air | 30 | 38 s | src/shared/classes.js:93 |
-| The Gryphon Queen | `talonrake` | Talon Rake | Warrior | skill | air | 29 | 7 s | src/shared/classes.js:95 |
-| The Gryphon Queen | `eagleplunge` | Eagle's Plunge | Warrior | burst | air | 29 | 36 s | src/shared/classes.js:96 |
-| The Gryphon Queen | `quillshot` | Quill Shot | Archer | skill | air | 29 | 7 s | src/shared/classes.js:97 |
-| The Gryphon Queen | `featherstorm` | Feather Storm | Archer | burst | earth | 29 | 38 s | src/shared/classes.js:98 |
-| The Gryphon Queen | `skylance` | Sky Lance | Mage | skill | air | 29 | 7 s | src/shared/classes.js:99 |
-| The Gryphon Queen | `updraft` | Updraft | Mage | burst | air | 29 | 40 s | src/shared/classes.js:100 |
-| The Mountain Golem | `stonefist` | Stone Fist | Warrior | skill | earth | 32 | 7 s | src/shared/classes.js:102 |
-| The Mountain Golem | `quakeslam` | Quake Slam | Warrior | burst | earth | 32 | 38 s | src/shared/classes.js:103 |
-| The Mountain Golem | `boulderarrow` | Boulder Arrow | Archer | skill | earth | 32 | 7 s | src/shared/classes.js:104 |
-| The Mountain Golem | `rockhail` | Hail of Rock | Archer | burst | earth | 32 | 40 s | src/shared/classes.js:105 |
-| The Mountain Golem | `stonebind` | Stone Bind | Mage | skill | earth | 32 | 7 s | src/shared/classes.js:106 |
-| The Mountain Golem | `avalanche` | Avalanche | Mage | burst | earth | 32 | 40 s | src/shared/classes.js:107 |
-| The Glass Guardian | `prismcleave` | Prism Cleave | Warrior | skill | light | 32 | 7 s | src/shared/classes.js:109 |
-| The Glass Guardian | `mirrorbreak` | Mirror Break | Warrior | burst | light | 32 | 38 s | src/shared/classes.js:110 |
-| The Glass Guardian | `glintarrow` | Glint Arrow | Archer | skill | light | 32 | 7 s | src/shared/classes.js:111 |
-| The Glass Guardian | `shardfan` | Shard Fan | Archer | burst | earth | 32 | 40 s | src/shared/classes.js:112 |
-| The Glass Guardian | `prismbeam` | Prism Beam | Mage | skill | light | 32 | 7 s | src/shared/classes.js:113 |
-| The Glass Guardian | `glassstorm` | Glass Storm | Mage | burst | light | 32 | 40 s | src/shared/classes.js:114 |
-| The Sand Wyrm | `wyrmcoil` | Wyrm Coil | Warrior | skill | earth | 36 | 7 s | src/shared/classes.js:116 |
-| The Sand Wyrm | `burrowstrike` | Burrow Strike | Warrior | burst | earth | 36 | 36 s | src/shared/classes.js:117 |
-| The Sand Wyrm | `sandpiercer` | Sand Piercer | Archer | skill | earth | 36 | 7 s | src/shared/classes.js:118 |
-| The Sand Wyrm | `duneshower` | Dune Shower | Archer | burst | fire | 36 | 40 s | src/shared/classes.js:119 |
-| The Sand Wyrm | `cinderchain` | Cinder Chain | Mage | skill | fire | 36 | 6 s | src/shared/classes.js:120 |
-| The Sand Wyrm | `sandstorm` | Sandstorm | Mage | burst | earth | 36 | 38 s | src/shared/classes.js:121 |
-| Captain Dredge | `anchorswing` | Anchor Swing | Warrior | skill | water | 35 | 7 s | src/shared/classes.js:123 |
-| Captain Dredge | `broadside` | Broadside | Warrior | burst | water | 35 | 38 s | src/shared/classes.js:124 |
-| Captain Dredge | `harpoon` | Harpoon | Archer | skill | water | 35 | 7 s | src/shared/classes.js:125 |
-| Captain Dredge | `grapeshot` | Grapeshot | Archer | burst | air | 35 | 40 s | src/shared/classes.js:126 |
-| Captain Dredge | `brinelash` | Brine Lash | Mage | skill | water | 35 | 6 s | src/shared/classes.js:127 |
-| Captain Dredge | `undertow` | Undertow | Mage | burst | water | 35 | 40 s | src/shared/classes.js:128 |
-| The Gloam Warden | `blackcleave` | Black Cleave | Warrior | skill | dark | 40 | 7 s | src/shared/classes.js:130 |
-| The Gloam Warden | `eclipse` | Dark Sun | Warrior | burst | dark | 40 | 38 s | src/shared/classes.js:131 |
-| The Gloam Warden | `gloomarrow` | Gloom Arrow | Archer | skill | dark | 40 | 7 s | src/shared/classes.js:132 |
-| The Gloam Warden | `wraithvolley` | Wraith Volley | Archer | burst | dark | 40 | 40 s | src/shared/classes.js:133 |
-| The Gloam Warden | `soulsiphon` | Soul Siphon | Mage | skill | dark | 40 | 7 s | src/shared/classes.js:134 |
-| The Gloam Warden | `nightfall` | Nightfall | Mage | burst | dark | 40 | 40 s | src/shared/classes.js:135 |
-| Old Thunder | `thunderclap` | Thunderclap | Warrior | skill | air | 41 | 7 s | src/shared/classes.js:137 |
-| Old Thunder | `anvilstrike` | Anvil Strike | Warrior | burst | air | 41 | 38 s | src/shared/classes.js:138 |
-| Old Thunder | `boltarrow` | Bolt Arrow | Archer | skill | air | 41 | 7 s | src/shared/classes.js:139 |
-| Old Thunder | `skyfall` | Skyfall Volley | Archer | burst | air | 41 | 40 s | src/shared/classes.js:140 |
-| Old Thunder | `chainlightning` | Chain Lightning | Mage | skill | air | 41 | 6 s | src/shared/classes.js:141 |
-| Old Thunder | `thunderhead` | Thunderhead | Mage | burst | air | 41 | 40 s | src/shared/classes.js:142 |
-| Oldhorn | `horngore` | Horn Gore | Warrior | skill | earth | 45 | 7 s | src/shared/classes.js:143 |
-| Oldhorn | `herdcharge` | Herd Charge | Warrior | burst | earth | 45 | 36 s | src/shared/classes.js:144 |
-| Oldhorn | `hollowpoint` | Hollow Point | Archer | skill | earth | 45 | 7 s | src/shared/classes.js:145 |
-| Oldhorn | `herdrain` | Rain of Stones | Archer | burst | earth | 45 | 40 s | src/shared/classes.js:146 |
-| Oldhorn | `tuskspike` | Tusk Spike | Mage | skill | earth | 45 | 7 s | src/shared/classes.js:147 |
-| Oldhorn | `greyquake` | Greyquake | Mage | burst | earth | 45 | 38 s | src/shared/classes.js:148 |
-| Ocelo | `sunclaw` | Sun Claw | Warrior | skill | fire | 45 | 6 s | src/shared/classes.js:150 |
-| Ocelo | `jaguarleap` | Jaguar Leap | Warrior | burst | fire | 45 | 36 s | src/shared/classes.js:151 |
-| Ocelo | `obsidianshard` | Obsidian Shard | Archer | skill | fire | 45 | 7 s | src/shared/classes.js:152 |
-| Ocelo | `sunfall` | Sunfall Volley | Archer | burst | fire | 45 | 40 s | src/shared/classes.js:153 |
-| Ocelo | `solarlance` | Solar Lance | Mage | skill | fire | 45 | 7 s | src/shared/classes.js:154 |
-| Ocelo | `darksun` | Dark Sun | Mage | burst | fire | 45 | 38 s | src/shared/classes.js:155 |
-| Tuila | `tidebreaker` | Tidebreaker | Warrior | skill | water | 46 | 7 s | src/shared/classes.js:156 |
-| Tuila | `riptiderush` | Riptide Rush | Warrior | burst | water | 46 | 36 s | src/shared/classes.js:157 |
-| Tuila | `pearlshot` | Pearl Shot | Archer | skill | water | 46 | 7 s | src/shared/classes.js:158 |
-| Tuila | `drowningrain` | Drowning Rain | Archer | burst | water | 46 | 40 s | src/shared/classes.js:159 |
-| Tuila | `surgebeam` | Surge Beam | Mage | skill | water | 46 | 7 s | src/shared/classes.js:160 |
-| Tuila | `whirlpool` | Whirlpool | Mage | burst | water | 46 | 40 s | src/shared/classes.js:161 |
+Boss skills (rows `drop:'<boss id>'`) were removed in the skill revamp; an old save's are refunded by `smigSanitize` (src/server/save-mig.js:48).
 
 ## 9. Boss helpers: summons and props
 

@@ -1,4 +1,4 @@
-//@ Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
+//@ Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot
 /* Your damage = 3 x f(level) + weapon attack, times the ability's multiplier (and its skill level: skillPower), +/-15%, 12% chance of x1.7,
    times the Ferocity passive and the element wheel against the monster (elements.js: foeMult; an element-less skill deals x1.1: ELEM_BASIC_K).
    -5% damage dealt per level the enemy is above you (never below 50%: lvDmgK, shared/balance.js).
@@ -85,8 +85,8 @@ function rewardKill(q,m){
   if(r>=0) addItemP(q,randomItem(tierFor(K.lv),r),false,m.id);
   if(MATS[m.def.id]&&(!m.dip||Math.random()<DIP_MAT_K)){ const n=rollDropCount(m.def,psP(q,'drop')+pendP(q,'drop')+rlP(q,'drop')+potBuffP(q,'fortune')); if(n) addMatP(q,m.def.id,n,m.id); }   // dip: a pipe's monsters drop DIP_MAT_K of the materials
   questKillP(q,m.def.id); q.dirty=true; gsStatP(q,'kill'); if(m.def.boss) gsStatP(q,'boss');   // gems: the kill counters
-  if(m.rd) return;   // raids: a raid copy of a boss pays the kill (above) but opens no tier, rolls no set, drops no boss skill and advances no quest
-  if(m.def.boss){ rlBossStonesP(q,m,K); bossSkillDropP(q,m.def.id); ssBossClearP(q,m); zoneTierKillP(q,m); }   // skillsets: the set of this boss's land at the tier fought (before the kill can unlock a tier)
+  if(m.rd) return;   // raids: a raid copy of a boss pays the kill (above) but opens no tier, rolls no set and advances no quest
+  if(m.def.boss){ rlBossStonesP(q,m,K); ssBossClearP(q,m); zoneTierKillP(q,m); }   // skillsets: the set of this boss's land at the tier fought (before the kill can unlock a tier)
   mqKillP(q,m);
   sqKillP(q,m);   // sidequests: kills, quest drops and bosses count for every running chain
   if(m.def.id==='boss') openValeP(q);
@@ -97,15 +97,6 @@ function rewardKill(q,m){
   if(m.def.id==='sinkwarden') vbRewardP(q,m);   // volcano: the talisman and the ending
   if(m.def.id==='oldhorn') openIslesP(q);   // emberwake: the herd-mother's fall opens the Tide Bridge (the barrier at the Amber Reach's south cape)
   if(m.def.id==='sandwyrm'){ openGateP(q,'redgate'); openGateP(q,'amber'); }   // (savanna: the same fall opens the way south into Amber Reach)
-}
-// a boss kill: each of that boss's skills you do not own yet drops with BOSS_SKILL_CHANCE (drops.js); you choose when to equip it
-function bossSkillDropP(q,bossId){
-  const sk=q.gear.skills;
-  for(const id of BOSS_SKILLS[bossId]||[]){
-    if(sk.owned.includes(id)||Math.random()>=BOSS_SKILL_CHANCE) continue;
-    sk.owned.push(id); bsRefreshP(q); q.dirty=true; ev('skilldrop',q.id,id);
-    toastTo(q.id,SKILLS[id].name+' dropped! ('+CLASSES[SKILLS[id].cls].name+' skill)','loot r3');
-  }
 }
 function handPosS(p){ return {x:p.x-Math.sin(p.face)*0.4,y:p.y+1.4,z:p.z-Math.cos(p.face)*0.4}; }
 function dirToS(p,m){ const c=monCenterS(m), h=handPosS(p); return norm3([c.x-h.x,c.y-h.y,c.z-h.z]); }

@@ -56,7 +56,7 @@ function attackVisuals(a,who){
   const x=who?who.x:P.x, y=who?who.y:P.y, z=who?who.z:P.z, face=who?who.face:P.face, sc=who?who.scale:hiker.scale, mine=!who, k=a.sk||a.kind;
   if(a.ab&&mine){ bhVisuals(a.ab,x,y,z,face,sc); return; }   // basic-hold: a charged release
   const gs=ACT_SKILL[k]; if(gs&&gs.cave&&caveVisCast(gs,who||P,mine?CB.target:null)) return;   // cave: a cave skill's own drawing (cave/vis.js)
-  if(gs&&gs.fx){ SSL.ub=mine?ssUbOwn(gs.id):!!a.ub; try{ fxVisuals(gs,x,y,z,face,sc,mine); } finally{ SSL.ub=false; } return; }   // a skill with generic effects (the boss skills)   // ult: a boosted cast is drawn stronger (SSL.ub, skillsets/looks.js)
+  if(gs&&gs.fx){ SSL.ub=mine?ssUbOwn(gs.id):!!a.ub; try{ fxVisuals(gs,x,y,z,face,sc,mine); } finally{ SSL.ub=false; } return; }   // a skill with generic effects (fx)   // ult: a boosted cast is drawn stronger (SSL.ub, skillsets/looks.js)
   if(gs&&!gs.fx) skfCast(gs,x,y,z,face,sc,mine);   // skillvis: the shop skills wear their class's flair (steel, wind, arcane)
   if(k==='quake'){ fxxDust(x,getH(x,z),z,18,6,0x8a7a60); fxxDebris(x,getH(x,z),z,14,7,0x6a5030); fxxScorch(x,z,4,0xd8b07a); }
   else if(k==='inferno'){ fxxDome(x,y,z,7,0xff7a2a); fxxScorch(x,z,5,0xff7a2a); fxxDust(x,y,z,10,5,0x4a3a30); }

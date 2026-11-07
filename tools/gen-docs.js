@@ -7,8 +7,8 @@
 // Run it after changing monster-defs.js, items.js, balance.js, drops.js, zones, the boss kits or any file whose line number the docs quote.
 const fs=require('fs'), path=require('path');
 const {ROOT,loadServer}=require('./load');
-const NAMES=['FAM','MON_DEFS','ALL_MON_DEFS','BOSS_DEFS','GREY_DEFS','MONS','ZONES','defZone','MATS','BOSS_SKILLS','SKILLS','CLASSES','BOSS_QUESTS','BOSS_DROPS',
-  'DROP_CHANCE','BOSS_SKILL_CHANCE','MAX_ZONE_LV','ITEM_LIST','TOOL_LIST','TIER_LV','TIERS','RARITY','RAR_KEY','RAR_MULT','SLOT_NAMES','PRICE','SLOT_PRICE','TIER_ATK',
+const NAMES=['FAM','MON_DEFS','ALL_MON_DEFS','BOSS_DEFS','GREY_DEFS','MONS','ZONES','defZone','MATS','SKILLS','CLASSES','BOSS_QUESTS','BOSS_DROPS',
+  'DROP_CHANCE','MAX_ZONE_LV','ITEM_LIST','TOOL_LIST','TIER_LV','TIERS','RARITY','RAR_KEY','RAR_MULT','SLOT_NAMES','PRICE','SLOT_PRICE','TIER_ATK',
   'ARMOR_HP','ARMOR_DEF','setHP','setDef','TOOL_MAT','TOOL_PRICE','TOOL_EXTRA','TOOL_KIND','TOOL_PROF','TOOL_SLOTS','craftCost','ORE_GRADES','LOG_GRADES','sellPrice',
   'CLASS_OF','WEAPON_SLOTS','ARMOR_SLOTS','MERGE_COUNT','SHOP_STEP','CRAFT_MAX_RAR','tierFor','fLv','expDmg','expHP','expRed','xpFor','expToNext','highMult','coinCapK','defRed',
   // the dungeons (version2): bosses, themes and their mob pools, the level-30 gear, rings and tempering
@@ -64,7 +64,7 @@ function mobsDoc(){
     ['How many of each kind exist, and where their camps are (a zone holds 40 of the level-1 kind down to 20 of level 15; the vale and the Reach 12 of each; `count` overrides)',code('MON_COUNT')+' '+loc(SV+'monsters.js',/^const MON_COUNT=/)+', '+code('initMonstersS')+' '+loc(SV+'monsters.js',/^function initMonstersS/)],
     ['Zones (name, level, where): home rings and edges / the Sakura Vale / the Hoarfrost Reach / the Tide King\'s beach',code('ZONES')+' '+loc(SH+'zones.js',/^const ZONES=/)+', '+loc(SH+'vale.js',/^const ARENAS=/)+', '+loc(SH+'hoarfrost.js',/^const ARENA26=/)+', '+loc(SH+'beach.js',/ZONES\.push\(ARENA_TIDE/)],
     ['Monster behaviour (aggro, chase, attack, leash, wander, respawn)',code('updateMonstersS')+' '+loc(SV+'monsters.js',/^function updateMonstersS/)],
-    ['What a kill pays (XP, coins, an item roll, the material, quests, boss skills)',code('rewardKill')+' '+loc(SV+'combat.js',/^function rewardKill/)],
+    ['What a kill pays (XP, coins, an item roll, the material, quests)',code('rewardKill')+' '+loc(SV+'combat.js',/^function rewardKill/)],
     ['Materials a kind drops (one per kind, `MAT_NAMES`)',code('MATS')+' '+loc(SH+'drops.js',/^const MAT_NAMES=/)],
     ['What a zone tier does to a monster (+10 levels per tier)',code('zoneTierK')+' '+loc(SH+'tiers.js',/^function zoneTierK/)+', '+code('monK')+' '+loc(SV+'tiers.js',/^const monK=/)],
     ['Boss fights: engagement, phases, reset / one move set per boss / the move primitives',code('BOSSES')+' '+loc(SV+'boss.js',/^const BOSSES=/)+' / '+code('BOSS_KITS')+' '+loc(SV+'boss-fx.js',/^const BOSS_KITS=/)+' / '+SV+'boss-fx.js'],
@@ -84,7 +84,7 @@ function mobsDoc(){
 - **Hits** in the tables is HP / expDmg(L): how many hits of a same-level, normally geared player it takes.
 - **Behaviour**: attack every \`Atk s\` seconds with a 0.28 s wind-up; moves at \`Spd\` m/s; a monster with \`Aggro 0\` ("passive") leaves you alone until hit; it gives up when 32 m from its camp; it only thinks while a player is within 110 m; a dead one respawns after 35 s if nobody is within 22 m of its camp. Bosses engage when a player steps inside their arena and reset when nobody is left inside.
 - **Level debuff**: −5% damage you deal per level the monster is above you, never below ×0.5 (from 10 levels up, \`lvDmgK\`); +5% damage you take per level above you. **Zone tiers** add 10 levels per tier to every monster of a land, and to a dungeon played at that land's tier (see \`zoneTierK\`); the tables show base values only.
-- **Drops**: every kind drops its material with ${W.DROP_CHANCE*100}% (one, sometimes two); a boss always drops ${W.BOSS_DROPS}. An item roll on every kill (monster: 2% common, 0.5% rare, 0.1% epic; boss: 50 / 10 / 3 / 1 / 0.1% common to legendary) of the gear tier of the monster's level (\`tierFor\`, see docs/EQUIPMENT.md). Each boss skill drops from its boss with ${W.BOSS_SKILL_CHANCE*100}% per kill and helper.
+- **Drops**: every kind drops its material with ${W.DROP_CHANCE*100}% (one, sometimes two); a boss always drops ${W.BOSS_DROPS}. An item roll on every kill (monster: 2% common, 0.5% rare, 0.1% epic; boss: 50 / 10 / 3 / 1 / 0.1% common to legendary) of the gear tier of the monster's level (\`tierFor\`, see docs/EQUIPMENT.md).
 
 `;
 
@@ -103,9 +103,7 @@ function mobsDoc(){
       code(b.kit)+' '+loc(SV+'boss-kits-'+(['roots','tide'].includes(b.kit)?'home':['oni','kitsune'].includes(b.kit)?'vale':['gryphon','golem'].includes(b.kit)?'grey':['glass','sandwyrm'].includes(b.kit)?'sun':['captain','gloamwarden'].includes(b.kit)?'gloam':['thunder','herdmother'].includes(b.kit)?'savanna':['jaguar','tidecaller'].includes(b.kit)?'isles':b.kit==='sinkwarden'?'volcano':'north')+'.js',new RegExp('^BOSS_KITS\\.'+b.kit+'=')),defRef(d)];
   }))+'\n\n';
   s+='Boss quest notices (`BOSS_QUESTS`, '+loc(SH+'quests.js',/^const BOSS_QUESTS=/)+'): '+W.BOSS_QUESTS.map(q=>`${q.title} from level ${q.from}`).join('; ')+'.\n\n';
-  s+='### Boss skills (36: a skill and a burst for each class, each with a 10% drop chance per kill)\n\nRows `drop:\'<boss id>\'` at the end of `SKILLS` ('+loc(SH+'classes.js',/^const SKILLS=\{/)+' ...), listed by `BOSS_SKILLS` ('+loc(SH+'drops.js',/^const BOSS_SKILL_CHANCE/)+').\n\n';
-  const skRows=[]; for(const b of W.BOSS_DEFS) for(const id of W.BOSS_SKILLS[b.def.id]||[]){ const k=W.SKILLS[id]; skRows.push([b.short,code(id),k.name,W.CLASSES[k.cls].name,k.slot,k.el||'—',k.lv,k.cd+' s',loc(SH+'classes.js',new RegExp('^\\s*'+id+":\\{cls:.*drop:'"))]); }
-  s+=rowsOf(['Boss','Id','Skill','Class','Slot','El','Lv','Cooldown','Defined'],skRows)+'\n\n';
+  s+='Boss skills (rows `drop:\'<boss id>\'`) were removed in the skill revamp; an old save\'s are refunded by `smigSanitize` ('+loc(SV+'save-mig.js',/^function smigSanitize/)+').\n\n';
 
   s+='## 9. Boss helpers: summons and props\n\nSummoned by a boss kit or placed by it; not in `MON_DEFS`, so no camps, no quest-board notices and no material. They are in `ALL_MON_DEFS`.\n\n';
   s+=rowsOf(['Id','Name','Lv','El','HP','Dmg','Atk s','Spd','Aggro','XP','Role','Defined'],W.BOSS_DEFS.flatMap(b=>[['add',b.add],['totem',b.totem],['prop',b.prop]].filter(r=>r[1]).map(([kind,d])=>[code(d.id),d.name,d.level,d.el||'—',d.hp,d.noAttack?'—':d.dmg,d.noAttack?'—':d.atk,d.speed||'—',d.aggro?d.aggro+' m':'—',d.noXp?'—':num(d.xp),(kind==='add'?'summoned by ':kind==='totem'?'shield-phase totem of ':'shelter prop of ')+b.short,defRef(d)])))+'\n\n';

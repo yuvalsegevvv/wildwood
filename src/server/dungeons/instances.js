@@ -21,7 +21,7 @@ const DG_RUNS=new Map(), DG_SLOT_RUN=new Array(DG_MAX_INST).fill(0); let dgNextR
 const DG_RESPAWNS=2, DG_POS_JUMP=12, DG_PLAYER_R=0.3;   // respawns a run; the most one position update may move you (a dash is 8 m); a player's collision radius on the server (a little less than the client's: never refuse a step the client allowed)
 const DG_EV_ALL=new Set(['chat','pjoin','pleave','pname','plook','pgear','weather','thunder']);   // who is online and what they look like, chat, the weather: for everyone
 // events whose e[1] is the player they are about: that player always gets them, even when another run (or the world) caused them
-const DG_EV_SELF=new Set(['toast','xp','coins','loot','lvup','hurt','down','up','skillslot','qdone','qturn','merge','skillbuy','skilldrop','skillup','lvset','mq','vale','north','warp','pot','craft','brew','cast','castx','gather','drop','pfx','buff']);
+const DG_EV_SELF=new Set(['toast','xp','coins','loot','lvup','hurt','down','up','skillslot','qdone','qturn','merge','skillbuy','skillup','lvset','mq','vale','north','warp','pot','craft','brew','cast','castx','gather','drop','pfx','buff']);
 // a new run in a free slot: the layout from the seed (the next seeds if dgLayout gives up on one), its bake, no members yet. o: {tier, L, seed, dev, back}
 function dgNewRunS(T,mission,o){
   const slot=DG_SLOT_RUN.slice(0,DG_DG_SLOTS).indexOf(0); if(slot<0||!DG_MISSIONS[mission]) return null;   // rift: the slots from DG_DG_SLOTS on are the rifts'

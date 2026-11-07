@@ -36,8 +36,6 @@ function guidePages(){
     skills:{t:'Skills',h:`
       <h4>Slots</h4>
       <p>Each class has three attack slots: the basic attack, a <b>skill</b> (level ${SKILL_SLOT_LV}) and a <b>Power skill</b> (level ${BURST_SLOT_LV}). Buy skills in the skills window (${kl(k('skills'))}) and drag them onto a slot. Cooldowns belong to the slot, so swapping skills does not reset them.</p>
-      <h4>Boss skills</h4>
-      <p>Every boss has six skills it can drop, about a 10% chance per skill per kill for each player who helped. They cannot be bought.</p>
       <h4>Elements</h4>
       <p>Skills and monsters carry elements, and the wheel decides: <b>water</b> beats fire, fire beats <b>air</b>, air beats <b>earth</b>, earth beats water, and <b>dark</b> and <b>light</b> beat each other. A skill that beats the monster's element deals x1.5; a skill of its own element, or of one it beats, deals x1/1.5. A skill with no element (Basic) deals x1.1 to every monster. The target frame shows what a monster is weak to and what it resists.</p>
       <p>Weaken and expose (a monster deals less / takes more) never add up on one monster: the strongest counts, for everyone in the party.</p>
@@ -79,7 +77,7 @@ function guidePages(){
       <p>Common, Rare, Epic, Unique, Legendary: each multiplies the stats (x1, 1.3, 1.7, 2.2, 3). Tempering Stones then add +1, +2... on top, and level-40 pieces can be rerolled at the forge.</p>`},
     upgrades:{t:'Upgrades',h:`
       <h4>Upgrading a skill</h4>
-      <p>Every bought skill goes up to level 5 (boss skills cannot be upgraded yet). Each level adds <b>+12% damage and shorter cooldown</b>. An upgrade costs <b>coins</b> (more for each level) and <b>monster drops</b>: materials that monsters leave behind (about a third of kills), of a kind that fits the skill's level. Level 5 also asks for two boss trophies. Open the skill in the skills window to see what it still needs.</p>
+      <p>Every bought skill goes up to level 5. Each level adds <b>+12% damage and shorter cooldown</b>. An upgrade costs <b>coins</b> (more for each level) and <b>monster drops</b>: materials that monsters leave behind (about a third of kills), of a kind that fits the skill's level. Level 5 also asks for two boss trophies. Open the skill in the skills window to see what it still needs.</p>
       <h4>Gear</h4>
       <p>Weapons and armour improve with your level and come in five rarities: Common, Rare, Epic, Unique, Legendary (stats x1, 1.3, 1.7, 2.2, 3). <b>Three identical items merge into the next rarity at the forge.</b> Shops never run out, but each copy you buy costs 20% more until sunrise.</p>
       <h4>Dungeon gear: rings, pendants, tempering</h4>

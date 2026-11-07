@@ -7,7 +7,7 @@ const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
   ['WX0','WX1','WZ0','WZ1','GW0','GXJ','HX0','WATER','VR','inGloam','inGrey','inSun','gloamIn','gloamGround','gloamCoast','waLandId','waIsSea','gloamKeepOut','GLOAM_STACKS','GLOAM_WRECKS','GLOAM_CAVES','GLOAM_LIGHT','GLOAM_HOLD','GLOAM_DG_DOOR','GLOAM_ZONE_NAMES',
-   'WA_HUBS','WA_POIS','WA_GATES','VIL4','VIL6','VILS','CIRCLES','ZONES','ARENAS','ARENA_M35','ARENA_M40','MON_DEFS','DEF_BY_ID','BOSS_DEFS','BOSSES','BOSS_SKILLS','BOSS_QUESTS','MATS','SKILLS','GREY_GATES','NODES','MONS','rawHeight','getH','zoneAt','defZone','landAt','borderZ',
+   'WA_HUBS','WA_POIS','WA_GATES','VIL4','VIL6','VILS','CIRCLES','ZONES','ARENAS','ARENA_M35','ARENA_M40','MON_DEFS','DEF_BY_ID','BOSS_DEFS','BOSSES','BOSS_QUESTS','MATS','SKILLS','GREY_GATES','NODES','MONS','rawHeight','getH','zoneAt','defZone','landAt','borderZ',
    'ZTIER_LANDS','ZTIER_BOSS','MAX_ZONE_LV','genQuest','sanitizeGear','newGearFor','vDist','vilAt','vNear','rewardKill','bridgeDeck']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
@@ -58,9 +58,9 @@ const H=x.rawHeight, V=x.VIL6, G=x.GREY_GATES.find(g=>g.id==='neck');
 
 // ---- the bosses ----
 { const cb=x.BOSS_DEFS.find(b=>b.def.id==='drownedcaptain'), gw=x.BOSS_DEFS.find(b=>b.def.id==='gloamwarden');
-  ok('two world bosses: Captain Dredge (level 35, the sea caves) and the Gloam Warden (level 40, the lighthouse), each on its own arena in the Gloamhorn, with a kit, six skills (two per class), a material and the arena\'s zone',
+  ok('two world bosses: Captain Dredge (level 35, the sea caves) and the Gloam Warden (level 40, the lighthouse), each on its own arena in the Gloamhorn, with a kit, a material and the arena\'s zone',
     cb&&gw&&cb.def.level===35&&gw.def.level===40&&cb.kit==='captain'&&gw.kit==='gloamwarden'&&gw.totem.id==='soullantern'&&cb.add.id==='drownedhand'&&gw.add.id==='gloamspecter'&&[x.ARENA_M35,x.ARENA_M40].every(A=>x.inGloam(A.x,A.z)&&A.zone.boss&&A.gloam)
-    &&[cb,gw].every(b=>{ const s=x.BOSS_SKILLS[b.def.id]||[]; return s.length===6&&['warrior','archer','mage'].every(c=>s.filter(id=>x.SKILLS[id].cls===c).length===2)&&x.MATS[b.def.id].name; })&&x.BOSSES.every(B=>typeof B.kit.tick==='function')&&new Set(x.BOSS_DEFS.map(b=>b.kit)).size===x.BOSS_DEFS.length);
+    &&[cb,gw].every(b=>x.MATS[b.def.id].name)&&x.BOSSES.every(B=>typeof B.kit.tick==='function')&&new Set(x.BOSS_DEFS.map(b=>b.kit)).size===x.BOSS_DEFS.length);
   ok('zone tiers: the Gloamhorn is a tier land opened by its second boss',x.ZTIER_LANDS.includes('gloam')&&x.ZTIER_BOSS.gloam==='gloamwarden'&&x.newGearFor('warrior').zt.gloam&&x.landAt(x.ARENA_M40.x,x.ARENA_M40.z)==='gloam'); }
 
 // ---- the gate: the neck's rock fall keeps you out until the Mountain Golem has fallen; walking into Wraithwick then attunes the circle ----

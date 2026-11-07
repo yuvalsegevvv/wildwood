@@ -3,7 +3,7 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},
-  ['MONS','getH','VIL2','VIL','rewardKill','elemHitS','rollDmgS','sanitizeGear','hurtP','ELEMS','MATS','upgradeNeeds','SKILLS','foeMult','foeTraits','ELEM_BASIC_K','ELEM_LIST','SKILL_MAX_LV','BOSS_SKILLS','bossSkillDropP','newSkills','damageMonsterS','psP','S','passiveSum','passiveOpen','PASSIVE_SLOT_LV','PASSIVE_SLOTS']);
+  ['MONS','getH','VIL2','VIL','rewardKill','elemHitS','rollDmgS','sanitizeGear','hurtP','ELEMS','MATS','upgradeNeeds','SKILLS','foeMult','foeTraits','ELEM_BASIC_K','ELEM_LIST','SKILL_MAX_LV','newSkills','damageMonsterS','psP','S','passiveSum','passiveOpen','PASSIVE_SLOT_LV','PASSIVE_SLOTS']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ n=Math.max(n,3); for(let i=0;i<n;i++){ // (at least 3 ticks: events reach the log with the next snapshot)
@@ -102,67 +102,18 @@ W.receive('a',{t:'dev',cmd:'level',v:24}); tick(1);
 // a saved level 20 hiker who never had passives gets the free one on join
 inbox.d=[]; W.join('d',{name:'Old',look:{cls:'warrior'},save:{level:20,exp:0,gear:{skills:{owned:[],v:2}}}}); tick(1);
 ok('an old save at level 20 gets Vitality on join',you('d').gear.skills.pass[0]==='vitality');
-// ---- boss skills: not sold, dropped by their boss at 10% each, 2 per class per boss, generic effects ----
-const CLS=['warrior','archer','mage'], BOSSES={boss:15,akaoni:20,kyuubi:25}, BS=x.BOSS_SKILLS;
-ok('three bosses drop 6 skills each: a skill and a burst for every class, at the boss level',Object.keys(BOSSES).every(b=>(BS[b]||[]).length===6&&CLS.every(c=>['skill','burst'].every(sl=>BS[b].filter(id=>x.SKILLS[id].cls===c&&x.SKILLS[id].slot===sl).length===1))&&BS[b].every(id=>x.SKILLS[id].lv===BOSSES[b])),Object.keys(BS).map(b=>b+':'+BS[b].length).join(' '));
-ok('boss skills are not free and not sold',Object.values(x.SKILLS).filter(s=>s.drop).every(s=>!x.newSkills().owned.includes(s.id)&&x.upgradeNeeds(s.id,2)===null));
-const elCount=(ids)=>{ const c={}; for(const id of ids){ const e=x.SKILLS[id].el; if(e) c[e]=(c[e]||0)+1; } return c; };
-const newIds=Object.keys(BOSSES).flatMap(b=>BS[b]), oldIds=Object.keys(x.SKILLS).filter(id=>!x.SKILLS[id].drop&&!x.SKILLS[id].set), cNew=elCount(newIds), cOld=elCount(oldIds), six=['fire','water','earth','air','dark','light'];
-ok('the new skills are mostly the elements used least so far (light, then fire / earth / air / dark, and only one water)',cOld.light===Math.min(...six.map(e=>cOld[e]))&&cNew.light===Math.max(...six.map(e=>cNew[e]||0))&&cNew.water===1&&six.every(e=>cNew[e]>=1),'before '+JSON.stringify(cOld)+' new '+JSON.stringify(cNew));
-// the Hoarfrost Reach's two bosses (Ymrik, level 26; Vetrmaw, level 30) drop 6 skills each too, in the region's elements (water, air, dark)
-{ const H={ymrik:26,vetrmaw:30};
-  ok('the two Hoarfrost bosses drop 6 skills each: a skill and a burst for every class, at the boss level, in water / air / dark',Object.keys(H).every(b=>(BS[b]||[]).length===6&&CLS.every(c=>['skill','burst'].every(sl=>BS[b].filter(id=>x.SKILLS[id].cls===c&&x.SKILLS[id].slot===sl).length===1))&&BS[b].every(id=>x.SKILLS[id].lv===H[b]&&['water','air','dark'].includes(x.SKILLS[id].el))),Object.keys(H).map(b=>b+':'+(BS[b]||[]).length).join(' ')); }
-ok('every class can now use all six elements',CLS.every(c=>six.every(e=>Object.values(x.SKILLS).some(s=>s.cls===c&&s.el===e))));
-// the drop chance: every unowned skill of that boss rolls 10% for each player who helped
-{ const N=4000; let got=0, other=0, dup=0; for(let i=0;i<N;i++){ const q={id:'t'+i,gear:{skills:x.newSkills()}}; x.bossSkillDropP(q,'boss'); if(q.gear.skills.owned.includes('snare')) got++; if(q.gear.skills.owned.some(id=>x.SKILLS[id].drop&&x.SKILLS[id].drop!=='boss')) other++; }
-  const q2={id:'z',gear:{skills:x.newSkills()}}; q2.gear.skills.owned.push('snare'); let again=0; for(let i=0;i<500;i++){ const before=q2.gear.skills.owned.length; x.bossSkillDropP(q2,'kyuubi'); if(q2.gear.skills.owned.filter(id=>id==='snare').length>1) dup++; again+=q2.gear.skills.owned.length-before; }
-  ok('each boss skill drops with a 10% chance per kill, only from its own boss, never twice',got/N>0.085&&got/N<0.115&&!other&&!dup&&again>0,(got/N*100).toFixed(1)+'% of '+N+' kills'); }
-// a real boss kill (the reward path) hands them out
-{ const bm=x.MONS.find(m=>m.def.id==='akaoni'); const q=W.players.get('a'); q.gear.skills.owned=q.gear.skills.owned.filter(id=>!x.SKILLS[id]||!x.SKILLS[id].drop); evs.length=0; let k=0; for(;k<300&&!BS.akaoni.every(id=>q.gear.skills.owned.includes(id));k++) x.rewardKill(q,bm); tick(3);
-  ok('killing a boss gives its skills to whoever helped, with a banner event and a toast',BS.akaoni.every(id=>q.gear.skills.owned.includes(id))&&!BS.boss.some(id=>q.gear.skills.owned.includes(id))&&new Set(evs.filter(e=>e[0]==='skilldrop'&&e[1]==='a').map(e=>e[2])).size===6&&toasts().some(t=>/dropped!/.test(t)),k+' kills for all six'); }
-W.receive('a',{t:'buyskill',id:'kanabo'}); W.receive('a',{t:'dev',cmd:'reset'}); tick(3);
-{ const q=W.players.get('a'); q.gear.skills.owned.push('snare'); q.gear.coins=99999; W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); q.gear.mats={}; for(const id of x.MATS?Object.keys(x.MATS):[]) q.gear.mats[id]=99; evs.length=0;
-  W.receive('a',{t:'buyskill',id:'kanabo'}); W.receive('a',{t:'upskill',id:'snare'}); tick(3);
-  ok('a boss skill cannot be bought or upgraded yet',!q.gear.skills.owned.includes('kanabo')&&!q.gear.skills.lv.snare&&toasts().some(t=>/not for sale/.test(t))&&toasts().some(t=>/cannot be upgraded/.test(t))); }
-{ const q=W.players.get('a'); q.level=40; q.gear.coins=99999; const sk=Object.values(x.SKILLS).find(s=>!s.drop&&!s.set&&s.price>0&&s.lv<=40&&!q.gear.skills.owned.includes(s.id)&&s.slot!=='passive');
+// ---- boss skills are gone (skill revamp step 6): no row drops from a boss, and an old save's are dropped (the refund: server-smoke, 'save migration') ----
+ok('no skill is a boss drop any more',!Object.values(x.SKILLS).some(s=>s.drop));
+W.receive('a',{t:'dev',cmd:'reset'}); tick(3);
+{ const q=W.players.get('a'); q.level=40; q.gear.coins=99999; const sk=Object.values(x.SKILLS).find(s=>!s.set&&s.price>0&&s.lv<=40&&!q.gear.skills.owned.includes(s.id)&&s.slot!=='passive');
   W.setPos('a',[x.VIL.x+150,x.getH(x.VIL.x+150,x.VIL.z),x.VIL.z,0,0,0]); tick(1); W.receive('a',{t:'buyskill',id:sk.id}); tick(2);
   ok('a skill cannot be bought out in the field (the trainer is in a village)',!q.gear.skills.owned.includes(sk.id)&&q.gear.coins===99999,sk.id);
   W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); tick(1); W.receive('a',{t:'buyskill',id:sk.id}); tick(2);
   ok('...and can be bought at the trainer',q.gear.skills.owned.includes(sk.id)&&q.gear.coins===99999-sk.price,sk.id); }
 const sg=x.sanitizeGear({skills:{owned:['snare','lifesap'],lv:{snare:5,lifesap:3},eq:{warrior:{skill:'snare',burst:'lifesap'}}}},'warrior');
-ok('a save keeps the boss skills you own, equipped, but not any upgrade level',sg.skills.owned.includes('snare')&&sg.skills.eq.warrior.skill==='snare'&&sg.skills.eq.warrior.burst==='lifesap'&&!sg.skills.lv.snare&&!sg.skills.lv.lifesap);
+ok('a save loses the retired boss skills: not owned, not equipped, no level',!sg.skills.owned.includes('snare')&&sg.skills.eq.warrior.skill!=='snare'&&sg.skills.eq.warrior.burst!=='lifesap'&&!sg.skills.lv.snare&&!sg.skills.lv.lifesap);
 
-// ---- every boss skill works: cast each one at a group of monsters ----
-const target=x.MONS.find(m=>m.def.id==='slime');
-let grp=[], gids=new Set();   // the monsters around the target, made unkillable before every cast (so nothing else is rewarded)
-const gather=()=>{ if(target.dead){ target.dead=false; target.deadT=0; }   // (an earlier check may have killed it)
-  // the six monsters nearest to the target are stood around it, on the side away from the caster: spawn spots are random, and a chain (Spirit Chain) needs at least three of them within a jump of each other (it failed about 1 run in 14 where the target stood alone)
-  x.MONS.filter(m=>m!==target&&!m.dead&&!m.remove&&!m.boss&&!m.inst).sort((a,b)=>Math.hypot(a.x-target.x,a.z-target.z)-Math.hypot(b.x-target.x,b.z-target.z)).slice(0,6).forEach((m,i)=>{ const a=Math.PI*(0.6+i*0.16), r=2.2+(i%2)*1.1; m.x=target.x+Math.cos(a)*r; m.z=target.z+Math.sin(a)*r; });
-  grp=x.MONS.filter(m=>!m.dead&&!m.remove&&Math.hypot(m.x-target.x,m.z-target.z)<16); for(const m of grp){ m.hp=m.maxHp=1e9; m.stunT=0; m.burnT=0; m.aggro=false; m.tgt=null; m.state='idle'; m.timer=1e9; m.vx=m.vz=0; m.kbx=m.kbz=0; } gids=new Set(grp.map(m=>m.id)); };   // (and held still: a slime on its way back to camp walked out of Inferno Volley's splash about 1 cast in 60, which made this check flaky)
-const dmgTo=(ids,from)=>evs.slice(from).filter(e=>e[0]==='dmg'&&ids.has(e[1])).length;
-const castOne=(id,pid,ticks)=>{
-  const s=x.SKILLS[id], cls=s.cls, lv=s.lv; inbox[pid]=[]; W.join(pid,{name:'C'+pid,look:{cls},save:{level:lv}}); tick(1);
-  const q=W.players.get(pid); q.gear.skills.owned.push(id); W.receive(pid,{t:'eqskill',id}); tick(1);
-  gather(); const dx=s.fx.dash?9:Math.min(4,Math.max(2,s.range-1.2)), face=Math.PI/2, px=target.x+dx;
-  W.setPos(pid,[px,x.getH(px,target.z),target.z,face,0,0]);   // (on the ground under their own feet: on a slope the target's height would bury the hand and every shot would end in the ground)
-  q.cd.skill=q.cd.burst=0; const from=evs.length; W.receive(pid,{t:'atk',k:s.slot,tg:target.id,face,aim:[-1,0,0]}); tick(ticks||60,true);
-  return {q,s,from};
-};
-const shown=[]; let castFails=[];
-for(const id of newIds){
-  const {q,s,from}=castOne(id,'c_'+id), f=s.fx, got=evs.slice(from), hits=dmgTo(gids,from);
-  const fine=f.buff?(q.buff&&q.buff.id===id&&got.some(e=>e[0]==='buff'&&e[2]===id)):hits>0;
-  const extra=(f.beam?got.some(e=>e[0]==='beam'):true)&&(f.chain?got.some(e=>e[0]==='chain'&&e[1].length>=3):true)&&(f.zone?got.some(e=>e[0]==='area'&&e[2]==='zone'&&e[8]===s.el):true)&&(f.proj?got.some(e=>e[0]==='proj')&&got.some(e=>e[0]==='pend'):true)&&(f.dash?Math.hypot(q.x-target.x,q.z-target.z)<4.5:true);
-  if(!(fine&&extra)) castFails.push(id+'('+(fine?'':'no hits ')+(extra?'':'no fx event')+')'); shown.push(id+':'+(f.buff?'buff':hits));
-  W.leave('c_'+id);
-}
-ok('all boss skills cast and do what their fx says (hits, buff, beam, chain, zone, projectile, dash)',!castFails.length,castFails.length?'failed: '+castFails.join(', '):shown.join(' '));
-// what the statuses do
-{   let r=castOne('cleave','c_cl'); const onTarget=evs.slice(r.from).filter(e=>e[0]==='dmg'&&e[1]===target.id).length;
-  ok('Oni Cleave sets enemies on fire and the fire keeps hurting (2 hits, then a tick every second)',target.burnT>0&&onTarget>=4,'burning '+target.burnT.toFixed(1)+' s left, '+onTarget+' hits on the target'); W.leave('c_cl');
-  r=castOne('snare','c_sn',12); ok('Bramble Snare roots what it pulls in (stunned, pulled next to you)',target.stunT>0&&Math.hypot(target.x-(target.x+4),0)>=0); W.leave('c_sn');
-  r=castOne('gate','c_ga'); ok('Demon Gate: nothing for 1.6 s, then one hit and a stun',dmgTo(gids,r.from)>0&&new Set(evs.slice(r.from).filter(e=>e[0]==='area'&&e[9]===1).map(e=>e[1])).size===1&&grp.some(m=>m.stunT>0)); W.leave('c_ga'); }
-// buffs: Lifesap steals, Dawn Guard takes less and heals, both give element-less attacks an element
+// buffs: a buff that steals, one that cuts damage taken and heals; both give element-less attacks an element (set on the player directly: the engine, not a row)
 { const q=W.players.get('a'); W.receive('a',{t:'dev',cmd:'level',v:25}); tick(3); const magma=x.MONS.find(m=>m.def.id==='magmaslime'), slime2=x.MONS.find(m=>m.def.id==='slime');
   q.buff=null; const base=x.elemHitS(q,'basic',magma); q.buff={id:'lifesap',until:(x.S.t+10),dmg:1.2,cd:0.75,crit:0,red:0,steal:0.2,regen:0,el:'water'};
   ok('Lifesap Frenzy: element-less attacks count as Water (x1.5 on a fire monster instead of the basic x1.1)',near(base,1.1)&&near(x.elemHitS(q,'basic',magma),1.5)&&near(x.elemHitS(q,'fire',magma),1/1.5),base+' -> '+x.elemHitS(q,'basic',magma));

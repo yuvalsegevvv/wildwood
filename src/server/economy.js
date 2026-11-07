@@ -83,7 +83,6 @@ function turnInP(p,id){
 /* ---- skills: bought from Aldric the trainer, equipped per class (passives: one loadout for every class), upgraded with coins and drops ---- */
 function buySkillP(p,id){
   const s=skillDef(id); if(!s||p.gear.skills.owned.includes(id)) return;
-  if(s.drop){ toastTo(p.id,s.name+' is not for sale: '+(BOSS_DEFS.find(b=>b.def.id===s.drop)).short+' drops it','bad'); return; }
   if(s.set){ toastTo(p.id,s.name+' is not for sale: it is a signature skill, earned from a boss or a dungeon','bad'); return; }   // skillsets: a piece is never bought
   if(p.level<s.lv){ toastTo(p.id,s.name+' needs level '+s.lv,'bad'); return; }
   if(p.gear.coins<s.price){ toastTo(p.id,'Not enough coins','bad'); return; }
@@ -113,7 +112,6 @@ function unequipSkillP(p,cls,slot,idx){
 // level up a skill or passive you own: coins and monster drops (upgradeNeeds), at the trainer in either village
 function upgradeSkillP(p,id){
   const s=skillDef(id), S=p.gear.skills; if(!s||!S.owned.includes(id)) return;
-  if(s.drop){ toastTo(p.id,s.name+' cannot be upgraded yet','bad'); return; }   // (boss skills: their level follows the zone tiers; a signature piece levels with raid material: rdUpNeeds)
   if(!inVillage(p)){ toastTo(p.id,'Skills are upgraded by a trainer: Aldric at the well (or Master Ryu in Hanami)','bad'); return; }
   const to=skillLvOf(S,id)+1; if(to>SKILL_MAX_LV){ toastTo(p.id,s.name+' is already at its highest level','bad'); return; }
   const need=upgradeNeeds(id,to); if(!need){ toastTo(p.id,s.name+' cannot be upgraded yet','bad'); return; }

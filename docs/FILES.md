@@ -97,7 +97,7 @@ shared
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
   skillsets.js                       Skill sets (rules, pure): the registry defineSkillSet (one file per set in shared/skillsets/), its checks, the expansion into SKILLS / PASSIVES rows, counting the worn pieces and the 3- / 5-set bonuses
   basic-hold.js                      Skill 1 (the basic slot) as an attack-speed skill with two modes (pure): attack speed and charge gain, the press / hold split, and what a held release becomes for each class
-  drops.js                           Monster drops (MATS: one material per monster kind), the skills bosses drop (BOSS_SKILLS), and what upgrading a skill costs (upgradeNeeds). Pure.
+  drops.js                           Monster drops (MATS: one material per monster kind) and what upgrading a skill costs (upgradeNeeds, upNeedsBase). Pure.
   items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, and the three profession tools (TOOL_LIST) with the same tiers and rarities (the pendants' rules are in pendants.js, the pieces in dungeon-items.js); prices, drop tables, merging, armour looks, gear helpers (the level-30 dungeon pieces join ITEM in dungeon-items.js). Pure.
   pendants.js                        Pendants, the rules: the five kinds a pendant can be (exp, drop, coin, crit rate, crit damage), their base values and names, their text, and the crit constants and caps rollDmgS uses. The pieces themselves are level-30 dungeon gear (dungeon-items.js). Pure.
   talisman.js                        Talismans, the level-40 accessory slot (eq.talisman) the volcano boss pays: five kinds (attack speed, buff duration, charge gain, cooldown reduction, flat attack), base values, names, text, and the boss's drop table by zone tier. Pure.
@@ -237,8 +237,9 @@ server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
   world.js                           Server heightmap over the whole world (coarser than the client's): SEG, HS, getH, grad; the grid is baked into the build (dist/wildwood-server.js and the page) as packed heights (heightbake)
   players.js                         Players on the server: records, stats, XP and levels, damage taken, knock-out and respawn, private state ("you")
+  save-mig.js                        The skill revamp's one save migration (gear.smv): retired boss skills refunded and unequipped, passives from the old slots 2-3 refunded, owned set pieces noted for Bond 0 (gear.bdMig)
   monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
-  combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
+  combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot
   basic-hold.js                      Skill 1 on the server: attack speed and charge gain of a player, the hold message and its release (how long the player really held), where a mage's held blast lands
   mon-status.js                      Shared statuses on monsters (server): vuln (takes more damage) and weak (deals less) that never stack, a skill's status key (vuln / weak / slow / stun), and the quiet flag for damage that is not a hit
   skillsets.js                       Skill sets on the server: granting a set's pieces, wearing a piece for all three classes, the loadout cache p.ss (the sets worn and their bonuses)
@@ -513,7 +514,7 @@ game
   combat/skill-props.js              Props a skill puts into the world when its text says so: a doll, a bell, an anvil, a sandglass, a powder keg, a lantern, a spear, a hand out of the ground... small low-poly models that drop, rise, plant, hover or waltz
   combat/skill-vis.js                Skill visuals that follow the skill's text: every blow of a multi-hit skill is a swing of its own, waves that travel, props that appear (dolls, anvils, bells...), run from a look's `vis` recipes
   combat/skill-flair.js              Class flair for the generic skills (the shop's and the bosses'): steel and dust for the warrior, wind lines and feathers for the archer, an arcane spiral for the mage, on top of the skill's own effects
-  combat/skill-vis-gen.js            The visuals that follow the text, for the generic skills (the shop's and the bosses'): waves of arrows in the number the text says, pulls and shoves as travelling waves, a gate, a thundercloud, beams that hit twice
+  combat/skill-vis-gen.js            The visuals that follow the text, for the generic skills (the shop's): waves of arrows in the number the text says, pulls and shoves as travelling waves, beams that hit twice
   combat/skill-move.js               The body moves with the skill: a step into every blow, a recoil after every shot, a hop into a stomp or a spin (your own hiker; real movement, so walls, slopes and monsters still stop it)
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
   combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
@@ -581,7 +582,7 @@ game
   economy/init.js                    Inventory key and first-time gear setup
   combat/boss.js                     The bosses, client side: telegraph visuals (circle, cone, line, donut, marks) and how each ends, root spikes, slam waves, shield bubble, roars, boss bar, a boss's look in each mode
   combat/boss-fx.js                  Boss zones and waves (fire pools, whirlpools, the whiteout, the blizzard, Amanita's spore clouds, tidal walls) and what a boss does to you: frozen, slowed, shoved, pulled into a whirlpool
-  combat/skill-fx.js                 Visuals and sounds for the equippable skills: Arrow Rain, Meteor, Chain Lightning, Piercing Shot, Shield Bash, Charge, and every skill with generic effects (fx: the boss skills)
+  combat/skill-fx.js                 Visuals and sounds for the equippable skills: Arrow Rain, Meteor, Chain Lightning, Piercing Shot, Shield Bash, Charge, and every skill with generic effects (fx)
   world/weather.js                   Weather on the client: rain streaks around the camera (snowfall and blizzards instead in the Hoarfrost Reach and on the Greyspine's peaks), a darker foggy sky, lightning and thunder (rain and wind sound: audio/rain.js)
   world/aurora.js                    The aurora over the Hoarfrost Reach: slow green and violet curtains in the northern sky on clear nights
   player/movement.js                 Player movement (with a boss's ice, shoves and whirlpools), a slope limit, collisions (the border bridge with its barred gate; the shut gates are shared/barriers.js), the shore's knee-deep rule, camera

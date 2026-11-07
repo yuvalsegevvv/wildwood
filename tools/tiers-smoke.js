@@ -6,7 +6,7 @@ const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev.map(e=>[pid,...e])); }},
   ['MONS','BOSSES','BOSS_DEFS','MON_DEFS','DEF_BY_ID','VIL','VIL2','VIL3','S','damageMonsterS','killMonsterS','rewardKill','hurtP','monK','recalcP','sanitizeGear','newGearFor',
-   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','ZTIER_SYMBOL_LANDS','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','bossSkillLvOf','ztBossLand','SAV_BOSS_ROWS','ARENA_A41','ARENA_A45','ZONES','monTierOf','SKILLS','BOSS_SKILL_MAX_LV','skillLvOf','rlBossStoneChance','rlBossStoneCount','dgRewardWeights','dgRewardRarity','DG_REWARD_W','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','mobHpK','BOSS_DEFS','DG_BOSS_DEFS','LATE_CREEP_LV','LATE_CREEP_BOSS','LATE_CREEP_MOB','lvDmgK','LV_DMG_MIN']);
+   'zoneTierK','zoneTierLv','defAt','landAt','symbolBonus','symbolPoints','ZTIER_SYMBOL_LANDS','ZTIER_BOSS','ZTIER_LANDS','ZTIER_MAX','ZTIER_STEP','ZTIER_BONUS','ZTIER_ROMAN','coinsFor','ztBossLand','SAV_BOSS_ROWS','ARENA_A41','ARENA_A45','ZONES','monTierOf','SKILLS','skillLvOf','rlBossStoneChance','rlBossStoneCount','dgRewardWeights','dgRewardRarity','DG_REWARD_W','expToNext','tierFor','xpFor','fLv','PAY_LV','PLAYER_MAX_LV','expDmg','expHP','expRed','highMult','bossCreep','BOSS_CREEP_LV','BOSS_CREEP_HP','BOSS_CREEP_DMG','lateCreep','mobHpK','BOSS_DEFS','DG_BOSS_DEFS','LATE_CREEP_LV','LATE_CREEP_BOSS','LATE_CREEP_MOB','lvDmgK','LV_DMG_MIN']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1,Math.abs(b));
@@ -166,14 +166,8 @@ fell(A,'vetrmaw'); ok('Vetrmaw opens the Reach\'s tier I',A.gear.zt.hoar.max===1
   const m=x.BOSSES.find(q=>q.bd.def.id==='carapax').m; m.dead=false; m.hp=m.maxHp; A.x=m.x+3; A.z=m.z; B.x=m.x-3; B.z=m.z; m.hitters.set(A.id,x.S.t); m.hitters.set(B.id,x.S.t); x.killMonsterS(m,A);
   ok('two players share a kill: the one at their highest tier gets the next tier, the other does not',A.gear.zt.home.max===2&&B.gear.zt.home.max===1); }
 
-// ---- version 3: boss skills follow the tiers, world bosses drop Reroll Stones, dungeon clears get luckier ----
-{ const sid=x.SKILLS.vetrmawfang?'vetrmawfang':Object.keys(x.SKILLS).find(k=>x.SKILLS[k].drop==='carapax');
-  ok('a boss\'s land is read from its arena (Carapax: home, Kyuubi: vale, the Gloam Warden: gloam)',x.ztBossLand('carapax')==='home'&&x.ztBossLand('kyuubi')==='vale'&&x.ztBossLand('gloamwarden')==='gloam'&&x.ztBossLand('nobody')===null);
-  ok('a boss skill is level 1 + the tiers defeated in its boss\'s land, and an ordinary skill is not touched',x.bossSkillLvOf({zt:zt([0,3],[0,0],[0,0])},sid)===4&&x.bossSkillLvOf({zt:zt([0,0],[0,0],[0,0])},sid)===1&&x.bossSkillLvOf({zt:zt([0,7],[0,0],[0,0])},sid)===x.BOSS_SKILL_MAX_LV&&x.bossSkillLvOf({zt:zt([0,7],[0,7],[0,7])},'slash')===1);
-  A.gear.zt=zt([0,3],[0,0],[0,0]); if(!A.gear.skills.owned.includes(sid)) A.gear.skills.owned.push(sid); x.recalcP(A);
-  ok('recalcP gives the owned boss skill its level and skillLvOf reads it (past the old limit of 5 at tier V+)',A.gear.skills.lv[sid]===4&&x.skillLvOf(A.gear.skills,sid)===4);
-  A.gear.zt=zt([0,7],[0,0],[0,0]); x.recalcP(A); ok('at tier VII it is level 8',x.skillLvOf(A.gear.skills,sid)===8);
-  A.gear.zt=zt([0,0],[0,0],[0,0]); x.recalcP(A); ok('and back to level 1 without tiers',x.skillLvOf(A.gear.skills,sid)===1&&A.gear.skills.lv[sid]===undefined); }
+// ---- version 3: world bosses drop Reroll Stones, dungeon clears get luckier (the boss skills that followed the tiers are gone: skill revamp step 6) ----
+ok('a boss\'s land is read from its arena (Carapax: home, Kyuubi: vale, the Gloam Warden: gloam)',x.ztBossLand('carapax')==='home'&&x.ztBossLand('kyuubi')==='vale'&&x.ztBossLand('gloamwarden')==='gloam'&&x.ztBossLand('nobody')===null);
 ok('Reroll Stone chance and number rise with the tier played (25% / 1 stone at tier 0, 95% / 3 at tier VII)',near(x.rlBossStoneChance(0),0.25,1e-9)&&near(x.rlBossStoneChance(7),0.95,1e-9)&&x.rlBossStoneCount(0)===1&&x.rlBossStoneCount(3)===2&&x.rlBossStoneCount(7)===3&&[0,1,2,3,4,5,6,7].every((t,i,a)=>i===0||x.rlBossStoneChance(t)>x.rlBossStoneChance(a[i-1])));
 { const real=Math.random; A.gear.zt=zt([0,0],[0,0],[0,0]); A.level=50; A.gear.rsw=0; A.gear.rsa=0; A.gear.zt.home.on=0;
   Math.random=()=>0.1; fell(A,'boss'); const lowGot=(A.gear.rsw|0)+(A.gear.rsa|0);

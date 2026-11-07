@@ -200,7 +200,8 @@ reset(); put(m1,0,-9); evs.length=0;
   const proj=evs.find(e=>e[0]==='proj'), area=evs.find(e=>e[0]==='area'), ast=evs.find(e=>e[0]==='ast'&&e[e.length-1]==='torgeir_2_any'), fxa=evs.find(e=>e[0]==='fxa'&&e[2]==='shield');
   ok('a set piece\'s events name the piece they come from as their last argument: a projectile, a zone, a buff, a shield',proj&&proj[proj.length-1]==='sorrel_2_any'&&area&&area[area.length-1]==='tansy_2_any'&&ast&&ast[ast.length-1]==='torgeir_2_any'&&fxa&&fxa[3]==='torgeir_2_any',JSON.stringify([proj,area,ast,fxa]).slice(0,220)); }
 reset(); put(m1,0,-9); evs.length=0;
-{ const sp=x.SKILLS.spore; x.resolveFxS(p,{fx:sp.fx,mult:sp.mult,range:sp.range,el:sp.el,aim:[0,0,-1],sid:'spore'},m1); const sn=x.SKILLS.snare; x.resolveFxS(p,{fx:sn.fx,mult:sn.mult,range:sn.range,el:sn.el,aim:[0,0,-1],sid:'snare'},null); tick(3);
-  const proj=evs.find(e=>e[0]==='proj'); ok('...and a boss skill\'s events carry nothing extra (no piece): its projectile event stays at ten fields, no shield or heal note',proj&&proj.length===10&&!evs.some(e=>e[0]==='fxa'),proj&&proj.length); }
+{ const sp={fx:{proj:{kind:'spore',speed:34,turn:8,life:1.4,zone:{r:3.5,dur:3,every:0.5,slow:1.5,k:0.4}}},mult:0.8,range:34,el:'air'}, sn={fx:{ring:{r:7,kb:-8,stun:1.5}},mult:0.9,range:7,el:'earth'};   // (the retired boss skills Spore Arrow and Bramble Snare, as rows: a skill that is not a set piece)
+  x.resolveFxS(p,{fx:sp.fx,mult:sp.mult,range:sp.range,el:sp.el,aim:[0,0,-1],sid:'spore'},m1); x.resolveFxS(p,{fx:sn.fx,mult:sn.mult,range:sn.range,el:sn.el,aim:[0,0,-1],sid:'snare'},null); tick(3);
+  const proj=evs.find(e=>e[0]==='proj'); ok('...and a skill that is not a piece carries nothing extra in its events (no piece): its projectile event stays at ten fields, no shield or heal note',proj&&proj.length===10&&!evs.some(e=>e[0]==='fxa'),proj&&proj.length); }
 
 console.log(fails?fails+' check(s) failed':'all passed'); process.exit(fails?1:0);

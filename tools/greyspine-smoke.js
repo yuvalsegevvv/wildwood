@@ -5,7 +5,7 @@
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['sunPassX','inSun','GXJ','GW0','inGloam','rawHeight','baseHeight','GREY_HM','GREY_QUEEN','greyTreeline','zoneAt','zoneRidge','NODES','MONS','inGrey','HALF','HZ0','WX0','WZ0','VIL','TUN','GLEN','inGlen','rewardKill','sanitizeGear','MQ_BY_ID','VIL3','VIL4','VILS','CIRCLES','vilAt','ROADS','respawnVil','nearLodge','defZone','arenaDist','MON_DEFS','ZONES','MATS','MAX_ZONE_LV','VR','ARENAS','landAt','zoneTierOn','ARENA29','ARENA32','BOSS_DEFS','BOSS_SKILLS','BOSS_QUESTS','SKILLS','BOSSES','waterSurf','greyWet','WATER','GREY_GATES','inGate','WA_HUBS','WA_GATES','WA_POIS','WA_ZONES','waLandId','waLand','waZoneId','gateHold','westBarX','WZ1']);
+  ['sunPassX','inSun','GXJ','GW0','inGloam','rawHeight','baseHeight','GREY_HM','GREY_QUEEN','greyTreeline','zoneAt','zoneRidge','NODES','MONS','inGrey','HALF','HZ0','WX0','WZ0','VIL','TUN','GLEN','inGlen','rewardKill','sanitizeGear','MQ_BY_ID','VIL3','VIL4','VILS','CIRCLES','vilAt','ROADS','respawnVil','nearLodge','defZone','arenaDist','MON_DEFS','ZONES','MATS','MAX_ZONE_LV','VR','ARENAS','landAt','zoneTierOn','ARENA29','ARENA32','BOSS_DEFS','BOSS_QUESTS','SKILLS','BOSSES','waterSurf','greyWet','WATER','GREY_GATES','inGate','WA_HUBS','WA_GATES','WA_POIS','WA_ZONES','waLandId','waLand','waZoneId','gateHold','westBarX','WZ1']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const H=x.rawHeight, slope=(a,b)=>Math.hypot(H(a+2,b)-H(a-2,b),H(a,b+2)-H(a,b-2))/4;
@@ -49,8 +49,8 @@ ok('the Greyspine has its resource nodes (53, tools/professions-smoke.js has the
 // ---- the two bosses ----
 for(const [A,id,lv,el] of [[x.ARENA29,'gryphonqueen',29,'air'],[x.ARENA32,'mountaingolem',32,'earth']]){
   const bd=x.BOSS_DEFS.find(b=>b.def.id===id), hs=[]; for(let a=0;a<12;a++) hs.push(H(A.x+Math.sin(a/12*6.283)*A.r*0.9,A.z+Math.cos(a/12*6.283)*A.r*0.9));
-  ok(A.name+': '+bd.def.name+' (level '+lv+', '+el+') has a flat arena in the Greyspine, in its own boss zone, with six skills, a named material and a quest',
-    bd.def.level===lv&&bd.def.el===el&&bd.arena===A.key&&x.inGrey(A.x,A.z)&&Math.max(...hs)-Math.min(...hs)<2.5&&x.zoneAt(A.x+A.r-4,A.z)===A.zone&&A.zone.boss&&(x.BOSS_SKILLS[id]||[]).length===6&&x.MATS[id]&&x.MATS[id].name&&x.BOSS_QUESTS.some(q=>q.target===id&&q.level===lv),'flat within '+(Math.max(...hs)-Math.min(...hs)).toFixed(2)+' m'); }
+  ok(A.name+': '+bd.def.name+' (level '+lv+', '+el+') has a flat arena in the Greyspine, in its own boss zone, with a named material and a quest',
+    bd.def.level===lv&&bd.def.el===el&&bd.arena===A.key&&x.inGrey(A.x,A.z)&&Math.max(...hs)-Math.min(...hs)<2.5&&x.zoneAt(A.x+A.r-4,A.z)===A.zone&&A.zone.boss&&x.MATS[id]&&x.MATS[id].name&&x.BOSS_QUESTS.some(q=>q.target===id&&q.level===lv),'flat within '+(Math.max(...hs)-Math.min(...hs)).toFixed(2)+' m'); }
 ok('eight bosses: the Greyspine\'s two have kits of their own and their adds (eaglets, rubble, iron joints)',x.BOSSES.length>=10&&x.BOSSES.filter(B=>B.bd.kit==='gryphon'||B.bd.kit==='golem').length===2&&x.BOSS_DEFS.find(b=>b.kit==='golem').totem.id==='ironjoint'&&x.BOSS_DEFS.find(b=>b.kit==='gryphon').add.id==='eaglet');
 // ---- the rock falls and the glacier valley: at the atlas\'s gates, held by the land border ----
 for(const G of x.GREY_GATES.filter(g=>g.id==='river'||g.id==='neck')){

@@ -21,11 +21,11 @@ function testKitP(p){
   g.pc=PREM_COLOURS.map((c,i)=>i);   // every premium colour (shared/colours.js)
   g.cos=cosAllKeys();   // every crafted piece, cape and aura, the Sigil track's included
   setLevelP(p,TEST_LV);
-  // skills: every class skill, passive and boss skill, every signature set, the burst, every cave skill; each at level TEST_SKILL_LV
+  // skills: every class skill, passive, every signature set, the burst, every cave skill; each at level TEST_SKILL_LV
   for(const id of [...SKILL_IDS,...PASSIVE_IDS]) if(!g.skills.owned.includes(id)) g.skills.owned.push(id);
   for(const id of SS_ORDER) if(!SS_SETS[id].dev) ssGrantSetP(p,id,true);
   for(const id of CAVE_SKILL_IDS) g.cave.own[id]=CAVE_LEVEL_MAX;
-  for(const id of g.skills.owned){ const d=SKILLS[id]; if(d&&!d.drop) g.skills.lv[id]=TEST_SKILL_LV; }
+  for(const id of g.skills.owned){ const d=SKILLS[id]; if(d) g.skills.lv[id]=TEST_SKILL_LV; }
   ultCheckP(p);
   // wear the best of it: the first weapon, every armour piece, a plain ring, a crit-damage pendant, an attack talisman
   equipP(p,dgGearId40('sword',TEST_RAR,TEST_ENH));
