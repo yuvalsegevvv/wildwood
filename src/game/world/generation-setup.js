@@ -148,6 +148,10 @@ const TERRAIN_BUMP=`
     vec2 tg=tn1.yz*(0.10*0.35)+tn2.yz*(0.045*1.3)+tn3.yz*(0.016*4.7);
     normal=normalize(normal+(viewMatrix*vec4(-tg.x*bf,0.0,-tg.y*bf,0.0)).xyz); }
 `;
+// the lawn stands 5 cm proud of dirt, paths and sand: green ground (same test as the lawn: green beats red and blue, not bright snow) is lifted in the vertex shader
+const SG_LIFT=`
+  { float sgl=smoothstep(0.0,0.06,color.g-max(color.r,color.b)*0.95)*(1.0-smoothstep(0.5,0.8,dot(color,vec3(0.3,0.59,0.11)))); transformed.y+=0.05*sgl; }
+`;
 const TERRAIN_SHORT_BUMP=`
   normal=normalize(normal+(viewMatrix*vec4(-sgg.x*0.035,0.0,-sgg.y*0.035,0.0)).xyz);
   { float gz=1.0-abs(dot(normalize(vViewPosition),normal)); diffuseColor.rgb*=1.0+sgk*gz*gz*0.22; }   // blades seen edge-on at a low angle: a lighter fringe, the carpet gets depth
@@ -158,7 +162,7 @@ function terrainMaterial(){
   const sgOn=phong&&(()=>{try{return localStorage.getItem('wildwood-sg')==='1';}catch(e){return false;}})();   // OFF by default until the owner approves how it looks; localStorage 'wildwood-sg'='1' turns it on
   m.onBeforeCompile=sh=>{
     sh.uniforms.uTime=timeU;
-    sh.vertexShader='varying vec3 vWp; varying float vDist;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.0)).xyz; vDist=length(mvPosition.xyz);');
+    sh.vertexShader='varying vec3 vWp; varying float vDist;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>'+(sgOn?SG_LIFT:'')).replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.0)).xyz; vDist=length(mvPosition.xyz);');
     sh.fragmentShader=TERRAIN_FS_HEAD+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n'+TERRAIN_COLOR+(sgOn?TERRAIN_SHORT:'')).replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+(phong?TERRAIN_BUMP+(sgOn?TERRAIN_SHORT_BUMP:''):''));
   };
   m.customProgramCacheKey=()=>phong?(sgOn?'terrainPS':'terrainP'):'terrainL';
