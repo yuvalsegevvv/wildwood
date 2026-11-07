@@ -435,7 +435,19 @@ function initNPCs(){
    one a slice, by the stream scheduler (job 'n', streaming.js) when nothing nearer is waiting. Each has an rng of its own (mulberry32(9002+seed)), so building them
    later changes nobody's look; everything that looks an NPC up (npcById, the label loop, the maps) does it when it needs one. */
 const NPC_DEFER=[];
-function* spawnDeferredNPCs(){ while(NPC_DEFER.length){ const d=NPC_DEFER.shift(); spawnNPC(d,mulberry32(9002+(d.seed||0))); yield; } }   // (a def with `rolled` already has its look: the rng passed is not used)
+/* Who is built next: the nearest waiting person within NPC_NEAR_R of the player (his village's people first, wherever he stands or teleports to), else the queue's head.
+   One person a job, so the scheduler (streaming.js) can put a near person ahead of the far chunks and a far one behind them. */
+const NPC_NEAR_R=300;
+function npcNextIdx(){
+  let bi=0, bd=1e18;
+  for(let i=0;i<NPC_DEFER.length;i++){
+    const d=NPC_DEFER[i]; let V=null; try{ V=d.site?wildSiteOf(d.site):VILS[(d.vil||1)-1]; }catch(_){}
+    const dist=V?Math.hypot(V.x-P.x,V.z-P.z):1e9; if(dist<bd){ bd=dist; bi=i; }
+  }
+  return bd<NPC_NEAR_R?bi:-1;
+}
+function npcNearWaiting(){ return NPC_DEFER.length>0&&npcNextIdx()>=0; }
+function* spawnDeferredNPCs(){ if(!NPC_DEFER.length) return; const i=npcNextIdx(), d=NPC_DEFER.splice(i<0?0:i,1)[0]; spawnNPC(d,mulberry32(9002+(d.seed||0))); yield; }   // (a def with `rolled` already has its look: the rng passed is not used)
 // steering for a walker: the straight line to the next point is tried first; when a house, tree or prop stands in it the walker turns to the nearer free side
 // and keeps that side for half a second (without this a villager led along the road pressed into a tree and shuffled left and right instead of passing it)
 function npcFree(x,z){ if(inBox(x,z,0.45)) return false; let ok=true; nearCols(x,z,(qx,qz,r)=>{ if(ok&&Math.hypot(qx-x,qz-z)<r+0.55) ok=false; }); return ok; }

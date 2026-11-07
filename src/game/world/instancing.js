@@ -2,6 +2,9 @@
 /* ---------- instancing ---------- */
 // chunks are CS (110 m) squares over the whole world: CHX across, CHZ down
 const CS=SIZE/8, CHX=Math.ceil(WW/CS-0.01), CHZ=Math.ceil(WD/CS-0.01);
+/* PLANT_GRP: plants are bucketed into squares of PLANT_GRP x PLANT_GRP chunks (CS = 110 m) per kind and level, not one per chunk: draw calls and scene objects fall by ~GRP squared
+   (the CPU, not the GPU, was the limit: ~2,000 calls and ~13,000 meshes a frame on an RTX 3050). Test other sizes with localStorage 'wildwood-grp' (1-4). */
+const PLANT_GRP=(()=>{ try{ const v=parseInt(localStorage.getItem('wildwood-grp'),10); if(v>=1&&v<=4) return v; }catch(_){} return 2; })(), CSG=CS*PLANT_GRP, CHGX=Math.ceil(CHX/PLANT_GRP);
 const _q=new THREE.Quaternion(), _e=new THREE.Euler(), _p=new THREE.Vector3(), _s=new THREE.Vector3();
 function mtx(x,y,z,ry,sx,sy,sz,tx,tz){ _e.set(tx||0,ry,tz||0); _q.setFromEuler(_e); _p.set(x,y,z); _s.set(sx,sy,sz); return new THREE.Matrix4().compose(_p,_q,_s); }
 /* Instanced plants live in one mesh per chunk (CS = 110 m) and kind. Unlike three's default, these are frustum culled (r128's InstancedMesh switches it
@@ -18,11 +21,11 @@ function addInstanced(geo, mat, items, o){
   // when a mesh without colours drew after one with. So all of them have colours.
   const buckets=new Map(), hasColor=true;
   for(const it of items){
-    const cx=clamp(Math.floor((it.x-WX0)/CS),0,CHX-1), cz=clamp(Math.floor((it.z-WZ0)/CS),0,CHZ-1), k=cz*CHX+cx;
+    const cx=clamp(Math.floor((it.x-WX0)/CSG),0,CHGX-1), cz=clamp(Math.floor((it.z-WZ0)/CSG),0,Math.ceil(CHZ/PLANT_GRP)-1), k=cz*CHGX+cx;
     let b=buckets.get(k); if(!b){ b=[]; buckets.set(k,b); } b.push(it);
   }
   buckets.forEach((list,k)=>{
-    const cx=k%CHX, cz=Math.floor(k/CHX);
+    const cx=k%CHGX, cz=Math.floor(k/CHGX);
     let x0=1e9, x1=-1e9, y0=1e9, y1=-1e9, z0=1e9, z1=-1e9;
     for(const it of list){ const y=it.m.elements[13]; if(it.x<x0) x0=it.x; if(it.x>x1) x1=it.x; if(y<y0) y0=y; if(y>y1) y1=y; if(it.z<z0) z0=it.z; if(it.z>z1) z1=it.z; }
     const hg=o.hgt===undefined?16:o.hgt, rd=o.rad===undefined?5:o.rad;
@@ -36,8 +39,9 @@ function addInstanced(geo, mat, items, o){
     mesh.instanceMatrix.needsUpdate=true;
     if(mesh.instanceColor) mesh.instanceColor.needsUpdate=true;
     mesh.frustumCulled=true; mesh.castShadow=!!o.cast; mesh.receiveShadow=!!o.receive;
+    mesh.matrixAutoUpdate=false;   // (a plant never moves: its matrix stays the identity, scene.matrixAutoUpdate is off too, renderer.js)
     scene.add(mesh);
-    CHUNK_MESHES.push({mesh,x:WX0+(cx+0.5)*CS,z:WZ0+(cz+0.5)*CS,max:o.maxDist||0});
+    CHUNK_MESHES.push({mesh,x:WX0+(cx+0.5)*CSG,z:WZ0+(cz+0.5)*CSG,max:o.maxDist||0});
   });
 }
 // instances that have levels of detail: the matrices and colours stay here, each level's mesh (made when first needed) holds only the instances
@@ -56,7 +60,7 @@ function lodMesh(g,j){
   geo.boundingSphere=g.sph.clone();
   const m=new THREE.InstancedMesh(geo, g.mat, cap);
   if(g.hasColor) m.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(cap*3),3);
-  m.frustumCulled=true; m.castShadow=L.cast; m.receiveShadow=!!g.o.receive; m.visible=false; m.count=0;
+  m.matrixAutoUpdate=false; m.frustumCulled=true; m.castShadow=L.cast; m.receiveShadow=!!g.o.receive; m.visible=false; m.count=0;
   scene.add(m); L.mesh=m; return m;
 }
 // a level's instance buffers are only as big as the level needs while the group is near: far away they are handed back (a world walked end to end
@@ -122,7 +126,7 @@ function updateLod(g,cx,cz,far){
 const CHUNK_MESHES=[]; let cullT=0;
 function cullChunks(dt){
   cullT-=dt; if(cullT>0) return; cullT=0.3; cullTerrain();
-  const cx=camera.position.x, cz=camera.position.z, pad=CS*0.72, far=scene.fog.far+30;
+  const cx=camera.position.x, cz=camera.position.z, pad=CSG*0.72, far=scene.fog.far+30;
   for(const c of CHUNK_MESHES){ const d=Math.hypot(c.x-cx,c.z-cz)-pad; c.mesh.visible=d<(c.max||far); }
   for(const g of LODS) updateLod(g,cx,cz,far);
 }

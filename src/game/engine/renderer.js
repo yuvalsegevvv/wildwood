@@ -21,6 +21,7 @@ renderer.shadowMap.enabled = !LITE;
 renderer.shadowMap.type = LOW ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
+scene.matrixAutoUpdate = false;   // the scene itself never moves; with it off three.js stops recomputing the world matrix of every static child (plants: matrixAutoUpdate=false, instancing.js) each frame
 scene.fog = new THREE.Fog(0xcfd3c9, 28, 230);
 const camera = new THREE.PerspectiveCamera(68, innerWidth/innerHeight, 0.1, 1200);
 
