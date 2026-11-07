@@ -120,7 +120,7 @@ const TERRAIN_COLOR=`
   diffuseColor.rgb*=1.0+(0.82+0.36*mix(0.5,tm,0.35+0.65*tfade)-1.0)*(1.0-0.75*tbright);
   diffuseColor.rgb*=mix(vec3(1.0),mix(vec3(0.95,1.0,1.03),vec3(1.08,1.03,0.88),smoothstep(0.3,0.75,tn0.x)),1.0-tbright);
 `;
-/* Short grass (desktop, VD>=2, not the 'wildwood-sg'='0' opt-out): the lawn between the tufts, made from noise in the same pixel shader, no model.
+/* Short grass (desktop, VD>=2, only with localStorage 'wildwood-sg'='1' for now): the lawn between the tufts, made from noise in the same pixel shader, no model.
    It applies only where the ground colour is green (sand is red-yellow, snow and ice are bright, mountain rock is grey, so those get none) and only
    near the camera. Blade streaks are noise stretched along the wind and shifted by the SAME travelling wave as the tufts' (grassMat, materials.js:
    direction (0.8,0.6), crest 28 m, 0.495 / 2.42 rad/s), so the lawn shimmers with the field. */
@@ -150,7 +150,7 @@ const TERRAIN_SHORT_BUMP=`
 function terrainMaterial(){
   const phong=VD>=2, m=phong?new THREE.MeshPhongMaterial({vertexColors:true,specular:0x000000,shininess:1}):new THREE.MeshLambertMaterial({vertexColors:true});
   if(VD<1) return m;
-  const sgOn=phong&&!(()=>{try{return localStorage.getItem('wildwood-sg')==='0';}catch(e){return false;}})();
+  const sgOn=phong&&(()=>{try{return localStorage.getItem('wildwood-sg')==='1';}catch(e){return false;}})();   // OFF by default until the owner approves how it looks; localStorage 'wildwood-sg'='1' turns it on
   m.onBeforeCompile=sh=>{
     sh.uniforms.uTime=timeU;
     sh.vertexShader='varying vec3 vWp; varying float vDist;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.0)).xyz; vDist=length(mvPosition.xyz);');
