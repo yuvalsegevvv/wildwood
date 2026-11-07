@@ -113,6 +113,8 @@ function drawFullMap(){
   dgEntMapMarks(x,at,land,fs,label,DPR);   // dungeons: the three doors, the Elder greyed while sealed
   pzMapMarks(x,at,(wx,wz)=>landAt(wx,wz)===land,DPR,true);   // puzzles: the land's stones
   skTrackMarks(x,at,(wx,wz)=>landAt(wx,wz)===(land==='home'?'home':land),DPR,true);   // tracked skill upgrade
+  dipMapMarks(x,at,land,fs,label,DPR);   // dip: the land's dark pipe
+  riftMapMarks(x,at,land,fs,label,DPR);   // rift: the tear
   rdMapMarks(x,at,land,fs,label,DPR);   // raids: the stronghold of this land and its state
   if(land!=='hoar'&&land!=='grey'&&land!=='sun'&&land!=='gloam'&&land!=='isles'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Bridge':'Bridge (barred)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='vale'){ const [cx,cy]=at(PASS.x,PASS.ice); dot(x,cx,cy,3.5*DPR,northOpen()?'#9fe0ff':'#8a8078'); label(northOpen()?'Frostgate Pass':'Frostgate Pass (ice wall)',cx-fs*4.6,cy,fs*0.85,'#e8e0d0'); }
