@@ -31,7 +31,7 @@ function pzStart(m){
 }
 function pzTick(){
   const c=PZ_CUR; if(!c||$('#puzzle').hidden){ if($('#puzzle').hidden) clearInterval(PZ_TIMER); return; }
-  const secs=(Date.now()-c.t0)/1000, tgt=PZ_DIFF[c.m.diff].target; $('#pzClock').textContent=pzFmt(secs)+' / '+pzFmt(tgt);
+  const secs=(Date.now()-c.t0)/1000;   // (no clock is shown any more; the time only resumes a saved board)
   try{ localStorage.setItem(pzKey(c.m),JSON.stringify({st:c.view.state?c.view.state():null,secs:Math.round(secs)})); }catch(_){}
 }
 $('#pzUndo').addEventListener('click',()=>{ if(PZ_CUR&&PZ_CUR.view.undo) PZ_CUR.view.undo(); UI_SFX.click(); });

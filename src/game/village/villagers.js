@@ -476,7 +476,7 @@ function updateNPCs(dt){
     if(!talking && n.state!=='home'){
       if(B.type==='stationary'){
         const A=anchorOf((D.atFn&&D.atFn())||B.at,V);   // atFn: a story villager who moves with the main quest (Tansy, Wren before the sickness)
-        if(n.state!=='walk' && Math.hypot(A.x-n.x,A.z-n.z)>0.6) routeTo(n,A);
+        if(n.state!=='walk' && Math.hypot(A.x-n.x,A.z-n.z)>0.9) routeTo(n,A);
         else if(n.state!=='walk'){ n.state='idle'; n.faceGoal=A.face!==undefined?A.face:Math.atan2(-(V.x-n.x),-(V.z-n.z)); }
       } else if(B.type==='patrol'){
         if(n.state==='idle'){ n.timer-=dt; if(n.timer<=0){ n.pi=(n.pi+1)%B.route.length; routeTo(n,anchorOf(B.route[n.pi],V)); } }
@@ -496,6 +496,7 @@ function updateNPCs(dt){
         n.route.shift();
         if(!n.route.length){
           if(n.state==='home'){ n.inside=true; n.g.visible=false; continue; }
+          n.vx=n.vz=0;   // stop dead: a fast walker (Tansy, speed 4.2) coasted past the 0.6 m "arrived" test and was sent back again and again: she looked like she was dancing
           n.state='idle'; n.timer=B.type==='patrol'?(B.pause||3):AR(4,10);
           if(tg.face!==undefined) n.faceGoal=tg.face;
         }
