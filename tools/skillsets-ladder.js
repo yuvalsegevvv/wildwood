@@ -6,7 +6,7 @@
 // Usage: node tools/skillsets-ladder.js [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
 // Also: require('./skillsets-ladder').ladder({W, x, pid}, opts) for a test (tools/skillsets-smoke.js runs it on a fixture); x must expose NAMES.
 const {loadServer}=require('./load');
-const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S','ssBonusSwitch','awkMigGrant'];
+const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S','ssBonusSwitch','awkMigGrant','bdGrantP','bdSetOk'];
 const WEAPON={warrior:'sword1',archer:'bow1',mage:'wand1'}, CLASSES=['warrior','archer','mage'];
 // the bands in percent of the baseline: [the pieces alone, the 3-set, the 5-set] (docs/SKILL-SETS.md 5b; a mixed set sits between a support's 90 and its main kit's ladder)
 // the same tree measured 93 to 99 for one set's pieces and 128 vs 131 for another's 5- and 3-set between runs (also before the Amber Reach), so the orderings carry this much slack
@@ -14,7 +14,8 @@ const LADDER_NOISE=4, LADDER_NOISE_FLOOR=92;
 const BANDS={safe:[110,125,150],risk:[125,142,170],riskCareless:[88,100,120],support:[90,90,90],heal:[90,90,90],tank:[90,90,90],grind:[50,50,50]};
 function ladder(env,opts){
   opts=opts||{}; const {W,x}=env, secs=opts.secs||60, classes=opts.classes||(opts.dist>4?['archer','mage']:CLASSES), p=W.players.get(env.pid), out=[];
-  const R=Math.random; let seed=12345; const seeded=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
+  // castCave false: the charge skill is worn (a Bond counts it) but never cast
+  const R=Math.random; let seed=12345, castCave=true; const seeded=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
   const dummies=x.MONS.filter(m=>!m.boss&&!m.inst&&!m.dead).slice(0,7), spot=[];
   // the hero stands in the village (nothing attacks there) with the dummy 2.4 m ahead (the way he faces) and six more around it
   const arrange=()=>{
@@ -33,7 +34,7 @@ function ladder(env,opts){
       // good play and careless play of a position set: the hero is always on the move (Light Feet), walks back after a dash, and the dummies keep their backs to him (opts.behind) or keep facing him
       p.lastMove=x.S.t; if(Math.hypot(p.x-home[0],p.z-home[1])>0.3){ const f=p.face; W.setPos(env.pid,[home[0],x.getH(home[0],home[1]),home[1],f,0,0]); }
       for(const m of dummies) m.face=Math.atan2(sgn*(p.x-m.x),sgn*(p.z-m.z));
-      if(!p.act&&p.gear.skills.cave&&p.cave.charge>=x.CAVE_SKILLS[p.gear.skills.cave].cost&&p.cd.cave<=0.08) cast('cave');   // slot 4 (C3): spends its charge as soon as it can
+      if(!p.act&&castCave&&p.gear.skills.cave&&p.cave.charge>=x.CAVE_SKILLS[p.gear.skills.cave].cost&&p.cd.cave<=0.08) cast('cave');   // slot 4 (C3): spends its charge as soon as it can
       if(!p.act&&opts.ultOn&&p.gear.skills.ult&&p.cd.ult<=0.08) cast('ult');   // slot 5 (docs/ULT.md): the burst as soon as it is ready
       if(!p.act) for(const k of ['burst','skill','basic']) if(p.cd[k]<=0.08&&x.abilityOf(x.clsOfP(p),k,p.gear.skills,p.level)){ cast(k); break; }
       W.tick(0.05); } } finally{ Math.random=R; }
@@ -74,10 +75,24 @@ function ladder(env,opts){
     for(const cls of classes){
       const ids=P.map(q=>q.bound==='any'?q.ids[0]:q.ids.find(i=>x.SKILLS[i].cls===cls)), pass=P.map(q=>q.passive);
       if(!ids.every(Boolean)) continue;   // basic-hold: skill 1 belongs to one class, the other classes have no version of the set
-      S.bonus=inert; wear(cls,ids,[]); const pieces=rotation(secs); S.bonus=bonus;
-      wear(cls,ids,[]); const three=rotation(secs);
-      wear(cls,ids,[pass[0],pass[1]]); const five=rotation(secs);
-      wear(cls,ids,pass); const six=rotation(secs);
+      // bond: the rows are Bond II (the 3-set row) and Bond VI (the 5-set row) now, in force while that many of the character's pieces are worn (server/bond.js). A set with Bonds is measured at
+      // Bond 0 (the pieces alone), Bond II with its three actives (the 3-set row and the Bond I passive) and Bond VI with all six places worn (the actives, the kept passive, the charge skill and the
+      // burst, those two worn for the count only, never cast: both rows, both Bond passives and the two +1 levels); a set without Bonds (a test fixture) the old way
+      const bd=x.bdSetOk&&x.bdSetOk(id)?(x.bdGrantP(p,id,6),p.gear.bd[id]):null, cs0=(x.CAVE_SKILL_IDS||[]).map(i=>x.CAVE_SKILLS[i]).find(q=>q.set===id);
+      let pieces, three, five, six;
+      if(bd){
+        const all6=()=>{ wear(cls,ids,[S.keptPassive]); if(cs0){ p.gear.cave.own[cs0.id]=1; p.gear.skills.cave=cs0.id; } p.gear.skills.ult=x.ULT_SKILLS&&x.ULT_SKILLS[id]?id:null; x.recalcP(p); };
+        const off=()=>{ if(cs0){ p.gear.skills.cave=null; delete p.gear.cave.own[cs0.id]; } p.gear.skills.ult=null; };
+        bd.b=0; wear(cls,ids,[]); pieces=rotation(secs);
+        bd.b=2; wear(cls,ids,[]); three=rotation(secs);
+        bd.b=6; castCave=false; all6(); five=rotation(secs); castCave=true; off(); six=five;
+      } else {
+        S.bonus=inert; wear(cls,ids,[]); pieces=rotation(secs); S.bonus=bonus;
+        wear(cls,ids,[]); three=rotation(secs);
+        wear(cls,ids,[pass[0],pass[1]]); five=rotation(secs);
+        wear(cls,ids,pass); six=rotation(secs);
+      }
+      if(bd) wear(cls,ids,[S.keptPassive]);   // (slot 4 below: on top of the actives and the kept passive at Bond VI)
       // slot 4 (docs/CAVE.md): the set's own cave skill at level 1 and 5 on top of all six pieces; its charge is fed by the casts, doubled for this set's pieces
       let c1=null, c5=null; const cs=(x.CAVE_SKILL_IDS||[]).map(i=>x.CAVE_SKILLS[i]).find(q=>q.set===id);   // a harness without the cave names (skillsets-smoke) skips slot 4
       if(cs&&opts.cave!==false){ p.gear.cave.own[cs.id]=1; p.gear.skills.cave=cs.id; c1=rotation(secs); p.gear.cave.own[cs.id]=5; c5=rotation(secs); p.gear.skills.cave=null; delete p.gear.cave.own[cs.id]; }
@@ -134,7 +149,7 @@ function ultRow(set,classes){
 module.exports={ultRow,ladder,judge,summarize,print,BANDS,NAMES};
 if(require.main===module){
   const args=process.argv.slice(2), val=(f,d)=>{ const i=args.indexOf(f); return i>=0?args[i+1]:d; };
-  const {api:W,x}=loadServer({dev:true,send(){}},NAMES); x.ssBonusSwitch(true);   // the set rows are switched off in the game (they become Bond II / VI, the skill revamp's step 5): the ladder still measures them
+  const {api:W,x}=loadServer({dev:true,send(){}},NAMES);   // bond: the set rows are Bond II / VI (server/bond.js): the ladder grants the Bonds and wears the pieces they ask for
   W.join('l',{name:'Ladder',look:{cls:'warrior'},save:{level:60}}); for(let i=0;i<3;i++) W.tick(0.05);
   if(!x.SS_ORDER.length){ console.log('no skill set is defined (src/shared/skillsets/*.js, listed in src/manifest.json)'); process.exit(0); }
   const cls=val('--class',null), opts={secs:+val('--secs',60),set:val('--set',null),classes:cls?[cls]:undefined,cave:args.includes('--check')?args.includes('--cave'):true}, env={W,x,pid:'l'};

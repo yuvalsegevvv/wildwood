@@ -26,11 +26,12 @@ W.join('a',{name:'Alma',look:{cls:'warrior'},save:{level:40}}); W.join('lo',{nam
 const p=W.players.get('a'), lo=W.players.get('lo'), T='torgeir';
 const own=(pl,set,pos)=>{ const n=x.ssGrantP(pl,set,pos,true); x.awkMigGrant(pl.gear,set,{bu:1}); return n; };   // awakening: bu1 (A3) makes an owned burst usable
 ok('nothing owned: no burst',!x.ultOwned(p.gear.skills,p.gear.cave,T)&&x.ultPieceCount(p.gear.skills,p.gear.cave,T)===0);
-own(p,T,1); ok('one drop (an active and its passive) is 2 of 7: not enough',x.ultPieceCount(p.gear.skills,p.gear.cave,T)===2&&!x.ultOwned(p.gear.skills,p.gear.cave,T));
+const KP=[1,2,3].find(q=>x.SS_SETS[T].pos[q].passive===x.SS_SETS[T].keptPassive), OP=KP===2?1:2;   // bond: only the kept passive comes with its drop (a Bond I / IV passive is no piece)
+own(p,T,KP); ok('one drop (an active and its passive) is 2 of 7: not enough',x.ultPieceCount(p.gear.skills,p.gear.cave,T)===2&&!x.ultOwned(p.gear.skills,p.gear.cave,T));
 { const cv=Object.values(x.CAVE_SKILLS).find(c=>c.set===T);
   ok('the set has a cave skill (the seventh piece)',!!cv);
   p.gear.cave.own[cv.id]=1; ok('one drop + the cave skill is 3 of 7: owned',x.ultOwned(p.gear.skills,p.gear.cave,T)); delete p.gear.cave.own[cv.id]; }
-x.ultCheckP(p); evs.length=0; own(p,T,2); tick(4);
+x.ultCheckP(p); evs.length=0; own(p,T,OP); tick(4);
 ok('two drops are 4 of 7: owned, and the player is told once (event ultget)',x.ultOwned(p.gear.skills,p.gear.cave,T)&&evs.some(e=>e[0]==='ultget'&&e[2]===T),JSON.stringify(evs.slice(0,3)));
 // ---- wearing ----
 W.receive('a',{t:'ultequip',id:'constructor'}); W.receive('a',{t:'ultequip',id:'tansy'}); W.receive('a',{t:'ultequip',id:7}); tick(1);

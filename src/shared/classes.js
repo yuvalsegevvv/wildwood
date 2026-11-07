@@ -75,7 +75,7 @@ const skillDef=id=>SKILLS[id]||PASSIVES[id]||null;   // an attack skill or a pas
    (x1.17 a level), a buff's bonus grows +6% and lasts +3% a level, the fx numbers through awkFx, the cooldown is skillCdMult(level) x.
    A passive's value is v[0] x (1 + 8% a level); the old per-level step v[1] is no longer read. */
 const SKILL_MAX_LV=10, SKILL_OLD_MAX_LV=5;   // awakening: the tree's top (AWK_TOP); the old upgrade path's top: a saved level above it is never trusted (the tree gives the rest, server/awakening.js awkSyncG)
-const skillLvOf=(skills,id)=>Math.max(1,Math.min(SKILL_MAX_LV,((skills&&skills.lv&&skills.lv[id])|0)||1));
+const skillLvOf=(skills,id)=>bdLvAdj(skills,id,Math.max(1,Math.min(SKILL_MAX_LV,((skills&&skills.lv&&skills.lv[id])|0)||1)));   // bond: the active Bond's level change (III / V +1, a guest piece -2; shared/bond.js)
 const skillPower=L=>awkCurve('dmg',L), skillCdMult=L=>awkCurve('cd',L);   // awakening: the damage and cooldown curves
 const passiveValue=(id,L)=>PASSIVES[id].v[0]*awkCurve('pass',L);   // awakening: +8% of the level-1 value a level
 const pctText=v=>+(v*100).toFixed(1);
@@ -83,6 +83,7 @@ const passiveText=(id,L)=>PASSIVES[id].text.replace('{}',pctText(passiveValue(id
 // the total of one passive stat from a loadout (0 before level PASSIVE_LV; a slot the level has not opened yet does nothing); cls: the class whose loadout counts the set bonuses (none: no bonuses)
 function passiveSum(skills,level,stat,cls,boost){   // boost: {passive id: x} a burst's v boost (ult), on the benefit only
   let t=ssBonusSum(skills,level,stat,cls)+(skills&&skills.aw&&typeof skills.aw[stat]==='number'?skills.aw[stat]:0);   // awakening: the stat nodes of the character played (gear.skills.aw, server/awakening.js awkStatsP)   // skillsets: the 3- / 5-set bonuses in force (none while SS_BONUS_ON is false)
+  { const X=skills&&skills.bdx&&skills.bdx.p; if(X) for(const id of Object.keys(X)){ const P=bdOwnKey(PASSIVES,id)?PASSIVES[id]:null; if(!P) continue; if(P.stat===stat&&!P.when) t+=passiveValue(id,X[id]); if(P.cost&&P.cost.stat===stat&&!P.cost.when) t+=P.cost.v; } }   // bond: the Bond I / IV passives work unequipped (gear.skills.bdx.p, server/bond.js)
   if(level<PASSIVE_LV||!skills||!Array.isArray(skills.pass)) return t;
   for(const id of skills.pass.slice(0,passiveOpen(level))){ const P=PASSIVES[id]; if(!P||!skills.owned.includes(id)||level<P.lv) continue; if(P.stat===stat&&!P.when) t+=passiveValue(id,skillLvOf(skills,id))*(boost&&boost[id]||1); if(P.cost&&P.cost.stat===stat&&!P.cost.when) t+=P.cost.v; }   // skillsets: a row may pay a cost; a row with a `when` is read by ssCondP (server/skillsets.js)
   return t;

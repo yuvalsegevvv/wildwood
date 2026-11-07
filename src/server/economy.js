@@ -90,6 +90,7 @@ function buySkillP(p,id){
 }
 // a passive goes into slot idx of the passive loadout (or the first free open one, or nowhere when they are all full); slot i opens at PASSIVE_SLOT_LV[i]
 function equipPassiveP(p,id,idx){
+  if(bdIsBondPassive(id)){ toastTo(p.id,PASSIVES[id].name+' is a Bond passive: it works by itself once the Bond is reached and enough pieces are worn','bad'); return; }   // bond: never worn
   const P=p.gear.skills.pass, need=Math.max(PASSIVE_LV,PASSIVES[id].lv), open=passiveOpen(p.level);
   if(p.level<need){ toastTo(p.id,PASSIVES[id].name+' needs level '+need,'bad'); return; }
   if(idx>=open){ toastTo(p.id,'Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx],'bad'); return; }
@@ -144,6 +145,7 @@ function devP(p,msg){
   else if(c==='skills'){ for(const id of [...SKILL_IDS,...PASSIVE_IDS]) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); if(p.gear.cave) for(const id of CAVE_SKILL_IDS) if(!(p.gear.cave.own[id]>0)) p.gear.cave.own[id]=1; ultCheckP(p); p.dirty=true; toastTo(p.id,'Every skill, passive and charge skill learned','good'); }   // cave: the cave skills too, at level 1 (a higher level is kept)
   else if(c==='set'){ const id=String(msg.v||''); if(!SS_SETS[id]){ toastTo(p.id,'No skill set called "'+id+'" ('+(SS_ORDER.join(', ')||'none defined')+')','bad'); return; } ssGrantSetP(p,id); recalcP(p); toastTo(p.id,SS_SETS[id].char.name+'\'s set: all six pieces given','good'); }   // skillsets: give a whole set (testing)
   else if(c==='ult'){ for(const id of SS_ORDER){ if(SS_SETS[id].dev) continue; ssGrantP(p,id,1,true); ssGrantP(p,id,2,true); awkMigGrant(p.gear,id,{bu:1}); } p.cd.ult=0; for(const m of MONS) m.ultLock=0; ultCheckP(p); p.dirty=true; toastTo(p.id,'Positions 1 and 2 of every set given (every burst), burst cooldown and stun locks cleared','good'); }   // ult: testing tool   // awakening: bu1 (and A3) makes the burst usable
+  else if(c==='bd') bdDevP(p,msg);   // bond: Bonds to a step (v: set id | 'all', n: Bond -1..6, default VI, s: stones)
   else if(c==='awk') awkDevP(p,msg);   // awakening: a whole tree to a tier (v: set id | 'wanderer' | 'all', n: tier 0-5, default 5)
   else if(c==='mats'){ for(const id of MAT_IDS) addMatP(p,id,20); toastTo(p.id,'20 of every monster drop added','good'); }
   else if(c==='weather'){ const k={clear:0,rain:1,storm:2}[msg.v]; if(k===0){ W.kind=0; W.t=0; W.dur=0; ev('weather',0); } else if(k) startWeatherS(k); }

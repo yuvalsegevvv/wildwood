@@ -17,11 +17,11 @@
    reflect (a passive stat, read in hurtP) deals a share of the damage taken back to the attacker (ssRawHitS: a hit that is not a skill's, no triggers).
    Used by: economy.js (equipSkillP, unequipSkillP, buySkillP, the testing tool 'set'; the levels: server/awakening.js awkSyncG, called by ssGrantP), players.js (recalcP, psP, sanitizeSkills, hurtP, updatePlayersS), combat.js (the hooks marked skillsets).
    A piece is earned (M3's sources, not built yet) or given by the testing tool: never free, never bought, never upgraded in v1. Events: ssget [pid, setId, pos], mk. */
-function ssPieceIdsOf(setId,pos){ const S=SS_SETS[setId], P=S&&S.pos[pos]; return P?[...P.ids,P.passive]:[]; }
+function ssPieceIdsOf(setId,pos){ const S=SS_SETS[setId], P=S&&S.pos[pos]; return P?(P.bond?[...P.ids]:[...P.ids,P.passive]):[]; }   // bond: a Bond I / IV passive is no piece (it works through the active Bond)
 function ssGrantP(p,setId,pos,quiet){
   const own=p.gear.skills.owned; let n=0;
   for(const id of ssPieceIdsOf(setId,pos)) if(!own.includes(id)){ own.push(id); n++; }
-  if(n){ p.dirty=true; awkSyncG(p.gear); if(!quiet) ev('ssget',p.id,setId,pos); ultCheckP(p); }   // awakening: a new piece takes its branch's level   // ult: three of the set's seven pieces grant its burst
+  if(n){ p.dirty=true; bdOwnZeroG(p.gear,setId); awkSyncG(p.gear); if(!quiet) ev('ssget',p.id,setId,pos); ultCheckP(p); }   // bond: a piece earned the old way makes the character yours (Bond 0) until the orbs   // awakening: a new piece takes its branch's level   // ult: three of the set's seven pieces grant its burst
   return n;
 }
 /* ---- where a set comes from (M3, docs/SKILL-SETS.md section 7): the rolls ---- */
@@ -65,7 +65,7 @@ function ssEquipAllP(p,setId){
   const S=p.gear.skills; let n=0, passIdx=0;
   for(let q=1;q<=3;q++){
     const P=T.pos[q], id=P.ids.find(i=>S.owned.includes(i)); if(id&&ssEquipPieceP(p,SKILLS[id])) n++;
-    if(S.owned.includes(P.passive)&&passIdx<passiveOpen(p.level)&&p.level>=Math.max(PASSIVE_LV,PASSIVES[P.passive].lv)){ equipPassiveP(p,P.passive,passIdx++); n++; }
+    if(!P.bond&&S.owned.includes(P.passive)&&passIdx<passiveOpen(p.level)&&p.level>=Math.max(PASSIVE_LV,PASSIVES[P.passive].lv)){ equipPassiveP(p,P.passive,passIdx++); n++; }
   }
   const cid=CAVE_SKILL_IDS.find(i=>CAVE_SKILLS[i].set===setId&&Object.prototype.hasOwnProperty.call(p.gear.cave.own,i));
   if(cid&&p.level>=CAVE_SLOT_LV){ caveEquipP(p,cid); n++; }
@@ -83,6 +83,7 @@ function ssRefreshP(p){
   if(SS_ORDER.length){
     if(Array.isArray(sk.pass)) for(const id of sk.pass.slice(0,passiveOpen(p.level))){ const P=PASSIVES[id]; if(P&&P.set&&sk.owned.includes(id)&&p.level>=Math.max(PASSIVE_LV,P.lv)) add(P,skillLvOf(sk,id)); }
     for(const b of bonus) add(b.row,0);
+    { const X=sk.bdx&&sk.bdx.p; if(X) for(const id of Object.keys(X)){ const P=Object.prototype.hasOwnProperty.call(PASSIVES,id)?PASSIVES[id]:null; if(P) add(P,X[id]); } }   // bond: the Bond I / IV passives' triggers and conditions, unequipped
   }
   p.ss={n:ssCount(sk,cls,p.level),bonus,trig,amp,cond};
 }

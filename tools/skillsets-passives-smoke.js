@@ -13,7 +13,7 @@ W.join('a',{name:'Tester',look:{cls:'warrior'},save:{level:60}}); tick(3);
 const p=W.players.get('a'), [m1,m2]=x.MONS.filter(m=>!m.boss&&!m.inst&&m.def.id==='slime');
 const put=(m,dx,dz)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; return m; };
 W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); p.dead=false; p.hp=p.maxHp; p.act=null; p.face=0; p.level=60;
-const wear=id=>{ const K=p.gear.skills; for(const c of ['warrior','archer','mage']) K.eq[c]={basic:null,skill:null,burst:null}; x.ssGrantSetP(p,id); const S=x.SS_SETS[id];
+const wear=id=>{ const K=p.gear.skills; for(const c of ['warrior','archer','mage']) K.eq[c]={basic:null,skill:null,burst:null}; x.ssGrantSetP(p,id); for(const k of [1,2,3]){ const pid=x.SS_SETS[id].pos[k].passive; if(!p.gear.skills.owned.includes(pid)) p.gear.skills.owned.push(pid); }   /* bond: a Bond I / IV passive is no piece now (never granted): this test wears all three by hand */ const S=x.SS_SETS[id];
   for(const pos of [1,2,3]){ const P=S.pos[pos], sid=P.bound==='any'?P.ids[0]:P.ids.find(i=>x.SKILLS[i].cls===x.clsOfP(p))||P.ids[0]; x.ssEquipPieceP(p,x.SKILLS[sid]); }
   K.pass=[1,2,3].map(k=>S.pos[k].passive); p.ssIcd={}; p.killTs=[]; p.cd={basic:0,skill:0,burst:0}; p.ally=null; p.shield=null; p.hp=p.maxHp; x.recalcP(p); put(m1,0,-2); put(m2,2,-2); x.AREAS.length=0; evs.length=0; };
 const rnd=v=>{ const R=Math.random; Math.random=()=>v; return ()=>{ Math.random=R; }; };

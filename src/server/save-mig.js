@@ -1,6 +1,7 @@
 //@ The skill revamp's one save migration (gear.smv): retired boss skills refunded and unequipped, passives from the old slots 2-3 refunded, owned set pieces noted for Bond 0 (gear.bdMig)
 /* Agent map. smigSanitize(g,out) runs at the end of sanitizeGear (server/players.js, the hook marked `// savemig:`) with the raw save g and the cleaned gear out.
    The cleaned gear always carries smv = SMIG_VER, so a save is migrated once: a second load (or a second pass of sanitizeGear) only re-checks gear.bdMig.
+   Version 3 (skills revamp step 12): bdMigrateG (server/bond.js) gives Bond 0 to every set in gear.bdMig and every set of which a piece is owned (only raises: idempotent).
    Version 2 (skills revamp step 9): awkMigrateG (server/awakening.js) gives each set owned the Awakening nodes and tier of its old levels (only adds: idempotent).
    Rules for a save older than SMIG_VER 1 (the skill revamp plan, section 9 "Migration"):
    1. Boss skills (the 96 rows with drop:'<boss id>' that left SKILLS; SMIG_BOSS_SKILLS keeps what pricing them needs: [0 skill / 1 burst, the row's lv, its element]).
@@ -14,7 +15,7 @@
    A save with startAll (the testing kit owns everything) gets no refunds. Coins stop at COINS_MAX and drops at MAT_MAX, as everywhere.
    Uses: DEFAULT_OF, PASSIVES, SKILL_MAX_LV, skillLvOf, upgradeNeeds, upNeedsBase, ztBossLand, zoneTierMax, SS_PIECE_OF, SS_SETS, SS_ORDER, clampInt, COINS_MAX, MAT_MAX, MATS.
    Test: server-smoke ('save migration'). */
-const SMIG_VER=2;   // 1: boss skills, passive slots, bdMig (step 6); 2: the Awakening trees (step 9, awkMigrateG)
+const SMIG_VER=3;   // 1: boss skills, passive slots, bdMig (step 6); 2: the Awakening trees (step 9, awkMigrateG); 3: Bond 0 for every set owned (step 12, bdMigrateG)
 const SMIG_BOSS_SKILLS={   // boss id -> {skill id: [slot (0 skill, 1 burst), lv, element]}: the retired rows, kept only to price their refund
   boss:{snare:[0,15,'earth'],lifesap:[1,15,'water'],spore:[0,15,'air'],bloom:[1,15,'dark'],thorns:[0,15,'earth'],drain:[1,15,'dark']},
   carapax:{clawcrush:[0,20,'earth'],tidalguard:[1,20,'water'],riptide:[0,20,'water'],barnacles:[1,20,'earth'],tidalsurge:[0,20,'water'],maelstrom:[1,20,'water']},
@@ -51,6 +52,7 @@ function smigSanitize(g,out){
   out.smv=SMIG_VER;
   let acc=null;
   if(v<1) acc=smigV1(g,out); else out.bdMig=smigBdList(g.bdMig);
+  if(v<3) bdMigrateG(out);   // bond: smv 3, Bond 0 for every set in bdMig or with a piece owned (server/bond.js)
   if(v<2) awkMigrateG(out);   // awakening: smv 2, each owned set's branches at its old levels, the stat nodes below them and the tier covering them (server/awakening.js)
   return acc;   // what the v1 step refunded (server-smoke reads it; nothing else needs it), null when it did not run
 }

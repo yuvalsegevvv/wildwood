@@ -69,7 +69,7 @@ function caveCastP(p,msg){   // atk {k:'cave'}: spend the cost and run the skill
 }
 // the level of an owned cave skill, and its scale on curve `kind` (shared/awakening.js; default damage): caveCastP puts the damage in a.mult and the fx through awkFx,
 // caveFxS (server/cave/skills.js) and caveSetFxS (server/cave-fx.js) read the other kinds for their own keys
-function caveLvOf(p,id,lvl){ const o=p&&p.gear&&p.gear.cave&&p.gear.cave.own; return o&&Object.prototype.hasOwnProperty.call(o,id)?o[id]:lvl||1; }   // lvl: the cast's own level when id is not an owned cave skill
+function caveLvOf(p,id,lvl){ const o=p&&p.gear&&p.gear.cave&&p.gear.cave.own; return o&&Object.prototype.hasOwnProperty.call(o,id)?bdLvAdj(p.gear.skills,id,o[id]):lvl||1; }   // bond: the active Bond's level change   // lvl: the cast's own level when id is not an owned cave skill
 const caveLvK=(p,id,lvl,kind)=>caveLevelK(caveLvOf(p,id,lvl),kind);
 // (caveup, the Echo Shard levels 2-5, is retired: a charge skill's level is its branch in the Awakening tree, server/awakening.js)
 // a kill on a floor (killMonsterS): the floor's material, now and then (CAVE_DROP_CHANCE), for whoever made the kill

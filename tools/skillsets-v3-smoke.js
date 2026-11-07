@@ -39,7 +39,7 @@ const still=fn=>{ const R=Math.random; Math.random=()=>0.5; try{ return fn(); } 
 const lost=(m,fn)=>{ const h=m.hp; fn(); return h-m.hp; };
 const cast=(id,tgt,o)=>{ const s=x.SKILLS[id]; x.resolveFxS(p,Object.assign({fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:id},o||{}),tgt||null); if(s.fx.proj) for(let i=0;i<30;i++) W.tick(0.05); };
 const clear=()=>{ const K=p.gear.skills; for(const c of ['warrior','archer','mage']) K.eq[c]={basic:null,skill:null,burst:null}; K.pass=K.pass.map(()=>null); p.ssIcd={}; p.killTs=[]; p.cd={basic:0,skill:0,burst:0}; p.ally=null; p.shield=null; x.recalcP(p); };
-const wear=(id,n)=>{ clear(); x.ssGrantSetP(p,id); const S=SET(id); for(const pos of [1,2,3]){ const P=S.pos[pos], sid=P.bound==='any'?P.ids[0]:P.ids.find(i=>x.SKILLS[i].cls===x.clsOfP(p))||P.ids[0]; x.ssEquipPieceP(p,x.SKILLS[sid]); } const pass=[1,2,3].map(k=>S.pos[k].passive); p.gear.skills.pass=pass.map((pid,k)=>k<n?pid:null); x.recalcP(p); };
+const wear=(id,n)=>{ clear(); x.ssGrantSetP(p,id); for(const k of [1,2,3]){ const pid=x.SS_SETS[id].pos[k].passive; if(!p.gear.skills.owned.includes(pid)) p.gear.skills.owned.push(pid); }   /* bond: a Bond I / IV passive is no piece now (never granted): this test wears all three by hand */ const S=SET(id); for(const pos of [1,2,3]){ const P=S.pos[pos], sid=P.bound==='any'?P.ids[0]:P.ids.find(i=>x.SKILLS[i].cls===x.clsOfP(p))||P.ids[0]; x.ssEquipPieceP(p,x.SKILLS[sid]); } const pass=[1,2,3].map(k=>S.pos[k].passive); p.gear.skills.pass=pass.map((pid,k)=>k<n?pid:null); x.recalcP(p); };
 const hpOf=q=>q.hp/q.maxHp;
 ok('the stage: a and b are one party',x.partyOf(p)&&x.partyOf(p)===x.partyOf(pb));
 

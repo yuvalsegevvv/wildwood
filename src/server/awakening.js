@@ -5,16 +5,16 @@
           gear.awm = {echo: n} the Awakening store (AWK_STORE_IDS; Echo Shards moved here from gear.cave.sh, an old save's count folded in once: caveSanitizeSave no longer writes sh).
    MESSAGE: awk {a:'tier', set} | {a:'up', set, id} | {a:'stat', set, id} (MSG.awk; set = a set id or 'wanderer'). Each returns null when bought, else the reason (also toasted).
           awkTierP: the next tier; hiker level AWK_TIERS[t].lv; awkTierCost. awkLevelP ('up' and the two 'star' nodes) / awkStatP ('stat'): the node exists in that character's shape and is of that kind,
-          not owned, the tier reached, the hiker level of its tier, every req owned (the parent, a Banyan via, the crown's joins); awkNodeCost. A set needs one of its pieces owned (Bond 0 is step 12).
+          not owned, the tier reached, the hiker level of its tier, every req owned (the parent, a Banyan via, the crown's joins); awkNodeCost. A set needs Bond 0 (bdOwns, server/bond.js); pa1 makes its kept passive yours.
           PAYING (awkPlanP, then awkTakeP): coins, `drops` of the character's land's monster kinds (awkDropKinds: the land's non-boss kinds from the tier's share of its level range up; the
           Wanderer's: any land's, from the tier's hiker level - 5), taken from the kinds held most; 'echo' from gear.awm; 'rd_<land>' from gear.rd.mat ('rd_any': any land's). Everything is checked first and
           taken after; trophy_<boss> from gear.awm (step 10a; 'trophy_any': any boss's), an id nobody can hold yet (ess_*: step 17) refuses the purchase with a reason. Event awk [pid, set, 't' | node id, tier]; p.dirty; recalcP; mqActP 'upskill' (main quest W10).
           ch1 makes the charge skill yours (a set's own; the Wanderer's: the general ones, set null); bu1 makes the burst usable (awkUltLvP >= 1, read by ultEquippedP / ultEquipP).
    LEVELS (awkSyncG(gear), run by recalcP, ssGrantP, sanitizeGear): a set piece's level = its branch (awkBranchLv: the deepest upgrade node owned in a row, a limb with an unlock node starts at 0),
           capped by the tier's cap: the actives of position 1 / 2 / 3 -> ba / sk / po, the kept passive -> pa, the set's charge skill -> ch (gear.cave.own), the burst -> bu (awkUltLvP, read by ultCastP).
-          Written into gear.skills.lv and gear.cave.own, so skillLvOf / caveLvOf and every reader (combat, the panel) follow the tree. A Bond passive (step 12) keeps its saved level. A shop skill / passive /
+          Written into gear.skills.lv and gear.cave.own, so skillLvOf / caveLvOf and every reader (combat, the panel) follow the tree. A Bond passive keeps its saved level (it works at BD_PASS_LV through the Bond). The active Bond's level changes (III / V +1, a guest -2) are not written here: gear.skills.bdx.lv, added by skillLvOf / caveLvOf / awkUltLvP. A shop skill / passive /
           general charge skill: the Wanderer's branch of its slot (basic ba, skill sk, burst po, passive pa, charge ch), never below its saved level (saved levels are trusted only up to SKILL_OLD_MAX_LV).
-   STATS (awkStatsP, run by recalcP): the stat nodes of the character played (awkMainOf: the set with the most pieces worn by the class in hand, else the Wanderer), summed into gear.skills.aw
+   STATS (awkStatsP, run by recalcP): the stat nodes of the character played (bdMainOf, server/bond.js: the worn power piece's set, else the most pieces worn, else the Wanderer), summed into gear.skills.aw
           {passive stat: v}, read by passiveSum (classes.js) like a passive: dmg crit hp drop xp heal move as they are, eff -> buffpow, cd / red as a positive cut.
    MIGRATION (awkMigrateG(gear), called by smigSanitize for a save older than smv 2): every set of which a piece is owned (gear.bdMig, the owned actives and passives, an owned charge skill): its
           branches get the nodes up to the old level (both kinds: the stat nodes below it too), the kept passive pa1..L, the charge skill ch1..L, an owned burst bu1, and the tier that covers it all
@@ -61,7 +61,7 @@ function awkBranchLv(gear,k,limb){
   for(let lv=Lm.first;lv<=AWK_TOP;lv++){ if(e.n[awkUpId(limb,lv)]===1) L=lv; else break; }
   return Math.min(L,AWK_TIERS[e.t].cap);
 }
-const awkUltLvP=(p,setId)=>awkBranchLv(p&&p.gear,setId,'bu');   // the burst's level: 0 = not usable (bu1 needs A3)
+const awkUltLvP=(p,setId)=>{ const L=awkBranchLv(p&&p.gear,setId,'bu'); return L>0?bdLvAdj(p.gear.skills,'u:'+setId,L):0; };   // the burst's level: 0 = not usable (bu1 needs A3)   // bond: the active Bond's level change ('u:<set>')
 function awkSetLv(sk,id,L){ if(L>1) sk.lv[id]=L; else delete sk.lv[id]; }
 // write the trees' levels into gear.skills.lv and gear.cave.own (see the agent map)
 function awkSyncG(gear){
@@ -73,7 +73,7 @@ function awkSyncG(gear){
       else if(id===S.keptPassive) awkSetLv(sk,id,awkBranchLv(gear,pc.set,'pa'));
       continue; }   // a Bond passive (step 12) keeps its saved level
     const d=skillDef(id), limb=d&&awkOwn(AWK_SLOT_LIMB,d.slot)?AWK_SLOT_LIMB[d.slot]:null; if(!limb) continue;
-    const W=awkBranchLv(gear,AWK_WANDERER,limb); if(W>skillLvOf(sk,id)) awkSetLv(sk,id,W);
+    const W=awkBranchLv(gear,AWK_WANDERER,limb); if(W>((sk.lv[id]|0)||1)) awkSetLv(sk,id,W);   // (the saved level, not skillLvOf: that adds the active Bond's change)
   }
   const own=gear.cave&&gear.cave.own; if(!own) return;
   for(const id of Object.keys(own)){ const c=caveSkillDef(id); if(!c) continue;
@@ -81,14 +81,8 @@ function awkSyncG(gear){
     else { const W=awkBranchLv(gear,AWK_WANDERER,'ch'); if(W>own[id]) own[id]=W; } }
 }
 // ---- stats ----
-// the character played: the set with the most pieces worn by the class in hand (ties: the first in SS_ORDER), else the Wanderer
-function awkMainOf(p){
-  const n=ssCount(p.gear.skills,clsOfP(p),p.level); let best=AWK_WANDERER, bn=0;
-  for(const id of SS_ORDER) if((n[id]|0)>bn&&awkShapeOf(id)){ best=id; bn=n[id]; }
-  return best;
-}
 function awkStatsP(p){
-  const key=awkMainOf(p), e=awkEntry(p.gear,key), out={};
+  const key=bdMainOf(p), e=awkEntry(p.gear,key), out={};   // bond: the main character (server/bond.js)
   if(e) for(const id of Object.keys(e.n)){ const s=awkStatOf(key,id,null); if(!s) continue; const ps=AWK_STAT_PS[s.stat]; if(ps) out[ps]=(out[ps]||0)+(s.stat==='cd'||s.stat==='red'?-s.v:s.v); }
   for(const k of Object.keys(out)) out[k]=Math.round(out[k]*10000)/10000;
   p.gear.skills.aw=out; p.awMain=key;
@@ -144,16 +138,12 @@ function awkTakeP(p,P){
   for(const [l,n] of P.rd){ const left=(rm[l]|0)-n; if(left>0) rm[l]=left; else delete rm[l]; }
 }
 // ---- buying ----
-function awkOwnsChar(p,k){
-  if(k===AWK_WANDERER) return true;
-  const sk=p.gear.skills; if(sk.owned.some(id=>{ const pc=SS_PIECE_OF[id]; return pc&&pc.set===k; })) return true;
-  const own=p.gear.cave&&p.gear.cave.own; return !!own&&Object.keys(own).some(id=>{ const c=caveSkillDef(id); return c&&c.set===k; });
-}
+const awkOwnsChar=(p,k)=>k===AWK_WANDERER||bdOwns(p,k);   // bond: Bond 0 makes the character yours (server/bond.js)
 function awkRefuse(p,why){ toastTo(p.id,why,'bad'); return why; }
 function awkDoneP(p,k,what,e){ recalcP(p); p.dirty=true; ev('awk',p.id,k,what,e.t); mqActP(p,'upskill'); return null; }   // (W10, "Sharper": any tree step counts)
 function awkTierP(p,k){
   if(!awkKeyOk(k)) return 'unknown character';
-  if(!awkOwnsChar(p,k)) return awkRefuse(p,'You need one of '+SS_SETS[k].char.name+'\'s pieces first');
+  if(!awkOwnsChar(p,k)) return awkRefuse(p,'Unlock '+SS_SETS[k].char.name+' first (Bond 0)');
   const cur=awkEntry(p.gear,k), to=(cur?cur.t:0)+1; if(to>=AWK_TIERS.length) return awkRefuse(p,'Already fully awakened');
   if(p.level<AWK_TIERS[to].lv) return awkRefuse(p,'Awakening A'+to+' needs level '+AWK_TIERS[to].lv);
   const r=awkPlanP(p,awkTierCost(k,to)); if(!r.plan) return awkRefuse(p,r.why);
@@ -164,7 +154,7 @@ function awkTierP(p,k){
 function awkNodeP(p,k,id,kinds){
   if(!awkKeyOk(k)) return 'unknown character';
   const n=awkNode(awkShapeOf(k),id); if(!n||!kinds.includes(n.kind)) return 'unknown node';
-  if(!awkOwnsChar(p,k)) return awkRefuse(p,'You need one of '+SS_SETS[k].char.name+'\'s pieces first');
+  if(!awkOwnsChar(p,k)) return awkRefuse(p,'Unlock '+SS_SETS[k].char.name+' first (Bond 0)');
   const cur=awkEntry(p.gear,k), t=cur?cur.t:0, has=x=>!!cur&&cur.n[x]===1;
   if(has(n.id)) return awkRefuse(p,'Already bought');
   if(t<n.tier) return awkRefuse(p,'This node needs Awakening A'+n.tier);
@@ -173,10 +163,15 @@ function awkNodeP(p,k,id,kinds){
   const r=awkPlanP(p,awkNodeCost(k,n.id)); if(!r.plan) return awkRefuse(p,r.why);
   awkTakeP(p,r.plan); const e=awkEntryW(p.gear,k); e.n[n.id]=1;
   if(n.id==='ch1') awkChargeOwnP(p,k);
+  if(n.id==='pa1') awkPassOwnP(p,k);   // bond: Bond 0 gives the actives only; A1's pa1 makes the kept passive yours
   return awkDoneP(p,k,n.id,e);
 }
 const awkLevelP=(p,k,id)=>awkNodeP(p,k,id,['up','star']);   // an upgrade node (a skill level) or a special burst node
 const awkStatP=(p,k,id)=>awkNodeP(p,k,id,['stat']);
+function awkPassOwnP(p,k){   // pa1: the character's one equippable passive is yours (a set's; the Wanderer's passives are the shop's)
+  const S=k===AWK_WANDERER?null:SS_SETS[k], id=S&&S.keptPassive, own=p.gear.skills.owned; if(!id||own.includes(id)) return;
+  own.push(id); awkSyncG(p.gear); toastTo(p.id,PASSIVES[id].name+' is yours: wear it in the passive slot','loot r3'); ultCheckP(p);
+}
 function awkChargeOwnP(p,k){   // ch1: the character's charge skill is yours (the Wanderer's: every general one)
   const own=p.gear.cave.own; let got=0;
   for(const id of CAVE_SKILL_IDS){ const c=CAVE_SKILLS[id]; if((k===AWK_WANDERER?!c.set:c.set===k)&&!awkOwn(own,id)){ own[id]=1; got++; ev('caveget',p.id,id); } }
@@ -214,6 +209,7 @@ function awkGrantP(p,k,t){
   const e=awkEntryW(p.gear,k); e.t=Math.max(e.t,t);
   for(const n of awkShapeOf(k).nodes) if(n.tier<=e.t) e.n[n.id]=1;
   if(e.n.ch1===1) awkChargeOwnP(p,k);
+  if(e.n.pa1===1) awkPassOwnP(p,k);   // bond
   p.dirty=true; return true;
 }
 function awkDevP(p,msg){   // dev 'awk' {v: set id | 'all', n: tier}

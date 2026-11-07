@@ -97,7 +97,7 @@ send({a:'tier',set:K}); send({a:'tier',set:K});
   if(T.keptPassive) old.skills.lv[T.keptPassive]=2;
   const cv=x.CAVE_SKILL_IDS.find(id=>x.CAVE_SKILLS[id].set===K); if(cv) old.cave.own[cv]=3;
   const m=x.sanitizeGear(JSON.parse(JSON.stringify(old)),'warrior'), A=m.awk[K];
-  ok('migration: smv '+x.SMIG_VER+', the old Echo Shards are in gear.awm',m.smv===2&&m.awm.echo===40&&m.cave.sh===undefined);
+  ok('migration: smv '+x.SMIG_VER+', the old Echo Shards are in gear.awm',m.smv===x.SMIG_VER&&m.awm.echo===40&&m.cave.sh===undefined);
   ok('migration: a level-3 set piece gives branch level 3 (ba2, ba3 and the stat nodes below them)',A&&A.n.ba2===1&&A.n.ba3===1&&A.n.sba2===1&&A.n.sba3===1&&!A.n.ba4&&x.skillLvOf(m.skills,piece)===3&&x.awkBranchLv(m,K,'ba')===3,JSON.stringify(A));
   ok('migration: a level-5 piece raises the tier to cover it (A1, cap 5), the passive and the charge skill keep their levels (A2)',A.t>=2&&x.awkBranchLv(m,K,'sk')===5&&x.skillLvOf(m.skills,T.pos[2].ids[0])===5
     &&(!T.keptPassive||x.skillLvOf(m.skills,T.keptPassive)===2)&&(!cv||m.cave.own[cv]===3),'t '+A.t);
