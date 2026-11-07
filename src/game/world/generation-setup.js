@@ -107,10 +107,14 @@ function buildGeometries(){
    needs per-pixel lighting (r128's Lambert is per vertex), so the terrain is a Phong material with no shine there. Both fade out with distance
    (fine detail would only shimmer). Light mode keeps the plain vertex-lit ground. */
 const TERRAIN_FS_HEAD=`varying vec3 vWp; varying float vDist; uniform float uTime;
-float thsh(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
-vec3 tnoise(vec2 p){ vec2 i=floor(p), f=fract(p), u=f*f*(3.0-2.0*f), du=6.0*f*(1.0-f);
+float thsh(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
+// value noise on a lattice turned by 31 degrees (not along the world's axes) and bent by a slow warp, so no octave shows straight rows or squares; the
+// gradient is turned back to world axes for the bump
+vec3 tnoise(vec2 p){ const mat2 R=mat2(0.857,0.515,-0.515,0.857);
+  p=R*p; p+=0.6*vec2(sin(p.y*0.37+1.3),sin(p.x*0.41+4.1));
+  vec2 i=floor(p), f=fract(p), u=f*f*(3.0-2.0*f), du=6.0*f*(1.0-f);
   float a=thsh(i), b=thsh(i+vec2(1.0,0.0)), c=thsh(i+vec2(0.0,1.0)), d=thsh(i+vec2(1.0,1.0)), k=a-b-c+d;
-  return vec3(a+(b-a)*u.x+(c-a)*u.y+k*u.x*u.y, du*vec2(b-a+k*u.y, c-a+k*u.x)); }
+  return vec3(a+(b-a)*u.x+(c-a)*u.y+k*u.x*u.y, (du*vec2(b-a+k*u.y, c-a+k*u.x))*R); }
 `;
 const TERRAIN_COLOR=`
   vec2 tq=vWp.xz; float tfade=1.0-smoothstep(40.0,130.0,vDist);
