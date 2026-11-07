@@ -15,12 +15,12 @@ function streamPump(budgetMs){
           let job=null;
           if(Stream.pending.length){   // the nearest area first, if it is within reach (the far side of the mountains waits until you come closer)
             let bi=0, bd=1e18; for(let i=0;i<Stream.pending.length;i++){ const d=distToChunk(Stream.pending[i],P.x,P.z); if(d<bd){ bd=d; bi=i; } }
-            if(bd>NEAR_R&&NPC_DEFER.length&&npcNearWaiting()) job={gen:spawnDeferredNPCs(), rng:mulberry32(5), kind:'n'};   // the people of the village you are in come before the far forest
+            if(bd>NEAR_R&&npcNearWaiting()) job={gen:spawnDeferredNPCs(), rng:mulberry32(5), kind:'n'};   // the people of the village you are in come before the far forest
             else if(bd<=FAR_R){ const ci=Stream.pending.splice(bi,1)[0]; job={gen:genChunk(ci), rng:mulberry32(1000+ci*7919), kind:'c', ci}; }
           }
           if(!job&&Stream.lazy>0){ const B=nextLazyTile(); if(B){ B.busy=true; job={gen:terrainTileColors(B), rng:mulberry32(77), kind:'k'}; } }   // ground colours of a tile the player is nearing
           if(!job){ const cs=cvNeed(); if(cs) job={gen:cvBuildJob(cs), rng:mulberry32(31), kind:'v'}; }   // caves: a site's rock mesh when you are within 420 m (world/caves.js)
-          if(!job&&NPC_DEFER.length) job={gen:spawnDeferredNPCs(), rng:mulberry32(5), kind:'n'};   // the far villages' people, when nothing nearer is waiting
+          if(!job&&NPC_DEFER.length&&npcNearWaiting()) job={gen:spawnDeferredNPCs(), rng:mulberry32(5), kind:'n'};   // the far villages' people, when nothing nearer is waiting
           if(!job) return;
           Stream.job=job;
         }

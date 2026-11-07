@@ -446,7 +446,9 @@ function npcNextIdx(){
   }
   return bd<NPC_NEAR_R?bi:-1;
 }
-function npcNearWaiting(){ return NPC_DEFER.length>0&&npcNextIdx()>=0; }
+let npcNearT=-1e9, npcNearV=false;
+function npcNearWaiting(){ const now=performance.now(); if(now-npcNearT>250){ npcNearT=now; npcNearV=NPC_DEFER.length>0&&npcNextIdx()>=0; } return npcNearV; }   // (cached a quarter second: asked several times a frame)
+/* Only the people of villages near you are built (NPC_NEAR_R): the far lands' ~100 people are built when you come within that range, not at boot (4-5 s of work). */
 function* spawnDeferredNPCs(){ if(!NPC_DEFER.length) return; const i=npcNextIdx(), d=NPC_DEFER.splice(i<0?0:i,1)[0]; spawnNPC(d,mulberry32(9002+(d.seed||0))); yield; }   // (a def with `rolled` already has its look: the rng passed is not used)
 // steering for a walker: the straight line to the next point is tried first; when a house, tree or prop stands in it the walker turns to the nearer free side
 // and keeps that side for half a second (without this a villager led along the road pressed into a tree and shuffled left and right instead of passing it)

@@ -7,9 +7,9 @@ function frame(){
   const dt=Math.min(clock.getDelta(),0.05);
   t+=dt; timeU.value=t;
   // stream the world: generous budget on the loading screen, a thin slice while playing
-  const busy=!Stream.terrainDone || Stream.pending.length || Stream.job || Stream.lazy>0 || NPC_DEFER.length || cvNeed();   // caves: a site's mesh still to build
+  const busy=!Stream.terrainDone || Stream.pending.length || Stream.job || Stream.lazy>0 || npcNearWaiting() || cvNeed();   // caves: a site's mesh still to build
   if(busy){
-    streamPump(started ? (terrainHot()?(LOW?14:24):(NPC_DEFER.length&&npcNearWaiting())?(LOW?10:16):NPC_DEFER.length?(LOW?6:12):(LOW?4:6)) : (LOW?28:40));   // (a bigger slice while ground next to you waits for its colours, e.g. just after a teleport)
+    streamPump(started ? (terrainHot()?(LOW?14:24):npcNearWaiting()?(LOW?10:16):(LOW?4:6)) : (LOW?28:40));   // (a bigger slice while ground next to you waits for its colours, e.g. just after a teleport)
     if(!Stream.terrainDone && Stream.tp!==undefined){ barEl.style.width=(35*Stream.tp).toFixed(0)+'%'; }
   }
   if(Stream.terrainDone){
