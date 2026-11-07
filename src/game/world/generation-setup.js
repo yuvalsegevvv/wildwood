@@ -149,6 +149,7 @@ const TCOLOR_NEAR=260, TCOLOR_R=Math.round(700*VIEW_K);   // metres: tiles this 
 // the mesh of one terrain tile (positions from HS, normals from the neighbouring heights), a few rows at a time; hidden until its colours are made
 let TMAT=null;
 function* terrainTileGeom(B){
+  yield* hsEnsure(B.c0-1,B.c0+B.nz+1);   // (a far tile made after Ready: its rows are waited for no longer, hsEnsure works out the missing ones)
   const {b0,c0,nx,nz,x0,z0}=B, w=nx*CELL, d=nz*CELL, hs=(ix,iz)=>HS[clamp(iz,0,SEGZ)*NVX+clamp(ix,0,SEGX)];
   const g=new THREE.PlaneGeometry(w,d,nx,nz); g.rotateX(-Math.PI/2); g.translate(x0+w/2,0,z0+d/2);
   const tp=g.attributes.position, tn=g.attributes.normal, n=new THREE.Vector3();
@@ -199,16 +200,24 @@ function* hsEnsure(a,b){
   a=Math.max(0,a); b=Math.min(NVZ-1,b);
   if(HW.on&&!HW.failed){
     const t0=performance.now();
-    while(!HW.failed&&!hwHave(a,b)&&performance.now()-t0<30000){ Stream.tp=(NVZ-HW.left)/NVZ*0.6; Stream.idle=true; yield; }
+    while(!Stream.terrainDone&&!HW.failed&&!hwHave(a,b)&&performance.now()-t0<30000){ Stream.tp=(NVZ-HW.left)/NVZ*0.6; Stream.idle=true; yield; }
     if(!HW.checked){ HW.checked=true; hwCheck(); }
   }
   for(let iz=a;iz<=b;iz++){
     if(HS_OWN[iz]||hwTake(iz)) continue;
     const z=WZ0+iz*CELL;
     for(let ix=0;ix<NVX;ix++) HS[iz*NVX+ix]=rawHeight(WX0+ix*CELL,z);
-    HS_OWN[iz]=1; Stream.tp=iz/NVZ*0.6;
+    HS_OWN[iz]=1; HS_OK[iz]=1; Stream.tp=iz/NVZ*0.6;
     if((iz&7)===7) yield;
   }
+}
+/* Without workers (or after one failed) the rest of the grid, which no longer gates the start, is worked out here after Ready, a few rows a slice (stream job 'h', streaming.js), before the chunks:
+   getH over a missing row is correct but ~16x slower, and everything after Ready asks it all the time. With workers it fills itself (HW). */
+let HS_FILL=0;
+function hsRestWaiting(){ if(HW.on&&!HW.failed) return false; while(HS_FILL<NVZ&&HS_OK[HS_FILL]) HS_FILL++; return HS_FILL<NVZ; }
+function* hsFillRest(){
+  for(let n=0;n<4&&hsRestWaiting();n++){ const iz=HS_FILL, z=WZ0+iz*CELL; for(let ix=0;ix<NVX;ix++) HS[iz*NVX+ix]=rawHeight(WX0+ix*CELL,z); HS_OWN[iz]=1; HS_OK[iz]=1; }
+  yield;
 }
 function* genTerrain(){
   // The height grid (HS): web workers have been filling it since the page began, rows nearest the spawn first (world/height-workers.js). The tiles by the spawn are made as soon as THEIR rows are in,
@@ -225,10 +234,7 @@ function* genTerrain(){
   // spawn are made and coloured now, the others (their mesh too, terrainTileGeom: a second of the start) when the player comes within TCOLOR_R of them (streamPump, job 'k'); until then they are not drawn (cullTerrain).
   const nNear=plan.filter(B=>B.near).length; let nMade=0;
   const makeNear=function*(){ for(const B of plan) if(B.near&&!B.g){ yield* hsEnsure(B.c0-1,B.c0+B.nz+1); yield* terrainTileGeom(B); yield* terrainTileColors(B); Stream.tp=0.6+0.4*(++nMade)/nNear; } };
-  if(HW.on) yield* makeNear();
-  yield* hsEnsure(0,NVZ-1);
-  if(HW.on) hwCheck();
-  yield* makeNear();   // (no workers: now that the whole grid is in)
+  yield* makeNear();   // only the rows by the spawn gate the start; the rest of the grid fills in behind (HS_OK; getH works out a point of a row that is not in yet)
   for(const B of plan) if(!B.near){ B.lazy=true; Stream.lazy++; }
   waterMat=new THREE.MeshPhongMaterial({color:0x2c5560, transparent:true, opacity:0.84, shininess:140, specular:0x8fa4b4});
   waterMat.onBeforeCompile=sh=>{

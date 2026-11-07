@@ -34,7 +34,7 @@ function hwStart(){
       const w=new Worker(url); HW.workers.push(w);
       w.onmessage=e=>{
         const d=e.data; if(HW.failed||!d||!d.o) return;
-        HS.set(d.o,d.r0*NVX); for(let r=d.r0;r<d.r1;r++) HW.rows[r]=1; HW.left-=d.r1-d.r0;
+        HS.set(d.o,d.r0*NVX); for(let r=d.r0;r<d.r1;r++){ HW.rows[r]=1; HS_OK[r]=1; } HW.left-=d.r1-d.r0;
         if(HW.left<=0){ HW.tDone=performance.now(); if(window.__hwlog) console.log('hw done in '+(HW.tDone-HW.t0).toFixed(0)+' ms, '+performance.now().toFixed(0)+' since load'); for(const x of HW.workers) x.terminate(); HW.workers=[]; } else hwFeed(w);
       };
       w.onerror=e=>hwFail(e&&e.message||'error');

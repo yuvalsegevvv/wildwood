@@ -13,6 +13,7 @@ function streamPump(budgetMs){
         if(!Stream.terrainDone) Stream.job={gen:genTerrain(), rng:mulberry32(99), kind:'t'};
         else{
           let job=null;
+          if(hsRestWaiting()) job={gen:hsFillRest(), rng:mulberry32(3), kind:'h'};   // no workers: the rest of the height grid, before anything that asks getH
           if(Stream.pending.length){   // the nearest area first, if it is within reach (the far side of the mountains waits until you come closer)
             let bi=0, bd=1e18; for(let i=0;i<Stream.pending.length;i++){ const d=distToChunk(Stream.pending[i],P.x,P.z); if(d<bd){ bd=d; bi=i; } }
             if(bd>NEAR_R&&npcNearWaiting()) job={gen:spawnDeferredNPCs(), rng:mulberry32(5), kind:'n'};   // the people of the village you are in come before the far forest
