@@ -4,7 +4,7 @@
 // Usage: node tools/rift-smoke.js
 const {loadServer}=require('./load');
 const sent=[];
-const {api:W,x}=loadServer({dev:false,send(to,m){ sent.push([to,m]); }},['RIFT_DEFS','RIFT_BAD','RIFT_MON_DEFS','RIFT_E_MAX','RIFT_E_MS','RIFT_E_DOUBLE','RIFT_WAVES','RIFT_ALIVE_MAX','RIFT_SLOT0',
+const {api:W,x}=loadServer({dev:false,send(to,m){ sent.push([to,m]); }},['RIFT_DEFS','RIFT_BAD','defineRift','RIFT_PAY','RIFT_MON_DEFS','RIFT_E_MAX','RIFT_E_MS','RIFT_E_DOUBLE','RIFT_WAVES','RIFT_ALIVE_MAX','RIFT_SLOT0',
   'RIFT_HP_K','RIFT_DMG_K','RIFT_BONUS_KILLS','riftEnergyAt','riftWaveSize','riftNear','riftLayout','DG_RUNS','DG_SLOT_RUN','DG_DG_SLOTS','DG_MAX_INST','DG_KITS','DG_MISSIONS','dgPoolS','dgBake','dgSolid',
   'dgHitOkS','dgWallAtS','DEF_BY_ID','MON_DEFS','sanitizeGear','getH','vilAt','inVillage','nearRoad','landAt','waCoast','CAMPS','killMonsterS','xpFor','defAt','dgKOf','MONS','S','dgLaunchS','DG_THEMES']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i!==undefined?'  ('+i+')':'')); if(!c) fails++; };
@@ -12,6 +12,9 @@ const tick=(n,dt)=>{ for(let i=0;i<n;i++) W.tick(dt||0.05); };
 const msgs=(to,t)=>sent.filter(s=>s[0]===to&&s[1].t===t).map(s=>s[1]);
 const R=x.RIFT_DEFS.shardmere, H=3600000;
 ok('the Shardmere is defined, nothing left out, seven glass kinds with the look flag',!!R&&!x.RIFT_BAD.length&&x.RIFT_MON_DEFS.length===7&&x.RIFT_MON_DEFS.every(d=>d.pal.glass&&d.pal.tint&&x.DEF_BY_ID[d.id]),JSON.stringify(x.RIFT_BAD));
+{ const n=x.RIFT_BAD.length, bad=x.defineRift(Object.assign({},R,{id:'badreward',reward:'gold'}));
+  ok('the Shardmere pays XP (its reward mode, default xp, has a payer); an unknown reward mode is left out',R.reward==='xp'&&typeof x.RIFT_PAY.xp.kill==='function'&&!bad&&x.RIFT_BAD.length===n+1&&!x.RIFT_DEFS.badreward,JSON.stringify(x.RIFT_BAD));
+  x.RIFT_BAD.length=n; }
 ok('the glass kinds are not world monsters (no camps, no board quests)',x.RIFT_MON_DEFS.every(d=>!x.MON_DEFS.includes(d)&&!x.CAMPS.some(c=>c.def===d)));
 ok('rift is not a dungeon mission: the Delve board never deals it, but its kit is there',!x.DG_MISSIONS.rift&&!x.dgPoolS().includes('rift')&&!!x.DG_KITS.rift);
 // the tear: in the wild

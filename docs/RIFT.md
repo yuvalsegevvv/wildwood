@@ -12,7 +12,7 @@ Stem `rift`, prefix `rift` / `RIFT_`. Plan and decisions: the project's `rifts-p
 |---|---|
 | `shared/rift.js` | the numbers, `riftEnergyAt`, the registry `defineRift` / `RIFT_DEFS` / `RIFT_BAD`, `riftMobDef` (glass copies of existing kinds), `riftLayout` (the platforms as a dungeon layout), `riftNear` (the tear's clearing), the HUD row `DG_HUD.rift` |
 | `shared/rift/shardmere.js` | the first rift: its tear, its aura, its seven glass kinds and the waves they join |
-| `server/rift.js` | `gear.rift` and its sanitizer, the window (`MSG.rift`), a solo run in a rift slot, the wave kit `DG_KITS.rift`, `riftRewardS` (XP only), the clear bonus, the death rule, leaving |
+| `server/rift.js` | `gear.rift` and its sanitizer, the window (`MSG.rift`), a solo run in a rift slot, the wave kit `DG_KITS.rift`, `riftRewardS` and `RIFT_PAY` (what a rift pays, by its `reward` mode; only `xp` is built), the clear bonus, the death rule, leaving |
 | `game/rift/rift.js` | the tear in the wild, the talk key, the window (`#rift`), the wave banner |
 | `game/rift/view.js` | the void world: glass platforms, rims, hanging crystals, tears, the portal, the aura sky, the drifting shards, the light, the music theme `rift` |
 | `game/rift/glass.js` | the glass monster material and the shatter on death |
@@ -37,6 +37,8 @@ Stem `rift`, prefix `rift` / `RIFT_`. Plan and decisions: the project's `rifts-p
 | `RIFT_SLOT0` | 16 | rift runs use the slots 16-31 (`DG_MAX_INST` 32); dungeons keep 0-15 (`DG_DG_SLOTS`) |
 
 No coins, items or materials from kills or the clear; kills count for no quest, tier or gate.
+
+**Reward modes.** A rift's data file names what it pays with `reward` (default `'xp'`, the Shardmere's). The engine calls only `riftPayOf(run)`; each mode is one entry of `RIFT_PAY` in `server/rift.js` with `kill(run,m,q,mb)` and `clear(run,p,mb)`, and its name is listed in `RIFT_REWARDS` (`shared/rift.js`), so `defineRift` leaves out a rift naming an unknown mode (`RIFT_BAD`). A later mode (the elemental rifts' essence) adds its name and its entry, nothing else in the engine.
 
 ## 3. How it is built
 

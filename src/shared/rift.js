@@ -22,16 +22,19 @@ const riftFullIn=(g,now)=>Math.ceil((RIFT_E_MAX-riftEnergyAt(g,now))*RIFT_E_MS/1
     herald: def id (waves 5 and 10), music} */
 const RIFT_DEFS=Object.create(null), RIFT_BAD=[], RIFT_MON_DEFS=[];
 var RIFT_DOORS=[];   // (a var: nearPath may ask before this file has run)
+// what a rift pays, named by its data file's `reward` (default 'xp'): each mode is one entry of RIFT_PAY on the server (server/rift.js); a new mode adds its name here and its entry there
+const RIFT_REWARDS=['xp'];
 function defineRift(R){
   let why='';
   if(!R||typeof R.id!=='string'||!/^[a-z][a-z0-9]*$/.test(R.id)) why='id must be lower-case letters and digits';
   else if(RIFT_DEFS[R.id]) why='defined twice';
   else if(!R.door||!isFinite(R.door.x)||!isFinite(R.door.z)) why='door {x,z} is missing';
   else if(!Array.isArray(R.aura)||R.aura.length!==3) why='aura needs three colours';
+  else if(R.reward!==undefined&&!RIFT_REWARDS.includes(R.reward)) why='reward must be one of '+RIFT_REWARDS.join(', ');
   else if(!Array.isArray(R.kinds)||!R.kinds.length) why='kinds is empty';
   else { const k=R.kinds.find(k=>!ALL_MON_DEFS.some(d=>d.id===k.id)); if(k) why='kind '+k.id+' is not a monster'; else if(!ALL_MON_DEFS.some(d=>d.id===R.herald)) why='herald is not a monster'; }
   if(why){ RIFT_BAD.push({id:R&&R.id,why}); if(typeof console!=='undefined') console.warn('rift '+(R&&R.id)+' left out: '+why); return null; }
-  R.rift=true; R.pal={floor:R.aura[1],wall:R.aura[0],fog:R.aura[1],light:R.aura[2]};   // (the dungeons' palette fields, for the parts of their code that read a theme: the minimap)
+  R.rift=true; R.reward=R.reward||'xp'; R.pal={floor:R.aura[1],wall:R.aura[0],fog:R.aura[1],light:R.aura[2]};   // (the dungeons' palette fields, for the parts of their code that read a theme: the minimap)
   RIFT_DEFS[R.id]=R; RIFT_DOORS.push({id:R.id,x:R.door.x,z:R.door.z}); return R;
 }
 /* A glass monster: a copy of an existing kind (its model, family numbers, animation) with its own id, name and element, at level 10 (a run scales it to your level: dgKOf), the look flag

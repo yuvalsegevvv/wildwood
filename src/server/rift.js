@@ -53,14 +53,19 @@ function riftSpawnS(run,defId,lx,lz,herald){
   m.maxHp=m.hp=Math.max(1,m.maxHp*RIFT_HP_K*(herald?RIFT_HERALD_HP:1)); m.dgHunt=true; if(herald){ m.elite=true; m.dgRole='herald'; }
   ev('spawn',monRoster(m)); S.ctx=c0; return m;
 }
-// a kill: XP only, x3 a same-level world kill with every XP bonus the world counts (rewardKill's list), x2 when doubled; no coins, items, materials or board hunts
+/* WHAT A RIFT PAYS: one entry per reward mode (R.reward, shared/rift.js RIFT_REWARDS), kill(run,m,q,mb) for each kill, clear(run,p,mb) for the clear bonus. The engine only calls riftPayOf(run).
+   xp: x3 a same-level world kill with every XP bonus the world counts (rewardKill's list), x2 when doubled; the clear is 75 same-level world kills' worth; no coins, items, materials or board hunts */
+const riftXpBonus=q=>1+psP(q,'xp')+pendP(q,'xp')+rlP(q,'exp')+potBuffP(q,'scholar');
+const RIFT_PAY={
+  xp:{
+    kill(run,m,q,mb){ const K=m.dgK||dgKOf(m.def,run.L), xp=m.T.xp*K.xp*RIFT_XP_K*(run.x2?2:1)*riftXpBonus(q); gainExpP(q,xp,m.id); if(mb) mb.got.xp+=xp; },
+    clear(run,p,mb){ const xp=xpFor(run.L)*RIFT_BONUS_KILLS*(run.x2?2:1)*riftXpBonus(p); gainExpP(p,xp,null); if(mb) mb.got.xp+=xp; },
+  },
+};
+const riftPayOf=run=>{ const R=RIFT_DEFS[run.rift]; return RIFT_PAY[R&&R.reward]||RIFT_PAY.xp; };
 function riftRewardS(run,m){
-  const K=m.dgK||dgKOf(m.def,run.L);
-  for(const q of dgPresentS(run)){
-    const mb=dgMemberOf(run,q), xp=m.T.xp*K.xp*RIFT_XP_K*(run.x2?2:1)*(1+psP(q,'xp')+pendP(q,'xp')+rlP(q,'exp')+potBuffP(q,'scholar'));
-    gainExpP(q,xp,m.id); q.dirty=true;
-    if(mb){ mb.got.xp+=xp; mb.got.kills++; }
-  }
+  const pay=riftPayOf(run);
+  for(const q of dgPresentS(run)){ const mb=dgMemberOf(run,q); pay.kill(run,m,q,mb); q.dirty=true; if(mb) mb.got.kills++; }
 }
 // downed in a rift (instead of the dungeons' 30 s and two respawns): one wake on the hub after RIFT_RESPAWN_S, a second knock-out ends the run
 function riftDownTickS(run,p,dt){
@@ -82,8 +87,7 @@ function riftWonS(run){
   for(const p of dgPresentS(run)){
     const mb=dgMemberOf(run,p), g=riftSaveOf(p);
     if(p.dead){ p.dead=false; p.deadT=0; p.hp=p.maxHp; p.lastHit=S.t; ev('up',p.id); }
-    const xp=xpFor(run.L)*RIFT_BONUS_KILLS*(run.x2?2:1)*(1+psP(p,'xp')+pendP(p,'xp')+rlP(p,'exp')+potBuffP(p,'scholar'));   // the clear bonus: 75 same-level world kills' worth
-    gainExpP(p,xp,null); if(mb) mb.got.xp+=xp;
+    riftPayOf(run).clear(run,p,mb);   // the clear bonus (xp: 75 same-level world kills' worth)
     g.clears=Math.min(999999,(g.clears|0)+1); if(!g.best||secs<g.best) g.best=secs; p.dirty=true;
     dgEndEvS(run,p,1,'');
   }
