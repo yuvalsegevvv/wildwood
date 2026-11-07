@@ -74,7 +74,6 @@ function pzSolveP(p,ans){
   const B=pzBoardS(O.kind,O.diff,O.seed); if(!B) return;
   const secs=(Date.now()-O.t0)/1000;
   if(!PZ_KINDS[O.kind].check(B,ans)){ pzNo(p,'That is not a solution'); p.pz=O; return; }
-  if(O.src==='site'&&secs<pzFloorSecs(O.diff)){ pzNo(p,'Too quick: the stone does not believe it. Look again.'); p.pz=O; return; }
   if(O.src==='dg'||O.src==='raid'){ pzGrpPayP(p,O); return; }   // puzzles: a group board
   pzPayP(p,O,secs);
 }

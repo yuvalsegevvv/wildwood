@@ -17,6 +17,7 @@ function mpRender(id){
   cthCam.position.set(c.x+Math.sin(MP_YAW)*dist,c.y+sz.y*0.22,c.z-Math.cos(MP_YAW)*dist); cthCam.lookAt(c.x,c.y,c.z); cthCam.updateMatrixWorld();
   const old=renderer.getRenderTarget(), oc=new THREE.Color(), oa=renderer.getClearAlpha(), ot=renderer.shadowMap.enabled;
   renderer.getClearColor(oc); renderer.shadowMap.enabled=false;
+  cthRT.viewport.set(0,0,CTH_W,CTH_H); cthRT.scissor.set(0,0,CTH_W,CTH_H);   // cthDraw leaves the viewport on its last atlas slot: without this the picture was cut off or blank
   renderer.setRenderTarget(cthRT); renderer.setClearColor(0x000000,0); renderer.clear(); renderer.render(cthScene,cthCam);
   renderer.readRenderTargetPixels(cthRT,0,0,CTH_W,CTH_H,cthBuf);
   renderer.setRenderTarget(old); renderer.setClearColor(oc,oa); renderer.shadowMap.enabled=ot;
