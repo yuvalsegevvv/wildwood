@@ -16,7 +16,7 @@ ALL_MON_DEFS.forEach(d=>{ DEF_BY_ID[d.id]=d; });
 function addMonView(r){ // [id, defId, campX, campZ, scale, x, z, dead, temp]
   if(MON_BY_ID.has(r[0])) return MON_BY_ID.get(r[0]);
   const d=DEF_BY_ID[r[1]]; if(!d) return null;
-  const mat=monMat(d.glow), g=new THREE.Group(); scene.add(g);
+  const mat=monMat(d.glow), g=new THREE.Group();   // (joins the scene only while it is shown: updateMonsters; ~3,700 empty groups were walked by three.js every frame)
   const m={id:r[0],def:d,model:d.model,T:d,camp:{x:r[2],z:r[3]},mat,g,parts:null,s:r[4],gs:r[4]*d.scale,maxHp:d.hp,hp:d.hp,
     x:r[5],z:r[6],y:getH(r[5],r[6]),tx:r[5],tz:r[6],face:0,tface:0,vx:0,vz:0,ph:AR(0,TAU),flash:0,slowT:0,
     dead:!!r[7],deadT:r[7]?9:0,aggro:false,immune:false,act:null,lunge:0,temp:!!r[8],spawnT:r[8]?0.6:0,boss:!!d.boss};
@@ -45,6 +45,7 @@ function monRespawned(m,x,z){
 function monCenter(m){ return new THREE.Vector3(m.x,m.y+m.T.height*0.5*m.s,m.z); }
 function updateMonsters(dt){
   for(const m of MONS){
+    if(m.g.visible){ if(!m.g.parent) scene.add(m.g); } else if(m.g.parent) scene.remove(m.g);
     if(m.dead){
       m.deadT+=dt; const dur=m.boss?2:1.2;
       if(m.deadT<dur){ const f=m.deadT/dur; m.g.scale.setScalar(m.gs*(1-f*(m.boss?0.6:0.85))); m.g.position.y=m.y-f*(m.boss?1.5:0.3); m.g.rotation.z=f*(m.boss?0.5:0.9); }
@@ -53,7 +54,7 @@ function updateMonsters(dt){
     }
     const dp=Math.hypot(m.x-P.x,m.z-P.z);
     if(dp>(m.boss?170:95)){ m.g.visible=false; m.x=m.tx; m.z=m.tz; continue; }
-    m.g.visible=true; if(!m.parts) m.parts=buildMonster(m.def,m.mat,m.g);
+    m.g.visible=true; if(!m.g.parent) scene.add(m.g); if(!m.parts) m.parts=buildMonster(m.def,m.mat,m.g);
     const ox=m.x, oz=m.z, k=1-Math.exp(-10*dt);
     m.x+=(m.tx-m.x)*k; m.z+=(m.tz-m.z)*k;
     if(Math.hypot(m.tx-m.x,m.tz-m.z)>12){ m.x=m.tx; m.z=m.tz; }
