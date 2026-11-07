@@ -492,7 +492,7 @@ function updateNPCs(dt){
     let moving=false;
     if((n.state==='walk'||n.state==='home') && !talking && n.route.length){
       const tg=n.route[0], dx=tg.x-n.x, dz=tg.z-n.z, d=Math.hypot(dx,dz);
-      if(d<0.45){
+      if(d<(B.type==='stationary'?0.95:0.45)){   // (a stationary person sharing a spot with another, Tansy and Wren at the well, is pushed 0.6 m off it by the crowd rule: she walked on the spot for ever)
         n.route.shift();
         if(!n.route.length){
           if(n.state==='home'){ n.inside=true; n.g.visible=false; continue; }
