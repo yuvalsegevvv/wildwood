@@ -1,9 +1,9 @@
 //@ Skill sets (rules, pure): the registry defineSkillSet (one file per set in shared/skillsets/), its checks, the expansion into SKILLS / PASSIVES rows, counting the worn pieces and the 3- / 5-set bonuses
 /* Agent map. Plan: docs/SKILL-SETS.md (sections 3 to 6); how to add ONE set as data, and the list of what a piece may use: docs/skillkits/AUTHORING.md; the kits: docs/skillkits/. Test: tools/skillsets-smoke.js.
    Exports: defineSkillSet(D), SS_SETS (by id), SS_ORDER (ids in definition order), SS_BAD ({id,field,why}: the sets left out), SS_PIECE_OF (piece id -> {set,pos,kind:'active'|'passive'}),
-   SS_SOURCES, SS_FX_KEYS / SS_ON / SS_EFFECT_KEYS (what a piece may use: add a key here when an engine feature adds it), ssCount, ssBonuses, ssBonusSum, ssSetFor, ssLint, ssOwnsBasic.
+   SS_SOURCES, SS_FX_KEYS / SS_ON / SS_EFFECT_KEYS (what a piece may use: add a key here when an engine feature adds it), SS_BONUS_ON, ssBonusSwitch, ssCount, ssBonuses, ssBonusSum, ssSetFor, ssLint, ssOwnsBasic.
    Used by: classes.js (passiveSum reads ssBonusSum, canSwap reads ssOwnsBasic), server/skillsets.js (grants, equipping a piece, the cache p.ss), the client's skills panel.
-   A SET is 3 actives + 3 passives (6 pieces) and two bonus rows (3-set, 5-set) that fill no slot: position 1 = the basic attack's slot (always class-bound: a warrior, an archer and a mage version),
+   A SET is 3 actives + 3 passives (6 pieces) and two bonus rows (3-set, 5-set; OFF while SS_BONUS_ON is false) that fill no slot: position 1 = the basic attack's slot (always class-bound: a warrior, an archer and a mage version),
    2 = skill, 3 = burst (each class-bound or `any`), each position with one passive. Where a piece comes from is fixed by the land (SS_SOURCES: boss 1, boss 2, the land's dungeon), not by the set.
    THE FILE OF A SET (shared/skillsets/<id>.js, listed in src/manifest.json after the last shared file) is one defineSkillSet({...}) call and no top-level names:
      id ('tansy': a lowercase word, permanent once shipped), name, land (a SS_SOURCES key), needs:{tier} (1..ZTIER_MAX), dev (true: a test set, never obtainable), el ('<element>' | 'basic': one element per set),
@@ -237,14 +237,17 @@ function ssCount(skills,cls,level){
   return n;
 }
 // the bonus rows in force: a set with 3 pieces worn has its bonus 3, with 5 both (a sixth adds nothing: there is no 6-set bonus)
+let SS_BONUS_ON=false;   // skill revamp step 4: the 3- / 5-set bonuses are OFF (they come back as Bond rows); the bonus data stays in the set files, ssBonuses/ssBonusSum read nothing while it is false
+function ssBonusSwitch(on){ SS_BONUS_ON=!!on; }   // for tests of the bonus-row engine (tools/skillsets-smoke.js); the game never calls it
 function ssBonuses(skills,cls,level){
-  const out=[], n=ssCount(skills,cls,level);
+  const out=[]; if(!SS_BONUS_ON) return out;
+  const n=ssCount(skills,cls,level);
   for(const id in n){ const S=SS_SETS[id]; if(!S) continue; if(n[id]>=3) out.push({set:id,tier:3,row:S.bonus[3]}); if(n[id]>=5) out.push({set:id,tier:5,row:S.bonus[5]}); }
   return out;
 }
 // the sum of one stat over the bonus rows in force, a cost counted with it (the passives' own are in passiveSum)
 function ssBonusSum(skills,level,stat,cls){
-  if(!cls||!SS_ORDER.length) return 0;
+  if(!SS_BONUS_ON||!cls||!SS_ORDER.length) return 0;
   let t=0; for(const b of ssBonuses(skills,cls,level)){ const r=b.row; if(r.stat===stat&&!r.when) t+=r.v[0]; if(r.cost&&r.cost.stat===stat&&!r.cost.when) t+=r.cost.v; }   // (a row with a `when` is read where the fight is known: ssCondP, server/skillsets.js)
   return t;
 }

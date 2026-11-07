@@ -4,7 +4,7 @@ Rules (Yuval's decisions, 2026-10-26). The full plan with the client and the buf
 
 ## 1. Rules
 
-- One burst skill per skill set (`ult:{}` in the set's own file), worn in a 5th slot, key `ult` (Digit5), level 35, off on the Proving Isle. Works with any class and without the set worn (then it buffs nothing).
+- One burst skill per skill set (`ult:{}` in the set's own file), worn in a 5th slot, key `ult` (Digit5), level 28, off on the Proving Isle. Works with any class and without the set worn (then it buffs nothing).
 - **Fixed cooldown 60 s.** Nothing reduces it (not the `cd` passive, rolls, ally haste, `ssCdrS`, the cave Echo, a boost). A grind set (`role.main:'grind'`) gets 30 s when cast outside a boss fight (`p.cave.fight`), 60 s inside; fixed at the cast.
 - Damage about x1.5 the set's slot-3 skill (an ordinary `fx` shape: ring, cone, proj or zone). **Stun 5 s** on what it hits, bosses and heavy enemies included, **no x1.5** on a boss. One burst stun per enemy per 50 s, whoever casts it (`m.ultLock`, on the monster); only `resetBossS` clears it.
 - Boss: the freeze is `B.ultStunT`, never `B.stunT` (the x1.5 and the kits' "strike now" windows read that one). A burst during a kit's stun is queued (`B.ultStunQ`) and starts when it ends.

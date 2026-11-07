@@ -72,7 +72,7 @@ function sanitizeSkills(g){
   }
   if(g.lv&&typeof g.lv==='object') for(const id in g.lv){ const L=out.owned.includes(id)&&!(skillDef(id)&&skillDef(id).drop)?clampInt(g.lv[id],1,SKILL_MAX_LV,1):1; if(L>1) out.lv[id]=L; }   // (boss skills cannot be upgraded: their level follows the zone tiers, bsRefreshP)
   // a passive keeps its slot (which slots a level can use is decided by newPlayer, which knows the level), and sits in one slot only
-  if(Array.isArray(g.pass)) g.pass.slice(0,PASSIVE_SLOTS).forEach((id,i)=>{ if(PASSIVES[id]&&out.owned.includes(id)&&!out.pass.includes(id)) out.pass[i]=id; });
+  if(Array.isArray(g.pass)){ const k=g.pass.findIndex(id=>typeof id==='string'&&PASSIVES[id]&&out.owned.includes(id)); if(k>=0) out.pass[0]=g.pass[k]; }   // ONE passive slot: an old save's first worn passive stays, the other two leave the loadout (they stay owned)
   out.pgiven=!!g.pgiven;   // the free passive was handed out once (so taking it off does not bring it back)
   out.ult=ultDef(g.ult)?g.ult:null;   // ult: the worn burst's set id (sanitizeGear clears it when it is not owned)
   out.cave=caveSkillDef(g.cave)?g.cave:null;   // cave: the worn cave skill (sanitizeGear clears it when it is not owned)
@@ -229,14 +229,14 @@ function unlockSkillsP(p,slot){
   toastTo(p.id,(slot==='burst'?'Power slot unlocked! ':'Skill slot unlocked! ')+(s?s.name:'Your new ability')+' is ready ('+(slot==='burst'?'R':'Q')+'). Aldric, the trainer at the well, teaches more.','good');
   ev('skillslot',p.id,slot);
 }
-// level 13 (PASSIVE_LV): the passives open, with Vitality (free) in the first slot
+// level 10 (PASSIVE_LV): the passive opens, with Vitality (free) in the first slot
 function autoEquipPassiveP(p){
   const S=p.gear.skills; if(S.pgiven||p.level<PASSIVE_LV) return false;
   S.pgiven=true; if(!S.owned.includes('vitality')) S.owned.push('vitality');
   const i=S.pass.slice(0,passiveOpen(p.level)).indexOf(null); if(i>=0&&!S.pass.includes('vitality')) S.pass[i]='vitality';
   p.dirty=true; return true;
 }
-// a level crossed one or more passive slot levels (13 / 16 / 20): tell the player about each new slot
+// a level crossed a passive slot level (only level 10 now): hand out the free Vitality
 function unlockPassivesP(p,was){
   if(autoEquipPassiveP(p)){ recalcP(p); toastTo(p.id,'Passive skills unlocked! Vitality is in your first passive slot. Aldric and Master Ryu teach more.','good'); ev('skillslot',p.id,'passive'); }
   PASSIVE_SLOT_LV.forEach((lv,i)=>{ if(i>0&&was<lv&&p.level>=lv){ toastTo(p.id,'Passive slot '+(i+1)+' unlocked! Drag a passive onto it in the skills panel (K).','good'); ev('skillslot',p.id,'passive'); } });

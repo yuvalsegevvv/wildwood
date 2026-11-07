@@ -42,9 +42,9 @@ function guidePages(){
       <p>Skills and monsters carry elements, and the wheel decides: <b>water</b> beats fire, fire beats <b>air</b>, air beats <b>earth</b>, earth beats water, and <b>dark</b> and <b>light</b> beat each other. A skill that beats the monster's element deals x1.5; a skill of its own element, or of one it beats, deals x1/1.5. A skill with no element (Basic) deals x1.1 to every monster. The target frame shows what a monster is weak to and what it resists.</p>
       <p>Weaken and expose (a monster deals less / takes more) never add up on one monster: the strongest counts, for everyone in the party.</p>
       <h4>Passives</h4>
-      <p>Passive skills work all the time, whatever your class. Their slots open at levels ${PASSIVE_SLOT_LV.join(', ')}.</p>`},
+      <p>Passive skills work all the time, whatever your class. You have one passive slot, open from level ${PASSIVE_LV}.</p>`},
     sets:{t:'Skill sets',h:`
-      <p>A skill set is one character's signature kit: <b>six pieces</b> (three attacks for the basic, skill and Power slots, and three passives), a symbol, usually an element, two set bonuses and a matching <b>outfit</b>. Every land has its own sets.</p>
+      <p>A skill set is one character's signature kit: <b>six pieces</b> (three attacks for the basic, skill and Power slots, and three passives), a symbol, usually an element and a matching <b>outfit</b>. Every land has its own sets.</p>
       <h4>How to get the pieces</h4>
       <ul>
         <li>The land's <b>first world boss</b> can drop the set's first attack and passive, the <b>second world boss</b> the second pair, and the land's <b>dungeon boss</b> the third pair.</li>
@@ -52,7 +52,7 @@ function guidePages(){
         <li>In this version every set can also be unlocked from Settings for testing.</li>
       </ul>
       <h4>Using a set</h4>
-      <p>Owned pieces show up in the skills window (${kl(k('skills'))}) with the set's own symbol. Drag attacks onto the three slots and passives onto the passive slots. The window's set effects card shows what you wear: <b>3 pieces</b> of one set light its first bonus and <b>5 pieces</b> its second. You can mix pieces of two sets (3 + 3) to get both first bonuses.</p>
+      <p>Owned pieces show up in the skills window (${kl(k('skills'))}) with the set's own symbol. Drag attacks onto the three slots and a passive onto the passive slot. The window's set pieces card shows what you wear. The 3-piece and 5-piece set bonuses are switched off for now.</p>
       <h4>Levelling a piece</h4>
       <p>Signature pieces go from level 2 to 5 like other skills, but ask three times the usual monster drops and also <b>raid material</b> of the set's land (a single one for level 2). Clear that land's ruined stronghold (the raid) to earn it: the more difficult the tier you clear, the more you get (1, 2, 4, 8... for tiers 0, I, II, III...). A cleared raid rebuilds 30 minutes later.</p>
       <h4>The outfit</h4>

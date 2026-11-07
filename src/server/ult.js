@@ -2,13 +2,13 @@
 /* Agent map. Rules: docs/ULT.md; registry and constants: shared/ult.js; test: tools/ult-smoke.js.
    Saved: gear.skills.ult = the worn burst's SET id or null (sanitizeSkills; sanitizeGear clears it unless ultOwned). Ownership is derived (3 of the set's 7 pieces), never saved.
    p.cd.ult is written ONLY here (ultCastP): no abilityCd, rlP cdr, ally haste, ssCdrS (its loop stays on the three class slots) or boost cdr ever touches it.
-   CAST: atk {k:'ult'} (handleAttack) needs: alive, not acting, not on the Proving Isle (p.pv), level 35, a burst worn and owned, p.cd.ult ~ 0. It starts the cooldown (60 s, or 30 s for a grind set outside a
+   CAST: atk {k:'ult'} (handleAttack) needs: alive, not acting, not on the Proving Isle (p.pv), level 28, a burst worn and owned, p.cd.ult ~ 0. It starts the cooldown (60 s, or 30 s for a grind set outside a
    boss fight: p.cave.fight; fixed at the cast), runs the ability's fxU through p.act (like a cave cast) and does NOT go through caveCastS (no charge, Echo cannot repeat it), ssTriggerS or mqActP.
    STUN: statusS sees ult:true on a shape entry (shared/ult.js ultFxOf) and calls ultStunS(m): players, the dead and immune bosses are skipped; m.ultLock (on the monster, shared by every player) blocks a second
    burst stun for 50 s; a normal or heavy monster gets m.stunT=5; a boss gets B.ultStunT (never B.stunT: no x1.5 damage, no kit 'strike now' window), queued in B.ultStunQ behind a kit's own stun. resetBossS clears the lock.
    Messages: ultequip {id|null} (MSG.ultequip). Events: ult [pid, setId, cd seconds], ultget [pid, setId]. Hooks are marked `// ult:` (grep -rn "// ult:" src). */
 const ultSetOfP=p=>{ const id=p.gear&&p.gear.skills&&p.gear.skills.ult; return ultDef(id)&&ultOwned(p.gear.skills,p.gear.cave,id)?id:null; };   // the worn burst's set id if p may use it, else null
-// the burst's ability if p may cast it now (level 35, not on the island, worn and owned), else null
+// the burst's ability if p may cast it now (level 28, not on the island, worn and owned), else null
 function ultEquippedP(p){ if(p.pv||p.level<ULT_LV) return null; const id=ultSetOfP(p); return id?ultDef(id):null; }
 function ultCastP(p,msg){   // atk {k:'ult'}
   if(p.dead||p.act||p.cd.ult>0.08) return;

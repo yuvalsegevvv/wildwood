@@ -6,7 +6,7 @@
 // Usage: node tools/skillsets-ladder.js [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
 // Also: require('./skillsets-ladder').ladder({W, x, pid}, opts) for a test (tools/skillsets-smoke.js runs it on a fixture); x must expose NAMES.
 const {loadServer}=require('./load');
-const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S'];
+const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S','ssBonusSwitch'];
 const WEAPON={warrior:'sword1',archer:'bow1',mage:'wand1'}, CLASSES=['warrior','archer','mage'];
 // the bands in percent of the baseline: [the pieces alone, the 3-set, the 5-set] (docs/SKILL-SETS.md 5b; a mixed set sits between a support's 90 and its main kit's ladder)
 // the same tree measured 93 to 99 for one set's pieces and 128 vs 131 for another's 5- and 3-set between runs (also before the Amber Reach), so the orderings carry this much slack
@@ -133,7 +133,8 @@ function ultRow(set,classes){
 module.exports={ultRow,ladder,judge,summarize,print,BANDS,NAMES};
 if(require.main===module){
   const args=process.argv.slice(2), val=(f,d)=>{ const i=args.indexOf(f); return i>=0?args[i+1]:d; };
-  const {api:W,x}=loadServer({dev:true,send(){}},NAMES); W.join('l',{name:'Ladder',look:{cls:'warrior'},save:{level:60}}); for(let i=0;i<3;i++) W.tick(0.05);
+  const {api:W,x}=loadServer({dev:true,send(){}},NAMES); x.ssBonusSwitch(true);   // the set rows are switched off in the game (they become Bond II / VI, the skill revamp's step 5): the ladder still measures them
+  W.join('l',{name:'Ladder',look:{cls:'warrior'},save:{level:60}}); for(let i=0;i<3;i++) W.tick(0.05);
   if(!x.SS_ORDER.length){ console.log('no skill set is defined (src/shared/skillsets/*.js, listed in src/manifest.json)'); process.exit(0); }
   const cls=val('--class',null), opts={secs:+val('--secs',60),set:val('--set',null),classes:cls?[cls]:undefined,cave:args.includes('--check')?args.includes('--cave'):true}, env={W,x,pid:'l'};
   if(args.includes('--ult')){   // slot 5: what each set's burst and its two boosts add to a 60 s rotation (gain over the rotation without it, %: single / pack)

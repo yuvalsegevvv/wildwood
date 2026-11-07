@@ -35,7 +35,7 @@ rows with `drop:'<boss id>'` at the end of `SKILLS` (`shared/classes.js`), `BOSS
 ## Reference numbers
 
 - Elements: against monsters the wheel water > fire > air > earth > water plus dark <> light (`ELEM_BEATS`): a skill that beats the monster's element x1.5, one it beats or its own element x1/1.5 (`ELEM_BOOST`); a skill with no element (`basic`) deals x1.1 to every monster (`ELEM_BASIC_K`) and is in neither the weak nor the resist list of the target frame.
-  Passives unlock at `PASSIVE_LV` 13 (3 slots, opened at levels 13 / 16 / 20: `PASSIVE_SLOT_LV`; each placeholder passive's own level is 13-19). Skill level 1-5: +12% damage and -3% cooldown per level.
+  Passives unlock at `PASSIVE_LV` 10 (ONE slot, `PASSIVE_SLOT_LV=[10]`; an old save's extra passives stay owned but leave the loadout, `sanitizeSkills`; each placeholder passive's own level is 10). Slots: basic 1, skill 2, power (`burst`) 8 (the plan says 3 and 10; the main quest needs the skill at level 2), passive 10, charge (`cave`) 20, burst (`ult`) 28. The 3- / 5-set bonuses are OFF (`SS_BONUS_ON`, `shared/skillsets.js`). Skill level 1-5: +12% damage and -3% cooldown per level.
   Boss skills: each of the boss's 6 skills has a 10% chance per kill, per player who helped. Burn: a share (k) of the hit's damage every second. Pull = negative knockback.
   Drops: 35% per kill (a boss always 3), upgrade to level n needs `UP_COUNT` 4 / 6 / 9 / 14 drops + coins (`UP_COINS` x (n-1)^1.7) and, at level 5, 2 boss trophies.
 

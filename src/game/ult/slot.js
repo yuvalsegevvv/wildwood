@@ -1,7 +1,7 @@
 //@ The set burst, client side of the 5th slot: the action-bar tile and its cooldown, casting it, the boost glow, the skills panel's Burst row and tab (equip / take off), the server's ult, ubo and ultget messages
 /* Agent map. Rules: docs/ULT.md; registry: shared/ult.js; server: server/ult.js; test: client-smoke (and tools/ult-smoke.js for the rules). The popup of a cast: game/ult/popup.js.
    ULT_UI = {sel (the burst selected in the panel), cdTotal (the cooldown the server last said, for the ring), boost ({piece id: ms it ends})}. Events: ult [pid, setId, cd] (own cast: cooldown + popup), ubo [pid, ids, secs] (the boosted pieces light up),
-   ultget [pid, setId] (a toast, and the picture is made ready); message ubo {ids} when a boost ends. The tile #abUlt: below level 35 a lock, owned but not worn "Burst", worn: its name; key KB_ACTIONS 'ult' (5).
+   ultget [pid, setId] (a toast, and the picture is made ready); message ubo {ids} when a boost ends. The tile #abUlt: below level 28 a lock, owned but not worn "Burst", worn: its name; key KB_ACTIONS 'ult' (5).
    Exports: ultOwnedIds, ultAbilityNow, ultFillTile, ultHudUpdate, ultBarKey, ultDoAttack, ultSlotHtml, ultGridHtml, ultInfoHtml, ultBindPanel. Hooks into other files are marked `// ult:`. */
 var ULT_UI={sel:null,cdTotal:60,boost:{}};
 function ultOwnedIds(){ return GEAR&&GEAR.skills?Object.keys(ULT_SKILLS).filter(id=>ultOwned(GEAR.skills,GEAR.cave,id)):[]; }   // (functions, not consts: setActionBar calls them at load, before this file runs)

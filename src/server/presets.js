@@ -6,7 +6,7 @@ function prSanitize(g){
     const e=Array.isArray(g)?g[i]:null; if(!e||typeof e!=='object'){ out.push(null); continue; }
     const eq={}; if(e.eq&&typeof e.eq==='object') for(const k in e.eq){ const id=e.eq[k]; if(typeof id==='string'&&Object.prototype.hasOwnProperty.call(ITEM,id)&&k in newGearFor('warrior').eq) eq[k]=id; }
     const cls=CLASSES[e.cls]?e.cls:'warrior', sk={}; for(const sl of SLOTS) if(e.sk&&typeof e.sk[sl]==='string'&&SKILLS[e.sk[sl]]) sk[sl]=e.sk[sl];
-    const pass=[null,null,null]; if(Array.isArray(e.pass)) for(let j=0;j<PASSIVE_SLOTS;j++) if(typeof e.pass[j]==='string'&&PASSIVES[e.pass[j]]) pass[j]=e.pass[j];
+    const pass=new Array(PASSIVE_SLOTS).fill(null); if(Array.isArray(e.pass)){ const k=e.pass.findIndex(x=>typeof x==='string'&&PASSIVES[x]); if(k>=0) pass[0]=e.pass[k]; }   // one passive slot: an old preset's first passive stays
     out.push({n:cleanName(e.n).slice(0,PR_NAME_MAX),cls,eq,sk,pass,ult:typeof e.ult==='string'&&ultDef(e.ult)?e.ult:null,cave:typeof e.cave==='string'&&caveSkillDef(e.cave)?e.cave:null,
       mov:typeof e.mov==='string'&&mvDef(e.mov)?e.mov:null,of:clampInt(e.of,-1,PR_OUTFITS-1,-1)});
   }

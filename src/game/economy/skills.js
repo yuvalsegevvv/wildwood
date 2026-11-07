@@ -1,6 +1,6 @@
 //@ Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, upgrade with coins and monster drops, learn from the trainers
 /* Open it with K, the Skills button in the inventory, the empty skill button, or by talking to Aldric (or Master Ryu in Hanami).
-   Top: the active slots of the class you are looking at (drop targets) and the three passive slots (the same for every class, opening at levels 13, 16 and 20: PASSIVE_SLOT_LV).
+   Top: the active slots of the class you are looking at (drop targets) and the one passive slot (the same for every class, opening at level 10: PASSIVE_SLOT_LV).
    Below: a tab per kind and a grid of its skills. Drag a skill you own onto its slot to use it, drag one out of a slot back into the grid to take it
    off; tap a skill for its details, Equip / Take off buttons (for touch) and its upgrade. Learning and upgrading happen at a trainer. */
 let skTab=null, skKind='skill';
@@ -29,10 +29,10 @@ function skSlotsHtml(C,cls){
   const caveH=caveSlotHtml(C);   // cave: the 4th slot's row   // ult: the 5th slot's row is added to the same line (ultSlotHtml, game/ult/slot.js)
   const pas=Array.from({length:PASSIVE_SLOTS},(_,i)=>{   // slot i opens at level PASSIVE_SLOT_LV[i]
     const id=C.S.pass&&C.S.pass[i], P=PASSIVES[id], usable=C.lv>=PASSIVE_SLOT_LV[i];
-    return `<div class="sk-pslot${P?' on':''}${usable?'':' locked'}" data-idx="${i}"><span class="sk-n">Passive ${i+1}</span>${P?skTile(P,C,'pslot:'+i):`<div class="sk-tile empty">${skIcon(usable?'plus':'lock')}</div>`}<b>${P?P.name:usable?'Empty':'Level '+PASSIVE_SLOT_LV[i]}</b><small>${P?passiveText(id,skillLvOf(C.S,id)):usable?'Drag one here':''}</small></div>`;
+    return `<div class="sk-pslot${P?' on':''}${usable?'':' locked'}" data-idx="${i}"><span class="sk-n">Passive${PASSIVE_SLOTS>1?' '+(i+1):''}</span>${P?skTile(P,C,'pslot:'+i):`<div class="sk-tile empty">${skIcon(usable?'plus':'lock')}</div>`}<b>${P?P.name:usable?'Empty':'Level '+PASSIVE_SLOT_LV[i]}</b><small>${P?passiveText(id,skillLvOf(C.S,id)):usable?'Drag one here':''}</small></div>`;
   }).join('');
   const later=PASSIVE_SLOT_LV.map((l,i)=>C.lv<l?'slot '+(i+1)+' at level '+l:'').filter(Boolean).join(', ');
-  return `<div class="sk-lcol"><div class="sk-load-h">Active skills</div><div class="sk-load">${act}${caveH}${ultSlotHtml(C)}</div></div><div class="sk-lcol"><div class="sk-load-h">Passive skills <span>${open?'the same for every class'+(later?' · '+later:''):'open at level '+PASSIVE_LV}</span></div><div class="sk-load pas">${pas}</div><div class="sk-load-h">Movement skill <span>free, from level ${MV_SLOT_LV}</span></div><div class="sk-load pas">${mvSlotHtml(C)}</div></div>`;   // movement: the slot below the passives   // two columns: active | passive (18-skills.css)
+  return `<div class="sk-lcol"><div class="sk-load-h">Active skills</div><div class="sk-load">${act}${caveH}${ultSlotHtml(C)}</div></div><div class="sk-lcol"><div class="sk-load-h">Passive skill <span>${open?'the same for every class'+(later?' · '+later:''):'open at level '+PASSIVE_LV}</span></div><div class="sk-load pas">${pas}</div><div class="sk-load-h">Movement skill <span>free, from level ${MV_SLOT_LV}</span></div><div class="sk-load pas">${mvSlotHtml(C)}</div></div>`;   // movement: the slot below the passives   // two columns: active | passive (18-skills.css)
 }
 // details of the selected skill: what it does at its level, how to equip it, and what its next level costs
 function skInfoHtml(C,cls){
@@ -68,7 +68,7 @@ function skInfoHtml(C,cls){
     }
   }
   const lock=low?`<span class="req bad">needs level ${needLv(s)}</span>`:'';
-  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico${ssTint(s)?' has-set':''}"${ssTint(s)?` style="--set:${ssTint(s)}"`:''}>${skIconOf(s)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags">${tags}</div><span class="sk-meta">${own?'Level '+L+' of '+SKILL_MAX_LV+' &middot; ':''}${stats} ${lock}</span></div><div class="sk-ii-btn">${acts}</div></div><p class="sk-desc">${pass?passiveText(s.id,L):s.desc}</p>${s.set?`<div class="sk-set-wrap"><div class="sk-load-h">Set effect <span>this piece is part of a set: wear 3 pieces for the first effect, 5 for the second</span></div>${ssCardHtml(s.set,ssCount(S,cls,C.lv)[s.set]||0,ssOwnedPairs(S,s.set))}</div>`:''}${up}</div>`;
+  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico${ssTint(s)?' has-set':''}"${ssTint(s)?` style="--set:${ssTint(s)}"`:''}>${skIconOf(s)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags">${tags}</div><span class="sk-meta">${own?'Level '+L+' of '+SKILL_MAX_LV+' &middot; ':''}${stats} ${lock}</span></div><div class="sk-ii-btn">${acts}</div></div><p class="sk-desc">${pass?passiveText(s.id,L):s.desc}</p>${s.set?`<div class="sk-set-wrap"><div class="sk-load-h">Set piece <span>${SS_BONUS_ON?'wear 3 pieces for the first effect, 5 for the second':'part of '+SS_SETS[s.set].name}</span></div>${ssCardHtml(s.set,ssCount(S,cls,C.lv)[s.set]||0,ssOwnedPairs(S,s.set))}</div>`:''}${up}</div>`;
 }
 function renderSkills(){
   if($('#skills').hidden) return;

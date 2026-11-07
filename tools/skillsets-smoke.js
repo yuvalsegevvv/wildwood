@@ -4,7 +4,7 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(pid==='a'&&c.t==='snap'&&c.ev) evs.push(...c.ev); }},
-  ['MONS','S','SKILLS','PASSIVES','SKILL_IDS','PASSIVE_IDS','ANIM_OF','ACT_SKILL','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','defineSkillSet','ssCount','ssBonuses','ssBonusSum','ssSetFor','ssLint','ssOwnsBasic',
+  ['MONS','S','SKILLS','PASSIVES','SKILL_IDS','PASSIVE_IDS','ANIM_OF','ACT_SKILL','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','defineSkillSet','ssCount','ssBonuses','ssBonusSum','ssBonusSwitch','SS_BONUS_ON','ssSetFor','ssLint','ssOwnsBasic',
    'VIL','ssEquipPieceP','ssGrantSetP','partyOf','ssAlliesOf','ssAllyS','allyP','ssShieldS','ssFxUtilS','ssTauntS','ssTauntedBy','ssRegenS','monK','SS_ALLY_CAP','SS_HEAL_CAP','SS_TAUNT_BOSS','DMG_TAKEN_MIN','statusS','resolveFxS','hurtP','killMonsterS','damageMonsterS','ssMarkN','ssMarkS','fxModK','ssTriggerS','healP','abilityOf','abilityCd','canSwap','newSkills','sanitizeSkills','sanitizeGear','psP','recalcP','clsOfP','passiveOpen','passiveSum','PASSIVE_SLOT_LV','getH','ZTIER_MAX'],{noSets:true});   // (the shipped sets are tested by tools/skillsets-<id>-smoke.js; this file defines its own fixtures in an empty registry)
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
@@ -151,38 +151,40 @@ send({t:'eqskill',id:'alpha_1_archer'});
 ok('wearing a slot-1 piece wears each class\'s own version (the archer\'s id picks all three)',p.gear.skills.eq.warrior.basic==='alpha_1_warrior'&&p.gear.skills.eq.archer.basic==='alpha_1_archer'&&p.gear.skills.eq.mage.basic==='alpha_1_mage'&&x.abilityOf('warrior','basic',p.gear.skills,p.level).id==='alpha_1_warrior');
 send({t:'eqskill',id:'alpha_3_any'});
 { const sk=p.gear.skills, cl=x.clsOfP(p);
-  ok('three actives of one set are 3 pieces: its bonus 3 is in force, not bonus 5',x.ssCount(sk,cl,p.level).alpha===3&&x.ssBonuses(sk,cl,p.level).map(b=>b.tier).join()==='3');
-  ok('p.ss caches it (recalcP): the count and the bonus rows',p.ss&&p.ss.n.alpha===3&&p.ss.bonus.length===1&&p.ss.bonus[0].row.id==='alpha_b3'); }
-const dmg0=x.psP(p,'dmg');
-ok('a stat bonus is read like a passive: +10% damage from the 3-set bonus',near(dmg0,0.10),dmg0);
-// the passives: slot i opens at PASSIVE_SLOT_LV[i]
-p.level=30; send({t:'dev',cmd:'level',v:30});
-send({t:'eqskill',id:'alpha_p1',idx:0}); send({t:'eqskill',id:'alpha_p2',idx:1});
-{ const sk=p.gear.skills, cl=x.clsOfP(p), n=x.ssCount(sk,cl,30);
-  ok('5 pieces (3 actives + 2 passives at level 30): both bonuses in force',n.alpha===5&&x.ssBonuses(sk,cl,30).map(b=>b.tier).join()==='3,5',JSON.stringify(n));
-  ok('...and the passives and both bonuses add up: damage +4% +10%, crit +3% +10%',near(x.psP(p,'dmg'),0.14)&&near(x.psP(p,'crit'),0.13),x.psP(p,'dmg')+' '+x.psP(p,'crit'));
-  ok('a piece the level cannot use counts for nothing: the slot-1 piece and the first passive at 15; the skill piece and the second passive (both need 20) at 20, the burst (needs 30) only at 30; the slots open at 13 / 16 / 20',x.passiveOpen(15)===1&&x.ssCount(sk,cl,15).alpha===2&&x.ssCount(sk,cl,16).alpha===2&&x.ssCount(sk,cl,20).alpha===4&&x.ssCount(sk,cl,30).alpha===5,[15,16,20,30].map(l=>x.ssCount(sk,cl,l).alpha).join(' ')); }
-send({t:'eqskill',id:'alpha_p3',idx:2});
+  ok('the set bonuses are OFF (skill revamp step 4): three actives still count as 3 pieces, but no bonus row is in force and none is cached',x.SS_BONUS_ON===false&&x.ssCount(sk,cl,p.level).alpha===3&&x.ssBonuses(sk,cl,p.level).length===0&&p.ss&&p.ss.n.alpha===3&&p.ss.bonus.length===0);
+  ok('...and they add nothing to a stat (3-set +10% damage is not read)',x.ssBonusSum(sk,p.level,'dmg',cl)===0&&near(x.psP(p,'dmg'),0)); }
+// the rest of this file tests the bonus-row ENGINE (triggers, costs, conditions) on fixture sets: switch the bonuses on for it (they come back as Bond rows)
+x.ssBonusSwitch(true); x.recalcP(p);
 { const sk=p.gear.skills, cl=x.clsOfP(p);
-  ok('all six pieces: still just the two bonuses (there is no 6-set bonus)',x.ssCount(sk,cl,30).alpha===6&&x.ssBonuses(sk,cl,30).length===2); }
+  ok('(engine on) three actives of one set are 3 pieces: its bonus 3 is in force, not bonus 5',x.ssCount(sk,cl,p.level).alpha===3&&x.ssBonuses(sk,cl,p.level).map(b=>b.tier).join()==='3');
+  ok('(engine on) p.ss caches it (recalcP): the count and the bonus rows',p.ss&&p.ss.n.alpha===3&&p.ss.bonus.length===1&&p.ss.bonus[0].row.id==='alpha_b3'); }
+const dmg0=x.psP(p,'dmg');
+ok('(engine on) a stat bonus is read like a passive: +10% damage from the 3-set bonus',near(dmg0,0.10),dmg0);
+// the passive: ONE slot, opens at PASSIVE_SLOT_LV[0]
+p.level=30; send({t:'dev',cmd:'level',v:30});
+send({t:'eqskill',id:'alpha_p1',idx:0});
+{ const sk=p.gear.skills, cl=x.clsOfP(p), n=x.ssCount(sk,cl,30);
+  ok('3 actives + the one passive at level 30: 4 pieces, bonus 3 only (5 pieces cannot be reached with one passive slot)',n.alpha===4&&x.ssBonuses(sk,cl,30).map(b=>b.tier).join()==='3',JSON.stringify(n));
+  ok('...and the passive and the bonus add up: damage +4% +10%',near(x.psP(p,'dmg'),0.14)&&near(x.psP(p,'crit'),0),x.psP(p,'dmg')+' '+x.psP(p,'crit'));
+  ok('a piece the level cannot use counts for nothing: the slot-1 piece counts early (its level is not checked) and the passive at 15; the skill piece (needs 20) at 20, the burst (needs 30) only at 30; the one slot opens at 10',x.passiveOpen(10)===1&&x.ssCount(sk,cl,14).alpha===1&&x.ssCount(sk,cl,15).alpha===2&&x.ssCount(sk,cl,19).alpha===2&&x.ssCount(sk,cl,20).alpha===3&&x.ssCount(sk,cl,30).alpha===4,[14,15,19,20,30].map(l=>x.ssCount(sk,cl,l).alpha).join(' ')); }
 // the piece is worn for the class in hand: switching class keeps the count
 { const hpA=p.maxHp; send({t:'cls',cls:'archer'}); const cl=x.clsOfP(p);
-  ok('a class change keeps the set count (the loadout is per class, a piece is worn for all three)',cl==='archer'&&p.ss.n.alpha===6,cl+' '+JSON.stringify(p.ss&&p.ss.n)); }
+  ok('a class change keeps the set count (the loadout is per class, a piece is worn for all three)',cl==='archer'&&p.ss.n.alpha===4,cl+' '+JSON.stringify(p.ss&&p.ss.n)); }
 // an unworn piece does not count; taking one off lowers the count
 send({t:'unskill',cls:x.clsOfP(p),slot:'burst'});
-ok('taking a piece off lowers the count (and the 5-set bonus goes at 4)',p.ss.n.alpha===5&&p.ss.bonus.length===2);
+ok('taking a piece off lowers the count (3 pieces keep bonus 3)',p.ss.n.alpha===3&&p.ss.bonus.map(b=>b.tier).join()==='3');
 send({t:'unskill',cls:x.clsOfP(p),slot:'skill'});
-ok('...and the 3-set bonus goes at 2 actives + 3 passives only when under 3: 4 pieces keep bonus 3',p.ss.n.alpha===4&&p.ss.bonus.map(b=>b.tier).join()==='3');
+ok('...and the 3-set bonus goes under 3 pieces',p.ss.n.alpha===2&&p.ss.bonus.length===0);
 send({t:'unskill',cls:x.clsOfP(p),slot:'basic'});
-ok('a slot-1 piece can be taken off: the class basic attack returns',x.abilityOf(x.clsOfP(p),'basic',p.gear.skills,p.level).set===undefined&&p.ss.n.alpha===3);
+ok('a slot-1 piece can be taken off: the class basic attack returns',x.abilityOf(x.clsOfP(p),'basic',p.gear.skills,p.level).set===undefined&&p.ss.n.alpha===1);
 
-// 3+3: one set's actives and another's passives each reach 3
+// one set's three actives plus another set's one passive: the passive counts for its own set only
 send({t:'dev',cmd:'set',v:'real1'});
 { const sk=p.gear.skills, cl=x.clsOfP(p);
   send({t:'eqskill',id:'alpha_2_any'}); send({t:'eqskill',id:'alpha_3_any'}); send({t:'eqskill',id:'alpha_1_archer'});
-  send({t:'eqskill',id:'real1_p1',idx:0}); send({t:'eqskill',id:'real1_p2',idx:1}); send({t:'eqskill',id:'real1_p3',idx:2});
+  send({t:'eqskill',id:'real1_p3',idx:0});
   const n=x.ssCount(sk,cl,30);
-  ok('3 + 3: two sets at 3 pieces each both have their bonus 3',n.alpha===3&&n.real1===3&&x.ssBonuses(sk,cl,30).map(b=>b.set+b.tier).sort().join()==='alpha3,real13',JSON.stringify(n)); }
+  ok('3 actives of one set + the other set\'s passive: only the three-piece set has its bonus 3',n.alpha===3&&n.real1===1&&x.ssBonuses(sk,cl,30).map(b=>b.set+b.tier).join()==='alpha3',JSON.stringify(n)); }
 // a cost is paid by the row that has the benefit
 { const base=p.maxHp; x.PASSIVES.real1_p3.cost={stat:'hp',v:-0.20}; x.recalcP(p); const lower=p.maxHp; delete x.PASSIVES.real1_p3.cost; x.recalcP(p);
   ok('a passive\'s cost is paid: -20% maximum health while it is worn (its own +5% included)',lower<base&&near(lower/p.maxHp,(1+0.05-0.20)/(1+0.05),0.03),lower+' vs '+p.maxHp); }
@@ -221,7 +223,8 @@ const kitfix=()=>fixture('kitx',d=>{ d.role={main:'risk'}; d.el='basic'; d.char.
 const K=x.defineSkillSet(kitfix());
 ok('a kit with marks, a pop, an amp, triggers, modifiers and a cost registers (modifiers and marks are checked, not just stored)',!!K&&x.SS_BAD.length===0,JSON.stringify(x.SS_BAD));
 send({t:'dev',cmd:'set',v:'kitx'}); p.level=30; send({t:'dev',cmd:'level',v:30});
-const wear=()=>{ for(const id of ['kitx_1_archer','kitx_2_any','kitx_3_any']) send({t:'eqskill',id}); send({t:'eqskill',id:'kitx_p1',idx:0}); send({t:'eqskill',id:'kitx_p2',idx:1}); send({t:'eqskill',id:'kitx_p3',idx:2}); };
+const wear=()=>{ for(const id of ['kitx_1_archer','kitx_2_any','kitx_3_any']) send({t:'eqskill',id}); send({t:'eqskill',id:'kitx_p2',idx:0}); };   // ONE passive slot: the amp (KP2); a check that needs KP1 or KP3 swaps it in with pass()
+const pass=id=>{ send({t:'eqskill',id,idx:0}); };
 const norm=x.MONS.filter(mm=>!mm.boss&&!mm.inst), mA=norm[0], mB=norm[1], mC=norm[2], bossM=x.MONS.find(mm=>mm.boss);
 const fresh=m=>{ m.dead=false; m.remove=false; m.hp=1e9; m.maxHp=1e9; m.mk=null; m.st=null; m.inst=0; m.immune=false; m.burnT=m.slowT=m.stunT=0; return m; };
 const place=(m,dx,dz,face)=>{ fresh(m); m.x=p.x+dx; m.z=p.z+dz; if(face!==undefined) m.face=face; return m; };
@@ -257,7 +260,7 @@ x.SS_SETS.kitx.bonus[3].on='crit'; W.setPos('a',[mA.x,x.getH(mA.x,mA.z),mA.z,0,0
 
 // ---- pop and amp ----
 wear();
-ok('the kit is worn: marks need the cone / ring, amp the second passive (level 30 opens all three slots)',p.ss.n.kitx===6&&p.ss.amp.length===1&&p.ss.amp[0].id==='barb');
+ok('the kit is worn: marks need the cone / ring, amp the second passive (the one passive slot holds it)',p.ss.n.kitx===4&&p.ss.amp.length===1&&p.ss.amp[0].id==='barb');
 { place(mA,3,0); const noMarks=still(()=>lost(mA,()=>x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic')));
   place(mA,3,0); x.ssMarkS(p,mA,{id:'barb',n:3,dur:10,max:3}); const marked=still(()=>lost(mA,()=>x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic')));
   ok('amp: a target carrying 3 marks of the owner takes 3 x 10% more from them (x1.3), not from someone else',near(marked/noMarks,1.3,0.04)&&(()=>{ const q=W.players.get('b'); q.dead=false; place(mA,3,0); x.ssMarkS(p,mA,{id:'barb',n:3,dur:10,max:3}); const h=mA.hp; still(()=>x.damageMonsterS(mA,1,q,q.x,q.z,0,'basic')); const byQ=h-mA.hp; place(mA,3,0); const h2=mA.hp; still(()=>x.damageMonsterS(mA,1,q,q.x,q.z,0,'basic')); return near(byQ,h2-mA.hp,2); })(),(marked/noMarks).toFixed(3)); }
@@ -277,7 +280,7 @@ x.SS_SETS.kitx.bonus[3].on='crit';
 { place(mA,3,0); p.ssIcd={}; tick(3); const n0=evs.filter(e=>e[0]==='dmg'&&e[1]===mA.id).length, R=Math.random; Math.random=()=>0;   // every hit crits, every chance passes (tick first: the events of the earlier checks are still on their way)
   x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic'); const n1=(tick(3),evs.filter(e=>e[0]==='dmg'&&e[1]===mA.id).length); Math.random=R;
   ok('a crit trigger that deals damage runs once and its damage fires no trigger (the hit, then the 3 m ring: 2 damage events, not a chain)',n1-n0===2,(n1-n0)+' damage events'); }
-{ place(mA,3,0); p.ssIcd={}; fresh(mA); const R=Math.random; Math.random=()=>0.5;
+{ pass('kitx_p1'); place(mA,3,0); p.ssIcd={}; fresh(mA); const R=Math.random; Math.random=()=>0.5;
   x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic'); x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic'); const n1=x.ssMarkN(p,mA,'barb'); x.S.t+=1.1; x.damageMonsterS(mA,1,p,p.x,p.z,0,'basic'); const n2=x.ssMarkN(p,mA,'barb'); Math.random=R;
   ok('a trigger\'s icd holds: two hits in the same moment give one mark, a hit after the icd another',n1===1&&n2===2,n1+' then '+n2); }
 { place(mA,3,0); p.ssIcd={}; const R=Math.random; fresh(mA);
@@ -288,6 +291,7 @@ x.SS_SETS.kitx.bonus[3].on='crit';
   // kill
   row({on:'kill',heal:0.5,icd:0}); delete x.SS_SETS.kitx.bonus[3].icd; p.hp=Math.round(p.maxHp*0.2); place(mB,3,0); mB.hp=1; const k0=p.hp; x.damageMonsterS(mB,50,p,p.x,p.z,0,'basic');
   ok('kill: a row that heals on a kill heals (half of maximum health here)',p.hp>k0+p.maxHp*0.3&&mB.dead,k0+' -> '+p.hp);
+  pass('kitx_p3');   // (the kill passive, for the check below: one passive slot)
   // a trigger's own kills fire no trigger: heal + a ring that kills what is near, once
   row({on:'kill',heal:0.1,fx:{ring:{r:9}},mult:99,range:9}); p.hp=Math.round(p.maxHp*0.2); const f0=p.hp;
   place(mB,2,0); place(mC,3,0); place(mA,4,0); for(const m of [mA,mB,mC]) m.hp=1; x.damageMonsterS(mA,50,p,p.x,p.z,0,'basic');
@@ -309,8 +313,8 @@ x.SS_SETS.kitx.bonus[3].on='crit';
   ok('reflect: half of the damage a monster does to you is dealt back to it',hm-mA.hp>30,'dealt back '+Math.round(hm-mA.hp));
 }
 // a bonus that costs: row kitx_b5 has +10% damage and -10% damage-taken reduction (a cost): both read
-{ x.SS_SETS.kitx.bonus[3]=Object.assign({},K.bonus[3]); x.recalcP(p);
-  ok('a cost is paid by the same bonus that has the benefit (the 5-set bonus: +10% damage, and 10% less damage reduction)',near(x.psP(p,'dmg'),0.10,0.001)&&near(x.psP(p,'red'),-0.10,0.001),x.psP(p,'dmg')+' / red '+x.psP(p,'red')); }
+{ x.SS_SETS.kitx.bonus[3]=Object.assign({},K.bonus[5]); x.recalcP(p);   // (5 pieces cannot be worn with one passive slot: the 5-set row is read from the 3-set place)
+  ok('a cost is paid by the same bonus that has the benefit (the 5-set row: +10% damage, and 10% less damage reduction)',near(x.psP(p,'dmg'),0.10,0.001)&&near(x.psP(p,'red'),-0.10,0.001),x.psP(p,'dmg')+' / red '+x.psP(p,'red')); }
 
 
 // ================= M2b: ally buffs, party heal, shield, taunt =================

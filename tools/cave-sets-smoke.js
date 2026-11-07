@@ -4,7 +4,7 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(pid==='a'&&c.t==='snap'&&c.ev) evs.push(...c.ev); }},
-  ['CAVE_SKILLS','CAVE_SKILL_IDS','CAVE_BAD','CAVE_REFUND_CAP','caveChargeGain','caveLevelK','SS_SETS','SKILLS','MONS','AREAS','VIL','getH','S','ssMarkN','ssMarkSum','ssBehind','ssWhen','fxModK','hurtP','killMonsterS','allyP','mstWeakK','mstVulnK','healP','partyOf','skillPower','CAVE_CHARGE_K','defineCaveSkill']);
+  ['CAVE_SKILLS','CAVE_SKILL_IDS','CAVE_BAD','CAVE_REFUND_CAP','caveChargeGain','caveLevelK','SS_SETS','SKILLS','MONS','AREAS','VIL','getH','S','ssMarkN','ssMarkSum','ssBehind','ssWhen','fxModK','hurtP','killMonsterS','allyP','mstWeakK','mstVulnK','healP','partyOf','skillPower','CAVE_CHARGE_K','defineChargeSkill']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const near=(a,b,e)=>Math.abs(a-b)<=(e===undefined?1e-6:e);
 const IDS=['threshing','shadowstep','shieldwall','lighthouse','cutandrun','marionette','tidepool','intermission','soundcharge','eagleperch','stoppedhour','lampwindow','nightline','bellecho','blackice','landslide','embalm','nightshift'];
@@ -28,7 +28,7 @@ ok('the Emberwake Isles\' three take the last empty place on floors 2-4 (Slack W
   [['slackwater',2,'meleni',30,'D','swell'],['embercount',3,'tzaya',35,'H','tally'],['cordsnare',4,'atuqa',35,'B','knot']].every(([id,f,set,c,m,mk])=>{ const s=x.CAVE_SKILLS[id]; return s&&s.floor===f&&s.set===set&&s.cost===c&&s.method===m&&s.el&&s.desc&&JSON.stringify(s.fx).includes('"id":"'+mk+'"')&&!/pop/.test(JSON.stringify(s.fx)); })
   &&[2,3,4].every(f=>'ABCDEFGH'.split('').every(m=>Object.values(x.CAVE_SKILLS).some(s=>s.floor===f&&s.method===m&&s.set))));
 { const base={id:'zzprobe',name:'Probe',floor:2,method:'C',set:'tansy',cost:30,desc:'d',mult:1,range:5,fx:{ring:{r:3}}}, n0=x.CAVE_BAD.length;
-  const bad=[{feat:{kind:'x'}},{feat:'no'},{fx:{ring:{r:3},refund:{n:3,secs:4,cap:16}}},{fx:{ring:{r:3},refund:{n:0,secs:4}}}].map((o,i)=>x.defineCaveSkill(Object.assign({},base,{id:'zzprobe'+i},o)));
+  const bad=[{feat:{kind:'x'}},{feat:'no'},{fx:{ring:{r:3},refund:{n:3,secs:4,cap:16}}},{fx:{ring:{r:3},refund:{n:0,secs:4}}}].map((o,i)=>x.defineChargeSkill(Object.assign({},base,{id:'zzprobe'+i},o)));
   ok('a bad feat or a refund above the cap (15) is left out and listed',bad.every(v=>v===null)&&x.CAVE_BAD.length===n0+4); x.CAVE_BAD.length=n0; }
 // ---- the world ----
 const spot=new Map();

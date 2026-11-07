@@ -38,7 +38,7 @@ function caveMouthBuild(){
   // the signboard on a post, both faces
   { const sp=[paint(cyl(0.08,0.1,2.6,6).translate(-3.2,gy(-3.2,7)+1.1,7),dgEntWood(0x5e4630)), paint(vbox(2.5,0.07,0.07,-3.2,gy(-3.2,7)+1.55,7),dgEntWood(0x5e4630))];
     const post=new THREE.Mesh(merge(sp),villageMat); G.add(post);
-    const mat=new THREE.MeshLambertMaterial({map:dgEntSignTex('THE DEEP CAVE','Lift to the floors · Lv 23+'),emissive:0x2a2418});
+    const mat=new THREE.MeshLambertMaterial({map:dgEntSignTex('THE DEEP CAVE','Lift to the floors · Lv 20+'),emissive:0x2a2418});
     for(const side of [1,-1]){ const p=new THREE.Mesh(new THREE.PlaneGeometry(2.3,0.58),mat); p.position.set(-3.2,gy(-3.2,7)+2.15,7+side*0.05); if(side<0) p.rotation.y=Math.PI; G.add(p); } addCol(caveMouthAt(-3.2,7)[0],caveMouthAt(-3.2,7)[1],0.3); }
   for(let u=-17;u<=17;u+=2.2){ if(Math.abs(u)<2.8) continue; const w=caveMouthAt(u,-10.6); addCol(w[0],w[1],1.3); }   // nobody walks behind the face, but through the doorway
   for(const s of [-1,1]) for(let v=Gr.v0-1;v>=Gr.v1;v-=1.8){ const w=caveMouthAt(s*(Gr.hw+0.6),v); addCol(w[0],w[1],0.9); }   // the grotto's walls

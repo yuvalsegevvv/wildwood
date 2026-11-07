@@ -110,7 +110,7 @@ shared
   cospieces.js                       Cosmetic pieces (version 3.2): which general parts of every slot (hat, top, bottom, shoes, gloves, cape, aura) are free and which are crafted, from professions' materials and monsters' drops; the try-on lock rules. Pure.
   amber.js                           Amber (a gear-upgrade material) and gems (the premium currency, version 3.3): the cap of a purse, the price of an outfit set, the grant of the public testing tool
   colours.js                         Premium colours (version 3.3): 48 extra colours for everything but the skin, 500 gems each, bought once for the whole account; the favourites list; what a look may wear. Pure.
-  cave.js                            The Deep Cave, shared rules: the 4th skill slot (opens at level 23), the charge that pays for it, the registry of cave skills (defineCaveSkill) and their validation
+  cave.js                            The Deep Cave, shared rules: the 4th skill slot (opens at level 20), the charge that pays for it, the registry of cave skills (defineChargeSkill) and their validation
   ult.js                             The 5th skill slot, the set burst ("Burst"): its constants, the registry ULT_SKILLS filled by each skill set's `ult` entry, its validation, the 3-of-7 ownership rule and the fixed cooldown
   movement.js                        Movement skills (the movement slot below the passives): common skills, free, in no skill set: a registry of six, the slot's level, the tuning numbers
   presets.js                         Loadout presets: ten saved setups of the eight skills and the equipment (each optionally linked to one of ten outfit slots), and the outfit slot count
@@ -517,7 +517,7 @@ game
   combat/mon-status.js               Monster status notes on the client: the "Vulnerable +14%" / "Weakened -10%" text that pops over a monster when a shared vuln or weak lands on it
   skillsets/marks.js                 Skill-set marks on the client: a kit's stacks as shaped, glowing pips over the monster (only yours), a full-stack halo, a burst when they are spent, and a stack chip on the target frame
   skillsets/procs.js                 Skill-set procs on the client: a set bonus that fires shows its name as a badge, a rune ring at the wearer and a streak of motes to its target; a refunded cooldown flashes its slot
-  skillsets/panel.js                 Skill sets in the skills panel and the action bar: each set's own symbol and colour on its pieces (never the generic star), and the set effect (the 3-piece and 5-piece bonuses, lit by how many pieces are worn)
+  skillsets/panel.js                 Skill sets in the skills panel and the action bar: each set's own symbol and colour on its pieces (never the generic star), and the set effect (the 3-piece and 5-piece bonus rows are hidden while SS_BONUS_ON is false)
   combat/lucky.js                    Lucky drops and forging: light beam, sparkles, banner and a bright jingle for epic, unique and legendary items
   combat/sounds.js                   Combat sounds (cSfx) and monster voices (monSound)
   ui/combat-hud.js                   Target frame, player bars, damage numbers, action bar, attack input

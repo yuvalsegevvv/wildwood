@@ -1,12 +1,12 @@
 //@ The 5th skill slot, the set burst ("Burst"): its constants, the registry ULT_SKILLS filled by each skill set's `ult` entry, its validation, the 3-of-7 ownership rule and the fixed cooldown
 /* Agent map. Plan and rules: docs/ULT.md; test: tools/ult-smoke.js. Stem `ult` (the visible name of slot 3 is "Power" but its code id stays `burst`: never name anything burst* for this slot).
    One burst skill per skill set, written as an `ult:{...}` entry in the set's own file (shared/skillsets/<id>.js) and registered by defineSkillSet through ultDefine().
-   It is NOT in SKILLS (too much iterates SKILLS: shops, drops, class loadouts, ssCount): ULT_SKILLS[<set id>] is an ability row {id:'<set>U', cls:'any', slot:'ult', set, cd:0, lv:35, ...}.
+   It is NOT in SKILLS (too much iterates SKILLS: shops, drops, class loadouts, ssCount): ULT_SKILLS[<set id>] is an ability row {id:'<set>U', cls:'any', slot:'ult', set, cd:0, lv:28, ...}.
    The entry: {name, desc, range, mult, act:[kind,secs,hit], anim?, fx:{ring|cone|proj|zone ...}, boost:[{piece, secs, mod?}, {piece, secs, mod?}]}. The stun is added by the engine (fxU: every shape entry carries ult:true), never written in fx.
    `boost` buffs exactly two of the set's seven pieces: 'a1'-'a3' (the actives), 'cave' (the set's cave skill, an active), 'p1'-'p3' (the passives); at least one an active. mod keys: ULT_MODS.
    Exports: ULT_SLOT, ULT_LV, ULT_CD, ULT_CD_GRIND, ULT_STUN, ULT_STUN_LOCK, ULT_POWER, ULT_OWN_N, ULT_PIECES, ULT_MODS, ULT_SKILLS, ULT_BAD, ultDef(setId), ultDefine(setId,U,el), ultCdOf(setId,inBossFight), ultPieceCount(skills,cave,setId), ultOwned(skills,cave,setId).
    Used by: shared/skillsets.js (defineSkillSet), classes.js (slotLv), server/ult.js, players.js (sanitize), game/ult/*. */
-const ULT_SLOT='ult', ULT_LV=35;                 // the slot opens at this player level
+const ULT_SLOT='ult', ULT_LV=28;                 // the slot opens at this player level
 const ULT_CD=60, ULT_CD_GRIND=30;                 // the fixed cooldown; a grind set cast outside a boss fight gets the short one. NOTHING reduces either (server/ult.js is the only writer of p.cd.ult)
 const ULT_STUN=5, ULT_STUN_LOCK=50;               // seconds of stun; seconds before the same enemy can be burst-stunned again, whoever casts it
 const ULT_POWER=[1.35,1.65];                      // a burst's mult against its set's position-3 skill (a lint warning, not a hard rule)

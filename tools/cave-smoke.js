@@ -1,36 +1,36 @@
-// Headless test of the Deep Cave's 4th slot (server straight from src/, no build): the slot opens at level 23, charge per cast (once, not per enemy), the cap, the set bonus,
+// Headless test of the Deep Cave's 4th slot (server straight from src/, no build): the slot opens at level 20, charge per cast (once, not per enemy), the cap, the set bonus,
 // the boss-fight rule (50 on entering, 0 on leaving early, kept when the boss dies), casting spends the cost, the registry's validation and a bad save. The cave skill used here is a fixture defined in this file.
 // Usage: node tools/cave-smoke.js
 const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
-  ['caveFloorDef','caveBake','caveGen','CAVE_FLOOR_N','CAVE_FLOOR_BAD','defineCaveFloor','caveFloorAt','caveFloorOrigin','caveGroundY','caveFree','caveSlide','caveLos','caveWallAt','caveLiftOf','caveArrival','caveFloorOpen','caveLiftRefusal','CAVE_MOUTH','CAVE_PORTAL','CAVE_LIFT_SURFACE','CAVE_MOUTH_V','CIRCLES','caveMouthNear','caveMouthPad','landAt','roadDist','arenaDist','coastDist','vDist','waterSurf','dgInSlots','dgSlotAt','CAVE_CELL','CAVE_SIZE','CAVE_WALK_R','DEF_BY_ID','baseHeight','rawHeight','MONS','BOSSES','getH','sanitizeGear','defineCaveSkill','CAVE_BAD','CAVE_SKILLS','SS_ORDER','SS_SETS','SKILLS','caveChargeGain','CAVE_SLOT_LV','CAVE_CHARGE_K','CAVE_COST_MAX','killMonsterS','slotLv','ssGrantSetP','caveSkillDef']);
+  ['caveFloorDef','caveBake','caveGen','CAVE_FLOOR_N','CAVE_FLOOR_BAD','defineCaveFloor','caveFloorAt','caveFloorOrigin','caveGroundY','caveFree','caveSlide','caveLos','caveWallAt','caveLiftOf','caveArrival','caveFloorOpen','caveLiftRefusal','CAVE_MOUTH','CAVE_PORTAL','CAVE_LIFT_SURFACE','CAVE_MOUTH_V','CIRCLES','caveMouthNear','caveMouthPad','landAt','roadDist','arenaDist','coastDist','vDist','waterSurf','dgInSlots','dgSlotAt','CAVE_CELL','CAVE_SIZE','CAVE_WALK_R','DEF_BY_ID','baseHeight','rawHeight','MONS','BOSSES','getH','sanitizeGear','defineChargeSkill','CAVE_BAD','CAVE_SKILLS','SS_ORDER','SS_SETS','SKILLS','caveChargeGain','CAVE_SLOT_LV','CAVE_CHARGE_K','CAVE_COST_MAX','killMonsterS','slotLv','ssGrantSetP','caveSkillDef']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const near=(a,b)=>Math.abs(a-b)<1e-6;
 const SET=x.SS_ORDER[0];
 // ---- the registry ----
-const fixture=x.defineCaveSkill({id:'fixflare',name:'Fixture Flare',floor:1,method:'B',set:null,cost:25,desc:'A test ring.',mult:1,range:10,fx:{ring:{r:8}}});
-const fixSet=x.defineCaveSkill({id:'fixset',name:'Fixture Set',floor:2,method:'C',set:SET,cost:30,desc:'A test ring of a set.',mult:1,range:10,fx:{ring:{r:8}}});
+const fixture=x.defineChargeSkill({id:'fixflare',name:'Fixture Flare',floor:1,method:'B',set:null,cost:25,desc:'A test ring.',mult:1,range:10,fx:{ring:{r:8}}});
+const fixSet=x.defineChargeSkill({id:'fixset',name:'Fixture Set',floor:2,method:'C',set:SET,cost:30,desc:'A test ring of a set.',mult:1,range:10,fx:{ring:{r:8}}});
 ok('a valid skill is registered, with the shape of an ability (cls any, slot cave, cd 0, an attack kind of its own)',fixture&&x.CAVE_SKILLS.fixflare===fixture&&fixture.cls==='any'&&fixture.slot==='cave'&&fixture.cd===0&&fixture.act[0]==='cv_fixflare'&&fixSet&&fixSet.set===SET);
 const bads=[{id:'Bad Id'},{id:'fixflare',name:'x',floor:1,method:'A',cost:25,desc:'d',mult:1,range:5,fx:{ring:{r:3}}},{id:'cost1',name:'x',floor:1,method:'A',cost:5,desc:'d',mult:1,range:5,fx:{ring:{r:3}}},
   {id:'floor9',name:'x',floor:9,method:'A',cost:25,desc:'d',mult:1,range:5,fx:{ring:{r:3}}},{id:'meth',name:'x',floor:1,method:'Z',cost:25,desc:'d',mult:1,range:5,fx:{ring:{r:3}}},
   {id:'nofx',name:'x',floor:1,method:'A',cost:25,desc:'d',mult:1,range:5},{id:'badset',name:'x',floor:1,method:'A',set:'constructor',cost:25,desc:'d',mult:1,range:5,fx:{ring:{r:3}}},
   {id:'slash',name:'x',floor:1,method:'A',cost:25,desc:'d',mult:1,range:5,fx:{ring:{r:3}}},null,'x'];
-ok('invalid entries are left out and listed in CAVE_BAD (never thrown)',bads.every(b=>x.defineCaveSkill(b)===null)&&x.CAVE_BAD.length===bads.length&&!x.caveSkillDef('constructor')&&!x.caveSkillDef('__proto__'),x.CAVE_BAD.map(b=>b.id+': '+b.why).join(' | '));
+ok('invalid entries are left out and listed in CAVE_BAD (never thrown)',bads.every(b=>x.defineChargeSkill(b)===null)&&x.CAVE_BAD.length===bads.length&&!x.caveSkillDef('constructor')&&!x.caveSkillDef('__proto__'),x.CAVE_BAD.map(b=>b.id+': '+b.why).join(' | '));
 ok('a cave skill id never collides with the class skills',!x.SKILLS.fixflare);
-// ---- a player below level 23 ----
-W.join('lo',{name:'Lowe',look:{cls:'warrior'},save:{level:22}}); W.join('a',{name:'Alma',look:{cls:'warrior'},save:{level:23}}); tick(3);
+// ---- a player below level 20 ----
+W.join('lo',{name:'Lowe',look:{cls:'warrior'},save:{level:19}}); W.join('a',{name:'Alma',look:{cls:'warrior'},save:{level:20}}); tick(3);
 const lo=W.players.get('lo'), p=W.players.get('a');
-ok('the slot opens at level 23',x.CAVE_SLOT_LV===23&&x.slotLv('cave')===23);
+ok('the slot opens at level 20',x.CAVE_SLOT_LV===20&&x.slotLv('cave')===20);
 lo.gear.cave.own.fixflare=1; W.receive('lo',{t:'cavequip',id:'fixflare'}); tick(1);
-ok('below level 23 a cave skill cannot be worn',lo.gear.skills.cave===null);
+ok('below level 20 a cave skill cannot be worn',lo.gear.skills.cave===null);
 const pile=(pl,n)=>{ // n awake monsters standing just in front of the player (face 0 looks towards -z: a basic attack's arc is a cone, and monsters placed at random behind the player made it miss about 1 run in 25)
   const ms=x.MONS.filter(m=>!m.boss&&!m.dead&&!m.inst).slice(0,n); const y=x.getH(pl.x,pl.z);
   for(const m of ms){ m.x=pl.x+(Math.random()-0.5)*0.4; m.z=pl.z-0.6-Math.random()*0.3; m.y=y; m.maxHp=m.hp=1e9; m.dead=false; m.immune=false; m.awake=true; }
   return ms; };
 const cast=(id,k,tg)=>{ const pl=W.players.get(id); pl.cd.basic=pl.cd.skill=pl.cd.burst=pl.cd.cave=0; W.receive(id,{t:'atk',k:k||'skill',tg:tg||null,face:0,aim:[0,0,-1]}); tick(30); };
-{ const near3=pile(lo,3); lo.cave.charge=0; cast('lo','skill'); ok('below level 23 nothing is charged',lo.cave.charge===0&&near3.length===3); }
+{ const near3=pile(lo,3); lo.cave.charge=0; cast('lo','skill'); ok('below level 20 nothing is charged',lo.cave.charge===0&&near3.length===3); }
 // ---- charge per cast ----
 const wh=x.SKILLS.whirlwind;
 { p.cave.charge=0; const ms=pile(p,4); cast('a','skill');
@@ -55,7 +55,7 @@ ok('the client is told the charge (a cave message with the rounded value)',(inbo
   else ok('(the set piece is not wearable by a warrior: only the pure rule is checked)',true); }
 // ---- casting spends the cost ----
 { p.gear.cave.own.fixflare=1; W.receive('a',{t:'cavequip',id:'fixflare'}); tick(1);
-  ok('an owned cave skill can be worn at level 23',p.gear.skills.cave==='fixflare');
+  ok('an owned cave skill can be worn at level 20',p.gear.skills.cave==='fixflare');
   W.receive('a',{t:'cavequip',id:'constructor'}); W.receive('a',{t:'cavequip',id:'nope'}); W.receive('a',{t:'cavequip',id:7}); tick(1);
   ok('a bad or unowned id changes nothing',p.gear.skills.cave==='fixflare');
   p.cave.charge=24; p.cd.cave=0; p.act=null; W.receive('a',{t:'atk',k:'cave',tg:null,face:0,aim:[0,0,-1]}); tick(2);
@@ -134,20 +134,20 @@ ok('the floors are far apart (no floor within a snapshot\'s reach of another)',F
   const C=x.CIRCLES.find(c=>c.id==='cavemouth'); ok('its teleport circle is in CIRCLES (the travel window lists it) and the lift stands in the grotto behind the doorway, a short walk from it, on the pad\'s floor',!!C&&C.V===x.CAVE_MOUTH_V&&Math.hypot(C.V.tele.x-x.CAVE_LIFT_SURFACE.x,C.V.tele.z-x.CAVE_LIFT_SURFACE.z)<30&&Math.hypot(x.CAVE_LIFT_SURFACE.x-M.x,x.CAVE_LIFT_SURFACE.z-M.z)<24&&((x.CAVE_LIFT_SURFACE.x-M.x)*M.fx+(x.CAVE_LIFT_SURFACE.z-M.z)*M.fz)<-12);
   ok('the ground under the circle and the lift is level (the pad)',[x.CAVE_MOUTH_V.tele,x.CAVE_LIFT_SURFACE].every(q=>Math.abs(x.getH(q.x,q.z)-M.h)<0.05)&&x.caveMouthNear(M.x+3,M.z,8)&&!x.caveMouthNear(M.x+60,M.z,8)); }
 // ---- the lift's rules ----
-{ const hi={level:40,gear:{cave:{own:{}}}}, lo2={level:22,gear:{cave:{own:{}}}};
-  ok('the lift refuses a hiker below level 23 (with the message), takes anyone of 23 to floor 1, and always takes you up',x.caveLiftRefusal(lo2,1).includes('level 23')&&x.caveLiftRefusal({level:23,gear:{cave:{own:{}}}},1)===''&&x.caveLiftRefusal(lo2,0)==='');
+{ const hi={level:40,gear:{cave:{own:{}}}}, lo2={level:19,gear:{cave:{own:{}}}};
+  ok('the lift refuses a hiker below level 20 (with the message), takes anyone of 20 to floor 1, and always takes you up',x.caveLiftRefusal(lo2,1).includes('level 20')&&x.caveLiftRefusal({level:20,gear:{cave:{own:{}}}},1)===''&&x.caveLiftRefusal(lo2,0)==='');
   ok('floor 2 stays shut until two skills of floor 1 are owned (caveFloorOpen), floor 1 is open to all',x.caveFloorOpen(hi,1)&&!x.caveFloorOpen(hi,2)&&!x.caveFloorOpen(hi,9)&&x.caveLiftRefusal(hi,2).includes('Floor 2 is still shut')&&!x.caveFloorOpen(hi,0)); }
 // ---- the lift, the walls and the monsters on a fresh server (the older checks above move every monster about) ----
 { const inbox2={}, S2=loadServer({dev:true,send(pid,m){ (inbox2[pid]=inbox2[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['MONS','DEF_BY_ID','MON_DEFS','ALL_MON_DEFS','caveFloorDef','caveBake','getH','caveFree','caveWallAt','caveFloorAt','caveFloorOrigin','caveArrival','CAVE_LIFT_SURFACE']), W=S2.api, x=S2.x;
   const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } }, told=(id,txt)=>(inbox2[id]||[]).some(m=>JSON.stringify(m).includes(txt));
   const L0=x.CAVE_LIFT_SURFACE, join=(id,lvl,x0,z0)=>{ W.join(id,{name:id,look:{cls:'warrior'},save:{level:lvl}}); tick(2); const pl=W.players.get(id); pl.x=x0; pl.z=z0; pl.y=x.getH(x0,z0); return pl; };
-  const pa=join('lf1',40,L0.x,L0.z), pb=join('lf2',22,L0.x,L0.z), pc=join('lf3',40,L0.x+30,L0.z); tick(45);
+  const pa=join('lf1',40,L0.x,L0.z), pb=join('lf2',19,L0.x,L0.z), pc=join('lf3',40,L0.x+30,L0.z); tick(45);
   W.receive('lf1',{t:'lift',to:1}); tick(2);
   ok('standing on the surface lift, floor 1 takes you down to the floor\'s lift (a tp message, you stand on floor 1)',x.caveFloorAt(pa.x,pa.z)===1&&(inbox2.lf1||[]).some(m=>m.t==='tp'&&x.caveFloorAt(m.x,m.z)===1),pa.x+','+pa.z);
   tick(45); W.receive('lf1',{t:'lift',to:2}); tick(2);
   ok('floor 2 is refused while it is shut (you stay, and are told)',x.caveFloorAt(pa.x,pa.z)===1&&told('lf1','still shut'));
   W.receive('lf2',{t:'lift',to:1}); tick(2);
-  ok('a hiker of level 22 is refused: still on the surface, and told why',x.caveFloorAt(pb.x,pb.z)===-1&&told('lf2','level 23'));
+  ok('a hiker of level 19 is refused: still on the surface, and told why',x.caveFloorAt(pb.x,pb.z)===-1&&told('lf2','level 20'));
   W.receive('lf3',{t:'lift',to:1}); tick(2);
   ok('standing away from the lift does nothing (and says so)',x.caveFloorAt(pc.x,pc.z)===-1&&told('lf3','Stand on the lift'));
   tick(45); for(const to of ['constructor','__proto__',-3,1e9,NaN,null,{}]) W.receive('lf1',{t:'lift',to}); tick(2);

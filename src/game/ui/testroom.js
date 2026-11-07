@@ -13,7 +13,7 @@ function troomRender(){
   if(!$('#troomHud').hidden||started) $('#troomHud').textContent='Damage '+troomFmt(u.tot)+'  ·  '+troomFmt(u.dps)+'/s  ·  '+u.hits+' hits';
   if($('#troom').hidden) return;
   $('#troomBody').innerHTML='<div class="tr-stats">'+troomStat('Total damage',troomFmt(u.tot))+troomStat('Damage per second',troomFmt(u.dps))+troomStat('Hits',u.hits)+troomStat('Biggest hit',troomFmt(u.max))+'</div>'
-    +'<div class="tr-btns"><button class="chip" data-tr="reset">Reset the counter</button><button class="chip" data-tr="cd">Reset cooldowns</button><button class="chip" data-tr="charge">Refill the cave charge to 100</button>'
+    +'<div class="tr-btns"><button class="chip" data-tr="reset">Reset the counter</button><button class="chip" data-tr="cd">Reset cooldowns</button><button class="chip" data-tr="charge">Refill the charge to 100</button>'
     +'<button class="chip" data-tr="skills">Change skills</button></div>'
     +'<p class="tr-note">The scarecrow cannot be hurt, so the counter only adds up what you deal. DPS runs from your first hit to your last. Your own gear and level count, as everywhere.</p>';
   $('#troomBody').querySelectorAll('[data-tr]').forEach(b=>b.onclick=()=>{

@@ -1,15 +1,15 @@
-//@ The Deep Cave, shared rules: the 4th skill slot (opens at level 23), the charge that pays for it, the registry of cave skills (defineCaveSkill) and their validation
+//@ The Deep Cave, shared rules: the 4th skill slot (opens at level 20), the charge that pays for it, the registry of cave skills (defineChargeSkill) and their validation
 /* Agent map. Plan: docs/CAVE.md (read its section 0 first). Test: tools/cave-smoke.js.
    The 4th slot is NOT in SLOTS (classes.js): SLOTS is the class skills' three slots, iterated by pvp, sanitizing and the skill sets' cast rows. The cave slot is its own thing:
    one universal skill (works for every class) in gear.skills.cave, owned in gear.cave.own ({id: level 1-5}); its tile is the action bar's fourth button, key 'cave' (KB_ACTIONS).
    Charge (CAVE_*) is per player, server-side, never saved: server/cave.js.
    Exports: CAVE_SLOT_LV, CAVE_SLOT, CAVE_CHARGE_K, CAVE_CHARGE_MAX, CAVE_BOSS_START, CAVE_BOSS_LEAVE, CAVE_COST_MIN/MAX, CAVE_REFUND_CAP, CAVE_LEVEL_MAX, CAVE_LEVEL_STEP, CAVE_CAST_CD, CAVE_CAST_WINDOW, CAVE_FLOORS, CAVE_METHODS,
-   CAVE_SKILLS (id -> ability), CAVE_SKILL_IDS, CAVE_BAD (rejected entries {id, why}), defineCaveSkill(def), caveSkillDef(id), caveLevelK(level), caveChargeGain(ab, cave, set).
+   CAVE_SKILLS (id -> ability), CAVE_SKILL_IDS, CAVE_BAD (rejected entries {id, why}), defineChargeSkill(def), caveSkillDef(id), caveLevelK(level), caveChargeGain(ab, cave, set).
    Used by: classes.js (slotLv), server/cave.js, server/players.js (sanitize), server/combat.js (hooks), game/cave/*.js, game/ui/combat-hud.js, game/economy/skills.js.
    SET SKILLS (floors 2-4, C4): shared/cave/skill-<floor>-<id>.js, one per skill set, `set` = its set id; they READ the set's mark (count it) and never spend it. Their extra fx keys (cvstrike, cvzone, wall, hold, ...) are run by server/cave-fx.js.
    `feat` (echo-trial skills, method C): {kind, n, secs?, id?} what the player must do once to earn the skill; the method engine reads it (validated loosely here).
-   Entries are data: shared/cave/<floor>-<id>.js call defineCaveSkill({...}) and need no code elsewhere (a skill with `fx` reuses resolveFxS: docs/areas/skills-items.md). */
-const CAVE_SLOT='cave', CAVE_SLOT_LV=23;   // the slot opens at this player level
+   Entries are data: shared/cave/<floor>-<id>.js call defineChargeSkill({...}) and need no code elsewhere (a skill with `fx` reuses resolveFxS: docs/areas/skills-items.md). */
+const CAVE_SLOT='cave', CAVE_SLOT_LV=20;   // the slot opens at this player level
 const CAVE_CHARGE_K=0.6;                   // charge per cast = this x the cast ability's base cooldown (one constant to tune)
 const CAVE_CHARGE_MAX=100, CAVE_BOSS_START=50, CAVE_BOSS_LEAVE=0;   // the bar's cap; the charge on entering a boss fight; on leaving one before it ends
 const CAVE_COST_MIN=20, CAVE_COST_MAX=40;   // what a cave skill may cost
@@ -29,9 +29,9 @@ const caveLevelK=level=>1+CAVE_LEVEL_STEP*(Math.max(1,Math.min(CAVE_LEVEL_MAX,le
 /* charge one cast earns: 0.6 x the ability's base cooldown (not its upgraded one), doubled when the equipped cave skill belongs to a skill set and the cast is a piece of that same set */
 function caveChargeGain(ab,caveSk){ const dbl=!!(caveSk&&caveSk.set&&ab&&ab.set===caveSk.set); return CAVE_CHARGE_K*(ab&&ab.cd>0?ab.cd:0)*(dbl?2:1); }
 const caveSkillDef=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(CAVE_SKILLS,id)?CAVE_SKILLS[id]:null;
-/* defineCaveSkill({id, name, floor 1-4, method 'A'-'H', set: a skill set id or null, cost 20-40, desc, mult, range, fx, el?, act?, anim?, icon?, feat? (method C only; kinds in docs/CAVE.md section 15)}) -> the ability, or null (and a CAVE_BAD row) when it is invalid.
+/* defineChargeSkill({id, name, floor 1-4, method 'A'-'H', set: a skill set id or null, cost 20-40, desc, mult, range, fx, el?, act?, anim?, icon?, feat? (method C only; kinds in docs/CAVE.md section 15)}) -> the ability, or null (and a CAVE_BAD row) when it is invalid.
    The ability looks like a SKILLS row (cls 'any', slot 'cave') so resolveFxS, the HUD and the panel read it the same way; cd is 0 (the cost is its limit). */
-function defineCaveSkill(d){
+function defineChargeSkill(d){
   const bad=why=>{ CAVE_BAD.push({id:d&&typeof d.id==='string'?d.id:'?',why}); if(typeof console!=='undefined') console.warn('cave skill left out:',d&&d.id,why); return null; };
   if(!d||typeof d!=='object') return bad('not an object');
   if(typeof d.id!=='string'||!/^[a-z][a-z0-9]{1,23}$/.test(d.id)) return bad('id must be 2-24 lowercase letters or digits');

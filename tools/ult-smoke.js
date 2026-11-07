@@ -1,5 +1,5 @@
 // Headless test of the 5th skill slot, the set burst (server straight from src/, no build): the registry and its checks, the 3-of-7 ownership rule, wearing, the fixed 60 / 30 s cooldown that nothing reduces,
-// refused below level 35 and on the Proving Isle, the 5 s stun with its 50 s per-enemy lock (bosses too, with no x1.5 and a queue behind a kit's own stun), and the burst never counting toward a set.
+// refused below level 28 and on the Proving Isle, the 5 s stun with its 50 s per-enemy lock (bosses too, with no x1.5 and a queue behind a kit's own stun), and the burst never counting toward a set.
 // Usage: node tools/ult-smoke.js
 const {loadServer}=require('./load');
 const evs=[];
@@ -10,7 +10,7 @@ const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.val
 // ---- the registry ----
 ok('the shipped bursts are registered and none is bad',Object.keys(x.ULT_SKILLS).length>=2&&x.ULT_BAD.length===0&&x.SS_BAD.length===0,JSON.stringify(x.ULT_BAD));
 { const u=x.ULT_SKILLS.tansy;
-  ok('a burst is an ability row of slot ult, cls any, cd 0, level 35, outside SKILLS',u&&u.slot==='ult'&&u.cls==='any'&&u.cd===0&&u.lv===35&&u.id==='tansyU'&&!x.SKILLS.tansyU&&x.slotLv('ult')===35);
+  ok('a burst is an ability row of slot ult, cls any, cd 0, level 28, outside SKILLS',u&&u.slot==='ult'&&u.cls==='any'&&u.cd===0&&u.lv===28&&u.id==='tansyU'&&!x.SKILLS.tansyU&&x.slotLv('ult')===28);
   ok('the stun is switched on by the engine in a copy of the fx, the data stays plain',u.fxU.ring.ult===true&&u.fx.ring.ult===undefined); }
 const base=(o)=>Object.assign({name:'Test Burst',desc:'d',range:10,mult:1.5,act:['fixultk'+Math.random().toString(36).slice(2,6),1,0.5],fx:{ring:{r:8}},boost:[{piece:'a1',secs:10},{piece:'p1',secs:10,mod:{v:2}}]},o);
 const before=x.ULT_BAD.length;
@@ -22,7 +22,7 @@ ok('invalid bursts are left out and listed in ULT_BAD, never thrown',bads.every(
 ok('a good one registers (cave piece, util and cdr mods allowed)',!!x.ultDefine('fixset',base({boost:[{piece:'cave',secs:12,mod:{mult:2,size:1.3}},{piece:'p3',secs:12,mod:{cdr:{skill:4}}}]}),'basic')&&x.ultDef('fixset')!==null&&x.ultDef('constructor')===null&&x.ultDef('__proto__')===null);
 delete x.ULT_SKILLS.fixset;
 // ---- ownership: any 3 of the 7 ----
-W.join('a',{name:'Alma',look:{cls:'warrior'},save:{level:40}}); W.join('lo',{name:'Lowe',look:{cls:'warrior'},save:{level:34}}); tick(3);
+W.join('a',{name:'Alma',look:{cls:'warrior'},save:{level:40}}); W.join('lo',{name:'Lowe',look:{cls:'warrior'},save:{level:27}}); tick(3);
 const p=W.players.get('a'), lo=W.players.get('lo'), T='torgeir';
 const own=(pl,set,pos)=>x.ssGrantP(pl,set,pos,true);
 ok('nothing owned: no burst',!x.ultOwned(p.gear.skills,p.gear.cave,T)&&x.ultPieceCount(p.gear.skills,p.gear.cave,T)===0);
@@ -38,7 +38,7 @@ ok('a bad id, a burst that is not owned and a non-string change nothing',p.gear.
 W.receive('a',{t:'ultequip',id:T}); tick(1); ok('an owned burst can be worn at level 40',p.gear.skills.ult===T);
 { p.gear.skills.ult=null; p.gear.skills.pass=[null,null,null]; W.receive('a',{t:'ssall',set:'constructor'}); W.receive('a',{t:'ssall',set:T}); tick(1);
   ok('"Equip the whole set" (ssall) wears the owned actives, passives and the burst; a bad set name changes nothing',p.gear.skills.ult===T&&p.gear.skills.pass.some(i=>i&&x.PASSIVES[i].set===T),JSON.stringify(p.gear.skills.pass)+' '+p.gear.skills.ult); }
-{ own(lo,T,1); own(lo,T,2); lo.level=34; W.receive('lo',{t:'ultequip',id:T}); tick(1); ok('below level 35 it cannot be worn',lo.gear.skills.ult===null); }
+{ own(lo,T,1); own(lo,T,2); lo.level=27; W.receive('lo',{t:'ultequip',id:T}); tick(1); ok('below level 28 it cannot be worn',lo.gear.skills.ult===null); }
 { const g=JSON.parse(JSON.stringify(p.gear)); g.skills.ult='tansy'; ok('a save wearing a burst it does not own is cleaned',x.sanitizeGear(g,'warrior').skills.ult===null);
   g.skills.ult='constructor'; ok('a prototype name in a save is cleaned',x.sanitizeGear(g,'warrior').skills.ult===null);
   g.skills.ult=T; ok('an owned burst survives a save',x.sanitizeGear(g,'warrior').skills.ult===T); }
@@ -48,7 +48,7 @@ const pile=(pl,n,heavy)=>{ const ms=x.MONS.filter(m=>!m.boss&&!m.dead&&!m.inst&&
   return ms; };
 const cast=(id,tg)=>{ const pl=W.players.get(id); pl.cd.basic=pl.cd.skill=pl.cd.burst=pl.cd.cave=0; W.receive(id,{t:'atk',k:'ult',tg:tg||null,face:0,aim:[0,0,-1]}); tick(30); };
 for(const m of x.MONS) if(!m.boss){ m.x=p.x+400; m.z=p.z+400; }
-{ p.level=34; const ms=pile(p,2); cast('a'); ok('below level 35 a cast does nothing',p.cd.ult===0&&ms.every(m=>!(m.stunT>0))); p.level=40; }
+{ p.level=27; const ms=pile(p,2); cast('a'); ok('below level 28 a cast does nothing',p.cd.ult===0&&ms.every(m=>!(m.stunT>0))); p.level=40; }
 { p.pv={sk:p.gear.skills,pre:1}; const ms=pile(p,2); cast('a'); ok('on the Proving Isle it is refused',p.cd.ult===0&&ms.every(m=>!(m.stunT>0))); p.pv=null; }
 { p.gear.skills.ult=null; const ms=pile(p,2); cast('a'); ok('nothing worn: nothing happens',p.cd.ult===0); p.gear.skills.ult=T; }
 { const ms=pile(p,3); p.cd.ult=0; const t0=x.S.t; evs.length=0; cast('a'); tick(2);

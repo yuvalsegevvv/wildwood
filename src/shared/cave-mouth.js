@@ -18,7 +18,7 @@ const CAVE_MOUTH_V=(()=>{ const t=caveMouthAt(-4.6,3.4); return {x:CAVE_MOUTH.x,
 // the grotto behind the open doorway (in the mouth's frame): its walls at u = +-hw from v0 (just inside the face) back to v1, its roof h m over the pad, the lift at its back; the terrain under it is cut down to the pad (caveMouthPad)
 const CAVE_GROTTO={hw:5,v0:-10.5,v1:-25,h:4.8,lift:[0,-20.4]};
 const CAVE_LIFT_SURFACE=(()=>{ const p=caveMouthAt(CAVE_GROTTO.lift[0],CAVE_GROTTO.lift[1]); return {x:p[0],z:p[1],r:2.2}; })();
-CIRCLES.push({id:'cavemouth',name:'The Deep Cave',land:'The Wildwood',lv:'23+',V:CAVE_MOUTH_V,open:g=>g.east>=2,hint:'Walk to Hanami on the far side of the bridge first'});
+CIRCLES.push({id:'cavemouth',name:'The Deep Cave',land:'The Wildwood',lv:'20+',V:CAVE_MOUTH_V,open:g=>g.east>=2,hint:'Walk to Hanami on the far side of the bridge first'});
 function caveMouthPad(x,z,h){ if(!CAVE_MOUTH) return h; const dx=x-CAVE_MOUTH.x, dz=z-CAVE_MOUTH.z; if(dx>CAVE_MOUTH.back||dx<-CAVE_MOUTH.back||dz>CAVE_MOUTH.back||dz<-CAVE_MOUTH.back) return h;
   const d=Math.sqrt(dx*dx+dz*dz); if(d<CAVE_MOUTH.padOut) h=lerp(h,CAVE_MOUTH.h,smoothstep(CAVE_MOUTH.padOut,CAVE_MOUTH.padR,d));
   /* the hill the doorway is cut into: a ridge behind the face (v < -9.5, the mouth's own frame), up to CAVE_MOUTH.hill m over the pad, fading out across (|u| 34) and behind (v -46),

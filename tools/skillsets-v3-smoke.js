@@ -4,7 +4,9 @@
 const fs=require('fs'), path=require('path'), {loadServer, SRC}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...m.ev); }},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','ssLint','ssSetFor','ssSourceOf','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssMarkN','ssMarkS','ssTriggerS','resolveFxS','damageMonsterS','killMonsterS','hurtP','ssCondP','AREAS','PROJS','mstVulnK','mstWeakK','recalcP','clsOfP','getH','VIL','psP']);
+  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','ssLint','ssSetFor','ssSourceOf','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssMarkN','ssMarkS','ssTriggerS','resolveFxS','damageMonsterS','killMonsterS','hurtP','ssCondP','AREAS','PROJS','mstVulnK','mstWeakK','recalcP','clsOfP','getH','VIL','psP','PASSIVE_SLOT_LV','ssBonusSwitch']);
+// These tests check what each kit's pieces DO. The game has ONE passive slot and the 3- / 5-set bonuses are off (skill revamp step 4), so the harness opens three passive slots and switches the bonus rows on here.
+x.PASSIVE_SLOT_LV.push(x.PASSIVE_SLOT_LV[0],x.PASSIVE_SLOT_LV[0]); x.ssBonusSwitch(true);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 const near=(a,b,e)=>Math.abs(a-b)<=(e||1e-6);

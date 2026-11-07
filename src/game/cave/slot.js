@@ -1,7 +1,7 @@
 //@ The Deep Cave, client side of the 4th slot: the action-bar tile and its charge bar, casting it, the skills panel's cave row and tab (equip / take off), the server's charge message
 /* Agent map. Rules and plan: docs/CAVE.md; shared constants and the registry: shared/cave.js; the server: server/cave.js; test: tools/cave-smoke.js (and client-smoke for the page).
    CAVE_UI = {charge (0-100, the server's last word; a cast subtracts its cost at once and the server corrects), sel (the cave skill selected in the panel)}. The server sends {t:'cave',c} (NETH.cave).
-   The tile #abCave: below level 23 a lock; from 23 with no cave skill owned it says "Go to the cave"; owned but not worn "Cave"; worn: its name, ready (glow) when charge >= cost. The key is KB_ACTIONS 'cave' (4).
+   The tile #abCave: below level 20 a lock; from 20 with no charge skill owned it says "Go to the cave"; owned but not worn "Cave"; worn: its name, ready (glow) when charge >= cost. The key is KB_ACTIONS 'cave' (4).
    Exports: caveOwnedIds, caveAbilityNow, caveFillTile, caveHudUpdate, caveBarKey, caveDoAttack (doAttack('cave') calls it), caveSlotHtml / caveGridHtml / caveInfoHtml / caveBindPanel (economy/skills.js).
    Hooks into other files are marked `// cave:` (listed in docs/CAVE.md). */
 var CAVE_UI={charge:0,sel:null};
@@ -37,7 +37,7 @@ function caveHudUpdate(){
 const caveBarKey=()=>'|'+(CAVE_UI?(caveAbilityNow()||{}).id:'')+'|'+(GEAR?caveOwnedIds().length:0)+'|'+Math.min(PL.level,CAVE_SLOT_LV);   // the action bar redraws its labels when this changes
 function caveDoAttack(){
   if(!started||!NET.ready||uiOpen()||PL.dead||CB.act||CB.cd.cave>0||PVC.on) return;
-  if(PL.level<CAVE_SLOT_LV){ toast('Your cave slot opens at level '+CAVE_SLOT_LV,'bad'); UI_SFX.error(); return; }
+  if(PL.level<CAVE_SLOT_LV){ toast('Your charge slot opens at level '+CAVE_SLOT_LV,'bad'); UI_SFX.error(); return; }
   const ab=caveAbilityNow();
   if(!ab){ if(caveOwnedIds().length) openSkills(null,'cave'); else toast('Go to the cave: its skills are earned there','bad'); UI_SFX.error(); return; }
   if(CAVE_UI.charge<ab.cost){ toast('Not enough charge ('+Math.floor(CAVE_UI.charge)+' of '+ab.cost+'). Hit enemies to charge it','bad'); UI_SFX.error(); return; }
@@ -81,7 +81,7 @@ function caveDrop(src,tg){
   if(src.from==='grid'){
     if(!tg.cave){ if(tg.slot||tg.idx!==undefined){ toast(s.name+' is a charge skill: it goes in slot 4','bad'); UI_SFX.error(); } return; }
     if(!caveLevelOf(s.id)){ toast(s.name+' is not yours yet: '+caveWhereText(s),'bad'); UI_SFX.error(); return; }
-    if(PL.level<CAVE_SLOT_LV){ toast('The cave slot opens at level '+CAVE_SLOT_LV,'bad'); UI_SFX.error(); return; }
+    if(PL.level<CAVE_SLOT_LV){ toast('The charge slot opens at level '+CAVE_SLOT_LV,'bad'); UI_SFX.error(); return; }
     netSend({t:'cavequip',id:s.id}); UI_SFX.click();
   } else if(tg.area){ netSend({t:'cavequip',id:null}); UI_SFX.click(); }
 }

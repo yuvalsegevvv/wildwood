@@ -4,11 +4,11 @@
    p.cave = {charge, sent, cur, fight, fightT} is NOT saved (caveNewState, made by newPlayer): charge 0-100, kept between ordinary fights.
    CHARGE: caveCastS(p,slot,ab) starts a cast (handleAttack); the first damage that cast deals (caveHitS, called from damageMonsterS) pays 0.6 x the ability's base cooldown ONCE (never per enemy),
    doubled when the equipped cave skill has a `set` and the cast ability is a piece of that set. A cast that hits nothing pays nothing; a hit lands up to CAVE_CAST_WINDOW seconds after the cast (projectiles).
-   Nothing is paid below level 23, on the Proving Isle, or by the cave skill's own casts. caveAddP caps at 100.
+   Nothing is paid below level 20, on the Proving Isle, or by the cave skill's own casts. caveAddP caps at 100.
    BOSS FIGHT RULE: a player is in a boss fight while they stand inside an ENGAGED boss's arena (+6 m, the boss's own `inside` list: caveBossTickS, called by updateBossS every tick).
    Entering sets charge to exactly 50 (also for a player who joins mid-fight). Not seen inside for 0.5 s ends their fight: if the boss is dead the fight ended and the charge stays;
    otherwise (they walked out, died, or everyone left and the boss reset) the charge drops to 0. Dungeon bosses count only when their kit runs through updateBossS.
-   CAST: caveCastP (handleAttack with k:'cave') needs level 23, the equipped skill owned, charge >= its cost, 0.8 s since the last cave cast; it spends the cost and runs the skill through p.act like any fx skill.
+   CAST: caveCastP (handleAttack with k:'cave') needs level 20, the equipped skill owned, charge >= its cost, 0.8 s since the last cave cast; it spends the cost and runs the skill through p.act like any fx skill.
    Messages: cavequip {id|null} (MSG.cavequip), atk {k:'cave'}; server to client: {t:'cave', c: charge rounded} whenever the rounded charge changes (and once on join).
    Used by: players.js (newPlayer, sanitizeGear, updatePlayersS), combat.js (handleAttack, damageMonsterS), boss.js (updateBossS); the hooks are marked `// cave:` and listed in docs/CAVE.md. */
 function caveNewState(){ return {charge:0,sent:-1,cur:null,fight:null,fightT:0,last:null,od:null,odT:0,gr:null,bur:0,burT:0,fx:{}}; }   // fx: the set skills' windows (server/cave-fx.js); last: the last skill or burst cast (Echo); od: Overdrive; gr: Grapple Line; bur: Burrow (server/cave/skills.js)
@@ -88,7 +88,7 @@ function caveDropS(p,m){
 function caveEquipP(p,id){   // cavequip: wear an owned cave skill, or take it off (id null)
   if(id===null||id===undefined||id===''){ if(p.gear.skills.cave){ p.gear.skills.cave=null; p.dirty=true; } return; }
   const sk=caveSkillDef(id); if(!sk||!Object.prototype.hasOwnProperty.call(p.gear.cave.own,id)) return;
-  if(p.level<CAVE_SLOT_LV){ toastTo(p.id,'The cave slot opens at level '+CAVE_SLOT_LV,'bad'); return; }
+  if(p.level<CAVE_SLOT_LV){ toastTo(p.id,'The charge slot opens at level '+CAVE_SLOT_LV,'bad'); return; }
   p.gear.skills.cave=id; p.dirty=true;
 }
 MSG.cavequip=(p,msg)=>caveEquipP(p,msg.id);

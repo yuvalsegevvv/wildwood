@@ -5,7 +5,8 @@
 const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...m.ev); }},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_BAD','ssEquipPieceP','ssGrantSetP','allyP','ssMarkN','ssTriggerS','AREAS','mstWeakK','recalcP','clsOfP','getH','VIL']);
+  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_BAD','ssEquipPieceP','ssGrantSetP','allyP','ssMarkN','ssTriggerS','AREAS','mstWeakK','recalcP','clsOfP','getH','VIL','PASSIVE_SLOT_LV']);
+x.PASSIVE_SLOT_LV.push(x.PASSIVE_SLOT_LV[0],x.PASSIVE_SLOT_LV[0]);   // the game has one passive slot now (the skill revamp): this test wears a set's three passives together
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 W.join('a',{name:'Tester',look:{cls:'warrior'},save:{level:60}}); tick(3);
