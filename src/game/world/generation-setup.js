@@ -106,7 +106,7 @@ function buildGeometries(){
    seams): patches of tone (moisture, dry grass, soil) at 10 m, 3 m, 0.8 m and 0.2 m, and on desktops small bumps in the surface normal, which
    needs per-pixel lighting (r128's Lambert is per vertex), so the terrain is a Phong material with no shine there. Both fade out with distance
    (fine detail would only shimmer). Light mode keeps the plain vertex-lit ground. */
-const TERRAIN_FS_HEAD=`varying vec3 vWp; varying float vDist;
+const TERRAIN_FS_HEAD=`varying vec3 vWp; varying float vDist; uniform float uTime;
 float thsh(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
 vec3 tnoise(vec2 p){ vec2 i=floor(p), f=fract(p), u=f*f*(3.0-2.0*f), du=6.0*f*(1.0-f);
   float a=thsh(i), b=thsh(i+vec2(1.0,0.0)), c=thsh(i+vec2(0.0,1.0)), d=thsh(i+vec2(1.0,1.0)), k=a-b-c+d;
@@ -120,6 +120,24 @@ const TERRAIN_COLOR=`
   diffuseColor.rgb*=1.0+(0.82+0.36*mix(0.5,tm,0.35+0.65*tfade)-1.0)*(1.0-0.75*tbright);
   diffuseColor.rgb*=mix(vec3(1.0),mix(vec3(0.95,1.0,1.03),vec3(1.08,1.03,0.88),smoothstep(0.3,0.75,tn0.x)),1.0-tbright);
 `;
+/* Short grass (desktop, VD>=2, not the 'wildwood-sg'='0' opt-out): the lawn between the tufts, made from noise in the same pixel shader, no model.
+   It applies only where the ground colour is green (sand is red-yellow, snow and ice are bright, mountain rock is grey, so those get none) and only
+   near the camera. Blade streaks are noise stretched along the wind and shifted by the SAME travelling wave as the tufts' (grassMat, materials.js:
+   direction (0.8,0.6), crest 28 m, 0.495 / 2.42 rad/s), so the lawn shimmers with the field. */
+const TERRAIN_SHORT=`
+  { float sg=smoothstep(0.03,0.10,diffuseColor.g-max(diffuseColor.r,diffuseColor.b)*0.92)*(1.0-tbright)*(1.0-smoothstep(28.0,62.0,vDist));
+    if(sg>0.002){
+      vec2 gw=vec2(0.8,0.6); float ga=dot(tq,gw);
+      float gg=smoothstep(0.15,0.95,0.6*(0.5+0.5*sin(ga*0.045-uTime*0.495))+0.4*tnoise((tq-gw*uTime*11.0)*0.012).x);
+      float gs=sin(ga*0.22-uTime*2.42);
+      vec2 gq=tq+gw*(0.05+0.10*gg)*(0.6+0.4*gs);
+      vec2 gu=vec2(dot(gq,gw),dot(gq,vec2(-gw.y,gw.x)));
+      float bl=tnoise(gu*vec2(7.0,26.0)).x*0.55+tnoise(gu*vec2(17.0,60.0)+5.0).x*0.45;
+      float sheen=(gs*0.5+0.5)*gg;
+      diffuseColor.rgb*=1.0+sg*((bl-0.5)*0.55+sheen*0.10);
+      diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.06,1.10,0.86),sg*smoothstep(0.55,0.9,bl)*0.5);
+    } }
+`;
 const TERRAIN_BUMP=`
   { float bf=1.0-smoothstep(25.0,85.0,vDist);
     vec2 tg=tn1.yz*(0.10*0.35)+tn2.yz*(0.045*1.3)+tn3.yz*(0.016*4.7);
@@ -128,11 +146,13 @@ const TERRAIN_BUMP=`
 function terrainMaterial(){
   const phong=VD>=2, m=phong?new THREE.MeshPhongMaterial({vertexColors:true,specular:0x000000,shininess:1}):new THREE.MeshLambertMaterial({vertexColors:true});
   if(VD<1) return m;
+  const sgOn=phong&&!(()=>{try{return localStorage.getItem('wildwood-sg')==='0';}catch(e){return false;}})();
   m.onBeforeCompile=sh=>{
+    sh.uniforms.uTime=timeU;
     sh.vertexShader='varying vec3 vWp; varying float vDist;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.0)).xyz; vDist=length(mvPosition.xyz);');
-    sh.fragmentShader=TERRAIN_FS_HEAD+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n'+TERRAIN_COLOR).replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+(phong?TERRAIN_BUMP:''));
+    sh.fragmentShader=TERRAIN_FS_HEAD+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n'+TERRAIN_COLOR+(sgOn?TERRAIN_SHORT:'')).replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+(phong?TERRAIN_BUMP:''));
   };
-  m.customProgramCacheKey=()=>phong?'terrainP':'terrainL';
+  m.customProgramCacheKey=()=>phong?(sgOn?'terrainPS':'terrainP'):'terrainL';
   return m;
 }
 // hollows (positive concavity: the neighbours' mean height minus this vertex's) collect moisture and shade, crests are drier and lighter
