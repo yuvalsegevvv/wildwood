@@ -52,9 +52,7 @@ const BAD=[
   ['support without a focus','role',d=>{ d.role={main:'support'}; }],
   ['a focus on a non-support','role',d=>{ d.role={main:'risk',focus:'buff'}; }],
   ['a second role of the same kind','role',d=>{ d.role={main:'safe',also:{role:'safe',part:'mild'}}; }],
-  ['a hybrid support set','el',d=>{ d.role={main:'support',focus:'buff'}; d.el=['fire','earth']; }],
-  ['a hybrid mixed set','el',d=>{ d.el=['fire','earth']; d.role={main:'safe',also:{role:'support',part:'mild'}}; }],
-  ['a hybrid of one element repeated','el',d=>{ d.el=['fire','fire']; }],
+  ['an element list (two-element sets are gone)','el',d=>{ d.el=['fire','earth']; }],
   ['a basic set with a fire piece','el',d=>{ d.el='basic'; d.pos[2].skill.any.el='fire'; }],
   ['a single-element set with fewer than 4 of 6 pieces in it','el',d=>{ d.pos[2].skill.any.el='water'; d.pos[3].skill.any.el='water'; }],
   ['a sex that is neither','char',d=>{ d.char.sex='robot'; }],
@@ -126,10 +124,6 @@ ok('a set defined twice is refused',x.SS_BAD.length===1&&x.SS_BAD[0].field==='id
 { const real1=x.defineSkillSet(fixture('real1',d=>{ d.dev=false; d.char.name='Real One'; }));
   quiet(()=>{ x.defineSkillSet(fixture('real2',d=>{ d.dev=false; d.char.name='Real Two'; })); });
   ok('only one released set for each land and tier (dev sets are exempt)',!!real1&&x.SS_BAD.length===1&&x.SS_BAD[0].field==='needs'&&!x.SS_SETS.real2); x.SS_BAD.length=0; }
-ok('a hybrid of two elements is allowed for a risk set, each piece takes one of them',(()=>{ const h=x.defineSkillSet(fixture('hyb',d=>{ d.role={main:'risk'}; d.el=['dark','air']; d.char.name='Hyb'; d.pos[1].skill.warrior.el='air'; d.pos[1].skill.archer.el='air'; d.pos[1].skill.mage.el='air'; d.pos[2].skill.any.el='dark'; d.pos[3].skill.any.el='dark'; })); return !!h&&h.pos[1].el==='air'&&x.SKILLS.hyb_2_any.el==='dark'&&x.PASSIVES.hyb_p1.el==='air'; })(),JSON.stringify(x.SS_BAD));
-ok('a grind set may be a hybrid too',!!x.defineSkillSet(fixture('hyb2',d=>{ d.role={main:'grind'}; d.el=['earth','fire']; d.char.name='Hyb Two'; d.pos[1].skill.warrior.el='earth'; d.pos[1].skill.archer.el='earth'; d.pos[1].skill.mage.el='earth'; d.pos[2].skill.any.el='fire'; d.pos[3].skill.any.el='fire'; })),JSON.stringify(x.SS_BAD));
-ok('a hybrid of fire and water is just a hybrid now: nothing lints it (the soul\'s penalty on opposites is gone)',(()=>{ x.defineSkillSet(fixture('hyb3',d=>{ d.role={main:'safe'}; d.el=['fire','water']; d.char.name='Hyb Three'; d.pos[1].skill.warrior.el='fire'; d.pos[1].skill.archer.el='fire'; d.pos[1].skill.mage.el='fire'; d.pos[2].skill.any.el='water'; d.pos[3].skill.any.el='water'; }));
-  const L=x.ssLint(); return !L.some(l=>l.set==='hyb3'); })());
 { quiet(()=>{ x.defineSkillSet(fixture('grinder',d=>{ d.dev=false; d.land='vale'; d.role={main:'grind'}; d.char.name='Grinder'; })); });
   ok('the first grinder that is not pure basic is linted (the owner\'s one requirement)',x.ssLint().some(l=>l.set==='grinder'&&/pure basic/.test(l.why)),JSON.stringify(x.ssLint())); }
 ok('a position in another element than its single-element set needs a why',(()=>{ x.defineSkillSet(fixture('odd',d=>{ d.char.name='Odd'; d.pos[2].skill.any.el='water'; })); return x.ssLint().some(l=>l.set==='odd'&&/no why/.test(l.why)); })());

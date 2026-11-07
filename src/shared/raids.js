@@ -5,8 +5,8 @@
    rdBossRow(id) (a raid boss's BOSS_DEFS row), rdUpNeeds(skill,to) (a signature piece's price to level `to`: coins, the land's monster material, and `rd`: the raid material), rdCapTier(gear,land,raidTier).
    Used by: server/raids.js (the fight), server/economy.js + shared/drops.js (upgrades), game/raids/* (the ruins, the HUD), game/combat/boss.js (arenaOf). The data: shared/raids/<id>.js (one per land).
    Test: node tools/raids-smoke.js. A bad entry is left out and listed in RD_BAD (the game still boots). */
-const RD_BASE_LV=40, RD_RESET=1800, RD_ABANDON=600, RD_FOOT=62, RD_MAT_MAX=99999;   // the level at +0; seconds from a clear to the rebuild; seconds with nobody inside before an engaged raid resets; the radius that counts as inside for the clear's pay
-const RD_MOB_HP=0.3;   // a garrison monster's health against the same level's ordinary numbers: the boss stays at 22 hits at level 40 while a mob falls in about 7 x this (elites twice that again): 28 full-health mobs outweighed the boss 12 to 1
+const RD_BASE_LV=30, RD_RESET=1800, RD_ABANDON=600, RD_FOOT=62, RD_MAT_MAX=99999;   // the level at +0; seconds from a clear to the rebuild; seconds with nobody inside before an engaged raid resets; the radius that counts as inside for the clear's pay
+const RD_MOB_HP=0.3;   // a garrison monster's health against the same level's ordinary numbers: the boss stays at 22 hits at level 30 while a mob falls in about 7 x this (elites twice that again): 28 full-health mobs outweighed the boss 12 to 1
 const RD_UP={2:1,3:2,4:4,5:8};   // raid material a signature piece needs to reach level n (one clear pays level 2); the one number to tune
 const RD_MOB_K=3;   // a signature piece asks RD_MOB_K x the usual monster drops (UP_COUNT): the grind is in the woods, the raid is the gate
 const RD_LANDS=['home','vale','hoar','grey','sun','gloam','amber','isles'];
@@ -52,7 +52,7 @@ function defineRaid(D){
 const rdBossRow=id=>BOSS_DEFS.find(b=>b.def.id===id)||null;
 let RD_DEF_CACHE=null;
 const rdDefOk=id=>{ if(!RD_DEF_CACHE) RD_DEF_CACHE=new Set(ALL_MON_DEFS.map(d=>d.id)); return typeof id==='string'&&RD_DEF_CACHE.has(id); };
-const rdLevel=tier=>RD_BASE_LV+ZTIER_STEP*tier, rdMatFor=tier=>Math.pow(2,tier);   // level 40 / 50 ... 110; 1 / 2 / 4 ... 128 raid material
+const rdLevel=tier=>RD_BASE_LV+ZTIER_STEP*tier, rdMatFor=tier=>Math.pow(2,tier);   // level 30 / 40 ... 100; 1 / 2 / 4 ... 128 raid material
 const rdOfLand=land=>RD_ORDER.map(i=>RDS[i]).find(r=>r.land===land)||null;
 // the raid whose inner court has its middle at (x, z): a raid boss's camp (the client's arenaOf)
 const rdCourtAt=(x,z)=>{ for(const i of RD_ORDER){ const A=RDS[i].court; if(Math.abs(A.x-x)<1&&Math.abs(A.z-z)<1) return A; } return null; };

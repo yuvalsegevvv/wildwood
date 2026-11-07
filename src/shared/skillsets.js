@@ -6,7 +6,7 @@
    A SET is 3 actives + 3 passives (6 pieces) and two bonus rows (3-set, 5-set) that fill no slot: position 1 = the basic attack's slot (always class-bound: a warrior, an archer and a mage version),
    2 = skill, 3 = burst (each class-bound or `any`), each position with one passive. Where a piece comes from is fixed by the land (SS_SOURCES: boss 1, boss 2, the land's dungeon), not by the set.
    THE FILE OF A SET (shared/skillsets/<id>.js, listed in src/manifest.json after the last shared file) is one defineSkillSet({...}) call and no top-level names:
-     id ('tansy': a lowercase word, permanent once shipped), name, land (a SS_SOURCES key), needs:{tier} (1..ZTIER_MAX), dev (true: a test set, never obtainable), el ('<element>' | 'basic' | ['<a>','<b>']),
+     id ('tansy': a lowercase word, permanent once shipped), name, land (a SS_SOURCES key), needs:{tier} (1..ZTIER_MAX), dev (true: a test set, never obtainable), el ('<element>' | 'basic': one element per set),
      role:{main:'risk'|'safe'|'grind'|'support'|'heal'|'tank', focus:'buff'|'debuff'|'both' (support only), also:{role, part:'major'|'mild'} (a mixed set)},
      char:{name, sex:'female'|'male', theme, ip:{kind:'original', riffs} | {kind:'licensed', work, license, source, credit}}, pal:{main, accent, glow} (colours), kit:{mark, name, text} (optional),
      pos:{1:{bound:'class', skill:{warrior:E, archer:E, mage:E}, passive:R, from:{chance, pity} (optional odds)}, 2:{bound:'class'|'any', skill:{...} | {any:E}, passive:R}, 3:{...}},
@@ -22,7 +22,7 @@
    (more for each stack of the caster's mark on the enemies near) and heal may carry lowest:true; dash may carry behind:true. `when` (ssWhenProblem lists the keys SS_WHEN_KEYS: moved still dist tgtHp hp taunting marked behind boss
    crowd allies exposed combat shield) is read by the server in ssWhen / ssCondP (server/skillsets.js); a cost may carry one too. docs/skillkits/AUTHORING.md section 4b has the table.
    A bad set is LEFT OUT (the game still boots), warned about and listed in SS_BAD; nothing of it is registered. Piece ids: <set>_<pos>_<class|any> for an active, <set>_p<pos> for a passive. */
-const SS_ROLES=['risk','safe','grind','support','heal','tank'], SS_FOCUS=['buff','debuff','both'], SS_PARTS=['major','mild'], SS_HYBRID_ROLES=['risk','safe','grind'];
+const SS_ROLES=['risk','safe','grind','support','heal','tank'], SS_FOCUS=['buff','debuff','both'], SS_PARTS=['major','mild'];
 const SS_CLASSES=['warrior','archer','mage'], SS_SLOT_OF=['basic','skill','burst'];
 // the three sources of a land (SS_SOURCES[land][position - 1]): boss 1, boss 2, the dungeon's theme id
 const SS_SOURCES={home:['boss','carapax','hollowroots'],vale:['akaoni','kyuubi','jadesprings'],hoar:['ymrik','vetrmaw','bonefrostbarrow'],grey:['gryphonqueen','mountaingolem','blackseam'],sun:['glassguardian','sandwyrm','sandglass'],gloam:['drownedcaptain','gloamwarden','gloamvault'],amber:['oldthunder','oldhorn','termitecathedral'],isles:['ocelo','tuila','cenote']};
@@ -165,13 +165,11 @@ function defineSkillSet(D){
   const tier=D.needs&&D.needs.tier; if(!Number.isInteger(tier)||tier<1||tier>ZTIER_MAX) return bad('needs','tier is a whole number from 1 to '+ZTIER_MAX);
   const dev=D.dev===true;
   if(!dev){ const other=SS_ORDER.map(o=>SS_SETS[o]).find(s=>!s.dev&&s.land===D.land&&s.tier===tier); if(other) return bad('needs','"'+other.id+'" already is the set of '+D.land+' at tier '+tier+' (one for each land and tier)'); }
-  // the element(s): one element, none, or a hybrid of two (risk DPS, safe DPS and grind only, never a mixed set)
-  const hybrid=Array.isArray(D.el), els=hybrid?D.el:[D.el];
-  if(!els.every(ssIsEl)||(hybrid&&(els.length!==2||els[0]===els[1]||els.includes('basic')))) return bad('el','"'+JSON.stringify(D.el)+'" (one element, "basic", or two different elements)');
+  // the element: one per set (a single element, or "basic" for none)
+  if(!ssIsEl(D.el)) return bad('el','"'+JSON.stringify(D.el)+'" (one element, or "basic")');
   const R=D.role; if(!R||!SS_ROLES.includes(R.main)) return bad('role','main is one of '+SS_ROLES.join(' '));
   if(R.main==='support'?!SS_FOCUS.includes(R.focus):R.focus!==undefined) return bad('role','focus ('+SS_FOCUS.join(' ')+') is for support and only for support');
   if(R.also!==undefined&&(!R.also||!SS_ROLES.includes(R.also.role)||R.also.role===R.main||!SS_PARTS.includes(R.also.part))) return bad('role','also is {role: another archetype, part: '+SS_PARTS.join(' or ')+'}');
-  if(hybrid&&(!SS_HYBRID_ROLES.includes(R.main)||R.also!==undefined)) return bad('el','a hybrid of two elements is for risk, safe and grind sets with no second role (support, heal, tank and mixed sets have one element or none)');
   const C=D.char; if(!C||typeof C.name!=='string'||!C.name.trim()) return bad('char','name missing');
   if(SS_ORDER.some(o=>SS_SETS[o].char.name.toLowerCase()===C.name.trim().toLowerCase())) return bad('char','the name "'+C.name+'" is another set\'s');
   if(C.sex!=='female'&&C.sex!=='male') return bad('char','sex is female or male');
@@ -193,21 +191,19 @@ function defineSkillSet(D){
     for(const k of Object.keys(P.skill)){
       const e=P.skill[k], pr=ssSkillProblem(e,taken); if(pr) return bad('pos',at+' '+k+': '+pr);
       taken.add(e.act[0]);
-      const ee=e.el!==undefined?e.el:(hybrid?undefined:D.el); if(ee===undefined) return bad('pos',at+' '+k+': a hybrid set names the element of every piece (el)');
+      const ee=e.el!==undefined?e.el:D.el;
       if(el!==undefined&&ee!==el) return bad('pos',at+': the '+keys.join(', ')+' versions must all have one element');
       el=ee; variants.push([k,e]);
     }
-    if(hybrid&&!els.includes(el)) return bad('pos',at+': element "'+el+'" is not one of the set\'s '+els.join(' and '));
     posEl[p]=el;
     const pp=ssRowProblem(P.passive,true); if(pp) return bad('pos',at+' passive: '+pp);
     if(P.from!==undefined){ const f=P.from; if(!f||(f.chance!==undefined&&!(f.chance>0&&f.chance<=1))||(f.pity!==undefined&&!(Number.isInteger(f.pity)&&f.pity>=1))) return bad('pos',at+': from is {chance (0 to 1), pity (a whole number)}'); }
     made.push({p,slot,variants,P,el});
   }
-  // the element rule: a basic set is element-less all through; a single-element set has at least 4 of its 6 pieces in it (the others say why); a hybrid has both of its elements
+  // the element rule: a basic set is element-less all through; a single-element set has at least 4 of its 6 pieces in it (the others say why)
   const inEl=e=>made.filter(m=>m.el===e).length*2;
   if(D.el==='basic'&&made.some(m=>m.el!=='basic')) return bad('el','a set with el "basic" is element-less in every piece');
-  if(!hybrid&&D.el!=='basic'&&inEl(D.el)<4) return bad('el','at least 4 of the 6 pieces (2 of the 3 positions) are in "'+D.el+'"');
-  if(hybrid&&els.some(e=>inEl(e)<2)) return bad('el','each of the two elements has at least one position');
+  if(D.el!=='basic'&&inEl(D.el)<4) return bad('el','at least 4 of the 6 pieces (2 of the 3 positions) are in "'+D.el+'"');
   const bn=D.bonus; if(!bn||ssRowProblem(bn[3],true)||ssRowProblem(bn[5],true)) return bad('bonus','bonus 3 and bonus 5 are rows: '+(!bn?'missing':ssRowProblem(bn[3],true)||ssRowProblem(bn[5],true)));
   // a pop or an amp spends marks: the set must make them (kit.mark, a skill's or a row's mark)
   { const made2=new Set(D.kit&&D.kit.mark?[D.kit.mark]:[]), used=new Set(), rows=[...made.map(m=>m.P.passive),bn[3],bn[5]];
@@ -228,7 +224,7 @@ function defineSkillSet(D){
     PASSIVE_IDS.push(pid); SS_PIECE_OF[pid]={set:id,pos:m.p,kind:'passive'};
     set.pos[m.p]={slot:m.slot,bound:m.P.bound,from:{kind:m.p<3?'boss':'dungeon',id:src[m.p-1],chance:m.P.from&&m.P.from.chance,pity:m.P.from&&m.P.from.pity},ids,passive:pid,lv,el:m.el};
   }
-  for(const t of [3,5]) set.bonus[t]=ssRow(bn[t],id+'_b'+t,{set:id,tier:t,slot:'bonus'},{el:hybrid?D.el[0]:D.el});
+  for(const t of [3,5]) set.bonus[t]=ssRow(bn[t],id+'_b'+t,{set:id,tier:t,slot:'bonus'},{el:D.el});
   SS_SETS[id]=set; SS_ORDER.push(id);
   if(D.ult!==undefined) ultDefine(id,D.ult,set.pos[3].el);   // ult: the set's burst skill (shared/ult.js); a bad one leaves only the burst out
   return set;
@@ -277,7 +273,7 @@ function ssLint(){
   const grinders=real.filter(s=>s.role.main==='grind').sort((a,b)=>land(a.land)-land(b.land)||a.tier-b.tier);
   if(grinders[0]&&grinders[0].el!=='basic') out.push({set:grinders[0].id,why:'the first grinder is pure basic (every piece element-less)'});
   for(const s of SS_ORDER.map(i=>SS_SETS[i])){
-    if(!Array.isArray(s.el)&&s.el!=='basic') for(let p=1;p<=3;p++) if(s.pos[p].el!==s.el&&!SKILLS[s.pos[p].ids[0]].why) out.push({set:s.id,why:'position '+p+' is in "'+s.pos[p].el+'" but the set is "'+s.el+'" and its entry has no why'});
+    if(s.el!=='basic') for(let p=1;p<=3;p++) if(s.pos[p].el!==s.el&&!SKILLS[s.pos[p].ids[0]].why) out.push({set:s.id,why:'position '+p+' is in "'+s.pos[p].el+'" but the set is "'+s.el+'" and its entry has no why'});
   }
   const f=real.filter(s=>s.char.sex==='female').length, m=real.length-f; if(real.length>=2&&Math.abs(f-m)>1) out.push({set:'*',why:'the gender ratio is '+f+' female to '+m+' male (equal is the owner\'s rule)'});
   return out;

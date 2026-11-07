@@ -27,7 +27,7 @@ The boss pool is `SS_SOURCES[land].slice(0,2)`. Sites were found by scanning eac
 
 Every raid has one layout (`RD_LAYOUT`, metres from the site, gate to the north): a gate (2 packs of 4), a yard (2 packs of 4, two **War Banners**, four **Barricades**), an inner wall with an opening and three **Warding Stones** in front of it, and the **inner court** (the boss arena, radius 20) with 2 packs of 3 on its walls. Six elites (x2 health, x1.25 size) guard the stones. That is 28 garrison monsters.
 
-- **Tier lock.** A fresh raid is *ready* at level 40. The first player hit locks it to that player's tier setting for the land (`rdLockS`): level `40 + 10 x tier` for everyone, boss and structures included; one `rdlv` event re-levels the clients' views. Tiers are personal but a monster exists once, so without the lock a +0 friend could carry a tier VII player.
+- **Tier lock.** A fresh raid is *ready* at level 30. The first player hit locks it to that player's tier setting for the land (`rdLockS`): level `30 + 10 x tier` for everyone, boss and structures included; one `rdlv` event re-levels the clients' views. Tiers are personal but a monster exists once, so without the lock a +0 friend could carry a tier VII player.
 - **Wards.** The boss is asleep (immune, not ticked) until all three Warding Stones are broken; a hit on it before that does nothing and says why.
 - **Banners** call a reinforcement every 40 s each (at most 4 alive per banner) while the raid is engaged and someone is inside.
 - **Barricades** are cover and dressing.

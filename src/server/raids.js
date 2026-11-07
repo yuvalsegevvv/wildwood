@@ -40,7 +40,7 @@ function rdClearAll(st){
   for(const m of st.all) if(!m.remove) removeMonS(m);
   st.all=[]; st.garrison=[]; st.wards=[]; st.spawners=[]; st.barricades=[]; st.boss=null;
 }
-// (re)build a raid ready for the next hiker: full garrison, every structure up, a boss rolled from the land's two, level 40 until the first hit locks the tier
+// (re)build a raid ready for the next hiker: full garrison, every structure up, a boss rolled from the land's two, level 30 until the first hit locks the tier
 function rdBuildS(st){
   const R=st.R; rdClearAll(st);
   st.state='ready'; st.tier=0; st.L=rdLevel(0); st.hit=new Map(); st.emptyT=0; st.clearT=0; st.reinfT=R.spawners.map(()=>RD_REINF_T*0.5); st.bossLive=false; st.bossDead=false;

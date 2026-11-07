@@ -5,7 +5,7 @@
 // Usage: node tools/dungeon-missions-smoke.js
 const {loadServer}=require('./load');
 const got={}, msgs={};   // pid -> events / messages received
-const NAMES=['DG_RUNS','DG_KITS','DG_KIT_BAD','DG_MISSIONS','DG_PARTY','DG_HUD','DG_HUD_BOSS','DG_OBJ_KINDS','DG_STONE_HITS','DG_CAPTIVE_HITS','DG_TILE','DG_CELL','S','DEF_BY_ID',
+const NAMES=['DG_RUNS','DG_CHEST_END_S','DG_KITS','DG_KIT_BAD','DG_MISSIONS','DG_PARTY','DG_HUD','DG_HUD_BOSS','DG_OBJ_KINDS','DG_STONE_HITS','DG_CAPTIVE_HITS','DG_TILE','DG_CELL','S','DEF_BY_ID',
   'dgHudText','dgObjName','dgPoolS','dgLocalS','dgWorldS','dgSpawnS','dgRemoveS','dgFree','dgLos','dgFlow','dgStep','dgAvgHitS','dgHzBuildS','dgFxOf','dgLoseS','dgInHallS',
   'killMonsterS','hurtP','ITEM'];
 const {api:W,x}=loadServer({dev:true,log(){},send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (msgs[pid]=msgs[pid]||[]).push(c); if(c.t==='snap'&&c.ev) (got[pid]=got[pid]||[]).push(...c.ev); }},NAMES);
@@ -95,33 +95,35 @@ party(C,[D]);
     tick(1); for(const m of alive(run,m=>m.dgRole==='wave'||m.dgRole==='breaker')) seen.add(m.id);
     if(i%4===0){ const v0=st.v, w0=k.wave; killAll(run,A,m=>m.dgRole==='wave'||m.dgRole==='breaker'); if(!k.queue.length){ tick(1); if(k.wave!==w0&&heal===null) heal=[v0,st.v]; } }
     const h=lastSnap('a'); if(h){ maxRot=Math.max(maxRot,h.dg[3]); maxWave=Math.max(maxWave,h.dg[4]); hudTexts.add(x.dgHudText('defense',h.dg).lines[0]); }
-    const c=run.objs.find(o=>o.kind==='chest'&&o.st===1); if(c&&!chest1){ chest1=c; }
+    if(!chest1&&(run.chestQ||[]).length) chest1=true;
   }
   ok('the stone heals 5% after a wave',!!heal&&Math.abs(heal[1]-heal[0]-5)<=1,JSON.stringify(heal));
   ok('2 rotations x 3 waves of 6 + 2 x rotation + 2 x wave: 54 monsters, then the boss in the same hall',seen.size===54&&!!run.boss&&run.phase==='boss'&&Math.hypot(run.boss.A.x-(run.ox+H.x),run.boss.A.z-(run.oz+H.z))<0.1,seen.size+' monsters');
   ok('the HUD walked through rotation 2 and wave 3, and its text with it',maxRot===2&&maxWave===3&&hudTexts.has('Rotation 2 of 2, wave 3 of 3'),[...hudTexts].slice(-2).join(' / '));
-  const chests=run.objs.filter(o=>o.kind==='chest');
-  ok('a reward chest at the end of each rotation (dgo "chest", v = its number)',chests.length===2&&chests[0].v===1&&chests[1].v===2&&!!chest1);
-  { const c2=chests[1], inv0=A.gear.inv.length; putAt(A,c2); dg('a','use',{id:c2.id}); tick(2); const got2=A.gear.inv.slice(inv0);
-    ok('the second chest\'s items are at least rarity 1 (rising with each chest)',got2.length===2&&got2.every(id=>x.ITEM[id]&&x.ITEM[id].rar>=1),got2.join(',')); }
+  ok('the rotations\' chests are queued, none stands while the boss lives (run.chestQ, v = its number)',!!chest1&&run.chestQ.length===2&&run.chestQ[0].n===1&&run.chestQ[1].n===2&&!run.objs.some(o=>o.kind==='chest'));
   ok('the stone still stands with the boss up (and the boss-phase HUD shows it)',run.objs.includes(st)&&st.st===1&&/stone still stands/.test(hudOf('a','defense').t.lines[0]||''));
   noteKinds('a');
   ok('Defense won: the boss falls in the hall it guarded',winBoss(run,A));
-  secs(21); }
+  const chests=run.objs.filter(o=>o.kind==='chest');
+  ok('the boss fell: both reward chests appear (dgo "chest", v = its number), the queue is empty, the exit waits '+x.DG_CHEST_END_S+' s',chests.length===2&&chests[0].v===1&&chests[1].v===2&&run.chestQ.length===0&&run.endLen===x.DG_CHEST_END_S);
+  { const c2=chests[1], inv0=A.gear.inv.length; putAt(A,c2); dg('a','use',{id:c2.id}); tick(2); const got2=A.gear.inv.slice(inv0);
+    ok('after the win a chest still opens; its items are at least rarity 1 (rising with each chest)',got2.length===2&&got2.every(id=>x.ITEM[id]&&x.ITEM[id].rar>=1),got2.join(',')); }
+  secs(21); ok('...and the run is still open 21 s after the win (chests to open), closed after '+x.DG_CHEST_END_S+' s',x.DG_RUNS.has(run.id)); secs(45); }
 party(A,[B]);
 { // a party of two in the Jade Springs: party health at spawn, the stone x DG_PARTY.obj, a chest the same for both
   const run=startRun(A,'jadesprings:defense:6',[B]), st=run.k.stone;
   ok('two in the run: the stone\'s health x'+x.DG_PARTY.obj[1]+' (DG_PARTY.obj)',st.max===Math.round(x.DG_STONE_HITS*x.dgAvgHitS(run)*x.DG_PARTY.obj[1]),st.max);
   secs(14); const w=alive(run,m=>m.dgRole==='wave'||m.dgRole==='breaker');
   ok('party health at spawn: every wave monster x'+x.DG_PARTY.hp[1]+' (elites x2.5 on top)',w.length>0&&w.every(m=>Math.abs(m.maxHp-m.def.hp*x.DG_PARTY.hp[1]*(m.elite?2.5:1))<1e-6));
-  for(let i=0;i<1500&&!run.objs.some(o=>o.kind==='chest');i++){ tick(1); if(i%4===0) killAll(run,A,m=>m.dgRole==='wave'||m.dgRole==='breaker'); }
+  for(let i=0;i<1500&&!(run.chestQ||[]).length;i++){ tick(1); if(i%4===0) killAll(run,A,m=>m.dgRole==='wave'||m.dgRole==='breaker'); }
+  ok('a rotation\'s end queues its chest, nothing stands yet',run.chestQ.length>=1&&!run.objs.some(o=>o.kind==='chest'));
+  for(let i=0;i<2400&&!run.boss&&!run.endT;i++){ tick(1); if(i%4===0) killAll(run,A,m=>m.dgRole==='wave'||m.dgRole==='breaker'); }
+  ok('Defense won on a second dungeon (the Jade Springs, a party of two)',!!run.boss&&winBoss(run,A));
   const c=run.objs.find(o=>o.kind==='chest'); putAt(A,c); const invA=A.gear.inv.length, invB=B.gear.inv.length, cA=A.gear.coins, cB=B.gear.coins; clear();
   dg('a','use',{id:c.id}); tick(3);
   const nA=A.gear.inv.slice(invA), nB=B.gear.inv.slice(invB);
   ok('the chest: one roll, the same two items and coins for every member present (the far one too)',nA.length===2&&JSON.stringify(nA)===JSON.stringify(nB)&&A.gear.coins-cA===B.gear.coins-cB&&A.gear.coins>cA&&c.st===2,nA+' / '+nB);
   dg('b','use',{id:c.id}); tick(2); ok('an opened chest gives nothing more',B.gear.inv.length===invB+2);
-  for(let i=0;i<2400&&!run.boss&&!run.endT;i++){ tick(1); if(i%4===0) killAll(run,A,m=>m.dgRole==='wave'||m.dgRole==='breaker'); }
-  ok('Defense won on a second dungeon (the Jade Springs, a party of two)',!!run.boss&&winBoss(run,A));
   secs(21); }
 { // lost: the stone broken (the Barrow)
   const run=startRun(C,'bonefrostbarrow:defense:7',[D]), st=run.k.stone; secs(14);
@@ -143,15 +145,16 @@ party(A,[B]);
   // spawns thicken: count the newcomers in a minute early and a minute late (killing everything as it comes)
   const count=(s)=>{ const seen=new Set(); for(let i=0;i<s*10;i++){ tick(1); for(const m of alive(run)) seen.add(m.id); if(i%5===0) killAll(run,A); } return seen.size; };
   const early=count(50);
-  let chest1=false; for(let i=0;i<2600&&run.t<400;i++){ tick(1); if(i%10===0) killAll(run,A); if(run.objs.some(o=>o.kind==='chest'&&o.v===1)) chest1=true; }
+  let chest1=false; for(let i=0;i<2600&&run.t<400;i++){ tick(1); if(i%10===0) killAll(run,A); if((run.chestQ||[]).some(c=>c.n===1)) chest1=true; }
   const late=count(50);
   ok('spawns thicken with time (more newcomers a minute late than early)',late>early*1.8,early+' early, '+late+' late');
-  ok('the 5:00 mark: a reward chest',chest1&&k.marks>=1);
+  ok('the 5:00 mark: a reward chest, queued (none stands before the boss falls)',chest1&&k.marks>=1&&!run.objs.some(o=>o.kind==='chest'));
   for(let i=0;i<3000&&!run.boss;i++){ tick(1); if(i%10===0) killAll(run,A); }
-  ok('the 10:00 mark: a second chest, the lantern topped up and holding (st 2), the boss in the same hall',k.marks===2&&run.objs.filter(o=>o.kind==='chest').length===2&&k.lantern.st===2&&k.light>=120&&!!run.boss&&run.phase==='boss');
+  ok('the 10:00 mark: a second chest, the lantern topped up and holding (st 2), the boss in the same hall',k.marks===2&&run.chestQ.length===2&&!run.objs.some(o=>o.kind==='chest')&&k.lantern.st===2&&k.light>=120&&!!run.boss&&run.phase==='boss');
   const l1=k.light; secs(8); ok('...and it no longer drains',k.light===l1);
   noteKinds('a');
   ok('Survival won: the boss falls',winBoss(run,A));
+  ok('...and its two queued chests appear',run.objs.filter(o=>o.kind==='chest').length===2&&run.chestQ.length===0);
   secs(21); }
 { // lost in the dark: everyone down
   const run=startRun(C,'jadesprings:survival:10',[D]), k=run.k; IMM.delete('c'); IMM.delete('d');

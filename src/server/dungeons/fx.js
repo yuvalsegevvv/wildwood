@@ -3,7 +3,7 @@
    exports: dgFxTickS(run,dt) (the hook in runs.js dgRunTickS: channels, then hazards.js), dgFxOf(run) (run.fx = {chan: Map pid -> channel, hz: hazards.js state}),
             dgWalkersS(run), dgAvgHitS(run), dgObjHpS(run,hits), dgObjHitS(m), dgObjHurtS(run,ob,v) -> true when it breaks, dgObjHealS(run,ob,v), dgObjMoveS(run,ob,lx,lz),
             dgWalkS(run,m,lx,lz,dt,speed,reach) -> distance, dgSwingS(m,dt,near) -> true when a swing lands, dgGuardS(run,m,dt), dgCountS(run,roles), dgAliveS(run),
-            dgChannelS(run,p,ob,secs,done), dgHurtPctS(p,share), dgChestS(run,lx,lz,n) -> objective, dgChestOpenS(run,ob,p), dgHallTileS(run), dgTileDistS(run,tile),
+            dgChannelS(run,p,ob,secs,done), dgHurtPctS(p,share), dgChestS(run,lx,lz,n) -> objective (queued until the boss falls: null), dgChestFlushS(run), dgChestOpenS(run,ob,p), dgHallTileS(run), dgTileDistS(run,tile),
             dgMouthsS(run,tile,dmin,dmax), dgPacksS(run,o), dgGuardiansS(run,o), dgGuardTickS(run,dt), dgFreeNearS(run,lx,lz,r), dgFarCellS(run,lx,lz,r), dgInHallS(run,lx,lz,pad), dgPickWalkerS(run),
             DG_STONE_HITS, DG_CAPTIVE_HITS, DG_CHEST_COINS, DG_WAVE_ALIVE, DG_CHAN_CAST
    users: the mission kits (server/dungeons/kits/*.js), hazards.js (dgHurtPctS); hooks: runs.js (dgFxTickS), mobs.js (m.dgOwn: dgMonTickS leaves the monster to its kit)
@@ -102,10 +102,22 @@ function dgHurtPctS(p,share){
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);
   if(p.hp<=0){ p.hp=0; p.dead=true; p.deadT=0; p.act=null; ev('down',p.id); for(const mm of MONS) if(mm.tgt===p.id){ mm.aggro=false; mm.tgt=null; mm.state='return'; mm.pendingHit=-1; } }
 }
-/* REWARD CHESTS (Defense's rotation ends, Survival's marks; docs/DUNGEONS.md section 6): an objective 'chest' (v = its number n) that any living member opens with dg{a:'use'};
+/* REWARD CHESTS (Defense's rotation ends, Survival's marks; docs/DUNGEONS.md section 6): a kit earns a chest mid-run but it only APPEARS once the boss has fallen:
+   dgChestS queues {lx,lz,n} in run.chestQ while the run is not won (nothing is toasted), dgChestFlushS (called by dgWinS) places every queued chest then, and a run that is
+   lost or abandoned first never places any (dgLoseS drops the queue). After the win the exit timer is DG_CHEST_END_S (runs.js) and dgUseP lets members open chests until it ends. An objective 'chest' (v = its number n) that any living member opens with dg{a:'use'};
    rolled ONCE when opened and the same handed to every member present (alive, downed or out), like rewardAllS: two items of the run's gear tier on the boss rarity table
    (rollBossRarity), each at least rarity n - 1 (rising with each chest) and never nothing, plus coinsFor(L) x DG_CHEST_COINS. A full bag loses the item (addItemP says so). */
-function dgChestS(run,lx,lz,n){ const at=dgFreeNearS(run,lx,lz,1); toastTo(null,'A reward chest appears in the round hall.','good'); return dgObjS(run,'chest',at.x,at.z,{r:1.5,v:n}); }
+function dgChestS(run,lx,lz,n){
+  if(run.phase!=='won'){ (run.chestQ||(run.chestQ=[])).push({lx,lz,n}); return null; }   // the boss still stands: the chest waits for its fall
+  const at=dgFreeNearS(run,lx,lz,1); return dgObjS(run,'chest',at.x,at.z,{r:1.5,v:n});
+}
+// the boss fell (dgWinS, phase already 'won'): place every queued chest; returns how many
+function dgChestFlushS(run){
+  const q=run.chestQ||[]; run.chestQ=[];
+  for(const c of q) dgChestS(run,c.lx,c.lz,c.n);
+  if(q.length) toastTo(null,q.length>1?'The boss is down: '+q.length+' reward chests appear in the round hall.':'The boss is down: a reward chest appears in the round hall.','good');
+  return q.length;
+}
 function dgChestOpenS(run,ob,p){
   if(ob.kind!=='chest'||ob.st!==1) return null;
   const n=ob.v|0, items=[], coins=coinsFor(run.L)*DG_CHEST_COINS;

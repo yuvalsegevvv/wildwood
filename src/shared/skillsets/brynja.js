@@ -1,9 +1,9 @@
 //@ Brynja's skill set, The Rime Run (risk DPS, water): fast cuts while she keeps moving, a skate-dash that chills what it crosses, and a whiteout that spends the frost; ice blue, slate and snow
-/* Agent map. Kit: docs/skillkits/kit-risk-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (a hybrid, water + dark: P1 and P3 water (the chill, a slow), P2 dark (the polar night she skates through); two elements stay for now: the one-element rule is a later step); outfit and palette: docs/skillkits/looks/brynja.md,
+/* Agent map. Kit: docs/skillkits/kit-risk-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (one element, water: the chill, a slow, and the polar night she skates through); outfit and palette: docs/skillkits/looks/brynja.md,
    game/outfits/brynja.js; visuals: game/skillsets/look-brynja.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js, tools/skillsets-ladder.js --set brynja.
    Land: the Hoarfrost Reach (tier 3). Mark: Rime. Unlike Sazanka (from behind) and Sabir (the wounded) she lives on momentum: Momentum needs a second of movement (`moved`), and she pays in maximum health. */
 defineSkillSet({
-  id:'brynja', name:'The Rime Run', land:'hoar', needs:{tier:3}, el:['water', 'dark'], outfit:'brynja',
+  id:'brynja', name:'The Rime Run', land:'hoar', needs:{tier:3}, el:'water', outfit:'brynja',
   role:{main:'risk'},
   char:{name:'Brynja', sex:'female', theme:'an ice-skater and frost-hunter who never stops moving across the frozen lake and cuts as she passes', ip:{kind:'original', riffs:'the frost-hunter and ice-skater genre (a fur-trimmed hood, a blade on the boot); no existing character'}},
   pal:{main:0x6fb4e0, accent:0xeaf4fb, glow:0xb8e6ff},
@@ -16,7 +16,7 @@ defineSkillSet({
                  fx:{proj:{kind:'frost', speed:50, turn:7, life:0.8, mark:{id:'rime', n:1, dur:12, max:5}}},style:'press',hold:{x:{slow:3}}}},
        passive:{name:'Skate Mark', text:'Casting Glide and Cut leaves a patch of black ice where you set off: for 4 seconds it chills and hurts what stands in it (at most every 6 s)', on:'cast2', icd:6, mult:0.5, range:3.5, fx:{zone:{r:3.5, dur:4, every:0.5, slow:2}}}},
     2:{bound:'any',
-       skill:{any:{name:'Glide and Cut', desc:'Skate up to 9 m through the polar dark to your target and cut everything round it, chilling it for 4 seconds. Leaves Rime on each.', cd:8, range:9, mult:1.45, act:['brynja2x',0.5,0.3], anim:'slash', el:'dark',
+       skill:{any:{name:'Glide and Cut', desc:'Skate up to 9 m through the polar dark to your target and cut everything round it, chilling it for 4 seconds. Leaves Rime on each.', cd:8, range:9, mult:1.45, act:['brynja2x',0.5,0.3], anim:'slash', el:'water',
                    fx:{dash:{ahead:2}, ring:{r:3.4, slow:1.5, mark:{id:'rime', n:1, dur:12, max:5}}}}},
        passive:{name:'Thin Ice', text:'+{}% critical hit damage; you take 10% more damage', stat:'critdmg', v:[0.30, 0.04], cost:{stat:'red', v:-0.10}}},
     3:{bound:'any',

@@ -7,10 +7,10 @@
    uses: party.js (a run's party), the rewards (dgClearReward: shared/dungeon-rewards.js, dgGrantItemP: server/dungeon-gear.js) for the clear's piece, clearBossFxS (server/boss-fx.js)
    test: tools/dungeon-runs-smoke.js.   Design: docs/DUNGEONS.md sections 2 (how a run goes), 5 (down and revive, joining), 8 (the save).
    Lifecycle: launch (the leader is in at once) -> the other party members are prompted (dgi) and have DG_ACCEPT_S to accept -> when all answered or the time is up the
-   kit's setup runs (so its monsters get the right head count) -> objectives -> the boss -> won (dge to each member, the clear saved) or lost -> DG_END_S later everyone
+   kit's setup runs (so its monsters get the right head count) -> objectives -> the boss -> won (dge to each member, the clear saved) or lost -> DG_END_S (DG_CHEST_END_S when reward chests were placed) later everyone
    is put back where they came from and the slot is freed. A run nobody is in closes after DG_EMPTY_S; a disconnected member's place is held DG_HOLD_S by account and he
    is put back at the entrance when he comes back online. A server restart ends every run (they live in memory); loot was banked as it dropped. */
-const DG_ACCEPT_S=15, DG_DOWN_S=30, DG_REVIVE_S=3, DG_REVIVE_R=2.5, DG_REVIVE_HP=0.35, DG_HOLD_S=300, DG_EMPTY_S=60, DG_END_S=20, DG_SAVE_MAX=999999;
+const DG_ACCEPT_S=15, DG_DOWN_S=30, DG_REVIVE_S=3, DG_REVIVE_R=2.5, DG_REVIVE_HP=0.35, DG_HOLD_S=300, DG_EMPTY_S=60, DG_END_S=20, DG_CHEST_END_S=60, DG_SAVE_MAX=999999;
 let dgSecT=0;
 const dgThemeOf=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(DG_THEMES,id)?DG_THEMES[id]:null;
 const dgMissionOk=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(DG_MISSIONS,id);
@@ -46,7 +46,7 @@ function updateInstsS(dt){
 function dgRunTickS(run,dt,sec){
   if(sec) dgMembersCheckS(run);
   dgFxTickS(run,dt);   // dungeons: the kits' channels, guardians and the theme's hazards (fx.js, hazards.js); after the end it takes the hazards' warnings back
-  if(run.endT){ if(S.t-run.endT>=DG_END_S) dgCloseS(run); return; }
+  if(run.endT){ if(S.t-run.endT>=(run.endLen||DG_END_S)) dgCloseS(run); return; }
   const present=dgPresentS(run);
   if(!present.length){ run.emptyT+=dt; if(run.emptyT>=DG_EMPTY_S) dgCloseS(run); return; }
   run.emptyT=0;
@@ -133,6 +133,7 @@ function dgReviveCastS(p,c){
 function dgWinS(run){
   if(run.endT) return; run.phase='won'; run.endT=S.t;
   const c0=S.ctx; S.ctx=run.id;
+  const chests=dgChestFlushS(run); if(chests) run.endLen=DG_CHEST_END_S;   // dungeons: the reward chests the kit earned appear now, and the exit waits longer so they can be opened
   for(const m of [...run.mons]) if(!(run.boss&&m===run.boss.m)) dgRemoveS(run,m);
   const key=run.th+':'+run.mission, secs=Math.max(1,Math.round(run.t)), saved=dgSaveKeyOk(key);
   const prize=dgClearReward(run.th,null,run.theme.land?run.tier-DG_LANDS[run.theme.land].base:0);   // the clear's own reward (docs/DUNGEON-THEMES.md section 7): one level-30 piece rolled once, handed to every member present (null for the test set)
@@ -144,11 +145,11 @@ function dgWinS(run){
     if(prize&&dgGrantItemP(p,prize)&&mb) mb.got.items.push(prize);   // (a full bag loses it: dgGrantItemP says so)
     dgEndEvS(run,p,1,'');
   }
-  toastTo(null,(run.theme.name||'The dungeon')+' cleared in '+dgClock(secs)+'! Back at the door in '+DG_END_S+' s.','good');
+  toastTo(null,(run.theme.name||'The dungeon')+' cleared in '+dgClock(secs)+'! Back at the door in '+(run.endLen||DG_END_S)+' s.','good');
   S.ctx=c0;
 }
 function dgLoseS(run,why){
-  if(run.endT) return; run.phase='lost'; run.endT=S.t;
+  if(run.endT) return; run.phase='lost'; run.endT=S.t; run.chestQ=[];   // (chests earned before the boss fell are never placed)
   const c0=S.ctx; S.ctx=run.id;
   if(run.boss&&!run.boss.m.dead) clearBossFxS(run.boss);
   for(const m of [...run.mons]) dgRemoveS(run,m);

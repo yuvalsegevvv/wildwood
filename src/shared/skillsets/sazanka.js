@@ -1,11 +1,11 @@
 //@ Sazanka's skill set, The Night Run (risk DPS, dark + air): quick jabs that hit hardest from behind, a slip to the target and a flurry that spends every Barb; ink, cord and moon-grey
-/* Agent map. Kit: docs/skillkits/kit-risk-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (a HYBRID: P1 air, P2 and P3 dark; the one-element rule is a later step); outfit and palette:
+/* Agent map. Kit: docs/skillkits/kit-risk-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (one element, dark); outfit and palette:
    docs/skillkits/looks/sazanka.md, game/outfits/sazanka.js; visuals: game/skillsets/look-sazanka.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-first8-smoke.js, tools/skillsets-ladder.js --set sazanka.
    Land: the Sakura Vale (tier 1). Mark: Barb.
    What the engine gives her: a Barb that lands only from behind (`mark.behind`), a dash that lands on the far side of the target (`dash.behind`), the `moved` condition (Light Feet), a crit-damage stat, `marked` (Quick Study: more crit
    chance against a barbed target), a trigger on a kill OR a crit (`on:[..]`) and a cooldown refund (`cdr`). Careless play (never behind) earns no Barbs at all: that is the risk. */
 defineSkillSet({
-  id:'sazanka', name:'The Night Run', land:'vale', needs:{tier:1}, el:['dark', 'air'], outfit:'sazanka',
+  id:'sazanka', name:'The Night Run', land:'vale', needs:{tier:1}, el:'dark', outfit:'sazanka',
   role:{main:'risk'},
   char:{name:'Sazanka', sex:'female', theme:'a night courier of lantern-lit streets (the shadow-runner genre)', ip:{kind:'original', riffs:'the night-courier and shadow-runner genre (a hood, a cord sash, a delivery tag); no existing character'}},
   pal:{main:0x2f3f6b, accent:0xc23b2a, glow:0x5a4cc0},
@@ -14,7 +14,7 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Pinprick', desc:'Two quick jabs at melee range, much stronger from behind the enemy. A hit from behind leaves a Barb.', cd:0.6, range:2.8, mult:0.4, act:['sazanka1w',0.4,0.25], anim:'slash', el:'air',
+         warrior:{name:'Pinprick', desc:'Two quick jabs at melee range, much stronger from behind the enemy. A hit from behind leaves a Barb.', cd:0.6, range:2.8, mult:0.4, act:['sazanka1w',0.4,0.25], anim:'slash', el:'dark',
                   fx:{cone:{r:2.8, arc:0.9, hits:2, mark:{id:'barb', n:1, dur:10, max:5, behind:true}}, behind:1.6},style:'press'}},
        passive:{name:'Light Feet', text:'+{}% damage for 2 s after you moved', stat:'dmg', v:[0.10, 0.01], when:{moved:2}}},
     2:{bound:'any',

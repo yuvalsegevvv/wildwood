@@ -50,9 +50,10 @@ function dgDeclineP(p){
 function dgLeaveP(p){ const run=dgRunOf(p); if(run) dgExitS(run,p); else dgDeclineP(p); }
 // use: an objective (by id), or, with no id, whatever the boss's kit lets you use in the hall (Haugbui's lamps: B.kit.use)
 function dgUseP(p,id){
-  const run=dgRunOf(p); if(!run||p.dead||!run.ready||run.endT) return;
+  const run=dgRunOf(p); if(!run||p.dead||!run.ready) return;
   const c0=S.ctx; S.ctx=run.id;
   const ob=id?run.objs.find(o=>o.id===id):null, kit=DG_KITS[run.mission], B=run.boss;
+  if(run.endT&&!(run.phase==='won'&&ob&&ob.kind==='chest')){ S.ctx=c0; return; }   // after the end only a won run's chests can still be opened
   if(ob&&ob.kind==='pzstone'){ if(Math.hypot(ob.x-p.x,ob.z-p.z)<=ob.r+1.5) pzDgUseP(run,p,ob); }   // puzzles: a run's stone
   else if(ob){ if(Math.hypot(ob.x-p.x,ob.z-p.z)<=ob.r+1.5&&kit&&kit.onUse) kit.onUse(run,p,ob); }
   else if(!id&&B&&!B.m.dead&&B.kit.use) B.kit.use(B,B.m,p);

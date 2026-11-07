@@ -28,7 +28,7 @@ function rdPlaceName(wx,wz){ for(let i=0;i<RD_ORDER.length;i++){ const R=RDS[RD_
 function rdMapMarks(x,at,land,fs,label,DPR){
   for(let i=0;i<RD_ORDER.length;i++){ const R=RDS[RD_ORDER[i]]; if(R.land!==land) continue; const [cx,cy]=at(R.x,R.z), s=RD_CL[i];
     dot(x,cx,cy,5*DPR,s&&s.st===2?'#8a8078':'#ffcf5a'); label(R.name,cx,cy-fs*1.3,fs,'#ffe9a8',true);
-    label(s?(s.st===2?'Cleared '+rdClock(rdLeftNow(s)):s.st===1?'Raid, level '+rdLevel(s.tier):'Raid, level 40+'):'Raid',cx,cy+fs*0.9,fs*0.85,'#ffd9a0'); }
+    label(s?(s.st===2?'Cleared '+rdClock(rdLeftNow(s)):s.st===1?'Raid, level '+rdLevel(s.tier):'Raid, level 30+'):'Raid',cx,cy+fs*0.9,fs*0.85,'#ffd9a0'); }
 }
 // the bag's raid material rows: [{land, name, n}] for the lands you hold some of
 function rdMatRows(){ return RD_ORDER.map(id=>RDS[id]).map(R=>({land:R.land,name:R.mat,n:rdMatHave(R.land)})).filter(r=>r.n>0); }

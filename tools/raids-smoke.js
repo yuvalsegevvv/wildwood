@@ -1,4 +1,4 @@
-// Headless test of the raids (shared/raids.js + the eight data files, server/raids.js and its hooks), straight from src/, no build: the registry and the sites, level 40..110 and 2^tier pay,
+// Headless test of the raids (shared/raids.js + the eight data files, server/raids.js and its hooks), straight from src/, no build: the registry and the sites, level 30..100 and 2^tier pay,
 // the garrison and the structures, the boss pool, the tier lock on the first hit (a +0 friend cannot carry a tier VII player), wards waking the boss, spawners, the clear and its pay,
 // the thirty-minute rebuild and the abandon reset, signature skills levelling with raid material, saves. Randomness is pinned where a number is compared. One line per check.
 // Usage: node tools/raids-smoke.js
@@ -13,14 +13,14 @@ const LANDS=['home','vale','hoar','grey','sun','gloam','amber','isles'];
 // ---- the registry ----
 ok('eight raids, one a land, none left out',x.RD_ORDER.length===8&&x.RD_BAD.length===0&&LANDS.every(l=>x.RD_ORDER.filter(i=>x.RDS[i].land===l).length===1),JSON.stringify(x.RD_BAD));
 ok('each raid\'s boss pool is its land\'s two world bosses (the sets\' first two sources), no new boss',x.RD_ORDER.every(i=>{ const R=x.RDS[i]; return R.bosses.join()===x.SS_SOURCES[R.land].slice(0,2).join(); }));
-ok('level 40 at +0 and ten more for each tier up to level 110 at tier VII; 1, 2, 4 ... 128 raid material',[0,1,2,3,4,5,6,7].map(x.rdLevel).join()==='40,50,60,70,80,90,100,110'&&[0,1,2,3,4,5,6,7].map(x.rdMatFor).join()==='1,2,4,8,16,32,64,128');
+ok('level 30 at +0 and ten more for each tier up to level 100 at tier VII; 1, 2, 4 ... 128 raid material',[0,1,2,3,4,5,6,7].map(x.rdLevel).join()==='30,40,50,60,70,80,90,100'&&[0,1,2,3,4,5,6,7].map(x.rdMatFor).join()==='1,2,4,8,16,32,64,128');
 ok('every raid has 28 garrison monsters in 6 packs and 6 elites, 3 wards, 2 spawners, 4 barricades',x.RD_ORDER.every(i=>{ const R=x.RDS[i], n=R.packs.reduce((a,p)=>a+p.n,0); return R.packs.length===6&&n===22&&R.elites.length===6&&R.wards.length===3&&R.spawners.length===2&&R.barricades.length===4; }));
 ok('the sites are dry land of their land, off the coast, clear of every village, door and world-boss arena',x.RD_ORDER.every(i=>{ const R=x.RDS[i]; return x.landAt(R.x,R.z)===R.land&&!x.waIsSea(R.x,R.z)&&x.waCoast(R.x,R.z)>60&&x.vDist(R.x,R.z)>x.VR+150&&!x.dgEntranceNear(R.x,R.z,120)&&x.ARENAS.every(A=>A.raid===i||Math.hypot(A.x-R.x,A.z-R.z)>A.r+60); }));
 ok('the court and the yard are arenas (pads that flatten the ground and keep camps, plants and nodes away), the court the size of a boss arena',x.RD_ORDER.every(i=>{ const R=x.RDS[i]; return x.ARENAS.includes(R.court)&&x.ARENAS.includes(R.yard)&&R.court.r===20&&Number.isFinite(R.court.h); }));
 
 // ---- the world holds them ----
-ok('the world server builds all eight, ready, level 40, a boss asleep (immune) in each court; BOSSES is still the seventeen world fights',x.RD_STATE.length===8&&x.RD_STATE.every(s=>s.state==='ready'&&s.L===40&&s.boss&&s.boss.m.immune&&!s.bossLive&&s.garrison.length===28&&s.wards.length===3&&s.spawners.length===2)&&x.BOSSES.length===17);
-ok('their monsters carry the raid and its numbers (monK is the raid level, not the zone tier); the boss rows reach the snapshot',x.RD_STATE.every(s=>s.all.every(m=>m.rd===s&&m.dgK&&m.dgK.lv===40))&&x.bossState().length===25);
+ok('the world server builds all eight, ready, level 30, a boss asleep (immune) in each court; BOSSES is still the seventeen world fights',x.RD_STATE.length===8&&x.RD_STATE.every(s=>s.state==='ready'&&s.L===30&&s.boss&&s.boss.m.immune&&!s.bossLive&&s.garrison.length===28&&s.wards.length===3&&s.spawners.length===2)&&x.BOSSES.length===17);
+ok('their monsters carry the raid and its numbers (monK is the raid level, not the zone tier); the boss rows reach the snapshot',x.RD_STATE.every(s=>s.all.every(m=>m.rd===s&&m.dgK&&m.dgK.lv===30))&&x.bossState().length===25);
 ok('garrison health is cut to RD_MOB_HP of the ordinary numbers while the boss and the destructibles keep theirs, so a pack never outweighs the boss',x.RD_STATE.every(s=>s.garrison.every(m=>Math.abs(m.dgK.hp-x.dgKOf(m.def,s.L).hp*x.RD_MOB_HP)<1e-9)&&s.boss.m.dgK.hp===x.dgKOf(s.boss.m.def,s.L).hp&&[...s.wards,...s.spawners,...s.barricades].every(m=>m.dgK.hp===x.dgKOf(m.def,s.L).hp)&&s.garrison.reduce((a,m)=>a+m.def.hp*m.dgK.hp*(m.elite?2:1),0)<s.boss.m.def.hp*s.boss.m.dgK.hp*6));
 ok('a world monster never sits on a pad: no camp inside any raid',x.MONS.every(m=>m.rd||x.RD_ORDER.every(i=>Math.hypot(m.x-x.RDS[i].x,m.z-x.RDS[i].z)>50)));
 
@@ -31,14 +31,14 @@ const put=(p,lx,lz)=>W.setPos(p.id,[R.x+lx,x.getH(R.x+lx,R.z+lz),R.z+lz,0,0,0]);
 put(A,0,-30); put(B,2,-30); tick(2);
 const mob=st.garrison[0], hit=(p,m,mult)=>x.damageMonsterS(m,mult||0.001,p,m.x+1,m.z,0);
 hit(B,mob);
-ok('the first hit locks the raid to the ATTACKER\'S tier: a +0 hiker locks it at level 40',st.state==='engaged'&&st.tier===0&&st.L===40&&st.all.every(m=>m.dgK.lv===40));
+ok('the first hit locks the raid to the ATTACKER\'S tier: a +0 hiker locks it at level 30',st.state==='engaged'&&st.tier===0&&st.L===30&&st.all.every(m=>m.dgK.lv===30));
 hit(A,mob);
-ok('a tier III hiker joining afterwards fights the same level-40 raid, and is paid at the raid\'s tier, not their own',st.tier===0&&x.monK(mob,A).lv===40&&x.rdCapTier(A.gear,'home',st.tier)===0);
+ok('a tier III hiker joining afterwards fights the same level-30 raid, and is paid at the raid\'s tier, not their own',st.tier===0&&x.monK(mob,A).lv===30&&x.rdCapTier(A.gear,'home',st.tier)===0);
 ok('a raid cannot be carried the other way either: the credited tier is capped by the hiker\'s own unlocked tier',x.rdCapTier(B.gear,'home',5)===0&&x.rdCapTier(A.gear,'home',5)===3&&x.rdCapTier(A.gear,'home',2)===2);
 { // a fresh raid locked by the tier III hiker
   const st2=x.RD_STATE[x.RD_ORDER.indexOf('kurohana')]; A.gear.zt=zt([3,3],[2,2]); const m2=st2.garrison[0]; put(A,0,-30); // (a hiker stands anywhere: the lock reads the setting, not the position)
   W.setPos('a',[st2.R.x,x.getH(st2.R.x,st2.R.z),st2.R.z-30,0,0,0]); hit(A,m2);
-  ok('locked by a vale tier II hiker: level 60 for everyone, the boss and the structures too, one event for the clients',st2.tier===2&&st2.L===60&&st2.all.every(m=>m.dgK.lv===60)); }
+  ok('locked by a vale tier II hiker: level 50 for everyone, the boss and the structures too, one event for the clients',st2.tier===2&&st2.L===50&&st2.all.every(m=>m.dgK.lv===50)); }
 // the boss sleeps until the wards are broken
 const bossM=st.boss.m, hp0=bossM.hp;
 put(A,0,22); tick(5); const dmg0=hit(A,bossM,50);
@@ -65,7 +65,7 @@ ok('paid 2^tier of the land\'s material to each hiker who fought here: 1 each at
   ok('a tier V clear pays 32; a hiker whose own best tier in the land is II is paid 4',x.rdMatFor(x.rdCapTier(C.gear,'hoar',5))===32&&x.rdMatFor(x.rdCapTier({zt:{hoar:{on:2,max:2}}},'hoar',5))===4&&x.rdCapTier(C.gear,'hoar',7)===7&&x.rdCapTier({},'hoar',5)===0); }
 // the rebuild
 st.clearT=0.02; tick(2);
-ok('half an hour after the clear the raid is rebuilt: ready, level 40, a fresh garrison and structures, the boss rolled again and asleep',st.state==='ready'&&st.L===40&&st.garrison.length===28&&st.garrison.every(m=>!m.dead)&&st.wards.length===3&&st.boss&&st.boss.m.immune&&!st.bossLive&&x.RD_RESET===1800);
+ok('half an hour after the clear the raid is rebuilt: ready, level 30, a fresh garrison and structures, the boss rolled again and asleep',st.state==='ready'&&st.L===30&&st.garrison.length===28&&st.garrison.every(m=>!m.dead)&&st.wards.length===3&&st.boss&&st.boss.m.immune&&!st.bossLive&&x.RD_RESET===1800);
 { const st4=x.RD_STATE[x.RD_ORDER.indexOf('stonewatch')]; put(A,0,0); W.setPos('a',[st4.R.x,x.getH(st4.R.x,st4.R.z),st4.R.z-30,0,0,0]); hit(A,st4.garrison[0]); const pre=st4.garrison[0].id;
   W.setPos('a',[0,x.getH(0,0),0,0,0,0]); st4.emptyT=x.RD_ABANDON-0.05; tick(3);
   ok('an engaged raid nobody has been inside for ten minutes resets in full (no half-broken raid is held for ever)',st4.state==='ready'&&st4.garrison[0].id!==pre&&st4.garrison.every(m=>!m.dead)); }
