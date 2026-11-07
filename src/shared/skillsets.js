@@ -1,5 +1,6 @@
 //@ Skill sets (rules, pure): the registry defineSkillSet (one file per set in shared/skillsets/), its checks, the expansion into SKILLS / PASSIVES rows, counting the worn pieces and the 3- / 5-set bonuses
 /* Agent map. Plan: docs/SKILL-SETS.md (sections 3 to 6); how to add ONE set as data, and the list of what a piece may use: docs/skillkits/AUTHORING.md; the kits: docs/skillkits/. Test: tools/skillsets-smoke.js.
+   Bonds (step 5): a set may carry bonds:{1:passive id,2:row,4:passive id,6:row} (2 and 6 are the old 3-/5-set rows, read as set.bonus[3/5]), tree (SS_TREES) and stone; Bond I/IV passives are still pieces (set.pos[n].bond = 1|4) until the Bond engine (step 12); the kept passive is set.keptPassive.
    Exports: defineSkillSet(D), SS_SETS (by id), SS_ORDER (ids in definition order), SS_BAD ({id,field,why}: the sets left out), SS_PIECE_OF (piece id -> {set,pos,kind:'active'|'passive'}),
    SS_SOURCES, SS_FX_KEYS / SS_ON / SS_EFFECT_KEYS (what a piece may use: add a key here when an engine feature adds it), SS_BONUS_ON, ssBonusSwitch, ssCount, ssBonuses, ssBonusSum, ssSetFor, ssLint, ssOwnsBasic.
    Used by: classes.js (passiveSum reads ssBonusSum, canSwap reads ssOwnsBasic), server/skillsets.js (grants, equipping a piece, the cache p.ss), the client's skills panel.
@@ -40,6 +41,7 @@ const SS_COND_STATS=['dmg','crit','critdmg','red','heal','buffpow','buffdur','de
 const SS_WHEN_KEYS=['moved','still','dist','tgtHp','hp','taunting','marked','behind','boss','crowd','allies','exposed','combat','shield'];
 const SS_ENTRY_KEYS=['name','desc','cd','range','mult','act','anim','el','fx','buff','why','style','hold'];   // style, hold: skill 1 only (shared/basic-hold.js)
 const SS_HOLD_X=['status','mark','taunt','slow','stun','burn','kb','splash'];   // what a skill 1's hold.x may add to its main shape at a full charge
+const SS_TREES=['oak','pine','willow','banyan'];   // the four Bond trees (skill revamp step 5)
 const SS_SETS=Object.create(null), SS_ORDER=[], SS_BAD=[], SS_PIECE_OF=Object.create(null);
 // a set's emblem: {col: a colour, glyph: SVG shapes (path / circle / ellipse / rect / line with plain attributes, drawn as strokes in a 24 x 24 box)}; it goes into the page as markup, so only those shapes are accepted
 const SS_GLYPH_OK=/^(<(path|circle|ellipse|rect|line)( (d|cx|cy|r|rx|ry|x|y|x1|y1|x2|y2|width|height|fill|opacity|stroke-width|transform)="[^"<>&]*")*\/>)+$/;   // (only drawing attributes: no on... handler, no href, no style)
@@ -204,7 +206,25 @@ function defineSkillSet(D){
   const inEl=e=>made.filter(m=>m.el===e).length*2;
   if(D.el==='basic'&&made.some(m=>m.el!=='basic')) return bad('el','a set with el "basic" is element-less in every piece');
   if(D.el!=='basic'&&inEl(D.el)<4) return bad('el','at least 4 of the 6 pieces (2 of the 3 positions) are in "'+D.el+'"');
-  const bn=D.bonus; if(!bn||ssRowProblem(bn[3],true)||ssRowProblem(bn[5],true)) return bad('bonus','bonus 3 and bonus 5 are rows: '+(!bn?'missing':ssRowProblem(bn[3],true)||ssRowProblem(bn[5],true)));
+  // Bonds (skill revamp step 5): bonds:{1:<passive id>,2:<row>,4:<passive id>,6:<row>}, tree, stone. A set with `bonds` holds the old 3- / 5-set rows as bonds[2] / bonds[6] (and has no `bonus`); a set not converted yet keeps `bonus`.
+  const hasB=D.bonds!==undefined; let bn=D.bonus, keptP=null;
+  if(hasB){
+    const B=D.bonds, pids=[1,2,3].map(n=>id+'_p'+n);
+    if(!B||typeof B!=='object') return bad('bonds','bonds is {1:<passive id>, 2:<row>, 4:<passive id>, 6:<row>}');
+    for(const k of [1,4]) if(!pids.includes(B[k])) return bad('bonds','bond '+k+' is one of this set\'s passive ids ('+pids.join(', ')+'), not '+JSON.stringify(B[k]));
+    if(B[1]===B[4]) return bad('bonds','bond 1 and bond 4 are two different passives');
+    const kept=pids.find(q=>q!==B[1]&&q!==B[4]), boosted=D.ult&&Array.isArray(D.ult.boost)?D.ult.boost.map(b=>b&&b.piece).filter(q=>typeof q==='string'&&/^p[123]$/.test(q)).map(q=>id+'_'+q):[];
+    for(const k of [1,4]) if(boosted.includes(B[k])) return bad('bonds','bond '+k+' ('+B[k]+') is a passive the burst buffs: it has to stay equippable');
+    if(ssRowProblem(B[2],true)||ssRowProblem(B[6],true)) return bad('bonds','bond 2 and bond 6 are rows: '+(ssRowProblem(B[2],true)||ssRowProblem(B[6],true)));
+    bn={3:B[2],5:B[6]};
+    if(!SS_TREES.includes(D.tree)) return bad('tree','tree is one of '+SS_TREES.join(' '));
+    if(typeof D.stone!=='string'||!D.stone.trim()||D.stone.length>40) return bad('stone','stone is the name of the Bondstone (1 to 40 characters)');
+    keptP=kept;
+  } else {
+    if(D.tree!==undefined&&!SS_TREES.includes(D.tree)) return bad('tree','tree is one of '+SS_TREES.join(' '));
+    if(D.stone!==undefined&&(typeof D.stone!=='string'||!D.stone.trim())) return bad('stone','stone is a name');
+  }
+  if(!bn||ssRowProblem(bn[3],true)||ssRowProblem(bn[5],true)) return bad('bonus','bonus 3 and bonus 5 are rows: '+(!bn?'missing':ssRowProblem(bn[3],true)||ssRowProblem(bn[5],true)));
   // a pop or an amp spends marks: the set must make them (kit.mark, a skill's or a row's mark)
   { const made2=new Set(D.kit&&D.kit.mark?[D.kit.mark]:[]), used=new Set(), rows=[...made.map(m=>m.P.passive),bn[3],bn[5]];
     const usedIn=(f,out)=>{ if(!f) return; for(const k of SS_FX_SHAPES) if(f[k]&&f[k].status&&f[k].status.perMark) out.add(f[k].status.perMark.id); if(f.pop) out.add(f.pop.id); for(const k of ['ally','heal','shield']) for(const e of f[k]===undefined?[]:[].concat(f[k])) if(e&&e.perMark) out.add(e.perMark.id); };
@@ -212,7 +232,7 @@ function defineSkillSet(D){
     for(const r of rows){ ssMarksMade(r,made2); if(r.amp) used.add(r.amp.id); usedIn(r.fx,used); if(r.status&&r.status.perMark) used.add(r.status.perMark.id); if(r.when&&r.when.marked) used.add(r.when.marked); if(r.cost&&r.cost.when&&r.cost.when.marked) used.add(r.cost.when.marked); }
     for(const u of used) if(!made2.has(u)) return bad('kit','"'+u+'" is popped or amplified but nothing in the set applies that mark (kit.mark, or a mark on a skill or a row)'); }
   // everything checks out: register the pieces
-  const set={id,name:D.name,land:D.land,tier,dev,el:D.el,role:JSON.parse(JSON.stringify(R)),char:JSON.parse(JSON.stringify(C)),pal:Object.assign({},D.pal),emblem:D.emblem?{col:D.emblem.col,glyph:D.emblem.glyph}:null,kit:D.kit?JSON.parse(JSON.stringify(D.kit)):null,outfit:D.outfit||null,pos:{},bonus:{}};
+  const set={id,name:D.name,land:D.land,tier,dev,el:D.el,role:JSON.parse(JSON.stringify(R)),char:JSON.parse(JSON.stringify(C)),pal:Object.assign({},D.pal),emblem:D.emblem?{col:D.emblem.col,glyph:D.emblem.glyph}:null,kit:D.kit?JSON.parse(JSON.stringify(D.kit)):null,outfit:D.outfit||null,pos:{},bonus:{},bonds:hasB?{1:D.bonds[1],2:id+'_b3',4:D.bonds[4],6:id+'_b5'}:null,keptPassive:hasB?keptP:null,tree:D.tree||null,stone:D.stone||null};
   for(const m of made){
     const lv=m.p<3?((BOSS_DEFS.find(b=>b.def.id===src[m.p-1])||{def:{level:SS_LATE_LV[src[m.p-1]]}}).def.level):(th?th.lv:SS_LATE_LV[src[2]]), ids=[];
     for(const [k,e] of m.variants){
@@ -222,7 +242,7 @@ function defineSkillSet(D){
     const pid=id+'_p'+m.p;
     PASSIVES[pid]=ssRow(m.P.passive,pid,{slot:'passive',cls:null,lv,price:0,set:id,pos:m.p},{el:m.el});
     PASSIVE_IDS.push(pid); SS_PIECE_OF[pid]={set:id,pos:m.p,kind:'passive'};
-    set.pos[m.p]={slot:m.slot,bound:m.P.bound,from:{kind:m.p<3?'boss':'dungeon',id:src[m.p-1],chance:m.P.from&&m.P.from.chance,pity:m.P.from&&m.P.from.pity},ids,passive:pid,lv,el:m.el};
+    set.pos[m.p]={bond:hasB&&D.bonds[1]===pid?1:hasB&&D.bonds[4]===pid?4:0,slot:m.slot,bound:m.P.bound,from:{kind:m.p<3?'boss':'dungeon',id:src[m.p-1],chance:m.P.from&&m.P.from.chance,pity:m.P.from&&m.P.from.pity},ids,passive:pid,lv,el:m.el};
   }
   for(const t of [3,5]) set.bonus[t]=ssRow(bn[t],id+'_b'+t,{set:id,tier:t,slot:'bonus'},{el:D.el});
   SS_SETS[id]=set; SS_ORDER.push(id);

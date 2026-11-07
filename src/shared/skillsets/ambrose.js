@@ -28,7 +28,10 @@ defineSkillSet({
   ult:{name:'Spring Flood', desc:'A wave rolls out in a 14 m cone: it hits and stuns the enemy, and the party it passes over gets a small heal (4% of maximum health).', range:14, mult:4.6, act:['ambroseult',1.0,0.55], anim:'nova',
        fx:{cone:{r:14, arc:0.6, kb:4, slow:2}, heal:{v:0.04, r:20}},
        boost:[{piece:'a1', secs:14, mod:{mult:2}}, {piece:'a2', secs:12, mod:{mult:2, util:1.25}}]},
-  bonus:{
-    3:{name:'Overflow', text:'{}% of the healing you give that would overheal becomes a shield (6 s) on the one healed', stat:'overflow', v:0.6},
-    5:{name:'Lifeline', text:'When you drop below 35% health, or bring a downed party member back in a dungeon, a rush of water heals you for 25% and shields and guards you and your allies (25% of health, 20% less damage taken, 8 s; at most every 20 s)', on:['low', 'revive'], below:0.35, icd:20, heal:0.25, shield:{v:0.25, dur:8}, buff:{kind:'guard', v:0.2, dur:8, r:25}}},
+  tree:'banyan', stone:'Reed Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'ambrose_p2',
+    2:{name:'Overflow', text:'{}% of the healing you give that would overheal becomes a shield (6 s) on the one healed', stat:'overflow', v:0.6},
+    4:'ambrose_p3',
+    6:{name:'Lifeline', text:'When you drop below 35% health, or bring a downed party member back in a dungeon, a rush of water heals you for 25% and shields and guards you and your allies (25% of health, 20% less damage taken, 8 s; at most every 20 s)', on:['low', 'revive'], below:0.35, icd:20, heal:0.25, shield:{v:0.25, dur:8}, buff:{kind:'guard', v:0.2, dur:8, r:25}}},
 });

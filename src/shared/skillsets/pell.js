@@ -32,7 +32,10 @@ defineSkillSet({
   ult:{name:'Lantern Flood', desc:'The spear is thrown into the ground and a pool of fire spreads (8 m), with 3 Lures on everything in it.', range:30, mult:1.5, act:['pellult',1.1,0.9], anim:'slash',
        fx:{zone:{r:8, dur:3, first:0.3, every:0.5, mark:{id:'lure', n:3, dur:12, max:3}}},
        boost:[{piece:'a3', secs:12, mod:{mult:2, cd:0.5}}, {piece:'p2', secs:14, mod:{v:2.5}}]},
-  bonus:{
-    3:{name:'Eel-Light', text:'a target carrying your Lure takes 10% more from you for each Lure', amp:{id:'lure', per:0.10}},
-    5:{name:'The Pool Burns', text:'Your third-slot attack sets everything in a 6 m circle round the target ablaze for 120% damage', on:'cast3', at:'target', mult:1.2, range:6, fx:{ring:{r:6, burn:{dur:4, k:0.3}}}}},
+  tree:'oak', stone:'Lantern Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'pell_p1',
+    2:{name:'Eel-Light', text:'a target carrying your Lure takes 10% more from you for each Lure', amp:{id:'lure', per:0.10}},
+    4:'pell_p3',
+    6:{name:'The Pool Burns', text:'Your third-slot attack sets everything in a 6 m circle round the target ablaze for 120% damage', on:'cast3', at:'target', mult:1.2, range:6, fx:{ring:{r:6, burn:{dur:4, k:0.3}}}}},
 });
