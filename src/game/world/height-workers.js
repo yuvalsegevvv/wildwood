@@ -43,19 +43,6 @@ function hwStart(){
     setTimeout(()=>URL.revokeObjectURL(url),60000);
   }catch(e){ hwFail(String(e&&e.message||e)); }
 }
-/* The main thread helps while it would only wait: a worker needs ~1.6 s to start (it evaluates the whole shared slice, and cannot start until the main thread yields), during which this
-   thread was idle. hwMainRow() works out ONE row of the next task still in HW.order (nearest the spawn first, the same queue the workers draw from, so no row is done twice) with the same
-   rawHeight; genTerrain's wait loop (hsEnsure) calls it instead of idling. Returns false when there is nothing left to take. */
-let HW_CUR=-1, HW_CUR_END=0;
-function hwMainRow(){
-  if(!HW.on||HW.failed) return false;
-  if(HW_CUR<0){ if(!HW.order.length) return false; HW_CUR=HW.order.shift(); HW_CUR_END=Math.min(NVZ,HW_CUR+HW_STEP); }
-  const iz=HW_CUR, z=WZ0+iz*CELL, o=iz*NVX;
-  for(let ix=0;ix<NVX;ix++) HS[o+ix]=rawHeight(WX0+ix*CELL,z);
-  HW.rows[iz]=1; HW.left--; HW_CUR++; if(HW_CUR>=HW_CUR_END) HW_CUR=-1;
-  if(HW.left<=0&&HW.workers.length){ HW.tDone=performance.now(); for(const x of HW.workers) x.terminate(); HW.workers=[]; }
-  return true;
-}
 // have the workers delivered rows a..b (inclusive)?
 function hwHave(a,b){ if(!HW.on||HW.failed) return false; for(let r=a;r<=b;r++) if(HW.rows[r]!==1) return false; return true; }
 // did the worker deliver this row? (rows are only trusted after hwCheck passed)

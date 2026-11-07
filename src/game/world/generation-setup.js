@@ -199,7 +199,7 @@ function* hsEnsure(a,b){
   a=Math.max(0,a); b=Math.min(NVZ-1,b);
   if(HW.on&&!HW.failed){
     const t0=performance.now();
-    while(!HW.failed&&!hwHave(a,b)&&performance.now()-t0<30000){ Stream.tp=(NVZ-HW.left)/NVZ*0.6; if(!hwMainRow()) Stream.idle=true; yield; }   // (the main thread takes a row of the workers' queue instead of waiting: height-workers.js hwMainRow)
+    while(!HW.failed&&!hwHave(a,b)&&performance.now()-t0<30000){ Stream.tp=(NVZ-HW.left)/NVZ*0.6; Stream.idle=true; yield; }
     if(!HW.checked){ HW.checked=true; hwCheck(); }
   }
   for(let iz=a;iz<=b;iz++){
