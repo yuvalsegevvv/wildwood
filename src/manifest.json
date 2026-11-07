@@ -514,6 +514,7 @@
     "world/weather.js",
     "world/aurora.js",
     "player/movement.js",
+    "player/barrier-hint.js",
     "player/footfx.js",
     "economy/main-quest-guide.js",
     "ui/waypoint.js",

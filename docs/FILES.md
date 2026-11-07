@@ -583,6 +583,7 @@ game
   world/weather.js                   Weather on the client: rain streaks around the camera (snowfall and blizzards instead in the Hoarfrost Reach and on the Greyspine's peaks), a darker foggy sky, lightning and thunder (rain and wind sound: audio/rain.js)
   world/aurora.js                    The aurora over the Hoarfrost Reach: slow green and violet curtains in the northern sky on clear nights
   player/movement.js                 Player movement (with a boss's ice, shoves and whirlpools), a slope limit, collisions (the border bridge with its barred gate; the shut gates are shared/barriers.js), the shore's knee-deep rule, camera
+  player/barrier-hint.js             Makes a shut gate visible: when barStep holds a hiker, a glowing wall fades in at the spot and a toast says which boss opens the way.
   player/footfx.js                   Footstep dust, snow powder and wading splashes at the player's feet: a puff a step, a ring on landing, drops while you wade
   economy/main-quest-guide.js        The first-steps guide: a trail of gold motes along the ground and a rising pillar of sparkles that lead a new hiker to the villager the main quest sends them to
   ui/waypoint.js                     The objective marker: a gold pin with the name and distance of where the main quest (or, on a cave floor, the cave guide) sends you, over the spot when it is on screen and on the screen's edge with an arrow when it is not

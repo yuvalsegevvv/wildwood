@@ -112,7 +112,7 @@ function onMonDmg(id,v,crit,by,fx){
 }
 function onMonDmgNow(id,v,crit,by,fx){
   const m=MON_BY_ID.get(id); if(!m) return;
-  m.flash=1; m.hp=Math.max(0,m.hp-v);
+  m.flash=1; m.hp=Math.max(0,m.hp-v/(monTierK(m).hp||1));   // m.hp is in the def's units: at a higher zone tier a hit takes off less of it (as the server does), else the bar dips and snaps back with the next snapshot
   // your own hits show whether the element helped (an arrow up) or hurt (down): your soul and the monster's element
   const mine=by===NET.pid&&fx, c=monCenter(m);
   popText(c.x,c.y+m.T.height*0.5*m.s,c.z,String(v)+(mine?(fx>0?'▲':'▼'):''),(crit?'crit':(by===NET.pid?'':'other'))+(mine?(fx>0?' up':' down'):''));

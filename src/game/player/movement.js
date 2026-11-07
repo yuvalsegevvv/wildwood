@@ -80,7 +80,8 @@ function worldBounds(o,ox,rad,oz){
     else o.z=T.z+clamp(dz,-(T.w-rad),T.w-rad);
   }
   o.z=clamp(o.z,WZ0+14,WZ1-14); o.x=clamp(o.x,WX0+14,WX1-14);   // the one clamp that stays: the world's edge, far offshore
-  if(!o.inTun) barStep(o,ox,oz===undefined?o.z:oz,GEAR||BAR_NONE);   // the gates that are still shut (shared/barriers.js)
+  if(!o.inTun){ const ix=o.x, iz=o.z; barStep(o,ox,oz===undefined?o.z:oz,GEAR||BAR_NONE);   // the gates that are still shut (shared/barriers.js)
+    if(oz!==undefined&&Math.hypot(o.x-ix,o.z-iz)>0.02) bwBlocked(ox,oz,ix,iz); else if(oz!==undefined) bwNear(o,ox,oz); }   // a shut gate was hit: show the wall and say how to open it (player/barrier-hint.js)
   if(oz!==undefined && coastDist(o.x,o.z)<34 && bridgeDeck(o.x,o.z)<WATER){ const h=getH(o.x,o.z); if(h<WATER-0.8 && h<getH(ox,oz)){ o.x=ox; o.z=oz; } }
   pvWall(o,ox,oz);   // pvp: the Proving Isle's lake is a wall too, and its gate stays shut after a knock-out (game/pvp/state.js)
 }
