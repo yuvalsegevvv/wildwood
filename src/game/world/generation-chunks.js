@@ -27,7 +27,7 @@ function addTreeKind(k,list){
    noise, along forest edges (forestDensity 0.3-0.6) and by the water (low ground), where they also stand taller. A neighbour reuses its parent's
    height less the slope it could climb (it may sit a little low, never float), so no getH is spent; none grows on slopes over 0.35, near a road,
    in a village's margin or by a teleport circle. The count grows by about GRASS_EXTRA. */
-const GRASS_BALD=0.9, GRASS_SAT_MAX=2.5, GRASS_EXTRA=0.12;   // how bare the bald patches get; at most this many neighbours per unit of lushness; the share of open-ground tufts that get one more neighbour (the meadow's density: +12 % tufts)
+const GRASS_BALD=0.6, GRASS_SAT_MAX=4, GRASS_EXTRA=0.9;   // how bare the bald patches get; at most this many neighbours per unit of lushness; the share of open-ground tufts that get one more neighbour (the meadow's density: about +100 % tufts; the owner found the first +12 % far too sparse)
 function grHashI(a,b){ let h=Math.imul(a,374761393)+Math.imul(b,668265263)|0; h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; }
 function grVn(x,z){   // value noise 0..1 from an integer hash (cheaper than noise2; only the clumping uses it)
   const ix=Math.floor(x), iz=Math.floor(z), fx=x-ix, fz=z-iz, u=fx*fx*(3-2*fx), v=fz*fz*(3-2*fz);
