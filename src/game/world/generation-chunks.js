@@ -1,4 +1,4 @@
-//@ Per-chunk vegetation placement (genChunk): the home forest's mix, sakura, maple, pine and bamboo in the Sakura Vale, snowy spruce, dwarf birch and boulders in the Hoarfrost Reach, conifers up to the treeline in the Greyspine
+//@ Per-chunk vegetation placement (genChunk): the home forest's mix, sakura, maple, pine and bamboo in the Sakura Vale, snowy spruce, dwarf birch and boulders in the Hoarfrost Reach, conifers up to the treeline in the Greyspine; grass clumping (grassClump)
 const NCH=CHX*CHZ;
 function chunkRect(ci,m){
   const cx=ci%CHX, cz=Math.floor(ci/CHX);
@@ -21,7 +21,48 @@ function addTreeKind(k,list){
   addInstanced(hi.trunk,matBark,base,{cast:true,receive:true,lods:[{geo:lo.trunk,from:TREE_LOD,cast:true}]});
   if(hi.leaves) addInstanced(hi.leaves,leafMat,list,{cast:true,receive:true,lods:[{geo:lo.leaves,from:TREE_LOD,cast:true}]});
 }
+/* Grass clumping: the placement loop in genChunk spreads tufts evenly (and must keep drawing from the chunk's rand exactly as before, or every plant
+   placed after the grass would move), so the clumps are made afterwards from the chunk's own mrng stream: bald patches (value noise, ~12 m) and
+   the edges of roads lose tufts, and as many tufts again grow as close neighbours (0.35-0.85 m) of the lush ones: in the lush blobs of the same
+   noise, along forest edges (forestDensity 0.3-0.6) and by the water (low ground), where they also stand taller. A neighbour reuses its parent's
+   height less the slope it could climb (it may sit a little low, never float), so no getH is spent; none grows on slopes over 0.35, near a road,
+   in a village's margin or by a teleport circle. The count grows by about GRASS_EXTRA. */
+const GRASS_BALD=0.9, GRASS_SAT_MAX=2.5, GRASS_EXTRA=0.12;   // how bare the bald patches get; at most this many neighbours per unit of lushness; the share of open-ground tufts that get one more neighbour (the meadow's density: +12 % tufts)
+function grHashI(a,b){ let h=Math.imul(a,374761393)+Math.imul(b,668265263)|0; h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; }
+function grVn(x,z){   // value noise 0..1 from an integer hash (cheaper than noise2; only the clumping uses it)
+  const ix=Math.floor(x), iz=Math.floor(z), fx=x-ix, fz=z-iz, u=fx*fx*(3-2*fx), v=fz*fz*(3-2*fz);
+  const a=grHashI(ix,iz), b=grHashI(ix+1,iz), c=grHashI(ix,iz+1), d=grHashI(ix+1,iz+1);
+  return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v;
+}
+function grassClump(items){
+  if(items.length<40) return items;
+  const {r:rg}=mrng(((items[0].x*73.1+items[0].z*19.7)|0)^0x5bd1), out=[], cand=[]; let drops=0, lushSum=0;
+  for(const it of items){
+    const k=grVn(it.x*0.085+0.5,it.z*0.085+0.5), bald=smoothstep(0.3,0.1,k), edge=smoothstep(0.06,0.38,it.ra||0);
+    if(rg()<bald*GRASS_BALD+edge*0.7){ drops++; continue; }
+    const e=it.m.elements, y=e[13];
+    if(edge>0){ const f=1-0.45*edge; e[4]*=f; e[5]*=f; e[6]*=f; }   // trodden short by the road
+    if(it.free&&it.g<0.35){
+      const wet=smoothstep(1.9,0.8,y), lush=smoothstep(0.6,0.85,k)+smoothstep(0.25,0.4,it.fd)*smoothstep(0.65,0.5,it.fd)*0.8+wet*1.2;
+      if(wet>0){ const f=1+0.35*wet; e[4]*=f; e[5]*=f; e[6]*=f; }
+      cand.push(it,lush); lushSum+=lush;
+    }
+    out.push(it);
+  }
+  const s0=lushSum>0?Math.min(GRASS_SAT_MAX,drops/lushSum):0;
+  for(let i=0;i<cand.length;i+=2){
+    const it=cand[i], e=it.m.elements, sx=Math.hypot(e[0],e[1],e[2]), sy=Math.hypot(e[4],e[5],e[6]);
+    for(let n=Math.floor(s0*cand[i+1]+rg())+(rg()<GRASS_EXTRA?1:0);n>0;n--){
+      const a=rg()*TAU, r=0.35+rg()*0.5, x=it.x+Math.cos(a)*r, z=it.z+Math.sin(a)*r;
+      if(nearTele(x,z,1.2)) continue;
+      const s=sx*(0.7+0.35*rg());
+      out.push({x,z,m:mtx(x,e[13]-it.g*r-0.02,z,rg()*TAU,s,sy*(0.75+0.35*rg()),s),c:it.c.clone().multiplyScalar(0.93+rg()*0.14)});
+    }
+  }
+  return out;
+}
 function addGrass(items){
+  items=grassSort(grassClump(items));   // (sorted for the levels of detail: see grassSort in grass-models.js)
   const T=G.grassHi;
   if(!T) addInstanced(G.grass,matGrass,items,{receive:true,maxDist:95,hgt:1.6,rad:0.6});
   else if(T.length<3) addInstanced(T[0],matGrass,items,{receive:true,maxDist:95,hgt:1.6,rad:0.6});
@@ -183,13 +224,14 @@ function* genChunk(ci){
   for(let a=0,n=0;a<GN*4 && n<GN;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(4), h=getH(x,z);
-    if(h<0.5 || (bareGround(x,z) && rand()<0.85)) continue;   // a few dry tufts on the beach and the Sunwall
+    const bare=h>=0.5&&bareGround(x,z);   // (asked as before: rand only when bare, so the chunk's stream is unchanged)
+    if(h<0.5 || (bare && rand()<0.85)) continue;   // a few dry tufts on the beach and the Sunwall
     const g=grad(x,z), fd=forestDensity(x,z);
     if(rand()>(1-smoothstep(0.55,0.95,fd)*0.75)*(1-smoothstep(0.6,0.95,g))) continue;
     const vd=vDist(x,z);   // inside a village the green is kept: fewer, shorter tufts (the long meadow grass made the home village look unkempt)
     if(vd<VR+26){ if(plazaAmt(x,z)>0.3 || pathAmt(x,z)>0.35 || inBox(x,z,0.3)) continue; if(vd<VR && rand()<0.7) continue; }
     if(Math.abs(z-TUN.z)<TUN.w+1 && x>TUN.x0-12 && x<TUN.x1+12) continue;   // the tunnel's gravel road
-    if(roadAmt(x,z)>0.4) continue;                                             // the roads
+    const ra=roadAmt(x,z); if(ra>0.4) continue;                                // the roads
     if(nearTele(x,z,1.2)) continue;
     const hoar=inHoar(x,z); if(hoar&&(rand()<0.8||iceDist(x,z)<2||inPass(x,z,1))) continue;   // a few dry tussocks poke through the snow
     if(inGrey(x,z)&&h>greyTreeline(x,z)+14 || greyWet(x,z,-0.5)) continue;   // no tufts in the Greyspine's snowfields or in the water
@@ -201,9 +243,11 @@ function* genChunk(ci){
       const ash=savBurnK(x,z); gc.setRGB(1,1,1).multiplyScalar(R(0.88,1.12)).lerp(SAV_ASH,ash*0.9);
       savItems.push({x,z,m:mtx(x,h-0.02,z,rand()*TAU,s*R(1.0,1.5),s*R(0.8,1.3)*(1+meadow*0.6)*(1-ash*0.5),s*R(1.0,1.5)),c:gc.clone()}); n++; continue;
     }
-    if(hoar) gc.set(pick(PAL.tussock)); else { terrainColor(x,z,h,g,gc); gc.lerp(fresh,0.3).multiplyScalar(R(0.95,1.2)); }
-    grassItems.push({x,z,m:mtx(x,h-0.02,z,rand()*TAU,s,s*R(0.8,1.15)*(1+meadow*0.9),s),c:gc.clone()}); n++;
+    if(hoar) gc.set(pick(PAL.tussock)); else if(LITE){ terrainColor(x,z,h,g,gc); gc.lerp(fresh,0.3).multiplyScalar(R(0.95,1.2)); } else { terrainColor(x,z,h,g,gc); grassTint(gc,(R(0.95,1.2)-0.95)*4); }   // (one rand either way: the chunk's stream must not change)
+    const free=!hoar&&!bare&&ra<0.02&&vd>VR+30&&!(Math.abs(z-TUN.z)<TUN.w+3&&x>TUN.x0-14&&x<TUN.x1+14);   // grassClump may grow neighbours here
+    grassItems.push({x,z,m:mtx(x,h-0.02,z,rand()*TAU,s,s*R(0.8,1.15)*(1+meadow*0.9),s),c:gc.clone(),g,fd,ra,free}); n++;
   }
+  yield;   // (grassClump and the packing take a few ms: give them a slice of their own)
   if(grassItems.length) addGrass(grassItems);
   if(savItems.length) savAddGrass(savItems);
   yield;

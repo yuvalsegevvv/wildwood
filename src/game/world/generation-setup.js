@@ -106,33 +106,66 @@ function buildGeometries(){
    seams): patches of tone (moisture, dry grass, soil) at 10 m, 3 m, 0.8 m and 0.2 m, and on desktops small bumps in the surface normal, which
    needs per-pixel lighting (r128's Lambert is per vertex), so the terrain is a Phong material with no shine there. Both fade out with distance
    (fine detail would only shimmer). Light mode keeps the plain vertex-lit ground. */
-const TERRAIN_FS_HEAD=`varying vec3 vWp; varying float vDist;
-float thsh(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
-vec3 tnoise(vec2 p){ vec2 i=floor(p), f=fract(p), u=f*f*(3.0-2.0*f), du=6.0*f*(1.0-f);
+const TERRAIN_FS_HEAD=`varying vec3 vWp; varying float vDist; uniform float uTime;
+float thsh(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
+// value noise on a lattice turned by 31 degrees (not along the world's axes) and bent by a slow warp, so no octave shows straight rows or squares; the
+// gradient is turned back to world axes for the bump
+vec3 tnoise(vec2 p){ const mat2 R=mat2(0.857,0.515,-0.515,0.857);
+  p=R*p; p+=0.6*vec2(sin(p.y*0.37+1.3),sin(p.x*0.41+4.1));
+  vec2 i=floor(p), f=fract(p), u=f*f*(3.0-2.0*f), du=6.0*f*(1.0-f);
   float a=thsh(i), b=thsh(i+vec2(1.0,0.0)), c=thsh(i+vec2(0.0,1.0)), d=thsh(i+vec2(1.0,1.0)), k=a-b-c+d;
-  return vec3(a+(b-a)*u.x+(c-a)*u.y+k*u.x*u.y, du*vec2(b-a+k*u.y, c-a+k*u.x)); }
+  return vec3(a+(b-a)*u.x+(c-a)*u.y+k*u.x*u.y, (du*vec2(b-a+k*u.y, c-a+k*u.x))*R); }
 `;
 const TERRAIN_COLOR=`
   vec2 tq=vWp.xz; float tfade=1.0-smoothstep(40.0,130.0,vDist);
   vec3 tn1=tnoise(tq*0.35), tn2=tnoise(tq*1.3+7.0), tn3=tnoise(tq*4.7+3.0), tn0=tnoise(tq*0.09+11.0);
   float tm=tn1.x*0.45+tn2.x*0.35+tn3.x*0.2;
   float tlum=dot(diffuseColor.rgb,vec3(0.3,0.59,0.11)), tbright=smoothstep(0.5,0.8,tlum);   // snow and ice keep their white: no warm shift, little tone
-  diffuseColor.rgb*=1.0+(0.82+0.36*mix(0.5,tm,0.35+0.65*tfade)-1.0)*(1.0-0.75*tbright);
-  diffuseColor.rgb*=mix(vec3(1.0),mix(vec3(0.95,1.0,1.03),vec3(1.08,1.03,0.88),smoothstep(0.3,0.75,tn0.x)),1.0-tbright);
+  float tgreen=smoothstep(0.0,0.06,diffuseColor.g-max(diffuseColor.r,diffuseColor.b)*0.95), tmask=max(tgreen,tbright);   // dirt, paths and sand (r >= g) stay flat: no noise on bare ground
+  diffuseColor.rgb*=1.0+(0.82+0.36*mix(0.5,tm,(0.35+0.65*tfade)*tmask)-1.0)*(1.0-0.88*tbright);
+  diffuseColor.rgb*=mix(vec3(1.0),mix(vec3(0.95,1.0,1.03),vec3(1.08,1.03,0.88),smoothstep(0.3,0.75,tn0.x)),(1.0-tbright)*tgreen);
+`;
+/* Short grass (desktop, VD>=2, only with localStorage 'wildwood-sg'='1' for now): the lawn between the tufts, made from noise in the same pixel shader, no model.
+   It applies only where the ground colour is green (sand is red-yellow, snow and ice are bright, mountain rock is grey, so those get none) and only
+   near the camera. Blade streaks are noise stretched along the wind and shifted by the SAME travelling wave as the tufts' (grassMat, materials.js:
+   direction (0.8,0.6), crest 28 m, 0.495 / 2.42 rad/s), so the lawn shimmers with the field. */
+const TERRAIN_SHORT=`
+  float sgk=0.0; vec2 sgg=vec2(0.0);
+  { sgk=smoothstep(0.03,0.10,diffuseColor.g-max(diffuseColor.r,diffuseColor.b)*0.92)*(1.0-tbright)*(1.0-smoothstep(22.0,55.0,vDist));
+    if(sgk>0.002){
+      vec2 gw=vec2(0.8,0.6); float ga=dot(tq,gw);
+      float gg=smoothstep(0.15,0.95,0.6*(0.5+0.5*sin(ga*0.045-uTime*0.495))+0.4*tnoise((tq-gw*uTime*11.0)*0.012).x);
+      float gs=sin(ga*0.22-uTime*2.42);
+      vec2 gq=tq+gw*(0.05+0.10*gg)*(0.6+0.4*gs);
+      vec3 b1=tnoise(gq*11.0), b2=tnoise(gq*27.0+5.0);
+      float bl=b1.x*0.6+b2.x*0.4;
+      sgg=(b1.yz*11.0*0.6+b2.yz*27.0*0.4)*sgk;   // slope of the blade field: tilts the normal so the sun catches blade sides
+      diffuseColor.rgb*=1.0-sgk*(0.30*(1.0-bl)*(1.0-bl));   // gaps between blades are dark (self-shadow), tops stay as they were
+    } }
 `;
 const TERRAIN_BUMP=`
   { float bf=1.0-smoothstep(25.0,85.0,vDist);
     vec2 tg=tn1.yz*(0.10*0.35)+tn2.yz*(0.045*1.3)+tn3.yz*(0.016*4.7);
     normal=normalize(normal+(viewMatrix*vec4(-tg.x*bf,0.0,-tg.y*bf,0.0)).xyz); }
 `;
+// the lawn stands 5 cm proud of dirt, paths and sand: green ground (same test as the lawn: green beats red and blue, not bright snow) is lifted in the vertex shader
+const SG_LIFT=`
+  { float sgl=smoothstep(0.0,0.06,color.g-max(color.r,color.b)*0.95)*(1.0-smoothstep(0.5,0.8,dot(color,vec3(0.3,0.59,0.11)))); transformed.y+=0.05*sgl; }
+`;
+const TERRAIN_SHORT_BUMP=`
+  normal=normalize(normal+(viewMatrix*vec4(-sgg.x*0.035,0.0,-sgg.y*0.035,0.0)).xyz);
+  { float gz=1.0-abs(dot(normalize(vViewPosition),normal)); diffuseColor.rgb*=1.0+sgk*gz*gz*0.22; }   // blades seen edge-on at a low angle: a lighter fringe, the carpet gets depth
+`;
 function terrainMaterial(){
   const phong=VD>=2, m=phong?new THREE.MeshPhongMaterial({vertexColors:true,specular:0x000000,shininess:1}):new THREE.MeshLambertMaterial({vertexColors:true});
   if(VD<1) return m;
+  const sgOn=phong&&(()=>{try{return localStorage.getItem('wildwood-sg')==='1';}catch(e){return false;}})();   // OFF by default until the owner approves how it looks; localStorage 'wildwood-sg'='1' turns it on
   m.onBeforeCompile=sh=>{
-    sh.vertexShader='varying vec3 vWp; varying float vDist;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.0)).xyz; vDist=length(mvPosition.xyz);');
-    sh.fragmentShader=TERRAIN_FS_HEAD+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n'+TERRAIN_COLOR).replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+(phong?TERRAIN_BUMP:''));
+    sh.uniforms.uTime=timeU;
+    sh.vertexShader='varying vec3 vWp; varying float vDist;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>'+(sgOn?SG_LIFT:'')).replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.0)).xyz; vDist=length(mvPosition.xyz);');
+    sh.fragmentShader=TERRAIN_FS_HEAD+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n'+TERRAIN_COLOR+(sgOn?TERRAIN_SHORT:'')).replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+(phong?TERRAIN_BUMP+(sgOn?TERRAIN_SHORT_BUMP:''):''));
   };
-  m.customProgramCacheKey=()=>phong?'terrainP':'terrainL';
+  m.customProgramCacheKey=()=>phong?(sgOn?'terrainPS':'terrainP'):'terrainL';
   return m;
 }
 // hollows (positive concavity: the neighbours' mean height minus this vertex's) collect moisture and shade, crests are drier and lighter
@@ -149,6 +182,7 @@ const TCOLOR_NEAR=260, TCOLOR_R=Math.round(700*VIEW_K);   // metres: tiles this 
 // the mesh of one terrain tile (positions from HS, normals from the neighbouring heights), a few rows at a time; hidden until its colours are made
 let TMAT=null;
 function* terrainTileGeom(B){
+  yield* hsEnsure(B.c0-1,B.c0+B.nz+1);   // (a far tile made after Ready: its rows are waited for no longer, hsEnsure works out the missing ones)
   const {b0,c0,nx,nz,x0,z0}=B, w=nx*CELL, d=nz*CELL, hs=(ix,iz)=>HS[clamp(iz,0,SEGZ)*NVX+clamp(ix,0,SEGX)];
   const g=new THREE.PlaneGeometry(w,d,nx,nz); g.rotateX(-Math.PI/2); g.translate(x0+w/2,0,z0+d/2);
   const tp=g.attributes.position, tn=g.attributes.normal, n=new THREE.Vector3();
@@ -199,16 +233,26 @@ function* hsEnsure(a,b){
   a=Math.max(0,a); b=Math.min(NVZ-1,b);
   if(HW.on&&!HW.failed){
     const t0=performance.now();
-    while(!HW.failed&&!hwHave(a,b)&&performance.now()-t0<30000){ Stream.tp=(NVZ-HW.left)/NVZ*0.6; Stream.idle=true; yield; }
+    while(!Stream.terrainDone&&!HW.failed&&!hwHave(a,b)&&performance.now()-t0<30000){ Stream.tp=(NVZ-HW.left)/NVZ*0.6; Stream.idle=true; yield; }
     if(!HW.checked){ HW.checked=true; hwCheck(); }
   }
   for(let iz=a;iz<=b;iz++){
     if(HS_OWN[iz]||hwTake(iz)) continue;
     const z=WZ0+iz*CELL;
     for(let ix=0;ix<NVX;ix++) HS[iz*NVX+ix]=rawHeight(WX0+ix*CELL,z);
-    HS_OWN[iz]=1; Stream.tp=iz/NVZ*0.6;
+    HS_OWN[iz]=1; HS_OK[iz]=1; Stream.tp=iz/NVZ*0.6;
     if((iz&7)===7) yield;
   }
+}
+/* Without workers (or after one failed) the rest of the grid, which no longer gates the start, is worked out here after Ready, a few rows a slice (stream job 'h', streaming.js), before the chunks:
+   getH over a missing row is correct but ~16x slower, and everything after Ready asks it all the time. With workers it fills itself (HW). */
+let HS_FILL=0;
+function hsRestWaiting(){ if(HW.on&&!HW.failed) return false; while(HS_FILL<NVZ&&HS_OK[HS_FILL]) HS_FILL++; return HS_FILL<NVZ; }
+// is the whole height grid in? (the map painter reads every cell: it waits for this)
+function hsComplete(){ if(HW.on&&!HW.failed) return HW.left<=0; return !hsRestWaiting(); }
+function* hsFillRest(){
+  for(let n=0;n<4&&hsRestWaiting();n++){ const iz=HS_FILL, z=WZ0+iz*CELL; for(let ix=0;ix<NVX;ix++) HS[iz*NVX+ix]=rawHeight(WX0+ix*CELL,z); HS_OWN[iz]=1; HS_OK[iz]=1; }
+  yield;
 }
 function* genTerrain(){
   // The height grid (HS): web workers have been filling it since the page began, rows nearest the spawn first (world/height-workers.js). The tiles by the spawn are made as soon as THEIR rows are in,
@@ -225,10 +269,7 @@ function* genTerrain(){
   // spawn are made and coloured now, the others (their mesh too, terrainTileGeom: a second of the start) when the player comes within TCOLOR_R of them (streamPump, job 'k'); until then they are not drawn (cullTerrain).
   const nNear=plan.filter(B=>B.near).length; let nMade=0;
   const makeNear=function*(){ for(const B of plan) if(B.near&&!B.g){ yield* hsEnsure(B.c0-1,B.c0+B.nz+1); yield* terrainTileGeom(B); yield* terrainTileColors(B); Stream.tp=0.6+0.4*(++nMade)/nNear; } };
-  if(HW.on) yield* makeNear();
-  yield* hsEnsure(0,NVZ-1);
-  if(HW.on) hwCheck();
-  yield* makeNear();   // (no workers: now that the whole grid is in)
+  yield* makeNear();   // only the rows by the spawn gate the start; the rest of the grid fills in behind (HS_OK; getH works out a point of a row that is not in yet)
   for(const B of plan) if(!B.near){ B.lazy=true; Stream.lazy++; }
   waterMat=new THREE.MeshPhongMaterial({color:0x2c5560, transparent:true, opacity:0.84, shininess:140, specular:0x8fa4b4});
   waterMat.onBeforeCompile=sh=>{

@@ -14,7 +14,7 @@ const DG_DOORS={doors:{},signs:{},noTint:false};
 const dgEntTheme=E=>DG_THEMES[E.theme]||{id:E.theme,name:E.name,land:landAt(E.x,E.z)};
 const dgEntSealed=E=>!dgGateOpen(GEAR,dgEntTheme(E));
 // where each door's patch is centred: the middle of the way from the door to its apron, so the front of the door (not the bank behind it) is what changes colour
-const dgEntCentre=E=>({x:E.x+Math.sin(E.a)*DG_APRON*0.5,z:E.z+Math.cos(E.a)*DG_APRON*0.5});
+const dgEntCentre=E=>E.cen||(E.cen={x:E.x+Math.sin(E.a)*DG_APRON*0.5,z:E.z+Math.cos(E.a)*DG_APRON*0.5});   // (cached on the door: the ground colour asks per vertex)
 
 /* ---- the ground ----
    A patch of DG_ENT_CLEAR + 1 m round each door, blended with noise so its edge is never a circle. The terrain's height is not touched (it moves what the scan finds,

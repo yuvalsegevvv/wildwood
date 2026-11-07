@@ -335,18 +335,18 @@ game
   ui/controls-legend.js              Fills the controls list on the start card (from the current keybinds; redrawn when a key changes)
   engine/renderer.js                 WebGL renderer, scene, camera, lights, sun shadow, timeU
   engine/sky.js                      Sky dome shader (gradient, sun/moon, stars, clouds)
-  engine/materials.js                Plant materials with wind sway (plantMat) and shared materials
+  engine/materials.js                Plant materials (plantMat: wind sway, leaf flutter, sunlight through tree leaves) and shared materials
   world/plant-models.js              Geometry helpers (paint, merge, mkGeo, cyl, blob) and plant models (trees, grass, ferns...)
-  world/plant-models-hi.js           Detailed plant models for the desktop (the *Hi builders): conifers with drooping boughs, broadleaf crowns of leaf fans on forked limbs, leafy bushes, pinnate ferns, faceted rocks, fallen logs, reeds
+  world/plant-models-hi.js           Detailed plant models for the desktop (the *Hi builders): conifers with irregular drooping tiers, broadleaf crowns of leaf-spray clusters on forked limbs, rooted trunks with streaked, mossy bark, bushes, ferns, rocks, logs, reeds
   world/plant-models-sun.js          The Sunscar's plants: the date palm, the saguaro-like cactus and the flat-crowned thorn tree (G.trees.palm / cactus / thorn); the rest of the planting is the sun branch of genChunk (generation-chunks.js)
   world/plant-models-savanna.js      Amber Reach's plants: the flat-topped acacia (G.trees.savacacia), the giant baobab (G.trees.baobab) and the tall savanna grass (G.savGrass, a material that turns gold or green with the season)
   world/plant-models-isles.js        The Emberwake Isles' tropical plants: the ceiba (a 30 m emergent with buttress roots and an umbrella crown hung with lianas), two canopy trees, two tall coconut palms, the banana plant and the tree fern (G.trees.ceiba / jtree / jtree2 / tpalm / tpalm2 / banana / treefern)
   world/plant-models-more.js         More tree species for variety: poplar, beech, willow, stone pine, cedar, ginkgo, larch, acacia and the gloom oak (G.trees / G.treesHi, a low-poly and a detailed model each)
-  world/grass-models.js              Grass tufts in three levels of detail (curved, tapering blades with a dark root and a bright tip) and flowers with petals
+  world/grass-models.js              Grass tufts in three levels of detail (fanned bunches of tapering blades: green, tall, drooping dry ones and seed stalks; grassMat colours and moves them), grass placement helpers (grassTint, grassSort), flowers with petals
   world/instancing.js                Chunked instanced meshes (frustum culled, with per-instance levels of detail), distance culling, tree collision grid (addCol, nearCols)
   player/state.js                    Player state P and spawn point
   world/generation-setup.js          Palettes, shared geometries (buildGeometries), terrain (in tiles, culled by distance, with a ground-detail shader) + water + the three villages (genTerrain)
-  world/generation-chunks.js         Per-chunk vegetation placement (genChunk): the home forest's mix, sakura, maple, pine and bamboo in the Sakura Vale, snowy spruce, dwarf birch and boulders in the Hoarfrost Reach, conifers up to the treeline in the Greyspine
+  world/generation-chunks.js         Per-chunk vegetation placement (genChunk): the home forest's mix, sakura, maple, pine and bamboo in the Sakura Vale, snowy spruce, dwarf birch and boulders in the Hoarfrost Reach, conifers up to the treeline in the Greyspine; grass clumping (grassClump)
   world/zone-props-models.js         Zone dressing models, part 1: the helpers (zpDef registry, painted box / cylinder / blob parts) and the home forest's and the Sakura Vale's props (huts, camps, toadstools, webs, shrines, toro, torii)
   world/zone-props-models2.js        Zone dressing models, part 2: the Hoarfrost Reach's, the Greyspine's, the Sunscar's and the Gloamhorn's props (ice, mines, tombs, wrecks, gravestones, lamps) and the ruins' pieces
   world/zone-props-models-savanna.js Zone dressing models, part 3: Amber Reach's props (thorn thickets, kopje stacks, reed clumps, termite spires and mounds, resin crystals, the anvil rock, smouldering ash, song posts, grey stones, mooring posts, red terraces)

@@ -5,6 +5,7 @@
     python3 build.py --check    build, then syntax-check every script with node (if installed), look for duplicate top-level names and check the
                                 layout rules: a header on every file, every source file in the manifest, docs/FILES.md up to date
     python3 build.py --inline-audio   also embed the music in the page (one ~14 MB file that works offline / from file://)
+    python3 build.py --min      release build: the game and server scripts without whitespace and comments (tools/minify.js, names kept; about -21% of the page). Used for the deploy and for publishing the artifact
     python3 build.py --no-bake  leave the server's height grid out of dist/wildwood-server.js and the page (the server works it out at start; see height_bake)
     python3 build.py --index    print what each source file contains (from its //@ header)
     python3 build.py --write-index   rewrite docs/FILES.md from those headers (run it after adding, renaming or re-describing a file)
@@ -41,7 +42,8 @@ AUDIO = os.path.join(ROOT, 'assets', 'audio')
 OUT = os.path.join(ROOT, 'dist', 'wildwood.html')
 SERVER_OUT = os.path.join(ROOT, 'dist', 'wildwood-server.js')
 AUDIO_TYPES = ('.wav', '.mp3', '.ogg', '.m4a')
-MAX_BYTES = 15 * 1024 * 1024  # the host allows 16 MB per page (a page with embedded music must stay under this)
+MAX_BYTES = 14 * 1024 * 1024  # the host allows 16 MB per page: the build fails at 14 MB, which leaves room for the page's own shell and a little growth in a single push
+WARN_BYTES = 12 * 1024 * 1024  # a warning from here on: time to minify, move data out of the page (like the music) or load a land on demand (perf-nature-plan/PLAN.md)
 MAX_FILE_BYTES = 15 * 1024 * 1024  # ... and 15 MB per published binary file
 AUDIO_OUT = os.path.join(ROOT, 'dist', 'audio')
 IMG = os.path.join(ROOT, 'assets', 'img')
@@ -203,6 +205,28 @@ def height_bake(server):
     return r.stdout
 
 
+MINIFY = '--min' in sys.argv
+
+
+def minify_js(code, label):
+    """The script without whitespace and comments (names and the /*@@shared*/ markers stay: tools/minify.js says why)."""
+    if not shutil.which('node') or not os.path.isdir(os.path.join(ROOT, 'node_modules', 'terser')):
+        sys.exit('--min needs node and the terser package: run `npm install` first')
+    with tempfile.TemporaryDirectory() as d:
+        a, b = os.path.join(d, 'in.js'), os.path.join(d, 'out.js')
+        with open(a, 'w', encoding='utf-8') as f:
+            f.write('function __wrap(){' + code + '\n}')   # (a slot holds the body of a function: it has top-level `return`s)
+        r = subprocess.run(['node', os.path.join(ROOT, 'tools', 'minify.js'), a, b], capture_output=True, text=True)
+        if r.returncode != 0:
+            sys.exit('minify of the %s script failed: %s' % (label, (r.stderr or r.stdout).strip()[:400]))
+        out = read(b).strip()
+    if not (out.startswith('function __wrap(){') and out.endswith('}')):
+        sys.exit('minify of the %s script: unexpected output shape' % label)
+    out = out[len('function __wrap(){'):-1]
+    print('minified %s: %.0f KB -> %.0f KB' % (label, len(code.encode('utf-8')) / 1024, len(out.encode('utf-8')) / 1024))
+    return out
+
+
 def build(inline_audio=False):
     manifest = json.loads(read(os.path.join(SRC, 'manifest.json')))
     styles = ''.join(strip_header(read(os.path.join(SRC, 'styles', f))) for f in manifest['styles'])
@@ -225,6 +249,10 @@ def build(inline_audio=False):
     if bake:   # the page's own world server (solo, shared room) and the Node server unpack the same grid instead of working it out
         server = server.replace(HB_PLACEHOLDER, 'var HB_BAKE="' + bake + '";', 1)
         slots['{{SERVER}}'] = server
+
+    if MINIFY:
+        slots['{{GAME}}'] = minify_js(slots['{{GAME}}'], 'game')
+        slots['{{SERVER}}'] = minify_js(slots['{{SERVER}}'], 'server')
 
     def render(tpl, sl):
         for k, v in sl.items():
@@ -253,7 +281,9 @@ def build(inline_audio=False):
     size = os.path.getsize(OUT)
     print('built %s (%.0f KB, %d game files, %d stylesheets)' % (os.path.relpath(OUT, ROOT), size / 1024, len(manifest['game']), len(manifest['styles'])))
     if size > MAX_BYTES:
-        sys.exit('page is over 15 MB; move sounds out of the page (music-* files are not embedded) or compress them')
+        sys.exit('page is over %d MB; move sounds and big data out of the page (music-* files are not embedded) or compress / split it' % (MAX_BYTES // 1048576))
+    if size > WARN_BYTES:
+        print('WARNING: the page is %.1f MB; the build fails at %d MB and the artifact allows 16 MB per file' % (size / 1048576, MAX_BYTES // 1048576))
     return page
 
 

@@ -26,11 +26,12 @@ function makeWillow(){
   const k=1.3, big=g=>g.scale(k,k,k);
   return {trunk:big(merge(tp)),leaves:big(merge(lp.map(g=>paint(g,shade(0.8,5.8)))))};
 }
-// weeping willow, detailed: forked limbs, a leafy dome and some 150 ribbons that arch out of it and hang nearly to the ground
+// weeping willow, detailed: a flared, rooted trunk, forked limbs, a dome of leaf clusters (treeCrown) and some 150 ribbons that arch out of it and hang nearly to the ground
 function makeWillowHi(){
   const {r:rg,R:rr}=mrng(8201), parts=[], H=3.4, ln=0.5, tp=[], fr=furrow(81,0.09);
-  for(let s=0;s<=9;s++){ const t=s/9; tp.push([ln*t*t,t*H,Math.sin(t*2.6)*0.08*t]); }
-  parts.push(tube(tp,(t,a)=>lerp(0.4,0.2,t)*(1+1.2*Math.exp(-t*H*1.5))*fr(t,a,H),9,barkHi(0x5a4a38,81)));
+  for(let s=0;s<=9;s++){ const t=Math.pow(s/9,1.3); tp.push([ln*t*t,-0.25+t*(H+0.25),Math.sin(t*2.6)*0.08*t]); }
+  parts.push(tube(tp,(t,a)=>{ const y=-0.25+Math.pow(t,1.3)*(H+0.25); return lerp(0.4,0.2,clamp(y/H))*rootFlare(y,a,1.1,5,0.4)*fr(t,a,H); },10,barkHi(0x5a4a38,81)));
+  rootsHi(parts,4,0.4,5,0.4,rg,rr,barkHi(0x5a4a38,81),[0,0,0]);
   const top=tp[9], limbCol=barkHi(0x5a4a38,84);
   for(let l=0;l<5;l++){
     const az=l/5*TAU+rr(-0.3,0.3), len=rr(1.5,2.2), r0=0.14;
@@ -38,14 +39,14 @@ function makeWillowHi(){
   }
   const cx=ln+0.2, cy=4.5, C=new THREE.Vector3(cx,cy,0), blobs=[{r:1.9,x:cx,y:cy,z:0,sy:0.6}];
   for(let k=0;k<5;k++){ const a=k/5*TAU+rg()*0.5; blobs.push({r:1.2,x:cx+Math.cos(a)*1.5,y:cy-0.2+rr(-0.2,0.4),z:Math.sin(a)*1.5,sy:0.6}); }
-  const cw=crownHi(blobs,C,0.4,0.8,rg,2.5,5.4), F=flatAcc();
+  const cw=treeCrown(blobs.map((b,i)=>({x:b.x,y:b.y,z:b.z,r:b.r,sy:b.sy,core:i<3})),C,0.3,420,rg,rr), F=flatAcc();
   for(let i=0;i<150;i++){
     const az=rg()*TAU, pol=rr(0.25,1.25), ca=Math.cos(az), sa=Math.sin(az), sx=cx+2.0*Math.sin(pol)*ca, sy=cy+1.05*Math.cos(pol), sz=2.0*Math.sin(pol)*sa;
     const len=Math.max(1.4,sy-rr(0.5,1.3)), seg=8, ph=rg()*TAU, w0=0.085*rr(0.8,1.2), nn=nrm3(ca*0.75,0.25,sa*0.75), tone=rr(0.85,1.15);
     let prev=null;
     for(let s=0;s<=seg;s++){
       const t=s/seg, out=0.55*Math.sin(Math.min(t*1.7,1)*Math.PI*0.6)+0.1*t, sway=0.12*Math.sin(t*4+ph)*t, w=w0*(1-0.75*t*t);
-      const px=sx+ca*out-sa*sway, py=sy-len*t, pz=sz+sa*out+ca*sway, L=[px-(-sa)*w,py,pz-ca*w], Rt=[px+(-sa)*w,py,pz+ca*w], v=(0.58+0.55*t)*tone, col=[v,v,v];
+      const px=sx+ca*out-sa*sway, py=sy-len*t, pz=sz+sa*out+ca*sway, L=[px-(-sa)*w,py,pz-ca*w], Rt=[px+(-sa)*w,py,pz+ca*w], v=(0.5+0.62*t)*tone, col=[v*(0.94+0.1*t),v,v*(1.08-0.2*t)];   // (dark and cool where a strand leaves the dome, light and warm at its tip)
       if(prev){ F.tri(prev[0],prev[1],L,nn,nn,nn,prev[2],prev[2],col); F.tri(prev[1],Rt,L,nn,nn,nn,prev[2],col,col); }
       prev=[L,Rt,col];
     }

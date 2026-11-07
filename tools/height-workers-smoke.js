@@ -18,6 +18,7 @@ srv.listen(0,'127.0.0.1',async()=>{
     await pg.goto('http://127.0.0.1:'+srv.address().port+'/');
     let t=''; for(let i=0;i<1800;i++){ t=await pg.evaluate(()=>document.getElementById('status').textContent); if(/Ready|forest is ready|Something/.test(t)) break; await new Promise(r=>setTimeout(r,100)); }
     ok('the page boots to Ready',/Ready|forest is ready/.test(t),t.slice(0,60));
+    for(let i=0;i<1800&&!logs.some(l=>/^hw done in/.test(l));i++) await new Promise(r=>setTimeout(r,100));   // (Ready no longer waits for the whole grid: it fills in behind)
     ok('the workers delivered every row',logs.some(l=>/^hw done in/.test(l)),logs.filter(l=>/^hw /.test(l)).join(' ')||'no "hw done" line');
     ok('no worker warning (spot check, blob, error)',!logs.some(l=>/height workers off/.test(l)),logs.filter(l=>/height workers off/.test(l))[0]||'');
     ok('no page errors',!errs.length,errs[0]||'');

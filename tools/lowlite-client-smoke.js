@@ -4,7 +4,7 @@
 // Build first (python3 build.py).   Usage: node tools/lowlite-client-smoke.js
 const {bootClient}=require('./headless');
 const wait=ms=>new Promise(r=>setTimeout(r,ms)); const until=async(f,ms)=>{ for(let t=0;t<(ms||10000);t+=50){ if(f()) return true; await wait(50); } return false; }; let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
-const EXPOSE=['NET','startSolo','beginPlay','canStart:()=>canStart','LOW','LITE','TBAND','TTILE','TERRAIN_BANDS','Stream','NPCs','NPC_DEFER','P','MONS','getH','started:()=>started'];
+const EXPOSE=['NET','startSolo','beginPlay','canStart:()=>canStart','LOW','LITE','TBAND','TTILE','TERRAIN_BANDS','Stream','NPCs','NPC_DEFER','npcNearWaiting','P','MONS','getH','started:()=>started'];
 (async()=>{
   const errors=[], err0=console.error; console.error=(...a)=>{ errors.push(a.map(String).join(' ').slice(0,200)); };
   for(const [name,opts,low,lite] of [['a phone (touch)',{touch:true},true,false],['light mode (touch + the LITE setting)',{touch:true,lite:true},true,true]]){
@@ -18,8 +18,8 @@ const EXPOSE=['NET','startSolo','beginPlay','canStart:()=>canStart','LOW','LITE'
     let nz=0; for(let i=0;i<far.tc.length;i++) if(far.tc[i]>0) nz++;
     ok(name+': a far tile is coloured once you are there',far.ready&&nz>far.tc.length*0.9,(t/10)+' s');
     G.P.x=home.x; G.P.z=home.z;
-    for(let i=0;i<600&&G.NPC_DEFER.length;i++){ await wait(100); G=c.G(); }
-    ok(name+': the far villages\' people are built after the loading screen',G.NPC_DEFER.length===0&&G.NPCs.length>npc0,npc0+' at boot, '+G.NPCs.length+' later');
+    await wait(500); for(let i=0;i<600&&G.npcNearWaiting();i++){ await wait(100); G=c.G(); }
+    ok(name+': the home village\'s people are built after the loading screen, the far villages\' wait until you come near',G.NPCs.length>npc0&&G.NPC_DEFER.length>0,npc0+' at boot, '+G.NPCs.length+' later, '+G.NPC_DEFER.length+' waiting');
     G.NET.onReady=()=>G.beginPlay(); G.startSolo(); await wait(2500); G=c.G();
     ok(name+': solo starts with the monsters in place',G.NET.ready&&G.MONS.length>400,G.MONS.length+' monster views');
     // the phone's controls, driven by the touch events a phone sends: the left side of the screen is a joystick, the right side turns the view, the button jumps
