@@ -215,6 +215,12 @@ function* hsEnsure(a,b){
    getH over a missing row is correct but ~16x slower, and everything after Ready asks it all the time. With workers it fills itself (HW). */
 let HS_FILL=0;
 function hsRestWaiting(){ if(HW.on&&!HW.failed) return false; while(HS_FILL<NVZ&&HS_OK[HS_FILL]) HS_FILL++; return HS_FILL<NVZ; }
+// are the grid rows a chunk's plants are placed on (and one beyond each side, for `grad`) all in? A chunk made earlier would ask getH over missing rows: the slow path, ~450,000 times in the 10 s after Ready
+function hsChunkReady(ci){
+  const r=chunkRect(ci,0), a=Math.max(0,Math.floor((r[2]-WZ0)/CELL)-1), b=Math.min(NVZ-1,Math.ceil((r[3]-WZ0)/CELL)+1);
+  for(let i=a;i<=b;i++) if(!HS_OK[i]) return false;
+  return true;
+}
 function* hsFillRest(){
   for(let n=0;n<4&&hsRestWaiting();n++){ const iz=HS_FILL, z=WZ0+iz*CELL; for(let ix=0;ix<NVX;ix++) HS[iz*NVX+ix]=rawHeight(WX0+ix*CELL,z); HS_OWN[iz]=1; HS_OK[iz]=1; }
   yield;
