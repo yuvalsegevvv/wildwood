@@ -296,6 +296,7 @@ function* genTerrain(){
   caveMouthBuild();   // cave: the Deep Cave's mouth, lift and circle (cave/mouth.js)
   dgEntBuild();   // dungeons: the three doors and their signposts
   dipBuild();   // dip: the pipes
+  riftBuild();   // rift: the tears
   pzBuild();   // puzzles: the stones
   troomBuild();   // testroom: the pad's ring, torches and signboard
 }

@@ -24,7 +24,7 @@ const DG_EV_ALL=new Set(['chat','pjoin','pleave','pname','plook','pgear','weathe
 const DG_EV_SELF=new Set(['toast','xp','coins','loot','lvup','hurt','down','up','skillslot','qdone','qturn','merge','skillbuy','skilldrop','skillup','soul','lvset','mq','vale','north','warp','pot','craft','brew','cast','castx','gather','drop','pfx','buff']);
 // a new run in a free slot: the layout from the seed (the next seeds if dgLayout gives up on one), its bake, no members yet. o: {tier, L, seed, dev, back}
 function dgNewRunS(T,mission,o){
-  const slot=DG_SLOT_RUN.indexOf(0); if(slot<0||!DG_MISSIONS[mission]) return null;
+  const slot=DG_SLOT_RUN.slice(0,DG_DG_SLOTS).indexOf(0); if(slot<0||!DG_MISSIONS[mission]) return null;   // rift: the slots from DG_DG_SLOTS on are the rifts'
   let seed=o.seed===undefined?Math.floor(Math.random()*1e9):o.seed|0, L=null;
   for(let i=0;i<40&&!L;i++){ L=dgLayout({mission,seed:seed+i,theme:T}); if(L) seed+=i; }   // (the theme gives the tiles and the legend: the client rebuilds it with dgLayout({mission:m, seed, theme:th}))
   if(!L) return null;
@@ -38,7 +38,7 @@ const dgLocalS=(run,x,z)=>({x:x-run.ox,z:z-run.oz});
 function dgRunAt(x,z){ const s=dgSlotAt(x,z); return s<0||!DG_SLOT_RUN[s]?null:DG_RUNS.get(DG_SLOT_RUN[s])||null; }
 const dgCtxAt=(x,z)=>{ const r=dgRunAt(x,z); return r?r.id:0; };
 const dgRunOf=p=>p&&p.inst?DG_RUNS.get(p.inst)||null:null;
-function dgWallAtS(x,z){ const r=dgRunAt(x,z); return !!r&&dgSolid(r.B,x-r.ox,z-r.oz); }
+function dgWallAtS(x,z){ const r=dgRunAt(x,z); return !!r&&!r.B.open&&dgSolid(r.B,x-r.ox,z-r.oz); }   // rift: the void stops no projectile
 function dgEv(run,...a){ const c0=S.ctx; S.ctx=run.id; const e=ev(...a); S.ctx=c0; return e; }
 function dgEvTo(kind,pid,...rest){ const e=ev(kind,pid,...rest); e.to=pid; return e; }
 function dgEvFor(evq,p){
@@ -126,7 +126,7 @@ function dgDashS(p,L){
    monster passed no wall (walls stop projectiles: the updateProjS hook), so one of p's projectiles beside it vouches for the hit when the attacker has since stepped round a corner. */
 function dgHitOkS(m,p,fx,fz){
   const run=DG_RUNS.get(m.inst); if(!run||!p||p.inst!==m.inst) return false;
-  if(dgLos(run.B,fx-run.ox,fz-run.oz,m.x-run.ox,m.z-run.oz)) return true;
+  if(run.B.open||dgLos(run.B,fx-run.ox,fz-run.oz,m.x-run.ox,m.z-run.oz)) return true;   // rift: the void hides nothing
   for(const pr of PROJS) if(pr.owner===p.id&&Math.hypot(pr.x-m.x,pr.z-m.z)<m.T.rad+2.5) return true;
   return false;
 }

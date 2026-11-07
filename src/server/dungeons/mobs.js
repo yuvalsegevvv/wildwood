@@ -104,6 +104,7 @@ function dgKilledS(m,p){
    for the main quest, the zone tiers or the land gates. A full bag loses the item (addItemP says so). Kept thin on purpose: rewardKill (server/combat.js) is the
    world's version, and dgLootRollS rolls through the same drop rule (dgRollDropP, server/dungeon-gear.js), once for the whole run. */
 function rewardAllS(run,m){
+  if(run.rift) return riftRewardS(run,m);   // rift: XP only, x3 (server/rift.js)
   const ps=dgPresentS(run); if(!ps.length) return;
   const K=m.dgK||dgKOf(m.def,run.L), R=dgLootRollS(m,K,ps);
   for(const q of ps){
