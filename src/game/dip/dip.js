@@ -58,3 +58,7 @@ function dipUpdate(dt){
   for(const v of DIP_VIEW){ const on=(DIP_UI.act[v.S.id]||0)>now; v.mouthM.color.setHex(on?0xd890ff:0x6a2a9a); v.colM.opacity+=((on?0.28+Math.sin(dipT*3)*0.06:0)-v.colM.opacity)*Math.min(1,dt*3); v.col.visible=v.colM.opacity>0.01; v.col.rotation.y=dipT*0.6; for(const c of v.cry){ c.rotation.y=dipT*(on?1.6:0.5); } }
   if(!$('#dip').hidden){ const S=DIP_BY_ID[DIP_UI.id]; if(!S||Math.hypot(P.x-S.x,P.z-S.z)>DIP_SIDE) closePanels(); else if(dipT%1<dt&&document.activeElement!==$('#dipSel')) dipRender(); }
 }
+// the full map's marker for each pipe in the land being drawn (ctx, world -> canvas, land key, font size, label(), pixel ratio)
+function dipMapMarks(x,at,land,fs,label,dpr){
+  for(const S of DIP_SITES){ if(S.land!==land) continue; const [cx,cy]=at(S.x,S.z); dot(x,cx,cy,4*dpr,'#b060ff'); label('Dark Pipe',cx,cy-fs*1.1,fs*0.85,'#e8c8ff'); }
+}

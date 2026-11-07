@@ -5,7 +5,7 @@
 // Usage: node tools/dungeon-runs-smoke.js
 const {loadServer}=require('./load');
 const got={}, msgs={};   // pid -> events / messages received
-const NAMES=['DG_RUNS','DG_SLOT_RUN','DG_KITS','DG_KIT_BAD','DG_THEMES','DG_MISSIONS','DG_PARTY','DG_X0','DG_SLOT','DG_FLOOR_Y','DG_MAX_INST','DG_ENTRANCES','DG_HOLD_S','DG_END_S','DG_EMPTY_S',
+const NAMES=['DG_RUNS','DG_SLOT_RUN','DG_DG_SLOTS','DG_KITS','DG_KIT_BAD','DG_THEMES','DG_MISSIONS','DG_PARTY','DG_X0','DG_SLOT','DG_FLOOR_Y','DG_MAX_INST','DG_ENTRANCES','DG_HOLD_S','DG_END_S','DG_EMPTY_S',
   'DG_DOWN_S','DG_REVIVE_HP','DG_LV','MONS','S','WX1','getH','dgWorldS','dgLocalS','dgSpawnS','dgRemoveS','dgPresentS','dgBossS','dgBossDefOf','dgSlotAt','dgSlotOrigin','dgSolid','dgFree','dgLos',
   'dgFlow','dgLayout','dgBake','dgOffer','dgPoolS','dgApron','dgDefineKit','dgMemberOf','dgKOf','damageMonsterS','killMonsterS','hurtP','monK','zoneTierK','landAt','recalcP','sanitizeGear',
   'DEF_BY_ID','fireProjS','PROJS','partyOf','ITEM','xpFor','psP','dgParse','PENDANT_STATS'];
@@ -31,7 +31,7 @@ const withRandom=(v,fn)=>{ const r=Math.random; Math.random=()=>v; try{ return f
 
 // ---- slots and the floor ----
 { const o0=x.dgSlotOrigin(0), o1=x.dgSlotOrigin(1), o4=x.dgSlotOrigin(4);
-  ok('slots lie far east of the walkable world, 600 m apart, 4 a row, 16 at most',x.DG_X0>=x.WX1+1000&&o1.x-o0.x===600&&o4.z-o0.z===600&&o4.x===o0.x&&x.DG_MAX_INST===16&&x.dgSlotAt(o0.x+10,o0.z+10)===0&&x.dgSlotAt(o4.x+300,o4.z+250)===4&&x.dgSlotAt(0,0)===-1);
+  ok('slots lie far east of the walkable world, 600 m apart, 4 a row, 32 of them, the first 16 the dungeons\' (the rest are the rifts\')',x.DG_X0>=x.WX1+1000&&o1.x-o0.x===600&&o4.z-o0.z===600&&o4.x===o0.x&&x.DG_MAX_INST===32&&x.DG_DG_SLOTS===16&&x.dgSlotAt(o0.x+10,o0.z+10)===0&&x.dgSlotAt(o4.x+300,o4.z+250)===4&&x.dgSlotAt(0,0)===-1);
   ok('the floor of a slot is flat at DG_FLOOR_Y; the world keeps its hills',x.getH(o0.x+5,o0.z+5)===x.DG_FLOOR_Y&&x.getH(o1.x+200,o1.z+90)===x.DG_FLOOR_Y&&[[0,0],[100,-50],[-200,150]].some(([a,b])=>x.getH(a,b)!==x.DG_FLOOR_Y)); }
 ok('the kit registry loaded with no bad kit, and Purge is built',x.DG_KIT_BAD.length===0&&!!x.DG_KITS.purge&&x.dgPoolS().includes('purge'),JSON.stringify(x.DG_KIT_BAD));
 
@@ -271,9 +271,9 @@ const runK=runOf('k');
   secs(x.DG_EMPTY_S+1.5); ok('a run nobody is in closes after '+x.DG_EMPTY_S+' s',!x.DG_RUNS.has(run.id)); }
 
 // ---- the slot cap ----
-{ const ps=[]; for(let i=0;x.DG_RUNS.size<x.DG_MAX_INST&&i<20;i++){ const pid='r'+i; join(pid,'Run'+i); IMM.add(pid); dev(pid,'bare:purge:'+i); ps.push(pid); }
+{ const ps=[]; for(let i=0;x.DG_RUNS.size<x.DG_DG_SLOTS&&i<20;i++){ const pid='r'+i; join(pid,'Run'+i); IMM.add(pid); dev(pid,'bare:purge:'+i); ps.push(pid); }
   tick(2); const p=join('over','Over'); clear(); dev('over','bare:purge:1'); tick(2);
-  ok(x.DG_MAX_INST+' runs at most: one more is refused',x.DG_RUNS.size===x.DG_MAX_INST&&!p.inst&&/busy/.test(toasts('over')));
+  ok(x.DG_DG_SLOTS+' dungeon runs at most: one more is refused',x.DG_RUNS.size===x.DG_DG_SLOTS&&!p.inst&&/busy/.test(toasts('over')));
   for(const pid of ps) dg(pid,'leave'); }
 
 // ---- the save ----

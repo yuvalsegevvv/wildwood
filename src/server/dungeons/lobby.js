@@ -47,7 +47,7 @@ function dgDeclineP(p){
     if(!run.ready&&!run.inv.size) dgSetupS(run);
   }
 }
-function dgLeaveP(p){ const run=dgRunOf(p); if(run) dgExitS(run,p); else dgDeclineP(p); }
+function dgLeaveP(p){ const run=dgRunOf(p); if(run&&run.rift) return riftLeaveP(run,p); if(run) dgExitS(run,p); else dgDeclineP(p); }   // rift: leaving ends the run
 // use: an objective (by id), or, with no id, whatever the boss's kit lets you use in the hall (Haugbui's lamps: B.kit.use)
 function dgUseP(p,id){
   const run=dgRunOf(p); if(!run||p.dead||!run.ready) return;

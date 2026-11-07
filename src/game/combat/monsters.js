@@ -16,7 +16,7 @@ ALL_MON_DEFS.forEach(d=>{ DEF_BY_ID[d.id]=d; });
 function addMonView(r){ // [id, defId, campX, campZ, scale, x, z, dead, temp]
   if(MON_BY_ID.has(r[0])) return MON_BY_ID.get(r[0]);
   const d=DEF_BY_ID[r[1]]; if(!d) return null;
-  const mat=monMat(d.glow), g=new THREE.Group();   // (joins the scene only while it is shown: updateMonsters; ~3,700 empty groups were walked by three.js every frame)
+  const mat=d.pal&&d.pal.glass?riftGlassMat(d):monMat(d.glow), g=new THREE.Group();   // rift: glass monsters   // (joins the scene only while it is shown: updateMonsters; ~3,700 empty groups were walked by three.js every frame)
   const m={id:r[0],def:d,model:d.model,T:d,camp:{x:r[2],z:r[3]},mat,g,parts:null,s:r[4],gs:r[4]*d.scale,maxHp:d.hp,hp:d.hp,
     x:r[5],z:r[6],y:getH(r[5],r[6]),tx:r[5],tz:r[6],face:0,tface:0,vx:0,vz:0,ph:AR(0,TAU),flash:0,slowT:0,
     dead:!!r[7],deadT:r[7]?9:0,aggro:false,immune:false,act:null,lunge:0,temp:!!r[8],spawnT:r[8]?0.6:0,boss:!!d.boss};

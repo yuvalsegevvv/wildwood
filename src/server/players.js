@@ -21,6 +21,7 @@ function sanitizeGear(g,cls){
   out.zt=sanitizeZt(g.zt);
   gsSanitize(g,out);   // gems: claimed achievements, the daily set and today's ads
   dipSanitize(g,out);   // dip: the pipes' levels
+  riftSanitize(g,out);   // rift: the energy (gear.rift)
   pzSanitize(g,out);   // puzzles: solved stones and their clocks, Sigils, upgrade scrolls
   ambSanitize(g,out);   // amber: the purse and the bought outfit sets (an old save has none)
   out.psh=pshopSanitize(g.psh);   // pshop: items listed in the player shop (escrow; an old save has none)
