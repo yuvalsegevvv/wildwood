@@ -40,6 +40,7 @@ styles
   32-testroom.css                    The test room (ui/testroom.js): the panel with the counter and its buttons, and the counter on the screen while you stand on the pad
   33-puzzles.css                     Puzzles (puzzles/panel.js, rootlines.js, ice.js, scrolls.js): the board panel, the pad, the chest window, the Sigil track
   34-dip.css                         The Dark Infection Pipe panel (game/dip/dip.js)
+  36-rift.css                        The rift's window (game/rift/rift.js): the blurb, the energy bar, the Double checkbox
   34-presets.css                     Presets panel (economy/presets.js): ten cards in a grid, the worn one highlighted, an empty one dimmed
   32-ult.css                         The set burst (5th slot): its action-bar tile, the cast popup card and the skills panel row (game/ult/slot.js, popup.js)
   35-movement.css                    Movement slot: the movement slot's tile (#abMov) and its tab in the skills panel (game/movement/slot.js)
@@ -231,6 +232,8 @@ shared
   puzzle-group.js                    Places the puzzle stones of the raids (2 trivial + 1 easy inside each stronghold's walls) and of the Deep Cave (41 over its four floors)
   puzzle-track.js                    The Sigil track's 40 rewards, in order: 32 small pieces (hair styles, decorations, gloves, hats, tops, bottoms, shoes: every part) and every 5th level a land's cape or aura, level 40 the Lampcrown
   dip.js                             The Dark Infection Pipes: one grind spot in each of the eight lands (a flat, tree-free 20 x 20 square), its levels, spawn counts and rates, upgrade materials and activation cost. Pure
+  rift.js                            Rifts: the numbers (energy, waves, XP x3), the energy clock (riftEnergyAt), the registry of rifts (defineRift, RIFT_DEFS, RIFT_BAD), the glass monsters (riftMobDef), the void world's platform layout (riftLayout), the tear's keep-out (riftNear). Pure; loaded by both sides
+  rift/shardmere.js                  The first rift, the Shardmere: its tear in the home forest's wilds, its aura (blue, purple, pink), its seven glass monsters and which wave each joins
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -314,6 +317,7 @@ server
   puzzles.js                         Puzzles on the server: opening a stone, checking an answer, the 2-hour renewals, the chest, first-solve gems and Sigils, the Sigil track, upgrade scrolls, and the admin Puzzles tool
   puzzles-group.js                   Puzzle stones for groups: a dungeon run's three side stones, the raids' stones inside the walls and the Deep Cave's chest in cave material
   dip.js                             Dark Infection Pipes on the server: upgrading a pipe with the zone's materials, releasing dark energy (coins, 10 minutes), the refill ticks that spawn the zone's monsters, the active list sent to hikers
+  rift.js                            Rifts on the server: the energy (gear.rift, refilled by the clock), the tear's window, a solo run in a rift slot of the dungeon instance layer, the waves of glass monsters, XP only (x3, x2 with the Double), the clear bonus, one respawn, leaving
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 
@@ -636,6 +640,9 @@ game
   pvp/state.js                       PvP on the Proving Isle, client side: whether you stand on it (server events pvp / pvlock), the fixed loadout your action bar and attacks use there, picking another fighter as the target, the badge and the shut-gate countdown
   dungeon/hud.js                     A run's HUD: the mission's title, lines and bar (dgHudText of the dg tuple) with the run's clock, the objectives' labels and compass arrows, the boss hall's arrow, the use / revive / relight / portal prompt and key, the leave button, the downed screen, the results panel, and the Testing tools' Dungeons row
   dungeon/minimap.js                 The maps in a run: the minimap and the full map draw the dungeon's tiles instead of the world, only the tiles you have walked into (explored), with the objectives, the portal, the boss's hall, the run's monsters and your party
+  rift/glass.js                      The rift's glass monsters on the client: the glass material (see-through, the kind's tint mixed into its colours, a bright rim in the rift's blue / purple / pink, a soft glow) and the shatter when one dies
+  rift/view.js                       The rift's void world on the client: frosted glass platforms and clear glass bridges with glowing rims, crystals hanging under them, the tears the waves come through, the hub's portal, an aura sky of drifting blue / purple / pink veils, floating shards, the light and fog, the music
+  rift/rift.js                       Rifts on the client: the tear in the wild (a crack of light in a ring of glass shards, glassed trees round its clearing), the talk key, the rift window (energy bar and time to full, the Double, Enter), the wave banner
   cave/zone.js                       The Deep Cave on the client: which floor you are on (CAVE_RUN), entering and leaving it on the server's tp or by where you stand, the explored cells for the maps, and the cave's frame (view, light, lift panel)
   cave/view.js                       The Deep Cave's meshes: floor, smoothed rock walls and the domed ceiling from a floor's bake (merged per chunk, light baked into the vertex colours), the water and lava, and the hooks the four themes dress it through; built at the floor's corner, disposed on leaving
   cave/view-themes.js                The Deep Cave's four looks: the Glowworm Grotto (blue ceilings, stalactites, still pools), the Prism Hollows (geodes and split light), the Drowned Galleries (flooded halls, river, waterfalls) and the Magma Heart (lava, obsidian, embers)

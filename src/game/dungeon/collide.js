@@ -15,7 +15,7 @@ function dgBounds(o,ox,rad,oz){
   const s=dgSlide(B,lx,lz,o.x-R.ox,o.z-R.oz,rad); o.x=s[0]+R.ox; o.z=s[1]+R.oz;
 }
 function dgCamBoom(hx,hy,hz,cx,cy,cz){
-  const R=DG_RUN, B=R&&R.B; if(!B) return [cx,cy,cz];
+  const R=DG_RUN, B=R&&R.B; if(!B||B.open) return [cx,cy,cz];   // rift: the void does not push the camera in
   const dx=cx-hx, dz=cz-hz, len=Math.hypot(dx,dz), now=performance.now()/1000, dt=Math.min(0.1,Math.max(0,now-DG_CAM.t)); DG_CAM.t=now;
   let k=1;
   if(len>1e-3){ const n=Math.ceil(len/0.2);

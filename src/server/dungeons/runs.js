@@ -36,7 +36,7 @@ function dgAskS(run,q,kind){
 const dgJoinableS=run=>!run.endT&&!run.boss&&run.phase==='objectives'&&dgPresentS(run).length<DG_MAX_PARTY;
 function dgSetupS(run){
   if(run.ready||run.endT) return; run.ready=true; run.t=0;
-  const kit=DG_KITS[run.mission], c0=S.ctx; S.ctx=run.id; if(kit) kit.setup(run); pzDgSetupS(run); S.ctx=c0;   // puzzles: the run's three stones
+  const kit=DG_KITS[run.mission], c0=S.ctx; S.ctx=run.id; if(kit) kit.setup(run); if(!run.rift) pzDgSetupS(run); S.ctx=c0;   // rift: no puzzle stones in a rift   // puzzles: the run's three stones
 }
 function updateInstsS(dt){
   dgSecT-=dt; const sec=dgSecT<=0; if(sec) dgSecT=1;
@@ -100,6 +100,7 @@ function dgGoneP(p){ const run=dgRunOf(p); if(run){ const mb=dgMemberOf(run,p); 
 // downed in a run (the updatePlayersS hook, instead of the world's wake in a village after 3 s): DG_DOWN_S to be revived, then a respawn at the entrance, or out
 function dgDownTickS(p,dt){
   const run=dgRunOf(p); if(!run){ p.inst=0; return; }
+  if(run.rift) return riftDownTickS(run,p,dt);   // rift: one respawn after 5 s, then the run is over
   const mb=dgMemberOf(run,p); if(!mb||mb.out||run.endT) return;
   p.deadT+=dt; if(p.deadT<DG_DOWN_S) return;
   if(mb.respawns>0){ mb.respawns--; dgRespawnS(run,p); toastTo(p.id,'You wake at the entrance ('+(mb.respawns?mb.respawns+(mb.respawns>1?' respawns':' respawn')+' left':'no respawns left')+').',''); }

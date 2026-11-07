@@ -148,6 +148,7 @@ const DG_PROP_KINDS={
 // can light from (x0, z0) reach (x1, z1)? like dgLos, but steps over the first `skip` metres (a lantern stands in its own solid cell)
 function dgvSees(B,x0,z0,x1,z1,skip){ const d=Math.hypot(x1-x0,z1-z0), n=Math.ceil(d/0.9); for(let i=1;i<n;i++){ const k=i/n; if(k*d<skip) continue; if(dgSolid(B,x0+(x1-x0)*k,z0+(z1-z0)*k)) return false; } return true; }
 function dgViewBuild(R){
+  if(R.T&&R.T.rift) return riftViewBuild(R);   // rift: the void world (rift/view.js)
   dgViewClear(); const B=R.B; if(!B) return;
   const T=R.T, pal=dgPalOf(T), W=B.w, H=B.h, N=W*H, wob=T?DG_WOBBLE[T.id]||0.12:0, amb=(T&&DG_AMB[T.id])||0.66;
   const g=new THREE.Group(); g.position.set(R.ox,R.y,R.oz); g.name='dungeon'; scene.add(g); DG_VIEW.g=g;
@@ -277,6 +278,7 @@ function dgObjView(o,remove){
 }
 function dgViewTick(dt){
   const V=DG_VIEW; if(!V.g) return;
+  if(DG_RUN&&DG_RUN.T&&DG_RUN.T.rift) riftViewTick(dt);   // rift: the sky follows the camera, the shards drift
   if(V.glowMat){ const k=0.92+0.08*Math.sin(t*1.7); V.glowMat.color.setRGB(k,k,k); }
   if(DG_RUN) for(const o of DG_RUN.objs.values()){ const v=o.view; if(!v) continue; v.userData.oct.rotation.y+=dt*1.4; v.userData.oct.position.y=1.6+Math.sin(t*2+o.id)*0.15; v.userData.beam.material.opacity=0.16+0.08*Math.sin(t*3+o.id); }
 }

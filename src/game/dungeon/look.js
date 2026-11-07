@@ -20,6 +20,7 @@ function dgLookEnter(R){
   if(!L.pool.length) for(let i=0;i<(LOW||LITE?0:2);i++){ const p=new THREE.PointLight(0xffffff,0,11,2); p.name='dgLamp'; L.pool.push(p); }
   for(const p of L.pool){ p.intensity=0; scene.add(p); }
   L.poolT=0;
+  if(R.T&&R.T.rift) riftLookTune(L,R);   // rift: the aura's light, a long sight
 }
 function dgLookLeave(){
   const L=DG_LOOK, s=L.save; L.on=false;
