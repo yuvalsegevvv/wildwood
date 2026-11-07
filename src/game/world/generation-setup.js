@@ -125,23 +125,27 @@ const TERRAIN_COLOR=`
    near the camera. Blade streaks are noise stretched along the wind and shifted by the SAME travelling wave as the tufts' (grassMat, materials.js:
    direction (0.8,0.6), crest 28 m, 0.495 / 2.42 rad/s), so the lawn shimmers with the field. */
 const TERRAIN_SHORT=`
-  { float sg=smoothstep(0.03,0.10,diffuseColor.g-max(diffuseColor.r,diffuseColor.b)*0.92)*(1.0-tbright)*(1.0-smoothstep(28.0,62.0,vDist));
-    if(sg>0.002){
+  float sgk=0.0; vec2 sgg=vec2(0.0);
+  { sgk=smoothstep(0.03,0.10,diffuseColor.g-max(diffuseColor.r,diffuseColor.b)*0.92)*(1.0-tbright)*(1.0-smoothstep(22.0,55.0,vDist));
+    if(sgk>0.002){
       vec2 gw=vec2(0.8,0.6); float ga=dot(tq,gw);
       float gg=smoothstep(0.15,0.95,0.6*(0.5+0.5*sin(ga*0.045-uTime*0.495))+0.4*tnoise((tq-gw*uTime*11.0)*0.012).x);
       float gs=sin(ga*0.22-uTime*2.42);
       vec2 gq=tq+gw*(0.05+0.10*gg)*(0.6+0.4*gs);
-      vec2 gu=vec2(dot(gq,gw),dot(gq,vec2(-gw.y,gw.x)));
-      float bl=tnoise(gu*vec2(7.0,26.0)).x*0.55+tnoise(gu*vec2(17.0,60.0)+5.0).x*0.45;
-      float sheen=(gs*0.5+0.5)*gg;
-      diffuseColor.rgb*=1.0+sg*((bl-0.5)*0.55+sheen*0.10);
-      diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.06,1.10,0.86),sg*smoothstep(0.55,0.9,bl)*0.5);
+      vec3 b1=tnoise(gq*11.0), b2=tnoise(gq*27.0+5.0);
+      float bl=b1.x*0.6+b2.x*0.4;
+      sgg=(b1.yz*11.0*0.6+b2.yz*27.0*0.4)*sgk;   // slope of the blade field: tilts the normal so the sun catches blade sides
+      diffuseColor.rgb*=1.0-sgk*(0.30*(1.0-bl)*(1.0-bl));   // gaps between blades are dark (self-shadow), tops stay as they were
     } }
 `;
 const TERRAIN_BUMP=`
   { float bf=1.0-smoothstep(25.0,85.0,vDist);
     vec2 tg=tn1.yz*(0.10*0.35)+tn2.yz*(0.045*1.3)+tn3.yz*(0.016*4.7);
     normal=normalize(normal+(viewMatrix*vec4(-tg.x*bf,0.0,-tg.y*bf,0.0)).xyz); }
+`;
+const TERRAIN_SHORT_BUMP=`
+  normal=normalize(normal+(viewMatrix*vec4(-sgg.x*0.035,0.0,-sgg.y*0.035,0.0)).xyz);
+  { float gz=1.0-abs(dot(normalize(vViewPosition),normal)); diffuseColor.rgb*=1.0+sgk*gz*gz*0.22; }   // blades seen edge-on at a low angle: a lighter fringe, the carpet gets depth
 `;
 function terrainMaterial(){
   const phong=VD>=2, m=phong?new THREE.MeshPhongMaterial({vertexColors:true,specular:0x000000,shininess:1}):new THREE.MeshLambertMaterial({vertexColors:true});
@@ -150,7 +154,7 @@ function terrainMaterial(){
   m.onBeforeCompile=sh=>{
     sh.uniforms.uTime=timeU;
     sh.vertexShader='varying vec3 vWp; varying float vDist;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.0)).xyz; vDist=length(mvPosition.xyz);');
-    sh.fragmentShader=TERRAIN_FS_HEAD+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n'+TERRAIN_COLOR+(sgOn?TERRAIN_SHORT:'')).replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+(phong?TERRAIN_BUMP:''));
+    sh.fragmentShader=TERRAIN_FS_HEAD+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n'+TERRAIN_COLOR+(sgOn?TERRAIN_SHORT:'')).replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+(phong?TERRAIN_BUMP+(sgOn?TERRAIN_SHORT_BUMP:''):''));
   };
   m.customProgramCacheKey=()=>phong?(sgOn?'terrainPS':'terrainP'):'terrainL';
   return m;
