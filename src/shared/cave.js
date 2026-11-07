@@ -3,8 +3,8 @@
    The 4th slot is NOT in SLOTS (classes.js): SLOTS is the class skills' three slots, iterated by pvp, sanitizing and the skill sets' cast rows. The cave slot is its own thing:
    one universal skill (works for every class) in gear.skills.cave, owned in gear.cave.own ({id: level 1-5}); its tile is the action bar's fourth button, key 'cave' (KB_ACTIONS).
    Charge (CAVE_*) is per player, server-side, never saved: server/cave.js.
-   Exports: CAVE_SLOT_LV, CAVE_SLOT, CAVE_CHARGE_K, CAVE_CHARGE_MAX, CAVE_BOSS_START, CAVE_BOSS_LEAVE, CAVE_COST_MIN/MAX, CAVE_REFUND_CAP, CAVE_LEVEL_MAX, CAVE_LEVEL_STEP, CAVE_CAST_CD, CAVE_CAST_WINDOW, CAVE_FLOORS, CAVE_METHODS,
-   CAVE_SKILLS (id -> ability), CAVE_SKILL_IDS, CAVE_BAD (rejected entries {id, why}), defineChargeSkill(def), caveSkillDef(id), caveLevelK(level), caveChargeGain(ab, cave, set).
+   Exports: CAVE_SLOT_LV, CAVE_SLOT, CAVE_CHARGE_K, CAVE_CHARGE_MAX, CAVE_BOSS_START, CAVE_BOSS_LEAVE, CAVE_COST_MIN/MAX, CAVE_REFUND_CAP, CAVE_LEVEL_MAX, CAVE_CAST_CD, CAVE_CAST_WINDOW, CAVE_FLOORS, CAVE_METHODS,
+   CAVE_SKILLS (id -> ability), CAVE_SKILL_IDS, CAVE_BAD (rejected entries {id, why}), defineChargeSkill(def), caveSkillDef(id), caveLevelK(level, kind), caveChargeGain(ab, cave, set).
    Used by: classes.js (slotLv), server/cave.js, server/players.js (sanitize), server/combat.js (hooks), game/cave/*.js, game/ui/combat-hud.js, game/economy/skills.js.
    SET SKILLS (floors 2-4, C4): shared/cave/skill-<floor>-<id>.js, one per skill set, `set` = its set id; they READ the set's mark (count it) and never spend it. Their extra fx keys (cvstrike, cvzone, wall, hold, ...) are run by server/cave-fx.js.
    `feat` (echo-trial skills, method C): {kind, n, secs?, id?} what the player must do once to earn the skill; the method engine reads it (validated loosely here).
@@ -13,7 +13,7 @@ const CAVE_SLOT='cave', CAVE_SLOT_LV=20;   // the slot opens at this player leve
 const CAVE_CHARGE_K=0.6;                   // charge per cast = this x the cast ability's base cooldown (one constant to tune)
 const CAVE_CHARGE_MAX=100, CAVE_BOSS_START=50, CAVE_BOSS_LEAVE=0;   // the bar's cap; the charge on entering a boss fight; on leaving one before it ends
 const CAVE_COST_MIN=20, CAVE_COST_MAX=40;   // what a cave skill may cost
-const CAVE_LEVEL_MAX=5, CAVE_LEVEL_STEP=0.1;   // level 2-5: +10% effect each (+40% at 5), the cost stays
+const CAVE_LEVEL_MAX=5;   // level 2-5 scale each number by its curve (shared/awakening.js: damage x1.17 a level, heals x1.10, strengths +6%, durations +3%), the cost stays
 const CAVE_LEVEL_COST=[0,0,3,7,15,40];   // Echo Shards to REACH level 2-5 (index = the new level), universal for any cave skill (C3; the owner's 3 / 7 / 15 / 40)
 // the cave's monster drops: each floor's monsters drop that floor's material (gear.cave.m[floor]); a level of a cave skill also asks for the material of the skill's own floor
 const CAVE_DROPS=[null,'Glow Silk','Prism Splinter','Drowned Pearl','Magma Heart'];   // index = floor
@@ -25,7 +25,7 @@ const CAVE_CAST_WINDOW=3;                   // a cast may still pay its charge t
 const CAVE_FLOORS=4;                        // floors with skills today (more floors are data rows later)
 const CAVE_METHODS='ABCDEFGH';              // the eight ways to earn a skill (docs/CAVE.md section 6)
 const CAVE_SKILLS=Object.create(null), CAVE_SKILL_IDS=[], CAVE_BAD=[];
-const caveLevelK=level=>1+CAVE_LEVEL_STEP*(Math.max(1,Math.min(CAVE_LEVEL_MAX,level|0||1))-1);
+const caveLevelK=(level,kind)=>awkCurve(kind||'dmg',Math.max(1,Math.min(CAVE_LEVEL_MAX,level|0||1)));   // awakening: a charge skill's level on curve `kind` (default damage); replaces the old +10% a level
 /* charge one cast earns: 0.6 x the ability's base cooldown (not its upgraded one), doubled when the equipped cave skill belongs to a skill set and the cast is a piece of that same set */
 function caveChargeGain(ab,caveSk){ const dbl=!!(caveSk&&caveSk.set&&ab&&ab.set===caveSk.set); return CAVE_CHARGE_K*(ab&&ab.cd>0?ab.cd:0)*(dbl?2:1); }
 const caveSkillDef=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(CAVE_SKILLS,id)?CAVE_SKILLS[id]:null;

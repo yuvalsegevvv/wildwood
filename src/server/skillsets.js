@@ -77,7 +77,8 @@ MSG.ssall=(p,msg)=>ssEquipAllP(p,msg.set);
 function ssRefreshP(p){
   const sk=p.gear.skills, cls=clsOfP(p), bonus=ssBonuses(sk,cls,p.level), trig={}, amp=[];
   const cond=[];   // the stat rows (and costs) with a `when`: ssCondP adds them where the fight is known
-  const add=(r,lv)=>{ if(r.on) for(const o of [].concat(r.on)) (trig[o]||(trig[o]=[])).push(r); if(r.amp) amp.push(r.amp);
+  // awakening: a leveled passive's proc row is pushed at its level (awkRow: mult by damage, heal / buff / shield / fx by their curves)
+  const add=(r,lv)=>{ if(r.on){ const rl=awkRow(r,lv); for(const o of [].concat(r.on)) (trig[o]||(trig[o]=[])).push(rl); } if(r.amp) amp.push(r.amp);
     if(r.stat&&r.when) cond.push({stat:r.stat,v:lv?passiveValue(r.id,lv):r.v[0],when:r.when,pid:lv?r.id:null}); if(r.cost&&r.cost.when) cond.push({stat:r.cost.stat,v:r.cost.v,when:r.cost.when}); };
   if(SS_ORDER.length){
     if(Array.isArray(sk.pass)) for(const id of sk.pass.slice(0,passiveOpen(p.level))){ const P=PASSIVES[id]; if(P&&P.set&&sk.owned.includes(id)&&p.level>=Math.max(PASSIVE_LV,P.lv)) add(P,skillLvOf(sk,id)); }

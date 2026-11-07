@@ -71,12 +71,13 @@ const PASSIVE_IDS=Object.keys(PASSIVES);
 for(const id of PASSIVE_IDS){ const P=PASSIVES[id]; P.id=id; P.slot='passive'; P.cls=null; P.el=null; }
 const skillDef=id=>SKILLS[id]||PASSIVES[id]||null;   // an attack skill or a passive
 /* Skill levels: every skill and passive can be upgraded from level 1 to SKILL_MAX_LV with coins and monster drops (drops.js).
-   An attack skill deals skillPower(level) x its damage (a buff's bonus grows the same way, and lasts 0.5 s longer per level)
-   and has a cooldown of skillCdMult(level) x. A passive's value grows by its per-level step. */
+   Every number scales by its curve in shared/awakening.js (awkCurve; skills revamp step 7): an attack skill deals skillPower(level) x its damage
+   (x1.17 a level), a buff's bonus grows +6% and lasts +3% a level, the fx numbers through awkFx, the cooldown is skillCdMult(level) x.
+   A passive's value is v[0] x (1 + 8% a level); the old per-level step v[1] is no longer read. */
 const SKILL_MAX_LV=5;
 const skillLvOf=(skills,id)=>Math.max(1,Math.min(SKILL_MAX_LV,((skills&&skills.lv&&skills.lv[id])|0)||1));
-const skillPower=L=>1+0.12*(L-1), skillCdMult=L=>1-0.03*(L-1);
-const passiveValue=(id,L)=>PASSIVES[id].v[0]+PASSIVES[id].v[1]*(L-1);
+const skillPower=L=>awkCurve('dmg',L), skillCdMult=L=>awkCurve('cd',L);   // awakening: the damage and cooldown curves
+const passiveValue=(id,L)=>PASSIVES[id].v[0]*awkCurve('pass',L);   // awakening: +8% of the level-1 value a level
 const pctText=v=>+(v*100).toFixed(1);
 const passiveText=(id,L)=>PASSIVES[id].text.replace('{}',pctText(passiveValue(id,L)));
 // the total of one passive stat from a loadout (0 before level PASSIVE_LV; a slot the level has not opened yet does nothing); cls: the class whose loadout counts the set bonuses (none: no bonuses)

@@ -17,7 +17,7 @@ const cvvWho=pid=>pid===NET.pid?P:(REMOTES.get(pid)||null);
 const cvvY=o=>o.y!==undefined?o.y:getH(o.x,o.z);
 const cvvAct=o=>o===P?CB.act:o.act;
 const cvvScale=o=>o===P?hiker.scale:(o.scale||1);
-const cvvLvK=(p,ab)=>p===P?caveLevelK(caveLevelOf(ab.id)):1.1;   // the level scale of the skill (your own level; another hiker's is not known here)
+const cvvLvK=(p,ab)=>p===P?caveLevelK(caveLevelOf(ab.id),'dur'):1.03;   // the duration scale of the skill's level (awakening: +3% a level; your own level, another hiker's is not known here)
 function cvvHand(o,out){ const sc=cvvScale(o); return out.set(o.x-Math.sin(o.face)*0.4,cvvY(o)+1.3*sc,o.z-Math.cos(o.face)*0.4); }
 function cvvSnd(x,z,fn){ if(!SND.ready) return; const s=spatial(x,z,12,80); if(s) fn(s); }
 function cvvRecent(pid,id){ const r=CVV.recent[pid]; return r&&r.id===id&&performance.now()-r.t<1800?r:null; }

@@ -2,7 +2,7 @@
 /* Agent map. Plan: docs/CAVE.md section 4; the skills are data (shared/cave/skill-<floor>-<id>.js); test: tools/cave-sets-smoke.js.
    A cave skill's p.act carries `cave:true`; resolveFxS calls caveSetFxS(p,a,tgt,src) last (hook `// cave:`), after the generic keys (dash, ally, heal, taunt...) it also uses.
    RULES: a set skill only READS its set's mark (ssMarkN / ssMarkSum count it, never ssPopS) and may ADD stacks (ssMarkS); kill refunds are capped at CAVE_REFUND_CAP charge a cast;
-   heals stay under SS_HEAL_CAP and go through ssHealAllS; weaken uses the shared non-stacking `weak` (mstDirectS); each skill level scales the effect by caveLevelK (a.mult already has it).
+   heals stay under SS_HEAL_CAP and go through ssHealAllS; weaken uses the shared non-stacking `weak` (mstDirectS); each skill level scales the effect by its curve (shared/awakening.js): the fx came through awkFx (heal, dur, slow by their curves), K = strength for the keys it does not know, KH = healing.
    NEW FX KEYS (all run here; the effects agent draws them from the `cvfx` / `cvhand` events and the zone's `area` event; every one is a placeholder look today):
      cvstrike:{r,arc?,kb?,crowd:{per,max}?,markK:{id,per,max}?,behind?,burn?,slow?,stun?,mark?,status?}   a ring (or cone with arc) hit; crowd = +per for each enemy hit (up to max), markK = +per for each stack of the set's mark on that target
      refund:{n,secs,cap?}   each of YOUR kills within secs of the cast gives back n charge, at most cap (up to 15) a cast
@@ -49,7 +49,7 @@ function cvZoneS(p,a,tgt,Z,f,src,K){
   else if(Z.self) c={x:p.x,z:p.z};
   else c=aimPoint(p,tgt,a.range,Z.dflt||10);
   const D=Z.durMark?Z.durMark.v*Math.min(Z.durMark.max||5,ssMarkSum(p,Z.durMark.id,Z.durMark.r)):0;   // a READ of the set's mark: a longer zone
-  const spec=Object.assign({},Z,{cave:Object.assign({K},Z.cv)}); if(Z.heal) spec.heal={v:Z.heal.v*K};
+  const spec=Object.assign({},Z,{cave:Object.assign({K},Z.cv)}); if(Z.heal) spec.heal={v:Z.heal.v};   // (awkFx already scaled it; K = the healing curve, for endHeal)
   addAreaS(p,'zone',c.x,c.z,Z.r,Z.dur+D,a.mult*(Z.k===undefined?1:Z.k),false,a.el,spec,f,src);
 }
 function cvSlideS(p,a,tgt,L){   // Landslide: everything in a len x w slope is pulled to its end
@@ -84,12 +84,12 @@ function cvHandS(p,m,sh){   // Night Shift: a grave hand rises where m died and 
 // ---- the entry: resolveFxS calls it after the generic keys ----
 function caveSetFxS(p,a,tgt,src){
   if(!a.cave||!p.cave) return;
-  const f=a.fx, X=p.cave.fx, K=caveLvK(p,a.sid,a.lvl), inRange=!!tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=a.range+2;
+  const f=a.fx, X=p.cave.fx, K=caveLvK(p,a.sid,a.lvl,'buff'), KH=caveLvK(p,a.sid,a.lvl,'heal'), inRange=!!tgt&&Math.hypot(tgt.x-p.x,tgt.z-p.z)<=a.range+2;
   const healK=1+psP(p,'heal')+ssCondP(p,'heal',null);
   if(f.refund) X.ref={until:S.t+f.refund.secs,left:Math.min(CAVE_REFUND_CAP,f.refund.cap||CAVE_REFUND_CAP),n:f.refund.n};
   if(f.behindWin) X.behind=S.t+f.behindWin;
   if(f.cvstrike) cvStrikeS(p,a,f.cvstrike);
-  if(f.cvzone) cvZoneS(p,a,tgt,f.cvzone,f,src,K);
+  if(f.cvzone) cvZoneS(p,a,tgt,f.cvzone,f,src,KH);
   if(f.slide) cvSlideS(p,a,tgt,f.slide);
   if(f.puppet) cvPuppetS(p,a,tgt,inRange,f.puppet,K);
   if(f.retreat){ let ux=Math.sin(p.face), uz=Math.cos(p.face); if(inRange){ const dx=p.x-tgt.x, dz=p.z-tgt.z, d=Math.hypot(dx,dz)||1; ux=dx/d; uz=dz/d; }
@@ -97,17 +97,17 @@ function caveSetFxS(p,a,tgt,src){
   if(f.wall){ const W=f.wall, n=Math.min(W.perMark.max,ssMarkSum(p,W.perMark.id,W.perMark.r)), red=Math.min(0.8,(W.red+Math.min(0.15,W.perMark.v*n))*K);
     X.wall={until:S.t+W.dur,x:p.x,z:p.z,fx:-Math.sin(p.face),fz:-Math.cos(p.face),red,r:W.r,taunt:W.taunt,nextT:S.t+2}; caveHurtLive=Math.max(caveHurtLive,X.wall.until); ev('cvfx',p.id,'wall',W.dur,r1(red*100)); }
   if(f.next){ const N=f.next, n=Math.min(N.perMark.max,ssMarkSum(p,N.perMark.id,N.perMark.r)), v=Math.min(N.cap,N.perMark.v*n)*K;
-    for(const q of ssAlliesOf(p,N.r)){ if(v>0) q.cave.fx.next={v,until:S.t+N.dur}; healP(q,q.maxHp*Math.min(SS_HEAL_CAP,N.heal*K*healK)); ev('cvfx',q.id,'next',v); } }
+    for(const q of ssAlliesOf(p,N.r)){ if(v>0) q.cave.fx.next={v,until:S.t+N.dur}; healP(q,q.maxHp*Math.min(SS_HEAL_CAP,N.heal*healK)); ev('cvfx',q.id,'next',v); } }
   if(f.cdrParty){ const C=f.cdrParty, n=Math.min(C.perMark.max,ssMarkSum(p,C.perMark.id,C.perMark.r)), sec=Math.min(C.cap,C.base+C.perMark.v*n)*K;
     for(const q of ssAlliesOf(p,C.r)) ssCdrS(q,{skill:sec,burst:sec}); }
   if(f.perch){ const P=f.perch; X.perch={until:S.t+P.dur,melee:P.melee,rangeAdd:P.rangeAdd,sightK:P.sightK*K}; caveHurtLive=Math.max(caveHurtLive,X.perch.until); ev('cvfx',p.id,'perch',P.dur); }
   if(f.hold){ const H=f.hold, n=Math.floor(Math.min(10,ssMarkSum(p,H.perN.id,H.r))/H.perN.n), dur=Math.min(H.max,H.dur+H.perN.add*n);
     for(const q of ssAlliesOf(p,H.r)){ q.cave.fx.hold={until:S.t+dur,pool:0,land:H.land}; ev('cvfx',q.id,'hold',dur); } caveHurtLive=Math.max(caveHurtLive,S.t+dur); }
   if(f.bell){ const B=f.bell, n=Math.min(B.perMark.max,Math.floor(ssMarkSum(p,B.perMark.id,B.perMark.r)/B.perMark.per));
-    X.bell={left:B.n+n,until:S.t+B.dur,reflect:Math.min(0.9,B.reflect*K),heal:B.heal*K}; caveHurtLive=Math.max(caveHurtLive,X.bell.until); ev('cvfx',p.id,'bell',X.bell.left); }
+    X.bell={left:B.n+n,until:S.t+B.dur,reflect:Math.min(0.9,B.reflect*K),heal:B.heal}; caveHurtLive=Math.max(caveHurtLive,X.bell.until); ev('cvfx',p.id,'bell',X.bell.left); }
   if(f.embalm){ const E=f.embalm, n=Math.min(E.perMark.max,ssMarkSum(p,E.perMark.id,E.perMark.r)); let w=p;
     for(const q of ssAlliesOf(p,E.r)) if(q.hp/q.maxHp<w.hp/w.maxHp) w=q;   // the one who needs it most (you, when alone)
-    w.cave.fx.embalm={until:S.t+E.dur,heal:(E.heal+E.perMark.v*n)*K*healK}; caveHurtLive=Math.max(caveHurtLive,S.t+E.dur); ev('cvfx',w.id,'embalm',E.dur); }
+    w.cave.fx.embalm={until:S.t+E.dur,heal:(E.heal+E.perMark.v*n*KH)*healK}; caveHurtLive=Math.max(caveHurtLive,S.t+E.dur); ev('cvfx',w.id,'embalm',E.dur); }
   if(f.shift){ const sh=f.shift; X.shift={until:S.t+sh.dur,hands:0,max:sh.max,r:sh.r,grab:sh.grab,slow:sh.slow,mult:a.mult*sh.k,el:a.el}; }
 }
 // ---- zones: updateAreasS calls these for a zone made by cvzone (A.fx.cave) ----
@@ -120,7 +120,7 @@ function caveZoneTickS(o,A){
   if(C.momentum&&X&&inZ(o)) X.moved=S.t+every+0.3;
   if(C.still&&X) X.still=S.t+every+0.5;
   if(C.lamp){ const L=A.lamp||(A.lamp=new Set());
-    for(const q of allies) if(!L.has(q.id)&&q.hp<q.maxHp*C.lamp.below){ L.add(q.id); healP(q,q.maxHp*Math.min(SS_HEAL_CAP,C.lamp.heal*C.K)); ev('cvfx',q.id,'lamp'); } }
+    for(const q of allies) if(!L.has(q.id)&&q.hp<q.maxHp*C.lamp.below){ L.add(q.id); healP(q,q.maxHp*Math.min(SS_HEAL_CAP,C.lamp.heal)); ev('cvfx',q.id,'lamp'); } }
 }
 function caveZoneEndS(o,A){
   const E=A.fx.cave.endHeal; if(!E) return;

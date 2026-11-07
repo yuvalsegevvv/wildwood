@@ -43,7 +43,7 @@ function skInfoHtml(C,cls){
   let stats;
   if(pass) stats=passiveText(s.id,L);
   else stats=(s.slot==='basic'?bhInterval(s,S,bhSpeedUi(),1,0).toFixed(2)+' s per swing · hold to charge':abilityCd(s,S,C.lv,cls,rlUiCdr()).toFixed(1)+' s cooldown')+(s.buff?'':' · '+Math.round(s.mult*skillPower(L)*100)+'% damage')
-    +(s.buff?' · +'+Math.round((s.buff.dmg-1)*skillPower(L)*100)+'% damage for '+(s.buff.dur+0.5*(L-1))+' s':'');
+    +(s.buff?' · +'+Math.round((s.buff.dmg-1)*awkCurve('buff',L)*100)+'% damage for '+Math.round(s.buff.dur*awkCurve('dur',L)*10)/10+' s':'');   // awakening: the buff and duration curves
   const tags=`<span class="sk-tag">${pass?'Passive':(s.cls==='any'?'Any class':CLASSES[s.cls].name)+' · '+KIND_TITLE[s.slot]}${s.set?' · '+SS_SETS[s.set].name+' ('+SS_SETS[s.set].char.name+'\'s set)':''}</span>${pass?'':elChip(el)}`;
   let acts='';
   if(own){
@@ -59,7 +59,7 @@ function skInfoHtml(C,cls){
     else {
       const n=upgradeNeeds(s.id,L+1); if(!n) up=`<div class="sk-up"><b>Signature skill</b><span class="muted">It cannot be upgraded yet.</span></div>`;   // (a set whose land has no raid)
       else { const have=GEAR.mats||{}, cOk=GEAR.coins>=n.coins, rdHave=n.rd?rdMatHave(n.rd.land):0, rdOk=!n.rd||rdHave>=n.rd.n, all=cOk&&rdOk&&n.mats.every(m=>(have[m.id]||0)>=m.n);   // raids: a signature piece also needs its land's raid material
-      const gain=pass?passiveText(s.id,L+1):Math.round((skillPower(L+1)/skillPower(L)-1)*1000)/10+'% more '+(s.buff?'bonus':'damage')+', '+Math.round((1-skillCdMult(L+1)/skillCdMult(L))*1000)/10+'% shorter cooldown';
+      const gain=pass?passiveText(s.id,L+1):Math.round((s.buff?awkCurve('buff',L+1)/awkCurve('buff',L):skillPower(L+1)/skillPower(L))*1000-1000)/10+'% more '+(s.buff?'bonus':'damage')+', '+Math.round((1-skillCdMult(L+1)/skillCdMult(L))*1000)/10+'% shorter cooldown';
       up=`<div class="sk-up"><b>Level ${L} &rarr; ${L+1}</b><span>${gain}</span><div class="sk-cost"><span class="${cOk?'ok':'bad'}">${n.coins} coins</span>${n.mats.map(m=>`<span class="${(have[m.id]||0)>=m.n?'ok':'bad'}" title="Dropped by ${MATS[m.id].from} (level ${MATS[m.id].lv})"><i style="background:${MATS[m.id].col}"></i>${MATS[m.id].name} ${have[m.id]||0}/${m.n}</span>`).join('')}${n.rd?`<span class="${rdOk?'ok':'bad'}" title="Won by clearing ${rdOfLand(n.rd.land).name}"><i style="background:#e8b84a"></i>${rdOfLand(n.rd.land).mat} ${rdHave}/${n.rd.n}</span>`:''}</div>`
         +(C.trainer?`<button class="chip buy" data-upskill="${s.id}" ${all?'':'disabled'}>Upgrade</button>`:'<span class="muted">Upgrades happen at Aldric (or Master Ryu in Hanami).</span>')+`<button class="chip" data-sktrack="${s.id}" aria-pressed="${skTrackId===s.id}" title="Mark where the monsters that drop the missing materials live (map and minimap)">${skTrackId===s.id?'Tracking':'Track'}</button></div>`; }
     }

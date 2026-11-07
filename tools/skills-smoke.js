@@ -3,7 +3,7 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},
-  ['MONS','getH','VIL2','VIL','rewardKill','elemHitS','rollDmgS','sanitizeGear','hurtP','ELEMS','MATS','upgradeNeeds','SKILLS','foeMult','foeTraits','ELEM_BASIC_K','ELEM_LIST','SKILL_MAX_LV','newSkills','damageMonsterS','psP','S','passiveSum','passiveOpen','PASSIVE_SLOT_LV','PASSIVE_SLOTS']);
+  ['MONS','getH','VIL2','VIL','rewardKill','elemHitS','rollDmgS','sanitizeGear','hurtP','ELEMS','MATS','upgradeNeeds','SKILLS','foeMult','foeTraits','ELEM_BASIC_K','ELEM_LIST','SKILL_MAX_LV','newSkills','damageMonsterS','psP','S','passiveSum','passiveOpen','PASSIVE_SLOT_LV','PASSIVE_SLOTS','awkCurve','awkFx','awkRow','AWK_LV_CAP','AWK_SCALE','skillPower','skillCdMult','passiveValue','PASSIVES','caveLevelK','applyBuffS']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ n=Math.max(n,3); for(let i=0;i<n;i++){ // (at least 3 ticks: events reach the log with the next snapshot)
@@ -21,6 +21,23 @@ ok('foeTraits: basic is neither weak nor resisted anywhere, each of the six elem
 ok('every monster and skill has a valid element',x.MONS.every(m=>!m.def.el||x.ELEMS[m.def.el])&&Object.values(x.SKILLS).every(s=>!s.el||x.ELEMS[s.el]));
 const up=x.upgradeNeeds('whirlwind',2);
 ok('upgrade costs coins and a monster drop that exists',up&&up.coins>0&&up.mats.length===1&&x.MATS[up.mats[0].id]&&x.upgradeNeeds('whirlwind',x.SKILL_MAX_LV+1)===null&&x.upgradeNeeds('whirlwind',5).mats.length===2);
+
+// ---- the level curves (skill revamp step 7, shared/awakening.js: AWK_SCALE, awkCurve, awkFx) ----
+{ const C=x.awkCurve, KINDS=Object.keys(x.AWK_SCALE);
+  ok('a level-1 skill is unchanged: every curve is x1, awkFx returns the fx itself, damage, cooldown and passive values as defined',KINDS.every(k=>C(k,1)===1)&&x.skillPower(1)===1&&x.skillCdMult(1)===1&&x.passiveValue('vitality',1)===x.PASSIVES.vitality.v[0]&&(()=>{ const f={ring:{r:5,stun:1}}; return x.awkFx(f,1)===f; })());
+  ok('damage compounds x1.17 a level: level 10 is x4.11 (+/-0.01), level 12 x5.62',Math.abs(C('dmg',10)-4.11)<=0.01&&Math.abs(x.skillPower(10)-4.11)<=0.01&&Math.abs(C('dmg',12)-5.62)<=0.01,C('dmg',10).toFixed(4));
+  ok('healing and shields compound x1.10 (level 10 x2.36); buffs +6%, durations +3%, passives +8% a level',Math.abs(C('heal',10)-2.358)<0.001&&near(C('buff',10),1.54)&&near(C('dur',10),1.27)&&near(C('pass',10),1.72));
+  ok('cooldowns: -3% a level to level 5 (x0.88), then -1% a level (x0.83 at 10, x0.81 at 12)',near(C('cd',5),0.88)&&near(x.skillCdMult(5),0.88)&&near(C('cd',10),0.83)&&near(C('cd',12),0.81)&&near(C('cd',6),0.87));
+  ok('crowd control: +2% a level, never above +20%',near(C('cc',5),1.08)&&near(C('cc',11),1.2)&&C('cc',12)===1.2&&C('cc',99)===1.2);
+  ok('the curves stop at AWK_LV_CAP (12)',x.AWK_LV_CAP===12&&C('dmg',13)===C('dmg',12)&&C('dmg',0)===1);
+  const f={ring:{r:6,kb:2,stun:1,slow:2},zone:{r:4,dur:5,heal:{v:0.1}},shield:{v:0.2,dur:4},ally:[{kind:'haste',v:0.1,dur:6}],burn:{dur:3,k:0.3},taunt:{r:8,dur:3},status:{kind:'stun',v:1,dur:2}}, g=x.awkFx(f,10);
+  ok('awkFx maps each field to its curve: stun / slow / kb / taunt by crowd control, dur by durations, heal and shield v by healing, ally v by buffs; radii and burn k untouched',
+    near(g.ring.stun,1*C('cc',10))&&near(g.ring.slow,2*C('cc',10))&&near(g.ring.kb,2*C('cc',10))&&g.ring.r===6&&near(g.zone.dur,5*C('dur',10))&&near(g.zone.heal.v,0.1*C('heal',10))&&near(g.shield.v,0.2*C('heal',10))&&near(g.shield.dur,4*C('dur',10))
+    &&near(g.ally[0].v,0.1*C('buff',10))&&near(g.ally[0].dur,6*C('dur',10))&&g.burn.k===0.3&&near(g.burn.dur,3*C('dur',10))&&near(g.taunt.dur,3*C('cc',10))&&near(g.status.dur,2*C('cc',10))&&g.zone.r===4&&f.ring.stun===1&&x.awkFx(f,10)===g,JSON.stringify(g));
+  const r=x.awkRow({id:'t',on:'hit',mult:2,heal:0.05,fx:{ring:{r:3,stun:1}}},5);
+  ok('a passive\'s proc row at level 5: mult by damage, heal by healing, fx through awkFx',near(r.mult,2*C('dmg',5))&&near(r.heal,0.05*C('heal',5))&&near(r.fx.ring.stun,C('cc',5)));
+  ok('passive values: v[0] x (1 + 8% a level)',near(x.passiveValue('ferocity',5),x.PASSIVES.ferocity.v[0]*1.32));
+  ok('charge skills read the same curves (caveLevelK, capped at their level 5)',near(x.caveLevelK(5),C('dmg',5))&&near(x.caveLevelK(5,'heal'),C('heal',5))&&near(x.caveLevelK(9),C('dmg',5))); }
 
 // ---- saves are checked ----
 const g=x.sanitizeGear({soul:'lava',mats:{slime:-5,nothing:3,boss:99999999,kappa:'7'},skills:{owned:['whirlwind','vitality','nope'],lv:{whirlwind:99,vitality:3,bash:4},pass:['vitality','vitality','ironwill']}},'warrior');
@@ -69,7 +86,7 @@ for(let to=3;to<=6;to++){ for(const m of x.upgradeNeeds('chain',Math.min(to,5)).
 ok('upgrade: stops at the top level',you('a').gear.skills.lv.chain===5);
 // the upgraded skill hits harder and cools down faster
 W.receive('a',{t:'eqskill',id:'chain'}); p.cd.skill=0; p.act=null; W.receive('a',{t:'atk',k:'skill',tg:slime.id,face:0});
-ok('an upgraded skill: damage x1.48, cooldown 12% shorter, its element goes along',p.act&&near(p.act.mult,x.SKILLS.chain.mult*1.48)&&near(p.cd.skill,x.SKILLS.chain.cd*0.88)&&p.act.lvl===5&&p.act.el==='air',p.act&&p.act.mult.toFixed(3)+' / cd '+p.cd.skill.toFixed(2));
+ok('an upgraded skill: damage x1.17^4 (x1.87), cooldown 12% shorter, its element goes along',p.act&&near(p.act.mult,x.SKILLS.chain.mult*Math.pow(1.17,4))&&near(p.cd.skill,x.SKILLS.chain.cd*0.88)&&p.act.lvl===5&&p.act.el==='air',p.act&&p.act.mult.toFixed(3)+' / cd '+p.cd.skill.toFixed(2));
 
 // ---- passives (ONE slot, opens at level 10) ----
 W.receive('a',{t:'dev',cmd:'reset'}); tick(1);

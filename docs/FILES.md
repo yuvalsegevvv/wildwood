@@ -94,6 +94,7 @@ shared
   emberwake-bosses.js                The Emberwake Isles' two world bosses as data: Ocelo the Sun-Jaguar (level 45, the Jaguar Court) and Tuila the Tide-Caller (level 46, the strait's tidepool; her fall opens the zone tier), their adds, and EW_BOSS_ROWS (the BOSS_DEFS rows)
   tiers.js                           Zone tiers: a harder setting for each land (every enemy in it, bosses included, +10 levels per tier), opened by its second boss, and the symbol bonus. Pure.
   elements.js                        Elements (ELEMS): the wheel a skill's element plays against a monster's element (foeMult, foeTraits), the x1.1 an element-less skill gets (ELEM_BASIC_K). Pure.
+  awakening.js                       Awakening: how a skill's level scales each of its numbers (AWK_SCALE curves, awkCurve, the field map AWK_FIELD, awkFx / awkRow scaled copies)
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
   skillsets.js                       Skill sets (rules, pure): the registry defineSkillSet (one file per set in shared/skillsets/), its checks, the expansion into SKILLS / PASSIVES rows, counting the worn pieces and the 3- / 5-set bonuses
   basic-hold.js                      Skill 1 (the basic slot) as an attack-speed skill with two modes (pure): attack speed and charge gain, the press / hold split, and what a held release becomes for each class

@@ -364,11 +364,11 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   for(const bad of ['constructor','__proto__','nope',7,null,{},[]]) W4.receive('s1',{t:'caveup',id:bad}); tk(1);
   ok('bad or unowned ids in caveup change nothing',g.sh===500&&Object.keys(g.own).length===ownN);
   const other=f1.find(s=>s.id!==s1.id); W4.receive('s1',{t:'caveup',id:other.id}); tk(1); ok('a skill you do not own cannot be levelled',!Object.prototype.hasOwnProperty.call(g.own,other.id)&&g.sh===500);
-  // the effect: +10% a level, +40% at 5, through the one helper
+  // the effect: the damage curve (shared/awakening.js, x1.17 a level, x1.87 at 5), through the one helper
   const lk=l=>{ g.own[s1.id]=l; return X.caveLvK(q,s1.id); };
-  ok('caveLvK gives x1.0 at level 1 and +10% per level (x1.4 at 5)',[1,2,3,4,5].every(l=>Math.abs(lk(l)-(1+0.1*(l-1)))<1e-9));
+  ok('caveLvK gives x1.0 at level 1 and x1.17 per level, compounding (x1.87 at 5)',[1,2,3,4,5].every(l=>Math.abs(lk(l)-Math.pow(1.17,l-1))<1e-9));
   g.own[s1.id]=1; const fx1=s1.id; q.cave.charge=100; { const run=lv=>{ g.own[fx1]=lv; q.gear.skills.cave=fx1; q.cave.charge=100; q.cd.cave=0; q.act=null; W4.receive('s1',{t:'atk',k:'cave',tg:null,face:0,aim:[0,0,-1]}); tk(1); const m=q.act&&q.act.mult; q.act=null; return m; };
-    const m1=run(1), m5=run(5); ok('a cast carries the level in its power (level 5 = 1.4 x level 1)',m1>0&&Math.abs(m5/m1-1.4)<1e-6,m1+' vs '+m5); }
+    const m1=run(1), m5=run(5); ok('a cast carries the level in its power (level 5 = 1.17^4 x level 1)',m1>0&&Math.abs(m5/m1-Math.pow(1.17,4))<1e-6,m1+' vs '+m5); }
   // sanitize
   { const c=X.caveSanitizeSave({own:{[s1.id]:9,constructor:3,nope:2,[other.id]:'x'},sh:-5}); ok('sanitize clamps levels to 1-5, drops unknown ids, shards >= 0',c.own[s1.id]===5&&!Object.prototype.hasOwnProperty.call(c.own,'constructor')&&!c.own.nope&&c.own[other.id]===1&&c.sh===0);
     const d=X.caveSanitizeSave({own:{},sh:12.7}); const e=X.caveSanitizeSave({sh:1e12}); const h=X.caveSanitizeSave({sh:'x'}); ok('shards are whole non-negative numbers, capped at 99999, junk is 0',Number.isInteger(d.sh)&&d.sh>=0&&e.sh===99999&&h.sh===0&&X.caveSanitizeSave(null).sh===0); }

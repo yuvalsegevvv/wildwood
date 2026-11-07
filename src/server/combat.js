@@ -21,7 +21,7 @@ function handleAttack(p,msg){
   if(isFinite(+msg.face)) p.face=+msg.face%(2*Math.PI);   // (modulo a turn: it goes out in the pact event and the snapshots, rounded by x100, and 1e308 became Infinity there)
   const tg=foeByIdS(p,msg.tg);   // pvp: a fighter on the island may name another fighter
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
-  p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:ab.fx,mult:ab.mult*skillPower(lvl)*caveNextK(p,k),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,holdAt:!!ab.holdAt};   // cave: Intermission's bonus on the next skill; basic-hold: holdAt = a mage's held blast, centred on the target
+  p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:awkFx(ab.fx,lvl),mult:ab.mult*skillPower(lvl)*caveNextK(p,k),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,holdAt:!!ab.holdAt};   // awakening: the fx at the skill's level (stun, slow, heal, durations...); cave: Intermission's bonus on the next skill; basic-hold: holdAt = a mage's held blast, centred on the target
   ultBoostActS(p,p.act,ab.id);   // ult: a boosted piece's cast (mult, n, size, util)
   ev('pact',p.id,kind,Math.round(p.face*100)/100,...(p.act.ub?[1]:[]));   // (the 5th field: a boosted cast, drawn stronger)
   if(k!=='basic'&&!p.pv) mqActP(p,k);   // the main quest's 'use your skill / burst' steps (pvp: nothing is credited on the island)
@@ -177,11 +177,11 @@ function resolveHitS(p,a){
     ev('chain',pts);
   }
 }
-// a buff skill (the row's buff): a timed boost; a higher skill level makes the bonus stronger and 0.5 s longer.
+// a buff skill (the row's buff): a timed boost; a higher skill level makes it stronger and longer (shared/awakening.js: +6% strength, +3% duration, regen by healing).
 // buff = {dur, dmg (damage x), cd (basic cooldown x), crit (+chance), red (damage taken less), steal (share of your damage you heal), regen (max health per second), el (element of element-less attacks), reset}
 function applyBuffS(p,a){
-  const b=SKILLS[a.sid].buff, dur=(b.dur+0.5*(a.lvl-1))*(1+rlP(p,'buffdur'));   // rolls: longer buffs
-  p.buff={id:a.sid,until:S.t+dur,dmg:1+(b.dmg-1)*skillPower(a.lvl),cd:b.cd,crit:b.crit,red:b.red||0,steal:b.steal||0,regen:b.regen||0,el:b.el||null};
+  const b=SKILLS[a.sid].buff, K=awkCurve('buff',a.lvl), dur=b.dur*awkCurve('dur',a.lvl)*(1+rlP(p,'buffdur'));   // awakening: the buff and duration curves   // rolls: longer buffs
+  p.buff={id:a.sid,until:S.t+dur,dmg:1+(b.dmg-1)*K,cd:b.cd,crit:(b.crit||0)*K,red:(b.red||0)*K,steal:(b.steal||0)*K,regen:(b.regen||0)*awkCurve('heal',a.lvl),el:b.el||null};
   if(b.reset) p.cd.skill=0;
   ev('buff',p.id,a.sid,dur);
 }

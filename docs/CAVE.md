@@ -50,7 +50,7 @@ Starting numbers to tune in play. The 0.6 is one constant.
 
 ## 4. The skills
 
-These rules apply to every cave skill. One skill works for all three classes, like the universal pieces. Costs run from 20 to 40 charge. Each level from 2 to 5 adds **+10% to the skill's effect** (+40% at level 5; `caveLevelK`), and the cost stays the same. Set skills **read** their set's mark but never spend it, so the set's own burst keeps its payoff. The letter is the method that earns the skill on that floor (A-H, section 6).
+These rules apply to every cave skill. One skill works for all three classes, like the universal pieces. Costs run from 20 to 40 charge. Each level from 2 to 5 scales each number by its curve in `shared/awakening.js` (damage x1.17 a level, heals x1.10, strength +6%, durations +3%; `caveLevelK(level, kind)`; the old +10% a level is replaced), and the cost stays the same. Set skills **read** their set's mark but never spend it, so the set's own burst keeps its payoff. The letter is the method that earns the skill on that floor (A-H, section 6).
 
 ### Floor 1: Glowworm Grotto: general skills
 
