@@ -61,3 +61,7 @@ function riftUpdate(dt){
     v.orbit.rotation.y=riftT*0.5; v.ring.rotation.z=Math.sin(riftT*0.7)*0.1; v.glowM.material.opacity=0.28+0.1*Math.sin(riftT*2.3); v.glowM.lookAt(camera.position.x,v.G.position.y+2.6,camera.position.z); }
   if(!$('#rift').hidden){ const R=RIFT_DEFS[RIFT_UI.id]; if(!R||Math.hypot(P.x-R.door.x,P.z-R.door.z)>RIFT_TALK+3) closePanels(); else if((riftRenderT-=dt)<=0){ riftRenderT=1; if(document.activeElement!==$('#riftX2')) riftRender(); } }
 }
+// the full map's marker for each rift tear in the land being drawn (ctx, world -> canvas, land key, font size, label(), pixel ratio)
+function riftMapMarks(x,at,land,fs,label,dpr){
+  for(const D of RIFT_DOORS){ if(landAt(D.x,D.z)!==land) continue; const R=RIFT_DEFS[D.id], [cx,cy]=at(D.x,D.z); dot(x,cx,cy,5*dpr,'#7ad0ff'); label(R?R.name:'Rift',cx,cy-fs*1.3,fs,'#c8e8ff',true); label('Rift',cx,cy+fs*0.9,fs*0.85,'#ffb0e0'); }
+}
