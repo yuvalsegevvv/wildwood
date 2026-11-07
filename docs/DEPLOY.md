@@ -4,7 +4,7 @@ Moved word for word from `CLAUDE.md` sections 6 and 7; `CLAUDE.md` keeps a short
 
 ## Render
 
-`render.yaml`: build `npm install --omit=dev ... && python3 build.py`, start
+`render.yaml`: build `npm install --omit=dev ... && python3 build.py --min` (`--min`: the game and server scripts without whitespace and comments, names kept, about -20% of the page: 8.8 to 7.1 MB; `tools/minify.js`, needs the `terser` dependency. Publish the playtest artifact from a `--min` build too; tests use the plain build), start
 `node dist/wildwood-server.js --no-dev` (testing tools off for players), health check `/healthz`.
 Live at https://wildwood-wib9.onrender.com (service `wildwood`, free plan: sleeps after 15 min idle, ~30-50 s
 to wake). `dist/` is not committed. `GET /status` shows players, monsters, storage kind (`"saves":"postgres"`
@@ -50,6 +50,6 @@ same artifact: `files` maps `audio/<name>.<hash>.m4a` to each `dist/audio/` file
 fetches them by that relative path (the Artifact contract allows `fetch()` of files published alongside the page). Names
 hold a content hash, so unchanged tracks keep their URL (cached in the viewer's browser); when a track was re-encoded, publish
 the new file and set the old path to `null`. Not yet checked in the real artifact sandbox: if the music there is the old generated
-kind, the fetch failed. Fallback: `python3 build.py --inline-audio` embeds everything again (13.6 MB, under the 15 MB cap,
+kind, the fetch failed. Fallback: `python3 build.py --inline-audio` embeds everything again (13.6 MB, under the build's 14 MB limit (it warns from 12 MB; the artifact allows 16 MB per file),
 no room to grow). Every music track is downloaded once per client (in-memory bytes + Cache Storage `wildwood-music-v1`, and on the
 Node server immutable HTTP caching), so check `read_network_requests` in the browser pane after a change to `samples.js`.

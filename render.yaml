@@ -11,7 +11,7 @@ services:
     runtime: node
     plan: free
     # npm install brings in pg (Postgres); build.py builds dist/ from src/
-    buildCommand: npm install --omit=dev --no-audit --no-fund && python3 build.py
+    buildCommand: npm install --omit=dev --no-audit --no-fund && python3 build.py --min
     # --no-dev: testing tools (set level, free items, coins) are off for players
     startCommand: node dist/wildwood-server.js --no-dev
     healthCheckPath: /healthz

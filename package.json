@@ -33,5 +33,8 @@
   },
   "devDependencies": {
     "three": "0.128.0"
+  },
+  "dependencies": {
+    "terser": "^5.31.6"
   }
 }
