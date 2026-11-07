@@ -471,6 +471,7 @@ function updateNPCs(dt){
   if(!NPCs.length) return;
   const night=envCur.night, cx=camera.position.x, cz=camera.position.z;
   nearNPC=null; let nd=3.8;
+  for(const n of NPCs){ if(n.g.visible){ if(!n.g.parent) scene.add(n.g); } else if(n.g.parent) scene.remove(n.g); }   // a sleeping villager leaves the scene graph: three.js walks (and recomputes the matrices of) hidden objects too, and ~170 people are ~10,000 of them
   for(const n of NPCs){
     const B=n.def.behavior, D=n.def, V=n.V;
     const dxp=P.x-n.x, dzp=P.z-n.z, dp=Math.hypot(dxp,dzp);

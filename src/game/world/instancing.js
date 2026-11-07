@@ -3,8 +3,8 @@
 // chunks are CS (110 m) squares over the whole world: CHX across, CHZ down
 const CS=SIZE/8, CHX=Math.ceil(WW/CS-0.01), CHZ=Math.ceil(WD/CS-0.01);
 /* PLANT_GRP: plants are bucketed into squares of PLANT_GRP x PLANT_GRP chunks (CS = 110 m) per kind and level, not one per chunk: draw calls and scene objects fall by ~GRP squared
-   (the CPU, not the GPU, was the limit: ~2,000 calls and ~13,000 meshes a frame on an RTX 3050). Test other sizes with localStorage 'wildwood-grp' (1-4). */
-const PLANT_GRP=(()=>{ try{ const v=parseInt(localStorage.getItem('wildwood-grp'),10); if(v>=1&&v<=4) return v; }catch(_){} return 2; })(), CSG=CS*PLANT_GRP, CHGX=Math.ceil(CHX/PLANT_GRP);
+   (the CPU, not the GPU, was the limit: ~2,000 calls and ~13,000 meshes a frame on an RTX 3050). Default 1 (= one per chunk): measured on an RTX 3050, 2 and 3 cut no calls and drew more triangles. Test other sizes with localStorage 'wildwood-grp' (1-4). */
+const PLANT_GRP=(()=>{ try{ const v=parseInt(localStorage.getItem('wildwood-grp'),10); if(v>=1&&v<=4) return v; }catch(_){} return 1; })(), CSG=CS*PLANT_GRP, CHGX=Math.ceil(CHX/PLANT_GRP);
 const _q=new THREE.Quaternion(), _e=new THREE.Euler(), _p=new THREE.Vector3(), _s=new THREE.Vector3();
 function mtx(x,y,z,ry,sx,sy,sz,tx,tz){ _e.set(tx||0,ry,tz||0); _q.setFromEuler(_e); _p.set(x,y,z); _s.set(sx,sy,sz); return new THREE.Matrix4().compose(_p,_q,_s); }
 /* Instanced plants live in one mesh per chunk (CS = 110 m) and kind. Unlike three's default, these are frustum culled (r128's InstancedMesh switches it

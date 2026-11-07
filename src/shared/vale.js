@@ -45,4 +45,4 @@ ARENA.zone={key:'boss',ring:2,arena:true,x:ARENA.x,z:ARENA.z,R:20,name:'The Ston
 ARENA20.zone={key:'boss20',ring:3,arena:true,vale:true,x:ARENA20.x,z:ARENA20.z,R:20,name:'Demon Gate',level:20,boss:true}; ZONES.push(ARENA20.zone);
 ARENA25.zone={key:'boss25',ring:3,arena:true,vale:true,x:ARENA25.x,z:ARENA25.z,R:20,name:'Foxfire Hollow',level:25,boss:true}; ZONES.push(ARENA25.zone);
 // the nearest arena's centre distance (vegetation and camps stay out of all three; pvp: the Proving Isle counts as one, 15 m closer than it is, so trees, camps and nodes keep off it and its ground is tinted like an arena floor)
-function arenaDist(x,z){ let m=Math.hypot(x-PVP_ISLE.x,z-PVP_ISLE.z)-15; for(const A of ARENAS){ const d=Math.hypot(x-A.x,z-A.z); if(d<m) m=d; } return m; }
+function arenaDist(x,z){ let q=Infinity; for(let i=0;i<ARENAS.length;i++){ const A=ARENAS[i], dx=x-A.x, dz=z-A.z, d2=dx*dx+dz*dz; if(d2<q) q=d2; } const ex=x-PVP_ISLE.x, ez=z-PVP_ISLE.z, p=Math.sqrt(ex*ex+ez*ez)-15, a=Math.sqrt(q); return a<p?a:p; }   // (called once per terrain vertex / plant candidate: squared distances, one sqrt each, no Math.hypot)
