@@ -1,10 +1,10 @@
-//@ The Deep Cave's eight methods on the server, the shared part: every player's progress on the floor they stand on, the 10-minute cooldown, a completed method paying its skill (or Echo Shards), the state message to the client, the HUD line
+//@ The Deep Cave's eight methods on the server, the shared part: every player's progress on the floor they stand on, the 10-minute cooldown, a completed method paying Echo Shards (its skill comes from the Awakening tree now), the state message to the client, the HUD line
 /* Agent map. Plan: docs/CAVE.md sections 6, 7, 15 (protocol and rules). Test: tools/cave-smoke.js. Method rows (the numbers): shared/cave/method-<a..h>-*.js; the places: the floor's anchors (shared/cave-gen.js, doc section 14).
    The methods run on EVERY floor at once, for any number of players: nothing here is per floor except the anchors it reads (caveAW(n): the floor's anchors in world metres) and the dress. Each player has p.cm (not saved) =
    {n floor, A, B, C, D, E, H progress of their own method runs; F and G are floor-wide (caveMFl(n): the tremor clock and the gem mole)}. Reset when you change floor. Only a hiker of level 23+ on a floor runs them.
-   Saved (caveSanitizeSave, server/cave.js): gear.cave.cd['<floor><M>'] (epoch seconds when the method is ready again), .done (completions), .sh (Echo Shards, C3 spends them).
-   exports: caveAW(n), caveMTickP(p) (caveTickP calls it each tick), caveMethodDoneP(p, floor, method) (a method finished: records it, starts the cooldown, grants the skill, else caveShardsP), caveShardsP(p, floor) (C3 fills this in:
-            today it only adds CAVE_SHARDS[floor] to gear.cave.sh), caveCdLeft(p, floor, method), caveMTell(p, M, key, text, kind), caveMMovePTo(p, x, z), caveMFl(n) (the floor's shared state), caveMDoneP(p, M, m).
+   Saved (caveSanitizeSave, server/cave.js): gear.cave.cd['<floor><M>'] (epoch seconds when the method is ready again), .done (completions), (Echo Shards: gear.awm.echo, spent by the Awakening tree).
+   exports: caveAW(n), caveMTickP(p) (caveTickP calls it each tick), caveMethodDoneP(p, floor, method) (a method finished: records it, starts the cooldown, pays caveShardsP), caveShardsP(p, floor) (C3 fills this in:
+            adds CAVE_SHARDS[floor] to gear.awm.echo), caveCdLeft(p, floor, method), caveMTell(p, M, key, text, kind), caveMMovePTo(p, x, z), caveMFl(n) (the floor's shared state), caveMDoneP(p, M, m).
    Messages: server to client {t:'cm', f: floor (0 = you left the floors), hud: one line of text, cd: {M: seconds left}, a, b, c, d, e, fv, g, h: the props' states} (docs/PROTOCOL.md). No message from the client: everything is proximity.
    Every method file is named in the tick below, in this order: A murals, B geodes (also caveGeodeHitS, from resolveHitS), C echo trial, D lantern, E silent chamber, F collapse (floor-wide), G gem mole (floor-wide), H crafting. */
 const CAVE_MAW=Object.create(null);
@@ -17,7 +17,7 @@ function caveAW(n){   // the floor's anchors with world coordinates (cached)
 }
 const caveMd=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const caveNow=()=>Date.now()/1000;
-function caveGearP(p){ const g=p.gear.cave; if(!g.cd) g.cd={}; if(!g.done) g.done={}; if(!(g.sh>=0)) g.sh=0; return g; }
+function caveGearP(p){ const g=p.gear.cave; if(!g.cd) g.cd={}; if(!g.done) g.done={}; return g; }
 function caveCdLeft(p,n,m){ const t=caveGearP(p).cd[n+m]; return t>0?Math.max(0,t-caveNow()):0; }
 function caveMNew(n){
   return {n,lt:S.t,sent:'',sendT:-9,tell:{},A:{got:0},B:{st:[0,0,0],au:[null,null,null]},C:{s:0,t0:0,hold:0,mons:[],lock:0,ok:0,tot:0,why:'',left:0},
@@ -30,15 +30,12 @@ function caveMethodDoneP(p,floor,method){
   const g=caveGearP(p), key=floor+method, sk=caveSkillAt(floor,method), M=caveMethodDef(method);
   g.done[key]=Math.min(99999,(g.done[key]|0)+1); g.cd[key]=caveNow()+CAVE_METHOD_CD; p.dirty=true;
   { const xp=Math.round(xpFor(p.level)*CAVE_XP_KILLS[floor]); if(xp>0){ gainExpP(p,xp); toastTo(p.id,'+'+xp+' XP: '+M.name+' complete','good'); } }   // every completion pays XP that grows with your level, on top of the skill or shards
-  if(sk&&!Object.prototype.hasOwnProperty.call(g.own,sk.id)){
-    g.own[sk.id]=1; toastTo(p.id,sk.name+' learned! ('+M.name+', '+caveFloorDef(floor).name+'). Wear it in the charge slot (K, Charge tab).','loot r3'); ev('caveget',p.id,sk.id); ultCheckP(p);   // ult: the cave skill is one of a set's seven pieces
-
-  } else caveShardsP(p,floor,sk);
+  caveShardsP(p,floor,sk);   // awakening: a method no longer grants its skill (the charge branch's ch1 does): it always pays Echo Shards
 }
-// the Echo Shards a completion pays when the skill is owned already or the place has no skill. spent on levels 2-5 by caveUpgradeP (server/cave.js).
+// the Echo Shards a completion pays (every completion: the skill itself is the Awakening tree's ch1 now)
 function caveShardsP(p,floor,sk){
-  const g=caveGearP(p), n=CAVE_SHARDS[floor]|0; g.sh=Math.min(99999,g.sh+n);
-  toastTo(p.id,'+'+n+' Echo Shard'+(n===1?'':'s')+(sk?' ('+sk.name+' is yours already)':' (this place has no skill yet)')+' · '+g.sh+' in all','good'); p.dirty=true; ev('caveshards',p.id,n,g.sh);
+  const w=p.gear.awm||(p.gear.awm={}), n=CAVE_SHARDS[floor]|0; w.echo=Math.min(AWK_STORE_MAX,(w.echo|0)+n);   // awakening: Echo Shards live in gear.awm (the Awakening tree's basic, skill and power branches spend them)
+  toastTo(p.id,'+'+n+' Echo Shard'+(n===1?'':'s')+' · '+w.echo+' in all','good'); p.dirty=true; ev('caveshards',p.id,n,w.echo);
 }
 function caveMDoneP(p,M,m){ caveMethodDoneP(p,M.n,m); M.sent=''; M.sendT=-9; }
 // ---- floor-wide state: the tremor clock (F) and the gem mole (G) ----

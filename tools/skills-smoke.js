@@ -3,7 +3,7 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},
-  ['MONS','getH','VIL2','VIL','rewardKill','elemHitS','rollDmgS','sanitizeGear','hurtP','ELEMS','MATS','upgradeNeeds','SKILLS','foeMult','foeTraits','ELEM_BASIC_K','ELEM_LIST','SKILL_MAX_LV','newSkills','damageMonsterS','psP','S','passiveSum','passiveOpen','PASSIVE_SLOT_LV','PASSIVE_SLOTS','awkCurve','awkFx','awkRow','AWK_LV_CAP','AWK_SCALE','skillPower','skillCdMult','passiveValue','PASSIVES','caveLevelK','applyBuffS']);
+  ['MONS','getH','VIL2','VIL','rewardKill','elemHitS','rollDmgS','sanitizeGear','hurtP','ELEMS','MATS','upgradeNeeds','SKILLS','foeMult','foeTraits','ELEM_BASIC_K','ELEM_LIST','SKILL_MAX_LV','newSkills','damageMonsterS','psP','S','passiveSum','passiveOpen','PASSIVE_SLOT_LV','PASSIVE_SLOTS','awkCurve','awkFx','awkRow','AWK_LV_CAP','AWK_SCALE','skillPower','skillCdMult','passiveValue','PASSIVES','caveLevelK','applyBuffS','recalcP','PASSIVE_IDS']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ n=Math.max(n,3); for(let i=0;i<n;i++){ // (at least 3 ticks: events reach the log with the next snapshot)
@@ -37,7 +37,7 @@ ok('upgrade costs coins and a monster drop that exists',up&&up.coins>0&&up.mats.
   const r=x.awkRow({id:'t',on:'hit',mult:2,heal:0.05,fx:{ring:{r:3,stun:1}}},5);
   ok('a passive\'s proc row at level 5: mult by damage, heal by healing, fx through awkFx',near(r.mult,2*C('dmg',5))&&near(r.heal,0.05*C('heal',5))&&near(r.fx.ring.stun,C('cc',5)));
   ok('passive values: v[0] x (1 + 8% a level)',near(x.passiveValue('ferocity',5),x.PASSIVES.ferocity.v[0]*1.32));
-  ok('charge skills read the same curves (caveLevelK, capped at their level 5)',near(x.caveLevelK(5),C('dmg',5))&&near(x.caveLevelK(5,'heal'),C('heal',5))&&near(x.caveLevelK(9),C('dmg',5))); }
+  ok('charge skills read the same curves (caveLevelK, capped at the tree\'s top, 10)',near(x.caveLevelK(5),C('dmg',5))&&near(x.caveLevelK(5,'heal'),C('heal',5))&&near(x.caveLevelK(12),C('dmg',10))); }
 
 // ---- saves are checked ----
 const g=x.sanitizeGear({soul:'lava',mats:{slime:-5,nothing:3,boss:99999999,kappa:'7'},skills:{owned:['whirlwind','vitality','nope'],lv:{whirlwind:99,vitality:3,bash:4},pass:['vitality','vitality','ironwill']}},'warrior');
@@ -70,20 +70,13 @@ for(let i=0;i<200;i++){ const before=p.gear.mats.slime||0; x.rewardKill(p,slime)
 tick(3); ok('kills drop the monster material (about 35% of kills)',dropped>=40&&dropped<=140&&evs.some(e=>e[0]==='drop'&&e[2]==='slime'),dropped+' in 200 kills');
 p.gear.mats={}; x.rewardKill(p,x.MONS.find(m=>m.boss)); ok('a boss always drops its trophy',p.gear.mats.boss===3,JSON.stringify(p.gear.mats));
 
-// ---- upgrading skills ----
+// ---- skill levels come from the Awakening tree (the old upskill path is retired; buying: tools/awakening-server-smoke.js) ----
 W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]);
 W.receive('a',{t:'dev',cmd:'skills'}); tick(1);
-const need=x.upgradeNeeds('chain',2); p.gear.coins=need.coins-1; p.gear.mats={}; W.receive('a',{t:'upskill',id:'chain'}); tick(1);
-ok('upgrade: refused without coins',!you('a').gear.skills.lv.chain&&toasts().some(t=>/Not enough coins/.test(t)));
-p.gear.coins=need.coins+5; W.receive('a',{t:'upskill',id:'chain'}); tick(1);
-ok('upgrade: refused without the drops',!you('a').gear.skills.lv.chain&&toasts().some(t=>/You need \d+ /.test(t)));
-p.gear.mats={[need.mats[0].id]:need.mats[0].n+2}; W.receive('a',{t:'upskill',id:'chain'}); tick(1);
-const y=you('a'); ok('upgrade: coins and drops are spent, the skill is level 2',y.gear.skills.lv.chain===2&&y.gear.coins===5&&y.gear.mats[need.mats[0].id]===2&&evs.some(e=>e[0]==='skillup'&&e[2]==='chain'&&e[3]===2));
-W.setPos('a',[500,x.getH(500,0),0,0,0,0]); p.gear.coins=99999; p.gear.mats={}; for(const m of x.upgradeNeeds('chain',3).mats) p.gear.mats[m.id]=99; W.receive('a',{t:'upskill',id:'chain'}); tick(1);
-ok('upgrade: only at a trainer (in a village)',you('a').gear.skills.lv.chain===2);
-W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]);
-for(let to=3;to<=6;to++){ for(const m of x.upgradeNeeds('chain',Math.min(to,5)).mats) p.gear.mats[m.id]=99; W.receive('a',{t:'upskill',id:'chain'}); tick(1); }
-ok('upgrade: stops at the top level',you('a').gear.skills.lv.chain===5);
+p.gear.coins=99999; for(const m of x.upgradeNeeds('chain',2).mats) p.gear.mats[m.id]=99; W.receive('a',{t:'upskill',id:'chain'}); tick(1);
+ok('upgrade: the old upskill message is retired (nothing changes, nothing is spent)',!p.gear.skills.lv.chain&&p.gear.coins===99999,JSON.stringify(p.gear.skills.lv)+' '+p.gear.coins);
+W.receive('a',{t:'dev',cmd:'awk',v:'wanderer',n:1}); tick(1);
+ok('a shop skill takes the Wanderer\'s branch of its slot, capped by the tier (A1: level 5)',you('a').gear.skills.lv.chain===5);
 // the upgraded skill hits harder and cools down faster
 W.receive('a',{t:'eqskill',id:'chain'}); p.cd.skill=0; p.act=null; W.receive('a',{t:'atk',k:'skill',tg:slime.id,face:0});
 ok('an upgraded skill: damage x1.17^4 (x1.87), cooldown 12% shorter, its element goes along',p.act&&near(p.act.mult,x.SKILLS.chain.mult*Math.pow(1.17,4))&&near(p.cd.skill,x.SKILLS.chain.cd*0.88)&&p.act.lvl===5&&p.act.el==='air',p.act&&p.act.mult.toFixed(3)+' / cd '+p.cd.skill.toFixed(2));
@@ -109,9 +102,9 @@ W.receive('a',{t:'eqskill',id:'ferocity'}); tick(1); ok('passives: with no slot 
   ok('a passive before the level that opens the slot does nothing',hp(['vitality'],9)===0&&hp(['vitality'],10)>0); }
 { inbox.e=[]; W.join('e',{name:'Slots',look:{cls:'warrior'},save:{level:14,exp:0,gear:{skills:{owned:['vitality','ferocity'],v:2,pass:[null,'ferocity','vitality']}}}}); tick(1);
   ok('a save at level 14 with passives in slots 2 and 3 keeps the first one in the one slot (both stay owned)',JSON.stringify(you('e').gear.skills.pass)==='["ferocity"]'&&you('e').gear.skills.owned.includes('ferocity')&&you('e').gear.skills.owned.includes('vitality'),JSON.stringify(you('e').gear.skills.pass)); }
-p.gear.mats={}; p.gear.coins=99999; W.receive('a',{t:'upskill',id:'ferocity'}); tick(1); ok('passives: upgrades need the drops too',!you('a').gear.skills.lv.ferocity);
-for(const m of x.upgradeNeeds('ferocity',2).mats) p.gear.mats[m.id]=50; W.receive('a',{t:'upskill',id:'ferocity'}); tick(1);
-ok('passives: upgraded',you('a').gear.skills.lv.ferocity===2);
+p.gear.awk.wanderer={t:1,n:{spa1:1,pa1:1,spa2:1,pa2:1}}; x.recalcP(p); p.dirty=true; tick(1);
+ok('passives: a shop passive takes the Wanderer\'s passive branch (pa2: level 2)',you('a').gear.skills.lv.ferocity===2);
+delete p.gear.awk.wanderer; for(const id of x.PASSIVE_IDS) delete p.gear.skills.lv[id]; x.recalcP(p); p.dirty=true; tick(1);
 // Iron Will takes some of every hit
 W.receive('a',{t:'eqskill',id:'ironwill',idx:0}); tick(1);
 const hp0=p.hp; p.lastHit=-99; x.hurtP(p,100,null); const lost=hp0-p.hp; ok('Iron Will: 5% less damage taken',lost===Math.max(1,Math.round(100*(1-p.red)*0.95)),'lost '+lost);

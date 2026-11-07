@@ -58,11 +58,11 @@ const rdOfLand=land=>RD_ORDER.map(i=>RDS[i]).find(r=>r.land===land)||null;
 const rdCourtAt=(x,z)=>{ for(const i of RD_ORDER){ const A=RDS[i].court; if(Math.abs(A.x-x)<1&&Math.abs(A.z-z)<1) return A; } return null; };
 // the tier a player is credited at: the raid's, but never above their own highest unlocked tier in that land
 const rdCapTier=(gear,land,raidTier)=>Math.min(raidTier|0,zoneTierMax(gear,land));
-/* A signature piece's price to level `to` (2..SKILL_MAX_LV): the usual coins and the land's monster material, and the raid material of the set's land (RD_UP). Level 5 also asks the land's second world boss' trophies. */
+/* A signature piece's price to level `to` (2..SKILL_OLD_MAX_LV, the old path: kept for refunds): the usual coins and the land's monster material, and the raid material of the set's land (RD_UP). Level 5 also asks the land's second world boss' trophies. */
 function rdUpNeeds(s,to){
-  if(!s||!s.set||!(to>=2)||to>SKILL_MAX_LV) return null;
+  if(!s||!s.set||!(to>=2)||to>SKILL_OLD_MAX_LV) return null;
   const set=SS_SETS[s.set], R=set&&rdOfLand(set.land); if(!R) return null;
   const mats=[{id:R.up[to-2],n:UP_COUNT[to]*RD_MOB_K}];
-  if(to===SKILL_MAX_LV) mats.push({id:R.second,n:BOSS_UP});
+  if(to===SKILL_OLD_MAX_LV) mats.push({id:R.second,n:BOSS_UP});
   return {coins:Math.round(UP_COINS[s.slot]*Math.pow(to-1,1.7)/10)*10,mats,rd:{land:set.land,n:RD_UP[to]}};
 }

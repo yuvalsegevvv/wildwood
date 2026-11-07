@@ -1,6 +1,6 @@
 //@ The Deep Cave on the server: the 4th slot's charge (earned by casts that hit, a boss fight sets it), casting the equipped cave skill, equipping, and sanitizing gear.cave
 /* Agent map. Plan and rules: docs/CAVE.md; the registry and constants are shared/cave.js; test: tools/cave-smoke.js.
-   gear.cave = {own:{<cave skill id>: level 1-5}, cd:{'<floor><method>': epoch seconds the method is ready again}, done:{'<floor><method>': completions}, sh:{shards}} (saved, caveSanitizeSave; the methods are server/cave/); the equipped one is gear.skills.cave (saved, sanitizeSkills; cleared by sanitizeGear when it is not owned).
+   gear.cave = {own:{<cave skill id>: level 1-5}, cd:{'<floor><method>': epoch seconds the method is ready again}, done:{'<floor><method>': completions}, m:[floor drops]} (Echo Shards moved to gear.awm.echo: server/awakening.js) (saved, caveSanitizeSave; the methods are server/cave/); the equipped one is gear.skills.cave (saved, sanitizeSkills; cleared by sanitizeGear when it is not owned).
    p.cave = {charge, sent, cur, fight, fightT} is NOT saved (caveNewState, made by newPlayer): charge 0-100, kept between ordinary fights.
    CHARGE: caveCastS(p,slot,ab) starts a cast (handleAttack); the first damage that cast deals (caveHitS, called from damageMonsterS) pays 0.6 x the ability's base cooldown ONCE (never per enemy),
    doubled when the equipped cave skill has a `set` and the cast ability is a piece of that set. A cast that hits nothing pays nothing; a hit lands up to CAVE_CAST_WINDOW seconds after the cast (projectiles).
@@ -14,13 +14,12 @@
 function caveNewState(){ return {charge:0,sent:-1,cur:null,fight:null,fightT:0,last:null,od:null,odT:0,gr:null,bur:0,burT:0,fx:{}}; }   // fx: the set skills' windows (server/cave-fx.js); last: the last skill or burst cast (Echo); od: Overdrive; gr: Grapple Line; bur: Burrow (server/cave/skills.js)
 // gear.cave from a save: only cave skills that exist, each at a level 1-5 (an old save has none)
 function caveSanitizeSave(g){
-  const out={own:{},cd:{},done:{},sh:0,m:[0,0,0,0,0]}, ok=g&&typeof g==='object'&&!Array.isArray(g), O=ok&&g.own&&typeof g.own==='object'?g.own:null;
-  if(O) for(const id of Object.keys(O).slice(0,64)){ if(!caveSkillDef(id)) continue; out.own[id]=clampInt(O[id],1,CAVE_LEVEL_MAX,1); }
+  const out={own:{},cd:{},done:{},m:[0,0,0,0,0]}, ok=g&&typeof g==='object'&&!Array.isArray(g), O=ok&&g.own&&typeof g.own==='object'?g.own:null;
+  if(O) for(const id of Object.keys(O).slice(0,64)){ if(!caveSkillDef(id)) continue; out.own[id]=clampInt(O[id],1,SKILL_OLD_MAX_LV,1); }   // awakening: a saved level above the old top is not trusted (the tree writes the rest: awkSyncG)
   const key=k=>/^[1-9][A-H]$/.test(k)&&caveMethodDef(k[1]);   // a method key is floor digit + letter: only real methods, never a bare client string
   const CD=ok&&g.cd&&typeof g.cd==='object'?g.cd:null, DN=ok&&g.done&&typeof g.done==='object'?g.done:null, now=Date.now()/1000;
   if(CD) for(const k of Object.keys(CD).slice(0,64)){ if(key(k)&&Number.isFinite(+CD[k])) out.cd[k]=Math.min(now+CAVE_METHOD_CD,Math.max(0,+CD[k])); }   // (never later than one cooldown from now: a tampered save cannot lock a method)
   if(DN) for(const k of Object.keys(DN).slice(0,64)){ if(key(k)) out.done[k]=clampInt(DN[k],0,99999,0); }
-  out.sh=ok?clampInt(g.sh,0,99999,0):0;
   if(ok&&Array.isArray(g.m)) for(let f=1;f<CAVE_DROPS.length;f++) out.m[f]=clampInt(g.m[f],0,CAVE_DROP_MAX,0);   // the floors' monster drops (an old save has none)
   return out;
 }
@@ -72,16 +71,7 @@ function caveCastP(p,msg){   // atk {k:'cave'}: spend the cost and run the skill
 // caveFxS (server/cave/skills.js) and caveSetFxS (server/cave-fx.js) read the other kinds for their own keys
 function caveLvOf(p,id,lvl){ const o=p&&p.gear&&p.gear.cave&&p.gear.cave.own; return o&&Object.prototype.hasOwnProperty.call(o,id)?o[id]:lvl||1; }   // lvl: the cast's own level when id is not an owned cave skill
 const caveLvK=(p,id,lvl,kind)=>caveLevelK(caveLvOf(p,id,lvl),kind);
-// caveup {id}: spend Echo Shards (CAVE_LEVEL_COST) to take an owned cave skill one level up, to 5
-function caveUpgradeP(p,id){
-  const sk=caveSkillDef(id), g=p.gear&&p.gear.cave; if(!sk||!g||!Object.prototype.hasOwnProperty.call(g.own,id)) return;
-  const lv=g.own[id]|0; if(lv>=CAVE_LEVEL_MAX){ toastTo(p.id,sk.name+' is at its top level.','bad'); return; }
-  const cost=CAVE_LEVEL_COST[lv+1]|0, have=g.sh|0, f=sk.floor, need=CAVE_DROP_COST[lv+1]|0, m=g.m||(g.m=[0,0,0,0,0]), got=m[f]|0;
-  if(have<cost||got<need){ toastTo(p.id,'Level '+(lv+1)+' costs '+cost+' Echo Shards and '+need+' '+CAVE_DROPS[f]+' (from floor '+f+'\'s monsters); you have '+have+' and '+got+'.','bad'); return; }
-  g.sh=have-cost; m[f]=got-need; g.own[id]=lv+1; p.dirty=true;
-  toastTo(p.id,sk.name+' is now level '+(lv+1)+' (+'+Math.round((caveLevelK(lv+1)-1)*100)+'% damage).','loot r3'); ev('caveup',p.id,id,lv+1);
-}
-MSG.caveup=(p,msg)=>caveUpgradeP(p,msg.id);
+// (caveup, the Echo Shard levels 2-5, is retired: a charge skill's level is its branch in the Awakening tree, server/awakening.js)
 // a kill on a floor (killMonsterS): the floor's material, now and then (CAVE_DROP_CHANCE), for whoever made the kill
 function caveDropS(p,m){
   const f=m&&m.cave|0, g=p&&p.gear&&p.gear.cave; if(!g||!(f>=1&&f<CAVE_DROPS.length)||m.temp||Math.random()>=CAVE_DROP_CHANCE) return;

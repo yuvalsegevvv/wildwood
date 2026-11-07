@@ -9,7 +9,7 @@
    Messages: ultequip {id|null} (MSG.ultequip). Events: ult [pid, setId, cd seconds], ultget [pid, setId]. Hooks are marked `// ult:` (grep -rn "// ult:" src). */
 const ultSetOfP=p=>{ const id=p.gear&&p.gear.skills&&p.gear.skills.ult; return ultDef(id)&&ultOwned(p.gear.skills,p.gear.cave,id)?id:null; };   // the worn burst's set id if p may use it, else null
 // the burst's ability if p may cast it now (level 28, not on the island, worn and owned), else null
-function ultEquippedP(p){ if(p.pv||p.level<ULT_LV) return null; const id=ultSetOfP(p); return id?ultDef(id):null; }
+function ultEquippedP(p){ if(p.pv||p.level<ULT_LV) return null; const id=ultSetOfP(p); return id&&awkUltLvP(p,id)>=1?ultDef(id):null; }   // awakening: the burst branch's bu1 (A3) makes it usable
 function ultCastP(p,msg){   // atk {k:'ult'}
   if(p.dead||p.act||p.cd.ult>0.08) return;
   const ab=ultEquippedP(p); if(!ab) return;
@@ -18,7 +18,8 @@ function ultCastP(p,msg){   // atk {k:'ult'}
   if(isFinite(+msg.face)) p.face=+msg.face%(2*Math.PI);
   const tg=foeByIdS(p,msg.tg);
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
-  p.act={kind,t:0,dur,hitAt,done:false,skill:true,sid:ab.id,lvl:1,el:elOf(ab),fx:ab.fxU,mult:ab.mult,range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,ult:true};
+  const L=awkUltLvP(p,ab.set);   // awakening: the burst's level is its branch (the 5 s stun and the 60 s cooldown never scale)
+  p.act={kind,t:0,dur,hitAt,done:false,skill:true,sid:ab.id,lvl:L,el:elOf(ab),fx:awkFx(ab.fxU,L),mult:ab.mult*awkCurve('dmg',L),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,ult:true};
   ev('pact',p.id,kind,Math.round(p.face*100)/100);
   ev('ult',p.id,ab.set,p.cd.ult);
   ultCastBuffsS(p,ab);   // the two boosts, for the worn pieces only
@@ -26,6 +27,7 @@ function ultCastP(p,msg){   // atk {k:'ult'}
 function ultEquipP(p,id){   // ultequip: wear an owned burst, or take it off (id null)
   if(id===null||id===undefined||id===''){ if(p.gear.skills.ult){ p.gear.skills.ult=null; p.dirty=true; } return; }
   if(!ultDef(id)||!ultOwned(p.gear.skills,p.gear.cave,id)) return;
+  if(awkUltLvP(p,id)<1){ toastTo(p.id,'Awaken the burst first (Awakening A3, its first node)','bad'); return; }   // awakening
   if(p.level<ULT_LV){ toastTo(p.id,'The burst slot opens at level '+ULT_LV,'bad'); return; }
   p.gear.skills.ult=id; p.dirty=true;
 }

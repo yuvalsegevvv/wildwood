@@ -6,7 +6,7 @@
 // Usage: node tools/skillsets-ladder.js [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
 // Also: require('./skillsets-ladder').ladder({W, x, pid}, opts) for a test (tools/skillsets-smoke.js runs it on a fixture); x must expose NAMES.
 const {loadServer}=require('./load');
-const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S','ssBonusSwitch'];
+const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S','ssBonusSwitch','awkMigGrant'];
 const WEAPON={warrior:'sword1',archer:'bow1',mage:'wand1'}, CLASSES=['warrior','archer','mage'];
 // the bands in percent of the baseline: [the pieces alone, the 3-set, the 5-set] (docs/SKILL-SETS.md 5b; a mixed set sits between a support's 90 and its main kit's ladder)
 // the same tree measured 93 to 99 for one set's pieces and 128 vs 131 for another's 5- and 3-set between runs (also before the Amber Reach), so the orderings carry this much slack
@@ -53,6 +53,7 @@ function ladder(env,opts){
     (pass||[]).forEach((id,i)=>{ S.pass[i]=id; }); x.recalcP(p);
   };
   p.level=60; p.gear.skills.owned=[...new Set([...p.gear.skills.owned,...x.SKILL_IDS])]; for(const id of x.SKILL_IDS) p.gear.skills.lv[id]=5;   // everything learned, boss skills too, all at level 5
+  if(x.awkMigGrant) for(const id of x.SS_ORDER) x.awkMigGrant(p.gear,id,{ba:5,sk:5,po:5,pa:5,ch:5,bu:1});   // awakening: a set piece's level is its branch: the same level 5 (and the burst's bu1)
   p.gear.skills.pass=new Array(p.gear.skills.pass.length).fill(null);
   const baseline={};
   for(const cls of classes){

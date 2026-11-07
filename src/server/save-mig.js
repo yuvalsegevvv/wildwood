@@ -1,11 +1,12 @@
 //@ The skill revamp's one save migration (gear.smv): retired boss skills refunded and unequipped, passives from the old slots 2-3 refunded, owned set pieces noted for Bond 0 (gear.bdMig)
 /* Agent map. smigSanitize(g,out) runs at the end of sanitizeGear (server/players.js, the hook marked `// savemig:`) with the raw save g and the cleaned gear out.
    The cleaned gear always carries smv = SMIG_VER, so a save is migrated once: a second load (or a second pass of sanitizeGear) only re-checks gear.bdMig.
+   Version 2 (skills revamp step 9): awkMigrateG (server/awakening.js) gives each set owned the Awakening nodes and tier of its old levels (only adds: idempotent).
    Rules for a save older than SMIG_VER 1 (the skill revamp plan, section 9 "Migration"):
    1. Boss skills (the 96 rows with drop:'<boss id>' that left SKILLS; SMIG_BOSS_SKILLS keeps what pricing them needs: [0 skill / 1 burst, the row's lv, its element]).
       An equipped one becomes that slot's class default (DEFAULT_OF; sanitizeSkills already emptied the slot), or stays empty without one.
       Each owned one refunds the coins and monster drops of its levels 2..L at today's table price (upNeedsBase, shared/drops.js), L = the higher of its saved
-      level and 1 + the zone tiers defeated in its boss's land (what the old bsRefreshP gave it), at most SKILL_MAX_LV. Level 1 was a free drop: nothing for it.
+      level and 1 + the zone tiers defeated in its boss's land (what the old bsRefreshP gave it), at most SKILL_OLD_MAX_LV (5). Level 1 was a free drop: nothing for it.
    2. Passives worn in the old slots 2 and 3 (one slot now: sanitizeSkills keeps the first worn one): each bought one (a price, not a set piece) leaves
       the owned list and refunds its price plus the upgrades of its levels (upgradeNeeds). A free one (Vitality) just goes back to the bag.
    3. The soul: nothing to refund (binding it was always free; step 1 already dropped gear.soul).
@@ -13,7 +14,7 @@
    A save with startAll (the testing kit owns everything) gets no refunds. Coins stop at COINS_MAX and drops at MAT_MAX, as everywhere.
    Uses: DEFAULT_OF, PASSIVES, SKILL_MAX_LV, skillLvOf, upgradeNeeds, upNeedsBase, ztBossLand, zoneTierMax, SS_PIECE_OF, SS_SETS, SS_ORDER, clampInt, COINS_MAX, MAT_MAX, MATS.
    Test: server-smoke ('save migration'). */
-const SMIG_VER=1;
+const SMIG_VER=2;   // 1: boss skills, passive slots, bdMig (step 6); 2: the Awakening trees (step 9, awkMigrateG)
 const SMIG_BOSS_SKILLS={   // boss id -> {skill id: [slot (0 skill, 1 burst), lv, element]}: the retired rows, kept only to price their refund
   boss:{snare:[0,15,'earth'],lifesap:[1,15,'water'],spore:[0,15,'air'],bloom:[1,15,'dark'],thorns:[0,15,'earth'],drain:[1,15,'dark']},
   carapax:{clawcrush:[0,20,'earth'],tidalguard:[1,20,'water'],riptide:[0,20,'water'],barnacles:[1,20,'earth'],tidalsurge:[0,20,'water'],maelstrom:[1,20,'water']},
@@ -37,7 +38,7 @@ for(const b in SMIG_BOSS_SKILLS) for(const id in SMIG_BOSS_SKILLS[b]){ const r=S
 const smigOwn=(o,k)=>!!o&&typeof o==='object'&&typeof k==='string'&&Object.prototype.hasOwnProperty.call(o,k);
 // the refund of a retired boss skill at level L: {coins, mats:{id:n}} added into acc
 function smigBossRefund(id,L,acc){
-  const r=SMIG_BS.get(id); for(let to=2;to<=Math.min(L,SKILL_MAX_LV);to++) smigAdd(acc,upNeedsBase(id,r,to));
+  const r=SMIG_BS.get(id); for(let to=2;to<=Math.min(L,SKILL_OLD_MAX_LV);to++) smigAdd(acc,upNeedsBase(id,r,to));
 }
 function smigAdd(acc,n){ if(!n) return; acc.coins+=n.coins|0; for(const m of n.mats||[]) acc.mats[m.id]=(acc.mats[m.id]||0)+m.n; }
 function smigBdList(v){   // a list of known set ids, each once
@@ -46,9 +47,14 @@ function smigBdList(v){   // a list of known set ids, each once
   return out;
 }
 function smigSanitize(g,out){
-  const done=clampInt(g&&g.smv,0,99,0)>=SMIG_VER;
+  const v=clampInt(g&&g.smv,0,99,0);
   out.smv=SMIG_VER;
-  if(done){ out.bdMig=smigBdList(g.bdMig); return null; }
+  let acc=null;
+  if(v<1) acc=smigV1(g,out); else out.bdMig=smigBdList(g.bdMig);
+  if(v<2) awkMigrateG(out);   // awakening: smv 2, each owned set's branches at its old levels, the stat nodes below them and the tier covering them (server/awakening.js)
+  return acc;   // what the v1 step refunded (server-smoke reads it; nothing else needs it), null when it did not run
+}
+function smigV1(g,out){
   const raw=g&&g.skills&&typeof g.skills==='object'?g.skills:{}, sk=out.skills, acc={coins:0,mats:{}}, free=!!out.startAll;
   // 1. boss skills: equipped ones fall back to the class default, owned ones are refunded
   if(raw.eq&&typeof raw.eq==='object') for(const c in sk.eq){
@@ -74,5 +80,5 @@ function smigSanitize(g,out){
   out.bdMig=SS_ORDER.filter(s=>bd.includes(s));
   out.coins=Math.min(COINS_MAX,out.coins+acc.coins);
   for(const m in acc.mats) if(smigOwn(MATS,m)) out.mats[m]=Math.min(MAT_MAX,(out.mats[m]||0)+acc.mats[m]);
-  return acc;   // what was refunded (server-smoke reads it; nothing else needs it)
+  return acc;
 }

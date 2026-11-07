@@ -15,13 +15,13 @@
    Events: ast [pid, kind, v, dur, piece] (a buff set or replaced, for the buffed player's own display); fxa [pid, 'heal'|'shield', piece] (a heal or a shield reached a player). THE PIECE (ssSrc: a skill id, or the id of a passive / bonus row
    that fired) is also the last field of area, proj, chain and beam events when a set piece caused them, so the client draws them in the set's look (game/skillsets/looks.js); a boss skill's events carry none.
    reflect (a passive stat, read in hurtP) deals a share of the damage taken back to the attacker (ssRawHitS: a hit that is not a skill's, no triggers).
-   Used by: economy.js (equipSkillP, unequipSkillP, buySkillP, upgradeSkillP, the testing tool 'set'), players.js (recalcP, psP, sanitizeSkills, hurtP, updatePlayersS), combat.js (the hooks marked skillsets).
+   Used by: economy.js (equipSkillP, unequipSkillP, buySkillP, the testing tool 'set'; the levels: server/awakening.js awkSyncG, called by ssGrantP), players.js (recalcP, psP, sanitizeSkills, hurtP, updatePlayersS), combat.js (the hooks marked skillsets).
    A piece is earned (M3's sources, not built yet) or given by the testing tool: never free, never bought, never upgraded in v1. Events: ssget [pid, setId, pos], mk. */
 function ssPieceIdsOf(setId,pos){ const S=SS_SETS[setId], P=S&&S.pos[pos]; return P?[...P.ids,P.passive]:[]; }
 function ssGrantP(p,setId,pos,quiet){
   const own=p.gear.skills.owned; let n=0;
   for(const id of ssPieceIdsOf(setId,pos)) if(!own.includes(id)){ own.push(id); n++; }
-  if(n){ p.dirty=true; if(!quiet) ev('ssget',p.id,setId,pos); ultCheckP(p); }   // ult: three of the set's seven pieces grant its burst
+  if(n){ p.dirty=true; awkSyncG(p.gear); if(!quiet) ev('ssget',p.id,setId,pos); ultCheckP(p); }   // awakening: a new piece takes its branch's level   // ult: three of the set's seven pieces grant its burst
   return n;
 }
 /* ---- where a set comes from (M3, docs/SKILL-SETS.md section 7): the rolls ---- */

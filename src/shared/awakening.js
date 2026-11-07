@@ -7,7 +7,7 @@
             (handleAttack, applyBuffS), server/cave.js + cave/skills.js + cave-fx.js (charge skills), server/skillsets.js (ssRefreshP: leveled trigger rows),
             game/economy/skills.js (the panel's numbers). Test: tools/skills-smoke.js (the curve block).
    THE ONE PLACE a skill level reaches a number. Level 1 is x1 for every kind. The level here is capped at AWK_LV_CAP (12) for the curves only:
-   the gameplay cap is still SKILL_MAX_LV (classes.js) / CAVE_LEVEL_MAX until step 9.
+   the gameplay cap is SKILL_MAX_LV (classes.js) / CAVE_LEVEL_MAX, both 10 (the tree's top) since step 9; the level itself is the tree's (server/awakening.js).
    Damage compounds (x1.17 a level: level 10 = x4.11); healing and shields compound slower (x1.10) because health and damage taken come from
    the hiker's level and gear, so a x4 heal would make healers immortal. The burst's 5 s stun (ULT_STUN) and 60 s cooldown are not skill
    levels and never pass through here. */

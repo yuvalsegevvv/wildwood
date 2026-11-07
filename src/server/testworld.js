@@ -26,6 +26,7 @@ function testKitP(p){
   for(const id of SS_ORDER) if(!SS_SETS[id].dev) ssGrantSetP(p,id,true);
   for(const id of CAVE_SKILL_IDS) g.cave.own[id]=CAVE_LEVEL_MAX;
   for(const id of g.skills.owned){ const d=SKILLS[id]; if(d) g.skills.lv[id]=TEST_SKILL_LV; }
+  awkGrantP(p,AWK_WANDERER); for(const id of SS_ORDER) if(!SS_SETS[id].dev) awkGrantP(p,id);   // awakening: every tree full (the free unlock tool: PLAN section 9); the set pieces' levels follow it
   ultCheckP(p);
   // wear the best of it: the first weapon, every armour piece, a plain ring, a crit-damage pendant, an attack talisman
   equipP(p,dgGearId40('sword',TEST_RAR,TEST_ENH));

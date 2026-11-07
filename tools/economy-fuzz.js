@@ -11,7 +11,7 @@ const arg=(n,d)=>{ const i=process.argv.indexOf(n); return i>0?+process.argv[i+1
 const STEPS=arg('--steps',4000), VERBOSE=process.argv.includes('--verbose');
 let seed=arg('--seed',1)>>>0; const rnd=()=>{ seed=(seed+0x6D2B79F5)>>>0; let t=seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
 const pick=a=>a[Math.floor(rnd()*a.length)];
-const {api:W,x}=loadServer({dev:true,send(){}},['VIL','getH','ITEM_LIST','BAG_MAX','ALL_SLOTS','TIERS','CRAFT_MAX_RAR','POTS','RES','MATS','SKILL_IDS','PASSIVE_IDS','PROF_IDS','CP_PIECE','ambOutfitIds','RES_MAX','sanitizeGear']);
+const {api:W,x}=loadServer({dev:true,send(){}},['VIL','getH','ITEM_LIST','BAG_MAX','ALL_SLOTS','TIERS','CRAFT_MAX_RAR','POTS','RES','MATS','SKILL_IDS','PASSIVE_IDS','PROF_IDS','CP_PIECE','ambOutfitIds','RES_MAX','sanitizeGear','SS_ORDER','SS_SETS','awkShapeOf']);
 W.join('e',{name:'Economist',look:{cls:'warrior'},save:{level:30}}); W.tick(0.05);
 const p=W.players.get('e');
 const home=()=>{ W.setPos('e',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); };
@@ -20,17 +20,21 @@ W.receive('e',{t:'dev',cmd:'level',v:30}); W.receive('e',{t:'dev',cmd:'skills'})
 const shop=x.ITEM_LIST.filter(it=>it.rar===0&&!it.dg).map(it=>it.id), potions=Object.keys(x.POTS), res=Object.keys(x.RES), cos=Object.keys(x.CP_PIECE), outfits=x.ambOutfitIds();
 const skills=[...x.SKILL_IDS,...x.PASSIVE_IDS];
 const sum=o=>Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
+// awakening: the trees (a tier and a node are goods), their characters and node ids
+const awkN=g=>Object.values(g.awk||{}).reduce((a,e)=>a+e.t+Object.keys(e.n).length,0), awkKeys=['wanderer',...x.SS_ORDER.filter(id=>x.awkShapeOf(id)).slice(0,3)], awkIds=x.awkShapeOf('wanderer').nodes.map(n=>n.id);
+const awkCanon=g=>JSON.stringify(Object.keys(g.awk||{}).sort().map(k=>[k,g.awk[k].t,Object.keys(g.awk[k].n).sort()]));
+for(const k of awkKeys) if(k!=='wanderer') W.receive('e',{t:'dev',cmd:'set',v:k});   // awakening: own the characters it tries
 // what a trade may give: items, potions, skills and their levels, professions, cosmetics, outfits
-const goods=g=>g.inv.length+sum(g.pot)+g.skills.owned.length+sum(g.skills.lv)+Object.keys(g.prof).length+g.cos.length+g.os.length;
+const goods=g=>g.inv.length+sum(g.pot)+g.skills.owned.length+sum(g.skills.lv)+Object.keys(g.prof).length+g.cos.length+g.os.length+awkN(g);
 // what a trade may take (each kind on its own: an achievement or a quest step that the trade finishes may pay gems or coins in the same step)
-const price=g=>[g.coins,g.gem,sum(g.res),sum(g.mats)];
+const price=g=>[g.coins,g.gem,sum(g.res),sum(g.mats),sum(g.awm),sum(g.rd&&g.rd.mat)];   // awakening: Echo Shards and raid material
 const took=(a,b)=>a.some((v,i)=>b[i]<v);
-const TRADES=['buy','craft','brew','buyskill','upskill','learn','cosmake','gembuy'];   // (a sale or a merge may finish a main quest step, which pays out: only a trade that has a price is held to it)
+const TRADES=['buy','craft','brew','buyskill','awk','learn','cosmake','gembuy'];   // (a sale or a merge may finish a main quest step, which pays out: only a trade that has a price is held to it)
 const bad=[]; const note=s=>{ if(bad.length<20) bad.push(s); };
 const MSGS=[
   ()=>({t:'buy',id:pick(shop)}), ()=>({t:'buy',id:pick(shop)}), ()=>({t:'sell',id:pick(p.gear.inv.length?p.gear.inv:shop)}), ()=>({t:'merge',id:pick(p.gear.inv.length?p.gear.inv:shop)}),
   ()=>({t:'craft',slot:pick(x.ALL_SLOTS),tier:Math.floor(rnd()*x.TIERS),rar:Math.floor(rnd()*(x.CRAFT_MAX_RAR+1))}), ()=>({t:'brew',id:pick(potions),n:1+Math.floor(rnd()*20)}),
-  ()=>({t:'buyskill',id:pick(skills)}), ()=>({t:'upskill',id:pick(p.gear.skills.owned.length?p.gear.skills.owned:skills)}), ()=>({t:'learn',id:pick(x.PROF_IDS)}),
+  ()=>({t:'buyskill',id:pick(skills)}), ()=>({t:'awk',a:pick(['tier','up','stat']),set:pick(awkKeys),id:pick(awkIds)}), ()=>({t:'awk',a:'stat',set:pick(awkKeys),id:pick(['spo2','sba2','ssk2','spa1','__proto__',7])}), ()=>({t:'learn',id:pick(x.PROF_IDS)}),
   ()=>{ const k=pick(cos).split(':'); return {t:'cosmake',type:k[0],id:k[1]}; }, ()=>({t:'gembuy',v:pick(outfits),b:rnd()<0.4?1:0}), ()=>({t:'gemtest'}),
   ()=>({t:'sellres',id:pick(res),n:Math.floor(rnd()*30)}),
 ];
@@ -41,6 +45,7 @@ const refill=()=>{   // purses and bags at their edges
   if(r>0.85&&r<0.9){ p.gear.inv.length=Math.min(p.gear.inv.length,Math.floor(rnd()*20)); for(const id of Object.values(p.gear.eq)) if(id&&!p.gear.inv.includes(id)) p.gear.inv.push(id); }   // (what is worn is always in the bag)
   if(r>0.9) for(const id of res) p.gear.res[id]=Math.floor(rnd()*60);
   if(r>0.95) for(const id of Object.keys(x.MATS)) p.gear.mats[id]=Math.floor(rnd()*40);
+  if(r>0.6&&r<0.7){ p.gear.awm.echo=Math.floor(rnd()*30); p.gear.rd.mat.home=Math.floor(rnd()*6); }   // awakening: Echo Shards and raid material
 };
 for(let step=0;step<STEPS&&bad.length<5;step++){
   refill(); if(rnd()<0.1) home();
@@ -53,8 +58,8 @@ for(let step=0;step<STEPS&&bad.length<5;step++){
   if(a.inv.length>x.BAG_MAX) note('step '+step+' '+JSON.stringify(m)+': the bag holds '+a.inv.length);
   if(step%20===0){   // what is in memory must survive a save and a login: nothing here may be above a cap that the sanitizer cuts
     const r=x.sanitizeGear(JSON.parse(JSON.stringify(a)),'warrior'), nz=o=>JSON.stringify(Object.entries(o||{}).filter(e=>e[1]).sort());
-    const mine={coins:a.coins,inv:[...a.inv].sort(),res:nz(a.res),mats:nz(a.mats),pot:nz(a.pot),own:[...a.skills.owned].sort(),lv:nz(a.skills.lv),prof:Object.keys(a.prof).sort(),cos:[...a.cos].sort(),os:[...a.os].sort(),gem:a.gem};
-    const kept={coins:r.coins,inv:[...r.inv].sort(),res:nz(r.res),mats:nz(r.mats),pot:nz(r.pot),own:[...r.skills.owned].sort(),lv:nz(r.skills.lv),prof:Object.keys(r.prof).sort(),cos:[...r.cos].sort(),os:[...r.os].sort(),gem:r.gem};
+    const mine={coins:a.coins,inv:[...a.inv].sort(),res:nz(a.res),mats:nz(a.mats),pot:nz(a.pot),own:[...a.skills.owned].sort(),lv:nz(a.skills.lv),prof:Object.keys(a.prof).sort(),cos:[...a.cos].sort(),os:[...a.os].sort(),gem:a.gem,awk:awkCanon(a),awm:nz(a.awm)};
+    const kept={coins:r.coins,inv:[...r.inv].sort(),res:nz(r.res),mats:nz(r.mats),pot:nz(r.pot),own:[...r.skills.owned].sort(),lv:nz(r.skills.lv),prof:Object.keys(r.prof).sort(),cos:[...r.cos].sort(),os:[...r.os].sort(),gem:r.gem,awk:awkCanon(r),awm:nz(r.awm)};
     for(const k of Object.keys(mine)) if(JSON.stringify(mine[k])!==JSON.stringify(kept[k])) note('step '+step+' '+JSON.stringify(m)+': '+k+' would change on the next login: '+JSON.stringify(mine[k]).slice(0,120)+' -> '+JSON.stringify(kept[k]).slice(0,120));
   }
   const paid=after.coins<before.coins||after.gem<before.gem;

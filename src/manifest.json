@@ -206,6 +206,7 @@
     "world.js",
     "players.js",
     "save-mig.js",
+    "awakening.js",
     "monsters.js",
     "combat.js",
     "basic-hold.js",

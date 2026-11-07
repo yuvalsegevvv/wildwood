@@ -34,7 +34,9 @@ function sanitizeGear(g,cls){
   out.temper=clampInt(g.temper,0,DG_STONE_MAX,0);   // dungeons: the Tempering Stones (a count; an old save has none)
   if(out.north<1&&out.mq.s>MQ_BY_ID.V10.i) out.north=1;   // saves that already got past Akaoni: the ice wall is open for them
   if(out.west<1&&out.mq.s>MQ_BY_ID.F8.i) out.west=1;      // ... and past Ymrik: the glacier valley is
+  awkSanitize(g,out);   // awakening: gear.awk (the trees) and gear.awm (Echo Shards), before the migration reads them
   smigSanitize(g,out);   // savemig: the skill revamp's one migration (boss skills and extra passives refunded, gear.bdMig), once per save (gear.smv)
+  awkSyncG(out);   // awakening: the skill levels the trees give (gear.skills.lv, gear.cave.own)
   return out;
 }
 // quests travel in the player's own save, so check every field and recompute the rewards here
@@ -72,7 +74,7 @@ function sanitizeSkills(g){
     const e=g.eq[c], slots=typeof e==='string'?{skill:e}:(e&&typeof e==='object'?e:{});
     for(const sl of SLOTS){ const id=slots[sl]; if(SKILLS[id]&&(SKILLS[id].cls===c||SKILLS[id].cls==='any')&&SKILLS[id].slot===sl&&out.owned.includes(id)&&canSwap(c,sl,out)) out.eq[c][sl]=id; }   // skillsets: cls 'any' fits every class; owning a slot-1 piece frees the basic slot
   }
-  if(g.lv&&typeof g.lv==='object') for(const id in g.lv){ const L=out.owned.includes(id)?clampInt(g.lv[id],1,SKILL_MAX_LV,1):1; if(L>1) out.lv[id]=L; }
+  if(g.lv&&typeof g.lv==='object') for(const id in g.lv){ const L=out.owned.includes(id)?clampInt(g.lv[id],1,SKILL_OLD_MAX_LV,1):1; if(L>1) out.lv[id]=L; }
   // a passive keeps its slot (which slots a level can use is decided by newPlayer, which knows the level), and sits in one slot only
   if(Array.isArray(g.pass)){ const k=g.pass.findIndex(id=>typeof id==='string'&&PASSIVES[id]&&out.owned.includes(id)); if(k>=0) out.pass[0]=g.pass[k]; }   // ONE passive slot: an old save's first worn passive stays, the other two leave the loadout (they stay owned)
   out.pgiven=!!g.pgiven;   // the free passive was handed out once (so taking it off does not bring it back)
@@ -125,6 +127,7 @@ function recalcP(p){
   if(p.pv){ pvpRecalcP(p); return; }   // pvp: on the Proving Isle everyone has the same numbers (server/pvp.js)
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
   g.atk+=dgRingAtkP(p)+talAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else 
+  awkRefreshP(p);   // awakening: the trees' skill levels and the played character's stat nodes (gear.skills.aw, read by passiveSum)
   rlRefreshP(p);   // rolls: the lines of the worn level-40 pieces (p.rl)
   p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)*(1+rlP(p,'hp'))*(1+toolBonusStat(p.gear,'hp'))); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym)*(1+rlP(p,'atk'))*(1+toolBonusStat(p.gear,'atk')); p.def=Math.round(g.def*(1+rlP(p,'def'))*(1+toolBonusStat(p.gear,'def'))); p.red=defRed(p.def);   // rolls: hp, atk and def lines   // professions: the worn tools' small bonus (shared/professions.js)
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));

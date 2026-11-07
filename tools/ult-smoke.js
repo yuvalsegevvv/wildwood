@@ -4,7 +4,7 @@
 const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...JSON.parse(JSON.stringify(m.ev))); }},
-  ['S','PASSIVES','ULT_SKILLS','ULT_BAD','ULT_CD','ULT_CD_GRIND','ULT_LV','ULT_STUN','ULT_STUN_LOCK','ultDef','ultDefine','ultOwned','ultPieceCount','ultCdOf','ultStunS','ultCheckP','ssGrantP','ssCount','ssCdrS','SS_SETS','SS_ORDER','CAVE_SKILLS','BOSSES','resetBossS','MONS','getH','SKILLS','slotLv','sanitizeGear','SS_BAD','psP','ultWornP','ultRowK','ultIcdK','ultOnP','ultTickP']);
+  ['S','PASSIVES','ULT_SKILLS','ULT_BAD','ULT_CD','ULT_CD_GRIND','ULT_LV','ULT_STUN','ULT_STUN_LOCK','ultDef','ultDefine','ultOwned','ultPieceCount','ultCdOf','ultStunS','ultCheckP','ssGrantP','ssCount','ssCdrS','SS_SETS','SS_ORDER','CAVE_SKILLS','BOSSES','resetBossS','MONS','getH','SKILLS','slotLv','sanitizeGear','SS_BAD','psP','ultWornP','ultRowK','ultIcdK','ultOnP','ultTickP','awkMigGrant']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 // ---- the registry ----
@@ -24,7 +24,7 @@ delete x.ULT_SKILLS.fixset;
 // ---- ownership: any 3 of the 7 ----
 W.join('a',{name:'Alma',look:{cls:'warrior'},save:{level:40}}); W.join('lo',{name:'Lowe',look:{cls:'warrior'},save:{level:27}}); tick(3);
 const p=W.players.get('a'), lo=W.players.get('lo'), T='torgeir';
-const own=(pl,set,pos)=>x.ssGrantP(pl,set,pos,true);
+const own=(pl,set,pos)=>{ const n=x.ssGrantP(pl,set,pos,true); x.awkMigGrant(pl.gear,set,{bu:1}); return n; };   // awakening: bu1 (A3) makes an owned burst usable
 ok('nothing owned: no burst',!x.ultOwned(p.gear.skills,p.gear.cave,T)&&x.ultPieceCount(p.gear.skills,p.gear.cave,T)===0);
 own(p,T,1); ok('one drop (an active and its passive) is 2 of 7: not enough',x.ultPieceCount(p.gear.skills,p.gear.cave,T)===2&&!x.ultOwned(p.gear.skills,p.gear.cave,T));
 { const cv=Object.values(x.CAVE_SKILLS).find(c=>c.set===T);
@@ -35,6 +35,7 @@ ok('two drops are 4 of 7: owned, and the player is told once (event ultget)',x.u
 // ---- wearing ----
 W.receive('a',{t:'ultequip',id:'constructor'}); W.receive('a',{t:'ultequip',id:'tansy'}); W.receive('a',{t:'ultequip',id:7}); tick(1);
 ok('a bad id, a burst that is not owned and a non-string change nothing',p.gear.skills.ult===null);
+{ const keep=p.gear.awk[T]; delete p.gear.awk[T]; W.receive('a',{t:'ultequip',id:T}); tick(1); ok('awakening: an owned burst without its first tree node (bu1, A3) cannot be worn',p.gear.skills.ult===null); p.gear.awk[T]=keep; }
 W.receive('a',{t:'ultequip',id:T}); tick(1); ok('an owned burst can be worn at level 40',p.gear.skills.ult===T);
 { p.gear.skills.ult=null; p.gear.skills.pass=[null,null,null]; W.receive('a',{t:'ssall',set:'constructor'}); W.receive('a',{t:'ssall',set:T}); tick(1);
   ok('"Equip the whole set" (ssall) wears the owned actives, passives and the burst; a bad set name changes nothing',p.gear.skills.ult===T&&p.gear.skills.pass.some(i=>i&&x.PASSIVES[i].set===T),JSON.stringify(p.gear.skills.pass)+' '+p.gear.skills.ult); }

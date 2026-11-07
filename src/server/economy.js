@@ -80,7 +80,7 @@ function turnInP(p,id){
   const rar=rollQuestItemRarity(r.item); if(rar>=0) addItemP(p,randomItem(tierFor(q.level),rar));
   ev('qturn',p.id,id); p.dirty=true; mqActP(p,'board'); gsTurnedInP(p,id);   // gems: a daily notice pays gems
 }
-/* ---- skills: bought from Aldric the trainer, equipped per class (passives: one loadout for every class), upgraded with coins and drops ---- */
+/* ---- skills: shop skills bought from Aldric the trainer (the Wanderer's: a set piece is never sold), equipped per class (passives: one loadout for every class); levels come from the Awakening tree ---- */
 function buySkillP(p,id){
   const s=skillDef(id); if(!s||p.gear.skills.owned.includes(id)) return;
   if(s.set){ toastTo(p.id,s.name+' is not for sale: it is a signature skill, earned from a boss or a dungeon','bad'); return; }   // skillsets: a piece is never bought
@@ -109,21 +109,7 @@ function unequipSkillP(p,cls,slot,idx){
   if(slot==='pass'){ const P=p.gear.skills.pass, i=clampInt(idx,0,PASSIVE_SLOTS-1,-1); if(i>=0&&P[i]){ P[i]=null; recalcP(p); p.dirty=true; } return; }
   const e=p.gear.skills.eq[cls]; if(e&&(slot==='skill'||slot==='burst'||(slot==='basic'&&SKILLS[e.basic]&&SKILLS[e.basic].set))){ e[slot]=null; p.dirty=true; recalcP(p); }   // skillsets: a slot-1 piece can be taken off (the class basic returns)
 }
-// level up a skill or passive you own: coins and monster drops (upgradeNeeds), at the trainer in either village
-function upgradeSkillP(p,id){
-  const s=skillDef(id), S=p.gear.skills; if(!s||!S.owned.includes(id)) return;
-  if(!inVillage(p)){ toastTo(p.id,'Skills are upgraded by a trainer: Aldric at the well (or Master Ryu in Hanami)','bad'); return; }
-  const to=skillLvOf(S,id)+1; if(to>SKILL_MAX_LV){ toastTo(p.id,s.name+' is already at its highest level','bad'); return; }
-  const need=upgradeNeeds(id,to); if(!need){ toastTo(p.id,s.name+' cannot be upgraded yet','bad'); return; }
-  const lack=need.mats.find(m=>(p.gear.mats[m.id]||0)<m.n);
-  if(p.gear.coins<need.coins){ toastTo(p.id,'Not enough coins','bad'); return; }
-  if(lack){ toastTo(p.id,'You need '+lack.n+' '+MATS[lack.id].name,'bad'); return; }
-  if(need.rd&&(rdMatsOf(p)[need.rd.land]||0)<need.rd.n){ toastTo(p.id,'You need '+need.rd.n+' '+rdOfLand(need.rd.land).mat+' (raid material of that land)','bad'); return; }   // raids
-  p.gear.coins-=need.coins;
-  if(need.rd){ const rm=rdMatsOf(p), left=(rm[need.rd.land]||0)-need.rd.n; if(left>0) rm[need.rd.land]=left; else delete rm[need.rd.land]; }   // raids
-  for(const m of need.mats){ const left=(p.gear.mats[m.id]||0)-m.n; if(left>0) p.gear.mats[m.id]=left; else delete p.gear.mats[m.id]; }
-  S.lv[id]=to; recalcP(p); p.dirty=true; toastTo(p.id,s.name+' is now level '+to,'good'); ev('skillup',p.id,id,to); mqActP(p,'upskill');
-}
+// (upgradeSkillP, the old coins-and-drops upgrade at a trainer, is retired: a skill's level is its branch in the Awakening tree, server/awakening.js MSG.awk)
 /* ---- chat and names ---- */
 // chat: up to 160 characters, at most one message every 0.7 s per player; everyone in the world hears it
 function chatP(p,text){
@@ -157,7 +143,8 @@ function devP(p,msg){
   else if(c==='startAll'){ p.gear.startAll=!!msg.v; if(p.gear.startAll) giveAllP(p); p.dirty=true; }
   else if(c==='skills'){ for(const id of [...SKILL_IDS,...PASSIVE_IDS]) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); if(p.gear.cave) for(const id of CAVE_SKILL_IDS) if(!(p.gear.cave.own[id]>0)) p.gear.cave.own[id]=1; ultCheckP(p); p.dirty=true; toastTo(p.id,'Every skill, passive and charge skill learned','good'); }   // cave: the cave skills too, at level 1 (a higher level is kept)
   else if(c==='set'){ const id=String(msg.v||''); if(!SS_SETS[id]){ toastTo(p.id,'No skill set called "'+id+'" ('+(SS_ORDER.join(', ')||'none defined')+')','bad'); return; } ssGrantSetP(p,id); recalcP(p); toastTo(p.id,SS_SETS[id].char.name+'\'s set: all six pieces given','good'); }   // skillsets: give a whole set (testing)
-  else if(c==='ult'){ for(const id of SS_ORDER){ if(SS_SETS[id].dev) continue; ssGrantP(p,id,1,true); ssGrantP(p,id,2,true); } p.cd.ult=0; for(const m of MONS) m.ultLock=0; ultCheckP(p); p.dirty=true; toastTo(p.id,'Positions 1 and 2 of every set given (every burst), burst cooldown and stun locks cleared','good'); }   // ult: testing tool
+  else if(c==='ult'){ for(const id of SS_ORDER){ if(SS_SETS[id].dev) continue; ssGrantP(p,id,1,true); ssGrantP(p,id,2,true); awkMigGrant(p.gear,id,{bu:1}); } p.cd.ult=0; for(const m of MONS) m.ultLock=0; ultCheckP(p); p.dirty=true; toastTo(p.id,'Positions 1 and 2 of every set given (every burst), burst cooldown and stun locks cleared','good'); }   // ult: testing tool   // awakening: bu1 (and A3) makes the burst usable
+  else if(c==='awk') awkDevP(p,msg);   // awakening: a whole tree to a tier (v: set id | 'wanderer' | 'all', n: tier 0-5, default 5)
   else if(c==='mats'){ for(const id of MAT_IDS) addMatP(p,id,20); toastTo(p.id,'20 of every monster drop added','good'); }
   else if(c==='weather'){ const k={clear:0,rain:1,storm:2}[msg.v]; if(k===0){ W.kind=0; W.t=0; W.dur=0; ev('weather',0); } else if(k) startWeatherS(k); }
   else if(c==='amber'){ ambAddP(p,clampInt(msg.v,-AMB_MAX,AMB_MAX,1000)); toastTo(p.id,'You now have '+p.gear.amb+' amber','good'); }   // amber (the upgrade material): add (or take away) some; the public gem tool is gemtest

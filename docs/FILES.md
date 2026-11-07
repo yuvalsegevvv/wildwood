@@ -241,6 +241,7 @@ server
   world.js                           Server heightmap over the whole world (coarser than the client's): SEG, HS, getH, grad; the grid is baked into the build (dist/wildwood-server.js and the page) as packed heights (heightbake)
   players.js                         Players on the server: records, stats, XP and levels, damage taken, knock-out and respawn, private state ("you")
   save-mig.js                        The skill revamp's one save migration (gear.smv): retired boss skills refunded and unequipped, passives from the old slots 2-3 refunded, owned set pieces noted for Bond 0 (gear.bdMig)
+  awakening.js                       Awakening on the server: gear.awk (each character's tier and bought tree nodes), buying a tier, an upgrade node or a stat node (MSG.awk), the skill levels the trees give, the stat nodes' totals, Echo Shards (gear.awm) and the smv-2 migration
   monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot
   basic-hold.js                      Skill 1 on the server: attack speed and charge gain of a player, the hold message and its release (how long the player really held), where a mage's held blast lands
@@ -253,7 +254,7 @@ server
   movement.js                        Movement slot (server): wear or take off a movement skill (the choice is saved in the loadout; the movement itself is the client's)
   presets.js                         Loadout presets (server): save the eight skills and the equipment of the worn class into one of ten slots, wear one instantly anywhere outside a boss fight, raid, the Proving Isle or a dungeon
   cave-zone.js                       The Deep Cave's floors on the server: the camps and their monsters, walls for hikers and monsters (setPos, dashes, steering round corners, line of sight), the lift between the surface and the floors, waking on a floor after a knock-out
-  cave/methods.js                    The Deep Cave's eight methods on the server, the shared part: every player's progress on the floor they stand on, the 10-minute cooldown, a completed method paying its skill (or Echo Shards), the state message to the client, the HUD line
+  cave/methods.js                    The Deep Cave's eight methods on the server, the shared part: every player's progress on the floor they stand on, the 10-minute cooldown, a completed method paying Echo Shards (its skill comes from the Awakening tree now), the state message to the client, the HUD line
   cave/method-a.js                   Cave method A on the server, Mural fragments: touch the five pieces at the dead ends (any order), then the wall; your light is always on, so only the walking matters
   cave/method-b.js                   Cave method B on the server, Resonance crystals: three geodes crack only to the element (or two-element chain) written on them; an attack's element is checked when it lands
   cave/method-c.js                   Cave method C on the server, Echo trial: stand on the plinth, an echo spawns a pack and sets a feat (no hit on floor 1; a set's own feat from its skill's `feat` field on the others)

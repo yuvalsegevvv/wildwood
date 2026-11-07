@@ -1,7 +1,7 @@
 //@ The Deep Cave, shared rules: the 4th skill slot (opens at level 20), the charge that pays for it, the registry of cave skills (defineChargeSkill) and their validation
 /* Agent map. Plan: docs/CAVE.md (read its section 0 first). Test: tools/cave-smoke.js.
    The 4th slot is NOT in SLOTS (classes.js): SLOTS is the class skills' three slots, iterated by pvp, sanitizing and the skill sets' cast rows. The cave slot is its own thing:
-   one universal skill (works for every class) in gear.skills.cave, owned in gear.cave.own ({id: level 1-5}); its tile is the action bar's fourth button, key 'cave' (KB_ACTIONS).
+   one universal skill (works for every class) in gear.skills.cave, owned in gear.cave.own ({id: level 1-10, written from the Awakening tree}); its tile is the action bar's fourth button, key 'cave' (KB_ACTIONS).
    Charge (CAVE_*) is per player, server-side, never saved: server/cave.js.
    Exports: CAVE_SLOT_LV, CAVE_SLOT, CAVE_CHARGE_K, CAVE_CHARGE_MAX, CAVE_BOSS_START, CAVE_BOSS_LEAVE, CAVE_COST_MIN/MAX, CAVE_REFUND_CAP, CAVE_LEVEL_MAX, CAVE_CAST_CD, CAVE_CAST_WINDOW, CAVE_FLOORS, CAVE_METHODS,
    CAVE_SKILLS (id -> ability), CAVE_SKILL_IDS, CAVE_BAD (rejected entries {id, why}), defineChargeSkill(def), caveSkillDef(id), caveLevelK(level, kind), caveChargeGain(ab, cave, set).
@@ -13,8 +13,8 @@ const CAVE_SLOT='cave', CAVE_SLOT_LV=20;   // the slot opens at this player leve
 const CAVE_CHARGE_K=0.6;                   // charge per cast = this x the cast ability's base cooldown (one constant to tune)
 const CAVE_CHARGE_MAX=100, CAVE_BOSS_START=50, CAVE_BOSS_LEAVE=0;   // the bar's cap; the charge on entering a boss fight; on leaving one before it ends
 const CAVE_COST_MIN=20, CAVE_COST_MAX=40;   // what a cave skill may cost
-const CAVE_LEVEL_MAX=5;   // level 2-5 scale each number by its curve (shared/awakening.js: damage x1.17 a level, heals x1.10, strengths +6%, durations +3%), the cost stays
-const CAVE_LEVEL_COST=[0,0,3,7,15,40];   // Echo Shards to REACH level 2-5 (index = the new level), universal for any cave skill (C3; the owner's 3 / 7 / 15 / 40)
+const CAVE_LEVEL_MAX=10;   // awakening: a charge skill's level is its branch in the Awakening tree (server/awakening.js awkSyncG; the tree's top); each number scales by its curve (shared/awakening.js), the cost stays
+const CAVE_LEVEL_COST=[0,0,3,7,15,40];   // the OLD Echo Shard price of levels 2-5 (caveup, retired by Awakening: the charge branch of the tree pays its levels now); kept for the panel until step 15
 // the cave's monster drops: each floor's monsters drop that floor's material (gear.cave.m[floor]); a level of a cave skill also asks for the material of the skill's own floor
 const CAVE_DROPS=[null,'Glow Silk','Prism Splinter','Drowned Pearl','Magma Heart'];   // index = floor
 const CAVE_DROP_COST=[0,0,3,6,10,20];   // of the skill's floor's material, to REACH level 2-5

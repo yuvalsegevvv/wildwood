@@ -7,7 +7,7 @@
             AWK_ID_ECHO, AWK_ID_PRIME, awkRaidId(land), awkTrophyId(boss), awkEssenceId(el) (the placeholder item ids below).
    A cost is {coins, drops, land, mats:{id:n}, tier, hikerLv} or null (an unknown set or node: a junk id never throws). `drops` is a count of the character's land's monster drops (`land`; 'any' for the Wanderer, whose
    drops can be any land's), the zone rising with the tier: which MATS kind it is, is the server's (step 9). `mats` holds the rest, by PLACEHOLDER ids that later steps fill:
-     'echo'              Echo Shards (today gear.cave.sh; step 9 moves them);        'rd_<land>'      the land's raid material (today gear.rd.mat; step 9 maps it)
+     'echo'              Echo Shards (gear.awm.echo since step 9);                  'rd_<land>'      the land's raid material (gear.rd.mat[land]; 'rd_any': any land's)
      'trophy_<boss id>'  one world boss' own trophy (step 10 adds BOSS_TROPHY; 'trophy_any' = the Wanderer's: any boss's)
      'ess_<element>'     Essence of the character's element (step 17, the rifts);    'ess_prime' Prime Essence (step 17; also an element-less character's, and the Wanderer's)
    Used by: server/awakening.js (step 9, charging), game/awakening (step 15, the panel). Test: tools/awakening-smoke.js. */

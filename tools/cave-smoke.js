@@ -201,10 +201,10 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   { const t=x.CAVE_SKILLS; ok('a skill row may carry a feat only on method C',true); }
   // ---- saves ----
   { const g=x.sanitizeGear({cave:{own:{echo:2},cd:{'1A':9e15,'2B':5,'9Z':1,'constructor':3,'1a':1,__proto__:{'1A':1}},done:{'1A':5,'x':1,'3H':-4},sh:77777777}},'warrior'), c=g.cave;
-    ok('gear.cave.cd / done / sh are cleaned: only real keys (floor digit + letter), the cooldown never later than one cooldown from now, counts clamped',
-      c.own.echo===2&&Object.keys(c.cd).sort().join()==='1A,2B'&&c.cd['1A']<=Date.now()/1000+x.CAVE_METHOD_CD+1&&c.cd['2B']===5&&c.done['1A']===5&&c.done['3H']===0&&Object.keys(c.done).length===2&&c.sh===99999,JSON.stringify(c));
-    const h=x.sanitizeGear({cave:{cd:'x',done:[1],sh:'a'}},'mage').cave; ok('garbage cooldowns and counts are cleaned',Object.keys(h.cd).length===0&&Object.keys(h.done).length===0&&h.sh===0);
-    ok('an old save has empty cooldowns, no completions and no shards',(c=>Object.keys(c.cd).length===0&&c.sh===0)(x.sanitizeGear({},'archer').cave)); }
+    ok('gear.cave.cd / done are cleaned, the old shards move to gear.awm.echo (awakening): only real keys (floor digit + letter), the cooldown never later than one cooldown from now, counts clamped',
+      c.own.echo===2&&Object.keys(c.cd).sort().join()==='1A,2B'&&c.cd['1A']<=Date.now()/1000+x.CAVE_METHOD_CD+1&&c.cd['2B']===5&&c.done['1A']===5&&c.done['3H']===0&&Object.keys(c.done).length===2&&c.sh===undefined&&g.awm.echo===99999,JSON.stringify(c)+' '+JSON.stringify(g.awm));
+    const hg=x.sanitizeGear({cave:{cd:'x',done:[1],sh:'a'}},'mage'), h=hg.cave; ok('garbage cooldowns and counts are cleaned',Object.keys(h.cd).length===0&&Object.keys(h.done).length===0&&!hg.awm.echo);
+    ok('an old save has empty cooldowns, no completions and no shards',(g=>Object.keys(g.cave.cd).length===0&&!g.awm.echo)(x.sanitizeGear({},'archer'))); }
   // ---- the players: one on each floor, all level 30 ----
   for(const m of x.MONS) if(m.cave){ m.dead=true; m.deadT=2; m.respawnT=1e9; }   // (the floors' packs stay out of these checks: a bite would fail a feat or dim a lantern at random)
   const p1=join('m1',30), p2=join('m2',30), pm=join('m3',30);
@@ -216,11 +216,11 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     ok('two players collect the five pieces at the same time, each their own',p1.cm.A.got===31&&p2.cm.A.got===31&&!p1.gear.cave.own.echo);
     tick(6); ok('the cm message carries the mural pieces you hold and the hud line',lastCm('m1').a===31&&/wall/i.test(lastCm('m1').hud));
     at(p1,A.wall); at(p2,A.wall); tick(2);
-    ok('touching the wall with all five teaches Echo (both players, level 1), records the completion and starts the 10-minute cooldown',p1.gear.cave.own.echo===1&&p2.gear.cave.own.echo===1&&p1.gear.cave.done['1A']===1&&p1.gear.cave.cd['1A']>Date.now()/1000+590&&told('m1','Echo learned'));
+    ok('touching the wall with all five pays Echo Shards (both players; awakening: the skill itself is the tree\'s ch1 now), records the completion and starts the 10-minute cooldown',!p1.gear.cave.own.echo&&p1.gear.awm.echo===x.CAVE_SHARDS[1]&&p2.gear.awm.echo===x.CAVE_SHARDS[1]&&p1.gear.cave.done['1A']===1&&p1.gear.cave.cd['1A']>Date.now()/1000+590&&told('m1','Echo Shard'));
     for(let i=0;i<5;i++){ at(p1,A.pieces[i]); tick(1); } at(p1,A.wall); tick(2);
-    ok('the cooldown holds: the pieces cannot be taken again and the wall teaches nothing before 10 minutes',p1.cm.A.got===0&&p1.gear.cave.done['1A']===1&&p1.gear.cave.sh===0&&lastCm('m1').cd&&lastCm('m1').cd.A>500);
+    ok('the cooldown holds: the pieces cannot be taken again and the wall teaches nothing before 10 minutes',p1.cm.A.got===0&&p1.gear.cave.done['1A']===1&&p1.gear.awm.echo===x.CAVE_SHARDS[1]&&lastCm('m1').cd&&lastCm('m1').cd.A>500);
     p1.gear.cave.cd['1A']=Date.now()/1000-1; for(let i=0;i<5;i++){ at(p1,A.pieces[i]); tick(1); } at(p1,A.wall); tick(2);
-    ok('once the cooldown is over a skill you own pays Echo Shards instead (floor 1: 1)',p1.gear.cave.done['1A']===2&&p1.gear.cave.sh===x.CAVE_SHARDS[1]&&p1.gear.cave.own.echo===1); }
+    ok('once the cooldown is over it pays again (floor 1: 1 more)',p1.gear.cave.done['1A']===2&&p1.gear.awm.echo===2*x.CAVE_SHARDS[1]); }
   // ---- B: resonance crystals (the real attack path for one, direct for the rest) ----
   { const G=WA(1).B.geodes, need=x.caveMethodDef('B').p.need[1], face=(pl,q)=>Math.atan2(-(q.x-pl.x),-(q.z-pl.z)), stand=(pl,i)=>{ const g=G[i]; pl.x=g.x+(g.nx||0)*2; pl.z=g.z+(g.nz||0)*2; pl.y=x.getH(pl.x,pl.z); pl.face=face(pl,g); };
     stand(p1,0); tick(1); const el0=need[0]; p1.cd.basic=0; W.receive('m1',{t:'atk',k:'basic',tg:null,face:p1.face,aim:[0,0,-1]}); tick(12);
@@ -230,7 +230,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     x.caveGeodeHitS(p1,{el:need[1],range:3}); ok('the right element cracks it',p1.cm.B.st[1]===1);
     stand(p1,2); tick(1); x.caveGeodeHitS(p1,{el:need[2][1],range:10}); ok('the second of a chain alone does nothing',p1.cm.B.st[2]===0);
     x.caveGeodeHitS(p1,{el:need[2][0],range:10}); ok('the first of a chain charges the geode (the cm message says 2)',p1.cm.B.st[2]===0&&p1.cm.B.au[2]&&(tick(6),lastCm('m1').b[2]===2));
-    x.caveGeodeHitS(p1,{el:need[2][1],range:10}); ok('the second within the window cracks it, and with all three the method pays Flare',p1.gear.cave.own.flare===1&&p1.gear.cave.done['1B']===1&&p1.cm.B.st.every(v=>v===0));
+    x.caveGeodeHitS(p1,{el:need[2][1],range:10}); ok('the second within the window cracks it, and with all three the method pays Flare',!p1.gear.cave.own.flare&&p1.gear.cave.done['1B']===1&&p1.cm.B.st.every(v=>v===0));
     resetCd(p1); stand(p1,2); tick(1); x.caveGeodeHitS(p1,{el:need[2][0],range:10}); p1.cm.B.au[2].until=x.S.t-1; x.caveGeodeHitS(p1,{el:need[2][1],range:10}); ok('a chain whose window ran out starts again',p1.cm.B.st[2]===0);
     const far=p1.x; at(p1,WA(1).start); tick(1); x.caveGeodeHitS(p1,{el:need[0],range:10}); ok('out of reach (far from every geode) an attack cracks nothing',p1.cm.B.st.every(v=>v===0)); }
   // ---- C: echo trial ----
@@ -242,7 +242,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     ok('being hit fails the feat: the pack is removed, nothing is paid and a new try waits a few seconds',p1.cm.C.s===0&&mons().every(m=>m.remove)&&!p1.gear.cave.own.overdrive&&told('m1','you were hit'));
     p1.cm.C.lock=0; p1.cd.basic=0; at(p1,pl); p1.cm.C.hold=0; for(let i=0;i<60&&!p1.cm.C.s;i++) tick(1); calm(); const pack=mons().filter(m=>!m.remove); ok('the trial starts again',p1.cm.C.s===1&&pack.length===5);
     for(const m of pack) x.killMonsterS(m,p1); tick(3);
-    ok('beating all five without a hit teaches Overdrive',p1.gear.cave.own.overdrive===1&&p1.gear.cave.done['1C']===1&&p1.cm.C.s===0);
+    ok('beating all five without a hit teaches Overdrive',!p1.gear.cave.own.overdrive&&p1.gear.cave.done['1C']===1&&p1.cm.C.s===0);
     // another player, a different floor's feat comes from the data
     ok('the feat is a data field of the floor\'s method-C skill (Marionette\'s on floor 2; the default for floor 1)',x.caveFeatOf(2)===x.caveSkillAt(2,'C').feat&&x.caveFeatOf(2).kind==='holdMark'&&x.caveFeatOf(1)===x.CAVE_FEAT_DEFAULT); }
   // ---- D: carry the lantern ----
@@ -255,7 +255,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     ok('(the floor has a pool to test the water with)',!!wet);
     if(wet){ at(p1,wet); tick(2); ok('water puts the crystal out',p1.cm.D.s===0&&told('m1','went out in the water')); p1.cm.D.out=0; }
     at(p1,A.crystal); tick(2); at(p1,A.altar); tick(2);
-    ok('carried to the altar it teaches Lantern Ward and starts the cooldown',p1.gear.cave.own.lanternward===1&&p1.gear.cave.cd['1D']>Date.now()/1000+590); }
+    ok('carried to the altar it teaches Lantern Ward and starts the cooldown',!p1.gear.cave.own.lanternward&&p1.gear.cave.cd['1D']>Date.now()/1000+590); }
   // ---- E: the silent chamber ----
   { const E=WA(1).E; resetCd(p1); floorTp(p1,1,E.entry); tick(2);
     ok('stepping in at the entry starts the crossing (noise 0)',p1.cm.E.s===1&&lastCm('m1').e.s===1);
@@ -265,7 +265,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     ok('running fills the meter: the guardian wakes and throws you out to the exit anchor',p1.cm.E.s===0&&Math.hypot(p1.x-E.exit.x,p1.z-E.exit.z)<1.5&&told('m1','throws you out'));
     p1.vx=0; p1.cm.E.lock=0; at(p1,E.entry); tick(2); ok('after the lock you may try again',p1.cm.E.s===1);
     p1.act={kind:'slash',skill:false}; tick(1); const z1=p1.cm.E.z; p1.act=null; ok('fighting adds noise (an attack started)',z1>=4);
-    at(p1,E.shrine); tick(2); ok('reaching the shrine teaches Burrow',p1.gear.cave.own.burrow===1&&p1.cm.E.s===0); }
+    at(p1,E.shrine); tick(2); ok('reaching the shrine teaches Burrow',!p1.gear.cave.own.burrow&&p1.cm.E.s===0); }
   // ---- F: the collapse run ----
   { const G=x.caveMFl(1), B=x.caveBake(1), V=WA(1).F, A=B.sealed; resetCd(p1); floorTp(p1,1); floorTp(p2,1); tick(1);
     ok('the seal is rock until the tremor',A.every(k=>B.cells[k]===0));
@@ -273,7 +273,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     G.next=x.S.t+0.05; tick(3);
     ok('the vault opens for 90 seconds: the seal cells are walkable and the cm message says so',A.every(k=>B.cells[k]===1)&&G.openUntil>x.S.t+80&&lastCm('m1').fv.o>0);
     at(p2,V.vault); tick(1);
-    ok('reaching the vault in time teaches Cave-in (and the vault is reachable: it is the same standing ground the server accepts)',p2.gear.cave.own.cavein===1&&p2.gear.cave.done['1F']===1);
+    ok('reaching the vault in time teaches Cave-in (and the vault is reachable: it is the same standing ground the server accepts)',!p2.gear.cave.own.cavein&&p2.gear.cave.done['1F']===1);
     resetCd(p1); at(p1,V.vault); tick(1); G.openUntil=x.S.t+0.05; tick(3);
     ok('when the tunnel caves in the rock is back and anybody still inside is moved out',A.every(k=>B.cells[k]===0)&&G.openUntil===0&&!(B.dist[Math.floor((p1.z-x.caveFloorOrigin(1).z)/2)*B.w+Math.floor((p1.x-x.caveFloorOrigin(1).x)/2)]===65535)&&told('m1','caves in'));
     ok('the next tremor is a few minutes away',G.next-x.S.t>=300); }
@@ -284,7 +284,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     m.stunT=1; const xs=m.x, zs=m.z; tick(10); ok('a stun holds it still',Math.hypot(m.x-xs,m.z-zs)<0.2); tick(15);
     const a=m.x, b=m.z; m.slowT=2; tick(10); const slowD=Math.hypot(m.x-a,m.z-b); m.slowT=0; const a2=m.x, b2=m.z; tick(10); const fastD=Math.hypot(m.x-a2,m.z-b2); ok('a slow makes it much slower',slowD<fastD*0.7,slowD.toFixed(1)+' vs '+fastD.toFixed(1));
     m.hitters.set('m1',x.S.t); tick(1); x.killMonsterS(m,p1); tick(3);
-    ok('bringing it down pays everyone who hit it: Grapple Line',p1.gear.cave.own.grapple===1&&G.mole===null&&G.moleNext>x.S.t+200);
+    ok('bringing it down pays everyone who hit it: Grapple Line',!p1.gear.cave.own.grapple&&G.mole===null&&G.moleNext>x.S.t+200);
     // one that escapes
     G.moleNext=0; tick(2); const m2=G.mole; ok('another mole comes later',!!m2&&m2!==m);
     m2.mole.tx=m2.x+0.5; m2.mole.tz=m2.z; tick(60);
@@ -302,11 +302,11 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     ok('and each herb',p1.cm.H.herb===D.herb&&lastCm('m1').h.b===D.herb&&/anvil/i.test(lastCm('m1').hud));
     at(p1,H.veins[5]); tick(30); ok('a vein you took stays taken for you (a second walk past does nothing more)',p1.cm.H.ore===D.ore);
     at(p1,H.anvil); tick(50);
-    ok('carving at the stone anvil teaches Second Wind',p1.gear.cave.own.secondwind===1&&p1.gear.cave.done['1H']===1&&p1.cm.H.ore===0); }
+    ok('carving at the stone anvil teaches Second Wind',!p1.gear.cave.own.secondwind&&p1.gear.cave.done['1H']===1&&p1.cm.H.ore===0); }
   // ---- every floor runs every method ----
-  { for(const n of FLOORS.filter(q=>q>1)){ const W2=WA(n); floorTp(pm,n); const sh0=pm.gear.cave.sh|0;
+  { for(const n of FLOORS.filter(q=>q>1)){ const W2=WA(n); floorTp(pm,n); const sh0=pm.gear.awm.echo|0;
       for(let i=0;i<5;i++){ at(pm,W2.A.pieces[i]); tick(1); } at(pm,W2.A.wall); tick(2);
-      { const sk=x.caveSkillAt(n,'A'); ok('floor '+n+': method A runs there too (it teaches '+(sk?sk.name:'nothing')+')',pm.gear.cave.done[n+'A']===1&&pm.cm.n===n&&(sk?pm.gear.cave.own[sk.id]===1:pm.gear.cave.sh-sh0===x.CAVE_SHARDS[n])); }
+      { const sk=x.caveSkillAt(n,'A'); ok('floor '+n+': method A runs there too (it teaches '+(sk?sk.name:'nothing')+')',pm.gear.cave.done[n+'A']===1&&pm.cm.n===n&&(pm.gear.awm.echo|0)-sh0===x.CAVE_SHARDS[n]); }
       const E=W2.E; at(pm,E.entry); tick(2); at(pm,E.shrine); tick(2); ok('floor '+n+': method E runs there (its own chamber)',pm.gear.cave.done[n+'E']===1);
       const D=W2.D; at(pm,D.crystal); tick(2); at(pm,D.altar); tick(2); ok('floor '+n+': method D runs there',pm.gear.cave.done[n+'D']===1); } }
   // ---- the cooldown is per floor and per method ----
@@ -344,34 +344,25 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   const f1=X.CAVE_SKILL_IDS.map(i=>X.CAVE_SKILLS[i]).filter(s=>s.floor===1), s1=f1[0], upEv=()=>(inb.s1||[]).filter(m=>m.t==='snap'&&m.ev).flatMap(m=>m.ev);
   ok('shards per completion are 1 / 2 / 4 / 8 on floors 1-4 and the level costs 3 / 7 / 15 / 40 shards plus 3 / 6 / 10 / 20 of the floor\'s monster drop',JSON.stringify(X.CAVE_SHARDS.slice(1))==='[1,2,4,8]'&&JSON.stringify(X.CAVE_LEVEL_COST.slice(2))==='[3,7,15,40]'&&JSON.stringify(X.CAVE_DROP_COST.slice(2))==='[3,6,10,20]'&&X.CAVE_DROPS.length===5);
   // a method whose skill you own pays shards on floors 1-4; a place with no skill too
-  g.own[s1.id]=1; g.sh=0; let want=0;
-  for(const n of [1,2,3,4]){ if(n===1){ X.caveMethodDoneP(q,1,s1.method); } else { const k=X.caveSkillAt(n,'A'); g.own[k.id]=1; X.caveMethodDoneP(q,n,'A'); } want+=X.CAVE_SHARDS[n]; }   // (every place has a skill now: floors 2-4 are completed from a place whose skill is owned)
+  const w=q.gear.awm; g.own[s1.id]=1; w.echo=0; let want=0;
+  for(const n of [1,2,3,4]){ X.caveMethodDoneP(q,n,n===1?s1.method:'A'); want+=X.CAVE_SHARDS[n]; }   // awakening: every completion pays shards (a method no longer teaches its skill)
   const ownN=Object.keys(g.own).length;
-  ok('owned-skill completions pay 1+2+4+8 shards in all (floors 1-4)',g.sh===want||g.sh>=want,g.sh+' vs '+want);
+  ok('completions pay 1+2+4+8 shards in all (floors 1-4) into gear.awm.echo, and teach nothing',w.echo===want&&ownN===1,w.echo+' vs '+want);
   tk(2); ok('a completion tells the client (toast with the shards won)',(inb.s1||[]).some(m=>JSON.stringify(m).includes('Echo Shard')));
-  // levelling
-  g.sh=0; q.dirty=false; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1);
-  ok('level 2 with too few shards is refused and nothing changes',g.own[s1.id]===1&&g.sh===0);
-  const costs=[3,7,15,40], drops=[3,6,10,20], F=X.CAVE_SKILLS[s1.id].floor; let allOk=true, tot=0; g.m=[0,0,0,0,0];
-  for(let i=0;i<4;i++){ g.sh=costs[i]-1; g.m[F]=drops[i]; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); if(g.own[s1.id]!==i+1||g.sh!==costs[i]-1) allOk=false;
-    g.sh=costs[i]; g.m[F]=drops[i]-1; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); if(g.own[s1.id]!==i+1||g.m[F]!==drops[i]-1) allOk=false;
-    g.sh=costs[i]+3; g.m[F]=drops[i]+2; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); if(g.own[s1.id]!==i+2||g.sh!==3||g.m[F]!==2) allOk=false; }
-  ok('each level costs exactly 3 / 7 / 15 / 40 shards and 3 / 6 / 10 / 20 of the skill\'s floor drop (one short of either is refused, nothing changes)',allOk&&g.own[s1.id]===5);
+  // levelling: caveup is retired (the charge branch of the Awakening tree gives the level: tools/awakening-server-smoke.js)
+  w.echo=500; g.m=[0,99,99,99,99]; W4.receive('s1',{t:'caveup',id:s1.id}); for(const bad of ['constructor','__proto__','nope',7,null,{},[]]) W4.receive('s1',{t:'caveup',id:bad}); tk(1);
+  ok('caveup is retired: nothing is levelled or spent',g.own[s1.id]===1&&w.echo===500&&g.m[1]===99&&Object.keys(g.own).length===ownN);
   { const R=Math.random; Math.random=()=>0; const before=g.m[2]|0; X.caveDropS(q,{cave:2}); X.caveDropS(q,{cave:0}); X.caveDropS(q,{cave:2,temp:true}); Math.random=()=>0.99; X.caveDropS(q,{cave:2}); Math.random=R;
     ok('a kill on a floor drops that floor\'s material at the drop chance (not off the floors, not from a temporary monster)',g.m[2]===before+1);
     ok('the floors\' drops survive a save, cleaned',JSON.stringify(X.caveSanitizeSave({own:{},m:[5,3,'x',-4,1e9]}).m)==='[0,3,0,0,9999]'&&JSON.stringify(X.caveSanitizeSave({}).m)==='[0,0,0,0,0]'); }
-  g.sh=500; W4.receive('s1',{t:'caveup',id:s1.id}); tk(1); ok('the cap is level 5: no more is bought and no shard is spent',g.own[s1.id]===5&&g.sh===500);
-  for(const bad of ['constructor','__proto__','nope',7,null,{},[]]) W4.receive('s1',{t:'caveup',id:bad}); tk(1);
-  ok('bad or unowned ids in caveup change nothing',g.sh===500&&Object.keys(g.own).length===ownN);
-  const other=f1.find(s=>s.id!==s1.id); W4.receive('s1',{t:'caveup',id:other.id}); tk(1); ok('a skill you do not own cannot be levelled',!Object.prototype.hasOwnProperty.call(g.own,other.id)&&g.sh===500);
+  const other=f1.find(s=>s.id!==s1.id);
   // the effect: the damage curve (shared/awakening.js, x1.17 a level, x1.87 at 5), through the one helper
   const lk=l=>{ g.own[s1.id]=l; return X.caveLvK(q,s1.id); };
   ok('caveLvK gives x1.0 at level 1 and x1.17 per level, compounding (x1.87 at 5)',[1,2,3,4,5].every(l=>Math.abs(lk(l)-Math.pow(1.17,l-1))<1e-9));
   g.own[s1.id]=1; const fx1=s1.id; q.cave.charge=100; { const run=lv=>{ g.own[fx1]=lv; q.gear.skills.cave=fx1; q.cave.charge=100; q.cd.cave=0; q.act=null; W4.receive('s1',{t:'atk',k:'cave',tg:null,face:0,aim:[0,0,-1]}); tk(1); const m=q.act&&q.act.mult; q.act=null; return m; };
     const m1=run(1), m5=run(5); ok('a cast carries the level in its power (level 5 = 1.17^4 x level 1)',m1>0&&Math.abs(m5/m1-Math.pow(1.17,4))<1e-6,m1+' vs '+m5); }
   // sanitize
-  { const c=X.caveSanitizeSave({own:{[s1.id]:9,constructor:3,nope:2,[other.id]:'x'},sh:-5}); ok('sanitize clamps levels to 1-5, drops unknown ids, shards >= 0',c.own[s1.id]===5&&!Object.prototype.hasOwnProperty.call(c.own,'constructor')&&!c.own.nope&&c.own[other.id]===1&&c.sh===0);
-    const d=X.caveSanitizeSave({own:{},sh:12.7}); const e=X.caveSanitizeSave({sh:1e12}); const h=X.caveSanitizeSave({sh:'x'}); ok('shards are whole non-negative numbers, capped at 99999, junk is 0',Number.isInteger(d.sh)&&d.sh>=0&&e.sh===99999&&h.sh===0&&X.caveSanitizeSave(null).sh===0); }
+  { const c=X.caveSanitizeSave({own:{[s1.id]:9,constructor:3,nope:2,[other.id]:'x'},sh:-5}); ok('sanitize clamps saved levels to 1-5 (the tree writes the rest), drops unknown ids, keeps no shards (gear.awm has them)',c.own[s1.id]===5&&!Object.prototype.hasOwnProperty.call(c.own,'constructor')&&!c.own.nope&&c.own[other.id]===1&&c.sh===undefined); }
   // the floor gate
   { const hp={level:30,gear:{cave:{own:{}}}}; const f=n=>X.CAVE_SKILL_IDS.map(i=>X.CAVE_SKILLS[i]).filter(s=>s.floor===n).map(s=>s.id);
     ok('floor 2 is shut with no floor-1 skill, still shut with one, open with two',!X.caveFloorOpen(hp,2)&&(hp.gear.cave.own[f(1)[0]]=1,!X.caveFloorOpen(hp,2))&&(hp.gear.cave.own[f(1)[1]]=1,X.caveFloorOpen(hp,2)));

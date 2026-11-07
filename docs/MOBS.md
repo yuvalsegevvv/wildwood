@@ -257,7 +257,7 @@ Health is 70 hits of a same-level player (×1.5 from level 10); a hit is 16% of 
 
 Boss quest notices (`BOSS_QUESTS`, src/shared/quests.js:32): The Rootwarden from level 13; Carapax, the Tide King from level 17; Akaoni, the Gate Demon from level 18; Kyuubi, the Nine-Tailed from level 23; Ymrik, the Rimeking from level 25; The Gryphon Queen from level 28; Vetrmaw, the Frost Wyrm from level 29; The Mountain Golem from level 31; The Glass Guardian from level 31; The Sand Wyrm from level 34; Captain Dredge from level 34; The Gloam Warden from level 38.
 
-Boss skills (rows `drop:'<boss id>'`) were removed in the skill revamp; an old save's are refunded by `smigSanitize` (src/server/save-mig.js:48).
+Boss skills (rows `drop:'<boss id>'`) were removed in the skill revamp; an old save's are refunded by `smigSanitize` (src/server/save-mig.js:49).
 
 ## 9. Boss helpers: summons and props
 

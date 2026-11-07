@@ -4,7 +4,7 @@
 // Usage: node tools/raids-smoke.js
 const {loadServer}=require('./load');
 const {api:W,x}=loadServer({dev:true,send(){}},['MONS','BOSSES','RDS','RD_ORDER','RD_BAD','RD_STATE','RD_LAYOUT','RD_UP','RD_MOB_HP','dgKOf','RD_RESET','RD_ABANDON','RD_BASE_LV','RD_FOOT','ARENAS','SS_SOURCES','SS_SETS','SKILLS','landAt','getH','waIsSea','waCoast','vDist','VR','arenaDist','rdLevel','rdMatFor','rdUpNeeds','rdMatsOf','rdSanitizeSave','rdCapTier','upgradeNeeds','MATS',
-  'damageMonsterS','monK','zoneTierOn','sanitizeGear','newGearFor','bossState','DEF_BY_ID','killMonsterS','upgradeSkillP','skillLvOf','UP_COUNT','UP_COINS','BOSS_UP','SKILL_MAX_LV','PASSIVES','dgEntranceNear','ZTIER_MAX','VIL']);
+  'damageMonsterS','monK','zoneTierOn','sanitizeGear','newGearFor','bossState','DEF_BY_ID','killMonsterS','awkTierP','awkTierCost','MAT_IDS','ssGrantSetP','skillLvOf','UP_COUNT','UP_COINS','BOSS_UP','SKILL_MAX_LV','PASSIVES','dgEntranceNear','ZTIER_MAX','VIL']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const zt=(home,vale)=>({home:{on:home[0],max:home[1]},vale:{on:vale[0],max:vale[1]},hoar:{on:0,max:0},grey:{on:0,max:0},sun:{on:0,max:0},gloam:{on:0,max:0}});
@@ -80,17 +80,14 @@ const pc=pieces.find(id=>x.SS_SETS[x.SKILLS[id].set].land==='home'), sk=x.SKILLS
 const need=x.upgradeNeeds(pc,2);
 ok('a signature piece\'s level 2 costs coins, 3x the usual monster material (RD_MOB_K) and one raid material; level 5 also two trophies of the land\'s second boss; 1 / 2 / 4 / 8 and 15 a piece',
   need&&need.rd&&need.rd.land==='home'&&need.rd.n===1&&need.mats.length===1&&need.mats[0].n===x.UP_COUNT[2]*3&&x.upgradeNeeds(pc,5).mats.length===2&&x.upgradeNeeds(pc,5).mats[1].id==='carapax'&&x.upgradeNeeds(pc,5).rd.n===8&&Object.values(x.RD_UP).reduce((a,b)=>a+b,0)===15);
-S.owned.push(pc); P.gear.coins=1e6; P.gear.mats={}; x.rdMatsOf(P).home=0;
-W.setPos('a',[0,x.getH(0,0),0,0,0,0]);   // not in a village
-W.receive('a',{t:'upskill',id:pc}); ok('refused outside a village',x.skillLvOf(S,pc)===1);
-W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z+4,0,0,0]); tick(1);
-W.receive('a',{t:'upskill',id:pc}); ok('refused without the monster material and the raid material',x.skillLvOf(S,pc)===1);
-P.gear.mats[need.mats[0].id]=need.mats[0].n;
-W.receive('a',{t:'upskill',id:pc}); ok('refused with the monster material but no raid material (the raid material is required on top)',x.skillLvOf(S,pc)===1&&P.gear.mats[need.mats[0].id]===need.mats[0].n);
-x.rdMatsOf(P).home=need.rd.n+1; const c0=P.gear.coins;
-W.receive('a',{t:'upskill',id:pc});
-ok('with all three it levels: coins, the monster material and exactly 4 raid material are spent (1 left over)',x.skillLvOf(S,pc)===2&&P.gear.coins===c0-need.coins&&!P.gear.mats[need.mats[0].id]&&x.rdMatsOf(P).home===1);
-{ const q=x.sanitizeGear(JSON.parse(JSON.stringify(P.gear)),'warrior'); ok('the level and the raid material survive a save',q.skills.lv[pc]===2&&q.rd.mat.home===1); }
+// awakening: the raid material now pays the Awakening tree (the passive, charge and burst branches, tiers A3-A5); the old upskill path is retired
+{ const set=sk.set, lv0=P.level; x.ssGrantSetP(P,set,true); P.level=30; P.gear.coins=1e9; for(const id of x.MAT_IDS) P.gear.mats[id]=999; P.gear.awm.echo=999; P.gear.awk[set]={t:2,n:{}}; x.rdMatsOf(P).home=0;
+  const c=x.awkTierCost(set,3), why=x.awkTierP(P,set);
+  ok('Awakening A3 of a home character is refused without the home raid material',typeof why==='string'&&P.gear.awk[set].t===2&&c.mats.rd_home===2,why);
+  x.rdMatsOf(P).home=c.mats.rd_home+1; x.awkTierP(P,set);
+  ok('with it A3 is bought and exactly its raid material is spent (1 left over)',P.gear.awk[set].t===3&&x.rdMatsOf(P).home===1);
+  const q=x.sanitizeGear(JSON.parse(JSON.stringify(P.gear)),'warrior'); ok('the tier and the raid material survive a save',q.awk[set].t===3&&q.rd.mat.home===1);
+  P.level=lv0; }
 { const r=x.rdSanitizeSave(JSON.parse('{"mat":{"home":5,"__proto__":9,"constructor":4,"vale":-3,"hoar":"x","grey":1e12,"extra":7}}'));
   ok('a save\'s raid material is clamped, junk and prototype names are dropped',JSON.stringify(r)==='{"mat":{"home":5,"grey":99999}}'&&JSON.stringify(x.rdSanitizeSave(null))==='{"mat":{}}',JSON.stringify(r)); }
 { const bp=pieces.find(id=>x.SS_SETS[x.SKILLS[id].set].land==='gloam'); ok('every land\'s sets ask for that land\'s own material and nothing else ',pieces.filter(id=>x.RD_ORDER.some(r=>x.RDS[r].land===x.SS_SETS[x.SKILLS[id].set].land)).every(id=>{ const n=x.upgradeNeeds(id,3); return n&&n.rd.land===x.SS_SETS[x.SKILLS[id].set].land; })&&x.upgradeNeeds(bp,2).rd.land==='gloam'); }
