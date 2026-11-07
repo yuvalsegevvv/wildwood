@@ -53,9 +53,16 @@ function blob(r,cx,cy,cz,sy,C,detail){
   return g;
 }
 function shade(bot,top){ return (x,y,z,nx,ny,nz,c)=>{ const v=(0.5+0.58*clamp((y-bot)/(top-bot)))*(0.88+h3(x,y,z)*0.24); c.setRGB(v,v,v); }; }
+/* the low-poly trees' leaves and bark in the colour language of the detailed ones (plant-models-hi.js): darker low down, underneath and toward the crown's
+   middle (reach: the crown's radius; 0 leaves that out), lighter and warmer at the top; bark with vertical streaks and a dark, mossy foot. No rand here:
+   these painters run while the world's own random stream is live */
+function shadeTree(bot,top,reach){ return (x,y,z,nx,ny,nz,c)=>{
+  const h=clamp((y-bot)/(top-bot)), o=reach?clamp(Math.hypot(x,z)/reach):1, v=(0.46+0.58*h)*(0.78+0.24*o)*(0.88+0.14*ny)*(0.88+h3(x,y,z)*0.24);
+  c.setRGB(v*(0.93+0.12*h),v*(0.98+0.05*h),v*(1.08-0.24*h)); }; }
+const barkLo=hex=>(x,y,z,nx,ny,nz,c)=>{ c.set(hex).multiplyScalar((0.7+0.42*h3(Math.floor(Math.atan2(nz,nx)*2.2),Math.floor(y*0.8),5))*(y<0.3?0.72:1)); if(y<0.3) c.lerp(moss,0.3); };
 
 function makeConifer(o){
-  const trunk = paint(cyl(0.1,0.27,o.trunkH,6).translate(0,o.trunkH/2,0), bark(0x4a3524));
+  const trunk = paint(cyl(0.1,0.27,o.trunkH,6).translate(0,o.trunkH/2,0), barkLo(0x4a3524));
   const parts=[]; let top=0;
   for(let i=0;i<o.layers;i++){
     const t=i/o.layers, r=o.r0*(1-t*0.85)+0.15, lh=o.lh*(1-t*0.25);
@@ -71,7 +78,7 @@ function makeConifer(o){
     g.translate(0,y0,0);
     parts.push(g); top=y0+lh*0.5;
   }
-  const leaves = merge(parts.map(g=>paint(g, shade(o.start, top))));
+  const leaves = merge(parts.map(g=>paint(g, shadeTree(o.start, top, 0))));
   return {trunk, leaves};
 }
 function makeBroadleaf(o){
@@ -84,12 +91,12 @@ function makeBroadleaf(o){
       else c.set(0xe6e1d6).multiplyScalar(0.88+h3(band,1,2)*0.14);
     }));
   } else {
-    tparts.push(paint(cyl(o.tr*0.55,o.tr,o.trunkH,7).translate(0,o.trunkH/2,0), bark(o.bark)));
+    tparts.push(paint(cyl(o.tr*0.55,o.tr,o.trunkH,7).translate(0,o.trunkH/2,0), barkLo(o.bark)));
     for(let b=0;b<o.branches;b++){
       const len=o.trunkH*0.6;
       const g=cyl(o.tr*0.18,o.tr*0.38,len,5).translate(0,len/2,0);
       g.rotateZ(0.6+rand()*0.35); g.rotateY(b/o.branches*TAU+rand()*0.5); g.translate(0,o.trunkH*0.72,0);
-      tparts.push(paint(g,bark(o.bark)));
+      tparts.push(paint(g,barkLo(o.bark)));
     }
   }
   const C=new THREE.Vector3(0,o.crownY,0), lparts=[];
@@ -99,7 +106,7 @@ function makeBroadleaf(o){
     lparts.push(blob(o.rMain*R(0.55,0.8), Math.cos(a)*d, o.crownY+R(-0.6,0.9)*o.sy, Math.sin(a)*d, o.sy, C));
   }
   const bot=o.crownY-o.rMain*o.sy*1.2, top=o.crownY+o.rMain*o.sy*1.2;
-  return {trunk:merge(tparts), leaves:merge(lparts.map(g=>paint(g,shade(bot,top))))};
+  return {trunk:merge(tparts), leaves:merge(lparts.map(g=>paint(g,shadeTree(bot,top,o.spread+o.rMain))))};
 }
 function makeSnag(){
   const parts=[paint(cyl(0.1,0.3,6.5,6).translate(0,3.25,0), bark(0x6b6254))];

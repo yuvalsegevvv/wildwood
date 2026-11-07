@@ -335,9 +335,9 @@ game
   ui/controls-legend.js              Fills the controls list on the start card (from the current keybinds; redrawn when a key changes)
   engine/renderer.js                 WebGL renderer, scene, camera, lights, sun shadow, timeU
   engine/sky.js                      Sky dome shader (gradient, sun/moon, stars, clouds)
-  engine/materials.js                Plant materials with wind sway (plantMat) and shared materials
+  engine/materials.js                Plant materials (plantMat: wind sway, leaf flutter, sunlight through tree leaves) and shared materials
   world/plant-models.js              Geometry helpers (paint, merge, mkGeo, cyl, blob) and plant models (trees, grass, ferns...)
-  world/plant-models-hi.js           Detailed plant models for the desktop (the *Hi builders): conifers with drooping boughs, broadleaf crowns of leaf fans on forked limbs, leafy bushes, pinnate ferns, faceted rocks, fallen logs, reeds
+  world/plant-models-hi.js           Detailed plant models for the desktop (the *Hi builders): conifers with irregular drooping tiers, broadleaf crowns of leaf-spray clusters on forked limbs, rooted trunks with streaked, mossy bark, bushes, ferns, rocks, logs, reeds
   world/plant-models-sun.js          The Sunscar's plants: the date palm, the saguaro-like cactus and the flat-crowned thorn tree (G.trees.palm / cactus / thorn); the rest of the planting is the sun branch of genChunk (generation-chunks.js)
   world/plant-models-savanna.js      Amber Reach's plants: the flat-topped acacia (G.trees.savacacia), the giant baobab (G.trees.baobab) and the tall savanna grass (G.savGrass, a material that turns gold or green with the season)
   world/plant-models-isles.js        The Emberwake Isles' tropical plants: the ceiba (a 30 m emergent with buttress roots and an umbrella crown hung with lianas), two canopy trees, two tall coconut palms, the banana plant and the tree fern (G.trees.ceiba / jtree / jtree2 / tpalm / tpalm2 / banana / treefern)
