@@ -1,6 +1,6 @@
-//@ Loadout presets: ten saved setups of the eight skills, the soul and the equipment (each optionally linked to one of ten outfit slots), and the outfit slot count
+//@ Loadout presets: ten saved setups of the eight skills and the equipment (each optionally linked to one of ten outfit slots), and the outfit slot count
 /* ---------- presets ----------
-   gear.pre = ten entries, each null or {n:name, cls, eq:{slot:itemId}, sk:{basic,skill,burst}, pass:[3], ult, cave, mov, soul, of:-1..PR_OUTFITS-1}.
+   gear.pre = ten entries, each null or {n:name, cls, eq:{slot:itemId}, sk:{basic,skill,burst}, pass:[3], ult, cave, mov, of:-1..PR_OUTFITS-1}.
    `of` links an outfit slot of the character editor (kept in the browser): -1 = no link and the outfit stays as it is.
    Applying is instant anywhere, except in a boss fight, a raid fight, on the Proving Isle or in a dungeon (server/presets.js prBusyP).
    Messages: prsave {i,n,of}, prwear {i}, prclear {i}. Event: prwear [pid, i, of] (the client wears the linked outfit slot).

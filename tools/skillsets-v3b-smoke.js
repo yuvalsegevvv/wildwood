@@ -4,7 +4,7 @@
 const fs=require('fs'), path=require('path'), {loadServer, SRC}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...m.ev); }},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_SOURCES','ssLint','ssSetFor','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssMarkN','ssMarkS','resolveFxS','AREAS','PROJS','rxVulnK','recalcP','clsOfP','getH','VIL','psP']);
+  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_SOURCES','ssLint','ssSetFor','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssMarkN','ssMarkS','resolveFxS','AREAS','PROJS','mstVulnK','recalcP','clsOfP','getH','VIL','psP']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 const near=(a,b,e)=>Math.abs(a-b)<=(e||1e-6);
@@ -31,7 +31,7 @@ const p=W.players.get('a'), pb=W.players.get('b');
 W.receive('a',{t:'party',a:'invite',name:'Other'}); tick(3); W.receive('b',{t:'party',a:'accept'}); tick(3);
 const norm=x.MONS.filter(m=>!m.boss&&!m.inst&&m.def.id==='slime'), [m1,m2,m3]=norm;
 const stand=(q,dx,dz)=>{ W.setPos(q.id,[p.x+dx,x.getH(p.x+dx,p.z+dz),p.z+dz,0,0,0]); q.dead=false; q.hp=q.maxHp; q.ally=null; q.shield=null; };
-const put=(m,dx,dz,face)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.aura=null; m.rxIcd=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; m.face=face===undefined?Math.PI:face; return m; };
+const put=(m,dx,dz,face)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; m.face=face===undefined?Math.PI:face; return m; };
 W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); p.dead=false; p.hp=p.maxHp; p.act=null; p.face=0; p.level=60;
 const reset=()=>{ x.AREAS.length=0; x.PROJS.length=0; stand(p,0,0); p.ally=null; p.shield=null; stand(pb,3,0); for(const m of [m1,m2,m3]) put(m,0,-30); };
 const still=fn=>{ const R=Math.random; Math.random=()=>0.5; try{ return fn(); } finally{ Math.random=R; } };
@@ -43,7 +43,7 @@ ok('the stage: a and b are one party',x.partyOf(p)&&x.partyOf(p)===x.partyOf(pb)
 
 // ---- Pell: the lure shot marks, the night-pool spear spends it ----
 clear(); reset(); put(m1,0,-12);
-{ still(()=>cast('pell_2_any',m1)); tick(20); ok('Pell: Dim the Lamp puts a Lure on the target',x.ssMarkN(p,m1,'lure')===1); }
+{ still(()=>cast('pell_2_any',m1)); tick(20); ok('Pell: Dim the Lamp puts a Lure on the target and sets it ablaze (the fire flavor became a plain burn)',x.ssMarkN(p,m1,'lure')===1&&m1.burnT>0&&x.ssMarkN(p,m2,'lure')===0); }
 { x.ssMarkS(p,m1,{id:'lure',n:3,dur:12,max:3}); still(()=>cast('pell_3_warrior',m1)); x.PROJS.length=0; ok('Pell: the spear\'s pop spends every Lure',x.ssMarkN(p,m1,'lure')===0); }
 // ---- Genzo: every strike tolls, Ring the Hour taunts and guards the party ----
 clear(); reset(); put(m1,0,-2.5);

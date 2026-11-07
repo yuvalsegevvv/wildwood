@@ -23,7 +23,7 @@ styles
   15-inventory.css                   Inventory: body slots, bag grid, item tiles and icons, drag and drop, item details
   16-map.css                         Minimap, the map of a land and the world map of Eldmere
   17-forge.css                       Rarity colours (tiles, rows, toasts), the forge panel, the lucky-drop banner
-  18-skills.css                      Skills panel (slots, tabs, tiles, details, upgrades), the Soul Hall, element chips, monster drops, the burst button, the skill slot's states
+  18-skills.css                      Skills panel (slots, tabs, tiles, details, upgrades), element chips, monster drops, the burst button, the skill slot's states
   19-chat.css                        Chat: log, input, chat button, speech bubbles; the name field in settings
   20-professions.css                 Professions and travel: the Wayfarers' Lodge panel (mining, woodcutting, gathering, tools, resources) and the teleport circle's travel window
   21-crafting.css                    Crafting, brewing and potions: the Craft tab, the brewing panel, the lodge's tool shop and resource list, the potion belt above the action bar
@@ -92,9 +92,7 @@ shared
   savanna-bosses.js                  The Amber Reach's two world bosses as data: Old Thunder (level 41, the Anvilwing) and Oldhorn the Herd-Mother (level 45), their adds, and SAV_BOSS_ROWS (the BOSS_DEFS rows, not yet in BOSS_DEFS)
   emberwake-bosses.js                The Emberwake Isles' two world bosses as data: Ocelo the Sun-Jaguar (level 45, the Jaguar Court) and Tuila the Tide-Caller (level 46, the strait's tidepool; her fall opens the zone tier), their adds, and EW_BOSS_ROWS (the BOSS_DEFS rows)
   tiers.js                           Zone tiers: a harder setting for each land (every enemy in it, bosses included, +10 levels per tier), opened by its second boss, and the symbol bonus. Pure.
-  elements.js                        Elements (ELEMS): your soul (SOUL_LV, opposite pairs) and a monster's element (the wheel), with the damage multipliers for both. Pure.
-  reactions.js                       Elemental reactions (rules, pure): the constants, each element's flavour and the reaction registry defineReaction that builds the chart
-  reactions-chart.js                 The fifteen elemental reactions as data (one defineReaction row per pair of elements; the names are placeholders)
+  elements.js                        Elements (ELEMS): the wheel a skill's element plays against a monster's element (foeMult, foeTraits), the x1.1 an element-less skill gets (ELEM_BASIC_K). Pure.
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
   skillsets.js                       Skill sets (rules, pure): the registry defineSkillSet (one file per set in shared/skillsets/), its checks, the expansion into SKILLS / PASSIVES rows, counting the worn pieces and the 3- / 5-set bonuses
   basic-hold.js                      Skill 1 (the basic slot) as an attack-speed skill with two modes (pure): attack speed and charge gain, the press / hold split, and what a held release becomes for each class
@@ -115,7 +113,7 @@ shared
   cave.js                            The Deep Cave, shared rules: the 4th skill slot (opens at level 23), the charge that pays for it, the registry of cave skills (defineCaveSkill) and their validation
   ult.js                             The 5th skill slot, the set burst ("Burst"): its constants, the registry ULT_SKILLS filled by each skill set's `ult` entry, its validation, the 3-of-7 ownership rule and the fixed cooldown
   movement.js                        Movement skills (the movement slot below the passives): common skills, free, in no skill set: a registry of six, the slot's level, the tuning numbers
-  presets.js                         Loadout presets: ten saved setups of the eight skills, the soul and the equipment (each optionally linked to one of ten outfit slots), and the outfit slot count
+  presets.js                         Loadout presets: ten saved setups of the eight skills and the equipment (each optionally linked to one of ten outfit slots), and the outfit slot count
   gem-sources.js                     Free ways to earn gems: the pay of main and side quest steps, the daily quest set (UTC), the placeholder ad watch, and the achievements list
   side-quests.js                     Side quests (SQ): six chains of linked, objective-based steps, each leading to a land's second boss (Carapax, Kyuubi, Vetrmaw, the Sand Wyrm) or through the Gloamhorn (Captain Dredge, then the Gloam Warden); rewards are resources, a little XP and a cosmetic at each chain's end. Pure.
   pvp.js                             The Proving Isle (PvP): the fighting ground, the fixed level, gear and loadout everyone fights with there, the gate on the bridge, where a knocked-out fighter wakes (a shore spot), the entry lock. Pure.
@@ -147,14 +145,14 @@ shared
   dungeons/themes/termitecathedral.js Dungeon theme: The Termite Cathedral (the Amber Reach, a hollow clay spire under the Termite Cathedrals; boss Queen Ortha, the Brood Queen; level 45, enter from 42): its roster, palette and tile kit (Royal Cell, Brood Chamber, Resin Gallery, Guard Chamber, Ventilation Gallery, Cold Shaft, Amber Hall, Larder, Spire Foot)
   dungeons/themes/cenote.js          Dungeon theme: The Cenote of Hollow Stars (the Emberwake Isles, a flooded sinkhole temple under the jungle; boss Ahmetl, the Star-Masked; level 48, enter from 45): its roster, palette and tile kit (Mask Hall, Offering Chamber, Flooded Gallery, Guard Chamber, Stair Gallery, Geyser Shaft, Star Hall, Treasury, Cenote Rim)
   rolls.js                           Rolled stats of level-40 gear (version 3): the 13 stats, three lines a roll, ranges for weapons and armour, caps, the code a roll adds to an item id, the reroll stones and what sacrificing a level-30+ piece pays. Pure.
-  dungeon-rewards.js                 Dungeon rewards, setup only (nothing calls it yet): what a clear pays (level-30 weapons, armour, rings or pendants, one random item, 70 / 25 / 4 / 0.8 / 0.2% by rarity), the ring (7 types, adds flat attack when it matches your soul), the pendant (5 kinds: exp, drop, coin, crit rate, crit damage: pendants.js), enhancing up to 2 / 4 / 6 / 8 / 10 times, and the tempering stone that monsters of level 30 and above drop instead of equipment. Pure.
+  dungeon-rewards.js                 Dungeon rewards, setup only (nothing calls it yet): what a clear pays (level-30 weapons, armour, rings or pendants, one random item, 70 / 25 / 4 / 0.8 / 0.2% by rarity), the ring (7 types, adds flat attack), the pendant (5 kinds: exp, drop, coin, crit rate, crit damage: pendants.js), enhancing up to 2 / 4 / 6 / 8 / 10 times, and the tempering stone that monsters of level 30 and above drop instead of equipment. Pure.
   dungeon-items.js                   Level-30 dungeon gear as items: the 665 ITEM records (not in ITEM_LIST, so no shop, drop or "all items" sees them), their look, merging, a ring's attack for a gear, enhancement info and texts. Pure.
   character.js                       Character sliders (range, default, label), the character models with their recommended slider setups and ranges, and the checks every model must pass. Pure.
   skillsets/tansy.js                 Tansy's skill set, The Harvest (a grinder, no element): a scythe sweep, a field that pulls a camp together, one huge swing to finish it; wheat and straw
   skillsets/torgeir.js               Torgeir's skill set, The Shield-Wall (a tank, earth): a taunting strike, a brace that shields the party, and a wall that holds the line; stone, bone and iron
   skillsets/sazanka.js               Sazanka's skill set, The Night Run (risk DPS, dark + air): quick jabs that hit hardest from behind, a slip to the target and a flurry that spends every Barb; ink, cord and moon-grey
   skillsets/corvin.js                Corvin's skill set, The Lamplight (a debuff support, light): a flash that exposes, a shutter that opens on a whole group, and noon over the field; brass, lamp white and verdigris
-  skillsets/sorrel.js                Sorrel's skill set, The Lookout (safe DPS, air): a clean long line, a spotting shot that spreads the wind, and one charged gale that grows with the distance; sky, cream and feathers
+  skillsets/sorrel.js                Sorrel's skill set, The Lookout (safe DPS, air): a clean long line, a spotting shot that marks the target, and one charged gale that grows with the distance; sky, cream and feathers
   skillsets/ambrose.js               Ambrose's skill set, The Marsh Remedy (a healer, water): a lash that mends, a ripple that returns the tide, and high water for the whole party; river green, shell white and aqua
   skillsets/dunstan.js               Dunstan's skill set, The Rally (a buff support, fire): a striking pole that quickens the line, a cry of valor, and a banner planted for the whole fight; ember red, gold and drum cream
   skillsets/marigold.js              Marigold's skill set, The Encore (a mixed set: safe DPS with a mild buff support, light): sparkles from afar, a stage that follows you, and the curtain call; marigold, cream, plum and paper lanterns
@@ -215,7 +213,7 @@ shared
   raids/wrackmoor.js                 Raid: Wrackmoor Fort, the Gloamhorn's drowned sea fort with a wreck through its wall (garrison, site, material)
   raids/moot.js                      Raid: The Broken Moot, the Amber Reach's ruined council hall in Baobab Reach, seven toppled seats in a ring (garrison, site, material)
   raids/sevengates.js                Raid: The Seven Gates, the Emberwake Isles' unfinished stronghold on the Terrace Slopes, seven stone gates in a row (garrison, site, material)
-  testroom.js                        The test room: a pad outside the home village's gate with a Training Scarecrow nobody can kill, a damage counter, and the tools for checking a build (reset cooldowns, refill the cave charge, swap soul and skills). Pure.
+  testroom.js                        The test room: a pad outside the home village's gate with a Training Scarecrow nobody can kill, a damage counter, and the tools for checking a build (reset cooldowns, refill the cave charge, swap skills). Pure.
   puzzles.js                         Puzzles (version 4): the registry of puzzle kinds (definePuzzleKind), the five difficulties, what a first solve and a chest pay, the Sigil track, seeds. Pure; the kinds are shared/puzzles/<kind>.js
   puzzles/rootlines.js               Rootlines (the Flow Free kind, the home forest's): join same-coloured seeds with roots that fill the board; a seeded generator that keeps only boards with ONE solution, and the checker
   puzzles/ice.js                     Ice slide (the Hoarfrost Reach's kind): a stone slides until it hits rock; stop it on the rune. Switches to light, twin stones and cracking tiles at the higher difficulties; a seeded generator and the move-replay checker
@@ -239,14 +237,14 @@ server
   monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
   basic-hold.js                      Skill 1 on the server: attack speed and charge gain of a player, the hold message and its release (how long the player really held), where a mage's held blast lands
-  reactions.js                       Reactions on the server: elemental auras and reactions, the flavours as shared statuses on monsters (vuln, weak, burn, slow, stun) and direct application
+  mon-status.js                      Shared statuses on monsters (server): vuln (takes more damage) and weak (deals less) that never stack, a skill's status key (vuln / weak / slow / stun), and the quiet flag for damage that is not a hit
   skillsets.js                       Skill sets on the server: granting a set's pieces, wearing a piece for all three classes, the loadout cache p.ss (the sets worn and their bonuses)
   amber.js                           Amber on the server: amber (gear.amb, a gear-upgrade material), gems (gear.gem, the premium currency), buying an outfit set for 1000 gems (gear.os), and the one public testing tool that grants gems on every server
   colours.js                         Premium colours on the server: buying one for PREM_PRICE gems (gear.pc, for every piece of the account) and saving the favourites list (gear.fav)
   cave.js                            The Deep Cave on the server: the 4th slot's charge (earned by casts that hit, a boss fight sets it), casting the equipped cave skill, equipping, and sanitizing gear.cave
   ult.js                             The 5th skill slot on the server (the set burst): owning it, wearing it, the cast with its fixed cooldown, and the 5 s stun with its 50 s per-enemy lock
   movement.js                        Movement slot (server): wear or take off a movement skill (the choice is saved in the loadout; the movement itself is the client's)
-  presets.js                         Loadout presets (server): save the eight skills, the soul and the equipment of the worn class into one of ten slots, wear one instantly anywhere outside a boss fight, raid, the Proving Isle or a dungeon
+  presets.js                         Loadout presets (server): save the eight skills and the equipment of the worn class into one of ten slots, wear one instantly anywhere outside a boss fight, raid, the Proving Isle or a dungeon
   cave-zone.js                       The Deep Cave's floors on the server: the camps and their monsters, walls for hikers and monsters (setPos, dashes, steering round corners, line of sight), the lift between the surface and the floors, waking on a floor after a knock-out
   cave/methods.js                    The Deep Cave's eight methods on the server, the shared part: every player's progress on the floor they stand on, the 10-minute cooldown, a completed method paying its skill (or Echo Shards), the state message to the client, the HUD line
   cave/method-a.js                   Cave method A on the server, Mural fragments: touch the five pieces at the dead ends (any order), then the wall; your light is always on, so only the walking matters
@@ -278,7 +276,7 @@ server
   dungeons/boss-kits-termite.js      The Brood Queen's move set (Queen Ortha, the Termite Cathedral): resin pools, burrow strikes out of the wall, clutches of eggs that hatch unless you pop them all, broodlings, spirefall, the brood thrum
   dungeons/boss-kits-cenote.js       The Star-Masked's move set (Ahmetl, the Cenote of Hollow Stars): an obsidian blade, falling stars under you, Hollow Stars (a hall-wide pulse that only a lit star's circle spares), star shades, a moon lance, the eclipse ring
   boss.js                            The bosses on the server: engagement, the shared melee (cleave), phases, reset; each boss's own moves are its BOSS_KITS entry (boss-kits-*.js) built on boss-fx.js
-  economy.js                         Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), the Soul Hall, testing commands
+  economy.js                         Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), testing commands
   dungeon-gear.js                    Dungeon gear on the server: the ring's attack (the pendant's bonuses are read by pendP in players.js), Tempering Stones (the drop that replaces equipment at level 30+, and the `temper` message), the forge's merge rule, a clear's item, testing commands
   rolls.js                           Rolled stats of level-40 gear on the server: the sums the rest of the game reads (rlP), the reroll stones, sacrificing a level-30+ piece, rolling and rerolling, testing commands
   main-quest.js                      The main quest on the server: starting, progressing and handing in steps (MQ in shared/main-quest.js) from what the server sees (talks, kills, system uses, places), rewards, the grey monsters spawned for you
@@ -516,7 +514,7 @@ game
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
   combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
   combat/basic-hold.js               Skill 1 on the client: hold the attack button to charge (press = tap), the charge shown on the button, the attack speed / charge gain mirrors, the slower walk while charging
-  combat/reactions.js                Reactions on the client: the aura marker over a monster, the reaction's name popping up, the vulnerable / weakened notes
+  combat/mon-status.js               Monster status notes on the client: the "Vulnerable +14%" / "Weakened -10%" text that pops over a monster when a shared vuln or weak lands on it
   skillsets/marks.js                 Skill-set marks on the client: a kit's stacks as shaped, glowing pips over the monster (only yours), a full-stack halo, a burst when they are spent, and a stack chip on the target frame
   skillsets/procs.js                 Skill-set procs on the client: a set bonus that fires shows its name as a badge, a rune ring at the wearer and a streak of motes to its target; a refunded cooldown flashes its slot
   skillsets/panel.js                 Skill sets in the skills panel and the action bar: each set's own symbol and colour on its pieces (never the generic star), and the set effect (the 3-piece and 5-piece bonuses, lit by how many pieces are worn)
@@ -532,9 +530,9 @@ game
   economy/inventory.js               Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
   economy/shops.js                   Weapon and armour shops, and Odran the peddler (a bit of everything, and curiosities he will not sell)
   economy/forge.js                   Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
-  economy/soul.js                    Element helpers for the interface (icons, chips) and the Soul Hall panel in Hanami, where you bind your soul to an element
+  ui/element-icons.js                Element helpers for the interface: the icon of each element (elSvg) and the coloured name chip (elChip) used by the skills panel, the presets and the item details
   economy/skills.js                  Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, upgrade with coins and monster drops, learn from the trainers
-  economy/presets.js                 Presets panel (the HUD's layers button): ten cards, each a saved setup of skills, soul and equipment with an optional linked outfit slot; wear, save, rename, clear
+  economy/presets.js                 Presets panel (the HUD's layers button): ten cards, each a saved setup of skills and equipment with an optional linked outfit slot; wear, save, rename, clear
   economy/skill-track.js             Tracking a skill upgrade: mark one skill and the maps show the camps of the monsters whose drops its next level still needs
   economy/skillsets.js               Skill sets on the client: the toast when a piece is earned (the pieces themselves live in the skills panel's grids, economy/skills.js) and the ally buffs that change what you do (haste)
   skillsets/looks.js                 Skill-set looks on the client: every signature skill is drawn in the colours and motifs of its outfit (particles, ground patterns, projectiles, auras), through hooks in skill-fx.js, attacks.js and net/client.js
@@ -618,7 +616,7 @@ game
   dungeon/party.js                   The party on the client: the frame under your bars (names, health, level, down, the leader's crown), the invite prompt, the party panel (invite by name, leave, kick, hand on the lead), a tap on a name tag, the party colour on the maps, the revive channel's cast bar
   ui/friends.js                      The friends and ranking panel (comma key): add a friend by name (the other player accepts), who is online, invite to a party, remove; the level ranking with your own place
   economy/pshop.js                   Player shops on the client: the Shops panel (a button in the inventory's header) with three tabs, Browse (open stalls, buy), My shop (list equipment from the bag with a price, open / close)
-  ui/testroom.js                     The test room on the client: the damage counter on the screen, the panel (counter, reset, cooldowns, cave charge, soul and skills), the talk key on the pad
+  ui/testroom.js                     The test room on the client: the damage counter on the screen, the panel (counter, reset, cooldowns, cave charge, skills), the talk key on the pad
   dip/dip.js                         Dark Infection Pipes on the client: the pipe and its dark 20 x 20 square in each land, the glow while it releases dark energy, the talk key and the panel (level, cost, upgrade, release)
   puzzles/panel.js                   The puzzle panel: opens a board the server announced (kind, difficulty, seed), builds it from the shared generator, keeps the clock and an unfinished board on the device, sends the answer, shows the chest
   puzzles/map.js                     The puzzle stones on the maps: a small rune on the minimap and the land map (lit while the stone is ready, grey while it renews), a dot on the world map

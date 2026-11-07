@@ -1,5 +1,5 @@
 //@ Pell's skill set, The Lantern Spear (safe DPS, fire): a torchlit dart from a safe distance, a lure that draws the quarry into the light, and one thrown spear that spends the lure; tar black, torch orange and river cream
-/* Agent map. Kit: docs/skillkits/kit-safe-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces fire: the lure shot leaves the aura a partner reacts with); outfit and palette: docs/skillkits/looks/pell.md,
+/* Agent map. Kit: docs/skillkits/kit-safe-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces fire: the lure shot sets its target alight); outfit and palette: docs/skillkits/looks/pell.md,
    game/outfits/pell.js; visuals: game/skillsets/look-pell.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js, tools/skillsets-ladder.js --set pell.
    Land: Wildwood (tier 3, the third set of every land). Mark: Lure. Unlike Sorrel (the other safe set: the farther the better) he is a patient one: the `still` condition (Steady Hand needs two seconds without moving)
    and the lure; Spear of the Night Pool spends the Lure. Slot 3 is class-bound too: a spear, an arrow, a flare. */
@@ -17,8 +17,8 @@ defineSkillSet({
                  fx:{proj:{kind:'ember', speed:54, turn:6, life:0.9}, rangeScale:{from:6, to:30, k:1.4}},style:'hold',hold:{x:{burn:{dur:4,k:0.3}}}}},
        passive:{name:'Steady Hand', text:'+{}% damage while you have stood still for 2 seconds', stat:'dmg', v:[0.16, 0.02], when:{still:2}}},
     2:{bound:'any',
-       skill:{any:{name:'Dim the Lamp', desc:'Swing the lantern low and loose a spotting flare at up to 34 m: it puts a Lure on the target and spreads the flame round it, so the enemies within 6 m carry its element too and your partners\' hits react on all of them.', cd:8, range:34, mult:1.6, act:['pell2x',0.6,0.5], anim:'shoot',
-                   fx:{proj:{kind:'ember', speed:58, turn:10, life:0.8, flavor:'fire', mark:{id:'lure', n:1, dur:12, max:3}}}}},
+       skill:{any:{name:'Dim the Lamp', desc:'Swing the lantern low and loose a spotting flare at up to 34 m: it puts a Lure on the target and sets it ablaze: 25% of the hit again every second for 4 seconds.', cd:8, range:34, mult:1.6, act:['pell2x',0.6,0.5], anim:'shoot',
+                   fx:{proj:{kind:'ember', speed:58, turn:10, life:0.8, burn:{dur:4, k:0.25}, mark:{id:'lure', n:1, dur:12, max:3}}}}},
        passive:{name:'Night Eyes', text:'+{}% critical hit chance against a target that carries a Lure', stat:'crit', v:[0.08, 0.01], when:{marked:'lure'}}},
     3:{bound:'class',
        skill:{

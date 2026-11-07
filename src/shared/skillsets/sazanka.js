@@ -1,7 +1,7 @@
 //@ Sazanka's skill set, The Night Run (risk DPS, dark + air): quick jabs that hit hardest from behind, a slip to the target and a flurry that spends every Barb; ink, cord and moon-grey
-/* Agent map. Kit: docs/skillkits/kit-risk-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (a HYBRID: P1 air, P2 and P3 dark; her own air basic then dark skill react into weak + spread); outfit and palette:
+/* Agent map. Kit: docs/skillkits/kit-risk-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (a HYBRID: P1 air, P2 and P3 dark; the one-element rule is a later step); outfit and palette:
    docs/skillkits/looks/sazanka.md, game/outfits/sazanka.js; visuals: game/skillsets/look-sazanka.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-first8-smoke.js, tools/skillsets-ladder.js --set sazanka.
-   Land: the Sakura Vale (tier 1). Mark: Barb. Soul to bind: dark (her skill and burst get x1.5).
+   Land: the Sakura Vale (tier 1). Mark: Barb.
    What the engine gives her: a Barb that lands only from behind (`mark.behind`), a dash that lands on the far side of the target (`dash.behind`), the `moved` condition (Light Feet), a crit-damage stat, `marked` (Quick Study: more crit
    chance against a barbed target), a trigger on a kill OR a crit (`on:[..]`) and a cooldown refund (`cdr`). Careless play (never behind) earns no Barbs at all: that is the risk. */
 defineSkillSet({

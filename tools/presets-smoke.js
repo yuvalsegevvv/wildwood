@@ -10,8 +10,8 @@ const p=W.players.get('a'), send=m=>{ W.receive('a',m); tick(2); };
 ok('ten presets, all empty, and ten outfit slots',p.gear.pre.length===10&&p.gear.pre.every(e=>e===null)&&x.PR_OUTFITS===10);
 const S=p.gear.skills, w0=p.gear.eq.weapon;
 send({t:'prsave',i:3,n:'Tank',of:4});
-ok('save keeps equipment, soul, skills and the outfit link',p.gear.pre[3]&&p.gear.pre[3].n==='Tank'&&p.gear.pre[3].of===4&&p.gear.pre[3].eq.weapon===w0&&p.gear.pre[3].soul===p.gear.soul);
-S.eq.warrior.skill=null; p.gear.eq.weapon='bow1'; p.gear.soul='basic';
+ok('save keeps equipment, skills and the outfit link (and no soul)',p.gear.pre[3]&&p.gear.pre[3].n==='Tank'&&p.gear.pre[3].of===4&&p.gear.pre[3].eq.weapon===w0&&p.gear.pre[3].soul===undefined);
+S.eq.warrior.skill=null; p.gear.eq.weapon='bow1';
 if(!p.gear.inv.includes('bow1')) p.gear.inv.push('bow1');
 evs.length=0; send({t:'prwear',i:3});
 ok('wear restores weapon and the skill loadout',p.gear.eq.weapon===w0&&S.eq.warrior.skill===p.gear.pre[3].sk.skill);
@@ -25,5 +25,5 @@ send({t:'prsave',i:99,n:'x'}); send({t:'prsave',i:-1}); send({t:'prwear',i:1.5})
 ok('bad indexes and empty slots are ignored',p.gear.pre.length===10);
 send({t:'prclear',i:3}); ok('clear empties the slot',p.gear.pre[3]===null);
 const bad=x.prSanitize([{n:'<b>x</b>',eq:{weapon:'constructor',zzz:'sword1'},sk:{skill:'__proto__'},of:99,soul:'nope'},'junk',5]);
-ok('a bad save is cut down',bad.length===10&&bad[0].of===9&&bad[0].soul==='basic'&&Object.keys(bad[0].eq).length===0&&bad[1]===null&&!/[<>]/.test(bad[0].n));
+ok('a bad save is cut down',bad.length===10&&bad[0].of===9&&bad[0].soul===undefined&&Object.keys(bad[0].eq).length===0&&bad[1]===null&&!/[<>]/.test(bad[0].n));
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);

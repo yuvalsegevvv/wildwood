@@ -1,5 +1,5 @@
 //@ Meleni's skill set, The Tide Chant (a buff support, water): a bolt of sea-spray that quickens the line, a landfall chant that lifts the whole crew, and a tide called up under the party; lagoon turquoise, shell cream and driftwood
-/* Agent map. Kit: docs/skillkits/kit-support.md (the buff focus, like Dunstan's Rally in another voice); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces water: her hits leave the aura a partner reacts with);
+/* Agent map. Kit: docs/skillkits/kit-support.md (the buff focus, like Dunstan's Rally in another voice); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces water);
    outfit: game/outfits/meleni.js, docs/skillkits/looks/meleni.md; visuals: game/skillsets/look-meleni.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-isles-smoke.js,
    tools/skillsets-ladder.js --set meleni. Land: the Emberwake Isles (tier 1; Ocelo, Tuila and the Cenote of Hollow Stars are its sources). Mark: Swell. Buffs never stack (the stronger wins) and are capped (SS_ALLY_CAP), so a second
    buffer adds only a different KIND. Numbers are Dunstan's on purpose (the owner's ladder, tools/skillsets-ladder.js, holds for them); only the words, the element and the look are hers. */

@@ -1,6 +1,6 @@
 //@ Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
 /* Your damage = 3 x f(level) + weapon attack, times the ability's multiplier (and its skill level: skillPower), +/-15%, 12% chance of x1.7,
-   times the Ferocity passive and the element: your soul (elements.js: soulMult, the opposite pairs) and the element wheel against the monster (foeMult).
+   times the Ferocity passive and the element wheel against the monster (elements.js: foeMult; an element-less skill deals x1.1: ELEM_BASIC_K).
    -5% damage dealt per level the enemy is above you (never below 50%: lvDmgK, shared/balance.js).
    Everyone who hit a monster in the last 30 s and is within 80 m gets the XP, coins, quest credit and a loot roll. */
 const PROJS=[]; let nextProjId=1;
@@ -26,14 +26,15 @@ function handleAttack(p,msg){
   ev('pact',p.id,kind,Math.round(p.face*100)/100,...(p.act.ub?[1]:[]));   // (the 5th field: a boosted cast, drawn stronger)
   if(k!=='basic'&&!p.pv) mqActP(p,k);   // the main quest's 'use your skill / burst' steps (pvp: nothing is credited on the island)
 }
-// the element multiplier of an attack of element el (a skill's, 'basic' if none) from p on monster m: their soul and the monster's own element
-function elemEffS(p,el){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=p.buff.el; return el; }   // reactions: the element an attack counts as (an enchanting buff gives element-less attacks its element), for the damage and the aura
+// the element multiplier of an attack of element el (a skill's, 'basic' if none) from p on monster m: the wheel against the monster's own element, x1.1 for an element-less attack
+function elemEffS(p,el){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=p.buff.el; return el; }   // the element an attack counts as (an enchanting buff gives element-less attacks its element)
 function elemHitS(p,el,m){ el=elemEffS(p,el);
-  const B=m&&m.pl?PVP.elemBoost:ELEM_BOOST;   // pvp: between fighters advantage and disadvantage are x1.15 and /1.15, and a fighter's element is their soul (the proxy's T.el)
-  return soulMult(soulOfP(p),el,psP(p,'soul'),B)*(m?foeMult(el,elOf(m.T),B):1); }
+  if(!m) return 1;
+  if(m.pl) return el==='basic'?1:foeMult(el,elOf(m.T),PVP.elemBoost);   // pvp: between fighters advantage and disadvantage are x1.15 and /1.15, a fighter's element is their basic slot skill's (the proxy's T.el), and basic is neutral
+  return foeMult(el,elOf(m.T)); }
 function rollDmgS(p,mult,m,el){   // cave: caveCritP (Overdrive: a sure crit) and caveBonusK (Grapple Line: the next hit) are read below
   const b=p.buff, crit=caveCritP(p)||Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m)+pendP(p,'crit')+rlP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
-  return {v:Math.max(1,Math.round(p.dmg*mult*caveBonusK(p)*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m)):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
+  return {v:Math.max(1,Math.round(p.dmg*mult*caveBonusK(p)*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m)):1))),crit,fx:elemEffS(p,el)==='basic'?0:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt (an element-less hit's x1.1 shows no arrow)
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
   if(m.pl) return pvpHitS(m,mult,p,fromX,fromZ,kb,el);   // pvp: m is another fighter on the island (server/pvp.js)
@@ -44,7 +45,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(m.immune){ ev('imm',m.id); return 0; }
   if(m.boss && m.B.stunT>0) mult*=1.5;
   const d=rollDmgS(p,mult,m,el);
-  const vk=rxVulnK(m); if(vk) d.v=Math.max(1,Math.round(d.v*(1+vk)));   // reactions: a vulnerable monster takes more, whoever hits it
+  const vk=mstVulnK(m); if(vk) d.v=Math.max(1,Math.round(d.v*(1+vk)));   // statuses: a vulnerable monster takes more, whoever hits it
   if(p.ss&&p.ss.amp.length) d.v=Math.max(1,Math.round(d.v*ssAmpK(p,m)));   // skillsets: the owner's marks make a marked target take more from them
   p.lastDealt=S.t;   // skillsets: in a fight (tick triggers run only then)
   if(m.T.heavy) kb=0;
@@ -58,14 +59,13 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(d.fx) ev('dmg',m.id,d.v,d.crit?1:0,p.id,d.fx); else ev('dmg',m.id,d.v,d.crit?1:0,p.id);
   if(m.hp<=0&&m.boss&&vbPartDownS(m)){}   // volcano: a part ended, not the boss
   else if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }
-  else rxHitS(m,p,elemEffS(p,el),mult);   // reactions: a direct hit leaves an aura or reacts with the one there
   caveHitS(p);   // cave: the cast that did this pays its charge (once per cast, not per enemy)
-  if(!rxQuiet&&p.ss&&p.ss.trig){ ssTriggerS(p,'hit',{m,v:d.v}); if(d.crit) ssTriggerS(p,'crit',{m,v:d.v}); }   // skillsets: on hit / on crit rows (a burn tick, a reaction's burst and a trigger's own damage are not hits)
+  if(!mstQuiet&&p.ss&&p.ss.trig){ ssTriggerS(p,'hit',{m,v:d.v}); if(d.crit) ssTriggerS(p,'crit',{m,v:d.v}); }   // skillsets: on hit / on crit rows (a burn tick and a trigger's own damage are not hits)
   return d.v;
 }
 function killMonsterS(m,p){
-  m.expoDeath=rxVulnK(m)>0||rxWeakK(m)<1;   // skillsets: it was exposed when it died (the `exposed` condition of a kill row; the statuses go with it just below)
-  m.burnT=0; rxClearS(m); ssClearS(m); m.dead=true; m.deadT=0;   // reactions: aura and statuses go with it; skillsets: so do the marks
+  m.expoDeath=mstVulnK(m)>0||mstWeakK(m)<1;   // skillsets: it was exposed when it died (the `exposed` condition of a kill row; the statuses go with it just below)
+  m.burnT=0; mstClearS(m); ssClearS(m); m.dead=true; m.deadT=0;   // statuses go with it; skillsets: so do the marks
   m.respawnT=12; if(m.rd) rdKilledS(m,p); m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
   ev('kill',m.id,p?p.id:null);
   if(p) ssTriggerS(p,'kill',{m});   // skillsets: on kill rows
@@ -202,7 +202,7 @@ function statusS(m,s,p,el,mult){
   if(s.stun&&!m.T.heavy&&!m.boss) m.stunT=Math.max(m.stunT||0,s.stun);
   if(s.slow) m.slowT=Math.max(m.slowT||0,s.slow);
   if(s.burn){ m.burnT=s.burn.dur; m.burnMult=mult*s.burn.k; m.burnBy=p.id; m.burnEl=el; m.burnTick=1; }
-  rxDirectS(m,s,p,mult);   // reactions: the entry's flavor and status keys
+  mstDirectS(m,s,p);   // statuses: the entry's status key (vuln / weak / slow / stun)
   if(s.mark) ssMarkS(p,m,s.mark);   // skillsets: the entry's mark
   if(s.taunt) ssTauntS(p,m,s.taunt.dur);   // skillsets: what the entry hits comes for the caster
 }
@@ -212,7 +212,7 @@ function updateBurnS(dt){
     S.ctx=m.inst|0;   // dungeons: burning belongs to the monster's run
     if(m.dead||m.remove){ m.burnT=0; continue; }
     m.burnT-=dt; m.burnTick-=dt;
-    if(m.burnTick<=0){ m.burnTick+=1; const o=S.players.get(m.burnBy); if(o) rxQuietS(()=>damageMonsterS(m,m.burnMult,o,m.x,m.z,0,m.burnEl)); else m.burnT=0; }   // reactions: a burn tick leaves no aura and reacts to nothing
+    if(m.burnTick<=0){ m.burnTick+=1; const o=S.players.get(m.burnBy); if(o) mstQuietS(()=>damageMonsterS(m,m.burnMult,o,m.x,m.z,0,m.burnEl)); else m.burnT=0; }   // a burn tick fires no on-hit triggers
   }
 }
 /* Skills with generic effects: the row's fx lists what happens, resolved in this order when the swing lands (any of them can be combined):
@@ -224,8 +224,7 @@ function updateBurnS(dt){
    chain:{n,fall,range}                  the target and n-1 more, each the nearest within range of the last, fall x weaker every jump
    proj:{kind,n,spread,seek,speed,turn,life,splash:{r,k},zone:{...},burn,slow,stun}   n projectiles in a fan (seek: each picks a different enemy near you)
    zone:{r,dur,every,once,follow,self,kb,slow,stun}     a ground area at the target (or on you), hitting every 'every' s (once: a single hit at the end)
-   k = a share of the skill's mult. Statuses (stun, slow, burn:{dur,k}) go with the entry they are in, and so do flavor:'<element>' (that element's flavour at full strength:
-   burn, slow, stun, spread, weak or vuln; docs/REACTIONS.md) and status:{kind:'vuln'|'weak'|'slow'|'stun',v,dur} on a ring, cone, proj or zone entry. */
+   k = a share of the skill's mult. Statuses (stun, slow, burn:{dur,k}) go with the entry they are in, and so does status:{kind:'vuln'|'weak'|'slow'|'stun',v,dur} on a ring, cone, proj or zone entry. */
 function resolveFxS(p,a,tgt){
   const src=ssSrc(a);   // skillsets: the piece (or the passive / bonus row) this comes from, sent with the events so the client can dress them in its outfit's look
   const f=a.fx, FO=foesS(p), alive=m=>!m.dead&&!m.remove, dist=m=>Math.hypot(m.x-p.x,m.z-p.z), inRange=tgt&&dist(tgt)<=a.range+2;

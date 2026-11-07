@@ -10,7 +10,7 @@ const PVP={x:PVP_ISLE.x,z:PVP_ISLE.z,r:34,   // r: the island down to where the 
   level:PASSIVE_LV,   // the one level everyone fights at: the level the first passive opens, so a level-10 hiker (all three attack slots) with the default passive is on a par with a level 60
   lockS:10,           // the gate stays shut this long after you wake from a knock-out
   hpK:2,              // health x: fights last twice as long as the plain numbers would make them
-  elemBoost:1.15,     // element advantage / disadvantage between fighters (the soul's match and opposite, the wheel against the other's soul): x1.15 and /1.15 instead of ELEM_BOOST's 1.5 against monsters
+  elemBoost:1.15,     // element advantage / disadvantage between fighters (a skill's element against the element of the other's basic skill): x1.15 and /1.15 instead of ELEM_BOOST's 1.5 against monsters
   bridge:null,gate:null,gateOut:null,shore:[]};
 const inPvp=(x,z)=>Math.hypot(x-PVP.x,z-PVP.z)<PVP.r;
 // the way in: the causeway's centre line runs mainland -> island; the gate is where it crosses into the ground, gateOut a few metres back on the planks (a locked-out hiker is held there)

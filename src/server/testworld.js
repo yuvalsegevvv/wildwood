@@ -27,7 +27,7 @@ function testKitP(p){
   for(const id of CAVE_SKILL_IDS) g.cave.own[id]=CAVE_LEVEL_MAX;
   for(const id of g.skills.owned){ const d=SKILLS[id]; if(d&&!d.drop) g.skills.lv[id]=TEST_SKILL_LV; }
   ultCheckP(p);
-  // wear the best of it: the first weapon, every armour piece, a plain ring (the soul is unbound), a crit-damage pendant, an attack talisman
+  // wear the best of it: the first weapon, every armour piece, a plain ring, a crit-damage pendant, an attack talisman
   equipP(p,dgGearId40('sword',TEST_RAR,TEST_ENH));
   for(const s of ARMOR_SLOTS) equipP(p,dgGearId40(s,TEST_RAR,TEST_ENH));
   equipP(p,dgRingId40('basic',TEST_RAR,TEST_ENH)); equipP(p,dgPendantId40('critdmg',TEST_RAR,TEST_ENH)); equipP(p,dgTalismanId('atk',TEST_RAR,TEST_ENH));

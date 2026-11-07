@@ -22,7 +22,7 @@ function verPages(){ return {
     <h4>Heroes</h4>
     <ul>
       <li>Three classes (warrior, archer, mage) with a basic attack, a skill (level 3) and a burst (level 10); skills upgrade five levels with coins and monster drops; 48 boss skills drop at 10%.</li>
-      <li>Elements: your soul is bound at level 15 in Hanami; skills and monsters carry elements with a x1.5 wheel.</li>
+      <li>Elements: skills and monsters carry elements, and a x1.5 wheel decides who beats whom (an element-less skill deals x1.1 to everything).</li>
       <li>Passive skills, 210 items in 6 tiers and 5 rarities, a forge that merges three into the next rarity, shops with rising prices.</li>
       <li>Zone tiers I-III: beat a land's second boss to set it harder, for better rewards and a +10% symbol.</li>
     </ul>
@@ -54,7 +54,7 @@ function verPages(){ return {
     <h4>Heroes</h4>
     <ul>
       <li>A reworked character model and eight <b>signature outfits</b> whose pieces mix.</li>
-      <li><b>Skill sets</b> (eight to try), three passive slots at levels 13 / 16 / 20, <b>elemental reactions</b> (see the Guide).</li>
+      <li><b>Skill sets</b> (eight to try), three passive slots at levels 13 / 16 / 20.</li>
       <li>Zone tiers IV and V, a soft level cap at 50, retuned late-game balance, boss health as a percentage.</li>
     </ul>
     <h4>Screens and comfort</h4>
@@ -66,7 +66,7 @@ function verPages(){ return {
     <p>What is new on top of version 2.</p>
     <h4>Rolled level-40 gear</h4>
     <ul>
-      <li>Level-40 weapons and armour carry <b>three rolled lines</b> out of <b>13 stats</b> (attack, health, defense, XP, drops, coins, crit chance, crit damage, cooldown reduction, buff duration, reaction strength, accuracy, resistance). Weapons roll higher offence, armour higher defence.</li>
+      <li>Level-40 weapons and armour carry <b>three rolled lines</b> out of <b>13 stats</b> (attack, health, defense, XP, drops, coins, crit chance, crit damage, cooldown reduction, buff duration, debuff duration, accuracy, resistance). Weapons roll higher offence, armour higher defence.</li>
       <li>The forge has two new tabs. <b>Roll</b> spends a Reroll Stone to roll (or reroll) all three lines of a piece; <b>Sacrifice</b> breaks a spare level-30 or level-40 weapon or armour piece into stones: 1 / 2 / 4 / 8 / 16 by rarity. Weapon pieces use weapon stones, armour uses armour stones.</li>
       <li>Cooldown reduction from gear stops at 40%.</li>
       <li><b>Accuracy</b> lowers the chance that a foe resists your hit; <b>resistance</b> is the chance to halve the damage of a hit and shrug off its debuffs (a resisted hit shows as "Resisted").</li>

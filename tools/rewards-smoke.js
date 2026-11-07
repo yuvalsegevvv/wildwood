@@ -1,10 +1,10 @@
-//@ Headless test of the dungeon rewards on the server: level-30 items, the ring's attack and the soul, Tempering Stone drops, tempering, the forge's merge rule, saves, testing commands
+//@ Headless test of the dungeon rewards on the server: level-30 items, the ring's flat attack, Tempering Stone drops, tempering, the forge's merge rule, saves, testing commands
 // Usage: node tools/rewards-smoke.js   (server straight from src/, no build; ~3 s)
 // What it covers: shared/dungeon-items.js, server/dungeon-gear.js and the marked hooks (`// dungeons:`) in items.js, players.js, economy.js, combat.js. Design: docs/DUNGEON-THEMES.md section 7.
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const io={dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }};
-const NAMES=['MONS','ITEM','ITEM_LIST','TOOL_LIST','dgAllIds','dgItem','dgGearId','dgRingId','sanitizeGear','soulOfP','monK','rewardKill','dgGrantItemP','dgTemperP','VIL','getH','VIL2','ENH_LV','ENH_DROP','ENH_NAME','ENH_MAX','DG_STONE_MAX','BAG_MAX','sellPrice','mergedId','effectiveLookOf','ARMOR_LOOK','clsOfP','gearStatsOf','recalcP','symbolBonus','RING_ELS','ALL_SLOTS','ELEM_LIST','newGearFor','fLv','defRed','RED_KNEE','RED_CAP','DEF_KNEE','DMG_TAKEN_MIN','setDef','expRed','tierFor','hurtP','DG_ATK','TIER_ATK','ENH_STEP','ARMOR_SLOTS','SKILLS','POT_BUFF','S','psP','recalcP'];
+const NAMES=['MONS','ITEM','ITEM_LIST','TOOL_LIST','dgAllIds','dgItem','dgGearId','dgRingId','sanitizeGear','monK','rewardKill','dgGrantItemP','dgTemperP','VIL','getH','VIL2','ENH_LV','ENH_DROP','ENH_NAME','ENH_MAX','DG_STONE_MAX','BAG_MAX','sellPrice','mergedId','effectiveLookOf','ARMOR_LOOK','clsOfP','gearStatsOf','recalcP','symbolBonus','RING_ELS','ALL_SLOTS','ELEM_LIST','newGearFor','fLv','defRed','RED_KNEE','RED_CAP','DEF_KNEE','DMG_TAKEN_MIN','setDef','expRed','tierFor','hurtP','DG_ATK','TIER_ATK','ENH_STEP','ARMOR_SLOTS','SKILLS','POT_BUFF','S','psP','recalcP'];
 const {api:W,x}=loadServer(io,NAMES);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
@@ -90,18 +90,14 @@ ok('a ring can be taken off',a.gear.eq.ring===null&&a.gear.inv.includes('ring-ba
   ok('enhancing carries the weight: the level-30 tier is a x'+stepTier.toFixed(2)+' step over the top world tier, enhancing to the limit is x'+[0,1,2,3,4].map(r=>mult(r).toFixed(1)).join(' / x')+' (common ... legendary), and from a rare up the enhancement is worth more than the tier',
     near(x.ENH_STEP,0.10,1e-9)&&stepTier<1.3&&mult(0)>=stepTier-0.06&&[1,2,3,4].every(r=>mult(r)>stepTier)&&near(mult(4),2,1e-9)&&x.ITEM['sword7-l+10'].atk===2*x.ITEM['sword7-l'].atk,'tier x'+stepTier.toFixed(2)); }
 
-// ---- the ring's attack and the soul: a flat number added to the weapon's, only for a matching soul ----
+// ---- the ring's attack: a flat number added to the weapon's, whatever the ring's element ----
 { const r=join('r',30,'warrior'); r.gear.east=2; give(r,'sword7-l','sword7','ring-fire-l','ring-water','ring-basic','ring-basic-u'); send('r',{t:'equip',id:'sword7-l'}); const noRing=r.dmg;
   send('r',{t:'equip',id:'ring-fire-l'});
-  ok('a fire ring on an unbound soul adds nothing',near(r.dmg,noRing)&&x.soulOfP(r)==='basic','dmg '+r.dmg);
-  r.x=x.VIL2.x; r.z=x.VIL2.z; send('r',{t:'soul',el:'fire'});
-  ok('binding the soul to fire recalculates at once: a legendary ring adds its flat 60 attack to the weapon\'s 375',near(r.dmg-noRing,60,0.5)&&r.gear.soul==='fire'&&near(you('r').dmg,r.dmg),'+'+(r.dmg-noRing).toFixed(2));
-  send('r',{t:'soul',el:'water'});
-  ok('changing the soul to the opposite takes the bonus away again, with no other change to the hiker',near(r.dmg,noRing),'dmg '+r.dmg);
-  send('r',{t:'soul',el:'fire'}); send('r',{t:'soul',el:'basic'});
-  ok('unbinding the soul takes it away too',near(r.dmg,noRing));
+  ok('a legendary fire ring adds its flat 60 attack to the weapon\'s 375, with no soul to match: the same for a water ring',near(r.dmg-noRing,60,0.5)&&near(you('r').dmg,r.dmg)&&r.gear.soul===undefined,'+'+(r.dmg-noRing).toFixed(2));
+  send('r',{t:'equip',id:'ring-water'});
+  ok('a common water ring adds the same flat +20 as a plain one (the element only names the ring)',near(r.dmg-noRing,20,0.5),'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'equip',id:'ring-basic'});
-  ok('the plain ring is the one for the unbound soul: a flat +20 (a common ring)',near(r.dmg-noRing,20,0.5),'+'+(r.dmg-noRing).toFixed(2));
+  ok('the plain ring: a flat +20 (a common ring)',near(r.dmg-noRing,20,0.5),'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'equip',id:'ring-basic-u'});
   ok('and it grows with rarity (unique: 44)',near(r.dmg-noRing,44,0.5),'+'+(r.dmg-noRing).toFixed(2));
   send('r',{t:'unequip',slot:'ring'}); ok('taking the ring off removes it',near(r.dmg,noRing));

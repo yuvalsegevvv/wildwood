@@ -1,5 +1,5 @@
 //@ Brynja's skill set, The Rime Run (risk DPS, water): fast cuts while she keeps moving, a skate-dash that chills what it crosses, and a whiteout that spends the frost; ice blue, slate and snow
-/* Agent map. Kit: docs/skillkits/kit-risk-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (a hybrid, water + dark: P1 and P3 water (the chill, a slow), P2 dark (the polar night she skates through); only the water pieces get a water soul's x1.5, in exchange her own water then dark hits react with each other); outfit and palette: docs/skillkits/looks/brynja.md,
+/* Agent map. Kit: docs/skillkits/kit-risk-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (a hybrid, water + dark: P1 and P3 water (the chill, a slow), P2 dark (the polar night she skates through); two elements stay for now: the one-element rule is a later step); outfit and palette: docs/skillkits/looks/brynja.md,
    game/outfits/brynja.js; visuals: game/skillsets/look-brynja.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js, tools/skillsets-ladder.js --set brynja.
    Land: the Hoarfrost Reach (tier 3). Mark: Rime. Unlike Sazanka (from behind) and Sabir (the wounded) she lives on momentum: Momentum needs a second of movement (`moved`), and she pays in maximum health. */
 defineSkillSet({

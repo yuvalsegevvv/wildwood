@@ -4,7 +4,7 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(pid==='a'&&c.t==='snap'&&c.ev) evs.push(...c.ev); }},
-  ['CAVE_SKILLS','CAVE_SKILL_IDS','CAVE_BAD','CAVE_REFUND_CAP','caveChargeGain','caveLevelK','SS_SETS','SKILLS','MONS','AREAS','VIL','getH','S','ssMarkN','ssMarkSum','ssBehind','ssWhen','fxModK','hurtP','killMonsterS','allyP','rxWeakK','rxVulnK','healP','partyOf','skillPower','CAVE_CHARGE_K','defineCaveSkill']);
+  ['CAVE_SKILLS','CAVE_SKILL_IDS','CAVE_BAD','CAVE_REFUND_CAP','caveChargeGain','caveLevelK','SS_SETS','SKILLS','MONS','AREAS','VIL','getH','S','ssMarkN','ssMarkSum','ssBehind','ssWhen','fxModK','hurtP','killMonsterS','allyP','mstWeakK','mstVulnK','healP','partyOf','skillPower','CAVE_CHARGE_K','defineCaveSkill']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const near=(a,b,e)=>Math.abs(a-b)<=(e===undefined?1e-6:e);
 const IDS=['threshing','shadowstep','shieldwall','lighthouse','cutandrun','marionette','tidepool','intermission','soundcharge','eagleperch','stoppedhour','lampwindow','nightline','bellecho','blackice','landslide','embalm','nightshift'];
@@ -46,7 +46,7 @@ function reset(n,layout){   // n dummies in the layout [[dx,dz],...] ahead of th
   W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,Math.PI,0,0]); W.setPos('b',[x.VIL.x+2,x.getH(x.VIL.x+2,x.VIL.z),x.VIL.z,Math.PI,0,0]);
   for(const q of [p,b]){ q.dead=false; q.hp=q.maxHp; q.act=null; q.cd={basic:0,skill:0,burst:0,cave:0}; q.ssIcd={}; q.ally=null; q.shield=null; q.buff=null; q.cave.fx={}; q.cave.charge=100; q.cave.cur=null; q.lastMove=-99; q.face=Math.PI; }
   x.AREAS.length=0; spot.clear(); keepHp=false;
-  D.forEach((m,i)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e6; m.slowT=m.burnT=m.stunT=0; m.mk=m.st=m.aura=m.rxIcd=m.taunt=m.puppet=null; m.immune=false; m.aggro=false; m.face=0; m.kbx=m.kbz=0;
+  D.forEach((m,i)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e6; m.slowT=m.burnT=m.stunT=0; m.mk=m.st=m.taunt=m.puppet=null; m.immune=false; m.aggro=false; m.face=0; m.kbx=m.kbz=0;
     if(i<n){ const L=layout[i]; m.x=p.x+L[0]; m.z=p.z+L[1]; m.y=x.getH(m.x,m.z); spot.set(m,[m.x,m.z]); } else { m.x=p.x+400+i*5; m.z=p.z+400; } });
   tick(1);
 }
@@ -114,7 +114,7 @@ refundTest('threshing',8,15,'Threshing Floor');
   tick(60); ok('after 4 s it is free again',D[0].puppet===null&&p.cave.fx.pup.length===0);
   ok('the number of monsters puppeted is counted for the feat',p.cave.fx.puppets===1);
   if(BOSS){ const bx=BOSS.x,bz=BOSS.z; BOSS.x=p.x; BOSS.z=p.z+3; BOSS.dead=false; reset(0,[]); BOSS.x=p.x; BOSS.z=p.z+3; spot.set(BOSS,[BOSS.x,BOSS.z]); cast('marionette',BOSS.id); tick(14);
-    ok('a boss cannot be puppeted: it is weakened 15% (the shared weak) and tied with a String instead',!BOSS.puppet&&!(BOSS.stunT>0)&&near(x.rxWeakK(BOSS),0.85,0.01)&&x.ssMarkN(p,BOSS,'string')>=1,String(x.rxWeakK(BOSS)));
+    ok('a boss cannot be puppeted: it is weakened 15% (the shared weak) and tied with a String instead',!BOSS.puppet&&!(BOSS.stunT>0)&&near(x.mstWeakK(BOSS),0.85,0.01)&&x.ssMarkN(p,BOSS,'string')>=1,String(x.mstWeakK(BOSS)));
     spot.delete(BOSS); BOSS.x=bx; BOSS.z=bz; } }
 // ---- 7 Tidepool ----
 { reset(4,ring(4,4)); marks('ripple',3,D.slice(0,4)); b.hp=b.maxHp*0.4; keepHp=true; W.setPos('b',[p.x+1,x.getH(p.x+1,p.z+3),p.z+3,0,0,0]); cast('tidepool'); tick(8);
@@ -160,7 +160,7 @@ refundTest('threshing',8,15,'Threshing Floor');
 // ---- 12 Lamp in the Window ----
 { reset(3,ring(3,3)); marks('vigil',2,D.slice(0,3)); keepHp=true; cast('lampwindow'); tick(14); const A=x.AREAS[0];
   ok('Lamp in the Window lasts 10 s + 1 s per Vigil (6 counted, up to 5)',A&&near(A.dur,15,0.01),A&&String(A.dur));
-  tick(10); ok('enemies inside are weakened (the shared weak, 10%)',D.slice(0,3).every(m=>near(x.rxWeakK(m),0.9,0.01)),String(x.rxWeakK(D[0])));
+  tick(10); ok('enemies inside are weakened (the shared weak, 10%)',D.slice(0,3).every(m=>near(x.mstWeakK(m),0.9,0.01)),String(x.mstWeakK(D[0])));
   ok('it hits nobody',D.slice(0,3).every(m=>hpLost(m)===0));
   b.hp=b.maxHp*0.25; tick(22); ok('an ally who falls under 30% inside it heals 15% once',near(b.hp/b.maxHp,0.40,0.02),String(b.hp/b.maxHp));
   b.hp=b.maxHp*0.2; tick(22); ok('and only once',b.hp/b.maxHp<0.25,String(b.hp/b.maxHp)); }

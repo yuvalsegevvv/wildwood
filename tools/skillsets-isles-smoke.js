@@ -25,7 +25,7 @@ ok('the three marks are their own (swell, tally, knot) and each is made and spen
 W.join('a',{name:'Tester',look:{cls:'mage'},save:{level:60}}); tick(3);
 const p=W.players.get('a'), m=x.MONS.filter(q=>!q.boss&&!q.inst&&q.def.id==='slime')[0];
 W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); p.dead=false; p.hp=p.maxHp; p.act=null; p.face=0; p.level=60;
-const put=()=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.aura=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x; m.z=p.z-3; m.face=Math.PI; };
+const put=()=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x; m.z=p.z-3; m.face=Math.PI; };
 const cast=id=>{ const s=x.SKILLS[id]; put(); const h=m.hp; x.resolveFxS(p,{fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:id},m); if(s.fx.proj||s.fx.zone) for(let i=0;i<30;i++){ W.tick(0.05); m.stunT=1e9; m.x=p.x; m.z=p.z-3; } return h-m.hp; };   // (a zone hurts on its ticks)
 for(const i of IDS){ let bad=[]; for(const id of PIECES(i)){ let d=0; try{ d=cast(id); }catch(e){ bad.push(id+' threw '+e.message); } if(!(d>0)) bad.push(id+' did no damage'); }
   ok(i+': its three actives resolve without a fault and each does damage',!bad.length,bad.join('; ')); }

@@ -181,7 +181,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
 
 // ======== C2: the eight methods on every floor, and floor 1's eight skills ========
 { const inbox3={}, S3=loadServer({dev:true,send(pid,m){ (inbox3[pid]=inbox3[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['S','MONS','getH','caveAW','caveMFl','caveMethodDef','CAVE_METHOD_DEFS','CAVE_METHOD_BAD','CAVE_METHOD_IDS','defineCaveMethod','caveSkillAt','caveBoardRows','caveFeatOf','CAVE_FEAT_DEFAULT','caveWhereText',
-    'CAVE_SKILLS','CAVE_SKILL_IDS','CAVE_BAD','caveBake','caveFloorOrigin','caveFloorAt','caveSanitizeSave','sanitizeGear','allyP','caveFree','CAVE_SHARDS','CAVE_METHOD_CD','ELEMS','hurtP','killMonsterS','TOOL_LIST','caveBonusK','soulOfP','CAVE_FLOOR_N','caveMDWet','DEF_BY_ID','caveMethodDoneP','caveGeodeHitS']), W=S3.api, x=S3.x;
+    'CAVE_SKILLS','CAVE_SKILL_IDS','CAVE_BAD','caveBake','caveFloorOrigin','caveFloorAt','caveSanitizeSave','sanitizeGear','allyP','caveFree','CAVE_SHARDS','CAVE_METHOD_CD','ELEMS','hurtP','killMonsterS','TOOL_LIST','caveBonusK','CAVE_FLOOR_N','caveMDWet','DEF_BY_ID','caveMethodDoneP','caveGeodeHitS']), W=S3.api, x=S3.x;
   const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
   const told=(id,txt)=>(inbox3[id]||[]).some(m=>JSON.stringify(m).includes(txt));
   const lastCm=id=>(inbox3[id]||[]).filter(m=>m.t==='cm').pop();
@@ -223,8 +223,9 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     ok('once the cooldown is over a skill you own pays Echo Shards instead (floor 1: 1)',p1.gear.cave.done['1A']===2&&p1.gear.cave.sh===x.CAVE_SHARDS[1]&&p1.gear.cave.own.echo===1); }
   // ---- B: resonance crystals (the real attack path for one, direct for the rest) ----
   { const G=WA(1).B.geodes, need=x.caveMethodDef('B').p.need[1], face=(pl,q)=>Math.atan2(-(q.x-pl.x),-(q.z-pl.z)), stand=(pl,i)=>{ const g=G[i]; pl.x=g.x+(g.nx||0)*2; pl.z=g.z+(g.nz||0)*2; pl.y=x.getH(pl.x,pl.z); pl.face=face(pl,g); };
-    stand(p1,0); tick(1); const el0=need[0]; p1.gear.soul=el0; p1.cd.basic=0; W.receive('m1',{t:'atk',k:'basic',tg:null,face:p1.face,aim:[0,0,-1]}); tick(12);
-    ok('a plain basic attack counts as your soul\'s element: a water soul cracks the geode that asks for water',p1.cm.B.st[0]===1&&told('m1','The geode cracks'));
+    stand(p1,0); tick(1); const el0=need[0]; p1.cd.basic=0; W.receive('m1',{t:'atk',k:'basic',tg:null,face:p1.face,aim:[0,0,-1]}); tick(12);
+    ok('a plain basic attack has no element and cracks nothing (the soul that used to stand in for it was removed)',p1.cm.B.st[0]===0&&!told('m1','The geode cracks'));
+    x.caveGeodeHitS(p1,{el:el0,range:3}); tick(3); ok('the geode that asks for '+el0+' cracks to an attack of that element',p1.cm.B.st[0]===1&&told('m1','The geode cracks'),JSON.stringify(p1.cm.B.st));
     stand(p1,1); tick(1); x.caveGeodeHitS(p1,{el:'fire',range:10}); ok('the wrong element does nothing',p1.cm.B.st[1]===0);
     x.caveGeodeHitS(p1,{el:need[1],range:3}); ok('the right element cracks it',p1.cm.B.st[1]===1);
     stand(p1,2); tick(1); x.caveGeodeHitS(p1,{el:need[2][1],range:10}); ok('the second of a chain alone does nothing',p1.cm.B.st[2]===0);

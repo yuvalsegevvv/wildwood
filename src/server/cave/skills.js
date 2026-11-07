@@ -13,7 +13,7 @@ function caveFxS(p,a,tgt,f){
   }
   if(f.flare){   // Flare: blind normal monsters (they swing and miss), weaken bosses
     for(const m of foesS(p)){ if(m.dead||m.remove||m.pl||Math.hypot(m.x-p.x,m.z-p.z)>a.range+m.T.rad) continue;
-      if(m.boss) rxStatusS(m,'weak',f.flare.boss,f.flare.bossDur,p); else m.blindT=S.t+f.flare.blind*L; }
+      if(m.boss) mstStatusS(m,'weak',f.flare.boss,f.flare.bossDur,p); else m.blindT=S.t+f.flare.blind*L; }
   }
   if(f.overdrive){ c.od={n:f.overdrive.n,until:S.t+f.overdrive.sec*L,cd:f.overdrive.cd}; toastTo(p.id,'Overdrive: your next '+f.overdrive.n+' basic attacks are sure crits','good'); }
   if(f.ward){   // Lantern Ward: a shield of a share of max health, half for the allies near

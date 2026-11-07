@@ -1,11 +1,10 @@
-//@ Elements (ELEMS): your soul (SOUL_LV, opposite pairs) and a monster's element (the wheel), with the damage multipliers for both. Pure.
-/* Six elements and 'basic' (none). Two different rules use them:
-   - Your soul (soulMult) works on PAIRS. Bind it at the Soul Hall in Hanami (level SOUL_LV, free, as often as you like): skills of that element deal
-     x1.5, skills of its opposite deal x1/1.5 (opposites: fire / water, earth / air, dark / light), every other skill is unchanged. Basic soul = nothing.
+//@ Elements (ELEMS): the wheel a skill's element plays against a monster's element (foeMult, foeTraits), the x1.1 an element-less skill gets (ELEM_BASIC_K). Pure.
+/* Six elements and 'basic' (none). One rule uses them (the soul and its opposite pairs are gone):
    - A monster's element (foeMult, el in monster-defs.js) works on the WHEEL: water beats fire beats air beats earth beats water (ELEM_BEATS, listed in
      that order in ELEM_WHEEL), and dark and light beat each other. A skill whose element beats the monster's deals x1.5, a skill the monster's element
      beats deals x1/1.5, and a skill of the monster's own element also x1/1.5 (it resists it). Everything else is unchanged.
-   Both stack (a water skill from a fire soul at a fire monster: x1/1.5 x1.5). Change ELEM_BOOST to retune everything at once. */
+   - A skill with no element ('basic') deals ELEM_BASIC_K = x1.1 to every monster: neither strong nor weak anywhere (foeTraits never lists it).
+   Change ELEM_BOOST / ELEM_BASIC_K to retune everything at once. Used by: server/combat.js (elemHitS), server/pvp.js, game/ui/combat-hud.js (foeTraits), game/ui/element-icons.js (names and colours). Test: tools/skills-smoke.js. */
 const ELEMS={
   basic:{name:'Basic',col:'#cfc8b8'},
   fire: {name:'Fire', col:'#ff7a45'},
@@ -17,24 +16,19 @@ const ELEMS={
 };
 const ELEM_WHEEL=['water','fire','air','earth'], ELEM_LIST=[...ELEM_WHEEL,'dark','light'];   // the wheel in the order each element beats the next
 const ELEM_BEATS={water:'fire',fire:'air',air:'earth',earth:'water',dark:'light',light:'dark'};   // each element beats the one it maps to
-const ELEM_OPP={fire:'water',water:'fire',earth:'air',air:'earth',dark:'light',light:'dark'};   // the soul's pairs
-const SOUL_LV=15, ELEM_BOOST=1.5;
+const ELEM_BOOST=1.5, ELEM_BASIC_K=1.1;   // the wheel's strength; what an element-less skill deals to any monster
 const elOf=x=>x&&ELEMS[x.el]?x.el:'basic';   // the element of a skill or monster definition
-// a skill of element el used by a soul bound to soul (bonus: added to the x1.5, from the Resonance passive; boost: another strength than ELEM_BOOST, PVP.elemBoost between fighters)
-function soulMult(soul,el,bonus,boost){
-  if(el==='basic'||soul==='basic'||!ELEM_OPP[soul]) return 1;
-  const B=boost||ELEM_BOOST;
-  return el===soul?B+(bonus||0):ELEM_OPP[soul]===el?1/B:1;
-}
-// a skill of element el hitting a monster of element foe: it beats the monster's element x1.5, is beaten by it (or shares it) x1/1.5 (boost: as in soulMult; a fighter's element is their soul)
+// a skill of element el hitting a monster of element foe: it beats the monster's element x1.5, is beaten by it (or shares it) x1/1.5; an element-less skill deals ELEM_BASIC_K to everything
+// (boost: another strength than ELEM_BOOST, PVP.elemBoost between fighters; server/combat.js keeps the basic bonus out of a fight between fighters)
 function foeMult(el,foe,boost){
-  if(!ELEM_BEATS[el]||!ELEM_BEATS[foe]) return 1;   // 'basic' on either side
+  if(el==='basic') return ELEM_BASIC_K;
+  if(!ELEM_BEATS[el]||!ELEM_BEATS[foe]) return 1;   // an unknown element, or a monster with none
   const B=boost||ELEM_BOOST;
   if(ELEM_BEATS[el]===foe) return B;
   if(ELEM_BEATS[foe]===el||el===foe) return 1/B;
   return 1;
 }
-// what a monster of element foe is weak to and what it resists, as lists of elements (the target frame shows them)
+// what a monster of element foe is weak to and what it resists, as lists of the six elements (the target frame shows them; 'basic' is x1.1 on every monster, so it is in neither list)
 function foeTraits(foe){
   const weak=[], resist=[];
   for(const e of ELEM_LIST){ const m=foeMult(e,foe); if(m>1) weak.push(e); else if(m<1) resist.push(e); }

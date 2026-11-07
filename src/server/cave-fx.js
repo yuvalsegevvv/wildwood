@@ -2,7 +2,7 @@
 /* Agent map. Plan: docs/CAVE.md section 4; the skills are data (shared/cave/skill-<floor>-<id>.js); test: tools/cave-sets-smoke.js.
    A cave skill's p.act carries `cave:true`; resolveFxS calls caveSetFxS(p,a,tgt,src) last (hook `// cave:`), after the generic keys (dash, ally, heal, taunt...) it also uses.
    RULES: a set skill only READS its set's mark (ssMarkN / ssMarkSum count it, never ssPopS) and may ADD stacks (ssMarkS); kill refunds are capped at CAVE_REFUND_CAP charge a cast;
-   heals stay under SS_HEAL_CAP and go through ssHealAllS; weaken uses the shared non-stacking `weak` (rxDirectS); each skill level scales the effect by caveLevelK (a.mult already has it).
+   heals stay under SS_HEAL_CAP and go through ssHealAllS; weaken uses the shared non-stacking `weak` (mstDirectS); each skill level scales the effect by caveLevelK (a.mult already has it).
    NEW FX KEYS (all run here; the effects agent draws them from the `cvfx` / `cvhand` events and the zone's `area` event; every one is a placeholder look today):
      cvstrike:{r,arc?,kb?,crowd:{per,max}?,markK:{id,per,max}?,behind?,burn?,slow?,stun?,mark?,status?}   a ring (or cone with arc) hit; crowd = +per for each enemy hit (up to max), markK = +per for each stack of the set's mark on that target
      refund:{n,secs,cap?}   each of YOUR kills within secs of the cast gives back n charge, at most cap (up to 15) a cast
@@ -67,7 +67,7 @@ function cvSlideS(p,a,tgt,L){   // Landslide: everything in a len x w slope is p
 function cvPuppetS(p,a,tgt,inRange,P,K){
   const t=inRange?tgt:nearestAhead(p,a.range), X=cvX(p); if(!t||t.dead||t.remove||t.pl) return;
   ssMarkS(p,t,P.mark);   // everything hit gets a String
-  if(t.boss){ rxDirectS(t,{status:{kind:'weak',v:Math.min(0.5,P.bossWeak*K),dur:P.dur}},p,1); ev('cvfx',p.id,'weak',t.id,P.dur); return; }   // a boss can't be puppeted: weakened (the shared, non-stacking weak)
+  if(t.boss){ mstDirectS(t,{status:{kind:'weak',v:Math.min(0.5,P.bossWeak*K),dur:P.dur}},p); ev('cvfx',p.id,'weak',t.id,P.dur); return; }   // a boss can't be puppeted: weakened (the shared, non-stacking weak)
   if(t.dgOwn) return;
   t.puppet=p.id; t.stunT=Math.max(t.stunT||0,P.dur); t.taunt=null;   // it stops attacking the hikers and fights its neighbours
   (X.pup||(X.pup=[])).push({m:t,until:S.t+P.dur,next:S.t+P.every,r:P.r,every:P.every,mult:a.mult*P.k,el:a.el,mark:P.mark}); X.puppets=(X.puppets|0)+1;
@@ -78,7 +78,7 @@ function cvHandS(p,m,sh){   // Night Shift: a grave hand rises where m died and 
   for(const n of cvAwakeS(p)){ if(n===m) continue; const d=Math.hypot(n.x-m.x,n.z-m.z); if(d<bd){ bd=d; best=n; } }
   if(!best) return;
   sh.hands++; ev('cvhand',r1(m.x),r1(m.z),best.id,p.id);
-  rxQuietS(()=>{ damageMonsterS(best,sh.mult,p,m.x,m.z,0,sh.el); });
+  mstQuietS(()=>{ damageMonsterS(best,sh.mult,p,m.x,m.z,0,sh.el); });
   if(!best.dead){ best.slowT=Math.max(best.slowT||0,sh.slow); ssMarkS(p,best,{id:'rot',n:1,dur:12,max:5}); }
 }
 // ---- the entry: resolveFxS calls it after the generic keys ----

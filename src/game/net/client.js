@@ -68,15 +68,13 @@ function applyEvent(e){
   switch(e[0]){
     case 'dmg': onMonDmg(e[1],e[2],e[3],e[4],e[5]); break;
     case 'imm': onMonImmune(e[1]); break;
-    case 'aura': rxOnAura(e[1],e[2],e[3]); break;   // reactions: an aura on a monster (el 0: gone)
     case 'ast': ssOnAlly(e[1],e[2],e[3],e[4],e[5]); break;   // skillsets: an ally buff (haste: shorter cooldowns)
     case 'mk': ssOnMark(e[1],e[2],e[3],e[4],e[5]); break;   // skillsets: a mark of yours on a monster (n 0: spent)
     case 'proc': ssOnProc(e[1],e[2],e[3]); break;   // skillsets: a triggered bonus fired (a badge, a ring and a streak to its target)
     case 'cdr': if(e[1]===NET.pid) ssOnCdr(e[2],e[3]); break;   // skillsets: a cooldown refund (seconds off one slot's bar)
     case 'fxa': ssOnFxa(e[1],e[2],e[3]); break;   // skillsets: a heal or a shield reached a player (drawn in the piece's look)
     case 'ssget': ssOnGet(e[1],e[2],e[3]); break;   // skillsets: a signature skill and its passive were earned
-    case 'react': rxOnReact(e[1],e[2]); break;   // reactions: two elements reacted
-    case 'st': rxOnStatus(e[1],e[2],e[3],e[4],e[5]); break;   // reactions: vuln / weak set
+    case 'st': mstOnStatus(e[1],e[2],e[3],e[4],e[5]); break;   // statuses: vuln / weak set
     case 'kill': onMonKill(e[1],e[2]); break;
     case 'mact': onMonAct(e[1],e[2]); break;
     case 'aggro': { const m=MON_BY_ID.get(e[1]); if(m) monSound(m,'aggro'); break; }
@@ -122,7 +120,6 @@ function applyEvent(e){
     case 'prwear': if(e[1]===me){ UI_SFX.success(); prWearOutfit(e[2],e[3]); } break;   // presets: wear the linked outfit slot
     case 'skillslot': if(e[1]===me){ UI_SFX.success(); if(e[2]!=='passive') flashSkillSlot(e[2]); } break;
     case 'skillbuy': case 'skillup': if(e[1]===me) UI_SFX.success(); break;
-    case 'soul': if(e[1]===me){ UI_SFX.success(); spawnRing(2.2,parseInt(ELEMS[e[2]].col.slice(1),16),P.y+0.2); } break;
     case 'drop': onDrop(e[1],e[2],e[3],e[4]); break;
     case 'xp': if(e[1]===me){ const m=e[3]!=null?MON_BY_ID.get(e[3]):null; if(m){ const c=monCenter(m); popText(c.x,c.y+m.T.height*0.6,c.z,'+'+(e[2]>=1000?numC(e[2]):e[2].toFixed(1))+' XP','xp'); } } break;
     case 'coins': if(e[1]===me){ const m=MON_BY_ID.get(e[3]); if(m){ const c=monCenter(m); popText(c.x+0.4,c.y+m.T.height*0.35,c.z,'+'+e[2]+' coins','coin'); } } break;

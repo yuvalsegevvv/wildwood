@@ -20,7 +20,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | The item id scheme (`sword2`, `sword2-e`) | `itemId` src/shared/items.js:23 |
 | Tools (pickaxe, axe, sickle): materials, prices, double-yield chance by rarity | `TOOL_MAT` / `TOOL_PRICE` / `TOOL_EXTRA` src/shared/items.js:38-39 |
 | What gear adds to a player (health, attack, defense) | `gearStatsOf` src/shared/items.js:65, `recalcP` src/server/players.js:122 |
-| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:200 |
+| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:205 |
 | Wearing an item (level check, slot) | `equipP` src/server/economy.js:25 |
 | Shops: common items only, +20% per copy bought | `buyP` src/server/economy.js:40, `shopPrice` src/shared/items.js:49, shop panel src/game/economy/shops.js:20 |
 | Monster and boss drops (the item roll and its tier) | `rollMonsterRarity` / `rollBossRarity` src/shared/items.js:53, used in `rewardKill` src/server/combat.js:80 |
@@ -364,7 +364,7 @@ Three tool slots (`eq.pick`, `eq.axe`, `eq.sickle`), the same 6 tiers and 5 rari
 
 A tier above the six of section 3, paid **only by dungeons**: level 30 (`DG_GEAR_LV`), not in `TIER_LV` / `ITEM_LIST`, so shops, drops, "give every item" and `tierFor` never see them (they are in `ITEM` and carry `dg:true`). 7 pieces and 7 rings, 5 rarities each, each of them enhanced from +0 up to **+2 / +4 / +6 / +8 / +10** (by rarity): 665 ids. Tempering Stones raise a piece one step (step n costs n stones) and add 10% of its own stats per step; they drop from normal monsters of level 30+ at 2.6% instead of equipment. One clear of a dungeon pays one random piece of its pool: the rarity is Common 70%, Rare 25%, Epic 4%, Unique 0.8%, Legendary 0.2%, then one kind of the pool with equal chance; everyone in the party gets the same piece.
 
-Ids: `<piece>7[-r|-e|-u|-l][+n]` (`sword7-e+3` is an epic level-30 sword at +3) and `ring-<element>[-r|-e|-u|-l][+n]` (`ring-fire-l+10`). The tables list the **+0 base of each of the 14 kinds × 5 rarities** and, in the last stat column, the stat at every step from +0 to the rarity's maximum, so every id is covered. A ring adds a flat number of **attack** (its own, added to your weapon's before everything else) and only when its element is your soul's (`basic` is the plain ring, for an unbound soul).
+Ids: `<piece>7[-r|-e|-u|-l][+n]` (`sword7-e+3` is an epic level-30 sword at +3) and `ring-<element>[-r|-e|-u|-l][+n]` (`ring-fire-l+10`). The tables list the **+0 base of each of the 14 kinds × 5 rarities** and, in the last stat column, the stat at every step from +0 to the rarity's maximum, so every id is covered. A ring adds a flat number of **attack** (its own, added to your weapon's before everything else), whatever its element.
 
 ### 7.1 Weapons (15)
 
@@ -419,7 +419,7 @@ Names `DG_NAMES`; health `DG_HP` and defense `DG_DEF` src/shared/dungeon-rewards
 
 Names `RING_NAMES` src/shared/dungeon-rewards.js:27; a common ring adds `RING_ATK` = 20 attack (× the rarity multiplier × the enhancement), shown in the stat columns.
 
-| Id | Name | Req Lv | Rarity | Attack (matching soul) | Price | Sell | Max | Stat at +0, +1 ... +max | Paid by | Ref |
+| Id | Name | Req Lv | Rarity | Attack | Price | Sell | Max | Stat at +0, +1 ... +max | Paid by | Ref |
 |---|---|---|---|---|---|---|---|---|---|---|
 | `ring-basic` | Plain Barrow Ring | 30 | Common | +20 | 36000 | 14400 | +2 | +20, +22, +24 | Bonefrost Barrow | RING_NAMES.basic |
 | `ring-basic-r` | Rare Plain Barrow Ring | 30 | Rare | +26 | 108000 | 43200 | +4 | +26, +29, +31, +34, +36 | Bonefrost Barrow | RING_NAMES.basic |

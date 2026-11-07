@@ -1,5 +1,5 @@
 //@ Dessa's skill set, The Anvil in the Road (a tank, earth): a hammer that makes them turn, an anvil set down for the herd to break on, and a stand that spends the Temper; slate, forge orange and iron
-/* Agent map. Kit: docs/skillkits/kit-tank.md (the main tank, nothing else: her anvil is a place to stand); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces earth: a held pack carries the aura a partner reacts with);
+/* Agent map. Kit: docs/skillkits/kit-tank.md (the main tank, nothing else: her anvil is a place to stand); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces earth);
    outfit: game/outfits/dessa.js, docs/skillkits/looks/dessa.md; visuals: none yet, drawn like a generic skill. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js,
    tools/skillsets-ladder.js --set dessa. Land: the Amber Reach (tier 2). Mark: Temper. The third tank (Torgeir: one big wall; Genzo: a bell that heals): Dessa is a PLACE, not a moment. Anvil Down plants a zone (guard and a shield
    for the allies standing in it, a slow and a taunt for what enters), and she hardens with the crowd round her (damage reduction with enemies near), so she wants the herd to come to her. */

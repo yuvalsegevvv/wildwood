@@ -1,4 +1,4 @@
-//@ Boss duel: a maxed hero (level 60 unless --level; level-30 gear at +10, the ring, the soul, the symbol, potions) against a real boss or a monster camp on the real server, standing in melee and drinking potions, with the share of the damage a player who dodges would avoid; --check asserts the balance targets of the level-80 bosses and the ramp below them
+//@ Boss duel: a maxed hero (level 60 unless --level; level-30 gear at +10, the ring, the symbol, potions) against a real boss or a monster camp on the real server, standing in melee and drinking potions, with the share of the damage a player who dodges would avoid; --check asserts the balance targets of the level-80 bosses and the ramp below them
 // Usage: node tools/boss-duel.js [--boss vetrmaw|jadesprings|bonefrostbarrow|hollowroots|<zone boss id>|<monster id> --camp] [--tier 5] [--level 60] [--class warrior,archer,mage] [--avoid 0,0.3,0.5,0.7] [--runs 3]   (a table, one cell per avoid share)
 //        node tools/boss-duel.js --check      (~20 s: the targets below, exit 1 on a miss)
 // What it covers: BOSS_CREEP_* in shared/monster-defs.js (defAt) through the real fights: a zone boss (zoneTierK, the hero's land tiers set to --tier) or a dungeon boss (a Purge run at --tier,
@@ -11,15 +11,15 @@ const hurts=[];
 const {api:W,x}=loadServer({dev:true,log(){},send(pid,m){ if(m.t==='snap'&&m.ev) for(const e of m.ev) if(e[0]==='hurt'&&e[1]===pid) hurts.push(e[2]); }},
   ['BOSSES','S','recalcP','monK','getH','ARMOR_SLOTS','ZTIER_LANDS','SKILL_IDS','SKILLS','PASSIVES','DG_RUNS','dgBossS','dgLos','dgSolid','MONS']);
 const DT=0.05, tick=()=>W.tick(DT), WEAPON={warrior:'sword',archer:'bow',mage:'wand'};
-// the best loadout found for each class against these bosses (an earth soul; a skill and a burst that fit)
-const BUILD={warrior:{soul:'earth',passive:'ferocity',skill:'clawcrush',burst:'berserk'},archer:{soul:'earth',passive:'ferocity',skill:'pierce',burst:'focus'},
-  mage:{soul:'earth',passive:'quickhands',skill:'meteor',burst:'surge',basic:'missiles'}};
+// the best loadout found for each class against these bosses (an earth ring; a skill and a burst that fit)
+const BUILD={warrior:{ring:'earth',passive:'ferocity',skill:'clawcrush',burst:'berserk'},archer:{ring:'earth',passive:'ferocity',skill:'pierce',burst:'focus'},
+  mage:{ring:'earth',passive:'quickhands',skill:'meteor',burst:'surge',basic:'missiles'}};
 let uid=0, lastAng=0;
 function makeHero(cls,tier,level){
   const id='d'+(++uid), o=BUILD[cls]; W.join(id,{name:'D'+uid,look:{cls},save:{level:level||60}}); tick();
-  const p=W.players.get(id), g=p.gear, items=[WEAPON[cls]+'7-l+10',...x.ARMOR_SLOTS.map(s=>s+'7-l+10'),'ring-'+o.soul+'-l+10'];
+  const p=W.players.get(id), g=p.gear, items=[WEAPON[cls]+'7-l+10',...x.ARMOR_SLOTS.map(s=>s+'7-l+10'),'ring-'+o.ring+'-l+10'];
   g.inv.push(...items); g.eq.weapon=items[0]; x.ARMOR_SLOTS.forEach((s,i)=>{ g.eq[s]=items[i+1]; }); g.eq.ring=items[items.length-1];
-  g.soul=o.soul; g.east=2; g.north=2; for(const l of x.ZTIER_LANDS) g.zt[l]={on:tier,max:['home','vale','hoar'].includes(l)?5:0};   // (the yardstick keeps its symbol at the +150% it was tuned with: three lands' fifteen points; the stronger version-3 symbol, tiers VI and VII and the level-40 gear are not tuned here yet)
+  g.east=2; g.north=2; for(const l of x.ZTIER_LANDS) g.zt[l]={on:tier,max:['home','vale','hoar'].includes(l)?5:0};   // (the yardstick keeps its symbol at the +150% it was tuned with: three lands' fifteen points; the stronger version-3 symbol, tiers VI and VII and the level-40 gear are not tuned here yet)
   const sk=g.skills; sk.owned=[...x.SKILL_IDS,...Object.keys(x.PASSIVES)]; sk.lv={}; for(const s of sk.owned){ const d=x.SKILLS[s]||x.PASSIVES[s]; if(d&&!d.drop) sk.lv[s]=5; }
   sk.eq[cls].skill=o.skill; sk.eq[cls].burst=o.burst; if(o.basic) sk.eq[cls].basic=o.basic; sk.pass=[o.passive,null,null];
   g.pot={heal3:999,might3:999,guard3:999}; g.coins=0; x.recalcP(p); p.hp=p.maxHp; p.dead=false;

@@ -20,7 +20,7 @@ function ladder(env,opts){
   const arrange=()=>{
     W.setPos(env.pid,[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,Math.PI,0,0]); p.face=Math.PI;
     dummies.forEach((m,i)=>{ const a=(i-1)/6*Math.PI*2, c=[p.x,p.z+2.4]; spot[i]=i===0?c:[c[0]+Math.sin(a)*3.5,c[1]+Math.cos(a)*3.5];
-      m.face=opts.behind?Math.PI:0; m.dead=false; m.remove=false; m.hp=m.maxHp=1e12; m.slowT=m.burnT=0; m.mk=m.st=m.aura=m.rxIcd=m.taunt=null; m.immune=false; m.aggro=false; });
+      m.face=opts.behind?Math.PI:0; m.dead=false; m.remove=false; m.hp=m.maxHp=1e12; m.slowT=m.burnT=0; m.mk=m.st=m.taunt=null; m.immune=false; m.aggro=false; });
   };
   const pin=()=>dummies.forEach((m,i)=>{ m.x=spot[i][0]; m.z=spot[i][1]; m.kbx=m.kbz=0; m.vx=m.vz=0; m.stunT=1e9; });
   const fresh=()=>{ arrange(); pin(); p.dead=false; p.hp=p.maxHp; p.act=null; p.cd={basic:0,skill:0,burst:0,cave:0,ult:0}; p.ultB=null; p.ultV=null; p.cave.charge=0; p.ssIcd={}; p.ally=null; p.shield=null; p.buff=null; p.lastDealt=-99; x.recalcP(p); };

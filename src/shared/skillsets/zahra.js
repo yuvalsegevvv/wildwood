@@ -1,5 +1,5 @@
 //@ Zahra's skill set, The Hour of Glass (a buff support, light): a mirror strike that quickens the line, a blessing of the long noon, and a sandglass planted for the whole fight; gold, glass and lapis
-/* Agent map. Kit: docs/skillkits/kit-support.md (the buff focus) + kit-mixed.md (also safe DPS, mild: her strikes and flashes hit harder); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces light: her hits leave the aura a partner reacts with; she debuffs nothing herself);
+/* Agent map. Kit: docs/skillkits/kit-support.md (the buff focus) + kit-mixed.md (also safe DPS, mild: her strikes and flashes hit harder); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces light; she debuffs nothing herself);
    outfit and palette: docs/skillkits/looks/zahra.md, game/outfits/zahra.js; visuals: game/skillsets/look-zahra.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js,
    tools/skillsets-ladder.js --set zahra. Land: the Sunscar (tier 2). Mark: Grain. Buffs never stack (the stronger wins) and are capped (SS_ALLY_CAP), so beside Dunstan she adds a different KIND: guard and critical damage first. */
 defineSkillSet({

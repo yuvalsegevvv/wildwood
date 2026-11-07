@@ -37,7 +37,7 @@ function mqPicking(){ const M=mqG(), s=mqCur(); return !!(s&&M.st===1&&s.parts.s
 function nearHerb(){ if(!mqPicking()) return -1; const M=mqG(); for(let i=0;i<HERBS.length;i++) if(!((M.h>>i)&1)&&Math.hypot(P.x-HERBS[i][0],P.z-HERBS[i][1])<HERB_R) return i; return -1; }
 // where a villager stands (their live position if they are drawn, else their anchor)
 function npcSpot(id){ const n=npcById(id); if(n) return {x:n.x,z:n.z,name:n.def.name}; return null; }
-const MQ_ACT_AT={buy:'ilse',board:'maren',upskill:'aldric',merge:'greta',soul:'kaede'};
+const MQ_ACT_AT={buy:'ilse',board:'maren',upskill:'aldric',merge:'greta'};
 const MQ_GREY_C={};
 // the nearest node of a gather part that your gear can work and is not taken (else null)
 function mqGatherTarget(pt){ let best=null,bd=1e9; for(const n of NODES) if((n.kind===pt.gather||NODE_KINDS[n.kind].prof===pt.gather)&&!nodeBlock(GEAR,n)){ const d=Math.hypot(n.x-P.x,n.z-P.z); if(d<bd&&!nodeTaken(n.i)){ bd=d; best=n; } } return best?{x:best.x,z:best.z,name:NODE_KINDS[best.kind].name}:null; }

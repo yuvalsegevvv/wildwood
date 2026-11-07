@@ -1,9 +1,9 @@
-// Headless test of elements, the Soul Hall, monster drops, skill upgrades, passives and the boss skills (server straight from src/, no build): one line per check.
+// Headless test of elements (the wheel, basic x1.1), monster drops, skill upgrades, passives and the boss skills (server straight from src/, no build): one line per check.
 // Usage: node tools/skills-smoke.js
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},
-  ['MONS','getH','VIL2','VIL','rewardKill','elemHitS','sanitizeGear','hurtP','ELEMS','MATS','upgradeNeeds','SKILLS','soulMult','foeMult','SKILL_MAX_LV','BOSS_SKILLS','bossSkillDropP','newSkills','damageMonsterS','psP','S','passiveSum','passiveOpen','PASSIVE_SLOT_LV']);
+  ['MONS','getH','VIL2','VIL','rewardKill','elemHitS','rollDmgS','sanitizeGear','hurtP','ELEMS','MATS','upgradeNeeds','SKILLS','foeMult','foeTraits','ELEM_BASIC_K','ELEM_LIST','SKILL_MAX_LV','BOSS_SKILLS','bossSkillDropP','newSkills','damageMonsterS','psP','S','passiveSum','passiveOpen','PASSIVE_SLOT_LV']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ n=Math.max(n,3); for(let i=0;i<n;i++){ // (at least 3 ticks: events reach the log with the next snapshot)
@@ -12,48 +12,40 @@ const toasts=()=>evs.filter(e=>e[0]==='toast').map(e=>e[2]);
 const near=(a,b)=>Math.abs(a-b)<1e-9;
 
 // ---- the rules (shared, pure) ----
-ok('soul: own element x1.5, opposite x1/1.5, others and basic x1',near(x.soulMult('fire','fire',0),1.5)&&near(x.soulMult('fire','water',0),1/1.5)&&x.soulMult('fire','earth',0)===1&&x.soulMult('fire','dark',0)===1&&x.soulMult('basic','fire',0)===1&&x.soulMult('fire','basic',0)===1);
-ok('every element has exactly one opposite (fire/water, earth/air, dark/light)',['fire','water','earth','air','dark','light'].every(e=>x.soulMult(e,e,0)===1.5)&&near(x.soulMult('earth','air',0),1/1.5)&&near(x.soulMult('light','dark',0),1/1.5)&&x.soulMult('earth','water',0)===1);
+ok('basic: an element-less skill deals x1.1 to every monster, whatever its element; the six elements keep the wheel',near(x.ELEM_BASIC_K,1.1)&&x.ELEM_LIST.every(f=>near(x.foeMult('basic',f),1.1))&&near(x.foeMult('basic','basic'),1.1));
+ok('foeTraits: basic is neither weak nor resisted anywhere, each of the six elements has exactly one weakness and resists itself',x.ELEM_LIST.every(f=>{ const t=x.foeTraits(f); return !t.weak.includes('basic')&&!t.resist.includes('basic')&&t.weak.length===1&&t.resist.includes(f); })&&x.foeTraits('basic').weak.length===0&&x.foeTraits('basic').resist.length===0);
 { const beats=[['water','fire'],['fire','air'],['air','earth'],['earth','water']];   // the wheel: water beats fire beats air beats earth beats water
   ok('monster wheel: a skill that beats the monster x1.5, one it beats x1/1.5 (water on fire 1.5, fire on water 1/1.5, ...)',beats.every(([a,b])=>near(x.foeMult(a,b),1.5)&&near(x.foeMult(b,a),1/1.5)),beats.map(([a,b])=>a+'>'+b+' '+x.foeMult(a,b).toFixed(2)+'/'+x.foeMult(b,a).toFixed(2)).join(' '));
-  ok('monster wheel: two steps apart, basic, and the same element',x.foeMult('water','air')===1&&x.foeMult('fire','earth')===1&&x.foeMult('basic','fire')===1&&x.foeMult('fire','basic')===1&&near(x.foeMult('fire','fire'),1/1.5)&&near(x.foeMult('dark','dark'),1/1.5));
-  ok('monster wheel: dark and light beat each other',near(x.foeMult('dark','light'),1.5)&&near(x.foeMult('light','dark'),1.5)&&x.foeMult('dark','fire')===1);
-  ok('the soul still works on the opposite pairs, not the wheel (a fire soul: water x1/1.5, air and earth x1)',near(x.soulMult('fire','water',0),1/1.5)&&x.soulMult('fire','air',0)===1&&x.soulMult('fire','earth',0)===1&&near(x.soulMult('water','fire',0),1/1.5)); }
+  ok('monster wheel: two steps apart, a monster with no element, and the same element',x.foeMult('water','air')===1&&x.foeMult('fire','earth')===1&&x.foeMult('basic','fire')===1.1&&x.foeMult('fire','basic')===1&&near(x.foeMult('fire','fire'),1/1.5)&&near(x.foeMult('dark','dark'),1/1.5));
+  ok('monster wheel: dark and light beat each other',near(x.foeMult('dark','light'),1.5)&&near(x.foeMult('light','dark'),1.5)&&x.foeMult('dark','fire')===1); }
 ok('every monster and skill has a valid element',x.MONS.every(m=>!m.def.el||x.ELEMS[m.def.el])&&Object.values(x.SKILLS).every(s=>!s.el||x.ELEMS[s.el]));
 const up=x.upgradeNeeds('whirlwind',2);
 ok('upgrade costs coins and a monster drop that exists',up&&up.coins>0&&up.mats.length===1&&x.MATS[up.mats[0].id]&&x.upgradeNeeds('whirlwind',x.SKILL_MAX_LV+1)===null&&x.upgradeNeeds('whirlwind',5).mats.length===2);
 
 // ---- saves are checked ----
 const g=x.sanitizeGear({soul:'lava',mats:{slime:-5,nothing:3,boss:99999999,kappa:'7'},skills:{owned:['whirlwind','vitality','nope'],lv:{whirlwind:99,vitality:3,bash:4},pass:['vitality','vitality','ironwill']}},'warrior');
-ok('a save is sanitized: soul, drops, skill levels, passives',g.soul==='basic'&&!g.mats.slime&&!g.mats.nothing&&g.mats.boss===999&&g.mats.kappa===7&&g.skills.lv.whirlwind===5&&g.skills.lv.vitality===3&&!g.skills.lv.bash&&g.skills.pass[0]==='vitality'&&g.skills.pass[1]===null&&g.skills.pass[2]===null,JSON.stringify([g.mats,g.skills.lv,g.skills.pass]));
+ok('a save is sanitized: an old save\'s soul is dropped, drops, skill levels, passives',g.soul===undefined&&!g.mats.slime&&!g.mats.nothing&&g.mats.boss===999&&g.mats.kappa===7&&g.skills.lv.whirlwind===5&&g.skills.lv.vitality===3&&!g.skills.lv.bash&&g.skills.pass[0]==='vitality'&&g.skills.pass[1]===null&&g.skills.pass[2]===null,JSON.stringify([g.mats,g.skills.lv,g.skills.pass]));
 
-// ---- the Soul Hall in Hanami ----
+// ---- a hiker at level 15 ----
 inbox.a=[]; W.join('a',{name:'Tester',look:{cls:'mage'},save:{level:14}}); tick(1);
 const p=W.players.get('a');
 W.receive('a',{t:'dev',cmd:'vale',v:2});
-const V2=x.VIL2; W.setPos('a',[V2.x,x.getH(V2.x,V2.z),V2.z,0,0,0]);
-W.receive('a',{t:'soul',el:'fire'}); tick(1);
-ok('soul: refused below level 15',you('a').gear.soul==='basic'&&toasts().some(t=>/level 15/.test(t)));
-W.receive('a',{t:'dev',cmd:'level',v:15}); W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); W.receive('a',{t:'soul',el:'fire'}); tick(1);
-ok('soul: refused outside Hanami',you('a').gear.soul==='basic'&&toasts().some(t=>/in Hanami/.test(t)));
-W.setPos('a',[V2.x,x.getH(V2.x,V2.z),V2.z,0,0,0]); W.receive('a',{t:'soul',el:'fire'}); tick(1);
-ok('soul: bound in Hanami at level 15',you('a').gear.soul==='fire'&&evs.some(e=>e[0]==='soul'&&e[2]==='fire'));
-W.receive('a',{t:'soul',el:'water'}); W.receive('a',{t:'soul',el:'lava'}); tick(1);
-ok('soul: changed freely, unknown elements ignored',you('a').gear.soul==='water');
-W.receive('a',{t:'soul',el:'fire'}); tick(1);
+W.receive('a',{t:'dev',cmd:'level',v:15}); tick(1);
+W.receive('a',{t:'soul',el:'fire'}); tick(1);   // the old message: nothing handles it any more
+ok('the soul is gone: the old message changes nothing and no field is saved',you('a').gear.soul===undefined&&!evs.some(e=>e[0]==='soul'));
 
 // ---- damage with elements ----
 const slime=x.MONS.find(m=>m.def.id==='slime'), boar=x.MONS.find(m=>m.def.id==='boar'), magma=x.MONS.find(m=>m.def.id==='magmaslime'), shroom=x.MONS.find(m=>m.def.id==='shroom');
 const eh=(el,m)=>x.elemHitS(p,el,m);
-ok('damage: fire soul, fire skill on an air shroom = 1.5 (soul) x 1.5 (fire beats air)',near(eh('fire',shroom),2.25),eh('fire',shroom).toFixed(3));
-ok('damage: fire soul, fire skill on a water slime = 1.5 (soul) x 1/1.5 (water beats fire) = 1',near(eh('fire',slime),1),eh('fire',slime).toFixed(3));
-ok('damage: on a fire monster a fire soul cancels out (1.5 x 1/1.5, water skills 1/1.5 x 1.5)',near(eh('water',magma),1)&&near(eh('fire',magma),1));
-ok('damage: basic skills and basic monsters are neutral',eh('basic',boar)===1&&eh('fire',boar)===1.5&&near(eh('water',boar),1/1.5));
+ok('damage: a fire skill on an air shroom = 1.5 (fire beats air)',near(eh('fire',shroom),1.5),eh('fire',shroom).toFixed(3));
+ok('damage: a fire skill on a water slime = 1/1.5 (water beats fire)',near(eh('fire',slime),1/1.5),eh('fire',slime).toFixed(3));
+ok('damage: on a fire monster a fire skill is resisted (1/1.5) and a water skill beats it (1.5)',near(eh('water',magma),1.5)&&near(eh('fire',magma),1/1.5));
+ok('damage: an element-less skill deals x1.1 to a monster of any element; an element skill on an element-less monster is neutral',near(eh('basic',boar),1.1)&&near(eh('basic',shroom),1.1)&&near(eh('basic',magma),1.1)&&eh('fire',boar)===1&&eh('water',boar)===1);
 // a real cast: the dmg event says the element helped (6th value 1)
 evs.length=0;
 for(let i=0;i<40&&!evs.some(e=>e[0]==='dmg'&&e[1]===shroom.id);i++){ W.setPos('a',[shroom.x+4,x.getH(shroom.x,shroom.z),shroom.z,Math.PI/2,0,0]); p.cd.basic=0; W.receive('a',{t:'atk',k:'basic',tg:shroom.id,face:Math.PI/2}); tick(30,true); }
 const hit=evs.find(e=>e[0]==='dmg'&&e[1]===shroom.id); ok('a hit tells the client the element helped',hit&&hit[5]===1,JSON.stringify(hit));
-p.gear.soul='basic'; ok('soul basic = no bonus',eh('fire',boar)===1); p.gear.soul='fire';
+ok('a hit of an element-less skill shows no arrow (fx 0), an element hit does',x.rollDmgS(p,1,boar,'basic').fx===0&&x.rollDmgS(p,1,shroom,'fire').fx===1&&x.rollDmgS(p,1,slime,'fire').fx===-1);
 
 // ---- monster drops ----
 p.gear.mats={}; let dropped=0;
@@ -181,11 +173,11 @@ ok('all boss skills cast and do what their fx says (hits, buff, beam, chain, zon
   r=castOne('snare','c_sn',12); ok('Bramble Snare roots what it pulls in (stunned, pulled next to you)',target.stunT>0&&Math.hypot(target.x-(target.x+4),0)>=0); W.leave('c_sn');
   r=castOne('gate','c_ga'); ok('Demon Gate: nothing for 1.6 s, then one hit and a stun',dmgTo(gids,r.from)>0&&new Set(evs.slice(r.from).filter(e=>e[0]==='area'&&e[9]===1).map(e=>e[1])).size===1&&grp.some(m=>m.stunT>0)); W.leave('c_ga'); }
 // buffs: Lifesap steals, Dawn Guard takes less and heals, both give element-less attacks an element
-{ const q=W.players.get('a'); W.receive('a',{t:'dev',cmd:'level',v:25}); tick(3); q.gear.soul='water'; const magma=x.MONS.find(m=>m.def.id==='magmaslime'), slime2=x.MONS.find(m=>m.def.id==='slime');
+{ const q=W.players.get('a'); W.receive('a',{t:'dev',cmd:'level',v:25}); tick(3); const magma=x.MONS.find(m=>m.def.id==='magmaslime'), slime2=x.MONS.find(m=>m.def.id==='slime');
   q.buff=null; const base=x.elemHitS(q,'basic',magma); q.buff={id:'lifesap',until:(x.S.t+10),dmg:1.2,cd:0.75,crit:0,red:0,steal:0.2,regen:0,el:'water'};
-  ok('Lifesap Frenzy: element-less attacks count as your soul element (water soul x1.5, and a fire monster is weak to water x1.5)',near(base,1)&&near(x.elemHitS(q,'basic',magma),2.25)&&near(x.elemHitS(q,'fire',magma),1/1.5*1/1.5),base+' -> '+x.elemHitS(q,'basic',magma));
+  ok('Lifesap Frenzy: element-less attacks count as Water (x1.5 on a fire monster instead of the basic x1.1)',near(base,1.1)&&near(x.elemHitS(q,'basic',magma),1.5)&&near(x.elemHitS(q,'fire',magma),1/1.5),base+' -> '+x.elemHitS(q,'basic',magma));
   q.hp=Math.round(q.maxHp/2); const h0=q.hp; slime2.hp=slime2.maxHp=1e9; const dealt=x.damageMonsterS(slime2,1,q,q.x,q.z,0,'basic'); ok('Lifesap Frenzy: you heal for 20% of the damage you deal',dealt>0&&Math.abs(q.hp-(h0+dealt*0.2))<1.01,'dealt '+dealt+', healed '+(q.hp-h0).toFixed(1));
   q.buff={id:'dawn',until:(x.S.t+10),dmg:1.15,cd:0.85,crit:0,red:0.4,steal:0,regen:0.03,el:'light'}; q.red=0; q.hp=q.maxHp; q.lastHit=-99; const before=q.hp; x.hurtP(q,100,null); const lost=before-q.hp;
   ok('Dawn Guard: 40% less damage taken',lost===Math.max(1,Math.round(100*(1-q.red)*(1-x.psP(q,'red'))*0.6)),'lost '+lost);
-  q.hp=Math.round(q.maxHp*0.5); q.lastHit=x.S.t; const a0=q.hp; tick(20); ok('Dawn Guard: 3% of your health back every second',q.hp>a0+q.maxHp*0.03*0.9,'+'+(q.hp-a0).toFixed(1)+' in 1 s'); q.buff=null; q.gear.soul='fire'; }
+  q.hp=Math.round(q.maxHp*0.5); q.lastHit=x.S.t; const a0=q.hp; tick(20); ok('Dawn Guard: 3% of your health back every second',q.hp>a0+q.maxHp*0.03*0.9,'+'+(q.hp-a0).toFixed(1)+' in 1 s'); q.buff=null; }
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

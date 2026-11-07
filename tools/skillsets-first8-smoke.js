@@ -5,21 +5,21 @@
 const fs=require('fs'), path=require('path'), {loadServer, SRC}=require('./load');
 const evs=[], inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...m.ev); }},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','ssLint','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssTauntedBy','ssMarkN','ssMarkS','ssTriggerS','resolveFxS','damageMonsterS','killMonsterS','hurtP','ssCondP','ssWhen','AREAS','PROJS','rxVulnK','fxModK','recalcP','clsOfP','getH','VIL','ZTIER_MAX','ELEM_OPP','psP','abilityOf']);
+  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','ssLint','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssTauntedBy','ssMarkN','ssMarkS','ssTriggerS','resolveFxS','damageMonsterS','killMonsterS','hurtP','ssCondP','ssWhen','AREAS','PROJS','mstVulnK','fxModK','recalcP','clsOfP','getH','VIL','ZTIER_MAX','psP','abilityOf']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 const near=(a,b,e)=>Math.abs(a-b)<=(e||1e-6);
 const IDS=['tansy','torgeir','sazanka','corvin','sorrel','ambrose','dunstan','marigold'], SET=id=>x.SS_SETS[id], PIECES=id=>[1,2,3].flatMap(n=>SET(id).pos[n].ids);
 
 // ---- the cast as a whole ----
-ok('all eight sets register: nothing left out, nothing linted (the first grinder is basic, four and four, no hybrid of soul opposites)',IDS.every(i=>SET(i))&&x.SS_BAD.length===0&&x.ssLint().length===0,JSON.stringify(x.SS_BAD)+JSON.stringify(x.ssLint()));
+ok('all eight sets register: nothing left out, nothing linted (the first grinder is basic, four and four)',IDS.every(i=>SET(i))&&x.SS_BAD.length===0&&x.ssLint().length===0,JSON.stringify(x.SS_BAD)+JSON.stringify(x.ssLint()));
 ok('every set has a symbol of its own (an emblem: shapes only, in a colour of its own), so its pieces are never the generic star',(()=>{ const g=IDS.map(i=>SET(i).emblem), ok1=g.every(e=>e&&/^(<(path|circle|ellipse|rect|line)( (d|cx|cy|r|rx|ry|x|y|x1|y1|x2|y2|width|height|fill|opacity|stroke-width|transform)="[^"<>&]*")*\/>)+$/.test(e.glyph)&&Number.isInteger(e.col)), glyphs=new Set(g.map(e=>e&&e.glyph)), cols=new Set(g.map(e=>e&&e.col)); return ok1&&glyphs.size===8&&cols.size===8; })());
 ok('one set for each land and tier (the first four: tier 1 of the four lands; the second wave: tier 2 of them)',(()=>{ const seen=new Set(IDS.map(i=>SET(i).land+SET(i).tier)); return seen.size===8&&IDS.slice(0,4).every(i=>SET(i).tier===1)&&new Set(IDS.slice(0,4).map(i=>SET(i).land)).size===4&&IDS.slice(4).every(i=>SET(i).tier===2); })(),IDS.map(i=>SET(i).land+SET(i).tier).join(' '));
 ok('the roles of THEMES.md: grind, tank, risk, debuff support, safe, healer, buff support, and a mixed safe + mild support',(()=>{ const r=i=>SET(i).role; return r('tansy').main==='grind'&&r('torgeir').main==='tank'&&r('sazanka').main==='risk'&&r('corvin').main==='support'&&r('corvin').focus==='debuff'&&r('sorrel').main==='safe'&&r('ambrose').main==='heal'&&r('dunstan').main==='support'&&r('dunstan').focus==='buff'&&r('marigold').main==='safe'&&r('marigold').also.role==='support'&&r('marigold').also.part==='mild'; })());
 ok('four women and four men: Tansy, Sazanka, Sorrel, Marigold / Torgeir, Corvin, Ambrose, Dunstan; two and two among the first four',IDS.filter(i=>SET(i).char.sex==='female').join()==='tansy,sazanka,sorrel,marigold'&&IDS.filter(i=>SET(i).char.sex==='male').join()==='torgeir,corvin,ambrose,dunstan'&&IDS.slice(0,4).filter(i=>SET(i).char.sex==='female').length===2);
 ok('the elements of ELEMENTS.md: none, earth, dark + air, light, air, water, fire, light',(()=>{ const e=i=>SET(i).el; return e('tansy')==='basic'&&e('torgeir')==='earth'&&e('sazanka').join()==='dark,air'&&e('corvin')==='light'&&e('sorrel')==='air'&&e('ambrose')==='water'&&e('dunstan')==='fire'&&e('marigold')==='light'; })());
 ok('the first four use disjoint elements (none; earth; dark + air; light), so any two of them react when partied',(()=>{ const els=['tansy','torgeir','sazanka','corvin'].map(i=>[].concat(SET(i).el).filter(e=>e!=='basic')); const all=els.flat(); return new Set(all).size===all.length; })());
-ok('only risk, safe and grind may be a hybrid; Sazanka\'s air is her first position, her dark the other two, and they are not soul opposites',(()=>{ const S=SET('sazanka'); return IDS.filter(i=>Array.isArray(SET(i).el)).join()==='sazanka'&&S.pos[1].el==='air'&&S.pos[2].el==='dark'&&S.pos[3].el==='dark'&&x.ELEM_OPP.dark!=='air'; })());
+ok('only risk, safe and grind may be a hybrid; Sazanka\'s air is her first position, her dark the other two',(()=>{ const S=SET('sazanka'); return IDS.filter(i=>Array.isArray(SET(i).el)).join()==='sazanka'&&S.pos[1].el==='air'&&S.pos[2].el==='dark'&&S.pos[3].el==='dark'; })());
 ok('Tansy is pure basic: every piece, passive and bonus element-less',PIECES('tansy').every(i=>x.SKILLS[i].el==='basic')&&[1,2,3].every(n=>x.PASSIVES[SET('tansy').pos[n].passive].el==='basic')&&[3,5].every(t=>SET('tansy').bonus[t].el==='basic'));
 ok('each set names its outfit, and that outfit exists (game/outfits/<id>.js)',IDS.every(i=>SET(i).outfit===i&&fs.existsSync(path.join(SRC,'game','outfits',i+'.js'))));
 ok('each set has a look (game/skillsets/look-<id>.js) and a palette of three colours',IDS.every(i=>fs.existsSync(path.join(SRC,'game','skillsets','look-'+i+'.js'))&&['main','accent','glow'].every(k=>Number.isInteger(SET(i).pal[k]))));
@@ -33,7 +33,7 @@ const p=W.players.get('a'), pb=W.players.get('b'), pc=W.players.get('c');
 W.receive('a',{t:'party',a:'invite',name:'Other'}); tick(3); W.receive('b',{t:'party',a:'accept'}); tick(3);
 const norm=x.MONS.filter(m=>!m.boss&&!m.inst&&m.def.id==='slime'), [m1,m2,m3]=norm, bossM=x.MONS.find(m=>m.boss);
 const stand=(q,dx,dz)=>{ W.setPos(q.id,[p.x+dx,x.getH(p.x+dx,p.z+dz),p.z+dz,0,0,0]); q.dead=false; q.hp=q.maxHp; q.ally=null; q.shield=null; };
-const put=(m,dx,dz,face)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.aura=null; m.rxIcd=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; m.face=face===undefined?Math.PI:face; return m; };
+const put=(m,dx,dz,face)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; m.face=face===undefined?Math.PI:face; return m; };
 W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); p.dead=false; p.hp=p.maxHp; p.act=null; p.face=0; p.level=60;
 const reset=()=>{ x.AREAS.length=0; x.PROJS.length=0; stand(p,0,0); p.ally=null; p.shield=null; stand(pb,3,0); stand(pc,0,40); for(const m of [m1,m2,m3]) put(m,0,-30); };
 const still=fn=>{ const R=Math.random; Math.random=()=>0.5; try{ return fn(); } finally{ Math.random=R; } };
@@ -107,22 +107,22 @@ clear();
 
 // ---- Corvin ----
 reset(); put(m1,0,-2); put(m2,0,-9);
-{ still(()=>cast('corvin_1_warrior',m1)); const v1=x.rxVulnK(m1); m1.st=null; still(()=>cast('corvin_1_warrior',m1)); const v2=x.rxVulnK(m1);
+{ still(()=>cast('corvin_1_warrior',m1)); const v1=x.mstVulnK(m1); m1.st=null; still(()=>cast('corvin_1_warrior',m1)); const v2=x.mstVulnK(m1);
   ok('Corvin: Flash Lens exposes its target a little (5% more damage from everyone), 3% more for each Glare it already carries, and leaves a Glare',near(v1,0.05,0.001)&&near(v2,0.08,0.001)&&x.ssMarkN(p,m1,'glare')===2,v1+' / '+v2);
-  still(()=>cast('corvin_3_any',null)); ok('Corvin: Noon exposes every enemy within 14 m for 22% + 2% a Glare (the cap is 30%): 26% on the one with two Glares, 22% on the other',near(x.rxVulnK(m1),0.26,0.001)&&near(x.rxVulnK(m2),0.22,0.001)&&x.rxVulnK(m1)<=0.30);
-  put(m3,0,-20); ok('...and not one outside the ring',x.rxVulnK(m3)===0);
+  still(()=>cast('corvin_3_any',null)); ok('Corvin: Noon exposes every enemy within 14 m for 22% + 2% a Glare (the cap is 30%): 26% on the one with two Glares, 22% on the other',near(x.mstVulnK(m1),0.26,0.001)&&near(x.mstVulnK(m2),0.22,0.001)&&x.mstVulnK(m1)<=0.30);
+  put(m3,0,-20); ok('...and not one outside the ring',x.mstVulnK(m3)===0);
   m1.st=null; const plain=lost(m1,()=>still(()=>x.damageMonsterS(m1,1,pb,pb.x,pb.z,0,'basic')));
   m1.st={vuln:{v:0.25,until:x.S.t+5,by:p.id}}; const withV=lost(m1,()=>still(()=>x.damageMonsterS(m1,1,pb,pb.x,pb.z,0,'basic')));
   ok('...and it is everyone\'s gain: the party member\'s hit does 25% more on an exposed monster',near(withV/plain,1.25,0.02),(withV/plain).toFixed(3)); }
 reset(); put(m1,0,-9);
-{ cast('corvin_2_any',m1); tick(35); ok('Corvin: Open the Shutter exposes its area (12%, +3% a Glare: three ticks, 18%) and puts a Glare on each monster in it (up to 3)',near(x.rxVulnK(m1),0.18,0.001)&&x.ssMarkN(p,m1,'glare')===3,x.rxVulnK(m1)+' / '+x.ssMarkN(p,m1,'glare')); x.AREAS.length=0; }
+{ cast('corvin_2_any',m1); tick(35); ok('Corvin: Open the Shutter exposes its area (12%, +3% a Glare: three ticks, 18%) and puts a Glare on each monster in it (up to 3)',near(x.mstVulnK(m1),0.18,0.001)&&x.ssMarkN(p,m1,'glare')===3,x.mstVulnK(m1)+' / '+x.ssMarkN(p,m1,'glare')); x.AREAS.length=0; }
 wear('corvin',1); reset(); put(m1,0,-2);
 { still(()=>cast('corvin_1_warrior',m1)); const left=m1.st.vuln.until-x.S.t; ok('Corvin: Long Wick makes his debuffs last 60% longer (a 3 s exposure lasts 4.8 s)',near(left,4.8,0.1),left.toFixed(2)); }
 wear('corvin',3); reset(); put(m1,0,-2); put(m2,0,-9.5); put(m3,0,-25);
 { x.ssMarkS(p,m1,{id:'x',n:1,dur:1,max:1}); m1.st={vuln:{v:0.1,until:x.S.t+5,by:p.id}};
-  ok('Corvin: Second Look: reactions on a target he exposed are 30% stronger (a plain target: no bonus)',near(x.ssCondP(p,'rxk',m1),0.30)&&x.ssCondP(p,'rxk',m3)===0);
+  ok('Corvin: Second Look: 10% more damage against a target he exposed (a plain target: no bonus)',near(x.ssCondP(p,'dmg',m1),0.10)&&x.ssCondP(p,'dmg',m3)===0);
   m2.st=null; p.ssIcd={}; x.killMonsterS(m1,p);   // the exposed one dies where it stands (2 m from her; m2 is 7.5 m from it, 9.5 m from her)
-  ok('Corvin: Afterglow: when a target he exposed dies, everything within 6 m of WHERE IT FELL is exposed (15%): a monster 7.5 m from him but 7.5 m from the body, yes; one far away, no',x.rxVulnK(m2)===0||near(x.rxVulnK(m2),0.15,0.001),'m2 '+x.rxVulnK(m2)); }
+  ok('Corvin: Afterglow: when a target he exposed dies, everything within 6 m of WHERE IT FELL is exposed (15%): a monster 7.5 m from him but 7.5 m from the body, yes; one far away, no',x.mstVulnK(m2)===0||near(x.mstVulnK(m2),0.15,0.001),'m2 '+x.mstVulnK(m2)); }
 clear();
 
 // ---- Sorrel ----
@@ -131,7 +131,7 @@ reset(); put(m1,0,-6); put(m2,0,-26);
   ok('Sorrel: Clean Line lands harder the farther the target: x1 up close, about x1.5 at 26 m (capped at x1.6)',near(near6,1.04,0.05)&&far26>1.4&&far26<=1.6001,near6.toFixed(2)+' / '+far26.toFixed(2));
   const g=x.SKILLS.sorrel_3_archer.fx; ok('Sorrel: Long Gale grows to x2.4 with distance, spends Sight, and is a long cast (1.3 s) in all three class versions',near(x.fxModK(g,p,m2),1+1.4*(26-5)/35,0.02)&&['archer','warrior','mage'].every(c=>x.SKILLS['sorrel_3_'+c].act[1]===1.3&&x.SKILLS['sorrel_3_'+c].fx.pop.id==='sight')); }
 reset(); put(m1,0,-8); put(m2,3,-8); put(m3,0,-30);
-{ cast('sorrel_2_any',m1); tick(30); ok('Sorrel: Mark the Gap puts Sight on its target and its air spreads to the monsters within 6 m (not one 30 m away)',x.ssMarkN(p,m1,'sight')===1&&m2.aura&&m2.aura.el==='air'&&!m3.aura,String(m2.aura&&m2.aura.el)); x.PROJS.length=0; }
+{ cast('sorrel_2_any',m1); tick(30); ok('Sorrel: Mark the Gap puts Sight on its target and on it only (the air aura it used to spread is gone)',x.ssMarkN(p,m1,'sight')===1&&x.ssMarkN(p,m2,'sight')===0&&!m2.aura&&!m3.aura,String(x.ssMarkN(p,m2,'sight'))); x.PROJS.length=0; }
 reset(); put(m1,0,-8);
 { x.ssMarkS(p,m1,{id:'sight',n:3,dur:12,max:3}); const spent=lost(m1,()=>still(()=>x.resolveFxS(p,{fx:x.SKILLS.sorrel_3_archer.fx,mult:x.SKILLS.sorrel_3_archer.mult,range:45,el:'air',aim:[0,0,-1],sid:'sorrel_3_archer'},m1)));
   ok('Sorrel: casting Long Gale pops the Sight at once (the marks are gone, the pop hit the target before the arrow)',x.ssMarkN(p,m1,'sight')===0&&spent>0,String(Math.round(spent))); x.PROJS.length=0; }

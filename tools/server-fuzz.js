@@ -24,7 +24,7 @@ const junk=(d=0)=>{ const r=rnd();
   if(r<0.80) return JSON.parse('{"__proto__":{"polluted":1},"constructor":{"prototype":{"polluted":1}}}');
   return rnd()*400-200; };
 const FIELDS=['id','slot','cls','tier','rar','n','k','tg','face','aim','idx','el','to','a','i','text','name','look','v','cmd','land','user','pass','token','p','worn','who','mission','dungeon','type','sel','m','set','piece','pid','dir','s','kind'];
-const TYPES=['pos','atk','equip','unequip','cls','buy','sell','merge','accept','turnin','abandon','buyskill','chat','name','eqskill','unskill','upskill','soul','look','warp','mq','learn','gather','sellres','craft','brew','potion','zt','dev','ft','party','temper','rwdev','dg','register','logout','hello','nonsense','','__proto__'];
+const TYPES=['pos','atk','equip','unequip','cls','buy','sell','merge','accept','turnin','abandon','buyskill','chat','name','eqskill','unskill','upskill','look','warp','mq','learn','gather','sellres','craft','brew','potion','zt','dev','ft','party','temper','rwdev','dg','register','logout','hello','nonsense','','__proto__'];
 // the list above is for the odd names; every message type the server really handles is read from the source too (api.js `case 'x'`, feature files `MSG.x=`, in any folder under src/server), so a new message is fuzzed without anyone remembering to list it
 const srvFiles=d=>require('fs').readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?srvFiles(require('path').join(d,e.name)):e.name.endsWith('.js')?[require('path').join(d,e.name)]:[]);
 for(const f of srvFiles(require('path').join(__dirname,'..','src','server'))){ const src=require('fs').readFileSync(f,'utf8');

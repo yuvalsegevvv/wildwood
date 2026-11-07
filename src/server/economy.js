@@ -1,4 +1,4 @@
-//@ Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), the Soul Hall, testing commands
+//@ Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), testing commands
 function addItemP(p,id,quiet,monId){
   if(p.gear.inv.length>=BAG_MAX){ toastTo(p.id,'Your bag is full','bad'); return; }
   p.gear.inv.push(id); p.dirty=true;
@@ -125,16 +125,6 @@ function upgradeSkillP(p,id){
   if(need.rd){ const rm=rdMatsOf(p), left=(rm[need.rd.land]||0)-need.rd.n; if(left>0) rm[need.rd.land]=left; else delete rm[need.rd.land]; }   // raids
   for(const m of need.mats){ const left=(p.gear.mats[m.id]||0)-m.n; if(left>0) p.gear.mats[m.id]=left; else delete p.gear.mats[m.id]; }
   S.lv[id]=to; recalcP(p); p.dirty=true; toastTo(p.id,s.name+' is now level '+to,'good'); ev('skillup',p.id,id,to); mqActP(p,'upskill');
-}
-// the Soul Hall in Hanami (level SOUL_LV): bind your soul to an element, free and as often as you like ('basic' unbinds it)
-function bindSoulP(p,el){
-  if(!ELEMS[el]||p.dead) return;
-  if(p.level<SOUL_LV){ toastTo(p.id,'The hall answers only hikers of level '+SOUL_LV+' and above','bad'); return; }
-  if(!troomIn(p.x,p.z,2)&&Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14){   // testroom: the pad too
-     toastTo(p.id,'The Soul Hall is in Hanami, beyond the eastern mountains','bad'); return; }
-  if(p.gear.soul===el) return;
-  p.gear.soul=el; p.dirty=true; if(el!=='basic') mqActP(p,'soul'); toastTo(p.id,el==='basic'?'Your soul is unbound':'Your soul is bound to '+ELEMS[el].name,'good'); ev('soul',p.id,el);
-  recalcP(p);   // dungeons: the ring's attack depends on the soul (it used to touch no stats)
 }
 /* ---- chat and names ---- */
 // chat: up to 160 characters, at most one message every 0.7 s per player; everyone in the world hears it

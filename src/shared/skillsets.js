@@ -12,13 +12,13 @@
      pos:{1:{bound:'class', skill:{warrior:E, archer:E, mage:E}, passive:R, from:{chance, pity} (optional odds)}, 2:{bound:'class'|'any', skill:{...} | {any:E}, passive:R}, 3:{...}},
      bonus:{3:R, 5:R}, outfit (an outfit id, optional until outfits exist).
    E, a skill entry, is a SKILLS row minus what the registry fills in (cls, slot, id, lv, price, set, pos): name, desc, cd, range, mult, act:[kind, seconds, when it lands], and optionally anim, el, fx, buff, why.
-   R, a passive or bonus row, is {name, text} plus ONE of: stat + v (a number, or [value at level 1, added a level]; text has {} for the percent; stats: SS_STATS, hp dmg crit red cd drop xp soul reflect rxk rxicd critdmg heal buffpow buffdur debuffdur area regen overflow revive; those in SS_COND_STATS may carry a `when`, see below), OR on (a trigger kind, or a list of them:
+   R, a passive or bonus row, is {name, text} plus ONE of: stat + v (a number, or [value at level 1, added a level]; text has {} for the percent; stats: SS_STATS, hp dmg crit red cd drop xp reflect critdmg heal buffpow buffdur debuffdur area regen overflow revive; those in SS_COND_STATS may carry a `when`, see below), OR on (a trigger kind, or a list of them:
    hit crit kill hurt cast1 cast2 cast3 tick low taunt shield revive) + at least one of fx / heal / buff / mark / status / shield / cdr (+ chance, icd (a tick's interval), mult, range, el, below (low: the health share), when, streak:{n, secs} (a kill trigger), at:'target'), OR amp:{id, per} (the
    owner's marked targets take per x stacks more from you); and optionally cost:{stat, v} with a negative v: the price this same row pays (less maximum health, more damage taken, longer cooldowns).
-   The fx of a skill (docs/SKILL-SETS.md 6, docs/REACTIONS.md): the shapes ring cone beam chain proj zone dash buff, and modifiers vsBoss (damage x against bosses), behind (x from behind: {k} or a number),
+   The fx of a skill (docs/SKILL-SETS.md 6): the shapes ring cone beam chain proj zone dash buff, and modifiers vsBoss (damage x against bosses), behind (x from behind: {k} or a number),
    rangeScale ({from, to, k}: damage grows to x k between those distances) and pop ({id, k, r, heal}: spend the player's marks of id: k x the hit's damage for each stack); the utility keys ally ({kind, v, dur, r}
    or a list: the caster and the party within r metres, in the same run), heal ({v, r}), shield ({v, dur, r}) and taunt ({dur, r}: the monsters near the caster come for them); a zone may carry ally / heal /
-   shield too (for the allies standing in it); a shape may carry mark:{id, n, dur, max, behind}, flavor ('<element>'), status:{kind, v, dur, perMark} and taunt:{dur} (what it hits comes for the caster); ally / heal / shield may carry perMark:{id, v, dur, r, max}
+   shield too (for the allies standing in it); a shape may carry mark:{id, n, dur, max, behind}, status:{kind, v, dur, perMark} and taunt:{dur} (what it hits comes for the caster); ally / heal / shield may carry perMark:{id, v, dur, r, max}
    (more for each stack of the caster's mark on the enemies near) and heal may carry lowest:true; dash may carry behind:true. `when` (ssWhenProblem lists the keys SS_WHEN_KEYS: moved still dist tgtHp hp taunting marked behind boss
    crowd allies exposed combat shield) is read by the server in ssWhen / ssCondP (server/skillsets.js); a cost may carry one too. docs/skillkits/AUTHORING.md section 4b has the table.
    A bad set is LEFT OUT (the game still boots), warned about and listed in SS_BAD; nothing of it is registered. Piece ids: <set>_<pos>_<class|any> for an active, <set>_p<pos> for a passive. */
@@ -35,16 +35,16 @@ const SS_ALLY_CAP={might:0.5,guard:0.5,haste:0.4,crit:0.4,critdmg:1,regen:0.05},
 const SS_ON=['hit','crit','kill','hurt','cast1','cast2','cast3','tick','low','taunt','shield','revive'], SS_EFFECT_KEYS=['fx','heal','buff','mark','status','shield','cdr'], SS_ST_KINDS=['vuln','weak','slow','stun'];
 const SS_ON_ICD=['hit','crit','hurt','tick','low','taunt','shield'];   // these need an icd (so they cannot run away)
 // the stats a passive or a bonus row may name (read with psP on the server), and the ones that may carry a `when` (read where the target or the fight is known: ssCondP)
-const SS_STATS=['hp','dmg','crit','red','cd','aspd','chg','drop','xp','soul','reflect','rxk','rxicd','critdmg','heal','buffpow','buffdur','debuffdur','area','regen','overflow','revive'];
-const SS_COND_STATS=['dmg','crit','critdmg','red','rxk','rxicd','heal','buffpow','buffdur','debuffdur','area','regen'];
+const SS_STATS=['hp','dmg','crit','red','cd','aspd','chg','drop','xp','reflect','critdmg','heal','buffpow','buffdur','debuffdur','area','regen','overflow','revive'];
+const SS_COND_STATS=['dmg','crit','critdmg','red','heal','buffpow','buffdur','debuffdur','area','regen'];
 const SS_WHEN_KEYS=['moved','still','dist','tgtHp','hp','taunting','marked','behind','boss','crowd','allies','exposed','combat','shield'];
 const SS_ENTRY_KEYS=['name','desc','cd','range','mult','act','anim','el','fx','buff','why','style','hold'];   // style, hold: skill 1 only (shared/basic-hold.js)
-const SS_HOLD_X=['status','mark','taunt','slow','stun','burn','kb','flavor','splash'];   // what a skill 1's hold.x may add to its main shape at a full charge
+const SS_HOLD_X=['status','mark','taunt','slow','stun','burn','kb','splash'];   // what a skill 1's hold.x may add to its main shape at a full charge
 const SS_SETS=Object.create(null), SS_ORDER=[], SS_BAD=[], SS_PIECE_OF=Object.create(null);
 // a set's emblem: {col: a colour, glyph: SVG shapes (path / circle / ellipse / rect / line with plain attributes, drawn as strokes in a 24 x 24 box)}; it goes into the page as markup, so only those shapes are accepted
 const SS_GLYPH_OK=/^(<(path|circle|ellipse|rect|line)( (d|cx|cy|r|rx|ry|x|y|x1|y1|x2|y2|width|height|fill|opacity|stroke-width|transform)="[^"<>&]*")*\/>)+$/;   // (only drawing attributes: no on... handler, no href, no style)
 const ssEmblemProblem=e=>!e||typeof e!=='object'||!Number.isInteger(e.col)||e.col<0||e.col>0xffffff||typeof e.glyph!=='string'||e.glyph.length>900||!SS_GLYPH_OK.test(e.glyph)?'emblem is {col: a colour, glyph: up to 900 characters of path / circle / ellipse / rect / line shapes}':null;
-const ssIsEl=e=>typeof e==='string'&&(e==='basic'||!!ELEM_OPP[e]);   // 'basic' or one of the six elements
+const ssIsEl=e=>typeof e==='string'&&(e==='basic'||ELEM_LIST.includes(e));   // 'basic' or one of the six elements
 const ssMarkProblem=m=>!m||!/^[a-z]+$/.test(m.id)||!(m.n===undefined||(m.n>=1&&m.n<=5))||!(m.dur===undefined||(m.dur>0&&m.dur<=60))||!(m.max===undefined||(m.max>=1&&m.max<=10))||!(m.behind===undefined||m.behind===true)?'mark is {id (a lowercase word), n (1 to 5), dur (seconds, up to 60), max (1 to 10), behind (true: only from behind the monster)}':null;
 const ssStatusProblem=t=>!t||!SS_ST_KINDS.includes(t.kind)||!(t.kind==='vuln'||t.kind==='weak'?t.v>0&&t.v<=0.5:true)||!(t.dur>0&&t.dur<=30)||!(t.perMark===undefined||(t.perMark&&typeof t.perMark.id==='string'&&/^[a-z]+$/.test(t.perMark.id)&&t.perMark.v>0&&t.perMark.v<=0.2))?'status is {kind: '+SS_ST_KINDS.join(' or ')+', v (vuln, weak: above 0, at most 0.5), dur (seconds), perMark: {id (a mark), v (added for each stack of your mark on the target, up to 0.2)}}':null;
 // a condition block ({moved: 2, dist: {from: 12}, ...}: all of them must hold; the server reads them in ssWhen, server/skillsets.js)
@@ -74,7 +74,7 @@ function ssFxProblem(fx,inTrigger){
   { const u=ssUtilProblem(fx,''); if(u) return u; if(fx.zone&&typeof fx.zone==='object'){ const z=ssUtilProblem(fx.zone,'zone.'); if(z) return z; } }
   const P=fx.pop; if(P!==undefined&&(!P||!/^[a-z]+$/.test(P.id)||!(P.k>0&&P.k<=3)||!(P.r===undefined||(P.r>0&&P.r<=20))||!(P.heal===undefined||(P.heal>0&&P.heal<=1)))) return 'pop is {id, k (up to 3), r (metres, optional), heal (a share of the damage, optional)}';
   if(fx.dash&&fx.dash.behind!==undefined&&fx.dash.behind!==true) return 'dash.behind is true (land on the far side of the target)';
-  for(const k of SS_FX_SHAPES){ const e=fx[k]; if(e&&typeof e==='object'){ if(e.taunt!==undefined&&!(e.taunt&&e.taunt.dur>0&&e.taunt.dur<=10)) return k+'.taunt is {dur (up to 10 s)}: what this entry hits comes for you'; if(e.mark!==undefined){ const m=ssMarkProblem(e.mark); if(m) return k+'.'+m; } if(e.status!==undefined){ const m=ssStatusProblem(e.status); if(m) return k+'.'+m; } if(e.flavor!==undefined&&!ssIsEl(e.flavor)) return k+'.flavor "'+e.flavor+'" is not an element'; } }
+  for(const k of SS_FX_SHAPES){ const e=fx[k]; if(e&&typeof e==='object'){ if(e.taunt!==undefined&&!(e.taunt&&e.taunt.dur>0&&e.taunt.dur<=10)) return k+'.taunt is {dur (up to 10 s)}: what this entry hits comes for you'; if(e.mark!==undefined){ const m=ssMarkProblem(e.mark); if(m) return k+'.'+m; } if(e.status!==undefined){ const m=ssStatusProblem(e.status); if(m) return k+'.'+m; } } }
   return null;
 }
 const ssAllyOk=a=>a&&SS_BUFF_KINDS.includes(a.kind)&&a.v>0&&a.v<=SS_ALLY_CAP[a.kind]&&a.dur>0&&a.dur<=30&&(a.r===undefined||(a.r>0&&a.r<=40));
@@ -270,14 +270,13 @@ const SS_CHANCE_BOSS=0.10, SS_PITY_BOSS=20, SS_CHANCE_DUNGEON=0.20, SS_PITY_DUNG
 function ssSourceOf(srcId){ for(const land in SS_SOURCES){ const i=SS_SOURCES[land].indexOf(srcId); if(i>=0) return {land,pos:i+1}; } return null; }
 // the odds of one position of a set: its own or the default of its kind of source
 function ssOddsOf(set,pos){ const f=set.pos[pos].from, boss=pos<3; return {chance:f.chance!==undefined?f.chance:boss?SS_CHANCE_BOSS:SS_CHANCE_DUNGEON, pity:f.pity!==undefined?f.pity:boss?SS_PITY_BOSS:SS_PITY_DUNGEON}; }
-// what the owner's rules ask of the released sets as a whole (warnings, not failures of one set): the first grinder is pure basic, two women and two men in the first four, no hybrid of soul opposites,
+// what the owner's rules ask of the released sets as a whole (warnings, not failures of one set): the first grinder is pure basic, two women and two men in the first four,
 // a piece in another element than its set says why. Returns [{set, why}]
 function ssLint(){
   const out=[], real=SS_ORDER.map(i=>SS_SETS[i]).filter(s=>!s.dev), land=l=>Object.keys(SS_SOURCES).indexOf(l);
   const grinders=real.filter(s=>s.role.main==='grind').sort((a,b)=>land(a.land)-land(b.land)||a.tier-b.tier);
   if(grinders[0]&&grinders[0].el!=='basic') out.push({set:grinders[0].id,why:'the first grinder is pure basic (every piece element-less)'});
   for(const s of SS_ORDER.map(i=>SS_SETS[i])){
-    if(Array.isArray(s.el)&&ELEM_OPP[s.el[0]]===s.el[1]) out.push({set:s.id,why:'a hybrid of soul opposites ('+s.el.join(' + ')+'): with the soul on one, the other pays x1/1.5'});
     if(!Array.isArray(s.el)&&s.el!=='basic') for(let p=1;p<=3;p++) if(s.pos[p].el!==s.el&&!SKILLS[s.pos[p].ids[0]].why) out.push({set:s.id,why:'position '+p+' is in "'+s.pos[p].el+'" but the set is "'+s.el+'" and its entry has no why'});
   }
   const f=real.filter(s=>s.char.sex==='female').length, m=real.length-f; if(real.length>=2&&Math.abs(f-m)>1) out.push({set:'*',why:'the gender ratio is '+f+' female to '+m+' male (equal is the owner\'s rule)'});

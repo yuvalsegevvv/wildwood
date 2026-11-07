@@ -1,5 +1,5 @@
-//@ Sorrel's skill set, The Lookout (safe DPS, air): a clean long line, a spotting shot that spreads the wind, and one charged gale that grows with the distance; sky, cream and feathers
-/* Agent map. Kit: docs/skillkits/kit-safe-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces air: the Mark the Gap shot spreads its aura to enemies within 6 m, so a partner's hit reacts on all of them);
+//@ Sorrel's skill set, The Lookout (safe DPS, air): a clean long line, a spotting shot that marks the target, and one charged gale that grows with the distance; sky, cream and feathers
+/* Agent map. Kit: docs/skillkits/kit-safe-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces air; the Mark the Gap shot used to spread an air aura, a reaction flavor with no equivalent: it only marks now);
    outfit and palette: docs/skillkits/looks/sorrel.md, game/outfits/sorrel.js; visuals: game/skillsets/look-sorrel.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md.
    Test: tools/skillsets-first8-smoke.js, tools/skillsets-ladder.js --set sorrel. Land: the Greyspine (tier 2, the second wave). Mark: Sight. Slot 3 is class-bound too ("it needs a weapon"): a javelin, an arrow, a ray.
    What the engine gives her: conditional passives (Far Sight needs the target at 14 m or more, Cold Eye a target at full health, Dead Zone costs damage inside 6 m: the `when` conditions `dist` and `tgtHp`; `still` and `moved` exist too). */
@@ -17,8 +17,8 @@ defineSkillSet({
                  fx:{proj:{kind:'frost', speed:56, turn:6, life:0.9}, rangeScale:{from:6, to:30, k:1.6}},hold:{x:{status:{kind:'vuln',v:0.1,dur:5}}}}},
        passive:{name:'Far Sight', text:'+{}% damage against a target 14 m or more away', stat:'dmg', v:[0.10, 0.02], when:{dist:{from:14}}}},
     2:{bound:'any',
-       skill:{any:{name:'Mark the Gap', desc:'A spotting shot at up to 36 m: it puts Sight on the target and spreads the wind round it, so the enemies within 6 m carry its element too and your partners\' hits react on all of them.', cd:8, range:36, mult:1.7, act:['sorrel2x',0.6,0.5], anim:'shoot',
-                   fx:{proj:{kind:'frost', speed:60, turn:10, life:0.8, flavor:'air', mark:{id:'sight', n:1, dur:12, max:3}}}}},
+       skill:{any:{name:'Mark the Gap', desc:'A spotting shot at up to 36 m: it puts Sight on the target.', cd:8, range:36, mult:1.7, act:['sorrel2x',0.6,0.5], anim:'shoot',
+                   fx:{proj:{kind:'frost', speed:60, turn:10, life:0.8, mark:{id:'sight', n:1, dur:12, max:3}}}}},
        passive:{name:'Cold Eye', text:'+{}% critical hit chance against a target at full health', stat:'crit', v:[0.10, 0.01], when:{tgtHp:{above:0.95}}}},
     3:{bound:'class',
        skill:{

@@ -1,5 +1,5 @@
 //@ Torgeir's skill set, The Shield-Wall (a tank, earth): a taunting strike, a brace that shields the party, and a wall that holds the line; stone, bone and iron
-/* Agent map. Kit: docs/skillkits/kit-tank.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces earth: the aura of a held pack lets a partner's hit react); outfit and palette: docs/skillkits/looks/torgeir.md,
+/* Agent map. Kit: docs/skillkits/kit-tank.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces earth); outfit and palette: docs/skillkits/looks/torgeir.md,
    game/outfits/torgeir.js; visuals: game/skillsets/look-torgeir.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-first8-smoke.js, tools/skillsets-ladder.js --set torgeir.
    Land: the Hoarfrost Reach (tier 1). Mark: Fixation, spent by Hold the Line.
    What the engine gives him: a `taunt` inside an entry (the strike, the shot or the bolt taunts what it HITS, from any range), the `taunting` condition (Thick Hide), `perMark` (a shield that grows with the Fixation near him, and Hold the Line

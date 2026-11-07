@@ -1,5 +1,5 @@
 //@ Dunstan's skill set, The Rally (a buff support, fire): a striking pole that quickens the line, a cry of valor, and a banner planted for the whole fight; ember red, gold and drum cream
-/* Agent map. Kit: docs/skillkits/kit-support.md (the buff focus); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces fire: his hits leave the aura a partner reacts with into a burn; he debuffs nothing himself);
+/* Agent map. Kit: docs/skillkits/kit-support.md (the buff focus); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces fire; he debuffs nothing himself);
    outfit and palette: docs/skillkits/looks/dunstan.md, game/outfits/dunstan.js; visuals: game/skillsets/look-dunstan.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-first8-smoke.js,
    tools/skillsets-ladder.js --set dunstan. Land: the Hoarfrost Reach (tier 2, the second wave). Mark: Fervor. Buffs never stack (the stronger wins) and are capped (SS_ALLY_CAP), so a second buffer adds only a different KIND.
    What the engine gives him: a buff-duration stat (Loud Voice), a buff-power stat (Rousing; both are still capped by SS_ALLY_CAP), and `perMark` (Cry of Valor is stronger for each Fervor near him, and then spends them). */

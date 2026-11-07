@@ -1,5 +1,5 @@
 //@ Genzo's skill set, The Gate Bell (a tank, air): a taunting toll, a held note that wards the party, and the great bell that answers a broken ward; bronze, lacquer red and cloud white
-/* Agent map. Kit: docs/skillkits/kit-tank.md + kit-mixed.md (main tank, also healer, mild: the bell mends the party); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces air: a held pack carries the aura a partner reacts with); outfit and palette: docs/skillkits/looks/genzo.md,
+/* Agent map. Kit: docs/skillkits/kit-tank.md + kit-mixed.md (main tank, also healer, mild: the bell mends the party); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces air); outfit and palette: docs/skillkits/looks/genzo.md,
    game/outfits/genzo.js; visuals: game/skillsets/look-genzo.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js, tools/skillsets-ladder.js --set genzo.
    Land: the Sakura Vale (tier 3). Mark: Toll. Unlike Torgeir (the other tank: Fixation, spent by one big wall) he rings: every strike tolls once, Hold the Hour spends the tolls for a heal, and his bonus answers a broken shield. */
 defineSkillSet({

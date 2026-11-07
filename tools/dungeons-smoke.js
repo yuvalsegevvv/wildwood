@@ -332,12 +332,12 @@ ok('the level-30 gear is a tier of its own: its 490 ids are ITEM records (shared
   const tot=[0,1,2,3,4].map(R.dgEnhanceTotal), kills=tot.map(t=>Math.round(t/R.ENH_DROP));
   ok('enhancing walks from +0 to 2 / 4 / 6 / 8 / 10 and stops: the step to +n costs n stones ('+tot.join(' / ')+' to the limit = about '+kills.join(' / ')+' kills at '+R.ENH_DROP*100+'%), and every step raises weapons, armour and rings (the top is +'+Math.round(R.ENH_STEP*R.ENH_MAX[4]*100)+'% for a legendary)',
     !bad.length&&tot.join()==='3,10,21,36,55',bad.join('; ')); }
-{ const e=R.RING_ELS, souls=['basic',...R.ELEM_LIST], bad=[];
-  for(const el of e) for(const so of souls){ const b=R.ringAtk(R.dgRingId(el,0,0),so); if((b>0)!==(el===so)||(el===so&&b!==R.RING_ATK)) bad.push(el+' ring, '+so+' soul = '+b); }
-  const byRar=[0,1,2,3,4].map(r=>R.ringAtk(R.dgRingId('fire',r,0),'fire')), enh=R.ringAtk(R.dgRingId('fire',4,10),'fire');
-  ok('a ring adds its flat attack only when its element is the soul\'s (7 rings x 7 souls: only the matching one pays the full RING_ATK; none for the opposite soul)',!bad.length&&R.ringAtk(R.dgRingId('fire',0,0),'water')===0&&R.RING_ATK===20,bad.join('; '));
-  ok('the flat attack is 20 / 26 / 34 / 44 / 60 by rarity (RING_ATK x RAR_MULT), is the ring\'s own (no weapon in it) and grows with enhancement (a legendary +10 gives 120), and a hiker with no soul (undefined) counts as basic',
-    byRar.join()==='20,26,34,44,60'&&enh===120&&R.ringAtk(R.dgRingId('basic',0,0))===20&&R.ringAtk('sword7','fire')===0&&R.ringAtk(null,'fire')===0&&R.dgItem(R.dgRingId('fire',0,0)).atk===undefined,byRar.join('/')+' '+enh); }
+{ const e=R.RING_ELS, bad=[];
+  for(const el of e){ const b=R.ringAtk(R.dgRingId(el,0,0)); if(b!==R.RING_ATK) bad.push(el+' ring = '+b); }
+  const byRar=[0,1,2,3,4].map(r=>R.ringAtk(R.dgRingId('fire',r,0))), enh=R.ringAtk(R.dgRingId('fire',4,10));
+  ok('a ring adds its flat attack whatever its element (7 rings: every one pays the full RING_ATK, no soul to match)',!bad.length&&R.RING_ATK===20,bad.join('; '));
+  ok('the flat attack is 20 / 26 / 34 / 44 / 60 by rarity (RING_ATK x RAR_MULT), is the ring\'s own (no weapon in it) and grows with enhancement (a legendary +10 gives 120)',
+    byRar.join()==='20,26,34,44,60'&&enh===120&&R.ringAtk(R.dgRingId('basic',0,0))===20&&R.ringAtk('sword7')===0&&R.ringAtk(null)===0&&R.dgItem(R.dgRingId('fire',0,0)).atk===undefined,byRar.join('/')+' '+enh); }
 { const real=Math.random, N=200000, rnd=mulberry(5); let a,b;
   Math.random=()=>R.ENH_DROP-1e-9; a=R.rollMonsterRarity(); Math.random=()=>R.ENH_DROP; b=R.rollMonsterRarity(); Math.random=real;
   ok('the stone\'s chance is exactly the equipment chance it replaces (2.6%: just under it a monster drops equipment, at it nothing)',a>=0&&b===-1&&R.ENH_DROP===0.026);

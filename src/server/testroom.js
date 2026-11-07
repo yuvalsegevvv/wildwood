@@ -1,7 +1,7 @@
 //@ The test room on the server: an immortal Training Scarecrow, each hiker's damage counter, and the messages that reset the counter and the cooldowns, refill the cave charge
 /* Agent map (docs/TESTROOM.md)
    owns:    troomInitS (makes the scarecrow, called once beside initMonstersS), troomHitS (a hit on it: the hp goes back, the counter grows), troomTickP (sends the counter, at most 5 a second), MSG.troom{a: 'reset'|'cd'|'charge'}.
-   hooks:   marked `// testroom:`: damageMonsterS (combat.js) and the skill-set trigger damage (skillsets.js) call troomHitS; monK (tiers.js) gives the scarecrow the tier-0 numbers; bindSoulP (economy.js) works on the pad;
+   hooks:   marked `// testroom:`: damageMonsterS (combat.js) and the skill-set trigger damage (skillsets.js) call troomHitS; monK (tiers.js) gives the scarecrow the tier-0 numbers;
             the player loop (players.js) calls troomTickP.
    protocol: out {t:'troomc',tot,hits,dps,max,secs} (the counter), {t:'troomcd'} (cooldowns cleared: the client zeroes its own); in {t:'troom',a}.
    test:    tools/testroom-smoke.js. */

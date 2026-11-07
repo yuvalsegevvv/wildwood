@@ -1,4 +1,4 @@
-//@ Dungeon rewards, setup only (nothing calls it yet): what a clear pays (level-30 weapons, armour, rings or pendants, one random item, 70 / 25 / 4 / 0.8 / 0.2% by rarity), the ring (7 types, adds flat attack when it matches your soul), the pendant (5 kinds: exp, drop, coin, crit rate, crit damage: pendants.js), enhancing up to 2 / 4 / 6 / 8 / 10 times, and the tempering stone that monsters of level 30 and above drop instead of equipment. Pure.
+//@ Dungeon rewards, setup only (nothing calls it yet): what a clear pays (level-30 weapons, armour, rings or pendants, one random item, 70 / 25 / 4 / 0.8 / 0.2% by rarity), the ring (7 types, adds flat attack), the pendant (5 kinds: exp, drop, coin, crit rate, crit damage: pendants.js), enhancing up to 2 / 4 / 6 / 8 / 10 times, and the tempering stone that monsters of level 30 and above drop instead of equipment. Pure.
 /* The owner's rules (docs/DUNGEON-THEMES.md section 7 has the numbers a designer would tune):
    - Clearing the Wildwood dungeon pays a level-30 WEAPON (sword, bow or wand), the Vale's a level-30 ARMOUR piece (helmet, top, bottom or shoes), the Reach's a RING, the Greyspine's a PENDANT.
      One random item a clear: the rarity from DG_REWARD_W, then one of the dungeon's pool with equal chance. Everyone in the party gets the same item (the all-loot rule).
@@ -7,8 +7,8 @@
      come from enhancing it (below: ENH_STEP, +10% of its own stats a step, so a legendary +10 is twice its +0), not from the tier it is.
    - The pendant is a second jewellery slot (eq.pendant, pendants.js): 5 kinds, each with ONE bonus (exp, drop chance, coins, crit chance, crit multiplier), one random kind a clear.
    - The ring is a new slot. 7 types: no element (`basic`) and the six elements. It adds a FLAT number to your attack (weapon 90 + ring 20 = 110, before every other calculation: recalcP adds it to the gear's attack),
-     but only when its element is your soul's (`soulOfP`: `basic` is what an unbound soul or a hiker below level 15 has, so the plain ring is the one for them). The number is the ring's own (`ratk`, not `atk`:
-     gearStatsOf sums every worn item's `atk`, which would ignore the soul) and does not depend on the weapon.
+     whatever its element (the soul that used to gate it is gone: the element only names the ring). The number is the ring's own (`ratk`, not `atk`:
+     gearStatsOf sums every worn item's `atk`, which would count it in the gear's attack twice) and does not depend on the weapon.
    - Enhancing: a level-30 piece (weapon, armour or ring) can be raised +1, +2... up to ENH_MAX of its rarity (2 / 4 / 6 / 8 / 10). Each step costs the tempering stone
      (ENH_STONES) and adds ENH_STEP of the piece's own stats; it always works.
    - The stone drops from NORMAL monsters of level ENH_LV or more (the level you fight them at, so a zone tier counts) at ENH_DROP, which is exactly the chance of an
@@ -25,7 +25,7 @@ const DG_PRICE=30000, DG_RING_PRICE=1.2, DG_PENDANT_PRICE=1.2;   // like PRICE x
 const DG_NAMES={sword:'Elderwood Blade',bow:'Elderwood Longbow',wand:'Elderwood Wand',helmet:'Jadeplate Helm',top:'Jadeplate Cuirass',bottom:'Jadeplate Greaves',shoes:'Jadeplate Sabatons'};
 const RING_ELS=['basic',...ELEM_LIST];   // the seven ring types: no element, then the six
 const RING_NAMES={basic:'Plain Barrow Ring',fire:'Emberbound Ring',water:'Tidebound Ring',earth:'Rootbound Ring',air:'Windbound Ring',dark:'Duskbound Ring',light:'Dawnbound Ring'};
-const RING_ATK=20;   // a common +0 ring adds 20 attack (for a matching soul); rarity multiplies it by RAR_MULT: 20 / 26 / 34 / 44 / 60, and each tempering step adds ENH_STEP of it (a legendary +10: 120)
+const RING_ATK=20;   // a common +0 ring adds 20 attack; rarity multiplies it by RAR_MULT: 20 / 26 / 34 / 44 / 60, and each tempering step adds ENH_STEP of it (a legendary +10: 120)
 // what each dungeon (a DG_THEMES id) pays: a kind and the pool one random piece comes from
 const DG_REWARDS={
   hollowroots:    {kind:'weapon',pool:[...WEAPON_SLOTS]},
@@ -94,10 +94,10 @@ function dgAllIds(){
   const out=[]; for(let r=0;r<5;r++) for(let n=0;n<=ENH_MAX[r];n++){ for(const s of ALL_SLOTS) out.push(dgGearId(s,r,n)); for(const e of RING_ELS) out.push(dgRingId(e,r,n)); for(const t of PENDANT_STATS) out.push(dgPendantId(t,r,n)); }
   return out;
 }
-// the flat attack a ring adds: its own number, only when its element is the soul's (a soul below level 15 is 'basic', as soulOfP says)
-function ringAtk(ring,soul){
+// the flat attack a ring adds: its own number (its element does not matter)
+function ringAtk(ring){
   const it=typeof ring==='string'?dgItem(ring):ring;
-  return it&&it.kind==='ring'&&it.el===(soul||'basic')?it.ratk:0;
+  return it&&it.kind==='ring'?it.ratk:0;
 }
 // enhancing a piece one step: the id after, or null (not a level-30 piece, or already at its rarity's limit); the stones that step costs
 function dgEnhanceNext(id){ const q=dgParse(id); if(!q||q.n>=ENH_MAX[q.rar]) return null; return q.el?(q.t===8?dgRingId40(q.el,q.rar,q.n+1,q.roll):dgRingId(q.el,q.rar,q.n+1)):q.slot==='talisman'?dgTalismanId(q.stat,q.rar,q.n+1,q.roll):q.stat?(q.t===8?dgPendantId40(q.stat,q.rar,q.n+1,q.roll):dgPendantId(q.stat,q.rar,q.n+1)):q.t===8?dgGearId40(q.slot,q.rar,q.n+1,q.roll):dgGearId(q.slot,q.rar,q.n+1); }   // (a level-40 piece keeps its roll)

@@ -5,7 +5,7 @@
 function sanitizeGear(g,cls){
   const base=newGearFor(cls);
   if(!g||typeof g!=='object'){ const fresh=sanitizeGear({},cls); delete fresh.skills.v; return fresh; }   // no save at all (a moved guest, an account with no gear yet): a clean one has every field (gear.cos, fr, sq, rd... were missing, so cosmake threw), minus skills.v so that newPlayer equips the free skills
-  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>typeof id==='string'&&ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.min(COINS_MAX,Math.max(0,Math.floor(+g.coins||0))),q:null,startAll:!!g.startAll,caveFull:!!g.caveFull,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),redgate:clampInt(g.redgate,0,1,0),amber:g.amber>=1||g.redgate>=1?1:0,wv:WORLD_VER,sun:clampInt(g.sun,0,2,0),gloam:clampInt(g.gloam,0,2,0),tall:clampInt(g.tall,0,2,0),isles:clampInt(g.isles,0,2,0),soul:ELEMS[g.soul]?g.soul:'basic',mats:{}};
+  const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>typeof id==='string'&&ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.min(COINS_MAX,Math.max(0,Math.floor(+g.coins||0))),q:null,startAll:!!g.startAll,caveFull:!!g.caveFull,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),redgate:clampInt(g.redgate,0,1,0),amber:g.amber>=1||g.redgate>=1?1:0,wv:WORLD_VER,sun:clampInt(g.sun,0,2,0),gloam:clampInt(g.gloam,0,2,0),tall:clampInt(g.tall,0,2,0),isles:clampInt(g.isles,0,2,0),mats:{}}   // (an old save's `soul` is not copied: the soul was removed);
   if(g.mats&&typeof g.mats==='object') for(const id in g.mats){ const n=MATS[id]?clampInt(g.mats[id],0,MAT_MAX,0):0; if(n) out.mats[id]=n; }
   if(g.eq) for(const k in out.eq){ const id=g.eq[k], it=ITEM[id]; if(it&&out.inv.includes(id)&&(k==='weapon'?it.kind==='weapon':it.slot===k)) out.eq[k]=id; else if(k!=='weapon') out.eq[k]=null; }
   if(!ITEM[out.eq.weapon]) out.eq.weapon=base.eq.weapon;
@@ -122,7 +122,7 @@ function newPlayer(pid,hello){
 function recalcP(p){
   if(p.pv){ pvpRecalcP(p); return; }   // pvp: on the Proving Isle everyone has the same numbers (server/pvp.js)
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
-  g.atk+=dgRingAtkP(p)+talAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else (only for a matching soul)
+  g.atk+=dgRingAtkP(p)+talAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else 
   rlRefreshP(p);   // rolls: the lines of the worn level-40 pieces (p.rl)
   p.maxHp=Math.round((20*fLv(p.level)+g.hp)*(1+psP(p,'hp'))*(1+sym)*(1+rlP(p,'hp'))*(1+toolBonusStat(p.gear,'hp'))); p.dmg=(3*fLv(p.level)+g.atk)*(1+sym)*(1+rlP(p,'atk'))*(1+toolBonusStat(p.gear,'atk')); p.def=Math.round(g.def*(1+rlP(p,'def'))*(1+toolBonusStat(p.gear,'def'))); p.red=defRed(p.def);   // rolls: hp, atk and def lines   // professions: the worn tools' small bonus (shared/professions.js)
   p.hp=p.dead?0:Math.max(1,Math.min(p.maxHp,Math.round(p.maxHp*ratio)));
@@ -133,7 +133,6 @@ const clsOfP=p=>classOfGear(p.gear);
 const psP=(p,stat)=>passiveSum(skOfP(p),pvLvP(p),stat,p.pv?undefined:clsOfP(p),p.ultV);   // ult: p.ultV, a burst's boost of a passive's value   // a passive stat (Vitality's hp, Ferocity's dmg...); pvp: on the island the fixed loadout at the fixed level, and no set bonuses
 // the bonus of the worn pendant for one stat (pendants.js): read from the item id in the save, never from a number the client sent, and only while you are high enough for it (pvp: none on the island)
 function pendP(p,stat){ if(p.pv) return 0; const it=ITEM[p.gear.eq.pendant]; return it&&it.kind==='pendant'&&it.stat===stat&&p.level>=it.lv?it.v:0; }   // pvp: no pendant on the island
-const soulOfP=p=>p.level>=SOUL_LV?p.gear.soul:'basic';
 function youMsg(p){ return {t:'you',level:p.level,exp:p.exp,maxHp:p.maxHp,hp:p.hp,dmg:p.dmg,def:p.def,red:p.red,dead:p.dead,pv:p.pv?1:0,gear:p.gear}; }   // pvp: pv = standing on the island, where the numbers above are the fixed ones
 function pubInfo(p){ return {id:p.id,name:p.name,look:p.look,eq:p.gear.eq,level:p.level}; }
 function inVillage(p){ return vNear(p.x,p.z,VR+12); }
@@ -206,7 +205,7 @@ function gainExpP(p,v,monId){
 function hurtP(p,v,m,by){   // returns the damage taken; by: the fighter who hit (pvp, no monster)
   if(p.dead||(p.cave&&p.cave.bur>S.t)||(p.vbGrace>S.t)) return 0;   // volcano: a moment's grace after waking on the spot   // cave: Burrow, nothing can hit you
   const K=m?monK(m,p):null, ld=m?Math.max(0,K.lv-p.level):0;
-  v=Math.max(1,Math.round(v*(K?K.dmg:1)*rxWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red')-ssCondP(p,'red',m))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))*(1-allyP(p,'guard')))));   // reactions: weak lowers what a monster deals
+  v=Math.max(1,Math.round(v*(K?K.dmg:1)*mstWeakK(m)*(1+0.05*ld)*Math.max(DMG_TAKEN_MIN,(1-p.red)*(1-psP(p,'red')-ssCondP(p,'red',m))*(1-(p.buff?p.buff.red||0:0))*(1-potBuffP(p,'guard'))*(1-allyP(p,'guard')))));   // statuses: weak lowers what a monster deals
   v=caveHurtS(p,v,m); if(v<=0){ p.lastHit=S.t; return 0; }   // cave: Shield-Wall, Stopped Hour, Bell Echo, Embalm, Eagle's Perch
   if(p.shield&&p.shield.until>S.t&&p.shield.v>0){ const a=Math.min(v,p.shield.v); p.shield.v-=a; v-=a; if(p.shield.v<=0&&!p.shield.done){ p.shield.done=true; ssShieldBreakS(p); } if(v<=0){ p.lastHit=S.t; return 0; } }   // skillsets: a shield soaks the hit first
   p.hp-=v; p.lastHit=S.t; ev('hurt',p.id,v);

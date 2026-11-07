@@ -84,7 +84,6 @@ const BAD=[
   ['a bad rangeScale','pos',d=>{ d.pos[2].skill.any.fx.rangeScale={from:10,to:5,k:2}; }],
   ['a bad mark','pos',d=>{ d.pos[2].skill.any.fx.ring.mark={id:'Bad Id'}; }],
   ['a bad status','pos',d=>{ d.pos[2].skill.any.fx.ring.status={kind:'vuln',v:0.9,dur:5}; }],
-  ['a flavor that is no element','pos',d=>{ d.pos[2].skill.any.fx.ring.flavor='lava'; }],
   ['a pop of a mark the set never applies','kit',d=>{ d.pos[3].skill.any.fx.pop={id:'ghost',k:1}; }],
   ['an amp of a mark the set never applies','kit',d=>{ d.pos[1].passive={name:'x',text:'y',amp:{id:'ghost',per:0.1}}; }],
   ['a trigger whose fx is a buff','pos',d=>{ d.pos[1].passive={name:'x',text:'y',on:'kill',fx:{buff:1}}; }],
@@ -129,8 +128,8 @@ ok('a set defined twice is refused',x.SS_BAD.length===1&&x.SS_BAD[0].field==='id
   ok('only one released set for each land and tier (dev sets are exempt)',!!real1&&x.SS_BAD.length===1&&x.SS_BAD[0].field==='needs'&&!x.SS_SETS.real2); x.SS_BAD.length=0; }
 ok('a hybrid of two elements is allowed for a risk set, each piece takes one of them',(()=>{ const h=x.defineSkillSet(fixture('hyb',d=>{ d.role={main:'risk'}; d.el=['dark','air']; d.char.name='Hyb'; d.pos[1].skill.warrior.el='air'; d.pos[1].skill.archer.el='air'; d.pos[1].skill.mage.el='air'; d.pos[2].skill.any.el='dark'; d.pos[3].skill.any.el='dark'; })); return !!h&&h.pos[1].el==='air'&&x.SKILLS.hyb_2_any.el==='dark'&&x.PASSIVES.hyb_p1.el==='air'; })(),JSON.stringify(x.SS_BAD));
 ok('a grind set may be a hybrid too',!!x.defineSkillSet(fixture('hyb2',d=>{ d.role={main:'grind'}; d.el=['earth','fire']; d.char.name='Hyb Two'; d.pos[1].skill.warrior.el='earth'; d.pos[1].skill.archer.el='earth'; d.pos[1].skill.mage.el='earth'; d.pos[2].skill.any.el='fire'; d.pos[3].skill.any.el='fire'; })),JSON.stringify(x.SS_BAD));
-ok('a hybrid of soul opposites is allowed but linted; the first grinder not being basic is linted',(()=>{ x.defineSkillSet(fixture('hyb3',d=>{ d.role={main:'safe'}; d.el=['fire','water']; d.char.name='Hyb Three'; d.pos[1].skill.warrior.el='fire'; d.pos[1].skill.archer.el='fire'; d.pos[1].skill.mage.el='fire'; d.pos[2].skill.any.el='water'; d.pos[3].skill.any.el='water'; }));
-  const L=x.ssLint(); return L.some(l=>l.set==='hyb3'&&/opposites/.test(l.why)); })());
+ok('a hybrid of fire and water is just a hybrid now: nothing lints it (the soul\'s penalty on opposites is gone)',(()=>{ x.defineSkillSet(fixture('hyb3',d=>{ d.role={main:'safe'}; d.el=['fire','water']; d.char.name='Hyb Three'; d.pos[1].skill.warrior.el='fire'; d.pos[1].skill.archer.el='fire'; d.pos[1].skill.mage.el='fire'; d.pos[2].skill.any.el='water'; d.pos[3].skill.any.el='water'; }));
+  const L=x.ssLint(); return !L.some(l=>l.set==='hyb3'); })());
 { quiet(()=>{ x.defineSkillSet(fixture('grinder',d=>{ d.dev=false; d.land='vale'; d.role={main:'grind'}; d.char.name='Grinder'; })); });
   ok('the first grinder that is not pure basic is linted (the owner\'s one requirement)',x.ssLint().some(l=>l.set==='grinder'&&/pure basic/.test(l.why)),JSON.stringify(x.ssLint())); }
 ok('a position in another element than its single-element set needs a why',(()=>{ x.defineSkillSet(fixture('odd',d=>{ d.char.name='Odd'; d.pos[2].skill.any.el='water'; })); return x.ssLint().some(l=>l.set==='odd'&&/no why/.test(l.why)); })());
@@ -230,7 +229,7 @@ ok('a kit with marks, a pop, an amp, triggers, modifiers and a cost registers (m
 send({t:'dev',cmd:'set',v:'kitx'}); p.level=30; send({t:'dev',cmd:'level',v:30});
 const wear=()=>{ for(const id of ['kitx_1_archer','kitx_2_any','kitx_3_any']) send({t:'eqskill',id}); send({t:'eqskill',id:'kitx_p1',idx:0}); send({t:'eqskill',id:'kitx_p2',idx:1}); send({t:'eqskill',id:'kitx_p3',idx:2}); };
 const norm=x.MONS.filter(mm=>!mm.boss&&!mm.inst), mA=norm[0], mB=norm[1], mC=norm[2], bossM=x.MONS.find(mm=>mm.boss);
-const fresh=m=>{ m.dead=false; m.remove=false; m.hp=1e9; m.maxHp=1e9; m.mk=null; m.st=null; m.aura=null; m.rxIcd=null; m.inst=0; m.immune=false; m.burnT=m.slowT=m.stunT=0; return m; };
+const fresh=m=>{ m.dead=false; m.remove=false; m.hp=1e9; m.maxHp=1e9; m.mk=null; m.st=null; m.inst=0; m.immune=false; m.burnT=m.slowT=m.stunT=0; return m; };
 const place=(m,dx,dz,face)=>{ fresh(m); m.x=p.x+dx; m.z=p.z+dz; if(face!==undefined) m.face=face; return m; };
 const still=fn=>{ const R=Math.random; Math.random=()=>0.5; try{ return fn(); } finally{ Math.random=R; } };
 const lost=(m,fn)=>{ const h=m.hp; fn(); return h-m.hp; };

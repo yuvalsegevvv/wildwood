@@ -7,14 +7,14 @@
    the owner's marked targets take more (ssAmpK), they die with the monster (ssClearS). Event mk [monId, markId, n, dur, ownerId] (only the owner draws it).
    SKILL MODIFIERS of a fx (fxModK): vsBoss, behind, rangeScale: a multiplier on each of the skill's hits, read where the hit is made (resolveFxS, impactFxS, updateAreasS).
    TRIGGERS (ssTriggerS(p,kind,ctx), kinds hit crit kill hurt cast1-3 tick low): the worn passives' and bonuses' rows with on:, each with chance and icd; a trigger never fires a trigger (ssDepth), its damage
-   leaves no aura (rxQuietS). Effects: fx (resolveFxS with a synthetic action), heal, mark, status; buff and shield are the ally effects (docs/SKILL-SETS.md 6.3).
+   is not a hit (mstQuietS). Effects: fx (resolveFxS with a synthetic action), heal, mark, status; buff and shield are the ally effects (docs/SKILL-SETS.md 6.3).
    ALLIES (docs/SKILL-SETS.md 6.3): the general buffs p.ally[kind]={v,until,by} (might, guard, haste, crit, critdmg, regen), a shield pool p.shield={v,until}, never stacking (the stronger wins, an equal one
    refreshes, a smaller one is ignored), read at the one place each number is used (allyP: rollDmgS, hurtP, handleAttack, updatePlayersS); a heal, a buff or a shield reaches the caster and their party
    within r metres in the same run (ssAlliesOf), and always the caster alone when there is no party. A skill's fx carries them as ally / heal / shield (ssFxUtilS) and a zone's as it ticks (ssZoneAlliesS).
    TAUNT: m.taunt={by,until}; the monster's own target code reads it (monsters.js, boss.js, dungeons/mobs.js); a boss takes SS_TAUNT_BOSS of the time, none while enraged; a run's kit-driven monsters (dgOwn) ignore it.
    Events: ast [pid, kind, v, dur, piece] (a buff set or replaced, for the buffed player's own display); fxa [pid, 'heal'|'shield', piece] (a heal or a shield reached a player). THE PIECE (ssSrc: a skill id, or the id of a passive / bonus row
    that fired) is also the last field of area, proj, chain and beam events when a set piece caused them, so the client draws them in the set's look (game/skillsets/looks.js); a boss skill's events carry none.
-   reflect (a passive stat, read in hurtP) deals a share of the damage taken back to the attacker (ssRawHitS: a hit that is not a skill's, no aura, no triggers).
+   reflect (a passive stat, read in hurtP) deals a share of the damage taken back to the attacker (ssRawHitS: a hit that is not a skill's, no triggers).
    Used by: economy.js (equipSkillP, unequipSkillP, buySkillP, upgradeSkillP, the testing tool 'set'), players.js (recalcP, psP, sanitizeSkills, hurtP, updatePlayersS), combat.js (the hooks marked skillsets).
    A piece is earned (M3's sources, not built yet) or given by the testing tool: never free, never bought, never upgraded in v1. Events: ssget [pid, setId, pos], mk. */
 function ssPieceIdsOf(setId,pos){ const S=SS_SETS[setId], P=S&&S.pos[pos]; return P?[...P.ids,P.passive]:[]; }
@@ -122,14 +122,14 @@ function ssWhen(p,m,w){
   if(w.marked&&!(m&&ssMarkN(p,m,w.marked)>0)) return false;
   if(w.behind&&!(m&&ssBehind(p,m))) return false;
   if(w.boss&&!(m&&m.boss)) return false;
-  if(w.exposed&&!(m&&(m.dead?m.expoDeath:(rxVulnK(m)>0||rxWeakK(m)<1)))) return false;
+  if(w.exposed&&!(m&&(m.dead?m.expoDeath:(mstVulnK(m)>0||mstWeakK(m)<1)))) return false;
   if(w.combat&&!(S.t-(p.lastDealt||-99)<6)) return false;
   if(w.shield&&!(p.shield&&p.shield.until>S.t&&p.shield.v>0)) return false;
   if(w.crowd){ let n=0; for(const q of MONS) if(!q.dead&&!q.remove&&(q.inst|0)===(p.inst|0)&&Math.hypot(q.x-p.x,q.z-p.z)<w.crowd.r+q.T.rad*0.5&&++n>=w.crowd.n) break; if(n<w.crowd.n) return false; }
   if(w.allies&&ssAlliesOf(p,w.allies.r).length-1<w.allies.n) return false;
   return true;
 }
-// the conditional part of a passive stat for this target (m may be null where the stat has no target): added to psP's plain sum where it is read (rollDmgS, hurtP, reactions, heals, buffs)
+// the conditional part of a passive stat for this target (m may be null where the stat has no target): added to psP's plain sum where it is read (rollDmgS, hurtP, heals, buffs)
 function ssCondP(p,stat,m){
   const L=p.ss&&p.ss.cond; if(!L||!L.length) return 0;
   let t=0; for(const c of L) if(c.stat===stat&&ssWhen(p,m||null,c.when)) t+=c.pid&&c.v>0?c.v*ultVK(p,c.pid):c.v; return t;   // ult: a boosted passive's benefit (not its cost)
@@ -150,7 +150,7 @@ function fxModK(f,p,m){
   if(f.rangeScale){ const R=f.rangeScale; k*=1+(R.k-1)*Math.max(0,Math.min(1,(Math.hypot(p.x-m.x,p.z-m.z)+caveRangeAdd(p)-R.from)/(R.to-R.from))); }
   return k;
 }
-// damage that is not a skill's (a reflect): through the same health pool (monK), no aura, no triggers
+// damage that is not a skill's (a reflect): through the same health pool (monK), no triggers
 function ssRawHitS(m,v,p){
   if(m.dead||m.remove||m.immune||!(v>0)) return;
   m.hp-=v/monK(m,p).hp; m.hitters.set(p.id,S.t); if(m.tr) troomHitS(m,p,v); ev('dmg',m.id,Math.round(v),0,p.id);
@@ -164,11 +164,11 @@ function ssRunRowS(p,r,ctx){
   if(r.heal){ healP(p,p.maxHp*r.heal*(1+psP(p,'heal')+ssCondP(p,'heal',m))); ev('fxa',p.id,'heal',r.id); }
   if(r.cdr) ssCdrS(p,r.cdr);
   if(r.mark&&m) ssMarkS(p,m,r.mark);
-  if(r.status&&m) rxDirectS(m,{status:r.status},p,1);
+  if(r.status&&m) mstDirectS(m,{status:r.status},p);
   if(r.buff) for(const q of ssAlliesOf(p,r.buff.r)) ssAllyS(q,r.buff.kind,r.buff.v,r.buff.dur,p.id,r.id);
   if(r.shield) for(const q of ssAlliesOf(p)) ssShieldS(q,r.shield.v,r.shield.dur,r.id);
   if(r.fx){ const at=r.at==='target'&&ctx&&ctx.m?{x:ctx.m.x,z:ctx.m.z}:null;   // at: centred on the monster the trigger is about (a kill: where it died)
-    rxQuietS(()=>resolveFxS(p,{fx:r.fx,mult:r.mult||1,range:r.range||10,el:r.el||'basic',aim:[-Math.sin(p.face),0,-Math.cos(p.face)],sid:null,src:r.id,at},m)); }
+    mstQuietS(()=>resolveFxS(p,{fx:r.fx,mult:r.mult||1,range:r.range||10,el:r.el||'basic',aim:[-Math.sin(p.face),0,-Math.cos(p.face)],sid:null,src:r.id,at},m)); }
 }
 // kind: hit crit kill hurt cast1 cast2 cast3 tick low; ctx: {m, v}. A player with no triggered rows leaves at once.
 function ssTriggerS(p,kind,ctx){

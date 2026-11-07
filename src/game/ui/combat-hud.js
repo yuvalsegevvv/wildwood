@@ -29,7 +29,7 @@ function updateCombatUI(dt){
   }
   for(;bi<barPool.length;bi++) barPool[bi].hidden=true;
   const T=CB.target;
-  const soul=soulNow(); $('#plLv').textContent='Lv '+(PVC&&PVC.on?PVP.level+' (PvP)':PL.level)+(soul!=='basic'?' · '+ELEMS[soul].name:''); $('#plHpT').textContent=Math.ceil(PL.hp)+' / '+PL.maxHp;
+  $('#plLv').textContent='Lv '+(PVC&&PVC.on?PVP.level+' (PvP)':PL.level); $('#plHpT').textContent=Math.ceil(PL.hp)+' / '+PL.maxHp;
   $('#plHp').style.width=(PL.hp/PL.maxHp*100)+'%'; const need=expToNext(PL.level);
   $('#plXp').style.width=Math.min(100,PL.exp/need*100)+'%'; $('#plXpT').textContent='XP '+numC(PL.exp)+' / '+numC(need);
   const bossUI=updateBossUI();

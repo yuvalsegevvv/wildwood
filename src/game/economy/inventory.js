@@ -21,7 +21,7 @@ function renderInv(){
   $('#invGems').textContent=(GEAR.gem||0)+' gems';
   $('#invAmber').textContent=(GEAR.amb||0)+' amber';
   const g=gearStats(), c=CLASSES[clsOf()];
-  let h=`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Soul</span><b style="color:${ELEMS[soulNow()].col}">${ELEMS[soulNow()].name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div>${invExtraStats()}</div>`;
+  let h=`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div>${invExtraStats()}</div>`;
   h+='<div class="inv-wrap"><div class="doll" id="invDoll">'+SIL;
   for(const [s,area] of BODY_SLOTS){
     const it=ITEM[GEAR.eq[s]];
@@ -43,12 +43,12 @@ function renderInv(){
 // every other number that shapes a fight: the passives' totals (the loadout you have open) and the necklace's line
 function invExtraStats(){
   const ps=st=>GEAR&&GEAR.skills?passiveSum(GEAR.skills,PL.level,st,clsOf()):0, pd=GEAR&&ITEM[GEAR.eq.pendant], pn=st=>pd&&pd.kind==='pendant'&&pd.stat===st&&PL.level>=pd.lv?pd.v:0, pc=v=>pendantPct(v)+'%';
-  const rows=[['Crit chance',pc(Math.min(CRIT_CAP,CRIT_BASE+ps('crit')+pn('crit')))],['Crit damage','x'+Math.min(CRIT_MULT_CAP,CRIT_MULT+pn('critdmg')+ps('critdmg')).toFixed(2)],['Damage bonus','+'+pc(ps('dmg'))],['Health bonus','+'+pc(ps('hp'))],['Damage taken','-'+pc(ps('red'))+' (passive)'],['Cooldowns','-'+pc(ps('cd'))],['Move speed','+'+pc(ps('move'))],['Drop chance','+'+pc(ps('drop')+pn('drop'))],['XP gain','+'+pc(ps('xp')+pn('xp'))],['Coin gain','+'+pc(pn('coin'))],['Soul bonus','+'+pc(ps('soul'))]];
+  const rows=[['Crit chance',pc(Math.min(CRIT_CAP,CRIT_BASE+ps('crit')+pn('crit')))],['Crit damage','x'+Math.min(CRIT_MULT_CAP,CRIT_MULT+pn('critdmg')+ps('critdmg')).toFixed(2)],['Damage bonus','+'+pc(ps('dmg'))],['Health bonus','+'+pc(ps('hp'))],['Damage taken','-'+pc(ps('red'))+' (passive)'],['Cooldowns','-'+pc(ps('cd'))],['Move speed','+'+pc(ps('move'))],['Drop chance','+'+pc(ps('drop')+pn('drop'))],['XP gain','+'+pc(ps('xp')+pn('xp'))],['Coin gain','+'+pc(pn('coin'))]];
   return rows.map(r=>`<div><span>${r[0]}</span><b>${r[1]}</b></div>`).join('');
 }
 function statDiff(it,cur){
   if(it.kind==='talisman') return cur&&cur.kind==='talisman'&&cur.stat===it.stat?(it.v===cur.v?'':`<span class="${it.v>cur.v?'up':'down'}">${it.v>cur.v?'+':'-'}${it.stat==='atk'?Math.round(Math.abs(it.v-cur.v))+' attack':pendantPct(Math.abs(it.v-cur.v))+'%'}</span>`):'<span class="muted">a different bonus</span>';
-  if(it.kind==='ring') return dgRingDiffHtml(it,cur);   // dungeons: a ring's difference is in attack, by your soul
+  if(it.kind==='ring') return dgRingDiffHtml(it,cur);   // dungeons: a ring's difference is in attack
   if(it.kind==='pendant') return cur&&cur.kind==='pendant'&&cur.stat===it.stat?(it.v===cur.v?'':`<span class="${it.v>cur.v?'up':'down'}">${it.v>cur.v?'+':'-'}${it.stat==='critdmg'?(Math.round(Math.abs(it.v-cur.v)*100)/100)+' crit multiplier':pendantPct(Math.abs(it.v-cur.v))+'%'}</span>`):'<span class="muted">a different bonus</span>';
   const k=it.kind==='tool'?[['tier','tier'],['rar','rarity']]:it.kind==='weapon'?[['atk','attack']]:[['hp','health'],['def','defense']];
   return k.map(([f,n])=>{ const d=(it[f]||0)-((cur&&cur[f])||0); return d?`<span class="${d>0?'up':'down'}">${d>0?'+':''}${d} ${n}</span>`:''; }).filter(Boolean).join(' ');
@@ -62,7 +62,7 @@ function renderInvInfo(){
   const have=bagCounts()[it.id]||0;
   if(!worn && have>=MERGE_COUNT && it.rar<4) cmp=`<span style="color:${RAR_COL[it.rar+1]}">You have ${have}: Greta's forge (or Tetsuo's in Hanami) can merge 3 into a ${RARITY[it.rar+1]} one.</span>`;
   if(!worn){ const d=statDiff(it,cur); cmp=(cmp?cmp+'<br>':'')+(cur?(d?`${d} <span class="muted">compared to your ${cur.name}</span>`:'<span class="muted">Same as what you wear</span>'):'<span class="up">Fills an empty slot</span>'); }
-  { const dg=dgInfoHtml(it); if(dg) cmp+=(cmp?'<br>':'')+dg; }   // dungeons: a level-30 piece's tempering, a ring's soul note
+  { const dg=dgInfoHtml(it); if(dg) cmp+=(cmp?'<br>':'')+dg; }   // dungeons: a level-30 piece's tempering
   const btn=worn?(slot==='weapon'?'<span class="muted">You always hold a weapon: drag another one onto your hand to swap.</span>':`<button class="chip" data-unequip="${slot}">Take off</button>`)
     :`<button class="chip" data-equip="${it.id}" ${locked?'disabled':''}>${locked?'Needs level '+it.lv:'Equip'}</button>`;
   el.innerHTML=`<div class="ii-ico r${it.rar}">${itemIcon(it)}</div><div class="ii-main"><b style="color:${RAR_COL[it.rar]}">${it.name}</b>
