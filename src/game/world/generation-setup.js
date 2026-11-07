@@ -122,7 +122,7 @@ const TERRAIN_COLOR=`
   float tm=tn1.x*0.45+tn2.x*0.35+tn3.x*0.2;
   float tlum=dot(diffuseColor.rgb,vec3(0.3,0.59,0.11)), tbright=smoothstep(0.5,0.8,tlum);   // snow and ice keep their white: no warm shift, little tone
   float tgreen=smoothstep(0.0,0.06,diffuseColor.g-max(diffuseColor.r,diffuseColor.b)*0.95), tmask=max(tgreen,tbright);   // dirt, paths and sand (r >= g) stay flat: no noise on bare ground
-  diffuseColor.rgb*=1.0+(0.82+0.36*mix(0.5,tm,(0.35+0.65*tfade)*tmask)-1.0)*(1.0-0.75*tbright);
+  diffuseColor.rgb*=1.0+(0.82+0.36*mix(0.5,tm,(0.35+0.65*tfade)*tmask)-1.0)*(1.0-0.88*tbright);
   diffuseColor.rgb*=mix(vec3(1.0),mix(vec3(0.95,1.0,1.03),vec3(1.08,1.03,0.88),smoothstep(0.3,0.75,tn0.x)),(1.0-tbright)*tgreen);
 `;
 /* Short grass (desktop, VD>=2, only with localStorage 'wildwood-sg'='1' for now): the lawn between the tufts, made from noise in the same pixel shader, no model.
