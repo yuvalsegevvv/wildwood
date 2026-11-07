@@ -3,7 +3,7 @@
 // Usage: node tools/dip-smoke.js
 const {loadServer}=require('./load');
 const sent=[];
-const {api:W,x}=loadServer({dev:false,send(to,m){ sent.push([to,m]); }},['DIP_SITES','DIP_BY_ID','DIP_BAD','DIP_ACT','landAt','DIP_COUNT','DIP_INTERVAL','DIP_MAX','DIP_SECS','DIP_SIDE','dipCost','dipNear','dipUpNeeds','dipKindLv','MON_DEFS','getH','MONS','monK','nearPath','PZ_SITES','sanitizeGear']);
+const {api:W,x}=loadServer({dev:false,send(to,m){ sent.push([to,m]); }},['DIP_SITES','DIP_BY_ID','DIP_BAD','DIP_ACT','landAt','DIP_COUNT','DIP_INTERVAL','DIP_MAX','DIP_SECS','DIP_SIDE','dipCost','dipNear','dipUpNeeds','dipKindLv','MON_DEFS','getH','MONS','monK','nearPath','PZ_SITES','sanitizeGear','DIP_LURE_K','DIP_LURE_COST','DIP_MAT_K']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const tick=(n,dt)=>{ for(let i=0;i<n;i++) W.tick(dt||0.05); };
 const msgs=(to,t)=>sent.filter(s=>s[0]===to&&s[1].t===t).map(s=>s[1]);
@@ -55,4 +55,20 @@ const st2=x.DIP_ACT.get(S0.id); tick(2);
 ok('releasing at level 1 with a level-3 pipe pays the level-1 price and fills to the level-1 count',!!st2&&st2.L===1&&A.gear.coins===1e9-x.dipCost(S0,1)&&st2.mons.filter(m=>!m.dead&&!m.remove).length===x.DIP_COUNT[1]);
 st2.until=0; tick(2); A.gear.dip[S0.id]=1; W.receive('a',{t:'dip',a:'go',id:S0.id,lv:5});
 ok('asking for more than your own level gives your own',x.DIP_ACT.get(S0.id)&&x.DIP_ACT.get(S0.id).L===1);
+// the lure: refused junk, x1.5 once, half the spawns the lured kind; no lure = the old price and mix
+ok('DIP_MAT_K is 0.25 and the lure constants are 0.5 / 1.5',x.DIP_MAT_K===0.25&&x.DIP_LURE_K===0.5&&x.DIP_LURE_COST===1.5);
+ok('a save keeps a valid lure and drops junk',(()=>{ const k=home.kinds[0], g=x.sanitizeGear({dip:{lure:{'dip-home':k,'dip-vale':'nope','constructor':'x'}}},'warrior'); const g2=x.sanitizeGear({dip:{lure:{'dip-home':'__proto__'}}},'warrior'); return g.dip.lure['dip-home']===k&&!g.dip.lure['dip-vale']&&Object.keys(g.dip.lure).length===1&&!g2.dip.lure; })());
+put(A,S0); A.dead=false; A.gear.dip={}; A.gear.dip[S0.id]=5; A.gear.coins=1e9; if(x.DIP_ACT.has(S0.id)){ x.DIP_ACT.get(S0.id).until=0; tick(2); }
+W.receive('a',{t:'dip',a:'lure',id:S0.id,k:'constructor'}); W.receive('a',{t:'dip',a:'lure',id:S0.id,k:'zzz'}); W.receive('a',{t:'dip',a:'lure',id:S0.id,k:{}});
+ok('a junk lure id is refused',!(A.gear.dip.lure&&A.gear.dip.lure[S0.id]));
+W.receive('a',{t:'dip',a:'go',id:S0.id}); const stN=x.DIP_ACT.get(S0.id);
+ok('no lure: the old price',!!stN&&!stN.lure&&A.gear.coins===1e9-x.dipCost(S0,5)); stN.until=0; tick(2);
+const LK=home.kinds[3]; W.receive('a',{t:'dip',a:'lure',id:S0.id,k:LK});
+ok('the lure is saved',A.gear.dip.lure[S0.id]===LK&&msgs('a','dip').length>0);
+A.gear.coins=1e9; W.receive('a',{t:'dip',a:'go',id:S0.id}); const stL=x.DIP_ACT.get(S0.id);
+ok('a lured release costs x1.5, once',!!stL&&stL.lure===LK&&A.gear.coins===1e9-x.dipCost(S0,5)*1.5&&x.dipCost(S0,5,true)===x.dipCost(S0,5)*1.5);
+W.receive('a',{t:'dip',a:'go',id:S0.id}); ok('a second go charges nothing',A.gear.coins===1e9-x.dipCost(S0,5)*1.5);
+{ let tot=0, lured=0; for(let r=0;r<10;r++){ tick(Math.ceil(x.DIP_INTERVAL[5]/0.05)+2); const al=stL.mons.filter(m=>!m.dead&&!m.remove); tot+=al.length; lured+=al.filter(m=>m.def.id===LK).length; for(const m of al){ m.dead=true; m.deadT=2; } }
+  ok('about half of a lured release\'s spawns are the lured kind',tot>300&&lured/tot>0.4&&lured/tot<0.6,lured+'/'+tot); }
+stL.until=0; tick(2);
 console.log(fails?fails+' FAILED':'all passed'); process.exit(fails?1:0);
