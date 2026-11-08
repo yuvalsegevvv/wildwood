@@ -4,7 +4,7 @@
             energy counts up), riftHere() / riftPrompt(tk) / riftOpenNear() (village/talking.js: the talk key), NETH.rift (the window's info), EVH.riftw (the wave banner), RIFT_UI
    markup: #rift (index.html, a panel: its id is in PANELS), styles 35-rift.css. Test: tools/client-smoke.js (the rift case), tools/rift-smoke.js
    The energy shown is the server's (info: e, full), counted up here at the server's rate between answers, never sent back. */
-const RIFT_VIEWS=[], RIFT_UI={info:null,at:0,x2:false,id:null};
+const RIFT_VIEWS=[], RIFT_UI={info:null,at:0,x2:false,id:null,lv:30};
 function riftBuild(){
   for(const id in RIFT_DEFS){
     const R=RIFT_DEFS[id], y=getH(R.door.x,R.door.z), G=new THREE.Group(); G.position.set(R.door.x,y,R.door.z); G.name='rift-'+id;
@@ -38,20 +38,29 @@ function riftOpenNear(){ const R=riftNearest(); if(!R) return; RIFT_UI.id=R.id; 
 NETH.rift=m=>{ if(m.a!=='info') return; RIFT_UI.info=m; RIFT_UI.at=Date.now(); riftRender(); };
 const riftEnergyNow=()=>{ const I=RIFT_UI.info; return I?Math.min(RIFT_E_MAX,I.e+(Date.now()-RIFT_UI.at)/RIFT_E_MS):0; };
 const riftHms=s=>{ s=Math.max(0,Math.ceil(s)); const h=Math.floor(s/3600), m=Math.floor(s%3600/60); return h?h+' h '+String(m).padStart(2,'0')+' min':m?m+' min':s+' s'; };
+// an elemental rift's part of the window: how its mode plays, the level picker (30 to 80: shut ones say what opens them), what a clear pays at the level picked
+function riftModeHtml(R,I){
+  const M=RIFT_MODES[R.mode]||RIFT_MODES.waves, es=riftEss(R), tiers=I.tiers&&I.tiers.length?I.tiers:RIFT_TIERS;
+  if(!tiers.includes(RIFT_UI.lv)||!riftTierOpen(RIFT_UI.lv,I.tier)) RIFT_UI.lv=tiers.filter(t=>riftTierOpen(t,I.tier)).pop()||tiers[0];
+  return '<p class="rf-line"><b>'+M.name+'.</b> '+M.how+'</p>'
+    +'<div class="rf-tiers">'+tiers.map(t=>{ const open=riftTierOpen(t,I.tier); return '<button class="chip rf-tier'+(t===RIFT_UI.lv?' on':'')+'" data-lv="'+t+'"'+(open?'':' disabled title="Opens with a clear of level '+(t-10)+'"')+'>Level '+t+(open?'':' 🔒')+'</button>'; }).join('')+'</div>'
+    +'<p class="rf-line">The monsters fight at <b>level '+RIFT_UI.lv+'</b>. A full clear pays <b>'+(RIFT_TIER_ESS[RIFT_UI.lv]||RIFT_ESS_FULL)+' '+(es?es.name:'Essence')+'</b> (less if you fall earlier); no XP, no coins. Solo only. A clear opens the next level in every elemental rift.</p>';
+}
 function riftRender(){
   const el=$('#riftBody'); if(!el||$('#rift').hidden) return; const I=RIFT_UI.info, R=RIFT_DEFS[RIFT_UI.id];
   if(!I||!R){ el.textContent='The glass hums...'; return; }
   const e=riftEnergyNow(), full=Math.max(0,I.full-(Date.now()-RIFT_UI.at)/1000), canX2=e>=I.cost, low=PL.level<I.lv, es=riftEss(R), en=es?(ELEMS[R.el]?ELEMS[R.el].name+' ':'')+'monsters':'glass monsters';
   if(!canX2) RIFT_UI.x2=false;
   el.innerHTML='<p class="rf-blurb"></p>'
-    +'<p class="rf-line">The rift fights at <b>your level ('+Math.max(I.lv,PL.level)+')</b>: '+RIFT_WAVES+' waves of '+en+(es?'. A full clear pays <b>'+riftEssFor(RIFT_WAVES)+' '+es.name+'</b> (less if you fall earlier); no XP, no coins. Solo only.</p>':', each worth <b>'+RIFT_XP_K+'x</b> the XP of the world. Solo only. XP is all it pays.</p>')
+    +(es?riftModeHtml(R,I):'<p class="rf-line">The rift fights at <b>your level ('+Math.max(I.lv,PL.level)+')</b>: '+RIFT_WAVES+' waves of '+en+', each worth <b>'+RIFT_XP_K+'x</b> the XP of the world. Solo only. XP is all it pays.</p>')
     +'<div class="rf-energy"><div class="rf-bar"><i style="width:'+Math.round(100*e/RIFT_E_MAX)+'%"></i></div><span><b>'+Math.floor(e)+'</b> / '+RIFT_E_MAX+' energy'+(full>0?' · full in '+riftHms(full):' · full')+'</span></div>'
     +'<label class="rf-x2'+(canX2?'':' off')+'"><input type="checkbox" id="riftX2"'+(RIFT_UI.x2?' checked':'')+(canX2?'':' disabled')+'> Double reward (costs '+I.cost+' energy): twice the '+(es?'Essence':'XP')+' for the whole run</label>'
     +'<div class="tr-btns"><button class="chip buy" id="riftGo"'+(low?' disabled':'')+'>'+(low?'Opens at level '+I.lv:'Enter the rift')+'</button></div>'
     +'<p class="tr-note">Energy refills on its own, online or not: '+RIFT_E_MAX+' in '+RIFT_E_FULL_H+' hours. One knock-out sends you back to the hub; a second ends the run. '+(I.clears?'Cleared '+I.clears+' time'+(I.clears>1?'s':'')+(I.best?', best '+dgClockText(I.best):'')+'.':'')+'</p>';
   el.querySelector('.rf-blurb').textContent=R.blurb;
   const cb=el.querySelector('#riftX2'); if(cb) cb.onchange=()=>{ RIFT_UI.x2=cb.checked; };
-  const go=el.querySelector('#riftGo'); if(go) go.onclick=()=>{ UI_SFX.click(); netSend({t:'rift',a:'go',x2:RIFT_UI.x2?1:0}); closePanels(); };
+  const go=el.querySelector('#riftGo'); if(go) go.onclick=()=>{ UI_SFX.click(); netSend({t:'rift',a:'go',x2:RIFT_UI.x2?1:0,lv:RIFT_UI.lv|0}); closePanels(); };
+  for(const b of el.querySelectorAll('.rf-tier')) b.onclick=()=>{ if(b.disabled) return; UI_SFX.click(); RIFT_UI.lv=+b.dataset.lv; riftRender(); };
 }
 // the wave banner: riftw [pid, wave]
 EVH.riftw=e=>{ if(e[1]!==NET.pid) return; const w=e[2]|0; toast(w>=RIFT_WAVES?'Final wave!':'Wave '+w+' / '+RIFT_WAVES,w>=RIFT_WAVES?'bad':''); if(SND.ready) riftChime({gain:1.4,pan:0}); };

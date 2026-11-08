@@ -8,7 +8,7 @@ riftMobDef('snowleopard','forgecat','Ashmane Cat',{el:'fire',pal:{tint:0xf08040}
 riftMobDef('mistwraith','forgewisp','Sparkwraith',{el:'fire',pal:{tint:0xffc060}});
 riftMobDef('minegoblin','forgesmith','Anvil Goblin',{el:'fire',pal:{tint:0xe0703a}});
 riftMobDef('rocktroll','forgeherald','Smelter Herald',{el:'fire',scale:1.5,heavy:true,pal:{tint:0xffb050}});
-defineElemRift({id:'forge',shape:['OoooO','o...o','o.H.o','o.o.o','OoooO'],   // its platforms: a ring of forges round the hub, one way in
+defineElemRift({id:'forge',mode:'gauntlet',shape:['OoooO','o...o','o.H.o','o.o.o','OoooO'],   // its platforms: a ring of forges round the hub, one way in
   name:'The Forge Rift',blurb:'A tear into a void of molten light and rising sparks. Forge-born monsters of the fire element pour in, wave after wave. It pays Fire Essence, no XP and no coins.',
   door:{x:-364,z:-400},aura:[0xff6a30,0xffa040,0xffe080],music:'rift',el:'fire',essence:'fire',herald:'forgeherald',
   mobs:['forgeslime','forgeboar','forgebeetle','forgecat','forgewisp','forgesmith']});

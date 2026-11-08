@@ -7,7 +7,7 @@
 const {loadServer}=require('./load');
 const sent=[];
 const {api:W,x}=loadServer({dev:false,send(to,m){ sent.push([to,m]); }},['RIFT_DEFS','RIFT_BAD','defineRift','RIFT_PAY','RIFT_MON_DEFS','RIFT_E_MAX','RIFT_E_MS','RIFT_E_DOUBLE','RIFT_WAVES','RIFT_ALIVE_MAX','RIFT_SLOT0',
-  'RIFT_HP_K','RIFT_DMG_K','RIFT_SPEED_K','riftShapeBad','ALL_MON_DEFS','RIFT_BONUS_KILLS','riftEnergyAt','riftWaveSize','riftNear','riftLayout','DG_RUNS','DG_SLOT_RUN','DG_DG_SLOTS','DG_MAX_INST','DG_KITS','DG_MISSIONS','dgPoolS','dgBake','dgSolid',
+  'RIFT_HP_K','RIFT_DMG_K','RIFT_SPEED_K','riftShapeBad','RIFT_TIERS','RIFT_TIER_ESS','riftTierOpen','ALL_MON_DEFS','RIFT_BONUS_KILLS','riftEnergyAt','riftWaveSize','riftNear','riftLayout','DG_RUNS','DG_SLOT_RUN','DG_DG_SLOTS','DG_MAX_INST','DG_KITS','DG_MISSIONS','dgPoolS','dgBake','dgSolid',
   'dgHitOkS','dgWallAtS','DEF_BY_ID','MON_DEFS','sanitizeGear','getH','vilAt','inVillage','nearRoad','landAt','waCoast','CAMPS','killMonsterS','xpFor','defAt','dgKOf','MONS','S','dgLaunchS','DG_THEMES',
   'RIFT_ELEM_LV','RIFT_ESS_FULL','RIFT_ELEM_SLOTS','riftEssFor','defineElemRift','riftMobDef','RIFT_DOORS','ESS_ORDER','essOf','foeMult','awkTierCost','awkTierP','awkGrantP','MAT_MAX','MAT_IDS','rdMatsOf']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i!==undefined?'  ('+i+')':'')); if(!c) fails++; };
@@ -125,9 +125,9 @@ const atT=(p,dx)=>{ p.x=TD.x+(dx||2); p.z=TD.z; p.y=x.getH(p.x,p.z); };
 const startT=x2=>{ A.gear.rift.e=100; A.gear.rift.at=Date.now(); A.dead=false; A.hp=A.maxHp; A.vbGrace=1e12; A.gear.awm={}; atT(A); W.receive('a',{t:'rift',a:'go',x2:x2?1:0}); return [...x.DG_RUNS.values()].find(q=>q.rift==='taproot'&&!q.endT); };
 const clearRun=r2=>{ for(let i=0;i<4000&&!r2.endT;i++){ for(const m of [...r2.mons]) if(!m.dead&&!m.remove){ m.hp=0; x.killMonsterS(m,A); } tick(4); keepAlive(); } };
 { const c0=A.gear.coins, e0=exp0(), t0=A.gear.mats?JSON.stringify(A.gear.mats):'', r1_=startT(false);
-  ok('a level-40 hiker enters the Taproot: a run in a rift slot, its theme the Taproot, no energy spent',!!r1_&&r1_.th==='taproot'&&r1_.L===40&&!r1_.x2&&Math.abs(A.gear.rift.e-100)<0.01&&msgs('a','tp').pop().dg.th==='taproot');
+  ok('a level-40 hiker enters the Taproot: a run in a rift slot, its theme the Taproot, no energy spent, at level 30 (no tier picked: the lowest)',!!r1_&&r1_.th==='taproot'&&r1_.L===30&&r1_.rtier===30&&!r1_.x2&&Math.abs(A.gear.rift.e-100)<0.01&&msgs('a','tp').pop().dg.th==='taproot');
   tick(Math.ceil(16/0.05)); keepAlive();
-  ok('its monsters carry the rift\'s element: earth, at your level, brittle',[...r1_.mons].filter(m=>!m.dead).length>0&&[...r1_.mons].filter(m=>!m.dead).every(m=>m.def.el==='earth'&&m.def.rift&&m.dgK.lv===40));
+  ok('its monsters carry the rift\'s element: earth, at the tier\'s level',[...r1_.mons].filter(m=>!m.dead).length>0&&[...r1_.mons].filter(m=>!m.dead).every(m=>m.def.el==='earth'&&m.def.rift&&m.dgK.lv===30));
   { const m=[...r1_.mons].find(m=>!m.dead), mb1=[...r1_.members.values()][0]; m.hp=0; x.killMonsterS(m,A);
     ok('a kill pays no XP, no coins and no Essence by itself',exp0()===e0&&A.gear.coins===c0&&awm()===0&&mb1.got.xp===0); }
   clearRun(r1_); const mb1=[...r1_.members.values()][0];
@@ -155,6 +155,29 @@ const clearRun=r2=>{ for(let i=0;i<4000&&!r2.endT;i++){ for(const m of [...r2.mo
   ok('A4 with one Prime Essence too few: refused naming it, nothing taken',need>0&&typeof why==='string'&&/Prime Essence/.test(why)&&!/cannot/.test(why)&&snapG()===s0&&gg.awk.wanderer.t===3,why);
   gg.awm.ess_prime=need+5; const r=x.awkTierP(A,'wanderer');
   ok('A4 with the Essence held: bought, exactly the price taken and 5 left',r===null&&gg.awk.wanderer.t===4&&gg.awm.ess_prime===5,String(r)+' '+gg.awm.ess_prime+' need '+need); }
+// EVERY ELEMENTAL RIFT PLAYS ITS OWN MODE: a bot clears each one at tier 30 (kills everything, walks into beacons, breaks open cores and pylons); the pay follows the tier; tiers open in order
+{ const modes=new Set(), bot=(r,id)=>{ const k=r.k;
+    for(const m of [...r.mons]) if(!m.dead&&!m.remove&&!m.immune){ m.hp=0; x.killMonsterS(m,A); }
+    const ob=r.objs.find(o=>o.st===1&&(o.kind==='beacon'||((o.kind==='core'||o.kind==='pylon')&&!(o.v>0))));
+    if(ob){ A.x=ob.x; A.z=ob.z; A.y=x.getH(A.x,A.z); if(ob.kind!=='beacon'&&!A.cast) W.receive('a',{t:'dg',a:'use',id:ob.id}); } };
+  for(const id of Object.keys(x.RIFT_DEFS).filter(i=>x.RIFT_DEFS[i].reward==='essence')){
+    const E=x.RIFT_DEFS[id]; modes.add(E.mode); A.gear.rift.tier=0;
+    const at=()=>{ A.inst=0; A.x=E.door.x+2; A.z=E.door.z; A.y=x.getH(A.x,A.z); A.dead=false; A.hp=A.maxHp; A.vbGrace=1e12; A.gear.awm={}; };
+    at(); W.receive('a',{t:'rift',a:'go',x2:0,lv:40}); ok(id+': level 40 is shut before a clear of 30',![...x.DG_RUNS.values()].some(q=>q.rift===id&&!q.endT));
+    at(); W.receive('a',{t:'rift',a:'go',x2:0,lv:30}); const r=[...x.DG_RUNS.values()].find(q=>q.rift===id&&!q.endT);
+    let n=0; for(;n<12000&&r&&!r.endT;n++){ bot(r,id); tick(2); keepAlive(); }
+    const got=Object.keys(A.gear.awm||{}).filter(k=>k.startsWith('ess_')).reduce((t,k)=>t+A.gear.awm[k],0);
+    ok(id+' ('+E.mode+'): won at level 30, '+x.RIFT_TIER_ESS[30]+' Essence, its own objectives',!!r&&r.phase==='won'&&got===x.RIFT_TIER_ESS[30]&&r.L===30&&!!A.gear.awm['ess_'+E.essence],r&&(r.phase+' '+got+' after '+n+' steps '+JSON.stringify(r.hud)));
+    ok(id+': the clear opens level 40',A.gear.rift.tier===30);
+    tick(Math.ceil(21/0.05)); }
+  ok('the seven elemental rifts play seven different modes, none of them plain waves',modes.size===7&&!modes.has('waves'),[...modes].join());
+  // a tier-40 run pays the tier's Essence, at its level
+  const E=x.RIFT_DEFS.taproot; A.gear.rift.tier=30; A.inst=0; A.x=E.door.x+2; A.z=E.door.z; A.y=x.getH(A.x,A.z); A.gear.awm={}; A.vbGrace=1e12;
+  W.receive('a',{t:'rift',a:'go',x2:0,lv:40}); const r=[...x.DG_RUNS.values()].find(q=>q.rift==='taproot'&&!q.endT);
+  for(let n=0;n<12000&&r&&!r.endT;n++){ bot(r); tick(2); keepAlive(); }
+  ok('level 40: monsters at 40, a full clear pays '+x.RIFT_TIER_ESS[40],!!r&&r.L===40&&r.phase==='won'&&awm()===x.RIFT_TIER_ESS[40]&&A.gear.rift.tier===40,r&&r.phase+' '+awm());
+  ok('the tier table rises with the level, and a bad tier in a message falls back to 30',x.RIFT_TIERS.join()==='30,40,50,60,70,80'&&x.RIFT_TIERS.every((t,i)=>!i||x.RIFT_TIER_ESS[t]>x.RIFT_TIER_ESS[x.RIFT_TIERS[i-1]])&&x.riftTierOpen(30,0)&&!x.riftTierOpen(50,30)&&x.riftTierOpen(50,40)&&!x.riftTierOpen(35,80));
+  tick(Math.ceil(21/0.05)); }
 // junk
 W.receive('a',{t:'rift',a:'constructor'}); W.receive('a',{t:'rift'}); W.receive('a',{t:'rift',a:'go',x2:'__proto__'});
 ok('junk messages do nothing (already in a run)',A.inst===c.id||!A.inst);

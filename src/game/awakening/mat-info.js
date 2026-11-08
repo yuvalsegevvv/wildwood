@@ -54,7 +54,7 @@ function awtHow(l){
   if(es){ const R=awtRiftFor(es.key); let at='';
     if(R&&R.door){ try{ at=' in '+awcLandName(landAt(R.door.x,R.door.z)); }catch(_){} }
     return {name,what:es.key==='prime'?'The rarest Essence: the root of all elements.':'Essence of the '+es.key+' element.',
-      where:R?'Won in the '+R.name+' rift'+at+', a solo run through waves of glass monsters. Rifts open at level '+RIFT_ELEM_LV+'; a full run pays '+RIFT_ESS_FULL+' (double with the Double, which costs 20 rift energy).':'Paid by an elemental rift (open from level '+RIFT_ELEM_LV+'); that rift is not built yet.'}; }
+      where:R?'Won in the '+R.name+' rift'+at+', a solo run ('+((RIFT_MODES[R.mode]||RIFT_MODES.waves).name)+'). Rifts open at level '+RIFT_ELEM_LV+'; you pick the monsters\' level, 30 to 80: a full run pays '+RIFT_TIER_ESS[30]+' at level 30 up to '+RIFT_TIER_ESS[80]+' at level 80 (double with the Double, which costs 20 rift energy).':'Paid by an elemental rift (open from level '+RIFT_ELEM_LV+'); that rift is not built yet.'}; }
   if(id.startsWith('rd_')){ const land=id.slice(3), r=land==='any'?null:rdOfLand(land);
     if(land==='any') return {name,what:'Raid material of any land counts here.',where:'Clear a raid on any land: each of the ruined strongholds pays its own material, 2 to the power of its tier a clear.'};
     return {name,what:'Raid material of '+awcLandName(land)+'.',where:r?'Clear the raid '+r.name+' ('+awcLandName(land)+'): 2 to the power of its tier a clear. The stronghold rebuilds 30 minutes after a clear.':'No raid pays it yet.'}; }

@@ -108,6 +108,7 @@ function riftLookTune(L,R){
   L.fog.setHex(au[1]).lerp(new THREE.Color(0xffffff),0.15); L.hs.setHex(au[0]).lerp(new THREE.Color(0xffffff),0.45); L.hg.setHex(au[2]).multiplyScalar(0.9); L.sun.setHex(0xf2e8ff);
   L.hi=0.95; L.sunI=0.42; L.far=L.farNow=160; L.near=30; L.gloom=false;
   if(L.torch) L.torch.color.setHex(0xe0d0ff);
+  if(R.T.mode==='lanterns'){ L.hi=0.28; L.sunI=0.1; L.far=L.farNow=60; L.near=8; L.fog.multiplyScalar(0.25); L.hs.multiplyScalar(0.35); L.hg.multiplyScalar(0.35); }   // the Long-night Rift: the void goes dark, you see only near the light
 }
 // the rift's music: E minor, slow and glassy, a bell-like arpeggio over a soft pad; light drums from a pulse
 THEMES.rift={beat:0.36,chordBars:2,chords:[[40,47,52,55,59],[36,43,48,52,55],[43,50,55,59,62],[38,45,50,54,57]],scale:[64,66,67,69,71,72,74,76,79],
