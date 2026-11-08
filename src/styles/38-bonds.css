@@ -104,3 +104,12 @@ button.bdc-sht{ width:100%; padding:0; border:0; background:none; color:var(--in
 /* the Wanderer's path picker (step 18: game/bond/panel.js bdcPathsHtml) */
 .bdc-paths{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 2px; }
 .bdc-paths .chip.on{ border-color:var(--c); color:var(--c); }
+/* character portraits (ui/portraits.js): transparent busts; where one is baked it replaces the emblem or dot */
+.port{ display:block; object-fit:contain; pointer-events:none; user-select:none; }
+.port-row{ flex:none; width:40px; height:50px; margin-right:8px; align-self:center; }
+.port-chip{ display:inline-block; vertical-align:middle; width:22px; height:27px; margin:-4px 5px -4px -3px; }
+.port-guide{ float:right; width:64px; height:80px; margin:0 0 4px 10px; }
+.bdc-emb.has-port, .bdc-pop-ico.has-port{ overflow:hidden; align-items:end; }
+.bdc-emb.has-port{ width:44px; height:44px; }
+.bdc-pop-ico.has-port{ width:40px; height:40px; box-shadow:0 0 10px var(--c); }
+.bdc-emb.has-port .port, .bdc-pop-ico.has-port .port{ width:120%; height:auto; max-width:none; margin-bottom:-18%; }

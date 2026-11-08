@@ -396,6 +396,8 @@
     "player/input.js",
     "player/gamepad.js",
     "ui/character-thumbs.js",
+    "ui/portraits-data.js",
+    "ui/portraits.js",
     "ui/colour-picker.js",
     "ui/character-editor.js",
     "village/buildings.js", "village/pshop-stall.js",

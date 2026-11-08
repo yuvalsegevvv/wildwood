@@ -137,7 +137,7 @@ function guideAllSets(){
     const pieces=[1,2,3].map(n=>{ const P=S.pos[n], a=SKILLS[P.ids[0]], ps=PASSIVES[P.passive], o=ssOddsOf(S,n);
       return `<li><b>${a.name}</b> (${['basic','skill','burst'][n-1]}): ${a.desc} <b>${ps.name}</b> (passive): ${ps.text.replace('{}','')}<br><em>From ${guideSrcName(P.from.id)}, ${Math.round(o.chance*100)}% a clear, sure after ${o.pity}.</em></li>`; }).join('');
     const bon=n=>`<b>${S.bonus[n].name}</b> (${n} pieces): ${S.bonus[n].text}`;
-    return `<div class="gu-set"><h4>${sym}${S.name} <small>${S.char.name}, ${GUIDE_SS_LAND[S.land]}, difficulty +${S.tier}</small></h4>
+    return `<div class="gu-set">${portHtml(S.id,'port-guide')}<h4>${sym}${S.name} <small>${S.char.name}, ${GUIDE_SS_LAND[S.land]}, difficulty +${S.tier}</small></h4>
       <p class="gu-look">${pal} <span>Look: ${S.char.theme}. A signature outfit in the editor's Signature tab.</span></p>
       <p>Kit: ${role}. Element: ${el(S.el)}.</p><ul>${pieces}</ul><p>${bon(3)}<br>${bon(5)}</p></div>`; }).join('');
   return `<p>Every released skill set, by land and difficulty. A set drops only from its own land's two bosses and dungeon boss, cleared at the tier shown or higher.</p>${cards}`;

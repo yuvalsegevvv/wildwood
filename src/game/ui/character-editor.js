@@ -291,7 +291,7 @@ function renderEditor(){
       // every set's voice: owning the set unlocks it, wearing it is not needed
       const vb=document.createElement('div'); vb.className='chips';
       for(const id of Object.keys(OUTFITS)){ if(!HV_OUTFIT[id]) continue; const ok=osOwned(id), nm=CHAR_MODELS[id]?CHAR_MODELS[id].name:id;
-        const b=document.createElement('button'); b.className='chip'+(ok?'':' locked'); b.textContent=(ok?'':'\u{1F512} ')+nm; b.setAttribute('aria-pressed',hvChoice()===id); b.disabled=!ok; b.title=ok?nm+' voice':'Locked: own the '+nm+' set to unlock this voice';
+        const b=document.createElement('button'); b.className='chip'+(ok?'':' locked'); b.innerHTML=portHtml(id,'port-chip'); b.append((ok?'':'\u{1F512} ')+nm); b.setAttribute('aria-pressed',hvChoice()===id); b.disabled=!ok; b.title=ok?nm+' voice':'Locked: own the '+nm+' set to unlock this voice';
         b.onclick=()=>{ hvSet(id); renderEditor(); hvShout('skill',{name:'Hear me',cls:LOOK.cls},true); }; vb.append(b); }
       wrap.append(vb);
       const hear=document.createElement('button'); hear.className='chip'; hear.textContent='Hear it'; hear.onclick=()=>hvShout('skill',{name:'Hear me',cls:LOOK.cls},true); wrap.append(hear);
