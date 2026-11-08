@@ -106,14 +106,14 @@ function bdRefreshP(p){
     }
     for(const k of Object.keys(W.ids)) if(k!==main) for(const id of W.ids[k]) X.lv[id]=-BD_GUEST_PEN;
   } else {
-    const R=bdRealOf(g); X.act=R; if(g.bd){ const W=g.bd[BD_WANDERER]; if(W&&typeof W==='object') W.r=R; else g.bd[BD_WANDERER]={r:R}; }   // (the path stays: server/wanderer.js)
-    const add=(R>=3?1:0)+(R>=5?1:0);
+    const R=bdRealOf(g), on=wdOnPathP(p); X.g=on.off; X.on=on.on; X.act=Math.max(0,Math.min(R,on.on)-on.off); if(g.bd){ const W=g.bd[BD_WANDERER]; if(W&&typeof W==='object') W.r=R; else g.bd[BD_WANDERER]={r:R}; }   // (the path stays: server/wanderer.js)
+    const add=(X.act>=3?1:0)+(X.act>=5?1:0), pk=wdPathOf(g);   // wanderer: Realization works like a Bond: min(Realization, the path's pieces worn) - the off-path pieces worn
     if(add){
-      for(const id of sk.owned){ const d=skillDef(id); if(d&&!d.set) X.lv[id]=add; }
+      for(const id of sk.owned){ const w=WD_PIECE_OF[id]; if((w&&w.path===pk)||id===wdPassId(pk)) X.lv[id]=add; }
       for(const id of Object.keys(own)){ const c=caveSkillDef(id); if(c&&!c.set) X.lv[id]=add; }
       if(sk.wdu) X.lv['u:'+sk.wdu]=add;   // wanderer: the path's burst
     }
-    for(const n of [1,2,4,6]){ const f=BD_WANDERER_ROWS[n]; if(R<n||typeof f!=='function') continue;   // wanderer: the active path's rows (shared/wanderer.js wdRealRows)
+    for(const n of [1,2,4,6]){ const f=BD_WANDERER_ROWS[n]; if(X.act<n||typeof f!=='function') continue;   // wanderer: the active path's rows (shared/wanderer.js wdRealRows)
       const o=f(g)||{}; if(o.p) for(const id of Object.keys(o.p)) if(bdOwn(PASSIVES,id)) X.p[id]=o.p[id]; if(Array.isArray(o.r)) X.r.push(...o.r); }
   }
   sk.bdx=X; p.bdMain=main;

@@ -73,13 +73,20 @@ function bdcRealGive(k,b){
 function bdcPathsHtml(cur){
   if(!WD_ORDER.length) return '';
   return '<div class="bdc-paths" role="group" aria-label="The Wanderer\'s path">'+WD_ORDER.map(k=>{ const W=WD_PATHS[k], on=k===cur; return '<button class="chip'+(on?' on':'')+'" data-bdcpath="'+k+'" aria-pressed="'+on+'" title="'+W.text.replace(/"/g,'&quot;')+'">'+W.name+'</button>'; }).join('')
-    +'</div><p class="bdc-note">'+(WD_PATHS[cur]?WD_PATHS[cur].text+' ':'')+'Changing path is free: the tree and the Realization stay.</p>';
+    +'</div><p class="bdc-note">'+(WD_PATHS[cur]?WD_PATHS[cur].text+' ':'')+bdcPathKitHtml(cur)+' Changing path is free: the tree and the Realization stay.</p>';
+}
+// the path's own set for the class in hand (placeholders: shared/wanderer.js WD_PIECE_SRC), and how much of the Realization is in play: like a Bond, min(Realization, path pieces worn) - off-path pieces
+function bdcPathKitHtml(k){
+  const P=WD_PATHS[k], c=P&&P.pieces[clsOf()]; if(!c) return '';
+  const nm=[c.basic,c.skill,c.burst].map(id=>SKILLS[id]?SKILLS[id].name:'').filter(Boolean);
+  return 'Its set: <b>'+nm.join('</b>, <b>')+'</b>, its passive <b>'+(PASSIVES[P.passive]?PASSIVES[P.passive].name:'')+'</b>, a general charge skill and its burst. Wear them for the Realization; anything else worn is off the path and costs a step.';
 }
 function bdcWandererHtml(){
   const r=((GEAR.bd||{}).wanderer||{}).r|0, X=GEAR.skills&&GEAR.skills.bdx, main=X&&X.main==='wanderer', open=BDC.sel==='wanderer', next=r<6?BDC_REAL[r+1]:null, pk=bdcPath(), W=pk&&WD_PATHS[pk];
   let steps=''; if(open){ steps='<ol class="bdc-steps">'; for(const R of BDC_REAL){ const b=R[0], own=r>=b, ask=b?MQ_ACTS[R[3]][1]:'', G=bdcRealGive(pk,b);
     steps+='<li class="'+(own?'own':b===r+1?'next':'')+'"><i>'+(own&&b?'&#10003;':BD_ROMAN[b])+'</i><span><b>'+(b?'Realization '+BD_ROMAN[b]+': ':'')+G[0]+'</b> '+G[1]+'<em>'+(b?'needs '+ask+' finished'+(own?' (done)':''):'always')+'</em></span></li>'; } steps+='</ol>'; }
   return '<div class="bdc-card own wand'+(open?' open':'')+(main?' main':'')+'" style="--c:#d9b26a" data-k="wanderer"><button class="bdc-top" data-bdcsel="wanderer" aria-expanded="'+open+'"><span class="bdc-emb">W</span><span class="bdc-nm"><b>The Wanderer'+(main?' <u>playing</u>':'')+'</b><small>'+(W?'the path of '+W.name+' &middot; ':'')+'no stones: the main quest\'s acts</small></span><span class="bdc-bn">Realization '+BD_ROMAN[r]+'</span></button>'
+    +(main?'<div class="bdc-act">Realization '+BD_ROMAN[Math.max(0,X.act|0)]+' active ('+(X.on|0)+' path piece'+((X.on|0)===1?'':'s')+' worn'+(X.g?', '+X.g+' off the path':'')+')</div>':'')
     +'<div class="bdc-pips">'+bdcPips(r,BD_TOP)+'</div>'+bdcPathsHtml(pk)+'<div class="bdc-acts">'+bdcPlayBtn('wanderer',true,main)+'</div><div class="bdc-st"><span>'+(next?'Next: Realization '+BD_ROMAN[next[0]]+' when '+MQ_ACTS[next[3]][1]+' is finished':'Every Realization reached')+'</span></div>'+steps+'</div>';
 }
 // the path picker: free, any time; the you update that follows redraws the card

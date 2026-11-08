@@ -13,10 +13,23 @@
           ultOwned asks skills.wdu), AWK_PATH_KIT[id] = kit. None of them is in PASSIVE_IDS (no shop, no testing grant lists them).
    A bad path is LEFT OUT (the game still boots), warned about and listed in WD_BAD {id, field, why}; nothing of it is registered.
    SAVED: gear.bd.wanderer.path (server/bond.js bdSanitize -> server/wanderer.js wdPathClean: a known path id, default WD_DEFAULT). wdPathOf(gear) reads it safely (the default when it is missing or unknown).
-   Exports: WD_PATHS, WD_ORDER, WD_BAD, WD_DEFAULT, WD_ULT_PIECES, WD_REAL_STEPS, defineWandererPath(D), wdPathOk(id), wdPathOf(gear), wdUltId(path), wdPassId(path), wdIsUlt(id), wdMainOk(skills), wdRowById(id), wdRealRows(gear, n).
+   PIECES: WD_PATHS[id].pieces[cls][slot] = the path's own basic / skill / power (placeholders, WD_PIECE_SRC above); WD_PIECE_OF[skill id] = {path, cls, slot}.
+   Exports: WD_PATHS, WD_PIECE_OF, wdPieceId, WD_ORDER, WD_BAD, WD_DEFAULT, WD_ULT_PIECES, WD_REAL_STEPS, defineWandererPath(D), wdPathOk(id), wdPathOf(gear), wdUltId(path), wdPassId(path), wdIsUlt(id), wdMainOk(skills), wdRowById(id), wdRealRows(gear, n).
    Used by: shared/bond.js (BD_WANDERER_ROWS, bdRowById, bdIsBondPassive), shared/ult.js (ultOwned), server/wanderer.js, server/bond.js, server/ult.js, game/bond/panel.js, game/economy/skills.js, game/ult/slot.js. */
 const WD_PATHS=Object.create(null), WD_ORDER=[], WD_BAD=[], WD_DEFAULT='fury';
 const WD_ULT_PIECES=['a1','a2','a3','p1'], WD_REAL_STEPS=[1,2,4,6];   // the burst may buff the class actives worn or the path passive; Realization I / II / IV / VI hold the path's rows (III and V: +1 level, server/bond.js)
+// THE PATH'S OWN ACTIVES (the owner: a path is a full Bond set of the Wanderer, mix and match stays the off-Bond way): per class a basic, a skill and a power, registered as
+// SKILLS['wd_<path>_<cls>_<slot>'] (wd: the path, never sold). PLACEHOLDERS for now: a renamed copy of a shop skill (the same attack kind, numbers and look), chosen by the path's role
+// (WD_PIECE_SRC) or by the entry's own pieces:{<cls>:[basic, skill, power]}; the path's element, when it has one, replaces the copy's. To be reshaped kit by kit.
+const WD_PIECE_SRC={
+  risk:  {warrior:['slash','charge','bladestorm'], archer:['shoot','pierce','snipe'], mage:['firebolt','meteor','inferno']},
+  safe:  {warrior:['slash','whirlwind','quake'], archer:['shoot','volley','hail'], mage:['iceshard','chain','blizzard']},
+  tank:  {warrior:['slash','bash','quake'], archer:['shoot','pierce','hail'], mage:['iceshard','frostnova','blizzard']},
+  grind: {warrior:['slash','whirlwind','bladestorm'], archer:['shoot','rain','hail'], mage:['missiles','chain','blizzard']},
+  support:{warrior:['slash','bash','berserk'], archer:['shoot','volley','focus'], mage:['missiles','frostnova','surge']},
+  heal:  {warrior:['slash','bash','berserk'], archer:['shoot','volley','focus'], mage:['missiles','frostnova','surge']}};
+const WD_PIECE_SLOTS=['basic','skill','burst'], WD_PIECE_OF=Object.create(null);   // WD_PIECE_OF[skill id] = {path, cls, slot}
+const wdPieceId=(path,cls,slot)=>'wd_'+path+'_'+cls+'_'+slot;
 const wdPathOk=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(WD_PATHS,id);
 const wdPathOf=gear=>{ const w=gear&&gear.bd&&gear.bd.wanderer, k=w&&typeof w==='object'?w.path:null; return wdPathOk(k)?k:wdPathOk(WD_DEFAULT)?WD_DEFAULT:(WD_ORDER[0]||null); };
 const wdUltId=path=>'wd_'+path, wdPassId=path=>'wd_'+path;   // (the burst's ULT_SKILLS key and the passive's PASSIVES id are the same string, in two registries)
@@ -68,7 +81,13 @@ function defineWandererPath(D){
   const rows={}; for(const n of [2,6]) rows[n]=ssRow(R[n],pid+'_r'+n,{set:null,wd:id,tier:n,slot:'bonus'},{el:null});
   const ab=ultRegister(pid,U,el); ab.wd=id;
   AWK_PATH_KIT[id]=kit;
-  const P={id,name:D.name.trim(),role:D.role,kit,from,text:D.text,el,passive:pid,ult:pid,real:{1:pid+'_r1',4:pid+'_r4'},rows};
+  const pieces={}, psrc=D.pieces||WD_PIECE_SRC[D.role]||WD_PIECE_SRC.safe;
+  for(const cls of ['warrior','archer','mage']){ pieces[cls]={};
+    WD_PIECE_SLOTS.forEach((slot,i)=>{ const o=SKILLS[psrc[cls]&&psrc[cls][i]]; if(!o||o.slot!==slot||o.cls!==cls) return;
+      const sid=wdPieceId(id,cls,slot), c=Object.assign({},o,{id:sid,name:D.name.trim()+' '+o.name,price:0,wd:id,icon:o.name,from:o.id,desc:o.desc+' (the path of '+D.name.trim()+')'});
+      if(el!=='basic'&&o.el) c.el=el;
+      SKILLS[sid]=c; SKILL_IDS.push(sid); WD_PIECE_OF[sid]={path:id,cls,slot}; pieces[cls][slot]=sid; }); }
+  const P={id,name:D.name.trim(),role:D.role,kit,from,text:D.text,el,passive:pid,ult:pid,real:{1:pid+'_r1',4:pid+'_r4'},rows,pieces};
   WD_PATHS[id]=P; WD_ORDER.push(id);
   return P;
 }
