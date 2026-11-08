@@ -88,7 +88,9 @@ function awcHaveOf(id){
 function awcCostLines(c){
   const g=GEAR||{}, M=g.mats||{}, out=[];
   out.push({name:'Coins',col:AWC_COIN_COL,have:g.coins|0,need:c.coins,ok:(g.coins|0)>=c.coins});
-  if(c.drops>0){ const kinds=awkDropKinds(c.land,c.tier), have=kinds.reduce((a,id)=>a+(awcHas(M,id)?M[id]|0:0),0);
+  if(c.drops>0&&c.kind){ const d=MON_DEFS.find(q=>q.id===c.kind)||{name:c.kind,level:0}, have=awcHas(M,c.kind)?M[c.kind]|0:0;
+    out.push({name:MAT_NAMES[c.kind]||c.kind,col:AWC_DROP_COL,have,need:c.drops,ok:have>=c.drops,note:'dropped by '+d.name+' (level '+d.level+(c.land==='any'?'':', '+awcLandName(c.land))+')'}); }
+  else if(c.drops>0){ const kinds=awkDropKinds(c.land,c.tier), have=kinds.reduce((a,id)=>a+(awcHas(M,id)?M[id]|0:0),0);
     const lv=kinds.length?Math.min(...kinds.map(id=>(MON_DEFS.find(d=>d.id===id)||{level:1}).level)):0;
     out.push({name:'Monster drops',col:AWC_DROP_COL,have,need:c.drops,ok:have>=c.drops,note:(c.land==='any'?'any land':awcLandName(c.land))+(lv?', level '+lv+' and above':'')}); }
   for(const id of Object.keys(c.mats)){ const need=c.mats[id], have=awcHaveOf(id);

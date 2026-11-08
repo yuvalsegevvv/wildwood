@@ -115,7 +115,8 @@ function awkPlanP(p,c){
   const g=p.gear; if(!c) return {why:'There is no such step'};
   if((g.coins|0)<c.coins) return {why:'Not enough coins ('+c.coins+' needed)'};
   const plan={coins:c.coins,drops:[],echo:0,rd:[],tr:[],es:[]};
-  if(c.drops>0){ const kinds=awkDropKinds(c.land,c.tier), got=awkGreedy(kinds.map(id=>[id,g.mats[id]|0]),c.drops);
+  if(c.drops>0){ const kinds=c.kind?[c.kind]:awkDropKinds(c.land,c.tier), got=awkGreedy(kinds.map(id=>[id,g.mats[id]|0]),c.drops);
+    if(!got&&c.kind) return {why:'You need '+c.drops+' '+(MAT_NAMES[c.kind]||c.kind)+' (dropped by '+((MON_DEFS.find(d=>d.id===c.kind)||{}).name||c.kind)+')'};
     if(!got) return {why:'You need '+c.drops+' monster drops of '+(c.land==='any'?'level '+Math.max(1,AWK_TIERS[c.tier].lv-5)+' or above':'that land')+' (from its tougher kinds as the tier rises)'};
     plan.drops=got; }
   for(const id of Object.keys(c.mats)){ const n=c.mats[id];
