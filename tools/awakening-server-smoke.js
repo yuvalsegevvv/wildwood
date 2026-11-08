@@ -31,7 +31,7 @@ x.ssGrantSetP(p,K,true); tick(1);
 { const s0=snap(); send({a:'up',set:K,id:'ba3'}); ok('out of order (ba3 before ba2): refused, nothing taken',snap()===s0&&!g.awk[K].n.ba3);
   send({a:'stat',set:K,id:'ba2'}); ok('the wrong message kind (stat for an upgrade node): refused',!g.awk[K].n.ba2&&snap()===s0); }
 { const c=x.awkNodeCost(K,'ba2'), e0=g.awm.echo, c0=g.coins; send({a:'up',set:K,id:'ba2'});
-  ok('an upgrade node is bought: coins, drops and Echo Shards taken once',g.awk[K].n.ba2===1&&c0-g.coins===c.coins&&e0-g.awm.echo===c.mats.echo,JSON.stringify(c.mats)); }
+  ok('an upgrade node is bought: coins and drops taken once, no Echo Shards below level 7',g.awk[K].n.ba2===1&&c0-g.coins===c.coins&&e0-g.awm.echo===(c.mats.echo||0),JSON.stringify(c.mats)); }
 const piece=T.pos[1].ids.find(id=>x.SKILLS[id].cls==='archer');
 ok('the basic piece is level 2 now (its branch)',x.skillLvOf(g.skills,piece)===2&&x.awkBranchLv(g,K,'ba')===2);
 send({a:'stat',set:K,id:'sba3'}); send({a:'up',set:K,id:'ba3'}); send({a:'stat',set:K,id:'sba4'}); send({a:'up',set:K,id:'ba4'});

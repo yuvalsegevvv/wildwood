@@ -22,10 +22,10 @@ function awkR(L){
 }
 const awkShare=(share,L)=>Math.round(share*awkR(L)/1000)*1000;
 // ---- the price tables. A coin price is a number or {r:share, at:the hiker level it is priced at}; drops, mat (branch material), ess (Essence), troph (see AWK_TROPHY)
-// a skill level step, by the level it reaches (PLAN 4b; the skill branch, x1.0); branch totals 9.2M coins, 1017 drops, 109 branch material, 90 Essence
+// a skill level step, by the level it reaches (levels 2-6 need no branch material: shards/raid material only from level 7) (PLAN 4b; the skill branch, x1.0); branch totals 9.2M coins, 1017 drops, 109 branch material, 90 Essence
 const AWK_STEP=[null,null,
-  {coins:300,drops:4,mat:1}, {coins:700,drops:8,mat:2}, {coins:1500,drops:15,mat:3}, {coins:3000,drops:25,mat:5},
-  {coins:{r:0.03,at:20},drops:45,mat:8}, {coins:{r:0.08,at:28},drops:80,mat:12,ess:12}, {coins:{r:0.15,at:35},drops:140,mat:18,ess:18},
+  {coins:300,drops:4,mat:0}, {coins:700,drops:8,mat:0}, {coins:1500,drops:15,mat:0}, {coins:3000,drops:25,mat:0},
+  {coins:{r:0.03,at:20},drops:45,mat:0}, {coins:{r:0.08,at:28},drops:80,mat:12,ess:12}, {coins:{r:0.15,at:35},drops:140,mat:18,ess:18},
   {coins:{r:0.3,at:40},drops:250,mat:25,ess:25}, {coins:{r:0.6,at:45},drops:450,mat:35,ess:35}];
 // trophies of the power (boss 1's) and charge (boss 2's) branches, by the level reached: 163 a branch
 const AWK_TROPHY=[0,0,1,2,4,6,10,15,25,40,60];

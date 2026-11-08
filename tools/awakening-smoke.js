@@ -64,11 +64,11 @@ for(const id of IDS){
 { const pell='pell', P={coins:0,drops:0,mat:0,ess:0,troph:0};   // the skill branch (x1.0) = the PLAN's branch total
   const sk=['sk2','sk3','sk4','sk5','sk6','sk7','sk8','sk9','sk10'].map(i=>X.awkNodeCost(pell,i));
   for(const c of sk){ P.coins+=c.coins; P.drops+=c.drops; P.mat+=c.mats.echo||0; P.ess+=c.mats.ess_fire||0; }
-  ok('the skill branch (x1.0), levels 2-10: about 9.2 million coins, 1,017 drops, 109 Echo Shards, 90 Essence',near(P.coins,9.2e6,0.02)&&P.drops===1017&&P.mat===109&&P.ess===90,M(P.coins)+' '+P.drops+' '+P.mat+' '+P.ess);
+  ok('the skill branch (x1.0), levels 2-10: about 9.2 million coins, 1,017 drops, 90 Echo Shards (none below level 7), 90 Essence',near(P.coins,9.2e6,0.02)&&P.drops===1017&&P.mat===90&&P.ess===90,M(P.coins)+' '+P.drops+' '+P.mat+' '+P.ess);
   ok('level steps: 300 / 700 / 1,500 / 3,000 coins for levels 2-5; level 10 is 5.9M and 35 Essence',sk.slice(0,4).map(c=>c.coins).join()==='300,700,1500,3000'&&near(sk[8].coins,5.9e6,0.01)&&sk[8].mats.ess_fire===35);
   const bm=(c,l)=>X.awkNodeCost(pell,l+c);
   ok('branch multipliers on coins and drops: basic x0.75, skill x1, power x1.25, passive x1, charge x1, burst x1.5; branch material and Essence unchanged',bm(9,'ba').coins===0.75*bm(9,'sk').coins&&bm(9,'po').coins===1.25*bm(9,'sk').coins&&bm(9,'pa').coins===bm(9,'sk').coins&&bm(9,'ch').coins===bm(9,'sk').coins&&bm(9,'bu').coins===1.5*bm(9,'sk').coins&&bm(9,'ba').mats.ess_fire===25&&bm(9,'bu').mats.ess_fire===25&&bm(9,'bu').mats.rd_home===25&&bm(9,'ba').mats.echo===25);
-  ok('branch material: Echo Shards on basic, skill and power, the land\'s raid material on passive, charge and burst',['ba','sk','po'].every(l=>X.awkNodeCost(pell,l+'5').mats.echo===5&&!X.awkNodeCost(pell,l+'5').mats.rd_home)&&['pa','ch','bu'].every(l=>X.awkNodeCost(pell,l+'5').mats.rd_home===5&&!X.awkNodeCost(pell,l+'5').mats.echo));
+  ok('branch material: Echo Shards on basic, skill and power, the land\'s raid material on passive, charge and burst',['ba','sk','po'].every(l=>X.awkNodeCost(pell,l+'7').mats.echo===12&&!X.awkNodeCost(pell,l+'7').mats.rd_home&&!X.awkNodeCost(pell,l+'5').mats.echo)&&['pa','ch','bu'].every(l=>X.awkNodeCost(pell,l+'7').mats.rd_home===12&&!X.awkNodeCost(pell,l+'7').mats.echo&&!X.awkNodeCost(pell,l+'5').mats.rd_home));
   const u=['pa1','ch1','bu1'].map(i=>X.awkNodeCost(pell,i));
   ok('unlock nodes pa1 / ch1 / bu1: 5,000 coins, 20 drops, 3 raid material each, nothing else',u.every(c=>c.coins===5000&&c.drops===20&&c.mats.rd_home===3&&Object.keys(c.mats).length===1));
   const s1=X.awkNodeCost(pell,'star1'), s2=X.awkNodeCost(pell,'star2');
@@ -98,7 +98,7 @@ for(const id of IDS){
 { const TOT=82e6, tot={}; for(const s of sets) tot[s.id]=X.awkTreeCost(s);
   ok('a fully awakened character costs about 82 million coins (within 5%) in every shape: Oak '+M(tot.pell.coins)+', Pine '+M(tot.tansy.coins)+', Willow '+M(tot.torgeir.coins)+', Banyan '+M(tot.marigold.coins),
     sets.every(s=>near(tot[s.id].coins,TOT,0.05)&&tot[s.id].nodes===116),sets.map(s=>s.id+' '+M(tot[s.id].coins)).filter((_,i)=>i%6===0).join(', '));
-  ok('... and about 9,900 monster drops (within 5%), about 340 Echo Shards and 350 raid material',sets.every(s=>near(tot[s.id].drops,9900,0.05)&&near(tot[s.id].mats.echo,340,0.05)&&near(tot[s.id].mats['rd_'+s.land],350,0.05)),tot.pell.drops+' '+tot.pell.mats.echo+' '+tot.pell.mats.rd_home);
+  ok('... and about 9,900 monster drops (within 5%), about 280 Echo Shards and 296 raid material',sets.every(s=>near(tot[s.id].drops,9900,0.05)&&near(tot[s.id].mats.echo,280,0.05)&&near(tot[s.id].mats['rd_'+s.land],296,0.05)),tot.pell.drops+' '+tot.pell.mats.echo+' '+tot.pell.mats.rd_home);
   ok('... and about 820 Essence (within 8%) of the character\'s element (or Prime), 50 Prime for A4-A5',sets.every(s=>{ const k=s.el==='basic'?'ess_prime':'ess_'+s.el, e=tot[s.id].mats[k]-(k==='ess_prime'?50:0); return near(e,820,0.08)&&tot[s.id].mats.ess_prime>=50; }),tot.pell.mats.ess_fire+' fire, '+tot.pell.mats.ess_prime+' Prime');
   ok('the PLAN\'s other columns: the totals are the same whatever the sets\' kit (stats change values, not prices); the Wanderer costs what an Oak character costs',near(tot.pell.coins,tot.zahra.coins,0.0001)&&X.awkTreeCost('wanderer').coins===tot.pell.coins);
   // the five parts of the PLAN's table
