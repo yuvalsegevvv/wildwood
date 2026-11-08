@@ -2,14 +2,14 @@
 /* Agent map. Rules: docs/ULT.md; registry and constants: shared/ult.js; test: tools/ult-smoke.js.
    Saved: gear.skills.ult = the worn burst's SET id or null (sanitizeSkills; sanitizeGear clears it unless ultOwned). Ownership is derived (3 of the set's 7 pieces), never saved.
    p.cd.ult is written ONLY here (ultCastP): no abilityCd, rlP cdr, ally haste, ssCdrS (its loop stays on the three class slots) or boost cdr ever touches it.
-   CAST: atk {k:'ult'} (handleAttack) needs: alive, not acting, not on the Proving Isle (p.pv), level 35, a burst worn and owned, p.cd.ult ~ 0. It starts the cooldown (60 s, or 30 s for a grind set outside a
+   CAST: atk {k:'ult'} (handleAttack) needs: alive, not acting, not on the Proving Isle (p.pv), level 28, a burst worn and owned, p.cd.ult ~ 0. It starts the cooldown (60 s, or 30 s for a grind set outside a
    boss fight: p.cave.fight; fixed at the cast), runs the ability's fxU through p.act (like a cave cast) and does NOT go through caveCastS (no charge, Echo cannot repeat it), ssTriggerS or mqActP.
    STUN: statusS sees ult:true on a shape entry (shared/ult.js ultFxOf) and calls ultStunS(m): players, the dead and immune bosses are skipped; m.ultLock (on the monster, shared by every player) blocks a second
    burst stun for 50 s; a normal or heavy monster gets m.stunT=5; a boss gets B.ultStunT (never B.stunT: no x1.5 damage, no kit 'strike now' window), queued in B.ultStunQ behind a kit's own stun. resetBossS clears the lock.
    Messages: ultequip {id|null} (MSG.ultequip). Events: ult [pid, setId, cd seconds], ultget [pid, setId]. Hooks are marked `// ult:` (grep -rn "// ult:" src). */
 const ultSetOfP=p=>{ const id=p.gear&&p.gear.skills&&p.gear.skills.ult; return ultDef(id)&&ultOwned(p.gear.skills,p.gear.cave,id)?id:null; };   // the worn burst's set id if p may use it, else null
-// the burst's ability if p may cast it now (level 35, not on the island, worn and owned), else null
-function ultEquippedP(p){ if(p.pv||p.level<ULT_LV) return null; const id=ultSetOfP(p); return id?ultDef(id):null; }
+// the burst's ability if p may cast it now (level 28, not on the island, worn and owned), else null
+function ultEquippedP(p){ if(p.pv||p.level<ULT_LV) return null; const id=ultSetOfP(p); if(id&&wdIsUlt(id)&&!wdMainOk(p.gear.skills)) return null; return id&&awkUltLvP(p,id)>=1?ultDef(id):null; }   // wanderer: a path's burst only while the Wanderer is played   // awakening: the burst branch's bu1 (A3) makes it usable
 function ultCastP(p,msg){   // atk {k:'ult'}
   if(p.dead||p.act||p.cd.ult>0.08) return;
   const ab=ultEquippedP(p); if(!ab) return;
@@ -18,7 +18,8 @@ function ultCastP(p,msg){   // atk {k:'ult'}
   if(isFinite(+msg.face)) p.face=+msg.face%(2*Math.PI);
   const tg=foeByIdS(p,msg.tg);
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
-  p.act={kind,t:0,dur,hitAt,done:false,skill:true,sid:ab.id,lvl:1,el:elOf(ab),fx:ab.fxU,mult:ab.mult,range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,ult:true};
+  const L=awkUltLvP(p,ab.set);   // awakening: the burst's level is its branch (the 5 s stun and the 60 s cooldown never scale)
+  p.act={kind,t:0,dur,hitAt,done:false,skill:true,sid:ab.id,lvl:L,el:elOf(ab),fx:awkFx(ab.fxU,L),mult:ab.mult*awkCurve('dmg',L),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,ult:true};
   ev('pact',p.id,kind,Math.round(p.face*100)/100);
   ev('ult',p.id,ab.set,p.cd.ult);
   ultCastBuffsS(p,ab);   // the two boosts, for the worn pieces only
@@ -26,6 +27,7 @@ function ultCastP(p,msg){   // atk {k:'ult'}
 function ultEquipP(p,id){   // ultequip: wear an owned burst, or take it off (id null)
   if(id===null||id===undefined||id===''){ if(p.gear.skills.ult){ p.gear.skills.ult=null; p.dirty=true; } return; }
   if(!ultDef(id)||!ultOwned(p.gear.skills,p.gear.cave,id)) return;
+  if(awkUltLvP(p,id)<1){ toastTo(p.id,'Awaken the burst first (Awakening A3, its first node)','bad'); return; }   // awakening
   if(p.level<ULT_LV){ toastTo(p.id,'The burst slot opens at level '+ULT_LV,'bad'); return; }
   p.gear.skills.ult=id; p.dirty=true;
 }
@@ -51,7 +53,11 @@ function ultStunS(m){
    mult / n / size / util -> ultBoostActS (the cast's act, from handleAttack and caveCastP), cd -> ultCdK (handleAttack), v -> passiveSum + ssCondP, eff / icd -> ssTriggerS (ultRowK), cdr -> once at the cast. */
 // the ids of the set's pieces the player wears now: {a1..a3, cave, p1..p3: the id}
 function ultWornP(p,setId){
-  const out={}, sk=p.gear.skills, S_=SS_SETS[setId]; if(!S_) return out;
+  const out={}, sk=p.gear.skills, S_=SS_SETS[setId];
+  if(!S_){ const ab=ultDef(setId); if(!ab||!ab.wd) return out; const cls=clsOfP(p);   // wanderer: a path's burst buffs the class actives worn (a1-a3: not a set's) and the path passive (p1)
+    for(let pos=1;pos<=3;pos++){ const s=abilityOf(cls,SS_SLOT_OF[pos-1],sk,p.level); if(s&&!s.set) out['a'+pos]=s.id; }
+    if(p.level>=PASSIVE_LV&&sk.pass.slice(0,passiveOpen(p.level)).includes(setId)&&sk.owned.includes(setId)) out.p1=setId;
+    return out; }
   const eq=sk.eq[clsOfP(p)]||{};
   for(let pos=1;pos<=3;pos++){ const id=eq[SS_SLOT_OF[pos-1]], pc=id&&SS_PIECE_OF[id]; if(pc&&pc.set===setId&&pc.pos===pos&&sk.owned.includes(id)) out['a'+pos]=id; }
   const cv=caveEquippedP(p); if(cv&&cv.set===setId) out.cave=cv.id;
@@ -66,7 +72,7 @@ const ultOnP=(p,id)=>{ const b=p.ultB&&p.ultB[id]; return b&&b.until>S.t?b:null;
 function ultCastBuffsS(p,ab){   // ultCastP: apply the two boosts to what is worn
   const W_=ultWornP(p,ab.set), ids=[], secs=[]; p.ultB=p.ultB||{};
   for(const b of ab.boost){ const id=W_[b.piece]; if(!id) continue;
-    p.ultB[id]={piece:b.piece,mod:b.mod,until:S.t+b.secs}; ids.push(id); secs.push(b.secs);
+    p.ultB[id]={piece:b.piece,mod:b.mod,until:S.t+b.secs,set:ab.set}; ids.push(id); secs.push(b.secs);
     if(b.mod.cdr) ssCdrS(p,b.mod.cdr);   // seconds off the skill / burst cooldowns, once, now (never the burst slot)
   }
   if(ids.length){ ultRebuildP(p); ev('ubo',p.id,ids,secs); }
@@ -75,7 +81,7 @@ function ultTickP(p){   // updatePlayersS: expire boosts; a boost ends with deat
   if(!p.ultB) return;
   let changed=false;
   for(const id in p.ultB){ const b=p.ultB[id];
-    if(b.until<=S.t||p.dead||p.pv||!Object.values(ultWornP(p,SS_PIECE_OF[id].set)).includes(id)){ delete p.ultB[id]; changed=true; } }
+    if(b.until<=S.t||p.dead||p.pv||!Object.values(ultWornP(p,b.set)).includes(id)){ delete p.ultB[id]; changed=true; } }   // (b.set: the burst's key; a Wanderer's boosted piece is no set piece)
   if(changed){ if(!Object.keys(p.ultB).length) p.ultB=null; ultRebuildP(p); sendTo(p.id,{t:'ubo',ids:p.ultB?Object.keys(p.ultB):[]}); }
 }
 // a cast's act gets the boost of the piece it comes from: mult, extra projectiles / hits (n), wider areas (size), bigger heals / shields / ally buffs (util), and the look flag ub

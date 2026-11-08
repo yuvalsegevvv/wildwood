@@ -9,7 +9,7 @@ function riftBuild(){
   for(const id in RIFT_DEFS){
     const R=RIFT_DEFS[id], y=getH(R.door.x,R.door.z), G=new THREE.Group(); G.position.set(R.door.x,y,R.door.z); G.name='rift-'+id;
     const au=R.aura.map(h=>new THREE.Color(h)), add=(geo,mat,x,yy,z)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,yy,z); G.add(m); return m; };
-    const glass=new THREE.MeshPhongMaterial({color:0xd8ccff,emissive:0x4a3080,shininess:90,specular:0xffffff,transparent:true,opacity:0.7});
+    const ess=R.reward==='essence', glass=new THREE.MeshPhongMaterial({color:ess?au[2].clone().lerp(new THREE.Color(0xffffff),0.55):0xd8ccff,emissive:ess?au[0].clone().multiplyScalar(0.35):0x4a3080,shininess:90,specular:0xffffff,transparent:true,opacity:0.7});
     const core=new THREE.MeshBasicMaterial({color:0xfff0ff}), halo=new THREE.MeshBasicMaterial({color:au[1],transparent:true,opacity:0.35,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide});
     // the tear: an upright crack, a white heart in a violet halo, edged with glass
     const crack=add(new THREE.PlaneGeometry(0.7,4.4),core,0,2.6,0); crack.material.side=THREE.DoubleSide;
@@ -32,7 +32,8 @@ function riftBuild(){
 }
 const riftNearest=()=>{ if(!started||PL.dead||dgIn()) return null; return riftDoorNear(P.x,P.z,RIFT_TALK); };
 const riftHere=()=>!!riftNearest();
-function riftPrompt(tk){ const R=riftNearest(); return 'Press '+tk+': '+R.name+' (a rift: '+RIFT_XP_K+'x XP, solo)'; }
+const riftEss=R=>R.reward==='essence'?essOf(essIdOf(R.essence)):null;   // the Essence an essence rift pays (shared/essence.js), or null
+function riftPrompt(tk){ const R=riftNearest(), e=riftEss(R); return 'Press '+tk+': '+R.name+(e?' (a rift: '+e.name+', solo, level '+R.lv+' and up)':' (a rift: '+RIFT_XP_K+'x XP, solo)'); }
 function riftOpenNear(){ const R=riftNearest(); if(!R) return; RIFT_UI.id=R.id; RIFT_UI.info=null; openPanel('rift'); riftRender(); netSend({t:'rift',a:'open'}); UI_SFX.click(); }
 NETH.rift=m=>{ if(m.a!=='info') return; RIFT_UI.info=m; RIFT_UI.at=Date.now(); riftRender(); };
 const riftEnergyNow=()=>{ const I=RIFT_UI.info; return I?Math.min(RIFT_E_MAX,I.e+(Date.now()-RIFT_UI.at)/RIFT_E_MS):0; };
@@ -40,12 +41,12 @@ const riftHms=s=>{ s=Math.max(0,Math.ceil(s)); const h=Math.floor(s/3600), m=Mat
 function riftRender(){
   const el=$('#riftBody'); if(!el||$('#rift').hidden) return; const I=RIFT_UI.info, R=RIFT_DEFS[RIFT_UI.id];
   if(!I||!R){ el.textContent='The glass hums...'; return; }
-  const e=riftEnergyNow(), full=Math.max(0,I.full-(Date.now()-RIFT_UI.at)/1000), canX2=e>=I.cost, low=PL.level<I.lv;
+  const e=riftEnergyNow(), full=Math.max(0,I.full-(Date.now()-RIFT_UI.at)/1000), canX2=e>=I.cost, low=PL.level<I.lv, es=riftEss(R), en=es?(ELEMS[R.el]?ELEMS[R.el].name+' ':'')+'monsters':'glass monsters';
   if(!canX2) RIFT_UI.x2=false;
   el.innerHTML='<p class="rf-blurb"></p>'
-    +'<p class="rf-line">The rift fights at <b>your level ('+Math.max(I.lv,PL.level)+')</b>: '+RIFT_WAVES+' waves of glass monsters, each worth <b>'+RIFT_XP_K+'x</b> the XP of the world. Solo only. XP is all it pays.</p>'
+    +'<p class="rf-line">The rift fights at <b>your level ('+Math.max(I.lv,PL.level)+')</b>: '+RIFT_WAVES+' waves of '+en+(es?'. A full clear pays <b>'+riftEssFor(RIFT_WAVES)+' '+es.name+'</b> (less if you fall earlier); no XP, no coins. Solo only.</p>':', each worth <b>'+RIFT_XP_K+'x</b> the XP of the world. Solo only. XP is all it pays.</p>')
     +'<div class="rf-energy"><div class="rf-bar"><i style="width:'+Math.round(100*e/RIFT_E_MAX)+'%"></i></div><span><b>'+Math.floor(e)+'</b> / '+RIFT_E_MAX+' energy'+(full>0?' · full in '+riftHms(full):' · full')+'</span></div>'
-    +'<label class="rf-x2'+(canX2?'':' off')+'"><input type="checkbox" id="riftX2"'+(RIFT_UI.x2?' checked':'')+(canX2?'':' disabled')+'> Double reward (costs '+I.cost+' energy): twice the XP for the whole run</label>'
+    +'<label class="rf-x2'+(canX2?'':' off')+'"><input type="checkbox" id="riftX2"'+(RIFT_UI.x2?' checked':'')+(canX2?'':' disabled')+'> Double reward (costs '+I.cost+' energy): twice the '+(es?'Essence':'XP')+' for the whole run</label>'
     +'<div class="tr-btns"><button class="chip buy" id="riftGo"'+(low?' disabled':'')+'>'+(low?'Opens at level '+I.lv:'Enter the rift')+'</button></div>'
     +'<p class="tr-note">Energy refills on its own, online or not: '+RIFT_E_MAX+' in '+RIFT_E_FULL_H+' hours. One knock-out sends you back to the hub; a second ends the run. '+(I.clears?'Cleared '+I.clears+' time'+(I.clears>1?'s':'')+(I.best?', best '+dgClockText(I.best):'')+'.':'')+'</p>';
   el.querySelector('.rf-blurb').textContent=R.blurb;
@@ -63,5 +64,5 @@ function riftUpdate(dt){
 }
 // the full map's marker for each rift tear in the land being drawn (ctx, world -> canvas, land key, font size, label(), pixel ratio)
 function riftMapMarks(x,at,land,fs,label,dpr){
-  for(const D of RIFT_DOORS){ if(landAt(D.x,D.z)!==land) continue; const R=RIFT_DEFS[D.id], [cx,cy]=at(D.x,D.z); dot(x,cx,cy,5*dpr,'#7ad0ff'); label(R?R.name:'Rift',cx,cy-fs*1.3,fs,'#c8e8ff',true); label('Rift',cx,cy+fs*0.9,fs*0.85,'#ffb0e0'); }
+  for(const D of RIFT_DOORS){ if(landAt(D.x,D.z)!==land) continue; const R=RIFT_DEFS[D.id], [cx,cy]=at(D.x,D.z); dot(x,cx,cy,5*dpr,R&&R.reward==='essence'?essCol(essIdOf(R.essence)):'#7ad0ff'); label(R?R.name:'Rift',cx,cy-fs*1.3,fs,'#c8e8ff',true); label('Rift',cx,cy+fs*0.9,fs*0.85,'#ffb0e0'); }
 }

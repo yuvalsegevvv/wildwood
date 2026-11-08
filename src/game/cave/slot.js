@@ -1,7 +1,7 @@
 //@ The Deep Cave, client side of the 4th slot: the action-bar tile and its charge bar, casting it, the skills panel's cave row and tab (equip / take off), the server's charge message
 /* Agent map. Rules and plan: docs/CAVE.md; shared constants and the registry: shared/cave.js; the server: server/cave.js; test: tools/cave-smoke.js (and client-smoke for the page).
    CAVE_UI = {charge (0-100, the server's last word; a cast subtracts its cost at once and the server corrects), sel (the cave skill selected in the panel)}. The server sends {t:'cave',c} (NETH.cave).
-   The tile #abCave: below level 23 a lock; from 23 with no cave skill owned it says "Go to the cave"; owned but not worn "Cave"; worn: its name, ready (glow) when charge >= cost. The key is KB_ACTIONS 'cave' (4).
+   The tile #abCave: below level 20 a lock; from 20 with no charge skill owned it says "Go to the cave"; owned but not worn "Cave"; worn: its name, ready (glow) when charge >= cost. The key is KB_ACTIONS 'cave' (4).
    Exports: caveOwnedIds, caveAbilityNow, caveFillTile, caveHudUpdate, caveBarKey, caveDoAttack (doAttack('cave') calls it), caveSlotHtml / caveGridHtml / caveInfoHtml / caveBindPanel (economy/skills.js).
    Hooks into other files are marked `// cave:` (listed in docs/CAVE.md). */
 var CAVE_UI={charge:0,sel:null};
@@ -37,7 +37,7 @@ function caveHudUpdate(){
 const caveBarKey=()=>'|'+(CAVE_UI?(caveAbilityNow()||{}).id:'')+'|'+(GEAR?caveOwnedIds().length:0)+'|'+Math.min(PL.level,CAVE_SLOT_LV);   // the action bar redraws its labels when this changes
 function caveDoAttack(){
   if(!started||!NET.ready||uiOpen()||PL.dead||CB.act||CB.cd.cave>0||PVC.on) return;
-  if(PL.level<CAVE_SLOT_LV){ toast('Your cave slot opens at level '+CAVE_SLOT_LV,'bad'); UI_SFX.error(); return; }
+  if(PL.level<CAVE_SLOT_LV){ toast('Your charge slot opens at level '+CAVE_SLOT_LV,'bad'); UI_SFX.error(); return; }
   const ab=caveAbilityNow();
   if(!ab){ if(caveOwnedIds().length) openSkills(null,'cave'); else toast('Go to the cave: its skills are earned there','bad'); UI_SFX.error(); return; }
   if(CAVE_UI.charge<ab.cost){ toast('Not enough charge ('+Math.floor(CAVE_UI.charge)+' of '+ab.cost+'). Hit enemies to charge it','bad'); UI_SFX.error(); return; }
@@ -71,9 +71,8 @@ function caveInfoHtml(){
   if(!s) return `<p class="muted">${isTouch?'Tap':'Click'} a charge skill for details. The Deep Cave is under the Wildwood; its skills are earned there. A charge skill is fed by charge: every attack that hits adds some, and casting it spends ${CAVE_COST_MIN} to ${CAVE_COST_MAX}.</p>`;
   const L=caveLevelOf(s.id), worn=GEAR.skills.cave===s.id, low=PL.level<CAVE_SLOT_LV;
   const act=L?(worn?`<button class="chip" data-caveoff="1">Take off</button>`:`<button class="chip" data-caveon="${s.id}" ${low?'disabled':''}>${low?'Level '+CAVE_SLOT_LV:'Equip'}</button>`):`<span class="muted">${caveWhereHtml(s)}</span>`;
-  const sh=(GEAR.cave&&GEAR.cave.sh)|0, dm=GEAR.cave&&GEAR.cave.m&&GEAR.cave.m[s.floor]|0, dn=CAVE_DROPS[s.floor], nx=L+1;   // cave: C3 levels, Echo Shards and the floor's monster drop
-  const up=L&&L<CAVE_LEVEL_MAX?`<div class="sk-up"><button class="chip" data-caveup="${s.id}" ${sh<CAVE_LEVEL_COST[nx]||dm<CAVE_DROP_COST[nx]?'disabled':''}>Level ${nx}: ${CAVE_LEVEL_COST[nx]} Echo Shards + ${CAVE_DROP_COST[nx]} ${dn}</button></div>`:'';
-  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico${ssTint(s)?' has-set':''}" style="${caveSetAttr(s).slice(1)}">${caveIco(s)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags"><span class="sk-tag">Any class · Charge skill · floor ${s.floor}${s.set?' · '+SS_SETS[s.set].name+'\'s set':''}</span>${s.el?elChip(s.el):''}</div><span class="sk-meta">${L?'Level '+L+' of '+CAVE_LEVEL_MAX+' &middot; ':''}costs ${s.cost} charge</span></div><div class="sk-ii-btn">${act}</div></div><p class="sk-desc">${s.desc}</p>${L?`<p class="muted">Echo Shards: ${sh}. ${dn}: ${dm} (dropped by floor ${s.floor}'s monsters). Each level adds ${Math.round(CAVE_LEVEL_STEP*100)}% to the effect${L>1?' (now +'+Math.round(CAVE_LEVEL_STEP*100*(L-1))+'%)':''}; the cost stays. Finish a method whose skill you own to earn more.</p>`:''}${up}</div>`;
+  const sh=(GEAR.awm&&GEAR.awm.echo)|0;   // awakening: Echo Shards are spent in the tree; a charge skill's level is its branch there (the old caveup button is retired)
+  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico${ssTint(s)?' has-set':''}" style="${caveSetAttr(s).slice(1)}">${caveIco(s)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags"><span class="sk-tag">Any class · Charge skill · floor ${s.floor}${s.set?' · '+SS_SETS[s.set].name+'\'s set':''}</span>${s.el?elChip(s.el):''}</div><span class="sk-meta">${L?'Level '+L+' of '+CAVE_LEVEL_MAX+' &middot; ':''}costs ${s.cost} charge</span></div><div class="sk-ii-btn">${act}</div></div><p class="sk-desc">${s.desc}</p>${L?`<p class="muted">Echo Shards: ${sh}. Each level adds 17% damage (compounding), 10% healing, 6% strength and 3% duration${L>1?' (damage now +'+Math.round((caveLevelK(L)-1)*100)+'%)':''}; the cost stays. Finish a method whose skill you own to earn more.</p><div class="sk-up"><span class="muted">Its level is the charge branch of the Awakening tree.</span><button class="chip buy" data-awaken="${s.set||'wanderer'}" data-limb="ch">Awaken</button></div>`:''}</div>`;
 }
 // a cave tile dropped (economy/skills.js skDrop): from the grid onto the 4th slot wears it; off the slot onto the grid takes it off; anything refused says why
 function caveDrop(src,tg){
@@ -81,7 +80,7 @@ function caveDrop(src,tg){
   if(src.from==='grid'){
     if(!tg.cave){ if(tg.slot||tg.idx!==undefined){ toast(s.name+' is a charge skill: it goes in slot 4','bad'); UI_SFX.error(); } return; }
     if(!caveLevelOf(s.id)){ toast(s.name+' is not yours yet: '+caveWhereText(s),'bad'); UI_SFX.error(); return; }
-    if(PL.level<CAVE_SLOT_LV){ toast('The cave slot opens at level '+CAVE_SLOT_LV,'bad'); UI_SFX.error(); return; }
+    if(PL.level<CAVE_SLOT_LV){ toast('The charge slot opens at level '+CAVE_SLOT_LV,'bad'); UI_SFX.error(); return; }
     netSend({t:'cavequip',id:s.id}); UI_SFX.click();
   } else if(tg.area){ netSend({t:'cavequip',id:null}); UI_SFX.click(); }
 }
@@ -89,6 +88,5 @@ function caveBindPanel(on){   // on(selector, fn) of renderSkills
   on('[data-caveslot]',()=>{ skKind='cave'; SK.sel=null; UI_SFX.click(); renderSkills(); });
   on('[data-cave]',b=>{ if(SKD.just) return; CAVE_UI.sel=b.dataset.cave; UI_SFX.click(); renderSkills(); });
   on('[data-caveon]',b=>{ netSend({t:'cavequip',id:b.dataset.caveon}); UI_SFX.click(); });
-  on('[data-caveup]',b=>{ netSend({t:'caveup',id:b.dataset.caveup}); UI_SFX.click(); });
   on('[data-caveoff]',()=>{ netSend({t:'cavequip',id:null}); UI_SFX.click(); });
 }

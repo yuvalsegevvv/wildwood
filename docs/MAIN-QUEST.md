@@ -57,7 +57,7 @@ at level 30.
 | W7b | Linnea's kettle | 6 | Linnea | 3 sunpetal; brew a Healing Potion at Linnea's; drink one when hurt (Z) | brewing, potions | .5 |
 | W8 | The peddler | 6 | Odran | Sell him 2 things at his cart | selling | .6 |
 | W9 | Grey in the bog | 7 | Bram | 3 grey-veined bog slimes (spawned for you in the Bog) | drops, tough monsters | .55 |
-| W10 | Sharper | 8 | Aldric | Upgrade a skill | skill upgrades | .5 |
+| W10 | Sharper | 8 | Aldric | Awaken a skill (a node of the Awakening tree) | skill levels | .5 |
 | W11 | Three of a kind | 9 | Greta | Merge the three items she gives you | rarity, the forge | .45 |
 | W11b | Made by hand | 9 | Tomas | Learn Mining; buy a pickaxe and wear it; mine 10 ore (copper, inner woods); craft a weapon at Tomas's | crafting, ore | .45 |
 | W12 | Everything at once | 10 | Aldric | Use your burst; 3 dire boars | burst slot | .4 |

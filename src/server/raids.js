@@ -40,7 +40,7 @@ function rdClearAll(st){
   for(const m of st.all) if(!m.remove) removeMonS(m);
   st.all=[]; st.garrison=[]; st.wards=[]; st.spawners=[]; st.barricades=[]; st.boss=null;
 }
-// (re)build a raid ready for the next hiker: full garrison, every structure up, a boss rolled from the land's two, level 40 until the first hit locks the tier
+// (re)build a raid ready for the next hiker: full garrison, every structure up, a boss rolled from the land's two, level 30 until the first hit locks the tier
 function rdBuildS(st){
   const R=st.R; rdClearAll(st);
   st.state='ready'; st.tier=0; st.L=rdLevel(0); st.hit=new Map(); st.emptyT=0; st.clearT=0; st.reinfT=R.spawners.map(()=>RD_REINF_T*0.5); st.bossLive=false; st.bossDead=false;
@@ -99,7 +99,7 @@ function rdCheckClearS(st){
   const R=st.R;
   for(const [pid,t] of st.hit){ const q=S.players.get(pid); if(!q||Math.hypot(q.x-R.x,q.z-R.z)>RD_FOOT) continue;
     const tier=rdCapTier(q.gear,R.land,st.tier), got=rdMatFor(tier), mat=rdMatsOf(q);
-    mat[R.land]=Math.min(RD_MAT_MAX,(mat[R.land]||0)+got); q.dirty=true;
+    mat[R.land]=Math.min(RD_MAT_MAX,(mat[R.land]||0)+got); q.dirty=true; bdStirRaidP(q,R);   // bond: the hour's stirring raid opens orbs
     toastTo(q.id,R.name+' cleared: +'+got+' '+R.mat+(tier<st.tier?' (paid at your tier '+tier+')':''),'loot r3'); }
   rdSend(st);
 }

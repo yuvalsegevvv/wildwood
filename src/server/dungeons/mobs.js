@@ -3,7 +3,7 @@
    exports: dgSpawnS(run,defId,lx,lz,opts) -> monster | null, dgRemoveS(run,m), dgAdoptS(m) (the makeMon hook), dgKOf(def,L), dgMonTickS(run,m,dt), dgKilledS(m,p) (the
             killMonsterS hook), rewardAllS(run,m), dgFlowToS(run,lx,lz), dgNearestS(run,m,maxD,needLos), DG_ELITE_HP, DG_AGGRO_R
    users: server/monsters.js (makeMon, monRoster, updateMonstersS skips m.inst), server/combat.js (killMonsterS), runs.js (the per-tick update), the mission kits
-   uses: the world's reward helpers (gainExpP, addItemP, addMatP, questKillP, bossSkillDropP) and the rewards' drop rule (dgRollDropP, dgAddStonesP: server/dungeon-gear.js)
+   uses: the world's reward helpers (gainExpP, addItemP, addMatP, questKillP) and the rewards' drop rule (dgRollDropP, dgAddStonesP: server/dungeon-gear.js)
    test: tools/dungeon-runs-smoke.js.   Design: docs/DUNGEONS.md sections 5 (party health), 6 (loot for all), 7 (the AI rows).
    A run's monster: m.inst = the run id, m.dgK = its numbers ({lv, hp, dmg, xp} against its def, what monK returns for it, so the zone tiers of the land the slot's x
    happens to read as never apply), m.maxHp = def.hp x the party's health factor at the moment it spawned (DG_PARTY.hp by the members present then), in the def's own
@@ -115,7 +115,6 @@ function rewardAllS(run,m){
     if(R.stones&&q!==R.q0) dgAddStonesP(q,R.stones,m.id);   // (R.q0 got his from dgRollDropP itself)
     if(MATS[m.def.id]){ const n=dgDropCountS(m.def,psP(q,'drop'),R.u1,R.u2); if(n){ addMatP(q,m.def.id,n,m.id); if(mb) mb.got.mats+=n; } }
     questKillP(q,m.def.id); q.dirty=true;
-    if(m.def.boss) bossSkillDropP(q,m.def.id);   // a world boss standing in for a dungeon's: its skills drop by the usual 10% rule, each player rolling for himself
     if(mb){ mb.got.xp+=xp; mb.got.coins+=R.coins; mb.got.kills++; }
   }
 }

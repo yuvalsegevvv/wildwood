@@ -3,10 +3,10 @@
 // dummy (and six more around it for the pack). The numbers are a SANITY BAND, not a verdict (the owner: balanced mostly in playtests): a row outside its band is a warning. --check fails only on the owner's
 // orderings, for the damage kits: the pieces beat the best non-set loadout, the 3-set beats the pieces, the 5-set beats the 3-set.
 // A set with rangeScale (damage grows with the distance) is also run from 16 m (archer and mage). A risk set is run twice: never behind its targets (careless play, ~0.8 of the safe ladder, warnings only) and always behind (the dummies face away: the owner's 125 / 142 / 170, judged).
-// Usage: node tools/skillsets-ladder.js [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
+// Usage: node tools/skillsets-ladder.js [--matrix | --bond 0-6 --awk A0-A5 [--guest]] [--wanderer [--path fury]] [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
 // Also: require('./skillsets-ladder').ladder({W, x, pid}, opts) for a test (tools/skillsets-smoke.js runs it on a fixture); x must expose NAMES.
 const {loadServer}=require('./load');
-const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S'];
+const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S','ssBonusSwitch','awkMigGrant','bdGrantP','bdSetOk','WD_PATHS','WD_ORDER','MQ','awkGrantP','AWK_TIERS','skillLvOf'];
 const WEAPON={warrior:'sword1',archer:'bow1',mage:'wand1'}, CLASSES=['warrior','archer','mage'];
 // the bands in percent of the baseline: [the pieces alone, the 3-set, the 5-set] (docs/SKILL-SETS.md 5b; a mixed set sits between a support's 90 and its main kit's ladder)
 // the same tree measured 93 to 99 for one set's pieces and 128 vs 131 for another's 5- and 3-set between runs (also before the Amber Reach), so the orderings carry this much slack
@@ -14,13 +14,14 @@ const LADDER_NOISE=4, LADDER_NOISE_FLOOR=92;
 const BANDS={safe:[110,125,150],risk:[125,142,170],riskCareless:[88,100,120],support:[90,90,90],heal:[90,90,90],tank:[90,90,90],grind:[50,50,50]};
 function ladder(env,opts){
   opts=opts||{}; const {W,x}=env, secs=opts.secs||60, classes=opts.classes||(opts.dist>4?['archer','mage']:CLASSES), p=W.players.get(env.pid), out=[];
-  const R=Math.random; let seed=12345; const seeded=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
+  // castCave false: the charge skill is worn (a Bond counts it) but never cast
+  const R=Math.random; let seed=12345, castCave=true; const seeded=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
   const dummies=x.MONS.filter(m=>!m.boss&&!m.inst&&!m.dead).slice(0,7), spot=[];
   // the hero stands in the village (nothing attacks there) with the dummy 2.4 m ahead (the way he faces) and six more around it
   const arrange=()=>{
     W.setPos(env.pid,[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,Math.PI,0,0]); p.face=Math.PI;
     dummies.forEach((m,i)=>{ const a=(i-1)/6*Math.PI*2, c=[p.x,p.z+2.4]; spot[i]=i===0?c:[c[0]+Math.sin(a)*3.5,c[1]+Math.cos(a)*3.5];
-      m.face=opts.behind?Math.PI:0; m.dead=false; m.remove=false; m.hp=m.maxHp=1e12; m.slowT=m.burnT=0; m.mk=m.st=m.aura=m.rxIcd=m.taunt=null; m.immune=false; m.aggro=false; });
+      m.face=opts.behind?Math.PI:0; m.dead=false; m.remove=false; m.hp=m.maxHp=1e12; m.slowT=m.burnT=0; m.mk=m.st=m.taunt=null; m.immune=false; m.aggro=false; });
   };
   const pin=()=>dummies.forEach((m,i)=>{ m.x=spot[i][0]; m.z=spot[i][1]; m.kbx=m.kbz=0; m.vx=m.vz=0; m.stunT=1e9; });
   const fresh=()=>{ arrange(); pin(); p.dead=false; p.hp=p.maxHp; p.act=null; p.cd={basic:0,skill:0,burst:0,cave:0,ult:0}; p.ultB=null; p.ultV=null; p.cave.charge=0; p.ssIcd={}; p.ally=null; p.shield=null; p.buff=null; p.lastDealt=-99; x.recalcP(p); };
@@ -33,7 +34,7 @@ function ladder(env,opts){
       // good play and careless play of a position set: the hero is always on the move (Light Feet), walks back after a dash, and the dummies keep their backs to him (opts.behind) or keep facing him
       p.lastMove=x.S.t; if(Math.hypot(p.x-home[0],p.z-home[1])>0.3){ const f=p.face; W.setPos(env.pid,[home[0],x.getH(home[0],home[1]),home[1],f,0,0]); }
       for(const m of dummies) m.face=Math.atan2(sgn*(p.x-m.x),sgn*(p.z-m.z));
-      if(!p.act&&p.gear.skills.cave&&p.cave.charge>=x.CAVE_SKILLS[p.gear.skills.cave].cost&&p.cd.cave<=0.08) cast('cave');   // slot 4 (C3): spends its charge as soon as it can
+      if(!p.act&&castCave&&p.gear.skills.cave&&p.cave.charge>=x.CAVE_SKILLS[p.gear.skills.cave].cost&&p.cd.cave<=0.08) cast('cave');   // slot 4 (C3): spends its charge as soon as it can
       if(!p.act&&opts.ultOn&&p.gear.skills.ult&&p.cd.ult<=0.08) cast('ult');   // slot 5 (docs/ULT.md): the burst as soon as it is ready
       if(!p.act) for(const k of ['burst','skill','basic']) if(p.cd[k]<=0.08&&x.abilityOf(x.clsOfP(p),k,p.gear.skills,p.level)){ cast(k); break; }
       W.tick(0.05); } } finally{ Math.random=R; }
@@ -53,7 +54,13 @@ function ladder(env,opts){
     (pass||[]).forEach((id,i)=>{ S.pass[i]=id; }); x.recalcP(p);
   };
   p.level=60; p.gear.skills.owned=[...new Set([...p.gear.skills.owned,...x.SKILL_IDS])]; for(const id of x.SKILL_IDS) p.gear.skills.lv[id]=5;   // everything learned, boss skills too, all at level 5
+  if(x.awkMigGrant) for(const id of x.SS_ORDER) x.awkMigGrant(p.gear,id,{ba:5,sk:5,po:5,pa:5,ch:5,bu:1});   // awakening: a set piece's level is its branch: the same level 5 (and the burst's bu1)
   p.gear.skills.pass=new Array(p.gear.skills.pass.length).fill(null);
+  // point mode (--bond / --awk / --guest, step 20): every tree at one tier (all its nodes: the branches at the tier's cap and its stat nodes), the baseline's shop skills at the Wanderer's branches of
+  // the same tier (their saved level 1), so a set is measured against the best non-set loadout of a hiker as far along
+  const PT=opts.point, tierOf=()=>{ for(const k of Object.keys(p.gear.awk||{})) delete p.gear.awk[k]; };
+  const tree=(k,t)=>{ if(p.gear.awk) delete p.gear.awk[k]; x.awkGrantP(p,k,t); };
+  if(PT){ tierOf(); for(const id of x.SKILL_IDS) if(!x.SKILLS[id].set) p.gear.skills.lv[id]=1; tree('wanderer',PT.awk); }
   const baseline={};
   for(const cls of classes){
     const best={};
@@ -65,6 +72,22 @@ function ladder(env,opts){
     }
     wear(cls,[best.basic,best.skill,best.burst],[]); baseline[cls]=Object.assign({ids:best},rotation(secs));
   }
+  if(opts.wanderer) return wandererRows(opts.wanderer);
+  // the Wanderer (step 18, --wanderer): the baseline's general skills plus the path passive (level 5, its pa branch) at Realization 0, II and VI (the main quest's acts set it: II after act II, VI after
+  // act IV), as the sets are measured at Bond 0, II and VI; the path burst is worn but not cast (like a set's at Bond VI), then one more VI rotation casting it (the `burst` column: its gain)
+  function wandererRows(path){
+    const P=x.WD_PATHS&&x.WD_PATHS[path]; if(!P) return out;
+    const lastOf=L=>{ let i=-1; x.MQ.forEach((q,k)=>{ if(q.id[0]===L) i=k; }); return i; }, mq0=p.gear.mq.s, B=p.gear.bd.wanderer||(p.gear.bd.wanderer={r:0});
+    B.path=path; x.awkMigGrant(p.gear,'wanderer',{pa:5,bu:1}); const rows={};
+    try{ for(const cls of classes){ const ids=baseline[cls].ids;
+      const at=s=>{ p.gear.mq.s=s; wear(cls,[ids.basic,ids.skill,ids.burst],[P.passive]); p.gear.skills.ult=P.ult; x.recalcP(p); return rotation(secs); };
+      const pieces=at(0), three=at(lastOf('V')+1), five=at(lastOf('G')+1); opts.ultOn=true; const ult=rotation(secs); opts.ultOn=false;
+      rows[cls]={base:baseline[cls],pieces,three,five,six:five,ult:{burst:ult}}; } }
+    finally{ p.gear.mq.s=mq0; p.gear.skills.ult=null; opts.ultOn=false; }
+    const S=summarize(rows,classes); S.burst=Math.round(classes.reduce((a,c)=>a+pct(rows[c].ult.burst.single,rows[c].five.single),0)/classes.length)-100;
+    out.push({id:'wanderer:'+path,role:P.role,also:null,ranged:false,rows,summary:S});
+    return out;
+  }
   for(const id of x.SS_ORDER){   // (ranged below: the damage GROWS with the distance, a k under 1 is a close-range bonus)
     if(opts.set&&opts.set!==id) continue;
     const S=x.SS_SETS[id], rows={}, P=[1,2,3].map(n=>S.pos[n]), bonus=S.bonus;
@@ -73,10 +96,36 @@ function ladder(env,opts){
     for(const cls of classes){
       const ids=P.map(q=>q.bound==='any'?q.ids[0]:q.ids.find(i=>x.SKILLS[i].cls===cls)), pass=P.map(q=>q.passive);
       if(!ids.every(Boolean)) continue;   // basic-hold: skill 1 belongs to one class, the other classes have no version of the set
-      S.bonus=inert; wear(cls,ids,[]); const pieces=rotation(secs); S.bonus=bonus;
-      wear(cls,ids,[]); const three=rotation(secs);
-      wear(cls,ids,[pass[0],pass[1]]); const five=rotation(secs);
-      wear(cls,ids,pass); const six=rotation(secs);
+      // bond: the rows are Bond II (the 3-set row) and Bond VI (the 5-set row) now, in force while that many of the character's pieces are worn (server/bond.js). A set with Bonds is measured at
+      // Bond 0 (the pieces alone), Bond II with its three actives (the 3-set row and the Bond I passive) and Bond VI with all six places worn (the actives, the kept passive, the charge skill and the
+      // burst, those two worn for the count only, never cast: both rows, both Bond passives and the two +1 levels); a set without Bonds (a test fixture) the old way
+      const bd=x.bdSetOk&&x.bdSetOk(id)?(x.bdGrantP(p,id,6),p.gear.bd[id]):null, cs0=(x.CAVE_SKILL_IDS||[]).map(i=>x.CAVE_SKILLS[i]).find(q=>q.set===id);
+      let pieces, three, five, six;
+      if(PT&&bd){   // one point: Bond PT.bond, the tree at PT.awk, wearing what that tier opens (A0 the three actives, A1 + the kept passive, A2 + the charge skill, A3 + the burst; those two worn, never cast)
+        const t=PT.awk, wearAt=list=>{ wear(cls,list,t>=1&&S.keptPassive?[S.keptPassive]:[]); p.gear.skills.cave=t>=2&&cs0&&p.gear.cave.own[cs0.id]?cs0.id:null; p.gear.skills.ult=t>=3&&x.ULT_SKILLS&&x.ULT_SKILLS[id]?id:null; x.recalcP(p); };
+        const off=()=>{ p.gear.skills.cave=null; p.gear.skills.ult=null; };
+        tree(id,t); bd.b=PT.bond; castCave=false; wearAt(ids); const act=p.gear.skills.bdx.act; pieces=rotation(secs);
+        // --guest: the skill (position 2) is another set's piece of the same class (the next set in SS_ORDER that has one), its tree at the same tier: what one guest costs
+        let guest=null; if(PT.guest){ const n=x.SS_ORDER.length, i0=x.SS_ORDER.indexOf(id);
+          for(let j=1;j<n&&!guest;j++){ const gid=x.SS_ORDER[(i0+j)%n], G=x.SS_SETS[gid]; if(G.dev||!x.bdSetOk(gid)) continue; const q=G.pos[2], gi=q.bound==='any'?q.ids[0]:q.ids.find(i=>x.SKILLS[i].cls===cls); if(!gi) continue;
+            x.ssGrantSetP(p,gid); tree(gid,t); wearAt([ids[0],gi,ids[2]]); guest={id:gid,skill:gi,act:p.gear.skills.bdx.act,lv:x.skillLvOf(p.gear.skills,gi),res:rotation(secs)}; } }
+        castCave=true; off(); wear(cls,ids,[]);
+        rows[cls]={base:baseline[cls],pieces,three:pieces,five:pieces,six:pieces,act,guest};
+        continue;
+      }
+      if(bd){
+        const all6=()=>{ wear(cls,ids,[S.keptPassive]); if(cs0){ p.gear.cave.own[cs0.id]=1; p.gear.skills.cave=cs0.id; } p.gear.skills.ult=x.ULT_SKILLS&&x.ULT_SKILLS[id]?id:null; x.recalcP(p); };
+        const off=()=>{ if(cs0){ p.gear.skills.cave=null; delete p.gear.cave.own[cs0.id]; } p.gear.skills.ult=null; };
+        bd.b=0; wear(cls,ids,[]); pieces=rotation(secs);
+        bd.b=2; wear(cls,ids,[]); three=rotation(secs);
+        bd.b=6; castCave=false; all6(); five=rotation(secs); castCave=true; off(); six=five;
+      } else {
+        S.bonus=inert; wear(cls,ids,[]); pieces=rotation(secs); S.bonus=bonus;
+        wear(cls,ids,[]); three=rotation(secs);
+        wear(cls,ids,[pass[0],pass[1]]); five=rotation(secs);
+        wear(cls,ids,pass); six=rotation(secs);
+      }
+      if(bd) wear(cls,ids,[S.keptPassive]);   // (slot 4 below: on top of the actives and the kept passive at Bond VI)
       // slot 4 (docs/CAVE.md): the set's own cave skill at level 1 and 5 on top of all six pieces; its charge is fed by the casts, doubled for this set's pieces
       let c1=null, c5=null; const cs=(x.CAVE_SKILL_IDS||[]).map(i=>x.CAVE_SKILLS[i]).find(q=>q.set===id);   // a harness without the cave names (skillsets-smoke) skips slot 4
       if(cs&&opts.cave!==false){ p.gear.cave.own[cs.id]=1; p.gear.skills.cave=cs.id; c1=rotation(secs); p.gear.cave.own[cs.id]=5; c5=rotation(secs); p.gear.skills.cave=null; delete p.gear.cave.own[cs.id]; }
@@ -96,6 +145,7 @@ function summarize(rows,classes){
   classes=classes.filter(c=>rows[c]);   // basic-hold: a set's skill 1 is for one class, only that class has a row
   const avg=f=>classes.reduce((a,c)=>a+f(rows[c]),0)/classes.length, S={};
   for(const k of ['pieces','three','five','six']){ S[k]=Math.round(avg(r=>pct(r[k].single,r.base.single))); S[k+'Pack']=Math.round(avg(r=>pct(r[k].pack,r.base.pack))); }
+  if(classes.some(c=>rows[c].guest)){ const gs=classes.filter(c=>rows[c].guest); S.guest=Math.round(gs.reduce((a,c)=>a+pct(rows[c].guest.res.single,rows[c].pieces.single),0)/gs.length)-100; S.guestPack=Math.round(gs.reduce((a,c)=>a+pct(rows[c].guest.res.pack,rows[c].pieces.pack),0)/gs.length)-100; }
   if(classes.every(c=>rows[c].c1)){   // the slot-4 column: the gain over the full set (all 6), in percent, single target; level 1 and level 5
     S.cave1=Math.round(avg(r=>pct(r.c1.single,r.six.single))-100); S.cave5=Math.round(avg(r=>pct(r.c5.single,r.six.single))-100);
     S.cave1Pack=Math.round(avg(r=>pct(r.c1.pack,r.six.pack))-100); S.cave5Pack=Math.round(avg(r=>pct(r.c5.pack,r.six.pack))-100); }
@@ -130,12 +180,58 @@ function ultRow(set,classes){
   const g=(k,f)=>Math.round(cs.reduce((a,c)=>{ const r=set.rows[c]; return a+(r.ult[k][f]/Math.max(1,r.six[f])-1)*100; },0)/cs.length);
   return ['none','active','passive','both'].map(k=>[g(k,'single'),g(k,'pack')]);
 }
-module.exports={ultRow,ladder,judge,summarize,print,BANDS,NAMES};
+// --wanderer: each path (or --path <id>) at Realization 0 / II / VI next to the damage sets' Bond 0 / II / VI (safe sets as measured, risk sets always behind: the rows the ladder judges); the target
+// (PLAN section 7): a damage path at about 80% of the average damage set at Bond VI, a tank path in the tank band (about 90 of the baseline's damage)
+const WD_TARGET=0.8;
+function wandererReport(env,opts,paths){
+  const runs=paths.map(path=>ladder(env,Object.assign({},opts,{wanderer:path}))[0]).filter(Boolean);   // (the paths first: a set's run leaves grants behind that the Wanderer's must not see)
+  const dmg=env.x.SS_ORDER.filter(id=>{ const S=env.x.SS_SETS[id]; return !S.dev&&!S.role.also&&(S.role.main==='risk'||S.role.main==='safe'); }), sets=[];
+  for(const id of dmg){ const S=env.x.SS_SETS[id]; sets.push(...ladder(env,Object.assign({},opts,{set:id,cave:false,behind:S.role.main==='risk'}))); }
+  const avg=k=>Math.round(sets.reduce((a,s)=>a+s.summary[k],0)/Math.max(1,sets.length));
+  const A={pieces:avg('pieces'),three:avg('three'),five:avg('five')};
+  console.log('the damage sets ('+sets.map(s=>s.id).join(' ')+'; risk ones always behind), average in % of the baseline: Bond 0 '+A.pieces+', Bond II '+A.three+', Bond VI '+A.five+'  ->  80% of Bond VI = '+Math.round(A.five*WD_TARGET)+'\n');
+  console.log('path'.padEnd(20)+'role'.padEnd(7)+'R0'.padStart(6)+'R II'.padStart(7)+'R VI'.padStart(7)+'  vs sets (R0 / II / VI)'.padEnd(26)+'pack VI'.padStart(9)+'  burst (gain at VI)');
+  const res=[];
+  for(const w of runs){ const path=w.id.slice(9), S=w.summary, r=k=>Math.round(S[k]/A[k]*100);
+    console.log(w.id.padEnd(20)+w.role.padEnd(7)+String(S.pieces).padStart(6)+String(S.three).padStart(7)+String(S.five).padStart(7)+('  '+r('pieces')+'% / '+r('three')+'% / '+r('five')+'%').padEnd(26)+String(S.fivePack).padStart(9)+'  +'+S.burst+'%');
+    const tank=w.role==='tank', band=BANDS[w.role], warn=tank||band&&band[0]<100?(S.five<band[2]*0.75||S.five>band[2]*1.25?'outside its band '+band[2]+' +- 25%':''):(r('five')<70||r('five')>90?'Bond VI ratio '+r('five')+'% is outside 80 +- 10':'');
+    if(warn) console.log('   warning: '+warn);
+    res.push({id:path,summary:S,ratio:r('five'),sets:A}); }
+  return res;
+}
+module.exports={ultRow,ladder,wandererReport,judge,summarize,print,BANDS,NAMES};
 if(require.main===module){
   const args=process.argv.slice(2), val=(f,d)=>{ const i=args.indexOf(f); return i>=0?args[i+1]:d; };
-  const {api:W,x}=loadServer({dev:true,send(){}},NAMES); W.join('l',{name:'Ladder',look:{cls:'warrior'},save:{level:60}}); for(let i=0;i<3;i++) W.tick(0.05);
+  const {api:W,x}=loadServer({dev:true,send(){}},NAMES);   // bond: the set rows are Bond II / VI (server/bond.js): the ladder grants the Bonds and wears the pieces they ask for
+  W.join('l',{name:'Ladder',look:{cls:'warrior'},save:{level:60}}); for(let i=0;i<3;i++) W.tick(0.05);
   if(!x.SS_ORDER.length){ console.log('no skill set is defined (src/shared/skillsets/*.js, listed in src/manifest.json)'); process.exit(0); }
   const cls=val('--class',null), opts={secs:+val('--secs',60),set:val('--set',null),classes:cls?[cls]:undefined,cave:args.includes('--check')?args.includes('--cave'):true}, env={W,x,pid:'l'};
+  if(args.includes('--wanderer')){   // step 18: the Wanderer's paths (docs: shared/wanderer.js; --path <id> for one)
+    const one=val('--path',null), paths=one?[one]:x.WD_ORDER.slice(); wandererReport(env,Object.assign({},opts,{set:null}),paths); process.exit(0); }
+  // step 20 (the balance pass): one point (--bond <0-6> and/or --awk <A0-A5>, --guest adds one guest piece) or --matrix (Bond 0 at A0, Bond II at A3, Bond VI at A5 with the guest cost there):
+  // every set in % of the baseline at the same tier, then the median and spread per role and the outliers (more than 25% from the role's median at Bond VI / A5); risk sets always behind
+  const tierArg=v=>{ const t=+(String(v||'').replace(/^A/i,'')); return Number.isInteger(t)&&t>=0&&t<=5?t:null; };
+  if(args.includes('--bond')||args.includes('--awk')||args.includes('--guest')||args.includes('--matrix')){
+    const pts=args.includes('--matrix')?[{bond:0,awk:0},{bond:2,awk:3},{bond:6,awk:5,guest:true}]
+      :[{bond:Math.max(0,Math.min(6,+val('--bond',6)|0)),awk:tierArg(val('--awk','A5'))===null?5:tierArg(val('--awk','A5')),guest:args.includes('--guest')}];
+    const roman=['0','I','II','III','IV','V','VI'], ids=x.SS_ORDER.filter(id=>!x.SS_SETS[id].dev&&(!opts.set||opts.set===id)), res={};
+    for(const P of pts){ const key='Bond '+roman[P.bond]+' / A'+P.awk; res[key]={};
+      for(const id of ids){ const r=ladder(env,Object.assign({},opts,{set:id,cave:false,point:P,behind:x.SS_SETS[id].role.main==='risk'}))[0]; if(r) res[key][id]=r; } }
+    const keys=Object.keys(res), roleOf=id=>x.SS_SETS[id].role.main, med=a=>{ const b=[...a].sort((p,q)=>p-q), n=b.length; return n?(n%2?b[n>>1]:(b[n/2-1]+b[n/2])/2):0; };
+    console.log('set'.padEnd(11)+'role'.padEnd(17)+keys.map(k=>k.padStart(18)).join('')+(pts.some(P=>P.guest)?'   one guest (at the last point): single / pack, its Bond':''));
+    for(const id of ids){ const S=x.SS_SETS[id], last=res[keys[keys.length-1]][id];
+      console.log(id.padEnd(11)+(S.role.main+(S.role.also?'+'+S.role.also.role:'')).padEnd(17)+keys.map(k=>String(res[k][id]?res[k][id].summary.pieces+' / '+res[k][id].summary.piecesPack:'-').padStart(18)).join('')
+        +(last&&last.summary.guest!==undefined?'   '+(last.summary.guest>=0?'+':'')+last.summary.guest+'% / '+(last.summary.guestPack>=0?'+':'')+last.summary.guestPack+'%, Bond '+roman[Math.max(0,Object.values(last.rows)[0].guest.act)]:'')); }
+    console.log('\nper role (single target, % of the baseline at the same tier): median [min..max]');
+    const roles=[...new Set(ids.map(roleOf))], outl=[];
+    for(const role of roles){ const mine=ids.filter(id=>roleOf(id)===role);
+      console.log(role.padEnd(9)+keys.map(k=>{ const v=mine.map(id=>res[k][id]&&res[k][id].summary.pieces).filter(n=>n!==undefined); return (Math.round(med(v))+' ['+Math.min(...v)+'..'+Math.max(...v)+']').padStart(18); }).join(''));
+      const L=keys[keys.length-1], m=med(mine.map(id=>res[L][id]&&res[L][id].summary.pieces).filter(n=>n!==undefined));
+      for(const id of mine){ const v=res[L][id]&&res[L][id].summary.pieces; if(v!==undefined&&Math.abs(v/m-1)>0.25) outl.push(id+' ('+role+') '+v+' at '+L+' vs the median '+Math.round(m)+' ('+(v>m?'+':'')+Math.round((v/m-1)*100)+'%)'); } }
+    const gs=ids.map(id=>res[keys[keys.length-1]][id]).filter(r=>r&&r.summary.guest!==undefined).map(r=>r.summary.guest);
+    if(gs.length) console.log('\none guest piece costs: median '+med(gs)+'% ['+Math.min(...gs)+'..'+Math.max(...gs)+'] single target');
+    console.log(outl.length?'\noutliers (more than 25% from the role median at '+keys[keys.length-1]+'):\n  '+outl.join('\n  '):'\nno outlier (every set within 25% of its role median at '+keys[keys.length-1]+')');
+    process.exit(0); }
   if(args.includes('--ult')){   // slot 5: what each set's burst and its two boosts add to a 60 s rotation (gain over the rotation without it, %: single / pack)
     const list=ladder(env,Object.assign({},opts,{ult:true,cave:false}));
     console.log('set'.padEnd(12)+'no boost'.padStart(12)+'active only'.padStart(14)+'passive only'.padStart(14)+'both'.padStart(12)+'   (% over the same rotation without the burst, single / pack)');

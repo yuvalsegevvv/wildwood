@@ -124,14 +124,13 @@ function hvShout(kind,ab,force){
   }catch(_){}
 }
 // Three reactions for each thing that happens to you. hvEvent(kind) is called from the places that show it (marked `// voice:`):
-// down (progression.js playerDown), lvup (levelUpFx), rare / epic (net/client.js onLoot), bossskill (lucky.js onSkillDrop),
+// down (progression.js playerDown), lvup (levelUpFx), rare / epic (net/client.js onLoot),
 // bossdown (combat/attacks.js onMonKill, a boss near you), dgwin / dglose (dungeon/hud.js dgResultShow), raidclear (raids/hud.js rdOnState), quest (net/client.js 'mq' / 'sq' handed in)
 const HV_EVENT={
   down:['Argh... not like this.','Ugh! I need a moment...','Tell them... I tried.'],
   lvup:['I feel stronger!','Yes! Level up!','Getting better every day!'],
   rare:['Ooh, what is this?','Now that is nice!','Look at that!'],
   epic:['Oh my! Look at this!','Incredible! Finally!','That is a beauty!'],
-  bossskill:['A boss skill! Oh yes!','I have never seen this one!','It is mine now!'],
   bossdown:['It is done! We did it!','The beast is down!','Not so tough after all!'],
   dgwin:['Dungeon cleared! What a run!','We made it out!','That is the last of them!'],
   dglose:['We will get them next time.','Ugh. Back to the gate.','That went badly.'],

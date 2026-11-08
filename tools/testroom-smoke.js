@@ -1,9 +1,9 @@
 // The test room (shared/testroom.js, server/testroom.js), straight from src/, no build: the pad is flat ground outside the village, the Training Scarecrow stands on it and cannot be hurt, a hit goes to the hiker's own counter
-// (and only theirs), the counter resets, the reset-cooldowns and cave-charge buttons work on the pad and not off it, the soul can be changed on the pad (not elsewhere), the scarecrow's numbers do not depend on the hiker's zone tier.
+// (and only theirs), the counter resets, the reset-cooldowns and cave-charge buttons work on the pad and not off it, the scarecrow's numbers do not depend on the hiker's zone tier.
 // Usage: node tools/testroom-smoke.js
 const {loadServer}=require('./load');
 const sent=[];
-const {api:W,x}=loadServer({dev:false,send(to,m){ sent.push([to,m]); }},['TROOM','troomIn','MONS','VIL','VR','getH','damageMonsterS','monK','SCARECROW_DEF','CAVE_CHARGE_MAX','SOUL_LV','ALL_MON_DEFS']);
+const {api:W,x}=loadServer({dev:false,send(to,m){ sent.push([to,m]); }},['TROOM','troomIn','MONS','VIL','VR','getH','damageMonsterS','monK','SCARECROW_DEF','CAVE_CHARGE_MAX','ALL_MON_DEFS']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i?'  ('+i+')':'')); if(!c) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const msgs=(to,t)=>sent.filter(s=>s[0]===to&&s[1].t===t).map(s=>s[1]);
@@ -37,11 +37,8 @@ ok('refill sets the cave charge to 100',A.cave.charge===x.CAVE_CHARGE_MAX);
 put(A,x.VIL.x,x.VIL.z); A.cd.skill=9; A.cave.charge=3; sent.length=0;
 W.receive('a',{t:'troom',a:'cd'}); W.receive('a',{t:'troom',a:'charge'});
 ok('off the pad neither button works',A.cd.skill===9&&A.cave.charge===3&&msgs('a','troomcd').length===0);
-A.level=40; A.gear.soul='basic'; W.receive('a',{t:'soul',el:'fire'});
-ok('a soul cannot be bound off the pad and away from Hanami',A.gear.soul==='basic');
-A.level=10; put(A,T.x+1,T.z+1); W.receive('a',{t:'soul',el:'fire'}); const lowLv=A.gear.soul;
-A.level=40; W.receive('a',{t:'soul',el:'fire'}); const fire=A.gear.soul; W.receive('a',{t:'soul',el:'water'});
-ok('on the pad the soul changes freely (from level '+x.SOUL_LV+')',lowLv==='basic'&&fire==='fire'&&A.gear.soul==='water',lowLv+' '+fire+' '+A.gear.soul+' '+JSON.stringify(sent.filter(s=>s[1].t==='toast').slice(-2)));
+A.level=40; put(A,T.x+1,T.z+1); W.receive('a',{t:'soul',el:'fire'});
+ok('the old soul message does nothing, on the pad or off it (the soul was removed)',A.gear.soul===undefined);
 const kills=sc.dead; for(let i=0;i<200;i++) x.damageMonsterS(sc,50,A,A.x,A.z,0); tick(3);
 ok('a huge pile of damage still cannot kill it',!sc.dead&&!kills&&sc.hp===sc.maxHp);
 console.log(fails?fails+' failed':'all passed'); process.exit(fails?1:0);

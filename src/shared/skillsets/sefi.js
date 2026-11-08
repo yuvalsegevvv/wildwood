@@ -27,7 +27,10 @@ defineSkillSet({
   ult:{name:'Photo Finish', desc:'Three dashes back and forth through the target in a line, each one faster; the stunned are spun round by the wind.', range:8, mult:1.32, act:['sefiult',1.0,0.4], anim:'slash',
        fx:{zone:{r:7, dur:1.2, first:0.2, every:0.5, self:true}},
        boost:[{piece:'a2', secs:10, mod:{cd:0.4, mult:1.5}}, {piece:'p3', secs:12, mod:{v:2.5}}]},
-  bonus:{
-    3:{name:'Cold Edge', text:'A hit on a target carrying a Stride (at most every 2 s) cuts again for 120% damage', on:'hit', when:{marked:'stride'}, icd:2, mult:1.2, range:3.4, fx:{cone:{r:3.4, arc:1.2}}},
-    5:{name:'Crosswind', text:'A critical hit cuts the enemies within 5 m of the target for 110% damage, leaves a Stride on them, takes 1 s off your skill cooldowns and quickens you by 15% for 4 s (at most every 3 s)', on:'crit', at:'target', icd:3, mult:1.1, range:5, fx:{ring:{r:5, mark:{id:'stride', n:1, dur:12, max:5}}}, cdr:{skill:1}, buff:{kind:'haste', v:0.15, dur:4, r:1}}},
+  tree:'willow', stone:'Plain Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'sefi_p1',
+    2:{name:'Cold Edge', text:'A hit on a target carrying a Stride (at most every 2 s) cuts again for 120% damage', on:'hit', when:{marked:'stride'}, icd:2, mult:1.2, range:3.4, fx:{cone:{r:3.4, arc:1.2}}},
+    4:'sefi_p2',
+    6:{name:'Crosswind', text:'A critical hit cuts the enemies within 5 m of the target for 110% damage, leaves a Stride on them, takes 1 s off your skill cooldowns and quickens you by 15% for 4 s (at most every 3 s)', on:'crit', at:'target', icd:3, mult:1.1, range:5, fx:{ring:{r:5, mark:{id:'stride', n:1, dur:12, max:5}}}, cdr:{skill:1}, buff:{kind:'haste', v:0.15, dur:4, r:1}}},
 });

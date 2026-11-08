@@ -4,7 +4,9 @@
 const fs=require('fs'), path=require('path'), {loadServer, SRC}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...m.ev); }},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','ssLint','ssSetFor','ssSourceOf','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssMarkN','ssMarkS','ssTriggerS','resolveFxS','damageMonsterS','killMonsterS','hurtP','ssCondP','AREAS','PROJS','rxVulnK','rxWeakK','recalcP','clsOfP','getH','VIL','psP']);
+  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','ssLint','ssSetFor','ssSourceOf','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssMarkN','ssMarkS','ssTriggerS','resolveFxS','damageMonsterS','killMonsterS','hurtP','ssCondP','AREAS','PROJS','mstVulnK','mstWeakK','recalcP','clsOfP','getH','VIL','psP','PASSIVE_SLOT_LV','ssBonusSwitch']);
+// These tests check what each kit's pieces DO. The game has ONE passive slot and the 3- / 5-set bonuses are off (skill revamp step 4), so the harness opens three passive slots and switches the bonus rows on here.
+x.PASSIVE_SLOT_LV.push(x.PASSIVE_SLOT_LV[0],x.PASSIVE_SLOT_LV[0]); x.ssBonusSwitch(true);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 const near=(a,b,e)=>Math.abs(a-b)<=(e||1e-6);
@@ -30,14 +32,14 @@ const p=W.players.get('a'), pb=W.players.get('b');
 W.receive('a',{t:'party',a:'invite',name:'Other'}); tick(3); W.receive('b',{t:'party',a:'accept'}); tick(3);
 const norm=x.MONS.filter(m=>!m.boss&&!m.inst&&m.def.id==='slime'), [m1,m2,m3]=norm;
 const stand=(q,dx,dz)=>{ W.setPos(q.id,[p.x+dx,x.getH(p.x+dx,p.z+dz),p.z+dz,0,0,0]); q.dead=false; q.hp=q.maxHp; q.ally=null; q.shield=null; };
-const put=(m,dx,dz,face)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.aura=null; m.rxIcd=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; m.face=face===undefined?Math.PI:face; return m; };
+const put=(m,dx,dz,face)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; m.face=face===undefined?Math.PI:face; return m; };
 W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); p.dead=false; p.hp=p.maxHp; p.act=null; p.face=0; p.level=60;
 const reset=()=>{ x.AREAS.length=0; x.PROJS.length=0; stand(p,0,0); p.ally=null; p.shield=null; stand(pb,3,0); for(const m of [m1,m2,m3]) put(m,0,-30); };
 const still=fn=>{ const R=Math.random; Math.random=()=>0.5; try{ return fn(); } finally{ Math.random=R; } };
 const lost=(m,fn)=>{ const h=m.hp; fn(); return h-m.hp; };
 const cast=(id,tgt,o)=>{ const s=x.SKILLS[id]; x.resolveFxS(p,Object.assign({fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:id},o||{}),tgt||null); if(s.fx.proj) for(let i=0;i<30;i++) W.tick(0.05); };
 const clear=()=>{ const K=p.gear.skills; for(const c of ['warrior','archer','mage']) K.eq[c]={basic:null,skill:null,burst:null}; K.pass=K.pass.map(()=>null); p.ssIcd={}; p.killTs=[]; p.cd={basic:0,skill:0,burst:0}; p.ally=null; p.shield=null; x.recalcP(p); };
-const wear=(id,n)=>{ clear(); x.ssGrantSetP(p,id); const S=SET(id); for(const pos of [1,2,3]){ const P=S.pos[pos], sid=P.bound==='any'?P.ids[0]:P.ids.find(i=>x.SKILLS[i].cls===x.clsOfP(p))||P.ids[0]; x.ssEquipPieceP(p,x.SKILLS[sid]); } const pass=[1,2,3].map(k=>S.pos[k].passive); p.gear.skills.pass=pass.map((pid,k)=>k<n?pid:null); x.recalcP(p); };
+const wear=(id,n)=>{ clear(); x.ssGrantSetP(p,id); for(const k of [1,2,3]){ const pid=x.SS_SETS[id].pos[k].passive; if(!p.gear.skills.owned.includes(pid)) p.gear.skills.owned.push(pid); }   /* bond: a Bond I / IV passive is no piece now (never granted): this test wears all three by hand */ const S=SET(id); for(const pos of [1,2,3]){ const P=S.pos[pos], sid=P.bound==='any'?P.ids[0]:P.ids.find(i=>x.SKILLS[i].cls===x.clsOfP(p))||P.ids[0]; x.ssEquipPieceP(p,x.SKILLS[sid]); } const pass=[1,2,3].map(k=>S.pos[k].passive); p.gear.skills.pass=pass.map((pid,k)=>k<n?pid:null); x.recalcP(p); };
 const hpOf=q=>q.hp/q.maxHp;
 ok('the stage: a and b are one party',x.partyOf(p)&&x.partyOf(p)===x.partyOf(pb));
 
@@ -49,7 +51,7 @@ reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'linen',n:4,dur:12,max:5}); p.hp=p.max
 reset(); put(m1,0,-3); pb.hp=pb.maxHp*0.4;
 { still(()=>cast('nephra_3_any',null)); ok('Nephra: Rise Again mends the party 25%, shields 15%, 3% regeneration, and throws the monster back',near(hpOf(pb),0.65,0.01)&&near(pb.shield.v,pb.maxHp*0.15,1)&&near(x.allyP(pb,'regen'),0.03)); }
 wear('nephra',3); reset(); put(m1,0,-3);
-{ p.shield={v:p.maxHp*0.05,until:x.S.t+5}; p.ssIcd={}; const h=m1.hp; x.ssTriggerS(p,'shield',{}); tick(3); ok('Nephra: The Curse Bites (5 pieces): when her shield breaks a ring of dust hits what is near and exposes it (12%)',m1.hp<h&&near(x.rxVulnK(m1),0.12,0.001),Math.round(h-m1.hp)+' '+x.rxVulnK(m1)); }
+{ p.shield={v:p.maxHp*0.05,until:x.S.t+5}; p.ssIcd={}; const h=m1.hp; x.ssTriggerS(p,'shield',{}); tick(3); ok('Nephra: The Curse Bites (5 pieces): when her shield breaks a ring of dust hits what is near and exposes it (12%)',m1.hp<h&&near(x.mstVulnK(m1),0.12,0.001),Math.round(h-m1.hp)+' '+x.mstVulnK(m1)); }
 ok('Nephra: Many Layers adds 6% maximum health at level 1 of the piece; Heavy with Gold trades 15% damage for less damage taken',x.psP(p,'hp')>=0.06-1e-9&&x.psP(p,'red')>0&&x.psP(p,'dmg')<=-0.15+1e-9,x.psP(p,'hp')+' '+x.psP(p,'red')+' '+x.psP(p,'dmg'));
 
 // ---- Sabir ----
@@ -81,11 +83,11 @@ ok('Ogden: Overtime (3 pieces) adds 15% experience',near(x.psP(p,'xp'),0.15,0.00
 
 // ---- Ottoline ----
 clear(); reset(); put(m1,0,-2.5);
-{ still(()=>cast('ottoline_1_mage',m1)); ok('Ottoline: Puppet Jab weakens its target (5%: it deals 95%), ties a String and gives her party member 4% crit',near(x.rxWeakK(m1),0.95,0.001)&&x.ssMarkN(p,m1,'string')===1&&near(x.allyP(pb,'crit'),0.04,0.001),x.rxWeakK(m1)+' '+x.allyP(pb,'crit')); }
+{ still(()=>cast('ottoline_1_mage',m1)); ok('Ottoline: Puppet Jab weakens its target (5%: it deals 95%), ties a String and gives her party member 4% crit',near(x.mstWeakK(m1),0.95,0.001)&&x.ssMarkN(p,m1,'string')===1&&near(x.allyP(pb,'crit'),0.04,0.001),x.mstWeakK(m1)+' '+x.allyP(pb,'crit')); }
 reset(); put(m1,0,-6);
-{ cast('ottoline_2_any',m1); tick(30); ok('Ottoline: Dance, Dolly slows and weakens what is in its zone and quickens the party (10% more damage)',m1.slowT>0&&x.rxWeakK(m1)<1&&near(x.allyP(pb,'might'),0.10,0.03)&&x.ssMarkN(p,m1,'string')>=1,x.rxWeakK(m1)+' '+x.allyP(pb,'might')); x.AREAS.length=0; }
+{ cast('ottoline_2_any',m1); tick(30); ok('Ottoline: Dance, Dolly slows and weakens what is in its zone and quickens the party (10% more damage)',m1.slowT>0&&x.mstWeakK(m1)<1&&near(x.allyP(pb,'might'),0.10,0.03)&&x.ssMarkN(p,m1,'string')>=1,x.mstWeakK(m1)+' '+x.allyP(pb,'might')); x.AREAS.length=0; }
 reset(); put(m1,0,-5); x.ssMarkS(p,m1,{id:'string',n:2,dur:12,max:3});
-{ still(()=>cast('ottoline_3_any',null)); ok('Ottoline: Final Curtsy weakens every enemy near (20% + 2% a String) and gives the party 15% less damage taken and 15% more crit damage',near(x.rxWeakK(m1),1-0.24,0.003)&&near(x.allyP(pb,'guard'),0.15,0.002)&&near(x.allyP(pb,'critdmg'),0.15,0.002),x.rxWeakK(m1)+' '+x.allyP(pb,'guard')); }
+{ still(()=>cast('ottoline_3_any',null)); ok('Ottoline: Final Curtsy weakens every enemy near (20% + 2% a String) and gives the party 15% less damage taken and 15% more crit damage',near(x.mstWeakK(m1),1-0.24,0.003)&&near(x.allyP(pb,'guard'),0.15,0.002)&&near(x.allyP(pb,'critdmg'),0.15,0.002),x.mstWeakK(m1)+' '+x.allyP(pb,'guard')); }
 wear('ottoline',3); reset(); put(m1,0,-3);
 ok('Ottoline: Pulled Strings: +10% crit only against a target carrying Strings; Porcelain costs 10% maximum health',(()=>{ const a=x.ssCondP(p,'crit',m1); x.ssMarkS(p,m1,{id:'string',n:1,dur:12,max:3}); const b=x.ssCondP(p,'crit',m1); return near(b-a,0.10,0.0001); })());
 { const hit=()=>lost(m1,()=>still(()=>x.damageMonsterS(m1,100,p,p.x,p.z,0,'dark'))); m1.mk=null; const a=hit(); x.ssMarkS(p,m1,{id:'string',n:3,dur:12,max:3}); const b=hit(); ok('Ottoline: Tangle (3 pieces): a target carrying her Strings takes 8% more from her for each (3 Strings: 24%)',near(b/a,1.24,0.02),Math.round(a)+' -> '+Math.round(b)); }

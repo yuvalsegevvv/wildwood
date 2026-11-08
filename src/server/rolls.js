@@ -4,7 +4,7 @@
             MSG.rldev (testing: stones, one of every level-40 piece), rlSanitizeStones (sanitizeGear). A ring is rolled and sacrificed like gear, with its own stone.
    uses:    state.js (MSG, ev, toastTo), economy.js (gearChangedP, unwornCount), the ITEM Proxy (a rolled id is made on first use).
    gear:    gear.rsw / gear.rsa / gear.rsr = weapon / armour / ring reroll stones (counts, 0..RL_STONE_MAX, sanitized).
-   hooks:   the lines marked `// rolls:` in players.js (recalcP, hurtP, sanitizeGear), combat.js (rollDmgS, damageMonsterS, applyBuffS, handleAttack, rewardKill), reactions.js (rxHitS), crafting.js (drinkP),
+   hooks:   the lines marked `// rolls:` in players.js (recalcP, hurtP, sanitizeGear), combat.js (rollDmgS, damageMonsterS, applyBuffS, handleAttack, rewardKill), mon-status.js (mstStatusS), crafting.js (drinkP),
             skillsets.js (buff duration), economy.js (mergeP); listed in docs/ROLLS.md.
    test:    tools/rolls-smoke.js */
 // the capped sums of the worn pieces' lines, kept on the player (recalcP runs whenever a piece or the level changes); a piece above your level counts for nothing

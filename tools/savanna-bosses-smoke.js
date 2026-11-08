@@ -6,10 +6,6 @@ const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.string
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.maxHp=1e7; p.hp=1e7; p.dead=false; } } };
 ok('two rows: Old Thunder 41 (air) and Oldhorn 45 (earth), each with an add and a kit',x.SAV_BOSS_ROWS.length===2&&x.OLDTHUNDER_DEF.level===41&&x.OLDTHUNDER_DEF.el==='air'&&x.OLDHORN_DEF.level===45&&x.OLDHORN_DEF.el==='earth'&&x.SAV_BOSS_ROWS.every(r=>r.add.bossAdd&&x.BOSS_KITS[r.kit]));
-for(const id of ['oldthunder','oldhorn']){
-  const sk=Object.values(x.SKILLS).filter(s=>s.drop===id);
-  ok(id+': drops 6 skills, a skill and a burst for each class, at the boss\'s level',sk.length===6&&['warrior','archer','mage'].every(c=>['skill','burst'].every(sl=>sk.some(s=>s.cls===c&&s.slot===sl)))&&sk.every(s=>s.lv===(id==='oldthunder'?41:45)&&s.el===(id==='oldthunder'?'air':'earth')));
-}
 W.join('a',{name:'Tanker',look:{cls:'warrior'},save:{level:45}}); W.join('b',{name:'Runner',look:{cls:'archer'},save:{level:45}});
 const T=x.ARENA_TIDE;
 const KEY={thunder:['tele:line','zone:grassfire','tele:geyser','tele:gust','pfx:push','tele:slam','mode:1','zone:whiteout','mode:4','summon:thunderwisp'],

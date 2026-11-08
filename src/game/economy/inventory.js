@@ -21,7 +21,7 @@ function renderInv(){
   $('#invGems').textContent=(GEAR.gem||0)+' gems';
   $('#invAmber').textContent=(GEAR.amb||0)+' amber';
   const g=gearStats(), c=CLASSES[clsOf()];
-  let h=`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Soul</span><b style="color:${ELEMS[soulNow()].col}">${ELEMS[soulNow()].name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div>${invExtraStats()}</div>`;
+  let h=`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div>${invExtraStats()}</div>`;
   h+='<div class="inv-wrap"><div class="doll" id="invDoll">'+SIL;
   for(const [s,area] of BODY_SLOTS){
     const it=ITEM[GEAR.eq[s]];
@@ -35,6 +35,8 @@ function renderInv(){
   h+=`<div class="inv-h">Monster drops <span>${have.length?'for upgrading skills':''}</span></div><div class="mat-row">${have.length?have.map(id=>`<span class="matc" title="${MATS[id].name}: dropped by ${MATS[id].from} (level ${MATS[id].lv})"><span class="tile r${MATS[id].boss?3:0} matt" aria-label="${MATS[id].name} x${mats[id]}">${matIcon(MATS[id].col,'drop',id,MATS[id].name)}<span class="ct">x${mats[id]}</span></span><span class="nm">${MATS[id].name}</span></span>`).join(''):'<p class="muted">Monsters sometimes drop materials. You use them to upgrade your skills at a trainer.</p>'}${dgStoneChipHtml()}${rlUiStoneChipHtml()}</div>`;   // dungeons: the stone count beside the drops; rolls: the reroll stones
   { const res=GEAR.res||{}, haveR=Object.keys(RES).filter(id=>res[id]>0);   // gathered resources (professions)
     if(haveR.length||(GEAR.prof&&Object.keys(GEAR.prof).length)) h+=`<div class="inv-h">Resources <span>${haveR.length?'gathered with your professions':''}</span></div><div class="mat-row">${haveR.length?haveR.map(id=>`<span class="matc" title="${RES[id].name}"><span class="tile r0 matt" aria-label="${RES[id].name} x${res[id]}">${matIcon(RES[id].col,RES[id].prof)}<span class="ct">x${res[id]}</span></span><span class="nm">${RES[id].name}</span></span>`).join(''):'<p class="muted">Nothing gathered yet.</p>'}</div>`; }
+  { const es=ESS_ORDER.filter(id=>GEAR.awm&&(GEAR.awm[id]|0)>0); if(es.length) h+=`<div class="inv-h">Essence <span>for the Awakening trees, paid by the elemental rifts</span></div><div class="mat-row">${es.map(id=>`<span class="matc" title="${ESSENCE[id].name}: paid by an elemental rift"><span class="tile r3 matt" aria-label="${ESSENCE[id].name} x${GEAR.awm[id]}">${essIcon(essCol(id),ESSENCE[id].key==='prime')}<span class="ct">x${GEAR.awm[id]}</span></span><span class="nm">${ESSENCE[id].name}</span></span>`).join('')}</div>`; }   // Essence (rifts, step 17a)
+  { const tr=BT_ORDER.filter(id=>GEAR.awm&&(GEAR.awm[id]|0)>0); if(tr.length) h+=`<div class="inv-h">Boss trophies <span>for the Awakening trees</span></div><div class="mat-row">${tr.map(id=>`<span class="matc" title="${BOSS_TROPHY[id].name}${BOSS_TROPHY[id].text?': '+BOSS_TROPHY[id].text:''}"><span class="tile r3 matt" aria-label="${BOSS_TROPHY[id].name} x${GEAR.awm[id]}">${btIcon(BOSS_TROPHY[id].col)}<span class="ct">x${GEAR.awm[id]}</span></span><span class="nm">${BOSS_TROPHY[id].name}</span></span>`).join('')}</div>`; }   // trophies
   { const rr=rdMatRows(); if(rr.length) h+=`<div class="inv-h">Raid materials <span>for upgrading signature skills</span></div><div class="mat-row">${rr.map(r=>`<span class="matc" title="${r.name}: won by clearing a raid in that land"><span class="tile r3 matt" aria-label="${r.name} x${r.n}">${matIcon(0xe8b84a,'drop',r.land,r.name)}<span class="ct">x${r.n}</span></span><span class="nm">${r.name}</span></span>`).join('')}</div>`; }   // raids
   $('#invBody').innerHTML=h;
   if(INV.sel && !(INV.sel.from==='bag'?counts[INV.sel.id]:GEAR.eq[INV.sel.from]===INV.sel.id)) INV.sel=null;
@@ -43,12 +45,12 @@ function renderInv(){
 // every other number that shapes a fight: the passives' totals (the loadout you have open) and the necklace's line
 function invExtraStats(){
   const ps=st=>GEAR&&GEAR.skills?passiveSum(GEAR.skills,PL.level,st,clsOf()):0, pd=GEAR&&ITEM[GEAR.eq.pendant], pn=st=>pd&&pd.kind==='pendant'&&pd.stat===st&&PL.level>=pd.lv?pd.v:0, pc=v=>pendantPct(v)+'%';
-  const rows=[['Crit chance',pc(Math.min(CRIT_CAP,CRIT_BASE+ps('crit')+pn('crit')))],['Crit damage','x'+Math.min(CRIT_MULT_CAP,CRIT_MULT+pn('critdmg')+ps('critdmg')).toFixed(2)],['Damage bonus','+'+pc(ps('dmg'))],['Health bonus','+'+pc(ps('hp'))],['Damage taken','-'+pc(ps('red'))+' (passive)'],['Cooldowns','-'+pc(ps('cd'))],['Move speed','+'+pc(ps('move'))],['Drop chance','+'+pc(ps('drop')+pn('drop'))],['XP gain','+'+pc(ps('xp')+pn('xp'))],['Coin gain','+'+pc(pn('coin'))],['Soul bonus','+'+pc(ps('soul'))]];
+  const rows=[['Crit chance',pc(Math.min(CRIT_CAP,CRIT_BASE+ps('crit')+pn('crit')))],['Crit damage','x'+Math.min(CRIT_MULT_CAP,CRIT_MULT+pn('critdmg')+ps('critdmg')).toFixed(2)],['Damage bonus','+'+pc(ps('dmg'))],['Health bonus','+'+pc(ps('hp'))],['Damage taken','-'+pc(ps('red'))+' (passive)'],['Cooldowns','-'+pc(ps('cd'))],['Move speed','+'+pc(ps('move'))],['Drop chance','+'+pc(ps('drop')+pn('drop'))],['XP gain','+'+pc(ps('xp')+pn('xp'))],['Coin gain','+'+pc(pn('coin'))]];
   return rows.map(r=>`<div><span>${r[0]}</span><b>${r[1]}</b></div>`).join('');
 }
 function statDiff(it,cur){
   if(it.kind==='talisman') return cur&&cur.kind==='talisman'&&cur.stat===it.stat?(it.v===cur.v?'':`<span class="${it.v>cur.v?'up':'down'}">${it.v>cur.v?'+':'-'}${it.stat==='atk'?Math.round(Math.abs(it.v-cur.v))+' attack':pendantPct(Math.abs(it.v-cur.v))+'%'}</span>`):'<span class="muted">a different bonus</span>';
-  if(it.kind==='ring') return dgRingDiffHtml(it,cur);   // dungeons: a ring's difference is in attack, by your soul
+  if(it.kind==='ring') return dgRingDiffHtml(it,cur);   // dungeons: a ring's difference is in attack
   if(it.kind==='pendant') return cur&&cur.kind==='pendant'&&cur.stat===it.stat?(it.v===cur.v?'':`<span class="${it.v>cur.v?'up':'down'}">${it.v>cur.v?'+':'-'}${it.stat==='critdmg'?(Math.round(Math.abs(it.v-cur.v)*100)/100)+' crit multiplier':pendantPct(Math.abs(it.v-cur.v))+'%'}</span>`):'<span class="muted">a different bonus</span>';
   const k=it.kind==='tool'?[['tier','tier'],['rar','rarity']]:it.kind==='weapon'?[['atk','attack']]:[['hp','health'],['def','defense']];
   return k.map(([f,n])=>{ const d=(it[f]||0)-((cur&&cur[f])||0); return d?`<span class="${d>0?'up':'down'}">${d>0?'+':''}${d} ${n}</span>`:''; }).filter(Boolean).join(' ');
@@ -62,7 +64,7 @@ function renderInvInfo(){
   const have=bagCounts()[it.id]||0;
   if(!worn && have>=MERGE_COUNT && it.rar<4) cmp=`<span style="color:${RAR_COL[it.rar+1]}">You have ${have}: Greta's forge (or Tetsuo's in Hanami) can merge 3 into a ${RARITY[it.rar+1]} one.</span>`;
   if(!worn){ const d=statDiff(it,cur); cmp=(cmp?cmp+'<br>':'')+(cur?(d?`${d} <span class="muted">compared to your ${cur.name}</span>`:'<span class="muted">Same as what you wear</span>'):'<span class="up">Fills an empty slot</span>'); }
-  { const dg=dgInfoHtml(it); if(dg) cmp+=(cmp?'<br>':'')+dg; }   // dungeons: a level-30 piece's tempering, a ring's soul note
+  { const dg=dgInfoHtml(it); if(dg) cmp+=(cmp?'<br>':'')+dg; }   // dungeons: a level-30 piece's tempering
   const btn=worn?(slot==='weapon'?'<span class="muted">You always hold a weapon: drag another one onto your hand to swap.</span>':`<button class="chip" data-unequip="${slot}">Take off</button>`)
     :`<button class="chip" data-equip="${it.id}" ${locked?'disabled':''}>${locked?'Needs level '+it.lv:'Equip'}</button>`;
   el.innerHTML=`<div class="ii-ico r${it.rar}">${itemIcon(it)}</div><div class="ii-main"><b style="color:${RAR_COL[it.rar]}">${it.name}</b>

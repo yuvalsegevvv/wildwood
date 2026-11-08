@@ -1,7 +1,7 @@
 //@ The test room on the server: an immortal Training Scarecrow, each hiker's damage counter, and the messages that reset the counter and the cooldowns, refill the cave charge
 /* Agent map (docs/TESTROOM.md)
    owns:    troomInitS (makes the scarecrow, called once beside initMonstersS), troomHitS (a hit on it: the hp goes back, the counter grows), troomTickP (sends the counter, at most 5 a second), MSG.troom{a: 'reset'|'cd'|'charge'}.
-   hooks:   marked `// testroom:`: damageMonsterS (combat.js) and the skill-set trigger damage (skillsets.js) call troomHitS; monK (tiers.js) gives the scarecrow the tier-0 numbers; bindSoulP (economy.js) works on the pad;
+   hooks:   marked `// testroom:`: damageMonsterS (combat.js) and the skill-set trigger damage (skillsets.js) call troomHitS; monK (tiers.js) gives the scarecrow the tier-0 numbers;
             the player loop (players.js) calls troomTickP.
    protocol: out {t:'troomc',tot,hits,dps,max,secs} (the counter), {t:'troomcd'} (cooldowns cleared: the client zeroes its own); in {t:'troom',a}.
    test:    tools/testroom-smoke.js. */
@@ -29,6 +29,6 @@ function troomMsgP(p,msg){
   const a=msg.a;
   if(a==='reset'){ p.trc=null; sendTo(p.id,{t:'troomc',tot:0,hits:0,dps:0,max:0,secs:0}); }
   else if(a==='cd'){ for(const k in p.cd) p.cd[k]=0; if(TROOM_MON) TROOM_MON.ultLock=0; sendTo(p.id,{t:'troomcd'}); toastTo(p.id,'Cooldowns reset','good'); }
-  else if(a==='charge'){ if(!p.cave||p.level<CAVE_SLOT_LV){ toastTo(p.id,'The cave slot opens at level '+CAVE_SLOT_LV,'bad'); return; } p.cave.charge=CAVE_CHARGE_MAX; p.cave.sent=-1; toastTo(p.id,'Cave charge refilled to '+CAVE_CHARGE_MAX,'good'); }
+  else if(a==='charge'){ if(!p.cave||p.level<CAVE_SLOT_LV){ toastTo(p.id,'The charge slot opens at level '+CAVE_SLOT_LV,'bad'); return; } p.cave.charge=CAVE_CHARGE_MAX; p.cave.sent=-1; toastTo(p.id,'Charge refilled to '+CAVE_CHARGE_MAX,'good'); }
 }
 MSG.troom=troomMsgP;

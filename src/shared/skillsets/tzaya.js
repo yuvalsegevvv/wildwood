@@ -26,7 +26,10 @@ defineSkillSet({
   ult:{name:'The Fifth Sun', desc:'The ground opens in a 10 m ring and fire geysers burst up; hands of ash reach out of the ground and hold what they catch.', range:10, mult:2.95, act:['tzayault',1.0,0.6], anim:'nova',
        fx:{ring:{r:10, kb:3}},
        boost:[{piece:'a3', secs:10, mod:{mult:2, util:2}}, {piece:'p1', secs:16, mod:{eff:3, icd:0.5}}]},
-  bonus:{
-    3:{name:'Long Count', text:'You gain {}% more experience from kills', stat:'xp', v:0.15},
-    5:{name:'Sunfall', text:'A kill makes the ground flare where it fell: the enemies within 5 m take 60% damage, are thrown back and are left with a Tally (at most every 1.5 s)', on:'kill', at:'target', icd:1.5, mult:1.2, range:5, fx:{vsBoss:0.5, ring:{r:5, kb:2, mark:{id:'tally', n:1, dur:12, max:5}}}}},
+  tree:'banyan', stone:'Sunclock Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'tzaya_p2',
+    2:{name:'Long Count', text:'You gain {}% more experience from kills', stat:'xp', v:0.15},
+    4:'tzaya_p3',
+    6:{name:'Sunfall', text:'A kill makes the ground flare where it fell: the enemies within 5 m take 60% damage, are thrown back and are left with a Tally (at most every 1.5 s)', on:'kill', at:'target', icd:1.5, mult:1.2, range:5, fx:{vsBoss:0.5, ring:{r:5, kb:2, mark:{id:'tally', n:1, dur:12, max:5}}}}},
 });

@@ -56,7 +56,7 @@ function attackVisuals(a,who){
   const x=who?who.x:P.x, y=who?who.y:P.y, z=who?who.z:P.z, face=who?who.face:P.face, sc=who?who.scale:hiker.scale, mine=!who, k=a.sk||a.kind;
   if(a.ab&&mine){ bhVisuals(a.ab,x,y,z,face,sc); return; }   // basic-hold: a charged release
   const gs=ACT_SKILL[k]; if(gs&&gs.cave&&caveVisCast(gs,who||P,mine?CB.target:null)) return;   // cave: a cave skill's own drawing (cave/vis.js)
-  if(gs&&gs.fx){ SSL.ub=mine?ssUbOwn(gs.id):!!a.ub; try{ fxVisuals(gs,x,y,z,face,sc,mine); } finally{ SSL.ub=false; } return; }   // a skill with generic effects (the boss skills)   // ult: a boosted cast is drawn stronger (SSL.ub, skillsets/looks.js)
+  if(gs&&gs.fx){ SSL.ub=mine?ssUbOwn(gs.id):!!a.ub; try{ fxVisuals(gs,x,y,z,face,sc,mine); } finally{ SSL.ub=false; } return; }   // a skill with generic effects (fx)   // ult: a boosted cast is drawn stronger (SSL.ub, skillsets/looks.js)
   if(gs&&!gs.fx) skfCast(gs,x,y,z,face,sc,mine);   // skillvis: the shop skills wear their class's flair (steel, wind, arcane)
   if(k==='quake'){ fxxDust(x,getH(x,z),z,18,6,0x8a7a60); fxxDebris(x,getH(x,z),z,14,7,0x6a5030); fxxScorch(x,z,4,0xd8b07a); }
   else if(k==='inferno'){ fxxDome(x,y,z,7,0xff7a2a); fxxScorch(x,z,5,0xff7a2a); fxxDust(x,y,z,10,5,0x4a3a30); }
@@ -113,7 +113,7 @@ function onMonDmg(id,v,crit,by,fx){
 function onMonDmgNow(id,v,crit,by,fx){
   const m=MON_BY_ID.get(id); if(!m) return;
   m.flash=1; m.hp=Math.max(0,m.hp-v/(monTierK(m).hp||1));   // m.hp is in the def's units: at a higher zone tier a hit takes off less of it (as the server does), else the bar dips and snaps back with the next snapshot
-  // your own hits show whether the element helped (an arrow up) or hurt (down): your soul and the monster's element
+  // your own hits show whether the element helped (an arrow up) or hurt (down): the monster's element
   const mine=by===NET.pid&&fx, c=monCenter(m);
   popText(c.x,c.y+m.T.height*0.5*m.s,c.z,String(v)+(mine?(fx>0?'▲':'▼'):''),(crit?'crit':(by===NET.pid?'':'other'))+(mine?(fx>0?' up':' down'):''));
   if(by===NET.pid||Math.random()<0.5||crit){ fxpSparks(c.x,c.y,c.z,crit?0xffd45a:0xffe8c0,crit?16:5,crit?7:4,{size:crit?0.26:0.16,life:0.4}); if(crit) fxpFlare(c.x,c.y,c.z,0xffd45a,2.4,0.25); }   // fx-pool: a hit spits sparks, a crit flares

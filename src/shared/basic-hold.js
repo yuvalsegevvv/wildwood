@@ -12,7 +12,7 @@
    A skill-1 entry of a skill set may say style:'press' (it hits better pressed: press x1.15, hold x0.9) or style:'hold' (the opposite), and hold:{x:{...}} (keys merged into its main shape at a full charge). */
 const BH_TAP=0.25, BH_FULL={warrior:0.9,archer:1.0,mage:1.1}, BH_ASPD_CAP=0.6, BH_CHG_CAP=1.0, BH_RECOVER=0.4;
 const BH_STYLE={press:{p:1.15,h:0.9},hold:{p:0.9,h:1.15}}, BH_EVEN={p:1,h:1};
-const BH_SHAPES=['cone','ring','beam','chain','zone','proj'], BH_KEEP=['mark','flavor','status','burn','slow','stun','taunt'];
+const BH_SHAPES=['cone','ring','beam','chain','zone','proj'], BH_KEEP=['mark','status','burn','slow','stun','taunt'];
 const bhSpeedK=(passive,rolled)=>1+Math.max(0,Math.min(BH_ASPD_CAP,(passive||0)+(rolled||0)));
 const bhChargeK=(passive,rolled)=>1+Math.max(0,Math.min(BH_CHG_CAP,(passive||0)+(rolled||0)));
 const bhFrac=(held,cls,chgK)=>held>=BH_TAP?Math.min(1,Math.max(0.2,held*(chgK||1)/(BH_FULL[cls]||1))):0;

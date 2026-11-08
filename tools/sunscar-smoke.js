@@ -7,7 +7,7 @@ const {loadServer}=require('./load');
 const inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ (inbox[pid]=inbox[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},
   ['rawHeight','bridgeDeck','landAt','inSun','inVale','inHoar','inGrey','WX0','WX1','WZ0','WZ1','HX0','HALF','VIL','VIL5','VILS','CIRCLES','vilAt','vDist','VR','SUN_CITY','SUN_PASS','sunPassX','SUN_RED','SUN_AMBER','SUN_DG_DOOR','sunKeepOut','sunWaterSurf','sunWallHold','sunCrestHold','gateHold','SUN_FLAT','SUN_BASE','WA_HUBS','WA_GATES','WA_POIS','waLandId',
-   'borderZ','WATER','GREY_GATES','ZONES','ARENAS','MON_DEFS','MONS','MATS','BOSS_DEFS','BOSSES','BOSS_SKILLS','BOSS_QUESTS','MAX_ZONE_LV','genQuest','NODES','defZone','zoneAt','rewardKill','sanitizeGear','sanitizeQuest','respawnVil','ZTIER_LANDS','ZTIER_BOSS','sunZoneAt','ARENA_S32','ARENA_S36','GW_PLACE','SKILLS']);
+   'borderZ','WATER','GREY_GATES','ZONES','ARENAS','MON_DEFS','MONS','MATS','BOSS_DEFS','BOSSES','BOSS_QUESTS','MAX_ZONE_LV','genQuest','NODES','defZone','zoneAt','rewardKill','sanitizeGear','sanitizeQuest','respawnVil','ZTIER_LANDS','ZTIER_BOSS','sunZoneAt','ARENA_S32','ARENA_S36','GW_PLACE','SKILLS']);
 let fails=0; const ok=(n,c,d)=>{ if(!c) fails++; console.log((c?'PASS ':'FAIL ')+n+(d?'  ('+d+')':'')); };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const H=x.rawHeight, C0=x.SUN_CITY, V=x.VIL5;
@@ -54,9 +54,9 @@ ok('zone tiers: the Sunscar is a tier land, opened by the Sand Wyrm',x.ZTIER_LAN
 
 // ---- the two bosses ----
 { const gg=x.BOSS_DEFS.find(b=>b.def.id==='glassguardian'), sw=x.BOSS_DEFS.find(b=>b.def.id==='sandwyrm');
-  ok('two world bosses: the Glass Guardian (level 32, black mirrors) and the Sand Wyrm (level 36), each on a flat arena of its own in the Sunscar, with a kit, six skills, a named material and a notice',
+  ok('two world bosses: the Glass Guardian (level 32, black mirrors) and the Sand Wyrm (level 36), each on a flat arena of its own in the Sunscar, with a kit, a named material and a notice',
     gg&&sw&&gg.def.level===32&&sw.def.level===36&&gg.kit==='glass'&&sw.kit==='sandwyrm'&&gg.totem.id==='blackmirror'&&sw.add.id==='sandwhelp'&&[x.ARENA_S32,x.ARENA_S36].every(A=>x.inSun(A.x,A.z)&&A.zone.boss&&Math.abs(H(A.x,A.z)-H(A.x+A.r*0.9,A.z))<2.5)&&
-    [gg,sw].every(b=>(x.BOSS_SKILLS[b.def.id]||[]).length===6&&x.MATS[b.def.id].name&&x.BOSS_QUESTS.some(q=>q.target===b.def.id))&&x.BOSSES.length>=10&&x.BOSSES.every(B=>typeof B.kit.tick==='function')); }
+    [gg,sw].every(b=>x.MATS[b.def.id].name&&x.BOSS_QUESTS.some(q=>q.target===b.def.id))&&x.BOSSES.length>=10&&x.BOSSES.every(B=>typeof B.kit.tick==='function')); }
 
 // ---- the gates on the server ----
 W.join('a',{name:'Walker',look:{cls:'warrior'},save:{level:30}}); tick(2);

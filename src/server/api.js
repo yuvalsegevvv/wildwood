@@ -7,7 +7,7 @@
    Registered accounts (name + password, Node server only) are in accounts.js.
    Messages in:  hello{acct,name,look,save[,user,pass|token]}  register{user,pass}  logout{token}  pos{p:[x,y,z,face,vx,vz]}  atk{k,tg,face,aim}  equip{id}  unequip{slot}
                  cls{cls}  buy{id}  sell{id}  accept{id}  turnin{id}  look{look}  warp{to: 'home'|'hanami'|'rimehold'..., any: 1 = from anywhere (the map's Travel)}  dev{cmd,v}  ft{cmd,v} (version2 testing: free skill sets)
-                 buyskill{id}  eqskill{id[,idx: passive slot]}  unskill{cls,slot[,idx]}  upskill{id}  soul{el}  mq{a:'talk'|'pick'|'read',id|i}  learn{id: a profession}  gather{i: a resource node}
+                 buyskill{id}  eqskill{id[,idx: passive slot]}  unskill{cls,slot[,idx]}  awk{a,set,id} (server/awakening.js)  mq{a:'talk'|'pick'|'read',id|i}  learn{id: a profession}  gather{i: a resource node}
    Messages out: welcome{pid,day,dev,players[,look: a logged-in account's own look]}  mons{list}  you  tp  snap{day,n,pl,mo,b:[per boss: id,engaged,phase,immune,enraged,stunned,aux,mode],ev}  auth{user,token}  authfail{text}   (see src/game/net/client.js) */
 initMonstersS(); initBossS(); initRaidsS(); caveInitS(); troomInitS();   // testroom: the scarecrow   // raids: after the world's monsters and bosses   // cave: a pack at every camp of the Deep Cave's floors
 const ACCT=new Map(), PENDING=new Set();   // account -> pid online; pids whose save is still loading
@@ -40,7 +40,7 @@ function join(pid,hello,auth,srvLook){
   if(io.test) testKitP(p);   // testworld: level 60 and the whole kit, before the first 'you'
   if(auth){ p.auth=auth; p.user=auth.user; }
   else { const n=freeName(p.name,p); if(n!==p.name){ toastTo(pid,'Someone already has the name '+p.name+', so you are '+n+'. Change it in Settings.',''); p.name=n; } }
-  sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth||srvLook?p.look:undefined});
+  sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,stir:bdStirMsg(),players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth||srvLook?p.look:undefined});
   const ros=MONS.filter(m=>!m.remove&&!m.inst).map(monRoster);   // dungeons: the world's monsters only (a run's reach its members on entry)
   for(let i=0;i<ros.length;i+=40) sendTo(pid,{t:'mons',list:ros.slice(i,i+40)});
   for(const B of BOSSES.concat(rdBossesS())){   // what a boss has set up right now, for someone who arrives in the middle of the fight
@@ -125,8 +125,6 @@ function receive(pid,msg){
     case 'name': renameP(p,msg.name); break;
     case 'eqskill': equipSkillP(p,msg.id,msg.idx); break;
     case 'unskill': unequipSkillP(p,msg.cls,msg.slot||'skill',msg.idx); break;
-    case 'upskill': upgradeSkillP(p,msg.id); break;
-    case 'soul': bindSoulP(p,msg.el); break;
     case 'look': if(msg.look&&typeof msg.look==='object'&&JSON.stringify(msg.look).length<LOOK_MAX){ const L=cleanLookS(msg.look); if(Object.keys(L).length){ p.look=premCleanLook(ambCleanLook(cosCleanLook(L,p.gear.cos),p.gear.os),p.gear.pc); p.saveDirty=true; ev('plook',p.id,p.look); } } break;
     case 'warp': warpP(p,typeof msg.to==='string'?msg.to:undefined,msg.any===1); break;
     case 'mq': mqMsgP(p,msg); break;
@@ -149,6 +147,7 @@ function tick(dt){
   else S.day=(S.day+dt/DAY_SECONDS)%1;
   if(S.day<S.prevDay) sunrise();
   S.prevDay=S.day;
+  bdStirTickS();   // bond: the hour's Stirrings (a new hour, new picks)
   updatePlayersS(dt); S.ctx=0; updateMonstersS(dt); dipTickS(dt); /*dip:*/ updateProjS(dt); updateAreasS(dt); updateBurnS(dt); rdTickS(dt); S.ctx=0; updateWeatherS(dt); updateNodesS(dt); updatePotionsS(dt); updateCastsS(); updatePartiesS(dt); updateInstsS(dt); S.ctx=0;   // dungeons: the per-entity loops set S.ctx (the run an event belongs to), so it goes back to the world after them; parties and runs tick here
   for(const p of S.players.values()) if(p.dirty){ p.dirty=false; p.saveDirty=true; sendTo(p.id,youMsg(p)); }
   S.saveT-=dt; if(S.saveT<=0){ S.saveT=5; for(const p of S.players.values()) if(p.saveDirty&&p.acct) saveP(p); }

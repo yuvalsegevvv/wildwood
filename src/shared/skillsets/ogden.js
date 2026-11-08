@@ -27,7 +27,10 @@ defineSkillSet({
   ult:{name:'Exhumation', desc:'The ground opens in a 10 m ring and grave-water geysers burst up; hands reach out of the mud and hold what they catch.', range:10, mult:2.95, act:['ogdenult',1.0,0.6], anim:'nova',
        fx:{ring:{r:10, kb:3}},
        boost:[{piece:'a3', secs:10, mod:{mult:2, util:2}}, {piece:'p1', secs:16, mod:{eff:3, icd:0.5}}]},
-  bonus:{
-    3:{name:'Overtime', text:'You gain {}% more experience from kills', stat:'xp', v:0.15},
-    5:{name:'Dead Weight', text:'A kill makes the ground heave where it fell: the enemies within 5 m take 60% damage, are thrown back and are left with Rot (at most every 1.5 s)', on:'kill', at:'target', icd:1.5, mult:1.2, range:5, fx:{vsBoss:0.5, ring:{r:5, kb:2, mark:{id:'rot', n:1, dur:12, max:5}}}}},
+  tree:'oak', stone:'Grave Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'ogden_p2',
+    2:{name:'Overtime', text:'You gain {}% more experience from kills', stat:'xp', v:0.15},
+    4:'ogden_p3',
+    6:{name:'Dead Weight', text:'A kill makes the ground heave where it fell: the enemies within 5 m take 60% damage, are thrown back and are left with Rot (at most every 1.5 s)', on:'kill', at:'target', icd:1.5, mult:1.2, range:5, fx:{vsBoss:0.5, ring:{r:5, kb:2, mark:{id:'rot', n:1, dur:12, max:5}}}}},
 });

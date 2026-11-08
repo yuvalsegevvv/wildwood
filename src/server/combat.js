@@ -1,6 +1,6 @@
-//@ Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot, boss skill drops
+//@ Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot
 /* Your damage = 3 x f(level) + weapon attack, times the ability's multiplier (and its skill level: skillPower), +/-15%, 12% chance of x1.7,
-   times the Ferocity passive and the element: your soul (elements.js: soulMult, the opposite pairs) and the element wheel against the monster (foeMult).
+   times the Ferocity passive and the element wheel against the monster (elements.js: foeMult; an element-less skill deals x1.1: ELEM_BASIC_K).
    -5% damage dealt per level the enemy is above you (never below 50%: lvDmgK, shared/balance.js).
    Everyone who hit a monster in the last 30 s and is within 80 m gets the XP, coins, quest credit and a loot roll. */
 const PROJS=[]; let nextProjId=1;
@@ -21,19 +21,20 @@ function handleAttack(p,msg){
   if(isFinite(+msg.face)) p.face=+msg.face%(2*Math.PI);   // (modulo a turn: it goes out in the pact event and the snapshots, rounded by x100, and 1e308 became Infinity there)
   const tg=foeByIdS(p,msg.tg);   // pvp: a fighter on the island may name another fighter
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
-  p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:ab.fx,mult:ab.mult*skillPower(lvl)*caveNextK(p,k),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,holdAt:!!ab.holdAt};   // cave: Intermission's bonus on the next skill; basic-hold: holdAt = a mage's held blast, centred on the target
+  p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:awkFx(ab.fx,lvl),mult:ab.mult*skillPower(lvl)*caveNextK(p,k),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,holdAt:!!ab.holdAt};   // awakening: the fx at the skill's level (stun, slow, heal, durations...); cave: Intermission's bonus on the next skill; basic-hold: holdAt = a mage's held blast, centred on the target
   ultBoostActS(p,p.act,ab.id);   // ult: a boosted piece's cast (mult, n, size, util)
   ev('pact',p.id,kind,Math.round(p.face*100)/100,...(p.act.ub?[1]:[]));   // (the 5th field: a boosted cast, drawn stronger)
   if(k!=='basic'&&!p.pv) mqActP(p,k);   // the main quest's 'use your skill / burst' steps (pvp: nothing is credited on the island)
 }
-// the element multiplier of an attack of element el (a skill's, 'basic' if none) from p on monster m: their soul and the monster's own element
-function elemEffS(p,el){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=p.buff.el; return el; }   // reactions: the element an attack counts as (an enchanting buff gives element-less attacks its element), for the damage and the aura
+// the element multiplier of an attack of element el (a skill's, 'basic' if none) from p on monster m: the wheel against the monster's own element, x1.1 for an element-less attack
+function elemEffS(p,el){ el=el||'basic'; if(el==='basic'&&p.buff&&p.buff.el) el=p.buff.el; return el; }   // the element an attack counts as (an enchanting buff gives element-less attacks its element)
 function elemHitS(p,el,m){ el=elemEffS(p,el);
-  const B=m&&m.pl?PVP.elemBoost:ELEM_BOOST;   // pvp: between fighters advantage and disadvantage are x1.15 and /1.15, and a fighter's element is their soul (the proxy's T.el)
-  return soulMult(soulOfP(p),el,psP(p,'soul'),B)*(m?foeMult(el,elOf(m.T),B):1); }
+  if(!m) return 1;
+  if(m.pl) return el==='basic'?1:foeMult(el,elOf(m.T),PVP.elemBoost);   // pvp: between fighters advantage and disadvantage are x1.15 and /1.15, a fighter's element is their basic slot skill's (the proxy's T.el), and basic is neutral
+  return foeMult(el,elOf(m.T)); }
 function rollDmgS(p,mult,m,el){   // cave: caveCritP (Overdrive: a sure crit) and caveBonusK (Grapple Line: the next hit) are read below
-  const b=p.buff, crit=caveCritP(p)||Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m)+pendP(p,'crit')+rlP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
-  return {v:Math.max(1,Math.round(p.dmg*mult*caveBonusK(p)*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m)):1))),crit,fx:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt
+  const b=p.buff, crit=caveCritP(p)||Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m,el)+pendP(p,'crit')+rlP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
+  return {v:Math.max(1,Math.round(p.dmg*mult*caveBonusK(p)*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m,el))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m,el)):1))),crit,fx:elemEffS(p,el)==='basic'?0:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt (an element-less hit's x1.1 shows no arrow)
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
   if(m.pl) return pvpHitS(m,mult,p,fromX,fromZ,kb,el);   // pvp: m is another fighter on the island (server/pvp.js)
@@ -44,7 +45,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(m.immune){ ev('imm',m.id); return 0; }
   if(m.boss && m.B.stunT>0) mult*=1.5;
   const d=rollDmgS(p,mult,m,el);
-  const vk=rxVulnK(m); if(vk) d.v=Math.max(1,Math.round(d.v*(1+vk)));   // reactions: a vulnerable monster takes more, whoever hits it
+  const vk=mstVulnK(m); if(vk) d.v=Math.max(1,Math.round(d.v*(1+vk)));   // statuses: a vulnerable monster takes more, whoever hits it
   if(p.ss&&p.ss.amp.length) d.v=Math.max(1,Math.round(d.v*ssAmpK(p,m)));   // skillsets: the owner's marks make a marked target take more from them
   p.lastDealt=S.t;   // skillsets: in a fight (tick triggers run only then)
   if(m.T.heavy) kb=0;
@@ -58,14 +59,13 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(d.fx) ev('dmg',m.id,d.v,d.crit?1:0,p.id,d.fx); else ev('dmg',m.id,d.v,d.crit?1:0,p.id);
   if(m.hp<=0&&m.boss&&vbPartDownS(m)){}   // volcano: a part ended, not the boss
   else if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }
-  else rxHitS(m,p,elemEffS(p,el),mult);   // reactions: a direct hit leaves an aura or reacts with the one there
   caveHitS(p);   // cave: the cast that did this pays its charge (once per cast, not per enemy)
-  if(!rxQuiet&&p.ss&&p.ss.trig){ ssTriggerS(p,'hit',{m,v:d.v}); if(d.crit) ssTriggerS(p,'crit',{m,v:d.v}); }   // skillsets: on hit / on crit rows (a burn tick, a reaction's burst and a trigger's own damage are not hits)
+  if(!mstQuiet&&p.ss&&p.ss.trig){ ssTriggerS(p,'hit',{m,v:d.v,el}); if(d.crit) ssTriggerS(p,'crit',{m,v:d.v,el}); }   // skillsets: on hit / on crit rows (a burn tick and a trigger's own damage are not hits)
   return d.v;
 }
 function killMonsterS(m,p){
-  m.expoDeath=rxVulnK(m)>0||rxWeakK(m)<1;   // skillsets: it was exposed when it died (the `exposed` condition of a kill row; the statuses go with it just below)
-  m.burnT=0; rxClearS(m); ssClearS(m); m.dead=true; m.deadT=0;   // reactions: aura and statuses go with it; skillsets: so do the marks
+  m.expoDeath=mstVulnK(m)>0||mstWeakK(m)<1;   // skillsets: it was exposed when it died (the `exposed` condition of a kill row; the statuses go with it just below)
+  m.burnT=0; mstClearS(m); ssClearS(m); m.dead=true; m.deadT=0;   // statuses go with it; skillsets: so do the marks
   m.respawnT=12; if(m.rd) rdKilledS(m,p); m.pendingHit=-1; m.aggro=false; m.tgt=null; m.act=null;
   ev('kill',m.id,p?p.id:null);
   if(p) ssTriggerS(p,'kill',{m});   // skillsets: on kill rows
@@ -85,8 +85,9 @@ function rewardKill(q,m){
   if(r>=0) addItemP(q,randomItem(tierFor(K.lv),r),false,m.id);
   if(MATS[m.def.id]&&(!m.dip||Math.random()<DIP_MAT_K)){ const n=rollDropCount(m.def,psP(q,'drop')+pendP(q,'drop')+rlP(q,'drop')+potBuffP(q,'fortune')); if(n) addMatP(q,m.def.id,n,m.id); }   // dip: a pipe's monsters drop DIP_MAT_K of the materials
   questKillP(q,m.def.id); q.dirty=true; gsStatP(q,'kill'); if(m.def.boss) gsStatP(q,'boss');   // gems: the kill counters
-  if(m.rd) return;   // raids: a raid copy of a boss pays the kill (above) but opens no tier, rolls no set, drops no boss skill and advances no quest
-  if(m.def.boss){ rlBossStonesP(q,m,K); bossSkillDropP(q,m.def.id); ssBossClearP(q,m); zoneTierKillP(q,m); }   // skillsets: the set of this boss's land at the tier fought (before the kill can unlock a tier)
+  if(m.rd) return;   // raids: a raid copy of a boss pays the kill (above) but opens no tier, rolls no set and advances no quest
+  if(m.def.boss){ if(!m.inst) awkTrophyP(q,m.def.id,monTierOf(q.gear,m)); rlBossStonesP(q,m,K); bdStirBossP(q,m,monTierOf(q.gear,m)); ssBossClearP(q,m); zoneTierKillP(q,m); }   // skillsets: the set of this boss's land at the tier fought (before the kill can unlock a tier)   // bond: bdStirBossP, the hour's stirring boss opens orbs at the tier fought
+  bdChargeS(q,m);   // bond: a kill in the hour's stirring zone charges an orb open
   mqKillP(q,m);
   sqKillP(q,m);   // sidequests: kills, quest drops and bosses count for every running chain
   if(m.def.id==='boss') openValeP(q);
@@ -97,15 +98,6 @@ function rewardKill(q,m){
   if(m.def.id==='sinkwarden') vbRewardP(q,m);   // volcano: the talisman and the ending
   if(m.def.id==='oldhorn') openIslesP(q);   // emberwake: the herd-mother's fall opens the Tide Bridge (the barrier at the Amber Reach's south cape)
   if(m.def.id==='sandwyrm'){ openGateP(q,'redgate'); openGateP(q,'amber'); }   // (savanna: the same fall opens the way south into Amber Reach)
-}
-// a boss kill: each of that boss's skills you do not own yet drops with BOSS_SKILL_CHANCE (drops.js); you choose when to equip it
-function bossSkillDropP(q,bossId){
-  const sk=q.gear.skills;
-  for(const id of BOSS_SKILLS[bossId]||[]){
-    if(sk.owned.includes(id)||Math.random()>=BOSS_SKILL_CHANCE) continue;
-    sk.owned.push(id); bsRefreshP(q); q.dirty=true; ev('skilldrop',q.id,id);
-    toastTo(q.id,SKILLS[id].name+' dropped! ('+CLASSES[SKILLS[id].cls].name+' skill)','loot r3');
-  }
 }
 function handPosS(p){ return {x:p.x-Math.sin(p.face)*0.4,y:p.y+1.4,z:p.z-Math.cos(p.face)*0.4}; }
 function dirToS(p,m){ const c=monCenterS(m), h=handPosS(p); return norm3([c.x-h.x,c.y-h.y,c.z-h.z]); }
@@ -186,11 +178,11 @@ function resolveHitS(p,a){
     ev('chain',pts);
   }
 }
-// a buff skill (the row's buff): a timed boost; a higher skill level makes the bonus stronger and 0.5 s longer.
+// a buff skill (the row's buff): a timed boost; a higher skill level makes it stronger and longer (shared/awakening.js: +6% strength, +3% duration, regen by healing).
 // buff = {dur, dmg (damage x), cd (basic cooldown x), crit (+chance), red (damage taken less), steal (share of your damage you heal), regen (max health per second), el (element of element-less attacks), reset}
 function applyBuffS(p,a){
-  const b=SKILLS[a.sid].buff, dur=(b.dur+0.5*(a.lvl-1))*(1+rlP(p,'buffdur'));   // rolls: longer buffs
-  p.buff={id:a.sid,until:S.t+dur,dmg:1+(b.dmg-1)*skillPower(a.lvl),cd:b.cd,crit:b.crit,red:b.red||0,steal:b.steal||0,regen:b.regen||0,el:b.el||null};
+  const b=SKILLS[a.sid].buff, K=awkCurve('buff',a.lvl), dur=b.dur*awkCurve('dur',a.lvl)*(1+rlP(p,'buffdur'));   // awakening: the buff and duration curves   // rolls: longer buffs
+  p.buff={id:a.sid,until:S.t+dur,dmg:1+(b.dmg-1)*K,cd:b.cd,crit:(b.crit||0)*K,red:(b.red||0)*K,steal:(b.steal||0)*K,regen:(b.regen||0)*awkCurve('heal',a.lvl),el:b.el||null};
   if(b.reset) p.cd.skill=0;
   ev('buff',p.id,a.sid,dur);
 }
@@ -202,7 +194,7 @@ function statusS(m,s,p,el,mult){
   if(s.stun&&!m.T.heavy&&!m.boss) m.stunT=Math.max(m.stunT||0,s.stun);
   if(s.slow) m.slowT=Math.max(m.slowT||0,s.slow);
   if(s.burn){ m.burnT=s.burn.dur; m.burnMult=mult*s.burn.k; m.burnBy=p.id; m.burnEl=el; m.burnTick=1; }
-  rxDirectS(m,s,p,mult);   // reactions: the entry's flavor and status keys
+  mstDirectS(m,s,p);   // statuses: the entry's status key (vuln / weak / slow / stun)
   if(s.mark) ssMarkS(p,m,s.mark);   // skillsets: the entry's mark
   if(s.taunt) ssTauntS(p,m,s.taunt.dur);   // skillsets: what the entry hits comes for the caster
 }
@@ -212,7 +204,7 @@ function updateBurnS(dt){
     S.ctx=m.inst|0;   // dungeons: burning belongs to the monster's run
     if(m.dead||m.remove){ m.burnT=0; continue; }
     m.burnT-=dt; m.burnTick-=dt;
-    if(m.burnTick<=0){ m.burnTick+=1; const o=S.players.get(m.burnBy); if(o) rxQuietS(()=>damageMonsterS(m,m.burnMult,o,m.x,m.z,0,m.burnEl)); else m.burnT=0; }   // reactions: a burn tick leaves no aura and reacts to nothing
+    if(m.burnTick<=0){ m.burnTick+=1; const o=S.players.get(m.burnBy); if(o) mstQuietS(()=>damageMonsterS(m,m.burnMult,o,m.x,m.z,0,m.burnEl)); else m.burnT=0; }   // a burn tick fires no on-hit triggers
   }
 }
 /* Skills with generic effects: the row's fx lists what happens, resolved in this order when the swing lands (any of them can be combined):
@@ -224,8 +216,7 @@ function updateBurnS(dt){
    chain:{n,fall,range}                  the target and n-1 more, each the nearest within range of the last, fall x weaker every jump
    proj:{kind,n,spread,seek,speed,turn,life,splash:{r,k},zone:{...},burn,slow,stun}   n projectiles in a fan (seek: each picks a different enemy near you)
    zone:{r,dur,every,once,follow,self,kb,slow,stun}     a ground area at the target (or on you), hitting every 'every' s (once: a single hit at the end)
-   k = a share of the skill's mult. Statuses (stun, slow, burn:{dur,k}) go with the entry they are in, and so do flavor:'<element>' (that element's flavour at full strength:
-   burn, slow, stun, spread, weak or vuln; docs/REACTIONS.md) and status:{kind:'vuln'|'weak'|'slow'|'stun',v,dur} on a ring, cone, proj or zone entry. */
+   k = a share of the skill's mult. Statuses (stun, slow, burn:{dur,k}) go with the entry they are in, and so does status:{kind:'vuln'|'weak'|'slow'|'stun',v,dur} on a ring, cone, proj or zone entry. */
 function resolveFxS(p,a,tgt){
   const src=ssSrc(a);   // skillsets: the piece (or the passive / bonus row) this comes from, sent with the events so the client can dress them in its outfit's look
   const f=a.fx, FO=foesS(p), alive=m=>!m.dead&&!m.remove, dist=m=>Math.hypot(m.x-p.x,m.z-p.z), inRange=tgt&&dist(tgt)<=a.range+2;

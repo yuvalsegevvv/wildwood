@@ -1,8 +1,8 @@
-//@ Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, upgrade with coins and monster drops, learn from the trainers
+//@ Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, learn from the trainers; levels are bought in the Awakening tree (the Awaken button)
 /* Open it with K, the Skills button in the inventory, the empty skill button, or by talking to Aldric (or Master Ryu in Hanami).
-   Top: the active slots of the class you are looking at (drop targets) and the three passive slots (the same for every class, opening at levels 13, 16 and 20: PASSIVE_SLOT_LV).
+   Top: the active slots of the class you are looking at (drop targets) and the one passive slot (the same for every class, opening at level 10: PASSIVE_SLOT_LV).
    Below: a tab per kind and a grid of its skills. Drag a skill you own onto its slot to use it, drag one out of a slot back into the grid to take it
-   off; tap a skill for its details, Equip / Take off buttons (for touch) and its upgrade. Learning and upgrading happen at a trainer. */
+   off; tap a skill for its details, Equip / Take off buttons (for touch) and the Awaken button. Learning happens at a trainer; levels come from the tree (awakening/panel.js). */
 let skTab=null, skKind='skill';
 const SK={sel:null};   // the selected skill or passive id
 function openSkills(n,kind){ openPanel('skills',n||null); skTab=clsOf(); if(KIND_TITLE[kind]) skKind=kind; SK.sel=null; renderSkills(); }
@@ -18,7 +18,7 @@ function skTile(s,C,from){
   const own=C.S.owned.includes(s.id), low=C.lv<needLv(s), L=skillLvOf(C.S,s.id), el=elOf(s);
   const drag=true;   // every tile can be dragged, so a drop that is refused always says why (not learned yet, level, the basic slot, a locked slot)
   const tint=ssTint(s);
-  return `<button class="sk-tile${el!=='basic'?' has-el':''}${tint?' has-set':''}${SK.sel===s.id?' sel':''}${own?'':' unowned'}${low?' locked':''}${drag?' drag':''}${s.slot==='burst'?' burst':''}" data-id="${s.id}" data-from="${from}" data-drag="${drag?1:0}" style="--el:${el==='basic'?'transparent':ELEMS[el].col}${tint?';--set:'+tint:''}" aria-label="${s.name}${s.set?' ('+SS_SETS[s.set].name+' set)':''}${own?', level '+L:''}">${skIconOf(s)}${el!=='basic'?'<i class="el-dot"></i>':''}<span class="lv">${own?'Lv '+L:s.drop?'Boss':low?'Lv '+needLv(s):s.price?s.price+'c':'Free'}</span></button>`;
+  return `<button class="sk-tile${el!=='basic'?' has-el':''}${tint?' has-set':''}${SK.sel===s.id?' sel':''}${own?'':' unowned'}${low?' locked':''}${drag?' drag':''}${s.slot==='burst'?' burst':''}" data-id="${s.id}" data-from="${from}" data-drag="${drag?1:0}" style="--el:${el==='basic'?'transparent':ELEMS[el].col}${tint?';--set:'+tint:''}" aria-label="${s.name}${s.set?' ('+SS_SETS[s.set].name+' set)':''}${own?', level '+L:''}">${skIconOf(s)}${el!=='basic'?'<i class="el-dot"></i>':''}${own?bdcTileBadge(C.S,s.id):''}<span class="lv">${own?'Lv '+L:low?'Lv '+needLv(s):s.price?s.price+'c':'Free'}</span></button>`;
 }
 function skSlotsHtml(C,cls){
   const act=SLOTS.map(slot=>{
@@ -29,10 +29,10 @@ function skSlotsHtml(C,cls){
   const caveH=caveSlotHtml(C);   // cave: the 4th slot's row   // ult: the 5th slot's row is added to the same line (ultSlotHtml, game/ult/slot.js)
   const pas=Array.from({length:PASSIVE_SLOTS},(_,i)=>{   // slot i opens at level PASSIVE_SLOT_LV[i]
     const id=C.S.pass&&C.S.pass[i], P=PASSIVES[id], usable=C.lv>=PASSIVE_SLOT_LV[i];
-    return `<div class="sk-pslot${P?' on':''}${usable?'':' locked'}" data-idx="${i}"><span class="sk-n">Passive ${i+1}</span>${P?skTile(P,C,'pslot:'+i):`<div class="sk-tile empty">${skIcon(usable?'plus':'lock')}</div>`}<b>${P?P.name:usable?'Empty':'Level '+PASSIVE_SLOT_LV[i]}</b><small>${P?passiveText(id,skillLvOf(C.S,id)):usable?'Drag one here':''}</small></div>`;
+    return `<div class="sk-pslot${P?' on':''}${usable?'':' locked'}" data-idx="${i}"><span class="sk-n">Passive${PASSIVE_SLOTS>1?' '+(i+1):''}</span>${P?skTile(P,C,'pslot:'+i):`<div class="sk-tile empty">${skIcon(usable?'plus':'lock')}</div>`}<b>${P?P.name:usable?'Empty':'Level '+PASSIVE_SLOT_LV[i]}</b><small>${P?passiveText(id,skillLvOf(C.S,id)):usable?'Drag one here':''}</small></div>`;
   }).join('');
   const later=PASSIVE_SLOT_LV.map((l,i)=>C.lv<l?'slot '+(i+1)+' at level '+l:'').filter(Boolean).join(', ');
-  return `<div class="sk-lcol"><div class="sk-load-h">Active skills</div><div class="sk-load">${act}${caveH}${ultSlotHtml(C)}</div></div><div class="sk-lcol"><div class="sk-load-h">Passive skills <span>${open?'the same for every class'+(later?' · '+later:''):'open at level '+PASSIVE_LV}</span></div><div class="sk-load pas">${pas}</div><div class="sk-load-h">Movement skill <span>free, from level ${MV_SLOT_LV}</span></div><div class="sk-load pas">${mvSlotHtml(C)}</div></div>`;   // movement: the slot below the passives   // two columns: active | passive (18-skills.css)
+  return `<div class="sk-lcol"><div class="sk-load-h">Active skills</div><div class="sk-load">${act}${caveH}${ultSlotHtml(C)}</div></div><div class="sk-lcol"><div class="sk-load-h">Passive skill <span>${open?'the same for every class'+(later?' · '+later:''):'open at level '+PASSIVE_LV}</span></div><div class="sk-load pas">${pas}</div><div class="sk-load-h">Movement skill <span>free, from level ${MV_SLOT_LV}</span></div><div class="sk-load pas">${mvSlotHtml(C)}</div></div>`;   // movement: the slot below the passives   // two columns: active | passive (18-skills.css)
 }
 // details of the selected skill: what it does at its level, how to equip it, and what its next level costs
 function skInfoHtml(C,cls){
@@ -43,32 +43,24 @@ function skInfoHtml(C,cls){
   let stats;
   if(pass) stats=passiveText(s.id,L);
   else stats=(s.slot==='basic'?bhInterval(s,S,bhSpeedUi(),1,0).toFixed(2)+' s per swing · hold to charge':abilityCd(s,S,C.lv,cls,rlUiCdr()).toFixed(1)+' s cooldown')+(s.buff?'':' · '+Math.round(s.mult*skillPower(L)*100)+'% damage')
-    +(s.buff?' · +'+Math.round((s.buff.dmg-1)*skillPower(L)*100)+'% damage for '+(s.buff.dur+0.5*(L-1))+' s':'');
-  const boss=s.drop?(BOSS_DEFS.find(b=>b.def.id===s.drop)).short:'';   // the boss that drops it (boss skills are not sold and cannot be upgraded yet)
-  const tags=`<span class="sk-tag">${pass?'Passive':(s.cls==='any'?'Any class':CLASSES[s.cls].name)+' · '+KIND_TITLE[s.slot]}${boss?' · dropped by '+boss:''}${s.set?' · '+SS_SETS[s.set].name+' ('+SS_SETS[s.set].char.name+'\'s set)':''}</span>${pass?'':elChip(el)}`;
+    +(s.buff?' · +'+Math.round((s.buff.dmg-1)*awkCurve('buff',L)*100)+'% damage for '+Math.round(s.buff.dur*awkCurve('dur',L)*10)/10+' s':'');   // awakening: the buff and duration curves
+  const tags=`<span class="sk-tag">${pass?'Passive':(s.cls==='any'?'Any class':CLASSES[s.cls].name)+' · '+KIND_TITLE[s.slot]}${s.set?' · '+SS_SETS[s.set].name+' ('+SS_SETS[s.set].char.name+'\'s set)':''}${s.wd?' · the Wanderer\'s path of '+WD_PATHS[s.wd].name:''}</span>${pass?'':elChip(el)}`;
   let acts='';
   if(own){
     if(eq&&!pass&&s.slot!=='basic') acts+=`<button class="chip" data-unskill="${s.slot}">Take off</button>`;
     else if(eq&&pass) acts+=`<button class="chip" data-unpass="${PS.indexOf(s.id)}">Take off</button>`;
     else if(!eq&&!(s.slot==='basic'&&!canSwap(s.cls,'basic',S))) acts+=`<button class="chip" data-eqskill="${s.id}" ${low?'disabled':''}>${low?'Level '+needLv(s):'Equip'}</button>`;
-  } else if(s.drop) acts+=`<span class="muted">Dropped by ${boss}: ${Math.round(BOSS_SKILL_CHANCE*100)}% per kill</span>`;
-  else if(s.set) acts+=`<span class="muted">A signature skill: earned from a boss or a dungeon</span>`;   // skillsets: never taught
+  } else if(s.set) acts+=`<span class="muted">A signature skill: earned from a boss or a dungeon</span>`;
+  else if(s.wd) acts+=`<span class="muted">The Wanderer's path passive: yours with his Awakening tree's passive node (pa1, A1). It works while the Wanderer is the character you play.</span>`;   // wanderer: never taught   // skillsets: never taught
   else if(C.trainer) acts+=`<button class="chip buy" data-buyskill="${s.id}" ${GEAR.coins<s.price||C.lv<needLv(s)?'disabled':''}>${C.lv<needLv(s)?'Level '+needLv(s):'Learn: '+s.price+' coins'}</button>`;
   else acts+=`<span class="muted">Aldric (or Master Ryu in Hanami) teaches it at the well: ${s.price} coins</span>`;
   let up='';
-  if(own){
-    if(s.drop) up=`<div class="sk-up"><b>Boss skill &middot; level ${L}</b><span class="muted">It gains a level for every zone tier you defeat in its boss's land (now ${L-1} of ${ZTIER_MAX}), not with coins.</span></div>`;
-    else if(L>=SKILL_MAX_LV) up=`<div class="sk-up"><b>Highest level</b><span class="muted">${s.name} cannot be upgraded any further.</span></div>`;
-    else {
-      const n=upgradeNeeds(s.id,L+1); if(!n) up=`<div class="sk-up"><b>Signature skill</b><span class="muted">It cannot be upgraded yet.</span></div>`;   // (a set whose land has no raid)
-      else { const have=GEAR.mats||{}, cOk=GEAR.coins>=n.coins, rdHave=n.rd?rdMatHave(n.rd.land):0, rdOk=!n.rd||rdHave>=n.rd.n, all=cOk&&rdOk&&n.mats.every(m=>(have[m.id]||0)>=m.n);   // raids: a signature piece also needs its land's raid material
-      const gain=pass?passiveText(s.id,L+1):Math.round((skillPower(L+1)/skillPower(L)-1)*1000)/10+'% more '+(s.buff?'bonus':'damage')+', '+Math.round((1-skillCdMult(L+1)/skillCdMult(L))*1000)/10+'% shorter cooldown';
-      up=`<div class="sk-up"><b>Level ${L} &rarr; ${L+1}</b><span>${gain}</span><div class="sk-cost"><span class="${cOk?'ok':'bad'}">${n.coins} coins</span>${n.mats.map(m=>`<span class="${(have[m.id]||0)>=m.n?'ok':'bad'}" title="Dropped by ${MATS[m.id].from} (level ${MATS[m.id].lv})"><i style="background:${MATS[m.id].col}"></i>${MATS[m.id].name} ${have[m.id]||0}/${m.n}</span>`).join('')}${n.rd?`<span class="${rdOk?'ok':'bad'}" title="Won by clearing ${rdOfLand(n.rd.land).name}"><i style="background:#e8b84a"></i>${rdOfLand(n.rd.land).mat} ${rdHave}/${n.rd.n}</span>`:''}</div>`
-        +(C.trainer?`<button class="chip buy" data-upskill="${s.id}" ${all?'':'disabled'}>Upgrade</button>`:'<span class="muted">Upgrades happen at Aldric (or Master Ryu in Hanami).</span>')+`<button class="chip" data-sktrack="${s.id}" aria-pressed="${skTrackId===s.id}" title="Mark where the monsters that drop the missing materials live (map and minimap)">${skTrackId===s.id?'Tracking':'Track'}</button></div>`; }
-    }
+  if(own){   // awakening: a skill's levels are bought in the tree (the trainer's Upgrade button is retired); the button opens it on this skill's character and branch
+    const limb=pass?'pa':({basic:'ba',skill:'sk',burst:'po'})[s.slot]||'';
+    up=`<div class="sk-up"><b>${L>=SKILL_MAX_LV?'Highest level':'Level '+L+' of '+SKILL_MAX_LV}</b><span class="muted">Skill levels, stats and tiers are bought in the Awakening tree, with coins and monster drops.</span><button class="chip buy" data-awaken="${s.set||'wanderer'}" data-limb="${limb}">Awaken</button></div>`;
   }
   const lock=low?`<span class="req bad">needs level ${needLv(s)}</span>`:'';
-  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico${ssTint(s)?' has-set':''}"${ssTint(s)?` style="--set:${ssTint(s)}"`:''}>${skIconOf(s)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags">${tags}</div><span class="sk-meta">${own?'Level '+L+' of '+SKILL_MAX_LV+' &middot; ':''}${stats} ${lock}</span></div><div class="sk-ii-btn">${acts}</div></div><p class="sk-desc">${pass?passiveText(s.id,L):s.desc}</p>${s.set?`<div class="sk-set-wrap"><div class="sk-load-h">Set effect <span>this piece is part of a set: wear 3 pieces for the first effect, 5 for the second</span></div>${ssCardHtml(s.set,ssCount(S,cls,C.lv)[s.set]||0,ssOwnedPairs(S,s.set))}</div>`:''}${up}</div>`;
+  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico${ssTint(s)?' has-set':''}"${ssTint(s)?` style="--set:${ssTint(s)}"`:''}>${skIconOf(s)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags">${tags}</div><span class="sk-meta">${own?'Level '+L+' of '+SKILL_MAX_LV+bdcLvNote(S,s.id)+' &middot; ':''}${stats} ${lock}</span></div><div class="sk-ii-btn">${acts}</div></div><p class="sk-desc">${pass?passiveText(s.id,L):s.desc}</p>${s.set?`<div class="sk-set-wrap"><div class="sk-load-h">Set piece <span>${SS_BONUS_ON?'wear 3 pieces for the first effect, 5 for the second':'part of '+SS_SETS[s.set].name}</span></div>${ssCardHtml(s.set,ssCount(S,cls,C.lv)[s.set]||0,ssOwnedPairs(S,s.set))}</div>`:''}${up}</div>`;
 }
 function renderSkills(){
   if($('#skills').hidden) return;
@@ -77,12 +69,12 @@ function renderSkills(){
   $('#skTitle').textContent=trainer?panelNPC.def.name+"'s lessons":'Skills'; $('#skCoins').textContent=fmtCoins(GEAR.coins)+' coins';
   const pass=skKind==='pass';
   let h=pass?'':`<div class="chips pn-tabs">${Object.keys(CLASSES).map(c=>`<button class="chip" data-sktab="${c}" aria-pressed="${c===cls}">${CLASSES[c].name}${c===clsOf()?' (you)':''}</button>`).join('')}</div>`;
-  h+=`<div class="sk-soul">Soul: ${elChip(soulNow())} <span>${PL.level>=SOUL_LV?'Skills of this element deal more damage. Change it at the Soul Hall in Hanami.':'Bind your soul to an element at the Soul Hall in Hanami, from level '+SOUL_LV+'.'}</span></div>`;
   h+=`<div class="sk-main"><div class="sk-left">${skSlotsHtml(C,cls)}</div>`;   // loadout on the left, the skill list on the right
   const setH=ssSummaryHtml(C,cls);   // skillsets: the set effects
   h+=`<div class="sk-area"><div class="chips sk-kinds">${['basic','skill','burst','cave','ult','mov','pass'].map(k=>`<button class="chip" data-skkind="${k}" aria-pressed="${k===skKind}">${KIND_TITLE[k]}</button>`).join('')}</div>`;
   let ids;
-  if(pass){ ids=PASSIVE_IDS.filter(id=>!PASSIVES[id].set||S.owned.includes(id)); if(lv<PASSIVE_LV)   // skillsets: a signature passive shows once it is yours
+  if(pass){ ids=PASSIVE_IDS.filter(id=>!PASSIVES[id].set||S.owned.includes(id)); { const wk=wdPathOf(GEAR); if(wk) ids.unshift(WD_PATHS[wk].passive); }   // wanderer: the active path's passive, first (equippable once the tree's pa1 is bought)
+    if(lv<PASSIVE_LV)   // skillsets: a signature passive shows once it is yours
     h+=`<p class="muted sk-note">Passive skills open at level ${PASSIVE_LV}. They work for every class.</p>`; }
   else {
     ids=SKILL_IDS.filter(id=>(SKILLS[id].cls===cls||SKILLS[id].cls==='any')&&SKILLS[id].slot===skKind&&(!SKILLS[id].set||S.owned.includes(id)));   // skillsets: a universal piece is in every class's grid; a signature piece shows once it is yours
@@ -107,13 +99,13 @@ function renderSkills(){
   on('[data-unpass]',b=>{ netSend({t:'unskill',slot:'pass',idx:+b.dataset.unpass}); UI_SFX.click(); });
   on('[data-buyskill]',b=>{ b.disabled=true; netSend({t:'buyskill',id:b.dataset.buyskill}); });
   on('[data-sktrack]',b=>{ skTrackToggle(b.dataset.sktrack); UI_SFX.click(); renderSkills(); });
-  on('[data-upskill]',b=>{ b.disabled=true; netSend({t:'upskill',id:b.dataset.upskill}); });
+  on('[data-awaken]',b=>awcOpen(b.dataset.awaken,b.dataset.limb));   // awakening: the tree, on this skill's character and branch
 }
 // put a skill you own in its slot (a passive: slot idx, or the first free one)
 function skEquip(id,idx){
   const s=skillDef(id); if(!s) return;
   const no=text=>{ toast(text,'bad'); UI_SFX.error(); };
-  if(!(GEAR.skills||newSkills()).owned.includes(id)){ no(s.name+' is not learned yet: '+(s.set?'it is a signature skill, earned from a boss or a dungeon':s.drop?(BOSS_DEFS.find(b=>b.def.id===s.drop)).short+' drops it':'Aldric (or Master Ryu in Hanami) teaches it at the well')); return; }
+  if(!(GEAR.skills||newSkills()).owned.includes(id)){ no(s.name+' is not learned yet: '+(s.set?'it is a signature skill, earned from a boss or a dungeon':'Aldric (or Master Ryu in Hanami) teaches it at the well')); return; }
   if(s.slot==='basic'&&!canSwap(s.cls,'basic',GEAR.skills)){ no('Only mages can change their basic attack'); return; }
   if(PL.level<needLv(s)){ no(s.name+' needs level '+needLv(s)); return; }
   if(s.slot==='passive'&&idx!==undefined&&idx>=passiveOpen(PL.level)){ no('Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx]); return; }

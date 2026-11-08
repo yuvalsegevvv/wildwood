@@ -36,6 +36,17 @@ const LV_DMG_MIN=0.5, lvDmgK=ld=>Math.max(LV_DMG_MIN,1-0.05*ld);
 const LV_RAMP=40, LV_SOFT=50, LV_RAMP_STEP=0.05, LV_DOUBLE=5, PLAYER_MAX_LV=1000;
 const COINS_MAX=1e12, EXP_MAX=1e300;   // what a saved or reported number may be at most: a save is data from the client ("Infinity", 1e308), and JSON turns an Infinity into null on the next save, a sum of two into NaN
 const expDmg=L=>3*fLv(L)+TIER_ATK[tierFor(L)];
+/* Monster health re-based for the Awakening curve (skills revamp step 20; docs/areas/tiers.md, Reference numbers). A skill level used to add +12% (cap 5: x1.48), it now compounds x1.17 (level 10 = x4.11,
+   12 with Bond / Realization V = x5.62) and the level also cuts cooldowns and raises buffs, passives and the tree's stat nodes: measured on a dummy (the duel's builds), one level is worth x1.236 of a
+   hiker's damage a second (= 1.17^1.35) and the old +12% a level x(1+0.12(L-1))^1.35. Every monster's health (defAt) is multiplied by
+       awkHpK(L) = max(1, AWK_HP_PER^(E(L)-1) / (1+0.12(Em(L)-1))^AWK_HP_EXP)
+   with E(L) the skill level a hiker of the monster's level is expected to wear (AWK_HP_LV: the tree's branch a little under the tier's cap, +1 from Bond / Realization III at ~28, +2 from V at ~45;
+   linear between the anchors; 11.5 from level 60 on, not 12, because the maxed hero, every node and Realization VI, measured x5.5 of the old one, which 11.5 gives) and Em(L) the old curve's (level 1 at hiker level 1, 5 from 12: what the old upgrade path's drops allowed). Kill times at the expected level are
+   then the old ones (x1.0 at level 1, x1.2 at 10, x1.5 at 20, x2.5 at 30, x4.4 at 45, x5.4 from 60); a hiker ahead of the curve kills faster, one behind it slower. */
+const AWK_HP_LV=[[1,1],[10,4],[20,5.5],[28,7.5],[35,8.5],[45,10.5],[60,11.5]], AWK_HP_PER=1.236, AWK_HP_EXP=1.35;
+function awkHpE(L){ const A=AWK_HP_LV; if(!(L>A[0][0])) return A[0][1]; for(let i=1;i<A.length;i++) if(L<=A[i][0]){ const a=A[i-1], b=A[i]; return a[1]+(b[1]-a[1])*(L-a[0])/(b[0]-a[0]); } return A[A.length-1][1]; }
+const awkHpOld=L=>Math.pow(1+0.12*(Math.min(5,1+4*Math.max(0,L-1)/11)-1),AWK_HP_EXP);
+const awkHpK=L=>Math.max(1,Math.pow(AWK_HP_PER,awkHpE(L)-1)/awkHpOld(L));
 const expHP=L=>20*fLv(L)+setHP(tierFor(L));
 const expRed=L=>defRed(setDef(tierFor(L)));
 /* XP: unchanged up to level 5, then later monsters give 15% more per level and levels need more,

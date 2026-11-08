@@ -1,5 +1,7 @@
 # Elemental reactions (plan, and what is built)
 
+> **RETIRED.** Elemental reactions and the soul were removed in the skill revamp (step 1). Only the shared `vuln` / `weak` statuses remain (`server/mon-status.js`). Kept for history; do not build on it.
+
 **Status:** planned here; **R0 to R2 built** (the shared data, the server engine, the client's display; section 9). No kit, no skill set uses it yet: the debuffer kit (`docs/skillkits/kit-support.md`, the debuff focus) is the first that will. Master plan and decisions: `docs/SKILL-SETS.md` section 6b (this file is its detail and wins on the engine). Test: `node tools/reactions-smoke.js`.
 
 **All numbers here are first guesses** (the owner: guidelines, balanced mostly in playtests). Every one is a named constant in `src/shared/reactions.js`.

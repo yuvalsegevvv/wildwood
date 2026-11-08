@@ -1,5 +1,5 @@
 //@ Dunstan's skill set, The Rally (a buff support, fire): a striking pole that quickens the line, a cry of valor, and a banner planted for the whole fight; ember red, gold and drum cream
-/* Agent map. Kit: docs/skillkits/kit-support.md (the buff focus); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces fire: his hits leave the aura a partner reacts with into a burn; he debuffs nothing himself);
+/* Agent map. Kit: docs/skillkits/kit-support.md (the buff focus); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces fire; he debuffs nothing himself);
    outfit and palette: docs/skillkits/looks/dunstan.md, game/outfits/dunstan.js; visuals: game/skillsets/look-dunstan.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-first8-smoke.js,
    tools/skillsets-ladder.js --set dunstan. Land: the Hoarfrost Reach (tier 2, the second wave). Mark: Fervor. Buffs never stack (the stronger wins) and are capped (SS_ALLY_CAP), so a second buffer adds only a different KIND.
    What the engine gives him: a buff-duration stat (Loud Voice), a buff-power stat (Rousing; both are still capped by SS_ALLY_CAP), and `perMark` (Cry of Valor is stronger for each Fervor near him, and then spends them). */
@@ -27,7 +27,10 @@ defineSkillSet({
   ult:{name:'Last Stand Banner', desc:'A burning war banner crashes down on the target (8 m) and sets the ground alight; the stunned cower before it.', range:24, mult:1.5, act:['dunstanult',1.0,0.55], anim:'nova',
        fx:{zone:{r:8, dur:4, first:0.3, every:1}},
        boost:[{piece:'a2', secs:12, mod:{mult:2, util:1.25}}, {piece:'p3', secs:16, mod:{v:2.5}}]},
-  bonus:{
-    3:{name:'Rousing', text:'The buffs you give are {}% stronger (still capped)', stat:'buffpow', v:0.20},
-    5:{name:'Blaze of Glory', text:'Banner Down also quickens you and your allies within 25 m: 20% shorter cooldowns for 8 s', on:'cast3', buff:{kind:'haste', v:0.20, dur:8, r:25}}},
+  tree:'banyan', stone:'Banner Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'dunstan_p1',
+    2:{name:'Rousing', text:'The buffs you give are {}% stronger (still capped)', stat:'buffpow', v:0.20},
+    4:'dunstan_p2',
+    6:{name:'Blaze of Glory', text:'Banner Down also quickens you and your allies within 25 m: 20% shorter cooldowns for 8 s', on:'cast3', buff:{kind:'haste', v:0.20, dur:8, r:25}}},
 });

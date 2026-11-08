@@ -1,4 +1,4 @@
-//@ Rifts on the server: the energy (gear.rift, refilled by the clock), the tear's window, a solo run in a rift slot of the dungeon instance layer, the waves of glass monsters, XP only (x3, x2 with the Double), the clear bonus, one respawn, leaving
+//@ Rifts on the server: the energy (gear.rift, refilled by the clock), the tear's window, a solo run in a rift slot of the dungeon instance layer, the waves of glass monsters, what a rift pays (XP x3, or Essence), x2 with the Double, the clear bonus, one respawn, leaving
 /* agent map (docs/RIFT.md; the numbers: shared/rift.js)
    exports: riftSanitize(g,out) (sanitizeGear hook), riftMsgP (MSG.rift), riftRewardS(run,m) (rewardAllS hook), riftDownTickS(run,p,dt) (dgDownTickS hook), riftLeaveP(run,p) (dgLeaveP hook),
             riftEnergyP(p), riftStartP(p,R,x2), riftRunNewS(p,R,x2), DG_KITS.rift (the wave kit, set directly: 'rift' is not a dungeon mission, so the Delve board never deals it)
@@ -21,13 +21,13 @@ const riftEnergyP=p=>riftEnergyAt(riftSaveOf(p),Date.now());
 function riftEnergyAddP(p,v){ const g=riftSaveOf(p), now=Date.now(); g.e=Math.round(clamp(riftEnergyAt(g,now)+v,0,RIFT_E_MAX)*1000)/1000; g.at=now; p.dirty=true; }
 function riftInfoP(p,R){
   const g=riftSaveOf(p), now=Date.now();
-  sendTo(p.id,{t:'rift',a:'info',id:R.id,e:Math.floor(riftEnergyAt(g,now)*10)/10,full:riftFullIn(g,now),L:Math.max(RIFT_LV,p.level|0),best:g.best|0,clears:g.clears|0,lv:RIFT_LV,cost:RIFT_E_DOUBLE});
+  sendTo(p.id,{t:'rift',a:'info',id:R.id,e:Math.floor(riftEnergyAt(g,now)*10)/10,full:riftFullIn(g,now),L:Math.max(RIFT_LV,p.level|0),best:g.best|0,clears:g.clears|0,lv:R.lv,cost:RIFT_E_DOUBLE});
 }
 const RIFT_TXT_SHARED='Rifts need Solo mode or a server: a shared room cannot keep a run apart from the world.';
 function riftStartP(p,R,x2){
   if(io.broadcastSnaps){ toastTo(p.id,RIFT_TXT_SHARED,'bad'); return; }
   if(p.dead||p.inst||p.pv) return;
-  if((p.level|0)<RIFT_LV){ toastTo(p.id,'The rift will not let you in: it is for hikers of level '+RIFT_LV+' and up.','bad'); return; }
+  if((p.level|0)<R.lv){ toastTo(p.id,'The rift will not let you in: it is for hikers of level '+R.lv+' and up.','bad'); return; }   // (R.lv: RIFT_LV, or RIFT_ELEM_LV for an elemental rift)
   if(x2&&riftEnergyP(p)<RIFT_E_DOUBLE){ toastTo(p.id,'A doubled run needs '+RIFT_E_DOUBLE+' energy.','bad'); return; }
   const run=riftRunNewS(p,R,x2); if(!run){ toastTo(p.id,'Every rift is busy right now. Try again in a minute.','bad'); return; }
   if(x2) riftEnergyAddP(p,-RIFT_E_DOUBLE);
@@ -54,14 +54,25 @@ function riftSpawnS(run,defId,lx,lz,herald){
   ev('spawn',monRoster(m)); S.ctx=c0; return m;
 }
 /* WHAT A RIFT PAYS: one entry per reward mode (R.reward, shared/rift.js RIFT_REWARDS), kill(run,m,q,mb) for each kill, clear(run,p,mb) for the clear bonus. The engine only calls riftPayOf(run).
-   xp: x3 a same-level world kill with every XP bonus the world counts (rewardKill's list), x2 when doubled; the clear is 75 same-level world kills' worth; no coins, items, materials or board hunts */
+   xp: x3 a same-level world kill with every XP bonus the world counts (rewardKill's list), x2 when doubled; the clear is 75 same-level world kills' worth; no coins, items, materials or board hunts.
+   essence (the elemental rifts, step 17a): no XP, no coins, no kill pays; Essence (R.essence: an element's or Prime, gear.awm via awkEssenceP) by the waves reached, riftEssFor, x2 when doubled: wave w - 1 is paid
+   when wave w begins (wave(run,p,mb,w), only to a hiker who has killed something in the run), the last wave at the clear: a full run pays RIFT_ESS_FULL (12), a lost one what it got through. mb.got.mats counts it (the results card, the HUD) */
 const riftXpBonus=q=>1+psP(q,'xp')+pendP(q,'xp')+rlP(q,'exp')+potBuffP(q,'scholar');
 const RIFT_PAY={
   xp:{
     kill(run,m,q,mb){ const K=m.dgK||dgKOf(m.def,run.L), xp=m.T.xp*K.xp*RIFT_XP_K*(run.x2?2:1)*riftXpBonus(q); gainExpP(q,xp,m.id); if(mb) mb.got.xp+=xp; },
     clear(run,p,mb){ const xp=xpFor(run.L)*RIFT_BONUS_KILLS*(run.x2?2:1)*riftXpBonus(p); gainExpP(p,xp,null); if(mb) mb.got.xp+=xp; },
   },
+  essence:{
+    kill(){},
+    wave(run,p,mb,w){ if(w>=2&&mb&&mb.got.kills>0) riftEssenceP(run,p,mb,riftEssFor(w-1)-riftEssFor(w-2)); },
+    clear(run,p,mb){ riftEssenceP(run,p,mb,riftEssFor(RIFT_WAVES)-riftEssFor(RIFT_WAVES-1)); const R=RIFT_DEFS[run.rift], e=R&&essOf(essIdOf(R.essence)); if(e&&mb) toastTo(p.id,'The rift paid '+mb.got.mats+' '+e.name+'.','good'); },
+  },
 };
+function riftEssenceP(run,p,mb,n){
+  const R=RIFT_DEFS[run.rift], id=R&&essIdOf(R.essence); n=Math.max(0,n|0)*(run.x2?2:1); if(!id||!n) return;
+  const add=awkEssenceP(p,id,n); if(mb) mb.got.mats+=add;
+}
 const riftPayOf=run=>{ const R=RIFT_DEFS[run.rift]; return RIFT_PAY[R&&R.reward]||RIFT_PAY.xp; };
 function riftRewardS(run,m){
   const pay=riftPayOf(run);
@@ -91,6 +102,7 @@ function riftWonS(run){
     g.clears=Math.min(999999,(g.clears|0)+1); if(!g.best||secs<g.best) g.best=secs; p.dirty=true;
     dgEndEvS(run,p,1,'');
   }
+  DG_KITS.rift.hud(run);   // (the HUD's last number includes the clear)
   toastTo(null,'The rift collapses! Cleared in '+dgClock(secs)+'. Back at the tear in '+DG_END_S+' s.','good');
 }
 // THE WAVE KIT. run.k = {w (the wave now, 0 = the count-down), start (run.t the wave began), size, dead (of this wave), q (spawns waiting: [def id, herald, not before run.t]), kills, ti (the next tear)}
@@ -102,7 +114,7 @@ DG_KITS.rift={
     for(let i=0;i<k.size;i++){ let r=Math.random()*tw, pick=kinds[0]; for(const c of kinds){ r-=c.w; if(r<=0){ pick=c; break; } } k.q.push([pick.id,false,run.t+RIFT_RELEASE_S*i/k.size,k.w]); }
     if(herald) k.q.push([R.herald,true,run.t+RIFT_RELEASE_S*0.5,k.w]);
     if(herald){ k.size++; k.q.sort((a,b)=>a[2]-b[2]); }   // (the Herald comes halfway through the wave's release)
-    for(const p of dgPresentS(run)) dgEvTo('riftw',p.id,k.w);
+    for(const p of dgPresentS(run)){ dgEvTo('riftw',p.id,k.w); const pay=riftPayOf(run); if(pay.wave) pay.wave(run,p,dgMemberOf(run,p),k.w); }
   },
   tick(run,dt){
     const k=run.k, V=DG_KITS.rift;
@@ -119,7 +131,7 @@ DG_KITS.rift={
   onKill(run,m){ const k=run.k; k.kills++; if(m.riftW===k.w) k.dead++; },
   hud(run){ const k=run.k; let alive=0; for(const m of run.mons) if(!m.dead&&!m.remove) alive++;
     const next=!k.w?Math.max(0,Math.ceil(RIFT_COUNT_S-run.t)):k.w>=RIFT_WAVES?0:Math.max(0,Math.ceil(RIFT_WAVE_S-(run.t-k.start)));
-    let xp=0; for(const mb of run.members.values()) xp=Math.max(xp,mb.got.xp);
+    const R=RIFT_DEFS[run.rift], gk=R&&R.reward==='essence'?'mats':'xp'; let xp=0; for(const mb of run.members.values()) xp=Math.max(xp,mb.got[gk]);   // (the HUD's fifth number: XP, or the Essence of an essence rift)
     run.hud=[k.w,alive+k.q.length,next,run.x2?1:0,Math.round(xp)]; }
 };
 function riftMsgP(p,msg){

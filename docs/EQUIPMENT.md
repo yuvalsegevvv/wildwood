@@ -19,8 +19,8 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 | Base prices (tier) and weight of each piece | `PRICE` src/shared/items.js:21, `SLOT_PRICE` src/shared/items.js:21 |
 | The item id scheme (`sword2`, `sword2-e`) | `itemId` src/shared/items.js:23 |
 | Tools (pickaxe, axe, sickle): materials, prices, double-yield chance by rarity | `TOOL_MAT` / `TOOL_PRICE` / `TOOL_EXTRA` src/shared/items.js:38-39 |
-| What gear adds to a player (health, attack, defense) | `gearStatsOf` src/shared/items.js:65, `recalcP` src/server/players.js:123 |
-| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:207 |
+| What gear adds to a player (health, attack, defense) | `gearStatsOf` src/shared/items.js:65, `recalcP` src/server/players.js:128 |
+| How much damage armour negates (soft-capped at 90%) and the 10% floor on a hit | `defRed` src/shared/balance.js:26, `hurtP` src/server/players.js:213 |
 | Wearing an item (level check, slot) | `equipP` src/server/economy.js:25 |
 | Shops: common items only, +20% per copy bought | `buyP` src/server/economy.js:40, `shopPrice` src/shared/items.js:49, shop panel src/game/economy/shops.js:20 |
 | Monster and boss drops (the item roll and its tier) | `rollMonsterRarity` / `rollBossRarity` src/shared/items.js:53, used in `rewardKill` src/server/combat.js:80 |
@@ -35,7 +35,7 @@ Generated from the live code by `node tools/gen-docs.js` (`--check` tells you wh
 ## 2. How the stats are made
 
 - **Weapon attack** = round(TIER_ATK[tier] × RAR_MULT[rarity]). The weapon you wield sets your class (sword: Warrior, bow: Archer, wand: Mage). A player's damage is `(3 f(L) + gear attack) × (1 + symbol)`.
-- **Armour health** = round(ARMOR_HP[piece][tier] × RAR_MULT[rarity]); **defense** = max(ARMOR_DEF[piece][tier] + rarity, round(ARMOR_DEF × RAR_MULT)). A player's health is `(20 f(L) + gear health) × (1 + passives) × (1 + symbol)`; damage taken is cut by `def / (def + 60)` up to 60% negation (defense 90) and then softly capped toward 90% (`defRed`): the maxed level-30 set (576 defense) negates 84%, not 91%; a hit always does at least 10% (`DMG_TAKEN_MIN`). The worst case on one hiker, worked out from the data: the best piece of every slot (726 defense) negates 85.5%; Iron Will (11.0%) makes it 87.1%; the strongest skill buff (40.0%) and the best guard potion (40.0%) on top would make it 95.4% by plain multiplication, and the floor holds it at 90.0%. Nothing in the game reaches 100%: armour never passes 90%, the sum of all sources never passes 90%, and a hit always does at least 1.
+- **Armour health** = round(ARMOR_HP[piece][tier] × RAR_MULT[rarity]); **defense** = max(ARMOR_DEF[piece][tier] + rarity, round(ARMOR_DEF × RAR_MULT)). A player's health is `(20 f(L) + gear health) × (1 + passives) × (1 + symbol)`; damage taken is cut by `def / (def + 60)` up to 60% negation (defense 90) and then softly capped toward 90% (`defRed`): the maxed level-30 set (576 defense) negates 84%, not 91%; a hit always does at least 10% (`DMG_TAKEN_MIN`). The worst case on one hiker, worked out from the data: the best piece of every slot (726 defense) negates 85.5%; Iron Will (8.6%) makes it 86.7%; the strongest skill buff (0.0%) and the best guard potion (40.0%) on top would make it 92.0% by plain multiplication, and the floor holds it at 90.0%. Nothing in the game reaches 100%: armour never passes 90%, the sum of all sources never passes 90%, and a hit always does at least 1.
 - **Price** = round(PRICE[tier] × SLOT_PRICE[piece] × 3^rarity); sells for 40% (`sellPrice`). Only **common** items are in the shops, unlimited, each copy bought costs 20% of the base more until sunrise.
 - **Level**: an item needs `lv` = TIER_LV[tier] (1, 5, 10, 15, 20, 25) to be worn. Tiers 1-4 are the home forest's, 5-6 the Sakura Vale's samurai gear; **tier 6 is the top of the world's gear**: levels 25-30 (the Hoarfrost Reach) still drop tier 6; the level-30 dungeon pieces (section 7) are a tier above and only dungeons pay them.
 - **Rarity** (Common ×1, Rare ×1.3, Epic ×1.7, Unique ×2.2, Legendary ×3): 3 identical items merge into one of the next rarity at the forge (same tier needed). Drops: a monster 2% common, 0.5% rare, 0.1% epic per kill; a boss 50 / 10 / 3 / 1 / 0.1% (common to legendary). The rarity is rolled first, then one of the seven pieces with equal chance, of the tier of the monster's level (`tierFor`).
@@ -364,7 +364,7 @@ Three tool slots (`eq.pick`, `eq.axe`, `eq.sickle`), the same 6 tiers and 5 rari
 
 A tier above the six of section 3, paid **only by dungeons**: level 30 (`DG_GEAR_LV`), not in `TIER_LV` / `ITEM_LIST`, so shops, drops, "give every item" and `tierFor` never see them (they are in `ITEM` and carry `dg:true`). 7 pieces and 7 rings, 5 rarities each, each of them enhanced from +0 up to **+2 / +4 / +6 / +8 / +10** (by rarity): 665 ids. Tempering Stones raise a piece one step (step n costs n stones) and add 10% of its own stats per step; they drop from normal monsters of level 30+ at 2.6% instead of equipment. One clear of a dungeon pays one random piece of its pool: the rarity is Common 70%, Rare 25%, Epic 4%, Unique 0.8%, Legendary 0.2%, then one kind of the pool with equal chance; everyone in the party gets the same piece.
 
-Ids: `<piece>7[-r|-e|-u|-l][+n]` (`sword7-e+3` is an epic level-30 sword at +3) and `ring-<element>[-r|-e|-u|-l][+n]` (`ring-fire-l+10`). The tables list the **+0 base of each of the 14 kinds × 5 rarities** and, in the last stat column, the stat at every step from +0 to the rarity's maximum, so every id is covered. A ring adds a flat number of **attack** (its own, added to your weapon's before everything else) and only when its element is your soul's (`basic` is the plain ring, for an unbound soul).
+Ids: `<piece>7[-r|-e|-u|-l][+n]` (`sword7-e+3` is an epic level-30 sword at +3) and `ring-<element>[-r|-e|-u|-l][+n]` (`ring-fire-l+10`). The tables list the **+0 base of each of the 14 kinds × 5 rarities** and, in the last stat column, the stat at every step from +0 to the rarity's maximum, so every id is covered. A ring adds a flat number of **attack** (its own, added to your weapon's before everything else), whatever its element.
 
 ### 7.1 Weapons (15)
 
@@ -419,7 +419,7 @@ Names `DG_NAMES`; health `DG_HP` and defense `DG_DEF` src/shared/dungeon-rewards
 
 Names `RING_NAMES` src/shared/dungeon-rewards.js:27; a common ring adds `RING_ATK` = 20 attack (× the rarity multiplier × the enhancement), shown in the stat columns.
 
-| Id | Name | Req Lv | Rarity | Attack (matching soul) | Price | Sell | Max | Stat at +0, +1 ... +max | Paid by | Ref |
+| Id | Name | Req Lv | Rarity | Attack | Price | Sell | Max | Stat at +0, +1 ... +max | Paid by | Ref |
 |---|---|---|---|---|---|---|---|---|---|---|
 | `ring-basic` | Plain Barrow Ring | 30 | Common | +20 | 36000 | 14400 | +2 | +20, +22, +24 | Bonefrost Barrow | RING_NAMES.basic |
 | `ring-basic-r` | Rare Plain Barrow Ring | 30 | Rare | +26 | 108000 | 43200 | +4 | +26, +29, +31, +34, +36 | Bonefrost Barrow | RING_NAMES.basic |

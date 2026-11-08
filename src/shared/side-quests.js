@@ -10,7 +10,7 @@
    test: tools/sidequests-smoke.js. doc: docs/SIDE-QUESTS.md. Story rules: docs/STORY.md section 0 (hints only, every hint has two readings). */
 // the villages of the people who give or take a step (VILS index + 1); a talk only counts in (or at the gate of) their village
 const SQ_NPC_VIL={oskar:1,bram:1,linnea:1,chiyo:2,ryu:2,kaede:2,sigrun:3,hallvard:3,ylva:3,omar:5,zahra:5,amal:5,maeve:6,brannoch:6,nuala:6,maelis:6,warden_ross:6,oruvi:7,hask:7,wiru:7,ennu:7,kesi:7,tamsa:7,makoa:8,lani:8,eleaka:8,hina:8,mele:8,nalu:8,kekoa:8};
-const SQ_NAMES={oskar:'Oskar',bram:'Bram',linnea:'Healer Linnea',chiyo:'Grandmother Chiyo',ryu:'Master Ryu',kaede:'Soul-reader Kaede',sigrun:'Old Sigrun',hallvard:'Hallvard',ylva:'Alchemist Ylva',
+const SQ_NAMES={oskar:'Oskar',bram:'Bram',linnea:'Healer Linnea',chiyo:'Grandmother Chiyo',ryu:'Master Ryu',kaede:'Shrine-keeper Kaede',sigrun:'Old Sigrun',hallvard:'Hallvard',ylva:'Alchemist Ylva',
   omar:'Captain Omar',zahra:'Marshal Zahra',amal:'Healer Amal',maeve:'Reeve Maeve',brannoch:'Brannoch',nuala:'Healer Nuala',maelis:'Keeper Maelis',warden_ross:'Warden Ross',oruvi:'Warden Oruvi',hask:'Brindle Hask',wiru:'Healer Wiru',ennu:'High Watch Ennu',kesi:'Kesi',tamsa:'Elder Tamsa',makoa:'Chief Makoa',lani:'Lani',eleaka:'Eleaka',hina:'Elder Hina',mele:'Mele',nalu:'Healer Nalu',kekoa:'Kekoa'};
 const SQ_VIL_NAMES=['Wildwood','Hanami','Rimehold','Highmark','Glasswell','Wraithwick','Tallgrass','Coralhaven'];
 // the places a visit part walks you to: {x, z, r (how close counts), name}

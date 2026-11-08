@@ -36,14 +36,13 @@ function guidePages(){
     skills:{t:'Skills',h:`
       <h4>Slots</h4>
       <p>Each class has three attack slots: the basic attack, a <b>skill</b> (level ${SKILL_SLOT_LV}) and a <b>Power skill</b> (level ${BURST_SLOT_LV}). Buy skills in the skills window (${kl(k('skills'))}) and drag them onto a slot. Cooldowns belong to the slot, so swapping skills does not reset them.</p>
-      <h4>Boss skills</h4>
-      <p>Every boss has six skills it can drop, about a 10% chance per skill per kill for each player who helped. They cannot be bought.</p>
-      <h4>Soul and elements</h4>
-      <p>At level ${SOUL_LV} the shrine maiden in Hanami binds a <b>soul</b>: your skills of that element hit harder (x1.5), and the opposite element hurts less. Elements are on skills and monsters; pick skills that beat what you hunt.</p>
+      <h4>Elements</h4>
+      <p>Skills and monsters carry elements, and the wheel decides: <b>water</b> beats fire, fire beats <b>air</b>, air beats <b>earth</b>, earth beats water, and <b>dark</b> and <b>light</b> beat each other. A skill that beats the monster's element deals x1.5; a skill of its own element, or of one it beats, deals x1/1.5. A skill with no element (Basic) deals x1.1 to every monster. The target frame shows what a monster is weak to and what it resists.</p>
+      <p>Weaken and expose (a monster deals less / takes more) never add up on one monster: the strongest counts, for everyone in the party.</p>
       <h4>Passives</h4>
-      <p>Passive skills work all the time, whatever your class. Their slots open at levels ${PASSIVE_SLOT_LV.join(', ')}.</p>`},
+      <p>Passive skills work all the time, whatever your class. You have one passive slot, open from level ${PASSIVE_LV}.</p>`},
     sets:{t:'Skill sets',h:`
-      <p>A skill set is one character's signature kit: <b>six pieces</b> (three attacks for the basic, skill and Power slots, and three passives), a symbol, usually an element, two set bonuses and a matching <b>outfit</b>. Every land has its own sets.</p>
+      <p>A skill set is one character's signature kit: <b>six pieces</b> (three attacks for the basic, skill and Power slots, and three passives), a symbol, usually an element and a matching <b>outfit</b>. Every land has its own sets.</p>
       <h4>How to get the pieces</h4>
       <ul>
         <li>The land's <b>first world boss</b> can drop the set's first attack and passive, the <b>second world boss</b> the second pair, and the land's <b>dungeon boss</b> the third pair.</li>
@@ -51,7 +50,7 @@ function guidePages(){
         <li>In this version every set can also be unlocked from Settings for testing.</li>
       </ul>
       <h4>Using a set</h4>
-      <p>Owned pieces show up in the skills window (${kl(k('skills'))}) with the set's own symbol. Drag attacks onto the three slots and passives onto the passive slots. The window's set effects card shows what you wear: <b>3 pieces</b> of one set light its first bonus and <b>5 pieces</b> its second. You can mix pieces of two sets (3 + 3) to get both first bonuses.</p>
+      <p>Owned pieces show up in the skills window (${kl(k('skills'))}) with the set's own symbol. Drag attacks onto the three slots and a passive onto the passive slot. The window's set pieces card shows what you wear. The 3-piece and 5-piece set bonuses are switched off for now.</p>
       <h4>Levelling a piece</h4>
       <p>Signature pieces go from level 2 to 5 like other skills, but ask three times the usual monster drops and also <b>raid material</b> of the set's land (a single one for level 2). Clear that land's ruined stronghold (the raid) to earn it: the more difficult the tier you clear, the more you get (1, 2, 4, 8... for tiers 0, I, II, III...). A cleared raid rebuilds 30 minutes later.</p>
       <h4>The outfit</h4>
@@ -62,7 +61,7 @@ function guidePages(){
       <ul>
         <li><b>Armour:</b> helmet, top, bottom and shoes raise your health and defence.</li>
         <li><b>Weapon:</b> sets your class and your damage. Pick up a bow or a staff to play archer or mage.</li>
-        <li><b>Ring and pendant:</b> from dungeons (level 30 and 40). A ring adds attack only when its element matches your soul; a pendant gives one bonus such as XP, drops, coins or crits.</li>
+        <li><b>Ring and pendant:</b> from dungeons (level 30 and 40). A ring adds flat attack; a pendant gives one bonus such as XP, drops, coins or crits.</li>
         <li><b>Tools:</b> pickaxe, axe and sickle for the three professions.</li>
       </ul>
       <p>Open the inventory with ${kl(k('inv'))}, click an item to wear it. Gear has a level; wear what is near your own.</p>
@@ -78,20 +77,20 @@ function guidePages(){
       <p>Common, Rare, Epic, Unique, Legendary: each multiplies the stats (x1, 1.3, 1.7, 2.2, 3). Tempering Stones then add +1, +2... on top, and level-40 pieces can be rerolled at the forge.</p>`},
     upgrades:{t:'Upgrades',h:`
       <h4>Upgrading a skill</h4>
-      <p>Every bought skill goes up to level 5 (boss skills cannot be upgraded yet). Each level adds <b>+12% damage and shorter cooldown</b>. An upgrade costs <b>coins</b> (more for each level) and <b>monster drops</b>: materials that monsters leave behind (about a third of kills), of a kind that fits the skill's level. Level 5 also asks for two boss trophies. Open the skill in the skills window to see what it still needs.</p>
+      <p>Every bought skill goes up to level 5. Each level adds <b>+12% damage and shorter cooldown</b>. An upgrade costs <b>coins</b> (more for each level) and <b>monster drops</b>: materials that monsters leave behind (about a third of kills), of a kind that fits the skill's level. Level 5 also asks for two boss trophies. Open the skill in the skills window to see what it still needs.</p>
       <h4>Gear</h4>
       <p>Weapons and armour improve with your level and come in five rarities: Common, Rare, Epic, Unique, Legendary (stats x1, 1.3, 1.7, 2.2, 3). <b>Three identical items merge into the next rarity at the forge.</b> Shops never run out, but each copy you buy costs 20% more until sunrise.</p>
       <h4>Dungeon gear: rings, pendants, tempering</h4>
       <ul>
         <li>Dungeons pay level-30 weapons, armour, <b>rings</b> and <b>pendants</b>.</li>
-        <li>A ring adds flat attack, but only when its element matches your soul.</li>
+        <li>A ring adds flat attack.</li>
         <li>A pendant gives one bonus: more XP, more drops, more coins, higher crit chance or stronger crits.</li>
         <li><b>Tempering Stones</b> raise a piece +1, +2... (up to +2 for Common, up to +10 for Legendary); each step adds 10% of its power.</li>
       </ul>
       <h4>Level-40 gear: rolled lines</h4>
       <ul>
         <li>A level-40 weapon or armour piece starts <b>unrolled</b>. Spend a <b>Reroll Stone</b> at the forge's <b>Roll</b> tab to give it three lines out of 13 stats; roll again to replace all three.</li>
-        <li>Weapons roll higher offence (attack, crits, reactions, attack speed), armour higher defence (health, defense). XP, drops, coins, cooldown and buff duration roll the same on both.</li>
+        <li>Weapons roll higher offence (attack, crits, attack speed), armour higher defence (health, defense). XP, drops, coins, cooldown and buff duration roll the same on both.</li>
         <li>The <b>Sacrifice</b> tab turns a spare level-30 or level-40 weapon or armour piece into stones: 1 / 2 / 4 / 8 / 16 by rarity. Weapon pieces make weapon stones, armour makes armour stones.</li>
         <li>Cooldown reduction from gear stops at 40%. <b>Attack speed</b> makes skill 1 swing faster and every skill cast faster (cooldowns stay); it also fills a held skill 1 sooner. <b>Charge gain</b> raises the Deep Cave charge your casts earn.</li>
       </ul>
@@ -112,7 +111,6 @@ function guidePages(){
         <li><b>The Hollowed Elder</b> (the home forest), <b>the Falls Door</b> (Sakura Vale), <b>the Barrow Door</b> (Hoarfrost Reach), <b>the Old Adit</b> (the Greyspine), <b>the Sandglass Door</b> (the Sunscar, in the desert south of Glasswell) <b>the Gloamvault Door</b> (the Gloamhorn, in the cliffs of Vault Heath) <b>the Termite Cathedral Door</b> (the Amber Reach, at the foot of a clay spire) and <b>the Cenote of Hollow Stars Door</b> (the Emberwake Isles, a mossy arch on the jungle floor): eight dungeons. The first four need level ${DG_ENTRY_LV}, at every difficulty (the difficulty tiers make monsters harder, not the way in); the Sandglass and the Gloamvault are level 40 with a level-40 boss and need level ${DG_THEMES.sandglass?DG_THEMES.sandglass.entry:36} and ${DG_THEMES.gloamvault?DG_THEMES.gloamvault.entry:38}; the Termite Cathedral is level 45 and needs level ${DG_THEMES.termitecathedral?DG_THEMES.termitecathedral.entry:42}; the Cenote is level 48 and needs level ${DG_THEMES.cenote?DG_THEMES.cenote.entry:45}. Each opens once you have reached that land's village; the home forest's also needs difficulty +1, unlocked by beating Carapax.</li>
       </ul>
       <p>Dungeons drop level-30 rings, pendants and other gear (the Sandglass a level-40 weapon, the Gloamvault a level-40 armour piece, the Termite Cathedral a level-40 ring, the Cenote of Hollow Stars a level-40 pendant), and Tempering Stones to improve it. If you fall in a run a party member can revive you; you can leave through the portal and keep what you already found.</p>`},
-    reactions:{t:'Reactions',h:guideReactions()},
     pvp:{t:'PvP island',h:`
       <p>The <b>Proving Isle</b> is a round island in a lake on the home forest's south beach, with the open sea behind it. Follow the Shore Road all the way south and take the side road, <b>The Proving Road</b>, east; its plank bridge leads to a gate with red banners.</p>
       <ul>
@@ -143,18 +141,6 @@ function guideAllSets(){
       <p class="gu-look">${pal} <span>Look: ${S.char.theme}. A signature outfit in the editor's Signature tab.</span></p>
       <p>Kit: ${role}. Element: ${el(S.el)}.</p><ul>${pieces}</ul><p>${bon(3)}<br>${bon(5)}</p></div>`; }).join('');
   return `<p>Every released skill set, by land and difficulty. A set drops only from its own land's two bosses and dungeon boss, cleared at the tier shown or higher.</p>${cards}`;
-}
-// the elemental reactions page, written from the chart itself (shared/reactions-chart.js) so it cannot drift
-const GUIDE_FLAVOR={fire:'burns',water:'slows',earth:'briefly stuns',air:'spreads the aura to enemies within '+RX_SPREAD_R+' m',dark:'weakens (it deals less)',light:'exposes (it takes more damage)'};
-function guideReactions(){
-  const el=e=>e[0].toUpperCase()+e.slice(1), rows=Object.keys(RX_CHART).sort().map(k=>{ const r=RX_CHART[k];
-    return `<tr><td><b>${r.name}</b></td><td>${el(r.a)} + ${el(r.b)}</td><td>${GUIDE_FLAVOR[r.a]} and ${GUIDE_FLAVOR[r.b]}${r.burst?', plus a burst of '+Math.round(r.burst*100)+'% of the hit':''}${r.k>RX_REACT_K?' (at full strength)':''}</td></tr>`; }).join('');
-  return `<p>A hit from an element skill leaves an <b>aura</b> on the monster for ${RX_AURA_DUR} seconds. Hit that monster with a <i>different</i> element while the aura is live and the two <b>react</b>: the aura is used up and both elements' effects land on the monster. The same element only refreshes the aura, and basic attacks do not count.</p>
-    <h4>What each element does</h4>
-    <dl><dt>Fire</dt><dd>burns the monster over time</dd><dt>Water</dt><dd>slows it</dd><dt>Earth</dt><dd>stuns it for a moment (never bosses)</dd><dt>Air</dt><dd>spreads the aura to nearby enemies</dd><dt>Dark</dt><dd>weakens it, so it hits less hard</dd><dt>Light</dt><dd>makes it take more damage</dd></dl>
-    <h4>The fifteen reactions</h4>
-    <table class="gu-tab"><tbody>${rows}</tbody></table>
-    <p>The same pair cannot react again on one monster for ${RX_ICD} seconds. Weaken and expose never add up: the strongest one counts, for everyone in the party.</p>`;
 }
 function guideSave(){ try{ localStorage.setItem(GUIDE_TAB_KEY,guideTab); }catch(_){} }
 function renderGuide(){

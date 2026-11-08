@@ -27,7 +27,10 @@ defineSkillSet({
   ult:{name:'Harvest Moon', desc:'A full turn of the scythe under a rising moon: a 12 m ring drags every enemy to her and a sheaf of straw binds them.', range:12, mult:2.7, act:['tansyult',1.1,0.6], anim:'nova',
        fx:{ring:{r:12, kb:-4}},
        boost:[{piece:'a2', secs:14, mod:{size:1.4, cd:0.5}}, {piece:'p2', secs:14, mod:{v:2}}]},
-  bonus:{
-    3:{name:'Windrow', text:'A kill takes 1 s off every cooldown (at most every 2 s)', on:'kill', icd:2, cdr:{all:1}},
-    5:{name:'Full Basket', text:'While three or more enemies are within 8 m, every 4 s a shockwave rolls out 8 m for 80% damage', on:'tick', icd:4, when:{crowd:{n:3, r:8}}, mult:1.6, range:8, fx:{vsBoss:0.5, ring:{r:8, kb:2}}}},
+  tree:'pine', stone:'Sickle Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'tansy_p1',
+    2:{name:'Windrow', text:'A kill takes 1 s off every cooldown (at most every 2 s)', on:'kill', icd:2, cdr:{all:1}},
+    4:'tansy_p3',
+    6:{name:'Full Basket', text:'While three or more enemies are within 8 m, every 4 s a shockwave rolls out 8 m for 80% damage', on:'tick', icd:4, when:{crowd:{n:3, r:8}}, mult:1.6, range:8, fx:{vsBoss:0.5, ring:{r:8, kb:2}}}},
 });

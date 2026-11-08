@@ -1,5 +1,5 @@
 //@ Dessa's skill set, The Anvil in the Road (a tank, earth): a hammer that makes them turn, an anvil set down for the herd to break on, and a stand that spends the Temper; slate, forge orange and iron
-/* Agent map. Kit: docs/skillkits/kit-tank.md (the main tank, nothing else: her anvil is a place to stand); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces earth: a held pack carries the aura a partner reacts with);
+/* Agent map. Kit: docs/skillkits/kit-tank.md (the main tank, nothing else: her anvil is a place to stand); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces earth);
    outfit: game/outfits/dessa.js, docs/skillkits/looks/dessa.md; visuals: none yet, drawn like a generic skill. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js,
    tools/skillsets-ladder.js --set dessa. Land: the Amber Reach (tier 2). Mark: Temper. The third tank (Torgeir: one big wall; Genzo: a bell that heals): Dessa is a PLACE, not a moment. Anvil Down plants a zone (guard and a shield
    for the allies standing in it, a slow and a taunt for what enters), and she hardens with the crowd round her (damage reduction with enemies near), so she wants the herd to come to her. */
@@ -13,7 +13,7 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Hammer Fall', desc:'Bring the long hammer down: a heavy blow, and everything it hits turns on you for 3 seconds. Leaves Temper.', cd:1.0, range:3.4, mult:0.9, act:['dessa1w',0.55,0.4], anim:'slash',
+         warrior:{name:'Hammer Fall', desc:'Bring the long hammer down: a heavy blow, and everything it hits turns on you for 3 seconds. Leaves Temper.', cd:1.0, range:3.4, mult:0.6, act:['dessa1w',0.55,0.4], anim:'slash',
                   fx:{cone:{r:3.4, arc:1.0, kb:2, taunt:{dur:3}, mark:{id:'temper', n:1, dur:12, max:5}}}}},
        passive:{name:'Hide Like a Wall', text:'{}% less damage taken while 3 enemies are within 6 m of you', stat:'red', v:[0.10, 0.01], when:{crowd:{n:3, r:6}}}},
     2:{bound:'any',
@@ -27,7 +27,10 @@ defineSkillSet({
   ult:{name:'Strike While Hot', desc:'A glowing anvil falls on the target (7 m) and leaves 5 Temper on everything it hits; the stunned stand ringing.', range:7, mult:1.8, act:['dessault',1.0,0.6], anim:'nova',
        fx:{ring:{r:7, kb:2, mark:{id:'temper', n:5, dur:12, max:5}}},
        boost:[{piece:'a3', secs:10, mod:{mult:2, util:2}}, {piece:'p1', secs:14, mod:{v:2}}]},
-  bonus:{
-    3:{name:'Hot Iron', text:'When you are hit, sparks leap 4 m round you for 50% damage and leave Temper (at most every 4 s)', on:'hurt', icd:4, mult:0.5, range:4, fx:{ring:{r:4, mark:{id:'temper', n:1, dur:12, max:5}}}},
-    5:{name:'The Anvil Holds', text:'When you drop below 35% health, the anvil rings: you heal 15% and you and your allies within 20 m take 20% less damage and carry a shield worth 10% of health for 8 s (at most every 25 s)', on:'low', below:0.35, icd:25, heal:0.15, shield:{v:0.10, dur:8}, buff:{kind:'guard', v:0.2, dur:8, r:20}}},
+  tree:'pine', stone:'Anvil Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'dessa_p2',
+    2:{name:'Hot Iron', text:'When you are hit, sparks leap 4 m round you for 50% damage and leave Temper (at most every 4 s)', on:'hurt', icd:4, mult:0.5, range:4, fx:{ring:{r:4, mark:{id:'temper', n:1, dur:12, max:5}}}},
+    4:'dessa_p3',
+    6:{name:'The Anvil Holds', text:'When you drop below 35% health, the anvil rings: you heal 15% and you and your allies within 20 m take 20% less damage and carry a shield worth 10% of health for 8 s (at most every 25 s)', on:'low', below:0.35, icd:25, heal:0.15, shield:{v:0.10, dur:8}, buff:{kind:'guard', v:0.2, dur:8, r:20}}},
 });

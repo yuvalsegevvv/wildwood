@@ -1,22 +1,10 @@
-//@ The visuals that follow the text, for the generic skills (the shop's and the bosses'): waves of arrows in the number the text says, pulls and shoves as travelling waves, a gate, a thundercloud, beams that hit twice
+//@ The visuals that follow the text, for the generic skills (the shop's): waves of arrows in the number the text says, pulls and shoves as travelling waves, beams that hit twice
 /* Agent map. Same engine as the sets (combat/skill-vis.js, skill-props.js), driven from the skill row instead of a look: skgCast (from fxVisuals, skill-fx.js) runs a skill's 'cast' recipe from SKG_BY_ID and remembers the cast;
    skgZone (from onArea) matches the zone the server then starts to that cast (same radius, within 3.5 s) and runs its 'zone' recipe, adds a wave front for every pull (kb < 0, inward) or shove (kb > 0) and a pulse for every tick;
    skgWaveGate (from the rain / hail / blizzard loops) lets arrows fall in the SKG_WAVES the text counts. SKG_BY_ID holds the recipes (the same verbs and options as a look's `vis`). A pseudo-look in the skill's element colour
    stands in for L. Test: client-smoke (every generic skill is cast; every recipe is checked). */
 const SKG_WAVES={rain:5, hail:8, blizzard:10};   // "5 waves over 2.5 seconds", "8 waves over 4 seconds", "10 waves of ice"
-const SKG_BY_ID={
-  gate:{zone:[{prop:{kind:'gate',anim:'rise',size:1.5,life:1.6,cols:[0,6,'hot']}},{shake:{v:0.3,at:1.5}}]},   // Demon Gate: a gate stands over the area and slams shut
-  thunderhead:{zone:[{prop:{kind:'cloud',anim:'hover',h:7,size:2.4,life:4.9,cols:[0,'hot']}}]},   // a thundercloud over the area
-  nightfall:{zone:[{prop:{kind:'moon',anim:'hover',h:11,size:2.2,life:5.9,cols:[3,'hot']}}]},   // night falls: a pale moon comes up over it
-  glassstorm:{zone:[{prop:{kind:'mirror',n:5,arr:'ring',rk:0.55,anim:'rise',stagger:0.08,size:1.3,life:4.8,cols:[5,6]}}]},   // a storm of black glass: mirrors stand round it
-  avalanche:{zone:[{prop:{kind:'terrace',n:9,arr:'scatter',rk:0.8,anim:'drop',fall:9,stagger:0.45,size:0.9,life:2.2,cols:[4]}}]},   // a slide of rock
-  herdrain:{zone:[{prop:{kind:'terrace',n:10,arr:'scatter',rk:0.8,anim:'drop',fall:11,stagger:0.4,size:0.7,life:2.2,cols:[4]}}]},   // grey stones fall
-  mirrorbreak:{cast:[{prop:{kind:'mirror',n:6,arr:'ring',r:3,anim:'collapse',stagger:0.03,size:1.1,life:1.1,cols:[5,6]}},{shake:0.4}]},   // a black mirror smashed at your feet
-  anvilstrike:{cast:[{prop:{kind:'anvil',anim:'drop',fall:9,size:2.2,life:1.4,cols:[0,1]}},{shake:{v:0.45,at:0.25}}]},   // the whole storm comes down at once
-  snare:{cast:[{prop:{kind:'spear',n:8,arr:'ring',r:3.6,anim:'rise',stagger:0.04,size:0.9,life:1.4,cols:[4,3]}}]},   // thorned roots lash out
-  quakeslam:{cast:[{prop:{kind:'fissure',anim:'rise',len:8,life:1.6,cols:[3]}},{shake:0.4}]},
-  stonebind:{cast:[{prop:{kind:'spear',n:10,arr:'ring',r:4,anim:'rise',stagger:0.03,size:0.8,life:2.2,cols:[4]}}]},   // stone closes round the feet
-  eclipse:{cast:[{prop:{kind:'sun',anim:'hover',h:4,size:1.6,life:0.9,cols:[0x120c1c,0x7a4aa0]}},{flash:{col:0x20102c,a:0.3}}]}   // the light goes out for a heartbeat
+const SKG_BY_ID={   // (the boss skills' recipes left with the boss skills; a shop skill with fx would add its recipe here)
 };
 const skgMix=(c,w)=>new THREE.Color(c).lerp(new THREE.Color(0xffffff),w).getHex();
 function skgLook(col){   // the stand-in for a look: the skill's colour, a paler one, and a few earth tones for props

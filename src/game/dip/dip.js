@@ -36,10 +36,11 @@ const dipFmt=n=>Math.round(n).toLocaleString('en-US');
 function dipRender(){
   const el=$('#dipBody'); if(!el||$('#dip').hidden) return; const I=DIP_UI.info;
   if(!I){ el.textContent='Looking at the pipe...'; return; }
-  const sel=DIP_UI.sel<0||DIP_UI.sel>I.lv?I.lv:DIP_UI.sel, cost=I.costs?I.costs[sel]:I.cost, S=DIP_BY_ID[I.id], lvs=S.defs.map(d=>dipKindLv(S,d)), names='all '+S.defs.length+' kinds of this land (levels '+Math.min(...lvs)+'-'+Math.max(...lvs)+')', left=dipLeft(I.id), coins=GEAR?GEAR.coins:0, have=(GEAR&&GEAR.mats)||{};
+  const sel=DIP_UI.sel<0||DIP_UI.sel>I.lv?I.lv:DIP_UI.sel, cost=I.lure&&I.lureCosts?I.lureCosts[sel]:(I.costs?I.costs[sel]:I.cost), S=DIP_BY_ID[I.id], lvs=S.defs.map(d=>dipKindLv(S,d)), names='all '+S.defs.length+' kinds of this land (levels '+Math.min(...lvs)+'-'+Math.max(...lvs)+')', left=dipLeft(I.id), coins=GEAR?GEAR.coins:0, have=(GEAR&&GEAR.mats)||{};
   let h='<p class="dp-line">Level <b>'+I.lv+' / '+I.max+'</b> · up to <b>'+I.count+'</b> monsters, refilled every <b>'+I.every+' s</b>, for 10 minutes</p>'
     +'<p class="dp-sub">Monsters: '+names+(S.land==='home'&&S.defs.some(d=>d.level<DIP_HOME_MIN_LV)?'; the weak ones fight at level '+DIP_HOME_MIN_LV+' here':'')+'. They drop fewer materials than usual.</p>'
     +(I.lv>0?'<p class="dp-sub">Release at level <select id="dipSel">'+Array.from({length:I.lv+1},(_,i)=>'<option value="'+i+'"'+(i===sel?' selected':'')+'>'+i+(i===I.lv?' (yours)':'')+'</option>').join('')+'</select> · '+DIP_COUNT[sel]+' monsters, every '+DIP_INTERVAL[sel]+' s</p>':'')
+    +'<p class="dp-sub">Lure <select id="dipLure"><option value="">none</option>'+S.defs.map(d=>'<option value="'+d.id+'"'+(I.lure===d.id?' selected':'')+'>'+d.name+'</option>').join('')+'</select> · '+(I.lure?'half the spawns are this kind; the release costs x'+DIP_LURE_COST:'no lure: the normal mix and price')+'</p>'
     +'<div class="tr-btns"><button class="chip buy" data-dp="go"'+(left||coins<cost?' disabled':'')+'>'+(left?'Dark energy: '+Math.floor(left/60)+':'+String(left%60).padStart(2,'0'):'Release dark energy · '+dipFmt(cost)+' coins')+'</button></div>';
   if(I.needs){
     const ok=I.needs.every(([id,n])=>(have[id]||0)>=n);
@@ -50,13 +51,14 @@ function dipRender(){
   h+='<p class="tr-note">Upgrade materials drop from the monsters of this land. Releasing costs coins: half of what killing every monster before each refill would pay.</p>';
   el.innerHTML=h;
   el.querySelectorAll('[data-dp]').forEach(b=>b.onclick=()=>{ UI_SFX.click(); netSend({t:'dip',a:b.dataset.dp,id:I.id,lv:b.dataset.dp==='go'?sel:undefined}); });
+  const lu=el.querySelector('#dipLure'); if(lu) lu.onchange=()=>{ UI_SFX.click(); netSend({t:'dip',a:'lure',id:I.id,k:lu.value}); };
   const ss=el.querySelector('#dipSel'); if(ss) ss.onchange=()=>{ DIP_UI.sel=+ss.value; dipRender(); };
 }
 let dipT=0;
 function dipUpdate(dt){
   if(!DIP_VIEW.length) return; dipT+=dt; const now=Date.now();
   for(const v of DIP_VIEW){ const on=(DIP_UI.act[v.S.id]||0)>now; v.mouthM.color.setHex(on?0xd890ff:0x6a2a9a); v.colM.opacity+=((on?0.28+Math.sin(dipT*3)*0.06:0)-v.colM.opacity)*Math.min(1,dt*3); v.col.visible=v.colM.opacity>0.01; v.col.rotation.y=dipT*0.6; for(const c of v.cry){ c.rotation.y=dipT*(on?1.6:0.5); } }
-  if(!$('#dip').hidden){ const S=DIP_BY_ID[DIP_UI.id]; if(!S||Math.hypot(P.x-S.x,P.z-S.z)>DIP_SIDE) closePanels(); else if(dipT%1<dt&&document.activeElement!==$('#dipSel')) dipRender(); }
+  if(!$('#dip').hidden){ const S=DIP_BY_ID[DIP_UI.id]; if(!S||Math.hypot(P.x-S.x,P.z-S.z)>DIP_SIDE) closePanels(); else if(dipT%1<dt&&document.activeElement!==$('#dipSel')&&document.activeElement!==$('#dipLure')) dipRender(); }
 }
 // the full map's marker for each pipe in the land being drawn (ctx, world -> canvas, land key, font size, label(), pixel ratio)
 function dipMapMarks(x,at,land,fs,label,dpr){

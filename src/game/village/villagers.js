@@ -5,7 +5,7 @@
      name      shown when you talk to them
      title     shown above their head with their name (their profession)
      role      'weaponsmith' / 'armorer' open a shop, 'quests' opens that villager's quest list, 'forge' opens the merge forge, 'trainer' opens the skills panel with lessons to buy,
-               'soul' opens the Soul Hall where you bind your element, 'lodge' opens the Wayfarers' Lodge where you learn professions (null = just chat)
+               'lodge' opens the Wayfarers' Lodge where you learn professions (null = just chat)
      look      any character-editor fields (sex, hair, top, colors...); anything missing is random
      behavior  { type:'stationary', at:'<anchor>', pose:'sit' (optional) }
                { type:'patrol', route:['<anchor>', ...], pause:seconds }
@@ -96,6 +96,11 @@ const VILLAGERS=[
     look:{height:0.82,build:0.85,face:'round',hair:'short',top:'tshirt',topColor:0x6a8ac8,bottom:'trousers',bottomColor:0x6a6e74,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2a1e,facial:'none',chest:0.6},
     behavior:{type:'stationary',at:'well'}, atFn:()=>mqStoryAt('wren0',mqG()), home:'house:0', schedule:'always', voice:{rate:1.05,pitch:1.35},
     lines:['The hens first, or they sulk. Then the Sheaf-Crown game, and nobody cheats.','Bring back the crown. And don\'t let Tansy cheat.','Blue ribbon, blue ribbon. The roots know our names, you know.'] },
+  // the orb stall (skills revamp step 13): Bond Orbs for 1 coin each, across the well from Aldric (role 'orbs': game/bond/orbs.js)
+  { id:'orla', late:true, title:'Orb stall · Bond Orbs', name:'Orla', role:'orbs',
+    look:{sex:'female',height:0.99,build:0.95,face:'oval',hair:'bun',hairColor:0x5a3a6a,chest:1.0,top:'jacket',topColor:0x6a4a8a,bottom:'skirt',bottomColor:0x3a2a4a,hat:'none',pack:false,shoes:'boots',shoeColor:0x2a1e14,facial:'none'},
+    behavior:{type:'stationary',at:'well:far'}, home:'house:3', schedule:'always', voice:{rate:1.0,pitch:1.1},
+    lines:['Bond Orbs, one coin each, any character you like. Cheap as pebbles: the luck is in opening them.','An orb opens while you play the hour\'s Stirrings: a stirring spot in every land, a boss, a dungeon or a raid. Watch the map.','Pick whose orbs open next in your pouch, or I will open the ones you hold most of.'] },
   { id:'linnea', late:true, title:'Healer · brews potions', icon:'healer', name:'Healer Linnea', role:'brew',
     look:{sex:'female',height:0.97,build:0.9,face:'oval',hair:'long',hairColor:0x8a6a4a,chest:1.0,top:'jacket',topColor:0x5a7a4a,bottom:'skirt',bottomColor:0x4a3a2a,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2a1e,facial:'none'},
     behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.9,pitch:1.05},
@@ -109,11 +114,11 @@ const VILLAGERS=[
     look:{sex:'male',height:1.02,build:1.05,face:'oval',hair:'short',hairColor:0x3a2a20,facial:'stubble',top:'jacket',topColor:0x5a4a6a,bottom:'trousers',bottomColor:0x2b2b2e,hat:'ranger',hatColor:0x3a3230,pack:true,shoes:'boots',shoeColor:0x2a1e14},
     behavior:{type:'stationary',at:'cart'}, home:'house:4', schedule:'always', voice:{rate:1.1,pitch:0.95},
     lines:['Cherry blossoms all year round. Somebody here is very good at gardening.','The bridge was long, but I have a good lamp. A very good lamp.','Buy something, sell something. The roads do not pay for themselves.'] },
-  // the Soul Hall: bind your soul to an element from level 15 (panel: economy/soul.js). late: spawned after everyone else, see above
-  { id:'kaede', vil:2, late:true, title:'Soul Hall', name:'Soul-reader Kaede', role:'soul',
+  // the keeper of the stone garden (no panel since the soul was removed; she gives main and side quests). late: spawned after everyone else, see above
+  { id:'kaede', vil:2, late:true, title:'Stone garden', name:'Shrine-keeper Kaede', role:null,
     look:{sex:'female',height:0.97,face:'oval',hair:'long',hairColor:0x1d1714,chest:0.95,skin:0xeac8a6,top:'jacket',topColor:0xe8e4dc,bottom:'skirt',bottomColor:0xb03a3a,hat:'none',shoes:'boots',shoeColor:0x2a1e14},
     behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.85,pitch:1.15},
-    lines:['The three stones in the gravel are older than the village. Fire, water, earth, air, and the twins dark and light: every soul leans toward one.','Come to me at level 15 and I will bind your soul to an element. Your skills of that element grow stronger, and the skills of its opposite grow weaker.','Fire and water, earth and air, dark and light: each has exactly one opposite. Bind yourself as you please, and change your mind as often as you like.','Monsters have elements too, and they follow the wheel: water douses fire, fire burns air, air wears down earth, and earth drinks water, while light and dark break each other. Strike a monster with the element that beats its own and it will feel it. Strike it with its own and it will only shrug.'] },
+    lines:['The three stones in the gravel are older than the village. Fire, water, earth, air, and the twins dark and light: everything that lives here leans toward one.','Monsters have elements, and they follow the wheel: water douses fire, fire burns air, air wears down earth, and earth drinks water, while light and dark break each other. Strike a monster with the element that beats its own and it will feel it. Strike it with its own and it will only shrug.'] },
   /* ---- Rimehold, in the Hoarfrost Reach: the same jobs again, hunters and ice-fishers in furs (docs/STORY.md, docs/MAIN-QUEST.md). All late, so the other villagers keep their looks ---- */
   { id:'ragna', vil:3, late:true, title:'Quest board', name:'Ragna', role:'quests',
     look:{sex:'female',height:1.0,build:1.05,face:'angular',hair:'long',hairColor:0xc9b48a,chest:1.0,skin:0xe6c8b0,top:'jacket',topColor:0x2f4a6b,bottom:'skirt',bottomColor:0x3a3a42,hat:'none',shoes:'boots',shoeColor:0x2a1e14},

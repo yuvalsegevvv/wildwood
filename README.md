@@ -213,11 +213,10 @@ level 10-15 monsters (and the boss) have 1.5x health and give 1.5x XP and coins 
 Definitions are `SKILLS` in `src/shared/classes.js`, effects in `src/server/combat.js`, visuals in
 `src/game/combat/skill-fx.js`.
 
-### Elements and your soul
+### Elements
 
 Every skill has an element (`el` on its row in `SKILLS`; Slash, Shoot and the three buffs have none = basic), and so does every
-monster (`el` in `src/shared/monster-defs.js`). Two rules use them: your soul works on pairs of opposites (**fire / water, earth / air,
-dark / light**), and monsters work on the wheel **water beats fire beats air beats earth beats water**, with dark and light beating each other.
+monster (`el` in `src/shared/monster-defs.js`). Monsters work on the wheel **water beats fire beats air beats earth beats water**, with dark and light beating each other.
 
 | Class | Skills by element |
 |---|---|
@@ -225,16 +224,12 @@ dark / light**), and monsters work on the wheel **water beats fire beats air bea
 | Archer | air: Volley · earth: Piercing Shot · water: Arrow Rain · dark: Hail of Arrows · light: Sniper Shot |
 | Mage | fire: Firebolt, Inferno · water: Ice Shard, Frost Nova, Blizzard · dark: Arcane Missiles · air: Chain Lightning · earth: Meteor |
 
-- **Your soul.** From level 15, the soul-reader Kaede at Hanami's raked garden binds your soul to an element. It is free and
-  you can change it as often as you like (a soul is `basic` until you do). Your skills of that element deal **x1.5**, skills of
-  its opposite deal **x1/1.5**, everything else is unchanged. The panel is `src/game/economy/soul.js`, the server rule is
-  `bindSoulP` (it checks the level and that you stand in Hanami).
 - **Monsters (the wheel).** A skill whose element beats the monster's element deals **x1.5** (water on a fire monster, fire on air, air on
   earth, earth on water, dark on light, light on dark). A skill whose element the monster's element beats, or the monster's own element,
-  deals **x1/1.5** (fire on a water monster, water on an earth monster...). Anything else is unchanged. Soul and wheel stack. Your own
+  deals **x1/1.5** (fire on a water monster, water on an earth monster...). Anything else is unchanged. A skill with no element (`basic`) deals **x1.1** to every monster. Your own
   damage numbers get an arrow (up: the element helped, down: it hurt), and the target frame shows the monster's element with what it is
   weak to and what it resists.
-- Change `ELEM_BOOST` (or the two functions `soulMult` / `foeMult`) in `src/shared/elements.js` to retune all of it.
+- Change `ELEM_BOOST` / `ELEM_BASIC_K` (or `foeMult`) in `src/shared/elements.js` to retune all of it.
 
 ### Boss skills
 
@@ -286,7 +281,6 @@ upgraded like any skill. This is a first set to be replaced or extended: `PASSIV
 | Quickhands | 21 | 6% shorter cooldowns (+2%) |
 | Scavenger | 22 | +15% chance of monster drops (+5%) |
 | Scholar | 23 | +5% XP from kills (+2%) |
-| Resonance | 24 | soul element skills deal +5% more damage (+3%) |
 
 ## The quest board
 

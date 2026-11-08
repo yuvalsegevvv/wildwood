@@ -1,4 +1,4 @@
-//@ Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), the Soul Hall, testing commands
+//@ Economy on the server: equip, shops (buy / sell), loot and monster drops, quests (accept, progress, hand in), skills (learn, equip, upgrade), testing commands
 function addItemP(p,id,quiet,monId){
   if(p.gear.inv.length>=BAG_MAX){ toastTo(p.id,'Your bag is full','bad'); return; }
   p.gear.inv.push(id); p.dirty=true;
@@ -80,17 +80,18 @@ function turnInP(p,id){
   const rar=rollQuestItemRarity(r.item); if(rar>=0) addItemP(p,randomItem(tierFor(q.level),rar));
   ev('qturn',p.id,id); p.dirty=true; mqActP(p,'board'); gsTurnedInP(p,id);   // gems: a daily notice pays gems
 }
-/* ---- skills: bought from Aldric the trainer, equipped per class (passives: one loadout for every class), upgraded with coins and drops ---- */
+/* ---- skills: shop skills bought from Aldric the trainer (the Wanderer's: a set piece is never sold), equipped per class (passives: one loadout for every class); levels come from the Awakening tree ---- */
 function buySkillP(p,id){
   const s=skillDef(id); if(!s||p.gear.skills.owned.includes(id)) return;
-  if(s.drop){ toastTo(p.id,s.name+' is not for sale: '+(BOSS_DEFS.find(b=>b.def.id===s.drop)).short+' drops it','bad'); return; }
   if(s.set){ toastTo(p.id,s.name+' is not for sale: it is a signature skill, earned from a boss or a dungeon','bad'); return; }   // skillsets: a piece is never bought
+  if(s.wd){ toastTo(p.id,s.name+' is not for sale: it is a Wanderer\'s path passive (the Awakening tree\'s passive node)','bad'); return; }   // wanderer: never bought
   if(p.level<s.lv){ toastTo(p.id,s.name+' needs level '+s.lv,'bad'); return; }
   if(p.gear.coins<s.price){ toastTo(p.id,'Not enough coins','bad'); return; }
   p.gear.coins-=s.price; p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Learned '+s.name+'!','good'); ev('skillbuy',p.id,id);
 }
 // a passive goes into slot idx of the passive loadout (or the first free open one, or nowhere when they are all full); slot i opens at PASSIVE_SLOT_LV[i]
 function equipPassiveP(p,id,idx){
+  if(bdIsBondPassive(id)){ toastTo(p.id,PASSIVES[id].name+' is a Bond passive: it works by itself once the Bond is reached and enough pieces are worn','bad'); return; }   // bond: never worn
   const P=p.gear.skills.pass, need=Math.max(PASSIVE_LV,PASSIVES[id].lv), open=passiveOpen(p.level);
   if(p.level<need){ toastTo(p.id,PASSIVES[id].name+' needs level '+need,'bad'); return; }
   if(idx>=open){ toastTo(p.id,'Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx],'bad'); return; }
@@ -110,32 +111,7 @@ function unequipSkillP(p,cls,slot,idx){
   if(slot==='pass'){ const P=p.gear.skills.pass, i=clampInt(idx,0,PASSIVE_SLOTS-1,-1); if(i>=0&&P[i]){ P[i]=null; recalcP(p); p.dirty=true; } return; }
   const e=p.gear.skills.eq[cls]; if(e&&(slot==='skill'||slot==='burst'||(slot==='basic'&&SKILLS[e.basic]&&SKILLS[e.basic].set))){ e[slot]=null; p.dirty=true; recalcP(p); }   // skillsets: a slot-1 piece can be taken off (the class basic returns)
 }
-// level up a skill or passive you own: coins and monster drops (upgradeNeeds), at the trainer in either village
-function upgradeSkillP(p,id){
-  const s=skillDef(id), S=p.gear.skills; if(!s||!S.owned.includes(id)) return;
-  if(s.drop){ toastTo(p.id,s.name+' cannot be upgraded yet','bad'); return; }   // (boss skills: their level follows the zone tiers; a signature piece levels with raid material: rdUpNeeds)
-  if(!inVillage(p)){ toastTo(p.id,'Skills are upgraded by a trainer: Aldric at the well (or Master Ryu in Hanami)','bad'); return; }
-  const to=skillLvOf(S,id)+1; if(to>SKILL_MAX_LV){ toastTo(p.id,s.name+' is already at its highest level','bad'); return; }
-  const need=upgradeNeeds(id,to); if(!need){ toastTo(p.id,s.name+' cannot be upgraded yet','bad'); return; }
-  const lack=need.mats.find(m=>(p.gear.mats[m.id]||0)<m.n);
-  if(p.gear.coins<need.coins){ toastTo(p.id,'Not enough coins','bad'); return; }
-  if(lack){ toastTo(p.id,'You need '+lack.n+' '+MATS[lack.id].name,'bad'); return; }
-  if(need.rd&&(rdMatsOf(p)[need.rd.land]||0)<need.rd.n){ toastTo(p.id,'You need '+need.rd.n+' '+rdOfLand(need.rd.land).mat+' (raid material of that land)','bad'); return; }   // raids
-  p.gear.coins-=need.coins;
-  if(need.rd){ const rm=rdMatsOf(p), left=(rm[need.rd.land]||0)-need.rd.n; if(left>0) rm[need.rd.land]=left; else delete rm[need.rd.land]; }   // raids
-  for(const m of need.mats){ const left=(p.gear.mats[m.id]||0)-m.n; if(left>0) p.gear.mats[m.id]=left; else delete p.gear.mats[m.id]; }
-  S.lv[id]=to; recalcP(p); p.dirty=true; toastTo(p.id,s.name+' is now level '+to,'good'); ev('skillup',p.id,id,to); mqActP(p,'upskill');
-}
-// the Soul Hall in Hanami (level SOUL_LV): bind your soul to an element, free and as often as you like ('basic' unbinds it)
-function bindSoulP(p,el){
-  if(!ELEMS[el]||p.dead) return;
-  if(p.level<SOUL_LV){ toastTo(p.id,'The hall answers only hikers of level '+SOUL_LV+' and above','bad'); return; }
-  if(!troomIn(p.x,p.z,2)&&Math.hypot(p.x-VIL2.x,p.z-VIL2.z)>VIL2.r+14){   // testroom: the pad too
-     toastTo(p.id,'The Soul Hall is in Hanami, beyond the eastern mountains','bad'); return; }
-  if(p.gear.soul===el) return;
-  p.gear.soul=el; p.dirty=true; if(el!=='basic') mqActP(p,'soul'); toastTo(p.id,el==='basic'?'Your soul is unbound':'Your soul is bound to '+ELEMS[el].name,'good'); ev('soul',p.id,el);
-  recalcP(p);   // dungeons: the ring's attack depends on the soul (it used to touch no stats)
-}
+// (upgradeSkillP, the old coins-and-drops upgrade at a trainer, is retired: a skill's level is its branch in the Awakening tree, server/awakening.js MSG.awk)
 /* ---- chat and names ---- */
 // chat: up to 160 characters, at most one message every 0.7 s per player; everyone in the world hears it
 function chatP(p,text){
@@ -167,9 +143,11 @@ function devP(p,msg){
   else if(c==='giveAll'){ giveAllP(p); toastTo(p.id,'Every item added to your bag','good'); }
   else if(c==='caveFull'){ p.gear.caveFull=!!msg.v; p.dirty=true; }   // cave: the 4th slot's charge always full (testing; caveTickP)
   else if(c==='startAll'){ p.gear.startAll=!!msg.v; if(p.gear.startAll) giveAllP(p); p.dirty=true; }
-  else if(c==='skills'){ for(const id of [...SKILL_IDS,...PASSIVE_IDS]) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); if(p.gear.cave) for(const id of CAVE_SKILL_IDS) if(!(p.gear.cave.own[id]>0)) p.gear.cave.own[id]=1; ultCheckP(p); p.dirty=true; toastTo(p.id,'Every skill, passive and cave skill learned','good'); }   // cave: the cave skills too, at level 1 (a higher level is kept)
+  else if(c==='skills'){ for(const id of [...SKILL_IDS,...PASSIVE_IDS]) if(!p.gear.skills.owned.includes(id)) p.gear.skills.owned.push(id); if(p.gear.cave) for(const id of CAVE_SKILL_IDS) if(!(p.gear.cave.own[id]>0)) p.gear.cave.own[id]=1; ultCheckP(p); p.dirty=true; toastTo(p.id,'Every skill, passive and charge skill learned','good'); }   // cave: the cave skills too, at level 1 (a higher level is kept)
   else if(c==='set'){ const id=String(msg.v||''); if(!SS_SETS[id]){ toastTo(p.id,'No skill set called "'+id+'" ('+(SS_ORDER.join(', ')||'none defined')+')','bad'); return; } ssGrantSetP(p,id); recalcP(p); toastTo(p.id,SS_SETS[id].char.name+'\'s set: all six pieces given','good'); }   // skillsets: give a whole set (testing)
-  else if(c==='ult'){ for(const id of SS_ORDER){ if(SS_SETS[id].dev) continue; ssGrantP(p,id,1,true); ssGrantP(p,id,2,true); } p.cd.ult=0; for(const m of MONS) m.ultLock=0; ultCheckP(p); p.dirty=true; toastTo(p.id,'Positions 1 and 2 of every set given (every burst), burst cooldown and stun locks cleared','good'); }   // ult: testing tool
+  else if(c==='ult'){ for(const id of SS_ORDER){ if(SS_SETS[id].dev) continue; ssGrantP(p,id,1,true); ssGrantP(p,id,2,true); bdOwnZeroG(p.gear,id) /*bond: the testing tool*/; awkMigGrant(p.gear,id,{bu:1}); } p.cd.ult=0; for(const m of MONS) m.ultLock=0; ultCheckP(p); p.dirty=true; toastTo(p.id,'Positions 1 and 2 of every set given (every burst), burst cooldown and stun locks cleared','good'); }   // ult: testing tool   // awakening: bu1 (and A3) makes the burst usable
+  else if(c==='bd') bdDevP(p,msg);   // bond: Bonds to a step (v: set id | 'all', n: Bond -1..6, default VI, s: stones)
+  else if(c==='awk') awkDevP(p,msg);   // awakening: a whole tree to a tier (v: set id | 'wanderer' | 'all', n: tier 0-5, default 5)
   else if(c==='mats'){ for(const id of MAT_IDS) addMatP(p,id,20); toastTo(p.id,'20 of every monster drop added','good'); }
   else if(c==='weather'){ const k={clear:0,rain:1,storm:2}[msg.v]; if(k===0){ W.kind=0; W.t=0; W.dur=0; ev('weather',0); } else if(k) startWeatherS(k); }
   else if(c==='amber'){ ambAddP(p,clampInt(msg.v,-AMB_MAX,AMB_MAX,1000)); toastTo(p.id,'You now have '+p.gear.amb+' amber','good'); }   // amber (the upgrade material): add (or take away) some; the public gem tool is gemtest
@@ -194,7 +172,7 @@ function devP(p,msg){
   else if(c==='north'){ const v=clampInt(msg.v,0,2,1); if(v>=1&&p.gear.north<1){ p.gear.north=1; ev('north',p.id,1); } if(v>=2){ p.gear.north=2; ev('north',p.id,2); } if(v===0) p.gear.north=0; p.dirty=true; }
   else if(c==='tunnel'&&typeof msg.v==='string'&&msg.v.startsWith('cave:')) caveDevTp(p,msg.v.slice(5));   // cave: 'cave:mouth', 'cave:2' (a floor's lift) or 'cave:2,x,z[,deg]' (floor-local metres), testing
   else if(c==='tunnel'){   // v: 'in' (halfway through), 'east' (the east portal), 'hanami' (its gate), 'pass' / 'north' (either side of the ice wall), 'rimehold' (its gate), 'hall' / 'nest' / 'gate' / 'hollow' / 'tide' / 'circle' (the boss arenas), 'glen' / 'glenw' (either side of the ice fall in the glacier valley), 'highmark' (its gate), 'cavern' (the golem's), 'riverfall' / 'neckfall' (the rock falls in the west wall), 'grey' / 'queen' (the Greyspine: Highmark's shelf, the Gryphon Queen's peak); default the west portal
-    const xy=/^-?\d+,-?\d+(,-?\d+)?$/.test(msg.v||'')?msg.v.split(',').map(Number):null;   // or 'x,z[,facing in degrees: 0 north, 90 west]' anywhere (testing)
+    const xy=typeof msg.v==='string'&&/^-?\d+,-?\d+(,-?\d+)?$/.test(msg.v)?msg.v.split(',').map(Number):null;   // or 'x,z[,facing in degrees: 0 north, 90 west]' anywhere (testing)
     const N={pass:[PASS.x,PASS.ice+14],north:[PASS.x,PASS.ice-14],rimehold:[VIL3.anchors.gate.x,VIL3.anchors.gate.z],hall:[ARENA26.x,ARENA26.z+ARENA26.r+8],nest:[ARENA30.x,ARENA30.z+ARENA30.r+8],tide:[ARENA_TIDE.x,ARENA_TIDE.z-ARENA_TIDE.r-8],circle:[ARENA.x,ARENA.z+ARENA.r+8],gate:[ARENA20.x,ARENA20.z+ARENA20.r+8],hollow:[ARENA25.x,ARENA25.z+ARENA25.r+8],highmark:[VIL4.anchors.gate.x,VIL4.anchors.gate.z],cavern:[ARENA32.x,ARENA32.z+ARENA32.r+8],riverfall:[GREY_GATES[0].x,GREY_GATES[0].z-14],redfall:[SUN_RED.x+14,SUN_RED.z],sunpass:[GREY_GATES[0].x,GREY_GATES[0].z+14],glasswell:[VIL5.anchors.gate.x,VIL5.anchors.gate.z],springhead:[SUN_SPRING.x,SUN_SPRING.z+SUN_SPRING.r+6],neckfall:[GREY_GATES[1].x+14,GREY_GATES[1].z],wraithwick:[VIL6.anchors.gate.x,VIL6.anchors.gate.z],tallgrass:[VIL7.anchors.gate.x,VIL7.anchors.gate.z],coralhaven:[VIL8.anchors.gate.x,VIL8.anchors.gate.z],jaguar:[ARENA_E45.x,ARENA_E45.z+ARENA_E45.r+8],tidepool:[ARENA_E46.x,ARENA_E46.z+ARENA_E46.r+8],captain:[ARENA_M35.x,ARENA_M35.z+ARENA_M35.r+8],warden:[ARENA_M40.x,ARENA_M40.z+ARENA_M40.r+8],gloamvault:[GLOAM_DG_DOOR.x,GLOAM_DG_DOOR.z+GLOAM_DG_DOOR.r+4],glen:[GLEN.ice+14,GLEN.z],glenw:[GLEN.ice-14,GLEN.z],grey:[GREY_HM.x,GREY_HM.z],queen:[GREY_QUEEN.x,GREY_QUEEN.z+GREY_QUEEN.r*0.5]}[msg.v];   // the Hoarfrost Reach's places, the Greyspine's and the boss arenas
     const x=xy?clamp(xy[0],WX0+14,WX1-14):N?N[0]:msg.v==='in'?(TUN.p0+TUN.p1)/2:msg.v==='east'?TUN.x1+12:msg.v==='hanami'?VIL2.anchors.gate.x:TUN.x0-14, z=xy?clamp(xy[1],WZ0+14,WZ1-14):N?N[1]:msg.v==='hanami'?VIL2.anchors.gate.z:TUN.z;
     // a shut land cannot be teleported into (shared/barriers.js)

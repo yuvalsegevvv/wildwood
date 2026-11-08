@@ -1,4 +1,4 @@
-//@ Visuals and sounds for the equippable skills: Arrow Rain, Meteor, Chain Lightning, Piercing Shot, Shield Bash, Charge, and every skill with generic effects (fx: the boss skills)
+//@ Visuals and sounds for the equippable skills: Arrow Rain, Meteor, Chain Lightning, Piercing Shot, Shield Bash, Charge, and every skill with generic effects (fx)
 /* The server sends 'area' (a ground effect starting), 'aend' (it ended), 'chain' (lightning points), 'beam' (a line of light) and 'proj'
    with kind 'pierce'. Everyone nearby sees them, whoever cast them. A skill with generic effects (fx in its row) is drawn from that row
    in the colour of its element: fxVisuals for the swing, then the same events as above. */

@@ -1,5 +1,5 @@
 //@ Meleni's skill set, The Tide Chant (a buff support, water): a bolt of sea-spray that quickens the line, a landfall chant that lifts the whole crew, and a tide called up under the party; lagoon turquoise, shell cream and driftwood
-/* Agent map. Kit: docs/skillkits/kit-support.md (the buff focus, like Dunstan's Rally in another voice); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces water: her hits leave the aura a partner reacts with);
+/* Agent map. Kit: docs/skillkits/kit-support.md (the buff focus, like Dunstan's Rally in another voice); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces water);
    outfit: game/outfits/meleni.js, docs/skillkits/looks/meleni.md; visuals: game/skillsets/look-meleni.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-isles-smoke.js,
    tools/skillsets-ladder.js --set meleni. Land: the Emberwake Isles (tier 1; Ocelo, Tuila and the Cenote of Hollow Stars are its sources). Mark: Swell. Buffs never stack (the stronger wins) and are capped (SS_ALLY_CAP), so a second
    buffer adds only a different KIND. Numbers are Dunstan's on purpose (the owner's ladder, tools/skillsets-ladder.js, holds for them); only the words, the element and the look are hers. */
@@ -27,7 +27,10 @@ defineSkillSet({
   ult:{name:'The Great Swell', desc:'A wall of green water rises over the target (8 m) and breaks, and the sea stays up round it; the stunned are carried off their feet.', range:24, mult:1.5, act:['meleniult',1.0,0.55], anim:'nova',
        fx:{zone:{r:8, dur:4, first:0.3, every:1}},
        boost:[{piece:'a2', secs:12, mod:{mult:2, util:1.25}}, {piece:'p3', secs:16, mod:{v:2.5}}]},
-  bonus:{
-    3:{name:'Rising Tide', text:'The buffs you give are {}% stronger (still capped)', stat:'buffpow', v:0.20},
-    5:{name:'Full Flood', text:'Call the Tide also quickens you and your allies within 25 m: 20% shorter cooldowns for 8 s', on:'cast3', buff:{kind:'haste', v:0.20, dur:8, r:25}}},
+  tree:'pine', stone:'Song Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'meleni_p1',
+    2:{name:'Rising Tide', text:'The buffs you give are {}% stronger (still capped)', stat:'buffpow', v:0.20},
+    4:'meleni_p2',
+    6:{name:'Full Flood', text:'Call the Tide also quickens you and your allies within 25 m: 20% shorter cooldowns for 8 s', on:'cast3', buff:{kind:'haste', v:0.20, dur:8, r:25}}},
 });

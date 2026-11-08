@@ -2,9 +2,10 @@
 /* Agent map (docs/DIP.md). A pipe is where you "release dark energy": for DIP_SECS (10 minutes) it spawns up to DIP_COUNT[level] monsters of every non-boss kind of its land, refilled every DIP_INTERVAL[level] seconds
    (12 s unupgraded, 3 s at level 5). The level is yours (gear.dip[site id], 0-5) and is bought with the materials four of the land's monster kinds drop (dipUpNeeds); activating costs coins (dipCost: 50% of what
    killing every spawn before each refill tick pays, without coin bonuses). Pipe monsters drop DIP_MAT_K of the usual materials. In the home forest a kind below level 10 spawns as a level-10 monster (DIP_HOME_MIN_LV).
-   owns:    DIP_SITES (id 'dip-<land>', {id, land, x, z, lv, kinds:[def ids], mats:[4 def ids], defs}), DIP_BY_ID, DIP_SIDE, DIP_MAX, DIP_SECS, DIP_COUNT, DIP_INTERVAL, DIP_REACH, dipNear(x,z,m), dipKindLv(site,def), dipUpNeeds(site,to), dipCost(site,level).
+   owns:    DIP_SITES (id 'dip-<land>', {id, land, x, z, lv, kinds:[def ids], mats:[4 def ids], defs}), DIP_BY_ID, DIP_SIDE, DIP_MAX, DIP_SECS, DIP_COUNT, DIP_INTERVAL, DIP_REACH, dipNear(x,z,m), dipKindLv(site,def), dipUpNeeds(site,to), dipCost(site,level,lure?), DIP_LURE_K, DIP_LURE_COST.
    used by: server/dip.js, game/dip/*, village-helpers.js (nearPath keeps trees and props off), server/monsters.js (camps keep off). Placed once at load by dipPlaceAll (deterministic: the atlas's own data). Test: tools/dip-smoke.js */
 const DIP_SIDE=20, DIP_MAX=5, DIP_SECS=600, DIP_REACH=12, DIP_HOME_MIN_LV=10, DIP_MAT_K=0.25;   // DIP_MAT_K: a pipe monster drops a quarter of the usual material chance
+const DIP_LURE_K=0.5, DIP_LURE_COST=1.5;   // a lured release: half of all spawns are the chosen kind, and it costs x1.5 (gear.dip.lure[site id] = the kind, or absent for none)
 const DIP_COUNT=[10,20,30,40,50,60], DIP_INTERVAL=[12,9.6,7.4,5.5,4,3];   // by pipe level 0-5: monsters alive at most, seconds between refills
 const DIP_UP_N=[0,8,15,25,40,60];   // materials of EACH of the four kinds to raise the pipe to level 1-5
 const DIP_MAX_RANGE=5;   // the most the ground may rise over the 20 m square
@@ -17,9 +18,9 @@ function dipUpNeeds(S,to){ if(!(to>=1&&to<=DIP_MAX)) return null; return S.mats.
 const DIP_COIN_AVG={};   // level -> the mean coins of one kill (coinsFor rolls 1.5-2.5x; the mean keeps a pipe's price steady)
 function dipCoinAvg(L){ if(DIP_COIN_AVG[L]) return DIP_COIN_AVG[L]; let s=0; for(let i=0;i<400;i++) s+=coinsFor(L); return DIP_COIN_AVG[L]=s/400; }
 // half of what you earn killing the full count at every refill tick for the whole activation, coins without bonuses (the mean over the kinds' levels)
-function dipCost(S,level){
+function dipCost(S,level,lure){
   const L=Math.max(0,Math.min(DIP_MAX,level|0)); let c=0; for(const d of S.defs||[]) c+=dipCoinAvg(dipKindLv(S,d)); c/=Math.max(1,(S.defs||[]).length);
-  return Math.max(10,Math.round(0.5*(DIP_SECS/DIP_INTERVAL[L])*DIP_COUNT[L]*c/10)*10);
+  return Math.max(10,Math.round(0.5*(DIP_SECS/DIP_INTERVAL[L])*DIP_COUNT[L]*c/10)*10)*(lure?DIP_LURE_COST:1);
 }
 // the height range over the square (25 samples): the flattest square the zone offers wins, a perfectly flat one is taken at once
 function dipRange(x,z){ let lo=1e9,hi=-1e9; for(let i=-2;i<=2;i++) for(let j=-2;j<=2;j++){ const h=waGround(x+i*5,z+j*5); if(h<lo) lo=h; if(h>hi) hi=h; } return lo>1.5?hi-lo:99; }

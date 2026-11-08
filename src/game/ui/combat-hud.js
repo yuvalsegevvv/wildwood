@@ -29,7 +29,7 @@ function updateCombatUI(dt){
   }
   for(;bi<barPool.length;bi++) barPool[bi].hidden=true;
   const T=CB.target;
-  const soul=soulNow(); $('#plLv').textContent='Lv '+(PVC&&PVC.on?PVP.level+' (PvP)':PL.level)+(soul!=='basic'?' · '+ELEMS[soul].name:''); $('#plHpT').textContent=Math.ceil(PL.hp)+' / '+PL.maxHp;
+  $('#plLv').textContent='Lv '+(PVC&&PVC.on?PVP.level+' (PvP)':PL.level); $('#plHpT').textContent=Math.ceil(PL.hp)+' / '+PL.maxHp;
   $('#plHp').style.width=(PL.hp/PL.maxHp*100)+'%'; const need=expToNext(PL.level);
   $('#plXp').style.width=Math.min(100,PL.exp/need*100)+'%'; $('#plXpT').textContent='XP '+numC(PL.exp)+' / '+numC(need);
   const bossUI=updateBossUI();
@@ -73,81 +73,8 @@ const ICONS={
   'Blizzard':'<path d="M12 2v20M4 6l16 12M4 18L20 6"/><circle cx="12" cy="12" r="3"/>',
   'Inferno':'<path d="M12 22c-5 0-8-3-8-7 0-4 4-6 4-10 3 2 4 5 4 7 1-2 1-4 0-6 4 2 8 6 8 9 0 4-3 7-8 7z"/>',
   'Arcane Surge':'<path d="M12 2l3 7h7l-6 5 2 8-6-5-6 5 2-8-6-5h7z"/>',
-  // the Greyspine's two bosses (the Gryphon Queen's air skills, the Mountain Golem's earth skills)
-  'Talon Rake':'<path d="M6 3c2 6 2 12 0 18M12 3c2 6 2 12 0 18M18 3c2 6 2 12 0 18"/>',
-  "Eagle's Plunge":'<path d="M12 21V9M7 14l5 7 5-7"/><path d="M3 5c3 1 6 3 9 3s6-2 9-3"/>',
-  'Quill Shot':'<path d="M5 19L19 5"/><path d="M19 5c-5-1-9 1-11 5M19 5c1 5-1 9-5 11M12 12l-4 4"/>',
-  'Feather Storm':'<path d="M3 7c4-3 9-3 13 0M3 12c4-3 9-3 13 0M8 17c4-3 9-3 13 0"/><path d="M18 3l3 2-3 2"/>',
-  'Sky Lance':'<path d="M3 21L16 8"/><path d="M13 4h7v7z"/><path d="M4 11a3 3 0 0 1 5-2"/>',
-  'Updraft':'<path d="M6 21V8M3 11l3-4 3 4M12 21V4M9 7l3-4 3 4M18 21V10M15 13l3-4 3 4"/>',
-  'Stone Fist':'<path d="M5 9l3-4h8l3 4v6l-3 4H8l-3-4z"/><path d="M9 9v4M12 8v5M15 9v4"/>',
-  'Quake Slam':'<path d="M3 20h18"/><path d="M12 20l-1-5 2-3-2-3 1-4"/><path d="M5 12l3 2M19 12l-3 2M7 7l3 1M17 7l-3 1"/>',
-  'Boulder Arrow':'<circle cx="16" cy="8" r="4"/><path d="M13 11L3 21M3 21h5M3 21v-5"/>',
-  'Hail of Rock':'<path d="M6 3l2 4-3 1zM13 2l2 5-4 1zM19 8l2 4-3 1z"/><path d="M5 14l2 4-3 1zM12 13l2 5-4 1zM19 16l1 4-3 1z"/>',
-  'Stone Bind':'<circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/><path d="M2 12h2M20 12h2"/>',
-  'Avalanche':'<path d="M2 20L9 6l4 8 3-4 6 10z"/><path d="M11 6l3 4M8 20l1-3M13 20l1-2M18 20l1-2"/>',
-  // the Glass Guardian's, the Sand Wyrm's, Captain Dredge's and the Gloam Warden's skills (light, earth/fire, water, dark)
-  'Prism Cleave':'<path d="M12 4l7 13H5z"/><path d="M4 21L20 3"/><path d="M15 9l5 1"/>',
-  'Mirror Break':'<ellipse cx="12" cy="11" rx="6" ry="8"/><path d="M12 3l-2 6 4 3-3 7M6 8l6 3 6-1"/>',
-  'Glint Arrow':'<path d="M3 21L16 8M16 8h-5M16 8v5"/><path d="M19 3v5M16.5 5.5h5"/>',
-  'Shard Fan':'<path d="M12 21L4 7M12 21V3M12 21L20 7"/><path d="M3 6l2 3 2-3M11 2l1 3 1-3M17 6l2 3 2-3"/>',
-  'Prism Beam':'<path d="M3 12h6M9 7l6 5-6 5z"/><path d="M15 12l6-4M15 12h6M15 12l6 4"/>',
-  'Glass Storm':'<path d="M8 4l3 3-3 3-3-3zM17 8l2.5 2.5L17 13l-2.5-2.5zM9 14l3 3-3 4-3-4z"/><path d="M14 17l3 1M5 14l-2 1"/>',
-  'Wyrm Coil':'<path d="M18 7c-4-4-12-2-12 3s8 5 10 2-3-4-5-2"/><path d="M18 7l3 1-2 2"/><path d="M6 19c4 2 10 2 14-1"/>',
-  'Burrow Strike':'<path d="M3 17c4 0 4 2 9 2s5-2 9-2"/><path d="M12 17V6M8 10l4-5 4 5"/><path d="M5 14l-2-2M19 14l2-2"/>',
-  'Sand Piercer':'<path d="M2 18c4-5 7-5 10 0M10 18c3-4 6-4 10 0"/><path d="M4 7l15 6M19 13l-5-1M19 13l-2-4"/>',
-  'Dune Shower':'<path d="M6 3v7M12 3v9M18 3v7M4 8l2 3 2-3M10 10l2 3 2-3M16 8l2 3 2-3"/><path d="M2 21c4-5 8-5 10 0 3-5 7-5 10 0"/>',
-  'Cinder Chain':'<rect x="3" y="9" width="10" height="6" rx="3"/><rect x="11" y="12" width="10" height="6" rx="3"/><path d="M17 3c1 2 3 2 3 4a3 3 0 0 1-6 0c0-1 1-1 1-2"/>',
-  'Sandstorm':'<path d="M3 8h12a3 3 0 1 0-3-3M3 13h16a3 3 0 1 1-3 3M3 18h9"/>',
-  'Anchor Swing':'<circle cx="12" cy="5" r="2"/><path d="M12 7v14M7 11h10M5 15c0 3 3 6 7 6s7-3 7-6"/><path d="M3 14l2 1M21 14l-2 1"/>',
-  'Broadside':'<path d="M3 18l3-5h12l3 5z"/><path d="M8 11L5 5M12 11V4M16 11l3-6"/><circle cx="5" cy="4" r="1.2"/><circle cx="12" cy="3" r="1.2"/><circle cx="19" cy="4" r="1.2"/>',
-  'Harpoon':'<path d="M3 21L17 7"/><path d="M14 4l6 6-4 1-3-3z"/><path d="M3 21c0-4 3-6 5-6"/>',
-  'Grapeshot':'<path d="M3 21l6-6"/><circle cx="14" cy="10" r="2"/><circle cx="19" cy="6" r="1.6"/><circle cx="19" cy="14" r="1.6"/><circle cx="10" cy="5" r="1.6"/><circle cx="14" cy="17" r="1.6"/>',
-  'Brine Lash':'<path d="M3 18c4-8 8 2 12-6s4-6 6-6"/><path d="M5 22c3-2 5 2 8 0"/><circle cx="20" cy="5" r="1.3"/>',
-  'Undertow':'<path d="M3 8c3-3 5 2 9-1s6 2 9-1"/><path d="M12 12v9M8 17l4 4 4-4"/>',
-  'Black Cleave':'<path d="M20 4C10 5 4 11 4 20c3-5 8-8 14-9"/><path d="M6 20l-2 2M9 18l-2 2"/>',
-  'Eclipse':'<circle cx="12" cy="12" r="6"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M5 19l2-2"/><path d="M12 6a6 6 0 0 1 0 12 4 6 0 0 0 0-12z"/>',
-  'Gloom Arrow':'<path d="M3 21L17 7M17 7h-5M17 7v5"/><path d="M19 3a4 4 0 1 0 2 5 3 3 0 0 1-2-5z"/>',
-  'Wraith Volley':'<path d="M4 20c2-2 2-4 4-6M9 21c2-2 2-4 5-7M3 14c2-2 3-3 5-5"/><path d="M12 12l5-8M17 14l5-8M8 9l3-5"/><path d="M12 12l-1-3M17 14l-1-3"/>',
-  'Soul Siphon':'<path d="M5 5c3 0 5 3 5 6s-2 5-5 5c1-3 0-8 0-11z"/><path d="M12 12h9M18 9l3 3-3 3"/>',
-  'Nightfall':'<path d="M16 3a9 9 0 1 0 5 12A7 7 0 0 1 16 3z"/><path d="M5 4l.8 1.6L7.5 6 5.8 6.6 5 8.3 4.3 6.6 2.5 6l1.8-.4z"/>',
-  // boss skills
-  'Bramble Snare':'<path d="M4 12c4-6 12-6 16 0M4 12c4 6 12 6 16 0"/><path d="M8 8l-1-3M12 6V3M16 8l1-3M8 16l-1 3M12 18v3M16 16l1 3"/>',
-  'Lifesap Frenzy':'<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/><path d="M12 11v6M9 14h6"/>',
-  'Spore Arrow':'<path d="M4 20L16 8M16 8h-4M16 8v4"/><circle cx="18" cy="6" r="2"/><circle cx="21" cy="10" r="1.3"/><circle cx="14" cy="4.5" r="1.3"/>',
-  'Black Bloom':'<circle cx="12" cy="12" r="2.5"/><path d="M12 9.5C12 5 10 3 8 3c0 3 1 5 4 6.5zM14.5 12C19 12 21 10 21 8c-3 0-5 1-6.5 4zM12 14.5c0 4.5 2 6.5 4 6.5 0-3-1-5-4-6.5zM9.5 12C5 12 3 14 3 16c3 0 5-1 6.5-4z"/>',
-  'Thorn Shards':'<path d="M4 20L9 6l3 9zM12 20l3-14 3 11z"/><path d="M20 20l1-6"/>',
-  'Heartwood Drain':'<path d="M2 12h8"/><path d="M15 20s-5-3-5-7a3 3 0 0 1 5-2 3 3 0 0 1 5 2c0 4-5 7-5 7z"/>',
-  'Claw Crush':'<path d="M4 20l7-9M20 20l-7-9"/><path d="M8 4c-2 3-1 6 3 7M16 4c2 3 1 6-3 7"/><path d="M11 11l1 3 1-3"/>',
-  'Tidal Guard':'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M7 12c2-2 3 2 5 0s3 2 5 0"/>',
-  'Riptide Arrow':'<path d="M3 21L15 9M15 9h-4M15 9v4"/><path d="M19 5a4 4 0 1 1-4 4"/><path d="M19 8a1.5 1.5 0 1 1-1.5 1.5"/>',
-  'Barnacle Barrage':'<circle cx="7" cy="7" r="2.3"/><circle cx="16" cy="9" r="2.3"/><circle cx="10" cy="16" r="2.3"/><path d="M3 21l3-3M14 21l2-2M19 15l2-2"/>',
-  'Tidal Surge':'<path d="M3 15c3-4 5 3 9-1s6 2 9-2M3 20c3-4 5 3 9-1s6 2 9-2"/><path d="M12 3v6M9 6l3-3 3 3"/>',
-  Maelstrom:'<path d="M12 12a2 2 0 1 1 2 2 5 5 0 1 1-5-5 8 8 0 1 1 8 8"/><path d="M3 12h3M18 12h3"/>',
-  'Oni Cleave':'<path d="M4 20L18 4M8 20L20 8"/><path d="M15 3c1 2 3 3 3 5"/>',
-  'Kanabo Slam':'<path d="M5 19l9-9"/><path d="M13 5l6 6-3 3-6-6z"/><path d="M3 21h6"/>',
-  'Ember Shot':'<path d="M3 21L15 9M15 9h-4M15 9v4"/><path d="M19 3c1 2 3 2 3 5a3 3 0 0 1-6 0c0-1 1-1.5 1-3z"/>',
-  'Inferno Volley':'<path d="M3 20L12 11M8 21L17 12M3 14L9 8"/><path d="M17 3c1 2 4 3 4 6a3 3 0 0 1-6 0c0-2 2-3 2-6z"/>',
-  'Oni Gale':'<path d="M3 9h12a3 3 0 1 0-3-3M3 14h17a3 3 0 1 1-3 3M3 19h8"/>',
-  'Demon Gate':'<path d="M3 6h18M5 6v14M19 6v14M7 11h10M9 6V4M15 6V4"/>',
-  'Foxfire Riposte':'<path d="M5 19L17 5M9 20L21 8M4 14L12 5"/><path d="M19 2v3M17.5 3.5h3"/>',
-  'Dawn Guard':'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><circle cx="12" cy="11" r="2.5"/><path d="M12 5.5v1.5M12 15v1.5M6.5 11H8M16 11h1.5"/>',
-  'Radiant Lance':'<path d="M3 21L21 3"/><path d="M15 3h6v6"/><path d="M8 13l3 3M5 16l3 3"/>',
-  'Fox Spirit Barrage':'<circle cx="18" cy="6" r="2.2"/><circle cx="18" cy="17" r="2.2"/><circle cx="11" cy="12" r="2.2"/><path d="M3 12h6M3 5l13 1M3 19l13-1"/>',
-  'Spirit Chain':'<circle cx="6" cy="6" r="2.5"/><circle cx="12" cy="13" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M7.5 8l3 3M13.5 11l3-3M12 15.5V20"/>',
-  Tempest:'<path d="M12 12a2 2 0 1 1 2 2 5 5 0 1 1-5-5 8 8 0 1 1 8 8"/>',
-  'Rime Cleave':'<path d="M5 19L17 7l2-4-4 2L3 17z"/><path d="M14 14l5 5M17 12h3M12 17v3"/>',
-  'Glacier Slam':'<path d="M3 20h18M6 20l3-9 3 5 3-8 3 12"/>',
-  'Frost Shot':'<path d="M4 20L16 8M16 8h-4M16 8v4"/><path d="M18 3v6M15 6h6M16 4l4 4M20 4l-4 4"/>',
-  'Hail of Shards':'<path d="M5 4l2 7M11 3l2 8M17 5l1 7M4 20l3-5M10 21l3-6M16 20l3-5"/>',
-  'Ice Lance':'<path d="M3 21L21 3M21 3h-6M21 3v6"/><path d="M8 16H5M11 13v-3"/>',
+  // set pieces that fall back to a name icon
   Whiteout:'<path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7"/><circle cx="12" cy="12" r="9"/>',
-  Wyrmfang:'<path d="M4 6c4 0 8 4 8 10 0-6 4-10 8-10-1 6-4 10-8 14-4-4-7-8-8-14z"/>',
-  "Wyrm's Hide":'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M8 10l4 4 4-4"/>',
-  'Frostbite Arrow':'<path d="M4 20L20 4M20 4h-6M20 4v6"/><path d="M7 14l4 4M13 8l4 4"/>',
-  'Blizzard Volley':'<path d="M4 6l4 3-4 3M10 12l4 3-4 3M16 6l4 3-4 3"/>',
-  'Frost Chain':'<circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><path d="M9 6h6M7.5 8.5l3 7M16.5 8.5l-3 7"/>',
-  Wyrmstorm:'<path d="M12 12a2 2 0 1 1 2 2 5 5 0 1 1-5-5 8 8 0 1 1 8 8"/><path d="M12 2v3M12 19v3"/>',
   // passives
   Vitality:'<path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z"/>',
   Ferocity:'<path d="M5 4l5 16M11 3l4 17M17 5l3 14"/>',
@@ -177,6 +104,7 @@ function setActionBar(){
     el.querySelector('svg').innerHTML=(a&&ssGlyph(a))||ICONS[a?a.name:locked?'lock':'plus']||ICONS.burst;   // skillsets: a set piece draws its set's own symbol, in the set's colour
     el.classList.toggle('has-set',!!(a&&ssTint(a))); el.style.setProperty('--set',a&&ssTint(a)||'transparent');
     el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+slotLv(slot):(slot==='burst'?'Power':'Skill');
+    bdcAbLevel(el,a,L);   // bond: the level in play, with the Bond's +1 or the guest mark (bond/tags.js)
     el.classList.toggle('empty',!a); const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
     el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Power':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };
   fill(abBasic,'basic',kbName('basic')); fill(abSkill,'skill',kbName('skill')); fill(abBurst,'burst',kbName('burst'));

@@ -28,7 +28,7 @@
   </div>
   <div class="hud-r">
   <div class="btns">
-    <button class="icon-btn" id="bPre" aria-label="Presets" title="Presets: ten saved skill, soul and gear setups">
+    <button class="icon-btn" id="bPre" aria-label="Presets" title="Presets: ten saved skill and gear setups">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5-8 4.5-8-4.5z"/><path d="M4 12l8 4.5 8-4.5"/><path d="M4 16.5L12 21l8-4.5"/></svg>
     </button>
     <button class="icon-btn" id="bMap" aria-label="Map (N)" title="Map (N)" data-kb="map" data-kbt="Map ({k})">
@@ -110,12 +110,21 @@
   <div class="pn-body" id="forgeBody"></div>
 </div>
 <div id="skills" class="panel" hidden role="dialog" aria-label="Skills">
-  <div class="pn-head"><span class="pn-t" id="skTitle">Skills</span><span class="pn-coins" id="skCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-head"><span class="pn-t" id="skTitle">Skills</span><button class="chip pn-skills" id="skAwaken" type="button" data-kb="awaken" data-kbx="Awaken ({k})" title="The Awakening tree: skill levels, stats and tiers">Awaken (T)</button><button class="chip pn-skills" id="skBonds" type="button" title="Bonds: every character's Bond steps, Bondstones and orbs">Bonds</button><span class="pn-coins" id="skCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="skBody"></div>
 </div>
-<div id="soul" class="panel" hidden role="dialog" aria-label="Soul Hall">
-  <div class="pn-head"><span class="pn-t" id="soTitle">Soul Hall</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-  <div class="pn-body" id="soBody"></div>
+<div id="awc" class="panel" hidden role="dialog" aria-label="Awakening tree">
+  <div class="pn-head"><span class="pn-t">Awakening</span><button class="chip pn-skills" id="awcBonds" type="button" title="Bonds: every character's Bond steps, Bondstones and orbs">Bonds</button><span class="pn-coins" id="awcCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body awc-body">
+    <div class="awc-pick" id="awcPick" role="group" aria-label="Character"></div>
+    <div class="awc-tier" id="awcTier"></div>
+    <div class="awc-main">
+      <div class="awc-stage"><canvas id="awcCv" aria-label="The Awakening tree: tap a node for its price"></canvas>
+        <div class="awc-zoom"><button type="button" id="awcZin" aria-label="Zoom in">+</button><button type="button" id="awcZout" aria-label="Zoom out">&minus;</button><button type="button" id="awcFit" aria-label="Show the whole tree">Fit</button></div></div>
+      <div class="awc-side"><div class="awc-limbs" id="awcLimbs"></div><div class="awc-detail" id="awcDetail"></div></div>
+    </div>
+    <div class="awc-key" id="awcKey"></div>
+  </div>
 </div>
 <div id="lodge" class="panel" hidden role="dialog" aria-label="Wayfarers' Lodge">
   <div class="pn-head"><span class="pn-t" id="loTitle">Wayfarers' Lodge</span><span class="pn-coins" id="loCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
@@ -124,6 +133,20 @@
 <div id="brew" class="panel" hidden role="dialog" aria-label="Brewing">
   <div class="pn-head"><span class="pn-t" id="brTitle">Brewing</span><span class="pn-coins" id="brCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="brBody"></div>
+</div>
+<div id="bdc" class="panel" hidden role="dialog" aria-label="Bonds">
+  <div class="pn-head"><span class="pn-t">Bonds</span><span class="pn-coins" id="bdcCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body bdc-body">
+    <p class="bdc-intro">Bond 0 makes a character yours; Bonds I-VI give their passives, set rows and +1 levels. Bondstones come from Bond Orbs, which open while you play the hour's Stirrings.</p>
+    <div class="bdc-top2"><div class="bdc-box" id="bdcPouch"></div><div class="bdc-box" id="bdcStir"></div></div>
+    <div class="bdc-filter" id="bdcFilter" role="group" aria-label="Show"></div>
+    <div class="bdc-grid" id="bdcGrid"></div>
+  </div>
+</div>
+<div id="bdcPops" aria-live="polite"></div>
+<div id="orbs" class="panel" hidden role="dialog" aria-label="Orb stall">
+  <div class="pn-head"><span class="pn-t" id="obTitle">Bond Orb stall</span><span class="pn-coins" id="obCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="obBody"></div>
 </div>
 <div id="travel" class="panel" hidden role="dialog" aria-label="Teleport circle">
   <div class="pn-head"><span class="pn-t">Teleport circle</span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
@@ -265,7 +288,7 @@
   <div class="test-row"><label for="tLevel">Level</label><input id="tLevel" type="number" min="1" max="99" value="1" inputmode="numeric"><button class="chip" id="tSetLv">Set level</button></div>
   <div class="test-col">
     <button class="chip" id="tSkills">Learn every skill and passive</button>
-    <button class="chip" id="tCaveFull" aria-pressed="false">Cave charge always 100: off</button>
+    <button class="chip" id="tCaveFull" aria-pressed="false">Charge always 100: off</button>
     <button class="chip" id="tProf">Learn every profession (with tools)</button>
     <button class="chip" id="tZt">Unlock zone tiers (all lands, +1)</button>
   </div>

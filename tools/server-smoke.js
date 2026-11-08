@@ -2,7 +2,7 @@
 // Usage: node tools/server-smoke.js
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
-const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['inVillage','BAG_MAX','sanitizeGear','waLandId','WX0','WX1','WZ0','WZ1','VIL','VIL2','VIL3','VIL5','MONS','getH','W','BOSSES','COINS_MAX','EXP_MAX','rewardKill']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['inVillage','BAG_MAX','sanitizeGear','waLandId','WX0','WX1','WZ0','WZ1','VIL','VIL2','VIL3','VIL5','MONS','getH','W','BOSSES','COINS_MAX','EXP_MAX','rewardKill','upNeedsBase','SS_PIECE_OF','SS_ORDER','SMIG_VER','PASSIVES','MATS']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ for(let i=0;i<n;i++){ W.tick(0.05); if(keepAlive) for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
@@ -105,5 +105,20 @@ W.receive('a',{t:'chat',text:'  hello   there '}); tick(3); ok('chat is cleaned 
   const old=(pos,g)=>{ W.join('ow',{name:'Oldie',look:{cls:'warrior'},save:{level:30,pos,gear:Object.assign({},g)}}); const o=W.players.get('ow'); const r=[o.x,o.z]; W.leave('ow'); return r; };
   const v2=old([900,-100],{east:2}), v0=old([900,-100],{east:0});
   ok('a save from the old frame with a position in the vale starts at Hanami if the vale is open for it, else at the home village',Math.hypot(v2[0]-x.VIL2.spawn.x,v2[1]-x.VIL2.spawn.z)<1&&Math.hypot(v0[0]-x.VIL.spawn.x,v0[1]-x.VIL.spawn.z)<1,JSON.stringify([v2,v0])); }
+// savemig: the skill revamp's one migration (server/save-mig.js): an old save with an equipped boss skill, an owned one at level 3, a bought passive in the old slot 2 and set pieces
+{ const set=x.SS_ORDER[0], pieces=Object.keys(x.SS_PIECE_OF).filter(id=>x.SS_PIECE_OF[id].set===set).slice(0,2);
+  const save={coins:100,mats:{},zt:{},skills:{v:2,owned:['snare','clawcrush','ferocity','precision',...pieces],eq:{warrior:{basic:'slash',skill:'snare',burst:'quake'}},lv:{clawcrush:3},pass:['ferocity','precision',null]}};
+  const want={coins:x.PASSIVES.precision.price,mats:{}}; for(const to of [2,3]){ const n=x.upNeedsBase('clawcrush',{slot:'skill',lv:20,el:'earth'},to); want.coins+=n.coins; for(const m of n.mats) want.mats[m.id]=(want.mats[m.id]||0)+m.n; }
+  W.join('mg',{name:'Migrant',look:{cls:'warrior'},save:{level:30,gear:JSON.parse(JSON.stringify(save))}}); const q=W.players.get('mg'), g=q.gear;
+  const matsOk=Object.keys(want.mats).every(id=>g.mats[id]===want.mats[id])&&Object.keys(g.mats).length===Object.keys(want.mats).length;
+  ok('save migration: an old save loads, the boss skill slot falls back to the class default, the boss skills and the slot-2 passive leave, the refund arrives, the sets are noted',
+    !!q&&g.smv===x.SMIG_VER&&g.skills.eq.warrior.skill==='whirlwind'&&!g.skills.owned.some(id=>id==='snare'||id==='clawcrush'||id==='precision')&&g.skills.pass[0]==='ferocity'&&g.skills.owned.includes('ferocity')
+    &&g.coins===100+want.coins&&matsOk&&JSON.stringify(g.bdMig)===JSON.stringify([set])&&pieces.every(id=>g.skills.owned.includes(id)),
+    'coins '+g.coins+' (want '+(100+want.coins)+'), mats '+JSON.stringify(g.mats)+', bdMig '+JSON.stringify(g.bdMig));
+  const again=JSON.parse(JSON.stringify(g)); W.leave('mg'); W.join('mg',{name:'Migrant',look:{cls:'warrior'},save:{level:30,gear:again}}); const g2=W.players.get('mg').gear;
+  ok('save migration runs once: the saved gear loads again with the same coins, drops and set list',g2.coins===g.coins&&JSON.stringify(g2.mats)===JSON.stringify(g.mats)&&JSON.stringify(g2.bdMig)===JSON.stringify(g.bdMig)&&g2.smv===x.SMIG_VER,'coins '+g2.coins);
+  const forged=x.sanitizeGear({smv:1,bdMig:['__proto__','constructor',set,set,7,'nope'],skills:{owned:['clawcrush']}},'warrior'), junk=x.sanitizeGear({skills:{owned:'snare',eq:{warrior:'gate',__proto__:{skill:'snare'}},lv:{__proto__:9},pass:'x'}},'mage');
+  ok('save migration: gear.bdMig keeps known set ids only, once each; a migrated save is not refunded again; a junk save does not throw',JSON.stringify(forged.bdMig)===JSON.stringify([set])&&forged.coins===0&&junk.smv===x.SMIG_VER&&junk.coins===0);
+  W.leave('mg'); }
 W.leave('b'); tick(3); ok('leave is broadcast',evs.some(e=>e[0]==='pleave'&&e[1]==='b'));
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

@@ -5,14 +5,15 @@
 const {loadServer}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...m.ev); }},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_BAD','ssEquipPieceP','ssGrantSetP','allyP','ssMarkN','ssTriggerS','AREAS','rxWeakK','recalcP','clsOfP','getH','VIL']);
+  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_BAD','ssEquipPieceP','ssGrantSetP','allyP','ssMarkN','ssTriggerS','AREAS','mstWeakK','recalcP','clsOfP','getH','VIL','PASSIVE_SLOT_LV']);
+x.PASSIVE_SLOT_LV.push(x.PASSIVE_SLOT_LV[0],x.PASSIVE_SLOT_LV[0]);   // the game has one passive slot now (the skill revamp): this test wears a set's three passives together
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 W.join('a',{name:'Tester',look:{cls:'warrior'},save:{level:60}}); tick(3);
 const p=W.players.get('a'), [m1,m2]=x.MONS.filter(m=>!m.boss&&!m.inst&&m.def.id==='slime');
-const put=(m,dx,dz)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.aura=null; m.rxIcd=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; return m; };
+const put=(m,dx,dz)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; return m; };
 W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); p.dead=false; p.hp=p.maxHp; p.act=null; p.face=0; p.level=60;
-const wear=id=>{ const K=p.gear.skills; for(const c of ['warrior','archer','mage']) K.eq[c]={basic:null,skill:null,burst:null}; x.ssGrantSetP(p,id); const S=x.SS_SETS[id];
+const wear=id=>{ const K=p.gear.skills; for(const c of ['warrior','archer','mage']) K.eq[c]={basic:null,skill:null,burst:null}; x.ssGrantSetP(p,id); for(const k of [1,2,3]){ const pid=x.SS_SETS[id].pos[k].passive; if(!p.gear.skills.owned.includes(pid)) p.gear.skills.owned.push(pid); }   /* bond: a Bond I / IV passive is no piece now (never granted): this test wears all three by hand */ const S=x.SS_SETS[id];
   for(const pos of [1,2,3]){ const P=S.pos[pos], sid=P.bound==='any'?P.ids[0]:P.ids.find(i=>x.SKILLS[i].cls===x.clsOfP(p))||P.ids[0]; x.ssEquipPieceP(p,x.SKILLS[sid]); }
   K.pass=[1,2,3].map(k=>S.pos[k].passive); p.ssIcd={}; p.killTs=[]; p.cd={basic:0,skill:0,burst:0}; p.ally=null; p.shield=null; p.hp=p.maxHp; x.recalcP(p); put(m1,0,-2); put(m2,2,-2); x.AREAS.length=0; evs.length=0; };
 const rnd=v=>{ const R=Math.random; Math.random=()=>v; return ()=>{ Math.random=R; }; };
@@ -43,7 +44,7 @@ wear('tzaya'); x.ssTriggerS(p,'crit',{m:m1,v:10});
 ok('Tzaya: Cinder Count adds a Tally to what a critical hit struck',x.ssMarkN(p,m1,'tally')===1&&proc('tzaya_p3'),x.ssMarkN(p,m1,'tally'));
 
 wear('zahra'); x.ssTriggerS(p,'hurt',{m:m1,v:50});
-ok('Zahra: Heat Haze leaves what hurt her dealing 15% less',Math.abs(x.rxWeakK(m1)-0.85)<1e-6&&proc('zahra_p2'),x.rxWeakK(m1));
+ok('Zahra: Heat Haze leaves what hurt her dealing 15% less',Math.abs(x.mstWeakK(m1)-0.85)<1e-6&&proc('zahra_p2'),x.mstWeakK(m1));
 
 wear('meleni'); x.ssTriggerS(p,'kill',{m:m1});
 ok('Meleni: Rising Swell gives 10% more damage after a kill',x.allyP(p,'might')>=0.1&&proc('meleni_p2'),x.allyP(p,'might'));

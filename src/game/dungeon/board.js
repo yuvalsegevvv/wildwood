@@ -88,6 +88,7 @@ function dgBoardRender(){
   }
   const facts=dgBoardEl('div','dgb-facts');
   dgBoardAdd(facts,dgBoardEl('span','dgb-fact lv','Level '+m.L),dgBoardEl('span','dgb-fact',(land?land.name+' ':'')+'+'+m.tier),dgBoardEl('span','dgb-fact','Enter from level '+DG_ENTRY_LV));
+  { const sn=bdcDoorNote(th); if(sn) facts.appendChild(dgBoardEl('span','dgb-fact bdc-stirfact','\u2605 '+sn)); }   // bond: the hour's stirring dungeon
   hero.appendChild(facts); body.appendChild(hero);
   body.appendChild(dgBoardEl('p','dgb-state '+(m.ok?'ok':'no'),m.ok?'The way is open for you.':(m.gate?'':'Sealed. ')+(m.why||'You cannot enter yet.')));
   const offer=m.offer||[], pool=m.pool||offer, cards=dgBoardEl('div','dgb-cards');

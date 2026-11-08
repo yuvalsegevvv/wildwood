@@ -18,7 +18,10 @@ const rdLeftNow=s=>Math.max(0,Math.round(s.left-(t-s.at)));
 const rdClock=sec=>Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
 function rdNearest(r){ let best=-1,bd=r*r; RD_ORDER.forEach((id,i)=>{ const R=RDS[id], dx=P.x-R.x, dz=P.z-R.z, d=dx*dx+dz*dz; if(d<bd){ bd=d; best=i; } }); return best; }
 function rdSummary(i){
-  const R=RDS[RD_ORDER[i]], s=RD_CL[i]; if(!s) return R.name;
+  const R=RDS[RD_ORDER[i]], s=RD_CL[i], sn=bdcRaidNote(RD_ORDER[i]);   // bond: the hour's stirring raid adds a line (bond/stir.js)
+  return (s?rdSummaryBase(R,s):R.name)+(sn?' \u00b7 \u2605 '+sn:'');
+}
+function rdSummaryBase(R,s){
   const boss=rdBossRow(R.bosses[s.slot]), lv=rdLevel(s.tier);
   if(s.st===2) return R.name+': cleared, rebuilds in '+rdClock(rdLeftNow(s));
   if(s.st===0) return R.name+': ready. '+(boss?boss.short+' waits inside. ':'')+'Level '+RD_BASE_LV+' at +0; the first hit locks the tier to its attacker\'s';
@@ -28,7 +31,7 @@ function rdPlaceName(wx,wz){ for(let i=0;i<RD_ORDER.length;i++){ const R=RDS[RD_
 function rdMapMarks(x,at,land,fs,label,DPR){
   for(let i=0;i<RD_ORDER.length;i++){ const R=RDS[RD_ORDER[i]]; if(R.land!==land) continue; const [cx,cy]=at(R.x,R.z), s=RD_CL[i];
     dot(x,cx,cy,5*DPR,s&&s.st===2?'#8a8078':'#ffcf5a'); label(R.name,cx,cy-fs*1.3,fs,'#ffe9a8',true);
-    label(s?(s.st===2?'Cleared '+rdClock(rdLeftNow(s)):s.st===1?'Raid, level '+rdLevel(s.tier):'Raid, level 40+'):'Raid',cx,cy+fs*0.9,fs*0.85,'#ffd9a0'); }
+    label(s?(s.st===2?'Cleared '+rdClock(rdLeftNow(s)):s.st===1?'Raid, level '+rdLevel(s.tier):'Raid, level 30+'):'Raid',cx,cy+fs*0.9,fs*0.85,'#ffd9a0'); }
 }
 // the bag's raid material rows: [{land, name, n}] for the lands you hold some of
 function rdMatRows(){ return RD_ORDER.map(id=>RDS[id]).map(R=>({land:R.land,name:R.mat,n:rdMatHave(R.land)})).filter(r=>r.n>0); }

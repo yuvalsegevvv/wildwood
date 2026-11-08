@@ -1,5 +1,5 @@
-//@ Sorrel's skill set, The Lookout (safe DPS, air): a clean long line, a spotting shot that spreads the wind, and one charged gale that grows with the distance; sky, cream and feathers
-/* Agent map. Kit: docs/skillkits/kit-safe-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces air: the Mark the Gap shot spreads its aura to enemies within 6 m, so a partner's hit reacts on all of them);
+//@ Sorrel's skill set, The Lookout (safe DPS, air): a clean long line, a spotting shot that marks the target, and one charged gale that grows with the distance; sky, cream and feathers
+/* Agent map. Kit: docs/skillkits/kit-safe-dps.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces air; the Mark the Gap shot used to spread an air aura, a reaction flavor with no equivalent: it only marks now);
    outfit and palette: docs/skillkits/looks/sorrel.md, game/outfits/sorrel.js; visuals: game/skillsets/look-sorrel.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md.
    Test: tools/skillsets-first8-smoke.js, tools/skillsets-ladder.js --set sorrel. Land: the Greyspine (tier 2, the second wave). Mark: Sight. Slot 3 is class-bound too ("it needs a weapon"): a javelin, an arrow, a ray.
    What the engine gives her: conditional passives (Far Sight needs the target at 14 m or more, Cold Eye a target at full health, Dead Zone costs damage inside 6 m: the `when` conditions `dist` and `tgtHp`; `still` and `moved` exist too). */
@@ -17,8 +17,8 @@ defineSkillSet({
                  fx:{proj:{kind:'frost', speed:56, turn:6, life:0.9}, rangeScale:{from:6, to:30, k:1.6}},hold:{x:{status:{kind:'vuln',v:0.1,dur:5}}}}},
        passive:{name:'Far Sight', text:'+{}% damage against a target 14 m or more away', stat:'dmg', v:[0.10, 0.02], when:{dist:{from:14}}}},
     2:{bound:'any',
-       skill:{any:{name:'Mark the Gap', desc:'A spotting shot at up to 36 m: it puts Sight on the target and spreads the wind round it, so the enemies within 6 m carry its element too and your partners\' hits react on all of them.', cd:8, range:36, mult:1.7, act:['sorrel2x',0.6,0.5], anim:'shoot',
-                   fx:{proj:{kind:'frost', speed:60, turn:10, life:0.8, flavor:'air', mark:{id:'sight', n:1, dur:12, max:3}}}}},
+       skill:{any:{name:'Mark the Gap', desc:'A spotting shot at up to 36 m: it puts Sight on the target.', cd:8, range:36, mult:1.7, act:['sorrel2x',0.6,0.5], anim:'shoot',
+                   fx:{proj:{kind:'frost', speed:60, turn:10, life:0.8, mark:{id:'sight', n:1, dur:12, max:3}}}}},
        passive:{name:'Cold Eye', text:'+{}% critical hit chance against a target at full health', stat:'crit', v:[0.10, 0.01], when:{tgtHp:{above:0.95}}}},
     3:{bound:'class',
        skill:{
@@ -32,7 +32,10 @@ defineSkillSet({
   ult:{name:'Eye of the Storm', desc:'A downdraft falls from the sky on a far target (7 m), harder the further it is from her.', range:45, mult:9.2, act:['sorrelult',1.3,1.1], anim:'shoot',
        fx:{proj:{kind:'snipe', speed:70, turn:12, life:1, splash:{r:7, k:1}}, rangeScale:{from:5, to:40, k:2.4}},
        boost:[{piece:'a1', secs:14, mod:{mult:2, n:1}}, {piece:'p1', secs:14, mod:{v:2.5}}]},
-  bonus:{
-    3:{name:'Steady Breath', text:'a target carrying your Sight takes 10% more from you for each Sight', amp:{id:'sight', per:0.10}},
-    5:{name:'Through the Gale', text:'Your third-slot attack sends a gale through everything in a 40 m line for 150% damage', on:'cast3', mult:1.5, range:40, fx:{beam:{len:40, w:1.2, hits:1}}}},
+  tree:'pine', stone:'Ridge Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'sorrel_p2',
+    2:{name:'Steady Breath', text:'a target carrying your Sight takes 10% more from you for each Sight', amp:{id:'sight', per:0.10}},
+    4:'sorrel_p3',
+    6:{name:'Through the Gale', text:'Your third-slot attack sends a gale through everything in a 40 m line for 150% damage', on:'cast3', mult:1.5, range:40, fx:{beam:{len:40, w:1.2, hits:1}}}},
 });

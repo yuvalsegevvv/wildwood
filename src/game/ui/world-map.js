@@ -143,6 +143,7 @@ function wmapDraw(){
     x.globalAlpha=1;
   }
   pzWorldMarks(x);   // puzzles: a dot for each stone of an open land
+  bdcWorldMarks(x);   // bond: the stirring boss (bond/stir.js)
   { const p=wmapPin(); if(p) wmapPinDraw(x,wmapSx(p[0]),wmapSy(p[1]),t); }
   x.font='600 12px "Alegreya Sans", system-ui, sans-serif'; x.textAlign='right'; x.textBaseline='alphabetic'; x.shadowColor='rgba(0,0,0,.9)'; x.shadowBlur=4; x.fillStyle='#fff';
   x.fillText(isTouch?'Tap a land · drag to pan · pinch to zoom':'Click a land · drag to pan · scroll to zoom',W-14,H-12); x.shadowColor='transparent'; x.shadowBlur=0;
@@ -182,7 +183,7 @@ function wmapBannerAt(sx,sy){
 function wmapHover(sx,sy){
   const id=wmapBannerAt(sx,sy)||wmapRegionAt(wmapAx(sx),wmapAy(sy)); WM.hot=id;
   wmapC.style.cursor=id&&id!=='unbuilt'&&landOpen(id)?'pointer':WM.ptr.size?'grabbing':'grab';
-  wmapSay(sx,sy,wmapWhat(id));
+  wmapSay(sx,sy,bdcWorldTip(sx,sy)||wmapWhat(id));   // bond: the stirring boss's mark answers first
 }
 function wmapGo(land){   // that land's full map (the one N opens), from here
   if(!LANDS[land]||!landOpen(land)) return;

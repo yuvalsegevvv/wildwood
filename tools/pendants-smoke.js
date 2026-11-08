@@ -7,7 +7,7 @@ const {loadServer}=require('./load');
 const {api:W,x}=loadServer({dev:true,send(){}},
   ['ITEM','ITEM_LIST','TOOL_LIST','PENDANT_STATS','PENDANT_BASE','PENDANT_NAMES','CRIT_BASE','CRIT_MULT','CRIT_CAP','CRIT_MULT_CAP','RAR_MULT','ENH_MAX','ENH_STEP','DG_REWARDS','DG_REWARD_W','RING_ELS',
    'dgAllIds','dgPendantId','dgRingId','dgGearId','dgItem','dgParse','dgMergedId','dgEnhanceNext','dgClearReward','dgGrantItemP','pendantText','mergedId','sellPrice','newGearFor','sanitizeGear',
-   'pendP','recalcP','rollDmgS','rewardKill','monK','MONS','DROP_CHANCE','BAG_MAX','soulOfP','VIL','getH']);
+   'pendP','recalcP','rollDmgS','rewardKill','monK','MONS','DROP_CHANCE','BAG_MAX','VIL','getH']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const near=(a,b,tol)=>Math.abs(a-b)<=tol*Math.max(1e-9,Math.abs(b));

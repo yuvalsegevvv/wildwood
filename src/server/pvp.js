@@ -7,15 +7,17 @@
    those loops (x, z, dead, T.rad, T.height ...) and carries .pl, the player. damageMonsterS / statusS see .pl first and call pvpHitS / pvpStatusS here; the target takes the hit through hurtP (their own armour,
    passives and buffs), the damage number is the existing 'hurt' event. A stun / slow set on a proxy (m.stunT=2) becomes a pfx root / slow on that player (the client applies it to itself).
    Events (ev): pvp [pid, 1 stepped onto the island | 0 left it]  pvlock [pid, seconds the gate is shut]   (the client: game/pvp/state.js). A knock-out is the usual down / up.
-   Exports: foesS(p), foeByIdS(p,id), pvpFoeOf(q), pvpHitS, pvpStatusS, pvpTickP(p,dt) (updatePlayersS), pvpDownS(q,by) (hurtP), pvpReviveP(p), skOfP(p), pvLvP(p).
+   Exports: foesS(p), foeByIdS(p,id), pvpFoeOf(q), pvpElOf(q) (a fighter's element when hit: the element of their basic slot skill, 'basic' without one; the soul it used to be was removed), pvpHitS, pvpStatusS, pvpTickP(p,dt) (updatePlayersS), pvpDownS(q,by) (hurtP), pvpReviveP(p), skOfP(p), pvLvP(p).
    Hooks into other files are marked `// pvp:` (grep -rn "// pvp:" src). */
 const PVP_REGEN_AFTER=6, PVP_REGEN_K=0.04, PVP_STUN_IMM=4, PVP_KB_MAX=8;   // on the island: health comes back 4% a second after 6 s without being hit (3 s and 8% outside); a root cannot be renewed for 4 s after it ends; a shove is at most this many m/s
 // the skills object a fighter's attacks and passives are read from (the fixed loadout on the island, their own save elsewhere) and the level the passives are read at
 const skOfP=p=>p.pv?p.pv.sk:p.gear.skills;
 const pvLvP=p=>p.pv?PVP.level:p.level;
+// a fighter's element when hit: the element of the skill in their basic slot (the island's fixed loadout), 'basic' when it has none
+const pvpElOf=q=>elOf(abilityOf(clsOfP(q),'basic',skOfP(q),PLAYER_MAX_LV));
 // a fighter as a target: the fields combat.js reads of a monster, read live from the player
 function pvpFoeOf(q){
-  return q.px||(q.px={pl:q,id:q.id,T:{rad:0.5,height:1.8,heavy:false,get el(){ return soulOfP(q); }},s:1,boss:false,model:'',inst:0,remove:false,
+  return q.px||(q.px={pl:q,id:q.id,T:{rad:0.5,height:1.8,heavy:false,get el(){ return pvpElOf(q); }},s:1,boss:false,model:'',inst:0,remove:false,
     get x(){ return q.x; }, get z(){ return q.z; }, get dead(){ return q.dead; },
     get stunT(){ return 0; }, set stunT(v){ pvpCcP(q,'root',v); },
     get slowT(){ return 0; }, set slowT(v){ pvpCcP(q,'slow',v); }});
@@ -37,7 +39,7 @@ function pvpCcP(q,kind,dur){
 // p hits the fighter behind proxy m: the damage roll is p's (fixed stats, no potion; the elements count, see elemHitS), the rest is the target's (hurtP); returns the damage dealt
 function pvpHitS(m,mult,p,fromX,fromZ,kb,el){
   const q=m.pl; if(!q.pv||q.dead||q===p||!p.pv||p.dead||pvpFriendP(p,q)) return 0;
-  const d=rollDmgS(p,mult,m,el);   // (the element maths: p's soul and the skill's element against the target's soul, at PVP.elemBoost)
+  const d=rollDmgS(p,mult,m,el);   // (the element maths: the skill's element against the target's element, at PVP.elemBoost)
   p.lastDealt=S.t;
   const v=hurtP(q,d.v,null,p);
   if(p.buff&&p.buff.steal) healP(p,v*p.buff.steal);
@@ -96,7 +98,7 @@ function pvpReviveP(p){
   p.x=s.x; p.z=s.z; p.y=getH(s.x,s.z); p.dead=false; p.hp=p.maxHp; p.lastHit=-99; p.pvLock=S.t+PVP.lockS;
   sendTo(p.id,{t:'tp',x:s.x,z:s.z,face:s.face}); ev('up',p.id); ev('pvlock',p.id,PVP.lockS); p.dirty=true;
 }
-// the fixed numbers: the level, the common gear of its tier for the class in hand, the fixed passives; health x PVP.hpK so a fight lasts a while. Nothing here looks at the player's own level, gear, pendant or potions (the soul still counts, as an element: elemHitS).
+// the fixed numbers: the level, the common gear of its tier for the class in hand, the fixed passives; health x PVP.hpK so a fight lasts a while. Nothing here looks at the player's own level, gear, pendant or potions (the elements still count: elemHitS).
 function pvpRecalcP(p){
   const g=pvpStatsOf(clsOfP(p)), ratio=p.maxHp>1?p.hp/p.maxHp:1;
   p.maxHp=Math.round((20*fLv(PVP.level)+g.hp)*(1+psP(p,'hp'))*PVP.hpK); p.dmg=3*fLv(PVP.level)+g.atk; p.def=g.def; p.red=defRed(g.def);

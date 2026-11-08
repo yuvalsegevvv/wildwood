@@ -64,6 +64,7 @@ function drawMinimap(){
   for(const m of MONS){ if(m.dead||!inside(m.x,m.z)) continue; const [a,b]=at(m.x,m.z); dot(x,a,b,(m.boss?4.5:m.aggro?2.8:2.1)*DPR,m.boss?'#c86bff':m.aggro?'#ff4a3a':'#e8904a'); }
   for(const r of REMOTES.values()){ if(r.tx===null||!inside(r.x,r.z)) continue; const [a,b]=at(r.x,r.z); dot(x,a,b,3.2*DPR,dgPartyCol(r.id)||'#6fb8ff'); }   // dungeons: party members in their colour (dungeon/party.js)
   if(GEAR.prof) for(const n of NODES){ if(NODE_TAKEN.has(n.i)||nodeBlock(GEAR,n)||!inside(n.x,n.z)) continue; const [a,b]=at(n.x,n.z); dot(x,a,b,2.4*DPR,RES[NODE_KINDS[n.kind].res].col); }   // the nodes of the professions you know
+  bdcMiniMarks(x,at,inside,DPR,W);   // bond: the hour's Stirrings (the glowing zone, boss, door; bond/stir.js)
   skTrackMarks(x,at,inside,DPR,false);   // tracked skill upgrade: the camps that drop what it needs
   dgEntMiniMarks(x,at,inside,DPR);   // dungeons: a door in range
   pzMapMarks(x,at,inside,DPR,false);   // puzzles: the stones in range
@@ -106,6 +107,7 @@ function drawFullMap(){
   const fs=Math.max(9,Math.min(13,W/DPR/48))*DPR, land=L===LANDS.isles?'isles':L===LANDS.amber?'amber':L===LANDS.gloam?'gloam':L===LANDS.sun?'sun':L===LANDS.hoar?'hoar':L===LANDS.vale?'vale':L===LANDS.grey?'grey':'home', vale=land==='vale'||land==='hoar', mine=zn=>landOfZone(zn)===land;
   x.textAlign='center'; x.textBaseline='middle';
   const label=(t,cx,cy,size,col,bold)=>mapStLabel(x,t,cx,cy,size,col,bold,DPR);   // (serif, dark ink on a pale halo: ui/map-style.js)
+  bdcMapGlow(x,at,land,DPR);   // bond: this hour's stirring spot of the land glows under the labels (bond/stir.js)
   for(const zn of ZONES){ if(zn.boss||!mine(zn)) continue; const [cx,cy]=at(...(zn.label||zonePoint(zn,0,0.5))); label(zn.name,cx,cy-fs*0.55,fs,'#f2f0e4',true); label('Level '+zoneLvText(zn),cx,cy+fs*0.6,fs*0.85,'#ffcf8a'); }
   for(const bd of BOSS_DEFS){ const A=ARENAS.find(a=>a.key===bd.arena); if((A.isles?'isles':A.amber?'amber':A.gloam?'gloam':A.sun?'sun':A.grey?'grey':A.hoar?'hoar':inVale(A.x,A.z)?'vale':'home')!==land) continue; const [cx,cy]=at(A.x,A.z); dot(x,cx,cy,5*DPR,'#c86bff'); label(bd.short,cx,cy-fs*1.3,fs,'#e8b8ff',true); label('Level '+bossLvIn(bd.def,land)+' boss',cx,cy+fs*1.25,fs*0.85,'#ffcf8a'); }
   { const V=land==='isles'?VIL8:land==='amber'?VIL7:land==='gloam'?VIL6:land==='sun'?VIL5:land==='grey'?VIL4:land==='hoar'?VIL3:land==='vale'?VIL2:VIL, [cx,cy]=at(V.x,V.z); label(land==='isles'?'Coralhaven':land==='amber'?'Tallgrass':land==='gloam'?'Wraithwick':land==='sun'?'Glasswell':land==='grey'?'Highmark':land==='hoar'?'Rimehold':land==='vale'?'Hanami':'Village',cx,cy-V.r*k-fs*0.2,fs*1.05,'#fff4d0',true); }
@@ -116,6 +118,7 @@ function drawFullMap(){
   dipMapMarks(x,at,land,fs,label,DPR);   // dip: the land's dark pipe
   riftMapMarks(x,at,land,fs,label,DPR);   // rift: the tear
   rdMapMarks(x,at,land,fs,label,DPR);   // raids: the stronghold of this land and its state
+  bdcMapMarks(x,at,land,fs,label,DPR);   // bond: the stirring spot's tag, the stirring boss, door and raid
   if(land!=='hoar'&&land!=='grey'&&land!=='sun'&&land!=='gloam'&&land!=='isles'){ const [cx,cy]=at(vale?TUN.p1:TUN.p0,TUN.z); dot(x,cx,cy,3.5*DPR,valeOpen()?'#9fe0ff':'#8a8078'); label(valeOpen()?'Bridge':'Bridge (barred)',cx+(vale?1:-1)*fs*2.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='vale'){ const [cx,cy]=at(PASS.x,PASS.ice); dot(x,cx,cy,3.5*DPR,northOpen()?'#9fe0ff':'#8a8078'); label(northOpen()?'Frostgate Pass':'Frostgate Pass (ice wall)',cx-fs*4.6,cy,fs*0.85,'#e8e0d0'); }
   if(land==='hoar'){ const [cx,cy]=at(PASS.x,PASS.z1+50); label('Frostgate Pass',cx-fs*3.6,cy,fs*0.85,'#e8e0d0'); for(const Lk of FROST_LAKES){ const [lx,ly]=at(Lk.x,Lk.z); label(Lk.name,lx,ly,fs*0.85,'#cfe8f6'); }
@@ -156,7 +159,7 @@ function placeName(wx,wz){
   if(inTunnelCut(wx,wz)&&wx>TUN.p0-4&&wx<TUN.p1+4) return valeOpen()?'The Greyfall bridge':'The Greyfall bridge (barred until the Rootwarden falls)';
   const B=bridgeAt(wx,wz,2); if(B) return B.road+' ('+B.name+')';
   const rd=roadAt(wx,wz,3); if(rd) return rd.name;
-  const zn=zoneAt(wx,wz); if(zn) return zn.key==='boss'?'Rootwarden Barrens':zn.boss?zn.name:zn.name+': level '+zoneLvText(zn)+' ('+MON_DEFS.filter(d=>defZone(d)===zn).map(d=>d.name).join(', ')+')';
+  const zn=zoneAt(wx,wz); if(zn) return zn.key==='boss'?'Rootwarden Barrens':zn.boss?zn.name:zn.name+': level '+zoneLvText(zn)+' ('+MON_DEFS.filter(d=>defZone(d)===zn).map(d=>d.name).join(', ')+')'+bdcZoneNote(zn);   // bond: a stirring spot says so
   return edgeName(wx,wz)||(inGloam(wx,wz)?'The Gloam heath':inHoar(wx,wz)?'The snowfields':inGrey(wx,wz)?'The Greyspine':inVale(wx,wz)?'Hanami meadows':'Village meadows');
 }
 // the lands' edges by their names in docs/WORLD.md: the shore, and the range along a land border (the atlas's land ids: home 0, vale 1, hoar 2, grey 3, sun 4, gloam 5)

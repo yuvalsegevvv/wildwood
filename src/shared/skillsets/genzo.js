@@ -1,5 +1,5 @@
 //@ Genzo's skill set, The Gate Bell (a tank, air): a taunting toll, a held note that wards the party, and the great bell that answers a broken ward; bronze, lacquer red and cloud white
-/* Agent map. Kit: docs/skillkits/kit-tank.md + kit-mixed.md (main tank, also healer, mild: the bell mends the party); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces air: a held pack carries the aura a partner reacts with); outfit and palette: docs/skillkits/looks/genzo.md,
+/* Agent map. Kit: docs/skillkits/kit-tank.md + kit-mixed.md (main tank, also healer, mild: the bell mends the party); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces air); outfit and palette: docs/skillkits/looks/genzo.md,
    game/outfits/genzo.js; visuals: game/skillsets/look-genzo.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js, tools/skillsets-ladder.js --set genzo.
    Land: the Sakura Vale (tier 3). Mark: Toll. Unlike Torgeir (the other tank: Fixation, spent by one big wall) he rings: every strike tolls once, Hold the Hour spends the tolls for a heal, and his bonus answers a broken shield. */
 defineSkillSet({
@@ -26,7 +26,10 @@ defineSkillSet({
   ult:{name:'Thousand Tolls', desc:'The great bell drops over him and rings three times, a 9 m gust each; the stunned are dazed by the sound.', range:9, mult:0.69, act:['genzoult',1.2,0.5], anim:'nova',
        fx:{zone:{r:9, dur:1.2, first:0.2, every:0.5, self:true, kb:3}},
        boost:[{piece:'cave', secs:12, mod:{mult:2}}, {piece:'p2', secs:16, mod:{icd:0.4}}]},
-  bonus:{
-    3:{name:'First Toll', text:'The first taunt of a fight raises a shield worth 10% of your maximum health for 6 s (at most every 12 s)', on:'taunt', icd:12, shield:{v:0.10, dur:6}},
-    5:{name:'The Bell Answers', text:'When a shield of yours breaks or runs out, the bell answers: a gust 6 m round you that throws enemies back (at most every 5 s)', on:'shield', icd:5, mult:0.9, range:6, fx:{ring:{r:6, kb:8}}}},
+  tree:'oak', stone:'Bell Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'genzo_p1',
+    2:{name:'First Toll', text:'The first taunt of a fight raises a shield worth 10% of your maximum health for 6 s (at most every 12 s)', on:'taunt', icd:12, shield:{v:0.10, dur:6}},
+    4:'genzo_p3',
+    6:{name:'The Bell Answers', text:'When a shield of yours breaks or runs out, the bell answers: a gust 6 m round you that throws enemies back (at most every 5 s)', on:'shield', icd:5, mult:0.9, range:6, fx:{ring:{r:6, kb:8}}}},
 });

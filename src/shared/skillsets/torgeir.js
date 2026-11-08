@@ -1,5 +1,5 @@
 //@ Torgeir's skill set, The Shield-Wall (a tank, earth): a taunting strike, a brace that shields the party, and a wall that holds the line; stone, bone and iron
-/* Agent map. Kit: docs/skillkits/kit-tank.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces earth: the aura of a held pack lets a partner's hit react); outfit and palette: docs/skillkits/looks/torgeir.md,
+/* Agent map. Kit: docs/skillkits/kit-tank.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces earth); outfit and palette: docs/skillkits/looks/torgeir.md,
    game/outfits/torgeir.js; visuals: game/skillsets/look-torgeir.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-first8-smoke.js, tools/skillsets-ladder.js --set torgeir.
    Land: the Hoarfrost Reach (tier 1). Mark: Fixation, spent by Hold the Line.
    What the engine gives him: a `taunt` inside an entry (the strike, the shot or the bolt taunts what it HITS, from any range), the `taunting` condition (Thick Hide), `perMark` (a shield that grows with the Fixation near him, and Hold the Line
@@ -28,7 +28,10 @@ defineSkillSet({
   ult:{name:'Unbroken Line', desc:'A ghost row of shields slams down in an 8 m cone in front of him and holds everything it stuns; what it hits comes for him.', range:10, mult:1.9, act:['torgeirult',1.0,0.55], anim:'nova',
        fx:{cone:{r:8, arc:0.8, kb:5, taunt:{dur:4}}},
        boost:[{piece:'a2', secs:12, mod:{util:2}}, {piece:'p2', secs:16, mod:{eff:2.5, icd:0.5}}]},
-  bonus:{
-    3:{name:'First Contact', text:'The first taunt of a fight raises a shield worth 10% of your maximum health for 6 s (at most every 12 s)', on:'taunt', icd:12, shield:{v:0.10, dur:6}},
-    5:{name:'Shattering Return', text:'When a shield of yours breaks or runs out, the earth answers: a burst 6 m round you that throws enemies back (at most every 5 s)', on:'shield', icd:5, mult:0.9, range:6, fx:{ring:{r:6, kb:8}}}},
+  tree:'willow', stone:'Shield Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'torgeir_p1',
+    2:{name:'First Contact', text:'The first taunt of a fight raises a shield worth 10% of your maximum health for 6 s (at most every 12 s)', on:'taunt', icd:12, shield:{v:0.10, dur:6}},
+    4:'torgeir_p3',
+    6:{name:'Shattering Return', text:'When a shield of yours breaks or runs out, the earth answers: a burst 6 m round you that throws enemies back (at most every 5 s)', on:'shield', icd:5, mult:0.9, range:6, fx:{ring:{r:6, kb:8}}}},
 });

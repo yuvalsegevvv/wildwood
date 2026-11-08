@@ -4,7 +4,7 @@
 // Usage: node tools/boss-smoke.js
 const {loadServer}=require('./load');
 const evs=[];
-const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['MONS','BOSSES','BOSS_DEFS','ARENAS','ARENA_TIDE','getH','zoneAt','edgeZoneAt','SKILLS','BOSS_SKILLS','MATS']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},['MONS','BOSSES','BOSS_DEFS','ARENAS','ARENA_TIDE','getH','zoneAt','edgeZoneAt','SKILLS','MATS']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=(n)=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.maxHp=1e7; p.hp=1e7; p.dead=false; } } };   // (a player who dies would reset the fight)
 W.join('a',{name:'Tanker',look:{cls:'warrior'},save:{level:30}}); W.join('b',{name:'Runner',look:{cls:'archer'},save:{level:30}});
@@ -13,7 +13,6 @@ ok('seventeen bosses, each with its own kit (the Sinkwarden has its own test: vo
 const A=x.ARENA_TIDE, tide=x.BOSSES.find(B=>B.bd.kit==='tide');
 ok('the Tide King lives on the beach: level 20, in the shore zone, in the sea-side south of the forest, on dry land',tide.bd.def.level===20&&A.z>560&&A.z<700&&x.getH(A.x,A.z)>1.5&&x.zoneAt(A.x,A.z)===A.zone&&x.edgeZoneAt(A.x+30,A.z-10)===A.zone,'arena at '+Math.round(A.x)+','+Math.round(A.z)+' h '+x.getH(A.x,A.z).toFixed(1));
 ok('it plays the Rootwarden\'s music for now (theme boss15)',tide.bd.def.music==='boss15'&&!x.BOSS_DEFS.filter(b=>b!==tide.bd&&b.def.music).length);
-ok('it drops its own six skills (a skill and a burst for each class)',(x.BOSS_SKILLS.carapax||[]).length===6&&['warrior','archer','mage'].every(c=>['skill','burst'].every(sl=>x.BOSS_SKILLS.carapax.some(id=>x.SKILLS[id].cls===c&&x.SKILLS[id].slot===sl))));
 ok('and its material has a name',!!x.MATS.carapax&&/Claw/.test(x.MATS.carapax.name));
 
 const sigs={};   // boss id -> Set of what it did

@@ -1,6 +1,6 @@
 //@ Panel open/close helpers (openPanel, closePanels, uiOpen, releasePointer)
 /* ----- panels ----- */
-const PANELS=['inv','shop','quests','map','forge','skills','soul','lodge','brew','travel','guide','versions','presets','dgBoard','wmap','friends','pshop','gemShop','cvLift','troom','puzzle','dip','rift'];   // rift: the tear's window (rift/rift.js)   // cave: the lift window (cave/lift.js)   // dungeons: the Delve board panel (dungeon/board.js)
+const PANELS=['inv','shop','quests','map','forge','skills','lodge','brew','travel','guide','versions','presets','dgBoard','wmap','friends','pshop','gemShop','cvLift','troom','puzzle','dip','rift','orbs','awc','bdc'];   // bond: the Bonds panel (bond/panel.js)   // awakening: the tree panel (awakening/panel.js)   // bond: the orb stall (bond/orbs.js)   // rift: the tear's window (rift/rift.js)   // cave: the lift window (cave/lift.js)   // dungeons: the Delve board panel (dungeon/board.js)
 let panelNPC=null;
 // the mouse look is locked while playing; panels, chat and the editor need the pointer back
 function releasePointer(){ if(document.pointerLockElement) try{ document.exitPointerLock(); }catch(_){} }

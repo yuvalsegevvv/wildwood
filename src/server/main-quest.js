@@ -2,7 +2,7 @@
 /* Progress lives in gear.mq (saved, sanitized by sanitizeMq). The client only asks: mq{a:'talk',id} (it talked to a villager),
    mq{a:'pick',i} (a heartleaf), mq{a:'read',id} (a lore spot); every one is checked here (you are there, the part is open).
    Everything else is counted where it happens: kills (rewardKill), system uses (mqActP from economy / players / combat), and
-   the checks every half second (mqTickP: level, weapon tier, soul, the flags of old saves, the grey monsters). */
+   the checks every half second (mqTickP: level, weapon tier, the flags of old saves, the grey monsters). */
 const mqOf=p=>p.gear.mq;
 let mqHush=false;   // set while a talk that also hands the step in is applied
 const mqStep=p=>MQ[mqOf(p).s]||null;
@@ -64,7 +64,7 @@ function mqReadP(p,id){
   const L=LORE_BY_ID[id], M=mqOf(p), step=mqStep(p); if(!L||!step||M.st!==1||Math.hypot(p.x-L.x,p.z-L.z)>LORE_R+2) return;
   step.parts.forEach((pt,i)=>{ if(pt.read===id) mqProgressP(p,i,1); });
 }
-// a system use: class, buy, armor, skill, burst, board, sell, upskill, merge, soul, warp, hanami, rimehold, highmark, learn, tool, craft, brew, potion. at:'cart' = only beside Odran's cart.
+// a system use: class, buy, armor, skill, burst, board, sell, upskill, merge, warp, hanami, rimehold, highmark, learn, tool, craft, brew, potion. at:'cart' = only beside Odran's cart.
 // arg says which: {prof} for learn, {tool, tier} for tool, {kind, tier} for craft, brew and potion: a part that names one of those only counts a match
 function mqActP(p,kind,n,arg){
   const M=mqOf(p), step=mqStep(p); if(!step||M.st!==1) return;
@@ -98,7 +98,7 @@ function mqAutoP(p){
   step.parts.forEach((pt,i)=>{
     if(!mqOpen(step,M.n,i)) return;
     const tool=pt.act==='tool'&&ITEM[g.eq[pt.tool]];
-    const has=(pt.level&&p.level>=pt.level)||(pt.tier!==undefined&&!pt.act&&w&&w.tier>=pt.tier)||(pt.act==='soul'&&g.soul!=='basic')||(pt.act==='hanami'&&g.east>=2)||(pt.act==='rimehold'&&g.north>=2)||(pt.act==='highmark'&&g.west>=2)||(pt.act==='learn'&&!!g.prof[pt.prof||'gathering'])||(tool&&tool.tier>=(pt.tier||0))||(pt.boss==='boss'&&g.east>=1);
+    const has=(pt.level&&p.level>=pt.level)||(pt.tier!==undefined&&!pt.act&&w&&w.tier>=pt.tier)||(pt.act==='hanami'&&g.east>=2)||(pt.act==='rimehold'&&g.north>=2)||(pt.act==='highmark'&&g.west>=2)||(pt.act==='learn'&&!!g.prof[pt.prof||'gathering'])||(tool&&tool.tier>=(pt.tier||0))||(pt.boss==='boss'&&g.east>=1);
     if(has) mqProgressP(p,i,mqNeed(pt),true);
   });
 }

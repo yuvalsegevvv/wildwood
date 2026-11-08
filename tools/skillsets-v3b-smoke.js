@@ -4,7 +4,7 @@
 const fs=require('fs'), path=require('path'), {loadServer, SRC}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...m.ev); }},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_SOURCES','ssLint','ssSetFor','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssMarkN','ssMarkS','resolveFxS','AREAS','PROJS','rxVulnK','recalcP','clsOfP','getH','VIL','psP']);
+  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_SOURCES','ssLint','ssSetFor','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssMarkN','ssMarkS','resolveFxS','AREAS','PROJS','mstVulnK','recalcP','clsOfP','getH','VIL','psP']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 const near=(a,b,e)=>Math.abs(a-b)<=(e||1e-6);
@@ -15,7 +15,7 @@ ok('every land has one real set at +1, +2 and +3 and none above (the eight lands
 ok('the new six sit where the table says: Pell Wildwood +3, Genzo Vale +3, Brynja Reach +3, Tamsin Greyspine +3, Zahra Sunscar +2, Hollis Gloamhorn +2; Sabir and Ottoline moved down to +1',[['pell','home',3],['genzo','vale',3],['brynja','hoar',3],['tamsin','grey',3],['zahra','sun',2],['hollis','gloam',2],['sabir','sun',1],['ottoline','gloam',1]].every(([i,l,t])=>SET(i).land===l&&SET(i).tier===t));
 ok('a clear at each tier rolls the set of that tier (and +4, +5 roll the +3 set)',['home','vale','hoar','grey','sun','gloam','amber'].every(l=>[1,2,3].every(t=>x.ssSetFor(l,t)&&x.ssSetFor(l,t).tier===t)&&x.ssSetFor(l,5).tier===3&&x.ssSetFor(l,0)===null));
 ok('twelve women and twelve men over the twenty-four; the six of version 3 are three and three (Brynja, Tamsin, Zahra / Pell, Genzo, Hollis), the Kin three are Dessa and Sefi / Brindle',x.SS_ORDER.filter(i=>SET(i).char.sex==='female').length===12&&x.SS_ORDER.filter(i=>SET(i).char.sex==='male').length===12&&['dessa','sefi'].every(i=>SET(i).char.sex==='female')&&SET('brindle').char.sex==='male'&&IDS.filter(i=>SET(i).char.sex==='female').join()==='brynja,tamsin,zahra'&&IDS.filter(i=>SET(i).char.sex==='male').join()==='pell,genzo,hollis');
-ok('the new six: fire, air, earth, light and dark are single elements and Brynja is the hybrid water + dark (the dual-element DPS)',IDS.map(i=>String(SET(i).el)).join()==='fire,air,water,dark,earth,light,dark');
+ok('the new six: fire, air, water, earth, light and dark: one element each (Brynja is water)',IDS.map(i=>String(SET(i).el)).join()==='fire,air,water,earth,light,dark');
 ok('roles: safe DPS, tank, risk DPS, grinder, support (buff), healer',(()=>{ const r=i=>SET(i).role; return r('pell').main==='safe'&&r('genzo').main==='tank'&&r('brynja').main==='risk'&&r('tamsin').main==='grind'&&r('zahra').main==='support'&&r('zahra').focus==='buff'&&r('hollis').main==='heal'; })());
 ok('dual roles: Genzo tank + healer, Tamsin grind + tank, Zahra support + safe DPS, Hollis healer + debuff support (all mild); Pell and Brynja are pure DPS',(()=>{ const r=i=>SET(i).role, al=i=>r(i).also&&r(i).also.role; return al('genzo')==='heal'&&al('tamsin')==='tank'&&al('zahra')==='safe'&&al('hollis')==='support'&&!r('pell').also&&!r('brynja').also&&['genzo','tamsin','zahra','hollis'].every(i=>r(i).also.part==='mild'&&!Array.isArray(SET(i).el)); })());
 ok('each set has an emblem of its own that no other set uses',(()=>{ const all=x.SS_ORDER.map(i=>SET(i).emblem); return IDS.every(i=>SET(i).emblem&&Number.isInteger(SET(i).emblem.col))&&new Set(all.map(e=>e.glyph)).size===all.length&&new Set(all.map(e=>e.col)).size===all.length; })());
@@ -31,7 +31,7 @@ const p=W.players.get('a'), pb=W.players.get('b');
 W.receive('a',{t:'party',a:'invite',name:'Other'}); tick(3); W.receive('b',{t:'party',a:'accept'}); tick(3);
 const norm=x.MONS.filter(m=>!m.boss&&!m.inst&&m.def.id==='slime'), [m1,m2,m3]=norm;
 const stand=(q,dx,dz)=>{ W.setPos(q.id,[p.x+dx,x.getH(p.x+dx,p.z+dz),p.z+dz,0,0,0]); q.dead=false; q.hp=q.maxHp; q.ally=null; q.shield=null; };
-const put=(m,dx,dz,face)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.aura=null; m.rxIcd=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; m.face=face===undefined?Math.PI:face; return m; };
+const put=(m,dx,dz,face)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; m.face=face===undefined?Math.PI:face; return m; };
 W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); p.dead=false; p.hp=p.maxHp; p.act=null; p.face=0; p.level=60;
 const reset=()=>{ x.AREAS.length=0; x.PROJS.length=0; stand(p,0,0); p.ally=null; p.shield=null; stand(pb,3,0); for(const m of [m1,m2,m3]) put(m,0,-30); };
 const still=fn=>{ const R=Math.random; Math.random=()=>0.5; try{ return fn(); } finally{ Math.random=R; } };
@@ -43,7 +43,7 @@ ok('the stage: a and b are one party',x.partyOf(p)&&x.partyOf(p)===x.partyOf(pb)
 
 // ---- Pell: the lure shot marks, the night-pool spear spends it ----
 clear(); reset(); put(m1,0,-12);
-{ still(()=>cast('pell_2_any',m1)); tick(20); ok('Pell: Dim the Lamp puts a Lure on the target',x.ssMarkN(p,m1,'lure')===1); }
+{ still(()=>cast('pell_2_any',m1)); tick(20); ok('Pell: Dim the Lamp puts a Lure on the target and sets it ablaze (the fire flavor became a plain burn)',x.ssMarkN(p,m1,'lure')===1&&m1.burnT>0&&x.ssMarkN(p,m2,'lure')===0); }
 { x.ssMarkS(p,m1,{id:'lure',n:3,dur:12,max:3}); still(()=>cast('pell_3_warrior',m1)); x.PROJS.length=0; ok('Pell: the spear\'s pop spends every Lure',x.ssMarkN(p,m1,'lure')===0); }
 // ---- Genzo: every strike tolls, Ring the Hour taunts and guards the party ----
 clear(); reset(); put(m1,0,-2.5);

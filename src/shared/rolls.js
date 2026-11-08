@@ -1,6 +1,6 @@
 //@ Rolled stats of level-40 gear (version 3): the 13 stats, three lines a roll, ranges for weapons and armour, caps, the code a roll adds to an item id, the reroll stones and what sacrificing a level-30+ piece pays. Pure.
 /* Agent map (design and numbers: docs/ROLLS.md; the pieces themselves are dungeon-rewards.js / dungeon-items.js)
-   owns:    RL_STATS (13 stats: atk hp def exp drop coin crit critdmg cdr buffdur rxk aspd chg), RL_LINES (3), RL_CAPS (cdr 40%, aspd 60%, chg 100%), RL_SAC (stones per rarity: 1 / 2 / 4 / 8 / 16),
+   owns:    RL_STATS (13 stats: atk hp def exp drop coin crit critdmg cdr buffdur debuffdur aspd chg), RL_LINES (3), RL_CAPS (cdr 40%, aspd 60%, chg 100%), RL_SAC (stones per rarity: 1 / 2 / 4 / 8 / 16),
             RL_COST (stones a roll costs), RL_STONE_KIND (weapon -> 'rsw', armour -> 'rsa'), rlRoll (a fresh code), rlParseCode, rlLinesOf (the lines of a code for a slot kind), rlText,
             rlSumOf (the capped sum of one stat over a set of worn items), rlLazyItem (ITEM's Proxy asks it for ids that carry a roll).
    uses:    items.js (RAR_MULT is not needed here; ITEM is the Proxy declared there), dungeon-rewards.js (dgItem builds the record of an id with a code).
@@ -22,7 +22,7 @@ const RL_STATS=[
   {id:'critdmg',k:'h',name:'Critical damage',      kind:'off', lo:0.05, hi:0.12, text:' critical multiplier', x:true},
   {id:'cdr',    k:'i',name:'Cooldown reduction',   kind:'util',lo:0.03, hi:0.08, text:'% shorter skill cooldowns'},
   {id:'buffdur',k:'j',name:'Buff duration',        kind:'util',lo:0.04, hi:0.10, text:'% longer buffs'},
-  {id:'rxk',    k:'k',name:'Reaction strength',    kind:'off', lo:0.03, hi:0.08, text:'% stronger elemental reactions'},
+  {id:'debuffdur',k:'k',name:'Debuff duration',      kind:'util',lo:0.04, hi:0.10, text:'% longer weaken and expose on enemies'},   // (code letter k was 'Reaction strength' before the reactions went: old rolled pieces keep their ids and now carry this)
   {id:'aspd',   k:'l',name:'Attack speed',         kind:'off', lo:0.03, hi:0.08, text:'% attack speed (your skill 1 swings faster, and every skill is cast faster; cooldowns stay)'},
   {id:'chg',    k:'m',name:'Charge gain',          kind:'util',lo:0.05, hi:0.12, text:'% more Deep Cave charge from every cast'}];
 const RL_BY_ID={}, RL_BY_KEY={}; for(const s of RL_STATS){ RL_BY_ID[s.id]=s; RL_BY_KEY[s.k]=s; }

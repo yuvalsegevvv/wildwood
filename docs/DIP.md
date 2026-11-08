@@ -15,6 +15,7 @@ One pipe in each of the eight lands (`DIP_SITES`, placed once at load by `dipPla
 
 Hooks marked `// dip:`: `nearPath` (village-helpers.js), the camp placer (monsters.js), `sanitizeGear` and the player loop (players.js), the tick (api.js), `rewardKill` (combat.js), `talking.js`, `loop.js`, `generation-setup.js`, `panels.js`.
 Protocol: in `dip{a:'open'|'up'|'go', id}`; out `{t:'dip',a:'info',id,lv,max,cost,count,every,kinds,needs,act,next}` and `{t:'dipa',a:[[id, seconds left]]}` (every 3 s while any pipe is active, once empty). Test: `node tools/dip-smoke.js`.
+**Lure** (`DIP_LURE_K` 0.5, `DIP_LURE_COST` 1.5): `dip{a:'lure',id,k}` picks one of the pipe's kinds (junk ids are refused, `''` clears); saved as `gear.dip.lure[site id]` (key absent = none, cleaned by `dipSanitize`). A release reads it once into its run state: half of every refill's spawns are that kind (the rest spread over the others) and the price is x1.5 (`dipCost(S,level,true)`), charged once. Materials from pipe monsters stay at `DIP_MAT_K` (0.25), in `rewardKill`.
 Not built: a map marker for the pipes; flattening the ground (a pipe is placed where the ground is flattest, at most 5 m of rise over the square).
 
 Coins (`coinsFor`, `shared/balance.js`) are soft-capped from level 30 (`coinCapK`): a level-60 kill pays x6 a level-30 one, level 120 pays x4 a level-60 one (x24 of level 30), a smooth ramp between; below level 30 nothing changed. Pipe prices follow it, so they are about 25 times lower than first built at the top.

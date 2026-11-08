@@ -32,7 +32,7 @@ ok('a tap is a press (0), a hold grows to 1 with the class\'s charge time, attac
   const A=x.abilityOf(cls,'basic',p.gear.skills,30);
   ok('attack speed 1.6 shortens both the swing and the pause',near(p.act.dur,A.act[1]/1.6,1e-6)&&near(p.cd.basic,A.cd/1.6,0.02),p.act.dur+' '+p.cd.basic);
   // skill 2 : cast time /speed, cooldown unchanged
-  p.act=null; p.cd={basic:0,skill:0,burst:0}; p.level=30; p.gear.skills.eq[cls]=p.gear.skills.eq[cls]||{}; if(!p.gear.skills.eq[cls].skill){ const id=Object.keys(x.SKILLS).find(k=>x.SKILLS[k].cls===cls&&x.SKILLS[k].slot==='skill'&&!x.SKILLS[k].set&&!x.SKILLS[k].drop); p.gear.skills.owned.push(id); p.gear.skills.eq[cls].skill=id; } const S2=x.abilityOf(cls,'skill',p.gear.skills,30);
+  p.act=null; p.cd={basic:0,skill:0,burst:0}; p.level=30; p.gear.skills.eq[cls]=p.gear.skills.eq[cls]||{}; if(!p.gear.skills.eq[cls].skill){ const id=Object.keys(x.SKILLS).find(k=>x.SKILLS[k].cls===cls&&x.SKILLS[k].slot==='skill'&&!x.SKILLS[k].set); p.gear.skills.owned.push(id); p.gear.skills.eq[cls].skill=id; } const S2=x.abilityOf(cls,'skill',p.gear.skills,30);
   ok('the player has a skill in slot 2',!!S2); if(S2){ W.receive('a',{t:'atk',k:'skill',face:0,aim:[0,0,-1]}); ok('every slot casts faster with attack speed, but its cooldown stays',p.act&&near(p.act.dur,S2.act[1]/1.6,1e-6)&&near(p.cd.skill,S2.cd*(1-0),S2.cd*0.2),p.act&&p.act.dur+' / '+p.cd.skill+' vs '+S2.cd); }
   { const ab2=x.abilityOf(cls,'basic',p.gear.skills,30), g=x.caveChargeGain(ab2,null); p.level=30; p.cave=p.cave||{charge:0}; p.rl={chg:0.5};
     p.cave.charge=0; x.caveCastS(p,'basic',ab2); x.caveHitS(p); const withChg=p.cave.charge; p.rl={}; p.cave.charge=0; x.caveCastS(p,'basic',ab2); x.caveHitS(p);

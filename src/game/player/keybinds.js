@@ -15,8 +15,8 @@ const KB_ACTIONS=[
   {id:'basic', name:'Basic attack',  def:['KeyF','Digit1']},
   {id:'skill', name:'Skill',         def:['KeyQ','Digit2']},
   {id:'burst', name:'Power skill',   def:['KeyR','Digit3']},
-  {id:'cave',  name:'Charge skill (4th slot)', def:['Digit4','']},   // cave: the 4th slot (game/cave/slot.js), opens at level 23
-  {id:'ult',   name:'Burst (5th slot)', def:['Digit5','']},   // ult: the set burst (game/ult/slot.js), opens at level 35
+  {id:'cave',  name:'Charge skill (4th slot)', def:['Digit4','']},   // cave: the 4th slot (game/cave/slot.js), opens at level 20
+  {id:'ult',   name:'Burst (5th slot)', def:['Digit5','']},   // ult: the set burst (game/ult/slot.js), opens at level 28
   {id:'mov',   name:'Movement skill (button)', def:['Digit6','']},   // movement: the movement slot's own button (game/movement/slot.js), opens at level 5
   {id:'pot1',  name:'Healing potion', def:['KeyZ','']},
   {id:'pot2',  name:'Potion of might', def:['KeyX','']},
@@ -29,6 +29,7 @@ const KB_ACTIONS=[
   {id:'gather',name:'Gather (mine, chop, pick herbs)', def:['KeyH','']},   // H: G is the world map's (a default key must not collide)
   {id:'inv',   name:'Inventory',     def:['KeyI','']},
   {id:'skills',name:'Skills',        def:['KeyK','']},
+  {id:'awaken',name:'Awakening tree', def:['KeyT','']},   // awakening: the tree of skill levels, stats and tiers (awakening/panel.js); T was a potion key before 11/2026 (a saved key keeps its owner)
   {id:'map',   name:'Map',           def:['KeyM','']},   // M: the map key most games use (N before 11/2026; saved keys keep theirs)
   {id:'world', name:'World map',     def:['KeyG','']},   // world map: the Eldmere panel (ui/world-map.js)
   {id:'chat',  name:'Chat',          def:['Enter','NumpadEnter']},

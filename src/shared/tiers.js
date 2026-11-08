@@ -38,12 +38,9 @@ function zoneTierK(d,t){
 }
 const symbolPoints=gear=>ZTIER_SYMBOL_LANDS.reduce((n,l)=>n+zoneTierMax(gear,l),0);
 const symbolBonus=gear=>ZTIER_BONUS*symbolPoints(gear);
-// version 3: a boss skill (the 72 a world boss drops, SKILLS[id].drop) rises one level for every zone tier of its boss's land you have defeated: level 1 + tiers (up to 1 + ZTIER_MAX), the same skillPower / skillCdMult curve as any skill.
-const BOSS_SKILL_MAX_LV=1+ZTIER_MAX;
 const ztBossLandCache=new Map();
 function ztBossLand(bossId){   // the land of a boss's arena ('home'... 'gloam'), or null for an unknown id
   if(ztBossLandCache.has(bossId)) return ztBossLandCache.get(bossId);
   const b=BOSS_DEFS.find(x=>x.def.id===bossId), A=b&&ARENAS.find(a=>a.key===b.arena), land=A?landAt(A.x,A.z):null;
   if(A) ztBossLandCache.set(bossId,land); return land;
 }
-const bossSkillLvOf=(gear,id)=>{ const s=SKILLS[id], land=s&&s.drop?ztBossLand(s.drop):null; return land?1+zoneTierMax(gear,land):1; };

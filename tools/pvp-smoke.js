@@ -4,7 +4,7 @@
 // Usage: node tools/pvp-smoke.js
 const {loadServer}=require('./load');
 const got={};
-const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) (got[pid]=got[pid]||[]).push(...c.ev); }},['PVP','inPvp','S','MONS','hurtP','recalcP','partyOf','SKILLS','skillLvOf','bridgeDeck','rawHeight','WATER','pvpFoeOf','foesS','PVP_ISLE','pvpSkillsOf','tierFor','elemHitS','soulOfP','ELEM_BOOST','WA_PVP','ARENA_TIDE','waLandId','waIsSea']);
+const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); if(c.t==='snap'&&c.ev) (got[pid]=got[pid]||[]).push(...c.ev); }},['PVP','inPvp','S','MONS','hurtP','recalcP','partyOf','SKILLS','skillLvOf','bridgeDeck','rawHeight','WATER','pvpFoeOf','foesS','PVP_ISLE','pvpSkillsOf','tierFor','elemHitS','ELEM_BOOST','ELEM_BASIC_K','WA_PVP','ARENA_TIDE','waLandId','waIsSea']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++) W.tick(0.05); };
 const P=pid=>W.players.get(pid);
@@ -45,16 +45,15 @@ ok('all three attack slots are open for a level-5 hiker (the class defaults fill
 ok('their real level, gear and save are untouched',A.level===5&&A.gear.skills.lv.whirlwind===5&&A.gear.eq.weapon==='sword1');
 ok('the snapshot shows everyone at the fighting level',(()=>{ let lv=null; const snap=[]; try{ lv=[...W.players.values()].filter(p=>p.pv).map(p=>p.pv?C.level:p.level); }catch(_){ } return lv&&lv.every(v=>v===C.level); })());
 
-// ---- elements: your soul is your element when you are hit; between fighters advantage is x1.15 (not the monsters' 1.5) ----
-{ const near=(a,b)=>Math.abs(a-b)<1e-9, K=1.15, def=P('c'), att=P('e');
-  def.level=40; def.gear.soul='fire'; att.gear.soul='basic'; const fireFoe=x.pvpFoeOf(def);
-  ok('a fighter\'s element is their soul (none under level 15 even if one is saved)',x.soulOfP(def)==='fire'&&fireFoe.T.el==='fire'&&(()=>{ const y=P('a'); y.gear.soul='water'; const r=x.soulOfP(y)==='basic'; y.gear.soul='basic'; return r; })());
-  ok('a water skill hitting a fire-soul fighter deals x1.15, not x1.5',near(x.elemHitS(att,'water',fireFoe),K));
+// ---- elements: a fighter's element is the one of their basic slot skill; between fighters advantage is x1.15 (not the monsters' 1.5), basic stays neutral ----
+{ const near=(a,b)=>Math.abs(a-b)<1e-9, K=1.15, att=P('e'), mage=P('d');   // Dara: a mage on the island
+  mage.pv.sk.owned.push('firebolt','iceshard'); mage.pv.sk.eq.mage.basic='firebolt'; const fireFoe=x.pvpFoeOf(mage), plainFoe=x.pvpFoeOf(P('c'));
+  ok('a fighter\'s element is the element of the skill in their basic slot (Firebolt: fire; a warrior\'s Slash: none)',fireFoe.T.el==='fire'&&plainFoe.T.el==='basic');
+  mage.pv.sk.eq.mage.basic='iceshard'; ok('...and follows the slot (Ice Shard: water)',x.pvpFoeOf(mage).T.el==='water'); mage.pv.sk.eq.mage.basic='firebolt';
+  ok('a water skill hitting a fire fighter deals x1.15, not x1.5',near(x.elemHitS(att,'water',fireFoe),K));
   ok('a skill of the target\'s own element or beaten by it deals /1.15 (fire on fire, air on fire)',near(x.elemHitS(att,'fire',fireFoe),1/K)&&near(x.elemHitS(att,'air',fireFoe),1/K));
-  ok('an element with no wheel relation, or a basic attack, is unchanged',near(x.elemHitS(att,'earth',fireFoe),1)&&near(x.elemHitS(att,'basic',fireFoe),1)&&near(x.elemHitS(att,'water',x.pvpFoeOf(P('a'))),1));
-  att.gear.soul='water'; ok('your own soul counts too, at the same strength (a water skill from a water soul: x1.15; at a fire soul as well: x1.15 x1.15)',near(x.elemHitS(att,'water',x.pvpFoeOf(P('a'))),K)&&near(x.elemHitS(att,'water',fireFoe),K*K)); att.gear.soul='basic';
-  ok('against a monster nothing changed: the same water skill deals x'+x.ELEM_BOOST,near(x.elemHitS(att,'water',{T:{el:'fire'}}),x.ELEM_BOOST)&&x.PVP.elemBoost===K);
-  def.level=40; def.gear.soul='basic'; }
+  ok('an element with no wheel relation is unchanged, and a basic attack has no bonus on a fighter (the x1.1 is for monsters)',near(x.elemHitS(att,'earth',fireFoe),1)&&near(x.elemHitS(att,'basic',fireFoe),1)&&near(x.elemHitS(att,'basic',plainFoe),1)&&near(x.elemHitS(att,'water',plainFoe),1));
+  ok('against a monster nothing changed: the same water skill deals x'+x.ELEM_BOOST+', a basic one x'+x.ELEM_BASIC_K,near(x.elemHitS(att,'water',{T:{el:'fire'}}),x.ELEM_BOOST)&&near(x.elemHitS(att,'basic',{T:{el:'fire'}}),x.ELEM_BASIC_K)&&x.PVP.elemBoost===K); }
 
 // ---- hitting ----
 const swing=(pid,tg,slot)=>{ const p=P(pid); p.cd.basic=p.cd.skill=p.cd.burst=0; p.act=null; W.receive(pid,{t:'atk',k:slot||'basic',tg,face:p.face,aim:[-Math.sin(p.face),0,-Math.cos(p.face)]}); tick(25); };

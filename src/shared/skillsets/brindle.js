@@ -1,5 +1,5 @@
 //@ Brindle's skill set, The Sun-Glass Belt (a mixed safe DPS + support, fire): a flung spark-pebble, a burst of focused sunlight that sharpens the party's aim, and a noon charge that spends the glints; amber, copper and laughing red
-/* Agent map. Kit: docs/skillkits/kit-mixed.md (main safe DPS, also support, mild: the sun-glass makes the party hit harder and crit more); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces fire: his hits leave the aura a partner reacts with);
+/* Agent map. Kit: docs/skillkits/kit-mixed.md (main safe DPS, also support, mild: the sun-glass makes the party hit harder and crit more); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces fire);
    outfit: game/outfits/brindle.js, docs/skillkits/looks/brindle.md; visuals: none yet, drawn like a generic skill. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js,
    tools/skillsets-ladder.js --set brindle. Land: the Amber Reach (tier 1; Old Thunder, Oldhorn and the Termite Cathedral are its sources, a late-bound id until the savanna bosses and dungeon exist). Mark: Glint.
    Unlike Marigold (the other safe + support: regeneration and a stage) he lends CRITICAL strikes: Sun-Glass Burst gives the party crit chance, Noon Charge crit damage and might, and both grow with the Glints he has on the enemies near him. */
@@ -27,7 +27,10 @@ defineSkillSet({
   ult:{name:'High Noon', desc:'He holds up a huge lens: a sunbeam burns a 30 m line and leaves a Glint on everything it crosses.', range:30, mult:3.96, act:['brindleult',1.1,0.6], anim:'cast',
        fx:{cone:{r:30, arc:0.3, mark:{id:'glint', n:2, dur:12, max:5}}},
        boost:[{piece:'a1', secs:14, mod:{mult:2, n:2}}, {piece:'p2', secs:14, mod:{v:2.5}}]},
-  bonus:{
-    3:{name:'Warm Lenses', text:'While you fight, you and your allies within 20 m deal 4% more damage (refreshed every 3 s)', on:'tick', icd:3, buff:{kind:'might', v:0.04, dur:4, r:20}},
-    5:{name:'Fuse Lit', text:'A critical hit on a target carrying a Glint sets the enemies within 5 m of it ablaze with a burst for 90% damage (at most every 3 s)', on:'crit', when:{marked:'glint'}, at:'target', icd:3, mult:0.9, range:5, fx:{ring:{r:5, burn:{dur:3, k:0.3}}}}},
+  tree:'banyan', stone:'Sunglass Bondstone',
+  bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
+    1:'brindle_p1',
+    2:{name:'Warm Lenses', text:'While you fight, you and your allies within 20 m deal 4% more damage (refreshed every 3 s)', on:'tick', icd:3, buff:{kind:'might', v:0.04, dur:4, r:20}},
+    4:'brindle_p3',
+    6:{name:'Fuse Lit', text:'A critical hit on a target carrying a Glint sets the enemies within 5 m of it ablaze with a burst for 90% damage (at most every 3 s)', on:'crit', when:{marked:'glint'}, at:'target', icd:3, mult:0.9, range:5, fx:{ring:{r:5, burn:{dur:3, k:0.3}}}}},
 });

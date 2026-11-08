@@ -8,7 +8,7 @@
    moved to a copy, every player on a floor shares its monsters, snapshots and chat like any land; the squares lie inside dgInSlots(x) (shared/dungeon-slots.js), so the machinery that already treats that
    strip as "underground, not the world" keeps working (flat-floor getH, no ambience of the forest, fish and dragonflies off), while dgSlotAt(x,z) is -1 there (no run is ever placed on a floor).
    The squares are CAVE_SIZE m (168 cells of 2 m) and CAVE_SPACING (600 m) apart: further than the widest snapshot radius (250 m) from each other and from the run slots, so no floor ever sees another.
-   caveFloorOpen: floor 1 is open to everyone from level 23; floor n > 1 once the hiker owns at least CAVE_OPEN_NEED (2) skills of the floor above (C3 turns on the earning of skills, the rule is already right). */
+   caveFloorOpen: floor 1 is open to everyone from level 20; floor n > 1 once the hiker owns at least CAVE_OPEN_NEED (2) skills of the floor above (C3 turns on the earning of skills, the rule is already right). */
 const CAVE_FLOOR_DEFS=Object.create(null), CAVE_FLOOR_N=[], CAVE_FLOOR_BAD=[];
 const CAVE_X0=DG_X0+DG_ACROSS*DG_SLOT+300, CAVE_Z0=DG_Z0, CAVE_SPACING=600, CAVE_SIZE=168*CAVE_CELL, CAVE_FLOOR_Y=DG_FLOOR_Y, CAVE_OPEN_NEED=2;
 const CAVE_THEMES=['grotto','prism','drowned','magma'];

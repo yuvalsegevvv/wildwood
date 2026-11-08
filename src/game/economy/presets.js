@@ -1,4 +1,4 @@
-//@ Presets panel (the HUD's layers button): ten cards, each a saved setup of skills, soul and equipment with an optional linked outfit slot; wear, save, rename, clear
+//@ Presets panel (the HUD's layers button): ten cards, each a saved setup of skills and equipment with an optional linked outfit slot; wear, save, rename, clear
 /* Server rules in server/presets.js. Agent map: renderPresets() (items.js calls it on every `you` update while the panel is open), prWearOutfit(i,of) (net/client.js 'prwear' event).
    The outfit slots live in the browser (character-editor.js wearOutfitSlot); a preset only stores the slot number, -1 = leave the outfit alone. test: tools/presets-smoke.js, client-smoke */
 const PRS={name:{}};   // names typed but not yet saved, per card
@@ -13,7 +13,6 @@ function prSkillNames(e){
 function prIsNow(e){
   const g=GEAR; if(!g||!e) return false;
   for(const k in g.eq) if((g.eq[k]||null)!==(e.eq[k]||null)) return false;
-  if((g.soul||'basic')!==(e.soul||'basic')) return false;
   const S=g.skills||{}, E=(S.eq&&S.eq[e.cls])||{};
   for(const sl of ['basic','skill','burst']) if((E[sl]||null)!==(e.sk[sl]||null)) return false;
   for(let j=0;j<3;j++) if(((S.pass||[])[j]||null)!==((e.pass||[])[j]||null)) return false;
@@ -31,10 +30,9 @@ function prCard(i,e){
   if(e){
     const w=ITEM[e.eq.weapon], gear=Object.keys(e.eq).filter(k=>k!=='weapon'&&e.eq[k]).length;
     const line1=document.createElement('div'); line1.className='pr-l1'; line1.textContent=(w?w.name:'No weapon')+(gear?' · '+gear+' gear piece'+(gear>1?'s':''):'');
-    const soul=document.createElement('span'); soul.innerHTML=ELEMS[e.soul]?elChip(e.soul):''; line1.append(' ',soul);
     const line2=document.createElement('div'); line2.className='pr-l2'; line2.textContent=prSkillNames(e).join(' · ')||'No skills set';
     sum.append(line1,line2);
-  } else sum.textContent='Empty: set up your skills, soul and gear, then save here.';
+  } else sum.textContent='Empty: set up your skills and gear, then save here.';
   card.append(sum);
   const ctl=document.createElement('div'); ctl.className='pr-ctl';
   const sel=document.createElement('select'); sel.className='pr-of'; sel.setAttribute('aria-label','Linked outfit for preset '+(i+1)); sel.title='Optional: wear an outfit slot together with this preset';
@@ -54,7 +52,7 @@ function renderPresets(){
   const body=$('#prBody'); if(!body||$('#presets').hidden) return;
   if(body.contains(document.activeElement)&&document.activeElement.tagName==='INPUT') return;   // not while a name is being typed
   const keep=body.scrollTop, L=(GEAR&&GEAR.pre)||[];
-  const note=document.createElement('p'); note.className='pr-note'; note.textContent='Each preset keeps your 8 skills, soul and equipment. Wear one anywhere, except in a boss fight, raid, dungeon or on the Proving Isle. An outfit link is optional: with none, your outfit stays as it is.';
+  const note=document.createElement('p'); note.className='pr-note'; note.textContent='Each preset keeps your 8 skills and equipment. Wear one anywhere, except in a boss fight, raid, dungeon or on the Proving Isle. An outfit link is optional: with none, your outfit stays as it is.';
   const grid=document.createElement('div'); grid.className='pr-grid';
   for(let i=0;i<PR_COUNT;i++) grid.append(prCard(i,L[i]||null));
   body.replaceChildren(note,grid); body.scrollTop=keep;
