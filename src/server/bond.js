@@ -117,6 +117,7 @@ function bdRefreshP(p){
       const o=f(g)||{}; if(o.p) for(const id of Object.keys(o.p)) if(bdOwn(PASSIVES,id)) X.p[id]=o.p[id]; if(Array.isArray(o.r)) X.r.push(...o.r); }
   }
   sk.bdx=X; p.bdMain=main;
+  if(p.look) bdLookCheckP(p);   // bond: the free look follows the character played
 }
 // the character played: free, any time (the owner: Bonds should not follow the Power piece). set = an owned set id, 'wanderer', or null (back to the Power piece's rule)
 function bdPlayP(p,k){
@@ -126,7 +127,15 @@ function bdPlayP(p,k){
   recalcP(p); p.dirty=true; return true;
 }
 // the outfits a hiker may wear for free, whole and unmodified: every character bonded (Bond 0+) that has an outfit (server/amber.js ambCleanLook)
-function bdFreeOutfits(g){ const out=[]; if(!g||!g.bd) return out; for(const k of SS_ORDER){ const S=SS_SETS[k]; if(S&&typeof S.outfit==='string'&&bdOf(g,k)>=0) out.push(S.outfit); } return out; }
+function bdFreeOutfits(g){   // only the character you play now (the owner: the look is the active Bond's; changing who you play takes it off)
+  const m=g&&g.skills&&g.skills.bdx&&g.skills.bdx.main, S=bdSetOk(m)?SS_SETS[m]:null;
+  return S&&typeof S.outfit==='string'&&bdOf(g,m)>=0?[S.outfit]:[];
+}
+// after the main character changed: a free look of another character goes back to your own (the base model; your hair, face and colours stay)
+function bdLookCheckP(p){
+  const L=p.look; if(!L||typeof L.model!=='string'||L.model==='base') return;
+  const c=ambCleanLook(L,p.gear.os,bdFreeOutfits(p.gear)); if(c.model!==L.model){ p.look=c; p.saveDirty=true; ev('plook',p.id,p.look); }
+}
 // ---- testing ----
 function bdGrantP(p,k,b,st){
   if(!bdSetOk(k)) return false;

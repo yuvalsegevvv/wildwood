@@ -83,8 +83,8 @@ function chrPathHtml(){ const cur=bdcPath(); return '<div class="chr-path">'+bdc
 function chrLookHtml(k){
   const S=SS_SETS[k], E=bdcEntry(k), id=S&&S.outfit, bought=!!(GEAR.os&&GEAR.os.includes(id)), on=LOOK&&LOOK.model===id;
   if(!id) return '<p class="bdc-note">This character has no outfit yet.</p>';
-  const free=E.b>=0;
-  return '<div class="chr-look"><p class="bdc-note">'+(free?S.char.name+'\'s look is yours to wear for free while you have their Bond, exactly as designed.':'Unlock '+S.char.name+' (Bond 0) to wear their look for free.')
+  const X=GEAR.skills&&GEAR.skills.bdx, free=E.b>=0&&!!X&&X.main===k;   // only while you play them (the server: bdFreeOutfits)
+  return '<div class="chr-look"><p class="bdc-note">'+(free?S.char.name+'\'s look is yours to wear for free while you play them, exactly as designed. Playing someone else puts your own look back.':E.b>=0?'Play '+S.char.name+' to wear their look for free.':'Unlock '+S.char.name+' (Bond 0), then play them, to wear their look for free.')
     +' Changing anything about it (colours, mixing its pieces into another look) needs the outfit set from the gem shop'+(bought?' (you own it: the character editor has every piece)':'')+'.</p>'
     +'<div class="chr-la">'+(free?'<button class="chip buy" data-chrlook="'+k+'"'+(on?' disabled':'')+'>'+(on?'Wearing it':'Wear '+S.char.name+'\'s look')+'</button>':'')
     +(on?'<button class="chip" data-chrlook="">Back to my own look</button>':'')+'</div></div>';
@@ -97,6 +97,13 @@ function chrWearLook(k){
   if(!CHR_OWN_LOOK&&LOOK.model!==id) CHR_OWN_LOOK=Object.assign({},LOOK);
   const L=Object.assign({},LOOK,{model:id}); for(const f of Object.keys(L)) if(/^tint[A-Z]/.test(f)) L[f]=-1;
   LOOK=fullLook(L); saveLook(); rebuildHiker(); UI_SFX.success(); awcRender();
+}
+// the free look follows the character played (economy/items.js applyGear calls this on every you update): a look of a character you no longer play, and have not bought, goes back to your own
+function chrLookCheck(){
+  if(!GEAR||!LOOK||typeof LOOK.model!=='string'||!OUTFITS[LOOK.model]||(GEAR.os&&GEAR.os.includes(LOOK.model))) return;
+  const X=GEAR.skills&&GEAR.skills.bdx, S=X&&SS_SETS[X.main]; if(S&&S.outfit===LOOK.model) return;
+  if(CHR_OWN_LOOK){ LOOK=fullLook(CHR_OWN_LOOK); CHR_OWN_LOOK=null; } else LOOK=fullLook(Object.assign({},LOOK,{model:'base'}));
+  saveLook(); rebuildHiker();
 }
 // ---- drawing ----
 function chrPut(id,html){ if(AWC.html[id]!==html){ AWC.html[id]=html; $('#'+id).innerHTML=html; return true; } return false; }

@@ -12,7 +12,7 @@ const {api:W,x}=loadServer({dev:true,send(to,m){ sent.push([to,m]); }},
   ['SS_SETS','SS_ORDER','BD_ROW_K','SKILLS','PASSIVES','CAVE_SKILLS','CAVE_SKILL_IDS','MQ','BD_COST','BD_TOP','BD_STONE_COINS','BD_GUEST_PEN','bdBuyP','bdAddStonesP','bdGrantP','bdOwns','bdMainOf','bdRealOf','bdTierNeed','bdIsBondPassive',
    'bdStonesLeft','awkGrantP','awkTierP','sanitizeGear','skillLvOf','caveLvOf','psP','recalcP','clsOfP','ssEquipPieceP','ssGrantSetP','SMIG_VER','passiveValue','BD_ORB_PRICE','BD_ORB_MAX','BD_ORB_ROLL','BD_STIR_SECS','BD_STIR_CHARGE','BD_STIR_BOSS','bdRollRow','bdStirPick','bdOrbBuyP','bdPickP','bdOpenOrbP','bdOpenManyP','bdOrbSetOf','bdStirPickS','bdStirTickS','bdStirMsg',
    'bdZonesByLand','BD_ZONE_OF','bdChargeS','bdStirBossP','bdStirDungeonP','bdStirRaidP','bdChargeFlushP','MONS','S','rewardKill','RD_ORDER','RDS','BOSS_DEFS','DG_THEMES','DG_ENTRANCES','ssGrantP','landAt',
-   'WD_PATHS','WD_ORDER','WD_PIECE_OF','WD_BAD','WD_DEFAULT','defineWandererPath','wdPathOf','ULT_SKILLS','ULT_BAD','AWK_PATH_KIT','ultEquippedP','buySkillP','equipSkillP','ssBonuses','SS_STATS','SS_WHEN_KEYS','ssWhenProblem','ssCondP','ssRowProblem']);   // (the last row: step 18, the Wanderer's paths)
+   'WD_PATHS','WD_ORDER','WD_PIECE_OF','bdFreeOutfits','WD_BAD','WD_DEFAULT','defineWandererPath','wdPathOf','ULT_SKILLS','ULT_BAD','AWK_PATH_KIT','ultEquippedP','buySkillP','equipSkillP','ssBonuses','SS_STATS','SS_WHEN_KEYS','ssWhenProblem','ssCondP','ssRowProblem']);   // (the last row: step 18, the Wanderer's paths)
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info!==undefined?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<(n||3);i++) W.tick(0.05); };
 W.join('a',{name:'Bonder',look:{cls:'warrior'},save:{level:60}}); tick();
@@ -84,6 +84,9 @@ ok('three pieces: Bond III, +1 level to the character\'s pieces (above the tier 
   ok('a guest piece costs the main one Bond step (2 own pieces, 1 guest: active Bond 1)',sk.bdx.g===1&&sk.bdx.act===1,sk.bdx.act);
   ok('...and is '+x.BD_GUEST_PEN+' levels lower, with none of its own Bond levels',x.skillLvOf(sk,ga)===Math.max(1,gb-x.BD_GUEST_PEN),gb+' -> '+x.skillLvOf(sk,ga));
   W.receive('a',{t:'bd',a:'play',set:GUEST}); ok('Play picks the main character and wears their set: the guest is now in play with its own pieces worn',x.bdMainOf(p)===GUEST&&sk.bdx.main===GUEST&&sk.bdx.g===0&&sk.bdx.act===0&&g.bd.play===GUEST,sk.bdx.main+' '+sk.bdx.g+' '+sk.bdx.act);
+  { const of=x.SS_SETS[GUEST].outfit; p.look={model:of,tintTop:5,hair:'short'}; x.recalcP(p);
+    ok('the character played may wear their outfit free (bdFreeOutfits), not another\'s',p.look.model===of&&x.bdFreeOutfits(g).join()===of,JSON.stringify(p.look));
+    W.receive('a',{t:'bd',a:'play',set:'wanderer'}); ok('...playing someone else puts your own look back (the base model, your hair kept)',p.look.model==='base'&&p.look.hair==='short',JSON.stringify(p.look)); }
   W.receive('a',{t:'bd',a:'play',set:'wanderer'}); ok('...the Wanderer too',sk.bdx.main==='wanderer');
   W.receive('a',{t:'bd',a:'play',set:'constructor'}); ok('...an unknown character is refused',g.bd.play==='wanderer');
   ok('...and the pick is saved',x.sanitizeGear(JSON.parse(JSON.stringify(g)),'warrior').bd.play==='wanderer');
