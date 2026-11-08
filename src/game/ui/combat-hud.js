@@ -104,6 +104,7 @@ function setActionBar(){
     el.querySelector('svg').innerHTML=(a&&ssGlyph(a))||ICONS[a?a.name:locked?'lock':'plus']||ICONS.burst;   // skillsets: a set piece draws its set's own symbol, in the set's colour
     el.classList.toggle('has-set',!!(a&&ssTint(a))); el.style.setProperty('--set',a&&ssTint(a)||'transparent');
     el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+slotLv(slot):(slot==='burst'?'Power':'Skill');
+    bdcAbLevel(el,a,L);   // bond: the level in play, with the Bond's +1 or the guest mark (bond/tags.js)
     el.classList.toggle('empty',!a); const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
     el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Power':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };
   fill(abBasic,'basic',kbName('basic')); fill(abSkill,'skill',kbName('skill')); fill(abBurst,'burst',kbName('burst'));

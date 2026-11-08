@@ -45,6 +45,7 @@ styles
   32-ult.css                         The set burst (5th slot): its action-bar tile, the cast popup card and the skills panel row (game/ult/slot.js, popup.js)
   35-movement.css                    Movement slot: the movement slot's tile (#abMov) and its tab in the skills panel (game/movement/slot.js)
   37-awakening.css                   Awakening tree panel (game/awakening/panel.js): the character picker, the tier strip, the canvas with its zoom buttons, the limb chips and the detail box; a bottom sheet on a phone
+  38-bonds.css                       Bonds (game/bond/): the Bonds panel (cards, the orb pouch, this hour's Stirrings), the orb pop-up, the +1 and guest marks on skill tiles and the action bar
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -532,7 +533,7 @@ game
   combat/mon-status.js               Monster status notes on the client: the "Vulnerable +14%" / "Weakened -10%" text that pops over a monster when a shared vuln or weak lands on it
   skillsets/marks.js                 Skill-set marks on the client: a kit's stacks as shaped, glowing pips over the monster (only yours), a full-stack halo, a burst when they are spent, and a stack chip on the target frame
   skillsets/procs.js                 Skill-set procs on the client: a set bonus that fires shows its name as a badge, a rune ring at the wearer and a streak of motes to its target; a refunded cooldown flashes its slot
-  skillsets/panel.js                 Skill sets in the skills panel and the action bar: each set's own symbol and colour on its pieces (never the generic star), and the set effect (the 3-piece and 5-piece bonus rows are hidden while SS_BONUS_ON is false)
+  skillsets/panel.js                 Skill sets in the skills panel and the action bar: each set's own symbol and colour on its pieces (never the generic star), and the set effect (the character's Bond rows and the active Bond in place of the old 3- and 5-piece rows, which only return with SS_BONUS_ON)
   combat/lucky.js                    Lucky drops and forging: light beam, sparkles, banner and a bright jingle for epic, unique and legendary items
   combat/sounds.js                   Combat sounds (cSfx) and monster voices (monSound)
   ui/combat-hud.js                   Target frame, player bars, damage numbers, action bar, attack input
@@ -653,7 +654,11 @@ game
   rift/glass.js                      The rift's glass monsters on the client: the glass material (see-through, the kind's tint mixed into its colours, a bright rim in the rift's blue / purple / pink, a soft glow) and the shatter when one dies
   rift/view.js                       The rift's void world on the client: frosted glass platforms and clear glass bridges with glowing rims, crystals hanging under them, the tears the waves come through, the hub's portal, an aura sky of drifting blue / purple / pink veils, floating shards, the light and fog, the music
   rift/rift.js                       Rifts on the client: the tear in the wild (a crack of light in a ring of glass shards, glassed trees round its clearing), the talk key, the rift window (energy bar and time to full, the Double, Enter), the wave banner
-  bond/orbs.js                       Bond Orbs on the client (minimal; step 16 builds the Bonds tab): the orb stall's panel (24 characters, buy 1 or 10, the pouch's pick), the hour's Stirrings picks, the orb and stir events
+  bond/orbs.js                       Bond Orbs on the client: the orb stall's panel (24 characters, buy 1 or 10, the pouch's pick), the hour's Stirrings picks (BDC_STIR), the orb and stir events (the Bonds panel, the map glow and the pop-up are in bond/panel.js, stir.js, popup.js)
+  bond/stir.js                       The hour's Stirrings on the client: the picks made drawable once (zone outlines, the boss's arena, the door, the raid), their glow on the land map, the minimap and the world map, and the "Stirrings this hour" box
+  bond/popup.js                      The orb pop-up: a small card in the character's colour when stones arrive (the stones, the next Bond step's progress), stacked and merged while orbs keep opening
+  bond/tags.js                       Bonds on the skill tiles and the set cards: the +1 a Bond gives, the guest tag and its -2, the action bar's level, and the skillsets panel's Bond rows with the active Bond
+  bond/panel.js                      The Bonds panel: every character's Bond 0-VI as pips with the stones held against the next step, the zone-tier gate, what each step gives and a Buy button; the orb pouch (the pick, the charge, the stall), the Wanderer's Realization and this hour's Stirrings
   awakening/tree.js                  Awakening tree drawing: one character's tree on a 2D canvas (limbs as lines, upgrade / stat / star nodes by state, faint joins, limb labels), the view (fit, zoom, clamp) and picking a node; pure: no DOM, no gear
   awakening/costs.js                 Awakening panel, the rules half: which characters are listed, a node's state (own / buy / open / tier / req), its name and effect in words, its price against what you hold (awcStatus, awcCostLines, awcTierInfo)
   awakening/panel.js                 Awakening panel: one character's tree on a canvas (tap a node, drag to pan, pinch or wheel to zoom), the character picker, the tier strip, the detail box with its price and Buy button; the awk event; opened by the Awaken button or its key

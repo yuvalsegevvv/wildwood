@@ -18,7 +18,7 @@ function skTile(s,C,from){
   const own=C.S.owned.includes(s.id), low=C.lv<needLv(s), L=skillLvOf(C.S,s.id), el=elOf(s);
   const drag=true;   // every tile can be dragged, so a drop that is refused always says why (not learned yet, level, the basic slot, a locked slot)
   const tint=ssTint(s);
-  return `<button class="sk-tile${el!=='basic'?' has-el':''}${tint?' has-set':''}${SK.sel===s.id?' sel':''}${own?'':' unowned'}${low?' locked':''}${drag?' drag':''}${s.slot==='burst'?' burst':''}" data-id="${s.id}" data-from="${from}" data-drag="${drag?1:0}" style="--el:${el==='basic'?'transparent':ELEMS[el].col}${tint?';--set:'+tint:''}" aria-label="${s.name}${s.set?' ('+SS_SETS[s.set].name+' set)':''}${own?', level '+L:''}">${skIconOf(s)}${el!=='basic'?'<i class="el-dot"></i>':''}<span class="lv">${own?'Lv '+L:low?'Lv '+needLv(s):s.price?s.price+'c':'Free'}</span></button>`;
+  return `<button class="sk-tile${el!=='basic'?' has-el':''}${tint?' has-set':''}${SK.sel===s.id?' sel':''}${own?'':' unowned'}${low?' locked':''}${drag?' drag':''}${s.slot==='burst'?' burst':''}" data-id="${s.id}" data-from="${from}" data-drag="${drag?1:0}" style="--el:${el==='basic'?'transparent':ELEMS[el].col}${tint?';--set:'+tint:''}" aria-label="${s.name}${s.set?' ('+SS_SETS[s.set].name+' set)':''}${own?', level '+L:''}">${skIconOf(s)}${el!=='basic'?'<i class="el-dot"></i>':''}${own?bdcTileBadge(C.S,s.id):''}<span class="lv">${own?'Lv '+L:low?'Lv '+needLv(s):s.price?s.price+'c':'Free'}</span></button>`;
 }
 function skSlotsHtml(C,cls){
   const act=SLOTS.map(slot=>{
@@ -59,7 +59,7 @@ function skInfoHtml(C,cls){
     up=`<div class="sk-up"><b>${L>=SKILL_MAX_LV?'Highest level':'Level '+L+' of '+SKILL_MAX_LV}</b><span class="muted">Skill levels, stats and tiers are bought in the Awakening tree, with coins and monster drops.</span><button class="chip buy" data-awaken="${s.set||'wanderer'}" data-limb="${limb}">Awaken</button></div>`;
   }
   const lock=low?`<span class="req bad">needs level ${needLv(s)}</span>`:'';
-  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico${ssTint(s)?' has-set':''}"${ssTint(s)?` style="--set:${ssTint(s)}"`:''}>${skIconOf(s)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags">${tags}</div><span class="sk-meta">${own?'Level '+L+' of '+SKILL_MAX_LV+' &middot; ':''}${stats} ${lock}</span></div><div class="sk-ii-btn">${acts}</div></div><p class="sk-desc">${pass?passiveText(s.id,L):s.desc}</p>${s.set?`<div class="sk-set-wrap"><div class="sk-load-h">Set piece <span>${SS_BONUS_ON?'wear 3 pieces for the first effect, 5 for the second':'part of '+SS_SETS[s.set].name}</span></div>${ssCardHtml(s.set,ssCount(S,cls,C.lv)[s.set]||0,ssOwnedPairs(S,s.set))}</div>`:''}${up}</div>`;
+  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico${ssTint(s)?' has-set':''}"${ssTint(s)?` style="--set:${ssTint(s)}"`:''}>${skIconOf(s)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags">${tags}</div><span class="sk-meta">${own?'Level '+L+' of '+SKILL_MAX_LV+bdcLvNote(S,s.id)+' &middot; ':''}${stats} ${lock}</span></div><div class="sk-ii-btn">${acts}</div></div><p class="sk-desc">${pass?passiveText(s.id,L):s.desc}</p>${s.set?`<div class="sk-set-wrap"><div class="sk-load-h">Set piece <span>${SS_BONUS_ON?'wear 3 pieces for the first effect, 5 for the second':'part of '+SS_SETS[s.set].name}</span></div>${ssCardHtml(s.set,ssCount(S,cls,C.lv)[s.set]||0,ssOwnedPairs(S,s.set))}</div>`:''}${up}</div>`;
 }
 function renderSkills(){
   if($('#skills').hidden) return;

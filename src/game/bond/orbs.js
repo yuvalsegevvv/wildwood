@@ -1,15 +1,15 @@
-//@ Bond Orbs on the client (minimal; step 16 builds the Bonds tab): the orb stall's panel (24 characters, buy 1 or 10, the pouch's pick), the hour's Stirrings picks, the orb and stir events
+//@ Bond Orbs on the client: the orb stall's panel (24 characters, buy 1 or 10, the pouch's pick), the hour's Stirrings picks (BDC_STIR), the orb and stir events (the Bonds panel, the map glow and the pop-up are in bond/panel.js, stir.js, popup.js)
 /* Agent map (skills revamp step 13-14; server half: server/bond-orbs.js, bond-stir.js; protocol: docs/PROTOCOL.md; test: client-smoke).
    Globals: BDC_STIR = the hour's picks {h, z: {land: zone key}, b: boss id, k: 'dg' | 'rd', id} (welcome and event stir; null before the first), bdcOpenStall(npc) (role 'orbs', talking.js openRolePanel),
-   bdcRender() (the panel; re-drawn by applyYou while open), bdcOnOrb(set, stones, coins) (event orb: a toast), bdcOnStir(msg).
+   bdcRender() (the panel; re-drawn by applyYou while open), bdcOnOrb(set, stones, coins) (event orb: the pop-up, bond/popup.js; a redraw of the open panels), bdcOnStir(msg) (the picks: the map marks and the Bonds panel's box are built from them, bond/stir.js).
    Reads the gear mirror: GEAR.bd[<set>] {b, st, o}, GEAR.bd.pick, GEAR.bd.chg. Messages: bd {a:'orb', set, n}, bd {a:'pick', set}. */
 var BDC_STIR=null;
-function bdcOnStir(msg){ BDC_STIR=msg&&typeof msg==='object'?msg:null; }
+function bdcOnStir(msg){ BDC_STIR=msg&&typeof msg==='object'?msg:null; if(typeof $==='function'&&$('#bdc')&&!$('#bdc').hidden) bdcBondsRender(); }
 function bdcOpenStall(n){ openPanel('orbs',n||null); bdcRender(); }
 function bdcOnOrb(set,stones,coins){
   const S=bdOwnKey(SS_SETS,set)?SS_SETS[set]:null; if(!S) return;
-  toast('Bond Orb opened: '+(+stones||0)+' '+S.char.name+' Bondstone'+(stones===1?'':'s')+(coins>0?' (+'+coins+' coins beyond Bond VI)':''),'loot r3');
-  if(UI_SFX&&UI_SFX.success) UI_SFX.success(); if(!$('#orbs').hidden) bdcRender();
+  bdcPop(set,+stones||0,+coins||0);   // (the pop-up says the stones, the coins beyond Bond VI and the next step's progress; step 16)
+  if(UI_SFX&&UI_SFX.success) UI_SFX.success(); if(!$('#orbs').hidden) bdcRender(); if(!$('#bdc').hidden) bdcBondsRender();
 }
 function bdcRender(){
   if($('#orbs').hidden) return;

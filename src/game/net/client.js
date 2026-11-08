@@ -75,6 +75,7 @@ function applyEvent(e){
     case 'fxa': ssOnFxa(e[1],e[2],e[3]); break;   // skillsets: a heal or a shield reached a player (drawn in the piece's look)
     case 'awk': if(e[1]===me) awcOnAwk(e[2],e[3],e[4]); break;   // awakening: a tier or a tree node of yours was bought (set id, 't' | node id, tier)
     case 'orb': if(e[1]===me) bdcOnOrb(e[2],e[3],e[4]); break;   // bond: an orb of yours was opened (set id, stones, coins beyond Bond VI)
+    case 'bd': if(e[1]===me) bdcOnBond(e[2],e[3]); break;   // bond: a Bond step of yours was bought (set id, the Bond reached)
     case 'stir': bdcOnStir(e[1]); break;   // bond: a new hour's Stirrings
     case 'ssget': ssOnGet(e[1],e[2],e[3]); break;   // skillsets: a signature skill and its passive were earned
     case 'st': mstOnStatus(e[1],e[2],e[3],e[4],e[5]); break;   // statuses: vuln / weak set
