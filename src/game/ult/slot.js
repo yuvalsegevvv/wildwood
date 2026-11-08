@@ -7,7 +7,8 @@ var ULT_UI={sel:null,cdTotal:60,boost:{}};
 function ultOwnedIds(){ return GEAR&&GEAR.skills?Object.keys(ULT_SKILLS).filter(id=>ultOwned(GEAR.skills,GEAR.cave,id)):[]; }   // (functions, not consts: setActionBar calls them at load, before this file runs)
 function ultAbilityNow(){   // the burst you can cast right now (worn, owned, slot open, not on the island), else null
   if(!GEAR||!GEAR.skills||PL.level<ULT_LV||(PVC&&PVC.on)) return null;
-  const id=GEAR.skills.ult; return ultDef(id)&&ultOwned(GEAR.skills,GEAR.cave,id)?ultDef(id):null;
+  const id=GEAR.skills.ult; if(wdIsUlt(id)&&!wdMainOk(GEAR.skills)) return null;   // wanderer: a path's burst only while the Wanderer is played
+  return ultDef(id)&&ultOwned(GEAR.skills,GEAR.cave,id)?ultDef(id):null;
 }
 function ultFillTile(){
   const el=$('#abUlt'); if(!el||!GEAR) return;
@@ -52,7 +53,10 @@ NETH.ubo=msg=>{ for(const id in ULT_UI.boost) if(!msg.ids.includes(id)) delete U
 EVH.ultget=e=>{ if(e[1]!==NET.pid) return; ultWarm(); UI_SFX.click(); };   // (the server also sent a toast)
 /* ---- the skills panel: the Burst row under the slots and the Burst tab ---- */
 function ultPieceName(setId,piece){
-  const S=SS_SETS[setId]; if(!S) return piece;
+  const S=SS_SETS[setId];
+  if(!S){ const a=ultDef(setId); if(!a||!a.wd) return piece;   // wanderer: a path's burst buffs the class active worn in that slot, or the path passive
+    if(piece==='p1') return PASSIVES[WD_PATHS[a.wd].passive].name;
+    const ab=GEAR&&GEAR.skills?abilityOf(clsOf(),SS_SLOT_OF[(+piece[1])-1],GEAR.skills,PL.level):null; return ab&&!ab.set?ab.name:['Your basic attack','Your skill','Your Power skill'][(+piece[1])-1]; }
   if(piece==='cave'){ const c=CAVE_SKILL_IDS.map(i=>CAVE_SKILLS[i]).find(q=>q.set===setId); return c?c.name:'Charge skill'; }
   const n=+piece[1], P=S.pos[n]; return piece[0]==='a'?SKILLS[P.ids[0]].name:PASSIVES[P.passive].name;
 }
@@ -76,23 +80,24 @@ function ultDrop(src,tg){
 function ultSlotHtml(C){
   const locked=C.lv<ULT_LV, a=GEAR&&GEAR.skills&&ultDef(GEAR.skills.ult), on=a&&ultOwned(GEAR.skills,GEAR.cave,a.set)&&!locked, owned=ultOwnedIds().length>0;
   const tile=on?ultTile(a,'slot:ult','','Burst'):`<div class="sk-tile empty">${skIcon(locked?'lock':'plus')}</div>`;
-  return `<div class="sk-slot ult${on?' on':''}${locked?' locked':''}" data-ultslot="1"><span class="sk-n">5 · Burst</span>${tile}<b>${on?a.name:locked?'Opens at level '+ULT_LV:owned?'Empty':'Earn one'}</b><small>${on?(SS_SETS[a.set].role.main==='grind'?'30 s (60 s in a boss fight)':'60 s'):''}</small></div>`;
+  return `<div class="sk-slot ult${on?' on':''}${locked?' locked':''}" data-ultslot="1"><span class="sk-n">5 · Burst</span>${tile}<b>${on?a.name:locked?'Opens at level '+ULT_LV:owned?'Empty':'Earn one'}</b><small>${on?(SS_SETS[a.set]&&SS_SETS[a.set].role.main==='grind'?'30 s (60 s in a boss fight)':'60 s'):''}</small></div>`;
 }
 function ultGridHtml(){
-  const ids=Object.keys(ULT_SKILLS); if(!ids.length) return '<p class="muted sk-note">No bursts exist yet.</p>';
+  const wk=GEAR?wdPathOf(GEAR):null, ids=Object.keys(ULT_SKILLS).filter(id=>!ULT_SKILLS[id].wd||ULT_SKILLS[id].wd===wk).sort((a,b)=>!!ULT_SKILLS[b].wd-!!ULT_SKILLS[a].wd);   // wanderer: only the active path's burst, first
+  if(!ids.length) return '<p class="muted sk-note">No bursts exist yet.</p>';
   return ids.map(id=>{ const s=ULT_SKILLS[id], own=GEAR&&GEAR.skills&&ultOwned(GEAR.skills,GEAR.cave,id), n=GEAR&&GEAR.skills?ultPieceCount(GEAR.skills,GEAR.cave,id):0;
-    return `<div class="sk-cell">${ultTile(s,'grid',(own?'':' unowned')+(ULT_UI.sel===id?' sel':''),own?'Burst':n+'/'+ULT_OWN_N)}<span class="nm">${s.name}</span></div>`; }).join('');
+    return `<div class="sk-cell">${ultTile(s,'grid',(own?'':' unowned')+(ULT_UI.sel===id?' sel':''),own?'Burst':s.wd?'A3':n+'/'+ULT_OWN_N)}<span class="nm">${s.name}</span></div>`; }).join('');
 }
 function ultInfoHtml(){
   const s=ultDef(ULT_UI.sel);
   if(!s) return `<p class="muted">${isTouch?'Tap':'Click'} a burst for details. Each skill set has one: it is yours when you own ${ULT_OWN_N} of the set's 7 pieces (its 6 skills and passives, and its charge skill). It deals damage, stuns everything it hits for ${ULT_STUN} s (bosses too, once per enemy every ${ULT_STUN_LOCK} s) and strengthens two of the set's pieces while you wear them.</p>`;
-  const S=SS_SETS[s.set], own=ultOwned(GEAR.skills,GEAR.cave,s.set), worn=GEAR.skills.ult===s.set, low=PL.level<ULT_LV, n=ultPieceCount(GEAR.skills,GEAR.cave,s.set);
-  const act=own?(worn?`<button class="chip" data-ultoff="1">Take off</button>`:`<button class="chip" data-ulton="${s.set}" ${low?'disabled':''}>${low?'Level '+ULT_LV:'Equip'}</button>`):`<span class="muted">Own ${ULT_OWN_N} of ${S.char.name}'s 7 pieces (${n} now)</span>`;
+  const W=s.wd?WD_PATHS[s.wd]:null, S=SS_SETS[s.set]||{name:W?'the path of '+W.name:'',char:{name:'The Wanderer'},role:{main:W?W.role:''}}, own=ultOwned(GEAR.skills,GEAR.cave,s.set), worn=GEAR.skills.ult===s.set, low=PL.level<ULT_LV, n=ultPieceCount(GEAR.skills,GEAR.cave,s.set);   // wanderer: a path's burst has no set
+  const act=own?(worn?`<button class="chip" data-ultoff="1">Take off</button>`:`<button class="chip" data-ulton="${s.set}" ${low?'disabled':''}>${low?'Level '+ULT_LV:'Equip'}</button>`):W?`<span class="muted">Yours with the Wanderer's burst node (bu1, Awakening A3)</span>`:`<span class="muted">Own ${ULT_OWN_N} of ${S.char.name}'s 7 pieces (${n} now)</span>`;
   const cd=S.role.main==='grind'?ULT_CD_GRIND+' s ('+ULT_CD+' s in a boss fight)':ULT_CD+' s';
   const boosts=s.boost.map(b=>`<li><b>${ultPieceName(s.set,b.piece)}</b> for ${b.secs} s: ${ultModText(b.mod)}</li>`).join('');
-  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico has-set" style="--set:${ssTint(s)}"><svg ${SS_ICON_ATTR}>${ssGlyph(s)||''}</svg></div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags"><span class="sk-tag">Burst · ${S.name} (${S.char.name}'s set)</span></div></div></div>
+  return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico has-set" style="--set:${ssTint(s)}"><svg ${SS_ICON_ATTR}>${ssGlyph(s)||''}</svg></div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags"><span class="sk-tag">Burst · ${W?'the Wanderer\'s path of '+W.name:S.name+' ('+S.char.name+'\'s set)'}</span></div></div></div>
     <p>${s.desc}</p><p class="muted">${cd} cooldown (nothing shortens it) · ${Math.round(s.mult*100)}% damage · ${ULT_STUN} s stun on everything it hits, bosses too (the same enemy cannot be stunned by a burst again for ${ULT_STUN_LOCK} s)</p>
-    <p class="muted">Strengthens, while you wear it:</p><ul class="sk-boost">${boosts}</ul><p class="muted">You can cast it without the set, but then it strengthens nothing. Its level, and its two buffs, are the burst branch of the Awakening tree.</p><div class="sk-acts">${act}<button class="chip buy" data-awaken="${s.set}" data-limb="bu">Awaken</button></div></div>`;
+    <p class="muted">Strengthens, while you wear it:</p><ul class="sk-boost">${boosts}</ul><p class="muted">${W?'It works while the Wanderer is the character you play (no set\'s Power skill worn). Its level is the Wanderer\'s burst branch.':'You can cast it without the set, but then it strengthens nothing. Its level, and its two buffs, are the burst branch of the Awakening tree.'}</p><div class="sk-acts">${act}<button class="chip buy" data-awaken="${W?'wanderer':s.set}" data-limb="bu">Awaken</button></div></div>`;
 }
 function ultBindPanel(on){   // on(selector, fn) of renderSkills
   on('[data-ultslot]',()=>{ skKind='ult'; SK.sel=null; UI_SFX.click(); renderSkills(); });

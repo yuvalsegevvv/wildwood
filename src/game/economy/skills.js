@@ -44,13 +44,14 @@ function skInfoHtml(C,cls){
   if(pass) stats=passiveText(s.id,L);
   else stats=(s.slot==='basic'?bhInterval(s,S,bhSpeedUi(),1,0).toFixed(2)+' s per swing · hold to charge':abilityCd(s,S,C.lv,cls,rlUiCdr()).toFixed(1)+' s cooldown')+(s.buff?'':' · '+Math.round(s.mult*skillPower(L)*100)+'% damage')
     +(s.buff?' · +'+Math.round((s.buff.dmg-1)*awkCurve('buff',L)*100)+'% damage for '+Math.round(s.buff.dur*awkCurve('dur',L)*10)/10+' s':'');   // awakening: the buff and duration curves
-  const tags=`<span class="sk-tag">${pass?'Passive':(s.cls==='any'?'Any class':CLASSES[s.cls].name)+' · '+KIND_TITLE[s.slot]}${s.set?' · '+SS_SETS[s.set].name+' ('+SS_SETS[s.set].char.name+'\'s set)':''}</span>${pass?'':elChip(el)}`;
+  const tags=`<span class="sk-tag">${pass?'Passive':(s.cls==='any'?'Any class':CLASSES[s.cls].name)+' · '+KIND_TITLE[s.slot]}${s.set?' · '+SS_SETS[s.set].name+' ('+SS_SETS[s.set].char.name+'\'s set)':''}${s.wd?' · the Wanderer\'s path of '+WD_PATHS[s.wd].name:''}</span>${pass?'':elChip(el)}`;
   let acts='';
   if(own){
     if(eq&&!pass&&s.slot!=='basic') acts+=`<button class="chip" data-unskill="${s.slot}">Take off</button>`;
     else if(eq&&pass) acts+=`<button class="chip" data-unpass="${PS.indexOf(s.id)}">Take off</button>`;
     else if(!eq&&!(s.slot==='basic'&&!canSwap(s.cls,'basic',S))) acts+=`<button class="chip" data-eqskill="${s.id}" ${low?'disabled':''}>${low?'Level '+needLv(s):'Equip'}</button>`;
-  } else if(s.set) acts+=`<span class="muted">A signature skill: earned from a boss or a dungeon</span>`;   // skillsets: never taught
+  } else if(s.set) acts+=`<span class="muted">A signature skill: earned from a boss or a dungeon</span>`;
+  else if(s.wd) acts+=`<span class="muted">The Wanderer's path passive: yours with his Awakening tree's passive node (pa1, A1). It works while the Wanderer is the character you play.</span>`;   // wanderer: never taught   // skillsets: never taught
   else if(C.trainer) acts+=`<button class="chip buy" data-buyskill="${s.id}" ${GEAR.coins<s.price||C.lv<needLv(s)?'disabled':''}>${C.lv<needLv(s)?'Level '+needLv(s):'Learn: '+s.price+' coins'}</button>`;
   else acts+=`<span class="muted">Aldric (or Master Ryu in Hanami) teaches it at the well: ${s.price} coins</span>`;
   let up='';
@@ -72,7 +73,8 @@ function renderSkills(){
   const setH=ssSummaryHtml(C,cls);   // skillsets: the set effects
   h+=`<div class="sk-area"><div class="chips sk-kinds">${['basic','skill','burst','cave','ult','mov','pass'].map(k=>`<button class="chip" data-skkind="${k}" aria-pressed="${k===skKind}">${KIND_TITLE[k]}</button>`).join('')}</div>`;
   let ids;
-  if(pass){ ids=PASSIVE_IDS.filter(id=>!PASSIVES[id].set||S.owned.includes(id)); if(lv<PASSIVE_LV)   // skillsets: a signature passive shows once it is yours
+  if(pass){ ids=PASSIVE_IDS.filter(id=>!PASSIVES[id].set||S.owned.includes(id)); { const wk=wdPathOf(GEAR); if(wk) ids.unshift(WD_PATHS[wk].passive); }   // wanderer: the active path's passive, first (equippable once the tree's pa1 is bought)
+    if(lv<PASSIVE_LV)   // skillsets: a signature passive shows once it is yours
     h+=`<p class="muted sk-note">Passive skills open at level ${PASSIVE_LV}. They work for every class.</p>`; }
   else {
     ids=SKILL_IDS.filter(id=>(SKILLS[id].cls===cls||SKILLS[id].cls==='any')&&SKILLS[id].slot===skKind&&(!SKILLS[id].set||S.owned.includes(id)));   // skillsets: a universal piece is in every class's grid; a signature piece shows once it is yours

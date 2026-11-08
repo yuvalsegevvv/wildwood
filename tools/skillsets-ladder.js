@@ -3,10 +3,10 @@
 // dummy (and six more around it for the pack). The numbers are a SANITY BAND, not a verdict (the owner: balanced mostly in playtests): a row outside its band is a warning. --check fails only on the owner's
 // orderings, for the damage kits: the pieces beat the best non-set loadout, the 3-set beats the pieces, the 5-set beats the 3-set.
 // A set with rangeScale (damage grows with the distance) is also run from 16 m (archer and mage). A risk set is run twice: never behind its targets (careless play, ~0.8 of the safe ladder, warnings only) and always behind (the dummies face away: the owner's 125 / 142 / 170, judged).
-// Usage: node tools/skillsets-ladder.js [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
+// Usage: node tools/skillsets-ladder.js [--wanderer [--path fury]] [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
 // Also: require('./skillsets-ladder').ladder({W, x, pid}, opts) for a test (tools/skillsets-smoke.js runs it on a fixture); x must expose NAMES.
 const {loadServer}=require('./load');
-const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S','ssBonusSwitch','awkMigGrant','bdGrantP','bdSetOk'];
+const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S','ssBonusSwitch','awkMigGrant','bdGrantP','bdSetOk','WD_PATHS','WD_ORDER','MQ'];
 const WEAPON={warrior:'sword1',archer:'bow1',mage:'wand1'}, CLASSES=['warrior','archer','mage'];
 // the bands in percent of the baseline: [the pieces alone, the 3-set, the 5-set] (docs/SKILL-SETS.md 5b; a mixed set sits between a support's 90 and its main kit's ladder)
 // the same tree measured 93 to 99 for one set's pieces and 128 vs 131 for another's 5- and 3-set between runs (also before the Amber Reach), so the orderings carry this much slack
@@ -66,6 +66,22 @@ function ladder(env,opts){
       best[slot]=top;
     }
     wear(cls,[best.basic,best.skill,best.burst],[]); baseline[cls]=Object.assign({ids:best},rotation(secs));
+  }
+  if(opts.wanderer) return wandererRows(opts.wanderer);
+  // the Wanderer (step 18, --wanderer): the baseline's general skills plus the path passive (level 5, its pa branch) at Realization 0, II and VI (the main quest's acts set it: II after act II, VI after
+  // act IV), as the sets are measured at Bond 0, II and VI; the path burst is worn but not cast (like a set's at Bond VI), then one more VI rotation casting it (the `burst` column: its gain)
+  function wandererRows(path){
+    const P=x.WD_PATHS&&x.WD_PATHS[path]; if(!P) return out;
+    const lastOf=L=>{ let i=-1; x.MQ.forEach((q,k)=>{ if(q.id[0]===L) i=k; }); return i; }, mq0=p.gear.mq.s, B=p.gear.bd.wanderer||(p.gear.bd.wanderer={r:0});
+    B.path=path; x.awkMigGrant(p.gear,'wanderer',{pa:5,bu:1}); const rows={};
+    try{ for(const cls of classes){ const ids=baseline[cls].ids;
+      const at=s=>{ p.gear.mq.s=s; wear(cls,[ids.basic,ids.skill,ids.burst],[P.passive]); p.gear.skills.ult=P.ult; x.recalcP(p); return rotation(secs); };
+      const pieces=at(0), three=at(lastOf('V')+1), five=at(lastOf('G')+1); opts.ultOn=true; const ult=rotation(secs); opts.ultOn=false;
+      rows[cls]={base:baseline[cls],pieces,three,five,six:five,ult:{burst:ult}}; } }
+    finally{ p.gear.mq.s=mq0; p.gear.skills.ult=null; opts.ultOn=false; }
+    const S=summarize(rows,classes); S.burst=Math.round(classes.reduce((a,c)=>a+pct(rows[c].ult.burst.single,rows[c].five.single),0)/classes.length)-100;
+    out.push({id:'wanderer:'+path,role:P.role,also:null,ranged:false,rows,summary:S});
+    return out;
   }
   for(const id of x.SS_ORDER){   // (ranged below: the damage GROWS with the distance, a k under 1 is a close-range bonus)
     if(opts.set&&opts.set!==id) continue;
@@ -146,13 +162,34 @@ function ultRow(set,classes){
   const g=(k,f)=>Math.round(cs.reduce((a,c)=>{ const r=set.rows[c]; return a+(r.ult[k][f]/Math.max(1,r.six[f])-1)*100; },0)/cs.length);
   return ['none','active','passive','both'].map(k=>[g(k,'single'),g(k,'pack')]);
 }
-module.exports={ultRow,ladder,judge,summarize,print,BANDS,NAMES};
+// --wanderer: each path (or --path <id>) at Realization 0 / II / VI next to the damage sets' Bond 0 / II / VI (safe sets as measured, risk sets always behind: the rows the ladder judges); the target
+// (PLAN section 7): a damage path at about 80% of the average damage set at Bond VI, a tank path in the tank band (about 90 of the baseline's damage)
+const WD_TARGET=0.8;
+function wandererReport(env,opts,paths){
+  const runs=paths.map(path=>ladder(env,Object.assign({},opts,{wanderer:path}))[0]).filter(Boolean);   // (the paths first: a set's run leaves grants behind that the Wanderer's must not see)
+  const dmg=env.x.SS_ORDER.filter(id=>{ const S=env.x.SS_SETS[id]; return !S.dev&&!S.role.also&&(S.role.main==='risk'||S.role.main==='safe'); }), sets=[];
+  for(const id of dmg){ const S=env.x.SS_SETS[id]; sets.push(...ladder(env,Object.assign({},opts,{set:id,cave:false,behind:S.role.main==='risk'}))); }
+  const avg=k=>Math.round(sets.reduce((a,s)=>a+s.summary[k],0)/Math.max(1,sets.length));
+  const A={pieces:avg('pieces'),three:avg('three'),five:avg('five')};
+  console.log('the damage sets ('+sets.map(s=>s.id).join(' ')+'; risk ones always behind), average in % of the baseline: Bond 0 '+A.pieces+', Bond II '+A.three+', Bond VI '+A.five+'  ->  80% of Bond VI = '+Math.round(A.five*WD_TARGET)+'\n');
+  console.log('path'.padEnd(20)+'role'.padEnd(7)+'R0'.padStart(6)+'R II'.padStart(7)+'R VI'.padStart(7)+'  vs sets (R0 / II / VI)'.padEnd(26)+'pack VI'.padStart(9)+'  burst (gain at VI)');
+  const res=[];
+  for(const w of runs){ const path=w.id.slice(9), S=w.summary, r=k=>Math.round(S[k]/A[k]*100);
+    console.log(w.id.padEnd(20)+w.role.padEnd(7)+String(S.pieces).padStart(6)+String(S.three).padStart(7)+String(S.five).padStart(7)+('  '+r('pieces')+'% / '+r('three')+'% / '+r('five')+'%').padEnd(26)+String(S.fivePack).padStart(9)+'  +'+S.burst+'%');
+    const tank=w.role==='tank', band=BANDS[w.role], warn=tank||band&&band[0]<100?(S.five<band[2]*0.75||S.five>band[2]*1.25?'outside its band '+band[2]+' +- 25%':''):(r('five')<70||r('five')>90?'Bond VI ratio '+r('five')+'% is outside 80 +- 10':'');
+    if(warn) console.log('   warning: '+warn);
+    res.push({id:path,summary:S,ratio:r('five'),sets:A}); }
+  return res;
+}
+module.exports={ultRow,ladder,wandererReport,judge,summarize,print,BANDS,NAMES};
 if(require.main===module){
   const args=process.argv.slice(2), val=(f,d)=>{ const i=args.indexOf(f); return i>=0?args[i+1]:d; };
   const {api:W,x}=loadServer({dev:true,send(){}},NAMES);   // bond: the set rows are Bond II / VI (server/bond.js): the ladder grants the Bonds and wears the pieces they ask for
   W.join('l',{name:'Ladder',look:{cls:'warrior'},save:{level:60}}); for(let i=0;i<3;i++) W.tick(0.05);
   if(!x.SS_ORDER.length){ console.log('no skill set is defined (src/shared/skillsets/*.js, listed in src/manifest.json)'); process.exit(0); }
   const cls=val('--class',null), opts={secs:+val('--secs',60),set:val('--set',null),classes:cls?[cls]:undefined,cave:args.includes('--check')?args.includes('--cave'):true}, env={W,x,pid:'l'};
+  if(args.includes('--wanderer')){   // step 18: the Wanderer's paths (docs: shared/wanderer.js; --path <id> for one)
+    const one=val('--path',null), paths=one?[one]:x.WD_ORDER.slice(); wandererReport(env,Object.assign({},opts,{set:null}),paths); process.exit(0); }
   if(args.includes('--ult')){   // slot 5: what each set's burst and its two boosts add to a 60 s rotation (gain over the rotation without it, %: single / pack)
     const list=ladder(env,Object.assign({},opts,{ult:true,cave:false}));
     console.log('set'.padEnd(12)+'no boost'.padStart(12)+'active only'.padStart(14)+'passive only'.padStart(14)+'both'.padStart(12)+'   (% over the same rotation without the burst, single / pack)');

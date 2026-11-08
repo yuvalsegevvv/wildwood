@@ -81,7 +81,7 @@ function ssRefreshP(p){
   const add=(r,lv)=>{ if(r.on){ const rl=awkRow(r,lv); for(const o of [].concat(r.on)) (trig[o]||(trig[o]=[])).push(rl); } if(r.amp) amp.push(r.amp);
     if(r.stat&&r.when) cond.push({stat:r.stat,v:lv?passiveValue(r.id,lv):r.v[0],when:r.when,pid:lv?r.id:null}); if(r.cost&&r.cost.when) cond.push({stat:r.cost.stat,v:r.cost.v,when:r.cost.when}); };
   if(SS_ORDER.length){
-    if(Array.isArray(sk.pass)) for(const id of sk.pass.slice(0,passiveOpen(p.level))){ const P=PASSIVES[id]; if(P&&P.set&&sk.owned.includes(id)&&p.level>=Math.max(PASSIVE_LV,P.lv)) add(P,skillLvOf(sk,id)); }
+    if(Array.isArray(sk.pass)) for(const id of sk.pass.slice(0,passiveOpen(p.level))){ const P=PASSIVES[id]; if(P&&(P.set||(P.wd&&wdMainOk(sk)))&&sk.owned.includes(id)&&p.level>=Math.max(PASSIVE_LV,P.lv)) add(P,skillLvOf(sk,id)); }   // wanderer: the path passive's triggers and conditions
     for(const b of bonus) add(b.row,0);
     { const X=sk.bdx&&sk.bdx.p; if(X) for(const id of Object.keys(X)){ const P=Object.prototype.hasOwnProperty.call(PASSIVES,id)?PASSIVES[id]:null; if(P) add(P,X[id]); } }   // bond: the Bond I / IV passives' triggers and conditions, unequipped
   }

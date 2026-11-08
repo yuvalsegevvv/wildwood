@@ -101,3 +101,6 @@ button.bdc-sht{ width:100%; padding:0; border:0; background:none; color:var(--in
   .bdc-spots{ grid-template-columns:minmax(0,1fr); }
   #bdcPops{ top:calc(env(safe-area-inset-top,0px) + 205px); width:min(250px,calc(100vw - 150px)); }   /* (under the player frame and the toasts, left of the minimap) */
 }
+/* the Wanderer's path picker (step 18: game/bond/panel.js bdcPathsHtml) */
+.bdc-paths{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 2px; }
+.bdc-paths .chip.on{ border-color:var(--c); color:var(--c); }

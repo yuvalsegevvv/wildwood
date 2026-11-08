@@ -3,13 +3,16 @@
 // main quest's acts, the smv-3 migration (idempotent), junk ids, and stones beyond Bond VI paid out in coins. The server straight from src/, no build.
 // Step 13-14 (appended): the orb stall (price once, junk refused, the pouch rule, the 1 / 2 / 3 roll, excess stones as coins), the hour's Stirrings (a fake clock: one zone a land, no repeats, dungeon and raid
 // alternating, events), charge (60 kills = an orb, an elite 3, Pipe and dungeon monsters never, saved), the stirring boss per tier, a dungeon win 2 orbs, a raid clear 3, the interim "a drop gives Bond 0" rule gone.
+// Step 18 (appended): the Wanderer's paths: Fury and Bulwark register (passive, rows, burst, stat table), junk path ids refused, a path change is free and keeps the tree and Realization (a worn path
+// passive / burst follows), Realization I / II / IV give the active path's rows only while the Wanderer is played, the path passive / burst are his after pa1 / bu1 (never bought), saves keep the path, a bad path file is left out and listed.
 // Usage: node tools/bond-smoke.js
 const {loadServer}=require('./load');
 const sent=[];
 const {api:W,x}=loadServer({dev:true,send(to,m){ sent.push([to,m]); }},
   ['SS_SETS','SS_ORDER','SKILLS','PASSIVES','CAVE_SKILLS','CAVE_SKILL_IDS','MQ','BD_COST','BD_TOP','BD_STONE_COINS','BD_GUEST_PEN','bdBuyP','bdAddStonesP','bdGrantP','bdOwns','bdMainOf','bdRealOf','bdTierNeed','bdIsBondPassive',
    'bdStonesLeft','awkGrantP','awkTierP','sanitizeGear','skillLvOf','caveLvOf','psP','recalcP','clsOfP','ssEquipPieceP','ssGrantSetP','SMIG_VER','passiveValue','BD_ORB_PRICE','BD_ORB_MAX','BD_ORB_ROLL','BD_STIR_SECS','BD_STIR_CHARGE','BD_STIR_BOSS','bdRollRow','bdStirPick','bdOrbBuyP','bdPickP','bdOpenOrbP','bdOpenManyP','bdOrbSetOf','bdStirPickS','bdStirTickS','bdStirMsg',
-   'bdZonesByLand','BD_ZONE_OF','bdChargeS','bdStirBossP','bdStirDungeonP','bdStirRaidP','bdChargeFlushP','MONS','S','rewardKill','RD_ORDER','RDS','BOSS_DEFS','DG_THEMES','DG_ENTRANCES','ssGrantP','landAt']);
+   'bdZonesByLand','BD_ZONE_OF','bdChargeS','bdStirBossP','bdStirDungeonP','bdStirRaidP','bdChargeFlushP','MONS','S','rewardKill','RD_ORDER','RDS','BOSS_DEFS','DG_THEMES','DG_ENTRANCES','ssGrantP','landAt',
+   'WD_PATHS','WD_ORDER','WD_BAD','WD_DEFAULT','defineWandererPath','wdPathOf','ULT_SKILLS','ULT_BAD','AWK_PATH_KIT','ultEquippedP','buySkillP','equipSkillP','ssBonuses']);   // (the last row: step 18, the Wanderer's paths)
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info!==undefined?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<(n||3);i++) W.tick(0.05); };
 W.join('a',{name:'Bonder',look:{cls:'warrior'},save:{level:60}}); tick();
@@ -204,5 +207,58 @@ Date.now=realNow;
 { const pc=W.players.get('b'); const G=x.SS_ORDER.find(i=>!x.SS_SETS[i].dev&&x.SS_SETS[i].bonds&&i!==K&&i!==K2&&i!==K3); delete pc.gear.bd[G]; x.ssGrantP(pc,G,1,true);
   ok('a piece earned the old way (a drop source: ssGrantP) no longer unlocks the character (no Bond 0, Awakening refused)',!x.bdOwns(pc,G)&&typeof x.awkTierP(pc,G)==='string');
   x.ssGrantSetP(pc,G,true); ok('...a whole-set grant (testing tools, gem shop) still does',x.bdOwns(pc,G)); }
+
+// ---- step 18: the Wanderer's paths ----
+{ const last=L=>{ let i=-1; x.MQ.forEach((q,k)=>{ if(q.id[0]===L) i=k; }); return i; };
+  const F=x.WD_PATHS.fury, B=x.WD_PATHS.bulwark;
+  ok('the paths register: Fury and Bulwark, nothing left out, each a passive, Realization I / IV rows, II / VI rows, a burst and a stat table',x.WD_ORDER.includes('fury')&&x.WD_ORDER.includes('bulwark')&&!x.WD_BAD.length&&!x.ULT_BAD.length
+    &&[F,B].every(P=>x.PASSIVES[P.passive]&&x.PASSIVES[P.passive].wd===P.id&&x.PASSIVES[P.real[1]].wdRow===1&&x.PASSIVES[P.real[4]].wdRow===4&&P.rows[2]&&P.rows[6]&&x.ULT_SKILLS[P.ult]&&x.ULT_SKILLS[P.ult].wd===P.id&&x.AWK_PATH_KIT[P.id]===P.kit)
+    &&F.kit==='risk'&&B.kit==='tank'&&x.WD_DEFAULT==='fury',JSON.stringify(x.WD_BAD));
+  ok('...each passive beats its shop passive (Fury > Ferocity, Bulwark > Vitality), the Realization I / IV rows are never worn',x.PASSIVES.wd_fury.v[0]>x.PASSIVES.ferocity.v[0]&&x.PASSIVES.wd_bulwark.v[0]>x.PASSIVES.vitality.v[0]&&x.bdIsBondPassive('wd_fury_r1')&&x.bdIsBondPassive('wd_bulwark_r4')&&!x.bdIsBondPassive('wd_fury'));
+  W.join('w',{name:'Walker',look:{cls:'warrior'},save:{level:60}}); tick();
+  const pw=W.players.get('w'), gw=pw.gear, sw=gw.skills;
+  ok('a fresh Wanderer walks Fury (the default), owns no path passive or burst before his tree',x.wdPathOf(gw)==='fury'&&gw.bd.wanderer.path==='fury'&&!sw.owned.includes('wd_fury')&&!sw.wdu);
+  for(const v of ['constructor','__proto__','toString','nope','',null,5,{},['fury']]) W.receive('w',{t:'bd',a:'path',id:v});
+  ok('junk path ids are refused (the path stays Fury)',gw.bd.wanderer.path==='fury');
+  ok('...and a save with a junk path loads as Fury',x.sanitizeGear({bd:{wanderer:{path:'constructor'}}},'warrior').bd.wanderer.path==='fury'&&x.sanitizeGear({bd:{wanderer:{path:'bulwark'}}},'warrior').bd.wanderer.path==='bulwark');
+  // before pa1 / bu1: nothing to wear; never bought
+  gw.coins=1e9; x.buySkillP(pw,'wd_fury'); W.receive('w',{t:'eqskill',id:'wd_fury',idx:0}); W.receive('w',{t:'ultequip',id:'wd_fury'});
+  ok('before pa1 / bu1 the path passive cannot be bought or worn, nor the burst',!sw.owned.includes('wd_fury')&&!sw.pass.includes('wd_fury')&&sw.ult!=='wd_fury'&&gw.coins===1e9);
+  x.awkGrantP(pw,'wanderer',1); x.recalcP(pw);
+  const d0=x.psP(pw,'dmg'); W.receive('w',{t:'eqskill',id:'wd_fury',idx:0}); const d1=x.psP(pw,'dmg'); W.receive('w',{t:'ultequip',id:'wd_fury'});
+  ok('after pa1 (A1) the path passive is his and can be worn (its damage counts), the burst not yet',sw.owned.includes('wd_fury')&&sw.pass[0]==='wd_fury'&&d1>d0+0.1&&sw.ult!=='wd_fury',d0+' -> '+d1);
+  x.awkGrantP(pw,'wanderer',3); x.recalcP(pw); W.receive('w',{t:'ultequip',id:'wd_fury'});
+  ok('after bu1 (A3) the path burst can be worn and cast',sw.wdu==='wd_fury'&&sw.ult==='wd_fury'&&!!x.ultEquippedP(pw)&&x.ultEquippedP(pw).id==='wd_furyU');
+  ok('...the other path\'s passive is not his (only the active path\'s)',!sw.owned.includes('wd_bulwark'));
+  // Realization: the active path's rows, only while the Wanderer is played
+  gw.mq.s=last('V')+1; x.recalcP(pw);
+  ok('Realization II as the Wanderer: the path\'s I passive and II row are in force',sw.bdx.main==='wanderer'&&gw.bd.wanderer.r===2&&sw.bdx.p.wd_fury_r1===1&&sw.bdx.r.includes('wd_fury_r2')&&x.ssBonuses(sw,'warrior',60).some(b=>b.row.id==='wd_fury_r2')&&(pw.ss.trig.hit||[]).some(r=>r.id==='wd_fury_r2'),JSON.stringify(sw.bdx));
+  { const before=x.psP(pw,'critdmg'); gw.mq.s=last('G')+1; x.recalcP(pw);
+    ok('Realization VI: the IV row (critical damage) and the VI row too',x.psP(pw,'critdmg')>before+0.1&&sw.bdx.r.includes('wd_fury_r6')&&sw.bdx.p.wd_fury_r4===1); }
+  { const lu=sw.bdx.lv['u:wd_fury']; ok('...III and V raise the path burst too (+2)',lu===2,lu); }
+  // a set played: no Realization rows, no path passive, no path burst
+  x.ssGrantSetP(pw,K,true); x.bdGrantP(pw,K,0); const a3=actOf(K)[2]; x.ssEquipPieceP(pw,x.SKILLS[a3]); x.recalcP(pw);
+  ok('with a set\'s power piece worn ('+K+' is played) the path rows, passive and burst are out of force',sw.bdx.main===K&&!sw.bdx.r.some(r=>/^wd_/.test(r))&&!Object.keys(sw.bdx.p).some(k=>/^wd_/.test(k))&&x.psP(pw,'dmg')<d1-0.1&&!x.ultEquippedP(pw),JSON.stringify(sw.bdx));
+  for(const c of ['warrior','archer','mage']) sw.eq[c].burst=null; x.recalcP(pw);
+  // changing the path: free, the tree and the Realization kept, the worn passive and burst follow
+  const coins=gw.coins, tree=JSON.stringify(gw.awk.wanderer), r0=gw.bd.wanderer.r, n0=sent.length;
+  W.receive('w',{t:'bd',a:'path',id:'bulwark'}); tick(1);
+  ok('a path change is free and keeps the tree and the Realization',gw.bd.wanderer.path==='bulwark'&&gw.coins===coins&&JSON.stringify(gw.awk.wanderer)===tree&&gw.bd.wanderer.r===r0);
+  ok('...the worn passive and burst become the new path\'s, the old passive is no longer his',sw.pass[0]==='wd_bulwark'&&sw.ult==='wd_bulwark'&&sw.wdu==='wd_bulwark'&&!sw.owned.includes('wd_fury')&&sw.owned.includes('wd_bulwark'));
+  ok('...and the Realization rows are Bulwark\'s now',sw.bdx.r.includes('wd_bulwark_r2')&&sw.bdx.r.includes('wd_bulwark_r6')&&!sw.bdx.r.includes('wd_fury_r2')&&sw.bdx.p.wd_bulwark_r1===1&&(pw.ss.trig.cast2||[]).some(r=>r.id==='wd_bulwark_r2'));
+  ok('...a you update went out',sent.slice(n0).some(([to,m])=>to==='w'&&m&&m.t==='you'));
+  { const G2=x.sanitizeGear(JSON.parse(JSON.stringify(gw)),'warrior'); ok('a save keeps the path and its worn passive and burst',G2.bd.wanderer.path==='bulwark'&&G2.skills.pass[0]==='wd_bulwark'&&G2.skills.ult==='wd_bulwark'&&G2.skills.wdu==='wd_bulwark'); }
+  { const G3=x.sanitizeGear(Object.assign(JSON.parse(JSON.stringify(gw)),{awk:{}}),'warrior'); ok('...a save without the tree loses them (never trusted)',!G3.skills.owned.includes('wd_bulwark')&&G3.skills.pass[0]!=='wd_bulwark'&&G3.skills.ult!=='wd_bulwark'); }
+  // a bad path file
+  const n=x.WD_BAD.length, ub=x.ULT_BAD.length, base={id:'zzt',name:'Test',role:'risk',from:'ferocity',text:'A test path.',passive:{name:'P',text:'+{}% damage',stat:'dmg',v:0.2},
+    ult:{name:'U',desc:'A test burst.',range:10,mult:1.5,act:['zztult',0.9,0.5],fx:{ring:{r:5}},boost:[{piece:'a2',secs:10,mod:{mult:2}},{piece:'p1',secs:12,mod:{v:2}}]},
+    real:{1:{name:'A',text:'+{}% damage',stat:'dmg',v:0.05},2:{name:'B',text:'+{}% damage',stat:'dmg',v:0.05},4:{name:'C',text:'+{}% damage',stat:'dmg',v:0.05},6:{name:'D',text:'+{}% damage',stat:'dmg',v:0.05}}};
+  const mk=o=>Object.assign(JSON.parse(JSON.stringify(base)),o);
+  const bads=[mk({passive:{name:'P',text:'+{}% damage',stat:'dmg',v:0.03}}), mk({id:'zzb',ult:Object.assign({},base.ult,{act:['zzbult',0.9,0.5],boost:[{piece:'cave',secs:10,mod:{mult:2}},{piece:'p1',secs:12,mod:{v:2}}]})}), mk({id:'zzc',real:{1:base.real[1],2:base.real[2],4:base.real[4]}}),
+    mk({id:'zzd',kit:'bard'}), mk({id:'zze',from:'constructor'}), mk({id:'fury'}), mk({id:'zzf',real:Object.assign({},base.real,{2:{name:'B',text:'pop',on:'hit',icd:2,mult:1,range:3,fx:{ring:{r:3},pop:{id:'ghost',k:1}}}})})];
+  const got=bads.map(D=>x.defineWandererPath(D));
+  ok('a bad path file is left out and listed (weaker than its source, a boost on the charge skill, a missing row, an unknown stat table or source, a second fury, a mark nothing makes)',got.every(r=>r===null)&&x.WD_BAD.length===n+bads.length&&x.WD_BAD.slice(n).every(b=>b.id&&b.field&&b.why)&&!x.WD_PATHS.zzt&&!x.PASSIVES.wd_zzt&&!x.ULT_SKILLS.wd_zzb&&x.ULT_BAD.length===ub&&x.WD_ORDER.length===2,JSON.stringify(x.WD_BAD.slice(n).map(b=>b.id+':'+b.field)));
+  ok('...and a good one registers',!!x.defineWandererPath(base)&&!!x.WD_PATHS.zzt&&!!x.ULT_SKILLS.wd_zzt);
+  x.WD_BAD.length=n; }
 
 console.log(fails?fails+' check(s) FAILED':'all bond checks passed'); process.exit(fails?1:0);

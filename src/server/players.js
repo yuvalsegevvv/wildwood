@@ -14,7 +14,7 @@ function sanitizeGear(g,cls){
   out.q=sanitizeQuests(g.q);
   out.skills=sanitizeSkills(g.skills);
   out.cave=caveSanitizeSave(g.cave); if(out.skills.cave&&!out.cave.own[out.skills.cave]) out.skills.cave=null;
-  if(out.skills.ult&&!ultOwned(out.skills,out.cave,out.skills.ult)) out.skills.ult=null;   // ult: the worn burst must be earned   // cave: the owned cave skills; the worn one must be owned
+  if(out.skills.ult&&!wdIsUlt(out.skills.ult)&&!ultOwned(out.skills,out.cave,out.skills.ult)) out.skills.ult=null;   // ult: the worn burst must be earned   // cave: the owned cave skills; the worn one must be owned
   out.mq=sanitizeMq(g.mq);
   out.sq=sanitizeSq(g.sq);   // sidequests: the chains' progress (an old save has none)
   { const pr=sanitizeProf(g); out.prof=pr.prof; out.res=pr.res; out.pot=sanitizePots(g); out.cos=sanitizeCos(g); premSanitize(g,out); }   // cosmetics: the auras and capes made at a lodge
@@ -37,6 +37,7 @@ function sanitizeGear(g,cls){
   awkSanitize(g,out);   // awakening: gear.awk (the trees) and gear.awm (Echo Shards), before the migration reads them
   bdSanitize(g,out);   // bond: gear.bd (Bonds, Bondstones, the Wanderer's Realization), before the migration raises it
   smigSanitize(g,out);   // savemig: the skill revamp's one migration (boss skills and extra passives refunded, gear.bdMig), once per save (gear.smv)
+  wdSyncG(out);   // wanderer: the path passive and burst (and a worn path burst checked), from the path and the Wanderer's tree
   awkSyncG(out);   // awakening: the skill levels the trees give (gear.skills.lv, gear.cave.own)
   return out;
 }
@@ -128,6 +129,7 @@ function recalcP(p){
   if(p.pv){ pvpRecalcP(p); return; }   // pvp: on the Proving Isle everyone has the same numbers (server/pvp.js)
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
   g.atk+=dgRingAtkP(p)+talAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else 
+  wdSyncG(p.gear);   // wanderer: the active path's passive and burst are his while pa1 / bu1 are bought
   awkRefreshP(p);   // awakening: the trees' skill levels and the played character's stat nodes (gear.skills.aw, read by passiveSum)
   bdRefreshP(p);   // bond: the active Bond (gear.skills.bdx: Bond passives, rows, level changes), before anything reads psP
   rlRefreshP(p);   // rolls: the lines of the worn level-40 pieces (p.rl)

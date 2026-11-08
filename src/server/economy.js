@@ -84,6 +84,7 @@ function turnInP(p,id){
 function buySkillP(p,id){
   const s=skillDef(id); if(!s||p.gear.skills.owned.includes(id)) return;
   if(s.set){ toastTo(p.id,s.name+' is not for sale: it is a signature skill, earned from a boss or a dungeon','bad'); return; }   // skillsets: a piece is never bought
+  if(s.wd){ toastTo(p.id,s.name+' is not for sale: it is a Wanderer\'s path passive (the Awakening tree\'s passive node)','bad'); return; }   // wanderer: never bought
   if(p.level<s.lv){ toastTo(p.id,s.name+' needs level '+s.lv,'bad'); return; }
   if(p.gear.coins<s.price){ toastTo(p.id,'Not enough coins','bad'); return; }
   p.gear.coins-=s.price; p.gear.skills.owned.push(id); p.dirty=true; toastTo(p.id,'Learned '+s.name+'!','good'); ev('skillbuy',p.id,id);

@@ -27,7 +27,8 @@ function awcMain(){   // the character you play now (the server writes it into b
 const awcEntry=k=>{ const e=GEAR&&awcHas(GEAR.awk,k)?GEAR.awk[k]:null; return {t:e&&e.t>0?Math.min(AWK_TIERS.length-1,e.t|0):0, n:e&&e.n&&typeof e.n==='object'?e.n:{}}; };
 // the skill a limb carries: a character's own (the one of your class for the three actives) or, for the Wanderer, the slot's general name
 function awcSkillName(k,limb){
-  if(k==='wanderer') return limb==='pa'||limb==='bu'?AWC_LIMB_NAME[limb]:AWC_LIMB_NAME[limb]+' skill';
+  if(k==='wanderer'){ const W=GEAR?WD_PATHS[wdPathOf(GEAR)]:null, u=W&&ultDef(W.ult);   // wanderer: the active path's passive and burst
+    return limb==='pa'?(W?PASSIVES[W.passive].name:AWC_LIMB_NAME[limb]):limb==='bu'?(u?u.name:AWC_LIMB_NAME[limb]):AWC_LIMB_NAME[limb]+' skill'; }
   const S=awcHas(SS_SETS,k)?SS_SETS[k]:null; if(!S) return AWC_LIMB_NAME[limb];
   if(limb==='pa') return S.keptPassive&&PASSIVES[S.keptPassive]?PASSIVES[S.keptPassive].name:'Passive';
   if(limb==='bu'){ const u=ultDef(k); return u?u.name:'Burst'; }
@@ -42,7 +43,8 @@ function awcLimbLevel(k,limb){
   return L;
 }
 const awcPct=v=>{ const t=Math.round(Math.abs(v*100)*10)/10; return (v<0?'-':'+')+String(t).replace(/\.0$/,'')+'%'; };
-function awcStatText(k,n){ const s=awkStatOf(k,n.id,null); return s?awcPct(s.v)+' '+AWC_STAT_NAME[s.stat]:''; }
+const awcPathOf=k=>k==='wanderer'&&GEAR?wdPathOf(GEAR):null;   // wanderer: the stat nodes follow the active path's table (shared/awakening-cost.js AWK_PATH_KIT)
+function awcStatText(k,n){ const s=awkStatOf(k,n.id,awcPathOf(k)); return s?awcPct(s.v)+' '+AWC_STAT_NAME[s.stat]:''; }
 // "Torch Arrow level 5", "Steady Hand unlock", "+1% crit chance (Torch Arrow)", "Burst buff 1": a node named for a sentence
 function awcNodeName(k,n){
   if(n.kind==='star') return 'Burst buff '+n.n;
@@ -52,8 +54,8 @@ function awcNodeName(k,n){
 }
 // what buying a node does, in a line (the curves are shared/awakening.js: damage x1.17 a level, cooldown -3% / -1%, healing x1.10, a passive +8% of its base)
 function awcEffect(k,n){
-  if(n.kind==='star'){ const u=k==='wanderer'?null:ultDef(k), b=u&&u.boost&&u.boost[n.n-1]; return b?ultPieceName(k,b.piece)+' for '+b.secs+' s while the burst lasts: '+ultModText(b.mod):'The burst\'s buff number '+n.n+' (a character\'s own burst)'; }
-  if(n.kind==='stat'){ const s=awkStatOf(k,n.id,null); return s?awcStatText(k,n)+' while '+(k==='wanderer'?'the Wanderer':SS_SETS[k].char.name)+' is the character you play (the '+s.band+' band of the '+AWC_LIMB_NAME[n.limb].toLowerCase()+' branch)':''; }
+  if(n.kind==='star'){ const u=ultDef(k==='wanderer'?(GEAR?wdUltId(wdPathOf(GEAR)):''):k), b=u&&u.boost&&u.boost[n.n-1]; return b?ultPieceName(k,b.piece)+' for '+b.secs+' s while the burst lasts: '+ultModText(b.mod):'The burst\'s buff number '+n.n+' (a character\'s own burst)'; }
+  if(n.kind==='stat'){ const s=awkStatOf(k,n.id,awcPathOf(k)); return s?awcStatText(k,n)+' while '+(k==='wanderer'?'the Wanderer':SS_SETS[k].char.name)+' is the character you play (the '+s.band+' band of the '+AWC_LIMB_NAME[n.limb].toLowerCase()+' branch)':''; }
   const sk=awcSkillName(k,n.limb), L=n.lv;
   if(L<=1) return n.limb==='pa'?'Makes '+sk+' yours: wear it in the passive slot.':n.limb==='ch'?(k==='wanderer'?'Makes the general charge skills yours: wear one in the charge slot.':'Makes '+sk+' yours: wear it in the charge slot.'):'Makes the burst usable: wear it in the burst slot.';
   const dmg=Math.round((awkCurve('dmg',L)/awkCurve('dmg',L-1)-1)*1000)/10, cd=Math.round((1-awkCurve('cd',L)/awkCurve('cd',L-1))*1000)/10;

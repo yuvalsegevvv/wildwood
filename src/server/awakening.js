@@ -68,7 +68,8 @@ function awkBranchLv(gear,k,limb){
   for(let lv=Lm.first;lv<=AWK_TOP;lv++){ if(e.n[awkUpId(limb,lv)]===1) L=lv; else break; }
   return Math.min(L,AWK_TIERS[e.t].cap);
 }
-const awkUltLvP=(p,setId)=>{ const L=awkBranchLv(p&&p.gear,setId,'bu'); return L>0?bdLvAdj(p.gear.skills,'u:'+setId,L):0; };   // the burst's level: 0 = not usable (bu1 needs A3)   // bond: the active Bond's level change ('u:<set>')
+const awkUltLvP=(p,setId)=>{ const L=awkBranchLv(p&&p.gear,wdIsUlt(setId)?AWK_WANDERER:setId,'bu');   // wanderer: a path's burst is the Wanderer's bu branch
+   return L>0?bdLvAdj(p.gear.skills,'u:'+setId,L):0; };   // the burst's level: 0 = not usable (bu1 needs A3)   // bond: the active Bond's level change ('u:<set>')
 function awkSetLv(sk,id,L){ if(L>1) sk.lv[id]=L; else delete sk.lv[id]; }
 // write the trees' levels into gear.skills.lv and gear.cave.own (see the agent map)
 function awkSyncG(gear){
@@ -90,7 +91,7 @@ function awkSyncG(gear){
 // ---- stats ----
 function awkStatsP(p){
   const key=bdMainOf(p), e=awkEntry(p.gear,key), out={};   // bond: the main character (server/bond.js)
-  if(e) for(const id of Object.keys(e.n)){ const s=awkStatOf(key,id,null); if(!s) continue; const ps=AWK_STAT_PS[s.stat]; if(ps) out[ps]=(out[ps]||0)+(s.stat==='cd'||s.stat==='red'?-s.v:s.v); }
+  if(e) for(const id of Object.keys(e.n)){ const s=awkStatOf(key,id,key===AWK_WANDERER?wdPathOf(p.gear):null); if(!s) continue; const ps=AWK_STAT_PS[s.stat]; if(ps) out[ps]=(out[ps]||0)+(s.stat==='cd'||s.stat==='red'?-s.v:s.v); }   // wanderer: the active path's table
   for(const k of Object.keys(out)) out[k]=Math.round(out[k]*10000)/10000;
   p.gear.skills.aw=out; p.awMain=key;
 }

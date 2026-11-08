@@ -7,7 +7,7 @@
    ACTIVE BOND (server/bond.js bdRefreshP): min(Bond unlocked, the main character's pieces worn) - 1 for each guest piece worn (a piece of another character); a guest piece is BD_GUEST_PEN levels lower.
           What it gives is written into gear.skills.bdx = {main, act, g: guests, p: {Bond passive id: level}, r: [row id], lv: {skill / cave skill id | 'u:<set>' (the burst): level change}}:
           passiveSum (classes.js) adds bdx.p, ssBonuses (skillsets.js) reads bdx.r, skillLvOf adds bdx.lv (bdLvAdj); the client reads the same field from its gear mirror.
-   REALIZATION (the Wanderer, bdRealOf): I / II / III with main-quest acts I / II / III done, IV V VI all with act IV. Only III / V's +1 level is wired; the rows of I / II / IV / VI are BD_WANDERER_ROWS (step 18: the paths).
+   REALIZATION (the Wanderer, bdRealOf): I / II / III with main-quest acts I / II / III done, IV V VI all with act IV. III / V: +1 level (server/bond.js); I / II / IV / VI: the active path's rows (BD_WANDERER_ROWS -> shared/wanderer.js wdRealRows).
    ORBS (step 13; server/bond-orbs.js): gear.bd.<set>.o = orbs held, gear.bd.pick = the set whose orbs open next, gear.bd.chg = the Stirrings' charge (0..BD_STIR_CHARGE). STIRRINGS (step 14; server/bond-stir.js): see there.
    Exports: BD_ORB_PRICE, BD_ORB_MAX, BD_ORB_BUY_MAX, BD_ORB_ROLL, BD_STIR_SECS, BD_STIR_CHARGE, BD_STIR_ELITE, BD_STIR_DG, BD_STIR_RD, BD_STIR_BOSS, bdRollRow, bdStirPick, BD_COST, BD_TOP, BD_TIER_ADD, BD_TIER_TOP, BD_STONE_COINS, BD_GUEST_PEN, BD_PASS_LV, BD_ST_MAX, BD_WANDERER, BD_WANDERER_ROWS, BD_ROMAN, bdOwnKey, bdSetOk, bdTierNeed, bdTierOk, bdStonesLeft,
             bdIsBondPassive, bdRowById, bdLvAdj, bdLvAddOf, bdActDone, bdRealOf. Used by: server/bond.js, server/awakening.js, server/skillsets.js, shared/classes.js, shared/skillsets.js. */
@@ -20,8 +20,8 @@ const BD_ORB_ROLL=[60,30,10];   // an opened orb gives 1 / 2 / 3 Bondstones at t
 const BD_STIR_SECS=3600, BD_STIR_CHARGE=60, BD_STIR_ELITE=3, BD_STIR_DG=2, BD_STIR_RD=3;   // a pick lasts an hour (UTC); 60 charge open an orb (a kill 1, an elite 3); a dungeon win opens 2, a raid clear 3
 const BD_STIR_BOSS=[[100],[70,30],[50,50],[30,70],[20,60,20],[10,50,40]];   // the stirring boss: percent chance of 1 / 2 / 3 orbs a kill, by the tier fought (+0 .. +V)
 const BD_WANDERER='wanderer', BD_ROMAN=['0','I','II','III','IV','V','VI'];
-// step 18 (the Wanderer's nine paths) fills these: Realization n -> a function (gear, path) returning {p: {passive id: level}, r: [row id]} the Wanderer's Realization I / II / IV / VI give
-const BD_WANDERER_ROWS={1:null,2:null,4:null,6:null};
+// Realization n -> a function (gear) returning {p: {passive id: level}, r: [row id]}: what the Wanderer's Realization I / II / IV / VI give, from the active path (step 18: shared/wanderer.js wdRealRows)
+const BD_WANDERER_ROWS={1:g=>wdRealRows(g,1),2:g=>wdRealRows(g,2),4:g=>wdRealRows(g,4),6:g=>wdRealRows(g,6)};
 const bdOwnKey=(o,k)=>!!o&&typeof o==='object'&&typeof k==='string'&&Object.prototype.hasOwnProperty.call(o,k);
 const bdSetOk=k=>typeof k==='string'&&bdOwnKey(SS_SETS,k)&&!!SS_SETS[k].bonds&&!SS_SETS[k].dev;   // a character a save or a message may name
 // the zone tier Bond b asks of its set's land (0: none)
@@ -40,9 +40,11 @@ function bdStirPick(key,list,h){
 // the stones still to spend from Bond b (unlocked) up to Bond VI
 const bdStonesLeft=b=>{ let n=0; for(let i=Math.max(0,b+1);i<=BD_TOP;i++) n+=BD_COST[i]; return n; };
 // a Bond I / IV passive: never worn, never granted as a piece
-const bdIsBondPassive=id=>{ const pc=typeof id==='string'?SS_PIECE_OF[id]:null; if(!pc||pc.kind!=='passive') return false; const S=SS_SETS[pc.set]; return !!(S&&S.pos[pc.pos]&&S.pos[pc.pos].bond); };
+const bdIsBondPassive=id=>{ if(typeof id==='string'&&bdOwnKey(PASSIVES,id)&&PASSIVES[id].wdRow) return true;   // wanderer: a path's Realization I / IV row (shared/wanderer.js)
+  const pc=typeof id==='string'?SS_PIECE_OF[id]:null; if(!pc||pc.kind!=='passive') return false; const S=SS_SETS[pc.set]; return !!(S&&S.pos[pc.pos]&&S.pos[pc.pos].bond); };
 // a row id of bdx.r ('<set>_b3' / '<set>_b5') -> {set, tier, row}, or null
 function bdRowById(id){
+  const w=wdRowById(id); if(w) return w;   // wanderer: a path's Realization II / VI row ('wd_<path>_r2' / '_r6')
   const m=typeof id==='string'?/^([a-z0-9]+)_b([35])$/.exec(id):null, S=m&&bdOwnKey(SS_SETS,m[1])?SS_SETS[m[1]]:null;
   return S&&S.bonus[m[2]]?{set:S.id,tier:+m[2],row:S.bonus[m[2]]}:null;
 }

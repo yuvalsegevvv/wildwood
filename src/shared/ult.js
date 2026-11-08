@@ -4,7 +4,7 @@
    It is NOT in SKILLS (too much iterates SKILLS: shops, drops, class loadouts, ssCount): ULT_SKILLS[<set id>] is an ability row {id:'<set>U', cls:'any', slot:'ult', set, cd:0, lv:28, ...}.
    The entry: {name, desc, range, mult, act:[kind,secs,hit], anim?, fx:{ring|cone|proj|zone ...}, boost:[{piece, secs, mod?}, {piece, secs, mod?}]}. The stun is added by the engine (fxU: every shape entry carries ult:true), never written in fx.
    `boost` buffs exactly two of the set's seven pieces: 'a1'-'a3' (the actives), 'cave' (the set's cave skill, an active), 'p1'-'p3' (the passives); at least one an active. mod keys: ULT_MODS.
-   Exports: ULT_SLOT, ULT_LV, ULT_CD, ULT_CD_GRIND, ULT_STUN, ULT_STUN_LOCK, ULT_POWER, ULT_OWN_N, ULT_PIECES, ULT_MODS, ULT_SKILLS, ULT_BAD, ultDef(setId), ultDefine(setId,U,el), ultCdOf(setId,inBossFight), ultPieceCount(skills,cave,setId), ultOwned(skills,cave,setId).
+   Exports: ULT_SLOT, ULT_LV, ULT_CD, ULT_CD_GRIND, ULT_STUN, ULT_STUN_LOCK, ULT_POWER, ULT_OWN_N, ULT_PIECES, ULT_MODS, ULT_SKILLS, ULT_BAD, ultDef(setId), ultDefine(setId,U,el), ultProblem(U), ultRegister(setId,U,el), ultCdOf(setId,inBossFight), ultPieceCount(skills,cave,setId), ultOwned(skills,cave,setId).
    Used by: shared/skillsets.js (defineSkillSet), classes.js (slotLv), server/ult.js, players.js (sanitize), game/ult/*. */
 const ULT_SLOT='ult', ULT_LV=28;                 // the slot opens at this player level
 const ULT_CD=60, ULT_CD_GRIND=30;                 // the fixed cooldown; a grind set cast outside a boss fight gets the short one. NOTHING reduces either (server/ult.js is the only writer of p.cd.ult)
@@ -27,7 +27,7 @@ function ultPieceCount(skills,cave,setId){
   if(cave&&cave.own) for(const id in CAVE_SKILLS) if(CAVE_SKILLS[id].set===setId&&Object.prototype.hasOwnProperty.call(cave.own,id)){ n++; break; }
   return n;
 }
-const ultOwned=(skills,cave,setId)=>!!ultDef(setId)&&ultPieceCount(skills,cave,setId)>=ULT_OWN_N;
+const ultOwned=(skills,cave,setId)=>!!ultDef(setId)&&(ULT_SKILLS[setId].wd?!!skills&&skills.wdu===setId:ultPieceCount(skills,cave,setId)>=ULT_OWN_N);   // wanderer: a path's burst ('wd_<path>') is the Wanderer's while it is the active path's and bu1 is bought (skills.wdu, server/wanderer.js wdSyncG)
 // what is wrong with one boost entry (null when nothing)
 function ultBoostProblem(b){
   if(!b||typeof b!=='object') return 'a boost is {piece, secs, mod?}';
@@ -49,7 +49,12 @@ function ultFxOf(fx){ const out=JSON.parse(JSON.stringify(fx)); for(const k of U
   return out; }
 /* defineSkillSet calls this after it has registered the set: validate U (the set's `ult` entry), register the ability in ULT_SKILLS, or list it in ULT_BAD and leave only the burst out (the set stays). el: the set's position-3 element */
 function ultDefine(setId,U,el){
-  const bad=why=>{ ULT_BAD.push({id:setId,why}); if(typeof console!=='undefined') console.warn('burst of '+setId+' left out: '+why); return null; };
+  const why=ultProblem(U); if(why){ ULT_BAD.push({id:setId,why}); if(typeof console!=='undefined') console.warn('burst of '+setId+' left out: '+why); return null; }
+  return ultRegister(setId,U,el);
+}
+// what is wrong with a burst entry (null when nothing): ultDefine's checks, also asked by shared/wanderer.js before it registers a path's burst
+function ultProblem(U){
+  const bad=why=>why;
   if(!U||typeof U!=='object') return bad('not an object');
   if(typeof U.name!=='string'||!U.name||U.name.length>24) return bad('name must be 1-24 characters');
   if(typeof U.desc!=='string'||!U.desc||U.desc.length>240) return bad('desc must be 1-240 characters');
@@ -65,6 +70,10 @@ function ultDefine(setId,U,el){
   for(const b of U.boost){ const p=ultBoostProblem(b); if(p) return bad('boost: '+p); }
   if(U.boost[0].piece===U.boost[1].piece) return bad('the two boosts name different pieces');
   if(!U.boost.some(b=>ULT_ACTIVE_PIECES.includes(b.piece))) return bad('at least one boost is on an active');
+  return null;
+}
+function ultRegister(setId,U,el){   // (U checked by ultProblem)
+  const a=U.act;
   const ab={id:setId+'U',cls:'any',slot:ULT_SLOT,ult:true,set:setId,name:U.name,desc:U.desc,cd:0,price:0,lv:ULT_LV,range:U.range,mult:U.mult,fx:JSON.parse(JSON.stringify(U.fx)),fxU:ultFxOf(U.fx),
     act:a.slice(),anim:U.anim||'nova',el,icon:null,boost:U.boost.map(b=>({piece:b.piece,secs:b.secs,mod:JSON.parse(JSON.stringify(b.mod===undefined?{mult:2}:b.mod))}))};
   ULT_SKILLS[setId]=ab; ACT_SKILL[a[0]]=ab; ANIM_OF[a[0]]=ab.anim;   // the client draws a cast from its attack kind, the body plays the borrowed animation

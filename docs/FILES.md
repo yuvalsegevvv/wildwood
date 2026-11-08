@@ -181,6 +181,9 @@ shared
   skillsets/tzaya.js                 Tzaya's skill set, The Long Count (a grinder, fire): an obsidian sweep, a fire pit that drags a camp together, and a reckoning that pays the whole count back; jade, gold and cinder red
   skillsets/atuqa.js                 Atuqa's skill set, The Terrace Wall (a tank, light): a sling stone that pins its target, a terrace raised under the party, and a wall of sun that holds the line; woven red, gold thread and terrace stone
   bond.js                            Bonds (rules, pure): Bond 0-VI per character (costs in Bondstones, the zone-tier gates, what each step gives), Realization for the Wanderer (from the main quest's acts), reading the active Bond the server writes
+  wanderer.js                        The Wanderer's paths (rules, pure): the registry defineWandererPath (one file per path in shared/wanderer/), its checks, the path passive, burst and Realization rows it registers, the active path of a save
+  wanderer/fury.js                   The Wanderer's path Fury (risk DPS, from Ferocity): more damage for less safety, crits that feed the rage, a red ruin of a burst; the worked example of a path file
+  wanderer/bulwark.js                The Wanderer's path Bulwark (tank, from Vitality): a deep well of health, shields when the blows land, a challenge that pulls the enemies in, and a slam that holds them
   cave/skill-1-echo.js               Cave skill Echo (floor 1, method A): repeats your last skill or burst at 60% power, with no cooldown
   cave/skill-1-flare.js              Cave skill Flare (floor 1, method B, light): a 10 m burst of light; normal monsters are blinded for 2 s and miss, bosses deal 20% less for 4 s
   cave/skill-1-overdrive.js          Cave skill Overdrive (floor 1, method C): your next 3 basic attacks are sure crits and come 30% faster
@@ -257,6 +260,7 @@ server
   bond.js                            Bonds on the server: gear.bd (each character's Bond and Bondstones, the Wanderer's Realization), buying a Bond step (MSG.bd), stones in and their overflow into coins, the active Bond and what it gives (gear.skills.bdx), the smv-3 migration
   bond-orbs.js                       Bond Orbs on the server: orbs held per character (gear.bd.<set>.o), the orb stall (bd 'orb': 1 coin each), the pouch's pick (bd 'pick'), opening an orb for 1 / 2 / 3 Bondstones
   bond-stir.js                       The hour's Stirrings on the server: each UTC hour a stirring zone per land, a stirring world boss and a stirring dungeon or raid (alternating); kills charge orbs open, boss kills, dungeon wins and raid clears open them
+  wanderer.js                        The Wanderer's paths on the server: the active path (gear.bd.wanderer.path), changing it (bd {a:'path'}), and the path passive and burst the Wanderer's tree makes his (pa1, bu1)
   monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot
   basic-hold.js                      Skill 1 on the server: attack speed and charge gain of a player, the hold message and its release (how long the player really held), where a mage's held blast lands

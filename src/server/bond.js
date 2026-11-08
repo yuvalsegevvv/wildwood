@@ -1,6 +1,6 @@
 //@ Bonds on the server: gear.bd (each character's Bond and Bondstones, the Wanderer's Realization), buying a Bond step (MSG.bd), stones in and their overflow into coins, the active Bond and what it gives (gear.skills.bdx), the smv-3 migration
 /* Agent map (skills revamp step 12; the rules and numbers: shared/bond.js; design: PLAN sections 0, 3, 7, 9; test: tools/bond-smoke.js; hooks: grep -rn "// bond:" src).
-   SAVED: gear.bd = {<set id>: {b: -1..6, st: 0..BD_ST_MAX}, wanderer: {r: 0..6}} (bdSanitize: known set ids only (own-property checks, no dev set), numbers clamped, an empty entry dropped;
+   SAVED: gear.bd = {<set id>: {b: -1..6, st: 0..BD_ST_MAX}, wanderer: {r: 0..6, path: the active path (server/wanderer.js)}} (bdSanitize: known set ids only (own-property checks, no dev set), numbers clamped, an empty entry dropped;
           the Realization is recomputed from the main quest (bdRealOf), never trusted from the save).
    MESSAGE: bd {a:'buy', set} (MSG.bd -> bdBuyP): the next Bond step: Bond b+1's stones (BD_COST) and its zone tier in the set's land (bdTierOk: gear.zt[land].max). Returns null when bought, else the reason
           (also toasted). Event bd [pid, set, b]; p.dirty; recalcP. Bond 0 grants the character's actives (every class version of its basic, skill and power: bdGrantActivesP).
@@ -13,7 +13,7 @@
    ACTIVE BOND (bdRefreshP, called by recalcP after the trees' levels): act = min(Bond, main's pieces worn) - guests (each worn piece of another character); written into gear.skills.bdx (shared/bond.js).
           act >= 1 / 4: the Bond passive works at BD_PASS_LV; >= 2 / 6: the 3- / 5-set row; >= 3 and >= 5: +1 level each to every piece of the main character (owned actives, the kept passive,
           its charge skill, its burst 'u:<set>'). A guest piece: -BD_GUEST_PEN levels (floor 1), none of its own Bond. The Wanderer as main: Realization in place of the Bond (no guests), +1 at III and V
-          to every general skill owned (shop and class skills, general passives, general charge skills); BD_WANDERER_ROWS (step 18) may add passives and rows for I / II / IV / VI.
+          to every general skill owned (shop and class skills, general passives, general charge skills); BD_WANDERER_ROWS gives the active path's rows for I / II / IV / VI (shared/wanderer.js), and III / V also raise the path's burst ('u:wd_<path>').
    MIGRATION (bdMigrateG, smv 3, from smigSanitize): every set in gear.bdMig and every set of which a piece is owned (an active, a passive, its charge skill) gets Bond 0 at least. Only raises: idempotent.
    TESTING: bdGrantP(p, set, b, st) (dev 'bd' {v: set id | 'all', n: Bond, s: stones}; the test world: Bond VI everywhere). */
 const bdOwn=bdOwnKey;
@@ -26,7 +26,7 @@ function bdSanitize(g,out){   // sanitizeGear: gear.bd from a save (before the m
   const raw=g&&g.bd&&typeof g.bd==='object'&&!Array.isArray(g.bd)?g.bd:null, B={};
   if(raw) for(const k of Object.keys(raw).slice(0,64)){ if(!bdSetOk(k)) continue; const e=raw[k]; if(!e||typeof e!=='object') continue;
     const b=clampInt(e.b,-1,BD_TOP,-1), st=clampInt(e.st,0,BD_ST_MAX,0), o=clampInt(e.o,0,BD_ORB_MAX,0); if(b>=0||st>0||o>0){ B[k]={b,st}; if(o) B[k].o=o; } }
-  B[BD_WANDERER]={r:bdRealOf(out)};   // (out.mq is sanitized before this runs)
+  B[BD_WANDERER]={r:bdRealOf(out),path:wdPathClean(raw&&raw[BD_WANDERER])};   // (out.mq is sanitized before this runs)   // wanderer: the active path (server/wanderer.js)
   if(raw){ const ck=clampInt(raw.chg,0,BD_STIR_CHARGE,0); if(ck) B.chg=ck; if(bdSetOk(raw.pick)) B.pick=raw.pick; }   // bond: the Stirrings' charge and the orb pouch's pick (server/bond-orbs.js, bond-stir.js)
   out.bd=B;
 }
@@ -58,7 +58,7 @@ function bdBuyP(p,k){
   toastTo(p.id,to===0?nm+' is yours (Bond 0): their basic, skill and power are in your skills panel':nm+' reached Bond '+BD_ROMAN[to]+'!','good');
   recalcP(p); p.dirty=true; ev('bd',p.id,k,to); return null;
 }
-MSG.bd=(p,msg)=>{ if(msg.a==='buy'&&typeof msg.set==='string') bdBuyP(p,msg.set); else if(msg.a==='orb') bdOrbBuyP(p,msg.set,msg.n); else if(msg.a==='pick') bdPickP(p,msg.set); };   // (orb, pick: server/bond-orbs.js)
+MSG.bd=(p,msg)=>{ if(msg.a==='buy'&&typeof msg.set==='string') bdBuyP(p,msg.set); else if(msg.a==='orb') bdOrbBuyP(p,msg.set,msg.n); else if(msg.a==='pick') bdPickP(p,msg.set); else if(msg.a==='path') wdPathP(p,msg.id); };   // (orb, pick: server/bond-orbs.js)   // wanderer: path (server/wanderer.js)
 // stones in (step 13's orbs): what the steps left still need is kept, the rest is paid out in coins
 function bdAddStonesP(p,k,n,quiet){
   n=clampInt(n,0,BD_ST_MAX,0); if(!bdSetOk(k)||!n) return {st:0,coins:0};
@@ -105,13 +105,14 @@ function bdRefreshP(p){
     }
     for(const k of Object.keys(W.ids)) if(k!==main) for(const id of W.ids[k]) X.lv[id]=-BD_GUEST_PEN;
   } else {
-    const R=bdRealOf(g); X.act=R; if(g.bd) g.bd[BD_WANDERER]={r:R};
+    const R=bdRealOf(g); X.act=R; if(g.bd){ const W=g.bd[BD_WANDERER]; if(W&&typeof W==='object') W.r=R; else g.bd[BD_WANDERER]={r:R}; }   // (the path stays: server/wanderer.js)
     const add=(R>=3?1:0)+(R>=5?1:0);
     if(add){
       for(const id of sk.owned){ const d=skillDef(id); if(d&&!d.set) X.lv[id]=add; }
       for(const id of Object.keys(own)){ const c=caveSkillDef(id); if(c&&!c.set) X.lv[id]=add; }
+      if(sk.wdu) X.lv['u:'+sk.wdu]=add;   // wanderer: the path's burst
     }
-    for(const n of [1,2,4,6]){ const f=BD_WANDERER_ROWS[n]; if(R<n||typeof f!=='function') continue;   // step 18: the Wanderer's paths
+    for(const n of [1,2,4,6]){ const f=BD_WANDERER_ROWS[n]; if(R<n||typeof f!=='function') continue;   // wanderer: the active path's rows (shared/wanderer.js wdRealRows)
       const o=f(g)||{}; if(o.p) for(const id of Object.keys(o.p)) if(bdOwn(PASSIVES,id)) X.p[id]=o.p[id]; if(Array.isArray(o.r)) X.r.push(...o.r); }
   }
   sk.bdx=X; p.bdMain=main;
