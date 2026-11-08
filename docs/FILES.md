@@ -184,6 +184,13 @@ shared
   wanderer.js                        The Wanderer's paths (rules, pure): the registry defineWandererPath (one file per path in shared/wanderer/), its checks, the path passive, burst and Realization rows it registers, the active path of a save
   wanderer/fury.js                   The Wanderer's path Fury (risk DPS, from Ferocity): more damage for less safety, crits that feed the rage, a red ruin of a burst; the worked example of a path file
   wanderer/bulwark.js                The Wanderer's path Bulwark (tank, from Vitality): a deep well of health, shields when the blows land, a challenge that pulls the enemies in, and a slam that holds them
+  wanderer/keeneye.js                The Wanderer's path Keen Eye (safe DPS, from Precision): a sharper eye than any shop can sell, every critical hit pays twice, a long clean shot of a burst
+  wanderer/stalwart.js               The Wanderer's path Stalwart (tank, from Iron Will): less damage taken, a steady recovery, and a second wind once the blows land; lives through attrition where Bulwark takes the front
+  wanderer/tempo.js                  The Wanderer's path Tempo (safe DPS, from Quickhands): shorter cooldowns, a basic attack that hurries the other skills along, and a burst that doubles the passive's pace
+  wanderer/forager.js                The Wanderer's path Forager (grind, from Scavenger): far more drops, a sharp eye for what a kill leaves behind, a pack-clearing burst that pulls the camp together
+  wanderer/lorekeeper.js             The Wanderer's path Lorekeeper (grind, from Scholar): more XP from every kill, a burst that leaves a whole camp vulnerable, and just enough hit to farm it
+  wanderer/wayfarer.js               The Wanderer's path Wayfarer (risk DPS, from Fleetfoot): faster on the move, hits that slow what they touch, and damage that lives on the run; standing still costs
+  wanderer/prism.js                  The Wanderer's path Prism (safe DPS, the element wheel): hits that beat their target's element on the wheel (x1.5) hit harder, crit more and split again; the old Resonance passive reborn
   cave/skill-1-echo.js               Cave skill Echo (floor 1, method A): repeats your last skill or burst at 60% power, with no cooldown
   cave/skill-1-flare.js              Cave skill Flare (floor 1, method B, light): a 10 m burst of light; normal monsters are blinded for 2 s and miss, bosses deal 20% less for 4 s
   cave/skill-1-overdrive.js          Cave skill Overdrive (floor 1, method C): your next 3 basic attacks are sure crits and come 30% faster

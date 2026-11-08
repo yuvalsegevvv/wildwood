@@ -86,6 +86,7 @@ Everything here is checked by the registry (a bad key leaves the set out, sectio
 | `exposed:true` | the target carries a `vuln` or `weak` status |
 | `combat:true` | you were in a fight in the last few seconds |
 | `shield:true` | you hold a shield |
+| `adv:true` | the hit's element beats the target's on the wheel (x1.5; the element-less x1.1 is not an advantage; a hit with no element, a kill or a hurt row never holds it). For a stat row it is read where the hit is rolled (`dmg crit critdmg`), for a trigger on `hit` / `crit` from that hit |
 
 **More stats** (`stat` + `v`): `critdmg` (+critical damage), `heal` (your heals and heal-over-time stronger), `buffpow` (the strength of the ally buffs you give), `buffdur` (their length), `debuffdur` (the length of the statuses you put on monsters), `area` (rings, cones and zones wider), `regen` (a share of maximum health a second, always), `overflow` (a share of the part of a heal that would overheal turns into a shield on the one healed), `revive` (a share of health a party member you bring back stands up with).
 

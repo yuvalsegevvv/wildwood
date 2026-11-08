@@ -12,7 +12,7 @@ const {api:W,x}=loadServer({dev:true,send(to,m){ sent.push([to,m]); }},
   ['SS_SETS','SS_ORDER','SKILLS','PASSIVES','CAVE_SKILLS','CAVE_SKILL_IDS','MQ','BD_COST','BD_TOP','BD_STONE_COINS','BD_GUEST_PEN','bdBuyP','bdAddStonesP','bdGrantP','bdOwns','bdMainOf','bdRealOf','bdTierNeed','bdIsBondPassive',
    'bdStonesLeft','awkGrantP','awkTierP','sanitizeGear','skillLvOf','caveLvOf','psP','recalcP','clsOfP','ssEquipPieceP','ssGrantSetP','SMIG_VER','passiveValue','BD_ORB_PRICE','BD_ORB_MAX','BD_ORB_ROLL','BD_STIR_SECS','BD_STIR_CHARGE','BD_STIR_BOSS','bdRollRow','bdStirPick','bdOrbBuyP','bdPickP','bdOpenOrbP','bdOpenManyP','bdOrbSetOf','bdStirPickS','bdStirTickS','bdStirMsg',
    'bdZonesByLand','BD_ZONE_OF','bdChargeS','bdStirBossP','bdStirDungeonP','bdStirRaidP','bdChargeFlushP','MONS','S','rewardKill','RD_ORDER','RDS','BOSS_DEFS','DG_THEMES','DG_ENTRANCES','ssGrantP','landAt',
-   'WD_PATHS','WD_ORDER','WD_BAD','WD_DEFAULT','defineWandererPath','wdPathOf','ULT_SKILLS','ULT_BAD','AWK_PATH_KIT','ultEquippedP','buySkillP','equipSkillP','ssBonuses']);   // (the last row: step 18, the Wanderer's paths)
+   'WD_PATHS','WD_ORDER','WD_BAD','WD_DEFAULT','defineWandererPath','wdPathOf','ULT_SKILLS','ULT_BAD','AWK_PATH_KIT','ultEquippedP','buySkillP','equipSkillP','ssBonuses','SS_STATS','SS_WHEN_KEYS','ssWhenProblem','ssCondP','ssRowProblem']);   // (the last row: step 18, the Wanderer's paths)
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info!==undefined?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<(n||3);i++) W.tick(0.05); };
 W.join('a',{name:'Bonder',look:{cls:'warrior'},save:{level:60}}); tick();
@@ -215,6 +215,12 @@ Date.now=realNow;
     &&[F,B].every(P=>x.PASSIVES[P.passive]&&x.PASSIVES[P.passive].wd===P.id&&x.PASSIVES[P.real[1]].wdRow===1&&x.PASSIVES[P.real[4]].wdRow===4&&P.rows[2]&&P.rows[6]&&x.ULT_SKILLS[P.ult]&&x.ULT_SKILLS[P.ult].wd===P.id&&x.AWK_PATH_KIT[P.id]===P.kit)
     &&F.kit==='risk'&&B.kit==='tank'&&x.WD_DEFAULT==='fury',JSON.stringify(x.WD_BAD));
   ok('...each passive beats its shop passive (Fury > Ferocity, Bulwark > Vitality), the Realization I / IV rows are never worn',x.PASSIVES.wd_fury.v[0]>x.PASSIVES.ferocity.v[0]&&x.PASSIVES.wd_bulwark.v[0]>x.PASSIVES.vitality.v[0]&&x.bdIsBondPassive('wd_fury_r1')&&x.bdIsBondPassive('wd_bulwark_r4')&&!x.bdIsBondPassive('wd_fury'));
+  // the seven other paths (the card skills-revamp-plan/wanderer-card.md): each registers, beats its shop passive, and makes its Realization II row active when chosen
+  const MORE=[['keeneye','precision'],['stalwart','ironwill'],['tempo','quickhands'],['forager','scavenger'],['lorekeeper','scholar'],['wayfarer','fleetfoot'],['prism',null]];
+  ok('the seven other paths register (Keen Eye, Stalwart, Tempo, Forager, Lorekeeper, Wayfarer, Prism): nothing left out, each a passive, I / IV rows, II / VI rows, a burst of its own and a stat table',
+    MORE.every(([k])=>{ const P=x.WD_PATHS[k]; return P&&x.WD_ORDER.includes(k)&&x.PASSIVES[P.passive]&&x.PASSIVES[P.passive].wd===k&&x.PASSIVES[P.real[1]].wdRow===1&&x.PASSIVES[P.real[4]].wdRow===4&&P.rows[2]&&P.rows[6]&&x.ULT_SKILLS[P.ult]&&x.ULT_SKILLS[P.ult].wd===k&&x.AWK_PATH_KIT[k]===P.kit; })&&!x.WD_BAD.length&&x.WD_ORDER.length===9,JSON.stringify(x.WD_BAD));
+  ok('...each passive beats its shop passive when it names the same stat (Fleetfoot\'s move too: the move stat is allowed in a row), and the roles are the card\'s',
+    MORE.every(([k,from])=>!from||x.PASSIVES['wd_'+k].stat!==x.PASSIVES[from].stat||x.PASSIVES['wd_'+k].v[0]>x.PASSIVES[from].v[0])&&x.PASSIVES.wd_wayfarer.stat==='move'&&x.WD_PATHS.stalwart.role==='tank'&&x.WD_PATHS.forager.role==='grind'&&x.WD_PATHS.prism.from===null&&x.WD_PATHS.wayfarer.role==='risk');
   W.join('w',{name:'Walker',look:{cls:'warrior'},save:{level:60}}); tick();
   const pw=W.players.get('w'), gw=pw.gear, sw=gw.skills;
   ok('a fresh Wanderer walks Fury (the default), owns no path passive or burst before his tree',x.wdPathOf(gw)==='fury'&&gw.bd.wanderer.path==='fury'&&!sw.owned.includes('wd_fury')&&!sw.wdu);
@@ -246,6 +252,18 @@ Date.now=realNow;
   ok('a path change is free and keeps the tree and the Realization',gw.bd.wanderer.path==='bulwark'&&gw.coins===coins&&JSON.stringify(gw.awk.wanderer)===tree&&gw.bd.wanderer.r===r0);
   ok('...the worn passive and burst become the new path\'s, the old passive is no longer his',sw.pass[0]==='wd_bulwark'&&sw.ult==='wd_bulwark'&&sw.wdu==='wd_bulwark'&&!sw.owned.includes('wd_fury')&&sw.owned.includes('wd_bulwark'));
   ok('...and the Realization rows are Bulwark\'s now',sw.bdx.r.includes('wd_bulwark_r2')&&sw.bdx.r.includes('wd_bulwark_r6')&&!sw.bdx.r.includes('wd_fury_r2')&&sw.bdx.p.wd_bulwark_r1===1&&(pw.ss.trig.cast2||[]).some(r=>r.id==='wd_bulwark_r2'));
+  // the seven other paths: choosing one makes its I passive and its II / VI rows the Wanderer's (Realization VI is in force here)
+  { const bad=[]; for(const [k] of MORE){ W.receive('w',{t:'bd',a:'path',id:k}); tick(1);
+      const good=gw.bd.wanderer.path===k&&sw.bdx.main==='wanderer'&&sw.bdx.r.includes('wd_'+k+'_r2')&&sw.bdx.r.includes('wd_'+k+'_r6')&&sw.bdx.p['wd_'+k+'_r1']===1&&sw.bdx.p['wd_'+k+'_r4']===1&&sw.pass[0]==='wd_'+k&&sw.ult==='wd_'+k;
+      if(!good) bad.push(k); }
+    ok('choosing each of the seven other paths makes its Realization II and VI rows active (gear.skills.bdx.r holds wd_<id>_r2), its I / IV passives, and wears its passive and burst',!bad.length,bad.join(' ')); }
+  // the wheel-advantage condition (adv, wanderer: prism) and the move stat (wanderer: wayfarer)
+  { W.receive('w',{t:'bd',a:'path',id:'prism'}); tick(1);
+    const foe=el=>({dead:false,remove:false,hp:1,maxHp:1,T:{el}}), c=(el,m)=>x.ssCondP(pw,'dmg',m,el);
+    ok('adv: Prism\'s passive adds its damage only when the hit\'s element beats the target\'s on the wheel (water beats fire; not fire on fire, air on fire, an element-less hit, no element, no target)',
+      c('water',foe('fire'))>0.25&&c('fire',foe('fire'))===0&&c('air',foe('fire'))===0&&c('basic',foe('fire'))===0&&c(undefined,foe('fire'))===0&&c('water',null)===0&&c('water',foe('basic'))===0&&c('light',foe('dark'))>0.25,[c('water',foe('fire')),c('fire',foe('fire')),c('basic',foe('fire'))].join(' '));
+    ok('...the registry knows adv (true only) and the move stat',x.SS_WHEN_KEYS.includes('adv')&&x.ssWhenProblem({adv:true})===null&&!!x.ssWhenProblem({adv:1})&&x.SS_STATS.includes('move')&&x.ssRowProblem({name:'a',text:'+{}%',stat:'move',v:0.05},true)===null);
+    W.receive('w',{t:'bd',a:'path',id:'bulwark'}); tick(1); }
   ok('...a you update went out',sent.slice(n0).some(([to,m])=>to==='w'&&m&&m.t==='you'));
   { const G2=x.sanitizeGear(JSON.parse(JSON.stringify(gw)),'warrior'); ok('a save keeps the path and its worn passive and burst',G2.bd.wanderer.path==='bulwark'&&G2.skills.pass[0]==='wd_bulwark'&&G2.skills.ult==='wd_bulwark'&&G2.skills.wdu==='wd_bulwark'); }
   { const G3=x.sanitizeGear(Object.assign(JSON.parse(JSON.stringify(gw)),{awk:{}}),'warrior'); ok('...a save without the tree loses them (never trusted)',!G3.skills.owned.includes('wd_bulwark')&&G3.skills.pass[0]!=='wd_bulwark'&&G3.skills.ult!=='wd_bulwark'); }
@@ -257,7 +275,7 @@ Date.now=realNow;
   const bads=[mk({passive:{name:'P',text:'+{}% damage',stat:'dmg',v:0.03}}), mk({id:'zzb',ult:Object.assign({},base.ult,{act:['zzbult',0.9,0.5],boost:[{piece:'cave',secs:10,mod:{mult:2}},{piece:'p1',secs:12,mod:{v:2}}]})}), mk({id:'zzc',real:{1:base.real[1],2:base.real[2],4:base.real[4]}}),
     mk({id:'zzd',kit:'bard'}), mk({id:'zze',from:'constructor'}), mk({id:'fury'}), mk({id:'zzf',real:Object.assign({},base.real,{2:{name:'B',text:'pop',on:'hit',icd:2,mult:1,range:3,fx:{ring:{r:3},pop:{id:'ghost',k:1}}}})})];
   const got=bads.map(D=>x.defineWandererPath(D));
-  ok('a bad path file is left out and listed (weaker than its source, a boost on the charge skill, a missing row, an unknown stat table or source, a second fury, a mark nothing makes)',got.every(r=>r===null)&&x.WD_BAD.length===n+bads.length&&x.WD_BAD.slice(n).every(b=>b.id&&b.field&&b.why)&&!x.WD_PATHS.zzt&&!x.PASSIVES.wd_zzt&&!x.ULT_SKILLS.wd_zzb&&x.ULT_BAD.length===ub&&x.WD_ORDER.length===2,JSON.stringify(x.WD_BAD.slice(n).map(b=>b.id+':'+b.field)));
+  ok('a bad path file is left out and listed (weaker than its source, a boost on the charge skill, a missing row, an unknown stat table or source, a second fury, a mark nothing makes)',got.every(r=>r===null)&&x.WD_BAD.length===n+bads.length&&x.WD_BAD.slice(n).every(b=>b.id&&b.field&&b.why)&&!x.WD_PATHS.zzt&&!x.PASSIVES.wd_zzt&&!x.ULT_SKILLS.wd_zzb&&x.ULT_BAD.length===ub&&x.WD_ORDER.length===9,JSON.stringify(x.WD_BAD.slice(n).map(b=>b.id+':'+b.field)));
   ok('...and a good one registers',!!x.defineWandererPath(base)&&!!x.WD_PATHS.zzt&&!!x.ULT_SKILLS.wd_zzt);
   x.WD_BAD.length=n; }
 

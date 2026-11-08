@@ -33,8 +33,8 @@ function elemHitS(p,el,m){ el=elemEffS(p,el);
   if(m.pl) return el==='basic'?1:foeMult(el,elOf(m.T),PVP.elemBoost);   // pvp: between fighters advantage and disadvantage are x1.15 and /1.15, a fighter's element is their basic slot skill's (the proxy's T.el), and basic is neutral
   return foeMult(el,elOf(m.T)); }
 function rollDmgS(p,mult,m,el){   // cave: caveCritP (Overdrive: a sure crit) and caveBonusK (Grapple Line: the next hit) are read below
-  const b=p.buff, crit=caveCritP(p)||Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m)+pendP(p,'crit')+rlP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
-  return {v:Math.max(1,Math.round(p.dmg*mult*caveBonusK(p)*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m)):1))),crit,fx:elemEffS(p,el)==='basic'?0:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt (an element-less hit's x1.1 shows no arrow)
+  const b=p.buff, crit=caveCritP(p)||Math.random()<Math.min(CRIT_CAP,CRIT_BASE+psP(p,'crit')+ssCondP(p,'crit',m,el)+pendP(p,'crit')+rlP(p,'crit')+allyP(p,'crit')+(b?b.crit:0)), ld=m&&!m.pl?Math.max(0,monK(m,p).lv-p.level):0, em=elemHitS(p,el,m);
+  return {v:Math.max(1,Math.round(p.dmg*mult*caveBonusK(p)*(b?b.dmg:1)*(1+psP(p,'dmg')+ssCondP(p,'dmg',m,el))*(1+potBuffP(p,'might')+allyP(p,'might'))*em*lvDmgK(ld)*AR(0.85,1.15)*(crit?Math.min(CRIT_MULT_CAP,CRIT_MULT+pendP(p,'critdmg')+rlP(p,'critdmg')+allyP(p,'critdmg')+psP(p,'critdmg')+ssCondP(p,'critdmg',m,el)):1))),crit,fx:elemEffS(p,el)==='basic'?0:em>1.01?1:em<0.99?-1:0};   // fx: 1 = the element helped, -1 = it hurt (an element-less hit's x1.1 shows no arrow)
 }
 function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dealt (0 if none)
   if(m.pl) return pvpHitS(m,mult,p,fromX,fromZ,kb,el);   // pvp: m is another fighter on the island (server/pvp.js)
@@ -60,7 +60,7 @@ function damageMonsterS(m,mult,p,fromX,fromZ,kb,el){   // returns the damage dea
   if(m.hp<=0&&m.boss&&vbPartDownS(m)){}   // volcano: a part ended, not the boss
   else if(m.hp<=0){ m.hp=0; killMonsterS(m,p); }
   caveHitS(p);   // cave: the cast that did this pays its charge (once per cast, not per enemy)
-  if(!mstQuiet&&p.ss&&p.ss.trig){ ssTriggerS(p,'hit',{m,v:d.v}); if(d.crit) ssTriggerS(p,'crit',{m,v:d.v}); }   // skillsets: on hit / on crit rows (a burn tick and a trigger's own damage are not hits)
+  if(!mstQuiet&&p.ss&&p.ss.trig){ ssTriggerS(p,'hit',{m,v:d.v,el}); if(d.crit) ssTriggerS(p,'crit',{m,v:d.v,el}); }   // skillsets: on hit / on crit rows (a burn tick and a trigger's own damage are not hits)
   return d.v;
 }
 function killMonsterS(m,p){

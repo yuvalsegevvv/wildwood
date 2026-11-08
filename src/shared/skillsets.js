@@ -36,9 +36,9 @@ const SS_ALLY_CAP={might:0.5,guard:0.5,haste:0.4,crit:0.4,critdmg:1,regen:0.05},
 const SS_ON=['hit','crit','kill','hurt','cast1','cast2','cast3','tick','low','taunt','shield','revive'], SS_EFFECT_KEYS=['fx','heal','buff','mark','status','shield','cdr'], SS_ST_KINDS=['vuln','weak','slow','stun'];
 const SS_ON_ICD=['hit','crit','hurt','tick','low','taunt','shield'];   // these need an icd (so they cannot run away)
 // the stats a passive or a bonus row may name (read with psP on the server), and the ones that may carry a `when` (read where the target or the fight is known: ssCondP)
-const SS_STATS=['hp','dmg','crit','red','cd','aspd','chg','drop','xp','reflect','critdmg','heal','buffpow','buffdur','debuffdur','area','regen','overflow','revive'];
+const SS_STATS=['hp','dmg','crit','red','cd','aspd','chg','drop','xp','reflect','critdmg','heal','buffpow','buffdur','debuffdur','area','regen','overflow','revive','move'];   // (move: movement speed, read by the client's updatePlayer through passiveSum; a path's passive-style rows use it, wanderer: wayfarer)
 const SS_COND_STATS=['dmg','crit','critdmg','red','heal','buffpow','buffdur','debuffdur','area','regen'];
-const SS_WHEN_KEYS=['moved','still','dist','tgtHp','hp','taunting','marked','behind','boss','crowd','allies','exposed','combat','shield'];
+const SS_WHEN_KEYS=['moved','still','dist','tgtHp','hp','taunting','marked','behind','boss','crowd','allies','exposed','combat','shield','adv'];   // (adv: the hit's element beats the target's on the wheel, wanderer: prism)
 const SS_ENTRY_KEYS=['name','desc','cd','range','mult','act','anim','el','fx','buff','why','style','hold'];   // style, hold: skill 1 only (shared/basic-hold.js)
 const SS_HOLD_X=['status','mark','taunt','slow','stun','burn','kb','splash'];   // what a skill 1's hold.x may add to its main shape at a full charge
 const SS_TREES=['oak','pine','willow','banyan'];   // the four Bond trees (skill revamp step 5)
@@ -58,7 +58,7 @@ function ssWhenProblem(w){
     if((k==='moved'||k==='still')&&!num(v,0.1,30)) return k+' is a number of seconds (0.1 to 30)';
     if(k==='dist'&&!(v&&typeof v==='object'&&(v.from!==undefined||v.to!==undefined)&&(v.from===undefined||num(v.from,0,80))&&(v.to===undefined||num(v.to,0.5,80))&&(v.from===undefined||v.to===undefined||v.from<v.to))) return 'dist is {from, to (above from)}: metres to the target (one of them or both)';
     if((k==='tgtHp'||k==='hp')&&!share(v)) return k+' is {above} and / or {below}: shares of health (0 to 1)';
-    if(['taunting','behind','boss','exposed','combat','shield'].includes(k)&&v!==true) return k+' is true';
+    if(['taunting','behind','boss','exposed','combat','shield','adv'].includes(k)&&v!==true) return k+' is true';
     if(k==='marked'&&!(typeof v==='string'&&/^[a-z]+$/.test(v))) return 'marked is a mark id';
     if((k==='crowd'||k==='allies')&&!(v&&Number.isInteger(v.n)&&v.n>=1&&v.n<=10&&num(v.r,1,40))) return k+' is {n (1 to 10), r (metres)}';
   }

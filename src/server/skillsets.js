@@ -113,7 +113,9 @@ function ssAmpK(p,m){
 // ---- conditions: a stat row or a trigger with a `when` (shared/skillsets.js ssWhenProblem lists them) ----
 const ssBehind=(p,m)=>{ if(p.cave&&p.cave.fx.behind>S.t) return true;   // cave: Shadow Step's window
   const dx=p.x-m.x, dz=p.z-m.z, d=Math.hypot(dx,dz)||1; return (-Math.sin(m.face)*dx-Math.cos(m.face)*dz)/d<-0.5; };   // within 60 degrees of straight behind the monster
-function ssWhen(p,m,w){
+// the hit's element beats the target's on the wheel (a real advantage: the element-less x1.1 is not one; el is the hit's element; undefined counts as element-less)
+const ssAdvS=(p,el,m)=>!!m&&!m.dead&&elemEffS(p,el)!=='basic'&&elemHitS(p,el,m)>1.01;   // wanderer: prism
+function ssWhen(p,m,w,el){
   if(!w) return true;
   if(w.moved!==undefined&&!(S.t-(p.lastMove||-99)<=w.moved||(p.cave&&p.cave.fx.moved>S.t))) return false;   // cave: Black Ice keeps Momentum on
   if(w.still!==undefined&&!(S.t-(p.lastMove||-99)>=w.still||(p.cave&&p.cave.fx.still>S.t))) return false;   // cave: Night Line counts as standing still
@@ -127,14 +129,15 @@ function ssWhen(p,m,w){
   if(w.exposed&&!(m&&(m.dead?m.expoDeath:(mstVulnK(m)>0||mstWeakK(m)<1)))) return false;
   if(w.combat&&!(S.t-(p.lastDealt||-99)<6)) return false;
   if(w.shield&&!(p.shield&&p.shield.until>S.t&&p.shield.v>0)) return false;
+  if(w.adv&&!ssAdvS(p,el,m)) return false;   // wanderer: prism
   if(w.crowd){ let n=0; for(const q of MONS) if(!q.dead&&!q.remove&&(q.inst|0)===(p.inst|0)&&Math.hypot(q.x-p.x,q.z-p.z)<w.crowd.r+q.T.rad*0.5&&++n>=w.crowd.n) break; if(n<w.crowd.n) return false; }
   if(w.allies&&ssAlliesOf(p,w.allies.r).length-1<w.allies.n) return false;
   return true;
 }
 // the conditional part of a passive stat for this target (m may be null where the stat has no target): added to psP's plain sum where it is read (rollDmgS, hurtP, heals, buffs)
-function ssCondP(p,stat,m){
+function ssCondP(p,stat,m,el){   // el: the element of the hit being rolled (rollDmgS), for the `adv` condition (wanderer: prism)
   const L=p.ss&&p.ss.cond; if(!L||!L.length) return 0;
-  let t=0; for(const c of L) if(c.stat===stat&&ssWhen(p,m||null,c.when)) t+=c.pid&&c.v>0?c.v*ultVK(p,c.pid):c.v; return t;   // ult: a boosted passive's benefit (not its cost)
+  let t=0; for(const c of L) if(c.stat===stat&&ssWhen(p,m||null,c.when,el)) t+=c.pid&&c.v>0?c.v*ultVK(p,c.pid):c.v; return t;   // ult: a boosted passive's benefit (not its cost)
 }
 // a cooldown refund (the cdr effect): seconds taken off the slots' running cooldowns; the client is told (event cdr) because it counts its own bar
 function ssCdrS(p,c){
@@ -181,7 +184,7 @@ function ssTriggerS(p,kind,ctx){
     if((icd[r.id]||0)>S.t) continue;
     if(kind==='low'&&!(p.hp<p.maxHp*(r.below||0.3))) continue;
     if(r.streak&&kind==='kill'){ let n=0; for(const t of p.killTs) if(S.t-t<=r.streak.secs) n++; if(n<r.streak.n) continue; }   // n kills within secs
-    if(r.when&&!ssWhen(p,ctx&&ctx.m||null,r.when)) continue;
+    if(r.when&&!ssWhen(p,ctx&&ctx.m||null,r.when,ctx&&ctx.el)) continue;   // (ctx.el: a hit's element, for `adv`)
     if(r.chance!==undefined&&Math.random()>=r.chance) continue;
     if(r.icd) icd[r.id]=S.t+r.icd*ultIcdK(p,r.id);   // ult: a boosted passive waits less
     ssDepth++; try{ ssRunRowS(p,p.ultB?ultRowK(p,r):r,ctx); } finally{ ssDepth--; }
