@@ -1,7 +1,7 @@
 //@ Rifts: the numbers (energy, waves, XP x3), the energy clock (riftEnergyAt), the registry of rifts (defineRift, RIFT_DEFS, RIFT_BAD), the glass monsters (riftMobDef), the void world's platform layout (riftLayout), the tear's keep-out (riftNear). Pure; loaded by both sides
 /* agent map (docs/RIFT.md)
    exports: RIFT_E_MAX, RIFT_E_FULL_H, RIFT_E_MS, RIFT_E_DOUBLE, RIFT_LV, RIFT_XP_K, RIFT_HP_K, RIFT_DMG_K, RIFT_WAVES, RIFT_NEXT_PCT, RIFT_WAVE_S, RIFT_RELEASE_S, RIFT_ALIVE_MAX,
-            RIFT_HERALD_HP, RIFT_BONUS_KILLS, RIFT_RESPAWN_S, RIFT_COUNT_S, RIFT_TALK, RIFT_CLEAR, RIFT_SLOT0, riftWaveSize(n), riftEnergyAt(g,now), riftFullIn(g,now) (seconds),
+            RIFT_HERALD_HP, RIFT_BONUS_KILLS, RIFT_RESPAWN_S, RIFT_COUNT_S, RIFT_ELEM_LV, RIFT_ESS_FULL, RIFT_ELEM_SLOTS, riftEssFor(w), defineElemRift(o), RIFT_TALK, RIFT_CLEAR, RIFT_SLOT0, riftWaveSize(n), riftEnergyAt(g,now), riftFullIn(g,now) (seconds),
             RIFT_DEFS (id -> rift, no prototype), RIFT_BAD, RIFT_DOORS (every rift's tear {id,x,z}: a var, nearPath asks it), defineRift(R), riftMobDef(base,id,name,o), RIFT_MON_DEFS,
             riftLayout(R) -> a dungeon layout ({gw, gh, start, cells}) that dgBake takes, riftNear(x,z,m), riftDoorNear(x,z,r), DG_HUD.rift (the HUD row)
    users: server/rift.js (runs, energy, waves, rewards), game/rift/*.js (the tear, the window, the void view, the glass), village-helpers.js nearPath (no tree or camp on the tear's clearing)
@@ -14,16 +14,22 @@ const RIFT_WAVES=10, RIFT_NEXT_PCT=0.75, RIFT_WAVE_S=40, RIFT_RELEASE_S=10, RIFT
 const RIFT_HERALD_HP=8, RIFT_BONUS_KILLS=75, RIFT_RESPAWN_S=5, RIFT_COUNT_S=5;   // the Herald's health x8; the clear bonus = 75 same-level world kills' XP; one respawn after 5 s; 5 s before wave 1
 const RIFT_TALK=6, RIFT_CLEAR=16, RIFT_SLOT0=16;   // the talk key works within 6 m of the tear; no tree, prop or camp within 16 m; rift runs use slots 16.. (dungeons keep 0-15)
 const riftWaveSize=n=>12+2*n;   // 14, 16 ... 32: 230 in all
+/* THE ELEMENTAL RIFTS (step 17a, PLAN section 5): the same wave plan, monster count (riftWaveSize) and level rule (your level) as every rift; they differ only in the look and the monsters' element, so no
+   element is easier to farm. They open at hiker level RIFT_ELEM_LV and pay Essence, no XP and no coins: a full run RIFT_ESS_FULL (12), by the waves reached (riftEssFor), x2 with the Double.
+   RIFT_ELEM_SLOTS is the one kind plan: slot i of a data file's six monsters joins at wave from with weight w (the Shardmere's own plan). Data files call defineElemRift, never defineRift. */
+const RIFT_ELEM_LV=28, RIFT_ESS_FULL=12;
+const RIFT_ELEM_SLOTS=[{from:1,w:4},{from:1,w:2},{from:2,w:3},{from:3,w:2},{from:4,w:2},{from:5,w:2}];
+const riftEssFor=w=>Math.round(RIFT_ESS_FULL*Math.max(0,Math.min(RIFT_WAVES,w|0))/RIFT_WAVES);   // the Essence for the first w waves (w = 10: 12; 5: 6; 1: 1)
 // the energy now (a float): what was saved plus the refill since, capped. A save without it is full.
 function riftEnergyAt(g,now){ if(!g||!isFinite(g.e)) return RIFT_E_MAX; return Math.min(RIFT_E_MAX,Math.max(0,g.e)+Math.max(0,now-(+g.at||now))/RIFT_E_MS); }
 const riftFullIn=(g,now)=>Math.ceil((RIFT_E_MAX-riftEnergyAt(g,now))*RIFT_E_MS/1000);
 /* THE REGISTRY (rule 4: a rift is one data file in shared/rift/, one defineRift call):
    {id, name, blurb, door: {x, z} (the tear, in the wild), aura: [blue, purple, pink] (hex: the sky's veils, the light, the glass rims), kinds: [{id, from (first wave), w (weight)}],
-    herald: def id (waves 5 and 10), music} */
+    herald: def id (waves 5 and 10), music, lv (the hiker level it opens at, default RIFT_LV), reward ('xp' default | 'essence'), essence ('prime' | an element: what 'essence' pays), el (the rift's element, elemental rifts)} */
 const RIFT_DEFS=Object.create(null), RIFT_BAD=[], RIFT_MON_DEFS=[];
 var RIFT_DOORS=[];   // (a var: nearPath may ask before this file has run)
 // what a rift pays, named by its data file's `reward` (default 'xp'): each mode is one entry of RIFT_PAY on the server (server/rift.js); a new mode adds its name here and its entry there
-const RIFT_REWARDS=['xp'];
+const RIFT_REWARDS=['xp','essence'];
 function defineRift(R){
   let why='';
   if(!R||typeof R.id!=='string'||!/^[a-z][a-z0-9]*$/.test(R.id)) why='id must be lower-case letters and digits';
@@ -31,16 +37,30 @@ function defineRift(R){
   else if(!R.door||!isFinite(R.door.x)||!isFinite(R.door.z)) why='door {x,z} is missing';
   else if(!Array.isArray(R.aura)||R.aura.length!==3) why='aura needs three colours';
   else if(R.reward!==undefined&&!RIFT_REWARDS.includes(R.reward)) why='reward must be one of '+RIFT_REWARDS.join(', ');
+  else if(R.reward==='essence'&&!essIdOf(R.essence)) why='essence must be an element or prime';
+  else if(R.lv!==undefined&&!(R.lv>=RIFT_LV&&R.lv<=99)) why='lv must be '+RIFT_LV+' to 99';
   else if(!Array.isArray(R.kinds)||!R.kinds.length) why='kinds is empty';
   else { const k=R.kinds.find(k=>!ALL_MON_DEFS.some(d=>d.id===k.id)); if(k) why='kind '+k.id+' is not a monster'; else if(!ALL_MON_DEFS.some(d=>d.id===R.herald)) why='herald is not a monster'; }
   if(why){ RIFT_BAD.push({id:R&&R.id,why}); if(typeof console!=='undefined') console.warn('rift '+(R&&R.id)+' left out: '+why); return null; }
-  R.rift=true; R.reward=R.reward||'xp'; R.pal={floor:R.aura[1],wall:R.aura[0],fog:R.aura[1],light:R.aura[2]};   // (the dungeons' palette fields, for the parts of their code that read a theme: the minimap)
+  R.rift=true; R.reward=R.reward||'xp'; R.lv=R.lv||RIFT_LV; R.pal={floor:R.aura[1],wall:R.aura[0],fog:R.aura[1],light:R.aura[2]};   // (the dungeons' palette fields, for the parts of their code that read a theme: the minimap)
   RIFT_DEFS[R.id]=R; RIFT_DOORS.push({id:R.id,x:R.door.x,z:R.door.z}); return R;
+}
+/* An elemental rift (essence mode): the data file gives what differs, this adds what is shared (RIFT_ELEM_LV, the kind plan, the reward). o = {id, name, blurb, door, aura, music, el (the element every monster of the
+   rift has), essence ('prime' or el), mobs: six glass kind ids (riftMobDef, in the order of RIFT_ELEM_SLOTS), herald}. A monster whose element is not o.el leaves the rift out (RIFT_BAD), so a file cannot drift. */
+function defineElemRift(o){
+  const bad=why=>{ RIFT_BAD.push({id:o&&o.id,why}); if(typeof console!=='undefined') console.warn('rift '+(o&&o.id)+' left out: '+why); return null; };
+  if(!o||!Array.isArray(o.mobs)||o.mobs.length!==RIFT_ELEM_SLOTS.length) return bad('mobs needs '+RIFT_ELEM_SLOTS.length+' kinds');
+  if(!ELEMS[o.el]||o.el==='basic') return bad('el must be one of the six elements');
+  if(o.essence!=='prime'&&o.essence!==o.el) return bad('essence must be prime or the rift\'s own element');
+  for(const id of [...o.mobs,o.herald]){ const d=ALL_MON_DEFS.find(m=>m.id===id); if(d&&d.el!==o.el) return bad('kind '+id+' has the element '+d.el+', not '+o.el); }
+  return defineRift({id:o.id,name:o.name,blurb:o.blurb,door:o.door,aura:o.aura,music:o.music,herald:o.herald,el:o.el,reward:'essence',essence:o.essence,lv:RIFT_ELEM_LV,
+    kinds:o.mobs.map((id,i)=>({id,from:RIFT_ELEM_SLOTS[i].from,w:RIFT_ELEM_SLOTS[i].w}))});
 }
 /* A glass monster: a copy of an existing kind (its model, family numbers, animation) with its own id, name and element, at level 10 (a run scales it to your level: dgKOf), the look flag
    pal.glass and pal.tint (game/rift/glass.js draws it as glass). Not in MON_DEFS: no zone camps, no board quests, no material (made like the cave's copies, shared/cave-map.js). */
 function riftMobDef(base,id,name,o){
   const b=ALL_MON_DEFS.find(m=>m.id===base); if(!b){ RIFT_BAD.push({id,why:'no base kind '+base}); return null; }
+  if(ALL_MON_DEFS.some(m=>m.id===id)){ RIFT_BAD.push({id,why:'monster id '+id+' is already used'}); return null; }   // (a second kind with an id would shadow the first)
   const d=Object.assign({},b,{id,name,level:RIFT_LV,zone:undefined,count:undefined,rift:true},o); d.pal=Object.assign({},b.pal,{glass:1},o.pal||{});
   for(const k of ['rad','height','hp','dmg','xp','color','res','acc','boss','drop']) delete d[k];
   if(o.scale) d.scale=o.scale;
@@ -70,6 +90,6 @@ const riftNear=(x,z,m)=>{ for(const d of RIFT_DOORS){ const dx=x-d.x, dz=z-d.z, 
 const riftDoorNear=(x,z,r)=>{ for(const d of RIFT_DOORS) if(Math.hypot(x-d.x,z-d.z)<=(r===undefined?RIFT_TALK:r)) return RIFT_DEFS[d.id]||null; return null; };
 /* the HUD (shared/dungeon-hud.js reads DG_HUD[mission]): run.hud = [wave 0-10 (0 = the count-down), monsters of the run alive or on their way, seconds to the next wave, 1 when doubled, XP so far]
    (dg[3]...dg[7]) */
-DG_HUD.rift=dg=>{ const w=dg[3]|0, left=dg[4]|0, next=dg[5]|0, x2=(dg[6]|0)===1, xp=dg[7]|0;
-  return {title:'Rift'+(x2?' · reward x2':''),lines:[w?'Wave '+w+' / '+RIFT_WAVES+(next>0&&w<RIFT_WAVES?' · next in '+next+' s':''):'The rift opens in '+next+' s','Monsters: '+left,'XP this run: '+xp.toLocaleString('en-US')],
+DG_HUD.rift=(dg,th)=>{ const w=dg[3]|0, left=dg[4]|0, next=dg[5]|0, x2=(dg[6]|0)===1, xp=dg[7]|0, R=th&&RIFT_DEFS[th], ess=R&&R.reward==='essence'?essOf(essIdOf(R.essence)):null;   // (the fifth number is the XP so far, or the Essence of an essence rift)
+  return {title:'Rift'+(x2?' · reward x2':''),lines:[w?'Wave '+w+' / '+RIFT_WAVES+(next>0&&w<RIFT_WAVES?' · next in '+next+' s':''):'The rift opens in '+next+' s','Monsters: '+left,(ess?ess.name+' this run: ':'XP this run: ')+xp.toLocaleString('en-US')],
     bar:{v:w,max:RIFT_WAVES,col:'#c78cff',label:'Wave '+w+' / '+RIFT_WAVES},warn:false}; };

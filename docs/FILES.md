@@ -102,6 +102,7 @@ shared
   classes.js                         Classes (CLASSES), basic attacks (ACTS), equippable skills with elements (SKILLS, abilityOf), skill levels, class-universal passives (PASSIVES). Pure.
   skillsets.js                       Skill sets (rules, pure): the registry defineSkillSet (one file per set in shared/skillsets/), its checks, the expansion into SKILLS / PASSIVES rows, counting the worn pieces and the 3- / 5-set bonuses
   boss-trophy.js                     Boss trophies: BOSS_TROPHY, the named trophy each world boss drops (2^tier a kill to every helper), the registry defineBossTrophy and its checks
+  essence.js                         Essence: the seven materials the elemental rifts pay and the Awakening trees spend (one per element, and Prime Essence): ids, names, colours, the lookup. Pure; loaded by both sides
   basic-hold.js                      Skill 1 (the basic slot) as an attack-speed skill with two modes (pure): attack speed and charge gain, the press / hold split, and what a held release becomes for each class
   drops.js                           Monster drops (MATS: one material per monster kind) and what upgrading a skill costs (upgradeNeeds, upNeedsBase). Pure.
   items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, and the three profession tools (TOOL_LIST) with the same tiers and rarities (the pendants' rules are in pendants.js, the pieces in dungeon-items.js); prices, drop tables, merging, armour looks, gear helpers (the level-30 dungeon pieces join ITEM in dungeon-items.js). Pure.
@@ -239,6 +240,7 @@ shared
   dip.js                             The Dark Infection Pipes: one grind spot in each of the eight lands (a flat, tree-free 20 x 20 square), its levels, spawn counts and rates, upgrade materials and activation cost. Pure
   rift.js                            Rifts: the numbers (energy, waves, XP x3), the energy clock (riftEnergyAt), the registry of rifts (defineRift, RIFT_DEFS, RIFT_BAD), the glass monsters (riftMobDef), the void world's platform layout (riftLayout), the tear's keep-out (riftNear). Pure; loaded by both sides
   rift/shardmere.js                  The first rift, the Shardmere: its tear in the home forest's wilds, its aura (blue, purple, pink), its seven glass monsters and which wave each joins
+  rift/taproot.js                    The first elemental rift, the Taproot (Wildwood's root rift, pays Prime Essence): its tear in the home forest's east wilds, its moss-and-gold aura, six earth glass kinds and a Herald
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -327,7 +329,7 @@ server
   puzzles.js                         Puzzles on the server: opening a stone, checking an answer, the 2-hour renewals, the chest, first-solve gems and Sigils, the Sigil track, upgrade scrolls, and the admin Puzzles tool
   puzzles-group.js                   Puzzle stones for groups: a dungeon run's three side stones, the raids' stones inside the walls and the Deep Cave's chest in cave material
   dip.js                             Dark Infection Pipes on the server: upgrading a pipe with the zone's materials, releasing dark energy (coins, 10 minutes), the refill ticks that spawn the zone's monsters, the active list sent to hikers
-  rift.js                            Rifts on the server: the energy (gear.rift, refilled by the clock), the tear's window, a solo run in a rift slot of the dungeon instance layer, the waves of glass monsters, XP only (x3, x2 with the Double), the clear bonus, one respawn, leaving
+  rift.js                            Rifts on the server: the energy (gear.rift, refilled by the clock), the tear's window, a solo run in a rift slot of the dungeon instance layer, the waves of glass monsters, what a rift pays (XP x3, or Essence), x2 with the Double, the clear bonus, one respawn, leaving
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 

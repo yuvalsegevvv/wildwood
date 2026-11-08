@@ -49,7 +49,7 @@ tick(40);
 send({a:'tier',set:K}); send({a:'tier',set:K});
 { ok('A2 and A3 bought',g.awk[K].t===3);
   const c4=x.awkTierCost(K,4), s0=snap(), why=x.awkTierP(p,K);
-  ok('A4 asks Prime Essence, which cannot be earned yet: refused with a reason, nothing taken, no throw',!!c4.mats.ess_prime&&typeof why==='string'&&/cannot be earned yet/.test(why)&&snap()===s0&&g.awk[K].t===3,why); }
+  ok('A4 asks Prime Essence, which the rifts pay (step 17a): refused with its name while none is held, nothing taken, no throw',!!c4.mats.ess_prime&&typeof why==='string'&&/Prime Essence/.test(why)&&!/cannot/.test(why)&&snap()===s0&&g.awk[K].t===3,why); }
 { const sh=x.awkShapeOf('pell'), po=x.awkNodeCost('pell','po2'); x.ssGrantSetP(p,'pell',true); fund(); x.awkStatP(p,'pell','spo2');
   const tid=Object.keys(po.mats).find(m=>m.startsWith('trophy_')), s0=snap(), why=x.awkLevelP(p,'pell','po2');
   ok('a power level asks the boss trophy: refused with a reason while none is held, nothing taken',sh.id==='oak'&&!!tid&&typeof why==='string'&&/trophy|Trophy/.test(why)&&snap()===s0&&!g.awk.pell.n.po2,why);

@@ -8,7 +8,7 @@
           not owned, the tier reached, the hiker level of its tier, every req owned (the parent, a Banyan via, the crown's joins); awkNodeCost. A set needs Bond 0 (bdOwns, server/bond.js); pa1 makes its kept passive yours.
           PAYING (awkPlanP, then awkTakeP): coins, `drops` of the character's land's monster kinds (awkDropKinds: the land's non-boss kinds from the tier's share of its level range up; the
           Wanderer's: any land's, from the tier's hiker level - 5), taken from the kinds held most; 'echo' from gear.awm; 'rd_<land>' from gear.rd.mat ('rd_any': any land's). Everything is checked first and
-          taken after; trophy_<boss> from gear.awm (step 10a; 'trophy_any': any boss's), an id nobody can hold yet (ess_*: step 17) refuses the purchase with a reason. Event awk [pid, set, 't' | node id, tier]; p.dirty; recalcP; mqActP 'upskill' (main quest W10).
+          taken after; trophy_<boss> from gear.awm (step 10a; 'trophy_any': any boss's), ess_<element> / ess_prime from gear.awm (step 17a, paid by the elemental rifts: server/rift.js; awkEssenceP adds, awkSanitize clamps to MAT_MAX), an unknown id refuses the purchase with a reason. Event awk [pid, set, 't' | node id, tier]; p.dirty; recalcP; mqActP 'upskill' (main quest W10).
           ch1 makes the charge skill yours (a set's own; the Wanderer's: the general ones, set null); bu1 makes the burst usable (awkUltLvP >= 1, read by ultEquippedP / ultEquipP).
    LEVELS (awkSyncG(gear), run by recalcP, ssGrantP, sanitizeGear): a set piece's level = its branch (awkBranchLv: the deepest upgrade node owned in a row, a limb with an unlock node starts at 0),
           capped by the tier's cap: the actives of position 1 / 2 / 3 -> ba / sk / po, the kept passive -> pa, the set's charge skill -> ch (gear.cave.own), the burst -> bu (awkUltLvP, read by ultCastP).
@@ -41,6 +41,7 @@ function awkSanitize(g,out){   // sanitizeGear: gear.awk and gear.awm from a sav
   out.awk=A;
   const W=g&&g.awm&&typeof g.awm==='object'&&!Array.isArray(g.awm)?g.awm:null, M={};
   for(const id of AWK_STORE_IDS){ const n=awkOwn(W,id)?clampInt(W[id],0,AWK_STORE_MAX,0):0; if(n) M[id]=n; }
+  for(const id of ESS_ORDER){ const n=awkOwn(W,id)?clampInt(W[id],0,MAT_MAX,0):0; if(n) M[id]=n; }   // Essence (step 17a): only the registry's seven ids, clamped to MAT_MAX
   for(const id of BT_ORDER){ const n=awkOwn(W,id)?clampInt(W[id],0,BT_MAX,0):0; if(n) M[id]=n; }   // boss trophies: only the registry's ids, each own property of the save
   const sh=g&&g.cave&&typeof g.cave==='object'?clampInt(g.cave.sh,0,99999,0):0; if(sh) M.echo=Math.min(AWK_STORE_MAX,(M.echo||0)+sh);   // an old save's Echo Shards (gear.cave.sh, no longer written)
   out.awm=M;
@@ -50,6 +51,12 @@ function awkTrophyP(p,bossId,tier){
   const t=btOfBoss(bossId); if(!t) return 0;
   const w=p.gear.awm||(p.gear.awm={}), have=awkOwn(w,t.id)?w[t.id]|0:0, add=Math.min(btCount(tier),BT_MAX-have); if(add<=0) return 0;
   w[t.id]=have+add; p.dirty=true; toastTo(p.id,'+'+add+' '+t.name,'good'); return add;
+}
+// Essence (step 17a): a rift's pay, kept in gear.awm under its id (ess_<element> | ess_prime); returns how many were added (the pile stops at MAT_MAX)
+function awkEssenceP(p,id,n){
+  if(!essOf(id)) return 0;
+  const w=p.gear.awm||(p.gear.awm={}), have=awkOwn(w,id)?w[id]|0:0, add=Math.min(Math.max(0,n|0),MAT_MAX-have); if(add<=0) return 0;
+  w[id]=have+add; p.dirty=true; return add;
 }
 const awkEntry=(gear,k)=>gear&&awkOwn(gear.awk,k)?gear.awk[k]:null;
 const awkEntryW=(gear,k)=>awkEntry(gear,k)||(gear.awk[k]={t:0,n:{}});
@@ -94,7 +101,7 @@ function awkRaidStock(p,land){   // [[land, n]] the raid material that pays rd_<
   const m=rdMatsOf(p); if(land==='any') return Object.keys(m).filter(l=>m[l]>0).map(l=>[l,m[l]]);
   return awkOwn(m,land)&&m[land]>0?[[land,m[land]]]:[];
 }
-const awkMatName=id=>awkOwn(AWK_MAT_NAME,id)?AWK_MAT_NAME[id]:btOf(id)?btOf(id).name:id.startsWith('rd_')?((rdOfLand(id.slice(3))||{}).mat||'raid material'):id;
+const awkMatName=id=>awkOwn(AWK_MAT_NAME,id)?AWK_MAT_NAME[id]:btOf(id)?btOf(id).name:essOf(id)?essOf(id).name:id.startsWith('rd_')?((rdOfLand(id.slice(3))||{}).mat||'raid material'):id;
 // greedy take of n from [[key, have]], the biggest stock first: [[key, n]] or null when there is not enough
 function awkGreedy(stock,n){
   if(!(n>0)) return [];
@@ -106,7 +113,7 @@ function awkGreedy(stock,n){
 function awkPlanP(p,c){
   const g=p.gear; if(!c) return {why:'There is no such step'};
   if((g.coins|0)<c.coins) return {why:'Not enough coins ('+c.coins+' needed)'};
-  const plan={coins:c.coins,drops:[],echo:0,rd:[],tr:[]};
+  const plan={coins:c.coins,drops:[],echo:0,rd:[],tr:[],es:[]};
   if(c.drops>0){ const kinds=awkDropKinds(c.land,c.tier), got=awkGreedy(kinds.map(id=>[id,g.mats[id]|0]),c.drops);
     if(!got) return {why:'You need '+c.drops+' monster drops of '+(c.land==='any'?'level '+Math.max(1,AWK_TIERS[c.tier].lv-5)+' or above':'that land')+' (from its tougher kinds as the tier rises)'};
     plan.drops=got; }
@@ -115,7 +122,8 @@ function awkPlanP(p,c){
     else if(id.startsWith('rd_')){ const got=awkGreedy(awkRaidStock(p,id.slice(3)),n); if(!got) return {why:'You need '+n+' '+awkMatName(id)+' (raid material)'}; plan.rd.push(...got); }
     else if(id==='trophy_any'){ const got=awkGreedy(BT_ORDER.map(t=>[t,g.awm[t]|0]),n); if(!got) return {why:'You need '+n+' boss trophies (any boss)'}; plan.tr.push(...got); }   // the Wanderer: any boss's
     else if(btOf(id)){ const have=awkOwn(g.awm,id)?g.awm[id]|0:0; if(have<n) return {why:'You need '+n+' '+btOf(id).name+' (you have '+have+')'}; plan.tr.push([id,n]); }
-    else return {why:'This step needs '+n+' '+id+', which cannot be earned yet'}; }   // Essence (step 17): no store yet
+    else if(essOf(id)){ const have=awkOwn(g.awm,id)?g.awm[id]|0:0; if(have<n) return {why:'You need '+n+' '+essOf(id).name+' (you have '+have+'; the rifts pay it)'}; plan.es.push([id,n]); }   // Essence (step 17a): from gear.awm
+    else return {why:'This step needs '+n+' '+id+', which cannot be earned'}; }
   return {plan};
 }
 function awkTakeP(p,P){
@@ -124,6 +132,7 @@ function awkTakeP(p,P){
   for(const [id,n] of P.drops){ const left=(g.mats[id]|0)-n; if(left>0) g.mats[id]=left; else delete g.mats[id]; }
   if(P.echo){ const left=(g.awm.echo|0)-P.echo; if(left>0) g.awm.echo=left; else delete g.awm.echo; }
   for(const [id,n] of P.tr){ const left=(g.awm[id]|0)-n; if(left>0) g.awm[id]=left; else delete g.awm[id]; }
+  for(const [id,n] of P.es){ const left=(g.awm[id]|0)-n; if(left>0) g.awm[id]=left; else delete g.awm[id]; }
   for(const [l,n] of P.rd){ const left=(rm[l]|0)-n; if(left>0) rm[l]=left; else delete rm[l]; }
 }
 // ---- buying ----

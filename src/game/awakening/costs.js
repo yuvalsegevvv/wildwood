@@ -6,11 +6,11 @@
             awcNodeName(k,n), awcStatText(k,n), awcEffect(k,n), awcStatus(k,n) -> {st, why, miss, cost, lines, afford}, awcStates(k) ({node id: state} for the canvas), awcCostLines(c), awcTierInfo(k),
             awcMatName(id), awcHaveOf(id,c), awcLandName(land).
    PAYING (what the server does, mirrored so the panel can say "you can pay"): coins; `drops` from the monster kinds awkDropKinds(land, tier) (all that you hold of them count); 'echo' from gear.awm; 'rd_<land>' from the
-   raid material of that land ('rd_any': any land's); 'trophy_<boss>' from gear.awm ('trophy_any': any boss's); Essence ('ess_*') cannot be held yet (step 17): such a price shows as "cannot be earned yet" and never as payable.
+   raid material of that land ('rd_any': any land's); 'trophy_<boss>' from gear.awm ('trophy_any': any boss's); Essence ('ess_*', ESSENCE in shared/essence.js) from gear.awm, paid by the elemental rifts (step 17a); an id nothing can hold shows as "cannot be earned yet" and never as payable.
    Test: client-smoke (the awakening block). */
 const AWC_STAT_NAME={dmg:'damage',crit:'crit chance',cd:'cooldowns',hp:'health',red:'damage taken',move:'move speed',drop:'drop rate',xp:'experience',heal:'healing done',eff:'buff strength'};
 const AWC_LIMB_NAME={ba:'Basic',sk:'Skill',po:'Power',pa:'Passive',ch:'Charge',bu:'Burst'};
-const AWC_ESS_COL='#c9a0ff', AWC_COIN_COL='#f2cf5a', AWC_ECHO_COL='#6fd6d0', AWC_RAID_COL='#e8b84a', AWC_DROP_COL='#a9c97a';
+const AWC_COIN_COL='#f2cf5a', AWC_ECHO_COL='#6fd6d0', AWC_RAID_COL='#e8b84a', AWC_DROP_COL='#a9c97a';
 const awcHas=(o,k)=>!!o&&typeof o==='object'&&typeof k==='string'&&Object.prototype.hasOwnProperty.call(o,k);
 const awcLandName=land=>land==='any'?'any land':(typeof LANDS!=='undefined'&&awcHas(LANDS,land)?LANDS[land].name:land);
 // the characters you may open: the Wanderer and every set with Bond 0 or more (the server refuses an unowned one)
@@ -69,18 +69,17 @@ function awcMatName(id){
   if(id==='trophy_any') return 'Boss trophies (any boss)';
   if(btOf(id)) return btOf(id).name;
   if(id.startsWith('rd_')){ const l=id.slice(3), r=l==='any'?null:rdOfLand(l); return r?r.mat:l==='any'?'Raid material (any land)':'Raid material'; }
-  if(id==='ess_prime') return 'Prime Essence';
-  if(id.startsWith('ess_')){ const e=id.slice(4); return (awcHas(ELEMS,e)?ELEMS[e].name+' ':'')+'Essence'; }
+  if(essOf(id)) return essOf(id).name;
   return id;
 }
-const awcMatCol=id=>id==='echo'?AWC_ECHO_COL:btOf(id)?btOf(id).col:id==='trophy_any'?'#d9b26a':id.startsWith('rd_')?AWC_RAID_COL:id.startsWith('ess_')?(awcHas(ELEMS,id.slice(4))?ELEMS[id.slice(4)].col:AWC_ESS_COL):'#cccccc';
-// how many of a price's material you hold; null: nothing can hold it yet (Essence)
+const awcMatCol=id=>id==='echo'?AWC_ECHO_COL:btOf(id)?btOf(id).col:id==='trophy_any'?'#d9b26a':id.startsWith('rd_')?AWC_RAID_COL:essOf(id)?essCol(id):'#cccccc';
+// how many of a price's material you hold (null: an id nothing can hold)
 function awcHaveOf(id){
   const W=(GEAR&&GEAR.awm)||{}, R=(GEAR&&GEAR.rd&&GEAR.rd.mat)||{};
   if(id==='echo') return awcHas(W,'echo')?W.echo|0:0;
   if(id.startsWith('rd_')){ const l=id.slice(3); if(l==='any') return Object.keys(R).reduce((a,x)=>a+(R[x]|0),0); return awcHas(R,l)?R[l]|0:0; }
   if(id==='trophy_any') return BT_ORDER.reduce((a,t)=>a+(awcHas(W,t)?W[t]|0:0),0);
-  if(btOf(id)) return awcHas(W,id)?W[id]|0:0;
+  if(btOf(id)||essOf(id)) return awcHas(W,id)?W[id]|0:0;   // trophies and Essence (step 17a) live in gear.awm
   return null;
 }
 // a price as lines [{name, col, have, need, ok, note}]: coins, monster drops of the character's land at the price's tier, then every material

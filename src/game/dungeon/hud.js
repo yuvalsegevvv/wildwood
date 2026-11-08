@@ -75,7 +75,8 @@ function dgResultShow(e){
   hvEvent(won?'dgwin':'dglose');   // voice: audio/voices-hero.js
   $('#dgResultTitle').textContent=won?'Cleared!':'The run is lost'; $('#dgResult').classList.toggle('lost',!won);
   $('#dgResultWhy').textContent=won?'':String(e[8]||''); $('#dgResultWhy').hidden=won||!e[8];
-  $('#dgResultStats').textContent='Time '+dgClockText(+e[3]||0)+' · '+Math.round(+e[4]||0)+' XP · '+(e[5]|0)+' coins · '+(e[7]|0)+' materials';
+  { const RR=DG_RUN&&DG_RUN.m==='rift'&&RIFT_DEFS[DG_RUN.th], re=RR&&RR.reward==='essence'?essOf(essIdOf(RR.essence)):null;   // a rift that pays Essence: the count is in the materials slot
+    $('#dgResultStats').textContent=re?'Time '+dgClockText(+e[3]||0)+' · '+(e[7]|0)+' '+re.name:'Time '+dgClockText(+e[3]||0)+' · '+Math.round(+e[4]||0)+' XP · '+(e[5]|0)+' coins · '+(e[7]|0)+' materials'; }
   box.innerHTML=''; if(!items.length) box.append(Object.assign(document.createElement('span'),{className:'dgr-none',textContent:'No items this time.'}));
   for(const id of items){ const it=ITEM[id], s=document.createElement('span'); s.className='dgr-it'; s.textContent=it?it.name:String(id); if(it) s.style.color=RAR_COL[it.rar]||''; box.append(s); }
   DG_HUD_EL.endAt=performance.now(); DG_HUD_EL.endLen=(DG_RUN?[...DG_RUN.objs.values()]:[]).some(o=>o.kind==='chest'&&o.st===1)?60:DG_END_SHOW;   /* the server waits 60 s while reward chests stand */ $('#dgResultGo').textContent='Leave now'; $('#dgResult').hidden=false; won?UI_SFX.success():UI_SFX.notify();

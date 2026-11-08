@@ -96,6 +96,7 @@
     "classes.js",
     "skillsets.js",
     "boss-trophy.js",
+    "essence.js",
     "basic-hold.js",
     "drops.js",
     "items.js",
@@ -203,7 +204,7 @@
     "raids/wrackmoor.js",
     "raids/moot.js",
     "raids/sevengates.js", "testroom.js",
-    "puzzles.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/sudoku.js", "puzzles/akari.js", "puzzles/slither.js", "puzzles/bridges.js", "puzzles/mirrors.js", "puzzles/nonogram.js", "puzzles/sokoban.js", "puzzle-sites.js", "puzzle-place.js", "puzzle-group.js", "puzzle-track.js", "dip.js", "rift.js", "rift/shardmere.js"
+    "puzzles.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/sudoku.js", "puzzles/akari.js", "puzzles/slither.js", "puzzles/bridges.js", "puzzles/mirrors.js", "puzzles/nonogram.js", "puzzles/sokoban.js", "puzzle-sites.js", "puzzle-place.js", "puzzle-group.js", "puzzle-track.js", "dip.js", "rift.js", "rift/shardmere.js", "rift/taproot.js"
   ],
   "server": [
     "state.js",

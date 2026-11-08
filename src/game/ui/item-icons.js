@@ -118,6 +118,13 @@ function btIconArt(col){
   const d=icoShade(col,0.62), l=icoShade(col,1.3);
   return `<path d="M9 7Q2 7 4 13Q6 18 11 18M23 7Q30 7 28 13Q26 18 21 18" fill="none" stroke="#15120e" stroke-width="3"/><path d="M9 7Q2 7 4 13Q6 18 11 18M23 7Q30 7 28 13Q26 18 21 18" fill="none" stroke="${d}" stroke-width="1.5"/><path d="M8 4H24V12Q24 20 16 21Q8 20 8 12Z" fill="${col}" ${OUT}/><path d="M11 6V12Q11 17 14 19" fill="none" stroke="${l}" stroke-width="1.3"/><path d="M14 21H18V25H14Z" fill="${d}" ${OUT}/><path d="M9 25H23V29H9Z" fill="${col}" ${OUT}/>`;
 }
+// an Essence (shared/essence.js): a tall faceted crystal tinted by the element's colour (Prime Essence: gold, with a bright core)
+function essIconArt(col,prime){
+  const d=icoShade(col,0.62), l=icoShade(col,1.35);
+  return `<path d="M16 1.5L25 10.5V21.5L16 30.5L7 21.5V10.5Z" fill="${col}" ${OUT}/><path d="M7 10.5L16 14.5L25 10.5M16 14.5V30.5" fill="none" stroke="${d}" stroke-width=".9"/><path d="M16 1.5L11.5 10.5L16 14.5L20.5 10.5Z" fill="${l}" opacity=".6"/><path d="M10 11.5L13.5 6" stroke="#fff" stroke-width="1.3" stroke-linecap="round" opacity=".8"/>`
+    +(prime?`<circle cx="16" cy="19.5" r="3" fill="#fff6d0" ${OUT}/><path d="M16 15.5V23.5M12 19.5H20" stroke="${d}" stroke-width=".8"/>`:'');
+}
+const essIcon=(col,prime)=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${essIconArt(col,prime)}</g></svg>`;
 const btIcon=col=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${btIconArt(col)}</g></svg>`;
 // id + name given for a monster drop: its own picture (ui/drop-icons.js); a resource passes its profession as `kind`
 const matIcon=(col,kind,id,name)=>`<svg class="ico" viewBox="0 0 32 32" aria-hidden="true"><g filter="url(#icoLit)">${kind==='drop'&&id?dropIconArt(id,col,name):matIconArt(col,kind)}</g></svg>`;
