@@ -254,7 +254,7 @@ function defineSkillSet(D){
 function ssCount(skills,cls,level){
   const n={}; if(!skills||!skills.eq||!SS_ORDER.length) return n;
   for(const slot of SLOTS){ const ab=abilityOf(cls,slot,skills,level); if(ab&&ab.set) n[ab.set]=(n[ab.set]||0)+1; }
-  if(Array.isArray(skills.pass)) for(const id of skills.pass.slice(0,passiveOpen(level))){ const P=PASSIVES[id]; if(P&&P.set&&skills.owned.includes(id)&&level>=Math.max(PASSIVE_LV,P.lv)) n[P.set]=(n[P.set]||0)+1; }
+  if(Array.isArray(skills.pass)) for(const id of skills.pass.slice(0,passiveOpen(level,skills))){ const P=PASSIVES[id]; if(P&&P.set&&skills.owned.includes(id)&&level>=Math.max(PASSIVE_LV,P.lv)) n[P.set]=(n[P.set]||0)+1; }
   return n;
 }
 // the bonus rows in force: a set with 3 pieces worn has its bonus 3, with 5 both (a sixth adds nothing: there is no 6-set bonus)

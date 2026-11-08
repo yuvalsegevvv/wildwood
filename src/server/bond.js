@@ -73,7 +73,7 @@ function bdWornP(p){
   const sk=p.gear.skills, cls=clsOfP(p), L=p.level, n={}, ids={}, put=(set,id)=>{ n[set]=(n[set]||0)+1; (ids[set]||(ids[set]=[])).push(id); };
   if(!sk||!sk.eq||!SS_ORDER.length) return {n,ids};
   for(const slot of SLOTS){ const ab=abilityOf(cls,slot,sk,L); if(ab&&ab.set) put(ab.set,ab.id); }
-  if(Array.isArray(sk.pass)) for(const id of sk.pass.slice(0,passiveOpen(L))){ const P=PASSIVES[id]; if(P&&P.set&&sk.owned.includes(id)&&L>=Math.max(PASSIVE_LV,P.lv)) put(P.set,id); }
+  if(Array.isArray(sk.pass)) for(const id of sk.pass.slice(0,passiveOpen(L,sk))){ const P=PASSIVES[id]; if(P&&P.set&&sk.owned.includes(id)&&L>=Math.max(PASSIVE_LV,P.lv)) put(P.set,id); }
   const cid=sk.cave, c=caveSkillDef(cid); if(c&&c.set&&L>=CAVE_SLOT_LV&&p.gear.cave&&bdOwn(p.gear.cave.own,cid)) put(c.set,cid);
   if(!p.pv&&L>=ULT_LV){ const u=ultSetOfP(p); if(u&&awkBranchLv(p.gear,u,'bu')>=1) put(u,'u:'+u); }
   return {n,ids};

@@ -56,12 +56,12 @@ function ultWornP(p,setId){
   const out={}, sk=p.gear.skills, S_=SS_SETS[setId];
   if(!S_){ const ab=ultDef(setId); if(!ab||!ab.wd) return out; const cls=clsOfP(p);   // wanderer: a path's burst buffs the class actives worn (a1-a3: not a set's) and the path passive (p1)
     for(let pos=1;pos<=3;pos++){ const s=abilityOf(cls,SS_SLOT_OF[pos-1],sk,p.level); if(s&&!s.set) out['a'+pos]=s.id; }
-    if(p.level>=PASSIVE_LV&&sk.pass.slice(0,passiveOpen(p.level)).includes(setId)&&sk.owned.includes(setId)) out.p1=setId;
+    if(p.level>=PASSIVE_LV&&sk.pass.slice(0,passiveOpen(p.level,sk)).includes(setId)&&sk.owned.includes(setId)) out.p1=setId;
     return out; }
   const eq=sk.eq[clsOfP(p)]||{};
   for(let pos=1;pos<=3;pos++){ const id=eq[SS_SLOT_OF[pos-1]], pc=id&&SS_PIECE_OF[id]; if(pc&&pc.set===setId&&pc.pos===pos&&sk.owned.includes(id)) out['a'+pos]=id; }
   const cv=caveEquippedP(p); if(cv&&cv.set===setId) out.cave=cv.id;
-  if(p.level>=PASSIVE_LV) for(const id of sk.pass.slice(0,passiveOpen(p.level))){ const pc=id&&SS_PIECE_OF[id]; if(pc&&pc.set===setId&&pc.kind==='passive'&&sk.owned.includes(id)) out['p'+pc.pos]=id; }
+  if(p.level>=PASSIVE_LV) for(const id of sk.pass.slice(0,passiveOpen(p.level,sk))){ const pc=id&&SS_PIECE_OF[id]; if(pc&&pc.set===setId&&pc.kind==='passive'&&sk.owned.includes(id)) out['p'+pc.pos]=id; }
   return out;
 }
 function ultRebuildP(p){   // p.ultV from p.ultB, and the stats a boosted passive may move (hp) are recomputed

@@ -5,7 +5,7 @@
 const {loadServer}=require('./load');
 const {api:W,x}=loadServer({dev:true,send(){}},
   ['S','SS_SETS','SS_ORDER','SKILLS','MATS','MAT_IDS','CAVE_SKILLS','CAVE_SKILL_IDS','AWK_TIERS','awkShapeOf','awkNode','awkNodeCost','awkTierCost','awkStatOf','awkDropKinds','awkBranchLv','awkUltLvP',
-   'awkLevelP','awkStatP','awkTierP','awkMigrateG','awkGrantP','awkSyncG','sanitizeGear','skillLvOf','caveLvOf','ssGrantP','ssGrantSetP','ultEquippedP','psP','rdMatsOf','SMIG_VER','getH','MONS','rewardKill','monTierOf','landAt','BOSS_TROPHY','BT_ORDER','BT_BAD','BT_MAX','btOf','awkTrophyP','SS_SOURCES','BOSS_DEFS']);
+   'awkLevelP','passiveOpen','recalcP','awkStatP','awkTierP','awkMigrateG','awkGrantP','awkSyncG','sanitizeGear','skillLvOf','caveLvOf','ssGrantP','ssGrantSetP','ultEquippedP','psP','rdMatsOf','SMIG_VER','getH','MONS','rewardKill','monTierOf','landAt','BOSS_TROPHY','BT_ORDER','BT_BAD','BT_MAX','btOf','awkTrophyP','SS_SOURCES','BOSS_DEFS']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
 const K='tansy', T=x.SS_SETS[K];   // a pine tree (the basic attack is the trunk): its first limb needs no trophy
@@ -13,6 +13,11 @@ W.join('a',{name:'Ayla',look:{cls:'archer'},save:{level:45}}); tick(2);
 const p=W.players.get('a'), g=p.gear, send=m=>{ W.receive('a',Object.assign({t:'awk'},m)); tick(1); };
 const fund=()=>{ g.coins=1e9; for(const id of x.MAT_IDS) g.mats[id]=999; g.awm.echo=9999; const rm=x.rdMatsOf(p); for(const l of ['home','vale','hoar','grey','sun','gloam','amber','isles']) rm[l]=999; };
 const snap=()=>JSON.stringify({c:g.coins,m:g.mats,e:g.awm,r:g.rd,a:g.awk});
+{ const pre=g.skills.pa; W.receive('a',{t:'eqskill',id:'vitality',idx:0}); tick(1);
+  ok('the passive slot waits for Awakening A1 of the character played (the owner): level 45 without A1 has no open slot: the Vitality a new hiker is given waits in it and adds nothing',pre===0&&x.passiveOpen(45,g.skills)===0&&x.psP(p,'hp')===0,pre+' '+g.skills.pass);
+  const w=g.awk.wanderer||(g.awk.wanderer={t:0,n:{}}); w.t=1; x.recalcP(p); W.receive('a',{t:'eqskill',id:'vitality',idx:0}); tick(1);
+  ok('...and A1 opens it: Vitality worn and counted',g.skills.pa===1&&g.skills.pass[0]==='vitality'&&x.psP(p,'hp')>0,g.skills.pa+' '+g.skills.pass+' '+x.psP(p,'hp'));
+  w.t=0; g.skills.pass[0]=null; x.recalcP(p); }
 ok('the set has a pine tree, every set has a shape',x.awkShapeOf(K)&&x.awkShapeOf(K).id==='pine'&&x.SS_ORDER.every(id=>x.SS_SETS[id].dev||x.awkShapeOf(id)));
 // ---- owning the character ----
 fund(); send({a:'stat',set:K,id:'sba2'});

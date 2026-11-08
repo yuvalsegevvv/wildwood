@@ -25,14 +25,14 @@ function skSlotsHtml(C,cls){
     const a=abilityOf(cls,slot,C.S,C.lv), locked=C.lv<slotLv(slot);
     return `<div class="sk-slot${a?' on':''}${locked?' locked':''}" data-slot="${slot}"><span class="sk-n">${SLOT_TITLE[slot]}</span>${a?skTile(a,C,'slot:'+slot):`<div class="sk-tile empty">${skIcon(locked?'lock':'plus')}</div>`}<b>${a?a.name:locked?'Opens at level '+slotLv(slot):'Empty'}</b><small>${a?abilityCd(a,C.S,C.lv,cls,rlUiCdr()).toFixed(1)+' s'+(elOf(a)!=='basic'?' · '+ELEMS[elOf(a)].name:'')+(a.set?' · '+SS_SETS[a.set].name:''):locked?'':'Drag one here'}</small></div>`;
   }).join('');
-  const open=C.lv>=PASSIVE_LV;
+  const noA1=C.S&&C.S.pa===0, open=C.lv>=PASSIVE_LV&&!noA1;   // awakening: the slot opens with A1 of the character played
   const caveH=caveSlotHtml(C);   // cave: the 4th slot's row   // ult: the 5th slot's row is added to the same line (ultSlotHtml, game/ult/slot.js)
   const pas=Array.from({length:PASSIVE_SLOTS},(_,i)=>{   // slot i opens at level PASSIVE_SLOT_LV[i]
-    const id=C.S.pass&&C.S.pass[i], P=PASSIVES[id], usable=C.lv>=PASSIVE_SLOT_LV[i];
-    return `<div class="sk-pslot${P?' on':''}${usable?'':' locked'}" data-idx="${i}"><span class="sk-n">Passive${PASSIVE_SLOTS>1?' '+(i+1):''}</span>${P?skTile(P,C,'pslot:'+i):`<div class="sk-tile empty">${skIcon(usable?'plus':'lock')}</div>`}<b>${P?P.name:usable?'Empty':'Level '+PASSIVE_SLOT_LV[i]}</b><small>${P?passiveText(id,skillLvOf(C.S,id)):usable?'Drag one here':''}</small></div>`;
+    const id=C.S.pass&&C.S.pass[i], P=PASSIVES[id], usable=C.lv>=PASSIVE_SLOT_LV[i]&&!noA1;
+    return `<div class="sk-pslot${P?' on':''}${usable?'':' locked'}" data-idx="${i}"><span class="sk-n">Passive${PASSIVE_SLOTS>1?' '+(i+1):''}</span>${P?skTile(P,C,'pslot:'+i):`<div class="sk-tile empty">${skIcon(usable?'plus':'lock')}</div>`}<b>${P?P.name:usable?'Empty':noA1?'Awakening A1':'Level '+PASSIVE_SLOT_LV[i]}</b><small>${P?passiveText(id,skillLvOf(C.S,id)):usable?'Drag one here':''}</small></div>`;
   }).join('');
   const later=PASSIVE_SLOT_LV.map((l,i)=>C.lv<l?'slot '+(i+1)+' at level '+l:'').filter(Boolean).join(', ');
-  return `<div class="sk-lcol"><div class="sk-load-h">Active skills</div><div class="sk-load">${act}${caveH}${ultSlotHtml(C)}</div></div><div class="sk-lcol"><div class="sk-load-h">Passive skill <span>${open?'the same for every class'+(later?' · '+later:''):'open at level '+PASSIVE_LV}</span></div><div class="sk-load pas">${pas}</div><div class="sk-load-h">Movement skill <span>free, from level ${MV_SLOT_LV}</span></div><div class="sk-load pas">${mvSlotHtml(C)}</div></div>`;   // movement: the slot below the passives   // two columns: active | passive (18-skills.css)
+  return `<div class="sk-lcol"><div class="sk-load-h">Active skills</div><div class="sk-load">${act}${caveH}${ultSlotHtml(C)}</div></div><div class="sk-lcol"><div class="sk-load-h">Passive skill <span>${open?'the same for every class'+(later?' · '+later:''):(noA1?'opens with Awakening A1':'open at level '+PASSIVE_LV)}</span></div><div class="sk-load pas">${pas}</div><div class="sk-load-h">Movement skill <span>free, from level ${MV_SLOT_LV}</span></div><div class="sk-load pas">${mvSlotHtml(C)}</div></div>`;   // movement: the slot below the passives   // two columns: active | passive (18-skills.css)
 }
 // details of the selected skill: what it does at its level, how to equip it, and what its next level costs
 function skInfoHtml(C,cls){
@@ -108,7 +108,7 @@ function skEquip(id,idx){
   if(!(GEAR.skills||newSkills()).owned.includes(id)){ no(s.name+' is not learned yet: '+(s.set?'it is a signature skill, earned from a boss or a dungeon':'Aldric (or Master Ryu in Hanami) teaches it at the well')); return; }
   if(s.slot==='basic'&&!canSwap(s.cls,'basic',GEAR.skills)){ no('Only mages can change their basic attack'); return; }
   if(PL.level<needLv(s)){ no(s.name+' needs level '+needLv(s)); return; }
-  if(s.slot==='passive'&&idx!==undefined&&idx>=passiveOpen(PL.level)){ no('Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx]); return; }
+  if(s.slot==='passive'&&idx!==undefined&&idx>=passiveOpen(PL.level,GEAR.skills)){ no(!(GEAR.skills&&GEAR.skills.pa===0)?'Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx]:'The passive slot opens with Awakening A1'); return; }
   netSend(idx===undefined?{t:'eqskill',id}:{t:'eqskill',id,idx}); UI_SFX.pickup();
 }
 /* ---- drag and drop (pointer events, so it works with a finger too) ---- */
@@ -128,7 +128,7 @@ function skCanDrop(src,tg){
   if(!tg) return false; const s=skDragDef(src);
   if(src.ult) return src.from==='grid'?!!tg.ult:!!tg.area;   // ult: a burst goes on the 5th slot, and back to the grid off it
   if(src.cave) return src.from==='grid'?!!tg.cave:!!tg.area;   // cave: a cave skill goes on the 4th slot, and back to the grid off it
-  if(src.from==='grid') return s.slot==='passive'?tg.idx!==undefined&&tg.idx<passiveOpen(PL.level):tg.slot===s.slot;
+  if(src.from==='grid') return s.slot==='passive'?tg.idx!==undefined&&tg.idx<passiveOpen(PL.level,GEAR.skills):tg.slot===s.slot;
   return !!tg.area;
 }
 function skDown(e){

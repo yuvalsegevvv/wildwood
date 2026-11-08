@@ -56,7 +56,7 @@ const SKILL_IDS=Object.keys(SKILLS);
    drop (chance of monster drops), xp (XP from kills), move (movement speed; read by the client's updatePlayer). These are a first set: swap or add rows freely,
    nothing else needs to change (name, lv, price, stat, v, text with {} for the percent). */
 const PASSIVE_LV=10, PASSIVE_SLOT_LV=[PASSIVE_LV], PASSIVE_SLOTS=PASSIVE_SLOT_LV.length;   // ONE passive slot (skill revamp: the others became Bond rows); an old save's extra passives stay owned but leave the loadout (sanitizeSkills)
-const passiveOpen=level=>PASSIVE_SLOT_LV.filter(l=>level>=l).length;   // how many passive slots a level can use (slot i opens at PASSIVE_SLOT_LV[i])
+const passiveOpen=(level,sk)=>sk&&sk.pa===0?0:PASSIVE_SLOT_LV.filter(l=>level>=l).length;   // awakening: sk.pa 0 = the character played has not reached A1 (the passive opens with the Awakening tree, server/awakening.js awkStatsP); undefined = no such rule (pvp's fixed loadout, tests)   // how many passive slots a level can use (slot i opens at PASSIVE_SLOT_LV[i])
 const PASSIVES={
   vitality:  {name:'Vitality',  lv:10,price:0,   stat:'hp',  v:[0.06,0.02], text:'+{}% maximum health'},
   ferocity:  {name:'Ferocity',  lv:10,price:1500,stat:'dmg', v:[0.05,0.02], text:'+{}% damage with every attack'},
@@ -85,7 +85,7 @@ function passiveSum(skills,level,stat,cls,boost){   // boost: {passive id: x} a 
   let t=ssBonusSum(skills,level,stat,cls)+(skills&&skills.aw&&typeof skills.aw[stat]==='number'?skills.aw[stat]:0);   // awakening: the stat nodes of the character played (gear.skills.aw, server/awakening.js awkStatsP)   // skillsets: the 3- / 5-set bonuses in force (none while SS_BONUS_ON is false)
   { const X=skills&&skills.bdx&&skills.bdx.p; if(X) for(const id of Object.keys(X)){ const P=bdOwnKey(PASSIVES,id)?PASSIVES[id]:null; if(!P) continue; if(P.stat===stat&&!P.when) t+=passiveValue(id,X[id])*BD_ROW_K;   /* bond: at BD_ROW_K strength */ if(P.cost&&P.cost.stat===stat&&!P.cost.when) t+=P.cost.v; } }   // bond: the Bond I / IV passives work unequipped (gear.skills.bdx.p, server/bond.js)
   if(level<PASSIVE_LV||!skills||!Array.isArray(skills.pass)) return t;
-  for(const id of skills.pass.slice(0,passiveOpen(level))){ const P=PASSIVES[id]; if(!P||!skills.owned.includes(id)||level<P.lv||(P.wd&&!wdMainOk(skills))) continue; if(P.stat===stat&&!P.when) t+=passiveValue(id,skillLvOf(skills,id))*(boost&&boost[id]||1); if(P.cost&&P.cost.stat===stat&&!P.cost.when) t+=P.cost.v; }   // skillsets: a row may pay a cost; a row with a `when` is read by ssCondP (server/skillsets.js)
+  for(const id of skills.pass.slice(0,passiveOpen(level,skills))){ const P=PASSIVES[id]; if(!P||!skills.owned.includes(id)||level<P.lv||(P.wd&&!wdMainOk(skills))) continue; if(P.stat===stat&&!P.when) t+=passiveValue(id,skillLvOf(skills,id))*(boost&&boost[id]||1); if(P.cost&&P.cost.stat===stat&&!P.cost.when) t+=P.cost.v; }   // skillsets: a row may pay a cost; a row with a `when` is read by ssCondP (server/skillsets.js)
   return t;
 }
 const ANIM_OF={}; for(const id in SKILLS){ const s=SKILLS[id]; s.id=id; ANIM_OF[s.act[0]]=s.anim||s.act[0]; }

@@ -5,10 +5,12 @@ const manifest=()=>JSON.parse(fs.readFileSync(path.join(SRC,'manifest.json'),'ut
 const strip=t=>t.startsWith('//@')?t.slice(t.indexOf('\n')+1):t;
 const read=(dir,f)=>strip(fs.readFileSync(path.join(SRC,dir,f),'utf8'));
 /* The world server straight from src/ (shared + server files), exactly as the build wraps it.
+   opts: noSets (no skill set files), allA1 (the passive slot never waits for Awakening A1).
    expose: extra top-level names to return alongside the API (e.g. ['MONS','genQuest']).
    opts.noSets: leave out the shipped skill sets (shared/skillsets/*.js), for a test that defines its own fixture sets and needs an empty registry. */
 function loadServer(io,expose,opts){
   const m=manifest(), keep=f=>!(opts&&opts.noSets&&f.startsWith('skillsets/')); let code=m.shared.filter(keep).map(f=>read('shared',f)).join('')+m.server.map(f=>read('server',f)).join('');
+  if(opts&&opts.allA1) code=code.replace('p.gear.skills.pa=e&&e.t>=1?1:0;','p.gear.skills.pa=1;');   // a test of passives themselves: every character counts as past Awakening A1 (the passive slot's gate, server/awakening.js)
   if(expose&&expose.length) code=code.replace(/return \{join:/,'globalThis.__EXPOSE={'+expose.join(',')+'};return {join:');
   const api=new Function('io',"'use strict';\n"+code)(Object.assign({send(){},broadcast(){}},io||{}));
   return {api,x:globalThis.__EXPOSE||{}};

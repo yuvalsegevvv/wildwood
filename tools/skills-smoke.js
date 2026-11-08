@@ -3,7 +3,7 @@
 const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(c.t==='snap'&&c.ev) evs.push(...c.ev); }},
-  ['MONS','getH','VIL2','VIL','rewardKill','elemHitS','rollDmgS','sanitizeGear','hurtP','ELEMS','MATS','upgradeNeeds','SKILLS','foeMult','foeTraits','ELEM_BASIC_K','ELEM_LIST','SKILL_MAX_LV','newSkills','damageMonsterS','psP','S','passiveSum','passiveOpen','PASSIVE_SLOT_LV','PASSIVE_SLOTS','awkCurve','awkFx','awkRow','AWK_LV_CAP','AWK_SCALE','skillPower','skillCdMult','passiveValue','PASSIVES','caveLevelK','applyBuffS','recalcP','PASSIVE_IDS']);
+  ['MONS','getH','VIL2','VIL','rewardKill','elemHitS','rollDmgS','sanitizeGear','hurtP','ELEMS','MATS','upgradeNeeds','SKILLS','foeMult','foeTraits','ELEM_BASIC_K','ELEM_LIST','SKILL_MAX_LV','newSkills','damageMonsterS','psP','S','passiveSum','passiveOpen','PASSIVE_SLOT_LV','PASSIVE_SLOTS','awkCurve','awkFx','awkRow','AWK_LV_CAP','AWK_SCALE','skillPower','skillCdMult','passiveValue','PASSIVES','caveLevelK','applyBuffS','recalcP','PASSIVE_IDS'],{allA1:true});
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const you=pid=>[...inbox[pid]].reverse().find(m=>m.t==='you');
 const tick=(n,keepAlive)=>{ n=Math.max(n,3); for(let i=0;i<n;i++){ // (at least 3 ticks: events reach the log with the next snapshot)
