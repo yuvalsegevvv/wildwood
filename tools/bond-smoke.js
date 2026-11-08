@@ -87,8 +87,8 @@ ok('three pieces: Bond III, +1 level to the character\'s pieces (above the tier 
   { const ARC=x.SS_ORDER.find(i=>!x.SS_SETS[i].dev&&x.SKILLS[x.SS_SETS[i].pos[1].ids[0]].cls==='archer'), c0=x.clsOfP(p); x.ssGrantSetP(p,ARC,true); W.receive('a',{t:'bd',a:'play',set:ARC});
     ok('...playing a character of another class puts their class\'s weapon in your hand (the class is the weapon held)',c0!=='archer'&&x.clsOfP(p)==='archer'&&sk.bdx.main===ARC,c0+' -> '+x.clsOfP(p));
     x.equipClassP(p,c0); W.receive('a',{t:'bd',a:'play',set:GUEST}); }
-  { const of=x.SS_SETS[GUEST].outfit; p.look={model:of,tintTop:5,hair:'short'}; x.recalcP(p);
-    ok('the character played may wear their outfit free (bdFreeOutfits), not another\'s',p.look.model===of&&x.bdFreeOutfits(g).join()===of,JSON.stringify(p.look));
+  { const of=x.SS_SETS[GUEST].outfit; p.look={model:of,top:of,tintTop:5,hair:'short'}; x.recalcP(p);
+    ok('the character played may wear their outfit free (bdFreeOutfits), not another\'s',p.look.model===of&&p.look.top===of&&x.bdFreeOutfits(g).join()===of,JSON.stringify(p.look));
     W.receive('a',{t:'bd',a:'play',set:'wanderer'}); ok('...playing someone else puts your own look back (the base model, your hair kept)',p.look.model==='base'&&p.look.hair==='short',JSON.stringify(p.look)); }
   W.receive('a',{t:'bd',a:'play',set:'wanderer'}); ok('...the Wanderer too',sk.bdx.main==='wanderer');
   W.receive('a',{t:'bd',a:'play',set:'constructor'}); ok('...an unknown character is refused',g.bd.play==='wanderer');

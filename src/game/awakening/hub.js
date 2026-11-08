@@ -116,19 +116,20 @@ function chrLookHtml(k){
     +(on?'<button class="chip" data-chrlook="">Back to my own look</button>':'')+'</div></div>';
 }
 // wearing the look: model = the outfit, every tint as designed (-1); "back" restores the look saved before
-let CHR_OWN_LOOK=null;
+let CHR_OWN_LOOK=null; try{ const v=JSON.parse(localStorage.getItem('wildwood-ownlook')||'null'); if(v&&typeof v==='object') CHR_OWN_LOOK=v; }catch(_){}   // your own look, kept while a character's is worn (survives a reload: a per-viewer convenience)
+function chrOwnSave(){ try{ if(CHR_OWN_LOOK) localStorage.setItem('wildwood-ownlook',JSON.stringify(CHR_OWN_LOOK)); else localStorage.removeItem('wildwood-ownlook'); }catch(_){} }
 function chrWearLook(k){
-  if(!k){ if(CHR_OWN_LOOK){ LOOK=fullLook(CHR_OWN_LOOK); CHR_OWN_LOOK=null; } else { LOOK=fullLook(Object.assign({},LOOK,{model:'base'})); } saveLook(); rebuildHiker(); UI_SFX.click(); awcRender(); return; }
+  if(!k){ if(CHR_OWN_LOOK){ LOOK=fullLook(CHR_OWN_LOOK); CHR_OWN_LOOK=null; chrOwnSave(); } else { LOOK=fullLook(ofWear(LOOK,'base')); } saveLook(); rebuildHiker(); UI_SFX.click(); awcRender(); return; }
   const S=SS_SETS[k], id=S&&S.outfit; if(!id||!(bdcEntry(k).b>=0)) return;
-  if(!CHR_OWN_LOOK&&LOOK.model!==id) CHR_OWN_LOOK=Object.assign({},LOOK);
-  const L=Object.assign({},LOOK,{model:id}); for(const f of Object.keys(L)) if(/^tint[A-Z]/.test(f)) L[f]=-1;
+  if(!CHR_OWN_LOOK&&LOOK.model!==id){ CHR_OWN_LOOK=Object.assign({},LOOK); chrOwnSave(); }
+  const L=ofWear(LOOK,id); for(const f of Object.keys(L)) if(/^tint[A-Z]/.test(f)) L[f]=-1;   // the whole set, every piece (look.model alone only names the set: the pieces are each slot's own field)
   LOOK=fullLook(L); saveLook(); rebuildHiker(); UI_SFX.success(); awcRender();
 }
 // the free look follows the character played (economy/items.js applyGear calls this on every you update): a look of a character you no longer play, and have not bought, goes back to your own
 function chrLookCheck(){
   if(!GEAR||!LOOK||typeof LOOK.model!=='string'||!OUTFITS[LOOK.model]||(GEAR.os&&GEAR.os.includes(LOOK.model))) return;
   const X=GEAR.skills&&GEAR.skills.bdx, S=X&&SS_SETS[X.main]; if(S&&S.outfit===LOOK.model) return;
-  if(CHR_OWN_LOOK){ LOOK=fullLook(CHR_OWN_LOOK); CHR_OWN_LOOK=null; } else LOOK=fullLook(Object.assign({},LOOK,{model:'base'}));
+  if(CHR_OWN_LOOK){ LOOK=fullLook(CHR_OWN_LOOK); CHR_OWN_LOOK=null; chrOwnSave(); } else LOOK=fullLook(ofWear(LOOK,'base'));
   saveLook(); rebuildHiker();
 }
 // ---- drawing ----

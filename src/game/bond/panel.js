@@ -125,7 +125,9 @@ function bdcBuy(k){
   netSend({t:'bd',a:'buy',set:k}); BDC.wait=performance.now(); setTimeout(()=>{ BDC.wait=0; bdcBondsRender(); },1500); bdcBondsRender(); return true;
 }
 // the character played (bd {a:'play'}): the server's word comes back as gear.skills.bdx.main
-function bdcPlayBtn(k,own,main){ if(!own) return ''; return '<button class="chip'+(main?' on':'')+'" data-bdcplay="'+k+'" aria-pressed="'+main+'"'+(main?' disabled':'')+' title="Play this character: their Bond is the one in play">'+(main?'Playing':'Play')+'</button>'; }
+function bdcPlayBtn(k,own,main){   // done only when picked with Play and their class's weapon is in hand: a character played by the old rule (their Power worn) or in another class's weapon keeps a live button
+  if(!own) return ''; const B=GEAR&&GEAR.bd||{}, c=k==='wanderer'?null:chrClsOf(k), done=main&&B.play===k&&(!c||c===clsOf());
+  return '<button class="chip'+(main?' on':'')+'" data-bdcplay="'+k+'" aria-pressed="'+main+'"'+(done?' disabled':'')+' title="Play this character: their set worn, their weapon in hand, their Bond in play">'+(done?'Playing':main?'Wear their set':'Play')+'</button>'; }
 function bdcPlay(k){ netSend({t:'bd',a:'play',set:k}); UI_SFX.click(); return true; }
 function bdcPick(k){ netSend({t:'bd',a:'pick',set:bdSetOk(k)?k:null}); UI_SFX.click(); return true; }
 function bdcSel(k){ BDC.sel=BDC.sel===k?null:(k==='wanderer'||bdSetOk(k)?k:null); bdcBondsRender(); }

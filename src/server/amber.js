@@ -16,7 +16,7 @@ const AMB_BASE_PIECE={model:'base',top:'tshirt',bottom:'trousers',shoes:'boots',
 function ambCleanLook(look,owned,free){
   if(!look||typeof look!=='object') return look;
   const ids=ambOutfitIds(), has=id=>Array.isArray(owned)&&owned.includes(id), o=Object.assign({},look);
-  if(typeof o.model==='string'&&!has(o.model)&&Array.isArray(free)&&free.includes(o.model)){ for(const f of Object.keys(o)) if(/^tint[A-Z]/.test(f)) o[f]=-1; for(const f of Object.keys(AMB_BASE_PIECE)) if(f!=='model'&&typeof o[f]==='string'&&ids.includes(o[f])&&!has(o[f])) o[f]=AMB_BASE_PIECE[f]; return o; }   // bond: the bonded character's look, free and unmodified
+  if(typeof o.model==='string'&&!has(o.model)&&Array.isArray(free)&&free.includes(o.model)){ for(const f of Object.keys(o)) if(/^tint[A-Z]/.test(f)) o[f]=-1; for(const f of Object.keys(AMB_BASE_PIECE)) if(f!=='model'&&typeof o[f]==='string'&&o[f]!==o.model&&ids.includes(o[f])&&!has(o[f])) o[f]=AMB_BASE_PIECE[f]; return o; }   // (its own pieces stay: the whole set; another unowned set's go back to base)   // bond: the bonded character's look, free and unmodified
   for(const f of Object.keys(AMB_BASE_PIECE)){ const v=o[f]; if(typeof v==='string'&&ids.includes(v)&&!has(v)) o[f]=AMB_BASE_PIECE[f]; }
   for(const s of Object.keys(KIN_SLOTS)){ const part=kinPart(s,o[KIN_SLOTS[s][0]]); if(part&&part.set&&!has(part.set)) o[KIN_SLOTS[s][0]]=''; }
   return o;
