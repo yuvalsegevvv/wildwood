@@ -1,5 +1,7 @@
 # The Deep Cave
 
+> **Revamp note.** Charge skills and their levels now come from the Awakening tree (charge branch, tier A2; `docs/AWAKENING.md`); the cave methods pay Echo Shards, not skills. Sections about earning skills and shard upgrades are historical.
+
 Design and code map of the Deep Cave. The approved plan (v2, all 26 skills designed) is sections 1 to 10; the owner's answers in it win over older docs. Sections 11 to 13 are the code map, the hooks table and the build status, which every build step keeps current. One feature stem: `cave` (`shared/cave.js` + `shared/cave/`, `server/cave.js`, `game/cave/`, `tools/cave-smoke.js`, this file). Router row: `CLAUDE.md` section 4.
 
 ## 0. In one screen

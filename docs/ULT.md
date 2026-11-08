@@ -1,5 +1,7 @@
 # The 5th skill slot: the set burst ("Burst")
 
+> **Revamp note.** The burst is unlocked by Awakening tier A3 and its `bu1` node, and its level is the burst branch of the tree (`docs/AWAKENING.md`). The 60 s cooldown and 5 s stun are unchanged.
+
 Rules (Yuval's decisions, 2026-10-26). The full plan with the client and the buff vocabulary is `/mnt/project-files/burst-skill-plan/PLAN.md`; one idea per set: `IDEAS.md` beside it. Stem `ult` (slot 3 is shown as "Power" but its code id stays `burst`: never name anything `burst*` for this slot).
 
 ## 1. Rules

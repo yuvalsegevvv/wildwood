@@ -239,6 +239,14 @@ of the free-plan tracks (all eleven) if the game ever earns money, and, if wante
 - **Cleansing.** A healer cannot remove a player's root, slow or push: those are applied by the client (`pfx`), and the status-cleansing potions are an open item of the professions (section 1).
 - **Small things the base leaves as they are.** A triggered row's `heal` heals only its owner (a party heal is a skill's `heal` key); a boss's taunt holds its melee target only, never its telegraphed moves, and a run's kit-driven monsters (`dgOwn`) ignore it; wearing a piece puts it in that slot for all three classes (the skill that was there for another class is unequipped, not lost); a set's three passives need passive slots that open at levels 18, 24 and 30, so a full set is a level-30 thing and the 5-set bonus a level-24 thing.
 
+## 5c. Skill revamp: open items
+
+- **Per-character orb methods**: each character should have its own orb source; for now the stall sells every character's orb for 1 coin (`BD_ORB_PRICE`), which makes Bondstones nearly free. Needs a design and a price.
+- **Prism's element switching** (Wanderer path): open question for the owner (one element per character, so what does a path with an element do?).
+- **The Wanderer's grind paths' pack damage** (Forager, Lorekeeper): not yet tuned against the Pipes' packs.
+- **Cave floor gate**: the floors' entry rule depends on charge skills, which are now tree-unlocked (A2 `ch1`); check the gate for a hiker who has not bought the branch.
+- **`tools/boss-duel.js` is flaky** after the balance re-base (`awkHpK`, `BD_ROW_K`); do not treat one failure as a regression.
+
 ## 6. Signature outfits (the eight characters of `docs/skillkits/`)
 
 Built: eight cosmetic outfits as 3D kits (`src/game/outfits/<id>.js`, hooks in `docs/CHARACTER.md` section 9), each with a weapon dressing; designs and previews in `docs/skillkits/looks/`. Not built:
