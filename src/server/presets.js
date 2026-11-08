@@ -41,7 +41,7 @@ function prWearP(p,i){
   for(const sl of SLOTS){ const id=e.sk[sl]; if(!id) continue;
     const s=SKILLS[id]; if(s&&S.owned.includes(id)&&(s.cls===C||s.cls==='any')&&s.slot===sl&&p.level>=Math.max(slotLv(sl),s.lv)&&canSwap(C,sl,S)) S.eq[C][sl]=id; else skipped++; }
   const np=[null,null,null];
-  for(let j=0;j<PASSIVE_SLOTS;j++){ const id=e.pass[j]; if(id&&PASSIVES[id]&&S.owned.includes(id)&&j<passiveOpen(p.level)&&p.level>=Math.max(PASSIVE_LV,PASSIVES[id].lv)&&np.indexOf(id)<0) np[j]=id; else if(id) skipped++; }
+  for(let j=0;j<PASSIVE_SLOTS;j++){ const id=e.pass[j]; if(id&&PASSIVES[id]&&S.owned.includes(id)&&j<passiveOpen(p.level,S)&&p.level>=Math.max(PASSIVE_LV,PASSIVES[id].lv)&&np.indexOf(id)<0) np[j]=id; else if(id) skipped++; }
   for(let j=0;j<PASSIVE_SLOTS;j++) S.pass[j]=np[j];
   S.ult=e.ult&&ultOwned(S,g.cave,e.ult)&&p.level>=ULT_LV?e.ult:null; if(e.ult&&!S.ult) skipped++;
   S.cave=e.cave&&Object.prototype.hasOwnProperty.call(g.cave.own,e.cave)&&p.level>=CAVE_SLOT_LV?e.cave:null; if(e.cave&&!S.cave) skipped++;

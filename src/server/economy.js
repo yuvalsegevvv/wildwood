@@ -91,9 +91,9 @@ function buySkillP(p,id){
 // a passive goes into slot idx of the passive loadout (or the first free open one, or nowhere when they are all full); slot i opens at PASSIVE_SLOT_LV[i]
 function equipPassiveP(p,id,idx){
   if(bdIsBondPassive(id)){ toastTo(p.id,PASSIVES[id].name+' is a Bond passive: it works by itself once the Bond is reached and enough pieces are worn','bad'); return; }   // bond: never worn
-  const P=p.gear.skills.pass, need=Math.max(PASSIVE_LV,PASSIVES[id].lv), open=passiveOpen(p.level);
+  const P=p.gear.skills.pass, need=Math.max(PASSIVE_LV,PASSIVES[id].lv), open=passiveOpen(p.level,p.gear.skills);
   if(p.level<need){ toastTo(p.id,PASSIVES[id].name+' needs level '+need,'bad'); return; }
-  if(idx>=open){ toastTo(p.id,'Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx],'bad'); return; }
+  if(idx>=open||!open){ toastTo(p.id,open?'Passive slot '+(idx+1)+' opens at level '+PASSIVE_SLOT_LV[idx]:'The passive slot opens with Awakening A1 of the character you play','bad'); return; }
   const at=idx>=0?idx:P.slice(0,open).indexOf(null); if(at<0){ toastTo(p.id,open>1?'Your passive slots are full: drop it onto one to replace it':'The passive slot is full: drop it onto the slot to replace it','bad'); return; }
   const was=P.indexOf(id); if(was>=0) P[was]=P[at];   // already worn in another slot: the two swap places (the other slot gets whatever was here, or nothing)
   P[at]=id; recalcP(p); p.dirty=true;

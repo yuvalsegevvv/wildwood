@@ -94,6 +94,7 @@ function awkStatsP(p){
   if(e) for(const id of Object.keys(e.n)){ const s=awkStatOf(key,id,key===AWK_WANDERER?wdPathOf(p.gear):null); if(!s) continue; const ps=AWK_STAT_PS[s.stat]; if(ps) out[ps]=(out[ps]||0)+(s.stat==='cd'||s.stat==='red'?-s.v:s.v); }   // wanderer: the active path's table
   for(const k of Object.keys(out)) out[k]=Math.round(out[k]*10000)/10000;
   p.gear.skills.aw=out; p.awMain=key;
+  p.gear.skills.pa=e&&e.t>=1?1:0;   // awakening: the passive slot opens with A1 of the character played (passiveOpen, shared/classes.js)
 }
 function awkRefreshP(p){ awkSyncG(p.gear); awkStatsP(p); }   // recalcP
 // ---- paying ----
