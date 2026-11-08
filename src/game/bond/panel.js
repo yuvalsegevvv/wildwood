@@ -13,8 +13,8 @@ function bdcCol(S){ let r=S.pal.main>>16&255, g=S.pal.main>>8&255, b=S.pal.main&
   return '#'+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1); }
 function bdcInk(col){ const n=parseInt(col.slice(1),16); return (0.299*(n>>16&255)+0.587*(n>>8&255)+0.114*(n&255))/255>0.55?'#14110c':'#fff'; }
 const bdcSets=()=>SS_ORDER.filter(bdSetOk);
-$('#skBonds').addEventListener('click',()=>chrOpen(null,'bd'));   // bond: the Characters panel's Bond tab (awakening/hub.js)
-$('#bdcSkills').addEventListener('click',()=>openSkills());
+$('#skBonds').addEventListener('click',()=>chrOpen(AWC.set,'sk'));   // bond: the Characters panel's Bond tab (awakening/hub.js)
+$('#bdcSkills').addEventListener('click',()=>chrOpen(null,'sk'));
 $('#bdcAwaken').addEventListener('click',()=>{ const X=GEAR&&GEAR.skills&&GEAR.skills.bdx; chrOpen(BDC.sel||(X&&X.main),'awk'); });   // bond: the Characters panel (awakening/hub.js)
 function bdcOpenBonds(set){
   openPanel('bdc'); BDC.sel=bdSetOk(set)?set:null; BDC.html={}; bdcBind(); bdcBondsRender();

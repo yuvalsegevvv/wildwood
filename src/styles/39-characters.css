@@ -6,10 +6,11 @@
 .chr-nm{ display:flex; flex-direction:column; min-width:0; line-height:1.15; }
 .chr-nm small{ font-size:10px; opacity:.7; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .awc-ch.locked{ opacity:.62; }
+.chr-v[hidden]{ display:none !important; }   /* the tree's view carries .awc-body (display:flex), which beat the hidden attribute: every tab showed the tree on top */
 .chr-main{ display:flex; flex-direction:column; gap:8px; min-width:0; }
 /* the hero: the look as a picture on the right, faded into the card */
-.chr-hd{ position:relative; display:flex; min-height:104px; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:linear-gradient(100deg, rgba(0,0,0,.5) 35%, color-mix(in srgb, var(--c) 28%, transparent)); }
-.chr-pic{ position:absolute; right:0; top:-10px; bottom:-30px; width:min(46%,260px); background:center top/cover no-repeat; opacity:.95; -webkit-mask-image:linear-gradient(90deg,transparent,#000 40%); mask-image:linear-gradient(90deg,transparent,#000 40%); }
+.chr-hd{ position:relative; display:flex; min-height:168px; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:linear-gradient(100deg, rgba(0,0,0,.5) 35%, color-mix(in srgb, var(--c) 28%, transparent)); }
+.chr-pic{ position:absolute; right:4px; top:4px; bottom:4px; width:min(40%,200px); background:center/contain no-repeat; -webkit-mask-image:linear-gradient(90deg,transparent,#000 22%); mask-image:linear-gradient(90deg,transparent,#000 22%); }   /* the whole figure, a 480x720 render (hub.js chrPortrait) shown at most ~200 px wide: sharp on a 2x screen */
 .chr-id{ position:relative; display:flex; flex-direction:column; gap:5px; padding:10px 12px; max-width:68%; }
 .chr-id > b{ font-family:var(--font-head); font-size:22px; line-height:1.1; color:#fff3d6; text-shadow:0 1px 3px #000; }
 .chr-id > span{ font-size:12.5px; color:#e6d7b4; }
@@ -20,8 +21,8 @@
 .chr-play .chip.on{ background:var(--lichen); color:var(--lichen-ink); }
 .chr-tabs{ display:flex; gap:6px; flex-wrap:wrap; border-bottom:1px solid var(--line); padding-bottom:6px; }
 .chr-tb[aria-selected="true"]{ background:var(--lichen); color:var(--lichen-ink); border-color:var(--lichen); }
-.chr-v .awc-stage{ height:clamp(260px,calc(100dvh - 540px),600px); }
-.chr-v .awc-side{ max-height:clamp(260px,calc(100dvh - 540px),600px); }
+.chr-v .awc-stage{ height:clamp(260px,calc(100dvh - 600px),600px); }
+.chr-v .awc-side{ max-height:clamp(260px,calc(100dvh - 600px),600px); }
 .chr-v:not(.awc-body){ max-height:min(56dvh,560px); overflow-y:auto; touch-action:pan-y; }
 /* the skills tab */
 .chr-sks{ display:flex; flex-direction:column; gap:6px; }
@@ -47,7 +48,7 @@
   .chr-body{ grid-template-columns:minmax(0,1fr); }
   .chr-list{ flex-direction:row; overflow-x:auto; overflow-y:hidden; max-height:none; touch-action:pan-x; }
   .chr-list .awc-ch{ width:auto; }
-  .chr-hd{ min-height:92px; }
+  .chr-hd{ min-height:150px; }
   .chr-id{ max-width:72%; }
   .chr-v .awc-stage{ height:min(42dvh,400px); }
   .chr-v:not(.awc-body){ max-height:none; overflow:visible; }

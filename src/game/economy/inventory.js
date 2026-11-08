@@ -147,4 +147,4 @@ $('#invBody').addEventListener('dblclick',e=>{
 });
 function toggleInv(){ if($('#inv').hidden){ INV.sel=null; openPanel('inv'); renderInv(); } else closePanels(); }
 $('#bInv').addEventListener('click',e=>{ e.currentTarget.blur(); toggleInv(); });
-$('#invSkills').addEventListener('click',()=>openSkills());
+$('#invSkills').addEventListener('click',()=>chrOpen(null,'sk'));

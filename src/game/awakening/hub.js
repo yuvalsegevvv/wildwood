@@ -34,11 +34,37 @@ function chrHeroHtml(k){
   return '<div class="chr-hd" style="--c:'+col+'"><div class="chr-pic" data-chrpic="'+k+'"></div><div class="chr-id"><b>'+S.char.name+'</b><span class="chr-tags">'+elChip(el)+'<i class="chr-t">'+(CHR_CLS[c]||'Any class')+'</i><i class="chr-t">'+(CHR_ROLE[S.role&&S.role.main]||'')+also+'</i><i class="chr-t">'+ZTIER_NAMES[S.land]+'</i></span>'
     +'<div class="chr-play">'+(own?bdcPlayBtn(k,true,main)+'<em>'+(main&&X.act>=0?'Bond '+BD_ROMAN[Math.max(0,X.act)]+' active':'Bond '+BD_ROMAN[E.b])+'</em>':'<em>Locked: unlock them on the Bond tab (Bond 0)</em>')+'</div></div></div>';
 }
-// the picture: the character's signature outfit, whole (ui/character-thumbs.js renders it once and caches it); the Wanderer shows your own look
+// the picture: the character's signature outfit, whole, rendered once at portrait size and full detail (the owner: the editor's 168 px thumbnail was too low quality for the hero card);
+// its own target (multisampled where WebGL2 has it), read back into a blob URL and kept for the session. The Wanderer shows your own look. No GL (the headless tests): no picture.
+const CHR_PW=480, CHR_PH=720, CHR_PIC={}; let chrPR=null;
+function chrPortrait(sp,key,cb){
+  if(CHR_PIC[key]!==undefined){ cb(CHR_PIC[key]); return; }
+  if(typeof renderer==='undefined'||!renderer||typeof cthLookFor!=='function') return;
+  try{
+    if(!chrPR){ const MS=THREE.WebGLMultisampleRenderTarget&&renderer.capabilities&&renderer.capabilities.isWebGL2?THREE.WebGLMultisampleRenderTarget:THREE.WebGLRenderTarget;
+      const rt=new MS(CHR_PW,CHR_PH,{format:THREE.RGBAFormat,depthBuffer:true}); const sc=new THREE.Scene();
+      sc.add(new THREE.HemisphereLight(0xeef2f8,0x5a5244,0.9)); const k1=new THREE.DirectionalLight(0xfff0d8,1.0); k1.position.set(-1.4,2.4,-2.6); sc.add(k1);
+      const k2=new THREE.DirectionalLight(0xb8ccff,0.45); k2.position.set(2.2,1.2,1.6); sc.add(k2);
+      chrPR={rt,sc,cam:new THREE.PerspectiveCamera(24,CHR_PW/CHR_PH,0.05,30),buf:new Uint8Array(CHR_PW*CHR_PH*4),cv:document.createElement('canvas')}; chrPR.cv.width=CHR_PW; chrPR.cv.height=CHR_PH; }
+    const {L}=cthLookFor(sp), rig=buildCharacter(L,{q:1}), root=rig.root; root.rotation.y=0.32; chrPR.sc.add(root);
+    if(typeof weaponsOn==='function'){ try{ weaponsOn(rig,GEAR&&GEAR.eq&&GEAR.eq.weapon||'sword1',L.build); }catch(_){} }
+    const H=rig.hipY, top=H+rig.dims.headY+0.25, mid=top/2, half=mid*1.06, dist=half/Math.tan(chrPR.cam.fov*Math.PI/360);
+    chrPR.cam.position.set(0,mid,-dist); chrPR.cam.lookAt(0,mid,0); chrPR.cam.updateMatrixWorld();
+    const old=renderer.getRenderTarget(), oc=new THREE.Color(), oa=renderer.getClearAlpha(), osh=renderer.shadowMap.enabled; renderer.getClearColor(oc);
+    try{ renderer.shadowMap.enabled=false; renderer.setClearColor(0x000000,0); renderer.setRenderTarget(chrPR.rt); renderer.clear(); renderer.render(chrPR.sc,chrPR.cam);
+      renderer.readRenderTargetPixels(chrPR.rt,0,0,CHR_PW,CHR_PH,chrPR.buf); }
+    finally{ renderer.setRenderTarget(old); renderer.setClearColor(oc,oa); renderer.shadowMap.enabled=osh; chrPR.sc.remove(root); root.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); }
+    const ctx=chrPR.cv.getContext('2d'), img=ctx.createImageData(CHR_PW,CHR_PH), W4=CHR_PW*4;
+    for(let y=0;y<CHR_PH;y++){ const s0=(CHR_PH-1-y)*W4; img.data.set(chrPR.buf.subarray(s0,s0+W4),y*W4); }
+    ctx.putImageData(img,0,0);
+    const fin=url=>{ CHR_PIC[key]=url; cb(url); };
+    if(typeof chrPR.cv.toBlob==='function'&&window.URL&&URL.createObjectURL) chrPR.cv.toBlob(b=>fin(b?URL.createObjectURL(b):''),'image/png'); else fin(chrPR.cv.toDataURL('image/png'));
+  }catch(e){ CHR_PIC[key]=''; }
+}
 function chrPic(k){
-  const el=document.querySelector?document.querySelector('#chrHero [data-chrpic]'):null; if(!el||typeof cthGet!=='function') return;
-  const S=SS_SETS[k], sp=S&&S.outfit&&CHAR_MODELS[S.outfit]?{kind:'outfit',id:S.outfit}:{kind:'slot',look:LOOK};
-  try{ cthGet(sp,url=>{ if(url&&AWC.set===k) el.style.backgroundImage='url("'+url+'")'; }); }catch(_){}
+  const el=document.querySelector?document.querySelector('#chrHero [data-chrpic]'):null; if(!el) return;
+  const S=SS_SETS[k], out=S&&S.outfit&&CHAR_MODELS[S.outfit], sp=out?{kind:'outfit',id:S.outfit}:{kind:'slot',look:LOOK}, key=out?'o:'+S.outfit+':'+(LOOK.skin|0):'me:'+JSON.stringify(LOOK).length;
+  setTimeout(()=>chrPortrait(sp,key,url=>{ if(url&&AWC.set===k) el.style.backgroundImage='url("'+url+'")'; }),0);   // (after the panel has drawn: a full-detail build takes a moment)
 }
 // ---- the skills tab ----
 function chrPieces(k){   // [{slot, label, id, kind: 'sk' | 'pass' | 'cave' | 'ult'}] for the class in hand
