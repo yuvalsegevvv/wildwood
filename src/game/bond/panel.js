@@ -99,12 +99,18 @@ function bdcFilterHtml(ks){
   return [['all','All '+ks.length],['own','Owned '+own],['can','Can buy '+can]].map(f=>'<button class="chip" data-bdcfilter="'+f[0]+'" aria-pressed="'+(BDC.filter===f[0])+'">'+f[1]+'</button>').join('');
 }
 function bdcPut(id,html){ if(BDC.html[id]!==html){ BDC.html[id]=html; $('#'+id).innerHTML=html; } }
+// which character's Bond is in play, and how to change it: the owner found it unclear (the main character is the worn power piece's set, bdMainOf on the server)
+function bdcMainHtml(){
+  const X=GEAR.skills&&GEAR.skills.bdx, k=X&&bdSetOk(X.main)?X.main:null;
+  return '<p class="bdc-note bdc-main">'+(k?'Playing <b>'+SS_SETS[k].char.name+'</b>: Bond '+(X.act>=1?BD_ROMAN[X.act]:'0')+' active.':'Playing <b>the Wanderer</b> (no character\'s power worn).')
+    +' Your Bond follows the character whose <b>Power</b> (skill slot 3) you wear, and grows with each of their pieces worn. To play another character, equip their Power in the Skills panel'+(kbName('skills')?' ('+kbName('skills')+')':'')+'.</p>';
+}
 function bdcBondsRender(){
   if($('#bdc').hidden||!GEAR) return;
   const ks=bdcSets().slice().sort((a,b)=>(bdcEntry(b).b>=0)-(bdcEntry(a).b>=0)), shown=ks.filter(k=>BDC.filter==='own'?bdcEntry(k).b>=0:BDC.filter==='can'?bdcNext(k).can:true);
   $('#bdcCoins').textContent=fmtCoins(GEAR.coins)+' coins';
   bdcPut('bdcPouch',bdcPouchHtml()); bdcPut('bdcStir',bdcStirBoxHtml(BDC.stirOpen===null?innerWidth>=720:BDC.stirOpen)); bdcPut('bdcFilter',bdcFilterHtml(ks));
-  bdcPut('bdcGrid',(BDC.filter==='all'||BDC.filter==='own'?bdcWandererHtml():'')+shown.map(bdcCardHtml).join('')+(shown.length?'':'<p class="bdc-note">No character can buy a step right now: they need more Bondstones or a higher zone tier.</p>'));
+  bdcPut('bdcGrid',bdcMainHtml()+(BDC.filter==='all'||BDC.filter==='own'?bdcWandererHtml():'')+shown.map(bdcCardHtml).join('')+(shown.length?'':'<p class="bdc-note">No character can buy a step right now: they need more Bondstones or a higher zone tier.</p>'));
 }
 function bdcBuy(k){
   const N=bdSetOk(k)?bdcNext(k):null; if(!N||!N.can){ toast(N&&N.why?N.why:'You cannot buy that yet','bad'); UI_SFX.error(); return false; }
