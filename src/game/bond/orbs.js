@@ -19,7 +19,7 @@ function bdcRender(){
   for(const k of SS_ORDER){
     if(!bdSetOk(k)) continue;
     const S=SS_SETS[k], e=bdOwnKey(B,k)&&typeof B[k]==='object'?B[k]:{b:-1,st:0}, o=e.o|0, pick=B.pick===k;
-    h+='<div class="it"><div class="it-main"><b>'+S.char.name+'</b><span>Bond '+(e.b>=0?BD_ROMAN[e.b]:'locked')+' &middot; '+(e.st|0)+' Bondstones &middot; '+o+' orb'+(o===1?'':'s')+'</span></div>'+
+    h+='<div class="it">'+portHtml(k,'port-row')+'<div class="it-main"><b>'+S.char.name+'</b><span>Bond '+(e.b>=0?BD_ROMAN[e.b]:'locked')+' &middot; '+(e.st|0)+' Bondstones &middot; '+o+' orb'+(o===1?'':'s')+'</span></div>'+
       '<div class="br-btns"><button class="chip'+(pick?' on':'')+'" data-bdpick="'+k+'">'+(pick?'Picked':'Pick')+'</button><button class="chip buy" data-bdorb="'+k+'" data-n="1" '+(coins>=BD_ORB_PRICE?'':'disabled')+'>Buy</button><button class="chip" data-bdorb="'+k+'" data-n="10" '+(coins>=10*BD_ORB_PRICE?'':'disabled')+'>x10</button></div></div>';
   }
   const bd=$('#obBody'); bd.innerHTML=h;

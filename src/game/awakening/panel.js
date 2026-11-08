@@ -22,7 +22,7 @@ function awcSel(id){ const sh=awkShapeOf(AWC.set); if(!sh||!awkNode(sh,id)) retu
 // ---- the pieces of markup ----
 function awcPickHtml(cs){
   const main=awcMain();
-  return cs.map(c=>'<button class="chip awc-ch'+(c.k===main?' main':'')+(c.locked?' locked':'')+'" data-awcset="'+c.k+'" aria-pressed="'+(c.k===AWC.set)+'" style="--c:'+c.col+'" title="'+(c.k===main?'The character you play now':c.name)+'"><i class="awc-dot"></i>'+c.name+'<small>A'+awcEntry(c.k).t+'</small></button>').join('');
+  return cs.map(c=>'<button class="chip awc-ch'+(c.k===main?' main':'')+(c.locked?' locked':'')+'" data-awcset="'+c.k+'" aria-pressed="'+(c.k===AWC.set)+'" style="--c:'+c.col+'" title="'+(c.k===main?'The character you play now':c.name)+'">'+(portHtml(c.k,'port-chip')||'<i class="awc-dot"></i>')+c.name+'<small>A'+awcEntry(c.k).t+'</small></button>').join('');
 }
 function awcLinesHtml(lines,where){
   return lines.map(l=>'<button type="button" class="awc-c '+(l.ok?'ok':'bad')+'" data-awtmat="'+l.id+'" data-awtwhere="'+where+'" title="'+(l.note||'How to get it')+'">'+awtIcon(l.id,l.col)+l.name+' <b>'+awcNum(l.have)+' / '+awcNum(l.need)+'</b>'+(l.note?'<em>'+l.note+'</em>':'')+'</button>').join('')+awtInfoHtml(lines,where);

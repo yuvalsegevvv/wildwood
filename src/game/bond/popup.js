@@ -14,7 +14,8 @@ function bdcPopProgress(set){   // "Bond III: 4 / 6 stones" or "Bond VI reached"
 function bdcPopHtml(P0){
   const S=SS_SETS[P0.set], col=bdcCol(S), E=bdcEntry(P0.set), to=Math.min(BD_TOP,E.b+1), need=BD_COST[to]||1, pct=E.b>=BD_TOP?100:Math.round(100*Math.min(E.st,need)/need);
   const what=P0.stones>0?'+'+P0.stones+' Bondstone'+(P0.stones===1?'':'s'):'', coins=P0.coins>0?(what?', ':'')+'+'+P0.coins+' coins (beyond Bond VI)':'';
-  return '<i class="bdc-pop-ico" style="--c:'+col+'"><svg '+SS_ICON_ATTR+'>'+(S.emblem?S.emblem.glyph:'')+'</svg></i><div class="bdc-pop-t"><b>'+S.char.name+' '+what+coins+'</b><span>'+(P0.orbs>1?P0.orbs+' orbs opened &middot; ':'')+bdcPopProgress(P0.set)+'</span><i class="bdc-pop-bar"><u style="width:'+pct+'%;background:'+col+'"></u></i></div>';
+  const pt=portHtml(P0.set);   // the character's face where a portrait is baked, else the emblem
+  return '<i class="bdc-pop-ico'+(pt?' has-port':'')+'" style="--c:'+col+'">'+(pt||'<svg '+SS_ICON_ATTR+'>'+(S.emblem?S.emblem.glyph:'')+'</svg>')+'</i><div class="bdc-pop-t"><b>'+S.char.name+' '+what+coins+'</b><span>'+(P0.orbs>1?P0.orbs+' orbs opened &middot; ':'')+bdcPopProgress(P0.set)+'</span><i class="bdc-pop-bar"><u style="width:'+pct+'%;background:'+col+'"></u></i></div>';
 }
 function bdcPopPaint(P0){ if(P0.el) P0.el.innerHTML=bdcPopHtml(P0); }
 function bdcPop(set,stones,coins){
