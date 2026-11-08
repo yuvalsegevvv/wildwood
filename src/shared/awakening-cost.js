@@ -6,7 +6,7 @@
             awkStatOf(set, nodeId, path) -> {stat, v, band, row}, awkNodeCost(set, nodeId), awkTierCost(set, tier), awkTreeCost(set) (every node and tier summed),
             AWK_ID_ECHO, AWK_ID_PRIME, awkRaidId(land), awkTrophyId(boss), awkEssenceId(el) (the placeholder item ids below),
             awkLandDefs(land) (a land's non-boss monster kinds by level), awkDropKinds(land, tier) (the kinds whose drops pay a price of that tier: moved here from server/awakening.js in step 15 so the panel can count them).
-   A cost is {coins, drops, land, mats:{id:n}, tier, hikerLv} or null (an unknown set or node: a junk id never throws). `drops` is a count of the character's land's monster drops (`land`; 'any' for the Wanderer, whose
+   A cost is {coins, drops, kind (the ONE monster kind whose drop pays `drops`: awkDropPick), land, mats:{id:n}, tier, hikerLv} or null (an unknown set or node: a junk id never throws). `drops` is a count of the character's land's monster drops (`land`; 'any' for the Wanderer, whose
    drops can be any land's), the zone rising with the tier: which MATS kind it is, is the server's (step 9). `mats` holds the rest, by PLACEHOLDER ids that later steps fill:
      'echo'              Echo Shards (gear.awm.echo since step 9);                  'rd_<land>'      the land's raid material (gear.rd.mat[land]; 'rd_any': any land's)
      'trophy_<boss id>'  one world boss' own trophy (step 10 adds BOSS_TROPHY; 'trophy_any' = the Wanderer's: any boss's)
@@ -91,6 +91,16 @@ function awkDropKinds(land,t){
   const lo=land==='any'?AWK_TIERS[t].lv-5:L[0].level+(L[L.length-1].level-L[0].level)*t/AWK_TIERS.length;
   return L.filter(d=>d.level>=lo).map(d=>d.id);
 }
+// the ONE monster kind whose drop a price asks (the owner: each skill level used to ask its own monster's material, not any drop of a land): picked from the tier's kinds (awkDropKinds)
+// in the tier's band (the lowest kinds, up to AWK_DROP_BAND levels above the first), the character's element first when two or more of the band have it, then by a hash of the
+// node's key, so every node keeps its own kind and neighbouring nodes ask for different ones. null when the land has no kind.
+const AWK_DROP_BAND=6;
+function awkDropPick(land,t,el,key){
+  const ids=awkDropKinds(land,t); if(!ids.length) return null;
+  const L=awkLandDefs(land).filter(d=>ids.includes(d.id)), lo=L[0].level, band=L.filter(d=>d.level<=lo+AWK_DROP_BAND), mine=el?band.filter(d=>d.el===el):[];
+  const pool=mine.length>=2?mine:band; let h=7; for(let i=0;i<key.length;i++) h=(h*31+key.charCodeAt(i))>>>0;
+  return pool[h%pool.length].id;
+}
 // ---- the placeholder item ids (see the agent map)
 const AWK_ID_ECHO='echo', AWK_ID_PRIME='ess_prime';
 const awkRaidId=land=>'rd_'+land, awkTrophyId=boss=>'trophy_'+boss, awkEssenceId=el=>el?'ess_'+el:AWK_ID_PRIME;
@@ -116,6 +126,7 @@ function awkNodeCost(set,nodeId){
     awkAdd(c.mats,awkBranchMat(I,n.limb),R.mat); awkAdd(c.mats,awkEssenceId(I.el),R.ess||0);
     if(Lm.troph) awkAdd(c.mats,awkTrophyId(I.bosses[Lm.troph-1]),AWK_TROPHY[n.lv]);
   }
+  if(c.drops>0) c.kind=awkDropPick(c.land,c.tier,I.el,I.id+':'+nodeId);   // the one monster kind asked
   return c;
 }
 // the price of raising a character to tier 1-5 (tier 0 is free); null for any other tier
@@ -125,6 +136,7 @@ function awkTierCost(set,tier){
   c.coins=awkCoins(R.coins); c.drops=R.drops;
   awkAdd(c.mats,AWK_ID_ECHO,R.echo||0); awkAdd(c.mats,awkRaidId(I.land),R.raid||0); awkAdd(c.mats,AWK_ID_PRIME,R.prime||0); awkAdd(c.mats,awkEssenceId(I.el),R.ess||0);
   awkAdd(c.mats,awkTrophyId(I.bosses[0]),R.troph||0); awkAdd(c.mats,awkTrophyId(I.bosses[1]),R.troph||0);
+  if(c.drops>0) c.kind=awkDropPick(c.land,c.tier,I.el,I.id+':tier'+tier);
   return c;
 }
 // the whole tree and every tier summed: {coins, drops, mats, nodes}; null for an unknown set

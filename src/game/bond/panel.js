@@ -1,7 +1,7 @@
 //@ The Bonds panel: every character's Bond 0-VI as pips with the stones held against the next step, the zone-tier gate, what each step gives and a Buy button; the orb pouch (the pick, the charge, the stall), the Wanderer's Realization and this hour's Stirrings
 /* Agent map (skills revamp step 16; PLAN section 3; rules: shared/bond.js; the server's word on every purchase: server/bond.js bdBuyP; protocol: docs/PROTOCOL.md `bd`; styles/38-bonds.css; test: client-smoke, the bonds block).
    Open: bdcOpenBonds(set) (the Bonds buttons of the skills panel and the Awakening panel, #bdc in PANELS: ui/panels.js); the orb stall's own panel stays in bond/orbs.js (#orbs), its link is in the pouch.
-   Sends: bd {a:'buy', set} | bd {a:'pick', set | null} | bd {a:'path', id} (the Wanderer's path picker, bdcSetPath; step 18). Hears: the bd event [pid, set, bond] (bdcOnBond: a ring on the card, a toast-free redraw) and every you update (applyGear: bdcBondsRender), so the panel shows what the server last said.
+   Sends: bd {a:'buy', set} | bd {a:'play', set} (Play: the character in play, bdcPlay) | bd {a:'pick', set | null} | bd {a:'path', id} (the Wanderer's path picker, bdcSetPath; step 18). Hears: the bd event [pid, set, bond] (bdcOnBond: a ring on the card, a toast-free redraw) and every you update (applyGear: bdcBondsRender), so the panel shows what the server last said.
    Reads the gear mirror: GEAR.bd[<set>] {b, st, o}, GEAR.bd.pick / chg / wanderer.r / wanderer.path, GEAR.skills.bdx {main, act, g}, GEAR.zt (zoneTierMax), GEAR.mq (the acts: bdActDone).
    State: BDC = {sel (the card that shows its steps), filter ('all' | 'own' | 'can'), stirOpen (the Stirrings box: null = open on a wide screen, folded on a phone), html (the last markup per box: the DOM is only touched when it changed), wait, ring (the card that just rose), bound}.
    Cards: wanderer first, then the characters you own, then the rest. bdcEntry(k), bdcNext(k) {to, need, have, stOk, tierNeed, tierOk, can, why}, bdcStepsHtml(k), bdcOrbSet() (the character whose orb opens next, as the server's bdOrbSetOf). */
@@ -13,8 +13,9 @@ function bdcCol(S){ let r=S.pal.main>>16&255, g=S.pal.main>>8&255, b=S.pal.main&
   return '#'+((1<<24)|(r<<16)|(g<<8)|b).toString(16).slice(1); }
 function bdcInk(col){ const n=parseInt(col.slice(1),16); return (0.299*(n>>16&255)+0.587*(n>>8&255)+0.114*(n&255))/255>0.55?'#14110c':'#fff'; }
 const bdcSets=()=>SS_ORDER.filter(bdSetOk);
-$('#skBonds').addEventListener('click',()=>bdcOpenBonds());
-$('#awcBonds').addEventListener('click',()=>bdcOpenBonds());
+$('#skBonds').addEventListener('click',()=>chrOpen(null,'bd'));   // bond: the Characters panel's Bond tab (awakening/hub.js)
+$('#bdcSkills').addEventListener('click',()=>openSkills());
+$('#bdcAwaken').addEventListener('click',()=>{ const X=GEAR&&GEAR.skills&&GEAR.skills.bdx; chrOpen(BDC.sel||(X&&X.main),'awk'); });   // bond: the Characters panel (awakening/hub.js)
 function bdcOpenBonds(set){
   openPanel('bdc'); BDC.sel=bdSetOk(set)?set:null; BDC.html={}; bdcBind(); bdcBondsRender();
 }
@@ -53,11 +54,11 @@ function bdcCardHtml(k){
     +'<div class="bdc-pips">'+bdcPips(E.b,BD_TOP)+'</div>'
     +'<div class="bdc-st"><i class="bdc-bar"><u style="width:'+pct+'%"></u></i><span>'+(N.to===null?'every step bought':E.st+' / '+N.need+' stones for '+(own?'Bond '+BD_ROMAN[N.to]:'Bond 0 (unlock)'))+'</span></div>'+gate
     +(main&&X.act>=1?'<div class="bdc-act">Bond '+BD_ROMAN[X.act]+' active'+(X.g?' ('+X.g+' guest piece'+(X.g===1?'':'s')+' worn)':'')+'</div>':'')
-    +'<div class="bdc-acts"><span class="bdc-orbs" title="Bond Orbs of this character held">'+E.o+' orb'+(E.o===1?'':'s')+'</span><button class="chip'+(pk?' on':'')+'" data-bdcpick="'+k+'" aria-pressed="'+pk+'" title="Open this character\'s orbs first">'+(pk?'Opens first':'Open first')+'</button>'+buy+'</div>'
+    +'<div class="bdc-acts"><span class="bdc-orbs" title="Bond Orbs of this character held">'+E.o+' orb'+(E.o===1?'':'s')+'</span><button class="chip'+(pk?' on':'')+'" data-bdcpick="'+k+'" aria-pressed="'+pk+'" title="Open this character\'s orbs first">'+(pk?'Opens first':'Open first')+'</button>'+bdcPlayBtn(k,own,main)+buy+'</div>'
     +(open?bdcStepsHtml(k):'')+'</div>';
 }
 // the Wanderer: Realization 0-VI from the main quest's acts, no stones; I / II / IV / VI are the active path's rows (shared/wanderer.js), the path picker sends bd {a:'path', id} (step 18)
-const BDC_REAL=[[0,'The Wanderer','no character\'s Bonds: the general skills and the path you walk',0],[1,'A path passive','your first path passive (the nine paths come later)',1],[2,'A path row','a row of your path (the nine paths come later)',2],[3,'+1 level','to every general skill: shop and class skills, general passives, charge skills and the path\'s passive and burst',3],[4,'A second path passive','the path\'s second passive (the nine paths come later)',4],[5,'+1 level','to every general skill once more',4],[6,'A path row','the path\'s last row (the nine paths come later)',4]];
+const BDC_REAL=[[0,'The Wanderer','no character\'s Bonds: the general skills and the path you walk',0],[1,'A path passive','your first path passive',1],[2,'A path row','a row of your path',2],[3,'+1 level','to every general skill: shop and class skills, general passives, charge skills and the path\'s passive and burst',3],[4,'A second path passive','the path\'s second passive',4],[5,'+1 level','to every general skill once more',4],[6,'A path row','the path\'s last row',4]];
 const bdcPath=()=>GEAR?wdPathOf(GEAR):null;   // the active path (the server's word: GEAR.bd.wanderer.path, the default when missing)
 // what Realization step b gives on path k: [name, text]; a step a path does not fill keeps BDC_REAL's words
 function bdcRealGive(k,b){
@@ -70,14 +71,21 @@ function bdcRealGive(k,b){
 function bdcPathsHtml(cur){
   if(!WD_ORDER.length) return '';
   return '<div class="bdc-paths" role="group" aria-label="The Wanderer\'s path">'+WD_ORDER.map(k=>{ const W=WD_PATHS[k], on=k===cur; return '<button class="chip'+(on?' on':'')+'" data-bdcpath="'+k+'" aria-pressed="'+on+'" title="'+W.text.replace(/"/g,'&quot;')+'">'+W.name+'</button>'; }).join('')
-    +'</div><p class="bdc-note">'+(WD_PATHS[cur]?WD_PATHS[cur].text+' ':'')+'Changing path is free: the tree and the Realization stay.</p>';
+    +'</div><p class="bdc-note">'+(WD_PATHS[cur]?WD_PATHS[cur].text+' ':'')+bdcPathKitHtml(cur)+' Changing path is free: the tree and the Realization stay.</p>';
+}
+// the path's own set for the class in hand (placeholders: shared/wanderer.js WD_PIECE_SRC), and how much of the Realization is in play: like a Bond, min(Realization, path pieces worn) - off-path pieces
+function bdcPathKitHtml(k){
+  const P=WD_PATHS[k], c=P&&P.pieces[clsOf()]; if(!c) return '';
+  const nm=[c.basic,c.skill,c.burst].map(id=>SKILLS[id]?SKILLS[id].name:'').filter(Boolean);
+  return 'Its set: <b>'+nm.join('</b>, <b>')+'</b>, its passive <b>'+(PASSIVES[P.passive]?PASSIVES[P.passive].name:'')+'</b>, a general charge skill and its burst. Wear them for the Realization; anything else worn is off the path and costs a step.';
 }
 function bdcWandererHtml(){
   const r=((GEAR.bd||{}).wanderer||{}).r|0, X=GEAR.skills&&GEAR.skills.bdx, main=X&&X.main==='wanderer', open=BDC.sel==='wanderer', next=r<6?BDC_REAL[r+1]:null, pk=bdcPath(), W=pk&&WD_PATHS[pk];
-  let steps=''; if(open){ steps=bdcPathsHtml(pk)+'<ol class="bdc-steps">'; for(const R of BDC_REAL){ const b=R[0], own=r>=b, ask=b?MQ_ACTS[R[3]][1]:'', G=bdcRealGive(pk,b);
+  let steps=''; if(open){ steps='<ol class="bdc-steps">'; for(const R of BDC_REAL){ const b=R[0], own=r>=b, ask=b?MQ_ACTS[R[3]][1]:'', G=bdcRealGive(pk,b);
     steps+='<li class="'+(own?'own':b===r+1?'next':'')+'"><i>'+(own&&b?'&#10003;':BD_ROMAN[b])+'</i><span><b>'+(b?'Realization '+BD_ROMAN[b]+': ':'')+G[0]+'</b> '+G[1]+'<em>'+(b?'needs '+ask+' finished'+(own?' (done)':''):'always')+'</em></span></li>'; } steps+='</ol>'; }
   return '<div class="bdc-card own wand'+(open?' open':'')+(main?' main':'')+'" style="--c:#d9b26a" data-k="wanderer"><button class="bdc-top" data-bdcsel="wanderer" aria-expanded="'+open+'"><span class="bdc-emb">W</span><span class="bdc-nm"><b>The Wanderer'+(main?' <u>playing</u>':'')+'</b><small>'+(W?'the path of '+W.name+' &middot; ':'')+'no stones: the main quest\'s acts</small></span><span class="bdc-bn">Realization '+BD_ROMAN[r]+'</span></button>'
-    +'<div class="bdc-pips">'+bdcPips(r,BD_TOP)+'</div><div class="bdc-st"><span>'+(next?'Next: Realization '+BD_ROMAN[next[0]]+' when '+MQ_ACTS[next[3]][1]+' is finished':'Every Realization reached')+'</span></div>'+steps+'</div>';
+    +(main?'<div class="bdc-act">Realization '+BD_ROMAN[Math.max(0,X.act|0)]+' active ('+(X.on|0)+' path piece'+((X.on|0)===1?'':'s')+' worn'+(X.g?', '+X.g+' off the path':'')+')</div>':'')
+    +'<div class="bdc-pips">'+bdcPips(r,BD_TOP)+'</div>'+bdcPathsHtml(pk)+'<div class="bdc-acts">'+bdcPlayBtn('wanderer',true,main)+'</div><div class="bdc-st"><span>'+(next?'Next: Realization '+BD_ROMAN[next[0]]+' when '+MQ_ACTS[next[3]][1]+' is finished':'Every Realization reached')+'</span></div>'+steps+'</div>';
 }
 // the path picker: free, any time; the you update that follows redraws the card
 function bdcSetPath(k){
@@ -99,17 +107,26 @@ function bdcFilterHtml(ks){
   return [['all','All '+ks.length],['own','Owned '+own],['can','Can buy '+can]].map(f=>'<button class="chip" data-bdcfilter="'+f[0]+'" aria-pressed="'+(BDC.filter===f[0])+'">'+f[1]+'</button>').join('');
 }
 function bdcPut(id,html){ if(BDC.html[id]!==html){ BDC.html[id]=html; $('#'+id).innerHTML=html; } }
+// which character's Bond is in play, and how to change it: the owner found it unclear (the main character is the worn power piece's set, bdMainOf on the server)
+function bdcMainHtml(){
+  const X=GEAR.skills&&GEAR.skills.bdx, k=X&&bdSetOk(X.main)?X.main:null;
+  return '<p class="bdc-note bdc-main">'+(k?'Playing <b>'+SS_SETS[k].char.name+'</b>: Bond '+(X.act>=1?BD_ROMAN[X.act]:'0')+' active.':'Playing <b>the Wanderer</b> (no character\'s power worn).')
+    +' Press <b>Play</b> on any character you own (or the Wanderer) to switch, free at any time. Their Bond grows with each of their pieces you wear; another character\'s piece is a guest.</p>';
+}
 function bdcBondsRender(){
   if($('#bdc').hidden||!GEAR) return;
   const ks=bdcSets().slice().sort((a,b)=>(bdcEntry(b).b>=0)-(bdcEntry(a).b>=0)), shown=ks.filter(k=>BDC.filter==='own'?bdcEntry(k).b>=0:BDC.filter==='can'?bdcNext(k).can:true);
   $('#bdcCoins').textContent=fmtCoins(GEAR.coins)+' coins';
   bdcPut('bdcPouch',bdcPouchHtml()); bdcPut('bdcStir',bdcStirBoxHtml(BDC.stirOpen===null?innerWidth>=720:BDC.stirOpen)); bdcPut('bdcFilter',bdcFilterHtml(ks));
-  bdcPut('bdcGrid',(BDC.filter==='all'||BDC.filter==='own'?bdcWandererHtml():'')+shown.map(bdcCardHtml).join('')+(shown.length?'':'<p class="bdc-note">No character can buy a step right now: they need more Bondstones or a higher zone tier.</p>'));
+  bdcPut('bdcGrid',bdcMainHtml()+(BDC.filter==='all'||BDC.filter==='own'?bdcWandererHtml():'')+shown.map(bdcCardHtml).join('')+(shown.length?'':'<p class="bdc-note">No character can buy a step right now: they need more Bondstones or a higher zone tier.</p>'));
 }
 function bdcBuy(k){
   const N=bdSetOk(k)?bdcNext(k):null; if(!N||!N.can){ toast(N&&N.why?N.why:'You cannot buy that yet','bad'); UI_SFX.error(); return false; }
   netSend({t:'bd',a:'buy',set:k}); BDC.wait=performance.now(); setTimeout(()=>{ BDC.wait=0; bdcBondsRender(); },1500); bdcBondsRender(); return true;
 }
+// the character played (bd {a:'play'}): the server's word comes back as gear.skills.bdx.main
+function bdcPlayBtn(k,own,main){ if(!own) return ''; return '<button class="chip'+(main?' on':'')+'" data-bdcplay="'+k+'" aria-pressed="'+main+'"'+(main?' disabled':'')+' title="Play this character: their Bond is the one in play">'+(main?'Playing':'Play')+'</button>'; }
+function bdcPlay(k){ netSend({t:'bd',a:'play',set:k}); UI_SFX.click(); return true; }
 function bdcPick(k){ netSend({t:'bd',a:'pick',set:bdSetOk(k)?k:null}); UI_SFX.click(); return true; }
 function bdcSel(k){ BDC.sel=BDC.sel===k?null:(k==='wanderer'||bdSetOk(k)?k:null); bdcBondsRender(); }
 // the bd event (net/client.js): a step of yours was bought; the you message that follows has the new gear
@@ -120,8 +137,8 @@ function bdcOnBond(set,b){
 function bdcBind(){
   if(BDC.bound) return; BDC.bound=true;
   $('#bdc').addEventListener('click',e=>{
-    const t=e.target&&e.target.closest?e.target.closest('[data-bdcbuy],[data-bdcpick],[data-bdcsel],[data-bdcfilter],[data-bdcstall],[data-bdcstir],[data-bdcpath]'):null; if(!t||t.disabled) return;
-    if(t.dataset.bdcpath) bdcSetPath(t.dataset.bdcpath); else if(t.dataset.bdcbuy) bdcBuy(t.dataset.bdcbuy); else if(t.dataset.bdcpick) bdcPick(t.dataset.bdcpick); else if(t.dataset.bdcsel) bdcSel(t.dataset.bdcsel);
+    const t=e.target&&e.target.closest?e.target.closest('[data-bdcbuy],[data-bdcpick],[data-bdcsel],[data-bdcfilter],[data-bdcstall],[data-bdcstir],[data-bdcpath],[data-bdcplay]'):null; if(!t||t.disabled) return;
+    if(t.dataset.bdcplay) bdcPlay(t.dataset.bdcplay); else if(t.dataset.bdcpath) bdcSetPath(t.dataset.bdcpath); else if(t.dataset.bdcbuy) bdcBuy(t.dataset.bdcbuy); else if(t.dataset.bdcpick) bdcPick(t.dataset.bdcpick); else if(t.dataset.bdcsel) bdcSel(t.dataset.bdcsel);
     else if(t.dataset.bdcfilter){ BDC.filter=t.dataset.bdcfilter; bdcBondsRender(); } else if(t.dataset.bdcstall) bdcOpenStall(); else if(t.dataset.bdcstir){ BDC.stirOpen=!(BDC.stirOpen===null?innerWidth>=720:BDC.stirOpen); bdcBondsRender(); }
   });
   $('#bdc').addEventListener('change',e=>{ const t=e.target; if(t&&t.id==='bdcPickSel') bdcPick(t.value||null); });

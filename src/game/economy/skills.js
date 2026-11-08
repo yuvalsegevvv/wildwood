@@ -9,7 +9,7 @@ function openSkills(n,kind){ openPanel('skills',n||null); skTab=clsOf(); if(KIND
 function toggleSkills(){ if(!started||customizing) return; if($('#skills').hidden) openSkills(); else closePanels(); }
 const skIcon=name=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||ICONS.burst||''}</svg>`;   // (skillsets: a signature skill without a glyph of its own gets the generic burst one, as the action bar does)
 // a skill's icon: a set piece draws its own set's symbol (skillsets/panel.js), any other its glyph by name (a piece of no set without one gets the generic burst)
-const skIconOf=s=>{ const g=ssGlyph(s); return g?`<svg ${SS_ICON_ATTR}>${g}</svg>`:skIcon(s.name); };
+const skIconOf=s=>{ const g=ssGlyph(s); return g?`<svg ${SS_ICON_ATTR}>${g}</svg>`:skIcon(s.icon||s.name); };
 const SLOT_TITLE={basic:'1 · Basic attack',skill:'2 · Skill',burst:'3 · Power'}, KIND_TITLE={basic:'1 · Basic',skill:'2 · Skill',burst:'3 · Power',cave:'4 · Charge',ult:'5 · Burst',pass:'Passive',mov:'Movement'};
 const needLv=s=>s.slot==='passive'?Math.max(PASSIVE_LV,s.lv):Math.max(slotLv(s.slot),s.lv);
 const SLOT_NO={basic:1,skill:2,burst:3};
@@ -77,7 +77,7 @@ function renderSkills(){
     if(lv<PASSIVE_LV)   // skillsets: a signature passive shows once it is yours
     h+=`<p class="muted sk-note">Passive skills open at level ${PASSIVE_LV}. They work for every class.</p>`; }
   else {
-    ids=SKILL_IDS.filter(id=>(SKILLS[id].cls===cls||SKILLS[id].cls==='any')&&SKILLS[id].slot===skKind&&(!SKILLS[id].set||S.owned.includes(id)));   // skillsets: a universal piece is in every class's grid; a signature piece shows once it is yours
+    ids=SKILL_IDS.filter(id=>(SKILLS[id].cls===cls||SKILLS[id].cls==='any')&&SKILLS[id].slot===skKind&&(!(SKILLS[id].set||SKILLS[id].wd)||S.owned.includes(id)));   // skillsets: a universal piece is in every class's grid; a signature piece shows once it is yours
     if(skKind!=='basic'&&lv<slotLv(skKind)) h+=`<p class="muted sk-note">This slot opens at level ${slotLv(skKind)}.</p>`;
     if(skKind==='basic'&&!canSwap(cls,'basic',S)) h+=`<p class="muted sk-note">Only mages can change their basic attack.</p>`;
   }

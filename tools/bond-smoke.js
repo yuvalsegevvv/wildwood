@@ -12,7 +12,7 @@ const {api:W,x}=loadServer({dev:true,send(to,m){ sent.push([to,m]); }},
   ['SS_SETS','SS_ORDER','BD_ROW_K','SKILLS','PASSIVES','CAVE_SKILLS','CAVE_SKILL_IDS','MQ','BD_COST','BD_TOP','BD_STONE_COINS','BD_GUEST_PEN','bdBuyP','bdAddStonesP','bdGrantP','bdOwns','bdMainOf','bdRealOf','bdTierNeed','bdIsBondPassive',
    'bdStonesLeft','awkGrantP','awkTierP','sanitizeGear','skillLvOf','caveLvOf','psP','recalcP','clsOfP','ssEquipPieceP','ssGrantSetP','SMIG_VER','passiveValue','BD_ORB_PRICE','BD_ORB_MAX','BD_ORB_ROLL','BD_STIR_SECS','BD_STIR_CHARGE','BD_STIR_BOSS','bdRollRow','bdStirPick','bdOrbBuyP','bdPickP','bdOpenOrbP','bdOpenManyP','bdOrbSetOf','bdStirPickS','bdStirTickS','bdStirMsg',
    'bdZonesByLand','BD_ZONE_OF','bdChargeS','bdStirBossP','bdStirDungeonP','bdStirRaidP','bdChargeFlushP','MONS','S','rewardKill','RD_ORDER','RDS','BOSS_DEFS','DG_THEMES','DG_ENTRANCES','ssGrantP','landAt',
-   'WD_PATHS','WD_ORDER','WD_BAD','WD_DEFAULT','defineWandererPath','wdPathOf','ULT_SKILLS','ULT_BAD','AWK_PATH_KIT','ultEquippedP','buySkillP','equipSkillP','ssBonuses','SS_STATS','SS_WHEN_KEYS','ssWhenProblem','ssCondP','ssRowProblem']);   // (the last row: step 18, the Wanderer's paths)
+   'WD_PATHS','WD_ORDER','WD_PIECE_OF','bdFreeOutfits','WD_BAD','WD_DEFAULT','defineWandererPath','wdPathOf','ULT_SKILLS','ULT_BAD','AWK_PATH_KIT','ultEquippedP','buySkillP','equipSkillP','ssBonuses','SS_STATS','SS_WHEN_KEYS','ssWhenProblem','ssCondP','ssRowProblem']);   // (the last row: step 18, the Wanderer's paths)
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info!==undefined?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<(n||3);i++) W.tick(0.05); };
 W.join('a',{name:'Bonder',look:{cls:'warrior'},save:{level:60}}); tick();
@@ -24,6 +24,7 @@ const actOf=(id,cls)=>{ const P=x.SS_SETS[id].pos; return [1,2,3].map(q=>P[q].bo
 const SET=x.SS_ORDER.map(i=>x.SS_SETS[i]).find(S=>!S.dev&&S.bonds&&actOf(S.id).every(Boolean)&&(()=>{ const P=x.PASSIVES[S.bonds[1]]; return P.stat&&!P.when&&!P.on&&!P.cost; })()&&x.CAVE_SKILL_IDS.some(i=>x.CAVE_SKILLS[i].set===S.id));
 const K=SET.id, GUEST=x.SS_ORDER.find(i=>i!==K&&!x.SS_SETS[i].dev&&x.SS_SETS[i].bonds&&actOf(i)[0]);   // (a guest with a warrior basic: some sets' skill 1 is for one class)
 ok('a test set with a stat Bond I passive and a charge skill: '+K+' (guest '+GUEST+')',!!SET&&!!GUEST);
+const onPath=(s2,g2,k)=>{ const P=x.WD_PATHS[k].pieces.warrior; s2.eq.warrior={basic:P.basic,skill:P.skill,burst:P.burst}; const cid=x.CAVE_SKILL_IDS.find(i=>!x.CAVE_SKILLS[i].set); if(cid&&g2.cave){ g2.cave.own[cid]=1; s2.cave=cid; } };   // the path's whole set worn (+ a general charge skill)
 const clear=()=>{ for(const c of ['warrior','archer','mage']) sk.eq[c]={basic:null,skill:null,burst:null}; sk.pass=sk.pass.map(()=>null); sk.cave=null; sk.ult=null; x.recalcP(p); };
 const wear=ids=>{ for(const id of ids) x.ssEquipPieceP(p,x.SKILLS[id]); x.recalcP(p); };
 
@@ -81,7 +82,15 @@ ok('three pieces: Bond III, +1 level to the character\'s pieces (above the tier 
   clear(); wear([A[1],A[2],ga]);   // the main's skill and power, the guest's basic
   ok('the main character is the power piece\'s set',x.bdMainOf(p)===K&&sk.bdx.main===K);
   ok('a guest piece costs the main one Bond step (2 own pieces, 1 guest: active Bond 1)',sk.bdx.g===1&&sk.bdx.act===1,sk.bdx.act);
-  ok('...and is '+x.BD_GUEST_PEN+' levels lower, with none of its own Bond levels',x.skillLvOf(sk,ga)===Math.max(1,gb-x.BD_GUEST_PEN),gb+' -> '+x.skillLvOf(sk,ga)); }
+  ok('...and is '+x.BD_GUEST_PEN+' levels lower, with none of its own Bond levels',x.skillLvOf(sk,ga)===Math.max(1,gb-x.BD_GUEST_PEN),gb+' -> '+x.skillLvOf(sk,ga));
+  W.receive('a',{t:'bd',a:'play',set:GUEST}); ok('Play picks the main character and wears their set: the guest is now in play with its own pieces worn',x.bdMainOf(p)===GUEST&&sk.bdx.main===GUEST&&sk.bdx.g===0&&sk.bdx.act===0&&g.bd.play===GUEST,sk.bdx.main+' '+sk.bdx.g+' '+sk.bdx.act);
+  { const of=x.SS_SETS[GUEST].outfit; p.look={model:of,tintTop:5,hair:'short'}; x.recalcP(p);
+    ok('the character played may wear their outfit free (bdFreeOutfits), not another\'s',p.look.model===of&&x.bdFreeOutfits(g).join()===of,JSON.stringify(p.look));
+    W.receive('a',{t:'bd',a:'play',set:'wanderer'}); ok('...playing someone else puts your own look back (the base model, your hair kept)',p.look.model==='base'&&p.look.hair==='short',JSON.stringify(p.look)); }
+  W.receive('a',{t:'bd',a:'play',set:'wanderer'}); ok('...the Wanderer too',sk.bdx.main==='wanderer');
+  W.receive('a',{t:'bd',a:'play',set:'constructor'}); ok('...an unknown character is refused',g.bd.play==='wanderer');
+  ok('...and the pick is saved',x.sanitizeGear(JSON.parse(JSON.stringify(g)),'warrior').bd.play==='wanderer');
+  W.receive('a',{t:'bd',a:'play',set:null}); clear(); wear(A); ok('...null goes back to the Power piece\'s rule',sk.bdx.main===K&&g.bd.play===undefined); }
 // ---- equip refuses the Bond passives ----
 { clear(); const bp=SET.bonds[1]; if(!sk.owned.includes(bp)) sk.owned.push(bp);
   ok('a Bond passive is one',x.bdIsBondPassive(bp)&&!x.bdIsBondPassive(SET.keptPassive));
@@ -92,11 +101,13 @@ ok('three pieces: Bond III, +1 level to the character\'s pieces (above the tier 
 { const M=x.MQ, last=L=>{ let i=-1; M.forEach((s,k)=>{ if(s.id[0]===L) i=k; }); return i; };
   const R=s=>x.bdRealOf({mq:{s}});
   ok('Realization from the acts: 0, I after act I, II, III, then VI after act IV',R(0)===0&&R(last('W')+1)===1&&R(last('V')+1)===2&&R(last('F')+1)===3&&R(last('G')+1)===6&&R(last('G'))===3,[0,last('W')+1,last('V')+1,last('F')+1,last('G')+1].map(R).join());
-  clear(); const gen=sk.owned.find(i=>x.SKILLS[i]&&!x.SKILLS[i].set&&x.SKILLS[i].cls==='warrior'&&x.SKILLS[i].slot==='skill'); sk.eq.warrior.skill=gen;
-  g.mq.s=last('F')+1; x.recalcP(p); const l3=x.skillLvOf(sk,gen);
+  clear(); x.recalcP(p); const PP=x.WD_PATHS[x.wdPathOf(g)].pieces.warrior, gen=PP.basic; sk.eq.warrior={basic:PP.basic,skill:PP.skill,burst:PP.burst};
+  const shop=sk.owned.find(i=>x.SKILLS[i]&&!x.SKILLS[i].set&&!x.SKILLS[i].wd&&x.SKILLS[i].cls==='warrior'&&x.SKILLS[i].slot==='skill');
   g.mq.s=last('V')+1; x.recalcP(p); const l2=x.skillLvOf(sk,gen);
-  g.mq.s=last('G')+1; x.recalcP(p); const l6=x.skillLvOf(sk,gen);
-  ok('the Wanderer (no set piece worn) at Realization III has +1 level on a general skill, +2 at VI',sk.bdx.main==='wanderer'&&l3===l2+1&&l6===l2+2&&g.bd.wanderer.r===6,l2+' '+l3+' '+l6); }
+  g.mq.s=last('G')+1; x.recalcP(p); const l6=x.skillLvOf(sk,gen), a6=sk.bdx.act;
+  sk.eq.warrior.skill=shop; x.recalcP(p); const lo=x.skillLvOf(sk,gen), ao=sk.bdx.act;
+  ok('the Wanderer\'s Realization works like a Bond: at VI with the path\'s three actives worn it is III (+1 level on them), a shop skill worn in their place is off the path (I, no level)',sk.bdx.main==='wanderer'&&a6===3&&l6===l2+1&&ao===1&&lo===l2&&g.bd.wanderer.r===6,l2+' '+l6+' '+lo+' act '+a6+' '+ao);
+  ok('the active path owns its own basic, skill and power for every class (placeholders), no other path\'s',['warrior','archer','mage'].every(c=>['basic','skill','burst'].every(q=>sk.owned.includes(x.WD_PATHS[x.wdPathOf(g)].pieces[c][q])))&&!sk.owned.some(i=>/^wd_bulwark_/.test(i))); }
 // ---- migration ----
 { const raw={smv:2,bdMig:[K],skills:{owned:[actOf(GUEST)[0]]},bd:{[x.SS_ORDER.find(i=>i!==K&&i!==GUEST&&!x.SS_SETS[i].dev)]:{b:3,st:2}}};
   const m1=x.sanitizeGear(raw,'warrior'), m2=x.sanitizeGear(JSON.parse(JSON.stringify(m1)),'warrior');
@@ -237,7 +248,7 @@ Date.now=realNow;
   ok('after bu1 (A3) the path burst can be worn and cast',sw.wdu==='wd_fury'&&sw.ult==='wd_fury'&&!!x.ultEquippedP(pw)&&x.ultEquippedP(pw).id==='wd_furyU');
   ok('...the other path\'s passive is not his (only the active path\'s)',!sw.owned.includes('wd_bulwark'));
   // Realization: the active path's rows, only while the Wanderer is played
-  gw.mq.s=last('V')+1; x.recalcP(pw);
+  onPath(sw,gw,'fury');   gw.mq.s=last('V')+1; x.recalcP(pw);
   ok('Realization II as the Wanderer: the path\'s I passive and II row are in force',sw.bdx.main==='wanderer'&&gw.bd.wanderer.r===2&&sw.bdx.p.wd_fury_r1===1&&sw.bdx.r.includes('wd_fury_r2')&&x.ssBonuses(sw,'warrior',60).some(b=>b.row.id==='wd_fury_r2')&&(pw.ss.trig.hit||[]).some(r=>r.id==='wd_fury_r2'),JSON.stringify(sw.bdx));
   { const before=x.psP(pw,'critdmg'); gw.mq.s=last('G')+1; x.recalcP(pw);
     ok('Realization VI: the IV row (critical damage) and the VI row too',x.psP(pw,'critdmg')>before+0.1&&sw.bdx.r.includes('wd_fury_r6')&&sw.bdx.p.wd_fury_r4===1); }
@@ -245,7 +256,7 @@ Date.now=realNow;
   // a set played: no Realization rows, no path passive, no path burst
   x.ssGrantSetP(pw,K,true); x.bdGrantP(pw,K,0); const a3=actOf(K)[2]; x.ssEquipPieceP(pw,x.SKILLS[a3]); x.recalcP(pw);
   ok('with a set\'s power piece worn ('+K+' is played) the path rows, passive and burst are out of force',sw.bdx.main===K&&!sw.bdx.r.some(r=>/^wd_/.test(r))&&!Object.keys(sw.bdx.p).some(k=>/^wd_/.test(k))&&x.psP(pw,'dmg')<d1-0.1&&!x.ultEquippedP(pw),JSON.stringify(sw.bdx));
-  for(const c of ['warrior','archer','mage']) sw.eq[c].burst=null; x.recalcP(pw);
+  for(const c of ['warrior','archer','mage']) sw.eq[c].burst=null; onPath(sw,gw,'fury'); x.recalcP(pw);
   // changing the path: free, the tree and the Realization kept, the worn passive and burst follow
   const coins=gw.coins, tree=JSON.stringify(gw.awk.wanderer), r0=gw.bd.wanderer.r, n0=sent.length;
   W.receive('w',{t:'bd',a:'path',id:'bulwark'}); tick(1);

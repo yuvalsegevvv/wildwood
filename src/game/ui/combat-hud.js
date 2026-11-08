@@ -101,7 +101,7 @@ function setActionBar(){
   const c=clsOf(), L=pvSkills();   // pvp: the fixed loadout on the island
   // each button: the equipped ability, a lock until the slot's level, or a + when nothing is equipped
   const fill=(el,slot,key)=>{ const a=abilityOf(c,slot,L,pvLevel()), locked=pvLevel()<slotLv(slot);
-    el.querySelector('svg').innerHTML=(a&&ssGlyph(a))||ICONS[a?a.name:locked?'lock':'plus']||ICONS.burst;   // skillsets: a set piece draws its set's own symbol, in the set's colour
+    el.querySelector('svg').innerHTML=(a&&ssGlyph(a))||ICONS[a?a.icon||a.name:locked?'lock':'plus']||ICONS.burst;   // skillsets: a set piece draws its set's own symbol, in the set's colour
     el.classList.toggle('has-set',!!(a&&ssTint(a))); el.style.setProperty('--set',a&&ssTint(a)||'transparent');
     el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+slotLv(slot):(slot==='burst'?'Power':'Skill');
     bdcAbLevel(el,a,L);   // bond: the level in play, with the Bond's +1 or the guest mark (bond/tags.js)

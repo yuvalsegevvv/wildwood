@@ -6,7 +6,7 @@
    you update (applyGear, economy/items.js: awcRender), so the panel always shows what the server last said.
    State: AWC = {set, sel (node id), V (the view: tree.js), hits (what the last draw put on screen), drawn (their count), ptr (the fingers down), pulse, wait, confirm, st (node states), M (the last draw's model)}.
    Taps: a tap is a pointer down and up that moved less than 7 px; the nearest node within a fingertip (16 px on a touch screen, 11 with a mouse, never less than its own radius) is picked. Test: client-smoke (awakening block). */
-const AWC={set:null,sel:null,V:null,fit:null,key:'',W:0,H:0,hits:[],drawn:0,ptr:new Map(),pinch:null,moved:false,pulse:null,wait:0,confirm:0,scrollTo:null,st:{},M:null,html:{},img:{},lim:{min:1,max:90},bound:false};
+const AWC={tab:'awk',set:null,sel:null,V:null,fit:null,key:'',W:0,H:0,hits:[],drawn:0,ptr:new Map(),pinch:null,moved:false,pulse:null,wait:0,confirm:0,scrollTo:null,st:{},M:null,html:{},img:{},lim:{min:1,max:90},bound:false};
 const awcNum=n=>Math.floor(n||0).toLocaleString('en-US');
 // the key (a listener of its own, like the inventory's in economy/init.js: the key also closes the panel, which combat-hud's keydown, shut while a panel is open, cannot do)
 addEventListener('keydown',e=>{ if(started&&!customizing&&kbIs(e.code,'awaken')&&!e.repeat) awcToggle(); });
@@ -14,24 +14,24 @@ $('#skAwaken').addEventListener('click',()=>awcOpen());   // the skills panel's 
 function awcToggle(){ if(!started||customizing) return; if($('#awc').hidden) awcOpen(); else closePanels(); }
 function awcOpen(set,limb){
   openPanel('awc');
-  const cs=awcChars(); AWC.set=cs.some(c=>c.k===set)?set:awcMain(); AWC.sel=null; AWC.V=null; AWC.key=''; AWC.confirm=0; AWC.wait=0; AWC.pulse=null;
+  const cs=awcChars(true); AWC.set=cs.some(c=>c.k===set)?set:awcMain(); AWC.tab='awk'; AWC.sel=null; AWC.V=null; AWC.key=''; AWC.confirm=0; AWC.wait=0; AWC.pulse=null;
   awcBind(); awcRender(); if(limb) awcFocusLimb(limb);
 }
-function awcSetChar(k){ if(!awcChars().some(c=>c.k===k)) return; AWC.set=k; AWC.sel=null; AWC.V=null; AWC.confirm=0; awcRender(); }
-function awcSel(id){ const sh=awkShapeOf(AWC.set); if(!sh||!awkNode(sh,id)) return; AWC.sel=id; awcRender(); }
+function awcSetChar(k){ if(!awcChars(true).some(c=>c.k===k)) return; if(AWC.tab==='path'&&k!=='wanderer'||AWC.tab==='look'&&k==='wanderer') AWC.tab='sk'; AWC.set=k; AWC.sel=null; AWC.V=null; AWC.confirm=0; awcRender(); }
+function awcSel(id){ const sh=awkShapeOf(AWC.set); if(!sh||!awkNode(sh,id)) return; AWC.sel=id; AWT.open=null; awcRender(); }
 // ---- the pieces of markup ----
 function awcPickHtml(cs){
   const main=awcMain();
-  return cs.map(c=>'<button class="chip awc-ch'+(c.k===main?' main':'')+'" data-awcset="'+c.k+'" aria-pressed="'+(c.k===AWC.set)+'" style="--c:'+c.col+'" title="'+(c.k===main?'The character you play now':c.name)+'"><i class="awc-dot"></i>'+c.name+'<small>A'+awcEntry(c.k).t+'</small></button>').join('');
+  return cs.map(c=>'<button class="chip awc-ch'+(c.k===main?' main':'')+(c.locked?' locked':'')+'" data-awcset="'+c.k+'" aria-pressed="'+(c.k===AWC.set)+'" style="--c:'+c.col+'" title="'+(c.k===main?'The character you play now':c.name)+'"><i class="awc-dot"></i>'+c.name+'<small>A'+awcEntry(c.k).t+'</small></button>').join('');
 }
-function awcLinesHtml(lines){
-  return lines.map(l=>'<span class="awc-c '+(l.ok?'ok':'bad')+'" title="'+(l.note||'')+'"><i style="background:'+l.col+'"></i>'+l.name+' <b>'+awcNum(l.have)+' / '+awcNum(l.need)+'</b>'+(l.note?'<em>'+l.note+'</em>':'')+'</span>').join('');
+function awcLinesHtml(lines,where){
+  return lines.map(l=>'<button type="button" class="awc-c '+(l.ok?'ok':'bad')+'" data-awtmat="'+l.id+'" data-awtwhere="'+where+'" title="'+(l.note||'How to get it')+'">'+awtIcon(l.id,l.col)+l.name+' <b>'+awcNum(l.have)+' / '+awcNum(l.need)+'</b>'+(l.note?'<em>'+l.note+'</em>':'')+'</button>').join('')+awtInfoHtml(lines,where);
 }
 function awcTierHtml(k){
   const I=awcTierInfo(k), pips=AWK_TIERS.map(T=>'<span class="awc-pip'+(T.t<I.t?' done':T.t===I.t?' cur':'')+'" title="A'+T.t+': '+AWC_TIER_OPENS[T.t]+', skill level '+T.cap+(T.lv?', hiker level '+T.lv:'')+'">A'+T.t+'</span>').join('<i class="awc-pl"></i>');
   let nx='<span class="muted">Fully awakened: skills reach level '+I.cap+'.</span>';
   if(I.next){ const N=I.next, ask=AWC.confirm&&performance.now()<AWC.confirm, busy=AWC.wait&&performance.now()-AWC.wait<1500;
-    nx='<div class="awc-nt"><b>Next: A'+N.t+'</b> opens '+N.opens+' and lifts skills to level '+N.cap+'. Needs hiker level '+N.lv+(N.lvOk?'':' <span class="bad">(you are '+PL.level+')</span>')+'.</div><div class="awc-cl">'+awcLinesHtml(N.lines)+'</div>'
+    nx='<div class="awc-nt"><b>Next: A'+N.t+'</b> opens '+N.opens+' and lifts skills to level '+N.cap+'. Needs hiker level '+N.lv+(N.lvOk?'':' <span class="bad">(you are '+PL.level+')</span>')+'.</div><div class="awc-cl">'+awcLinesHtml(N.lines,'tier')+'</div>'
       +'<button class="chip buy" data-awctier="1"'+(N.can&&!busy?'':' disabled')+'>'+(ask?'Spend '+awcNum(N.lines[0].need)+' coins? Tap again':'Awaken to A'+N.t)+'</button>'; }
   return '<div class="awc-pips" role="list">'+pips+'</div><div class="awc-next"><span class="muted">Now A'+I.t+': skills reach level '+I.cap+'.</span>'+nx+'</div>';
 }
@@ -49,7 +49,7 @@ function awcDetailHtml(k,sh){
   const needs=n.req.map(r=>{ const q=sh.byId[r], ok=awcEntry(k).n[r]===1; return '<span class="awc-nd '+(ok?'ok':'bad')+'">'+(ok?'&#10003; ':'&#10007; ')+awcNodeName(k,q)+'</span>'; }).join('');
   let h='<div class="awc-d" style="--c:'+col+'"><div class="awc-dh"><i class="awc-dd"></i><div><b>'+title+'</b><small>'+sub+'</small></div></div><p class="awc-eff">'+awcEffect(k,n)+'</p>';
   if(S.st==='own') return h+'<p class="awc-own">&#10003; Grown</p></div>';
-  h+='<div class="awc-cl">'+awcLinesHtml(S.lines||awcCostLines(awkNodeCost(k,n.id)))+'</div>';
+  h+='<div class="awc-cl">'+awcLinesHtml(S.lines||awcCostLines(awkNodeCost(k,n.id)),'node')+'</div>';
   if(needs) h+='<div class="awc-needs">Needs '+needs+'</div>';
   const busy=AWC.wait&&performance.now()-AWC.wait<1500;
   if(S.st==='tier'||S.st==='req') h+='<p class="awc-why">'+S.why+'</p>';
@@ -61,14 +61,14 @@ const awcKeyHtml=()=>'<span><i class="awc-k own"></i>grown</span><span><i class=
 function awcPut(id,html){ if(AWC.html[id]!==html){ AWC.html[id]=html; $('#'+id).innerHTML=html; } }
 function awcRender(){
   if($('#awc').hidden) return;
-  const cs=awcChars(); if(!cs.some(c=>c.k===AWC.set)) AWC.set=awcMain();
+  const cs=awcChars(true); if(!cs.some(c=>c.k===AWC.set)) AWC.set=awcMain();
   const k=AWC.set, sh=awkShapeOf(k); if(!sh||!GEAR) return;
   if(AWC.sel&&!awkNode(sh,AWC.sel)) AWC.sel=null;
   $('#awcCoins').textContent=fmtCoins(GEAR.coins)+' coins';
   AWC.st=awcStates(k);
   const pk0=AWC.html.awcPick; awcPut('awcPick',awcPickHtml(cs)); awcPut('awcTier',awcTierHtml(k)); awcPut('awcLimbs',awcLimbsHtml(k,sh)); awcPut('awcDetail',awcDetailHtml(k,sh)); awcPut('awcKey',awcKeyHtml());
   if(AWC.html.awcPick!==pk0||AWC.scrollTo!==k){ AWC.scrollTo=k; const pb=$('#awcPick'), on=pb.querySelector?pb.querySelector('[aria-pressed="true"]'):null; if(on&&on.offsetLeft!==undefined) pb.scrollLeft=Math.max(0,on.offsetLeft-(pb.clientWidth-on.offsetWidth)/2); }   // keep the chosen character's chip in view
-  awcCanvas(false);
+  chrRender(); if(AWC.tab==='awk') awcCanvas(false);   // the Characters panel's other tabs (hub.js)
 }
 // ---- the canvas ----
 function awcImg(k){   // the character's emblem as a picture (an SVG data URL; drawn once it has loaded), or null: the root then shows the initial
@@ -91,7 +91,7 @@ function awcCanvas(refit){
 }
 function awcPaint(){
   const cv=$('#awcCv'), sh=awkShapeOf(AWC.set); if(!sh||!AWC.V) return; const g=cv.getContext('2d'); if(!g) return;
-  const cs=awcChars().find(c=>c.k===AWC.set)||{name:'',col:'#d9b26a',initial:'?'}, labels={}; for(const l of sh.limbs) labels[l]=awcSkillName(AWC.set,l);
+  const cs=awcChars(true).find(c=>c.k===AWC.set)||{name:'',col:'#d9b26a',initial:'?'}, labels={}; for(const l of sh.limbs) labels[l]=awcSkillName(AWC.set,l);
   g.setTransform(Math.min(2,window.devicePixelRatio||1),0,0,Math.min(2,window.devicePixelRatio||1),0,0);
   AWC.M={shape:sh,V:AWC.V,st:AWC.st,sel:AWC.sel,name:cs.name,col:cs.col,initial:cs.initial,img:awcImg(AWC.set),labels,pulse:AWC.pulse,hits:AWC.hits,avoid:[[AWC.W-56,0,AWC.W,150]]};   // avoid: the zoom buttons' corner, where no limb label may go
   awcDraw(g,AWC.W,AWC.H,AWC.M); AWC.drawn=AWC.hits.length;
@@ -105,7 +105,7 @@ function awcFocusLimb(limb){
 }
 function awcTap(px,py){
   const h=awcPickHit(AWC.hits,px,py,isTouch?16:11); if(!h) return null;
-  AWC.sel=h.id; awcRender(); return h.id;
+  AWC.sel=h.id; AWT.open=null; awcRender(); return h.id;
 }
 // ---- buying ----
 function awcBuy(){
@@ -154,5 +154,5 @@ function awcBind(){
     const t=e.target&&e.target.closest?e.target.closest('[data-awcset],[data-awclimb],[data-awcbuy],[data-awctier]'):null; if(!t||t.disabled) return;
     if(t.dataset.awcset) awcSetChar(t.dataset.awcset); else if(t.dataset.awclimb) awcFocusLimb(t.dataset.awclimb); else if(t.dataset.awcbuy) awcBuy(); else if(t.dataset.awctier) awcTierUp();
   });
-  addEventListener('resize',()=>{ if(!$('#awc').hidden) awcCanvas(true); });
+  addEventListener('resize',()=>{ if(!$('#awc').hidden&&AWC.tab==='awk') awcCanvas(true); });
 }

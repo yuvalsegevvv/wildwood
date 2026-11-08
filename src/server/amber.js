@@ -11,9 +11,12 @@ function ambSanitize(g,out){   // an old save has neither field
 /* A look wears an outfit set (look.model, or a piece of it in the fields below, or a Kin part that comes with a set) only when the set is in gear.os; what is not owned goes back to a base piece.
    The editor already refuses to close on a locked set, so this only stops a hacked client (a copy; the look is already flat primitives: cleanLookS). */
 const AMB_BASE_PIECE={model:'base',top:'tshirt',bottom:'trousers',shoes:'boots',hat:'none',hair:'short',faceItem:'',weaponItem:'',gloves:'none'};
-function ambCleanLook(look,owned){
+// free: the outfits of the characters you have bonded (Bond 0+, bdFreeOutfits): worn whole and as designed for free (look.model only: no piece mixed into another look, every tint back to -1);
+// changing anything about it is the bought set's (gear.os)
+function ambCleanLook(look,owned,free){
   if(!look||typeof look!=='object') return look;
   const ids=ambOutfitIds(), has=id=>Array.isArray(owned)&&owned.includes(id), o=Object.assign({},look);
+  if(typeof o.model==='string'&&!has(o.model)&&Array.isArray(free)&&free.includes(o.model)){ for(const f of Object.keys(o)) if(/^tint[A-Z]/.test(f)) o[f]=-1; for(const f of Object.keys(AMB_BASE_PIECE)) if(f!=='model'&&typeof o[f]==='string'&&ids.includes(o[f])&&!has(o[f])) o[f]=AMB_BASE_PIECE[f]; return o; }   // bond: the bonded character's look, free and unmodified
   for(const f of Object.keys(AMB_BASE_PIECE)){ const v=o[f]; if(typeof v==='string'&&ids.includes(v)&&!has(v)) o[f]=AMB_BASE_PIECE[f]; }
   for(const s of Object.keys(KIN_SLOTS)){ const part=kinPart(s,o[KIN_SLOTS[s][0]]); if(part&&part.set&&!has(part.set)) o[KIN_SLOTS[s][0]]=''; }
   return o;
