@@ -21,7 +21,7 @@ function guidePages(){
       <p>The quest board offers four notices at a time (hunts and bounties). ${kl(k('quests'))} (or a click on the quest list) opens your quests: the main quest's step with a picture of each monster it asks for, the board's notices and the ones you carry. A zone's name and level show in the top left: turn back if it is far above yours. If you are knocked out you wake in the village and lose nothing but time.</p>`},
     combat:{t:'Combat',h:`
       <h4>Classes</h4>
-      <p><b>Warrior:</b> sword and shield, Slash hits everything in an arc. <b>Archer:</b> homing arrows from far away. <b>Mage:</b> Firebolt bursts on impact. Your class is the weapon you hold; each class keeps its own skills.</p>
+      <p><b>Warrior:</b> sword and shield, Slash hits everything in an arc. <b>Archer:</b> homing arrows from far away. <b>Mage:</b> Firebolt bursts on impact. You carry a sword, a bow and a wand at once; the character you play (Characters panel, ${kl(k('awaken'))}: Play) decides which one is in hand, and each class keeps its own skills. The Wanderer's paths each have their own class and element.</p>
       <h4>Damage</h4>
       <ul>
         <li>Your damage comes from your level and your weapon; your health from your level and your armour. Armour cuts incoming damage, with diminishing returns at high defence.</li>
@@ -60,7 +60,7 @@ function guidePages(){
       <h4>What you can wear</h4>
       <ul>
         <li><b>Armour:</b> helmet, top, bottom and shoes raise your health and defence.</li>
-        <li><b>Weapon:</b> sets your class and your damage. Pick up a bow or a staff to play archer or mage.</li>
+        <li><b>Weapons:</b> you carry a sword, a bow and a wand; only the one for the character you play counts (the other two are shown greyed in the inventory). Equipping a weapon stores it in its class's slot.</li>
         <li><b>Ring and pendant:</b> from dungeons (level 30 and 40). A ring adds flat attack; a pendant gives one bonus such as XP, drops, coins or crits.</li>
         <li><b>Tools:</b> pickaxe, axe and sickle for the three professions.</li>
       </ul>

@@ -34,7 +34,7 @@ function dgTemperP(p,id,worn){
   if(have<info.stones){ toastTo(p.id,'You need '+info.stones+' '+ENH_NAME+(info.stones>1?'s':'')+' (you have '+have+')','bad'); return; }
   const slot=Object.keys(p.gear.eq).find(s=>p.gear.eq[s]===id), wornCopy=!!slot&&(!!worn||unwornCount(p,id)<1);
   p.gear.temper=have-info.stones;
-  p.gear.inv[p.gear.inv.lastIndexOf(id)]=info.nextId;   // one copy; the others stay as they were
+  p.gear.inv[p.gear.inv.lastIndexOf(id)]=info.nextId; wpnSwapG(p.gear,id,info.nextId);   // one copy; the others stay as they were (wpn: a carried weapon's slot follows)
   if(wornCopy){ p.gear.eq[slot]=info.nextId; gearChangedP(p); } else p.dirty=true;
   toastTo(p.id,'Tempered: '+info.next.name,'loot r'+info.next.rar); ev('temper',p.id,info.nextId,id);
 }

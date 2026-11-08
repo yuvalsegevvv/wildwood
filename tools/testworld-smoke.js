@@ -17,6 +17,7 @@ const you=c=>msgs(c).filter(m=>m.t==='you').pop(), hello=(c,extra)=>send(c,Objec
     ok('level 60, 10M coins, 1000 reroll stones of each kind',y.level===60&&g.coins===10000000&&g.rsw===1000&&g.rsa===1000&&g.rsr===1000,y.level+' '+g.coins);
     ok('the browser\'s save was ignored',g.coins!==7);
     const inv=g.inv||[];
+    ok('all three weapons are carried (sword, bow, wand)',!!g.eq.wpn&&['warrior','archer','mage'].every(c=>!!g.eq.wpn[c]),JSON.stringify(g.eq.wpn));
     ok('every level-40 piece at Unique +8 and every pendant',['sword8-u+8','bow8-u+8','wand8-u+8','helmet8-u+8','top8-u+8','bottom8-u+8','shoes8-u+8','ring8-basic-u+8','ring8-light-u+8','pendant8-xp-u+8','pendant8-critdmg-u+8','talisman8-aspd-u+8','talisman8-atk-u+8'].every(i=>inv.includes(i)));
     ok('the best is worn',g.eq.weapon==='sword8-u+8'&&g.eq.top==='top8-u+8'&&g.eq.ring==='ring8-basic-u+8'&&g.eq.pendant==='pendant8-critdmg-u+8'&&g.eq.talisman==='talisman8-atk-u+8',JSON.stringify(g.eq));
     ok('every circle attuned, every symbol +4',g.east===2&&g.north===2&&g.west===2&&g.sun===2&&g.gloam===2&&g.tall===2&&Object.values(g.zt).every(z=>z.max===4));

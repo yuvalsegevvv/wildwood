@@ -2,9 +2,9 @@
 /* Agent map (skills revamp step 18; design: PLAN sections 3 (Realization) and 7; the server half: server/wanderer.js; test: tools/bond-smoke.js (the paths block), tools/skillsets-ladder.js --wanderer).
    The Wanderer is the hero with no character's set worn: general skills (the class basic, shop skills and powers, general charge skills) plus ONE path's passive and burst. A path is one data file
    shared/wanderer/<id>.js (listed in src/manifest.json after this file): one defineWandererPath({...}) call and no top-level names (rule 4). fury.js is the worked example.
-   THE ENTRY: {id (a lowercase word, permanent once shipped), name, role (an SS_ROLES archetype: risk safe grind support heal tank), kit (an AWK_KIT_STATS key: the Wanderer's branch stats while this path
+   THE ENTRY: {id (a lowercase word, permanent once shipped), name, cls (warrior | archer | mage: the path's ONE class), el (the path's ONE element, one of the six; null = no element: fury, bulwark, wayfarer (warrior 2 basic + 1 elemental, archer 1 + 2, mage 3 elemental); every piece and the burst take it), role (an SS_ROLES archetype: risk safe grind support heal tank), kit (an AWK_KIT_STATS key: the Wanderer's branch stats while this path
           is active, written into AWK_PATH_KIT; default = role), from (the shop passive it is built from, a base PASSIVES id; null only for a path with no shop source: Prism), text (one line for the picker),
-          el (the burst's element, default 'basic'), passive: R, ult: {the set burst format of shared/ult.js; boost pieces only WD_ULT_PIECES: 'a1'-'a3' the class actives worn, 'p1' the path passive},
+          passive: R, ult: {the set burst format of shared/ult.js; boost pieces only WD_ULT_PIECES: 'a1'-'a3' the class actives worn, 'p1' the path passive},
           real: {1: R (passive-style), 2: R (like a 3-set row), 4: R (passive-style), 6: R (like a 5-set row)}}.
           R is the set row schema (shared/skillsets.js ssRowProblem: a stat row, a triggered row or an amp), so passiveSum / ssBonuses / ssRefreshP / ssTriggerS read them with no new effect kind.
           The passive must beat its source: when it names the same stat, its level-1 value is above the shop passive's.
@@ -68,7 +68,8 @@ function defineWandererPath(D){
   if(typeof D.text!=='string'||!D.text||D.text.length>160) return bad('text','one line for the picker (1 to 160 characters)');
   const from=D.from===undefined?null:D.from, src=from===null?null:(typeof from==='string'&&Object.prototype.hasOwnProperty.call(PASSIVES,from)&&!PASSIVES[from].set&&!PASSIVES[from].wd?PASSIVES[from]:false);
   if(src===false) return bad('from','a shop passive id ('+PASSIVE_IDS.filter(q=>!PASSIVES[q].set).join(' ')+') or null');
-  const el=D.el===undefined?'basic':D.el; if(!ssIsEl(el)) return bad('el','"'+JSON.stringify(el)+'" (one element, or "basic")');
+  if(!['warrior','archer','mage'].includes(D.cls)) return bad('cls','one of warrior archer mage (the path\'s one class)');
+  const el=D.el===null?'basic':D.el; if(!ssIsEl(el)) return bad('el','"'+JSON.stringify(D.el)+'" (one of the six elements, or null: the base path of a class has none, like a basic skill)');
   { const p=ssRowProblem(D.passive,true); if(p) return bad('passive',p); }
   if(src&&D.passive.stat===src.stat){ const v=Array.isArray(D.passive.v)?D.passive.v[0]:D.passive.v; if(!(v>src.v[0])) return bad('passive','it is built from '+src.name+' ('+src.v[0]+' at level 1) and has to be stronger'); }
   const R=D.real; if(!R||typeof R!=='object') return bad('real','real is {1: row, 2: row, 4: row, 6: row}');
@@ -86,12 +87,12 @@ function defineWandererPath(D){
   const ab=ultRegister(pid,U,el); ab.wd=id;
   AWK_PATH_KIT[id]=kit;
   const pieces={}, psrc=D.pieces||WD_PIECE_SRC[D.role]||WD_PIECE_SRC.safe;
-  for(const cls of ['warrior','archer','mage']){ pieces[cls]={};
+  for(const cls of ['warrior','archer','mage']){ pieces[cls]={}; if(cls!==D.cls) continue;   // a path has ONE class: pieces only for it (the owner: the Wanderer's paths act like the other characters)
     WD_PIECE_SLOTS.forEach((slot,i)=>{ const o=SKILLS[psrc[cls]&&psrc[cls][i]]; if(!o||o.slot!==slot||o.cls!==cls) return;
       const sid=wdPieceId(id,cls,slot), c=Object.assign({},o,{id:sid,name:D.name.trim()+' '+o.name,price:0,wd:id,icon:o.name,from:o.id,desc:o.desc+' (the path of '+D.name.trim()+')'});
-      if(el!=='basic'&&o.el) c.el=el;
+      if(el==='basic') delete c.el; else c.el=el;   // every piece takes the path's element (a base path: none)
       SKILLS[sid]=c; SKILL_IDS.push(sid); WD_PIECE_OF[sid]={path:id,cls,slot}; pieces[cls][slot]=sid; }); }
-  const P={id,name:D.name.trim(),role:D.role,kit,from,text:D.text,el,passive:pid,ult:pid,real:{1:pid+'_r1',4:pid+'_r4'},rows,pieces};
+  const P={id,name:D.name.trim(),cls:D.cls,role:D.role,kit,from,text:D.text,el,passive:pid,ult:pid,real:{1:pid+'_r1',4:pid+'_r4'},rows,pieces};
   WD_PATHS[id]=P; WD_ORDER.push(id);
   if(id===WD_DEFAULT&&!WD_ULT_SHARED) WD_ULT_SHARED=D.ult;   // every later path borrows the default path's burst (see WD_ULT_SHARED)
   return P;

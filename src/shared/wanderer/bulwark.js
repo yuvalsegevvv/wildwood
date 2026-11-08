@@ -2,7 +2,7 @@
 /* Agent map. Registry and format: shared/wanderer.js (defineWandererPath); the worked example: shared/wanderer/fury.js. Test: tools/bond-smoke.js, tools/skillsets-ladder.js --wanderer --path bulwark
    (a tank: judged by the tank band, about 90 of the baseline's damage). Stats of the Wanderer's tree: the 'tank' table. */
 defineWandererPath({
-  id:'bulwark', name:'Bulwark', role:'tank', kit:'tank', from:'vitality',
+  id:'bulwark', name:'Bulwark', cls:'warrior', el:null, role:'tank', kit:'tank', from:'vitality',
   text:'Stand in front and stay standing: more health than any shop can teach, shields when you are struck, and the enemies come to you.',
   passive:{name:'Bastion', text:'+{}% maximum health; you deal 12% less damage', stat:'hp', v:[0.15, 0.02], cost:{stat:'dmg', v:-0.12}},
   ult:{name:'Iron Bastion', desc:'You slam your weight into the ground: everything within 7 m is hit, thrown back and comes for you for 4 seconds, and the stunned cannot answer.', range:7, mult:1.2, act:['wdbulwarkult',0.9,0.55], anim:'nova',

@@ -60,3 +60,9 @@ body.dragging, body.dragging *{ cursor:grabbing !important; }
   .inv-info{ flex-wrap:wrap; }
   .ii-btn{ max-width:none; width:100%; }
 }
+/* wpn: the three carried weapons (sword, bow, wand); the two not in use are greyed */
+.wpn-row{ display:flex; gap:10px; justify-content:center; margin:6px 0 4px; }
+.wpn-s{ display:flex; flex-direction:column; align-items:center; gap:2px; }
+.wpn-s em{ font-size:10px; font-style:normal; color:var(--ink-dim); }
+.wpn-s.off .tile{ opacity:.45; filter:grayscale(.8); }
+.wpn-s.on em{ color:var(--lichen); }

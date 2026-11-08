@@ -7,6 +7,7 @@
           passive (and any Realization row id) is taken out of owned and the passive slot; gear.skills.wdu = 'wd_<path>' (the burst ultOwned accepts) while bu1 is bought, else null; a worn burst of
           another path is taken off. Nothing of it is trusted from a save. The levels: the path passive is a general passive (the pa branch, awkSyncG), the burst the bu branch (awkUltLvP maps
           'wd_<path>' to the Wanderer's tree), both +1 at Realization III and V (server/bond.js).
+   CLASS: a path has one class and one element (shared/wanderer.js); wdPathP puts the path's class weapon in hand (wpnClassP, server/wpn.js) while the Wanderer is the character played; pieces exist only for that class.
    PIECES: the active path's own basic / skill / power (shared/wanderer.js WD_PIECE_OF, placeholders) are owned for every class; another path's are dropped and a worn one swapped for this path's.
    ON THE PATH (wdOnPathP): the Wanderer's Realization works like a Bond: min(Realization, the path's pieces worn) - the off-path pieces worn (server/bond.js).
    IN FORCE only while the Wanderer is the character played (wdMainOk: gear.skills.bdx.main): passiveSum, ssRefreshP and ultEquippedP ask it. */
@@ -55,6 +56,7 @@ function wdPathP(p,id){
   W.path=id; wdSyncG(g);
   if(slot>=0&&sk.owned.includes(wdPassId(id))) sk.pass[slot]=wdPassId(id);   // the new path's passive takes the old one's slot
   if(wornU&&sk.wdu===wdUltId(id)) sk.ult=sk.wdu;   // ... and its burst the burst slot
+  if(B.play===BD_WANDERER||(!B.play&&sk.bdx&&sk.bdx.main===BD_WANDERER)) wpnClassP(p,WD_PATHS[id].cls);   // wpn: the path has its own class: its weapon in hand (only while the Wanderer is the character played)
   recalcP(p); p.dirty=true;
   toastTo(p.id,'The Wanderer walks the path of '+WD_PATHS[id].name+' now','good');
   return null;

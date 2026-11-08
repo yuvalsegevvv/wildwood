@@ -70,12 +70,12 @@ function bdcRealGive(k,b){
 }
 function bdcPathsHtml(cur){
   if(!WD_ORDER.length) return '';
-  return '<div class="bdc-paths" role="group" aria-label="The Wanderer\'s path">'+WD_ORDER.map(k=>{ const W=WD_PATHS[k], on=k===cur; return '<button class="chip'+(on?' on':'')+'" data-bdcpath="'+k+'" aria-pressed="'+on+'" title="'+W.text.replace(/"/g,'&quot;')+'">'+W.name+'</button>'; }).join('')
+  return '<div class="bdc-paths" role="group" aria-label="The Wanderer\'s path">'+WD_ORDER.map(k=>{ const W=WD_PATHS[k], on=k===cur; return '<button class="chip'+(on?' on':'')+'" data-bdcpath="'+k+'" aria-pressed="'+on+'" title="'+W.text.replace(/"/g,'&quot;')+'">'+W.name+' <small>'+({warrior:'Warrior',archer:'Archer',mage:'Mage'}[W.cls]||'')+' &middot; '+(W.el==='basic'?'no element':ELEMS[W.el].name)+'</small></button>'; }).join('')
     +'</div><p class="bdc-note">'+(WD_PATHS[cur]?WD_PATHS[cur].text+' ':'')+bdcPathKitHtml(cur)+' Changing path is free: the tree and the Realization stay.</p>';
 }
 // the path's own set for the class in hand (placeholders: shared/wanderer.js WD_PIECE_SRC), and how much of the Realization is in play: like a Bond, min(Realization, path pieces worn) - off-path pieces
 function bdcPathKitHtml(k){
-  const P=WD_PATHS[k], c=P&&P.pieces[clsOf()]; if(!c) return '';
+  const P=WD_PATHS[k], c=P&&P.pieces[P.cls]; if(!c) return '';   // (the path's own class: one class and one element each)
   const nm=[c.basic,c.skill,c.burst].map(id=>SKILLS[id]?SKILLS[id].name:'').filter(Boolean);
   return 'Its set: <b>'+nm.join('</b>, <b>')+'</b>, its passive <b>'+(PASSIVES[P.passive]?PASSIVES[P.passive].name:'')+'</b>, a general charge skill and its burst. Wear them for the Realization; anything else worn is off the path and costs a step.';
 }

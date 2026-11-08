@@ -44,7 +44,7 @@ const refill=()=>{   // purses and bags at their edges
   const r=rnd();
   if(r<0.12) p.gear.coins=Math.floor(rnd()*3000); else if(r<0.2) p.gear.coins=50000+Math.floor(rnd()*500000);
   if(r>0.7&&r<0.8) while(p.gear.inv.length<x.BAG_MAX-Math.floor(rnd()*3)) p.gear.inv.push(pick(shop));
-  if(r>0.85&&r<0.9){ p.gear.inv.length=Math.min(p.gear.inv.length,Math.floor(rnd()*20)); for(const id of Object.values(p.gear.eq)) if(id&&!p.gear.inv.includes(id)) p.gear.inv.push(id); }   // (what is worn is always in the bag)
+  if(r>0.85&&r<0.9){ p.gear.inv.length=Math.min(p.gear.inv.length,Math.floor(rnd()*20)); for(const id of [...Object.values(p.gear.eq).filter(v=>typeof v==='string'),...Object.values(p.gear.eq.wpn||{})]) if(id&&!p.gear.inv.includes(id)) p.gear.inv.push(id); }   // (what is worn is always in the bag)
   if(r>0.9) for(const id of res) p.gear.res[id]=Math.floor(rnd()*60);
   if(r>0.95) for(const id of Object.keys(x.MATS)) p.gear.mats[id]=Math.floor(rnd()*40);
   if(r>0.6&&r<0.7){ p.gear.awm.echo=Math.floor(rnd()*30); p.gear.rd.mat.home=Math.floor(rnd()*6); }   // awakening: Echo Shards and raid material

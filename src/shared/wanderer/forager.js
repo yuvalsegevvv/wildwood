@@ -2,7 +2,7 @@
 /* Agent map. Registry and format: shared/wanderer.js (defineWandererPath); the worked example: shared/wanderer/fury.js. Test: tools/bond-smoke.js, tools/skillsets-ladder.js --wanderer --path forager
    (a grind path: judged on the pack column, about 80% of the grind sets' pack at Bond VI; the drop stat does not show in the ladder). Stats of the Wanderer's tree: the 'grind' table. */
 defineWandererPath({
-  id:'forager', name:'Forager', role:'grind', kit:'grind', from:'scavenger',
+  id:'forager', name:'Forager', cls:'archer', el:'earth', role:'grind', kit:'grind', from:'scavenger',
   text:'Turn every camp into a haul: a much better chance of drops, and kills that burst into the next pack.',
   passive:{name:'Keen Nose', text:'+{}% chance of monster drops; you deal 25% less damage', stat:'drop', v:[0.25, 0.05], cost:{stat:'dmg', v:-0.25}},
   ult:{name:'Windfall', desc:'You throw a net of wind and clatter: a field 8 m wide opens on the target, drags the camp in and keeps hitting for 3 seconds, and the stunned cannot scatter.', range:26, mult:1.2, act:['wdforagerult',0.9,0.55], anim:'nova',

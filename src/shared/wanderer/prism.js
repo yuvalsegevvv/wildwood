@@ -4,7 +4,7 @@
    the target's; the element-less x1.1 is not one): it is read where the hit is rolled (server/combat.js rollDmgS, ssCondP) and from the hit that fires a trigger (ssWhen). NOT built: PLAN section 6's "your skills
    take the element of the monster last hit with an advantage" (an element switch); an open question for the owner. No soul, no soul stat, no reactions. Stats of the Wanderer's tree: the 'safe' table. */
 defineWandererPath({
-  id:'prism', name:'Prism', role:'safe', kit:'safe', from:null, el:'light',
+  id:'prism', name:'Prism', cls:'mage', el:'light', role:'safe', kit:'safe', from:null,
   text:'Play the wheel: attacks whose element beats the enemy\'s hit harder, crit more often and split into a second blow.',
   passive:{name:'Prism Lens', text:'+{}% damage with an attack whose element beats the target\'s', stat:'dmg', v:[0.30, 0.03], when:{adv:true}},
   ult:{name:'Spectrum', desc:'You split a beam of white light into a wide fan: a 9 m burst of light round the target that hits everything there, and the stunned cannot look away.', range:28, mult:1.5, act:['wdprismult',0.9,0.55], anim:'nova',

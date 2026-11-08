@@ -3,7 +3,7 @@
    (a safe damage path: about 80% of the damage sets' average at Bond VI). Compare the safe sets Pell and Sorrel (distance and standing still); this one lives on critical hits and asks nothing of where you stand.
    Stats of the Wanderer's tree: the 'safe' table. */
 defineWandererPath({
-  id:'keeneye', name:'Keen Eye', role:'safe', kit:'safe', from:'precision',
+  id:'keeneye', name:'Keen Eye', cls:'archer', el:'air', role:'safe', kit:'safe', from:'precision',
   text:'Win with the critical hit: a better eye than the shop sells, bigger crits, and every crit sharpens the next.',
   passive:{name:'Hawk Sight', text:'+{}% critical hit chance', stat:'crit', v:[0.09, 0.015]},
   ult:{name:'Dead Center', desc:'You take a long breath and loose one perfect shot at up to 40 m: a heavy hit on the target, and the stunned cannot dodge it.', range:40, mult:3.2, act:['wdkeeneyeult',1.2,0.85], anim:'shoot',

@@ -7,7 +7,8 @@ function sanitizeGear(g,cls){
   if(!g||typeof g!=='object'){ const fresh=sanitizeGear({},cls); delete fresh.skills.v; return fresh; }   // no save at all (a moved guest, an account with no gear yet): a clean one has every field (gear.cos, fr, sq, rd... were missing, so cosmake threw), minus skills.v so that newPlayer equips the free skills
   const out={inv:Array.isArray(g.inv)?g.inv.filter(id=>typeof id==='string'&&ITEM[id]).slice(0,BAG_MAX):base.inv,eq:Object.assign({},base.eq),coins:Math.min(COINS_MAX,Math.max(0,Math.floor(+g.coins||0))),q:null,startAll:!!g.startAll,caveFull:!!g.caveFull,bought:{},east:clampInt(g.east,0,2,0),north:clampInt(g.north,0,2,0),west:clampInt(g.west,0,2,0),river:clampInt(g.river,0,1,0),neck:clampInt(g.neck,0,1,0),redgate:clampInt(g.redgate,0,1,0),amber:g.amber>=1||g.redgate>=1?1:0,wv:WORLD_VER,sun:clampInt(g.sun,0,2,0),gloam:clampInt(g.gloam,0,2,0),tall:clampInt(g.tall,0,2,0),isles:clampInt(g.isles,0,2,0),mats:{}}   // (an old save's `soul` is not copied: the soul was removed);
   if(g.mats&&typeof g.mats==='object') for(const id in g.mats){ const n=MATS[id]?clampInt(g.mats[id],0,MAT_MAX,0):0; if(n) out.mats[id]=n; }
-  if(g.eq) for(const k in out.eq){ const id=g.eq[k], it=ITEM[id]; if(it&&out.inv.includes(id)&&(k==='weapon'?it.kind==='weapon':it.slot===k)) out.eq[k]=id; else if(k!=='weapon') out.eq[k]=null; }
+  if(g.eq) for(const k in out.eq){ if(k==='wpn') continue; const id=g.eq[k], it=ITEM[id]; if(it&&out.inv.includes(id)&&(k==='weapon'?it.kind==='weapon':it.slot===k)) out.eq[k]=id; else if(k!=='weapon') out.eq[k]=null; }
+  out.eq.wpn=g.eq&&g.eq.wpn&&typeof g.eq.wpn==='object'?g.eq.wpn:{};   // wpn: the saved carried weapons (checked by wpnSyncG at the end); an old save has none, so its weapon in hand fills its class's slot
   if(!ITEM[out.eq.weapon]) out.eq.weapon=base.eq.weapon;
   if(!out.inv.includes(out.eq.weapon)) out.inv.push(out.eq.weapon);
   if(g.bought&&typeof g.bought==='object') for(const id in g.bought) if(ITEM[id]&&ITEM[id].rar===0) out.bought[id]=clampInt(g.bought[id],0,999,0);
@@ -37,6 +38,7 @@ function sanitizeGear(g,cls){
   awkSanitize(g,out);   // awakening: gear.awk (the trees) and gear.awm (Echo Shards), before the migration reads them
   bdSanitize(g,out);   // bond: gear.bd (Bonds, Bondstones, the Wanderer's Realization), before the migration raises it
   smigSanitize(g,out);   // savemig: the skill revamp's one migration (boss skills and extra passives refunded, gear.bdMig), once per save (gear.smv)
+  wpnSyncG(out);   // wpn: eq.wpn (three weapons, the basic one in an empty slot) and eq.weapon = the played character's class (an old save: its weapon goes in its class's slot)
   wdSyncG(out);   // wanderer: the path passive and burst (and a worn path burst checked), from the path and the Wanderer's tree
   awkSyncG(out);   // awakening: the skill levels the trees give (gear.skills.lv, gear.cave.own)
   return out;
@@ -129,6 +131,7 @@ function recalcP(p){
   if(p.pv){ pvpRecalcP(p); return; }   // pvp: on the Proving Isle everyone has the same numbers (server/pvp.js)
   const g=gearStatsOf(p.gear), ratio=p.maxHp>1?p.hp/p.maxHp:1, sym=symbolBonus(p.gear);   // the zone tiers' symbol: +10% health and attack per unlocked tier point
   g.atk+=dgRingAtkP(p)+talAtkP(p);   // dungeons: the worn ring's flat attack, added with the weapon's before everything else 
+  wpnSyncG(p.gear,p.level);   // wpn: eq.weapon always matches the active class, whatever changed it
   wdSyncG(p.gear);   // wanderer: the active path's passive and burst are his while pa1 / bu1 are bought
   awkRefreshP(p);   // awakening: the trees' skill levels and the played character's stat nodes (gear.skills.aw, read by passiveSum)
   bdRefreshP(p);   // bond: the active Bond (gear.skills.bdx: Bond passives, rows, level changes), before anything reads psP
@@ -142,7 +145,7 @@ const psP=(p,stat)=>passiveSum(skOfP(p),pvLvP(p),stat,p.pv?undefined:clsOfP(p),p
 // the bonus of the worn pendant for one stat (pendants.js): read from the item id in the save, never from a number the client sent, and only while you are high enough for it (pvp: none on the island)
 function pendP(p,stat){ if(p.pv) return 0; const it=ITEM[p.gear.eq.pendant]; return it&&it.kind==='pendant'&&it.stat===stat&&p.level>=it.lv?it.v:0; }   // pvp: no pendant on the island
 function youMsg(p){ return {t:'you',level:p.level,exp:p.exp,maxHp:p.maxHp,hp:p.hp,dmg:p.dmg,def:p.def,red:p.red,dead:p.dead,pv:p.pv?1:0,gear:p.gear}; }   // pvp: pv = standing on the island, where the numbers above are the fixed ones
-function pubInfo(p){ return {id:p.id,name:p.name,look:p.look,eq:p.gear.eq,level:p.level}; }
+function pubInfo(p){ return {id:p.id,name:p.name,look:p.look,eq:wpnPubEq(p.gear.eq),level:p.level}; }
 function inVillage(p){ return vNear(p.x,p.z,VR+12); }
 // the teleport circles (one in each village): standing on one and choosing a destination (the client's travel window, warp{to}) takes you
 // there (CIRCLES in shared/hoarfrost.js: a land's circles wake when you have walked into its village).
