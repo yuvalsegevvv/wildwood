@@ -64,7 +64,7 @@ function qProgress(q){
   return 'Defeated '+(GEAR.q.active[q.id]||0)+' of '+q.count+(where?' &middot; '+where:'');
 }
 function renderQlog(){
-  const el=$('#qlog'), Q=GEAR.q, ids=Object.keys(Q.active||{}), D=qDefs(), main=mqLogRow()+sqLogRow();   // sidequests: the tracked chain's row under the main quest's
+  const el=$('#qlog'), Q=GEAR.q, ids=Object.keys(Q.active||{}), D=qDefs(), main=mqLogRow()+sqLogRow()+(typeof awtLogRows==='function'?awtLogRows():'');   // sidequests: the tracked chain's row under the main quest's
   if((!ids.length&&!main)||!started){ el.hidden=true; return; }
   el.hidden=false;
   el.innerHTML=main+ids.map(id=>{ const q=D[id]; if(!q) return ''; const ready=Q.ready.includes(id);

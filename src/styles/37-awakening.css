@@ -79,3 +79,13 @@
   .awc-side{ flex:none; max-height:none; overflow:visible; }
   .awc-zoom button{ width:40px; height:40px; }
 }
+/* material chips: a picture, and the "how to get it" box (awakening/mat-info.js) */
+button.awc-c{ font-family:inherit; color:var(--ink); cursor:pointer; } button.awc-c:hover{ border-color:var(--brass); }
+.awt-ic{ flex:none; display:inline-flex; width:20px; height:20px; } .awt-ic .ico{ width:20px; height:20px; }
+.awc-c .awt-ic{ margin-left:-5px; }
+.awt-box{ flex:1 1 100%; display:flex; gap:9px; padding:8px 10px; border-radius:10px; border:1px solid var(--c,#999); background:rgba(20,14,8,.7); font-size:12.5px; }
+.awt-box>.awt-ic{ width:34px; height:34px; } .awt-box>.awt-ic .ico{ width:34px; height:34px; }
+.awt-tx p{ margin:3px 0 0; } .awt-wh u{ text-decoration:none; color:var(--brass); font-weight:600; } .awt-bt{ display:flex; gap:6px; margin-top:7px; }
+.ql.awt{ display:grid; grid-template-columns:20px 1fr auto 22px; align-items:center; gap:2px 6px; border-left:3px solid var(--c,#999); padding:4px 6px 4px 8px; }
+.ql.awt b{ display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .ql.awt .awt-ic .ico{ width:18px; height:18px; }
+.awt-x{ width:22px; height:22px; padding:0; border:0; background:none; color:var(--ink-dim); font-size:16px; cursor:pointer; }

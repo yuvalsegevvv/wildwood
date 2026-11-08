@@ -18,20 +18,20 @@ function awcOpen(set,limb){
   awcBind(); awcRender(); if(limb) awcFocusLimb(limb);
 }
 function awcSetChar(k){ if(!awcChars(true).some(c=>c.k===k)) return; if(AWC.tab==='path'&&k!=='wanderer'||AWC.tab==='look'&&k==='wanderer') AWC.tab='sk'; AWC.set=k; AWC.sel=null; AWC.V=null; AWC.confirm=0; awcRender(); }
-function awcSel(id){ const sh=awkShapeOf(AWC.set); if(!sh||!awkNode(sh,id)) return; AWC.sel=id; awcRender(); }
+function awcSel(id){ const sh=awkShapeOf(AWC.set); if(!sh||!awkNode(sh,id)) return; AWC.sel=id; AWT.open=null; awcRender(); }
 // ---- the pieces of markup ----
 function awcPickHtml(cs){
   const main=awcMain();
   return cs.map(c=>'<button class="chip awc-ch'+(c.k===main?' main':'')+(c.locked?' locked':'')+'" data-awcset="'+c.k+'" aria-pressed="'+(c.k===AWC.set)+'" style="--c:'+c.col+'" title="'+(c.k===main?'The character you play now':c.name)+'"><i class="awc-dot"></i>'+c.name+'<small>A'+awcEntry(c.k).t+'</small></button>').join('');
 }
-function awcLinesHtml(lines){
-  return lines.map(l=>'<span class="awc-c '+(l.ok?'ok':'bad')+'" title="'+(l.note||'')+'"><i style="background:'+l.col+'"></i>'+l.name+' <b>'+awcNum(l.have)+' / '+awcNum(l.need)+'</b>'+(l.note?'<em>'+l.note+'</em>':'')+'</span>').join('');
+function awcLinesHtml(lines,where){
+  return lines.map(l=>'<button type="button" class="awc-c '+(l.ok?'ok':'bad')+'" data-awtmat="'+l.id+'" data-awtwhere="'+where+'" title="'+(l.note||'How to get it')+'">'+awtIcon(l.id,l.col)+l.name+' <b>'+awcNum(l.have)+' / '+awcNum(l.need)+'</b>'+(l.note?'<em>'+l.note+'</em>':'')+'</button>').join('')+awtInfoHtml(lines,where);
 }
 function awcTierHtml(k){
   const I=awcTierInfo(k), pips=AWK_TIERS.map(T=>'<span class="awc-pip'+(T.t<I.t?' done':T.t===I.t?' cur':'')+'" title="A'+T.t+': '+AWC_TIER_OPENS[T.t]+', skill level '+T.cap+(T.lv?', hiker level '+T.lv:'')+'">A'+T.t+'</span>').join('<i class="awc-pl"></i>');
   let nx='<span class="muted">Fully awakened: skills reach level '+I.cap+'.</span>';
   if(I.next){ const N=I.next, ask=AWC.confirm&&performance.now()<AWC.confirm, busy=AWC.wait&&performance.now()-AWC.wait<1500;
-    nx='<div class="awc-nt"><b>Next: A'+N.t+'</b> opens '+N.opens+' and lifts skills to level '+N.cap+'. Needs hiker level '+N.lv+(N.lvOk?'':' <span class="bad">(you are '+PL.level+')</span>')+'.</div><div class="awc-cl">'+awcLinesHtml(N.lines)+'</div>'
+    nx='<div class="awc-nt"><b>Next: A'+N.t+'</b> opens '+N.opens+' and lifts skills to level '+N.cap+'. Needs hiker level '+N.lv+(N.lvOk?'':' <span class="bad">(you are '+PL.level+')</span>')+'.</div><div class="awc-cl">'+awcLinesHtml(N.lines,'tier')+'</div>'
       +'<button class="chip buy" data-awctier="1"'+(N.can&&!busy?'':' disabled')+'>'+(ask?'Spend '+awcNum(N.lines[0].need)+' coins? Tap again':'Awaken to A'+N.t)+'</button>'; }
   return '<div class="awc-pips" role="list">'+pips+'</div><div class="awc-next"><span class="muted">Now A'+I.t+': skills reach level '+I.cap+'.</span>'+nx+'</div>';
 }
@@ -49,7 +49,7 @@ function awcDetailHtml(k,sh){
   const needs=n.req.map(r=>{ const q=sh.byId[r], ok=awcEntry(k).n[r]===1; return '<span class="awc-nd '+(ok?'ok':'bad')+'">'+(ok?'&#10003; ':'&#10007; ')+awcNodeName(k,q)+'</span>'; }).join('');
   let h='<div class="awc-d" style="--c:'+col+'"><div class="awc-dh"><i class="awc-dd"></i><div><b>'+title+'</b><small>'+sub+'</small></div></div><p class="awc-eff">'+awcEffect(k,n)+'</p>';
   if(S.st==='own') return h+'<p class="awc-own">&#10003; Grown</p></div>';
-  h+='<div class="awc-cl">'+awcLinesHtml(S.lines||awcCostLines(awkNodeCost(k,n.id)))+'</div>';
+  h+='<div class="awc-cl">'+awcLinesHtml(S.lines||awcCostLines(awkNodeCost(k,n.id)),'node')+'</div>';
   if(needs) h+='<div class="awc-needs">Needs '+needs+'</div>';
   const busy=AWC.wait&&performance.now()-AWC.wait<1500;
   if(S.st==='tier'||S.st==='req') h+='<p class="awc-why">'+S.why+'</p>';
@@ -105,7 +105,7 @@ function awcFocusLimb(limb){
 }
 function awcTap(px,py){
   const h=awcPickHit(AWC.hits,px,py,isTouch?16:11); if(!h) return null;
-  AWC.sel=h.id; awcRender(); return h.id;
+  AWC.sel=h.id; AWT.open=null; awcRender(); return h.id;
 }
 // ---- buying ----
 function awcBuy(){
