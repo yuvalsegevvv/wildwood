@@ -4,7 +4,8 @@
             AWK_STEP (coins / drops / branch material / Essence of a skill level 2-10), AWK_TROPHY, AWK_STAT_ROWS (s1-s9), AWK_STAT_DEPTH_STEP, awkStatRow(depth, tier), AWK_UNLOCK, AWK_STAR, AWK_TIER_COST,
             AWK_KIT_STATS (kit -> the stat of each limb), AWK_STAT_VALUE (stat -> [shallow, middle, deep]), AWK_PATH_KIT (the Wanderer's nine paths), awkInfo(set), awkKitOf(set, path),
             awkStatOf(set, nodeId, path) -> {stat, v, band, row}, awkNodeCost(set, nodeId), awkTierCost(set, tier), awkTreeCost(set) (every node and tier summed),
-            AWK_ID_ECHO, AWK_ID_PRIME, awkRaidId(land), awkTrophyId(boss), awkEssenceId(el) (the placeholder item ids below).
+            AWK_ID_ECHO, AWK_ID_PRIME, awkRaidId(land), awkTrophyId(boss), awkEssenceId(el) (the placeholder item ids below),
+            awkLandDefs(land) (a land's non-boss monster kinds by level), awkDropKinds(land, tier) (the kinds whose drops pay a price of that tier: moved here from server/awakening.js in step 15 so the panel can count them).
    A cost is {coins, drops, land, mats:{id:n}, tier, hikerLv} or null (an unknown set or node: a junk id never throws). `drops` is a count of the character's land's monster drops (`land`; 'any' for the Wanderer, whose
    drops can be any land's), the zone rising with the tier: which MATS kind it is, is the server's (step 9). `mats` holds the rest, by PLACEHOLDER ids that later steps fill:
      'echo'              Echo Shards (gear.awm.echo since step 9);                  'rd_<land>'      the land's raid material (gear.rd.mat[land]; 'rd_any': any land's)
@@ -76,6 +77,19 @@ function awkStatOf(set,nodeId,path){
   const kit=awkKitOf(set,path), n=awkNode(awkShapeOf(set),nodeId); if(!kit||!n||n.kind!=='stat') return null;
   const stat=AWK_KIT_STATS[kit][n.limb], row=awkStatRow(n.depth,n.tier), band=row<=3?0:row<=6?1:2;
   return {stat, v:AWK_STAT_VALUE[stat][band], band:AWK_BANDS[band], row};
+}
+// ---- the drops that pay a price (server/awakening.js awkPlanP charges them, game/awakening shows them: ONE rule, so the panel's count is the server's)
+const AWK_LAND_DEFS=Object.create(null);
+function awkLandDefs(land){   // the land's non-boss monster kinds, by level (cached; 'any' = every land's)
+  if(AWK_LAND_DEFS[land]) return AWK_LAND_DEFS[land];
+  const out=[]; for(const d of MON_DEFS){ if(d.boss||!awkHas(MATS,d.id)) continue; const zn=defZone(d); if(!zn||zn.boss) continue; if(land==='any'||landAt(zn.x,zn.z)===land) out.push(d); }
+  out.sort((a,b)=>a.level-b.level); return AWK_LAND_DEFS[land]=out;
+}
+// the kinds whose drops pay a price of tier t: the zone rises with the tier (a land's: from t/6 of its level range up; the Wanderer's: from the tier's hiker level - 5)
+function awkDropKinds(land,t){
+  const L=awkLandDefs(land); if(!L.length) return [];
+  const lo=land==='any'?AWK_TIERS[t].lv-5:L[0].level+(L[L.length-1].level-L[0].level)*t/AWK_TIERS.length;
+  return L.filter(d=>d.level>=lo).map(d=>d.id);
 }
 // ---- the placeholder item ids (see the agent map)
 const AWK_ID_ECHO='echo', AWK_ID_PRIME='ess_prime';

@@ -44,6 +44,7 @@ styles
   34-presets.css                     Presets panel (economy/presets.js): ten cards in a grid, the worn one highlighted, an empty one dimmed
   32-ult.css                         The set burst (5th slot): its action-bar tile, the cast popup card and the skills panel row (game/ult/slot.js, popup.js)
   35-movement.css                    Movement slot: the movement slot's tile (#abMov) and its tab in the skills panel (game/movement/slot.js)
+  37-awakening.css                   Awakening tree panel (game/awakening/panel.js): the character picker, the tier strip, the canvas with its zoom buttons, the limb chips and the detail box; a bottom sheet on a phone
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -545,7 +546,7 @@ game
   economy/shops.js                   Weapon and armour shops, and Odran the peddler (a bit of everything, and curiosities he will not sell)
   economy/forge.js                   Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
   ui/element-icons.js                Element helpers for the interface: the icon of each element (elSvg) and the coloured name chip (elChip) used by the skills panel, the presets and the item details
-  economy/skills.js                  Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, upgrade with coins and monster drops, learn from the trainers
+  economy/skills.js                  Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, learn from the trainers; levels are bought in the Awakening tree (the Awaken button)
   economy/presets.js                 Presets panel (the HUD's layers button): ten cards, each a saved setup of skills and equipment with an optional linked outfit slot; wear, save, rename, clear
   economy/skill-track.js             Tracking a skill upgrade: mark one skill and the maps show the camps of the monsters whose drops its next level still needs
   economy/skillsets.js               Skill sets on the client: the toast when a piece is earned (the pieces themselves live in the skills panel's grids, economy/skills.js) and the ally buffs that change what you do (haste)
@@ -653,6 +654,9 @@ game
   rift/view.js                       The rift's void world on the client: frosted glass platforms and clear glass bridges with glowing rims, crystals hanging under them, the tears the waves come through, the hub's portal, an aura sky of drifting blue / purple / pink veils, floating shards, the light and fog, the music
   rift/rift.js                       Rifts on the client: the tear in the wild (a crack of light in a ring of glass shards, glassed trees round its clearing), the talk key, the rift window (energy bar and time to full, the Double, Enter), the wave banner
   bond/orbs.js                       Bond Orbs on the client (minimal; step 16 builds the Bonds tab): the orb stall's panel (24 characters, buy 1 or 10, the pouch's pick), the hour's Stirrings picks, the orb and stir events
+  awakening/tree.js                  Awakening tree drawing: one character's tree on a 2D canvas (limbs as lines, upgrade / stat / star nodes by state, faint joins, limb labels), the view (fit, zoom, clamp) and picking a node; pure: no DOM, no gear
+  awakening/costs.js                 Awakening panel, the rules half: which characters are listed, a node's state (own / buy / open / tier / req), its name and effect in words, its price against what you hold (awcStatus, awcCostLines, awcTierInfo)
+  awakening/panel.js                 Awakening panel: one character's tree on a canvas (tap a node, drag to pan, pinch or wheel to zoom), the character picker, the tier strip, the detail box with its price and Buy button; the awk event; opened by the Awaken button or its key
   cave/zone.js                       The Deep Cave on the client: which floor you are on (CAVE_RUN), entering and leaving it on the server's tp or by where you stand, the explored cells for the maps, and the cave's frame (view, light, lift panel)
   cave/view.js                       The Deep Cave's meshes: floor, smoothed rock walls and the domed ceiling from a floor's bake (merged per chunk, light baked into the vertex colours), the water and lava, and the hooks the four themes dress it through; built at the floor's corner, disposed on leaving
   cave/view-themes.js                The Deep Cave's four looks: the Glowworm Grotto (blue ceilings, stalactites, still pools), the Prism Hollows (geodes and split light), the Drowned Galleries (flooded halls, river, waterfalls) and the Magma Heart (lava, obsidian, embers)

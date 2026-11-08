@@ -1,8 +1,8 @@
-//@ Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, upgrade with coins and monster drops, learn from the trainers
+//@ Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, learn from the trainers; levels are bought in the Awakening tree (the Awaken button)
 /* Open it with K, the Skills button in the inventory, the empty skill button, or by talking to Aldric (or Master Ryu in Hanami).
    Top: the active slots of the class you are looking at (drop targets) and the one passive slot (the same for every class, opening at level 10: PASSIVE_SLOT_LV).
    Below: a tab per kind and a grid of its skills. Drag a skill you own onto its slot to use it, drag one out of a slot back into the grid to take it
-   off; tap a skill for its details, Equip / Take off buttons (for touch) and its upgrade. Learning and upgrading happen at a trainer. */
+   off; tap a skill for its details, Equip / Take off buttons (for touch) and the Awaken button. Learning happens at a trainer; levels come from the tree (awakening/panel.js). */
 let skTab=null, skKind='skill';
 const SK={sel:null};   // the selected skill or passive id
 function openSkills(n,kind){ openPanel('skills',n||null); skTab=clsOf(); if(KIND_TITLE[kind]) skKind=kind; SK.sel=null; renderSkills(); }
@@ -54,15 +54,9 @@ function skInfoHtml(C,cls){
   else if(C.trainer) acts+=`<button class="chip buy" data-buyskill="${s.id}" ${GEAR.coins<s.price||C.lv<needLv(s)?'disabled':''}>${C.lv<needLv(s)?'Level '+needLv(s):'Learn: '+s.price+' coins'}</button>`;
   else acts+=`<span class="muted">Aldric (or Master Ryu in Hanami) teaches it at the well: ${s.price} coins</span>`;
   let up='';
-  if(own){
-    if(L>=SKILL_MAX_LV) up=`<div class="sk-up"><b>Highest level</b><span class="muted">${s.name} cannot be upgraded any further.</span></div>`;
-    else {
-      const n=upgradeNeeds(s.id,L+1); if(!n) up=`<div class="sk-up"><b>Signature skill</b><span class="muted">It cannot be upgraded yet.</span></div>`;   // (a set whose land has no raid)
-      else { const have=GEAR.mats||{}, cOk=GEAR.coins>=n.coins, rdHave=n.rd?rdMatHave(n.rd.land):0, rdOk=!n.rd||rdHave>=n.rd.n, all=cOk&&rdOk&&n.mats.every(m=>(have[m.id]||0)>=m.n);   // raids: a signature piece also needs its land's raid material
-      const gain=pass?passiveText(s.id,L+1):Math.round((s.buff?awkCurve('buff',L+1)/awkCurve('buff',L):skillPower(L+1)/skillPower(L))*1000-1000)/10+'% more '+(s.buff?'bonus':'damage')+', '+Math.round((1-skillCdMult(L+1)/skillCdMult(L))*1000)/10+'% shorter cooldown';
-      up=`<div class="sk-up"><b>Level ${L} &rarr; ${L+1}</b><span>${gain}</span><div class="sk-cost"><span class="${cOk?'ok':'bad'}">${n.coins} coins</span>${n.mats.map(m=>`<span class="${(have[m.id]||0)>=m.n?'ok':'bad'}" title="Dropped by ${MATS[m.id].from} (level ${MATS[m.id].lv})"><i style="background:${MATS[m.id].col}"></i>${MATS[m.id].name} ${have[m.id]||0}/${m.n}</span>`).join('')}${n.rd?`<span class="${rdOk?'ok':'bad'}" title="Won by clearing ${rdOfLand(n.rd.land).name}"><i style="background:#e8b84a"></i>${rdOfLand(n.rd.land).mat} ${rdHave}/${n.rd.n}</span>`:''}</div>`
-        +(C.trainer?`<button class="chip buy" data-upskill="${s.id}" ${all?'':'disabled'}>Upgrade</button>`:'<span class="muted">Upgrades happen at Aldric (or Master Ryu in Hanami).</span>')+`<button class="chip" data-sktrack="${s.id}" aria-pressed="${skTrackId===s.id}" title="Mark where the monsters that drop the missing materials live (map and minimap)">${skTrackId===s.id?'Tracking':'Track'}</button></div>`; }
-    }
+  if(own){   // awakening: a skill's levels are bought in the tree (the trainer's Upgrade button is retired); the button opens it on this skill's character and branch
+    const limb=pass?'pa':({basic:'ba',skill:'sk',burst:'po'})[s.slot]||'';
+    up=`<div class="sk-up"><b>${L>=SKILL_MAX_LV?'Highest level':'Level '+L+' of '+SKILL_MAX_LV}</b><span class="muted">Skill levels, stats and tiers are bought in the Awakening tree, with coins and monster drops.</span><button class="chip buy" data-awaken="${s.set||'wanderer'}" data-limb="${limb}">Awaken</button></div>`;
   }
   const lock=low?`<span class="req bad">needs level ${needLv(s)}</span>`:'';
   return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico${ssTint(s)?' has-set':''}"${ssTint(s)?` style="--set:${ssTint(s)}"`:''}>${skIconOf(s)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags">${tags}</div><span class="sk-meta">${own?'Level '+L+' of '+SKILL_MAX_LV+' &middot; ':''}${stats} ${lock}</span></div><div class="sk-ii-btn">${acts}</div></div><p class="sk-desc">${pass?passiveText(s.id,L):s.desc}</p>${s.set?`<div class="sk-set-wrap"><div class="sk-load-h">Set piece <span>${SS_BONUS_ON?'wear 3 pieces for the first effect, 5 for the second':'part of '+SS_SETS[s.set].name}</span></div>${ssCardHtml(s.set,ssCount(S,cls,C.lv)[s.set]||0,ssOwnedPairs(S,s.set))}</div>`:''}${up}</div>`;
@@ -103,7 +97,7 @@ function renderSkills(){
   on('[data-unpass]',b=>{ netSend({t:'unskill',slot:'pass',idx:+b.dataset.unpass}); UI_SFX.click(); });
   on('[data-buyskill]',b=>{ b.disabled=true; netSend({t:'buyskill',id:b.dataset.buyskill}); });
   on('[data-sktrack]',b=>{ skTrackToggle(b.dataset.sktrack); UI_SFX.click(); renderSkills(); });
-  on('[data-upskill]',b=>{ b.disabled=true; netSend({t:'upskill',id:b.dataset.upskill}); });
+  on('[data-awaken]',b=>awcOpen(b.dataset.awaken,b.dataset.limb));   // awakening: the tree, on this skill's character and branch
 }
 // put a skill you own in its slot (a passive: slot idx, or the first free one)
 function skEquip(id,idx){

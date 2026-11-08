@@ -92,7 +92,7 @@ function ultInfoHtml(){
   const boosts=s.boost.map(b=>`<li><b>${ultPieceName(s.set,b.piece)}</b> for ${b.secs} s: ${ultModText(b.mod)}</li>`).join('');
   return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico has-set" style="--set:${ssTint(s)}"><svg ${SS_ICON_ATTR}>${ssGlyph(s)||''}</svg></div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags"><span class="sk-tag">Burst · ${S.name} (${S.char.name}'s set)</span></div></div></div>
     <p>${s.desc}</p><p class="muted">${cd} cooldown (nothing shortens it) · ${Math.round(s.mult*100)}% damage · ${ULT_STUN} s stun on everything it hits, bosses too (the same enemy cannot be stunned by a burst again for ${ULT_STUN_LOCK} s)</p>
-    <p class="muted">Strengthens, while you wear it:</p><ul class="sk-boost">${boosts}</ul><p class="muted">You can cast it without the set, but then it strengthens nothing.</p><div class="sk-acts">${act}</div></div>`;
+    <p class="muted">Strengthens, while you wear it:</p><ul class="sk-boost">${boosts}</ul><p class="muted">You can cast it without the set, but then it strengthens nothing. Its level, and its two buffs, are the burst branch of the Awakening tree.</p><div class="sk-acts">${act}<button class="chip buy" data-awaken="${s.set}" data-limb="bu">Awaken</button></div></div>`;
 }
 function ultBindPanel(on){   // on(selector, fn) of renderSkills
   on('[data-ultslot]',()=>{ skKind='ult'; SK.sel=null; UI_SFX.click(); renderSkills(); });

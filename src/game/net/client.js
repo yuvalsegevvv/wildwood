@@ -73,6 +73,7 @@ function applyEvent(e){
     case 'proc': ssOnProc(e[1],e[2],e[3]); break;   // skillsets: a triggered bonus fired (a badge, a ring and a streak to its target)
     case 'cdr': if(e[1]===NET.pid) ssOnCdr(e[2],e[3]); break;   // skillsets: a cooldown refund (seconds off one slot's bar)
     case 'fxa': ssOnFxa(e[1],e[2],e[3]); break;   // skillsets: a heal or a shield reached a player (drawn in the piece's look)
+    case 'awk': if(e[1]===me) awcOnAwk(e[2],e[3],e[4]); break;   // awakening: a tier or a tree node of yours was bought (set id, 't' | node id, tier)
     case 'orb': if(e[1]===me) bdcOnOrb(e[2],e[3],e[4]); break;   // bond: an orb of yours was opened (set id, stones, coins beyond Bond VI)
     case 'stir': bdcOnStir(e[1]); break;   // bond: a new hour's Stirrings
     case 'ssget': ssOnGet(e[1],e[2],e[3]); break;   // skillsets: a signature skill and its passive were earned

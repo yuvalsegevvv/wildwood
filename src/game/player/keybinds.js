@@ -29,6 +29,7 @@ const KB_ACTIONS=[
   {id:'gather',name:'Gather (mine, chop, pick herbs)', def:['KeyH','']},   // H: G is the world map's (a default key must not collide)
   {id:'inv',   name:'Inventory',     def:['KeyI','']},
   {id:'skills',name:'Skills',        def:['KeyK','']},
+  {id:'awaken',name:'Awakening tree', def:['KeyT','']},   // awakening: the tree of skill levels, stats and tiers (awakening/panel.js); T was a potion key before 11/2026 (a saved key keeps its owner)
   {id:'map',   name:'Map',           def:['KeyM','']},   // M: the map key most games use (N before 11/2026; saved keys keep theirs)
   {id:'world', name:'World map',     def:['KeyG','']},   // world map: the Eldmere panel (ui/world-map.js)
   {id:'chat',  name:'Chat',          def:['Enter','NumpadEnter']},

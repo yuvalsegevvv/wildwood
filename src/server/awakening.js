@@ -89,18 +89,7 @@ function awkStatsP(p){
 }
 function awkRefreshP(p){ awkSyncG(p.gear); awkStatsP(p); }   // recalcP
 // ---- paying ----
-const AWK_LAND_DEFS=Object.create(null);
-function awkLandDefs(land){   // the land's non-boss monster kinds, by level (cached; 'any' = every land's)
-  if(AWK_LAND_DEFS[land]) return AWK_LAND_DEFS[land];
-  const out=[]; for(const d of MON_DEFS){ if(d.boss||!awkOwn(MATS,d.id)) continue; const zn=defZone(d); if(!zn||zn.boss) continue; if(land==='any'||landAt(zn.x,zn.z)===land) out.push(d); }
-  out.sort((a,b)=>a.level-b.level); return AWK_LAND_DEFS[land]=out;
-}
-// the kinds whose drops pay a price of tier t: the zone rises with the tier (a land's: from t/6 of its level range up; the Wanderer's: from the tier's hiker level - 5)
-function awkDropKinds(land,t){
-  const L=awkLandDefs(land); if(!L.length) return [];
-  const lo=land==='any'?AWK_TIERS[t].lv-5:L[0].level+(L[L.length-1].level-L[0].level)*t/AWK_TIERS.length;
-  return L.filter(d=>d.level>=lo).map(d=>d.id);
-}
+// (awkLandDefs / awkDropKinds, the kinds whose drops pay a price, are shared: shared/awakening-cost.js, the panel shows the same count)
 function awkRaidStock(p,land){   // [[land, n]] the raid material that pays rd_<land>
   const m=rdMatsOf(p); if(land==='any') return Object.keys(m).filter(l=>m[l]>0).map(l=>[l,m[l]]);
   return awkOwn(m,land)&&m[land]>0?[[land,m[land]]]:[];

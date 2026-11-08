@@ -110,8 +110,21 @@
   <div class="pn-body" id="forgeBody"></div>
 </div>
 <div id="skills" class="panel" hidden role="dialog" aria-label="Skills">
-  <div class="pn-head"><span class="pn-t" id="skTitle">Skills</span><span class="pn-coins" id="skCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-head"><span class="pn-t" id="skTitle">Skills</span><button class="chip pn-skills" id="skAwaken" type="button" data-kb="awaken" data-kbx="Awaken ({k})" title="The Awakening tree: skill levels, stats and tiers">Awaken (T)</button><span class="pn-coins" id="skCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="skBody"></div>
+</div>
+<div id="awc" class="panel" hidden role="dialog" aria-label="Awakening tree">
+  <div class="pn-head"><span class="pn-t">Awakening</span><span class="pn-coins" id="awcCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body awc-body">
+    <div class="awc-pick" id="awcPick" role="group" aria-label="Character"></div>
+    <div class="awc-tier" id="awcTier"></div>
+    <div class="awc-main">
+      <div class="awc-stage"><canvas id="awcCv" aria-label="The Awakening tree: tap a node for its price"></canvas>
+        <div class="awc-zoom"><button type="button" id="awcZin" aria-label="Zoom in">+</button><button type="button" id="awcZout" aria-label="Zoom out">&minus;</button><button type="button" id="awcFit" aria-label="Show the whole tree">Fit</button></div></div>
+      <div class="awc-side"><div class="awc-limbs" id="awcLimbs"></div><div class="awc-detail" id="awcDetail"></div></div>
+    </div>
+    <div class="awc-key" id="awcKey"></div>
+  </div>
 </div>
 <div id="lodge" class="panel" hidden role="dialog" aria-label="Wayfarers' Lodge">
   <div class="pn-head"><span class="pn-t" id="loTitle">Wayfarers' Lodge</span><span class="pn-coins" id="loCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
@@ -120,6 +133,7 @@
 <div id="brew" class="panel" hidden role="dialog" aria-label="Brewing">
   <div class="pn-head"><span class="pn-t" id="brTitle">Brewing</span><span class="pn-coins" id="brCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="brBody"></div>
+</div>
 <div id="orbs" class="panel" hidden role="dialog" aria-label="Orb stall">
   <div class="pn-head"><span class="pn-t" id="obTitle">Bond Orb stall</span><span class="pn-coins" id="obCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="obBody"></div>
