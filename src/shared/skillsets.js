@@ -262,7 +262,7 @@ let SS_BONUS_ON=false;   // a test switch only: true reads the rows from the wor
 function ssBonusSwitch(on){ SS_BONUS_ON=!!on; }
 function ssBonuses(skills,cls,level){
   const out=[];
-  if(!SS_BONUS_ON){ const R=skills&&skills.bdx&&Array.isArray(skills.bdx.r)?skills.bdx.r:null; if(R) for(const id of R){ const b=bdRowById(id); if(b) out.push(b); } return out; }   // bond: the active Bond's rows
+  if(!SS_BONUS_ON){ const R=skills&&skills.bdx&&Array.isArray(skills.bdx.r)?skills.bdx.r:null; if(R) for(const id of R){ const b=bdRowById(id); if(b) out.push({set:b.set,tier:b.tier,row:bdScaleRow(b.row)}); } return out; }   // bond: the active Bond's rows, at BD_ROW_K strength (shared/bond.js)
   const n=ssCount(skills,cls,level);
   for(const id in n){ const S=SS_SETS[id]; if(!S) continue; if(n[id]>=3) out.push({set:id,tier:3,row:S.bonus[3]}); if(n[id]>=5) out.push({set:id,tier:5,row:S.bonus[5]}); }
   return out;

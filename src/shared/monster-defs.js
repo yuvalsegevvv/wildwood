@@ -217,7 +217,7 @@ const lateCreep=(d,L)=>L>LATE_CREEP_LV&&(d.boss||!d.hits)?Math.pow(d.boss||d.bos
    count of hits instead (d.hits). Damage: a share of a same-level, normally geared player's health, before that player's armor (a boss: 16%). */
 function defAt(d,L){
   const hits=d.hits||(4+0.45*L), k=d.hits?1:d.hpK, rd=1-expRed(L), c=bossCreep(d,L);
-  return {hp:Math.round(expDmg(L)*hits*k*highMult(L)*(1+BOSS_CREEP_HP*c)*lateCreep(d,L)*mobHpK(d,L)),
+  return {hp:Math.round(expDmg(L)*hits*k*highMult(L)*(1+BOSS_CREEP_HP*c)*lateCreep(d,L)*mobHpK(d,L)*awkHpK(L)),   // awakening: re-based for the x1.17 skill curve (balance.js)
     dmg:d.boss?Math.round(expHP(L)*0.16/rd*(1+BOSS_CREEP_DMG*c)):Math.max(1,Math.round(expHP(L)*d.dmgPct/rd)),
     xp:d.noXp?0:xpFor(L)*(d.boss?25:1)};
 }

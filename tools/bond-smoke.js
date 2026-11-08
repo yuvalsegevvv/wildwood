@@ -9,7 +9,7 @@
 const {loadServer}=require('./load');
 const sent=[];
 const {api:W,x}=loadServer({dev:true,send(to,m){ sent.push([to,m]); }},
-  ['SS_SETS','SS_ORDER','SKILLS','PASSIVES','CAVE_SKILLS','CAVE_SKILL_IDS','MQ','BD_COST','BD_TOP','BD_STONE_COINS','BD_GUEST_PEN','bdBuyP','bdAddStonesP','bdGrantP','bdOwns','bdMainOf','bdRealOf','bdTierNeed','bdIsBondPassive',
+  ['SS_SETS','SS_ORDER','BD_ROW_K','SKILLS','PASSIVES','CAVE_SKILLS','CAVE_SKILL_IDS','MQ','BD_COST','BD_TOP','BD_STONE_COINS','BD_GUEST_PEN','bdBuyP','bdAddStonesP','bdGrantP','bdOwns','bdMainOf','bdRealOf','bdTierNeed','bdIsBondPassive',
    'bdStonesLeft','awkGrantP','awkTierP','sanitizeGear','skillLvOf','caveLvOf','psP','recalcP','clsOfP','ssEquipPieceP','ssGrantSetP','SMIG_VER','passiveValue','BD_ORB_PRICE','BD_ORB_MAX','BD_ORB_ROLL','BD_STIR_SECS','BD_STIR_CHARGE','BD_STIR_BOSS','bdRollRow','bdStirPick','bdOrbBuyP','bdPickP','bdOpenOrbP','bdOpenManyP','bdOrbSetOf','bdStirPickS','bdStirTickS','bdStirMsg',
    'bdZonesByLand','BD_ZONE_OF','bdChargeS','bdStirBossP','bdStirDungeonP','bdStirRaidP','bdChargeFlushP','MONS','S','rewardKill','RD_ORDER','RDS','BOSS_DEFS','DG_THEMES','DG_ENTRANCES','ssGrantP','landAt',
    'WD_PATHS','WD_ORDER','WD_BAD','WD_DEFAULT','defineWandererPath','wdPathOf','ULT_SKILLS','ULT_BAD','AWK_PATH_KIT','ultEquippedP','buySkillP','equipSkillP','ssBonuses','SS_STATS','SS_WHEN_KEYS','ssWhenProblem','ssCondP','ssRowProblem']);   // (the last row: step 18, the Wanderer's paths)
@@ -74,7 +74,7 @@ ok('three pieces: Bond III, +1 level to the character\'s pieces (above the tier 
   ok('...the Bond IV passive and no 5-set row yet',!!sk.bdx.p[SET.bonds[4]]&&!sk.bdx.r.includes(SET.bonds[6])); }
 // the gate below Bond I: the same piece at Bond 0
 { const e=g.bd[K]; e.b=0; clear(); wear([A[0]]); const ps0=x.psP(p,stat);
-  ok('at Bond 0 the Bond I passive does nothing, worn pieces or not',sk.bdx.act===0&&!sk.bdx.p[SET.bonds[1]]&&near(ps1-ps0,x.passiveValue(SET.bonds[1],1)),ps1+' '+ps0);
+  ok('at Bond 0 the Bond I passive does nothing, worn pieces or not',sk.bdx.act===0&&!sk.bdx.p[SET.bonds[1]]&&near(ps1-ps0,x.passiveValue(SET.bonds[1],1)*x.BD_ROW_K),ps1+' '+ps0);   // (a Bond passive works at BD_ROW_K strength: shared/bond.js)
   wear([A[1],A[2]]); ok('...and no row and no level with three worn',!p.ss.bonus.length&&x.skillLvOf(sk,A[0])===base[0]); e.b=6; }
 // ---- guests ----
 { x.ssGrantSetP(p,GUEST,true); x.awkGrantP(p,GUEST,5); clear(); wear(A); const ga=actOf(GUEST)[0], gb=x.skillLvOf(sk,ga);

@@ -10,7 +10,7 @@
    REALIZATION (the Wanderer, bdRealOf): I / II / III with main-quest acts I / II / III done, IV V VI all with act IV. III / V: +1 level (server/bond.js); I / II / IV / VI: the active path's rows (BD_WANDERER_ROWS -> shared/wanderer.js wdRealRows).
    ORBS (step 13; server/bond-orbs.js): gear.bd.<set>.o = orbs held, gear.bd.pick = the set whose orbs open next, gear.bd.chg = the Stirrings' charge (0..BD_STIR_CHARGE). STIRRINGS (step 14; server/bond-stir.js): see there.
    Exports: BD_ORB_PRICE, BD_ORB_MAX, BD_ORB_BUY_MAX, BD_ORB_ROLL, BD_STIR_SECS, BD_STIR_CHARGE, BD_STIR_ELITE, BD_STIR_DG, BD_STIR_RD, BD_STIR_BOSS, bdRollRow, bdStirPick, BD_COST, BD_TOP, BD_TIER_ADD, BD_TIER_TOP, BD_STONE_COINS, BD_GUEST_PEN, BD_PASS_LV, BD_ST_MAX, BD_WANDERER, BD_WANDERER_ROWS, BD_ROMAN, bdOwnKey, bdSetOk, bdTierNeed, bdTierOk, bdStonesLeft,
-            bdIsBondPassive, bdRowById, bdLvAdj, bdLvAddOf, bdActDone, bdRealOf. Used by: server/bond.js, server/awakening.js, server/skillsets.js, shared/classes.js, shared/skillsets.js. */
+            bdIsBondPassive, bdRowById, BD_ROW_K, bdScaleRow (Bond strength), bdLvAdj, bdLvAddOf, bdActDone, bdRealOf. Used by: server/bond.js, server/awakening.js, server/skillsets.js, shared/classes.js, shared/skillsets.js. */
 const BD_COST=[6,3,3,6,6,9,9], BD_TOP=6, BD_TIER_ADD=[0,0,0,1,1,2,2], BD_TIER_TOP=5;   // Bond 0's tier is none (bdTierNeed); V / VI ask the set's tier + 2 but never above tier V
 const BD_STONE_COINS=300;   // a Bondstone beyond Bond VI turns into this many coins (an orb's 1-3 stones are then worth about a mid-level notice)
 const BD_GUEST_PEN=2, BD_PASS_LV=1, BD_ST_MAX=999;   // a guest piece's level loss (floor 1); the level a Bond passive works at (it has no tree branch); the most stones of one character held
@@ -42,6 +42,22 @@ const bdStonesLeft=b=>{ let n=0; for(let i=Math.max(0,b+1);i<=BD_TOP;i++) n+=BD_
 // a Bond I / IV passive: never worn, never granted as a piece
 const bdIsBondPassive=id=>{ if(typeof id==='string'&&bdOwnKey(PASSIVES,id)&&PASSIVES[id].wdRow) return true;   // wanderer: a path's Realization I / IV row (shared/wanderer.js)
   const pc=typeof id==='string'?SS_PIECE_OF[id]:null; if(!pc||pc.kind!=='passive') return false; const S=SS_SETS[pc.set]; return !!(S&&S.pos[pc.pos]&&S.pos[pc.pos].bond); };
+/* Bond strength (step 20, the owner: "bond effects should be a bit stronger"): every Bond effect works at BD_ROW_K (x1.5) of its written numbers: the Bond I / IV passives (passiveSum in classes.js,
+   ssRefreshP in server/skillsets.js) and the Bond II / VI rows (ssBonuses in skillsets.js), the Wanderer's Realization rows with them. bdScaleRow scales the strength fields (BD_ROW_KEYS: a stat's v,
+   a proc's mult, heal, a damage over time's k, an amplifier's per, and the v of a buff / shield / status inside) and leaves cooldowns (icd, cdr), ranges, durations, stacks (mark), conditions (when,
+   below) and a drawback (cost) as written. The III / V +1 levels are not touched. A row's text keeps its written numbers. */
+const BD_ROW_K=1.5, BD_ROW_KEYS={v:1,mult:1,heal:1,k:1,per:1}, BD_ROW_KEEP={cost:1,when:1,mark:1,cdr:1};
+const BD_ROW_MEMO=new WeakMap();
+function bdScaleObj(o){
+  if(Array.isArray(o)) return o.map(e=>e&&typeof e==='object'?bdScaleObj(e):e);
+  const out={}; for(const k of Object.keys(o)){ const v=o[k];
+    if(typeof v==='number') out[k]=BD_ROW_KEYS[k]===1?v*BD_ROW_K:v;
+    else if(k==='v'&&Array.isArray(v)) out[k]=v.map(n=>typeof n==='number'?n*BD_ROW_K:n);   // a stat row's [base, per level]
+    else if(v&&typeof v==='object') out[k]=BD_ROW_KEEP[k]===1?v:bdScaleObj(v);
+    else out[k]=v; }
+  return out;
+}
+function bdScaleRow(r){ if(!r||typeof r!=='object') return r; let c=BD_ROW_MEMO.get(r); if(!c){ c=bdScaleObj(r); BD_ROW_MEMO.set(r,c); } return c; }
 // a row id of bdx.r ('<set>_b3' / '<set>_b5') -> {set, tier, row}, or null
 function bdRowById(id){
   const w=wdRowById(id); if(w) return w;   // wanderer: a path's Realization II / VI row ('wd_<path>_r2' / '_r6')

@@ -13,7 +13,7 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Hammer Fall', desc:'Bring the long hammer down: a heavy blow, and everything it hits turns on you for 3 seconds. Leaves Temper.', cd:1.0, range:3.4, mult:0.9, act:['dessa1w',0.55,0.4], anim:'slash',
+         warrior:{name:'Hammer Fall', desc:'Bring the long hammer down: a heavy blow, and everything it hits turns on you for 3 seconds. Leaves Temper.', cd:1.0, range:3.4, mult:0.6, act:['dessa1w',0.55,0.4], anim:'slash',
                   fx:{cone:{r:3.4, arc:1.0, kb:2, taunt:{dur:3}, mark:{id:'temper', n:1, dur:12, max:5}}}}},
        passive:{name:'Hide Like a Wall', text:'{}% less damage taken while 3 enemies are within 6 m of you', stat:'red', v:[0.10, 0.01], when:{crowd:{n:3, r:6}}}},
     2:{bound:'any',

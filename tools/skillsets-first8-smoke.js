@@ -91,7 +91,7 @@ clear();
 // ---- Sazanka ----
 reset();
 { const front=lost(m1,()=>{ put(m1,0,-2.2,Math.PI); still(()=>cast('sazanka_1_warrior',m1)); }), back=lost(m2,()=>{ put(m2,0,-2.2,0); still(()=>cast('sazanka_1_warrior',m2)); });
-  ok('Sazanka: Pinprick hits much harder from behind the monster (its back to her) than from the front',back>front*1.4&&back<front*1.7,Math.round(back)+' vs '+Math.round(front)); }
+  ok('Sazanka: Pinprick hits much harder from behind the monster (its back to her) than from the front',back>front*1.3&&back<front*1.55,Math.round(back)+' vs '+Math.round(front)); }
 reset(); put(m1,0,-2.2,Math.PI); for(let i=0;i<6;i++) still(()=>cast('sazanka_1_warrior',m1));
 { const frontBarbs=x.ssMarkN(p,m1,'barb'); put(m1,0,-2.2,0); for(let i=0;i<8;i++) still(()=>cast('sazanka_1_warrior',m1));
   ok('Sazanka: a jab from the front leaves no Barb, a jab from behind does, up to five',frontBarbs===0&&x.ssMarkN(p,m1,'barb')===5,frontBarbs+' / '+x.ssMarkN(p,m1,'barb')); }

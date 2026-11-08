@@ -14,16 +14,16 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Pinprick', desc:'Two quick jabs at melee range, much stronger from behind the enemy. A hit from behind leaves a Barb.', cd:0.6, range:2.8, mult:0.4, act:['sazanka1w',0.4,0.25], anim:'slash', el:'dark',
-                  fx:{cone:{r:2.8, arc:0.9, hits:2, mark:{id:'barb', n:1, dur:10, max:5, behind:true}}, behind:1.6},style:'press'}},
+         warrior:{name:'Pinprick', desc:'Two quick jabs at melee range, much stronger from behind the enemy. A hit from behind leaves a Barb.', cd:0.6, range:2.8, mult:0.36, act:['sazanka1w',0.4,0.25], anim:'slash', el:'dark',
+                  fx:{cone:{r:2.8, arc:0.9, hits:2, mark:{id:'barb', n:1, dur:10, max:5, behind:true}}, behind:1.4},style:'press'}},
        passive:{name:'Light Feet', text:'+{}% damage for 2 s after you moved', stat:'dmg', v:[0.10, 0.01], when:{moved:2}}},
     2:{bound:'any',
        skill:{any:{name:'Slip Behind', desc:'Dash up to 10 m past your target and strike from behind on arrival, much stronger from behind. Leaves a Barb on everything hit.', cd:8, range:10, mult:1.1, act:['sazanka2x',0.5,0.3], anim:'slash', el:'dark',
-                   fx:{dash:{ahead:6, behind:true}, ring:{r:3.2, mark:{id:'barb', n:1, dur:10, max:5}}, behind:1.6}}},
+                   fx:{dash:{ahead:6, behind:true}, ring:{r:3.2, mark:{id:'barb', n:1, dur:10, max:5}}, behind:1.4}}},
        passive:{name:'Brittle Edge', text:'+{}% critical hit damage; you have 10% less maximum health', stat:'critdmg', v:[0.30, 0.04], cost:{stat:'hp', v:-0.10}}},
     3:{bound:'any',
-       skill:{any:{name:'Dusk Flurry', desc:'Spend every Barb at once on the target and everything within 4 m of it, then fight in a three-second flurry round you that follows you. Stronger from behind.', cd:32, range:6, mult:0.3, act:['sazanka3x',0.7,0.4], anim:'spin', el:'dark',
-                   fx:{zone:{r:3.4, dur:2.5, every:0.25, self:true, follow:true}, pop:{id:'barb', k:1.0, r:4}, behind:1.6}}},
+       skill:{any:{name:'Dusk Flurry', desc:'Spend every Barb at once on the target and everything within 4 m of it, then fight in a three-second flurry round you that follows you. Stronger from behind.', cd:32, range:6, mult:0.22, act:['sazanka3x',0.7,0.4], anim:'spin', el:'dark',
+                   fx:{zone:{r:3.4, dur:2.5, every:0.25, self:true, follow:true}, pop:{id:'barb', k:1.0, r:4}, behind:1.4}}},
        passive:{name:'Quick Study', text:'+{}% critical hit chance against a target carrying Barbs', stat:'crit', v:[0.12, 0.01], when:{marked:'barb'}}}},
   ult:{name:'New Moon', desc:'She vanishes, comes back behind the target and lands a six-cut flurry; the stunned lose sight of her.', range:4, mult:0.75, act:['sazankault',0.9,0.4], anim:'spin',
        fx:{cone:{r:4, arc:1.2, hits:6}, behind:1.6},
@@ -31,7 +31,7 @@ defineSkillSet({
   tree:'willow', stone:'Camellia Bondstone',
   bonds:{   // Bond I and IV: the two passives that are no longer equippable; II and VI: the old 3- and 5-set rows (the Bond engine reads them in step 12)
     1:'sazanka_p1',
-    2:{name:'First Cut', text:'The first hit on a target from behind (every 2 s) adds a second Barb and cuts again for 90% damage', on:'hit', when:{behind:true}, icd:2, mark:{id:'barb', n:1, dur:10, max:5}, mult:0.9, range:3.4, fx:{cone:{r:3.4, arc:1.2}, behind:1.6}},
+    2:{name:'First Cut', text:'The first hit on a target from behind (every 2 s) adds a second Barb and cuts again for 90% damage', on:'hit', when:{behind:true}, icd:2, mark:{id:'barb', n:1, dur:10, max:5}, mult:0.9, range:3.4, fx:{cone:{r:3.4, arc:1.2}, behind:1.4}},
     4:'sazanka_p2',
     6:{name:'Open Season', text:'A kill or a critical hit takes 2.5 s off Dusk Flurry\'s cooldown (at most every 1.5 s)', on:['kill', 'crit'], icd:1.5, cdr:{burst:2.5}}},
 });

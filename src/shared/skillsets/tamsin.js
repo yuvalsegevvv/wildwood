@@ -12,11 +12,11 @@ defineSkillSet({
   pos:{
     1:{bound:'class', from:{chance:0.15, pity:14},
        skill:{
-         warrior:{name:'Sledge Sweep', desc:'Swing the sledge in a wide low arc: everything in front of you takes a light blow and is knocked back a little.', cd:0.9, range:3.6, mult:0.8, act:['tamsin1w',0.55,0.4], anim:'slash',
+         warrior:{name:'Sledge Sweep', desc:'Swing the sledge in a wide low arc: everything in front of you takes a light blow and is knocked back a little.', cd:0.9, range:3.6, mult:0.5, act:['tamsin1w',0.55,0.4], anim:'slash',
                   fx:{vsBoss:0.5, cone:{r:3.8, arc:2.2, kb:1}},style:'press'}},
        passive:{name:'Loose Scree', text:'A kill in a crowd (three or more enemies within 8 m) heals you for 2% of your maximum health (at most every 2 s)', on:'kill', icd:2, heal:0.02, when:{crowd:{n:3, r:8}}}},
     2:{bound:'any', from:{chance:0.15, pity:14},
-       skill:{any:{name:'Pull the Slope', desc:'A wide tremor at your target\'s feet: for 3 seconds everything in it is dragged to the middle, rattled and turns on you. Wide enough to take in the next camp.', cd:10, range:16, mult:1, act:['tamsin2x',0.7,0.5], anim:'nova',
+       skill:{any:{name:'Pull the Slope', desc:'A wide tremor at your target\'s feet: for 3 seconds everything in it is dragged to the middle, rattled and turns on you. Wide enough to take in the next camp.', cd:10, range:16, mult:0.8, act:['tamsin2x',0.7,0.5], anim:'nova',
                    fx:{vsBoss:0.5, zone:{r:9.5, dur:3, every:0.5, kb:-4}, taunt:{dur:4, r:9.5}}}},
        passive:{name:'Wide Stance', text:'Every ring, cone and field of yours is {}% wider; you deal 25% less damage to bosses', stat:'area', v:[0.25, 0.03], cost:{stat:'dmg', v:-0.25, when:{boss:true}}}},
     3:{bound:'any', from:{chance:0.30, pity:7},
@@ -31,5 +31,5 @@ defineSkillSet({
     1:'tamsin_p1',
     2:{name:'Cleared Ground', text:'A kill takes 1 s off every cooldown (at most every 2 s)', on:'kill', icd:2, cdr:{all:1}},
     4:'tamsin_p2',
-    6:{name:'Aftershock', text:'While three or more enemies are within 8 m, every 4 s a tremor rolls out 8 m for 80% damage', on:'tick', icd:4, when:{crowd:{n:3, r:8}}, mult:1.6, range:8, fx:{vsBoss:0.5, ring:{r:8, kb:2}}}},
+    6:{name:'Aftershock', text:'While three or more enemies are within 8 m, every 4 s a tremor rolls out 8 m for 80% damage', on:'tick', icd:4, when:{crowd:{n:3, r:8}}, mult:0.8, range:8, fx:{vsBoss:0.5, ring:{r:8, kb:2}}}},
 });

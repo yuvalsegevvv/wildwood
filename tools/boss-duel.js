@@ -1,5 +1,5 @@
 //@ Boss duel: a maxed hero (level 60 unless --level; level-30 gear at +10, the ring, the symbol, potions) against a real boss or a monster camp on the real server, standing in melee and drinking potions, with the share of the damage a player who dodges would avoid; --check asserts the balance targets of the level-80 bosses and the ramp below them
-// Usage: node tools/boss-duel.js [--boss vetrmaw|jadesprings|bonefrostbarrow|hollowroots|<zone boss id>|<monster id> --camp] [--tier 5] [--level 60] [--class warrior,archer,mage] [--avoid 0,0.3,0.5,0.7] [--runs 3]   (a table, one cell per avoid share)
+// Usage: node tools/boss-duel.js [--awk A0-A5] [--real 0-6] [--boss vetrmaw|jadesprings|bonefrostbarrow|hollowroots|<zone boss id>|<monster id> --camp] [--tier 5] [--level 60] [--class warrior,archer,mage] [--avoid 0,0.3,0.5,0.7] [--runs 3] [--seed n]   (a table, one cell per avoid share)
 //        node tools/boss-duel.js --check      (~20 s: the targets below, exit 1 on a miss)
 // What it covers: BOSS_CREEP_* in shared/monster-defs.js (defAt) through the real fights: a zone boss (zoneTierK, the hero's land tiers set to --tier) or a dungeon boss (a Purge run at --tier,
 // the boss's finale started with dgBossS, the other mobs removed). The hero never moves except to stay 3.5 m from the boss in a spot it can see; it drinks might and guard at once and a greater heal
@@ -9,18 +9,25 @@
 const {loadServer}=require('./load');
 const hurts=[];
 const {api:W,x}=loadServer({dev:true,log(){},send(pid,m){ if(m.t==='snap'&&m.ev) for(const e of m.ev) if(e[0]==='hurt'&&e[1]===pid) hurts.push(e[2]); }},
-  ['BOSSES','S','recalcP','monK','getH','ARMOR_SLOTS','ZTIER_LANDS','SKILL_IDS','SKILLS','PASSIVES','DG_RUNS','dgBossS','dgLos','dgSolid','MONS']);
+  ['BOSSES','S','recalcP','monK','getH','ARMOR_SLOTS','ZTIER_LANDS','SKILL_IDS','SKILLS','PASSIVES','DG_RUNS','dgBossS','dgLos','dgSolid','MONS','awkGrantP','MQ','BD_ACT_LETTER']);
 const DT=0.05, tick=()=>W.tick(DT), WEAPON={warrior:'sword',archer:'bow',mage:'wand'};
 // the best loadout found for each class against these bosses (an earth ring; a skill and a burst that fit)
 const BUILD={warrior:{ring:'earth',passive:'ferocity',skill:'bash',burst:'berserk'},archer:{ring:'earth',passive:'ferocity',skill:'pierce',burst:'focus'},
   mage:{ring:'earth',passive:'quickhands',skill:'meteor',burst:'surge',basic:'missiles'}};
+const arg=(k,d)=>{ const i=process.argv.indexOf('--'+k); return i>0?process.argv[i+1]:d; };
+// the hero's progression (step 20): the Awakening tier of the Wanderer's tree (--awk A0-A5, default A5: a maxed hero) and the Realization (--real 0-6, default VI: the main quest done)
+const AWK=Math.max(0,Math.min(5,+String(arg('awk','A5')).replace(/^A/i,'')|0)), REAL=Math.max(0,Math.min(6,+arg('real',6)|0));
+const DUEL_SEED=+arg('seed',20261108)>>>0;   // --seed n: another draw of the same fights
 let uid=0, lastAng=0;
 function makeHero(cls,tier,level){
   const id='d'+(++uid), o=BUILD[cls]; W.join(id,{name:'D'+uid,look:{cls},save:{level:level||60}}); tick();
   const p=W.players.get(id), g=p.gear, items=[WEAPON[cls]+'7-l+10',...x.ARMOR_SLOTS.map(s=>s+'7-l+10'),'ring-'+o.ring+'-l+10'];
   g.inv.push(...items); g.eq.weapon=items[0]; x.ARMOR_SLOTS.forEach((s,i)=>{ g.eq[s]=items[i+1]; }); g.eq.ring=items[items.length-1];
   g.east=2; g.north=2; for(const l of x.ZTIER_LANDS) g.zt[l]={on:tier,max:['home','vale','hoar'].includes(l)?5:0};   // (the yardstick keeps its symbol at the +150% it was tuned with: three lands' fifteen points; the stronger version-3 symbol, tiers VI and VII and the level-40 gear are not tuned here yet)
-  const sk=g.skills; sk.owned=[...x.SKILL_IDS,...Object.keys(x.PASSIVES)]; sk.lv={}; for(const s of sk.owned){ const d=x.SKILLS[s]||x.PASSIVES[s]; if(d) sk.lv[s]=5; }
+  // awakening (step 20): the shop skills' levels are the Wanderer's tree (every node of tier AWK: the branches at its cap, A0 4 .. A5 10, and its stat nodes), +1 at Realization III and V
+  // (REAL: the main quest done up to that act; III = act III, VI = act IV); the saved levels are 1 so the tree alone sets them
+  const sk=g.skills; sk.owned=[...x.SKILL_IDS,...Object.keys(x.PASSIVES)]; sk.lv={}; for(const s of sk.owned){ const d=x.SKILLS[s]||x.PASSIVES[s]; if(d) sk.lv[s]=1; }
+  x.awkGrantP(p,'wanderer',AWK); if(REAL>0){ const L=x.BD_ACT_LETTER[Math.min(4,REAL)]; let last=-1; x.MQ.forEach((q,i)=>{ if(q.id[0]===L) last=i; }); g.mq.s=last+1; }
   sk.eq[cls].skill=o.skill; sk.eq[cls].burst=o.burst; if(o.basic) sk.eq[cls].basic=o.basic; sk.pass=[o.passive,null,null];
   g.pot={heal3:999,might3:999,guard3:999}; g.coins=0; x.recalcP(p); p.hp=p.maxHp; p.dead=false;
   return {id,p,cls};
@@ -84,11 +91,13 @@ function camp(h,defId,avoid){
 const med=a=>[...a].sort((p,q)=>p-q)[Math.floor(a.length/2)];
 // n runs of a class against a boss with an avoid share: how many were won, the median time and potions
 function duel(boss,tier,cls,avoid,n,level,asCamp){
-  const res=[]; for(let i=0;i<n;i++){ const h=makeHero(cls,tier,level); res.push(asCamp?camp(h,boss,avoid):fight(h,target(h,boss),avoid,600)); W.leave(h.id); }
+  // (step 20: each run draws from its own seeded generator, so --check gives the same answer every time; it used to be flaky: the mage's Kyuubi V wins 8 of 9 on average, 0-3 of 3 in a draw)
+  const res=[], R0=Math.random; for(let i=0;i<n;i++){ let sd=(DUEL_SEED+i*7919)>>>0; Math.random=()=>{ sd=(sd*1664525+1013904223)>>>0; return sd/4294967296; };
+    try{ const h=makeHero(cls,tier,level); res.push(asCamp?camp(h,boss,avoid):fight(h,target(h,boss),avoid,600)); W.leave(h.id); } finally{ Math.random=R0; } }
   const won=res.filter(r=>r.won).length;
   return {won,n,secs:med(res.map(r=>r.secs)),heals:med(res.map(r=>r.heals)),low:med(res.map(r=>r.low||0)),text:won+'/'+n+' won ~'+Math.round(med(res.map(r=>r.secs)))+'s, '+med(res.map(r=>r.heals))+' heals'+(won?'':(asCamp?', '+Math.round(med(res.map(r=>r.left))*100)+'% of the pack left':', boss '+Math.round(med(res.map(r=>r.left))*100)+'% left'))};
 }
-const arg=(k,d)=>{ const i=process.argv.indexOf('--'+k); return i>0?process.argv[i+1]:d; };
+
 if(process.argv.includes('--check')){
   // targets for the level-80 bosses: a hero that only stands and drinks loses, one that avoids half the damage wins in 1.5 to 3 minutes with a handful of potions.
   // (Gawataro is only checked from the winning side: the warrior's crowd control (a slash knocks whelps back) lets it beat him standing, the archer barely loses: docs/areas/tiers.md)

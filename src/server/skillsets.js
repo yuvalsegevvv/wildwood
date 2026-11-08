@@ -78,12 +78,12 @@ function ssRefreshP(p){
   const sk=p.gear.skills, cls=clsOfP(p), bonus=ssBonuses(sk,cls,p.level), trig={}, amp=[];
   const cond=[];   // the stat rows (and costs) with a `when`: ssCondP adds them where the fight is known
   // awakening: a leveled passive's proc row is pushed at its level (awkRow: mult by damage, heal / buff / shield / fx by their curves)
-  const add=(r,lv)=>{ if(r.on){ const rl=awkRow(r,lv); for(const o of [].concat(r.on)) (trig[o]||(trig[o]=[])).push(rl); } if(r.amp) amp.push(r.amp);
-    if(r.stat&&r.when) cond.push({stat:r.stat,v:lv?passiveValue(r.id,lv):r.v[0],when:r.when,pid:lv?r.id:null}); if(r.cost&&r.cost.when) cond.push({stat:r.cost.stat,v:r.cost.v,when:r.cost.when}); };
+  const add=(r,lv,k)=>{ if(r.on){ const rl=awkRow(r,lv); for(const o of [].concat(r.on)) (trig[o]||(trig[o]=[])).push(rl); } if(r.amp) amp.push(r.amp);
+    if(r.stat&&r.when) cond.push({stat:r.stat,v:lv?passiveValue(r.id,lv)*(k||1):r.v[0],when:r.when,pid:lv?r.id:null}); if(r.cost&&r.cost.when) cond.push({stat:r.cost.stat,v:r.cost.v,when:r.cost.when}); };
   if(SS_ORDER.length){
     if(Array.isArray(sk.pass)) for(const id of sk.pass.slice(0,passiveOpen(p.level))){ const P=PASSIVES[id]; if(P&&(P.set||(P.wd&&wdMainOk(sk)))&&sk.owned.includes(id)&&p.level>=Math.max(PASSIVE_LV,P.lv)) add(P,skillLvOf(sk,id)); }   // wanderer: the path passive's triggers and conditions
     for(const b of bonus) add(b.row,0);
-    { const X=sk.bdx&&sk.bdx.p; if(X) for(const id of Object.keys(X)){ const P=Object.prototype.hasOwnProperty.call(PASSIVES,id)?PASSIVES[id]:null; if(P) add(P,X[id]); } }   // bond: the Bond I / IV passives' triggers and conditions, unequipped
+    { const X=sk.bdx&&sk.bdx.p; if(X) for(const id of Object.keys(X)){ const P=Object.prototype.hasOwnProperty.call(PASSIVES,id)?PASSIVES[id]:null; if(P) add(bdScaleRow(P),X[id],BD_ROW_K); } }   // bond: the Bond I / IV passives' triggers and conditions, unequipped, at BD_ROW_K strength (shared/bond.js)
   }
   p.ss={n:ssCount(sk,cls,p.level),bonus,trig,amp,cond};
 }
