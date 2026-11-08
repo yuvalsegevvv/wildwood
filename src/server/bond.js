@@ -1,13 +1,13 @@
 //@ Bonds on the server: gear.bd (each character's Bond and Bondstones, the Wanderer's Realization), buying a Bond step (MSG.bd), stones in and their overflow into coins, the active Bond and what it gives (gear.skills.bdx), the smv-3 migration
 /* Agent map (skills revamp step 12; the rules and numbers: shared/bond.js; design: PLAN sections 0, 3, 7, 9; test: tools/bond-smoke.js; hooks: grep -rn "// bond:" src).
-   SAVED: gear.bd = {<set id>: {b: -1..6, st: 0..BD_ST_MAX}, wanderer: {r: 0..6, path: the active path (server/wanderer.js)}} (bdSanitize: known set ids only (own-property checks, no dev set), numbers clamped, an empty entry dropped;
+   SAVED: gear.bd = {<set id>: {b: -1..6, st: 0..BD_ST_MAX}, wanderer: {r: 0..6, path: the active path (server/wanderer.js)}} (bdSanitize: play = the character picked to play; known set ids only (own-property checks, no dev set), numbers clamped, an empty entry dropped;
           the Realization is recomputed from the main quest (bdRealOf), never trusted from the save).
    MESSAGE: bd {a:'buy', set} (MSG.bd -> bdBuyP): the next Bond step: Bond b+1's stones (BD_COST) and its zone tier in the set's land (bdTierOk: gear.zt[land].max). Returns null when bought, else the reason
           (also toasted). Event bd [pid, set, b]; p.dirty; recalcP. Bond 0 grants the character's actives (every class version of its basic, skill and power: bdGrantActivesP).
    STONES: bdAddStonesP(p, set, n) (step 13's orbs call it): the stones the remaining steps still need are kept, the rest become coins (BD_STONE_COINS each). Returns {st, coins}.
    OWNING: bdOwns(p, set) = Bond 0 or above (server/awakening.js asks it before every purchase). Step 13 narrowed the interim rule: one piece earned the old way (ssGrantP from a drop source, ssClearP) is only a piece, Bond 0 is bought with Bondstones
           (orbs: server/bond-orbs.js); a WHOLE-set grant (ssGrantSetP: the testing tools, the gem shop's outfit sets, tests) and dev 'ult' still give Bond 0; the smv-3 migration gives it to every old owner.
-   MAIN CHARACTER (bdMainOf): the set of the worn power piece (slot 3, code id 'burst'), else the set with the most pieces worn (ties: the first in SS_ORDER), else the Wanderer. Used by server/awakening.js (the stat nodes).
+   MAIN CHARACTER (bdMainOf): gear.bd.play when set (bd {a:'play', set}: an owned set id or 'wanderer'; null clears it), else the set of the worn power piece (slot 3, code id 'burst'), else the set with the most pieces worn (ties: the first in SS_ORDER), else the Wanderer. Used by server/awakening.js (the stat nodes).
    WORN (bdWornP): the class in hand's basic / skill / power (abilityOf) and the open passive slot (as ssCount counts them), plus the worn charge skill (the cave slot, from its level) and the worn burst
           (when it can be cast, ultEquippedP): six places, so Bond V / VI can be active.
    ACTIVE BOND (bdRefreshP, called by recalcP after the trees' levels): act = min(Bond, main's pieces worn) - guests (each worn piece of another character); written into gear.skills.bdx (shared/bond.js).
@@ -27,7 +27,7 @@ function bdSanitize(g,out){   // sanitizeGear: gear.bd from a save (before the m
   if(raw) for(const k of Object.keys(raw).slice(0,64)){ if(!bdSetOk(k)) continue; const e=raw[k]; if(!e||typeof e!=='object') continue;
     const b=clampInt(e.b,-1,BD_TOP,-1), st=clampInt(e.st,0,BD_ST_MAX,0), o=clampInt(e.o,0,BD_ORB_MAX,0); if(b>=0||st>0||o>0){ B[k]={b,st}; if(o) B[k].o=o; } }
   B[BD_WANDERER]={r:bdRealOf(out),path:wdPathClean(raw&&raw[BD_WANDERER])};   // (out.mq is sanitized before this runs)   // wanderer: the active path (server/wanderer.js)
-  if(raw){ const ck=clampInt(raw.chg,0,BD_STIR_CHARGE,0); if(ck) B.chg=ck; if(bdSetOk(raw.pick)) B.pick=raw.pick; }   // bond: the Stirrings' charge and the orb pouch's pick (server/bond-orbs.js, bond-stir.js)
+  if(raw){ const ck=clampInt(raw.chg,0,BD_STIR_CHARGE,0); if(ck) B.chg=ck; if(bdSetOk(raw.pick)) B.pick=raw.pick; if(raw.play===BD_WANDERER||bdSetOk(raw.play)) B.play=raw.play; }   // bond: the Stirrings' charge and the orb pouch's pick (server/bond-orbs.js, bond-stir.js)
   out.bd=B;
 }
 function bdMigrateG(gear){   // smv 3: Bond 0 for every set an old save owned a piece of (see the agent map)
@@ -58,7 +58,7 @@ function bdBuyP(p,k){
   toastTo(p.id,to===0?nm+' is yours (Bond 0): their basic, skill and power are in your skills panel':nm+' reached Bond '+BD_ROMAN[to]+'!','good');
   recalcP(p); p.dirty=true; ev('bd',p.id,k,to); return null;
 }
-MSG.bd=(p,msg)=>{ if(msg.a==='buy'&&typeof msg.set==='string') bdBuyP(p,msg.set); else if(msg.a==='orb') bdOrbBuyP(p,msg.set,msg.n); else if(msg.a==='pick') bdPickP(p,msg.set); else if(msg.a==='path') wdPathP(p,msg.id); };   // (orb, pick: server/bond-orbs.js)   // wanderer: path (server/wanderer.js)
+MSG.bd=(p,msg)=>{ if(msg.a==='buy'&&typeof msg.set==='string') bdBuyP(p,msg.set); else if(msg.a==='orb') bdOrbBuyP(p,msg.set,msg.n); else if(msg.a==='pick') bdPickP(p,msg.set); else if(msg.a==='path') wdPathP(p,msg.id); else if(msg.a==='play') bdPlayP(p,msg.set); };   // (orb, pick: server/bond-orbs.js)   // wanderer: path (server/wanderer.js)
 // stones in (step 13's orbs): what the steps left still need is kept, the rest is paid out in coins
 function bdAddStonesP(p,k,n,quiet){
   n=clampInt(n,0,BD_ST_MAX,0); if(!bdSetOk(k)||!n) return {st:0,coins:0};
@@ -79,6 +79,7 @@ function bdWornP(p){
   return {n,ids};
 }
 function bdMainOfW(p,W){
+  const pl=p.gear.bd&&p.gear.bd.play; if(pl===BD_WANDERER) return BD_WANDERER; if(bdSetOk(pl)&&bdOf(p.gear,pl)>=0) return pl;   // the character picked to play (bdPlayP), else the old rule
   const ab=abilityOf(clsOfP(p),'burst',p.gear.skills,p.level); if(ab&&ab.set) return ab.set;
   let best=BD_WANDERER, bn=0; for(const id of SS_ORDER) if((W.n[id]|0)>bn){ best=id; bn=W.n[id]; }
   return best;
@@ -116,6 +117,12 @@ function bdRefreshP(p){
       const o=f(g)||{}; if(o.p) for(const id of Object.keys(o.p)) if(bdOwn(PASSIVES,id)) X.p[id]=o.p[id]; if(Array.isArray(o.r)) X.r.push(...o.r); }
   }
   sk.bdx=X; p.bdMain=main;
+}
+// the character played: free, any time (the owner: Bonds should not follow the Power piece). set = an owned set id, 'wanderer', or null (back to the Power piece's rule)
+function bdPlayP(p,k){
+  const B=p.gear.bd||(p.gear.bd={});
+  if(k===BD_WANDERER||(bdSetOk(k)&&bdOf(p.gear,k)>=0)) B.play=k; else if(k===null||k===undefined||k==='') delete B.play; else return false;
+  recalcP(p); p.dirty=true; return true;
 }
 // ---- testing ----
 function bdGrantP(p,k,b,st){
