@@ -54,7 +54,14 @@ const riftFullIn=(g,now)=>Math.ceil((RIFT_E_MAX-riftEnergyAt(g,now))*RIFT_E_MS/1
 const RIFT_DEFS=Object.create(null), RIFT_BAD=[], RIFT_MON_DEFS=[];
 var RIFT_DOORS=[];   // (a var: nearPath may ask before this file has run)
 // what a rift pays, named by its data file's `reward` (default 'xp'): each mode is one entry of RIFT_PAY on the server (server/rift.js); a new mode adds its name here and its entry there
-const RIFT_REWARDS=['xp','essence'];
+const RIFT_REWARDS=['xp','essence','coins','stones'];
+/* COIN AND STONE RIFTS (asked 8 Nov): at your level, they open at RIFT_COIN_LV / RIFT_STONE_LV. coins: a kill pays RIFT_COIN_K x a world kill's coins (with the coin bonuses), the clear
+   RIFT_COIN_CLEAR more (in a mean kill's coins): about 230 kills x 15 + 1500 = ~4,950 kills' worth in at most 6.75 minutes (~730 a minute), above what a level-5 pipe can pay (its 60 alive every 3 s is
+   12,000 kills in 10 minutes at the very most, half of them spent on its price: 600 a minute net, and nobody kills every spawn). stones: no coins, no XP; reroll stones of one kind (R.stone: rsw weapon,
+   rsa armour, rsr accessory) by the stages reached, a full clear riftStonesFull(L) (40 at level 40, 55 at 60); one roll costs one stone, a sacrificed common piece gives one. */
+const RIFT_COIN_LV=20, RIFT_STONE_LV=30, RIFT_COIN_K=15, RIFT_COIN_CLEAR=1500;
+const riftStonesFull=L=>Math.round(10+0.75*Math.max(RIFT_STONE_LV,L|0));
+const riftStonesAt=(w,L)=>Math.round(riftStonesFull(L)*Math.max(0,Math.min(RIFT_WAVES,w|0))/RIFT_WAVES);
 function defineRift(R){
   let why='';
   if(!R||typeof R.id!=='string'||!/^[a-z][a-z0-9]*$/.test(R.id)) why='id must be lower-case letters and digits';
@@ -63,6 +70,7 @@ function defineRift(R){
   else if(!Array.isArray(R.aura)||R.aura.length!==3) why='aura needs three colours';
   else if(R.reward!==undefined&&!RIFT_REWARDS.includes(R.reward)) why='reward must be one of '+RIFT_REWARDS.join(', ');
   else if(R.reward==='essence'&&!essIdOf(R.essence)) why='essence must be an element or prime';
+  else if(R.reward==='stones'&&!['rsw','rsa','rsr'].includes(R.stone)) why='stone must be rsw, rsa or rsr';
   else if(R.lv!==undefined&&!(R.lv>=RIFT_LV&&R.lv<=99)) why='lv must be '+RIFT_LV+' to 99';
   else if(R.shape!==undefined&&riftShapeBad(R.shape)) why=riftShapeBad(R.shape);
   else if(R.mode!==undefined&&!Object.prototype.hasOwnProperty.call(RIFT_MODES,R.mode)) why='mode must be one of '+Object.keys(RIFT_MODES).join(', ');
@@ -143,6 +151,6 @@ DG_HUD.rift=(dg,th)=>{ const w=dg[3]|0, left=dg[4]|0, clk=dg[5]|0, x2=(dg[6]|0)=
   const M=RIFT_MODES[R&&R.mode]||RIFT_MODES.waves, waves=M===RIFT_MODES.waves, lines=[];
   if(waves) lines.push(w?'Wave '+w+' / '+RIFT_WAVES+(clk>0&&w<RIFT_WAVES?' · next in '+clk+' s':''):'The rift opens in '+clk+' s');
   else { const ln=M.line(dg[9]|0,dg[10]|0); if(ln) lines.push(ln); if(M.clock==='left') lines.push(Math.floor(clk/60)+':'+String(clk%60).padStart(2,'0')+' left'); else if(M.clock==='next'&&clk>0&&w<RIFT_WAVES) lines.push('Wave '+w+' / '+RIFT_WAVES+' · next in '+clk+' s'); }
-  lines.push('Monsters: '+left,(ess?ess.name+' this run: ':'XP this run: ')+got.toLocaleString('en-US'));
+  lines.push('Monsters: '+left,(ess?ess.name+' this run: ':R&&R.reward==='coins'?'Coins this run: ':R&&R.reward==='stones'?RL_STONE_NAME[R.stone]+'s this run: ':'XP this run: ')+got.toLocaleString('en-US'));
   return {title:(waves?'Rift':M.name)+(tier?' · level '+tier:'')+(x2?' · reward x2':''),lines,
     bar:{v:w,max:RIFT_WAVES,col:'#c78cff',label:(waves?'Wave ':'Stage ')+w+' / '+RIFT_WAVES},warn:false}; };

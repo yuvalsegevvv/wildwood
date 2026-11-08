@@ -7,7 +7,7 @@
 const {loadServer}=require('./load');
 const sent=[];
 const {api:W,x}=loadServer({dev:false,send(to,m){ sent.push([to,m]); }},['RIFT_DEFS','RIFT_BAD','defineRift','RIFT_PAY','RIFT_MON_DEFS','RIFT_E_MAX','RIFT_E_MS','RIFT_E_DOUBLE','RIFT_WAVES','RIFT_ALIVE_MAX','RIFT_SLOT0',
-  'RIFT_HP_K','RIFT_DMG_K','RIFT_SPEED_K','riftShapeBad','RIFT_TIERS','RIFT_TIER_ESS','riftTierOpen','ALL_MON_DEFS','RIFT_BONUS_KILLS','riftEnergyAt','riftWaveSize','riftNear','riftLayout','DG_RUNS','DG_SLOT_RUN','DG_DG_SLOTS','DG_MAX_INST','DG_KITS','DG_MISSIONS','dgPoolS','dgBake','dgSolid',
+  'RIFT_HP_K','RIFT_DMG_K','RIFT_SPEED_K','riftShapeBad','RIFT_TIERS','RIFT_TIER_ESS','riftTierOpen','riftStonesFull','DIP_SECS','DIP_INTERVAL','DIP_COUNT','dipCoinAvg','RIFT_COUNT_S','RIFT_WAVE_S','inVillage','nearRoad','ALL_MON_DEFS','RIFT_BONUS_KILLS','riftEnergyAt','riftWaveSize','riftNear','riftLayout','DG_RUNS','DG_SLOT_RUN','DG_DG_SLOTS','DG_MAX_INST','DG_KITS','DG_MISSIONS','dgPoolS','dgBake','dgSolid',
   'dgHitOkS','dgWallAtS','DEF_BY_ID','MON_DEFS','sanitizeGear','getH','vilAt','inVillage','nearRoad','landAt','waCoast','CAMPS','killMonsterS','xpFor','defAt','dgKOf','MONS','S','dgLaunchS','DG_THEMES',
   'RIFT_ELEM_LV','RIFT_ESS_FULL','RIFT_ELEM_SLOTS','riftEssFor','defineElemRift','riftMobDef','RIFT_DOORS','ESS_ORDER','essOf','foeMult','awkTierCost','awkTierP','awkGrantP','MAT_MAX','MAT_IDS','rdMatsOf']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i!==undefined?'  ('+i+')':'')); if(!c) fails++; };
@@ -109,7 +109,7 @@ for(const id of Object.keys(x.RIFT_DEFS).filter(i=>x.RIFT_DEFS[i].reward==='esse
     ids.every(i=>{ const m=x.DEF_BY_ID[i]; return m&&m.rift&&m.el===E.el&&m.pal.glass&&m.pal.tint; })&&(E.essence==='prime'||E.essence===E.el)&&x.essOf('ess_'+E.essence)&&x.RIFT_BAD.length===0,JSON.stringify(x.RIFT_BAD));
   ok('elemental rift '+id+': its tear is in one of the first four lands, outside villages, off roads and the coast, 250 m from every other tear, no camp in its clearing',['home','vale','hoar','grey'].includes(x.landAt(d.x,d.z))&&!x.inVillage(d.x,d.z)&&!x.nearRoad(d.x,d.z,10)&&x.waCoast(d.x,d.z)>60&&x.getH(d.x,d.z)>2&&
     others.every(o=>Math.hypot(o.x-d.x,o.z-d.z)>250)&&x.CAMPS.every(c=>Math.hypot(c.x-d.x,c.z-d.z)>20),id+' '+d.x+','+d.z+' '+x.landAt(d.x,d.z)); }
-{ const n=x.RIFT_BAD.length, M=TR.kinds.map(k=>k.id), mk=o=>Object.assign({id:'x'+Math.random().toString(36).slice(2,6),name:'X',blurb:'',door:{x:0,z:0},aura:[1,2,3],music:'rift',el:'earth',essence:'prime',herald:'rootherald',mobs:M},o);
+{ const n=x.RIFT_BAD.length, M=TR.kinds.map(k=>k.id), mk=o=>Object.assign({id:'x'+Math.random().toString(36).slice(2,6),name:'X',blurb:'',door:{x:0,z:0},aura:[1,2,3],music:'rift',el:'earth',essence:'prime',herald:'rootherald',mode:'heart',mobs:M},o);
   const a=x.defineElemRift(mk({el:'fire'})), b=x.defineElemRift(mk({essence:'fire'})), c2=x.defineElemRift(mk({mobs:M.slice(1)})), d2=x.defineElemRift(mk({essence:'gold',el:'earth'}));
   ok('a drifting file is left out: a monster of another element, essence of another element, a short kind list',!a&&!b&&!c2&&!d2&&x.RIFT_BAD.length===n+4&&x.RIFT_BAD.slice(n).every(r=>r.why),JSON.stringify(x.RIFT_BAD.slice(n)));
   const dup=x.riftMobDef('treant','rootlet','Again',{el:'earth',pal:{tint:1}}), nm=x.RIFT_MON_DEFS.length;
@@ -178,6 +178,22 @@ const clearRun=r2=>{ for(let i=0;i<4000&&!r2.endT;i++){ for(const m of [...r2.mo
   ok('level 40: monsters at 40, a full clear pays '+x.RIFT_TIER_ESS[40],!!r&&r.L===40&&r.phase==='won'&&awm()===x.RIFT_TIER_ESS[40]&&A.gear.rift.tier===40,r&&r.phase+' '+awm());
   ok('the tier table rises with the level, and a bad tier in a message falls back to 30',x.RIFT_TIERS.join()==='30,40,50,60,70,80'&&x.RIFT_TIERS.every((t,i)=>!i||x.RIFT_TIER_ESS[t]>x.RIFT_TIER_ESS[x.RIFT_TIERS[i-1]])&&x.riftTierOpen(30,0)&&!x.riftTierOpen(50,30)&&x.riftTierOpen(50,40)&&!x.riftTierOpen(35,80));
   tick(Math.ceil(21/0.05)); }
+// THE COIN RIFT AND THE THREE STONE RIFTS: at your level, their own tear in one of the four later lands, their own mode; a bot clears each
+{ const want={gilded:['coins','sun',''],blade:['stones','gloam','rsw'],bulwark:['stones','amber','rsa'],charm:['stones','isles','rsr']};
+  for(const id in want){ const E=x.RIFT_DEFS[id], [rw,land,st]=want[id], d=E&&E.door;
+    ok(id+': defined, pays '+rw+(st?' ('+st+')':'')+', its tear in '+land+' outside villages, off roads, 250 m from every other tear',!!E&&E.reward===rw&&(E.stone||'')===st&&x.landAt(d.x,d.z)===land&&!x.inVillage(d.x,d.z)&&!x.nearRoad(d.x,d.z,10)&&x.RIFT_DOORS.filter(o=>o.id!==id).every(o=>Math.hypot(o.x-d.x,o.z-d.z)>250),E&&(d.x+','+d.z+' '+x.landAt(d.x,d.z)));
+    if(!E) continue;
+    const at=()=>{ A.inst=0; A.x=d.x+2; A.z=d.z; A.y=x.getH(A.x,A.z); A.dead=false; A.hp=A.maxHp; A.vbGrace=1e12; };
+    at(); const c0=A.gear.coins, s0=st?A.gear[st]|0:0, e0=exp0(); W.receive('a',{t:'rift',a:'go',x2:0}); const r=[...x.DG_RUNS.values()].find(q=>q.rift===id&&!q.endT);
+    let n=0; for(;n<12000&&r&&!r.endT;n++){ for(const m of [...r.mons]) if(!m.dead&&!m.remove&&!m.immune){ m.hp=0; x.killMonsterS(m,A); }
+      const ob=r.objs.find(o=>o.st===1&&(o.kind==='beacon'||((o.kind==='core'||o.kind==='pylon')&&!(o.v>0)))); if(ob){ A.x=ob.x; A.z=ob.z; A.y=x.getH(A.x,A.z); if(ob.kind!=='beacon'&&!A.cast) W.receive('a',{t:'dg',a:'use',id:ob.id}); }
+      tick(2); keepAlive(); }
+    const won=!!r&&r.phase==='won'&&r.L===40&&exp0()===e0;
+    if(rw==='coins'){ const got=A.gear.coins-c0, pipe=0.5*(x.DIP_SECS/x.DIP_INTERVAL[5])*x.DIP_COUNT[5]*x.dipCoinAvg(40), worst=(x.RIFT_COUNT_S+x.RIFT_WAVES*x.RIFT_WAVE_S)/60;
+      ok(id+' ('+E.mode+'): won at your level (40), only coins, more a minute (even at its slowest) than a level-5 pipe can pay net',won&&got/worst>pipe/(x.DIP_SECS/60)&&A.gear[ 'rsw']===A.gear['rsw'],r&&(r.phase+' '+got+' coins vs pipe '+Math.round(pipe)+' per 10 min')); }
+    else { const got=(A.gear[st]|0)-s0; ok(id+' ('+E.mode+'): won at your level (40), only '+st+': '+x.riftStonesFull(40)+' stones, no coins',won&&got===x.riftStonesFull(40)&&A.gear.coins===c0,r&&(r.phase+' '+got+' '+(A.gear.coins-c0)+' coins')); }
+    tick(Math.ceil(21/0.05)); }
+  ok('the stones scale with your level',x.riftStonesFull(30)<x.riftStonesFull(40)&&x.riftStonesFull(40)<x.riftStonesFull(60)&&x.riftStonesFull(40)===40); }
 // junk
 W.receive('a',{t:'rift',a:'constructor'}); W.receive('a',{t:'rift'}); W.receive('a',{t:'rift',a:'go',x2:'__proto__'});
 ok('junk messages do nothing (already in a run)',A.inst===c.id||!A.inst);

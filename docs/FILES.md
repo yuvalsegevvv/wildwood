@@ -258,6 +258,10 @@ shared
   rift/longnight.js                  The Long-Night Rift, a Hoarfrost Reach rift (dark, pays Dark Essence): its tear on the Reach's plateau, its violet night aura, six dark glass kinds and a Herald
   rift/stone.js                      The Stone Rift, a Greyspine rift (earth, pays Earth Essence): its tear on the Greyspine's ground, its grey-ochre aura, six earth glass kinds and a Herald
   rift/forge.js                      The Forge Rift, a Greyspine rift (fire, pays Fire Essence): its tear on the Greyspine's ground, its ember-orange aura, six fire glass kinds and a Herald
+  rift/gilded.js                     The Gilded Rift, the Sunscar's rift (pays coins): its tear in the Sunscar's wilds west of Glasswell, a gold and rose aura, six glass kinds of the desert and a Herald; mode Gale, a comb of platforms
+  rift/blade.js                      The Blade Rift, the Gloamhorn's rift (pays Weapon Reroll Stones): its tear in the Gloamhorn's wilds west of Wraithwick, a steel-blue and violet aura, six glass kinds of the dusk and a Herald (the colossus); mode Quarry, a long cross
+  rift/bulwark.js                    The Bulwark Rift, the Amber Reach's rift (pays Armor Reroll Stones): its tear in the Amber Reach's wilds west of Tallgrass, a sky-blue and amber aura, six glass kinds of the savanna and a Herald; mode Heartwood, a broken square round the hub
+  rift/charm.js                      The Charm Rift, the Emberwake Isles' rift (pays Accessory Reroll Stones): its tear on the isles east of Coralhaven, a sea-cyan and coral aura, six glass kinds of the isles and a Herald; mode Lanterns, a double comb
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers

@@ -33,11 +33,19 @@ function riftBuild(){
 const riftNearest=()=>{ if(!started||PL.dead||dgIn()) return null; return riftDoorNear(P.x,P.z,RIFT_TALK); };
 const riftHere=()=>!!riftNearest();
 const riftEss=R=>R.reward==='essence'?essOf(essIdOf(R.essence)):null;   // the Essence an essence rift pays (shared/essence.js), or null
-function riftPrompt(tk){ const R=riftNearest(), e=riftEss(R); return 'Press '+tk+': '+R.name+(e?' (a rift: '+e.name+', solo, level '+R.lv+' and up)':' (a rift: '+RIFT_XP_K+'x XP, solo)'); }
+function riftPrompt(tk){ const R=riftNearest(), e=riftEss(R); return 'Press '+tk+': '+R.name+(e?' (a rift: '+e.name+', solo, level '+R.lv+' and up)':R.reward==='coins'?' (a rift: coins, solo, level '+R.lv+' and up)':R.reward==='stones'?' (a rift: '+RL_STONE_NAME[R.stone]+'s, solo, level '+R.lv+' and up)':' (a rift: '+RIFT_XP_K+'x XP, solo)'); }
 function riftOpenNear(){ const R=riftNearest(); if(!R) return; RIFT_UI.id=R.id; RIFT_UI.info=null; openPanel('rift'); riftRender(); netSend({t:'rift',a:'open'}); UI_SFX.click(); }
 NETH.rift=m=>{ if(m.a!=='info') return; RIFT_UI.info=m; RIFT_UI.at=Date.now(); riftRender(); };
 const riftEnergyNow=()=>{ const I=RIFT_UI.info; return I?Math.min(RIFT_E_MAX,I.e+(Date.now()-RIFT_UI.at)/RIFT_E_MS):0; };
 const riftHms=s=>{ s=Math.max(0,Math.ceil(s)); const h=Math.floor(s/3600), m=Math.floor(s%3600/60); return h?h+' h '+String(m).padStart(2,'0')+' min':m?m+' min':s+' s'; };
+// the XP, coin and stone rifts' part of the window: they fight at your level; what a run pays
+function riftLevelHtml(R,I,en){
+  const M=RIFT_MODES[R.mode]||RIFT_MODES.waves, L=Math.max(I.lv,PL.level), how=R.mode==='waves'?'':'<p class="rf-line"><b>'+M.name+'.</b> '+M.how+'</p>';
+  const pay=R.reward==='coins'?'Every glass monster pays <b>'+RIFT_COIN_K+'x</b> the coins of the world, and a clear pays a hoard more. Coins are all it pays.'
+    :R.reward==='stones'?'A full clear pays <b>'+riftStonesFull(L)+' '+RL_STONE_NAME[R.stone]+'s</b> (more the higher your level; less if you fall earlier). Stones are all it pays.'
+    :RIFT_WAVES+' waves of '+en+', each worth <b>'+RIFT_XP_K+'x</b> the XP of the world. XP is all it pays.';
+  return how+'<p class="rf-line">The rift fights at <b>your level ('+L+')</b>. '+pay+' Solo only.</p>';
+}
 // an elemental rift's part of the window: how its mode plays, the level picker (30 to 80: shut ones say what opens them), what a clear pays at the level picked
 function riftModeHtml(R,I){
   const M=RIFT_MODES[R.mode]||RIFT_MODES.waves, es=riftEss(R), tiers=I.tiers&&I.tiers.length?I.tiers:RIFT_TIERS;
@@ -52,9 +60,9 @@ function riftRender(){
   const e=riftEnergyNow(), full=Math.max(0,I.full-(Date.now()-RIFT_UI.at)/1000), canX2=e>=I.cost, low=PL.level<I.lv, es=riftEss(R), en=es?(ELEMS[R.el]?ELEMS[R.el].name+' ':'')+'monsters':'glass monsters';
   if(!canX2) RIFT_UI.x2=false;
   el.innerHTML='<p class="rf-blurb"></p>'
-    +(es?riftModeHtml(R,I):'<p class="rf-line">The rift fights at <b>your level ('+Math.max(I.lv,PL.level)+')</b>: '+RIFT_WAVES+' waves of '+en+', each worth <b>'+RIFT_XP_K+'x</b> the XP of the world. Solo only. XP is all it pays.</p>')
+    +(es?riftModeHtml(R,I):riftLevelHtml(R,I,en))
     +'<div class="rf-energy"><div class="rf-bar"><i style="width:'+Math.round(100*e/RIFT_E_MAX)+'%"></i></div><span><b>'+Math.floor(e)+'</b> / '+RIFT_E_MAX+' energy'+(full>0?' · full in '+riftHms(full):' · full')+'</span></div>'
-    +'<label class="rf-x2'+(canX2?'':' off')+'"><input type="checkbox" id="riftX2"'+(RIFT_UI.x2?' checked':'')+(canX2?'':' disabled')+'> Double reward (costs '+I.cost+' energy): twice the '+(es?'Essence':'XP')+' for the whole run</label>'
+    +'<label class="rf-x2'+(canX2?'':' off')+'"><input type="checkbox" id="riftX2"'+(RIFT_UI.x2?' checked':'')+(canX2?'':' disabled')+'> Double reward (costs '+I.cost+' energy): twice the '+(es?'Essence':R.reward==='coins'?'coins':R.reward==='stones'?'stones':'XP')+' for the whole run</label>'
     +'<div class="tr-btns"><button class="chip buy" id="riftGo"'+(low?' disabled':'')+'>'+(low?'Opens at level '+I.lv:'Enter the rift')+'</button></div>'
     +'<p class="tr-note">Energy refills on its own, online or not: '+RIFT_E_MAX+' in '+RIFT_E_FULL_H+' hours. One knock-out sends you back to the hub; a second ends the run. '+(I.clears?'Cleared '+I.clears+' time'+(I.clears>1?'s':'')+(I.best?', best '+dgClockText(I.best):'')+'.':'')+'</p>';
   el.querySelector('.rf-blurb').textContent=R.blurb;

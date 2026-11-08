@@ -70,6 +70,16 @@ const RIFT_PAY={
     clear(run,p,mb){ const R=RIFT_DEFS[run.rift], e=R&&essOf(essIdOf(R.essence)), g=riftSaveOf(p); if(run.rtier>(g.tier|0)){ g.tier=run.rtier; const nx=RIFT_TIERS[RIFT_TIERS.indexOf(run.rtier)+1]; if(nx) toastTo(p.id,'Level '+nx+' rifts are open to you now.','good'); }
       if(e&&mb) toastTo(p.id,'The rift paid '+mb.got.mats+' '+e.name+'.','good'); },
   },
+  coins:{
+    kill(run,m,q,mb){ const c=Math.round(coinsFor(run.L)*RIFT_COIN_K*(run.x2?2:1)*(1+pendP(q,'coin')+rlP(q,'coin')+potBuffP(q,'fortune'))); q.gear.coins+=c; ev('coins',q.id,c,m.id); if(mb) mb.got.coins+=c; },
+    clear(run,p,mb){ const c=Math.round(dipCoinAvg(run.L)*RIFT_COIN_CLEAR*(run.x2?2:1)*(1+pendP(p,'coin')+rlP(p,'coin'))); p.gear.coins+=c; if(mb) mb.got.coins+=c; toastTo(p.id,'The rift paid '+(mb?mb.got.coins:c).toLocaleString('en-US')+' coins.','good'); },
+  },
+  stones:{
+    kill(){},
+    stage(run,p,mb,st){ if(!(mb&&mb.got.kills>0)) return; const R=RIFT_DEFS[run.rift], k=R.stone, n=(riftStonesAt(st,run.L)-riftStonesAt(st-1,run.L))*(run.x2?2:1); if(n<=0) return;
+      const was=p.gear[k]|0; p.gear[k]=Math.min(RL_STONE_MAX,was+n); if(mb) mb.got.mats+=p.gear[k]-was; },
+    clear(run,p,mb){ const R=RIFT_DEFS[run.rift]; if(mb) toastTo(p.id,'The rift paid '+mb.got.mats+' '+RL_STONE_NAME[R.stone]+'s.','good'); },
+  },
 };
 function riftEssenceP(run,p,mb,n){
   const R=RIFT_DEFS[run.rift], id=R&&essIdOf(R.essence); n=Math.max(0,n|0)*(run.x2?2:1); if(!id||!n) return;
@@ -148,7 +158,7 @@ function riftWaveStepS(run,breakers,onWave){
 }
 const riftWaveClockS=run=>{ const k=run.k; return !k.w?Math.max(0,Math.ceil(RIFT_COUNT_S-run.t)):k.w>=RIFT_WAVES?0:Math.max(0,Math.ceil(RIFT_WAVE_S-(run.t-k.start))); };
 // the snapshot's numbers (shared/rift.js DG_HUD.rift): [stage, monsters, clock, x2, paid, tier, a, b]
-function riftHudS(run,stage,clock,a,b){ const k=run.k, R=RIFT_DEFS[run.rift], gk=R&&R.reward==='essence'?'mats':'xp'; let got=0; for(const mb of run.members.values()) got=Math.max(got,mb.got[gk]);
+function riftHudS(run,stage,clock,a,b){ const k=run.k, R=RIFT_DEFS[run.rift], gk=R&&(R.reward==='essence'||R.reward==='stones')?'mats':R&&R.reward==='coins'?'coins':'xp'; let got=0; for(const mb of run.members.values()) got=Math.max(got,mb.got[gk]);
   run.hud=[stage|0,riftAliveS(run)+k.q.length,Math.max(0,Math.ceil(clock||0)),run.x2?1:0,Math.round(got),run.rtier|0,Math.round(a||0),Math.round(b||0)]; }
 // the breakers (Heartwood): walk to the objective and swing at it; true when it breaks
 function riftBreakersS(run,ob,dt){
