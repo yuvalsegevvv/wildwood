@@ -122,8 +122,11 @@ function bdRefreshP(p){
 function bdPlayP(p,k){
   const B=p.gear.bd||(p.gear.bd={});
   if(k===BD_WANDERER||(bdSetOk(k)&&bdOf(p.gear,k)>=0)) B.play=k; else if(k===null||k===undefined||k==='') delete B.play; else return false;
+  if(k===BD_WANDERER) wdWearP(p); else if(bdSetOk(k)) ssEquipAllP(p,k);   // Play wears the character's whole set (the owner: their skills by default, a swap is a choice); ssEquipAllP toasts what it wore
   recalcP(p); p.dirty=true; return true;
 }
+// the outfits a hiker may wear for free, whole and unmodified: every character bonded (Bond 0+) that has an outfit (server/amber.js ambCleanLook)
+function bdFreeOutfits(g){ const out=[]; if(!g||!g.bd) return out; for(const k of SS_ORDER){ const S=SS_SETS[k]; if(S&&typeof S.outfit==='string'&&bdOf(g,k)>=0) out.push(S.outfit); } return out; }
 // ---- testing ----
 function bdGrantP(p,k,b,st){
   if(!bdSetOk(k)) return false;

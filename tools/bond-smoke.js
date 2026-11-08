@@ -83,11 +83,11 @@ ok('three pieces: Bond III, +1 level to the character\'s pieces (above the tier 
   ok('the main character is the power piece\'s set',x.bdMainOf(p)===K&&sk.bdx.main===K);
   ok('a guest piece costs the main one Bond step (2 own pieces, 1 guest: active Bond 1)',sk.bdx.g===1&&sk.bdx.act===1,sk.bdx.act);
   ok('...and is '+x.BD_GUEST_PEN+' levels lower, with none of its own Bond levels',x.skillLvOf(sk,ga)===Math.max(1,gb-x.BD_GUEST_PEN),gb+' -> '+x.skillLvOf(sk,ga));
-  W.receive('a',{t:'bd',a:'play',set:GUEST}); ok('Play picks the main character, whatever Power is worn: the guest is now in play, the main\'s pieces are its guests',x.bdMainOf(p)===GUEST&&sk.bdx.main===GUEST&&sk.bdx.g===2&&g.bd.play===GUEST,sk.bdx.main+' '+sk.bdx.g);
+  W.receive('a',{t:'bd',a:'play',set:GUEST}); ok('Play picks the main character and wears their set: the guest is now in play with its own pieces worn',x.bdMainOf(p)===GUEST&&sk.bdx.main===GUEST&&sk.bdx.g===0&&sk.bdx.act===0&&g.bd.play===GUEST,sk.bdx.main+' '+sk.bdx.g+' '+sk.bdx.act);
   W.receive('a',{t:'bd',a:'play',set:'wanderer'}); ok('...the Wanderer too',sk.bdx.main==='wanderer');
   W.receive('a',{t:'bd',a:'play',set:'constructor'}); ok('...an unknown character is refused',g.bd.play==='wanderer');
   ok('...and the pick is saved',x.sanitizeGear(JSON.parse(JSON.stringify(g)),'warrior').bd.play==='wanderer');
-  W.receive('a',{t:'bd',a:'play',set:null}); ok('...null goes back to the Power piece\'s rule',sk.bdx.main===K&&g.bd.play===undefined); }
+  W.receive('a',{t:'bd',a:'play',set:null}); clear(); wear(A); ok('...null goes back to the Power piece\'s rule',sk.bdx.main===K&&g.bd.play===undefined); }
 // ---- equip refuses the Bond passives ----
 { clear(); const bp=SET.bonds[1]; if(!sk.owned.includes(bp)) sk.owned.push(bp);
   ok('a Bond passive is one',x.bdIsBondPassive(bp)&&!x.bdIsBondPassive(SET.keptPassive));

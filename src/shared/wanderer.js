@@ -28,6 +28,9 @@ const WD_PIECE_SRC={
   grind: {warrior:['slash','whirlwind','bladestorm'], archer:['shoot','rain','hail'], mage:['missiles','chain','blizzard']},
   support:{warrior:['slash','bash','berserk'], archer:['shoot','volley','focus'], mage:['missiles','frostnova','surge']},
   heal:  {warrior:['slash','bash','berserk'], archer:['shoot','volley','focus'], mage:['missiles','frostnova','surge']}};
+// ONE charge skill and ONE burst for every path FOR NOW (the owner: "just to have something there"): the charge is Echo (a general charge skill), the burst is the default path's
+// (Fury's Red Ruin), registered under each path's own id 'wd_<path>' so a path can take back its own (its file keeps its `ult`) by dropping WD_ULT_SHARED.
+const WD_CHARGE='echo'; let WD_ULT_SHARED=null;
 const WD_PIECE_SLOTS=['basic','skill','burst'], WD_PIECE_OF=Object.create(null);   // WD_PIECE_OF[skill id] = {path, cls, slot}
 const wdPieceId=(path,cls,slot)=>'wd_'+path+'_'+cls+'_'+slot;
 const wdPathOk=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(WD_PATHS,id);
@@ -71,9 +74,10 @@ function defineWandererPath(D){
   const R=D.real; if(!R||typeof R!=='object') return bad('real','real is {1: row, 2: row, 4: row, 6: row}');
   for(const n of WD_REAL_STEPS){ const p=ssRowProblem(R[n],true); if(p) return bad('real','Realization '+BD_ROMAN[n]+': '+p); }
   if(Object.keys(R).some(k=>!WD_REAL_STEPS.includes(+k))) return bad('real','only the steps 1, 2, 4 and 6 hold rows (III and V are +1 level)');
-  const U=D.ult; { const p=ultProblem(U); if(p) return bad('ult',p); }
-  if(!U.boost.every(b=>WD_ULT_PIECES.includes(b.piece))) return bad('ult','boost pieces are '+WD_ULT_PIECES.join(' ')+' (the class actives worn, the path passive)');
-  { const m=wdMarkProblem([D.passive,...WD_REAL_STEPS.map(n=>R[n])],U); if(m) return bad('real',m); }
+  { const p=ultProblem(D.ult); if(p) return bad('ult',p); }
+  if(!D.ult.boost.every(b=>WD_ULT_PIECES.includes(b.piece))) return bad('ult','boost pieces are '+WD_ULT_PIECES.join(' ')+' (the class actives worn, the path passive)');
+  { const m=wdMarkProblem([D.passive,...WD_REAL_STEPS.map(n=>R[n])],D.ult); if(m) return bad('real',m); }
+  const U=WD_ULT_SHARED?Object.assign({},WD_ULT_SHARED,{act:D.ult.act}):D.ult;   // the shared burst (WD_ULT_SHARED) keeps the path's own attack kind: one kind is one skill; the file's own burst is still checked
   // everything checks out: register
   const pid='wd_'+id, base={slot:'passive',cls:null,lv:PASSIVE_LV,price:0,set:null,wd:id};
   PASSIVES[pid]=ssRow(D.passive,pid,base,{el:null});
@@ -89,5 +93,6 @@ function defineWandererPath(D){
       SKILLS[sid]=c; SKILL_IDS.push(sid); WD_PIECE_OF[sid]={path:id,cls,slot}; pieces[cls][slot]=sid; }); }
   const P={id,name:D.name.trim(),role:D.role,kit,from,text:D.text,el,passive:pid,ult:pid,real:{1:pid+'_r1',4:pid+'_r4'},rows,pieces};
   WD_PATHS[id]=P; WD_ORDER.push(id);
+  if(id===WD_DEFAULT&&!WD_ULT_SHARED) WD_ULT_SHARED=D.ult;   // every later path borrows the default path's burst (see WD_ULT_SHARED)
   return P;
 }

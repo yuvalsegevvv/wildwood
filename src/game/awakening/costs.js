@@ -14,10 +14,10 @@ const AWC_COIN_COL='#f2cf5a', AWC_ECHO_COL='#6fd6d0', AWC_RAID_COL='#e8b84a', AW
 const awcHas=(o,k)=>!!o&&typeof o==='object'&&typeof k==='string'&&Object.prototype.hasOwnProperty.call(o,k);
 const awcLandName=land=>land==='any'?'any land':(typeof LANDS!=='undefined'&&awcHas(LANDS,land)?LANDS[land].name:land);
 // the characters you may open: the Wanderer and every set with Bond 0 or more (the server refuses an unowned one)
-function awcChars(){
+function awcChars(all){   // all: the locked characters too (the Characters panel's list: locked ones open on their Bond tab)
   const B=(GEAR&&GEAR.bd)||{}, out=[{k:'wanderer',name:'The Wanderer',col:'#d9b26a',initial:'W',set:null}];
-  for(const k of SS_ORDER){ if(!bdSetOk(k)||!awkShapeOf(k)) continue; const e=awcHas(B,k)&&typeof B[k]==='object'?B[k]:null; if(!e||!(e.b>=0)) continue;
-    const S=SS_SETS[k]; out.push({k,name:S.char.name,col:'#'+('000000'+S.pal.main.toString(16)).slice(-6),initial:S.char.name[0],set:S}); }
+  for(const k of SS_ORDER){ if(!bdSetOk(k)||!awkShapeOf(k)) continue; const e=awcHas(B,k)&&typeof B[k]==='object'?B[k]:null, own=!!e&&e.b>=0; if(!own&&!all) continue;
+    const S=SS_SETS[k]; out.push({k,name:S.char.name,col:'#'+('000000'+S.pal.main.toString(16)).slice(-6),initial:S.char.name[0],set:S,locked:!own}); }
   return out;
 }
 function awcMain(){   // the character you play now (the server writes it into bdx), if you can open it

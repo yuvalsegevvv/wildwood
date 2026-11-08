@@ -1,0 +1,54 @@
+/*@ The Characters panel's frame (game/awakening/hub.js): the character list on the left, the hero card with the default look behind it, the tabs, the skills tab's rows with their swap button, the look tab; a phone stacks it */
+.chr-body{ display:grid; grid-template-columns:210px minmax(0,1fr); gap:10px; align-items:start; }
+.chr-list{ flex-direction:column; overflow-x:hidden; overflow-y:auto; max-height:min(78dvh,760px); touch-action:pan-y; padding-right:4px; }
+.chr-list .awc-ch{ width:100%; justify-content:flex-start; text-align:left; min-height:40px; }
+.chr-list .awc-ch > small{ margin-left:auto; }
+.chr-nm{ display:flex; flex-direction:column; min-width:0; line-height:1.15; }
+.chr-nm small{ font-size:10px; opacity:.7; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.awc-ch.locked{ opacity:.62; }
+.chr-main{ display:flex; flex-direction:column; gap:8px; min-width:0; }
+/* the hero: the look as a picture on the right, faded into the card */
+.chr-hd{ position:relative; display:flex; min-height:104px; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:linear-gradient(100deg, rgba(0,0,0,.5) 35%, color-mix(in srgb, var(--c) 28%, transparent)); }
+.chr-pic{ position:absolute; right:0; top:-10px; bottom:-30px; width:min(46%,260px); background:center top/cover no-repeat; opacity:.95; -webkit-mask-image:linear-gradient(90deg,transparent,#000 40%); mask-image:linear-gradient(90deg,transparent,#000 40%); }
+.chr-id{ position:relative; display:flex; flex-direction:column; gap:5px; padding:10px 12px; max-width:68%; }
+.chr-id > b{ font-family:var(--font-head); font-size:22px; line-height:1.1; color:#fff3d6; text-shadow:0 1px 3px #000; }
+.chr-id > span{ font-size:12.5px; color:#e6d7b4; }
+.chr-tags{ display:flex; flex-wrap:wrap; gap:5px; align-items:center; }
+.chr-t{ font-style:normal; padding:1px 8px; border-radius:999px; background:rgba(0,0,0,.35); border:1px solid rgba(238,240,226,.18); font-size:11.5px; }
+.chr-play{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:2px; }
+.chr-play em{ font-style:normal; font-size:12px; color:#d2dc9a; }
+.chr-play .chip.on{ background:var(--lichen); color:var(--lichen-ink); }
+.chr-tabs{ display:flex; gap:6px; flex-wrap:wrap; border-bottom:1px solid var(--line); padding-bottom:6px; }
+.chr-tb[aria-selected="true"]{ background:var(--lichen); color:var(--lichen-ink); border-color:var(--lichen); }
+.chr-v .awc-stage{ height:clamp(260px,calc(100dvh - 540px),600px); }
+.chr-v .awc-side{ max-height:clamp(260px,calc(100dvh - 540px),600px); }
+.chr-v:not(.awc-body){ max-height:min(56dvh,560px); overflow-y:auto; touch-action:pan-y; }
+/* the skills tab */
+.chr-sks{ display:flex; flex-direction:column; gap:6px; }
+.chr-sk{ display:flex; gap:10px; align-items:flex-start; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:rgba(0,0,0,.2); }
+.chr-sk.on{ border-color:rgba(210,220,154,.55); }
+.chr-sk.off{ opacity:.6; }
+.chr-ic{ flex:none; width:36px; height:36px; display:grid; place-items:center; border-radius:8px; background:rgba(238,240,226,.07); }
+.chr-ic svg{ width:24px; height:24px; }
+.chr-skt{ flex:1; min-width:0; }
+.chr-skt b{ display:block; font-size:14px; }
+.chr-skt b small{ font-size:11px; color:#d2dc9a; }
+.chr-skt em{ display:block; font-style:normal; font-size:11px; color:var(--ink-dim); }
+.chr-skt p{ margin:3px 0 0; font-size:12.5px; line-height:1.4; color:#e6d7b4; }
+.chr-sw{ flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+.chr-worn{ font-style:normal; font-size:10.5px; color:#9fe08a; font-weight:700; }
+.chr-swap{ width:26px; height:26px; padding:0; display:grid; place-items:center; border-radius:7px; border:1px solid var(--line); background:rgba(20,14,8,.8); color:var(--ink-dim); cursor:pointer; }
+.chr-swap:hover{ color:var(--ink); border-color:var(--brass); }
+.chr-swap svg{ width:15px; height:15px; }
+.chr-lk{ font-style:normal; font-size:10.5px; color:#ff8a78; }
+.chr-bd .bdc-card{ max-width:none; }
+.chr-bdx, .chr-la{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+@media (max-width:719px){
+  .chr-body{ grid-template-columns:minmax(0,1fr); }
+  .chr-list{ flex-direction:row; overflow-x:auto; overflow-y:hidden; max-height:none; touch-action:pan-x; }
+  .chr-list .awc-ch{ width:auto; }
+  .chr-hd{ min-height:92px; }
+  .chr-id{ max-width:72%; }
+  .chr-v .awc-stage{ height:min(42dvh,400px); }
+  .chr-v:not(.awc-body){ max-height:none; overflow:visible; }
+}

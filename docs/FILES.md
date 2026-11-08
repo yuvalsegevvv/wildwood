@@ -46,6 +46,7 @@ styles
   35-movement.css                    Movement slot: the movement slot's tile (#abMov) and its tab in the skills panel (game/movement/slot.js)
   37-awakening.css                   Awakening tree panel (game/awakening/panel.js): the character picker, the tier strip, the canvas with its zoom buttons, the limb chips and the detail box; a bottom sheet on a phone
   38-bonds.css                       Bonds (game/bond/): the Bonds panel (cards, the orb pouch, this hour's Stirrings), the orb pop-up, the +1 and guest marks on skill tiles and the action bar
+  39-characters.css                  The Characters panel's frame (game/awakening/hub.js): the character list on the left, the hero card with the default look behind it, the tabs, the skills tab's rows with their swap button, the look tab; a phone stacks it
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -681,6 +682,7 @@ game
   awakening/tree.js                  Awakening tree drawing: one character's tree on a 2D canvas (limbs as lines, upgrade / stat / star nodes by state, faint joins, limb labels), the view (fit, zoom, clamp) and picking a node; pure: no DOM, no gear
   awakening/costs.js                 Awakening panel, the rules half: which characters are listed, a node's state (own / buy / open / tier / req), its name and effect in words, its price against what you hold (awcStatus, awcCostLines, awcTierInfo)
   awakening/panel.js                 Awakening panel: one character's tree on a canvas (tap a node, drag to pan, pinch or wheel to zoom), the character picker, the tier strip, the detail box with its price and Buy button; the awk event; opened by the Awaken button or its key
+  awakening/hub.js                   The Characters panel's frame (#awc): the hero card (the character's default look behind its name, element, class, role and the Play button) and the tabs Awakening / Skills / Bond, Path (the Wanderer) and Look (a bonded character's outfit, free and unmodified)
   cave/zone.js                       The Deep Cave on the client: which floor you are on (CAVE_RUN), entering and leaving it on the server's tp or by where you stand, the explored cells for the maps, and the cave's frame (view, light, lift panel)
   cave/view.js                       The Deep Cave's meshes: floor, smoothed rock walls and the domed ceiling from a floor's bake (merged per chunk, light baked into the vertex colours), the water and lava, and the hooks the four themes dress it through; built at the floor's corner, disposed on leaving
   cave/view-themes.js                The Deep Cave's four looks: the Glowworm Grotto (blue ceilings, stalactites, still pools), the Prism Hollows (geodes and split light), the Drowned Galleries (flooded halls, river, waterfalls) and the Magma Heart (lava, obsidian, embers)

@@ -113,10 +113,14 @@
   <div class="pn-head"><span class="pn-t" id="skTitle">Skills</span><button class="chip pn-skills" id="skAwaken" type="button" data-kb="awaken" data-kbx="Awaken ({k})" title="The Awakening tree: skill levels, stats and tiers">Awaken (T)</button><button class="chip pn-skills" id="skBonds" type="button" title="Bonds: every character's Bond steps, Bondstones and orbs">Bonds</button><span class="pn-coins" id="skCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="skBody"></div>
 </div>
-<div id="awc" class="panel" hidden role="dialog" aria-label="Awakening tree">
-  <div class="pn-head"><span class="pn-t">Awakening</span><button class="chip pn-skills" id="awcSkills" type="button" title="The skills panel: your slots and every skill">Skills</button><button class="chip pn-skills" id="awcBonds" type="button" title="Bonds: every character's Bond steps, Bondstones and orbs">Bonds</button><span class="pn-coins" id="awcCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-  <div class="pn-body awc-body">
-    <div class="awc-pick" id="awcPick" role="group" aria-label="Character"></div>
+<div id="awc" class="panel" hidden role="dialog" aria-label="Characters">
+  <div class="pn-head"><span class="pn-t">Characters</span><span class="pn-coins" id="awcCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body chr-body">
+    <div class="awc-pick chr-list" id="awcPick" role="group" aria-label="Character"></div>
+    <div class="chr-main">
+      <div class="chr-hero" id="chrHero"></div>
+      <div class="chr-tabs" id="chrTabs" role="tablist"></div>
+      <div class="chr-v awc-body" id="chrVAwk">
     <div class="awc-tier" id="awcTier"></div>
     <div class="awc-main">
       <div class="awc-stage"><canvas id="awcCv" aria-label="The Awakening tree: tap a node for its price"></canvas>
@@ -124,6 +128,12 @@
       <div class="awc-side"><div class="awc-limbs" id="awcLimbs"></div><div class="awc-detail" id="awcDetail"></div></div>
     </div>
     <div class="awc-key" id="awcKey"></div>
+      </div>
+      <div class="chr-v" id="chrVSk" hidden></div>
+      <div class="chr-v" id="chrVBd" hidden></div>
+      <div class="chr-v" id="chrVPath" hidden></div>
+      <div class="chr-v" id="chrVLook" hidden></div>
+    </div>
   </div>
 </div>
 <div id="lodge" class="panel" hidden role="dialog" aria-label="Wayfarers' Lodge">
