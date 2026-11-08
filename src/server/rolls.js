@@ -40,7 +40,7 @@ function rlRollP(p,id,worn){
   const slot=Object.keys(p.gear.eq).find(s=>p.gear.eq[s]===id), wornCopy=!!slot&&(!!worn||unwornCount(p,id)<1);
   const q=dgParse(id), nid=it.kind==='ring'?dgRingId40(q.el,q.rar,q.n,rlRoll()):it.kind==='pendant'?dgPendantId40(q.stat,q.rar,q.n,rlRoll()):it.kind==='talisman'?dgTalismanId(q.stat,q.rar,q.n,rlRoll()):dgGearId40(q.slot,q.rar,q.n,rlRoll());
   p.gear[kind]=have-RL_COST;
-  p.gear.inv[p.gear.inv.lastIndexOf(id)]=nid;
+  p.gear.inv[p.gear.inv.lastIndexOf(id)]=nid; wpnSwapG(p.gear,id,nid);   // wpn: a carried weapon's slot follows
   if(wornCopy){ p.gear.eq[slot]=nid; gearChangedP(p); } else p.dirty=true;
   toastTo(p.id,'Rolled: '+ITEM[nid].name,'loot r'+ITEM[nid].rar); ev('reroll',p.id,nid,id);
 }

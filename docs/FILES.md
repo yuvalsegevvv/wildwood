@@ -192,6 +192,7 @@ shared
   wanderer/lorekeeper.js             The Wanderer's path Lorekeeper (grind, from Scholar): more XP from every kill, a burst that leaves a whole camp vulnerable, and just enough hit to farm it
   wanderer/wayfarer.js               The Wanderer's path Wayfarer (risk DPS, from Fleetfoot): faster on the move, hits that slow what they touch, and damage that lives on the run; standing still costs
   wanderer/prism.js                  The Wanderer's path Prism (safe DPS, the element wheel): hits that beat their target's element on the wheel (x1.5) hit harder, crit more and split again; the old Resonance passive reborn
+  wpn.js                             Three weapons at once (gear.eq.wpn = {warrior, archer, mage}): the active class (the character played), keeping eq.weapon (the one in use) in step with it; pure rules
   cave/skill-1-echo.js               Cave skill Echo (floor 1, method A): repeats your last skill or burst at 60% power, with no cooldown
   cave/skill-1-flare.js              Cave skill Flare (floor 1, method B, light): a 10 m burst of light; normal monsters are blinded for 2 s and miss, bosses deal 20% less for 4 s
   cave/skill-1-overdrive.js          Cave skill Overdrive (floor 1, method C): your next 3 basic attacks are sure crits and come 30% faster
@@ -269,6 +270,7 @@ server
   bond-orbs.js                       Bond Orbs on the server: orbs held per character (gear.bd.<set>.o), the orb stall (bd 'orb': 1 coin each), the pouch's pick (bd 'pick'), opening an orb for 1 / 2 / 3 Bondstones
   bond-stir.js                       The hour's Stirrings on the server: each UTC hour a stirring zone per land, a stirring world boss and a stirring dungeon or raid (alternating); kills charge orbs open, boss kills, dungeon wins and raid clears open them
   wanderer.js                        The Wanderer's paths on the server: the active path (gear.bd.wanderer.path), changing it (bd {a:'path'}), and the path passive and burst the Wanderer's tree makes his (pa1, bu1)
+  wpn.js                             Three weapons at once on the server: the class switch when the character played (or the Wanderer's path) changes, and the weapon an equip puts in its class's slot
   monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot
   basic-hold.js                      Skill 1 on the server: attack speed and charge gain of a player, the hold message and its release (how long the player really held), where a mage's held blast lands

@@ -2,7 +2,7 @@
 /* Agent map. Registry and format: shared/wanderer.js (defineWandererPath); the worked example: shared/wanderer/fury.js. Test: tools/bond-smoke.js, tools/skillsets-ladder.js --wanderer --path lorekeeper
    (a grind path: judged on the pack column, about 80% of the grind sets' pack at Bond VI; the xp stat does not show in the ladder). Stats of the Wanderer's tree: the 'grind' table. */
 defineWandererPath({
-  id:'lorekeeper', name:'Lorekeeper', role:'grind', kit:'grind', from:'scholar',
+  id:'lorekeeper', name:'Lorekeeper', cls:'mage', el:'dark', role:'grind', kit:'grind', from:'scholar',
   text:'Learn from every fight: a great deal more XP from each kill, and the camp you study takes more from you.',
   passive:{name:'Field Notes', text:'+{}% XP from kills; you deal 20% less damage', stat:'xp', v:[0.12, 0.02], cost:{stat:'dmg', v:-0.20}},
   ult:{name:'Open Book', desc:'You open the book on everything within 9 m: it is hit, shoved back and stays exposed for 8 seconds, taking 20% more from everyone, and the stunned cannot turn the page.', range:9, mult:1.3, act:['wdlorekeeperult',0.9,0.55], anim:'nova',

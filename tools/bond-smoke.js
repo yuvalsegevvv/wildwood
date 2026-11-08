@@ -12,7 +12,7 @@ const {api:W,x}=loadServer({dev:true,send(to,m){ sent.push([to,m]); }},
   ['SS_SETS','SS_ORDER','BD_ROW_K','SKILLS','PASSIVES','CAVE_SKILLS','CAVE_SKILL_IDS','MQ','BD_COST','BD_TOP','BD_STONE_COINS','BD_GUEST_PEN','bdBuyP','bdAddStonesP','bdGrantP','bdOwns','bdMainOf','bdRealOf','bdTierNeed','bdIsBondPassive',
    'bdStonesLeft','awkGrantP','awkTierP','sanitizeGear','skillLvOf','caveLvOf','psP','recalcP','clsOfP','ssEquipPieceP','ssGrantSetP','SMIG_VER','passiveValue','BD_ORB_PRICE','BD_ORB_MAX','BD_ORB_ROLL','BD_STIR_SECS','BD_STIR_CHARGE','BD_STIR_BOSS','bdRollRow','bdStirPick','bdOrbBuyP','bdPickP','bdOpenOrbP','bdOpenManyP','bdOrbSetOf','bdStirPickS','bdStirTickS','bdStirMsg',
    'bdZonesByLand','BD_ZONE_OF','bdChargeS','bdStirBossP','bdStirDungeonP','bdStirRaidP','bdChargeFlushP','MONS','S','rewardKill','RD_ORDER','RDS','BOSS_DEFS','DG_THEMES','DG_ENTRANCES','ssGrantP','landAt',
-   'WD_PATHS','WD_ORDER','equipClassP','WD_PIECE_OF','bdFreeOutfits','WD_BAD','WD_DEFAULT','defineWandererPath','wdPathOf','ULT_SKILLS','ULT_BAD','AWK_PATH_KIT','ultEquippedP','buySkillP','equipSkillP','ssBonuses','SS_STATS','SS_WHEN_KEYS','ssWhenProblem','ssCondP','ssRowProblem']);   // (the last row: step 18, the Wanderer's paths)
+   'WD_PATHS','WD_ORDER','wdWearP','wpnSyncG','wpnPlayCls','equipP','bdPlayP','classOfGear','equipClassP','WD_PIECE_OF','bdFreeOutfits','WD_BAD','WD_DEFAULT','defineWandererPath','wdPathOf','ULT_SKILLS','ULT_BAD','AWK_PATH_KIT','ultEquippedP','buySkillP','equipSkillP','ssBonuses','SS_STATS','SS_WHEN_KEYS','ssWhenProblem','ssCondP','ssRowProblem']);   // (the last row: step 18, the Wanderer's paths)
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info!==undefined?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<(n||3);i++) W.tick(0.05); };
 W.join('a',{name:'Bonder',look:{cls:'warrior'},save:{level:60}}); tick();
@@ -110,7 +110,7 @@ ok('three pieces: Bond III, +1 level to the character\'s pieces (above the tier 
   g.mq.s=last('G')+1; x.recalcP(p); const l6=x.skillLvOf(sk,gen), a6=sk.bdx.act;
   sk.eq.warrior.skill=shop; x.recalcP(p); const lo=x.skillLvOf(sk,gen), ao=sk.bdx.act;
   ok('the Wanderer\'s Realization works like a Bond: at VI with the path\'s three actives worn it is III (+1 level on them), a shop skill worn in their place is off the path (I, no level)',sk.bdx.main==='wanderer'&&a6===3&&l6===l2+1&&ao===1&&lo===l2&&g.bd.wanderer.r===6,l2+' '+l6+' '+lo+' act '+a6+' '+ao);
-  ok('the active path owns its own basic, skill and power for every class (placeholders), no other path\'s',['warrior','archer','mage'].every(c=>['basic','skill','burst'].every(q=>sk.owned.includes(x.WD_PATHS[x.wdPathOf(g)].pieces[c][q])))&&!sk.owned.some(i=>/^wd_bulwark_/.test(i))); }
+  ok('the active path owns its own basic, skill and power for its one class (placeholders), no other path\'s',['basic','skill','burst'].every(q=>sk.owned.includes(x.WD_PATHS[x.wdPathOf(g)].pieces[x.WD_PATHS[x.wdPathOf(g)].cls][q]))&&!sk.owned.some(i=>/^wd_bulwark_/.test(i))); }
 // ---- migration ----
 { const raw={smv:2,bdMig:[K],skills:{owned:[actOf(GUEST)[0]]},bd:{[x.SS_ORDER.find(i=>i!==K&&i!==GUEST&&!x.SS_SETS[i].dev)]:{b:3,st:2}}};
   const m1=x.sanitizeGear(raw,'warrior'), m2=x.sanitizeGear(JSON.parse(JSON.stringify(m1)),'warrior');
@@ -267,7 +267,7 @@ Date.now=realNow;
   ok('...the worn passive and burst become the new path\'s, the old passive is no longer his',sw.pass[0]==='wd_bulwark'&&sw.ult==='wd_bulwark'&&sw.wdu==='wd_bulwark'&&!sw.owned.includes('wd_fury')&&sw.owned.includes('wd_bulwark'));
   ok('...and the Realization rows are Bulwark\'s now',sw.bdx.r.includes('wd_bulwark_r2')&&sw.bdx.r.includes('wd_bulwark_r6')&&!sw.bdx.r.includes('wd_fury_r2')&&sw.bdx.p.wd_bulwark_r1===1&&(pw.ss.trig.cast2||[]).some(r=>r.id==='wd_bulwark_r2'));
   // the seven other paths: choosing one makes its I passive and its II / VI rows the Wanderer's (Realization VI is in force here)
-  { const bad=[]; for(const [k] of MORE){ W.receive('w',{t:'bd',a:'path',id:k}); tick(1);
+  { const bad=[]; for(const [k] of MORE){ W.receive('w',{t:'bd',a:'path',id:k}); tick(1); x.wdWearP(pw); x.recalcP(pw);
       const good=gw.bd.wanderer.path===k&&sw.bdx.main==='wanderer'&&sw.bdx.r.includes('wd_'+k+'_r2')&&sw.bdx.r.includes('wd_'+k+'_r6')&&sw.bdx.p['wd_'+k+'_r1']===1&&sw.bdx.p['wd_'+k+'_r4']===1&&sw.pass[0]==='wd_'+k&&sw.ult==='wd_'+k;
       if(!good) bad.push(k); }
     ok('choosing each of the seven other paths makes its Realization II and VI rows active (gear.skills.bdx.r holds wd_<id>_r2), its I / IV passives, and wears its passive and burst',!bad.length,bad.join(' ')); }
@@ -282,7 +282,7 @@ Date.now=realNow;
   { const G2=x.sanitizeGear(JSON.parse(JSON.stringify(gw)),'warrior'); ok('a save keeps the path and its worn passive and burst',G2.bd.wanderer.path==='bulwark'&&G2.skills.pass[0]==='wd_bulwark'&&G2.skills.ult==='wd_bulwark'&&G2.skills.wdu==='wd_bulwark'); }
   { const G3=x.sanitizeGear(Object.assign(JSON.parse(JSON.stringify(gw)),{awk:{}}),'warrior'); ok('...a save without the tree loses them (never trusted)',!G3.skills.owned.includes('wd_bulwark')&&G3.skills.pass[0]!=='wd_bulwark'&&G3.skills.ult!=='wd_bulwark'); }
   // a bad path file
-  const n=x.WD_BAD.length, ub=x.ULT_BAD.length, base={id:'zzt',name:'Test',role:'risk',from:'ferocity',text:'A test path.',passive:{name:'P',text:'+{}% damage',stat:'dmg',v:0.2},
+  const n=x.WD_BAD.length, ub=x.ULT_BAD.length, base={id:'zzt',name:'Test',cls:'mage',el:'dark',role:'risk',from:'ferocity',text:'A test path.',passive:{name:'P',text:'+{}% damage',stat:'dmg',v:0.2},
     ult:{name:'U',desc:'A test burst.',range:10,mult:1.5,act:['zztult',0.9,0.5],fx:{ring:{r:5}},boost:[{piece:'a2',secs:10,mod:{mult:2}},{piece:'p1',secs:12,mod:{v:2}}]},
     real:{1:{name:'A',text:'+{}% damage',stat:'dmg',v:0.05},2:{name:'B',text:'+{}% damage',stat:'dmg',v:0.05},4:{name:'C',text:'+{}% damage',stat:'dmg',v:0.05},6:{name:'D',text:'+{}% damage',stat:'dmg',v:0.05}}};
   const mk=o=>Object.assign(JSON.parse(JSON.stringify(base)),o);
@@ -292,5 +292,40 @@ Date.now=realNow;
   ok('a bad path file is left out and listed (weaker than its source, a boost on the charge skill, a missing row, an unknown stat table or source, a second fury, a mark nothing makes)',got.every(r=>r===null)&&x.WD_BAD.length===n+bads.length&&x.WD_BAD.slice(n).every(b=>b.id&&b.field&&b.why)&&!x.WD_PATHS.zzt&&!x.PASSIVES.wd_zzt&&!x.ULT_SKILLS.wd_zzb&&x.ULT_BAD.length===ub&&x.WD_ORDER.length===9,JSON.stringify(x.WD_BAD.slice(n).map(b=>b.id+':'+b.field)));
   ok('...and a good one registers',!!x.defineWandererPath(base)&&!!x.WD_PATHS.zzt&&!!x.ULT_SKILLS.wd_zzt);
   x.WD_BAD.length=n; }
+
+// ---- three weapons at once; paths with one class and one element ----
+{ const EXP={fury:['warrior',null],bulwark:['warrior',null],stalwart:['warrior','fire'],wayfarer:['archer',null],keeneye:['archer','air'],forager:['archer','earth'],tempo:['mage','water'],prism:['mage','light'],lorekeeper:['mage','dark']};
+  ok('the nine paths: one class and one element each (warrior 2 basic + 1 elemental, archer 1 + 2, mage 3), as the owner set them',Object.keys(EXP).every(k=>{ const P=x.WD_PATHS[k]; return P&&P.cls===EXP[k][0]&&P.el===(EXP[k][1]||'basic'); }));
+  ok('a path registers pieces only for its own class, each with the path\'s element (none for a basic path)',Object.keys(EXP).every(k=>{ const P=x.WD_PATHS[k]; return ['warrior','archer','mage'].every(c=>{ const ids=Object.values(P.pieces[c]); return c===P.cls?ids.length===3&&ids.every(i=>(x.SKILLS[i].el||'basic')===P.el):ids.length===0; }); }));
+  const bad=[{cls:'rogue',el:'fire'},{cls:'mage',el:'plasma'},{cls:'mage',el:'basic'}]; const n=x.WD_BAD.length;
+  ok('a path with an unknown class or element is left out',bad.every((b,i)=>x.defineWandererPath({id:'zzw'+'abc'[i],name:'W',role:'risk',from:'ferocity',text:'t',passive:{name:'P',text:'+{}%',stat:'dmg',v:0.2},...b})===null)&&x.WD_BAD.length===n+3);
+  x.WD_BAD.length=n;
+  W.join('t',{name:'Tri',look:{cls:'warrior'},save:{level:60}}); tick(); const pt=W.players.get('t'), gt=pt.gear;
+  ok('a new hiker carries its starter weapon in its class slot',gt.eq.wpn.warrior==='sword1'&&gt.eq.weapon==='sword1');
+  const ARCH=x.SS_ORDER.find(i=>!x.SS_SETS[i].dev&&x.SS_SETS[i].bonds&&x.SKILLS[x.SS_SETS[i].pos[1].ids[0]].cls==='archer'), WAR=x.SS_ORDER.find(i=>!x.SS_SETS[i].dev&&x.SS_SETS[i].bonds&&x.SKILLS[x.SS_SETS[i].pos[1].ids[0]].cls==='warrior');
+  x.bdGrantP(pt,ARCH,0); x.bdGrantP(pt,WAR,0); x.bdPlayP(pt,ARCH);
+  ok('playing an archer character puts the bow in hand (eq.weapon = eq.wpn.archer)',x.classOfGear(gt)==='archer'&&gt.eq.weapon===gt.eq.wpn.archer,gt.eq.weapon);
+  x.bdPlayP(pt,WAR);
+  ok('...and playing a warrior one puts the sword back',x.classOfGear(gt)==='warrior'&&gt.eq.weapon===gt.eq.wpn.warrior&&gt.eq.wpn.archer==='bow1');
+  gt.inv.push('bow3','wand3'); x.equipP(pt,'bow3');
+  ok('equipping a bow while a warrior character is played fills eq.wpn.archer but leaves eq.weapon a sword',gt.eq.wpn.archer==='bow3'&&gt.eq.weapon===gt.eq.wpn.warrior&&x.classOfGear(gt)==='warrior');
+  x.bdPlayP(pt,ARCH); ok('...and that bow is in hand when an archer is played',gt.eq.weapon==='bow3');
+  x.bdPlayP(pt,'wanderer'); const pcl=x.WD_PATHS[x.wdPathOf(gt)].cls;
+  ok('playing the Wanderer puts in hand the weapon of the active path\'s class ('+x.wdPathOf(gt)+', '+pcl+')',x.classOfGear(gt)===pcl);
+  W.receive('t',{t:'bd',a:'path',id:'tempo'}); tick(1);
+  ok('picking a path of another class (tempo, mage) switches to its weapon',x.classOfGear(gt)==='mage'&&gt.eq.weapon===gt.eq.wpn.mage&&x.wpnPlayCls(gt)==='mage');
+  W.receive('t',{t:'bd',a:'path',id:'keeneye'}); tick(1); ok('...and keeneye (archer) back to the bow',gt.eq.weapon==='bow3');
+  const wp=gt.eq.weapon; W.receive('t',{t:'unequip',slot:'weapon'}); W.receive('t',{t:'unequip',slot:'wpn'}); ok('the weapon in hand and the slots cannot be taken off',gt.eq.weapon===wp&&gt.eq.wpn&&gt.eq.wpn.archer===wp);
+  const sold=gt.coins; W.receive('t',{t:'sell',id:'sword1'}); ok('a carried weapon that is the only copy cannot be sold',gt.inv.includes('sword1')&&gt.coins===sold);
+  x.bdPlayP(pt,null);
+  const old=x.sanitizeGear({inv:['sword1','bow1','wand1','bow2'],eq:{weapon:'bow2'}},'warrior');
+  ok('an old save without eq.wpn gets it filled: its weapon in its class slot',old.eq.weapon==='bow2'&&old.eq.wpn.archer==='bow2'&&old.eq.wpn.warrior===null&&old.eq.wpn.mage===null,JSON.stringify(old.eq.wpn));
+  const junk=x.sanitizeGear({inv:['sword1'],eq:{weapon:'sword1',wpn:{warrior:'constructor',archer:'wand1',mage:{}, __proto__:{mage:'wand1'}}}},'warrior');
+  ok('junk in eq.wpn is dropped (not owned, wrong class, not an id)',junk.eq.wpn.warrior==='sword1'&&junk.eq.wpn.archer===null&&junk.eq.wpn.mage===null);
+  const pv=x.sanitizeGear({inv:['sword1','bow1'],eq:{weapon:'sword1',wpn:{warrior:'sword1',archer:'bow1'}},bd:{[WAR]:{b:0,st:0},play:WAR}},'warrior');
+  ok('a save whose played character is a warrior keeps the sword in hand',pv.eq.weapon==='sword1');
+  const pa=x.sanitizeGear({inv:['sword1','bow1'],eq:{weapon:'sword1',wpn:{warrior:'sword1',archer:'bow1'}},bd:{[ARCH]:{b:0,st:0},play:ARCH}},'warrior');
+  ok('a save whose played character is an archer has the bow in hand (eq.weapon never disagrees with the class played)',pa.eq.weapon==='bow1',pa.eq.weapon);
+}
 
 console.log(fails?fails+' check(s) FAILED':'all bond checks passed'); process.exit(fails?1:0);

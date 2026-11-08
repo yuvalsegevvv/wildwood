@@ -14,7 +14,7 @@ function chrOpen(set,tab){
 // the class a character fights as: its own basic attack's class (a set's position 1 is bound to one class); the Wanderer: any
 function chrClsOf(k){ const S=SS_SETS[k], id=S&&S.pos&&S.pos[1]&&S.pos[1].ids[0], d=id&&SKILLS[id]; return d?d.cls:null; }
 function chrTagLine(k){
-  if(k==='wanderer'){ const P=WD_PATHS[bdcPath()]; return P?P.name+' path':'any class'; }
+  if(k==='wanderer'){ const P=WD_PATHS[bdcPath()]; return P?P.name+' path · '+CHR_CLS[P.cls]+' · '+(P.el==='basic'?'no element':ELEMS[P.el].name):'any class'; }
   const S=SS_SETS[k]; if(!S) return ''; const c=chrClsOf(k);
   return (CHR_CLS[c]||'')+(S.role&&CHR_ROLE[S.role.main]?' · '+CHR_ROLE[S.role.main]:'');
 }
@@ -28,7 +28,7 @@ function chrTab(t){
 function chrHeroHtml(k){
   const X=GEAR.skills&&GEAR.skills.bdx, main=X&&X.main===k, own=chrOwn(k);
   if(k==='wanderer'){ const P=WD_PATHS[bdcPath()], r=((GEAR.bd||{}).wanderer||{}).r|0;
-    return '<div class="chr-hd" style="--c:#d9b26a"><div class="chr-pic" data-chrpic="wanderer"></div><div class="chr-id"><b>The Wanderer</b><span>Your own hiker &middot; any class &middot; '+(P?'the path of '+P.name+' ('+(CHR_ROLE[P.role]||P.role)+')':'no path')+' &middot; Realization '+BD_ROMAN[r]+'</span>'
+    return '<div class="chr-hd" style="--c:#d9b26a"><div class="chr-pic" data-chrpic="wanderer"></div><div class="chr-id"><b>The Wanderer</b><span class="chr-tags">'+(P?elChip(P.el):'')+(P?'<i class="chr-t">'+CHR_CLS[P.cls]+'</i>':'')+' Your own hiker &middot; '+(P?'the path of '+P.name+' ('+(CHR_ROLE[P.role]||P.role)+')':'no path')+' &middot; Realization '+BD_ROMAN[r]+'</span>'
       +'<div class="chr-play">'+bdcPlayBtn('wanderer',true,main)+(main&&X.act>=0?'<em>Realization '+BD_ROMAN[Math.max(0,X.act)]+' active</em>':'')+'</div></div></div>'; }
   const S=SS_SETS[k], c=chrClsOf(k), col='#'+('000000'+S.pal.main.toString(16)).slice(-6), E=bdcEntry(k), el=S.el&&ELEMS[S.el]?S.el:'basic', also=S.role&&S.role.also?' + '+(CHR_ROLE[S.role.also.role]||S.role.also.role):'';
   return '<div class="chr-hd" style="--c:'+col+'"><div class="chr-pic" data-chrpic="'+k+'"></div><div class="chr-id"><b>'+S.char.name+'</b><span class="chr-tags">'+elChip(el)+'<i class="chr-t">'+(CHR_CLS[c]||'Any class')+'</i><i class="chr-t">'+(CHR_ROLE[S.role&&S.role.main]||'')+also+'</i><i class="chr-t">'+ZTIER_NAMES[S.land]+'</i></span>'
@@ -69,7 +69,7 @@ function chrPic(k){
 // ---- the skills tab ----
 function chrPieces(k){   // [{slot, label, id, kind: 'sk' | 'pass' | 'cave' | 'ult'}] for the class in hand
   const cls=clsOf(), out=[], sk=GEAR.skills||{};
-  if(k==='wanderer'){ const P=WD_PATHS[bdcPath()]; if(!P) return out; const pc=P.pieces[cls]||{};
+  if(k==='wanderer'){ const P=WD_PATHS[bdcPath()]; if(!P) return out; const pc=P.pieces[P.cls]||{};   // (the path's one class)
     out.push({slot:'basic',kind:'sk',id:pc.basic},{slot:'skill',kind:'sk',id:pc.skill},{slot:'burst',kind:'sk',id:pc.burst},{slot:'pass',kind:'pass',id:P.passive},{slot:'cave',kind:'cave',id:WD_CHARGE},{slot:'ult',kind:'ult',id:P.ult});
     return out; }
   const S=SS_SETS[k]; if(!S) return out;
@@ -127,7 +127,7 @@ function chrWearLook(k){
 }
 // the free look follows the character played (economy/items.js applyGear calls this on every you update): a look of a character you no longer play, and have not bought, goes back to your own
 function chrLookCheck(){
-  if(!GEAR||!LOOK||typeof LOOK.model!=='string'||!OUTFITS[LOOK.model]||(GEAR.os&&GEAR.os.includes(LOOK.model))) return;
+  if(!GEAR||!LOOK||typeof LOOK.model!=='string'||!OUTFITS[LOOK.model]||(!CHR_OWN_LOOK&&GEAR.os&&GEAR.os.includes(LOOK.model))) return;   // worn from the Look tab: it follows the character even when the set is owned (the test world owns every outfit)
   const X=GEAR.skills&&GEAR.skills.bdx, S=X&&SS_SETS[X.main]; if(S&&S.outfit===LOOK.model) return;
   if(CHR_OWN_LOOK){ LOOK=fullLook(CHR_OWN_LOOK); CHR_OWN_LOOK=null; chrOwnSave(); } else LOOK=fullLook(ofWear(LOOK,'base'));
   saveLook(); rebuildHiker();

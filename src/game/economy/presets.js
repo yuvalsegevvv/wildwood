@@ -12,7 +12,7 @@ function prSkillNames(e){
 // is this card what you are wearing right now?
 function prIsNow(e){
   const g=GEAR; if(!g||!e) return false;
-  for(const k in g.eq) if((g.eq[k]||null)!==(e.eq[k]||null)) return false;
+  for(const k in g.eq) if(k!=='wpn'&&(g.eq[k]||null)!==(e.eq[k]||null)) return false;
   const S=g.skills||{}, E=(S.eq&&S.eq[e.cls])||{};
   for(const sl of ['basic','skill','burst']) if((E[sl]||null)!==(e.sk[sl]||null)) return false;
   for(let j=0;j<3;j++) if(((S.pass||[])[j]||null)!==((e.pass||[])[j]||null)) return false;

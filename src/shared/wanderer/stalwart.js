@@ -3,7 +3,7 @@
    tools/skillsets-ladder.js --wanderer --path stalwart (a tank: judged by the tank band, about 90 of the baseline's damage). The ladder cannot see what makes it a tank (the `red` stat, the `tick` / `hurt` heals).
    Stats of the Wanderer's tree: the 'tank' table. */
 defineWandererPath({
-  id:'stalwart', name:'Stalwart', role:'tank', kit:'tank', from:'ironwill',
+  id:'stalwart', name:'Stalwart', cls:'warrior', el:'fire', role:'tank', kit:'tank', from:'ironwill',
   text:'Outlast everything: far less damage taken and a steady recovery in the fight, for a lighter hand.',
   passive:{name:'Thick Hide', text:'{}% less damage taken; you deal 14% less damage', stat:'red', v:[0.09, 0.015], cost:{stat:'dmg', v:-0.14}},
   ult:{name:'Last Stand', desc:'You plant your feet and the ground answers: everything within 6 m is hit and shoved back, and a shield worth 20% of your maximum health holds for 6 seconds.', range:6, mult:1.2, act:['wdstalwartult',0.9,0.55], anim:'nova',

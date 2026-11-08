@@ -137,7 +137,7 @@ MSG.scroll=(p,msg)=>{
   if((p.gear.scr[to]||0)<1){ toastTo(p.id,'You have no '+(to==='e'?'epic':'unique')+' upgrade scroll','bad'); return; }
   const nid=it.base+'-'+RAR_KEY[want]; if(!ITEM[nid]) return;
   p.gear.scr[to]--; const spare=unwornCount(p,id)>=1, worn=Object.keys(p.gear.eq).find(k=>p.gear.eq[k]===id);   // a spare copy in the bag is the one that burns; a worn piece with no spare is changed where it stands
-  p.gear.inv.splice(p.gear.inv.indexOf(id),1,nid); if(!spare&&worn) p.gear.eq[worn]=nid;
+  p.gear.inv.splice(p.gear.inv.indexOf(id),1,nid); if(!spare&&worn) p.gear.eq[worn]=nid; wpnSwapG(p.gear,id,nid);
   gearChangedP(p); toastTo(p.id,'The scroll burns away: '+ITEM[nid].name,'loot r'+ITEM[nid].rar); ev('merge',p.id,nid);
 };
 MSG.pztest=(p,msg)=>{ if(!io.test) return; pzDevP(p,msg.v); };   // testworld: the one public puzzle tool, honoured only in the /test world (nothing there is saved); the admin Puzzles section is the same thing behind the dev switch

@@ -27,7 +27,7 @@ function renderShop(){
     const ids=Object.keys(counts).sort((a,b)=>ITEM[a].tier-ITEM[b].tier||ITEM[a].rar-ITEM[b].rar);
     if(!ids.length) h='<p class="muted">Nothing to sell here.</p>';
     for(const id of ids){
-      const it=ITEM[id], locked=Object.values(GEAR.eq).includes(id)&&counts[id]<2, val=sellPrice(it);
+      const it=ITEM[id], locked=(Object.values(GEAR.eq).includes(id)||wpnInactive(GEAR).includes(id))&&counts[id]<2, val=sellPrice(it);
       h+=row(it,locked?'<span class="tag on">Equipped</span>':`<button class="chip" data-sell="${id}">Sell ${val}</button>`,'x'+counts[id]);
     }
   }

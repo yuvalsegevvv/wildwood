@@ -10,7 +10,7 @@ function addMatP(p,id,n,monId){
   const have=p.gear.mats[id]||0, add=Math.min(n,MAT_MAX-have); if(add<=0) return;
   p.gear.mats[id]=have+add; p.dirty=true; ev('drop',p.id,id,add,monId==null?null:monId);
 }
-const unwornCount=(p,id)=>p.gear.inv.filter(x=>x===id).length-Object.values(p.gear.eq).filter(x=>x===id).length;
+const unwornCount=(p,id)=>p.gear.inv.filter(x=>x===id).length-Object.values(p.gear.eq).filter(x=>x===id).length-wpnInactive(p.gear).filter(x=>x===id).length;   // wpn: the two carried weapons not in use count as worn
 // Greta's forge: three identical items (not the ones you wear) become one of the next rarity
 function mergeP(p,id){
   if(dgMergeRefusedP(p,id)) return;   // dungeons: a tempered (above +0) level-30 piece does not merge
@@ -21,19 +21,18 @@ function mergeP(p,id){
   const n=ITEM[nid]; toastTo(p.id,'Forged: '+n.name,'loot r'+n.rar); ev('merge',p.id,nid);
 }
 function giveAllP(p){ for(const it of ITEM_LIST) if(!p.gear.inv.includes(it.id)&&p.gear.inv.length<BAG_MAX) p.gear.inv.push(it.id); p.dirty=true; }
-function gearChangedP(p){ recalcP(p); p.dirty=true; ev('pgear',p.id,p.gear.eq); }
+function gearChangedP(p){ recalcP(p); p.dirty=true; ev('pgear',p.id,wpnPubEq(p.gear.eq)); }
 function equipP(p,id){
   const it=ITEM[id]; if(!it||!p.gear.inv.includes(id)) return;
   if(p.level<it.lv){ toastTo(p.id,it.name+' needs level '+it.lv,'bad'); return; }
-  const cls=clsOfP(p); p.gear.eq[it.kind==='weapon'?'weapon':it.slot]=id; gearChangedP(p);
+  const cls=clsOfP(p); if(it.kind==='weapon') wpnEquipP(p,it); else p.gear.eq[it.slot]=id; gearChangedP(p);   // wpn: a weapon goes to its class's slot
   if(it.kind==='armor') mqActP(p,'armor'); else if(it.kind==='tool') mqActP(p,'tool',1,{tool:it.slot,tier:it.tier}); else if(clsOfP(p)!==cls) mqActP(p,'class');
 }
-function unequipP(p,slot){ if(slot==='weapon'||!(slot in p.gear.eq)) return; p.gear.eq[slot]=null; gearChangedP(p); }
+function unequipP(p,slot){ if(slot==='weapon'||slot==='wpn'||!(slot in p.gear.eq)) return; p.gear.eq[slot]=null; gearChangedP(p); }
 function equipClassP(p,cls){
   const slot=WEAPON_OF[cls]; if(!slot) return;
-  let owned=p.gear.inv.filter(id=>ITEM[id].slot===slot&&ITEM[id].lv<=p.level).sort((a,b)=>ITEM[b].tier-ITEM[a].tier);
-  if(!owned.length){ p.gear.inv.push(slot+'1'); owned=[slot+'1']; }
-  const was=clsOfP(p); p.gear.eq.weapon=owned[0]; gearChangedP(p); if(clsOfP(p)!==was) mqActP(p,'class');
+  const pc=wpnPlayCls(p.gear); if(pc&&pc!==cls){ toastTo(p.id,'The character you play uses a '+CLASSES[pc].name.toLowerCase()+' weapon: play someone else to change','bad'); return; }   // wpn
+  const was=clsOfP(p), W=p.gear.eq.wpn||(p.gear.eq.wpn={}), cur=W[cls]; W[cls]=cur&&p.gear.inv.includes(cur)?cur:wpnBestG(p.gear,cls,p.level); p.gear.eq.weapon=W[cls]; gearChangedP(p); if(clsOfP(p)!==was) mqActP(p,'class');
 }
 // shops, the forge, the trainer and the quest board stand in the villages and their panels open only beside their people: a message from the field (a hacked client) is refused
 function marketP(p){ if(inVillage(p)) return true; toastTo(p.id,'Shops, the forge, the trainer and the quest board are in the villages','bad'); return false; }
@@ -45,7 +44,7 @@ function buyP(p,id){ const it=ITEM[id]; if(!it||it.rar>0) return;   // shops onl
   if(p.gear.coins<price){ toastTo(p.id,'Not enough coins','bad'); return; } p.gear.coins-=price; p.gear.bought[id]=n+1; addItemP(p,id,true); toastTo(p.id,'Bought '+it.name+' for '+price+' coins','loot r0'); ev('loot',p.id,id); if(it.kind!=='tool') mqActP(p,'buy'); }
 function sellP(p,id){
   const i=p.gear.inv.lastIndexOf(id); if(i<0) return;
-  const copies=p.gear.inv.filter(x=>x===id).length; if(Object.values(p.gear.eq).includes(id)&&copies<2) return;
+  const copies=p.gear.inv.filter(x=>x===id).length; if((Object.values(p.gear.eq).includes(id)||wpnInactive(p.gear).includes(id))&&copies<2) return;
   p.gear.inv.splice(i,1); p.gear.coins+=sellPrice(ITEM[id]); p.dirty=true; mqActP(p,'sell');
 }
 /* ---- the quest board ---- */

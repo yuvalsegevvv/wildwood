@@ -30,6 +30,7 @@ function testKitP(p){
   awkGrantP(p,AWK_WANDERER,4); for(const id of SS_ORDER) if(!SS_SETS[id].dev) awkGrantP(p,id,4);   // awakening: every tree to A4 (the owner's choice: skills unlock to level 8; A5 is earned); the set pieces' levels follow it
   ultCheckP(p);
   // wear the best of it: the first weapon, every armour piece, a plain ring, a crit-damage pendant, an attack talisman
+  for(const w of ['sword','bow','wand']) equipP(p,dgGearId40(w,TEST_RAR,TEST_ENH));   // wpn: all three carried (the last one equipped is in hand until a character is played)
   equipP(p,dgGearId40('sword',TEST_RAR,TEST_ENH));
   for(const s of ARMOR_SLOTS) equipP(p,dgGearId40(s,TEST_RAR,TEST_ENH));
   equipP(p,dgRingId40('basic',TEST_RAR,TEST_ENH)); equipP(p,dgPendantId40('critdmg',TEST_RAR,TEST_ENH)); equipP(p,dgTalismanId('atk',TEST_RAR,TEST_ENH));

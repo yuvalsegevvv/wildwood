@@ -10,7 +10,7 @@ function renderForge(){
   if(forgeTab==='scroll'){ $('#forgeBody').innerHTML=pzScrollHtml(); pzScrollBind($('#forgeBody')); return; }   // puzzles: the Scrolls tab (puzzles/scrolls.js)
   if(forgeTab==='sac'){ $('#forgeBody').innerHTML=rlUiSacHtml(); rlUiBind($('#forgeBody')); return; }   // rolls: the Sacrifice tab
   if(forgeTab==='temper'){ $('#forgeBody').innerHTML=dgTemperHtml(); dgTemperBind($('#forgeBody')); return; }   // dungeons: the Temper tab (dungeon-gear.js)
-  const counts=bagCounts(), worn={}; for(const s in GEAR.eq){ const id=GEAR.eq[s]; if(id) worn[id]=(worn[id]||0)+1; }
+  const counts=bagCounts(), worn={}; for(const s in GEAR.eq){ const id=GEAR.eq[s]; if(typeof id==='string') worn[id]=(worn[id]||0)+1; } for(const id of wpnInactive(GEAR)) worn[id]=(worn[id]||0)+1;   // wpn: carried weapons count as worn
   const ids=Object.keys(counts).filter(id=>ITEM[id].rar<4&&counts[id]>=2&&!ITEM[id].n)   // dungeons: a tempered (+n) piece does not merge
     .sort((a,b)=>(counts[b]>=MERGE_COUNT)-(counts[a]>=MERGE_COUNT)||ITEM[b].rar-ITEM[a].rar||ITEM[b].tier-ITEM[a].tier||a.localeCompare(b));
   let h=`<p class="fg-intro">Bring me three of the same piece (same name, level and rarity) and I will forge them into one of the next rarity. It still needs the same level to wear, but it is a good deal stronger. I don't touch what you're wearing.</p>

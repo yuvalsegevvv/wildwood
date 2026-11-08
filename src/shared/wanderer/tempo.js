@@ -3,7 +3,7 @@
    (a safe damage path: about 80% of the damage sets' average at Bond VI). The cd stat is capped at 60% in all (abilityCd): the passive, Realization I and the Awakening branch stack under that cap.
    Stats of the Wanderer's tree: the 'safe' table. */
 defineWandererPath({
-  id:'tempo', name:'Tempo', role:'safe', kit:'safe', from:'quickhands',
+  id:'tempo', name:'Tempo', cls:'mage', el:'water', role:'safe', kit:'safe', from:'quickhands',
   text:'Keep every skill spinning: shorter cooldowns, and your basic attacks hurry the others back.',
   passive:{name:'Quick Pace', text:'{}% shorter cooldowns', stat:'cd', v:[0.10, 0.02]},
   ult:{name:'Time Slip', desc:'You step out of the moment: a shock 8 m round you hits everything there, and the stunned stand still while you go on.', range:8, mult:1.4, act:['wdtempoult',0.9,0.55], anim:'nova',

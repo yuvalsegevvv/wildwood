@@ -6,7 +6,8 @@ const INV={sel:null};   // selected item: {id, from:'bag'|slot}
 const slotOf=it=>it.kind==='weapon'?'weapon':it.slot;
 function bagCounts(){ // items in the bag that are not being worn (one copy of each worn item is on the body)
   const c={}; GEAR.inv.forEach(id=>c[id]=(c[id]||0)+1);
-  for(const s in GEAR.eq){ const id=GEAR.eq[s]; if(id&&c[id]){ c[id]--; if(!c[id]) delete c[id]; } }
+  for(const s in GEAR.eq){ const id=GEAR.eq[s]; if(typeof id==='string'&&c[id]){ c[id]--; if(!c[id]) delete c[id]; } }
+  for(const id of wpnInactive(GEAR)) if(c[id]){ c[id]--; if(!c[id]) delete c[id]; }   // wpn: the two carried weapons not in use are not in the bag either
   return c;
 }
 function tile(it,from,count){
@@ -22,6 +23,9 @@ function renderInv(){
   $('#invAmber').textContent=(GEAR.amb||0)+' amber';
   const g=gearStats(), c=CLASSES[clsOf()];
   let h=`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div>${invExtraStats()}</div>`;
+  { const W=GEAR.eq.wpn||{}, act=ITEM[GEAR.eq.weapon]&&CLASS_OF[ITEM[GEAR.eq.weapon].slot];   // wpn: the three carried weapons; only the one for the class you play counts
+    h+='<div class="wpn-row" aria-label="Weapons carried">'+WPN_CLS.map(cl=>{ const it=typeof W[cl]==='string'?ITEM[W[cl]]:null, on=cl===act;
+      return `<div class="wpn-s${on?' on':' off'}"><span class="eq-l">${WEAPON_OF[cl][0].toUpperCase()+WEAPON_OF[cl].slice(1)} (${CLASSES[cl].name})</span>${it?tile(it,on?'weapon':'wpn',1):`<div class="tile empty">${slotIcon('weapon')}</div>`}<em>${on?'in use':'inactive'}</em></div>`; }).join('')+'</div>'; }
   h+='<div class="inv-wrap"><div class="doll" id="invDoll">'+SIL;
   for(const [s,area] of BODY_SLOTS){
     const it=ITEM[GEAR.eq[s]];
@@ -39,7 +43,7 @@ function renderInv(){
   { const tr=BT_ORDER.filter(id=>GEAR.awm&&(GEAR.awm[id]|0)>0); if(tr.length) h+=`<div class="inv-h">Boss trophies <span>for the Awakening trees</span></div><div class="mat-row">${tr.map(id=>`<span class="matc" title="${BOSS_TROPHY[id].name}${BOSS_TROPHY[id].text?': '+BOSS_TROPHY[id].text:''}"><span class="tile r3 matt" aria-label="${BOSS_TROPHY[id].name} x${GEAR.awm[id]}">${btIcon(BOSS_TROPHY[id].col)}<span class="ct">x${GEAR.awm[id]}</span></span><span class="nm">${BOSS_TROPHY[id].name}</span></span>`).join('')}</div>`; }   // trophies
   { const rr=rdMatRows(); if(rr.length) h+=`<div class="inv-h">Raid materials <span>for upgrading signature skills</span></div><div class="mat-row">${rr.map(r=>`<span class="matc" title="${r.name}: won by clearing a raid in that land"><span class="tile r3 matt" aria-label="${r.name} x${r.n}">${matIcon(0xe8b84a,'drop',r.land,r.name)}<span class="ct">x${r.n}</span></span><span class="nm">${r.name}</span></span>`).join('')}</div>`; }   // raids
   $('#invBody').innerHTML=h;
-  if(INV.sel && !(INV.sel.from==='bag'?counts[INV.sel.id]:GEAR.eq[INV.sel.from]===INV.sel.id)) INV.sel=null;
+  if(INV.sel && !(INV.sel.from==='bag'?counts[INV.sel.id]:INV.sel.from==='wpn'?wpnInactive(GEAR).includes(INV.sel.id):GEAR.eq[INV.sel.from]===INV.sel.id)) INV.sel=null;
   renderInvInfo();
 }
 // every other number that shapes a fight: the passives' totals (the loadout you have open) and the necklace's line
@@ -58,14 +62,14 @@ function statDiff(it,cur){
 function renderInvInfo(){
   const el=$('#invInfo'); if(!el) return;
   if(!INV.sel){ el.innerHTML=`<p class="muted">${isTouch?'Tap':'Click'} an item for details. Drag it onto your body to wear it, or back into the bag to take it off.</p>`; return; }
-  const it=ITEM[INV.sel.id], worn=INV.sel.from!=='bag', slot=slotOf(it), cur=ITEM[GEAR.eq[slot]], locked=PL.level<it.lv;
+  const it=ITEM[INV.sel.id], worn=INV.sel.from!=='bag', carried=INV.sel.from==='wpn', slot=slotOf(it), cur=ITEM[GEAR.eq[slot]], locked=PL.level<it.lv;
   const kind=it.kind==='weapon'?it.slot[0].toUpperCase()+it.slot.slice(1)+' ('+CLASSES[CLASS_OF[it.slot]].name+')':SLOT_LABEL[slot];
   let cmp='';
   const have=bagCounts()[it.id]||0;
   if(!worn && have>=MERGE_COUNT && it.rar<4) cmp=`<span style="color:${RAR_COL[it.rar+1]}">You have ${have}: Greta's forge (or Tetsuo's in Hanami) can merge 3 into a ${RARITY[it.rar+1]} one.</span>`;
   if(!worn){ const d=statDiff(it,cur); cmp=(cmp?cmp+'<br>':'')+(cur?(d?`${d} <span class="muted">compared to your ${cur.name}</span>`:'<span class="muted">Same as what you wear</span>'):'<span class="up">Fills an empty slot</span>'); }
   { const dg=dgInfoHtml(it); if(dg) cmp+=(cmp?'<br>':'')+dg; }   // dungeons: a level-30 piece's tempering
-  const btn=worn?(slot==='weapon'?'<span class="muted">You always hold a weapon: drag another one onto your hand to swap.</span>':`<button class="chip" data-unequip="${slot}">Take off</button>`)
+  const btn=carried?'<span class="muted">Carried, not in use: it is in your hand when you play a '+CLASSES[CLASS_OF[it.slot]].name.toLowerCase()+' character (Characters panel, T).</span>':worn?(slot==='weapon'?'<span class="muted">You always hold a weapon: drag another one onto your hand to swap.</span>':`<button class="chip" data-unequip="${slot}">Take off</button>`)
     :`<button class="chip" data-equip="${it.id}" ${locked?'disabled':''}>${locked?'Needs level '+it.lv:'Equip'}</button>`;
   el.innerHTML=`<div class="ii-ico r${it.rar}">${itemIcon(it)}</div><div class="ii-main"><b style="color:${RAR_COL[it.rar]}">${it.name}</b>
     <span>${RARITY[it.rar]} ${kind} &middot; <span class="${locked?'req bad':''}">level ${it.lv}</span> &middot; ${itemStat(it)}</span>${cmp?`<span>${cmp}</span>`:''}</div><div class="ii-btn">${btn}</div>`;
@@ -86,7 +90,7 @@ function canDrop(src,tg){
   return !!tg.bag && src.from!=='weapon';
 }
 function invDown(e){
-  const t=e.target.closest('.tile[data-id]'); if(!t||e.button>0) return;
+  const t=e.target.closest('.tile[data-id]'); if(!t||e.button>0||t.dataset.from==='wpn') return;   // (a carried weapon not in use is not dragged)
   DRAG.src={id:t.dataset.id,from:t.dataset.from}; DRAG.on=false; DRAG.x0=e.clientX; DRAG.y0=e.clientY; DRAG.pid=e.pointerId;
   addEventListener('pointermove',invMove,{passive:false}); addEventListener('pointerup',invUp); addEventListener('pointercancel',invCancel);
 }

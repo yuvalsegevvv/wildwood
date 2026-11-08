@@ -4,7 +4,7 @@
 function prSanitize(g){
   const out=[]; for(let i=0;i<PR_COUNT;i++){
     const e=Array.isArray(g)?g[i]:null; if(!e||typeof e!=='object'){ out.push(null); continue; }
-    const eq={}; if(e.eq&&typeof e.eq==='object') for(const k in e.eq){ const id=e.eq[k]; if(typeof id==='string'&&Object.prototype.hasOwnProperty.call(ITEM,id)&&k in newGearFor('warrior').eq) eq[k]=id; }
+    const eq={}; if(e.eq&&typeof e.eq==='object') for(const k in e.eq){ if(k==='wpn') continue; const id=e.eq[k]; if(typeof id==='string'&&Object.prototype.hasOwnProperty.call(ITEM,id)&&k in newGearFor('warrior').eq) eq[k]=id; }
     const cls=CLASSES[e.cls]?e.cls:'warrior', sk={}; for(const sl of SLOTS) if(e.sk&&typeof e.sk[sl]==='string'&&SKILLS[e.sk[sl]]) sk[sl]=e.sk[sl];
     const pass=new Array(PASSIVE_SLOTS).fill(null); if(Array.isArray(e.pass)){ const k=e.pass.findIndex(x=>typeof x==='string'&&PASSIVES[x]); if(k>=0) pass[0]=e.pass[k]; }   // one passive slot: an old preset's first passive stays
     out.push({n:cleanName(e.n).slice(0,PR_NAME_MAX),cls,eq,sk,pass,ult:typeof e.ult==='string'&&ultDef(e.ult)?e.ult:null,cave:typeof e.cave==='string'&&caveSkillDef(e.cave)?e.cave:null,
@@ -23,7 +23,7 @@ function prBusyP(p){
 function prSaveP(p,i,name,of){
   if(!Number.isInteger(i)||i<0||i>=PR_COUNT) return;
   const g=p.gear, S=g.skills, cls=clsOfP(p), L=prListP(p), old=L[i], eq={};
-  for(const k in g.eq) if(g.eq[k]) eq[k]=g.eq[k];
+  for(const k in g.eq) if(k!=='wpn'&&g.eq[k]) eq[k]=g.eq[k];
   L[i]={n:cleanName(name||(old&&old.n)||'Preset '+(i+1)).slice(0,PR_NAME_MAX),cls,eq,sk:Object.assign({},S.eq[cls]),pass:S.pass.slice(0,PASSIVE_SLOTS),ult:S.ult||null,cave:S.cave||null,mov:S.mov||null,of:clampInt(of,-1,PR_OUTFITS-1,-1)};
   p.dirty=true; toastTo(p.id,'Saved preset '+(i+1),'good');
 }
@@ -32,9 +32,9 @@ function prWearP(p,i){
   const e=prListP(p)[i]; if(!e) return;
   if(prBusyP(p)){ toastTo(p.id,'Presets cannot be changed in a boss fight, a raid, a dungeon or on the Proving Isle','bad'); return; }
   const g=p.gear, S=g.skills; let skipped=0;
-  for(const k in g.eq){   // gear: the weapon is always kept (it decides the class); other slots become what the preset holds, or empty
+  for(const k in g.eq){ if(k==='wpn') continue;   // gear: the weapon is always kept (it decides the class); other slots become what the preset holds, or empty
     const id=e.eq[k], it=id&&ITEM[id];
-    if(it&&g.inv.includes(id)&&p.level>=it.lv&&(k==='weapon'?it.kind==='weapon':it.slot===k)) g.eq[k]=id;
+    if(it&&g.inv.includes(id)&&p.level>=it.lv&&(k==='weapon'?it.kind==='weapon':it.slot===k)){ g.eq[k]=id; if(k==='weapon') (g.eq.wpn||(g.eq.wpn={}))[CLASS_OF[it.slot]]=id; }   // wpn: the preset's weapon goes to its class's slot (recalcP keeps the played class's)
     else { if(id) skipped++; if(k!=='weapon') g.eq[k]=null; }
   }
   const C=e.cls;   // (a preset keeps the loadout of the class it was saved with; the weapon decides which class is worn)

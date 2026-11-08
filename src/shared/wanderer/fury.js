@@ -4,7 +4,7 @@
    The shape every path follows: a passive built from its shop passive (stronger, with a twist that fits the role: here a cost, you take more damage), Realization I and IV passive-style rows,
    II and VI rows like a set's 3- and 5-set rows, and a burst whose two boosts buff a class active worn (a1-a3) and / or the path passive (p1). Stats of the Wanderer's tree: the 'risk' table. */
 defineWandererPath({
-  id:'fury', name:'Fury', role:'risk', kit:'risk', from:'ferocity',
+  id:'fury', name:'Fury', cls:'warrior', el:null, role:'risk', kit:'risk', from:'ferocity',
   text:'Hit harder than anyone and pay for it: more damage, more taken, and critical hits that stoke the rage.',
   passive:{name:'Red Temper', text:'+{}% damage with every attack; you take 8% more damage', stat:'dmg', v:[0.09, 0.02], cost:{stat:'red', v:-0.08}},
   ult:{name:'Red Ruin', desc:'You hurl a blood-red shock onto the target: 8 m of torn ground that keeps bursting for 2 seconds, and the stunned reel.', range:26, mult:1.5, act:['wdfuryult',0.9,0.55], anim:'nova',
