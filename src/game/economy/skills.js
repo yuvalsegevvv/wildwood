@@ -6,7 +6,7 @@
 let skTab=null, skKind='skill';
 const SK={sel:null};   // the selected skill or passive id
 function openSkills(n,kind){ openPanel('skills',n||null); skTab=clsOf(); if(KIND_TITLE[kind]) skKind=kind; SK.sel=null; renderSkills(); }
-function toggleSkills(){ if(!started||customizing) return; if($('#skills').hidden) openSkills(); else closePanels(); }
+function toggleSkills(){ if(!started||customizing) return; if($('#skills').hidden&&$('#awc').hidden) chrOpen(null,'sk'); else closePanels(); }   // K: the Characters panel on its Skills tab (awakening/hub.js); the slot picker below opens from its swap buttons
 const skIcon=name=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||ICONS.burst||''}</svg>`;   // (skillsets: a signature skill without a glyph of its own gets the generic burst one, as the action bar does)
 // a skill's icon: a set piece draws its own set's symbol (skillsets/panel.js), any other its glyph by name (a piece of no set without one gets the generic burst)
 const skIconOf=s=>{ const g=ssGlyph(s); return g?`<svg ${SS_ICON_ATTR}>${g}</svg>`:skIcon(s.icon||s.name); };
