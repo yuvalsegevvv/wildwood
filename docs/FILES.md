@@ -258,6 +258,10 @@ shared
   rift/longnight.js                  The Long-Night Rift, a Hoarfrost Reach rift (dark, pays Dark Essence): its tear on the Reach's plateau, its violet night aura, six dark glass kinds and a Herald
   rift/stone.js                      The Stone Rift, a Greyspine rift (earth, pays Earth Essence): its tear on the Greyspine's ground, its grey-ochre aura, six earth glass kinds and a Herald
   rift/forge.js                      The Forge Rift, a Greyspine rift (fire, pays Fire Essence): its tear on the Greyspine's ground, its ember-orange aura, six fire glass kinds and a Herald
+  rift/gilded.js                     The Gilded Rift, the Sunscar's rift (pays coins): its tear in the Sunscar's wilds west of Glasswell, a gold and rose aura, six glass kinds of the desert and a Herald; mode Gale, a comb of platforms
+  rift/blade.js                      The Blade Rift, the Gloamhorn's rift (pays Weapon Reroll Stones): its tear in the Gloamhorn's wilds west of Wraithwick, a steel-blue and violet aura, six glass kinds of the dusk and a Herald (the colossus); mode Quarry, a long cross
+  rift/bulwark.js                    The Bulwark Rift, the Amber Reach's rift (pays Armor Reroll Stones): its tear in the Amber Reach's wilds west of Tallgrass, a sky-blue and amber aura, six glass kinds of the savanna and a Herald; mode Heartwood, a broken square round the hub
+  rift/charm.js                      The Charm Rift, the Emberwake Isles' rift (pays Accessory Reroll Stones): its tear on the isles east of Coralhaven, a sea-cyan and coral aura, six glass kinds of the isles and a Herald; mode Lanterns, a double comb
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
@@ -348,6 +352,14 @@ server
   puzzles-group.js                   Puzzle stones for groups: a dungeon run's three side stones, the raids' stones inside the walls and the Deep Cave's chest in cave material
   dip.js                             Dark Infection Pipes on the server: upgrading a pipe with the zone's materials, releasing dark energy (coins, 10 minutes), the refill ticks that spawn the zone's monsters, the active list sent to hikers
   rift.js                            Rifts on the server: the energy (gear.rift, refilled by the clock), the tear's window, a solo run in a rift slot of the dungeon instance layer, the waves of glass monsters, what a rift pays (XP x3, or Essence), x2 with the Double, the clear bonus, one respawn, leaving
+  rift/waves.js                      Rift mode Waves (the Shardmere): ten waves through the tears, the next at 75% dead or 40 s, the Herald on waves 5 and 10; the last wave dead wins
+  rift/heart.js                      Rift mode Heartwood (the Taproot): a root heart on the hub; ten waves, a quarter of each are breakers that walk to the heart and swing at it; it heals 5% a wave; broken = the run is lost
+  rift/gale.js                       Rift mode Gale (the Petal Rift): ten waves, and every RIFT_GUST_S a gust: one platform glows (most often the one you stand on), RIFT_GUST_WARN s later the wind throws whoever is on it (a third of their health; monsters lose half)
+  rift/beacons.js                    Rift mode Beacons (the Sunlit Rift): three sun beacons on the far platforms; stand in one's circle to light it (RIFT_BEACON_S s) while monsters pour in steadily; a lit beacon heals who stands in it; all three lit call the Radiant Herald; its death wins
+  rift/thaw.js                       Rift mode Thaw (the Rime Rift): frost creeps over you (full in RIFT_FROST_S s), every kill melts some, at full frost it bites (5% of your health a second); waves on a clock; after RIFT_THAW_S the Rimecaller comes; its death wins
+  rift/lanterns.js                   Rift mode Lanterns (the Long-night Rift): a dark void (the client's look); four shadow cores on the platforms, each shielded while its three wardens live; break an open core with a 2 s channel (the talk key); a small wave every RIFT_LANTERN_POUR_S; all cores broken call the Night Herald; its death wins
+  rift/quarry.js                     Rift mode Quarry (the Stone Rift): a stone colossus (the Herald, x RIFT_COLOSSUS_HP more) walks the platforms, immune while its four glass pylons stand; each pylon has three guards; break a pylon with a 3 s channel; all four broken open the colossus; its death wins
+  rift/gauntlet.js                   Rift mode Gauntlet (the Forge Rift): no waves; five forge champions one after another (a Herald-sized elite of the rift's kinds, tougher each time, with a few adds), fire vents flaring under you (a glowing ring, RIFT_VENT_WARN s, a fifth of your health), a RIFT_GAUNT_S clock: out of time = lost
   testworld.js                       The public test world: a second, throwaway world on the deployed server where a hiker starts at level 60 with a full kit (no saves, no accounts, no rankings, no XP, no admin tools)
   api.js                             Server API: join, leave, receive (message routing), setPos, tick (simulation, private updates, per-player snapshots)
 

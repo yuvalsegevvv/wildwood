@@ -8,6 +8,7 @@ riftMobDef('stonetreant','stonecairn','Cairn Treant',{el:'earth',pal:{tint:0x9a8
 riftMobDef('minegoblin','stonegoblin','Quarry Goblin',{el:'earth',pal:{tint:0xb09a70}});
 riftMobDef('slatecrawler','stonecrawler','Shale Crawler',{el:'earth',pal:{tint:0x8a8070}});
 riftMobDef('granitegolem','stoneherald','Bedrock Herald',{el:'earth',scale:1.5,heavy:true,pal:{tint:0xd8c090}});
-defineElemRift({id:'stone',name:'The Stone Rift',blurb:'A tear into a void of cut stone and ochre dust. Quarry-born monsters of the earth element pour in, wave after wave. It pays Earth Essence, no XP and no coins.',
+defineElemRift({id:'stone',mode:'quarry',shape:['OOO','OoO','HOO'],   // its platforms: one wide mesa of slabs, open on every side
+  name:'The Stone Rift',blurb:'A tear into a void of cut stone and ochre dust. Quarry-born monsters of the earth element pour in, wave after wave. It pays Earth Essence, no XP and no coins.',
   door:{x:-64,z:-484},aura:[0x8a7a6a,0xc2914e,0xe8d0a0],music:'rift',el:'earth',essence:'earth',herald:'stoneherald',
   mobs:['stoneslime','stoneboar','stonebeetle','stonecairn','stonegoblin','stonecrawler']});

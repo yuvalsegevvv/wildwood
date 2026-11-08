@@ -90,3 +90,28 @@ Design: the skills revamp's PLAN section 5. A rift with `reward:'essence'` pays 
 | petal, sunlit, rime, long-night, stone, forge | Sakura Vale, Hoarfrost Reach, Greyspine | Air, Light, Water, Dark, Earth, Fire Essence | the card `haiku-rift-card.md` in the revamp plan folder |
 
 Window and HUD: an essence rift's window says what it pays and its element; the HUD's last line and the results card show the Essence (`mb.got.mats`). The inventory lists Essence under the trophies (`essIcon`).
+
+## 6. Modes, shapes, tiers and the coin and stone rifts (8 Nov)
+
+Every rift plays its own **mode** on its own **shape**; glass monsters run **twice as fast** as the kind they copy (`RIFT_SPEED_K`).
+
+| Rift | Land | Pays | Mode (`server/rift/<mode>.js`) | Shape |
+|---|---|---|---|---|
+| Shardmere | home | XP x3 | waves | the plus |
+| Taproot | home | Prime Essence | heart: a root heart on the hub, a quarter of each wave breaks for it | a root tree |
+| Petal | vale | Air Essence | gale: a platform glows, 3 s later its gust takes a third of your health | a ring |
+| Sunlit | vale | Light Essence | beacons: stand in three beacons to light them, then the Herald | a sun road |
+| Rime | hoar | Water Essence | thaw: frost fills in 45 s, kills melt it, full frost bites; 6 minutes, then the Rimecaller | a stair |
+| Long-night | hoar | Dark Essence | lanterns: a dark look; four shielded cores (kill the wardens, channel 2 s), then the Herald | two wings |
+| Stone | grey | Earth Essence | quarry: an immune colossus, four pylons (channel 3 s) open it | a mesa |
+| Forge | grey | Fire Essence | gauntlet: five champions, fire vents, a 10-minute clock | a ring of forges |
+| Gilded | sun | coins (15x a world kill, a clear 1500 more) | gale | a comb |
+| Blade | gloam | Weapon Reroll Stones | quarry | a long cross |
+| Bulwark | amber | Armor Reroll Stones | heart | a broken square |
+| Charm | isles | Accessory Reroll Stones | lanterns | a double comb |
+
+- **Shape** (`R.shape`): rows of H (hub), O (platform, two tears), o (stepping stone), `.` (void); neighbours are bridged; `riftShapeBad` checks it, `riftLayout` builds it (also `isles`, `mid` for the view).
+- **Mode** (`R.mode`, `RIFT_MODES` text in `shared/rift.js`, kits `RIFT_MODE_KITS.<mode>`): the engine's shared parts are in `server/rift.js` (`riftQueueS`, `riftPourS`, `riftWaveStepS`, `riftStageS`, `riftHudS`, `riftBigIslesS`, `riftGuardsS`). Every mode counts 10 stages; Essence and stones pay by stage. The objectives are dungeon objectives (`dgObjS`; kinds `riftheart`, `gust`, `beacon`, `core`, `pylon`, `vent` in `DG_OBJ_KINDS`).
+- **Tiers** (elemental rifts): pick level 30-80 in the window (`rift{a:'go',lv}`); the monsters fight at it; a full clear pays `RIFT_TIER_ESS` (12 / 18 / 26 / 38 / 55 / 80); a clear opens the next tier in every elemental rift (`gear.rift.tier`, `riftTierOpen`).
+- **Coin and stone rifts** fight at your level: coins from level 20 (`RIFT_COIN_*`, above a level-5 pipe's net coins a minute even at the rift's slowest; the smoke test checks it), stones from level 30 (`riftStonesFull(L)` = 10 + 0.75 L a full clear).
+- HUD tuple now: `[stage, monsters, clock, x2, paid, tier, a, b]` (`DG_HUD.rift`).

@@ -8,3 +8,7 @@
 .rf-bar i{ display:block; height:100%; background:linear-gradient(90deg,#5a8cff,#a86cff,#ff7ac8); }
 .rf-x2{ display:flex; gap:8px; align-items:center; margin:0 0 10px; font-size:13px; cursor:pointer; }
 .rf-x2.off{ opacity:.5; cursor:default; }
+/* the level picker of an elemental rift */
+#rift .rf-tiers{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+#rift .rf-tier.on{outline:2px solid #c78cff;background:rgba(199,140,255,.25)}
+#rift .rf-tier[disabled]{opacity:.45}
