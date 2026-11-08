@@ -55,11 +55,11 @@ send({a:'tier',set:K}); send({a:'tier',set:K});
 { ok('A2 and A3 bought',g.awk[K].t===3);
   const c4=x.awkTierCost(K,4), s0=snap(), why=x.awkTierP(p,K);
   ok('A4 asks Prime Essence, which the rifts pay (step 17a): refused with its name while none is held, nothing taken, no throw',!!c4.mats.ess_prime&&typeof why==='string'&&/Prime Essence/.test(why)&&!/cannot/.test(why)&&snap()===s0&&g.awk[K].t===3,why); }
-{ const sh=x.awkShapeOf('pell'), po=x.awkNodeCost('pell','po2'); x.ssGrantSetP(p,'pell',true); fund(); x.awkStatP(p,'pell','spo2');
-  const tid=Object.keys(po.mats).find(m=>m.startsWith('trophy_')), s0=snap(), why=x.awkLevelP(p,'pell','po2');
-  ok('a power level asks the boss trophy: refused with a reason while none is held, nothing taken',sh.id==='oak'&&!!tid&&typeof why==='string'&&/trophy|Trophy/.test(why)&&snap()===s0&&!g.awk.pell.n.po2,why);
-  g.awm[tid]=po.mats[tid]; const r=x.awkLevelP(p,'pell','po2');
-  ok('with the trophies held, po2 is bought once and the trophies are taken',r===null&&g.awk.pell.n.po2===1&&!(tid in g.awm),String(r)); }
+{ const sh=x.awkShapeOf('pell'), po=x.awkNodeCost('pell','po7'); x.ssGrantSetP(p,'pell',true); fund(); x.awkStatP(p,'pell','spo2');
+  const tid=Object.keys(po.mats).find(m=>m.startsWith('trophy_')), s0=snap(), why=null;
+  ok('a power level 7 asks the boss trophy; levels 2-6 ask none',sh.id==='oak'&&!!tid&&!x.awkNodeCost('pell','po2').mats[tid],why);
+  const r=x.awkLevelP(p,'pell','po2');
+  ok('po2 is bought with no trophy',r===null&&g.awk.pell.n.po2===1,String(r)); }
 // ---- boss trophies (step 10a) ----
 { ok('every land boss has a trophy row, none is bad, ids are trophy_<boss>',x.BT_BAD.length===0&&Object.values(x.SS_SOURCES).every(l=>[l[0],l[1]].every(b=>x.btOf('trophy_'+b)&&x.btOf('trophy_'+b).boss===b))&&x.BT_ORDER.length===16);
   ok('every trophy boss is a real world boss',x.BT_ORDER.every(id=>x.BOSS_DEFS.some(b=>b.def.id===x.BOSS_TROPHY[id].boss)));

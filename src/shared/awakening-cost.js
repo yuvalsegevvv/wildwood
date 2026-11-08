@@ -102,7 +102,7 @@ function awkDropPick(land,t,el,key){
   return pool[h%pool.length].id;
 }
 // ---- the placeholder item ids (see the agent map)
-const AWK_ECHO_FROM=7;   // the first skill level whose branch material is Echo Shards
+const AWK_ECHO_FROM=7;   // the first skill level that asks special materials (branch material, trophies, Essence)
 const AWK_ID_ECHO='echo', AWK_ID_PRIME='ess_prime';
 const awkRaidId=land=>'rd_'+land, awkTrophyId=boss=>'trophy_'+boss, awkEssenceId=el=>el?'ess_'+el:AWK_ID_PRIME;
 const awkCoins=c=>typeof c==='number'?c:awkShare(c.r,c.at);
@@ -120,14 +120,13 @@ function awkNodeCost(set,nodeId){
   } else if(n.kind==='stat'){
     const R=AWK_STAT_ROWS[awkStatRow(n.depth,n.tier)]; c.coins=Math.round(awkCoins(R.coins)*Lm.k); c.drops=Math.round(R.drops*Lm.k); awkAdd(c.mats,awkEssenceId(I.el),R.ess||0);
   } else if(n.lv<=1){
-    c.coins=AWK_UNLOCK.coins; c.drops=AWK_UNLOCK.drops; awkAdd(c.mats,awkBranchMat(I,n.limb),AWK_UNLOCK.mat);
+    c.coins=AWK_UNLOCK.coins; c.drops=AWK_UNLOCK.drops;   // the unlock is below level 7: coins and drops only
   } else {
     const R=AWK_STEP[n.lv]; if(!R) return null;
     c.coins=Math.round(awkCoins(R.coins)*Lm.k); c.drops=Math.round(R.drops*Lm.k);
-    // Echo Shards (basic / skill / power branches) are asked only from skill level 7; every other material stays from level 2
-    if(!(AWK_LIMBS[n.limb].mat==='echo'&&n.lv<AWK_ECHO_FROM)) awkAdd(c.mats,awkBranchMat(I,n.limb),R.mat);
-    awkAdd(c.mats,awkEssenceId(I.el),R.ess||0);
-    if(Lm.troph) awkAdd(c.mats,awkTrophyId(I.bosses[Lm.troph-1]),AWK_TROPHY[n.lv]);
+    // below skill level AWK_ECHO_FROM a step costs only coins and drops; the special materials (branch material, Essence, trophies) start at level 7
+    if(n.lv>=AWK_ECHO_FROM){ awkAdd(c.mats,awkBranchMat(I,n.limb),R.mat); awkAdd(c.mats,awkEssenceId(I.el),R.ess||0); }
+    if(Lm.troph&&n.lv>=AWK_ECHO_FROM) awkAdd(c.mats,awkTrophyId(I.bosses[Lm.troph-1]),AWK_TROPHY[n.lv]);
   }
   if(c.drops>0) c.kind=awkDropPick(c.land,c.tier,I.el,I.id+':'+nodeId);   // the one monster kind asked
   return c;

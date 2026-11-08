@@ -70,7 +70,7 @@ for(const id of IDS){
   ok('branch multipliers on coins and drops: basic x0.75, skill x1, power x1.25, passive x1, charge x1, burst x1.5; branch material and Essence unchanged',bm(9,'ba').coins===0.75*bm(9,'sk').coins&&bm(9,'po').coins===1.25*bm(9,'sk').coins&&bm(9,'pa').coins===bm(9,'sk').coins&&bm(9,'ch').coins===bm(9,'sk').coins&&bm(9,'bu').coins===1.5*bm(9,'sk').coins&&bm(9,'ba').mats.ess_fire===25&&bm(9,'bu').mats.ess_fire===25&&bm(9,'bu').mats.rd_home===25&&bm(9,'ba').mats.echo===25);
   ok('branch material: Echo Shards on basic, skill and power, the land\'s raid material on passive, charge and burst',['ba','sk','po'].every(l=>X.awkNodeCost(pell,l+'7').mats.echo===12&&!X.awkNodeCost(pell,l+'7').mats.rd_home&&!X.awkNodeCost(pell,l+'5').mats.echo)&&['pa','ch','bu'].every(l=>X.awkNodeCost(pell,l+'7').mats.rd_home===12&&!X.awkNodeCost(pell,l+'7').mats.echo&&!X.awkNodeCost(pell,l+'5').mats.rd_home));
   const u=['pa1','ch1','bu1'].map(i=>X.awkNodeCost(pell,i));
-  ok('unlock nodes pa1 / ch1 / bu1: 5,000 coins, 20 drops, 3 raid material each, nothing else',u.every(c=>c.coins===5000&&c.drops===20&&c.mats.rd_home===3&&Object.keys(c.mats).length===1));
+  ok('unlock nodes pa1 / ch1 / bu1: 5,000 coins and 20 drops, no special material (below level 7)',u.every(c=>c.coins===5000&&c.drops===20&&Object.keys(c.mats).length===0));
   const s1=X.awkNodeCost(pell,'star1'), s2=X.awkNodeCost(pell,'star2');
   ok('star1: 0.1R at 35 (545,000), 150 drops, 20 trophies of each boss, 20 Essence; star2: 0.3R at 45 (2.9M), 300 drops, 40 of each, 40 Essence',near(s1.coins,545000,0.01)&&s1.drops===150&&s1.mats.trophy_boss===20&&s1.mats.trophy_carapax===20&&s1.mats.ess_fire===20&&near(s2.coins,2.9e6,0.02)&&s2.drops===300&&s2.mats.trophy_boss===40&&s2.mats.trophy_carapax===40&&s2.mats.ess_fire===40);
   const T=[1,2,3,4,5].map(t=>X.awkTierCost(pell,t));
@@ -79,7 +79,7 @@ for(const id of IDS){
       &&near(T[4].coins,4.9e6,0.01)&&T[4].mats.rd_home===10&&T[4].mats.ess_prime===30&&T[4].mats.ess_fire===50&&T[4].mats.trophy_boss===2&&T[4].mats.trophy_carapax===2&&[T[0],T[1],T[2],T[3],T[4]].map(c=>c.hikerLv).join()==='10,20,28,35,45');
   ok('tier 0 is free; any other tier is null',(c=>c&&c.coins===0&&c.drops===0&&Object.keys(c.mats).length===0)(X.awkTierCost(pell,0))&&[-1,6,1.5,NaN,'1',null,undefined].every(t=>X.awkTierCost(pell,t)===null));
   const w=X.awkTierCost('tansy',4);
-  ok('an element-less character (Tansy) pays Prime in place of Essence: A4 asks 20 + 30 Prime; the Wanderer too, with any boss\'s trophy',w.mats.ess_prime===50&&!Object.keys(w.mats).some(k=>/^ess_(?!prime)/.test(k))&&X.awkTierCost('wanderer',5).mats.ess_prime===80&&X.awkTierCost('wanderer',5).mats.trophy_any===4&&X.awkNodeCost('wanderer','po4').mats.trophy_any===4); }
+  ok('an element-less character (Tansy) pays Prime in place of Essence: A4 asks 20 + 30 Prime; the Wanderer too, with any boss\'s trophy',w.mats.ess_prime===50&&!Object.keys(w.mats).some(k=>/^ess_(?!prime)/.test(k))&&X.awkTierCost('wanderer',5).mats.ess_prime===80&&X.awkTierCost('wanderer',5).mats.trophy_any===4&&X.awkNodeCost('wanderer','po7').mats.trophy_any===15&&!X.awkNodeCost('wanderer','po4').mats.trophy_any); }
 // ---- stat nodes
 { const rows=[1,2,3,4,5,6,7,8,9].map(r=>X.AWK_STAT_ROWS[r]), A=X.awkShare;
   ok('stat node rows s1-s9: 500 / 1,000 / 2,000 / 5,000 / 12,000 coins, then 0.015R at 20, 0.03R at 28, 0.08R at 35, 0.15R at 45; drops 5 ... 100; Essence only on s7-s9 (5 / 7 / 10)',
@@ -115,13 +115,13 @@ for(const id of IDS){
       if(has!==allowed) bad.push(s.id+' '+n.id);
       if(has&&(n.tier<3||c.hikerLv<28)) bad.push(s.id+' '+n.id+' early');
       if(has&&Object.keys(c.mats).filter(k=>k.startsWith('ess_')).some(k=>k!==ek)) bad.push(s.id+' '+n.id+' wrong element');
-      const tr=Object.keys(c.mats).filter(k=>k.startsWith('trophy_')), okT=n.kind==='star'?tr.length===2:n.kind==='up'&&n.lv>=2&&X.AWK_LIMBS[n.limb].troph?tr.length===1&&tr[0]==='trophy_'+I.bosses[X.AWK_LIMBS[n.limb].troph-1]:tr.length===0;
+      const tr=Object.keys(c.mats).filter(k=>k.startsWith('trophy_')), okT=n.kind==='star'?tr.length===2:n.kind==='up'&&n.lv>=7&&X.AWK_LIMBS[n.limb].troph?tr.length===1&&tr[0]==='trophy_'+I.bosses[X.AWK_LIMBS[n.limb].troph-1]:tr.length===0;
       if(!okT) badT.push(s.id+' '+n.id); }
     for(let t=0;t<=5;t++){ const c=X.awkTierCost(s,t); if(Object.keys(c.mats).some(k=>k.startsWith('ess_')&&k!=='ess_prime'||k==='ess_prime'&&!(t>=4))&&!(t>=4)) bad.push(s.id+' tier '+t); if(Object.keys(c.mats).some(k=>k.startsWith('trophy_'))&&t!==5) badT.push(s.id+' tier '+t); } }
   ok('Essence only at skill levels 7-10, stat nodes s7-s9, the two stars and tiers A4-A5, always the character\'s element (Prime if it has none), never before hiker level 28',bad.length===0,bad.slice(0,4).join(', '));
   ok('trophies only on the power branch (the land\'s first boss), the charge branch (its second), the two stars and A5',badT.length===0,badT.slice(0,4).join(', '));
   const tr=(l)=>SH.oak.nodes.filter(n=>n.limb===l&&n.kind==='up').reduce((s,n)=>s+(Object.entries(X.awkNodeCost('pell',n.id).mats).filter(([k])=>k.startsWith('trophy_')).reduce((a,[,v])=>a+v,0)),0);
-  ok('163 trophies on the power branch and 163 on the charge branch; none on the other four',tr('po')===163&&tr('ch')===163&&['ba','sk','pa','bu'].every(l=>tr(l)===0)&&X.AWK_TROPHY.slice(2).join()==='1,2,4,6,10,15,25,40,60');
+  ok('140 trophies (levels 7-10) on the power branch and 140 on the charge branch; none on the other four',tr('po')===140&&tr('ch')===140&&['ba','sk','pa','bu'].every(l=>tr(l)===0)&&X.AWK_TROPHY.slice(2).join()==='1,2,4,6,10,15,25,40,60');
   ok('Essence is the element of the set: fire for Pell, water for Brynja, Prime for Tansy and the Wanderer',X.awkNodeCost('pell','sk10').mats.ess_fire===35&&X.awkNodeCost('brynja','sk10').mats.ess_water===35&&X.awkNodeCost('tansy','sk10').mats.ess_prime===35&&X.awkNodeCost('wanderer','sk10').mats.ess_prime===35); }
 
 // ---- junk never throws
