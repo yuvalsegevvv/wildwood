@@ -204,7 +204,7 @@
     "raids/wrackmoor.js",
     "raids/moot.js",
     "raids/sevengates.js", "testroom.js",
-    "puzzles.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/sudoku.js", "puzzles/akari.js", "puzzles/slither.js", "puzzles/bridges.js", "puzzles/mirrors.js", "puzzles/nonogram.js", "puzzles/sokoban.js", "puzzle-sites.js", "puzzle-place.js", "puzzle-group.js", "puzzle-track.js", "dip.js", "rift.js", "rift/shardmere.js", "rift/taproot.js"
+    "puzzles.js", "puzzles/rootlines.js", "puzzles/ice.js", "puzzles/sudoku.js", "puzzles/akari.js", "puzzles/slither.js", "puzzles/bridges.js", "puzzles/mirrors.js", "puzzles/nonogram.js", "puzzles/sokoban.js", "puzzle-sites.js", "puzzle-place.js", "puzzle-group.js", "puzzle-track.js", "dip.js", "rift.js", "rift/shardmere.js", "rift/taproot.js", "rift/petal.js", "rift/sunlit.js", "rift/rime.js", "rift/longnight.js", "rift/stone.js", "rift/forge.js"
   ],
   "server": [
     "state.js",

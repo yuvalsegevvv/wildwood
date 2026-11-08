@@ -241,6 +241,12 @@ shared
   rift.js                            Rifts: the numbers (energy, waves, XP x3), the energy clock (riftEnergyAt), the registry of rifts (defineRift, RIFT_DEFS, RIFT_BAD), the glass monsters (riftMobDef), the void world's platform layout (riftLayout), the tear's keep-out (riftNear). Pure; loaded by both sides
   rift/shardmere.js                  The first rift, the Shardmere: its tear in the home forest's wilds, its aura (blue, purple, pink), its seven glass monsters and which wave each joins
   rift/taproot.js                    The first elemental rift, the Taproot (Wildwood's root rift, pays Prime Essence): its tear in the home forest's east wilds, its moss-and-gold aura, six earth glass kinds and a Herald
+  rift/petal.js                      The Petal Rift, a Sakura Vale rift (air, pays Air Essence): its tear in the Vale's wilds, its pale sky-pink aura, six air glass kinds and a Herald
+  rift/sunlit.js                     The Sunlit Rift, a Sakura Vale rift (light, pays Light Essence): its tear in the Vale's wilds, its gold-cream aura, six light glass kinds and a Herald
+  rift/rime.js                       The Rime Rift, a Hoarfrost Reach rift (water, pays Water Essence): its tear on the Reach's plateau, its pale ice-blue aura, six water glass kinds and a Herald
+  rift/longnight.js                  The Long-Night Rift, a Hoarfrost Reach rift (dark, pays Dark Essence): its tear on the Reach's plateau, its violet night aura, six dark glass kinds and a Herald
+  rift/stone.js                      The Stone Rift, a Greyspine rift (earth, pays Earth Essence): its tear on the Greyspine's ground, its grey-ochre aura, six earth glass kinds and a Herald
+  rift/forge.js                      The Forge Rift, a Greyspine rift (fire, pays Fire Essence): its tear on the Greyspine's ground, its ember-orange aura, six fire glass kinds and a Herald
 
 server
   state.js                           Server state (S), the per-tick event queue (ev), messaging helpers
