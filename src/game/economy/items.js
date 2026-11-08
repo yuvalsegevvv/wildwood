@@ -21,7 +21,7 @@ function applyGear(g){
   else if(cosLocked(LOOK,GEAR.cos).length||premLocked(LOOK,GEAR.pc).length){ LOOK=premCleanLook(cosCleanLook(LOOK,GEAR.cos),GEAR.pc); LOOK_SAVED=Object.assign({},LOOK); saveLookLocal(); rebuildHiker(); }   // a look saved before the pieces were crafted: what you do not own comes off
   if(JSON.stringify(GEAR.eq)!==prevEq) rebuildHiker();
   $('#plCoins').textContent=fmtCoins(GEAR.coins); tiersRefresh();
-  gemRefresh(); renderInv(); if(!$('#shop').hidden) renderShop(); if(!$('#forge').hidden) renderForge(); if(!$('#skills').hidden) renderSkills(); if(!$('#presets').hidden) renderPresets(); if(!$('#lodge').hidden) renderLodge(); if(!$('#brew').hidden) renderBrew(); updatePotBar(true); if(!$('#travel').hidden) renderTravel(); if(!$('#quests').hidden) renderQuests(); renderQlog(); syncStartAll(); syncCaveFull();
+  gemRefresh(); renderInv(); if(!$('#shop').hidden) renderShop(); if(!$('#forge').hidden) renderForge(); if(!$('#skills').hidden) renderSkills(); if(!$('#presets').hidden) renderPresets(); if(!$('#lodge').hidden) renderLodge(); if(!$('#brew').hidden) renderBrew(); if(!$('#orbs').hidden) bdcRender(); /*bond:*/ updatePotBar(true); if(!$('#travel').hidden) renderTravel(); if(!$('#quests').hidden) renderQuests(); renderQlog(); syncStartAll(); syncCaveFull();
 }
 function equip(id){
   const it=ITEM[id]; if(!it) return;

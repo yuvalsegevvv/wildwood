@@ -41,7 +41,7 @@ function onWelcome(msg){
   adoptLook(msg.look);
   clearMonViews(); clearRemotes(); clearBossVisuals(); CB.projs.forEach(p=>scene.remove(p.mesh)); CB.projs.length=0; CB.target=null;
   (msg.players||[]).forEach(remoteAdd);
-  serverDay=msg.day; dayClock=msg.day;
+  serverDay=msg.day; dayClock=msg.day; bdcOnStir(msg.stir);   // bond: the hour's Stirrings
   $('#tSec').hidden=!msg.dev&&!NET.test; if(NET.test&&!msg.dev) $('#tSec').querySelectorAll('details.tg').forEach(d=>{ d.hidden=d.id!=='tPzSec'; if(d.id==='tPzSec') d.open=true; });   // the test world shows only the Puzzles tools (the rest need the dev switch)
   $('#acctSec').hidden=NET.mode!=='ws'; syncAcctSec();
   if(NET.onReady){ const f=NET.onReady; NET.onReady=null; f(); }
@@ -73,6 +73,8 @@ function applyEvent(e){
     case 'proc': ssOnProc(e[1],e[2],e[3]); break;   // skillsets: a triggered bonus fired (a badge, a ring and a streak to its target)
     case 'cdr': if(e[1]===NET.pid) ssOnCdr(e[2],e[3]); break;   // skillsets: a cooldown refund (seconds off one slot's bar)
     case 'fxa': ssOnFxa(e[1],e[2],e[3]); break;   // skillsets: a heal or a shield reached a player (drawn in the piece's look)
+    case 'orb': if(e[1]===me) bdcOnOrb(e[2],e[3],e[4]); break;   // bond: an orb of yours was opened (set id, stones, coins beyond Bond VI)
+    case 'stir': bdcOnStir(e[1]); break;   // bond: a new hour's Stirrings
     case 'ssget': ssOnGet(e[1],e[2],e[3]); break;   // skillsets: a signature skill and its passive were earned
     case 'st': mstOnStatus(e[1],e[2],e[3],e[4],e[5]); break;   // statuses: vuln / weak set
     case 'kill': onMonKill(e[1],e[2]); break;

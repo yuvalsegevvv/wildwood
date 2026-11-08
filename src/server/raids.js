@@ -99,7 +99,7 @@ function rdCheckClearS(st){
   const R=st.R;
   for(const [pid,t] of st.hit){ const q=S.players.get(pid); if(!q||Math.hypot(q.x-R.x,q.z-R.z)>RD_FOOT) continue;
     const tier=rdCapTier(q.gear,R.land,st.tier), got=rdMatFor(tier), mat=rdMatsOf(q);
-    mat[R.land]=Math.min(RD_MAT_MAX,(mat[R.land]||0)+got); q.dirty=true;
+    mat[R.land]=Math.min(RD_MAT_MAX,(mat[R.land]||0)+got); q.dirty=true; bdStirRaidP(q,R);   // bond: the hour's stirring raid opens orbs
     toastTo(q.id,R.name+' cleared: +'+got+' '+R.mat+(tier<st.tier?' (paid at your tier '+tier+')':''),'loot r3'); }
   rdSend(st);
 }

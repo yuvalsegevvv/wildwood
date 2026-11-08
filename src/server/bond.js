@@ -5,8 +5,8 @@
    MESSAGE: bd {a:'buy', set} (MSG.bd -> bdBuyP): the next Bond step: Bond b+1's stones (BD_COST) and its zone tier in the set's land (bdTierOk: gear.zt[land].max). Returns null when bought, else the reason
           (also toasted). Event bd [pid, set, b]; p.dirty; recalcP. Bond 0 grants the character's actives (every class version of its basic, skill and power: bdGrantActivesP).
    STONES: bdAddStonesP(p, set, n) (step 13's orbs call it): the stones the remaining steps still need are kept, the rest become coins (BD_STONE_COINS each). Returns {st, coins}.
-   OWNING: bdOwns(p, set) = Bond 0 or above (server/awakening.js asks it before every purchase). A piece earned the old way (ssGrantP: a drop, the testing tool) makes the character yours too (bdOwnZeroG)
-          until each character has its orbs (step 13).
+   OWNING: bdOwns(p, set) = Bond 0 or above (server/awakening.js asks it before every purchase). Step 13 narrowed the interim rule: one piece earned the old way (ssGrantP from a drop source, ssClearP) is only a piece, Bond 0 is bought with Bondstones
+          (orbs: server/bond-orbs.js); a WHOLE-set grant (ssGrantSetP: the testing tools, the gem shop's outfit sets, tests) and dev 'ult' still give Bond 0; the smv-3 migration gives it to every old owner.
    MAIN CHARACTER (bdMainOf): the set of the worn power piece (slot 3, code id 'burst'), else the set with the most pieces worn (ties: the first in SS_ORDER), else the Wanderer. Used by server/awakening.js (the stat nodes).
    WORN (bdWornP): the class in hand's basic / skill / power (abilityOf) and the open passive slot (as ssCount counts them), plus the worn charge skill (the cave slot, from its level) and the worn burst
           (when it can be cast, ultEquippedP): six places, so Bond V / VI can be active.
@@ -18,15 +18,16 @@
    TESTING: bdGrantP(p, set, b, st) (dev 'bd' {v: set id | 'all', n: Bond, s: stones}; the test world: Bond VI everywhere). */
 const bdOwn=bdOwnKey;
 const bdEntry=(gear,k)=>gear&&bdOwn(gear.bd,k)&&k!==BD_WANDERER?gear.bd[k]:null;
-const bdEntryW=(gear,k)=>bdEntry(gear,k)||(gear.bd[k]={b:-1,st:0});
+const bdEntryW=(gear,k)=>bdEntry(gear,k)||(gear.bd[k]={b:-1,st:0});   // (never called with 'wanderer' / 'pick' / 'chg': callers ask bdSetOk first)
 const bdOf=(gear,k)=>{ const e=bdEntry(gear,k); return e?e.b:-1; };
 const bdOwns=(p,k)=>bdSetOk(k)&&bdOf(p.gear,k)>=0;
 // ---- saves ----
 function bdSanitize(g,out){   // sanitizeGear: gear.bd from a save (before the migration)
   const raw=g&&g.bd&&typeof g.bd==='object'&&!Array.isArray(g.bd)?g.bd:null, B={};
   if(raw) for(const k of Object.keys(raw).slice(0,64)){ if(!bdSetOk(k)) continue; const e=raw[k]; if(!e||typeof e!=='object') continue;
-    const b=clampInt(e.b,-1,BD_TOP,-1), st=clampInt(e.st,0,BD_ST_MAX,0); if(b>=0||st>0) B[k]={b,st}; }
+    const b=clampInt(e.b,-1,BD_TOP,-1), st=clampInt(e.st,0,BD_ST_MAX,0), o=clampInt(e.o,0,BD_ORB_MAX,0); if(b>=0||st>0||o>0){ B[k]={b,st}; if(o) B[k].o=o; } }
   B[BD_WANDERER]={r:bdRealOf(out)};   // (out.mq is sanitized before this runs)
+  if(raw){ const ck=clampInt(raw.chg,0,BD_STIR_CHARGE,0); if(ck) B.chg=ck; if(bdSetOk(raw.pick)) B.pick=raw.pick; }   // bond: the Stirrings' charge and the orb pouch's pick (server/bond-orbs.js, bond-stir.js)
   out.bd=B;
 }
 function bdMigrateG(gear){   // smv 3: Bond 0 for every set an old save owned a piece of (see the agent map)
@@ -57,13 +58,13 @@ function bdBuyP(p,k){
   toastTo(p.id,to===0?nm+' is yours (Bond 0): their basic, skill and power are in your skills panel':nm+' reached Bond '+BD_ROMAN[to]+'!','good');
   recalcP(p); p.dirty=true; ev('bd',p.id,k,to); return null;
 }
-MSG.bd=(p,msg)=>{ if(msg.a==='buy'&&typeof msg.set==='string') bdBuyP(p,msg.set); };
+MSG.bd=(p,msg)=>{ if(msg.a==='buy'&&typeof msg.set==='string') bdBuyP(p,msg.set); else if(msg.a==='orb') bdOrbBuyP(p,msg.set,msg.n); else if(msg.a==='pick') bdPickP(p,msg.set); };   // (orb, pick: server/bond-orbs.js)
 // stones in (step 13's orbs): what the steps left still need is kept, the rest is paid out in coins
-function bdAddStonesP(p,k,n){
+function bdAddStonesP(p,k,n,quiet){
   n=clampInt(n,0,BD_ST_MAX,0); if(!bdSetOk(k)||!n) return {st:0,coins:0};
   const e=bdEntryW(p.gear,k), room=Math.max(0,Math.min(BD_ST_MAX,bdStonesLeft(e.b))-e.st), keep=Math.min(n,room), coins=(n-keep)*BD_STONE_COINS;
   e.st+=keep; if(coins) p.gear.coins=Math.min(COINS_MAX,p.gear.coins+coins);
-  p.dirty=true; toastTo(p.id,(keep?'+'+keep+' '+SS_SETS[k].char.name+' Bondstone'+(keep===1?'':'s'):'')+(keep&&coins?', ':'')+(coins?'+'+coins+' coins (Bondstones beyond Bond VI)':''),'good');
+  p.dirty=true; if(!quiet) toastTo(p.id,(keep?'+'+keep+' '+SS_SETS[k].char.name+' Bondstone'+(keep===1?'':'s'):'')+(keep&&coins?', ':'')+(coins?'+'+coins+' coins (Bondstones beyond Bond VI)':''),'good');
   return {st:keep,coins};
 }
 // ---- what the active Bond gives ----

@@ -40,7 +40,7 @@ function join(pid,hello,auth,srvLook){
   if(io.test) testKitP(p);   // testworld: level 60 and the whole kit, before the first 'you'
   if(auth){ p.auth=auth; p.user=auth.user; }
   else { const n=freeName(p.name,p); if(n!==p.name){ toastTo(pid,'Someone already has the name '+p.name+', so you are '+n+'. Change it in Settings.',''); p.name=n; } }
-  sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth||srvLook?p.look:undefined});
+  sendTo(pid,{t:'welcome',pid,day:S.day,dev:S.dev,stir:bdStirMsg(),players:[...S.players.values()].filter(q=>q!==p).map(pubInfo),look:auth||srvLook?p.look:undefined});
   const ros=MONS.filter(m=>!m.remove&&!m.inst).map(monRoster);   // dungeons: the world's monsters only (a run's reach its members on entry)
   for(let i=0;i<ros.length;i+=40) sendTo(pid,{t:'mons',list:ros.slice(i,i+40)});
   for(const B of BOSSES.concat(rdBossesS())){   // what a boss has set up right now, for someone who arrives in the middle of the fight
@@ -147,6 +147,7 @@ function tick(dt){
   else S.day=(S.day+dt/DAY_SECONDS)%1;
   if(S.day<S.prevDay) sunrise();
   S.prevDay=S.day;
+  bdStirTickS();   // bond: the hour's Stirrings (a new hour, new picks)
   updatePlayersS(dt); S.ctx=0; updateMonstersS(dt); dipTickS(dt); /*dip:*/ updateProjS(dt); updateAreasS(dt); updateBurnS(dt); rdTickS(dt); S.ctx=0; updateWeatherS(dt); updateNodesS(dt); updatePotionsS(dt); updateCastsS(); updatePartiesS(dt); updateInstsS(dt); S.ctx=0;   // dungeons: the per-entity loops set S.ctx (the run an event belongs to), so it goes back to the world after them; parties and runs tick here
   for(const p of S.players.values()) if(p.dirty){ p.dirty=false; p.saveDirty=true; sendTo(p.id,youMsg(p)); }
   S.saveT-=dt; if(S.saveT<=0){ S.saveT=5; for(const p of S.players.values()) if(p.saveDirty&&p.acct) saveP(p); }

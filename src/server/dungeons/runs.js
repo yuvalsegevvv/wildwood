@@ -142,6 +142,7 @@ function dgWinS(run){
     const mb=dgMemberOf(run,p);
     if(p.dead){ p.dead=false; p.deadT=0; p.hp=Math.max(1,Math.round(p.maxHp*DG_REVIVE_HP)); p.lastHit=S.t; ev('up',p.id); }
     if(saved){ const g=dgSaveOf(p); g.clear[key]=Math.min(DG_SAVE_MAX,(g.clear[key]|0)+1); if(!g.best[key]||secs<g.best[key]) g.best[key]=secs; p.dirty=true; }
+    bdStirDungeonP(p,run);   // bond: the hour's stirring dungeon opens orbs
     ssDungeonClearP(p,run);   // skillsets: the land's dungeon set, rolled once for each member present
     if(prize&&dgGrantItemP(p,prize)&&mb) mb.got.items.push(prize);   // (a full bag loses it: dgGrantItemP says so)
     dgEndEvS(run,p,1,'');

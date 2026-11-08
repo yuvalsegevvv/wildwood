@@ -21,7 +21,7 @@ function ssPieceIdsOf(setId,pos){ const S=SS_SETS[setId], P=S&&S.pos[pos]; retur
 function ssGrantP(p,setId,pos,quiet){
   const own=p.gear.skills.owned; let n=0;
   for(const id of ssPieceIdsOf(setId,pos)) if(!own.includes(id)){ own.push(id); n++; }
-  if(n){ p.dirty=true; bdOwnZeroG(p.gear,setId); awkSyncG(p.gear); if(!quiet) ev('ssget',p.id,setId,pos); ultCheckP(p); }   // bond: a piece earned the old way makes the character yours (Bond 0) until the orbs   // awakening: a new piece takes its branch's level   // ult: three of the set's seven pieces grant its burst
+  if(n){ p.dirty=true; awkSyncG(p.gear); if(!quiet) ev('ssget',p.id,setId,pos); ultCheckP(p); }   // awakening: a new piece takes its branch's level   // ult: three of the set's seven pieces grant its burst
   return n;
 }
 /* ---- where a set comes from (M3, docs/SKILL-SETS.md section 7): the rolls ---- */
@@ -45,7 +45,7 @@ function ssClearP(p,srcId,tier){
 // a world boss kill that p helped with: at the tier p fought it at (monTierOf). A dungeon's win: at the run's tier (the leader's; a member needs it unlocked to enter)
 const ssBossClearP=(q,m)=>ssClearP(q,m.def.id,monTierOf(q.gear,m));
 const ssDungeonClearP=(p,run)=>ssClearP(p,run.theme.id,run.tier);
-function ssGrantSetP(p,setId,quiet){ let n=0; for(let pos=1;pos<=3;pos++) n+=ssGrantP(p,setId,pos,quiet); return n; }   // (quiet: no ssget toast for each position)
+function ssGrantSetP(p,setId,quiet){ let n=0; for(let pos=1;pos<=3;pos++) n+=ssGrantP(p,setId,pos,quiet); bdOwnZeroG(p.gear,setId); return n; }   // bond: a WHOLE-set grant (the testing tools, the gem shop, tests) still makes the character yours (Bond 0); one piece from a drop source (ssClearP -> ssGrantP) does not   // (quiet: no ssget toast for each position)
 // wear the piece of skill row s in its slot for every class that owns a version of it (one action for all three: a weapon swap must not silently drop the set)
 function ssEquipPieceP(p,s){
   const S=p.gear.skills, P=SS_SETS[s.set].pos[s.pos], need=Math.max(slotLv(s.slot),s.lv);

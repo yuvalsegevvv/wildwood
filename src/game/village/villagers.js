@@ -96,6 +96,11 @@ const VILLAGERS=[
     look:{height:0.82,build:0.85,face:'round',hair:'short',top:'tshirt',topColor:0x6a8ac8,bottom:'trousers',bottomColor:0x6a6e74,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2a1e,facial:'none',chest:0.6},
     behavior:{type:'stationary',at:'well'}, atFn:()=>mqStoryAt('wren0',mqG()), home:'house:0', schedule:'always', voice:{rate:1.05,pitch:1.35},
     lines:['The hens first, or they sulk. Then the Sheaf-Crown game, and nobody cheats.','Bring back the crown. And don\'t let Tansy cheat.','Blue ribbon, blue ribbon. The roots know our names, you know.'] },
+  // the orb stall (skills revamp step 13): Bond Orbs for 1 coin each, across the well from Aldric (role 'orbs': game/bond/orbs.js)
+  { id:'orla', late:true, title:'Orb stall · Bond Orbs', name:'Orla', role:'orbs',
+    look:{sex:'female',height:0.99,build:0.95,face:'oval',hair:'bun',hairColor:0x5a3a6a,chest:1.0,top:'jacket',topColor:0x6a4a8a,bottom:'skirt',bottomColor:0x3a2a4a,hat:'none',pack:false,shoes:'boots',shoeColor:0x2a1e14,facial:'none'},
+    behavior:{type:'stationary',at:'well:far'}, home:'house:3', schedule:'always', voice:{rate:1.0,pitch:1.1},
+    lines:['Bond Orbs, one coin each, any character you like. Cheap as pebbles: the luck is in opening them.','An orb opens while you play the hour\'s Stirrings: a stirring spot in every land, a boss, a dungeon or a raid. Watch the map.','Pick whose orbs open next in your pouch, or I will open the ones you hold most of.'] },
   { id:'linnea', late:true, title:'Healer · brews potions', icon:'healer', name:'Healer Linnea', role:'brew',
     look:{sex:'female',height:0.97,build:0.9,face:'oval',hair:'long',hairColor:0x8a6a4a,chest:1.0,top:'jacket',topColor:0x5a7a4a,bottom:'skirt',bottomColor:0x4a3a2a,hat:'none',pack:false,shoes:'boots',shoeColor:0x3a2a1e,facial:'none'},
     behavior:{type:'stationary',at:'garden'}, home:'house:8', schedule:'always', voice:{rate:0.9,pitch:1.05},

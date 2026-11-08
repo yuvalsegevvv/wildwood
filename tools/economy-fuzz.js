@@ -24,18 +24,20 @@ const sum=o=>Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
 const awkN=g=>Object.values(g.awk||{}).reduce((a,e)=>a+e.t+Object.keys(e.n).length,0), awkKeys=['wanderer',...x.SS_ORDER.filter(id=>x.awkShapeOf(id)).slice(0,3)], awkIds=x.awkShapeOf('wanderer').nodes.map(n=>n.id);
 const awkCanon=g=>JSON.stringify(Object.keys(g.awk||{}).sort().map(k=>[k,g.awk[k].t,Object.keys(g.awk[k].n).sort()]));
 for(const k of awkKeys) if(k!=='wanderer') W.receive('e',{t:'dev',cmd:'set',v:k});   // awakening: own the characters it tries
+// bond: Bond Orbs held are goods too (the orb stall's 1 coin each)
+const orbN=g=>Object.values(g.bd||{}).reduce((a,e)=>a+((e&&e.o)|0),0);
 // what a trade may give: items, potions, skills and their levels, professions, cosmetics, outfits
-const goods=g=>g.inv.length+sum(g.pot)+g.skills.owned.length+sum(g.skills.lv)+Object.keys(g.prof).length+g.cos.length+g.os.length+awkN(g);
+const goods=g=>g.inv.length+sum(g.pot)+g.skills.owned.length+sum(g.skills.lv)+Object.keys(g.prof).length+g.cos.length+g.os.length+awkN(g)+orbN(g);
 // what a trade may take (each kind on its own: an achievement or a quest step that the trade finishes may pay gems or coins in the same step)
 const price=g=>[g.coins,g.gem,sum(g.res),sum(g.mats),sum(g.awm),sum(g.rd&&g.rd.mat)];   // awakening: Echo Shards and raid material
 const took=(a,b)=>a.some((v,i)=>b[i]<v);
-const TRADES=['buy','craft','brew','buyskill','awk','learn','cosmake','gembuy'];   // (a sale or a merge may finish a main quest step, which pays out: only a trade that has a price is held to it)
+const TRADES=['bd','buy','craft','brew','buyskill','awk','learn','cosmake','gembuy'];   // (a sale or a merge may finish a main quest step, which pays out: only a trade that has a price is held to it)
 const bad=[]; const note=s=>{ if(bad.length<20) bad.push(s); };
 const MSGS=[
   ()=>({t:'buy',id:pick(shop)}), ()=>({t:'buy',id:pick(shop)}), ()=>({t:'sell',id:pick(p.gear.inv.length?p.gear.inv:shop)}), ()=>({t:'merge',id:pick(p.gear.inv.length?p.gear.inv:shop)}),
   ()=>({t:'craft',slot:pick(x.ALL_SLOTS),tier:Math.floor(rnd()*x.TIERS),rar:Math.floor(rnd()*(x.CRAFT_MAX_RAR+1))}), ()=>({t:'brew',id:pick(potions),n:1+Math.floor(rnd()*20)}),
   ()=>({t:'buyskill',id:pick(skills)}), ()=>({t:'awk',a:pick(['tier','up','stat']),set:pick(awkKeys),id:pick(awkIds)}), ()=>({t:'awk',a:'stat',set:pick(awkKeys),id:pick(['spo2','sba2','ssk2','spa1','__proto__',7])}), ()=>({t:'learn',id:pick(x.PROF_IDS)}),
-  ()=>{ const k=pick(cos).split(':'); return {t:'cosmake',type:k[0],id:k[1]}; }, ()=>({t:'gembuy',v:pick(outfits),b:rnd()<0.4?1:0}), ()=>({t:'gemtest'}),
+  ()=>{ const k=pick(cos).split(':'); return {t:'cosmake',type:k[0],id:k[1]}; }, ()=>({t:'gembuy',v:pick(outfits),b:rnd()<0.4?1:0}), ()=>({t:'gemtest'}), ()=>({t:'bd',a:'orb',set:pick(x.SS_ORDER),n:Math.floor(rnd()*120)-5}), ()=>({t:'bd',a:'orb',set:pick(['constructor','__proto__','pick',7,null]),n:3}),
   ()=>({t:'sellres',id:pick(res),n:Math.floor(rnd()*30)}),
 ];
 const refill=()=>{   // purses and bags at their edges

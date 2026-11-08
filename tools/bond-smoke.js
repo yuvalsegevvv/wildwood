@@ -1,11 +1,15 @@
 // Headless test of the Bonds (skills revamp step 12: shared/bond.js, server/bond.js): buying Bond 0-VI in order at their stone costs, the zone-tier gates, the active Bond = min(Bond, pieces worn) less a
 // step per guest piece, a Bond I passive working unequipped, the Bond II row, the +1 levels of Bond III / V, a guest piece's -2 levels, Bond passives refused by equip, the Wanderer's Realization from the
 // main quest's acts, the smv-3 migration (idempotent), junk ids, and stones beyond Bond VI paid out in coins. The server straight from src/, no build.
+// Step 13-14 (appended): the orb stall (price once, junk refused, the pouch rule, the 1 / 2 / 3 roll, excess stones as coins), the hour's Stirrings (a fake clock: one zone a land, no repeats, dungeon and raid
+// alternating, events), charge (60 kills = an orb, an elite 3, Pipe and dungeon monsters never, saved), the stirring boss per tier, a dungeon win 2 orbs, a raid clear 3, the interim "a drop gives Bond 0" rule gone.
 // Usage: node tools/bond-smoke.js
 const {loadServer}=require('./load');
-const {api:W,x}=loadServer({dev:true,send(){}},
+const sent=[];
+const {api:W,x}=loadServer({dev:true,send(to,m){ sent.push([to,m]); }},
   ['SS_SETS','SS_ORDER','SKILLS','PASSIVES','CAVE_SKILLS','CAVE_SKILL_IDS','MQ','BD_COST','BD_TOP','BD_STONE_COINS','BD_GUEST_PEN','bdBuyP','bdAddStonesP','bdGrantP','bdOwns','bdMainOf','bdRealOf','bdTierNeed','bdIsBondPassive',
-   'bdStonesLeft','awkGrantP','awkTierP','sanitizeGear','skillLvOf','caveLvOf','psP','recalcP','clsOfP','ssEquipPieceP','ssGrantSetP','SMIG_VER','passiveValue']);
+   'bdStonesLeft','awkGrantP','awkTierP','sanitizeGear','skillLvOf','caveLvOf','psP','recalcP','clsOfP','ssEquipPieceP','ssGrantSetP','SMIG_VER','passiveValue','BD_ORB_PRICE','BD_ORB_MAX','BD_ORB_ROLL','BD_STIR_SECS','BD_STIR_CHARGE','BD_STIR_BOSS','bdRollRow','bdStirPick','bdOrbBuyP','bdPickP','bdOpenOrbP','bdOpenManyP','bdOrbSetOf','bdStirPickS','bdStirTickS','bdStirMsg',
+   'bdZonesByLand','BD_ZONE_OF','bdChargeS','bdStirBossP','bdStirDungeonP','bdStirRaidP','bdChargeFlushP','MONS','S','rewardKill','RD_ORDER','RDS','BOSS_DEFS','DG_THEMES','DG_ENTRANCES','ssGrantP','landAt']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info!==undefined?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<(n||3);i++) W.tick(0.05); };
 W.join('a',{name:'Bonder',look:{cls:'warrior'},save:{level:60}}); tick();
@@ -101,5 +105,104 @@ ok('three pieces: Bond III, +1 level to the character\'s pieces (above the tier 
   ok('junk set ids are refused without a throw',!threw&&x.bdBuyP(p,'constructor')==='unknown character'&&!Object.prototype.hasOwnProperty.call(g.bd,'constructor'),threw&&threw.message);
   const s=x.sanitizeGear({bd:{constructor:{b:6,st:9},toString:{b:6},nope:{b:3},[K]:{b:99,st:-5},[GUEST]:{b:'x',st:1e9}},smv:3},'warrior');
   ok('a save\'s gear.bd keeps known sets only, numbers clamped',!Object.prototype.hasOwnProperty.call(s.bd,'constructor')&&!Object.prototype.hasOwnProperty.call(s.bd,'toString')&&!s.bd.nope&&s.bd[K].b===6&&s.bd[K].st===0&&s.bd[GUEST].b===-1&&s.bd[GUEST].st===999,JSON.stringify(s.bd)); }
+
+// ---- step 13: orbs ----
+W.join('b',{name:'Orber',look:{cls:'warrior'},save:{level:60}}); tick();
+const pb=W.players.get('b'), gb=pb.gear, K2=x.SS_ORDER.filter(i=>!x.SS_SETS[i].dev&&x.SS_SETS[i].bonds)[1], K3=x.SS_ORDER.filter(i=>!x.SS_SETS[i].dev&&x.SS_SETS[i].bonds)[2];
+const evsOf=(name,from)=>{ const out=[]; for(const [to,m] of sent.slice(from||0)) if(to==='a'&&m&&m.t==='snap'&&m.ev) for(const e of m.ev) if(e[0]===name) out.push(e); return out; };
+ok('no character is called pick / chg / wanderer (gear.bd keys)',!['pick','chg','wanderer'].some(k=>Object.prototype.hasOwnProperty.call(x.SS_SETS,k)));
+gb.coins=1000;
+ok('an orb costs '+x.BD_ORB_PRICE+' coin',x.BD_ORB_PRICE===1);
+ok('buying 5 orbs charges 5 coins once and holds 5',x.bdOrbBuyP(pb,K2,5)===null&&gb.coins===995&&gb.bd[K2].o===5,gb.coins+' '+JSON.stringify(gb.bd[K2]));
+ok('n is clamped to 1..99 (a huge n buys 99, junk and zero buy 1)',(x.bdOrbBuyP(pb,K3,1e9),gb.bd[K3].o===99&&gb.coins===896)&&(x.bdOrbBuyP(pb,K3,'x'),gb.bd[K3].o===100)&&(x.bdOrbBuyP(pb,K3,-4),gb.bd[K3].o===101),gb.bd[K3].o+' '+gb.coins);
+{ const c0=gb.coins; for(const v of ['constructor','__proto__','toString','nope',null,5,{},'pick','chg','wanderer']){ W.receive('b',{t:'bd',a:'orb',set:v,n:3}); W.receive('b',{t:'bd',a:'pick',set:v}); x.bdOrbBuyP(pb,v,3); }
+  ok('junk set ids buy nothing and charge nothing',gb.coins===c0&&!Object.prototype.hasOwnProperty.call(gb.bd,'constructor')&&!Object.prototype.hasOwnProperty.call(gb.bd,'nope')&&gb.bd.chg===undefined,String(gb.coins)); }
+{ const c0=gb.coins; gb.coins=2; ok('too few coins: refused, nothing taken',typeof x.bdOrbBuyP(pb,K2,5)==='string'&&gb.coins===2&&gb.bd[K2].o===5); gb.coins=c0; }
+{ gb.bd[K2].o=x.BD_ORB_MAX; const c0=gb.coins; ok('a full pouch of one character refuses more',typeof x.bdOrbBuyP(pb,K2,5)==='string'&&gb.coins===c0&&gb.bd[K2].o===x.BD_ORB_MAX); gb.bd[K2].o=5; }
+// the pouch rule
+ok('no pick: the set with the most orbs opens ('+K3+' 101 against '+K2+' 5)',x.bdOrbSetOf(pb)===K3);
+ok('pick a set with orbs held: it opens first',x.bdPickP(pb,K2)===null&&gb.bd.pick===K2&&x.bdOrbSetOf(pb)===K2);
+{ gb.bd[K2].o=0; ok('pick a set with none held: the most-held set opens instead',x.bdOrbSetOf(pb)===K3); gb.bd[K2].o=5; }
+ok('a pick of junk is refused and keeps the old pick',typeof x.bdPickP(pb,'constructor')==='string'&&gb.bd.pick===K2&&x.bdPickP(pb,null)===null&&gb.bd.pick===undefined);
+ok('the pick is sanitized on load (known set only) and survives the round trip',(()=>{ const s1=x.sanitizeGear({smv:3,bd:{pick:K2,chg:30,[K2]:{b:-1,st:0,o:7},[K3]:{o:1e9}}},'warrior'), s2=x.sanitizeGear({smv:3,bd:{pick:'constructor',chg:1e9,[K2]:{o:-3}}},'warrior');
+  return s1.bd.pick===K2&&s1.bd.chg===30&&s1.bd[K2].o===7&&s1.bd[K3].o===x.BD_ORB_MAX&&s2.bd.pick===undefined&&s2.bd.chg===x.BD_STIR_CHARGE&&!s2.bd[K2]; })());
+// opening
+{ const n0=gb.bd[K2].o, st0=gb.bd[K2].st, from=sent.length; x.bdPickP(pb,K2); const r=x.bdOpenOrbP(pb); tick();
+  const e=evsOf('orb',from).filter(v=>v[1]==='b');   // (the events reach every hiker: read them as 'a')
+  ok('opening one orb takes one, gives 1-3 stones and sends event orb [pid, set, stones, coins]',r&&r.set===K2&&gb.bd[K2].o===n0-1&&gb.bd[K2].st===st0+r.n&&r.n>=1&&r.n<=3&&e.length===1&&e[0][2]===K2&&e[0][3]===r.n&&e[0][4]===0,JSON.stringify(e)); }
+{ const a=[0,0,0,0]; let seed=12345; const keep=Math.random; Math.random=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
+  for(let i=0;i<6000;i++) a[x.bdRollRow(x.BD_ORB_ROLL,Math.random())]++; Math.random=keep;
+  ok('the roll is 1 / 2 / 3 stones at 60 / 30 / 10 % (6000 rolls, 3 points of slack)',Math.abs(a[1]/60-60)<3&&Math.abs(a[2]/60-30)<3&&Math.abs(a[3]/60-10)<3&&x.BD_ORB_ROLL.join()==='60,30,10',a.join()); }
+{ gb.bd[K3].st=0; gb.bd[K3].o=3000; gb.bd[K3].b=-1; x.bdPickP(pb,K3); const c0=gb.coins, cnt=[0,0,0,0], keep=Math.random; let seed=99; Math.random=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
+  let stones=0; for(let i=0;i<3000;i++){ const r=x.bdOpenOrbP(pb); cnt[r.n]++; stones+=r.n; } Math.random=keep;
+  ok('3000 real opens: the 1 / 2 / 3 split holds, the orbs are used up',Math.abs(cnt[1]/30-60)<3&&Math.abs(cnt[2]/30-30)<3&&Math.abs(cnt[3]/30-10)<3&&gb.bd[K3].o===undefined,cnt.join());
+  ok('...only the 42 stones the steps need are kept, the rest paid as coins ('+x.BD_STONE_COINS+' each)',gb.bd[K3].st===42&&gb.coins-c0===(stones-42)*x.BD_STONE_COINS,gb.bd[K3].st+' '+(gb.coins-c0)+' '+stones); }
+{ gb.bd[K2].o=0; gb.bd[K3].o=0; delete gb.bd.pick; ok('no orbs anywhere: bdOpenOrbP returns null, bdOpenManyP opens 0',x.bdOpenOrbP(pb)===null&&x.bdOpenManyP(pb,3)===0); }
+
+// ---- step 14: the hour's Stirrings, with a fake clock ----
+const H=x.BD_STIR_SECS*1000, h0=Math.floor(Date.now()/H);
+const realNow=Date.now; let fake=h0*H+1000; Date.now=()=>fake;
+{ x.S.bdStir=null; tick(); const s0=x.S.bdStir, from=sent.length;
+  ok('picks exist and the welcome message carries them',!!s0&&s0.h===h0&&x.bdStirMsg().h===h0&&x.bdStirMsg().b===s0.boss);
+  const lands=[...new Set(Object.keys(x.bdZonesByLand()))];
+  ok('one ordinary zone in every land ('+lands.length+' lands)',lands.length>=8&&lands.every(l=>s0.zones[l]!==undefined&&x.bdZonesByLand()[l].includes(s0.zones[l])),JSON.stringify(s0.zones));
+  tick(5); ok('same hour, same picks, no stir event',x.S.bdStir===s0&&evsOf('stir',from).length===0);
+  fake+=H; tick(4); const s1=x.S.bdStir, e=evsOf('stir',from);
+  ok('the hour turns: new picks and one stir event {h, z, b, k, id}',s1!==s0&&s1.h===h0+1&&e.length===1&&e[0][1].h===h0+1&&e[0][1].b===s1.boss&&e[0][1].z.home===s1.zones.home,JSON.stringify(e).slice(0,120)); }
+{ let bad='', dgn=0, rdn=0, prev=null; const N=400;
+  for(let i=0;i<N;i++){ const s=x.bdStirPickS((h0+2+i)*H);
+    if(prev){ for(const l of Object.keys(s.zones)) if(s.zones[l]===prev.zones[l]) bad+=' zone '+l+'@'+i; if(s.boss===prev.boss) bad+=' boss@'+i; if(s.kind===prev.kind) bad+=' kind@'+i; if(s.id===prev.id) bad+=' id@'+i; }
+    if(s.kind==='dg'){ dgn++; if(!x.DG_THEMES[s.id]||s.h%2!==0) bad+=' dg@'+i; } else { rdn++; if(!x.RDS[s.id]||s.h%2!==1) bad+=' rd@'+i; }
+    prev=s; }
+  ok('400 hours: no zone, boss or dungeon / raid repeats two hours running, and dungeons and raids alternate',bad===''&&dgn===N/2&&rdn===N/2,bad); }
+{ const seen=new Set(); const lists=x.bdZonesByLand().home, N=lists.length; for(let i=0;i<N;i++) seen.add(x.bdStirPickS((h0*0+Math.floor(h0/N)*N+i)*H).zones.home);
+  ok('a land\'s zones each come once before any returns (a cycle of '+N+')',seen.size===N,seen.size); }
+ok('the pick is the same on every call for one hour (no state)',JSON.stringify(x.bdStirPickS(h0*H).zones)===JSON.stringify(x.bdStirPickS(h0*H+5).zones));
+// helpers: put a wanted pick in force
+const forceHour=f=>{ for(let i=0;i<5000;i++){ const s=x.bdStirPickS((h0+10+i)*H); if(f(s)) return s; } return null; };
+// charge
+const zoneKind=key=>x.MONS.find(m=>x.BD_ZONE_OF[m.def.id]===key&&!m.dead&&!m.temp&&!m.def.boss);
+const sz=forceHour(s=>true), zkey=sz.zones.home, mon=zoneKind(zkey);
+ok('a monster of the stirring zone exists to test with ('+zkey+')',!!mon);
+gb.bd={wanderer:{r:0}}; gb.bd[K2]={b:-1,st:0,o:5}; const clone=o=>Object.assign(Object.create(mon),o);
+{ for(let i=0;i<59;i++) x.bdChargeS(pb,mon); ok('59 kills: charge 59, no orb opened',gb.bd.chg===59&&gb.bd[K2].o===5);
+  x.bdChargeS(pb,mon); ok('the 60th kill opens one orb: charge 0, one orb used, stones in',gb.bd.chg===undefined&&gb.bd[K2].o===4&&gb.bd[K2].st>=1,JSON.stringify(gb.bd[K2])); }
+{ const o0=gb.bd[K2].o; for(let i=0;i<20;i++) x.bdChargeS(pb,clone({elite:true})); ok('an elite counts 3 (20 elites = 60: one orb)',gb.bd[K2].o===o0-1&&gb.bd.chg===undefined,JSON.stringify(gb.bd)); }
+{ const o0=gb.bd[K2].o, c0=gb.bd.chg|0; for(let i=0;i<100;i++){ x.bdChargeS(pb,clone({dip:true})); x.bdChargeS(pb,clone({inst:1})); x.bdChargeS(pb,clone({rd:{}})); x.bdChargeS(pb,clone({temp:true})); }
+  ok('Pipe, dungeon, raid and temporary monsters never charge',(gb.bd.chg|0)===c0&&gb.bd[K2].o===o0); }
+{ const other=forceHour(s=>true), outside=x.MONS.find(m=>x.BD_ZONE_OF[m.def.id]&&!x.S.bdStir.zs[x.BD_ZONE_OF[m.def.id]]&&!m.dead&&!m.temp), c0=gb.bd.chg|0; x.bdChargeS(pb,outside);
+  const boss=x.MONS.find(m=>m.def.boss); x.bdChargeS(pb,boss);
+  ok('a monster outside the stirring zones, and a boss, charge nothing',(gb.bd.chg|0)===c0); x.bdStirPickS((h0+10)*H); }
+{ x.S.bdStir=null; const s=forceHour(t=>true), m2=zoneKind(s.zones.home); gb.bd[K2].o=0; delete gb.bd.chg; for(let i=0;i<200;i++) x.bdChargeS(pb,m2);
+  ok('with no orb held the charge waits at the cap (60), nothing is lost or opened',gb.bd.chg===x.BD_STIR_CHARGE&&!gb.bd[K2].o);
+  gb.coins=100; const st0=gb.bd[K2].st; x.bdOrbBuyP(pb,K2,2);
+  ok('...an orb arriving is opened by the waiting charge: charge 0, one orb left, stones in',gb.bd.chg===undefined&&gb.bd[K2].o===1&&gb.bd[K2].st>st0,JSON.stringify(gb.bd[K2])+' chg '+gb.bd.chg); }
+{ x.S.bdStir=null; const s=forceHour(t=>true), m2=zoneKind(s.zones.vale); const c0=gb.bd.chg|0; x.rewardKill(pb,m2);
+  ok('rewardKill itself charges (one real kill in the stirring zone adds 1)',(gb.bd.chg|0)===c0+1,String(gb.bd.chg)); }
+ok('the charge is saved: sanitizeGear keeps gear.bd.chg and the orbs',(()=>{ gb.bd.chg=37; const s=x.sanitizeGear(JSON.parse(JSON.stringify(gb)),'warrior'); return s.bd.chg===37&&s.bd[K2].o===gb.bd[K2].o; })());
+// the stirring boss
+{ const s=forceHour(t=>true), boss=x.MONS.find(m=>m.def.boss&&m.def.id===s.boss)||x.MONS.find(m=>m.def.boss), other=x.MONS.find(m=>m.def.boss&&m.def.id!==s.boss);
+  const bm=Object.assign(Object.create(boss),{def:Object.assign(Object.create(boss.def),{id:s.boss})});
+  ok('the boss table is 100 / 70-30 / 50-50 / 30-70 / 20-60-20 / 10-50-40 and averages 1.0 1.3 1.5 1.7 2.0 2.3',x.BD_STIR_BOSS.map(r=>r.reduce((a,v,i)=>a+v*(i+1),0)/100).map(v=>v.toFixed(1)).join()==='1.0,1.3,1.5,1.7,2.0,2.3'&&x.BD_STIR_BOSS.every(r=>r.reduce((a,v)=>a+v,0)===100));
+  const keep=Math.random; let seed=7; Math.random=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
+  const stat={}; for(let t=0;t<=5;t++){ const cnt=[0,0,0,0]; gb.bd[K2].o=0; for(let i=0;i<2000;i++){ gb.bd[K2].o=3; const o0=3; x.bdStirBossP(pb,bm,t); cnt[o0-(gb.bd[K2].o|0)]++; } stat[t]=cnt; }
+  Math.random=keep;
+  const near=(c,tbl)=>tbl.every((p,i)=>Math.abs(c[i+1]/20-p)<4)&&c.slice(tbl.length+1).every(v=>v===0)&&c[0]===0;
+  ok('per tier the stirring boss opens orbs by the table (2000 kills each, 4 points of slack)',x.BD_STIR_BOSS.every((tbl,t)=>near(stat[t],tbl)),JSON.stringify(stat));
+  gb.bd[K2].o=5; x.bdStirBossP(pb,Object.assign(Object.create(other),{}),5); ok('a boss that is not the stirring one opens nothing',gb.bd[K2].o===5);
+  x.bdStirBossP(pb,Object.assign(Object.create(bm),{rd:{}}),5); x.bdStirBossP(pb,Object.assign(Object.create(bm),{inst:1}),5); ok('...and neither does a raid copy or a dungeon boss',gb.bd[K2].o===5);
+  gb.bd[K2].o=1; const e0=gb.bd[K2].o; Math.random=()=>0.99; x.bdStirBossP(pb,bm,5); Math.random=keep; ok('fewer orbs held than the roll opens only those held (1 held, a roll of 3: 1 opened, none banked)',gb.bd[K2].o===undefined||gb.bd[K2].o===0); }
+// dungeon and raid
+{ const sd=forceHour(t=>t.kind==='dg'), run={theme:{id:sd.id}}, wrong={theme:{id:x.DG_THEMES[sd.id]?Object.keys(x.DG_THEMES).find(k=>k!==sd.id&&!x.DG_THEMES[k].dev):'x'}};
+  gb.bd[K2].o=5; x.bdStirDungeonP(pb,wrong); ok('a win of another dungeon opens nothing',gb.bd[K2].o===5);
+  x.bdStirDungeonP(pb,run); ok('a win of the stirring dungeon opens 2 orbs',gb.bd[K2].o===3,String(gb.bd[K2].o));
+  const sr=forceHour(t=>t.kind==='rd'), R=x.RDS[sr.id]; gb.bd[K2].o=5; x.bdStirRaidP(pb,x.RDS[x.RD_ORDER.find(i=>i!==sr.id)]); ok('a clear of another raid opens nothing',gb.bd[K2].o===5);
+  x.bdStirRaidP(pb,R); ok('a clear of the stirring raid opens 3 orbs',gb.bd[K2].o===2,String(gb.bd[K2].o));
+  x.bdStirDungeonP(pb,{theme:{id:sd.id}}); ok('...and in a raid hour a dungeon win opens nothing (dungeon and raid alternate)',gb.bd[K2].o===2); }
+Date.now=realNow;
+// ---- the interim rule is gone ----
+{ const pc=W.players.get('b'); const G=x.SS_ORDER.find(i=>!x.SS_SETS[i].dev&&x.SS_SETS[i].bonds&&i!==K&&i!==K2&&i!==K3); delete pc.gear.bd[G]; x.ssGrantP(pc,G,1,true);
+  ok('a piece earned the old way (a drop source: ssGrantP) no longer unlocks the character (no Bond 0, Awakening refused)',!x.bdOwns(pc,G)&&typeof x.awkTierP(pc,G)==='string');
+  x.ssGrantSetP(pc,G,true); ok('...a whole-set grant (testing tools, gem shop) still does',x.bdOwns(pc,G)); }
 
 console.log(fails?fails+' check(s) FAILED':'all bond checks passed'); process.exit(fails?1:0);

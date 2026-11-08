@@ -9,7 +9,7 @@ function startTalk(n){ loreOpen=null; talkNPC=n; n.line=0; UI_SFX.talk(); const 
   if(Q) netSend({t:'sq',a:'talk',id:n.def.id});   // sidequests: their lines follow the main quest's
   sayLine(n); if(!mqBusy(n)) openRolePanel(n); }
 const mqBusy=n=>!!(n.mq&&n.mq.length)||!!svPickOn;
-function openRolePanel(n){ const r=n.def.role; if(r==='weaponsmith'||r==='armorer'||r==='peddler') openShop(n); else if(r==='quests') openQuests(n); else if(r==='forge') openForge(n); else if(r==='trainer') openSkills(n); else if(r==='lodge') openLodge(n); else if(r==='brew') openBrew(n); }
+function openRolePanel(n){ const r=n.def.role; if(r==='weaponsmith'||r==='armorer'||r==='peddler') openShop(n); else if(r==='quests') openQuests(n); else if(r==='forge') openForge(n); else if(r==='trainer') openSkills(n); else if(r==='lodge') openLodge(n); else if(r==='brew') openBrew(n); else if(r==='orbs') bdcOpenStall(n); }   // bond: the orb stall (bond/orbs.js)
 function sayLine(n){
   const L=n.def.lines&&n.def.lines.length?n.def.lines:['Hello there.'];
   const quest=mqBusy(n), line=quest?n.mq.shift():L[n.line++%L.length];
