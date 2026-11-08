@@ -123,6 +123,7 @@ function bdRefreshP(p){
 function bdPlayP(p,k){
   const B=p.gear.bd||(p.gear.bd={});
   if(k===BD_WANDERER||(bdSetOk(k)&&bdOf(p.gear,k)>=0)) B.play=k; else if(k===null||k===undefined||k==='') delete B.play; else return false;
+  if(bdSetOk(k)){ const b=SS_SETS[k].pos[1].ids[0], c=SKILLS[b]&&SKILLS[b].cls; if(c&&SS_CLASSES.includes(c)&&c!==clsOfP(p)) equipClassP(p,c); }   // a character of another class: their weapon in hand (the class is the weapon held; the best owned one)
   if(k===BD_WANDERER) wdWearP(p); else if(bdSetOk(k)) ssEquipAllP(p,k);   // Play wears the character's whole set (the owner: their skills by default, a swap is a choice); ssEquipAllP toasts what it wore
   recalcP(p); p.dirty=true; return true;
 }
