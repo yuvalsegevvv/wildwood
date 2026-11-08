@@ -235,12 +235,13 @@ function defineSkillSet(D){
   const set={id,name:D.name,land:D.land,tier,dev,el:D.el,role:JSON.parse(JSON.stringify(R)),char:JSON.parse(JSON.stringify(C)),pal:Object.assign({},D.pal),emblem:D.emblem?{col:D.emblem.col,glyph:D.emblem.glyph}:null,kit:D.kit?JSON.parse(JSON.stringify(D.kit)):null,outfit:D.outfit||null,pos:{},bonus:{},bonds:hasB?{1:D.bonds[1],2:id+'_b3',4:D.bonds[4],6:id+'_b5'}:null,keptPassive:hasB?keptP:null,tree:D.tree||null,stone:D.stone||null};
   for(const m of made){
     const lv=m.p<3?((BOSS_DEFS.find(b=>b.def.id===src[m.p-1])||{def:{level:SS_LATE_LV[src[m.p-1]]}}).def.level):(th?th.lv:SS_LATE_LV[src[2]]), ids=[];
+    // a piece asks no hiker level of its own (the owner: only the Awakening tree and the slot's early story level lock a skill); lv stays on set.pos as the source's level
     for(const [k,e] of m.variants){
-      const rid=id+'_'+m.p+'_'+k, row=Object.assign(JSON.parse(JSON.stringify(e)),{id:rid,cls:k,slot:m.slot,el:m.el,price:0,lv,set:id,pos:m.p});
+      const rid=id+'_'+m.p+'_'+k, row=Object.assign(JSON.parse(JSON.stringify(e)),{id:rid,cls:k,slot:m.slot,el:m.el,price:0,lv:1,set:id,pos:m.p});
       SKILLS[rid]=row; SKILL_IDS.push(rid); ANIM_OF[row.act[0]]=row.anim||row.act[0]; ACT_SKILL[row.act[0]]=row; SS_PIECE_OF[rid]={set:id,pos:m.p,kind:'active'}; ids.push(rid);
     }
     const pid=id+'_p'+m.p;
-    PASSIVES[pid]=ssRow(m.P.passive,pid,{slot:'passive',cls:null,lv,price:0,set:id,pos:m.p},{el:m.el});
+    PASSIVES[pid]=ssRow(m.P.passive,pid,{slot:'passive',cls:null,lv:1,price:0,set:id,pos:m.p},{el:m.el});
     PASSIVE_IDS.push(pid); SS_PIECE_OF[pid]={set:id,pos:m.p,kind:'passive'};
     set.pos[m.p]={bond:hasB&&D.bonds[1]===pid?1:hasB&&D.bonds[4]===pid?4:0,slot:m.slot,bound:m.P.bound,from:{kind:m.p<3?'boss':'dungeon',id:src[m.p-1],chance:m.P.from&&m.P.from.chance,pity:m.P.from&&m.P.from.pity},ids,passive:pid,lv,el:m.el};
   }
