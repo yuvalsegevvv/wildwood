@@ -10,6 +10,7 @@
    theme the rift's entry, its layout riftLayout (not dgLayout), its bake marked B.open (the void blocks walking, never a hit or a projectile). One member, always. */
 const RIFT_E_MAX=100, RIFT_E_FULL_H=28, RIFT_E_MS=RIFT_E_FULL_H*3600000/RIFT_E_MAX, RIFT_E_DOUBLE=20;   // energy: 100 at most, full in 28 h (a point every 16.8 min), by the server's clock (online and offline); a doubled run costs 20
 const RIFT_LV=10, RIFT_XP_K=3, RIFT_HP_K=0.6, RIFT_DMG_K=0.6;   // entry level; a kill pays 3x a same-level world kill; glass monsters are brittle: 0.6 of a world monster's health and damage
+const RIFT_SPEED_K=2;   // glass monsters move twice as fast as the world kind they copy (asked 8 Nov)
 const RIFT_WAVES=10, RIFT_NEXT_PCT=0.75, RIFT_WAVE_S=40, RIFT_RELEASE_S=10, RIFT_ALIVE_MAX=45;   // 10 waves; the next comes at 75% of this one dead or 40 s after it started; a wave pours in over 10 s; 45 alive at most
 const RIFT_HERALD_HP=8, RIFT_BONUS_KILLS=75, RIFT_RESPAWN_S=5, RIFT_COUNT_S=5;   // the Herald's health x8; the clear bonus = 75 same-level world kills' XP; one respawn after 5 s; 5 s before wave 1
 const RIFT_TALK=6, RIFT_CLEAR=16, RIFT_SLOT0=16;   // the talk key works within 6 m of the tear; no tree, prop or camp within 16 m; rift runs use slots 16.. (dungeons keep 0-15)
@@ -39,6 +40,7 @@ function defineRift(R){
   else if(R.reward!==undefined&&!RIFT_REWARDS.includes(R.reward)) why='reward must be one of '+RIFT_REWARDS.join(', ');
   else if(R.reward==='essence'&&!essIdOf(R.essence)) why='essence must be an element or prime';
   else if(R.lv!==undefined&&!(R.lv>=RIFT_LV&&R.lv<=99)) why='lv must be '+RIFT_LV+' to 99';
+  else if(R.shape!==undefined&&riftShapeBad(R.shape)) why=riftShapeBad(R.shape);
   else if(!Array.isArray(R.kinds)||!R.kinds.length) why='kinds is empty';
   else { const k=R.kinds.find(k=>!ALL_MON_DEFS.some(d=>d.id===k.id)); if(k) why='kind '+k.id+' is not a monster'; else if(!ALL_MON_DEFS.some(d=>d.id===R.herald)) why='herald is not a monster'; }
   if(why){ RIFT_BAD.push({id:R&&R.id,why}); if(typeof console!=='undefined') console.warn('rift '+(R&&R.id)+' left out: '+why); return null; }
@@ -53,7 +55,7 @@ function defineElemRift(o){
   if(!ELEMS[o.el]||o.el==='basic') return bad('el must be one of the six elements');
   if(o.essence!=='prime'&&o.essence!==o.el) return bad('essence must be prime or the rift\'s own element');
   for(const id of [...o.mobs,o.herald]){ const d=ALL_MON_DEFS.find(m=>m.id===id); if(d&&d.el!==o.el) return bad('kind '+id+' has the element '+d.el+', not '+o.el); }
-  return defineRift({id:o.id,name:o.name,blurb:o.blurb,door:o.door,aura:o.aura,music:o.music,herald:o.herald,el:o.el,reward:'essence',essence:o.essence,lv:RIFT_ELEM_LV,
+  return defineRift({id:o.id,name:o.name,blurb:o.blurb,door:o.door,aura:o.aura,music:o.music,herald:o.herald,el:o.el,reward:'essence',essence:o.essence,lv:RIFT_ELEM_LV,shape:o.shape,
     kinds:o.mobs.map((id,i)=>({id,from:RIFT_ELEM_SLOTS[i].from,w:RIFT_ELEM_SLOTS[i].w}))});
 }
 /* A glass monster: a copy of an existing kind (its model, family numbers, animation) with its own id, name and element, at level 10 (a run scales it to your level: dgKOf), the look flag
@@ -61,14 +63,25 @@ function defineElemRift(o){
 function riftMobDef(base,id,name,o){
   const b=ALL_MON_DEFS.find(m=>m.id===base); if(!b){ RIFT_BAD.push({id,why:'no base kind '+base}); return null; }
   if(ALL_MON_DEFS.some(m=>m.id===id)){ RIFT_BAD.push({id,why:'monster id '+id+' is already used'}); return null; }   // (a second kind with an id would shadow the first)
-  const d=Object.assign({},b,{id,name,level:RIFT_LV,zone:undefined,count:undefined,rift:true},o); d.pal=Object.assign({},b.pal,{glass:1},o.pal||{});
+  const d=Object.assign({},b,{id,name,level:RIFT_LV,zone:undefined,count:undefined,rift:true},o); d.pal=Object.assign({},b.pal,{glass:1},o.pal||{}); d.riftOf=base;
   for(const k of ['rad','height','hp','dmg','xp','color','res','acc','boss','drop']) delete d[k];
   if(o.scale) d.scale=o.scale;
-  prepDef(d); ALL_MON_DEFS.push(d); RIFT_MON_DEFS.push(d); return d;
+  prepDef(d); d.speed=(d.speed||0)*RIFT_SPEED_K; ALL_MON_DEFS.push(d); RIFT_MON_DEFS.push(d); return d;   // glass monsters run twice as fast as their world kind
 }
-/* THE VOID WORLD: a 3 x 3 grid of the dungeons' 48 m tiles. The hub (the middle tile: a 16 m disc, the portal P in its middle) has four 8 m wide glass bridges to four outer
-   platforms (12 m discs), each with two tears (S) on its far rim where the waves come in; the corners are void. Every cell that is not glass is solid to walkers (dgBake), so nobody
-   falls off; the bake is marked open (B.open) by both sides so the void never stops a hit or a projectile. */
+/* THE VOID WORLD: each rift has its own shape (R.shape, rows of a small grid of the dungeons' 48 m tiles): H the hub (a 16 m disc, the portal P in its middle), O a platform
+   (a 12 m disc with two tears S on its far rim, where the waves come in), o a stepping stone (an 8 m disc, no tear), . the void. Every two glass tiles side by side are joined by
+   an 8 m wide glass bridge. Every cell that is not glass is solid to walkers (dgBake), so nobody falls off; the bake is marked open (B.open) by both sides so the void never stops
+   a hit or a projectile. A rift without a shape is the Shardmere's plus. */
+const RIFT_SHAPE_PLUS=['.O.','OHO','.O.'];
+const RIFT_SHAPE_MAX=6, RIFT_ISLE_R={H:8,O:6,o:4};   // (radius in cells of DG_CELL = 2 m)
+// is a shape good? '' or why not: rows of one length, at most 6 x 6, one hub, at least one platform, every glass tile reachable from the hub
+function riftShapeBad(sh){
+  if(!Array.isArray(sh)||!sh.length||sh.length>RIFT_SHAPE_MAX||sh.some(r=>typeof r!=='string'||r.length!==sh[0].length||!r.length||r.length>RIFT_SHAPE_MAX||/[^HOo.]/.test(r))) return 'shape needs rows of H O o . of one length, at most '+RIFT_SHAPE_MAX+' x '+RIFT_SHAPE_MAX;
+  const all=sh.join(''); if(all.split('H').length!==2) return 'shape needs exactly one hub H'; if(all.indexOf('O')<0) return 'shape needs a platform O';
+  const W=sh[0].length, glass=(x,z)=>z>=0&&z<sh.length&&x>=0&&x<W&&sh[z][x]!=='.', seen=new Set(), hz=sh.findIndex(r=>r.includes('H')), st=[[sh[hz].indexOf('H'),hz]];
+  while(st.length){ const [x,z]=st.pop(), k=x+','+z; if(seen.has(k)||!glass(x,z)) continue; seen.add(k); st.push([x+1,z],[x-1,z],[x,z+1],[x,z-1]); }
+  return seen.size===all.replace(/\./g,'').length?'':'every glass tile of the shape must join the hub';
+}
 function riftTileArt(doors,radius,marks){
   const C=DG_TC/2, g=Array.from({length:DG_TC},()=>Array(DG_TC).fill('#'));
   for(let z=0;z<DG_TC;z++) for(let x=0;x<DG_TC;x++) if(Math.hypot(x+0.5-C,z+0.5-C)<=radius) g[z][x]='.';
@@ -77,14 +90,24 @@ function riftTileArt(doors,radius,marks){
   for(const [ch,dx,dz] of marks) g[C+dz][C+dx]=ch;
   return g.map(r=>r.join(''));
 }
+// the layout dgBake takes, plus isles [{x, z, r}] in metres (the view hangs crystals under them) and mid, the shape's middle in metres
 function riftLayout(R){
-  const outer=[[1,0,DG_S,[0,-1]],[2,1,DG_W,[1,0]],[1,2,DG_N,[0,1]],[0,1,DG_E,[-1,0]]];   // x, z, the door toward the hub, the way out (the tears' side)
-  const cells=[{x:1,z:1,mask:15,id:'rift-hub',rot:0,role:'start',dist:0,art:riftTileArt(15,8,[['P',0,0]])}];
-  for(const [x,z,door,[ox,oz]] of outer){
-    const sx=-oz, sz=ox;   // across the way out
-    cells.push({x,z,mask:door,id:'rift-isle',rot:0,role:'room',dist:1,art:riftTileArt(door,6,[['S',ox*4+sx*3,oz*4+sz*3],['S',ox*4-sx*3,oz*4-sz*3]])});
+  const sh=R&&R.shape||RIFT_SHAPE_PLUS, W=sh[0].length, H=sh.length, glass=(x,z)=>z>=0&&z<H&&x>=0&&x<W&&sh[z][x]!=='.';
+  const hz=sh.findIndex(r=>r.includes('H')), hx=sh[hz].indexOf('H'), sides=[[DG_N,0,-1],[DG_E,1,0],[DG_S,0,1],[DG_W,-1,0]], cells=[], isles=[];
+  for(let z=0;z<H;z++) for(let x=0;x<W;x++){ const ch=sh[z][x]; if(ch==='.') continue;
+    let mask=0; for(const [b,dx,dz] of sides) if(glass(x+dx,z+dz)) mask|=b;
+    let marks=[];
+    if(ch==='H') marks=[['P',0,0]];
+    else if(ch==='O'){   // two tears on a free rim, the one facing away from the hub if it can
+      const away=Math.abs(x-hx)>=Math.abs(z-hz)?[Math.sign(x-hx)||1,0]:[0,Math.sign(z-hz)||1];
+      const free=sides.filter(([b])=>!(mask&b)).map(([,dx,dz])=>[dx,dz]).sort((a,b)=>(b[0]*away[0]+b[1]*away[1])-(a[0]*away[0]+a[1]*away[1]));
+      if(free.length){ const [ox,oz]=free[0], sx=-oz, sz=ox; marks=[['S',ox*4+sx*3,oz*4+sz*3],['S',ox*4-sx*3,oz*4-sz*3]]; }
+      else marks=[['S',3,3],['S',-3,-3]];   // (a platform with four bridges: tears on two diagonals)
+    }
+    cells.push({x,z,mask,id:ch==='H'?'rift-hub':'rift-isle',rot:0,role:ch==='H'?'start':'room',dist:Math.abs(x-hx)+Math.abs(z-hz),art:riftTileArt(mask,RIFT_ISLE_R[ch],marks)});
+    isles.push({x:(x+0.5)*DG_TILE,z:(z+0.5)*DG_TILE,r:RIFT_ISLE_R[ch]*DG_CELL});
   }
-  return {gw:3,gh:3,start:[1,1],cells,seed:0,mission:'rift',tries:1,theme:R?R.id:null,legend:{},rift:R?R.id:null};
+  return {gw:W,gh:H,start:[hx,hz],cells,isles,mid:{x:W*DG_TILE/2,z:H*DG_TILE/2},seed:0,mission:'rift',tries:1,theme:R?R.id:null,legend:{},rift:R?R.id:null};
 }
 const riftNear=(x,z,m)=>{ for(const d of RIFT_DOORS){ const dx=x-d.x, dz=z-d.z, r=RIFT_CLEAR+(m||0); if(dx*dx+dz*dz<r*r) return true; } return false; };
 const riftDoorNear=(x,z,r)=>{ for(const d of RIFT_DOORS) if(Math.hypot(x-d.x,z-d.z)<=(r===undefined?RIFT_TALK:r)) return RIFT_DEFS[d.id]||null; return null; };

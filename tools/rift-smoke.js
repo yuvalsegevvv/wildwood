@@ -7,7 +7,7 @@
 const {loadServer}=require('./load');
 const sent=[];
 const {api:W,x}=loadServer({dev:false,send(to,m){ sent.push([to,m]); }},['RIFT_DEFS','RIFT_BAD','defineRift','RIFT_PAY','RIFT_MON_DEFS','RIFT_E_MAX','RIFT_E_MS','RIFT_E_DOUBLE','RIFT_WAVES','RIFT_ALIVE_MAX','RIFT_SLOT0',
-  'RIFT_HP_K','RIFT_DMG_K','RIFT_BONUS_KILLS','riftEnergyAt','riftWaveSize','riftNear','riftLayout','DG_RUNS','DG_SLOT_RUN','DG_DG_SLOTS','DG_MAX_INST','DG_KITS','DG_MISSIONS','dgPoolS','dgBake','dgSolid',
+  'RIFT_HP_K','RIFT_DMG_K','RIFT_SPEED_K','riftShapeBad','ALL_MON_DEFS','RIFT_BONUS_KILLS','riftEnergyAt','riftWaveSize','riftNear','riftLayout','DG_RUNS','DG_SLOT_RUN','DG_DG_SLOTS','DG_MAX_INST','DG_KITS','DG_MISSIONS','dgPoolS','dgBake','dgSolid',
   'dgHitOkS','dgWallAtS','DEF_BY_ID','MON_DEFS','sanitizeGear','getH','vilAt','inVillage','nearRoad','landAt','waCoast','CAMPS','killMonsterS','xpFor','defAt','dgKOf','MONS','S','dgLaunchS','DG_THEMES',
   'RIFT_ELEM_LV','RIFT_ESS_FULL','RIFT_ELEM_SLOTS','riftEssFor','defineElemRift','riftMobDef','RIFT_DOORS','ESS_ORDER','essOf','foeMult','awkTierCost','awkTierP','awkGrantP','MAT_MAX','MAT_IDS','rdMatsOf']);
 let fails=0; const ok=(n,c,i)=>{ console.log((c?'PASS ':'FAIL ')+n+(i!==undefined?'  ('+i+')':'')); if(!c) fails++; };
@@ -16,6 +16,12 @@ const msgs=(to,t)=>sent.filter(s=>s[0]===to&&s[1].t===t).map(s=>s[1]);
 const R=x.RIFT_DEFS.shardmere, H=3600000;
 const shardIds=[...R.kinds.map(k=>k.id),R.herald];
 ok('the Shardmere is defined, nothing left out, seven glass kinds with the look flag',!!R&&!x.RIFT_BAD.length&&shardIds.length===7&&shardIds.every(id=>{ const d=x.DEF_BY_ID[id]; return d&&d.rift&&d.pal.glass&&d.pal.tint&&x.RIFT_MON_DEFS.includes(d); }),JSON.stringify(x.RIFT_BAD));
+{ const base=id=>x.ALL_MON_DEFS.find(d=>d.id===id);
+  ok('glass monsters run twice as fast as the kind they copy',x.RIFT_SPEED_K===2&&x.RIFT_MON_DEFS.every(d=>base(d.riftOf)&&Math.abs(d.speed-2*base(d.riftOf).speed)<1e-9),x.RIFT_MON_DEFS.filter(d=>!base(d.riftOf)||d.speed!==2*base(d.riftOf).speed).map(d=>d.id).join());
+  const Rs=Object.values(x.RIFT_DEFS), keys=Rs.map(r=>JSON.stringify(x.riftLayout(r).cells.map(c=>[c.x,c.z,c.mask])));
+  const bakes=Rs.map(r=>{ const L=x.riftLayout(r), B=x.dgBake(L), O=(r.shape||['O']).join('').split('O').length-1; return {id:r.id,ok:!!B&&!!B.start&&B.marks.S.length===(r.shape?2*O:8)}; });
+  ok('every rift has its own platform shape (the Shardmere the plus), each bakes with its hub and two tears a platform',new Set(keys).size===Rs.length&&!R.shape&&Rs.filter(r=>r.id!=='shardmere').every(r=>r.shape)&&bakes.every(b=>b.ok),bakes.filter(b=>!b.ok).map(b=>b.id).join());
+  ok('a bad shape is refused (two hubs, a cut-off platform)',!!x.riftShapeBad(['HOH'])&&!!x.riftShapeBad(['HO.','..O'])&&x.riftShapeBad(['.O.','OHO','.O.'])===''); }
 { const n=x.RIFT_BAD.length, bad=x.defineRift(Object.assign({},R,{id:'badreward',reward:'gold'}));
   ok('the Shardmere pays XP (its reward mode, default xp, has a payer); an unknown reward mode is left out',R.reward==='xp'&&typeof x.RIFT_PAY.xp.kill==='function'&&!bad&&x.RIFT_BAD.length===n+1&&!x.RIFT_DEFS.badreward,JSON.stringify(x.RIFT_BAD));
   x.RIFT_BAD.length=n; }

@@ -14,7 +14,7 @@ function riftViewBuild(R){
   const T=R.T, au=T.aura.map(h=>new THREE.Color(h)), W=B.w, H=B.h;
   const g=new THREE.Group(); g.position.set(R.ox,R.y,R.oz); g.name='rift'; scene.add(g); DG_VIEW.g=g;
   const open=(gx,gz)=>gx>=0&&gz>=0&&gx<W&&gz<H&&!!B.cells[gz*W+gx];
-  const C=DG_TILE/2, centres=[[1,1,16],[1,0,12],[2,1,12],[1,2,12],[0,1,12]].map(([tx,tz,r])=>({x:tx*DG_TILE+C,z:tz*DG_TILE+C,r}));
+  const lay=riftLayout(T), centres=lay.isles, mid=lay.mid;   // (each rift's own shape)
   const onIsle=(x,z)=>centres.some(c=>Math.hypot(x-c.x,z-c.z)<=c.r+0.6);   // a platform cell, not a bridge
   const A={lit:dgvAcc(),glow:dgvAcc(),soft:dgvAcc(),bridge:dgvAcc()}, rng=mulberry32(0x51f7);
   const pale=new THREE.Color(0xe6dcff), pale2=new THREE.Color(0xcfe0ff), pink=new THREE.Color(0xffd6f0), side=au[1].clone().lerp(new THREE.Color(0x30205a),0.35), cTmp=new THREE.Color();
@@ -47,7 +47,7 @@ function riftViewBuild(R){
     for(let i=0;i<n;i++){ const a=rng()*TAU, d=i?rng()*c.r*0.7:0, len=(i?4+rng()*6:10+rng()*4)*(c.r/14);
       dgvPut(A.soft,new THREE.ConeGeometry(0.8+rng()*1.6,len,5).rotateX(Math.PI),c.x+Math.sin(a)*d,-RIFT_EDGE-len/2+0.2,c.z+Math.cos(a)*d,{ry:rng()*TAU,col:au[i%3].clone().lerp(new THREE.Color(0xffffff),0.25).getHex(),va:0.12}); } }
   // the tears the waves come through: an upright crack of light in a ring of shards
-  for(const s of B.marks.S){ const face=Math.atan2(s.x-72,s.z-72);
+  for(const s of B.marks.S){ const face=Math.atan2(s.x-mid.x,s.z-mid.z);
     dgvPut(A.glow,new THREE.TorusGeometry(1.4,0.12,5,18),s.x,2.2,s.z,{ry:face+Math.PI/2,sy:1.6,col:au[2].getHex(),va:0.05});
     dgvPut(A.glow,new THREE.PlaneGeometry(0.5,3.6),s.x,2.2,s.z,{ry:face+Math.PI/2,col:0xfff0ff,va:0.02});
     dgvPut(A.glow,dgvRing(1.3,1.6,20),s.x,0.02,s.z,{col:au[1].getHex(),va:0.05});
@@ -56,7 +56,7 @@ function riftViewBuild(R){
   const st=B.start; if(st){ dgvPut(A.glow,new THREE.TorusGeometry(1.7,0.17,6,20,Math.PI),st.x,0.2,st.z,{col:au[0].getHex(),va:0.05});
     if(!LITE) dgvPut(A.soft,new THREE.CircleGeometry(1.6,20,0,Math.PI),st.x,0.2,st.z,{col:0xe8e0ff,va:0.02});
     dgvPut(A.glow,dgvRing(2.0,2.3,28),st.x,0.02,st.z,{col:au[1].getHex(),va:0.02}); dgvPut(A.glow,dgvRing(5.6,5.8,40),st.x,0.02,st.z,{col:au[2].getHex(),va:0.02}); }
-  DG_VIEW.anchors=[{x:st?st.x:72,z:st?st.z:72,y:2,col:0xb8c8ff,i:0.8,r:12,skip:0,dyn:true},...B.marks.S.map(s=>({x:s.x,z:s.z,y:2,col:T.aura[2],i:0.7,r:9,skip:0,dyn:true}))];
+  DG_VIEW.anchors=[{x:st?st.x:mid.x,z:st?st.z:mid.z,y:2,col:0xb8c8ff,i:0.8,r:12,skip:0,dyn:true},...B.marks.S.map(s=>({x:s.x,z:s.z,y:2,col:T.aura[2],i:0.7,r:9,skip:0,dyn:true}))];
   // the meshes
   DG_VIEW.surfMat=new THREE.MeshPhongMaterial({vertexColors:true,shininess:70,specular:0x8a7aa8,emissive:0x140e26}); DG_VIEW.mats.push(DG_VIEW.surfMat);
   dgvMesh(A.lit,DG_VIEW.surfMat,'glass');
@@ -64,7 +64,7 @@ function riftViewBuild(R){
   { const m=dgvMesh(A.bridge,bm,'bridges'); if(m) m.renderOrder=2; }
   DG_VIEW.glowMat=new THREE.MeshBasicMaterial({vertexColors:true}); DG_VIEW.mats.push(DG_VIEW.glowMat); dgvMesh(A.glow,DG_VIEW.glowMat,'rims');
   const sm=new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:0.72,depthWrite:false}); DG_VIEW.mats.push(sm); { const m=dgvMesh(A.soft,sm,'crystals'); if(m) m.renderOrder=1; }
-  riftSkyBuild(g,au); riftShardsBuild(g,au,rng);
+  riftSkyBuild(g,au); riftShardsBuild(g,au,rng,mid);
 }
 // the aura sky: blue overhead, violet round the horizon, pink veils drifting, a deep violet void below with slow points of light
 function riftSkyBuild(g,au){
@@ -87,12 +87,13 @@ function riftSkyBuild(g,au){
   DG_VIEW.geos.push(geo); DG_VIEW.mats.push(mat); RIFT_VIEW.sky=sky; RIFT_VIEW.t=0;
 }
 // glass shards drifting round the platforms at different depths (one merged mesh, the group turns slowly)
-function riftShardsBuild(g,au,rng){
+function riftShardsBuild(g,au,rng,mid){
   const A=dgvAcc(), n=LOW?26:54;
-  for(let i=0;i<n;i++){ const a=rng()*TAU, d=55+rng()*55, y=-45+rng()*75, s=0.6+rng()*2.6;
+  const ext=Math.max(55,Math.max(mid.x,mid.z)-17);   // (outside the platforms of the widest shape)
+  for(let i=0;i<n;i++){ const a=rng()*TAU, d=ext+rng()*55, y=-45+rng()*75, s=0.6+rng()*2.6;
     dgvPut(A,new THREE.OctahedronGeometry(s,0),Math.sin(a)*d,y,Math.cos(a)*d,{sy:1.6+rng(),rx:rng()*3,ry:rng()*3,col:au[i%3].clone().lerp(new THREE.Color(0xffffff),0.3+rng()*0.3).getHex(),va:0.15}); }
   const mat=new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:0.8,depthWrite:false}); DG_VIEW.mats.push(mat);
-  const sg=new THREE.Group(); sg.position.set(72,0,72); g.add(sg);
+  const sg=new THREE.Group(); sg.position.set(mid.x,0,mid.z); g.add(sg);
   const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(A.p,3)); geo.setAttribute('normal',new THREE.Float32BufferAttribute(A.n,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(A.c,3));
   const m=new THREE.Mesh(geo,mat); m.renderOrder=1; sg.add(m); DG_VIEW.geos.push(geo); RIFT_VIEW.shards=sg;
 }

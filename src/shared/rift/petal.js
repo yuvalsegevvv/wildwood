@@ -8,6 +8,7 @@ riftMobDef('kitsune','petalfox','Gale Kitsune',{el:'air',pal:{tint:0xffc0d8}});
 riftMobDef('onibi','petalwisp','Petal Wisp',{el:'air',pal:{tint:0xfff0f5}});
 riftMobDef('tengu','petaltengu','Breeze Tengu',{el:'air',pal:{tint:0xd8a0c0}});
 riftMobDef('sakuratreant','petalherald','Blossom Herald',{el:'air',scale:1.5,heavy:true,pal:{tint:0xffc8dc}});
-defineElemRift({id:'petal',name:'The Petal Rift',blurb:'A tear into a void of drifting petals and pale sky. Blossom-born monsters of the air element pour in, wave after wave. It pays Air Essence, no XP and no coins.',
+defineElemRift({id:'petal',shape:['OoO','o.o','OHO'],   // its platforms: a ring of petals round a hole in the sky
+  name:'The Petal Rift',blurb:'A tear into a void of drifting petals and pale sky. Blossom-born monsters of the air element pour in, wave after wave. It pays Air Essence, no XP and no coins.',
   door:{x:812,z:-124},aura:[0xf5c0d8,0xffb0d0,0xff8fb8],music:'rift',el:'air',essence:'air',herald:'petalherald',
   mobs:['petalslime','petalkodama','petalbeetle','petalfox','petalwisp','petaltengu']});

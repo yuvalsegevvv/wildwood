@@ -8,6 +8,7 @@ riftMobDef('wolf','rimewolf','Tidefrost Wolf',{el:'water',pal:{tint:0x9cc8e8}});
 riftMobDef('rimewisp','rimeglint','Meltwater Wisp',{el:'water',pal:{tint:0xd0ecff}});
 riftMobDef('yeti','rimeyeti','Drift Yeti',{el:'water',pal:{tint:0xa0d0f0}});
 riftMobDef('rimetreant','rimeherald','Rimewater Herald',{el:'water',scale:1.5,heavy:true,pal:{tint:0xc8e8ff}});
-defineElemRift({id:'rime',name:'The Rime Rift',blurb:'A tear into a void of rime and meltwater light. Frost-born monsters of the water element pour in, wave after wave. It pays Water Essence, no XP and no coins.',
+defineElemRift({id:'rime',shape:['..OO','.oo.','Oo..','H...'],   // its platforms: a frozen stair climbing away from the hub
+  name:'The Rime Rift',blurb:'A tear into a void of rime and meltwater light. Frost-born monsters of the water element pour in, wave after wave. It pays Water Essence, no XP and no coins.',
   door:{x:644,z:-568},aura:[0x9ad8ff,0xcfeaff,0xe8f6ff],music:'rift',el:'water',essence:'water',herald:'rimeherald',
   mobs:['rimeslime','rimeboar','rimebeetle','rimewolf','rimeglint','rimeyeti']});

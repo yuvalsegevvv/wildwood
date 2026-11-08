@@ -10,6 +10,7 @@ riftMobDef('shroom','rootsprout','Mulch Sprout',{el:'earth',pal:{tint:0xe0c068}}
 riftMobDef('goblin','rootburl','Burl Goblin',{el:'earth',pal:{tint:0x9a7a3a}});
 riftMobDef('cragwarden','rootstone','Stoneroot Warden',{el:'earth',pal:{tint:0xd8b858}});
 riftMobDef('ancient','rootherald','Taproot Herald',{el:'earth',scale:1.5,heavy:true,pal:{tint:0xf0d070}});
-defineElemRift({id:'taproot',name:'The Taproot',blurb:'A tear into a void of roots and earth-gold light. Root-born monsters of the earth element pour in, wave after wave. It pays Prime Essence, no XP and no coins.',
+defineElemRift({id:'taproot',shape:['O.O.O','o.o.o','ooooo','..o..','..H..'],   // its platforms: a root tree: a trunk from the hub that forks into three crowns
+  name:'The Taproot',blurb:'A tear into a void of roots and earth-gold light. Root-born monsters of the earth element pour in, wave after wave. It pays Prime Essence, no XP and no coins.',
   door:{x:368,z:68},aura:[0x6a9a3a,0xc9a24a,0xf0d070],music:'rift',el:'earth',essence:'prime',herald:'rootherald',
   mobs:['rootlet','rootgnarl','rootboar','rootsprout','rootburl','rootstone']});
