@@ -65,6 +65,7 @@ function buildTorso(X,D){
     const gw=G(y,wy,0.11), gh=G(y,-0.03,y>-0.03?0.075:0.1), up=sm(0.22,0.4,y)*(1-sN);
     x*=1+(S.shoulders-1)*up+(S.waist-1)*gw+(S.hips-1)*gh+chestRibs(ch)*G(y,0.32,0.1);   // (a larger chest: a broader ribcage)
     z*=1+(S.waist-1)*0.7*gw+(S.hips-1)*(front?0.08:0.5)*gh+(S.shoulders-1)*0.2*up;   // wide hips widen the sides and push the seat back, but never fill the belly out in front
+    x*=1+(fem?0.11:0.14)*G(y,0.495,0.03)*(1-sN);   // the top of the shoulder runs out level with the top of the arm's ball (trapezius into deltoid): the ball no longer stands up as a knob beside a sloping torso
     const ax=Math.abs(x);
     if(front){
       if(!fem) z+=0.012*B*G(y,0.33,0.1)*(1-0.4*G(ax,0,0.12))*(1-0.4*Math.min(S.chestShape,0))-0.003*B*(0.5+0.5*ch)*G(y,0.37,0.05)*G(ax,0.07*B,0.07)-0.007*B*Math.max(S.chestShape,0)*G(y,0.34,0.05)*G(ax,0.06*B,0.045);   // a man's chest: a flat, broad plane (the ribcage flattened by 1.2 cm) with only a hint of pec; a rounded bump read as a bust
