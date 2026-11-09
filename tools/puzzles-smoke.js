@@ -7,7 +7,7 @@ const N=+(process.argv[process.argv.indexOf('--seeds')+1])||12;
 ok('no kind or site was left out as bad',x.PZ_BAD.length===0&&x.PZ_SITE_BAD.length===0,JSON.stringify(x.PZ_BAD)+JSON.stringify(x.PZ_SITE_BAD));
 ok('all nine kinds are registered',['rootlines','iceslide','sudoku','akari','slither','bridges','mirrors','nonogram','sokoban'].every(k=>x.PZ_KIND_IDS.includes(k)),x.PZ_KIND_IDS.join(','));
 // every kind and difficulty: generate, the stored solution passes the checker, the same seed gives the same board, a wrong answer fails
-const budget={1:50,2:150,3:400,4:4000,5:20000}, budgetKind={slither:{5:90000},sokoban:{3:3000}};   // slither d5 (15x15) is the slow one, see docs/PUZZLES.md
+const budget={1:50,2:150,3:400,4:4000,5:20000}, budgetKind={slither:{5:4000},sokoban:{3:3000}};   // slither d5 (15x15) is the slow one, see docs/PUZZLES.md
 const junk=[[],'',null,undefined,5,{},'x'.repeat(5000),new Array(5000).fill(1),new Array(300).fill([0,0,0]),[[1,2,3,4]],{length:9}];   // ms per board, a generous ceiling (the plan's 5 ms for trivial-normal is reported by the table below, not enforced)
 for(const kind of x.PZ_KIND_IDS){
   for(let d=1;d<=5;d++){
