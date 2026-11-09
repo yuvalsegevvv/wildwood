@@ -17,9 +17,9 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
   ok('defaults (11/2026): M opens the map, N mutes, the version 3 potions on 7 8 9, O the friends',G.kbIs('KeyM','map')&&G.kbIs('KeyN','mute')&&G.kbIs('Digit7','pot4')&&G.kbIs('Digit8','pot5')&&G.kbIs('Digit9','pot6')&&G.kbIs('KeyO','friends')&&G.kbIs('Comma','friends'));
   ok('labels: letters, arrows, shift, numpad',G.kbName('inv')==='I'&&G.kbLabel('ArrowUp')==='↑'&&G.kbLabel('ShiftLeft')==='L Shift'&&G.kbLabel('Numpad5')==='Num 5'&&G.kbLabel('Digit3')==='3');
   // rebinding, swapping, clearing
-  ok('rebind: Inventory to B',G.kbSet('inv',0,'KeyB')===''&&G.kbIs('KeyB','inv')&&!G.kbIs('KeyI','inv'));
-  const note=G.kbSet('map',0,'KeyB');
-  ok('binding a used key swaps: Map takes B, Inventory takes M',G.kbIs('KeyB','map')&&G.kbIs('KeyM','inv')&&/Inventory now uses M/.test(note),note);
+  ok('rebind: Equipment to U',G.kbSet('inv',0,'KeyU')===''&&G.kbIs('KeyU','inv')&&!G.kbIs('KeyI','inv'));
+  const note=G.kbSet('map',0,'KeyU');
+  ok('binding a used key swaps: Map takes U, Equipment takes M',G.kbIs('KeyU','map')&&G.kbIs('KeyM','inv')&&/Equipment now uses M/.test(note),note);
   ok('still no key used twice',unique(G));
   ok('clearing the last key says so',/Mute sound has no key now/.test(G.kbSet('mute',0,''))&&G.kbName('mute')==='');
   G.kbSet('mute',0,'KeyN');
@@ -30,7 +30,7 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
   // the HUD hints follow the keys, and drop the "(K)" for an action with no key
   { const el={dataset:{kb:'map',kbt:'Map ({k})',kba:'Minimap. Open the map ({k})'},_a:{},title:'',setAttribute(k,v){ this._a[k]=v; }};
     const qs=document.querySelectorAll; document.querySelectorAll=s=>s==='[data-kb]'?[el]:[]; G.kbHints();
-    ok('hint shows the new key',el.title==='Map (B)'&&el._a['aria-label']==='Minimap. Open the map (B)',el.title);
+    ok('hint shows the new key',el.title==='Map (U)'&&el._a['aria-label']==='Minimap. Open the map (U)',el.title);
     G.kbSet('map',0,''); G.kbSet('map',1,''); G.kbHints(); ok('hint drops the key when there is none',el.title==='Map'&&el._a['aria-label']==='Minimap. Open the map',el.title);
     G.kbSet('map',0,'KeyB'); document.querySelectorAll=qs; }
   // the start card's legend is redrawn from the keys

@@ -103,10 +103,5 @@ body.touch .ab-burst{ width:56px; height:56px; align-self:center; }
 }
 @media (max-width:719px) and (min-width:521px){ .sk-left{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
 
-/* inventory: the key resources block (economy/inv-keys.js) */
-.ik-list{ display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
-.ik-row{ display:flex; align-items:center; gap:10px; padding:4px 8px; border-radius:10px; background:rgba(255,255,255,.04); }
-.ik-row.none{ opacity:.55; }
-.ik-t{ flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; } .ik-t b{ font-size:13.5px; } .ik-t small{ font-size:11px; opacity:.75; line-height:1.25; }
-.ik-row em{ font-style:normal; font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:rgba(255,255,255,.1); }
-.ik-row em.ik-top{ background:#ffd24a; color:#2a1f05; } .ik-row em.ik-high{ background:#8fc4ff; color:#08203a; }
+/* inventory: the key resources row (economy/inv-keys.js) */
+.matc.ik-none{ opacity:.5; }

@@ -40,8 +40,11 @@
     <button class="icon-btn" id="bFriends" aria-label="Friends and ranking" title="Friends and ranking" data-kb="friends" data-kbt="Friends and ranking ({k})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.6-.3 4.5 1.4 4.5 4"/></svg>
     </button>
-    <button class="icon-btn" id="bInv" aria-label="Inventory (I)" title="Inventory (I)" data-kb="inv" data-kbt="Inventory ({k})">
+    <button class="icon-btn" id="bInv" aria-label="Equipment (I)" title="Equipment (I)" data-kb="inv" data-kbt="Equipment ({k})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+    </button>
+    <button class="icon-btn" id="bMats" aria-label="Inventory (B)" title="Inventory (B)" data-kb="mats" data-kbt="Inventory ({k})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>
     </button>
     <button class="icon-btn" id="bGems" aria-label="Gem shop" title="Gem shop">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l2-5h14l2 5"/><path d="M4 9h16v3a2.7 2.7 0 0 1-5.3 0 2.7 2.7 0 0 1-5.4 0A2.7 2.7 0 0 1 4 12z"/><path d="M5 14v6h14v-6"/><path d="M10 20v-4h4v4"/></svg>
@@ -69,9 +72,13 @@
 <div id="toasts"></div>
 <div id="rdStrip" hidden role="status"></div>
 <div id="bossbar" hidden><div class="bb-top"><b id="bbName">The Rootwarden</b><span class="bb-lv" id="bbLv">Lv 15 boss</span><span id="bbEl"></span><span id="bbPhase"></span></div><div class="bb-bar"><i id="bbHp"></i><u class="bb-tick" style="left:60%"></u><u class="bb-tick" style="left:30%"></u><span id="bbPct">100%</span></div></div>
-<div id="inv" class="panel" hidden role="dialog" aria-label="Inventory">
-  <div class="pn-head"><span class="pn-t">Inventory</span><button class="chip pn-skills" id="invShops" type="button">Shops</button><button class="chip pn-skills" id="invSkills" data-kb="skills" data-kbx="Skills ({k})">Skills (K)</button><span class="pn-coins" id="invCoins"></span><span class="pn-gems" id="invGems"></span><span class="pn-amber" id="invAmber"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<div id="inv" class="panel" hidden role="dialog" aria-label="Equipment">
+  <div class="pn-head"><span class="pn-t">Equipment</span><button class="chip pn-skills" id="invShops" type="button">Shops</button><button class="chip pn-skills" id="invSkills" data-kb="skills" data-kbx="Skills ({k})">Skills (K)</button><span class="pn-coins" id="invCoins"></span><span class="pn-gems" id="invGems"></span><span class="pn-amber" id="invAmber"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="invBody"></div>
+</div>
+<div id="mats" class="panel" hidden role="dialog" aria-label="Inventory">
+  <div class="pn-head"><span class="pn-t">Inventory</span><span class="pn-coins" id="matsCoins"></span><span class="pn-gems" id="matsGems"></span><span class="pn-amber" id="matsAmber"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-body" id="matsBody"></div>
 </div>
 <div id="gemShop" class="panel" hidden role="dialog" aria-label="Gem shop">
   <div class="pn-head"><span class="pn-t">Gem shop</span><span class="pn-gems" id="gemBal"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>

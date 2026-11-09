@@ -34,7 +34,7 @@ const el=s=>document.querySelector(s);
   ok('tempering shows: the pieces are +1 now, their tiles have a "+1" badge and the dungeon accent, the stones are spent (20 -> 18)',G.GEAR.inv.includes('sword7+1')&&G.GEAR.inv.includes('helmet7+1')&&G.GEAR.temper===18&&/class="tile r0 dg[^"]*" data-id="sword7\+1" data-from="bag"[^>]*>(?:(?!<\/button>)[\s\S])*<span class="enh">\+1<\/span>/.test(h)&&/class="tile r0 dg[^"]*" data-id="bow7"/.test(h)&&!/enh/.test(h.split('data-id="bow7"')[1].split('</button>')[0]));
   G.INV.sel={id:'sword7+1',from:'bag'}; G.renderInvInfo(); h=el('#invInfo').innerHTML.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
   ok('a tempered weapon\'s details name it "+1", say how far it can go and what the next step costs and gives',/Elderwood Blade \+1/.test(h)&&/Tempered \+1 of 2/.test(h)&&/next: \+150 attack \(\+12\) for 2 Tempering Stones \(you have 18\)/.test(h),h.slice(0,300));
-  ok('the stone count is listed among the key resources (with its icon)',/<b>Tempering Stones<\/b>[\s\S]{0,400}/.test(el('#invBody').innerHTML)&&/aria-label="Tempering Stones x18"><svg/.test(el('#invBody').innerHTML));
+  el('#mats').hidden=false; G.renderInv(); ok('the stone count is listed among the key resources (with its icon)',/aria-label="Tempering Stones x18"><svg/.test(el('#matsBody').innerHTML)); el('#mats').hidden=true;
   // ---- the forge ----
   G.openForge({def:{name:'Greta'}}); h=el('#forgeBody').innerHTML;
   ok('the forge opens on the Merge tab, ',!/data-temper=/.test(h));

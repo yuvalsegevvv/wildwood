@@ -26,7 +26,7 @@ function buildWildBenches(){
         const y=getH(x,z); if(y<WATER+0.6) continue;
         const hs=[getH(x+1,z),getH(x-1,z),getH(x,z+1),getH(x,z-1)]; if(Math.max(...hs)-Math.min(...hs)>0.7) continue;
         if(roadDist(x,z)<2.4) continue;
-        const rot=Math.atan2(-uz*side,ux*side);   // the sitter faces rot+PI (see sitToggle), which is the road; the backrest is on the local +z side
+        const rot=Math.atan2(-uz*side,ux*side);   // the sitter's face is rot (see sitToggle): they look at the road, the backrest is on the local +z side behind them
         acc=0; n++;
         const sx=Math.sin(rot), cz=Math.cos(rot), at=(lx,lz)=>[x+lx*cz+lz*sx, z-lx*sx+lz*cz];
         part(new THREE.BoxGeometry(1.7,0.12,0.5),wood,x,y+0.5,z,rot);
@@ -50,7 +50,7 @@ function sitToggle(){
   if(SIT.on){ sitSet(0); return; }
   if(!started||customizing||PL.dead||P.vy>0.5||!P.ground||(typeof dgIn==='function'&&dgIn())||(typeof caveIn==='function'&&caveIn())) return;
   const s=sitSpotNear();
-  if(s){ P.x=s.x; P.z=s.z; P.y=getH(s.x,s.z); P.vx=P.vz=0; P.face=s.rot+Math.PI; sitSet(2); }
+  if(s){ P.x=s.x; P.z=s.z; P.y=getH(s.x,s.z); P.vx=P.vz=0; P.face=s.rot; sitSet(2); }   // a model looks along (-sin face, -cos face): face = rot looks against rot's own direction, i.e. at the road from a wild bench (its backrest is on the +rot side) and at the fire from a log bench
   else { P.vx=P.vz=0; sitSet(1); }
 }
 function sitUpdate(){
