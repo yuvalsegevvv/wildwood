@@ -33,7 +33,7 @@ function cjSway(rig,mesh,w,amt,size){
     if(quiet){ pos.array.set(base); pos.needsUpdate=true; rest=true; sy=sz=sx=vy=vz=vx=0; return; }
     rest=false; const a=pos.array;
     for(let n=0;n<idx.length;n++){ const i=idx[n], o=i*3, q=w[i]*k;
-      a[o]=base[o]+Math.sign(base[o])*ex*0.03*q; a[o+1]=base[o+1]+ey*0.07*q; a[o+2]=base[o+2]-ez*0.07*q; }
+      a[o]=base[o]+Math.sign(base[o])*ex*0.021*q; a[o+1]=base[o+1]+ey*0.049*q; a[o+2]=base[o+2]-ez*0.049*q; }
     pos.needsUpdate=true;
   });
 }
