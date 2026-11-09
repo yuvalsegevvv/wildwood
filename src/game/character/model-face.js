@@ -123,10 +123,21 @@ function buildFace(X){
   { const mw=0.0165*S.mouthSize*(fem?0.92:1), my=(-0.062+0.008*S.mouthHeight)*HEAD_TALL, sm=S.smile, lipsC=skin.clone().lerp(_tint.set(Number.isFinite(L.lipColor)&&L.lipColor>=0?L.lipColor:0xb04a52),Number.isFinite(L.lipColor)&&L.lipColor>=0?0.8:fem?0.62:0.4), line=lipsC.clone().multiplyScalar(0.5).getHex();
     const P=[]; for(let i=0;i<=6;i++){ const u=i/6*2-1, x=u*mw, y=my+sm*0.0055*u*u-0.0013*(1-u*u)*(1+0.3*sm); P.push([x,y,zAt(x,y)-0.0007]); }
     parts.push(col(sweepTube(P,[0.0008,0.0015,0.0019,0.002,0.0019,0.0015,0.0008],sg(6),{cap:'point',rings:sg(14)}),line));
-    const lw=S.lips; const lo=new THREE.Color(lipsC);
-    const lower=place(el(mw*0.6,0.0046*lw,0.0036,0,0,0),0,my-0.0058-0.001*sm,0.0008); parts.push(pc(lower,c=>c.copy(lo).multiplyScalar(1.04)));
-    if(fem||lw>1.15){ const upper=place(el(mw*0.5,0.0030*lw,0.003,0,0,0),0,my+0.0028,0.0004); parts.push(pc(upper,c=>c.copy(lo).multiplyScalar(0.92))); }
-    if(sm>0.55){ const teeth=place(el(mw*0.5,0.0022*(sm-0.45),0.002,0,0,0),0,my-0.0035,0.0003); parts.push(solid(teeth,0xf4f0ea)); }   // a wide smile shows teeth
+    // the lips: two surfaces that grow out of the mouth line and lie on the face (not two ovals stuck on it). The upper one has a cupid's bow (two peaks, a dip between), the lower one
+    // is fullest in the middle; both taper to nothing at the corners, swell a little, and fade into the skin at their outer edge
+    const lw=S.lips, lo=new THREE.Color(lipsC), LW=mw*0.9, yl=u=>my+sm*0.0055*u*u-0.0013*(1-u*u)*(1+0.3*sm);
+    const hU=u=>(fem?0.0043:0.0027)*lw*Math.pow(Math.max(0,1-u*u),0.8)*(1-0.24*G(u,0,0.15))*(1+0.22*G(Math.abs(u),0.3,0.2)), hLo=u=>(fem?0.0064:0.005)*lw*Math.pow(Math.max(0,1-u*u),0.62);
+    const gap=sm>0.55?0.0046*(sm-0.45):0;   // a wide smile parts the lips over the teeth
+    const lipGeo=up=>{ const nu=Math.max(6,sg(18)), nv=sg(100)>=50?5:3, pos=[], idx=[], W=nu+1;
+      for(let j=0;j<=nv;j++) for(let i=0;i<=nu;i++){ const u=i/nu*2-1, v=j/nv, x=u*LW, h=up?hU(u):hLo(u), y=yl(u)+(up?h*v:-gap*(1-u*u)-h*v), out=(up?0.0013:0.0021)*Math.min(1.4,lw)*Math.pow(Math.sin(Math.PI*Math.min(1,v*1.08)),0.8)*Math.sqrt(Math.max(0,1-u*u));
+        pos.push(x,y,zAt(x,y)-0.0003-out); }
+      for(let j=0;j<nv;j++) for(let i=0;i<nu;i++){ const a0=j*W+i, b0=a0+1, c0=a0+W, d0=c0+1; if(up) idx.push(a0,c0,b0,b0,c0,d0); else idx.push(a0,b0,c0,b0,d0,c0); }
+      const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pos),3)); g.setIndex(idx); return smoothN(g); };
+    const lipPaint=up=>(x,y,z,c)=>{ const u=clamp(x/LW,-1,1), h=(up?hU(u):hLo(u))||1e-6, v=clamp((Math.abs(y-yl(u))-(up?0:gap*(1-u*u)))/h);
+      c.copy(lo).multiplyScalar(up?0.9:1.0+0.1*G(v,0.45,0.25)*G(u,0,0.5)); c.lerp(skin,(fem?0:0.25)+(1-(fem?0:0.25))*0.75*faceSm(0.62,1,v)); };
+    parts.push(pc(lipGeo(false),lipPaint(false)));
+    if(fem||lw>1.15) parts.push(pc(lipGeo(true),lipPaint(true)));
+    if(sm>0.55){ const teeth=place(el(mw*0.62,gap*0.62,0.0016,0,0,0),0,my-0.0017-gap*0.5,0.0002); parts.push(solid(teeth,0xf4f0ea)); }   // a wide smile shows teeth
   }
 
   /* ears: a flattened shell with a hollow, a lobe, and (earPoint) an elf's long tip */
