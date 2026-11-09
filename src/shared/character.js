@@ -13,7 +13,7 @@ const BODY_SLIDERS=[
   // Body
   {k:'height',   g:'Body',     label:'Height',        min:0.9,  max:1.1,  def:1, ends:['Shorter','Taller']},
   {k:'build',    g:'Body',     label:'Build',         min:0.84, max:1.24, def:1, ends:['Slim','Sturdy']},
-  {k:'chest',    g:'Shape',    label:'Chest',         min:0.5,  max:3,    def:1, ends:['Smaller','Larger']},
+  {k:'chest',    g:'Shape',    label:'Chest',         min:0.5,  max:3.5,   def:1, ends:['Smaller','Larger']},
   {k:'chestShape',g:'Shape', label:'Chest shape',  min:-0.7, max:0.2,  def:0, ends:['Broad & flat','Round & full']},   // the second chest dimension: the same volume spread wide and flat, or gathered round and forward (model-body.js buildTorso, outfit-tools.js torsoSize)
   {k:'undertone',g:'Body',     label:'Skin undertone',min:-1,   max:1,    def:0, ends:['Cool','Warm']},
   // Shape (the proportions between the body's parts)
@@ -21,7 +21,7 @@ const BODY_SLIDERS=[
   {k:'waist',    g:'Shape',    label:'Waist',         min:0.75, max:1.3,  def:1, ends:['Cinched','Full']},
   {k:'hips',     g:'Shape',    label:'Hips',          min:0.8,  max:1.3,  def:1, ends:['Narrow','Wide']},
   {k:'hipCurve', g:'Shape',    label:'Hip curve',     min:0.4,  max:2.6,  def:1, ends:['Flat','Round']},   // how far the back of the hips curves out (the same bump the torso has always had, scaled)
-  {k:'chestLift',g:'Shape',    label:'Chest height',  min:-0.5, max:1.8,   def:0, ends:['Lower','Higher']},   // moves the bust up or down the torso (model-body.js: bust centre cy)
+  {k:'chestLift',g:'Shape',    label:'Chest height',  min:-1.3, max:1.8,   def:0, ends:['Lower','Higher']},   // moves the bust up or down the torso (model-body.js: bust centre cy)
   {k:'hipTall',  g:'Shape',    label:'Hip height',    min:-0.5, max:1.8,   def:0, ends:['Shorter','Taller']},   // stretches the seat vertically (model-body.js: glutes' vertical spread)
   {k:'chestGap', g:'Shape',    label:'Chest spacing', min:-0.6, max:1,    def:0, ends:['Closer','Apart']},   // the gap between the two lobes of the bust (model-body.js lobe offset)
   {k:'torso',    g:'Shape',    label:'Torso length',  min:0.88, max:1.15, def:1, ends:['Short','Long']},
