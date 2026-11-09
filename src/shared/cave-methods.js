@@ -6,8 +6,8 @@
    defineCaveMethod({id 'A'-'H', name, short (what the HUD says it is), blurb (one sentence for the board), dress [4 strings: the floor's name for the props, floors 1-4], p: {numbers the engine and the view read}}).
    Users: server/cave/*.js, game/cave/methods.js (HUD, board, skills panel), game/economy/skills.js (the locked tile's text). */
 const CAVE_METHOD_CD=600;                  // seconds before the same player can finish the same method on the same floor again
-const CAVE_SHARDS=[0,1,2,4,8];             // Echo Shards for one completion that pays shards, by floor (index 1-4)
-const CAVE_XP_KILLS=[0,40,70,110,160];         // XP of one method completion on a floor (index 1-4), in kills of a monster of your own level (xpFor): grows with your level
+const CAVE_SHARDS=[0,1,2,4,8,16,32];             // Echo Shards for one completion that pays shards, by floor (index 1-4)
+const CAVE_XP_KILLS=[0,40,70,110,160,210,260];         // XP of one method completion on a floor (index 1-4), in kills of a monster of your own level (xpFor): grows with your level
 const CAVE_METHOD_DEFS=Object.create(null), CAVE_METHOD_IDS=[], CAVE_METHOD_BAD=[];
 function defineCaveMethod(d){
   const bad=why=>{ CAVE_METHOD_BAD.push({id:d&&typeof d.id==='string'?d.id:'?',why}); if(typeof console!=='undefined') console.warn('cave method left out:',d&&d.id,why); return null; };

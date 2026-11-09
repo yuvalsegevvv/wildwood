@@ -14,7 +14,7 @@
 function caveNewState(){ return {charge:0,en:undefined,sent:-1,cur:null,fight:null,fightT:0,last:null,od:null,odT:0,gr:null,bur:0,burT:0,fx:{}}; }   // fx: the set skills' windows (server/cave-fx.js); last: the last skill or burst cast (Echo); od: Overdrive; gr: Grapple Line; bur: Burrow (server/cave/skills.js)
 // gear.cave from a save: only cave skills that exist, each at a level 1-5 (an old save has none)
 function caveSanitizeSave(g){
-  const out={own:{},cd:{},done:{},m:[0,0,0,0,0],mx:[0,0,0,0,0,0,0,0,0,0],sn:{}}, ok=g&&typeof g==='object'&&!Array.isArray(g), O=ok&&g.own&&typeof g.own==='object'?g.own:null;
+  const out={own:{},cd:{},done:{},m:CAVE_DROPS.map(()=>0),mx:[0,0,0,0,0,0,0,0,0,0],sn:{}}, ok=g&&typeof g==='object'&&!Array.isArray(g), O=ok&&g.own&&typeof g.own==='object'?g.own:null;
   if(O) for(const id of Object.keys(O).slice(0,64)){ if(!caveSkillDef(id)) continue; out.own[id]=clampInt(O[id],1,SKILL_OLD_MAX_LV,1); }   // awakening: a saved level above the old top is not trusted (the tree writes the rest: awkSyncG)
   const key=k=>/^[1-9][A-H]$/.test(k)&&caveMethodDef(k[1]);   // a method key is floor digit + letter: only real methods, never a bare client string
   const CD=ok&&g.cd&&typeof g.cd==='object'?g.cd:null, DN=ok&&g.done&&typeof g.done==='object'?g.done:null, now=Date.now()/1000;

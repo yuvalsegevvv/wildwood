@@ -128,6 +128,8 @@
     "cave/floor-2-prism.js",
     "cave/floor-3-drowned.js",
     "cave/floor-4-magma.js",
+    "cave/floor-5-frost.js",
+    "cave/floor-6-umbral.js",
     "cave-methods.js",
     "cave/method-a-murals.js",
     "cave/method-b-crystals.js",

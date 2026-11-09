@@ -3,4 +3,4 @@ defineCaveMethod({id:'B',name:'Resonance crystals',short:'Crack the three geodes
   dress:['Glowworm geode','Prism geode','Drowned geode','Magma geode'],
   p:{reach:3.6,maxReach:14,chain:8,
     /* what each floor's three geodes ask: an element, or [first, second] (hit the first, then the second within `chain` seconds). Floors 2-4 are placeholders until their steps tune them */
-    need:{1:['water','earth',['fire','air']],2:['light','fire',['water','dark']],3:['air','dark',['earth','light']],4:['fire','water',['air','earth']]}}});
+    need:{1:['water','earth',['fire','air']],2:['light','fire',['water','dark']],3:['air','dark',['earth','light']],4:['fire','water',['air','earth']],5:['water','air',['light','dark']],6:['dark','earth',['fire','water']]}}});

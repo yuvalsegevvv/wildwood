@@ -134,6 +134,8 @@ shared
   cave/floor-2-prism.js              Cave floor 2, the Prism Hollows (monsters level 35-44): giant geodes, light split into colours, echoing round chambers; its generator options, look and ten monsters
   cave/floor-3-drowned.js            Cave floor 3, the Drowned Galleries (monsters level 45-54): flooded old halls with pillars, an underground river, waterfalls indoors; its generator options, look and ten monsters
   cave/floor-4-magma.js              Cave floor 4, the Magma Heart (monsters level 55-64): lava tubes, obsidian, ember vents, heat shimmer; its generator options, look and ten monsters
+  cave/floor-5-frost.js              Cave floor 5, the Frostbound Vaults (monsters level 65-74): frozen geodes, blue ice light, rime-furred halls; its generator options, look and ten monsters
+  cave/floor-6-umbral.js             Cave floor 6, the Umbral Deep (monsters level 75-84): the deepest dark, violet glowworm threads, black stone halls; its generator options, look and ten monsters
   cave-methods.js                    The Deep Cave's eight ways to earn a skill (methods A-H): the registry (defineCaveMethod), the 10-minute cooldown, the Echo Shard amounts, and the questions "which skill does this place give" and "where does this skill come from". Pure.
   cave/method-a-murals.js            Cave method A, Mural fragments: five pieces of a painted skill hidden at the dead ends, seen only near your light; touch all five, then the wall teaches it
   cave/method-b-crystals.js          Cave method B, Resonance crystals: three sealed geodes, each cracks only to a named element or to a two-element chain; hit it with the right skills

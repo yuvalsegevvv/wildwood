@@ -96,16 +96,16 @@ ok('the client is told the charge (a cave message with the rounded value)',(inbo
 
 // ======== C1: the floors' maps, the way in ========
 const FL=x.CAVE_FLOOR_N;
-ok('four floors are defined in order and none was left out',FL.join()==='1,2,3,4'&&x.CAVE_FLOOR_BAD.length===0,FL.join()+' bad '+JSON.stringify(x.CAVE_FLOOR_BAD));
-{ const bad=[null,{id:'x'},{id:'ok1',n:1,name:'Dup',theme:'grotto',lv:[1,2],seed:1,gen:{},look:{}},{id:'ok2',n:5,name:'N',theme:'plasma',lv:[1,2],seed:1,gen:{},look:{}},{id:'ok3',n:5,name:'N',theme:'grotto',lv:[3,2],seed:1,gen:{},look:{}},
-    {id:'ok4',n:5,name:'N',theme:'grotto',lv:[1,2],seed:1.5,gen:{},look:{}},{id:'ok5',n:5,name:'N',theme:'grotto',lv:[1,2],seed:1,look:{}}];
-  const n0=x.CAVE_FLOOR_BAD.length; ok('invalid floor rows (a duplicate floor, a theme that does not exist, a bad level range or seed, no generator options) are left out and listed, never thrown',bad.every(b=>x.defineCaveFloor(b)===null)&&x.CAVE_FLOOR_BAD.length===n0+bad.length&&x.CAVE_FLOOR_N.join()==='1,2,3,4');
+ok('six floors are defined in order and none was left out',FL.join()==='1,2,3,4,5,6'&&x.CAVE_FLOOR_BAD.length===0,FL.join()+' bad '+JSON.stringify(x.CAVE_FLOOR_BAD));
+{ const bad=[null,{id:'x'},{id:'ok1',n:1,name:'Dup',theme:'grotto',lv:[1,2],seed:1,gen:{},look:{}},{id:'ok2',n:7,name:'N',theme:'plasma',lv:[1,2],seed:1,gen:{},look:{}},{id:'ok3',n:7,name:'N',theme:'grotto',lv:[3,2],seed:1,gen:{},look:{}},
+    {id:'ok4',n:7,name:'N',theme:'grotto',lv:[1,2],seed:1.5,gen:{},look:{}},{id:'ok5',n:7,name:'N',theme:'grotto',lv:[1,2],seed:1,look:{}}];
+  const n0=x.CAVE_FLOOR_BAD.length; ok('invalid floor rows (a duplicate floor, a theme that does not exist, a bad level range or seed, no generator options) are left out and listed, never thrown',bad.every(b=>x.defineCaveFloor(b)===null)&&x.CAVE_FLOOR_BAD.length===n0+bad.length&&x.CAVE_FLOOR_N.join()==='1,2,3,4,5,6');
   x.CAVE_FLOOR_BAD.length=n0; }
 const hashB=B=>{ let h=2166136261>>>0; for(const a of [B.open,B.cells,B.water,B.lava,B.dw]) for(let i=0;i<a.length;i++){ h^=a[i]*1000|0; h=Math.imul(h,16777619)>>>0; } for(let i=0;i<B.hgt.length;i+=7){ h^=Math.round(B.hgt[i]*1000); h=Math.imul(h,16777619)>>>0; } return h+':'+JSON.stringify([B.anchors,B.camps,B.chambers,B.lift,B.start]).length; };
 const hashes={};
 for(const n of FL){ const F=x.caveFloorDef(n), a=x.caveGen(F), b=x.caveGen(F); hashes[n]=hashB(a);
   ok('floor '+n+' ('+F.name+'): the same seed gives the very same map twice, anchors included',hashB(a)===hashB(b)&&JSON.stringify(a.anchors)===JSON.stringify(b.anchors)&&JSON.stringify(a.camps)===JSON.stringify(b.camps)); }
-ok('the four floors are four different maps',new Set(Object.values(hashes)).size===4);
+ok('the six floors are six different maps',new Set(Object.values(hashes)).size===6);
 { const F=x.caveFloorDef(1), B1=x.caveGen(F), B2=x.caveGen(Object.assign({},F,{seed:F.seed+1})); ok('and another seed gives another map (the seed is what makes it)',hashB(B1)!==hashB(B2)); }
 // every anchor reachable from the floor's start by walking (the vault once its seal is opened), standing on a walkable cell
 for(const n of FL){
@@ -177,7 +177,7 @@ ok('the floors are far apart (no floor within a snapshot\'s reach of another)',F
 // every cave kind has a model that builds (the client's own builder, headless)
 try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_MON_DEFS','buildMonster','monMat']}); const G=c.G(); const names=[]; let bad=null;
   for(const d of G.ALL_MON_DEFS.filter(d=>d.cave)){ names.push(d.id); try{ const g=new (require('three').Group)(); const parts=G.buildMonster(d,G.monMat(d.glow),g); let tris=0; g.traverse(o=>{ if(o.isMesh){ tris+=o.geometry.attributes.position.count; if(!o.geometry.attributes.normal) bad=bad||d.id+' has no normals'; } }); if(!tris) bad=bad||d.id+' is empty'; }catch(e){ bad=bad||d.id+': '+e.message; } }
-  ok('every cave kind ('+names.length+': the 40 monsters and the gem mole) has a model that builds, with normals',names.length===41&&!bad,bad||''); }catch(e){ ok('model build check ran',false,e.message); }
+  ok('every cave kind ('+names.length+': the 60 monsters and the gem mole) has a model that builds, with normals',names.length===61&&!bad,bad||''); }catch(e){ ok('model build check ran',false,e.message); }
 
 // ======== C2: the eight methods on every floor, and floor 1's eight skills ========
 { const inbox3={}, S3=loadServer({dev:true,send(pid,m){ (inbox3[pid]=inbox3[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['S','MONS','getH','caveAW','caveEnKillS','caveEnNodeLeft','caveFloorOpen','CAVE_EN_LOW','CAVE_EN_MAX','CAVE_EN_MINE','caveMFl','caveMethodDef','CAVE_METHOD_DEFS','CAVE_METHOD_BAD','CAVE_METHOD_IDS','defineCaveMethod','caveSkillAt','caveBoardRows','caveFeatOf','CAVE_FEAT_DEFAULT','caveWhereText',
@@ -353,7 +353,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   const W4=S4.api, X=S4.x, tk=n=>{ for(let i=0;i<n;i++){ W4.tick(0.05); for(const q of W4.players.values()){ q.hp=q.maxHp; q.dead=false; } } };
   W4.join('s1',{name:'Shardy',look:{cls:'warrior'},save:{level:30}}); tk(3); const q=W4.players.get('s1'), g=q.gear.cave;
   const f1=X.CAVE_SKILL_IDS.map(i=>X.CAVE_SKILLS[i]).filter(s=>s.floor===1), s1=f1[0], upEv=()=>(inb.s1||[]).filter(m=>m.t==='snap'&&m.ev).flatMap(m=>m.ev);
-  ok('shards per completion are 1 / 2 / 4 / 8 on floors 1-4 and the level costs 3 / 7 / 15 / 40 shards plus 3 / 6 / 10 / 20 of the floor\'s monster drop',JSON.stringify(X.CAVE_SHARDS.slice(1))==='[1,2,4,8]'&&JSON.stringify(X.CAVE_LEVEL_COST.slice(2))==='[3,7,15,40]'&&JSON.stringify(X.CAVE_DROP_COST.slice(2))==='[3,6,10,20]'&&X.CAVE_DROPS.length===5);
+  ok('shards per completion are 1 / 2 / 4 / 8 / 16 / 32 on floors 1-6 and the level costs 3 / 7 / 15 / 40 shards plus 3 / 6 / 10 / 20 of the floor\'s monster drop',JSON.stringify(X.CAVE_SHARDS.slice(1))==='[1,2,4,8,16,32]'&&JSON.stringify(X.CAVE_LEVEL_COST.slice(2))==='[3,7,15,40]'&&JSON.stringify(X.CAVE_DROP_COST.slice(2))==='[3,6,10,20]'&&X.CAVE_DROPS.length===7);
   // a method whose skill you own pays shards on floors 1-4; a place with no skill too
   const w=q.gear.awm; g.own[s1.id]=1; w.echo=0; let want=0;
   for(const n of [1,2,3,4]){ X.caveMethodDoneP(q,n,n===1?s1.method:'A'); want+=X.CAVE_SHARDS[n]; }   // awakening: every completion pays shards (a method no longer teaches its skill)
@@ -365,7 +365,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   ok('caveup is retired: nothing is levelled or spent',g.own[s1.id]===1&&w.echo===500&&g.m[1]===99&&Object.keys(g.own).length===ownN);
   { const R=Math.random; Math.random=()=>0; const before=g.m[2]|0; X.caveDropS(q,{cave:2}); X.caveDropS(q,{cave:0}); X.caveDropS(q,{cave:2,temp:true}); Math.random=()=>0.99; X.caveDropS(q,{cave:2}); Math.random=R;
     ok('a kill on a floor drops that floor\'s material at the drop chance (not off the floors, not from a temporary monster)',g.m[2]===before+1);
-    ok('the floors\' drops survive a save, cleaned',JSON.stringify(X.caveSanitizeSave({own:{},m:[5,3,'x',-4,1e9]}).m)==='[0,3,0,0,9999]'&&JSON.stringify(X.caveSanitizeSave({}).m)==='[0,0,0,0,0]'); }
+    ok('the floors\' drops survive a save, cleaned',JSON.stringify(X.caveSanitizeSave({own:{},m:[5,3,'x',-4,1e9]}).m)==='[0,3,0,0,9999,0,0]'&&JSON.stringify(X.caveSanitizeSave({}).m)==='[0,0,0,0,0,0,0]'); }
   const other=f1.find(s=>s.id!==s1.id);
   // the effect: the damage curve (shared/awakening.js, x1.17 a level, x1.87 at 5), through the one helper
   const lk=l=>{ g.own[s1.id]=l; return X.caveLvK(q,s1.id); };
