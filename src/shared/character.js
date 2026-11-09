@@ -20,7 +20,10 @@ const BODY_SLIDERS=[
   {k:'shoulders',g:'Shape',    label:'Shoulders',     min:0.8,  max:1.25, def:1, ends:['Narrow','Broad']},
   {k:'waist',    g:'Shape',    label:'Waist',         min:0.75, max:1.3,  def:1, ends:['Cinched','Full']},
   {k:'hips',     g:'Shape',    label:'Hips',          min:0.8,  max:1.3,  def:1, ends:['Narrow','Wide']},
-  {k:'hipCurve', g:'Shape',    label:'Hip curve',     min:0.4,  max:1.8,  def:1, ends:['Flat','Round']},   // how far the back of the hips curves out (the same bump the torso has always had, scaled)
+  {k:'hipCurve', g:'Shape',    label:'Hip curve',     min:0.4,  max:2.6,  def:1, ends:['Flat','Round']},   // how far the back of the hips curves out (the same bump the torso has always had, scaled)
+  {k:'chestLift',g:'Shape',    label:'Chest height',  min:-0.5, max:1.8,   def:0, ends:['Lower','Higher']},   // moves the bust up or down the torso (model-body.js: bust centre cy)
+  {k:'hipTall',  g:'Shape',    label:'Hip height',    min:-0.5, max:1.8,   def:0, ends:['Shorter','Taller']},   // stretches the seat vertically (model-body.js: glutes' vertical spread)
+  {k:'chestGap', g:'Shape',    label:'Chest spacing', min:-0.6, max:1,    def:0, ends:['Closer','Apart']},   // the gap between the two lobes of the bust (model-body.js lobe offset)
   {k:'torso',    g:'Shape',    label:'Torso length',  min:0.88, max:1.15, def:1, ends:['Short','Long']},
   {k:'legs',     g:'Shape',    label:'Leg length',    min:0.85, max:1.2,  def:1, ends:['Short','Long']},
   {k:'thighs',   g:'Shape',    label:'Thighs',        min:0.8,  max:1.35, def:1, ends:['Slender','Full']},

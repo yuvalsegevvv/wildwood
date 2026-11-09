@@ -71,13 +71,13 @@ function buildTorso(X,D){
       if(fem){
         // bust: part of the torso surface, not two balls. Each side slopes gently down from the collarbone, is fullest low and tucks in underneath;
         // the two join softly in the middle. A larger chest (ch) is deeper, a little wider and sits a little lower.
-        const ce=chestEff(ch), cs=S.chestShape, cy=0.315-0.012*(ce-1)-0.006*cs, wx=0.05*(0.86+0.14*ce)*(1-0.4*cs), wl=0.036*(0.8+0.2*ce);   // cs, the chest shape: broad and flat (-1) spreads the lobes wide apart and shallow, round and full (+1) gathers them narrower, closer and deeper
-        const lobe=sd=>{ const dx=x-sd*0.056*B*(1-0.3*cs), dy=y-cy; return Math.exp(-Math.pow(dx/wx,2))*Math.exp(-Math.pow(dy/(dy>0?0.075:wl),2)); };
+        const ce=chestEff(ch), cs=S.chestShape, cy=0.39+0.03*S.chestLift-0.012*(ce-1)-0.006*cs, wx=0.05*(0.86+0.14*ce)*(1-0.4*cs), wl=0.036*(0.8+0.2*ce);   // cs, the chest shape: broad and flat (-1) spreads the lobes wide apart and shallow, round and full (+1) gathers them narrower, closer and deeper
+        const lobe=sd=>{ const dx=x-sd*0.056*B*(1-0.3*cs)*(1+0.5*S.chestGap), dy=y-cy; return Math.exp(-Math.pow(dx/wx,2))*Math.exp(-Math.pow(dy/(dy>0?0.075:wl),2)); };
         const a=lobe(-1), b=lobe(1); z-=0.034*lr*ce*(1+0.4*cs)*(1-(1-a)*(1-b));
       }
     } else {
       z+=0.012*B*G(y,0.37,0.07)*G(ax,0.075*B,0.045);                    // shoulder blades
-      z+=(fem?0.034:0.022)*B*hipAmp(S.hipCurve)*G(y,0.0,0.055*hipWide(S.hipCurve))*G(ax,0.066*B,0.05*hipWide(S.hipCurve));         // glutes (the hip curve slider scales them)
+      z+=(fem?0.05:0.03)*B*hipAmp(S.hipCurve)*G(y,0.01+0.01*S.hipTall,0.14*(1+0.6*S.hipTall)*hipWide(S.hipCurve))*G(ax,0.066*B,0.05*hipWide(S.hipCurve));         // glutes (the hip curve slider scales them)
       z-=0.008*G(ax,0,0.018)*G(y,0.2,0.18);                             // the groove of the spine
     }
     z-=sN*(y-0.5)*0.1; p.setXYZ(i,x,y*TK,z);
