@@ -23,7 +23,7 @@ function defineCaveMethod(d){
 }
 const caveMethodDef=id=>typeof id==='string'&&Object.prototype.hasOwnProperty.call(CAVE_METHOD_DEFS,id)?CAVE_METHOD_DEFS[id]:null;
 function caveSkillAt(floor,method){ for(const id of CAVE_SKILL_IDS){ const s=CAVE_SKILLS[id]; if(s.floor===floor&&s.method===method) return s; } return null; }
-function caveWhereText(sk){ const M=caveMethodDef(sk&&sk.method), F=sk&&caveFloorDef(sk.floor); return M&&F?M.name+', '+F.name:'the Deep Cave'; }
-function caveBoardRows(floor){ return CAVE_METHODS.split('').filter(m=>m!==CAVE_METHOD_OFF).map(m=>{ const M=caveMethodDef(m), sk=caveSkillAt(floor,m); return {m,name:M?M.name:m,skill:sk,short:M?M.short:''}; }); }
+function caveWhereText(sk){ return 'unlocked in the skill tree (Awakening, charge branch)'; }   // a cave skill is no longer earned by a method: it comes with its node in the Awakening tree
+function caveBoardRows(floor){ return CAVE_METHODS.split('').filter(m=>m!==CAVE_METHOD_OFF).map(m=>{ const M=caveMethodDef(m), sk=caveSkillAt(floor,m); return {m,name:M?M.name:m,skill:null,short:M?M.short:''}; }); }
 const CAVE_FEAT_DEFAULT={kind:'pack',n:5,time:90,noHit:true};   // floor 1's feat and the one for a place with no skill: win a fight against five spawned monsters without being hit once
 function caveFeatOf(floor){ const sk=caveSkillAt(floor,'C'); return sk&&sk.feat?sk.feat:CAVE_FEAT_DEFAULT; }

@@ -45,4 +45,4 @@ function caveBoardHtml(floor){
     h+='</ul>'; }
   return h+'</div>';
 }
-function caveWhereHtml(s){ const M=caveMethodDef(s.method); return M?`${M.name}, ${caveFloorDef(s.floor).name} (method ${s.method}): ${M.short.toLowerCase()}`:'earned in the Deep Cave'; }
+function caveWhereHtml(s){ return 'Unlocked in the skill tree (Awakening, charge branch)'; }

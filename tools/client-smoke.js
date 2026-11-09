@@ -57,7 +57,7 @@ const el=s=>document.querySelector(s);
     G.qShowTab('side'); ok('the side quests tab lists the eleven chains, each with its land, level and cosmetic, none under way yet',(q().match(/class="sq-card/g)||[]).length===11&&/The Grey Tide/.test(q())&&/Tide King&#39;s Mantle|Tide King's Mantle/.test(q())&&/From level 15/.test(q()),q().slice(0,200));
     G.qShowTab('taken'); ok('the taken tab says when you carry nothing',/carry no notices/.test(q())); G.closePanels(); }
   G.openSkills(); ok('skills panel renders 5 slots (the three class slots, the cave row and the burst row)',(el('#skBody').innerHTML.match(/class="sk-slot/g)||[]).length===5&&/data-ultslot/.test(el('#skBody').innerHTML));
-  ok('skills panel: the cave row says what to do (locked below level 20, or Go to the cave)',/data-caveslot/.test(el('#skBody').innerHTML)&&/(Opens at level 20|Go to the cave)/.test(el('#skBody').innerHTML));
+  ok('skills panel: the cave row says what to do (locked below level 20, or Go to the cave)',/data-caveslot/.test(el('#skBody').innerHTML)&&/(Opens at level 20|Awakening tree)/.test(el('#skBody').innerHTML));
   { const h=()=>el('#skBody').innerHTML; ok('skills panel: a tab for 1, 2, 3, Cave, Burst, Movement and Passive, one passive slot and the movement slot',(h().match(/data-skkind=/g)||[]).length===7&&(h().match(/class="sk-pslot/g)||[]).length===2);
     G.NET.send({t:'dev',cmd:'level',v:20}); G.NET.send({t:'dev',cmd:'skills'}); G.NET.send({t:'dev',cmd:'mats'}); await wait(600); G=c.G();
     G.openSkills(null,'pass'); ok('passives tab lists every passive (and the Wanderer\'s path passive), Vitality is in a slot',(h().match(/data-from="grid"/g)||[]).length===G.PASSIVE_IDS.length+1&&/data-id="wd_fury"|wd_fury/.test(h())&&(h().match(/class="sk-pslot on/g)||[]).length===1,G.GEAR.skills.pass.join());
@@ -531,8 +531,8 @@ const el=s=>document.querySelector(s);
       ok('floor '+n+': leaving disposes the props and gives the rock back',G.CAVE_MP.g===null&&G.CAVE_MP.upd.length===0&&G.CAVE_RUN()===null&&G.caveBake(n).sealed.every(k=>G.caveBake(n).cells[k]===0));
     }
     console.error=ce;
-    const board=G.caveBoardHtml(); ok('the board lists every floor and all seven methods with the skill each gives',G.CAVE_FLOOR_N.every(n=>board.includes('Floor '+n))&&board.includes('Mural fragments')&&board.includes('Echo')&&board.includes('Second Wind')&&(board.match(/<li>/g)||[]).length===7*G.CAVE_FLOOR_N.length);
-    { const own=G.GEAR.cave.own, had=own.echo; delete own.echo; ok('a locked skill\'s details say which method and floor give it',/Mural fragments, The Glowworm Grotto/.test((G.CAVE_UI.sel='echo',G.caveInfoHtml()))); if(had) own.echo=had; }   // (the testing tool at the start gave every cave skill)
+    const board=G.caveBoardHtml(); ok('the board lists every floor and all seven methods with the skill each gives',G.CAVE_FLOOR_N.every(n=>board.includes('Floor '+n))&&board.includes('Mural fragments')&&board.includes('Echo Shards')&&(board.match(/<li>/g)||[]).length===7*G.CAVE_FLOOR_N.length);
+    { const own=G.GEAR.cave.own, had=own.echo; delete own.echo; ok('a locked skill\'s details say it comes from the skill tree',/skill tree/.test((G.CAVE_UI.sel='echo',G.caveInfoHtml()))); if(had) own.echo=had; }   // (the testing tool at the start gave every cave skill)
     { const lv0=G.PL.level; G.NET.send({t:'dev',cmd:'level',v:30}); G.NET.send({t:'dev',cmd:'skills'}); await wait(500); G=c.G();
       const can=G.skCanDrop({id:'flare',from:'grid',cave:true},{cave:true})&&!G.skCanDrop({id:'flare',from:'grid',cave:true},{slot:'skill'});
       G.caveDrop({id:'flare',from:'grid',cave:true},{cave:true}); await wait(500); G=c.G(); const on=G.GEAR.skills.cave==='flare';

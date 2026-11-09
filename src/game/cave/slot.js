@@ -20,11 +20,11 @@ function caveFillTile(){
   const locked=PL.level<CAVE_SLOT_LV, a=caveAbilityNow(), owned=caveOwnedIds().length>0;
   el.querySelector('svg').innerHTML=(a&&(ssGlyph(a)||ICONS[a.name]))||ICONS[locked?'lock':owned?'burst':'plus']||ICONS.burst;
   el.classList.toggle('has-set',!!(a&&ssTint(a))); el.style.setProperty('--set',a&&ssTint(a)||'transparent');
-  el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+CAVE_SLOT_LV:owned?'Charge':'Go to the cave';
+  el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+CAVE_SLOT_LV:owned?'Charge':'Skill tree';
   el.classList.toggle('empty',!a);
   const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
   el.style.setProperty('--cost',a?a.cost+'%':'100%');
-  el.setAttribute('aria-label',a?a.name+' (charge skill, costs '+a.cost+' charge, '+kbName('cave')+')':locked?'Charge slot, opens at level '+CAVE_SLOT_LV:owned?'Charge slot: choose a charge skill':'Go to the cave: its skills are earned there');
+  el.setAttribute('aria-label',a?a.name+' (charge skill, costs '+a.cost+' charge, '+kbName('cave')+')':locked?'Charge slot, opens at level '+CAVE_SLOT_LV:owned?'Charge slot: choose a charge skill':'Unlock a charge skill in the Awakening tree (its charge branch)');
   el.querySelector('.key').textContent=kbName('cave');
 }
 function caveHudUpdate(){
@@ -39,7 +39,7 @@ function caveDoAttack(){
   if(!started||!NET.ready||uiOpen()||PL.dead||CB.act||CB.cd.cave>0||PVC.on) return;
   if(PL.level<CAVE_SLOT_LV){ toast('Your charge slot opens at level '+CAVE_SLOT_LV,'bad'); UI_SFX.error(); return; }
   const ab=caveAbilityNow();
-  if(!ab){ if(caveOwnedIds().length) openSkills(null,'cave'); else toast('Go to the cave: its skills are earned there','bad'); UI_SFX.error(); return; }
+  if(!ab){ if(caveOwnedIds().length) openSkills(null,'cave'); else toast('Unlock a charge skill in the Awakening tree (its charge branch)','bad'); UI_SFX.error(); return; }
   if(CAVE_UI.charge<ab.cost){ toast('Not enough charge ('+Math.floor(CAVE_UI.charge)+' of '+ab.cost+'). Hit enemies to charge it','bad'); UI_SFX.error(); return; }
   CAVE_UI.charge-=ab.cost;
   const tgtOK=CB.target&&!CB.target.dead&&Math.hypot(CB.target.x-P.x,CB.target.z-P.z)<=ab.range+3;
@@ -59,12 +59,12 @@ function caveDoAttack(){
 function caveSlotHtml(C){
   const locked=C.lv<CAVE_SLOT_LV, a=GEAR&&GEAR.skills&&caveSkillDef(GEAR.skills.cave), on=a&&caveLevelOf(a.id)&&!locked, owned=caveOwnedIds().length>0;
   const tile=on?`<button class="sk-tile${a.el&&a.el!=='basic'?' has-el':''}${ssTint(a)?' has-set':''}" data-cave="${a.id}" data-from="slot:cave" style="--el:${a.el&&a.el!=='basic'?ELEMS[a.el].col:'transparent'}${caveSetAttr(a)}" aria-label="${a.name}">${caveIco(a)}${a.el&&a.el!=='basic'?'<i class="el-dot"></i>':''}<i class="lv">${caveLevelOf(a.id)}</i></button>`:`<div class="sk-tile empty">${skIcon(locked?'lock':'plus')}</div>`;
-  return `<div class="sk-slot cave${on?' on':''}${locked?' locked':''}" data-caveslot="1"><span class="sk-n">4 · Charge skill</span>${tile}<b>${on?a.name:locked?'Opens at level '+CAVE_SLOT_LV:owned?'Empty':'Go to the cave'}</b><small>${on?'costs '+a.cost+' charge':locked?'':owned?'Open the Charge tab':'Its skills are earned there'}</small></div>`;
+  return `<div class="sk-slot cave${on?' on':''}${locked?' locked':''}" data-caveslot="1"><span class="sk-n">4 · Charge skill</span>${tile}<b>${on?a.name:locked?'Opens at level '+CAVE_SLOT_LV:owned?'Empty':'Awakening tree: unlock a charge skill'}</b><small>${on?'costs '+a.cost+' charge':locked?'':owned?'Open the Charge tab':'Its skills are earned there'}</small></div>`;
 }
 function caveGridHtml(){
   if(!CAVE_SKILL_IDS.length) return '<p class="muted sk-note">No charge skills exist yet. They are earned in the Deep Cave.</p>';
   return CAVE_SKILL_IDS.map(id=>{ const s=CAVE_SKILLS[id], L=caveLevelOf(id), el=s.el||'basic';
-    return `<div class="sk-cell"><button class="sk-tile${el!=='basic'?' has-el':''}${ssTint(s)?' has-set':''}${L?'':' unowned cv-lock'}${CAVE_UI.sel===id?' sel':''}" data-cave="${id}" data-from="grid" style="--el:${el==='basic'?'transparent':ELEMS[el].col}${caveSetAttr(s)}" aria-label="${s.name}${L?', level '+L:', locked'}"${L?'':` title="${caveWhereText(s)}"`}>${caveIco(s)}${el!=='basic'?'<i class="el-dot"></i>':''}${L?`<i class="lv">${L}</i>`:`<svg class="cv-padlock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">${ICONS.lock}</svg>`}</button><span class="nm">${s.name}</span>${L?'':`<small class="sk-where">${caveMethodDef(s.method).name}</small>`}</div>`; }).join('');
+    return `<div class="sk-cell"><button class="sk-tile${el!=='basic'?' has-el':''}${ssTint(s)?' has-set':''}${L?'':' unowned cv-lock'}${CAVE_UI.sel===id?' sel':''}" data-cave="${id}" data-from="grid" style="--el:${el==='basic'?'transparent':ELEMS[el].col}${caveSetAttr(s)}" aria-label="${s.name}${L?', level '+L:', locked'}"${L?'':` title="${caveWhereText(s)}"`}>${caveIco(s)}${el!=='basic'?'<i class="el-dot"></i>':''}${L?`<i class="lv">${L}</i>`:`<svg class="cv-padlock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">${ICONS.lock}</svg>`}</button><span class="nm">${s.name}</span>${L?'':`<small class="sk-where">Skill tree</small>`}</div>`; }).join('');
 }
 function caveInfoHtml(){
   const s=caveSkillDef(CAVE_UI.sel);
