@@ -59,7 +59,12 @@ function limb(st,len,seg,rings,o){
   const ts=[]; for(let i=0;i<=rings;i++) ts.push(i/rings); for(const c of (o.cuts||[])){ const e=0.0005/len; ts.push(c-e,c+e); } ts.sort((a,b)=>a-b);
   for(const t of ts){ const s=at(t); R.push({y:-len*t,rx:s[0],rz:s[1],zc:s[2]}); }
   if(!o.openBottom) for(let i=1;i<=nc;i++){ const b=Math.pow(i/nc,2)*Math.PI/2; R.push({y:-len-Math.sin(b)*rcB,rx:Math.cos(b)*(bot[0]-mg),rz:Math.cos(b)*(bot[1]-mg),zc:bot[2]}); }
-  return loftRings(R,seg);
+  // toward a closed end the normals are turned level (fully at the joint's ring and the cap's first ring): both sides of a joint then shade the same there, and a thigh that
+  // tapers into a shin that swells no longer shows a line of light across a straight knee or elbow
+  const g=loftRings(R,seg), nr=g.attributes.normal, W=seg+1, i0=o.openTop?0:nc, i1=i0+ts.length;
+  for(let k=0;k<R.length;k++){ let f=1; if(k>=i0&&k<i1){ const t=ts[k-i0]; f=Math.min(1,o.openTop?1:t/0.14,o.openBottom?1:(1-t)/0.14); } else if(k===i0-1||k===i1) f=0;
+    if(f<1) for(let j=0;j<W;j++){ const i=k*W+j, x=nr.getX(i), y=nr.getY(i)*Math.max(0,f), z=nr.getZ(i), l=Math.hypot(x,y,z)||1; nr.setXYZ(i,x/l,y/l,z/l); } }
+  return g;
 }
 /* A sweepTube swept along a smooth curve through pts ([x,y,z] points): hair locks, fingers, braids, ahoge, eyelashes.
    rad: radius at each point (an array as long as pts, spread evenly along the curve) or a function of 0..1. o.rings: samples along it; o.cap: 'round' (default) ends
