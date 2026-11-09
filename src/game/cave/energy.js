@@ -1,17 +1,21 @@
-//@ The Deep Cave's energy on the client: the bar under the method line, the blindness when it runs low, a hint when you stand in a safe spot, and the echo shard nodes in the floor
+//@ The Deep Cave's energy on the client: the bar under the method line, the void fog when it runs low, a hint when you stand in a safe spot, and the echo shard nodes in the floor
 /* Agent map. Doc: docs/CAVE.md section 17; rules: shared/cave-energy.js; the server: server/cave/energy.js. The numbers come in the cm message (cave/methods.js): en (0-100), sf (1 = safe spot), sn (bit mask of nodes resting), mc (mining).
-   exports: caveEnFrame(dt) (caveMethodsFrame calls it: bar, blindness), caveMpS(X) (the shard nodes' props; method-props.js builds them with the methods'), caveEnHide() (leaving the floors).
-   Elements: #cvEnergy (the bar, index.html), #cvBlind (the dark vignette over the screen, pointer-events none). Test: tools/client-smoke.js (the cave case). */
+   exports: caveEnFrame(dt) (caveMethodsFrame calls it: the bar, the fog's easing), caveEnFogK() (look.js), caveMpS(X) (the shard nodes' props; method-props.js builds them with the methods'), caveEnHide() (leaving the floors).
+   Element: #cvEnergy (the bar, index.html). Test: tools/client-smoke.js (the cave case). */
+// the void fog of a low bar (Minecraft's void fog, not a dark screen): the fog's far end comes in to CAVE_EN_FOG_NEAR_FAR m and its colour goes near black, eased slowly; look.js reads caveEnFogK()
+var CAVE_EN_FOG={k:0};
+const CAVE_EN_FOG_NEAR_FAR=7, CAVE_EN_FOG_COL=new THREE.Color(0x020306);
+const caveEnFogK=()=>CAVE_EN_FOG.k;
 function caveEnFrame(dt){
-  const s=typeof caveMState==='function'?caveMState():null, bar=$('#cvEnergy'), bl=$('#cvBlind'); if(!bar||!bl) return;
+  const s=typeof caveMState==='function'?caveMState():null, bar=$('#cvEnergy'); if(!bar) return;
+  CAVE_EN_FOG.k+=((s&&s.en!==undefined?caveEnBlind(s.en):0)-CAVE_EN_FOG.k)*Math.min(1,dt*0.8);   // the fog follows the energy slowly
   if(!s||s.en===undefined){ caveEnHide(); return; }
-  const e=s.en, k=caveEnBlind(e); bar.hidden=false;
+  const e=s.en; bar.hidden=false;
   const f=bar.firstElementChild; if(f){ f.style.width=Math.max(0,Math.min(100,e/CAVE_EN_MAX*100))+'%'; }
   bar.dataset.low=e<CAVE_EN_LOW?'1':''; bar.dataset.safe=s.sf?'1':''; bar.dataset.full=e>=CAVE_EN_MAX?'1':'';
   const lb=bar.lastElementChild; if(lb) lb.textContent='Cave energy '+e+(s.sf?' · safe':'')+(s.mc?' · mining':'')+(e>=CAVE_EN_MAX?' · floor open':'');
-  bl.style.opacity=k?(0.55+0.45*k).toFixed(2):'0'; bl.hidden=!k;
 }
-function caveEnHide(){ const bar=$('#cvEnergy'), bl=$('#cvBlind'); if(bar) bar.hidden=true; if(bl){ bl.hidden=true; bl.style.opacity='0'; } }
+function caveEnHide(){ const bar=$('#cvEnergy'); if(bar) bar.hidden=true; CAVE_EN_FOG.k=0; }
 // the shard nodes: a cluster of crystal on the wall that is bright while ready and grey while it rests for you
 function caveMpS(X){
   const MP=CAVE_MP, rd=X.rd, stone=caveMpRockC(0x4d4a46,0.35), GL=0x9fe8ff, lite=new THREE.Color(GL).lerp(new THREE.Color(0xffffff),0.4).getHex(), dk=new THREE.Color(GL).multiplyScalar(0.35).getHex();
