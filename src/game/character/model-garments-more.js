@@ -104,8 +104,8 @@ function gmxCuff(X,D,sd){
 }
 // ---- the hips' frame ----
 function gmxHips(X,D){
-  const {L,sg}=X, TK=D.TK, b=L.bottom, tc=L.bottomColor, PL=gmxPalAt(L,'bottom'), out=[], s0=torsoSize(X,D,0.03), rz=Math.max(s0.rz,s0.rzBack)+0.012, leg=X.S.legs, dk=gmxMul(tc,0.55), lt=new THREE.Color(tc).lerp(new THREE.Color(0xffffff),0.35).getHex();
-  const belt=(hex,w,y)=>out.push(pc(ofLoft([{y:y*TK,rx:s0.rx+0.012,rz},{y:y*TK-w,rx:s0.rx+0.014,rz:rz+0.002}],sg(28),0,TAU),c=>c.set(hex)));
+  const {L,sg}=X, TK=D.TK, b=L.bottom, tc=L.bottomColor, PL=gmxPalAt(L,'bottom'), out=[], s0=torsoSize(X,D,0.03), rz=s0.rz+0.009, rm=(s0.rz+s0.rzBack)/2+0.009, zc=(s0.rzBack-s0.rz)/2, leg=X.S.legs, dk=gmxMul(tc,0.55), lt=new THREE.Color(tc).lerp(new THREE.Color(0xffffff),0.35).getHex();
+  const belt=(hex,w,y)=>out.push(pc(ofLoft([{y:y*TK,rx:s0.rx+0.01,rz:rm,zc},{y:y*TK-w,rx:s0.rx+0.012,rz:rm+0.002,zc}],sg(28),0,TAU),c=>c.set(hex)));
   if(b==='breeches'||b==='greaves'){ belt(PL[1],0.034,0.052); out.push(solid(vbox(0.034,0.028,0.008,0,0.036*TK,-rz-0.004),PL[2])); }
   else if(b==='shortshorts'){
     belt(PL[1],0.026,0.018);   // a low-slung waistband
@@ -113,7 +113,7 @@ function gmxHips(X,D){
     out.push(solid(csph(0.0045,5,4).translate(-0.012,-0.002,-rz-0.004),PL[3]),solid(csph(0.0045,5,4).translate(0.012,-0.002,-rz-0.004),PL[3]));
   } else if(b==='hakama'){
     belt(PL[1],0.03,0.11); belt(gmxMul(tc,0.7),0.05,0.075);
-    out.push(pc(vbox(0.1,0.14,0.012,0,0.0,rz+0.01).rotateX(-0.12),c=>c.set(PL[2])));   // the stiff back plate
+    out.push(pc(vbox(0.1,0.14,0.012,0,0.0,s0.rzBack+0.019).rotateX(-0.12),c=>c.set(PL[2])));   // the stiff back plate
     for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.03,0.085*TK,-rz-0.008],[sd*0.05,0.02*TK,-rz-0.012],[sd*0.06,-0.1,-rz-0.01]],0.022,{up:[0,0,-1],seg:sg(8),th:0.004}),PL[3]));   // the ties hanging in front
   } else if(b==='bikinibottom'){
     for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*(s0.rx+0.004),0.052*TK,0],[sd*(s0.rx+0.012),0.04*TK,-rz*0.6],[sd*0.05,0.034*TK,-rz-0.004]],0.01,{up:[0,1,0],seg:sg(8),th:0.003}),PL[1]));
@@ -125,7 +125,7 @@ function gmxHips(X,D){
   } else if(b==='loincloth'){
     belt(PL[1],0.034,0.06); out.push(solid(vbox(0.036,0.03,0.008,0,0.044*TK,-rz-0.004),PL[2]));
     for(const [a0,a1,len] of [[Math.PI-0.55,Math.PI+0.55,0.42],[-0.5,0.5,0.34]]){   // a long front flap and a shorter back one
-      const hm=len*leg, rows=[0,-0.08,-0.2,-hm+0.05,-hm+0.045,-hm+0.032,-hm+0.028,-hm].map((y,i)=>({y,rx:s0.rx+0.016+Math.min(3,i)*0.004,rz:rz+0.006+Math.min(3,i)*0.014}));
+      const hm=len*leg, rows=[0,-0.08,-0.2,-hm+0.05,-hm+0.045,-hm+0.032,-hm+0.028,-hm].map((y,i)=>({y,rx:s0.rx+0.016+Math.min(3,i)*0.004,rz:rm+0.006+Math.min(3,i)*0.014,zc}));
       out.push(pc(ofLoft(rows,sg(14),a0,a1),(x,y,z,c)=>{ c.set(tc); if(y<-hm+0.03) c.set(PL[3]).multiplyScalar(0.9); else if(y<-hm+0.047) c.multiplyScalar(0.7); const t=-y/hm; if(Math.abs(x)<0.006&&t>0.3) c.multiplyScalar(0.8); })); }
     out.push(solid(csph(0.012,sg(6),sg(5)).translate(0.1,0.0,-rz*0.5),PL[2]));
   }

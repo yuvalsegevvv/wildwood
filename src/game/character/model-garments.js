@@ -18,7 +18,7 @@ function gmRingAt(p,t,R,r,seg){ const g=new THREE.TorusGeometry(R,r,4,Math.max(6
 const gmCol=(c,h,m)=>c.set(h).multiplyScalar(m===undefined?1:m);
 // a band round the torso between design heights y0 and y1 (a belt, a hem): a loft over the body's own size
 function gmBand(X,D,y0,y1,fn,m){ const a=torsoSize(X,D,y0), b=torsoSize(X,D,y1), mm=m||0.006, TK=D.TK;   // y0 above y1 (design heights)
-  return pc(ofLoft([{y:y0*TK,rx:a.rx+mm,rz:Math.max(a.rz,a.rzBack)+mm},{y:y1*TK,rx:b.rx+mm,rz:Math.max(b.rz,b.rzBack)+mm}],X.sg(28),0,TAU),fn); }
+  return pc(ofLoft([{y:y0*TK,rx:a.rx+mm,rz:(a.rz+a.rzBack)/2+mm,zc:(a.rzBack-a.rz)/2},{y:y1*TK,rx:b.rx+mm,rz:(b.rz+b.rzBack)/2+mm,zc:(b.rzBack-b.rz)/2}],X.sg(28),0,TAU),fn); }
 // ---- tops, in the spine's frame ----
 function gmTop(X,D){
   if(X.kit&&X.kit.sl.top) return [];
@@ -71,9 +71,13 @@ function gmCuff(X,D,sd){
 }
 // ---- the skirt family (its top radius fits the body at the hips: the torso's width and depth, or the thighs, whichever is larger, so a slim body gets a snug waistband and a heavy one is never cut through): a lathe from the waist, a number of sharp pleats or a smooth flare; hem and waistband are painted ----
 function gmSkirt(X,D,kind){
-  const {L,S,sg}=X, prof=[], rows=sg(16), legs=S.legs, ts=torsoSize(X,D,0.045), top=Math.max(ts.rx+0.008,(Math.max(ts.rz,ts.rzBack)+0.012)/0.8,D.hx+0.08*D.tw+0.002), zk=Math.min(0.9,Math.max(0.5,Math.max(Math.max(ts.rz,ts.rzBack)+0.012,0.1*D.tw+0.008)/top)), kilt=kind==='kilt', hk=kind==='hakama', wr=kind==='wrapskirt', pl=kind==='pleated'||hk, len=(kilt?0.46:hk?0.8:pl?0.3:wr?0.25:0.4)*S.skirtLen, hem=top*(1+((kilt?1.22:hk?1.4:pl?1.55:wr?1.25:1.4)-1)*S.skirtFlare);   // (the skirt length and flare sliders scale the cut)
+  const {L,S,sg}=X, prof=[], rows=sg(16), legs=S.legs, ts=torsoSize(X,D,0.045), top=Math.max(ts.rx+0.008,(Math.max(ts.rz,ts.rzBack)+0.012)/0.8,D.hx+0.092*D.tw+0.004), zk=Math.min(0.9,Math.max(0.5,Math.max(Math.max(ts.rz,ts.rzBack)+0.012,0.1*D.tw+0.008)/top)), kilt=kind==='kilt', hk=kind==='hakama', wr=kind==='wrapskirt', pl=kind==='pleated'||hk, len=(kilt?0.46:hk?0.8:pl?0.3:wr?0.25:0.4)*S.skirtLen, hem=top*(1+((kilt?1.22:hk?1.4:pl?1.55:wr?1.25:1.4)-1)*S.skirtFlare);   // (the skirt length and flare sliders scale the cut)
   for(let i=0;i<=rows;i++){ const t=i/rows; prof.push(new THREE.Vector2(top+(hem-top)*Math.pow(t,kilt?1.1:1.35)+top*0.05*Math.sin(Math.PI*Math.min(1,t/0.4)),(0.04-len*t)*legs)); }   // (a hip swell first, then the flare: a curve, not a cone)
   const g=(wr?new THREE.LatheGeometry(prof,sg(40),Math.PI*1.5+0.65,TAU-1.3):new THREE.LatheGeometry(prof,sg(pl?48:40))).scale(1,1,zk), p=g.attributes.position;   // (the front-to-back depth follows the body too: a fixed 0.8 left a gap in front of a slim body)
+  // the skirt lies round the body: its depth in front is the belly's (then the thighs'), behind it the seat's, each with a centimetre of ease (the width clears the hip joints' balls, which reach up to the waist at the sides, and is a centimetre less at the waist ring itself);
+  // one depth for both (the larger) made it a hoop standing 3 cm off the belly
+  { const t0=torsoSize(X,D,0), ek=Math.sqrt(Math.max(0.3,1-Math.pow(D.hx/top,2))), dF0=Math.max(ts.rz+0.01,(0.09*D.tw+0.009)/ek), dF1=Math.max(dF0,(0.097*D.tw+0.01)/ek),   /* (clears the thighs' fronts, which lie off the middle, where an ellipse is shallower) */ dB0=ts.rzBack+0.012, dB1=Math.max(dB0,t0.rzBack+0.012,0.1*D.tw+0.008), d0=top*zk, wx=Math.min(1,Math.max(ts.rx+0.008,D.hx+0.082*D.tw+0.004)/top);
+    for(let i=0;i<p.count;i++){ const z=p.getZ(i), u=clamp((0.04*legs-p.getY(i))/0.045), k=u*u*(3-2*u); p.setX(i,p.getX(i)*lerp(wx,1,k)); p.setZ(i,z*(z<0?lerp(dF0,dF1,k):lerp(dB0,dB1,k))/d0); } }
   if(pl) for(let i=0;i<p.count;i++){ const x=p.getX(i), z=p.getZ(i), a=Math.atan2(x,z), k=(Math.floor(((a/TAU)*36+36)%1*0)+0)+0.045*Math.sin(a*18)*(1-(p.getY(i)>-0.01?1:0)*0.9); const r=Math.hypot(x,z); p.setX(i,x*(1+k*0.5)); p.setZ(i,z*(1+k*0.5)); }
   if(!pl) for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), t=Math.min(1,Math.max(0,(0.04*legs-y)/(len*legs))), a=Math.atan2(x,z), f=(kilt?0.02:0.045)*Math.pow(t,1.25)*(Math.sin(a*9)*0.7+Math.sin(a*20.7+1.3)*0.3);   // soft folds that deepen to the hem, and a hem that rises and falls
     p.setX(i,x*(1+f)); p.setZ(i,z*(1+f)); p.setY(i,y+(kilt?0.004:0.012)*Math.pow(t,2.5)*Math.sin(a*3+1)); }
@@ -86,25 +90,25 @@ function gmSkirt(X,D,kind){
 // ---- the hips' frame ----
 function gmHips(X,D){
   if(gmdIs(X.L.top)&&!X.kit) return gmdHips(X,D);   // a dress carries its own skirt (model-dresses.js)
-  const {L,sg}=X, TK=D.TK, out=[], b=L.bottom, tc=L.bottomColor, dk=new THREE.Color(tc).multiplyScalar(0.55).getHex(), s0=torsoSize(X,D,0.03), rz=Math.max(s0.rz,s0.rzBack)+0.012;
+  const {L,sg}=X, TK=D.TK, out=[], b=L.bottom, tc=L.bottomColor, dk=new THREE.Color(tc).multiplyScalar(0.55).getHex(), s0=torsoSize(X,D,0.03), rz=s0.rz+0.009, rm=(s0.rz+s0.rzBack)/2+0.009, zc=(s0.rzBack-s0.rz)/2;   // rz: the belly's depth in front (buckles and bows sit there); a belt or waistband is an ellipse of half-depth rm moved back by zc, so it lies on the belly AND on the seat instead of standing off the front as a hoop
   const kB=X.kit&&X.kit.sl.bottom, kT=X.kit&&X.kit.sl.top;
   if(b==='none'||b==='outfit') return out;
   if(kB){ return out; }
-  const belt=(hex,w)=>out.push(pc(ofLoft([{y:0.052*TK,rx:s0.rx+0.012,rz},{y:0.052*TK-w,rx:s0.rx+0.014,rz:rz+0.002}],sg(28),0,TAU),c=>c.set(hex)));
+  const belt=(hex,w)=>out.push(pc(ofLoft([{y:0.052*TK,rx:s0.rx+0.01,rz:rm,zc},{y:0.052*TK-w,rx:s0.rx+0.012,rz:rm+0.002,zc}],sg(28),0,TAU),c=>c.set(hex)));
   if(b==='trousers'||b==='shorts'){
     belt(0x4a3626,0.034);
     out.push(solid(new THREE.BoxGeometry(0.034,0.028,0.008).translate(0,0.036*TK,-rz-0.004),0xc9a13a),solid(new THREE.BoxGeometry(0.02,0.016,0.01).translate(0,0.036*TK,-rz-0.0045),0x2a2a2a));
-    for(let i=0;i<6;i++){ const a=(i/6)*TAU+0.5; if(Math.abs(Math.sin(a))>0.25) out.push(solid(new THREE.BoxGeometry(0.02,0.012,0.008).translate(Math.sin(a)*(s0.rx+0.02),0.044*TK,Math.cos(a)*(rz+0.004)),0x4a3626)); }   // belt loops
+    for(let i=0;i<6;i++){ const a=(i/6)*TAU+0.5; if(Math.abs(Math.sin(a))>0.25) out.push(solid(new THREE.BoxGeometry(0.02,0.012,0.008).translate(Math.sin(a)*(s0.rx+0.02),0.044*TK,zc+Math.cos(a)*(rm+0.004)),0x4a3626)); }   // belt loops
     for(const sd of [-1,1]) out.push(pc(new THREE.BoxGeometry(0.006,0.075,0.05).translate(sd*(s0.rx+0.002+0.008),-0.04,-0.045),c=>c.set(tc).multiplyScalar(0.8)));   // pocket stitching at the hips
   } else if(b==='skirt'||b==='kilt'||b==='pleated'){
-    out.push(pc(ofLoft([{y:0.06*TK,rx:s0.rx+0.012,rz},{y:0.025*TK,rx:s0.rx+0.014,rz:rz+0.002}],sg(28),0,TAU),c=>c.set(b==='pleated'?0xe8e4dc:b==='kilt'?0x4a3626:dk)));   // the waistband
+    out.push(pc(ofLoft([{y:0.06*TK,rx:s0.rx+0.014,rz:rm+0.005,zc},{y:0.025*TK,rx:s0.rx+0.016,rz:rm+0.007,zc}],sg(28),0,TAU),c=>c.set(b==='pleated'?0xe8e4dc:b==='kilt'?0x4a3626:dk)));   // the waistband
     if(b==='kilt'){ out.push(solid(new THREE.BoxGeometry(0.034,0.034,0.008).translate(0,0.042*TK,-rz-0.004),0xc9a13a));
       out.push(pc(csph(0.035,sg(12),sg(8)).scale(1,1.15,0.6).translate(0,-0.06,-(rz+0.04)),(x,y,z,c)=>{ c.set(0x5a3a22).multiplyScalar(0.85+0.2*(y>-0.04?1:0)); }),solid(sweepTube([[-0.04,0.03,-rz-0.015],[0,0.0,-rz-0.032],[0.04,0.03,-rz-0.015]],[0.003,0.003,0.003],4,{cap:'round',rings:6}),0xc9a13a));   // the sporran, hung from a chain
       out.push(solid(new THREE.OctahedronGeometry(0.012,0).translate(-0.095,-0.17,-rz*0.6),0xb9bdc2)); }   // the kilt pin
     if(b==='pleated'){ out.push(pc(ofRibbon([[0.02,0.05*TK,-rz-0.01],[0.06,0.02*TK,-rz-0.03],[0.09,-0.05,-rz-0.03],[0.07,-0.1,-rz-0.02]],0.03,{up:[0,0,-1],seg:sg(8),th:0.003}),c=>c.set(0xc0344a))); }   // a ribbon belt's bow
   }
   if(!kT&&L.top==='tunic'&&b!=='skirt'&&b!=='kilt'&&b!=='pleated'){   // the tunic's flare over the thighs
-    const rows=[{y:0.0,rx:s0.rx+0.014,rz},{y:-0.035,rx:s0.rx+0.03,rz:rz+0.016},{y:-0.07,rx:s0.rx+0.048,rz:rz+0.03},{y:-0.125,rx:s0.rx+0.066,rz:rz+0.044},{y:-0.18,rx:s0.rx+0.08,rz:rz+0.054}];   // five rings: a curve that eases out
+    const rows=[{y:0.0,rx:s0.rx+0.014,rz:rm,zc},{y:-0.035,rx:s0.rx+0.03,rz:rm+0.016,zc},{y:-0.07,rx:s0.rx+0.048,rz:rm+0.03,zc},{y:-0.125,rx:s0.rx+0.066,rz:rm+0.044,zc},{y:-0.18,rx:s0.rx+0.08,rz:rm+0.054,zc}];   // five rings: a curve that eases out
     out.push(pc(ofLoft(rows,sg(36),0,TAU),(x,y,z,c)=>{ c.set(L.topColor); if(y<-0.16) c.set(0xe8d9b0); else if(y<-0.15) c.multiplyScalar(0.7); }));
   }
   out.push(...gmxHips(X,D));   // the crafted bottoms' belts, flaps and sashes (model-garments-more.js)
