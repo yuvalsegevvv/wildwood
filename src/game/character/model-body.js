@@ -69,6 +69,7 @@ function buildTorso(X,D){
     if(front){
       if(!fem) z+=0.012*B*G(y,0.33,0.1)*(1-0.4*G(ax,0,0.12))*(1-0.4*Math.min(S.chestShape,0))-0.003*B*(0.5+0.5*ch)*G(y,0.37,0.05)*G(ax,0.07*B,0.07)-0.007*B*Math.max(S.chestShape,0)*G(y,0.34,0.05)*G(ax,0.06*B,0.045);   // a man's chest: a flat, broad plane (the ribcage flattened by 1.2 cm) with only a hint of pec; a rounded bump read as a bust
       if(!fem&&ch>1) z-=0.012*B*Math.min(ch-1,1.2)*G(y,0.34,0.07)*(1-0.4*G(ax,0,0.03));   // a man's chest grows as bulk of the pecs and ribs, not as a bust
+      { const u=clamp((-0.03-y)/0.085); z*=1-0.62*Math.pow(u,1.5); }   // below the hip joints the front falls back between the thighs, so the crotch narrows to a point (a V crease) instead of ending as a flat-bottomed wedge
       z-=0.008*G(y,0.14,0.11)*(1-G(ax,0,0.04))*(fem?0.5:1);
       z+=0.0045*B*G(y,0.085,0.016)*G(ax,0,0.016);   // the belly button: a small soft dimple              // stomach, a little rounded
       if(fem){
