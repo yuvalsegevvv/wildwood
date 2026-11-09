@@ -5,7 +5,7 @@ Every monster kind in the game, with the numbers the server uses and the place i
 
 Generated from the live code by `node tools/gen-docs.js` (`--check` tells you when this file is out of date). Line numbers are those of the code when it was generated.
 
-148 monster kinds in 82 zones, 17 bosses, 22 boss helpers (summons and props) and 4 grey-veined quest monsters: 321 definitions, plus 8 dungeon bosses with their helpers (section 11). 3719 monsters exist in the world at start (148 kinds in their camps + 17 bosses).
+148 monster kinds in 82 zones, 17 bosses, 22 boss helpers (summons and props) and 4 grey-veined quest monsters: 340 definitions, plus 8 dungeon bosses with their helpers (section 11). 3842 monsters exist in the world at start (148 kinds in their camps + 17 bosses).
 
 ## 1. Where it is defined
 
@@ -189,7 +189,7 @@ Two kinds per level, 12 of each, in nine zones.
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `frostslime` | Frost Slime | 22 | water | 3604 | 23.5 | 155 | 1.6 | 2.2 | 10 m | 449.0 | 422 | 18 | — | — | Rimewood Edge | Frost Jelly | slime ×1.6 | src/shared/monster-defs.js:76 |
 | `snowboar` | Snow Boar | 22 | water | 4241 | 27.6 | 284 | 2 | 3.4 | 13 m | 449.0 | 422 | 18 | — | — | Rimewood Edge | Snow Tusk | boar ×1.5 | src/shared/monster-defs.js:77 |
-| `icebeetle` | Ice Beetle | 23 | water | 5861 | 37.1 | 211 | 1.4 | 2.6 | 11 m | 544.0 | 489 | 18 | — | — | Whitebirch Flats | Ice Shell | beetle ×1.5 | src/shared/monster-defs.js:78 |
+| `icebeetle` | Ice Beetle | 23 | water | 5861 | 37.1 | 211 | 1.4 | 2.6 | 11 m | 544.0 | 489 | 24 | — | — | Whitebirch Flats | Ice Shell | beetle ×1.5 | src/shared/monster-defs.js:78 |
 | `wolf` | Winter Wolf | 23 | air | 4689 | 29.7 | 264 | 1.5 | 3.8 | 14 m | 544.0 | 489 | 18 | — | — | Whitebirch Flats | Winter Pelt | fox ×1.35 | src/shared/monster-defs.js:79 |
 | `reaver` | Frost Reaver | 24 | dark | 6215 | 38.2 | 243 | 1.3 | 3 | 14 m | 658.1 | 566 | 22 | — | — | Frostmere Shore | Reaver Rune | goblin ×1.05 | src/shared/monster-defs.js:80 |
 | `rimewisp` | Rime Wisp | 24 | air | 4661 | 28.7 | 270 | 1.7 | 2.6 | 13 m | 658.1 | 566 | 18 | — | — | Frostmere Shore | Rime Spark | wisp ×1.1 | src/shared/monster-defs.js:81 |
@@ -415,24 +415,24 @@ A def's `model` picks a family model (`MODELS.<model>={geo,build,anim}`) and its
 
 | Model | Kinds using it | Family defaults (hpK / dmgPct / atk s / speed / rad / height / aggro / camp) | Family row | Client model |
 |---|---|---|---|---|
-| `slime` | 26 | 0.85 / 0.06 / 1.6 / 2.2 / 0.45 / 0.8 / 10 / 6 | src/shared/monster-defs.js:3 | src/game/combat/monster-blobs.js:5 |
-| `shroom` | 7 | 0.95 / 0.07 / 1.7 / 1.8 / 0.4 / 1.1 / 10 / 5 | src/shared/monster-defs.js:4 | src/game/combat/monster-blobs.js:50 |
-| `beetle` | 40 | 1.15 / 0.08 / 1.4 / 2.6 / 0.6 / 0.8 / 11 / 5 | src/shared/monster-defs.js:5 | src/game/combat/monster-bugs.js:105 |
+| `slime` | 27 | 0.85 / 0.06 / 1.6 / 2.2 / 0.45 / 0.8 / 10 / 6 | src/shared/monster-defs.js:3 | src/game/combat/monster-blobs.js:5 |
+| `shroom` | 8 | 0.95 / 0.07 / 1.7 / 1.8 / 0.4 / 1.1 / 10 / 5 | src/shared/monster-defs.js:4 | src/game/combat/monster-blobs.js:50 |
+| `beetle` | 42 | 1.15 / 0.08 / 1.4 / 2.6 / 0.6 / 0.8 / 11 / 5 | src/shared/monster-defs.js:5 | src/game/combat/monster-bugs.js:105 |
 | `boar` | 20 | 1 / 0.11 / 2 / 3.4 / 0.6 / 1 / 13 / 4 | src/shared/monster-defs.js:6 | src/game/combat/monster-beasts.js:5 |
-| `goblin` | 53 | 1 / 0.09 / 1.3 / 3 / 0.45 / 1.8 / 14 / 5 | src/shared/monster-defs.js:7 | src/game/combat/monster-folk.js:112 |
-| `treant` | 37 | 1.35 / 0.14 / 2.4 / 1.6 / 0.85 / 3.3 / 12 / 3 | src/shared/monster-defs.js:8 | src/game/combat/monster-woods.js:13 |
-| `fox` | 25 | 1 / 0.1 / 1.5 / 3.8 / 0.55 / 1 / 14 / 4 | src/shared/monster-defs.js:9 | src/game/combat/monster-beasts.js:45 |
-| `wisp` | 33 | 0.9 / 0.1 / 1.7 / 2.6 / 0.45 / 1.6 / 13 / 5 | src/shared/monster-defs.js:10 | src/game/combat/monster-spirits.js:4 |
+| `goblin` | 55 | 1 / 0.09 / 1.3 / 3 / 0.45 / 1.8 / 14 / 5 | src/shared/monster-defs.js:7 | src/game/combat/monster-folk.js:112 |
+| `treant` | 40 | 1.35 / 0.14 / 2.4 / 1.6 / 0.85 / 3.3 / 12 / 3 | src/shared/monster-defs.js:8 | src/game/combat/monster-woods.js:13 |
+| `fox` | 27 | 1 / 0.1 / 1.5 / 3.8 / 0.55 / 1 / 14 / 4 | src/shared/monster-defs.js:9 | src/game/combat/monster-beasts.js:45 |
+| `wisp` | 34 | 0.9 / 0.1 / 1.7 / 2.6 / 0.45 / 1.6 / 13 / 5 | src/shared/monster-defs.js:10 | src/game/combat/monster-spirits.js:4 |
 | `totem` | 9 | 1 / 0 / 99 / 0 / 0.55 / 2.7 / 0 / 2 | src/shared/monster-defs.js:11 | src/game/combat/monster-woods.js:97 |
 | `keg` | 0 | 1 / 0 / 99 / 0 / 0.5 / 1.1 / 0 / 2 | src/shared/monster-defs.js:12 | src/game/combat/monster-mine.js:4 |
-| `wyrm` | 13 | 1 / 0.12 / 2.2 / 2.6 / 0.9 / 2 / 16 / 3 | src/shared/monster-defs.js:13 | src/game/combat/monster-wyrm.js:18 |
+| `wyrm` | 15 | 1 / 0.12 / 2.2 / 2.6 / 0.9 / 2 / 16 / 3 | src/shared/monster-defs.js:13 | src/game/combat/monster-wyrm.js:18 |
 | `gryphon` | 3 | 1 / 0.12 / 2.1 / 3.2 / 0.8 / 2 / 16 / 3 | src/shared/monster-defs.js:14 | src/game/combat/monster-gryphon.js:15 |
-| `scorpion` | 6 | 1.05 / 0.1 / 1.5 / 3 / 0.7 / 1 / 12 / 5 | src/shared/monster-defs.js:15 | src/game/combat/monster-desert.js:8 |
+| `scorpion` | 7 | 1.05 / 0.1 / 1.5 / 3 / 0.7 / 1 / 12 / 5 | src/shared/monster-defs.js:15 | src/game/combat/monster-desert.js:8 |
 | `cactus` | 1 | 1.35 / 0.13 / 2.3 / 1.5 / 0.8 / 3 / 10 / 3 | src/shared/monster-defs.js:16 | src/game/combat/monster-desert.js:41 |
 | `sandworm` | 10 | 1.2 / 0.12 / 2.2 / 2.4 / 0.95 / 2 / 14 / 3 | src/shared/monster-defs.js:17 | src/game/combat/monster-desert.js:69 |
-| `djinn` | 9 | 0.95 / 0.11 / 1.8 / 2.8 / 0.5 / 2.3 / 15 / 4 | src/shared/monster-defs.js:18 | src/game/combat/monster-desert.js:104 |
+| `djinn` | 11 | 0.95 / 0.11 / 1.8 / 2.8 / 0.5 / 2.3 / 15 / 4 | src/shared/monster-defs.js:18 | src/game/combat/monster-desert.js:104 |
 | `sentinel` | 1 | 1 / 0.12 / 2.6 / 1.9 / 1 / 3.1 / 0 / 2 | src/shared/monster-defs.js:19 | src/game/combat/monster-desert.js:137 |
-| `bat` | 7 | 0.8 / 0.09 / 1.4 / 4 / 0.45 / 1 / 16 / 6 | src/shared/monster-defs.js:20 | src/game/combat/monster-gloam.js:5 |
+| `bat` | 9 | 0.8 / 0.09 / 1.4 / 4 / 0.45 / 1 / 16 / 6 | src/shared/monster-defs.js:20 | src/game/combat/monster-gloam.js:5 |
 | `feline` | 5 | 1 / 0.11 / 1.6 / 4 / 0.6 / 1 / 15 / 4 | src/shared/monster-defs.js:21 | src/game/combat/monster-savanna.js:13 |
 | `swarm` | 1 | 0.9 / 0.08 / 1.4 / 3.4 / 0.6 / 1.5 / 14 / 5 | src/shared/monster-defs.js:22 | src/game/combat/monster-savanna.js:46 |
 | `bird` | 6 | 0.95 / 0.1 / 1.6 / 3 / 0.5 / 1.6 / 14 / 4 | src/shared/monster-defs.js:23 | src/game/combat/monster-savanna.js:64 |

@@ -1,6 +1,6 @@
 //@ Dungeon gear on the server: the ring's attack (the pendant's bonuses are read by pendP in players.js), Tempering Stones (the drop that replaces equipment at level 30+, and the `temper` message), the forge's merge rule, a clear's item, testing commands
 /* Agent map (rules and ids: shared/dungeon-rewards.js; the items: shared/dungeon-items.js; the design: docs/DUNGEON-THEMES.md section 7)
-   owns:    dgRingAtkP (recalcP adds it), dgRollDropP (rewardKill: a stone instead of equipment), dgAddStonesP, dgTemperP + MSG.temper, dgMergeRefusedP (mergeP),
+   owns:    dgRingAtkP (recalcP adds it), dgRollDropP (rewardKill: a stone instead of equipment), dgAddStonesP, dgTemperP + MSG.temper (mergeP),
             dgGrantItemP (a clear's item for one player: the integration step calls it once for every member), MSG.rwdev (testing tools: stones, every level-30 piece, three for the forge)
    uses:    state.js (MSG, ev, toastTo), economy.js (addItemP, unwornCount, gearChangedP).
    events:  stone [pid,n,monId] (a stone dropped), temper [pid,newId,oldId] (a piece was tempered); the toasts carry the words.
@@ -40,10 +40,6 @@ function dgTemperP(p,id,worn){
 }
 MSG.temper=(p,msg)=>dgTemperP(p,msg.id,!!msg.worn);
 // the forge merges only +0 pieces: say why a tempered one is refused (mergeP returns when this is true)
-function dgMergeRefusedP(p,id){
-  const it=ITEM[id]; if(!it||!it.dg||!it.n) return false;
-  toastTo(p.id,it.name+' has been tempered: only +0 pieces can be merged','bad'); return true;
-}
 // a clear's item for one player (the integration step rolls dgClearReward(theme) once and hands the id to every member); false when the bag is full
 function dgGrantItemP(p,id){
   const it=ITEM[id]; if(!it||!it.dg) return false;

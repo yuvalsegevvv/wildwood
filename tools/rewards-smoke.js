@@ -151,13 +151,13 @@ const withRandom=(v,f)=>{ const real=Math.random; Math.random=typeof v==='functi
 // ---- the forge: merge +0 only ----
 { const m=join('m',30); give(m,'sword7+1','sword7+1','sword7+1','top7','top7','top7','ring-fire','ring-fire','ring-fire','helmet7-l','helmet7-l','helmet7-l');
   let n=send('m',{t:'merge',id:'sword7+1'});
-  ok('three tempered pieces (+1) do not merge: refused with a toast, nothing lost',m.gear.inv.filter(i=>i==='sword7+1').length===3&&!m.gear.inv.includes('sword7-r+1')&&toastsOf('m',n).some(t=>/only \+0 pieces/.test(t)));
+  ok('three tempered pieces (+1) merge into one of the next rarity and keep the +1',m.gear.inv.filter(i=>i==='sword7+1').length===0&&m.gear.inv.includes('sword7-r+1'));
   n=send('m',{t:'merge',id:'top7'});
   ok('three +0 level-30 pieces merge into the next rarity at +0 (top7 -> top7-r)',m.gear.inv.filter(i=>i==='top7').length===0&&m.gear.inv.includes('top7-r')&&evs.slice(n).some(e=>e[0]==='merge'&&e[1]==='m'&&e[2]==='top7-r'));
   send('m',{t:'merge',id:'ring-fire'}); ok('rings merge the same way (ring-fire -> ring-fire-r)',m.gear.inv.includes('ring-fire-r')&&!m.gear.inv.includes('ring-fire'));
   send('m',{t:'merge',id:'helmet7-l'}); ok('a legendary piece has no next rarity: it stays',m.gear.inv.filter(i=>i==='helmet7-l').length===3);
   give(m,'sword7','sword7','sword7'); send('m',{t:'merge',id:'sword7'}); ok('weapons: sword7 -> sword7-r',m.gear.inv.includes('sword7-r')&&x.ITEM['sword7-r'].atk===163);
-  ok('every +0 id below legendary merges into a real record of the next rarity, +0, and a tempered one into nothing',x.dgAllIds().every(id=>{ const it=x.ITEM[id], nx=x.mergedId(id); return it.rar>=4||it.n>0?nx===null:!!x.ITEM[nx]&&x.ITEM[nx].rar===it.rar+1&&x.ITEM[nx].n===0&&x.ITEM[nx].slot===it.slot&&x.ITEM[nx].el===it.el; })); }
+  ok('every +0 id below legendary merges into a real record of the next rarity, +0, and a tempered one into the next rarity at the same +n',x.dgAllIds().every(id=>{ const it=x.ITEM[id], nx=x.mergedId(id); return it.rar>=4?nx===null:!!x.ITEM[nx]&&x.ITEM[nx].rar===it.rar+1&&x.ITEM[nx].n===(it.n||0)&&x.ITEM[nx].slot===it.slot&&x.ITEM[nx].el===it.el; })); }
 
 // ---- saves ----
 { const g=x.newGearFor('warrior'); g.inv.push('ring-fire-l+3','sword7-e+2','ring-basic'); g.eq.ring='ring-fire-l+3'; g.eq.weapon='sword7-e+2'; g.temper=42;

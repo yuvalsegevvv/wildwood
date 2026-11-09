@@ -34,10 +34,10 @@ const el=s=>document.querySelector(s);
   ok('tempering shows: the pieces are +1 now, their tiles have a "+1" badge and the dungeon accent, the stones are spent (20 -> 18)',G.GEAR.inv.includes('sword7+1')&&G.GEAR.inv.includes('helmet7+1')&&G.GEAR.temper===18&&/class="tile r0 dg[^"]*" data-id="sword7\+1" data-from="bag"[^>]*>(?:(?!<\/button>)[\s\S])*<span class="enh">\+1<\/span>/.test(h)&&/class="tile r0 dg[^"]*" data-id="bow7"/.test(h)&&!/enh/.test(h.split('data-id="bow7"')[1].split('</button>')[0]));
   G.INV.sel={id:'sword7+1',from:'bag'}; G.renderInvInfo(); h=el('#invInfo').innerHTML.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
   ok('a tempered weapon\'s details name it "+1", say how far it can go and what the next step costs and gives',/Elderwood Blade \+1/.test(h)&&/Tempered \+1 of 2/.test(h)&&/next: \+150 attack \(\+12\) for 2 Tempering Stones \(you have 18\)/.test(h),h.slice(0,300));
-  ok('the stone count is among the materials',/<span class="mat"[^>]*><i[^>]*><\/i>Tempering Stone <b>18<\/b>/.test(el('#invBody').innerHTML));
+  ok('the stone count is listed among the key resources (with its icon)',/<b>Tempering Stones<\/b>[\s\S]{0,400}/.test(el('#invBody').innerHTML)&&/aria-label="Tempering Stones x18"><svg/.test(el('#invBody').innerHTML));
   // ---- the forge ----
   G.openForge({def:{name:'Greta'}}); h=el('#forgeBody').innerHTML;
-  ok('the forge opens on the Merge tab, and a tempered piece is not offered there',!/data-temper=/.test(h)&&!/data-merge="sword7\+1"/.test(h));
+  ok('the forge opens on the Merge tab, ',!/data-temper=/.test(h));
   G.setForgeTab('temper'); G.renderForge(); h=el('#forgeBody').innerHTML; const t=h.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
   ok('the Temper tab lists your level-30 pieces (14 + the enhanced ones) with +n -> +n+1, the stat change and the stone cost, and your stones',/Tempering Stones\s*18/.test(t)&&(h.match(/class="fg-row/g)||[]).length>=14&&/Elderwood Blade[^]*?\+2/.test(t)&&/data-temper="sword7\+1"/.test(h)&&/Temper: 2 stones/.test(t)&&/Temper: 1 stone/.test(t),(h.match(/class="fg-row/g)||[]).length+' rows');
   { const have=G.GEAR.temper; G.GEAR.temper=1; G.renderForge(); const h1=el('#forgeBody').innerHTML, t1=h1.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
@@ -52,7 +52,7 @@ const el=s=>document.querySelector(s);
     ok('"3 of a level-30 piece" shows in the Merge tab with a ready Merge 3 button',new RegExp('data-merge="'+q+'"').test(h)&&/Merge 3/.test(h),three);
     const had1=G.GEAR.inv.filter(i=>i===three+'+1').length;   // (the sword and the helmet were tempered above: the random piece may be one of them)
     G.NET.send({t:'temper',id:three}); G.NET.send({t:'temper',id:three}); await wait(500); G=c.G(); G.renderForge(); h=el('#forgeBody').innerHTML;
-    ok('once two of them are tempered (+1 x2, one +0 left) the Merge tab does not list the tempered pair and says why',G.GEAR.inv.filter(i=>i===three+'+1').length===had1+2&&!new RegExp('data-merge="'+q+'\\+1"').test(h)&&/Tempered pieces \(\+1 and up\) cannot be merged/.test(h),three); }
+    ok('once two of them are tempered (+1 x2, one +0 left) the Merge tab lists the tempered pair too (it keeps its step)',G.GEAR.inv.filter(i=>i===three+'+1').length===had1+2&&new RegExp('data-merge="'+q+'\\+1"').test(h),three); }
   // ---- events ----
   { let threw=null; try{ G.applyEvent(['stone',G.NET.pid,1,null]); G.applyEvent(['stone','someone else',1,null]); G.applyEvent(['temper',G.NET.pid,'sword7+1','sword7']); G.applyEvent(['temper','someone else','sword7+1','sword7']); }catch(e){ threw=e; }
     ok('the stone and temper events are handled (yours and other players\') without errors',!threw,threw&&threw.message); }

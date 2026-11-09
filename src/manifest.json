@@ -492,6 +492,7 @@
     "ui/mon-pics.js",
     "ui/panels.js",
     "economy/inventory.js",
+    "economy/inv-keys.js",
     "economy/shops.js",
     "economy/forge.js",
     "ui/element-icons.js",

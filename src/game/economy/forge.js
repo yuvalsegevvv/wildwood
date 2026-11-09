@@ -11,7 +11,7 @@ function renderForge(){
   if(forgeTab==='sac'){ $('#forgeBody').innerHTML=rlUiSacHtml(); rlUiBind($('#forgeBody')); return; }   // rolls: the Sacrifice tab
   if(forgeTab==='temper'){ $('#forgeBody').innerHTML=dgTemperHtml(); dgTemperBind($('#forgeBody')); return; }   // dungeons: the Temper tab (dungeon-gear.js)
   const counts=bagCounts(), worn={}; for(const s in GEAR.eq){ const id=GEAR.eq[s]; if(typeof id==='string') worn[id]=(worn[id]||0)+1; } for(const id of wpnInactive(GEAR)) worn[id]=(worn[id]||0)+1;   // wpn: carried weapons count as worn
-  const ids=Object.keys(counts).filter(id=>ITEM[id].rar<4&&counts[id]>=2&&!ITEM[id].n)   // dungeons: a tempered (+n) piece does not merge
+  const ids=Object.keys(counts).filter(id=>ITEM[id].rar<4&&counts[id]>=2&&!ITEM[id].roll)   // a tempered (+n) piece merges and keeps its step; a rolled level-40 piece does not
     .sort((a,b)=>(counts[b]>=MERGE_COUNT)-(counts[a]>=MERGE_COUNT)||ITEM[b].rar-ITEM[a].rar||ITEM[b].tier-ITEM[a].tier||a.localeCompare(b));
   let h=`<p class="fg-intro">Bring me three of the same piece (same name, level and rarity) and I will forge them into one of the next rarity. It still needs the same level to wear, but it is a good deal stronger. I don't touch what you're wearing.</p>
     <div class="fg-ladder">${RARITY.map((r,i)=>`<span style="color:${RAR_COL[i]}">${r}</span>`).join(ARROW)}</div>`;
@@ -23,7 +23,6 @@ function renderForge(){
       <div class="fg-main"><b style="color:${RAR_COL[nx.rar]}">${nx.name}</b><span>Level ${nx.lv} &middot; ${itemStat(nx)} <span class="up">(was ${itemStat(it).replace(/^\+/,'')})</span></span><span class="muted">You have ${n} in your bag${worn[id]?', plus one you are wearing':''}</span></div>
       <button class="chip forge" data-merge="${id}" ${ready?'':'disabled'}>${ready?'Merge 3':'Need '+(MERGE_COUNT-n)+' more'}</button></div>`;
   }
-  if(Object.keys(counts).some(id=>ITEM[id].n)) h+='<p class="muted">Tempered pieces (+1 and up) cannot be merged; temper them in the other tab.</p>';   // dungeons: why a tempered piece is not listed
   $('#forgeBody').innerHTML=h;
   $('#forgeBody').querySelectorAll('[data-merge]').forEach(b=>b.onclick=()=>{ b.disabled=true; b.textContent='Forging…'; netSend({t:'merge',id:b.dataset.merge}); });
 }

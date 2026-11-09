@@ -13,7 +13,6 @@ function addMatP(p,id,n,monId){
 const unwornCount=(p,id)=>p.gear.inv.filter(x=>x===id).length-Object.values(p.gear.eq).filter(x=>x===id).length-wpnInactive(p.gear).filter(x=>x===id).length;   // wpn: the two carried weapons not in use count as worn
 // Greta's forge: three identical items (not the ones you wear) become one of the next rarity
 function mergeP(p,id){
-  if(dgMergeRefusedP(p,id)) return;   // dungeons: a tempered (above +0) level-30 piece does not merge
   const it=ITEM[id], nid=mergedId(id); if(!it||!nid) return;
   if(unwornCount(p,id)<MERGE_COUNT){ toastTo(p.id,'You need three '+it.name+' in your bag','bad'); return; }
   for(let k=0;k<MERGE_COUNT;k++) p.gear.inv.splice(p.gear.inv.lastIndexOf(id),1);

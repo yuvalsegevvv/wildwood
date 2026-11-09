@@ -2,7 +2,7 @@
 /* Agent map. pzScrollHtml() / pzScrollBind(root) draw the forge's Scrolls tab (message scroll{id,to}, server/puzzles.js); pzTrackRender(box) draws the Sigil track tab: your Sigils, the next level, the levels as a row
    of lamps, the cosmetic of each level (PZ_TRACK_COS, empty until the content thread fills it). Both read GEAR.scr / GEAR.sig / GEAR.sigPaid. Test: client-smoke (loads). */
 function pzScrollHtml(){
-  const sc=GEAR.scr||{e:0,u:0}, eligible=to=>[...new Set(GEAR.inv)].filter(id=>{ const it=ITEM[id]; return it&&!it.dg&&id.indexOf('~')<0&&ALL_SLOTS.includes(it.slot)&&(to==='e'?it.rar<=1:it.rar<=2); })
+  const sc=GEAR.scr||{e:0,u:0}, eligible=to=>[...new Set(GEAR.inv)].filter(id=>{ const it=ITEM[id]; return it&&id.indexOf('~')<0&&ALL_SLOTS.includes(it.slot)&&(to==='e'?it.rar<=1:it.rar<=2); })
     .sort((a,b)=>ITEM[b].tier-ITEM[a].tier||ITEM[b].rar-ITEM[a].rar||a.localeCompare(b));
   const sect=(to,name,col)=>{ const ids=eligible(to);
     return `<div class="inv-h">${name} upgrade scroll <span>${sc[to]||0} owned</span></div><p class="muted">${to==='e'?'Turns a common or rare piece into epic.':'Turns a common, rare or epic piece into unique.'} Chests of the puzzle stones drop ${to==='e'?'epic':'unique'} scrolls${to==='e'?' (normal, hard and extreme)':' (the Sigil track, every 50 Sigils)'}.</p>`
