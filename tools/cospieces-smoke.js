@@ -99,7 +99,7 @@ bad.length=0; build('three','female',{deco1:'wings',deco2:'tail',deco3:'halo',de
 // ---- the child-safe setting ----
 { const C2=require('./char-load')(code=>code.replace('getItem(){return null}',"getItem(k){return k==='wildwood-modest'?'1':null}"));
   const sig=(Cx,o)=>Cx.tris(Cx.buildCharacter(Object.assign({},Cx.LOOK_M,o),{q:0.5})).join();
-  const swaps=[['top','crop','tunic'],['top','halter','tunic'],['top','harness','tunic'],['bottom','loincloth','trousers'],['bottom','shortshorts','trousers'],['bottom','wrapskirt','trousers']];
+  const swaps=[['top','crop','tunic'],['top','halter','tunic'],['top','bikini','tunic'],['bottom','bikinibottom','trousers'],['top','harness','tunic'],['bottom','loincloth','trousers'],['bottom','shortshorts','trousers'],['bottom','wrapskirt','trousers']];
   ok('off by default: the bare pieces draw as themselves',swaps.every(([k,a,b])=>sig(C,{[k]:a})!==sig(C,{[k]:b})));
   ok('on: every bare crafted top and bottom is drawn as its plain stand-in',swaps.every(([k,a,b])=>sig(C2,{[k]:a})===sig(C2,{[k]:b})));
   const wear=(Cx,id)=>{ const m=Cx.CHAR_MODELS[id], sex=m.sexes[0]; return Cx.buildCharacter(Cx.ofWear(Cx.applySetup(Object.assign({},sex==='female'?Cx.LOOK_F:Cx.LOOK_M),Cx.setupsOf(m,sex)[0]),id),{q:0.5}); };

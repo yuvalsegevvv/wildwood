@@ -14,6 +14,7 @@ function clothPaints(L){
     else if(L.top==='flannel') plaid(c,L.topColor,u,v);
     else if(L.top==='vest'||L.top==='jerkin') c.set(0xe8e4dc);   // (the waistcoat and the leather jerkin are geometry over a cream shirt: model-garments.js, model-garments-more.js)
     else if(L.top==='crop'){ if(v<0.36) c.set(L.skin); else c.set(L.topColor); }   // the midriff is bare
+    else if(L.top==='bikini'){ if(v>0.33&&v<0.45) c.set(L.topColor); else c.set(L.skin); }   // two small cups, everything else bare
     else if(L.top==='halter'){ if(v>0.32&&v<0.47) c.set(L.topColor); else c.set(L.skin); }   // a wrap round the chest, bare shoulders, back and belly
     else if(L.top==='harness'){ if(L.sex==='female'&&v>0.325&&v<0.435) c.set(v>0.42||v<0.34?underBand(L):underCol(L)); else c.set(L.skin); }   // straps over a bare chest (a woman keeps her band top)   // (the waistcoat is geometry over a cream shirt: model-garments.js)
     else if(gmdIs(L.top)) gmdPaint(L,c,u,v);   // dresses: skin above the bodice (model-dresses.js)
@@ -22,6 +23,7 @@ function clothPaints(L){
     else c.set(L.topColor);
   };
   const botPaint=(c,u,v)=>{
+    if(L.bottom==='bikinibottom'){ c.set(v<0.045?L.bottomColor:L.skin); return; }
     if(L.bottom==='none'||gmxBareBottom(L.bottom)){ if(v<0.045) c.set(v>0.025?underBand(L):underCol(L)); else c.set(L.skin); return; }
     c.set(L.bottomColor);
     if(L.bottomStyle==='mail') c.multiplyScalar(0.72+0.38*((Math.floor((u||0)*70)+Math.floor((v||0)*70))&1));
@@ -170,8 +172,8 @@ function buildLeg(X,D,sd){
   const {L,S,fem,sg,skinPaint,botPaint}=X, kB=X.kit&&X.kit.sl.bottom, kS=X.kit&&X.kit.sl.shoes, {tw,cw,thigh,shin,KR,hx,B,lr}=D, boot=kS?kS.boot!==false:(L.shoes==='boots'||L.shoes==='tallboots'||L.shoes==='furboots'||L.shoes==='sabatons');   // kB / kS: the outfits' bottoms and shoes, when worn
   const hp=new THREE.Group(); hp.name=sd<0?'hipL':'hipR'; hp.position.set(sd*hx,0,0);
   // thigh: the hip ball, full quads in front, tapering to the knee (radius KR, shared with the shin below)
-  const th=pc(limb([[0,0.092*tw,0.102*tw],[0.14,0.092*tw,0.099*tw],[0.42,0.077*tw,0.081*tw,-0.004],[0.76,Math.max(KR*1.1,0.057*tw),Math.max(KR*1.12,0.06*tw),-0.002],[1,KR,KR*1.04]],thigh,sg(24),sg(28),{cuts:[0.53,0.53-0.03/thigh].concat(L.bottom==='shortshorts'?[0.2,0.2-0.025/thigh]:[]).concat((kB&&kB.cuts&&kB.cuts.thigh)||[])}),kB?(x,y,z,c)=>ofPaint(X,'bottom','thigh',c,x,y,z,sd):(x,y,z,c)=>{
-    if(L.bottom==='trousers'||L.bottom==='greaves'||L.bottom==='breeches'||L.bottom==='hakama'||(L.bottom==='shorts'&&y>-thigh*0.53)||(L.bottom==='shortshorts'&&y>-thigh*0.2)) botPaint(c,x,y); else if((L.bottom==='none'||gmxBareBottom(L.bottom))&&y>-thigh*0.16) c.set(y>-thigh*0.03?underBand(L):underCol(L)); else skinPaint(c);
+  const th=pc(limb([[0,0.09*tw,0.097*tw],[0.14,0.091*tw,0.096*tw],[0.42,0.077*tw,0.081*tw,-0.004],[0.76,Math.max(KR*1.1,0.057*tw),Math.max(KR*1.12,0.06*tw),-0.002],[1,KR,KR*1.04]],thigh,sg(24),sg(28),{cuts:[0.53,0.53-0.03/thigh].concat(L.bottom==='shortshorts'?[0.2,0.2-0.025/thigh]:[]).concat((kB&&kB.cuts&&kB.cuts.thigh)||[])}),kB?(x,y,z,c)=>ofPaint(X,'bottom','thigh',c,x,y,z,sd):(x,y,z,c)=>{
+    if(L.bottom==='trousers'||L.bottom==='greaves'||L.bottom==='breeches'||L.bottom==='hakama'||(L.bottom==='shorts'&&y>-thigh*0.53)||(L.bottom==='shortshorts'&&y>-thigh*0.2)) botPaint(c,x,y); else if((L.bottom==='none'||gmxBareBottom(L.bottom))&&L.bottom!=='bikinibottom'&&y>-thigh*0.16) c.set(y>-thigh*0.03?underBand(L):underCol(L)); else skinPaint(c);
     if(L.bottom==='shorts'&&y>-thigh*0.53&&y<-thigh*0.53+0.03) c.multiplyScalar(0.85); if(L.bottom==='shortshorts'&&y>-thigh*0.2&&y<-thigh*0.2+0.025) c.multiplyScalar(0.8); });
   const m1=new THREE.Mesh(th,matChar); m1.castShadow=true; hp.add(m1);
   if(!kB){ const ex=gmxThigh(X,D,sd); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; hp.add(m); } }   // the plated leggings' thigh plates (model-garments-more.js)

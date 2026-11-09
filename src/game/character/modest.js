@@ -7,8 +7,8 @@ var MODEST=false;
 try{ MODEST=localStorage.getItem('wildwood-modest')==='1'; }catch(_){}
 function modestOn(){ return MODEST; }
 // what stands in for each bare piece. tools/modest-smoke.js measures the result (every look, both bodies, the shortest skirt): when it finds a look that still shows the belly, the back, the shoulders or the thighs above the knee, add that piece here.
-const MODEST_TOP={none:'tshirt',crop:'tunic',halter:'tunic',harness:'tunic',sundress:'tunic',peasant:'tunic',tiered:'tunic',mermaid:'tunic',ballgown:'tunic',wrapdress:'tunic'};
-const MODEST_BOTTOM={none:'trousers',loincloth:'trousers',shortshorts:'trousers',wrapskirt:'trousers',shorts:'breeches',pleated:'skirt'};
+const MODEST_TOP={none:'tshirt',crop:'tunic',halter:'tunic',harness:'tunic',bikini:'tunic',sundress:'tunic',peasant:'tunic',tiered:'tunic',mermaid:'tunic',ballgown:'tunic',wrapdress:'tunic'};
+const MODEST_BOTTOM={none:'trousers',loincloth:'trousers',shortshorts:'trousers',bikinibottom:'trousers',wrapskirt:'trousers',shorts:'breeches',pleated:'skirt'};
 const MODEST_SKIRT_LEN={skirt:1.3,kilt:1.15};   // the shortest skirtLen that still reaches the knee (the skirt's own length is 0.4 / 0.46 m: shared/character.js skirtLen, model-garments.js gmSkirt)
 const MODEST_SET_TOP=['atuqa','tzaya','meleni','nephra','ottoline','sefi','tamsin','zahra'], MODEST_SET_BOTTOM=['marigold','meleni','nephra','sefi','tzaya'];   // signature pieces that bare skin and are swapped for the plain stand-in (the other sets' own paint asks modestOn())
 const modestHas=(o,k)=>typeof k==='string'&&Object.prototype.hasOwnProperty.call(o,k);

@@ -7,14 +7,14 @@
    owns: GMX_TOPS, GMX_BOTTOMS, GMX_SHOES, gmxTop, gmxCuff, gmxHips, gmxThigh, gmxShin, gmxSkirtKind, gmxBareBottom, gmxSleeveless.   used by: model-garments.js, model-body.js, ui/character-editor.js.   test: tools/cospieces-smoke.js */
 const GMX_TOPS=CP_PIECES.filter(r=>r[0]==='t').map(r=>[r[1],r[2],r[4]]), GMX_BOTTOMS=CP_PIECES.filter(r=>r[0]==='b').map(r=>[r[1],r[2],r[4]]), GMX_SHOES=CP_PIECES.filter(r=>r[0]==='s').map(r=>[r[1],r[2],r[4]]);
 // the body shows where the garment is open: the bare top ids and the bottoms whose hips stay open over the briefs
-const gmxSleeveless=t=>t==='halter'||t==='harness'||gmdIs(t), gmxBareBottom=b=>b==='loincloth'||b==='wrapskirt', gmxSkirtKind=b=>b==='hakama'||b==='wrapskirt';
+const gmxSleeveless=t=>t==='halter'||t==='bikini'||t==='harness'||gmdIs(t), gmxBareBottom=b=>b==='loincloth'||b==='wrapskirt'||b==='bikinibottom', gmxSkirtKind=b=>b==='hakama'||b==='wrapskirt';
 const GMX_STEEL=0xb9bdc2, GMX_LEATHER=0x5a3a22, GMX_BRASS=0xc9a13a;
 const gmxMul=(hex,m)=>new THREE.Color(hex).multiplyScalar(m).getHex();
 // the colours of a crafted top or bottom (the same four slots as a set's piece: tintTop2..4 / tintBottom2..4): [main, second, third, fourth], each default derived from the main colour
 const GMX_PAL={
-  top:{crop:tc=>[tc,0xf4efe6,gmxMul(tc,0.7)],halter:tc=>[tc,0xe8c24a,gmxMul(tc,0.7)],harness:tc=>[tc,GMX_LEATHER,GMX_BRASS],robe:tc=>[tc,0x7a2a3a,new THREE.Color(tc).lerp(new THREE.Color(0xffffff),0.35).getHex()],
+  top:{crop:tc=>[tc,0xf4efe6,gmxMul(tc,0.7)],halter:tc=>[tc,0xe8c24a,gmxMul(tc,0.7)],bikini:tc=>[tc,gmxMul(tc,0.75),0xe8e4dc],harness:tc=>[tc,GMX_LEATHER,GMX_BRASS],robe:tc=>[tc,0x7a2a3a,new THREE.Color(tc).lerp(new THREE.Color(0xffffff),0.35).getHex()],
     poncho:tc=>[tc,0xe8d9b0,gmxMul(tc,0.7)],jerkin:tc=>[tc,0xe8d9b0,GMX_BRASS,0x3a2a1c]},
-  bottom:{breeches:tc=>[tc,0x4a3626,GMX_BRASS,gmxMul(tc,0.72)],shortshorts:tc=>[tc,gmxMul(tc,0.6),0xe8e4dc,GMX_STEEL],wrapskirt:tc=>[tc,gmxMul(tc,0.5),gmxMul(tc,0.5)],
+  bottom:{breeches:tc=>[tc,0x4a3626,GMX_BRASS,gmxMul(tc,0.72)],shortshorts:tc=>[tc,gmxMul(tc,0.6),0xe8e4dc,GMX_STEEL],wrapskirt:tc=>[tc,gmxMul(tc,0.5),gmxMul(tc,0.5)],bikinibottom:tc=>[tc,gmxMul(tc,0.75),0xe8e4dc],
     hakama:tc=>[tc,0xe8e4dc,gmxMul(tc,0.75),0xe8e4dc],loincloth:tc=>[tc,0x4a3626,GMX_BRASS,0xe8d9b0],greaves:tc=>[tc,0x4a3626,GMX_BRASS,GMX_STEEL]}
 };
 // the Sigil track's four sets (shared/puzzle-track.js PZ_TRACK_SETS): each piece is an existing silhouette (base) in the set's own colours (col, pal = the other three tint slots), so a set's top, bottom and shoes belong together.
@@ -56,6 +56,11 @@ function gmxTop(X,D){
     out.push(gmBand(X,D,0.47,0.445,(x,y,z,c)=>c.set(PL[1]),0.004),gmBand(X,D,0.32,0.295,(x,y,z,c)=>c.set(PL[1]),0.004));   // the wrap's top and bottom edges
     out.push(solid(csph(0.0105,sg(8),sg(6)).scale(1.3,1,0.8).translate(0,0.385*TK,cz-0.006),PL[2]),solid(ofRibbon([[0,0.38*TK,cz-0.008],[0.012,0.35*TK,cz-0.01],[0.01,0.31*TK,cz-0.01]],0.012,{up:[0,0,-1],seg:sg(6),th:0.003}),PL[2]));   // the knot between the cups, with a tail
     for(const sd of [-1,1]) out.push(solid(gmRingAt([0,0.39*TK,0],[0,1,0],torsoSize(X,D,0.39).rx*0.98,0.0015,sg(6)),PL[1]));
+  } else if(top==='bikini'){
+    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.05,0.43*TK,fz(0.43)-0.004],[sd*0.04,0.5*TK,fz(0.5)-0.003],[sd*nr*1.15,0.565*TK,-nr*0.55],[sd*nr*0.5,0.585*TK,nr*1.25]],0.012,{up:[0,1,-0.3],seg:sg(10),th:0.003}),PL[1]));   // the neck ties
+    out.push(solid(csph(0.009,sg(8),sg(6)).translate(0,0.585*TK,nr*1.35),PL[1]));
+    out.push(solid(csph(0.0075,sg(8),sg(6)).translate(0,0.385*TK,fz(0.385)-0.008),PL[2]));   // a small bead between the cups
+    out.push(gmBand(X,D,0.45,0.43,(x,y,z,c)=>c.set(PL[1]),0.004),gmBand(X,D,0.335,0.315,(x,y,z,c)=>c.set(PL[1]),0.004));   // the cups' top and bottom edges
   } else if(top==='harness'){
     for(const sd of [-1,1]){
       out.push(solid(ofRibbon(gmxStrap(X,D,0.5,0.1,sd*0.07,-sd*0.1,false),0.03,{up:[0,0,-1],seg:sg(14),th:0.006}),PL[1]));
@@ -110,6 +115,9 @@ function gmxHips(X,D){
     belt(PL[1],0.03,0.11); belt(gmxMul(tc,0.7),0.05,0.075);
     out.push(pc(vbox(0.1,0.14,0.012,0,0.0,rz+0.01).rotateX(-0.12),c=>c.set(PL[2])));   // the stiff back plate
     for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.03,0.085*TK,-rz-0.008],[sd*0.05,0.02*TK,-rz-0.012],[sd*0.06,-0.1,-rz-0.01]],0.022,{up:[0,0,-1],seg:sg(8),th:0.004}),PL[3]));   // the ties hanging in front
+  } else if(b==='bikinibottom'){
+    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*(s0.rx+0.004),0.052*TK,0],[sd*(s0.rx+0.012),0.04*TK,-rz*0.6],[sd*0.05,0.034*TK,-rz-0.004]],0.01,{up:[0,1,0],seg:sg(8),th:0.003}),PL[1]));
+    for(const sd of [-1,1]) out.push(solid(csph(0.006,sg(6),sg(5)).translate(sd*0.05,0.034*TK,-rz-0.006),PL[2]));   // a bead on each tie (the briefs themselves are the torso's paint)
   } else if(b==='wrapskirt'){
     belt(PL[1],0.05,0.075);   // the sash
     out.push(solid(csph(0.02,sg(8),sg(6)).scale(1.3,1,0.7).translate(0.09,0.05*TK,-rz-0.012),PL[1]));
