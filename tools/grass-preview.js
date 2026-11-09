@@ -17,6 +17,7 @@ const gch=read('game/world','generation-chunks.js'), clumpSrc=gch.indexOf('const
 const page=`<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#9ec3e0}canvas{display:block}</style><body><script>${fs.readFileSync(path.join(SRC,'vendor/three.r128.min.js'),'utf8')}</script><script>
 const LITE=false, LOW=false, LAKES=[]; const moss=new THREE.Color(0x56702f); const timeU={value:${TIME}};
 ${['math.js','noise.js'].map(f=>read('shared',f)).join('\n')}
+${read('game/engine','cam-fade.js')}
 ${read('game/engine','materials.js')}
 ${read('game/world','plant-models.js')}
 ${read('game/world','plant-models-hi.js')}

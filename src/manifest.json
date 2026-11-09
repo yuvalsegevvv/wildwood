@@ -308,6 +308,7 @@
     "ui/controls-legend.js",
     "engine/renderer.js",
     "engine/sky.js",
+    "engine/cam-fade.js",
     "engine/materials.js",
     "world/plant-models.js",
     "world/plant-models-hi.js",

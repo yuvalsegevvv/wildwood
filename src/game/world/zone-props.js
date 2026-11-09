@@ -156,7 +156,7 @@ function terrainColor(x,z,h,g,out,noCut){ return cvGroundTint(x,z,h,zpGroundTint
 
 /* ---- the props ---- */
 let ZP_MATS=null;
-function zpMat(name){ if(!ZP_MATS) ZP_MATS={rock:new THREE.MeshLambertMaterial({vertexColors:true}),flat:new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}),glow:new THREE.MeshBasicMaterial({vertexColors:true})};
+function zpMat(name){ if(!ZP_MATS){ ZP_MATS={rock:new THREE.MeshLambertMaterial({vertexColors:true}),flat:new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}),glow:new THREE.MeshBasicMaterial({vertexColors:true})}; cfHook(ZP_MATS.rock); cfHook(ZP_MATS.flat); }   // camfade: props go see-through between the camera and you
   return ZP_MATS[name]; }
 const zpClu=(x,z,i)=>noise2(x*0.045+i*13.1,z*0.045-i*7.7)*0.5+0.5;   // 0..1, patches ~25 m across: camps stand where it is high
 const zpHash=s=>{ let h=7; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return Math.abs(h)+1; };

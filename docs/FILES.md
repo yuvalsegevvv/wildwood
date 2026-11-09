@@ -387,6 +387,7 @@ game
   ui/controls-legend.js              Fills the controls list on the start card (from the current keybinds; redrawn when a key changes)
   engine/renderer.js                 WebGL renderer, scene, camera, lights, sun shadow, timeU
   engine/sky.js                      Sky dome shader (gradient, sun/moon, stars, clouds)
+  engine/cam-fade.js                 See-through blockers: trees, rocks, buildings and props between the third-person camera and the hiker are drawn with holes (screen-door fade)
   engine/materials.js                Plant materials (plantMat: wind sway, leaf flutter, sunlight through tree leaves) and shared materials
   world/plant-models.js              Geometry helpers (paint, merge, mkGeo, cyl, blob) and plant models (trees, grass, ferns...)
   world/plant-models-hi.js           Detailed plant models for the desktop (the *Hi builders): conifers with irregular drooping tiers, broadleaf crowns of leaf-spray clusters on forked limbs, rooted trunks with streaked, mossy bark, bushes, ferns, rocks, logs, reeds

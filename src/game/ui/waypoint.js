@@ -5,7 +5,7 @@
    Hidden: before play, in the editor, while knocked out, while a panel or a scene is open (uiOpen), in a dungeon run, and within WP_NEAR metres of the spot (you are there).
    The marker is #wpMark in index.html (styles 02-hud.css); the text goes through textContent (the names come from shared data, but keep it that way).
    Test: tools/client-smoke.js (the marker follows the first step's target). */
-const WP_NEAR=6, WP_EDGE=34, WP={el:null,txt:null,t:0,T:null,show:false,v:null};
+const WP_NEAR=3, WP_EDGE=34, WP={el:null,txt:null,t:0,T:null,show:false,v:null};
 function wpTarget(){
   if(typeof caveIn==='function'&&caveIn()) return cvwTarget();   // cave: the next method place (cave/waypoint.js)
   if(typeof dgIn==='function'&&dgIn()) return null;            // dungeons: a run has its own map and goal

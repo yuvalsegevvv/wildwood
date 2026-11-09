@@ -6,7 +6,8 @@ Added after a blind playtest (11/2026): a new player could not find the first vi
 
 - A gold diamond with the target's name and distance (`#wpMark`, styles at the end of `02-hud.css`). On screen it sits over the spot; off screen it rides the screen's edge with an arrow (behind you: the bottom edge).
 - The target: `wpTarget()`: on a cave floor the cave guide's (`cvwTarget`), in a dungeon run none, otherwise the main quest's (`mqTarget`, `economy/main-quest.js`: the next villager, monster zone or place; null while the step waits for a level).
-- Hidden before play, in the editor, while knocked out, while a panel or a scene is open (`uiOpen`), and within `WP_NEAR` (6 m) of the spot.
+- Hidden before play, in the editor, while knocked out, while a panel or a scene is open (`uiOpen`), and within `WP_NEAR` (3 m) of the spot.
+- The talk key: within `NPC_QUEST_R` (7 m) the villager your main or side quest marks wins the talk key over a nearer villager (`npcQuestNear`, `village/villagers.js`).
 - `updateWaypoint(dt)` runs every frame from `main/loop.js`; the target and text are refreshed four times a second.
 
 ## The cave guide (`src/game/cave/waypoint.js`, prefix `cvw`)
