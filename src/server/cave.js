@@ -11,16 +11,20 @@
    CAST: caveCastP (handleAttack with k:'cave') needs level 20, the equipped skill owned, charge >= its cost, 0.8 s since the last cave cast; it spends the cost and runs the skill through p.act like any fx skill.
    Messages: cavequip {id|null} (MSG.cavequip), atk {k:'cave'}; server to client: {t:'cave', c: charge rounded} whenever the rounded charge changes (and once on join).
    Used by: players.js (newPlayer, sanitizeGear, updatePlayersS), combat.js (handleAttack, damageMonsterS), boss.js (updateBossS); the hooks are marked `// cave:` and listed in docs/CAVE.md. */
-function caveNewState(){ return {charge:0,sent:-1,cur:null,fight:null,fightT:0,last:null,od:null,odT:0,gr:null,bur:0,burT:0,fx:{}}; }   // fx: the set skills' windows (server/cave-fx.js); last: the last skill or burst cast (Echo); od: Overdrive; gr: Grapple Line; bur: Burrow (server/cave/skills.js)
+function caveNewState(){ return {charge:0,en:undefined,sent:-1,cur:null,fight:null,fightT:0,last:null,od:null,odT:0,gr:null,bur:0,burT:0,fx:{}}; }   // fx: the set skills' windows (server/cave-fx.js); last: the last skill or burst cast (Echo); od: Overdrive; gr: Grapple Line; bur: Burrow (server/cave/skills.js)
 // gear.cave from a save: only cave skills that exist, each at a level 1-5 (an old save has none)
 function caveSanitizeSave(g){
-  const out={own:{},cd:{},done:{},m:[0,0,0,0,0]}, ok=g&&typeof g==='object'&&!Array.isArray(g), O=ok&&g.own&&typeof g.own==='object'?g.own:null;
+  const out={own:{},cd:{},done:{},m:[0,0,0,0,0],mx:[0,0,0,0,0,0,0,0,0,0],sn:{}}, ok=g&&typeof g==='object'&&!Array.isArray(g), O=ok&&g.own&&typeof g.own==='object'?g.own:null;
   if(O) for(const id of Object.keys(O).slice(0,64)){ if(!caveSkillDef(id)) continue; out.own[id]=clampInt(O[id],1,SKILL_OLD_MAX_LV,1); }   // awakening: a saved level above the old top is not trusted (the tree writes the rest: awkSyncG)
   const key=k=>/^[1-9][A-H]$/.test(k)&&caveMethodDef(k[1]);   // a method key is floor digit + letter: only real methods, never a bare client string
   const CD=ok&&g.cd&&typeof g.cd==='object'?g.cd:null, DN=ok&&g.done&&typeof g.done==='object'?g.done:null, now=Date.now()/1000;
   if(CD) for(const k of Object.keys(CD).slice(0,64)){ if(key(k)&&Number.isFinite(+CD[k])) out.cd[k]=Math.min(now+CAVE_METHOD_CD,Math.max(0,+CD[k])); }   // (never later than one cooldown from now: a tampered save cannot lock a method)
   if(DN) for(const k of Object.keys(DN).slice(0,64)){ if(key(k)) out.done[k]=clampInt(DN[k],0,99999,0); }
   if(ok&&Array.isArray(g.m)) for(let f=1;f<CAVE_DROPS.length;f++) out.m[f]=clampInt(g.m[f],0,CAVE_DROP_MAX,0);   // the floors' monster drops (an old save has none)
+  if(ok&&Array.isArray(g.mx)) for(let f=1;f<out.mx.length;f++) out.mx[f]=g.mx[f]?1:0;   // floors whose energy bar was filled (open the floor below them)
+  for(let f=1;f<out.mx.length;f++) if(caveOwnedOn({cave:out},f)>=CAVE_OPEN_NEED) out.mx[f]=1;   // an old save that opened a floor by owning its skills keeps it
+  const SN=ok&&g.sn&&typeof g.sn==='object'?g.sn:null;
+  if(SN) for(const k of Object.keys(SN).slice(0,64)){ if(/^[1-9]:[0-5]$/.test(k)&&Number.isFinite(+SN[k])) out.sn[k]=Math.min(now+CAVE_EN_NODE_CD,Math.max(0,+SN[k])); }   // (a shard node's rest, never longer than one rest from now)
   return out;
 }
 // the equipped cave skill's ability if p may use it now (level, owned), else null
@@ -74,6 +78,7 @@ const caveLvK=(p,id,lvl,kind)=>caveLevelK(caveLvOf(p,id,lvl),kind);
 // (caveup, the Echo Shard levels 2-5, is retired: a charge skill's level is its branch in the Awakening tree, server/awakening.js)
 // a kill on a floor (killMonsterS): the floor's material, now and then (CAVE_DROP_CHANCE), for whoever made the kill
 function caveDropS(p,m){
+  caveEnKillS(p,m);   // energy for everyone near on that floor (server/cave/energy.js)
   const f=m&&m.cave|0, g=p&&p.gear&&p.gear.cave; if(!g||!(f>=1&&f<CAVE_DROPS.length)||m.temp||Math.random()>=CAVE_DROP_CHANCE) return;
   const M=g.m||(g.m=[0,0,0,0,0]); M[f]=Math.min(CAVE_DROP_MAX,(M[f]|0)+1); p.dirty=true; toastTo(p.id,'+1 '+CAVE_DROPS[f],'loot');
 }

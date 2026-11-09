@@ -51,7 +51,7 @@ function caveMPropsBuild(R){
     const cv=document.createElement('canvas'); cv.width=256; cv.height=64; const tex=keep(new THREE.CanvasTexture(cv),MP.texs), m=keep(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,fog:false}),MP.mats), s=new THREE.Sprite(m); s.scale.set(w,w/4,1);
     let last=''; return {s,set(txt,col){ if(last===txt+col) return; last=txt+col; const x=cv.getContext('2d'); x.clearRect(0,0,256,64); x.fillStyle='rgba(10,10,14,.72)'; x.beginPath(); x.moveTo(30,8); x.arcTo(250,8,250,56,24); x.arcTo(250,56,6,56,24); x.arcTo(6,56,6,8,24); x.arcTo(6,8,250,8,24); x.fill();
       x.strokeStyle=col; x.lineWidth=3; x.stroke(); x.font='bold 27px sans-serif'; x.textAlign='center'; x.fillStyle='#f4efe4'; x.fillText(txt,128,42); tex.needsUpdate=true; }}; };
-  for(const [k,f] of [['A',caveMpA],['B',caveMpB],['C',caveMpC],['D',caveMpD],['E',caveMpE],['F',caveMpF],['G',caveMpG],['H',caveMpH]]) try{ f(X); }catch(err){ console.error('cave props '+k+':',err); }
+  for(const [k,f] of [['A',caveMpA],['B',caveMpB],['C',caveMpC],['D',caveMpD],['E',caveMpE],['S',caveMpS],['G',caveMpG],['H',caveMpH]]) try{ f(X); }catch(err){ console.error('cave props '+k+':',err); }
 }
 function caveMPropsFrame(dt,s){
   const MP=CAVE_MP; if(!MP.g) return; const tt=performance.now()/1000;

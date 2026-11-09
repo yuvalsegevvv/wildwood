@@ -69,7 +69,7 @@ q.gear.gem=10; W2.receive('a',{t:'pz',a:'buy',n:1}); ok('too few gems buys nothi
 // raid and cave stones (puzzles-group.js): placement, one solver, a new board at each rebuild, the cave's own material
 { const raids=X2.PZ_SITES.filter(s=>s.raid), cave=X2.PZ_SITES.filter(s=>s.cave), cnt=(a,d)=>a.filter(s=>s.diff===d).length;
   ok('3 stones in each of the '+X2.RD_ORDER.length+' strongholds (2 trivial + 1 easy)',raids.length===3*X2.RD_ORDER.length&&cnt(raids,1)===2*X2.RD_ORDER.length&&cnt(raids,2)===X2.RD_ORDER.length);
-  ok('41 cave stones: 15 / 12 / 8 / 4 / 2, on all four floors',cave.length===41&&[15,12,8,4,2].every((n,i)=>cnt(cave,i+1)===n)&&[1,2,3,4].every(f=>cave.some(s=>s.cave===f)),cave.length+'');
+  ok('cave stones: 5 trivial + 3 easy on each floor, nothing harder, kinds from several lands',(nf=>nf>=4&&cave.length===8*nf&&cnt(cave,1)===5*nf&&cnt(cave,2)===3*nf)(new Set(cave.map(s=>s.cave)).size)&&new Set(cave.map(s=>s.kind)).size>=6,cave.length+'');
   ok('no bad site',X2.PZ_SITES.length>0&&true);
   const R1=raids.find(s=>s.id==='rd-home-1'), R3=raids.find(s=>s.id==='rd-home-3'); q.x=R1.x; q.z=R1.z; q.dead=false;
   W2.join('b',{name:'Bo',look:{cls:'warrior'},save:{level:12}}); for(let i=0;i<2;i++) W2.tick(0.5); const q2=W2.players.get('b'); q2.x=R1.x+1; q2.z=R1.z; q2.gear.coins=0; const c0=q.gear.coins, c1=q2.gear.coins;

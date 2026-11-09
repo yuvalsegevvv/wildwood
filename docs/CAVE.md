@@ -336,3 +336,16 @@ Decisions where the plan was silent: remote hikers' skill levels are not known, 
 
 Test: `client-smoke` (every one of these skills has a `CAVE_VIS` entry; casting each, its press, its zone events and the cvfx events throw nothing, and everything is gone afterwards).
 - **The Emberwake Isles' three (done):** `skill-2-slackwater.js` (Meleni), `skill-3-embercount.js` (Tzaya), `skill-4-cordsnare.js` (Atuqa), data only (generic fx keys `cvstrike`, `ally`, `taunt`), each reading its set's mark (Swell, Tally, Knot) and none spending it; tests `cave-sets-smoke`, `cave-smoke`.
+
+## 17. Cave energy (the revamp)
+
+Why fight in the cave: monsters of a floor feed an **energy bar**, and the bar is what the cave asks of you. Code: `shared/cave-energy.js` (numbers), `server/cave/energy.js`, `game/cave/energy.js`; hooks: `caveMTickP` (tick), `caveMSendP` (cm fields), `caveDropS` (kills), `caveFloorOpen` (the gate), `caveSanitizeSave` (saves). Test: `cave-smoke` (energy block).
+
+- **Energy** is `p.cave.en`, 0-100, not saved; a hiker steps onto a floor with 40 (`CAVE_EN_START`). A kill of a floor monster (not a temp one) gives every hiker of that floor within 45 m `caveEnGain(floor)` (5-9).
+- **Drain** `0.25 + 1.6 x (en / 100)` a second: the fuller the bar, the faster it drains. Only standing within 14 m of the floor's lift (the safe spot) stops it. **Puzzles and methods do not pause it** (the owner changed his mind: the cave's stones are only trivial and easy ones, from every land's kind, 5 + 3 a floor, `PZ_CAVE_PLAN`, and the bar keeps draining while you solve).
+- **Below 15** (`CAVE_EN_LOW`): blindness (a vignette that closes in, `#cvBlind`) and damage over time, 2% of max health a second, stopping at 1 hp, no regeneration while it burns.
+- **Full bar opens the next floor**: reaching 100 on floor n sets `gear.cave.mx[n]`; `caveFloorOpen(p, n)` is floor 1 or `mx[n-1]`. An old save that owned 2 skills of a floor keeps the floor below... (`caveSanitizeSave` sets `mx` for it).
+- **Echo shard nodes** (anchor `S.nodes`, 6 a floor, wall points drawn last in `caveGen`): stand still 2.5 s near one, pay 25 energy, get `CAVE_SHARDS[floor] x 2` Echo Shards; a node rests 15 minutes per hiker (`gear.cave.sn`).
+- **The Collapse run (method F, the vault) is retired**: `CAVE_METHOD_OFF`; no tremor, not on the board, no props, no guide place. Its row and the skills naming it stay as history.
+- **Tracking is constant**: with a method tracked on the board, the cave guide (`cvwPick`) points only at it (its in-progress spot, else its first place) however many other methods are under way.
+- **cm message** gains `en` (energy), `sf` (1 = safe spot), `mc` (1 = mining), `sn` (bit mask of nodes resting for you).

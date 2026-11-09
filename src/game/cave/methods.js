@@ -22,13 +22,14 @@ function caveMethodsEnter(R){
 }
 function caveMethodsLeave(){
   if(CAVE_RUN) for(const k of CAVE_RUN.B.sealed) CAVE_RUN.B.cells[k]=0;   // (the bake is cached: the rock goes back)
-  caveMPropsClear(); CAVE_M.s=null; CAVE_M.seal=false; const el=$('#cvMethod'); if(el) el.hidden=true;
+  caveMPropsClear(); caveEnHide(); CAVE_M.s=null; CAVE_M.seal=false; const el=$('#cvMethod'); if(el) el.hidden=true;
 }
 function caveMethodsFrame(dt){
   const R=CAVE_RUN, s=caveMState(); if(!R) return;
   if(s&&s.fv){ if(s.fv.w>0&&s.fv.w<=8&&typeof camShake!=='undefined') camShake=Math.max(camShake,0.12+0.03*(8-s.fv.w)); }   // the tremor rumbles before the vault opens
   if(CAVE_M.shakeT>0) CAVE_M.shakeT-=dt;
   caveMPropsFrame(dt,s);
+  caveEnFrame(dt);   // the energy bar and the blindness (cave/energy.js)
   cvwFrame(dt);   // caveguide: the HUD line follows you as you walk (cave/waypoint.js)
 }
 // ---- the board ----

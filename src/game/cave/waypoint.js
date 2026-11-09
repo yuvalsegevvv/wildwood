@@ -3,7 +3,7 @@
    floor-local metres + R.ox / R.oz) and GEAR.cave.own; nothing is sent or saved.
    exports: CVW.track / cvwSetTrack('n:M') (the board's Track buttons: that method is the one the guide points at on its floor), cvwPick() -> {T:{x,z,name}, m (method letter), line} or null (off the floors), cvwTarget() (ui/waypoint.js: the marker), cvwHud() (writes #cvMethod: the server's line, else "Next: ..."; plus the distance),
             cvwFrame(dt) (cave/methods.js caveMethodsFrame: the line again twice a second, as you walk), cvwMapMarks(x, at, inside, dpr, labels) (cave/minimap.js caveMapMarks: a letter on each method's place).
-   The order: a method you are in the middle of (any in progress first), then the tracked one, (lantern carried, silent chamber, open vault, mole running, mural pieces, geodes, crafting) points at its next spot; otherwise the nearest method that is not
+   The order: the tracked method alone if you chose one (constant: nothing else interrupts it), else a method you are in the middle of (lantern carried, silent chamber, mole running, mural pieces, geodes, crafting) points at its next spot; otherwise the nearest method that is not
    resting and teaches a skill you do not own (one that pays only Echo Shards counts three times as far). The gem mole (G) has no fixed place: it shows only while a mole runs.
    Test: tools/client-smoke.js (the cave case). */
 const CVW={t:0,last:null,track:null};   // track: 'n:M' (floor and method letter) the hiker chose on the board, kept in this browser
@@ -19,23 +19,27 @@ function cvwPick(){
   const A=R.B.anchors, W=(a,name)=>a?{x:R.ox+a.x,z:R.oz+a.z,name}:null, L=list=>(list||[]).map(a=>a&&Object.assign({wx:R.ox+a.x,wz:R.oz+a.z},a));
   const S=s||{}, rest=m=>!!(S.cd&&S.cd[m]>0), own=(GEAR&&GEAR.cave&&GEAR.cave.own)||{}, H=caveMethodDef('H'), HP=H&&H.p||{ore:3,herb:2};
   const go=(m,T,line)=>T?{T,m,line}:null;
-  // a method in progress: its next spot
-  if(S.d&&S.d.s) return go('D',W(A.D&&A.D.altar,'The altar'),null);
-  if(S.e&&S.e.s) return go('E',W(A.E&&A.E.shrine,'The shrine'),null);
-  if(S.fv&&S.fv.o>0&&!rest('F')) return go('F',W(A.F&&A.F.vault,'The vault'),null);
-  if(S.g&&!rest('G')){ const mo=MONS.find(x=>x.id===S.g&&!x.dead); if(mo) return go('G',{x:mo.x,z:mo.z,name:'The gem mole'},null); }
-  if(S.a&&!rest('A')){ if(S.a===31) return go('A',W(A.A&&A.A.wall,'The mural wall'),null); const p=cvwNear(L(A.A&&A.A.pieces),i=>cvwBit(S.a,i)); if(p) return go('A',{x:p.wx,z:p.wz,name:'A mural piece'},null); }
-  if(S.b&&S.b.some(v=>v===1)&&!rest('B')){ const p=cvwNear(L(A.B&&A.B.geodes),i=>S.b[i]===1); if(p) return go('B',{x:p.wx,z:p.wz,name:'A geode'},null); }
-  if(S.h&&(S.h.o||S.h.b)&&!rest('H')){
-    if(S.h.o>=HP.ore&&S.h.b>=HP.herb) return go('H',W(A.H&&A.H.anvil,'The stone anvil'),null);
-    const p=S.h.o<HP.ore?cvwNear(L(A.H&&A.H.veins),i=>cvwBit(S.h.vm,i)):cvwNear(L(A.H&&A.H.herbs),i=>cvwBit(S.h.hm,i)); if(p) return go('H',{x:p.wx,z:p.wz,name:S.h.o<HP.ore?'A glow vein':'A cave herb'},null);
-  }
-  // the method you chose to track on the board, while it is not resting (its in-progress spot above wins only for that method; the others wait)
+  // the in-progress spot of a method (its next goal), or null
+  const busy=m=>{
+    if(m==='D') return S.d&&S.d.s?W(A.D&&A.D.altar,'The altar'):null;
+    if(m==='E') return S.e&&S.e.s?W(A.E&&A.E.shrine,'The shrine'):null;
+    if(m==='G'){ if(!S.g||rest('G')) return null; const mo=MONS.find(x=>x.id===S.g&&!x.dead); return mo?{x:mo.x,z:mo.z,name:'The gem mole'}:null; }
+    if(m==='A'){ if(!S.a||rest('A')) return null; if(S.a===31) return W(A.A&&A.A.wall,'The mural wall'); const p=cvwNear(L(A.A&&A.A.pieces),i=>cvwBit(S.a,i)); return p?{x:p.wx,z:p.wz,name:'A mural piece'}:null; }
+    if(m==='B'){ if(!(S.b&&S.b.some(v=>v===1))||rest('B')) return null; const p=cvwNear(L(A.B&&A.B.geodes),i=>S.b[i]===1); return p?{x:p.wx,z:p.wz,name:'A geode'}:null; }
+    if(m==='H'){ if(!(S.h&&(S.h.o||S.h.b))||rest('H')) return null;
+      if(S.h.o>=HP.ore&&S.h.b>=HP.herb) return W(A.H&&A.H.anvil,'The stone anvil');
+      const p=S.h.o<HP.ore?cvwNear(L(A.H&&A.H.veins),i=>cvwBit(S.h.vm,i)):cvwNear(L(A.H&&A.H.herbs),i=>cvwBit(S.h.hm,i)); return p?{x:p.wx,z:p.wz,name:S.h.o<HP.ore?'A glow vein':'A cave herb'}:null; }
+    return null;
+  };
+  // tracking is constant: a method you chose to track is the ONLY thing the guide points at on its floor (its own in-progress spot, else its first place), however many others are under way
   const tm=CVW.track&&+CVW.track[0]===R.n?CVW.track[2]:null;
-  if(tm&&!rest(tm)){ const pl=cvwPlace(A,tm,L,W), M=caveMethodDef(tm), sk=caveSkillAt(R.n,tm); if(pl) return {T:pl,m:tm,line:'Tracked: '+(M?M.name:tm)+(sk?' ('+sk.name+')':'')+'. '+(M?M.short:''),tracked:true}; }
+  if(tm&&tm!==CAVE_METHOD_OFF){ const sp=busy(tm)||(rest(tm)?null:cvwPlace(A,tm,L,W)), M=caveMethodDef(tm), sk=caveSkillAt(R.n,tm);
+    if(sp) return {T:sp,m:tm,line:'Tracked: '+(M?M.name:tm)+(sk?' ('+sk.name+')':'')+'. '+(M?M.short:''),tracked:true}; }
+  // nothing tracked: a method you are in the middle of, then
+  for(const m of 'DEGABH'){ const sp=busy(m); if(sp) return go(m,sp,null); }
   // nothing under way: the nearest place that still teaches something
   let best=null, bs=1e9;
-  for(const m of 'ABCDEFH'){
+  for(const m of 'ABCDEH'){
     if(rest(m)) continue;
     const pl=cvwPlace(A,m,L,W); if(!pl) continue;
     const sk=caveSkillAt(R.n,m), mine=!sk||Object.prototype.hasOwnProperty.call(own,sk.id), d=Math.hypot(pl.x-P.x,pl.z-P.z)*(mine?3:1);
@@ -50,7 +54,6 @@ function cvwPlace(A,m,L,W){
   if(m==='C') return W(A.C&&A.C.plinth,'The echo plinth');
   if(m==='D') return W(A.D&&A.D.crystal,'The glow crystal');
   if(m==='E') return W(A.E&&A.E.entry,'The silent chamber');
-  if(m==='F') return W(A.F&&A.F.seal,'The sealed vault (opens with a tremor)');
   if(m==='H'){ const p=cvwNear(L(A.H&&A.H.veins)); return p?{x:p.wx,z:p.wz,name:'Glow veins'}:null; }
   return null;
 }
@@ -68,7 +71,7 @@ function cvwMapMarks(x,at,inside,dpr,labels){
   const R=CAVE_RUN; if(!R||!R.B||!R.B.anchors) return;
   const A=R.B.anchors, s=caveMState()||{}, own=(GEAR&&GEAR.cave&&GEAR.cave.own)||{}, L=list=>(list||[]).map(a=>a&&Object.assign({wx:R.ox+a.x,wz:R.oz+a.z},a)), W=(a,name)=>a?{x:R.ox+a.x,z:R.oz+a.z,name}:null, cur=CVW.last;
   x.font=`700 ${9*dpr}px "Alegreya Sans", system-ui, sans-serif`; x.textAlign='center'; x.textBaseline='middle';
-  for(const m of 'ABCDEFH'){
+  for(const m of 'ABCDEH'){
     if(s.cd&&s.cd[m]>0) continue;
     const pl=cvwPlace(A,m,L,W); if(!pl||!inside(pl.x,pl.z)) continue;
     const sk=caveSkillAt(R.n,m), fresh=sk&&!Object.prototype.hasOwnProperty.call(own,sk.id), [a,b]=at(pl.x,pl.z), r=6*dpr;

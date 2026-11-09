@@ -59,3 +59,12 @@ body.editing #actionbar, body.editing #tframe, body.editing .dmg, body.editing .
 .sk-tile.cv-lock{ position:relative; border-style:dashed; filter:grayscale(.85); opacity:.5; }
 .sk-tile.cv-lock .cv-padlock{ position:absolute; right:3px; bottom:3px; width:14px; height:14px; color:#f2cf5a; }
 .sk-tile.cv-lock.sel{ opacity:.8; }
+/* the Deep Cave's energy bar (under the method line) and the blindness vignette (game/cave/energy.js) */
+#cvEnergy{ position:fixed; top:calc(env(safe-area-inset-top,0px) + 92px); left:50%; transform:translateX(-50%); width:min(70vw,260px); height:16px; border-radius:9px; background:rgba(8,14,20,.72); border:1px solid rgba(159,232,255,.45); overflow:hidden; pointer-events:none; z-index:20; }
+#cvEnergy[hidden]{ display:none; }
+#cvEnergy i{ position:absolute; left:0; top:0; bottom:0; width:0; background:linear-gradient(90deg,#2a8fb8,#9fe8ff); transition:width .25s; }
+#cvEnergy[data-low="1"] i{ background:linear-gradient(90deg,#a02a2a,#ff7a5a); }
+#cvEnergy[data-full="1"] i{ background:linear-gradient(90deg,#c9a233,#ffe9a0); }
+#cvEnergy b{ position:absolute; inset:0; font:700 11px/16px "Alegreya Sans",system-ui,sans-serif; text-align:center; color:#fff; text-shadow:0 1px 2px #000; }
+#cvBlind{ position:fixed; inset:0; pointer-events:none; z-index:19; background:radial-gradient(circle at 50% 50%,rgba(0,0,0,.35) 0%,rgba(0,0,0,.9) 28%,#000 55%); }
+#cvBlind[hidden]{ display:none; }

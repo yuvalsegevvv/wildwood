@@ -13,7 +13,7 @@ function caveAW(n){   // the floor's anchors with world coordinates (cached)
   const B=caveBake(n), o=caveFloorOrigin(n), A=B.anchors, w=q=>Object.assign({},q,{x:o.x+q.x,z:o.z+q.z}), ws=l=>l.map(w);
   const sil=B.chambers.find(c=>c.role==='silent');
   return CAVE_MAW[n]={start:w(A.start),lift:w(A.lift),A:{wall:w(A.A.wall),pieces:ws(A.A.pieces)},B:{geodes:ws(A.B.geodes)},C:{plinth:w(A.C.plinth)},D:{crystal:w(A.D.crystal),altar:w(A.D.altar)},
-    E:{entry:w(A.E.entry),shrine:w(A.E.shrine),guard:w(A.E.guard),exit:w(A.E.exit),r:sil?sil.r:9},F:{vault:w(A.F.vault),seal:w(A.F.seal)},G:{burrows:ws(A.G.burrows),holes:ws(A.G.holes)},H:{veins:ws(A.H.veins),herbs:ws(A.H.herbs),anvil:w(A.H.anvil)}};
+    E:{entry:w(A.E.entry),shrine:w(A.E.shrine),guard:w(A.E.guard),exit:w(A.E.exit),r:sil?sil.r:9},S:{nodes:ws(A.S.nodes)},G:{burrows:ws(A.G.burrows),holes:ws(A.G.holes)},H:{veins:ws(A.H.veins),herbs:ws(A.H.herbs),anvil:w(A.H.anvil)}};
 }
 const caveMd=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
 const caveNow=()=>Date.now()/1000;
@@ -21,7 +21,7 @@ function caveGearP(p){ const g=p.gear.cave; if(!g.cd) g.cd={}; if(!g.done) g.don
 function caveCdLeft(p,n,m){ const t=caveGearP(p).cd[n+m]; return t>0?Math.max(0,t-caveNow()):0; }
 function caveMNew(n){
   return {n,lt:S.t,sent:'',sendT:-9,tell:{},A:{got:0},B:{st:[0,0,0],au:[null,null,null]},C:{s:0,t0:0,hold:0,mons:[],lock:0,ok:0,tot:0,why:'',left:0},
-    D:{s:0,hits:0,lh:0,out:0},E:{s:0,z:0,act:null,lock:0,wake:0},H:{ore:0,herb:0,vm:0,hm:0,cast:null,carve:0}};
+    D:{s:0,hits:0,lh:0,out:0},N:{cast:null,safe:false},E:{s:0,z:0,act:null,lock:0,wake:0},H:{ore:0,herb:0,vm:0,hm:0,cast:null,carve:0}};
 }
 function caveMTell(p,M,key,text,kind){ if(S.t-(M.tell[key]||-99)<5) return; M.tell[key]=S.t; toastTo(p.id,text,kind||''); }
 function caveMMovePTo(p,x,z){ p.x=x; p.z=z; p.y=getH(x,z); p.vx=p.vz=0; p.act=null; sendTo(p.id,{t:'tp',x,z,face:p.face||0}); }
@@ -40,14 +40,14 @@ function caveShardsP(p,floor,sk){
 function caveMDoneP(p,M,m){ caveMethodDoneP(p,M.n,m); M.sent=''; M.sendT=-9; }
 // ---- floor-wide state: the tremor clock (F) and the gem mole (G) ----
 const CAVE_MG={t:-1,fl:Object.create(null)};
-function caveMFl(n){ return CAVE_MG.fl[n]||(CAVE_MG.fl[n]={live:false,next:0,openUntil:0,warned:false,moleNext:0,mole:null}); }
+function caveMFl(n){ return CAVE_MG.fl[n]||(CAVE_MG.fl[n]={live:false,moleNext:0,mole:null}); }
 function caveMGlobalS(){
   if(CAVE_MG.t===S.t) return; CAVE_MG.t=S.t;
   const dt=0.05, pop={}; for(const q of S.players.values()){ const n=caveFloorAt(q.x,q.z); if(n>=0&&!q.pv&&q.level>=CAVE_SLOT_LV) pop[n]=(pop[n]|0)+1; }
   for(const n of CAVE_FLOOR_N){ const G=caveMFl(n);
-    if(!pop[n]){ if(G.live){ if(G.openUntil>0) caveMCloseS(n,G); G.live=false; if(G.mole){ removeMonS(G.mole); G.mole=null; } } continue; }   // nobody there: the floor sleeps (its tremor and mole start fresh when someone comes)
-    if(!G.live){ G.live=true; G.next=S.t+caveMethodDef('F').p.first; G.moleNext=S.t+caveMethodDef('G').p.first; G.warned=false; }
-    caveMFTickS(n,G); caveMGTickS(n,G,dt); }
+    if(!pop[n]){ if(G.live){ G.live=false; if(G.mole){ removeMonS(G.mole); G.mole=null; } } continue; }   // nobody there: the floor sleeps (its tremor and mole start fresh when someone comes)
+    if(!G.live){ G.live=true; G.moleNext=S.t+caveMethodDef('G').p.first; G.warned=false; }
+    caveMGTickS(n,G,dt); }
 }
 function caveMTickP(p){
   const n=caveFloorAt(p.x,p.z);
@@ -57,10 +57,11 @@ function caveMTickP(p){
   let M=p.cm; if(!M||M.n!==n){ if(M) caveMLeaveP(p,M); M=p.cm=caveMNew(n); }
   const dt=Math.min(0.25,Math.max(0,S.t-M.lt)); M.lt=S.t;
   if(p.dead) caveMDownP(p,M);
-  else { caveMATickP(p,M); caveMCTickP(p,M,dt); caveMDTickP(p,M); caveMETickP(p,M,dt); caveMFTickP(p,M); caveMHTickP(p,M,dt); }
+  else { caveMATickP(p,M); caveMCTickP(p,M,dt); caveMDTickP(p,M); caveMETickP(p,M,dt); caveMHTickP(p,M,dt); }
+  caveEnTickP(p,M,dt);   // energy: drain, low-bar damage, shard nodes (server/cave/energy.js)
   caveMSendP(p,M);
 }
-function caveMDownP(p,M){ M.D.s=0; M.E.s=0; M.E.z=0; M.H.cast=null; M.H.carve=0; caveMCClear(M,'You were knocked out.'); }
+function caveMDownP(p,M){ M.N.cast=null; M.D.s=0; M.E.s=0; M.E.z=0; M.H.cast=null; M.H.carve=0; caveMCClear(M,'You were knocked out.'); }
 function caveMLeaveP(p,M){ caveMCClear(M,''); }
 // ---- what the client is told ----
 function caveMHudP(p,M){
@@ -68,9 +69,7 @@ function caveMHudP(p,M){
   if(M.E.s) return 'Silent chamber: noise '+Math.round(M.E.z)+'%';
   if(M.D.s) return 'Glow crystal: carry it to the altar ('+(W('D').p.hits-M.D.hits)+' hits left)';
   if(M.C.s) return 'Echo trial: '+M.C.why;
-  const fl=caveMFl(n), D=Math.ceil(fl.openUntil-S.t);
-  if(fl.openUntil>S.t&&!caveCdLeft(p,n,'F')) return 'The vault is open! '+D+' s';
-  if(fl.warned&&fl.openUntil<=S.t&&!caveCdLeft(p,n,'F')) return 'The ground trembles... the vault opens in '+Math.max(0,Math.ceil(fl.next-S.t))+' s';
+  const fl=caveMFl(n);
   if(fl.mole&&!fl.mole.dead&&!caveCdLeft(p,n,'G')) return 'A gem mole is running! Catch it';
   if(M.A.got&&!caveCdLeft(p,n,'A')) return M.A.got===31?'Mural: all five pieces. Touch the wall':'Mural pieces '+caveBits(M.A.got)+' of 5';
   const bs=M.B.st.filter(x=>x===1).length; if(bs&&!caveCdLeft(p,n,'B')) return 'Geodes cracked '+bs+' of 3';
@@ -80,11 +79,12 @@ function caveMHudP(p,M){
 const caveBits=v=>{ let n=0; for(;v;v>>=1) n+=v&1; return n; };
 function caveMSendP(p,M){
   const n=M.n, fl=caveMFl(n), v={t:'cm',f:n,hud:caveMHudP(p,M)}, cd={};
-  for(const m of CAVE_METHODS){ const l=Math.ceil(caveCdLeft(p,n,m)); if(l>0) cd[m]=l; }
+  for(const m of CAVE_METHODS){ if(m===CAVE_METHOD_OFF) continue; const l=Math.ceil(caveCdLeft(p,n,m)); if(l>0) cd[m]=l; }
   if(Object.keys(cd).length) v.cd=cd;
   v.a=M.A.got; v.b=M.B.st.map((s,i)=>s?1:M.B.au[i]&&M.B.au[i].until>S.t?2:0);
   v.c={s:M.C.s,k:M.C.ok,n:M.C.tot}; v.d={s:M.D.s,h:M.D.hits}; v.e={s:M.E.s,z:Math.round(M.E.z),w:M.E.wake>S.t?1:0};
-  v.fv={o:fl.openUntil>S.t?Math.ceil(fl.openUntil-S.t):0,w:fl.warned&&fl.openUntil<=S.t?Math.max(0,Math.ceil(fl.next-S.t)):0};
+  v.fv={o:0,w:0};   // (the Collapse run's vault is gone: the field stays so an old client still reads the message)
+  caveEnSendP(p,M,v);
   v.g=fl.mole&&!fl.mole.dead?fl.mole.id:0; v.h={vm:M.H.vm,hm:M.H.hm,o:M.H.ore,b:M.H.herb,c:M.H.cast?1:0};
   const s=JSON.stringify(v);
   if(s!==M.sent&&S.t-M.sendT>=0.2){ M.sent=s; M.sendT=S.t; sendTo(p.id,v); }

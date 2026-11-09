@@ -531,7 +531,7 @@ const el=s=>document.querySelector(s);
       ok('floor '+n+': leaving disposes the props and gives the rock back',G.CAVE_MP.g===null&&G.CAVE_MP.upd.length===0&&G.CAVE_RUN()===null&&G.caveBake(n).sealed.every(k=>G.caveBake(n).cells[k]===0));
     }
     console.error=ce;
-    const board=G.caveBoardHtml(); ok('the board lists every floor and all eight methods with the skill each gives',G.CAVE_FLOOR_N.every(n=>board.includes('Floor '+n))&&board.includes('Mural fragments')&&board.includes('Echo')&&board.includes('Second Wind')&&(board.match(/<li>/g)||[]).length===8*G.CAVE_FLOOR_N.length);
+    const board=G.caveBoardHtml(); ok('the board lists every floor and all seven methods with the skill each gives',G.CAVE_FLOOR_N.every(n=>board.includes('Floor '+n))&&board.includes('Mural fragments')&&board.includes('Echo')&&board.includes('Second Wind')&&(board.match(/<li>/g)||[]).length===7*G.CAVE_FLOOR_N.length);
     { const own=G.GEAR.cave.own, had=own.echo; delete own.echo; ok('a locked skill\'s details say which method and floor give it',/Mural fragments, The Glowworm Grotto/.test((G.CAVE_UI.sel='echo',G.caveInfoHtml()))); if(had) own.echo=had; }   // (the testing tool at the start gave every cave skill)
     { const lv0=G.PL.level; G.NET.send({t:'dev',cmd:'level',v:30}); G.NET.send({t:'dev',cmd:'skills'}); await wait(500); G=c.G();
       const can=G.skCanDrop({id:'flare',from:'grid',cave:true},{cave:true})&&!G.skCanDrop({id:'flare',from:'grid',cave:true},{slot:'skill'});

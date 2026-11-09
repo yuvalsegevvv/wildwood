@@ -23,6 +23,7 @@ const CAVE_REFUND_CAP=15;                   // a cast's kill refunds (fx.refund)
 const CAVE_CAST_CD=0.8;                     // seconds between two cave casts (the charge is the real limit)
 const CAVE_CAST_WINDOW=3;                   // a cast may still pay its charge this long after it started (a projectile in flight)
 const CAVE_FLOORS=4;                        // floors with skills today (more floors are data rows later)
+const CAVE_METHOD_OFF='F';                 // the Collapse run (the vault) is retired: its row stays so old skills can name it, but nothing runs it and no board lists it
 const CAVE_METHODS='ABCDEFGH';              // the eight ways to earn a skill (docs/CAVE.md section 6)
 const CAVE_SKILLS=Object.create(null), CAVE_SKILL_IDS=[], CAVE_BAD=[];
 const caveLevelK=(level,kind)=>awkCurve(kind||'dmg',Math.max(1,Math.min(CAVE_LEVEL_MAX,level|0||1)));   // awakening: a charge skill's level on curve `kind` (default damage); replaces the old +10% a level

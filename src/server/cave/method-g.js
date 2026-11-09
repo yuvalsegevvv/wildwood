@@ -54,3 +54,4 @@ function caveMolePayS(m,D){
     if(!q||!M||M.n!==m.cave||S.t-t>D.credit||caveCdLeft(q,M.n,'G')>0) continue;
     caveMDoneP(q,M,'G'); }
 }
+function caveMToFloorS(n,text,kind){ for(const q of S.players.values()) if(caveFloorAt(q.x,q.z)===n&&!q.pv&&q.level>=CAVE_SLOT_LV) toastTo(q.id,text,kind); }   // (moved here from the retired Collapse run)

@@ -4,8 +4,8 @@
    1-5), kind Glowstones on every floor (PZ_CAVE_KIND), spots drawn from a seeded rng among free floor cells (caveFree, 1.6 m) at least 12 m from the lift, 8 m from a camp and 16 m from another stone. Ids: rd-<land>-1..3,
    cv<floor>-<nn>. Exports: pzGroupPlaceAll(), PZ_CAVE_PLAN, PZ_RAID_SPOTS. Users: server/puzzles.js (pzSwitch), tools/puzzles-smoke.js. Test: node tools/puzzles-smoke.js */
 const PZ_RAID_SPOTS=[[-10,-21,1],[10,-21,1],[0,-31,2]];   // [dx, dz, difficulty] from the raid's site (x east, z south; the gate looks north)
-const PZ_CAVE_PLAN=[{t:4,e:3,n:2,h:1,x:0},{t:4,e:3,n:2,h:1,x:0},{t:4,e:3,n:2,h:1,x:0},{t:3,e:3,n:2,h:1,x:2}];   // = 15 / 12 / 8 / 4 / 2 = 41
-const PZ_CAVE_KIND=['akari'];   // the Deep Cave's own kind on every floor: Glowstones (light the dark; puzzles plan, the eighth land). It once borrowed four other lands' kinds by floor
+const PZ_CAVE_PLAN={t:5,e:3,n:0,h:0,x:0};   // every floor (the same plan for floors 1-9): 5 trivial + 3 easy stones, nothing harder (the cave's pressure is its energy, which keeps draining while you solve)
+const PZ_CAVE_KIND=['rootlines','sudoku','iceslide','bridges','mirrors','nonogram','sokoban','akari'];   // the kinds of all the lands (PZ_KIND_OF) and the cave's Glowstones: stone k of a floor takes kind k mod 8
 const PZ_GROUP_DIFF={t:1,e:2,n:3,h:4,x:5};
 let PZ_GROUP_DONE=false;
 function pzGroupPlaceAll(){
@@ -14,16 +14,16 @@ function pzGroupPlaceAll(){
     const R=RDS[id]; if(!R) continue;
     PZ_RAID_SPOTS.forEach((sp,i)=>pzSiteAdd({id:'rd-'+R.land+'-'+(i+1),kind:PZ_KIND_OF[R.land]||'rootlines',diff:sp[2],x:R.x+sp[0],z:R.z+sp[1],lv:rdLevel(0),raid:R.land}));
   }
-  CAVE_FLOOR_N.forEach((n,fi)=>{
-    const F=caveFloorDef(n), B=caveBake(n), o=caveFloorOrigin(n), plan=PZ_CAVE_PLAN[fi]; if(!F||!B||!plan) return;
-    const rng=mulberry32(0xca7e+n*977), lift=caveLiftOf(n), kind=PZ_CAVE_KIND[fi%PZ_CAVE_KIND.length], mine=[];
+  CAVE_FLOOR_N.forEach(n=>{
+    const F=caveFloorDef(n), B=caveBake(n), o=caveFloorOrigin(n), plan=PZ_CAVE_PLAN; if(!F||!B) return;
+    const rng=mulberry32(0xca7e+n*977), lift=caveLiftOf(n), mine=[];
     const ok=(x,z)=>caveFree(x,z,1.6)&&Math.hypot(x-lift.x,z-lift.z)>12&&B.camps.every(c=>Math.hypot(o.x+c.x-x,o.z+c.z-z)>8)&&mine.every(s=>Math.hypot(s.x-x,s.z-z)>16);
     let k=0;
     for(const letter of ['x','h','n','e','t']) for(let i=0;i<plan[letter];i++){
       let at=null; for(let t=0;t<6000&&!at;t++){ const x=o.x+rng()*CAVE_SIZE, z=o.z+rng()*CAVE_SIZE; if(ok(x,z)) at={x,z}; }
       if(!at){ PZ_SITE_BAD.push('cv'+n+' no room'); continue; }
       const lv=F.lv?Math.round((F.lv[0]+F.lv[F.lv.length-1])/2):30; mine.push(at);
-      pzSiteAdd({id:'cv'+n+'-'+String(++k).padStart(2,'0'),kind,diff:PZ_GROUP_DIFF[letter],x:at.x,z:at.z,lv:Math.max(1,lv),cave:n});
+      pzSiteAdd({id:'cv'+n+'-'+String(++k).padStart(2,'0'),kind:PZ_CAVE_KIND[(k+n)%PZ_CAVE_KIND.length],diff:PZ_GROUP_DIFF[letter],x:at.x,z:at.z,lv:Math.max(1,lv),cave:n});
     }
   });
 }

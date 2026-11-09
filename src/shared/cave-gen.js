@@ -218,10 +218,11 @@ function caveGen(F){
   camps.forEach((c,k)=>{ c.lv=Math.min(lv[1],lv[0]+Math.floor(k/camps.length*(lv[1]-lv[0]+1))); delete c.d; });
   const sealCells=vault?vault.seal:[], vp=vault?pt(vault.pocket.x,vault.pocket.z):pt(c0.x,c0.z), sa=vault?pt(vault.sealAt[0],vault.sealAt[1]):pt(c0.x,c0.z);
   if(vault) for(const k of vault.seal){ cells[k]=0; open[k]=0; }
+  const shardNodes=[]; for(let k=0;k<CAVE_EN_NODES;k++) shardNodes.push(wallAny(12));   // energy shard nodes (docs/CAVE.md section 17): drawn last so no older anchor moves
   const anchors={ start:{x:m(c0.x),z:m(c0.z),face}, lift, deep:pt(deepC.x,deepC.z),
     A:{wall:A_wall,pieces:pieces.map(p=>pt(p.x,p.z))}, B:{geodes:B_geodes}, C:{plinth:{x:m(cC.x),z:m(cC.z),r:m(cC.r*0.6)}},
     D:{crystal:pt(deepC.x,deepC.z),altar:pt(altarP[0],altarP[1])}, E:{entry:pt(eEntry[0],eEntry[1]),shrine:pt(eShrine[0],eShrine[1]),guard:pt(eC.x,eC.z),exit:pt(eExit[0],eExit[1])},
-    F:{vault:vp,seal:sa}, G:{burrows,holes}, H:{veins,herbs,anvil:pt(anvilP[0],anvilP[1])} };
+    F:{vault:vp,seal:sa}, S:{nodes:shardNodes}, G:{burrows,holes}, H:{veins,herbs,anvil:pt(anvilP[0],anvilP[1])} };
   const chambers=ch.map(c=>({x:m(c.x),z:m(c.z),r:m(c.r),kind:c.kind||'cavern',depth:c.depth,role:c.id===eC.id?'silent':c.id===cC.id?'echo':c.role,hx:c.hx?m(c.hx):0,hz:c.hz?m(c.hz):0}));
   return {n:F.n,w:W,h:H,cells,open,water,lava,hgt,dw,dist,size:[W*M,H*M],start:{x:anchors.start.x,z:anchors.start.z,face},lift,chambers,dead:deadOk.map(d=>pt(d.x,d.z)),pillars:pillars.map(p=>pt(p.x,p.z)),pools:pools.map(p=>({x:m(p.x),z:m(p.z),r:m(p.r)})),
     river,sealed:sealCells,anchors,camps,maxDepth:maxD/10,seed:SEED,style:G.style};

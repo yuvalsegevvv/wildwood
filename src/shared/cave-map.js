@@ -56,13 +56,13 @@ function caveArrival(n){ if(n===0){ const L=CAVE_LIFT_SURFACE, M=CAVE_MOUTH; ret
   const B=caveBake(n), o=caveFloorOrigin(n), s=B.start, dx=Math.sin(s.face), dz=Math.cos(s.face); return {x:o.x+s.x+dx*3.4,z:o.z+s.z+dz*3.4,face:s.face}; }
 // owned cave skills of a floor: gear.cave.own is {skill id: level}; the skill rows say which floor they belong to
 function caveOwnedOn(gear,floor){ const own=gear&&gear.cave&&gear.cave.own; if(!own) return 0; let n=0; for(const id in own){ if(own[id]>0&&Object.prototype.hasOwnProperty.call(own,id)){ const s=caveSkillDef(id); if(s&&s.floor===floor) n++; } } return n; }
-const caveFloorOpen=(p,n)=>{ const g=p&&p.gear||p; return Number.isInteger(n)&&n>=1&&!!caveFloorDef(n)&&(n===1||caveOwnedOn(g,n-1)>=CAVE_OPEN_NEED); };
+const caveFloorOpen=(p,n)=>{ const g=p&&p.gear||p; return Number.isInteger(n)&&n>=1&&!!caveFloorDef(n)&&(n===1||!!(g&&g.cave&&g.cave.mx&&g.cave.mx[n-1])); };   // floor n opens once your cave energy has been full on floor n - 1 (shared/cave-energy.js)
 // why a hiker may not take the lift to floor n ('' = may); n = 0 (the surface) is always allowed
 function caveLiftRefusal(p,n){
   if(n===0) return '';
   if(!caveFloorDef(n)) return 'There is no such floor.';
   if((p.level|0)<CAVE_SLOT_LV) return 'The lift cage will not move: the Deep Cave is for hikers of level '+CAVE_SLOT_LV+' and up.';
-  if(!caveFloorOpen(p,n)) return 'Floor '+n+' is still shut: own '+CAVE_OPEN_NEED+' skills from floor '+(n-1)+' first ('+caveOwnedOn(p.gear||p,n-1)+' so far).';
+  if(!caveFloorOpen(p,n)) return 'Floor '+n+' is still shut: fill your cave energy to the max on floor '+(n-1)+' first.';
   return '';
 }
 /* A cave monster: a copy of an existing kind (its model, family numbers and look) with its own id, name, level and colours, made like the grey-veined copies of monster-defs.js. Not in MON_DEFS (no zone camps, no board

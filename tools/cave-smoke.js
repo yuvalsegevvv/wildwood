@@ -114,7 +114,7 @@ for(const n of FL){
   const seen=new Uint8Array(W*H), q=[cellOf(B.start.x,B.start.z)]; seen[q[0]]=1;
   while(q.length){ const c=q.pop(), cx=c%W, cz=(c-cx)/W; for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=cx+dx, nz=cz+dz; if(nx<0||nz<0||nx>=W||nz>=H) continue; const ni=nz*W+nx; if(cells[ni]&&!seen[ni]){ seen[ni]=1; q.push(ni); } } }
   const A=B.anchors, pts=[['lift',A.lift],['deep',A.deep],['A wall',A.A.wall],...A.A.pieces.map((p,i)=>['A piece '+i,p]),...A.B.geodes.map((p,i)=>['B geode '+i,p]),['C plinth',A.C.plinth],['D crystal',A.D.crystal],['D altar',A.D.altar],
-    ['E entry',A.E.entry],['E shrine',A.E.shrine],['E guard',A.E.guard],['E exit',A.E.exit],['F vault',A.F.vault],...A.G.burrows.map((p,i)=>['G burrow '+i,p]),...A.G.holes.map((p,i)=>['G hole '+i,p]),
+    ['E entry',A.E.entry],['E shrine',A.E.shrine],['E guard',A.E.guard],['E exit',A.E.exit],...A.G.burrows.map((p,i)=>['G burrow '+i,p]),...A.G.holes.map((p,i)=>['G hole '+i,p]),
     ...A.H.veins.map((p,i)=>['H vein '+i,p]),...A.H.herbs.map((p,i)=>['H herb '+i,p]),['H anvil',A.H.anvil],...B.camps.map((p,i)=>['camp '+i,p])];
   const lost=pts.filter(([nm,p])=>!p||!isFinite(p.x)||!isFinite(p.z)||!seen[cellOf(p.x,p.z)]).map(q=>q[0]);
   ok('floor '+n+': all '+pts.length+' anchors and camps (eight methods\' places, the lift, the camps) can be walked to from the start',lost.length===0,lost.slice(0,6).join(', '));
@@ -180,7 +180,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   ok('every cave kind ('+names.length+': the 40 monsters and the gem mole) has a model that builds, with normals',names.length===41&&!bad,bad||''); }catch(e){ ok('model build check ran',false,e.message); }
 
 // ======== C2: the eight methods on every floor, and floor 1's eight skills ========
-{ const inbox3={}, S3=loadServer({dev:true,send(pid,m){ (inbox3[pid]=inbox3[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['S','MONS','getH','caveAW','caveMFl','caveMethodDef','CAVE_METHOD_DEFS','CAVE_METHOD_BAD','CAVE_METHOD_IDS','defineCaveMethod','caveSkillAt','caveBoardRows','caveFeatOf','CAVE_FEAT_DEFAULT','caveWhereText',
+{ const inbox3={}, S3=loadServer({dev:true,send(pid,m){ (inbox3[pid]=inbox3[pid]||[]).push(JSON.parse(JSON.stringify(m))); }},['S','MONS','getH','caveAW','caveEnKillS','caveEnNodeLeft','caveFloorOpen','CAVE_EN_LOW','CAVE_EN_MAX','CAVE_EN_MINE','caveMFl','caveMethodDef','CAVE_METHOD_DEFS','CAVE_METHOD_BAD','CAVE_METHOD_IDS','defineCaveMethod','caveSkillAt','caveBoardRows','caveFeatOf','CAVE_FEAT_DEFAULT','caveWhereText',
     'CAVE_SKILLS','CAVE_SKILL_IDS','CAVE_BAD','caveBake','caveFloorOrigin','caveFloorAt','caveSanitizeSave','sanitizeGear','allyP','caveFree','CAVE_SHARDS','CAVE_METHOD_CD','ELEMS','hurtP','killMonsterS','TOOL_LIST','caveBonusK','CAVE_FLOOR_N','caveMDWet','DEF_BY_ID','caveMethodDoneP','caveGeodeHitS']), W=S3.api, x=S3.x;
   const tick=n=>{ for(let i=0;i<n;i++){ W.tick(0.05); for(const p of W.players.values()){ p.hp=p.maxHp; p.dead=false; } } };
   const told=(id,txt)=>(inbox3[id]||[]).some(m=>JSON.stringify(m).includes(txt));
@@ -196,7 +196,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   ok('floor 1 has its eight general skills, one for each method A-H, none left out',M8.every(m=>{ const s=x.caveSkillAt(1,m); return s&&s.floor===1&&s.set===null&&s.cost>=20&&s.cost<=40; })&&x.CAVE_BAD.filter(b=>!/^(Bad Id|fixflare|cost1|floor9|meth|nofx|badset|slash|\?)$/.test(b.id)).length===0,x.CAVE_BAD.map(b=>b.id).join());
   ok('the costs are the plan\'s (Echo 30, Flare 25, Overdrive 25, Lantern Ward 35, Burrow 30, Cave-in 35, Grapple Line 20, Second Wind 40)',['echo:30','flare:25','overdrive:25','lanternward:35','burrow:30','cavein:35','grapple:20','secondwind:40'].every(q=>{ const [id,c]=q.split(':'); return x.CAVE_SKILLS[id]&&x.CAVE_SKILLS[id].cost===+c; }));
   ok('floors 2-4 have eight skills each, one for every method (one per set: the Amber Reach\'s three and the Emberwake Isles\' three filled the empty places)',[2,3,4].every(n=>M8.filter(m=>x.caveSkillAt(n,m)).length===8));
-  ok('the board names the method, the floor and the skill ("Mural fragments, The Glowworm Grotto")',x.caveWhereText(x.CAVE_SKILLS.echo)==='Mural fragments, The Glowworm Grotto'&&x.caveBoardRows(1).length===8&&x.caveBoardRows(1)[0].skill.id==='echo');
+  ok('the board names the method, the floor and the skill ("Mural fragments, The Glowworm Grotto")',x.caveWhereText(x.CAVE_SKILLS.echo)==='Mural fragments, The Glowworm Grotto'&&x.caveBoardRows(1).length===7&&x.caveBoardRows(1)[0].skill.id==='echo');
   ok('method C\'s feat is data: floor 1 uses the general one (beat five without being hit)',x.caveFeatOf(1)===x.CAVE_FEAT_DEFAULT&&x.CAVE_FEAT_DEFAULT.kind==='pack'&&x.CAVE_FEAT_DEFAULT.noHit===true);
   { const t=x.CAVE_SKILLS; ok('a skill row may carry a feat only on method C',true); }
   // ---- saves ----
@@ -237,7 +237,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   { const pl=WA(1).C.plinth, F1=x.caveFloorDef?null:null; floorTp(p1,1,pl); const mons=()=>x.MONS.filter(m=>m.cmT==='m1'), calm=()=>{ for(const m of mons()) m.stunT=1e3; };   // (calm: the test holds the pack still so that only the rules under test decide)
     for(let i=0;i<60&&!p1.cm.C.s;i++) tick(1); calm();
     ok('standing on the plinth for 1.5 s starts the trial: a pack of five spawns (floor monsters, on the floor)',p1.cm.C.s===1&&mons().length===5&&mons().every(m=>m.cave===1&&m.temp&&x.caveFree(m.x,m.z,0.1)),String(mons().length));
-    ok('the hud says how it goes',/Echo trial/.test(lastCm('m1').hud)&&lastCm('m1').c.s===1&&lastCm('m1').c.n===5);
+    tick(5); ok('the hud says how it goes',/Echo trial/.test(lastCm('m1').hud)&&lastCm('m1').c.s===1&&lastCm('m1').c.n===5);
     x.hurtP(p1,3,null); tick(2);
     ok('being hit fails the feat: the pack is removed, nothing is paid and a new try waits a few seconds',p1.cm.C.s===0&&mons().every(m=>m.remove)&&!p1.gear.cave.own.overdrive&&told('m1','you were hit'));
     p1.cm.C.lock=0; p1.cd.basic=0; at(p1,pl); p1.cm.C.hold=0; for(let i=0;i<60&&!p1.cm.C.s;i++) tick(1); calm(); const pack=mons().filter(m=>!m.remove); ok('the trial starts again',p1.cm.C.s===1&&pack.length===5);
@@ -266,17 +266,28 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     p1.vx=0; p1.cm.E.lock=0; at(p1,E.entry); tick(2); ok('after the lock you may try again',p1.cm.E.s===1);
     p1.act={kind:'slash',skill:false}; tick(1); const z1=p1.cm.E.z; p1.act=null; ok('fighting adds noise (an attack started)',z1>=4);
     at(p1,E.shrine); tick(2); ok('reaching the shrine teaches Burrow',!p1.gear.cave.own.burrow&&p1.cm.E.s===0); }
-  // ---- F: the collapse run ----
-  { const G=x.caveMFl(1), B=x.caveBake(1), V=WA(1).F, A=B.sealed; resetCd(p1); floorTp(p1,1); floorTp(p2,1); tick(1);
-    ok('the seal is rock until the tremor',A.every(k=>B.cells[k]===0));
-    G.next=x.S.t+10; tick(8); ok('a tremor is announced ahead of time (a toast to everyone on the floor and the cm field)',told('m1','trembles')&&lastCm('m1').fv.w>0);
-    G.next=x.S.t+0.05; tick(3);
-    ok('the vault opens for 90 seconds: the seal cells are walkable and the cm message says so',A.every(k=>B.cells[k]===1)&&G.openUntil>x.S.t+80&&lastCm('m1').fv.o>0);
-    at(p2,V.vault); tick(1);
-    ok('reaching the vault in time teaches Cave-in (and the vault is reachable: it is the same standing ground the server accepts)',!p2.gear.cave.own.cavein&&p2.gear.cave.done['1F']===1);
-    resetCd(p1); at(p1,V.vault); tick(1); G.openUntil=x.S.t+0.05; tick(3);
-    ok('when the tunnel caves in the rock is back and anybody still inside is moved out',A.every(k=>B.cells[k]===0)&&G.openUntil===0&&!(B.dist[Math.floor((p1.z-x.caveFloorOrigin(1).z)/2)*B.w+Math.floor((p1.x-x.caveFloorOrigin(1).x)/2)]===65535)&&told('m1','caves in'));
-    ok('the next tremor is a few minutes away',G.next-x.S.t>=300); }
+  // ---- the energy (docs/CAVE.md section 17); the Collapse run (F) is retired ----
+  { const B=x.caveBake(1), W1=WA(1), g=p1.gear.cave; resetCd(p1); floorTp(p1,1); tick(1);
+    ok('the Collapse run is gone: no tremor, the seal stays rock, the board lists seven methods',B.sealed.every(k=>B.cells[k]===0)&&x.caveBoardRows(1).length===7&&lastCm('m1').fv.o===0);
+    p1.cave.en=50; tick(20); ok('in the safe spot (at the lift) nothing drains',Math.round(p1.cave.en)===50&&lastCm('m1').sf===1);
+    at(p1,{x:W1.start.x+40,z:W1.start.z}); const d0=p1.cave.en; tick(20); const d1=d0-p1.cave.en; ok('away from the lift the energy drains',d1>0.5,d1.toFixed(2));
+    p1.cave.en=100; const f1=p1.cave.en; at(p1,{x:W1.start.x+40,z:W1.start.z}); tick(20); const dFull=f1-p1.cave.en; p1.cave.en=10; tick(20); const dLow=10-p1.cave.en;
+    ok('the fuller the bar, the faster it drains',dFull>dLow*3,dFull.toFixed(2)+' vs '+dLow.toFixed(2));
+    p1.cave.en=5; p1.hp=p1.maxHp; const hp0=p1.hp; for(let i=0;i<20;i++){ W.tick(0.05); } ok('a low bar hurts over time but never kills',p1.hp<hp0&&p1.hp>=1,hp0+' -> '+p1.hp);
+    ok('and the client is told (en below the blind line)',lastCm('m1').en<x.CAVE_EN_LOW);
+    p1.cave.en=10; const e0=p1.cave.en; x.caveEnKillS(p1,{cave:1,x:p1.x,z:p1.z}); ok('a kill on the floor gives energy',p1.cave.en>e0+3,e0+' -> '+p1.cave.en);
+    ok('a temp monster (a trial pack) gives none',(()=>{ const e=p1.cave.en; x.caveEnKillS(p1,{cave:1,temp:true,x:p1.x,z:p1.z}); return p1.cave.en===e; })());
+    ok('floor 2 is shut until floor 1 was filled',!x.caveFloorOpen(p1,2)||!!g.mx[1]);
+    g.mx[1]=0; p1.gear.cave.own={}; ok('floor 2 is shut with no max recorded',!x.caveFloorOpen(p1,2));
+    p1.cave.en=x.CAVE_EN_MAX-1; x.caveEnKillS(p1,{cave:1,x:p1.x,z:p1.z}); ok('a full bar opens the next floor',g.mx[1]===1&&x.caveFloorOpen(p1,2)&&!x.caveFloorOpen(p1,3));
+    // a shard node
+    const N=W1.S.nodes[0]; const sh0=p1.gear.awm&&p1.gear.awm.echo|0; p1.cave.en=60; at(p1,N); tick(60);
+    ok('standing at a shard node pays Echo Shards and costs energy',(p1.gear.awm.echo|0)>sh0&&p1.cave.en<60-x.CAVE_EN_MINE+30,sh0+' -> '+(p1.gear.awm.echo|0));
+    ok('the node then rests for you',x.caveEnNodeLeft(p1,1,0)>0&&(lastCm('m1').sn&1)===1);
+    const sh1=p1.gear.awm.echo|0; p1.cave.en=60; at(p1,N); tick(60); ok('a resting node pays nothing',(p1.gear.awm.echo|0)===sh1);
+    const N1=W1.S.nodes[1]; p1.cave.en=5; at(p1,N1); tick(60); ok('a node needs the energy',(p1.gear.awm.echo|0)===sh1);
+    ok('mx and sn survive a save',(()=>{ const c=x.caveSanitizeSave(JSON.parse(JSON.stringify(g))); return c.mx[1]===1&&c.sn['1:0']>0; })());
+    ok('every floor has 6 shard nodes reachable',[1,2,3,4].every(n=>x.caveAW(n).S.nodes.length===6)); }
   // ---- G: the gem mole ----
   { const G=x.caveMFl(1); resetCd(p1); floorTp(p1,1); G.moleNext=0; tick(8); const m=G.mole;
     ok('a gem mole spawns at a burrow (a scripted temp monster of the floor, a real monster for the client)',m&&m.cmo===1&&m.cave===1&&m.temp&&x.WA_OK!==0&&told('m1','gem mole')&&lastCm('m1').g===m.id,m&&m.def.id);
@@ -365,8 +376,8 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   { const c=X.caveSanitizeSave({own:{[s1.id]:9,constructor:3,nope:2,[other.id]:'x'},sh:-5}); ok('sanitize clamps saved levels to 1-5 (the tree writes the rest), drops unknown ids, keeps no shards (gear.awm has them)',c.own[s1.id]===5&&!Object.prototype.hasOwnProperty.call(c.own,'constructor')&&!c.own.nope&&c.own[other.id]===1&&c.sh===undefined); }
   // the floor gate
   { const hp={level:30,gear:{cave:{own:{}}}}; const f=n=>X.CAVE_SKILL_IDS.map(i=>X.CAVE_SKILLS[i]).filter(s=>s.floor===n).map(s=>s.id);
-    ok('floor 2 is shut with no floor-1 skill, still shut with one, open with two',!X.caveFloorOpen(hp,2)&&(hp.gear.cave.own[f(1)[0]]=1,!X.caveFloorOpen(hp,2))&&(hp.gear.cave.own[f(1)[1]]=1,X.caveFloorOpen(hp,2)));
-    ok('the refusal says what is needed and how many you have',/own 2 skills from floor 1/.test(X.caveLiftRefusal({level:30,gear:{cave:{own:{[f(1)[0]]:1}}}},2))&&/1 so far/.test(X.caveLiftRefusal({level:30,gear:{cave:{own:{[f(1)[0]]:1}}}},2)));
-    ok('floors 3 and 4 follow the same rule from floors 2 and 3 (floor 1 skills do not count)',!X.caveFloorOpen(hp,3)&&!X.caveFloorOpen(hp,4)&&(f(2).slice(0,2).forEach(i=>hp.gear.cave.own[i]=1),X.caveFloorOpen(hp,3)&&!X.caveFloorOpen(hp,4))); }
+    ok('floor 2 is shut until floor 1\'s energy was full; owning skills no longer opens it',(f(1).forEach(i=>hp.gear.cave.own[i]=1),!X.caveFloorOpen(hp,2))&&(hp.gear.cave.mx=[0,1,0,0,0,0,0,0,0,0],X.caveFloorOpen(hp,2)));
+    ok('the refusal says to fill the energy',/cave energy/.test(X.caveLiftRefusal({level:30,gear:{cave:{own:{},mx:[]}}},2)));
+    ok('floors 3 and 4 follow the same rule from floors 2 and 3',!X.caveFloorOpen(hp,3)&&(hp.gear.cave.mx[2]=1,X.caveFloorOpen(hp,3)&&!X.caveFloorOpen(hp,4))); }
 }
 console.log(fails?fails+' check(s) failed':'all passed'); process.exit(fails?1:0);
