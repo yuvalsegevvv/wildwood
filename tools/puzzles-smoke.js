@@ -126,6 +126,7 @@ G.inv.push('sword2'); G.scr.e=1; G.scr.u=0; W.receive('a',{t:'scroll',id:'sword2
 ok('an epic scroll turns a common sword into an epic one',G.inv.includes('sword2-e')&&G.scr.e===0);
 W.receive('a',{t:'scroll',id:'sword2-e',to:'e'}); ok('...and not again without a scroll',G.inv.includes('sword2-e'));
 G.scr.e=3; W.receive('a',{t:'scroll',id:'sword2-e',to:'e'}); ok('an epic scroll does not touch an epic piece',G.scr.e===3);
+G.inv.push('sword7-r+2'); G.scr.e=1; W.receive('a',{t:'scroll',id:'sword7-r+2',to:'e'}); ok('an upgrade scroll on a tempered level-30 piece keeps its +2 (sword7-r+2 -> sword7-e+2)',G.inv.includes('sword7-e+2')&&!G.inv.includes('sword7-r+2')&&G.scr.e===0);
 G.scr.u=1; W.receive('a',{t:'scroll',id:'sword2-e',to:'u'}); ok('a unique scroll turns it unique',G.inv.includes('sword2-u')&&G.scr.u===0);
 G.scr.u=1; G.inv.push('sword3-l'); W.receive('a',{t:'scroll',id:'sword3-l',to:'u'}); ok('never down from legendary',G.scr.u===1&&G.inv.includes('sword3-l'));
 // saves are cleaned

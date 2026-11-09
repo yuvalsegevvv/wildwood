@@ -583,6 +583,7 @@ game
   ui/mon-pics.js                     Monster pictures for the quest panel: each monster a quest asks you to defeat, drawn once from its own model on a small off-screen target and kept as an image
   ui/panels.js                       Panel open/close helpers (openPanel, closePanels, uiOpen, releasePointer)
   economy/inventory.js               Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
+  economy/inv-keys.js                The inventory's key resources at the top: Echo Shards, Tempering Stones, the three Reroll Stones and Sigils first (with how much each matters), then Bond Orbs and Bondstones; each with its own icon
   economy/shops.js                   Weapon and armour shops, and Odran the peddler (a bit of everything, and curiosities he will not sell)
   economy/forge.js                   Greta's forge: merge three identical items into one of the next rarity (common > rare > epic > unique > legendary)
   ui/element-icons.js                Element helpers for the interface: the icon of each element (elSvg) and the coloured name chip (elChip) used by the skills panel, the presets and the item details

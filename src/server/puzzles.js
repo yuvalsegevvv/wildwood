@@ -129,14 +129,14 @@ function pzDevP(p,v){
   const seed=(v.seed==null||v.seed==='')?Math.floor(Math.random()*4294967296):clampInt(v.seed,0,4294967295,1);
   pzOpenS(p,'dev',kind,diff,seed>>>0,p.level,false,'dev');
 }
-// Greta's forge: an upgrade scroll turns a common/rare piece into epic ('e'), or a common/rare/epic one into unique ('u'). Gear only (tools, rolled and level-30 pieces keep their own rules and are refused); the id keeps its slot and tier.
+// Greta's forge: an upgrade scroll turns a common/rare piece into epic ('e'), or a common/rare/epic one into unique ('u'). Gear only (tools and rolled pieces keep their own rules and are refused); the id keeps its slot and tier.
 MSG.scroll=(p,msg)=>{
   const id=String(msg.id||''), to=msg.to==='u'?'u':msg.to==='e'?'e':'', it=Object.prototype.hasOwnProperty.call(ITEM,id)?ITEM[id]:null;
-  if(!to||!it||it.dg||id.indexOf('~')>=0||!ALL_SLOTS.includes(it.slot)||!p.gear.inv.includes(id)) return;
+  if(!to||!it||id.indexOf('~')>=0||!ALL_SLOTS.includes(it.slot)||!p.gear.inv.includes(id)) return;
   const want=to==='e'?2:3, from=it.rar;
   if(from>=want||(to==='e'&&from>1)||(to==='u'&&from>2)){ toastTo(p.id,to==='e'?'An epic scroll turns a common or rare piece into epic':'A unique scroll turns a common, rare or epic piece into unique','bad'); return; }
   if((p.gear.scr[to]||0)<1){ toastTo(p.id,'You have no '+(to==='e'?'epic':'unique')+' upgrade scroll','bad'); return; }
-  const nid=it.base+'-'+RAR_KEY[want]; if(!ITEM[nid]) return;
+  const nid=it.dg?dgRaisedId(it,want):it.base+'-'+RAR_KEY[want]; if(!nid||!ITEM[nid]) return;   // a level-30/40 piece keeps its tempering step
   p.gear.scr[to]--; const spare=unwornCount(p,id)>=1, worn=Object.keys(p.gear.eq).find(k=>p.gear.eq[k]===id);   // a spare copy in the bag is the one that burns; a worn piece with no spare is changed where it stands
   p.gear.inv.splice(p.gear.inv.indexOf(id),1,nid); if(!spare&&worn) p.gear.eq[worn]=nid; wpnSwapG(p.gear,id,nid);
   gearChangedP(p); toastTo(p.id,'The scroll burns away: '+ITEM[nid].name,'loot r'+ITEM[nid].rar); ev('merge',p.id,nid);

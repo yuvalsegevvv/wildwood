@@ -17,8 +17,13 @@ const DG_LOOK_TIER=5;   // the Shogun's (tier 5) look, icon and weapon model sta
 const dgVisTier=it=>Math.min(it.tier,DG_LOOK_TIER);
 // the id three +0 copies merge into: the next rarity at +0 (a piece above +0 does not merge: the forge says so); null for a legendary or a tempered piece
 function dgMergedId(it){
-  if(!it||!it.dg||it.n||it.rar>=4||it.roll) return null;   // (a rolled level-40 piece does not merge)
-  return it.kind==='ring'?(it.t===8?dgRingId40(it.el,it.rar+1,0):dgRingId(it.el,it.rar+1,0)):it.kind==='talisman'?dgTalismanId(it.stat,it.rar+1,0):it.kind==='pendant'?(it.t===8?dgPendantId40(it.stat,it.rar+1,0):dgPendantId(it.stat,it.rar+1,0)):it.t===8?dgGearId40(it.slot,it.rar+1,0):dgGearId(it.slot,it.rar+1,0);
+  if(!it||!it.dg||it.rar>=4||it.roll) return null;   // (a rolled level-40 piece does not merge); a tempered piece merges and keeps its +n
+  return dgRaisedId(it,it.rar+1);
+}
+// the same piece at rarity r, keeping its tempering step (merge and upgrade scrolls); null when it is not a level-30/40 piece or the step is more than that rarity allows
+function dgRaisedId(it,r){
+  if(!it||!it.dg||it.roll||!(r>=0&&r<=4)) return null; const n=it.n|0; if(n>ENH_MAX[r]) return null;
+  return it.kind==='ring'?(it.t===8?dgRingId40(it.el,r,n):dgRingId(it.el,r,n)):it.kind==='talisman'?dgTalismanId(it.stat,r,n):it.kind==='pendant'?(it.t===8?dgPendantId40(it.stat,r,n):dgPendantId(it.stat,r,n)):it.t===8?dgGearId40(it.slot,r,n):dgGearId(it.slot,r,n);
 }
 // the attack a worn ring adds to a gear: its own flat number
 function dgRingAtkOf(gear){

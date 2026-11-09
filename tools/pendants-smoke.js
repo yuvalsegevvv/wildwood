@@ -31,8 +31,8 @@ ok('their names say what they are (rarity, kind, step) and their text what they 
   x.pendantText(I['pendant-coin'])==='+10% coins from kills'&&x.pendantText(I['pendant-crit'])==='+2% critical hit chance'&&x.pendantText(I['pendant-critdmg'])==='Critical hits deal x1.80 (instead of x1.7)');
 ok('the crit numbers that used to be literals are unchanged (12%, x1.7), with a cap of 60% chance and x2.5 damage',x.CRIT_BASE===0.12&&x.CRIT_MULT===1.7&&x.CRIT_CAP===0.6&&x.CRIT_MULT_CAP===2.5);
 ok('ids parse and rebuild themselves, and refuse a step past the rarity\'s limit or a made-up kind',ids.every(id=>{ const q=x.dgParse(id); return q&&q.stat&&PID(q.stat,q.rar,q.n)===id; })&&x.dgParse('pendant-xp+3')===null&&x.dgParse('pendant-xp-l+11')===null&&x.dgParse('pendant-luck')===null&&x.dgParse('pd-xp1')===null);
-ok('the forge: three +0 pendants of one kind and rarity become the next rarity (+0); a legendary or a tempered one has no merge; gear, rings and tools merge as before',
-  x.mergedId('pendant-xp')==='pendant-xp-r'&&x.mergedId('pendant-critdmg-u')==='pendant-critdmg-l'&&x.mergedId('pendant-xp-l')===null&&x.mergedId('pendant-xp+1')===null&&x.mergedId('pendant-xp-r+2')===null&&
+ok('the forge: three +0 pendants of one kind and rarity become the next rarity (+0); a legendary one has no merge and a tempered one keeps its +n; gear, rings and tools merge as before',
+  x.mergedId('pendant-xp')==='pendant-xp-r'&&x.mergedId('pendant-critdmg-u')==='pendant-critdmg-l'&&x.mergedId('pendant-xp-l')===null&&x.mergedId('pendant-xp+1')==='pendant-xp-r+1'&&x.mergedId('pendant-xp-r+2')==='pendant-xp-e+2'&&
   x.mergedId('sword2')==='sword2-r'&&x.mergedId('ring-fire')==='ring-fire-r'&&x.mergedId('sword7-e')==='sword7-u'&&x.mergedId('pick3-e')==='pick3-u');
 ok('every existing item still merges to the id the old rule gave (slot, tier, next rarity)',x.ITEM_LIST.concat(x.TOOL_LIST).every(i=>i.rar>=4?x.mergedId(i.id)===null:x.mergedId(i.id)===i.slot+(i.tier+1)+'-'+'reul'[i.rar]));
 
@@ -67,7 +67,7 @@ ok('and it comes off (back in the bag); the ring stays',A.gear.eq.pendant===null
   A.gear.inv.push('pendant-coin','pendant-coin'); A.gear.eq.pendant='pendant-coin'; W.receive('a',{t:'merge',id:'pendant-coin'}); tick(1);
   ok('... but the one you wear does not count towards the three',A.gear.inv.filter(i=>i==='pendant-coin').length===2&&A.gear.inv.filter(i=>i==='pendant-coin-r').length===1);
   A.gear.inv=A.gear.inv.filter(i=>!i.startsWith('pendant-')); A.gear.eq.pendant=null; A.gear.inv.push('pendant-coin+1','pendant-coin+1','pendant-coin+1'); W.receive('a',{t:'merge',id:'pendant-coin+1'}); tick(1);
-  ok('a tempered pendant (+1) does not merge: the forge refuses',A.gear.inv.filter(i=>i==='pendant-coin+1').length===3); }
+  ok('three tempered pendants (+1) merge into the next rarity and keep the +1',A.gear.inv.filter(i=>i==='pendant-coin+1').length===0&&A.gear.inv.filter(i=>i==='pendant-coin-r+1').length===1); }
 { // tempering: the step to +n costs n stones, always works, and the worn copy follows
   A.gear.inv=A.gear.inv.filter(i=>!i.startsWith('pendant-')); A.gear.inv.push('pendant-crit-e'); A.gear.eq.pendant=null; A.gear.temper=0; W.receive('a',{t:'temper',id:'pendant-crit-e'}); tick(1);
   ok('tempering needs the stones (a refusal leaves the pendant and the count alone)',A.gear.inv.includes('pendant-crit-e')&&A.gear.temper===0);
