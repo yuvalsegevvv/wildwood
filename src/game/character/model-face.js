@@ -71,7 +71,7 @@ function buildFace(X){
   const blushC=new THREE.Color(0xe98c88), pos=skull.attributes.position;
   let earX=0.095; { let m=0; for(let i=0;i<pos.count;i++){ if(Math.abs(pos.getY(i)+0.008)<0.012&&pos.getZ(i)>-0.02&&pos.getZ(i)<0.03) m=Math.max(m,Math.abs(pos.getX(i))); } if(m>0) earX=m; }
   parts.push(pc(skull,(x,y,z,c)=>{ skinPaint(c);
-    if(L.facial==='stubble'&&y<-0.018*HEAD_TALL&&z<-0.02) c.lerp(hairCol,0.3);
+    if(L.facial==='stubble'){ const top=lerp(-0.047,-0.022,faceSm(0.035,0.075,Math.abs(x)))*HEAD_TALL; c.lerp(hairCol,0.3*faceSm(top+0.012,top-0.012,y)*faceSm(-0.005,-0.035,z)); }   // a soft shadow over the jaw, chin and upper lip (from the sideburns down at the sides, below the nose in the middle), not a hard band across the face at eye level
     if(z<-0.03) c.lerp(blushC,Math.min(0.75,(fem?0.2:0.1)+0.5*S.blush)*G(Math.abs(x),0.058*fs[0],0.022)*G(y,-0.03*HEAD_TALL,0.02)); }));     // a faint blush on the cheeks
   // put a feature (built around the origin, facing -z) on the face at (x,y), `push` metres out of the surface, turned to follow the surface's slope
   const place=(g,x,y,push)=>{ const d=0.004, z=zAt(x,y), n=new THREE.Vector3((zAt(x+d,y)-zAt(x-d,y))/(2*d),(zAt(x,y+d)-zAt(x,y-d))/(2*d),-1).normalize();
@@ -134,7 +134,8 @@ function buildFace(X){
     for(const sd of [-1,1]){ const x0=sd*(earX-0.002), y0=-0.008*HEAD_TALL, z0=0.012, ear=[];
       ear.push(pc(el(0.0068,0.0235*es,0.0155*es,0,0,0).rotateZ(sd*-0.1).rotateY(sd*0.3).translate(x0,y0,z0),(x,y,z,c)=>skinPaint(c)));
       ear.push(pc(el(0.0034,0.0135*es,0.0085*es,0,0,0).rotateY(sd*0.3).translate(x0+sd*0.0045,y0+0.002,z0-0.001),(x,y,z,c)=>{ skinPaint(c); c.multiplyScalar(0.82); }));
-      ear.push(pc(el(0.0052*es,0.0062*es,0.0058*es,x0+sd*0.0012,y0-0.0225*es,z0-0.002),(x,y,z,c)=>skinPaint(c)));
+      ear.push(pc(el(0.0046*es,0.0078*es,0.0066*es,x0+sd*0.0012,y0-0.0172*es,z0-0.0015),(x,y,z,c)=>skinPaint(c)));   // the lobe: the shell's rounded lower end (a ball hanging under it read as an earring)
+      ear.push(pc(sweepTube([[x0+sd*0.0035,y0+0.012*es,z0-0.0095*es],[x0+sd*0.0048,y0+0.0215*es,z0-0.001*es],[x0+sd*0.0062,y0+0.0165*es,z0+0.0105*es],[x0+sd*0.0066,y0+0.002*es,z0+0.0142*es],[x0+sd*0.005,y0-0.011*es,z0+0.0105*es]],[0.002*es,0.0029*es,0.003*es,0.0027*es,0.0016*es],sg(6),{rings:sg(14)}),(x,y,z,c)=>skinPaint(c)));   // the helix: a rolled rim over the top and down the back
       if(pt>0.03){ const T=[[x0,y0+0.016*es,z0+0.003],[x0+sd*0.014,y0+0.03*es+0.02*pt,z0+0.007+0.01*pt],[x0+sd*0.026+sd*0.012*pt,y0+0.042*es+0.05*pt,z0+0.015+0.026*pt]];
         ear.push(pc(sweepTube(T,[0.0085,0.0052,0.0011],sg(8),{cap:'point',rings:sg(10)}),(x,y,z,c)=>skinPaint(c))); }
       parts.push(...ear); }
