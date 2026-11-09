@@ -130,12 +130,14 @@ function buildTorso(X,D){
 
 // a hand's fingers and thumb, as tubes that curl a little toward the palm (the palm faces the thigh)
 function buildFingers(X,D,sd){
-  const {S,sg,skinPaint}=X, hh=S.hands, out=[], f=[[-0.019,0.95],[-0.0065,1],[0.0065,0.93],[0.018,0.76]], gp=X.glove, fat=gp&&gp.fingers!=='bare'?1.17:1;   // (a glove: fatter fingers, painted by the plan; a mitten: one fat blob and a thumb)
+  const {S,sg,skinPaint}=X, hh=S.hands, out=[], f=[[-0.019,0.93,0.003],[-0.0065,1,0],[0.0065,0.93,0.002],[0.0185,0.76,0.007]], gp=X.glove, fat=gp&&gp.fingers!=='bare'?1.17:1;   // (a glove: fatter fingers, painted by the plan; a mitten: one fat blob and a thumb)
   const fp=gp?(x,y,z,c)=>gp.finger(c,x,y,z,sd):skinPaint, mitt=gp&&gp.fingers==='mitt';
-  if(mitt) out.push(pc(csph(1,sg(10),sg(8)).scale(0.0145*hh,0.05*hh,0.0275*hh).translate(-sd*0.004*hh,-0.312,-0.001),fp,-0.28));
-  else for(const [z0,k] of f){ const L=0.062*hh*k, y0=-0.272;
-    out.push(pc(sweepTube([[0,y0,z0*hh],[-sd*0.003*hh,y0-L*0.45,z0*hh],[-sd*0.011*hh,y0-L*0.8,(z0-0.0008)*hh],[-sd*0.015*hh,y0-L,(z0-0.001)*hh]],[0.0072*hh*fat,0.0064*hh*fat,0.0052*hh*fat,0.004*hh*fat],sg(7),{cap:'round',rings:sg(10)}),fp,-0.28)); }
-  out.push(pc(sweepTube([[-sd*0.008*hh,-0.255,-0.013*hh],[-sd*0.017*hh,-0.278,-0.024*hh],[-sd*0.02*hh,-0.298,-0.03*hh],[-sd*0.018*hh,-0.315,-0.032*hh]],[0.0105*hh*fat,0.0085*hh*fat,0.0068*hh*fat,0.0052*hh*fat],sg(7),{cap:'round',rings:sg(10)}),fp,-0.28));
+  if(mitt) out.push(pc(csph(1,sg(10),sg(8)).scale(0.0145*hh,0.05*hh,0.0275*hh).translate(-sd*0.006*hh,-0.33,-0.001),fp,-0.28));
+  // the fingers start at the knuckle line (the palm's far end, in a shallow arc: the middle knuckle lowest) and are as long as the palm, so the hand reads as a hand and not a ball with claws
+  else for(const [z0,k,ky] of f){ const L=0.07*hh*k, y0=-0.306+ky;
+    out.push(pc(sweepTube([[-sd*0.001*hh,y0,z0*hh],[-sd*0.004*hh,y0-L*0.4,z0*1.02*hh],[-sd*0.01*hh,y0-L*0.76,z0*1.03*hh],[-sd*0.017*hh,y0-L*0.99,z0*1.02*hh]],[0.0079*hh*fat,0.0073*hh*fat,0.0065*hh*fat,0.0054*hh*fat],sg(7),{cap:'round',rings:sg(10)}),fp,-0.28)); }
+  // the thumb leaves the palm's front edge near the wrist and lies ahead of the index finger
+  out.push(pc(sweepTube([[-sd*0.006*hh,-0.258,-0.015*hh],[-sd*0.012*hh,-0.279,-0.029*hh],[-sd*0.017*hh,-0.299,-0.036*hh],[-sd*0.021*hh,-0.317,-0.037*hh]],[0.0112*hh*fat,0.0096*hh*fat,0.008*hh*fat,0.0064*hh*fat],sg(7),{cap:'round',rings:sg(10)}),fp,-0.28));
   return out;
 }
 // the forearm's paint with the gloves laid over it below their start (y is the elbow's frame: y = -d down the forearm)
@@ -151,7 +153,7 @@ function buildArm(X,D,sd){
   // forearm and hand in one surface: thick below the elbow, slim at the wrist (t = 0.82), then the palm flattens out of it
   const wr=D.wrist/fore, ww=0.02*aw, pw=0.027*hh;
   const gp=X.glove, gcut=gp?[gp.start/fore]:[];   // gp: the gloves' plan (model-gloves.js): the forearm below gp.start is painted as glove
-  const fa=pc(limb([[0,ER,ER*1.04],[0.1,0.037*aw,0.038*aw],[0.34,0.0305*aw,0.03*aw],[wr-0.12,0.0235*aw,0.0235*aw],[wr,ww,ww],[wr+0.08,0.0125*hh,pw*0.9],[1,0.0115*hh,pw]],fore,sg(20),sg(26),{cuts:[0.2/fore,0.225/fore].concat((kit&&kit.cuts&&kit.cuts.foreArm)||[],gcut)}),gloveWrap(gp,sd,kit?(x,y,z,c)=>ofPaint(X,'top','foreArm',c,x,y,z,sd):(x,y,z,c)=>{ if(longSleeve && y>-0.225){ topPaint(c,x+sd*0.3,y-upper); if(y<-0.2) c.multiplyScalar(0.8); } else skinPaint(c); }),-upper);
+  const fa=pc(limb([[0,ER,ER*1.04],[0.1,0.037*aw,0.038*aw],[0.34,0.0305*aw,0.03*aw],[wr-0.12,0.0235*aw,0.0235*aw],[wr,ww*0.9,ww*1.06],[wr+0.07,0.0128*hh,pw*0.9],[0.94,0.0124*hh,pw],[1,0.0104*hh,pw*0.95]],fore,sg(20),sg(26),{cuts:[0.2/fore,0.225/fore].concat((kit&&kit.cuts&&kit.cuts.foreArm)||[],gcut)}),gloveWrap(gp,sd,kit?(x,y,z,c)=>ofPaint(X,'top','foreArm',c,x,y,z,sd):(x,y,z,c)=>{ if(longSleeve && y>-0.225){ topPaint(c,x+sd*0.3,y-upper); if(y<-0.2) c.multiplyScalar(0.8); } else skinPaint(c); }),-upper);
   const hand=q>=0.5?[fa].concat(buildFingers(X,D,sd)):[fa];
   const m2=new THREE.Mesh(hand.length>1?merge(hand):fa,matChar); m2.castShadow=true; el.add(m2);
   if(X.kit){ const ex=ofRun(X,'forearm',sd); if(ex.length){ const m=new THREE.Mesh(merge(ex),matChar); m.castShadow=true; el.add(m); } }   // cuffs, bracers, in the elbow's frame (y down the forearm)

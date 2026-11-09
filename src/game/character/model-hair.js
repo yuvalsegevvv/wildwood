@@ -23,8 +23,16 @@ function buildHair(X,F){
     for(let k=0;k<=n;k++){ const f=k/n; P.push(sp(th+sw*f,lerp(ph0,ph1,f),(o.R||R)+0.004*Math.sin(f*Math.PI)+(o.lift||0)*f)); }
     if(o.tip) P.push(sp(th+sw*1.15,ph1+o.tip,(o.R||R)+0.003+(o.lift||0)));
     const g=sweepTube(P,rad,sg(8),{cap:'point',rings:sg(14)}); flat(g,o.k||0.5); return fit(g); };
-  const cap=(r,tl,tilt)=>shell(r,0,tl*Math.PI,0,tilt,sg(40),sg(20));
-  const crown=(r,tl,tilt)=>add(fit(cap(r*hv,tl,tilt)));
+  // a shell's lower rim cut into points of different lengths (every second column of its last row hangs up to `amp` radians lower, tucked toward the scalp), so the cap ends
+  // in hair tips and not in a helmet's straight edge; `ends`: a band that does not go all the way round also narrows to a point at both ends instead of a square corner
+  const jag=(g,w,h,amp,ends)=>{ const p=g.attributes.position, W=w+1; if(p.count!==W*(h+1)||!amp) return g;
+    const pol=i=>{ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), r=Math.hypot(x,y,z)||1; return [r,Math.acos(clamp(y/r,-1,1)),Math.atan2(x,z)]; }, put=(i,r,t,a)=>p.setXYZ(i,r*Math.sin(t)*Math.sin(a),r*Math.cos(t),r*Math.sin(t)*Math.cos(a));
+    if(ends) for(let ix=0;ix<W;ix++){ const e=Math.min(ix,w-ix)/(w*0.16); if(e>=1) continue; const k=0.12+0.88*e*e*(3-2*e), t0=pol(ix)[1]; for(let iy=1;iy<=h;iy++){ const q=pol(iy*W+ix); put(iy*W+ix,q[0],t0+(q[1]-t0)*k,q[2]); } }
+    for(let ix=1;ix<w;ix+=2){ const i=h*W+ix, q=pol(i), d=amp*(0.35+0.65*h3(ix*7,w,h)); put(i,q[0]*(1-0.12*d),q[1]+d,q[2]); }
+    return smoothN(g); };
+  const cap=(r,tl,tilt,amp)=>{ const g=jag(shell(r,0,tl*Math.PI,0,0,sg(40),sg(20)),sg(40),sg(20),amp===undefined?0.2:amp); if(tilt) g.rotateX(tilt); return g; };
+  const band=(r,t0,tl,gap,w,h)=>jag(shell(r,t0,tl,gap,0,w,h),w,h,0.16,true);   // the short styles' band of hair round the back of the head
+  const crown=(r,tl,tilt,amp)=>add(fit(cap(r*hv,tl,tilt,amp)));
   // the fringe: ribbons from the crown down over the forehead, each a different length and ending in a point, swept to one side; the slider sets how far they hang
   const fringe=(n,spread,sweep)=>{ if(bg<0.05) return; const rng=mulberry32(77+n);
     for(let i=0;i<n;i++){ const f=i/(n-1)*2-1, af=Math.abs(f), yb=0.074-0.03*bg-0.016*bg*(i%2)-0.012*rng()*bg, ph1=Math.acos(clamp(yb/R,-0.9,0.9)), w=0.0155-0.0035*af+0.003*rng();
@@ -56,8 +64,8 @@ function buildHair(X,F){
   // a signature outfit's hair item and head item (docs/CHARACTER.md section 9): kH.hair(F, T) composes the pieces above (T) and its own geometry (T.add paints and collects it), kHat.head(F, T) is the hat, built after the base hats below
   const T={add,swing,wisps,sp,flat,fit,hang,scalpLock,crown,fringe,sideLocks,backLocks,blade,tie,hp,R,hv,hl,bg};
   if(kH&&kH.hair){ const n0=parts.length, ex=kH.hair(F,T); if(ex) parts.push(...ex); ofTintFrom(X,'hair',parts,n0); }
-  if(H==='buzz') crown(0.108,0.42,0.38);
-  if(H==='short'){ crown(0.114,0.5,0.32); add(fit(shell(0.111*hv,0.38*Math.PI,0.17*Math.PI,1.9,0,sg(30),sg(8)))); fringe(8,1.0,0.14); sideLocks(0.05); backLocks(sg(18),0,11); }
+  if(H==='buzz') crown(0.108,0.42,0.38,0);
+  if(H==='short'){ crown(0.114,0.5,0.32); add(fit(band(0.111*hv,0.38*Math.PI,0.17*Math.PI,1.9,sg(30),sg(8)))); fringe(8,1.0,0.14); sideLocks(0.05); backLocks(sg(18),0,11); }
   const hatOver=hat&&!['circlet','bandana','laurel','catphones'].includes(L.hat);   // a hat that covers the crown: the blades standing off the scalp would poke through it
   if(H==='messy'){ crown(0.116,0.52,0.3); fringe(8,1.05,0.3); sideLocks(0.05); backLocks(sg(14),0.02,21);
     const rng=mulberry32(4242); for(let i=0;i<(hatOver?0:10);i++){ const th=rng()*TAU, ph=(0.14+rng()*0.3)*Math.PI; add(hang(blade(th,ph,(0.04+rng()*0.04)*(0.8+0.3*hl),0.016+rng()*0.006,[(rng()-0.5)*0.6,0.1+rng()*0.3,0.2+rng()*0.4]))); } }
@@ -67,11 +75,11 @@ function buildHair(X,F){
     if(!hatOver) for(const f of [-0.75,0,0.75]){ const th=f*0.8, ph=0.2*Math.PI, len=0.06*Math.max(0.3,bg), a=sp(th,ph,R*0.97), d=sp(th,0.42*Math.PI,1);
       add(fit(sweepTube([a,[a[0]+d[0]*len*0.5,a[1]+d[1]*len*0.2+0.01,a[2]+d[2]*len*0.5],[a[0]+d[0]*len,a[1]-0.045*Math.max(0.3,bg),a[2]+d[2]*len*1.1]],[0.022,0.02,0.002],sg(8),{cap:'point',rings:sg(9)}))); } }
   if(H==='curly'){ const r=hat?(L.hat==='helm'?0.11:0.118):0.138*hv; const g=cap(r,0.56,0.3), p=g.attributes.position; for(let i=0;i<p.count;i++){ const x=p.getX(i),y=p.getY(i),z=p.getZ(i),j=1+(h3(x*3,y*3,z*3)-0.5)*0.12; p.setXYZ(i,x*j,y*j,z*j); } smoothN(g); add(fit(g));
-    add(fit(shell(r*0.95,0.4*Math.PI,0.22*Math.PI,1.9,0,sg(30),sg(8))));
+    add(fit(band(r*0.95,0.4*Math.PI,0.22*Math.PI,1.9,sg(30),sg(8))));
     if(!hat){ const rng=mulberry32(31); for(let i=0;i<16;i++){ const th=(i/16)*TAU+rng()*0.2, ph=(0.46+rng()*0.1)*Math.PI; const q=sp(th,ph,r*0.98); add(csph(0.032+rng()*0.01,sg(10),sg(8)).translate(q[0],q[1]-0.01,q[2]).scale(fs[0],1,1)); } }
     fringe(5,0.85,0.1); }
   if(H==='bob'||H==='long'||H==='waves'||H==='buns2'||H==='sidebraid'||H==='highpony'||H==='twintail'||H==='braid'||H==='ponytail'||H==='bun') crown(H==='bob'||H==='long'?0.116:0.113,0.5,H==='ponytail'||H==='bun'||H==='buns2'||H==='highpony'?0.24:0.3);
-  if(H==='bob'){ add(fit(shell(0.118*hv,0.34*Math.PI,0.2*Math.PI,1.55,0,sg(36),sg(10)))); fringe(8,1.05,0.12); sideLocks(0.1*hl); backLocks(sg(20),0.09*hl,51); }
+  if(H==='bob'){ add(fit(band(0.118*hv,0.34*Math.PI,0.2*Math.PI,1.55,sg(36),sg(10)))); fringe(8,1.05,0.12); sideLocks(0.1*hl); backLocks(sg(20),0.09*hl,51); }
   if(H==='long'||H==='waves'){ fringe(8,1.1,0.1); sideLocks(0.2*hl);
     const rings=[]; const n=sg(18), len=0.5*hl;
     for(let i=0;i<=n;i++){ const t=i/n, e=t*t*(3-2*t); rings.push({y:0.04-len*t,rx:lerp(0.108,0.128,Math.sin(t*Math.PI*0.7))*(1-0.82*Math.pow(t,3))*hv,rz:lerp(0.05,0.06,Math.sin(t*Math.PI*0.6))*(1-0.85*Math.pow(t,3)),zc:0.062+0.045*Math.sin(Math.min(1,t*1.8)*Math.PI*0.5)-0.02*t}); }
