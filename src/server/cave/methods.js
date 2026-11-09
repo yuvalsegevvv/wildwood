@@ -28,8 +28,10 @@ function caveMMovePTo(p,x,z){ p.x=x; p.z=z; p.y=getH(x,z); p.vx=p.vz=0; p.act=nu
 // ---- a method is finished ----
 function caveMethodDoneP(p,floor,method){
   const g=caveGearP(p), key=floor+method, sk=caveSkillAt(floor,method), M=caveMethodDef(method);
+  const first=!(g.done[key]|0);   // a first completion of this method on this floor pays amber
   g.done[key]=Math.min(99999,(g.done[key]|0)+1); g.cd[key]=caveNow()+CAVE_METHOD_CD; p.dirty=true;
   { const xp=Math.round(xpFor(p.level)*CAVE_XP_KILLS[floor]); if(xp>0){ gainExpP(p,xp); toastTo(p.id,'+'+xp+' XP: '+M.name+' complete','good'); } }   // every completion pays XP that grows with your level, on top of the skill or shards
+  if(first){ const a=CAVE_AMBER_FIRST[floor]|0; if(a>0){ ambAddP(p,a); toastTo(p.id,'+'+a+' amber: first time finishing '+M.name,'good'); } }
   caveShardsP(p,floor,sk);   // awakening: a method no longer grants its skill (the charge branch's ch1 does): it always pays Echo Shards
 }
 // the Echo Shards a completion pays (every completion: the skill itself is the Awakening tree's ch1 now)

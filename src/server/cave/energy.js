@@ -33,7 +33,7 @@ function caveEnTickP(p,M,dt){
       toastTo(p.id,'You mine '+k+' Echo Shards · '+w.echo+' in all','good'); ev('caveshards',p.id,k,w.echo); }
     return; }
   W.S.nodes.forEach((q,i)=>{ if(M.N.cast||Math.hypot(p.x-q.x,p.z-q.z)>=CAVE_EN_NODE_REACH||caveEnNodeLeft(p,n,i)>0) return;
-    if(c.en<CAVE_EN_MINE){ caveMTell(p,M,'ennode','An echo shard node needs '+CAVE_EN_MINE+' cave energy.','bad'); return; }
+    if(c.en<CAVE_EN_NODE_NEED){ caveMTell(p,M,'ennode','An echo shard node needs '+CAVE_EN_NODE_NEED+' cave energy (and uses '+CAVE_EN_MINE+').','bad'); return; }
     M.N.cast={i,end:S.t+CAVE_EN_MINE_SECS,x:p.x,z:p.z}; });
 }
 function caveEnSendP(p,M,v){

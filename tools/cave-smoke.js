@@ -270,9 +270,9 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
   { const B=x.caveBake(1), W1=WA(1), g=p1.gear.cave; resetCd(p1); floorTp(p1,1); tick(1);
     ok('the Collapse run is gone: no tremor, the seal stays rock, the board lists seven methods',B.sealed.every(k=>B.cells[k]===0)&&x.caveBoardRows(1).length===7&&lastCm('m1').fv.o===0);
     p1.cave.en=50; tick(20); ok('in the safe spot (at the lift) nothing drains',Math.round(p1.cave.en)===50&&lastCm('m1').sf===1);
-    at(p1,{x:W1.start.x+40,z:W1.start.z}); const d0=p1.cave.en; tick(20); const d1=d0-p1.cave.en; ok('away from the lift the energy drains',d1>0.5,d1.toFixed(2));
-    p1.cave.en=100; const f1=p1.cave.en; at(p1,{x:W1.start.x+40,z:W1.start.z}); tick(20); const dFull=f1-p1.cave.en; p1.cave.en=10; tick(20); const dLow=10-p1.cave.en;
-    ok('the fuller the bar, the faster it drains',dFull>dLow*3,dFull.toFixed(2)+' vs '+dLow.toFixed(2));
+    at(p1,{x:W1.start.x+40,z:W1.start.z}); const d0=p1.cave.en; tick(20); const d1=d0-p1.cave.en; ok('away from the lift the energy drains',d1>0.3,d1.toFixed(2));
+    p1.cave.en=200; const f1=p1.cave.en; at(p1,{x:W1.start.x+40,z:W1.start.z}); tick(20); const dFull=f1-p1.cave.en; p1.cave.en=100; tick(20); const dLow=100-p1.cave.en; p1.cave.en=50; tick(20); const dMid=50-p1.cave.en;
+    ok('the drain is flat up to 100 energy and rises above it',dFull>dLow*2&&Math.abs(dMid-dLow)<0.3*dLow+0.1,dFull.toFixed(2)+' vs '+dLow.toFixed(2));
     p1.cave.en=5; p1.hp=p1.maxHp; const hp0=p1.hp; for(let i=0;i<20;i++){ W.tick(0.05); } ok('a low bar hurts over time but never kills',p1.hp<hp0&&p1.hp>=1,hp0+' -> '+p1.hp);
     ok('and the client is told (en below the blind line)',lastCm('m1').en<x.CAVE_EN_LOW);
     p1.cave.en=10; const e0=p1.cave.en; x.caveEnKillS(p1,{cave:1,x:p1.x,z:p1.z}); ok('a kill on the floor gives energy',p1.cave.en>e0+3,e0+' -> '+p1.cave.en);
@@ -281,11 +281,11 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     g.mx[1]=0; p1.gear.cave.own={}; ok('floor 2 is shut with no max recorded',!x.caveFloorOpen(p1,2));
     p1.cave.en=x.CAVE_EN_MAX-1; x.caveEnKillS(p1,{cave:1,x:p1.x,z:p1.z}); ok('a full bar opens the next floor',g.mx[1]===1&&x.caveFloorOpen(p1,2)&&!x.caveFloorOpen(p1,3));
     // a shard node
-    const N=W1.S.nodes[0]; const sh0=p1.gear.awm&&p1.gear.awm.echo|0; p1.cave.en=60; at(p1,N); tick(60);
-    ok('standing at a shard node pays Echo Shards and costs energy',(p1.gear.awm.echo|0)>sh0&&p1.cave.en<60-x.CAVE_EN_MINE+30,sh0+' -> '+(p1.gear.awm.echo|0));
+    const N=W1.S.nodes[0]; const sh0=p1.gear.awm&&p1.gear.awm.echo|0; p1.cave.en=180; at(p1,N); tick(60);
+    ok('standing at a shard node (150 energy needed) pays Echo Shards and costs 100',(p1.gear.awm.echo|0)>sh0&&p1.cave.en<180-x.CAVE_EN_MINE+30,sh0+' -> '+(p1.gear.awm.echo|0));
     ok('the node then rests for you',x.caveEnNodeLeft(p1,1,0)>0&&(lastCm('m1').sn&1)===1);
-    const sh1=p1.gear.awm.echo|0; p1.cave.en=60; at(p1,N); tick(60); ok('a resting node pays nothing',(p1.gear.awm.echo|0)===sh1);
-    const N1=W1.S.nodes[1]; p1.cave.en=5; at(p1,N1); tick(60); ok('a node needs the energy',(p1.gear.awm.echo|0)===sh1);
+    const sh1=p1.gear.awm.echo|0; p1.cave.en=180; at(p1,N); tick(60); ok('a resting node pays nothing',(p1.gear.awm.echo|0)===sh1);
+    const N1=W1.S.nodes[1]; p1.cave.en=140; at(p1,N1); tick(60); ok('a node needs 150 energy',(p1.gear.awm.echo|0)===sh1);
     ok('mx and sn survive a save',(()=>{ const c=x.caveSanitizeSave(JSON.parse(JSON.stringify(g))); return c.mx[1]===1&&c.sn['1:0']>0; })());
     ok('every floor has 6 shard nodes reachable',[1,2,3,4].every(n=>x.caveAW(n).S.nodes.length===6)); }
   // ---- G: the gem mole ----
