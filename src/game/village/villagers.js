@@ -474,6 +474,14 @@ function tryChat(n){
   }
   return false;
 }
+// the talk key prefers the villager an active main or side quest marks ('!' / '?') when that villager is within NPC_QUEST_R metres and in sight (not asleep indoors)
+const NPC_QUEST_R=7;
+function npcQuestNear(){
+  let best=null, bd=NPC_QUEST_R;
+  for(const n of NPCs){ if(!n.g.visible||n.inside) continue; const id=n.def.id, d=Math.hypot(P.x-n.x,P.z-n.z); if(d>=bd) continue;
+    if(mqMark(id)||(typeof sqMark==='function'&&sqMark(id))){ bd=d; best=n; } }
+  return best;
+}
 function updateNPCs(dt){
   if(!NPCs.length) return;
   const night=envCur.night, cx=camera.position.x, cz=camera.position.z;
@@ -557,6 +565,7 @@ function updateNPCs(dt){
     }
     if(dp<nd && dp<(n.def.role||n.def.kin?3.8:2.8)){ nd=dp; nearNPC=n; }
   }
+  { const q=npcQuestNear(); if(q) nearNPC=q; }   // talk: the villager your quest sends you to wins the talk key within NPC_QUEST_R, even with someone nearer (a blind playtest got the nearest stranger six times)
   updateTalkUI();
 }
 

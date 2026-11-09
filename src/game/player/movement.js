@@ -87,7 +87,7 @@ function worldBounds(o,ox,rad,oz){
 }
 const inTunnelBore=(x,z)=>x>TUN.p0-1&&x<TUN.p1+1&&Math.abs(z-TUN.z)<TUN.w+0.5;   // (on the border bridge: the name stays from the tunnel it replaced)
 function updateCamera(dt){
-  if(customizing){ editorCamera(dt); return; }
+  if(customizing){ cfUpdate(false); editorCamera(dt); return; }
   if(thirdPerson){
     const pt=clamp(0.28-P.pitch*0.9,-0.25,1.25), dist=4.6;
     const hx=P.x, hy=P.y+1.45*hiker.scale, hz=P.z;
@@ -98,7 +98,9 @@ function updateCamera(dt){
     else { const b=cvCamBoom(hx,hy,hz,cx,cyy,cz); cx=b[0]; cyy=b[1]; cz=b[2]; }   // caves: the camera's arm stops short of the rock   // dungeons: the camera's arm shortens in front of a run's walls (dungeon/collide.js)
     camera.position.set(cx+(Math.random()-0.5)*camShake*0.6,cyy+(Math.random()-0.5)*camShake*0.6,cz);
     camera.lookAt(hx,hy+0.2,hz);
+    cfUpdate(true,cx,cyy,cz,hx,hy,hz);   // camfade: blockers between the lens and your head go see-through (engine/cam-fade.js)
   } else {
+    cfUpdate(false);
     const sp=Math.hypot(P.vx,P.vz), bob=P.ground?Math.sin(P.walk*2)*0.045*Math.min(sp/4,1.5):0;
     camera.position.set(P.x,P.y+1.62*hiker.scale+bob,P.z);
     camera.rotation.set(P.pitch,P.yaw,0,'YXZ');

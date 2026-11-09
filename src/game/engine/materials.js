@@ -112,4 +112,5 @@ const matFern = plantMat({wind:0.1, double:true});
 const matFlower = plantMat({wind:0.22, double:true});
 const matReed = plantMat({wind:0.09, double:true});
 const matFlat = plantMat({double:true});
+[matBark,matRock,matConifer,matConiferD,matBroad,matBroadD,matBush,matBushD].forEach(cfHook);   // trees, bushes and rocks go see-through between the camera and you (engine/cam-fade.js)
 

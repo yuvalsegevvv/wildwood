@@ -2,6 +2,7 @@
 /* ---------- the village: buildings and props ---------- */
 const villageMat=new THREE.MeshLambertMaterial({vertexColors:true});
 const windowMat=new THREE.MeshLambertMaterial({vertexColors:true, emissive:0xffb060, emissiveIntensity:0});
+cfHook(villageMat); cfHook(windowMat);   // houses go see-through between the camera and you (engine/cam-fade.js)
 const flameMats=[new THREE.MeshBasicMaterial({color:0xff7a22,transparent:true,opacity:0.85,depthWrite:false,blending:THREE.AdditiveBlending}),
                  new THREE.MeshBasicMaterial({color:0xffd060,transparent:true,opacity:0.9,depthWrite:false,blending:THREE.AdditiveBlending})];
 const fireLight=new THREE.PointLight(0xff9a4a,0,18,2); scene.add(fireLight);
