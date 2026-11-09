@@ -16,13 +16,13 @@ const CAVE_COST_MIN=20, CAVE_COST_MAX=40;   // what a cave skill may cost
 const CAVE_LEVEL_MAX=10;   // awakening: a charge skill's level is its branch in the Awakening tree (server/awakening.js awkSyncG; the tree's top); each number scales by its curve (shared/awakening.js), the cost stays
 const CAVE_LEVEL_COST=[0,0,3,7,15,40];   // the OLD Echo Shard price of levels 2-5 (caveup, retired by Awakening: the charge branch of the tree pays its levels now); kept for the panel until step 15
 // the cave's monster drops: each floor's monsters drop that floor's material (gear.cave.m[floor]); a level of a cave skill also asks for the material of the skill's own floor
-const CAVE_DROPS=[null,'Glow Silk','Prism Splinter','Drowned Pearl','Magma Heart'];   // index = floor
+const CAVE_DROPS=[null,'Glow Silk','Prism Splinter','Drowned Pearl','Magma Heart','Frost Shard','Umbral Pearl'];   // index = floor
 const CAVE_DROP_COST=[0,0,3,6,10,20];   // of the skill's floor's material, to REACH level 2-5
 const CAVE_DROP_CHANCE=0.35, CAVE_DROP_MAX=9999;   // a kill on a floor drops one (the same chance as a land's monster material); the count's cap
 const CAVE_REFUND_CAP=15;                   // a cast's kill refunds (fx.refund) never give back more than this much charge in all
 const CAVE_CAST_CD=0.8;                     // seconds between two cave casts (the charge is the real limit)
 const CAVE_CAST_WINDOW=3;                   // a cast may still pay its charge this long after it started (a projectile in flight)
-const CAVE_FLOORS=4;                        // floors with skills today (more floors are data rows later)
+const CAVE_FLOORS=6;                        // floors with skills today (more floors are data rows later)
 const CAVE_METHOD_OFF='F';                 // the Collapse run (the vault) is retired: its row stays so old skills can name it, but nothing runs it and no board lists it
 const CAVE_METHODS='ABCDEFGH';              // the eight ways to earn a skill (docs/CAVE.md section 6)
 const CAVE_SKILLS=Object.create(null), CAVE_SKILL_IDS=[], CAVE_BAD=[];
