@@ -15,14 +15,13 @@ const PZ_DIFF=[null,
 const PZ_SOLVER_PRICE=50, PZ_SOLVER_NEED=[null,1,1,1,2,3];   // the Puzzle solver (gem shop, 50 gems): skips a stone's FIRST solve; 1 for trivial / easy / normal, 2 for hard, 3 for extreme; never a renewal, dungeon or raid stone (anti pay-to-win)
 var PZ_MAX_DIFF=5;   // the game has five difficulties; only the puzzle lab (tools/puzzle-lab-diffs.js) raises this to 10, just for fun
 const PZ_RENEW_MS=2*3600*1000, PZ_FLOOR_K=0.3, PZ_REACH=7;   // PZ_REACH: how close (m) you must stand to a stone
-// (amber no longer comes from a chest: the Deep Cave's methods pay it, CAVE_AMBER_FIRST)
 // a chest by difficulty: coins x coinsFor(level), potions [min,max], drops (skill-upgrade materials of the level), stones (Tempering, from level 30), amber, scroll (epic scroll chance), gear (first solve: [chance, min rarity])
 const PZ_CHEST=[null,
   {coins:2,pot:[0,1],potP:0.4,drops:1,stones:0,amber:0,scroll:0,gear:null},
   {coins:4,pot:[0,2],potP:1,drops:2,stones:0,amber:0,scroll:0,gear:null},
   {coins:8,pot:[1,3],potP:1,drops:3,stones:1,amber:0,scroll:0.02,gear:null},
-  {coins:15,pot:[2,4],potP:1,drops:5,stones:2,amber:0,scroll:0.06,gear:[0.1,1]},
-  {coins:30,pot:[3,6],potP:1,drops:8,stones:4,amber:0,scroll:0.20,gear:[1,2]}];
+  {coins:15,pot:[2,4],potP:1,drops:5,stones:2,amber:20,scroll:0.06,gear:[0.1,1]},
+  {coins:30,pot:[3,6],potP:1,drops:8,stones:4,amber:50,scroll:0.20,gear:[1,2]}];
 // XP of a chest, counted in kills of a monster of the stone's level (xpFor(lv)): it grows with the level like the kills do. The first solve of a stone pays PZ_XP_FIRST times as much
 const PZ_XP_KILLS=[0,6,12,25,50,100], PZ_XP_FIRST=3;
 const PZ_POTION_ODDS=[['heal',0.55],['might',0.25],['guard',0.20]], PZ_LUCKY=0.10, PZ_STONE_LV=30;
