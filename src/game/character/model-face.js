@@ -113,9 +113,10 @@ function buildFace(X){
 
   /* nose: a tiny rounded tip with two wings and nostril dots (anime noses are little more than a hint, and have no bridge line) */
   { const nS=S.noseSize*(fem?0.88:1), n=[];
-    n.push(pc(sweepTube([[0,0.008,0.002],[0,-0.001,-0.004*nS],[0,-0.007,-0.0082*nS]],[0.0015*nS,0.0028*nS,0.0045*nS],sg(8),{cap:'round',rings:sg(8)}),(x,y,z,c)=>skinPaint(c)));
-    n.push(pc(el(0.0058*nS,0.005*nS,0.0055*nS,0,-0.0085,-0.0085*nS),(x,y,z,c)=>{ skinPaint(c); c.multiplyScalar(0.985); }));
-    for(const sd of [-1,1]){ n.push(pc(el(0.0028*nS,0.003*nS,0.003*nS,sd*0.0048*nS,-0.0078,-0.0052*nS),(x,y,z,c)=>{ skinPaint(c); c.multiplyScalar(0.96); }));
+    // the bridge is a long low ridge whose upper end sinks into the face (a tilted ellipsoid: no tube standing on the skin, which read as a peg from the front); the tip is a small soft ball
+    n.push(pc(csph(1,sg(12),sg(10)).scale(0.0037*nS,0.0125,0.0043*nS).rotateX(0.5).translate(0,0.0008,-0.0014*nS),(x,y,z,c)=>skinPaint(c)));
+    n.push(pc(el(0.0052*nS,0.0043*nS,0.005*nS,0,-0.0088,-0.0078*nS),(x,y,z,c)=>{ skinPaint(c); c.multiplyScalar(0.985); }));
+    for(const sd of [-1,1]){ n.push(pc(el(0.0027*nS,0.0028*nS,0.003*nS,sd*0.0042*nS,-0.0088,-0.0048*nS),(x,y,z,c)=>{ skinPaint(c); c.multiplyScalar(0.96); }));
       n.push(col(el(0.0013*nS,0.001*nS,0.001*nS,sd*0.0025*nS,-0.0118,-0.0088*nS),skin.clone().multiplyScalar(0.62).getHex())); }
     parts.push(place(merge(n),0,-0.02*HEAD_TALL,0)); }
 
