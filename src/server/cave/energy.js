@@ -22,7 +22,7 @@ function caveEnTickP(p,M,dt){
   const safe=caveEnSafeP(p,n); M.N.safe=safe;
   if(!safe){
     c.en=Math.max(0,c.en-caveEnDrain(c.en)*dt);
-    if(c.en<CAVE_EN_LOW){ caveMTell(p,M,'enlow','Your cave energy is fading: you are blind and hurting. Kill monsters or return to the lift.','bad');
+    if(c.en<CAVE_EN_LOW){ caveMTell(p,M,'enlow','Your cave energy is fading: you are hurting. Kill monsters or return to the lift.','bad');
       p.hp=Math.max(1,p.hp-p.maxHp*CAVE_EN_DOT*dt); p.lastHit=S.t; }   // (lastHit: no regeneration while it burns)
   }
   // shard nodes: stand still near one, pay the energy, get Echo Shards

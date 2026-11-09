@@ -31,7 +31,8 @@ function caveLookEnv(s){
   const L=CAVE_LOOK; if(!CAVE_RUN||!L.on) return;
   s.fog.copy(L.fog); s.sky.copy(L.fog); s.hor.copy(L.fog); s.cloud.copy(L.fog); s.hs.copy(L.hs); s.hg.copy(L.hg); s.sun.copy(L.sun);
   s.hi=L.hi; s.sunI=L.sunI; s.night=0; s.elev=78; s.azim=40; s.sE=78; s.sA=40; s.mE=-90; s.lk=1; s.far=L.far;
-  scene.fog.near=L.near;
+  { const k=typeof caveEnFogK==='function'?caveEnFogK():0; if(k>0){ s.far=L.far+(CAVE_EN_FOG_NEAR_FAR-L.far)*k; s.fog.lerp(CAVE_EN_FOG_COL,0.75*k); s.sky.copy(s.fog); s.hor.copy(s.fog); s.cloud.copy(s.fog); } }   // low energy: the void fog (cave/energy.js)
+  scene.fog.near=L.near*(1-0.9*(typeof caveEnFogK==='function'?caveEnFogK():0));
 }
 function caveLookTick(dt){
   const L=CAVE_LOOK, R=CAVE_RUN; if(!R||!L.on) return;
