@@ -71,9 +71,10 @@ function pzOpenSiteP(p,id){
 }
 function pzSolveP(p,ans){
   const O=p.pz; if(!O) return; p.pz=null;
-  const B=pzBoardS(O.kind,O.diff,O.seed); if(!B) return;
+  let B=null, good=false; try{ B=pzBoardS(O.kind,O.diff,O.seed); good=!!B&&PZ_KINDS[O.kind].check(B,ans); }catch(e){ B=null; }   // a throwing generator or checker refuses the answer, it never ends the tick
+  if(!B){ pzNo(p,'The board could not be checked. Open the stone again'); return; }
   const secs=(Date.now()-O.t0)/1000;
-  if(!PZ_KINDS[O.kind].check(B,ans)){ pzNo(p,'That is not a solution'); p.pz=O; return; }
+  if(!good){ pzNo(p,'That is not a solution'); p.pz=O; return; }
   if(O.src==='dg'||O.src==='raid'){ pzGrpPayP(p,O); return; }   // puzzles: a group board
   pzPayP(p,O,secs);
 }

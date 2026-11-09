@@ -78,10 +78,10 @@ function slGen(seed,diff){
     for(let r=0;r<=h;r++) for(let c=0;c<w;c++) if(inside(r-1,c)!==inside(r,c)) sol.push(r*w+c);
     for(let r=0;r<h;r++) for(let c=0;c<=w;c++) if(inside(r,c-1)!==inside(r,c)) sol.push(G.hN+r*(w+1)+c);
     const on=new Set(sol), clue=G.cellE.map(es=>es.filter(e=>on.has(e)).length);
-    let r=slSolve(w,h,clue,2,diff>=5?300000:60000,G); if(r.aborted||r.sols!==1) continue;
+    let r=slSolve(w,h,clue,2,diff>=5?15000:60000,G); if(r.aborted||r.sols!==1) continue;
     const order=[...Array(N).keys()]; for(let i=N-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); const t=order[i]; order[i]=order[j]; order[j]=t; }
     let left=N; const want=Math.round(N*D.keep);   // stop taking numbers out at a share of the board: the last few numbers cost the most search and add little difficulty
-    for(const i of order){ if(left<=want) break; const v=clue[i]; clue[i]=-1; r=slSolve(w,h,clue,2,diff>=5?300000:60000,G); if(r.aborted||r.sols!==1) clue[i]=v; else left--; }
+    for(const i of order){ if(left<=want) break; const v=clue[i]; clue[i]=-1; r=slSolve(w,h,clue,2,diff>=5?15000:60000,G); if(r.aborted||r.sols!==1) clue[i]=v; else left--; }
     return {w,h,clue,sol};
   }
   return null;
