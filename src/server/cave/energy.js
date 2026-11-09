@@ -5,8 +5,10 @@
    exports: caveEnTickP(p, M, dt) (caveMTickP calls it on a floor), caveEnKillS(p, m) (caveDropS), caveEnSafeP(p, n), caveEnNodeLeft(p, n, i), caveEnSendP(p, M, v) adds en / sf / sn / mc to the cm message. */
 function caveEnSafeP(p,n){ const W=caveAW(n); return Math.hypot(p.x-W.start.x,p.z-W.start.z)<CAVE_EN_SAFE_R; }
 function caveEnNodeLeft(p,n,i){ const s=p.gear.cave.sn&&p.gear.cave.sn[n+':'+i]; return s>0?Math.max(0,s-caveNow()):0; }
-function caveEnAddP(p,n,x){   // energy up to the max; the max opens the next floor, once
-  const c=p.cave; c.en=Math.max(0,Math.min(CAVE_EN_MAX,(c.en===undefined?CAVE_EN_START:c.en)+x));
+// energy belongs to ONE visit of ONE floor: a new floor, or a return after more than a second away from every floor (the lift, a warp, a death), starts again at CAVE_EN_START (no carrying a full bar between floors)
+function caveEnFloorP(p,n){ const c=p.cave; if(c.enN!==n||!(S.t-(c.enAt||0)<1)){ c.enN=n; c.en=CAVE_EN_START; } c.enAt=S.t; }
+function caveEnAddP(p,n,x){   // energy up to the max; the max opens the next floor, once (touching it for an instant is enough: the bar then stays at the cap)
+  const c=p.cave; caveEnFloorP(p,n); c.en=Math.max(0,Math.min(CAVE_EN_MAX,c.en+x));
   const g=p.gear.cave; if(c.en>=CAVE_EN_MAX&&g&&!(g.mx&&g.mx[n])){ (g.mx||(g.mx=[0,0,0,0,0,0,0,0,0,0]))[n]=1; p.dirty=true;
     toastTo(p.id,caveFloorDef(n+1)?'Your energy is full: floor '+(n+1)+' is open!':'Your energy is full.','good'); }
 }
@@ -17,7 +19,7 @@ function caveEnKillS(p,m){   // a monster of a floor died: everyone on that floo
 }
 function caveEnTickP(p,M,dt){
   const c=p.cave, n=M.n; if(!c) return;
-  if(c.en===undefined) c.en=CAVE_EN_START;
+  caveEnFloorP(p,n);
   if(p.dead){ M.N.cast=null; return; }
   const safe=caveEnSafeP(p,n); M.N.safe=safe;
   if(!safe){
