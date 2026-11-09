@@ -349,6 +349,7 @@
     "character/model-garments-more.js",
     "character/cloth.js",
     "character/hair-sway.js",
+    "character/chest-jiggle.js",
     "character/model-dresses.js",
     "character/model-silly.js",
     "character/outfit-tools.js",

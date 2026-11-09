@@ -122,6 +122,7 @@ function buildCharacter(L,opt){
     if(!rig.anims.length) rig.anims=null; }
   if(X.kit&&!X.L.aura) for(const k of X.kit.kits) if(k.aura&&X.kit.sl.top===k) cosBuildAura(rig,X,k.aura);   // a set's own aura (kit.aura, same fields as COS_AURAS), unless the wearer chose one
   for(const m of sway) clSway(rig,m,gmdIs(L.top));
+  cjSway(rig,torso,cjWeights(torso.geometry,X,D),S.chestJiggle,fem?Math.min(1,0.3+0.25*chestEff(S.chest)):(S.chest>1.4?0.3*Math.min(1,0.3+0.25*chestEff(S.chest)):0));   // the bust lags the stride, a stop and a turn (character/chest-jiggle.js)
   if(hairMesh) hwSway(rig,hairMesh,hwReach(hairDyn),S.hairSwing);   // the hanging hair swings with the head and the walk (character/hair-sway.js)   // skirts, flares and hems follow the legs (character/cloth.js)
   kinDress(rig,X);   // kin: the fur markings, then the ears, muzzle and tail of look.kinEars / kinMuzzle / kinTail (character/model-kin.js)
   rig.left=!!L.left; rig.sillyS=sillyId(L,'strong'); rig.sillyW=sillyId(L,'weak');   // handedness (Settings > Left-handed: the weapon and shield swap hands, pose.js mirrors the arms) and the silly hand items that replace the weapon / the shield (model-silly.js)

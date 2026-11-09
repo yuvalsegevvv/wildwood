@@ -69,6 +69,7 @@ A look field that is not a slider (hair style, colours, face shape) still follow
 | `chestLift` | Shape | Chest height | -1.3 .. 1.8 | 0 | whole range | Lower / Higher |
 | `hipTall` | Shape | Hip height | -0.5 .. 1.8 | 0 | whole range | Shorter / Taller |
 | `chestGap` | Shape | Chest spacing | -0.6 .. 1 | 0 | whole range | Closer / Apart |
+| `chestJiggle` | Shape | Chest jiggle | 0 .. 2 | 1 | whole range | Still / Bouncy |
 | `hipCurve` | Shape | Hip curve | 0.4 .. 2.6 | 1 | whole range | Flat / Round |
 | `hatSize` | Outfit | Hat size | 0.8 .. 1.35 | 1 | whole range | Smaller / Larger |
 | `hatTilt` | Outfit | Hat tilt | -1 .. 1 | 0 | whole range | Left / Right |
