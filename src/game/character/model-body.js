@@ -167,7 +167,8 @@ function buildArm(X,D,sd){
 // the shoe: a loft from the heel to the toe, whose ankle opening is where the shin comes down into it
 function buildFoot(X,D,sd,boot){
   const {L,S,sg,skinPaint}=X, kit=X.kit&&X.kit.sl.shoes, sf=S.feet, wf=0.55+0.45*sf, hf=0.8+0.2*sf, A=D.ankleH;
-  const st=[[0.056,0.004,0.004,0.02],[0.047,0.02,0.026,0.03],[0.026,0.029,0.04,0.04],[0.0,0.031,0.05,0.05],[-0.03,0.033,0.04,0.042],[-0.075,0.037,0.027,0.029],[-0.115,0.031,0.02,0.021],[-0.14,0.018,0.013,0.015],[-0.153,0.004,0.004,0.01]];
+  const st=[[0.056,0.004,0.004,0.02],[0.05,0.017,0.022,0.027],[0.04,0.025,0.033,0.035],[0.022,0.03,0.042,0.042],[0.0,0.031,0.05,0.05],[-0.03,0.033,0.04,0.042],[-0.075,0.038,0.027,0.029],[-0.112,0.036,0.021,0.022],[-0.138,0.031,0.016,0.017],[-0.151,0.022,0.011,0.012],[-0.157,0.008,0.005,0.007]];   // heel (a round ball), ankle, instep, the ball of the foot (widest), then a round toe box: the old one ran to a point like an elf's shoe
+  if(sg(100)<50) st.splice(9,1), st.splice(7,1), st.splice(2,1);   // phones: three stations fewer (the triangle budget)
   const rings=[]; for(const s of st){ rings.push({y:s[0]*sf,rx:s[1]*wf,rz:s[2]*hf,zc:-(s[3]*hf-A)}); }
   const dense=[]; for(let i=0;i<rings.length-1;i++){ const k=Math.max(1,Math.round(sg(3))); for(let j=0;j<k;j++){ const f=j/k, a=rings[i], b=rings[i+1]; dense.push({y:lerp(a.y,b.y,f),rx:lerp(a.rx,b.rx,f),rz:lerp(a.rz,b.rz,f),zc:lerp(a.zc,b.zc,f)}); } } dense.push(rings[rings.length-1]);
   const g=loftRings(dense,sg(18)); g.rotateX(Math.PI/2); g.rotateY(-sd*0.1);
