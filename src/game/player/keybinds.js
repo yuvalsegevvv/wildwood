@@ -27,7 +27,8 @@ const KB_ACTIONS=[
   {id:'target',name:'Switch target', def:['Tab','']},
   {id:'talk',  name:'Talk / travel', def:['KeyE','']},
   {id:'gather',name:'Gather (mine, chop, pick herbs)', def:['KeyH','']},   // H: G is the world map's (a default key must not collide)
-  {id:'inv',   name:'Inventory',     def:['KeyI','']},
+  {id:'inv',   name:'Equipment',     def:['KeyI','']},   // (the panel with the doll and the bag; the materials are the Inventory, key B)
+  {id:'mats',  name:'Inventory',     def:['KeyB','']},
   {id:'skills',name:'Skills',        def:['KeyK','']},
   {id:'awaken',name:'Awakening tree', def:['KeyT','']},   // awakening: the tree of skill levels, stats and tiers (awakening/panel.js); T was a potion key before 11/2026 (a saved key keeps its owner)
   {id:'map',   name:'Map',           def:['KeyM','']},   // M: the map key most games use (N before 11/2026; saved keys keep theirs)

@@ -40,7 +40,8 @@
     "35-movement.css",
     "37-awakening.css",
     "38-bonds.css",
-    "39-characters.css"
+    "39-characters.css",
+    "40-tooltip.css"
   ],
   "shared": [
     "math.js",
@@ -491,6 +492,7 @@
     "ui/drop-icons.js",
     "ui/mon-pics.js",
     "ui/panels.js",
+    "ui/tooltip.js",
     "economy/inventory.js",
     "economy/inv-keys.js",
     "economy/shops.js",

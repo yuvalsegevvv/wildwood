@@ -47,6 +47,7 @@ styles
   37-awakening.css                   Awakening tree panel (game/awakening/panel.js): the character picker, the tier strip, the canvas with its zoom buttons, the limb chips and the detail box; a bottom sheet on a phone
   38-bonds.css                       Bonds (game/bond/): the Bonds panel (cards, the orb pouch, this hour's Stirrings), the orb pop-up, the +1 and guest marks on skill tiles and the action bar
   39-characters.css                  The Characters panel's frame (game/awakening/hub.js): the character list on the left, the hero card with the default look behind it, the tabs, the skills tab's rows with their swap button, the look tab; a phone stacks it
+  40-tooltip.css                     The in-game hover note (ui/tooltip.js) and the scrollbars: bark, brass and parchment instead of the browser's grey
 
 shared
   math.js                            Shared math: TAU, DEG, AR (random range), APick, angDiff, angLerp. Pure: runs in the browser and on the server.
@@ -582,6 +583,7 @@ game
   ui/drop-icons.js                   Monster-drop icons (version 3.1): every drop in the bag drawn as what it is (goo, tusk, claw, feather, plate, pelt, flame...), picked from its name, in the monster's colours, with a variation per monster
   ui/mon-pics.js                     Monster pictures for the quest panel: each monster a quest asks you to defeat, drawn once from its own model on a small off-screen target and kept as an image
   ui/panels.js                       Panel open/close helpers (openPanel, closePanels, uiOpen, releasePointer)
+  ui/tooltip.js                      The in-game hover note: any element with a title (or data-tip) shows a bark-and-brass note beside the pointer instead of the browser's grey popup
   economy/inventory.js               Inventory panel: equipment worn on a body outline, the bag as a grid of icons, drag and drop between them
   economy/inv-keys.js                The inventory's key resources at the top: Echo Shards, Tempering Stones, the three Reroll Stones and Sigils first (with how much each matters), then Bond Orbs and Bondstones; each with its own icon
   economy/shops.js                   Weapon and armour shops, and Odran the peddler (a bit of everything, and curiosities he will not sell)

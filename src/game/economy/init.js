@@ -4,6 +4,7 @@ addEventListener('keydown',e=>{
   if(e.code==='Escape') closePanels();
   if(!started||customizing) return;
   if(kbIs(e.code,'inv')) toggleInv();
+  if(kbIs(e.code,'mats')) toggleMats();
 });
 if(!ITEM[GEAR.eq.weapon]) GEAR.eq.weapon=WEAPON_OF[CLASSES[LOOK.cls]?LOOK.cls:'warrior']+'1';
 LOOK.cls=clsOf();

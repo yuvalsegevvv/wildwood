@@ -131,7 +131,7 @@ function onGatherEvent(i,res,n){
   hideCast();
   toast('+'+n+' '+RES[res].name,'good'); UI_SFX.success();
   const nd=NODES[i]; if(nd){ for(let k=0;k<6;k++){ const m=new THREE.Mesh(emberGeo,emberMat); m.position.set(nd.x+AR(-0.4,0.4),getH(nd.x,nd.z)+AR(0.3,1.0),nd.z+AR(-0.4,0.4)); scene.add(m); CB.fx.push({mesh:m,life:0.6,max:0.6,shrink:true}); } }
-  if(!$('#inv').hidden) renderInv();
+  if(!$('#inv').hidden||!$('#mats').hidden) renderInv();
 }
 /* ---- the lodge panel ---- */
 let loTier=-1;   // the tier shown in the tool shop (-1: the best one you can use)

@@ -32,5 +32,5 @@ body.touch #minimap{ width:104px; height:104px; border-radius:8px; }
   body.touch #qlog{ top:calc(env(safe-area-inset-top,0px) + 182px) !important; bottom:auto; }   /* under the 104 px minimap: its old spot above Dash and Jump lay behind the column of skill buttons */
   body:not(.touch) #qlog{ top:calc(env(safe-area-inset-top,0px) + 232px) !important; }
 }
-@media (max-width:520px){ body.touch #qlog{ top:calc(env(safe-area-inset-top,0px) + 276px) !important; } }   /* (the buttons are a 3x3 block here, 02-hud.css, so the minimap ends at 266) */
+@media (max-width:520px){ body.touch #qlog{ top:calc(env(safe-area-inset-top,0px) + 324px) !important; } }   /* (the buttons are a 3-wide, four-row block here, 02-hud.css, so the minimap ends at 314) */
 body.touch #bMap{ display:none; }

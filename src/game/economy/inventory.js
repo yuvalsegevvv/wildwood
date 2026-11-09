@@ -17,12 +17,13 @@ function tile(it,from,count){
 const SIL='<svg class="doll-sil" viewBox="0 0 120 240" aria-hidden="true"><circle cx="60" cy="30" r="20"/><path d="M60 54c-20 0-34 8-37 26l-8 58c-1 6 7 8 9 2l10-50v62l-4 76c0 7 10 7 11 0l12-66h14l12 66c1 7 11 7 11 0l-4-76v-62l10 50c2 6 10 4 9-2l-8-58c-3-18-17-26-37-26z"/></svg>';
 function renderInv(){
   $('#plCoins').textContent=fmtCoins(GEAR.coins);
+  renderMats();   // the Inventory panel (materials) is its own panel since 11/2026
   if($('#inv').hidden) return;
   $('#invCoins').textContent=fmtCoins(GEAR.coins)+' coins';
   $('#invGems').textContent=(GEAR.gem||0)+' gems';
   $('#invAmber').textContent=(GEAR.amb||0)+' amber';
   const g=gearStats(), c=CLASSES[clsOf()];
-  let h=ikHtml()+`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div>${invExtraStats()}</div>`;
+  let h=`<div class="inv-stats"><div><span>Level</span><b>${PL.level}</b></div><div><span>Class</span><b>${c.name}</b></div><div><span>Health</span><b>${PL.maxHp}</b></div><div><span>Damage</span><b>${Math.round(PL.dmg)}</b></div><div><span>Defense</span><b>${g.def} <small>(${Math.round(PL.red*100)}% less damage)</small></b></div>${invExtraStats()}</div>`;
   { const W=GEAR.eq.wpn||{}, act=ITEM[GEAR.eq.weapon]&&CLASS_OF[ITEM[GEAR.eq.weapon].slot];   // wpn: the three carried weapons; only the one for the class you play counts
     h+='<div class="wpn-row" aria-label="Weapons carried">'+WPN_CLS.map(cl=>{ const it=typeof W[cl]==='string'?ITEM[W[cl]]:null, on=cl===act;
       return `<div class="wpn-s${on?' on':' off'}"><span class="eq-l">${WEAPON_OF[cl][0].toUpperCase()+WEAPON_OF[cl].slice(1)} (${CLASSES[cl].name})</span>${it?tile(it,on?'weapon':'wpn',1):`<div class="tile empty">${slotIcon('weapon')}</div>`}<em>${on?'in use':'inactive'}</em></div>`; }).join('')+'</div>'; }
@@ -34,14 +35,6 @@ function renderInv(){
   const counts=bagCounts(), ids=Object.keys(counts).sort((a,b)=>ITEM[a].kind.localeCompare(ITEM[b].kind)||ITEM[b].tier-ITEM[a].tier||ITEM[a].slot.localeCompare(ITEM[b].slot));
   h+=`</div><div class="bag"><div class="inv-h">Bag <span>${GEAR.inv.length} / 80</span></div><div class="bag-grid" id="invBag">${ids.map(id=>tile(ITEM[id],'bag',counts[id])).join('')||'<p class="muted bag-empty">Nothing in your bag. Items you take off land here.</p>'}</div></div></div>`;
   h+=`<div class="inv-info" id="invInfo"></div>`;
-  // monster drops: only used to upgrade skills (Skills panel)
-  const mats=GEAR.mats||{}, have=MAT_IDS.filter(id=>mats[id]>0);
-  h+=`<div class="inv-h">Monster drops <span>${have.length?'for upgrading skills':''}</span></div><div class="mat-row">${have.length?have.map(id=>`<span class="matc" title="${MATS[id].name}: dropped by ${MATS[id].from} (level ${MATS[id].lv})"><span class="tile r${MATS[id].boss?3:0} matt" aria-label="${MATS[id].name} x${mats[id]}">${matIcon(MATS[id].col,'drop',id,MATS[id].name)}<span class="ct">x${mats[id]}</span></span><span class="nm">${MATS[id].name}</span></span>`).join(''):'<p class="muted">Monsters sometimes drop materials. You use them to upgrade your skills at a trainer.</p>'}</div>`;   // dungeons: the stone count beside the drops; rolls: the reroll stones
-  { const res=GEAR.res||{}, haveR=Object.keys(RES).filter(id=>res[id]>0);   // gathered resources (professions)
-    if(haveR.length||(GEAR.prof&&Object.keys(GEAR.prof).length)) h+=`<div class="inv-h">Resources <span>${haveR.length?'gathered with your professions':''}</span></div><div class="mat-row">${haveR.length?haveR.map(id=>`<span class="matc" title="${RES[id].name}"><span class="tile r0 matt" aria-label="${RES[id].name} x${res[id]}">${matIcon(RES[id].col,RES[id].prof)}<span class="ct">x${res[id]}</span></span><span class="nm">${RES[id].name}</span></span>`).join(''):'<p class="muted">Nothing gathered yet.</p>'}</div>`; }
-  { const es=ESS_ORDER.filter(id=>GEAR.awm&&(GEAR.awm[id]|0)>0); if(es.length) h+=`<div class="inv-h">Essence <span>for the Awakening trees, paid by the elemental rifts</span></div><div class="mat-row">${es.map(id=>`<span class="matc" title="${ESSENCE[id].name}: paid by an elemental rift"><span class="tile r3 matt" aria-label="${ESSENCE[id].name} x${GEAR.awm[id]}">${essIcon(essCol(id),ESSENCE[id].key==='prime')}<span class="ct">x${GEAR.awm[id]}</span></span><span class="nm">${ESSENCE[id].name}</span></span>`).join('')}</div>`; }   // Essence (rifts, step 17a)
-  { const tr=BT_ORDER.filter(id=>GEAR.awm&&(GEAR.awm[id]|0)>0); if(tr.length) h+=`<div class="inv-h">Boss trophies <span>for the Awakening trees</span></div><div class="mat-row">${tr.map(id=>`<span class="matc" title="${BOSS_TROPHY[id].name}${BOSS_TROPHY[id].text?': '+BOSS_TROPHY[id].text:''}"><span class="tile r3 matt" aria-label="${BOSS_TROPHY[id].name} x${GEAR.awm[id]}">${btIcon(BOSS_TROPHY[id].col)}<span class="ct">x${GEAR.awm[id]}</span></span><span class="nm">${BOSS_TROPHY[id].name}</span></span>`).join('')}</div>`; }   // trophies
-  { const rr=rdMatRows(); if(rr.length) h+=`<div class="inv-h">Raid materials <span>for upgrading signature skills</span></div><div class="mat-row">${rr.map(r=>`<span class="matc" title="${r.name}: won by clearing a raid in that land"><span class="tile r3 matt" aria-label="${r.name} x${r.n}">${matIcon(0xe8b84a,'drop',r.land,r.name)}<span class="ct">x${r.n}</span></span><span class="nm">${r.name}</span></span>`).join('')}</div>`; }   // raids
   $('#invBody').innerHTML=h;
   if(INV.sel && !(INV.sel.from==='bag'?counts[INV.sel.id]:INV.sel.from==='wpn'?wpnInactive(GEAR).includes(INV.sel.id):GEAR.eq[INV.sel.from]===INV.sel.id)) INV.sel=null;
   renderInvInfo();
@@ -149,6 +142,23 @@ $('#invBody').addEventListener('dblclick',e=>{
   if(t.dataset.from==='bag') equip(t.dataset.id); else unequip(t.dataset.from);
   INV.sel=null;
 });
+// the Inventory panel (key B): everything that is not worn gear: key resources first, then drops, resources, Essence, trophies, raid materials
+function renderMats(){
+  if($('#mats').hidden) return;
+  $('#matsCoins').textContent=fmtCoins(GEAR.coins)+' coins'; $('#matsGems').textContent=(GEAR.gem||0)+' gems'; $('#matsAmber').textContent=(GEAR.amb||0)+' amber';
+  let h=ikHtml();
+  // monster drops: only used to upgrade skills (Skills panel)
+  const mats=GEAR.mats||{}, have=MAT_IDS.filter(id=>mats[id]>0);
+  h+=`<div class="inv-h">Monster drops <span>${have.length?'for upgrading skills':''}</span></div><div class="mat-row">${have.length?have.map(id=>`<span class="matc" title="${MATS[id].name}: dropped by ${MATS[id].from} (level ${MATS[id].lv})"><span class="tile r${MATS[id].boss?3:0} matt" aria-label="${MATS[id].name} x${mats[id]}">${matIcon(MATS[id].col,'drop',id,MATS[id].name)}<span class="ct">x${mats[id]}</span></span><span class="nm">${MATS[id].name}</span></span>`).join(''):'<p class="muted">Monsters sometimes drop materials. You use them to upgrade your skills at a trainer.</p>'}</div>`;   // dungeons: the stone count beside the drops; rolls: the reroll stones
+  { const res=GEAR.res||{}, haveR=Object.keys(RES).filter(id=>res[id]>0);   // gathered resources (professions)
+    if(haveR.length||(GEAR.prof&&Object.keys(GEAR.prof).length)) h+=`<div class="inv-h">Resources <span>${haveR.length?'gathered with your professions':''}</span></div><div class="mat-row">${haveR.length?haveR.map(id=>`<span class="matc" title="${RES[id].name}"><span class="tile r0 matt" aria-label="${RES[id].name} x${res[id]}">${matIcon(RES[id].col,RES[id].prof)}<span class="ct">x${res[id]}</span></span><span class="nm">${RES[id].name}</span></span>`).join(''):'<p class="muted">Nothing gathered yet.</p>'}</div>`; }
+  { const es=ESS_ORDER.filter(id=>GEAR.awm&&(GEAR.awm[id]|0)>0); if(es.length) h+=`<div class="inv-h">Essence <span>for the Awakening trees, paid by the elemental rifts</span></div><div class="mat-row">${es.map(id=>`<span class="matc" title="${ESSENCE[id].name}: paid by an elemental rift"><span class="tile r3 matt" aria-label="${ESSENCE[id].name} x${GEAR.awm[id]}">${essIcon(essCol(id),ESSENCE[id].key==='prime')}<span class="ct">x${GEAR.awm[id]}</span></span><span class="nm">${ESSENCE[id].name}</span></span>`).join('')}</div>`; }   // Essence (rifts, step 17a)
+  { const tr=BT_ORDER.filter(id=>GEAR.awm&&(GEAR.awm[id]|0)>0); if(tr.length) h+=`<div class="inv-h">Boss trophies <span>for the Awakening trees</span></div><div class="mat-row">${tr.map(id=>`<span class="matc" title="${BOSS_TROPHY[id].name}${BOSS_TROPHY[id].text?': '+BOSS_TROPHY[id].text:''}"><span class="tile r3 matt" aria-label="${BOSS_TROPHY[id].name} x${GEAR.awm[id]}">${btIcon(BOSS_TROPHY[id].col)}<span class="ct">x${GEAR.awm[id]}</span></span><span class="nm">${BOSS_TROPHY[id].name}</span></span>`).join('')}</div>`; }   // trophies
+  { const rr=rdMatRows(); if(rr.length) h+=`<div class="inv-h">Raid materials <span>for upgrading signature skills</span></div><div class="mat-row">${rr.map(r=>`<span class="matc" title="${r.name}: won by clearing a raid in that land"><span class="tile r3 matt" aria-label="${r.name} x${r.n}">${matIcon(0xe8b84a,'drop',r.land,r.name)}<span class="ct">x${r.n}</span></span><span class="nm">${r.name}</span></span>`).join('')}</div>`; }   // raids
+  $('#matsBody').innerHTML=h;
+}
+function toggleMats(){ if($('#mats').hidden){ openPanel('mats'); renderMats(); } else closePanels(); }
+$('#bMats').addEventListener('click',e=>{ e.currentTarget.blur(); toggleMats(); });
 function toggleInv(){ if($('#inv').hidden){ INV.sel=null; openPanel('inv'); renderInv(); } else closePanels(); }
 $('#bInv').addEventListener('click',e=>{ e.currentTarget.blur(); toggleInv(); });
 $('#invSkills').addEventListener('click',()=>openSkills());
