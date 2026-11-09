@@ -3,7 +3,7 @@
    Rules: PZ_KIND_OF says each land's kind. Trivial stones stand beside the roads 60-300 m from the village, easy ones beside roads farther out, normal ones at the atlas's camps (WA_SPOTS), hard ones on a ring round a boss arena or a door (WA_POIS),
    the first extreme one on a ring round the land's top boss (the future lamp shrine of the story plan, B4), the second hidden far from any road in the land's highest zone (B5's letter). Every stone is on flat dry ground, 5 m off a road, clear of villages,
    arenas, doors, the dungeon doors and other stones. The stone's level is its zone's level. The chosen first-time seeds (seed0) are 0 until the rater picks them. Used by: server/puzzles.js, game/village/buildings-puzzle.js, the three maps. Test: tools/puzzles-smoke.js */
-const PZ_KIND_OF={home:'rootlines',vale:'sudoku',hoar:'iceslide',grey:'bridges',sun:'mirrors',gloam:'nonogram',amber:'sokoban',isles:'rootlines'};
+const PZ_KIND_OF={home:'rootlines',vale:'sudoku',hoar:'iceslide',grey:'bridges',sun:'akari',gloam:'nonogram',amber:'sokoban',isles:'slither'};   // (the plan's 'Mirrors' for the Sunscar became Glowstones when the cave began drawing random kinds from all of them; the isles have their Coastlines)
 const PZ_PLAN=[['t',1,15],['e',2,12],['n',3,8],['h',4,4],['x',5,2]];   // letter in the id, difficulty, count per land
 const PZ_MIN_GAP=38;   // metres between two stones
 function pzFlat(x,z){ const h=waGround(x,z); return Math.max(Math.abs(waGround(x+3,z)-h),Math.abs(waGround(x-3,z)-h),Math.abs(waGround(x,z+3)-h),Math.abs(waGround(x,z-3)-h))<=0.9; }
