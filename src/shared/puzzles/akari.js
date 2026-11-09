@@ -1,4 +1,4 @@
-//@ Glowstones (the Deep Cave's Akari kind): place glow crystals so every floor tile is lit and no two crystals see each other; numbered rocks say how many crystals touch them. Seeded generator, one answer, checker
+//@ Glowstones (the Sunscar's kind): place glow crystals so every floor tile is lit and no two crystals see each other; numbered rocks say how many crystals touch them. Seeded generator, one answer, checker
 /* Agent map. definePuzzleKind 'akari'. Board {w, h, black: [cells] (rocks), num: {cell: 0..4} (the numbered rocks), sol: [bulb cells]}. Answer: the list of crystal cells. Cell = z*w+x.
    A crystal lights its row and column up to the next rock. Rules (akCheck): every non-rock cell lit, no crystal lit by another, each numbered rock has exactly that many crystals on its 4 neighbours.
    Generation: scatter rocks, find a lighting with a randomised search (akSolve), number every rock from it, then drop numbers while the answer stays unique (akSolve counts to 2). Sizes AK_D: 5, 6, 8, 10, 14.
@@ -57,4 +57,4 @@ function akCheck(B,ans){
   for(const k in B.num){ const b=+k; let have=0; if(b%w>0&&bulb[b-1]) have++; if(b%w<w-1&&bulb[b+1]) have++; if(b>=w&&bulb[b-w]) have++; if(b<N-w&&bulb[b+w]) have++; if(have!==B.num[k]) return false; }
   return true;
 }
-definePuzzleKind({id:'akari',name:'Glowstones',land:'The Deep Cave',gen:akGen,check:akCheck,rate:B=>({size:B.w+'x'+B.h,rocks:B.black.length,numbers:Object.keys(B.num).length,crystals:B.sol.length})});
+definePuzzleKind({id:'akari',name:'Glowstones',land:'The Sunscar',gen:akGen,check:akCheck,rate:B=>({size:B.w+'x'+B.h,rocks:B.black.length,numbers:Object.keys(B.num).length,crystals:B.sol.length})});

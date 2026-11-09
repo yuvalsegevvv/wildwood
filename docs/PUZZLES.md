@@ -84,3 +84,7 @@ Standing at the statue, the talk key opens "Offering to the statue" (`pzOfferOpe
 - Each station shows a **chest** (not a stone) under a floating rune: closed while it waits, glinting when it holds loot, open and empty while it renews (`buildings-puzzle.js`).
 - The Emberwake Isles have 41 stations (kind Rootlines, `PZ_KIND_OF.isles`). No station stands inside a village (the rule uses the village's own radius; the tutorial station moved to (98, 210), outside the home village).
 - A chest pays **XP**: `xpFor(lv) * PZ_XP_KILLS[diff]` (6/12/25/50/100 kills), times `PZ_XP_FIRST` (3) on a stone's first solve (`pzChestP`). Deep Cave method completions pay `xpFor(level) * CAVE_XP_KILLS[floor]` (`caveMethodDoneP`).
+
+## Round 14: Glowstones move to the Sunscar, the cave plays every kind
+
+The Deep Cave has no kind of its own: its stones (5 trivial + 3 easy a floor) take every kind in turn (`PZ_CAVE_KIND`, nine kinds). Glowstones (`akari`) became the **Sunscar's** kind (`PZ_KIND_OF.sun`, its view redrawn in sand and sun-glass); Sun mirrors stay registered and appear in the cave. The Emberwake Isles' stones are Coastlines (`slither`), as the plan says, no longer the Rootlines fallback.

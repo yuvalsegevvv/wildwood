@@ -73,4 +73,4 @@ function mrGen(seed,diff){
   return null;
 }
 function mrCheck(B,ans){ return !!B&&Array.isArray(ans)&&ans.length===B.mir.length&&ans.every(v=>v===0||v===1)&&mrSolved(B,ans); }
-definePuzzleKind({id:'mirrors',name:'Sun mirrors',land:'Sunscar',gen:mrGen,check:mrCheck,rate:B=>({size:B.w+'x'+B.h,mirrors:B.mir.length,prisms:B.prism.length,targets:B.tgt.length,sources:B.src.length})});
+definePuzzleKind({id:'mirrors',name:'Sun mirrors',land:'The Sunscar',gen:mrGen,check:mrCheck,rate:B=>({size:B.w+'x'+B.h,mirrors:B.mir.length,prisms:B.prism.length,targets:B.tgt.length,sources:B.src.length})});

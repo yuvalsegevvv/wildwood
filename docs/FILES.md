@@ -242,7 +242,7 @@ shared
   puzzles/rootlines.js               Rootlines (the Flow Free kind, the home forest's): join same-coloured seeds with roots that fill the board; a seeded generator that keeps only boards with ONE solution, and the checker
   puzzles/ice.js                     Ice slide (the Hoarfrost Reach's kind): a stone slides until it hits rock; stop it on the rune. Switches to light, twin stones and cracking tiles at the higher difficulties; a seeded generator and the move-replay checker
   puzzles/sudoku.js                  Shrine tiles (the Sakura Vale's Sudoku kind): fill the grid with blossom glyphs so none repeats in a row, column or box; a seeded generator that keeps one answer, and the checker
-  puzzles/akari.js                   Glowstones (the Deep Cave's Akari kind): place glow crystals so every floor tile is lit and no two crystals see each other; numbered rocks say how many crystals touch them. Seeded generator, one answer, checker
+  puzzles/akari.js                   Glowstones (the Sunscar's kind): place glow crystals so every floor tile is lit and no two crystals see each other; numbered rocks say how many crystals touch them. Seeded generator, one answer, checker
   puzzles/slither.js                 Coastlines (Slitherlink, the Emberwake Isles' kind; testing tools only until the isles exist): draw one closed shoreline round the grid so each number has that many of its four sides on it. Seeded generator, one answer, checker
   puzzles/bridges.js                 Rope bridges (the Greyspine's Hashiwokakero kind): join the peaks with straight bridges so each peak's number is how many it carries, bridges never cross, and every peak is reachable. Seeded generator, one answer, checker
   puzzles/mirrors.js                 Sun mirrors (the Sunscar's kind): turn the glass mirrors so the beam reaches every target; prisms split a beam, coloured beams light only their own targets. Seeded generator (the beam is laid first, the mirrors turned afterwards) and the checker
@@ -679,7 +679,7 @@ game
   puzzles/ice.js                     Ice slide on the client: arrow keys, WASD, a swipe or the pad slide the stone (or the twin stones) over the ice; undo and reset
   puzzles/common.js                  Shared helpers of the puzzle views: a square canvas sized to the panel, and a pointer position in cells
   puzzles/sudoku.js                  Shrine tiles on the client: a grid of buttons and a pad of blossom glyphs; pick a cell, pick a glyph
-  puzzles/akari.js                   Glowstones on the client: tap a floor tile to set or lift a crystal; lit tiles glow, crystals that see each other turn red
+  puzzles/akari.js                   Glowstones (the Sunscar's kind) on the client: tap a floor tile to set or lift a crystal; lit tiles glow, crystals that see each other turn red
   puzzles/slither.js                 Coastlines on the client: tap beside a cell side to draw or lift a shoreline segment; one closed loop, every number met
   puzzles/bridges.js                 Rope bridges on the client: tap a peak, then a peak in line with it, to add a bridge; again for a second, again to remove
   puzzles/mirrors.js                 Sun mirrors on the client: tap a mirror to turn it; the beams are redrawn at once, targets glow when their colour reaches them
