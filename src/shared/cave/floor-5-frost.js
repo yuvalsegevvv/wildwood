@@ -10,7 +10,7 @@ caveMobDef('snowleopard','iceprowler','Ice Prowler',{level:71,el:'water',scale:1
 caveMobDef('cragwyvern','rimewyrm','Rime Wyrm',{level:72,el:'water',scale:1.1,pal:{stone:1,body:0xb8d8ec,belly:0xf0faff,ridge:0x4a88c0,horn:0xffffff,eye:0x7affff,wing:0x98c0e0}});
 caveMobDef('dustdjinn','blizzarddjinn','Blizzard Djinn',{level:73,el:'air',scale:1.3,glow:0x0a3a50,pal:{dust:0xd8f4ff,body:0x4a88c8,skin:0xc8e0f0,gold:0x9fffff,turban:0xe8f8ff,eye:0xffffff}});
 caveMobDef('efreet','frostefreet','Frostbound Efreet',{level:74,el:'dark',scale:1.8,glow:0x0a2a50,pal:{fire:1,flame:0x7ae0ff,body:0x2a58a0,skin:0x6a98c8,gold:0xc8f0ff,turban:0x102a50,eye:0xe8ffff}});
-defineCaveFloor({id:'frost',n:5,name:'The Frostbound Vaults',theme:'prism',lv:[65,74],seed:5531,
+defineCaveFloor({id:'frost',n:5,name:'The Frostbound Vaults',theme:'frost',lv:[65,74],seed:5531,
   mobs:['rimeslime','icebeetle','hoarwisp','frostbat','glacierwarden','rimegoblin','iceprowler','rimewyrm','blizzarddjinn','frostefreet'],
   gen:{cells:168,chambers:11,rMin:8.5,rMax:14,rStart:8,tw:3,wind:7,side:9,loops:3,style:'geode',camps:22,pools:2,start:[0.11,0.88],deep:[0.88,0.12]},
   look:{music:'rimehold',wall:0x5a7490,wall2:0x44668a,floor:0x405a72,ceil:0x2a4060,fog:0x0a1a2e,amb:0.4,light:0xdff4ff,hues:[0x9fe8ff,0xffffff,0x6ab0ff,0xc8f0ff,0x8ad0ff],h0:5,hk:1.5,hmax:18,wobble:0.35,far:62,fx:['geodes','beams','crystals','sparkle']}});

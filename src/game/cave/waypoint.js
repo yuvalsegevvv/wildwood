@@ -12,6 +12,7 @@ function cvwSetTrack(v){ CVW.track=CVW.track===v?null:v; try{ if(CVW.track) loca
   document.querySelectorAll('[data-cvtrack]').forEach(b=>{ const on=b.dataset.cvtrack===CVW.track; b.classList.toggle('on',on); b.textContent=on?'Tracked':'Track'; }); cvwHud(); }
 // the board's Track buttons (cave/methods.js caveBoardHtml draws them in the lift window and the skills panel): one listener for every board
 document.addEventListener('click',e=>{ const b=e.target&&e.target.closest&&e.target.closest('[data-cvtrack]'); if(!b) return; e.preventDefault(); cvwSetTrack(b.dataset.cvtrack); if(typeof UI_SFX!=='undefined') UI_SFX.click(); });
+const cvwSkill=()=>null;   // cave skills come from the Awakening tree now: no method teaches one, every method pays Echo Shards
 const cvwBit=(v,i)=>((v||0)>>i)&1;
 function cvwNear(list,skip){ let best=null,bd=1e9; (list||[]).forEach((a,i)=>{ if(!a||(skip&&skip(i))) return; const d=Math.hypot(a.wx-P.x,a.wz-P.z); if(d<bd){ bd=d; best=a; } }); return best; }
 function cvwPick(){
@@ -33,7 +34,7 @@ function cvwPick(){
   };
   // tracking is constant: a method you chose to track is the ONLY thing the guide points at on its floor (its own in-progress spot, else its first place), however many others are under way
   const tm=CVW.track&&+CVW.track[0]===R.n?CVW.track[2]:null;
-  if(tm&&tm!==CAVE_METHOD_OFF){ const sp=busy(tm)||(rest(tm)?null:cvwPlace(A,tm,L,W)), M=caveMethodDef(tm), sk=caveSkillAt(R.n,tm);
+  if(tm&&tm!==CAVE_METHOD_OFF){ const sp=busy(tm)||(rest(tm)?null:cvwPlace(A,tm,L,W)), M=caveMethodDef(tm), sk=cvwSkill(R.n,tm);
     if(sp) return {T:sp,m:tm,line:'Tracked: '+(M?M.name:tm)+(sk?' ('+sk.name+')':'')+'. '+(M?M.short:''),tracked:true}; }
   // nothing tracked: a method you are in the middle of, then
   for(const m of 'DEGABH'){ const sp=busy(m); if(sp) return go(m,sp,null); }
@@ -42,7 +43,7 @@ function cvwPick(){
   for(const m of 'ABCDEH'){
     if(rest(m)) continue;
     const pl=cvwPlace(A,m,L,W); if(!pl) continue;
-    const sk=caveSkillAt(R.n,m), mine=!sk||Object.prototype.hasOwnProperty.call(own,sk.id), d=Math.hypot(pl.x-P.x,pl.z-P.z)*(mine?3:1);
+    const sk=cvwSkill(R.n,m), mine=!sk||Object.prototype.hasOwnProperty.call(own,sk.id), d=Math.hypot(pl.x-P.x,pl.z-P.z)*(mine?3:1);
     if(d<bs){ bs=d; const M=caveMethodDef(m); best={T:pl,m,line:'Next: '+(M?M.name:m)+(sk&&!mine?' (teaches '+sk.name+')':' (Echo Shards)')+'. '+(M?M.short:'')}; }
   }
   return best;
@@ -74,7 +75,7 @@ function cvwMapMarks(x,at,inside,dpr,labels){
   for(const m of 'ABCDEH'){
     if(s.cd&&s.cd[m]>0) continue;
     const pl=cvwPlace(A,m,L,W); if(!pl||!inside(pl.x,pl.z)) continue;
-    const sk=caveSkillAt(R.n,m), fresh=sk&&!Object.prototype.hasOwnProperty.call(own,sk.id), [a,b]=at(pl.x,pl.z), r=6*dpr;
+    const sk=cvwSkill(R.n,m), fresh=sk&&!Object.prototype.hasOwnProperty.call(own,sk.id), [a,b]=at(pl.x,pl.z), r=6*dpr;
     x.beginPath(); x.arc(a,b,r,0,TAU); x.fillStyle=fresh?'rgba(70,50,10,.85)':'rgba(30,30,30,.8)'; x.fill(); x.lineWidth=1.5*dpr; x.strokeStyle=fresh?'#ffd27a':'#9a9a9a'; x.stroke();
     x.fillStyle=fresh?'#ffe9b0':'#cfcfcf'; x.fillText(m,a,b+0.5*dpr);
     if(labels&&fresh) labels(sk.name,a,b+13*dpr,'#ffe9b0');

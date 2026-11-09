@@ -10,7 +10,7 @@ caveMobDef('dunescorpion','gloamscorpion','Gloam Scorpion',{level:81,el:'dark',s
 caveMobDef('gravehound','umbrahound','Umbral Hound',{level:82,el:'dark',scale:1.8,glow:0x1a0a30,pal:{body:0x241c3a,belly:0x4a3a68,tip:0x9a6aff,eye:0xe0a0ff,legs:0x181028}});
 caveMobDef('cragwyvern','nightwyrm','Night Wyrm',{level:83,el:'dark',scale:1.2,pal:{stone:1,body:0x3a2e58,belly:0x6a5a88,ridge:0x9a6aff,horn:0xd8c8f0,eye:0xe0a0ff,wing:0x4a3a70}});
 caveMobDef('granitegolem','abyssalcolossus','Abyssal Colossus',{level:84,el:'earth',scale:2.4,glow:0x1a0a30,pal:{kind:'rock',style:'granite',lichen:0,crack:0xa070ff,bark:0x241c3a,c1:0x3a2e58,c2:0x4a3e68,c3:0x2a2040,eyes:0xe0a0ff}});
-defineCaveFloor({id:'umbral',n:6,name:'The Umbral Deep',theme:'grotto',lv:[75,84],seed:8113,
+defineCaveFloor({id:'umbral',n:6,name:'The Umbral Deep',theme:'umbral',lv:[75,84],seed:8113,
   mobs:['umbraslime','gloamcap','voidbeetle','shadebat','deepwarden','murkgoblin','gloamscorpion','umbrahound','nightwyrm','abyssalcolossus'],
   gen:{cells:168,chambers:14,rMin:7,rMax:13,rStart:8,tw:3,wind:9,side:10,loops:3,style:'hall',camps:24,pools:3,start:[0.5,0.89],deep:[0.5,0.11]},
   look:{music:'gloam2',wall:0x3a3450,wall2:0x2a2640,floor:0x2c2840,ceil:0x1a1630,fog:0x0a0618,amb:0.36,light:0xb08aff,h0:4.2,hk:1.15,hmax:13,wobble:0.55,far:54,fx:['glowworms','stalactites','pools','strata']}});

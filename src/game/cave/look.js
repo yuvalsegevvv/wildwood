@@ -48,10 +48,12 @@ const caveZoneText=()=>{ const R=CAVE_RUN; return R.F.name+' (Lv '+R.F.lv[0]+'-'
 function caveAmbience(T){
   if(!SND.ready||!CAVE_RUN) return;
   const th=CAVE_RUN.F.theme, c=SND.ctx, now=c.currentTime, L=SND.loops, set=(g,v)=>g.gain.setTargetAtTime(v,now,0.5), r=p=>Math.random()<p*T/0.1;
-  set(L.wind.g,th==='magma'?0.05:0.03); L.wind.f.frequency.setTargetAtTime(th==='magma'?260:380,now,0.5);
+  set(L.wind.g,th==='magma'?0.05:th==='frost'?0.09:0.03); L.wind.f.frequency.setTargetAtTime(th==='magma'?260:th==='frost'?520:th==='umbral'?200:380,now,0.5);
   set(L.leaves.g,0); set(L.water.g,th==='drowned'?0.09:th==='grotto'?0.02:0); set(L.fire.g,th==='magma'?0.07:0);
   const around=(a,b)=>{ const ang=AR(0,TAU), d=AR(a,b); return spatial(P.x+Math.sin(ang)*d,P.z+Math.cos(ang)*d,4,40); };
   if((th==='grotto'||th==='drowned')&&r(0.16)){ const s=around(3,18); if(s) dgEntDrip(s.pan,s.gain*1.4); }
   if(th==='prism'&&r(0.05)){ const s=around(4,20); if(s){ const f=AR(1500,2600); tone({freq:f,freq2:f*1.5,dur:1.4,attack:0.02,vol:0.025*s.gain,pan:s.pan,verb:true}); } }
+  if(th==='frost'&&r(0.04)){ const s=around(4,20); if(s){ const f=AR(2200,3400); tone({freq:f,freq2:f*1.01,dur:0.9,attack:0.01,vol:0.02*s.gain,pan:s.pan,verb:true}); } }   // ice ticks
+  if(th==='umbral'&&r(0.04)){ const s=around(5,22); if(s) noiseHit({filter:'lowpass',ff:AR(80,180),dur:0.9,vol:0.05*s.gain}); }   // low breathing
   if(th==='magma'&&r(0.05)){ const s=around(5,22); if(s) noiseHit({filter:'lowpass',ff:AR(120,260),dur:0.5,vol:0.06*s.gain}); }
 }

@@ -1,6 +1,6 @@
 # The Deep Cave
 
-> **Revamp note.** Charge skills and their levels now come from the Awakening tree (charge branch, tier A2; `docs/AWAKENING.md`); the cave methods pay Echo Shards, not skills. Sections about earning skills and shard upgrades are historical.
+> **Revamp note.** The methods no longer teach skills: every method pays Echo Shards, a cave skill is yours when you unlock it in the tree (sections 6 and 15 still describe the old "earned by" wiring; read them as history except for how each method runs). Charge skills and their levels now come from the Awakening tree (charge branch, tier A2; `docs/AWAKENING.md`); the cave methods pay Echo Shards, not skills. Sections about earning skills and shard upgrades are historical.
 
 Design and code map of the Deep Cave. The approved plan (v2, all 26 skills designed) is sections 1 to 10; the owner's answers in it win over older docs. Sections 11 to 13 are the code map, the hooks table and the build status, which every build step keeps current. One feature stem: `cave` (`shared/cave.js` + `shared/cave/`, `server/cave.js`, `game/cave/`, `tools/cave-smoke.js`, this file). Router row: `CLAUDE.md` section 4.
 
@@ -16,7 +16,7 @@ Built for eight lands from the start: floors 2-4 pick up sets by `tier = floor -
 - **The lift** stands next to the entrance and works like a teleport circle between floors: it takes you to any floor you have opened.
 - **Opening a floor:** own **2 skills** from the floor above. Floor 1 is open to everyone from level 20.
 - **Shared:** one open zone for everyone, like a land, not an instanced run.
-- **The slot** opens at level 20 (`CAVE_SLOT_LV`). Until you own a cave skill, its action-bar tile says *Go to the cave*.
+- **The slot** opens at level 20 (`CAVE_SLOT_LV`). Cave skills come only from the Awakening tree (the charge branch's first node, `awkChargeOwnP`); until you own one, its action-bar tile says *Skill tree*.
 
 ## 2. The four floors
 
