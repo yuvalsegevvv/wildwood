@@ -135,7 +135,7 @@ function buildFace(X){
       ear.push(pc(el(0.0068,0.0235*es,0.0155*es,0,0,0).rotateZ(sd*-0.1).rotateY(sd*0.3).translate(x0,y0,z0),(x,y,z,c)=>skinPaint(c)));
       ear.push(pc(el(0.0034,0.0135*es,0.0085*es,0,0,0).rotateY(sd*0.3).translate(x0+sd*0.0045,y0+0.002,z0-0.001),(x,y,z,c)=>{ skinPaint(c); c.multiplyScalar(0.82); }));
       ear.push(pc(el(0.0046*es,0.0078*es,0.0066*es,x0+sd*0.0012,y0-0.0172*es,z0-0.0015),(x,y,z,c)=>skinPaint(c)));   // the lobe: the shell's rounded lower end (a ball hanging under it read as an earring)
-      ear.push(pc(sweepTube([[x0+sd*0.0035,y0+0.012*es,z0-0.0095*es],[x0+sd*0.0048,y0+0.0215*es,z0-0.001*es],[x0+sd*0.0062,y0+0.0165*es,z0+0.0105*es],[x0+sd*0.0066,y0+0.002*es,z0+0.0142*es],[x0+sd*0.005,y0-0.011*es,z0+0.0105*es]],[0.002*es,0.0029*es,0.003*es,0.0027*es,0.0016*es],sg(6),{rings:sg(14)}),(x,y,z,c)=>skinPaint(c)));   // the helix: a rolled rim over the top and down the back
+      if(sg(100)>=50) ear.push(pc(sweepTube([[x0+sd*0.0035,y0+0.012*es,z0-0.0095*es],[x0+sd*0.0048,y0+0.0215*es,z0-0.001*es],[x0+sd*0.0062,y0+0.0165*es,z0+0.0105*es],[x0+sd*0.0066,y0+0.002*es,z0+0.0142*es],[x0+sd*0.005,y0-0.011*es,z0+0.0105*es]],[0.002*es,0.0029*es,0.003*es,0.0027*es,0.0016*es],sg(6),{rings:sg(14)}),(x,y,z,c)=>skinPaint(c)));   // the helix: a rolled rim over the top and down the back (not on phones: the triangle budget)
       if(pt>0.03){ const T=[[x0,y0+0.016*es,z0+0.003],[x0+sd*0.014,y0+0.03*es+0.02*pt,z0+0.007+0.01*pt],[x0+sd*0.026+sd*0.012*pt,y0+0.042*es+0.05*pt,z0+0.015+0.026*pt]];
         ear.push(pc(sweepTube(T,[0.0085,0.0052,0.0011],sg(8),{cap:'point',rings:sg(10)}),(x,y,z,c)=>skinPaint(c))); }
       parts.push(...ear); }
