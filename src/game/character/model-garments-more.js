@@ -46,16 +46,16 @@ function gmxTop(X,D){
   if(gmdIs(X.L.top)) return gmdTop(X,D);   // dresses: model-dresses.js
   const {L,sg}=X, TK=D.TK, nr=D.neckR, top=L.top, out=[], tc=L.topColor, PL=gmxPalAt(L,'top'), dk=gmxMul(tc,0.7), lt=new THREE.Color(tc).lerp(new THREE.Color(0xffffff),0.35).getHex(), fz=yd=>-(torsoSize(X,D,yd).rz+0.004), bz=yd=>torsoSize(X,D,yd).rzBack+0.004;
   if(top==='crop'){
-    out.push(gmBand(X,D,0.3,0.275,(x,y,z,c)=>c.set(PL[1]),0.004));   // the ribbed hem, high on the ribs
+    out.push(gmBand(X,D,0.36,0.335,(x,y,z,c)=>c.set(PL[1]),0.004));   // the ribbed hem, high on the ribs
     out.push(solid(gmRingAt([0,0.572*TK,0],[0,1,0],nr*1.4,0.0065,sg(8)),PL[2]));   // the collar
     for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*nr*1.5,0.575*TK,fz(0.5)],[sd*nr*2.4,0.545*TK,fz(0.5)-0.002],[sd*nr*3.0,0.5*TK,fz(0.47)]],0.012,{up:[0,1,-0.4],seg:sg(6),th:0.003}),PL[2]));
   } else if(top==='halter'){
-    const cz=fz(0.34);
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.07,0.43*TK,fz(0.43)-0.005],[sd*0.05,0.495*TK,fz(0.5)-0.004],[sd*nr*1.15,0.565*TK,-nr*0.55],[sd*nr*0.5,0.585*TK,nr*1.25]],0.017,{up:[0,1,-0.3],seg:sg(10),th:0.003}),PL[2]));   // the straps up to the knot behind the neck
+    const cz=fz(0.38);
+    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.07,0.47*TK,fz(0.47)-0.005],[sd*0.05,0.515*TK,fz(0.5)-0.004],[sd*nr*1.15,0.565*TK,-nr*0.55],[sd*nr*0.5,0.585*TK,nr*1.25]],0.017,{up:[0,1,-0.3],seg:sg(10),th:0.003}),PL[2]));   // the straps up to the knot behind the neck
     out.push(solid(csph(0.011,sg(8),sg(6)).translate(0,0.585*TK,nr*1.35),PL[2]));
-    out.push(gmBand(X,D,0.435,0.41,(x,y,z,c)=>c.set(PL[1]),0.004),gmBand(X,D,0.285,0.26,(x,y,z,c)=>c.set(PL[1]),0.004));   // the wrap's top and bottom edges
-    out.push(solid(csph(0.0105,sg(8),sg(6)).scale(1.3,1,0.8).translate(0,0.345*TK,cz-0.006),PL[2]),solid(ofRibbon([[0,0.34*TK,cz-0.008],[0.012,0.31*TK,cz-0.01],[0.01,0.27*TK,cz-0.01]],0.012,{up:[0,0,-1],seg:sg(6),th:0.003}),PL[2]));   // the knot between the cups, with a tail
-    for(const sd of [-1,1]) out.push(solid(gmRingAt([0,0.35*TK,0],[0,1,0],torsoSize(X,D,0.35).rx*0.98,0.0015,sg(6)),PL[1]));
+    out.push(gmBand(X,D,0.47,0.445,(x,y,z,c)=>c.set(PL[1]),0.004),gmBand(X,D,0.32,0.295,(x,y,z,c)=>c.set(PL[1]),0.004));   // the wrap's top and bottom edges
+    out.push(solid(csph(0.0105,sg(8),sg(6)).scale(1.3,1,0.8).translate(0,0.385*TK,cz-0.006),PL[2]),solid(ofRibbon([[0,0.38*TK,cz-0.008],[0.012,0.35*TK,cz-0.01],[0.01,0.31*TK,cz-0.01]],0.012,{up:[0,0,-1],seg:sg(6),th:0.003}),PL[2]));   // the knot between the cups, with a tail
+    for(const sd of [-1,1]) out.push(solid(gmRingAt([0,0.39*TK,0],[0,1,0],torsoSize(X,D,0.39).rx*0.98,0.0015,sg(6)),PL[1]));
   } else if(top==='harness'){
     for(const sd of [-1,1]){
       out.push(solid(ofRibbon(gmxStrap(X,D,0.5,0.1,sd*0.07,-sd*0.1,false),0.03,{up:[0,0,-1],seg:sg(14),th:0.006}),PL[1]));
