@@ -212,7 +212,7 @@ const CP_RECIPE={
 // kin: the crafted Kin parts (ears, tails, muzzles, horns, mane: shared/kin.js, which loads first) join the catalog; the free ones are base parts like a base hat and are not in it
 for(const P of KIN_PARTS) if(!P.free){ CP_PIECES.push([P.slot,P.id,P.name,String(P.grade),P.text]); CP_RECIPE[P.slot+':'+P.id]=P.recipe; }
 // worn by anyone, made by nobody: the plain pieces of the two slots whose pieces used to be crafted (the backpack is a cape)
-const CP_FREE=['c:pack','c:wayfarer','c:moss','a:firefly','a:dew'];
+const CP_FREE=['c:pack','c:quiver','c:wayfarer','c:moss','a:firefly','a:dew'];
 // earned, never made: the last step of a side quest chain gives it (shared/side-quests.js, its chain id here); no recipe, the Lodge does not list it
 const CP_QUEST={'c:tideking':'tide','a:foxfire':'ninetails','c:wyrmscale':'wyrm','a:sunwept':'sunwept','c:greatcoat':'drowned','a:lamplight':'keeper','c:dawnseat':'dawnseat','a:herdsong':'drought','a:saltlight':'saltwatch','c:tidecape':'strait','a:condorwind':'terraces'};
 var CP_TRACK={};   // 'c:rootcloak' -> the Sigil track level that gives it (filled by shared/puzzle-track.js): earned, never made, like CP_QUEST

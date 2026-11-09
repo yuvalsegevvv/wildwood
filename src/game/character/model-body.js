@@ -119,6 +119,12 @@ function buildTorso(X,D){
     parts.push(pc(new THREE.CylinderGeometry(0.065,0.065,0.36,12).rotateZ(Math.PI/2).translate(0,0.5*TK,bz),c=>c.set(roll)));
     for(const sd of [-1,1]) parts.push(pc(new THREE.BoxGeometry(0.035,0.34,0.012).translate(sd*0.085*B,0.33*TK,-profR(base,0.33)*(fem?0.66:0.62)*B-0.004-(fem?0.012:0)),c=>c.set(strap)));
   }
+  if(L.cape==='quiver'){   // the free cape 'quiver': a leather quiver slung across the back (its colours: look.capeColor leather, look.capeTrim fletching); look.left puts it on the other shoulder
+    const bz=0.1*B+0.08, cv=cosQ(L.capeColor), tr=cosQ(L.capeTrim), leather=cv>=0?cv:0x6b3a22, fletch=tr>=0?tr:0xe8e4dc, sd=L.left?-1:1, tilt=-0.35*sd, q=g=>g.rotateZ(tilt).translate(sd*0.06,0.3*TK,bz-0.05);
+    parts.push(pc(q(new THREE.CylinderGeometry(0.07,0.06,0.55,10)),c=>c.set(leather)));
+    for(const x of [-0.03,0,0.03]) parts.push(pc(q(new THREE.BoxGeometry(0.012,0.12,0.04).translate(x,0.32,(x/0.03)*0.02)),c=>c.set(fletch)));
+    parts.push(pc(new THREE.BoxGeometry(0.03,0.3,0.01).rotateZ(-0.6*sd).translate(0,0.3*TK,-profR(base,0.3)*(fem?0.66:0.62)*B-0.004-(fem?0.012:0)),c=>c.set(leather)));   // the strap across the chest
+  }
   return parts;
 }
 

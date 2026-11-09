@@ -45,6 +45,7 @@ const COS_AURAS=[
 // patterns (game/character/cosmetics.js cosPattern): stitch, flames, stars, rays, petals, fur, ermine, moss, ash, waves, dunes, gloam
 const COS_CAPES=[
   ['pack','Backpack',1,0x566437,0x8a3b2c,0,'A canvas pack with a bedroll, a flap pocket and two shoulder straps. Free.','pack',0],
+  ['quiver','Quiver',1,0x6b3a22,0xe8e4dc,0,'A leather quiver of fletched arrows slung across the back, the archer\'s old look. Free.','pack',0],
   ['wayfarer','Wayfarer\'s Cloak',1,0x4a6a3a,0xc9a86a,1.0,'Green wool with a stitched leather hem and a bone clasp.','stitch',0],
   ['moss','Mossback Cloak',1,0x4d6a3c,0x8a6a3c,1.0,'Patchy moss and lichen, a rough cloak of the deep forest.','moss',0],
   ['hunter','Hunter\'s Mantle',2,0x7a5a3a,0xe8dcc0,1.05,'Tanned hide with a fur collar and a ragged, stitched hem.','hide',1],

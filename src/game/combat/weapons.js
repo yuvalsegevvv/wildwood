@@ -40,8 +40,7 @@ function weaponsOn(r,weaponId,build){
     const shb=dr&&dr.shape&&dr.shape.bow, BK={c:{blade:0xc8ccd0,guard:tip,grip:DC('grip',0x4a3020),wood,accent:tip,glow:DC('glow',0xffd070)},tr,TR};
     const bow=new THREE.Mesh(wshHas('bow',shb)?merge(WPN_SHAPES.bow[shb](BK)):merge([pc(bowG,(x,y,z,col)=>{ col.set(Math.abs(z)>half*0.85?tip:wood); TR(col,z,'limb'); }),pc(strG,col=>col.set(tr===3?0xffe9a0:tr===5?0xcfe8ff:0xe8e4dc)),pc(cyl(0.028,0.028,0.12,6).rotateX(Math.PI/2),(x,y,z,col)=>{ col.set(DC('grip',0x3a2a1c)); TR(col,z,'grip'); }),...ends]),matChar);
     bow.position.set(0,-0.32,0); if(!r.sillyW) add(weakEl,bow); charm(bow,0,-0.05,0);
-    const quiver=new THREE.Mesh(merge([pc(cyl(0.07,0.06,0.55,10),(x,y,z,col)=>{ col.set(DC('grip',[0x6b3a22,0x5a3a2a,0x2e2a36,0x8a2f2f,0x2a2830,0x6a2a26][tr])); TR(col,y,'quiver'); }),...[-0.03,0,0.03].map((x,i)=>pc(vbox(0.012,0.12,0.04,x,0.32,(i-1)*0.02),col=>col.set(0xe8e4dc)))]),matChar);
-    quiver.position.set(lf?-0.12:0.12,0.34,0.24*(build||1)); quiver.rotation.z=lf?0.35:-0.35; add(r.spine,quiver);
+    // (the quiver is no longer part of the bow: it is the free cape 'quiver', drawn on the torso in model-body.js buildTorso)
   } else {
     const wood=DC('wood',[0x7a5236,0xcfd8e6,0x3a2a4a,0x2a1e14,0xf2c6d6,0x2a1e14][tr]), glow=DC('glow',[0xc8f07a,0x9fd8ff,0xc59bff,0xffb040,0xff9ad5,0x6ab8ff][tr]), L=[0.3,0.34,0.38,0.42,0.45,0.48][tr];
     const wand=new THREE.Group(), shs=dr&&dr.shape&&dr.shape.staff, SK={c:{blade:0xc8ccd0,guard:DC('metal',tr>=2?0xd4a83a:0x8a7a4a),grip:DC('grip',0x4a3020),wood,accent:glow,glow},tr,TR}, sres=wshHas('staff',shs)?WPN_SHAPES.staff[shs](SK):null;
