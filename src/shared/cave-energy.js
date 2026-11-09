@@ -13,7 +13,7 @@ const CAVE_EN_DOT=0.02;          // below CAVE_EN_LOW: this share of max health 
 const CAVE_EN_NODES=6;           // shard nodes a floor has
 const CAVE_EN_MINE=100;          // energy one shard node costs
 const CAVE_EN_NODE_NEED=150;     // energy needed to start mining one
-const CAVE_AMBER_FIRST=[0,1,1,1,1,1,1];   // amber (gear.amb) for finishing a method for the first time, by floor: 1 each, 7 methods x 6 floors = 42 from the cave (the overworld's chests still pay amber)
+const CAVE_SIGIL_FIRST=[0,1,1,1,1,1,1];   // Sigils (gear.sig, the puzzle track's currency) for finishing a method for the first time, by floor: 1 each, 7 methods x 6 floors = 42 from the cave
 const CAVE_EN_MINE_SECS=2.5;     // standing still this long near a node mines it
 const CAVE_EN_NODE_REACH=2.6, CAVE_EN_NODE_CD=900;   // metres; seconds before the same hiker may mine the same node again
 const CAVE_EN_SHARD_K=2;         // a node pays CAVE_SHARDS[floor] x this many Echo Shards
