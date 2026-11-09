@@ -279,6 +279,7 @@ try{ const {bootClient}=require('./headless'); const c=bootClient({expose:['ALL_
     ok('a temp monster (a trial pack) gives none',(()=>{ const e=p1.cave.en; x.caveEnKillS(p1,{cave:1,temp:true,x:p1.x,z:p1.z}); return p1.cave.en===e; })());
     ok('floor 2 is shut until floor 1 was filled',!x.caveFloorOpen(p1,2)||!!g.mx[1]);
     g.mx[1]=0; p1.gear.cave.own={}; ok('floor 2 is shut with no max recorded',!x.caveFloorOpen(p1,2));
+    { const q=p1.cave; q.en=180; q.enN=2; tick(1); ok('a bar from another floor is not carried over (floor 1 starts again at 40)',q.enN===1&&q.en<=41,q.en.toFixed(1)); }
     p1.cave.en=x.CAVE_EN_MAX-1; x.caveEnKillS(p1,{cave:1,x:p1.x,z:p1.z}); ok('a full bar opens the next floor',g.mx[1]===1&&x.caveFloorOpen(p1,2)&&!x.caveFloorOpen(p1,3));
     // a shard node
     const N=W1.S.nodes[0]; const sh0=p1.gear.awm&&p1.gear.awm.echo|0; p1.cave.en=180; at(p1,N); tick(60);
