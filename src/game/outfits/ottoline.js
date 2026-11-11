@@ -5,7 +5,7 @@
 CHAR_MODELS.ottoline={id:'ottoline',name:'Ottoline',signature:true, hairGrad:{mode:'tips',c2:0x7a1a2a}, items:{hat:'Lace headdress',hair:'Hime ringlets',face:'Doll face',top:'Corset blouse',bottom:'Tier skirt',shoes:'Strap shoes',weapon:'Key & doll'},sexes:['female'],
   note:'The porcelain doll: small, narrow and big-eyed, built for a slight figure with a small waist.',
   ranges:{height:[0.92,1.02],build:[0.88,1.02],shoulders:[0.88,1.05],arms:[0.82,1.05],chest:[0.6,1.15],waist:[0.82,1.0],hips:[0.9,1.15],legs:[0.96,1.12],head:[1.0,1.12],eyeSize:[1.1,1.3],hairLength:[1.0,1.35],hairVolume:[1.0,1.25]},
-  setups:[{id:'ottoline',name:'Ottoline',sex:'female',def:true,note:'The doll as drawn: small, a tiny waist, huge glassy eyes, a still face.',v:{height:0.93,build:0.9,chest:0.8,shoulders:0.92,waist:0.84,torso:0.96,legs:1.04,thighs:0.92,arms:0.84,neck:0.95,hands:0.88,feet:0.9,head:1.08,jaw:0.88,chin:0.85,cheeks:1.1,eyeSize:1.3,eyeGap:1.05,eyeHeight:-0.15,eyeTilt:0.05,brow:0.0,noseSize:0.7,mouthSize:0.8,lips:1.0,smile:0.1,hairLength:1.3,hairVolume:1.1}}]};
+  setups:[{id:'ottoline',name:'Ottoline',sex:'female',def:true,note:'The doll as drawn: small, a tiny waist, huge glassy eyes, a still face.',v:{height:0.93,build:0.9,chest:0.91,shoulders:0.92,waist:0.84,torso:0.96,legs:1.04,thighs:0.92,arms:0.84,neck:0.95,hands:0.88,feet:0.9,head:1.08,jaw:0.88,chin:0.85,cheeks:1.1,eyeSize:1.3,eyeGap:1.05,eyeHeight:-0.15,eyeTilt:0.05,brow:0.0,noseSize:0.7,mouthSize:0.8,lips:1.0,smile:0.1,hairLength:1.3,hairVolume:1.1,muscle:-0.6,belly:-0.2}}]};
 
 OUTFITS.ottoline=(function(){
   const BLACK=0x1c1822, BLACK_L=0x2e2638, PORC=0xf3eee8, LACE=0xf8f4ee, ROSE=0x8a1f3d, ROSE_L=0xb8385a, SILVER=0xb9b6c4, HAIR=0x241c2c;

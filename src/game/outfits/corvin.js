@@ -6,7 +6,7 @@
 CHAR_MODELS.corvin={id:'corvin',name:'Corvin',signature:true, hairGrad:{mode:'streak',c2:0x8a7a60}, items:{glove:'Survey gloves',hat:'Lamp cap',hair:'Silver wave',face:'Lamp soot & specs',top:'Plumb coat',bottom:'Survey legs',shoes:'Nail boots',weapon:'Brass bind'},sexes:['male'],
   note:'The lamplighter and mine surveyor: a tall narrow column in a long coat, built for a slim, tall man.',
   ranges:{height:[0.98,1.08],legs:[0.96,1.14],build:[0.88,1.06],shoulders:[0.88,1.08],chest:[0.6,1.15],waist:[0.88,1.1],thighs:[0.85,1.1],neck:[0.85,1.15],head:[0.92,1.06],eyeGap:[0.96,1.1],noseSize:[0.85,1.2],earSize:[0.8,1.15],hairVolume:[0.9,1.05],bangs:[0.3,1.0]},
-  setups:[{id:'corvin',name:'Corvin',sex:'male',def:true,note:'The surveyor as drawn: tall, narrow, a long nose for the spectacles.',v:{height:1.04,build:0.94,chest:0.9,shoulders:0.94,waist:0.95,hips:0.95,torso:1.04,legs:1.06,thighs:0.9,arms:0.9,hands:1.05,jaw:0.95,chin:0.95,cheeks:0.9,eyeGap:1.04,brow:-0.1,noseSize:1.1,lips:0.9,hairVolume:0.9,bangs:0.3}}]};
+  setups:[{id:'corvin',name:'Corvin',sex:'male',def:true,note:'The surveyor as drawn: tall, narrow, a long nose for the spectacles.',v:{height:1.04,build:0.94,chest:0.9,shoulders:0.94,waist:0.95,hips:0.95,torso:1.04,legs:1.06,thighs:0.9,arms:0.9,hands:1.05,jaw:0.95,chin:0.95,cheeks:0.9,eyeGap:1.04,brow:-0.1,noseSize:1.1,lips:0.9,hairVolume:0.9,bangs:0.3,muscle:-0.4}}]};
 
 OUTFITS.corvin=(function(){
   const CHAR=0x6b6a3e, CHAR_L=0x8d8c58, CHAR_D=0x45441f, LEATHER=0x3a3228, LEATHER_D=0x241e18, LEATHER_L=0x5c4b3a, BRASS=0xc9a13a, BRASS_D=0x8a6d27, BRASS_L=0xeccf6e,

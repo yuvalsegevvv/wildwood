@@ -5,7 +5,7 @@
 CHAR_MODELS.morrow={id:'morrow',name:'Morrow',signature:true, hairGrad:{mode:'streak',c2:0xcfcfd4}, items:{hat:'Bent witch hat',hair:'Grey-streak plait',face:'Sharp & tired',top:'Patched mantle',bottom:'Layered skirt',shoes:'Laced boots',weapon:'Herb sickle'},sexes:['female'],
   note:'The hedge-witch: tall, thin and sharp-boned, built for a long, wiry woman.',
   ranges:{height:[0.98,1.08],build:[0.88,1.02],chest:[0.6,1.1],waist:[0.82,1.02],hips:[0.88,1.1],legs:[0.98,1.14],neck:[0.95,1.2],arms:[0.9,1.1],head:[0.95,1.08],hairLength:[0.9,1.35],hairVolume:[0.9,1.2]},
-  setups:[{id:'morrow',name:'Morrow',sex:'female',def:true,note:'The hedge-witch as drawn: tall, wiry and a little stooped.',v:{height:1.04,build:0.92,chest:0.8,shoulders:0.98,waist:0.9,torso:1.0,legs:1.06,thighs:0.92,arms:1.0,neck:1.08,hands:1.1,feet:1.0,jaw:0.94,chin:1.04,cheeks:0.86,noseSize:1.12,mouthSize:0.92,smile:0.12,hairLength:1.2,hairVolume:1.05}}]};
+  setups:[{id:'morrow',name:'Morrow',sex:'female',def:true,note:'The hedge-witch as drawn: tall, wiry and a little stooped.',v:{height:1.04,build:0.92,chest:0.91,shoulders:0.98,waist:0.9,torso:1.0,legs:1.06,thighs:0.92,arms:1.0,neck:1.08,hands:1.1,feet:1.0,jaw:0.94,chin:1.04,cheeks:0.86,noseSize:1.12,mouthSize:0.92,smile:0.12,hairLength:1.2,hairVolume:1.05,muscle:-0.4}}]};
 
 OUTFITS.morrow=(function(){
   const LICHEN=0x6b7a5c, LICHEN_D=0x4a5642, INK=0x2a2a34, PLUM=0x5a3a52, EMBER=0xc9763a, BONE=0xe0d8c0, BRASS=0xb09040, MOSS=0x8fa66a, HAIR=0x2c2630;

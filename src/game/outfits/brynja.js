@@ -5,7 +5,7 @@
 CHAR_MODELS.brynja={id:'brynja',name:'Brynja',signature:true, hairGrad:{mode:'ombre',c2:0x8ac4ee,c3:0xb9a8f0}, items:{glove:'Fur-cuff mittens',hat:'Fur-rim hood',hair:'Twin frost braids',face:'Frost freckles',top:'Quilted jacket',bottom:'Pleated skirt',shoes:'Skate boots',weapon:'Skate rig'},sexes:['female'],
   note:'The skater: long-legged, quick and light, built for a tall slim woman.',
   ranges:{height:[0.98,1.08],build:[0.88,1.02],chest:[0.7,1.2],waist:[0.82,1.0],hips:[0.9,1.15],legs:[1.02,1.14],neck:[0.95,1.2],arms:[0.85,1.1],head:[0.95,1.08],hairLength:[1.0,1.35],hairVolume:[0.9,1.2]},
-  setups:[{id:'brynja',name:'Brynja',sex:'female',def:true,note:'The skater as drawn: tall, light and long in the leg.',v:{height:1.05,build:0.92,chest:0.92,shoulders:0.96,waist:0.88,torso:0.98,legs:1.1,thighs:0.94,arms:0.95,neck:1.05,hands:0.95,feet:0.95,jaw:0.95,chin:0.98,cheeks:1.0,noseSize:0.95,mouthSize:1.0,smile:0.4,hairLength:1.2,hairVolume:1.05}}]};
+  setups:[{id:'brynja',name:'Brynja',sex:'female',def:true,note:'The skater as drawn: tall, light and long in the leg.',v:{height:1.05,build:0.92,chest:0.97,shoulders:0.96,waist:0.88,torso:0.98,legs:1.1,thighs:0.94,arms:0.95,neck:1.05,hands:0.95,feet:0.95,jaw:0.95,chin:0.98,cheeks:1.0,noseSize:0.95,mouthSize:1.0,smile:0.4,hairLength:1.2,hairVolume:1.05,muscle:0.5,belly:-0.5}}]};
 
 OUTFITS.brynja=(function(){
   const ICE=0x6fb4e0, ICE_D=0x4a86b0, SNOW=0xeaf4fb, SLATE=0x3c4a5a, SLATE_D=0x2a3440, FUR=0xb8a890, STEEL=0xc9d4dc, HAIR=0xe8e2d4;

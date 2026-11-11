@@ -88,6 +88,7 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `smile` (Expression) | 0.35 |
 | `hairLength` (Hair length) | 1.25 |
 | `hairVolume` (Hair volume) | 1.05 |
+| `belly` (Belly) | -0.3 |
 | `lips` (Lips) | 1.15 |
 | `eyeSize` (Eye size) | 1.12 |
 | `eyeTilt` (Eye tilt) | 0.22 |

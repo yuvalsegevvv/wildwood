@@ -140,7 +140,7 @@ function buildTorso(X,D){
   const {L,S,fem,sg,skin,skinPaint,topPaint,botPaint}=X, {B,lr,TK,neckR}=D, ch=S.chest, G=faceG, sm=faceSm, kT=X.kit&&X.kit.sl.top, kB=X.kit&&X.kit.sl.bottom;   // kT / kB: the signature outfits' top and bottoms, when worn
   const base=fem?TORSO_F:TORSO_M;
   const hem=(L.top==='jacket'||L.top==='hoodie'||L.top==='mail'||L.top==='plate')?-0.035:0.03;
-  const nt=Math.max(0.7,(D.headY-0.03)/TK), U=y=>trsUpper(S,D,y), prof0=base.filter(p=>p[1]<TRS_Y0).concat([0.33,0.36,0.39,0.42,0.445,0.47,0.495,0.52,0.545,0.57,0.6,0.635,nt].map(y=>[profR(base,y),y]));   // above TRS_Y0 the ring heights only (the radius, the old profile's so the rings below blend into it, is rebuilt per angle from trsUpper): the shoulders and the neck's root get rings every 2.5 cm
+  const nt=Math.max(0.7,(D.headY-0.03)/TK), U=y=>trsUpper(S,D,y), prof0=base.filter(p=>p[1]<TRS_Y0).concat([0.33,0.36,0.39,0.42,0.445,0.47,0.495,0.52,0.545,0.5545,0.5555,0.5745,0.5755,0.6,0.635,nt].filter(y=>y<nt-0.005).concat([nt]).map(y=>[profR(base,y),y]));   // above TRS_Y0 the ring heights only (the radius, the old profile's so the rings below blend into it, is rebuilt per angle from trsUpper): the shoulders and the neck's root get rings every 2.5 cm
   // rings exactly at the colour edges (the hem, the belt line, the plate band) so those edges are crisp
   // the colour edges: a whole outfit has its own; mixed, the top's lie above the waist and the bottoms' below it (a base garment's are the original list)
   const kc=k=>(k.cuts&&k.cuts.torso)||[], cutList=kT&&kT===kB?kc(kT):[hem].concat(kT?kc(kT).filter(y=>y>hem):[hem+0.03,0.07],kB?kc(kB).filter(y=>y<=hem):[hem-0.035,0.02]);
@@ -188,10 +188,12 @@ function buildTorso(X,D){
     z-=sN*(y-0.5)*0.06; p.setXYZ(i,x,y*TK,z);
   }
   smoothN(tg); trsShoulderNormals(tg,D);
+  X.trsGeo=tg; X.gfit=null;   // the true surface for the garments' details (garment-fit.js)
   const skinY=kT&&kT.skinFrom!==undefined?kT.skinFrom:0.555;   // an outfit top with a high collar paints the neck itself (skinFrom)
   const u45=U(D.shY/TK), onDelt=(x,y,z)=>{ const dx=Math.abs(x)-D.shX, dy=y-D.shY; const e=dy*dy/Math.pow(u45.rd*(dy>0?0.9:TRS_DROP),2), f=1-(dy>0?e:e*e); return f>0&&dx>-0.45*u45.rd&&dx*dx+z*z<u45.rd*u45.rd*f*1.3; };   // (the same egg as trsDelt)   // a point of the deltoid's cap over the arm
   const bareLeg=!kB&&(L.bottom==='none'||gmxBareBottom(L.bottom));
-  const tp=(x,y,z,c)=>{ const yd=onDelt(x,y,z)?Math.max(y/TK,0.47):y/TK;   // the deltoid is painted as the shoulder above it (y 0.47): a band top or a bikini leaves it bare, a shirt covers it   // one paint for every piece of the torso: neck skin, top, belt line, bottoms (each of the top and the bottoms is a base garment or an outfit's item)
+  const slv=gmxSleeveless(L.top)&&!kT, dW=(x,y,z)=>{ const dx=Math.abs(x)-D.shX, dy=y-D.shY, rd=u45.rd, e=dy*dy/Math.pow(rd*(dy>0?0.9:TRS_DROP),2), f=1-(dy>0?e:e*e); if(f<=0||dx<=-0.45*rd) return 0; return clamp((f*1.3*rd*rd-(dx*dx+z*z))/(0.35*rd*rd)); };   // a sleeveless top leaves the deltoid's cap bare: its edge is a soft blend over the egg (a hard cut was a ragged line across the triangles)
+  const tp0=(x,y,z,c)=>{ const yd=onDelt(x,y,z)?Math.max(y/TK,0.47):y/TK;   // the deltoid is painted as the shoulder above it (y 0.47): a band top or a bikini leaves it bare, a shirt covers it   // one paint for every piece of the torso: neck skin, top, belt line, bottoms (each of the top and the bottoms is a base garment or an outfit's item)
     if(yd>skinY+0.02*sm(-0.04,0.04,z)) skinPaint(c);   // the neckline: lower in front, higher behind, blended
     else if(yd>hem){ if(kT) ofPaint(X,'top','torso',c,x,yd,z,0); else topPaint(c,x,yd); }
     else if(kB) ofPaint(X,'bottom','torso',c,x,yd,z,0);
@@ -199,17 +201,16 @@ function buildTorso(X,D){
     else if(bareLeg&&yd<0.02){ const s=Math.pow(clamp(Math.abs(x)/(0.165*B)),1.3), w=sm(-0.03,0.03,z), bk=L.bottom==='bikinibottom', yl=lerp(-0.15+(bk?0.21:fem?0.13:0.1)*s,(bk?-0.13+0.2*s:-0.16+0.05*s),w); skinPaint(c); const sk=c.clone(); botPaint(c,x,yd); c.lerp(sk,1-sm(yl-0.014,yl+0.014,yd)); }   // briefs and a bikini (cut higher: only its strings cross the hip): blended over 2.8 cm (a diagonal line across the lathe's rings snapped to them in steps); the leg opening runs from the crotch up to the hip's side in front, lower and fuller behind
     else botPaint(c,x,yd);
     if(!kT&&(L.top==='jacket'||L.top==='hoodie'||L.top==='mail') && yd<hem+0.03 && yd>hem) c.multiplyScalar(0.8);
-    if(!kT&&L.top==='plate' && yd>0.02 && yd<0.07) c.set(0x3a2a1c); };
+    if(!kT&&L.top==='plate' && yd>0.02 && yd<0.07) c.set(0x3a2a1c); },
+    tp=slv?(x,y,z,c)=>{ tp0(x,y,z,c); const w=dW(x,y,z); if(w>0){ const sk=new THREE.Color(); skinPaint(sk); c.lerp(sk,w); } }:tp0;
   const parts=[pc(tg,tp)];
   if(L.top==='jacket'){
     parts.push(pc(ofLoft([0,0.5,1].map(f=>{ const yd=0.578+(f-0.5)*0.06/TK, sc=trsSection(X,D,yd), m=0.006+0.004*f; return {y:yd*TK,rx:sc.rx+m,rz:(sc.rzF+sc.rzB)/2+m,zc:sc.zc+(sc.rzB-sc.rzF)/2}; }),sg(20),0,TAU),(x,y,z,c)=>{ c.set(L.topColor).multiplyScalar(0.8); }));   // the stand-up collar: rings round the body's own section (the trapezius at its foot, the neck at its top), a little off it
-    const Z=[]; for(let y=0.45;y>=-0.01;y-=0.06) Z.push([0,y*TK,-profR(base,y)*(fem?0.66:0.62)*B-0.002]);
-    parts.push(solid(sweepTube(Z,Z.map(()=>0.0045),5,{cap:'round',rings:Z.length*2}),0x2a2a2a));
+    parts.push(solid(gfitCord(X,D,[[0,0.5],[0,0.0]],0.0045,{lift:0.002}),0x2a2a2a));   // the zip, lying on the body's front (down the cleavage)
   }
   if(L.top==='hoodie'){
     parts.push(pc(csph(0.1,sg(14),sg(10)).scale(1.15*B,0.7,0.95).translate(0,0.565*TK,0.062*B),(x,y,z,c)=>{ c.set(L.topColor).multiplyScalar(0.88); }));
-    parts.push(pc(new THREE.BoxGeometry(0.19*B,0.09,0.02).translate(0,0.1*TK,-profR(base,0.1)*(fem?0.66:0.62)*B-0.006),(x,y,z,c)=>{ c.set(L.topColor).multiplyScalar(0.85); }));
-    for(const sd of [-1,1]) parts.push(solid(new THREE.BoxGeometry(0.006,0.11,0.006).translate(sd*0.03,0.44*TK,-profR(base,0.44)*(fem?0.66:0.62)*B-0.004),0xe8e4dc));
+    parts.push(pc(gfitSeat(X,D,new THREE.BoxGeometry(0.19*B,0.09,0.02,8,4,1),0,0.1,0.006),(x,y,z,c)=>{ c.set(L.topColor).multiplyScalar(0.85); }));   // the pouch pocket, seated on the belly
   }
   if(!kT) parts.push(...gmTop(X,D));   // a base garment's collar, pockets, buttons (model-garments.js)
   if(X.kit) parts.push(...ofRun(X,'torso'));   // an outfit's extra pieces on the torso (collars, tabards, belts, sashes), in the spine's frame

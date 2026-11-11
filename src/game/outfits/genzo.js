@@ -5,7 +5,7 @@
 CHAR_MODELS.genzo={id:'genzo',name:'Genzo',signature:true, items:{glove:'Bound fists',hat:'Bronze headband',hair:'Cropped knot',face:'Bushy brows & scar',top:'Gate robe',bottom:'Wide trousers',shoes:'Straw sandals',weapon:'Bell rig'},sexes:['male'],
   note:'The gate-keeper: broad, steady and unhurried, built for a heavy-shouldered man.',
   ranges:{height:[0.98,1.08],build:[1.0,1.18],chest:[0.9,1.35],waist:[0.9,1.15],hips:[0.92,1.2],legs:[0.92,1.08],neck:[0.95,1.2],arms:[0.95,1.25],head:[0.95,1.1],hairLength:[0.7,1.1],hairVolume:[0.9,1.15]},
-  setups:[{id:'genzo',name:'Genzo',sex:'male',def:true,note:'The gate-keeper as drawn: broad, thick-necked and calm.',v:{height:1.04,build:1.1,chest:1.15,shoulders:1.12,waist:1.02,torso:1.0,legs:0.98,thighs:1.1,arms:1.12,neck:1.1,hands:1.1,feet:1.05,jaw:1.1,chin:1.05,cheeks:1.0,noseSize:1.05,mouthSize:1.0,smile:0.3,hairLength:0.85,hairVolume:1.0}}]};
+  setups:[{id:'genzo',name:'Genzo',sex:'male',def:true,note:'The gate-keeper as drawn: broad, thick-necked and calm.',v:{height:1.04,build:1.1,chest:1.15,shoulders:1.12,waist:1.02,torso:1.0,legs:0.98,thighs:1.1,arms:1.12,neck:1.1,hands:1.1,feet:1.05,jaw:1.1,chin:1.05,cheeks:1.0,noseSize:1.05,mouthSize:1.0,smile:0.3,hairLength:0.85,hairVolume:1.0,muscle:0.8,belly:0.2}}]};
 
 OUTFITS.genzo=(function(){
   const VERM=0xb8452a, VERM_D=0x8a3220, BRONZE=0xd2a24a, BRONZE_D=0x9a7430, WHITE=0xf3ead2, INK=0x2a2020, STRAW=0xc8a860, STEEL=0xc9ccd4, HAIR=0x1d1816;

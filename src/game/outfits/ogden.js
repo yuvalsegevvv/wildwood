@@ -5,7 +5,7 @@
 CHAR_MODELS.ogden={id:'ogden',name:'Ogden',signature:true, hairGrad:{mode:'ombre',c2:0x5a7a50}, items:{hat:'Diggers cap',hair:'Straggle',face:'Stitches & blotches',top:'Grave waistcoat',bottom:'Torn breeches',shoes:'Split boots',weapon:'Grave spade'},sexes:['male'],
   note:'The gravedigger: heavy, stooped and long in the arm, built for a broad, tall man.',
   ranges:{height:[0.98,1.08],build:[1.0,1.18],chest:[0.9,1.2],waist:[0.95,1.15],hips:[0.9,1.15],legs:[0.92,1.06],neck:[0.9,1.15],arms:[1.0,1.25],head:[0.95,1.08],hairLength:[0.8,1.2],hairVolume:[0.9,1.1]},
-  setups:[{id:'ogden',name:'Ogden',sex:'male',def:true,note:'The gravedigger as drawn: big, stooped, long-armed, a heavy jaw.',v:{height:1.04,build:1.1,chest:1.0,shoulders:1.05,waist:1.1,torso:1.0,legs:0.96,thighs:1.05,arms:1.15,neck:1.0,hands:1.15,feet:1.1,jaw:1.15,chin:1.1,cheeks:0.85,noseSize:1.1,mouthSize:1.05,smile:0.0,hairLength:0.9,hairVolume:0.92}}]};
+  setups:[{id:'ogden',name:'Ogden',sex:'male',def:true,note:'The gravedigger as drawn: big, stooped, long-armed, a heavy jaw.',v:{height:1.04,build:1.1,chest:1.0,shoulders:1.05,waist:1.1,torso:1.0,legs:0.96,thighs:1.05,arms:1.15,neck:1.0,hands:1.15,feet:1.05,jaw:1.15,chin:1.1,cheeks:0.85,noseSize:1.1,mouthSize:1.05,smile:0.0,hairLength:0.9,hairVolume:0.92,muscle:0.4,belly:0.6}}]};
 
 OUTFITS.ogden=(function(){
   const MOSS=0x6f8f6b, MOSS_D=0x516b50, BONE=0xe5e0c8, MUD=0x5a4632, LINEN=0xcfc7a8, BLACK=0x24211f, BURG=0x6a2c2c, RUST=0x7d6a58, ROPE=0x8a7048, GREY=0x6f6a5a;

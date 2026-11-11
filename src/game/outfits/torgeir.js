@@ -5,7 +5,7 @@
 CHAR_MODELS.torgeir={id:'torgeir',name:'Torgeir',signature:true, hairGrad:{mode:'streak',c2:0xd8dde0}, items:{hat:'Ward cap',hair:'Paired braids',face:'Scar & braid beard',top:'Hold coat',bottom:'Stone greaves',shoes:'Fell boots',weapon:'Lichen wrap'},sexes:['male'],
   note:'The shield-wall veteran: a heavy mantle, an iron cap-helm and a wall of a body, built for a broad, tall man.',
   ranges:{height:[0.96,1.08],build:[1.0,1.18],chest:[0.9,1.25],shoulders:[1.0,1.18],arms:[0.95,1.25],neck:[0.95,1.2],legs:[0.92,1.06],thighs:[0.95,1.25],head:[0.95,1.1],hairLength:[1.0,1.35],hairVolume:[0.9,1.15]},
-  setups:[{id:'torgeir',name:'Torgeir',sex:'male',def:true,note:'The veteran as drawn: wide, tall, a plain stern face.',v:{height:1.04,build:1.16,chest:1.05,shoulders:1.14,waist:1.04,hips:0.98,torso:1.04,legs:0.98,thighs:1.22,arms:1.2,neck:1.15,hands:1.15,feet:1.1,jaw:1.1,chin:1.08,cheeks:0.95,eyeSize:0.95,eyeHeight:-0.1,eyeTilt:-0.1,brow:0.15,noseSize:1.1,lips:0.85,hairLength:1.25,bangs:0.5}}]};
+  setups:[{id:'torgeir',name:'Torgeir',sex:'male',def:true,note:'The veteran as drawn: wide, tall, a plain stern face.',v:{height:1.04,build:1.16,chest:1.05,shoulders:1.14,waist:1.04,hips:0.98,torso:1.04,legs:0.98,thighs:1.22,arms:1.2,neck:1.15,hands:1.15,feet:1.05,jaw:1.1,chin:1.08,cheeks:0.95,eyeSize:0.95,eyeHeight:-0.1,eyeTilt:-0.1,brow:0.15,noseSize:1.1,lips:0.85,hairLength:1.25,bangs:0.5,muscle:0.9,belly:0.4}}]};
 
 OUTFITS.torgeir=(function(){
   const SLATE=0x3f5668, SLATE_D=0x2b3a47, SLATE_L=0x587490, BONE=0xe3dccb, BONE_D=0xb4ab95, IRON=0x5d6168, IRON_L=0x8a8f97, IRON_D=0x383b41, LICHEN=0x7d8c5a, LICHEN_D=0x566640,

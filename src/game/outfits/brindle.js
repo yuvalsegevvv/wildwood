@@ -19,7 +19,7 @@ KIN_MUZZLES.brindle=K=>{ const z=kinFace(K,0,-0.048), dk=new THREE.Color(0x2a1c1
 CHAR_MODELS.brindle={id:'brindle',name:'Brindle',signature:true, kin:{ears:'brindle',tail:'brindle',muzzle:'brindle',fur:0xc8a064,fur2:0x3a2414,mark:'spots'}, hairGrad:{mode:'tips',c2:0xd98a2b}, items:{glove:'Singed work gloves',hat:'Goggle cap',hair:'Nape ridge',face:'Soot & grin',top:'Tinker vest',bottom:'Patched baggies',shoes:'Dust boots',weapon:'Tinker rig'},sexes:['male'],
   note:'The tinker: short, broad and always laughing, built for a stocky man.',
   ranges:{height:[0.92,1.0],build:[1.0,1.18],chest:[0.9,1.5],waist:[0.9,1.15],hips:[0.95,1.2],legs:[0.92,1.02],neck:[0.85,1.05],arms:[0.95,1.2],head:[1.0,1.12],hairLength:[0.7,1.1],hairVolume:[1.0,1.25]},
-  setups:[{id:'brindle',name:'Brindle',sex:'male',def:true,note:'The tinker as drawn: short, wide and loud, all chest and cheek.',v:{height:0.94,build:1.12,chest:1.2,shoulders:1.06,waist:1.08,torso:0.96,legs:0.94,thighs:1.15,arms:1.1,neck:0.92,hands:1.12,feet:1.1,jaw:1.1,chin:0.9,cheeks:1.1,noseSize:1.2,mouthSize:1.2,smile:0.8,hairLength:0.9,hairVolume:1.15}}]};
+  setups:[{id:'brindle',name:'Brindle',sex:'male',def:true,note:'The tinker as drawn: short, wide and loud, all chest and cheek.',v:{height:0.94,build:1.12,chest:1.2,shoulders:1.06,waist:1.08,torso:0.96,legs:0.94,thighs:1.15,arms:1.1,neck:0.92,hands:1.12,feet:1.05,jaw:1.1,chin:0.9,cheeks:1.1,noseSize:1.2,mouthSize:1.2,smile:0.8,hairLength:0.9,hairVolume:1.15,muscle:0.3,belly:0.5}}]};
 
 OUTFITS.brindle=(function(){
   const AMBER=0xd98a2b, RUST=0x7a3b1c, RUST_D=0x4e2512, CREAM=0xefe0bd, LEATHER=0x5a3a22, BRASS=0xc9a24a, GLASS=0xffd27a, SAND=0x8f7c58, SOOT=0x2a2018, HAIR=0x4a2c18;

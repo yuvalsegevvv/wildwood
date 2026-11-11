@@ -344,6 +344,7 @@
     "character/outfit-palettes.js",
     "character/model-body.js",
     "character/model-gloves.js",
+    "character/garment-fit.js",
     "character/model-garments.js",
     "character/model-hats-more.js",
     "character/model-garments-more.js",

@@ -5,7 +5,7 @@
 CHAR_MODELS.sabir={id:'sabir',name:'Sabir',signature:true, hairGrad:{mode:'tips',c2:0xb02a2a}, items:{hat:'Dune turban',hair:'Rope braid',face:'Veil & kohl',top:'Raider harness',bottom:'Sash sarwal',shoes:'Buckled boots',weapon:'Raider rig'},sexes:['male'],
   note:'The dune raider: lean, wide-shouldered and quick, built for a long-limbed man.',
   ranges:{height:[0.98,1.08],build:[0.9,1.08],chest:[0.8,1.15],waist:[0.82,1.05],hips:[0.88,1.1],legs:[1.0,1.14],neck:[0.9,1.15],arms:[0.95,1.2],head:[0.95,1.08],hairLength:[0.8,1.2],hairVolume:[0.9,1.15]},
-  setups:[{id:'sabir',name:'Sabir',sex:'male',def:true,note:'The raider as drawn: lean, sharp-jawed, long in the leg.',v:{height:1.04,build:0.98,chest:0.95,shoulders:1.08,waist:0.92,torso:0.98,legs:1.08,thighs:0.95,arms:1.08,neck:1.0,hands:1.05,feet:1.0,jaw:1.08,chin:1.1,cheeks:0.9,noseSize:1.1,mouthSize:0.95,smile:0.35,hairLength:1.0,hairVolume:1.0}}]};
+  setups:[{id:'sabir',name:'Sabir',sex:'male',def:true,note:'The raider as drawn: lean, sharp-jawed, long in the leg.',v:{height:1.04,build:0.98,chest:0.95,shoulders:1.08,waist:0.92,torso:0.98,legs:1.08,thighs:0.95,arms:1.08,neck:1.0,hands:1.05,feet:1.0,jaw:1.08,chin:1.1,cheeks:0.9,noseSize:1.1,mouthSize:0.95,smile:0.35,hairLength:1.0,hairVolume:1.0,muscle:0.6,belly:-0.5}}]};
 
 OUTFITS.sabir=(function(){
   const SAND=0xd2b27a, SAND_D=0xa88a52, CRIM=0xa8322a, INDIGO=0x23233a, LEATHER=0x5a3a24, BRASS=0xc89a3c, STEEL=0xc9ccd4, HAIR=0x2b2018;

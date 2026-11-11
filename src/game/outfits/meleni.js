@@ -5,7 +5,7 @@
 CHAR_MODELS.meleni={id:'meleni',name:'Meleni',signature:true, hairGrad:{mode:'tips',c2:0x2fb4b0}, items:{hat:'Shell leaf crown',hair:'Tide braid',face:'Wave marks',top:'Tapa bandeau & lei',bottom:'Wave pareu',shoes:'Shell anklets',weapon:'Paddle staff'},sexes:['female'],
   note:'The wayfinder: tall, broad in the shoulder from the paddle, long in the leg.',
   ranges:{height:[1.0,1.08],build:[0.92,1.08],chest:[0.7,1.2],waist:[0.82,1.0],hips:[0.9,1.15],legs:[1.0,1.14],neck:[0.95,1.15],arms:[0.95,1.15],head:[0.95,1.05],hairLength:[1.1,1.35],hairVolume:[0.95,1.2]},
-  setups:[{id:'meleni',name:'Meleni',sex:'female',def:true,note:'The wayfinder as drawn: tall, strong-shouldered and long-haired.',v:{height:1.05,build:1.0,chest:0.95,shoulders:1.08,waist:0.9,torso:1.0,legs:1.08,thighs:1.0,arms:1.08,neck:1.04,hands:1.0,feet:1.0,jaw:0.95,chin:0.95,cheeks:1.05,noseSize:1.0,mouthSize:1.05,smile:0.55,hairLength:1.3,hairVolume:1.1}}]};
+  setups:[{id:'meleni',name:'Meleni',sex:'female',def:true,note:'The wayfinder as drawn: tall, strong-shouldered and long-haired.',v:{height:1.05,build:1.0,chest:0.98,shoulders:1.08,waist:0.9,torso:1.0,legs:1.08,thighs:1.0,arms:1.08,neck:1.04,hands:1.0,feet:1.0,jaw:0.95,chin:0.95,cheeks:1.05,noseSize:1.0,mouthSize:1.05,smile:0.55,hairLength:1.3,hairVolume:1.1,muscle:0.3,belly:-0.3}}]};
 
 OUTFITS.meleni=(function(){
   const TURQ=0x2fb4b0, CREAM=0xf2e6c8, DEEP=0x16607a, WOOD=0x8a6a48, CORAL=0xe86a5a, GOLD=0xe8c060, HAIR=0x241822;

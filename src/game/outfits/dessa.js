@@ -23,7 +23,7 @@ KIN_MUZZLES.dessa=K=>{ const z=kinFace(K,0,-0.05), dk=new THREE.Color(0x3a3a3f),
 CHAR_MODELS.dessa={id:'dessa',name:'Dessa',signature:true, kin:{ears:'dessa',tail:'dessa',muzzle:'dessa',fur:0x8d9097,fur2:0x3a3a3f}, hairGrad:{mode:'ombre',c2:0x6b6f78}, items:{glove:'Smith\'s gauntlets',hat:'Soot wrap',hair:'Short braid',face:'Soot streak',top:'Smith\'s tunic & apron',bottom:'Iron-kneed trousers',shoes:'Toecap boots',weapon:'Anvil rig'},sexes:['female'],
   note:'The smith: tall, broad and heavy-handed, built for the strongest woman on the road.',
   ranges:{height:[1.0,1.08],build:[1.05,1.18],chest:[0.9,1.9],waist:[0.95,1.15],hips:[0.95,1.2],legs:[0.95,1.1],neck:[1.0,1.2],arms:[1.05,1.25],head:[0.92,1.08],hairLength:[0.7,0.95],hairVolume:[0.9,1.1]},
-  setups:[{id:'dessa',name:'Dessa',sex:'female',def:true,note:'The smith as drawn: tall, broad in the shoulder and strong in the arm.',v:{height:1.07,build:1.18,chest:1.3,shoulders:1.15,waist:1.1,torso:1.04,legs:1.0,thighs:1.2,arms:1.2,neck:1.1,hands:1.18,feet:1.15,jaw:1.2,chin:1.2,cheeks:0.9,noseSize:1.15,mouthSize:1.2,smile:0.0,hairLength:0.8,hairVolume:0.95}}]};
+  setups:[{id:'dessa',name:'Dessa',sex:'female',def:true,note:'The smith as drawn: tall, broad in the shoulder and strong in the arm.',v:{height:1.07,build:1.18,chest:1.3,shoulders:1.15,waist:1.1,torso:1.04,legs:1.0,thighs:1.2,arms:1.2,neck:1.1,hands:1.18,feet:1.1,jaw:1.2,chin:1.2,cheeks:0.9,noseSize:1.15,mouthSize:1.2,smile:0.0,hairLength:0.8,hairVolume:0.95,muscle:0.9,belly:0.3}}]};
 
 OUTFITS.dessa=(function(){
   const SLATE=0x6b6f78, SLATE_D=0x4a4e56, ORANGE=0xd9742a, IRON=0x3a3d44, LEATHER=0x6a4a30, LEATHER_D=0x4a3220, ASH=0xb8b0a0, SOOT=0x24262b, HAIR=0x2e2e34;

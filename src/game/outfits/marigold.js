@@ -6,7 +6,7 @@
 CHAR_MODELS.marigold={id:'marigold',name:'Marigold',signature:true, hairGrad:{mode:'ombre',c2:0xff7aa8,c3:0x9a5ad8}, items:{hat:'Lantern crown',hair:'Ribbon tails',face:'Lantern glyph',top:'Curtain jacket',bottom:'Footlight skirt',shoes:'Bell boots',weapon:'Stage trim'},sexes:['female'],
   note:'The stage idol: small, big-headed, built for a light, slim figure.',
   ranges:{height:[0.92,1.02],build:[0.88,1.05],shoulders:[0.88,1.05],arms:[0.82,1.05],chest:[0.6,1.2],waist:[0.85,1.05],hips:[0.9,1.15],legs:[0.98,1.14],head:[1.0,1.12],eyeSize:[1.05,1.3],noseSize:[0.7,1.1],smile:[0.2,0.9],hairLength:[1.0,1.35],hairVolume:[1.0,1.25]},
-  setups:[{id:'marigold',name:'Marigold',sex:'female',def:true,note:'The idol as drawn: small, big-headed, huge bright eyes.',v:{height:0.94,build:0.9,chest:0.85,shoulders:0.92,waist:0.9,torso:0.97,legs:1.06,thighs:0.95,arms:0.85,neck:0.95,hands:0.9,feet:0.92,head:1.08,jaw:0.9,chin:0.88,cheeks:1.15,eyeSize:1.3,eyeGap:1.04,eyeHeight:-0.2,eyeTilt:0.1,brow:-0.1,noseSize:0.75,mouthSize:0.9,lips:1.15,smile:0.6,hairLength:1.2,hairVolume:1.15}}]};
+  setups:[{id:'marigold',name:'Marigold',sex:'female',def:true,note:'The idol as drawn: small, big-headed, huge bright eyes.',v:{height:0.94,build:0.9,chest:0.93,shoulders:0.92,waist:0.9,torso:0.97,legs:1.06,thighs:0.95,arms:0.85,neck:0.95,hands:0.9,feet:0.92,head:1.08,jaw:0.9,chin:0.88,cheeks:1.15,eyeSize:1.3,eyeGap:1.04,eyeHeight:-0.2,eyeTilt:0.1,brow:-0.1,noseSize:0.75,mouthSize:0.9,lips:1.15,smile:0.6,hairLength:1.2,hairVolume:1.15,belly:-0.2}}]};
 
 OUTFITS.marigold=(function(){
   const PLUM=0x5a2a4a, PLUM_D=0x3f1c35, PLUM_L=0x7d4a68, MARI=0xe59a2b, MARI_L=0xf4b957, CREAM=0xfff2d6, GLOW=0xffd36b, GOLD=0xe3b448, PGOLD=0xf2dca0, HAZEL=0x8a5a2e;

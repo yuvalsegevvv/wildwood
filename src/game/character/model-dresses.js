@@ -21,38 +21,38 @@ const gmdTopAt=(L,id)=>Math.min(0.62,GMD[id].top*sliderVal(L,'neckline'));   // 
 const gmdPaint=(L,c,u,v)=>{ if(v>gmdTopAt(L,L.top)) c.set(L.skin); else c.set(L.topColor); };
 // the bodice: a snug shell over the torso from the waist to its top edge, straps, sleeves, ties and trim, in the spine's frame
 function gmdTop(X,D){
-  const {L,sg}=X, id=L.top, G=Object.assign({},GMD[id],{top:gmdTopAt(L,id)}), TK=D.TK, nr=D.neckR, PL=gmxPalAt(L,'top'), tc=L.topColor, out=[], fz=yd=>-(torsoSize(X,D,yd).rz+0.004), bz=yd=>torsoSize(X,D,yd).rzBack+0.004;
+  const {L,sg}=X, id=L.top, G=Object.assign({},GMD[id],{top:gmdTopAt(L,id)}), TK=D.TK, nr=D.neckR, PL=gmxPalAt(L,'top'), tc=L.topColor, out=[], fz=(yd,x)=>gfitFz(X,D,x||0,yd)-0.004, bz=(yd,x)=>gfitBz(X,D,x||0,yd)+0.004;
   const ys=[]; for(let i=0;i<=6;i++) ys.push(0.02+(G.top-0.045)*i/6); ys.push(G.top-0.027,G.top-0.024,G.top);   // (two rows a hair apart at the trim's lower edge: a crisp line, not a gradient)
-  const rows=ys.map(yd=>{ const t=torsoSize(X,D,yd), m=0.009; return {y:yd*TK,rx:t.rx+m,rz:Math.max(t.rz,t.rzBack)+m}; });
-  out.push(pc(ofLoft(rows,sg(40),0,TAU),(x,y,z,c)=>{ c.set(tc); const t=y/TK; if(t>G.top-0.025) c.set(PL[1]); else if(t<0.045) c.multiplyScalar(0.8); c.multiplyScalar(0.96+0.04*Math.sin(Math.atan2(x,z)*6)); }));   // (the first row sits at the waist: the skirt's rim covers its lower edge)
-  const edge=(yd,hex)=>out.push(gmBand(X,D,yd+0.004,yd-0.014,(x,y,z,c)=>c.set(hex),0.013));   // a thin trim that follows the body's oval (a round ring floated out at the sides)
+  const scoop=(ang,x)=>0.06*TK*clamp((Math.abs(x)-0.1)/0.05);   // the bodice's top edge (and its trim) dips under the arm: the deltoid's ball stands there
+  out.push(pc(gfitShell(X,0.02*TK,G.top*TK,0.009,{rows:[(G.top-0.027)*TK,(G.top-0.024)*TK,0.045*TK],lim:(a,x)=>[0,G.top*TK-scoop(a,x)]}),(x,y,z,c)=>{ c.set(tc); const t=y/TK; if(t>G.top-0.025) c.set(PL[1]); else if(t<0.045) c.multiplyScalar(0.8); c.multiplyScalar(0.96+0.04*Math.sin(Math.atan2(x,z)*6)); }));   // (the first row sits at the waist: the skirt's rim covers its lower edge)
+  const edge=(yd,hex)=>out.push(gmBand(X,D,yd+0.004,yd-0.014,(x,y,z,c)=>c.set(hex),0.013,{dy:scoop}));   // (the top edge dips under the arm: the deltoid's ball stands there)   // a thin trim that follows the body's oval (a round ring floated out at the sides)
   if(id==='sundress'){
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.075,G.top*TK,fz(G.top)-0.004],[sd*0.06,0.5*TK,fz(0.5)-0.004],[sd*nr*1.3,0.575*TK,-nr*0.45],[sd*0.075,0.5*TK,bz(0.5)+0.004],[sd*0.075,G.top*TK,bz(G.top)+0.004]],0.018,{up:[0,1,0],seg:sg(12),th:0.004}),PL[1]));   // thin shoulder straps
+    for(const sd of [-1,1]) out.push(solid(ofRibbon(gmShoulderStrap(X,D,sd*0.07,G.top),0.018,{up:[0,1,0],seg:sg(16),th:0.004}),PL[1]));   // thin shoulder straps: down the front, over the shoulder's top, down the back
     edge(G.top,PL[1]);
-    for(const sd of [-1,1]) out.push(solid(csph(0.0075,5,4).translate(sd*0.06,0.5*TK,fz(0.5)-0.007),PL[2]));   // a button on each strap
+    for(const sd of [-1,1]) out.push(solid(gfitSeat(X,D,csph(0.0075,5,4),sd*0.07,0.46,0.007),PL[2]));   // a button on each strap
   } else if(id==='peasant'){
     edge(G.top,PL[1]);
     for(const sd of [-1,1]) out.push(pc(ofLoft([{y:0.5*TK,rx:0.021*D.aw+0.004,rz:0.021*D.aw+0.004},{y:0.5*TK-0.03,rx:0.027*D.aw+0.008,rz:0.027*D.aw+0.008},{y:0.5*TK-0.07,rx:0.03*D.aw+0.006,rz:0.03*D.aw+0.006}],sg(14),0,TAU).translate(sd*(D.shX-0.01),0,0),(x,y,z,c)=>c.set(PL[1]).multiplyScalar(y<0.5*TK-0.06?0.85:1)));   // gathered puff sleeves hanging from the shoulders
-    for(let i=0;i<5;i++){ const yd=0.4-i*0.07; out.push(solid(ofRibbon([[-0.026,yd*TK,fz(yd)-0.008],[0,(yd-0.028)*TK,fz(yd)-0.01],[0.026,yd*TK,fz(yd)-0.008]],0.006,{up:[0,0,-1],seg:4,th:0.003}),PL[2])); }   // a laced front
+    for(let i=0;i<5;i++){ const yd=0.4-i*0.07; out.push(solid(gfitRibbon(X,D,[[-0.026,yd],[0,yd-0.028],[0.026,yd]],0.006,{lift:0.004,th:0.003}),PL[2])); }   // a laced front
   } else if(id==='tiered'){
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.07,G.top*TK,fz(G.top)-0.005],[sd*0.05,0.5*TK,fz(0.5)-0.004],[sd*nr*1.15,0.565*TK,-nr*0.55],[sd*nr*0.5,0.585*TK,nr*1.25]],0.016,{up:[0,1,-0.3],seg:sg(10),th:0.003}),PL[2]));   // halter straps to a knot behind the neck
-    out.push(solid(csph(0.011,sg(8),sg(6)).translate(0,0.585*TK,nr*1.35),PL[2])); edge(G.top,PL[2]);
-    out.push(solid(csph(0.012,sg(8),sg(6)).scale(1.4,1,0.7).translate(0,0.13*TK,fz(0.13)-0.008),PL[2]));   // a small bow at the waist
+    for(const sd of [-1,1]) out.push(solid(ofRibbon(gmNeckPath(X,D,[[sd*0.07,G.top],[sd*0.06,(G.top+0.5)/2],[sd*0.05,0.5]],sd,0.005),0.016,{up:[0,1,-0.3],seg:sg(14),th:0.003}),PL[2]));   // halter straps round the neck to a knot behind it
+    out.push(solid(csph(0.011,sg(8),sg(6)).translate(...gmNape(X,D,0.007)),PL[2])); edge(G.top,PL[2]);
+    out.push(solid(gfitSeat(X,D,csph(0.012,sg(8),sg(6)).scale(1.4,1,0.7),0,0.13,0.008),PL[2]));   // a small bow at the waist
   } else if(id==='mermaid'){
     edge(G.top,PL[1]); edge(G.top-0.03,PL[1]);
-    for(const sd of [-1,1]) out.push(solid(csph(0.012,sg(8),sg(6)).translate(sd*torsoSize(X,D,0.3).rx*0.5,(0.36+CHEST_DY)*TK,fz(0.36+CHEST_DY)-0.009),PL[2]));   // two pearls on the bust
-    out.push(solid(csph(0.016,sg(8),sg(6)).scale(1,0.8,0.7).translate(0,0.17*TK,fz(0.17)-0.01),PL[1]));
+    for(const sd of [-1,1]) out.push(solid(gfitSeat(X,D,csph(0.012,sg(8),sg(6)),sd*chestLobeX(X.S,D),0.36+CHEST_DY,0.0095),PL[2]));   // two pearls on the bust
+    out.push(solid(gfitSeat(X,D,csph(0.016,sg(8),sg(6)).scale(1,0.8,0.7),0,0.17,0.01),PL[1]));
   } else if(id==='ballgown'){
     edge(G.top,PL[1]); edge(G.top-0.045,PL[2]);
     for(const sd of [-1,1]){ out.push(pc(ofLoft([{y:0.43*TK,rx:0.03*D.aw+0.006,rz:0.03*D.aw+0.006},{y:0.43*TK-0.035,rx:0.034*D.aw+0.01,rz:0.034*D.aw+0.01},{y:0.43*TK-0.075,rx:0.03*D.aw+0.008,rz:0.03*D.aw+0.008}],sg(14),0,TAU).translate(sd*(D.shX+0.004),0,0),(x,y,z,c)=>c.set(PL[2]).multiplyScalar(y<0.43*TK-0.065?0.86:1)));   // off-the-shoulder puffs
-      out.push(solid(csph(0.011,sg(8),sg(6)).translate(sd*0.05,0.33*TK,fz(0.33)-0.008),PL[1])); }
-    out.push(solid(csph(0.022,sg(8),sg(6)).scale(1.3,1,0.7).translate(0,0.1*TK,bz(0.1)+0.016),PL[1]));   // the bow at the back
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.03,0.1*TK,bz(0.1)+0.02],[sd*0.07,0.0,bz(0.05)+0.04],[sd*0.085,-0.12,bz(0.03)+0.05]],0.03,{up:[0,0,1],seg:sg(8),th:0.004}),PL[1]));
+      out.push(solid(gfitSeat(X,D,csph(0.011,sg(8),sg(6)),sd*0.05,0.33,0.008),PL[1])); }
+    out.push(solid(gfitSeat(X,D,csph(0.022,sg(8),sg(6)).scale(1.3,1,0.7),0,0.1,0.012,false),PL[1]));   // the bow at the back
+    for(const sd of [-1,1]) out.push(solid(gfitRibbon(X,D,[[sd*0.03,0.1],[sd*0.07,0.0],[sd*0.085,-0.12/TK]],0.03,{lift:0.016,front:false}),PL[1]));
   } else if(id==='wrapdress'){
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*nr*1.15,0.57*TK,fz(0.55)-0.004],[sd*nr*1.6,0.5*TK,fz(0.5)-0.007],[-sd*0.02,0.3*TK,fz(0.3)-0.009+(sd>0?-0.003:0)],[-sd*0.045,0.1*TK,fz(0.1)-0.01+(sd>0?-0.003:0)]],0.04,{up:[0,0,-1],seg:sg(14),th:0.005}),sd>0?PL[1]:gmxMul(tc,0.85)));   // the crossed lapels
+    for(const sd of [-1,1]) out.push(solid(gfitRibbon(X,D,[[sd*nr*1.15,0.55],[sd*nr*1.6,0.5],[sd*nr*0.4,0.4],[-sd*0.02,0.3],[-sd*0.045,0.1]],0.04,{lift:sd>0?0.01:0.007,th:0.005}),sd>0?PL[1]:gmxMul(tc,0.85)));   // the crossed lapels
     out.push(gmBand(X,D,0.14,0.07,(x,y,z,c)=>c.set(PL[2]),0.012));   // the sash
-    out.push(solid(csph(0.02,sg(8),sg(6)).scale(1.2,1,0.7).translate(0.08,0.1*TK,fz(0.1)-0.012),PL[2]));
-    for(const sd of [0,1]) out.push(solid(ofRibbon([[0.08,0.1*TK,fz(0.1)-0.016],[0.1+sd*0.015,0.02,fz(0.03)-0.02],[0.11+sd*0.03,-0.1-sd*0.04,fz(0.0)-0.018]],0.026,{up:[0,0,-1],seg:sg(8),th:0.004}),PL[2]));   // the bow's tails
+    out.push(solid(gfitSeat(X,D,csph(0.02,sg(8),sg(6)).scale(1.2,1,0.7),0.08,0.1,0.01),PL[2]));
+    for(const sd of [0,1]) out.push(solid(ofRibbon([[0.08,0.1*TK,fz(0.1,0.08)-0.016],[0.1+sd*0.015,0.02,fz(0.03,0.1)-0.02],[0.11+sd*0.03,-0.1-sd*0.04,fz(0.0,0.11)-0.018]],0.026,{up:[0,0,-1],seg:sg(8),th:0.004}),PL[2]));   // the bow's tails
     out.push(solid(gmRingAt([0,0.572*TK,0],[0,1,0],nr*1.5,0.007,sg(8)),PL[1]));
   }
   return out;

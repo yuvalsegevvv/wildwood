@@ -5,7 +5,7 @@
 CHAR_MODELS.nephra={id:'nephra',name:'Nephra',signature:true, hairGrad:{mode:'tips',c2:0xd8b050,c3:0x2f55a0}, items:{hat:'Striped headcloth',hair:'Kohl bob & strips',face:'Kohl wings & gold dots',top:'Wrapped collar',bottom:'Ragged kilt',shoes:'Wrapped sandals',weapon:'Ankh bind'},sexes:['female'],
   note:'The tomb-keeper: tall, slim and still, built for a long, narrow figure.',
   ranges:{height:[0.96,1.08],build:[0.88,1.02],chest:[0.6,1.1],waist:[0.82,1.05],hips:[0.88,1.12],legs:[1.0,1.14],neck:[1.0,1.2],arms:[0.82,1.05],head:[0.95,1.08],hairLength:[0.8,1.2],hairVolume:[0.9,1.15]},
-  setups:[{id:'nephra',name:'Nephra',sex:'female',def:true,note:'The tomb-keeper as drawn: tall, narrow, long-necked and calm.',v:{height:1.05,build:0.9,chest:0.8,shoulders:1.0,waist:0.9,torso:1.02,legs:1.1,thighs:0.9,arms:0.88,neck:1.15,hands:0.92,feet:0.95,head:0.98,jaw:0.88,chin:0.95,cheeks:0.9,eyeSize:1.1,eyeTilt:0.15,brow:0.1,noseSize:0.9,mouthSize:0.85,lips:1.1,smile:0.25,hairLength:1.0,hairVolume:1.0}}]};
+  setups:[{id:'nephra',name:'Nephra',sex:'female',def:true,note:'The tomb-keeper as drawn: tall, narrow, long-necked and calm.',v:{height:1.05,build:0.9,chest:0.91,shoulders:1.0,waist:0.9,torso:1.02,legs:1.1,thighs:0.9,arms:0.88,neck:1.15,hands:0.92,feet:0.95,head:0.98,jaw:0.88,chin:0.95,cheeks:0.9,eyeSize:1.1,eyeTilt:0.15,brow:0.1,noseSize:0.9,mouthSize:0.85,lips:1.1,smile:0.25,hairLength:1.0,hairVolume:1.0,muscle:-0.2,belly:-0.3}}]};
 
 OUTFITS.nephra=(function(){
   const LINEN=0xe3d5b0, LINEN_D=0xc8b68a, STAIN=0x9c8458, LAPIS=0x2f55a0, GOLD=0xd4a83a, TURQ=0x3fb0a8, KOHL=0x1f1a22, BRONZE=0xc79a55, ACACIA=0x8a6a40, HAIR=0x2a2230;

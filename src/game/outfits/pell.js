@@ -5,7 +5,7 @@
 CHAR_MODELS.pell={id:'pell',name:'Pell',signature:true, items:{hat:'Reed cone hat',hair:'Tied crop',face:'Soot & squint',top:'Oilskin & net',bottom:'Rolled waders',shoes:'Tarred boots',weapon:'Torch spear'},sexes:['male'],
   note:'The night-fisher: lean, patient and a little stooped, built for a long, narrow man.',
   ranges:{height:[0.96,1.08],build:[0.88,1.05],chest:[0.7,1.15],waist:[0.82,1.05],hips:[0.88,1.1],legs:[0.98,1.14],neck:[0.9,1.15],arms:[0.9,1.15],head:[0.95,1.08],hairLength:[0.8,1.2],hairVolume:[0.9,1.15]},
-  setups:[{id:'pell',name:'Pell',sex:'male',def:true,note:'The night-fisher as drawn: lean, long-armed and squinting.',v:{height:1.03,build:0.94,chest:0.9,shoulders:0.98,waist:0.92,torso:1.0,legs:1.06,thighs:0.94,arms:1.08,neck:1.05,hands:1.08,feet:1.0,jaw:0.98,chin:1.0,cheeks:0.9,noseSize:1.08,mouthSize:0.95,smile:0.3,hairLength:1.0,hairVolume:1.0}}]};
+  setups:[{id:'pell',name:'Pell',sex:'male',def:true,note:'The night-fisher as drawn: lean, long-armed and squinting.',v:{height:1.03,build:0.94,chest:0.9,shoulders:0.98,waist:0.92,torso:1.0,legs:1.06,thighs:0.94,arms:1.08,neck:1.05,hands:1.08,feet:1.0,jaw:0.98,chin:1.0,cheeks:0.9,noseSize:1.08,mouthSize:0.95,smile:0.3,hairLength:1.0,hairVolume:1.0,muscle:0.3}}]};
 
 OUTFITS.pell=(function(){
   const TAR=0x2a2420, TAR_L=0x4a3e34, TORCH=0xe0762a, CREAM=0xe9dfc4, CREAM_D=0xc8bc9a, REED=0x8a7a44, ROPE=0x9a8a5c, BRASS=0xc89a3c, STEEL=0xbfc4c8, HAIR=0x3a2c20;

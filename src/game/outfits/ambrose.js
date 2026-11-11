@@ -6,7 +6,7 @@
 CHAR_MODELS.ambrose={id:'ambrose',name:'Ambrose',signature:true, hairGrad:{mode:'tips',c2:0x6fae7a}, items:{hat:'Marsh wrap',hair:'Reed knot',face:'Clay dab',top:'Ford robe',bottom:'Wader legs',shoes:'Ford boots',weapon:'Reed tend'},sexes:['male'],
   note:'The marsh herbalist: soft in the middle, gentle-faced, built for a slightly rounded man with good hands.',
   ranges:{build:[0.9,1.15],shoulders:[0.88,1.1],chest:[0.7,1.3],waist:[0.9,1.15],hands:[0.95,1.2],head:[0.95,1.1],eyeTilt:[-0.5,0.2],brow:[-0.6,0.2],hairLength:[0.8,1.2]},
-  setups:[{id:'ambrose',name:'Ambrose',sex:'male',def:true,note:'The herbalist as drawn: soft in the middle, gentle-faced, good hands.',v:{build:0.98,shoulders:0.96,waist:1.06,hips:1.02,torso:1.02,arms:0.95,hands:1.12,head:1.02,jaw:0.95,chin:0.95,cheeks:1.05,eyeSize:1.05,eyeGap:1.02,eyeTilt:-0.25,brow:-0.3,lips:1.05,smile:0.35,hairLength:1.1,bangs:0.8}}]};
+  setups:[{id:'ambrose',name:'Ambrose',sex:'male',def:true,note:'The herbalist as drawn: soft in the middle, gentle-faced, good hands.',v:{build:0.98,shoulders:0.96,waist:1.06,hips:1.02,torso:1.02,arms:0.95,hands:1.12,head:1.02,jaw:0.95,chin:0.95,cheeks:1.05,eyeSize:1.05,eyeGap:1.02,eyeTilt:-0.25,brow:-0.3,lips:1.05,smile:0.35,hairLength:1.1,bangs:0.8,muscle:-0.4,belly:0.4}}]};
 
 OUTFITS.ambrose=(function(){
   const GREEN=0x4f7a6a, GREEN_D=0x3b5f52, SHELL=0xe6ecea, SHELL_D=0xc9d3d0, CLAY=0xa57b55, CLAY_D=0x8a6340, REED=0xcdbd8a, REED_D=0xa89a64, REED_P=0xe3d9b0;

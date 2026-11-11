@@ -5,7 +5,7 @@
 CHAR_MODELS.atuqa={id:'atuqa',name:'Atuqa',signature:true, hairGrad:{mode:'streaks',c2:0xe8c860}, items:{hat:'Woven flap cap',hair:'Twin braids',face:'Sun stripes',top:'Woven tunic & quipu',bottom:'Wool leggings',shoes:'Wrapped sandals',weapon:'Sling rig'},sexes:['male'],
   note:'The terrace-keeper: broad, deep-chested and square, built for a man who holds a wall.',
   ranges:{height:[0.95,1.05],build:[1.0,1.18],chest:[0.9,1.4],waist:[0.9,1.15],hips:[0.9,1.15],legs:[0.92,1.06],neck:[0.95,1.15],arms:[1.0,1.25],head:[0.95,1.1],hairLength:[0.9,1.3],hairVolume:[0.95,1.25]},
-  setups:[{id:'atuqa',name:'Atuqa',sex:'male',def:true,note:'The keeper as drawn: broad, solid and a head shorter than the priests.',v:{height:0.98,build:1.1,chest:1.15,shoulders:1.1,waist:1.02,torso:0.97,legs:0.98,thighs:1.1,arms:1.14,neck:1.06,hands:1.12,feet:1.04,jaw:1.1,chin:1.1,cheeks:1.0,noseSize:1.1,mouthSize:1.0,smile:0.1,hairLength:1.1,hairVolume:1.05}}]};
+  setups:[{id:'atuqa',name:'Atuqa',sex:'male',def:true,note:'The keeper as drawn: broad, solid and a head shorter than the priests.',v:{height:0.98,build:1.1,chest:1.15,shoulders:1.1,waist:1.02,torso:0.97,legs:0.98,thighs:1.1,arms:1.14,neck:1.06,hands:1.12,feet:1.04,jaw:1.1,chin:1.1,cheeks:1.0,noseSize:1.1,mouthSize:1.0,smile:0.1,hairLength:1.1,hairVolume:1.05,muscle:0.7,belly:0.2}}]};
 
 OUTFITS.atuqa=(function(){
   const RED=0xb83a2a, GOLD=0xe8c860, STONE=0x8e887a, WOOL=0xe8dcc0, INDIGO=0x2a3a6a, SUN=0xfff0b0, LEATHER=0x5a4028, HAIR=0x1c1612;

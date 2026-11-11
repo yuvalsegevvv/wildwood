@@ -23,7 +23,7 @@ KIN_MUZZLES.sefi=K=>{ const z=kinFace(K,0,-0.045), dk=new THREE.Color(0x15100c),
 CHAR_MODELS.sefi={id:'sefi',name:'Sefi',signature:true, kin:{ears:'sefi',tail:'sefi',muzzle:'sefi',fur:0xe0a830,fur2:0x2a1c14,mark:'spots'}, hairGrad:{mode:'tips',c2:0x5aa0d0}, items:{glove:'Wrapped hands',hat:'Wind headband',hair:'Wind ponytail',face:'Sky liner',top:'Courier\'s crop & sash',bottom:'Wrap skirt',shoes:'Wrapped sandals',weapon:'Runner rig'},sexes:['female'],
   note:'The courier: tall, lean and long in the leg, built for a woman who runs.',
   ranges:{height:[1.0,1.08],build:[0.88,1.0],chest:[0.6,1.0],waist:[0.82,1.0],hips:[0.85,1.05],legs:[1.06,1.14],neck:[1.0,1.2],arms:[0.9,1.1],head:[0.92,1.05],hairLength:[1.1,1.35],hairVolume:[0.9,1.1]},
-  setups:[{id:'sefi',name:'Sefi',sex:'female',def:true,note:'The courier as drawn: tall, light-boned and all leg.',v:{height:1.06,build:0.88,chest:0.8,shoulders:0.94,waist:0.86,torso:0.96,legs:1.14,thighs:0.9,arms:1.04,neck:1.1,hands:0.92,feet:1.1,jaw:0.85,chin:0.85,cheeks:0.85,noseSize:0.85,mouthSize:0.9,smile:0.5,hairLength:1.25,hairVolume:1.0}}]};
+  setups:[{id:'sefi',name:'Sefi',sex:'female',def:true,note:'The courier as drawn: tall, light-boned and all leg.',v:{height:1.06,build:0.88,chest:0.91,shoulders:0.94,waist:0.86,torso:0.96,legs:1.14,thighs:0.9,arms:1.04,neck:1.1,hands:0.92,feet:1.05,jaw:0.85,chin:0.85,cheeks:0.85,noseSize:0.85,mouthSize:0.9,smile:0.5,hairLength:1.25,hairVolume:1.0,muscle:0.5,belly:-0.7}}]};
 
 OUTFITS.sefi=(function(){
   const GOLD=0xe0b040, DARK=0x3a2a1a, SKY=0xbfe6ff, SKY_D=0x5aa0d0, CREAM=0xf2e6c8, BRASS=0xc9a24a, HAIR=0x6a4a28, TIP=0xf0d8a0;

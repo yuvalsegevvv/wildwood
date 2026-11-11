@@ -7,7 +7,7 @@
 CHAR_MODELS.tansy={id:'tansy',name:'Tansy',signature:true, hairGrad:{mode:'tips',c2:0xe8c860}, items:{hat:'Sun brim',hair:'Sheaf crown',face:'Freckles',top:'Harvest smock',bottom:'Stook breeches',shoes:'Furrow boots',weapon:'Sheaf wrap'},sexes:['female'],
   note:'The farm-hand: a wide brim and round shapes, built for a short, strong, round-cheeked woman.',
   ranges:{chest:[0.7,1.3],waist:[0.88,1.15],legs:[0.92,1.1],thighs:[0.95,1.25],arms:[0.9,1.25],neck:[0.9,1.2],head:[0.94,1.1],hairLength:[0.9,1.25],hairVolume:[1.0,1.2]},
-  setups:[{id:'tansy',name:'Tansy',sex:'female',def:true,note:'Tansy as drawn: short, strong, round-cheeked, always smiling.',v:{height:0.96,build:1.1,shoulders:1.04,hips:1.1,thighs:1.12,arms:1.15,hands:1.1,feet:1.05,jaw:1.05,chin:0.95,cheeks:1.15,eyeSize:1.1,noseSize:0.95,mouthSize:1.1,smile:0.5,hairVolume:1.1,bangs:0.8}}]};
+  setups:[{id:'tansy',name:'Tansy',sex:'female',def:true,note:'Tansy as drawn: short, strong, round-cheeked, always smiling.',v:{height:0.96,build:1.1,shoulders:1.04,hips:1.1,thighs:1.12,arms:1.15,hands:1.1,feet:1.05,jaw:1.05,chin:0.95,cheeks:1.15,eyeSize:1.1,noseSize:0.95,mouthSize:1.1,smile:0.5,hairVolume:1.1,bangs:0.8,muscle:0.4,belly:0.2}}]};
 
 OUTFITS.tansy=(function(){
   const WHEAT=0xe0b95a, FIELD=0x7a9a3c, CLAY=0xb5532f, OAT=0xece3c8, LEATHER=0x7a5a3a;

@@ -17,49 +17,65 @@ function gmRingAt(p,t,R,r,seg){ const g=new THREE.TorusGeometry(R,r,4,Math.max(6
   g.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(q)); return g.translate(p[0],p[1],p[2]); }
 const gmCol=(c,h,m)=>c.set(h).multiplyScalar(m===undefined?1:m);
 // a band round the torso between design heights y0 and y1 (a belt, a hem): a loft over the body's own size
-function gmBand(X,D,y0,y1,fn,m){ const a=torsoSize(X,D,y0), b=torsoSize(X,D,y1), mm=m||0.006, TK=D.TK;   // y0 above y1 (design heights)
+function gmBand(X,D,y0,y1,fn,m,o){
+  if(X.trsGeo) return pc(gfitShell(X,Math.min(y0,y1)*D.TK,Math.max(y0,y1)*D.TK,m||0.006,o),fn);   // an offset of the body's own surface (garment-fit.js): it follows the bust, the belly and the flanks
+  const a=torsoSize(X,D,y0), b=torsoSize(X,D,y1), mm=m||0.006, TK=D.TK;   // y0 above y1 (design heights)
   return pc(ofLoft([{y:y0*TK,rx:a.rx+mm,rz:(a.rz+a.rzBack)/2+mm,zc:(a.rzBack-a.rz)/2},{y:y1*TK,rx:b.rx+mm,rz:(b.rz+b.rzBack)/2+mm,zc:(b.rzBack-b.rz)/2}],X.sg(28),0,TAU),fn); }
+// a collar band on the neck's real section (trsSection: the root of the neck on the trapezius, deeper behind, leaning forward) at design height yc, h tall, m off the skin
+function gmCollar(X,D,yc,h,m,fn){ const rows=[0.5,0,-0.5].map(f=>{ const sc=trsSection(X,D,yc+f*h); return {y:(yc+f*h)*D.TK,rx:sc.rx+m+(f<0?0.0:0),rz:(sc.rzF+sc.rzB)/2+m,zc:sc.zc+(sc.rzB-sc.rzF)/2}; });
+  return pc(ofLoft(rows,X.sg(24),0,TAU),fn); }
+// a tie from the chest (points [x, yd] on the surface) round the side of the neck to the nape: the neck's real section (trsSection) at each height, so it lies ON the neck and both ties end together behind it
+function gmNeckPath(X,D,chestPts,sd,m){
+  const P=gfitPath(X,D,chestPts,0.004,true), TK=D.TK;
+  for(const [a,yd] of [[2.5,0.535],[1.9,0.55],[1.2,0.565],[0.55,0.58],[0,0.585]]){ const sc=trsSection(X,D,yd), cz=sc.zc+(sc.rzB-sc.rzF)/2, hz=(sc.rzF+sc.rzB)/2, aa=sd*a; P.push(new THREE.Vector3(Math.sin(aa)*(sc.rx+m),yd*TK,cz+Math.cos(aa)*(hz+m))); }
+  return P; }
+const gmNape=(X,D,m)=>{ const sc=trsSection(X,D,0.585); return [0,0.585*D.TK,sc.zc+(sc.rzB-sc.rzF)/2+(sc.rzF+sc.rzB)/2+m]; };   // the knot behind the neck
+// a strap over the shoulder: down the front surface from yd0 to just below the shoulder's top, over it, and down the back to yd0 (x across)
+function gmShoulderStrap(X,D,x,yd0){
+  let yt=0.62; for(let y=0.62;y>0.4;y-=0.004){ if(trsSection(X,D,y).rx>=Math.abs(x)+0.004){ yt=y; break; } }
+  const sc=trsSection(X,D,yt), cz=sc.zc+(sc.rzB-sc.rzF)/2, yl=Math.min(0.5,yt-0.035);
+  return gfitPath(X,D,[[x,yd0],[x,yl]],0.004,true).concat([new THREE.Vector3(x,yt*D.TK+0.004,cz)],gfitPath(X,D,[[x,yl],[x,yd0]],0.004,false)); }
 // ---- tops, in the spine's frame ----
 function gmTop(X,D){
   if(X.kit&&X.kit.sl.top) return [];
   const {L,sg}=X, TK=D.TK, B=D.B, top=L.top, out=[], nr=D.neckR, tc=new THREE.Color(L.topColor), dk=tc.clone().multiplyScalar(0.72).getHex(), lt=tc.clone().lerp(new THREE.Color(0xffffff),0.3).getHex();
   if(top==='none'||top==='outfit') return out;
-  const fz=yd=>-(torsoSize(X,D,yd).rz+0.004), hemY=(top==='jacket'||top==='hoodie')?-0.035:0.03;
-  const button=(yd,hex)=>solid(csph(0.0075,sg(7),sg(6)).scale(1,1,0.6).translate(0,yd*TK,fz(yd)-0.003),hex);
+  const fz=(yd,x)=>gfitFz(X,D,x||0,yd)-0.004, hemY=(top==='jacket'||top==='hoodie')?-0.035:0.03;
+  const button=(yd,hex)=>solid(gfitSeat(X,D,csph(0.0075,sg(7),sg(6)).scale(1,1,0.6),0,yd,0.006),hex);
   if(top==='tshirt'){
     { const yc=0.575, sc=trsSection(X,D,yc), rx=sc.rx, rz=(sc.rzF+sc.rzB)/2, zc=sc.zc+(sc.rzB-sc.rzF)/2;   // the body's own section at the collar's height (the neck's root on the trapezius, deeper behind, leaning forward: trsUpper in model-body.js)
       out.push(solid(ofLoft((sg(100)>=50?[[0.01,0.0012],[0.0055,0.0052],[-0.0005,0.0058],[-0.0065,0.0045],[-0.012,0.0015]]:[[0.01,0.0012],[-0.0005,0.0058],[-0.012,0.0015]]).map(q=>({y:(yc+q[0])*TK,rx:rx+q[1]+Math.max(0,-q[0])*0.5,rz:rz+q[1]+Math.max(0,-q[0])*0.5,zc})),sg(24),0,TAU),dk)); }   // the ribbed collar: a rolled band that lies on the neck (a round ring floated off an oval, leaning neck)
     out.push(gmBand(X,D,hemY+0.012,hemY-0.006,(x,y,z,c)=>gmCol(c,L.topColor,0.82),0.004));   // the hem
   } else if(top==='flannel'){
-    out.push(pc(new THREE.BoxGeometry(0.014,0.5*TK,0.004).translate(0,0.285*TK,fz(0.285)),c=>gmCol(c,L.topColor,0.62)));   // the placket
+    out.push(pc(gfitRibbon(X,D,[[0,0.535],[0,0.035]],0.014,{lift:0.0015,th:0.003}),c=>gmCol(c,L.topColor,0.62)));   // the placket: a strip laid on the body's front (down the cleavage)
     for(const yd of [0.5,0.4,0.3,0.2,0.1]) out.push(button(yd,0xe8e4dc));
-    out.push(pc(new THREE.BoxGeometry(0.052,0.052,0.004).translate(torsoSize(X,D,0.36).rx*0.45,0.36*TK,fz(0.36)),c=>gmCol(c,L.topColor,0.78)),solid(new THREE.BoxGeometry(0.052,0.006,0.005).translate(torsoSize(X,D,0.36).rx*0.45,0.382*TK,fz(0.36)-0.001),dk));   // a chest pocket
+    { const px=torsoSize(X,D,0.36).rx*0.45; out.push(pc(gfitSeat(X,D,new THREE.BoxGeometry(0.052,0.052,0.004,5,5,1),px,0.36,0.002),c=>gmCol(c,L.topColor,0.78)),solid(gfitSeat(X,D,new THREE.BoxGeometry(0.052,0.006,0.005,5,1,1),px,0.382,0.0035),dk)); }   // a chest pocket (seated on the body: the bust stands under it)
   } else if(top==='jacket'){
-    for(const sd of [-1,1]){ const x=sd*torsoSize(X,D,0.14).rx*0.5, t15=torsoSize(X,D,0.15), pz=-(t15.rz+0.004)*Math.sqrt(Math.max(0.25,1-(x/t15.rx)*(x/t15.rx)));   // the pocket's own depth at half-radius: a flat box at the front's apex floated its outer corners off the lathe
-      out.push(pc(new THREE.BoxGeometry(0.06,0.032,0.005).translate(x,0.15*TK,pz),c=>gmCol(c,L.topColor,0.74)));   // flapped pockets
-      out.push(solid(new THREE.BoxGeometry(0.06,0.004,0.006).translate(x,0.134*TK,pz-0.001),0x2a2a2a));
-      out.push(solid(ofRibbon([[sd*nr*0.9,0.58*TK,-nr*1.4],[sd*nr*2.3,0.56*TK,-nr*1.3],[sd*nr*2.9,0.52*TK,fz(0.52)-0.01]],0.04,{up:[0,1,-0.5],seg:sg(8),th:0.004}),dk)); }   // the high collar's lapels
+    for(const sd of [-1,1]){ const x=sd*torsoSize(X,D,0.14).rx*0.5;
+      out.push(pc(gfitSeat(X,D,new THREE.BoxGeometry(0.06,0.032,0.005,6,4,1),x,0.15,0.0025),c=>gmCol(c,L.topColor,0.74)));   // flapped pockets, seated on the body
+      out.push(solid(gfitSeat(X,D,new THREE.BoxGeometry(0.06,0.004,0.006,6,1,1),x,0.134,0.004),0x2a2a2a));
+      out.push(solid(gfitRibbon(X,D,[[sd*0.03,0.55],[sd*0.06,0.49]],0.03,{lift:0.006}),dk)); }   // the collar's folded flaps, lying on the chest
+    out.push(gmCollar(X,D,0.568,0.03,0.005,(x,y,z,c)=>gmCol(c,L.topColor,0.72)));   // the high collar: a band on the neck's own section
     out.push(gmBand(X,D,hemY+0.03,hemY,(x,y,z,c)=>gmCol(c,L.topColor,0.62),0.005));   // the ribbed hem
   } else if(top==='hoodie'){
     out.push(gmBand(X,D,hemY+0.035,hemY,(x,y,z,c)=>gmCol(c,L.topColor,0.66),0.005));
-    for(const sd of [-1,1]) out.push(solid(sweepTube([[sd*0.03,0.44*TK,fz(0.44)-0.004],[sd*0.034,0.36*TK,fz(0.36)-0.006],[sd*0.03,0.3*TK,fz(0.3)-0.006]],[0.0035,0.0035,0.0045],4,{cap:'round',rings:6}),0xe8e4dc),solid(csph(0.006,sg(6),sg(5)).translate(sd*0.03,0.295*TK,fz(0.3)-0.006),0xc9a13a));   // drawstrings with tips
+    for(const sd of [-1,1]) out.push(solid(gfitCord(X,D,[[sd*0.03,0.5],[sd*0.034,0.4],[sd*0.03,0.3]],r=>0.0035+0.001*r,{lift:0.004}),0xe8e4dc),solid(gfitSeat(X,D,csph(0.006,sg(6),sg(5)),sd*0.03,0.295,0.004),0xc9a13a));   // drawstrings lying on the body down from the neck, with tips
   } else if(top==='vest'){
-    const rows=[0.505,0.42,0.3,0.18,0.07,0.01].map(yd=>{ const t=torsoSize(X,D,yd), m=0.009+(yd<0.2?0.004:0); return {y:yd*TK,rx:t.rx+m,rz:Math.max(t.rz,t.rzBack)+m}; });
-    out.push(pc(ofLoft(rows,sg(36),-2.85,2.85),(x,y,z,c)=>{ c.set(L.topColor); const k=Math.abs(Math.atan2(x,-z)); if(k<0.52) c.multiplyScalar(0.84); if(y<0.04*TK) c.multiplyScalar(0.8); else if(y>0.5*TK) c.multiplyScalar(0.84); }));   // the waistcoat: back and sides, the front open
-    for(const sd of [-1,1]){ const t=torsoSize(X,D,0.42); out.push(pc(ofRibbon([[sd*0.01,0.5*TK,fz(0.5)-0.006],[sd*0.035,0.4*TK,fz(0.4)-0.008],[sd*0.03,0.25*TK,fz(0.25)-0.01],[sd*0.012,0.06*TK,fz(0.06)-0.01]],0.026,{up:[0,0,-1],seg:sg(10),th:0.004}),(x,y,z,c)=>gmCol(c,L.topColor,0.7))); }   // the two fronts' edges
+    const vfn=(x,y,z,c)=>{ c.set(L.topColor); const k=Math.abs(Math.atan2(x,-z)); if(k<0.5) c.multiplyScalar(0.72); if(y<0.04*TK) c.multiplyScalar(0.8); else if(y>0.5*TK) c.multiplyScalar(0.84); }, vlim=(a,x)=>[0.0,(0.505-0.17*gmSmooth((Math.abs(x)-0.05)/0.1))*TK];
+    out.push(pc(gfitShell(X,0.0,0.505*TK,0.007,{a0:0.36,a1:Math.PI,lim:vlim}),vfn),pc(gfitShell(X,0.0,0.505*TK,0.007,{a0:-Math.PI,a1:-0.36,lim:vlim}),vfn));   // the waistcoat: an offset of the body (a cut of its own surface), back and sides, the front open, the armholes high
     for(const yd of [0.43,0.33,0.23,0.13]) out.push(button(yd,0xd8b84a));
-    out.push(solid(sweepTube([[-0.07,0.17*TK,fz(0.17)-0.01],[-0.04,0.165*TK,fz(0.17)-0.012],[0.0,0.2*TK,fz(0.2)-0.012]],[0.0018,0.0018,0.0018],4,{cap:'round',rings:5}),0xd8b84a));   // a watch chain
     out.push(solid(gmRingAt([0,0.572*TK,0],[0,1,0],nr*1.35,0.006,sg(8)),0xe8e4dc));   // the shirt's collar under it
   } else if(top==='tunic'){
     out.push(gmBand(X,D,0.045,0.0,(x,y,z,c)=>{ c.set(0x4a3626); },0.008));   // the belt
-    out.push(solid(new THREE.BoxGeometry(0.036,0.03,0.008).translate(0,0.02*TK,fz(0.02)-0.008),0xc9a13a),solid(new THREE.BoxGeometry(0.022,0.018,0.01).translate(0,0.02*TK,fz(0.02)-0.009),0x2a2a2a));   // the buckle
-    for(const sd of [-1,1]) out.push(solid(sweepTube([[sd*0.012,0.555*TK,fz(0.55)-0.004],[sd*0.02,0.5*TK,fz(0.5)-0.005],[sd*0.012,0.46*TK,fz(0.46)-0.005]],[0.0025,0.0025,0.0025],4,{cap:'round',rings:6}),0xe8d9b0));   // the laced neck
-    out.push(gmBand(X,D,0.54,0.505,(x,y,z,c)=>{ c.set(L.topColor).lerp(ofCol(0xe8d9b0),0.6); },0.004));
+    out.push(solid(gfitSeat(X,D,new THREE.BoxGeometry(0.036,0.03,0.008,4,3,1),0,0.02,0.012),0xc9a13a),solid(gfitSeat(X,D,new THREE.BoxGeometry(0.022,0.018,0.01,3,2,1),0,0.02,0.014),0x2a2a2a));   // the buckle
+    for(const sd of [-1,1]) out.push(solid(gfitCord(X,D,[[sd*0.012,0.55],[sd*0.02,0.5],[sd*0.012,0.46]],0.0025,{lift:0.004}),0xe8d9b0));   // the laced neck, lying on the chest
+    out.push(gmCollar(X,D,0.565,0.016,0.004,(x,y,z,c)=>{ c.set(L.topColor).lerp(ofCol(0xe8d9b0),0.6); }));   // the collar: a band on the neck's own section
   }
   out.push(...gmxTop(X,D));   // the crafted tops (model-garments-more.js)
   return out;
 }
 // ---- cuffs, in the elbow's frame ----
+function gmSmooth(t){ t=clamp(t); return t*t*(3-2*t); }   // a smoothstep, so an armhole edge is a curve and not a stair
 function gmCuff(X,D,sd){
   if(X.kit&&X.kit.sl.top) return [];
   const {L,sg}=X, aw=D.aw, top=L.top, out=[], band=(y,r,hex)=>solid(gmRingAt([0,y,0],[0,1,0],r*aw+0.003,0.0045,sg(7)),hex), col=new THREE.Color(L.topColor);
@@ -94,16 +110,17 @@ function gmHips(X,D){
   const kB=X.kit&&X.kit.sl.bottom, kT=X.kit&&X.kit.sl.top;
   if(b==='none'||b==='outfit') return out;
   if(kB){ return out; }
-  const belt=(hex,w)=>out.push(pc(ofLoft([{y:0.052*TK,rx:s0.rx+0.01,rz:rm,zc},{y:0.052*TK-w,rx:s0.rx+0.012,rz:rm+0.002,zc}],sg(28),0,TAU),c=>c.set(hex)));
+  const belt=(hex,w)=>out.push(pc(gfitShell(X,0.052*TK-w,0.052*TK,0.01),c=>c.set(hex)));   // a belt: an offset of the body's own surface (the belly, the flanks and the seat), not an ellipse
   if(b==='trousers'||b==='shorts'){
     belt(0x4a3626,0.034);
-    out.push(solid(new THREE.BoxGeometry(0.034,0.028,0.008).translate(0,0.036*TK,-rz-0.004),0xc9a13a),solid(new THREE.BoxGeometry(0.02,0.016,0.01).translate(0,0.036*TK,-rz-0.0045),0x2a2a2a));
-    for(let i=0;i<6;i++){ const a=(i/6)*TAU+0.5; if(Math.abs(Math.sin(a))>0.25) out.push(solid(new THREE.BoxGeometry(0.02,0.012,0.008).translate(Math.sin(a)*(s0.rx+0.02),0.044*TK,zc+Math.cos(a)*(rm+0.004)),0x4a3626)); }   // belt loops
+    out.push(solid(gfitSeat(X,D,new THREE.BoxGeometry(0.034,0.028,0.008,3,3,1),0,0.036,0.014),0xc9a13a),solid(gfitSeat(X,D,new THREE.BoxGeometry(0.02,0.016,0.01,2,2,1),0,0.036,0.0155),0x2a2a2a));   // the buckle, on the belly
+    for(const [x,fr] of [[-0.08,true],[0.08,true],[-0.08,false],[0.08,false]]) out.push(solid(gfitSeat(X,D,new THREE.BoxGeometry(0.02,0.012,0.008,2,1,1),x,0.044,0.0125,fr),0x4a3626));   // belt loops
     for(const sd of [-1,1]) out.push(pc(new THREE.BoxGeometry(0.006,0.075,0.05).translate(sd*(s0.rx+0.002+0.008),-0.04,-0.045),c=>c.set(tc).multiplyScalar(0.8)));   // pocket stitching at the hips
   } else if(b==='skirt'||b==='kilt'||b==='pleated'){
-    out.push(pc(ofLoft([{y:0.06*TK,rx:s0.rx+0.014,rz:rm+0.005,zc},{y:0.025*TK,rx:s0.rx+0.016,rz:rm+0.007,zc}],sg(28),0,TAU),c=>c.set(b==='pleated'?0xe8e4dc:b==='kilt'?0x4a3626:dk)));   // the waistband
-    if(b==='kilt'){ out.push(solid(new THREE.BoxGeometry(0.034,0.034,0.008).translate(0,0.042*TK,-rz-0.004),0xc9a13a));
-      out.push(pc(csph(0.035,sg(12),sg(8)).scale(1,1.15,0.6).translate(0,-0.06,-(rz+0.04)),(x,y,z,c)=>{ c.set(0x5a3a22).multiplyScalar(0.85+0.2*(y>-0.04?1:0)); }),solid(sweepTube([[-0.04,0.03,-rz-0.015],[0,0.0,-rz-0.032],[0.04,0.03,-rz-0.015]],[0.003,0.003,0.003],4,{cap:'round',rings:6}),0xc9a13a));   // the sporran, hung from a chain
+    out.push(pc(gfitShell(X,0.025*TK,0.06*TK,0.013),c=>c.set(b==='pleated'?0xe8e4dc:b==='kilt'?0x4a3626:dk)));   // the waistband
+    if(b==='kilt'){ out.push(solid(gfitSeat(X,D,new THREE.BoxGeometry(0.034,0.034,0.008,3,3,1),0,0.042,0.017),0xc9a13a));
+      const sz=Math.max(-gfitFz(X,D,0,0.03),-gfitFz(X,D,0,-0.06/TK))+0.035;   // the sporran hangs in front of the skirt: the belly's depth (at the belt or where it hangs) and a hand more
+      out.push(pc(csph(0.035,sg(12),sg(8)).scale(1,1.15,0.6).translate(0,-0.06,-sz),(x,y,z,c)=>{ c.set(0x5a3a22).multiplyScalar(0.85+0.2*(y>-0.04?1:0)); }),solid(sweepTube([[-0.04,0.03,-sz+0.025],[0,0.0,-sz+0.008],[0.04,0.03,-sz+0.025]],[0.003,0.003,0.003],4,{cap:'round',rings:6}),0xc9a13a));   // the sporran, hung from a chain
       out.push(solid(new THREE.OctahedronGeometry(0.012,0).translate(-0.095,-0.17,-rz*0.6),0xb9bdc2)); }   // the kilt pin
     if(b==='pleated'){ out.push(pc(ofRibbon([[0.02,0.05*TK,-rz-0.01],[0.06,0.02*TK,-rz-0.03],[0.09,-0.05,-rz-0.03],[0.07,-0.1,-rz-0.02]],0.03,{up:[0,0,-1],seg:sg(8),th:0.003}),c=>c.set(0xc0344a))); }   // a ribbon belt's bow
   }

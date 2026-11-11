@@ -5,7 +5,7 @@
 CHAR_MODELS.sazanka={id:'sazanka',name:'Sazanka',signature:true, hairGrad:{mode:'ombre',c2:0x6a4ab0,c3:0xb89aff}, items:{glove:'Cord-bound gloves',hat:'Dusk hood',hair:'Cord lock',face:'Tally marks',top:'Runner wrap',bottom:'Taper wraps',shoes:'Soft stalks',weapon:'Cord sheath'},sexes:['female'],
   note:'The night courier: the narrowest and lowest silhouette, drawn for a small, long-legged runner.',
   ranges:{height:[0.92,1.04],build:[0.88,1.05],chest:[0.6,1.1],shoulders:[0.88,1.05],arms:[0.82,1.1],thighs:[0.85,1.1],neck:[0.85,1.1],hands:[0.85,1.1],head:[0.92,1.06],eyeTilt:[0.1,0.7],hairLength:[0.7,1.05],hairVolume:[0.9,1.1]},
-  setups:[{id:'sazanka',name:'Sazanka',sex:'female',def:true,note:'The courier as drawn: small, long-legged, narrow-eyed.',v:{height:0.95,build:0.9,chest:0.85,shoulders:0.93,waist:0.88,torso:0.97,legs:1.12,thighs:0.95,arms:0.9,neck:0.95,hands:0.95,feet:0.95,jaw:0.92,chin:0.95,cheeks:0.9,eyeSize:1.05,eyeHeight:0.05,eyeTilt:0.45,brow:0.3,noseSize:0.9,mouthSize:0.9,lips:0.9,smile:0.1,hairLength:0.9,bangs:1.1}}]};
+  setups:[{id:'sazanka',name:'Sazanka',sex:'female',def:true,note:'The courier as drawn: small, long-legged, narrow-eyed.',v:{height:0.95,build:0.9,chest:0.93,shoulders:0.93,waist:0.88,torso:0.97,legs:1.12,thighs:0.95,arms:0.9,neck:0.95,hands:0.95,feet:0.95,jaw:0.92,chin:0.95,cheeks:0.9,eyeSize:1.05,eyeHeight:0.05,eyeTilt:0.45,brow:0.3,noseSize:0.9,mouthSize:0.9,lips:0.9,smile:0.1,hairLength:0.9,bangs:1.1,muscle:0.35,belly:-0.6}}]};
 
 OUTFITS.sazanka=(function(){
   const INK=0x1b1f2a, INDIGO=0x6a2a62, INDIGO_D=0x4a1f46, BODICE=0x52244e, LAPEL=0x9a4a8a, VERM=0xc23b2a, MOON=0xc9ccd6, LAC=0x1e1c22, STEEL=0x4a5260, VIOLET=0x6a5ac8, WISP=0xdfe8ff, HAIR=0x1b1c27, TAG=0x7a5a3c;

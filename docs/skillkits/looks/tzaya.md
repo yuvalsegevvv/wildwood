@@ -88,6 +88,8 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `smile` (Expression) | 0 |
 | `hairLength` (Hair length) | 0.9 |
 | `hairVolume` (Hair volume) | 0.95 |
+| `muscle` (Muscle) | 0.5 |
+| `belly` (Belly) | -0.5 |
 | `eyeSize` (Eye size) | 0.9 |
 | `brow` (Brows) | 0.8 |
 | `lips` (Lips) | 0.8 |

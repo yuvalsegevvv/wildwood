@@ -95,6 +95,8 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `smile` (Expression) | 0.1 |
 | `hairLength` (Hair length) | 1.3 |
 | `hairVolume` (Hair volume) | 1.1 |
+| `muscle` (Muscle) | -0.6 |
+| `belly` (Belly) | -0.2 |
 | `hips` (Hips) | 0.95 |
 
 Every slider not listed rests at its neutral value (1, or 0 for the +/- sliders).

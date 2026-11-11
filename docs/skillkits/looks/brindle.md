@@ -89,7 +89,7 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `arms` (Arms) | 1.1 |
 | `neck` (Neck) | 0.92 |
 | `hands` (Hands) | 1.12 |
-| `feet` (Feet) | 1.1 |
+| `feet` (Feet) | 1.05 |
 | `jaw` (Jaw width) | 1.1 |
 | `chin` (Chin) | 0.9 |
 | `cheeks` (Cheeks) | 1.12 |
@@ -98,6 +98,8 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `smile` (Expression) | 0.85 |
 | `hairLength` (Hair length) | 0.9 |
 | `hairVolume` (Hair volume) | 1.15 |
+| `muscle` (Muscle) | 0.3 |
+| `belly` (Belly) | 0.5 |
 | `eyeSize` (Eye size) | 1.15 |
 | `lips` (Lips) | 1.2 |
 | `undertone` (Skin undertone) | 0.2 |

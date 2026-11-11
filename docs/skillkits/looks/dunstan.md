@@ -90,6 +90,8 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `smile` (Expression) | 0.35 |
 | `hairVolume` (Hair volume) | 1.1 |
 | `bangs` (Fringe length) | 0.8 |
+| `muscle` (Muscle) | 0.3 |
+| `belly` (Belly) | 0.4 |
 | `brow` (Brows) | 0.3 |
 | `lips` (Lips) | 0.9 |
 | `undertone` (Skin undertone) | 0.5 |

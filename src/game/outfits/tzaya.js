@@ -5,7 +5,7 @@
 CHAR_MODELS.tzaya={id:'tzaya',name:'Tzaya',signature:true, hairGrad:{mode:'roots',c2:0x4a2a1a}, items:{hat:'Feather fan crown',hair:'Priest crop',face:'Glyph marks',top:'Jade collar & red sash',bottom:'Flap loin-wrap',shoes:'Jade sandals',weapon:'Obsidian rig'},sexes:['male'],
   note:'The calendar-priest: tall, lean-muscled and upright, built for a man who stands through a long ceremony.',
   ranges:{height:[1.0,1.08],build:[0.95,1.1],chest:[0.8,1.2],waist:[0.82,1.0],hips:[0.9,1.1],legs:[1.0,1.14],neck:[0.95,1.15],arms:[0.95,1.15],head:[0.95,1.05],hairLength:[0.8,1.1],hairVolume:[0.9,1.1]},
-  setups:[{id:'tzaya',name:'Tzaya',sex:'male',def:true,note:'The priest as drawn: tall, lean and straight-backed.',v:{height:1.06,build:1.0,chest:1.0,shoulders:1.02,waist:0.88,torso:1.04,legs:1.06,thighs:0.96,arms:1.06,neck:1.1,hands:1.04,feet:1.0,jaw:1.08,chin:1.05,cheeks:0.9,noseSize:1.15,mouthSize:0.95,smile:0.0,hairLength:0.9,hairVolume:0.95}}]};
+  setups:[{id:'tzaya',name:'Tzaya',sex:'male',def:true,note:'The priest as drawn: tall, lean and straight-backed.',v:{height:1.06,build:1.0,chest:1.0,shoulders:1.02,waist:0.88,torso:1.04,legs:1.06,thighs:0.96,arms:1.06,neck:1.1,hands:1.04,feet:1.0,jaw:1.08,chin:1.05,cheeks:0.9,noseSize:1.15,mouthSize:0.95,smile:0.0,hairLength:0.9,hairVolume:0.95,muscle:0.5,belly:-0.5}}]};
 
 OUTFITS.tzaya=(function(){
   const JADE=0x2f8a5a, TEAL=0x3ac0a0, GOLD=0xd8b040, CINDER=0xb83a28, EMBER=0xff7a3a, COTTON=0xe8dcc0, OBS=0x15131a, HAIR=0x100c0c;

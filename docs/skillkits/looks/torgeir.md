@@ -96,6 +96,8 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `lips` (Lips) | 0.85 |
 | `hairLength` (Hair length) | 1.25 |
 | `bangs` (Fringe length) | 0.5 |
+| `muscle` (Muscle) | 0.9 |
+| `belly` (Belly) | 0.4 |
 | `undertone` (Skin undertone) | 0.2 |
 | `blush` (Blush) | 0.35 |
 | `earSize` (Ear size) | 1.1 |

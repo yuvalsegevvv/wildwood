@@ -80,7 +80,7 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 |---|---|
 | `height` (Height) | 1.06 |
 | `build` (Build) | 0.88 |
-| `chest` (Chest) | 0.8 |
+| `chest` (Chest) | 0.91 |
 | `shoulders` (Shoulders) | 0.94 |
 | `waist` (Waist) | 0.86 |
 | `torso` (Torso length) | 0.96 |
@@ -89,7 +89,7 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `arms` (Arms) | 1.04 |
 | `neck` (Neck) | 1.1 |
 | `hands` (Hands) | 0.92 |
-| `feet` (Feet) | 1.1 |
+| `feet` (Feet) | 1.05 |
 | `jaw` (Jaw width) | 0.85 |
 | `chin` (Chin) | 0.85 |
 | `cheeks` (Cheeks) | 0.85 |
@@ -98,6 +98,8 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `smile` (Expression) | 0.5 |
 | `hairLength` (Hair length) | 1.25 |
 | `hairVolume` (Hair volume) | 1 |
+| `muscle` (Muscle) | 0.5 |
+| `belly` (Belly) | -0.7 |
 | `eyeSize` (Eye size) | 1.2 |
 | `lips` (Lips) | 0.9 |
 | `undertone` (Skin undertone) | 0.1 |

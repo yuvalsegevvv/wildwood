@@ -5,7 +5,7 @@
 CHAR_MODELS.zahra={id:'zahra',name:'Zahra',signature:true, hairGrad:{mode:'tips',c2:0xe0b840,c3:0x2f55a0}, items:{hat:'Beaded circlet',hair:'Gold-strung braid',face:'Gold dots',top:'Wide-sleeve robe',bottom:'Split noon skirt',shoes:'Gold sandals',weapon:'Mirror rig'},sexes:['female'],
   note:'The glass-bearer: tall, composed and graceful, built for a long-limbed woman.',
   ranges:{height:[0.98,1.08],build:[0.88,1.05],chest:[0.7,1.2],waist:[0.82,1.02],hips:[0.9,1.15],legs:[1.0,1.14],neck:[1.0,1.2],arms:[0.85,1.1],head:[0.95,1.08],hairLength:[1.0,1.35],hairVolume:[0.9,1.2]},
-  setups:[{id:'zahra',name:'Zahra',sex:'female',def:true,note:'The glass-bearer as drawn: tall, poised and long-necked.',v:{height:1.05,build:0.94,chest:0.95,shoulders:0.98,waist:0.9,torso:1.0,legs:1.08,thighs:0.96,arms:0.95,neck:1.12,hands:0.95,feet:0.96,jaw:0.95,chin:1.0,cheeks:1.0,noseSize:1.0,mouthSize:0.98,smile:0.35,hairLength:1.25,hairVolume:1.05}}]};
+  setups:[{id:'zahra',name:'Zahra',sex:'female',def:true,note:'The glass-bearer as drawn: tall, poised and long-necked.',v:{height:1.05,build:0.94,chest:0.98,shoulders:0.98,waist:0.9,torso:1.0,legs:1.08,thighs:0.96,arms:0.95,neck:1.12,hands:0.95,feet:0.96,jaw:0.95,chin:1.0,cheeks:1.0,noseSize:1.0,mouthSize:0.98,smile:0.35,hairLength:1.25,hairVolume:1.05,belly:-0.3}}]};
 
 OUTFITS.zahra=(function(){
   const GOLD=0xe8c050, GOLD_D=0xb08a3a, LAPIS=0x2b6aa8, LAPIS_D=0x1d4a78, WHITE=0xf4efe0, SAND=0xd6b87a, HAIR=0x241a18;

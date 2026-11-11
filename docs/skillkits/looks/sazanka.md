@@ -96,6 +96,8 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `smile` (Expression) | 0.35 |
 | `hairLength` (Hair length) | 0.9 |
 | `bangs` (Fringe length) | 1.1 |
+| `muscle` (Muscle) | 0.35 |
+| `belly` (Belly) | -0.6 |
 | `blush` (Blush) | 0.4 |
 | `earSize` (Ear size) | 1.15 |
 | `undertone` (Skin undertone) | 0.2 |

@@ -5,7 +5,7 @@
 CHAR_MODELS.dunstan={id:'dunstan',name:'Dunstan',signature:true, hairGrad:{mode:'tips',c2:0xe8c050}, items:{hat:'Drum shako',hair:'Gold queue',face:'Stripes & handlebar',top:'Rally tabard',bottom:'Stripe breeches',shoes:'March boots',weapon:'Banner bind'},sexes:['male'],
   note:'The standard-bearer: a tall cap and long lines, built for a broad, tall man.',
   ranges:{height:[0.98,1.08],build:[1.02,1.18],chest:[0.9,1.2],waist:[0.95,1.15],hips:[0.9,1.15],legs:[0.92,1.06],neck:[1.0,1.2],arms:[0.95,1.25],head:[0.95,1.1],hairLength:[0.9,1.2],hairVolume:[1.0,1.2]},
-  setups:[{id:'dunstan',name:'Dunstan',sex:'male',def:true,note:'The standard-bearer as drawn: tall, a barrel of a body, a big smile.',v:{height:1.04,build:1.12,chest:1.05,shoulders:1.1,waist:1.08,torso:1.02,legs:0.97,thighs:1.08,arms:1.12,neck:1.12,hands:1.1,feet:1.05,jaw:1.05,chin:1.05,cheeks:1.12,noseSize:1.1,mouthSize:1.15,smile:0.55,hairVolume:1.1,bangs:0.8}}]};
+  setups:[{id:'dunstan',name:'Dunstan',sex:'male',def:true,note:'The standard-bearer as drawn: tall, a barrel of a body, a big smile.',v:{height:1.04,build:1.12,chest:1.05,shoulders:1.1,waist:1.08,torso:1.02,legs:0.97,thighs:1.08,arms:1.12,neck:1.12,hands:1.1,feet:1.05,jaw:1.05,chin:1.05,cheeks:1.12,noseSize:1.1,mouthSize:1.15,smile:0.55,hairVolume:1.1,bangs:0.8,muscle:0.3,belly:0.4}}]};
 
 OUTFITS.dunstan=(function(){
   const EMBER=0x2d56a8, GOLD=0xd4a83a, SOOT=0x2e2a2a, CREAM=0xeee2c0, COPPER=0xc47a45, LEATHER=0x5a3c26, WHITE=0xf2eee4, BRASS=0xb89a4a, WAX=0x8a4a28;

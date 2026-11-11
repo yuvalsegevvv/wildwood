@@ -5,7 +5,7 @@
 CHAR_MODELS.pip={id:'pip',name:'Pip',signature:true, hairGrad:{mode:'tips',c2:0xd8b070}, items:{hat:'Fern crown',hair:'Leafy mop',face:'Freckles & mud',top:'Patched sack tunic',bottom:'Rolled trousers',shoes:'Bare feet & ribbon',weapon:'Whittled stick'},sexes:['male'],
   note:'The lost child: small, quick and wide-eyed, built for a short, slight boy.',
   ranges:{height:[0.92,0.98],build:[0.88,0.96],chest:[0.7,1.0],waist:[0.85,1.05],hips:[0.88,1.05],legs:[0.92,1.0],neck:[0.9,1.1],arms:[0.85,1.0],head:[1.04,1.12],hairLength:[0.8,1.2],hairVolume:[1.0,1.25]},
-  setups:[{id:'pip',name:'Pip',sex:'male',def:true,note:'The lost child as drawn: small, big-headed and a little thin.',v:{height:0.93,build:0.9,chest:0.82,shoulders:0.94,waist:0.95,torso:0.96,legs:0.94,thighs:0.92,arms:0.92,neck:0.95,hands:1.05,feet:1.12,jaw:0.9,chin:0.92,cheeks:1.1,noseSize:0.9,mouthSize:0.95,smile:0.3,hairLength:1.0,hairVolume:1.15}}]};
+  setups:[{id:'pip',name:'Pip',sex:'male',def:true,note:'The lost child as drawn: small, big-headed and a little thin.',v:{height:0.93,build:0.9,chest:0.82,shoulders:0.94,waist:0.95,torso:0.96,legs:0.94,thighs:0.92,arms:0.92,neck:0.95,hands:1.05,feet:1.06,jaw:0.9,chin:0.92,cheeks:1.1,noseSize:0.9,mouthSize:0.95,smile:0.3,hairLength:1.0,hairVolume:1.15,muscle:-0.4,belly:0.2}}]};
 
 OUTFITS.pip=(function(){
   const FERN=0x4f8a4a, MOSS=0x7fb060, BARK=0x8a6a48, SACK=0xc9b48a, SACK_D=0xa8946a, RUST=0xb8603a, MUD=0x3a2e24, ROPE=0x9a8458, HAIR=0x7a4a26;

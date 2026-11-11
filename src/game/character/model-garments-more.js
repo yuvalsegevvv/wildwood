@@ -44,53 +44,54 @@ function gmxStrap(X,D,y0,y1,x0,x1,back,n){
 // ---- tops, in the spine's frame ----
 function gmxTop(X,D){
   if(gmdIs(X.L.top)) return gmdTop(X,D);   // dresses: model-dresses.js
-  const {L,sg}=X, TK=D.TK, nr=D.neckR, top=L.top, out=[], tc=L.topColor, PL=gmxPalAt(L,'top'), dk=gmxMul(tc,0.7), lt=new THREE.Color(tc).lerp(new THREE.Color(0xffffff),0.35).getHex(), fz=yd=>-(torsoSize(X,D,yd).rz+0.004), bz=yd=>torsoSize(X,D,yd).rzBack+0.004;
+  const {L,sg}=X, TK=D.TK, nr=D.neckR, top=L.top, out=[], tc=L.topColor, PL=gmxPalAt(L,'top'), dk=gmxMul(tc,0.7), lt=new THREE.Color(tc).lerp(new THREE.Color(0xffffff),0.35).getHex(), fz=(yd,x)=>gfitFz(X,D,x||0,yd)-0.004, bz=(yd,x)=>gfitBz(X,D,x||0,yd)+0.004;
+  const neckTo=(front,rest)=>front.concat(rest.map(q=>new THREE.Vector3(q[0],q[1],q[2])));   // a strap: the part over the chest lies on the body's surface, the rest runs up the neck
   if(top==='crop'){
     out.push(gmBand(X,D,0.36,0.335,(x,y,z,c)=>c.set(PL[1]),0.004));   // the ribbed hem, high on the ribs
     out.push(solid(gmRingAt([0,0.572*TK,0],[0,1,0],nr*1.4,0.0065,sg(8)),PL[2]));   // the collar
     for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*nr*1.5,0.575*TK,fz(0.5)],[sd*nr*2.4,0.545*TK,fz(0.5)-0.002],[sd*nr*3.0,0.5*TK,fz(0.47)]],0.012,{up:[0,1,-0.4],seg:sg(6),th:0.003}),PL[2]));
   } else if(top==='halter'){
     const CB=chestBand(X.S), h0=CB.lo-0.006, h1=CB.hi+0.035, cz=fz(CB.cy-0.01);
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.07,h1*TK,fz(h1)-0.005],[sd*0.05,0.515*TK,-trsSection(X,D,0.515).rzF-0.008],[sd*nr*1.15,0.565*TK,-nr*0.55],[sd*nr*0.5,0.585*TK,nr*1.25]],0.017,{up:[0,1,-0.3],seg:sg(10),th:0.003}),PL[2]));   // the straps up to the knot behind the neck
-    out.push(solid(csph(0.011,sg(8),sg(6)).translate(0,0.585*TK,nr*1.35),PL[2]));
+    for(const sd of [-1,1]) out.push(solid(ofRibbon(gmNeckPath(X,D,[[sd*0.07,h1],[sd*0.06,(h1+0.515)/2],[sd*0.05,0.515]],sd,0.005),0.017,{up:[0,1,-0.3],seg:sg(14),th:0.003}),PL[2]));   // the straps up round the neck to the knot behind it
+    out.push(solid(csph(0.011,sg(8),sg(6)).translate(...gmNape(X,D,0.007)),PL[2]));
     out.push(gmBand(X,D,h1,h1-0.025,(x,y,z,c)=>c.set(PL[1]),0.004),gmBand(X,D,h0,h0-0.025,(x,y,z,c)=>c.set(PL[1]),0.004));   // the wrap's top and bottom edges
-    out.push(solid(csph(0.0105,sg(8),sg(6)).scale(1.3,1,0.8).translate(0,(CB.cy-0.005)*TK,cz-0.006),PL[2]),solid(ofRibbon([[0,(CB.cy-0.01)*TK,cz-0.008],[0.012,(CB.cy-0.04)*TK,cz-0.01],[0.01,(CB.cy-0.08)*TK,cz-0.01]],0.012,{up:[0,0,-1],seg:sg(6),th:0.003}),PL[2]));   // the knot between the cups, with a tail
-    for(const sd of [-1,1]) out.push(solid(gmRingAt([0,CB.cy*TK,0],[0,1,0],torsoSize(X,D,CB.cy).rx*0.98,0.0015,sg(6)),PL[1]));
+    out.push(solid(gfitSeat(X,D,csph(0.0105,sg(8),sg(6)).scale(1.3,1,0.8),0,CB.cy-0.005,0.006),PL[2]),solid(gfitRibbon(X,D,[[0,CB.cy-0.01],[0.012,CB.cy-0.04],[0.01,CB.cy-0.08]],0.012,{lift:0.007,th:0.003}),PL[2]));   // the knot between the cups, with a tail, seated on the body
   } else if(top==='bikini'){
     const CB=chestBand(X.S), b0=CB.lo, b1=CB.hi, tz=yd=>-(trsSection(X,D,yd).rzF+chestBump(X.S,D,0.046,yd)+0.008);   // the skin's front above the cups: the body's own section plus the bust's upper slope (buildTorso)
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.05,(b1-0.005)*TK,fz(b1-0.005)-0.004],[sd*0.047,(b1+0.015)*TK,tz(b1+0.015)],[sd*0.044,0.47*TK,tz(0.47)],[sd*0.038,0.51*TK,tz(0.51)],[sd*nr*1.15,0.565*TK,-trsSection(X,D,0.565).rzF*0.75],[sd*nr*0.5,0.585*TK,nr*1.25]],0.012,{up:[0,1,-0.3],seg:sg(10),th:0.003}),PL[1]));   // the neck ties
-    out.push(solid(csph(0.009,sg(8),sg(6)).translate(0,0.585*TK,nr*1.35),PL[1]));
-    out.push(solid(csph(0.0075,sg(8),sg(6)).translate(0,(CB.cy-0.005)*TK,-(trsSection(X,D,CB.cy-0.005).rzF+chestBump(X.S,D,0,CB.cy-0.005)+0.006)),PL[2]));   // (in the cleavage: the bust's depth at the middle, not the lobes' envelope)   // a small bead between the cups
+    for(const sd of [-1,1]) out.push(solid(ofRibbon(gmNeckPath(X,D,[[sd*0.05,b1-0.005],[sd*0.047,b1+0.015],[sd*0.044,0.47],[sd*0.038,0.51]],sd,0.004),0.012,{up:[0,1,-0.3],seg:sg(14),th:0.003}),PL[1]));   // the neck ties (over the chest on the surface, round the neck)
+    out.push(solid(csph(0.009,sg(8),sg(6)).translate(...gmNape(X,D,0.006)),PL[1]));
+    out.push(solid(gfitSeat(X,D,csph(0.0075,sg(8),sg(6)),0,CB.cy-0.005,0.0065),PL[2]));   // a small bead between the cups (in the cleavage: the surface at the middle)
     out.push(gmBand(X,D,b1+0.015,b1-0.005,(x,y,z,c)=>c.set(PL[1]),0.004),gmBand(X,D,b0+0.007,b0-0.013,(x,y,z,c)=>c.set(PL[1]),0.004));   // the cups' top and bottom edges
   } else if(top==='harness'){
     for(const sd of [-1,1]){
-      out.push(solid(ofRibbon(gmxStrap(X,D,0.5,0.1,sd*0.07,-sd*0.1,false),0.03,{up:[0,0,-1],seg:sg(14),th:0.006}),PL[1]));
-      out.push(solid(ofRibbon(gmxStrap(X,D,0.5,0.1,sd*0.07,-sd*0.1,true),0.03,{up:[0,0,1],seg:sg(14),th:0.006}),PL[1]));
-      out.push(solid(ofRibbon([[sd*0.07,0.5*TK,fz(0.5)-0.004],[sd*D.shX*0.7,0.5*TK+0.015,0],[sd*0.07,0.5*TK,bz(0.5)]],0.03,{up:[0,1,0],seg:sg(8),th:0.006}),PL[1]));   // over the shoulder
-      for(const yd of [0.43,0.3,0.18]){ const t=(0.5-yd)/0.4, x=lerp(sd*0.07,-sd*0.1,t); out.push(solid(csph(0.0055,sg(6),sg(5)).translate(x,yd*TK,fz(yd)-0.012),PL[2])); }
+      out.push(solid(gfitRibbon(X,D,[[sd*0.07,0.5],[sd*0.035,0.4],[0,0.3],[-sd*0.05,0.2],[-sd*0.1,0.1]],0.03,{lift:0.005,th:0.006}),PL[1]));   // the straps lie on the chest and the back (garment-fit.js)
+      out.push(solid(gfitRibbon(X,D,[[sd*0.07,0.5],[sd*0.035,0.4],[0,0.3],[-sd*0.05,0.2],[-sd*0.1,0.1]],0.03,{lift:0.005,th:0.006,front:false}),PL[1]));
+      out.push(solid(ofRibbon([[sd*0.07,0.5*TK,fz(0.5,sd*0.07)-0.004],[sd*D.shX*0.7,0.5*TK+0.015,0],[sd*0.07,0.5*TK,bz(0.5,sd*0.07)]],0.03,{up:[0,1,0],seg:sg(8),th:0.006}),PL[1]));   // over the shoulder
+      for(const yd of [0.43,0.3,0.18]){ const t=(0.5-yd)/0.4, x=lerp(sd*0.07,-sd*0.1,t); out.push(solid(gfitSeat(X,D,csph(0.0055,sg(6),sg(5)),x,yd,0.012),PL[2])); }
     }
-    out.push(solid(gmRingAt([0,0.33*TK,fz(0.33)-0.012],[0,0,1],0.017,0.0045,sg(8)),PL[2]));   // the ring where the straps cross
-    out.push(gmBand(X,D,0.07,0.035,(x,y,z,c)=>c.set(PL[1]),0.007),solid(vbox(0.03,0.026,0.008,0,0.052*TK,fz(0.05)-0.008),PL[2]));
+    out.push(solid(gfitSeat(X,D,new THREE.TorusGeometry(0.017,0.0045,6,14),0,0.33,0.012),PL[2]));   // the ring where the straps cross
+    out.push(gmBand(X,D,0.07,0.035,(x,y,z,c)=>c.set(PL[1]),0.007),solid(gfitSeat(X,D,new THREE.BoxGeometry(0.03,0.026,0.008,3,3,1),0,0.052,0.012),PL[2]));
   } else if(top==='robe'){
     const trim=PL[2];
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*nr*1.15,0.57*TK,fz(0.55)-0.004],[sd*nr*1.6,0.5*TK,fz(0.5)-0.007],[-sd*0.02,0.3*TK,fz(0.3)-0.009+(sd>0?-0.003:0)],[-sd*0.045,0.14*TK,fz(0.14)-0.01+(sd>0?-0.003:0)]],0.042,{up:[0,0,-1],seg:sg(14),th:0.005}),sd>0?trim:gmxMul(tc,0.82)));   // the crossed lapels
+    for(const sd of [-1,1]) out.push(solid(gfitRibbon(X,D,[[sd*nr*1.15,0.55],[sd*nr*1.6,0.5],[sd*nr*0.4,0.4],[-sd*0.02,0.3],[-sd*0.045,0.14]],0.042,{lift:sd>0?0.01:0.007,th:0.005}),sd>0?trim:gmxMul(tc,0.82)));   // the crossed lapels, laid on the body
     out.push(gmBand(X,D,0.2,0.1,(x,y,z,c)=>c.set(PL[1]),0.009));   // the wide sash
-    out.push(solid(csph(0.02,sg(8),sg(6)).scale(1.2,1,0.7).translate(0.06,0.15*TK,bz(0.15)+0.014),PL[1]));
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.03,0.15*TK,bz(0.15)+0.02],[sd*0.06,0.08*TK,bz(0.1)+0.03],[sd*0.07,0.0,bz(0.05)+0.035]],0.026,{up:[0,0,1],seg:sg(8),th:0.004}),PL[1]));   // the bow's tails
+    out.push(solid(gfitSeat(X,D,csph(0.02,sg(8),sg(6)).scale(1.2,1,0.7),0.06,0.15,0.012,false),PL[1]));   // the bow, seated on the back
+    for(const sd of [-1,1]) out.push(solid(gfitRibbon(X,D,[[sd*0.03,0.15],[sd*0.06,0.08],[sd*0.07,0.0]],0.026,{lift:0.014,front:false}),PL[1]));   // the bow's tails
     out.push(solid(gmRingAt([0,0.572*TK,0],[0,1,0],nr*1.5,0.008,sg(8)),trim));
     const s0=torsoSize(X,D,0.03), r0=Math.max(s0.rz,s0.rzBack)+0.012, len=0.62*X.S.legs;   // the skirt of the robe, to the calf, a split a hand wide at the front hem
     out.push(pc(ofLoft([{y:0.02,rx:s0.rx+0.014,rz:r0},{y:-0.1,rx:s0.rx+0.05,rz:r0+0.04},{y:-0.32,rx:s0.rx+0.085,rz:r0+0.065},{y:-len+0.062,rx:s0.rx+0.108,rz:r0+0.075},{y:-len+0.058,rx:s0.rx+0.109,rz:r0+0.0755},{y:-len+0.047,rx:s0.rx+0.111,rz:r0+0.077},{y:-len+0.043,rx:s0.rx+0.1115,rz:r0+0.0775},{y:-len,rx:s0.rx+0.115,rz:r0+0.08}],sg(36),0.1,TAU-0.1),(x,y,z,c)=>{ c.set(tc); if(y<-len+0.045) c.copy(new THREE.Color(trim)); else if(y<-len+0.06) c.multiplyScalar(0.7); c.multiplyScalar(0.94+0.06*Math.sin(Math.atan2(x,z)*12)); }));
   } else if(top==='poncho'){
     const rows=[[0.57,nr*1.9,nr*1.9],[0.5,D.shX*0.85,D.shX*0.6],[0.42,D.shX+0.075,0.14*D.B+0.045],[0.27,D.shX+0.12,0.14*D.B+0.075],[0.12,D.shX+0.15,0.14*D.B+0.095],[0.0,D.shX+0.165,0.14*D.B+0.105]].map(([yd,rx,rz])=>({y:yd*TK,rx,rz}));
+    for(const r of rows){ const ts=torsoSize(X,D,r.y/TK), shl=r.y/TK>0.3?D.shX+0.05*D.aw+0.014:0; r.rx=Math.max(r.rx,ts.rx+0.025,shl); r.rz=Math.max(r.rz,Math.max(ts.rz,ts.rzBack)+0.02); }   // never narrower than the body under it: the shoulders, the arms' tops and the bust
     out.push(pc(ofLoft(rows,sg(40),0,TAU),(x,y,z,c)=>{ c.set(tc); const t=y/TK, k=(((t*22)%1)+1)%1; if(k<0.16) c.multiplyScalar(0.7); else if(k>0.5&&k<0.62) c.lerp(new THREE.Color(PL[1]),0.55); if(t<0.03) c.multiplyScalar(0.8); c.multiplyScalar(0.94+0.06*Math.sin(Math.atan2(x,z)*14)); }));
     for(let i=0;i<sg(30);i++){ const a=i/sg(30)*TAU, r=rows[rows.length-1]; out.push(solid(sweepTube([[Math.sin(a)*r.rx,0,Math.cos(a)*r.rz],[Math.sin(a)*(r.rx+0.004),-0.025,Math.cos(a)*(r.rz+0.004)],[Math.sin(a)*(r.rx+0.006),-0.05,Math.cos(a)*(r.rz+0.006)]],[0.0032,0.0028,0.0014],4,{cap:'round',rings:4}),0xe8d9b0)); }   // the fringe
     out.push(solid(gmRingAt([0,0.575*TK,0],[0,1,0],nr*1.9,0.007,sg(8)),PL[2]));   // the neck slit's stitched rim
   } else if(top==='jerkin'){
-    const rows=[0.52,0.44,0.3,0.18,0.07,0.0].map(yd=>{ const t=torsoSize(X,D,yd), m=0.011; return {y:yd*TK,rx:t.rx+m,rz:Math.max(t.rz,t.rzBack)+m}; });
-    out.push(pc(ofLoft(rows,sg(36),0.3,TAU-0.3),(x,y,z,c)=>{ c.set(tc); const k=Math.abs(Math.atan2(x,-z)); if(k>2.4) c.multiplyScalar(0.84); if(y<0.04*TK) c.multiplyScalar(0.78); if(y>0.5*TK) c.multiplyScalar(0.82); }));   // the leather body, open a hand's width in the middle of the front for the lacing
-    for(let i=0;i<6;i++){ const yd=0.46-i*0.07; out.push(solid(ofRibbon([[-0.026,yd*TK,fz(yd)-0.012],[0,(yd-0.03)*TK,fz(yd)-0.014],[0.026,yd*TK,fz(yd)-0.012]],0.007,{up:[0,0,-1],seg:4,th:0.003}),PL[1])); out.push(solid(csph(0.004,5,4).translate(-0.028,yd*TK,fz(yd)-0.01),PL[2]),solid(csph(0.004,5,4).translate(0.028,yd*TK,fz(yd)-0.01),PL[2])); }   // the criss-cross lacing and its eyelets
-    for(const sd of [-1,1]){ for(const yd of [0.4,0.22,0.08]) out.push(solid(csph(0.0048,5,4).translate(sd*torsoSize(X,D,yd).rx*0.55,yd*TK,fz(yd)-0.0155),PL[2])); out.push(solid(csph(0.0048,5,4).translate(sd*torsoSize(X,D,0.4).rx*0.55,0.4*TK,fz(0.4)-0.0155),PL[2]));
-      out.push(solid(ofRibbon([[sd*0.05,0.525*TK,fz(0.5)-0.006],[sd*D.shX*0.7,0.535*TK,0],[sd*0.05,0.525*TK,bz(0.5)+0.004]],0.03,{up:[0,1,0],seg:sg(8),th:0.004}),gmxMul(tc,0.85))); }   // shoulder straps
+    const jfn=(x,y,z,c)=>{ c.set(tc); const k=Math.abs(Math.atan2(x,-z)); if(k>2.4) c.multiplyScalar(0.84); if(y<0.04*TK) c.multiplyScalar(0.78); if(y>0.5*TK) c.multiplyScalar(0.82); }, jlim=(a,x)=>[0.0,(0.5-0.15*gmSmooth((Math.abs(x)-0.05)/0.1))*TK];
+    out.push(pc(gfitShell(X,0.0,0.52*TK,0.011,{a0:0.2,a1:Math.PI,lim:jlim}),jfn),pc(gfitShell(X,0.0,0.52*TK,0.011,{a0:-Math.PI,a1:-0.2,lim:jlim}),jfn));   // the leather body: an offset of the body, open a hand's width in the middle of the front for the lacing
+    for(let i=0;i<6;i++){ const yd=0.46-i*0.07; out.push(solid(gfitRibbon(X,D,[[-0.026,yd],[0,yd-0.03],[0.026,yd]],0.007,{lift:0.004,th:0.003}),PL[1])); out.push(solid(gfitSeat(X,D,csph(0.004,5,4),-0.028,yd,0.003),PL[2]),solid(gfitSeat(X,D,csph(0.004,5,4),0.028,yd,0.003),PL[2])); }   // the criss-cross lacing and its eyelets, on the body
+    for(const sd of [-1,1]){ for(const yd of [0.4,0.22,0.08]) out.push(solid(gfitSeat(X,D,csph(0.0048,5,4),sd*torsoSize(X,D,yd).rx*0.55,yd,0.0125),PL[2]));
+    }   // (the old shoulder straps are gone: the cut armholes leave no shoulder for them)
     out.push(gmBand(X,D,0.045,0.01,(x,y,z,c)=>c.set(PL[3]),0.013));
   }
   return out;
@@ -106,27 +107,27 @@ function gmxCuff(X,D,sd){
 // ---- the hips' frame ----
 function gmxHips(X,D){
   const {L,sg}=X, TK=D.TK, b=L.bottom, tc=L.bottomColor, PL=gmxPalAt(L,'bottom'), out=[], s0=torsoSize(X,D,0.03), rz=s0.rz+0.009, rm=(s0.rz+s0.rzBack)/2+0.009, zc=(s0.rzBack-s0.rz)/2, leg=X.S.legs, dk=gmxMul(tc,0.55), lt=new THREE.Color(tc).lerp(new THREE.Color(0xffffff),0.35).getHex();
-  const belt=(hex,w,y)=>out.push(pc(ofLoft([{y:y*TK,rx:s0.rx+0.01,rz:rm,zc},{y:y*TK-w,rx:s0.rx+0.012,rz:rm+0.002,zc}],sg(28),0,TAU),c=>c.set(hex)));
-  if(b==='breeches'||b==='greaves'){ belt(PL[1],0.034,0.052); out.push(solid(vbox(0.034,0.028,0.008,0,0.036*TK,-rz-0.004),PL[2])); }
+  const belt=(hex,w,y)=>out.push(pc(gfitShell(X,y*TK-w,y*TK,0.01),c=>c.set(hex)));   // an offset of the body's own surface (garment-fit.js)
+  if(b==='breeches'||b==='greaves'){ belt(PL[1],0.034,0.052); out.push(solid(gfitSeat(X,D,new THREE.BoxGeometry(0.034,0.028,0.008,3,3,1),0,0.036,0.014),PL[2])); }
   else if(b==='shortshorts'){
     belt(PL[1],0.026,0.018);   // a low-slung waistband
     for(const sd of [-1,1]) out.push(solid(sweepTube([[sd*0.012,0.0,-rz-0.004],[sd*0.02,-0.04,-rz-0.008],[sd*0.016,-0.075,-rz-0.006]],[0.0028,0.0026,0.0016],4,{cap:'round',rings:6}),PL[2]));   // the drawstring
     out.push(solid(csph(0.0045,5,4).translate(-0.012,-0.002,-rz-0.004),PL[3]),solid(csph(0.0045,5,4).translate(0.012,-0.002,-rz-0.004),PL[3]));
   } else if(b==='hakama'){
     belt(PL[1],0.03,0.11); belt(gmxMul(tc,0.7),0.05,0.075);
-    out.push(pc(vbox(0.1,0.14,0.012,0,0.0,s0.rzBack+0.019).rotateX(-0.12),c=>c.set(PL[2])));   // the stiff back plate
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.03,0.085*TK,-rz-0.008],[sd*0.05,0.02*TK,-rz-0.012],[sd*0.06,-0.1,-rz-0.01]],0.022,{up:[0,0,-1],seg:sg(8),th:0.004}),PL[3]));   // the ties hanging in front
+    out.push(pc(gfitSeat(X,D,new THREE.BoxGeometry(0.1,0.14,0.012,6,8,1),0,0.02/TK,0.014,false),c=>c.set(PL[2])));   // the stiff back plate
+    for(const sd of [-1,1]) { const dm=Math.max(-gfitFz(X,D,sd*0.03,0.085),-gfitFz(X,D,sd*0.05,0.04)); out.push(solid(ofRibbon([[sd*0.03,0.085*TK,-dm-0.012],[sd*0.05,0.02*TK,-dm-0.012],[sd*0.06,-0.1,-dm-0.01]],0.022,{up:[0,0,-1],seg:sg(8),th:0.004}),PL[3])); }   // the ties hanging in front (from the belly's true depth)
   } else if(b==='bikinibottom'){
     for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*(s0.rx+0.004),0.052*TK,0],[sd*(s0.rx+0.012),0.04*TK,-rz*0.6],[sd*0.05,0.034*TK,-rz-0.004]],0.01,{up:[0,1,0],seg:sg(8),th:0.003}),PL[1]));
     for(const sd of [-1,1]) out.push(solid(csph(0.006,sg(6),sg(5)).translate(sd*0.05,0.034*TK,-rz-0.006),PL[2]));   // a bead on each tie (the briefs themselves are the torso's paint)
   } else if(b==='wrapskirt'){
     belt(PL[1],0.05,0.075);   // the sash
-    out.push(solid(csph(0.02,sg(8),sg(6)).scale(1.3,1,0.7).translate(0.09,0.05*TK,-rz-0.012),PL[1]));
-    for(const sd of [0,1]) out.push(solid(ofRibbon([[0.09,0.05*TK,-rz-0.014],[0.11+sd*0.015,-0.02,-rz-0.02],[0.12+sd*0.03,-0.13-sd*0.04,-rz-0.016]],0.024,{up:[0,0,-1],seg:sg(8),th:0.004}),PL[2]));
+    out.push(solid(gfitSeat(X,D,csph(0.02,sg(8),sg(6)).scale(1.3,1,0.7),0.09,0.05,0.012),PL[1]));
+    { const dm=-gfitFz(X,D,0.09,0.05); for(const sd of [0,1]) out.push(solid(ofRibbon([[0.09,0.05*TK,-dm-0.014],[0.11+sd*0.015,-0.02,-Math.max(dm,rz)-0.02],[0.12+sd*0.03,-0.13-sd*0.04,-Math.max(dm,rz)-0.016]],0.024,{up:[0,0,-1],seg:sg(8),th:0.004}),PL[2])); }
   } else if(b==='loincloth'){
-    belt(PL[1],0.034,0.06); out.push(solid(vbox(0.036,0.03,0.008,0,0.044*TK,-rz-0.004),PL[2]));
+    belt(PL[1],0.034,0.06); out.push(solid(gfitSeat(X,D,new THREE.BoxGeometry(0.036,0.03,0.008,3,3,1),0,0.044,0.014),PL[2]));
     for(const [a0,a1,len] of [[Math.PI-0.55,Math.PI+0.55,0.42],[-0.5,0.5,0.34]]){   // a long front flap and a shorter back one
-      const hm=len*leg, rows=[0,-0.08,-0.2,-hm+0.05,-hm+0.045,-hm+0.032,-hm+0.028,-hm].map((y,i)=>({y,rx:s0.rx+0.016+Math.min(3,i)*0.004,rz:rm+0.006+Math.min(3,i)*0.014,zc}));
+      const fr=a0>0, hm=len*leg, d0=-gfitFz(X,D,0,0.03)+0.012, rows=[0.03,-0.08,-0.2,-hm+0.05,-hm+0.045,-hm+0.032,-hm+0.028,-hm].map((y,i)=>{ const k=Math.min(3,i), tf=d0+k*0.014, rzb=fr?(tf+s0.rzBack)/2:rm+0.006+k*0.014; return {y,rx:s0.rx+0.016+k*0.004,rz:rzb,zc:fr?(s0.rzBack-tf)/2:zc}; });   // (the front flap hangs from the belly's TRUE depth, not the ellipse's)
       out.push(pc(ofLoft(rows,sg(14),a0,a1),(x,y,z,c)=>{ c.set(tc); if(y<-hm+0.03) c.set(PL[3]).multiplyScalar(0.9); else if(y<-hm+0.047) c.multiplyScalar(0.7); const t=-y/hm; if(Math.abs(x)<0.006&&t>0.3) c.multiplyScalar(0.8); })); }
     out.push(solid(csph(0.012,sg(6),sg(5)).translate(0.1,0.0,-rz*0.5),PL[2]));
   }

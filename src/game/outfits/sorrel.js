@@ -5,7 +5,7 @@
 CHAR_MODELS.sorrel={id:'sorrel',name:'Sorrel',signature:true, hairGrad:{mode:'ombre',c2:0xa8d4f0,c3:0x58c0b8}, items:{hat:'Ridge band',hair:'Gale long',face:'Wind streaks',top:'Lookout layers',bottom:'Crag trousers',shoes:'Ledge boots',weapon:'Feather flight'},sexes:['female'],
   note:'The lookout: the tallest and lightest line, drawn for a tall, slim, long-legged woman.',
   ranges:{height:[0.98,1.08],build:[0.88,1.08],chest:[0.6,1.2],shoulders:[0.88,1.08],waist:[0.85,1.05],legs:[1.0,1.14],thighs:[0.85,1.05],arms:[0.82,1.1],neck:[0.95,1.2],head:[0.92,1.08],eyeSize:[0.9,1.15],eyeTilt:[0.05,0.7],hairLength:[1.0,1.35],hairVolume:[1.0,1.25]},
-  setups:[{id:'sorrel',name:'Sorrel',sex:'female',def:true,note:'The lookout as drawn: tall, slim, long-legged, a cool narrow stare.',v:{height:1.05,build:0.9,chest:0.95,shoulders:0.95,waist:0.9,hips:0.97,torso:1.02,legs:1.12,thighs:0.92,arms:0.92,neck:1.05,jaw:0.9,chin:0.95,cheeks:0.85,eyeSize:0.95,eyeGap:1.02,eyeTilt:0.4,brow:0.25,noseSize:0.9,mouthSize:0.9,lips:0.9,hairLength:1.3,hairVolume:1.15,bangs:0.7}}]};
+  setups:[{id:'sorrel',name:'Sorrel',sex:'female',def:true,note:'The lookout as drawn: tall, slim, long-legged, a cool narrow stare.',v:{height:1.05,build:0.9,chest:0.98,shoulders:0.95,waist:0.9,hips:0.97,torso:1.02,legs:1.12,thighs:0.92,arms:0.92,neck:1.05,jaw:0.9,chin:0.95,cheeks:0.85,eyeSize:0.95,eyeGap:1.02,eyeTilt:0.4,brow:0.25,noseSize:0.9,mouthSize:0.9,lips:0.9,hairLength:1.3,hairVolume:1.15,bangs:0.7,muscle:0.25,belly:-0.4}}]};
 
 OUTFITS.sorrel=(function(){
   const SKY=0x8fb8d8, SKY_L=0xc4dcec, SKY_D=0x6f9cbf, CREAM=0xf1ead8, CREAM_D=0xddd4bd, SLATE=0x4a5560, SLATE_D=0x38414a, SNOW=0xf4f6f8, FEATH=0xb7c0c9, FEATH_D=0x8c97a3,

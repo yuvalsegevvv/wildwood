@@ -88,6 +88,8 @@ One recommended setup (the reference: the body this outfit was fitted for, male)
 | `smile` (Expression) | 0.5 |
 | `hairLength` (Hair length) | 1.1 |
 | `bangs` (Fringe length) | 0.8 |
+| `muscle` (Muscle) | -0.4 |
+| `belly` (Belly) | 0.4 |
 | `blush` (Blush) | 0.55 |
 | `undertone` (Skin undertone) | -0.2 |
 | `noseSize` (Nose) | 0.9 |

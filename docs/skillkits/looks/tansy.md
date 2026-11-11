@@ -86,6 +86,8 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `smile` (Expression) | 0.7 |
 | `hairVolume` (Hair volume) | 1.1 |
 | `bangs` (Fringe length) | 0.8 |
+| `muscle` (Muscle) | 0.4 |
+| `belly` (Belly) | 0.2 |
 | `blush` (Blush) | 0.7 |
 | `lips` (Lips) | 1.1 |
 | `undertone` (Skin undertone) | 0.3 |

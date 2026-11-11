@@ -70,7 +70,7 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 |---|---|
 | `height` (Height) | 1.04 |
 | `build` (Build) | 0.92 |
-| `chest` (Chest) | 0.8 |
+| `chest` (Chest) | 0.91 |
 | `shoulders` (Shoulders) | 0.98 |
 | `waist` (Waist) | 0.9 |
 | `torso` (Torso length) | 1 |
@@ -88,6 +88,7 @@ One recommended setup (the reference: the body this outfit was fitted for, femal
 | `smile` (Expression) | 0.12 |
 | `hairLength` (Hair length) | 1.2 |
 | `hairVolume` (Hair volume) | 1.05 |
+| `muscle` (Muscle) | -0.4 |
 | `brow` (Brows) | 0.45 |
 | `eyeSize` (Eye size) | 1 |
 | `lips` (Lips) | 0.8 |
