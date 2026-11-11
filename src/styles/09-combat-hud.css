@@ -36,6 +36,18 @@ body.playing #actionbar{ display:flex; }
 body.touch #actionbar{ left:auto; transform:none; right:calc(104px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 26px); flex-direction:column-reverse; }
 body.touch .ab{ width:72px; height:72px; border-radius:50%; }
 body.touch .ab .key{ display:none; }
+/* a phone: locked slots are ghost chips, not buttons. At level 1 four of the five slots are locked, and as 72 px buttons the column stood on the quest log (portrait) and reached the top button row (landscape) */
+body.touch .ab.locked{ width:30px; height:30px; border-radius:9px; opacity:.5; }
+body.touch .ab.locked .nm{ display:none; }
+body.touch .ab.locked svg{ width:13px; height:13px; }
+/* a landscape phone: the column was taller than the screen, so the slots lie along the bottom edge, left of Dash and Jump; the quest log tucks under the minimap above them */
+@media (orientation:landscape) and (max-height:500px){
+  body.touch #actionbar{ flex-direction:row; align-items:flex-end; right:calc(190px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 18px); gap:8px; }
+  body.touch .ab{ width:58px; height:58px; }
+  body.touch .ab .nm{ font-size:9px; bottom:4px; }
+  #bDash{ right:calc(106px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 30px); }   /* beside Jump again: here the right-edge stack's top ran into the quest log, not the column */
+  #bTalk{ bottom:calc(env(safe-area-inset-bottom,0px) + 112px); }   /* above Jump (07-talk.css's 180 is the portrait stack's) */
+}
 body.editing #actionbar, body.editing #tframe, body.editing .dmg, body.editing .hpb{ display:none !important; }
 .card{ max-height:calc(100dvh - 32px); overflow-y:auto; }
 .ed-info{ font-size:13.5px; line-height:1.5; color:var(--ink-dim); margin:12px 0 0; }

@@ -3,7 +3,9 @@
 // The page is loaded without starting the game (the HUD is markup and CSS): body.playing is switched on and the panels are shown by hand, so nothing here needs the world. Sizes: 390 x 780, 360 x 640 and 430 x 900
 // (portrait phones), 700 x 900 (a small tablet, still bottom sheets) and 844 x 390 (a landscape phone). Each failure line names the element and its rectangle.
 // What it guards (all found on a real 390 px phone): nine 44 px buttons in a row were 460 px wide (styles/02-hud.css, the 3x3 block up to 520 px), eight panels had a width of their own that the
-// phone rule `.panel{ width:auto }` did not beat, the settings popover's max-height came from a later stylesheet. Not covered: what is drawn inside the panels (client-smoke) and the landscape quest log.
+// phone rule `.panel{ width:auto }` did not beat, the settings popover's max-height came from a later stylesheet. Seen in phone screenshots (2026-11-10): the action bar's column stood on the quest
+// log (portrait) and reached the top button row (landscape), Dash lay on the bottom skill slot, and locked slots were 72 px buttons — they are ghost chips now, and the rotate card (ui/rotate.js)
+// asks an upright phone once. Not covered: what is drawn inside the panels (client-smoke).
 const fs=require('fs'), path=require('path'), http=require('http');
 const dist=path.join(__dirname,'..','dist');
 let chromium; for(const base of [process.cwd(),path.join(__dirname,'..'),'/opt/node-tools','/usr/local/lib']){ try{ chromium=require(require.resolve('playwright',{paths:[base,path.join(base,'node_modules')]})).chromium; break; }catch(e){} }
@@ -18,14 +20,18 @@ const srv=http.createServer((q,r)=>{ const f=path.join(dist,q.url==='/'?'wildwoo
 function measure(){
   const R=e=>{ const r=e.getBoundingClientRect(); return [Math.round(r.left),Math.round(r.top),Math.round(r.right),Math.round(r.bottom)]; };
   const shown=e=>e&&getComputedStyle(e).display!=='none';
-  document.body.classList.add('playing');
+  document.body.classList.add('playing','can-talk');   // can-talk: the contextual Talk button shows, so its rectangle is measured too
   const o={W:innerWidth,H:innerHeight,touch:document.body.classList.contains('touch')};
   o.btns=[...document.querySelectorAll('.btns .icon-btn')].filter(shown).map(e=>[e.id,...R(e)]);
+  o.tbtns=[...document.querySelectorAll('.touch-btn')].filter(shown).map(e=>[e.id,...R(e)]);
   o.minimap=R(document.getElementById('minimap')); o.brand=R(document.querySelector('.brand'));
   const q=document.getElementById('qlog'); q.hidden=false; const row=document.createElement('div'); row.className='ql'; row.textContent='A quest'; q.appendChild(row); o.qlog=R(row);
   const t=document.getElementById('toasts'); const toast=document.createElement('div'); toast.className='toast'; toast.textContent='A toast'; t.appendChild(toast); o.toast=R(toast);
   o.panels=[]; for(const p of document.querySelectorAll('.panel')){ p.hidden=false; o.panels.push([p.id,...R(p)]); p.hidden=true; }
   const s=document.getElementById('sound'); s.hidden=false; o.sound=R(s); s.hidden=true;
+  o.ab=[...document.querySelectorAll('#actionbar .ab')].filter(shown).map(R);   // the action bar's slots: the quest log and the top buttons must stay clear of them
+  o.abLocked=[...document.querySelectorAll('#actionbar .ab.locked')].filter(shown).map(R);   // touch: locked slots are ghost chips, not 72 px buttons
+  o.chatBtn=R(document.getElementById('chatBtn'));
   return o;
 }
 const inside=(r,W,H)=>r[0]>=-1&&r[1]>=-1&&r[2]<=W+1&&r[3]<=H+1;
@@ -44,9 +50,16 @@ srv.listen(0,'127.0.0.1',async()=>{
     ok(tag+'the minimap is on the screen',inside(m.minimap,w,h),m.minimap.join(','));
     const hit=m.btns.filter(r=>meets(r.slice(1),m.brand)).map(r=>r[0]); ok(tag+'the buttons stay off the name box',!hit.length,hit.join(','));
     const btnBottom=Math.max(...m.btns.map(r=>r[4]));
+    const abHit=m.ab.filter(r=>meets(r,m.qlog)).length; ok(tag+'the quest log stays clear of the action bar',!abHit,abHit+' slot(s) on the log');
+    const tbHit=m.tbtns.filter(r=>meets(r,m.qlog)).map(r=>r[0]); ok(tag+'the round buttons stay clear of the quest log',!tbHit.length,tbHit.join(',')+' of '+m.tbtns.length+' shown');
+    const abTop=m.ab.filter(r=>m.btns.some(b=>meets(r,b.slice(1)))); ok(tag+'the action bar stays off the top buttons',!abTop.length,m.ab.map(r=>r.join()).join(' ; '));
+    const tall=m.abLocked.filter(r=>r[3]-r[1]>40); ok(tag+'locked slots are ghost chips ('+m.abLocked.length+' locked)',!tall.length,tall.map(r=>r.join()).join(' ; '));
+    const rot=await pg.evaluate(()=>{ if(window.wwRotCheck) window.wwRotCheck(); const c=document.getElementById('rotCard'); const vis=!c.hidden; let stored=null; if(vis){ document.getElementById('rotNo').click(); stored=localStorage.getItem('wwRot'); } return {vis,after:c.hidden,stored}; });
+    if(w<h) ok(tag+'the rotate card asks once and is dismissed for good',rot.vis&&rot.after&&rot.stored==='1',JSON.stringify(rot));
+    else ok(tag+'the rotate card keeps quiet in landscape',!rot.vis,JSON.stringify(rot));
     if(w<=519){   // a portrait phone: the 3x3 block, and everything that hangs under it
       ok(tag+'the minimap hangs under the button block',m.minimap[1]>=btnBottom,m.minimap[1]+' < '+btnBottom);
-      ok(tag+'the quest log hangs under the minimap (not behind the skill buttons)',m.qlog[1]>=m.minimap[3],m.qlog[1]+' < '+m.minimap[3]);
+      ok(tag+'the quest log sits in the left column, under the chat button',m.qlog[0]<m.chatBtn[2]&&m.qlog[1]>=m.chatBtn[3]-2,m.qlog.join(','));
       ok(tag+'toasts start under the button block',m.toast[1]>=btnBottom,m.toast[1]+' < '+btnBottom);
       ok(tag+'the settings popover opens under the block and ends on the screen',m.sound[1]>=btnBottom&&inside(m.sound,w,h),m.sound.join(','));
     } else ok(tag+'the settings popover is on the screen',inside(m.sound,w,h),m.sound.join(','));

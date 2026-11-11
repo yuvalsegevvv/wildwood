@@ -49,12 +49,13 @@ function updateRemotes(dt){
     const talking=CHAT.bubbles.has(r.id)&&performance.now()<CHAT.bubbles.get(r.id).until;
     if(started && (d<45||(talking&&d<90))){
       const s=toScreen(r.x,r.y+2.25*r.scale,r.z); if(!s) continue;
-      let tag=tagPool[ti]; if(!tag){ tag=document.createElement('div'); tag.className='ntag'; tag.innerHTML='<q hidden></q><b></b><span></span><i><i></i></i>'; document.body.append(tag); tagPool.push(tag); }
+      let tag=tagPool[ti]; if(!tag){ tag=document.createElement('div'); tag.className='ntag'; tag.innerHTML='<q hidden></q><b title="Click to invite to a party"></b><span></span><i><i></i></i>'; document.body.append(tag); tagPool.push(tag); }
       ti++; tag.hidden=false; tag.style.transform=`translate(${s[0]}px,${s[1]}px) translate(-50%,-100%)`;
       tag.classList.toggle('foe',PVC.on&&pvHostile(r)); tag.classList.toggle('tgt',PVC.on&&PVC.tg===r);   // pvp: a fighter you can hit has a red name, the picked one glows
-      tag.dataset.pid=String(r.id);   // dungeons: a tap on the name opens the party panel with it (dungeon/party.js)
+      const pid=String(r.id); if(tag.dataset.pid!==pid) tag.dataset.pid=pid;   // dungeons: a tap on the name opens the party panel with it (dungeon/party.js)
       const say=CHAT.bubbles.get(r.id), q=tag.children[0], on=!!(say&&performance.now()<say.until); q.hidden=!on; if(on&&q.textContent!==say.text) q.textContent=say.text;
-      tag.children[1].textContent=r.name; tag.children[2].textContent='Lv '+r.level; tag.children[3].firstChild.style.width=(r.hp/Math.max(1,r.maxHp)*100)+'%';
+      const tnm=tag.children[1], tlv=tag.children[2], tbar=tag.children[3].firstChild, tlvS='Lv '+r.level, thw=(r.hp/Math.max(1,r.maxHp)*100)+'%';   // a pooled tag changes hands between players: write only what differs from what it shows
+      if(tnm.textContent!==r.name) tnm.textContent=r.name; if(tlv.textContent!==tlvS) tlv.textContent=tlvS; if(tbar.style.width!==thw) tbar.style.width=thw;
     }
   }
   for(;ti<tagPool.length;ti++) tagPool[ti].hidden=true;

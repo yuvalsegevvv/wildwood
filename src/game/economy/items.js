@@ -7,13 +7,21 @@ function newGear(){ return newGearFor(CLASSES[LOOK.cls]?LOOK.cls:'warrior'); }
 try{ const s=JSON.parse(localStorage.getItem('wildwood-gear-v1')||'null'); if(s&&Array.isArray(s.inv)){ GEAR=Object.assign(newGear(),s); GEAR.inv=GEAR.inv.filter(id=>ITEM[id]); } }catch(_){}
 if(!GEAR) GEAR=newGear();
 GEAR.q=Object.assign({active:{},ready:[],done:[]},GEAR.q||{});
-function saveGear(){ if(NET&&(NET.user||NET.test)) return; try{ localStorage.setItem('wildwood-gear-v1',JSON.stringify(GEAR)); }catch(_){} }
+let gearSaveT=null;   // the save waits a beat: loot and crafting land in bursts, and every write stringifies the whole inventory
+function saveGear(){ if(NET&&(NET.user||NET.test)) return; if(gearSaveT!==null) return; gearSaveT=setTimeout(gearSaveFlush,400); }
+function gearSaveFlush(){ gearSaveT=null; if(NET&&(NET.user||NET.test)) return; try{ localStorage.setItem('wildwood-gear-v1',JSON.stringify(GEAR)); }catch(_){} }
+addEventListener('pagehide',()=>{ if(gearSaveT!==null){ clearTimeout(gearSaveT); gearSaveFlush(); } });   // the last change is not lost when the tab closes
+addEventListener('visibilitychange',()=>{ if(document.hidden&&gearSaveT!==null){ clearTimeout(gearSaveT); gearSaveFlush(); } });   // (a phone killed in the background never fires pagehide)
 const fmtCoins=n=>Math.floor(n||0).toLocaleString('en-US');   // 12345 -> "12,345" (coin displays)
 function gearStats(){ return gearStatsOf(GEAR); }
 function effectiveLook(){ return effectiveLookOf(LOOK,GEAR); }
 // the server sends your gear in every "you" update; apply it and redraw whatever changed
+let gearApplied=null, gearSig='';   // what the last one held: most repeat the gear unchanged (every hit, every quest tick), and only a real change should redraw anything
 function applyGear(g){
   if(!g) return;
+  const sig=JSON.stringify(g);
+  if(gearApplied===GEAR&&sig===gearSig) return;
+  gearApplied=g; gearSig=sig;
   const prevW=GEAR&&GEAR.eq.weapon, prevEq=JSON.stringify(GEAR&&GEAR.eq);
   GEAR=g; saveGear();
   if(GEAR.eq.weapon!==prevW){ LOOK.cls=clsOf(); saveLookLocal(); attachWeapons(); setActionBar(); if(customizing) renderEditor(); }

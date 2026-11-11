@@ -1,6 +1,8 @@
 //@ Target frame, player bars, damage numbers, action bar, attack input
 /* combat interface: target frame, health bars, damage numbers, action buttons */
 const tframe=$('#tframe'), tName=$('#tName'), tLv=$('#tLv'), tEl=$('#tEl'), tBar=$('#tBar'), tHp=$('#tHp');
+const plLv=$('#plLv'), plHpT=$('#plHpT'), plHp=$('#plHp'), plXp=$('#plXp'), plXpT=$('#plXpT');
+let lastTEl=null;   // the target frame's element chip: it changes with the target, not every frame
 const dmgPool=[], barPool=[];
 for(let i=0;i<20;i++){ const d=document.createElement('div'); d.className='dmg'; d.hidden=true; document.body.append(d); dmgPool.push({el:d,life:0}); }
 for(let i=0;i<10;i++){ const d=document.createElement('div'); d.className='hpb'; d.hidden=true; d.innerHTML='<i></i>'; document.body.append(d); barPool.push(d); }
@@ -19,26 +21,33 @@ function updateCombatUI(dt){
   }
   let bi=0;
   if(started && !customizing){
-    const list=MONS.filter(m=>!m.dead&&m.g.visible&&(m.hp<m.maxHp||m.aggro||m===CB.target)&&Math.hypot(m.x-P.x,m.z-P.z)<35);
-    for(const m of list){
-      if(bi>=barPool.length) break;
+    const px=P.x, pz=P.z, tg=CB.target;   // in place with a squared distance: MONS holds the whole roster (thousands), and filter() walked all of it for a ten-bar list
+    for(let mi=0;mi<MONS.length&&bi<barPool.length;mi++){
+      const m=MONS[mi];
+      if(m.dead||!m.g.visible) continue;
+      if(!(m.hp<m.maxHp||m.aggro||m===tg)) continue;
+      const dx=m.x-px, dz=m.z-pz;
+      if(dx*dx+dz*dz>=1225) continue;   // 35 m
       const s=toScreen(m.x,m.y+(m.T.height+0.35)*m.s,m.z); if(!s) continue;
       const b=barPool[bi++]; b.hidden=false; b.style.transform=`translate(${s[0]}px,${s[1]}px) translate(-50%,-50%)`;
-      b.firstChild.style.width=(m.hp/m.maxHp*100)+'%'; b.classList.toggle('tgt',m===CB.target);
+      b.firstChild.style.width=(m.hp/m.maxHp*100)+'%'; b.classList.toggle('tgt',m===tg);
     }
   }
   for(;bi<barPool.length;bi++) barPool[bi].hidden=true;
   const T=CB.target;
-  $('#plLv').textContent='Lv '+(PVC&&PVC.on?PVP.level+' (PvP)':PL.level); $('#plHpT').textContent=Math.ceil(PL.hp)+' / '+PL.maxHp;
-  $('#plHp').style.width=(PL.hp/PL.maxHp*100)+'%'; const need=expToNext(PL.level);
-  $('#plXp').style.width=Math.min(100,PL.exp/need*100)+'%'; $('#plXpT').textContent='XP '+numC(PL.exp)+' / '+numC(need);
+  const lvS='Lv '+(PVC&&PVC.on?PVP.level+' (PvP)':PL.level); if(plLv.textContent!==lvS) plLv.textContent=lvS;   // the player line: cached elements, written only when the value moved
+  const hpS=Math.ceil(PL.hp)+' / '+PL.maxHp; if(plHpT.textContent!==hpS) plHpT.textContent=hpS;
+  const hpW=(PL.hp/PL.maxHp*100)+'%'; if(plHp.style.width!==hpW) plHp.style.width=hpW;
+  const need=expToNext(PL.level);
+  const xpW=Math.min(100,PL.exp/need*100)+'%'; if(plXp.style.width!==xpW) plXp.style.width=xpW;
+  const xpS='XP '+numC(PL.exp)+' / '+numC(need); if(plXpT.textContent!==xpS) plXpT.textContent=xpS;
   const bossUI=updateBossUI();
-  if(T && started && !customizing && !(bossUI&&T===BOSS.m)){ tframe.hidden=false; tName.textContent=T.T.name; const K=monTierK(T), ld=K.lv-PL.level; tLv.textContent='Lv '+K.lv+(ld>0?'  (-'+ld*5+'% dmg)':''); tLv.classList.toggle('bad',ld>0);
-    const te=elOf(T.T); tEl.textContent=te==='basic'?'':ELEMS[te].name; tEl.style.color=ELEMS[te].col; if(te==='basic') tEl.title=''; else { const tr=foeTraits(te), nm=l=>l.map(e=>ELEMS[e].name).join(' and '); tEl.title=ELEMS[te].name+': weak to '+nm(tr.weak)+', resists '+nm(tr.resist); }
-    tBar.style.width=(T.hp/T.maxHp*100)+'%'; tHp.textContent=Math.ceil(T.hp*K.hp)+' / '+Math.round(T.maxHp*K.hp); }
+  if(T && started && !customizing && !(bossUI&&T===BOSS.m)){ tframe.hidden=false; const nm=T.T.name; if(tName.textContent!==nm) tName.textContent=nm; const K=monTierK(T), ld=K.lv-PL.level, lvS='Lv '+K.lv+(ld>0?'  (-'+ld*5+'% dmg)':''); if(tLv.textContent!==lvS) tLv.textContent=lvS; tLv.classList.toggle('bad',ld>0);
+    const te=elOf(T.T); if(te!==lastTEl){ lastTEl=te; tEl.textContent=te==='basic'?'':ELEMS[te].name; tEl.style.color=ELEMS[te].col; if(te==='basic') tEl.title=''; else { const tr=foeTraits(te), nm2=l=>l.map(e=>ELEMS[e].name).join(' and '); tEl.title=ELEMS[te].name+': weak to '+nm2(tr.weak)+', resists '+nm2(tr.resist); } }   // the element chip and its trait tooltip change only with the target
+    const tbW=(T.hp/T.maxHp*100)+'%'; if(tBar.style.width!==tbW) tBar.style.width=tbW; const thS=Math.ceil(T.hp*K.hp)+' / '+Math.round(T.maxHp*K.hp); if(tHp.textContent!==thS) tHp.textContent=thS; }
   else tframe.hidden=true;
   const L=pvSkills(), PV=pvLevel(), c=clsOf(), ba=abilityOf(c,'basic',L,PV), sk=abilityOf(c,'skill',L,PV), bu=abilityOf(c,'burst',L,PV);   // pvp: the fixed loadout on the island
-  abBasic.style.setProperty('--p',ba?Math.min(1,CB.cd.basic/bhInterval(ba,L,bhSpeedUi(),CB.buff?CB.buff.cd:1,0)):0); bhHudTick(); abSkill.style.setProperty('--p',sk?CB.cd.skill/abilityCd(sk,L,PV,c,rlUiCdr()):0); abBurst.style.setProperty('--p',bu?CB.cd.burst/abilityCd(bu,L,PV,c,rlUiCdr()):0);   // (skillsets: the bonuses of the class in hand)
+  abSet(abBasic,0,ba?Math.min(1,CB.cd.basic/bhInterval(ba,L,bhSpeedUi(),CB.buff?CB.buff.cd:1,0)):0); bhHudTick(); abSet(abSkill,1,sk?CB.cd.skill/abilityCd(sk,L,PV,c,rlUiCdr()):0); abSet(abBurst,2,bu?CB.cd.burst/abilityCd(bu,L,PV,c,rlUiCdr()):0);   // (skillsets: the bonuses of the class in hand)
   abSkill.classList.toggle('ready',!!sk&&CB.cd.skill<=0); abBurst.classList.toggle('ready',!!bu&&CB.cd.burst<=0);
   abBasic.classList.toggle('buffed',!!CB.buff);
   mvHudUpdate();   // movement: the movement button's cooldown
@@ -95,6 +104,8 @@ const ICONS={
   'Second Wind':'<path d="M3 9h11a3 3 0 1 0-3-3M3 13h15a3 3 0 1 1-3 3M3 17h7"/>',
 };
 const abBasic=$('#abBasic'), abSkill=$('#abSkill'), abBurst=$('#abBurst'); let abKey='';
+const abP=[-1,-1,-1];   // the belt's cooldown sweeps: written only when the rounded value moves (an idle belt writes nothing at all)
+function abSet(el,i,v){ v=Math.round(v*1000)/1000; if(abP[i]===v) return; abP[i]=v; el.style.setProperty('--p',v); }   // a tenth of a percent per step: a crossing bar still sweeps every frame
 function burstSlot(){ doAttack('burst'); }
 function flashSkillSlot(slot){ abKey=''; const el=slot==='burst'?abBurst:abSkill; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
 function setActionBar(){
@@ -104,8 +115,10 @@ function setActionBar(){
     el.querySelector('svg').innerHTML=(a&&ssGlyph(a))||ICONS[a?a.icon||a.name:locked?'lock':'plus']||ICONS.burst;   // skillsets: a set piece draws its set's own symbol, in the set's colour
     el.classList.toggle('has-set',!!(a&&ssTint(a))); el.style.setProperty('--set',a&&ssTint(a)||'transparent');
     el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+slotLv(slot):(slot==='burst'?'Power':'Skill');
+    el.querySelector('.key').textContent=key||'';   // the caption follows the rebind (the movement, cave and ult tiles already did; a bar that says F while Space swings misleads exactly when it is read)
     bdcAbLevel(el,a,L);   // bond: the level in play, with the Bond's +1 or the guest mark (bond/tags.js)
     el.classList.toggle('empty',!a); const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
+    el.classList.toggle('locked',locked);   // touch: a locked slot collapses to a ghost chip (09-combat-hud.css) — at level 1 four of the five slots are locked, and as 72 px buttons they stood on the quest log and the top buttons
     el.setAttribute('aria-label',a?a.name+' ('+key+')':locked?(slot==='burst'?'Power':'Skill')+' slot, opens at level '+slotLv(slot):'Empty '+slot+' slot: choose one'); };
   fill(abBasic,'basic',kbName('basic')); fill(abSkill,'skill',kbName('skill')); fill(abBurst,'burst',kbName('burst'));
   mvFillTile();   // movement: the movement skill's tile
@@ -124,7 +137,6 @@ addEventListener('keydown',e=>{
   if(kbIs(e.code,'burst')) burstSlot();
   if(kbIs(e.code,'cave')) doAttack('cave');   // cave: the 4th slot
   if(kbIs(e.code,'ult')) doAttack('ult');   // ult: the 5th slot
-  if(kbIs(e.code,'skills') && !e.repeat) toggleSkills();
   if(kbIs(e.code,'target')){ e.preventDefault(); cycleTarget(); }
 });
 canvas.addEventListener('contextmenu',e=>e.preventDefault());

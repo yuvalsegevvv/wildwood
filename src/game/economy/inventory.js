@@ -156,6 +156,7 @@ function renderMats(){
   { const tr=BT_ORDER.filter(id=>GEAR.awm&&(GEAR.awm[id]|0)>0); if(tr.length) h+=`<div class="inv-h">Boss trophies <span>for the Awakening trees</span></div><div class="mat-row">${tr.map(id=>`<span class="matc" title="${BOSS_TROPHY[id].name}${BOSS_TROPHY[id].text?': '+BOSS_TROPHY[id].text:''}"><span class="tile r3 matt" aria-label="${BOSS_TROPHY[id].name} x${GEAR.awm[id]}">${btIcon(BOSS_TROPHY[id].col)}<span class="ct">x${GEAR.awm[id]}</span></span><span class="nm">${BOSS_TROPHY[id].name}</span></span>`).join('')}</div>`; }   // trophies
   { const rr=rdMatRows(); if(rr.length) h+=`<div class="inv-h">Raid materials <span>for upgrading signature skills</span></div><div class="mat-row">${rr.map(r=>`<span class="matc" title="${r.name}: won by clearing a raid in that land"><span class="tile r3 matt" aria-label="${r.name} x${r.n}">${matIcon(0xe8b84a,'drop',r.land,r.name)}<span class="ct">x${r.n}</span></span><span class="nm">${r.name}</span></span>`).join('')}</div>`; }   // raids
   $('#matsBody').innerHTML=h;
+  matFindRender();   // the search box's results follow (a Track button may have flipped)
 }
 function toggleMats(){ if($('#mats').hidden){ openPanel('mats'); renderMats(); } else closePanels(); }
 $('#bMats').addEventListener('click',e=>{ e.currentTarget.blur(); toggleMats(); });

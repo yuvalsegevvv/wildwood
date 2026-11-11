@@ -130,7 +130,7 @@ function onNodeEvent(i,state){ if(state) NODE_TAKEN.add(i); else NODE_TAKEN.dele
 function onGatherEvent(i,res,n){
   hideCast();
   toast('+'+n+' '+RES[res].name,'good'); UI_SFX.success();
-  const nd=NODES[i]; if(nd){ for(let k=0;k<6;k++){ const m=new THREE.Mesh(emberGeo,emberMat); m.position.set(nd.x+AR(-0.4,0.4),getH(nd.x,nd.z)+AR(0.3,1.0),nd.z+AR(-0.4,0.4)); scene.add(m); CB.fx.push({mesh:m,life:0.6,max:0.6,shrink:true}); } }
+  const nd=NODES[i]; if(nd){ for(let k=0;k<6;k++){ fxpAdd(nd.x+AR(-0.4,0.4),getH(nd.x,nd.z)+AR(0.3,1.0),nd.z+AR(-0.4,0.4),0,AR(0.3,1),0,0xff8a2a,0.2,0.6,{white:0.3,grow:0.05}); } }   // fx-pool: the haul's sparkle
   if(!$('#inv').hidden||!$('#mats').hidden) renderInv();
 }
 /* ---- the lodge panel ---- */

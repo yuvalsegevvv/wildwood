@@ -537,6 +537,7 @@
     "economy/professions.js",
     "economy/cosmetics.js",
     "economy/crafting.js",
+    "economy/mat-find.js",
     "ui/potions.js",
     "ui/travel.js",
     "ui/guide.js",
@@ -576,6 +577,7 @@
     "ui/account.js",
     "ui/guest-gate.js",
     "ui/chat.js",
+    "ui/rotate.js",
     "ui/start-screen.js",
     "main/loop.js"
   ]

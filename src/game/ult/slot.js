@@ -16,7 +16,7 @@ function ultFillTile(){
   el.querySelector('svg').innerHTML=(a&&ssGlyph(a))||ICONS[locked?'lock':owned?'burst':'plus']||ICONS.burst;
   el.classList.toggle('has-set',!!(a&&ssTint(a))); el.style.setProperty('--set',a&&ssTint(a)||'transparent');
   el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+ULT_LV:'Burst';
-  el.classList.toggle('empty',!a);
+  el.classList.toggle('empty',!a); el.classList.toggle('locked',locked);   // touch: a level-locked slot is a ghost chip (09-combat-hud.css)
   const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
   el.setAttribute('aria-label',a?a.name+' (set burst, '+kbName('ult')+')':locked?'Burst slot, opens at level '+ULT_LV:owned?'Burst slot: choose a burst':'Burst slot: earned from skill sets');
   el.querySelector('.key').textContent=kbName('ult');

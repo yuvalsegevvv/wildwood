@@ -1,5 +1,6 @@
 //@ Potions on the client: the potion belt above the action bar (healing, might, guard, mossblood, scholar and fortune, with counts, keys, cooldowns and the running buff), drinking with the keys, and the potion icons
-/* The belt shows a button for each kind of potion you carry, or have running. A press sends potion{k}; the server drinks the strongest one you own,
+/* The belt shows a button for each kind of potion you carry, or have running; with none it stays, dimmed, with a note
+   that says where potions come from and which keys drink them (the first potion should not summon an unexplained HUD element). A press sends potion{k}; the server drinks the strongest one you own,
    and answers with a pot event [pid, kind, tier, seconds] that starts the kind's cooldown here and, for might and guard, the buff timer.
    The keys are the rebindable actions pot1 .. pot6 (player/keybinds.js). */
 const POT_ST={cd:{},cdMax:{},until:{}};   // per kind: the time (t) its cooldown ends / its buff ends
@@ -11,7 +12,7 @@ function potIcon(kind,tier){
 }
 const potBar=$('#potbar');
 function potBarBuild(){
-  potBar.innerHTML=POT_KIND_IDS.map(k=>`<button class="pb" data-pot="${k}" data-silent="1" style="--pc:${POT_KINDS[k].col}"><span class="pi"></span><span class="pn"></span><span class="pk"></span><span class="pt"></span></button>`).join('');
+  potBar.innerHTML=POT_KIND_IDS.map(k=>`<button class="pb" data-pot="${k}" data-silent="1" style="--pc:${POT_KINDS[k].col}"><span class="pi"></span><span class="pn"></span><span class="pk"></span><span class="pt"></span></button>`).join('')+'<span class="pb-hint" hidden></span>';
   potBar.querySelectorAll('.pb').forEach(b=>{ const go=()=>drinkPotion(b.dataset.pot); b.addEventListener('touchstart',e=>{ e.preventDefault(); go(); },{passive:false}); b.addEventListener('click',go); });
 }
 potBarBuild();
@@ -28,7 +29,7 @@ function onPotionEvent(kind,tier,secs){
   POT_ST.cd[kind]=t+POT_KINDS[kind].cd; POT_ST.cdMax[kind]=POT_KINDS[kind].cd;
   if(secs) POT_ST.until[kind]=t+secs;
   UI_SFX.success();
-  for(let k=0;k<10;k++){ const m=new THREE.Mesh(emberGeo,emberMat); m.position.set(P.x+AR(-0.5,0.5),P.y+AR(0.2,1.8),P.z+AR(-0.5,0.5)); scene.add(m); CB.fx.push({mesh:m,life:0.7,max:0.7,shrink:true}); }
+  for(let k=0;k<10;k++){ fxpAdd(P.x+AR(-0.5,0.5),P.y+AR(0.2,1.8),P.z+AR(-0.5,0.5),0,AR(0.2,0.8),0,0xff8a2a,0.22,0.7,{white:0.3,grow:0.05}); }   // fx-pool: the potion's sparkle
   toast(kind==='heal'?'You feel better':kind==='might'?'Might: more damage for '+secs+' s':kind==='guard'?'Guard: less damage taken for '+secs+' s':kind==='regen'?'Mossblood: you heal over '+secs+' s':kind==='scholar'?'Scholar: more exp for '+Math.round(secs/60)+' min':'Fortune: more coins and drops for '+Math.round(secs/60)+' min','good');
   updatePotBar(true);
 }
@@ -38,7 +39,11 @@ function updatePotBar(force){
   if(!potBar) return;
   const kinds=POT_KIND_IDS.filter(k=>potCount(k)>0||(POT_ST.until[k]||0)>t);
   const sig=kinds.join()+'|'+POT_KIND_IDS.map(k=>potCount(k)+':'+((POT_ST.until[k]||0)>t?Math.ceil(POT_ST.until[k]-t):0)+':'+((POT_ST.cd[k]||0)>t?1:0)).join()+'|'+started;
-  potBar.hidden=!started||!kinds.length; if(!started||(!force&&sig===potSig&&!kinds.some(k=>(POT_ST.cd[k]||0)>t))) return;
+  potBar.hidden=!started;   // with no potions the belt stays, dimmed, teaching itself — the first potion should not summon an unexplained HUD element
+  const hint=potBar.querySelector('.pb-hint');
+  if(hint){ hint.hidden=!started||!!kinds.length;
+    if(!hint.hidden){ const hs='No potions yet · a healer brews them from herbs · '+(kbName('pot1')||'Z')+' drinks one'; if(hint.textContent!==hs) hint.textContent=hs; } }
+  if(!started||(!force&&sig===potSig&&!kinds.some(k=>(POT_ST.cd[k]||0)>t))) return;
   potSig=sig;
   potBar.querySelectorAll('.pb').forEach(b=>{
     const k=b.dataset.pot, on=kinds.includes(k), cd=(POT_ST.cd[k]||0)-t, left=(POT_ST.until[k]||0)-t, P=potStrongest(k)||POTS[k+'1'];

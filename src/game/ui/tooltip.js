@@ -1,6 +1,7 @@
 //@ The in-game hover note: any element with a title (or data-tip) shows a bark-and-brass note beside the pointer instead of the browser's grey popup
 /* Agent map. One #gtip div is made on first use. On a mouse pointer over an element with title, the title moves to data-tip (so the browser shows nothing) and the note appears: the first part (before " · ") is the
-   heading, the rest are lines; a title with a colon splits into heading and text. Touch pointers show nothing (tap an item for its details). Hidden on leave, scroll, a click and when the panel closes.
+   heading, the rest are lines; a title with a colon splits into heading and text. Touch pointers have no hover: a press-and-hold
+   shows the same note as a toast and swallows the tap that follows it. Hidden on leave, scroll, a click and when the panel closes.
    Styles: 40-tooltip.css. Test: client-smoke (the markup the panels give is checked there; this file is DOM-only). */
 var GTIP={el:null,cur:null};
 function gtipEl(){
@@ -32,3 +33,17 @@ document.addEventListener('pointerover',e=>{
 document.addEventListener('pointermove',e=>{ if(GTIP.cur) gtipPlace(e.clientX,e.clientY); });
 document.addEventListener('pointerout',e=>{ if(GTIP.cur&&(!e.relatedTarget||!GTIP.cur.contains(e.relatedTarget))) gtipHide(); });
 document.addEventListener('pointerdown',gtipHide); document.addEventListener('scroll',gtipHide,true);
+/* touch has no hover: a press-and-hold shows the same note as a toast, and the tap that follows it is swallowed so the
+   long press never triggers the element's own click. A drag past 12 px cancels it (the finger was scrolling, not asking). */
+let gtipHold=null, gtipNoMenu=0;   // gtipNoMenu: until when a native long-press menu is suppressed (a touch is asking for a note, not the browser's menu)
+document.addEventListener('pointerdown',e=>{
+  if(e.pointerType!=='touch') return;
+  const t=e.target&&e.target.closest?e.target.closest('[title],[data-tip]'):null; if(!t) return;
+  const x=e.clientX, y=e.clientY; gtipNoMenu=performance.now()+1200;
+  gtipHold={x,y,timer:setTimeout(()=>{ gtipHold=null; GTIP.block=true; gtipNoMenu=performance.now()+1200;
+    const v=t.getAttribute('data-tip')||t.getAttribute('title'); if(v) toast(v.replace(/ · /g,' — ')); },550)};
+});
+document.addEventListener('pointermove',e=>{ if(gtipHold&&Math.hypot(e.clientX-gtipHold.x,e.clientY-gtipHold.y)>12){ clearTimeout(gtipHold.timer); gtipHold=null; } },{passive:true});
+for(const ev of ['pointerup','pointercancel']) document.addEventListener(ev,()=>{ if(gtipHold){ clearTimeout(gtipHold.timer); gtipHold=null; } });
+document.addEventListener('contextmenu',e=>{ if(performance.now()<gtipNoMenu) e.preventDefault(); },true);
+document.addEventListener('click',e=>{ if(!GTIP.block) return; GTIP.block=false; e.stopPropagation(); e.preventDefault(); },true);

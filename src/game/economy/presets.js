@@ -44,7 +44,8 @@ function prCard(i,e){
   const save=document.createElement('button'); save.className='pr-btn'; save.textContent=e?'Overwrite':'Save here';
   save.onclick=()=>{ netSend({t:'prsave',i,n:nm.value,of:+sel.value}); delete PRS.name[i]; UI_SFX.click(); };
   const clr=document.createElement('button'); clr.className='pr-btn pr-clr'; clr.textContent='✕'; clr.title='Clear preset '+(i+1); clr.setAttribute('aria-label',clr.title); clr.disabled=!e;
-  clr.onclick=()=>{ netSend({t:'prclear',i}); delete PRS.name[i]; UI_SFX.click(); };
+  clr.onclick=()=>{ if(clr.dataset.sure){ netSend({t:'prclear',i}); delete PRS.name[i]; UI_SFX.click(); return; }   // like abandoning a quest: the second tap clears, so a mis-tap cannot lose a saved preset
+    clr.dataset.sure='1'; clr.textContent='Tap again'; setTimeout(()=>{ if(clr.isConnected){ delete clr.dataset.sure; clr.textContent='✕'; } },2500); };
   ctl.append(wear,save,clr); card.append(ctl);
   return card;
 }

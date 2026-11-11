@@ -9,7 +9,7 @@ const BOSS={m:null,list:[],tele:new Map(),fx:[],shield:null,engaged:false,phase:
 const teleFill=new THREE.CircleGeometry(1,40).rotateX(-Math.PI/2), teleEdge=new THREE.RingGeometry(0.94,1,56).rotateX(-Math.PI/2);
 const teleLine=new THREE.PlaneGeometry(2,1).translate(0,0.5,0).rotateX(-Math.PI/2);   // a strip of half-width 1 running from the origin along -z: scale x = half-width, z = length; rotation.y = face
 const spikeGeo=merge([pc(new THREE.ConeGeometry(0.22,1.6,6).translate(0,0.8,0),(x,y,z,c)=>c.set(0x3a2a1e).lerp(_tint.set(0x7a4a8a),clamp(y/1.6)))]);
-const iceSpikeMat=new THREE.MeshBasicMaterial({color:0xcdf1ff,transparent:true,opacity:0.92}), dustMat=fxMat(0xd8c090,0.8), columnGeo=new THREE.CylinderGeometry(0.9,1.3,1,10,1,true).translate(0,0.5,0);
+const iceSpikeMat=new THREE.MeshBasicMaterial({color:0xcdf1ff,transparent:true,opacity:0.92}), columnGeo=new THREE.CylinderGeometry(0.9,1.3,1,10,1,true).translate(0,0.5,0);
 BOSS.shield=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),fxMat(0x7af0a0,0.2)); BOSS.shield.visible=false; scene.add(BOSS.shield);
 function applyBossState(b){
   if(!Array.isArray(b)) return;
@@ -139,21 +139,23 @@ function bossVisual(m,dt){
   m.g.position.y+=m.lift;
   const hid=mode===2;
   if(hid!==!!m.hid){ m.hid=hid; const c=monCenter(m); spawnBurst(c,m.def.el==='light'?0xfff0c0:0xd8c090,1.5*m.T.scale*0.5); if(SND.ready){ const s=spatial(m.x,m.z,10,80); if(s) noiseHit({bus:'ui',filter:'lowpass',ff:500,dur:0.5,vol:0.2*s.gain,pan:s.pan}); } }
-  if(hid){ m.g.visible=false; if(Math.random()<dt*14){ const e=new THREE.Mesh(emberGeo,dustMat); e.position.set(m.x+AR(-1,1),m.y+0.2,m.z+AR(-1,1)); scene.add(e); CB.fx.push({mesh:e,life:0.6,max:0.6,shrink:true}); } }
+  if(hid){ m.g.visible=false; if(Math.random()<dt*14){ fxpAdd(m.x+AR(-1,1),m.y+0.2,m.z+AR(-1,1),0,0.25,0,0xd8c090,0.18,0.6,{grow:0.05,a:0.8}); } }   // fx-pool: dust over where it burrowed
 }
+const bossBarEl=$('#bossbar'), bossHpEl=$('#bbHp'), bossPctEl=$('#bbPct'), bossNameEl=$('#bbName'), bossChipEl=$('#bbEl'), bossLvEl=$('#bbLv'), bossPhaseEl=$('#bbPhase');   // the bar is asked about every frame of a boss fight: cached, and written only on change
 function updateBossUI(){
-  const m=BOSS.m, bb=$('#bossbar');
-  if(!m||!BOSS.engaged||m.dead||!started){ bb.hidden=true; return false; }
-  const A=arenaOf(m); if(Math.hypot(P.x-A.x,P.z-A.z)>A.r+40){ bb.hidden=true; return false; }
+  const m=BOSS.m;
+  if(!m||!BOSS.engaged||m.dead||!started){ bossBarEl.hidden=true; return false; }
+  const A=arenaOf(m); if(Math.hypot(P.x-A.x,P.z-A.z)>A.r+40){ bossBarEl.hidden=true; return false; }
   const frac=m.hp/m.maxHp, pct=Math.max(1,Math.ceil(frac*100)); // never "0%" while it stands
-  bb.hidden=false; $('#bbHp').style.width=(frac*100)+'%';
-  const pt=pct+'%'; if($('#bbPct').textContent!==pt) $('#bbPct').textContent=pt;
-  if(BOSS.shown!==m){ BOSS.shown=m; $('#bbName').textContent=m.def.name; $('#bbEl').innerHTML=elOf(m.def)!=='basic'?elChip(elOf(m.def)):''; }   // the boss's element, so you know which skills hit it x1.5
-  const bbLv='Lv '+monTierK(m).lv+' boss'; if($('#bbLv').textContent!==bbLv) $('#bbLv').textContent=bbLv;
+  bossBarEl.hidden=false; const hpW=(frac*100)+'%'; if(bossHpEl.style.width!==hpW) bossHpEl.style.width=hpW;
+  const pt=pct+'%'; if(bossPctEl.textContent!==pt) bossPctEl.textContent=pt;
+  if(BOSS.shown!==m){ BOSS.shown=m; bossNameEl.textContent=m.def.name; bossChipEl.innerHTML=elOf(m.def)!=='basic'?elChip(elOf(m.def)):''; }   // the boss's element, so you know which skills hit it x1.5
+  const bbLv='Lv '+monTierK(m).lv+' boss'; if(bossLvEl.textContent!==bbLv) bossLvEl.textContent=bbLv;
   const bd=bossInfo(m)||{}, bar=bd.bar||{};
-  $('#bbPhase').textContent=BOSS.mode===3?'Shielded: break the '+(bd.totems||'totems')+' ('+BOSS.aux+' left)':BOSS.stunned?(bar.stun||'Stunned!'):bar[BOSS.mode]||(BOSS.enraged?'Enraged':'');
-  if(bd.partText&&!BOSS.stunned&&BOSS.mode!==1) $('#bbPhase').textContent=(bd.partText[BOSS.phase-1]||'').replace('{n}',BOSS.aux);   // volcano: the part the fight is in
-  if(bd.auxText&&!BOSS.mode&&!BOSS.stunned) $('#bbPhase').textContent=bd.auxText.replace('{n}',BOSS.aux);   // a number the kit keeps in aux (the golem's shell, Dredge's bilge)
-  const dgBar=dgBossBarText(bd,bar); if(dgBar) $('#bbPhase').textContent=dgBar;   // dungeons: what a dungeon boss's number means (its dish, its puffballs, its lamps)
+  let ph=BOSS.mode===3?'Shielded: break the '+(bd.totems||'totems')+' ('+BOSS.aux+' left)':BOSS.stunned?(bar.stun||'Stunned!'):bar[BOSS.mode]||(BOSS.enraged?'Enraged':'');
+  if(bd.partText&&!BOSS.stunned&&BOSS.mode!==1) ph=(bd.partText[BOSS.phase-1]||'').replace('{n}',BOSS.aux);   // volcano: the part the fight is in
+  if(bd.auxText&&!BOSS.mode&&!BOSS.stunned) ph=bd.auxText.replace('{n}',BOSS.aux);   // a number the kit keeps in aux (the golem's shell, Dredge's bilge)
+  const dgBar=dgBossBarText(bd,bar); if(dgBar) ph=dgBar;   // dungeons: what a dungeon boss's number means (its dish, its puffballs, its lamps)
+  if(bossPhaseEl.textContent!==ph) bossPhaseEl.textContent=ph;
   return true;
 }

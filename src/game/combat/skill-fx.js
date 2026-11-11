@@ -30,6 +30,7 @@ function onAreaEnd(id){
   const A=AREA_FX.get(id); if(!A) return; AREA_FX.delete(id);
   if(A.look) ssLookAreaEnd(A);   // skillsets
   for(const o of [A.fill,A.edge,A.meteor,...A.objs]) if(o){ scene.remove(o); if(o.material&&o.material!==matChar&&o.material.dispose) o.material.dispose(); }
+  if(A.fmat) A.fmat.dispose();   // the shared flake material (its meshes above already disposed it: this is for when they all fell out on their own)
   if(A.once){   // a zone that hits once, at the end (Demon Gate)
     const c=new THREE.Vector3(A.x,A.y+0.5,A.z);
     spawnBurst(c,A.col,2.2); spawnBurst(c,0xffffff,1); spawnRingAt(A.x,A.y,A.z,A.r+1.5,A.col); spawnRingAt(A.x,A.y+0.4,A.z,A.r,0xffffff);
@@ -104,9 +105,9 @@ function updateZoneFx(A,dt,k){   // a generic zone: motes of its element rising 
   if(Math.random()<dt*14*FXP_K&&A.t<A.dur-0.2){ const a=AR(0,TAU), r=Math.sqrt(Math.random())*A.r; fxpRise(A.x+Math.sin(a)*r,A.y+0.1,A.z+Math.cos(a)*r,A.col,0.2,AR(0.8,1.4)); }   // fx-pool: glowing motes
   A.spawn-=dt;
   while(A.spawn<=0&&A.t<A.dur-0.2){ A.spawn+=A.once?0.03:0.02; const a=AR(0,TAU), r=Math.sqrt(Math.random())*A.r, ax=A.x+Math.sin(a)*r, az=A.z+Math.cos(a)*r;
-    const m=new THREE.Mesh(snowGeo,fxMat(A.col,0.9)); m.position.set(ax,getH(ax,az)+0.1,az); m.scale.setScalar(A.once?1.6:2.2); m.userData.v=AR(2,5); m.userData.life=AR(0.5,0.9); scene.add(m); A.objs.push(m); }
+    const m=new THREE.Mesh(snowGeo,A.fmat||(A.fmat=fxMat(A.col,0.9))); m.position.set(ax,getH(ax,az)+0.1,az); m.scale.setScalar(A.once?1.6:2.2); m.userData.v=AR(2,5); m.userData.life=AR(0.5,0.9); scene.add(m); A.objs.push(m); }   // one material for the zone's flakes, not one per flake
   for(let i=A.objs.length-1;i>=0;i--){ const m=A.objs[i]; m.userData.life-=dt; m.position.y+=m.userData.v*dt; m.rotation.y+=dt*5; m.scale.multiplyScalar(1-dt*1.5);
-    if(m.userData.life<=0){ scene.remove(m); m.material.dispose(); A.objs.splice(i,1); } }
+    if(m.userData.life<=0){ scene.remove(m); A.objs.splice(i,1); } }
   if(SND.ready&&Math.random()<dt*5){ const s=spatial(A.x,A.z,10,60); if(s) noiseHit({bus:'ui',filter:'bandpass',ff:800,dur:0.3,vol:0.05*s.gain,pan:s.pan}); }
 }
 function updateSkillFx(dt){
@@ -126,13 +127,13 @@ function updateSkillFx(dt){
       if(Math.random()<dt*20*FXP_K){ const a=AR(0,TAU), r=Math.sqrt(Math.random())*A.r; fxpRise(A.x+Math.sin(a)*r,A.y+AR(0.3,3),A.z+Math.cos(a)*r,0xcfeaff,0.16,AR(0.6,1.1)); }   // fx-pool: ice glints
       A.spawn-=dt; const wvOn=skgWaveGate(A); if(!wvOn) A.spawn=Math.max(A.spawn,0);   // skillvis: ten waves of ice
       if(wvOn) while(A.spawn<=0&&A.t<A.dur-0.3){ A.spawn+=0.007; const a=AR(0,TAU), r=Math.sqrt(Math.random())*A.r, ax=A.x+Math.sin(a)*r, az=A.z+Math.cos(a)*r;
-        const m=new THREE.Mesh(snowGeo,fxMat(0xeef8ff,0.9)); m.position.set(ax,getH(ax,az)+AR(6,10),az); m.userData.g=getH(ax,az)+0.1; m.userData.v=AR(7,11); scene.add(m); A.objs.push(m); }
-      for(let i=A.objs.length-1;i>=0;i--){ const m=A.objs[i]; m.position.y-=m.userData.v*dt; m.position.x+=dt*2.5; m.rotation.x+=dt*4; if(m.position.y<=m.userData.g){ scene.remove(m); m.material.dispose(); A.objs.splice(i,1); } }
+        const m=new THREE.Mesh(snowGeo,A.fmat||(A.fmat=fxMat(0xeef8ff,0.9))); m.position.set(ax,getH(ax,az)+AR(6,10),az); m.userData.g=getH(ax,az)+0.1; m.userData.v=AR(7,11); scene.add(m); A.objs.push(m); }   // one material for the blizzard's flakes
+      for(let i=A.objs.length-1;i>=0;i--){ const m=A.objs[i]; m.position.y-=m.userData.v*dt; m.position.x+=dt*2.5; m.rotation.x+=dt*4; if(m.position.y<=m.userData.g){ scene.remove(m); A.objs.splice(i,1); } }
       if(SND.ready&&Math.random()<dt*6){ const s=spatial(A.x,A.z,12,70); if(s) noiseHit({bus:'ui',filter:'bandpass',ff:900,dur:0.5,vol:0.05*s.gain,pan:s.pan}); }
       continue;
     }
     if(A.kind==='meteor'){ A.fill.scale.setScalar(Math.max(0.01,k*A.r)); const h=26*(1-k*k); A.meteor.position.set(A.x-6*(1-k*k),A.y+h,A.z-6*(1-k*k)); A.meteor.rotation.x+=dt*3;
-      A.spawn-=dt; if(A.spawn<=0){ A.spawn=0.03; const e=new THREE.Mesh(emberGeo,emberMat); e.position.copy(A.meteor.position); e.scale.setScalar(3); scene.add(e); CB.fx.push({mesh:e,life:0.5,max:0.5,shrink:true}); const q=A.meteor.position; fxpTrail(q.x,q.y,q.z,0xff7a2a,1.6,0.5); fxpAdd(q.x,q.y,q.z,AR(-1.5,1.5),AR(0,2),AR(-1.5,1.5),0xffc060,0.3,0.6,{g:4,drag:1,white:0.4,grow:0.1}); } }
+      A.spawn-=dt; if(A.spawn<=0){ A.spawn=0.03; const q=A.meteor.position; fxpTrail(q.x,q.y,q.z,0xff7a2a,1.6,0.5); fxpAdd(q.x,q.y,q.z,AR(-1.5,1.5),AR(0,2),AR(-1.5,1.5),0xffc060,0.3,0.6,{g:4,drag:1,white:0.4,grow:0.1}); fxpFlare(q.x,q.y,q.z,0xffc060,1.1,0.28); } }   // fx-pool: the falling rock's tail and head-glow (the mesh embers it used to push are gone)
     else { // arrow rain: arrows keep falling inside the circle
       A.spawn-=dt; const wvOn=skgWaveGate(A); if(!wvOn) A.spawn=Math.max(A.spawn,0);   // skillvis: 5 waves of arrows (rain), 8 (hail)
       if(wvOn) while(A.spawn<=0 && A.t<A.dur-0.3){ A.spawn+=A.kind==='hail'?0.01:0.025; const a=AR(0,TAU), r=Math.sqrt(Math.random())*A.r, ax=A.x+Math.sin(a)*r, az=A.z+Math.cos(a)*r;

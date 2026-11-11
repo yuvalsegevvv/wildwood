@@ -34,7 +34,10 @@ body.playing .hud-top{ opacity:1; }
   opacity:0; transition:opacity 1s; pointer-events:none;
 }
 #hint.show{ opacity:1; }
-body.touch #hint{ bottom:calc(env(safe-area-inset-bottom,0px) + 118px); }
+body.touch #hint{ bottom:calc(env(safe-area-inset-bottom,0px) + 96px); left:calc(12px + env(safe-area-inset-left,0px)); transform:none; text-align:left; max-width:calc(100vw - 262px - env(safe-area-inset-right,0px)); }   /* a phone: anchored left, clear of the action column, the belt and the round buttons (the centred pill ran behind the skill slots) */
+@media (orientation:landscape) and (max-height:500px){
+  body.touch #hint{ bottom:calc(env(safe-area-inset-bottom,0px) + 110px); left:calc(12px + env(safe-area-inset-left,0px)); transform:none; text-align:left; max-width:40vw; }   /* left-anchored above the action row: centred, it ran into the belt row and the quest log */
+}
 
 /* AI disclosure, bottom left: always there, over the start card too; on a phone it stops short of the round buttons on the right */
 #aiNote{

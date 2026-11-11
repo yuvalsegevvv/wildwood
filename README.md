@@ -5,7 +5,7 @@ three lakes, a village with villagers and shops, 19 monster zones with 555 monst
 to 25 of each level-15 kind, and level 16-20 crabs, tide slimes, scarabs, ram-horned boars and crag wardens on the forest's edges), dirt roads, a river bridge and plank causeways over the drowned roads, a main quest line (a sick sibling, three acts: Wildwood, the Sakura Vale and the snowbound Hoarfrost Reach with its village Rimehold, where rain falls as snow and the Wayfarers' Lodge teaches mining, woodcutting and gathering), teleport circles that let you choose among the three villages, three classes, equipment in 5 rarities with a drag-and-drop inventory and a merge forge, quests, a boss, a minimap
 and world map (N), a soundtrack of AI-generated songs (one per area and boss), and synthesised sound effects.
 
-**Developing with an AI agent?** Start with [CLAUDE.md](CLAUDE.md) (guide) and [docs/FILES.md](docs/FILES.md) (file map);
+**Developing with an AI agent?** Start with [CLAUDE.md](CLAUDE.md) (guide) and [docs/FILES.md](docs/FILES.md) (file map — grep it for a word, never read it whole);
 headless tests and a model preview are in [tools/](tools/README.md).
 
 ## Three ways to play

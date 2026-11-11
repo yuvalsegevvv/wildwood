@@ -15,7 +15,7 @@ function guidePages(){
         <dt>${kl(k('skill'))} / right-click</dt><dd>Skill (from level ${SKILL_SLOT_LV}). ${kl(k('burst'))} is the Power skill (from level ${BURST_SLOT_LV}).</dd>
         <dt>${kl(k('pot1'))} ${kl(k('pot2'))} ${kl(k('pot3'))} ${kl(k('pot4'))} ${kl(k('pot5'))} ${kl(k('pot6'))}</dt><dd>Healing, might and guard potions, then the heal-over-time, exp and loot potions.</dd>
         <dt>${kl(k('talk'))}</dt><dd>Talk to villagers, open shops, the quest board and teleport circles. ${kl(k('gather'))} mines, chops or picks what you stand beside.</dd>
-        <dt>${kl(k('inv'))} ${kl(k('skills'))} ${kl(k('map'))} ${kl(k('world'))}</dt><dd>Equipment, skills, the land's map, the world map.</dd>
+        <dt>${kl(k('inv'))} ${kl(k('skills'))} ${kl(k('map'))} ${kl(k('world'))}</dt><dd>Gear and bag, skills, the land's map, the world map.</dd>
         <dt>${kl(k('party'))} ${kl(k('chat'))}</dt><dd>Party and chat. Hold ${kl('Alt')} to free the mouse for menus.</dd>
       </dl>
       <p>The quest board offers four notices at a time (hunts and bounties). ${kl(k('quests'))} (or a click on the quest list) opens your quests: the main quest's step with a picture of each monster it asks for, the board's notices and the ones you carry. A zone's name and level show in the top left: turn back if it is far above yours. If you are knocked out you wake in the village and lose nothing but time.</p>`},
@@ -56,15 +56,15 @@ function guidePages(){
       <h4>The outfit</h4>
       <p>Each set has a matching outfit in the character editor's <b>Signature</b> tab. An outfit is <b>locked until you own at least one piece of that set</b>. It is only a look: it changes no stat.</p>`},
     allsets:{t:'All sets',h:guideAllSets()},
-    equipment:{t:'Equipment',h:`
+    equipment:{t:'Gear',h:`
       <h4>What you can wear</h4>
       <ul>
         <li><b>Armour:</b> helmet, top, bottom and shoes raise your health and defence.</li>
-        <li><b>Weapons:</b> you carry a sword, a bow and a wand; only the one for the character you play counts (the other two are shown greyed in the inventory). Equipping a weapon stores it in its class's slot.</li>
+        <li><b>Weapons:</b> you carry a sword, a bow and a wand; only the one for the character you play counts (the other two are shown greyed in your bag). Equipping a weapon stores it in its class's slot.</li>
         <li><b>Ring and pendant:</b> from dungeons (level 30 and 40). A ring adds flat attack; a pendant gives one bonus such as XP, drops, coins or crits.</li>
         <li><b>Tools:</b> pickaxe, axe and sickle for the three professions.</li>
       </ul>
-      <p>Open your equipment with ${kl(k('inv'))} (materials and keys are in the Inventory, ${kl(k('mats'))}), click an item to wear it. Gear has a level; wear what is near your own.</p>
+      <p>Open your gear with ${kl(k('inv'))} — the doll and your bag in one panel (materials are separate, in Materials, ${kl(k('mats'))}). Click an item to wear it. Gear has a level; wear what is near your own.</p>
       <h4>How to get it</h4>
       <ul>
         <li><b>Shops:</b> the village smith, armourer and general store sell gear for your level. Prices rise 20% per copy until sunrise.</li>

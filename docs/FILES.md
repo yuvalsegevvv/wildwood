@@ -593,7 +593,7 @@ game
   ui/element-icons.js                Element helpers for the interface: the icon of each element (elSvg) and the coloured name chip (elChip) used by the skills panel, the presets and the item details
   economy/skills.js                  Skills panel: a tab for each attack slot (1 basic, 2 skill, 3 burst) and the passives, drag skills onto the active slots, learn from the trainers; levels are bought in the Awakening tree (the Awaken button)
   economy/presets.js                 Presets panel (the HUD's layers button): ten cards, each a saved setup of skills and equipment with an optional linked outfit slot; wear, save, rename, clear
-  economy/skill-track.js             Tracking a skill upgrade: mark one skill and the maps show the camps of the monsters whose drops its next level still needs
+  economy/skill-track.js             Tracking a skill upgrade: mark one skill and the maps show the camps of the monsters whose drops its next level still needs, and the quest log carries its price lines
   economy/skillsets.js               Skill sets on the client: the toast when a piece is earned (the pieces themselves live in the skills panel's grids, economy/skills.js) and the ally buffs that change what you do (haste)
   skillsets/looks.js                 Skill-set looks on the client: every signature skill is drawn in the colours and motifs of its outfit (particles, ground patterns, projectiles, auras), through hooks in skill-fx.js, attacks.js and net/client.js
   skillsets/look-tansy.js            Tansy's skill look (The Harvest): chaff and wheat ears fall and swirl, a wheat-ear ring is laid on the ground, a twine tie closes every field she gathers
@@ -628,6 +628,7 @@ game
   economy/professions.js             Professions on the client: the Wayfarers' Lodge panel (learn mining, woodcutting and gathering, buy tools, sell resources), the resource nodes of every land (drawn, taken and back), gathering with the gather key (G) or the talk key and its cast bar
   economy/cosmetics.js               The Cosmetics section of the Wayfarers' Lodge panel (version 3.2): every crafted hat, top, bottom, shoes, gloves, cape and aura with its recipe (resources and monsters' drops), and a Make button; cosRecipeText; the tools' small stat bonus line; the Go home / Leave home button
   economy/crafting.js                Crafting and brewing on the client: the Craft tab of the weaponsmiths' and armourers' shops (gear from ore and logs), and the brewing panel of the healers (potions from herbs)
+  economy/mat-find.js                The Materials panel's search box: type any material's name (or what you want to do — "rift", "Glasswell", "pickaxe") and it lists what it is and exactly where it comes from, with a Track button
   ui/potions.js                      Potions on the client: the potion belt above the action bar (healing, might, guard, mossblood, scholar and fortune, with counts, keys, cooldowns and the running buff), drinking with the keys, and the potion icons
   ui/travel.js                       The travel window: stepping on a teleport circle and pressing the talk key, or the map's Travel button from anywhere, lists every village (CIRCLES in shared/hoarfrost.js); the ones you have not walked to yet are locked
   ui/guide.js                        The Guide: a short in-game wiki (controls, combat, skills, upgrades, dungeons, the Proving Isle) opened by the book button or its key; text only, keys read from the current binds
@@ -736,6 +737,7 @@ game
   ui/account.js                      Accounts on the online server: session token, the server's auth answers, register / log out / guest code in settings
   ui/guest-gate.js                   The "Register to continue" popup a guest sees at the online server's limits (level 20, the first three lands, zone tiers)
   ui/chat.js                         Chat between players: the chat log, the input (Enter / chat button), speech bubbles, /name, joins and leaves
+  ui/rotate.js                       The portrait nudge: while a touch device plays upright, one dismissible card suggests the wide way (the game stays playable in portrait)
   ui/start-screen.js                 Start card: loading state, Log in / Register / Play as guest (Solo / Shared without a server), connecting, beginPlay
   main/loop.js                       Main loop (frame) and boot; the start card and loading progress are in ui/start-screen.js
 ```

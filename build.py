@@ -3,7 +3,8 @@
 
     python3 build.py            build
     python3 build.py --check    build, then syntax-check every script with node (if installed), look for duplicate top-level names and check the
-                                layout rules: a header on every file, every source file in the manifest, docs/FILES.md up to date
+                                layout rules: a header on every file, every source file in the manifest, docs/FILES.md up to date, and the
+                                generated docs (docs/MOBS.md, docs/EQUIPMENT.md) up to date
     python3 build.py --inline-audio   also embed the music in the page (one ~14 MB file that works offline / from file://)
     python3 build.py --min      release build: the game and server scripts without whitespace and comments (tools/minify.js, names kept; about -21% of the page). Used for the deploy and for publishing the artifact
     python3 build.py --no-bake  leave the server's height grid out of dist/wildwood-server.js and the page (the server works it out at start; see height_bake)
@@ -114,7 +115,10 @@ def audio_block(inline):
     changed track gets a new URL and an unchanged one can be cached forever. inline=True embeds everything."""
     if os.path.isdir(AUDIO_OUT):   # drop files of earlier builds (old hashes); the folder stays, OneDrive may hold it open
         for old in os.listdir(AUDIO_OUT):
-            os.unlink(os.path.join(AUDIO_OUT, old))
+            try:
+                os.unlink(os.path.join(AUDIO_OUT, old))
+            except OSError:   # OneDrive can move the file away between the listing and the unlink while it syncs a rename
+                pass
     files = sorted(f for f in os.listdir(AUDIO) if f.lower().endswith(AUDIO_TYPES)) if os.path.isdir(AUDIO) else []
     embedded, urls, music_bytes = {}, {}, 0
     for f in files:
@@ -320,6 +324,13 @@ def check(page):
     if problems:
         sys.exit('layout rules broken (CLAUDE.md section 5):\n  ' + '\n  '.join(problems))
     print('layout ok (headers, manifest, docs/FILES.md, test registry, doc pointers)')
+    # docs/MOBS.md and docs/EQUIPMENT.md are written from the live code (tools/gen-docs.js): a stale copy quietly
+    # sends an agent to numbers that no longer exist, so --check fails until they are regenerated. Line-number-only
+    # drift passes (quoting a file that shifted lines is harmless); --strict is what fails on that.
+    r = subprocess.run(['node', os.path.join(ROOT, 'tools', 'gen-docs.js'), '--check'], capture_output=True, text=True, cwd=ROOT)
+    if r.returncode:
+        sys.exit('the generated docs are out of date (run  node tools/gen-docs.js):\n' + (r.stdout or r.stderr).strip())
+    print('generated docs ok (docs/MOBS.md, docs/EQUIPMENT.md)')
 
 
 FILES_MD = os.path.join(ROOT, 'docs', 'FILES.md')

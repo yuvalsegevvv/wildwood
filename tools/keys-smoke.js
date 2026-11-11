@@ -17,9 +17,9 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
   ok('defaults (11/2026): M opens the map, N mutes, the version 3 potions on 7 8 9, O the friends',G.kbIs('KeyM','map')&&G.kbIs('KeyN','mute')&&G.kbIs('Digit7','pot4')&&G.kbIs('Digit8','pot5')&&G.kbIs('Digit9','pot6')&&G.kbIs('KeyO','friends')&&G.kbIs('Comma','friends'));
   ok('labels: letters, arrows, shift, numpad',G.kbName('inv')==='I'&&G.kbLabel('ArrowUp')==='↑'&&G.kbLabel('ShiftLeft')==='L Shift'&&G.kbLabel('Numpad5')==='Num 5'&&G.kbLabel('Digit3')==='3');
   // rebinding, swapping, clearing
-  ok('rebind: Equipment to U',G.kbSet('inv',0,'KeyU')===''&&G.kbIs('KeyU','inv')&&!G.kbIs('KeyI','inv'));
+  ok('rebind: Gear & bag to U',G.kbSet('inv',0,'KeyU')===''&&G.kbIs('KeyU','inv')&&!G.kbIs('KeyI','inv'));
   const note=G.kbSet('map',0,'KeyU');
-  ok('binding a used key swaps: Map takes U, Equipment takes M',G.kbIs('KeyU','map')&&G.kbIs('KeyM','inv')&&/Equipment now uses M/.test(note),note);
+  ok('binding a used key swaps: Map takes U, Gear & bag takes M',G.kbIs('KeyU','map')&&G.kbIs('KeyM','inv')&&/Gear & bag now uses M/.test(note),note);
   ok('still no key used twice',unique(G));
   ok('clearing the last key says so',/Mute sound has no key now/.test(G.kbSet('mute',0,''))&&G.kbName('mute')==='');
   G.kbSet('mute',0,'KeyN');
@@ -35,7 +35,7 @@ const unique=G=>{ const all=Object.values(G.KB.map).flat().filter(Boolean); retu
     G.kbSet('map',0,'KeyB'); document.querySelectorAll=qs; }
   // the start card's legend is redrawn from the keys
   G.kbChanged(); { const t=G.keysEl._kids.slice(-36).map(x=>x.textContent);
-    ok('the legend lists the current keys, Gather and Hold Alt',t.length===36&&t.includes('Hold Alt')&&t[t.indexOf('Gather: mine, chop or pick what you stand beside')-1]==='H'&&t[t.indexOf('Map of the land you are in')-1]==='B'&&t[t.indexOf('World map of Eldmere')-1]==='G'&&t[t.indexOf('Inventory (drag items onto your body)')-1]==='M',t.join('|')); }
+    ok('the legend lists the current keys, Gather and Hold Alt',t.length===36&&t.includes('Hold Alt')&&t[t.indexOf('Gather: mine, chop or pick what you stand beside')-1]==='H'&&t[t.indexOf('Map of the land you are in')-1]==='B'&&t[t.indexOf('World map of Eldmere')-1]==='G'&&t[t.indexOf('Gear & bag (drag items onto your body)')-1]==='M',t.join('|')); }
   // a key event reaches the right handler
   G.setStarted(true); G=c.G();
   { const v0=G.thirdPerson(); key('KeyV'); ok('V toggles the camera view',c.G().thirdPerson()!==v0); G.kbSet('view',0,'KeyX'); key('KeyV'); ok('after rebinding, V does nothing',c.G().thirdPerson()!==v0);

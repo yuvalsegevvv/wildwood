@@ -20,7 +20,7 @@ Output is one line per test (`PASS name  N checks  secs`, or `FAIL` with its FAI
 Adding a test: write `tools/<name>-smoke.js` (print `PASS ...` / `FAIL ...`, exit 1 on a failure), add its row to `tools/tests.json` (`covers` = regular expressions on the paths whose change should run it; `args` = command-line arguments; `file` = the script to run when it is not `<id>.js`, so one script can have several rows, as `server-fuzz` and `server-fuzz-prod` do). Other single-purpose commands:
 
 ```
-python3 build.py --check       # syntax of every bundle, duplicate top-level names, the layout rules, the registry
+python3 build.py --check       # syntax of every bundle, duplicate top-level names, the layout rules, the registry, the generated docs
 npm run lint                   # tools/lint-bundles.js: ESLint over each bundle as it runs (ONE scope: client = shared + game, server = shared + server)
 npm run fuzz [-- --nodev --seed N --rounds N]   # tools/server-fuzz.js
 npm run bench [-- --players 40 --secs 60]       # tools/server-bench.js

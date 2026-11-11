@@ -31,14 +31,13 @@ function gmTop(X,D){
       out.push(solid(ofLoft((sg(100)>=50?[[0.01,0.0012],[0.0055,0.0052],[-0.0005,0.0058],[-0.0065,0.0045],[-0.012,0.0015]]:[[0.01,0.0012],[-0.0005,0.0058],[-0.012,0.0015]]).map(q=>({y:(yc+q[0])*TK,rx:rx+q[1]+Math.max(0,-q[0])*0.5,rz:rz+q[1]+Math.max(0,-q[0])*0.5,zc})),sg(24),0,TAU),dk)); }   // the ribbed collar: a rolled band that lies on the neck (a round ring floated off an oval, leaning neck)
     out.push(gmBand(X,D,hemY+0.012,hemY-0.006,(x,y,z,c)=>gmCol(c,L.topColor,0.82),0.004));   // the hem
   } else if(top==='flannel'){
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*nr*0.9,0.585*TK,-nr*1.25],[sd*nr*2.0,0.575*TK,-nr*1.1],[sd*nr*2.5,0.545*TK,fz(0.545)-0.01]],0.034,{up:[0,1,-0.4],seg:sg(8),th:0.004}),lt));   // the collar's two points
     out.push(pc(new THREE.BoxGeometry(0.014,0.5*TK,0.004).translate(0,0.285*TK,fz(0.285)),c=>gmCol(c,L.topColor,0.62)));   // the placket
     for(const yd of [0.5,0.4,0.3,0.2,0.1]) out.push(button(yd,0xe8e4dc));
     out.push(pc(new THREE.BoxGeometry(0.052,0.052,0.004).translate(torsoSize(X,D,0.36).rx*0.45,0.36*TK,fz(0.36)),c=>gmCol(c,L.topColor,0.78)),solid(new THREE.BoxGeometry(0.052,0.006,0.005).translate(torsoSize(X,D,0.36).rx*0.45,0.382*TK,fz(0.36)-0.001),dk));   // a chest pocket
   } else if(top==='jacket'){
-    for(const sd of [-1,1]){ const x=sd*torsoSize(X,D,0.14).rx*0.5;
-      out.push(pc(new THREE.BoxGeometry(0.06,0.032,0.005).translate(x,0.15*TK,fz(0.15)),c=>gmCol(c,L.topColor,0.74)));   // flapped pockets
-      out.push(solid(new THREE.BoxGeometry(0.06,0.004,0.006).translate(x,0.134*TK,fz(0.15)-0.001),0x2a2a2a));
+    for(const sd of [-1,1]){ const x=sd*torsoSize(X,D,0.14).rx*0.5, t15=torsoSize(X,D,0.15), pz=-(t15.rz+0.004)*Math.sqrt(Math.max(0.25,1-(x/t15.rx)*(x/t15.rx)));   // the pocket's own depth at half-radius: a flat box at the front's apex floated its outer corners off the lathe
+      out.push(pc(new THREE.BoxGeometry(0.06,0.032,0.005).translate(x,0.15*TK,pz),c=>gmCol(c,L.topColor,0.74)));   // flapped pockets
+      out.push(solid(new THREE.BoxGeometry(0.06,0.004,0.006).translate(x,0.134*TK,pz-0.001),0x2a2a2a));
       out.push(solid(ofRibbon([[sd*nr*0.9,0.58*TK,-nr*1.4],[sd*nr*2.3,0.56*TK,-nr*1.3],[sd*nr*2.9,0.52*TK,fz(0.52)-0.01]],0.04,{up:[0,1,-0.5],seg:sg(8),th:0.004}),dk)); }   // the high collar's lapels
     out.push(gmBand(X,D,hemY+0.03,hemY,(x,y,z,c)=>gmCol(c,L.topColor,0.62),0.005));   // the ribbed hem
   } else if(top==='hoodie'){

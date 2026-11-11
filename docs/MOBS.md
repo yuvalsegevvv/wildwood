@@ -5,7 +5,7 @@ Every monster kind in the game, with the numbers the server uses and the place i
 
 Generated from the live code by `node tools/gen-docs.js` (`--check` tells you when this file is out of date). Line numbers are those of the code when it was generated.
 
-148 monster kinds in 82 zones, 17 bosses, 22 boss helpers (summons and props) and 4 grey-veined quest monsters: 340 definitions, plus 8 dungeon bosses with their helpers (section 11). 3842 monsters exist in the world at start (148 kinds in their camps + 17 bosses).
+148 monster kinds in 82 zones, 17 bosses, 22 boss helpers (summons and props) and 4 grey-veined quest monsters: 341 definitions, plus 8 dungeon bosses with their helpers (section 11). 3842 monsters exist in the world at start (148 kinds in their camps + 17 bosses).
 
 ## 1. Where it is defined
 
@@ -415,7 +415,7 @@ A def's `model` picks a family model (`MODELS.<model>={geo,build,anim}`) and its
 
 | Model | Kinds using it | Family defaults (hpK / dmgPct / atk s / speed / rad / height / aggro / camp) | Family row | Client model |
 |---|---|---|---|---|
-| `slime` | 27 | 0.85 / 0.06 / 1.6 / 2.2 / 0.45 / 0.8 / 10 / 6 | src/shared/monster-defs.js:3 | src/game/combat/monster-blobs.js:5 |
+| `slime` | 28 | 0.85 / 0.06 / 1.6 / 2.2 / 0.45 / 0.8 / 10 / 6 | src/shared/monster-defs.js:3 | src/game/combat/monster-blobs.js:5 |
 | `shroom` | 8 | 0.95 / 0.07 / 1.7 / 1.8 / 0.4 / 1.1 / 10 / 5 | src/shared/monster-defs.js:4 | src/game/combat/monster-blobs.js:50 |
 | `beetle` | 42 | 1.15 / 0.08 / 1.4 / 2.6 / 0.6 / 0.8 / 11 / 5 | src/shared/monster-defs.js:5 | src/game/combat/monster-bugs.js:105 |
 | `boar` | 20 | 1 / 0.11 / 2 / 3.4 / 0.6 / 1 / 13 / 4 | src/shared/monster-defs.js:6 | src/game/combat/monster-beasts.js:5 |

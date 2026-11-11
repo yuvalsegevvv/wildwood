@@ -35,7 +35,7 @@ function buildHair(X,F){
   const crown=(r,tl,tilt,amp)=>add(fit(cap(r*hv,tl,tilt,amp)));
   // the fringe: ribbons from the crown down over the forehead, each a different length and ending in a point, swept to one side; the slider sets how far they hang
   const fringe=(n,spread,sweep)=>{ if(bg<0.05) return; const rng=mulberry32(77+n);
-    for(let i=0;i<n;i++){ const f=i/(n-1)*2-1, af=Math.abs(f), yb=0.074-0.03*bg-0.016*bg*(i%2)-0.012*rng()*bg, ph1=Math.acos(clamp(yb/R,-0.9,0.9)), w=0.0155-0.0035*af+0.003*rng();
+    for(let i=0;i<n;i++){ const f=i/(n-1)*2-1, af=Math.abs(f), yb=0.074-0.03*bg-0.016*bg*(i%2)-0.02*rng()*bg, ph1=Math.acos(clamp(yb/R,-0.9,0.9)), w=0.0155-0.0035*af+0.003*rng();   // (a wider length spread: the even alternate rhythm read as a saw-tooth band)
       add(scalpLock(f*spread,0.15*Math.PI,ph1,[0.009,w,w*1.1,w*0.6,0.0015],{sw:sweep*(0.7+0.6*(1-af))+f*0.2,tip:0.11*bg,lift:0.002+0.006*(1-af),k:0.42})); }
     // between them a finer, shorter lock each, so the fringe breaks into strands and the scalp does not show between the broad ones
     if(sg(100)>=50) for(let i=0;i<n-1;i++){ const f=(i+0.5)/(n-1)*2-1, af=Math.abs(f), yb=0.082-0.026*bg-0.012*rng()*bg, ph1=Math.acos(clamp(yb/R,-0.9,0.9)), w=0.0068+0.002*rng();
@@ -86,7 +86,7 @@ function buildHair(X,F){
     const cg=loftRings(rings,sg(32)), cp=cg.attributes.position; for(let i=0;i<cp.count;i++){ const x=cp.getX(i), z=cp.getZ(i); if(z>0.04) cp.setZ(i,z+0.0035*Math.sin(x*150)); if(H==='waves') cp.setX(i,x+0.012*Math.sin(cp.getY(i)*62)*Math.min(1,Math.abs(cp.getY(i)-0.04)*9)); } smoothN(cg); add(swing(cg));
     for(let i=0;i<5;i++){ const f=i/4*2-1, y0=0.04-len*0.9, P=[[f*0.05,y0,0.105],[f*0.058,y0-0.05*hl,0.1],[f*0.06+0.012*Math.sin(i*2),y0-0.1*hl-0.02*i%2,0.092]]; add(swing(sweepTube(P,[0.02,0.017,0.002],sg(7),{cap:'point',rings:sg(8)}))); }
     for(const sd of [-1,1]){ const P=[[sd*0.1,0.0,-0.01],[sd*0.114,-0.1*hl,-0.02],[sd*0.124,-0.22*hl,-0.025],[sd*0.12,-0.34*hl,-0.02]]; add(swing(sweepTube(P,[0.02,0.026,0.022,0.003],sg(8),{cap:'point',rings:sg(14)}))); } }
-  if(H==='ponytail'){ fringe(8,1.0,0.12); sideLocks(0.05); tie(0,0.072,0.092,0.02);
+  if(H==='ponytail'){ fringe(8,1.0,0.12); sideLocks(0.05); tie(0,0.07,0.088,0.02);
     const P=[[0,0.078,0.09],[0,0.05,0.16],[0,-0.03,0.2],[0,-0.14*hl,0.185],[0.012,-0.26*hl,0.15]];
     add(swing(sweepTube(P,[0.026,0.036,0.04,0.03,0.003],sg(10),{cap:'point',rings:sg(18)}))); wisps(P,0.03,3,0.012);
     for(const sd of [-1,1]) add(swing(sweepTube([[sd*0.012,0.075,0.092],[sd*0.03,0.04,0.17],[sd*0.042,-0.04,0.2],[sd*0.04,-0.15*hl,0.18],[sd*0.03,-0.24*hl,0.15]],[0.012,0.02,0.022,0.016,0.002],sg(8),{cap:'point',rings:sg(14)}))); }

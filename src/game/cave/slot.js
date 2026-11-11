@@ -21,7 +21,7 @@ function caveFillTile(){
   el.querySelector('svg').innerHTML=(a&&(ssGlyph(a)||ICONS[a.name]))||ICONS[locked?'lock':owned?'burst':'plus']||ICONS.burst;
   el.classList.toggle('has-set',!!(a&&ssTint(a))); el.style.setProperty('--set',a&&ssTint(a)||'transparent');
   el.querySelector('.nm').textContent=a?a.name:locked?'Lv '+CAVE_SLOT_LV:owned?'Charge':'Skill tree';
-  el.classList.toggle('empty',!a);
+  el.classList.toggle('empty',!a); el.classList.toggle('locked',locked);   // touch: a level-locked slot is a ghost chip (09-combat-hud.css)
   const ae=a?elOf(a):'basic'; el.classList.toggle('has-el',ae!=='basic'); el.style.setProperty('--el',ELEMS[ae].col);
   el.style.setProperty('--cost',a?a.cost+'%':'100%');
   el.setAttribute('aria-label',a?a.name+' (charge skill, costs '+a.cost+' charge, '+kbName('cave')+')':locked?'Charge slot, opens at level '+CAVE_SLOT_LV:owned?'Charge slot: choose a charge skill':'Unlock a charge skill in the Awakening tree (its charge branch)');

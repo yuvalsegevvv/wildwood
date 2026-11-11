@@ -89,3 +89,11 @@ button.awc-c{ font-family:inherit; color:var(--ink); cursor:pointer; } button.aw
 .ql.awt{ display:grid; grid-template-columns:20px 1fr auto 22px; align-items:center; gap:2px 6px; border-left:3px solid var(--c,#999); padding:4px 6px 4px 8px; }
 .ql.awt b{ display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .ql.awt .awt-ic .ico{ width:18px; height:18px; }
 .awt-x{ width:22px; height:22px; padding:0; border:0; background:none; color:var(--ink-dim); font-size:16px; cursor:pointer; }
+.ql.sk{ position:relative; border-left:3px solid #ffd24a; padding-right:26px; }   /* the tracked skill upgrade's row (economy/skill-track.js skLogRow) */
+.ql.sk b{ color:#ffd24a; } .ql.sk.ok b{ color:#9fe08a; }
+.ql.sk .awt-x{ position:absolute; top:3px; right:3px; }
+.ql-sk-mats{ display:flex; flex-wrap:wrap; gap:3px 12px; margin-top:3px; }
+.ql-mat{ display:inline-flex; align-items:center; gap:4px; font-size:11.5px; color:var(--ink-dim); }
+.ql-mat b{ display:inline; font-family:inherit; font-size:11.5px; font-weight:600; }
+.ql-mat .awt-ic .ico{ width:15px; height:15px; }
+.ql-mat.ok{ color:#9fe08a; } .ql-mat.ok b{ color:#9fe08a; }

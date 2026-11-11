@@ -61,12 +61,16 @@ function updateMonsters(dt){
     const inv=1/Math.max(dt,1e-3); m.vx=(m.x-ox)*inv; m.vz=(m.z-oz)*inv;
     m.y=getH(m.x,m.z);
     m.face=angLerp(m.face,m.tface,1-Math.exp(-10*dt));
-    animateMonster(m,dt,Math.min(Math.hypot(m.vx,m.vz),9));
+    // far monsters animate at a lower rate (their rigs are the idle frame's dearest part): every frame within 35 m, 30 fps to 65 m, 20 fps to the 95 m edge; bosses always full speed
+    const rate=m.boss?0:dp<=35?0:dp<=65?0.032:0.05;
+    m.aT=(m.aT||0)+dt;
+    if(m.aT>=rate){ animateMonster(m,m.aT,Math.min(Math.hypot(m.vx,m.vz),9)); m.aT=0; }
     m.flash=Math.max(0,m.flash-dt*4);
     if(m.boss){ bossVisual(m,dt); continue; }
-    const f=m.flash, sl=m.slowT>0?0.35:0, gl=m.mat.userData.glow, bn=m.burning?0.35+0.15*Math.sin(t*14):0;   // burning: an orange glow and sparks
-    m.mat.emissive.setRGB(gl.r+f*0.9+bn,gl.g+f*0.35+sl*0.4+bn*0.4,gl.b+f*0.3+sl);
-    if(m.burning&&m.g.visible&&Math.random()<dt*12){ const e=new THREE.Mesh(emberGeo,emberMat); e.position.set(m.x+AR(-0.35,0.35)*m.s,m.y+m.T.height*m.s*AR(0.2,1),m.z+AR(-0.35,0.35)*m.s); scene.add(e); CB.fx.push({mesh:e,life:0.5,max:0.5,shrink:true}); }
+    const f=m.flash, lit=f>0||m.slowT>0||m.burning;   // burning: an orange glow and sparks
+    if(lit||m.emD){ const sl=m.slowT>0?0.35:0, gl=m.mat.userData.glow, bn=m.burning?0.35+0.15*Math.sin(t*14):0;
+      m.mat.emissive.setRGB(gl.r+f*0.9+bn,gl.g+f*0.35+sl*0.4+bn*0.4,gl.b+f*0.3+sl); m.emD=lit; }   // the fading pass writes the plain glow back, then an idle monster writes nothing here
+    if(m.burning&&m.g.visible&&Math.random()<dt*12){ fxpRise(m.x+AR(-0.35,0.35)*m.s,m.y+m.T.height*m.s*AR(0.2,1),m.z+AR(-0.35,0.35)*m.s,0xff8a2a,0.18,0.5); }   // fx-pool: embers off a burning hide
   }
   updateBossFx(dt); ssvUpdate(dt);   // skillsets: the mark pips
 }

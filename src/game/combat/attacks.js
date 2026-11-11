@@ -230,7 +230,7 @@ function updateCombat(dt){
     if(!p.look) fxProjTrail(p,dt);   // fx-pool
     if(p.look){ _pv2.copy(p.pos).add(p.vel); p.mesh.lookAt(_pv2); ssLookTrail(p.look,p,dt); }   // skillsets: a look's projectile points along its flight and leaves its own trail
     else if(p.kind==='arrow'||p.kind==='pierce'||p.kind==='snipe'||p.kind==='shard'||p.kind==='spore'||p.kind==='ember'||p.kind==='thorn'){ _pv2.copy(p.pos).add(p.vel); p.mesh.lookAt(_pv2); }
-    else { p.mesh.scale.setScalar(1+Math.sin(t*30)*0.12); p.emberT-=dt; if(p.emberT<=0){ p.emberT=0.025; const e=new THREE.Mesh(emberGeo,emberMat); e.position.copy(p.pos); scene.add(e); CB.fx.push({mesh:e,life:0.35,max:0.35,shrink:true}); } }
+    else { p.mesh.scale.setScalar(1+Math.sin(t*30)*0.12); p.emberT-=dt; if(p.emberT<=0){ p.emberT=0.025; fxpTrail(p.pos.x,p.pos.y,p.pos.z,0xff8a2a,0.18,0.35); } }   // fx-pool: an ember tail over the kind's own trail (fxProjTrail)
   }
   for(let i=CB.fx.length-1;i>=0;i--){
     const f=CB.fx[i]; f.life-=dt; const k=1-f.life/f.max;

@@ -29,8 +29,13 @@ body.touch #minimap{ width:104px; height:104px; border-radius:8px; }
 .lg.q, .lg.qr{ border-radius:1px; transform:rotate(45deg); width:9px; height:9px; background:#f2cf5a; } .lg.qr{ background:#9fe08a; }
 @media (max-width:719px){
   #map, #wmap{ width:auto; height:88dvh; }
-  body.touch #qlog{ top:calc(env(safe-area-inset-top,0px) + 182px) !important; bottom:auto; }   /* under the 104 px minimap: its old spot above Dash and Jump lay behind the column of skill buttons */
+  body.touch #qlog{ top:calc(env(safe-area-inset-top,0px) + 182px) !important; bottom:auto; max-height:100px; overflow:hidden; }   /* under the 104 px minimap: its old spot above Dash and Jump lay behind the column of skill buttons; capped so a long log cannot run down into the action bar */
   body:not(.touch) #qlog{ top:calc(env(safe-area-inset-top,0px) + 232px) !important; }
 }
-@media (max-width:520px){ body.touch #qlog{ top:calc(env(safe-area-inset-top,0px) + 324px) !important; } }   /* (the buttons are a 3-wide, four-row block here, 02-hud.css, so the minimap ends at 314) */
+@media (orientation:landscape) and (max-height:500px){
+  body.touch #qlog{ right:calc(120px + env(safe-area-inset-right,0px)); }   /* left of the right-edge buttons (Jump, the contextual Talk above it, Dash beside) */
+}
+@media (max-width:520px){
+  body.touch #qlog{ top:calc(env(safe-area-inset-top,0px) + 196px) !important; right:auto; left:calc(12px + env(safe-area-inset-left,0px)); }   /* the left column under the chat button: the right side is the action bar's (the 3-wide button block ends at 314 with the minimap under it, and the skill slots hung on the log) */
+}
 body.touch #bMap{ display:none; }

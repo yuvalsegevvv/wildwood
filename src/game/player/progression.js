@@ -1,17 +1,18 @@
 //@ Your health, level and XP as told by the server, the save kept in this browser, hurt / level-up / knocked-out effects
 /* The server owns the numbers (see src/server/players.js). The client mirrors them in PL, saves your level
-   and XP in this browser whenever the server sends an update, and plays the effects. */
+   and XP in this browser when they change, and plays the effects. */
 const PL={level:1,exp:0,hp:1,maxHp:1,dmg:1,def:0,red:0,dead:false};
 let SAVE_PROGRESS={level:1,exp:0};
 try{ const s=JSON.parse(localStorage.getItem('wildwood-progress-v1')||'null'); if(s&&s.level>=1) SAVE_PROGRESS={level:Math.min(50,s.level|0),exp:+s.exp||0}; }catch(_){}
 PL.level=SAVE_PROGRESS.level; PL.exp=SAVE_PROGRESS.exp;
 { const f=fLv(PL.level); PL.maxHp=Math.round(20*f); PL.hp=PL.maxHp; PL.dmg=3*f; }
-function saveProgress(){ if(NET&&(NET.user||NET.test)) return; try{ localStorage.setItem('wildwood-progress-v1',JSON.stringify({level:PL.level,exp:PL.exp})); }catch(_){} }
+function saveProgress(){ if(NET&&(NET.user||NET.test)) return; if(PL.level===SAVE_PROGRESS.level&&PL.exp===SAVE_PROGRESS.exp) return; SAVE_PROGRESS={level:PL.level,exp:PL.exp}; try{ localStorage.setItem('wildwood-progress-v1',JSON.stringify(SAVE_PROGRESS)); }catch(_){} }   // most "you" updates only move hp: the saved part is level and xp, so the write waits for them
+let tLevelEl=null;
 function applyYou(msg){
   PL.level=msg.level; PL.exp=msg.exp; PL.maxHp=msg.maxHp; PL.dmg=msg.dmg; PL.def=msg.def; PL.red=msg.red; PL.hp=msg.hp;
   if(!msg.dead && PL.dead) playerUp();
   saveProgress(); applyGear(msg.gear);
-  $('#tLevel').value=PL.level;
+  if(!tLevelEl) tLevelEl=$('#tLevel'); if(+tLevelEl.value!==PL.level) tLevelEl.value=PL.level;
 }
 function levelUpFx(level){
   const el=$('#lvup'); el.textContent='Level '+level; el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');

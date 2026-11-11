@@ -247,7 +247,7 @@ const OUT={'docs/MOBS.md':mobsDoc(),'docs/EQUIPMENT.md':equipmentDoc()};
 let stale=0;
 const noLines=t=>t.replace(/(\.js):\d+(?:-\d+)?/g,'$1:N');
 for(const f in OUT){
-  const p=path.join(ROOT,f), now=fs.existsSync(p)?fs.readFileSync(p,'utf8'):null;
+  const p=path.join(ROOT,f), now=fs.existsSync(p)?fs.readFileSync(p,'utf8').replace(/\r\n/g,'\n'):null;   // (a checkout can carry CRLF endings: without normalizing them, every fresh clone reads as stale)
   if(CHECK){
     if(now===OUT[f]) console.log('ok     '+f);
     else if(now!==null&&noLines(now)===noLines(OUT[f])){ console.log('moved  '+f+' (only line numbers changed: node tools/gen-docs.js refreshes them)'); if(STRICT) stale++; }

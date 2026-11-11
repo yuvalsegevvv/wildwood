@@ -7,6 +7,7 @@ let skTab=null, skKind='skill';
 const SK={sel:null};   // the selected skill or passive id
 function openSkills(n,kind){ openPanel('skills',n||null); skTab=clsOf(); if(KIND_TITLE[kind]) skKind=kind; SK.sel=null; renderSkills(); }
 function toggleSkills(){ if(!started||customizing) return; if($('#skills').hidden&&$('#awc').hidden) chrOpen(null,'sk'); else closePanels(); }   // K: the Characters panel on its Skills tab (awakening/hub.js); the slot picker below opens from its swap buttons
+addEventListener('keydown',e=>{ if(started&&!customizing&&kbIs(e.code,'skills')&&!e.repeat) toggleSkills(); });   // K opens and closes it: its own listener (the combat keydown's uiOpen guard made the key only ever open it)
 const skIcon=name=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||ICONS.burst||''}</svg>`;   // (skillsets: a signature skill without a glyph of its own gets the generic burst one, as the action bar does)
 // a skill's icon: a set piece draws its own set's symbol (skillsets/panel.js), any other its glyph by name (a piece of no set without one gets the generic burst)
 const skIconOf=s=>{ const g=ssGlyph(s); return g?`<svg ${SS_ICON_ATTR}>${g}</svg>`:skIcon(s.icon||s.name); };
@@ -57,7 +58,7 @@ function skInfoHtml(C,cls){
   let up='';
   if(own){   // awakening: a skill's levels are bought in the tree (the trainer's Upgrade button is retired); the button opens it on this skill's character and branch
     const limb=pass?'pa':({basic:'ba',skill:'sk',burst:'po'})[s.slot]||'';
-    up=`<div class="sk-up"><b>${L>=SKILL_MAX_LV?'Highest level':'Level '+L+' of '+SKILL_MAX_LV}</b><span class="muted">Skill levels, stats and tiers are bought in the Awakening tree, with coins and monster drops.</span><button class="chip buy" data-awaken="${s.set||'wanderer'}" data-limb="${limb}">Awaken</button></div>`;
+    up=`<div class="sk-up"><b>${L>=SKILL_MAX_LV?'Highest level':'Level '+L+' of '+SKILL_MAX_LV}</b><span class="muted">Skill levels, stats and tiers are bought in the Awakening tree, with coins and monster drops.</span><span class="sk-up-bt"><button class="chip buy" data-awaken="${s.set||'wanderer'}" data-limb="${limb}">Awaken</button>${limb?`<button class="chip" data-sktrack="${s.id}" aria-pressed="${skTrackId===s.id}" title="Carry the next level's price in the quest log and mark the monsters whose drops it needs (map and minimap)">${skTrackId===s.id?'Tracking':'Track'}</button>`:''}</span></div>`;
   }
   const lock=low?`<span class="req bad">needs level ${needLv(s)}</span>`:'';
   return `<div class="sk-ii"><div class="sk-ii-h"><div class="sk-ico${ssTint(s)?' has-set':''}"${ssTint(s)?` style="--set:${ssTint(s)}"`:''}>${skIconOf(s)}</div><div class="sk-ii-main"><b>${s.name}</b><div class="sk-tags">${tags}</div><span class="sk-meta">${own?'Level '+L+' of '+SKILL_MAX_LV+bdcLvNote(S,s.id)+' &middot; ':''}${stats} ${lock}</span></div><div class="sk-ii-btn">${acts}</div></div><p class="sk-desc">${pass?passiveText(s.id,L):s.desc}</p>${s.set?`<div class="sk-set-wrap"><div class="sk-load-h">Set piece <span>${SS_BONUS_ON?'wear 3 pieces for the first effect, 5 for the second':'part of '+SS_SETS[s.set].name}</span></div>${ssCardHtml(s.set,ssCount(S,cls,C.lv)[s.set]||0,ssOwnedPairs(S,s.set))}</div>`:''}${up}</div>`;
@@ -98,7 +99,7 @@ function renderSkills(){
   on('[data-unskill]',b=>{ netSend({t:'unskill',cls,slot:b.dataset.unskill}); UI_SFX.click(); });
   on('[data-unpass]',b=>{ netSend({t:'unskill',slot:'pass',idx:+b.dataset.unpass}); UI_SFX.click(); });
   on('[data-buyskill]',b=>{ b.disabled=true; netSend({t:'buyskill',id:b.dataset.buyskill}); });
-  on('[data-sktrack]',b=>{ skTrackToggle(b.dataset.sktrack); UI_SFX.click(); renderSkills(); });
+  on('[data-sktrack]',b=>{ skTrackToggle(b.dataset.sktrack); UI_SFX.click(); renderSkills(); if(typeof renderQlog==='function') renderQlog(); });   // the quest log carries the tracked skill's price lines
   on('[data-awaken]',b=>awcOpen(b.dataset.awaken,b.dataset.limb));   // awakening: the tree, on this skill's character and branch
 }
 // put a skill you own in its slot (a passive: slot idx, or the first free one)

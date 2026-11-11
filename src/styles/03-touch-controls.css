@@ -15,7 +15,19 @@
   border:1.5px solid rgba(238,240,226,.4); background:var(--glass); color:var(--ink);
   font:600 13px "Alegreya Sans", system-ui, sans-serif;
 }
-#bDash{ right:calc(106px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 50px); width:60px; height:60px; }   /* beside Jump */
+#bDash{ right:calc(24px + env(safe-area-inset-right,0px)); bottom:calc(env(safe-area-inset-bottom,0px) + 112px); width:60px; height:60px; }   /* above Jump (it used to sit beside it — under the action bar's bottom slot, where the two buttons mixed taps) */
 body.touch.playing .touch-btn{ display:grid; }
 .touch-btn:active{ background:var(--glass-strong); }
+/* the portrait nudge (ui/rotate.js): a small card over the lower third, clear of the action bar and the buttons; never over an open panel (z under the sheets) */
+#rotCard{
+  position:fixed; z-index:8; left:50%; bottom:calc(env(safe-area-inset-bottom,0px) + 250px); transform:translateX(-50%);
+  width:min(320px,calc(100vw - 32px)); text-align:center;
+  background:var(--glass-strong); border:1px solid var(--line); border-radius:12px;
+  padding:14px 16px 12px; box-shadow:0 8px 30px rgba(0,0,0,.35);
+}
+#rotCard[hidden]{ display:none; }
+#rotCard b{ font-family:Alegreya,Georgia,serif; font-size:17px; }
+#rotCard p{ font-size:12.5px; line-height:1.45; color:var(--ink-dim); margin:5px 0 10px; }
+#rotCard .rot-bt{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+@media (orientation:landscape){ #rotCard{ display:none !important; } }   /* (the card is for upright phones; rotate.js keeps it hidden here anyway) */
 

@@ -3,6 +3,12 @@
 const Stream={ job:null, terrainDone:false, pending:[], done:0, needed:null, failed:false, lazy:0 };   // lazy: terrain tiles still waiting for their colours (generation-setup.js)
 for(let i=0;i<NCH;i++) Stream.pending.push(i);
 const NEAR_R=55, FAR_R=Math.round(320*VIEW_K);   // (the chunks grown ahead of the player follow the view distance, core/setup.js VIEW_K)
+// is any still-pending chunk within reach? The rest (the far side of the mountains) wait until you come closer: the scheduler never takes them, so they must not hold the frame busy
+// (loop.js asks this every frame to decide whether the world is still streaming — with the bare pending count, the far chunks kept 'busy' true forever and the frame's adaptive pixel ratio never ran)
+function streamPendingNear(){
+  for(let i=0;i<Stream.pending.length;i++) if(distToChunk(Stream.pending[i],P.x,P.z)<=FAR_R) return true;
+  return false;
+}
 function streamPump(budgetMs){
   if(Stream.failed) return;
   if(dgIn()||caveIn()) return;   // cave: (a floor too)   // dungeons: no chunks grow while you are in a run (dungeon/run.js)

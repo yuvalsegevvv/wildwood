@@ -47,7 +47,7 @@ function dgPtyRender(){
 function dgPtyPanelRender(){
   const body=$('#dgPtyBody'), L=dgPartyState.list, me=NET.pid, lead=dgPartyState.lead===me;
   body.innerHTML='';
-  if(!L.length) body.append(dgPtyEl('p','dgp-note','You are not in a party. Invite up to three others by name (or type /invite and a name in chat); a run started by the leader asks every member to come.'));
+  if(!L.length) body.append(dgPtyEl('p','dgp-note','You are not in a party. Invite up to three others by name, by typing /invite and a name in chat, or by clicking a player\'s name over their head; a run started by the leader asks every member to come.'));
   for(const r of L){
     const row=dgPtyEl('div','dgp-mem'), name=dgPtyEl('b','',(r[0]===dgPartyState.lead?'♛ ':'')+String(r[1])+(r[0]===me?' (you)':''));
     row.append(name,dgPtyEl('span','dgp-lv','Lv '+r[4]+(r[5]?' · down':'')+(r[6]?' · in a run':'')));

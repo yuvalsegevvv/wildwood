@@ -40,10 +40,10 @@
     <button class="icon-btn" id="bFriends" aria-label="Friends and ranking" title="Friends and ranking" data-kb="friends" data-kbt="Friends and ranking ({k})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c2.6-.3 4.5 1.4 4.5 4"/></svg>
     </button>
-    <button class="icon-btn" id="bInv" aria-label="Equipment (I)" title="Equipment (I)" data-kb="inv" data-kbt="Equipment ({k})">
+    <button class="icon-btn" id="bInv" aria-label="Gear & bag (I)" title="Gear & bag (I)" data-kb="inv" data-kbt="Gear & bag ({k})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
     </button>
-    <button class="icon-btn" id="bMats" aria-label="Inventory (B)" title="Inventory (B)" data-kb="mats" data-kbt="Inventory ({k})">
+    <button class="icon-btn" id="bMats" aria-label="Materials (B)" title="Materials (B)" data-kb="mats" data-kbt="Materials ({k})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l8-4 8 4v10l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>
     </button>
     <button class="icon-btn" id="bGems" aria-label="Gem shop" title="Gem shop">
@@ -68,16 +68,18 @@
 
 <div id="hint"></div><div id="cvMethod" hidden></div><div id="cvEnergy" hidden><i></i><b></b></div><div id="wpMark" hidden aria-hidden="true"><i class="wp-pin"></i><i class="wp-arr"></i><b id="wpTxt"></b></div>
 <div id="aiNote" role="note">Everything in this game, including the assets and music, was made with AI.</div>
+<div id="rotCard" hidden role="dialog" aria-label="Turn your phone sideways"><b>Sideways is best</b><p>Wildwood plays in your two hands — walking on the left, fighting on the right. Turn your phone the wide way.</p><div class="rot-bt"><button class="chip" id="rotGo" type="button">Turn me sideways</button><button class="chip" id="rotNo" type="button">Keep this way</button></div></div>
 <div id="qlog" hidden></div>
 <div id="toasts"></div>
 <div id="rdStrip" hidden role="status"></div>
 <div id="bossbar" hidden><div class="bb-top"><b id="bbName">The Rootwarden</b><span class="bb-lv" id="bbLv">Lv 15 boss</span><span id="bbEl"></span><span id="bbPhase"></span></div><div class="bb-bar"><i id="bbHp"></i><u class="bb-tick" style="left:60%"></u><u class="bb-tick" style="left:30%"></u><span id="bbPct">100%</span></div></div>
-<div id="inv" class="panel" hidden role="dialog" aria-label="Equipment">
-  <div class="pn-head"><span class="pn-t">Equipment</span><button class="chip pn-skills" id="invShops" type="button">Shops</button><button class="chip pn-skills" id="invSkills" data-kb="skills" data-kbx="Skills ({k})">Skills (K)</button><span class="pn-coins" id="invCoins"></span><span class="pn-gems" id="invGems"></span><span class="pn-amber" id="invAmber"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<div id="inv" class="panel" hidden role="dialog" aria-label="Gear & bag">
+  <div class="pn-head"><span class="pn-t">Gear &amp; bag</span><button class="chip pn-skills" id="invShops" type="button">Shops</button><button class="chip pn-skills" id="invSkills" data-kb="skills" data-kbx="Skills ({k})">Skills (K)</button><span class="pn-coins" id="invCoins"></span><span class="pn-gems" id="invGems"></span><span class="pn-amber" id="invAmber"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="invBody"></div>
 </div>
-<div id="mats" class="panel" hidden role="dialog" aria-label="Inventory">
-  <div class="pn-head"><span class="pn-t">Inventory</span><span class="pn-coins" id="matsCoins"></span><span class="pn-gems" id="matsGems"></span><span class="pn-amber" id="matsAmber"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+<div id="mats" class="panel" hidden role="dialog" aria-label="Materials">
+  <div class="pn-head"><span class="pn-t">Materials</span><input class="mat-q" id="matFind" type="search" placeholder="Where do I get…?" autocomplete="off" spellcheck="false" aria-label="Search where to get a material"><span class="pn-coins" id="matsCoins"></span><span class="pn-gems" id="matsGems"></span><span class="pn-amber" id="matsAmber"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="mat-out" id="matOut" hidden></div>
   <div class="pn-body" id="matsBody"></div>
 </div>
 <div id="gemShop" class="panel" hidden role="dialog" aria-label="Gem shop">
@@ -117,11 +119,11 @@
   <div class="pn-body" id="forgeBody"></div>
 </div>
 <div id="skills" class="panel" hidden role="dialog" aria-label="Skills">
-  <div class="pn-head"><span class="pn-t" id="skTitle">Skills</span><button class="chip pn-skills" id="skAwaken" type="button" data-kb="awaken" data-kbx="Awaken ({k})" title="The Awakening tree: skill levels, stats and tiers">Awaken (T)</button><button class="chip pn-skills" id="skBonds" type="button" title="Back to the Characters panel">&larr; Character</button><span class="pn-coins" id="skCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-head"><span class="pn-t" id="skTitle">Skills</span><button class="chip pn-skills" id="skAwaken" type="button" data-kb="awaken" data-kbx="Awaken ({k})" title="The Awakening tree: skill levels, stats and tiers">Awaken (T)</button><button class="chip pn-skills" id="skBonds" type="button" title="The Bonds overview: every character's steps, the orb pouch and the Stirrings">Bonds</button><span class="pn-coins" id="skCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body" id="skBody"></div>
 </div>
 <div id="awc" class="panel" hidden role="dialog" aria-label="Characters">
-  <div class="pn-head"><span class="pn-t">Characters</span><span class="pn-coins" id="awcCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="pn-head"><span class="pn-t">Characters</span><button class="chip pn-skills" id="awcBonds" type="button" title="The Bonds overview: every character's steps, the orb pouch and the Stirrings">Bonds</button><span class="pn-coins" id="awcCoins"></span><button class="snd-x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="pn-body chr-body">
     <div class="awc-pick chr-list" id="awcPick" role="group" aria-label="Character"></div>
     <div class="chr-main">
@@ -299,7 +301,7 @@
   </div>
   <div class="snd-sub snd-sec">Your name</div>
   <div class="name-row"><input id="setName" maxlength="16" autocomplete="nickname" spellcheck="false" aria-label="Your name"><button class="chip" id="setNameBtn">Save</button></div>
-  <div id="tSec">
+  <div id="tSec" hidden>
   <div class="snd-sub snd-sec">Admin testing tools</div>
   <details class="tg"><summary>Character</summary>
   <div class="test-row"><label for="tLevel">Level</label><input id="tLevel" type="number" min="1" max="99" value="1" inputmode="numeric"><button class="chip" id="tSetLv">Set level</button></div>

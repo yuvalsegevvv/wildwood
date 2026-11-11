@@ -1,0 +1,54 @@
+# CI: the same gate the repo's agents run by hand, on every push to main and every pull request.
+#   python3 build.py --check          build + syntax + duplicate names + layout rules + docs/FILES.md + the generated docs
+#   node tools/run-tests.js --fast   every registered test but the three slow ones (about 6-8 minutes on 4 cores)
+# The two Playwright tests run too: one of them boots the real page to "Ready" in a headless Chromium, which is
+# the cheapest possible answer to "did this push break the game for players". They skip themselves when Chromium
+# is missing, but we install one so they actually run.
+#
+# Deploys: Render deploys every push to main as soon as it is pushed. When you want deploys to wait for these
+# tests instead, see the commented deploy job at the bottom.
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-check-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm install
+      - name: Build and check
+        run: python3 build.py --check
+      - name: Chromium for the two browser tests
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Tests (all but the slow three)
+        run: node tools/run-tests.js --fast -j 4
+
+  # Deploy only after CI passes, instead of Render deploying every push — less downtime as the playerbase
+  # grows. To switch over (about 2 minutes, reversible):
+  #   1. Render dashboard > wildwood > Settings > Build & Deploy > Auto-Deploy: Off
+  #      (or add `autoDeploy: false` to the service in render.yaml)
+  #   2. Render dashboard > wildwood > Settings > Deploy Hook: create one, copy its URL
+  #   3. GitHub repo > Settings > Secrets and variables > Actions > new secret
+  #      RENDER_DEPLOY_HOOK_URL = that URL
+  #   4. Uncomment the job below. From then on: push -> tests -> only a green run triggers the Render deploy.
+  # deploy-after-ci:
+  #   needs: build-check-test
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Trigger the Render deploy hook
+  #       env:
+  #         RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+  #       run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"

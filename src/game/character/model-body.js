@@ -46,13 +46,13 @@ function charDims(L,S,fem,fs){
 function profR(prof,y){ for(let i=1;i<prof.length;i++) if(y<=prof[i][1]){ const a=prof[i-1], b=prof[i], f=(y-a[1])/((b[1]-a[1])||1); return lerp(a[0],b[0],f); } return prof[prof.length-1][0]; }
 
 // the torso's lathe profile [radius, design y] for a man and a woman: top-level so an outfit can ask how big the torso is at a height (torsoSize)
-const TORSO_F=[[0.001,-0.115],[0.116,-0.1],[0.158,-0.05],[0.166,0.0],[0.15,0.07],[0.116,0.17],[0.104,0.22],[0.116,0.3],[0.132,0.37],[0.138,0.43],[0.124,0.482],[0.082,0.524],[0.062,0.55]];
-const TORSO_M=[[0.001,-0.115],[0.112,-0.1],[0.152,-0.05],[0.16,0.0],[0.142,0.08],[0.124,0.15],[0.136,0.23],[0.156,0.31],[0.17,0.38],[0.17,0.43],[0.148,0.478],[0.098,0.522],[0.07,0.55]];
+const TORSO_F=[[0.001,-0.115],[0.116,-0.1],[0.158,-0.05],[0.166,0.0],[0.15,0.07],[0.116,0.17],[0.104,0.22],[0.116,0.3],[0.132,0.37],[0.138,0.43],[0.121,0.472]];
+const TORSO_M=[[0.001,-0.115],[0.112,-0.1],[0.152,-0.05],[0.16,0.0],[0.142,0.08],[0.124,0.15],[0.136,0.23],[0.156,0.31],[0.17,0.38],[0.17,0.43],[0.146,0.472]];   // the profile stops at the shoulder's tip: the trapezius and the neck's flare are the concat below (they scale with the neck, not the chest)
 function buildTorso(X,D){
   const {L,S,fem,sg,skin,skinPaint,topPaint,botPaint}=X, {B,lr,TK,neckR}=D, ch=S.chest, G=faceG, sm=faceSm, kT=X.kit&&X.kit.sl.top, kB=X.kit&&X.kit.sl.bottom;   // kT / kB: the signature outfits' top and bottoms, when worn
   const base=fem?TORSO_F:TORSO_M;
   const hem=(L.top==='jacket'||L.top==='hoodie'||L.top==='mail'||L.top==='plate')?-0.035:0.03;
-  const nt=Math.max(0.7,(D.headY-0.03)/TK), prof0=base.concat([[neckR*1.3,0.572],[neckR*1.06,0.6],[neckR,0.635],[neckR*0.98,nt]]);   // the neck is the top of the same surface
+  const nt=Math.max(0.7,(D.headY-0.03)/TK), prof0=base.concat([[neckR*1.9,0.505],[neckR*1.5,0.535],[neckR*1.18,0.565],[neckR*1.04,0.6],[neckR,0.635],[neckR*0.98,nt]]);   // the neck grows out of the shoulders: the trapezius slope runs from the shoulder's tip, then a long flare (1.9x the neck's radius at the root, narrowing upward) — no cone-to-cylinder step
   // rings exactly at the colour edges (the hem, the belt line, the plate band) so those edges are crisp
   // the colour edges: a whole outfit has its own; mixed, the top's lie above the waist and the bottoms' below it (a base garment's are the original list)
   const kc=k=>(k.cuts&&k.cuts.torso)||[], cutList=kT&&kT===kB?kc(kT):[hem].concat(kT?kc(kT).filter(y=>y>hem):[hem+0.03,0.07],kB?kc(kB).filter(y=>y<=hem):[hem-0.035,0.02]);

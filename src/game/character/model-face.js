@@ -71,8 +71,9 @@ function buildFace(X){
   const blushC=new THREE.Color(0xe98c88), pos=skull.attributes.position;
   let earX=0.095; { let m=0; for(let i=0;i<pos.count;i++){ if(Math.abs(pos.getY(i)+0.008)<0.012&&pos.getZ(i)>-0.02&&pos.getZ(i)<0.03) m=Math.max(m,Math.abs(pos.getX(i))); } if(m>0) earX=m; }
   parts.push(pc(skull,(x,y,z,c)=>{ skinPaint(c);
+    c.multiplyScalar(lerp(0.955,1.02,clamp((y+0.1)/0.2)));   // a smooth form gradient: the jaw and under-chin a little darker, the crown lighter (per-vertex colour, no hash: it must not facet)
     if(L.facial==='stubble'){ const top=lerp(-0.047,-0.022,faceSm(0.035,0.075,Math.abs(x)))*HEAD_TALL; c.lerp(hairCol,0.3*faceSm(top+0.012,top-0.012,y)*faceSm(-0.005,-0.035,z)); }   // a soft shadow over the jaw, chin and upper lip (from the sideburns down at the sides, below the nose in the middle), not a hard band across the face at eye level
-    if(z<-0.03) c.lerp(blushC,Math.min(0.75,(fem?0.2:0.1)+0.5*S.blush)*G(Math.abs(x),0.058*fs[0],0.022)*G(y,-0.03*HEAD_TALL,0.02)); }));     // a faint blush on the cheeks
+    if(z<-0.03) c.lerp(blushC,Math.min(0.8,(fem?0.3:0.22)+0.45*S.blush)*G(Math.abs(x),0.058*fs[0],0.026)*G(y,-0.03*HEAD_TALL,0.024)); }));     // a faint blush on the cheeks (raised: at game distance it used to vanish)
   // put a feature (built around the origin, facing -z) on the face at (x,y), `push` metres out of the surface, turned to follow the surface's slope
   const place=(g,x,y,push)=>{ const d=0.004, z=zAt(x,y), n=new THREE.Vector3((zAt(x+d,y)-zAt(x-d,y))/(2*d),(zAt(x,y+d)-zAt(x,y-d))/(2*d),-1).normalize();
     g.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,-1),n)));
@@ -103,12 +104,12 @@ function buildFace(X){
     parts.push(place(eye,sd*ex,ey,0.0015));
   }
 
-  /* brows: a tapered arch over each eye; the slider turns them from gentle (inner end up) to stern (inner end down) */
-  const by=ey+0.026+(ES.browLift||0), hb=new THREE.Color(hairCol).multiplyScalar(0.78).getHex();
+  /* brows: a tapered arch over each eye; the slider turns them from gentle (inner end up) to stern (inner end down). Thick enough to read at game distance (they were hairlines) */
+  const by=ey+0.026+(ES.browLift||0), hb=new THREE.Color(hairCol).multiplyScalar(0.62).getHex();
   for(const sd of [-1,1]){
     const b=S.brow+(ES.browAngle||0), P=[[sd*(ex-0.029*E),by-0.007*b,0],[sd*(ex-0.01*E),by+0.0035-0.002*b,0],[sd*(ex+0.012*E),by+0.0045+0.0005*b,0],[sd*(ex+0.032*E),by+0.0005+0.0045*b,0]];
     P.forEach(q=>{ q[2]=zAt(q[0],q[1])-0.0012; });
-    const t=(fem?1:1.5)*(ES.browThick||1); parts.push(col(sweepTube(P,[0.0016*t,0.0027*t,0.0025*t,0.0011*t],sg(6),{cap:'point',rings:sg(14)}),hb));
+    const t=(fem?1.6:2.2)*(ES.browThick||1); parts.push(col(sweepTube(P,[0.0016*t,0.0027*t,0.0025*t,0.0011*t],sg(6),{cap:'point',rings:sg(14)}),hb));
   }
 
   /* nose: a tiny rounded tip with two wings and nostril dots (anime noses are little more than a hint, and have no bridge line) */
@@ -121,9 +122,9 @@ function buildFace(X){
     parts.push(place(merge(n),0,-0.02*HEAD_TALL,0)); }
 
   /* mouth: a fine line whose corners lift with a smile, a fuller lower lip (and an upper one on a female face) */
-  { const mw=0.0165*S.mouthSize*(fem?0.92:1), my=(-0.062+0.008*S.mouthHeight)*HEAD_TALL, sm=S.smile, lipsC=skin.clone().lerp(_tint.set(Number.isFinite(L.lipColor)&&L.lipColor>=0?L.lipColor:0xb04a52),Number.isFinite(L.lipColor)&&L.lipColor>=0?0.8:fem?0.62:0.4), line=lipsC.clone().multiplyScalar(0.5).getHex();
+  { const mw=0.0165*S.mouthSize*(fem?0.92:1), my=(-0.062+0.008*S.mouthHeight)*HEAD_TALL, sm=S.smile, lipsC=skin.clone().lerp(_tint.set(Number.isFinite(L.lipColor)&&L.lipColor>=0?L.lipColor:0xb04a52),Number.isFinite(L.lipColor)&&L.lipColor>=0?0.8:fem?0.62:0.4), line=lipsC.clone().multiplyScalar(0.45).getHex();
     const P=[]; for(let i=0;i<=6;i++){ const u=i/6*2-1, x=u*mw, y=my+sm*0.0055*u*u-0.0013*(1-u*u)*(1+0.3*sm); P.push([x,y,zAt(x,y)-0.0007]); }
-    parts.push(col(sweepTube(P,[0.0008,0.0015,0.0019,0.002,0.0019,0.0015,0.0008],sg(6),{cap:'point',rings:sg(14)}),line));
+    parts.push(col(sweepTube(P,[0.0012,0.0022,0.0028,0.003,0.0028,0.0022,0.0012],sg(6),{cap:'point',rings:sg(14)}),line));   // (thicker than a hairline: the mouth vanished at game distance)
     // the lips: two surfaces that grow out of the mouth line and lie on the face (not two ovals stuck on it). The upper one has a cupid's bow (two peaks, a dip between), the lower one
     // is fullest in the middle; both taper to nothing at the corners, swell a little, and fade into the skin at their outer edge
     const lw=S.lips, lo=new THREE.Color(lipsC), LW=mw*0.9, yl=u=>my+sm*0.0055*u*u-0.0013*(1-u*u)*(1+0.3*sm);
