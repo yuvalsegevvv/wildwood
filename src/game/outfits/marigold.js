@@ -39,8 +39,8 @@ OUTFITS.marigold=(function(){
     const {S,sg,fem,skinPaint}=X, TK=D.TK, B=D.B, lr=D.lr, aw=D.aw, ch=S.chest, WY=fem?0.215:0.15, HEAD_T=typeof HEAD_TALL!=='undefined'?HEAD_TALL:1.1;
     // ---- the torso's real surface (the same formulas as buildTorso), so cloth can lie on it, bust and hips included ----
     const nt=Math.max(0.7,(D.headY-0.03)/TK), PROF=(fem?TORSO_F:TORSO_M).concat([[D.neckR*1.3,0.572],[D.neckR*1.06,0.6],[D.neckR,0.635],[D.neckR*0.98,nt]]), rAt=yd=>profR(PROF,yd);
-    const bodyXZ=(a,yd)=>{ const r=rAt(yd), x0=r*Math.sin(a), z0=r*Math.cos(a), front=z0<0, sN=sm(0.5,0.6,yd), up=sm(0.22,0.4,yd)*(1-sN), gw=G(yd,WY,0.11), gh=G(yd,-0.03,0.1), belly=G(yd,0.1,0.13)*(B-1)*1.4;
-      let x=x0*lerp(B*(fem?1:1.04),1.1,sN), z=z0*lerp((fem?0.66:0.62)*B,0.94,sN)*(1+(front?belly:belly*0.3)*(1-sN));
+    const bodyXZ=(a,yd)=>{ const r=rAt(yd), x0=r*Math.sin(a), z0=r*Math.cos(a), front=z0<0, sN=sm(0.5,0.6,yd), up=sm(0.22,0.4,yd)*(1-sN), gw=G(yd,WY,0.11), gh=G(yd,-0.03,0.1), belly=trsBellyK(S,B,yd);
+      let x=x0*lerp(B*(fem?1:1.04),1.1,sN)*lerp(musW(S,fem,yd),1,sN), z=z0*lerp((fem?0.66:0.62)*B,0.94,sN)*(1+(front?belly:0)*(1-sN))*lerp(musD(S,fem,yd),1,sN);
       x*=1+(S.shoulders-1)*up+(S.waist-1)*gw+(S.hips-1)*gh; z*=1+(S.waist-1)*0.7*gw+(S.hips-1)*0.5*gh+(S.shoulders-1)*0.2*up;
       const ax=Math.abs(x);
       if(front){

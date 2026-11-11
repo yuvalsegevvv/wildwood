@@ -27,7 +27,7 @@ function gmTop(X,D){
   const fz=yd=>-(torsoSize(X,D,yd).rz+0.004), hemY=(top==='jacket'||top==='hoodie')?-0.035:0.03;
   const button=(yd,hex)=>solid(csph(0.0075,sg(7),sg(6)).scale(1,1,0.6).translate(0,yd*TK,fz(yd)-0.003),hex);
   if(top==='tshirt'){
-    { const yc=0.565, sN=faceSm(0.5,0.6,yc), r0=lerp(X.fem?0.062:0.07,nr*1.3,(yc-0.55)/0.022), rx=r0*lerp(D.B*(X.fem?1:1.04),1.1,sN), rz=r0*lerp((X.fem?0.66:0.62)*D.B,0.94,sN), zc=-sN*(yc-0.5)*0.1;   // the neck's own section at the collar's height (wider than deep, leaning forward: buildTorso)
+    { const yc=0.575, sc=trsSection(X,D,yc), rx=sc.rx, rz=(sc.rzF+sc.rzB)/2, zc=sc.zc+(sc.rzB-sc.rzF)/2;   // the body's own section at the collar's height (the neck's root on the trapezius, deeper behind, leaning forward: trsUpper in model-body.js)
       out.push(solid(ofLoft((sg(100)>=50?[[0.01,0.0012],[0.0055,0.0052],[-0.0005,0.0058],[-0.0065,0.0045],[-0.012,0.0015]]:[[0.01,0.0012],[-0.0005,0.0058],[-0.012,0.0015]]).map(q=>({y:(yc+q[0])*TK,rx:rx+q[1]+Math.max(0,-q[0])*0.5,rz:rz+q[1]+Math.max(0,-q[0])*0.5,zc})),sg(24),0,TAU),dk)); }   // the ribbed collar: a rolled band that lies on the neck (a round ring floated off an oval, leaning neck)
     out.push(gmBand(X,D,hemY+0.012,hemY-0.006,(x,y,z,c)=>gmCol(c,L.topColor,0.82),0.004));   // the hem
   } else if(top==='flannel'){

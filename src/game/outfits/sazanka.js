@@ -49,9 +49,9 @@ OUTFITS.sazanka=(function(){
     // ---- the torso's real surface (the same formulas as buildTorso), so cloth can lie on it, bust and hips included ----
     const nt=Math.max(0.7,(D.headY-0.03)/TK), PROF=(fem?TORSO_F:TORSO_M).concat([[D.neckR*1.3,0.572],[D.neckR*1.06,0.6],[D.neckR,0.635],[D.neckR*0.98,nt]]), rAt=yd=>profR(PROF,yd);
     const WY=fem?0.215:0.15;
-    const kx=yd=>{ const sN=sm(0.5,0.6,yd), up=sm(0.22,0.4,yd)*(1-sN); return lerp(B*(fem?1:1.04),1.1,sN)*(1+(S.shoulders-1)*up+(S.waist-1)*G(yd,WY,0.11)+(S.hips-1)*G(yd,-0.03,0.1)); };
-    const kz=(yd,front)=>{ const sN=sm(0.5,0.6,yd), up=sm(0.22,0.4,yd)*(1-sN), gw=G(yd,WY,0.11), gh=G(yd,-0.03,0.1), belly=G(yd,0.1,0.13)*(B-1)*1.4;
-      return lerp((fem?0.66:0.62)*B,0.94,sN)*(1+(front?belly:belly*0.3)*(1-sN))*(1+(S.waist-1)*0.7*gw+(S.hips-1)*0.5*gh+(S.shoulders-1)*0.2*up); };
+    const kx=yd=>{ const sN=sm(0.5,0.6,yd), up=sm(0.22,0.4,yd)*(1-sN); return lerp(B*(fem?1:1.04),1.1,sN)*(1+(S.shoulders-1)*up+(S.waist-1)*G(yd,WY,0.11)+(S.hips-1)*G(yd,-0.03,0.1))*lerp(musW(S,fem,yd),1,sN); };
+    const kz=(yd,front)=>{ const sN=sm(0.5,0.6,yd), up=sm(0.22,0.4,yd)*(1-sN), gw=G(yd,WY,0.11), gh=G(yd,-0.03,0.1), belly=trsBellyK(S,B,yd);
+      return lerp((fem?0.66:0.62)*B,0.94,sN)*(1+(front?belly:0)*(1-sN))*(1+(S.waist-1)*0.7*gw+(S.hips-1)*0.5*gh+(S.shoulders-1)*0.2*up)*lerp(musD(S,fem,yd),1,sN); };
     const surfZ=(x,yd,front)=>{ const r=rAt(yd), a=kx(yd), x0=clamp(x/a,-r,r), z0=Math.sqrt(Math.max(0,r*r-x0*x0)), ax=Math.abs(x), sN=sm(0.5,0.6,yd);
       let z=(front?-z0:z0)*kz(yd,front);
       if(front){ z-=0.008*G(yd,0.1,0.08)*(1-G(ax,0,0.04))*(fem?0.5:1);

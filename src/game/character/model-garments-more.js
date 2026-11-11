@@ -50,17 +50,18 @@ function gmxTop(X,D){
     out.push(solid(gmRingAt([0,0.572*TK,0],[0,1,0],nr*1.4,0.0065,sg(8)),PL[2]));   // the collar
     for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*nr*1.5,0.575*TK,fz(0.5)],[sd*nr*2.4,0.545*TK,fz(0.5)-0.002],[sd*nr*3.0,0.5*TK,fz(0.47)]],0.012,{up:[0,1,-0.4],seg:sg(6),th:0.003}),PL[2]));
   } else if(top==='halter'){
-    const cz=fz(0.38);
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.07,0.47*TK,fz(0.47)-0.005],[sd*0.05,0.515*TK,fz(0.5)-0.004],[sd*nr*1.15,0.565*TK,-nr*0.55],[sd*nr*0.5,0.585*TK,nr*1.25]],0.017,{up:[0,1,-0.3],seg:sg(10),th:0.003}),PL[2]));   // the straps up to the knot behind the neck
+    const CB=chestBand(X.S), h0=CB.lo-0.006, h1=CB.hi+0.035, cz=fz(CB.cy-0.01);
+    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.07,h1*TK,fz(h1)-0.005],[sd*0.05,0.515*TK,-trsSection(X,D,0.515).rzF-0.008],[sd*nr*1.15,0.565*TK,-nr*0.55],[sd*nr*0.5,0.585*TK,nr*1.25]],0.017,{up:[0,1,-0.3],seg:sg(10),th:0.003}),PL[2]));   // the straps up to the knot behind the neck
     out.push(solid(csph(0.011,sg(8),sg(6)).translate(0,0.585*TK,nr*1.35),PL[2]));
-    out.push(gmBand(X,D,0.47,0.445,(x,y,z,c)=>c.set(PL[1]),0.004),gmBand(X,D,0.32,0.295,(x,y,z,c)=>c.set(PL[1]),0.004));   // the wrap's top and bottom edges
-    out.push(solid(csph(0.0105,sg(8),sg(6)).scale(1.3,1,0.8).translate(0,0.385*TK,cz-0.006),PL[2]),solid(ofRibbon([[0,0.38*TK,cz-0.008],[0.012,0.35*TK,cz-0.01],[0.01,0.31*TK,cz-0.01]],0.012,{up:[0,0,-1],seg:sg(6),th:0.003}),PL[2]));   // the knot between the cups, with a tail
-    for(const sd of [-1,1]) out.push(solid(gmRingAt([0,0.39*TK,0],[0,1,0],torsoSize(X,D,0.39).rx*0.98,0.0015,sg(6)),PL[1]));
+    out.push(gmBand(X,D,h1,h1-0.025,(x,y,z,c)=>c.set(PL[1]),0.004),gmBand(X,D,h0,h0-0.025,(x,y,z,c)=>c.set(PL[1]),0.004));   // the wrap's top and bottom edges
+    out.push(solid(csph(0.0105,sg(8),sg(6)).scale(1.3,1,0.8).translate(0,(CB.cy-0.005)*TK,cz-0.006),PL[2]),solid(ofRibbon([[0,(CB.cy-0.01)*TK,cz-0.008],[0.012,(CB.cy-0.04)*TK,cz-0.01],[0.01,(CB.cy-0.08)*TK,cz-0.01]],0.012,{up:[0,0,-1],seg:sg(6),th:0.003}),PL[2]));   // the knot between the cups, with a tail
+    for(const sd of [-1,1]) out.push(solid(gmRingAt([0,CB.cy*TK,0],[0,1,0],torsoSize(X,D,CB.cy).rx*0.98,0.0015,sg(6)),PL[1]));
   } else if(top==='bikini'){
-    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.05,0.43*TK,fz(0.43)-0.004],[sd*0.04,0.5*TK,fz(0.5)-0.003],[sd*nr*1.15,0.565*TK,-nr*0.55],[sd*nr*0.5,0.585*TK,nr*1.25]],0.012,{up:[0,1,-0.3],seg:sg(10),th:0.003}),PL[1]));   // the neck ties
+    const CB=chestBand(X.S), b0=CB.lo, b1=CB.hi, tz=yd=>-(trsSection(X,D,yd).rzF+chestBump(X.S,D,0.046,yd)+0.008);   // the skin's front above the cups: the body's own section plus the bust's upper slope (buildTorso)
+    for(const sd of [-1,1]) out.push(solid(ofRibbon([[sd*0.05,(b1-0.005)*TK,fz(b1-0.005)-0.004],[sd*0.047,(b1+0.015)*TK,tz(b1+0.015)],[sd*0.044,0.47*TK,tz(0.47)],[sd*0.038,0.51*TK,tz(0.51)],[sd*nr*1.15,0.565*TK,-trsSection(X,D,0.565).rzF*0.75],[sd*nr*0.5,0.585*TK,nr*1.25]],0.012,{up:[0,1,-0.3],seg:sg(10),th:0.003}),PL[1]));   // the neck ties
     out.push(solid(csph(0.009,sg(8),sg(6)).translate(0,0.585*TK,nr*1.35),PL[1]));
-    out.push(solid(csph(0.0075,sg(8),sg(6)).translate(0,0.385*TK,fz(0.385)-0.008),PL[2]));   // a small bead between the cups
-    out.push(gmBand(X,D,0.45,0.43,(x,y,z,c)=>c.set(PL[1]),0.004),gmBand(X,D,0.335,0.315,(x,y,z,c)=>c.set(PL[1]),0.004));   // the cups' top and bottom edges
+    out.push(solid(csph(0.0075,sg(8),sg(6)).translate(0,(CB.cy-0.005)*TK,-(trsSection(X,D,CB.cy-0.005).rzF+chestBump(X.S,D,0,CB.cy-0.005)+0.006)),PL[2]));   // (in the cleavage: the bust's depth at the middle, not the lobes' envelope)   // a small bead between the cups
+    out.push(gmBand(X,D,b1+0.015,b1-0.005,(x,y,z,c)=>c.set(PL[1]),0.004),gmBand(X,D,b0+0.007,b0-0.013,(x,y,z,c)=>c.set(PL[1]),0.004));   // the cups' top and bottom edges
   } else if(top==='harness'){
     for(const sd of [-1,1]){
       out.push(solid(ofRibbon(gmxStrap(X,D,0.5,0.1,sd*0.07,-sd*0.1,false),0.03,{up:[0,0,-1],seg:sg(14),th:0.006}),PL[1]));

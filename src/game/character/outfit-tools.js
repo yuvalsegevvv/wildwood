@@ -5,11 +5,11 @@
 
 // the torso's half-width and half-depth (metres, in the spine's frame) at design height yd (0 = the hips' line, 0.55 = the neck's base), with the sliders applied: where cloth lies on the body
 function torsoSize(X,D,yd){
-  const {S,fem}=X, B=D.B, r=profR(fem?TORSO_F:TORSO_M,yd), up=faceSm(0.22,0.4,yd), gw=faceG(yd,fem?0.215:0.15,0.11), gh=faceG(yd,-0.03,0.1), belly=faceG(yd,0.1,0.13)*(B-1)*1.4;
-  const rz=r*(fem?0.66:0.62)*B*(1+(S.waist-1)*0.7*gw+(S.hips-1)*0.5*gh+(S.shoulders-1)*0.2*up);
+  const {S,fem}=X, B=D.B, r=profR(fem?TORSO_F:TORSO_M,yd), up=faceSm(0.22,0.4,yd), gw=faceG(yd,fem?0.215:0.15,0.11), gh=faceG(yd,-0.03,0.1), belly=trsBellyK(S,B,yd);
+  const rz=r*(fem?0.66:0.62)*B*(1+(S.waist-1)*0.7*gw+(S.hips-1)*0.5*gh+(S.shoulders-1)*0.2*up)*ribK(fem,yd)*musD(S,fem,yd);
   // rz is the front (the belly and the stomach pushed out, a woman's bust); rzBack the back (a third of the belly, the shoulder blades, the glutes): cloth on the back must clear these or the body shows through
-  return {rx:r*B*(fem?1:1.04)*(1+(S.shoulders-1)*up+(S.waist-1)*gw+(S.hips-1)*gh+chestRibs(S.chest)*faceG(yd,0.32,0.1)), rz:rz*(1+belly)+0.008*faceG(yd,0.1,0.08)+(fem?0.034*D.lr*chestEff(S.chest)*(1+0.4*Math.max(S.chestShape,0))*faceG(yd,0.315-0.012*(chestEff(S.chest)-1),0.06):0.012*B*Math.min(Math.max(S.chest-1,0),1.2)*faceG(yd,0.34,0.07)+0.007*B*Math.max(S.chestShape,0)*faceG(yd,0.34,0.06)),   // (a woman's front includes the bust)
-    rzBack:rz*(1+belly*0.3)+0.012*B*faceG(yd,0.37,0.07)+(fem?0.05:0.03)*B*hipAmp(Math.max(S.hipCurve,1))*faceG(yd,0,(yd>0?0.06:0.14*(1+0.6*Math.max(S.hipTall,0)))*hipWide(S.hipCurve))};
+  return {rx:r*B*(fem?1:1.04)*(1+(S.shoulders-1)*up+(S.waist-1)*gw+(S.hips-1)*gh+chestRibs(S.chest)*faceG(yd,0.32,0.1))*musW(S,fem,yd), rz:rz*(1+belly)+0.008*faceG(yd,0.1,0.08)+musP(S,fem,yd)+(fem?chestBump(S,D,chestLobeX(S,D),yd):0.012*B*Math.min(Math.max(S.chest-1,0),1.2)*faceG(yd,0.34,0.07)+0.007*B*Math.max(S.chestShape,0)*faceG(yd,0.34,0.06)),   // (a woman's front includes the bust)
+    rzBack:rz+0.012*B*faceG(yd,0.37,0.07)+(fem?0:0.008*B*faceG(yd,0.3,0.12))+trsGlute({hipCurve:Math.max(S.hipCurve,1),hipTall:Math.max(S.hipTall,0),muscle:Math.max(S.muscle,0)},B,fem,yd)};
 }
 /* A flat ribbon (sash, pennant, strap, feather, tail of a bow) along a smooth curve through pts ([x,y,z]); width: a number or a function of 0..1 along it; both faces are drawn
    (two thin sheets back to back), so it shows from either side. o.up = the direction the flat face looks at (default -z, the front); o.th = its thickness; o.seg = samples. */

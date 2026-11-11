@@ -6,7 +6,7 @@
    owns: cjWeights, cjSway.   used by: model.js.   test: tools/chest-jiggle-smoke.js */
 function cjWeights(geo,X,D){
   const p=geo.attributes.position, S=X.S, B=D.B, TK=D.TK, ch=S.chest, ce=chestEff(ch), cs=S.chestShape, w=new Float32Array(p.count);
-  const cy=(0.39+0.03*S.chestLift-0.012*(ce-1)-0.006*cs)*TK, wx=0.06*(0.8+0.22*ce), wy=0.085*TK*(0.8+0.3*ce), mid=0.056*B*(1-0.3*cs)*(1+0.5*S.chestGap);
+  const cy=chestBand(S).cy*TK, wx=0.06*(0.8+0.22*ce), wy=0.085*TK*(0.8+0.3*ce), mid=0.056*B*(1-0.3*cs)*(1+0.5*S.chestGap);
   for(let i=0;i<p.count;i++){ const z=p.getZ(i); if(z>-0.02) continue;
     const dx=(Math.abs(p.getX(i))-mid)/wx, dy=(p.getY(i)-cy)/wy, f=Math.min(1,(-z-0.02)/0.04);
     w[i]=Math.exp(-dx*dx-dy*dy)*f*f*(3-2*f); }

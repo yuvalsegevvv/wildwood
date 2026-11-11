@@ -40,7 +40,7 @@ function gmdTop(X,D){
     out.push(solid(csph(0.012,sg(8),sg(6)).scale(1.4,1,0.7).translate(0,0.13*TK,fz(0.13)-0.008),PL[2]));   // a small bow at the waist
   } else if(id==='mermaid'){
     edge(G.top,PL[1]); edge(G.top-0.03,PL[1]);
-    for(const sd of [-1,1]) out.push(solid(csph(0.012,sg(8),sg(6)).translate(sd*torsoSize(X,D,0.3).rx*0.5,0.36*TK,fz(0.36)-0.009),PL[2]));   // two pearls on the bust
+    for(const sd of [-1,1]) out.push(solid(csph(0.012,sg(8),sg(6)).translate(sd*torsoSize(X,D,0.3).rx*0.5,(0.36+CHEST_DY)*TK,fz(0.36+CHEST_DY)-0.009),PL[2]));   // two pearls on the bust
     out.push(solid(csph(0.016,sg(8),sg(6)).scale(1,0.8,0.7).translate(0,0.17*TK,fz(0.17)-0.01),PL[1]));
   } else if(id==='ballgown'){
     edge(G.top,PL[1]); edge(G.top-0.045,PL[2]);

@@ -15,7 +15,7 @@ close above the eyes, a flat front and a **rounded** chin and jaw (no point), a 
 
 The old model was a stack of separate rounded parts. Rules that keep the new one one body (do not undo them):
 
-* The torso lathe is **one surface from the pelvis through the chest, the shoulders and the neck**; the collarbones are tubes into the arm's ball joint.
+* The torso lathe is **one surface from the pelvis through the chest, the shoulders and the neck**. Above the chest each ring is rebuilt per angle (`trsUpper`: width, front and back depth, so the trapezius slopes only at the sides and the neck rises from a sternal notch in front) and the **deltoid** is a ball round the arm's joint blended into it (`trsDelt`): the arm's top sits inside the shoulder. Below the hip joints the lathe is the **pelvis**, a bowl wider than the thighs' tops: each thigh turns inside it and the briefs' leg line is painted on it, so it stays put when the leg swings. No collarbone tubes, no Adam's apple bead.
 * Every limb is `limb(stations, ...)` (model-parts.js): a surface whose cross-section (x and z half-width) changes smoothly along its length, closed by a **ball cap**.
   The neighbour on the other side of a joint starts with the **same cross-section** (`D.ER` at the elbow, `D.KR` at the knee), so a bent joint stays round and a straight one
   has no step. The elbow / knee check in the smoke test measures exactly this.
@@ -36,7 +36,7 @@ A look field that is not a slider (hair style, colours, face shape) still follow
 |---|---|---|---|---|---|---|
 | `height` | Body | Height | 0.9 .. 1.1 | 1 | 0.92 .. 1.08 | Shorter / Taller |
 | `build` | Body | Build | 0.84 .. 1.24 | 1 | 0.88 .. 1.18 | Slim / Sturdy |
-| `chest` | Body | Chest | 0.5 .. 3.5 | 1 | 0.6 .. 1.4 | Smaller / Larger |
+| `chest` | Body | Chest | 0.5 .. 4.5 | 1 | 0.6 .. 1.4 | Smaller / Larger |
 | `shoulders` | Shape | Shoulders | 0.8 .. 1.25 | 1 | 0.88 .. 1.18 | Narrow / Broad |
 | `waist` | Shape | Waist | 0.75 .. 1.3 | 1 | 0.82 .. 1.15 | Cinched / Full |
 | `hips` | Shape | Hips | 0.8 .. 1.3 | 1 | 0.85 .. 1.2 | Narrow / Wide |
@@ -66,6 +66,8 @@ A look field that is not a slider (hair style, colours, face shape) still follow
 | `hairVolume` | Hair | Hair volume | 0.85 .. 1.35 | 1 | 0.9 .. 1.25 | Sleek / Fluffy |
 | `bangs` | Hair | Fringe length | 0 .. 1.5 | 1 | 0.3 .. 1.4 | None / Long |
 | `chestShape` | Shape | Chest shape | -0.7 .. 0.2 | 0 | whole range | Broad & flat / Round & full |
+| `belly` | Shape | Belly | -1 .. 1.5 | 0 | -1 .. 1.2 | Flat / Round |
+| `muscle` | Shape | Muscle | -1 .. 1.5 | 0 | -1 .. 1.2 | Soft / Athletic |
 | `chestLift` | Shape | Chest height | -1.3 .. 1.8 | 0 | whole range | Lower / Higher |
 | `hipTall` | Shape | Hip height | -0.5 .. 1.8 | 0 | whole range | Shorter / Taller |
 | `chestGap` | Shape | Chest spacing | -0.6 .. 1 | 0 | whole range | Closer / Apart |
