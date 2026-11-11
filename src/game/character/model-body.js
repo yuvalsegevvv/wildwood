@@ -36,8 +36,8 @@ function clothPaints(L){
    that fits a sleeve or a trouser leg by them still clears the body; the body's own stations then come back down from that peak (the elbow, the wrist, the knee and the ankle keep today's size,
    e < 1), so the muscle reads as a swelling and the joints stay slim. A negative value is a uniform, slightly slimmer limb. musW: the torso's width factor (lats), musD: its depth factor (ribs, pecs), musP: the pecs' own forward mass */
 function musK(S){ const m=S.muscle, p=Math.max(m,0), n=Math.max(-m,0); return {m,p,n,a:1+0.13*p-0.05*n,t:1+0.105*p-0.045*n,c:1+0.09*p-0.045*n}; }
-const musW=(S,fem,y)=>1+(S.muscle>=0?(fem?0.03:0.075)*S.muscle:0.025*S.muscle)*faceG(y,0.28,0.09);
-const musD=(S,fem,y)=>1+(S.muscle>=0?(fem?0.02:0.045)*S.muscle:0.015*S.muscle)*faceG(y,0.32,0.08);
+const musW=(S,fem,y)=>1+(S.muscle>=0?(fem?0.03:0.075)*S.muscle*faceG(y,0.28,0.09):-S.muscle*(0.045*faceG(y,0.12,0.1)-0.02*faceG(y,0.3,0.08)));   // (soft: the lats go, the waist and the flanks fill out, so the V taper softens into a straighter, rounder trunk)
+const musD=(S,fem,y)=>1+(S.muscle>=0?(fem?0.02:0.045)*S.muscle*faceG(y,0.32,0.08):-S.muscle*(0.04*faceG(y,0.12,0.1)-0.01*faceG(y,0.32,0.08)));   // (soft: a little rounder at the waist, front and back)
 const musP=(S,fem,y)=>(fem?0.004:0.015)*Math.max(S.muscle,0)*faceG(y,0.34,0.06)+(fem?0.0:0.006)*Math.max(S.muscle,0)*faceG(y,0.12,0.07);   // (what torsoSize adds to the front: the pecs, and a man's abs)
 // the measurements every part shares (also handed to outfits as rig.dims)
 function charDims(L,S,fem,fs){
@@ -48,7 +48,7 @@ function charDims(L,S,fem,fs){
     shY:0.45*TK,                                    // and its height above the hips
     hx:(fem?0.08:0.078)*B*(1+(S.hips-1)*0.6),      // hip joint, off the middle
     aw:(fem?0.9:1.08)*lr*S.arms*mk.a, tw:(fem?1.02:1.0)*lr*S.thighs*mk.t, cw:(fem?0.96:1.04)*lr*S.calves*mk.c, upper:0.28, fore:0.305, wrist:0.25, mk};
-  D.ER=0.034*D.aw/mk.a; D.KR=0.05*lr;              // the elbow's and the knee's radius: both sides of the joint use it (the elbow stays slim however strong the arm: /mk.a)
+  D.ER=0.034*D.aw/Math.sqrt(mk.a); D.KR=0.05*lr*Math.sqrt(mk.t);              // the elbow's and the knee's radius: both sides of the joint use it (the elbow grows at half the muscle's rate, /sqrt(mk.a): fully slim, the swelling forearm next to it read as a knot)
   return D;
 }
 function profR(prof,y){ for(let i=1;i<prof.length;i++) if(y<=prof[i][1]){ const a=prof[i-1], b=prof[i], f=(y-a[1])/((b[1]-a[1])||1); return lerp(a[0],b[0],f); } return prof[prof.length-1][0]; }
@@ -166,8 +166,9 @@ function buildTorso(X,D){
     if(front){
       if(!fem) z+=0.008*B*G(y,0.33,0.1)*(1-0.4*G(ax,0,0.12))*(1-0.4*Math.min(S.chestShape,0))-0.003*B*(0.5+0.5*ch)*G(y,0.37,0.05)*G(ax,0.07*B,0.07)-0.007*B*Math.max(S.chestShape,0)*G(y,0.34,0.05)*G(ax,0.06*B,0.045);   // a man's chest: a flat, broad plane (the ribcage flattened by 0.8 cm: 1.2 read paper thin from the side) with only a hint of pec; a rounded bump read as a bust
       if(S.muscle>0){ const mp=S.muscle, up2=sm(0.62,0.34,y);   // muscle: a man's pecs gain mass with a soft line between them and a lower edge; a woman's chest wall a little firmness (the bust is the bust's); abs: a groove and two soft columns, geometry only where the lathe is fine enough for it
-        if(!fem) z-=0.015*B*mp*G(y,0.345,0.055)*G(ax,0.062*B,0.055)*(1-0.55*G(ax,0,0.011)*sm(0.3,0.36,y))+0.006*mp*G(ax,0,0.01)*G(y,0.13,0.1)-0.006*mp*G(ax,0.03*B,0.02)*G(y,0.12,0.07);
+        if(!fem) z-=0.013*B*mp*G(y,0.345,y<0.345?0.07:0.055)*G(ax,0.062*B,0.055)*(1-0.55*G(ax,0,0.011)*sm(0.3,0.36,y))+0.006*mp*G(ax,0,0.01)*G(y,0.13,0.1)-0.006*mp*G(ax,0.03*B,0.02)*G(y,0.12,0.07);
         else z-=0.004*mp*G(y,0.36,0.07)*G(ax,0,0.1)+0.0015*mp*G(ax,0.03*B,0.02)*G(y,0.12,0.07); }
+      else if(S.muscle<0&&!fem) z-=0.006*(-S.muscle)*B*G(y,0.315,0.045)*G(ax,0.065*B,0.05);   // soft: a man's chest gains a little soft, low fullness under the pecs (no line)
       if(!fem&&ch>1) z-=0.012*B*Math.min(ch-1,1.2)*G(y,0.34,0.07)*(1-0.4*G(ax,0,0.03));   // a man's chest grows as bulk of the pecs and ribs, not as a bust
       { const u=clamp((-0.03-y)/0.13); z*=1-0.6*Math.pow(u,1.5); }   // below the hip joints the front falls back between the thighs, so the crotch narrows to a point (a V crease) instead of ending as a flat-bottomed wedge
       z-=0.008*G(y,0.14,0.11)*(1-G(ax,0,0.04))*(fem?0.5:1);

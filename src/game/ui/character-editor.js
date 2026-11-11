@@ -35,7 +35,7 @@ const EDIT=[
       {type:'dcolor',k:'furColor',num:1,hint:'Fur',premium:false,none:'Skin tone',opts:KIN_FUR.concat(SKINS)},
       {k:'furMark',label:'Markings',type:'seg',opts:KIN_MARKS.map(m=>m.slice())},
       {type:'dcolor',k:'furColor2',num:2,hint:'Markings, ear and tail tips',premium:false,none:'As designed',opts:KIN_FUR.concat(TINTC)}]},
-    {name:'Upper body', rows:['chest','chestShape','shoulders','waist','belly','hips','hipCurve','hipTall','chestLift','chestGap','chestJiggle','torso'].map(k=>({slider:k}))},
+    {name:'Upper body', rows:['chest','chestShape','shoulders','waist','belly','muscle','hips','hipCurve','hipTall','chestLift','chestGap','chestJiggle','torso'].map(k=>({slider:k}))},
     {name:'Limbs', rows:['legs','thighs','calves','arms','neck','hands','feet'].map(k=>({slider:k}))}
   ]},
   {tab:'Face', close:true, subs:[
