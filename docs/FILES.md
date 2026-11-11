@@ -424,6 +424,7 @@ game
   character/model-body.js            The hiker's body: chest, neck, shoulders and hips as one surface; arms and legs whose joints continue each other; hands with fingers; shaped feet
   character/model-gloves.js          Gloves (version 3.1): six base gloves and the glove slot of the signature outfits: the hand's paint, fatter fingers or a mitten, and the cuff (geometry on the forearm)
   character/garment-fit.js           Garment fit: the body's TRUE torso surface (the lathe buildTorso made) as a lookup, so details, trims, straps and shells lie on the bust, the belly and the flanks instead of on an estimate
+  character/arm-clear.js             Arm clearance: measures the body and clothes beside each arm when a character is built, so the hands swing past the hips, thighs, belly, bust and skirts instead of through them
   character/model-garments.js        The base garments' details (version 3.1): collars, plackets, pockets, belts, cuffs, laces, soles and straps for the plain tops, bottoms and shoes, and the new vest, tunic, kilt, pleated skirt, sandals and tall boots
   character/model-hats-more.js       The crafted hats (version 3.2): the horned cap, the laurel wreath and the captain's tricorn, drawn for htBase (model-hats.js) in the head's frame
   character/model-garments-more.js   The crafted tops, bottoms and shoes (version 3.2): robe, poncho, jerkin, crop top, halter wrap and harness; breeches, hakama, plated leggings, loincloth, short shorts and a slit wrap skirt; geta, fur-lined boots and sabatons

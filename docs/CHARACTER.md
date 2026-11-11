@@ -26,6 +26,12 @@ The old model was a stack of separate rounded parts. Rules that keep the new one
   takes the part's offset down the body so the tint noise continues across a joint.
 * Look at joints in a **bent pose**: `node tools/model-preview.js out.png --bent --at 0.5` (knees) / `--at 1.2` (shoulders).
 
+* **Hands clear the body** (`arm-clear.js`, test `tools/hands-clip-smoke.js`). `poseRig` swings the arms only forward and back, so the build measures what is beside each arm
+  (the torso lathe below the armpit, every mesh on the hips, the thighs: radial envelopes of their own vertices) and keeps a table of the extra shoulder abduction (and, past
+  `ACL_MAX`, extra elbow bend) that holds the forearm and hand `ACL_CLR` clear, per shoulder swing x elbow bend x standing / walking / running; `poseRig` looks it up every frame
+  (`rig.acl`, `aclLook`). The built lean (`armLean(D)`, shared with the torso's deltoid) stays; a wide body or a gown adds on top, at rest up to `ACL_REST_MAX` before the arm
+  carries forward and bends instead. Seated hands are placed on top of the thighs (`aclSit`). A new garment hung on the hips or a new slider is measured automatically.
+
 ## 3. Sliders
 
 `BODY_SLIDERS` in `src/shared/character.js` is the one table: key, group, label, absolute range, default, the two end labels. The editor, `buildCharacter`, `randomLook` and the tests read it.

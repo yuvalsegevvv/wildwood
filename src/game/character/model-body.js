@@ -123,15 +123,17 @@ function trsSection(X,D,yd){ const u=trsUpper(X.S,D,yd); return {rx:u.w,rzF:u.df
 const TRS_NBLEND_IN=0.004, TRS_NBLEND=0.035;
 function trsShoulderNormals(g,D){
   const p=g.attributes.position, n=g.attributes.normal, r=0.05*D.aw, L=0.2;
-  for(const sd of [-1,1]){ const th=sd*(0.1+(D.B-1)*0.35), ax=Math.sin(th), ay=-Math.cos(th), jx=sd*D.shX, jy=D.shY;
+  for(const sd of [-1,1]){ const th=sd*armLean(D), ax=Math.sin(th), ay=-Math.cos(th), jx=sd*D.shX, jy=D.shY;
     for(let i=0;i<p.count;i++){ const x=p.getX(i); if(x*sd<D.shX*0.3) continue;
       const dx=x-jx, dy=p.getY(i)-jy, z=p.getZ(i), t=Math.max(0,Math.min(L,dx*ax+dy*ay)), qx=dx-ax*t, qy=dy-ay*t, d=Math.hypot(qx,qy,z), dd=d-r;
       if(dd>TRS_NBLEND) continue; const w=1-faceSm(TRS_NBLEND_IN,TRS_NBLEND,dd), k=0.9*w;
       const fx=qx/(d||1), fy=qy/(d||1), fz=z/(d||1), nx=lerp(n.getX(i),fx,k), ny=lerp(n.getY(i),fy,k), nz=lerp(n.getZ(i),fz,k), l=Math.hypot(nx,ny,nz)||1; n.setXYZ(i,nx/l,ny/l,nz/l); } }
 }
+// the arm's built lean out from the body (shoulder rotation.z, by the build): the torso's deltoid and its normals are shaped for it. poseRig adds what arm-clear.js measures on top
+function armLean(D){ return 0.1+(D.B-1)*0.35; }
 // the deltoid: how far a ray from the spine (direction ux,uz) reaches through the ball round the arm's joint at height y (design); 0 where it misses
 function trsDelt(D,u,y,ux,uz){
-  const dy=(y-u.yS)*D.TK, ry=dy>0?u.rd*0.9:u.rd*TRS_DROP, e=dy*dy/(ry*ry), f=1-(dy>0?e:e*e), a=D.shX+(dy<0?-dy*(0.1+(D.B-1)*0.35):0); if(f<=0) return 0;   // (below the joint it leans out with the hanging arm: buildArm's rest angle)   // a ball above the joint; below it the deltoid keeps its width, then tucks steeply into the arm (a squared falloff): a shallow taper met the arm's own surface almost tangentially and z-fought in a ragged line
+  const dy=(y-u.yS)*D.TK, ry=dy>0?u.rd*0.9:u.rd*TRS_DROP, e=dy*dy/(ry*ry), f=1-(dy>0?e:e*e), a=D.shX+(dy<0?-dy*armLean(D):0); if(f<=0) return 0;   // (below the joint it leans out with the hanging arm: buildArm's rest angle)   // a ball above the joint; below it the deltoid keeps its width, then tucks steeply into the arm (a squared falloff): a shallow taper met the arm's own surface almost tangentially and z-fought in a ragged line
   const rr=u.rd*u.rd*f;
   const k=rr-a*a*uz*uz; return a*Math.abs(ux)+Math.sign(k)*Math.sqrt(Math.abs(k));   // a ray that misses the ball still gets a value (falling off past the grazing one), so the smooth max has no jump where rays stop hitting it: that jump was a hard rim round the shoulder in the side view
 }
@@ -256,7 +258,7 @@ function armDeltoid(g,sd,aw,mus){
 const gloveWrap=(gp,sd,f)=>gp?(x,y,z,c)=>{ f(x,y,z,c); if(-y>=gp.start) gp.paint(c,x,y,z,sd); }:f;
 function buildArm(X,D,sd){
   const {L,S,fem,sg,skinPaint,topPaint,q}=X, kit=X.kit&&X.kit.sl.top, {aw,ER,upper,fore}=D, longSleeve=L.top!=='tshirt'&&L.top!=='none'&&L.top!=='vest'&&L.top!=='jerkin'&&L.top!=='crop'&&!gmxSleeveless(L.top), hh=S.hands, bareArm=gmxSleeveless(L.top);   // kit: the outfit's top (the sleeves are the top's)
-  const sh=new THREE.Group(); sh.name=sd<0?'shL':'shR'; sh.position.set(sd*D.shX,D.shY,0); sh.rotation.z=sd*(0.1+(D.B-1)*0.35);
+  const sh=new THREE.Group(); sh.name=sd<0?'shL':'shR'; sh.position.set(sd*D.shX,D.shY,0); sh.rotation.z=sd*armLean(D);
   // upper arm: the shoulder ball, the biceps in front, narrowing to the elbow. (Cut rings only where a colour edge is: on bare skin a pair of rings 1 mm apart shaded as a faint line round the limb)
   const mk=D.mk, ua=pc(limb([[0,0.05*aw,0.052*aw],[0.13,0.0505*aw,0.053*aw],[0.38,0.045*aw*(1-0.03*mk.p),0.048*aw,-0.003-0.002*mk.p],[0.7,0.037*aw*(1-0.05*mk.p),0.039*aw*(1-0.03*mk.p)],[1,ER,ER*1.04]],upper,sg(24),sg(24),{cuts:(!kit&&!bareArm&&!longSleeve&&L.top!=='none'?[0.13/upper]:[]).concat((kit&&kit.cuts&&kit.cuts.upperArm)||[])}),kit?(x,y,z,c)=>ofPaint(X,'top','upperArm',c,x,y,z,sd):(x,y,z,c)=>{ if(!bareArm&&(longSleeve||y>-0.13)) topPaint(c,x+sd*0.3,y); else skinPaint(c); });
   armDeltoid(ua,sd,aw,D.mk);

@@ -35,6 +35,15 @@ function poseRig(r,dt,o){
   }
   if(lf){ let x=aL; aL=aR; aR=x; x=eL; eL=eR; eR=x; if(twist!==null) twist=-twist; }
   const k=Math.min(1,dt*(o.act?26:14)), L=(ob,v)=>{ ob.rotation.x+=(v-ob.rotation.x)*k; };
+  if(r.acl){   // arm clearance (arm-clear.js): the hands pass beside the hips, the thighs, a belly, a bust, a skirt instead of through them (it only ever moves an arm out, so a slash or a cast keeps its shape)
+    const A=r.acl, sit=o.sit&&!o.act&&!air, st=(o.act||air||o.sit)?0:1-mv; let yL=0, yR=0;
+    if(sit){ const md=o.sit===1?1:2, pl=aclSit(A,md,-1), pr=aclSit(A,md,1), talkArm=o.talk?(lf?'L':'R'):'';   // seated: the hands rest on top of the thighs (a talking sitter still gestures with the strong hand)
+      if(talkArm!=='L'){ aL=pl.a; eL=pl.e; yL=-pl.b; } if(talkArm!=='R'){ aR=pr.a; eR=pr.e; yR=pr.b; } }
+    else if(st>0){ const q0=A.rest[0], q1=A.rest[1]; aL+=q0.a*st; aR+=q1.a*st; eL+=Math.max(0,q0.e-eL)*st; eR+=Math.max(0,q1.e-eR)*st; }   // standing: the arm a very wide body (or a gown) asks to carry a little forward and bent
+    let zL=-A.lean, zR=A.lean; const m=sit?0:mv+run, q=r.aclQ||(r.aclQ=[0,0]);
+    if(!sit||(o.talk&&lf)){ aclLook(A,-1,aL,eL,m,q); zL-=q[0]; eL+=q[1]; }
+    if(!sit||(o.talk&&!lf)){ aclLook(A,1,aR,eR,m,q); zR+=q[0]; eR+=q[1]; }
+    r.shL.rotation.z+=(zL-r.shL.rotation.z)*k; r.shR.rotation.z+=(zR-r.shR.rotation.z)*k; r.shL.rotation.y+=(yL-r.shL.rotation.y)*k; r.shR.rotation.y+=(yR-r.shR.rotation.y)*k; }
   L(r.hipL,tL); L(r.hipR,tR); L(r.kneeL,kL); L(r.kneeR,kR);
   L(r.shL,aL); L(r.shR,aR); L(r.elL,eL); L(r.elR,eR); L(r.spine,lean);
   const walkTurn=(1-0.6*run)*mv;   // pelvis and shoulders turn against each other (the shoulders with the arm that is back)
