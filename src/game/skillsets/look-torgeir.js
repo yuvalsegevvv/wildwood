@@ -6,7 +6,7 @@ ssDefineLook('torgeir',{
   vis:{   // the text: Pinning Shot pins (a peg of stone); Brace raises the shield; Hold the Line stamps and holds a row of shields; Unbroken Line slams a ghost row down
     '1':{hit:[{prop:{kind:'spear',anim:'plant',size:0.5,tilt:0.15,life:1.6,cols:[0,1,1]}}]},
     '2':{cast:[{prop:{kind:'shield',where:'front',d:1.7,anim:'rise',size:2.2,life:1.5,cols:[3,1]}}]},
-    '3':{cast:[{prop:{kind:'shield',n:7,arr:'arc',arc:1.5,r:2.9,anim:'rise',stagger:0.05,size:1.9,life:2.6,cols:[3,1]}},{shake:0.4},{dust:{n:10,r:3,col:0}}]},
+    '3':{cast:[{prop:{kind:'shield',n:7,arr:'arc',arc:1.5,r:2.9,anim:'rise',stagger:0.05,size:1.9,life:2.6,cols:[3,1]}},{shake:0.4},{dust:{n:10,r:3,col:0}},{decal:{r:4,life:8,keep:1,r0:1,spin:0.05,op:0.35}}]},   // the rivets lie for the 8 s guard
     ult:{cast:[{prop:{kind:'shield',n:9,arr:'arc',arc:0.9,r:5.6,anim:'drop',fall:6,size:2.5,stagger:0.04,life:3,cols:[0,1]}},{shake:0.55},{wave:{shape:'arc',arc:0.9,r:8,style:'dust',col:0,h:1,at:0.3}}]}
   },
   mote:[{sh:'pebble',c:0x8a8f94,s:0.2,w:3,g:-9,spin:6},{sh:'shard',c:1,s:0.3,w:2,g:-8,spin:5},{sh:'pebble',c:2,s:0.15,w:2,g:-7,spin:6},{sh:'spark',c:4,s:0.18,w:0.7,add:1}],
@@ -15,5 +15,10 @@ ssDefineLook('torgeir',{
     sslFlash(L,x,y+1.0*sc,z,face,1.8,0.9,0x3f5668,0xe3dccb); spawnArcAt(x,y+0.9*sc,z,face,L.arcCol,C.r/2.6); sslSector(L,x,y+0.4*sc,z,face,C.arc,C.r,16); },
   util:c=>{ const {L,f,x,z}=c;   // a taunt: slabs of stone stand up round him
     if(f.taunt){ sslSlabs(L,x,z,Math.min(f.taunt.r*0.55,7),f.taunt.r>10?10:7,0x6a6e74); spawnRingAt(x,c.gy,z,Math.min(f.taunt.r,10)*0.6,L.hot2); } },
-  fxa:(L,o,kind)=>{ const y=o.y||getH(o.x,o.z); if(kind==='shield'){ sslDome(L,o.x,y,o.z,1.3,0x7d8c5a,1.1); sslBurst(L,o.x,y+0.9,o.z,8,2.4); } else { sslBurst(L,o.x,y+0.4,o.z,8,2); } }
+  fxa:(L,o,kind)=>{ const y=o.y||getH(o.x,o.z); if(kind==='shield'){ sslDome(L,o.x,y,o.z,1.3,0x7d8c5a,1.1); sslBurst(L,o.x,y+0.9,o.z,8,2.4); } else { sslBurst(L,o.x,y+0.4,o.z,8,2); } },
+  proc:(L,o,row,mon)=>{   // First Contact: a slab rises at the target; Shattering Return: slabs thrown out round him and a shake; Iron Return: a short dust crest
+    if(row.name==='Iron Return'){ skvWave(o.x,o.z,{r:3.5,style:'dust',col:L.cols[0],h:0.5,life:0.35}); return true; }
+    if(row.name==='First Contact'){ const m=mon||o; sslSlabs(L,m.x,m.z,1.2,3,0x6a6e74); return true; }
+    if(row.name!=='Shattering Return') return false; sslSlabs(L,o.x,o.z,4,10,0x6a6e74); skvWave(o.x,o.z,{r:6,style:'dust',col:L.cols[0],h:0.9,life:0.6});
+    if(Math.hypot(P.x-o.x,P.z-o.z)<25) camShake=Math.max(camShake,0.3); return true; }
 });

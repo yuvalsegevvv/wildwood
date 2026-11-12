@@ -3,7 +3,10 @@
    Engine: game/skillsets/looks.js. The motes are dark and drawn with normal blending (additive would hide ink); the arcs and rings are additive in the violet and the white-blue. Dusk Flurry whirls crescents round her. */
 ssDefineLook('sazanka',{
   cols:[0x2f3f6b,0xc23b2a,0x1b1f2a,0xc9ccd6,0x5a4cc0,0xdfe8ff], hot:0x7a6cf0, hot2:0xdfe8ff, decal:'cords', arcCol:0xdfe8ff,
-  vis:{   // the text: New Moon vanishes, returns behind the target and lands six cuts under a dark moon
+  vis:{
+    '2':{cast:[{decal:{r:2.4,life:0.9,spin:1.2,op:0.6,at:0.3}}]},   // the slip: the cords flash where she lands
+    '3':{cast:[{decal:{r:4,life:3,keep:1,r0:1,spin:0.3,op:0.4}},{prop:{kind:'moon',anim:'hover',h:5,size:0.7,life:3,cols:[4,5]}}]},   // the 3 s flurry under a small dark moon
+    // the text: New Moon vanishes, returns behind the target and lands six cuts under a dark moon
     ult:{cast:[{burst:{n:14,spd:4}},{prop:{kind:'moon',where:'target',anim:'hover',h:7,size:1.4,life:2,cols:[4,5]}},{swing:{n:6,gap:0.08,r:3,where:'target',at:0.35,turn:6.28,col:5}},{burst:{where:'target',n:16,spd:5,at:0.35}}]}
   },
   mote:[{sh:'wisp',c:2,s:0.34,w:4,g:0.4,sway:1.0,op:0.85},{sh:'spark',c:3,s:0.2,w:2,add:1},{sh:'streak',c:1,s:0.55,w:2.5,face:true,spin:0},{sh:'wisp',c:5,s:0.22,w:2,add:1,g:0.8,sway:1.2}],
@@ -15,5 +18,10 @@ ssDefineLook('sazanka',{
   dash:c=>{ const {L,x,z,fx,fz,hy}=c;   // the slip: an ink streak behind her and her delivery tag dropping where she lands
     sslLine(L,x-fx*7,hy,z-fz*7,x,hy,z,24); sslBurst(L,x,hy-0.3,z,8,3); spawnRingAt(x,c.gy,z,2.2,L.hot);
     ssPart('tag',0x9a6a3a,x+fx*0.4,hy+0.6,z+fz*0.4,{v:[fx*1.2,2.2,fz*1.2],g:-9,life:0.8,s:0.26,spin:5,floor:true}); },
-  zoneTick:(L,A,dt)=>{ A.fl=(A.fl||0)-dt; if(A.fl<=0){ A.fl=0.12; spawnArcAt(A.x,getH(A.x,A.z)+sslR(0.6,1.5),A.z,sslR(0,TAU),Math.random()<0.5?L.arcCol:L.hot,A.r/2.1); } }   // the flurry: crescents whirl round her
+  zoneTick:(L,A,dt)=>{ A.fl=(A.fl||0)-dt; if(A.fl<=0){ A.fl=0.12; spawnArcAt(A.x,getH(A.x,A.z)+sslR(0.6,1.5),A.z,sslR(0,TAU),Math.random()<0.5?L.arcCol:L.hot,A.r/2.1); } },   // the flurry: crescents whirl round her
+  proc:(L,o,row,mon)=>{   // First Cut: a white-blue crescent on the target; Open Season: two crossing crescents and a violet flare
+    if(!mon) return false; const h=slfHead(mon);
+    if(row.name==='First Cut'){ spawnArcAt(mon.x,h.y-0.4,mon.z,sslR(0,TAU),L.arcCol,1.1); return true; }
+    if(row.name!=='Open Season') return false; spawnArcAt(mon.x,h.y-0.3,mon.z,0.6,L.arcCol,1.6); spawnArcAt(mon.x,h.y-0.3,mon.z,-0.6,L.hot,1.6); fxpFlare(h.x,h.y,h.z,L.hot,1.3,0.3); return true; },
+  spent:(L,mon)=>{ const h=slfHead(mon); sslBurst(L,h.x,h.y,h.z,8,4,{sh:'streak',c:4,add:1}); }   // the Barbs tear out as violet streaks
 });
