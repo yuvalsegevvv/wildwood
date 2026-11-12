@@ -8,7 +8,7 @@ Goal: every one of the eight dungeons stays worth running at every stage. They s
 
 | Rule | Value |
 |---|---|
-| Tiers | 11 per dungeon: monster level 30, 38, 46 ... 110 (8 levels a tier). Not tied to zone tiers. The owner first asked for 130 and moved the top to 110 so the top tier fits a maxed character with maxed level-60 gear, the new pieces and maxed symbols (pending his pick of the ladder). |
+| Tiers | 11 per dungeon: monster level 30, 38, 46 ... 110 (8 levels a tier). Not tied to zone tiers. The owner first asked for 130 and moved the top to 110 so the top tier fits a maxed character with maxed level-60 gear, the new pieces and maxed symbols (his pick: 11 tiers, 8 levels apart). |
 | Rarity of every piece | 65 / 25 / 7 / 2.5 / 0.5 % (common / rare / epic / unique / legendary), the same at every tier |
 | Dungeons 1-4 | keep their drops: Hollow Roots weapons, Jade Springs armour, Bonefrost Barrow rings, Blackseam pendants |
 | Dungeon 5, the Sandglass | talismans |
