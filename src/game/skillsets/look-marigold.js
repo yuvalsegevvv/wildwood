@@ -5,6 +5,7 @@ ssDefineLook('marigold',{
   cols:[0xe59a2b,0x5a2a4a,0xffd36b,0xfff2d6,0xf2dca0], hot:0xffd36b, hot2:0xf2dca0, decal:'scallop', arcCol:0xffd36b,
   vis:{   // the text: Ribbon Flourish throws a wave of light 6 m long; Curtain Call is a pulse of light; Standing Ovation drops a spotlight, then fireworks
     '1':{cast:[{wave:{shape:'arc',arc:0.45,r:6,style:'light',col:2,h:0.8,life:0.6}}]},
+    '2':{zone:[{decal:{r:7,life:8,keep:1,r0:1,spin:0.06,op:0.35}}]},   // the stage's scalloped ring for its 8 s
     '3':{cast:[{wave:{r:9,style:'light',col:2,h:1,life:0.8}}]},
     ult:{cast:[{prop:{kind:'spotlight',where:'target',anim:'drop',fall:10,size:1.6,life:2.8,cols:[2]}},{burst:{where:'target',y:4,n:22,spd:6,at:0.7}},{burst:{where:'target',y:5.5,n:22,spd:6,at:1.0}},{burst:{where:'target',y:3.5,n:22,spd:6,at:1.3}},{ring:{where:'target',r:7,at:0.7,col:2}}]}
   },
@@ -24,5 +25,11 @@ ssDefineLook('marigold',{
       (g,s)=>{ g.userData.halo.rotation.y=s*1.6; g.userData.halo.position.y=2.35+Math.sin(s*3)*0.04;
         for(const m of g.userData.wings){ const sd=m.userData.sd, i=m.userData.i; m.rotation.set(0.3,0,sd*(0.7+i*0.22+Math.sin(s*4+i)*0.12)); } }); },
   zoneStart:(L,A)=>{ A.lan=[]; for(let i=0;i<8;i++){ const m=new THREE.Mesh(ssGeo('lantern'),sslOwn(0xffd36b,0.95,true)); m.scale.setScalar(0.42); scene.add(m); A.objs.push(m); A.lan.push(m); } },   // eight paper lanterns turn round the stage
-  zoneTick:(L,A,dt)=>{ if(A.lan) A.lan.forEach((m,i)=>{ const a=t*0.8+i/8*TAU, r=A.r*0.94; m.position.set(A.x+Math.sin(a)*r,getH(A.x,A.z)+1.7+Math.sin(t*2+i)*0.2,A.z+Math.cos(a)*r); m.rotation.y=a; }); }
+  zoneTick:(L,A,dt)=>{ if(A.lan) A.lan.forEach((m,i)=>{ const a=t*0.8+i/8*TAU, r=A.r*0.94; m.position.set(A.x+Math.sin(a)*r,getH(A.x,A.z)+1.7+Math.sin(t*2+i)*0.2,A.z+Math.cos(a)*r); m.rotation.y=a; }); },
+  proc:(L,o,row,mon)=>{   // Grand Finale: three fireworks over her; Warm-Up (every second) and Encore: a spark, no ring
+    const y=o.y||getH(o.x,o.z);
+    if(row.name==='Warm-Up'||row.name==='Encore'){ ssPart('spark',L.hot,o.x,y+2,o.z,{s:0.3,life:0.4,add:1}); return true; }
+    if(row.name!=='Grand Finale') return false;
+    for(let i=0;i<3;i++) fxpLater(i*0.25,()=>{ const a=sslR(0,TAU); sslBurst(L,o.x+Math.sin(a)*1.5,y+4+i*0.8,o.z+Math.cos(a)*1.5,sslN(14),5); }); return true; },
+  spent:(L,mon)=>{ const h=slfHead(mon); for(let i=0;i<sslN(10);i++) ssEmit(L,h.x,h.y,h.z,{sh:i%2?'chaff':'spark',c:i%3?3:2,v:[sslR(-2,2),sslR(3,6),sslR(-2,2)],g:-5,life:sslR(0.7,1.1),sway:1.6}); }   // the Applause goes up as confetti
 });

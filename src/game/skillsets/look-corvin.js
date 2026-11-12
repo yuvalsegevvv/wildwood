@@ -5,8 +5,8 @@ ssDefineLook('corvin',{
   cols:[0xc9a13a,0x5f8f7f,0xfff1c9,0x2b2b2e,0xffffff], hot:0xfff1c9, hot2:0xe6c86a, decal:'dial', arcCol:0xfff1c9,
   vis:{   // the text: a lantern shield flashes; the shutter opens over the area; Noon is a full flash; Midnight Sun opens a sun overhead
     '1':{cast:[{prop:{kind:'lantern',where:'front',d:1.4,anim:'hover',h:1.0,size:1.7,life:0.5,cols:['hot',3,0]}},{flash:{a:0.18}}]},
-    '2':{zone:[{prop:{kind:'lantern',anim:'hover',h:5.5,size:4,life:1.3,cols:['hot',3,0]}},{shaft:{h:9}}]},
-    '3':{cast:[{prop:{kind:'sun',anim:'hover',h:7,size:1.3,life:1.3,cols:['hot','hot2']}},{wave:{r:14,style:'light',col:2,h:0.7,life:0.8}},{flash:{a:0.35}}]},
+    '2':{zone:[{prop:{kind:'lantern',anim:'hover',h:5.5,size:4,life:1.3,cols:['hot',3,0]}},{shaft:{h:9}},{decal:{r:7,life:7.2,keep:1,r0:1,spin:0.05,op:0.4}}]},   // the dial stays for the 6 s exposure
+    '3':{cast:[{prop:{kind:'sun',anim:'hover',h:7,size:1.3,life:1.3,cols:['hot','hot2']}},{wave:{r:14,style:'light',col:2,h:0.7,life:0.8}},{flash:{a:0.35}},{decal:{r:14,life:8,keep:1,r0:1,spin:0.03,op:0.22,at:0.9}}]},   // Noon's 8 s: a faint dial under the field
     ult:{cast:[{prop:{kind:'sun',where:'target',anim:'hover',h:9,size:3,life:3.2,cols:['hot','hot2']}},{wave:{where:'target',r:12,style:'light',col:2,h:0.6,at:0.4,life:1}},{flash:{a:0.3}}]}
   },
   mote:[{sh:'spark',c:2,s:0.25,w:4,add:1,g:0.3},{sh:'glint',c:4,s:0.2,w:1.5,add:1},{sh:'ember',c:0,s:0.1,w:3,add:1,g:0.8,sway:0.6},{sh:'tick',c:0,s:0.28,w:1.5,g:-2}],
@@ -22,5 +22,8 @@ ssDefineLook('corvin',{
   zoneTick:(L,A,dt)=>{ A.fl=(A.fl||0)-dt; if(A.fl<=0){ A.fl=0.09;   // the shutter: parallel bars of light across the field, and plumb lines dropping
       const off=sslR(-A.r*0.8,A.r*0.8), px=A.x+off*0.7, pz=A.z+off*0.7;
       ssPart('ray',L.hot,px,getH(px,pz)+0.5,pz,{s:A.r*1.7,add:1,life:0.35,spin:0,op:0.5,rot:[Math.PI/2,Math.PI*0.75,0,'YXZ']});
-      if(Math.random()<0.5){ const a=sslR(0,TAU), d=Math.sqrt(Math.random())*A.r, qx=A.x+Math.sin(a)*d, qz=A.z+Math.cos(a)*d; ssPart('tick',0xc9a13a,qx,getH(qx,qz)+6,qz,{v:[0,-16,0],life:0.4,s:0.55,spin:0,floor:true,fout:0.5,rot:[0,0,0]}); } } }
+      if(Math.random()<0.5){ const a=sslR(0,TAU), d=Math.sqrt(Math.random())*A.r, qx=A.x+Math.sin(a)*d, qz=A.z+Math.cos(a)*d; ssPart('tick',0xc9a13a,qx,getH(qx,qz)+6,qz,{v:[0,-16,0],life:0.4,s:0.55,spin:0,floor:true,fout:0.5,rot:[0,0,0]}); } } },
+  proc:(L,o,row,mon)=>{   // Afterglow: rays and a lamp flare where the exposed one fell, a dial flash 6 m
+    if(row.name!=='Afterglow') return false; const m=mon||o, gy=getH(m.x,m.z);
+    for(let i=0;i<8;i++) sslRays(L,m.x,gy+0.3,m.z,i/8*TAU,0,1,5,L.hot,{life:0.5}); fxpFlare(m.x,gy+1.2,m.z,L.hot,1.6,0.35); sslDecal(L,m.x,m.z,6,{life:0.8,spin:0.4,op:0.6}); return true; }
 });

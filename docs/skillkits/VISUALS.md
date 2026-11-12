@@ -59,6 +59,25 @@ The visual passes of `COMBO-REWORK.md` and `SYNERGY-REWORK.md`: what the order o
 - **Marks**: Vigil is a flame now (a kept light); Twine a knot; a one-stack mark wears no full-stack halo.
 - **Phone**: everything goes through `ssPart` (`SSL_MAX` 150 in LOW, counts halved by `sslN`) and the wave cap (6 in LOW); the per-hit procs draw at most a few motes.
 
+## The other ten kits (the visual pass after the reworks; no number changed)
+
+What was weak (W) and what changed (C), per kit. The same tools as above: recipes, the `proc` / `spent` / `ally` / `fxa` hooks, windows as ground decals that stay for the status they show, nothing outside `ssPart` and the prop and wave caps.
+
+| Kit | Weak now | Changes |
+|---|---|---|
+| Brindle | W: Fuse Lit and Warm Lenses get the generic ring; Noon Charge's spend of Glints is unseen; his party buffs have no look of their own; nothing marks the 3 s blaze | C: Sun-Glass Burst lays a lens decal on the target for the blaze (3 s); a spent Glint flies up as a sun-glass glint and flashes; Fuse Lit is a fuse spark running to the target and a little fire ring; Warm Lenses quiet (a glint); a crit or might buff from him is a ring of lens glints circling the ally |
+| Corvin | W: the exposure windows (6 s, 8 s) are not on the ground; Afterglow is the default ring | C: Open the Shutter's dial stays under the target for the 6 s exposure; Noon's dial lies 8 s at a low opacity; Afterglow: rays and a lamp flare on the fallen one, a dial flash 6 m |
+| Dessa | W: Hammer Fall is the generic cone; Break the Herd's spend and its 8 s guard are unseen; Hot Iron and The Anvil Holds are default rings | C: Hammer Fall throws forge sparks and a short dust crest; Break the Herd drops an anvil at her feet and lays the rivets for the 8 s; a spent Temper flies to her as sparks; Hot Iron sparks leap round her; The Anvil Holds drops a glowing anvil and a dome |
+| Genzo | W: Bell Mallet is generic; the 8 s guard is unseen; First Toll and The Bell Answers are default rings | C: Bell Mallet rings a small bronze wave; Hold the Hour's rivets lie for the 8 s; a spent Toll is a bronze ring closing on the target; First Toll a small bell over him; The Bell Answers a bell dropped at his feet with a gust |
+| Marigold | W: Center Stage has no ground of its own (only the lanterns); Grand Finale and Warm-Up are default rings; spent Applause unseen | C: the stage lays its scalloped ring for its 8 s; Grand Finale is three fireworks over her; Warm-Up quiet (a spark); spent Applause bursts up as confetti from the target |
+| Pell | W: Dim the Lamp's 4 s burn is unseen; the spear's spend of Lures is unseen; The Pool Burns is the default ring | C: Dim the Lamp lays a lens decal on the target for the 4 s burn and a small flame column; a spent Lure is a lantern light lifting off the target; The Pool Burns: a fire wave 6 m round the target and flames rising |
+| Sabir | W: Smash and Grab has no recipe; the 4 s blaze is unseen; Quick Fingers and Fence the Goods are default rings; spent Loot unseen | C: Smash and Grab: dust, a raider's arc and a flame decal for the blaze (4 s); spent Loot spills as gold coins flying to him; Quick Fingers a single coin flick; Fence the Goods a ring of coins and a fire crest 6 m |
+| Sazanka | W: Slip Behind and Dusk Flurry have no recipes; First Cut and Open Season are default rings; spent Barbs unseen | C: Slip Behind lays the cord pattern for an instant where she lands; Dusk Flurry lays it for the 3 s flurry with a small dark moon; spent Barbs burst as violet streaks; First Cut a white-blue crescent on the target; Open Season two crossing crescents and a violet flare |
+| Torgeir | W: the 8 s guard of Hold the Line is unseen; First Contact and Shattering Return are default rings | C: Hold the Line's rivets lie for the 8 s; First Contact a slab rising at the target; Shattering Return slabs thrown out round him with a shake |
+| Ottoline | W: Cat's Cradle's hit is a plain ring; Final Curtsy's 8 s weakening is unseen; Last Dance is the default ring | C: Cat's Cradle flashes the cords pattern under the target; Final Curtsy lays the cords pattern 12 m for the 8 s; Last Dance: a doll waltzes once round her |
+
+Phone: every addition goes through `ssPart` / `sslN`, the prop cap (18 in LOW) and the decal list; the per-hit procs (Warm Lenses, Quick Fingers, First Cut) draw one or two motes.
+
 ## Known gaps
 
 - Never seen in a real browser (above): sizes, counts, brightness against the forest, the look of a pattern at an angle.
