@@ -99,12 +99,14 @@ function ssMarkS(p,m,spec){
 }
 const SS_MK_QUIET=2;
 function ssClearS(m){ m.mk=null; }
-// fx.pop {id,k,r,heal,cdr,cdrMax}: spend the player's marks on the target (and on every monster within r metres of it): k x the skill's damage for each stack; heal: a share of the damage dealt comes back
+// fx.pop {id,k,r,heal,cdr,cdrMax,cap}: spend the player's marks on the target (and on every monster within r metres of it): k x the skill's damage for each stack; heal: a share of the damage dealt comes back
 function ssPopS(p,P,tgt,mult,dmg){
   const hit=[]; if(tgt) hit.push(tgt);
   if(P.r){ const cx=tgt?tgt.x:p.x, cz=tgt?tgt.z:p.z; for(const m of MONS) if(m!==tgt&&!m.dead&&!m.remove&&(m.inst|0)===(p.inst|0)&&Math.hypot(m.x-cx,m.z-cz)<P.r+m.T.rad) hit.push(m); }
   let dealt=0, spent=0;
-  for(const m of hit){ const n=ssMarkN(p,m,P.id); if(!n) continue; delete m.mk[p.id][P.id]; ev('mk',m.id,P.id,0,0,p.id); spent+=n; dealt+=dmg(m,mult*P.k*n); }
+  const cap=P.cap||1e9;   // pop.cap: at most cap stacks spent a cast (the target's first); what is over the cap stays on the monster
+  for(const m of hit){ if(spent>=cap) break; const has=ssMarkN(p,m,P.id); if(!has) continue; const n=Math.min(has,cap-spent), e=m.mk[p.id][P.id];
+    if(n<has){ e.n=has-n; ev('mk',m.id,P.id,e.n,Math.max(0.1,e.until-S.t),p.id); } else { delete m.mk[p.id][P.id]; ev('mk',m.id,P.id,0,0,p.id); } spent+=n; dealt+=dmg(m,mult*P.k*n); }
   if(P.heal&&dealt) healP(p,dealt*P.heal*(1+psP(p,'heal')+ssCondP(p,'heal',tgt)));
   if(P.cdr&&spent){ const n=Math.min(spent,P.cdrMax||5), c={}; for(const k of Object.keys(P.cdr)) c[k]=P.cdr[k]*n; ssCdrS(p,c); }   // pop.cdr: each stack spent (over all targets, up to cdrMax) takes time off a slot's cooldown
 }

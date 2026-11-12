@@ -5,7 +5,7 @@
 // A set with rangeScale (damage grows with the distance) is also run from 16 m (archer and mage). A risk set is run twice: never behind its targets (careless play, ~0.8 of the safe ladder, warnings only) and always behind (the dummies face away: the owner's 125 / 142 / 170, judged).
 // --combo (docs/skillkits/COMBO-REWORK.md E5): a set with kit.combo {order:[a,b], win} is also played in its order: the bot holds b until a was cast within win seconds (unless a's cooldown left is longer than b's own: waiting
 //   would cost a whole cast of b), and a burst `a` that spends the kit's mark (a pop) waits for the full stack on the target (at most 10 s); both columns are printed, plain (careless) and in order.
-// Usage: node tools/skillsets-ladder.js [--matrix | --bond 0-6 --awk A0-A5 [--guest]] [--wanderer [--path fury]] [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave] [--combo] [--orders]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
+// Usage: node tools/skillsets-ladder.js [--matrix | --bond 0-6 --awk A0-A5 [--guest]] [--wanderer [--path fury]] [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave] [--combo] [--orders [--runs N]]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
 // Also: require('./skillsets-ladder').ladder({W, x, pid}, opts) for a test (tools/skillsets-smoke.js runs it on a fixture); x must expose NAMES.
 const {loadServer}=require('./load');
 const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S','ssBonusSwitch','awkMigGrant','bdGrantP','bdSetOk','WD_PATHS','WD_ORDER','MQ','awkGrantP','AWK_TIERS','skillLvOf','ssMarkN'];
@@ -17,7 +17,7 @@ const BANDS={safe:[110,125,150],risk:[125,142,170],riskCareless:[88,100,120],sup
 function ladder(env,opts){
   opts=opts||{}; const {W,x}=env, secs=opts.secs||60, classes=opts.classes||(opts.dist>4?['archer','mage']:CLASSES), p=W.players.get(env.pid), out=[];
   // castCave false: the charge skill is worn (a Bond counts it) but never cast; combo: the set's kit.combo while --combo plays it (set per set below)
-  const R=Math.random; let seed=12345, castCave=true, combo=null, order=null; const seeded=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
+  const R=Math.random; let seed=12345+(opts.seed|0)*7919, castCave=true, combo=null, order=null; const seeded=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
   const dummies=x.MONS.filter(m=>!m.boss&&!m.inst&&!m.dead).slice(0,7), spot=[];
   // the hero stands in the village (nothing attacks there) with the dummy 2.4 m ahead (the way he faces) and six more around it
   const arrange=()=>{
@@ -256,9 +256,10 @@ if(require.main===module){
   if(args.includes('--orders')){   // docs/skillkits/SYNERGY-REWORK.md section 11: each set in three press orders (burst > skill > basic, skill > burst > basic, the burst held until a skill was cast in the last 4 s); an order-free kit's columns lie within the noise of each other
     const ids=x.SS_ORDER.filter(id=>!x.SS_SETS[id].dev&&(!opts.set||opts.set===id));
     console.log('set'.padEnd(12)+'burst first'.padStart(13)+'skill first'.padStart(13)+'burst held'.padStart(13)+'   spread (pieces / pack)');
-    for(const id of ids){ const R=['burst','skill','hold'].map(o=>ladder(env,Object.assign({},opts,{set:id,cave:false,order:o==='burst'?null:o}))[0]); if(!R.every(Boolean)) continue;
+    const runs=Math.max(1,+val('--runs',1)|0);   // --runs N: each order N times with other seeds, the mean (one seeded run of a set with a pop can land far from its mean)
+    for(const id of ids){ const R=['burst','skill','hold'].map(o=>{ const L=[]; for(let i=0;i<runs;i++){ const r=ladder(env,Object.assign({},opts,{set:id,cave:false,order:o==='burst'?null:o,seed:i}))[0]; if(r) L.push(r.summary); } if(!L.length) return null; const mean=k=>Math.round(L.reduce((a,b)=>a+b[k],0)/L.length); return {summary:{pieces:mean('pieces'),fivePack:mean('fivePack')}}; }); if(!R.every(Boolean)) continue;
       const pc=R.map(r=>r.summary.pieces), pk=R.map(r=>r.summary.fivePack), sp=a=>Math.max(...a)-Math.min(...a);
-      console.log(id.padEnd(12)+R.map(r=>(r.summary.pieces+' / '+r.summary.fivePack).padStart(13)).join('')+'   '+sp(pc)+' / '+sp(pk)); }
+      console.log(id.padEnd(12)+R.map(r=>(r.summary.pieces+' / '+r.summary.fivePack).padStart(13)).join('')+'   '+sp(pc)+' / '+sp(pk)+(runs>1?'   (mean of '+runs+')':'')); }
     process.exit(0); }
   if(args.includes('--combo')){   // E5: each set with a kit.combo, plain (the bot casts whatever is ready: a careless player) and in its order; risk sets always behind, sets with rangeScale from 16 m too
     const ids=x.SS_ORDER.filter(id=>{ const S=x.SS_SETS[id]; return !S.dev&&S.kit&&S.kit.combo&&(!opts.set||opts.set===id); });

@@ -19,7 +19,7 @@ defineSkillSet({
        passive:{name:'Loud Voice', text:'Your buffs last {}% longer', stat:'buffdur', v:[0.4, 0.05]}},
     2:{bound:'any',
        skill:{any:{name:'Cry of Valor', desc:'A cry that carries: you and your allies within 25 m deal 10% more damage for 10 seconds, and 2% more for each Fervor on the enemies near you. A shock of flame round you then spends every Fervor nearby for extra damage.', cd:14, range:6, mult:1.0, act:['dunstan2x',0.7,0.45], anim:'nova',
-                   fx:{ring:{r:6, kb:2}, ally:{kind:'might', v:0.10, dur:10, r:25, perMark:{id:'fervor', v:0.02, r:8}}, pop:{id:'fervor', k:0.5, r:6}}}},
+                   fx:{ring:{r:6, kb:2}, ally:{kind:'might', v:0.10, dur:10, r:25, perMark:{id:'fervor', v:0.02, r:8}}, pop:{id:'fervor', k:0.5, r:6, cap:5}}}},
        passive:{name:'Warm Hearth', text:'While you fight, you and your allies within 20 m regenerate 1% of maximum health a second (refreshed every 3 s)', on:'tick', icd:3, buff:{kind:'regen', v:0.01, dur:4, r:20}}},
     3:{bound:'any',
        skill:{any:{name:'Banner Down', desc:'Plant the banner at your feet for 8 seconds: you and your allies standing within 9 m get 20% more critical hit chance, 40% more critical damage and 2% health back a second. The flame at its foot burns the enemies there, leaves a Fervor on each every second and burns half again as hard on anything that carries Fervor.', cd:45, range:9, mult:0.5, act:['dunstan3x',0.9,0.6], anim:'nova',

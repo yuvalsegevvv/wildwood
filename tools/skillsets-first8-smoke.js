@@ -204,6 +204,9 @@ reset(); put(m1,0,-3); put(m2,0,-20); evs.length=0;
 { const hs=[]; let h=m1.hp; still(()=>{ cast('dunstan_3_any',null); for(let i=0;i<50;i++){ W.tick(0.05); if(m1.hp<h){ hs.push(h-m1.hp); h=m1.hp; } } });
   ok('Dunstan (synergy): the banner leaves a Fervor every second on what stands in it, and none outside',x.ssMarkN(p,m1,'fervor')>=2&&x.ssMarkN(p,m2,'fervor')===0,x.ssMarkN(p,m1,'fervor')+' / '+x.ssMarkN(p,m2,'fervor'));
   ok('...its flame is cold on a clean monster\'s first tick and 1.5x from the second (Fanned Flame), and the client is told (proc names the banner)',hs.length>=2&&near(hs[1]/hs[0],1.5,0.02)&&evs.some(e=>e[0]==='proc'&&e.includes('dunstan_3_any')),hs.map(v=>Math.round(v)).join(',')); }
+reset(); put(m1,0,-3); put(m2,2,-3); put(m3,-2,-3); for(const m of [m1,m2,m3]) x.ssMarkS(p,m,{id:'fervor',n:5,dur:12,max:5});
+{ still(()=>cast('dunstan_2_any',null)); const left=[m1,m2,m3].map(m=>x.ssMarkN(p,m,'fervor')).reduce((a,b)=>a+b,0);
+  ok('Dunstan (balance): Cry of Valor spends at most five Fervor a cast (pop.cap): three monsters at five keep ten, the banner\'s pack of marks is no nuke',left===10,String(left)); }
 reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'fervor',n:5,dur:12,max:5});
 { still(()=>cast('dunstan_2_any',null)); const spent=x.ssMarkN(p,m1,'fervor'); still(()=>cast('dunstan_3_any',null)); tick(25); ok('Dunstan (synergy): Cry of Valor spends the Fervor, a banner planted after it lays it again within a tick',spent===0&&x.ssMarkN(p,m1,'fervor')>=1,spent+' -> '+x.ssMarkN(p,m1,'fervor')); }
 reset(); put(m1,0,-3); evs.length=0;
