@@ -13,6 +13,8 @@ const WEAPON={warrior:'sword1',archer:'bow1',mage:'wand1'}, CLASSES=['warrior','
 // the bands in percent of the baseline: [the pieces alone, the 3-set, the 5-set] (docs/SKILL-SETS.md 5b; a mixed set sits between a support's 90 and its main kit's ladder)
 // the same tree measured 93 to 99 for one set's pieces and 128 vs 131 for another's 5- and 3-set between runs (also before the Amber Reach), so the orderings carry this much slack
 const LADDER_NOISE=4, LADDER_NOISE_FLOOR=92;
+// the ladder value of each combo kit (--combo): its plain pieces before the combo spread (main 023bc12, mean of 3 seeds); the spread aims at wrong about -10%, best about +10% of it
+const COMBO_REF={sorrel:{plain:117,'16 m':117}, brynja:{plain:116,behind:111}, tamsin:{plain:122}, hollis:{plain:237}, sefi:{plain:120,behind:119}, meleni:{plain:150}};
 const BANDS={safe:[110,125,150],risk:[125,142,170],riskCareless:[88,100,120],support:[90,90,90],heal:[90,90,90],tank:[90,90,90],grind:[50,50,50]};
 function ladder(env,opts){
   opts=opts||{}; const {W,x}=env, secs=opts.secs||60, classes=opts.classes||(opts.dist>4?['archer','mage']:CLASSES), p=W.players.get(env.pid), out=[];
@@ -26,16 +28,27 @@ function ladder(env,opts){
       m.face=opts.behind?Math.PI:0; m.dead=false; m.remove=false; m.hp=m.maxHp=1e12; m.slowT=m.burnT=0; m.mk=m.st=m.taunt=null; m.immune=false; m.aggro=false; });
   };
   const pin=()=>dummies.forEach((m,i)=>{ m.x=spot[i][0]; m.z=spot[i][1]; m.kbx=m.kbz=0; m.vx=m.vz=0; m.stunT=1e9; });
-  const fresh=()=>{ arrange(); pin(); p.dead=false; p.hp=p.maxHp; p.act=null; p.cd={basic:0,skill:0,burst:0,cave:0,ult:0}; p.ultB=null; p.ultV=null; p.cave.charge=0; p.ssIcd={}; p.ally=null; p.shield=null; p.buff=null; p.lastDealt=-99; x.recalcP(p); };
+  const fresh=()=>{ arrange(); pin(); p.dead=false; p.hp=p.maxHp; p.act=null; p.cd={basic:0,skill:0,burst:0,cave:0,ult:0}; p.ultB=null; p.ultV=null; p.cave.charge=0; p.ssIcd={}; p.ssCastT={}; p.ally=null; p.shield=null; p.buff=null; p.lastDealt=-99; x.recalcP(p); };
   const last={}, cast=k=>{ const a0=p.act; W.receive(env.pid,{t:'atk',k,tg:dummies[0].id,face:Math.PI,aim:[0,0,1]}); if(p.act&&p.act!==a0) last[k]=x.S.t; };
   // --combo: should slot k wait (kit.combo's order)?
   let popReady=null;
   const held=k=>{
     if(order==='hold'&&k==='burst'){ const ab=s=>x.abilityOf(x.clsOfP(p),s,p.gear.skills,p.level); return !!ab('skill')&&x.S.t-(last.skill===undefined?-1e9:last.skill)>4; }   // --orders 'hold': the burst waits for a skill cast within 4 s
-    if(!combo) return false; const [a,b]=combo.order, ab=s=>x.abilityOf(x.clsOfP(p),s,p.gear.skills,p.level);
-    if(k===b){ if(x.S.t-(last[a]===undefined?-1e9:last[a])<=combo.win||!ab(a)) return false; const B=ab(b); return p.cd[a]<=x.abilityCd(B,p.gear.skills,p.level,x.clsOfP(p)); }
-    if(k===a&&a==='burst'&&combo.mark){ const A=ab(a); if(!A||!A.fx||!A.fx.pop||A.fx.pop.id!==combo.mark) return false; if(popReady===null) popReady=x.S.t;
-      if(x.ssMarkN(p,dummies[0],combo.mark)>=combo.max||x.S.t-popReady>10){ popReady=null; return false; } return true; }
+    if(!combo) return false; const [a,b]=combo.order, ab=s=>x.abilityOf(x.clsOfP(p),s,p.gear.skills,p.level), ago=s=>x.S.t-(last[s]===undefined?-1e9:last[s]);
+    // combo.how: 'best' (b right after a, a pop waits for the full stack), 'order' (in order but sloppy: b late in the window, no stack wait), 'wrong' (the payoff first: a only after b, b never inside a's window)
+    if(combo.how==='wrong'){ if(!ab(a)||!ab(b)) return false;
+      if(k===b) return ago(a)<=combo.win*1.5;   // (half again the window: the set-up's chill, gap or weakness outlasts the window a little)
+      if(k===a){ if(ago(b)<=combo.win) return false; return p.cd[b]<=x.abilityCd(ab(a),p.gear.skills,p.level,x.clsOfP(p)); }
+      return false; }
+    const pops=s=>{ const A=ab(s); return !!(combo.mark&&A&&A.fx&&A.fx.pop&&A.fx.pop.id===combo.mark); }, full=()=>x.ssMarkN(p,dummies[0],combo.mark)>=combo.max;
+    if(k===b){ const since=x.S.t-(last[a]===undefined?-1e9:last[a]);
+      if(since<=combo.win||!ab(a)){ if(!ab(a)) return false;
+        if(combo.how==='order') return since<combo.win*0.6;   // sloppy: b only late in the window
+        if(combo.how==='best'&&pops(b)&&!full()&&since<combo.win-0.4) return true;   // best: a pop in b waits for the full stack while the window lasts
+        return false; }
+      const B=ab(b); return p.cd[a]<=x.abilityCd(B,p.gear.skills,p.level,x.clsOfP(p)); }
+    if(k===a&&combo.how==='best'&&pops(a)){ if(popReady===null) popReady=x.S.t;   // best: a pop in a waits for the full stack (at most 10 s)
+      if(full()||x.S.t-popReady>10){ popReady=null; return false; } return true; }
     return false; };
   // seconds of the rotation (burst, then skill, then basic, whichever is ready): damage a second to the dummy and to all seven
   const rotation=s=>{
@@ -72,8 +85,9 @@ function ladder(env,opts){
   const PT=opts.point, tierOf=()=>{ for(const k of Object.keys(p.gear.awk||{})) delete p.gear.awk[k]; };
   const tree=(k,t)=>{ if(p.gear.awk) delete p.gear.awk[k]; x.awkGrantP(p,k,t); };
   if(PT){ tierOf(); for(const id of x.SKILL_IDS) if(!x.SKILLS[id].set) p.gear.skills.lv[id]=1; tree('wanderer',PT.awk); }
-  const baseline={};
-  for(const cls of classes){
+  const bkey=JSON.stringify([classes,opts.behind,opts.dist,opts.seed|0,secs,PT||null]), bcache=opts.cacheBase?env.ladderBase||(env.ladderBase={}):{};   // opts.cacheBase (--combo): the baseline is the same for every set of one setting, kept on env
+  const baseline=bcache[bkey]||(bcache[bkey]={});
+  if(!Object.keys(baseline).length) for(const cls of classes){
     const best={};
     for(const slot of ['basic','skill','burst']){
       let top=null, topV=-1;
@@ -105,7 +119,7 @@ function ladder(env,opts){
     order=opts.order||null;   // --orders: the bot's press order ('skill': skill before burst; 'hold': burst only after a skill)
     combo=null; if(opts.combo){ if(!S.kit||!S.kit.combo) continue;   // --combo: only the sets that name an order
       const mk=S.kit.mark; let max=0; for(const sid of x.SKILL_IDS){ const r=x.SKILLS[sid]; if(r.set!==id||!r.fx) continue; for(const sh of Object.values(r.fx)) if(sh&&sh.mark&&sh.mark.id===mk) max=Math.max(max,sh.mark.max||5); }
-      combo={order:S.kit.combo.order,win:S.kit.combo.win,mark:mk||null,max:max||5}; }
+      combo={order:S.kit.combo.order,win:S.kit.combo.win,mark:mk||null,max:max||5,how:opts.combo===true?'best':opts.combo}; }
     const inert={}; for(const t of [3,5]) inert[t]=Object.assign({},bonus[t],{stat:'inert',v:[0,0],on:undefined,amp:undefined,cost:undefined});
     x.ssGrantSetP(p,id);
     for(const cls of classes){
@@ -132,8 +146,9 @@ function ladder(env,opts){
         const all6=()=>{ wear(cls,ids,[S.keptPassive]); if(cs0){ p.gear.cave.own[cs0.id]=1; p.gear.skills.cave=cs0.id; } p.gear.skills.ult=x.ULT_SKILLS&&x.ULT_SKILLS[id]?id:null; x.recalcP(p); };
         const off=()=>{ if(cs0){ p.gear.skills.cave=null; delete p.gear.cave.own[cs0.id]; } p.gear.skills.ult=null; };
         bd.b=0; wear(cls,ids,[]); pieces=rotation(secs);
+        if(opts.piecesOnly){ three=five=six=pieces; } else {   // (--combo measures the pieces alone)
         bd.b=2; wear(cls,ids,[]); three=rotation(secs);
-        bd.b=6; castCave=false; all6(); five=rotation(secs); castCave=true; off(); six=five;
+        bd.b=6; castCave=false; all6(); five=rotation(secs); castCave=true; off(); six=five; }
       } else {
         S.bonus=inert; wear(cls,ids,[]); pieces=rotation(secs); S.bonus=bonus;
         wear(cls,ids,[]); three=rotation(secs);
@@ -261,14 +276,16 @@ if(require.main===module){
       const pc=R.map(r=>r.summary.pieces), pk=R.map(r=>r.summary.fivePack), sp=a=>Math.max(...a)-Math.min(...a);
       console.log(id.padEnd(12)+R.map(r=>(r.summary.pieces+' / '+r.summary.fivePack).padStart(13)).join('')+'   '+sp(pc)+' / '+sp(pk)+(runs>1?'   (mean of '+runs+')':'')); }
     process.exit(0); }
-  if(args.includes('--combo')){   // E5: each set with a kit.combo, plain (the bot casts whatever is ready: a careless player) and in its order; risk sets always behind, sets with rangeScale from 16 m too
-    const ids=x.SS_ORDER.filter(id=>{ const S=x.SS_SETS[id]; return !S.dev&&S.kit&&S.kit.combo&&(!opts.set||opts.set===id); });
-    console.log('set'.padEnd(12)+'mode'.padEnd(10)+'plain: pieces / 3-set / 5-set / pack'.padEnd(40)+'in order: pieces / 3-set / 5-set / pack'.padEnd(42)+'order gain (pieces)');
+  if(args.includes('--combo')){   // E5 / COMBO-REWORK.md section 9: each set with a kit.combo in four plays, against its ladder value (COMBO_REF): wrong (the order reversed), plain (whatever is ready: a careless player),
+    // order (in order but sloppy: the payoff late in the window, no stack wait) and best (the payoff right after the set-up, pops on a full stack); risk sets always behind, sets with rangeScale from 16 m too
+    const ids=x.SS_ORDER.filter(id=>{ const S=x.SS_SETS[id]; return !S.dev&&S.kit&&S.kit.combo&&(!opts.set||opts.set===id); }), runs=Math.max(1,+val('--runs',1)|0), plays=[['wrong','wrong'],['plain',false],['order','order'],['best','best']];
+    console.log('set'.padEnd(10)+'mode'.padEnd(8)+plays.map(q=>(q[0]+' pcs/pack').padStart(16)).join('')+'   % of the ladder value (pieces): wrong / plain / order / best'+(runs>1?'   (mean of '+runs+')':''));
     for(const id of ids){ const S=x.SS_SETS[id], modes=[['plain',{}]]; if(S.role.main==='risk') modes.push(['behind',{behind:true}]);
       if(x.SKILL_IDS.some(i=>x.SKILLS[i].set===id&&x.SKILLS[i].fx&&x.SKILLS[i].fx.rangeScale&&x.SKILLS[i].fx.rangeScale.k>1)) modes.push(['16 m',{dist:16,classes:undefined}]);
-      for(const [nm,o] of modes){ const a=ladder(env,Object.assign({},opts,o,{set:id,cave:false}))[0], b=ladder(env,Object.assign({},opts,o,{set:id,cave:false,combo:true}))[0]; if(!a||!b) continue;
-        const col=r=>[r.summary.pieces,r.summary.three,r.summary.five,r.summary.fivePack].join(' / ');
-        console.log(id.padEnd(12)+nm.padEnd(10)+col(a).padEnd(40)+col(b).padEnd(42)+(b.summary.pieces-a.summary.pieces>=0?'+':'')+(b.summary.pieces-a.summary.pieces)); } }
+      for(const [nm,o] of modes){
+        const R=plays.map(([,c])=>{ const L=[]; for(let i=0;i<runs;i++){ const r=ladder(env,Object.assign({},opts,o,{set:id,cave:false,combo:c,seed:i,piecesOnly:true,cacheBase:true}))[0]; if(r) L.push(r.summary); } if(!L.length) return null; const mean=k=>Math.round(L.reduce((a,b)=>a+b[k],0)/L.length); return {pieces:mean('pieces'),pack:mean('piecesPack')}; });
+        if(!R.every(Boolean)) continue; const ref=(COMBO_REF[id]||{})[nm]||R[1].pieces, pc=v=>{ const d=Math.round((v/ref-1)*100); return (d>=0?'+':'')+d; };
+        console.log(id.padEnd(10)+nm.padEnd(8)+R.map(r=>(r.pieces+' / '+r.pack).padStart(16)).join('')+'   '+String(ref).padStart(4)+': '+R.map(r=>pc(r.pieces)).join(' / ')); } }
     process.exit(0); }
   const list=ladder(env,opts); print(list);
   // a risk set is also run with every dummy facing away from the hero (always behind: good play), a set with rangeScale from 16 m; those rows are the ones judged

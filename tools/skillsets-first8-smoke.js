@@ -5,7 +5,7 @@
 const fs=require('fs'), path=require('path'), {loadServer, SRC}=require('./load');
 const evs=[], inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...m.ev); }},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','ssLint','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssTauntedBy','ssMarkN','ssMarkS','ssTriggerS','resolveFxS','damageMonsterS','killMonsterS','hurtP','ssCondP','ssWhen','AREAS','PROJS','mstVulnK','fxModK','recalcP','clsOfP','getH','VIL','ZTIER_MAX','psP','abilityOf','PASSIVE_SLOT_LV','ssBonusSwitch','bhHoldAb','mstDirectS'],{allA1:true});
+  ['MONS','S','SKILLS','SKILL_IDS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','ssLint','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssTauntedBy','ssMarkN','ssMarkS','ssTriggerS','resolveFxS','damageMonsterS','killMonsterS','hurtP','ssCondP','ssWhen','AREAS','PROJS','mstVulnK','fxModK','recalcP','clsOfP','getH','VIL','ZTIER_MAX','psP','abilityOf','PASSIVE_SLOT_LV','ssBonusSwitch','bhHoldAb','mstDirectS'],{allA1:true});
 // These tests check what each kit's pieces DO. The game has ONE passive slot and the 3- / 5-set bonuses are off (skill revamp step 4), so the harness opens three passive slots and switches the bonus rows on here (the engine and the kit data stay valid for the Bond rows that bring them back).
 x.PASSIVE_SLOT_LV.push(x.PASSIVE_SLOT_LV[0],x.PASSIVE_SLOT_LV[0]); x.ssBonusSwitch(true);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
@@ -38,7 +38,7 @@ const norm=x.MONS.filter(m=>!m.boss&&!m.inst&&m.def.id==='slime'), [m1,m2,m3]=no
 const stand=(q,dx,dz)=>{ W.setPos(q.id,[p.x+dx,x.getH(p.x+dx,p.z+dz),p.z+dz,0,0,0]); q.dead=false; q.hp=q.maxHp; q.ally=null; q.shield=null; };
 const put=(m,dx,dz,face)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; m.face=face===undefined?Math.PI:face; return m; };
 W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); p.dead=false; p.hp=p.maxHp; p.act=null; p.face=0; p.level=60;
-const reset=()=>{ x.AREAS.length=0; x.PROJS.length=0; stand(p,0,0); p.ally=null; p.shield=null; stand(pb,3,0); stand(pc,0,40); for(const m of [m1,m2,m3]) put(m,0,-30); };
+const reset=()=>{ x.AREAS.length=0; x.PROJS.length=0; stand(p,0,0); p.ally=null; p.shield=null; p.ssCastT={}; stand(pb,3,0); stand(pc,0,40); for(const m of [m1,m2,m3]) put(m,0,-30); };
 const still=fn=>{ const R=Math.random; Math.random=()=>0.5; try{ return fn(); } finally{ Math.random=R; } };
 const lost=(m,fn)=>{ const h=m.hp; fn(); return h-m.hp; };
 const cast=(id,tgt,o)=>{ const s=x.SKILLS[id]; x.resolveFxS(p,Object.assign({fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:id},o||{}),tgt||null); if(s.fx.proj) for(let i=0;i<30;i++) W.tick(0.05); };
@@ -164,7 +164,9 @@ reset(); put(m1,0,-12);
 { const k=c=>{ const s=x.SKILLS['sorrel_3_'+c]; const run=exp=>{ reset(); put(m1,0,-8); if(exp) m1.st={vuln:{v:0.0001,until:x.S.t+5,by:'zz'}}; return lost(m1,()=>still(()=>{ x.resolveFxS(p,{fx:s.fx,mult:s.mult,range:s.range,el:'air',aim:[0,0,-1],sid:s.id},m1); for(let i=0;i<30;i++) W.tick(0.05); })); };
     const a=run(false), b=run(true); x.PROJS.length=0; return b/a/1.0001; };
   const ks=['archer','warrior','mage'].map(k);
-  ok('Sorrel: Long Gale through an open gap: x1.2 in all three class versions (Through the Gap)',ks.every(v=>near(v,1.2,0.01)),ks.map(v=>v.toFixed(3)).join(' ')); }
+  const SK=x.SKILLS.sorrel_3_archer.fx.vs.k; ok('Sorrel: Long Gale through an open gap: x'+SK+' in all three class versions (Through the Gap)',ks.every(v=>near(v,SK,0.01)),ks.map(v=>v.toFixed(3)).join(' ')); }
+// every Long Gale lands (its act's hit share is under 1: a share of 1.1 never resolved before the act ended)
+{ const late=x.SKILL_IDS.filter(i=>{ const a=x.SKILLS[i].act; return a&&!(a[2]>=0&&a[2]<=1); }); ok('every skill resolves its hit inside its act (act[2] is a share of the seconds; Sorrel\'s and Pell\'s long draws had 1.1)',!late.length&&x.SKILLS.sorrel_3_archer.act[2]<1&&x.SKILLS.pell_3_archer.act[2]<1,late.join(' ')); }
 
 // ---- Ambrose ----
 reset(); put(m1,0,-2); pb.hp=pb.maxHp*0.3; p.hp=p.maxHp*0.5;

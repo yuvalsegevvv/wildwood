@@ -298,9 +298,15 @@ ok('the kit is worn: marks need the cone / ring, amp the second passive (the one
     bad('crowd',d=>{ d.pos[2].skill.any.fx.vs={when:{crowd:{n:3,r:8}},k:1.5,name:'X'}; })&&bad('allies',d=>{ d.pos[2].skill.any.fx.vs={when:{allies:{n:1,r:8}},k:1.5,name:'X'}; })&&bad('taunting',d=>{ d.pos[2].skill.any.fx.vs={when:{taunting:true},k:1.5,name:'X'}; })
     &&bad('k',d=>{ d.pos[2].skill.any.fx.vs={when:{slowed:true},k:1,name:'X'}; })&&bad('name',d=>{ d.pos[2].skill.any.fx.vs={when:{slowed:true},k:1.5,name:'x'.repeat(25)}; })
     &&bad('cdr',d=>{ d.kit.mark='barb'; d.pos[2].skill.any.fx.ring.mark={id:'barb'}; d.pos[3].skill.any.fx.pop={id:'barb',k:1,cdr:{all:1}}; })&&bad('cdrMax',d=>{ d.kit.mark='barb'; d.pos[2].skill.any.fx.ring.mark={id:'barb'}; d.pos[3].skill.any.fx.pop={id:'barb',k:1,cdr:{skill:1},cdrMax:11}; })
-    &&bad('combo order',d=>{ d.kit.combo={order:['skill','skill'],win:4,text:'t'}; })&&bad('combo win',d=>{ d.kit.combo={order:['skill','burst'],win:20,text:'t'}; })&&bad('combo text',d=>{ d.kit.combo={order:['skill','burst'],win:4,text:'t'.repeat(161)}; }));
-  const good=quiet(()=>x.defineSkillSet(fixture('vsok',d=>{ d.char.name='Vs Ok'; d.kit={name:'T',text:'t',combo:{order:['skill','burst'],win:4,text:'Skill, then burst.'}}; d.pos[2].skill.any.fx.vs={when:{slowed:true},k:1.4,name:'Cold Read'}; })));
-  ok('...a valid vs and kit.combo register; the built row carries vs.sid = its piece id, the set keeps the combo',!!good&&x.SKILLS.vsok_2_any.fx.vs.sid==='vsok_2_any'&&good.kit.combo.win===4,JSON.stringify(x.SS_BAD.slice(-2))); }
+    &&bad('combo order',d=>{ d.kit.combo={order:['skill','skill'],win:4,text:'t'}; })&&bad('combo win',d=>{ d.kit.combo={order:['skill','burst'],win:20,text:'t'}; })&&bad('combo text',d=>{ d.kit.combo={order:['skill','burst'],win:4,text:'t'.repeat(161)}; })
+    &&bad('tight after',d=>{ d.pos[2].skill.any.fx.vs={when:{slowed:true},k:1.5,name:'X',tight:{after:'cave',secs:2,k:1.2}}; })&&bad('tight k',d=>{ d.pos[2].skill.any.fx.vs={when:{slowed:true},k:1.5,name:'X',tight:{after:'burst',secs:2,k:2.5}}; })&&bad('cast slot',d=>{ d.pos[2].skill.any.fx.vs={when:{cast:{ult:3}},k:1.5,name:'X'}; })
+    &&bad('act share',d=>{ d.pos[2].skill.any.act=[d.pos[2].skill.any.act[0],1.3,1.1]; }));
+  const good=quiet(()=>x.defineSkillSet(fixture('vsok',d=>{ d.char.name='Vs Ok'; d.kit={name:'T',text:'t',combo:{order:['skill','burst'],win:4,text:'Skill, then burst.'}}; d.pos[2].skill.any.fx.vs={when:{slowed:true},k:1.4,name:'Cold Read',tight:{after:'burst',secs:2,k:1.3}}; d.pos[3].skill.any.fx.vs={when:{cast:{skill:4}},k:1.5,name:'Follow'}; })));
+  ok('...a valid vs (with tight, and a when.cast) and kit.combo register; the built row carries vs.sid = its piece id, the set keeps the combo',!!good&&x.SKILLS.vsok_2_any.fx.vs.sid==='vsok_2_any'&&good.kit.combo.win===4,JSON.stringify(x.SS_BAD.slice(-2)));
+  // vs.tight and when.cast read the owner's cast times (p.ssCastT, set by handleAttack)
+  if(good){ const f2=x.SKILLS.vsok_2_any.fx, f3=x.SKILLS.vsok_3_any.fx; place(mA,3,0); mA.slowT=10; const c0=p.ssCastT;
+    p.ssCastT={}; const a=x.fxModK(f2,p,mA), b=x.fxModK(f3,p,mA); p.ssCastT={burst:x.S.t-1, skill:x.S.t-3}; const c=x.fxModK(f2,p,mA), d=x.fxModK(f3,p,mA); p.ssCastT={burst:x.S.t-2.5, skill:x.S.t-4.5}; const e=x.fxModK(f2,p,mA), g=x.fxModK(f3,p,mA); p.ssCastT=c0; mA.slowT=0;
+    ok('vs.tight: x1.3 more within 2 s of the burst (1.4 -> 1.82, back to 1.4 after); when.cast: x1.5 only within 4 s of the skill',near(a,1.4)&&near(c,1.82)&&near(e,1.4)&&near(b,1)&&near(d,1.5)&&near(g,1),[a,c,e,b,d,g].map(v=>v.toFixed(2)).join(' ')); } }
 
 // ---- triggers ----
 x.SS_SETS.kitx.bonus[3].on='crit';

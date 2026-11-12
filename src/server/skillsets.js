@@ -128,6 +128,7 @@ function ssWhen(p,m,w,el){
   if(w.tgtHp){ if(!m||!(m.maxHp>0)) return false; const h=m.hp/m.maxHp; if((w.tgtHp.above!==undefined&&h<w.tgtHp.above)||(w.tgtHp.below!==undefined&&h>w.tgtHp.below)) return false; }
   if(w.hp){ const h=p.hp/p.maxHp; if((w.hp.above!==undefined&&h<w.hp.above)||(w.hp.below!==undefined&&h>w.hp.below)) return false; }
   if(w.taunting&&!MONS.some(n=>!n.dead&&!n.remove&&n.taunt&&n.taunt.by===p.id&&n.taunt.until>S.t&&(n.inst|0)===(p.inst|0))) return false;
+  if(w.cast){ const sl=Object.keys(w.cast)[0], t=p.ssCastT&&p.ssCastT[sl]; if(!(t!==undefined&&S.t-t<=w.cast[sl])) return false; }   // the owner cast that slot within secs (p.ssCastT, server/combat.js handleAttack)
   if(w.marked&&!(m&&ssMarkN(p,m,w.marked)>0)) return false;
   if(w.behind&&!(m&&ssBehind(p,m))) return false;
   if(w.boss&&!(m&&m.boss)) return false;
@@ -159,7 +160,7 @@ function fxModK(f,p,m){
   if(f.vsBoss&&m.boss) k*=f.vsBoss;
   if(f.behind&&ssBehind(p,m)) k*=f.behind;
   if(f.rangeScale){ const R=f.rangeScale; k*=1+(R.k-1)*Math.max(0,Math.min(1,(Math.hypot(p.x-m.x,p.z-m.z)+caveRangeAdd(p)-R.from)/(R.to-R.from))); }
-  if(f.vs&&ssWhen(p,m,f.vs.when)){ k*=f.vs.k; ssVsProcS(p,f.vs,m); }   // skillsets: a skill's own conditional multiplier (vs)
+  if(f.vs&&ssWhen(p,m,f.vs.when)){ k*=f.vs.k; const T=f.vs.tight; if(T&&p.ssCastT&&S.t-(p.ssCastT[T.after]===undefined?-1e9:p.ssCastT[T.after])<=T.secs) k*=T.k; ssVsProcS(p,f.vs,m); }   // skillsets: a skill's own conditional multiplier (vs); vs.tight: x more when the set-up slot was cast within secs
   return k;
 }
 // a vs that fired: the proc event names the piece (its badge shows vs.name), at most once every 0.5 s per piece

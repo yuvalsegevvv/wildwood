@@ -4,28 +4,28 @@
    tools/skillsets-ladder.js --set sefi. Land: the Amber Reach (tier 3). Mark: Stride. The fourth risk DPS and the second courier, so she is built on a different lever from Sazanka (Barbs from behind) and Brynja (Momentum:
    damage while moving): SPEED OF KILLING (crits that shorten her cooldowns). Crits take time off her cooldowns (Crosswind), a fresh target takes her best crits (First Strike), and she pays in damage taken (Bare Run).
    The combo, "the second lap" (docs/skillkits/COMBO-REWORK.md section 4): cuts to five Strides, Dead Heat spends them and each takes 1.4 s off Gust Dash (pop.cdr: five reset it), then Gust Dash at once, x2 on the
-   weakened target (vs: Second Lap). `exposed` is the shared status, so a debuff support's vuln or weak switches it on too (party synergy, kept: the owner's default). */
+   weakened target (vs: Second Lap, x3; x1.6 more within 2 s of Dead Heat: vs.tight). `exposed` is the shared status, so a debuff support's vuln or weak switches it on too (party synergy, kept: the owner's default). */
 defineSkillSet({
   id:'sefi', name:'The Long Run', land:'amber', needs:{tier:3}, el:'air', outfit:'sefi',
   role:{main:'risk'},
   char:{name:'Sefi', sex:'female', theme:'a cheetah-kin courier who crosses the plain faster than the message, and cuts whatever stands in the way as she passes', ip:{kind:'original', riffs:'the plains courier and runner genre (a light sash, a curved knife, spotted gold fur); no existing character'}},
   pal:{main:0xe0b040, accent:0x3a2a1a, glow:0xbfe6ff},
   emblem:{col:0xf0cc66, glyph:'<path d="M3 15c3-1 4-4 8-5l8-1"/><path d="M6 19c2.5-.6 3.6-2.6 6.5-3.4l6-.6"/><path d="M15 6l4 3-3.6 2.4"/><circle cx="8" cy="9" r=".8"/>'},
-  kit:{mark:'stride', name:'Stride', text:'Every cut takes a Stride (up to 5). Dead Heat spends them all and each one brings Gust Dash back sooner; a Gust Dash into a weakened target hits twice as hard.',
-       combo:{order:['burst','skill'], win:4, text:'At five Strides run Dead Heat, then Gust Dash straight through the staggered target.'}},
+  kit:{mark:'stride', name:'Stride', text:'Every cut takes a Stride (up to 5). Dead Heat spends them all and each one brings Gust Dash back sooner; a Gust Dash into a weakened target hits three times as hard.',
+       combo:{order:['burst','skill'], win:6, text:'At five Strides run Dead Heat, then Gust Dash straight through the staggered target: at once, and it hits harder still.'}},
   pos:{
     1:{bound:'class',
        skill:{
-         warrior:{name:'Passing Cut', desc:'A quick curved cut with the whole stride behind it: heavy for a basic attack. Leaves a Stride.', cd:1.0, range:3.4, mult:1.4, act:['sefi1w',0.5,0.35], anim:'slash',
+         warrior:{name:'Passing Cut', desc:'A quick curved cut with the whole stride behind it: heavy for a basic attack. Leaves a Stride.', cd:1.0, range:3.4, mult:1.27, act:['sefi1w',0.5,0.35], anim:'slash',
                   fx:{cone:{r:3.4, arc:1.1, mark:{id:'stride', n:1, dur:12, max:5}}}, style:'press', hold:{x:{slow:2}}}},
        passive:{name:'First Strike', text:'+{}% critical hit chance against a target above 80% health', stat:'crit', v:[0.08, 0.012], when:{tgtHp:{above:0.8}}}},
     2:{bound:'any',
-       skill:{any:{name:'Gust Dash', desc:'Burst up to 10 m past your target on a gust and cut everything round where you land. Leaves a Stride on each. Second Lap: twice the damage against a weakened or exposed target.', cd:7, range:10, mult:1.1, act:['sefi2x',0.5,0.3], anim:'slash',
-                   fx:{dash:{behind:true, ahead:2}, ring:{r:3.4, mark:{id:'stride', n:1, dur:12, max:5}}, vs:{when:{exposed:true}, k:2.0, name:'Second Lap'}}}},
+       skill:{any:{name:'Gust Dash', desc:'Burst up to 10 m past your target on a gust and cut everything round where you land. Leaves a Stride on each. Second Lap: three times the damage against a weakened or exposed target, and 60% more again within 2 seconds of Dead Heat.', cd:7, range:10, mult:1.2, act:['sefi2x',0.5,0.3], anim:'slash',
+                   fx:{dash:{behind:true, ahead:2}, ring:{r:3.4, mark:{id:'stride', n:1, dur:12, max:5}}, vs:{when:{exposed:true}, k:3.0, name:'Second Lap', tight:{after:'burst', secs:2, k:1.6}}}}},
        passive:{name:'Bolt', text:'When you fall below 40% health you bolt: 30% shorter cooldowns for 6 seconds and a shield worth 10% of your health for 3 seconds (at most every 45 s)', on:'low', below:0.4, icd:45, buff:{kind:'haste', v:0.3, dur:6, r:1}, shield:{v:0.1, dur:3}}},
     3:{bound:'any',
-       skill:{any:{name:'Dead Heat', desc:'Dash up to 12 m through your target and cut everything within 6 m of where you land, spending every Stride for extra damage. Each Stride spent takes 1.4 seconds off Gust Dash (five bring it straight back). What is cut is weakened for 4 seconds.', cd:30, range:12, mult:2.4, act:['sefi3x',0.8,0.5], anim:'slash',
-                   fx:{dash:{ahead:4}, ring:{r:6, status:{kind:'weak', v:0.1, dur:4}}, pop:{id:'stride', k:0.8, r:6, cdr:{skill:1.4}, cdrMax:5}}}},
+       skill:{any:{name:'Dead Heat', desc:'Dash up to 12 m through your target and cut everything within 6 m of where you land, spending every Stride for extra damage. Each Stride spent takes 1.4 seconds off Gust Dash (five bring it straight back). What is cut is weakened for 6 seconds.', cd:30, range:12, mult:2.4, act:['sefi3x',0.8,0.5], anim:'slash',
+                   fx:{dash:{ahead:4}, ring:{r:6, status:{kind:'weak', v:0.1, dur:6}}, pop:{id:'stride', k:0.8, r:6, cdr:{skill:1.4}, cdrMax:5}}}},
        passive:{name:'Bare Run', text:'+{}% critical hit damage; you take 10% more damage', stat:'critdmg', v:[0.24, 0.035], cost:{stat:'red', v:-0.10}}}},
   ult:{name:'Photo Finish', desc:'Three dashes back and forth through the target in a line, each one faster; the stunned are spun round by the wind.', range:8, mult:1.32, act:['sefiult',1.0,0.4], anim:'slash',
        fx:{zone:{r:7, dur:1.2, first:0.2, every:0.5, self:true}},

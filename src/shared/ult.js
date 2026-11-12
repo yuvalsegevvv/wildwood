@@ -63,7 +63,7 @@ function ultProblem(U){
   { const p=ssFxProblem(U.fx,false); if(p) return bad(p); }
   if(!ULT_SHAPES.some(k=>U.fx[k])) return bad('fx needs a shape ('+ULT_SHAPES.join(' ')+')');
   for(const k of SS_FX_SHAPES){ const e=U.fx[k]; if(!e) continue; if(!ULT_SHAPES.includes(k)) return bad('shape "'+k+'" is not allowed (only '+ULT_SHAPES.join(' ')+')'); if(e.stun!==undefined||(e.status&&e.status.kind==='stun')) return bad(k+': the stun is added by the engine, do not write one'); }
-  const a=U.act; if(!Array.isArray(a)||a.length!==3||typeof a[0]!=='string'||!/^[a-z][a-z0-9]*$/.test(a[0])||!(a[1]>0.2&&a[1]<=3)||!(a[2]>=0&&a[2]<=a[1])) return bad('act is [kind, seconds, when it lands] with a lowercase kind');
+  const a=U.act; if(!Array.isArray(a)||a.length!==3||typeof a[0]!=='string'||!/^[a-z][a-z0-9]*$/.test(a[0])||!(a[1]>0.2&&a[1]<=3)||!(a[2]>=0&&a[2]<=1)) return bad('act is [kind, seconds, when it lands (a share of the seconds, 0 to 1)] with a lowercase kind');
   if(ACT_SKILL[a[0]]) return bad('the attack kind "'+a[0]+'" is already used');
   if(U.anim!==undefined&&!Object.values(ANIM_OF).includes(U.anim)) return bad('anim "'+U.anim+'" is not a body animation another skill borrows');
   if(!Array.isArray(U.boost)||U.boost.length!==2) return bad('boost is exactly two entries');
