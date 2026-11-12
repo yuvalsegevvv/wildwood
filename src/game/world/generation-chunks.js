@@ -214,7 +214,8 @@ function* genChunk(ci){
     const [x,z]=pt(8), h=getH(x,z);
     if(h<0.8 || grad(x,z)>0.75 || forestDensity(x,z)<0.45 || vDist(x,z)<VR || arenaDist(x,z)<20 || inTunnelCut(x,z) || inHoar(x,z) || inAmber(x,z) || (inIsles(x,z)&&(vgBare(x,z)||ewKeepOut(x,z,2)||coastDist(x,z)<30)) || (inGrey(x,z)&&h>greyTreeline(x,z)-12) || greyWet(x,z,-1)) continue;
     const s=R(0.6,1.3);
-    fernItems.push({x,z,m:mtx(x,h-0.03,z,rand()*TAU,s,s*R(0.8,1.2),s),c:tint(pick(PAL.fern))}); n++;
+    const fi={x,z,m:mtx(x,h-0.03,z,rand()*TAU,s,s*R(0.8,1.2),s),c:tint(pick(PAL.fern))};
+    if(!(inSun(x,z)||inGloam(x,z))) fernItems.push(fi); n++;   // (the desert and the heath get no forest ferns: a ghost is drawn like any fern but not kept, so the chunk's stream does not move)
   }
   if(fernItems.length){
     if(G.fernHi) addInstanced(G.fernHi,matFern,fernItems,{receive:true,maxDist:110,hgt:1.8,rad:2,lods:[{geo:G.fern,from:55}]});
@@ -266,7 +267,8 @@ function* genChunk(ci){
     const FL=inVale(x,z)?PAL.valeFlowers:PAL.flowers;
     const idx=rand()<0.8?Math.floor((noise2(x*0.02-50,z*0.02+50)*0.5+0.5)*FL.length)%FL.length:Math.floor(rand()*FL.length);
     const s=R(0.7,1.35), m=mtx(x,h-0.02,z,rand()*TAU,s,s,s);
-    stemItems.push({x,z,m}); headItems.push({x,z,m,c:tint(FL[idx],0.08)}); n++;
+    const fh={x,z,m,c:tint(FL[idx],0.08)};
+    if(!(inSun(x,z)||inGloam(x,z))){ stemItems.push({x,z,m}); headItems.push(fh); } n++;   // (no meadow flowers in the desert or on the heath: a ghost, see the ferns)
   }
   if(stemItems.length){ addInstanced(G.stemHi||G.stem,matFlower,stemItems,{maxDist:85,hgt:0.8,rad:0.3}); addInstanced(G.headHi||G.head,matFlower,headItems,{maxDist:85,hgt:0.8,rad:0.3}); }
   yield;
@@ -293,7 +295,8 @@ function* genChunk(ci){
     const [x,z]=pt(10), h=getH(x,z);
     if(h<1 || grad(x,z)>0.3 || forestDensity(x,z)<0.4 || vDist(x,z)<VR+4 || arenaDist(x,z)<23 || inTunnelCut(x,z) || inHoar(x,z) || (inGrey(x,z)&&h>greyTreeline(x,z)) || greyWet(x,z,-0.5)) continue;
     const s=R(0.8,1.2), l=R(0.7,1.4);
-    logItems.push({x,z,m:mtx(x,h+0.18*s,z,rand()*TAU,l,s,s)}); n++;
+    const lgi={x,z,m:mtx(x,h+0.18*s,z,rand()*TAU,l,s,s)};
+    if(!(inSun(x,z)||inGloam(x,z))) logItems.push(lgi); n++;   // (no fallen logs in the desert or on the heath: a ghost)
   }
   if(logItems.length) addInstanced(G.logHi||G.log,matBark,logItems,{cast:true,receive:true,hgt:1.6,rad:3.2});
   yield;
@@ -312,11 +315,14 @@ function* genChunk(ci){
   }
   if(mushItems.length) addInstanced(G.mush,matBark,mushItems,{receive:true,maxDist:70,hgt:0.5,rad:0.4});
 
-  // reeds on the shoreline
+  // reeds on the shoreline. A chunk whose lowest sampled ground is well above the reeds' range (h <= 0.9) cannot grow any: its 15,000 attempts used to call getH each for nothing.
+  // They still draw the same random numbers (pt) and now skip only getH (h=99 is rejected exactly as a dry point was), so nothing placed later moves.
+  let wetLo=1e9; { const r=chunkRect(ci,6); for(let i=0;i<=17;i++) for(let j=0;j<=17;j++) wetLo=Math.min(wetLo,getH(r[0]+(r[1]-r[0])*i/17,r[2]+(r[3]-r[2])*j/17)); }
+  const dryChunk=wetLo>3;
   const reedItems=[];
   for(let a=0,n=0;a<15000 && n<(Q*(LOW?1000:1700))/5;a++){
     if((a&1023)===1023) yield;
-    const [x,z]=pt(6), h=getH(x,z);
+    const [x,z]=pt(6), h=dryChunk?99:getH(x,z);
     if(h<-0.6 || h>0.9) continue;
     const s=R(0.75,1.3);
     reedItems.push({x,z,m:mtx(x,h-0.05,z,rand()*TAU,s,s*R(0.85,1.2),s),c:tint(0xffffff,0.12)}); n++;
@@ -327,7 +333,7 @@ function* genChunk(ci){
   const lilyItems=[], lilyFlowers=[];
   for(let a=0,n=0;a<15000 && n<(Q*(LOW?260:420))/4;a++){
     if((a&1023)===1023) yield;
-    const [x,z]=pt(6), h=getH(x,z);
+    const [x,z]=pt(6), h=dryChunk?99:getH(x,z);
     if(h<-1.6 || h>-0.4) continue;
     const s=R(0.6,1.3), ry=rand()*TAU;
     lilyItems.push({x,z,m:mtx(x,WATER+0.025,z,ry,s,1,s),c:tint(pick(PAL.lily))});
