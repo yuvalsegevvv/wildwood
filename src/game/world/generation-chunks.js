@@ -179,6 +179,8 @@ function* genChunk(ci){
     trees.push({x,z,s});
     placed++;
   }
+  skStandApply(items);   // stands.js: species in patches (a pure post-pass: the stream does not move)
+  const vets=skVeterans(ci,items);   // one giant oak or beech per ~200 m
   for(const k in G.trees){ const list=items[k]; if(list.length) addTreeKind(k,list); }
   yield;
 
@@ -208,7 +210,7 @@ function* genChunk(ci){
   yield;
 
   // ferns
-  const fernItems=[];
+  const fernItems=[]; let mushRef=[];
   for(let a=0,n=0;a<30000*per && n<(Q*(LOW?2600:4200))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(8), h=getH(x,z);
@@ -217,6 +219,7 @@ function* genChunk(ci){
     const fi={x,z,m:mtx(x,h-0.03,z,rand()*TAU,s,s*R(0.8,1.2),s),c:tint(pick(PAL.fern))};
     if(!(inSun(x,z)||inGloam(x,z))) fernItems.push(fi); n++;   // (the desert and the heath get no forest ferns: a ghost is drawn like any fern but not kept, so the chunk's stream does not move)
   }
+  skCourt(ci,vets,fernItems,mushRef=[]);   // stands.js: ferns round each veteran (its mushrooms are added with the mushrooms below)
   if(fernItems.length){
     if(G.fernHi) addInstanced(G.fernHi,matFern,fernItems,{receive:true,maxDist:110,hgt:1.8,rad:2,lods:[{geo:G.fern,from:55}]});
     else addInstanced(G.fern,matFern,fernItems,{receive:true,maxDist:110,hgt:1.8,rad:2});
@@ -270,6 +273,7 @@ function* genChunk(ci){
     const fh={x,z,m,c:tint(FL[idx],0.08)};
     if(!(inSun(x,z)||inGloam(x,z))){ stemItems.push({x,z,m}); headItems.push(fh); } n++;   // (no meadow flowers in the desert or on the heath: a ghost, see the ferns)
   }
+  skVerge(ci,stemItems,headItems);   // stands.js: flowers along the roads
   if(stemItems.length){ addInstanced(G.stemHi||G.stem,matFlower,stemItems,{maxDist:85,hgt:0.8,rad:0.3}); addInstanced(G.headHi||G.head,matFlower,headItems,{maxDist:85,hgt:0.8,rad:0.3}); }
   yield;
 
@@ -313,6 +317,7 @@ function* genChunk(ci){
       mushItems.push({x,z,m:mtx(x,h-0.02,z,rand()*TAU,s,s,s,R(-0.15,0.15),R(-0.15,0.15)),c:brown?new THREE.Color(1.35,1.05,0.75):tint(0xffffff,0.08)});
     }
   }
+  mushItems.push(...mushRef);
   if(mushItems.length) addInstanced(G.mush,matBark,mushItems,{receive:true,maxDist:70,hgt:0.5,rad:0.4});
 
   // reeds on the shoreline. A chunk whose lowest sampled ground is well above the reeds' range (h <= 0.9) cannot grow any: its 15,000 attempts used to call getH each for nothing.

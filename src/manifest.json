@@ -317,6 +317,7 @@
     "world/plant-models-isles.js",
     "world/plant-models-more.js",
     "world/bush-models.js",
+    "world/stands.js",
     "world/grass-models.js",
     "world/instancing.js",
     "player/state.js",
