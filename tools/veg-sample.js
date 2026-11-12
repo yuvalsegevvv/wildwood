@@ -9,6 +9,7 @@ const fs=require('fs'), path=require('path'), {SRC,strip}=require('./load');
 const arg=(n,d)=>{ const i=process.argv.indexOf(n); return i>0?process.argv[i+1]:d; };
 const out=process.argv[2]&&!process.argv[2].startsWith('--')?process.argv[2]:'grass';
 const ONLY=arg('--kinds',''), ROW=(ONLY?ONLY.split(','):null);   // --kinds a,b,c: only those trees, in one row 7 m apart (view 'row')
+const BUSHES=arg('--bushes','');   // --bushes leafy,berry,hazel,juniper,frostjuniper,thicket,scrub: those bush kinds in a row 2.5 m apart (detailed, then low-poly behind), view 'bushes'
 const SG=process.argv.includes('--sg');   // --sg: the terrain's shader lawn on (the game has it off by default)
 const [W,H]=arg('--size','1280x720').split('x').map(Number), VIEWS=arg('--views','top,hiker,close'), TIME=+arg('--time','3'), NT=+arg('--n','26000');
 let chromium; for(const base of [process.cwd(),path.join(__dirname,'..'),'/opt/node-tools','/usr/local/lib']){ try{ chromium=require(require.resolve('playwright',{paths:[base,path.join(base,'node_modules')]})).chromium; break; }catch(e){} }
@@ -24,6 +25,7 @@ ${read('game/engine','materials.js')}
 ${read('game/world','plant-models.js')}
 ${read('game/world','plant-models-hi.js')}
 ${read('game/world','plant-models-more.js')}
+${read('game/world','bush-models.js')}
 ${read('game/world','grass-models.js')}
 ${palSrc}
 ${terSrc}
@@ -70,6 +72,12 @@ const {r:rg}=mrng(777), fresh=new THREE.Color(0x5f8f35), gc=new THREE.Color();
 const free=(x,z,r)=>!TREES.some(t=>Math.hypot(x-t[0],z-t[1])<r);
 const spread=(n,geo,mat,fn,cast)=>{ const list=[]; for(let a=0;a<n*6&&list.length<n;a++){ const x=(rg()-0.5)*50, z=(rg()-0.5)*50; if(!free(x,z,2.2)) continue; const it=fn(x,z,HT(x,z)); if(it) list.push(it); } if(list.length) inst(geo,mat,list,!!cast); };
 const FH=makeFernHi(31), BH=[makeBushHi(4,0.6,21),makeBushHi(3,0.45,22)], SH=makeStemHi(0.45,[0.35,0.55,0.2],41), HH=makeFlowerHead(42), LG=makeLogHi(61), RK=[makeRockHi(false,51,6),makeRockHi(false,52,6)], RD=makeReedsHi(62);
+if(${JSON.stringify(BUSHES)}){ G.bush=[makeBush(4,0.6),makeBush(3,0.45)]; G.bushHi=BH; buildBushKinds(); G.bushK.leafy={hi:BH[0],lo:G.bush[0]};
+  const ks=${JSON.stringify(BUSHES)}.split(','), cols={leafy:0x4f7d32}; const tri={};
+  ks.forEach((k,i)=>{ const K=G.bushK[k]; if(!K) return; const snow=k==='frostjuniper', c=new THREE.Color(cols[k]||BSH_PAL[k][0]); tri[k]=[K.hi?K.hi.attributes.position.count/3:0,K.lo.attributes.position.count/3];
+    const x=(i-(ks.length-1)/2)*1.7, h=HT(x,20);
+    if(K.hi) inst(K.hi,snow?matBushDSnow:matBushD,[{m:_m(x,h,20,0,1),c}],true); inst(K.lo,snow?matBushSnow:matBush,[{m:_m(x,h,16.5,0,1),c}],true); });
+  window.__bush=tri; }
 spread(40,FH,matFern,(x,z,h)=>({m:_m(x,h,z,rg()*TAU,0.8+rg()*0.5),c:new THREE.Color(0x4a7a35).multiplyScalar(0.85+rg()*0.3)}));
 for(let i=0;i<2;i++) spread(8,BH[i],matBushD,(x,z,h)=>({m:_m(x,h,z,rg()*TAU,0.9+rg()*0.4),c:new THREE.Color(0x4f7d32).multiplyScalar(0.85+rg()*0.3)}),true);
 { const fl=[], hd=[], pal=[0xf2e44a,0xf5f5f0,0xd96aa8,0x8a6ad9,0xe8503a]; for(let k=0;k<5;k++){ const cx=(rg()-0.5)*40, cz=(rg()-0.5)*40; for(let j=0;j<22;j++){ const a=rg()*TAU, d=rg()*3, x=cx+Math.cos(a)*d, z=cz+Math.sin(a)*d; if(Math.abs(x)>25||Math.abs(z)>25||!free(x,z,2.2)) continue; const m=_m(x,HT(x,z),z,rg()*TAU,0.8+rg()*0.5); fl.push({m,c:new THREE.Color(0x4c8a2c)}); hd.push({m,c:new THREE.Color(pal[k])}); } }
@@ -78,7 +86,7 @@ spread(5,RK[0],matRock,(x,z,h)=>({m:_m(x,h-0.1,z,rg()*TAU,0.6+rg()*0.8),c:W1}),t
 spread(1,LG,matBark,(x,z,h)=>({m:_m(x,h+0.1,z,rg()*TAU,1),c:W1}),true);
 spread(3,RD,matReed,(x,z,h)=>({m:_m(x,h,z,rg()*TAU,1),c:new THREE.Color(0x7c8a45)}));
 // grass: random tufts like genChunk's loop (fewer under the trees), levels of detail by distance to the eye, as addInstanced does it
-const VIEW={top:{p:[0,62,26],t:[0,0,0]},hiker:{p:[0,2.6,35],t:[0,1.6,10]},low:{p:[-18,1.7,22],t:[-8,0.6,5]},close:{p:[1.5,0.95,3],t:[0,0.25,-0.5]},row:{p:[0,3,18],t:[0,4,0]},sun:{p:[0,2.4,32],t:[0,1.6,6]}};
+const VIEW={top:{p:[0,62,26],t:[0,0,0]},hiker:{p:[0,2.6,35],t:[0,1.6,10]},low:{p:[-18,1.7,22],t:[-8,0.6,5]},close:{p:[1.5,0.95,3],t:[0,0.25,-0.5]},bushes:{p:[0,1.4,27],t:[0,0.6,19]},row:{p:[0,3,18],t:[0,4,0]},sun:{p:[0,2.4,32],t:[0,1.6,6]}};
 const TUFTS=buildGrassTufts(), items=[];
 for(let a=0;a<${NT}*3&&items.length<${NT};a++){
   const x=(rg()-0.5)*50, z=(rg()-0.5)*50, fd=fdAt(x,z);
@@ -90,7 +98,7 @@ for(let a=0;a<${NT}*3&&items.length<${NT};a++){
 }
 let ITEMS=typeof grassClump==='function'?grassClump(items):items; if(typeof grassSort==='function') grassSort(ITEMS);
 const LEV=[[0,1],[30,0.85],[62,0.6]], MAXD=100;
-window.__order=TREES.map(t=>t[2]); window.__tris=Object.fromEntries(KINDS.map(k=>[k,[GT[k]&&GT[k].trunk.attributes.position.count/3+GT[k].leaves.attributes.position.count/3]]));
+window.__order=TREES.map(t=>t[2]); window.__tris=Object.fromEntries(KINDS.map(k=>[k,[GT[k]&&GT[k].trunk.attributes.position.count/3+(GT[k].leaves?GT[k].leaves.attributes.position.count/3:0)]]));
 window.__render=(vn)=>{
   for(const o of scene.children.filter(o=>o.userData.grass)) scene.remove(o);
   const V=VIEW[vn], cam=new THREE.PerspectiveCamera(vn==='close'?55:(vn==='top'?45:68),${W}/${H},0.1,1200); cam.position.set(...V.p); cam.lookAt(...V.t);
@@ -98,7 +106,7 @@ window.__render=(vn)=>{
   const per=LEV.map(()=>[]); const n=ITEMS.length; let gt=0;
   ITEMS.forEach((it,i)=>{ const d=Math.hypot(it.x-V.p[0],it.z-V.p[2]); if(d>=MAXD) return; let j=0; while(j<LEV.length-1&&d>=LEV[j+1][0]) j++; if(i>=Math.ceil(n*LEV[j][1])) return; per[j].push(it); });
   per.forEach((list,j)=>{ if(!list.length) return; const geo=TUFTS[Math.min(j,TUFTS.length-1)], m=inst(geo,matGrass,list,false); m.userData.grass=1; gt+=geo.attributes.position.count/3*list.length; });
-  renderer.render(scene,cam); return {grassTris:gt, tufts:TUFTS.map(g=>g.attributes.position.count/3), shown:per.map(l=>l.length), tris:window.__tris};
+  renderer.render(scene,cam); return {grassTris:gt, tufts:TUFTS.map(g=>g.attributes.position.count/3), shown:per.map(l=>l.length), tris:window.__tris,bush:window.__bush};
 };
 window.__ready=true;
 </script>`;

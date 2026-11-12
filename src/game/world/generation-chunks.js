@@ -183,7 +183,7 @@ function* genChunk(ci){
   yield;
 
   // bushes
-  const bushItems=[[],[]];
+  const bushItems=[[],[]], bshItems={berry:[],hazel:[],juniper:[],frostjuniper:[],thicket:[],scrub:[]};
   for(let a=0,n=0;a<30000*per && n<(Q*(LOW?900:1400))*per;a++){
     if((a&511)===511) yield;
     const [x,z]=pt(8), h=getH(x,z);
@@ -194,7 +194,9 @@ function* genChunk(ci){
     const fd=forestDensity(x,z);
     if(rand()>clamp(1-Math.abs(fd-0.55)*2)+0.08) continue;
     const s=R(0.6,1.5), vale=inVale(x,z), bloom=!hoar&&rand()<(vale?0.35:0.1);   // the vale's azaleas
-    bushItems[n%2].push({x,z,m:mtx(x,h-0.1,z,rand()*TAU,s*R(0.9,1.2),s*R(0.7,1.1),s*R(0.9,1.2)),c:tint(pick(hoar?PAL.frostBush:bloom?(vale?PAL.azalea:PAL.shrubBloom):PAL.bush))});
+    const bi={x,z,m:mtx(x,h-0.1,z,rand()*TAU,s*R(0.9,1.2),s*R(0.7,1.1),s*R(0.9,1.2)),c:tint(pick(hoar?PAL.frostBush:bloom?(vale?PAL.azalea:PAL.shrubBloom):PAL.bush))},
+      bk=bshKind(x,z,h,fd,hoar?'hoar':vale?'vale':inGrey(x,z)?'grey':inSun(x,z)?'sun':inAmber(x,z)?'amber':inGloam(x,z)?'gloam':inIsles(x,z)?'isles':'home',bloom);   // bushes: more kinds by a position hash (bush-models.js), no random number
+    if(bk==='leafy') bushItems[n%2].push(bi); else { bi.c=bshColor(bk,x,z); bshItems[bk].push(bi); }
     n++;
   }
   G.bush.forEach((g,i)=>{
@@ -202,6 +204,7 @@ function* genChunk(ci){
     if(G.bushHi) addInstanced(G.bushHi[i],matBushD,bushItems[i],{cast:true,receive:true,maxDist:170,hgt:2.8,rad:2,lods:[{geo:g,from:65,cast:true}]});
     else addInstanced(g,matBush,bushItems[i],{cast:true,receive:true,maxDist:170,hgt:2.8,rad:2});
   });
+  bshAdd(bshItems,addInstanced);   // bush-models.js
   yield;
 
   // ferns
