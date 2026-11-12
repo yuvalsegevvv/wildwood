@@ -17,7 +17,7 @@ function shAltProblem(a,taken){
   if(a.secs!==undefined&&!(Number.isFinite(a.secs)&&a.secs>=SH_SECS[0]&&a.secs<=SH_SECS[1])) return 'alt.secs is the hold it needs: '+SH_SECS[0]+' to '+SH_SECS[1]+' seconds';
   if(a.cd!==undefined&&!(Number.isFinite(a.cd)&&a.cd>0)) return 'alt.cd is above 0 (or left out: the tap\'s)';
   for(const k of ['range','mult']) if(!(Number.isFinite(a[k])&&a[k]>=0)) return 'alt.'+k+' is a number of 0 or more';
-  const t=a.act; if(!Array.isArray(t)||t.length!==3||typeof t[0]!=='string'||!/^[a-z][a-z0-9]*$/.test(t[0])||!(t[1]>0)||!(t[2]>=0&&t[2]<=t[1])) return 'alt.act is [kind, seconds, when it lands] with a lowercase kind';
+  const t=a.act; if(!Array.isArray(t)||t.length!==3||typeof t[0]!=='string'||!/^[a-z][a-z0-9]*$/.test(t[0])||!(t[1]>0)||!(t[2]>=0&&t[2]<=1)) return 'alt.act is [kind, seconds, when it lands (a share of the seconds, 0 to 1)] with a lowercase kind';
   if(ACT_SKILL[t[0]]||taken.has(t[0])) return 'alt.act: the attack kind "'+t[0]+'" is already used';
   if(a.anim!==undefined&&!Object.values(ANIM_OF).includes(a.anim)) return 'alt.anim "'+a.anim+'" is not a body animation another skill borrows';
   const f=ssFxProblem(a.fx,false); if(f) return 'alt.'+f;

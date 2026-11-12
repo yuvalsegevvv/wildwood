@@ -3,7 +3,7 @@
    game/outfits/hollis.js; visuals: game/skillsets/look-hollis.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-v3b-smoke.js, tools/skillsets-ladder.js --set hollis, tools/boss-duel.js --check.
    Land: the Gloamhorn (tier 2). Mark: Vigil. Healing is capped (SS_HEAL_CAP 0.5 of maximum health a cast; ally regen 5% a second). Unlike Ambrose (a tide) and Nephra (shields) he heals what he has watched:
    the Vigil he keeps on the enemy (Candle Bolt keeps it, The Long Night fills it to five on everything it touches) is returned by Dusk Lent's pop, and Dusk Lent's party heal grows with every Vigil
-   it returns (perMark: the utility is counted before the pop, so it reads the stacks it is about to spend). The combo (docs/skillkits/COMBO-REWORK.md section 6): The Long Night, then Dusk Lent while the Vigil is full. */
+   it returns (perMark: the utility is counted before the pop, so it reads the stacks it is about to spend). The combo (docs/skillkits/COMBO-REWORK.md section 6): The Long Night, then Dusk Lent while the Vigil is full (vs Lantern Lit: when.cast within 8 s of the burst, x3; x1.3 more within 2 s: vs.tight). */
 defineSkillSet({
   id:'hollis', name:'The Wake Lantern', land:'gloam', needs:{tier:2}, el:'dark', outfit:'hollis',
   role:{main:'heal', also:{role:'support', part:'mild'}},
@@ -11,16 +11,16 @@ defineSkillSet({
   pal:{main:0x3a3548, accent:0xe8a84a, glow:0xffcf7a},
   emblem:{col:0xd89a48, glyph:'<path d="M12 2v3"/><path d="M8 8h8l1.5 3.5v6L16 21H8l-1.5-3.5v-6z"/><path d="M12 11v6"/><path d="M9.5 8V5.5h5V8"/>'},
   kit:{mark:'vigil', name:'Vigil', text:'Every blow leaves a Vigil (up to 5) on its target and The Long Night fills it; Dusk Lent returns every Vigil as a wave that hurts the enemy and heals the party more for each one.',
-       combo:{order:['burst','skill'], win:8, text:'Light The Long Night first, then call Dusk Lent while the Vigil is full.'}},
+       combo:{order:['burst','skill'], win:8, text:'Light The Long Night first, then call Dusk Lent while the Vigil is full: the sooner after the night, the harder it lands.'}},
   pos:{
     1:{bound:'class',
        skill:{
-         mage:{name:'Candle Bolt', desc:'A heavy drop of dark candle-flame: a damaging hit that mends the one of you with the least health for 2.5% of their maximum. Weakens what it hits a little (3% less damage dealt, 4 seconds). Leaves a Vigil.', cd:1.1, range:24, mult:2.3, act:['hollis1m',0.6,0.5], anim:'cast',
+         mage:{name:'Candle Bolt', desc:'A heavy drop of dark candle-flame: a damaging hit that mends the one of you with the least health for 2.5% of their maximum. Weakens what it hits a little (3% less damage dealt, 4 seconds). Leaves a Vigil.', cd:1.1, range:24, mult:2.12, act:['hollis1m',0.6,0.5], anim:'cast',
                fx:{proj:{kind:'spore', speed:32, turn:8, life:1.0, status:{kind:'weak', v:0.03, dur:4}, mark:{id:'vigil', n:1, dur:12, max:5}}, heal:{v:0.025, r:15, lowest:true}}}},
        passive:{name:'Steady Flame', text:'Your heals and the regeneration you give are {}% stronger (still capped)', stat:'heal', v:[0.25, 0.03]}},
     2:{bound:'any',
-       skill:{any:{name:'Dusk Lent', desc:'Call back every Vigil within 10 m: the dusk rolls over the enemies for damage for each Vigil, and a share of it mends you. The wave heals you and your allies for 6% of maximum health, and 1.2% more for each Vigil (up to five), and shields them for a moment.', cd:12, range:10, mult:1.5, act:['hollis2x',0.7,0.45], anim:'nova',
-                   fx:{ring:{r:10}, pop:{id:'vigil', k:0.6, r:10, heal:0.5}, heal:{v:0.06, r:20, perMark:{id:'vigil', v:0.012, r:10, max:5}}, shield:{v:0.08, dur:6, r:20}}}},
+       skill:{any:{name:'Dusk Lent', desc:'Call back every Vigil within 10 m: the dusk rolls over the enemies for damage for each Vigil, and a share of it mends you. The wave heals you and your allies for 6% of maximum health, and 1.2% more for each Vigil (up to five), and shields them for a moment. Lantern Lit: three times the damage within 8 seconds of The Long Night, and 30% more again within 2 seconds.', cd:12, range:10, mult:1.35, act:['hollis2x',0.7,0.45], anim:'nova',
+                   fx:{ring:{r:10}, pop:{id:'vigil', k:0.55, r:10, heal:0.5}, heal:{v:0.06, r:20, perMark:{id:'vigil', v:0.012, r:10, max:5}}, shield:{v:0.08, dur:6, r:20}, vs:{when:{cast:{burst:8}}, k:3.0, name:'Lantern Lit', tight:{after:'burst', secs:2, k:1.3}}}}},
        passive:{name:'Lantern Leans In', text:'When you are hurt, the lantern leans in: you and your allies within 15 m regenerate 2% of maximum health a second for 5 seconds (at most every 10 s)', on:'hurt', icd:10, buff:{kind:'regen', v:0.02, dur:5, r:15}}},
     3:{bound:'any',
        skill:{any:{name:'The Long Night', desc:'The lanterns are lit all at once: you and your allies within 20 m are healed for 30% of maximum health, regenerate 3% a second and are shielded for 15% for 8 seconds. A wave of dusk round you hurts the enemies near, weakens their blows and leaves them 8% easier to hurt for 6 seconds. Everything the dusk touches is left with a full Vigil.', cd:45, range:9, mult:2.6, act:['hollis3x',0.9,0.6], anim:'nova',

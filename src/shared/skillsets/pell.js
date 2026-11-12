@@ -13,7 +13,7 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         archer:{name:'Torch Arrow', desc:'A burning arrow from far away: a precise, heavy shot for a basic attack.', cd:0.9, range:34, mult:3.3, act:['pell1a',0.55,0.5], anim:'shoot',
+         archer:{name:'Torch Arrow', desc:'A burning arrow from far away: a precise, heavy shot for a basic attack.', cd:0.9, range:34, mult:3.0, act:['pell1a',0.55,0.5], anim:'shoot',
                  fx:{proj:{kind:'ember', speed:54, turn:6, life:0.9}, rangeScale:{from:6, to:30, k:1.4}},style:'hold',hold:{x:{burn:{dur:4,k:0.3}}}}},
        passive:{name:'Steady Hand', text:'+{}% damage while you have stood still for 2 seconds', stat:'dmg', v:[0.16, 0.02], when:{still:2}}},
     2:{bound:'any',
@@ -22,12 +22,12 @@ defineSkillSet({
        passive:{name:'Night Eyes', text:'+{}% critical hit chance against a target that carries a Lure', stat:'crit', v:[0.08, 0.01], when:{marked:'lure'}}},
     3:{bound:'class',
        skill:{
-         warrior:{name:'Spear of the Night Pool', desc:'Wind up and hurl one great spear: it lands harder the farther it flies, up to 2.2 times at 28 m. Spends every Lure on the target.', cd:28, range:30, mult:6.0, act:['pell3w',1.3,1.1], anim:'slash',
-                  fx:{proj:{kind:'thorn', speed:54, turn:12, life:0.8}, rangeScale:{from:5, to:28, k:2.2}, pop:{id:'lure', k:0.8}}},
-         archer:{name:'Pitch Arrow', desc:'Draw and loose one arrow wrapped in burning pitch: up to 2.2 times as hard at 38 m. Spends every Lure on the target.', cd:28, range:42, mult:6.2, act:['pell3a',1.3,1.1], anim:'shoot',
-                 fx:{proj:{kind:'snipe', speed:68, turn:12, life:1.0}, rangeScale:{from:5, to:38, k:2.2}, pop:{id:'lure', k:0.8}}},
-         mage:{name:'Flare of the Pool', desc:'Gather the torch fire and loose one flare: up to 2.2 times as hard at 34 m. Spends every Lure on the target.', cd:28, range:34, mult:6.0, act:['pell3m',1.3,1.1], anim:'cast',
-               fx:{proj:{kind:'ember', speed:62, turn:12, life:0.9}, rangeScale:{from:5, to:34, k:2.2}, pop:{id:'lure', k:0.8}}}},
+         warrior:{name:'Spear of the Night Pool', desc:'Wind up and hurl one great spear: it lands harder the farther it flies, up to 2.2 times at 28 m. Spends every Lure on the target.', cd:28, range:30, mult:2.9, act:['pell3w',1.3,0.85], anim:'slash',
+                  fx:{proj:{kind:'thorn', speed:54, turn:12, life:0.8}, rangeScale:{from:5, to:28, k:2.2}, pop:{id:'lure', k:0.55}}},
+         archer:{name:'Pitch Arrow', desc:'Draw and loose one arrow wrapped in burning pitch: up to 2.2 times as hard at 38 m. Spends every Lure on the target.', cd:28, range:42, mult:3.0, act:['pell3a',1.3,0.85], anim:'shoot',
+                 fx:{proj:{kind:'snipe', speed:68, turn:12, life:1.0}, rangeScale:{from:5, to:38, k:2.2}, pop:{id:'lure', k:0.55}}},
+         mage:{name:'Flare of the Pool', desc:'Gather the torch fire and loose one flare: up to 2.2 times as hard at 34 m. Spends every Lure on the target.', cd:28, range:34, mult:2.9, act:['pell3m',1.3,0.85], anim:'cast',
+               fx:{proj:{kind:'ember', speed:62, turn:12, life:0.9}, rangeScale:{from:5, to:34, k:2.2}, pop:{id:'lure', k:0.55}}}},
        passive:{name:'Far Bank', text:'+{}% damage with every attack; you deal 20% less to a target within 6 m', stat:'dmg', v:[0.12, 0.02], cost:{stat:'dmg', v:-0.20, when:{dist:{to:6}}}}}},
   ult:{name:'Lantern Flood', desc:'The spear is thrown into the ground and a pool of fire spreads (8 m), with 3 Lures on everything in it.', range:30, mult:1.5, act:['pellult',1.1,0.9], anim:'slash',
        fx:{zone:{r:8, dur:3, first:0.3, every:0.5, mark:{id:'lure', n:3, dur:12, max:3}}},

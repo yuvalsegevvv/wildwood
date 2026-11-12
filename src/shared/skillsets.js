@@ -18,7 +18,7 @@
    hit crit kill hurt cast1 cast2 cast3 tick low taunt shield revive) + at least one of fx / heal / buff / mark / status / shield / cdr (+ chance, icd (a tick's interval), mult, range, el, below (low: the health share), when, streak:{n, secs} (a kill trigger), at:'target'), OR amp:{id, per} (the
    owner's marked targets take per x stacks more from you); and optionally cost:{stat, v} with a negative v: the price this same row pays (less maximum health, more damage taken, longer cooldowns).
    The fx of a skill (docs/SKILL-SETS.md 6): the shapes ring cone beam chain proj zone dash buff, and modifiers vsBoss (damage x against bosses), behind (x from behind: {k} or a number),
-   rangeScale ({from, to, k}: damage grows to x k between those distances), vs ({when, k, name}: this skill's damage x k on a target for which the condition holds, named on a proc badge; not crowd / allies / taunting)
+   rangeScale ({from, to, k}: damage grows to x k between those distances), vs ({when, k, name, tight?}: this skill's damage x k on a target for which the condition holds, named on a proc badge; not crowd / allies / taunting; tight {after, secs, k}: x k more when the slot after was cast within secs: a clean combo)
    and pop ({id, k, r, heal, cdr, cdrMax, cap}: spend the player's marks of id: k x the hit's damage for each stack (at most cap stacks a cast, the target's first: the rest stay); cdr {basic|skill|burst: seconds} off that slot for each stack spent, up to cdrMax stacks); the utility keys ally ({kind, v, dur, r}
    or a list: the caster and the party within r metres, in the same run), heal ({v, r}), shield ({v, dur, r}) and taunt ({dur, r}: the monsters near the caster come for them); a zone may carry ally / heal /
    shield too (for the allies standing in it); a shape may carry mark:{id, n, dur, max, behind}, status:{kind, v, dur, perMark} and taunt:{dur} (what it hits comes for the caster); ally / heal / shield may carry perMark:{id, v, dur, r, max}
@@ -40,7 +40,7 @@ const SS_ON_ICD=['hit','crit','hurt','tick','low','taunt','shield'];   // these 
 // the stats a passive or a bonus row may name (read with psP on the server), and the ones that may carry a `when` (read where the target or the fight is known: ssCondP)
 const SS_STATS=['hp','dmg','crit','red','cd','aspd','chg','drop','xp','reflect','critdmg','heal','buffpow','buffdur','debuffdur','area','regen','overflow','revive','move'];   // (move: movement speed, read by the client's updatePlayer through passiveSum; a path's passive-style rows use it, wanderer: wayfarer)
 const SS_COND_STATS=['dmg','crit','critdmg','red','heal','buffpow','buffdur','debuffdur','area','regen'];
-const SS_WHEN_KEYS=['moved','still','dist','tgtHp','hp','taunting','marked','behind','boss','crowd','allies','exposed','combat','shield','adv','slowed'];   // (adv: the hit's element beats the target's on the wheel, wanderer: prism; slowed: the target is slowed now, m.slowT > 0)
+const SS_WHEN_KEYS=['moved','still','dist','tgtHp','hp','taunting','marked','behind','boss','crowd','allies','exposed','combat','shield','adv','slowed','cast'];   // (cast: {skill: 3}: the owner cast that slot within that many seconds, a combo's payoff; adv: the hit's element beats the target's on the wheel, wanderer: prism; slowed: the target is slowed now, m.slowT > 0)
 const SS_VS_NO_WHEN=['crowd','allies','taunting'];   // a vs's condition is asked once per hit (fxModK): these scan every monster, so a vs may not use them (the tick's cost rule)
 const SS_ENTRY_KEYS=['name','desc','cd','range','mult','act','anim','el','fx','buff','why','style','hold','alt'];   // style, hold: skill 1 only (shared/basic-hold.js); alt: skill 2 only, its held mode (shared/skill-hold.js)
 const SS_HOLD_X=['status','mark','taunt','slow','stun','burn','kb','splash'];   // what a skill 1's hold.x may add to its main shape at a full charge
@@ -63,6 +63,7 @@ function ssWhenProblem(w){
     if((k==='tgtHp'||k==='hp')&&!share(v)) return k+' is {above} and / or {below}: shares of health (0 to 1)';
     if(['taunting','behind','boss','exposed','combat','shield','adv','slowed'].includes(k)&&v!==true) return k+' is true';
     if(k==='marked'&&!(typeof v==='string'&&/^[a-z]+$/.test(v))) return 'marked is a mark id';
+    if(k==='cast'&&!(v&&typeof v==='object'&&Object.keys(v).length===1&&['basic','skill','burst'].includes(Object.keys(v)[0])&&num(v[Object.keys(v)[0]],0.1,30))) return 'cast is {slot: seconds}: one of basic / skill / burst, cast within 0.1 to 30 s';
     if((k==='crowd'||k==='allies')&&!(v&&Number.isInteger(v.n)&&v.n>=1&&v.n<=10&&num(v.r,1,40))) return k+' is {n (1 to 10), r (metres)}';
   }
   return null;
@@ -80,7 +81,8 @@ function ssFxProblem(fx,inTrigger){
   const P=fx.pop; if(P!==undefined&&(!P||!/^[a-z]+$/.test(P.id)||!(P.k>0&&P.k<=3)||!(P.r===undefined||(P.r>0&&P.r<=20))||!(P.heal===undefined||(P.heal>0&&P.heal<=1))||!(P.cdrMax===undefined||(Number.isInteger(P.cdrMax)&&P.cdrMax>=1&&P.cdrMax<=10))||!(P.cap===undefined||(Number.isInteger(P.cap)&&P.cap>=1&&P.cap<=50)))) return 'pop is {id, k (up to 3), r (metres, optional), heal (a share of the damage, optional), cap (stacks spent per cast, 1 to 50, optional), cdr ({basic, skill, burst}: seconds off a cooldown for each stack spent, optional), cdrMax (stacks counted, 1 to 10, default 5)}';
   if(P&&P.cdr!==undefined){ const c=ssCdrProblem(P.cdr); if(c||P.cdr.all!==undefined) return 'pop.'+(c||'cdr is {basic, skill, burst}: seconds for each stack spent (no all)'); }
   const V=fx.vs; if(V!==undefined){   // vs: this skill's own conditional multiplier (read in fxModK, server/skillsets.js)
-    if(!V||typeof V!=='object'||!(Number.isFinite(V.k)&&V.k>1&&V.k<=3)||typeof V.name!=='string'||!V.name||V.name.length>24||Object.keys(V).some(k=>!['when','k','name'].includes(k))) return 'vs is {when (a condition block), k (above 1, at most 3), name (1 to 24 characters: the badge)}';
+    if(!V||typeof V!=='object'||!(Number.isFinite(V.k)&&V.k>1&&V.k<=3)||typeof V.name!=='string'||!V.name||V.name.length>24||Object.keys(V).some(k=>!['when','k','name','tight'].includes(k))) return 'vs is {when (a condition block), k (above 1, at most 3), name (1 to 24 characters: the badge), tight (optional)}';
+    const T=V.tight; if(T!==undefined&&(!T||typeof T!=='object'||!['basic','skill','burst'].includes(T.after)||!(Number.isFinite(T.secs)&&T.secs>0&&T.secs<=10)||!(Number.isFinite(T.k)&&T.k>1&&T.k<=2)||Object.keys(T).some(k=>!['after','secs','k'].includes(k)))) return 'vs.tight is {after (basic / skill / burst: the set-up slot), secs (above 0, at most 10), k (above 1, at most 2)}';
     const w=ssWhenProblem(V.when); if(w) return 'vs.'+w; const no=Object.keys(V.when).find(k=>SS_VS_NO_WHEN.includes(k)); if(no) return 'vs.when may not use "'+no+'" (it scans every monster, and a vs is asked on every hit)'; }
   if(fx.dash&&fx.dash.behind!==undefined&&fx.dash.behind!==true) return 'dash.behind is true (land on the far side of the target)';
   for(const k of SS_FX_SHAPES){ const e=fx[k]; if(e&&typeof e==='object'){ if(e.taunt!==undefined&&!(e.taunt&&e.taunt.dur>0&&e.taunt.dur<=10)) return k+'.taunt is {dur (up to 10 s)}: what this entry hits comes for you'; if(e.mark!==undefined){ const m=ssMarkProblem(e.mark); if(m) return k+'.'+m; } if(e.status!==undefined){ const m=ssStatusProblem(e.status); if(m) return k+'.'+m; } } }
@@ -114,7 +116,7 @@ function ssSkillProblem(e,taken){
   if(typeof e.desc!=='string'||!e.desc) return 'desc missing';
   for(const k of ['cd','range','mult']) if(!(Number.isFinite(e[k])&&e[k]>=0)) return k+' must be a number of 0 or more';
   if(!(e.cd>0)) return 'cd must be above 0';
-  const a=e.act; if(!Array.isArray(a)||a.length!==3||typeof a[0]!=='string'||!/^[a-z][a-z0-9]*$/.test(a[0])||!(a[1]>0)||!(a[2]>=0&&a[2]<=a[1])) return 'act is [kind, seconds, when it lands (0 to the seconds)] with a lowercase kind';
+  const a=e.act; if(!Array.isArray(a)||a.length!==3||typeof a[0]!=='string'||!/^[a-z][a-z0-9]*$/.test(a[0])||!(a[1]>0)||!(a[2]>=0&&a[2]<=1)) return 'act is [kind, seconds, when it lands (a share of the seconds, 0 to 1: the server resolves the hit at seconds x share)] with a lowercase kind';
   if(ACT_SKILL[a[0]]||taken.has(a[0])) return 'the attack kind "'+a[0]+'" is already used (every skill has its own)';
   if(e.anim!==undefined&&!Object.values(ANIM_OF).includes(e.anim)) return 'anim "'+e.anim+'" is not a body animation that another skill already borrows';
   if(e.el!==undefined&&!ssIsEl(e.el)) return 'el "'+e.el+'" is not an element';

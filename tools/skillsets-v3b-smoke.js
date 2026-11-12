@@ -33,7 +33,7 @@ const norm=x.MONS.filter(m=>!m.boss&&!m.inst&&m.def.id==='slime'), [m1,m2,m3]=no
 const stand=(q,dx,dz)=>{ W.setPos(q.id,[p.x+dx,x.getH(p.x+dx,p.z+dz),p.z+dz,0,0,0]); q.dead=false; q.hp=q.maxHp; q.ally=null; q.shield=null; };
 const put=(m,dx,dz,face)=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=null; m.inst=0; m.immune=false; m.burnT=m.slowT=0; m.stunT=1e9; m.taunt=null; m.aggro=false; m.x=p.x+dx; m.z=p.z+dz; m.face=face===undefined?Math.PI:face; return m; };
 W.setPos('a',[x.VIL.x,x.getH(x.VIL.x,x.VIL.z),x.VIL.z,0,0,0]); p.dead=false; p.hp=p.maxHp; p.act=null; p.face=0; p.level=60;
-const reset=()=>{ x.AREAS.length=0; x.PROJS.length=0; stand(p,0,0); p.ally=null; p.shield=null; stand(pb,3,0); for(const m of [m1,m2,m3]) put(m,0,-30); };
+const reset=()=>{ x.AREAS.length=0; x.PROJS.length=0; stand(p,0,0); p.ally=null; p.shield=null; p.ssCastT={}; stand(pb,3,0); for(const m of [m1,m2,m3]) put(m,0,-30); };
 const still=fn=>{ const R=Math.random; Math.random=()=>0.5; try{ return fn(); } finally{ Math.random=R; } };
 const lost=(m,fn)=>{ const h=m.hp; fn(); return h-m.hp; };
 const cast=(id,tgt,o)=>{ const s=x.SKILLS[id]; x.resolveFxS(p,Object.assign({fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:id},o||{}),tgt||null); if(s.fx.proj) for(let i=0;i<30;i++) W.tick(0.05); };
@@ -109,7 +109,8 @@ clear(); reset(); tick(3); let n0=evs.length;
   ok('Brynja: Glide and Cut hits a rimed target 1.4x (Cold Read) and chills it for 4 s',near(rimed/clean,1.4,0.02)&&m1.slowT>=3.9,(rimed/clean).toFixed(3)+' slow '+m1.slowT.toFixed(2)); }
 { reset(); put(m1,0,-10); x.ssMarkS(p,m1,{id:'rime',n:5,dur:12,max:5}); const cold=lost(m1,()=>still(()=>cast('brynja_3_any',m1)));
   reset(); put(m1,0,-10); x.ssMarkS(p,m1,{id:'rime',n:5,dur:12,max:5}); m1.slowT=100; const sh=lost(m1,()=>still(()=>cast('brynja_3_any',m1)));
-  ok('Brynja: Whiteout shatters a chilled target: 1.5x from its impact and its pop together',near(sh/cold,1.5,0.02),(sh/cold).toFixed(3)); }
+  const V=x.SKILLS.brynja_3_any.fx.vs; reset(); put(m1,0,-10); x.ssMarkS(p,m1,{id:'rime',n:5,dur:12,max:5}); m1.slowT=100; p.ssCastT={skill:x.S.t}; const tight=lost(m1,()=>still(()=>cast('brynja_3_any',m1)));
+  ok('Brynja: Whiteout shatters a chilled target: x'+V.k+' from its impact and its pop together, x'+V.tight.k+' more within '+V.tight.secs+' s of Glide and Cut (combo spread)',near(sh/cold,V.k,0.02)&&near(tight/sh,V.tight.k,0.02),(sh/cold).toFixed(3)+' '+(tight/sh).toFixed(3)); }
 tick(3); { const nW=evs.length; reset(); put(m1,0,-10); still(()=>cast('brynja_3_any',m1)); tick(3);
   ok('Brynja: Whiteout\'s own slow lands after its hit: on a clean target it never shatters (no Shatter proc)',procs(nW,'brynja_3_any').length===0&&m1.slowT>0); }
 { const H=x.SH_ALT.brynja_2_any; reset(); put(m1,0,-8); put(m2,0,8); still(()=>castRow(H,m1));
@@ -122,7 +123,8 @@ clear(); reset(); tick(3); n0=evs.length;
   ok('Sefi: Dead Heat at 5 Strides takes 7 s off Gust Dash (2.8 s at 2), never below 0, and the cdr event is sent',near(r5,7,1e-6)&&near(r2,2.8,1e-6)&&p.cd.skill===0&&evs.slice(n0).some(e=>e[0]==='cdr'&&e[1]==='a'&&e[2]==='skill'),r5.toFixed(2)+' '+r2.toFixed(2)+' '+p.cd.skill); }
 { reset(); put(m1,0,-6); const clean=lost(m1,()=>still(()=>cast('sefi_2_any',m1)));
   reset(); put(m1,0,-6); x.mstDirectS(m1,{status:{kind:'weak',v:0.1,dur:4}},p); const lap=lost(m1,()=>still(()=>cast('sefi_2_any',m1)));
-  tick(3); ok('Sefi: Gust Dash into a weakened target deals 2x (Second Lap), and the proc names sefi_2_any',near(lap/clean,2,0.02)&&procs(n0,'sefi_2_any').length>0,(lap/clean).toFixed(3)); }
+  const V=x.SKILLS.sefi_2_any.fx.vs; reset(); put(m1,0,-6); x.mstDirectS(m1,{status:{kind:'weak',v:0.1,dur:4}},p); p.ssCastT={burst:x.S.t}; const tl=lost(m1,()=>still(()=>cast('sefi_2_any',m1)));
+  tick(3); ok('Sefi: Gust Dash into a weakened target deals x'+V.k+' (Second Lap), x'+V.tight.k+' more within '+V.tight.secs+' s of Dead Heat, and the proc names sefi_2_any',near(lap/clean,V.k,0.02)&&near(tl/lap,V.tight.k,0.02)&&procs(n0,'sefi_2_any').length>0,(lap/clean).toFixed(3)+' '+(tl/lap).toFixed(3)); }
 // ---- Hollis: the night keeps the vigil, the dusk returns it ----
 clear(); reset();
 { const heal=n=>{ reset(); put(m1,0,-3); if(n) x.ssMarkS(p,m1,{id:'vigil',n,dur:12,max:5}); pb.hp=pb.maxHp*0.5; pb.shield=null; still(()=>cast('hollis_2_any',null)); return hpOf(pb)-0.5; };
@@ -137,7 +139,7 @@ clear(); reset(); tick(3); n0=evs.length;
 { const run=slow=>{ reset(); put(m1,0,-2); if(slow) m1.slowT=100; const ring=lost(m1,()=>still(()=>cast('tamsin_3_any',null))); m1.x=p.x; m1.z=p.z-2; m1.kbx=m1.kbz=0;
     const zone=lost(m1,()=>still(()=>{ for(let i=0;i<60;i++){ m1.x=p.x; m1.z=p.z-2; W.tick(0.05); } })); return [ring,zone]; };
   const [rc,zc]=run(false), [rs,zs]=run(true);
-  ok('Tamsin: a rattled target takes 1.35x from The Mountain Moves\' ring and from its slide; a clean one takes 1x for all five ticks (its own zone never rattles)',near(rs/rc,1.35,0.02)&&near(zs/zc,1.35,0.02)&&near(zc/rc,5,0.05),(rs/rc).toFixed(3)+' '+(zs/zc).toFixed(3)+' ticks '+(zc/rc).toFixed(2)); }
+  const TK=x.SKILLS.tamsin_3_any.fx.vs.k; ok('Tamsin: a rattled target takes x'+TK+' from The Mountain Moves\' ring and from its slide; a clean one takes 1x for all five ticks (its own zone never rattles)',near(rs/rc,TK,0.02)&&near(zs/zc,TK,0.02)&&near(zc/rc,5,0.05),(rs/rc).toFixed(3)+' '+(zs/zc).toFixed(3)+' ticks '+(zc/rc).toFixed(2)); }
 { reset(); put(m1,0,-2); const plain=lost(m1,()=>still(()=>cast('tamsin_1_warrior',m1))); reset(); put(m1,0,-2); m1.slowT=100; const rat=lost(m1,()=>still(()=>cast('tamsin_1_warrior',m1)));
   ok('Tamsin: Sledge Sweep hits a rattled target 1.25x (Loose Footing)',near(rat/plain,1.25,0.02),(rat/plain).toFixed(3)); }
 { const H=x.SH_ALT.tamsin_2_any; reset(); put(m1,0,-5); still(()=>castRow(H,null)); tick(12);

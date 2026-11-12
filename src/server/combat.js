@@ -23,6 +23,7 @@ function handleAttack(p,msg){
   const tg=foeByIdS(p,msg.tg);   // pvp: a fighter on the island may name another fighter
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
   p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:awkFx(ab.fx,lvl),mult:ab.mult*skillPower(lvl)*caveNextK(p,k),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,holdAt:!!ab.holdAt};   // awakening: the fx at the skill's level (stun, slow, heal, durations...); cave: Intermission's bonus on the next skill; basic-hold: holdAt = a mage's held blast, centred on the target
+  (p.ssCastT||(p.ssCastT={}))[k]=S.t;   // skillsets: when each slot was last cast (a payoff's vs.tight)
   if(alt) p.act.src=alt.id;   // skill-hold: the events of a held cast name the held mode ('<piece>_h'): the client draws it in its own recipe
   ultBoostActS(p,p.act,ab.id);   // ult: a boosted piece's cast (mult, n, size, util)
   ev('pact',p.id,kind,Math.round(p.face*100)/100,...(p.act.ub?[1]:[]));   // (the 5th field: a boosted cast, drawn stronger)

@@ -16,12 +16,12 @@ defineSkillSet({
   pos:{
     1:{bound:'class',
        skill:{
-         mage:{name:'Spray Bolt', desc:'A bolt of sea-spray: a damaging hit that quickens you and your allies within 18 m (10% shorter cooldowns for 3 seconds). Leaves a Swell.', cd:1.1, range:24, mult:1.5, act:['meleni1m',0.6,0.5], anim:'cast',
+         mage:{name:'Spray Bolt', desc:'A bolt of sea-spray: a damaging hit that quickens you and your allies within 18 m (10% shorter cooldowns for 3 seconds). Leaves a Swell.', cd:1.1, range:24, mult:1.3, act:['meleni1m',0.6,0.5], anim:'cast',
                fx:{proj:{kind:'frost', speed:32, turn:8, life:1.0, mark:{id:'swell', n:1, dur:12, max:5}}, ally:{kind:'haste', v:0.10, dur:3, r:18}}}},
        passive:{name:'Carrying Voice', text:'Your buffs last {}% longer', stat:'buffdur', v:[0.4, 0.05]}},
     2:{bound:'any',
-       skill:{any:{name:'Landfall Chant', desc:'Tap: Landfall. You and your allies within 25 m deal 10% more damage for 10 seconds, and 2% more for each Swell near you. A surge round you then spends every Swell nearby for extra damage, and each one (up to five) takes 1.5 seconds off Call the Tide. Hold: Ebb.', cd:14, range:6, mult:1.1, act:['meleni2x',0.7,0.45], anim:'nova',
-                   fx:{ring:{r:6, kb:2}, ally:{kind:'might', v:0.10, dur:10, r:25, perMark:{id:'swell', v:0.02, r:8}}, pop:{id:'swell', k:0.5, r:6, cdr:{burst:1.5}, cdrMax:5}},
+       skill:{any:{name:'Landfall Chant', desc:'Tap: Landfall. You and your allies within 25 m deal 10% more damage for 10 seconds, and 2% more for each Swell near you. A surge round you then spends every Swell nearby for extra damage, and each one (up to five) takes 1.5 seconds off Call the Tide. High Water: twice the damage within 6 seconds of Call the Tide. Hold: Ebb.', cd:14, range:6, mult:1.0, act:['meleni2x',0.7,0.45], anim:'nova',
+                   fx:{ring:{r:6, kb:2}, ally:{kind:'might', v:0.10, dur:10, r:25, perMark:{id:'swell', v:0.02, r:8}}, pop:{id:'swell', k:0.7, r:6, cdr:{burst:1.5}, cdrMax:5}, vs:{when:{cast:{burst:6}}, k:2.0, name:'High Water'}},
                    alt:{name:'Ebb', secs:0.6, cd:9, desc:'Draw the water back: everything within 8 m is dragged toward you and left with 2 Swell, and you and your allies within 25 m take 12% less damage for 6 seconds.', mult:0.7, range:8, act:['meleni2xh',0.8,0.5], anim:'nova',
                         fx:{ring:{r:8, kb:-3, mark:{id:'swell', n:2, dur:12, max:5}}, ally:{kind:'guard', v:0.12, dur:6, r:25}}}}},
        passive:{name:'Rising Swell', text:'A kill lifts you and your allies within 15 m: 10% more damage for 5 seconds (at most every 4 s)', on:'kill', icd:4, buff:{kind:'might', v:0.1, dur:5, r:15}}},

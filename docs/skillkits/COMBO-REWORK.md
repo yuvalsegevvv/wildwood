@@ -103,6 +103,8 @@ Test (`skill-hold-smoke`): a tap casts the base; a hold of `secs` casts the alt;
 
 ## 3. Brynja, The Rime Run: build, chill, shatter
 
+(Sections 3 to 8 are the first pass. The second pass, which made the combo worth about 20%, changed the multipliers listed in section 9b: read those numbers there.)
+
 File `src/shared/skillsets/brynja.js`. Look `src/game/skillsets/look-brynja.js`. Test block in `tools/skillsets-v3b-smoke.js`. Cave skill `shared/cave/skill-4-blackice.js` (unchanged: its lane slows and lays Rime every second, so it is a second way to set up the shatter).
 
 **Now.** Icicle Shot (2.25, Rime; a full hold chills 3 s) / Glide and Cut (dash, ring 3.4 m, 1.45, `slow:1.5`, Rime, cd 8) / Whiteout (projectile, splash 6 m, 3.4, pops Rime k 0.8, cd 30). **Problem**: Sabir's kit in blue. The chill does nothing for her; the text promises 4 s of chill and gives 1.5; nothing rewards an order.
@@ -310,6 +312,30 @@ Baselines measured before any change (`node tools/skillsets-ladder.js --set <id>
 - The bot casts burst, then skill, then basic, each as soon as it is ready. That is the wrong order for Brynja, Sorrel and Tamsin and the right one for Sefi, Hollis and Meleni, so run both: plain (a careless player) and `--combo` (E5). **Hold**: plain within -6 and `--combo` within +6 of the baseline's `pieces` column; if a kit is outside, move the basic's `mult` first (it is most of the damage), then the `vs.k`. The orderings of `--check` must still pass (noise 4).
 - A seeded run varies by about 4 points (`LADDER_NOISE`): do not tune inside that.
 - Healing and buffs: `tools/boss-duel.js --check` (Hollis), and for Meleni assert the uptime numbers of section 8 in her test rather than reading them off the ladder.
+
+### 9b. The combo spread (second pass: playing the combo right is worth about 20%)
+
+The owner's target, against each kit's **ladder value** (its plain `pieces` on main 023bc12, mean of 3 seeds: `COMBO_REF` in `tools/skillsets-ladder.js`): played wrong about **-10%**, played right and clean about **+10%**, sloppy but in order between. `node tools/skillsets-ladder.js --combo --runs 5 [--set id]` plays each kit four ways (pieces alone, Bond 0):
+
+- **wrong**: the payoff first; the set-up only after it, and the payoff never within 1.5 x `win` of the set-up;
+- **plain**: whatever is ready (burst, skill, basic): the careless player. It is the right order by accident for the burst-first kits (Sefi, Hollis, Meleni) and for Sorrel (skill cd 8 lines up with the burst's 28);
+- **order**: in order but late (the payoff only after 0.6 x `win`), no wait for a full stack;
+- **best**: the payoff straight after the set-up; a pop waits for the full stack.
+
+What rewards the clean play (engine, AUTHORING.md section 4): `vs.tight:{after, secs, k}` (x k more when the set-up slot was cast within secs: `p.ssCastT`, set in `handleAttack`) and the `when` key `cast:{slot: secs}` (a payoff that needs its set-up but no status: Hollis, Meleni); the full stack is rewarded by the pops (`pop.k` per stack, Meleni's might per Swell).
+
+| Kit | changed | wrong / plain / order / best, % of the ladder value (pieces; Tamsin: pack) |
+|---|---|---|
+| Brynja (116; behind 111) | Icicle Shot 2.35 -> 2.25; Shatter x1.5 -> x1.7, tight x1.3 within 2 s of Glide and Cut | -12 / -7 / +2 / +9; behind -6 / -2 / +9 / +14 |
+| Sefi (120; behind 119) | Passing Cut 1.4 -> 1.27; Gust Dash 1.1 -> 1.2, Second Lap x2 -> x3, tight x1.6 within 2 s of Dead Heat; Dead Heat's weak 4 -> 6 s, combo `win` 4 -> 6 | -7 / +6 / -6 / +10; behind -7 / +5 / -6 / +9 |
+| Sorrel (117) | Clean Line 2.0 -> 1.6; Long Gale 5.6 / 5.6 / 5.4 -> 3.2 / 3.2 / 3.1 (its hit share fixed, below); Through the Gap x1.2 -> x2, tight x1.3 within 2.5 s of Mark the Gap | -11 / +10 / -3 / +5; 16 m -11 / +8 / +2 / +9 |
+| Hollis (237) | Candle Bolt 2.3 -> 2.12; Dusk Lent 1.5 -> 1.35, pop k 0.6 -> 0.55, Lantern Lit x3 within 8 s of The Long Night (`cast`), tight x1.3 within 2 s | -16 / +5 / +1 / +8 |
+| Tamsin (pack 474) | Sledge Sweep 0.46 -> 0.37; Pull the Slope 0.8 -> 0.73; The Mountain Moves 1.6 -> 1.32, Rockslide x1.35 -> x2.4, tight x1.3 within 1.5 s of Pull the Slope | pack -9 / -2 / +5 / +9 (pieces -8 / -2 / +0 / +7) |
+| Meleni (150) | Spray Bolt 1.5 -> 1.3; Landfall 1.1 -> 1.0, pop k 0.5 -> 0.7, High Water x2 within 6 s of Call the Tide (`cast`) | -11 / -5 / +2 / +11 |
+
+Before this pass the four plays sat within about 8 points of each other for every kit (Sorrel's were flat). One seeded run of a kit varies by up to 10 points, so judge only means of 5.
+
+**A bug found on the way**: an `act`'s third number is a share of its seconds (the server resolves the hit at seconds x share), but Sorrel's three Long Gales, her burst Eye of the Storm and Pell's three long throws had `[.., 1.3, 1.1]`: the act ended before its hit, so they never dealt damage. Now `1.3, 0.85` (it lands at 1.1 s), and `defineSkillSet`, `ult.js` and `skill-hold.js` reject a share above 1 (`skillsets-first8-smoke` checks every skill). Pell's long throws were then trimmed (6.0 / 6.2 / 6.0 -> 2.9 / 3.0 / 2.9, pop k 0.8 -> 0.55) to keep its ladder: `--orders` 105 / 106 / 112 before (the throws missing), 103 / 108 / 105 after.
 
 ## 10. Build order and the tests of each step
 
