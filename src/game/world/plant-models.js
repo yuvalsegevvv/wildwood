@@ -66,10 +66,10 @@ const barkLo=hex=>(x,y,z,nx,ny,nz,c)=>{ c.set(hex).multiplyScalar((0.7+0.42*h3(M
    sag / lift / frondW / core / snow shape the boughs (makeConiferHi). */
 const CONI={
   pine:{trunkH:4, layers:5, r0:2.3, lh:2.8, spacing:1.45, start:1.6, habit:'pine', pads:7, H:9.6},
-  spruce:{trunkH:3, layers:8, r0:1.8, lh:2.2, spacing:1.05, start:0.7, taper:0.75, sag:0.55, lift:0.3, frondW:0.2, core:0.45},
-  frostspruce:{trunkH:2.6, layers:9, r0:1.25, lh:2.3, spacing:0.95, start:0.8, taper:0.55, sag:0.95, lift:0.05, frondW:0.24, core:0.45, snow:1},
+  spruce:{trunkH:3, layers:7, r0:1.8, lh:1.2, spacing:1.35, start:1.8, taper:0.7, sag:0.2, lift:0.1, frondW:0.34, core:0.3},   // like the cedar (the owner's favourite): distinct flat, drooping tiers with the trunk showing between
+  frostspruce:{trunkH:2.6, layers:8, r0:1.3, lh:1.1, spacing:1.1, start:1.2, taper:0.55, sag:0.5, lift:0.05, frondW:0.3, core:0.3, snow:1},
   cedar:{trunkH:3.2, layers:6, r0:2.1, lh:0.9, spacing:1.55, start:1.5, taper:0.6, sag:0.05, lift:0.12, frondW:0.42, core:0.25},
-  larch:{trunkH:4, layers:9, r0:1.7, lh:1.5, spacing:1.05, start:1.6, taper:0.9, sag:0.2, lift:0.1, frondW:0.16, core:0.2, thin:1}
+  larch:{trunkH:4, layers:8, r0:1.7, lh:1.0, spacing:1.2, start:1.8, taper:0.7, sag:0.15, lift:0.12, frondW:0.3, core:0.25}
 };
 function conPinePads(o,seed){   // the pine's crown pads: [{x,y,z,r}], lopsided, widest at 80 % of the height, on a trunk that bends a little
   const {r:rg,R:rr}=mrng(seed+700), H=o.H||9.6, n=o.pads||7, k=(o.r0||2.3)/2.3, a0=rg()*TAU, pads=[];
