@@ -145,6 +145,32 @@ The inventory greys an inactive ring and says "needs a <element> kit or path". C
 - New fields with defaults: `eq.cape`, `eq.gloves`, `eq.shield` (empty) and `gear.dg.top` (0).
 - `MOBS.md` / `EQUIPMENT.md` are regenerated (`node tools/gen-docs.js`).
 
+## 7b. The Dungeon Rewards menu
+
+A panel, **"Delves"**, that shows clearly what every dungeon pays at every tier. It opens from three places: the Delve board (a "Rewards" tab), the teleport circle's travel window (section 7c), and a button in the inventory header beside Shops.
+
+- **Left: the eight dungeons** as cards. Each card has the dungeon's name, land, boss portrait (`mpPic`), the kind it pays with its icon (sword / armour / ring / pendant / talisman / cape / gloves / shield), and a lock if its door is not open yet ("Reach Glasswell first").
+- **Top: the tier strip** I-XI with each tier's monster level. A cleared tier gets a tick, the highest open one glows gold, and a locked one shows a padlock with "Clear tier N first".
+- **Centre: the reward card** for the chosen dungeon and tier:
+  - pieces per clear ("2-3 pieces"), shown as that many item tiles;
+  - the equipment-level split as one stacked bar (eq 30 / 40 / 50 / 60 in four shades, the % on each part) and the rolled lines each level carries (0 / 1 / 2 / 3);
+  - the rarity line, 65 / 25 / 7 / 2.5 / 0.5 %, in the rarity colours;
+  - the pool: every kind the dungeon can pay (the 3 weapons, the 8 capes, the 6 gloves...), each tile showing its fixed bonus at common +0 for the most likely eq level of that tier; a tap shows the full details card (`skInfoHtml`-style).
+- **Bottom: "Compare tiers"**, a small table of all 11 tiers for the chosen dungeon (level, pieces, the eq split), so you can see at a glance where level-60 pieces start.
+- Style: the panel look of the game (gold-lined frame, serif titles, `12-panels.css`), a new `styles/39-delves.css`; on a portrait phone the dungeon list becomes a row of icons above the card (`phone-layout-smoke`).
+- Data: everything comes from `DG_TIERS` and `DG_REWARDS` (shared), so the menu never disagrees with what a clear pays. The only thing the server sends is your `gear.dg.top` and which doors are open (already in `you`).
+- Files: `game/dungeon/rewards-menu.js` (`dgrm…`), markup `#dgRewards` in `index.html`, `'dgRewards'` in `PANELS`.
+
+## 7c. Enter a dungeon from a teleport circle
+
+The travel window (`game/ui/travel.js`) gets a second tab, **"Dungeons"**, beside the villages:
+- the eight dungeons, each with its kind's icon, your highest open tier, and its lock state (a dungeon whose door you have never opened is locked here too: the land gate still counts);
+- a tap on a dungeon opens its Delve board right there (the same panel as at the door: the two missions on offer, the tier picker, the party, the leader's Start). "Rewards" opens the menu of 7b on that dungeon.
+- Start from a circle sends the party into the run directly. When the run ends, everyone returns to the circle they left from, not to the door (`run.back` = the circle's spot; today it is `dgApron(E)`).
+- A "Go to the door" button warps you to the dungeon's door instead (to walk in or meet the party there).
+- Server: `dg{a:'open',th,via:'circle'}` and `dg{a:'start',...,via:'circle'}` are accepted when the sender stands on a circle (the same check `warpP` makes), or when they use the map's travel-from-anywhere (`any:1`, with the same rules: not in a run, not in a fight, not on the Proving Isle or a cave floor). Every other check of the door (gate, tier, party, levels) is unchanged. The party's other members are asked as today (`dgi`), wherever they stand.
+- Files: `game/ui/travel.js` (the tab), `game/dungeon/board.js` (opened without a door), `server/dungeons/lobby.js` (`via`), `docs/PROTOCOL.md`.
+
 ## 8. Not in this plan
 
 - Pyrrhax's new drop (Yuval has an idea, later).
@@ -163,6 +189,8 @@ The inventory greys an inactive ring and says "needs a <element> kit or path". C
 | D6 | Gloves: slot, the 6 kinds, combat hooks; the Termite Cathedral | new `gloves-smoke`, `skills-smoke` |
 | D7 | Shields: slot, the 7 kinds, hurt hooks; the Cenote | new `shields-smoke`, `server-smoke` |
 | D8 | Client: inventory slots and icons, forge tabs, details text, the board, a results card with several pieces; the docs | `rewards-client-smoke`, `client-smoke`, `phone-layout-smoke` |
+| D8b | The Delves rewards menu (7b) | new `dungeon-rewards-menu-smoke`, `phone-layout-smoke` |
+| D8c | Dungeons from the teleport circle (7c) | `dungeon-runs-smoke`, `dungeon-board-client-smoke`, `client-smoke` |
 | D9 | Full suite, `npm run fuzz`, `economy-fuzz`, `world-soak`, `gen-docs`, merge | `npm test` |
 
 The main files touched: `shared/dungeon-rewards.js`, `dungeon-items.js`, `rolls.js`, `talisman.js`, `dungeons.js`, and new `shared/dungeon-tiers.js`, `capes.js`, `gloves.js`, `shields.js`; `server/dungeon-gear.js`, `rolls.js`, `players.js` (`recalcP`, `hurtP`), `combat.js`, `boss-kits-volcano.js`, `dungeons/runs.js`, `lobby.js`; `game/economy/inventory.js`, `dungeon-gear.js`, `rolls.js`, `game/dungeon/board.js`, `hud.js`, `ui/item-icons.js`; and the docs `ROLLS.md`, `DUNGEON-THEMES.md` section 7, `VOLCANO.md`, `areas/dungeons.md`, `PROTOCOL.md`.
