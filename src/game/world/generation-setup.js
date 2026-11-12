@@ -36,15 +36,15 @@ function buildGeometries(){
   G.trees={
     pine:makeConifer(CONI.pine),
     spruce:makeConifer(CONI.spruce),
-    oakA:makeBroadleaf({trunkH:4.2, tr:0.42, crownY:6.2, rMain:2.4, blobs:5, spread:1.9, sy:0.85, branches:3, bark:0x4f3c2a}),
-    oakB:makeBroadleaf({trunkH:3.4, tr:0.36, crownY:5.0, rMain:2.0, blobs:6, spread:2.2, sy:0.75, branches:4, bark:0x5a4632}),
-    birch:makeBroadleaf({trunkH:7.5, tr:0.16, crownY:7.6, rMain:1.2, blobs:4, spread:0.85, sy:1.6, branches:0, birch:true}),
+    oakA:makeBroadleaf({trunkH:4.2, tr:0.42, crownY:6.2, rMain:2.4, blobs:5, spread:1.9, sy:0.85, branches:3, bark:0x4f3c2a,leaf:'oval'}),
+    oakB:makeBroadleaf({trunkH:3.4, tr:0.36, crownY:5.0, rMain:2.0, blobs:6, spread:2.2, sy:0.75, branches:4, bark:0x5a4632,leaf:'oval'}),
+    birch:makeBroadleaf({trunkH:7.5, tr:0.16, crownY:7.6, rMain:1.2, blobs:4, spread:0.85, sy:1.6, branches:0, birch:true,leaf:'small'}),
     snag:makeSnag(),
     sakura:makeSakura(),
-    maple:makeBroadleaf({trunkH:2.6, tr:0.22, crownY:4.0, rMain:1.6, blobs:6, spread:1.5, sy:0.65, branches:3, bark:0x3e302a}),
+    maple:makeBroadleaf({trunkH:2.6, tr:0.22, crownY:4.0, rMain:1.6, blobs:6, spread:1.5, sy:0.65, branches:3, bark:0x3e302a,leaf:'lobed'}),
     bamboo:makeBamboo(),
     frostspruce:makeConifer(CONI.frostspruce),
-    dwarfbirch:makeBroadleaf({trunkH:2.4, tr:0.1, crownY:2.8, rMain:0.85, blobs:3, spread:0.6, sy:1.25, branches:0, birch:true}),
+    dwarfbirch:makeBroadleaf({trunkH:2.4, tr:0.1, crownY:2.8, rMain:0.85, blobs:3, spread:0.6, sy:1.25, branches:0, birch:true,leaf:'small'}),
     palm:makePalm(),
     cactus:makeCactus(),
     thorn:makeBroadleaf({trunkH:2.6, tr:0.13, crownY:3.4, rMain:1.9, blobs:4, spread:1.7, sy:0.3, branches:2, bark:0x5a4a38}),
@@ -70,14 +70,14 @@ function buildGeometries(){
     G.treesHi={
       pine:makeConiferHi(CONI.pine,1),
       spruce:makeConiferHi(CONI.spruce,2),
-      oakA:makeBroadleafHi({trunkH:4.2, tr:0.42, crownY:6.2, rMain:2.4, blobs:5, spread:1.9, sy:0.85, branches:3, bark:0x4f3c2a},3),
-      oakB:makeBroadleafHi({trunkH:3.4, tr:0.36, crownY:5.0, rMain:2.0, blobs:6, spread:2.2, sy:0.75, branches:4, bark:0x5a4632},4),
-      birch:makeBroadleafHi({trunkH:7.5, tr:0.16, crownY:7.6, rMain:1.2, blobs:4, spread:0.85, sy:1.6, branches:0, birch:true},5),
+      oakA:makeBroadleafHi({trunkH:4.2, tr:0.42, crownY:6.2, rMain:2.4, blobs:5, spread:1.9, sy:0.85, branches:3, bark:0x4f3c2a,leaf:'oval'},3),
+      oakB:makeBroadleafHi({trunkH:3.4, tr:0.36, crownY:5.0, rMain:2.0, blobs:6, spread:2.2, sy:0.75, branches:4, bark:0x5a4632,leaf:'oval'},4),
+      birch:makeBroadleafHi({trunkH:7.5, tr:0.16, crownY:7.6, rMain:1.2, blobs:4, spread:0.85, sy:1.6, branches:0, birch:true,leaf:'small'},5),
       snag:makeSnagHi(),
       sakura:makeSakuraHi(),
-      maple:makeBroadleafHi({trunkH:2.6, tr:0.22, crownY:4.0, rMain:1.6, blobs:6, spread:1.5, sy:0.65, branches:3, bark:0x3e302a},8),
+      maple:makeBroadleafHi({trunkH:2.6, tr:0.22, crownY:4.0, rMain:1.6, blobs:6, spread:1.5, sy:0.65, branches:3, bark:0x3e302a,leaf:'lobed'},8),
       frostspruce:makeConiferHi(CONI.frostspruce,10),
-      dwarfbirch:makeBroadleafHi({trunkH:2.4, tr:0.1, crownY:2.8, rMain:0.85, blobs:3, spread:0.6, sy:1.25, branches:0, birch:true},11)
+      dwarfbirch:makeBroadleafHi({trunkH:2.4, tr:0.1, crownY:2.8, rMain:0.85, blobs:3, spread:0.6, sy:1.25, branches:0, birch:true,leaf:'small'},11)
     };   // (no bamboo: its groves are dense and the low-poly culms are already 1,000 triangles)
     G.bushHi=[makeBushHi(4,0.6,21), makeBushHi(3,0.45,22)];
     G.fernHi=makeFernHi(31);

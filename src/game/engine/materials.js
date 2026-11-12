@@ -21,7 +21,8 @@ function plantMat(o){
         transformed.z += cos(ph*0.83) * wh * ${(s*0.6).toFixed(4)} * gust;`+(fl?`
         transformed += objectNormal * sin(uTime*4.3 + dot(position, vec3(3.1,2.3,2.7)) + ip.x*0.7 + ip.z*0.5) * ${fl.toFixed(4)} * gust * min(wh*0.3, 1.0);`:''));
     }
-    if(lf) sh.vertexShader = sh.vertexShader.replace('#include <lights_lambert_vertex>', `#include <lights_lambert_vertex>
+    if(lf) sh.vertexShader = (s>0?'float pnh(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }\nfloat pnv(vec2 p){ vec2 i=floor(p), f=fract(p), u=f*f*(3.0-2.0*f); return mix(mix(pnh(i),pnh(i+vec2(1.0,0.0)),u.x),mix(pnh(i+vec2(0.0,1.0)),pnh(i+vec2(1.0,1.0)),u.x),u.y); }\n':'') + sh.vertexShader.replace('#include <lights_lambert_vertex>', `#include <lights_lambert_vertex>
+      ${s>0?`{ float th=pnh(floor(ip.xz*0.5)); vColor.rgb*=(0.86+0.28*pnv(ip.xz*0.03+vec2(5.0,2.0)))*vec3(1.0+(th-0.5)*0.12,1.0,1.0-(th-0.5)*0.16); }   // stand variation: a slow tone across the forest and a small one per tree`:''}
       #if NUM_DIR_LIGHTS > 0
       { vec3 ld = directionalLights[0].direction;
         float bk = saturate(-dot(geometry.normal, ld)), vw = saturate(dot(normalize(mvPosition.xyz), ld));

@@ -235,7 +235,7 @@ function archPts(S,E,segs,arch,rg){
 /* one leaf spray: four leaves along a short twig on a cluster's surface at p (alternate sides and one at the end), each a folded diamond.
    n: the surface's normal there, g: the crown's outward direction (the shading normal leans on it, so the crown shades softly);
    v: brightness, hr / hb: the cluster's own hue (red and blue factors). The leaf's base is darker and cooler, its tip lighter and warmer. */
-function leafSpray(F,p,n,g,L,rg,v,hr,hb){
+function leafSpray(F,p,n,g,L,rg,v,hr,hb,lw){   // lw: the leaf's width factor (plant-models-hi.js LEAF: oval, small, lobed...)
   let u=crs3(n,Math.abs(n[1])>0.95?[1,0,0]:[0,1,0]); u=nrm3(u[0],u[1],u[2]); const w=crs3(n,u), a0=rg()*TAU, ca=Math.cos(a0), sa=Math.sin(a0);
   const t=nrm3(u[0]*ca+w[0]*sa+n[0]*0.3, u[1]*ca+w[1]*sa+n[1]*0.3-0.15, u[2]*ca+w[2]*sa+n[2]*0.3), s0=crs3(t,n), sl=Math.hypot(s0[0],s0[1],s0[2])||1, sd=[s0[0]/sl,s0[1]/sl,s0[2]/sl];
   const cb=[v*0.68*0.94*hr,v*0.68,v*0.68*1.08*hb], cm=[v*hr,v,v*hb], ct=[v*1.2*hr,v*1.18,v*0.98*hb];
@@ -243,12 +243,12 @@ function leafSpray(F,p,n,g,L,rg,v,hr,hb){
     const f=j===3?0.62:j*0.25, sg=j===3?0:(j&1?1:-1), up=0.15+rg()*0.3;
     const bx=p[0]+t[0]*L*f, by=p[1]+t[1]*L*f, bz=p[2]+t[2]*L*f;
     const ax=nrm3(t[0]*0.8+sd[0]*sg*0.85+n[0]*up, t[1]*0.8+sd[1]*sg*0.85+n[1]*up-0.12, t[2]*0.8+sd[2]*sg*0.85+n[2]*up);
-    const Ll=L*(0.8+rg()*0.35)*(j===3?1.12:1), q=crs3(ax,n), ql=Math.hypot(q[0],q[1],q[2])||1, W=Ll*(0.4+rg()*0.12)*0.5/ql, fold=0.1*Ll;
+    const Ll=L*(0.8+rg()*0.35)*(j===3?1.12:1), q=crs3(ax,n), ql=Math.hypot(q[0],q[1],q[2])||1, W=Ll*(0.4+rg()*0.12)*0.5/ql*(lw||1), fold=0.1*Ll;
     const ML=[bx+ax[0]*Ll*0.42-q[0]*W+n[0]*fold, by+ax[1]*Ll*0.42-q[1]*W+n[1]*fold, bz+ax[2]*Ll*0.42-q[2]*W+n[2]*fold];
     const MR=[bx+ax[0]*Ll*0.42+q[0]*W+n[0]*fold, by+ax[1]*Ll*0.42+q[1]*W+n[1]*fold, bz+ax[2]*Ll*0.42+q[2]*W+n[2]*fold];
     const B=[bx,by,bz], T=[bx+ax[0]*Ll, by+ax[1]*Ll-0.06*Ll, bz+ax[2]*Ll];
     let ln=crs3(ax,q); if(ln[0]*n[0]+ln[1]*n[1]+ln[2]*n[2]<0) ln=[-ln[0],-ln[1],-ln[2]];
-    const ll=Math.hypot(ln[0],ln[1],ln[2])||1, nn=nrm3(ln[0]/ll*0.35+g[0]*0.65,ln[1]/ll*0.35+g[1]*0.65,ln[2]/ll*0.35+g[2]*0.65), j2=0.92+rg()*0.16;
+    const ll=Math.hypot(ln[0],ln[1],ln[2])||1, nn=nrm3(ln[0]/ll*0.2+g[0]*0.8,ln[1]/ll*0.2+g[1]*0.8,ln[2]/ll*0.2+g[2]*0.8), j2=0.92+rg()*0.16;
     const m2=[cm[0]*j2,cm[1]*j2,cm[2]*j2];
     F.tri(B,ML,MR,nn,nn,nn,cb,m2,m2); F.tri(ML,T,MR,nn,nn,nn,m2,ct,m2);
   }
@@ -257,13 +257,15 @@ function leafSpray(F,p,n,g,L,rg,v,hr,hb){
    dark core blob (core clusters only), so the crown reads as separate masses of leaves with shade and gaps between them. nSpray: about how many sprays
    the whole crown gets (4 leaves, 8 triangles each). Fake ambient occlusion in the colours: darker low down, toward the crown's centre and on a
    cluster's inner side; lighter, warmer and more saturated at the top and the outer tips. */
-function treeCrown(cl,C,L,nSpray,rg,rr){
+/* leaf shapes of the broadleaf species (still 2 triangles a leaf): w the width factor, l the length factor; makeBroadleafHi reads o.leaf */
+const LEAF={oval:{w:0.85,l:1.05},small:{w:0.9,l:0.75},lobed:{w:1.0,l:1.0},petal:{w:0.95,l:0.72},fan:{w:1.0,l:1.0},fine:{w:0.4,l:1.2}};
+function treeCrown(cl,C,L,nSpray,rg,rr,lf){
   const F=flatAcc(), core=[];
   let bot=1e9, top=-1e9, reach=0.1, area=0;
   for(const c of cl){ bot=Math.min(bot,c.y-c.r*c.sy); top=Math.max(top,c.y+c.r*c.sy); reach=Math.max(reach,Math.hypot(c.x-C.x,c.z-C.z)+c.r); c.area=4*Math.PI*c.r*c.r*(1+c.sy)/2; area+=c.area; }
   for(const c of cl){
     const ox=c.x-C.x, oy=(c.y-C.y)*1.6+0.6, oz=c.z-C.z, co=nrm3(ox,oy,oz), hr=1+rr(-0.06,0.06), hb=1+rr(-0.1,0.1);   // co: which way the cluster faces out of the crown
-    if(c.core) core.push(paint(blob(c.r*0.58,c.x,c.y,c.z,c.sy,C,1),(x,y,z,nx,ny,nz,col)=>{ const v=(0.2+0.22*clamp((y-bot)/(top-bot)))*(0.55+h3(x*3,y*3,z*3)*0.9); col.setRGB(v*0.92*hr,v,v*1.06*hb); }));
+    if(c.core) core.push(paint(blob(c.r*0.62,c.x,c.y,c.z,c.sy,C,1),(x,y,z,nx,ny,nz,col)=>{ const v=(0.3+0.24*clamp((y-bot)/(top-bot)))*(0.55+h3(x*3,y*3,z*3)*0.9); col.setRGB(v*0.92*hr,v,v*1.06*hb); }));
     const cnt=Math.max(5,Math.round(nSpray*c.area/area*1.3));
     for(let i=0;i<cnt;i++){
       const yy=1-(i+0.5)/cnt*2, rad=Math.sqrt(Math.max(0,1-yy*yy)), ph=i*2.39996+rg()*0.6;
@@ -273,10 +275,10 @@ function treeCrown(cl,C,L,nSpray,rg,rr){
       let buried=false;
       for(const o of cl){ if(o===c) continue; const ex=(px-o.x)/o.r, ey=(py-o.y)/(o.r*o.sy), ez=(pz-o.z)/o.r; if(ex*ex+ey*ey+ez*ez<0.72){ buried=true; break; } }
       if(buried) continue;
-      const e=nrm3(d[0],d[1]/c.sy,d[2]), g=nrm3(px-C.x,py-C.y,pz-C.z), nn=nrm3(e[0]*0.55+g[0]*0.45,e[1]*0.55+g[1]*0.45,e[2]*0.55+g[2]*0.45);
+      const e=nrm3(d[0],d[1]/c.sy,d[2]), g=nrm3(px-C.x,py-C.y,pz-C.z), nn=nrm3(e[0]*0.75+g[0]*0.25,e[1]*0.75+g[1]*0.25,e[2]*0.75+g[2]*0.25);
       const hgt=clamp((py-bot)/(top-bot)), out=clamp(Math.hypot(px-C.x,pz-C.z)/reach*0.8+Math.max(0,py-C.y)/(top-C.y+0.01)*0.4), face=0.5+0.5*(d[0]*co[0]+d[1]*co[1]+d[2]*co[2]);
-      const v=(0.52+0.52*hgt)*(0.66+0.34*out)*(0.8+0.28*face)*(0.9+rg()*0.2);
-      leafSpray(F,[px,py,pz],nn,g,L*(0.85+rg()*0.3),rg,v,hr,hb);
+      const v=(0.6+0.46*hgt)*(0.66+0.34*out)*(0.62+0.5*face)*(0.9+rg()*0.2);
+      leafSpray(F,[px,py,pz],nn,g,L*(0.85+rg()*0.3)*(lf?lf.l:1),rg,v,hr,hb,lf?lf.w:1);
     }
   }
   return {core,leaves:F.done()};
@@ -342,13 +344,13 @@ function makeBroadleafHi(o,seed){
     cl.push({x:rr(-0.1,0.1),y:yt-o.rMain*0.3,z:rr(-0.1,0.1),r:o.rMain*0.5,sy:1,core:true});
   }
   if(!birch) deadTwigs(parts,1,tp,H*0.35,H*0.7,tr*0.13,tr*3.2,0.25,0.7,rg,rr);
-  const L=clamp(0.22*o.rMain+0.1,0.3,0.62)*0.86, nS=Math.round(190*(o.rMain+o.spread*0.5)*Math.sqrt(Math.max(o.sy,0.5)));
-  const cw=treeCrown(cl,C,L,nS,rg,rr);
+  const L=clamp(0.22*o.rMain+0.1,0.3,0.62)*0.76, nS=Math.round(215*(o.rMain+o.spread*0.5)*Math.sqrt(Math.max(o.sy,0.5)));
+  const cw=treeCrown(cl,C,L,nS,rg,rr,LEAF[o.leaf||'oval']);
   return {trunk:merge(parts), leaves:merge(cw.core.concat([cw.leaves]))};
 }
 // the Sakura Vale's cherry: a wide, flat crown on a leaning trunk (lean as in makeSakura)
 function makeSakuraHi(){
-  const t=makeBroadleafHi({trunkH:3.0, tr:0.34, crownY:4.6, rMain:2.1, blobs:7, spread:2.5, sy:0.55, branches:5, bark:0x4a3434},77);
+  const t=makeBroadleafHi({trunkH:3.0, tr:0.34, crownY:4.6, rMain:2.1, blobs:7, spread:2.5, sy:0.55, branches:5, bark:0x4a3434, leaf:'petal'},77);
   const lean=g=>{ const p=g.attributes.position; for(let i=0;i<p.count;i++){ const y=p.getY(i); p.setX(i,p.getX(i)+y*y*0.018); } return g; };
   return {trunk:lean(t.trunk), leaves:lean(t.leaves)};
 }
@@ -369,8 +371,9 @@ function makeSnagHi(){
 function makeBushHi(nb,spread,seed){
   const {r:rg,R:rr}=mrng(seed), C=new THREE.Vector3(0,0.3,0), blobs=[];
   for(let k=0;k<nb;k++){ const a=k/nb*TAU+rg()*TAU, d=k===0?0:spread*rr(0.5,1); blobs.push({r:rr(0.5,0.8),x:Math.cos(a)*d,y:rr(0.45,0.75),z:Math.sin(a)*d,sy:0.8}); }
-  const cw=crownHi(blobs,C,0.24,1,rg,0,1.4);
-  return merge(cw.core.concat([cw.leaves]));
+  for(let k=0;k<2;k++){ const a=rg()*TAU, d=spread*rr(0.9,1.4); blobs.push({r:rr(0.3,0.42),x:Math.cos(a)*d,y:rr(0.28,0.42),z:Math.sin(a)*d,sy:0.8}); }   // low skirts that reach the grass
+  const cw=crownHi(blobs,C,0.19,1,rg,0,1.4), st=bshStems(rg,rr,5,spread*0.6,0.45,3);   // a few stems show at the foot (bush-models.js)
+  return merge(cw.core.concat([cw.leaves],st));
 }
 
 /* ---------- ferns: arching fronds with leaflets on both sides of a rib ---------- */
