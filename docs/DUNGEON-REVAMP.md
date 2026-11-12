@@ -56,6 +56,8 @@ New:
 
 Run monsters and bosses use the world's `defAt` at the tier's level, unchanged: the late creep above 60, the boss creep, and the level debuff on your damage (floor x0.5). This matches Yuval's playtest: on the test server, unique level-40 gear beats level-80 monsters without trouble. Playtesting tunes the curve later, so this plan adds no dungeon-only curve.
 
+**Target for tier XI (level 110), kept by Yuval**: a party of four level-75 players with support, not a solo hero. The simulation (project files `dungeon-revamp/SIM-110.md`) gives a maxed solo level-75 hero about 2.6-3.7 M damage a second, and it gets the level-110 boss (1,039 M health) to about 46% before dying. In a party of four the boss has x3.6 health (`DG_PARTY.hp`), and four hitters deal x4, so the fight is about 6 minutes of damage without support, and about 4-5 minutes with a support set's buffs. Its hits are split between four players and their healer. Tiers IX-X (level 94-102) stay soloable for a maxed level-75 hero.
+
 XP and coins follow the tier's level, with the usual limit that no kill pays for more than 10 levels above you (`xpLeadK`).
 
 ## 4. Equipment levels 30 / 40 / 50 / 60
