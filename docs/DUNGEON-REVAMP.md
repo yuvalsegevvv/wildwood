@@ -2,13 +2,13 @@
 
 Status: **plan, waiting for Yuval's approval.** Nothing below is implemented. Section 9 lists the choices that are Yuval's; each has a recommendation, and the rest of the plan assumes it.
 
-Goal: every one of the eight dungeons stays worth running at every stage. They stop following the land's zone tier and get **11 tiers of their own, level 30 to level 130**, all eight with the same ladder. Each dungeon pays one kind of piece; which **equipment level** (30 / 40 / 50 / 60) the piece is depends on the tier.
+Goal: every one of the eight dungeons stays worth running at every stage. They stop following the land's zone tier and get **11 tiers of their own, level 30 to level 110**, all eight with the same ladder. Each dungeon pays one kind of piece; which **equipment level** (30 / 40 / 50 / 60) the piece is depends on the tier.
 
 ## 1. What the owner asked (the fixed rules)
 
 | Rule | Value |
 |---|---|
-| Tiers | 11 per dungeon: monster level 30, 40, 50 ... 130. Not tied to zone tiers. Level 130 at the top is intentional (more gear slots now, higher skill levels after the skill revamp). |
+| Tiers | 11 per dungeon: monster level 30, 38, 46 ... 110 (8 levels a tier). Not tied to zone tiers. The owner first asked for 130 and moved the top to 110 so the top tier fits a maxed character with maxed level-60 gear, the new pieces and maxed symbols (pending his pick of the ladder). |
 | Rarity of every piece | 65 / 25 / 7 / 2.5 / 0.5 % (common / rare / epic / unique / legendary), the same at every tier |
 | Dungeons 1-4 | keep their drops: Hollow Roots weapons, Jade Springs armour, Bonefrost Barrow rings, Blackseam pendants |
 | Dungeon 5, the Sandglass | talismans |
@@ -19,23 +19,23 @@ Goal: every one of the eight dungeons stays worth running at every stage. They s
 | Rolled lines | level 40: **1 line** (was 3), level 50: **2 lines** (new), level 60: **3 lines** (new) |
 | Old level-40 pieces | keep their first line, the last two are deleted (Yuval, in the thread) |
 | Rings | work only with their matching kit (section 6) |
-| Pieces per clear | 1 at level 30, rising to 3-5 at level 130 (section 3) |
+| Pieces per clear | 1 at level 30, rising to 3-5 at level 110 (section 3) |
 
 Equipment level of each piece, by dungeon tier (%, from the owner):
 
 | Tier | Lv | Eq 30 | Eq 40 | Eq 50 | Eq 60 | Pieces |
 |---|---|---|---|---|---|---|
 | I | 30 | 100 | 0 | 0 | 0 | 1 |
-| II | 40 | 50 | 50 | 0 | 0 | 1 |
-| III | 50 | 25 | 50 | 25 | 0 | 1-2 |
-| IV | 60 | 20 | 30 | 40 | 10 | 1-2 |
-| V | 70 | 10 | 30 | 45 | 15 | 2 |
-| VI | 80 | 5 | 25 | 50 | 20 | 2-3 |
-| VII | 90 | 0 | 20 | 50 | 30 | 2-3 |
-| VIII | 100 | 0 | 10 | 50 | 40 | 2-4 |
-| IX | 110 | 0 | 5 | 45 | 50 | 3-4 |
-| X | 120 | 0 | 0 | 40 | 60 | 3-4 |
-| XI | 130 | 0 | 0 | 25 | 75 | 3-5 |
+| II | 38 | 50 | 50 | 0 | 0 | 1 |
+| III | 46 | 25 | 50 | 25 | 0 | 1-2 |
+| IV | 54 | 20 | 30 | 40 | 10 | 1-2 |
+| V | 62 | 10 | 30 | 45 | 15 | 2 |
+| VI | 70 | 5 | 25 | 50 | 20 | 2-3 |
+| VII | 78 | 0 | 20 | 50 | 30 | 2-3 |
+| VIII | 86 | 0 | 10 | 50 | 40 | 2-4 |
+| IX | 94 | 0 | 5 | 45 | 50 | 3-4 |
+| X | 102 | 0 | 0 | 40 | 60 | 3-4 |
+| XI | 110 | 0 | 0 | 25 | 75 | 3-5 |
 
 The "Pieces" column is my proposal (the owner gave only the ends, 1 and 3-5): a whole number drawn evenly from the range. Each piece rolls its own equipment level and rarity. Everyone in the party gets the same pieces (the all-loot rule stays).
 
@@ -50,13 +50,13 @@ New:
 - The Hollow Roots' "+1 difficulty" lock and the Sandglass / Gloamvault entry levels (36, 38) go: every dungeon starts at tier I.
 - The zone tier setting no longer touches dungeons. Where other code asks for a run's "steps above base" it is re-pointed: the skill set drop ("a won run at +1 or above", `ssDungeonClearP`) becomes "tier II or above"; the Bond Stirring is unchanged.
 
-## 3. Monster strength from 30 to 130 (the main risk)
+## 3. Monster strength from 30 to 110 (the main risk)
 
-The world curve cannot be used as it is. `fLv(L) = L + (13/12)^L`: 41 at 30, 182 at 60, 684 at 80, 3,094 at 100, **33,173 at 130**. A level-130 monster built by `defAt` would have ~180x the health and damage of a level-60 one, plus the late creep and the level debuff. No gear closes that.
+The world curve cannot be used as it is. `fLv(L) = L + (13/12)^L`: 41 at 30, 182 at 60, 684 at 80, 3,094 at 100, **6,775 at 110** (33,173 at 130). A level-110 monster built by `defAt` would have ~37x the health and damage of a level-60 one (~180x at 130), plus the late creep and the level debuff. No gear closes that.
 
 Proposal: a dungeon monster's **level** is the tier's (shown, used for XP and the level debuff on your damage), but its **stats** come from a gentle dungeon curve:
-- `dgtStat(t)`: health and damage multipliers on the level-60 `defAt` numbers, calibrated so that the expected gear of that tier (section 8) clears it in about the same time and with the same danger as a tier I run with level-30 gear. First guess, to be tuned: health x1.35 and damage x1.25 per tier above IV; tiers I-IV keep `defAt` at their own level.
-- The level debuff on damage you deal (`lvDmgK`, floor x0.5) stays: a level-60 hiker deals half damage from tier VI up, which is the "hardest dungeon" feeling the owner wants. The growing damage you take (+5% a level) is capped inside runs at the same 10 levels, otherwise tier XI is a one-hit kill whatever the gear.
+- `dgtStat(t)`: health and damage multipliers on the level-60 `defAt` numbers, calibrated so that the expected gear of that tier (section 8) clears it in about the same time and with the same danger as a tier I run with level-30 gear. First guess, to be tuned: health x1.35 and damage x1.25 per tier above IV, so tier XI is about 6x / 4x a level-54 run: the target is a maxed character in maxed level-60 gear with all new pieces and maxed symbols; tiers I-IV keep `defAt` at their own level.
+- The level debuff on damage you deal (`lvDmgK`, floor x0.5) stays: a level-60 hiker deals half damage from tier VI up, which is the "hardest dungeon" feeling the owner wants. The growing damage you take (+5% a level) is capped inside runs at the same 10 levels, otherwise tier XI (level 110) is a one-hit kill whatever the gear.
 - Bosses: the dungeon boss uses the same `dgtStat`; the boss-only creep (`BOSS_CREEP_*`, `LATE_CREEP_BOSS`) is skipped in runs.
 - Calibration tool: extend `tools/boss-duel.js` with `--dungeon <theme> --tier N --gear <expected>` and a ladder over all 11 tiers; the numbers go in `docs/DUNGEON-REVAMP.md` once measured. This is step D2, before any loot work ships.
 
@@ -140,7 +140,7 @@ Today a ring adds its flat attack whatever its element (the soul that gated it i
 
 - Old level-40 pieces with three lines (`…8…~xxyyzz`): keep the first line, delete the last two. Worn, in the bag, in player shops (`gear.psh`) and in mail all go through the same id rewrite.
 - Old level-40 talismans stay level 40 (they get 1 line too). Pyrrhax stops paying them.
-- `gear.dg.top` starts at the tier a player's highest clear would have been under the old rule (a level-50 run cleared -> tier III), so nobody loses access.
+- `gear.dg.top` starts at the tier a player's highest clear would have been under the old rule (a level-46+ run cleared -> tier III), so nobody loses access.
 - New fields with defaults: `eq.cape`, `eq.gloves`, `eq.shield` (empty), `gear.dg.top` (0).
 - `MOBS.md` / `EQUIPMENT.md` regenerate (`node tools/gen-docs.js`).
 
@@ -157,7 +157,7 @@ Today a ring adds its flat attack whatever its element (the soul that gated it i
 
 1. **Tier unlock**: clearing tier N of any dungeon opens N+1 everywhere (recommended), or per dungeon, or open from the start.
 2. **Talismans, capes, gloves, shields at equipment level 30 too** so the drop table works for all eight (recommended), or only 40 / 50 / 60 with the level-30 share moved to 40.
-3. **Monster stats**: the gentle dungeon curve of section 3 (recommended; level 130 is otherwise unwinnable), or the world curve.
+3. **Monster stats**: the gentle dungeon curve of section 3 (recommended; level 110 is otherwise unwinnable), or the world curve.
 4. **Rings without a set**: only a basic ring works (recommended), or every ring works for the Wanderer.
 5. **Pieces per clear** in the middle tiers: the column in section 1 (recommended), or a straight line from 1 to 3-5.
 6. **Glove and shield kinds**: the lists above are a menu; strike what you do not want.
