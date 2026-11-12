@@ -80,7 +80,7 @@ function conPinePads(o,seed){   // the pine's crown pads: [{x,y,z,r}], lopsided,
   return pads;
 }
 function makePineLo(o){
-  const H=o.H||9.6, pads=conPinePads(o,1), trunk=paint(cyl(0.1,0.27,H,6).translate(0,H/2,0),barkLo(0x6a4a32)), parts=[];
+  const H=o.H||9.6, tk=o.tk||1, pads=conPinePads(o,1), trunk=paint(cyl(0.1*tk,0.27*tk,H,6).translate(0,H/2,0),barkLo(0x6a4a32)), parts=[];
   for(let i=0;i<o.layers;i++) rand();   // (the old pine drew one global random number a layer: keep the stream, so nothing built after it moves)
   pads.forEach((p,i)=>{ const g=new THREE.ConeGeometry(p.r*1.3,0.9,7,1); g.scale(1,0.8,1); g.rotateY(i*2.1); g.translate(p.x,p.y+0.4,p.z); parts.push(g); });
   return {trunk, leaves:merge(parts.map(g=>paint(g,shadeTree(H*0.5,H,0))))};

@@ -118,11 +118,11 @@ function makePineHi(o,seed){
   const pts=[]; for(let s=0;s<=8;s++){ const t=s/8, y=-0.25+t*(H*0.98+0.25); pts.push([bendK*Math.pow(Math.max(y,0)/H,2)+Math.sin(t*2.6+seed)*0.05*t,y,Math.cos(t*2.1+seed)*0.05*t]); }
   const fr=furrow(seed,0.08), ph=rg()*TAU, bark=barkHi(0x6a4a32,seed), orange=new THREE.Color(0xa8623c);
   const col=(x,y,z,c)=>{ bark(x,y,z,c); c.lerp(orange,clamp((y-0.4*H)/(0.2*H))*0.6); };
-  parts.push(tube(pts,(t,a)=>{ const y=-0.25+t*(H*0.98+0.25); return lerp(0.26,0.06,clamp(y/H))*rootFlare(y,a,0.85,4,ph)*fr(t,a,H); },8,col));
+  parts.push(tube(pts,(t,a)=>{ const y=-0.25+t*(H*0.98+0.25); return (o.tk||1)*lerp(0.26,0.06,clamp(y/H))*rootFlare(y,a,0.85,4,ph)*fr(t,a,H); },8,col));
   rootsHi(parts,3,0.26,4,ph,rg,rr,col,[0,0,0]);
   for(const p of pads){   // a limb from the trunk up to its pad, then the pad
     const by=Math.max(p.y-1.3,0.4*H), bx=bendK*Math.pow(by/H,2), L=[[bx,by,0],[(bx+p.x)*0.5,by+(p.y-by)*0.35,p.z*0.5],[p.x,p.y-0.1,p.z]];
-    parts.push(tube(L,(t)=>lerp(0.085,0.03,t),5,col,true));
+    parts.push(tube(L,(t)=>(o.tk||1)*lerp(0.085,0.03,t),5,col,true));
     const sy=0.95, rim=8, ring=(rad,dy,v)=>{ const row=[]; for(let k=0;k<rim;k++){ const a=k/rim*TAU+p.x; row.push(A.v(p.x+Math.cos(a)*rad,p.y+dy,p.z+Math.sin(a)*rad,v*0.9,v,v*1.06)); } return row; };
     const R0=ring(p.r,0,0.72), R1=ring(p.r*0.72,p.r*sy*0.6,0.8), top=A.v(p.x,p.y+p.r*sy,p.z,0.6,0.6,0.62), bot=A.v(p.x,p.y-p.r*0.3,p.z,0.5,0.5,0.5);
     for(let k=0;k<rim;k++){ const k1=(k+1)%rim; A.quad(R0[k],R0[k1],R1[k1],R1[k],0,1,0); A.tri(R1[k],R1[k1],top,0,1,0); A.tri(R0[k],R0[k1],bot,0,-1,0); }
