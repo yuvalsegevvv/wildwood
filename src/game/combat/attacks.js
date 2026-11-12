@@ -18,7 +18,7 @@ function cycleTarget(){
   if(!list.length){ CB.target=null; return; }
   const i=list.indexOf(CB.target); CB.target=list[(i+1)%list.length];
 }
-function doAttack(kind,hold){   // hold: the strength 0..1 of a charged skill 1 (basic-hold.js); returns true when the attack was sent
+function doAttack(kind,hold,alt){   // hold: the strength 0..1 of a charged skill 1 (basic-hold.js); alt: skill 2's held row when its hold was long enough (skill-hold.js); returns true when the attack was sent
   if(kind==='cave'){ caveDoAttack(); return false; }   // cave: the 4th slot (game/cave/slot.js)
   if(kind==='ult'){ ultDoAttack(); return false; }   // ult: the 5th slot, the set burst (game/ult/slot.js)
   if(!started||!NET.ready||uiOpen()||PL.dead||CB.act||CB.cd[kind]>0) return false;
@@ -29,7 +29,7 @@ function doAttack(kind,hold){   // hold: the strength 0..1 of a charged skill 1 
     return false;
   }
   const spd=bhSpeedUi(), hf=kind==='basic'&&hold>0?hold:0, bcd=kind==='basic'&&CB.buff?CB.buff.cd:1;   // basic-hold: the same numbers the server uses
-  const ab=hf?bhHoldAb(ab0,c,hf):ab0;
+  const ab=hf?bhHoldAb(ab0,c,hf):kind==='skill'&&alt&&alt.base===ab0.id?shCastAb(ab0,alt):ab0;   // skill-hold: the held mode, under the piece's id (its cooldown)
   const tgtOK=CB.target&&!CB.target.dead&&Math.hypot(CB.target.x-P.x,CB.target.z-P.z)<=ab.range+3;
   if(!tgtOK&&!PVC.on){ const t2=pickTarget(Math.max(ab.range+2,8)); if(t2) CB.target=t2; }
   const [k,dur0,hitAt]=ab.act, dur=bhActDur(dur0,spd,1);

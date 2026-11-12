@@ -5,8 +5,9 @@
    Test: client-smoke. */
 const SSV={marks:new Map(), geos:{}, mats:{}, haloGeo:null, shown:'', max:{}, fly:[]};   // monster id -> {markId: {n, until, pips:[mesh], born:[t], full}}
 // shape of each kit's mark: orb ring gem shard flame bell coin bar thorn seed knot blob star (a mark not listed here is an orb)
-const SSV_SHAPE={ripple:'ring', knot:'knot', glint:'gem', rime:'shard', glare:'star', temper:'flame', fervor:'flame', toll:'bell', vigil:'bar', applause:'star', swell:'ring', linen:'bar', rot:'blob', string:'bar', lure:'orb', loot:'coin', barb:'thorn', stride:'thorn', sight:'ring', fixation:'gem', tally:'bar', grain:'seed'};
+const SSV_SHAPE={ripple:'ring', knot:'knot', glint:'gem', rime:'shard', glare:'star', temper:'flame', fervor:'flame', toll:'bell', vigil:'flame', applause:'star', swell:'ring', linen:'bar', rot:'blob', string:'bar', lure:'orb', loot:'coin', barb:'thorn', stride:'thorn', sight:'ring', fixation:'gem', tally:'bar', grain:'seed', twine:'knot'};
 function ssvColor(markId){ for(const id of SS_ORDER){ const s=SS_SETS[id]; if(s.kit&&s.kit.mark===markId) return s.pal.accent; } return 0xffffff; }
+function ssvSet(markId){ for(const id of SS_ORDER){ const s=SS_SETS[id]; if(s.kit&&s.kit.mark===markId) return s; } return null; }
 function ssvKit(markId){ for(const id of SS_ORDER){ const s=SS_SETS[id]; if(s.kit&&s.kit.mark===markId) return s.kit; } return null; }
 function ssvMax(markId){   // the "(up to 5)" of the kit's text; a kit that does not say it holds 5
   if(SSV.max[markId]) return SSV.max[markId];
@@ -46,14 +47,15 @@ function ssvBurst(m,markId,n){   // a spent stack: its own shapes fly out of the
 }
 function ssOnMark(monId,markId,n,dur,by){
   const mon=MON_BY_ID.get(monId); if(by!==NET.pid||!mon) return;
-  if(!n){ const e=SSV.marks.get(monId), was=e&&e[markId]?e[markId].n:0; ssvDrop(monId,markId); if(was>0) ssvBurst(mon,markId,Math.min(5,was)); return; }
+  if(!n){ const e=SSV.marks.get(monId), was=e&&e[markId]?e[markId].n:0; ssvDrop(monId,markId); if(was>0){ ssvBurst(mon,markId,Math.min(5,was)); const S=ssvSet(markId), L=S&&SSL.looks[S.id]; if(L&&L.spent) L.spent(L,mon,was); } return; }   // (a look's spent hook: what the spent stacks pay, e.g. Tzaya's tallies flying home)
   const e=SSV.marks.get(monId)||SSV.marks.set(monId,{}).get(monId), cur=e[markId]||(e[markId]={n:0,until:0,pips:[],born:[],full:false}), col=ssvColor(markId), shape=SSV_SHAPE[markId]||'orb', now=performance.now()/1000;
   const grew=n>cur.n; cur.n=n; cur.until=now+dur;
   while(cur.pips.length<n){ const mesh=new THREE.Mesh(ssvGeo(shape),ssvMat(col)); mesh.visible=false; scene.add(mesh); cur.pips.push(mesh); cur.born.push(now); }
   while(cur.pips.length>n){ scene.remove(cur.pips.pop()); cur.born.pop(); }
   if(grew){ fxpFlare(mon.x,mon.y+mon.T.height*mon.s*0.6,mon.z,col,0.55,0.18); fxpSparks(mon.x,mon.y+mon.T.height*mon.s*0.6,mon.z,col,3,1.6,{up:0.8,size:0.12,life:0.35}); }
   const mx=ssvMax(markId);
-  if(n>=mx&&!cur.full){ cur.full=true;   // the stack is full: one ring pulse and a halo that stays
+  if(n>=mx&&mx>1&&!cur.full){ cur.full=true;   // (a one-stack mark, Tansy's Twine, is always "full": no halo on every bound monster)
+   // the stack is full: one ring pulse and a halo that stays
     spawnRingAt(mon.x,mon.y+mon.T.height*mon.s+0.9,mon.z,0.9,col); fxpSparks(mon.x,mon.y+mon.T.height*mon.s+0.9,mon.z,col,10,2.4,{up:1,size:0.16,life:0.5});
     const h=new THREE.Mesh(SSV.haloGeo||(SSV.haloGeo=new THREE.TorusGeometry(0.4,0.018,4,28).rotateX(Math.PI/2)),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.7,depthWrite:false,blending:THREE.AdditiveBlending}));
     h.visible=false; scene.add(h); cur.halo=h;

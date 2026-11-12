@@ -77,7 +77,7 @@ const SKVX={
   shaft:(L,c,o)=>{ const a=skvAnchor(c,o); sslShaft(L,a.x,a.z,o.h||7,skvCol(L,o.col!==undefined?o.col:'hot')); },
   rays:(L,c,o)=>{ const a=skvAnchor(c,o); sslRays(L,a.x,c.y+(o.y||1.2),a.z,c.face,o.arc||0.8,o.n||7,o.len||6,skvCol(L,o.col!==undefined?o.col:'hot')); },
   slabs:(L,c,o)=>{ const a=skvAnchor(c,o); sslSlabs(L,a.x,a.z,skvR(c,o,4),o.n||8,skvCol(L,o.col!==undefined?o.col:0)); },
-  decal:(L,c,o)=>{ const a=skvAnchor(c,o); sslDecal(L,a.x,a.z,skvR(c,o,5),{life:o.life||0.8,spin:o.spin||0.8}); },
+  decal:(L,c,o)=>{ const a=skvAnchor(c,o); sslDecal(L,a.x,a.z,skvR(c,o,5),{life:o.life||0.8,spin:o.spin!==undefined?o.spin:0.8,op:o.op,r0:o.r0,inward:o.inward,keep:!!o.keep}); },   // (op, r0, inward: a decal that lies for a window, or one that closes)
   shake:(L,c,o)=>{ if(c.mine||Math.hypot(P.x-c.x,P.z-c.z)<25) camShake=Math.max(camShake,typeof o==='number'?o:o.v||0.3); },
   dust:(L,c,o)=>{ const a=skvAnchor(c,o); fxxDust(a.x,getH(a.x,a.z),a.z,o.n||8,skvR(c,o,3),o.col!==undefined?skvCol(L,o.col):0x8a7a60); },
   rise:(L,c,o)=>{ const a=skvAnchor(c,o); for(let i=0;i<sslN(o.n||10);i++){ const q=AR(0,TAU), d=Math.sqrt(Math.random())*skvR(c,o,2); ssEmit(L,a.x+Math.sin(q)*d,getH(a.x,a.z)+0.2,a.z+Math.cos(q)*d,{v:[0,sslR(1,3),0],life:sslR(0.7,1.3)}); } },
@@ -86,7 +86,7 @@ const SKVX={
 // the recipe of a skill row in a look: the exact id first, then 'ult' / its position
 function skvRecipeOf(L,s){
   if(!L||!L.vis||!s) return null;
-  return L.vis[s.id]||(s.slot==='ult'?L.vis.ult:L.vis[String(s.pos)])||null;
+  return L.vis[s.id]||(s.base?null:s.slot==='ult'?L.vis.ult:L.vis[String(s.pos)])||null;   // skill-hold: a held mode has only its own key '<piece>_h' (never the tap's position recipe)
 }
 function skvRunRecipe(L,s,phase,c){   // phase: 'cast' | 'zone' | 'end' | 'hit'
   const R=skvRecipeOf(L,s), steps=R&&R[phase]; if(!steps) return;

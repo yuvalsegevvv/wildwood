@@ -5,7 +5,7 @@ ssDefineLook('ambrose',{
   cols:[0x4f7a6a,0xe6ecea,0x7fd0d8,0xcdbd8a,0x2f5a52], hot:0x9fe8ee, hot2:0x7fd0d8, decal:'waves', arcCol:0x9fe8ee,
   vis:{   // the text: Ebb and Flow is a wave out and a wave back; High Water is a rising tide; Spring Flood rolls a wave out in a cone
     '2':{cast:[{wave:{r:10,style:'water',col:2,h:0.9,life:0.8}},{wave:{r:10,style:'water',col:2,h:0.6,inward:true,at:0.5,life:0.8}}]},
-    '3':{cast:[{wave:{r:13,style:'water',col:2,h:1.4,life:1}},{wave:{r:9,style:'water',col:1,h:1,at:0.3,life:1}}]},
+    '3':{cast:[{wave:{r:13,style:'water',col:2,h:1.4,life:1}},{wave:{r:9,style:'water',col:1,h:1,at:0.3,life:1}},{decal:{r:9,life:8,keep:1,r0:1,spin:0.1,op:0.5}},{rise:{n:14,r:9,at:0.4}}]},   // the wave line lies for the shield's 8 s
     ult:{cast:[{wave:{shape:'arc',arc:0.7,r:14,h:1.7,style:'water',col:2,life:1.1}},{wave:{shape:'arc',arc:0.55,r:12,h:1.2,style:'water',col:1,at:0.2,life:1}}]}
   },
   mote:[{sh:'drop',c:2,s:0.22,w:5,g:-9,op:0.85,spin:2},{sh:'bubble',c:1,s:0.2,w:3,g:1.2,sway:0.8,op:0.45,add:1,spin:0},{sh:'reed',c:0,s:0.4,w:2,g:-3,sway:1.5},{sh:'reed',c:3,s:0.34,w:1.5,g:-3,sway:1.5}],
@@ -16,7 +16,7 @@ ssDefineLook('ambrose',{
     spawnRingAt(x,c.gy,z,R.r*0.9,L.hot,false); spawnRingAt(x,c.gy,z,R.r*0.7,L.hot2,!!f.pop); spawnRingAt(x,c.gy,z,R.r*0.45,0xe6ecea,false);
     sslRingMotes(L,x,z,R.r,R.r*3.2,null,!!f.pop);
     if(f.heal&&f.heal.v>=0.2) for(let i=0;i<sslN(18);i++) ssPart('bubble',L.cols[1],x+sslR(-0.6,0.6),c.gy+sslR(0,0.6),z+sslR(-0.6,0.6),{v:[0,sslR(2,4),0],g:0.5,life:sslR(1,1.6),s:sslR(0.14,0.3),add:1,op:0.5,sway:1,spin:0}); },
-  fxa:(L,o,kind)=>{ const y=o.y||getH(o.x,o.z);
-    if(kind==='shield') sslDome(L,o.x,y,o.z,1.25,0x7fd0d8,1.2);
-    else { for(let i=0;i<sslN(10);i++) ssPart('bubble',L.cols[1],o.x+sslR(-0.45,0.45),y+sslR(0,0.5),o.z+sslR(-0.45,0.45),{v:[0,sslR(1.2,2.6),0],g:0.4,life:sslR(0.8,1.3),s:sslR(0.1,0.2),add:1,op:0.55,sway:1,spin:0}); spawnRingAt(o.x,y+0.1,o.z,1.0,L.hot2); } }
+  fxa:(L,o,kind)=>{ const y=o.y||getH(o.x,o.z), rp=slfNear('ripple',o.x,o.z,14);   // synergy: the Ripples near (yours) deepen the mend and thicken the shield: more bubbles, a second shell
+    if(kind==='shield'){ sslDome(L,o.x,y,o.z,1.25,0x7fd0d8,1.2); if(rp>=3) sslDome(L,o.x,y,o.z,1.45,L.cols[1],1.2); }
+    else { for(let i=0;i<sslN(3+Math.round(rp*0.8)+7);i++) ssPart('bubble',L.cols[1],o.x+sslR(-0.45,0.45),y+sslR(0,0.5),o.z+sslR(-0.45,0.45),{v:[0,sslR(1.2,2.6),0],g:0.4,life:sslR(0.8,1.3),s:sslR(0.1,0.2),add:1,op:0.55,sway:1,spin:0}); spawnRingAt(o.x,y+0.1,o.z,1.0,L.hot2); } }
 });

@@ -47,7 +47,7 @@ function updateCombatUI(dt){
     const tbW=(T.hp/T.maxHp*100)+'%'; if(tBar.style.width!==tbW) tBar.style.width=tbW; const thS=Math.ceil(T.hp*K.hp)+' / '+Math.round(T.maxHp*K.hp); if(tHp.textContent!==thS) tHp.textContent=thS; }
   else tframe.hidden=true;
   const L=pvSkills(), PV=pvLevel(), c=clsOf(), ba=abilityOf(c,'basic',L,PV), sk=abilityOf(c,'skill',L,PV), bu=abilityOf(c,'burst',L,PV);   // pvp: the fixed loadout on the island
-  abSet(abBasic,0,ba?Math.min(1,CB.cd.basic/bhInterval(ba,L,bhSpeedUi(),CB.buff?CB.buff.cd:1,0)):0); bhHudTick(); abSet(abSkill,1,sk?CB.cd.skill/abilityCd(sk,L,PV,c,rlUiCdr()):0); abSet(abBurst,2,bu?CB.cd.burst/abilityCd(bu,L,PV,c,rlUiCdr()):0);   // (skillsets: the bonuses of the class in hand)
+  abSet(abBasic,0,ba?Math.min(1,CB.cd.basic/bhInterval(ba,L,bhSpeedUi(),CB.buff?CB.buff.cd:1,0)):0); bhHudTick(); abSet(abSkill,1,sk?CB.cd.skill/abilityCd(sk,L,PV,c,rlUiCdr()):0); shHudTick(); abSet(abBurst,2,bu?CB.cd.burst/abilityCd(bu,L,PV,c,rlUiCdr()):0);   // (skillsets: the bonuses of the class in hand)
   abSkill.classList.toggle('ready',!!sk&&CB.cd.skill<=0); abBurst.classList.toggle('ready',!!bu&&CB.cd.burst<=0);
   abBasic.classList.toggle('buffed',!!CB.buff);
   mvHudUpdate();   // movement: the movement button's cooldown
@@ -128,12 +128,14 @@ function setActionBar(){
 const press=(el,fn)=>{ el.addEventListener('touchstart',e=>{ e.preventDefault(); fn(); },{passive:false}); el.addEventListener('click',fn); };
 abBasic.addEventListener('touchstart',e=>{ e.preventDefault(); bhDown(); },{passive:false}); abBasic.addEventListener('touchend',e=>{ e.preventDefault(); bhUp(); },{passive:false}); abBasic.addEventListener('touchcancel',bhCancel);
 abBasic.addEventListener('mousedown',e=>{ if(e.button===0) bhDown(); }); addEventListener('mouseup',e=>{ if(e.button===0) bhUp(); });   // basic-hold: skill 1 fires when the button comes up (a tap = a press, a hold = a charged attack)
-press(abSkill,()=>doAttack('skill')); press(abBurst,burstSlot); press($('#abMov'),mvPress); press($('#abCave'),()=>doAttack('cave')); press($('#abUlt'),()=>doAttack('ult'));   // cave: the 4th slot; ult: the 5th
-addEventListener('keyup',e=>{ if(kbIs(e.code,'basic')) bhUp(); });
+abSkill.addEventListener('touchstart',e=>{ e.preventDefault(); shDown(); },{passive:false}); abSkill.addEventListener('touchend',e=>{ e.preventDefault(); shUp(); },{passive:false}); abSkill.addEventListener('touchcancel',shCancel);
+abSkill.addEventListener('mousedown',e=>{ if(e.button===0) shDown(); }); addEventListener('mouseup',e=>{ if(e.button===0||e.button===2) shUp(); });   // skill-hold: a skill 2 with a held mode fires on release (a tap = the skill, a hold = its held mode); any other fires on down (skill-hold.js)
+press(abBurst,burstSlot); press($('#abMov'),mvPress); press($('#abCave'),()=>doAttack('cave')); press($('#abUlt'),()=>doAttack('ult'));   // cave: the 4th slot; ult: the 5th
+addEventListener('keyup',e=>{ if(kbIs(e.code,'basic')) bhUp(); if(kbIs(e.code,'skill')) shUp(); });
 addEventListener('keydown',e=>{
   if(!started||uiOpen()) return;
   if(kbIs(e.code,'basic')&&!e.repeat) bhDown();
-  if(kbIs(e.code,'skill')) doAttack('skill');
+  if(kbIs(e.code,'skill')) shDown(e.repeat);   // skill-hold: fires at once unless the skill has a held mode
   if(kbIs(e.code,'burst')) burstSlot();
   if(kbIs(e.code,'cave')) doAttack('cave');   // cave: the 4th slot
   if(kbIs(e.code,'ult')) doAttack('ult');   // ult: the 5th slot
@@ -146,7 +148,7 @@ canvas.addEventListener('mousedown',e=>{
   const locked=document.pointerLockElement===canvas;
   mDown={x:e.clientX,y:e.clientY,t:performance.now(),locked};
   if(!locked){ if(canvas.dataset.lockTried) canvas.dataset.lockFailed='1'; canvas.dataset.lockTried='1'; }
-  if(locked && !uiOpen()){ if(e.button===2) doAttack('skill'); else bhDown(); }
+  if(locked && !uiOpen()){ if(e.button===2) shDown(); else bhDown(); }
 });
 addEventListener('mouseup',e=>{
   if(!mDown) return; const d=mDown; mDown=null;

@@ -10,7 +10,7 @@ const bhHeld=()=>BHC?Math.max(0,(performance.now()-BHC.t0)/1000):0;
 function bhClearHud(){ abBasic.classList.remove('charging','charged'); abKey=''; }
 function bhDown(){
   if(BHC||!started||!NET.ready||uiOpen()||PL.dead||customizing) return;
-  BHC={t0:performance.now()+Math.max(0,CB.cd.basic)*1000,cls:clsOf()};   // (the charge starts when skill 1 is ready again) netSend({t:'hold',on:1});
+  BHC={t0:performance.now()+Math.max(0,CB.cd.basic)*1000,cls:clsOf()}; netSend({t:'hold',on:1});   // (the charge starts when skill 1 is ready again; the send had slipped into this comment, so the server never saw a hold)
 }
 function bhUp(){
   if(!BHC) return; const f=bhFrac(bhHeld(),BHC.cls,bhSpeedUi()), same=BHC.cls===clsOf(); BHC=null; bhClearHud();

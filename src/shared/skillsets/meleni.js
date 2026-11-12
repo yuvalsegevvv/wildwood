@@ -2,14 +2,17 @@
 /* Agent map. Kit: docs/skillkits/kit-support.md (the buff focus, like Dunstan's Rally in another voice); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces water);
    outfit: game/outfits/meleni.js, docs/skillkits/looks/meleni.md; visuals: game/skillsets/look-meleni.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-isles-smoke.js,
    tools/skillsets-ladder.js --set meleni. Land: the Emberwake Isles (tier 1; Ocelo, Tuila and the Cenote of Hollow Stars are its sources). Mark: Swell. Buffs never stack (the stronger wins) and are capped (SS_ALLY_CAP), so a second
-   buffer adds only a different KIND. Numbers are Dunstan's on purpose (the owner's ladder, tools/skillsets-ladder.js, holds for them); only the words, the element and the look are hers. */
+   buffer adds only a different KIND. The buff values are still Dunstan's (the owner's ladder, tools/skillsets-ladder.js, holds for them); how they are reached is hers (docs/skillkits/COMBO-REWORK.md section 8):
+   skill 2 has two modes (alt, shared/skill-hold.js): held, Ebb pulls the enemies in, lays 2 Swell on each and guards the party; tapped, Landfall gives might, spends the Swell and every Swell spent takes
+   1.5 s off Call the Tide (pop.cdr); the risen tide lays a Swell a second on what stands in it. Ebb gives the buff support a defensive KIND Dunstan does not have (guard). */
 defineSkillSet({
   id:'meleni', name:'The Tide Chant', land:'isles', needs:{tier:1}, el:'water', outfit:'meleni',
   role:{main:'support', focus:'buff'},
   char:{name:'Meleni', sex:'female', theme:'a wayfinder-singer who chants the crew home across open water', ip:{kind:'original', riffs:'the Pacific wayfinder and chant-leader genre (a shell lei, a woven wrap, a paddle-staff); no existing character'}},
   pal:{main:0x2fb4b0, accent:0xf2e6c8, glow:0x7fe8ff},
   emblem:{col:0x6fe0d4, glyph:'<path d="M3 15c3-3 5-3 9 0s6 3 9 0"/><path d="M3 20c3-3 5-3 9 0s6 3 9 0"/><path d="M12 3v8"/><path d="M9 6l3-3 3 3"/>'},
-  kit:{mark:'swell', name:'Swell', text:'Every strike leaves a Swell (up to 5); the Landfall Chant spends them for extra damage.'},
+  kit:{mark:'swell', name:'Swell', text:'Every strike leaves a Swell (up to 5), and so do the Ebb and the risen tide. Landfall spends them: more might for the party, and each Swell spent brings Call the Tide back sooner.',
+       combo:{order:['burst','skill'], win:6, text:'Ebb to gather the water, Landfall at five Swell; when the tide is up, chant Landfall inside it.'}},
   pos:{
     1:{bound:'class',
        skill:{
@@ -17,12 +20,14 @@ defineSkillSet({
                fx:{proj:{kind:'frost', speed:32, turn:8, life:1.0, mark:{id:'swell', n:1, dur:12, max:5}}, ally:{kind:'haste', v:0.10, dur:3, r:18}}}},
        passive:{name:'Carrying Voice', text:'Your buffs last {}% longer', stat:'buffdur', v:[0.4, 0.05]}},
     2:{bound:'any',
-       skill:{any:{name:'Landfall Chant', desc:'A chant that carries over the water: you and your allies within 25 m deal 10% more damage for 10 seconds, and 2% more for each Swell on the enemies near you. A surge of water round you then spends every Swell nearby for extra damage.', cd:14, range:6, mult:1.1, act:['meleni2x',0.7,0.45], anim:'nova',
-                   fx:{ring:{r:6, kb:2}, ally:{kind:'might', v:0.10, dur:10, r:25, perMark:{id:'swell', v:0.02, r:8}}, pop:{id:'swell', k:0.5, r:6}}}},
+       skill:{any:{name:'Landfall Chant', desc:'Tap: Landfall. You and your allies within 25 m deal 10% more damage for 10 seconds, and 2% more for each Swell near you. A surge round you then spends every Swell nearby for extra damage, and each one (up to five) takes 1.5 seconds off Call the Tide. Hold: Ebb.', cd:14, range:6, mult:1.1, act:['meleni2x',0.7,0.45], anim:'nova',
+                   fx:{ring:{r:6, kb:2}, ally:{kind:'might', v:0.10, dur:10, r:25, perMark:{id:'swell', v:0.02, r:8}}, pop:{id:'swell', k:0.5, r:6, cdr:{burst:1.5}, cdrMax:5}},
+                   alt:{name:'Ebb', secs:0.6, cd:9, desc:'Draw the water back: everything within 8 m is dragged toward you and left with 2 Swell, and you and your allies within 25 m take 12% less damage for 6 seconds.', mult:0.7, range:8, act:['meleni2xh',0.8,0.5], anim:'nova',
+                        fx:{ring:{r:8, kb:-3, mark:{id:'swell', n:2, dur:12, max:5}}, ally:{kind:'guard', v:0.12, dur:6, r:25}}}}},
        passive:{name:'Rising Swell', text:'A kill lifts you and your allies within 15 m: 10% more damage for 5 seconds (at most every 4 s)', on:'kill', icd:4, buff:{kind:'might', v:0.1, dur:5, r:15}}},
     3:{bound:'any',
-       skill:{any:{name:'Call the Tide', desc:'Call the tide up round your feet for 8 seconds: you and your allies standing within 9 m get 20% more critical hit chance, 40% more critical damage and 2% health back a second, and the water at its edge batters the enemies there.', cd:45, range:9, mult:0.5, act:['meleni3x',0.9,0.6], anim:'nova',
-                   fx:{zone:{r:9, dur:8, every:1, self:true, ally:[{kind:'crit', v:0.20, dur:2.5}, {kind:'critdmg', v:0.40, dur:2.5}, {kind:'regen', v:0.02, dur:2.5}]}}}},
+       skill:{any:{name:'Call the Tide', desc:'Call the tide up round your feet for 6 seconds: you and your allies standing within 9 m get 20% more critical hit chance, 40% more critical damage and 2% health back a second. The undertow holds the enemies in it and leaves a Swell on each every second.', cd:45, range:9, mult:0.5, act:['meleni3x',0.9,0.6], anim:'nova',
+                   fx:{zone:{r:9, dur:6, every:1, self:true, kb:-1, mark:{id:'swell', n:1, dur:12, max:5}, ally:[{kind:'crit', v:0.20, dur:2.5}, {kind:'critdmg', v:0.40, dur:2.5}, {kind:'regen', v:0.02, dur:2.5}]}}}},
        passive:{name:'Salt Throat', text:'+{}% damage with every attack; your cooldowns are 8% longer', stat:'dmg', v:[0.06, 0.01], cost:{stat:'cd', v:-0.08}}}},
   ult:{name:'The Great Swell', desc:'A wall of green water rises over the target (8 m) and breaks, and the sea stays up round it; the stunned are carried off their feet.', range:24, mult:1.5, act:['meleniult',1.0,0.55], anim:'nova',
        fx:{zone:{r:8, dur:4, first:0.3, every:1}},

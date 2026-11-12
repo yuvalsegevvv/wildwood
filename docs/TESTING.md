@@ -54,6 +54,10 @@ The scripted dungeon tests walk the happy paths; `tools/dungeon-fuzz.js` walks t
 
 `tools/skillset-fuzz.js`: two players unlock sets (the free `ft` message), wear and take off pieces, put passives in slots, change class, climb a few levels at a time, fight and save; after EVERY action the live loadout must be valid (nothing worn that is unowned, unknown or in the wrong slot or class; a passive only in a slot the level has opened and never twice) and every 40 steps the gear is put through `sanitizeGear` twice (valid, then identical). Stats (`maxHp`, damage, defence) must stay finite. Levels only rise in it: the testing tool can lower a level, and then a save cannot clear the slots the lower level no longer opens (`sanitizeGear` does not know the level). Mutation-checked: dropping the "slot not open yet" guard in `equipPassiveP` is caught. `--steps N --seed N`.
 
+## Press orders of a skill set: `skillsets-ladder --orders`
+
+`node tools/skillsets-ladder.js --orders [--set id]` plays each set three times with the bot preferring burst > skill > basic (the default ladder), skill > burst > basic, and the burst held until skill 2 was cast in the last 4 s; it prints `pieces / pack at 5-set` for each order and the spread. An order-free kit (`docs/skillkits/SYNERGY-REWORK.md`) should show a small spread, a combo kit (`--combo`, `docs/skillkits/COMBO-REWORK.md`) a larger one. Cooldown alignment alone already moves a set by more than the noise (a pulled camp under a ring is worth more), so judge a kit by the change of its spread, not by the spread alone. About 30 s a set.
+
 ## Chaos at the bosses: `boss-fuzz`
 
 `tools/boss-fuzz.js` fights each of the eight world bosses with four level-60 players who, at random, die in one hit, run out of the arena, step back in, disconnect and rejoin; then everyone leaves, eight seconds pass, and the boss must have reset completely (not engaged, full health, phase 1, no zones, telegraphs, walls, orbs, adds or totems; a boss that was killed must respawn). `--seed N --rounds N --steps N`. Mutation-checked: skipping `clearBossFxS` in `resetBossS` fails it. `boss-smoke` is the clean version of the same fights.

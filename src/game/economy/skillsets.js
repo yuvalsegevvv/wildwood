@@ -10,6 +10,6 @@ function ssOnGet(pid,setId,pos){
   if(!$('#skills').hidden) renderSkills();
 }
 const SSA={};   // your ally buffs: kind -> {v, until} (seconds of performance.now)
-function ssOnAlly(pid,kind,v,dur,src){ if(pid===NET.pid) SSA[kind]={v,until:performance.now()/1000+dur}; if(src) ssLookAlly(pid,kind,src,dur); }   // (src: the piece, for its look)
+function ssOnAlly(pid,kind,v,dur,src){ if(pid===NET.pid) SSA[kind]={v,until:performance.now()/1000+dur}; if(src) ssLookAlly(pid,kind,src,dur,v); }   // (src: the piece, for its look)
 function ssOnCdr(slot,sec){ if(CB.cd[slot]>0) CB.cd[slot]=Math.max(0,CB.cd[slot]-sec); sspFlashSlot(slot); }   // procs: the slot's tile flashes   // the server shortened that slot's cooldown: so does the bar it is counted on here
 const ssHasteK=()=>{ const a=SSA.haste; return a&&a.until>performance.now()/1000?a.v:0; };   // the share of every cooldown a haste buff takes off

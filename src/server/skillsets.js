@@ -5,7 +5,7 @@
    rebuilt by recalcP: when a piece is worn, a passive moves, the class or the level changes).
    MARKS (a kit's own, personal, they stack): m.mk[playerId][markId]={n,until}; ssMarkS applies (a skill shape's mark:{id,n,dur,max}, or a row's), fx.pop spends them (ssPopS), a row's amp:{id,per} makes
    the owner's marked targets take more (ssAmpK), they die with the monster (ssClearS). Event mk [monId, markId, n, dur, ownerId] (only the owner draws it).
-   SKILL MODIFIERS of a fx (fxModK): vsBoss, behind, rangeScale: a multiplier on each of the skill's hits, read where the hit is made (resolveFxS, impactFxS, updateAreasS).
+   SKILL MODIFIERS of a fx (fxModK): vsBoss, behind, rangeScale, vs (its own `when`, a proc event at most every 0.5 s: ssVsProcS): a multiplier on each of the skill's hits, read where the hit is made (resolveFxS, impactFxS, updateAreasS).
    TRIGGERS (ssTriggerS(p,kind,ctx), kinds hit crit kill hurt cast1-3 tick low): the worn passives' and bonuses' rows with on:, each with chance and icd; a trigger never fires a trigger (ssDepth), its damage
    is not a hit (mstQuietS). Effects: fx (resolveFxS with a synthetic action), heal, mark, status; buff and shield are the ally effects (docs/SKILL-SETS.md 6.3).
    ALLIES (docs/SKILL-SETS.md 6.3): the general buffs p.ally[kind]={v,until,by} (might, guard, haste, crit, critdmg, regen), a shield pool p.shield={v,until}, never stacking (the stronger wins, an equal one
@@ -94,16 +94,21 @@ function ssMarkS(p,m,spec){
   if(!m||m.dead||m.remove||(spec.behind&&!ssBehind(p,m))) return;
   const mine=(m.mk||(m.mk={}))[p.id]||(m.mk[p.id]={}), cur=mine[spec.id], dur=spec.dur||8;
   const n=Math.min(spec.max||5,(cur&&cur.until>S.t?cur.n:0)+(spec.n||1));
-  mine[spec.id]={n,until:S.t+dur}; ev('mk',m.id,spec.id,n,dur,p.id);
+  const quiet=cur&&cur.until>S.t&&cur.n===n&&S.t-(cur.ev||-99)<SS_MK_QUIET;   // a mark at its max only refreshed: no event within SS_MK_QUIET s of the last (Twine on a pulled camp; the pips may end up to that much early)
+  mine[spec.id]={n,until:S.t+dur,ev:quiet?cur.ev:S.t}; if(!quiet) ev('mk',m.id,spec.id,n,dur,p.id);
 }
+const SS_MK_QUIET=2;
 function ssClearS(m){ m.mk=null; }
-// fx.pop {id,k,r,heal}: spend the player's marks on the target (and on every monster within r metres of it): k x the skill's damage for each stack; heal: a share of the damage dealt comes back
+// fx.pop {id,k,r,heal,cdr,cdrMax,cap}: spend the player's marks on the target (and on every monster within r metres of it): k x the skill's damage for each stack; heal: a share of the damage dealt comes back
 function ssPopS(p,P,tgt,mult,dmg){
   const hit=[]; if(tgt) hit.push(tgt);
   if(P.r){ const cx=tgt?tgt.x:p.x, cz=tgt?tgt.z:p.z; for(const m of MONS) if(m!==tgt&&!m.dead&&!m.remove&&(m.inst|0)===(p.inst|0)&&Math.hypot(m.x-cx,m.z-cz)<P.r+m.T.rad) hit.push(m); }
-  let dealt=0;
-  for(const m of hit){ const n=ssMarkN(p,m,P.id); if(!n) continue; delete m.mk[p.id][P.id]; ev('mk',m.id,P.id,0,0,p.id); dealt+=dmg(m,mult*P.k*n); }
+  let dealt=0, spent=0;
+  const cap=P.cap||1e9;   // pop.cap: at most cap stacks spent a cast (the target's first); what is over the cap stays on the monster
+  for(const m of hit){ if(spent>=cap) break; const has=ssMarkN(p,m,P.id); if(!has) continue; const n=Math.min(has,cap-spent), e=m.mk[p.id][P.id];
+    if(n<has){ e.n=has-n; ev('mk',m.id,P.id,e.n,Math.max(0.1,e.until-S.t),p.id); } else { delete m.mk[p.id][P.id]; ev('mk',m.id,P.id,0,0,p.id); } spent+=n; dealt+=dmg(m,mult*P.k*n); }
   if(P.heal&&dealt) healP(p,dealt*P.heal*(1+psP(p,'heal')+ssCondP(p,'heal',tgt)));
+  if(P.cdr&&spent){ const n=Math.min(spent,P.cdrMax||5), c={}; for(const k of Object.keys(P.cdr)) c[k]=P.cdr[k]*n; ssCdrS(p,c); }   // pop.cdr: each stack spent (over all targets, up to cdrMax) takes time off a slot's cooldown
 }
 // a row's amp:{id,per}: the owner's marked target takes per x stacks more from the owner
 function ssAmpK(p,m){
@@ -130,6 +135,7 @@ function ssWhen(p,m,w,el){
   if(w.combat&&!(S.t-(p.lastDealt||-99)<6)) return false;
   if(w.shield&&!(p.shield&&p.shield.until>S.t&&p.shield.v>0)) return false;
   if(w.adv&&!ssAdvS(p,el,m)) return false;   // wanderer: prism
+  if(w.slowed&&!(m&&m.slowT>0)) return false;   // (a fighter on the Proving Isle has no slowT: it never holds there)
   if(w.crowd){ let n=0; for(const q of MONS) if(!q.dead&&!q.remove&&(q.inst|0)===(p.inst|0)&&Math.hypot(q.x-p.x,q.z-p.z)<w.crowd.r+q.T.rad*0.5&&++n>=w.crowd.n) break; if(n<w.crowd.n) return false; }
   if(w.allies&&ssAlliesOf(p,w.allies.r).length-1<w.allies.n) return false;
   return true;
@@ -148,12 +154,18 @@ const ssMarkSum=(p,id,r)=>{ let n=0; for(const m of MONS) if(!m.dead&&!m.remove&
 // the multiplier of a skill's own modifiers on one hit (f: its fx): vsBoss (against a boss), behind (the attacker is within 60 degrees of straight behind the monster), rangeScale (grows with the distance)
 function fxModK(f,p,m){
   const pk=caveSightK(p,m);   // cave: Eagle's Perch, +% per Sight on the target
-  if(!f||(!f.vsBoss&&!f.behind&&!f.rangeScale)) return pk;
+  if(!f||(!f.vsBoss&&!f.behind&&!f.rangeScale&&!f.vs)) return pk;
   let k=pk;
   if(f.vsBoss&&m.boss) k*=f.vsBoss;
   if(f.behind&&ssBehind(p,m)) k*=f.behind;
   if(f.rangeScale){ const R=f.rangeScale; k*=1+(R.k-1)*Math.max(0,Math.min(1,(Math.hypot(p.x-m.x,p.z-m.z)+caveRangeAdd(p)-R.from)/(R.to-R.from))); }
+  if(f.vs&&ssWhen(p,m,f.vs.when)){ k*=f.vs.k; ssVsProcS(p,f.vs,m); }   // skillsets: a skill's own conditional multiplier (vs)
   return k;
+}
+// a vs that fired: the proc event names the piece (its badge shows vs.name), at most once every 0.5 s per piece
+function ssVsProcS(p,V,m){
+  if(!V.sid) return; const icd=p.ssIcd||(p.ssIcd={}), key='vs:'+V.sid; if((icd[key]||0)>S.t) return;
+  icd[key]=S.t+0.5; ev('proc',p.id,V.sid,m&&m.id||0);
 }
 // damage that is not a skill's (a reflect): through the same health pool (monK), no triggers
 function ssRawHitS(m,v,p){

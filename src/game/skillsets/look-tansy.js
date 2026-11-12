@@ -4,12 +4,13 @@
 ssDefineLook('tansy',{
   cols:[0xe0b95a,0xb5532f,0x7a9a3c,0xece3c8,0xa8803a], hot:0xf2d98a, hot2:0xd9754a, decal:'wheat', arcCol:0xf2d98a,
   vis:{   // the text: Gather In pulls a field in and ties a sheaf; Bumper Crop is a swathe; Harvest Moon is a full turn of the scythe under a moon, ending in sheaves
-    '2':{zone:[{wave:{shape:'ring',style:'dust',col:0,h:0.7,inward:true,life:0.9}}], end:[{prop:{kind:'sheaf',anim:'rise',size:1.5,life:1.8,cols:[0,1]}}]},
-    '3':{cast:[{wave:{r:11,style:'dust',col:0,h:1.1,life:0.9}},{dust:{n:10,r:5,col:4}}]},
+    '2':{zone:[{wave:{shape:'ring',style:'dust',col:0,h:0.7,inward:true,life:0.9}},{wave:{shape:'ring',style:'dust',col:0,h:0.5,inward:true,life:0.9,at:1.5}},{decal:{rk:1,life:3,keep:1,r0:1,spin:0.15,op:0.55}}], end:[{prop:{kind:'sheaf',anim:'rise',size:1.5,life:1.8,cols:[0,1]}}]},
+    '3':{cast:[{wave:{r:11,style:'dust',col:0,h:1.1,life:0.9}},{dust:{n:10,r:5,col:4}},{swing:{n:3,gap:0.08,r:8,turn:6.28,col:'hot'}},{prop:{kind:'sheaf',n:4,arr:'ring',r:6,anim:'rise',stagger:0.08,at:0.4,size:1,life:2.5,cols:[0,1]}}]},   // the scythe's full turn, sheaves for the lingering swathe
     ult:{cast:[{prop:{kind:'moon',anim:'hover',h:12,size:2.2,life:2.6,cols:[3,0]}},{swing:{n:9,gap:0.06,r:6,turn:6.28,col:'hot'}},{wave:{r:12,style:'dust',col:0,h:1,inward:true,life:0.9,at:0.3}},{prop:{kind:'sheaf',n:6,arr:'ring',r:2.6,anim:'rise',stagger:0.06,at:0.6,size:1.2,life:2.4,cols:[0,1]}}]}
   },
   mote:[{sh:'ear',c:0,s:0.3,w:3,g:-3.5,sway:1.2},{sh:'chaff',c:4,s:0.22,w:4,g:-3,sway:1.5},{sh:'chaff',c:3,s:0.2,w:3,g:-2.4,sway:1.4},{sh:'chaff',c:1,s:0.18,w:1.5,g:-3},{sh:'chaff',c:2,s:0.17,w:1,g:-3}],
   proj:{sh:'ear',c:0,s:0.8,len:1.1,glow:3,trail:{sh:'chaff',c:4,s:0.16,g:-2.2,sway:1.2}},
   zone:{rate:30},
+  proc:(L,o,row)=>row.name==='Bound',   // synergy: Bound fires on every volley: the badge only, no ring or streak
   zoneEnd:(L,A)=>{ spawnRingAt(A.x,getH(A.x,A.z),A.z,A.r*0.9,L.hot2,true); sslBurst(L,A.x,getH(A.x,A.z)+0.6,A.z,14,3); }   // the twine is pulled tight: a ring closes on the gathered sheaf
 });

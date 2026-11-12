@@ -14,6 +14,7 @@ function updatePlayer(dt){
   if(PFX.slow>0) speed*=0.5; speed*=cvbSpeedK(); if(PFX.root>0) speed=0;   // a boss's ice: frozen or slowed (combat/boss-fx.js); cave: cvbSpeedK() is Black Ice's lane (+40%)
   speed*=mvSpeedK();   // movement: Sprint
   speed*=bhMoveK();   // basic-hold: charging skill 1 slows you
+  speed*=shMoveK();   // skill-hold: holding skill 2 for its held mode slows you too
   if(CB.act && (CB.act.kind==='slash'||CB.act.kind==='nova'||CB.act.kind==='shoot'||CB.act.kind==='volley')) speed*=0.45;
   const sy=Math.sin(P.yaw), cy=Math.cos(P.yaw);
   const tx=(-sy*f+cy*s)*speed, tz=(-cy*f-sy*s)*speed;

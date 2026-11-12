@@ -1,15 +1,17 @@
 //@ Skill-set procs on the client: a set bonus that fires shows its name as a badge, a rune ring at the wearer and a streak of motes to its target; a refunded cooldown flashes its slot
-/* Agent map. The server sends proc [pid, rowId, monId] when a triggered bonus row with a chance, a cooldown or a streak fires (ssTriggerS, server/skillsets.js); applyEvent (net/client.js) calls ssOnProc.
-   The badge (a pill over the action bar) is for your own procs; everyone's procs draw the ring and the streak in their set's colours. A look may draw its own with L.proc(L,o,row,mon).
+/* Agent map. The server sends proc [pid, rowId, monId] when a triggered bonus row with a chance, a cooldown or a streak fires (ssTriggerS, server/skillsets.js), or an active piece's own vs (rowId = the piece id, ssVsProcS); applyEvent (net/client.js) calls ssOnProc.
+   The badge (a pill over the action bar) is for your own procs; everyone's procs draw the ring and the streak in their set's colours. A look may draw its own with L.proc(L,o,row,mon): it returns true for a proc it drew (by row.name; a quiet one draws nothing and returns true), else the default ring and streak.
    ssOnCdr (economy/skillsets.js) calls sspFlashSlot. Test: client-smoke. */
 const SSP={box:null, last:new Map(), shown:0};
 function sspHex(n){ return '#'+(n>>>0).toString(16).padStart(6,'0'); }
-function sspRow(rowId){   // the set and the bonus row a proc names (a bonus row "<set>_b<tier>" or a triggered passive "<set>_p<n>")
+function sspRow(rowId){   // the set and the bonus row a proc names (a bonus row "<set>_b<tier>", a triggered passive "<set>_p<n>" or an active piece with a vs: {name: vs.name})
   if(typeof rowId!=='string') return null;
   const S=SS_SETS[rowId.split('_')[0]]; if(!S) return null;
   for(const t of Object.keys(S.bonus)) if(S.bonus[t].id===rowId) return {set:S,row:S.bonus[t]};
   const P=Object.prototype.hasOwnProperty.call(PASSIVES,rowId)?PASSIVES[rowId]:null;   // (a set's triggered passive: its id is "<set>_p<n>")
-  return P&&P.set===S.id&&P.on?{set:S,row:P}:null;
+  if(P) return P.set===S.id&&P.on?{set:S,row:P}:null;
+  const A=shSkillRow(rowId), pc=SS_PIECE_OF[A&&A.base?A.base:rowId];   // skillsets: an active piece whose own vs fired (fxModK): the badge shows the combo's name
+  return A&&pc&&pc.kind==='active'&&A.set===S.id&&A.fx&&A.fx.vs?{set:S,row:{name:A.fx.vs.name}}:null;
 }
 function sspBadge(set,row){
   if(!SSP.box){ SSP.box=document.createElement('div'); SSP.box.id='sspBox'; document.body.appendChild(SSP.box); }
@@ -28,7 +30,7 @@ function ssOnProc(pid,rowId,monId){
   const key=pid+'|'+rowId, now=performance.now(); if(now-(SSP.last.get(key)||0)<180) return; SSP.last.set(key,now);   // (a row that fires on every hit of a swing shows once)
   const L=SSL.looks[info.set.id], mon=monId?MON_BY_ID.get(monId):null, y=o.y||getH(o.x,o.z);
   if(pid===NET.pid) sspBadge(info.set,info.row);
-  if(L&&L.proc){ L.proc(L,o,info.row,mon); return; }
+  if(L&&L.proc&&L.proc(L,o,info.row,mon)) return;   // a look draws the procs it knows (by row.name) and returns true; any other falls through to the default ring and streak
   const col=info.set.pal.accent; spawnRingAt(o.x,y+0.15,o.z,1.3,L?L.hot:col);
   if(L){ fxpSparks(o.x,y+1.2,o.z,L.hot2,5,1.8,{up:1.2,size:0.14,life:0.45}); if(mon&&!mon.dead) sspStreak(L,o,mon); }
 }

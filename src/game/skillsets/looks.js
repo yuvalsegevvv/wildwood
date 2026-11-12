@@ -4,7 +4,7 @@
    A LOOK is data plus a few optional functions, one file per set (look-<id>.js, ssDefineLook(id, spec)):
      mote:[{sh:shape, c:colour (an index into cols or a hex number), s:size in metres, w:weight, add:1 for glowing, g:gravity, sway, spin}], cols:[..] (default: the set's pal main, accent, glow), decal:'wheat'|'rivets'|'cords'|'dial'|'lens'|'waves'|'flames'|'scallop',
      arcCol (the colour of a swing's arc), zone:{mode:'rise'|'fall'|'in'|'out'|'orbit', rate} (default by the skill's own kb), proj:{sh, c, s, len, glow, trail}, and any of the overrides
-     swing(c) cone(c) ring(c) dash(c) muzzle(c) util(c) impact(L,pos,p,hit) fxa(L,o,kind,src) ally(L,o,kind,dur) zoneStart(L,A) zoneTick(L,A,dt,k) zoneEnd(L,A); c = {L,s,f,x,y,z,face,sc,mine,gy,fx,fz,hx,hy,hz}.
+     swing(c) cone(c) ring(c) dash(c) muzzle(c) util(c) impact(L,pos,p,hit) fxa(L,o,kind,src,pid) ally(L,o,kind,dur,src,v) proc(L,o,row,mon) spent(L,mon,n) zoneStart(L,A) zoneTick(L,A,dt,k) zoneEnd(L,A); helpers for the payoffs: look-fx.js; c = {L,s,f,x,y,z,face,sc,mine,gy,fx,fz,hx,hy,hz}.
    Particles share geometries and materials (they fade by shrinking, never by opacity), at most SSL_MAX alive. Hooks: ssLookFor, ssLookSwing, ssLookArea / ssLookZoneTick / ssLookAreaEnd, ssLookProj / ssLookTrail / ssLookImpact,
    ssLookLine, ssOnFxa, ssLookAlly, ssLookUpdate (from updateSkillFx). Test: client-smoke (every look draws every skill of its set without errors). */
 const SSL={ub:false, looks:Object.create(null), bad:[], parts:[], decals:[], geo:Object.create(null), mats:new Map(), tex:Object.create(null), auras:new Map(), flat:null};
@@ -61,7 +61,7 @@ function ssPart(shape,col,x,y,z,o){   // o: v [vx,vy,vz], g (an acceleration alo
   const m=new THREE.Mesh(ssGeo(shape),sslMat(col,o.op===undefined?0.95:o.op,!!o.add)); m.position.set(x,y,z); m.rotation.set(Math.random()*TAU,Math.random()*TAU,Math.random()*TAU); if(o.rot){ m.rotation.order=o.rot[3]||'XYZ'; m.rotation.set(o.rot[0],o.rot[1],o.rot[2]); }
   m.scale.setScalar(0.01); scene.add(m);
   const v=o.v||[0,0,0], life=o.life||0.8;
-  const P_={m,vx:v[0],vy:v[1],vz:v[2],g:o.g||0,drag:o.drag||0,life,max:life,s0:o.s0!==undefined?o.s0:(o.s||0.25),s1:o.s1!==undefined?o.s1:(o.s||0.25),spin:o.spin===undefined?3:o.spin,sway:o.sway||0,ph:Math.random()*TAU,face:!!o.face,floor:!!o.floor,fin:o.fin===undefined?0.12:o.fin,fout:o.fout===undefined?0.35:o.fout};
+  const P_={m,vx:v[0],vy:v[1],vz:v[2],g:o.g||0,drag:o.drag||0,life,max:life,s0:o.s0!==undefined?o.s0:(o.s||0.25),s1:o.s1!==undefined?o.s1:(o.s||0.25),spin:o.spin===undefined?3:o.spin,sway:o.sway||0,ph:Math.random()*TAU,face:!!o.face,floor:!!o.floor,fin:o.fin===undefined?0.12:o.fin,fout:o.fout===undefined?0.35:o.fout,orb:o.orb||null};
   SSL.parts.push(P_); return P_;
 }
 function sslPick(L){ let r=Math.random()*L.tw; for(const m of L.mote){ r-=m.w||1; if(r<=0) return m; } return L.mote[0]; }
@@ -174,7 +174,7 @@ function ssLookArea(A,src){
 }
 function sslAreaIn(A,src){
   const L=ssLookFor(src); if(!L||A.kind!=='zone') return;
-  A.look=L; A.skill=SKILLS[src]||null; A.zf=A.skill&&A.skill.fx&&A.skill.fx.zone||{};
+  A.look=L; A.skill=shSkillRow(src);   /* skill-hold: a held mode's id ('<piece>_h') resolves through SH_ALT */ A.zf=A.skill&&A.skill.fx&&A.skill.fx.zone||{};
   const D=sslDecal(L,A.x,A.z,A.r,{life:A.dur,op:0.8,r0:0.05,keep:true,spin:A.zf.kb<0?-0.6:0.5,follow:A.follow?(()=>A):null,inward:false}); D.zoneOf=A; A.deco=D;
   A.fill.material.color.setHex(L.hot); A.edge.material.color.setHex(L.hot2); A.fill.material.opacity=0.12;
   A.col=L.hot;
@@ -215,7 +215,7 @@ function ssLookTrail(L,p,dt){
   if(T) ssPart(T.sh,sslCol(L,T.c),p.pos.x,p.pos.y,p.pos.z,Object.assign({s:T.s||0.18,add:T.add,g:T.g||0,sway:T.sway||0},o)); else ssEmit(L,p.pos.x,p.pos.y,p.pos.z,o);
 }
 function ssLookImpact(L,pos,p,hit){
-  skvRunRecipe(L,SKILLS[p.src]||null,'hit',{x:pos.x,y:pos.y,z:pos.z,face:0,sc:1,mine:false});   // skillvis: what the piece's shot does where it lands
+  skvRunRecipe(L,shSkillRow(p.src),'hit',{x:pos.x,y:pos.y,z:pos.z,face:0,sc:1,mine:false});   // skillvis: what the piece's shot does where it lands
   if(L.impact){ L.impact(L,pos,p,hit); return; }
   sslBurst(L,pos.x,pos.y,pos.z,12,3.2); sslDecal(L,pos.x,pos.z,2.2,{life:0.45,r0:0.4}); spawnRingAt(pos.x,pos.y,pos.z,1.6,L.hot);
 }
@@ -229,7 +229,7 @@ function ssOnFxa(pid,kind,src){
 }
 function sslFxaIn(pid,kind,src){
   const L=ssLookFor(src), o=L&&sslWho(pid); if(!L||!o) return;
-  if(L.fxa){ L.fxa(L,o,kind,src); return; }
+  if(L.fxa&&L.fxa(L,o,kind,src,pid)!==false) return;   // (a hook returns false to leave a kind it does not draw to the default)
   const y=o.y||getH(o.x,o.z);
   if(kind==='shield'){ sslDome(L,o.x,y,o.z,1.25,L.hot,1.0); }
   else { for(let i=0;i<sslN(9);i++) ssEmit(L,o.x+sslR(-0.5,0.5),y+sslR(0.1,0.8),o.z+sslR(-0.5,0.5),{v:[0,sslR(1,2.2),0],life:sslR(0.7,1.2)}); spawnRingAt(o.x,y+0.1,o.z,1.1,L.hot); }
@@ -238,13 +238,13 @@ function sslDome(L,x,y,z,r,col,life){   // a translucent bubble round a player t
   const m=new THREE.Mesh(ssGeo('bubble'),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.34,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
   m.position.set(x,y+0.9,z); m.scale.setScalar(r*2*0.5); scene.add(m); SSL.decals.push({m,life,max:life,r:r*2,r0:0.5,spin:0,op:0.34,follow:null,dome:true,own:true});
 }
-function ssLookAlly(pid,kind,src,dur){
+function ssLookAlly(pid,kind,src,dur,v){   // v: the buff's value (a look may draw a stronger one bigger: L.ally(L,o,kind,dur,src,v))
   const L=ssLookFor(src), o=L&&sslWho(pid); if(!L||!o) return;
   const key=pid+'|'+L.id+'|'+kind, cur=SSL.auras.get(key), until=performance.now()+Math.min(dur,10)*1000;
-  if(cur){ cur.until=until; return; }
-  if(L.ally){ L.ally(L,o,kind,dur,src); }
+  if(cur){ cur.until=until; if(L.ally&&v>(cur.v||0)+0.005){ cur.v=v; L.ally(L,o,kind,dur,src,v); } return; }   // (a refresh draws again only when it got stronger)
+  if(L.ally){ L.ally(L,o,kind,dur,src,v); }
   const D=sslDecal(L,o.x,o.z,1.3,{life:Math.min(dur,10),r0:1,op:0.7,keep:true,spin:1.2,follow:()=>sslWho(pid)});
-  SSL.auras.set(key,{D,until,L,pid,t:0});
+  SSL.auras.set(key,{D,until,L,pid,t:0,v:v||0});
 }
 // a transformation: extra meshes worn by a player for dur seconds (a halo, wings), built by build() and moved by tick(group, seconds worn); client-only, nothing on the server reads it,
 // and it follows the avatar's group (the hiker's, or a remote player's), so a rebuild of the character does not lose it
@@ -270,6 +270,7 @@ function ssLookUpdate(dt){
     const k=1-p.life/p.max, m=p.m, d=Math.max(0,1-p.drag*dt);
     p.vx*=d; p.vz*=d; p.vy=p.vy*d+p.g*dt;
     m.position.x+=p.vx*dt+(p.sway?Math.sin(t*5+p.ph)*p.sway*dt:0); m.position.y+=p.vy*dt; m.position.z+=p.vz*dt+(p.sway?Math.cos(t*4+p.ph)*p.sway*dt:0);
+    if(p.orb){ const q=p.orb, w=q.who(); if(w){ q.a+=q.w*dt; m.position.set(w.x+Math.sin(q.a)*q.r,(w.y||getH(w.x,w.z))+q.y+Math.sin(q.a*2)*0.08,w.z+Math.cos(q.a)*q.r); } }   // orb: a mote circling a player (look-fx.js slfOrbit)
     if(p.floor){ const gy=getH(m.position.x,m.position.z)+0.06; if(m.position.y<gy){ m.position.y=gy; p.vx=p.vy=p.vz=0; p.g=0; p.spin=0; } }
     if(p.face&&(p.vx||p.vz||p.vy)) m.lookAt(m.position.x+p.vx,m.position.y+p.vy,m.position.z+p.vz); else if(p.spin){ m.rotation.x+=p.spin*dt; m.rotation.y+=p.spin*0.7*dt; }
     const s=p.s0+(p.s1-p.s0)*k, fade=k<p.fin?k/p.fin:k>1-p.fout?(1-k)/p.fout:1;
