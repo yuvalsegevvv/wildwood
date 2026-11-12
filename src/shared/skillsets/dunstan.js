@@ -2,27 +2,28 @@
 /* Agent map. Kit: docs/skillkits/kit-support.md (the buff focus); theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces fire; he debuffs nothing himself);
    outfit and palette: docs/skillkits/looks/dunstan.md, game/outfits/dunstan.js; visuals: game/skillsets/look-dunstan.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-first8-smoke.js,
    tools/skillsets-ladder.js --set dunstan. Land: the Hoarfrost Reach (tier 2, the second wave). Mark: Fervor. Buffs never stack (the stronger wins) and are capped (SS_ALLY_CAP), so a second buffer adds only a different KIND.
-   What the engine gives him: a buff-duration stat (Loud Voice), a buff-power stat (Rousing; both are still capped by SS_ALLY_CAP), and `perMark` (Cry of Valor is stronger for each Fervor near him, and then spends them). */
+   What the engine gives him: a buff-duration stat (Loud Voice), a buff-power stat (Rousing; both are still capped by SS_ALLY_CAP), and `perMark` (Cry of Valor is stronger for each Fervor near him, and then spends them).
+   Synergy (docs/skillkits/SYNERGY-REWORK.md section 3, order-free): the banner lays Fervor every second and its flame burns half again as hard on what carries it (vs Fanned Flame); the bolt's haste reads the Fervor near him. */
 defineSkillSet({
   id:'dunstan', name:'The Rally', land:'hoar', needs:{tier:2}, el:'fire', outfit:'dunstan',
   role:{main:'support', focus:'buff'},
   char:{name:'Dunstan', sex:'male', theme:'a standard-bearer and drummer who rallies the line', ip:{kind:'original', riffs:'the standard-bearer and drummer genre (a plumed shako, a pennant, a drum at the hip); no existing character'}},
   pal:{main:0xb8432a, accent:0xd4a83a, glow:0xff7a3a},
   emblem:{col:0xf0684a, glyph:'<path d="M6 21V4"/><path d="M6 4.5h12l-3.4 4.2 3.4 4.3H6"/><circle cx="6" cy="2.8" r="1"/>'},   // the set's own symbol on its skills and passives (24 x 24 strokes, drawn in col): never the generic star
-  kit:{mark:'fervor', name:'Fervor', text:'Every strike leaves a Fervor (up to 5); Cry of Valor spends them for extra damage.'},
+  kit:{mark:'fervor', name:'Fervor', text:'Every strike and the planted banner leave Fervor (up to 5). Fervor near you makes every bolt quicken the line more, makes Cry of Valor stronger and feeds the banner\'s flame.'},
   pos:{
     1:{bound:'class',
        skill:{
-         mage:{name:'Beacon Bolt', desc:'A beacon of flame: a damaging hit that quickens you and your allies within 18 m (10% shorter cooldowns for 3 seconds). Leaves a Fervor.', cd:1.1, range:24, mult:1.5, act:['dunstan1m',0.6,0.5], anim:'cast',
-               fx:{proj:{kind:'ember', speed:32, turn:8, life:1.0, mark:{id:'fervor', n:1, dur:12, max:5}}, ally:{kind:'haste', v:0.10, dur:3, r:18}}}},
+         mage:{name:'Beacon Bolt', desc:'A beacon of flame: a damaging hit that quickens you and your allies within 18 m (8% shorter cooldowns for 3 seconds, and 1% more for each Fervor on the enemies near you). Leaves a Fervor.', cd:1.1, range:24, mult:1.5, act:['dunstan1m',0.6,0.5], anim:'cast',
+               fx:{proj:{kind:'ember', speed:32, turn:8, life:1.0, mark:{id:'fervor', n:1, dur:12, max:5}}, ally:{kind:'haste', v:0.08, dur:3, r:18, perMark:{id:'fervor', v:0.01, r:8}}}}},
        passive:{name:'Loud Voice', text:'Your buffs last {}% longer', stat:'buffdur', v:[0.4, 0.05]}},
     2:{bound:'any',
-       skill:{any:{name:'Cry of Valor', desc:'A cry that carries: you and your allies within 25 m deal 10% more damage for 10 seconds, and 2% more for each Fervor on the enemies near you. A shock of flame round you then spends every Fervor nearby for extra damage.', cd:14, range:6, mult:1.1, act:['dunstan2x',0.7,0.45], anim:'nova',
+       skill:{any:{name:'Cry of Valor', desc:'A cry that carries: you and your allies within 25 m deal 10% more damage for 10 seconds, and 2% more for each Fervor on the enemies near you. A shock of flame round you then spends every Fervor nearby for extra damage.', cd:14, range:6, mult:1.0, act:['dunstan2x',0.7,0.45], anim:'nova',
                    fx:{ring:{r:6, kb:2}, ally:{kind:'might', v:0.10, dur:10, r:25, perMark:{id:'fervor', v:0.02, r:8}}, pop:{id:'fervor', k:0.5, r:6}}}},
        passive:{name:'Warm Hearth', text:'While you fight, you and your allies within 20 m regenerate 1% of maximum health a second (refreshed every 3 s)', on:'tick', icd:3, buff:{kind:'regen', v:0.01, dur:4, r:20}}},
     3:{bound:'any',
-       skill:{any:{name:'Banner Down', desc:'Plant the banner at your feet for 8 seconds: you and your allies standing within 9 m get 20% more critical hit chance, 40% more critical damage and 2% health back a second, and the flame at its foot burns the enemies there.', cd:45, range:9, mult:0.5, act:['dunstan3x',0.9,0.6], anim:'nova',
-                   fx:{zone:{r:9, dur:8, every:1, self:true, ally:[{kind:'crit', v:0.20, dur:2.5}, {kind:'critdmg', v:0.40, dur:2.5}, {kind:'regen', v:0.02, dur:2.5}]}}}},
+       skill:{any:{name:'Banner Down', desc:'Plant the banner at your feet for 8 seconds: you and your allies standing within 9 m get 20% more critical hit chance, 40% more critical damage and 2% health back a second. The flame at its foot burns the enemies there, leaves a Fervor on each every second and burns half again as hard on anything that carries Fervor.', cd:45, range:9, mult:0.5, act:['dunstan3x',0.9,0.6], anim:'nova',
+                   fx:{zone:{r:9, dur:8, every:1, self:true, mark:{id:'fervor', n:1, dur:12, max:5}, ally:[{kind:'crit', v:0.20, dur:2.5}, {kind:'critdmg', v:0.40, dur:2.5}, {kind:'regen', v:0.02, dur:2.5}]}, vs:{when:{marked:'fervor'}, k:1.5, name:'Fanned Flame'}}}},
        passive:{name:'Hoarse', text:'+{}% damage with every attack; your cooldowns are 8% longer', stat:'dmg', v:[0.06, 0.01], cost:{stat:'cd', v:-0.08}}}},
   ult:{name:'Last Stand Banner', desc:'A burning war banner crashes down on the target (8 m) and sets the ground alight; the stunned cower before it.', range:24, mult:1.5, act:['dunstanult',1.0,0.55], anim:'nova',
        fx:{zone:{r:8, dur:4, first:0.3, every:1}},

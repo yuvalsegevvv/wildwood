@@ -5,7 +5,7 @@
 // A set with rangeScale (damage grows with the distance) is also run from 16 m (archer and mage). A risk set is run twice: never behind its targets (careless play, ~0.8 of the safe ladder, warnings only) and always behind (the dummies face away: the owner's 125 / 142 / 170, judged).
 // --combo (docs/skillkits/COMBO-REWORK.md E5): a set with kit.combo {order:[a,b], win} is also played in its order: the bot holds b until a was cast within win seconds (unless a's cooldown left is longer than b's own: waiting
 //   would cost a whole cast of b), and a burst `a` that spends the kit's mark (a pop) waits for the full stack on the target (at most 10 s); both columns are printed, plain (careless) and in order.
-// Usage: node tools/skillsets-ladder.js [--matrix | --bond 0-6 --awk A0-A5 [--guest]] [--wanderer [--path fury]] [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave] [--combo]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
+// Usage: node tools/skillsets-ladder.js [--matrix | --bond 0-6 --awk A0-A5 [--guest]] [--wanderer [--path fury]] [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave] [--combo] [--orders]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
 // Also: require('./skillsets-ladder').ladder({W, x, pid}, opts) for a test (tools/skillsets-smoke.js runs it on a fixture); x must expose NAMES.
 const {loadServer}=require('./load');
 const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S','ssBonusSwitch','awkMigGrant','bdGrantP','bdSetOk','WD_PATHS','WD_ORDER','MQ','awkGrantP','AWK_TIERS','skillLvOf','ssMarkN'];
@@ -17,7 +17,7 @@ const BANDS={safe:[110,125,150],risk:[125,142,170],riskCareless:[88,100,120],sup
 function ladder(env,opts){
   opts=opts||{}; const {W,x}=env, secs=opts.secs||60, classes=opts.classes||(opts.dist>4?['archer','mage']:CLASSES), p=W.players.get(env.pid), out=[];
   // castCave false: the charge skill is worn (a Bond counts it) but never cast; combo: the set's kit.combo while --combo plays it (set per set below)
-  const R=Math.random; let seed=12345, castCave=true, combo=null; const seeded=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
+  const R=Math.random; let seed=12345, castCave=true, combo=null, order=null; const seeded=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
   const dummies=x.MONS.filter(m=>!m.boss&&!m.inst&&!m.dead).slice(0,7), spot=[];
   // the hero stands in the village (nothing attacks there) with the dummy 2.4 m ahead (the way he faces) and six more around it
   const arrange=()=>{
@@ -31,6 +31,7 @@ function ladder(env,opts){
   // --combo: should slot k wait (kit.combo's order)?
   let popReady=null;
   const held=k=>{
+    if(order==='hold'&&k==='burst'){ const ab=s=>x.abilityOf(x.clsOfP(p),s,p.gear.skills,p.level); return !!ab('skill')&&x.S.t-(last.skill===undefined?-1e9:last.skill)>4; }   // --orders 'hold': the burst waits for a skill cast within 4 s
     if(!combo) return false; const [a,b]=combo.order, ab=s=>x.abilityOf(x.clsOfP(p),s,p.gear.skills,p.level);
     if(k===b){ if(x.S.t-(last[a]===undefined?-1e9:last[a])<=combo.win||!ab(a)) return false; const B=ab(b); return p.cd[a]<=x.abilityCd(B,p.gear.skills,p.level,x.clsOfP(p)); }
     if(k===a&&a==='burst'&&combo.mark){ const A=ab(a); if(!A||!A.fx||!A.fx.pop||A.fx.pop.id!==combo.mark) return false; if(popReady===null) popReady=x.S.t;
@@ -46,7 +47,7 @@ function ladder(env,opts){
       for(const m of dummies) m.face=Math.atan2(sgn*(p.x-m.x),sgn*(p.z-m.z));
       if(!p.act&&castCave&&p.gear.skills.cave&&p.cave.charge>=x.CAVE_SKILLS[p.gear.skills.cave].cost&&p.cd.cave<=0.08) cast('cave');   // slot 4 (C3): spends its charge as soon as it can
       if(!p.act&&opts.ultOn&&p.gear.skills.ult&&p.cd.ult<=0.08) cast('ult');   // slot 5 (docs/ULT.md): the burst as soon as it is ready
-      if(!p.act) for(const k of ['burst','skill','basic']) if(p.cd[k]<=0.08&&x.abilityOf(x.clsOfP(p),k,p.gear.skills,p.level)&&!held(k)){ cast(k); break; }
+      if(!p.act) for(const k of order==='skill'?['skill','burst','basic']:['burst','skill','basic']) if(p.cd[k]<=0.08&&x.abilityOf(x.clsOfP(p),k,p.gear.skills,p.level)&&!held(k)){ cast(k); break; }
       W.tick(0.05); } } finally{ Math.random=R; }
     const lost=dummies.map((m,i)=>h0[i]-m.hp);
     return {single:lost[0]/s,pack:lost.reduce((a,b)=>a+b,0)/s};
@@ -101,6 +102,7 @@ function ladder(env,opts){
   for(const id of x.SS_ORDER){   // (ranged below: the damage GROWS with the distance, a k under 1 is a close-range bonus)
     if(opts.set&&opts.set!==id) continue;
     const S=x.SS_SETS[id], rows={}, P=[1,2,3].map(n=>S.pos[n]), bonus=S.bonus;
+    order=opts.order||null;   // --orders: the bot's press order ('skill': skill before burst; 'hold': burst only after a skill)
     combo=null; if(opts.combo){ if(!S.kit||!S.kit.combo) continue;   // --combo: only the sets that name an order
       const mk=S.kit.mark; let max=0; for(const sid of x.SKILL_IDS){ const r=x.SKILLS[sid]; if(r.set!==id||!r.fx) continue; for(const sh of Object.values(r.fx)) if(sh&&sh.mark&&sh.mark.id===mk) max=Math.max(max,sh.mark.max||5); }
       combo={order:S.kit.combo.order,win:S.kit.combo.win,mark:mk||null,max:max||5}; }
@@ -250,6 +252,13 @@ if(require.main===module){
     console.log('set'.padEnd(12)+'no boost'.padStart(12)+'active only'.padStart(14)+'passive only'.padStart(14)+'both'.padStart(12)+'   (% over the same rotation without the burst, single / pack)');
     for(const s of list){ const u=ultRow(s,opts.classes||CLASSES); if(!u){ console.log(s.id.padEnd(12)+'(no burst)'); continue; }
       const A=u[1][0]-u[0][0], Pa=u[2][0]-u[0][0]; console.log(s.id.padEnd(12)+u.map(v=>(v[0]+'/'+v[1]).padStart(12)).join('  ')+(A>0&&(Pa<A*0.75||Pa>A*1.25)?'   warning: the passive boost adds '+Pa+' against the active\'s '+A+' (target within 25%)':'')); }
+    process.exit(0); }
+  if(args.includes('--orders')){   // docs/skillkits/SYNERGY-REWORK.md section 11: each set in three press orders (burst > skill > basic, skill > burst > basic, the burst held until a skill was cast in the last 4 s); an order-free kit's columns lie within the noise of each other
+    const ids=x.SS_ORDER.filter(id=>!x.SS_SETS[id].dev&&(!opts.set||opts.set===id));
+    console.log('set'.padEnd(12)+'burst first'.padStart(13)+'skill first'.padStart(13)+'burst held'.padStart(13)+'   spread (pieces / pack)');
+    for(const id of ids){ const R=['burst','skill','hold'].map(o=>ladder(env,Object.assign({},opts,{set:id,cave:false,order:o==='burst'?null:o}))[0]); if(!R.every(Boolean)) continue;
+      const pc=R.map(r=>r.summary.pieces), pk=R.map(r=>r.summary.fivePack), sp=a=>Math.max(...a)-Math.min(...a);
+      console.log(id.padEnd(12)+R.map(r=>(r.summary.pieces+' / '+r.summary.fivePack).padStart(13)).join('')+'   '+sp(pc)+' / '+sp(pk)); }
     process.exit(0); }
   if(args.includes('--combo')){   // E5: each set with a kit.combo, plain (the bot casts whatever is ready: a careless player) and in its order; risk sets always behind, sets with rangeScale from 16 m too
     const ids=x.SS_ORDER.filter(id=>{ const S=x.SS_SETS[id]; return !S.dev&&S.kit&&S.kit.combo&&(!opts.set||opts.set===id); });

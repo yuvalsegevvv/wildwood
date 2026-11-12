@@ -45,11 +45,20 @@ ok('the stage: a and b are one party',x.partyOf(p)&&x.partyOf(p)===x.partyOf(pb)
 
 // ---- Nephra ----
 clear(); reset(); put(m1,0,-2.5);
-{ still(()=>cast('nephra_1_mage',m1)); ok('Nephra: Binding Lash hurts, leaves Linen and shields her and her party member for 3% of health',x.ssMarkN(p,m1,'linen')===1&&near(p.shield&&p.shield.v,p.maxHp*0.03,1)&&near(pb.shield&&pb.shield.v,pb.maxHp*0.03,1),String(p.shield&&p.shield.v)); }
+{ still(()=>cast('nephra_1_mage',m1)); ok('Nephra: Binding Lash hurts, leaves Linen and shields her and her party member for 2.5% of health (no Linen near yet)',x.ssMarkN(p,m1,'linen')===1&&near(p.shield&&p.shield.v,p.maxHp*0.025,1)&&near(pb.shield&&pb.shield.v,pb.maxHp*0.025,1),String(p.shield&&p.shield.v/p.maxHp)); }
+reset(); put(m1,0,-2.5); x.ssMarkS(p,m1,{id:'linen',n:5,dur:12,max:5});
+{ still(()=>cast('nephra_1_mage',m1)); ok('Nephra (synergy): with five Linen near the bolt\'s shield is 4.5%',near(pb.shield.v/pb.maxHp,0.045,0.001),String(pb.shield.v/pb.maxHp)); }
 reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'linen',n:4,dur:12,max:5}); p.hp=p.maxHp*0.5;
-{ const h0=p.hp; still(()=>cast('nephra_2_any',null)); ok('Nephra: Salve for Sand spends every Linen, mends her from the damage, shields the party (10%) and guards it (12% + 2% a Linen)',x.ssMarkN(p,m1,'linen')===0&&p.hp>h0&&near(p.shield&&p.shield.v,p.maxHp*0.10,1)&&near(x.allyP(pb,'guard'),0.20,0.002),'guard '+x.allyP(pb,'guard')); }
+{ const h0=p.hp; still(()=>cast('nephra_2_any',null)); ok('Nephra: Salve for Sand spends every Linen, mends her from the damage, shields the party (8% + 0.8% a Linen, counted before the pop: 11.2%) and guards it (12% + 2% a Linen)',x.ssMarkN(p,m1,'linen')===0&&p.hp>h0&&near(p.shield&&p.shield.v,p.maxHp*0.112,1)&&near(x.allyP(pb,'guard'),0.20,0.002),'guard '+x.allyP(pb,'guard')); }
 reset(); put(m1,0,-3); pb.hp=pb.maxHp*0.4;
-{ still(()=>cast('nephra_3_any',null)); ok('Nephra: Rise Again mends the party 25%, shields 15%, 3% regeneration, and throws the monster back',near(hpOf(pb),0.65,0.01)&&near(pb.shield.v,pb.maxHp*0.15,1)&&near(x.allyP(pb,'regen'),0.03)); }
+{ still(()=>cast('nephra_3_any',null)); ok('Nephra: Rise Again mends the party 25%, shields 12% (+3.2% for the two Linen its own dust left), 3% regeneration, and throws the monster back',near(hpOf(pb),0.65,0.01)&&near(pb.shield.v,pb.maxHp*0.152,1)&&near(x.allyP(pb,'regen'),0.03),String(pb.shield.v/pb.maxHp));
+  ok('Nephra (synergy): Rise Again leaves two Linen on what its dust touched',x.ssMarkN(p,m1,'linen')===2,String(x.ssMarkN(p,m1,'linen'))); }
+reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'linen',n:3,dur:12,max:5});
+{ still(()=>cast('nephra_3_any',null)); const rise=pb.shield.v/pb.maxHp; reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'linen',n:5,dur:12,max:5}); still(()=>cast('nephra_2_any',null)); const salve=pb.shield.v/pb.maxHp, before=pb.shield.v;
+  put(m2,0,-2.5); still(()=>cast('nephra_1_mage',m2));
+  ok('Nephra (synergy): at five Linen Rise Again shields 20% and Salve 12%, and a thin bolt shield does not replace the Salve shield in force',near(rise,0.20,0.002)&&near(salve,0.12,0.002)&&pb.shield.v===before,rise.toFixed(3)+' / '+salve.toFixed(3)+' / '+(pb.shield.v/pb.maxHp).toFixed(3)); }
+reset(); pb.shield=null;
+{ still(()=>cast('nephra_3_any',null)); ok('...and with no enemy near, the floor: a 12% shield',near(pb.shield.v/pb.maxHp,0.12,0.002),String(pb.shield.v/pb.maxHp)); }
 wear('nephra',3); reset(); put(m1,0,-3);
 { p.shield={v:p.maxHp*0.05,until:x.S.t+5}; p.ssIcd={}; const h=m1.hp; x.ssTriggerS(p,'shield',{}); tick(3); ok('Nephra: The Curse Bites (5 pieces): when her shield breaks a ring of dust hits what is near and exposes it (12%)',m1.hp<h&&near(x.mstVulnK(m1),0.12,0.001),Math.round(h-m1.hp)+' '+x.mstVulnK(m1)); }
 ok('Nephra: Many Layers adds 6% maximum health at level 1 of the piece; Heavy with Gold trades 15% damage for less damage taken',x.psP(p,'hp')>=0.06-1e-9&&x.psP(p,'red')>0&&x.psP(p,'dmg')<=-0.15+1e-9,x.psP(p,'hp')+' '+x.psP(p,'red')+' '+x.psP(p,'dmg'));
@@ -71,11 +80,19 @@ wear('sabir',3); reset(); put(m1,0,-3); put(m2,2,-3); p.hp=p.maxHp*0.5; p.ssIcd=
 
 // ---- Ogden ----
 clear(); reset(); put(m1,0,-3); put(m2,1.5,-3); put(m3,-2,-5);
-{ still(()=>cast('ogden_1_warrior',m1)); ok('Ogden: Spade Sweep is a wide light arc: it hits what is in front (two monsters) and leaves Rot',x.ssMarkN(p,m1,'rot')===1&&x.ssMarkN(p,m2,'rot')===1); }
+{ p.hp=p.maxHp*0.5; still(()=>cast('ogden_1_warrior',m1)); const h1=hpOf(p); ok('Ogden: Spade Sweep is a wide light arc: it hits what is in front (two monsters) and leaves Rot; each sweep mends him (0.2% + 0.08% for each Rot within 6 m: the two it just left, 0.36%)',x.ssMarkN(p,m1,'rot')===1&&x.ssMarkN(p,m2,'rot')===1&&near(h1,0.5036,0.0005),String(h1)); }
+reset(); put(m1,0,-3); put(m2,1.5,-3); put(m3,0,-20); x.ssMarkS(p,m1,{id:'rot',n:5,dur:12,max:5}); x.ssMarkS(p,m2,{id:'rot',n:5,dur:12,max:5}); p.hp=p.maxHp*0.5;
+{ still(()=>cast('ogden_1_warrior',m1)); ok('Ogden (synergy): with five Rot near (counted up to five) a sweep mends him 0.6%, and only him (the party member is not healed)',near(hpOf(p),0.506,0.0005)&&pb.hp===pb.maxHp,String(hpOf(p))); }
+reset(); put(m1,0,-3); p.hp=p.maxHp*0.5; pb.hp=pb.maxHp*0.5;
+{ still(()=>cast('ogden_1_warrior',m1)); ok('...the sweep\'s mend is his own (r 1 m): a party member 3 m away gets none',pb.hp===pb.maxHp*0.5,String(hpOf(pb))); }
 reset(); put(m1,4,-5); put(m2,-5,-3); put(m3,0,-9);
 { const h=[m1,m2,m3].map(m=>m.hp); cast('ogden_2_any',m3); tick(45); ok('Ogden: Open Grave is a wide pit that pulls and nicks everything in it and leaves Rot',[m1,m2,m3].every((m,i)=>m.hp<h[i])&&x.ssMarkN(p,m3,'rot')>=1,[m1,m2,m3].map((m,i)=>Math.round(h[i]-m.hp)).join(',')); x.AREAS.length=0; }
 reset(); put(m1,0,-5); x.ssMarkS(p,m1,{id:'rot',n:4,dur:12,max:5}); p.hp=p.maxHp*0.5;
 { const h0=p.hp; still(()=>cast('ogden_3_any',null)); ok('Ogden: Feeding Frenzy spends the Rot, mends him from the damage and leaves a swell that goes on mending him',x.ssMarkN(p,m1,'rot')===0&&p.hp>h0&&x.AREAS.some(a=>a.sid==='ogden_3_any'||a.piece==='ogden_3_any'||true),Math.round(p.hp-h0)); x.AREAS.length=0; }
+reset(); put(m1,0,-3); put(m2,0,-6.5); x.ssMarkS(p,m1,{id:'rot',n:5,dur:12,max:5});
+{ still(()=>cast('ogden_3_any',null)); put(m1,0,-3); put(m2,0,-6.5);   // (back where they stood: the wave threw them)
+  const n0=x.ssMarkN(p,m1,'rot'); tick(10); const n1=x.ssMarkN(p,m1,'rot'); tick(45); const n5=x.ssMarkN(p,m1,'rot');
+  ok('Ogden (synergy): after a Frenzy that spent everything, the swell re-seeds: a Rot again after one tick, five after 2.5 s; nothing on a monster 6.5 m away',n0===0&&n1>=1&&n5===5&&x.ssMarkN(p,m2,'rot')===0,n0+' '+n1+' '+n5+' / '+x.ssMarkN(p,m2,'rot')); x.AREAS.length=0; }
 wear('ogden',3); reset(); put(m1,0,-3); p.hp=p.maxHp*0.5; p.ssIcd={};
 { x.ssTriggerS(p,'kill',{m:m1}); ok('Ogden: Hungry: a kill heals him 1.5% of maximum health; Rotten Luck raises the drops (and he takes 5% more damage)',near(hpOf(p),0.515,0.004)&&x.psP(p,'drop')>0&&x.psP(p,'red')<0,String(hpOf(p))+' '+x.psP(p,'drop')); }
 ok('Ogden: the grinder\'s friendlier odds are on every position (a drop of a piece is 15%, 15%, 30%)',[1,2,3].every(n=>SET('ogden').pos[n].from.chance!==undefined)&&SET('ogden').pos[3].from.chance>SET('ogden').pos[1].from.chance);

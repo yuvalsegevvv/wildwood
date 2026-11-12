@@ -59,6 +59,19 @@ ok('Tansy: Gather In is a field wider than a camp\'s gap that PULLS (negative kn
 reset(); put(m1,0,-9.5); put(m2,0,-12.5);
 { const a=lost(m1,()=>still(()=>cast('tansy_3_any',null))), b=lost(m2,()=>still(()=>cast('tansy_3_any',null)));
   ok('Tansy: Bumper Crop is the widest ring (11 m): it hits a monster 9.5 m away and not one 12.5 m away',x.SKILLS.tansy_3_any.fx.ring.r===11&&a>0&&b===0,a+' / '+b); }
+reset(); put(m1,0,-3); put(m2,0,-30); tick(3); evs.length=0;   // (tick: the events of the casts above are delivered first)
+{ still(()=>cast('tansy_1_archer',m1)); const n1=x.ssMarkN(p,m1,'twine'); x.ssMarkS(p,m1,{id:'twine',n:1,dur:10,max:1}); tick(3);   // (seven arrows and their splashes refresh it many times; the refresh here is under 2 s after the first)
+  const mk=evs.filter(e=>e[0]==='mk'&&e[1]===m1.id&&e[2]==='twine');
+  ok('Tansy (synergy): Chaff Fan binds what it hits in Twine, one stack and never two (seven arrows and their splashes), and a refresh at the max within 2 s sends no second mk event',n1===1&&x.ssMarkN(p,m1,'twine')===1&&mk.length===1,n1+' '+x.ssMarkN(p,m1,'twine')+' mk '+mk.length);
+  still(()=>cast('tansy_1_archer',m1)); tick(3);
+  ok('...the client is told when Bound adds to a hit (the second volley: proc names the piece)',evs.some(e=>e[0]==='proc'&&e.includes('tansy_1_archer'))); x.PROJS.length=0; }
+{ const K=id=>x.fxModK(x.SKILLS[id].fx,p,m1)/x.fxModK(x.SKILLS[id].fx,p,m2), B=x.fxModK(x.SKILLS.tansy_3_any.fx,p,bossM);
+  x.ssMarkS(p,bossM,{id:'twine',n:1,dur:10,max:1}); const Bm=x.fxModK(x.SKILLS.tansy_3_any.fx,p,bossM); bossM.mk=null;
+  ok('Tansy (synergy): a bound enemy takes 1.15x a fan arrow, 1.2x a field tick and 1.2x Bumper Crop; vsBoss still halves it on a boss',near(K('tansy_1_archer'),1.15,1e-6)&&near(K('tansy_2_any'),1.2,1e-6)&&near(K('tansy_3_any'),1.2,1e-6)&&near(Bm/B,1.2,1e-6)&&near(B,0.5,1e-6),[K('tansy_1_archer'),K('tansy_2_any'),K('tansy_3_any'),B,Bm].map(v=>v.toFixed(3)).join(' ')); }
+reset(); put(m1,0,-12);
+{ const hs=[]; let h=m1.hp; still(()=>{ cast('tansy_2_any',m1); for(let i=0;i<40;i++){ W.tick(0.05); if(m1.hp<h){ hs.push(h-m1.hp); h=m1.hp; } } }); x.AREAS.length=0;
+  ok('Tansy (synergy): Gather In is cold on a clean monster\'s first tick and 1.2x from the second (it bound it); the field and Bumper Crop bind too',hs.length>=2&&near(hs[1]/hs[0],1.2,0.02)&&x.ssMarkN(p,m1,'twine')===1&&['tansy_2_any','tansy_3_any'].every(id=>{ const f=x.SKILLS[id].fx; return (f.zone&&f.zone.mark&&f.zone.mark.id==='twine')||(f.ring&&f.ring.mark&&f.ring.mark.id==='twine'); }),hs.slice(0,3).map(v=>Math.round(v)).join(',')); }
+ok('...and she is still pure basic: every piece element-less, no new lint warning',PIECES('tansy').every(id=>x.SKILLS[id].el==='basic')&&!(x.ssLint?x.ssLint():[]).some(w=>/tansy/.test(String(w))));
 wear('tansy',3); reset(); put(m1,0,-2); put(m2,3,-3); put(m3,-3,-4);
 ok('Tansy: Wide Berth makes every ring, cone and field 25% wider (the area stat) and costs 25% damage against bosses only',near(x.psP(p,'area'),0.25)&&near(x.ssCondP(p,'dmg',bossM),-0.25)&&x.ssCondP(p,'dmg',m1)===0,x.psP(p,'area')+' '+x.ssCondP(p,'dmg',bossM));
 { evs.length=0; cast('tansy_2_any',m1); tick(3); const ar=evs.find(e=>e[0]==='area'&&e[10]==='tansy_2_any'); ok('...the field of Gather In is 9.5 m x 1.25 across (the area event says so)',ar&&near(ar[5],11.875,0.01),ar&&ar[5]); x.AREAS.length=0; }
@@ -155,29 +168,44 @@ reset(); put(m1,0,-12);
 
 // ---- Ambrose ----
 reset(); put(m1,0,-2); pb.hp=pb.maxHp*0.3; p.hp=p.maxHp*0.5;
-{ still(()=>cast('ambrose_1_warrior',m1)); ok('Ambrose: Reed Lash mends the ONE with the least health (the party member at 30%: +2.5%), not the others; leaves a Ripple',near(hpOf(pb),0.325,0.002)&&near(hpOf(p),0.5,0.002)&&pc.hp===pc.maxHp&&x.ssMarkN(p,m1,'ripple')===1,pct(hpOf(pb))+' / '+pct(hpOf(p))); }
+{ still(()=>cast('ambrose_1_warrior',m1)); ok('Ambrose: Reed Lash mends the ONE with the least health (the party member at 30%: +2.2%, 2% and 0.2% for the Ripple the lash itself just left), not the others; leaves a Ripple',near(hpOf(pb),0.322,0.002)&&near(hpOf(p),0.5,0.002)&&pc.hp===pc.maxHp&&x.ssMarkN(p,m1,'ripple')===1,pct(hpOf(pb))+' / '+pct(hpOf(p))); }
 wear('ambrose',1); reset(); put(m1,0,-2); pb.hp=pb.maxHp*0.3;
-{ still(()=>cast('ambrose_1_warrior',m1)); ok('Ambrose: Steady Current makes his heals 25% stronger (2.5% becomes 3.1%)',near(hpOf(pb),0.3313,0.002),pct(hpOf(pb))); }
+{ still(()=>cast('ambrose_1_warrior',m1)); ok('Ambrose: Steady Current makes his heals 25% stronger (2.2% becomes 2.75%)',near(hpOf(pb),0.3275,0.002),pct(hpOf(pb))); }
+clear(); reset(); put(m1,0,-2); put(m2,2,-3); pb.hp=pb.maxHp*0.3; x.ssMarkS(p,m1,{id:'ripple',n:3,dur:12,max:5}); x.ssMarkS(p,m2,{id:'ripple',n:2,dur:12,max:5});
+{ still(()=>cast('ambrose_1_warrior',m1)); ok('Ambrose (synergy): with five Ripples near (counted over the pack) the lash mends 3%',near(hpOf(pb),0.33,0.002),pct(hpOf(pb))); }
 wear('ambrose',2); reset(); p.hp=p.maxHp*0.5; p.lastHit=x.S.t+60; tick(20);   // (lastHit in the future: no natural out-of-combat regen of 8% a second)
 ok('Ambrose: Marsh Calm: he always regenerates (0.8% of his health a second): a second of standing still, 0.8% back',near(hpOf(p),0.508,0.003)&&near(x.psP(p,'regen'),0.008),pct(hpOf(p)));
 wear('ambrose',3); reset(); put(m1,0,-2); pb.hp=pb.maxHp*0.99; pb.shield=null;
-{ still(()=>cast('ambrose_1_warrior',m1)); ok('Ambrose: Overflow (3 pieces): healing that would overheal turns into a shield on the one healed: 60% of the surplus (2.5% healed x1.25 by Steady Current = 3.1%, 1% fits, 2.1% over, 60% of it: 1.3%)',near(hpOf(pb),1,0.001)&&pb.shield&&near(pb.shield.v,pb.maxHp*0.0128,pb.maxHp*0.003),pb.shield&&pct(pb.shield.v/pb.maxHp)); }
+{ still(()=>cast('ambrose_1_warrior',m1)); ok('Ambrose: Overflow (3 pieces): healing that would overheal turns into a shield on the one healed: 60% of the surplus (2.2% healed x1.25 by Steady Current = 2.75%, 1% fits, 1.75% over, 60% of it: 1.05%)',near(hpOf(pb),1,0.001)&&pb.shield&&near(pb.shield.v,pb.maxHp*0.0105,pb.maxHp*0.003),pb.shield&&pct(pb.shield.v/pb.maxHp)); }
 { reset(); p.hp=p.maxHp*0.9; pb.hp=pb.maxHp*0.4; pb.shield=null; p.ssIcd={}; x.ssTriggerS(p,'revive',{q:pb});
   ok('Ambrose: Lifeline (5 pieces): bringing a downed party member back heals him 25% and shields and guards the one who stood up (25% of health, 20% less damage, 8 s)',near(hpOf(p),1,0.001)&&pb.shield&&near(pb.shield.v,pb.maxHp*0.25,2)&&near(x.allyP(pb,'guard'),0.2)); }
 { reset(); p.hp=p.maxHp*0.2; p.ssIcd={}; x.ssTriggerS(p,'low',{m:m1,v:1}); ok('...and so does dropping below 35% health yourself',hpOf(p)>=0.44&&p.shield&&p.shield.v>0); }
 reset(); put(m1,0,-3); put(m2,2,-5); pb.hp=pb.maxHp*0.2; p.hp=p.maxHp*0.2; clear(); put(m1,0,-3);
 { x.ssMarkS(p,m1,{id:'ripple',n:4,dur:12,max:5}); const h0=p.hp; still(()=>cast('ambrose_2_any',null)); ok('Ambrose: Ebb and Flow returns every Ripple within 10 m (gone), heals the party for 10% of maximum health, a share of the damage mends him, and shields them',x.ssMarkN(p,m1,'ripple')===0&&p.hp-h0>p.maxHp*0.1&&near(hpOf(pb),0.3,0.01)&&pb.shield&&pb.shield.v>0); }
 reset(); pb.hp=pb.maxHp*0.2; p.hp=p.maxHp*0.2; put(m1,0,-3);
-{ still(()=>cast('ambrose_3_any',null)); ok('Ambrose: High Water heals the party for 30% (a capped heal), gives 3% regeneration for 8 s and a 15% shield, and the wave slows what is near',near(hpOf(pb),0.5,0.01)&&near(x.allyP(pb,'regen'),0.03)&&near(pb.shield.v,pb.maxHp*0.15,1)&&m1.slowT>0&&x.allyP(pc,'regen')===0); }
+{ still(()=>cast('ambrose_3_any',null)); ok('Ambrose: High Water heals the party for 30% (a capped heal), gives 3% regeneration for 8 s and a shield (12%, +2.4% for the two Ripples its own wave left), and the wave slows what is near',near(hpOf(pb),0.5,0.01)&&near(x.allyP(pb,'regen'),0.03)&&near(pb.shield.v,pb.maxHp*0.144,1)&&m1.slowT>0&&x.allyP(pc,'regen')===0,pct(pb.shield.v/pb.maxHp));
+  ok('Ambrose (synergy): High Water leaves two Ripples on what its wave touched',x.ssMarkN(p,m1,'ripple')===2,String(x.ssMarkN(p,m1,'ripple'))); }
+reset(); pb.shield=null; put(m1,0,-3); x.ssMarkS(p,m1,{id:'ripple',n:3,dur:12,max:5});
+{ still(()=>cast('ambrose_3_any',null)); const sh=pb.shield.v/pb.maxHp; still(()=>cast('ambrose_2_any',null)); ok('Ambrose (synergy): at five Ripples High Water shields 18%, and Ebb and Flow right after it has the Ripples to return',near(sh,0.18,0.002)&&x.ssMarkN(p,m1,'ripple')===0,pct(sh)); }
+reset(); pb.shield=null;
+{ still(()=>cast('ambrose_3_any',null)); ok('...and with no enemy near, the floor: a 12% shield',near(pb.shield.v/pb.maxHp,0.12,0.002),pct(pb.shield.v/pb.maxHp)); }
 ok('...and no heal of his is above the cap of half the maximum health a cast',IDS.every(i=>PIECES(i).every(id=>{ const f=x.SKILLS[id].fx; return !f.heal||f.heal.v<=0.5; })));
 
 // ---- Dunstan ----
 clear(); reset(); put(m1,0,-2);
-{ still(()=>cast('dunstan_1_mage',m1)); ok('Dunstan: Rallying Strike quickens him and the party member (10% shorter cooldowns for 3 s), not the third player; leaves a Fervor',near(x.allyP(p,'haste'),0.1)&&near(x.allyP(pb,'haste'),0.1)&&x.allyP(pc,'haste')===0&&x.ssMarkN(p,m1,'fervor')===1); }
+{ still(()=>cast('dunstan_1_mage',m1)); ok('Dunstan: Beacon Bolt quickens him and the party member (8% shorter cooldowns for 3 s with no Fervor near), not the third player; leaves a Fervor',near(x.allyP(p,'haste'),0.08)&&near(x.allyP(pb,'haste'),0.08)&&x.allyP(pc,'haste')===0&&x.ssMarkN(p,m1,'fervor')===1,String(x.allyP(p,'haste'))); }
+reset(); put(m1,0,-2); x.ssMarkS(p,m1,{id:'fervor',n:5,dur:12,max:5});
+{ still(()=>cast('dunstan_1_mage',m1)); ok('Dunstan (synergy): with five Fervor near, the bolt quickens 13% (1% more for each)',near(x.allyP(pb,'haste'),0.13),String(x.allyP(pb,'haste'))); }
 reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'fervor',n:5,dur:12,max:5});
 { still(()=>cast('dunstan_2_any',null)); ok('Dunstan: Cry of Valor gives the party 10% more damage for 10 s, 2% more for each Fervor near him (five: 20%), and then spends the Fervor for damage',near(x.allyP(pb,'might'),0.20)&&x.ssMarkN(p,m1,'fervor')===0,String(x.allyP(pb,'might')));
   put(m2,0,-3); m2.st=null; const base=lost(m2,()=>still(()=>x.damageMonsterS(m2,1,pb,pb.x,pb.z,0,'basic'))); pb.ally=null; put(m2,0,-3); const plain=lost(m2,()=>still(()=>x.damageMonsterS(m2,1,pb,pb.x,pb.z,0,'basic')));
   ok('...(the party member\'s hit is 20% heavier under the buff)',near(base/plain,1.20,0.03),(base/plain).toFixed(3)); }
+reset(); put(m1,0,-3); put(m2,0,-20); evs.length=0;
+{ const hs=[]; let h=m1.hp; still(()=>{ cast('dunstan_3_any',null); for(let i=0;i<50;i++){ W.tick(0.05); if(m1.hp<h){ hs.push(h-m1.hp); h=m1.hp; } } });
+  ok('Dunstan (synergy): the banner leaves a Fervor every second on what stands in it, and none outside',x.ssMarkN(p,m1,'fervor')>=2&&x.ssMarkN(p,m2,'fervor')===0,x.ssMarkN(p,m1,'fervor')+' / '+x.ssMarkN(p,m2,'fervor'));
+  ok('...its flame is cold on a clean monster\'s first tick and 1.5x from the second (Fanned Flame), and the client is told (proc names the banner)',hs.length>=2&&near(hs[1]/hs[0],1.5,0.02)&&evs.some(e=>e[0]==='proc'&&e.includes('dunstan_3_any')),hs.map(v=>Math.round(v)).join(',')); }
+reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'fervor',n:5,dur:12,max:5});
+{ still(()=>cast('dunstan_2_any',null)); const spent=x.ssMarkN(p,m1,'fervor'); still(()=>cast('dunstan_3_any',null)); tick(25); ok('Dunstan (synergy): Cry of Valor spends the Fervor, a banner planted after it lays it again within a tick',spent===0&&x.ssMarkN(p,m1,'fervor')>=1,spent+' -> '+x.ssMarkN(p,m1,'fervor')); }
 reset(); put(m1,0,-3); evs.length=0;
 { still(()=>cast('dunstan_3_any',null)); tick(25); ok('Dunstan: Banner Down plants a banner: a party member standing in it gets crit, critical damage and regeneration, someone outside it nothing, and the flame burns what is in it',near(x.allyP(pb,'crit'),0.2)&&near(x.allyP(pb,'critdmg'),0.4)&&near(x.allyP(pb,'regen'),0.02)&&x.allyP(pc,'crit')===0&&m1.hp<m1.maxHp,x.allyP(pb,'crit')+' '+x.allyP(pb,'critdmg')+' '+x.allyP(pb,'regen')); }
 wear('dunstan',1); reset(); put(m1,0,-3);

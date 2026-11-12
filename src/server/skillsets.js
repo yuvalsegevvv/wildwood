@@ -94,8 +94,10 @@ function ssMarkS(p,m,spec){
   if(!m||m.dead||m.remove||(spec.behind&&!ssBehind(p,m))) return;
   const mine=(m.mk||(m.mk={}))[p.id]||(m.mk[p.id]={}), cur=mine[spec.id], dur=spec.dur||8;
   const n=Math.min(spec.max||5,(cur&&cur.until>S.t?cur.n:0)+(spec.n||1));
-  mine[spec.id]={n,until:S.t+dur}; ev('mk',m.id,spec.id,n,dur,p.id);
+  const quiet=cur&&cur.until>S.t&&cur.n===n&&S.t-(cur.ev||-99)<SS_MK_QUIET;   // a mark at its max only refreshed: no event within SS_MK_QUIET s of the last (Twine on a pulled camp; the pips may end up to that much early)
+  mine[spec.id]={n,until:S.t+dur,ev:quiet?cur.ev:S.t}; if(!quiet) ev('mk',m.id,spec.id,n,dur,p.id);
 }
+const SS_MK_QUIET=2;
 function ssClearS(m){ m.mk=null; }
 // fx.pop {id,k,r,heal,cdr,cdrMax}: spend the player's marks on the target (and on every monster within r metres of it): k x the skill's damage for each stack; heal: a share of the damage dealt comes back
 function ssPopS(p,P,tgt,mult,dmg){

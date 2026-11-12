@@ -5,7 +5,7 @@
    Test: client-smoke. */
 const SSV={marks:new Map(), geos:{}, mats:{}, haloGeo:null, shown:'', max:{}, fly:[]};   // monster id -> {markId: {n, until, pips:[mesh], born:[t], full}}
 // shape of each kit's mark: orb ring gem shard flame bell coin bar thorn seed knot blob star (a mark not listed here is an orb)
-const SSV_SHAPE={ripple:'ring', knot:'knot', glint:'gem', rime:'shard', glare:'star', temper:'flame', fervor:'flame', toll:'bell', vigil:'bar', applause:'star', swell:'ring', linen:'bar', rot:'blob', string:'bar', lure:'orb', loot:'coin', barb:'thorn', stride:'thorn', sight:'ring', fixation:'gem', tally:'bar', grain:'seed'};
+const SSV_SHAPE={ripple:'ring', knot:'knot', glint:'gem', rime:'shard', glare:'star', temper:'flame', fervor:'flame', toll:'bell', vigil:'bar', applause:'star', swell:'ring', linen:'bar', rot:'blob', string:'bar', lure:'orb', loot:'coin', barb:'thorn', stride:'thorn', sight:'ring', fixation:'gem', tally:'bar', grain:'seed', twine:'knot'};
 function ssvColor(markId){ for(const id of SS_ORDER){ const s=SS_SETS[id]; if(s.kit&&s.kit.mark===markId) return s.pal.accent; } return 0xffffff; }
 function ssvKit(markId){ for(const id of SS_ORDER){ const s=SS_SETS[id]; if(s.kit&&s.kit.mark===markId) return s.kit; } return null; }
 function ssvMax(markId){   // the "(up to 5)" of the kit's text; a kit that does not say it holds 5

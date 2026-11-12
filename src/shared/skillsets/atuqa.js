@@ -1,19 +1,20 @@
 //@ Atuqa's skill set, The Terrace Wall (a tank, light): a sling stone that pins its target, a terrace raised under the party, and a wall of sun that holds the line; woven red, gold thread and terrace stone
 /* Agent map. Kit: docs/skillkits/kit-tank.md; theme and element: docs/skillkits/THEMES.md, ELEMENTS.md (all six pieces light: Torgeir's kit in another voice); outfit: game/outfits/atuqa.js, docs/skillkits/looks/atuqa.md;
    visuals: game/skillsets/look-atuqa.js. Registry: shared/skillsets.js, docs/skillkits/AUTHORING.md. Test: tools/skillsets-isles-smoke.js, tools/skillsets-ladder.js --set atuqa.
-   Land: the Emberwake Isles (tier 3). Mark: Knot, spent by Hold the Wall (a quipu: every knot is a promise she keeps). Numbers are Torgeir's on purpose (the ladder holds for them); only the words, the element and the look are his. */
+   Land: the Emberwake Isles (tier 3). Mark: Knot, spent by Hold the Wall (a quipu: every knot is a promise she keeps). His own line is the shot (docs/skillkits/SYNERGY-REWORK.md section 10, order-free): Sling Stone hits the knotted a fifth harder (vs Kept Promise) and raises a thin shield
+   for each Knot near (shield.perMark). Hold the Wall does not re-tie: a ring's mark lands before the same cast's pop, so the pop would spend it (the plan's fallback). */
 defineSkillSet({
   id:'atuqa', name:'The Terrace Wall', land:'isles', needs:{tier:3}, el:'light', outfit:'atuqa',
   role:{main:'tank'},
   char:{name:'Atuqa', sex:'male', theme:'a highland keeper of knotted cords who holds a terrace wall for the ones behind it', ip:{kind:'original', riffs:'the Andean terrace-keeper and quipu-reader genre (a woven poncho, a knotted cord, a sling); no existing character'}},
   pal:{main:0xb83a2a, accent:0xe8c860, glow:0xfff0b0},
   emblem:{col:0xd8a64a, glyph:'<path d="M3 20h18"/><path d="M5 20v-4h14v4"/><path d="M8 16v-4h8v4"/><path d="M10.5 12V8h3v4"/><circle cx="12" cy="5" r="1.4"/>'},
-  kit:{mark:'knot', name:'Knot', text:'Every shot leaves a Knot (up to 5) on what it hit; Hold the Wall spends them all for a heavier blow that heals you.'},
+  kit:{mark:'knot', name:'Knot', text:'Every shot, the terrace and every blow you take leave a Knot (up to 5). Shots hit the knotted harder and raise a thin shield for each Knot near you; both walls are thicker for each Knot. Hold the Wall spends them for a heavier blow that heals you.'},
   pos:{
     1:{bound:'class',
        skill:{
-         archer:{name:'Sling Stone', desc:'A heavy stone at up to 20 m that pins its target in place and makes it come for you for 3 seconds. Leaves a Knot.', cd:1.0, range:20, mult:0.85, act:['atuqa1a',0.55,0.5], anim:'shoot',
-                 fx:{proj:{kind:'snipe', speed:44, turn:9, life:0.55, taunt:{dur:3}, mark:{id:'knot', n:1, dur:12, max:5}}}}},
+         archer:{name:'Sling Stone', desc:'A heavy stone at up to 20 m that pins its target in place and makes it come for you for 3 seconds. A fifth harder against a target that carries a Knot. Each shot raises a thin shield, thicker for each Knot near you. Leaves a Knot.', cd:1.0, range:20, mult:0.85, act:['atuqa1a',0.55,0.5], anim:'shoot',
+                 fx:{proj:{kind:'snipe', speed:44, turn:9, life:0.55, taunt:{dur:3}, mark:{id:'knot', n:1, dur:12, max:5}}, vs:{when:{marked:'knot'}, k:1.2, name:'Kept Promise'}, shield:{v:0.005, dur:4, r:1, perMark:{id:'knot', v:0.002, r:10}}}}},
        passive:{name:'Woven Cloak', text:'{}% less damage taken while you hold an enemy (one you taunted)', stat:'red', v:[0.10, 0.01], when:{taunting:true}}},
     2:{bound:'any',
        skill:{any:{name:'Raise the Terrace', desc:'Plant your feet and raise a stone terrace: a wide taunt (4 seconds, 12 m), 20% less damage taken for you and your party for 6 seconds and a shield worth 8% of your health, and 3% more for each Knot on the enemies near you. What is close is shoved back.', cd:16, range:6, mult:0.75, act:['atuqa2x',0.7,0.45], anim:'nova',

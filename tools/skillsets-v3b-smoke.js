@@ -4,7 +4,7 @@
 const fs=require('fs'), path=require('path'), {loadServer, SRC}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...m.ev); }},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_SOURCES','ssLint','ssSetFor','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssMarkN','ssMarkS','resolveFxS','AREAS','PROJS','mstVulnK','recalcP','clsOfP','getH','VIL','psP','SH_ALT','mstDirectS','SS_HEAL_CAP']);
+  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_SOURCES','ssLint','ssSetFor','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssMarkN','ssMarkS','resolveFxS','AREAS','PROJS','mstVulnK','mstWeakK','ssTriggerS','recalcP','clsOfP','getH','VIL','psP','SH_ALT','mstDirectS','SS_HEAL_CAP']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 const near=(a,b,e)=>Math.abs(a-b)<=(e||1e-6);
@@ -59,6 +59,17 @@ clear(); reset(); put(m1,0,-3); put(m2,2,-3);
 // ---- Zahra: Long Noon raises critical damage for the party and spends Grain ----
 clear(); reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'grain',n:4,dur:12,max:5});
 { still(()=>cast('zahra_2_any',null)); ok('Zahra: Long Noon spends the Grain and gives the party critical damage (30% + 3% a Grain, capped)',x.ssMarkN(p,m1,'grain')===0&&x.allyP(pb,'critdmg')>=0.30-1e-6,String(x.allyP(pb,'critdmg'))); }
+// ---- Zahra (synergy, docs/skillkits/SYNERGY-REWORK.md section 4): Grain is glare ----
+ok('Zahra (synergy): the registry takes the sandglass\'s status.perMark (the set registered, nothing left out)',!!SET('zahra')&&!(x.SS_BAD||[]).some(b=>String(b.id||b).indexOf('zahra')===0)&&x.SKILLS.zahra_3_any.fx.zone.status.perMark.id==='grain');
+clear(); reset(); put(m1,0,-2.5);
+{ still(()=>cast('zahra_1_mage',m1)); const g0=x.allyP(pb,'guard'); reset(); put(m1,0,-2.5); x.ssMarkS(p,m1,{id:'grain',n:5,dur:12,max:5}); still(()=>cast('zahra_1_mage',m1));
+  ok('Zahra (synergy): Sunlit Bolt guards the party 8% with no Grain near, 13% with five',near(g0,0.08)&&near(x.allyP(pb,'guard'),0.13),g0+' / '+x.allyP(pb,'guard')); x.PROJS.length=0; }
+reset(); put(m1,0,-3); put(m2,0,-20); put(m3,2,-3); x.ssMarkS(p,m3,{id:'grain',n:4,dur:12,max:5});
+{ still(()=>cast('zahra_3_any',null)); tick(22); const w1=x.mstWeakK(m1), w3=x.mstWeakK(m3);   // (the glass ticks every second, the first at 1 s)
+  ok('Zahra (synergy): a sandglass tick leaves a Grain on what stands in it (none outside) and dazzles it: 4% less on a clean monster, 8.8% at four Grain (the tick reads before it lays)',x.ssMarkN(p,m1,'grain')===1&&x.ssMarkN(p,m2,'grain')===0&&near(w1,0.96,1e-6)&&near(w3,0.912,1e-6),w1+' / '+w3);
+  tick(20); ok('...a second later the dazzle on the third has climbed to 10% (five Grain), and the party in the glass is guarded 12%',near(x.mstWeakK(m3),0.90,1e-6)&&near(x.allyP(pb,'guard'),0.12),x.mstWeakK(m3)+' / '+x.allyP(pb,'guard')); x.AREAS.length=0; }
+clear(); reset(); put(m1,0,-3); p.ssIcd={}; p.ss=Object.assign({},p.ss,{trig:{hurt:[x.PASSIVES.zahra_p2]}});   // (Heat Haze is Bond IV: its row alone, as the Bond engine would add it)
+{ x.ssTriggerS(p,'hurt',{m:m1}); clear(); ok('Zahra (synergy): Heat Haze dazzles what hit her (15%) and leaves it a Grain',near(x.mstWeakK(m1),0.85,1e-6)&&x.ssMarkN(p,m1,'grain')===1,x.mstWeakK(m1)+' '+x.ssMarkN(p,m1,'grain')); }
 // ---- Hollis: the lantern swing mends the weakest, Dusk Lent returns the Vigil ----
 clear(); reset(); put(m1,0,-2.5); pb.hp=pb.maxHp*0.5;
 { still(()=>cast('hollis_1_mage',m1)); ok('Hollis: Lantern Swing mends the party member with the least health and leaves a Vigil',hpOf(pb)>0.5&&x.ssMarkN(p,m1,'vigil')===1,hpOf(pb).toFixed(3)); }

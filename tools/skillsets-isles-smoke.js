@@ -2,8 +2,9 @@
 // It checks that all twenty-four sets register (nothing left out, nothing linted), that the isles have one set at +1, +2 and +3 (the table every land follows), that the sources are Ocelo, Tuila and the Cenote,
 // that every name is new, that each set has a look file and an emblem of its own, and that each active resolves against a monster without a fault and does damage. Usage: node tools/skillsets-isles-smoke.js
 const fs=require('fs'), path=require('path'), {loadServer, SRC}=require('./load');
-const {api:W,x}=loadServer({dev:true,send(){}},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_SOURCES','ssLint','ssSetFor','ssSourceOf','resolveFxS','AREAS','PROJS','recalcP','getH','VIL','ssMarkN','ssMarkS','SH_ALT','allyP','SS_ALLY_CAP']);
+const evs=[];
+const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...m.ev); }},
+  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_SOURCES','ssLint','ssSetFor','ssSourceOf','resolveFxS','AREAS','PROJS','recalcP','getH','VIL','ssMarkN','ssMarkS','SH_ALT','allyP','SS_ALLY_CAP','ssTriggerS','fxModK']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 const IDS=['meleni','tzaya','atuqa'], SET=id=>x.SS_SETS[id], PIECES=id=>[1,2,3].flatMap(n=>SET(id).pos[n].ids);
@@ -44,4 +45,30 @@ for(const i of IDS){ let bad=[]; for(const id of PIECES(i)){ let d=0; try{ d=cas
   // tide is back after T with T + 7.5 x floor(T / 14) >= 45: T = 30 (two refunds), about 27 s with Salt Throat's longer Landfall counted out: 6 / 27 to 6 / 30 = 20-22%
   const T=(()=>{ for(let t=1;t<=45;t++) if(t+7.5*Math.floor(t/14)>=45) return t; return 45; })();
   ok('Meleni: Call the Tide stands for 6 s; its uptime rises from 13% (on cooldown, no Swell) to about 20% with a full Landfall on every Landfall cooldown',x.SKILLS.meleni_3_any.fx.zone.dur===6&&x.SKILLS.meleni_3_any.cd===45&&Math.abs(6/45-0.133)<0.001&&6/T>=0.19&&6/T<=0.23,'cycle '+T+' s, '+Math.round(600/T)+'%'); }
+// ---- Tzaya and Atuqa, the synergy rework (docs/skillkits/SYNERGY-REWORK.md sections 9 and 10): order-free ----
+{ const m2=x.MONS.filter(q=>!q.boss&&!q.inst&&q.def.id==='slime')[1], at=(q,dz)=>{ q.dead=false; q.remove=false; q.hp=q.maxHp=1e9; q.mk=null; q.st=null; q.inst=0; q.immune=false; q.slowT=0; q.stunT=1e9; q.taunt=null; q.x=p.x; q.z=p.z+dz; q.kbx=q.kbz=0; };
+  const run=(s,tgt,n)=>{ x.resolveFxS(p,{fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:s.id},tgt||null); for(let i=0;i<(n||0);i++) W.tick(0.05); };
+  const ss0=p.ss; p.ss=Object.assign({},p.ss,{trig:{kill:[x.PASSIVES.tzaya_p1]}}); p.ssIcd={}; p.cd.burst=10; at(m,-3);
+  x.ssTriggerS(p,'kill',{m}); const c1=p.cd.burst; x.ssTriggerS(p,'kill',{m}); const c2=p.cd.burst; p.ss=ss0;
+  ok('Tzaya: Day Count (the kept passive, once Ember Hunger): a kill takes 0.5 s off The Reckoning, and not again within 1.5 s',Math.abs(c1-9.5)<1e-6&&Math.abs(c2-9.5)<1e-6&&x.PASSIVES.tzaya_p1.name==='Day Count',c1+' '+c2);
+  const R=x.SKILLS.tzaya_3_any, refund=(n,cd)=>{ at(m,-3); if(n) x.ssMarkS(p,m,{id:'tally',n,dur:12,max:5}); p.cd.skill=cd; run(R,null); x.AREAS.length=0; return cd-p.cd.skill; };
+  const r5=refund(5,10), r2=refund(2,10), r0=refund(5,0), r9=refund(5,3);
+  ok('Tzaya: The Reckoning takes 1.2 s off Fire Pit for each Tally spent: 6 s for five, 2.4 s for two, nothing when the pit is ready, never below 0',Math.abs(r5-6)<1e-6&&Math.abs(r2-2.4)<1e-6&&r0===0&&Math.abs(r9-3)<1e-6&&p.cd.skill===0,[r5,r2,r0,r9].join(' '));
+  ok('Tzaya: the heat that follows him mends 0.6% a tick (was 1%)',R.fx.zone.heal.v===0.006);
+  const F=x.SKILLS.tzaya_2_any.fx; at(m,-3); at(m2,-15); x.ssMarkS(p,m,{id:'tally',n:1,dur:12,max:5});
+  ok('Tzaya: Fire Pit burns a counted monster 1.15x (vs Counted), a clean one 1x',Math.abs(x.fxModK(F,p,m)/x.fxModK(F,p,m2)-1.15)<1e-6);
+  at(m,-12); const hs=[]; let h=m.hp; x.resolveFxS(p,{fx:F,mult:x.SKILLS.tzaya_2_any.mult,range:16,el:'fire',aim:[0,0,-1],sid:'tzaya_2_any'},m);
+  { const Rnd=Math.random; Math.random=()=>0.5; try{ for(let i=0;i<25;i++){ W.tick(0.05); m.stunT=1e9; if(m.hp<h){ hs.push(h-m.hp); h=m.hp; } } } finally{ Math.random=Rnd; } } x.AREAS.length=0;
+  ok('...a clean monster takes 1x on the pit\'s first tick and 1.15x from the second (the pit counted it)',hs.length>=2&&Math.abs(hs[1]/hs[0]-1.15)<0.03,hs.slice(0,3).map(Math.round).join(','));
+  // Atuqa
+  const A1=x.SKILLS.atuqa_1_archer, A3=x.SKILLS.atuqa_3_any; at(m,-3); at(m2,-15); x.ssMarkS(p,m,{id:'knot',n:1,dur:12,max:5});
+  ok('Atuqa: Sling Stone hits a knotted target 1.2x (vs Kept Promise), a clean one 1x',Math.abs(x.fxModK(A1.fx,p,m)/x.fxModK(A1.fx,p,m2)-1.2)<1e-6);
+  at(m,-3); at(m2,-30); p.shield=null; run(A1,m); const s0=p.shield&&p.shield.v/p.maxHp; at(m,-3); x.ssMarkS(p,m,{id:'knot',n:5,dur:12,max:5}); p.shield=null; run(A1,m); const s5=p.shield&&p.shield.v/p.maxHp;
+  ok('Atuqa: each shot raises a thin shield on him: 0.5% with no Knot near, 1.5% with five',Math.abs(s0-0.005)<1e-6&&Math.abs(s5-0.015)<1e-6,s0+' / '+s5); x.PROJS.length=0;
+  at(m,-3); p.shield=null; run(A3,null); const wall=p.shield.v; at(m,-3); x.ssMarkS(p,m,{id:'knot',n:5,dur:12,max:5}); run(A1,m);
+  ok('Atuqa: a shot during Hold the Wall\'s 14% shield leaves the 14% in force (the larger shield wins)',Math.abs(wall/p.maxHp-0.14)<1e-6&&p.shield.v===wall,(wall/p.maxHp)+' / '+(p.shield.v/p.maxHp)); x.PROJS.length=0;
+  at(m,-3); x.ssMarkS(p,m,{id:'knot',n:5,dur:12,max:5}); run(A3,null);
+  ok('Atuqa: Hold the Wall spends every Knot and ties none (a ring\'s mark would land before the same cast\'s pop: the fallback of the plan)',x.ssMarkN(p,m,'knot')===0&&!A3.fx.ring.mark);
+  evs.length=0; at(m,-6); x.ssMarkS(p,m,{id:'knot',n:2,dur:12,max:5}); p.ssIcd={}; run(A1,m,30); x.PROJS.length=0;
+  ok('Atuqa: the client is told when Kept Promise adds to a shot (proc names the piece)',evs.some(e=>e[0]==='proc'&&e.includes('atuqa_1_archer'))); }
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);
