@@ -8,10 +8,11 @@ function handleAttack(p,msg){
   if(p.dead||p.act) return;
   if(msg.k==='cave'){ caveCastP(p,msg); return; }   // cave: the 4th slot (server/cave.js)
   if(msg.k==='ult'){ ultCastP(p,msg); return; }   // ult: the 5th slot, the set burst (server/ult.js)
-  const k=SLOTS.includes(msg.k)?msg.k:'basic'; if(p.cd[k]>0.08) return;
+  const k=SLOTS.includes(msg.k)?msg.k:'basic'; if(p.cd[k]>0.08){ if(k==='skill') p.holdT2=null; return; }   // skill-hold: an atk during the cooldown ends a hold of skill 2
   const cls=clsOfP(p), SK=skOfP(p), LV=p.pv?999:p.level, ab0=abilityOf(cls,k,SK,LV); if(!ab0) return;   // no skill equipped, or the slot is still locked; pvp: on the island the fixed loadout, every slot open
   const spd=bhSpeedP(p), hold=k==='basic'?bhReleaseP(p,cls):0, bcd=k==='basic'&&p.buff?p.buff.cd:1;   // basic-hold: skill 1 has no cooldown, its attack speed sets the pace; a hold releases a charged attack
-  const ab=hold>0?bhHoldAb(ab0,cls,hold):k==='basic'?Object.assign({},ab0,{mult:bhPressMult(ab0)}):ab0;
+  const alt=k==='skill'?shReleaseP(p,ab0):null;   // skill-hold: skill 2 held for its alt's secs casts its held mode, under the base piece's id (server/skill-hold.js)
+  const ab=hold>0?bhHoldAb(ab0,cls,hold):k==='basic'?Object.assign({},ab0,{mult:bhPressMult(ab0)}):alt?shCastAb(ab0,alt):ab0;
   const [kind,dur0,hitAt0]=ab.act, dur=bhActDur(dur0,spd,1), hitAt=hitAt0;   // (a buff's basic-cooldown x paces the swings, not how long one swing takes)
   const lvl=skillLvOf(SK,ab.id);
   p.cd[k]=k==='basic'?bhInterval(ab,SK,spd,bcd,hold):abilityCd(ab,SK,LV,cls,rlP(p,'cdr'))*(1-allyP(p,'haste'));   // skillsets: an ally haste buff shortens the cooldowns of skill 2 and burst
@@ -22,6 +23,7 @@ function handleAttack(p,msg){
   const tg=foeByIdS(p,msg.tg);   // pvp: a fighter on the island may name another fighter
   const aim=Array.isArray(msg.aim)&&msg.aim.length===3&&msg.aim.every(v=>isFinite(+v))?norm3(msg.aim.map(Number)):[-Math.sin(p.face),0,-Math.cos(p.face)];
   p.act={kind,t:0,dur,hitAt,done:false,skill:k!=='basic',sid:ab.id,lvl,el:elOf(ab),fx:awkFx(ab.fx,lvl),mult:ab.mult*skillPower(lvl)*caveNextK(p,k),range:ab.range,tg:tg&&!tg.dead?tg.id:null,aim,holdAt:!!ab.holdAt};   // awakening: the fx at the skill's level (stun, slow, heal, durations...); cave: Intermission's bonus on the next skill; basic-hold: holdAt = a mage's held blast, centred on the target
+  if(alt) p.act.src=alt.id;   // skill-hold: the events of a held cast name the held mode ('<piece>_h'): the client draws it in its own recipe
   ultBoostActS(p,p.act,ab.id);   // ult: a boosted piece's cast (mult, n, size, util)
   ev('pact',p.id,kind,Math.round(p.face*100)/100,...(p.act.ub?[1]:[]));   // (the 5th field: a boosted cast, drawn stronger)
   if(k!=='basic'&&!p.pv) mqActP(p,k);   // the main quest's 'use your skill / burst' steps (pvp: nothing is credited on the island)

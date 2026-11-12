@@ -106,6 +106,7 @@ shared
   boss-trophy.js                     Boss trophies: BOSS_TROPHY, the named trophy each world boss drops (2^tier a kill to every helper), the registry defineBossTrophy and its checks
   essence.js                         Essence: the seven materials the elemental rifts pay and the Awakening trees spend (one per element, and Prime Essence): ids, names, colours, the lookup. Pure; loaded by both sides
   basic-hold.js                      Skill 1 (the basic slot) as an attack-speed skill with two modes (pure): attack speed and charge gain, the press / hold split, and what a held release becomes for each class
+  skill-hold.js                      Skill 2 with two modes (pure): a tap casts the skill, a hold of at least `secs` casts its held mode (`alt`); the registry SH_ALT of the held rows, their checks (SH_BAD) and the arming rule
   drops.js                           Monster drops (MATS: one material per monster kind) and what upgrading a skill costs (upgradeNeeds, upNeedsBase). Pure.
   items.js                           Items (ITEM, ITEM_LIST): 7 pieces x 6 level tiers x 5 rarities, and the three profession tools (TOOL_LIST) with the same tiers and rarities (the pendants' rules are in pendants.js, the pieces in dungeon-items.js); prices, drop tables, merging, armour looks, gear helpers (the level-30 dungeon pieces join ITEM in dungeon-items.js). Pure.
   pendants.js                        Pendants, the rules: the five kinds a pendant can be (exp, drop, coin, crit rate, crit damage), their base values and names, their text, and the crit constants and caps rollDmgS uses. The pieces themselves are level-30 dungeon gear (dungeon-items.js). Pure.
@@ -282,6 +283,7 @@ server
   monsters.js                        Monsters on the server: camps in their zones, AI (aggro, chase, attack, leash), respawns, temporary monsters
   combat.js                          Combat on the server: attacks, projectiles, damage (level debuff, crits, elements), generic skill effects (fx), burning, kills, shared rewards, loot
   basic-hold.js                      Skill 1 on the server: attack speed and charge gain of a player, the hold message and its release (how long the player really held), where a mage's held blast lands
+  skill-hold.js                      Skill 2's held mode on the server: the hold message for skill 2 (the server times the hold itself) and the release that turns a cast into its held mode
   mon-status.js                      Shared statuses on monsters (server): vuln (takes more damage) and weak (deals less) that never stack, a skill's status key (vuln / weak / slow / stun), and the quiet flag for damage that is not a hit
   skillsets.js                       Skill sets on the server: granting a set's pieces, wearing a piece for all three classes, the loadout cache p.ss (the sets worn and their bonuses)
   amber.js                           Amber on the server: amber (gear.amb, a gear-upgrade material), gems (gear.gem, the premium currency), buying an outfit set for 1000 gems (gear.os), and the one public testing tool that grants gems on every server
@@ -577,6 +579,7 @@ game
   combat/weapons.js                  Weapon models in the hiker's hands (attachWeapons), aim helpers
   combat/attacks.js                  Targeting and attacks (sent to the server), plus the visuals for server combat events: damage, kills, projectiles
   combat/basic-hold.js               Skill 1 on the client: hold the attack button to charge (press = tap), the charge shown on the button, the attack speed / charge gain mirrors, the slower walk while charging
+  combat/skill-hold.js               Skill 2's held mode on the client: a skill 2 with an `alt` waits for the release (a tap casts it, a hold of its secs casts the held mode), the fill on the skill button, the slower walk while holding
   combat/mon-status.js               Monster status notes on the client: the "Vulnerable +14%" / "Weakened -10%" text that pops over a monster when a shared vuln or weak lands on it
   skillsets/marks.js                 Skill-set marks on the client: a kit's stacks as shaped, glowing pips over the monster (only yours), a full-stack halo, a burst when they are spent, and a stack chip on the target frame
   skillsets/procs.js                 Skill-set procs on the client: a set bonus that fires shows its name as a badge, a rune ring at the wearer and a streak of motes to its target; a refunded cooldown flashes its slot

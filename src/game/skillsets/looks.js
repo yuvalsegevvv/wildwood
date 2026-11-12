@@ -174,7 +174,7 @@ function ssLookArea(A,src){
 }
 function sslAreaIn(A,src){
   const L=ssLookFor(src); if(!L||A.kind!=='zone') return;
-  A.look=L; A.skill=SKILLS[src]||null; A.zf=A.skill&&A.skill.fx&&A.skill.fx.zone||{};
+  A.look=L; A.skill=shSkillRow(src);   /* skill-hold: a held mode's id ('<piece>_h') resolves through SH_ALT */ A.zf=A.skill&&A.skill.fx&&A.skill.fx.zone||{};
   const D=sslDecal(L,A.x,A.z,A.r,{life:A.dur,op:0.8,r0:0.05,keep:true,spin:A.zf.kb<0?-0.6:0.5,follow:A.follow?(()=>A):null,inward:false}); D.zoneOf=A; A.deco=D;
   A.fill.material.color.setHex(L.hot); A.edge.material.color.setHex(L.hot2); A.fill.material.opacity=0.12;
   A.col=L.hot;
@@ -215,7 +215,7 @@ function ssLookTrail(L,p,dt){
   if(T) ssPart(T.sh,sslCol(L,T.c),p.pos.x,p.pos.y,p.pos.z,Object.assign({s:T.s||0.18,add:T.add,g:T.g||0,sway:T.sway||0},o)); else ssEmit(L,p.pos.x,p.pos.y,p.pos.z,o);
 }
 function ssLookImpact(L,pos,p,hit){
-  skvRunRecipe(L,SKILLS[p.src]||null,'hit',{x:pos.x,y:pos.y,z:pos.z,face:0,sc:1,mine:false});   // skillvis: what the piece's shot does where it lands
+  skvRunRecipe(L,shSkillRow(p.src),'hit',{x:pos.x,y:pos.y,z:pos.z,face:0,sc:1,mine:false});   // skillvis: what the piece's shot does where it lands
   if(L.impact){ L.impact(L,pos,p,hit); return; }
   sslBurst(L,pos.x,pos.y,pos.z,12,3.2); sslDecal(L,pos.x,pos.z,2.2,{life:0.45,r0:0.4}); spawnRingAt(pos.x,pos.y,pos.z,1.6,L.hot);
 }

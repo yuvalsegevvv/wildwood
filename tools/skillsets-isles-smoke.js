@@ -3,7 +3,7 @@
 // that every name is new, that each set has a look file and an emblem of its own, and that each active resolves against a monster without a fault and does damage. Usage: node tools/skillsets-isles-smoke.js
 const fs=require('fs'), path=require('path'), {loadServer, SRC}=require('./load');
 const {api:W,x}=loadServer({dev:true,send(){}},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_SOURCES','ssLint','ssSetFor','ssSourceOf','resolveFxS','AREAS','PROJS','recalcP','getH','VIL']);
+  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_SOURCES','ssLint','ssSetFor','ssSourceOf','resolveFxS','AREAS','PROJS','recalcP','getH','VIL','ssMarkN','ssMarkS','SH_ALT','allyP','SS_ALLY_CAP']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 const IDS=['meleni','tzaya','atuqa'], SET=id=>x.SS_SETS[id], PIECES=id=>[1,2,3].flatMap(n=>SET(id).pos[n].ids);
@@ -29,4 +29,19 @@ const put=()=>{ m.dead=false; m.remove=false; m.hp=m.maxHp=1e9; m.mk=null; m.st=
 const cast=id=>{ const s=x.SKILLS[id]; put(); const h=m.hp; x.resolveFxS(p,{fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:id},m); if(s.fx.proj||s.fx.zone) for(let i=0;i<30;i++){ W.tick(0.05); m.stunT=1e9; m.x=p.x; m.z=p.z-3; } return h-m.hp; };   // (a zone hurts on its ticks)
 for(const i of IDS){ let bad=[]; for(const id of PIECES(i)){ let d=0; try{ d=cast(id); }catch(e){ bad.push(id+' threw '+e.message); } if(!(d>0)) bad.push(id+' did no damage'); }
   ok(i+': its three actives resolve without a fault and each does damage',!bad.length,bad.join('; ')); }
+
+// ---- Meleni, the combo rework (docs/skillkits/COMBO-REWORK.md section 8): ebb, then flow ----
+{ const m2=x.MONS.filter(q=>!q.boss&&!q.inst&&q.def.id==='slime')[1], at=(q,dz)=>{ q.dead=false; q.remove=false; q.hp=q.maxHp=1e9; q.mk=null; q.st=null; q.inst=0; q.immune=false; q.slowT=0; q.stunT=1e9; q.taunt=null; q.x=p.x; q.z=p.z+dz; q.kbx=q.kbz=0; };
+  const run=(s,tgt,n)=>{ x.resolveFxS(p,{fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:s.base||s.id,src:s.base?s.id:undefined},tgt||null); for(let i=0;i<(n||0);i++) W.tick(0.05); };
+  const land=(n,cd)=>{ at(m,-3); if(n) x.ssMarkS(p,m,{id:'swell',n,dur:12,max:5}); p.cd.burst=cd; p.ally=null; run(x.SKILLS.meleni_2_any,null); return cd-p.cd.burst; };
+  const r5=land(5,20), mt=x.allyP(p,'might'), r0=land(5,0);
+  ok('Meleni: Landfall at five Swell takes 7.5 s off Call the Tide (nothing when the tide is ready), and its might is 10% + 2% a Swell = 20%, under the cap',Math.abs(r5-7.5)<1e-6&&r0===0&&Math.abs(mt-0.20)<1e-6&&mt<=x.SS_ALLY_CAP.might,r5+' '+r0+' might '+mt);
+  at(m,-3); at(m2,-15); x.AREAS.length=0; run(x.SKILLS.meleni_3_any,null,30); x.AREAS.length=0;
+  ok('Meleni: the risen tide lays a Swell a second on an enemy inside it, none outside',x.ssMarkN(p,m,'swell')>=1&&x.ssMarkN(p,m2,'swell')===0,x.ssMarkN(p,m,'swell')+' / '+x.ssMarkN(p,m2,'swell'));
+  const H=x.SH_ALT.meleni_2_any; at(m,-6); p.ally=null; const d0=Math.hypot(m.x-p.x,m.z-p.z); run(H,null,10); const d1=Math.hypot(m.x-p.x,m.z-p.z);
+  ok('Meleni: the held Ebb lays 2 Swell, pulls the enemy nearer and guards the party for 12%; its own cooldown is 9 s',!!H&&x.ssMarkN(p,m,'swell')===2&&d1<d0-0.3&&Math.abs(x.allyP(p,'guard')-0.12)<1e-6&&H.cd===9,H&&(x.ssMarkN(p,m,'swell')+' '+d0.toFixed(2)+'->'+d1.toFixed(2)+' guard '+x.allyP(p,'guard')));
+  // the uptime of the crit zone (COMBO-REWORK.md section 8): 6 / 45 = 13% cast on cooldown with no Swell; a Landfall (cd 14) at five Swell every 14 s while the tide waits takes 7.5 s off each time, so the
+  // tide is back after T with T + 7.5 x floor(T / 14) >= 45: T = 30 (two refunds), about 27 s with Salt Throat's longer Landfall counted out: 6 / 27 to 6 / 30 = 20-22%
+  const T=(()=>{ for(let t=1;t<=45;t++) if(t+7.5*Math.floor(t/14)>=45) return t; return 45; })();
+  ok('Meleni: Call the Tide stands for 6 s; its uptime rises from 13% (on cooldown, no Swell) to about 20% with a full Landfall on every Landfall cooldown',x.SKILLS.meleni_3_any.fx.zone.dur===6&&x.SKILLS.meleni_3_any.cd===45&&Math.abs(6/45-0.133)<0.001&&6/T>=0.19&&6/T<=0.23,'cycle '+T+' s, '+Math.round(600/T)+'%'); }
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

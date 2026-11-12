@@ -58,11 +58,16 @@ A skill entry is a skills-table row minus what the registry fills in: `name`, `d
 | `buff:1` (+ the entry's `buff:{dur,dmg,cd,crit,red,steal,regen,el}`) | your own timed boost |
 | on a `ring`, `cone`, `proj` or `zone`: `mark:{id,n,dur,max}`, `flavor:'<element>'`, `status:{kind,v,dur}` | a mark of the kit (personal, stacks to `max`); the element's flavour at full strength (burn slow stun spread weak vuln); a general status by name (`vuln` / `weak` up to 0.5, `slow`, `stun`) |
 | `vsBoss:k`, `behind:k`, `rangeScale:{from,to,k}` | this skill's damage x k against a boss / from behind a monster / growing with the distance |
-| `pop:{id,k,r,heal}` | spend your marks of `id` on the target and everything within r of it: k x the damage per stack, a share of it heals you |
+| `vs:{when,k,name}` | this skill's own conditional multiplier: x k (above 1, up to 3) on a target for which the `when` holds (section 4b; never `crowd`, `allies` or `taunting`: they scan every monster on every hit). It works on every hit of the skill, its pop included; `name` (up to 24 characters) is the proc badge. Mind the order: a shape applies its statuses AFTER its damage, so a ring that slows never switches on its own `vs:{when:{slowed:true}}`, but a zone's second tick would |
+| `pop:{id,k,r,heal,cdr,cdrMax}` | spend your marks of `id` on the target and everything within r of it: k x the damage per stack, a share of it heals you; `cdr:{basic|skill|burst: seconds}` takes that much off a slot's cooldown for each stack spent (over all targets, up to `cdrMax`, default 5). Do not refund the slot being cast (its cooldown is set before the pop) |
 | `ally:{kind,v,dur,r}` (or a list) | the caster and the party within r (default 25 m) in the same run get the buff: `might guard haste crit critdmg regen`, never stacking (the stronger wins), capped |
 | `heal:{v,r,lowest}`, `shield:{v,dur,r}`, `taunt:{dur,r}` | a share of maximum health back (at most 50% a cast) for the party (`lowest:true`: only the ally with the least health); a damage-absorbing pool; monsters near you come for you (a boss for half the time, none while enraged) |
 
 A **zone** may also carry `ally`, `heal`, `shield` (applied to the allies standing in it each tick).
+
+**Skill 2 may have two modes** (`alt`, position 2 only; `shared/skill-hold.js`, `docs/SKILL-HOLD.md`): `alt:{name, desc, secs, mult, range, act:[kind, seconds, lands], anim, fx, cd}`. A press shorter than `secs` (0.3 to 1.2, default 0.5) casts the entry, a hold of at least `secs` casts `alt` on release. One slot, one cooldown (`alt.cd` may give the held mode its own length); `alt.mult` and `alt.fx` are complete (not merged into the tap's); its `act` kind is new like any other. A bad `alt` leaves only the held mode out (`SH_BAD`). End the tap's desc with `Hold: <alt name>.`; the details panel shows both. Its look recipe is the key `'<piece id>_h'`.
+
+**The kit's combo** (`kit.combo:{order:[slot, slot], win, text}`): the order that pays (cast `order[1]` within `win` seconds, 1 to 12, after `order[0]`) and one sentence (up to 160 characters) the set's card shows under `kit.text`; `node tools/skillsets-ladder.js --combo --set <id>` plays it and prints the careless and the ordered columns side by side.
 
 **A passive or a bonus row** has `name`, `text` and **one** of: `stat` + `v` (`hp dmg crit red cd drop xp soul reflect rxk rxicd critdmg heal buffpow buffdur debuffdur area regen overflow revive`, section 4b; `v` a number or `[level 1, per level]`; the text has `{}` for the percent), or `on` + an effect, or `amp:{id,per}`. Triggers: `on` is `hit crit kill hurt cast1 cast2 cast3 tick low` (`low` also `below`), with `chance`, `icd` (**required** for `hit crit hurt tick low`; for `tick` it is the interval) and one or more effects: `fx` (damage through a skill's shapes, `mult`, `range`, `el`; it leaves no aura and fires no trigger), `heal` (a share of your maximum health), `mark`, `status`, `buff:{kind,v,dur,r}` (the ally buffs), `shield:{v,dur}`. `cost:{stat,v}` (v negative) is what the same row pays (less maximum health, less damage reduction, longer cooldowns). `rxk` makes the reactions you trigger stronger and `rxicd` shortens their cooldown (`docs/REACTIONS.md`).
 
@@ -84,6 +89,7 @@ Everything here is checked by the registry (a bad key leaves the set out, sectio
 | `crowd:{n,r}` | at least n enemies within r metres of you |
 | `allies:{n,r}` | at least n party members (you not counted) within r metres |
 | `exposed:true` | the target carries a `vuln` or `weak` status |
+| `slowed:true` | the target is slowed now (`m.slowT > 0`: a `slow` on a shape, a `status` of kind slow; a boss too). A fighter on the Proving Isle never holds it |
 | `combat:true` | you were in a fight in the last few seconds |
 | `shield:true` | you hold a shield |
 | `adv:true` | the hit's element beats the target's on the wheel (x1.5; the element-less x1.1 is not an advantage; a hit with no element, a kill or a hurt row never holds it). For a stat row it is read where the hit is rolled (`dmg crit critdmg`), for a trigger on `hit` / `crit` from that hit |

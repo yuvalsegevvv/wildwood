@@ -4,7 +4,7 @@
 const fs=require('fs'), path=require('path'), {loadServer, SRC}=require('./load');
 const evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...m.ev); }},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_SOURCES','ssLint','ssSetFor','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssMarkN','ssMarkS','resolveFxS','AREAS','PROJS','mstVulnK','recalcP','clsOfP','getH','VIL','psP']);
+  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_SOURCES','ssLint','ssSetFor','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssMarkN','ssMarkS','resolveFxS','AREAS','PROJS','mstVulnK','recalcP','clsOfP','getH','VIL','psP','SH_ALT','mstDirectS','SS_HEAL_CAP']);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 const near=(a,b,e)=>Math.abs(a-b)<=(e||1e-6);
@@ -63,7 +63,7 @@ clear(); reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'grain',n:4,dur:12,max:5});
 clear(); reset(); put(m1,0,-2.5); pb.hp=pb.maxHp*0.5;
 { still(()=>cast('hollis_1_mage',m1)); ok('Hollis: Lantern Swing mends the party member with the least health and leaves a Vigil',hpOf(pb)>0.5&&x.ssMarkN(p,m1,'vigil')===1,hpOf(pb).toFixed(3)); }
 reset(); put(m1,0,-3); x.ssMarkS(p,m1,{id:'vigil',n:3,dur:12,max:5}); pb.hp=pb.maxHp*0.5;
-{ still(()=>cast('hollis_2_any',null)); ok('Hollis: Dusk Lent spends the Vigil and heals and shields the party',x.ssMarkN(p,m1,'vigil')===0&&hpOf(pb)>=0.6&&pb.shield&&pb.shield.v>0); }
+{ still(()=>cast('hollis_2_any',null)); ok('Hollis: Dusk Lent spends the Vigil and heals and shields the party',x.ssMarkN(p,m1,'vigil')===0&&hpOf(pb)>=0.59&&pb.shield&&pb.shield.v>0); }
 // ---- the Amber Reach's three (Kin): Brindle, Dessa, Sefi. Registered with no outfit yet (the savanna plan's K2), their sources late-bound ----
 ok('the Amber Reach: Brindle +1 (fire, safe DPS + support), Dessa +2 (earth, tank), Sefi +3 (air, risk DPS); sources are the two bosses and the Termite Cathedral',
   [['brindle',1,'fire','safe'],['dessa',2,'earth','tank'],['sefi',3,'air','risk']].every(([i,t,el,role])=>SET(i)&&SET(i).land==='amber'&&SET(i).tier===t&&SET(i).el===el&&SET(i).role.main===role&&SET(i).pos[1].ids.length===1&&SET(i).pos[2].bound==='any'&&SET(i).pos[3].bound==='any')
@@ -87,4 +87,49 @@ reset(); put(m1,0,-6);
 { const d=lost(m1,()=>still(()=>cast('sefi_2_any',m1))); ok('Sefi: Gust Dash hurts the target and leaves a Stride',d>0&&x.ssMarkN(p,m1,'stride')>=1,Math.round(d)+' '+x.ssMarkN(p,m1,'stride')); }
 reset(); put(m1,0,-5); x.ssMarkS(p,m1,{id:'stride',n:4,dur:12,max:5});
 { const d=lost(m1,()=>still(()=>cast('sefi_3_any',m1))); ok('Sefi: Dead Heat spends every Stride on the target for extra damage',d>0&&x.ssMarkN(p,m1,'stride')===0,Math.round(d)+' '+x.ssMarkN(p,m1,'stride')); }
+
+// ================= the combo rework (docs/skillkits/COMBO-REWORK.md sections 3, 4, 6, 7) =================
+const procs=(n0,id)=>evs.slice(n0).filter(e=>e[0]==='proc'&&e[2]===id);
+const castRow=(s,tgt)=>{ x.resolveFxS(p,{fx:s.fx,mult:s.mult,range:s.range,el:s.el,aim:[0,0,-1],sid:s.base||s.id,src:s.base?s.id:undefined},tgt||null); if(s.fx.proj) for(let i=0;i<30;i++) W.tick(0.05); };
+// ---- Brynja: build, chill, shatter ----
+clear(); reset(); tick(3); let n0=evs.length;
+{ put(m1,0,-6); const clean=lost(m1,()=>still(()=>cast('brynja_2_any',m1)));
+  reset(); put(m1,0,-6); x.ssMarkS(p,m1,{id:'rime',n:1,dur:12,max:5}); const rimed=lost(m1,()=>still(()=>cast('brynja_2_any',m1)));
+  ok('Brynja: Glide and Cut hits a rimed target 1.4x (Cold Read) and chills it for 4 s',near(rimed/clean,1.4,0.02)&&m1.slowT>=3.9,(rimed/clean).toFixed(3)+' slow '+m1.slowT.toFixed(2)); }
+{ reset(); put(m1,0,-10); x.ssMarkS(p,m1,{id:'rime',n:5,dur:12,max:5}); const cold=lost(m1,()=>still(()=>cast('brynja_3_any',m1)));
+  reset(); put(m1,0,-10); x.ssMarkS(p,m1,{id:'rime',n:5,dur:12,max:5}); m1.slowT=100; const sh=lost(m1,()=>still(()=>cast('brynja_3_any',m1)));
+  ok('Brynja: Whiteout shatters a chilled target: 1.5x from its impact and its pop together',near(sh/cold,1.5,0.02),(sh/cold).toFixed(3)); }
+tick(3); { const nW=evs.length; reset(); put(m1,0,-10); still(()=>cast('brynja_3_any',m1)); tick(3);
+  ok('Brynja: Whiteout\'s own slow lands after its hit: on a clean target it never shatters (no Shatter proc)',procs(nW,'brynja_3_any').length===0&&m1.slowT>0); }
+{ const H=x.SH_ALT.brynja_2_any; reset(); put(m1,0,-8); put(m2,0,8); still(()=>castRow(H,m1));
+  ok('Brynja: the held Frost Line chills (4 s) and rimes everything in its 12 m line, not what is behind her',!!H&&x.ssMarkN(p,m1,'rime')===1&&m1.slowT>=3.9&&x.ssMarkN(p,m2,'rime')===0,H&&(x.ssMarkN(p,m1,'rime')+' '+m1.slowT.toFixed(2))); }
+tick(3); ok('Brynja: the proc events name the pieces whose combo fired (brynja_2_any, brynja_3_any)',procs(n0,'brynja_2_any').length>0&&procs(n0,'brynja_3_any').length>0);
+// ---- Sefi: spend, then run the second lap ----
+clear(); reset(); tick(3); n0=evs.length;
+{ const dh=n=>{ reset(); put(m1,0,-5); if(n) x.ssMarkS(p,m1,{id:'stride',n,dur:12,max:5}); p.cd.skill=10; still(()=>cast('sefi_3_any',m1)); return 10-p.cd.skill; };
+  const r5=dh(5), r2=dh(2); p.cd.skill=0.5; x.ssMarkS(p,m1,{id:'stride',n:5,dur:12,max:5}); reset(); put(m1,0,-5); x.ssMarkS(p,m1,{id:'stride',n:5,dur:12,max:5}); still(()=>cast('sefi_3_any',m1)); tick(3);
+  ok('Sefi: Dead Heat at 5 Strides takes 7 s off Gust Dash (2.8 s at 2), never below 0, and the cdr event is sent',near(r5,7,1e-6)&&near(r2,2.8,1e-6)&&p.cd.skill===0&&evs.slice(n0).some(e=>e[0]==='cdr'&&e[1]==='a'&&e[2]==='skill'),r5.toFixed(2)+' '+r2.toFixed(2)+' '+p.cd.skill); }
+{ reset(); put(m1,0,-6); const clean=lost(m1,()=>still(()=>cast('sefi_2_any',m1)));
+  reset(); put(m1,0,-6); x.mstDirectS(m1,{status:{kind:'weak',v:0.1,dur:4}},p); const lap=lost(m1,()=>still(()=>cast('sefi_2_any',m1)));
+  tick(3); ok('Sefi: Gust Dash into a weakened target deals 2x (Second Lap), and the proc names sefi_2_any',near(lap/clean,2,0.02)&&procs(n0,'sefi_2_any').length>0,(lap/clean).toFixed(3)); }
+// ---- Hollis: the night keeps the vigil, the dusk returns it ----
+clear(); reset();
+{ const heal=n=>{ reset(); put(m1,0,-3); if(n) x.ssMarkS(p,m1,{id:'vigil',n,dur:12,max:5}); pb.hp=pb.maxHp*0.5; pb.shield=null; still(()=>cast('hollis_2_any',null)); return hpOf(pb)-0.5; };
+  const k=1+x.psP(p,'heal'), h0=heal(0), h5=heal(5);
+  ok('Hollis: Dusk Lent heals an ally 6% with no Vigil and 12% with five (x heal power), never above SS_HEAL_CAP',near(h0,0.06*k,0.003)&&near(h5,0.12*k,0.003)&&h5<=x.SS_HEAL_CAP,h0.toFixed(4)+' '+h5.toFixed(4)); }
+{ reset(); put(m1,0,-3); put(m2,4,-4); put(m3,0,-20); still(()=>cast('hollis_3_any',null));
+  ok('Hollis: The Long Night leaves a full Vigil (5) on every monster within 9 m',x.ssMarkN(p,m1,'vigil')===5&&x.ssMarkN(p,m2,'vigil')===5&&x.ssMarkN(p,m3,'vigil')===0);
+  stand(p,0,0); still(()=>cast('hollis_2_any',null)); ok('Hollis: ...and Dusk Lent then returns them all',x.ssMarkN(p,m1,'vigil')===0&&x.ssMarkN(p,m2,'vigil')===0); }
+// ---- Tamsin: rattle the slope, then bring it down ----
+clear(); reset(); tick(3); n0=evs.length;
+{ put(m1,0,-10); still(()=>cast('tamsin_2_any',m1)); tick(12); ok('Tamsin: Pull the Slope\'s tick rattles (slows) what stands in it',m1.slowT>0,m1.slowT.toFixed(2)); x.AREAS.length=0; }
+{ const run=slow=>{ reset(); put(m1,0,-2); if(slow) m1.slowT=100; const ring=lost(m1,()=>still(()=>cast('tamsin_3_any',null))); m1.x=p.x; m1.z=p.z-2; m1.kbx=m1.kbz=0;
+    const zone=lost(m1,()=>still(()=>{ for(let i=0;i<60;i++){ m1.x=p.x; m1.z=p.z-2; W.tick(0.05); } })); return [ring,zone]; };
+  const [rc,zc]=run(false), [rs,zs]=run(true);
+  ok('Tamsin: a rattled target takes 1.35x from The Mountain Moves\' ring and from its slide; a clean one takes 1x for all five ticks (its own zone never rattles)',near(rs/rc,1.35,0.02)&&near(zs/zc,1.35,0.02)&&near(zc/rc,5,0.05),(rs/rc).toFixed(3)+' '+(zs/zc).toFixed(3)+' ticks '+(zc/rc).toFixed(2)); }
+{ reset(); put(m1,0,-2); const plain=lost(m1,()=>still(()=>cast('tamsin_1_warrior',m1))); reset(); put(m1,0,-2); m1.slowT=100; const rat=lost(m1,()=>still(()=>cast('tamsin_1_warrior',m1)));
+  ok('Tamsin: Sledge Sweep hits a rattled target 1.25x (Loose Footing)',near(rat/plain,1.25,0.02),(rat/plain).toFixed(3)); }
+{ const H=x.SH_ALT.tamsin_2_any; reset(); put(m1,0,-5); still(()=>castRow(H,null)); tick(12);
+  ok('Tamsin: the held Dig In taunts, rattles and shields her (8%)',!!H&&m1.taunt&&m1.taunt.by==='a'&&m1.slowT>0&&p.shield&&near(p.shield.v0,p.maxHp*0.08,1),H&&JSON.stringify(m1.taunt)); x.AREAS.length=0; }
+tick(3); ok('Tamsin: the proc events name the sweep and the mountain (tamsin_1_warrior, tamsin_3_any)',procs(n0,'tamsin_1_warrior').length>0&&procs(n0,'tamsin_3_any').length>0);
 console.log(fails?fails+' check(s) failed':'all checks passed'); process.exit(fails?1:0);

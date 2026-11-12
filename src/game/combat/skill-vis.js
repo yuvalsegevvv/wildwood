@@ -86,7 +86,7 @@ const SKVX={
 // the recipe of a skill row in a look: the exact id first, then 'ult' / its position
 function skvRecipeOf(L,s){
   if(!L||!L.vis||!s) return null;
-  return L.vis[s.id]||(s.slot==='ult'?L.vis.ult:L.vis[String(s.pos)])||null;
+  return L.vis[s.id]||(s.base?null:s.slot==='ult'?L.vis.ult:L.vis[String(s.pos)])||null;   // skill-hold: a held mode has only its own key '<piece>_h' (never the tap's position recipe)
 }
 function skvRunRecipe(L,s,phase,c){   // phase: 'cast' | 'zone' | 'end' | 'hit'
   const R=skvRecipeOf(L,s), steps=R&&R[phase]; if(!steps) return;

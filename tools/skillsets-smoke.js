@@ -5,7 +5,7 @@ const {loadServer}=require('./load');
 const inbox={}, evs=[];
 const {api:W,x}=loadServer({dev:true,send(pid,m){ const c=JSON.parse(JSON.stringify(m)); (inbox[pid]=inbox[pid]||[]).push(c); if(pid==='a'&&c.t==='snap'&&c.ev) evs.push(...c.ev); }},
   ['MONS','S','SKILLS','PASSIVES','SKILL_IDS','PASSIVE_IDS','ANIM_OF','ACT_SKILL','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','defineSkillSet','ssCount','ssBonuses','ssBonusSum','ssBonusSwitch','SS_BONUS_ON','ssSetFor','ssLint','ssOwnsBasic',
-   'VIL','ssEquipPieceP','ssGrantSetP','partyOf','ssAlliesOf','ssAllyS','allyP','ssShieldS','ssFxUtilS','ssTauntS','ssTauntedBy','ssRegenS','monK','SS_ALLY_CAP','SS_HEAL_CAP','SS_TAUNT_BOSS','DMG_TAKEN_MIN','statusS','resolveFxS','hurtP','killMonsterS','damageMonsterS','ssMarkN','ssMarkS','fxModK','ssTriggerS','healP','abilityOf','abilityCd','canSwap','newSkills','sanitizeSkills','sanitizeGear','psP','recalcP','clsOfP','passiveOpen','passiveSum','PASSIVE_SLOT_LV','getH','ZTIER_MAX'],{noSets:true,allA1:true});   // (the shipped sets are tested by tools/skillsets-<id>-smoke.js; this file defines its own fixtures in an empty registry)
+   'VIL','ssEquipPieceP','ssGrantSetP','partyOf','ssAlliesOf','ssAllyS','allyP','ssShieldS','ssFxUtilS','ssTauntS','ssTauntedBy','ssRegenS','monK','SS_ALLY_CAP','SS_HEAL_CAP','SS_TAUNT_BOSS','DMG_TAKEN_MIN','statusS','resolveFxS','hurtP','killMonsterS','damageMonsterS','ssMarkN','ssMarkS','fxModK','ssTriggerS','healP','abilityOf','abilityCd','canSwap','newSkills','sanitizeSkills','sanitizeGear','psP','recalcP','clsOfP','passiveOpen','passiveSum','PASSIVE_SLOT_LV','getH','ZTIER_MAX','ssWhen','impactFxS','SH_ALT','SH_BAD'],{noSets:true,allA1:true});   // (the shipped sets are tested by tools/skillsets-<id>-smoke.js; this file defines its own fixtures in an empty registry)
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
 const tick=n=>{ for(let i=0;i<Math.max(n,3);i++) W.tick(0.05); };
 const near=(a,b,e)=>Math.abs(a-b)<=(e||1e-6);
@@ -274,6 +274,33 @@ ok('the kit is worn: marks need the cone / ring, amp the second passive (the one
 { place(mA,3,0); x.ssMarkS(p,mA,{id:'barb',n:3,dur:10,max:3}); const ring=still(()=>lost(mA,()=>x.resolveFxS(p,act({ring:{r:8}}),mA)));
   place(mA,3,0); x.ssMarkS(p,mA,{id:'barb',n:3,dur:10,max:3}); const withPop=still(()=>lost(mA,()=>x.resolveFxS(p,act({ring:{r:8},pop:{id:'barb',k:1}}),mA)));
   ok('pop deals k x the skill\'s damage for each stack on top of the hit (3 marks: hit + 3x = about x4 once amp is counted in both)',withPop>ring*3.2&&withPop<ring*4.8,(withPop/ring).toFixed(2)); }
+
+// ---- the combo engine (docs/skillkits/COMBO-REWORK.md section 2): vs, the slowed condition, pop.cdr, kit.combo ----
+{ place(mA,3,0); mA.slowT=0; ok('slowed: holds only while the target is slowed (slowT > 0)',!x.ssWhen(p,mA,{slowed:true})&&(mA.slowT=2,x.ssWhen(p,mA,{slowed:true}))&&(mA.slowT=0,!x.ssWhen(p,mA,{slowed:true})));
+  const V={when:{slowed:true},k:2,name:'Test Combo',sid:'kitx_2_any'};
+  const pair=(f,run)=>{ const a=still(()=>lost(place(mA,3,0),()=>run(f(null)))), b=still(()=>{ place(mA,3,0); mA.slowT=100; return lost(mA,()=>run(f(V))); }); mA.slowT=0; return b/Math.max(1e-9,a); };
+  const fxOf=(base,v)=>Object.assign(J(base),v?{vs:v}:{});
+  const kR=pair(v=>fxOf({ring:{r:8}},v),f=>x.resolveFxS(p,act(f),mA));
+  const kC=pair(v=>fxOf({cone:{r:8,arc:3.2}},v),f=>x.resolveFxS(p,act(f),mA));
+  const kP=pair(v=>fxOf({},v),f=>x.impactFxS(p,{fx:{},mult:1,el:'basic',mods:f},mA));
+  const kZ=pair(v=>fxOf({zone:{r:8,dur:0.6,every:0.5,self:true,kb:0}},v),f=>{ x.resolveFxS(p,act(f),mA); tick(16); });
+  const popOf=v=>fxOf({ring:{r:8},pop:{id:'barb',k:1}},v), popDmg=v=>still(()=>{ place(mA,3,0); if(v) mA.slowT=100; x.ssMarkS(p,mA,{id:'barb',n:3,dur:10,max:3}); const h=mA.hp; x.resolveFxS(p,act(popOf(v)),mA); const d=h-mA.hp; mA.slowT=0; return d; });
+  ok('vs: x k on a ring, a cone, a projectile\'s impact, a zone\'s ticks and a pop when its condition holds, x1 when not',[kR,kC,kP,kZ].every(k=>near(k,2,0.08))&&near(popDmg(V)/popDmg(null),2,0.08),[kR,kC,kP,kZ].map(k=>k.toFixed(2)).join(' ')+' pop '+(popDmg(V)/popDmg(null)).toFixed(2));
+  p.ssIcd={}; tick(3); const n0=evs.length; still(()=>{ place(mA,3,0); mA.slowT=100; x.resolveFxS(p,act(fxOf({ring:{r:8}},V)),mA); x.resolveFxS(p,act(fxOf({ring:{r:8}},V)),mA); mA.slowT=0; }); tick(3);
+  const pr=evs.slice(n0).filter(e=>e[0]==='proc'&&e[2]==='kitx_2_any');
+  ok('...a vs that fires sends proc [pid, the active piece id, monId], at most once every 0.5 s per piece',pr.length===1&&pr[0][1]==='a'&&pr[0][3]===mA.id,JSON.stringify(pr));
+  const cd=(cdrMax,nA,nB)=>{ place(mA,3,0); place(mB,5,0); if(nA) x.ssMarkS(p,mA,{id:'barb',n:nA,dur:10,max:3}); if(nB) x.ssMarkS(p,mB,{id:'barb',n:nB,dur:10,max:3}); p.cd.skill=10; still(()=>x.resolveFxS(p,act({ring:{r:8},pop:Object.assign({id:'barb',k:1,r:8,cdr:{skill:1.4}},cdrMax?{cdrMax}:{})}),mA)); return 10-p.cd.skill; };
+  const c6=cd(0,3,3), c2=cd(0,2,0), cMax2=cd(2,3,3), c0=cd(0,0,0); tick(3);
+  ok('pop.cdr: each stack spent (over all targets) takes its seconds off the slot, up to cdrMax (default 5); no stack, no refund; the cdr event is sent',near(c6,7,1e-6)&&near(c2,2.8,1e-6)&&near(cMax2,2.8,1e-6)&&c0===0&&evs.some(e=>e[0]==='cdr'&&e[1]==='a'&&e[2]==='skill'),[c6,c2,cMax2,c0].map(v=>v.toFixed(2)).join(' '));
+  p.cd.skill=0;
+  const bad=(what,f)=>quiet(()=>{ const d=fixture('cb'+Math.random().toString(36).slice(2,7).replace(/[0-9]/g,'q')); d.kit={name:'T',text:'t'}; f(d); const n=x.SS_BAD.length; const r=x.defineSkillSet(d); return !r&&x.SS_BAD.length===n+1; });
+  ok('a vs with crowd / allies / taunting is rejected (it would scan every monster on every hit), and so are a k of 1 or less, a name over 24 characters, a bad pop.cdr and a bad kit.combo',
+    bad('crowd',d=>{ d.pos[2].skill.any.fx.vs={when:{crowd:{n:3,r:8}},k:1.5,name:'X'}; })&&bad('allies',d=>{ d.pos[2].skill.any.fx.vs={when:{allies:{n:1,r:8}},k:1.5,name:'X'}; })&&bad('taunting',d=>{ d.pos[2].skill.any.fx.vs={when:{taunting:true},k:1.5,name:'X'}; })
+    &&bad('k',d=>{ d.pos[2].skill.any.fx.vs={when:{slowed:true},k:1,name:'X'}; })&&bad('name',d=>{ d.pos[2].skill.any.fx.vs={when:{slowed:true},k:1.5,name:'x'.repeat(25)}; })
+    &&bad('cdr',d=>{ d.kit.mark='barb'; d.pos[2].skill.any.fx.ring.mark={id:'barb'}; d.pos[3].skill.any.fx.pop={id:'barb',k:1,cdr:{all:1}}; })&&bad('cdrMax',d=>{ d.kit.mark='barb'; d.pos[2].skill.any.fx.ring.mark={id:'barb'}; d.pos[3].skill.any.fx.pop={id:'barb',k:1,cdr:{skill:1},cdrMax:11}; })
+    &&bad('combo order',d=>{ d.kit.combo={order:['skill','skill'],win:4,text:'t'}; })&&bad('combo win',d=>{ d.kit.combo={order:['skill','burst'],win:20,text:'t'}; })&&bad('combo text',d=>{ d.kit.combo={order:['skill','burst'],win:4,text:'t'.repeat(161)}; }));
+  const good=quiet(()=>x.defineSkillSet(fixture('vsok',d=>{ d.char.name='Vs Ok'; d.kit={name:'T',text:'t',combo:{order:['skill','burst'],win:4,text:'Skill, then burst.'}}; d.pos[2].skill.any.fx.vs={when:{slowed:true},k:1.4,name:'Cold Read'}; })));
+  ok('...a valid vs and kit.combo register; the built row carries vs.sid = its piece id, the set keeps the combo',!!good&&x.SKILLS.vsok_2_any.fx.vs.sid==='vsok_2_any'&&good.kit.combo.win===4,JSON.stringify(x.SS_BAD.slice(-2))); }
 
 // ---- triggers ----
 x.SS_SETS.kitx.bonus[3].on='crit';

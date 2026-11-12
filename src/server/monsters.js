@@ -61,7 +61,8 @@ function updateMonstersS(dt){
   for(const m of MONS){
     if(m.remove) continue;
     if(m.inst) continue;   // dungeons: a run's monsters (its boss too) move in updateInstsS
-    if(m.boss){ if(m.rd) rdBossTickS(m,dt); else updateBossS(m,dt); continue; }   // raids: a raid boss sleeps until its wards are broken (rdBossTickS, server/raids.js)
+    if(m.boss){ if(m.slowT>0) m.slowT-=dt;   // skillsets: a boss's slow runs out too (the `slowed` condition; it never ticked down before)
+      if(m.rd) rdBossTickS(m,dt); else updateBossS(m,dt); continue; }   // raids: a raid boss sleeps until its wards are broken (rdBossTickS, server/raids.js)
     if(m.cmo){ caveMoleS(m,dt); continue; }   // cave: the gem mole is scripted (server/cave/method-g.js)
     if(m.dead){
       m.deadT+=dt;
@@ -70,7 +71,7 @@ function updateMonstersS(dt){
     }
     m.awake=m.aggro||anyPlayerNear(m.x,m.z,110);
     if(!m.awake) continue;
-    if(m.stunT>0){ m.stunT-=dt; m.pendingHit=-1; m.x+=m.kbx*dt; m.z+=m.kbz*dt; if(m.cave) caveMonStepS(m,m.x-m.kbx*dt,m.z-m.kbz*dt); const kd=Math.exp(-7*dt); m.kbx*=kd; m.kbz*=kd; m.vx=m.vz=0; continue; }   // cave: walls hold a knocked-back monster
+    if(m.stunT>0){ m.stunT-=dt; if(m.slowT>0) m.slowT-=dt; m.pendingHit=-1; m.x+=m.kbx*dt; m.z+=m.kbz*dt; if(m.cave) caveMonStepS(m,m.x-m.kbx*dt,m.z-m.kbz*dt); const kd=Math.exp(-7*dt); m.kbx*=kd; m.kbz*=kd; m.vx=m.vz=0; continue; }   // cave: walls hold a knocked-back monster
     const hd=Math.hypot(m.x-m.camp.x,m.z-m.camp.z);
     if(!m.aggro && m.T.aggro){ const p=nearestFighter(m.x,m.z,m.T.aggro); if(p&&(!m.cave||caveLos(m.x,m.z,p.x,p.z))){ m.aggro=true; m.tgt=p.id; ev('aggro',m.id); } }   // cave: a wall hides you
     { const tq=ssTauntedBy(m); if(tq&&!inVillage(tq)&&hd<=32){ m.tgt=tq.id; m.aggro=true; } }   // skillsets: a taunted monster comes for the taunter

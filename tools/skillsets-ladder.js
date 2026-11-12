@@ -3,10 +3,12 @@
 // dummy (and six more around it for the pack). The numbers are a SANITY BAND, not a verdict (the owner: balanced mostly in playtests): a row outside its band is a warning. --check fails only on the owner's
 // orderings, for the damage kits: the pieces beat the best non-set loadout, the 3-set beats the pieces, the 5-set beats the 3-set.
 // A set with rangeScale (damage grows with the distance) is also run from 16 m (archer and mage). A risk set is run twice: never behind its targets (careless play, ~0.8 of the safe ladder, warnings only) and always behind (the dummies face away: the owner's 125 / 142 / 170, judged).
-// Usage: node tools/skillsets-ladder.js [--matrix | --bond 0-6 --awk A0-A5 [--guest]] [--wanderer [--path fury]] [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
+// --combo (docs/skillkits/COMBO-REWORK.md E5): a set with kit.combo {order:[a,b], win} is also played in its order: the bot holds b until a was cast within win seconds (unless a's cooldown left is longer than b's own: waiting
+//   would cost a whole cast of b), and a burst `a` that spends the kit's mark (a pop) waits for the full stack on the target (at most 10 s); both columns are printed, plain (careless) and in order.
+// Usage: node tools/skillsets-ladder.js [--matrix | --bond 0-6 --awk A0-A5 [--guest]] [--wanderer [--path fury]] [--set <id>] [--class warrior|archer|mage] [--secs 60] [--check] [--cave] [--combo]  (the slot-4 column doubles the run time, so --check leaves it out unless --cave is given)      (the sets are the ones registered from src/manifest.json)
 // Also: require('./skillsets-ladder').ladder({W, x, pid}, opts) for a test (tools/skillsets-smoke.js runs it on a fixture); x must expose NAMES.
 const {loadServer}=require('./load');
-const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S','ssBonusSwitch','awkMigGrant','bdGrantP','bdSetOk','WD_PATHS','WD_ORDER','MQ','awkGrantP','AWK_TIERS','skillLvOf'];
+const NAMES=['ULT_SKILLS','ULT_ACTIVE_PIECES','MONS','SKILLS','SKILL_IDS','SS_SETS','SS_ORDER','abilityOf','abilityCd','clsOfP','recalcP','ssEquipPieceP','ssGrantSetP','CAVE_SKILLS','CAVE_SKILL_IDS','getH','VIL','S','ssBonusSwitch','awkMigGrant','bdGrantP','bdSetOk','WD_PATHS','WD_ORDER','MQ','awkGrantP','AWK_TIERS','skillLvOf','ssMarkN'];
 const WEAPON={warrior:'sword1',archer:'bow1',mage:'wand1'}, CLASSES=['warrior','archer','mage'];
 // the bands in percent of the baseline: [the pieces alone, the 3-set, the 5-set] (docs/SKILL-SETS.md 5b; a mixed set sits between a support's 90 and its main kit's ladder)
 // the same tree measured 93 to 99 for one set's pieces and 128 vs 131 for another's 5- and 3-set between runs (also before the Amber Reach), so the orderings carry this much slack
@@ -14,8 +16,8 @@ const LADDER_NOISE=4, LADDER_NOISE_FLOOR=92;
 const BANDS={safe:[110,125,150],risk:[125,142,170],riskCareless:[88,100,120],support:[90,90,90],heal:[90,90,90],tank:[90,90,90],grind:[50,50,50]};
 function ladder(env,opts){
   opts=opts||{}; const {W,x}=env, secs=opts.secs||60, classes=opts.classes||(opts.dist>4?['archer','mage']:CLASSES), p=W.players.get(env.pid), out=[];
-  // castCave false: the charge skill is worn (a Bond counts it) but never cast
-  const R=Math.random; let seed=12345, castCave=true; const seeded=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
+  // castCave false: the charge skill is worn (a Bond counts it) but never cast; combo: the set's kit.combo while --combo plays it (set per set below)
+  const R=Math.random; let seed=12345, castCave=true, combo=null; const seeded=()=>{ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; };
   const dummies=x.MONS.filter(m=>!m.boss&&!m.inst&&!m.dead).slice(0,7), spot=[];
   // the hero stands in the village (nothing attacks there) with the dummy 2.4 m ahead (the way he faces) and six more around it
   const arrange=()=>{
@@ -25,10 +27,18 @@ function ladder(env,opts){
   };
   const pin=()=>dummies.forEach((m,i)=>{ m.x=spot[i][0]; m.z=spot[i][1]; m.kbx=m.kbz=0; m.vx=m.vz=0; m.stunT=1e9; });
   const fresh=()=>{ arrange(); pin(); p.dead=false; p.hp=p.maxHp; p.act=null; p.cd={basic:0,skill:0,burst:0,cave:0,ult:0}; p.ultB=null; p.ultV=null; p.cave.charge=0; p.ssIcd={}; p.ally=null; p.shield=null; p.buff=null; p.lastDealt=-99; x.recalcP(p); };
-  const cast=k=>W.receive(env.pid,{t:'atk',k,tg:dummies[0].id,face:Math.PI,aim:[0,0,1]});
+  const last={}, cast=k=>{ const a0=p.act; W.receive(env.pid,{t:'atk',k,tg:dummies[0].id,face:Math.PI,aim:[0,0,1]}); if(p.act&&p.act!==a0) last[k]=x.S.t; };
+  // --combo: should slot k wait (kit.combo's order)?
+  let popReady=null;
+  const held=k=>{
+    if(!combo) return false; const [a,b]=combo.order, ab=s=>x.abilityOf(x.clsOfP(p),s,p.gear.skills,p.level);
+    if(k===b){ if(x.S.t-(last[a]===undefined?-1e9:last[a])<=combo.win||!ab(a)) return false; const B=ab(b); return p.cd[a]<=x.abilityCd(B,p.gear.skills,p.level,x.clsOfP(p)); }
+    if(k===a&&a==='burst'&&combo.mark){ const A=ab(a); if(!A||!A.fx||!A.fx.pop||A.fx.pop.id!==combo.mark) return false; if(popReady===null) popReady=x.S.t;
+      if(x.ssMarkN(p,dummies[0],combo.mark)>=combo.max||x.S.t-popReady>10){ popReady=null; return false; } return true; }
+    return false; };
   // seconds of the rotation (burst, then skill, then basic, whichever is ready): damage a second to the dummy and to all seven
   const rotation=s=>{
-    fresh(); const h0=dummies.map(m=>m.hp); Math.random=seeded;
+    fresh(); const h0=dummies.map(m=>m.hp); Math.random=seeded; for(const k of Object.keys(last)) delete last[k]; popReady=null;
     const home=[p.x,p.z], sgn=opts.behind?1:-1;
     try{ for(let t=0;t<s/0.05;t++){ p.dead=false; p.hp=p.maxHp; pin();
       // good play and careless play of a position set: the hero is always on the move (Light Feet), walks back after a dash, and the dummies keep their backs to him (opts.behind) or keep facing him
@@ -36,7 +46,7 @@ function ladder(env,opts){
       for(const m of dummies) m.face=Math.atan2(sgn*(p.x-m.x),sgn*(p.z-m.z));
       if(!p.act&&castCave&&p.gear.skills.cave&&p.cave.charge>=x.CAVE_SKILLS[p.gear.skills.cave].cost&&p.cd.cave<=0.08) cast('cave');   // slot 4 (C3): spends its charge as soon as it can
       if(!p.act&&opts.ultOn&&p.gear.skills.ult&&p.cd.ult<=0.08) cast('ult');   // slot 5 (docs/ULT.md): the burst as soon as it is ready
-      if(!p.act) for(const k of ['burst','skill','basic']) if(p.cd[k]<=0.08&&x.abilityOf(x.clsOfP(p),k,p.gear.skills,p.level)){ cast(k); break; }
+      if(!p.act) for(const k of ['burst','skill','basic']) if(p.cd[k]<=0.08&&x.abilityOf(x.clsOfP(p),k,p.gear.skills,p.level)&&!held(k)){ cast(k); break; }
       W.tick(0.05); } } finally{ Math.random=R; }
     const lost=dummies.map((m,i)=>h0[i]-m.hp);
     return {single:lost[0]/s,pack:lost.reduce((a,b)=>a+b,0)/s};
@@ -91,6 +101,9 @@ function ladder(env,opts){
   for(const id of x.SS_ORDER){   // (ranged below: the damage GROWS with the distance, a k under 1 is a close-range bonus)
     if(opts.set&&opts.set!==id) continue;
     const S=x.SS_SETS[id], rows={}, P=[1,2,3].map(n=>S.pos[n]), bonus=S.bonus;
+    combo=null; if(opts.combo){ if(!S.kit||!S.kit.combo) continue;   // --combo: only the sets that name an order
+      const mk=S.kit.mark; let max=0; for(const sid of x.SKILL_IDS){ const r=x.SKILLS[sid]; if(r.set!==id||!r.fx) continue; for(const sh of Object.values(r.fx)) if(sh&&sh.mark&&sh.mark.id===mk) max=Math.max(max,sh.mark.max||5); }
+      combo={order:S.kit.combo.order,win:S.kit.combo.win,mark:mk||null,max:max||5}; }
     const inert={}; for(const t of [3,5]) inert[t]=Object.assign({},bonus[t],{stat:'inert',v:[0,0],on:undefined,amp:undefined,cost:undefined});
     x.ssGrantSetP(p,id);
     for(const cls of classes){
@@ -237,6 +250,15 @@ if(require.main===module){
     console.log('set'.padEnd(12)+'no boost'.padStart(12)+'active only'.padStart(14)+'passive only'.padStart(14)+'both'.padStart(12)+'   (% over the same rotation without the burst, single / pack)');
     for(const s of list){ const u=ultRow(s,opts.classes||CLASSES); if(!u){ console.log(s.id.padEnd(12)+'(no burst)'); continue; }
       const A=u[1][0]-u[0][0], Pa=u[2][0]-u[0][0]; console.log(s.id.padEnd(12)+u.map(v=>(v[0]+'/'+v[1]).padStart(12)).join('  ')+(A>0&&(Pa<A*0.75||Pa>A*1.25)?'   warning: the passive boost adds '+Pa+' against the active\'s '+A+' (target within 25%)':'')); }
+    process.exit(0); }
+  if(args.includes('--combo')){   // E5: each set with a kit.combo, plain (the bot casts whatever is ready: a careless player) and in its order; risk sets always behind, sets with rangeScale from 16 m too
+    const ids=x.SS_ORDER.filter(id=>{ const S=x.SS_SETS[id]; return !S.dev&&S.kit&&S.kit.combo&&(!opts.set||opts.set===id); });
+    console.log('set'.padEnd(12)+'mode'.padEnd(10)+'plain: pieces / 3-set / 5-set / pack'.padEnd(40)+'in order: pieces / 3-set / 5-set / pack'.padEnd(42)+'order gain (pieces)');
+    for(const id of ids){ const S=x.SS_SETS[id], modes=[['plain',{}]]; if(S.role.main==='risk') modes.push(['behind',{behind:true}]);
+      if(x.SKILL_IDS.some(i=>x.SKILLS[i].set===id&&x.SKILLS[i].fx&&x.SKILLS[i].fx.rangeScale&&x.SKILLS[i].fx.rangeScale.k>1)) modes.push(['16 m',{dist:16,classes:undefined}]);
+      for(const [nm,o] of modes){ const a=ladder(env,Object.assign({},opts,o,{set:id,cave:false}))[0], b=ladder(env,Object.assign({},opts,o,{set:id,cave:false,combo:true}))[0]; if(!a||!b) continue;
+        const col=r=>[r.summary.pieces,r.summary.three,r.summary.five,r.summary.fivePack].join(' / ');
+        console.log(id.padEnd(12)+nm.padEnd(10)+col(a).padEnd(40)+col(b).padEnd(42)+(b.summary.pieces-a.summary.pieces>=0?'+':'')+(b.summary.pieces-a.summary.pieces)); } }
     process.exit(0); }
   const list=ladder(env,opts); print(list);
   // a risk set is also run with every dummy facing away from the hero (always behind: good play), a set with rangeScale from 16 m; those rows are the ones judged

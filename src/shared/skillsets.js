@@ -9,19 +9,21 @@
    THE FILE OF A SET (shared/skillsets/<id>.js, listed in src/manifest.json after the last shared file) is one defineSkillSet({...}) call and no top-level names:
      id ('tansy': a lowercase word, permanent once shipped), name, land (a SS_SOURCES key), needs:{tier} (1..ZTIER_MAX), dev (true: a test set, never obtainable), el ('<element>' | 'basic': one element per set),
      role:{main:'risk'|'safe'|'grind'|'support'|'heal'|'tank', focus:'buff'|'debuff'|'both' (support only), also:{role, part:'major'|'mild'} (a mixed set)},
-     char:{name, sex:'female'|'male', theme, ip:{kind:'original', riffs} | {kind:'licensed', work, license, source, credit}}, pal:{main, accent, glow} (colours), kit:{mark, name, text} (optional),
+     char:{name, sex:'female'|'male', theme, ip:{kind:'original', riffs} | {kind:'licensed', work, license, source, credit}}, pal:{main, accent, glow} (colours), kit:{mark, name, text, combo:{order, win, text}} (optional),
      pos:{1:{bound:'class', skill:{warrior:E, archer:E, mage:E}, passive:R, from:{chance, pity} (optional odds)}, 2:{bound:'class'|'any', skill:{...} | {any:E}, passive:R}, 3:{...}},
      bonus:{3:R, 5:R}, outfit (an outfit id, optional until outfits exist).
-   E, a skill entry, is a SKILLS row minus what the registry fills in (cls, slot, id, lv, price, set, pos): name, desc, cd, range, mult, act:[kind, seconds, when it lands], and optionally anim, el, fx, buff, why.
+   E, a skill entry, is a SKILLS row minus what the registry fills in (cls, slot, id, lv, price, set, pos): name, desc, cd, range, mult, act:[kind, seconds, when it lands], and optionally anim, el, fx, buff, why
+   (and on position 2 alt: the held mode, shared/skill-hold.js, docs/SKILL-HOLD.md).
    R, a passive or bonus row, is {name, text} plus ONE of: stat + v (a number, or [value at level 1, added a level]; text has {} for the percent; stats: SS_STATS, hp dmg crit red cd drop xp reflect critdmg heal buffpow buffdur debuffdur area regen overflow revive; those in SS_COND_STATS may carry a `when`, see below), OR on (a trigger kind, or a list of them:
    hit crit kill hurt cast1 cast2 cast3 tick low taunt shield revive) + at least one of fx / heal / buff / mark / status / shield / cdr (+ chance, icd (a tick's interval), mult, range, el, below (low: the health share), when, streak:{n, secs} (a kill trigger), at:'target'), OR amp:{id, per} (the
    owner's marked targets take per x stacks more from you); and optionally cost:{stat, v} with a negative v: the price this same row pays (less maximum health, more damage taken, longer cooldowns).
    The fx of a skill (docs/SKILL-SETS.md 6): the shapes ring cone beam chain proj zone dash buff, and modifiers vsBoss (damage x against bosses), behind (x from behind: {k} or a number),
-   rangeScale ({from, to, k}: damage grows to x k between those distances) and pop ({id, k, r, heal}: spend the player's marks of id: k x the hit's damage for each stack); the utility keys ally ({kind, v, dur, r}
+   rangeScale ({from, to, k}: damage grows to x k between those distances), vs ({when, k, name}: this skill's damage x k on a target for which the condition holds, named on a proc badge; not crowd / allies / taunting)
+   and pop ({id, k, r, heal, cdr, cdrMax}: spend the player's marks of id: k x the hit's damage for each stack; cdr {basic|skill|burst: seconds} off that slot for each stack spent, up to cdrMax stacks); the utility keys ally ({kind, v, dur, r}
    or a list: the caster and the party within r metres, in the same run), heal ({v, r}), shield ({v, dur, r}) and taunt ({dur, r}: the monsters near the caster come for them); a zone may carry ally / heal /
    shield too (for the allies standing in it); a shape may carry mark:{id, n, dur, max, behind}, status:{kind, v, dur, perMark} and taunt:{dur} (what it hits comes for the caster); ally / heal / shield may carry perMark:{id, v, dur, r, max}
    (more for each stack of the caster's mark on the enemies near) and heal may carry lowest:true; dash may carry behind:true. `when` (ssWhenProblem lists the keys SS_WHEN_KEYS: moved still dist tgtHp hp taunting marked behind boss
-   crowd allies exposed combat shield) is read by the server in ssWhen / ssCondP (server/skillsets.js); a cost may carry one too. docs/skillkits/AUTHORING.md section 4b has the table.
+   crowd allies exposed combat shield adv slowed) is read by the server in ssWhen / ssCondP (server/skillsets.js); a cost may carry one too. docs/skillkits/AUTHORING.md section 4b has the table.
    A bad set is LEFT OUT (the game still boots), warned about and listed in SS_BAD; nothing of it is registered. Piece ids: <set>_<pos>_<class|any> for an active, <set>_p<pos> for a passive. */
 const SS_ROLES=['risk','safe','grind','support','heal','tank'], SS_FOCUS=['buff','debuff','both'], SS_PARTS=['major','mild'];
 const SS_CLASSES=['warrior','archer','mage'], SS_SLOT_OF=['basic','skill','burst'];
@@ -29,7 +31,7 @@ const SS_CLASSES=['warrior','archer','mage'], SS_SLOT_OF=['basic','skill','burst
 const SS_SOURCES={home:['boss','carapax','hollowroots'],vale:['akaoni','kyuubi','jadesprings'],hoar:['ymrik','vetrmaw','bonefrostbarrow'],grey:['gryphonqueen','mountaingolem','blackseam'],sun:['glassguardian','sandwyrm','sandglass'],gloam:['drownedcaptain','gloamwarden','gloamvault'],amber:['oldthunder','oldhorn','termitecathedral'],isles:['ocelo','tuila','cenote']};
 // a dungeon theme that another file may register after the sets (or not at all yet): its land is not checked when a set names it, and ssSourceOf names it all the same (it is only an id)
 const SS_THEME_LATE=['gloamvault','termitecathedral'], SS_LATE_LV={gloamvault:40,termitecathedral:45,oldthunder:41,oldhorn:45};   // (and the level its pieces ask for, the theme's lv; the Amber Reach's two bosses are here too until their defs (savanna wave 0, B1) are in BOSS_DEFS, which then wins)
-const SS_FX_SHAPES=['buff','dash','ring','cone','beam','chain','proj','zone'], SS_FX_MODS=['vsBoss','behind','rangeScale','pop','ally','heal','shield','taunt'], SS_FX_KEYS=[...SS_FX_SHAPES,...SS_FX_MODS];   // what resolveFxS knows (server/combat.js)
+const SS_FX_SHAPES=['buff','dash','ring','cone','beam','chain','proj','zone'], SS_FX_MODS=['vsBoss','behind','rangeScale','vs','pop','ally','heal','shield','taunt'], SS_FX_KEYS=[...SS_FX_SHAPES,...SS_FX_MODS];   // what resolveFxS knows (server/combat.js)
 const SS_BUFF_KINDS=['might','guard','haste','crit','critdmg','regen'];   // the general ally buffs (docs/SKILL-SETS.md 6.3)
 // the most each can be (a share: might +50% damage, guard -50% damage taken (the 10% floor still holds), haste -40% cooldowns, crit +40% chance, critdmg +100%, regen 5% of maximum health a second)
 const SS_ALLY_CAP={might:0.5,guard:0.5,haste:0.4,crit:0.4,critdmg:1,regen:0.05}, SS_ALLY_R=25, SS_HEAL_CAP=0.5, SS_TAUNT_BOSS=0.5;   // SS_ALLY_R: metres from the caster; SS_HEAL_CAP: of maximum health a cast; SS_TAUNT_BOSS: a boss's share of a taunt's time
@@ -38,8 +40,9 @@ const SS_ON_ICD=['hit','crit','hurt','tick','low','taunt','shield'];   // these 
 // the stats a passive or a bonus row may name (read with psP on the server), and the ones that may carry a `when` (read where the target or the fight is known: ssCondP)
 const SS_STATS=['hp','dmg','crit','red','cd','aspd','chg','drop','xp','reflect','critdmg','heal','buffpow','buffdur','debuffdur','area','regen','overflow','revive','move'];   // (move: movement speed, read by the client's updatePlayer through passiveSum; a path's passive-style rows use it, wanderer: wayfarer)
 const SS_COND_STATS=['dmg','crit','critdmg','red','heal','buffpow','buffdur','debuffdur','area','regen'];
-const SS_WHEN_KEYS=['moved','still','dist','tgtHp','hp','taunting','marked','behind','boss','crowd','allies','exposed','combat','shield','adv'];   // (adv: the hit's element beats the target's on the wheel, wanderer: prism)
-const SS_ENTRY_KEYS=['name','desc','cd','range','mult','act','anim','el','fx','buff','why','style','hold'];   // style, hold: skill 1 only (shared/basic-hold.js)
+const SS_WHEN_KEYS=['moved','still','dist','tgtHp','hp','taunting','marked','behind','boss','crowd','allies','exposed','combat','shield','adv','slowed'];   // (adv: the hit's element beats the target's on the wheel, wanderer: prism; slowed: the target is slowed now, m.slowT > 0)
+const SS_VS_NO_WHEN=['crowd','allies','taunting'];   // a vs's condition is asked once per hit (fxModK): these scan every monster, so a vs may not use them (the tick's cost rule)
+const SS_ENTRY_KEYS=['name','desc','cd','range','mult','act','anim','el','fx','buff','why','style','hold','alt'];   // style, hold: skill 1 only (shared/basic-hold.js); alt: skill 2 only, its held mode (shared/skill-hold.js)
 const SS_HOLD_X=['status','mark','taunt','slow','stun','burn','kb','splash'];   // what a skill 1's hold.x may add to its main shape at a full charge
 const SS_TREES=['oak','pine','willow','banyan'];   // the four Bond trees (skill revamp step 5)
 const SS_SETS=Object.create(null), SS_ORDER=[], SS_BAD=[], SS_PIECE_OF=Object.create(null);
@@ -58,7 +61,7 @@ function ssWhenProblem(w){
     if((k==='moved'||k==='still')&&!num(v,0.1,30)) return k+' is a number of seconds (0.1 to 30)';
     if(k==='dist'&&!(v&&typeof v==='object'&&(v.from!==undefined||v.to!==undefined)&&(v.from===undefined||num(v.from,0,80))&&(v.to===undefined||num(v.to,0.5,80))&&(v.from===undefined||v.to===undefined||v.from<v.to))) return 'dist is {from, to (above from)}: metres to the target (one of them or both)';
     if((k==='tgtHp'||k==='hp')&&!share(v)) return k+' is {above} and / or {below}: shares of health (0 to 1)';
-    if(['taunting','behind','boss','exposed','combat','shield','adv'].includes(k)&&v!==true) return k+' is true';
+    if(['taunting','behind','boss','exposed','combat','shield','adv','slowed'].includes(k)&&v!==true) return k+' is true';
     if(k==='marked'&&!(typeof v==='string'&&/^[a-z]+$/.test(v))) return 'marked is a mark id';
     if((k==='crowd'||k==='allies')&&!(v&&Number.isInteger(v.n)&&v.n>=1&&v.n<=10&&num(v.r,1,40))) return k+' is {n (1 to 10), r (metres)}';
   }
@@ -74,7 +77,11 @@ function ssFxProblem(fx,inTrigger){
   if(fx.behind!==undefined&&!(fx.behind>=1&&fx.behind<=4)) return 'behind is a number from 1 to 4';
   const R=fx.rangeScale; if(R!==undefined&&!(R&&R.from>=0&&R.to>R.from&&R.k>0&&R.k<=4)) return 'rangeScale is {from, to (above from), k (up to 4)}';
   { const u=ssUtilProblem(fx,''); if(u) return u; if(fx.zone&&typeof fx.zone==='object'){ const z=ssUtilProblem(fx.zone,'zone.'); if(z) return z; } }
-  const P=fx.pop; if(P!==undefined&&(!P||!/^[a-z]+$/.test(P.id)||!(P.k>0&&P.k<=3)||!(P.r===undefined||(P.r>0&&P.r<=20))||!(P.heal===undefined||(P.heal>0&&P.heal<=1)))) return 'pop is {id, k (up to 3), r (metres, optional), heal (a share of the damage, optional)}';
+  const P=fx.pop; if(P!==undefined&&(!P||!/^[a-z]+$/.test(P.id)||!(P.k>0&&P.k<=3)||!(P.r===undefined||(P.r>0&&P.r<=20))||!(P.heal===undefined||(P.heal>0&&P.heal<=1))||!(P.cdrMax===undefined||(Number.isInteger(P.cdrMax)&&P.cdrMax>=1&&P.cdrMax<=10)))) return 'pop is {id, k (up to 3), r (metres, optional), heal (a share of the damage, optional), cdr ({basic, skill, burst}: seconds off a cooldown for each stack spent, optional), cdrMax (stacks counted, 1 to 10, default 5)}';
+  if(P&&P.cdr!==undefined){ const c=ssCdrProblem(P.cdr); if(c||P.cdr.all!==undefined) return 'pop.'+(c||'cdr is {basic, skill, burst}: seconds for each stack spent (no all)'); }
+  const V=fx.vs; if(V!==undefined){   // vs: this skill's own conditional multiplier (read in fxModK, server/skillsets.js)
+    if(!V||typeof V!=='object'||!(Number.isFinite(V.k)&&V.k>1&&V.k<=3)||typeof V.name!=='string'||!V.name||V.name.length>24||Object.keys(V).some(k=>!['when','k','name'].includes(k))) return 'vs is {when (a condition block), k (above 1, at most 3), name (1 to 24 characters: the badge)}';
+    const w=ssWhenProblem(V.when); if(w) return 'vs.'+w; const no=Object.keys(V.when).find(k=>SS_VS_NO_WHEN.includes(k)); if(no) return 'vs.when may not use "'+no+'" (it scans every monster, and a vs is asked on every hit)'; }
   if(fx.dash&&fx.dash.behind!==undefined&&fx.dash.behind!==true) return 'dash.behind is true (land on the far side of the target)';
   for(const k of SS_FX_SHAPES){ const e=fx[k]; if(e&&typeof e==='object'){ if(e.taunt!==undefined&&!(e.taunt&&e.taunt.dur>0&&e.taunt.dur<=10)) return k+'.taunt is {dur (up to 10 s)}: what this entry hits comes for you'; if(e.mark!==undefined){ const m=ssMarkProblem(e.mark); if(m) return k+'.'+m; } if(e.status!==undefined){ const m=ssStatusProblem(e.status); if(m) return k+'.'+m; } } }
   return null;
@@ -156,6 +163,8 @@ function ssRowProblem(r,needName){
     if(c.when!==undefined){ if(!SS_COND_STATS.includes(c.stat)) return 'a cost may carry a "when" only for '+SS_COND_STATS.join(' '); const w=ssWhenProblem(c.when); if(w) return w; } }
   return null;
 }
+// kit.combo {order:[slot, slot], win (seconds), text}: cast order[1] within win seconds after order[0] (the text the set's card shows, the order tools/skillsets-ladder.js --combo plays)
+const ssComboProblem=c=>!c||typeof c!=='object'||Object.keys(c).some(k=>!['order','win','text'].includes(k))||!Array.isArray(c.order)||c.order.length!==2||!c.order.every(o=>SLOTS.includes(o))||c.order[0]===c.order[1]||!(Number.isFinite(c.win)&&c.win>=1&&c.win<=12)||typeof c.text!=='string'||!c.text||c.text.length>160?'kit.combo is {order: [two different slots of '+SLOTS.join(' ')+'], win (1 to 12 seconds), text (up to 160 characters)}':null;
 const ssRow=(r,id,extra,defaults)=>Object.assign({},defaults,JSON.parse(JSON.stringify(r)),{id},extra,{v:r.stat?(Array.isArray(r.v)?r.v.slice():[r.v,0]):[0,0]});   // defaults sit under the row's own keys (an el of its own wins)
 function defineSkillSet(D){
   const id=D&&typeof D.id==='string'?D.id:'?', bad=(field,why)=>{ SS_BAD.push({id,field,why}); if(typeof console!=='undefined') console.warn('skill set '+id+' left out: '+field+': '+why); return null; };
@@ -179,7 +188,8 @@ function defineSkillSet(D){
   const ip=C.ip; if(!ip||!(ip.kind==='original'?typeof ip.riffs==='string'&&ip.riffs:ip.kind==='licensed'&&['work','license','source','credit'].every(k=>typeof ip[k]==='string'&&ip[k]))) return bad('char','ip is {kind:"original", riffs} or {kind:"licensed", work, license, source, credit}');
   if(!D.pal||!['main','accent','glow'].every(k=>Number.isInteger(D.pal[k]))) return bad('pal','main, accent and glow colours (whole numbers)');
   if(D.emblem!==undefined){ const ep=ssEmblemProblem(D.emblem); if(ep) return bad('emblem',ep); }
-  if(D.kit!==undefined&&(!D.kit||typeof D.kit.name!=='string'||typeof D.kit.text!=='string'||(D.kit.mark!==undefined&&!/^[a-z]+$/.test(D.kit.mark)))) return bad('kit','kit is {mark (a lowercase word, optional), name, text}');
+  if(D.kit!==undefined&&(!D.kit||typeof D.kit.name!=='string'||typeof D.kit.text!=='string'||(D.kit.mark!==undefined&&!/^[a-z]+$/.test(D.kit.mark))||Object.keys(D.kit).some(k=>!['mark','name','text','combo'].includes(k)))) return bad('kit','kit is {mark (a lowercase word, optional), name, text, combo (optional)}');
+  if(D.kit&&D.kit.combo!==undefined){ const c=ssComboProblem(D.kit.combo); if(c) return bad('kit',c); }
   if(!D.pos||typeof D.pos!=='object') return bad('pos','missing');
   const src=SS_SOURCES[D.land], taken=new Set(), posEl={}, made=[], th=DG_THEMES[src[2]];
   if(!th&&SS_THEME_LATE.includes(src[2])){ /* registered later */ } else if(!th||th.land!==D.land) return bad('land','the dungeon "'+src[2]+'" of '+D.land+' is not defined');
@@ -192,6 +202,7 @@ function defineSkillSet(D){
     let el; const variants=[];
     for(const k of Object.keys(P.skill)){
       const e=P.skill[k], pr=ssSkillProblem(e,taken); if(pr) return bad('pos',at+' '+k+': '+pr);
+      if(e.alt!==undefined&&p!==2) return bad('pos',at+' '+k+': alt (a held mode) is for position 2 only');
       taken.add(e.act[0]);
       const ee=e.el!==undefined?e.el:D.el;
       if(el!==undefined&&ee!==el) return bad('pos',at+': the '+keys.join(', ')+' versions must all have one element');
@@ -238,7 +249,10 @@ function defineSkillSet(D){
     // a piece asks no hiker level of its own (the owner: only the Awakening tree and the slot's early story level lock a skill); lv stays on set.pos as the source's level
     for(const [k,e] of m.variants){
       const rid=id+'_'+m.p+'_'+k, row=Object.assign(JSON.parse(JSON.stringify(e)),{id:rid,cls:k,slot:m.slot,el:m.el,price:0,lv:1,set:id,pos:m.p});
+      if(row.fx&&row.fx.vs) row.fx.vs.sid=rid;   // (the proc event names the piece whose vs fired)
+      delete row.alt;   // (the held mode is its own row: SH_ALT, registered below)
       SKILLS[rid]=row; SKILL_IDS.push(rid); ANIM_OF[row.act[0]]=row.anim||row.act[0]; ACT_SKILL[row.act[0]]=row; SS_PIECE_OF[rid]={set:id,pos:m.p,kind:'active'}; ids.push(rid);
+      if(e.alt!==undefined) shDefine(row,e.alt,taken);   // skill-hold: skill 2's held mode (shared/skill-hold.js); a bad one is left out alone (SH_BAD)
     }
     const pid=id+'_p'+m.p;
     PASSIVES[pid]=ssRow(m.P.passive,pid,{slot:'passive',cls:null,lv:1,price:0,set:id,pos:m.p},{el:m.el});

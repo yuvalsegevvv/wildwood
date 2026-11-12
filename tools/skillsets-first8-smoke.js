@@ -5,7 +5,7 @@
 const fs=require('fs'), path=require('path'), {loadServer, SRC}=require('./load');
 const evs=[], inbox={};
 const {api:W,x}=loadServer({dev:true,send(pid,m){ if(pid==='a'&&m.t==='snap'&&m.ev) evs.push(...m.ev); }},
-  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','ssLint','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssTauntedBy','ssMarkN','ssMarkS','ssTriggerS','resolveFxS','damageMonsterS','killMonsterS','hurtP','ssCondP','ssWhen','AREAS','PROJS','mstVulnK','fxModK','recalcP','clsOfP','getH','VIL','ZTIER_MAX','psP','abilityOf','PASSIVE_SLOT_LV','ssBonusSwitch'],{allA1:true});
+  ['MONS','S','SKILLS','PASSIVES','SS_SETS','SS_ORDER','SS_BAD','SS_PIECE_OF','SS_SOURCES','ssLint','ssEquipPieceP','ssGrantSetP','partyOf','allyP','ssTauntedBy','ssMarkN','ssMarkS','ssTriggerS','resolveFxS','damageMonsterS','killMonsterS','hurtP','ssCondP','ssWhen','AREAS','PROJS','mstVulnK','fxModK','recalcP','clsOfP','getH','VIL','ZTIER_MAX','psP','abilityOf','PASSIVE_SLOT_LV','ssBonusSwitch','bhHoldAb','mstDirectS'],{allA1:true});
 // These tests check what each kit's pieces DO. The game has ONE passive slot and the 3- / 5-set bonuses are off (skill revamp step 4), so the harness opens three passive slots and switches the bonus rows on here (the engine and the kit data stay valid for the Bond rows that bring them back).
 x.PASSIVE_SLOT_LV.push(x.PASSIVE_SLOT_LV[0],x.PASSIVE_SLOT_LV[0]); x.ssBonusSwitch(true);
 let fails=0; const ok=(name,cond,info)=>{ console.log((cond?'PASS ':'FAIL ')+name+(info?'  ('+info+')':'')); if(!cond) fails++; };
@@ -139,8 +139,19 @@ reset(); put(m1,0,-8);
 { x.ssMarkS(p,m1,{id:'sight',n:3,dur:12,max:3}); const spent=lost(m1,()=>still(()=>x.resolveFxS(p,{fx:x.SKILLS.sorrel_3_archer.fx,mult:x.SKILLS.sorrel_3_archer.mult,range:45,el:'air',aim:[0,0,-1],sid:'sorrel_3_archer'},m1)));
   ok('Sorrel: casting Long Gale pops the Sight at once (the marks are gone, the pop hit the target before the arrow)',x.ssMarkN(p,m1,'sight')===0&&spent>0,String(Math.round(spent))); x.PROJS.length=0; }
 wear('sorrel',3); reset(); put(m1,0,-20); put(m2,0,-5); put(m3,0,-30); m3.hp=m3.maxHp*0.5;
-ok('Sorrel: Far Sight: +10% damage on a target 14 m or more away; Dead Zone: -20% on one within 6 m (and +12% on all); Cold Eye: +10% crit on a target at full health, none on a hurt one',near(x.ssCondP(p,'dmg',m1),0.10)&&near(x.ssCondP(p,'dmg',m2),-0.20)&&near(x.ssCondP(p,'crit',m1),0.10)&&x.ssCondP(p,'crit',m3)===0,[x.ssCondP(p,'dmg',m1),x.ssCondP(p,'dmg',m2),x.ssCondP(p,'crit',m1),x.ssCondP(p,'crit',m3)].join(' '));
+ok('Sorrel: Far Sight: +10% damage on a target 14 m or more away; Dead Zone: -20% on one within 6 m (and +12% on all); Cold Eye: +6% crit on an exposed target only (combo rework)',near(x.ssCondP(p,'dmg',m1),0.10)&&near(x.ssCondP(p,'dmg',m2),-0.20)&&x.ssCondP(p,'crit',m1)===0&&(x.mstDirectS(m3,{status:{kind:'vuln',v:0.05,dur:5}},p),near(x.ssCondP(p,'crit',m3),0.06)),[x.ssCondP(p,'dmg',m1),x.ssCondP(p,'dmg',m2),x.ssCondP(p,'crit',m1),x.ssCondP(p,'crit',m3)].join(' '));
 clear();
+
+// ---- Sorrel, the combo rework (docs/skillkits/COMBO-REWORK.md section 5): spot the gap, shoot through it ----
+reset(); put(m1,0,-12);
+{ const H=x.bhHoldAb(x.SKILLS.sorrel_1_archer,'archer',1); still(()=>x.resolveFxS(p,{fx:H.fx,mult:H.mult,range:H.range,el:'air',aim:[0,0,-1],sid:'sorrel_1_archer'},m1)); tick(30); x.PROJS.length=0;
+  ok('Sorrel: a fully drawn Clean Line leaves a Sight (and its 10% exposure)',x.ssMarkN(p,m1,'sight')===1&&x.mstVulnK(m1)>=0.1-1e-6,x.ssMarkN(p,m1,'sight')+' '+x.mstVulnK(m1)); }
+reset(); put(m1,0,-12);
+{ cast('sorrel_2_any',m1); tick(10); x.PROJS.length=0; ok('Sorrel: Mark the Gap opens a gap: the target takes 5% more from everyone (vuln 0.05) for 5 s',near(x.mstVulnK(m1),0.05,1e-6)&&m1.st.vuln.until-x.S.t>2,String(x.mstVulnK(m1))); }
+{ const k=c=>{ const s=x.SKILLS['sorrel_3_'+c]; const run=exp=>{ reset(); put(m1,0,-8); if(exp) m1.st={vuln:{v:0.0001,until:x.S.t+5,by:'zz'}}; return lost(m1,()=>still(()=>{ x.resolveFxS(p,{fx:s.fx,mult:s.mult,range:s.range,el:'air',aim:[0,0,-1],sid:s.id},m1); for(let i=0;i<30;i++) W.tick(0.05); })); };
+    const a=run(false), b=run(true); x.PROJS.length=0; return b/a/1.0001; };
+  const ks=['archer','warrior','mage'].map(k);
+  ok('Sorrel: Long Gale through an open gap: x1.2 in all three class versions (Through the Gap)',ks.every(v=>near(v,1.2,0.01)),ks.map(v=>v.toFixed(3)).join(' ')); }
 
 // ---- Ambrose ----
 reset(); put(m1,0,-2); pb.hp=pb.maxHp*0.3; p.hp=p.maxHp*0.5;
