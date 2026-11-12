@@ -14,9 +14,10 @@ function distToChunk(ci,x,z){
    ones with the low-poly one (addInstanced decides per instance); bushes, ferns and boulders do the same at shorter distances, and grass has three
    tufts. Without the detailed set (phones, light mode) the low-poly models are drawn alone, as before. */
 const TREE_LOD=120;
+const SNOW_KINDS={frostspruce:1,dwarfbirch:1,krummholz:1};   // the trees of the snowy zones are drawn with snow on their upward faces (plantMat snow)
 function addTreeKind(k,list){
   const lo=G.trees[k], hi=G.treesHi&&G.treesHi[k], conifer=k==='pine'||k==='spruce'||k==='frostspruce'||!!MORE_CONIFER[k];
-  const base=list.map(i=>({x:i.x,z:i.z,m:i.m})), leafMat=conifer?(hi?matConiferD:matConifer):k==='bamboo'?matBush:hi?matBroadD:matBroad;
+  const base=list.map(i=>({x:i.x,z:i.z,m:i.m})), snow=!!SNOW_KINDS[k], leafMat=conifer?(hi?(snow?matConiferDSnow:matConiferD):(snow?matConiferSnow:matConifer)):k==='bamboo'?matBush:hi?(snow?matBroadDSnow:matBroadD):(snow?matBroadSnow:matBroad);
   if(!hi){ addInstanced(lo.trunk,matBark,base,{cast:true,receive:true}); if(lo.leaves) addInstanced(lo.leaves,leafMat,list,{cast:true,receive:true}); return; }
   addInstanced(hi.trunk,matBark,base,{cast:true,receive:true,lods:[{geo:lo.trunk,from:TREE_LOD,cast:true}]});
   if(hi.leaves) addInstanced(hi.leaves,leafMat,list,{cast:true,receive:true,lods:[{geo:lo.leaves,from:TREE_LOD,cast:true}]});

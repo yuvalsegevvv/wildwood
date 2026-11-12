@@ -49,7 +49,7 @@ const GT={pine:makeConiferHi(CONI.pine,1),
 const G={trees:{},treesHi:GT}; buildMoreTrees();   // G.treesHi is GT: the nine more species join it
 const PALK={pine:PAL.pine,spruce:PAL.spruce||PAL.pine,oakA:PAL.oak,oakB:PAL.oak,birch:PAL.birch,snag:PAL.oak,sakura:PAL.sakura||PAL.oak,maple:PAL.maple||PAL.oak,frostspruce:PAL.frostspruce||PAL.pine,dwarfbirch:PAL.dwarfbirch||PAL.birch};
 for(const k in MORE_TREE) PALK[k]=PAL[k]||PAL.oak;
-const ROWK=${JSON.stringify(ROW)}; const CONIF=Object.assign({pine:1,spruce:1,frostspruce:1},MORE_CONIFER), KINDS=ROWK||Object.keys(GT);
+const SNOWK={frostspruce:1,dwarfbirch:1,krummholz:1}; const ROWK=${JSON.stringify(ROW)}; const CONIF=Object.assign({pine:1,spruce:1,frostspruce:1},MORE_CONIFER), KINDS=ROWK||Object.keys(GT);
 const TREES=ROWK?KINDS.map((k,i)=>[(i-(KINDS.length-1)/2)*7,0,k]):KINDS.map((k,i)=>{ const col=i%5, row=Math.floor(i/5); return [-20+col*10+((i*7)%3-1)*1.2, -21+row*9.5+((i*5)%3-1)*0.8, k]; });
 const fdAt=(x,z)=>{ let f=0; for(const t of TREES){ const d=Math.hypot(x-t[0],z-t[1]); f=Math.max(f,1-d/4.5); } return clamp(f); };
 const COL={lush:new THREE.Color(0x4c7a2b),dry:new THREE.Color(0x8a8f42),floor:new THREE.Color(0x5b4a30),dirt:new THREE.Color(0x6e5738)};
@@ -64,7 +64,7 @@ const inst=(geo,mat,list,cast)=>{ const m=new THREE.InstancedMesh(geo,mat,list.l
 const _m=(x,y,z,ry,s)=>new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(0,ry,0)),new THREE.Vector3(s,s,s));
 const W1=new THREE.Color(1,1,1);
 for(const t of TREES){ const T=GT[t[2]]; if(!T) continue; const m=_m(t[0],HT(t[0],t[1])-0.15,t[1],t[0]*0.3,1);
-  inst(T.trunk,matBark,[{m,c:W1}],true); if(T.leaves) inst(T.leaves,CONIF[t[2]]?matConiferD:matBroadD,[{m,c:new THREE.Color((PALK[t[2]]||[0x5a8a3a])[0])}],true); }
+  inst(T.trunk,matBark,[{m,c:W1}],true); if(T.leaves) inst(T.leaves,(SNOWK[t[2]]?(CONIF[t[2]]?matConiferDSnow:matBroadDSnow):(CONIF[t[2]]?matConiferD:matBroadD)),[{m,c:new THREE.Color((PALK[t[2]]||[0x5a8a3a])[0])}],true); }
 // low plants from their own streams: ferns, bushes, flowers, mushrooms, rocks and a log
 const {r:rg}=mrng(777), fresh=new THREE.Color(0x5f8f35), gc=new THREE.Color();
 const free=(x,z,r)=>!TREES.some(t=>Math.hypot(x-t[0],z-t[1])<r);

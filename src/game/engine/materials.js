@@ -5,7 +5,7 @@
    trembles along its normal on top of the whole crown's sway. The key names every option, so each combination compiles its own program. */
 function plantMat(o){
   const m = new THREE.MeshLambertMaterial({vertexColors:true, side:o.double?THREE.DoubleSide:THREE.FrontSide});
-  const s = o.wind||0, lf=o.leaf||0, fl=o.flutter||0, key='plant_'+s+(o.double?'_d':'')+(lf?'_l'+lf:'')+(fl?'_f'+fl:'');
+  const s = o.wind||0, lf=o.leaf||0, fl=o.flutter||0, key='plant_'+s+(o.double?'_d':'')+(lf?'_l'+lf:'')+(fl?'_f'+fl:'')+(o.snow?'_snow':'');
   m.onBeforeCompile = sh => {
     sh.uniforms.uTime = timeU;
     if(s>0){
@@ -27,6 +27,8 @@ function plantMat(o){
         float bk = saturate(-dot(geometry.normal, ld)), vw = saturate(dot(normalize(mvPosition.xyz), ld));
         vIndirectFront += directionalLights[0].color * PI * (bk*${(0.14*lf).toFixed(3)} + vw*vw*vw*${(0.3*lf).toFixed(3)}); }
       #endif`);
+    if(o.snow) sh.vertexShader = sh.vertexShader.replace('#include <lights_lambert_vertex>', `#include <lights_lambert_vertex>
+      vColor.rgb = mix(vColor.rgb, vec3(0.94,0.97,1.0), smoothstep(0.3,0.62,objectNormal.y)*0.93);   // snow lies on every upward-facing surface (the boughs' tops, the crown's upper side)`);
     if(o.double) sh.fragmentShader = sh.fragmentShader.replace(/gl_FrontFacing/g,'true');
   };
   m.customProgramCacheKey = () => key;
@@ -114,6 +116,11 @@ const matConifer = plantMat({wind:0.011, leaf:1});
 const matConiferD = plantMat({wind:0.011, double:true, leaf:1, flutter:0.02});   // the desktop's bough fronds are open polygons
 const matBroad = plantMat({wind:0.017, leaf:1});
 const matBroadD = plantMat({wind:0.017, double:true, leaf:1, flutter:0.035});   // the desktop's leaf clusters are open polygons, seen from both sides
+// the snowy zones' trees (frost spruce, dwarf birch, krummholz): the same shading with snow on the upward faces
+const matConiferSnow = plantMat({wind:0.011, leaf:1, snow:1});
+const matConiferDSnow = plantMat({wind:0.011, double:true, leaf:1, flutter:0.02, snow:1});
+const matBroadSnow = plantMat({wind:0.017, leaf:1, snow:1});
+const matBroadDSnow = plantMat({wind:0.017, double:true, leaf:1, flutter:0.035, snow:1});
 const matBush = plantMat({wind:0.03});
 const matBushD = plantMat({wind:0.03, double:true});
 const matGrass = LITE ? plantMat({wind:0.24, double:true}) : grassMat(LOW?0:1);   // (light mode: the old flat tuft, which has no gk attribute)

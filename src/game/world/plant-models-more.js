@@ -96,7 +96,8 @@ function treeLakeD(x,z){ let d=1e9; for(const L of LAKES){ const e=Math.hypot(x-
 function treeVariety(type,x,z,h,land){
   const k=h3(Math.floor(x*1.3),Math.floor(z*1.3),23);
   if(land==='home'){
-    if((type==='pine'||type==='spruce')&&k<0.7&&inGrey(x,z)&&h>greyTreeline(x,z)-14) return 'krummholz';   // the Greyspine's treeline: dwarf mountain pines
+    if((type==='pine'||type==='spruce')&&k<0.7&&inGrey(x,z)&&h>greyTreeline(x,z)-14) return 'krummholz';
+    if((type==='pine'||type==='spruce')&&inGrey(x,z)&&h>greyTreeline(x,z)-36) return 'frostspruce';   // the Greyspine's snowy slopes: snow-laden spruce   // the Greyspine's treeline: dwarf mountain pines
     if(type==='birch'&&k>=0.3&&k<0.42) return 'rowan';
     if(type==='spruce'&&k>=0.28&&k<0.42&&h>12) return 'fir';   // the forest's giants on the higher ground
     if(h<7&&k<0.6&&(type==='oakA'||type==='oakB'||type==='birch')&&treeLakeD(x,z)<26) return 'willow';
@@ -110,7 +111,6 @@ function treeVariety(type,x,z,h,land){
     if(type==='sakura'&&k<0.1||type==='maple'&&k<0.3) return 'ginkgo';
     if(h<7&&type==='sakura'&&k<0.35&&treeLakeD(x,z)<26) return 'willow';
   } else if(land==='hoar'){
-    if(type==='frostspruce'&&k<0.14) return 'larch';
     if(type==='dwarfbirch'&&k<0.25) return 'krummholz';
   } else if(land==='gloam'){
     if(type==='spruce'&&k<0.45) return 'gloomoak';
