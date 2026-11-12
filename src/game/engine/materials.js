@@ -52,39 +52,48 @@ function grassMat(lod){
   m.onBeforeCompile=sh=>{
     sh.uniforms.uTime=timeU;
     sh.vertexShader=GRASS_VS_HEAD+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
-      vec3 ip=vec3(0.0); vec3 gic=vec3(1.0); vec3 gc0=vec3(1.0,0.0,0.0), gc2=vec3(0.0,0.0,1.0);
+      float gsy=1.0; vec3 ip=vec3(0.0); vec3 gic=vec3(1.0); vec3 gc0=vec3(1.0,0.0,0.0), gc2=vec3(0.0,0.0,1.0);
       #ifdef USE_INSTANCING
-        ip=instanceMatrix[3].xyz; gc0=instanceMatrix[0].xyz; gc2=instanceMatrix[2].xyz;
+        gsy=length(instanceMatrix[1].xyz); ip=instanceMatrix[3].xyz; gc0=instanceMatrix[0].xyz; gc2=instanceMatrix[2].xyz;
       #endif
       #ifdef USE_INSTANCING_COLOR
         gic=instanceColor;
       #endif
-      float gt=gk.y, gkind=gk.x, ghh=gh12(floor(ip.xz*2.0)), gd=length(ip.xz-cameraPosition.xz);
+      float gt=gk.y, gkind=floor(gk.x+0.01), grnd=fract(gk.x)/0.9, ghh=gh12(floor(ip.xz*2.0)), gd=length(ip.xz-cameraPosition.xz);
       float gn1=gvn(ip.xz*0.034+vec2(3.7,9.1)), gn2=gvn(ip.xz*0.12+vec2(17.0,5.0));
       float gdry=smoothstep(0.52,0.86,gn1), gcool=1.0-smoothstep(0.12,0.42,gn1);   // (GLSL smoothstep needs edge0 < edge1: reversed it is undefined, NaN on some GPUs)
       float gkeep=1.0-smoothstep(80.0,99.0,gd);`+(lod?`
       gkeep*=(1.0-step(0.83,ghh)*smoothstep(17.0,24.0,gd))*(1.0-step(0.58,ghh)*smoothstep(46.0,56.0,gd));`:'')+`
-      if(gkind>1.5 && fract(ghh*7.31)>0.3+0.45*gdry) gkeep=0.0;
+      bool gseed=gkind>1.5&&gkind<2.5, glawn=gkind>2.5;
+      if(gseed && fract(ghh*7.31)>0.3+0.45*gdry) gkeep=0.0;
+      // turf zones: a slow world noise makes some of the meadow short, open turf (tufts at 0.42 height, no seed stalks) and the rest tall meadow
+      float gturf=1.0-smoothstep(0.38,0.6,gvn(ip.xz*0.045+vec2(41.0,7.0)));
+      if(gseed && gturf>0.5) gkeep=0.0;
+      if(glawn){ transformed.y*=(0.9+0.5*ghh)/gsy; gkeep*=1.0-smoothstep(17.0,26.0,gd); }   // the lawn blades ignore the tuft's height (meadow tufts must not grow long lawn) and fade out before the 30 m level switch
+      else { transformed.y*=mix(1.0,0.42,gturf); transformed.xz*=mix(1.0,1.25,gturf); }
       // wind: ONE world-space wave train for the whole field (crests 28 m apart, ~11 m/s along gw) under a gust envelope that travels with it
       // (a long sine along the wind, its fronts bent by a slow noise drifting at the same speed): every tuft leans downwind by the gust and sways
       // with the wave; a blade's own phase differs only a little (its place in the tuft, a small per-tuft hash). gw in the tuft's own frame: gwl.
       vec3 gw=vec3(0.8,0.0,0.6); vec2 gwl=vec2(dot(gc0,gw)/dot(gc0,gc0), dot(gc2,gw)/dot(gc2,gc2));
       float galong=dot(ip.xz,gw.xz);
       float ggust=smoothstep(0.15,0.95,0.6*(0.5+0.5*sin(galong*0.045-uTime*0.495))+0.4*gvn((ip.xz-gw.xz*uTime*11.0)*0.012));
-      float gsway=sin(galong*0.22-uTime*2.42+(ghh-0.5)*0.35+dot(position.xz,gw.xz)*0.8);
+      float gsway=sin(galong*0.22-uTime*2.42+(ghh-0.5)*0.35+grnd*1.2+dot(position.xz,gw.xz)*0.8);
       float gpush=0.15+0.55*ggust+(0.12+0.38*ggust)*gsway;
       float gwh=max(transformed.y,0.0);
       float gbend=gpush*gwh*gwh*0.6;
       transformed.xz+=gwl*gbend;
       transformed.y-=min(gbend*gbend/(2.0*max(gwh,0.05)),gwh*0.45);
+      if(glawn) transformed.xz+=gwl*gwh*(0.5*ggust+0.35*gsway);   // short blades: the bend above is height squared, so a linear shimmer
       transformed*=gkeep;
       // colour: the meadow's patches, the tip's freshness, straw, the sheen of the bent blades, the far fade into the ground
-      vec3 gpatch=mix(mix(vec3(1.0),vec3(0.84,0.98,1.12),gcool),vec3(1.14,1.05,0.72),gdry)*(0.86+0.28*gn2)*vec3(1.0+(ghh-0.5)*0.12,1.0,1.0-(ghh-0.5)*0.14);
-      vColor*=mix(vec3(1.0),gpatch,0.3+0.7*gt);
+      vec3 gpatch=mix(mix(vec3(1.0),vec3(0.78,0.96,1.14),gcool),vec3(1.2,1.06,0.62),gdry)*(0.86+0.28*gn2)*vec3(1.0+(ghh-0.5)*0.12,1.0,1.0-(ghh-0.5)*0.14);
+      vColor*=mix(vec3(1.0),gpatch,0.45+0.55*gt);
       vec3 gtint=vec3(0.76,0.93,0.64);   // the tuft's colour is the ground's (genChunk), so tufts melted into it and the meadow looked bare: stand them out, darker and greener than the ground they stand on (the far fade below returns to the ground's colour)
-      vColor*=gtint;
+      vec3 gtl=mix(vec3(1.0),gtint,smoothstep(0.0,0.3,gt));   // the lowest third is the ground's own colour: the tuft grows out of it
+      vColor*=gtl;
+      if(gkind<0.5||glawn){ if(grnd>0.92) vColor*=vec3(0.92,0.86,0.7); else if(grnd<0.06) vColor*=vec3(0.9,1.0,1.1); }   // a few olive and blue-green blades
       vColor=mix(vColor,vColor*vec3(1.22,1.06,0.6),gdry*gt*gt*0.55);
-      if(gkind>0.5){ vec3 straw=mix(vec3(0.6,0.56,0.33),vec3(0.74,0.64,0.38),gdry)*(0.9+0.2*gn2); if(gkind>1.5) straw*=vec3(0.86,0.8,0.8); vColor=color*mix(gic*0.9,straw,0.35+0.6*gt)*gtint; }
+      if(gkind>0.5&&!glawn){ vec3 straw=mix(vec3(0.6,0.56,0.33),vec3(0.74,0.64,0.38),gdry)*(0.9+0.2*gn2); if(gseed) straw*=vec3(0.86,0.8,0.8); vColor=color*mix(gic*0.9,straw,0.35+0.6*gt)*gtl; }
       vColor*=1.0+0.3*(gpush-0.45)*gt;
       float gfar=smoothstep(55.0,97.0,gd);
       vColor=mix(vColor,gic,gfar);

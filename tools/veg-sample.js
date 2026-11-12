@@ -8,11 +8,12 @@
 const fs=require('fs'), path=require('path'), {SRC,strip}=require('./load');
 const arg=(n,d)=>{ const i=process.argv.indexOf(n); return i>0?process.argv[i+1]:d; };
 const out=process.argv[2]&&!process.argv[2].startsWith('--')?process.argv[2]:'grass';
+const SG=process.argv.includes('--sg');   // --sg: the terrain's shader lawn on (the game has it off by default)
 const [W,H]=arg('--size','1280x720').split('x').map(Number), VIEWS=arg('--views','top,hiker,close'), TIME=+arg('--time','3'), NT=+arg('--n','26000');
 let chromium; for(const base of [process.cwd(),path.join(__dirname,'..'),'/opt/node-tools','/usr/local/lib']){ try{ chromium=require(require.resolve('playwright',{paths:[base,path.join(base,'node_modules')]})).chromium; break; }catch(e){} }
 if(!chromium){ console.error('needs the playwright package (node tools/doctor.js)'); process.exit(2); }
 const read=(d,f)=>strip(fs.readFileSync(path.join(SRC,d,f),'utf8'));
-const gs=read('game/world','generation-setup.js'), palSrc=gs.slice(gs.indexOf('const PAL={'),gs.indexOf('const RAD=')), terSrc=gs.slice(gs.indexOf('const TERRAIN_FS_HEAD'),gs.indexOf('// hollows'));
+const gs=read('game/world','generation-setup.js'), palSrc=gs.slice(gs.indexOf('const PAL={'),gs.indexOf('const RAD=')), terSrc=gs.slice(gs.indexOf('const TERRAIN_FS_HEAD'),gs.indexOf('// hollows')).replace(/const sgOn=[^\n]*/,SG?'const sgOn=phong;':'$&');
 const gch=read('game/world','generation-chunks.js'), clumpSrc=gch.indexOf('const GRASS_BALD')<0?'':gch.slice(gch.indexOf('const GRASS_BALD'),gch.indexOf('function addGrass'));   // grassClump, when it exists
 const page=`<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#9ec3e0}canvas{display:block}</style><body><script>${fs.readFileSync(path.join(SRC,'vendor/three.r128.min.js'),'utf8')}</script><script>
 const LITE=false, LOW=false, LAKES=[]; const moss=new THREE.Color(0x56702f); const timeU={value:${TIME}};

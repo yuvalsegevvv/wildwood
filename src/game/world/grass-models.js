@@ -8,24 +8,25 @@
    a fatter, sparser one to 62 m, the far one to 100 m (addGrass, generation-chunks.js); phones get one cheap tuft. */
 function makeGrassTuft(o,seed){
   const {r:rg,R:rr}=mrng(seed), P=[], N=[], C=[], K=[], rt=o.root||0.6;   // rt: the root's shade (the coarser levels darker: fewer blades need more contrast)
-  const tri=(a,b,c,n,ca,cb,cc,k,ta,tb,tc)=>{ P.push(...a,...b,...c); N.push(...n,...n,...n); C.push(...ca,...cb,...cc); K.push(k,ta,k,tb,k,tc); };
+  const tri=(a,b,c,n,ca,cb,cc,k,ta,tb,tc)=>{ P.push(...a,...b,...c); if(n.length===3&&Array.isArray(n[0])) N.push(...n[0],...n[1],...n[2]); else N.push(...n,...n,...n); C.push(...ca,...cb,...cc); K.push(k,ta,k,tb,k,tc); };
   const blade=(kind,segs,h,w,bend,lean0,r,fan)=>{
     const a=rg()*TAU, bx=Math.cos(a)*r, bz=Math.sin(a)*r, phi=r>o.radius*0.3?a+rr(-fan,fan):rg()*TAU, hx=Math.cos(phi), hz=Math.sin(phi);   // (rim blades lean outward: a tuft opens like a fountain)
-    const px=-hz, pz=hx, twist=rr(-0.5,0.5), nn=nrm3(hx*0.3,0.92,hz*0.3), hue=rr(-1,1), jit=0.86+rg()*0.28;
+    const px=-hz, pz=hx, twist=rr(-0.5,0.5), nn=nrm3(hx*0.3,0.92,hz*0.3), nL=nrm3(hx*0.3-px*0.55,0.92,hz*0.3-pz*0.55), nR=nrm3(hx*0.3+px*0.55,0.92,hz*0.3+pz*0.55), hue=rr(-1,1), jit=0.86+rg()*0.28, kk=kind+rg()*0.9, rtb=r>o.radius*0.6?Math.min(rt+0.2,0.9):rt;   // nL / nR: the two edges lean apart, so a blade shades across its width; kk: the kind plus a per-blade random for the shader; rtb: roots at the tuft's rim are lighter (the shade belongs in its heart)
     const pts=[[bx,0,bz]]; let x=bx, y=0, z=bz;
     for(let s=1;s<=segs;s++){ const t=s/segs, th=lean0+bend*Math.pow(t,1.8), st=h/segs; x+=Math.sin(th)*hx*st; y+=Math.cos(th)*st; z+=Math.sin(th)*hz*st; pts.push([x,y,z]); }
     const col=t=>kind?[0.8+0.25*t,0.8+0.25*t,0.8+0.25*t].map(v=>v*jit):   // dry and seed: the shader mixes the straw, this is only the shade
-      [(rt+(1.1-rt)*t)*jit*(1+hue*0.06),(rt+0.03+(1.23-rt)*t)*jit,(rt-0.04+(0.86-rt)*t)*jit*(1-hue*0.14)];   // green: dark root (shade at the ground) to a fresh tip, some blades bluer, some yellower
+      [(rtb+(1.04-rtb)*t)*jit*(1+hue*0.1),(rtb+0.03+(1.14-rtb)*t)*jit,(rtb-0.04+(0.84-rtb)*t)*jit*(1-hue*0.2)];   // green: dark root (shade at the ground) to a fresh tip, some blades bluer, some yellower
     const side=s=>{ const t=s/segs, wd=w*(1-Math.pow(t,2.2))*(kind===2?1:0.85+0.6*t*(1-t)), tw=twist*t, cx=px*Math.cos(tw)-hx*Math.sin(tw)*0.5, cz=pz*Math.cos(tw)-hz*Math.sin(tw)*0.5, p=pts[s];
       return [[p[0]-cx*wd,p[1],p[2]-cz*wd],[p[0]+cx*wd,p[1],p[2]+cz*wd]]; };
     let prev=side(0);
     for(let s=1;s<segs;s++){
       const cur=side(s), t0=(s-1)/segs, t1=s/segs, c0=col(t0), c1=col(t1);
-      tri(prev[0],prev[1],cur[1],nn,c0,c0,c1,kind,t0,t0,t1); tri(prev[0],cur[1],cur[0],nn,c0,c1,c1,kind,t0,t1,t1);
+      const d0=c0.map(v=>v*0.88), d1=c1.map(v=>v*0.88);   // the left edge is the shaded half of a V-folded blade
+      tri(prev[0],prev[1],cur[1],[nL,nR,nR],d0,c0,c1,kk,t0,t0,t1); tri(prev[0],cur[1],cur[0],[nL,nR,nL],d0,c1,d1,kk,t0,t1,t1);
       prev=cur;
     }
     const tip=pts[segs], tl=(segs-1)/segs, cl=col(tl), ct=col(1);
-    tri(prev[0],prev[1],tip,nn,cl,cl,ct,kind,tl,tl,1);
+    tri(prev[0],prev[1],tip,[nL,nR,nn],cl.map(v=>v*0.88),cl,ct,kk,tl,tl,1);
     return {tip, dir:nrm3(tip[0]-pts[segs-1][0],tip[1]-pts[segs-1][1],tip[2]-pts[segs-1][2])};
   };
   const R0=o.radius;
@@ -41,6 +42,14 @@ function makeGrassTuft(o,seed){
       tri(p0,s0,p2,nn,c,c,c,2,1,1,1); tri(p0,p2,s1,nn,c,c,c,2,1,1,1);
     }
   }
+  if(o.lawn){   // lawn: single-triangle short blades over a wide skirt round the tuft (kind 3, drawn from their own stream so the blades above do not move)
+    const L=mrng(seed+500), lr=L.r, lR=L.R;
+    for(let b=0;b<o.lawn;b++){
+      const a=lr()*TAU, r=o.lawnR*Math.sqrt(lr()), bx=Math.cos(a)*r, bz=Math.sin(a)*r, ph=lr()*TAU, hx=Math.cos(ph), hz=Math.sin(ph), w=lR(0.007,0.012)*(o.lawnW||1), h=lR(0.07,0.16), lean=lR(0.1,0.5), kk=3+lr()*0.9;
+      const base0=[bx-hz*w,0,bz+hx*w], base1=[bx+hz*w,0,bz-hx*w], tip=[bx+Math.sin(lean)*hx*h,Math.cos(lean)*h,bz+Math.sin(lean)*hz*h], nn=nrm3(hx*0.3,0.92,hz*0.3), cr=[0.62,0.66,0.34], ct=[1.04,1.16,0.84];
+      tri(base0,base1,tip,nn,cr,cr,ct,kk,0,0,1);
+    }
+  }
   const g=mkGeo(P,N,C); g.setAttribute('gk',new THREE.Float32BufferAttribute(K,2));
   return g;
 }
@@ -48,8 +57,8 @@ function makeGrassTuft(o,seed){
    a 3-segment blade (5 triangles) curves well enough at hiker height, so the triangles go into more blades over more ground, not smoother ones */
 function buildGrassTufts(){
   if(VD>=2) return [
-    makeGrassTuft({main:28,tall:3,dry:3,seed:2,segs:3,tallSegs:4,radius:0.42,h:[0.3,0.66],w:[0.02,0.034]},11),
-    makeGrassTuft({main:13,tall:2,dry:2,seed:1,segs:2,tallSegs:3,radius:0.4,h:[0.3,0.66],w:[0.034,0.052],headQ:1,root:0.5},12),
+    makeGrassTuft({main:24,tall:3,dry:3,seed:2,segs:3,tallSegs:4,radius:0.42,h:[0.3,0.66],w:[0.011,0.02],lawn:60,lawnR:0.95},11),
+    makeGrassTuft({main:13,tall:2,dry:2,seed:1,segs:2,tallSegs:3,radius:0.4,h:[0.3,0.66],w:[0.026,0.04],headQ:1,root:0.5,lawn:14,lawnR:1.1,lawnW:1.6},12),
     makeGrassTuft({main:9,tall:1,segs:2,radius:0.36,h:[0.3,0.66],w:[0.05,0.076],root:0.46},13)];
   return [makeGrassTuft({main:7,tall:1,dry:1,segs:2,radius:0.28,h:[0.32,0.66],w:[0.032,0.052],root:0.5},11)];
 }

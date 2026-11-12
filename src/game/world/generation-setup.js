@@ -137,10 +137,17 @@ const TERRAIN_SHORT=`
       float gg=smoothstep(0.15,0.95,0.6*(0.5+0.5*sin(ga*0.045-uTime*0.495))+0.4*tnoise((tq-gw*uTime*11.0)*0.012).x);
       float gs=sin(ga*0.22-uTime*2.42);
       vec2 gq=tq+gw*(0.05+0.10*gg)*(0.6+0.4*gs);
+      // two layers so blades seem to stand up: the roots at the ground, the tips 6 cm higher and shifted along the view (parallax)
+      vec3 sgv=normalize(cameraPosition-vWp); vec2 sgpar=sgv.xz/max(sgv.y,0.25);
       vec3 b1=tnoise(gq*11.0), b2=tnoise(gq*27.0+5.0);
-      float bl=b1.x*0.6+b2.x*0.4;
+      float lo=b1.x*0.6+b2.x*0.4;
+      vec2 gq2=gq+sgpar*0.06;
+      float hi=tnoise(gq2*11.0+2.0).x*0.6+tnoise(gq2*27.0+9.0).x*0.4;
+      float tipM=smoothstep(0.52,0.7,hi), rootM=smoothstep(0.4,0.62,lo);
       sgg=(b1.yz*11.0*0.6+b2.yz*27.0*0.4)*sgk;   // slope of the blade field: tilts the normal so the sun catches blade sides
-      diffuseColor.rgb*=1.0-sgk*(0.30*(1.0-bl)*(1.0-bl));   // gaps between blades are dark (self-shadow), tops stay as they were
+      vec3 sgBase=diffuseColor.rgb;
+      diffuseColor.rgb=sgBase*mix(1.0,0.66,sgk*(1.0-rootM));   // dark gaps between blades (self-shadow)
+      diffuseColor.rgb=mix(diffuseColor.rgb,sgBase*vec3(0.98,1.14,0.78),sgk*tipM*0.5);   // lighter, greener tips on top
     } }
 `;
 const TERRAIN_BUMP=`
