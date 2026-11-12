@@ -513,6 +513,7 @@
     "economy/skill-track.js",
     "economy/skillsets.js",
     "skillsets/looks.js",
+    "skillsets/look-fx.js",
     "skillsets/look-tansy.js",
     "skillsets/look-torgeir.js",
     "skillsets/look-sazanka.js",

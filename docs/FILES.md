@@ -604,6 +604,7 @@ game
   economy/skill-track.js             Tracking a skill upgrade: mark one skill and the maps show the camps of the monsters whose drops its next level still needs, and the quest log carries its price lines
   economy/skillsets.js               Skill sets on the client: the toast when a piece is earned (the pieces themselves live in the skills panel's grids, economy/skills.js) and the ally buffs that change what you do (haste)
   skillsets/looks.js                 Skill-set looks on the client: every signature skill is drawn in the colours and motifs of its outfit (particles, ground patterns, projectiles, auras), through hooks in skill-fx.js, attacks.js and net/client.js
+  skillsets/look-fx.js               Payoff helpers for the skill-set looks: your mark stacks near a point, a cord or streak between two points, motes circling a player, a glare at a monster's eyes, a flame column on a monster
   skillsets/look-tansy.js            Tansy's skill look (The Harvest): chaff and wheat ears fall and swirl, a wheat-ear ring is laid on the ground, a twine tie closes every field she gathers
   skillsets/look-torgeir.js          Torgeir's skill look (The Shield-Wall): a round shield flashes in front of him, stone chips and bone shards fly, a wall of slabs rises round him when he taunts, rivets are laid on the ground
   skillsets/look-sazanka.js          Sazanka's skill look (The Night Run): crossed moon-grey crescents, ink wisps and vermilion cord flicks, a violet edge; a delivery tag drops where she lands
